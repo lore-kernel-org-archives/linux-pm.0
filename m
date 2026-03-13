@@ -1,170 +1,63 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 559603BD620;
-	Fri, 13 Mar 2026 15:45:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21A103CA492;
+	Fri, 13 Mar 2026 17:33:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773416744; cv=none; b=IfbLQOwzfEOimEve0IvCCGPidJRzIajlD+EpttgW7sOLJqbp9YLsxxW9PwJygyH9468Xc+2gFYIzZt4aVhQAoHVYfrGTepVzXZch115v38aAxkuN9Ten2k0gGGXJu2iuUEWmXVmRMmvO8MwR+qtudWsfefRUTOo/atMpCT1bFrE=
+	t=1773423198; cv=none; b=TMK2J8M1vQ0mqjaWGQAXnqwvE/KW9Kh4yZona1DQtKzL0aKhlvWZ48+5DxThcDnK0JUMDTcOi3ikszhE46aEWvTHlP9ix1YS4L7NvCOI1dvbTWtaRcBXb0O9Lih5JAgiwiJqh7/JumseHhFK/kU4q0xje3CdeFiR/6NBorgXU/4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773416744; c=relaxed/simple;
-	bh=YYhgaGQGgj6pk0KU3WwMbVlwjJ4TINR3W342W46Ppmg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Krt/hqu4/hH8tAYORaXU2m8j4jOddiCtbk5Wvan+j7ozYEZDEUrwO1MoAdQTJZ7cL40BNV9cEBkDSTIS1dLeiW+/Am7rG8SQDvpgBAgARnaW331zQ4ohfyUcwl/1gc2bObH22Ae45kikWr1OKynOWZY6BjZ98SLdUf5EXYGbdxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 635041477;
-	Fri, 13 Mar 2026 08:45:35 -0700 (PDT)
-Received: from [10.1.37.41] (e127648.arm.com [10.1.37.41])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8DC573F73B;
-	Fri, 13 Mar 2026 08:45:40 -0700 (PDT)
-Message-ID: <a102eb05-9051-43bb-9f25-accf71498f6a@arm.com>
-Date: Fri, 13 Mar 2026 15:45:38 +0000
+	s=arc-20240116; t=1773423198; c=relaxed/simple;
+	bh=BfmyISGxlVAOSTxksyjZ1Q6UFf8YFommfJ2UrtwDlKE=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=HgSY8JZ/vn8m4XVOvzwpB8YZXYETTGW8Y0C5YnM+9//HW/a4si0ohM66m60Bw+WKelhzCpCszEOpNXFwMkK7wcxLjAE1hd5tuykptPkzi/nQQp8gaOCTI6/EDQwUbOc/uuVnlmXRucwjpXODFLF3rikg9RvA/QIYevdlMaZd6MI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rgvacG07; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rgvacG07"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6425C19421;
+	Fri, 13 Mar 2026 17:33:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773423197;
+	bh=BfmyISGxlVAOSTxksyjZ1Q6UFf8YFommfJ2UrtwDlKE=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=rgvacG07qhtl01pcADx7X+yFjk6vkOxyEMex3BhLN81pugLriCR9pGDt80+HUPhW6
+	 BCvCqZaIJdUeskY0e/SPdyUOXi8osy3ht9afB4O0aNjz+OYquBZ7Np154utlAYjMoz
+	 8r4hwMklUmwA04v5Csx2GslBg4fOT0N6Lp5/HuzKxSfe5GyH2JS9Ur/pzVj5QLd1PC
+	 zHMjeJK8R3HbuR9kCeCgDEPe6CTA3/kP2mYLGERIsntNk3zlHvRooTr/dhvEGB7xru
+	 TsMMvTqVDEXOhyWvhBA/3LaMginC2Hz3IpUIbQObopYxtpqlRHXmAjC4hESbyHM8cB
+	 9TC4s61vpLM7g==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA0AC3808200;
+	Fri, 13 Mar 2026 17:33:13 +0000 (UTC)
+Subject: Re: [GIT PULL] power sequencing fixes for v7.0-rc4
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20260313091403.7973-1-bartosz.golaszewski@oss.qualcomm.com>
+References: <20260313091403.7973-1-bartosz.golaszewski@oss.qualcomm.com>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20260313091403.7973-1-bartosz.golaszewski@oss.qualcomm.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.0-rc4
+X-PR-Tracked-Commit-Id: 5c3daa5301693d2e5364483a3405649a0fdaed98
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 92e989acfb83493e0305bc9fdcc666275ddd46c9
+Message-Id: <177342319228.1438840.7249911167636099569.pr-tracker-bot@kernel.org>
+Date: Fri, 13 Mar 2026 17:33:12 +0000
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] sched: idle: Consolidate the handling of two special
- cases
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
- Qais Yousef <qyousef@layalina.io>, Frederic Weisbecker
- <frederic@kernel.org>, Aboorva Devarajan <aboorvad@linux.ibm.com>
-References: <4741364.LvFx2qVVIh@rafael.j.wysocki>
- <c1f6d920-6bd9-4131-af08-da1be1206812@arm.com>
- <CAJZ5v0hnamFh6YUriWLgdWip6mRer69pNcL3ueBt5Aux6fzsgg@mail.gmail.com>
- <ae9d5cba-f525-48bb-bac4-cbd50db1dbac@arm.com>
- <CAJZ5v0grtJVtj7oGDRJ=gyWVs6VnGcydOURJ5aDfE6qVn8nkXg@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAJZ5v0grtJVtj7oGDRJ=gyWVs6VnGcydOURJ5aDfE6qVn8nkXg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-On 3/13/26 15:28, Rafael J. Wysocki wrote:
-> On Fri, Mar 13, 2026 at 3:04 PM Christian Loehle
-> <christian.loehle@arm.com> wrote:
->>
->> On 3/13/26 13:07, Rafael J. Wysocki wrote:
->>> On Fri, Mar 13, 2026 at 1:53 PM Christian Loehle
->>> <christian.loehle@arm.com> wrote:
->>>>
->>>> On 3/13/26 12:25, Rafael J. Wysocki wrote:
->>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>>
->>>>> There are two special cases in the idle loop that are handled
->>>>> inconsistently even though they are analogous.
->>>>>
->>>>> The first one is when a cpuidle driver is absent and the default CPU
->>>>> idle time power management implemented by the architecture code is used.
->>>>> In that case, the scheduler tick is stopped every time before invoking
->>>>> default_idle_call().
->>>>>
->>>>> The second one is when a cpuidle driver is present, but there is only
->>>>> one idle state in its table.  In that case, the scheduler tick is never
->>>>> stopped.
->>>>>
->>>>> Since each of these approaches leads to suboptimal choices in some
->>>>> cases, reconcile them with the help of one simple heuristic.  Namely,
->>>>> stop the tick if the CPU has been woken up by it in the previous
->>>>> iteration of the idle loop, or let it tick otherwise.>
->>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>> ---
->>>>>
->>>>> Based on today's mainline.
->>>>>
->>>>> ---
->>>>>  kernel/sched/idle.c |   30 +++++++++++++++++++++---------
->>>>>  1 file changed, 21 insertions(+), 9 deletions(-)
->>>>>
->>>>> --- a/kernel/sched/idle.c
->>>>> +++ b/kernel/sched/idle.c
->>>>> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
->>>>>       return cpuidle_enter(drv, dev, next_state);
->>>>>  }
->>>>>
->>>>> +static void idle_call_stop_or_retain_tick(bool stop_tick)
->>>>> +{
->>>>> +     if (stop_tick || tick_nohz_tick_stopped())
->>>>> +             tick_nohz_idle_stop_tick();
->>>>> +     else
->>>>> +             tick_nohz_idle_retain_tick();
->>>>> +}
->>>>> +
->>>>>  /**
->>>>>   * cpuidle_idle_call - the main idle function
->>>>>   *
->>>>> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
->>>>>   * set, and it returns with polling set.  If it ever stops polling, it
->>>>>   * must clear the polling bit.
->>>>>   */
->>>>> -static void cpuidle_idle_call(void)
->>>>> +static void cpuidle_idle_call(bool stop_tick)
->>>>>  {
->>>>>       struct cpuidle_device *dev = cpuidle_get_device();
->>>>>       struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
->>>>> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
->>>>>       }
->>>>>
->>>>>       if (cpuidle_not_available(drv, dev)) {
->>>>> -             tick_nohz_idle_stop_tick();
->>>>> +             idle_call_stop_or_retain_tick(stop_tick);
->>>>>
->>>>>               default_idle_call();
->>>>>               goto exit_idle;
->>>>> @@ -222,17 +230,19 @@ static void cpuidle_idle_call(void)
->>>>>               next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
->>>>>               call_cpuidle(drv, dev, next_state);
->>>>>       } else if (drv->state_count > 1) {
->>>>> -             bool stop_tick = true;
->>>>> +             /*
->>>>> +              * stop_tick is expected to be true by default by cpuidle
->>>>> +              * governors, which allows them to select idle states with
->>>>> +              * target residency above the tick period length.
->>>>> +              */
->>>>> +             stop_tick = true;
->>>>>
->>>>>               /*
->>>>>                * Ask the cpuidle framework to choose a convenient idle state.
->>>>>                */
->>>>>               next_state = cpuidle_select(drv, dev, &stop_tick);
->>>>>
->>>>> -             if (stop_tick || tick_nohz_tick_stopped())
->>>>> -                     tick_nohz_idle_stop_tick();
->>>>> -             else
->>>>> -                     tick_nohz_idle_retain_tick();
->>>>> +             idle_call_stop_or_retain_tick(stop_tick);
->>>>>
->>>>>               entered_state = call_cpuidle(drv, dev, next_state);
->>>>>               /*
->>>>> @@ -240,7 +250,7 @@ static void cpuidle_idle_call(void)
->>>>>                */
->>>>>               cpuidle_reflect(dev, entered_state);
->>>>>       } else {
->>>>> -             tick_nohz_idle_retain_tick();
->>>>> +             idle_call_stop_or_retain_tick(stop_tick);
->>>>
->>>> This would supersede e5c9ffc6ae1b ("cpuidle: Skip governor when only one idle state is available")
->>>> so we should remove that code too.
->>>
->>> Which code?  Do you mean the one that has been removed by
->>>
->>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d557640e4ce589a24dca5ca7ce3b9680f471325f
->>>
->> Ah of course, sorry!
-> 
-> No worries.
-> 
->> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-> 
-> So should I regard this as a fix for 7.0?
-> 
-> I guess so because I don't think it would be useful to ship 7.0
-> without it only to change the behavior immediately in 7.1.  And I
-> think that it can be treated as a fix for e5c9ffc6ae1b (above).
+The pull request you sent on Fri, 13 Mar 2026 10:14:03 +0100:
 
-Yes I think it being a fix for e5c9ffc6ae1b should be fine (fingers crossed).
+> git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-fixes-for-v7.0-rc4
+
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/92e989acfb83493e0305bc9fdcc666275ddd46c9
+
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
