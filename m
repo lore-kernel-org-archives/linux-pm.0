@@ -1,83 +1,76 @@
-Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4FD0238D52
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 06:05:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AD211DF980
+	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 06:07:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773381957; cv=none; b=AkMlplVOp8cT2e9MAAqwVXc/NaZ9r8sbsCpCfckQR2L6ieIjIU5s6mKHhHgIIhDGEo2s+kIhj//e+CU+mk/BHQPoFxORfwhW44sLGYcpmc4euDb6nP8mrqgqBGywaJvMU717kt2LH9UmENw68ORwjpnKFvsk1FJQG4+Co8/thww=
+	t=1773382074; cv=none; b=k9msBUoylc0DXRk9BKxVFvjX2OMGckEtvwoX1QidY1YAyq5vUx19wZof8x8d7YW2kyHLtvxrxWhEWpYjxN0S91weBlwiqEUfhLY2SN1UQrnuiVQoy7dfDlgZozSPqwvuYZpgHzoEIG5wMKqIs06jPItaEkrkni1J/TtaPJ9psE4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773381957; c=relaxed/simple;
-	bh=y1/7oP/ovxI+VzxharFTN+r/aEH+d+Q9pXzaQpFlmQw=;
+	s=arc-20240116; t=1773382074; c=relaxed/simple;
+	bh=c6VYYooBuklbrFIdu6kM24pC5jve/wT/sSRJEvmlKTM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Pfw9FH3WroZTGvbLmXcapCsfsDTbCfrPcv//x5aCd8T5KV4pRih8ErtzNcILmpPJ6FYDoeMVWQjDPbtUnXuI940lgj5ph2sZ+FSXUKVkl5Vzm72EY1qQFEIRjJhTWJZ/j4KYGRE48ciJ7ez53OmCUOkdC4WslWxQiFAAI2F6sWI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MotLXT8q; arc=none smtp.client-ip=209.85.216.47
+	 Content-Type:Content-Disposition:In-Reply-To; b=REsijDHQmUzKpv3sVGxxb4qSc/PU2eq2v5niLsBofcDeT3NXgMUIj1qfdY5Wj1TC5U0SwWEN82b4xwBI+RX+l3z1zv3k6/6UXlv0g9tSZwkYlXEquJSsHOjpR0Im6/ihPej0q4z/nXjWX934WyE3VdBrW9I1g9HBdGl1/O5TEK0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qdBV16/0; arc=none smtp.client-ip=209.85.214.175
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MotLXT8q"
-Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-35a1c6081a5so467229a91.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 23:05:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qdBV16/0"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2ad9a9be502so11706985ad.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2026 23:07:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1773381956; x=1773986756; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1773382073; x=1773986873; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3hC09S5sDnZdHvn3a7hnWkfl+l3DBqPPVMlT1wRmE1I=;
-        b=MotLXT8qZH1YETgPLsFZyuM04jGN6IQoh4ESFgwSNYYY+zABA+FpB6+ftULOObJnQE
-         qL2nM+4W44iU3iKg0vPi38H39i069pii9EhmEYgvWlF3fWEkjr8Vnt73zaA9eS5bKT2F
-         I6ilzSc5gK2HcJKnZyK+3t3lGECnSpXKHolizht5MjGmjdlBorQWWkpxeR2lSmqcPtbV
-         fqCZ6SK4tYARxEDO6lcJf7P+H7fdGaWP1IqpyUisRMAV16BpggaVDK+QaJo48SRAlGro
-         Yx/hTRJjFSrt/XSmT3RpdC7ozLrjvvcvi3Yk+0L0qbgg4oVFuFYZsVtoxKbLeRDB62aT
-         mc1Q==
+        bh=KwCbFjCjgsNsO4YhMYDCjGLZ2umsTE3gLTKcHITMbH0=;
+        b=qdBV16/0jhm2xFD8b/ly97jVH9XtwRaFOsqq410Y6WnpItqnFRRIhMD6QigxFIH/vd
+         zfpNgCuJpyf9kDLLtQ0uDb5bf3MnJBB9CxrKqilk7UofkiUnGjCWpCtQZTDwUaa553ZD
+         tNtVz4ryRR9PAtinSFY6KomdLemE8BPCe+0Q7rjSF3Tb+kgzrYl4PUK+DRpyG6JuzJ8U
+         EOWHnuPY7Y3yKg40h725GpvqVarfry8OU3xDZ3VHC9xmxoJ6u2OD1hyaqtdSdZD5Lj/G
+         TG5zO0R22FTqSwVB1tSBlUtn825BZ1k1GUU0hh/7lmRbd2McMKfodNqII9EpL5G/K2sR
+         qXjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773381956; x=1773986756;
+        d=1e100.net; s=20251104; t=1773382073; x=1773986873;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3hC09S5sDnZdHvn3a7hnWkfl+l3DBqPPVMlT1wRmE1I=;
-        b=QH4XHAsREzgXGTXdQhJmjrph5sOB0C7ZSkoIYaMizCz2I3onCD7pasv8syQadipUA1
-         i1hAZU+9kMyGHELKMk9Pg1T/72cxhCo3zo2C2bjNKdNGoEF4zZq1sWFJUUSJO2TKzTB4
-         mYGYarsKJHOJ2p+m9sTlOjp6CJogIR8ME4zaeQGl1gFltJg6FXlgZdW/sl/kIeuJc0Pm
-         /UaqpW+/S/eulacMiVfXa19oYYAsPP0GTTmAJRe05z46RArnC4Z+9//543OoYC1CbYmy
-         NQcxKYZ1z7kW6x0QVuAlanRwn9yLL1Bio7pPZWIhU9WVfBAuByFDAQbBeYVVWCwvAw+n
-         7QeA==
-X-Forwarded-Encrypted: i=1; AJvYcCWorTp/PkA9vAEvYPwBK6Lywc2HL6nBxQb9lZG5uh0NCb5G58vBiFskLl7OQkrpXG8Tqy6LDibngQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzUMduGEM2RQuIPAjqGSLKqvRgIDXsOXxlHmVEoGFXwGU3KowSf
-	HBd2FQeewohEWO8oIoB5NPX7fuKeie7wuUPk3Szj7lQtf+6fmlQ8ct0FCNr4z1UImqc=
-X-Gm-Gg: ATEYQzwuQJE5u8m/vBaGLEIHwhnH5fWnhr8NDJSAe6EHsdIGF8Ss0UI8czfZPybOn5C
-	vV+yAG81jERU+dj9y8NPhZedDHIhcK/+VM/4FXtZRVqQf9+Ege/BNxeIyO99nsR8IkSbZB7U5Oo
-	tDKavXQulwGONfsI/0tdKpCu7bJbW924EyL5z+jZoJ8l1A9nekt9EDtB6XvnVrPhuBPYobYgpnx
-	vz8a3GUKCnyiEphmtdRDvehzWaW6kxu7iWBxOfeYO3mCbeuoGg/n1f6AwnMBrXwM6fozYPYPJBN
-	91Ms2fi8hN64PluAPs2sDfqVOO0dmBpGnvxVRp68pOwmIRpnH04XrdRqiZFHFnHTqaz2vnEZGZt
-	ZOTesBXvIeZLqM+/zxNcQy7gdP63VpqMltJwb+jAG0gCSfHM0Nbla7ZXAuTAF5rpLwIVF8CJsEz
-	a5DEIgrtkgmCGtQpVolRCa4veB
-X-Received: by 2002:a17:90b:3d4b:b0:35a:117:9521 with SMTP id 98e67ed59e1d1-35a21fdb67bmr1469582a91.10.1773381955934;
-        Thu, 12 Mar 2026 23:05:55 -0700 (PDT)
+        bh=KwCbFjCjgsNsO4YhMYDCjGLZ2umsTE3gLTKcHITMbH0=;
+        b=AhxjkjXgvYhiGTXCwcoUQdtg1T4GCYRvTdY5PficLGmvP/Nyahy3u4dfARQe7yKAqj
+         yFbT8mhQeZf4JA5OEc02EIZbzTzesM3y2E6rm1D82IEPCN6WYHjDlyFZ4WOZbAcOR/se
+         QXVeKtjHH4T+uCL+oz3YNwIXp4abRxKwwtnO5wS25yaNO6HmERQG5lLIaZ65wClRn4AG
+         WGICFgQrEN1P63naytE98x9sQmoQsG1hzqa2dmC07kH/7V82pDk/47/sXlcPIn8UPQy7
+         ZsTGze7B0aIdw0agjI+RJEOqLWYWO3kBV26FwjVZB8WLsoJM5RDeXB0ZZ2B5OruHidbZ
+         4gsA==
+X-Forwarded-Encrypted: i=1; AJvYcCW5lnSDkqRPbYDk7yJdZyaT1X51rSyDfzOOMtJ90hKGEdO7V2jyG5q6jkR01qa3TlRpMrM1b6GpWQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwsYm7wy6AZNZB9h1FLNKc05UQYejuzTv9DiQHSgvXmcO1f44D8
+	4u71kHC7aekfy7FQaPk4X+ODPSTxz9GmCYqzgbTQhuERfckweLVmY0eHKeUpdIwUadU=
+X-Gm-Gg: ATEYQzzPq0LE5VvnFda1/q5aDSvZVOk1P6sshS4zPUB4Ab2r6lkALaomIT3OxAJkqcV
+	1r3Wm7adJ4XV9BOBXWUdhwlbNacKdFiucP729eZGBXJeyeGy4n0N8SjjLweJ1yIClTHJHKjgqJG
+	9+4oGt6ubhZG+FfQCMBb++2l+Zui9OF99ooeyC3doN0OgzmCmGuw68AwQ8VcT7ZZIzcX8obviAa
+	DTLV4NB7ZO0va9NqkdjIe6+pfeYBMAIZ8mU64i5qMUdI6J2oY193VXtoO+ZKxBsPZsT7aFNO8JP
+	K/LiR573FM9ub/9B0SrQW6oFIqYEa9h+BPbHqUonrnTmOUAam5Yu0icZpm+3spgktHCgC8aSqvK
+	OD6fJKIbA6DJA5xxXD/Ft2NyLHNfuhrAEPHm59ZU8Q3kaRCLSsCu8K0rmtKdTphJ6T6ojlBItbx
+	fYKA330dlFD8X7srPJeSJG4Rkj
+X-Received: by 2002:a17:902:ce11:b0:2ae:3dd5:c69c with SMTP id d9443c01a7336-2aecab1ed6bmr19020575ad.33.1773382072584;
+        Thu, 12 Mar 2026 23:07:52 -0700 (PDT)
 Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35a24acecadsm538089a91.2.2026.03.12.23.05.53
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aece7ed753sm12352835ad.45.2026.03.12.23.07.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Mar 2026 23:05:55 -0700 (PDT)
-Date: Fri, 13 Mar 2026 11:35:51 +0530
+        Thu, 12 Mar 2026 23:07:51 -0700 (PDT)
+Date: Fri, 13 Mar 2026 11:37:49 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, mingo@redhat.com, 
-	peterz@infradead.org, juri.lelli@redhat.com, vincent.guittot@linaro.org, 
-	dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de, 
-	vschneid@redhat.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxarm@huawei.com, jonathan.cameron@huawei.com, zhanjie9@hisilicon.com, 
-	lihuisong@huawei.com, yubowen8@huawei.com, zhangpengjie2@huawei.com, 
-	wangzhi12@huawei.com, linhongye@h-partners.com
-Subject: Re: [PATCH 0/2] cpufreq: governor: Apply limits with target_freq
- instead of policy->cur
-Message-ID: <swdjuguqfniecaqxgdjwihjieiwdzxjv3vq2agq5sbd5kcftuz@qwzhr43ydzxy>
-References: <20260210115458.3493646-1-zhenglifeng1@huawei.com>
- <javy6tllyw7pcnri3s6s2gnpv3kewe2b4zkyoz3vj3jzmfu6c5@nikhlydadvcc>
- <CAJZ5v0h1FHH0Cvn0CQ8gMk9Zzt=bcA-RUfya4hYH4Em3nDzm7w@mail.gmail.com>
- <d21b9ad3-72d9-44b2-b194-4e2a24077eab@huawei.com>
- <utvxk3rn6icadx4llmzfu32auqk4ql7rckh7kxtgdgmtoyovqz@vo2lmhip5vk7>
- <b7d3819f-168a-48f7-99f2-2ba04dec77e6@huawei.com>
- <dqyn4dv3ecbzzmqr4l3jxfctuxpehstjhean5gi2iqfllwso4g@i4nodkyrhwpb>
- <8f29a0ce-4cbd-4c47-b866-b4f015f0792b@huawei.com>
+To: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, 
+	Peter Zijlstra <peterz@infradead.org>, Huang Rui <ray.huang@amd.com>, 
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
+	Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/15] cpufreq: Use trace_invoke_##name() at guarded
+ tracepoint call sites
+Message-ID: <upto66dotvjmkd5zsdbmtumxccm53qgwmf3qlpfd36q56jqfcj@7ed5kdoq4q76>
+References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
+ <20260312150523.2054552-7-vineeth@bitbyteword.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,33 +79,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8f29a0ce-4cbd-4c47-b866-b4f015f0792b@huawei.com>
+In-Reply-To: <20260312150523.2054552-7-vineeth@bitbyteword.org>
 
-On 13-03-26, 11:51, zhenglifeng (A) wrote:
-> When querying cpuinfo_cur_freq, based on the following call chain, the
-> target frequency will eventually be updated if policy->cur is out of
-> limits:
+On 12-03-26, 11:05, Vineeth Pillai (Google) wrote:
+> Replace trace_foo() with the new trace_invoke_foo() at sites already
+> guarded by trace_foo_enabled(), avoiding a redundant
+> static_branch_unlikely() re-evaluation inside the tracepoint.
+> trace_invoke_foo() calls the tracepoint callbacks directly without
+> utilizing the static branch again.
 > 
-> show_cpuinfo_cur_freq()
->   __cpufreq_get()
->     cpufreq_verify_current_freq()
->       handle_update()
->         refresh_frequency_limits()
->           cpufreq_set_policy()
->             cpufreq_governor_limits()
->               cpufreq_dbs_governor_limits()
->                 cpufreq_policy_apply_limits()
->                   __cpufreq_driver_target()
-> 
-> At least to me, it's strange that querying frequency would cause the
-> target frequency to be updated.
+> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
+> Assisted-by: Claude:claude-sonnet-4-6
+> ---
+>  drivers/cpufreq/amd-pstate.c   | 10 +++++-----
+>  drivers/cpufreq/cpufreq.c      |  2 +-
+>  drivers/cpufreq/intel_pstate.c |  2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
 
-Yeah, that is an optimization and not a feature. Normally checking the frequency
-shouldn't lead to anything, but cpufreq core needs to fix itself and it actually
-thinks that this won't happen. The hardware (yours) doing something secretly
-isn't right and breaks the design to be honest. One way to fix all this mess is
-to make your platform not do this and instead play with policy->min/max like
-everyone else, instead of making a hard change secretly.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
