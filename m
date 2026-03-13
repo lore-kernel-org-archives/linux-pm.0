@@ -1,178 +1,201 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010007.outbound.protection.outlook.com [52.101.193.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E480734D3B8
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 12:03:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773403399; cv=none; b=WXAZMOwZ8G/3HXbJvWDTFUb9xtpLnnOWcTnFFQPfnJUJt1P7XRC6dDRP0qeTuCKWcROjLtuG39fJL/4fr1m2ywO/91dQR65zV0uBKp+xKbZnDzSYmDeMskuJz+3rK+pxSF/gcGnMGWZD4VkvG6UreKOaLUFDLNWp5C4FY/qOv1Y=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773403399; c=relaxed/simple;
-	bh=/kq0ISMrDscXIMjtfUzR/DbfQeSXdNMNxQ/j13s42Ww=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MLCBV9uiNGpsKgPPyHn7Kw0dO/AmkkBRm+lONCxGHwfHr44um1B5PZKItDSh0sfT3HuLSUYgjLRkVL9a2XaKEKW9G8DppODj19rSUszyvqGuL8irTtclGqOE3ax92ydhhNc2dRxUbOAeOFfLKx4DQ5V6A/3JnDNQpeCoLhaQftI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JvcjOk/Z; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1E8B1DD525;
+	Fri, 13 Mar 2026 12:07:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.7
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773403636; cv=fail; b=DxW8LbXhEU5YBclYsK/TLJyFTdmhFyb3vei+GgeuseUnTPLEdOaydIEsdxF3gX+9FKtFaLvocFnAQYAqlbEbQvQl1gwDemEySuyJiaWWPpx5OMNHxanLJPQDlSVGLLC/AvMyQHOdRV94z/CgWUEG445il2y6UUz+h43NGPzL2OU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773403636; c=relaxed/simple;
+	bh=b9pSu5pzl37evLB9Z8HmJz+XJFS69BE19DyvKaQIEwM=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aMAyadv5aSuu0VIDU08u4LCw1r/3iSsu8aeP/vqWKLyrp9MnNtJprNH1BkIyFZ9fzfohXls32W+tZ3Ri6qBq7DqqJJiABYr2lBgmXtC8V0XKDsXUs5BOz/1b8asLOVZBR4/3ZWOL90H9PwliqB+kEXtlEY3kYC/KFb+CvoXY5pk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=hVVZ16Yu; arc=fail smtp.client-ip=52.101.193.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JvcjOk/Z"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C952C19421
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 12:03:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773403398;
-	bh=/kq0ISMrDscXIMjtfUzR/DbfQeSXdNMNxQ/j13s42Ww=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=JvcjOk/Zec2mNQwanSdRe3EgtbAAlW/N23tVcFfKgGEVlfSSBptV3YS2dul3CazCB
-	 Qnl5M4YCTjO2uDoseBxjXyTlUQ9/KEl/uw5Ch2BtoNHcGYeJfyAL5d9Hdih2lb0F4o
-	 rqtw+qaJQJ9uFR4f+7ITNYmYqv34wmxcicvJSXtXg5ekbmG/YyQH8llWq6BmwrVVfv
-	 dgE51gJt/mNrElnCae4QE62/dnXXcEUVfqpQUlNiPhnitYHlrdjinwyWrchbTyrLf4
-	 hKkv7CgnftTTi5PRsyPxgW6yz4vaHRwOik6djBHkExWXFLqTGPKkZyB4r/CVOyBWKT
-	 cUAtbV+kX6Iew==
-Received: by mail-ot1-f48.google.com with SMTP id 46e09a7af769-7d748ca8708so1327338a34.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 05:03:18 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVvCBdBIWzA+TQY6Mfn/YZtUVgQMtR7hhJx2wInNA3SJjpiix5sQpt6oxemHKcfrI0GmpRiIJez6Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwgzbxqN8qxdgUGxE7gnsy0LnyHZvx4jGHf7bch5uI+tBBf9Qll
-	iqMlRXf7tRO+DUXGFwcnXhLDF3HzdW08HbCxEdPQzYMr2uo0qKaYCJplbf+qkkZgfKwyOVuuAKt
-	xiN4HxDvgNY1kYDfZ/1mbUOEerfT3K7o=
-X-Received: by 2002:a05:6820:4510:b0:67b:b368:bef0 with SMTP id
- 006d021491bc7-67bda991b2dmr1432499eaf.1.1773403397634; Fri, 13 Mar 2026
- 05:03:17 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="hVVZ16Yu"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wv7ywo2hrHSnvgcWkcdMkijG50ZxjGrNJsMrP2A9hlu92ctOv3Ee4YSMEzN+iKVwZZvuNL966LHLWzQ7aYnydPoxoJm+Ue9x4vaWjS9OU+WXpxAjDSSThDzItGa6w991cNKgtd/q19VZ8795646nMdm2A5Az2Xf3wjnt5r8VmypoakoXIIsIYmJStEmh2KegSgret48LXiRVm5qqmmMt/hgM2BGu18HAuu4244koGo4hrwUtTUjwUQbTLizSJ28Iw7W85eJWNJSKg9FFgn/K2RxKK8uv2YGOHhm3UjjAdgqLj+37n/IprOKwjDipyB7Uxqhbfd4oHiNflnblyL23jg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AP/ZwzjFJlK94M1WuxoATn9Is2JUsSWPV6rrSthpLgU=;
+ b=tAEDvl/jcTfgrYxgMfYDr0/W2h+k24ZCyPCXXChu0LQb8kkEYj5jYDW1LenLcr4fD4A2iVQWSe6zHFQGur7U248J0Ey1eO+qKC005jH0dQ99WY0TyXc5np2srKDDMYUPrWAyT3hYVLegl4Aif/0IBoLvaezy636lXIRdISuuyh/ophvHDm56lso9HDMVW+ywA4xPRnctDjWFfUyYWWNRSykkeWX7EHSl8egqLxedGdqZup3w+WDMQeoOr8lSxWVWIe9HW9n+AI62TrPZa916471zH5TkfQYnnBLozud8QgpZyovKAYVY4O2q1V99swNItU1wavaVY+kBqoAKMOe1KA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 198.47.23.195) smtp.rcpttodomain=lists.infradead.org smtp.mailfrom=ti.com;
+ dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AP/ZwzjFJlK94M1WuxoATn9Is2JUsSWPV6rrSthpLgU=;
+ b=hVVZ16YunGvdxYLdG58m9yT3m3hG4aapz0FGJEiUXuxNdcQB+AAn9ryjSESyt6cqGJMgsm7yT+lpw12LfnkmNPoEfbjrK+ot9maKXCJ5+1je5jGkk9IRq4U5DdEch45fqBr+Q+wkPZfhsybmba9rXFoQU99i6RFW58oSMaOfoBY=
+Received: from MN2PR06CA0003.namprd06.prod.outlook.com (2603:10b6:208:23d::8)
+ by SJ0PR10MB6423.namprd10.prod.outlook.com (2603:10b6:a03:44d::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.12; Fri, 13 Mar
+ 2026 12:07:10 +0000
+Received: from BL6PEPF0001AB59.namprd02.prod.outlook.com
+ (2603:10b6:208:23d:cafe::ae) by MN2PR06CA0003.outlook.office365.com
+ (2603:10b6:208:23d::8) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.17 via Frontend Transport; Fri,
+ 13 Mar 2026 12:07:10 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.195)
+ smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
+ action=none header.from=ti.com;
+Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
+ 198.47.23.195 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.23.195; helo=lewvzet201.ext.ti.com; pr=C
+Received: from lewvzet201.ext.ti.com (198.47.23.195) by
+ BL6PEPF0001AB59.mail.protection.outlook.com (10.167.241.11) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9700.17 via Frontend Transport; Fri, 13 Mar 2026 12:07:09 +0000
+Received: from DLEE200.ent.ti.com (157.170.170.75) by lewvzet201.ext.ti.com
+ (10.4.14.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 13 Mar
+ 2026 07:07:09 -0500
+Received: from DLEE204.ent.ti.com (157.170.170.84) by DLEE200.ent.ti.com
+ (157.170.170.75) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 13 Mar
+ 2026 07:07:09 -0500
+Received: from lelvem-mr06.itg.ti.com (10.180.75.8) by DLEE204.ent.ti.com
+ (157.170.170.84) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
+ Transport; Fri, 13 Mar 2026 07:07:09 -0500
+Received: from localhost (lcpd911.dhcp.ti.com [172.24.233.130])
+	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 62DC78X94190594;
+	Fri, 13 Mar 2026 07:07:08 -0500
+Date: Fri, 13 Mar 2026 17:37:07 +0530
+From: Dhruva Gole <d-gole@ti.com>
+To: "Kevin Hilman (TI)" <khilman@baylibre.com>
+CC: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
+	"Geert Uytterhoeven" <geert@linux-m68k.org>, <linux-pm@vger.kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<arm-scmi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 3/3] pmdomain: arm_scmi: add support for domain
+ hierarchies
+Message-ID: <20260313120707.jhkyd772wzuwmlhd@lcpd911>
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+ <20260310-topic-lpm-pmdomain-child-ids-v1-3-5361687a18ff@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312182720.2776083-1-bvanassche@acm.org>
-In-Reply-To: <20260312182720.2776083-1-bvanassche@acm.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 13 Mar 2026 13:03:06 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0i2vUX5HgrGKDa1w9vPVUFx_opiVcbMnirok+emTGMvdg@mail.gmail.com>
-X-Gm-Features: AaiRm52VmdG3Z-U302eUXzGKjoniL44WEzGY2z38UfP_cNEWYVIVjfIIJ9PzCHE
-Message-ID: <CAJZ5v0i2vUX5HgrGKDa1w9vPVUFx_opiVcbMnirok+emTGMvdg@mail.gmail.com>
-Subject: Re: [PATCH] PM: runtime: Fix a race condition related to device removal
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org, 
-	Deepak Sharma <deepak.sharma.472935@gmail.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ming Lei <ming.lei@redhat.com>, 
-	syzbot+6c905ab800f20cf4086c@syzkaller.appspotmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20260310-topic-lpm-pmdomain-child-ids-v1-3-5361687a18ff@baylibre.com>
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL6PEPF0001AB59:EE_|SJ0PR10MB6423:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3551a4f3-7057-4f99-e3d8-08de80f90dd6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|1800799024|376014|82310400026|22082099003|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	4AXoEWM65yj4hXN14eJFFp7aZrIHiXyBUXUZWGs5hLms0YpokEAHBr76+PlwzHm/4URfqVSC+RcE3xdO+SjkcP1LPL0pSnloFP20HLg83M9UcjjmMh09PE88jHQZLMMr3JvOeQUE6b0KRn85JQ2xnXMHVw8FhwwNeoVDcZW1fZTxEc4fG4vGPnYLCh3yblV1HjEW4zdaF5AAyEVbzpxjo5YQPbT7O+vLFiKfUPCQQWIOn8dzg9kq5iBtKMrH5lL7/iAemqlQITiylQfWgJduSujF9J2k5qPmzg0f2dTHtmaMFTvaH0Jp1D/qdljJsHF91Y6b34vS/O6+v/rBQ+Srko5x/fOI6/dYeGuTUout245MRrIEbAVHxOZKgyOcULDXLDk9ycvUVLSsX0yVLMqLy4qUXOoLilDqUnJSUvaFSrckQ6X0GM4uuCkF85roBOu/hG0AeEiJupw11zfYX0pXTvXcvrfWNtsFwBJxjRI5xnMZics08YWKqOUkydRkpZmhOz54Hy8KMQcbVLDLw/X/Q2KyLodA/abNLVWYvbN/o8kAHzOEQ/TFPxKjlzM/Q13Vhp87QLri0T7+VFzW6y5lcp+0L7G1Fa0P4TG/zPSrjQeukaExIyXGvKeAY9pUwVxWKgjJ3I4EWjTC1T6OVbOieLIZMS0ox4fpdtUTN1L0QMTnZvMbxl1/ruB5P0BR+xaFuuXxsYVt1VxwbrauIDTMS32qxdg6cljMr2AM3t6HjGSXUaFxmPcxplufAy70xUYbezas+CVYyBk5rKogGE0VCw==
+X-Forefront-Antispam-Report:
+	CIP:198.47.23.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet201.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(376014)(82310400026)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	onGWnT9YmDzSqRQIQTfYWwroRumveI/buJLEXltbIJq56q1FEIpsU/Ai450PTqJUm14mHZDWI0fmqQT98+eAqQeP2uZewUhqwF5g+ML086Tujhi3mEQzEiAiLfC6kOqbudSUv11yrPn+kSnOUq7Ss5Yg8acUbdl9z/5JRoLadMwB2ar+2A1+WDu6nyJDhExSdB/m5IDISBx+VIbttG5/vKJx9s3cUsNKJlQRaFO96UgYhOsYh1pZ4+ixLUcdckpCyi/ajzArBlsfaR2k0ppN1UNMcYuVP7n4m76kbJU+NPwTtwlwo5v3002DmDBQmke6/vO5H0KmlsFv+SDHYIUJ/kiukgZz/yKI5CodseUNINGsdniNYoyGGn0OJNudCvczIPCoN+FsWjHklyZ9iHkdrjsJNiWgh/T+w+r5u/Jr59syaI+YlOTMgUdG5WJtuOhl
+X-OriginatorOrg: ti.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2026 12:07:09.9409
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3551a4f3-7057-4f99-e3d8-08de80f90dd6
+X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.195];Helo=[lewvzet201.ext.ti.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BL6PEPF0001AB59.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB6423
 
-On Thu, Mar 12, 2026 at 7:27=E2=80=AFPM Bart Van Assche <bvanassche@acm.org=
-> wrote:
->
-> The following code in pm_runtime_work() may dereference the dev->parent
-> pointer after the parent device has been freed:
->
->         /* Maybe the parent is now able to suspend. */
->         if (parent && !parent->power.ignore_children) {
->                 spin_unlock(&dev->power.lock);
->
->                 spin_lock(&parent->power.lock);
->                 rpm_idle(parent, RPM_ASYNC);
->                 spin_unlock(&parent->power.lock);
->
->                 spin_lock(&dev->power.lock);
->         }
->
-> Fix this by inserting a flush_work() call in pm_runtime_remove().
->
-> Without this patch blktest block/001 triggers the following complaint
-> sporadically:
->
-> BUG: KASAN: slab-use-after-free in lock_acquire+0x70/0x160
-> Read of size 1 at addr ffff88812bef7198 by task kworker/u553:1/3081
-> Workqueue: pm pm_runtime_work
-> Call Trace:
->  <TASK>
->  dump_stack_lvl+0x61/0x80
->  print_address_description.constprop.0+0x8b/0x310
->  print_report+0xfd/0x1d7
->  kasan_report+0xd8/0x1d0
->  __kasan_check_byte+0x42/0x60
->  lock_acquire.part.0+0x38/0x230
->  lock_acquire+0x70/0x160
->  _raw_spin_lock+0x36/0x50
->  rpm_suspend+0xc6a/0xfe0
->  rpm_idle+0x578/0x770
->  pm_runtime_work+0xee/0x120
->  process_one_work+0xde3/0x1410
->  worker_thread+0x5eb/0xfe0
->  kthread+0x37b/0x480
->  ret_from_fork+0x6cb/0x920
->  ret_from_fork_asm+0x11/0x20
->  </TASK>
->
-> Allocated by task 4314:
->  kasan_save_stack+0x2a/0x50
->  kasan_save_track+0x18/0x40
->  kasan_save_alloc_info+0x3d/0x50
->  __kasan_kmalloc+0xa0/0xb0
->  __kmalloc_noprof+0x311/0x990
->  scsi_alloc_target+0x122/0xb60 [scsi_mod]
->  __scsi_scan_target+0x101/0x460 [scsi_mod]
->  scsi_scan_channel+0x179/0x1c0 [scsi_mod]
->  scsi_scan_host_selected+0x259/0x2d0 [scsi_mod]
->  store_scan+0x2d2/0x390 [scsi_mod]
->  dev_attr_store+0x43/0x80
->  sysfs_kf_write+0xde/0x140
->  kernfs_fop_write_iter+0x3ef/0x670
->  vfs_write+0x506/0x1470
->  ksys_write+0xfd/0x230
->  __x64_sys_write+0x76/0xc0
->  x64_sys_call+0x213/0x1810
->  do_syscall_64+0xee/0xfc0
->  entry_SYSCALL_64_after_hwframe+0x4b/0x53
->
-> Freed by task 4314:
->  kasan_save_stack+0x2a/0x50
->  kasan_save_track+0x18/0x40
->  kasan_save_free_info+0x3f/0x50
->  __kasan_slab_free+0x67/0x80
->  kfree+0x225/0x6c0
->  scsi_target_dev_release+0x3d/0x60 [scsi_mod]
->  device_release+0xa3/0x220
->  kobject_cleanup+0x105/0x3a0
->  kobject_put+0x72/0xd0
->  put_device+0x17/0x20
->  scsi_device_dev_release+0xacf/0x12c0 [scsi_mod]
->  device_release+0xa3/0x220
->  kobject_cleanup+0x105/0x3a0
->  kobject_put+0x72/0xd0
->  put_device+0x17/0x20
->  scsi_device_put+0x7f/0xc0 [scsi_mod]
->  sdev_store_delete+0xa5/0x120 [scsi_mod]
->  dev_attr_store+0x43/0x80
->  sysfs_kf_write+0xde/0x140
->  kernfs_fop_write_iter+0x3ef/0x670
->  vfs_write+0x506/0x1470
->  ksys_write+0xfd/0x230
->  __x64_sys_write+0x76/0xc0
->  x64_sys_call+0x213/0x1810
->
-> Cc: Deepak Sharma <deepak.sharma.472935@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Reported-by: Ming Lei <ming.lei@redhat.com>
-> Closes: https://lore.kernel.org/all/ZxdNvLNI8QaOfD2d@fedora/
-> Reported-by: syzbot+6c905ab800f20cf4086c@syzkaller.appspotmail.com
-> Closes: https://lore.kernel.org/all/68c13942.050a0220.2ff435.000b.GAE@goo=
-gle.com/
-> Fixes: 5e928f77a09a ("PM: Introduce core framework for run-time PM of I/O=
- devices (rev. 17)")
-> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+On Mar 10, 2026 at 17:19:25 -0700, Kevin Hilman (TI) wrote:
+> After primary SCMI pmdomain is created, use new of_genpd helper which
+> checks for child domain mappings defined in power-domains-child-ids.
+> 
+> Also remove any child domain mappings when SCMI domain is removed.
+> 
+> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 > ---
->  drivers/base/power/runtime.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0ee8ea971aa4..335288e8b5b3 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1895,6 +1895,7 @@ void pm_runtime_reinit(struct device *dev)
->  void pm_runtime_remove(struct device *dev)
->  {
->         __pm_runtime_disable(dev, false);
-> +       flush_work(&dev->power.work);
->         pm_runtime_reinit(dev);
->  }
 
-Applied as 7.0-rc material, thanks!
+Again, since it worked fine on my AM62L,
+Tested-by: Dhruva Gole <d-gole@ti.com>
+
+But I had some thoughts further down...
+
+>  drivers/pmdomain/arm/scmi_pm_domain.c | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pmdomain/arm/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
+> index b5e2ffd5ea64..9d8faef44aa9 100644
+> --- a/drivers/pmdomain/arm/scmi_pm_domain.c
+> +++ b/drivers/pmdomain/arm/scmi_pm_domain.c
+> @@ -114,6 +114,14 @@ static int scmi_pm_domain_probe(struct scmi_device *sdev)
+>  
+>  	dev_set_drvdata(dev, scmi_pd_data);
+>  
+> +	/*
+> +	 * Parse (optional) power-domains-child-ids property to
+> +	 * establish parent-child relationships
+> +	 */
+> +	ret = of_genpd_add_child_ids(np, scmi_pd_data);
+> +	if (ret < 0 && ret != -ENOENT)
+> +		pr_err("Failed to parse power-domains-child-ids for %pOF: %d\n", np, ret);
+
+Nit: I think the style of this driver is to use dev_err than pr_err
+
+Also, maybe a dev_warn makes more sense since we're not even returning
+the error or doing anything different if we get certain error path.
+
+I am wondering if it makes sense to just abort the whole idea of
+creating power-domain child ids if anything goes wrong?
+
+Basically just of_genpd_remove_child_ids if we face a condition where we
+have different number of parents/ children or id > num etc...
+
+All are error cases where the system behaviour can go on to become very
+unpredictable if we end up making a false/ incomplete parent-child ID
+map.
+
+Thoughts?
+
+PS.
+If we go on to do a of_genpd_remove_child_ids here incase of failure then it makes sense to
+scream a dev_err here.
+
+
+> +
+>  	return 0;
+>  err_rm_genpds:
+>  	for (i = num_domains - 1; i >= 0; i--)
+> @@ -129,9 +137,13 @@ static void scmi_pm_domain_remove(struct scmi_device *sdev)
+>  	struct device *dev = &sdev->dev;
+>  	struct device_node *np = dev->of_node;
+>  
+> +	scmi_pd_data = dev_get_drvdata(dev);
+> +
+> +	/* Remove any parent-child relationships established at probe time */
+> +	of_genpd_remove_child_ids(np, scmi_pd_data);
+> +
+>  	of_genpd_del_provider(np);
+>  
+> -	scmi_pd_data = dev_get_drvdata(dev);
+>  	for (i = 0; i < scmi_pd_data->num_domains; i++) {
+>  		if (!scmi_pd_data->domains[i])
+>  			continue;
+> 
+> -- 
+> 2.51.0
+> 
+> 
+
+-- 
+Best regards,
+Dhruva Gole
+Texas Instruments Incorporated
