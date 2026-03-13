@@ -1,170 +1,153 @@
-Received: from mail-yx1-f52.google.com (mail-yx1-f52.google.com [74.125.224.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55211371884
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 14:02:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773410570; cv=pass; b=XmAhs+CIIJJY4tqoiJbjx9Ik1pjuvMxkS6DvkkucoPHJEoDDZBzfCJdz5HZtQFJzVXxQhamzSW2M9VBWRIUWhrW4Sgehlge9xVxMrvyjeKhzc8ypQtANSom5o/o3bMt5Dxd5cw+y37CE7nlXpNGzRNpb09pBpWmfKd8HG/VTS3s=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773410570; c=relaxed/simple;
-	bh=a7/dI9iHAkAoxpT/Y/jlrZ1Uk/u+tnKK+1+hPiLUJTk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=J5/f505KKqtDfjNEO68YWKcHs3STDnB6UojJYaE2IupQhZxnQkCpmDGnGPfnyQmknrEUduWCBTqCx2tEwtJBgw1dc10ye2vkHRM2q1cBwmxuEIihOM7nhsS2LPhAarHOxq43guaYr2dJlekVphqQOeDZEGCt8EFIy56BBTRWJuk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org; spf=pass smtp.mailfrom=bitbyteword.org; dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b=ObfNwz7s; arc=pass smtp.client-ip=74.125.224.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bitbyteword.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b="ObfNwz7s"
-Received: by mail-yx1-f52.google.com with SMTP id 956f58d0204a3-64ca423ad53so2382371d50.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 07:02:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773410565; cv=none;
-        d=google.com; s=arc-20240605;
-        b=UP9TmuGdekG4GupzBCIOKD8bJqKq7F/wThvi53R7LrkwkxrOSSZivd9YZysTj6Crcv
-         eNW7N/TNSkymYWfkZduh/Xcgd1HE9lhFkx8wTi0RFyisV3raxRxkn4MPDmrHGyWSMO3k
-         iotPGqkNhdiXcu1kcYhSM334aiw6A8MHEHA7ipGzimm3eoKO2aj/jdETXGJrhfp5NACS
-         iLXwZt43xyyp03wu3Q4jSNBv5NdRsZi34ygR3xp6dBqtcld/e07bsfD+mt+lJsEC2WfU
-         DX20BL0CvL3qfph2BvDgXyHWG5AMRkceQR1v8RymJ+M0Kz10q9K0RL+VgWVIzphJScx1
-         /a0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=a7/dI9iHAkAoxpT/Y/jlrZ1Uk/u+tnKK+1+hPiLUJTk=;
-        fh=kAx9mH42ln04wqUKKg9r+X1EekHQ0LEKdp0TPgAyTpU=;
-        b=C9ROtemcMgm5q0DsdQPcUoaeKIclk/YR1VgXI6D0XGfkYiG040ARTmj7xM1yipn0Zg
-         ZNcXMm145/xeVgF9VlPt2TyYQNnhTapCzZXfFIuO6br09N1u1cBHUWT3r2neqGB5XHu5
-         c3rbZ/c2AtztMS79pwr/m9bFr6xaDtZI1mM1acfGM4Pw5PyvJ1z/0HkgCUBbxvAHWqPK
-         v9qmL5xUXK7HNaOFmb7a6GNcfiXU/SI7Nhr4NYLEGUCMIyfWvlarvlc7Pd003dmlIY/M
-         CHxOyR2XSWc7vss5zqMp76sFXGFoglSjN06R5DQrMl7ieIN9/mDDAgkXXIW8RtgiuAXf
-         udmg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bitbyteword.org; s=google; t=1773410565; x=1774015365; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=a7/dI9iHAkAoxpT/Y/jlrZ1Uk/u+tnKK+1+hPiLUJTk=;
-        b=ObfNwz7sVmzZBuIGYYUHNiLCrYOnrj8c6jSXCTXbQttafWQ6iigv2iFCUWBaoiYoUP
-         65QJafHt+sCKkuHWwkmPoCcyygdqmYnJqwQvkPOoFp//2xTrPOAnMOEt6QHOb6B2JvqT
-         uUidn8yG11+xxULj+cUGv2RAFi7xkRZfAAMzfTE8wLSqLl+bB0W1/CQna7kgFTcQ079U
-         jdJDbGknVFFIGRjt+9Ia/rAPUbdCEaVBzQY/lQOSzveUUMV9JbrJZ9dM14sssdL0Veoz
-         2HvOhbyl3fwXxpTdX3XOVWdJQawUfi41VBhM025fBbFm4jHJUnRUxEJqrBTBuYU1u6Rq
-         p7og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773410565; x=1774015365;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=a7/dI9iHAkAoxpT/Y/jlrZ1Uk/u+tnKK+1+hPiLUJTk=;
-        b=cUzIhsv+G1WCQZGiFojkgQl5o5UMacmRq+/GaJ+mQslbOFLFpraCFnNSwoAcPtS/UG
-         f1bAg9srL0sH5mLfPSWBroTA+r/zG1/qSWUTGczTcKClsyNRWMuDhWdj+B3rTRnPu6kp
-         wjchbNDtMzrK3ev5jABHzptHOZpVUOaZeXusDBWjj/xenR6ldpEVYsuVlzQCPqDScI9X
-         ZJZovdPuWFhgBK5/yqXUfJo0MaFh9oy2NQAZyQWg8x6todS5HCgM4UkSBeyknQuhPfDE
-         mOxy5DQoAUq3R2+7dVuZu+hm4NYwQeFF7q2X/jpvF9k1wgohRfTYDmJb2MWT88CFQNj2
-         SMTw==
-X-Forwarded-Encrypted: i=1; AJvYcCWej1Z4G1EE3fiH3731A/g+RiWJOel2qYEftUJuNWsogEsZU4jcWmFnBpTD2GP4lFRK+ToZmUULEw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzCOrxhCr/DKVtLW/IIBGPrBKFXNt9tquwH5PJ7bKcQgfYBEgpc
-	Ncy8sjMYQGjsCBSEJLMU7ukpNKIxJhga/doLLOfE2h/B3JEzYj05jcMyCeqbbubQpjJaZzhrKax
-	OL73R4Bi/O8A2bA5HC9KL8Qnlz9zW9FqU/7Wnq0NLRg==
-X-Gm-Gg: ATEYQzxQf9DGPSGTVpcaxZKM4X5splGLhqLuS7qxe/YZ8SUXdjcAqwJul+c1MK9BYz6
-	D45hDCo/bCDJgJsP6ENksC3yElX5RYIOcdWILXjSNHI2mFuscwCc8bfujYQFHKSse+FW2Nh62mE
-	2SNwlKQbEXlRB1vCQ9iDQzsIHRo3FjHcKHovfDfPYAUpdPItV1l5TRFvXHLneDcV18u6wqsZgT2
-	3vrhiVaICb1S6xIMrAo1KT9q1Q0rDEO8xBjaEbbFKGqSnjY0e7KNlnr+UAghnnl7eLQnNYjqTEY
-	YLSWwZY=
-X-Received: by 2002:a53:eccf:0:b0:64d:568b:bcb3 with SMTP id
- 956f58d0204a3-64e62eeb40fmr2691449d50.9.1773410564388; Fri, 13 Mar 2026
- 07:02:44 -0700 (PDT)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CC37B3264E3;
+	Fri, 13 Mar 2026 14:04:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773410642; cv=none; b=HDjtP72mjDd1wFiQgM4KKnSZV7NINg0EDHkOrzXXpmtWKni0iuBYA28UDxseyaami1LWnyJ12d2cCb3W7MTDaIp3IjL5Cuw6Vj8RYzHfy4h4uW3GhzWEtSMwElFqptFM4sYGJcLiXNHQe6hYY0W3j9/74n4mR0FYaMeKOdjEe5k=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773410642; c=relaxed/simple;
+	bh=yXrDoWSsYX4xQHuDIRoHgbG/yGY81G9TpJ96mL/H+3s=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UUEy/86n7bX7ROm2kNDUiLN3FwNaD7EGQy8DT7fwkgxDSuR0dJL3U0Oljxgl+6pjqx8dUp++y8f9JlbSlrsUaUpRIpOnCaABKflDWHub/ftS0b0j7VM9bEFDHlTBxDHx1klgmqwAEC0mg+SCBx56XFFdthqbVdSVq1R58kDcjrc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F15C8152B;
+	Fri, 13 Mar 2026 07:03:53 -0700 (PDT)
+Received: from [10.1.37.41] (e127648.arm.com [10.1.37.41])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 307373F7BD;
+	Fri, 13 Mar 2026 07:03:59 -0700 (PDT)
+Message-ID: <ae9d5cba-f525-48bb-bac4-cbd50db1dbac@arm.com>
+Date: Fri, 13 Mar 2026 14:03:57 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
- <1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com> <20260312112354.3dd99e36@gandalf.local.home>
- <219d015d-076b-4c80-8f63-88569115fdad@efficios.com> <20260312114041.5193c729@gandalf.local.home>
- <1becdbce-2c01-468a-bbab-42b5dea9fdf8@efficios.com> <CAO7JXPjnnruhM5oC6xMgnYaQ9efzYFqMCFiJLNM3HCQ+ZeCiJw@mail.gmail.com>
- <CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com> <20260312130255.6476e560@gandalf.local.home>
-In-Reply-To: <20260312130255.6476e560@gandalf.local.home>
-From: Vineeth Remanan Pillai <vineeth@bitbyteword.org>
-Date: Fri, 13 Mar 2026 10:02:32 -0400
-X-Gm-Features: AaiRm51K5Hc3O7_rOVK2jMiMzft9bvuP5pyZ-VF_j7db91GKvyylhuGDp34sRoA
-Message-ID: <CAO7JXPgHYZ9zF1HFahb2447X85YRZCQQBHB6ihOwKSDtiZi8kQ@mail.gmail.com>
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andrii Nakryiko <andrii.nakryiko@gmail.com>, 
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Peter Zijlstra <peterz@infradead.org>, 
-	Dmitry Ilvokhin <d@ilvokhin.com>, Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, 
-	Xin Long <lucien.xin@gmail.com>, Jon Maloy <jmaloy@redhat.com>, 
-	Aaron Conole <aconole@redhat.com>, Eelco Chaudron <echaudro@redhat.com>, 
-	Ilya Maximets <i.maximets@ovn.org>, netdev@vger.kernel.org, bpf@vger.kernel.org, 
-	linux-sctp@vger.kernel.org, tipc-discussion@lists.sourceforge.net, 
-	dev@openvswitch.org, Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>, 
-	dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
-	Huang Rui <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
-	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
-	Sumit Semwal <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org, 
-	Eddie James <eajames@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Joel Stanley <joel@jms.id.au>, linux-fsi@lists.ozlabs.org, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Alex Deucher <alexander.deucher@amd.com>, Danilo Krummrich <dakr@kernel.org>, 
-	Matthew Brost <matthew.brost@intel.com>, Philipp Stanner <phasta@kernel.org>, 
-	Harry Wentland <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>, 
-	amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, 
-	Benjamin Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, 
-	Mark Brown <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, 
-	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, 
-	Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org, 
-	linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] sched: idle: Consolidate the handling of two special
+ cases
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+ Qais Yousef <qyousef@layalina.io>, Frederic Weisbecker
+ <frederic@kernel.org>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+References: <4741364.LvFx2qVVIh@rafael.j.wysocki>
+ <c1f6d920-6bd9-4131-af08-da1be1206812@arm.com>
+ <CAJZ5v0hnamFh6YUriWLgdWip6mRer69pNcL3ueBt5Aux6fzsgg@mail.gmail.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAJZ5v0hnamFh6YUriWLgdWip6mRer69pNcL3ueBt5Aux6fzsgg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, Mar 12, 2026 at 1:03=E2=80=AFPM Steven Rostedt <rostedt@goodmis.org=
-> wrote:
->
-> On Thu, 12 Mar 2026 09:54:29 -0700
-> Andrii Nakryiko <andrii.nakryiko@gmail.com> wrote:
->
-> > > > emit_trace_foo()
-> > > > __trace_foo()
-> >
-> > this seems like the best approach, IMO. double-underscored variants
-> > are usually used for some specialized/internal version of a function
-> > when we know that some conditions are correct (e.g., lock is already
-> > taken, or something like that). Which fits here: trace_xxx() will
-> > check if tracepoint is enabled, while __trace_xxx() will not check and
-> > just invoke the tracepoint? It's short, it's distinct, and it says "I
-> > know what I am doing".
->
-> Honestly, I consider double underscore as internal only and not something
-> anyone but the subsystem maintainers use.
->
-> This, is a normal function where it's just saying: If you have it already
-> enabled, then you can use this. Thus, I don't think it qualifies as a "yo=
-u
-> know what you are doing".
->
-> Perhaps: call_trace_foo() ?
->
-call_trace_foo has one collision with the tracepoint
-sched_update_nr_running and a function
-call_trace_sched_update_nr_running. I had considered this and later
-moved to trace_invoke_foo() because of the collision. But I can rename
-call_trace_sched_update_nr_running to something else if call_trace_foo
-is the general consensus.
-
-Thanks,
-Vineeth
+On 3/13/26 13:07, Rafael J. Wysocki wrote:
+> On Fri, Mar 13, 2026 at 1:53 PM Christian Loehle
+> <christian.loehle@arm.com> wrote:
+>>
+>> On 3/13/26 12:25, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> There are two special cases in the idle loop that are handled
+>>> inconsistently even though they are analogous.
+>>>
+>>> The first one is when a cpuidle driver is absent and the default CPU
+>>> idle time power management implemented by the architecture code is used.
+>>> In that case, the scheduler tick is stopped every time before invoking
+>>> default_idle_call().
+>>>
+>>> The second one is when a cpuidle driver is present, but there is only
+>>> one idle state in its table.  In that case, the scheduler tick is never
+>>> stopped.
+>>>
+>>> Since each of these approaches leads to suboptimal choices in some
+>>> cases, reconcile them with the help of one simple heuristic.  Namely,
+>>> stop the tick if the CPU has been woken up by it in the previous
+>>> iteration of the idle loop, or let it tick otherwise.>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>
+>>> Based on today's mainline.
+>>>
+>>> ---
+>>>  kernel/sched/idle.c |   30 +++++++++++++++++++++---------
+>>>  1 file changed, 21 insertions(+), 9 deletions(-)
+>>>
+>>> --- a/kernel/sched/idle.c
+>>> +++ b/kernel/sched/idle.c
+>>> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
+>>>       return cpuidle_enter(drv, dev, next_state);
+>>>  }
+>>>
+>>> +static void idle_call_stop_or_retain_tick(bool stop_tick)
+>>> +{
+>>> +     if (stop_tick || tick_nohz_tick_stopped())
+>>> +             tick_nohz_idle_stop_tick();
+>>> +     else
+>>> +             tick_nohz_idle_retain_tick();
+>>> +}
+>>> +
+>>>  /**
+>>>   * cpuidle_idle_call - the main idle function
+>>>   *
+>>> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
+>>>   * set, and it returns with polling set.  If it ever stops polling, it
+>>>   * must clear the polling bit.
+>>>   */
+>>> -static void cpuidle_idle_call(void)
+>>> +static void cpuidle_idle_call(bool stop_tick)
+>>>  {
+>>>       struct cpuidle_device *dev = cpuidle_get_device();
+>>>       struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>>> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
+>>>       }
+>>>
+>>>       if (cpuidle_not_available(drv, dev)) {
+>>> -             tick_nohz_idle_stop_tick();
+>>> +             idle_call_stop_or_retain_tick(stop_tick);
+>>>
+>>>               default_idle_call();
+>>>               goto exit_idle;
+>>> @@ -222,17 +230,19 @@ static void cpuidle_idle_call(void)
+>>>               next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
+>>>               call_cpuidle(drv, dev, next_state);
+>>>       } else if (drv->state_count > 1) {
+>>> -             bool stop_tick = true;
+>>> +             /*
+>>> +              * stop_tick is expected to be true by default by cpuidle
+>>> +              * governors, which allows them to select idle states with
+>>> +              * target residency above the tick period length.
+>>> +              */
+>>> +             stop_tick = true;
+>>>
+>>>               /*
+>>>                * Ask the cpuidle framework to choose a convenient idle state.
+>>>                */
+>>>               next_state = cpuidle_select(drv, dev, &stop_tick);
+>>>
+>>> -             if (stop_tick || tick_nohz_tick_stopped())
+>>> -                     tick_nohz_idle_stop_tick();
+>>> -             else
+>>> -                     tick_nohz_idle_retain_tick();
+>>> +             idle_call_stop_or_retain_tick(stop_tick);
+>>>
+>>>               entered_state = call_cpuidle(drv, dev, next_state);
+>>>               /*
+>>> @@ -240,7 +250,7 @@ static void cpuidle_idle_call(void)
+>>>                */
+>>>               cpuidle_reflect(dev, entered_state);
+>>>       } else {
+>>> -             tick_nohz_idle_retain_tick();
+>>> +             idle_call_stop_or_retain_tick(stop_tick);
+>>
+>> This would supersede e5c9ffc6ae1b ("cpuidle: Skip governor when only one idle state is available")
+>> so we should remove that code too.
+> 
+> Which code?  Do you mean the one that has been removed by
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d557640e4ce589a24dca5ca7ce3b9680f471325f
+> 
+Ah of course, sorry!
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
