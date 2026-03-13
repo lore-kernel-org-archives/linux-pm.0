@@ -1,190 +1,169 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D7923A6EF7
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 15:29:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53C5133FE36
+	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 15:32:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773415747; cv=none; b=gLfSx1Zjb0eS2ifgDI7dcZyWgwf+4lPYgw5CA5POXNaldhoXjL1xo05x4ZV+eWDCSOiihcRitHiaEkCSdzo7yxuannJ0PbRNMUePMudIelmAc8SPCYloG+p9oEG+AIuQX/nWFk0NHFSX543fxyXQ1psEe4wToyb5vn4OwuI9v+w=
+	t=1773415922; cv=none; b=Xtag1edURCDZ8Wl2e6V9tt0Jc9U/0R1ebEwDsyos9wRXMi//3bU/Eh4rll/Gr4PP8vh3JSqlKuM5aIoya5oglhEgF7e0xkgTfl3N0/ktwysJkgLsPA07Wz4b9RgME+TLfhVyDajVuJAvGf3nFN1pVH3Kx0tbOJLEAN6JOGp0Cyc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773415747; c=relaxed/simple;
-	bh=ywaeVirycj8FBKFmQIFkPS7dhmfA1HtHARIV34Oy3ko=;
+	s=arc-20240116; t=1773415922; c=relaxed/simple;
+	bh=xlK7fd03Zsa9My6o4ZFqIg+tnyfO3jn1IV6L/SZmr9U=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MPL71HSQ7kVp3kkBxE7YOgHbIkeXXdD20sCnMEu9cOyrRQbNqqtgA7W2GbcFs4yeyPckwAoORhZ3GxNYK+Vx1bbud1sFPzxOsTc0HK5f9YOCBKQ+xTGTBlgCxA/XuEAmB5ZhS6c7jnLSUIcnldV7qefuBlK6ty8SJiiau3DR43s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sZvHWK6C; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=TeT13wY0LFOpqo+l6R5eCHuFtqm6GsU1Qgfg+fuq5mBwc7YoY0JlhZnePV4KHR7meoCRA8dLWPB7QaVfBfnB92MwKLfMtQnPc3OXRt3YyO7geTv9VitdSR84Ix00/zoTr1eCwdH1iUVmMVTlXkVfstRneXfhQ8ArGdS+ZYcOaeg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZGAhUS9e; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sZvHWK6C"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10225C2BC86
-	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 15:29:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZGAhUS9e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D193C2BC86
+	for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 15:32:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773415747;
-	bh=ywaeVirycj8FBKFmQIFkPS7dhmfA1HtHARIV34Oy3ko=;
+	s=k20201202; t=1773415922;
+	bh=xlK7fd03Zsa9My6o4ZFqIg+tnyfO3jn1IV6L/SZmr9U=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=sZvHWK6CP7Zzzx6ZrW6+gewsiUEW+xWiS2XG+nVGhrueaembBl+myU1xLhl7B1pbg
-	 ZCuYhiuPOPXYgiA+te4P8DZf7hNJy3pd0SPLhQ76RIx5m0XCVFwl2P9j8cJ2D0hlqW
-	 m2D05chyK4ji2YtzTq37da7JYW/Nrl4csAXyGv2pcEqC2tTD2niGRFXCVfmfZCyYGY
-	 US1tlHI/n7UvEZ2R0jBVIrnVQoxnJemgYB7onD1NkJ2F6WeoOenX4H0ScTJqW6DHTX
-	 BUo6WQuX/7l9RF88+vhmrULHeWajX4nVo6NDBoHeIOusZau5yD/hCz7dOR40b9EvT5
-	 rMRV2zribokBw==
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7d76a331ebbso1519608a34.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 08:29:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVvHN/8KDYOsDACfLwPqSJLP+wFKc4Vm0iuvn5yLE1R4KSsVup/4Q7Ggd6Nx2wduwsrdAmRrgCArA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxqQXLFYl6zIxjE2vLCWlw6DZlNsDHFOXuwvnLPrYjpccLuHm6I
-	OtHENLxefU7mWFQkUSMJfgclSHra6f50jf7eZtjOcX7zO2YGKChs1YPa/5nt4aAcvt/TenfSayu
-	pEYG2Rafb5UX0CrLfr2tOEQ99dKfNqVs=
-X-Received: by 2002:a05:6820:60e:b0:67b:a77a:e679 with SMTP id
- 006d021491bc7-67bda9e0978mr2006541eaf.31.1773415745971; Fri, 13 Mar 2026
- 08:29:05 -0700 (PDT)
+	b=ZGAhUS9eLTjSsuQmzGIK7oifIVnfaL5P2NBDpst1wSR3f6aXoMcL7WbeFVj5lUMp6
+	 QHOJQX7O3PYvWdMp2R8bFZSlfHfQQthdpvUaQxRy/cwvzQtv+hpvxeKxHzu59+5dLu
+	 W4clHgX/9zrhWErt5FuX9V9OkKBGa0JOj8r3Nu6UnTCTAr6VG5XKbfbhk8DwwagQEv
+	 Rn6qF2RiOk5gslZ2kW+yNwYgTzczBvh9LC5Mp03hr4TJQlqa3JRfHme/6+XygFesut
+	 2/QDPE36In2sNnNIZNfXqPXWqryKNDmDTMY4Valx2TcDoxDbCnlcslCoxjtm7f8er2
+	 g4zlaKTcK+bGw==
+Received: by mail-ot1-f50.google.com with SMTP id 46e09a7af769-7d7653db148so1667073a34.2
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 08:32:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVnWhXebQclpsY3zvK/7gseKqzrcBCWj0rmTcjr2ZssESLltrOygD1ejkS5TgzF93uLk4834NP8NA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxcFqC6KudBsIb61eSGY1VTgKEidJCcSd5L22esMRz2RQ52IgLg
+	1Y2Rwm80ewYafY1dlRn/5pH/SmTVlGtIo4kxN8x816qC6xqNnbvqUthvIt1HlJlMGxOY6RqokPt
+	NcU7cMioRjDGcbTx0z8mVXHdgYfmh9+c=
+X-Received: by 2002:a05:6820:4deb:b0:67b:c8c4:43bd with SMTP id
+ 006d021491bc7-67bdaa96769mr2165571eaf.72.1773415920704; Fri, 13 Mar 2026
+ 08:32:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <4741364.LvFx2qVVIh@rafael.j.wysocki> <c1f6d920-6bd9-4131-af08-da1be1206812@arm.com>
- <CAJZ5v0hnamFh6YUriWLgdWip6mRer69pNcL3ueBt5Aux6fzsgg@mail.gmail.com> <ae9d5cba-f525-48bb-bac4-cbd50db1dbac@arm.com>
-In-Reply-To: <ae9d5cba-f525-48bb-bac4-cbd50db1dbac@arm.com>
+References: <20260225084930.1692228-1-pierre.gondois@arm.com>
+ <20260225084930.1692228-3-pierre.gondois@arm.com> <CAJZ5v0iLEBiQE8GEyBn_RFHyojQOyrf=jr_CbPdG6dyvoqXBiA@mail.gmail.com>
+ <CAJZ5v0hH7jGoJdFrdh81woh_GVk3WYAeB+OM7nbu0jy0O1j47w@mail.gmail.com> <b740cefd-cbfa-4b98-b3ee-8fefdaf8e322@arm.com>
+In-Reply-To: <b740cefd-cbfa-4b98-b3ee-8fefdaf8e322@arm.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 13 Mar 2026 16:28:54 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0grtJVtj7oGDRJ=gyWVs6VnGcydOURJ5aDfE6qVn8nkXg@mail.gmail.com>
-X-Gm-Features: AaiRm53-DKU3ZBa-3EdsVGeJFklQkPyPy3cwJB0gphef3mZ8Ef4d6VoKDoT2qzQ
-Message-ID: <CAJZ5v0grtJVtj7oGDRJ=gyWVs6VnGcydOURJ5aDfE6qVn8nkXg@mail.gmail.com>
-Subject: Re: [PATCH v1] sched: idle: Consolidate the handling of two special cases
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
-	Peter Zijlstra <peterz@infradead.org>, Qais Yousef <qyousef@layalina.io>, 
-	Frederic Weisbecker <frederic@kernel.org>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+Date: Fri, 13 Mar 2026 16:31:49 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jE0-tP5hz8yMrxriawYJ3pQyQs8rYMn_TA5fm1umb84w@mail.gmail.com>
+X-Gm-Features: AaiRm51m5v_zpkiVtKSyeYd4XAJIzHz5LYg7-tef_IoUfKs-F6_B0CQ6rrmSqsw
+Message-ID: <CAJZ5v0jE0-tP5hz8yMrxriawYJ3pQyQs8rYMn_TA5fm1umb84w@mail.gmail.com>
+Subject: Re: [PATCH v5 2/6] cpufreq: Add boost_freq_req QoS request
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, 
+	Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
+	Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, 
+	Christian Loehle <christian.loehle@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 13, 2026 at 3:04=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
+On Fri, Mar 13, 2026 at 3:30=E2=80=AFPM Pierre Gondois <pierre.gondois@arm.=
+com> wrote:
 >
-> On 3/13/26 13:07, Rafael J. Wysocki wrote:
-> > On Fri, Mar 13, 2026 at 1:53=E2=80=AFPM Christian Loehle
-> > <christian.loehle@arm.com> wrote:
+>
+> On 3/11/26 14:57, Rafael J. Wysocki wrote:
+> > On Wed, Mar 11, 2026 at 2:52=E2=80=AFPM Rafael J. Wysocki<rafael@kernel=
+.org> wrote:
+> >> On Wed, Feb 25, 2026 at 9:49=E2=80=AFAM Pierre Gondois<pierre.gondois@=
+arm.com> wrote:
+> >>> The Power Management Quality of Service (PM QoS) allows to
+> >>> aggregate constraints from multiple entities. It is currently
+> >>> used to manage the min/max frequency of a given policy.
+> >>>
+> >>> Frequency constraints can come for instance from:
+> >>> - Thermal framework: acpi_thermal_cpufreq_init()
+> >>> - Firmware: _PPC objects: acpi_processor_ppc_init()
+> >>> - User: by setting policyX/scaling_[min|max]_freq
+> >>> The minimum of the max frequency constraints is used to compute
+> >>> the resulting maximum allowed frequency.
+> >>>
+> >>> When enabling boost frequencies, the same frequency request object
+> >>> (policy->max_freq_req) as to handle requests from users is used.
+> >>> As a result, when setting:
+> >>> - scaling_max_freq
+> >>> - boost
+> >>> The last sysfs file used overwrites the request from the other
+> >>> sysfs file.
+> >>>
+> >>> To avoid this, create a per-policy boost_freq_req to save the boost
+> >>> constraints instead of overwriting the last scaling_max_freq
+> >>> constraint.
+> >>>
+> >>> Signed-off-by: Pierre Gondois<pierre.gondois@arm.com>
+> >>> ---
+> >>>   drivers/cpufreq/cpufreq.c | 37 ++++++++++++++++++++++++++++++++----=
+-
+> >>>   include/linux/cpufreq.h   |  1 +
+> >>>   2 files changed, 33 insertions(+), 5 deletions(-)
+> >>>
+> >>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> >>> index db414c052658b..50467b938668a 100644
+> >>> --- a/drivers/cpufreq/cpufreq.c
+> >>> +++ b/drivers/cpufreq/cpufreq.c
+> >>> @@ -1359,17 +1359,21 @@ static void cpufreq_policy_free(struct cpufre=
+q_policy *policy)
+> >>>          /* Cancel any pending policy->update work before freeing the=
+ policy. */
+> >>>          cancel_work_sync(&policy->update);
+> >>>
+> >>> -       if (policy->max_freq_req) {
+> >>> +       if ((policy->max_freq_req && !policy->boost_supported) ||
+> >>> +           policy->boost_freq_req) {
+> >> Are you sure?
 > >>
-> >> On 3/13/26 12:25, Rafael J. Wysocki wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>                  /*
+> >>> -                * Remove max_freq_req after sending CPUFREQ_REMOVE_P=
+OLICY
+> >>> -                * notification, since CPUFREQ_CREATE_POLICY notifica=
+tion was
+> >>> -                * sent after adding max_freq_req earlier.
+> >>> +                * Remove max/boost _freq_req after sending CPUFREQ_R=
+EMOVE_POLICY
+> >>> +                * notification, since CPUFREQ_CREATE_POLICY notifica=
+tion was sent
+> >>> +                * after adding max/boost _freq_req earlier.
+> >>>                   */
+> >>>                  blocking_notifier_call_chain(&cpufreq_policy_notifie=
+r_list,
+> >>>                                               CPUFREQ_REMOVE_POLICY, =
+policy);
+> >>> -               freq_qos_remove_request(policy->max_freq_req);
+> >>>          }
 > >>>
-> >>> There are two special cases in the idle loop that are handled
-> >>> inconsistently even though they are analogous.
-> >>>
-> >>> The first one is when a cpuidle driver is absent and the default CPU
-> >>> idle time power management implemented by the architecture code is us=
-ed.
-> >>> In that case, the scheduler tick is stopped every time before invokin=
-g
-> >>> default_idle_call().
-> >>>
-> >>> The second one is when a cpuidle driver is present, but there is only
-> >>> one idle state in its table.  In that case, the scheduler tick is nev=
-er
-> >>> stopped.
-> >>>
-> >>> Since each of these approaches leads to suboptimal choices in some
-> >>> cases, reconcile them with the help of one simple heuristic.  Namely,
-> >>> stop the tick if the CPU has been woken up by it in the previous
-> >>> iteration of the idle loop, or let it tick otherwise.>
-> >>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>> ---
-> >>>
-> >>> Based on today's mainline.
-> >>>
-> >>> ---
-> >>>  kernel/sched/idle.c |   30 +++++++++++++++++++++---------
-> >>>  1 file changed, 21 insertions(+), 9 deletions(-)
-> >>>
-> >>> --- a/kernel/sched/idle.c
-> >>> +++ b/kernel/sched/idle.c
-> >>> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
-> >>>       return cpuidle_enter(drv, dev, next_state);
-> >>>  }
-> >>>
-> >>> +static void idle_call_stop_or_retain_tick(bool stop_tick)
-> >>> +{
-> >>> +     if (stop_tick || tick_nohz_tick_stopped())
-> >>> +             tick_nohz_idle_stop_tick();
-> >>> +     else
-> >>> +             tick_nohz_idle_retain_tick();
-> >>> +}
+> >>> +       freq_qos_remove_request(policy->boost_freq_req);
+> >>> +       kfree(policy->boost_freq_req);
 > >>> +
-> >>>  /**
-> >>>   * cpuidle_idle_call - the main idle function
-> >>>   *
-> >>> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
-> >>>   * set, and it returns with polling set.  If it ever stops polling, =
-it
-> >>>   * must clear the polling bit.
-> >>>   */
-> >>> -static void cpuidle_idle_call(void)
-> >>> +static void cpuidle_idle_call(bool stop_tick)
-> >>>  {
-> >>>       struct cpuidle_device *dev =3D cpuidle_get_device();
-> >>>       struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
-> >>> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
-> >>>       }
+> >>> +       freq_qos_remove_request(policy->max_freq_req);
+> >>>          freq_qos_remove_request(policy->min_freq_req);
+> >>>          kfree(policy->min_freq_req);
 > >>>
-> >>>       if (cpuidle_not_available(drv, dev)) {
-> >>> -             tick_nohz_idle_stop_tick();
-> >>> +             idle_call_stop_or_retain_tick(stop_tick);
+> >>> @@ -1479,6 +1483,29 @@ static int cpufreq_policy_online(struct cpufre=
+q_policy *policy,
+> >>>                          goto out_destroy_policy;
+> >>>                  }
 > >>>
-> >>>               default_idle_call();
-> >>>               goto exit_idle;
-> >>> @@ -222,17 +230,19 @@ static void cpuidle_idle_call(void)
-> >>>               next_state =3D cpuidle_find_deepest_state(drv, dev, max=
-_latency_ns);
-> >>>               call_cpuidle(drv, dev, next_state);
-> >>>       } else if (drv->state_count > 1) {
-> >>> -             bool stop_tick =3D true;
-> >>> +             /*
-> >>> +              * stop_tick is expected to be true by default by cpuid=
-le
-> >>> +              * governors, which allows them to select idle states w=
-ith
-> >>> +              * target residency above the tick period length.
-> >>> +              */
-> >>> +             stop_tick =3D true;
-> >>>
-> >>>               /*
-> >>>                * Ask the cpuidle framework to choose a convenient idl=
-e state.
-> >>>                */
-> >>>               next_state =3D cpuidle_select(drv, dev, &stop_tick);
-> >>>
-> >>> -             if (stop_tick || tick_nohz_tick_stopped())
-> >>> -                     tick_nohz_idle_stop_tick();
-> >>> -             else
-> >>> -                     tick_nohz_idle_retain_tick();
-> >>> +             idle_call_stop_or_retain_tick(stop_tick);
-> >>>
-> >>>               entered_state =3D call_cpuidle(drv, dev, next_state);
-> >>>               /*
-> >>> @@ -240,7 +250,7 @@ static void cpuidle_idle_call(void)
-> >>>                */
-> >>>               cpuidle_reflect(dev, entered_state);
-> >>>       } else {
-> >>> -             tick_nohz_idle_retain_tick();
-> >>> +             idle_call_stop_or_retain_tick(stop_tick);
-> >>
-> >> This would supersede e5c9ffc6ae1b ("cpuidle: Skip governor when only o=
-ne idle state is available")
-> >> so we should remove that code too.
-> >
-> > Which code?  Do you mean the one that has been removed by
-> >
-> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm=
-it/?id=3Dd557640e4ce589a24dca5ca7ce3b9680f471325f
-> >
-> Ah of course, sorry!
+> >>> +               if (policy->boost_supported) {
+> >>> +                       policy->boost_freq_req =3D kzalloc(sizeof(*po=
+licy->boost_freq_req),
+> >>> +                                                        GFP_KERNEL);
+> >> Instead of doing this, why don't you add 1 to the policy->min_freq_req
+> >> allocation size when boost is supported?  You'll destroy the policy if
+> >> the allocation fails anyway.
+>
+>
+> Yes right,
+> this would make the error handling much simpler to follow.
+>
+> On the other hand Viresh seems to have acknowledged the logic,
 
-No worries.
+But he has also said "+1" to this one. :-)
 
-> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+> so whatever seems is better to both of you.
 
-So should I regard this as a fix for 7.0?
-
-I guess so because I don't think it would be useful to ship 7.0
-without it only to change the behavior immediately in 7.1.  And I
-think that it can be treated as a fix for e5c9ffc6ae1b (above).
+I think we agree.
