@@ -1,65 +1,65 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75913272E61
-	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 01:05:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7CE12D46B2
+	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 01:05:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773450343; cv=none; b=gQFuHgpoimSbkMv/Y1+F79Uj+0v6jhRosdQuRlpeFvSFlJkBivoAG6ypGCKmVIDQd28Kwb1cvPovD0fe71vjHq8DWUBXI8SzBF7TgFp4OCBEmMMlqjl8EUCNdWO/ZPI4yb/5qsk/E/VAE2muiDyVoAn28PjuHtcUx/EOgjlUF24=
+	t=1773450344; cv=none; b=SGNSq+4ES2KYfnj7411y+BcP4m2wFlZ0on8LNc12bPuC/zmC2dFe3ABXpVNKAqMKPf3zeQ/NE6f+xZoxSY/Gum12ALksM0m9f6yIrBvSnHmeDz0TWHGfufIeBkbPOQK8tGdsyLCQ6VUX76Lb0zkbMpNfNGyHlFuPRHBY9wpX5wY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773450343; c=relaxed/simple;
-	bh=SPg2hA7y1CcYnIkWT+SZNHxhcM9Bjt4HXuIIXfopeG8=;
+	s=arc-20240116; t=1773450344; c=relaxed/simple;
+	bh=5UruTDQYwRhP8yhzakmYIDCojVLLfICF8nWe8oykZsk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bSqgyX/q8t/z7lYOEwTcl5Ep+0hexFdNUROrBOhcBm9ET45f+NmikniiCQVLwc0A/VsWdYWsH7s3jfWjofZBRjuxAOCmAD2o2BYAVYqU597ktSLnh7susWpTIk+wzapAAVj5+bGUT/URD9CsJE+quOua1nqxnrCVDMgjqTjhjaM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aRj9yChb; arc=none smtp.client-ip=209.85.128.42
+	 MIME-Version; b=ZI5cbs3dBWfHGDvtm0DXdMvhKaRcMCGESIMWU/v70Uim1iUVZk5o6UVbYYc8TEoA5t8k3YiPnaXBr8fMOOfhZSg77ctw8x3iTRgOHcENJPljN5XAhvfESjxbUDmlTDvYq+lvCLvJ709yJzpEyLFpfednmExfv3Dc7FpF8V+y2cM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B+bls5o6; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aRj9yChb"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4852f73d0a3so22100785e9.3
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 18:05:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B+bls5o6"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-439ce3605ecso2128298f8f.0
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 18:05:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773450340; x=1774055140; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773450341; x=1774055141; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wP0R4g6EguFpERuWw6kFrrPwl8MQ9NSP5DgPehkcTOc=;
-        b=aRj9yChbVOveC5SplYMPdXRBjFmsFXy0MoxPX3B5zsq8ZY0JciaJHOf7YCNFFDlrov
-         yDpg0FCEULA19n1/IaCmQ/yehFjDp2eumOP32HnxqgCVEVych78SLZsaeW7MJ5HavfHd
-         7dwYzxKMYEaLszSUuAkecRe7co0uLr6lQifFxpqMgsMDld0afVvy84HwaWxeoNUg0Jwz
-         5/xafz2BNul9dj6qmw/ApIgB0h5HwXwtDEFd9PWrTl5FjS3alUIo9a02M6k1+GedY8M6
-         iNhnEOvLw4W20bc3iZ/EHXhMhNa+2fQwNyXrds25K2NA5FBEIunxtV34zEg0lnlRvMjV
-         O4Fg==
+        bh=pPTsETiep3NOBpBHAgOsX9uFP2vJQ7HjGOgXPWAlTNU=;
+        b=B+bls5o69SBh1RyM72tpLB/isfmTFWYJl2O/0vJjqxRN8oVGal2+szUQ10tJmvRf2D
+         NJLRTIQYKzDFJvonPENKrfU82U22Paja1WHT1TgjRio3WxBZEpJ8e+aGHqbamr1Y95df
+         JIDbh1+VIBigH4FJo9Y2PeB1ZE3LMesjEC3drbEkNqzezM5SYydMjpbwPAYNoZ7exVcl
+         SJgOa2mTbY7FBU5xedBV8kuY/yXCOuxLalA7qKqqrM7xVJ4EjpyF+MznRsTzQDNh1B60
+         83Q+5n3CGxscmq+N0+5IKrvwf8muLIGBFFJD3VpfqrLUU8PYZennPHjqeoq76JUwU40a
+         Jyeg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773450340; x=1774055140;
+        d=1e100.net; s=20251104; t=1773450341; x=1774055141;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=wP0R4g6EguFpERuWw6kFrrPwl8MQ9NSP5DgPehkcTOc=;
-        b=c1TYlouvuMm88iA2ze2B/qinBxQW/LkogY/Z7bg3iyjXiCLGK5Pj0HXBXDIm8FaNVu
-         ylvjCcYxszYNESxrNHjHBd6MPyVrvdzNPgEYe0eRqpTllOevvKVbrKXCegGIOfk0eLP/
-         NmhDuiv/8Od6we5R7a7Gnp6AkTi8On7rNudid26Ijec1rI8eW9LTT1IPhDUvIUQx+6GF
-         e7cL41x7dPnHnCSy9BE2mJg1z7ptjuAQCuXHewpfgLYNPIYUuQOwYcXWwJmYCCwXfrfI
-         xh8FaxwlggUJ9LIYi3/PPUG6mFI0Xlv1C4PPYTWE6brp0vnKV05aBmqw9sN5CEPFFpu9
-         8rJA==
-X-Forwarded-Encrypted: i=1; AJvYcCXvu4KDS1L9zYlBiPTmU7bGRMKQzkpkGx5ml3tpX3HbNyTLW0FSQ+v+XHzFt2Z2bdz6Q0twT6nMxw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy4koOcHeCcP3/jQQ/DzxiouQwZpTt0868zMerW9fVsdgtNVQiQ
-	qzM/VLWZjyOEDQ2g0X26qlgEvN+KGuG34gYOvhCs/Kp7cJIZ09jQwDE=
-X-Gm-Gg: ATEYQzyJjG66aqyQpsBKLZ/0ofh2+fL9Ob80KImR/e7Bn5ipaok3mfSW5U5lPEONyGC
-	Hd1hfkYPsVP/c5CA9n1X3RufQdOXT0QF1SZJLk4TpbrYJjTqF9rbtqQ9ahRpPsPBHRSYOE2u4+7
-	2/T5BMVjxgzi10WymA/bgIKYKkFJfb98j1zyDla9qVxMBuJEfYjO81USG/1YONP2baWPn81NHCF
-	5aAtOOB7kHTOkY11OQXybcivloqQjydNcOK4dX7X7Bj96NUFibgfPwGJwdA1F7XMqy3pI2ydBRt
-	NK7Zan7eQM6f49VFW38P2aMkzmVlI4PjMTAxNcT5C93bmsi9xf/ONQ6Ur+FIKzYQmaC2afRqw5u
-	BrsEtycRbvbVLC4nii0K+qSUC1kfsHl6SG44N8dBvjvAQ4sFNLiPY4PBIqWLm7/DdmLuMS38qa5
-	01Q/qf9yYVKUWS36ao85v3qGDPIBTdi1KiIbzDX/WiQVqMmYjQJkGTL/TSQj2PImU6HKPU1BqxO
-	4OATgPc+A7Gs5LVgthzCSOmu5TgcRS0/Fu+APUFK80sL1duizZXYuBwkHbwI2xt5EWL1oOkVKXj
-	lQOCNYtOgrFaQ3M=
-X-Received: by 2002:a05:600c:6287:b0:485:3f72:323f with SMTP id 5b1f17b1804b1-485566d2ff2mr89507195e9.11.1773450339517;
-        Fri, 13 Mar 2026 18:05:39 -0700 (PDT)
+        bh=pPTsETiep3NOBpBHAgOsX9uFP2vJQ7HjGOgXPWAlTNU=;
+        b=b/dJ8ckHDB7MXSbtd0lEHU957Gk3pHIkfoxXoszZeqsBCUDGzlHYtwQwyp/DDer8eB
+         /5ORVtrqkbdF7Lfk3U+9NQsRUsmXqpZk8OdL6po+YFp67juAe+ENYqTj7M7gMRtujgIN
+         +ecWLFqSdAP/ikbAhKOIAa2CrWrxgKgKMLuloiWGng6N/cYpuOnV00PqSM25OnZ4seVC
+         Hdr+k1tQhHUknDvk1xqCkRh/lEU+2ni7ADpznxM2bCEzBKaEKVrgrG9Pk6xJGKBmLISZ
+         jAiC5gxDdYK8rR6ub3go3Gpz3Q46FIFMUx9X+20DpiysMTjPKlLz3OkoBAL4WDcLQ7v0
+         SS8g==
+X-Forwarded-Encrypted: i=1; AJvYcCXHouem85Jp6z5/9IaeMpORCmiZKLm2fn9JFfVLQ7qPyZBqIZhycJMDviJON7CHQo+UvVpZoaxjmQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyVMYg2doTgBvklti+BtGZQ4G9Vdt5q+xzGTfCN0j47adO8Cf+n
+	d/5AIM23PNOnF2pfkTv0LNH/YL/38La9W9H3grU8MhjN98c9K748B7I=
+X-Gm-Gg: ATEYQzy2phf/EdRitaCJgKhOdlQDuXMOsWS1/tv8AaWdQVicv7EtfVreleG5wvqY3cv
+	HOfm0+ln5xJZehz6JhGW+bw52kzAO/d3yg0gi6zIOyv0EvEXFVZyQoUf9bIRv3qOVjkL9zkMYo4
+	azxxLLR4v3Nh8Y/Ewo+rzXSn8708e1G6W6E/MkGK0E0LT3X9J71o7Px+QzmF7h8JzYUSuxIH1pi
+	CYg6/Dsd9UCye3ZuMi1sENSwbzCVxQB/XlqKLp5nE4adNVk663TkZUKGZ09T023YlxlsXdku7FD
+	C03qNWlKlNXaB5AfcGEDk9EfqCQYHlGK8s/5uCk8JuCAivcL5pDzmlMTaHvkQnag5T5tZZt+5XC
+	qbBtsDon0er6in+l+qKtVoONy2Q/0WKs2vcgAAjc/ePhMDcNlSUMFNytG43B+tU/5WQKG5DlgBY
+	XC51TdQqljrru1mE9vvQZDaEISVpAGp2Z6MX1zj7A94hCDWdFwAZHNF4p83CDEJobc0fHEb0xPY
+	kuMii3KZTSeMDP3Scd+mvxppj/obeoSeiEPFkT4vXoM/9TcMxORi1t2XLUBsyuQoonnDrgp9RW4
+	JOArxTGLwgZ+aKU=
+X-Received: by 2002:a05:6000:4283:b0:439:df17:b037 with SMTP id ffacd0b85a97d-43a04d780f9mr9727413f8f.12.1773450341141;
+        Fri, 13 Mar 2026 18:05:41 -0700 (PDT)
 Received: from sissix.lzampier.com (92.40.172.137.threembb.co.uk. [92.40.172.137])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43a03cfd18fsm13059963f8f.36.2026.03.13.18.05.38
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43a03cfd18fsm13059963f8f.36.2026.03.13.18.05.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Mar 2026 18:05:39 -0700 (PDT)
+        Fri, 13 Mar 2026 18:05:40 -0700 (PDT)
 From: Lucas Zampieri <lcasmz54@gmail.com>
 To: linux-input@vger.kernel.org
 Cc: Lucas Zampieri <lcasmz54@gmail.com>,
@@ -69,9 +69,9 @@ Cc: Lucas Zampieri <lcasmz54@gmail.com>,
 	Sebastian Reichel <sre@kernel.org>,
 	Bastien Nocera <hadess@hadess.net>,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v7 2/3] HID: input: Introduce struct hid_battery and refactor battery code
-Date: Sat, 14 Mar 2026 01:05:29 +0000
-Message-ID: <20260314010533.110278-3-lcasmz54@gmail.com>
+Subject: [PATCH v7 3/3] HID: input: Add support for multiple batteries per device
+Date: Sat, 14 Mar 2026 01:05:30 +0000
+Message-ID: <20260314010533.110278-4-lcasmz54@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260314010533.110278-1-lcasmz54@gmail.com>
 References: <20260314010533.110278-1-lcasmz54@gmail.com>
@@ -83,514 +83,190 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Introduce struct hid_battery to encapsulate individual battery state,
-preparing for future multi-battery support.
+Add support for HID devices that report multiple batteries, each
+identified by its report ID.
 
-The new structure contains all battery-related fields previously stored
-directly in hid_device (capacity, min, max, report_type, report_id,
-charge_status, etc.). The hid_device->battery pointer type changes from
-struct power_supply* to struct hid_battery*, and all battery functions
-are refactored accordingly.
-
-A hid_get_battery() helper is added for external drivers, with
-hid-apple.c and hid-magicmouse.c updated to use the new API. The
-hid-input-test.c KUnit tests are also updated for the new structure.
-
-No functional changes for single-battery devices.
+The hid_device->battery pointer is replaced with a batteries list.
+Batteries are named using the pattern hid-{uniq}-battery-{report_id}.
+The hid_get_battery() helper returns the first battery in the list for
+backwards compatibility with single-battery drivers.
 
 Signed-off-by: Lucas Zampieri <lcasmz54@gmail.com>
 ---
- drivers/hid/hid-apple.c      |  10 +--
- drivers/hid/hid-input-test.c |  39 ++++++-----
- drivers/hid/hid-input.c      | 131 +++++++++++++++++++----------------
- drivers/hid/hid-magicmouse.c |  10 +--
- include/linux/hid.h          |  52 ++++++++++----
- 5 files changed, 146 insertions(+), 96 deletions(-)
+ drivers/hid/hid-core.c  |  4 ++++
+ drivers/hid/hid-input.c | 44 ++++++++++++++++++++++++++++-------------
+ include/linux/hid.h     | 11 ++++++++---
+ 3 files changed, 42 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
-index fc5897a6b..8b8b05c8a 100644
---- a/drivers/hid/hid-apple.c
-+++ b/drivers/hid/hid-apple.c
-@@ -623,17 +623,19 @@ static int apple_fetch_battery(struct hid_device *hdev)
- 	struct apple_sc *asc = hid_get_drvdata(hdev);
- 	struct hid_report_enum *report_enum;
- 	struct hid_report *report;
-+	struct hid_battery *bat;
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index da57cbf0a..58a31ee07 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -2995,6 +2995,10 @@ struct hid_device *hid_allocate_device(void)
+ 	mutex_init(&hdev->ll_open_lock);
+ 	kref_init(&hdev->ref);
  
--	if (!(asc->quirks & APPLE_RDESC_BATTERY) || !hdev->battery)
-+	bat = hid_get_battery(hdev);
-+	if (!(asc->quirks & APPLE_RDESC_BATTERY) || !bat)
- 		return -1;
- 
--	report_enum = &hdev->report_enum[hdev->battery_report_type];
--	report = report_enum->report_id_hash[hdev->battery_report_id];
-+	report_enum = &hdev->report_enum[bat->report_type];
-+	report = report_enum->report_id_hash[bat->report_id];
- 
- 	if (!report || report->maxfield < 1)
- 		return -1;
- 
--	if (hdev->battery_capacity == hdev->battery_max)
-+	if (bat->capacity == bat->max)
- 		return -1;
- 
- 	hid_hw_request(hdev, report, HID_REQ_GET_REPORT);
-diff --git a/drivers/hid/hid-input-test.c b/drivers/hid/hid-input-test.c
-index 6f5c71660..c92008daf 100644
---- a/drivers/hid/hid-input-test.c
-+++ b/drivers/hid/hid-input-test.c
-@@ -9,54 +9,59 @@
- 
- static void hid_test_input_update_battery_charge_status(struct kunit *test)
- {
--	struct hid_device *dev;
-+	struct hid_battery *bat;
- 	bool handled;
- 
--	dev = kunit_kzalloc(test, sizeof(*dev), GFP_KERNEL);
--	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+	bat = kunit_kzalloc(test, sizeof(*bat), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, bat);
- 
--	handled = hidinput_update_battery_charge_status(dev, HID_DG_HEIGHT, 0);
-+	handled = hidinput_update_battery_charge_status(bat, HID_DG_HEIGHT, 0);
- 	KUNIT_EXPECT_FALSE(test, handled);
--	KUNIT_EXPECT_EQ(test, dev->battery_charge_status, POWER_SUPPLY_STATUS_UNKNOWN);
-+	KUNIT_EXPECT_EQ(test, bat->charge_status, POWER_SUPPLY_STATUS_UNKNOWN);
- 
--	handled = hidinput_update_battery_charge_status(dev, HID_BAT_CHARGING, 0);
-+	handled = hidinput_update_battery_charge_status(bat, HID_BAT_CHARGING, 0);
- 	KUNIT_EXPECT_TRUE(test, handled);
--	KUNIT_EXPECT_EQ(test, dev->battery_charge_status, POWER_SUPPLY_STATUS_DISCHARGING);
-+	KUNIT_EXPECT_EQ(test, bat->charge_status, POWER_SUPPLY_STATUS_DISCHARGING);
- 
--	handled = hidinput_update_battery_charge_status(dev, HID_BAT_CHARGING, 1);
-+	handled = hidinput_update_battery_charge_status(bat, HID_BAT_CHARGING, 1);
- 	KUNIT_EXPECT_TRUE(test, handled);
--	KUNIT_EXPECT_EQ(test, dev->battery_charge_status, POWER_SUPPLY_STATUS_CHARGING);
-+	KUNIT_EXPECT_EQ(test, bat->charge_status, POWER_SUPPLY_STATUS_CHARGING);
- }
- 
- static void hid_test_input_get_battery_property(struct kunit *test)
- {
- 	struct power_supply *psy;
-+	struct hid_battery *bat;
- 	struct hid_device *dev;
- 	union power_supply_propval val;
- 	int ret;
- 
- 	dev = kunit_kzalloc(test, sizeof(*dev), GFP_KERNEL);
- 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
--	dev->battery_avoid_query = true;
++#ifdef CONFIG_HID_BATTERY_STRENGTH
++	INIT_LIST_HEAD(&hdev->batteries);
++#endif
 +
-+	bat = kunit_kzalloc(test, sizeof(*bat), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, bat);
-+	bat->dev = dev;
-+	bat->avoid_query = true;
- 
- 	psy = kunit_kzalloc(test, sizeof(*psy), GFP_KERNEL);
- 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, psy);
--	psy->drv_data = dev;
-+	psy->drv_data = bat;
- 
--	dev->battery_status = HID_BATTERY_UNKNOWN;
--	dev->battery_charge_status = POWER_SUPPLY_STATUS_CHARGING;
-+	bat->status = HID_BATTERY_UNKNOWN;
-+	bat->charge_status = POWER_SUPPLY_STATUS_CHARGING;
- 	ret = hidinput_get_battery_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
- 	KUNIT_EXPECT_EQ(test, ret, 0);
- 	KUNIT_EXPECT_EQ(test, val.intval, POWER_SUPPLY_STATUS_UNKNOWN);
- 
--	dev->battery_status = HID_BATTERY_REPORTED;
--	dev->battery_charge_status = POWER_SUPPLY_STATUS_CHARGING;
-+	bat->status = HID_BATTERY_REPORTED;
-+	bat->charge_status = POWER_SUPPLY_STATUS_CHARGING;
- 	ret = hidinput_get_battery_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
- 	KUNIT_EXPECT_EQ(test, ret, 0);
- 	KUNIT_EXPECT_EQ(test, val.intval, POWER_SUPPLY_STATUS_CHARGING);
- 
--	dev->battery_status = HID_BATTERY_REPORTED;
--	dev->battery_charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	bat->status = HID_BATTERY_REPORTED;
-+	bat->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
- 	ret = hidinput_get_battery_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
- 	KUNIT_EXPECT_EQ(test, ret, 0);
- 	KUNIT_EXPECT_EQ(test, val.intval, POWER_SUPPLY_STATUS_DISCHARGING);
+ 	ret = hid_bpf_device_init(hdev);
+ 	if (ret)
+ 		goto out_err;
 diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 7e0f971ef..b5d34658b 100644
+index b5d34658b..8fff185fe 100644
 --- a/drivers/hid/hid-input.c
 +++ b/drivers/hid/hid-input.c
-@@ -416,18 +416,18 @@ static unsigned find_battery_quirk(struct hid_device *hdev)
- 	return quirks;
+@@ -507,6 +507,18 @@ static int hidinput_get_battery_property(struct power_supply *psy,
+ 	return ret;
  }
  
--static int hidinput_scale_battery_capacity(struct hid_device *dev,
-+static int hidinput_scale_battery_capacity(struct hid_battery *bat,
- 					   int value)
- {
--	if (dev->battery_min < dev->battery_max &&
--	    value >= dev->battery_min && value <= dev->battery_max)
--		value = ((value - dev->battery_min) * 100) /
--			(dev->battery_max - dev->battery_min);
-+	if (bat->min < bat->max &&
-+	    value >= bat->min && value <= bat->max)
-+		value = ((value - bat->min) * 100) /
-+			(bat->max - bat->min);
- 
- 	return value;
- }
- 
--static int hidinput_query_battery_capacity(struct hid_device *dev)
-+static int hidinput_query_battery_capacity(struct hid_battery *bat)
- {
- 	int ret;
- 
-@@ -435,19 +435,20 @@ static int hidinput_query_battery_capacity(struct hid_device *dev)
- 	if (!buf)
- 		return -ENOMEM;
- 
--	ret = hid_hw_raw_request(dev, dev->battery_report_id, buf, 4,
--				 dev->battery_report_type, HID_REQ_GET_REPORT);
-+	ret = hid_hw_raw_request(bat->dev, bat->report_id, buf, 4,
-+				 bat->report_type, HID_REQ_GET_REPORT);
- 	if (ret < 2)
- 		return -ENODATA;
- 
--	return hidinput_scale_battery_capacity(dev, buf[1]);
-+	return hidinput_scale_battery_capacity(bat, buf[1]);
- }
- 
- static int hidinput_get_battery_property(struct power_supply *psy,
- 					 enum power_supply_property prop,
- 					 union power_supply_propval *val)
- {
--	struct hid_device *dev = power_supply_get_drvdata(psy);
-+	struct hid_battery *bat = power_supply_get_drvdata(psy);
-+	struct hid_device *dev = bat->dev;
- 	int value;
- 	int ret = 0;
- 
-@@ -457,17 +458,17 @@ static int hidinput_get_battery_property(struct power_supply *psy,
- 		break;
- 
- 	case POWER_SUPPLY_PROP_PRESENT:
--		val->intval = dev->battery_present;
-+		val->intval = bat->present;
- 		break;
- 
- 	case POWER_SUPPLY_PROP_CAPACITY:
--		if (dev->battery_status != HID_BATTERY_REPORTED &&
--		    !dev->battery_avoid_query) {
--			value = hidinput_query_battery_capacity(dev);
-+		if (bat->status != HID_BATTERY_REPORTED &&
-+		    !bat->avoid_query) {
-+			value = hidinput_query_battery_capacity(bat);
- 			if (value < 0)
- 				return value;
- 		} else  {
--			value = dev->battery_capacity;
-+			value = bat->capacity;
- 		}
- 
- 		val->intval = value;
-@@ -478,20 +479,20 @@ static int hidinput_get_battery_property(struct power_supply *psy,
- 		break;
- 
- 	case POWER_SUPPLY_PROP_STATUS:
--		if (dev->battery_status != HID_BATTERY_REPORTED &&
--		    !dev->battery_avoid_query) {
--			value = hidinput_query_battery_capacity(dev);
-+		if (bat->status != HID_BATTERY_REPORTED &&
-+		    !bat->avoid_query) {
-+			value = hidinput_query_battery_capacity(bat);
- 			if (value < 0)
- 				return value;
- 
--			dev->battery_capacity = value;
--			dev->battery_status = HID_BATTERY_QUERIED;
-+			bat->capacity = value;
-+			bat->status = HID_BATTERY_QUERIED;
- 		}
- 
--		if (dev->battery_status == HID_BATTERY_UNKNOWN)
-+		if (bat->status == HID_BATTERY_UNKNOWN)
- 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
- 		else
--			val->intval = dev->battery_charge_status;
-+			val->intval = bat->charge_status;
- 		break;
- 
- 	case POWER_SUPPLY_PROP_SCOPE:
-@@ -509,8 +510,9 @@ static int hidinput_get_battery_property(struct power_supply *psy,
++static struct hid_battery *hidinput_find_battery(struct hid_device *dev,
++						 int report_id)
++{
++	struct hid_battery *bat;
++
++	list_for_each_entry(bat, &dev->batteries, list) {
++		if (bat->report_id == report_id)
++			return bat;
++	}
++	return NULL;
++}
++
  static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
  				  struct hid_field *field, bool is_percentage)
  {
-+	struct hid_battery *bat;
- 	struct power_supply_desc *psy_desc;
--	struct power_supply_config psy_cfg = { .drv_data = dev, };
-+	struct power_supply_config psy_cfg = { 0 };
- 	unsigned quirks;
+@@ -517,13 +529,15 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
  	s32 min, max;
  	int error;
-@@ -526,16 +528,22 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 
+-	if (dev->battery)
+-		return 0;	/* already initialized? */
++	/* Check if battery for this report ID already exists */
++	if (hidinput_find_battery(dev, field->report->id))
++		return 0;
+ 
+ 	quirks = find_battery_quirk(dev);
+ 
+-	hid_dbg(dev, "device %x:%x:%x %d quirks %d\n",
+-		dev->bus, dev->vendor, dev->product, dev->version, quirks);
++	hid_dbg(dev, "device %x:%x:%x %d quirks %d report_id %d\n",
++		dev->bus, dev->vendor, dev->product, dev->version, quirks,
++		field->report->id);
+ 
  	if (quirks & HID_BATTERY_QUIRK_IGNORE)
  		return 0;
+@@ -538,9 +552,11 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 		goto err_free_bat;
+ 	}
  
--	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
--	if (!psy_desc)
-+	bat = devm_kzalloc(&dev->dev, sizeof(*bat), GFP_KERNEL);
-+	if (!bat)
- 		return -ENOMEM;
- 
-+	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
-+	if (!psy_desc) {
-+		error = -ENOMEM;
-+		goto err_free_bat;
-+	}
-+
- 	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL, "hid-%s-battery",
+-	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL, "hid-%s-battery",
++	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL,
++					"hid-%s-battery-%d",
  					strlen(dev->uniq) ?
- 						dev->uniq : dev_name(&dev->dev));
+-						dev->uniq : dev_name(&dev->dev));
++						dev->uniq : dev_name(&dev->dev),
++					field->report->id);
  	if (!psy_desc->name) {
  		error = -ENOMEM;
--		goto err_free_mem;
-+		goto err_free_desc;
+ 		goto err_free_desc;
+@@ -593,7 +609,7 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
  	}
  
- 	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
-@@ -555,51 +563,57 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
- 	if (quirks & HID_BATTERY_QUIRK_FEATURE)
- 		report_type = HID_FEATURE_REPORT;
- 
--	dev->battery_min = min;
--	dev->battery_max = max;
--	dev->battery_report_type = report_type;
--	dev->battery_report_id = field->report->id;
--	dev->battery_charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	bat->dev = dev;
-+	bat->min = min;
-+	bat->max = max;
-+	bat->report_type = report_type;
-+	bat->report_id = field->report->id;
-+	bat->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	bat->status = HID_BATTERY_UNKNOWN;
- 
- 	/*
- 	 * Stylus is normally not connected to the device and thus we
- 	 * can't query the device and get meaningful battery strength.
- 	 * We have to wait for the device to report it on its own.
- 	 */
--	dev->battery_avoid_query = report_type == HID_INPUT_REPORT &&
--				   field->physical == HID_DG_STYLUS;
-+	bat->avoid_query = report_type == HID_INPUT_REPORT &&
-+			   field->physical == HID_DG_STYLUS;
- 
- 	if (quirks & HID_BATTERY_QUIRK_AVOID_QUERY)
--		dev->battery_avoid_query = true;
-+		bat->avoid_query = true;
- 
--	dev->battery_present = (quirks & HID_BATTERY_QUIRK_DYNAMIC) ? false : true;
-+	bat->present = (quirks & HID_BATTERY_QUIRK_DYNAMIC) ? false : true;
- 
--	dev->battery = devm_power_supply_register(&dev->dev, psy_desc, &psy_cfg);
--	if (IS_ERR(dev->battery)) {
--		error = PTR_ERR(dev->battery);
-+	psy_cfg.drv_data = bat;
-+	bat->ps = devm_power_supply_register(&dev->dev, psy_desc, &psy_cfg);
-+	if (IS_ERR(bat->ps)) {
-+		error = PTR_ERR(bat->ps);
- 		hid_warn(dev, "can't register power supply: %d\n", error);
- 		goto err_free_name;
- 	}
- 
--	power_supply_powers(dev->battery, &dev->dev);
-+	power_supply_powers(bat->ps, &dev->dev);
-+	dev->battery = bat;
+ 	power_supply_powers(bat->ps, &dev->dev);
+-	dev->battery = bat;
++	list_add_tail(&bat->list, &dev->batteries);
  	return 0;
  
  err_free_name:
- 	devm_kfree(&dev->dev, psy_desc->name);
--err_free_mem:
-+err_free_desc:
+@@ -602,7 +618,6 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
  	devm_kfree(&dev->dev, psy_desc);
-+err_free_bat:
-+	devm_kfree(&dev->dev, bat);
- 	dev->battery = NULL;
+ err_free_bat:
+ 	devm_kfree(&dev->dev, bat);
+-	dev->battery = NULL;
  	return error;
  }
  
--static bool hidinput_update_battery_charge_status(struct hid_device *dev,
-+static bool hidinput_update_battery_charge_status(struct hid_battery *bat,
- 						  unsigned int usage, int value)
- {
- 	switch (usage) {
- 	case HID_BAT_CHARGING:
--		dev->battery_charge_status = value ?
--					     POWER_SUPPLY_STATUS_CHARGING :
--					     POWER_SUPPLY_STATUS_DISCHARGING;
-+		bat->charge_status = value ?
-+				     POWER_SUPPLY_STATUS_CHARGING :
-+				     POWER_SUPPLY_STATUS_DISCHARGING;
- 		return true;
- 	}
+@@ -620,12 +635,13 @@ static bool hidinput_update_battery_charge_status(struct hid_battery *bat,
+ 	return false;
+ }
  
-@@ -609,34 +623,35 @@ static bool hidinput_update_battery_charge_status(struct hid_device *dev,
- static void hidinput_update_battery(struct hid_device *dev, unsigned int usage,
- 				    int value)
+-static void hidinput_update_battery(struct hid_device *dev, unsigned int usage,
+-				    int value)
++static void hidinput_update_battery(struct hid_device *dev, int report_id,
++				    unsigned int usage, int value)
  {
-+	struct hid_battery *bat = dev->battery;
+-	struct hid_battery *bat = dev->battery;
++	struct hid_battery *bat;
  	int capacity;
  
--	if (!dev->battery)
-+	if (!bat)
++	bat = hidinput_find_battery(dev, report_id);
+ 	if (!bat)
  		return;
  
--	if (hidinput_update_battery_charge_status(dev, usage, value)) {
--		dev->battery_present = true;
--		power_supply_changed(dev->battery);
-+	if (hidinput_update_battery_charge_status(bat, usage, value)) {
-+		bat->present = true;
-+		power_supply_changed(bat->ps);
- 		return;
- 	}
- 
- 	if ((usage & HID_USAGE_PAGE) == HID_UP_DIGITIZER && value == 0)
- 		return;
- 
--	if (value < dev->battery_min || value > dev->battery_max)
-+	if (value < bat->min || value > bat->max)
- 		return;
- 
--	capacity = hidinput_scale_battery_capacity(dev, value);
-+	capacity = hidinput_scale_battery_capacity(bat, value);
- 
--	if (dev->battery_status != HID_BATTERY_REPORTED ||
--	    capacity != dev->battery_capacity ||
--	    ktime_after(ktime_get_coarse(), dev->battery_ratelimit_time)) {
--		dev->battery_present = true;
--		dev->battery_capacity = capacity;
--		dev->battery_status = HID_BATTERY_REPORTED;
--		dev->battery_ratelimit_time =
-+	if (bat->status != HID_BATTERY_REPORTED ||
-+	    capacity != bat->capacity ||
-+	    ktime_after(ktime_get_coarse(), bat->ratelimit_time)) {
-+		bat->present = true;
-+		bat->capacity = capacity;
-+		bat->status = HID_BATTERY_REPORTED;
-+		bat->ratelimit_time =
- 			ktime_add_ms(ktime_get_coarse(), 30 * 1000);
--		power_supply_changed(dev->battery);
-+		power_supply_changed(bat->ps);
- 	}
+@@ -661,8 +677,8 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	return 0;
  }
- #else  /* !CONFIG_HID_BATTERY_STRENGTH */
-diff --git a/drivers/hid/hid-magicmouse.c b/drivers/hid/hid-magicmouse.c
-index 9eadf3252..e70bd3dc0 100644
---- a/drivers/hid/hid-magicmouse.c
-+++ b/drivers/hid/hid-magicmouse.c
-@@ -817,19 +817,21 @@ static int magicmouse_fetch_battery(struct hid_device *hdev)
- #ifdef CONFIG_HID_BATTERY_STRENGTH
- 	struct hid_report_enum *report_enum;
- 	struct hid_report *report;
-+	struct hid_battery *bat;
  
--	if (!hdev->battery ||
-+	bat = hid_get_battery(hdev);
-+	if (!bat ||
- 	    (!is_usb_magicmouse2(hdev->vendor, hdev->product) &&
- 	     !is_usb_magictrackpad2(hdev->vendor, hdev->product)))
- 		return -1;
+-static void hidinput_update_battery(struct hid_device *dev, unsigned int usage,
+-				    int value)
++static void hidinput_update_battery(struct hid_device *dev, int report_id,
++				    unsigned int usage, int value)
+ {
+ }
+ #endif	/* CONFIG_HID_BATTERY_STRENGTH */
+@@ -1546,7 +1562,7 @@ void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct
+ 		return;
  
--	report_enum = &hdev->report_enum[hdev->battery_report_type];
--	report = report_enum->report_id_hash[hdev->battery_report_id];
-+	report_enum = &hdev->report_enum[bat->report_type];
-+	report = report_enum->report_id_hash[bat->report_id];
+ 	if (usage->type == EV_PWR) {
+-		hidinput_update_battery(hid, usage->hid, value);
++		hidinput_update_battery(hid, report->id, usage->hid, value);
+ 		return;
+ 	}
  
- 	if (!report || report->maxfield < 1)
- 		return -1;
- 
--	if (hdev->battery_capacity == hdev->battery_max)
-+	if (bat->capacity == bat->max)
- 		return -1;
- 
- 	hid_hw_request(hdev, report, HID_REQ_GET_REPORT);
 diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 44357295b..71beff003 100644
+index 71beff003..442a80d79 100644
 --- a/include/linux/hid.h
 +++ b/include/linux/hid.h
-@@ -634,6 +634,36 @@ enum hid_battery_status {
- 	HID_BATTERY_REPORTED,		/* Device sent unsolicited battery strength report */
+@@ -648,6 +648,7 @@ enum hid_battery_status {
+  * @avoid_query: if true, avoid querying battery (e.g., for stylus)
+  * @present: if true, battery is present (may be dynamic)
+  * @ratelimit_time: rate limiting for battery reports
++ * @list: list node for linking into hid_device's battery list
+  */
+ struct hid_battery {
+ 	struct hid_device *dev;
+@@ -662,6 +663,7 @@ struct hid_battery {
+ 	bool avoid_query;
+ 	bool present;
+ 	ktime_t ratelimit_time;
++	struct list_head list;
  };
  
-+/**
-+ * struct hid_battery - represents a single battery power supply
-+ * @dev: pointer to the parent hid_device
-+ * @ps: the power supply instance
-+ * @min: minimum battery value from HID descriptor
-+ * @max: maximum battery value from HID descriptor
-+ * @report_type: HID report type (input/feature)
-+ * @report_id: HID report ID for this battery
-+ * @charge_status: current charging status
-+ * @status: battery reporting status
-+ * @capacity: current battery capacity (0-100)
-+ * @avoid_query: if true, avoid querying battery (e.g., for stylus)
-+ * @present: if true, battery is present (may be dynamic)
-+ * @ratelimit_time: rate limiting for battery reports
-+ */
-+struct hid_battery {
-+	struct hid_device *dev;
-+	struct power_supply *ps;
-+	__s32 min;
-+	__s32 max;
-+	__s32 report_type;
-+	__s32 report_id;
-+	__s32 charge_status;
-+	enum hid_battery_status status;
-+	__s32 capacity;
-+	bool avoid_query;
-+	bool present;
-+	ktime_t ratelimit_time;
-+};
-+
  struct hid_driver;
- struct hid_ll_driver;
- 
-@@ -670,20 +700,9 @@ struct hid_device {
+@@ -700,9 +702,10 @@ struct hid_device {
  #ifdef CONFIG_HID_BATTERY_STRENGTH
  	/*
  	 * Power supply information for HID devices which report
--	 * battery strength. power_supply was successfully registered if
--	 * battery is non-NULL.
-+	 * battery strength. battery is non-NULL if successfully registered.
+-	 * battery strength. battery is non-NULL if successfully registered.
++	 * battery strength. Each battery is tracked separately in the
++	 * batteries list.
  	 */
--	struct power_supply *battery;
--	__s32 battery_capacity;
--	__s32 battery_min;
--	__s32 battery_max;
--	__s32 battery_report_type;
--	__s32 battery_report_id;
--	__s32 battery_charge_status;
--	enum hid_battery_status battery_status;
--	bool battery_avoid_query;
--	bool battery_present;
--	ktime_t battery_ratelimit_time;
-+	struct hid_battery *battery;
+-	struct hid_battery *battery;
++	struct list_head batteries;
  #endif
  
  	unsigned long status;						/* see STAT flags above */
-@@ -745,6 +764,13 @@ static inline void hid_set_drvdata(struct hid_device *hdev, void *data)
- 	dev_set_drvdata(&hdev->dev, data);
+@@ -767,7 +770,9 @@ static inline void hid_set_drvdata(struct hid_device *hdev, void *data)
+ #ifdef CONFIG_HID_BATTERY_STRENGTH
+ static inline struct hid_battery *hid_get_battery(struct hid_device *hdev)
+ {
+-	return hdev->battery;
++	if (list_empty(&hdev->batteries))
++		return NULL;
++	return list_first_entry(&hdev->batteries, struct hid_battery, list);
  }
- 
-+#ifdef CONFIG_HID_BATTERY_STRENGTH
-+static inline struct hid_battery *hid_get_battery(struct hid_device *hdev)
-+{
-+	return hdev->battery;
-+}
-+#endif
-+
- #define HID_GLOBAL_STACK_SIZE 4
- #define HID_COLLECTION_STACK_SIZE 4
+ #endif
  
 -- 
 2.53.0
