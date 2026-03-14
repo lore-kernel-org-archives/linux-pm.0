@@ -1,207 +1,169 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0476C1A3166
-	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 11:30:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 192DF24886A
+	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 11:42:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.65
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773487855; cv=none; b=Qx07O0Ga/tQZ32aPI3V6Oz0ggt2IeckJ3C7wddQSC8D/kgSly6glLZtszcxkOSwPhwmqDYe/i3bOrWSnVKOgCyZ1uBgS6RSJ3tERyZ/wayTbIjIs2ZMGG5/OrqIc/SoqXu6JupfKTHemHcX4OLgrO/mOkfFmVS1sxzteOJj+gxE=
+	t=1773488526; cv=none; b=q8zuMuRHwV6rq1d8ISCgx3jENZQnHiU4JupX0iYY5t5MHB8KPZbp/v50cPMFACjr2rT+EPbOvOWeJHqOV6fDYy9pNm+nioPrlx/WxChVDqdO+SOVcjT/XFzh1Ev1LdBZza5l5i+dXzQUvTcrhlfa1dqVHLg70zq6phSYUWDJZog=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773487855; c=relaxed/simple;
-	bh=cmhwEiJ7YclHpAQAto7hTWj5xi+lG3Tt+kXKOmtwZHc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hth2RcUkNLtEww7wU8elQR3KIOPzkMIzo1/f4d03G1pFs1KeKSnTPCcBufgN7Eb13WLYSyKp9x1DHA9d3ZnLULdkcsSt8z0llsZwZF5NPtruC9ktqRlkHSZbDhOUoLqqX86e99ohtMhVMZF4f7CZ2x26Nu5oZTTLjXg5YPliAZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Im6iR6oS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773488526; c=relaxed/simple;
+	bh=4km8dCKXBGzirqg1GhM7rfpMT9QUazVAipZnrBjHiBQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=PguDfS9tpakvryqYkiyjO0DTD2wXt2eKuhra0LXeg/gC5nqQBAvu1ZP5tsUQxTUWL12F3Kli5QCGQHwFqwOVRZR0B4VQaMl89hycVCYnhQZadCJMVDt8c7764ol5rEdZi8BFpjVfRalVQkT8M3SwhkgEJbiZCkcLuuhxrhokTp4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=eVny/CGI; arc=none smtp.client-ip=185.67.36.65
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Im6iR6oS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7AF9C19425
-	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 11:30:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773487854;
-	bh=cmhwEiJ7YclHpAQAto7hTWj5xi+lG3Tt+kXKOmtwZHc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Im6iR6oSzttUtwHezUzZL0FSqsuknkIEZ14LBNbG3sCpSs9YeMfvSQUILq/9BZW4x
-	 eBCefbBJvr67rm7KfuryjoLPg/+7xe/JclOgXq45ZakmkeMcj3NMsJh1juSzL6xPsj
-	 7VNSXiIo0fDwIqTlb61oO4IrcgBCB0A4Tbkb/MXFlk4VmNZwzA7pNZ4coPtFaiYN5u
-	 omUwh3p4JtuQidg67v7U9kGr06JzmQFyEO66+MR9hT3IO/NHcmG/KZDXzxQA4ntVG4
-	 8WlvY542iW2bZBUPWrhFSEFhHfv3bQjK2YhIOj/YXzSw2egmes3Jy9v/nDKXz5D7So
-	 oGXzfIrcdNF6g==
-Received: by mail-ot1-f54.google.com with SMTP id 46e09a7af769-7d556c1a79eso3413724a34.3
-        for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 04:30:54 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVVwBHeeUsYkggpuEU5ufegSYwjROLM7MBthjo5yvUwsKuVSZ+0WlFkUN2cY24Y9OCcM9jgortnwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxa6QqCSscNLAPml+bSdzI3J1VO6M9ojvOoG45naSjn18rIv6m1
-	tY1Af/1OYpk5NOYWi6kYaodpFcEKCBLtdt8QUz62otKv4AzvCZDECUXTQ9MJXWmB2jAhy6nV8te
-	tbD0HboHC/EtlbweynyYgZ/3RFDaoRwM=
-X-Received: by 2002:a05:6820:4912:b0:67b:b1e0:501a with SMTP id
- 006d021491bc7-67bda9bf9bbmr3361106eaf.17.1773487853768; Sat, 14 Mar 2026
- 04:30:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="eVny/CGI"
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout01.posteo.de (Postfix) with ESMTPS id 5CB56240027
+	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 12:42:03 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
+	t=1773488523; bh=wuP7aGFXaCoi0Qj9e0TOENROxQfNcb8qbW4/sLW+2MA=;
+	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
+	 MIME-Version:OpenPGP:From;
+	b=eVny/CGIImF8jH8O0FIZKcN4zAb274dFEU7yPs677sQjMepqSt/RUW83YjX+qB7Qr
+	 H5/XMYTx9dp1t51PclxmWw1tn/Tr3yV1pJX/AJC4G32q5/iqEthVYjiIvB3SfEzlhG
+	 6Fl4NNkKQqC6w8NEpVTB/N+x7TNODppf+nzOreinRB+JvxSLIxxYbVjsUhq5+jIdeV
+	 ADYAPMYTRKaPT9fXDbIntJXEUTsStWos57nrbS+VayXpXM+sdJjuZ+cnL8lvlKPYl9
+	 FLhxEx3aH5ty0NZ3c6nNLtplG1VRKHQzKwzzPYPgnwKJONXgYX8LxhsaEaarRHCcxE
+	 wbQOvj4X8CBFg==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4fXzwR5X5Nz6tvm;
+	Sat, 14 Mar 2026 12:41:59 +0100 (CET)
+Message-ID: <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
+Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
+From: Markus Probst <markus.probst@posteo.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>, Miguel
+ Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
+ =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron	 <bjorn3_gh@protonmail.com>, Benno
+ Lossin <lossin@kernel.org>, Andreas Hindborg	 <a.hindborg@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross	 <tmgross@umich.edu>,
+ Danilo Krummrich <dakr@kernel.org>, Kari Argillander	
+ <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>,
+ David Airlie <airlied@gmail.com>,  Simona Vetter <simona@ffwll.ch>,
+ linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
+	driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
+Date: Sat, 14 Mar 2026 11:42:02 +0000
+In-Reply-To: <2026031402-absence-graph-af5d@gregkh>
+References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
+	 <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
+	 <2026031402-absence-graph-af5d@gregkh>
+Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
+ keydata=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
+ jfGillcaQOqFZ3WwVqyzG1BUfTow==
+Content-Type: multipart/signed; micalg="pgp-sha256";
+	protocol="application/pgp-signature"; boundary="=-I1iRCfX0MpbeR/VGtPiF"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <4741364.LvFx2qVVIh@rafael.j.wysocki> <c1f6d920-6bd9-4131-af08-da1be1206812@arm.com>
- <CAJZ5v0hnamFh6YUriWLgdWip6mRer69pNcL3ueBt5Aux6fzsgg@mail.gmail.com>
- <ae9d5cba-f525-48bb-bac4-cbd50db1dbac@arm.com> <CAJZ5v0grtJVtj7oGDRJ=gyWVs6VnGcydOURJ5aDfE6qVn8nkXg@mail.gmail.com>
- <a102eb05-9051-43bb-9f25-accf71498f6a@arm.com>
-In-Reply-To: <a102eb05-9051-43bb-9f25-accf71498f6a@arm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Sat, 14 Mar 2026 12:30:42 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hifVc=bLnLwDbm7DHQKMOgKd0X0O-1CGS5_BYzzG3p6w@mail.gmail.com>
-X-Gm-Features: AaiRm51yscCWCUu2xFCOJ0f8tOdPd1c7AoFaM5pq_5tNw0U1oyxPAQ_s2NwGWAw
-Message-ID: <CAJZ5v0hifVc=bLnLwDbm7DHQKMOgKd0X0O-1CGS5_BYzzG3p6w@mail.gmail.com>
-Subject: Re: [PATCH v1] sched: idle: Consolidate the handling of two special cases
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
-	Peter Zijlstra <peterz@infradead.org>, Qais Yousef <qyousef@layalina.io>, 
-	Frederic Weisbecker <frederic@kernel.org>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+
+
+--=-I1iRCfX0MpbeR/VGtPiF
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 13, 2026 at 4:45=E2=80=AFPM Christian Loehle
-<christian.loehle@arm.com> wrote:
->
-> On 3/13/26 15:28, Rafael J. Wysocki wrote:
-> > On Fri, Mar 13, 2026 at 3:04=E2=80=AFPM Christian Loehle
-> > <christian.loehle@arm.com> wrote:
-> >>
-> >> On 3/13/26 13:07, Rafael J. Wysocki wrote:
-> >>> On Fri, Mar 13, 2026 at 1:53=E2=80=AFPM Christian Loehle
-> >>> <christian.loehle@arm.com> wrote:
-> >>>>
-> >>>> On 3/13/26 12:25, Rafael J. Wysocki wrote:
-> >>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>>>
-> >>>>> There are two special cases in the idle loop that are handled
-> >>>>> inconsistently even though they are analogous.
-> >>>>>
-> >>>>> The first one is when a cpuidle driver is absent and the default CP=
-U
-> >>>>> idle time power management implemented by the architecture code is =
-used.
-> >>>>> In that case, the scheduler tick is stopped every time before invok=
-ing
-> >>>>> default_idle_call().
-> >>>>>
-> >>>>> The second one is when a cpuidle driver is present, but there is on=
-ly
-> >>>>> one idle state in its table.  In that case, the scheduler tick is n=
-ever
-> >>>>> stopped.
-> >>>>>
-> >>>>> Since each of these approaches leads to suboptimal choices in some
-> >>>>> cases, reconcile them with the help of one simple heuristic.  Namel=
-y,
-> >>>>> stop the tick if the CPU has been woken up by it in the previous
-> >>>>> iteration of the idle loop, or let it tick otherwise.>
-> >>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>>> ---
-> >>>>>
-> >>>>> Based on today's mainline.
-> >>>>>
-> >>>>> ---
-> >>>>>  kernel/sched/idle.c |   30 +++++++++++++++++++++---------
-> >>>>>  1 file changed, 21 insertions(+), 9 deletions(-)
-> >>>>>
-> >>>>> --- a/kernel/sched/idle.c
-> >>>>> +++ b/kernel/sched/idle.c
-> >>>>> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
-> >>>>>       return cpuidle_enter(drv, dev, next_state);
-> >>>>>  }
-> >>>>>
-> >>>>> +static void idle_call_stop_or_retain_tick(bool stop_tick)
-> >>>>> +{
-> >>>>> +     if (stop_tick || tick_nohz_tick_stopped())
-> >>>>> +             tick_nohz_idle_stop_tick();
-> >>>>> +     else
-> >>>>> +             tick_nohz_idle_retain_tick();
-> >>>>> +}
-> >>>>> +
-> >>>>>  /**
-> >>>>>   * cpuidle_idle_call - the main idle function
-> >>>>>   *
-> >>>>> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
-> >>>>>   * set, and it returns with polling set.  If it ever stops polling=
-, it
-> >>>>>   * must clear the polling bit.
-> >>>>>   */
-> >>>>> -static void cpuidle_idle_call(void)
-> >>>>> +static void cpuidle_idle_call(bool stop_tick)
-> >>>>>  {
-> >>>>>       struct cpuidle_device *dev =3D cpuidle_get_device();
-> >>>>>       struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
-> >>>>> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
-> >>>>>       }
-> >>>>>
-> >>>>>       if (cpuidle_not_available(drv, dev)) {
-> >>>>> -             tick_nohz_idle_stop_tick();
-> >>>>> +             idle_call_stop_or_retain_tick(stop_tick);
-> >>>>>
-> >>>>>               default_idle_call();
-> >>>>>               goto exit_idle;
-> >>>>> @@ -222,17 +230,19 @@ static void cpuidle_idle_call(void)
-> >>>>>               next_state =3D cpuidle_find_deepest_state(drv, dev, m=
-ax_latency_ns);
-> >>>>>               call_cpuidle(drv, dev, next_state);
-> >>>>>       } else if (drv->state_count > 1) {
-> >>>>> -             bool stop_tick =3D true;
-> >>>>> +             /*
-> >>>>> +              * stop_tick is expected to be true by default by cpu=
-idle
-> >>>>> +              * governors, which allows them to select idle states=
- with
-> >>>>> +              * target residency above the tick period length.
-> >>>>> +              */
-> >>>>> +             stop_tick =3D true;
-> >>>>>
-> >>>>>               /*
-> >>>>>                * Ask the cpuidle framework to choose a convenient i=
-dle state.
-> >>>>>                */
-> >>>>>               next_state =3D cpuidle_select(drv, dev, &stop_tick);
-> >>>>>
-> >>>>> -             if (stop_tick || tick_nohz_tick_stopped())
-> >>>>> -                     tick_nohz_idle_stop_tick();
-> >>>>> -             else
-> >>>>> -                     tick_nohz_idle_retain_tick();
-> >>>>> +             idle_call_stop_or_retain_tick(stop_tick);
-> >>>>>
-> >>>>>               entered_state =3D call_cpuidle(drv, dev, next_state);
-> >>>>>               /*
-> >>>>> @@ -240,7 +250,7 @@ static void cpuidle_idle_call(void)
-> >>>>>                */
-> >>>>>               cpuidle_reflect(dev, entered_state);
-> >>>>>       } else {
-> >>>>> -             tick_nohz_idle_retain_tick();
-> >>>>> +             idle_call_stop_or_retain_tick(stop_tick);
-> >>>>
-> >>>> This would supersede e5c9ffc6ae1b ("cpuidle: Skip governor when only=
- one idle state is available")
-> >>>> so we should remove that code too.
-> >>>
-> >>> Which code?  Do you mean the one that has been removed by
-> >>>
-> >>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/co=
-mmit/?id=3Dd557640e4ce589a24dca5ca7ce3b9680f471325f
-> >>>
-> >> Ah of course, sorry!
-> >
-> > No worries.
-> >
-> >> Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-> >
-> > So should I regard this as a fix for 7.0?
-> >
-> > I guess so because I don't think it would be useful to ship 7.0
-> > without it only to change the behavior immediately in 7.1.  And I
-> > think that it can be treated as a fix for e5c9ffc6ae1b (above).
->
-> Yes I think it being a fix for e5c9ffc6ae1b should be fine (fingers cross=
-ed).
+On Sat, 2026-03-14 at 09:07 +0100, Greg Kroah-Hartman wrote:
+> On Fri, Mar 13, 2026 at 06:12:31PM +0000, Markus Probst wrote:
+> > Add rust private data to `struct serdev_device`, as it is required by t=
+he
+> > rust abstraction added in the following commit
+> > (rust: add basic serial device bus abstractions).
+>=20
+> why is rust "special" here?  What's wrong with the existing private
+> pointer in this structure?  Why must we add another one?
+Because in rust, the device drvdata will be set after probe has run. In
+serdev, once the device has been opened, it can receive data. It must
+be opened either inside probe or before probe, because it can only be
+configured (baudrate, flow control etc.) and data written to after it
+has been opened. Because it can receive data before drvdata has been
+set yet, we need to ensure it waits on data receival for the probe to
+be finished. Otherwise this would be a null pointer dereference. To do
+this, we need to store a `Completion` for it to wait and a `bool` in
+case the probe exits with an error. We cannot store this data in the
+device drvdata, because this is where the drivers drvdata goes. We also
+cannot create a wrapper of the drivers drvdata, because
+`Device::drvdata::<T>()` would always fail in that case. That is why we
+need a "rust_private_data" for this abstraction to store the
+`Completion` and `bool`.
 
-OK
+Thanks
+- Markus Probst
 
-So I'm going to queue it up for the next -rc.  If anyone has
-objections, please let me know.
+>=20
+> thanks,
+>=20
+> greg k-h
+
+--=-I1iRCfX0MpbeR/VGtPiF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmm1SXgbFIAAAAAABAAO
+bWFudTIsMi41KzEuMTEsMiwyAAoJEDR2H/jnrUPS9jAP/3JGU2gk+hFkYnBUk8UU
+iP1lJJDruz2fV0dXxGHCh3svfkHvcKFTtozb6FSQ7hZ9wNU8tsxTfnqMhycvmf6S
+J3NpCtL/ifnjtIWpy6qq0xk89BLrEU0EglsQ5tLN+BAY0Nkxsa1e7bvw461ZFEPF
+xzVwh8hAucFdEZuVt7O6ouZ0CIryYmM6MK2BSnjA5yo+vMlS560JtDh2rQFuilrd
+zzbOBhpbxlIxRGVHg5WdiTT07kgm6zr+uHehF4GQmyYH6Z7KvNOHRRFA8FUYUes0
+cRZjsxmeMzE/7EU4lshWDN6AYprhE8CHDNxEJd05aFMATuWpOKB82SCyC1qKQdE+
+EGdLS2lcUUl5yRXXRFl6+VjfrvaZo7IrwhE8i1Akbp2kXqZbn5R2kADaQ1RIDt/Z
+AvDz9Af8HhqJF3wwUrtlameo6UyKl/AOAWK6QQzjTyk9/8LXmA1lfHiSZr7waTxf
+6zE39ALkP5vaBNjDbljj01OkoPR9NNjbaZZ3O2WKy9656HWDVofGnISWq9L++lXO
+FtGVAQGxPETFtqjA81aFVchaYtskooLtA2VuAnnuoEJok6hqYTUCgSdijOi/rEJW
+k6THWQDqZ9kM5F/oxvn1a3h2jAosCbISp/lXkKGlUiOcGrlc0D3UjVC641JaOHYD
+9U2DU5EH/6+xscOpnN2O1gvc
+=2BtH
+-----END PGP SIGNATURE-----
+
+--=-I1iRCfX0MpbeR/VGtPiF--
