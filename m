@@ -1,80 +1,63 @@
-Received: from mail-wr1-f74.google.com (mail-wr1-f74.google.com [209.85.221.74])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C943B378813
-	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 13:24:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.74
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E78682517A5;
+	Sat, 14 Mar 2026 13:31:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773494683; cv=none; b=AJ2LEwm/Kbqwos24y6Y1FZ4EARWWtpLLHxVwcefyyVsi6nLHLN7/73YWeYYYHXlimECz4p7+yICq0dajy/h3dLROL4zQnoymfYRwZxZ9OnQN95h0XvWUjtRLzQt0WPbQhfmCmderp25let9jUFR5n3N6DZCa2Kckw7b568WLcPY=
+	t=1773495104; cv=none; b=kL8UGPr/XY+R820PFk6tAJ7F/8R/ikytvU6mzn9L4MCqJ+iuVo6GgMm2JBFyL7c+KV2ZqeWIHdCUwhz1eBW0+Ek4usao9ib2yVNdRfNoBa/T5YUe3ryWBifOdozak2ro8kSXOPqqNhOCrpy5ijmc1rvXWxdkpLVJ4D6Y8Uzvoio=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773494683; c=relaxed/simple;
-	bh=pDh0iEx46jMmrLE1oovTz9VyKt8aN4TLMUcZAAJgaaU=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=ltV5OpkRaWDyBURCKlChj5z05M7nPvgV4jeHQiGPB4vDJVGNcPYncOJd46LGdXcg6bGV5e6hDAAFIMdiMOYz7dHT1irijKSThF4aV6SqXGtZhjhWy5RY5fD4U4U/XCL/mK3d5n5g0TDSK3XBokbGKuwwOUUQ5v3MnoqVjs3Dp7Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=L/LnnH27; arc=none smtp.client-ip=209.85.221.74
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
+	s=arc-20240116; t=1773495104; c=relaxed/simple;
+	bh=33fhq7j5vg+tmMCu8Sapd06qjx9fDJbLUGUc3OjM+E4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rZRxGTmuyUQb86Pbk2Z2/59nHIzcb6nkuricDK9ewLafJMOBgJl+z+N3BE72eSBPzWv5Lz4mxBDw+5ifndHZd4MGhPgjWjQWoC2Zm9mT4UykYcGd6DUxOF7O7A1+7AnHq56ZjUBjeQGmPPVRFH5NhK1puTdcgjFeKWw3y/vvEYw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=dv9u0Zpw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="L/LnnH27"
-Received: by mail-wr1-f74.google.com with SMTP id ffacd0b85a97d-439c54e0f6aso2559143f8f.0
-        for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 06:24:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1773494679; x=1774099479; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=HELqxrOQ/OwUFnReaSfuYgQk+nnNmP4iYE5u5YV1ltw=;
-        b=L/LnnH27pMxgKSit445WYEXzEa4v/cRUXoQQsgvvz0QEavNgSpJoURxVMUnpERnglt
-         ga8Y9NYU5ew7ryGIo3+My9ilTVOFg43zYpsRQk5gDJWTTA7h5ZNF3CBtT7ihLxA1rGvq
-         ZWBeILYuRjH0ts1rIn66O2umNZVdsGylCpXzq/7HqxPGCQWBuRg0tdXJsCM7qr92WYy4
-         8MQpUcFk6OIMpak7LUHU39/we4GjYFHwK1G/01C2eHbej1jFb94w44JR35eyombDsPdF
-         TwPQIsVue15Qlx7bzulEIrmI4VYhakGWlQCNsktX5oKmbMJchwS9Yc2Cgd1HNNh79X4s
-         hkrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773494679; x=1774099479;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=HELqxrOQ/OwUFnReaSfuYgQk+nnNmP4iYE5u5YV1ltw=;
-        b=Vp0Ptv1nUaURttBDFfUH+0VWesPLhKufNWeMc+ib0IB4OKvBxQDITCmdTF8Kaotf2U
-         VTZeOwMN773qnscMg2Uet7N+FprFKmbNcA33ttLBDH1XBawnaX7iDdGwgBiV/FZ+3pdE
-         WvcB0snOc2jTCNNXXpbldXl5B/XEhMVvNlXIhvhra5Bjjo2+oUCprnZumbYqzW4AbeQ2
-         rSG+FUNQQlteU1qwyqffkC8rV7agBus8Mw47Cmlkawxj2PBHCqXBFMlJBQdy+poLRc75
-         DX3NREfCFhkrJFh9QgDkbE78+XV4Rw72ey5QTKCAuH0HV5SASAEcSi1Bz8JOW2FjBjIB
-         uYhQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVOAPWW1T0i42oc4jIXGkxESAVJT8vhAz6OCrbakde86H0oeW+WiBLKrIkczpNigE6ZFYcW2R4z4A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyiYanUzK397ynAl78BNOOj5xh4k8STSx763gzFbWpXqwELbJ3h
-	TmM1w4T3enVcXTfIvnTwEcTWxwuuEA64dc2CMHB4Xfen+8yk2C4YxJgyd+c6s2QiAeTgRvKdIC8
-	Gla9B77Ruuw4zq78KAg==
-X-Received: from wrxk10.prod.google.com ([2002:a05:6000:4a:b0:439:d5c0:336d])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a5d:64a2:0:b0:43a:4e0:1774 with SMTP id ffacd0b85a97d-43a04e01813mr8786099f8f.16.1773494678748;
- Sat, 14 Mar 2026 06:24:38 -0700 (PDT)
-Date: Sat, 14 Mar 2026 13:24:37 +0000
-In-Reply-To: <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="dv9u0Zpw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3F5EC116C6;
+	Sat, 14 Mar 2026 13:31:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1773495103;
+	bh=33fhq7j5vg+tmMCu8Sapd06qjx9fDJbLUGUc3OjM+E4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=dv9u0ZpwOCbxh1VMl/0LobIPwxuijRelA04TesVduk5vbbp+kGnqw9UNedhXkOOPt
+	 TgOyvngKw842sT462V0uXDzZPJyziLSVipaw4mLC3ezBVhYFy0S4I/UtVix2RzkKKh
+	 ROKzexdoLNYAubV50MkEEGhFHovLrU33mKuM81sc=
+Date: Sat, 14 Mar 2026 14:31:38 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Markus Probst <markus.probst@posteo.de>
+Cc: Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>,
+	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
+	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Kari Argillander <kari.argillander@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>, linux-serial@vger.kernel.org,
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+	dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
+Message-ID: <2026031447-margarita-untamed-e976@gregkh>
+References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
+ <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
+ <2026031402-absence-graph-af5d@gregkh>
+ <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
+ <2026031422-shaded-matchbook-5078@gregkh>
+ <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
- <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de> <2026031402-absence-graph-af5d@gregkh>
- <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
- <2026031422-shaded-matchbook-5078@gregkh> <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
-Message-ID: <abVhlQ91AMViBsPu@google.com>
-Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
-From: Alice Ryhl <aliceryhl@google.com>
-To: Markus Probst <markus.probst@posteo.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	"=?utf-8?B?QmrDtnJu?= Roy Baron" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Kari Argillander <kari.argillander@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
 
 On Sat, Mar 14, 2026 at 12:08:09PM +0000, Markus Probst wrote:
 > On Sat, 2026-03-14 at 12:52 +0100, Greg Kroah-Hartman wrote:
@@ -112,6 +95,11 @@ On Sat, Mar 14, 2026 at 12:08:09PM +0000, Markus Probst wrote:
 > function pointer we provide in advance), even in the case that the
 > driver hasn't completed probe yet.
 
-Why can the function pointers be called during probe?
+But how is that any different from a USB or PCI driver doing the same
+thing?  Why is serdev so unique here?  What specific serdev function
+causes this and why isn't it an issue with the C api?  Can we change the
+C code to not require this?
 
-Alice
+thanks,
+
+greg k-h
