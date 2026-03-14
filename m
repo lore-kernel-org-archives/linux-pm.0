@@ -1,52 +1,36 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C086C1AF4D5;
-	Sat, 14 Mar 2026 11:52:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79575273F9
+	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 12:03:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773489155; cv=none; b=NMPJjy/wlC2iazgmQEKuds5MgIfsAuJEILaOlyoPkh9soQCsXfa4nuLgX9V9dJNQB+CGzDOBYXMEW8aFJK9oMnyqk87I3c68MwkCkk7/tPicXgMupInT15ImyyN3TTsmH5Pz6u+hYc1oFDSHrdQyCgVgRyGtlGRV8c7zQx43+oc=
+	t=1773489822; cv=none; b=MoYuSkbrJMe361douKAU5wYkvIvrJUHMw7GDjO13J06G8dGU7gMWrzTHH+xdpx5ZYjOBWFu0F1GW82W5P41sKBo6i2GbsITRU/F4NRhIJO/WOBcgD9NkXL5czMGBXs3oMn/WgwVJOukfM+Gq5Ph8sYJ8bsDIMAQC9i0Ij9zs2g0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773489155; c=relaxed/simple;
-	bh=YtuOZ55W8PDmlGkVLBE4be0lCpswLb+7bbBVz7Kd9Gw=;
+	s=arc-20240116; t=1773489822; c=relaxed/simple;
+	bh=j6y2ArRUFz8a1GlT5Ct9kugX1+DT5KThsUa3nR24WQo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Te6tn57jL5w2+6lW3jDDob9Y+qrWFnEu0KHHgHkNqh3dTaa7debviRvNP3VOwj2cgcv/AoL/ad958qSAy7WmlQciMaev5mq0Pzfy0QDvwGBaZRbLml1DrLMiex0u/xuVzNjs6nFD4QQlWN23ONGKZw1GHGQmyZdvpXdCQho0YPU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=s9+v0ZA6; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="s9+v0ZA6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82A56C116C6;
-	Sat, 14 Mar 2026 11:52:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1773489155;
-	bh=YtuOZ55W8PDmlGkVLBE4be0lCpswLb+7bbBVz7Kd9Gw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=s9+v0ZA6+GWWKYRvJli/W2sGWMVldNwhLNWxqAFjZ5rblzbxzv+HV5KlIdTDLjT8K
-	 3BBzTsWonv56AhpnRF5hqtt4nY58f0l4pzxhxqtBJkTNyuloB6bsl+/t6uqQNbHVRy
-	 hrlhYQ0VlW8oXaaO1rEAAiIrimDaIXCWNv0He5JI=
-Date: Sat, 14 Mar 2026 12:52:31 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Markus Probst <markus.probst@posteo.de>
-Cc: Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>,
-	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Kari Argillander <kari.argillander@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>, linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
-Message-ID: <2026031422-shaded-matchbook-5078@gregkh>
-References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
- <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
- <2026031402-absence-graph-af5d@gregkh>
- <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
+	 Content-Type:Content-Disposition:In-Reply-To; b=A/4iSFgGNea7AknQk++NzPU5awNNe7Oes2jO/kQ5UV8bRL07PRd9ABNwy33EUMCmVMsn5pbTAueqHmBdFRtFBgIaU5ccpFFcMvg0IIxwN4M/XyL1XhpgJJLef3LJgL7QqmhqKbOyyTeLDrylKmoz2qrrJ66WXGovEbWFuSCDZW0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
+	by 156.147.51.103 with ESMTP; 14 Mar 2026 20:48:28 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+Date: Sat, 14 Mar 2026 20:48:28 +0900
+From: YoungJun Park <youngjun.park@lge.com>
+To: Kairui Song <ryncsn@gmail.com>
+Cc: rafael@kernel.org, akpm@linux-foundation.org, chrisl@kernel.org,
+	kasong@tencent.com, pavel@kernel.org, shikemeng@huaweicloud.com,
+	nphamcs@gmail.com, bhe@redhat.com, baohua@kernel.org,
+	usama.arif@linux.dev, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RESEND RFC PATCH v3 1/2] mm/swap, PM: hibernate: fix swapoff
+ race in uswsusp by getting swap reference
+Message-ID: <abVLDJq/mn5tFkfe@yjaykim-PowerEdge-T330>
+References: <20260312112511.3596781-1-youngjun.park@lge.com>
+ <20260312112511.3596781-2-youngjun.park@lge.com>
+ <abQMiv6Y4WEKTLng@KASONG-MC4>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -55,42 +39,123 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
+In-Reply-To: <abQMiv6Y4WEKTLng@KASONG-MC4>
 
-On Sat, Mar 14, 2026 at 11:42:02AM +0000, Markus Probst wrote:
-> On Sat, 2026-03-14 at 09:07 +0100, Greg Kroah-Hartman wrote:
-> > On Fri, Mar 13, 2026 at 06:12:31PM +0000, Markus Probst wrote:
-> > > Add rust private data to `struct serdev_device`, as it is required by the
-> > > rust abstraction added in the following commit
-> > > (rust: add basic serial device bus abstractions).
-> > 
-> > why is rust "special" here?  What's wrong with the existing private
-> > pointer in this structure?  Why must we add another one?
-> Because in rust, the device drvdata will be set after probe has run. In
-> serdev, once the device has been opened, it can receive data. It must
-> be opened either inside probe or before probe, because it can only be
-> configured (baudrate, flow control etc.) and data written to after it
-> has been opened. Because it can receive data before drvdata has been
-> set yet, we need to ensure it waits on data receival for the probe to
-> be finished. Otherwise this would be a null pointer dereference. To do
-> this, we need to store a `Completion` for it to wait and a `bool` in
-> case the probe exits with an error. We cannot store this data in the
-> device drvdata, because this is where the drivers drvdata goes. We also
-> cannot create a wrapper of the drivers drvdata, because
-> `Device::drvdata::<T>()` would always fail in that case. That is why we
-> need a "rust_private_data" for this abstraction to store the
-> `Completion` and `bool`.
+> Hi, YoungJun
+>
+> Nice work! Thanks for improving the swap part of hibernation.
 
-So why is this any different from any other bus type?  I don't see the
-"uniqueness" here that has not required this to happen for PCI or USB or
-anything else.
+Hello Kairui :D
 
-What am I missing?
+> Some comments below:
+>
+> > diff --git a/include/linux/swap.h b/include/linux/swap.h
+> > index 7a09df6977a5..ecf19a581fc7 100644
+> > --- a/include/linux/swap.h
+> > +++ b/include/linux/swap.h
+> > @@ -433,8 +433,9 @@ static inline long get_nr_swap_pages(void)
+> >  }
+> >
+> >  extern void si_swapinfo(struct sysinfo *);
+> > -int swap_type_of(dev_t device, sector_t offset);
+> > +int swap_type_of(dev_t device, sector_t offset, bool ref);
+> >  int find_first_swap(dev_t *device);
+> > +void put_swap_device_by_type(int type);
+> >  extern unsigned int count_swap_pages(int, int);
+> >  extern sector_t swapdev_block(int, pgoff_t);
+> >  extern int __swap_count(swp_entry_t entry);
+>
+> I think the `ref` parameter here is really confusing. Maybe at
+> lease add some comment that some caller will block swapoff so
+> no ref needed.
+>
+> Or could we use a new helper to grab the device? Or better, is
+> it possible to grab the swap device then keep allocating it,
+> instead of check the device every time from hibernation side?
+>
+> The combination of swap_type_of & put_swap_device_by_type call
+> pair really doesn't look good.
 
-Also, all of this information MUST be in the changelog text in order for
-us to be able to accept it.  You need to say _why_ a change is needed,
-not just _what_ the change does, as you know.
+Initially, I considered making the function grab the reference
+by default and renaming it accordingly to better reflect its
+role in acquiring a swap device for hibernation.
 
-thanks,
+However, based on Chris Li's earlier review, this approach
+would require adding a significant amount of error-handling
+code to release the reference in the regular (non-uswsusp)
+hibernation path. After further consideration, I concluded
+that the regular hibernation path genuinely does not need the
+reference, since user-space processes are already frozen.
 
-greg k-h
+So I will either introduce a separate helper function for
+grabbing the reference or add comments to clarify the
+distinction. I will also improve the naming of the put
+function to make the pairing more intuitive.
+
+> > diff --git a/kernel/power/user.c b/kernel/power/user.c
+> > index 4401cfe26e5c..7ade4d0aa846 100644
+> > --- a/kernel/power/user.c
+> > +++ b/kernel/power/user.c
+> > @@ -235,11 +238,13 @@ static int snapshot_set_swap_area(
+> >             offset = swap_area.offset;
+> >     }
+> >
+> > +   put_swap_device_by_type(data->swap);
+> > +
+> >     /*
+> >      * User space encodes device types as two-byte values,
+> >      * so we need to recode them
+> >      */
+> > -   data->swap = swap_type_of(swdev, offset);
+> > +   data->swap = swap_type_of(swdev, offset, true);
+>
+> For example this put_swap_device_by_type followed by
+> swap_type_of looks very strange. I guess here you only want to
+> get the swap type without increasing the ref.
+
+The put here is needed because the SNAPSHOT_SET_SWAP_AREA ioctl
+can be called more than once. If the swap type changes between
+calls, we need to release the reference from the previous one.
+That said, if the type remains the same, there is no need to
+call swap_type_of again. I think this part needs some
+refinement.
+
+> > +           if (ref && get_swap_device_info(sis)) {
+> > +                   spin_unlock(&swap_lock);
+> > +                   return type;
+>
+> This part seems wrong, if ref == false, it never returns a
+> usable type value.
+
+Oops, you are right. It should be something like:
+
+	if (ref && !get_swap_device_info(sis))
+		continue;
+
+	spin_unlock(&swap_lock);
+	return type;
+
+> > +   if (type < 0 || type >= MAX_SWAPFILES)
+> > +           return;
+>
+> Maybe we better have a WARN if type is invalid? Caller should
+> never do that IMO.
+
+Agreed, will add that.
+
+> > +   sis = swap_info[type];
+>
+> We have __swap_type_to_info and swap_type_to_info since reading
+> swap_info have some RCU context implications (see comment in
+> __swap_type_to_info) and these helpers have better debug checks
+> too.
+>
+> Maybe you can just use swap_type_to_info and add a check for
+> type < 0 in swap_type_to_info, and WARN on NULL in
+> put_swap_device_by_type. How do you think?
+
+Thank you for the review. I will switch to swap_type_to_info
+and add the WARN as you suggested in the next revision.
+
+Best regards,
+Youngjun Park
