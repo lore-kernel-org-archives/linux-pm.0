@@ -1,63 +1,65 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 640B31B4244
-	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 01:05:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34B5D269CE6
+	for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2026 01:05:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773450339; cv=none; b=cjaHEu3njYM+dC8Xd9UbpUU5J/Mor9Gx+t58hOlANSIZ2ozmUnEiig5QwdZcpdSl7K0hgtBK1I7OLl+RJrxgL8Xf/92Hu6FeurcEhKiZ4gGyZQUP5ClEE00CnclyAgUOqpzc1HXbcV6TKcV/Ss2RlDZi+12K6/xhiJc/KkD3zdM=
+	t=1773450341; cv=none; b=dOpgKJlix71kKd+DB3efKHc/zMOW8I1EdrCzNo0SJolgEpm53ur6yX0dNeU4+ic1fW2AdwDC0AolA5X+Ei+jB/B9CzxgDLlz2RMR0VrPcJI/Tl3GqYvZvYT0dPK7pZP4jYa6vK+jtgH8B9c6TWxL5pcI3K0b2gNYUSC4g3BMLm8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773450339; c=relaxed/simple;
-	bh=QD8IJvX9VZieY8pcCZGgkNtS+hRqgT9Cvfmiv+Ifzpk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JAWzEs2zZSIhGbYj45OSrFFHYrlnVwPkEtW+5EnLS0XEBvOAgRD7cLZ00lGZK94HAQgDP2r1r6PVBFyDAk4ZGyAqLFZCj/cswyMdEOYMflhzny3V9TF5Bb912gfijcoUn/0KyBUfA2DZfiWbInlkTQF39aywYxfoFgUeO08Nawk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JlQ8RUXW; arc=none smtp.client-ip=209.85.128.49
+	s=arc-20240116; t=1773450341; c=relaxed/simple;
+	bh=U5owSX045Ib0ahybg1me7g+qoWpff+IWRo4y6Hv88vU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Ih+1LtbJ1rqcO122sEZO23DneRmrpc9pmm5oppD2Bn4fKMsFGxGvAIzkGm8Q4ZOuhpxLA9HWVZ/VTDcWWS4seWDXwCxpYSESUH7IRpZT1TGHIjCPfOkdrk6jNt8CXrSTm1rb2TYTlm4KK1NWreBDThxzhzF+g/9mOiOqnU6UHrM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P+TlrZy+; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JlQ8RUXW"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-485445e80bdso24222095e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 18:05:38 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P+TlrZy+"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-439d8dc4ae4so2893066f8f.2
+        for <linux-pm@vger.kernel.org>; Fri, 13 Mar 2026 18:05:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773450337; x=1774055137; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6QzqL9Iv/Ww5wZvqSt/AhzZpe019G8OQviCfvAtV7Bk=;
-        b=JlQ8RUXWJvqb+IZIm5avISRcPAjnEkppax5N3f9nOhWetdXDezQggAiptkpRDbOd0V
-         cx03xY+3cEq+ike2og0Br8YN/ylmMfWEcblCnfMZXHu1/QGRHGGCyiWzz+mmwcrG4t6+
-         1OxXiZJUKzHPtiXnxYGLsKgUGG9FEWyA1jPGwectEIl2gjlyq5hMxOauEHlkUMGbY/OX
-         dgP2VaPEboSMkhgP2FtTHB9yfCs1rG+AktGyVQNKBSe1zIiMdFJ/k94MR2wOG6wryEeE
-         qccNocTPAEF5KYnCOLFgR8+QFiUzMcYvr3FRRT7JIrsBW6Vtr3XfLS1A4rZT8P3WSGGD
-         PxJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773450337; x=1774055137;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1773450339; x=1774055139; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=6QzqL9Iv/Ww5wZvqSt/AhzZpe019G8OQviCfvAtV7Bk=;
-        b=KEc55vK3I7wWPAiA0xx3YwiSqW/TNHxRMDeolhMjIxHoRSurzgq/GoUXGogJuAuThK
-         nrvgl9b3LxcM4rjA5iZejP4a5nvQjU6Gm+zZHuUatduhmI6nJ9xwE+X+z4s8LWhE5zBO
-         KAdTMBFvZzqSKa2jHajb0lMgMumqaUqd1PtgU8n533Nt9KUn0DQWyY1LS4IwHa064AeK
-         OxcDICGtAwblq8EVC15M6As+DEeFsn58UZ6ysD9l8PdMN77BsbUqdbChtawGoH0ErKrj
-         JnfOZfgm34zvFCQEiTxH11zLqowS9HtB4dFfOC2pGvTfe5mwT01EKBCrgeV+NbCKkwsR
-         YjXw==
-X-Forwarded-Encrypted: i=1; AJvYcCX4w1zs1Dbtq/I1eItlVL+WS6nKq7gih8q9Wsd201XTkUZCEBDshlzawPVAQcUMykKN6cFLVoPoUA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyR1zaHKzl3R9esRSF7VimWSV/M8qaWKRHib70AupNlkQIx9dzI
-	9WkB/Gt7nMXJE/YHDS/m/cu68Sh4IF6dKtOkJiGCeOG3B38+dtrKYCc=
-X-Gm-Gg: ATEYQzz7bJ2XVbsPmid+tEU6CEQPOcI3ji67klfFcQcsGOGgK0mYJngBVS/ocKyr/sQ
-	kes9iIPcXdy3S8korpg4MxQtsgNg5wqzXfJbIPmJx2eNvCR3vhjCHN3y2iVIOY26BV0mTU3hjBM
-	Zn57oaxu5mGZgkj/YC/GkDqfDXd4HbPqlppL+w/UxfNt+XZI+Ch9iETZHRarpmxfBOMOrcMmple
-	m1g4TodNMSdjUV14SpQLZr2vYcjLLBDOHAkQSsMvC2Y0hOOlVJi9MAzgHluBhlo8Ktss9fSOBUg
-	VY1InxrkwdboYIbKSf9RzNQ1OMmFsAWsq5iU9El09ZeXhcvyVjvfK6K9d5Mg5yzLJU1qX9xPw2m
-	MHO5jPsCj1jDR+ZGRnB/UO6cP0Zx+Czdwc6qGDB1TGefj9YfLHrzYTCrsGYjawGQlM3VtAstSgd
-	QVTNdR3wy1CdDclUGRVxG9FXy3rq7MI7TDf3mYz306UvTlH9E+9aqhzm/SICCCmVoFuiLRfLagq
-	OVaXnK8/97+3bxCrJrY4Yl1lv8GHx04UUvMUu37uIp8jtOCjDhwSgFYWGSMnaEyM3JnOePaK+VS
-	wkK+j5aZoYAvToM=
-X-Received: by 2002:a05:600c:46d2:b0:485:3a03:ced1 with SMTP id 5b1f17b1804b1-4855672737fmr91652075e9.28.1773450336455;
-        Fri, 13 Mar 2026 18:05:36 -0700 (PDT)
+        bh=fflG4TjEG/VcWRgaf7Cfa5vhuhGA88Qlq712W7KoR88=;
+        b=P+TlrZy+GLDArdUWYw92xXv3myzp/rURD+mL+itUpk9CCqzuXf2ISlB2imV6dXtm2a
+         7Tu1/XEAc0u8q6lW7o2eG1guSRYr7CP9bRdd8nESt9UCkurRJydap2oo70gahrhUi81o
+         kziP7eSUYBwsaUHPrABFBuvRAWw2YJOvn3aUn4yNWuj6DhQ3xTFz/8J+OUK3Fftzm+iS
+         GuWp0naKpydF/rFJLnflbNmoEC3aY+0UCU5HGlrVwcbVTFNUpJF30t/FbJyS5K/jWDOW
+         lxyvo6ZkxPqWAp5znnN0N3sq2s8GBaUyC0z92ryWaBRbsqurVAt9QSe0EtTLzcxtb3zn
+         zA7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773450339; x=1774055139;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=fflG4TjEG/VcWRgaf7Cfa5vhuhGA88Qlq712W7KoR88=;
+        b=Cr9HknrDkBPzpx1t0iIOefFnkA4H+6x4Ty1GfJQmOavaqxrft01VtH7MTG/VkMeJIf
+         LzQv6MC8diLraPxOKUPdwmR9yW2S+8GuyRGRPoGvdbT/WmlLszlYa5inYs4RFRztqaOd
+         6ou8IVPDlx5g/CyTx2y870i6AACHk7eZbIUGnknrnZPgRe39hwWalEtj0X4n0mpru5Cg
+         sPdww9t4NF+g8OenNyVU4QroAO4jpW+Gs1vuoJOBdC0J504krOppHm4tTc7clcC/zXN5
+         xJnQQ8VXTdH28F7xfBVjKQ169xo6Ltva/v2oofKHwhzCL7i6OLl+mEsoY0BvgkLrUvqF
+         hVIA==
+X-Forwarded-Encrypted: i=1; AJvYcCX+QDe/erKKsDh4/JBS6E+1JDquLmhhxw1kijQq1Q7vwrtzAicQqIPvU9aPxkeRKygv3U2uFubIDg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPlQ4+XcVituwySQLBDvbBMGuZRU3yr5zYAmGDUIXnylbzgDHD
+	hYMfwktwGRT9HN4Tm3JS7YtQ/Qi2PUlrnE3lZLEa+mta3ZKECNba91M=
+X-Gm-Gg: ATEYQzwPu09q5JrIojP4G3w4tp6GlxzwDoWkeHB+OXugAOV9XARqpqMVYJ+lV4+xGk6
+	a2C4FIPT/NsTfUD9ToxA14Kwk7YuwgTUYWmvPrzlsp13DLzH8iHFK7zmfu3WmQaZtR7nTrPjzgV
+	Chsjznv6f3sVuKVtghQh1pr62QaCjhN7JzAA3koRsZGo4zXX+cVb6ICsK22UsFVcNsL9acycbbX
+	AO84pYsZzuEAEeB3sA0t7ohN+xvRtZj/CvqvxcIsWjZ14UEgszYRzJPbesJ8+PV2CDyOkDLjvTF
+	vnHzFzB5XC053Zu3GXDO7gLom373DJRVIcSpplcZpKrtd6Xi9iOa0IiN7dstRO7hRCI+hpnfWS4
+	xYahBeZOTCk/GeKrYfjrYX7siNUABKFTfYVBDP8L/LNYdIxGl4E3I7dKH+QpEWSMP/L6PVBWDtV
+	fwiAwcnlmQQ/fKjohwF8tRjS29EBWfioFc9IaSiy+k4qqRpP7xGKg5x150zlva6PxtcrETSNqnW
+	daFplW+/DUKiTgf6uV1z2K0elOFE7Q1PjKFR/YgAJfXpE7t6ldFEGXF08dyG5hKlGVswLMpJg94
+	mP1FZcd8iz0AfrA=
+X-Received: by 2002:a5d:5849:0:b0:439:ca1f:3929 with SMTP id ffacd0b85a97d-43a04dc0e02mr9324311f8f.48.1773450338480;
+        Fri, 13 Mar 2026 18:05:38 -0700 (PDT)
 Received: from sissix.lzampier.com (92.40.172.137.threembb.co.uk. [92.40.172.137])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43a03cfd18fsm13059963f8f.36.2026.03.13.18.05.35
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43a03cfd18fsm13059963f8f.36.2026.03.13.18.05.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Mar 2026 18:05:36 -0700 (PDT)
+        Fri, 13 Mar 2026 18:05:37 -0700 (PDT)
 From: Lucas Zampieri <lcasmz54@gmail.com>
 To: linux-input@vger.kernel.org
 Cc: Lucas Zampieri <lcasmz54@gmail.com>,
@@ -67,10 +69,12 @@ Cc: Lucas Zampieri <lcasmz54@gmail.com>,
 	Sebastian Reichel <sre@kernel.org>,
 	Bastien Nocera <hadess@hadess.net>,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v7 0/3] HID: Add support for multiple batteries per device
-Date: Sat, 14 Mar 2026 01:05:27 +0000
-Message-ID: <20260314010533.110278-1-lcasmz54@gmail.com>
+Subject: [PATCH v7 1/3] HID: input: Convert battery code to devm_*
+Date: Sat, 14 Mar 2026 01:05:28 +0000
+Message-ID: <20260314010533.110278-2-lcasmz54@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260314010533.110278-1-lcasmz54@gmail.com>
+References: <20260314010533.110278-1-lcasmz54@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,139 +83,101 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series adds support for HID devices with multiple batteries.
+Convert the HID battery code to use devm_* managed resource APIs for
+the power_supply_desc allocation, battery name string, and power supply
+registration.
 
-Currently, the HID battery reporting subsystem only supports one battery per
-device. There are several devices with multiple batteries that would benefit
-from this support:
-- Gaming headsets with batteries in both the headset and charging dock
-- Wireless earbuds with per-earbud batteries plus charging case
-- Split keyboards with per-side batteries
-
-## Proposed Solution
-
-This series introduces struct hid_battery to encapsulate individual battery
-state, replaces the old battery fields with a list-based approach, and adds
-support for multiple batteries tracked within struct hid_device. Batteries
-are identified by report ID and named as hid-{uniq}-battery-{id}. The
-implementation is fully backwards compatible with single-battery devices
-through a helper function. The series first converts the battery code to
-devm_* as preparatory cleanup, which simplifies the subsequent refactoring
-and reduces risk of memory management bugs.
-
-## Testing
-
-Tested with split keyboard hardware (Dactyl 5x6) using custom ZMK firmware
-that implements per-side HID battery reporting. Each battery (left and right
-keyboard halves) reports independently through the power supply interface with
-distinct report IDs (0x05 and 0x06).
-
-Test firmware available on my personal fork at:
-https://github.com/zampierilucas/zmk/tree/feat/individual-hid-battery-reporting
-If this series gets merged, these changes will be proposed to upstream ZMK.
-
-HID descriptor and recording captured with hid-recorder:
-
-D: 0
-R: 162 05 01 09 06 a1 01 85 01 05 07 19 e0 29 e7 15 00 25 01 75 01 95 08 81 02 05 07 75 08 95 01 81 03 05 07 15 00 25 01 19 00 29 67 75 01 95 68 81 02 c0 05 0c 09 01 a1 01 85 02 05 0c 15 00 26 ff 0f 19 00 2a ff 0f 75 10 95 06 81 00 c0 05 84 09 05 a1 01 05 85 85 05 09 44 15 00 25 01 35 00 45 01 75 08 95 01 81 02 09 65 15 00 25 64 35 00 45 64 75 08 95 01 81 02 c0 05 84 09 05 a1 01 05 85 85 06 09 44 15 00 25 01 35 00 45 01 75 08 95 01 81 02 09 65 15 00 25 64 35 00 45 64 75 08 95 01 81 02 c0
-N: ZMK Project Dactyl 5x6
-P: usb-0000:2d:00.3-4.2/input2
-I: 3 1d50 615e
-D: 0
-E: 0.000000 3 05 00 56
-E: 0.000977 3 05 00 56
-E: 1.490974 3 06 00 52
-E: 1.491958 3 06 00 52
-E: 6.492979 3 06 00 53
-E: 6.493962 3 06 00 53
-
-The recording shows both batteries reporting with different charge levels
-(Report ID 05: 86%, Report ID 06: 82%-83%), demonstrating the multi-battery
-functionality. This can be used to verify UPower compatibility.
-
-## Future Work: Userspace Integration
-
-As suggested by Bastien, semantic battery differentiation (e.g., "left
-earbud" vs "right earbud") requires userspace coordination, as HID
-reports typically lack role metadata.
-
-This will require:
-1. systemd/hwdb entries for device-specific battery role mappings
-2. UPower updates to enumerate and group multi-battery devices
-3. Desktop environment changes to display batteries with meaningful labels
-
-This kernel infrastructure is a prerequisite for that userspace work.
-
-Lucas Zampieri (3):
-  HID: input: Convert battery code to devm_*
-  HID: input: Introduce struct hid_battery and refactor battery code
-  HID: input: Add support for multiple batteries per device
+The error path uses devm_kfree() to clean up allocated memory if
+devm_power_supply_register() fails, preventing memory waste on repeated
+setup attempts. The hidinput_cleanup_battery() function is removed as
+devm handles cleanup automatically.
 
 Signed-off-by: Lucas Zampieri <lcasmz54@gmail.com>
+---
+ drivers/hid/hid-input.c | 34 +++++++---------------------------
+ 1 file changed, 7 insertions(+), 27 deletions(-)
 
-Changes in v7:
-- Rebased on top of hid.git for-next branch as requested by Jiri
-- Adapted to new battery_present field and HID_BATTERY_QUIRK_DYNAMIC
-  quirk introduced upstream
-- Adapted to kzalloc_obj() -> devm_kzalloc() and __free(kfree) cleanup
-  guard changes in upstream
-
-Changes in v6:
-- Split v5 patch 2/2 into two separate patches as suggested by Benjamin:
-  - Patch 2/3: Introduce struct hid_battery and convert existing code
-    (no functional change for single-battery devices)
-  - Patch 3/3: Add multi-battery list support
-- Renamed hid_get_first_battery() to hid_get_battery() as suggested by
-  Benjamin
-- Added devm_kfree() calls in error path of hidinput_setup_battery() for
-  proper cleanup if devm_power_supply_register() fails
-
-Changes in v5:
-- Split the monolithic v4 patch into two logical patches as suggested by
-  Benjamin, devm_* conversion, then struct refactor and multi-battery support
-  combined
-
-Changes in v4:
-- Added missing hidinput_update_battery() stub in #else block for
-  CONFIG_HID_BATTERY_STRENGTH=n builds
-- Reported-by: kernel test robot <lkp@intel.com>
-- Closes: https://lore.kernel.org/oe-kbuild-all/202511201624.yUv4VtBv-lkp@intel.com/
-
-Changes in v3:
-- Squashed the three v2 patches into a single patch as suggested by
-  Benjamin
-- Removed all legacy dev->battery_* fields, using list-based storage only
-- Changed battery naming to include report ID: hid-{uniq}-battery-{report_id}
-- Converted battery memory management to devm_* for automatic cleanup
-- Updated hidinput_update_battery() to take struct hid_battery directly
-- Added hid_get_first_battery() helper for external driver compatibility
-- Updated hid-apple.c and hid-magicmouse.c to use new battery API
-- Simplified cover letter based on feedback
-
-Changes in v2:
-- Split the monolithic v1 patch into three logical patches for easier review:
-  1. Introduce struct hid_battery (pure structure addition)
-  2. Refactor existing code to use the new structure (internal changes)
-  3. Add multi-battery support (new functionality)
-- Added detailed testing section with hardware specifics
-- Added hid-recorder output (dactyl-hid-recording.txt) demonstrating two-battery
-  HID descriptor for UPower validation
-- Added "Future Work: Userspace Integration" section addressing Bastien's feedback
-  about semantic battery differentiation
-- Added hardware examples with product links to commit messages (per Bastien's
-  suggestion)
-- No functional changes from v1, only improved patch organization and documentation
-
- drivers/hid/hid-apple.c      |  10 +-
- drivers/hid/hid-core.c       |   4 +
- drivers/hid/hid-input-test.c |  39 ++++---
- drivers/hid/hid-input.c      | 197 ++++++++++++++++++-----------------
- drivers/hid/hid-magicmouse.c |  10 +-
- include/linux/hid.h          |  57 +++++++---
- 6 files changed, 186 insertions(+), 131 deletions(-)
-
-
-base-commit: 73965d0aefc8ef6504552e5805f645d58a8727b0
---
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 395138372..7e0f971ef 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -526,13 +526,13 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	if (quirks & HID_BATTERY_QUIRK_IGNORE)
+ 		return 0;
+ 
+-	psy_desc = kzalloc_obj(*psy_desc);
++	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
+ 	if (!psy_desc)
+ 		return -ENOMEM;
+ 
+-	psy_desc->name = kasprintf(GFP_KERNEL, "hid-%s-battery",
+-				   strlen(dev->uniq) ?
+-					dev->uniq : dev_name(&dev->dev));
++	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL, "hid-%s-battery",
++					strlen(dev->uniq) ?
++						dev->uniq : dev_name(&dev->dev));
+ 	if (!psy_desc->name) {
+ 		error = -ENOMEM;
+ 		goto err_free_mem;
+@@ -574,7 +574,7 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 
+ 	dev->battery_present = (quirks & HID_BATTERY_QUIRK_DYNAMIC) ? false : true;
+ 
+-	dev->battery = power_supply_register(&dev->dev, psy_desc, &psy_cfg);
++	dev->battery = devm_power_supply_register(&dev->dev, psy_desc, &psy_cfg);
+ 	if (IS_ERR(dev->battery)) {
+ 		error = PTR_ERR(dev->battery);
+ 		hid_warn(dev, "can't register power supply: %d\n", error);
+@@ -585,27 +585,13 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	return 0;
+ 
+ err_free_name:
+-	kfree(psy_desc->name);
++	devm_kfree(&dev->dev, psy_desc->name);
+ err_free_mem:
+-	kfree(psy_desc);
++	devm_kfree(&dev->dev, psy_desc);
+ 	dev->battery = NULL;
+ 	return error;
+ }
+ 
+-static void hidinput_cleanup_battery(struct hid_device *dev)
+-{
+-	const struct power_supply_desc *psy_desc;
+-
+-	if (!dev->battery)
+-		return;
+-
+-	psy_desc = dev->battery->desc;
+-	power_supply_unregister(dev->battery);
+-	kfree(psy_desc->name);
+-	kfree(psy_desc);
+-	dev->battery = NULL;
+-}
+-
+ static bool hidinput_update_battery_charge_status(struct hid_device *dev,
+ 						  unsigned int usage, int value)
+ {
+@@ -660,10 +646,6 @@ static int hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	return 0;
+ }
+ 
+-static void hidinput_cleanup_battery(struct hid_device *dev)
+-{
+-}
+-
+ static void hidinput_update_battery(struct hid_device *dev, unsigned int usage,
+ 				    int value)
+ {
+@@ -2393,8 +2375,6 @@ void hidinput_disconnect(struct hid_device *hid)
+ {
+ 	struct hid_input *hidinput, *next;
+ 
+-	hidinput_cleanup_battery(hid);
+-
+ 	list_for_each_entry_safe(hidinput, next, &hid->inputs, list) {
+ 		list_del(&hidinput->list);
+ 		if (hidinput->registered)
+-- 
 2.53.0
 
