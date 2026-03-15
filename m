@@ -1,155 +1,150 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail-43166.protonmail.ch (mail-43166.protonmail.ch [185.70.43.166])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E9273845C7;
-	Sat, 14 Mar 2026 21:35:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7259A19CD0A;
+	Sun, 15 Mar 2026 11:24:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.166
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773524159; cv=none; b=KM7GW5f/v+cHRIUhrlN0tEcySM59fwjGeQ8DGy3UDE0QEomZRPgHH/lueVtevdndsI9NXHx5epHiK8r5ttR7x8mAF2hE55qaq8gu2bulDFo0Ng3NvQeDXaTRhgu/hoXdr3x9vW0akmaMdC+x13QtO2oVagh4ec3ubap/jOakr/k=
+	t=1773573877; cv=none; b=gGFPMuSYtNsJMusXG7xikdc9rU51KE1EU1jM3aY0jBem+Md6PhIAWS9vYYbE6yLCDSckFFZe7j+RLbLrKegpSPaCR4SZ8MausBa2o6AStzFE02MrKWSzMCtmqnX23WmSiwFgoCCsdf8pCIvDV+i5rdUMJFu15TALUdqwDkS3fQk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773524159; c=relaxed/simple;
-	bh=JWRu3Ts4XCH6EVNWqY6K4/OGwPEsBoXK67d+4bDxyAw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YUVHppWX74RDaG7MehSEBgVCo9llIGPjCLjntMrg9sU1zw4h4cQjQSUwXn+gBYNvCKwNlefk/Ah8dqw/Xn6Fi0NG/Nz3pkKwKhPoSPsLr5wlTWtxUNnae/comZfmXtayQfd94GFjd3avjipP6olWYH3+IhRVRJ3IzxWyX2+k8n8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jn3DbppI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773573877; c=relaxed/simple;
+	bh=xkra8kEoCverdCIDZrHoFjQjX/uvuf0BEW3UwC8238A=;
+	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=Ed4IxjNUHz5e4FDB/m2xUcCQcbtXMjDQ78P8Y2ReHKxS5iWzdY3/UbB7YahfVyqz7doeVTjc8AG+NqKfMOiq04A9lxmPN6oUenb+Q8+dtAyKh0OgQ9yC0DDnwPvcLX3EBJGjgWpd7rRHKAHHzZ3LA46wQVGpqwxrVzwk8EH5Uxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=jG9OC1hd; arc=none smtp.client-ip=185.70.43.166
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jn3DbppI"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C5B72C2BCB9;
-	Sat, 14 Mar 2026 21:35:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773524158;
-	bh=JWRu3Ts4XCH6EVNWqY6K4/OGwPEsBoXK67d+4bDxyAw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Jn3DbppIuXycpowAYZc+X/VIcRxi0nH2FcyY88MA7H+5gDMz1jKzQC2v7lLQ2+/1S
-	 aYqVipWWvj9C3Wi+QAzjIhUrooeiKau0MGzdYFoOOC6y2gBfviqTR0/M6eMBIgBMUZ
-	 qORMzqrd7wo2wDp3u16yX3aHIJp11yoxcN+oom7QkRS9eDmCRi3O61NiW1QRbE+A2i
-	 8EZsJBkZN23YQP6TcKUW71oYbJuSjQ0tUak1HtRgSv9CYsbo/Ib4VE5IP2xw2Z2uC7
-	 yesrB6ve5Q6kWeS5xB6fixHgwr5dgj6j09tPoLAjMaFVpQt2hHMtmdbbEWsexlUMe8
-	 dR+CFukcfxxwQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA6BA10854AE;
-	Sat, 14 Mar 2026 21:35:58 +0000 (UTC)
-From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Sat, 14 Mar 2026 21:35:39 +0000
-Subject: [PATCH RESEND v8 4/6] lib/linear_ranges: Add
- linear_range_get_selector_high_array
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="jG9OC1hd"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=aj2fmjlhhvbdnoqmet5uslglyy.protonmail; t=1773573870; x=1773833070;
+	bh=6kzIhSrQlefIonVwDS2QLdSZuz4jn+m6gzVCZWAvoXY=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=jG9OC1hdzmvYaLXR5Ur5hmKWynU7+BGfYCLwde3wqtjlDMwRXijjuDdlJxYxx8zuo
+	 fjpPm1JaurlPVg1gSWNJyCx994Huv7nAWi+rdme5drUMtzqYAZqGicwO00LeFYhFIY
+	 C/tSs5JQBPGVEPgJ7z7A5Xb1SMGRyRcvLo8/luo0Y4WeSQJ/JInUvP05LnsFd6Z04E
+	 bFJ3pKJD2o+vO8HacHGgmWX6sTcszVPBR21xrTOx2CNQvIhgi84zqhMsnAQKTaJrgo
+	 h0p6bKuzCbx03iGbkHlfdlLLBqYN39UjxtkLWRgVI/03aOMCn3nQwAln3H4OSG9VpB
+	 rIdEQZPZ/LG/Q==
+Date: Sun, 15 Mar 2026 11:24:25 +0000
+To: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+From: John <therealgraysky@proton.me>
+Cc: Joanne Koong <joannelkoong@gmail.com>, "linux-fuse@lists.sourceforge.net" <linux-fuse@lists.sourceforge.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>
+Subject: [BUG] fuse: wb_wait_for_completion hang on suspend with fuse-overlayfs on tmpfs persists in 6.19.6 (AS_NO_DATA_INTEGRITY fix incomplete)
+Message-ID: <Utw_Cjiuq0_XhCoA5EXpzLE9qfRpiA0-fmXEmui7NnBnIeMiCDGOyXWPtE5DkxVNYNSsgiUotB7fsGYnlMQn1xDCx14yx1d0UJqx62vAwp4=@proton.me>
+Feedback-ID: 47473199:user:proton
+X-Pm-Message-ID: e2ffb5343d28f46feee85beb2462585b7ecc7789
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260314-max77759-charger-v8-4-226ca5f8c7d2@google.com>
-References: <20260314-max77759-charger-v8-0-226ca5f8c7d2@google.com>
-In-Reply-To: <20260314-max77759-charger-v8-0-226ca5f8c7d2@google.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Lee Jones <lee@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Badhri Jagan Sridharan <badhri@google.com>, 
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, Mark Brown <broonie@kernel.org>, 
- Matti Vaittinen <mazziesaccount@gmail.com>, 
- Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-usb@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
- RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
- Amit Sunil Dhamne <amitsd@google.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773524157; l=3003;
- i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=uuyjXd7dWRAWN4xiKCoHmw/T2i4nCX6K/xcdYc4Jrhc=;
- b=rClPlVLQ0lBkHwwSlvv6522AMU4iooGWIquWXhUEXeNpg3OLKrUpkh3/ip0mrBybe4SeBzG/J
- /P1O7/wt3gJAUjoPyRKlkTbxzc9ZD1B51tJzKo+1potLF7GiWgmfust
-X-Developer-Key: i=amitsd@google.com; a=ed25519;
- pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
-X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
- auth_id=262
-X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
-Reply-To: amitsd@google.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+Kernel: 6.19.6-arch1-1
+Component: fs/fuse, fs/fs-writeback
 
-Add a helper function to find the selector for a given value in a linear
-range array. The selector should be such that the value it represents
-should be higher or equal to the given value.
+--- SUMMARY ---
 
-Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
-Reviewed-by: Matti Vaittinen <mazziesaccount@gmail.com>
-Acked-by: Mark Brown <broonie@kernel.org>
----
- include/linux/linear_range.h |  3 +++
- lib/linear_ranges.c          | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
+A suspend-to-RAM hang in wb_wait_for_completion() via sync_inodes_sb() pers=
+ists on 6.19.6 when fuse-overlayfs is mounted on tmpfs. The fix introduced =
+in 6.19~rc6 for Debian bug #1120058 ("fs/writeback: skip AS_NO_DATA_INTEGRI=
+TY mappings in wait_sb_inodes()") does not cover this code path.
 
-diff --git a/include/linux/linear_range.h b/include/linux/linear_range.h
-index 2e4f4c3539c0..0f3037f1a94f 100644
---- a/include/linux/linear_range.h
-+++ b/include/linux/linear_range.h
-@@ -57,5 +57,8 @@ void linear_range_get_selector_within(const struct linear_range *r,
- int linear_range_get_selector_low_array(const struct linear_range *r,
- 					int ranges, unsigned int val,
- 					unsigned int *selector, bool *found);
-+int linear_range_get_selector_high_array(const struct linear_range *r,
-+					 int ranges, unsigned int val,
-+					 unsigned int *selector, bool *found);
- 
- #endif
-diff --git a/lib/linear_ranges.c b/lib/linear_ranges.c
-index a1a7dfa881de..c85583678f6b 100644
---- a/lib/linear_ranges.c
-+++ b/lib/linear_ranges.c
-@@ -241,6 +241,42 @@ int linear_range_get_selector_high(const struct linear_range *r,
- }
- EXPORT_SYMBOL_GPL(linear_range_get_selector_high);
- 
-+/**
-+ * linear_range_get_selector_high_array - return linear range selector for value
-+ * @r:		pointer to array of linear ranges where selector is looked from
-+ * @ranges:	amount of ranges to scan from array
-+ * @val:	value for which the selector is searched
-+ * @selector:	address where found selector value is updated
-+ * @found:	flag to indicate that given value was in the range
-+ *
-+ * Scan array of ranges for selector for which range value matches given
-+ * input value. Value is matching if it is equal or higher than given value
-+ * If given value is found to be in a range scanning is stopped and @found is
-+ * set true. If a range with values greater than given value is found
-+ * but the range min is being greater than given value, then the range's
-+ * lowest selector is updated to @selector and scanning is stopped.
-+ *
-+ * Return: 0 on success, -EINVAL if range array is invalid or does not contain
-+ * range with a value greater or equal to given value
-+ */
-+int linear_range_get_selector_high_array(const struct linear_range *r,
-+					 int ranges, unsigned int val,
-+					 unsigned int *selector, bool *found)
-+{
-+	int i;
-+	int ret;
-+
-+	for (i = 0; i < ranges; i++) {
-+		ret = linear_range_get_selector_high(&r[i], val, selector,
-+						     found);
-+		if (!ret)
-+			return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(linear_range_get_selector_high_array);
-+
- /**
-  * linear_range_get_selector_within - return linear range selector for value
-  * @r:		pointer to linear range where selector is looked from
+--- BACKGROUND ---
 
--- 
-2.53.0.851.ga537e3e6e9-goog
+This issue was originally reported in:
+https://github.com/containers/fuse-overlayfs/issues/386
 
+The fuse-overlayfs developer identified it as a kernel issue. It was subseq=
+uently bisected to commit 0c58a97f919c ("fuse: remove tmp folio for writeba=
+cks and internal rb tree", merged in 6.16) and tracked in Debian as bug #11=
+20058. The fix applied in 6.19~rc6 targets wait_sb_inodes(), but the hang i=
+n the reporter's original trace and in this report occurs in sync_inodes_sb=
+() via a separate code path that the fix does not reach.
 
+The issue is also known to syzbot as "INFO: task hung in sync_inodes_sb" wi=
+th open instances on linux-5.15, linux-6.1, and linux-6.6:
+
+https://syzkaller.appspot.com/bug?extid=3De0232bd63c6e293aaf6a
+https://syzkaller.appspot.com/bug?extid=3D4983a35cf671e5ed55b3
+
+--- REPRODUCTION ---
+
+mkdir -p /dev/shm/test/up
+mkdir -p /dev/shm/test/tmp
+mkdir -p /dev/shm/test/data
+
+fuse-overlayfs -o "static_nlink,noacl,\
+  upperdir=3D/dev/shm/test/up,\
+  lowerdir=3D$HOME/.config/mozilla/firefox,\
+  workdir=3D/dev/shm/test/tmp" \
+  /dev/shm/test/data
+
+firefox --profile /dev/shm/test/data/PROFILENAME
+
+Browse to youtube and start playing a video then trigger suspend while the =
+video is playing in the browser. I used XFCE4 suspend from the menu.
+
+The display goes blank and does not recover. The system does not enter susp=
+end. Switching to a tty shows the system is alive but X11 is frozen. Reboot=
+ is blocked:
+
+# reboot
+Call to Reboot failed: Action suspend already in progress, refusing request=
+ed reboot operation.
+
+--- CALL TRACE (6.19.6) ---
+
+Mar 15 06:44:42 kernel: INFO: task kworker/u128:0:106160 blocked for more t=
+han 122 seconds.
+Mar 15 06:44:42 kernel:       Not tainted 6.19.6-arch1-1 #1
+Mar 15 06:44:42 kernel: task:kworker/u128:0  state:D stack:0     pid:106160=
+ tgid:106160 ppid:2
+Mar 15 06:44:42 kernel: Workqueue: pm_fs_sync pm_fs_sync_work_fn
+Mar 15 06:44:42 kernel: Call Trace:
+Mar 15 06:44:42 kernel:  <TASK>
+Mar 15 06:44:42 kernel:  __schedule+0x457/0x1720
+Mar 15 06:44:42 kernel:  schedule+0x27/0xd0
+Mar 15 06:44:42 kernel:  wb_wait_for_completion+0x97/0xe0
+Mar 15 06:44:42 kernel:  sync_inodes_sb+0xf8/0x2e0
+Mar 15 06:44:42 kernel:  __iterate_supers+0xdc/0x160
+Mar 15 06:44:42 kernel:  ksys_sync+0x43/0xb0
+Mar 15 06:44:42 kernel:  pm_fs_sync_work_fn+0x17/0xa0
+Mar 15 06:44:42 kernel:  process_one_work+0x193/0x350
+Mar 15 06:44:42 kernel:  worker_thread+0x1a1/0x310
+Mar 15 06:44:42 kernel:  kthread+0xfc/0x240
+Mar 15 06:44:42 kernel:  ret_from_fork+0x243/0x280
+Mar 15 06:44:42 kernel:  ret_from_fork_asm+0x1a/0x30
+Mar 15 06:44:42 kernel:  </TASK>
+
+--- MORE CONTEXT ---
+
+Compared to the original report (which ran through systemd-sleep -> pm_susp=
+end -> ksys_sync), the sync call in 6.19 has been moved into a kernel workq=
+ueue via pm_fs_sync_work_fn. The hang point is identical: wb_wait_for_compl=
+etion() inside sync_inodes_sb() never returns because the FUSE daemon (fuse=
+-overlayfs) is unable to complete writeback while the suspend freezer is in=
+ progress.
+
+The AS_NO_DATA_INTEGRITY fix targets wait_sb_inodes(), which is a separate =
+function from sync_inodes_sb(). The hung writeback completion wait in sync_=
+inodes_sb() is not gated by the AS_NO_DATA_INTEGRITY check and remains unad=
+dressed.
+
+Note: prior to commit 0c58a97f919c, sync() on FUSE filesystems was effectiv=
+ely a no-op, which avoided this hang at the cost of correctness. The regres=
+sion was introduced when that commit made sync() actually wait on FUSE writ=
+eback completion.
+
+I am using Arch Linux but users of Fedora F43 and Debian testing are hittin=
+g this bug also. See refs below.
+
+References:
+1. fuse-overlayfs upstream issue: https://github.com/containers/fuse-overla=
+yfs/issues/386
+2. profile-sync-daemon issue: https://github.com/graysky2/profile-sync-daem=
+on/issues/411
+3. Debian bug #1120058: https://bugs.debian.org/1120058
