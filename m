@@ -1,130 +1,225 @@
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 580C6377ECA
-	for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 21:42:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 928B2287246;
+	Sun, 15 Mar 2026 23:07:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773610933; cv=none; b=dmMSyzl6pxsHYb1MxnWsNvv/t71wAERuHk1sZ2DH/w2ElecY/ZLFqVum0w8/Hh7vQXIxyXHOHNYfXW9ZxNxmZdSUPRZRd4JJkg8zLiX3ntmiisS8ZDSf2FHtDY+l3nsMPf7bjNJpU/mJjDvdTk8/DQU2S4+HRuIxypjr4FQEdVE=
+	t=1773616077; cv=none; b=dUrrD9HOVSbdmFrIfEraXNJya7FPaIPkV7IrwFnRtZHoFemHa68TZyvAgW/mxKoLUXSSUaSpFqV3u0DVSJzAcZ/VFH/4/ECWOJzv85kphZfrgIHtHQIqp0MdQBq8GhyucPznvjszfMoi3p4L7nlf/Zpuw6XFs7ufe/00ALsbMI0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773610933; c=relaxed/simple;
-	bh=l49tgpINxgLlt4RIwK+onaV/lm+OjQDLgCOi7+pmJQ4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AGKWBnxA3MeFcVEh3DXHux637EzJi9E2c74gSpqR3a0vsj/ap5t2Q1AMcBh2g2OQbMOmRShxL1OQoE5wKIRNLxnH3PAhbvXJsWBBsKRFfiZPeIU4bWUKowRC7sZyrwOCLKSW/RS3W/z154d7hNkTdyD6H6AeSvl264kXWzHh9Sw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PytlC6sr; arc=none smtp.client-ip=209.85.214.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1773616077; c=relaxed/simple;
+	bh=uX/BrtmW8jeZBfsMpz031mbVpPze8fSVQMgM+ZisUFI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EOzHkb3wU5Z2q4k+fw3XL0gT90bBN2dQQ6wKJ/DtrhG/IIwuAixiptPwJV5thElJTEky9l/kj3Wh3rE0hX3OsTKB9oMnEVenO+ZMtuyWAt1GCIDX+Njb9M1DtF5GPvLeyCStvp7n2ZgOI7IYhPNEpenLW44b/k6c3uU2nWhqodo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=ON3HXg1L; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PytlC6sr"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2ae3a2f6007so29639905ad.2
-        for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 14:42:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773610931; x=1774215731; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=QGzlmojAeYWZ15xUYmvWFth9QXCu+msLbAW7T3Gc0xU=;
-        b=PytlC6sr+FRPibLnScYLnLPohLvZvsl+IAA3vdqPsblsxW9khBu1IqW5mimSbSyALL
-         KdrexN9j1HyhRLF3Z4ZlaH29qYNqZ5vDxBDj1b/USo7+IzoC7pyp6N5alMWG1BwTG/X7
-         5tiyk3pN71oEqO92Xhu8X4CrWfdkGUldn1o3oUUHXUN9yvkevLX1TGpjJqVrRIFKoHGJ
-         C9KHu3y7Xlqx8sG7T7RF4tluyJw0//4x+nb5kK8kJIZgO+KwcZj/K3F6JPu/vUgO4BUE
-         Sd8fhDbX8STp34hXxuukSuonOdylR0555wsitLq7eYxpEctqQZT4R98aIPoWT1Q/mxYh
-         ezHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773610931; x=1774215731;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=QGzlmojAeYWZ15xUYmvWFth9QXCu+msLbAW7T3Gc0xU=;
-        b=MWgJ32uP1f1/TJpLsO3IBWDpUzXK8GDW8Bpdo0K1Rs+TuDtc8hkTticUqrkUZRzg5g
-         mh+iDdqXBb86nh1DccQrbJMhsc3J22E42XX+Ol54180i2KLfS7mY0AjXkqYLY+N1ftVO
-         VrIdGKUKJnMqUzDp++194aCE72bqVzH6uA7phhfPErv/CuQM8W1VQZMg794njmydAO2/
-         B6JHRIx4BD7degBL/2P26CBv3BnkvzjW5653aTT8IOdbUCY3jakJJD7lj4PsIqYHQwu9
-         i7Sqb6miHDSWSs/Z7Dhf/W731GlvMmO6SgePMjlWHf+VvDZ5Lb66KNha+9JP0gVGhLIu
-         E0+g==
-X-Gm-Message-State: AOJu0YwG3ImHTReiEBTrt2nv7hQRRBlQYG4f34fQXnP1eQXin5uzAjn1
-	mO3u6jSN9SCbZl3XKDrpIQONLJVU1gUhghYeyBZDMHW6z1AkbUfT9rVcs2rbXQ==
-X-Gm-Gg: ATEYQzyWLBtjhh8YSsbtmIzXoBu1OmAYry5Lph1zSCznZNwdOV4WtxXitJewbN61s5w
-	wo6HLWKuT9va32rpoFTkEfSCZGXGB3WB4XlkquAHbK5+PKfybM0h5jW9I/LF6K/iv3J8nqbFtJc
-	HUifHs3Q4d/3O8G1jjCB50hhwq+JP/b4pf/aKx9/oLBzpemcaW6RdD09ZgSgxU2dt7vCJuCTQqM
-	N18TcdNQ+Fywx4Ep9HIHSzgeW+xfZtMmYgd198Z4Siv2s6ja986CocExHBc2fX1f7d63SCh1coH
-	14fXEyBPPXlq9Hv9lwx7D1VhbapIRxkAYqhaLEalueW4jIYl05y7IFIFDYzbUWccO2k0vnXOncR
-	Vz0Pv86o+1695gi94Mg4Q7fv2+Jo9YPDuUS+jzCpUNkgwL0Q0q+MTOMIERoifhGbO3HyCRWuQ9E
-	EUcKG+Hfkm5Wh8FJP2ttMiKPZBFDbBWVnvtkZ4c7tUKjbtyrS9MQMiVMg=
-X-Received: by 2002:a17:902:d548:b0:2ae:5f65:171 with SMTP id d9443c01a7336-2aecab1ee59mr116748185ad.33.1773610931360;
-        Sun, 15 Mar 2026 14:42:11 -0700 (PDT)
-Received: from ryzen ([2601:644:8000:56f5::8bd])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2aece56c7b5sm94185815ad.9.2026.03.15.14.42.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Mar 2026 14:42:10 -0700 (PDT)
-From: Rosen Penev <rosenp@gmail.com>
-To: linux-pm@vger.kernel.org
-Cc: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-msm@vger.kernel.org (open list:QUALCOMM CORE POWER REDUCTION (CPR) AVS DRIVER),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] pmdomain: qcom: cpr: simplify main allocation
-Date: Sun, 15 Mar 2026 14:41:53 -0700
-Message-ID: <20260315214153.3682-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="ON3HXg1L"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
+	s=s31663417; t=1773616053; x=1774220853; i=wahrenst@gmx.net;
+	bh=VMCPSBmKWW117qnhfEXoCMhM6JqsDOVzqEruNBY+32c=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=ON3HXg1L7ih7TWuitHt6pRyWc2gJ+iSokjz43d4bbkKTMuKdYbmge0R1WUJ3BXSB
+	 A9UEx+pL9Pikw+6wSGc5aESZxtIOioXkB6whifPx2G+K4vLQ6DnIXObudZP4Wrbc2
+	 RMlrkVrL99/JEbXUCADfKrtEykDdaQguGuWz0GvBZqIATe2PawXcpdy6N5L4bbmoI
+	 hKbQD8KmXLvkq2eRuMpddOTst35KUqEdzQEq6Q9T+G6ggfuClk3R6uXTRBA5o/eOp
+	 Q6NOtfSj7sgM0PgIU5IQxVJVUQskkeuteY4WMXoBhCRDioszwdU1hkKiK9LRFCyKX
+	 JMreomHyo/EVKGuvUw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N1OXZ-1vd30Q1tL1-011y24; Mon, 16
+ Mar 2026 00:07:33 +0100
+Message-ID: <bdae424d-f4b5-4181-9421-4393fe3ac8fb@gmx.net>
+Date: Mon, 16 Mar 2026 00:07:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 2/5] pmdomain: bcm: bcm2835-power: Increase ASB control
+ timeout
+To: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Nicolas Saenz Julienne <nsaenz@kernel.org>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Maxime Ripard <mripard@kernel.org>, Melissa Wen <mwen@igalia.com>,
+ Iago Toral Quiroga <itoral@igalia.com>,
+ Chema Casanova <jmcasanova@igalia.com>,
+ Dave Stevenson <dave.stevenson@raspberrypi.com>,
+ Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, kernel-dev@igalia.com,
+ stable@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ linux-pm@vger.kernel.org
+References: <20260312-v3d-power-management-v7-0-9f006a1d4c55@igalia.com>
+ <20260312-v3d-power-management-v7-2-9f006a1d4c55@igalia.com>
+Content-Language: en-US
+From: Stefan Wahren <wahrenst@gmx.net>
+Autocrypt: addr=wahrenst@gmx.net; keydata=
+ xjMEZ1dOJBYJKwYBBAHaRw8BAQdA7H2MMG3q8FV7kAPko5vOAeaa4UA1I0hMgga1j5iYTTvN
+ IFN0ZWZhbiBXYWhyZW4gPHdhaHJlbnN0QGdteC5uZXQ+wo8EExYIADcWIQT3FXg+ApsOhPDN
+ NNFuwvLLwiAwigUCZ1dOJAUJB4TOAAIbAwQLCQgHBRUICQoLBRYCAwEAAAoJEG7C8svCIDCK
+ JQ4BAP4Y9uuHAxbAhHSQf6UZ+hl5BDznsZVBJvH8cZe2dSZ6AQCNgoc1Lxw1tvPscuC1Jd1C
+ TZomrGfQI47OiiJ3vGktBc44BGdXTiQSCisGAQQBl1UBBQEBB0B5M0B2E2XxySUQhU6emMYx
+ f5QR/BrEK0hs3bLT6Hb9WgMBCAfCfgQYFggAJhYhBPcVeD4Cmw6E8M000W7C8svCIDCKBQJn
+ V04kBQkHhM4AAhsMAAoJEG7C8svCIDCKJxoA/i+kqD5bphZEucrJHw77ujnOQbiKY2rLb0pE
+ aHMQoiECAQDVbj827W1Yai/0XEABIr8Ci6a+/qZ8Vz6MZzL5GJosAA==
+In-Reply-To: <20260312-v3d-power-management-v7-2-9f006a1d4c55@igalia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:/TS4HxQY5TivZuoGW+W8HuPijf3g1Y33tGVX19IspPImRfLdS+l
+ mGRaX0xQXzL+rTovBJdd9n124GsVHj6yq4fAk0YjfYTt+ihwybN+w5C7yn+2a+ic6wxg0AV
+ 8WoM01mBRHG83QjzwGQp+8ehdQ12V3BwihkK8qnKaWoO3O63nFhc75hjaBpnF8dAas3X+MY
+ NKCG0IaT6VcrZ7Tn47WYg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:xlCW+9NPf/c=;9NSQeZ/QDaIr9hEogBnBqpDggU7
+ iaidDky1CevuT+83qWRcXON8gjOW3XPMEuVtFNJgugo+wjVUaGiwyIg6s0C4z7kI6u+wscyOM
+ 5fvKFCpUv7f9eI33doUEQaSmIAkEbsQJu036CUnryoTSl5UUhHig52GrH2SBQnHTU87WwwLvI
+ BC2Br0FP6VfXDhAheXBxHLCOlefhoLe8Knygm7ilwG5PkKugj4THJ6lflQRvJVxJbT88AMKxy
+ NMBiALHbCrTu33M3yo7Q7qAs74vQEaeHPnI2KruAvzxSs4StqNX6Lla720cqc62naeodiiqnt
+ MwHEmSkk8mFQXOn3PbLZOjiAaUaZoS5vW0rOFtAknesYAmvNYzKbMzlYJuHLAf4wiRpO7CiVZ
+ RZzBFXWYZ3CzbYVXKe0dYZpwipCAmS5uEWl4+nQcCbN34fxRv/DBHLgnP0MqXfnWyrSpsBPIZ
+ SnXvYz+cchAG2yXZuOE1x+bxnVFtuhhWFvF7EQuOYfEKT6RfooTOZU5CIS/q/8SHdzWe/yxXr
+ bThGAQKT3peVj3xA8L+UJVSStbi+Wod4/p4BcVOfHtAxLHs21npfJG0FsLNZUXnHR6NtRELtD
+ GB/nF835qcw33lgpkDh+0z48/0zqWBxYlLOJVwld0Ev6Dajpk9PZVwyz1EOoGFhX0KvPWci/x
+ Kf1WK1Q03hpbQFJvgU3MCh8VgSxfmpYVN5bzCMteB+W/c1yyH4bSSHaOcx9AUZGJPGrPAFbNn
+ BY+kYrroK7gabsVRCROaT6UJF4h/Slsd7fl2ejggglixsKLz8KB4ToGznm8qUXzi9qSuoy0PB
+ p/2NJAfAx7dJbw1V5bi704bby+JeLT/WWJlNCHXXZ8vwTuyPShid1I0jGRcqr886B6Wy+WfYC
+ TAUH/URyCL2RHaZq5W8bsEgKgdkyc55wDrtTXpBm/+XMQRtiR+3k0ITku4M+6BIx7bVV0qCJw
+ 0ZoAEY03GBo2m/UYVILaV2uifI10MskojQhque/ZIPHFe5OJc/aGLLKsgTGAQmdFUji3kXZ6a
+ IJkOhqX1pbgAHUxcm68xGgfczZBepjytuGPjw08GgxgrZay4AZug7VgBuSZVPibMvl0MIhwaC
+ fBo0HjZBCkyxX33jtsZFQ7bEdb303ZQyuFLLVIL80og/Cv/DMR6bGu1/aYDJLfXK+8hrDMTku
+ Sc9wtI3S3m106O8nhsxCqV5SMZuWgvsERD6sEqo9VN5BnoVjLfh3kJ51tydwZsVF/Qk2Zt+0/
+ MlS0dStju6E8AnTMfxRZpTz5H7UYYbc3wZgns6CFMKLybI22/3pvufknpBwmBzLGY+oqDJbxN
+ 5jF5X/AMj+QG+rXeJmwq7+oLCIFqJCUcuIcCot2S4c1LAj590a86tCTbEhkiezO5CkRdt6u3P
+ OO0Vra3rdDh/3K4M0rts1GHLHa27UGY+j4FplAd/glyu6czD+ibobkYR4BAd0Oai/TOeI6vbH
+ oLofNE17ekjwk57geACaFSMjCm8Q0jlrwc27NS8JLugnBkrW27ShrAUlPtlK/UyQJbM1R4582
+ D8gN+4LK3Q/C/sGVMpQAf0UXXnn9joh4c0C+zLSJRM5bMRZnk7cNW1LyiqJknzy5Moq7L048R
+ qQH8RH1LU6S89xLkteezPmaNdwEbS4m5AShOUCplJJjmAEcJl3wUL19AAoEQtn5VFqBhNXsMj
+ bUXANyDyuMqhsVQZx6v//8ift58YzgFq+8aIDQPtWDij3GExaODlg7yh6ce69/akKv1mnCuIU
+ PduUQa0StfAE+vUEQhw5vHw1UmmyNVKSS+9zh3GgraWpeQeAHci7DChboMZKtX23rtBUbSZqj
+ oqhuvr7kIxH1ybQa0tLk9rddr8hbGWFfs7nD2NC0JjcwOBiEdhp6FlLOEihvLt+T9/vIxpmGk
+ 0UyA1HSI3qheEHSGyPtwaknhHalS2sV16dNhIa7ldHCibBLmBxQZLKPJQLe8yGJpAyQ9stSX5
+ rnQXvGgQ2tRICOQ3veFiXuiA6h6l8Wl6WHaIRHpJGoTg0dHv4m61EnOpNRFK38vyYrjkSU4YO
+ gpx5jgsX+GRHCrFuGOFEHiBO42+a6wb5Fo2XubZb815OrggVVYPLn6XTvzNlGe5hF157su3nr
+ tWvyNqa7P6bmd26xOr33d0fFymvsz+2dWJweB/Yc6JJJJRnjFIKljQ0jmj86USqIeFLseuTCG
+ 6x94BypqRU2iwKQKd0r9TGfOEWMPywBQlrPTCtAEeex+poJU8nM0MtMEwx1zt6DXC7TrgPudn
+ vwUGTqqxAThwVbHR4S6wnUQtBFvN/SE9MRCjFq3ZAjbfQU3Wsz5EYXlLZ+eBD9d/MnmCRuvqd
+ 3T4JEsccNiOI9UfPhjg33OYxVBxDXRQgB8S+Y3lAVQrkty3/2jVb/tazkUU0v1c6ITaMGixuv
+ BRqKHv6jK4KvDjZROjEhhthCgGW2Nq6xb87v0d5AnIDiCEtFHkUUgidKvSJlWvz6bWX8mSqYS
+ 6B/2XSxyUb+k5Kziq25nBK4vfeqUMyJSOkJzfMVUZjQ5f45Zyl1nY4rszYNK0LNSbM6E9VhbV
+ ZyUUUazjIunYnihzoB5Aq1jfNJrzHhMMMxDcF+8WAgHui7JV51+9B2LPD94C4EfL/fCtTAFWn
+ PHOrXuZO4y9QH/oy4psICoM+ciXMwIxojUteJpiby4R689hNto6OMryodHp3Lq+cmVTQQLhAb
+ ax3vAiBi6XbDWAUGAyjAOyYDi2oJvltSlyuFFlgXTn/kkbozUxDkS5XMzBPunfvXq8+AMHo2M
+ 6teBu9zSgOCL0rAU/IEI76P9kFa6h9n3wfrfN3AfqWB9L7OAxyvSi6dTrJMNtizUezHlVJ6z4
+ rqeKdVvtNy/5hgnRY9Xxe4WcStS8DM2OH0dsPVFDFbVs8HKSJ1Z6Ru45N9CrQN8iIcE/7YsrN
+ jnzaXE+ZzHIQb9BOc40jMOin1rEGGSPgCfBWcJKx5IVNn3ESwhsJWz8356eOTVPKsmaE4NKnN
+ 2DOZ9LxBlBhljxcCm4b5oh00cRHV6R427ExL9qwAcByZ2Huzw098uyTwz6tmmLYzVqYpv5GwZ
+ qkSw2byOupWbmp3sgWr6CEvWwYWX/fJih4ztNtlHw0GsvOVHGCCfDoyCPSNATgXH/1HOdSplZ
+ ffMWS3Zun8l++csUBKuZb1U86KaMebQBqG/D9rYklZPL9LHdHEvGWoWqiMbcfF1zHHoPRAxrH
+ mexeJoDpp1jo8YgawpW3BwdYNk/uuqwE7N1usTMNMIqA+ZXCQyC4PoEB3vO5Q9MpVGofWLNGF
+ 3qLurao7lFYKBFRV5KvrpqnhrCL1iRkZJRD9Y9RDaGC5NUiB8K1Vs7paQLWi6KXi7uZJH/Brd
+ pQjR0aRzEJddHkQAhzFlbKwaGiPQj/qIEOAy99TVGg7Hc5FxyEV7zJCO5oa6EqjSZHagTo6v/
+ LNks4VbJ+9uhvLMeIw//af5wTFjdU3xHazqVGYTO1LZOVDvFdbF1Sv7aqAvoyZBpvScItBKmi
+ nzmBO8PqtII09Bmg9hFmyda1vHAStrjAFqtT/sHSqi4+vrWbrGTzkWZflC49uOpGqyQEr3OG2
+ EQMS4UQydIf7S9zieeOFwIMxbHdhSrTthLvICF9MBcP6Jqlq0cNjANQ008XRdA3/ae06zy/0i
+ b0pmOm1dHOPQuh/QwaYyx+DoumfjzstKEVyHOhW6EzcyWO/zAYJLeAI+scgsDyXzZWSCbvSGr
+ sX7t+hbTxvpQNRaULN01+tzHU/gQU8J4Ujyo4H/gSxwBbrBzBd25D6a0wVBuA4gofQP3p5EGM
+ C1lLL6OAhpaew5b+UP4McEIsolmx59RFH5lTDfZwMgiV2pSjJ1Ej+1T3IQm36vmK1NyDoVLg7
+ 7WziNB25KHRSvSqtOaOZGUwR+NvV1oz57JFp0PFx5HqqWU9nJufajAkHOYDV9d7lr8ucLU4C0
+ URQFSLXa+kIzPpuaY6Y8EAebGOFyosGNmauMsCJTiPEsDKL67ECKlAKfuKu1QZgAA4FSDWRWl
+ Bc6RNcC522+Ak7nR92VRmK7D7/za1hKhGH/HopGJbgn4DyATFnVYBbfvJphOouoVCAIVBLWhx
+ wjpZTeVFkH67BPxx6OXMP9U/askz6wxvI0ZXl8qV13SkoKjm9fP6ejM8SguDd2yoS7VOK9oAF
+ IC52Hf/qIsqV+95MFPiiP4y3MqNe6wzt4ZmrVYq0CVsAOMrqqDdhNnr/6UV2PDpSHJTmwOnVS
+ tw4knvOyvQN6rHNjGbYVxP9IqWyW7mTqxPsd+9R0KhroJgaJISHxVJ0UhTfqy2f5OpOmbyk1I
+ 7mSRjCzr0pFfImzY0C1C81dWYS2fOmsKwXA0q5Lr/CBd0QfKVE2epXZAE2eIZqKn+ydILjHKx
+ u0yBnWfewlKwTSaQb1dTK5FKa8WMtBszwV8TQWsFt2y1u20tFDEfAoVR6HoHy98e/XRKZnmtt
+ CwRD0kzY59D1wRuKInvY0zAEEahZtfbqqpzcAyP+CAAwVp8qPbuEYO0wlQIJCe14578izGAwu
+ aUjf52izkZhadd9pGo+0QaTHNpM7fCFj9YVK8g+d6eC0ytXXNvhMtj1JYk8DlayVWt5i1O6Ze
+ LafjW5ulD//Mfj1+LUqmRpZTj/gxNmX3z6Jv1TpnbeVgA+lpmmXpcBdqmFnjqSllcdGhNjjkJ
+ g55X/4TIIWswpU3ZjldzM6NL7G+uDEgh5SgCmK0xZKbfBLecUqnaH2c3LyHPiRe9iKmPXu6r4
+ KJYlEFAc+cVzMKi2iNAhwewhxzbYP/Ev0p663V1CMqNE6YnlXseuAV29HEplqCmOwB1TIwQhj
+ wyKMjlNQlX2WCUkSn8hJbX87jxuTrlQaKbiYz8noaPI5wpIN2lY/2z16BAddGoCucbFbmoI1h
+ bxpZemS+QB7ZeStCuk8x36RoWPlzqdozTkXs9yUYNWTBatguRxRpYmJRChkn0rKTLRUuGGTKt
+ tCUHaHgxGqtgkK+wTh8nU4wO8dwnApl6g47aiT36EaSxp75sBgRGDp6Yjyitf+v5m9HvatkqG
+ jG2Q5UeLy2aUVkqtxUV/JgMzGBDh8PNR0MDK3wD2/rFBRXdoXxM4cip3WOB3PsM5QcGhglMKC
+ l/BGAghShCLcfojyI8IClC8jqUhX3ryvD/lQs2mly58RJP1owUWOa0YuHg8cEA6EGsFxx2fvM
+ sNx+DjgeiNIuiBnQ2FpPPDYLMTITN4ddH7khg+gzLz2WYwqvmSaPvqZD85NfwA3IHi4Gtpfvl
+ jkQ7l4HuWj4NUB8adRmRxjKF7NaUQsLTy90Vyr2ziYb10PGOh0sK/nM1LqJzOfs3aYL+Gcs+p
+ xxnMvn3QXiy0LsR73hWXzq6/WmUVI80OTNhSrnPHUT+5ThbbrAyLr9OxhmRWRdE=
 
-Remove kcalloc by using a flexible array member to combine allocations.
+Hi Ma=C3=ADra,
 
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- drivers/pmdomain/qcom/cpr.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+Am 12.03.26 um 22:34 schrieb Ma=C3=ADra Canal:
+> The bcm2835_asb_control() function uses a tight polling loop to wait
+> for the ASB bridge to acknowledge a request. During intensive workloads,
+> this handshake intermittently fails for V3D's master ASB on BCM2711,
+> resulting in "Failed to disable ASB master for v3d" errors during
+> runtime PM suspend. As a consequence, the failed power-off leaves V3D in
+> a broken state, leading to bus faults or system hangs on later accesses.
+>
+> As the timeout is insufficient in some scenarios, increase the polling
+> timeout from 1us to 5us, which is still negligible in the context of a
+> power domain transition. Also, move the start timestamp to after the
+> MMIO write, as the write latency is counted against the timeout,
+> reducing the effective wait time for the hardware to respond.
+>
+> Cc: stable@vger.kernel.org
+I think, a Fixes tag would be helpful here. Also this fix should be the=20
+first patch of the series or separate.
+> Reviewed-by: Stefan Wahren <wahrenst@gmx.net>
+> Signed-off-by: Ma=C3=ADra Canal <mcanal@igalia.com>
+>
+> ---
+> To: Ulf Hansson <ulf.hansson@linaro.org>
+> To: Ray Jui <rjui@broadcom.com>
+> To: Scott Branden <sbranden@broadcom.com>
+> Cc: linux-pm@vger.kernel.org
+This looks unusual. Is this intended?
 
-diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
-index 3ee8184e4be3..c30690ef6919 100644
---- a/drivers/pmdomain/qcom/cpr.c
-+++ b/drivers/pmdomain/qcom/cpr.c
-@@ -239,7 +239,6 @@ struct cpr_drv {
- 	u32			gcnt;
- 	unsigned long		flags;
- 
--	struct fuse_corner	*fuse_corners;
- 	struct corner		*corners;
- 
- 	const struct cpr_desc *desc;
-@@ -247,6 +246,8 @@ struct cpr_drv {
- 	const struct cpr_fuse *cpr_fuses;
- 
- 	struct dentry *debugfs;
-+
-+	struct fuse_corner	fuse_corners[];
- };
- 
- static bool cpr_is_allowed(struct cpr_drv *drv)
-@@ -1600,19 +1601,15 @@ static int cpr_probe(struct platform_device *pdev)
- 	if (!data || !data->cpr_desc || !data->acc_desc)
- 		return -EINVAL;
- 
--	drv = devm_kzalloc(dev, sizeof(*drv), GFP_KERNEL);
-+	drv = devm_kzalloc(dev,
-+			struct_size(drv, fuse_corners, data->cpr_desc->num_fuse_corners),
-+			GFP_KERNEL);
- 	if (!drv)
- 		return -ENOMEM;
- 	drv->dev = dev;
- 	drv->desc = data->cpr_desc;
- 	drv->acc_desc = data->acc_desc;
- 
--	drv->fuse_corners = devm_kcalloc(dev, drv->desc->num_fuse_corners,
--					 sizeof(*drv->fuse_corners),
--					 GFP_KERNEL);
--	if (!drv->fuse_corners)
--		return -ENOMEM;
--
- 	np = of_parse_phandle(dev->of_node, "acc-syscon", 0);
- 	if (!np)
- 		return -ENODEV;
--- 
-2.53.0
+Best regards
+> ---
+>   drivers/pmdomain/bcm/bcm2835-power.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm=
+/bcm2835-power.c
+> index 0450202bbee2513c9116a36abaa839b460550935..1815eb4ee69b9b672b5e3144=
+02f1cc9897c57dcb 100644
+> --- a/drivers/pmdomain/bcm/bcm2835-power.c
+> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
+> @@ -166,8 +166,6 @@ static int bcm2835_asb_control(struct bcm2835_power =
+*power, u32 reg, bool enable
+>   		break;
+>   	}
+>  =20
+> -	start =3D ktime_get_ns();
+> -
+>   	/* Enable the module's async AXI bridges. */
+>   	if (enable) {
+>   		val =3D readl(base + reg) & ~ASB_REQ_STOP;
+> @@ -176,9 +174,10 @@ static int bcm2835_asb_control(struct bcm2835_power=
+ *power, u32 reg, bool enable
+>   	}
+>   	writel(PM_PASSWORD | val, base + reg);
+>  =20
+> +	start =3D ktime_get_ns();
+>   	while (!!(readl(base + reg) & ASB_ACK) =3D=3D enable) {
+>   		cpu_relax();
+> -		if (ktime_get_ns() - start >=3D 1000)
+> +		if (ktime_get_ns() - start >=3D 5000)
+>   			return -ETIMEDOUT;
+>   	}
+>  =20
+>
 
