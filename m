@@ -1,81 +1,81 @@
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C90C37C909
-	for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 21:21:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3D602571DA
+	for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 21:22:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.52
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773609680; cv=pass; b=NrsJLRopY7HXECM+BC95vm3NXfXEArH7R/PfhxtHbyv7bzvk0yOtGX+pbuHncaLnZdJw1h/Xv0+ghbzkTK0FjzNWv15JWwYkM0/dK5gZE2XaY2g5VxzGL3+7umqrb2+EFpHvOthzKOQn0ifYPduPS+fE89EnkilajPMXERSL5ow=
+	t=1773609770; cv=pass; b=rw/rStnTa7pH9l8y8E7Rl0EBexjwqBqEopCKEbl/2lno5bT05ZdZXscakJbIEdpk3zZEH13rC6OwI4WktPMmZYYGW3BO5Oe1CF0gpOTL0tBfwIgDRKYEomkBDwzKvRLhOTcWIyzXwt1ktRPhxYuL2wfBhr2zO/uzvW50vTfMbng=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773609680; c=relaxed/simple;
-	bh=Fn6OScHObcdiYuVDP96/DqXZ9Cr8pfsSOyt+88yaKbM=;
+	s=arc-20240116; t=1773609770; c=relaxed/simple;
+	bh=kSDFhyU3+XacTSQQkN7fKJ39pcLSb9VyjW1OzdgSjVA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WYreO5oNm8B2IZGxRu/shCRl1cnSG0g7LiN38kFCmkjrDG7hY2nwL6reXOQdarzxXGOFVd3lk78uJonykEjJr8Jyyogy4jeEzXNeAhXMJFCAbN5PrcRKbZG1Tm/aYjwJswY+IxhR3vQdHUivGQpkqdJ+m2QoMJ2mwiOTwB3Z1XU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=G2DbcstQ; arc=pass smtp.client-ip=74.125.82.179
+	 To:Cc:Content-Type; b=HEo19JC5mU5n1+Bh0xAuz9wNWFYqNoEu2tv+5x5IEhCgm2kKAs9bJWKRvO0OSFsymP8PgfDfdBT7FAqzB+0nZCi4Owjkly6W8Sg47vPziJR08i1+6MBmVKRu0tSMB6xnRKjX91gT7+UFe22GmIxk061em9JdWCREq+GtyyR8noc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Q/huJ/Ki; arc=pass smtp.client-ip=74.125.82.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G2DbcstQ"
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-2bda3b4318dso262048eec.1
-        for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 14:21:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773609678; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q/huJ/Ki"
+Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-128d600ad25so184953c88.2
+        for <linux-pm@vger.kernel.org>; Sun, 15 Mar 2026 14:22:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773609769; cv=none;
         d=google.com; s=arc-20240605;
-        b=WZ6Ez2RYiZTqKC5TQjhpCaIPOECnlJOvX9c8CcJyk8d9RUTIBvb+mzpavD5tY4IRrA
-         Fzp61nROmIXNTk2T8GrDuGhOxOZdiBZ/8hZzdgJsERUwJIaDZJN6MHPgoQHZZi5Wf9uI
-         sF5hw0cHIlpX8xDS7Ux9DnRkDvC1XOnzozfN9DGdavw16ffMgi67hLSoQneXgEonH0v9
-         8vaIcQpTOajYtZgbTHeQGfvrdkby7hDTnjmCi3dNkx5IJG5MS0epnvQjbxyFQzlSQSjY
-         uGe6kItnZ9V55GxrtU+7AHD0baym8VpFZz5xtmzdH57xcB1lLvcVxC/nRXFTtclr5taX
-         Yilw==
+        b=Ci86QiCBRkTiXz1CFXRrhBMrA1qlQ+AdLlBD9bixC+EbGUwy2LwCvl4xx6sQa3WaZJ
+         6N34+Z/GH7M1mPAhwJPTu76/T2/9kiUAnkTGsOEenwoPFCkE8gj1T9M5FUt7OPlLLXJA
+         a8yfzKfZVb5nykZe5SkNrG7Fr7jXnWTpJP9MlWum49ZkwgpYIeLaHsshzpVFLkbqN9Yn
+         fxveqeleGbO6Qxo0twdM4J9UFJgsN/FUxFRbuOQKlAv/PLiGaMuf2XmgMQezClu/Mrkm
+         HnUQPUy1JvC2K04itu7ui23yv/rph/a57+tYKRPEdjFiYE+Xr4HMp6HNnOqGieJ5Rb4b
+         3HgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=Fn6OScHObcdiYuVDP96/DqXZ9Cr8pfsSOyt+88yaKbM=;
-        fh=WiSIK87XBDbn0eqFo+jT9G1LwPGsSXqwbW7kl1acrqo=;
-        b=PPKPAqz8+FlEJiEDqM1rsOH4ZRofIgzrw6BLCHx8I4qblmKcbaGbUyHCre6ndMGf6b
-         5DdWhd36C9DzXQz0Am7rdH134lq5jgc0Pd7w6WIua1Uc1w/lV2+a6fn38hxN2HVA3etj
-         R/O3tgIb3ijXs0p8uqOPBEgMby232GPlp6o7tR1nfPXMzwfTjPu1uzGpYMOyQzv/yok6
-         ovuH+kRh06o5X8C+g8M1Sb82jILJDqOpzP7kKPV4g1jqV7GD8Md9CNxYk1v8muBWgISk
-         JG6IzFzbbg0Bft5sJf+iG9fi/j3UXQvdCcO/38j3hAsHFWkml8BPYT+abLaja1PSQlAO
-         lYww==;
+        bh=kSDFhyU3+XacTSQQkN7fKJ39pcLSb9VyjW1OzdgSjVA=;
+        fh=N9id0pApBlVO5dV76p3C9FQoLY8aKM3VgCZqAbfXh4w=;
+        b=er1i0IttFlKVJjiT9s7QNMJTklRIEvtZGs9F7WYKbaCqgeAwtX+EL0P/KhOg34bLIh
+         f4Jfvqy3rXeExXejrOrYIV65E+f/bq6N6OVDtjxIIY9Jc1LTK0bk+2oB9pLGaMw7X8aT
+         fgqLXfM4/WVETfZLjEM6BsBEnI9tNmLrzzoJ14gh31WQGu8Jzql5rlpI4S8vS+lOBZvU
+         KMF+IWnXU9HRzC90UBI3s2y/CwcjuUDbLTAIiOgHaW7j6C2YA4JzQgGNelyXIcvs4rZp
+         j70BpRMkxD5XEpRglJed9+M6Jt+F0lCaQ2oPGzqB0QWgam6L1hX+BzncmW/DWkM6UrZ4
+         GYJw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773609678; x=1774214478; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773609769; x=1774214569; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Fn6OScHObcdiYuVDP96/DqXZ9Cr8pfsSOyt+88yaKbM=;
-        b=G2DbcstQJyhhyB5mlD+Qb3EkBO9lKpJQo2RLHpE0R8m4VLmkRz1v0vAESQFURaDFlf
-         PzClwltVDd0OqK62WpH77d9oggfnVa5NmdNYUjz39Hi2jryxIFm9Q9yD6Fx++iKffXQh
-         N3po2QZZ0RDRxr9x4ja/5nEaOS2BjpFNwIsFw1Av/mADXd0opmfpXpQWAYJvzerROC6V
-         qWo6YgPlAH6egchMg+nzS37FQh+6jdmHaauRjrbgXSynn4MeANbFZ8w0VYyyj+21UJHN
-         oQM5yWWlBH6fxu+myQm8ilzILTzXRT4LxaA2GLQNpvtu0941kro7w2bQTQRNDuH8jzqW
-         hS1g==
+        bh=kSDFhyU3+XacTSQQkN7fKJ39pcLSb9VyjW1OzdgSjVA=;
+        b=Q/huJ/KiOdJ751cjDDRy7U6TBUcfFqoBVzQpVRCCwX2fKry2+8A1EOONg5aKulI5WM
+         GYocyUvbeu2yuyWNDN4Kmk7ts7/jmoVAUguIfQbw3TDA7LRTpXiTeR02Lhw2o1pa5NB/
+         obWigZu6J03oQHKyxLbaGai80z9ve3qYfcXwkIxwc2eVLCUCbGw6Qjrcd+KBNLkiu+oE
+         lyLay7NJMQY3685dqNkc7xZ96ZB6Jpdj3nRaW9ts9tpLozVA321sEXi+nyzveTea45bP
+         htL4uUZKhgScwijjIwLu6hTO9N6z5U54iWw3KXJLutIZ3WH/FpzTPiSGTGsnzCLM218X
+         ks2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773609678; x=1774214478;
+        d=1e100.net; s=20251104; t=1773609769; x=1774214569;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=Fn6OScHObcdiYuVDP96/DqXZ9Cr8pfsSOyt+88yaKbM=;
-        b=SiRBkdV+K3ELm4arc+E/li7ZogtLtKt0nOx2FPadTG/CP6uDbML3t7WIhKLxaEhvf4
-         rIfMVc+gZGK/J8++woD+7aBPnTpYwx+sr9R0AjQfPe2Di2crx15uI69/92VFw9sE/sm9
-         umGrbAVFSeUJlsPS/gGeGYJUhraei0+wTiZmBPaABPgbWmNWuUsTxUthUQNaH1zacGF2
-         rcmhPosGn8CCXu5TfvxPhcE7lzRjU7CPRZv2wjim5JgTFW1mARm03INB/iwyysEr3SpE
-         H0+4s1EY2e4OuNs9H6iystjrQC0qrFmjHUqcpHJ4d23HRav300ZAYAEIeP0Gm0FzGiTN
-         5XZQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW/EnsC8YydKvPiMUzGx+bJkMQKtORYAaf3pyUExAagbwyvdQPkHrc14tchEVosXCsw4hqZ4rtcXA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz490gVSvc4gDzO52AOX57bPemmiaAwXNhnFmZ/6+XAWSlpTaLF
-	VdzNN43TpsmjfR8O+lc0ERv9xVpdvkv1/fbAudoTddJEZ0wlWEUzItx0sFW8PF0kEzNZj2kOZDC
-	XDZVll/wnsFgRn7Yd0dnwq65e2Ir9HY8=
-X-Gm-Gg: ATEYQzzLUwFBYlyveKuaJjdQKdx21yV9mx6ItT4a7V2NuGZ3hfZCJCwKLXnqfHpdCWz
-	/vgLVbd2+oiDxskaakgIVZAlseCA+xLiSfo42bAkIgkXdkfD89fp7JbMsR06NMH4yhX80WUCGMY
-	TbvPc+pgAFtvwyVDYg6nscbbHHBZhLyTl9KFziUauJ6D7mZKCc5QYNwyLkUrqLLT4P/iRFSwK4Q
-	I4udAHwQGfZiDTw9bl9CxTZMgRAC1l9CEo7T2kr2szKS2IrDGx+7TwGzAFuP0as1eUUHG5F1p7p
-	dGvag6ZyFnxwpFn8R4qfYM6lD/ac+7MUUgX64QJgboRA136HykM8W2SOjKu/jcfjZa7asVbqm+9
-	MP2cf1UXH+aHCggacbOsyYmk=
-X-Received: by 2002:a05:693c:4088:b0:2c0:b4c4:2b25 with SMTP id
- 5a478bee46e88-2c0b4c42ea9mr744151eec.6.1773609677624; Sun, 15 Mar 2026
- 14:21:17 -0700 (PDT)
+        bh=kSDFhyU3+XacTSQQkN7fKJ39pcLSb9VyjW1OzdgSjVA=;
+        b=muYZmvOFBVkKC8B7/RS3HFoiIVZcPG6dK6W2JHqtnQKb2PY5Y6EzXi5GJa/8Bq6DKT
+         QPXjLpSx7bka+1FFJY9s2UbvvGabK+PDW0o0/nZ+WxSf7vFEPtpsvbvDDGQaLyf8jyvc
+         4jIyhw1clspNSaq53ftL78omegzgwn+WGgxD1Fy4qNbBAMV+OjGsaaGRYEUl6aCXvjkg
+         6cP3Q42r/SZuK/d15zOQW40e5mTAJMNoofpmDW/6UoWz7cLJ6XaAekmk1dEF14xCguVW
+         3EsuysvaT/EYeD3omuyfWijamazd1FSn7WV557WYM3u63MIYd24w/ZF1zyZg833ssXcH
+         Rm0g==
+X-Forwarded-Encrypted: i=1; AJvYcCVhvgH+hpC6SGgZoaEzeUfEEfi1TCcWSdpq73J81iGgXzs550pXBGH3Gs9itx9U33Q/0CiEwdoagQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxStLJCVmwLt8poqO40Q1T9iXW36wfk52IQmM8gNim5kyVBzez5
+	oSQ5HJeAYo0o9MIVBDuK4Uwd15reM4OjsO7855Z3NLscK80p7rDI1BJVstbdN96PBgpRuVhwNOo
+	x9SiixOiwe/kYN/7c+6WoKfaB769A/gI=
+X-Gm-Gg: ATEYQzx7lozJvUyGzr3r8EPsmsLQTHes2snDLRhKG5i+kZqCZ3Y266Z2QjpyAIKzYRj
+	88zTTG7DLS29qZAvRyDvGJEnbhM6NTIgP/eWZIXvEKSIuymfqYwNdbExMDgCNWfC+31vWRUfUm3
+	qYo71EiDufEmwRw6CKpH3d3XlhL69vAej+mL6cG9fjMpc2cergjQpfWSHhFXpBgwKbusDU1cuyR
+	bdsWS0gTh+lPUZEBkh3I2Q/HMM60RrcgeTk3L8z8ZYncvUZA3x6OUEMW5FWCVukMbGAAqfqCqtg
+	XIPbRGjdavH+0F2DpMOFQDHXn/VAQJHTVaP4plRP41EgOuTahXDoQykh1L8SYC0dRwPkzUJn+QF
+	gwoRCgDpGkyfrTTlw5kndKsc=
+X-Received: by 2002:a05:7300:e887:b0:2b7:e929:856b with SMTP id
+ 5a478bee46e88-2bea5590920mr2510000eec.5.1773609768815; Sun, 15 Mar 2026
+ 14:22:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -83,12 +83,12 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 References: <CANiq72mWdFU11GcCZRchzhy0Gi1QZShvZtyRkHV2O+WA2uTdVQ@mail.gmail.com>
- <20260307170929.153892-1-ojeda@kernel.org>
-In-Reply-To: <20260307170929.153892-1-ojeda@kernel.org>
+ <20260307170929.153892-1-ojeda@kernel.org> <CANiq72=drAtf3y_DZ-2o4jb6Az9J3Yj4QYwWnbRui4sm4AJD3Q@mail.gmail.com>
+In-Reply-To: <CANiq72=drAtf3y_DZ-2o4jb6Az9J3Yj4QYwWnbRui4sm4AJD3Q@mail.gmail.com>
 From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sun, 15 Mar 2026 22:21:04 +0100
-X-Gm-Features: AaiRm510VDRQcNtTttKVQ75yM96x2koxa41q6VuLJJhInLQt6nz9bFa1tZUsSWA
-Message-ID: <CANiq72=drAtf3y_DZ-2o4jb6Az9J3Yj4QYwWnbRui4sm4AJD3Q@mail.gmail.com>
+Date: Sun, 15 Mar 2026 22:22:36 +0100
+X-Gm-Features: AaiRm52WZuU_9qvGI6K7_I3dVWa7hrbA1AfH9ApfWZiXnxNTtXGlv6pDXlVsoyg
+Message-ID: <CANiq72kvxvTh1_8U+1aFCXRNxDY_HQUzkhzjoo+8vTrkCSWoNQ@mail.gmail.com>
 Subject: Re: [RFC PATCH] rust: kbuild: support global per-version flags
 To: Miguel Ojeda <ojeda@kernel.org>
 Cc: a.hindborg@kernel.org, aliceryhl@google.com, bjorn3_gh@protonmail.com, 
@@ -99,23 +99,12 @@ Cc: a.hindborg@kernel.org, aliceryhl@google.com, bjorn3_gh@protonmail.com,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Mar 7, 2026 at 6:09=E2=80=AFPM Miguel Ojeda <ojeda@kernel.org> wrot=
-e:
+On Sun, Mar 15, 2026 at 10:21=E2=80=AFPM Miguel Ojeda
+<miguel.ojeda.sandonis@gmail.com> wrote:
 >
-> Sometimes it is useful to gate global Rust flags per compiler version.
-> For instance, we may want to disable a lint that has false positives in
-> a single version [1].
+> plus `clippy::double_parens` for 1.92.0).
 
-Regarding this, we currently have a warning on 1.85.1 for
-`clippy::precedence` and a few in 1.88.0 for
-`clippy::uninlined_format_args`, so we could use this to sort those
-out (plus `clippy::double_parens` for 1.92.0).
-
-(We will see how hard it is to keep all these versions clean in the
-medium-term future when more Rust is in the kernel: we have the MSRV
-bump cadence now with Debian Stable, so it may be doable, but worst
-case we could consider relaxing the policy to just the latest stable
-release and whatever linux-next runs).
+I mean < 1.92.0.
 
 Cheers,
 Miguel
