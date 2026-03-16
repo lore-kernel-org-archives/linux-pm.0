@@ -1,209 +1,206 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A93D7251795
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:32:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61F3C78C9C
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773653528; cv=none; b=ozXrE+zuz6vuWhsFMyvq5cKq6Jb79qglcjXexENwU26MzLQnip4DpKM48EKgWmlHAIAQ+dcmbnQGHU2w/Aka702J0sc6v53odMHOpb2ZSEYEomyd59aAuVplwdm6f5eJq4m8sJ3Y/HVzjq6gfufOYHpHK2+dFCV02pFC3UN/g3Y=
+	t=1773654344; cv=none; b=rGstMVTP+zQvaZCp92nIubqZwoFAfZ0YI7bN3asZFXebfCTZbtEb5b3cKMtqgiBdLnYJMHlcU5WmdG4/PXU+s2r6qqOVaaH/T70bt6HO/nteQBc1vbeQ3LVnnFWcDc7qBEURVx+I+aKqQrc+Sob2vRsRbr2bfLSX2uDmP6t4Y1g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773653528; c=relaxed/simple;
-	bh=XJqokLOZsKTYJReR4cyIg3v1eo4NKzO7ugmYAgK7NWE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZsjVtim86xbLkfOq4PDmrzVWYLzemnwFpwOsL6gFM2XD3sTbTWRgeViwegucCuhfJziuIQL/Pb1NZsX+GGXInUBXbzTzNa0cbSgEMod2GFpjpnMqqXZH66XeBFQ5qTdP4XuvDH4kJms2s7ncxZgCJJq6Jt2mvkH8SYWUX7JfZEQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JePlYEyh; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fA9sBT96; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1773654344; c=relaxed/simple;
+	bh=wNifxD/uVuc7NAbXzSxDhaJ7op2FNUcGF/+rEs7q8XY=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=GZYDD75qtE5cZUBJDMiPBZqCLzDCgCMPpg9OEhTET84ivFmAGfH3+Xy9G6kT7rS2k/Z34ZueD7ksU+9GqjchnRR0MzBZ6bYdFzfn8SmViLIyubavF8IVPKzlZlypm0YNxBtdzFnJ9MNITogVgwYANa/UjFuuN76Tn9fsqJdZHfA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=RkIpYnIB; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ae/QgGRU; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JePlYEyh";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fA9sBT96"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62G65BwU1068188
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:32:06 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="RkIpYnIB";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ae/QgGRU"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62G64dRN3777661
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:43 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	f8X5kFWCBMHnHAO6UFq3igterPL5sWg/kPVCVlpvea4=; b=JePlYEyhlCzzXls6
-	LZ2P+MaAKZ5JahO6nscuCySZNkWfk30ZcQ4xJ3/Y2uRH9nqnblZTMAF8OWFrSEPI
-	rVZKqXQ+5kVKsIkUHmWONICVePSvzDKAwyafuhyFOkm9QJbxjEOhbRJwqKT9MBze
-	GWTklqboGjbvlxhDPB2bOvjrT0jo1vYaQpXiKUE4tUYgTuyJLDnEeon8wnzskyYw
-	EnUl0cPicCScLFq60prGJNts9wbABE1N1USnzRoqdhOyw5HOaq4QPGBUPvQTwV2+
-	wYxhW4jj/rtyx8j2LDo8YI6hpOf2osdafuLhe8NAS8B3OSZ11RtLATUPNkIWSraR
-	s2yThA==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cw027d2x4-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=eZX3+pV1mLh4qQV/ja7HXP
+	0WPf1mmp2fnKR9a3HpTPE=; b=RkIpYnIBHca+sMT16Qy0AUvaVdmiMC/ZMaDeJw
+	nudeVmDv68Z0PU1UJ1zceSKj5smRxTI/jOGS1e/JGesQ5HKc5B0m2kkd4cxtPsve
+	qPylS5qhdkk7yzcgXLQ6XyDTDDwltTQ3yyNCCtB1zdjB84kBCB6yFULjlxlw/K4Z
+	4uomx0/Idy6zBMQvuMh78Ucy1YqKsgfJSe4nV27j1XN0gzLlUmRx4J4KaWvWRQmE
+	LiqZ2snYGLS2bpapFcpzTud9dxsxAvAmmsbDj5kbE6LrCDrLWNWCNaTjsTwcnCNK
+	r6PWGbLNsdyqN7RlCw9rszhOJlHIKzOTSjAZdxEpwweJFa2A==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cw0y7vyww-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:32:06 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8cd84943c76so3967689785a.0
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 02:32:06 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:42 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-8cdae902bccso2296324885a.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 02:45:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773653526; x=1774258326; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=f8X5kFWCBMHnHAO6UFq3igterPL5sWg/kPVCVlpvea4=;
-        b=fA9sBT965t7Dd9ov+TbJ2AHU/+GUF71qsf52yQV649o2SUau0ZAhVlXJqlr7iZugDM
-         Zi8n7v9OBKZqw1CD/quikp9lfAhsjao/um5XDPZAZ1FQOEppNZb039X0uv9z76t0NGa8
-         HLGCgRkLY9jyPGRau1mQ+44S+5S4YJyPFrwciX53uVqUBGOHT1m6RFFgRdWcj5w2QZez
-         PE7gIfVhlrUgjgaVSkaRha3YIIVdZIdBSn08fkrKDphOfxl1/5sMaA6YdYrhCml37fJQ
-         3ZlcO/ONtqR66U4NXtnijHmf266Wc1pNDyMsCWenYQQYtBf8KERpJJSKZWLvFVVEup9C
-         BHMw==
+        d=oss.qualcomm.com; s=google; t=1773654342; x=1774259142; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=eZX3+pV1mLh4qQV/ja7HXP0WPf1mmp2fnKR9a3HpTPE=;
+        b=Ae/QgGRU5CTzgyyqoEWpShJ/xGZX5zCSN0RSgfLn+vVLCN3FczDGrs0/JYdWhQV2lt
+         yG+CIwVI2jTq1bh7St+OWknF7nN6LM7OstyZT0m8L2DB9qT+uYajfcylk/9lkxgoqOc6
+         34iMVnO1qEqZ7o8hEeUNn1/Pcnq6m+5ChlQwthulFlGCtFzTpEelAYUdmItu0OEGO0cE
+         HO/hEP9ZxkCzsDdjx/nXrQqoQJVgmdj/ebZPEogCSh6iFFiyvqKWyeeHHWYLewda7EWv
+         JYpg+7WTBnI0AMChNlBYM4Wr3h5y6wv5okT7FaOfyk0d9df8za5y6J//pDCq8zhCf62l
+         eK9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773653526; x=1774258326;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=f8X5kFWCBMHnHAO6UFq3igterPL5sWg/kPVCVlpvea4=;
-        b=PjaVGwWFtDtJH8EeoW3J7rb4GYbCCNA1i0ZnA5Hq+2czoOh62f2D1WEa4d2r8gDQzD
-         8qeZiYVFcEkfd4yFkbWqDufdHckNFhPkwcIDYqZI8omfkgw/O898AqiehKyKLpNnRIdx
-         1WRD1kxOPeKHILXiqvIWFBDrcQTLxpRGuCPfJDaZs55dkNBATj47etkW8POJ0B1uMPme
-         H3z8z/+NAul/S+Qm15cVetck1b1pWJoRLeRfowR9bp+nJKbScwXIG07G4wsjMspI2C8z
-         qqf06tkgjud/AONu3c0Hdf11dlI99eL4au4LkaxHtO7586gL2eCcstp9DEOnE3d2DFot
-         BkMg==
-X-Gm-Message-State: AOJu0YxfODrwfuuqOgS8QabQLBXCN/A2YQWcCuZIZYNMYMviBgDb/A3n
-	vpxswhZvEQ++U5Ip9u2vPHzAJDT4yW/xEsIND/+9Bia7jfSlDmH95/BU3A60KINQZebh37YAw5h
-	n8l7H0nGGTvx0eTqAKO4ZMzKP/CjtmlPY8/xPJKrL34W6kN3rs524FSYEw73j2EkDc6XokQ==
-X-Gm-Gg: ATEYQzwkB8d7wcNKWJ3X0bfK0X4uWgYCIyLrQW8U1zcDHualhuCi1ISr0pFqZHrpH/X
-	QYjSKX3vFHRi7VB+9f6A+1eczh+KBqFXdL7Jwi6bG4KKKvAlR35y/KhlqX1DdtS6XqTdyenMFRB
-	yOlmwlZX+g45k2bibn3A6QXHhYwXMOB0Zh6Lk9nIeqY4TMrW23Ju9pZYgEsU7Hh+abfA7CLxPPS
-	NzboAosbEqiCaVG8xj9vCb2AStsJgbEalHSXJMuWmAUqv3jlsEPdAWMb0QPehJv5FEKOHYJRF+Q
-	1BvTIKv8rNCjnAchQ0dVd1029mh5VEiZdlyKcG9DNFIdyYG12GI5FbwOHgPswgayWYPyzXHtR7y
-	G/Rt8JRhOEXgEfwhXILsOlXNaoOvwDOSUZtRO5gXl+AppUebCx5UFPnAeSUp7zdL8ygrKbkJaNZ
-	2NNka1S5s7
-X-Received: by 2002:a05:620a:4441:b0:8c7:110e:9cd5 with SMTP id af79cd13be357-8cdaa8c59c8mr2259642685a.45.1773653525767;
-        Mon, 16 Mar 2026 02:32:05 -0700 (PDT)
-X-Received: by 2002:a05:620a:4441:b0:8c7:110e:9cd5 with SMTP id af79cd13be357-8cdaa8c59c8mr2259638385a.45.1773653525298;
-        Mon, 16 Mar 2026 02:32:05 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:5dfc:3995:22ce:d286? ([2a05:6e02:1041:c10:5dfc:3995:22ce:d286])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541b6f6e6sm871921055e9.10.2026.03.16.02.32.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Mar 2026 02:32:04 -0700 (PDT)
-Message-ID: <ba23f8c8-a842-4498-b52f-528baed62325@oss.qualcomm.com>
-Date: Mon, 16 Mar 2026 10:32:04 +0100
+        d=1e100.net; s=20251104; t=1773654342; x=1774259142;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=eZX3+pV1mLh4qQV/ja7HXP0WPf1mmp2fnKR9a3HpTPE=;
+        b=YSR1d2IOzXOfMO8umiLnvjMMUHSDvK5oL2nOKFk42+mVKBYu77Zxq+f8ViXiTPAw9N
+         EhLhKE5FnpeWbEgEPQzTQQzHrLQ5sG6rE7fYvDnKV57yJ79PMvr5IPJw7OsLtSqP/8Gv
+         uevmZHnHNJrAU93iX5RvfsEYVEOXtBSvkhYx9J5Rs7XeNlJ49osbFFbLOZaDeK7PYVou
+         7Zv3zU+FOt36rUG6wwcPScn0LUEX2yxORAwv2XmVXDJLbkF6dmsHWBDg7QAK+pqNvC75
+         gM4OKCBYKcG01zfzJdlGFEvz7/CjJSKPEIaSZylkYcFzGhAFb+2dQn231NhLeIkHhM9F
+         CfjA==
+X-Forwarded-Encrypted: i=1; AJvYcCU+g293g+2ELsqrgHMQJnct5FI0jsrZ7Cih/qSl5ZwtEn2A6+3MxzIh4w9iSMHlJcqoxvJtwdpRdw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxdVpxaeow00Gzs/xxTCxdqQnmNDf/sZ+2ip90gnUjLM62cZ2kV
+	Uh6IdJWhafIf5qlDgD38FMVUjytiCWMeDPZDyYbB8K49dOOmOKdmiMxkplEnofs2faTGHsfkkoZ
+	hrylxlmOIMig2k+1RGcDAPYo3UFHeD5qi8RvcWxJvAWH0wncffa1qKnts4zHdrw==
+X-Gm-Gg: ATEYQzw0hwNZGrDCoFQPuObqFVrGSIbHtQ6b0TBL/pK/opSgUlEBr0UbdrIvJASmgQk
+	irsezUjqNGdgLDcjz1S9mH95umluAXJUaaHa71dENOdYbPzLaL1jjxojihhdgE66GdwWtg5Qvtb
+	T27cJ0jBH6N//XwnB8HE8SmR6uxTvRtCUoxHaUMjtRpUIEhKaWRHVGqSgKeWDfzJIM9XoJL7K5W
+	JHKgulq1B0bJj899ZLv0SJGYvFHzUq//JiyE0vir3bP5oLyjT31KG7lCg0izQMdJv6oR92s3WIR
+	9fvvvLVGI2mbHRb1km8xH+pw65RNfxtW1+jHvP4Q4izOW4dp/YsOtCQ798e3z3F8EMVc9iCwReh
+	4YnMVk+jecCiIQJkx7uW50Ro+IqNfwKtHqcIKax8AWN9SfuIPDSYe
+X-Received: by 2002:a05:620a:4483:b0:8cd:942e:82dc with SMTP id af79cd13be357-8cdb5b24ef6mr1646095485a.41.1773654341674;
+        Mon, 16 Mar 2026 02:45:41 -0700 (PDT)
+X-Received: by 2002:a05:620a:4483:b0:8cd:942e:82dc with SMTP id af79cd13be357-8cdb5b24ef6mr1646091385a.41.1773654341260;
+        Mon, 16 Mar 2026 02:45:41 -0700 (PDT)
+Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:ba9e:e504:fb0b:f1f3])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541ab9f9esm503138755e9.4.2026.03.16.02.45.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Mar 2026 02:45:40 -0700 (PDT)
+From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: [PATCH v2 0/9] gpio: remove uneeded Kconfig dependencies on
+ OF_GPIO
+Date: Mon, 16 Mar 2026 10:45:20 +0100
+Message-Id: <20260316-gpio-of-kconfig-v2-0-de2f4b00a0e4@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpuidle: Deny idle entry when CPU already have IPI
- interrupt pending
-To: Christian Loehle <christian.loehle@arm.com>,
-        Maulik Shah <maulik.shah@oss.qualcomm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-References: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
- <39ffe4f6-5716-400d-963b-06675a727225@arm.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <39ffe4f6-5716-400d-963b-06675a727225@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: WaX865TV6RsjhN4D_8QqLagNjoQhakDd
-X-Proofpoint-ORIG-GUID: WaX865TV6RsjhN4D_8QqLagNjoQhakDd
-X-Authority-Analysis: v=2.4 cv=AqXjHe9P c=1 sm=1 tr=0 ts=69b7ce16 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+X-B4-Tracking: v=1; b=H4sIADDRt2kC/3WNwQ6CMBBEf4Xs2SWlCk09+R+GQ1MW2Cgstko0p
+ P9u5e5lkjfJvNkgUmCKcC42CLRyZJkz6EMBfnTzQMhdZtBKN+qoTjgsLCg93rzMPQ9IujbkjLd
+ OWcirJVDP7914bTOPHJ8SPvvBWv3a/661QoVdbY2tGjKWzEViLB8vd/cyTWUOaFNKXyKp+Ia1A
+ AAA
+X-Change-ID: 20260304-gpio-of-kconfig-e257ea7c9a09
+To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+        Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, Linus Walleij <linusw@kernel.org>,
+        Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sebastian Reichel <sre@kernel.org>
+Cc: brgl@kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-pm@vger.kernel.org,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2162;
+ i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
+ bh=wNifxD/uVuc7NAbXzSxDhaJ7op2FNUcGF/+rEs7q8XY=;
+ b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBpt9E0vDJ6dx7Ia4fQ84h8eE2etKlWvxV+vL3m+
+ FEVG19udtmJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCabfRNAAKCRAFnS7L/zaE
+ w6/JD/90RDo1/kiO8qCAJrcGU364A0L3DxLqgOQi4iAqM2tT6AZ4IE8R29waLnPi/L94XNMGssc
+ 6HxIsy7Y3Ohu7YbbfxiNadlDhwEg4QMApO1BXmGT7W6fGaMT2tujzIZ6P/trHTtxPCxSZPMbm9h
+ B0Yk4F+ywcUCsz7Gfo2fflEKhwsAZwFbqUBajx7MdcfyVG06fLVTuOm0YcrxNs8H3zLk8TrRRLj
+ y2vRZG/XYSoDtRBSaaaD2C/CEOPsRUnoKlqTIfgGwvhEmmek16YWzK+KI+sh5IRsDtq3H1lckrL
+ kkVeGYBIf26BclCEVCYN9DImO9zVCx87bHDlap000sJ+jKQ6B7dNX2rzdnyXjOVP09M2LNo54nV
+ B4mpWGWorOKR/74PzhcrIJW8U4jBDOtpXy3wN/CcOvAmIw8gkOXa6SKZRmqQ4LkNyfX3gvtPaR4
+ XMzn8xIsNQfoXqRA4MMgKnuKvlTUwohMokVN7fSuEouA0y32kxCZf0/HKcLxr3pYphztnqNr63k
+ iRLkyCoSuqmuPq+wBr9QhvOnwt9s5ralyNijLmHZcfnl0BJcKjESTvYqKk2onuu5C+5BFSun/M/
+ A668YboqoN3Qf3s/yg1NIYO6jISfe+v7bKqUiWThxSvIU/hoSR11H/omw20ui5GzM72/Mv8Y8Tv
+ BB/HL11BpfULi5g==
+X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
+ fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
+X-Proofpoint-GUID: i_6VuJWtQykNVirXZ3gDiNHu0uMsLyOK
+X-Proofpoint-ORIG-GUID: i_6VuJWtQykNVirXZ3gDiNHu0uMsLyOK
+X-Authority-Analysis: v=2.4 cv=D9xK6/Rj c=1 sm=1 tr=0 ts=69b7d146 cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
  a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=NEAV23lmAAAA:8
- a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8 a=lggpn7pwzXPsZ0vCzx8A:9
- a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDA3MyBTYWx0ZWRfX/gZUSuWqqSao
- Z/t4IPO8EiGjJTWjZ/jk58IrlqvoB98GokLfMCsNRfVIaPoRSIL55aQAh04bkiqlgLqueyMAiLH
- a4dfD7oRT8Jfrj1ufDewtcJ85mmn1XNo3NP4+IMAfFcYEqY3aCbLgnWZO6c5f/Omjjkjx6Plz1d
- Xal8jXlYaOyFn8fdf11D9T5P3zrGNIEqppn0/vadCxJWb6Nja33NHQaKRqbsNodpl8MSkuFaLGY
- tY6DJpbkmOuZBshpaEubwUdprzyFaCsNClER3bnbkVXRJCOLicO3HNBE3WD4vBpmT7Q9ijbSFzA
- VxfpWc/8XUvTAQBVfR3iZUQApGc1NS3uWnC/GS3a87aiFtFdu52zUiIeUsmczZ7EJUo1iELutdn
- MyIoFvy4vZEWyNdglPAV3CXAL2NrQ/aO6eDyCmWVmyOX8ZZqWZT+R7mZDnNFnjE4JFvto/ihrQh
- 7re87TX/nxMSXfeT5CA==
+ a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=bC-a23v3AAAA:8
+ a=EUspDBNiAAAA:8 a=RbMT-lXscSRh0E1VkaUA:9 a=QEXdDO2ut3YA:10
+ a=NFOGd7dJGGMPyQGDc5-O:22 a=FO4_E8m0qiDe52t0p3_H:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDA3NSBTYWx0ZWRfX0LHZQ6U8uR1a
+ kM3Y5Iun4NsbqRqhxJSyHHBTMznBESSC3FFBAM9hS+b5W4FjDZzW4Ql5XYJRG0hGQd7LQcJWEs7
+ c045A1k2MfMTSzC2qTCiTe4dZrnDZ+vpLO4WAUbDfsNdEcfXNxXujDsefxB00ENGyE7+w6Vlw0w
+ 8qii9k0+1MTQqKt0wHSUbOkjLIq8sI+htccdPE7IZjc7eLpq9Q6la6ESFU+eDYJdOVJkWuCIJEm
+ 6NZZlK8EPKRJzXrjiLxN9AHoV7Aygs0JHu/H1Ale0zw2Wj4L+gdeTJQ1Ra9kTIrvH8/8AkQSW4f
+ kgpTQSYpXba9D4Gqqgpo2mxiMLS4G0aPbEhknml0ZBRbhrunwn2irdWVfMJgIC+4TUEpjf274iR
+ fzHRxwucWtZ3iA3X43vJNwcfDw3dNDmzizgPkK0PlnsLhvn0yDuVGyMQS0V0BwEYFmt4fnsLLqn
+ ljgOBRSGmiw7v3Zg1wg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-16_03,2026-03-13_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 bulkscore=0 clxscore=1015 phishscore=0
- spamscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0
+ malwarescore=0 impostorscore=0 lowpriorityscore=0 spamscore=0 suspectscore=0
+ clxscore=1015 bulkscore=0 priorityscore=1501 phishscore=0 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603160073
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603160075
 
-On 3/16/26 09:55, Christian Loehle wrote:
-> On 3/16/26 07:37, Maulik Shah wrote:
->> CPU can get IPI interrupt from another CPU while it is executing
->> cpuidle_select() or about to execute same. The selection do not account
->> for pending interrupts and may continue to enter selected idle state only
->> to exit immediately.
->>
->> Example trace collected when there is cross CPU IPI.
->>
->>   [000] 154.892148: sched_waking: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->>   [000] 154.892148: ipi_raise: target_mask=00000000,00000080 (Function call interrupts)
->>   [007] 154.892162: cpu_idle: state=2 cpu_id=7
->>   [007] 154.892208: cpu_idle: state=4294967295 cpu_id=7
->>   [007] 154.892211: irq_handler_entry: irq=2 name=IPI
->>   [007] 154.892211: ipi_entry: (Function call interrupts)
->>   [007] 154.892213: sched_wakeup: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->>   [007] 154.892214: ipi_exit: (Function call interrupts)
->>
->> This impacts performance and the above count increments.
->>
->> commit ccde6525183c ("smp: Introduce a helper function to check for pending
->> IPIs") already introduced a helper function to check the pending IPIs and
->> it is used in pmdomain governor to deny the cluster level idle state when
->> there is a pending IPI on any of cluster CPUs.
->>
->> This however does not stop CPU to enter CPU level idle state. Make use of
->> same at CPUidle to deny the idle entry when there is already IPI pending.
->>
->> With change observing glmark2 [1] off screen scores improving in the range
->> of 25% to 30% on Qualcomm lemans-evk board which is arm64 based having two
->> clusters each with 4 CPUs.
->>
->> [1] https://github.com/glmark2/glmark2
->>
->> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
->> ---
->>   drivers/cpuidle/cpuidle.c | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index c7876e9e024f9076663063ad21cfc69343fdbbe7..c88c0cbf910d6c2c09697e6a3ac78c081868c2ad 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -224,6 +224,9 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->>   	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
->>   	ktime_t time_start, time_end;
->>   
->> +	if (cpus_peek_for_pending_ipi(drv->cpumask))
->> +		return -EBUSY;
->> +
->>   	instrumentation_begin();
->>   
->>   	/*
->>
->> ---
->> base-commit: b84a0ebe421ca56995ff78b66307667b62b3a900
->> change-id: 20260316-cpuidle_ipi-4c64036f9a48
->>
->> Best regards,
-> 
-> So we already do a per-CPU IPI need_resched() check in the idle path.
+NOTE: Each patch in this series can be picked up independently into
+maintainer trees.
 
-The need_resched() is not the same check. Here the interrupts are off, 
-the test check if there is a pending IPI before entering the sleep 
-routine which will in any case abort because of it. This check saves the 
-costs related to preparing entering the idle state, the call to the 
-firmware and the rollback. Those add an overhead in terms of latency and 
-energy for nothing. As stated in the description, this ultimate check 
-before going idle was introduced also for the cluster idle state and 
-showed a significant improvement [1].
+CONFIG_OF_GPIO is a switch that enables the compilation of the gpiolib-of
+module. The module itself handles GPIO lookup via the OF-node tree and
+is automatically enabled on all OF systems. It does not export any
+public symbols to drivers. There is no reason for them to select or
+depend on it in Kconfig.
 
-[1] 
-https://lore.kernel.org/all/20251105095415.17269-1-ulf.hansson@linaro.org/
+This series removes any such dependencies from Kconfig. If a given entry
+has no other dependencies than OF_GPIO - they are converted to OF to
+avoid new symbols popping up for everyone in make config.
 
-> Your patch uses drv->cpumask, which will contain all CPUs, preventing idle entry if
-> any CPU has an IPI pending?
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+---
+Changes in v2:
+- Make gpio-watchdog depend on OF && GPIOLIB
+- Drop picked up patches
+- Link to v1: https://patch.msgid.link/20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com
 
+---
+Bartosz Golaszewski (9):
+      arm64: Kconfig: drop unneeded dependency on OF_GPIO
+      net: mdio: drop unneeded dependency on OF_GPIO
+      gpio: drop unneeded Kconfig dependencies on OF_GPIO
+      leds: Kconfig: drop unneeded dependency on OF_GPIO
+      watchdog: convert the Kconfig dependency on OF_GPIO to OF
+      bus: drop unneeded dependency on OF_GPIO
+      staging: media: max96712: drop unneeded dependency on OF_GPIO
+      power: reset: drop unneeded dependencies on OF_GPIO
+      media: i2c: drop unneeded dependencies on OF_GPIO
+
+ arch/arm64/Kconfig.platforms           |  1 -
+ drivers/bus/Kconfig                    |  2 +-
+ drivers/gpio/Kconfig                   | 53 +++++++++++-----------------------
+ drivers/leds/Kconfig                   |  1 -
+ drivers/media/i2c/Kconfig              | 12 ++++----
+ drivers/net/mdio/Kconfig               |  2 +-
+ drivers/power/reset/Kconfig            |  8 ++---
+ drivers/staging/media/max96712/Kconfig |  1 -
+ drivers/watchdog/Kconfig               |  2 +-
+ 9 files changed, 29 insertions(+), 53 deletions(-)
+---
+base-commit: b84a0ebe421ca56995ff78b66307667b62b3a900
+change-id: 20260304-gpio-of-kconfig-e257ea7c9a09
+
+Best regards,
+-- 
+Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
