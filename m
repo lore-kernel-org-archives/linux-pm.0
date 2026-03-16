@@ -1,37 +1,38 @@
 Received: from mail11.truemail.it (mail11.truemail.it [217.194.8.81])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2F5B3B7B71;
-	Mon, 16 Mar 2026 15:57:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D4B521A95D;
+	Mon, 16 Mar 2026 16:01:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.194.8.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773676658; cv=none; b=X4PpdP4p8bM2FhBTNlnjioOW01RSy9qvOftojtHl/Cjl7fcEMfPN2nKukWehZXbYaKAXROu9+eBy5S9pRdQ0EINwpCBDsY+FPmvvMcgDu0chTh86yjqBwIrEexw2ftpXtBGpXKc2nRfXd2yXbPFUJuFSd4tG491VjYcsRkIbchk=
+	t=1773676902; cv=none; b=jEUefmdLpr++0E6LMmuuXgPPA6GDQLzzkTlzR1L3DPGBiSjtg9wN7PXtgGpUPlSbcI8jKjbXF3FksVREFC2FOG4lgtGsqNZVrBaw5FHy3wSHvhLOUrfTA/zfDPAbNTMhVamQU/MaRpA5ctqNXVav0rBIw4jYXBYcuzEnOnQ3mC8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773676658; c=relaxed/simple;
-	bh=bauaN0rwvZ5ND9o7f7AFwAWfFGS+QIjNybGjmwWpuCo=;
+	s=arc-20240116; t=1773676902; c=relaxed/simple;
+	bh=UyIZsrjKkEUaxHt7v/3reYw2j7lqEdtoJPKx1gtB+vg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B4vskjYHl08NXuI6jiLPRhDfv6n2/IbarLnwx+DJ1gXmCvWO4w7Y1qfqASP9pVQhhkZwNBQp0GGlmFz7m/6JkfZbcDu+k+D6a4xzolGPLEapkJVESMV7hy4sALsSuqAfOGqhcSI6V/VzdsfmWtN9v5hvE2Mkiso+cCKdq4LBrfc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it; spf=pass smtp.mailfrom=dolcini.it; dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b=CG/wOdvh; arc=none smtp.client-ip=217.194.8.81
+	 Content-Type:Content-Disposition:In-Reply-To; b=lnn6takAcXSd3itde/2vXnBg5BAVVFLZBfDh4GMEt1QdX8LupMlW1PF9J+zG6TsvYAHCwsAEXaqXdvUosWHiisWp6xZ3SBKOlHdHtFaxQtS8KaOlVhAw2tcBYoTWKwbCO+ewsKVs11iyKVb1suVXmDKSCo5b1ZSYXwiRZPugn7Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it; spf=pass smtp.mailfrom=dolcini.it; dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b=USsn5Id1; arc=none smtp.client-ip=217.194.8.81
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=dolcini.it
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dolcini.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b="CG/wOdvh"
+	dkim=pass (2048-bit key) header.d=dolcini.it header.i=@dolcini.it header.b="USsn5Id1"
 Received: from francesco-nb (xcpe-178-82-120-96.dyn.res.sunrise.net [178.82.120.96])
-	by mail11.truemail.it (Postfix) with ESMTPA id C1FF71FA6D;
-	Mon, 16 Mar 2026 16:57:31 +0100 (CET)
+	by mail11.truemail.it (Postfix) with ESMTPA id C71371FABC;
+	Mon, 16 Mar 2026 17:01:37 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dolcini.it;
-	s=default; t=1773676652;
-	bh=zEuqXYLwdnr/h2zdw/7lA5Y0YBEZ5aLcF0pDLSnsKRA=; h=From:To:Subject;
-	b=CG/wOdvhkrI7VJK5Ltm22UKXsL1TWqPJGrEkmQM+OFCb5ErieX2h0GmDaGar7l/ze
-	 dgScDmFbeGnU9gikIGI01vX8r4e+g2W5/9T84gM9+q8M+mrV1FfH+imeEH4nnXXcux
-	 LrV3izZODDCLPPypcPFykWsZAJuI1caBi/1PnVJAhKqElkzp1GKzdxHXEiq7GphQ6D
-	 8t/g9xlSqhRsoikEwRnegUgGcOFSUZJIrR8quurrXVH8VwaOlBShvhp1VVn4zzBk8w
-	 5Uq2Ow60hu8UsLtkPE0RhPbdCfe08wV9+smZ8Vq03LZbtCOZv9qoSVdyJPcSGEjXq5
-	 2TY3p4bNKKzcA==
-Date: Mon, 16 Mar 2026 16:57:27 +0100
+	s=default; t=1773676898;
+	bh=vhmAKk+4/zPYmmEuoWhhmx7M2Dlod4lMaxpiHqopJPk=; h=From:To:Subject;
+	b=USsn5Id1GmEi1ZI96WmPiKcNx5xtNxmE3ma2bHTvCZQCOUvz0rO8RB6gxDHv2RzIk
+	 3JVU78saC5ArM5uD4CAO0axgfLhJ2i8IDHgYBhFLuuF2oPkd2HlJWChqXw6BYO3qE0
+	 MWqeCtDUd2O1QTdeKO05aT3spatvaXHOwJxMSXQvekKQWGVa1drmsPebFltmKrklxI
+	 ecq8AnEVqRs0HuZ4FYHvwG18t1FJt/EhdBlAIkLrXsN6+F6TEK7h8f24DdfY+ER6Vl
+	 sau069TI35K4nCbRPQjwhSGm8iTSkH7aWZqbzUGjhxjYhfO8j4qh01eSfJFKO/P5xu
+	 dehkwvvtlNz9w==
+Date: Mon, 16 Mar 2026 17:01:36 +0100
 From: Francesco Dolcini <francesco@dolcini.it>
-To: Nicolas Dufresne <nicolas@ndufresne.ca>
-Cc: Francesco Dolcini <francesco@dolcini.it>, ming.qian@oss.nxp.com,
+To: Thorsten Leemhuis <regressions@leemhuis.info>
+Cc: Nicolas Dufresne <nicolas@ndufresne.ca>,
+	Francesco Dolcini <francesco@dolcini.it>, ming.qian@oss.nxp.com,
 	linux-media@vger.kernel.org, mchehab@kernel.org,
 	hverkuil-cisco@xs4all.nl, benjamin.gaignard@collabora.com,
 	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
@@ -45,10 +46,11 @@ Cc: Francesco Dolcini <francesco@dolcini.it>, ming.qian@oss.nxp.com,
 	linux-arm-kernel@lists.infradead.org, regressions@lists.linux.dev
 Subject: Re: [PATCH v4] media: verisilicon: Fix kernel panic due to
  __initconst misuse
-Message-ID: <20260316155727.GA43134@francesco-nb>
+Message-ID: <20260316160136.GB43134@francesco-nb>
 References: <20260306031059.801-1-ming.qian@oss.nxp.com>
  <20260312173349.GA137045@francesco-nb>
  <e559b822c5f4fc9167d40544172c6c450d88636a.camel@ndufresne.ca>
+ <3b30506f-f651-44c4-aca2-29e99ce60cba@leemhuis.info>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,60 +60,74 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <e559b822c5f4fc9167d40544172c6c450d88636a.camel@ndufresne.ca>
+In-Reply-To: <3b30506f-f651-44c4-aca2-29e99ce60cba@leemhuis.info>
 
-On Mon, Mar 16, 2026 at 11:25:53AM -0400, Nicolas Dufresne wrote:
-> Le jeudi 12 mars 2026 à 18:34 +0100, Francesco Dolcini a écrit :
-> > Hello,
+On Mon, Mar 16, 2026 at 04:56:09PM +0100, Thorsten Leemhuis wrote:
+> On 3/16/26 16:25, Nicolas Dufresne wrote:
+> > Le jeudi 12 mars 2026 à 18:34 +0100, Francesco Dolcini a écrit :
+> >> On Fri, Mar 06, 2026 at 11:10:57AM +0800, ming.qian@oss.nxp.com wrote:
+> >>> From: Ming Qian <ming.qian@oss.nxp.com>
+> >>>
+> >>> Fix a kernel panic when probing the driver as a module:
+> >>>
+> >>>   Unable to handle kernel paging request at virtual address
+> >>>   ffffd9c18eb05000
+> >>>   of_find_matching_node_and_match+0x5c/0x1a0
+> >>>   hantro_probe+0x2f4/0x7d0 [hantro_vpu]
+> >>>
+> >>> The imx8mq_vpu_shared_resources array is referenced by variant
+> >>> structures through their shared_devices field. When built as a
+> >>> module, __initconst causes this data to be freed after module
+> >>> init, but it's later accessed during probe, causing a page fault.
+> >>>
+> >>> The imx8mq_vpu_shared_resources is referenced from non-init code,
+> >>> so keeping __initconst or __initconst_or_module here is wrong.
+> >>>
+> >>> Drop the __initconst annotation and let it live in the normal .rodata
+> >>> section.
+> >>>
+> >>> A bug of __initconst called from regular non-init probe code
+> >>> leading to bugs during probe deferrals or during unbind-bind cycles.
+> >>>
+> >>> Reported-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> >>> Closes: https://lore.kernel.org/all/68ef934f-baa0-4bf6-93d8-834bbc441e66@kernel.org/
+> >>> Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
+> >>> Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
+> >>> Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
+> >>> Suggested-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> >>> Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
+> >>> Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
+> >>> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
+> >>
+> >> What's the plan to merge this? It fixes a quite severe regression,
+> >> a boot failure.
 > > 
-> > On Fri, Mar 06, 2026 at 11:10:57AM +0800, ming.qian@oss.nxp.com wrote:
-> > > From: Ming Qian <ming.qian@oss.nxp.com>
-> > > 
-> > > Fix a kernel panic when probing the driver as a module:
-> > > 
-> > >   Unable to handle kernel paging request at virtual address
-> > >   ffffd9c18eb05000
-> > >   of_find_matching_node_and_match+0x5c/0x1a0
-> > >   hantro_probe+0x2f4/0x7d0 [hantro_vpu]
-> > > 
-> > > The imx8mq_vpu_shared_resources array is referenced by variant
-> > > structures through their shared_devices field. When built as a
-> > > module, __initconst causes this data to be freed after module
-> > > init, but it's later accessed during probe, causing a page fault.
-> > > 
-> > > The imx8mq_vpu_shared_resources is referenced from non-init code,
-> > > so keeping __initconst or __initconst_or_module here is wrong.
-> > > 
-> > > Drop the __initconst annotation and let it live in the normal .rodata
-> > > section.
-> > > 
-> > > A bug of __initconst called from regular non-init probe code
-> > > leading to bugs during probe deferrals or during unbind-bind cycles.
-> > > 
-> > > Reported-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> > > Closes: https://lore.kernel.org/all/68ef934f-baa0-4bf6-93d8-834bbc441e66@kernel.org/
-> > > Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
-> > > Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
-> > > Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
-> > > Suggested-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-> > > Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
-> > > Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
-> > > Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
-> > 
-> > What's the plan to merge this? It fixes a quite severe regression,
-> > a boot failure.
+> > To be decided this week. The commit message does not say if it was released, or
+> > came in RCs (and I didn't check myself yet). I'd say, if its the first one, it
+> > will go through next and backports, otherwise its is really tight to get that
+> > into the RC series, but serious enough. Please fill the gap if you have time,
+> > and I'll handle it later, probably tomorrow.
 > 
-> To be decided this week. The commit message does not say if it was released, or
-> came in RCs (and I didn't check myself yet). I'd say, if its the first one, it
-> will go through next and backports, otherwise its is really tight to get that
-> into the RC series, but serious enough. Please fill the gap if you have time,
-> and I'll handle it later, probably tomorrow.
+> Well, FYI: the culprit according to the fixes tag quoted above is
+> e0203ddf9af7c8 ("media: verisilicon: Avoid G2 bus error while decoding
+> H.264 and HEVC") [v7.0-rc1, v6.19.6 (286d629d10640b)]. Given that this was
+> * reported 11 days ago
+> * reported at least two times
+> * made it into a stable series
+> it is something that Linus would like to see fixed by now in mainline
+> afaics, as ""the rule of thumb should generally be "within a week",
+> preferably before the next rc."":
+> https://www.kernel.org/doc/html/next/process/handling-regressions.html#on-how-quickly-regressions-should-be-fixed
+> 
+> If that fix is too dangerous a revert is of course an option, too.
+> 
+> BTW, given that the culprit made it to a stable series, it would be a
+> wise to add a stable tag to ensure it's backported (it otherweise might
+> be silent dropped and/or applying might be deferred).
 
-This fixes commit e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error
-while decoding H.264 and HEVC"), that was merged in 7.0-rc1.
+Absolutely ... the tag here should help b4
 
-As of now, because of that, 7.0-rc is not booting on affected platforms
-(i.MX8MP), to me this needs to get merged before 7.0 is released.
+Cc: stable@vger.kernel.org
 
 Francesco
 
