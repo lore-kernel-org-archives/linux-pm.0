@@ -1,54 +1,54 @@
-Received: from mail-dl1-f74.google.com (mail-dl1-f74.google.com [74.125.82.74])
+Received: from mail-dy1-f201.google.com (mail-dy1-f201.google.com [74.125.82.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 625623128C9
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 15:03:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.74
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 39C0E39C64E
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 15:03:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773673390; cv=none; b=dety++ki5JmZ3F3wEPFMRwx0x9AvUPLH6batEW4XYJbMGFA5+zrvKyVgI+ZFxi/uOzu2oURmnRQ8WFdDFFRx2162fBGN5quW1O7YGb+tv+4oTNptBP4/isJaB7rbBgh3i67lgrnegIhBM2inOTh0pX/8o4jFq407NFsSiainGwQ=
+	t=1773673391; cv=none; b=kaMaiw2Jmci3SwPWkSu9ib81i2a3Sx5eRYkgEdxIEUhCmyE6wD58VgqJwjb4zwbsqlK69d5oFZs88+ea30viA3eHMK2NggxakeeVRld3LAEizfateQzTnwwo5yzg1fgOZrVGF6DCvu7e5Q+bNm9M7B4Pj2YcmRsk3zRoOY7N1lw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773673390; c=relaxed/simple;
-	bh=4emKMQpGnwxg+WazHqPYVUn+OWaTGfYXDzRjRzw8P5w=;
+	s=arc-20240116; t=1773673391; c=relaxed/simple;
+	bh=FAgn8PATspMB+pVd+tPE4w1KID3ZX0qCAzJbN6EYHd8=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=D4efIt3RXWiLYQdTq1uf4TaWH91P/yrMG+5kSmFg7AfnM2oon2mID0e513yDlvBV0gH6wEX1LnAkvRRUhTUyfmcf3qsRYQTU2lj1K7ipm2ldfcnzBKS49QbqrnD0OOc/I07Gi7fGd8BvgOorEp75ycDpc3FyRcxGEdUNO/ti+ok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--badhri.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=qlBMYJRk; arc=none smtp.client-ip=74.125.82.74
+	 To:Cc:Content-Type; b=pPeZkfvhfotkT2pf6XVscmbgcFDVmlnKRogynx34mTljhYc89fQEAxJPWD0siSI8o8buLO0+aMAIl3XIp//QHKjArCfxZSeZA2+ZIsC6ZiZBsk8rfVAfvrw4CneI1Zg+B1I4jzC42ddLyGUJtBcLWQcbDpuEexh+Z3yRg2074/k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--badhri.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=DWIkJ5bd; arc=none smtp.client-ip=74.125.82.201
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--badhri.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="qlBMYJRk"
-Received: by mail-dl1-f74.google.com with SMTP id a92af1059eb24-128edc72e5bso3747337c88.1
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 08:03:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DWIkJ5bd"
+Received: by mail-dy1-f201.google.com with SMTP id 5a478bee46e88-2beabdd96f2so4100909eec.1
+        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 08:03:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1773673387; x=1774278187; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1773673388; x=1774278188; darn=vger.kernel.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=w9RHSlwF1VNunYEv1VCERKRFyFUXQhzCOoRBUszxeFM=;
-        b=qlBMYJRkp7a95vHKndyLrVL0mm2L6kf0dgvzHQk9WosJHc4q9/tWyGwVodMuu95Rzc
-         BGBHvLEl3ftKHbqj9yoF4bvcNPD3q6ntpObMQwHwsG4SejVq0uqRipzdI0m1BxXEHqvS
-         qyRnEycN0W78ld0ETOXyOc5x1MfxCRYgXiwv/WCs7LQ8tG3kbZhEGJ1Pk9MFlWxTyOFE
-         fh/Dl2U/O7y0Tkt95DozyX8rD922tFapkvW9zdG5xG8f0vyYemKkbMomdFaNZsKzHYDy
-         BFIT1Zra1dprqK6x1kiJYMQa03CkPa4O0rQVDznzo7gjnZ7+nOBVwoVltbpfOxGihZ80
-         HEEw==
+        bh=dlmlDuwufDiMYRaMF84SHpudU9RqQKI1UxXXTehJXjg=;
+        b=DWIkJ5bdRc5rhsla3JsCMOhHQUb7puHBUvoEjv0JaP6KvJavtyR0CVpRx5Lc0FMaj5
+         DZ/Qpxhekm470MJa7v1l00KrHEq+YjL5GE3gKfVfuXo9dXwpSlMEEc4NtpKuMC2ACnmW
+         222Mz8J8bbPwjxtzDYPjyQ+Ur4mDaP+Kq0FeRHVGhS2LOMhRjuwTnW55sR+cAuMR0Prs
+         6cEOlf2RLYicKjRtg9tAWep+JjF01Zsc5sxRr8ffFC4dHw9gaFxnI3cst6NtmKXML0sP
+         cH6XR04CXH7owcdWLsyJcHGqz1rvQseA0vdq1wpXvyfUrFo4NAvD2aSB58IaM6FHdVSv
+         rAaQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773673387; x=1774278187;
+        d=1e100.net; s=20251104; t=1773673388; x=1774278188;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=w9RHSlwF1VNunYEv1VCERKRFyFUXQhzCOoRBUszxeFM=;
-        b=i5N6oXIKotIrwwZDIxqBLuy84RrmXIGl/4n1w5AQ2NFjbUxm9xttflHGF53HzRkKNi
-         SOC7r2TCzJ8Ir6mr8D6KV8nZMAqhWpWEl8MmTzfwiriFEVRjq4Xh8Eky+op3Xu8IwqNY
-         uExe5Rb35ensSp5ITkCi2LDPke5PumyCbsdKNhXLG6nTZXFjrjOB1CKnWkqqi6GsvWcH
-         n4w/L9YF05xxe5tVScaXcwsKXayg28cxs6+f6FIbe1hO2T4lkJMIvLYWoAPzVONqipuH
-         dtQ+RiANpJyvcfEAkfdaiU2t2mOjkW7PHLC+SX6k5gGaUHHN8wTQdRcuczGIXPLYKfE8
-         bDqQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWmeXs5/tB8K0+VamZi2jfLITqYLioIDZ2IQT6pIY2YVKt7+QpxIio10DqpnMrkEKZqczxE4fwGHw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywx5tfthAhsD7nocRv02jRHD5tPTpa9DKKWvqifo8Yt7U51TA5o
-	voNbWbQHzd4hCwTqP2rdQQTx3cFDBMOOP3n72Zb12cWVdXW/4eSLQeNC8fy1PcNwLb/t+2WaDE3
-	LK1XYsA==
-X-Received: from dlbvv17.prod.google.com ([2002:a05:7022:5f11:b0:128:d41f:2c06])
- (user=badhri job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7022:628b:b0:128:cf5c:5357
- with SMTP id a92af1059eb24-128f3d0dce2mr6738893c88.2.1773673386080; Mon, 16
- Mar 2026 08:03:06 -0700 (PDT)
-Date: Mon, 16 Mar 2026 15:02:59 +0000
+        bh=dlmlDuwufDiMYRaMF84SHpudU9RqQKI1UxXXTehJXjg=;
+        b=UroMMLOrWgyQaLHAbtomy4mVrArf9VrAUbsk7qXsHkR4r5hnTvJTe1BuCN7i8lJsYF
+         paK6uFZYNM47g8ljXEYdqhxik4+ZrEbKxy4bUjElaV8lLqbVOY5Ugf5v5nEWux1DLWtS
+         gPDld7F06dKCWvGCWqlxgaE3gdq21Se1bGzxevIKxTrM0e1G+vl1EGWJUCCCT4vUw3UA
+         sgOcX50i0sC3bkzesPdd/Nn11d1e5wdeCTdrMPmS9iIgrQYTLv1NkYwZ96ae2aGsfkdx
+         jP6UOv07khQHHhJI54Pedgvu2LRVeukRErYY1UoZL3z/IexfVZTj1AoR2qm3fDGMt1M4
+         XbUQ==
+X-Forwarded-Encrypted: i=1; AJvYcCViYODVUcf63BCFdIL3t+mDwuZQbrbh1nuhgsnWx3Snam5IWB2nU5oOfTM+zPPh94t86x77V4Vv3w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwsBQWL5Sq6x8VdmxynpF7P+6C9Hlo/azMyIgdti3qHOkQc/ZI9
+	2Ydna3TNKfJXiW9FDgpsKN1cSsJvVTzu1Z7iPDm6/oJhfSVo5DDTXBxiVPnObkAkhAovPxkuywO
+	hF6XCIg==
+X-Received: from dlae14.prod.google.com ([2002:a05:701b:230e:b0:128:d97e:9ee4])
+ (user=badhri job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7022:1602:b0:123:2d38:928e
+ with SMTP id a92af1059eb24-128f3df8ea9mr5063477c88.35.1773673387856; Mon, 16
+ Mar 2026 08:03:07 -0700 (PDT)
+Date: Mon, 16 Mar 2026 15:03:00 +0000
 In-Reply-To: <20260316150301.3892223-1-badhri@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -58,8 +58,8 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <20260316150301.3892223-1-badhri@google.com>
 X-Mailer: git-send-email 2.53.0.851.ga537e3e6e9-goog
-Message-ID: <20260316150301.3892223-2-badhri@google.com>
-Subject: [PATCH v2 1/3] dt-bindings: connector: Add SPR AVS Sink APDO definitions
+Message-ID: <20260316150301.3892223-3-badhri@google.com>
+Subject: [PATCH v2 2/3] power: supply: Add PD SPR AVS support to USB type enum
 From: Badhri Jagan Sridharan <badhri@google.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
 	Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
@@ -69,70 +69,64 @@ Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-USB Power Delivery 3.2 introduces a new power supply type SPR AVS.
-Add macro definitions for the USB Power Delivery (PD)
-Standard Power Range (SPR) Adjustable Voltage Supply (AVS) as a
-Sink Augmented Power Data Object (APDO) in the device tree bindings.
+Add two new members to the power_supply_usb_type to represent the
+USB Power Delivery (PD) Standard Power Range (SPR) Adjustable Voltage
+Supply (AVS) charging types:
+
+POWER_SUPPLY_USB_TYPE_PD_SPR_AVS: For devices supporting only the
+PD SPR AVS type.
+
+POWER_SUPPLY_USB_TYPE_PD_PPS_SPR_AVS: For devices that support both
+PD Programmable Power Supply (PPS) and PD SPR AVS.
 
 Signed-off-by: Badhri Jagan Sridharan <badhri@google.com>
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- .../bindings/connector/usb-connector.yaml      |  5 +++--
- include/dt-bindings/usb/pd.h                   | 18 ++++++++++++++++++
- 2 files changed, 21 insertions(+), 2 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power | 3 ++-
+ drivers/power/supply/power_supply_sysfs.c   | 2 ++
+ include/linux/power_supply.h                | 3 +++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/connector/usb-connector.yaml b/Documentation/devicetree/bindings/connector/usb-connector.yaml
-index 901986de3e2b..a00b239960a3 100644
---- a/Documentation/devicetree/bindings/connector/usb-connector.yaml
-+++ b/Documentation/devicetree/bindings/connector/usb-connector.yaml
-@@ -364,8 +364,9 @@ $defs:
-           "Universal Serial Bus Power Delivery Specification" chapter 6.4.1.3
-           Sink Capabilities Message, the order of each entry(PDO) should follow the
-           PD spec chapter 6.4.1. Required for power sink and power dual role. User
--          can specify the sink PDO array via PDO_FIXED/BATT/VAR/PPS_APDO() defined
--          in dt-bindings/usb/pd.h.
-+          can specify the sink PDO array via
-+          PDO_FIXED/BATT/VAR/PPS_APDO/SPR_AVS_SNK_APDO() defined in
-+          dt-bindings/usb/pd.h.
-         minItems: 1
-         maxItems: 7
-         $ref: /schemas/types.yaml#/definitions/uint32-array
-diff --git a/include/dt-bindings/usb/pd.h b/include/dt-bindings/usb/pd.h
-index 6cff2339bda3..1e64a1f563f9 100644
---- a/include/dt-bindings/usb/pd.h
-+++ b/include/dt-bindings/usb/pd.h
-@@ -60,6 +60,7 @@
- 	 PDO_VAR_MAX_VOLT(max_mv) | PDO_VAR_MAX_CURR(max_ma))
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 4b21d5d23251..32697b926cc8 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -675,7 +675,8 @@ Description:
  
- #define APDO_TYPE_PPS		0
-+#define APDO_TYPE_SPR_AVS	2
+ 		Valid values:
+ 			      "Unknown", "SDP", "DCP", "CDP", "ACA", "C", "PD",
+-			      "PD_DRP", "PD_PPS", "BrickID"
++			      "PD_DRP", "PD_PPS", "BrickID", "PD_SPR_AVS",
++			      "PD_PPS_SPR_AVS"
  
- #define PDO_APDO_TYPE_SHIFT	28	/* Only valid value currently is 0x0 - PPS */
- #define PDO_APDO_TYPE_MASK	0x3
-@@ -85,6 +86,23 @@
- 	 PDO_PPS_APDO_MIN_VOLT(min_mv) | PDO_PPS_APDO_MAX_VOLT(max_mv) |	\
- 	 PDO_PPS_APDO_MAX_CURR(max_ma))
+ **Device Specific Properties**
  
-+#define PDO_SPR_AVS_APDO_9V_TO_15V_MAX_CURR_SHIFT	10	/* 10mA units */
-+#define PDO_SPR_AVS_APDO_15V_TO_20V_MAX_CURR_SHIFT	0	/* 10mA units */
-+#define PDO_SPR_AVS_APDO_MAX_CURR_MASK			0x3ff
-+
-+#define PDO_SPR_AVS_APDO_9V_TO_15V_MAX_CURR(max_cur_9v_to_15v_ma)		\
-+	((((max_cur_9v_to_15v_ma) / 10) & PDO_SPR_AVS_APDO_MAX_CURR_MASK) <<	\
-+	PDO_SPR_AVS_APDO_9V_TO_15V_MAX_CURR_SHIFT)
-+
-+#define PDO_SPR_AVS_APDO_15V_TO_20V_MAX_CURR(max_cur_15v_to_20v_ma)		\
-+	((((max_cur_15v_to_20v_ma) / 10) & PDO_SPR_AVS_APDO_MAX_CURR_MASK) <<	\
-+	PDO_SPR_AVS_APDO_15V_TO_20V_MAX_CURR_SHIFT)
-+
-+#define PDO_SPR_AVS_SNK_APDO(max_cur_9v_to_15v_ma, max_cur_15v_to_20v_ma)	\
-+	(PDO_TYPE(PDO_TYPE_APDO) | PDO_APDO_TYPE(APDO_TYPE_SPR_AVS) |		\
-+	PDO_SPR_AVS_APDO_9V_TO_15V_MAX_CURR(max_cur_9v_to_15v_ma) |		\
-+	PDO_SPR_AVS_APDO_15V_TO_20V_MAX_CURR(max_cur_15v_to_20v_ma))
-+
-  /*
-   * Based on "Table 6-14 Fixed Supply PDO - Sink" of "USB Power Delivery Specification Revision 3.0,
-   * Version 1.2"
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dd3a48d72d2b..f30a7b9ccd5e 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -70,6 +70,8 @@ static const char * const POWER_SUPPLY_USB_TYPE_TEXT[] = {
+ 	[POWER_SUPPLY_USB_TYPE_PD]		= "PD",
+ 	[POWER_SUPPLY_USB_TYPE_PD_DRP]		= "PD_DRP",
+ 	[POWER_SUPPLY_USB_TYPE_PD_PPS]		= "PD_PPS",
++	[POWER_SUPPLY_USB_TYPE_PD_SPR_AVS]	= "PD_SPR_AVS",
++	[POWER_SUPPLY_USB_TYPE_PD_PPS_SPR_AVS]	= "PD_PPS_SPR_AVS",
+ 	[POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID]	= "BrickID",
+ };
+ 
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 360ffdf272da..7a5e4c3242a0 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -210,6 +210,9 @@ enum power_supply_usb_type {
+ 	POWER_SUPPLY_USB_TYPE_PD,		/* Power Delivery Port */
+ 	POWER_SUPPLY_USB_TYPE_PD_DRP,		/* PD Dual Role Port */
+ 	POWER_SUPPLY_USB_TYPE_PD_PPS,		/* PD Programmable Power Supply */
++	/* PD Standard Power Range Adjustable Voltage Supply */
++	POWER_SUPPLY_USB_TYPE_PD_SPR_AVS,
++	POWER_SUPPLY_USB_TYPE_PD_PPS_SPR_AVS,	/* Supports both PD PPS + SPR AVS */
+ 	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
+ };
+ 
 -- 
 2.53.0.851.ga537e3e6e9-goog
 
