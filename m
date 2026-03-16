@@ -1,242 +1,231 @@
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010006.outbound.protection.outlook.com [52.101.56.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEC4624E4AF;
-	Mon, 16 Mar 2026 07:54:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.158.5
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773647682; cv=none; b=UtmQsf+n0CSBGNGuAqB/0/p0oGxUXW8hAXPio0+ioQaNlUMUiBOMSovj/GyfbwrNTy8nsVzlh1erPSP9bviCaNigT/owiUUncHzf/SkTWwhfGxYMIw2M0l1e2y97VbN/hEGiOLtDjE6BrQsIvOHFG9kT2wV24wyb1SpXmUEj0J4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773647682; c=relaxed/simple;
-	bh=xeKoaLy28vZY0IB4shX0/EVzeFo7xiJ2NrBnfAOAmvM=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=gGuJIGTZzpWWpVlaRLkbvevhwyn9J3YmWxqfBZm5fJpWLdLVYr/I6/X0sDlolRMZZiEfQBJbJkrI3W83kqGKIMsbDie4b5+/Rmxx6OzncR0sMl88vnv3NtsI/Ly/k2B6NkSoanTMvlaf1DEI40ntgyT3mIahK6auGNK6gVEjxF8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=jdNe8BBY; arc=none smtp.client-ip=148.163.158.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9290E18787A;
+	Mon, 16 Mar 2026 08:19:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.6
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773649163; cv=fail; b=M+bluLKXVwgbXNqppvu2Al58EDwNB9Mc7M7RImR1/4ULPnUKzHJbw+PywLdtjKGNpRFvMrss8kS+rSFi6DjNxx6gznw1i7BYgpTb/3matVaNtaFnGCktXY3PROmpbC6iGxmwtb6pIbmV56eyJXr20PhKegPw8NLRv0B3PKVgY5k=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773649163; c=relaxed/simple;
+	bh=u8p6kihIC5m+Usb39oUowDP4m/wAO0nhpT6HfVkbsoo=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tjqyOpzjrJf2bsjrYbyY+v6otJjCZavpaBG+rFTDBjHVSmMDgowKl37o8wAfbkE4TO/Ao35IsBy/P9U9gEx8vcbIFVUQR13apyvYhVTT3nDIemMNP8CBbBYtGzWdJpJZVxQkIMXFFQahdzVonLX8vktSs0inYQG8aN81cVseO9g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=VPbuXYjn; arc=fail smtp.client-ip=52.101.56.6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="jdNe8BBY"
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62FFkMKO077903;
-	Mon, 16 Mar 2026 07:54:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0FVA3T
-	Xq20rSO035ojYHOh8hGDPnn5US3uqjG+vCU1Q=; b=jdNe8BBYVi1INYl0orWYNF
-	kl46NOUNdF6IMraKfQqr+EucDdIGkuva0MV1gig9tMLLV1KMcUmbEZ6TTOxqFoDb
-	Ljh1g9MJNZb5GUDDewLl/RLCi+/sWdgXHuA1Q1XMlgynYXeumOqg0Q6sgEeQe+I7
-	X5eVl8DqDKYB7D4X01nknIkD7zDMu/GhsW4Vg71Ngh8fp6/0IPNk2Zsl8Q0NajPE
-	W4ZmOm2CLVR0SEMUBDys8DqXlj1+w46obAz9qPZQ35Eey1EWioYrBquj7vLWVQ1R
-	bmcOhGqdhD0VbF2R1/+L9O1qbZFp+CYwXir6ngGxCgyKhvyrMOedMA1Bi8DswCXQ
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cvx3cphkf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 16 Mar 2026 07:54:10 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62G4AN0W004737;
-	Mon, 16 Mar 2026 07:54:09 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cwj0s42hy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 16 Mar 2026 07:54:09 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62G7s89N49545486
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 16 Mar 2026 07:54:08 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E920620043;
-	Mon, 16 Mar 2026 07:54:07 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5296920040;
-	Mon, 16 Mar 2026 07:54:05 +0000 (GMT)
-Received: from aboo.ibm.com (unknown [9.43.40.241])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 16 Mar 2026 07:54:05 +0000 (GMT)
-Message-ID: <8af73ded803f36dd940411e1fa8919a741471d98.camel@linux.ibm.com>
-Subject: Re: [PATCH v1] sched: idle: Consolidate the handling of two special
- cases
-From: Aboorva Devarajan <aboorvad@linux.ibm.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM
- <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner
- <tglx@linutronix.de>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Qais Yousef
- <qyousef@layalina.io>,
-        Christian Loehle	 <christian.loehle@arm.com>,
-        Frederic Weisbecker <frederic@kernel.org>,
-        Aboorva Devarajan
- <aboorvad@linux.ibm.com>
-Date: Mon, 16 Mar 2026 13:24:04 +0530
-In-Reply-To: <4741364.LvFx2qVVIh@rafael.j.wysocki>
-References: <4741364.LvFx2qVVIh@rafael.j.wysocki>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="VPbuXYjn"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=qyKNXdTNcKM/dx7ivly05gazgaijjbNv59xdUtTLwws3LuTURmKCxzNm6vSjsDgjCO3KWFwFl1EPtcTO6d3L2rujwP1vgzDPMUunfHoCqeqJgSZUI18yFcYwY5Ffxli4f3E5z2NjNRJxUZpYl9q56RT+f4qr89fx7wYtaITj88Hz2OCYVQLPUTGGRN8UqCgI1eacHGxBvuP9eLBaj00vKXr7ftk5Nd1m3axBHrH0tyYQ4DbavsYrI8xF0sVmZhcIkxTfRy0hF3RZcvQoNM4ui+R+yqLVqtOSMwCY3dfnePt2bTCLMtl5dpQcLepLPWIhtdN3BQmJ7g2ph1O9YohhTg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ABZVWCwWxQS/JTiepEZ2I7oesmb0vmwSgqE8KmntjC4=;
+ b=ZBS7Eeqzhj/fBz+m3EBtp5pyTw5HrgeNRSUK7zmeTEur3fvpwqZ7lGLJcJJB5+ywUdSuHVBCDBAw40jBWpv+cRw/ugea4zy1CN83GPJhoHgJgOjX8ysZML+IBkXpo7lNI438tU+HZ/m5DeVs21VMxfQk4q8gsZ41KKBHAiyKGR9S349kzzNWpYiGaUtIlSNzSx/ngogvb837o2/vFwiVmbPUijUqdcvfuJx0OcSQ6WkhhLtzBExksJYWEf/cLHnJbwS75XnIckv1RPmpGSLhtpM1Vned208FaPiy+HitlkWSzBKfMAjw8ipNWT4V3RJ0IxHDI8T8NELgZ5SzMuQDFg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ABZVWCwWxQS/JTiepEZ2I7oesmb0vmwSgqE8KmntjC4=;
+ b=VPbuXYjnhafx1TBAyrvabyhhxIVdIGCGqOsw4MOmlIUuO+2iNloix9L98OQG+WdCllgAu4Ib+g4I7oR2jUkBpGyiYjj7AXiWoPd7oIduR7vtisFovaDC8rnzJjntlXoXPTKAtdb1gNagwagd/S2nnQjaS/RvLBBWGA6s8Gs3v1E=
+Received: from CH5P221CA0023.NAMP221.PROD.OUTLOOK.COM (2603:10b6:610:1f2::25)
+ by SA3PR12MB8763.namprd12.prod.outlook.com (2603:10b6:806:312::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.16; Mon, 16 Mar
+ 2026 08:19:15 +0000
+Received: from CH1PEPF0000AD80.namprd04.prod.outlook.com
+ (2603:10b6:610:1f2:cafe::e2) by CH5P221CA0023.outlook.office365.com
+ (2603:10b6:610:1f2::25) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.25 via Frontend Transport; Mon,
+ 16 Mar 2026 08:19:12 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ CH1PEPF0000AD80.mail.protection.outlook.com (10.167.244.90) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9700.17 via Frontend Transport; Mon, 16 Mar 2026 08:19:15 +0000
+Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Mon, 16 Mar
+ 2026 03:19:07 -0500
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy"
+	<gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Clark Williams
+	<clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, "Srinivas
+ Pandruvada" <srinivas.pandruvada@linux.intel.com>, Len Brown
+	<lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra
+	<peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot
+	<vincent.guittot@linaro.org>, Miguel Ojeda <ojeda@kernel.org>
+CC: Perry Yuan <perry.yuan@amd.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <rust-for-linux@vger.kernel.org>,
+	<linux-rt-devel@lists.linux.dev>, K Prateek Nayak <kprateek.nayak@amd.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>, Ben Segall <bsegall@google.com>,
+	Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
+	"Boqun Feng" <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>, Benno Lossin
+	<lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl
+	<aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, Danilo Krummrich
+	<dakr@kernel.org>
+Subject: [PATCH v4 0/2] cpufreq/amd-pstate: Prevent scheduling when atomic on PREEMPT_RT
+Date: Mon, 16 Mar 2026 08:18:47 +0000
+Message-ID: <20260316081849.19368-1-kprateek.nayak@amd.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=arO/yCZV c=1 sm=1 tr=0 ts=69b7b722 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=QyXUC8HyAAAA:8
- a=VnNF1IyMAAAA:8 a=BDRg9pTkFPxzGgAR9HQA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDA1OCBTYWx0ZWRfXwF7nSAQupkzo
- 3oiJ2ZdwcF9/PDr4eli95+dCE/YCJujodWSo1+vXyI5EshYhmnh6PTGCuJ7PHoCs/npN+yZR2PH
- TYVyWsuW9QnyIrKONvaThI8cEgGe+4yZmp+ZExtC31CW1y/3utSUl8GqVKnnWU3MpnHVre08+Xx
- bsSwXNcD4vCY5Psf51bYEy8QtnIhUjBQu/eoL3NZI3msNWIAVLoyayLWzr/7kl2QzbuqAG2LR7h
- Juf47pdgkW1z2ArEmJ5hjj5b9rJL8ml55PRmHwp0SduUZTpZgIiO1qFXAtQtvC2O4Q5OwBXdJWo
- ginSFzS9BF+QoDwOqAP2QWNAwMkUci9PXyajadZOnoQJZNp2+4Th5iMpMHjRrQjTK0kwEBwpyrZ
- BIpHVeSCcwLjZbypn4swWuXL6WNJlsVaihQCUV2IqWEr8ELNUYukyTu+xWxOkQwcuM72n2anAf3
- 2G8czjbjM4PTBPFV2Kw==
-X-Proofpoint-GUID: OV1SQYwGQVttq20JIlyNzM2hHJ-bC3fE
-X-Proofpoint-ORIG-GUID: OV1SQYwGQVttq20JIlyNzM2hHJ-bC3fE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-16_03,2026-03-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 spamscore=0 lowpriorityscore=0 impostorscore=0
- adultscore=0 bulkscore=0 suspectscore=0 malwarescore=0 clxscore=1011
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603160058
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH1PEPF0000AD80:EE_|SA3PR12MB8763:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1f70b194-e704-40fb-b882-08de8334b668
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|82310400026|36860700016|7416014|376014|921020|13003099007|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	sbWuAYMA9f5hfIclxVf3stdfacv03grEvnMv+YCIa48jmVWhMr6BUq/UcAGdNqxeeBs+hWcZNdR3xw6Q0/GvVlNUUJ3mXfLAFqkgNxGPf1WO/rIQtSNI5YMMbm/CPXrLOjZAe+EjaQyeb8miutADtXcE6R22Cu5oq0/Gx3eJnOejwpD7KRDdXciOnY3rofFrSbO0R4JWTw7Q2EOR5+FJdhBk6JWevYfsgIcf+vfuWEUlp9Hy6YY9Ew1FLjBX8P9jaxbwYMcJGBGMPpY+YJyBLEbtx64KY1GPLLDTWWGiJzcNcwgUVZBi9bvOlyIEe538WojRLJ92Q/4lu5AFetFL6P67RiGg7B5Ret7Q/r2Wk+idxfHVzbbEnSlOvnyKraZrn5WYt59SqYIWdFe0jUod65po2/ZIiI0t68sRDYZtNZM1JyOYUtJYrCmCYRsuoz6LNv0Y43uSTwWYyz87Ldc1GMk0Juelkzn349cBEW9Rn+hnnSWfieEji0EbzjfxpVMoT5uHUz/611dERdxB8GbC3SKdydCVaVtAD01IbNSbhrEQ40NUMPA3506Xk9JJffyBErbYpSFgqEri5YjtmQIUb1iYl+6Vu9viK/k7f32DlWJmbRT53fu5KIWtWLhvlJCnmsryznd6rN/ZX3BDFeb3oERr5V2RGHtODCEsxvPZeg2+Us0PPTpWQRRj67N8SMISoGgScHthrdfDTXdHqXwJaVVTPFR2j+4zVhnH1DL4mj8M3RrByakTOzU3VYn5AHFWGCc1/Kvlt274QmT+laBSrABhr5yeB0lLFaplfdfmMVGcSINSGo0q3yol6d27ryoXixRgDwEaaYVmbx3Jp5UN/A==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700016)(7416014)(376014)(921020)(13003099007)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	VDUBMucg4QyuVwl4Z0aeL55Pr6gEgTQY46ls/jNLFAzBY3mlvzodH2LlzJbTV/usgTN7auFq3sOtEJMt9eMSf7+tOGPA8m/pLVivW8+kbnIQhZJCRZRCpUstUX4Y4W9/ibyhK3S7afCn/0xndoh9Z3yv7RG7BYc2HFYqWCn1iEFeog4TwWKnfltsmNozz9vehCLyxRnMSZiJIq2lUxHKJ1O3X6+T/FBAB15IsGVgRaXNFKOl69I/uO+usAFpemanDMhiBpps4IfK9trtzgWGLer3Y5Q9pzYIKvXHRB8FhEprdEPBq1iegc0rGfX8bLcGJeEs3dhN84TucwJW/UGHFnSDN3GpgDrqsyyojD1HCvhCXbJo15yrzQKVrCB3B2Db5nBMs63lKCBjFEqmFgxnQ90iPC9jTncy1JvKo7TtF3Spi9dUSXtIMEPf/PimSAmm
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 08:19:15.4503
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1f70b194-e704-40fb-b882-08de8334b668
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH1PEPF0000AD80.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR12MB8763
 
-On Fri, 2026-03-13 at 13:25 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> There are two special cases in the idle loop that are handled
-> inconsistently even though they are analogous.
->=20
-> The first one is when a cpuidle driver is absent and the default CPU
-> idle time power management implemented by the architecture code is used.
-> In that case, the scheduler tick is stopped every time before invoking
-> default_idle_call().
->=20
-> The second one is when a cpuidle driver is present, but there is only
-> one idle state in its table.=C2=A0 In that case, the scheduler tick is ne=
-ver
-> stopped.
->=20
-> Since each of these approaches leads to suboptimal choices in some
-> cases, reconcile them with the help of one simple heuristic.=C2=A0 Namely=
-,
-> stop the tick if the CPU has been woken up by it in the previous
-> iteration of the idle loop, or let it tick otherwise.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->=20
-> Based on today's mainline.
->=20
-> ---
-> =C2=A0kernel/sched/idle.c |=C2=A0=C2=A0 30 +++++++++++++++++++++---------
-> =C2=A01 file changed, 21 insertions(+), 9 deletions(-)
->=20
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -161,6 +161,14 @@ static int call_cpuidle(struct cpuidle_d
-> =C2=A0	return cpuidle_enter(drv, dev, next_state);
-> =C2=A0}
-> =C2=A0
-> +static void idle_call_stop_or_retain_tick(bool stop_tick)
-> +{
-> +	if (stop_tick || tick_nohz_tick_stopped())
-> +		tick_nohz_idle_stop_tick();
-> +	else
-> +		tick_nohz_idle_retain_tick();
-> +}
-> +
-> =C2=A0/**
-> =C2=A0 * cpuidle_idle_call - the main idle function
-> =C2=A0 *
-> @@ -170,7 +178,7 @@ static int call_cpuidle(struct cpuidle_d
-> =C2=A0 * set, and it returns with polling set.=C2=A0 If it ever stops pol=
-ling, it
-> =C2=A0 * must clear the polling bit.
-> =C2=A0 */
-> -static void cpuidle_idle_call(void)
-> +static void cpuidle_idle_call(bool stop_tick)
-> =C2=A0{
-> =C2=A0	struct cpuidle_device *dev =3D cpuidle_get_device();
-> =C2=A0	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
-> @@ -186,7 +194,7 @@ static void cpuidle_idle_call(void)
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	if (cpuidle_not_available(drv, dev)) {
-> -		tick_nohz_idle_stop_tick();
-> +		idle_call_stop_or_retain_tick(stop_tick);
-> =C2=A0
-> =C2=A0		default_idle_call();
-> =C2=A0		goto exit_idle;
-> @@ -222,17 +230,19 @@ static void cpuidle_idle_call(void)
-> =C2=A0		next_state =3D cpuidle_find_deepest_state(drv, dev, max_latency_n=
-s);
-> =C2=A0		call_cpuidle(drv, dev, next_state);
-> =C2=A0	} else if (drv->state_count > 1) {
-> -		bool stop_tick =3D true;
-> +		/*
-> +		 * stop_tick is expected to be true by default by cpuidle
-> +		 * governors, which allows them to select idle states with
-> +		 * target residency above the tick period length.
-> +		 */
-> +		stop_tick =3D true;
-> =C2=A0
-> =C2=A0		/*
-> =C2=A0		 * Ask the cpuidle framework to choose a convenient idle state.
-> =C2=A0		 */
-> =C2=A0		next_state =3D cpuidle_select(drv, dev, &stop_tick);
-> =C2=A0
-> -		if (stop_tick || tick_nohz_tick_stopped())
-> -			tick_nohz_idle_stop_tick();
-> -		else
-> -			tick_nohz_idle_retain_tick();
-> +		idle_call_stop_or_retain_tick(stop_tick);
-> =C2=A0
-> =C2=A0		entered_state =3D call_cpuidle(drv, dev, next_state);
-> =C2=A0		/*
-> @@ -240,7 +250,7 @@ static void cpuidle_idle_call(void)
-> =C2=A0		 */
-> =C2=A0		cpuidle_reflect(dev, entered_state);
-> =C2=A0	} else {
-> -		tick_nohz_idle_retain_tick();
-> +		idle_call_stop_or_retain_tick(stop_tick);
-> =C2=A0
-> =C2=A0		/*
-> =C2=A0		 * If there is only a single idle state (or none), there is
-> @@ -268,6 +278,7 @@ exit_idle:
-> =C2=A0static void do_idle(void)
-> =C2=A0{
-> =C2=A0	int cpu =3D smp_processor_id();
-> +	bool got_tick =3D false;
-> =C2=A0
-> =C2=A0	/*
-> =C2=A0	 * Check if we need to update blocked load
-> @@ -338,8 +349,9 @@ static void do_idle(void)
-> =C2=A0			tick_nohz_idle_restart_tick();
-> =C2=A0			cpu_idle_poll();
-> =C2=A0		} else {
-> -			cpuidle_idle_call();
-> +			cpuidle_idle_call(got_tick);
-> =C2=A0		}
-> +		got_tick =3D tick_nohz_idle_got_tick();
-> =C2=A0		arch_cpu_idle_exit();
-> =C2=A0	}
-> =C2=A0
->=20
+Bert reported hitting "BUG: scheduling while atomic" when running
+amd-pstate-ut on a PREEMPT_RT kernel [1].
 
-This unifies the special-case tick handling with a heuristic,
-affecting only the no-driver and single-state paths while leaving the
-common multi-state governor path behaviorally unchanged.
+Since reader-writer locks turn sleepable on PREEMPT_RT, they are not
+suitable to be used in the scheduler hot-path under rq_lock to grab the
+cpufreq policy object.
 
-So,
+Unfortunately, the amd-pstate driver has a tight coupling between the
+cpufreq_policy object and the cpudata stored in it as the driver_data.
 
-Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+Trying to grab a read reference on PREEMPT_RT can cause "scheduling
+while atomic" if a concurrent writer is active, and trying to grab a
+nested reference in presence of a writer can cause a deadlock (manifests
+as lockup) since the reader fast-path is disabled on PREEMPT_RT to
+prevent write-side starvation.
 
-Thanks,
-Aboorva
+The two patches included removes cases of grabbing a nested read
+reference to the cpufreq policy in amd-pstate, and modifies the
+cpufreq_driver->adjust_perf() callback to take the raw policy reference
+cached by the schedutil governor respectively.
+
+The policy object outlives the governor and the driver making it safe to
+use this cached reference from the sugov data. Any changes to the policy
+will end up calling cpufreq_driver->set_policy() or
+governor->set_limits() once the policy is modified which should ensure
+eventual consistency despite not holding the read-side.
+
+Series has been tested with amd-pstate-ut on PREEMPT_RT kernel which
+successfully passes without any splats on LOCKDEP + DEBUG_ATOMIC_SLEEP
+config. Additionally, the driver switch test from Gautham [2] was run
+for 10min on the same config without observing any splats.
+
+[1] https://lore.kernel.org/all/20250731092316.3191-1-spasswolf@web.de/
+[2] https://lore.kernel.org/all/aJRN2wMLAnhDFykv@BLRRASHENOY1.amd.com/
+
+Since the generic cpufreq changes also affect the rust bindings, Patch2
+includes the necessary rust/ binding fixes to preserve bisection.
+
+Patches are based on:
+
+  git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+
+at commit 18ca40891b83 ("Merge branch 'pm-cpuidle-fixes' into
+bleeding-edge") (14-03-2026).
+
+Everyone has been Cc'd on the cover letter. Respective Maintainers,
+Reviewers, and the folks from get_maintainer.pl have been Cc'd on the
+respective patches. The amd-pstate maintainers, PREEMPT_RT maintainers,
+and the lists get the entire series.
+
+Rafael, since this touches the generic cpufreq layer, it would be good
+to route this through linux-pm. Upcoming amd-pstate changes from Gautham
+[3] apply cleanly on top of this and doesn't have any dependencies.
+
+[3] https://lore.kernel.org/lkml/20260311140116.19604-1-gautham.shenoy@amd.com/
+
+If you would like to see anything changed, please let me know and I'll
+address it in the next version.
+---
+Chnagelog v3..v4:
+
+o Rebased and tested on the latest linux-pm:bleeding-edge.
+
+o Added a "Fixes:" tag to Patch 2. (Gautham)
+
+v3: https://lore.kernel.org/lkml/20260116063234.24084-1-kprateek.nayak@amd.com/
+
+Changelog v2..v3:
+
+o Fixed the rust bindings for adjust_perf_callaback in Patch 2 (kernel
+  test robot).
+
+o Tested PREEMPT_RT + CONFIG_RUST builds using amd-pstate-ut.
+
+o Viresh's ack on Patch 2 was retained since the incremental diff for
+  Rust bindings was discussed on v2. (Viresh let me know in case you
+  have additional comments and if I should drop the tag.)
+
+o Adding the Rust and sched folks to Cc for awareness on rust bindings
+  and the schedutil bits respectively.
+
+v2: https://lore.kernel.org/lkml/20260114085113.21378-1-kprateek.nayak@amd.com/
+
+Changelog rfc v1..v2:
+
+o Updated the kdoc comment above cpufreq_driver_adjust_perf() in Patch 2
+  to reflect that cpufreq_policy is passed as an argument now instead of
+  the target CPU. (kernel test robot)
+
+o Added "Reported-by:" and "Closes:" tags to Patch 2. (Mario)
+
+o Collected tags from v1. (Thank you Mario, Viresh)
+
+o Dropped the RFC tag.
+
+v1: https://lore.kernel.org/lkml/20260106073608.278644-1-kprateek.nayak@amd.com/
+---
+K Prateek Nayak (2):
+  cpufreq/amd-pstate: Pass the policy to amd_pstate_update()
+  cpufreq: Pass the policy to cpufreq_driver->adjust_perf()
+
+ drivers/cpufreq/amd-pstate.c     | 14 +++++---------
+ drivers/cpufreq/cpufreq.c        |  6 +++---
+ drivers/cpufreq/intel_pstate.c   |  4 ++--
+ include/linux/cpufreq.h          |  4 ++--
+ kernel/sched/cpufreq_schedutil.c |  5 +++--
+ rust/kernel/cpufreq.rs           | 13 ++++++-------
+ 6 files changed, 21 insertions(+), 25 deletions(-)
+
+
+base-commit: 18ca40891b83f01b35537f4cc93c9d95528eaf42
+-- 
+2.34.1
+
