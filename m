@@ -1,86 +1,86 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B280D38D6B1
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD9DF390213
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773654352; cv=none; b=JDq6UAet1j2Umb9f9Pj7Cze+fappjlNp9fXb66Ba9lhMHOOO9EE7XSxSG5aG4642VimV0gp42KRD8+tB73gle3FMGJmmUSLKMwOoEOOPQrYkBc4HGAUTUO4KeR/C9DGylJ+neo6/qreUDnsQ3FxZNiX8SRjCxfVDXiSoa3Zgas8=
+	t=1773654355; cv=none; b=V2+ESEcKDytiEYxGIU3cxcHtLVExZKgcEusMotDSaVCJGTGnWUZjnVfBFmUV8bF7OIQ3yaD+S9+O0D+Upi7fsYftAMW5XGEJN0+jHsEmpYi9bdB5k6UuPvbiYMrCjhweF8B6k42o6cVnSE9KD382nVFzBsEikCMTHiUZVwiiHBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773654352; c=relaxed/simple;
-	bh=4fbp6KU0HzzSL9Nt1PKq3lQF7ufXuCLrwnMnj5C0HYw=;
+	s=arc-20240116; t=1773654355; c=relaxed/simple;
+	bh=esqrcU2iBVY8ci/hzt1UovcnezFcilbxILgA7vFytvo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jAJt+G+KruiiWCknrwhdcZeJqY5+wRGnc9486wRPQeKM+DPUpzatn60OYJYYlwVlBzApNoJ5VMx5/iPnCbC17IMAN5/Fz9zkFuIAc7qIgNTas7GgjdsX18lwvDB8Ti6LEzh/3C9cdLAJfqBBEkA9gA6qR8S3yKnSRh6SbMY9c+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gOnW1Gr2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fEVS+Jk7; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:To:Cc; b=DJQ44vLQfFdIartu86S56yxEcgy4LVsKwrTWOn8XN7091JJpcatJ5nDUob+Fc777/wAsdGR4RsVNcyOb31lnjNzlIe6HtpPyNBPyscsgRGhucdPgzWG0pY68o1/DWSjvTi64MtyV7KL0+I+OWnj9xgADFV5qM0xgMnwih+Jt0os=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=jNm9uV8w; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Koa7Ox7T; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gOnW1Gr2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fEVS+Jk7"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62G6552k2584078
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:50 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="jNm9uV8w";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Koa7Ox7T"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62G64cs5323556
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:51 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	WLabK281ljaRm4Q5k6ndGIQLgmuJ6H/0UUBtzqck2mc=; b=gOnW1Gr21MR0c0st
-	MopeeI/HR2qvWWFVCUpGzwpAoS/j1cXoCMCyS67cLyaMfqXHBZPH6zN0vJWk14uW
-	/VoT0HN419Ngdx+utCOTWnPcQ+D7wjOhjnEuBc+tuAxBXcYsnZVHwlyLoC7699+p
-	vrQgrj+IEYr1BuhMyj9iUxa9vf3Z8Om+PtD6EptbVQap1KF8fwAQsoHsfJ3JTHri
-	n5U0OnRve6y5jKTGiTxQWNVivGyEXR1gIqN3bftjy3fWDG2dprdScRsWrr6rntvo
-	/q3eAoM/fowpIerRemnyQHRetcL4bHjBtzPTbCrXU1RYBeCmQE+Sh2Il7CEoklI8
-	irVvVA==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cw0ecd08a-1
+	m25Evgz+upNl8LtXZ2aO7wMuzsie8zywScFsKF98g7Q=; b=jNm9uV8wa7esxl23
+	r9DP5HoqaYHcDUIqlxJHYWwY1Fp3Jy6Wi0qaxhB/TZ1RCg/NH1fXtASxjZs8D0rG
+	NvE6y938E9UPgqduAJ7tocNKi3+OTDm/wE+wYT6ywH5m9dgZ3srcq3I8+d64pzvU
+	svwgMKlCJKEEiOJ7MxFht8CYa2STD7z2OmO1EW/RXaLq6hyxZp62tTeX8xWs1A/H
+	95qD7oyG1nHjMJv+CVZmUVNW9yrEC2WGIQdE5WcX7Qze5CIaHqokyJernc4tNBmo
+	w7DEh0EurOSrrjn7+E4qw8gA2PAUb1rO5HM5GEfcgqjbsTgVxYLdyeYjTXVn0VAu
+	IiL0yw==
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com [209.85.222.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cw03qn6fw-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:50 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8cd773dd39bso3498017885a.2
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 02:45:49 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 09:45:51 +0000 (GMT)
+Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-8cd81be6f05so2754717285a.2
+        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 02:45:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773654349; x=1774259149; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1773654351; x=1774259151; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=WLabK281ljaRm4Q5k6ndGIQLgmuJ6H/0UUBtzqck2mc=;
-        b=fEVS+Jk7cWrVpUTw8hEH8ErVW0lOXT0Cz9ERZNe3eBuPeyTQ9d/pXvWzI18iyLS88S
-         4NJlw8Va7GlPZ78h5m37N8it8fCg6zaO6z8XXHFBn8vIzXzzo+tlAsV2Ql/wFSpfL29T
-         4vdLoKkO0fX55SLtXAKHPx7Ze5f/CgyBAny28yeEKIXQcngvRgCn58Nyhg2+Dp+yzn+A
-         CgdE5pehAczu4wZM+dov/CNkc7KNhELR4yNpfvQvQqtnAzxfPk7/80Ik1FKCZefJK4/r
-         T8hDdbhsySWPuiOb12DfDk2myHoAh4AF01bDCCCn40q5oW7bb19gzXIMwxK3swKpF9PS
-         btMQ==
+        bh=m25Evgz+upNl8LtXZ2aO7wMuzsie8zywScFsKF98g7Q=;
+        b=Koa7Ox7TwZSlaIOYMAy4dR9Jw6DESTj45d6sBtCCM9o6cs8QLC4ijrBFsu1CyU+KnB
+         Vgz3eiW2JrXqs/Kqi8JpX4Htwh9LCYj8gIPkU9Iy8b+9DwlXpjBpNAJPmDAJwI/bQYMZ
+         FZtZ3ETiHFzM6/V7aASNcw24X54c8izsAGzdb08OvgIOa+cHBlLkUKVzn2ut023kwcM4
+         CRdjHzPGP0//4JfqR5uI3kBHZ/4OBwwbDB4EcsojzMA92H4t9oZCoD3ErGL82pAyag8y
+         u9M7R+WRb2970VphAwN7m4vDWJYcpJURyxx81BshwibVMDiyOi1h9zkZv8DsNgxP5XY9
+         kwcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773654349; x=1774259149;
+        d=1e100.net; s=20251104; t=1773654351; x=1774259151;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=WLabK281ljaRm4Q5k6ndGIQLgmuJ6H/0UUBtzqck2mc=;
-        b=nnwt6/957XffjisWxLf2AKOXtkf9BN8d4AGMxTHmomNirVRyb+lhduzLwh1qKCnbIX
-         BwDrxc0ksRAEcgycO/PKdZFuc3ferPToVEqyP3uNMtUsT4j3a8I19QlWc3GPg0Wx/XHF
-         vwrPcCGGG+bwFtapFyfgvKXfdpuzmEy3ckJL08NBVC5KzjWLx8EdR4Rjiv7N/xjUbGoC
-         bdFomGzZJBKLbN+32IPgtP8GYcaRUOuPZWujycTiwtMm3ybCp263WhpjojOdouXxRMsK
-         k1n6zfUzTp59z09zd17/YOVYjwBOnfNo4opYt5ia2b6OG8da0FdY/T75knpHo7OJ+u/6
-         GW2g==
-X-Forwarded-Encrypted: i=1; AJvYcCWK9Lqun2xE2kj4cvPyYyV5NqS+X6Cye5f3HoWUefSUA3fgscXlujWOP0GQQTYQLqqMMrDfzvWNOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxVKEsVuzoeYsyKobVfoLoANOrd8MhZU6+NnvSyy8bxFA1lhmSD
-	l2VgIebimFghALOLTWMriXCU1fxZXULNLlugLyMXATgn0o5v7aKW/SlnTTMmx2q7Hu1FZf9wRwI
-	xcwV4yvORJfdUcKUhkUY+VwYFJAU0fvK3BF5U50FAJg2n/8fPq5Uw0Oo3M9S8MA==
-X-Gm-Gg: ATEYQzw2ujvbtV5QzFmeuHabaolZsQe20z2knXxGiI+xDTn32NlQVF2wV2ZNxdqdwhH
-	ycyew6OfruV+DEdtAxERWfa5mznt79EqT6NKqVWzzzkCTskFnmGa1GEwwHC50cBnwfEUVlffWRc
-	PfQUTsSRIq8vSr9O2HZyg5dEJA3qPi+iImylmCz3gVKRBx15ItQd3EPntpmOvcO71BAOPe2MPPk
-	+14l+/6Dou8pvkNIxvDvX9+YTCT4eglfT39ElJxjmSsbf8TAE/1xjDr+sO7tYPKqxNekli4t3Dh
-	uTUQxXnfRsuxLXL0Oa6F5kOukBVXwI1/17fgsiqiVEOeBfpt4zsCpdPTGtxynLM0V2CLesLPdK4
-	VW3iNCfoVBeePxRkDHUNJ7UZ/fA+JzrAhOSsRtiGWrzclFQTDvVU2
-X-Received: by 2002:a05:620a:4044:b0:8c5:2ce6:dc2 with SMTP id af79cd13be357-8cdb5a54963mr1552523185a.17.1773654348913;
-        Mon, 16 Mar 2026 02:45:48 -0700 (PDT)
-X-Received: by 2002:a05:620a:4044:b0:8c5:2ce6:dc2 with SMTP id af79cd13be357-8cdb5a54963mr1552518085a.17.1773654348306;
-        Mon, 16 Mar 2026 02:45:48 -0700 (PDT)
+        bh=m25Evgz+upNl8LtXZ2aO7wMuzsie8zywScFsKF98g7Q=;
+        b=AI1voJlAIWGLucV2vubYeO304p2oAxziKyclmPfmidATRG8+GgSB8rL6N1cZsSKTyI
+         O/n0RLHivCKTsbuE27ThVKlRvMeTicnxkus0p9cE5+iRciPY/vQzefCCC6Ha5JAb3c9X
+         4239yk/NphIWTIqbB7Wc5oTBDLPgteHLiO47Cjo026nE1dBPrTSebszm9HeYnm6Bixk2
+         tjjkJXhP+jLutoTNyBMcQ/JJFzpenDXBmmU0gMlfeD4gd7gvW8SFd5Lt29S7TmHB4Xy/
+         dtnqyebu10Y7rf/QH9odwNiSkJyCec8RxMd1vT8LwTa2L93kS7+Vbj+gmaKMUFHv9hyh
+         zRcA==
+X-Forwarded-Encrypted: i=1; AJvYcCXBQaCMD+GYmTT71oHBU/OZOD2Ai0o2unMbtCH/awE8CF0X27z6T2RNCpez64YS1zzNcFJwKu8V1g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywetf553lOIzcukT3pBuWq1OIeRlFnEiinD452UndEkGKtM1BYH
+	ONMmBUfBdeqXYkPrYW0ohygkIELUwqMLuLTRT1spyVGI9BJ3H7/J9h+wFZY35OzkG+d6LDLgdXP
+	pWwXTVzb2Uv7P5a8oD8SzXD6xnoGa+9qDldanOVD6OcEB8i4RDgkKy9zEoD8bcw==
+X-Gm-Gg: ATEYQzykzRTjVO5iAVZW8V5P2DSg9NBJEAUfOlDzLqhLOtarTplIkqTaH73IsxyX276
+	VDx1QRdQmzkDuJFXrBkmD9OdA5FW1UYL9nvH9DuDCqjim5r0UKCiZZOGlzgzjiUR0+Wr4FdQoXY
+	hRbnJKRIXT8cfnEO/Db7jMXJ8T12cirY87iHECIK/FItU9kgdEl3oWwNXuLon82qmnjv6BB53Jw
+	ZB6i9jUoIJu/5UKBBJcnJesrw2+EinIOZUzPpmye/vLFoR6JT3RdV2iI+46lqwZmP46whRJXm4A
+	0vDGMxw5/6e62mq6jA0MwWOyvO17VFy91ZAgqeZnpMe+usFBunyljzaCB463h9g0LsuIgHQnyEZ
+	yutGLvOvu+KBM4Q0fy5QmL/JPP2HPD61HcBwZICXr4gHCjiZI2D56
+X-Received: by 2002:a05:620a:4153:b0:8cd:91f5:7a29 with SMTP id af79cd13be357-8cdb5b2598emr1635911385a.53.1773654351023;
+        Mon, 16 Mar 2026 02:45:51 -0700 (PDT)
+X-Received: by 2002:a05:620a:4153:b0:8cd:91f5:7a29 with SMTP id af79cd13be357-8cdb5b2598emr1635907985a.53.1773654350529;
+        Mon, 16 Mar 2026 02:45:50 -0700 (PDT)
 Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:ba9e:e504:fb0b:f1f3])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541ab9f9esm503138755e9.4.2026.03.16.02.45.46
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541ab9f9esm503138755e9.4.2026.03.16.02.45.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Mar 2026 02:45:47 -0700 (PDT)
+        Mon, 16 Mar 2026 02:45:49 -0700 (PDT)
 From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Mon, 16 Mar 2026 10:45:23 +0100
-Subject: [PATCH v2 3/9] gpio: drop unneeded Kconfig dependencies on OF_GPIO
+Date: Mon, 16 Mar 2026 10:45:24 +0100
+Subject: [PATCH v2 4/9] leds: Kconfig: drop unneeded dependency on OF_GPIO
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,7 +89,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260316-gpio-of-kconfig-v2-3-de2f4b00a0e4@oss.qualcomm.com>
+Message-Id: <20260316-gpio-of-kconfig-v2-4-de2f4b00a0e4@oss.qualcomm.com>
 References: <20260316-gpio-of-kconfig-v2-0-de2f4b00a0e4@oss.qualcomm.com>
 In-Reply-To: <20260316-gpio-of-kconfig-v2-0-de2f4b00a0e4@oss.qualcomm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
@@ -111,365 +111,69 @@ Cc: brgl@kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-staging@lists.linux.dev, linux-pm@vger.kernel.org,
         Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=10217;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=808;
  i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=4fbp6KU0HzzSL9Nt1PKq3lQF7ufXuCLrwnMnj5C0HYw=;
- b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBpt9E72wS/2QRzY6ua4fnuXp5Pa0ZmDCGvN7Kw0
- pPgAXLjA5WJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCabfROwAKCRAFnS7L/zaE
- w82VD/wPe/R5EdgCGL5r1clbzEmU1eW8JTPSygYwiq6h6sIxqeH09lWmUl/6jcIIpXZ0MReMmUE
- gBeDme+Trsp+4DOrNnoCXlk7uaOS73yuvnSerY20kkuTYXMAVcDJKs+D9Z6pZxtG4CigywriMLh
- R4s3gdXwzRlhHoO2w8JYm9oFCxzCosuv7/5S2nxuogCCnZ6GE8iq6gwUIr2/wHVUoFPQRsRzEGG
- VihGMeFWWan4Fuboyb3SzuaKSjd5GgVle5J7iEap+PrCg7QAJLiETcLptpMMN/00Z6R5syCS4D4
- WaBI2KO/v3O9TpuQMqaWcQMimPFt3L9YUadVAeTuU6FuzXG24lcNqigs3Aq2j4vuWpGvCj8nNK5
- y3KyHmJTByhpf7b6To2O+na15MpGhaY7VPmBon6TgxXofooRuCvtP2Jf/Vhl74UhqlzfTZgC3sJ
- PcZheudtladAMZ6Zas2Yqc09kvOrZJcVjI5gXjOrrFbfZ+QPMSbGE7QvsGKVfIJmb39Bvr3QdMG
- boZAVGJqzwO+fhrJbZ6UhIaXAoeW+oWyneuvJ2GUxnBm7Kdj0/X6xrzhNP97tzQH8ajdoZ9mSuG
- BbCxLrcxN1+a46LxiDvyUEY0bKle/kF5JZrc1I34SGwAZcx+arnTNUcu4elVbb5C4yxxFDF720k
- HxfRsTBLTdT0gGw==
+ bh=esqrcU2iBVY8ci/hzt1UovcnezFcilbxILgA7vFytvo=;
+ b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBpt9E8i6aEL4piTNPBuxvNyhkggWe1e3NVYraN7
+ Ks7jiQgHs+JAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCabfRPAAKCRAFnS7L/zaE
+ w/ZAD/9owgYgilZp+MsY55UDQRktGsR/H7gu25ynf1yhU4AxMzntmbgKtI8ceNacGdL80sij1rd
+ BC1afcEdcSeocPHYhV8XrTHz09iBj+gnuOx806Aztjp7T2dAIN+2iEIjUM3kaBCEgSnqgV4zQr6
+ KP800070rOt+5F9egqM0Lv6yiQUDNMAn8zKj1lHgWzcRAX+/m+tJCaOTvMQ+lfYmN8RwfNOnafG
+ cDonwS9X74nEm1gLh3vwBangOT0m6NA/CaV9RZH8/DXyYqAIvvCpV8Jz3U2D1pRdGxSrHe9eRup
+ cbjzFzq/LgbVkxDXxoTu4i4o1iNuhn4k1/feicc2rZzuUySztakWwWWSm5acHzKR6Ptz1WMQI89
+ Hai2+hXihj3LpxTO/VnuyrqwkfChDWqcIYxw3Vsn9nZdRi4NraVQGY/AjuFi4NDRw8E0I0oIZ0V
+ bqrdOjurKqeApM8B3x+pdjk3MGTlDbhn/AQrLzGeiWpOHr5yNZeuN+E8BiBQFvka6LJRALRFKtN
+ lpy5tTKnZuANqh+kbu8XfvN1aim+wXkG0r+mrAX66Sm6PuUCfDKrXHz5NKSMBkBfTvAtGmGzu0s
+ L0qw3k6k3RvIxBjnOdCxgcNf83bKNrudGRNJ53TXD5F7++vEy53ZASRmatk5lcOn2fdcam0C7NF
+ v/S76FvWP49WAfg==
 X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
  fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-GUID: 8FbXEaGiTr-FLnFrw_jb1lA4SXNKk5zz
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDA3NSBTYWx0ZWRfXwMNlujhSYHvG
- 3vZUwfhEjJ0jNeT7eXiWix0NGHT7GTMVe0uWTNsxvCrVkiowE06wVUEgJT31MUmuoQVi2WZRNj1
- soxyHVR9b3CQX6G3ggQXlurWR/etl3FAVIIFD6789Cxzh8xEQOAfkmJw4J2EbVlyfaYM9TOIbUh
- iJbjec3vCelVNGLxAbsppYvt295GMzadgGU4vrkcMRIlb64oc2RqdoGYkJRuiPcTm9pXJI68RNc
- K61rqDNmtDZSUYhk/2nfS/AqeaV726LeszlJbT0+bKpdKxAjH4B29c9X9hVC4pFxw36qE0/oHkn
- oJIz5G0AVXnCDmV5RP+AZWsPFgLfISLQyb1pzJy0AyrP4aCMTt4YgDzZGa9mXfVjygNVr5EIVxV
- 2cgWGdHKP2PIVhR4fh6VfMQneYcUIgDauusssDYmULAaainjq3x66U1DO8oIBD6SFYsUBcIQ6UH
- S7uSmv+b7+iGEnXqCAQ==
-X-Proofpoint-ORIG-GUID: 8FbXEaGiTr-FLnFrw_jb1lA4SXNKk5zz
-X-Authority-Analysis: v=2.4 cv=BqqQAIX5 c=1 sm=1 tr=0 ts=69b7d14e cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+X-Proofpoint-GUID: VSZBktm1oQOYbJVgHr1-XRsGKKpqA9NN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDA3NSBTYWx0ZWRfX4LGyXt5cjBtO
+ NUfnxWWqV3wK1TkXBLqsEkV69IPyPC9C9UYPWSBe03i5QLJ6Flglr66JED9GeBqG1Soe5H3tppI
+ 6OOHbyKZ67O4huKCgN2ahrrxwlOl3iUtzuEjPfVAq7L0HzbYuQ1QO/T5/op/Oo32npAVlQ+ejWt
+ FaZk/gsCsIC2krwh1Cfi6ZzIbMH+dTlZHM3zwzxNtq0jSWRaktCQn7xUdgTvqRZRXi/DSRP+dwc
+ N0Mi2/w+9Ka4zJd/Gx9U+uaccS6+E8yGrjncNcE0AKAloeK/EBo52bK3ywo0UTa2LJPtr4BuLMS
+ 657D/4up2CgVnVjBCL0vEg7NJ2wXcf9n4gmKgY3HfKy5xvBfIjhv8RGLacL3dUxelCoPudVkEMO
+ CouZe+X4G893jrW3BNM4kKgYkCv/LTwC0PD6uC2u3ujlK5bV/fTfupwaoLlIht1O5Spdd+cBOi2
+ EyTOn8n9ZQhrmNl2Ksw==
+X-Proofpoint-ORIG-GUID: VSZBktm1oQOYbJVgHr1-XRsGKKpqA9NN
+X-Authority-Analysis: v=2.4 cv=ZbQQ98VA c=1 sm=1 tr=0 ts=69b7d14f cx=c_pps
+ a=hnmNkyzTK/kJ09Xio7VxxA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
  a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22 a=EUspDBNiAAAA:8
- a=os9z4gxJ5ke727RypPIA:9 a=r15waxpOa3ezfu1y:21 a=QEXdDO2ut3YA:10
- a=IoWCM6iH3mJn3m4BftBB:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=ULgK7OEL32dECu8VbM0A:9 a=QEXdDO2ut3YA:10 a=PEH46H7Ffwr30OY-TuGO:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-16_03,2026-03-13_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015 spamscore=0
- phishscore=0 bulkscore=0 malwarescore=0 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603160075
+ impostorscore=0 priorityscore=1501 adultscore=0 suspectscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 phishscore=0 spamscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603160075
 
 OF_GPIO is selected automatically on all OF systems. Any symbols it
 controls also provide stubs so there's really no reason to select it
-explicitly. Remove all Kconfig dependencies/selects for GPIO drivers.
-For those that have no other dependencies: convert it to requiring
-CONFIG_OF instead to avoid new symbols popping up in make config.
+explicitly.
 
 Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 ---
- drivers/gpio/Kconfig | 53 +++++++++++++++++-----------------------------------
- 1 file changed, 17 insertions(+), 36 deletions(-)
+ drivers/leds/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index b45fb799e36c19794e56bbac7539250c09beaeb7..e649384f436e7fdd6ac633d9caad94bbee724439 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -145,7 +145,7 @@ menu "Memory mapped GPIO drivers"
- 
- config GPIO_74XX_MMIO
- 	tristate "GPIO driver for 74xx-ICs with MMIO access"
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 597d7a79c988b35f304e953e873af3afe2ae04b8..f4a0a3c8c8705e0f10ba26584277dbb2d5eac5b5 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -765,7 +765,6 @@ config LEDS_NETXBIG
+ 	tristate "LED support for Big Network series LEDs"
+ 	depends on LEDS_CLASS
+ 	depends on MACH_KIRKWOOD || COMPILE_TEST
 -	depends on OF_GPIO
-+	depends on OF
- 	select GPIO_GENERIC
+ 	default MACH_KIRKWOOD
  	help
- 	  Say yes here to support GPIO functionality for 74xx-compatible ICs
-@@ -175,14 +175,14 @@ config GPIO_AMDPT
- 
- config GPIO_ASPEED
- 	tristate "Aspeed GPIO support"
--	depends on (ARCH_ASPEED || COMPILE_TEST) && OF_GPIO
-+	depends on ARCH_ASPEED || COMPILE_TEST
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  Say Y here to support Aspeed AST2400 and AST2500 GPIO controllers.
- 
- config GPIO_ASPEED_SGPIO
- 	bool "Aspeed SGPIO support"
--	depends on (ARCH_ASPEED || COMPILE_TEST) && OF_GPIO
-+	depends on ARCH_ASPEED || COMPILE_TEST
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -201,7 +201,6 @@ config GPIO_ATH79
- config GPIO_RASPBERRYPI_EXP
- 	tristate "Raspberry Pi 3 GPIO Expander"
- 	default RASPBERRYPI_FIRMWARE
--	depends on OF_GPIO
- 	# Make sure not 'y' when RASPBERRYPI_FIRMWARE is 'm'. This can only
- 	# happen when COMPILE_TEST=y, hence the added !RASPBERRYPI_FIRMWARE.
- 	depends on (ARCH_BCM2835 && RASPBERRYPI_FIRMWARE) || (COMPILE_TEST && !RASPBERRYPI_FIRMWARE)
-@@ -218,7 +217,7 @@ config GPIO_BCM_KONA
- 
- config GPIO_BCM_XGS_IPROC
- 	tristate "BRCM XGS iProc GPIO support"
--	depends on OF_GPIO && (ARCH_BCM_IPROC || COMPILE_TEST)
-+	depends on ARCH_BCM_IPROC || COMPILE_TEST
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	default ARCH_BCM_IPROC
-@@ -229,7 +228,6 @@ config GPIO_BLZP1600
- 	tristate "Blaize BLZP1600 GPIO support"
- 	default y if ARCH_BLAIZE
- 	depends on ARCH_BLAIZE || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -240,7 +238,7 @@ config GPIO_BLZP1600
- config GPIO_BRCMSTB
- 	tristate "BRCMSTB GPIO support"
- 	default y if (ARCH_BRCMSTB || BMIPS_GENERIC)
--	depends on OF_GPIO && (ARCH_BRCMSTB || ARCH_BCM2835 || BMIPS_GENERIC || COMPILE_TEST)
-+	depends on ARCH_BRCMSTB || ARCH_BCM2835 || BMIPS_GENERIC || COMPILE_TEST
- 	select GPIO_GENERIC
- 	select IRQ_DOMAIN
- 	help
-@@ -248,7 +246,7 @@ config GPIO_BRCMSTB
- 
- config GPIO_CADENCE
- 	tristate "Cadence GPIO support"
--	depends on OF_GPIO
-+	depends on OF
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -280,14 +278,13 @@ config GPIO_DWAPB
- config GPIO_EIC_SPRD
- 	tristate "Spreadtrum EIC support"
- 	depends on ARCH_SPRD || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  Say yes here to support Spreadtrum EIC device.
- 
- config GPIO_EM
- 	tristate "Emma Mobile GPIO"
--	depends on (ARCH_EMEV2 || COMPILE_TEST) && OF_GPIO
-+	depends on ARCH_EMEV2 || COMPILE_TEST
- 	help
- 	  Say yes here to support GPIO on Renesas Emma Mobile SoCs.
- 
-@@ -329,7 +326,7 @@ config GPIO_GE_FPGA
- 
- config GPIO_FTGPIO010
- 	bool "Faraday FTGPIO010 GPIO"
--	depends on OF_GPIO
-+	depends on OF
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	default (ARCH_GEMINI || ARCH_MOXART)
-@@ -383,7 +380,7 @@ config GPIO_HISI
- 
- config GPIO_HLWD
- 	tristate "Nintendo Wii (Hollywood) GPIO"
--	depends on OF_GPIO
-+	depends on OF
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -434,7 +431,6 @@ config GPIO_LOONGSON
- config GPIO_LOONGSON_64BIT
- 	tristate "Loongson 64 bit GPIO support"
- 	depends on LOONGARCH || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -447,7 +443,7 @@ config GPIO_LOONGSON_64BIT
- config GPIO_LPC18XX
- 	tristate "NXP LPC18XX/43XX GPIO support"
- 	default y if ARCH_LPC18XX
--	depends on OF_GPIO && (ARCH_LPC18XX || COMPILE_TEST)
-+	depends on ARCH_LPC18XX || COMPILE_TEST
- 	select IRQ_DOMAIN_HIERARCHY
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -456,7 +452,7 @@ config GPIO_LPC18XX
- 
- config GPIO_LPC32XX
- 	tristate "NXP LPC32XX GPIO support"
--	depends on OF_GPIO && (ARCH_LPC32XX || COMPILE_TEST)
-+	depends on ARCH_LPC32XX || COMPILE_TEST
- 	help
- 	  Select this option to enable GPIO driver for
- 	  NXP LPC32XX devices.
-@@ -499,7 +495,6 @@ config GPIO_MPC8XXX
- config GPIO_MT7621
- 	bool "Mediatek MT7621 GPIO Support"
- 	depends on SOC_MT7620 || SOC_MT7621 || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -592,7 +587,6 @@ config GPIO_RCAR
- config GPIO_RDA
- 	bool "RDA Micro GPIO controller support"
- 	depends on ARCH_RDA || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -642,7 +636,6 @@ config GPIO_RTD
- config GPIO_SAMA5D2_PIOBU
- 	tristate "SAMA5D2 PIOBU GPIO support"
- 	depends on MFD_SYSCON
--	depends on OF_GPIO
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select GPIO_SYSCON
- 	help
-@@ -654,7 +647,7 @@ config GPIO_SAMA5D2_PIOBU
- 
- config GPIO_SIFIVE
- 	tristate "SiFive GPIO support"
--	depends on OF_GPIO
-+	depends on OF
- 	select IRQ_DOMAIN_HIERARCHY
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
-@@ -673,7 +666,6 @@ config GPIO_SIOX
- config GPIO_SNPS_CREG
- 	bool "Synopsys GPIO via CREG (Control REGisters) driver"
- 	depends on ARC || COMPILE_TEST
--	depends on OF_GPIO
- 	help
- 	  This driver supports GPIOs via CREG on various Synopsys SoCs.
- 	  This is a single-register MMIO GPIO driver for complex cases
-@@ -683,7 +675,6 @@ config GPIO_SNPS_CREG
- config GPIO_SPACEMIT_K1
- 	tristate "SPACEMIT K1 GPIO support"
- 	depends on ARCH_SPACEMIT || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIO_GENERIC
- 	select GPIOLIB_IRQCHIP
- 	help
-@@ -699,7 +690,6 @@ config GPIO_SPEAR_SPICS
- config GPIO_SPRD
- 	tristate "Spreadtrum GPIO support"
- 	depends on ARCH_SPRD || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  Say yes here to support Spreadtrum GPIO device.
-@@ -707,7 +697,6 @@ config GPIO_SPRD
- config GPIO_STP_XWAY
- 	bool "XWAY STP GPIOs"
- 	depends on SOC_XWAY || COMPILE_TEST
--	depends on OF_GPIO
- 	help
- 	  This enables support for the Serial To Parallel (STP) unit found on
- 	  XWAY SoC. The STP allows the SoC to drive a shift registers cascade,
-@@ -742,7 +731,6 @@ config GPIO_TEGRA
- 	tristate "NVIDIA Tegra GPIO support"
- 	default ARCH_TEGRA
- 	depends on ARCH_TEGRA || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	select IRQ_DOMAIN_HIERARCHY
- 	help
-@@ -752,7 +740,6 @@ config GPIO_TEGRA186
- 	tristate "NVIDIA Tegra186 GPIO support"
- 	default ARCH_TEGRA_186_SOC || ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC
- 	depends on ARCH_TEGRA_186_SOC || ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	select IRQ_DOMAIN_HIERARCHY
- 	help
-@@ -760,7 +747,6 @@ config GPIO_TEGRA186
- 
- config GPIO_TS4800
- 	tristate "TS-4800 DIO blocks and compatibles"
--	depends on OF_GPIO
- 	depends on SOC_IMX51 || COMPILE_TEST
- 	select GPIO_GENERIC
- 	help
-@@ -780,7 +766,6 @@ config GPIO_THUNDERX
- config GPIO_UNIPHIER
- 	tristate "UniPhier GPIO support"
- 	depends on ARCH_UNIPHIER || COMPILE_TEST
--	depends on OF_GPIO
- 	select IRQ_DOMAIN_HIERARCHY
- 	help
- 	  Say yes here to support UniPhier GPIOs.
-@@ -797,7 +782,6 @@ config GPIO_VF610
- config GPIO_VISCONTI
- 	tristate "Toshiba Visconti GPIO support"
- 	depends on ARCH_VISCONTI || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	select GPIO_GENERIC
- 	select IRQ_DOMAIN_HIERARCHY
-@@ -806,14 +790,14 @@ config GPIO_VISCONTI
- 
- config GPIO_WCD934X
- 	tristate "Qualcomm Technologies Inc WCD9340/WCD9341 GPIO controller driver"
--	depends on MFD_WCD934X && OF_GPIO
-+	depends on MFD_WCD934X
- 	help
-          This driver is to support GPIO block found on the Qualcomm Technologies
- 	 Inc WCD9340/WCD9341 Audio Codec.
- 
- config GPIO_XGENE
- 	bool "APM X-Gene GPIO controller support"
--	depends on ARM64 && OF_GPIO
-+	depends on ARM64
- 	help
- 	  This driver is to support the GPIO block within the APM X-Gene SoC
- 	  platform's generic flash controller. The GPIO pins are muxed with
-@@ -1111,7 +1095,7 @@ menu "I2C GPIO expanders"
- 
- config GPIO_ADNP
- 	tristate "Avionic Design N-bit GPIO expander"
--	depends on OF_GPIO
-+	depends on OF
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  This option enables support for N GPIOs found on Avionic Design
-@@ -1144,7 +1128,7 @@ config GPIO_DS4520
- 
- config GPIO_GW_PLD
- 	tristate "Gateworks PLD GPIO Expander"
--	depends on OF_GPIO
-+	depends on OF
- 	help
- 	  Say yes here to provide access to the Gateworks I2C PLD GPIO
- 	  Expander. This is used at least on the Cambria GW2358-4.
-@@ -1567,7 +1551,6 @@ config GPIO_PALMAS
- config GPIO_PMIC_EIC_SPRD
- 	tristate "Spreadtrum PMIC EIC support"
- 	depends on MFD_SC27XX_PMIC || COMPILE_TEST
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  Say yes here to support Spreadtrum PMIC EIC device.
-@@ -1606,7 +1589,6 @@ config GPIO_SL28CPLD
- config GPIO_STMPE
- 	tristate "STMPE GPIOs"
- 	depends on MFD_STMPE
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  This enables support for the GPIOs found on the STMPE I/O
-@@ -1615,7 +1597,6 @@ config GPIO_STMPE
- config GPIO_TC3589X
- 	bool "TC3589X GPIOs"
- 	depends on MFD_TC3589X
--	depends on OF_GPIO
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  This enables support for the GPIOs found on the TC3589X
-@@ -2005,7 +1986,7 @@ config GPIO_LATCH
- 
- config GPIO_LINE_MUX
- 	tristate "GPIO line mux driver"
--	depends on OF_GPIO
-+	depends on OF
- 	select MULTIPLEXER
- 	help
- 	  Say Y here to support the GPIO line mux, which can provide virtual
+ 	  This option enables support for LEDs found on the LaCie 2Big
 
 -- 
 2.47.3
