@@ -1,160 +1,101 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.ilvokhin.com (mail.ilvokhin.com [178.62.254.231])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 786F43B5824;
-	Mon, 16 Mar 2026 16:31:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2355D328B58;
+	Mon, 16 Mar 2026 17:40:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.62.254.231
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773678672; cv=none; b=M+Ch/HMqav3yn62zO3P15WY+wK1g8kqKM9skIug/+rvNKhkoQRLiuJgg8DKdEeCHFiAntj+QlYdS0jTRzQwS+/+qk9pj7F6afmLALq0f4LpjZH9JHK3eWirzn2nLI3dIlHLu4jCgwwA2ffYPJFRGX5eoISl7z4us1UBjQdsjPWc=
+	t=1773682853; cv=none; b=h8ZEA0pi+YeyJK98cjwZkJp/tJ1yv7M9vGppwzaxtdE1niETT8NmVoL13JVYV/E+MvA95t/IjHk1eiyHs/Q5lPkaw1cWUi586g7jMWi0C84qDvH80fQ4ZFVlWubCzMYLitMMMgMb+A100AXD4EC6eahN9LZqq5Q24z8lxBOFvAs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773678672; c=relaxed/simple;
-	bh=ogWJS6+fbkJKhwd2cn3COve3OtrIPc4ti934RTsFUDU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eYnqdwd4pvwAerXClLYOIRaGDaFr8d32Ppd+PM9mTY4Qk7w+TCO1qxvpIojB30oF3n4M9OYOzHUCZmQR/kkcFcZ5IczEqOy616MCszFmA4cp+2OycWJLyELvy9ox1voTkMF9GwobX/RIcVeXO62WfpVX0IVEEQIBwZ6bBnpebqM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tzN25Hks; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773682853; c=relaxed/simple;
+	bh=i5PwwlE0Erxpfq9BYUPkFLkHrCDQPEvfsDQxy0XNePg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WheapCLHABJhGxuSC+n1Up6o9PNYNlyKi54a7rsoa3wv9LJdf3Tyn+Otc5mW6xJckTFgmkkswaK7eJr72mSn54TlhQwpgrh9kaGVVAoNCB2H0GNpULZO0+OIKcVVIDzZuRx/bKQOuSG/4JnrS6Ua0erzw7ZpinHGi08jBVRy+Ig=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; spf=pass smtp.mailfrom=ilvokhin.com; dkim=pass (1024-bit key) header.d=ilvokhin.com header.i=@ilvokhin.com header.b=dTS6csCv; arc=none smtp.client-ip=178.62.254.231
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ilvokhin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tzN25Hks"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB5D3C19421;
-	Mon, 16 Mar 2026 16:31:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773678671;
-	bh=ogWJS6+fbkJKhwd2cn3COve3OtrIPc4ti934RTsFUDU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=tzN25Hksy4MeH/oXFwsK7O4YaNxhpcrzCXC+b23Gsro3l336xpZp8qt1VXMDJVxcW
-	 EEYgvZNIyezaFWmF2DRaS6DBNCtMCewOBTo38imkrQWoB7f4i4yZvI1sEZu1fdLuA0
-	 QcCkui8dgqAyPS/2H9GWahAaeJKnXMh3qScXZ2d0hz5yOgkWRxAfskYr+hmpjqNQtC
-	 fEIAwFasnDA46BtbiIpIWPMUgWOOsp5m1+NK2Jza+6ItFdI5vSBRpXaKjWn6wg+1rp
-	 C0ROyAPJqV2dNEN1dKuqXo2VjuuudHirK808KxON1ohIbdIvxu3pOY0vy915ozzEMz
-	 cLbuzcPuLtmqQ==
-Message-ID: <e1cf4c86-f777-4b2f-8dd0-e47554006660@kernel.org>
-Date: Mon, 16 Mar 2026 17:31:03 +0100
+	dkim=pass (1024-bit key) header.d=ilvokhin.com header.i=@ilvokhin.com header.b="dTS6csCv"
+Received: from shell.ilvokhin.com (shell.ilvokhin.com [138.68.190.75])
+	(Authenticated sender: d@ilvokhin.com)
+	by mail.ilvokhin.com (Postfix) with ESMTPSA id CE69CB3C52;
+	Mon, 16 Mar 2026 17:40:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ilvokhin.com;
+	s=mail; t=1773682850;
+	bh=PYKf7aY84Fm2Usf9vwKrE8cpw7bghTbRx6rsJcLbz+c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=dTS6csCvLTM1SQTIz3SKBrpcK4/YVI8zJ4qyJCVZoEHV1Vxlqnqgvu9skkc2esslD
+	 kPcBYa04hvvJJkdQNZF8Ul3irDYeARFq9+DGb6fdeupxhpdV46YjtsdJjsbnUv6nf2
+	 VFicRtsQGemIELk2SvKmdV2I0TqcYlkkroeR9yuQ=
+Date: Mon, 16 Mar 2026 17:40:48 +0000
+From: Dmitry Ilvokhin <d@ilvokhin.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Matthew Wilcox <willy@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Axel Rasmussen <axelrasmussen@google.com>,
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	Brendan Jackman <jackmanb@google.com>,
+	Johannes Weiner <hannes@cmpxchg.org>, Zi Yan <ziy@nvidia.com>,
+	Oscar Salvador <osalvador@suse.de>,
+	Qi Zheng <zhengqi.arch@bytedance.com>,
+	Shakeel Butt <shakeel.butt@linux.dev>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 0/5] mm: zone lock tracepoint instrumentation
+Message-ID: <abhAoF5EpiPigsx7@shell.ilvokhin.com>
+References: <cover.1772206930.git.d@ilvokhin.com>
+ <aa7G1nD7Rd9F4eBH@casper.infradead.org>
+ <aa7XdpIVtLFS3FIu@shell.ilvokhin.com>
+ <aa7dgQDMEz34eadj@casper.infradead.org>
+ <20260309151317.7bba06dd@gandalf.local.home>
+ <aa8xawMxLeUjkyHx@casper.infradead.org>
+ <20260309171700.063318b5@gandalf.local.home>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] media: verisilicon: Fix kernel panic due to
- __initconst misuse
-To: Nicolas Dufresne <nicolas@ndufresne.ca>,
- Francesco Dolcini <francesco@dolcini.it>, ming.qian@oss.nxp.com
-Cc: linux-media@vger.kernel.org, mchehab@kernel.org,
- hverkuil-cisco@xs4all.nl, benjamin.gaignard@collabora.com, robh@kernel.org,
- krzk+dt@kernel.org, conor+dt@kernel.org, p.zabel@pengutronix.de,
- sebastian.fricke@collabora.com, shawnguo@kernel.org, ulf.hansson@linaro.org,
- s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
- m.felsch@pengutronix.de, fra.schnyder@gmail.com, linux-imx@nxp.com,
- l.stach@pengutronix.de, Frank.li@nxp.com, peng.fan@nxp.com,
- eagle.zhou@nxp.com, devicetree@vger.kernel.org, imx@lists.linux.dev,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, regressions@lists.linux.dev
-References: <20260306031059.801-1-ming.qian@oss.nxp.com>
- <20260312173349.GA137045@francesco-nb>
- <e559b822c5f4fc9167d40544172c6c450d88636a.camel@ndufresne.ca>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <e559b822c5f4fc9167d40544172c6c450d88636a.camel@ndufresne.ca>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260309171700.063318b5@gandalf.local.home>
 
-On 16/03/2026 16:25, Nicolas Dufresne wrote:
-> Le jeudi 12 mars 2026 à 18:34 +0100, Francesco Dolcini a écrit :
->> Hello,
->>
->> On Fri, Mar 06, 2026 at 11:10:57AM +0800, ming.qian@oss.nxp.com wrote:
->>> From: Ming Qian <ming.qian@oss.nxp.com>
->>>
->>> Fix a kernel panic when probing the driver as a module:
->>>
->>>   Unable to handle kernel paging request at virtual address
->>>   ffffd9c18eb05000
->>>   of_find_matching_node_and_match+0x5c/0x1a0
->>>   hantro_probe+0x2f4/0x7d0 [hantro_vpu]
->>>
->>> The imx8mq_vpu_shared_resources array is referenced by variant
->>> structures through their shared_devices field. When built as a
->>> module, __initconst causes this data to be freed after module
->>> init, but it's later accessed during probe, causing a page fault.
->>>
->>> The imx8mq_vpu_shared_resources is referenced from non-init code,
->>> so keeping __initconst or __initconst_or_module here is wrong.
->>>
->>> Drop the __initconst annotation and let it live in the normal .rodata
->>> section.
->>>
->>> A bug of __initconst called from regular non-init probe code
->>> leading to bugs during probe deferrals or during unbind-bind cycles.
->>>
->>> Reported-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->>> Closes: https://lore.kernel.org/all/68ef934f-baa0-4bf6-93d8-834bbc441e66@kernel.org/
->>> Reported-by: Franz Schnyder <franz.schnyder@toradex.com>
->>> Closes: https://lore.kernel.org/all/n3qmcb62tepxltoskpf7ws6yiirc2so62ia23b42rj3wlmpl67@rvkbuirx7kkp/
->>> Fixes: e0203ddf9af7 ("media: verisilicon: Avoid G2 bus error while decoding H.264 and HEVC")
->>> Suggested-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->>> Suggested-by: Marco Felsch <m.felsch@pengutronix.de>
->>> Reviewed-by: Marco Felsch <m.felsch@pengutronix.de>
->>> Signed-off-by: Ming Qian <ming.qian@oss.nxp.com>
->>
->> What's the plan to merge this? It fixes a quite severe regression,
->> a boot failure.
-> 
-> To be decided this week. The commit message does not say if it was released, or
-> came in RCs (and I didn't check myself yet). I'd say, if its the first one, it
-> will go through next and backports, otherwise its is really tight to get that
-> into the RC series, but serious enough. Please fill the gap if you have time,
-> and I'll handle it later, probably tomorrow.
+Thanks for the discussion and for the feedback on generic lock
+instrumentation.
 
-As Francesco pointed and earlier Franz, this affects current users so
-please consider bigger impact of the issue and applying as soon as you
-have time (I know you have many patches).
+Following up on the earlier points about lightweight LOCK_STAT and
+tracepoints.
 
-To help:
+While the thread has focused on spin_lock() calls, the real gap is on
+the unlock path: there is currently no release-side tracepoint to
+correlate holders and waiters or measure contended hold times.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+A possible generic solution is a trace_contended_release() for spin
+locks, for example:
 
-Best regards,
-Krzysztof
+    if (trace_contended_release_enabled() &&
+        atomic_read(&lock->val) & ~_Q_LOCKED_MASK)
+        trace_contended_release(lock);
+
+This might work on x86, but could increase code size and regress
+performance on arches where spin_unlock() is inlined, such as arm64
+under !PREEMPTION.
+
+So even a generic release-side tracepoint has nontrivial downsides (not
+to mention lightweight LOCK_STAT, since a disabled tracepoint is about
+as lightweight as it gets, the more stats we add, the less lightweight
+the mechanism becomes).
+
+The zone lock wrappers provide a practical, production-safe solution to
+observe this specific high-contention lock, if the generic approach
+proves impractical.
