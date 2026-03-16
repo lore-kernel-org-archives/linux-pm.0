@@ -1,164 +1,285 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 965E13CE495
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 19:58:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773691082; cv=none; b=V4CrUcKMs7RL7okGb83n3VEABYxohxqT8/+qDcPy9UHYOOCKE8DN042LqRHsE9Zm0DuU6m41T+v6C1g5LRvhcQDbqJ9Psp8DVUIcuJcZBo6ayZV093Ey8L1/s50u4ARqG0/0/A6CzCLbH9mxoofaeBrCT+/3kNr2Ylfak09WK00=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773691082; c=relaxed/simple;
-	bh=A6js31Z1d6nsCbfs7ycR0dcTVA/JnXJPq1+0VSqpYUo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VmmJEU/FLiD8gCICcTz4neSAsr7L4hgUD8h8yy0Z5KPKb+2qgnwi394mE4KUsKWEo1ftWNQ7NHwlt5iiQovNi3MK8+bq+NeFdzbyFkcE+v62jp1EKUUP7qQv0dPL4kifOk4aMyeE1B3m9AGxhfyq9BPlh8MZdfak23WAovTfeX4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Osz8bkEc; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BIUpMS5P; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 325DF35CB9B;
+	Mon, 16 Mar 2026 22:09:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.177.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773698975; cv=fail; b=jbwkiN12nCuZdvEKE+KFijMKwdwwvpGr3VIQ5XxcvuNXf5bih5IYWfE9ybd4h3yuve20n2X7nYDQeJNUvk09Yk7PtwXmhQRNyQvRSvcsgTH8Q1Ayq0kpdcfbpioMgsfZdAYil4Zh0z+tX2iNj14wa+X3V6MF944HFoPGo4gQKPk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773698975; c=relaxed/simple;
+	bh=ZOBxg+QFY4/F4jQb01GlUMs4XPGLcVm0wiDjUuj6AvQ=;
+	h=References:From:To:Cc:Subject:In-reply-to:Date:Message-ID:
+	 Content-Type:MIME-Version; b=fhWsb0CftoWtF6AYzFLq0TgDEWpd5zLg1adVeLuYlkxx8LQXuNTA5gynVHWasN1dpJCK1xkD28qhjzK70+vD0yKLoDYGkPt44ChVdIMrqiyATOa3I9c+CmU2T0q0ENPa/822b335yWEsrDkAfqQ2b0Bwz3F5iEsayCI9rF6GOwE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=H5SPbc+P; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=VgfxLL6m; arc=fail smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Osz8bkEc";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BIUpMS5P"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62GGN84D3102502
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 19:58:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	ZcF89JA/zHwug4b4HxZGA6W10El1ATEw9RV+7MLjotg=; b=Osz8bkEcXtVFUMzs
-	oiXQKBV6vRZ0Ly1HTEMmW5JOI5AXrvnRqlMH3s1yKQD6Sq5QYO5tXfNCvicdjRae
-	qImMa+NIhp4msbZ70jUI6yRR9GnIyeAWg0MInQv5VbY4I6Cc8gaPPZTkA2MqHWld
-	XE9ae+jicPN7cj49UoO7t58bV2W/Z9uR5hhbMogYDXX6qHDW7msNKsmGFs+bkN1J
-	7n2+7O01Iin/L1uB7XetbIhc0Ww2dn6s9b/K1tYjf753jaku9pgconKs5H9BCczg
-	xeRA3Zz7oUonpz5lfDt4pu/PCrPjG7PqYPeTAfJ6LoSDmvHqgmYoLyBCPeHd+2IB
-	L4DShA==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cxnb78s11-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 19:58:00 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-8cd7ea0bb20so2912465485a.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 12:58:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="H5SPbc+P";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="VgfxLL6m"
+Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62GEGWJs2956065;
+	Mon, 16 Mar 2026 22:09:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2025-04-25; bh=eN/7seRlJnnxh+BfHz
+	UenuxBuoQc8krkCvBTTSMdd3Y=; b=H5SPbc+PBfYty9xWDxSPdq8s6b2D225FVR
+	YOccbregy7Oa3dCtoTF7Ab3x1Jnl9Xs1HKJiRJ618F4T9Zn8EgHIMwOTT4xH5cry
+	FaoHVORuTePX4PBey2Gcdg5hF+9noIlLkZBTLsS4PjU2AoNo2yPWxdDhK8PbJGzw
+	6zPHm/oWnSGdQFPsjauy8J3spdyhHLIkje2KVmZeS+EEdtqzLR2locdRC9NNay+T
+	uWaDEqlCd3d+uWQPpSvZkuuWj9LH3SBys4mQ5hCHnA5NpZcF2/xD/+60WnjHCISu
+	x+FQTAu9VgJek5HSdBRlVhxhBmABTDE3ChFV1qHeFf/5nwOqv0KA==
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4cvyqbu592-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Mar 2026 22:09:03 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 62GL985J017796;
+	Mon, 16 Mar 2026 22:09:03 GMT
+Received: from dm1pr04cu001.outbound.protection.outlook.com (mail-centralusazon11010005.outbound.protection.outlook.com [52.101.61.5])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4cvx4krb71-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Mar 2026 22:09:03 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nXvral7MDaPBfIVcdDwAJdUimrCH4s4EdjDQsQDyoJ0tEpyCtBjcFneCzhevbjsoEkDeoiK1h7+oHrstTgLcuTyMQfqWlTJFpaqNjuziwoNZ187kkHHdjbXXg4tvYlX7MovawmiwzYI/DbmYEYxm1Gz+a+la3ASjOuojSyry/C86FT6Mb2GuB/cJnUaQFjGTtKHqMmwrbeacXQc6Z40ycw7OpSRbPUBzkRqGqJlyRPLh+MpsaF81y2K9CwGlxaAdU0ulCglaSQqdgRRpFJ8ALp89CS+3NgDuA/68me8/4cjUkABpfTec9nucfxwlEY1ii4AZvm8BJLgDzvwzQx+tlg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=eN/7seRlJnnxh+BfHzUenuxBuoQc8krkCvBTTSMdd3Y=;
+ b=yUkL8k5m/fZYWtv6h5qejVrchkG2W0NZ+YHC3Lc4WFcRS266fO9Dim0YKLkB6ynDjyfEVv8Vzu0o20TjgAFaj3sJGUqdECDURyf6OW8oKA2VH5j1huGZJahP9sfWbR2X3Qno55uVA3nXiAQXoGBpU/hqSuCtfKjS4aAgvdJfCVcAZW30Mwn5mmz2qYQ7ORsHEZpCYkXw3xlKFH4SUjOsbr14/TPOeXPPlnLmUmGdT0+qCFEib8gSW5ewpkJ6yeAW4o9LCmkSoFcCUid7mzUqhJim7300x1R6C8bG0UhGOnJWygNffGRdkiz34X/4bvZHoCABY/M6dvKYqNtkmpoVHw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773691080; x=1774295880; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=ZcF89JA/zHwug4b4HxZGA6W10El1ATEw9RV+7MLjotg=;
-        b=BIUpMS5P8c0VqPazEtLpLut6hV59BbmpyR+ZL8NxqKKF0ITKHpokzrZL3nVG8DXlNH
-         3o0FPZHZk62JhN7tbrJBZdzAMavmp+MaPOeK12JMTKYszgpAANgSmRblmrM6+N87e4wO
-         xti3vva1Ld06YElvaZe7YpEGNBbr2Q2vWisLYjSRGllIleBKBnmC+UMEk6g8ZKPHgcVm
-         y66HZY9+phNaBQOgn69T+s9ZkrlT1+9GE6iNK/F+1x98GU8LYEYjNa5uQV67RaIoHsL3
-         NE4/XaZY+LjK5IfOdHp6qPBDDLy6bpjBhuJ2LPFa+ZM+mJpIJT1d0y+dN4sWDtxDTPam
-         rY5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773691080; x=1774295880;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZcF89JA/zHwug4b4HxZGA6W10El1ATEw9RV+7MLjotg=;
-        b=iiRFNGI4vGi+PTETsuLkTHfkYZslMbgpIgL/NzpOFtHzGSgOfTRT+NPdtpPxDz/3pF
-         iT+0rvDoJ0XA2fz4/aWqyAGmdH7xtmIaqxdy4fruzDaJHS30tN36ZBlsxxVPW1BINuQc
-         624nAJJnHFXfIO96gXocWDNT8mQiTiJKV4xu7Qz1nVl/xfefAg2cP53LNUVEsvgHd+0A
-         W2cZT6UTHCfPQAWE4szjXIqZuSKOdXKSHaOgZerGlm5YghTbkDI7EI7aur3B1DFMfWrC
-         MIinAYKeiSMxhhff5q21+eWqS83+aLycPPxceAYUjKIDU/jgdTElmCK+Ig+R3botqv40
-         DSIg==
-X-Forwarded-Encrypted: i=1; AJvYcCUoKS58zgqN4rsYpkJUkiTGJNiOgpalDks4HYatFNYKSTX0CQyjiRGMCFKjN1k5VhzeHlIVQs87bQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YydurDyTsEzpjqM4dCl+PlzsH0MuxB2id82GhLOTInipItovme5
-	2b7eDSgpqLcvRWEsklb5+LZ0ZdVhFYNaFoXVkvBxawLN0Ubp4XfHrMcHdRN+6364KH9jIPgwAJk
-	eNqcheq2IMuzrGNhSRFdsUHBoXVEYsSlEyw2uJGh1u1EAoIRjEerihlCEtqBnQRSqQNl7Mw==
-X-Gm-Gg: ATEYQzxOTDyhYfmVxldp8Tkby0kEF0kyNtdsg/5v43cAOualH9l4CwQMulKIeFkb+t3
-	FhKAa0acwXMvvik9GQNtftJsQ+CDLN9OSGbFQYmUhfd+86yFwBj1j7MWZ4/zG3Dwdg7vpEzJPgI
-	l5xHo8TIbje2reaT/Xof34CdX+eYPQcavHo64yHd4SUjYn50uMfCa9Rk3+UTQkPG4r7eeW6KigY
-	r1w1bzTbD9+gJYcu0drOGbNM1jCJYjsfL2wSy3i2pGHcNXou4iHAYZ5VpfU5y8UAIfmiSyOKD7t
-	GGnPNHeJ4kF3KSGvXWQe8wjzxl0VGExPmBOAJc48y32eG184/JAZ6d7e15AehitqibGx7566Swj
-	0FynYr643RFISNwwXSDV0CGyMqxPvC12e1YLMiJ/xOsg=
-X-Received: by 2002:a05:620a:414a:b0:8cd:b317:b464 with SMTP id af79cd13be357-8cdb5bafd02mr1865249085a.61.1773691079899;
-        Mon, 16 Mar 2026 12:57:59 -0700 (PDT)
-X-Received: by 2002:a05:620a:414a:b0:8cd:b317:b464 with SMTP id af79cd13be357-8cdb5bafd02mr1865245785a.61.1773691079423;
-        Mon, 16 Mar 2026 12:57:59 -0700 (PDT)
-Received: from mai.linaro.org ([2a05:6e02:1041:c10:67fb:53f6:20ba:ff45])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4855725572csm206186085e9.2.2026.03.16.12.57.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Mar 2026 12:57:58 -0700 (PDT)
-Date: Mon, 16 Mar 2026 20:57:56 +0100
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>, andersson@kernel.org,
-        mathieu.poirier@linaro.org, robh@kernel.org, krzk+dt@kernel.org,
-        conor+dt@kernel.org, rui.zhang@intel.com, lukasz.luba@arm.com,
-        konradybcio@kernel.org, mani@kernel.org, casey.connolly@linaro.org,
-        amit.kucheria@oss.qualcomm.com, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
-Subject: Re: [PATCH v2 2/8] dt-bindings: thermal: Add qcom,qmi-cooling yaml
- bindings
-Message-ID: <abhgxF1RcAJD-cK9@mai.linaro.org>
-References: <20260127155722.2797783-3-gaurav.kohli@oss.qualcomm.com>
- <20260128-whispering-caracal-of-respect-a26638@quoll>
- <36706481-2549-4716-8e6d-0e4db42591a2@oss.qualcomm.com>
- <546faeda-d896-403c-a449-5c9b0cd7159e@kernel.org>
- <17474333-bb82-49d7-bc04-45ab21095c38@oss.qualcomm.com>
- <ae4c1f7e-8f4c-4ce0-a6b8-bab29984e693@kernel.org>
- <c6136314-5bdf-466b-b19e-43062fb11150@oss.qualcomm.com>
- <e6679f94-2648-4d35-80cf-d3f823f9dad3@kernel.org>
- <4f815a0f-a815-4b77-a4cf-a4b18e776eab@oss.qualcomm.com>
- <95142608-b5b1-43a4-b8b6-38e658275f30@kernel.org>
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=eN/7seRlJnnxh+BfHzUenuxBuoQc8krkCvBTTSMdd3Y=;
+ b=VgfxLL6mNeOpbvb0mDXw65Bk+gXRMFbohFb8dwG7HxZTqrPFMgD8HdUipIydGFb+WwpiFTn+jqmO2JXQl/3aEMpfy/jthT4Hg+eevj478V6agFGgpln3tP1VB5YxQPukxB+dUjK25JIk9MfoWN9aY7Fuue+O2hq6xSNUstI0bBs=
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com (2603:10b6:5:357::14)
+ by CH0PR10MB5196.namprd10.prod.outlook.com (2603:10b6:610:c0::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.27; Mon, 16 Mar
+ 2026 22:08:08 +0000
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574]) by CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574%6]) with mapi id 15.20.9700.022; Mon, 16 Mar 2026
+ 22:08:08 +0000
+References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
+ <20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
+User-agent: mu4e 1.4.10; emacs 27.2
+From: Ankur Arora <ankur.a.arora@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ankur Arora <ankur.a.arora@oracle.com>, linux-kernel@vger.kernel.org,
+        linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, bpf@vger.kernel.org, arnd@arndb.de,
+        catalin.marinas@arm.com, will@kernel.org, peterz@infradead.org,
+        mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org,
+        ast@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
+        memxor@gmail.com, zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
+        rdunlap@infradead.org, david.laight.linux@gmail.com,
+        joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
+        konrad.wilk@oracle.com
+Subject: Re: [PATCH v10 00/12] barrier: Add
+ smp_cond_load_{relaxed,acquire}_timeout()
+In-reply-to: <20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
+Date: Mon, 16 Mar 2026 15:08:07 -0700
+Message-ID: <874imftol4.fsf@oracle.com>
+Content-Type: text/plain
+X-ClientProxiedBy: MW4PR04CA0244.namprd04.prod.outlook.com
+ (2603:10b6:303:88::9) To CO6PR10MB5409.namprd10.prod.outlook.com
+ (2603:10b6:5:357::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <95142608-b5b1-43a4-b8b6-38e658275f30@kernel.org>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDE2MCBTYWx0ZWRfX6iFNZcHJet6O
- L3WnWUpaB+mXBgkSApqJee8j+VW9TBpMwMnDO85aSd+beyO1QhQJRmle9VhrcWckx6lygBW/dt2
- zIXr3rb7WLO/ZFzws656Qk/gRFSt9ectP6Hld72t3p84o4pmpXG/h+7K9sCilsWRSH7vZ188SyG
- 5QCPKUm5NTjjVwdYR/f11w1SdAbX0E3HA/gPOg48c18xs8u+ScPWgSyy+lOdAECJ0AW2L3Ro9b4
- fF+2vxvA9LuJqChyas5ruIce084nvvL22MJj0JOJ+ACcpMKsa4vWI3zm80hcKNSnnzGa+ksuVur
- 6ftK3N7gL3V92i5LcyLNRGpwh1NazUWyLNuEbfhTnu6vA5DfZ0qI8TGLXVd8OhdWHfN9bgeTObV
- 06UE+MgP+KHsDcPCVmLSHZwJPzkSWOvpMsgQ9z9Yn5hIxw4QAiqr0wZ9oIhP3G/lwLtMMEXDkB8
- Q9bVxu/wgiG4C2scmfg==
-X-Authority-Analysis: v=2.4 cv=D7pK6/Rj c=1 sm=1 tr=0 ts=69b860c8 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=Otm6cmvd0WkZQvGKRdUA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
-X-Proofpoint-ORIG-GUID: nplf7gao8qbje3jRr40itre5TL8BZUch
-X-Proofpoint-GUID: nplf7gao8qbje3jRr40itre5TL8BZUch
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO6PR10MB5409:EE_|CH0PR10MB5196:EE_
+X-MS-Office365-Filtering-Correlation-Id: c6015823-7491-4818-1eeb-08de83a88175
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|7053199007|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	8M8klLwDPcAmaT7Y0Gk51IEtf31e+Fut8WrdGsRDnJNpK6fuDL1XGv99na2QcJTTchWkJw5TqHYlzmyMl0jD/h3OYAltz66Eo95QJZU8fDsObYHpKa3Pven5TjDGn/dyPeMov5IRAX5gpY3SulEXmOULtX0dHJuSpNAUKKKfPExL5LVK0KpUtAmGJr2imDmDjIDrQ3fEfpGEgPceAjnO7oFpiHyIM5NrTtwkg9IPh9znVk8jf+fkg1xGWGdswSsBol/2akcmRhu/+89VhvBMDkXIqggSS/gz2Q9Thf8wqWW3DiIEfRFhyYkdIKtgbwfSozRgtKiUwIpR+U0cdE2obM9GO05XdopFDQrqFSE1KXr3LlMmLa/U0pjVcmaDnV6mOKIy/xBp1mKKq+tojSZa0/fvwU2kFxjptoNjjiaxP506qacJFiA4HlPZtRy5nWX3GuHQerqRMo6Qjbz6HksDlTH4XN55FB1DpHb/J+MZVT3/vgQATGRf9p5Oy+FeBZC6QoCAjYBrktf1gGLmhTDhntD79zT/WiHkegV7cG7BGhVKFwX5Dz4GEHR+2LqrA6/Uxwmu1FLV4pSATcdKFKx1nxhKetfDu5qc0ZG9oSpBqxwxUup93Ja4JLcq7tGMjMZt3X7HGThqwZVMqiP/M3Ovpki6lW2r/3Y/v5KlkKSETUQMYVA961UD4DOzQCLn/23SBnWKVKpIDt8b89KtMWCGVyfDknyUjlRwo9qu2ue3MyuYCUhaFWVrrDKYfBegkILK
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO6PR10MB5409.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(7053199007)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?ie+GoJhIc51UXZdlch0dAQKRdsAzbqwCsqdh4EqniOJHhNGMsRQ1bldbiZLR?=
+ =?us-ascii?Q?FAHXyLXC81pvTPeKXbzbbJL0g1oT8BRQcY7lKA8Q4dgSA2TMGSbC0AY+kE7/?=
+ =?us-ascii?Q?IjN5W5hKkd564pcjzmKPeGAyAGFjjDGKM6algKh7eZ2r6CX2NR4ek/p5eaFZ?=
+ =?us-ascii?Q?4ycoQOHv1SJ8Cvbu0WafWxjxx4LEEG04FmUABpL8mqMVG2Eo+bdgDAfsb8u8?=
+ =?us-ascii?Q?JVntgWj9+CX9Y0e+xlIqAHKh6CcIgjvxj3xqkWcBQIFa9yAJfRnQGSOXpL7B?=
+ =?us-ascii?Q?dXAWOZPnjauSa9kMRPCh47T6xslZNd3KWN+1V/S7tTIkGnNJdWN7r0T3oVgd?=
+ =?us-ascii?Q?+lrpLhar5MlETcdePxd8ntSMWY6xDBuYQ+csD7gbRwHgtmkhPLQVAqiBAOXn?=
+ =?us-ascii?Q?Vt8DZmcCksGq+MG6hESM+iQD1RpRRs+9EniWMHNo2lN7tyGjSWOew8yGxiIU?=
+ =?us-ascii?Q?52y3n2xmdJh7V3/b9s9wV5sYY0KXVg9S+i8vV9cR3kiccnb3q/vg5LD5cBRx?=
+ =?us-ascii?Q?AgReGZfhPPjTHizfrY89dw55Vs5S1rpZgHS5inICu/2QbITP0DylESnXBplX?=
+ =?us-ascii?Q?KQ9VNinzKpTAQwXkhWt2iNLRNyCG5tRck5nJvARxJmCCvyEqih1W2x/hlPU3?=
+ =?us-ascii?Q?dZfykOOfKmu5EpDrE04z1SOcp2JYYmfmesclDv7A5zb06pvaBshMiR8sehKC?=
+ =?us-ascii?Q?jGKopfQc0sP/e2fvVhKmRzVNfcUxoxmDLojW3GrtuIapXi22BwD2DhL5SSP/?=
+ =?us-ascii?Q?A0cK7PiokHNQkTYwAZbllX/8YY8K8mSKy8j24A5sdUOQciGsZwesGmWej3BV?=
+ =?us-ascii?Q?3bA+IiqrrZwzqyt+ZdGISSohInHqQg8C3SiKEIUKIsIQg+oczgBztFji72Rq?=
+ =?us-ascii?Q?PfOq8LtPf1dwyOrn7TSmDyHaH+gj8VF/i+YDNRGj2UAPmzVvIL9iWjonDT/l?=
+ =?us-ascii?Q?YY5J4laq+R4atX+sGu91Td7EldR1cUvEt4JltqljOjHt0zbpv3IsDDmY0eSr?=
+ =?us-ascii?Q?7QC7rHm0/VFh/Dk8DnDDeJ4QGL+tR5vhobgPMaFtghV64xDdADWsBtxMfjge?=
+ =?us-ascii?Q?10E+DBDSd0/XkzsXwzPlghGZz8WZEsyRoj+M/kg4u+sdhqP79MmvtbLCxPCu?=
+ =?us-ascii?Q?VapI3XjCqxpG+nHdR+Td6tGmqWKknEa+/bk5g+gR8YvjTBRWnMQu9n9vboie?=
+ =?us-ascii?Q?Q9SgdzCds1rbZD7oFWZdjgla0f+I1YW4fyFg/z77n/V5qoUvkhQ23pPJcQim?=
+ =?us-ascii?Q?ioRyhBNGFWsEGAy4srPfPzgp/XILQPbhvP8Fh0VJ7VMGSAiLeGB58zS30E3Y?=
+ =?us-ascii?Q?CW9qcZ6xVcG61lbplq/DfgqUz0QJB2qnKDLPLOkKWrXBAr8huWTP5Sezu9jI?=
+ =?us-ascii?Q?pNnX1WZ2yZZiAjnII3kdnzN/Tj5FUiBrEbgCURCUUoDYbtMSONi9jAlQGAlC?=
+ =?us-ascii?Q?W3KcODv48/Dph0pC/Pr8ksRCEVBNASCrhafQyTGlh+iPGNJImuPDIzQGg85Q?=
+ =?us-ascii?Q?wJyv1Z+3QFt+0/zPKI4vmXyvR/e8jWUqTonNYEriWgnUDhfJ6myDOGLsDXkc?=
+ =?us-ascii?Q?0lpf0XotSqAqRvKHZUoTP9KQ5RfslJ7IM680i7iSrXIZysnkkAPmFvQXEaBR?=
+ =?us-ascii?Q?KVP99NIAg7mPdmEIg+WxF2gYMRXZQZRb4/3tCHPZYBFhKuoAM1y2Czt3lfMy?=
+ =?us-ascii?Q?o7Ljx1O9L8bikkynAv/BLtPSOAnbV6lrbJ5eAFWRKhMasTxi5WTFfAc2jPk1?=
+ =?us-ascii?Q?MesWsa70ZFVb5sPKOFwc3ez/qjMu8Vo=3D?=
+X-Exchange-RoutingPolicyChecked:
+	OMWeLP4rmfWpDwh6dileuhvO49io+srczIgskC45hgdI9VUKkg3CbHDv6fxrFb7n2e/7yHnKM/ErBDcUpFHByj9fBuk92zTfEejPf850J9hrCw7sRrl0+EmScYmWGAGZu5Kd8oIyYZvCHLKIEqOWqK8GYibWzvXHlsQCyfv/dRDB8psV1ZTYrlBkISYavhfCRiAldlxtD4yQQReCdqcE3eXMq1SWkDjFyaeH1T6BaIRDHqR4MRxZ5WdFitIv1xg2yIyt3A/KQFKh+EUdB96rvI2cS4oD7Gio8BnLaTIDWVZcxBQs3iHhxZPYJjA8n28Q0YBYbuTkaTFt5pQX15oB8w==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	i50hcTyW0nRfcOKbv9AJH4ix2N6XHl37kjgwtInba+NEpvlvUsoBBs55a5ryMQbUwfFZAbjGCq4jqC7MbkPBji4FU2baF1zL/hv5tPS9posa2/Zy4pohsWAwD/wqtpoHs4jcpvZZpRlLwSwbCRiPI37g1ewLNd9SQMN7EtXyUfevC151hM4CCfEr3gqwE+QYSc2F5UbItm3t6j+djnxHB8cJDcexh5pxq47vDR1fREEA70scREciaEPoe9sUe9VfPLzdfAYI8SybiY1vS+yJZinDts2/L6a4BSW4dzOOt8ioxrLIoUuJXHLJpMWV6SKaTTr8jB5TpeKgFOpVtxzyN+qMdAi/8ijVp4GIMHJ21Rm2q2F3unW4Go8Rj42OdnZ5HOeBlgIWj8as28gGkjDBsSyUIc64yhNLnPuRZvYQy46ilvf6YFSxzkXS3qpstqqMqhEUaOqGaRecBalm6t6mwMQkUhW0otbyokIzQhciWdb+2AHnAfiN/fMcwahmCdynmIpDUzvhVGWRp/hZbIQXgwyYb+54VfV80PVgh48LFnKprJSgyAinuEIgkU75p/hvZmWsNo5McWcq5PACXxg7EQ2TBuPRl7mQTwTp25cRK2U=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c6015823-7491-4818-1eeb-08de83a88175
+X-MS-Exchange-CrossTenant-AuthSource: CO6PR10MB5409.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 22:08:08.4595
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ey2QBs9ZHeDb3zeypwC0UW9wfZWeeYT0IpSI/A+5GzFkaCd0kF+/hvpqBoS7S04UTU5m6JiZi0V946+gLaWEaQBWY+C4v7kbFHrNaG7sWp0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR10MB5196
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-16_05,2026-03-16_06,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 adultscore=0 clxscore=1015 suspectscore=0 spamscore=0
- malwarescore=0 lowpriorityscore=0 phishscore=0 bulkscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603160160
+ definitions=2026-03-16_06,2026-03-16_06,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 adultscore=0
+ suspectscore=0 bulkscore=0 spamscore=0 phishscore=0 mlxlogscore=999
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2603050001 definitions=main-2603160182
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDE4MiBTYWx0ZWRfX3g2+W8mM6GsF
+ MC/zE3RRVPUG3DAv3Q0r9G9nNgNnbCdnmZ2KZVkGQMbLiZacHxi6s12mvB03/Z88eXJeQc6EjZ5
+ psvBKKvmRW+1ruwPYdUMPT2wB+rWK3eLGIrCTbt1aBGZCO8JCQN7fGo3jZhPajUXUlMXIKYyY/G
+ TIWaW0QO+3QNVVRjjpwysCewxLXHqJnSzGpda4Vi2pVIdD/aDaMHWX7sSuCqIyclIFItOuQh00N
+ 8pIxDa8CsMgorGuko7ykekc2/gtqjelpkpw9+9M9MMELyKPWeVYkH4jzm+GczNyukQzhAsU0sQx
+ Mion1j1D2fxqNUleVgC+6lE+8s74FBpuGHEdfoL5Hu9zZC0Wmy5vlIYd8BHS/S/68txKo3sDqaM
+ 0LXSuARY6WbR6yc6gVppwiyg+kg25lPPRrTVEKoHvagIp11jjodGxx6QRR1eSiICYU5n80QJZvn
+ eiDxR/2SB1rOoAqLGRltZtCL11OL1ucNilm1UD0M=
+X-Authority-Analysis: v=2.4 cv=J8WnLQnS c=1 sm=1 tr=0 ts=69b87f7f b=1 cx=c_pps
+ a=qoll8+KPOyaMroiJ2sR5sw==:117 a=qoll8+KPOyaMroiJ2sR5sw==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=Yq5XynenixoA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
+ a=BqU2WV_vvsyTyxaotp0D:22 a=VwQbUJbxAAAA:8 a=yPCof4ZbAAAA:8 a=Z4Rwk6OoAAAA:8
+ a=PNWjKoLIGiLtemlLGygA:9 a=HkZW87K1Qel5hWWM3VKY:22 cc=ntf awl=host:12273
+X-Proofpoint-GUID: p-fU1koxgmksVqKjGsTzEF1QQZg1aMBk
+X-Proofpoint-ORIG-GUID: p-fU1koxgmksVqKjGsTzEF1QQZg1aMBk
 
-On Tue, Feb 24, 2026 at 01:17:22PM +0100, Krzysztof Kozlowski wrote:
-> On 24/02/2026 13:09, Gaurav Kohli wrote:
 
-[ ... ]
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> >>> As a result, each core requires its own cooling device, which must be
-> >>> linked to its TSENS thermal zone. Because of this, we introduced
-> >>> multiple child nodes—one for each cooling device.
-> >>
-> >> So you have one device with cooling cells=1+2, no?
-> >>
-> > 
-> > This will be a bigger framework change which is not supported, i can see 
-> 
-> I don't think that changing open source frameworks is "not supported". I
-> am pretty sure that changing is not only supported, but actually desired.
+> On Sun, 15 Mar 2026 18:36:39 -0700 Ankur Arora <ankur.a.arora@oracle.com> wrote:
+>
+>> Hi,
+>>
+>> This series adds waited variants of the smp_cond_load() primitives:
+>> smp_cond_load_relaxed_timeout(), and smp_cond_load_acquire_timeout().
+>>
+>> ...
+>>
+>
+> How are we to determine that this change is successful, useful, etc?
 
-Yes, IMO it could make sense. There are the thermal zones with phandle
-to a sensor and a sensor id. We can have the same with a phandle to a
-cooling device and a cooling device id.
+Good point. So this series was split off from this one here:
+  https://lore.kernel.org/lkml/20250218213337.377987-1-ankur.a.arora@oracle.com/
 
-(... or several ids because the thermal sensor can also have multiple
-ids ?)
+The series enables ARCH_HAS_CPU_RELAX on arm64 which should allow
+relatively cheap polling in idle on arm64.
+However, it does need a few more patches from the series above to do that.
 
-May be an array of names corresponding to the TMD names at the 'id'
-position ?
+> Reduced CPU consumption?  Reduced energy usage?  Improved latencies?
 
+With the additional patches this should improve wakeup latency:
+
+  I ran the sched-pipe test with processes on VCPUs 4 and 5 with
+  kvm-arm.wfi_trap_policy=notrap.
+
+  # perf stat -r 5 --cpu 4,5 -e task-clock,cycles,instructions,sched:sched_wake_idle_without_ipi \
+  perf bench sched pipe -l 1000000 -c 4
+
+  # No haltpoll (and, no TIF_POLLING_NRFLAG):
+
+  Performance counter stats for 'CPU(s) 4,5' (5 runs):
+
+         25,229.57 msec task-clock                       #    2.000 CPUs utilized               ( +-  7.75% )
+    45,821,250,284      cycles                           #    1.816 GHz                         ( +- 10.07% )
+    26,557,496,665      instructions                     #    0.58  insn per cycle              ( +-  0.21% )
+                 0      sched:sched_wake_idle_without_ipi #    0.000 /sec
+
+       12.615 +- 0.977 seconds time elapsed  ( +-  7.75% )
+
+
+  # Haltpoll:
+
+  Performance counter stats for 'CPU(s) 4,5' (5 runs):
+
+         15,131.58 msec task-clock                       #    2.000 CPUs utilized               ( +- 10.00% )
+    34,158,188,839      cycles                           #    2.257 GHz                         ( +-  6.91% )
+    20,824,950,916      instructions                     #    0.61  insn per cycle              ( +-  0.09% )
+         1,983,822      sched:sched_wake_idle_without_ipi #  131.105 K/sec                       ( +-  0.78% )
+
+        7.566 +- 0.756 seconds time elapsed  ( +- 10.00% )
+
+  We get a decent boost just because we are executing ~20% fewer
+  instructions. Not sure how the cpu frequency scaling works in a VM but
+  we also run at a higher frequency.
+
+(That specifically applies to guests but that series also adds enables this
+with acpi-idle for baremetal.)
+
+(From: https://lore.kernel.org/lkml/877c9zhk68.fsf@oracle.com/)
+
+>> Finally update poll_idle() and resilient queued spinlocks to use them.
+>
+> Have you identified other suitable sites for conversion?
+
+Haven't found other places in the core kernel where this could be used.
+I think one reason is that the typical kernel wait is unbounded.
+
+There are some in drivers/ that have this pattern. For instance I think
+this in drivers/iommu/arm/arm-smmu-v3 could be converted:
+__arm_smmu_cmdq_poll_until_msi().
+
+However, as David Laight pointed out in this thread
+(https://lore.kernel.org/lkml/20260214113122.70627a8b@pumpkin/)
+that this would be fine so long as the polling is on memory, but would
+need some work to handle MMIO.
+
+>>  Documentation/atomic_t.txt           | 14 +++--
+>>  arch/arm64/Kconfig                   |  3 +
+>>  arch/arm64/include/asm/barrier.h     | 23 +++++++
+>>  arch/arm64/include/asm/cmpxchg.h     | 62 +++++++++++++++----
+>>  arch/arm64/include/asm/delay-const.h | 27 +++++++++
+>>  arch/arm64/include/asm/rqspinlock.h  | 85 --------------------------
+>>  arch/arm64/lib/delay.c               | 15 ++---
+>>  drivers/cpuidle/poll_state.c         | 21 +------
+>>  drivers/soc/qcom/rpmh-rsc.c          |  8 +--
+>>  include/asm-generic/barrier.h        | 90 ++++++++++++++++++++++++++++
+>>  include/linux/atomic.h               | 10 ++++
+>>  include/linux/atomic/atomic-long.h   | 18 +++---
+>>  include/linux/sched/idle.h           | 29 +++++++++
+>>  kernel/bpf/rqspinlock.c              | 77 +++++++++++++++---------
+>>  scripts/atomic/gen-atomic-long.sh    | 16 +++--
+>>  15 files changed, 320 insertions(+), 178 deletions(-)
+>>  create mode 100644 arch/arm64/include/asm/delay-const.h
+>
+> Some sort of testing in lib/tests/ would be appropriate and useful.
+
+Makes sense. Will add.
+
+Thanks
+--
+ankur
