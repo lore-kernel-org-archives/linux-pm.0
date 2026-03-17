@@ -1,67 +1,39 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16369318ED6
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 14:35:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5936B27FB0E;
+	Tue, 17 Mar 2026 14:44:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773758131; cv=none; b=cf4VkMdWro5dYhIN1j3ATyEOUIUzoFNLTfLJqWettjmqNHq0qyo0ZFoQsF7x+1KPHJMlgOTUZ7hs/HMmQ/7n9/3vD34kzaoFrfo1paz8XKTXVxTq9+4fO5Fe8wjcvcA3eSP2JHTHS02RZZTW9gNb5/QMpFJB9d/32cyMyH5iewU=
+	t=1773758689; cv=none; b=QtGaEuzhln6I7kWPflBbsj7fS8K2rWGKg/A8N350WCQVramrg4GvaOelIV+/1JFZmgB0xb16N8K01CNqswrg0pBTOc4+HgQtkPF+z3ZH4m8d1b3mnNJF0WVcnSeopiLsqfNBx1By3uSTBGu/fTabyYC/dWhyY/+NBruXZnH/QTU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773758131; c=relaxed/simple;
-	bh=VcSxu7+Rt6pjbVzIfjpQ5S4/EHYXb1jK8VCuGDXYnXc=;
+	s=arc-20240116; t=1773758689; c=relaxed/simple;
+	bh=ig/EMNX8avDH9Wkq0jW9ZCq98ghPv+RlnlihJXI4x1g=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=i4HHGmtIS0i0YV8EJgQB5HEsVfykH9x9Xxps2jMrQqywUmC3WNbeT0pJtZyGoZlaP9HTWs+3WgieUcYsao1iUjcG4ES5jcSKux6EJPseG2C2akNdMV8VxMLZbX8HtzleLu9G17uN1ZR82PqYHWuz5k3/WP65u2M0DcaHZjBwwPk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=MH9h2pPp; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	 In-Reply-To:Content-Type; b=RkzQTd/70CR99r/6Wr2vjeuguPW891jJtc0IqerFk7CfRnF/rli5wANOQuBSyfrRu3jWeNhQsAopGbnYCRYHE69PJO5GLICip1Di/0m3zgTVI8EbRY3MyGXvOlfpOawY8FI50yjo2W1U2RLwhKH/3o/xSrKyLipMhCNyb0uY434=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=kPkW309+; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="MH9h2pPp"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-48540d21f7dso66879125e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 07:35:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1773758128; x=1774362928; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=9Cwk0sufcQW5RoTCtoeXyYyIvZ59fFS2/mrNoD7ViYI=;
-        b=MH9h2pPpOYUB+MNhiRorZ/kSJVTA/4li+JmIFIVVE4hMYPlycdOlZEKiw8qPMhZPPh
-         39dckjk3pyeObUdQnWl6qU30duQYaMoCQ1TkMGAOuzzho9QxZVDa9ziXpLHNqk7pMglS
-         TF0Nji6FOWJzOzTiebIixKwt7GzQCwzvzJmvC94nOKYg3HYX8GbwnIplZ61s/N7JPS6u
-         3iPx5BK3xWPtnnzF7RbCSr+kFVVvkroRu2O3qeLXMvkNKQRttPQR+pat7fOpSV2N58Qd
-         eE/E8h+ZZt+Vz4HU0z1RFQGjk3Agv2b0UYk5i1wqS5ErsaX0PUv4N8F5kK7a91rebVzI
-         zyVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773758128; x=1774362928;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9Cwk0sufcQW5RoTCtoeXyYyIvZ59fFS2/mrNoD7ViYI=;
-        b=j6cBBQ1mfBoTAVCfSzbRbpFiOIBpN0CDloRiNXNMUY8HikeFyFK/lISVumVp3PZ+DJ
-         CFedRDHzrAFmlgykhenZbqoTDcMR3OMtRY3GYw8vwkuI689yAqjyctVlnOliAWeTmfAF
-         H/zSIL/aOYJ90XQ+vgGucUrs+RD/7yB3NC0EbM1E7QCMN76wgGoNWAxmTd8VIv3iMi20
-         NUDv8mE36jpKysu3Zgyvv3s/hlKktnw0cQUKErF7RXA4iBqp9NxNzZh7/Qf8aZiu4BQf
-         n7zYkukYcaLiedT5xIsK2Mn3Od3I0WMXNzBHhLZT7IJfFUCabhlB/PJYJ3xp+OT1i6OO
-         BaFQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUsHADI1VPaZRSVake1EOyOSdzEt/a/9d5T69AIidZTNY/WnorWs0Ue6nJlklEDe0HvoEBUftAgQQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywcx9C9s4NycCM13O2qhWyT0OMYYZSrXCYK5ek47Vn4glb6FbXS
-	XYQa8jBp/vE6I8VYWAYFNef5VseI/7y2IkG5c1Y5CIyAroiDqa6tBbtx9qd2ICgSKkKuR34TQ+q
-	68zU3
-X-Gm-Gg: ATEYQzzVBQ4FHIp457lxHXmpOHtQmqEfuXKyHOpVbixIxtSaUUH6oIrp763C+r97PZS
-	5ISqBcYjwCyxhPnlhzrjJxlolDQFZfjg+t8jsqqN4+W2RdsiYDXqSQqyFwZhoOVUt0Gp1LoCrgs
-	u/1ttoUrBVB7Rk5/eg3w4MlaKCsR9DuqktiLtEywMlxJlKq5btmf1ojfz+t67ewTGPKcp9y8obV
-	EsB1333t/DKUkfAU9u0D1oEEKzaUDzdhG2c+F4QJgqP97m09onruD1KRUeenzwF4zi+rOBfPOqD
-	7O2DDF9TMlRM+WkJW+ESR+oZB3Da1emxUpcD6haKuoyFZ5neS3M5ZHrKWCgVxaRmOGT1fbUPZgB
-	ljr08dLW9GuSj0og72mg73ZSjAiGCgP5Q9tuST2Tn/PWW7moxq61Zle5J+1dmog0X8iAQwz50hT
-	cewTOCniGNDg/FgcA99t1HPjcgRWULCW1WyNVYwMQQyfvMrJWwvOjIy0nUccW5Uoh0Y6c=
-X-Received: by 2002:a05:600c:4e8e:b0:485:34b3:8587 with SMTP id 5b1f17b1804b1-485566d7035mr274762245e9.10.1773758128320;
-        Tue, 17 Mar 2026 07:35:28 -0700 (PDT)
-Received: from ?IPV6:2001:a61:13ea:b101:88d5:cd46:69d7:10e4? ([2001:a61:13ea:b101:88d5:cd46:69d7:10e4])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48557a74266sm112003685e9.17.2026.03.17.07.35.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Mar 2026 07:35:27 -0700 (PDT)
-Message-ID: <03344b43-b3aa-4800-b4dc-0b5a2b2fd5b4@suse.com>
-Date: Tue, 17 Mar 2026 15:35:26 +0100
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="kPkW309+"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+	List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=9nzDO8JHBjMy9LqMyHLjdL/DanHBIGqFXpaJScTCJtQ=; b=kPkW309+RbGupOYzxYbz0CwI8B
+	jEeGsg5RfC93jrywAcCL34e1cun4dqZs3klL8EDztT2qCwquFn+lHGmIREkefKmcP8GUQZgL2mXG4
+	djbLGdEgQAheNnsKH+o5Q67B+F3bb0E4ocgxAPTs9/E0K+QaauyLMxrdd82Jj2Lyq0HdghUhSIcXa
+	5/aGP8YOr1JW/ivrCAbCMC59PwxSkF/i4FaVUFNmMTIjee1alVMKzxM+j5VbJevf8UpK8WUFbDm1y
+	qMpwaOfwiRfpasKIvS4VYtxK58ZuDzYCM1iHkDEMhWQnCRM3bL4Jv6UpARZkODTX9vQasW7n8DnUe
+	MH37YmVA==;
+Received: from gwsc.sc.usp.br ([143.107.225.16] helo=[172.24.4.78])
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+	id 1w2Vet-002Joh-2k; Tue, 17 Mar 2026 15:44:35 +0100
+Message-ID: <14ad62c7-7046-4df6-8267-c868a9fde982@igalia.com>
+Date: Tue, 17 Mar 2026 11:44:25 -0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,45 +41,130 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATH v2] usb: usblp: add the reset_resume function interface
-To: Alan Stern <stern@rowland.harvard.edu>, shitao <shitao@kylinos.cn>
-Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-References: <20260317125614.3215254-1-shitao@kylinos.cn>
- <c4f66c3b-7cb4-4bcc-868a-d3aef2d9e521@rowland.harvard.edu>
+Subject: Re: [PATCH v7 2/5] pmdomain: bcm: bcm2835-power: Increase ASB control
+ timeout
+To: Stefan Wahren <wahrenst@gmx.net>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Nicolas Saenz Julienne <nsaenz@kernel.org>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Maxime Ripard <mripard@kernel.org>, Melissa Wen <mwen@igalia.com>,
+ Iago Toral Quiroga <itoral@igalia.com>,
+ Chema Casanova <jmcasanova@igalia.com>,
+ Dave Stevenson <dave.stevenson@raspberrypi.com>,
+ Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, kernel-dev@igalia.com,
+ stable@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ linux-pm@vger.kernel.org
+References: <20260312-v3d-power-management-v7-0-9f006a1d4c55@igalia.com>
+ <20260312-v3d-power-management-v7-2-9f006a1d4c55@igalia.com>
+ <bdae424d-f4b5-4181-9421-4393fe3ac8fb@gmx.net>
+From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
 Content-Language: en-US
-From: Oliver Neukum <oneukum@suse.com>
-In-Reply-To: <c4f66c3b-7cb4-4bcc-868a-d3aef2d9e521@rowland.harvard.edu>
+Autocrypt: addr=mcanal@igalia.com; keydata=
+ xsBNBGcCwywBCADgTji02Sv9zjHo26LXKdCaumcSWglfnJ93rwOCNkHfPIBll85LL9G0J7H8
+ /PmEL9y0LPo9/B3fhIpbD8VhSy9Sqz8qVl1oeqSe/rh3M+GceZbFUPpMSk5pNY9wr5raZ63d
+ gJc1cs8XBhuj1EzeE8qbP6JAmsL+NMEmtkkNPfjhX14yqzHDVSqmAFEsh4Vmw6oaTMXvwQ40
+ SkFjtl3sr20y07cJMDe++tFet2fsfKqQNxwiGBZJsjEMO2T+mW7DuV2pKHr9aifWjABY5EPw
+ G7qbrh+hXgfT+njAVg5+BcLz7w9Ju/7iwDMiIY1hx64Ogrpwykj9bXav35GKobicCAwHABEB
+ AAHNIE1hw61yYSBDYW5hbCA8bWNhbmFsQGlnYWxpYS5jb20+wsCRBBMBCAA7FiEE+ORdfQEW
+ dwcppnfRP/MOinaI+qoFAmcCwywCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQ
+ P/MOinaI+qoUBQgAqz2gzUP7K3EBI24+a5FwFlruQGtim85GAJZXToBtzsfGLLVUSCL3aF/5
+ O335Bh6ViSBgxmowIwVJlS/e+L95CkTGzIIMHgyUZfNefR2L3aZA6cgc9z8cfow62Wu8eXnq
+ GM/+WWvrFQb/dBKKuohfBlpThqDWXxhozazCcJYYHradIuOM8zyMtCLDYwPW7Vqmewa+w994
+ 7Lo4CgOhUXVI2jJSBq3sgHEPxiUBOGxvOt1YBg7H9C37BeZYZxFmU8vh7fbOsvhx7Aqu5xV7
+ FG+1ZMfDkv+PixCuGtR5yPPaqU2XdjDC/9mlRWWQTPzg74RLEw5sz/tIHQPPm6ROCACFls7A
+ TQRnAsMsAQgAxTU8dnqzK6vgODTCW2A6SAzcvKztxae4YjRwN1SuGhJR2isJgQHoOH6oCItW
+ Xc1CGAWnci6doh1DJvbbB7uvkQlbeNxeIz0OzHSiB+pb1ssuT31Hz6QZFbX4q+crregPIhr+
+ 0xeDi6Mtu+paYprI7USGFFjDUvJUf36kK0yuF2XUOBlF0beCQ7Jhc+UoI9Akmvl4sHUrZJzX
+ LMeajARnSBXTcig6h6/NFVkr1mi1uuZfIRNCkxCE8QRYebZLSWxBVr3h7dtOUkq2CzL2kRCK
+ T2rKkmYrvBJTqSvfK3Ba7QrDg3szEe+fENpL3gHtH6h/XQF92EOulm5S5o0I+ceREwARAQAB
+ wsB2BBgBCAAgFiEE+ORdfQEWdwcppnfRP/MOinaI+qoFAmcCwywCGwwACgkQP/MOinaI+qpI
+ zQf+NAcNDBXWHGA3lgvYvOU31+ik9bb30xZ7IqK9MIi6TpZqL7cxNwZ+FAK2GbUWhy+/gPkX
+ it2gCAJsjo/QEKJi7Zh8IgHN+jfim942QZOkU+p/YEcvqBvXa0zqW0sYfyAxkrf/OZfTnNNE
+ Tr+uBKNaQGO2vkn5AX5l8zMl9LCH3/Ieaboni35qEhoD/aM0Kpf93PhCvJGbD4n1DnRhrxm1
+ uEdQ6HUjWghEjC+Jh9xUvJco2tUTepw4OwuPxOvtuPTUa1kgixYyG1Jck/67reJzMigeuYFt
+ raV3P8t/6cmtawVjurhnCDuURyhUrjpRhgFp+lW8OGr6pepHol/WFIOQEg==
+In-Reply-To: <bdae424d-f4b5-4181-9421-4393fe3ac8fb@gmx.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+Hi Stefan,
 
-
-On 17.03.26 15:06, Alan Stern wrote:
-> On Tue, Mar 17, 2026 at 08:56:14PM +0800, shitao wrote:
-
->> 9. Result: kernel panic in pm_op() with use-after-free
->>
->> The bug manifests as:
->> Unable to handle kernel paging request at virtual address 006b6b6b6b6b6b93
->> pc : pm_op+0x50/0x80
->> Call trace:
->> pm_op+0x50/0x80
->> dpm_resume+0xdc/0x200
->> hibernation_snapshot+0x234/0x3d8
+On 15/03/26 20:07, Stefan Wahren wrote:
+> Hi Maíra,
 > 
-> First, are you certain that setting the reset_resume callback equal to
-> the resume callback is the right thing to do?  Don't printers hold some
-> state information that will need to be restored after a reset?
+> Am 12.03.26 um 22:34 schrieb Maíra Canal:
+>> The bcm2835_asb_control() function uses a tight polling loop to wait
+>> for the ASB bridge to acknowledge a request. During intensive workloads,
+>> this handshake intermittently fails for V3D's master ASB on BCM2711,
+>> resulting in "Failed to disable ASB master for v3d" errors during
+>> runtime PM suspend. As a consequence, the failed power-off leaves V3D in
+>> a broken state, leading to bus faults or system hangs on later accesses.
+>>
+>> As the timeout is insufficient in some scenarios, increase the polling
+>> timeout from 1us to 5us, which is still negligible in the context of a
+>> power domain transition. Also, move the start timestamp to after the
+>> MMIO write, as the write latency is counted against the timeout,
+>> reducing the effective wait time for the hardware to respond.
+>>
+>> Cc: stable@vger.kernel.org
+> I think, a Fixes tag would be helpful here. Also this fix should be the 
+> first patch of the series or separate.
 
-Correct. This will not work.
+I'll send it separately with the Fixes tag. Thanks!
 
-However, if we take the trace seriously, it means that resume() was called
-after disconnect(). That must never happen. Yet, if that happens the issue
-is in the PM core, not USB.
+>> Reviewed-by: Stefan Wahren <wahrenst@gmx.net>
+>> Signed-off-by: Maíra Canal <mcanal@igalia.com>
+>>
+>> ---
+>> To: Ulf Hansson <ulf.hansson@linaro.org>
+>> To: Ray Jui <rjui@broadcom.com>
+>> To: Scott Branden <sbranden@broadcom.com>
+>> Cc: linux-pm@vger.kernel.org
+> This looks unusual. Is this intended?
 
-	Regards
-		Oliver
+As b4 doesn't support it natively, I used this strategy to send only
+this patch to the linux-pm mailing list and not the whole series.
 
-  
+Best regards,
+- Maíra
+
+> 
+> Best regards
+>> ---
+>>   drivers/pmdomain/bcm/bcm2835-power.c | 5 ++---
+>>   1 file changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/ 
+>> bcm/bcm2835-power.c
+>> index 
+>> 0450202bbee2513c9116a36abaa839b460550935..1815eb4ee69b9b672b5e314402f1cc9897c57dcb 100644
+>> --- a/drivers/pmdomain/bcm/bcm2835-power.c
+>> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
+>> @@ -166,8 +166,6 @@ static int bcm2835_asb_control(struct 
+>> bcm2835_power *power, u32 reg, bool enable
+>>           break;
+>>       }
+>> -    start = ktime_get_ns();
+>> -
+>>       /* Enable the module's async AXI bridges. */
+>>       if (enable) {
+>>           val = readl(base + reg) & ~ASB_REQ_STOP;
+>> @@ -176,9 +174,10 @@ static int bcm2835_asb_control(struct 
+>> bcm2835_power *power, u32 reg, bool enable
+>>       }
+>>       writel(PM_PASSWORD | val, base + reg);
+>> +    start = ktime_get_ns();
+>>       while (!!(readl(base + reg) & ASB_ACK) == enable) {
+>>           cpu_relax();
+>> -        if (ktime_get_ns() - start >= 1000)
+>> +        if (ktime_get_ns() - start >= 5000)
+>>               return -ETIMEDOUT;
+>>       }
+>>
+> 
 
