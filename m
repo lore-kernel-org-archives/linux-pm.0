@@ -1,131 +1,104 @@
-Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F2739B4BC;
-	Tue, 17 Mar 2026 08:42:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA51438E5FB
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 08:51:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773736970; cv=none; b=s6X05JRNmRIAcBqbOSy92+1CNirB4ZKOtnom//zDEeagN0u0eO6oiQYRdfpiw7LKHuBAfX64vCfZtwuyhp4lm0XkHivlfFPcSfmmydOeiUw+xFQ/vxStLzVZd/DvqwLQNRjlPhYAydRSFgUcxhGrxmpt928J6d1Vpr8PybUNTQo=
+	t=1773737520; cv=none; b=Nwr2XVOS2WlNGcCHGJF1FMrPPNXM+/I1CsGkKNnO7HnDP8rFI/7p4BCKUJUdAdyriF3FQU4sv1B8Lmnn7khvG5TE+QQ3c5TyPuB73eERGGz0LqbJ7UnewDjRNJLVkNFPU2H6qNnmm8Wo2hZMy3jxXp5Dtpy5xLkVS7O0dpQjVqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773736970; c=relaxed/simple;
-	bh=39i0FKvjbnLo0UcB1HUzCVNIP0REpjbkijj1jKEeZKs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ElB2D6wyHs4yJFVxcXPfI5JcFAQHvgf9TuGyAos8fcNil58k2P3RWkjd0IzVBELCKIPUMeeRh3ZmAA95rVD819TR2uCbPwTtcznTA0fJZqBX+x7HE6A968XwzP9hMKCM8EWAJA4Vu8D4wqgrduyVTIAdx2yBM0oataKTI5rmQ3w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=Ggz+E/xp; arc=none smtp.client-ip=113.46.200.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1773737520; c=relaxed/simple;
+	bh=p8pVTyPl47a537YPvdFqH/ssrxTbysfNXijEbIICXdQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CT8AwY8ab7MWn1eCmU8t3/MQ62jPpq2uAs5DPz+t653E8zw1wRQcmUvuKzMXFxesyoynTMnIG3lLct8xYY00EfnRrL+b3kmqw8zEHXrZ0hZPT6HrQwSRD3+Dmvg9epSPqIKq4aknfibq/8woua+vbalDfI8oSYxcsAsbGOkQT0Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=l91ggJsY; arc=none smtp.client-ip=209.85.210.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="Ggz+E/xp"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=TnIUpYSoUJH43ZHFR5aKdHD8AMHQO6zFXhEONnGc1d4=;
-	b=Ggz+E/xpQrytBBwhFN28wbfvZfu3Hb+ZF7efQvSxMVjHbla7VLAnZb0DFFl/5qMYj4BGuJVI+
-	E+nTjnbsw+Fv9L9BWfeb519SJH15zeN1sTe/VouLH07HaXupEMdBvJBZW1gEMK+oVz6PruAxgjk
-	GIe6a52knXH29CkElz+jAfk=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4fZlh40MgQz1T4GV;
-	Tue, 17 Mar 2026 16:37:24 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id CE50340567;
-	Tue, 17 Mar 2026 16:42:43 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
- (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 17 Mar
- 2026 16:42:43 +0800
-Message-ID: <4c1bec09-4a13-4bbb-a0a5-0014157c3297@huawei.com>
-Date: Tue, 17 Mar 2026 16:42:42 +0800
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="l91ggJsY"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-82987437624so364580b3a.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 01:51:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773737519; x=1774342319; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Rab1Vx6P07OVr4XGKcMH30oU9Egb7S8XIvL2tnMJznM=;
+        b=l91ggJsYtSm00fcAO5YEN4SX1keC3xNi7qFXCHfaCFcdlCyHLIfJeXiw24zBUKyfd9
+         7KZvB2K5B5O+kIunW2DvKCuJMBRpJRx9Kcbvd54zlgClPzQKlAes56Wh04edsiYlMelq
+         g0d/zIa0nsWFekU793DOJ6iNa/IDraRhrHB1g46VJWXLewbHzvQsryVBQDIXHiYJHKwG
+         712Mded4uZtBxPLm7rswJMXFtY7G5lOW5RgLSTDI3EMN8KGQxhiJfbGWw1KMLzLzuZhj
+         O9n7+t9HD52Z/hI9gnw7O2kcEwqcH1v4HrMeAMlPZX3nL2E5hPQ4AzMRo4souo2Rf4qU
+         a6Jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773737519; x=1774342319;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Rab1Vx6P07OVr4XGKcMH30oU9Egb7S8XIvL2tnMJznM=;
+        b=g8PO2x/NBT/zMAo88uNpzyRqBGnE+cZdB42E/371wS5fxpjqbDPS0vjismuUZz5CCJ
+         pFjISldXrALOAuklVn4XEw6soJ24A0vwMCgO5WamZotf4PQo3Vro0RkVFVr9T6onxW8r
+         U5AV/TdSDHpOcl3yqzIagmyFy7pcTzMg9SIcIsxh25VdSCGUrhzpVsA+QvSmhZFOf/B3
+         LOAwrBBFk38MXO7T4wdF5njdEklmwmp6eSw/y6/qNMYo9jSPJvm/B/F1lAkgntv86gK6
+         TfpdoVq4Ha2OKwXUm8D1b5tKCU3kwieF97kASK3X7sB3SerdI7EQz/m7S186AZ1ognc+
+         +pIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVnt3FBv7qkAV0wcEHZJiNtdaG/ZWqCD1SihNQ+2c6mXrHwfOiWAiUfTqwk5kdcMdoztUNmybFCwg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YytglZRijKnF6+018mTQH8+YZhvVYp2KVZqV2KAfMohseT3ESXF
+	8pLVFsi5eI7H2EmI76PAgFmM9q90YPF7RSEscfmqgse5vsisC4l0aRShzkLjOU7pC0ckybYPikH
+	2DzI1
+X-Gm-Gg: ATEYQzxYAYtyVvXYnOkOV/ErS18DGrS4zfNxe4rjP62dDOr5UQ5YfYGoxKcBTuDZ8iG
+	I5FhScFvyjbKkolX2bSCsLwalC+nX6T2WZI+sYRDxp+bbAApAvSr0c3yjuTu06o0w1nbzxUIL59
+	+dlwPm6VuCV9vRdrLzpveQ1n5Gm3QT+rKdBeEUtPehfUpJ1dQkI0andvNY34pBM8KuVW+3JOOXW
+	x2Hj8IbQlxs64T4rnAue2fWfP3NYY/ZgXLAkO94PEJBlXn8ZAGBkbdAmIwuUDv5TIxkb5ORAdfX
+	4I2VWHfQEFNgBorkwVMZEaqPh7JKqsihLCF3sR77iIKTV1kgERpfJet61tj8i29lmG8rhVot3aP
+	9x5OPqQkd0+0EsaPw2QIb1sXnO+AHfZecnbCNO3mm6h+XZmZg88Iumxc2qCNodbG0xd6fpuQHYn
+	pM91BrsCD1WtDiwEKX8Abj7peN
+X-Received: by 2002:a05:6a00:1398:b0:822:69b2:7ed0 with SMTP id d2e1a72fcca58-82a56014846mr2547142b3a.6.1773737519091;
+        Tue, 17 Mar 2026 01:51:59 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82a07340417sm15903645b3a.39.2026.03.17.01.51.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Mar 2026 01:51:58 -0700 (PDT)
+Date: Tue, 17 Mar 2026 14:21:56 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, umang.chheda@oss.qualcomm.com, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: Add QCS8300 to cpufreq-dt-platdev blocklist
+Message-ID: <apsp4wx7pluiwfc46unxpwaylubwk7ltn4oc62dtqrgvggumb5@5aobovyqmlgl>
+References: <20260316103752.289324-1-faruque.ansari@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 1/6] cpufreq: Remove per-CPU QoS constraint
-To: Pierre Gondois <pierre.gondois@arm.com>, Viresh Kumar
-	<viresh.kumar@linaro.org>
-CC: <linux-kernel@vger.kernel.org>, Jie Zhan <zhanjie9@hisilicon.com>, Ionela
- Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
-	Christian Loehle <christian.loehle@arm.com>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy"
-	<gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>, Srinivas Pandruvada
-	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
- Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>
-References: <20260225084930.1692228-1-pierre.gondois@arm.com>
- <20260225084930.1692228-2-pierre.gondois@arm.com>
- <zvk6qqwde535fiimjrtwhkyjnhymliv5acubtho3ge5hgj7y5g@3wolynnix3gz>
- <de26c436-bc6d-49bd-ab88-e055f1665c2f@arm.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <de26c436-bc6d-49bd-ab88-e055f1665c2f@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf200001.china.huawei.com (7.202.181.227)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260316103752.289324-1-faruque.ansari@oss.qualcomm.com>
 
-On 3/16/2026 10:45 PM, Pierre Gondois wrote:
+On 16-03-26, 16:07, Faruque Ansari wrote:
+> The Qualcomm QCS8300 platform uses the qcom-cpufreq-hw
+> driver, so add it to the cpufreq-dt-platdev driver's blocklist.
 > 
-> On 3/13/26 09:57, Viresh Kumar wrote:
->> On 25-02-26, 09:49, Pierre Gondois wrote:
->>> policy->max_freq_req represents the maximum allowed frequency as
->>> requested by the policyX/scaling_max_freq sysfs file. This request
->>> applies to all CPUs of the policy. It is not possible to request
->>> a per-CPU maximum frequency.
->>>
->>> Thus, the interaction between the policy boost and scaling_max_freq
->>> settings should be handled by adding a boost specific QoS constraint.
->>> This will be handled in the following patches.
->>>
->>> This patch reverts of:
->>> commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
->>> a CPU")
->>>
->>> Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
->>> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
->>> ---
->>>   drivers/cpufreq/cpufreq.c | 4 ----
->>>   1 file changed, 4 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>> index 4472bb1ec83c7..db414c052658b 100644
->>> --- a/drivers/cpufreq/cpufreq.c
->>> +++ b/drivers/cpufreq/cpufreq.c
->>> @@ -1481,10 +1481,6 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
->>>             blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->>>                   CPUFREQ_CREATE_POLICY, policy);
->>> -    } else {
->>> -        ret = freq_qos_update_request(policy->max_freq_req, policy->max);
->>> -        if (ret < 0)
->>> -            goto out_destroy_policy;
->>>       }
->>>         if (cpufreq_driver->get && has_target()) {
->> Even if this change is required, I don't think this should be applied
->> separately. Just reverting this will get the bug back, which was fixed by
->> commit 1608f0230510. Individual patches shouldn't break kernel (and bisect) as
->> much as possible.
->>
-> I could not reproduce the original issue.
+> Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> At the time of the patch and still now, calls to
-> freq_qos_update_request() are checked against negative values.
-> The only exception is when using the scaling_max_frequency sysfs
-> entry, but this is out of the scope.
-> 
-> So I don't see how:
-> 
-> commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging a CPU")
-> 
-> can prevent a CPU to reach the boost frequency.  The only path that
-> could fail and that I could reproduce was fixed by:
-> 
-> https://lore.kernel.org/all/852ff11c589e6300730d207baac195b2d9d8b95f.1745511526.git.viresh.kumar@linaro.org/
-> 
-> So the current conclusion is that "cpufreq: Fix re-boost issue after hotplugging a CPU"
-> was not the real fix
-> 
-> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 25fd3b191b7e..ff1204c666b1 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -159,6 +159,7 @@ static const struct of_device_id blocklist[] __initconst = {
+>  	{ .compatible = "qcom,qcm2290", },
+>  	{ .compatible = "qcom,qcm6490", },
+>  	{ .compatible = "qcom,qcs404", },
+> +	{ .compatible = "qcom,qcs8300", },
+>  	{ .compatible = "qcom,qdu1000", },
+>  	{ .compatible = "qcom,sa8155p" },
+>  	{ .compatible = "qcom,sa8540p" },
 
-Yes. After Viresh's patchset, the original issue was solved. So commit
-1608f0230510 is not needed anymore and can be reverted.
+Applied. Thanks.
 
+-- 
+viresh
