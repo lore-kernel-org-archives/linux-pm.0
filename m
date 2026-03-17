@@ -1,112 +1,113 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 862F93E3DA7;
-	Tue, 17 Mar 2026 14:31:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16369318ED6
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 14:35:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773757898; cv=none; b=LjPIaNZ05Tj+DKpf5O3lO/zJuEBO1lz+ywk9ElZqv1iVSFtYPMTpKMjAW2ZkJ44MDsAuFUu8IYGaVIK4EPPPsYPP9NxN4wtSnGW6v7y0tn9w0SLMuO3sovcnYcO93ZrANDFCD/ZX+vXYYrw9MYcFvBm/ddJXX4uEv1zxMtLn4B0=
+	t=1773758131; cv=none; b=cf4VkMdWro5dYhIN1j3ATyEOUIUzoFNLTfLJqWettjmqNHq0qyo0ZFoQsF7x+1KPHJMlgOTUZ7hs/HMmQ/7n9/3vD34kzaoFrfo1paz8XKTXVxTq9+4fO5Fe8wjcvcA3eSP2JHTHS02RZZTW9gNb5/QMpFJB9d/32cyMyH5iewU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773757898; c=relaxed/simple;
-	bh=rM6Cq3+ZUiC+AZdFn8pQ1HrieI0QVdQPA7j0GTmtziQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=oLA23bXZnnCO6CV6w6YztgeWwvy+eIgeW26laYb+PIehbuK2Lhe+Ew+eVuP/5tH92zJWSeq360IObNyaIdzPRJC5vhJ3Wkf4Ccogakb3NO2GGAdg4upwwkTvKfqvYK35yQmuaCD3QpVENOhUpUuGBLinKBUoc6l7ZXQwypwzsd0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=f7s6+i5q; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1773758131; c=relaxed/simple;
+	bh=VcSxu7+Rt6pjbVzIfjpQ5S4/EHYXb1jK8VCuGDXYnXc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=i4HHGmtIS0i0YV8EJgQB5HEsVfykH9x9Xxps2jMrQqywUmC3WNbeT0pJtZyGoZlaP9HTWs+3WgieUcYsao1iUjcG4ES5jcSKux6EJPseG2C2akNdMV8VxMLZbX8HtzleLu9G17uN1ZR82PqYHWuz5k3/WP65u2M0DcaHZjBwwPk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=MH9h2pPp; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="f7s6+i5q"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1773757895;
-	bh=rM6Cq3+ZUiC+AZdFn8pQ1HrieI0QVdQPA7j0GTmtziQ=;
-	h=From:Date:Subject:To:Cc:From;
-	b=f7s6+i5qeAAhNNBIIP95or8sqqZR8VV6EGDPuK8gMGdnGKIYgdrqCGWQYS9HIzSaN
-	 2wZBja0TR0tFI7I0+c8Cs2VS5tokSz/B/ra35kideju+jeOk02YJDVLZmOYn4rWfxV
-	 jjSxMPbKSziXYWH6huiEGpbfo6DIVvjfCY/JUbiRSGTlY7Kc+p2/I3jDtH89p4Js9T
-	 w6rU1fz7iUXCY+ZNNwPLEyY0frIzXfaMkj3SVOv/9fy79bjshbBXszs771K1Xs/Ebt
-	 XnoE8osfJw38Qr4L0gugLufChcL5L0w0B/UXDTQ+7/iqlJ4Xj3CxlV409IZqwNW6Ok
-	 +8O06/Znl5KJQ==
-Received: from jupiter.universe (dyndsl-091-248-085-025.ewe-ip-backbone.de [91.248.85.25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: sre)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id AE84517E0E3F;
-	Tue, 17 Mar 2026 15:31:35 +0100 (CET)
-Received: by jupiter.universe (Postfix, from userid 1000)
-	id 4D43348002A; Tue, 17 Mar 2026 15:31:35 +0100 (CET)
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Date: Tue, 17 Mar 2026 15:31:30 +0100
-Subject: [PATCH] thermal/drivers/rockchip: Shut up eFuse prober defer
- warning
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="MH9h2pPp"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-48540d21f7dso66879125e9.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 07:35:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1773758128; x=1774362928; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9Cwk0sufcQW5RoTCtoeXyYyIvZ59fFS2/mrNoD7ViYI=;
+        b=MH9h2pPpOYUB+MNhiRorZ/kSJVTA/4li+JmIFIVVE4hMYPlycdOlZEKiw8qPMhZPPh
+         39dckjk3pyeObUdQnWl6qU30duQYaMoCQ1TkMGAOuzzho9QxZVDa9ziXpLHNqk7pMglS
+         TF0Nji6FOWJzOzTiebIixKwt7GzQCwzvzJmvC94nOKYg3HYX8GbwnIplZ61s/N7JPS6u
+         3iPx5BK3xWPtnnzF7RbCSr+kFVVvkroRu2O3qeLXMvkNKQRttPQR+pat7fOpSV2N58Qd
+         eE/E8h+ZZt+Vz4HU0z1RFQGjk3Agv2b0UYk5i1wqS5ErsaX0PUv4N8F5kK7a91rebVzI
+         zyVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773758128; x=1774362928;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9Cwk0sufcQW5RoTCtoeXyYyIvZ59fFS2/mrNoD7ViYI=;
+        b=j6cBBQ1mfBoTAVCfSzbRbpFiOIBpN0CDloRiNXNMUY8HikeFyFK/lISVumVp3PZ+DJ
+         CFedRDHzrAFmlgykhenZbqoTDcMR3OMtRY3GYw8vwkuI689yAqjyctVlnOliAWeTmfAF
+         H/zSIL/aOYJ90XQ+vgGucUrs+RD/7yB3NC0EbM1E7QCMN76wgGoNWAxmTd8VIv3iMi20
+         NUDv8mE36jpKysu3Zgyvv3s/hlKktnw0cQUKErF7RXA4iBqp9NxNzZh7/Qf8aZiu4BQf
+         n7zYkukYcaLiedT5xIsK2Mn3Od3I0WMXNzBHhLZT7IJfFUCabhlB/PJYJ3xp+OT1i6OO
+         BaFQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUsHADI1VPaZRSVake1EOyOSdzEt/a/9d5T69AIidZTNY/WnorWs0Ue6nJlklEDe0HvoEBUftAgQQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywcx9C9s4NycCM13O2qhWyT0OMYYZSrXCYK5ek47Vn4glb6FbXS
+	XYQa8jBp/vE6I8VYWAYFNef5VseI/7y2IkG5c1Y5CIyAroiDqa6tBbtx9qd2ICgSKkKuR34TQ+q
+	68zU3
+X-Gm-Gg: ATEYQzzVBQ4FHIp457lxHXmpOHtQmqEfuXKyHOpVbixIxtSaUUH6oIrp763C+r97PZS
+	5ISqBcYjwCyxhPnlhzrjJxlolDQFZfjg+t8jsqqN4+W2RdsiYDXqSQqyFwZhoOVUt0Gp1LoCrgs
+	u/1ttoUrBVB7Rk5/eg3w4MlaKCsR9DuqktiLtEywMlxJlKq5btmf1ojfz+t67ewTGPKcp9y8obV
+	EsB1333t/DKUkfAU9u0D1oEEKzaUDzdhG2c+F4QJgqP97m09onruD1KRUeenzwF4zi+rOBfPOqD
+	7O2DDF9TMlRM+WkJW+ESR+oZB3Da1emxUpcD6haKuoyFZ5neS3M5ZHrKWCgVxaRmOGT1fbUPZgB
+	ljr08dLW9GuSj0og72mg73ZSjAiGCgP5Q9tuST2Tn/PWW7moxq61Zle5J+1dmog0X8iAQwz50hT
+	cewTOCniGNDg/FgcA99t1HPjcgRWULCW1WyNVYwMQQyfvMrJWwvOjIy0nUccW5Uoh0Y6c=
+X-Received: by 2002:a05:600c:4e8e:b0:485:34b3:8587 with SMTP id 5b1f17b1804b1-485566d7035mr274762245e9.10.1773758128320;
+        Tue, 17 Mar 2026 07:35:28 -0700 (PDT)
+Received: from ?IPV6:2001:a61:13ea:b101:88d5:cd46:69d7:10e4? ([2001:a61:13ea:b101:88d5:cd46:69d7:10e4])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48557a74266sm112003685e9.17.2026.03.17.07.35.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Mar 2026 07:35:27 -0700 (PDT)
+Message-ID: <03344b43-b3aa-4800-b4dc-0b5a2b2fd5b4@suse.com>
+Date: Tue, 17 Mar 2026 15:35:26 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATH v2] usb: usblp: add the reset_resume function interface
+To: Alan Stern <stern@rowland.harvard.edu>, shitao <shitao@kylinos.cn>
+Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+References: <20260317125614.3215254-1-shitao@kylinos.cn>
+ <c4f66c3b-7cb4-4bcc-868a-d3aef2d9e521@rowland.harvard.edu>
+Content-Language: en-US
+From: Oliver Neukum <oneukum@suse.com>
+In-Reply-To: <c4f66c3b-7cb4-4bcc-868a-d3aef2d9e521@rowland.harvard.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260317-rockchip-thermal-trim-warning-v1-1-01bc4bda75e9@collabora.com>
-X-B4-Tracking: v=1; b=H4sIAMFluWkC/x3MwQpAQBAA0F/RnE2tJcqvyGFaw05YmhVK/t3m+
- C7vgcgqHKHNHlA+JcoWEoo8A+cpTIwyJIM1tjZl0aBubnZedjw860oLHiorXqRBwoRuMKaxRHa
- sakjHrjzK/f9d/74fe+Y/z28AAAA=
-X-Change-ID: 20260317-rockchip-thermal-trim-warning-cd0072aa2f46
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Heiko Stuebner <heiko@sntech.de>, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
- kernel@collabora.com, Sebastian Reichel <sebastian.reichel@collabora.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1275;
- i=sebastian.reichel@collabora.com; h=from:subject:message-id;
- bh=rM6Cq3+ZUiC+AZdFn8pQ1HrieI0QVdQPA7j0GTmtziQ=;
- b=owJ4nAFtApL9kA0DAAoB2O7X88g7+poByyZiAGm5ZcfOlHQ7B7RY9QNFeSFEmZIw2HGpVt8dv
- mD4+j/mpmTEmYkCMwQAAQoAHRYhBO9mDQdGP4tyanlUE9ju1/PIO/qaBQJpuWXHAAoJENju1/PI
- O/qaA5UP/1gX3O/UsiG5YGu6U32IAcf1ROmf2gS3hTr4Qy5C2UMVBC7FyJuV3Yhwotm+tZ1FedJ
- pTWqekZXX90khjfN1dAct8DmQmL4NEc8O60f7g9q79Hu1D2nTOBOJBvmmWE6esZJAE+tx1q65Uw
- MA47NDvMaki1BpkU/rA8rzAsYiEdZpmOYQMCYZN5wkb6Ida/Khc8gZxDum1qVSIAlmcGyphmfN5
- Kj/oV7weqc3RTJKvb45VwRYrll4RKQ7gEUN8Sjq1XAUtdKql3bbSIJywX4atWfRPpCW5y81V0/S
- GI+iDnZf5u22N44RLZskYy+DA/UxR7RwKEGO9/rQ2zwI+TTRGsEi9q1/0mIsbUdoIlK1W9VQSDm
- 6GWiMBIvMSyFHDcGJC+upkL8eBX7AKlBCGWF3FqJdjnPzpcgx8uxa5VQkryAJPx8wua5YwsHv1w
- dvGb0iz8dPzZph2NnL7MmQOZcxfXqdve/9oJce3FLPgXLBhvD/CbvsfEIaKLiObDl174lSqybff
- Vn6YT3C5iS2Y7ecuwLHcW1TE1qAUchL/tGxR8wLaSqSchzSZyOXb2RLBQxM2MppiwzpJspxw7tM
- sWCClZLrjhReq0cf3qCvxrgbQON1ubEtTtCwX+7Uvjd3bA4BuUFiZ6TbF0WXI+eaDvn5TLOqvJ0
- ML+Y/XnxAN06UQL8iX2QtsA==
-X-Developer-Key: i=sebastian.reichel@collabora.com; a=openpgp;
- fpr=EF660D07463F8B726A795413D8EED7F3C83BFA9A
 
-Shut up the following message printed at error level on ArmSom Sige5:
 
-rockchip-thermal 2ae70000.tsadc: failed reading trim of sensor 0: -EPROBE_DEFER
 
-Fixes: ae332ec0009d ("thermal/drivers/rockchip: Support reading trim values from OTP")
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/thermal/rockchip_thermal.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+On 17.03.26 15:06, Alan Stern wrote:
+> On Tue, Mar 17, 2026 at 08:56:14PM +0800, shitao wrote:
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index c49ddf70f86e..2a40339de0d0 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1638,8 +1638,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 	if (tsadc->get_trim_code && sensor->of_node) {
- 		error = rockchip_get_efuse_value(sensor->of_node, "trim", &trim);
- 		if (error < 0 && error != -ENOENT) {
--			dev_err(dev, "failed reading trim of sensor %d: %pe\n",
--				id, ERR_PTR(error));
-+			dev_err_probe(dev, error, "failed reading trim of sensor %d\n", id);
- 			return error;
- 		}
- 		if (trim) {
+>> 9. Result: kernel panic in pm_op() with use-after-free
+>>
+>> The bug manifests as:
+>> Unable to handle kernel paging request at virtual address 006b6b6b6b6b6b93
+>> pc : pm_op+0x50/0x80
+>> Call trace:
+>> pm_op+0x50/0x80
+>> dpm_resume+0xdc/0x200
+>> hibernation_snapshot+0x234/0x3d8
+> 
+> First, are you certain that setting the reset_resume callback equal to
+> the resume callback is the right thing to do?  Don't printers hold some
+> state information that will need to be restored after a reset?
 
----
-base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
-change-id: 20260317-rockchip-thermal-trim-warning-cd0072aa2f46
+Correct. This will not work.
 
-Best regards,
--- 
-Sebastian Reichel <sebastian.reichel@collabora.com>
+However, if we take the trace seriously, it means that resume() was called
+after disconnect(). That must never happen. Yet, if that happens the issue
+is in the PM core, not USB.
+
+	Regards
+		Oliver
+
+  
 
