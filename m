@@ -1,41 +1,41 @@
 Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 600D63E51F7;
-	Tue, 17 Mar 2026 22:42:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 702883E51F7
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 22:42:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773787335; cv=none; b=ovnp+RL9wmRRx7bfamWgxAHtydmexRR/c0V01Uo1L7nUHJUavEDZLPrP+GySnHq1ajUNLB9jIvveFPIaL4xz4D+UZHoCZVL1ONwBnbXKRsFF+lsGTINiQJjkz3Yn+S2/Wc27TWLIGw72WAbiifT/P29xihuGCq3z3iCWtjoBPO0=
+	t=1773787337; cv=none; b=gMA/HQcUTkK8ijQTcF+FNCCgtRgIgc4p65IYR4JPTCS2FLqlv1hKuF9kMnbhKSw+meLUFnOPT3QuTSH3Vnjq8Fk5FqDzTvKm5ZJoA19g/BphqmLh1qFkcron3OGSZ331VZ5L1SLGEuRoixK/FeZy2Xi9b7T/9fThTmSPTbjcRA4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773787335; c=relaxed/simple;
-	bh=9prGGMPk75qqbDT81hIfE5A+1HwPjos8tDp1+6maqCA=;
+	s=arc-20240116; t=1773787337; c=relaxed/simple;
+	bh=CmmPaRCr2hx1pUoOyiaFLoF4fRJRXNq/GTA2ITgum2Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WLuffavGhSH8iG7EZZxxsuv6mLgFrJtHEaxyyKJv3oaZYbMKA7XHWo9Q8UwxgjZ82PhuySJCfu0gqR8ETGFCPuuAGQkGl1i1vPGNK/EZNYeC3MdXupnRdFYgOcNhvcrRCpoLd48grK6OV4oqCVp3DhHMYaiCkO5ZPW8dR8aOXrQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=Lx2IjctP; arc=none smtp.client-ip=213.97.179.56
+	 In-Reply-To:To:Cc; b=Mu3Gb8+4OFWw9htcnV9ryToYz7WBC1vC87FFpLS85dgyRjUuyoxOKE+mImGOx3Xr28Th0HzNg4jMKU7RBUN9idWZBumXddbB3XWX7aMqsZ4v9Essey9WDEAycH+mhBOc/DXfLuZa9X3wArJVm0XXWAZ6ZQwjbOQetpkE8on7yTw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=Xi7S8mCV; arc=none smtp.client-ip=213.97.179.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="Lx2IjctP"
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="Xi7S8mCV"
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
 	s=20170329; h=Cc:To:In-Reply-To:References:Message-Id:
 	Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender:
 	Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender
 	:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
 	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=z2009rEY2gnfaE9h9ap7WndfJ2n1E8Xi93loAQJbZnc=; b=Lx2IjctPgdmk5pSubQ5eYd9W1n
-	HizBTAelqrcl3Vs7YLbv+oQ5QoYogpIIH+Xl+SdiDl1qrk14NX/g0pE+zVatQeS6nymVVDauJu55N
-	xdEXk+n9S/VdIKcSo6mIFF0eDqayApn2IRNEUaA8wFQXHBdqXxmoZWpqgoN4zdDRyvFwXNIzwOgjY
-	gadsgyFNb0DgpRjzubDc6j1t4af/G+2w8YsZgJbEyI46cachbivuk4QhqYHO6960Mrxcwr6JU6ey0
-	mnD1AGQLsuaJPLQ9HO/ApNvETxtu6nVwSradBW7Vk3wU0ogVxstm3ixI8leCLSY/Q/rfKjEtJI6Hn
-	AG3hp0vA==;
+	bh=bzAPEKG6So/PDOGgY059VUp1RC8xXZ0CXcJWrOlWZks=; b=Xi7S8mCVqyoEHR9EBCuewJZyHn
+	NzHGkJ1s9ukyv7YF6ovfBYxFxMMg5tJ2h7VzPYXL92/+8Nyr7gDx/Fdi6GgnwDv4rR/iZz3LJSiE5
+	t4Jw4Q/9TiY6sHxytsQS8FayNFYtktC2U66Q5jk9fXIjndlFwOsGmYZ7W0xDdzntk4izGyPMx+ysM
+	sisUeyoaZBvWyfhMSkfSkSSzjyZQ7363H21xDDSMycSJEJmD+jNhR0h3ac+xEF3U9PzGs2S06cdW/
+	tgtEErCn45gVht5PDdBht9TKaqpZ+6xeYkwaV4TQPUR0zLOaiqxabRSKHWHKak3QhrSSVhiZbC60X
+	TFlG0Gkw==;
 Received: from [189.7.87.203] (helo=janis.local)
 	by fanzine2.igalia.com with esmtpsa 
 	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
-	id 1w2d73-002VQv-6w; Tue, 17 Mar 2026 23:42:09 +0100
+	id 1w2d77-002VQv-4b; Tue, 17 Mar 2026 23:42:13 +0100
 From: =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
-Date: Tue, 17 Mar 2026 19:41:49 -0300
-Subject: [PATCH 1/2] pmdomain: bcm: bcm2835-power: Increase ASB control
- timeout
+Date: Tue, 17 Mar 2026 19:41:50 -0300
+Subject: [PATCH 2/2] pmdomain: bcm: bcm2835-power: Replace open-coded
+ polling with readl_poll_timeout_atomic()
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,7 +44,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260317-bcm2835-power-timeout-v1-1-19db323c51f9@igalia.com>
+Message-Id: <20260317-bcm2835-power-timeout-v1-2-19db323c51f9@igalia.com>
 References: <20260317-bcm2835-power-timeout-v1-0-19db323c51f9@igalia.com>
 In-Reply-To: <20260317-bcm2835-power-timeout-v1-0-19db323c51f9@igalia.com>
 To: Ulf Hansson <ulf.hansson@linaro.org>, 
@@ -54,83 +54,84 @@ To: Ulf Hansson <ulf.hansson@linaro.org>,
  Stefan Wahren <wahrenst@gmx.net>, Rob Herring <robh@kernel.org>
 Cc: kernel-dev@igalia.com, linux-pm@vger.kernel.org, 
  linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
- stable@vger.kernel.org, =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
+ =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2420; i=mcanal@igalia.com;
- h=from:subject:message-id; bh=9prGGMPk75qqbDT81hIfE5A+1HwPjos8tDp1+6maqCA=;
- b=owEBbQGS/pANAwAIAT/zDop2iPqqAcsmYgBpudi4dyJ4KK1KtRrF/bvXoEogvw2rY4awK0thb
- 1liS9Ac51aJATMEAAEIAB0WIQT45F19ARZ3Bymmd9E/8w6Kdoj6qgUCabnYuAAKCRA/8w6Kdoj6
- qhnwCADERBggI/4Upzvl4EIwhQvSydEcFdJjtEp31Vc6Jpa4oIAaUOON/WM0To7WU6wKy4zdjXD
- 4pXYFdHGpJTvw8FTtN5hZlHyKbNpFX+pSWLHfx4aQ598VsZnXQHlD6CHTHHhOSh+IJYx84wBBmX
- 5UiomOwwXQTYWPNoUW/n/JIt8tRpA9zJrAZ6y9VjG291cen6vTLhr8oVmYa8tERhg4bYanHnz/G
- +zOOHsiMQI3QV3sv9xFYHHbvPaIHL2fgrNK9HkHvkapzFcudeFE8wmVcIlGTF/V72tjdSxf4uDh
- L7tn6e8A4ierCgQhm++Lz0b+Flq/kkNncPmGMHKsvg28saU5
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2198; i=mcanal@igalia.com;
+ h=from:subject:message-id; bh=CmmPaRCr2hx1pUoOyiaFLoF4fRJRXNq/GTA2ITgum2Q=;
+ b=owEBbQGS/pANAwAIAT/zDop2iPqqAcsmYgBpudi5JcsfXMgcYcCBw1ClEm9HvzDKFJ12jR84F
+ CKbxS6s7haJATMEAAEIAB0WIQT45F19ARZ3Bymmd9E/8w6Kdoj6qgUCabnYuQAKCRA/8w6Kdoj6
+ qg1NB/4gfFS+FHmcdn144QE3wxtqYM2Owhhc7uvEYX4wodH2DVlkoKsz9mmm0xttspRbSecwFcy
+ GdXw/l/zyLjLRvTmtNe/VsPievQTHdV+dHePobKLBYGkR3dmttheD9kLTuzOrhl8EJp+mIDPh+A
+ bcOtlF4fSv2U3E6Y6WDW/B9a6gxvTbInZoXMzCPsHFhlwF4YG0/6cWwWqWcBO/iJ8D2yfqcVsLc
+ n31QijEtmxo95XsSZ0vWvfhyGEnbKyOc/K4Rp7RxNHYkNjrRAgfFv+kkJ48oqTdhIjqSTK6VIHs
+ bO09U34UbqMIK73X+1DkqzjSXIP74lO1heg5aFkpoKgnVmmG
 X-Developer-Key: i=mcanal@igalia.com; a=openpgp;
  fpr=F8E45D7D0116770729A677D13FF30E8A7688FAAA
 
-The bcm2835_asb_control() function uses a tight polling loop to wait
-for the ASB bridge to acknowledge a request. During intensive workloads,
-this handshake intermittently fails for V3D's master ASB on BCM2711,
-resulting in "Failed to disable ASB master for v3d" errors during
-runtime PM suspend. As a consequence, the failed power-off leaves V3D in
-a broken state, leading to bus faults or system hangs on later accesses.
+Replace hand-rolled ktime_get_ns()/cpu_relax() polling loops with
+readl_poll_timeout_atomic() for the power-on (POWOK), and memory
+repair (MRDONE) waits.
 
-As the timeout is insufficient in some scenarios, increase the polling
-timeout from 1us to 5us, which is still negligible in the context of a
-power domain transition. Also, replace the open-coded ktime_get_ns()/
-cpu_relax() polling loop with readl_poll_timeout_atomic().
+No functional change intended.
 
-Cc: stable@vger.kernel.org
-Fixes: 670c672608a1 ("soc: bcm: bcm2835-pm: Add support for power domains under a new binding.")
 Signed-off-by: Maíra Canal <mcanal@igalia.com>
 ---
- drivers/pmdomain/bcm/bcm2835-power.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/pmdomain/bcm/bcm2835-power.c | 25 +++++++++----------------
+ 1 file changed, 9 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm/bcm2835-power.c
-index 0450202bbee2513c9116a36abaa839b460550935..eee87a3005325848547ce1f5fd729b168a641460 100644
+index eee87a3005325848547ce1f5fd729b168a641460..b76d74e3849be0aff226cfbe311970c9557eccfa 100644
 --- a/drivers/pmdomain/bcm/bcm2835-power.c
 +++ b/drivers/pmdomain/bcm/bcm2835-power.c
-@@ -9,6 +9,7 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/io.h>
-+#include <linux/iopoll.h>
- #include <linux/mfd/bcm2835-pm.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -153,7 +154,6 @@ struct bcm2835_power {
- static int bcm2835_asb_control(struct bcm2835_power *power, u32 reg, bool enable)
+@@ -215,10 +215,10 @@ static int bcm2835_power_power_on(struct bcm2835_power_domain *pd, u32 pm_reg)
  {
- 	void __iomem *base = power->asb;
+ 	struct bcm2835_power *power = pd->power;
+ 	struct device *dev = power->dev;
 -	u64 start;
- 	u32 val;
+ 	int ret;
+ 	int inrush;
+ 	bool powok;
++	u32 val;
  
- 	switch (reg) {
-@@ -166,8 +166,6 @@ static int bcm2835_asb_control(struct bcm2835_power *power, u32 reg, bool enable
- 		break;
+ 	/* We don't run this on BCM2711 */
+ 	if (power->rpivid_asb)
+@@ -239,12 +239,8 @@ static int bcm2835_power_power_on(struct bcm2835_power_domain *pd, u32 pm_reg)
+ 			 (inrush << PM_INRUSH_SHIFT) |
+ 			 PM_POWUP);
+ 
+-		start = ktime_get_ns();
+-		while (!(powok = !!(PM_READ(pm_reg) & PM_POWOK))) {
+-			cpu_relax();
+-			if (ktime_get_ns() - start >= 3000)
+-				break;
+-		}
++		powok = !readl_poll_timeout_atomic(power->base + pm_reg,
++						   val, val & PM_POWOK, 0, 3);
  	}
+ 	if (!powok) {
+ 		dev_err(dev, "Timeout waiting for %s power OK\n",
+@@ -258,15 +254,12 @@ static int bcm2835_power_power_on(struct bcm2835_power_domain *pd, u32 pm_reg)
  
+ 	/* Repair memory */
+ 	PM_WRITE(pm_reg, PM_READ(pm_reg) | PM_MEMREP);
 -	start = ktime_get_ns();
--
- 	/* Enable the module's async AXI bridges. */
- 	if (enable) {
- 		val = readl(base + reg) & ~ASB_REQ_STOP;
-@@ -176,11 +174,9 @@ static int bcm2835_asb_control(struct bcm2835_power *power, u32 reg, bool enable
- 	}
- 	writel(PM_PASSWORD | val, base + reg);
- 
--	while (!!(readl(base + reg) & ASB_ACK) == enable) {
+-	while (!(PM_READ(pm_reg) & PM_MRDONE)) {
 -		cpu_relax();
--		if (ktime_get_ns() - start >= 1000)
--			return -ETIMEDOUT;
--	}
-+	if (readl_poll_timeout_atomic(base + reg, val,
-+				      !!(val & ASB_ACK) != enable, 0, 5))
-+		return -ETIMEDOUT;
+-		if (ktime_get_ns() - start >= 1000) {
+-			dev_err(dev, "Timeout waiting for %s memory repair\n",
+-				pd->base.name);
+-			ret = -ETIMEDOUT;
+-			goto err_disable_ispow;
+-		}
++	if (readl_poll_timeout_atomic(power->base + pm_reg, val,
++				      val & PM_MRDONE, 0, 1)) {
++		dev_err(dev, "Timeout waiting for %s memory repair\n",
++			pd->base.name);
++		ret = -ETIMEDOUT;
++		goto err_disable_ispow;
+ 	}
  
- 	return 0;
- }
+ 	/* Disable functional isolation */
 
 -- 
 2.53.0
