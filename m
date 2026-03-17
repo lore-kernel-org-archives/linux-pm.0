@@ -1,212 +1,119 @@
-Received: from YT3PR01CU008.outbound.protection.outlook.com (mail-canadacentralazon11020103.outbound.protection.outlook.com [52.101.189.103])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F5E42D593E;
-	Tue, 17 Mar 2026 16:02:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.189.103
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773763344; cv=fail; b=jLUxBb4SfNQ4Err75c0YvsgnOheXqXTP70x9X6Lgg11+9aaMOjBDmcckJQ6o7uYJWpfIdrsHIpKc/RD33cJ8mA+eX1ljSSpQmXuHPUWWSKD1DbLEzktjnHagM2wtgIi7K89lpTP52LsDdTHTqfmRoqjK/mutcDjEyPz1S4AVEiA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773763344; c=relaxed/simple;
-	bh=7hFJ3TArkBRSEeFB5ouWfdZX4niwJblXSmuo1pu00+k=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=aFy9HfXXuY7o8mEa5b5Ckt12EFrKfDukYB+JMtTP6xKVenlmXvI/sUNNhDbNw6BAbKXn2dXPOvoD6+exxMFjjL6WPXmWCuVU/JHcZ7+Z/WZLGPE054W3GGpRsKG6vGi20uzb+hednd7OdpxiXfJq1OoNcRSzeIVTb0aaT28wh20=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=efficios.com; spf=pass smtp.mailfrom=efficios.com; dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b=EDzgPeHQ; arc=fail smtp.client-ip=52.101.189.103
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=efficios.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=efficios.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2687B3C5DBA
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 16:38:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.179
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773765504; cv=none; b=hwcZ1FOMwkNqA5rWFR7bk9IC7OSts+Fse+xSYDEd9xxX2Ybk3pNibxis6ELDvqpoy2XKJ4dTQPin262XmK8tmDyr0iSdQvSMjit1yKovaB/0ddMzwPiudfSFS9xWRKT/VAGXSVzKM8dg/ZZCJQ7eD4ZpJdCeSCaCg3qtc5mr2Mg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773765504; c=relaxed/simple;
+	bh=GalLhym8PhTqJ7xrDfNn2Bb94b2pFwdHTu8Jw2xTqls=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AdtcwnSzf1ylQ/BMMkrYC4KUdeIhf483Tuzba+LIAwvELNNWdQaxNyy/88PdvkqFhN7UFaBG/8aZ81XLOf3Ssw4Biniq0T/7n5JSIuGmEGciHPd/4lWeP52nk/sYXWrw8NfM8PtDSlQzDtzyAO/y0t/IJ2HD5S+cw3nOjvHoQ00=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu; spf=fail smtp.mailfrom=g.harvard.edu; dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b=JyvYIRvW; arc=none smtp.client-ip=209.85.160.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=g.harvard.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="EDzgPeHQ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=OsmPmzYzWF5tAoPD8xKrAbGM76mwOKmkS8QlL9057w0l8RrSwNBaMJcRi0xvk0sgUgre42+pWJ+WCMUpllB3QM6Rm16kTvfdIkC+sMtzrPym/L9KGta9u6kJIJxP02u/vyeirp5frC03LlQC5+W8YwqVtOHWiBsXtH8k1BgH+sUNrVK0tktX0UZIKcPaI6kxh2FxSOlsKpmHz/b268Ec+kCTOCm9YGpwQBHOE2SKmXCXbVUNOPlpnHu5wAFaGO8Yo8HHNIgF8cU8ZOYz2aHWcngYqjlbwaICGNXuGQfhH2MJdcje9rCF5OrH0OcrzEml1VMvDKH0yvUUPb+GOE+19g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=D6nYAt2rANnvmH+6XhOsldNbRJtyrelEu+XebSnaROw=;
- b=efLJwnMN10JvzzKhBLUPRU59mQYKlgXA7MIm/Rm/n4xi0F7ZE847Te8vNjT4EumMXHGXetexYyqnAhJShVvpqTZLg+4HJcLsWpq9DIX2GOMx+CtnvQxCowcpulR4CHRmPD1PkmdN966nM69W9/k+UQXSrBwVH1RFwiqj6PqK2aXDorFs4ZMKoyBV78ewxdQWrEGK7ZIG3s+Bk7ywo82Jd4G8gZnPe4Quj++2DAKY/9t8zfWBpMC72MjKCJK3kH+FBMcz+qEAEePEGEieCBNU77rqDzvBg61VkzFxAGh86fTsW1qQnmLJGva9R6cgXgQQkypmeKQXeQ3DOi/7y2fZBg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
- dkim=pass header.d=efficios.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=D6nYAt2rANnvmH+6XhOsldNbRJtyrelEu+XebSnaROw=;
- b=EDzgPeHQmITtrivFWWbAfEOJAb8bvb0tFsb4dvxtTukN3fgV2hyq7KO0xuFslEj6nJvdAFcRrC5HRCExRGfS3gd3uxytd3QdcmZ6ND9+qeWUNDno69pH/GdXT/+u8FVTf1UL2PKSHoUgIV8fS34iGZstGKQk2qZ2DSQ4ODOlSpW+lwY+gzb1U9ii0oVUK5jNAGLzY1/UNmCe9WiLKfX8ccmA/6R26ER2N1tT9Wc6zc3SZ7u1X33aGhA2xa/0UtbQiMrdWBtmY+KlWs9ZA2EUnn9bg+Zv5qULpKsRZkr4USl4Wu7dFIWn24GEYoi/3hysVXbZeZfNaS9XC1i+jGEPpw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=efficios.com;
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:be::5)
- by YQBPR0101MB9550.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:c01:81::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Tue, 17 Mar
- 2026 16:02:10 +0000
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1]) by YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1%3]) with mapi id 15.20.9700.024; Tue, 17 Mar 2026
- 16:02:08 +0000
-Message-ID: <6ca9f884-9566-4a82-9995-4c802a0bf8a0@efficios.com>
-Date: Tue, 17 Mar 2026 12:02:07 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/15] tracepoint: Avoid double static_branch evaluation
- at guarded call sites
-To: Steven Rostedt <rostedt@goodmis.org>,
- Vineeth Remanan Pillai <vineeth@bitbyteword.org>
-Cc: Andrii Nakryiko <andrii.nakryiko@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Jens Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
- Xin Long <lucien.xin@gmail.com>, Jon Maloy <jmaloy@redhat.com>,
- Aaron Conole <aconole@redhat.com>, Eelco Chaudron <echaudro@redhat.com>,
- Ilya Maximets <i.maximets@ovn.org>, netdev@vger.kernel.org,
- bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org,
- Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz <koby.elbaz@intel.com>,
- dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Huang Rui <ray.huang@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>, Len Brown <lenb@kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- Sumit Semwal <sumit.semwal@linaro.org>, linaro-mm-sig@lists.linaro.org,
- Eddie James <eajames@linux.ibm.com>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>,
- linux-fsi@lists.ozlabs.org, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>,
- Danilo Krummrich <dakr@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
- Philipp Stanner <phasta@kernel.org>, Harry Wentland
- <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>,
- Benjamin Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org,
- Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org,
- Mark Brown <broonie@kernel.org>,
- Michael Hennerich <michael.hennerich@analog.com>,
- =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-scsi@vger.kernel.org, Chris Mason <clm@fb.com>,
- David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260312150523.2054552-1-vineeth@bitbyteword.org>
- <1e3c2830-765e-4271-89f7-0b6784b37597@efficios.com>
- <20260312112354.3dd99e36@gandalf.local.home>
- <219d015d-076b-4c80-8f63-88569115fdad@efficios.com>
- <20260312114041.5193c729@gandalf.local.home>
- <1becdbce-2c01-468a-bbab-42b5dea9fdf8@efficios.com>
- <CAO7JXPjnnruhM5oC6xMgnYaQ9efzYFqMCFiJLNM3HCQ+ZeCiJw@mail.gmail.com>
- <CAEf4BzbnfyhCqp0ne=2gRnVxp-mdGmuZwDeFRyhRYH+eDcz2-w@mail.gmail.com>
- <20260312130255.6476e560@gandalf.local.home>
- <CAO7JXPgHYZ9zF1HFahb2447X85YRZCQQBHB6ihOwKSDtiZi8kQ@mail.gmail.com>
- <20260317120049.6a60fa88@gandalf.local.home>
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Content-Language: en-US
-In-Reply-To: <20260317120049.6a60fa88@gandalf.local.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: YQBPR01CA0118.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:1::18) To YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:be::5)
+	dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b="JyvYIRvW"
+Received: by mail-qt1-f179.google.com with SMTP id d75a77b69052e-5094ba0af1aso65994891cf.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:38:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rowland.harvard.edu; s=google; t=1773765502; x=1774370302; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=lU4j7u7qB7NKyiYAh11jHRQXrqQaqS0wNGhTelRvvIw=;
+        b=JyvYIRvW6Jgbxi3KTVjbR4+c78+oaFooM6EpfUhyPGiDkFkRno/5rtn/A3cgbx96ft
+         KbgKXrYfhanWLkESpixyqSvf7R8rCwYwjBMsWON4EOtR0wNXn/w+POyJoi+Ulq1MBHgw
+         aaRxXQA7CrbCRFrqedO9DNd6UoCZENt2lqbggn5Mj71ReOqLq+IvZB6QmTEGMFypbq/O
+         47297MaZ4HFvQ5xT4WEghjyXmNLvBlk0/Pu60mETQD+yFLBHANhn+x3HWSrUAw+Le0hy
+         Iztv4Ck39X38Ma5m+1BCJBGR4aCZzzH3A/0BliKYn1ZVqSeQqdTEwn0noh9oBPA4r1QU
+         jqEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773765502; x=1774370302;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lU4j7u7qB7NKyiYAh11jHRQXrqQaqS0wNGhTelRvvIw=;
+        b=MZv/kQ70pl4CX9/lLv8ds+GQ9WyWXNg8hrMHuV8NzZ8iOndjPls87PRVjmHN6lF1zp
+         8TV67YbqMA8vwjSV/nnlmjdQEaZr7voH6kIjITZicCl5H+/v1WSiDvkBjImxawfQV5y1
+         kpoAskkKGBgmjrRfbA7THrzakLH0WR/nOQ6P6N6MFB4A8xC8WPKoTirxBFbcTkZ5TwGL
+         i6ua2L93tQ7Lw8ev9Z+20s3YEMziEwFtrDkI1i6c4uhFC2VpE5Gh/5k+4WeR/IggBQpu
+         4AQqYvPC78DF69z5AIhYk9dskGqofdAZ1GMAgONT8nGkn7ze5o923zaWLyDsIpIOJ72h
+         iOrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXIDsKZrFJzKrOluT5dbrkqfy/XZqrywSbm1XZ+Drlh84GdFX/qO86z/hjK84EM4kcpGMwopNigDA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyPDYjQZvm3nKd64XBL978fsUIQHiCYut/qe+Am4wpSqUt3yb/r
+	LORTKEOSzld6xHo6TaDPZAAkYNH9d33sDzEhH7vfhPpXm9cG9+J6m2by0dAuuuiWTA==
+X-Gm-Gg: ATEYQzxJ5nquWqqZooU0F4S/ZHd28ysv0TNyHtGFU+utcZloZFhQj6169acNVRUsKJZ
+	uz5xAo8xUT1e/p9gIb2jbdS8t/OVJHQMZhbvjlbf/a4weGWT6EGtBaCTdJ+CRQAlUgaAMsF+ZT0
+	kxaXs4G/XY7Ltz/pW/HFDdIGesROX05Bjyzd8sBnN1d1ermQk6f4qKHWM9a50XN3V3ehZq5ICOy
+	U8y0tzUCbzLD6lUzwqbymvHhO4qcIyEoZHGqLAbDkMLdV1psU1raEvLpycflXcCBVjXZsHroOAG
+	K+6uYwgWVR0LJ2Pi8Sb0HHgoGkcxPbXWFUsgygpOT3ASGa6HC/oLPVVKTmHeCxRuAHbpGzpvdUM
+	PkT6ocpxCYmgrnwXiSqwxAfxm0If6WouOOL+nurmtH85j4XmG4sUw3achcjCmo+SrCcMtXblL+/
+	LlIGTVKDy2GzSi8s1+4RU8+63s
+X-Received: by 2002:a05:622a:189f:b0:509:1748:6df2 with SMTP id d75a77b69052e-50957db57f9mr237397571cf.30.1773765502006;
+        Tue, 17 Mar 2026 09:38:22 -0700 (PDT)
+Received: from rowland.harvard.edu ([2601:19b:d01:d210::687c])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-50b13598c7esm2062941cf.18.2026.03.17.09.38.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Mar 2026 09:38:21 -0700 (PDT)
+Date: Tue, 17 Mar 2026 12:38:18 -0400
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: shitao <shitao@kylinos.cn>, gregkh@linuxfoundation.org,
+	linux-usb@vger.kernel.org,
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: Re: [PATH v2] usb: usblp: add the reset_resume function interface
+Message-ID: <ccf9e0ab-3a45-44d6-8a51-955689fa69ec@rowland.harvard.edu>
+References: <20260317125614.3215254-1-shitao@kylinos.cn>
+ <c4f66c3b-7cb4-4bcc-868a-d3aef2d9e521@rowland.harvard.edu>
+ <03344b43-b3aa-4800-b4dc-0b5a2b2fd5b4@suse.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: YT2PR01MB9175:EE_|YQBPR0101MB9550:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1dba82a3-a93c-40fe-7618-08de843e8aec
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	Fd5seIWNdep06J+o9YfnYnmnktzaRbFheZK66W9xWXPpGVap5d/32LfvZeGLFo3r5gSbfU9SyKc7F99MexxjsGdQqteKYWwwc+mc7iKTENgDR4Xwj+6wDD6zPDLe9uQQw27hMzVXzKN4W8WqzqmGtts75eS01+2ezzssG2s+awhHl/Ngp8Vg+v/6A/E/Y3mydRzXyIJKLy9VueHjF3ubo7C9zynRx4Tc2cdsM8VFuc2Q6X2/obI///c1ScNm67+Jtamj6jl2hZxhvx8Y4Zas/Z6JVj0z/ZMKnR9pPQPmnfIV9gd4wPosZQqlnsGrC85npVaZzlvk+eJcWwnaSGZ8cSin7K4ZwB5XM9j2YNYG9XDEGYfAg9bst9jMY3rV6Yq3bx3K9jn5THGwvdOYM8EcSrr3qREL3CYI3bW6MHX09Q7/ruC4pZTMJiokPNC+FKyl9R4n7GStwE69wQGYolYatWCNmQLlgSbhbhG+4xoDD5QaOx36a4cALof0+2NZzVmewHFeaQN39PyWMUgqwK04UGY7/Zyy8WoX0qS5rChOlc2EJjizWPE7gcrttc+S6EruYMdkQM91+Tjt2AewpAlPAQqoB4SqzWCim0ZTM6HWsrQJ9cvVLBe9Al+qd+3SmmpknyFMtXCJM+3LgI1lchMOVvyCyWExvZUi3VKrHkVTcjQ=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?MHpGVzAzekUrNlBKTHBuNTdPanJROXNPVlpSYmszbzVrbFZuK2FzTHFhYVBI?=
- =?utf-8?B?TkxCN0ZJbGgrMGhnS2d5MUI5MXhlQWUvK0VXR3R3NnV0c05jMVZyRDUyemUv?=
- =?utf-8?B?Ym05Wk5Rc1pUZ3M5aE92M0s2NUJBZmVQQ1drUXlTc0hVMlBENzFOTUpyMnVr?=
- =?utf-8?B?Z1lqakJEWGkyMFVoZkNqMzliYUdGUzBJaUJEVVZKclRud0F4dVFaZU03dW5p?=
- =?utf-8?B?UmY5QnN3ajNmdkdsdWNzZjlHc0JSbVBiOHNUb3dZMTc5RndnRTRXZ3diZ1M0?=
- =?utf-8?B?THplVEhQSUdENWFnbExmbFNRek5PeExHTVBrL0xjK1lwRVkyVzBmU3o0L1Fm?=
- =?utf-8?B?ejByRUtqTDRWVXFSajEyYUxUSDEvMnZOcDhJN2NmRzZkczAzZmZad0JKcUY2?=
- =?utf-8?B?cCtJdWFLanFJVDZzQklrR080Y1MwN2hlMWFyM2t5b0Y5WGpJYjBIRHRMR0cw?=
- =?utf-8?B?dUY5YnE5SVM1enB1bFRreG9NS2VDV2Q5WThpdmNRRjdMYjVlZXBORjk5M3dY?=
- =?utf-8?B?Wm9sR2tFRTFnaDVacHZXV0tMdkY1amxwUjJqUVQrWUg2Um9uWW41QlU3ekxv?=
- =?utf-8?B?ZlJnU0Jya1Z1ZFdoOFY0aDc0ZDhKOThyNHNocUMvMk9pVzdjMmJjR3RKRHJB?=
- =?utf-8?B?OHIxalpUNG5MZUcrY0cybG1obkJBVDBuWlUrdUMvTUthcjRjVzltZG5kY0Nr?=
- =?utf-8?B?eTlDV3Rha3dYeTNicStjZHNCeUszTXBwSE1TOVpsTkxXYlloRWNMdFF1eGFZ?=
- =?utf-8?B?NmtrY2IvNkRyT3J4a3BpV25xNW1mTkplRmJqVm1mQ3dvUkhqckxLSzFQNTZM?=
- =?utf-8?B?eWk4SHUzNjA0S3o3SW1BZFVRckFIa1J1QTZaLzFFOXJrLzFHdkM1R3duVUx5?=
- =?utf-8?B?dHFKTVhZVlFQaWdFdW8yWVUzdWl1SmhsYm53azJpR3VPQjNJZnFLSXllRFh4?=
- =?utf-8?B?UG9ZaWpmSmZYWHhYVnZsNWtoamtqVVZvdHlUeFhkbVM2Nlk2ZGhUby9PUHV0?=
- =?utf-8?B?aEU5NWNjdU5NUDBNZmFOSjZqOHB4cGkwZEM0bE15N29yQWdYdkNLb3I2MVVO?=
- =?utf-8?B?YlFSbTczSTZvWnBBbWp2WVpDR0FXb3dIMERGaTRoOEpkOUNqYUxwVVNoY1kr?=
- =?utf-8?B?SGxhUUUzZWN3b0pxaGpudU5hRDg5TGpzb3hzdk5FT1RGTGY4Y0hDdGZUVGt3?=
- =?utf-8?B?NVdtckZhbm5SUmpIT2Rrb29HN3lZMGxyYWVyL052V2U4RHIrZ1g4THZDNEpk?=
- =?utf-8?B?NVZNbGFaMkdtUHptQnVWUHlNZFVmREx5eTlpWWxTRzVmTmdRWDA2ajRKV2Yy?=
- =?utf-8?B?c1lUNkRhTnJsTE1VMkZpSEZnYkU5blZsZHdvZWlyL0N2eGdzN3NRZjF6TW1N?=
- =?utf-8?B?SXpPRnphY0xwbjRnd2xTUlFDck9CNUFLcGZVYlpxNS80dTFycHg2WXJBUTk5?=
- =?utf-8?B?SWlXdnBLbFJiYUF4U0Z2SGsyM1JpYnEzMFlvN2tjd09lMmplVjVGUjhYMnln?=
- =?utf-8?B?T0RiSndnekJsWHpVWSs0NVBQQndGYXEwcFpNQlJUcUJibitjVzBPaGVDNmd2?=
- =?utf-8?B?MXRVUmlGQ25qMU12aXpacUhhblRHTXg2ZSs1SmFtNkFkTmUvcEx1MnR4TnhC?=
- =?utf-8?B?Z0JkcnI5V1NCTzQ1T0lyVkJGZzc0ejhhaVJNT2VmN3Y5akVZbktML3RKR3NE?=
- =?utf-8?B?blpRcHBQUFh6VzNoaGxYU3VMK2Eyd0llVy9VV09ObDNpcERmWVNLbUxudTNq?=
- =?utf-8?B?bU9hSE5SOEVCRllIeUJwTFE3NDJGd3l1NVllYUJIQWtveGg0RXBodUNiRmNl?=
- =?utf-8?B?MCtPOWJFL3NtNGFSV0NCaU91Ukpta09XMVFMS1hVY2drbUNzS0xQcnV1RmNL?=
- =?utf-8?B?M0RWK3h3Y2NyaTBaaHlSTlZCUlI3Mnl1akV0T25YV2tueGovSUswZklBVDJQ?=
- =?utf-8?B?T2J1a3RkL2VkNlo4VlpYQ0hGWndVaVkxMWc0K09ycWdhSWloZ1h0RVUvYXBq?=
- =?utf-8?B?elFrOVZPWVFITkNlcDZWQTZJaXNONDJsWWFKUVM1cC9odkozY1NqWDgzRjVP?=
- =?utf-8?B?QkJkRjErWVBtUVNCS25pcEw5Zm1xR0FZeHQ1ME1xZ3JkNlV3Zmg2a2RVdG13?=
- =?utf-8?B?Y3VIVGR6NG9VYkVCUnhWUmtBanhPM2dlbEJSZXVQMFBMUkJrS0ZtaXhmOEtk?=
- =?utf-8?B?NTNTVHdzTVZYQUt1eVlEWUt4MDZXQStMajVkVDcrckh1aWVIckRNVDFWSmRB?=
- =?utf-8?B?WHh3VU9kTFZUVVRVSGNFM29pM25LN2gwUnFlV21Xb21EcmdEN1NEOWorR1FM?=
- =?utf-8?B?UVR3ZEhMMlJDN0ZwNDFndzVBMUxiamxvWnFiQVJ4SkVEYmkrU3FSQlZjMUd3?=
- =?utf-8?Q?f+SS0krKrjtNC5d21yMJIHuPw0vgrfrBGDQvE?=
-X-OriginatorOrg: efficios.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1dba82a3-a93c-40fe-7618-08de843e8aec
-X-MS-Exchange-CrossTenant-AuthSource: YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 16:02:08.7751
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: YQ32woqbOF/dZJhETZ35VyvJMtpMETAczjg4AC4vMSvhwEA6qvbQKwPA0gYSeK2ZUbZXtQJKMs7+5cn/u3ysVxj+gMfLfV6JKwPraZywVQk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: YQBPR0101MB9550
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <03344b43-b3aa-4800-b4dc-0b5a2b2fd5b4@suse.com>
 
-On 2026-03-17 12:00, Steven Rostedt wrote:
-> On Fri, 13 Mar 2026 10:02:32 -0400
-> Vineeth Remanan Pillai <vineeth@bitbyteword.org> wrote:
+On Tue, Mar 17, 2026 at 03:35:26PM +0100, Oliver Neukum wrote:
 > 
->>>
->>> Perhaps: call_trace_foo() ?
->>>   
->> call_trace_foo has one collision with the tracepoint
->> sched_update_nr_running and a function
->> call_trace_sched_update_nr_running. I had considered this and later
->> moved to trace_invoke_foo() because of the collision. But I can rename
->> call_trace_sched_update_nr_running to something else if call_trace_foo
->> is the general consensus.
 > 
-> OK, then lets go with: trace_call__foo()
+> On 17.03.26 15:06, Alan Stern wrote:
+> > On Tue, Mar 17, 2026 at 08:56:14PM +0800, shitao wrote:
 > 
-> The double underscore should prevent any name collisions.
+> > > 9. Result: kernel panic in pm_op() with use-after-free
+> > > 
+> > > The bug manifests as:
+> > > Unable to handle kernel paging request at virtual address 006b6b6b6b6b6b93
+> > > pc : pm_op+0x50/0x80
+> > > Call trace:
+> > > pm_op+0x50/0x80
+> > > dpm_resume+0xdc/0x200
+> > > hibernation_snapshot+0x234/0x3d8
+> > 
+> > First, are you certain that setting the reset_resume callback equal to
+> > the resume callback is the right thing to do?  Don't printers hold some
+> > state information that will need to be restored after a reset?
 > 
-> Does anyone have an objections?
-I'm OK with it.
+> Correct. This will not work.
+> 
+> However, if we take the trace seriously, it means that resume() was called
+> after disconnect(). That must never happen. Yet, if that happens the issue
+> is in the PM core, not USB.
 
-Thanks!
+In fact, it would be good to have a kernel log showing more exactly 
+where the invalid request happened, what was on the call stack, and what 
+device was involved.  The log extract in the patch submission doesn't 
+even include any details to prove that the error was associated with 
+usblp.
 
-Mathieu
+In general, the PM core will invoke callbacks in the USB core for device 
+resume (such as usb_dev_thaw()).  usb_resume_interface() is then 
+responsible for calling the driver's resume handler -- or not calling it 
+if the interface's needs_binding flag is set, which is what should have 
+happened here since that flag is set by usb_forced_unbind_intf().
 
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-https://www.efficios.com
+Alan Stern
