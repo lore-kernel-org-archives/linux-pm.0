@@ -1,205 +1,306 @@
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010054.outbound.protection.outlook.com [52.101.84.54])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA5733A63F8;
-	Tue, 17 Mar 2026 10:30:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.54
-ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773743405; cv=fail; b=bOIvnJXEa6N3dw85zf9XcnwBEqSIah41x+1ffChuIf7odn8CoKnGViySBh98tM38e9sokU+v8ChfApBPW7eNRyW1hnJsnPMzBCQAey34/XgI87pXHPomNsuCjEHdPjvAGgO7jTNUKfwUXdtxEQXxJT/6Ay9xqqEI0rhqcXB7Cow=
-ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773743405; c=relaxed/simple;
-	bh=SvJ7lnN5LwzvTN02ostoTJVUBGGAW6iLj8BIqj+/kZA=;
-	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=LtL7QIzGpmxK6dDBoTWB9FQkpZDmSN3FLvAaFd6EGbU/cbWBC/hG51bO0JGmUfTbHUeP9x4UXzl/9F7pDVo6ZDaDjAN4uc3onbVa5Xnq+rWNNEYs4EwxukuuA7WsOW5lo+hTsKXScTsFbZui+YB0ZG0XIB73wqsREfPFBXkTgNs=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ALJVwdMh; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ALJVwdMh; arc=fail smtp.client-ip=52.101.84.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C22034A775
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 11:09:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773745785; cv=none; b=OY/I8p7udj7CfBXOSZRUgmGBmp70vpcMqY/rzAmPpVL8mdG11GSUlwrL5h2TEIY1zORyffMRMDy2WVzv2cI3FsS5e54apRz4u84i15BbG1Fx/VQWOvXTgAhKz+PPmtlsC8h2iBj0dUbK36K0IF9CdfOmqI8qk1VShKbgR478q30=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773745785; c=relaxed/simple;
+	bh=57r2PUUb7zcKOw509zsayq59a7gl7x2rdxjK+W9uTBE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=DGXVsD3T4QJdWTYIBpecNHRN5uTQ2jOcVBk/HzcaxJNUmo5sSwtXw9e22fUpM6Nx3u7RLF3dEWwpFyGEu/0L5gT1oucnhDb9r+yNGtykDXbqUX+DLg2OYE+FzEwMUgXsEK8esJMD/nz6ghZGE2I2497Aum0fkGkJOv1V+uhY5kM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=c5quMl/y; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ALJVwdMh";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ALJVwdMh"
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=yCKjOg8E7QLeV/cNiaHHKSEhYBwEycWdRnf4b/M7ztA1bhDEEivyvq4ZvfuPdle/1ckTR9kFQXggpW1jt9WGWxOsRQxROpVUzmIcnM8qVX4pqyiSnjkNcrZSPS54la+V3wrlfqnQkdN8+/U1vd8dGH0waxm/Tkk3UVpA9WIcgfIHMdRUVYN2oUIT71SNKOggk8dtsZPT5aNfVV4oWZqVVaj5BWkYiw31W/bqbVrybsQ5jdCAo80GDXk7EKs2XMkOmxfXkDXCQd9UII/KxkjWfGMV267Oxgrk/WOK9KhFOBk8xzv3GmvGFJpayl2D85B38rS3JPwDvAQoKFAs96YPIA==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1IG+1iEQwVLhBUoRgiOiSSm+w6piu/PL/wYJsV0xEwA=;
- b=LhECgV8y6Jde9XWuMFk4g/1Et/c5XLfyIsMML6rmxfMwHWm/MR5OLGAchXGQdoDn3ivhGsH/tPXkeXdEjj22e0TZt8rnNe8nMMNHMFTO8iY/j5FsB4wV8xhYnn0I5d1ayvjldtYggnAa/LqzHlgDIe0iL2HOQ08TMcTcVl8kF4I6f3ZjsnPdbhI9dce9sQ8GS3sfZLsNhmRGZyo6FJVLvbVD5gvLpdtSdBqKJmukby6Ak1+T0n/nfkxJIE/lPgEtJr8003jDwE+vLzLwOAFqss7KLZJIU1XCP8Ra42lh8K5dW8eJdksEVU5tuWVG36Wvk5+8A9htwqtin0sKoruTrw==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=linaro.org smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1IG+1iEQwVLhBUoRgiOiSSm+w6piu/PL/wYJsV0xEwA=;
- b=ALJVwdMh7ygVMCh8/EysWCAtj74A1p4SYQv6ddHnDUJ8yf5c3lZNfwkjZfOkdVc4hkEW1vmAb/S+Knaq88kIf69ibklBbsuXrXdJFMTm3lxuhqJ6EewIqAtTie0cAjxTYexC8RfGful1KiL0EhWxeii69mYggT1IBM2Kn+Dkwrc=
-Received: from AM0P309CA0013.EURP309.PROD.OUTLOOK.COM (2603:10a6:20b:28f::34)
- by AS2PR08MB8382.eurprd08.prod.outlook.com (2603:10a6:20b:559::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.22; Tue, 17 Mar
- 2026 10:29:51 +0000
-Received: from AM3PEPF00009BA2.eurprd04.prod.outlook.com
- (2603:10a6:20b:28f:cafe::f0) by AM0P309CA0013.outlook.office365.com
- (2603:10a6:20b:28f::34) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9678.9 via Frontend Transport; Tue,
- 17 Mar 2026 10:29:51 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- AM3PEPF00009BA2.mail.protection.outlook.com (10.167.16.27) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.17
- via Frontend Transport; Tue, 17 Mar 2026 10:29:50 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nFrMF4cKkssCsY8vFKx2tnB0WbWswjxhtI8OCe9y2NmBGBF6WaecRMxjnlowF3NpUuclRHmOuNKG6PMh/Du9nkwrnX6LkKgecr16W3Ui9ENefHvq7h6DfdDhElO1WUMlp3rVIjb4WNmJzNnhyPRFYKdgZhlABd3+HicN6Nx44xTUOVSJVG4ZqSojwrF08/8Te7e6MxKAlaX2DWoRmVH9GA7oPw5+mdIRxZajaNAvMuoXnq/CeG85JtysT3NZFrlcHLICW1IFCp1mvfcnT3zxW2E1EhPiH5keXXXo0dPE3PYiPDCpMXgnz5iblLthChiRfh9QDD3uMPsxjwzVbt4qHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1IG+1iEQwVLhBUoRgiOiSSm+w6piu/PL/wYJsV0xEwA=;
- b=QZq61kzg/KOV2wc/8nIS78XYPhAaCiZIoJPPYC08JwmYBtmYCEDoF+KvrWnnzCIkKgjj4wX8m+0kc3XfZJzHE+mpuvdP5hdgSd+6+s9gNhroA/T82nBf6n3zL7siCPQ4DerpNy38x25xkN52OfoV7kFbi3FGbDQVVREtppAk0EVbZczww3sP+WfWWMwZl52msX8lzvVJvmhneEZexHFiWRSjEDBVXFuKKlimwaCbGPEuuej+T9SqRXwaYaxVP5pAirCwPLHVhiZc7yIysbnAF4sL/ZpqEPGQUv27CU3wF8w6NPm5XN6yq4wKgSx+18Xm2Q0pki/kSTnsJW288AXX2g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1IG+1iEQwVLhBUoRgiOiSSm+w6piu/PL/wYJsV0xEwA=;
- b=ALJVwdMh7ygVMCh8/EysWCAtj74A1p4SYQv6ddHnDUJ8yf5c3lZNfwkjZfOkdVc4hkEW1vmAb/S+Knaq88kIf69ibklBbsuXrXdJFMTm3lxuhqJ6EewIqAtTie0cAjxTYexC8RfGful1KiL0EhWxeii69mYggT1IBM2Kn+Dkwrc=
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by GVXPR08MB7703.eurprd08.prod.outlook.com (2603:10a6:150:6b::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.22; Tue, 17 Mar
- 2026 10:28:43 +0000
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91%4]) with mapi id 15.20.9700.022; Tue, 17 Mar 2026
- 10:28:42 +0000
-Message-ID: <29045913-845b-4e04-aea3-3d680d456ceb@arm.com>
-Date: Tue, 17 Mar 2026 11:28:41 +0100
-User-Agent: Mozilla Thunderbird
-From: Pierre Gondois <pierre.gondois@arm.com>
-Subject: Re: [PATCH v5 3/6] cpufreq: Centralize boost freq QoS requests
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>,
- Lifeng Zheng <zhenglifeng1@huawei.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Christian Loehle <christian.loehle@arm.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Huang Rui <ray.huang@amd.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Perry Yuan <perry.yuan@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
- linux-pm@vger.kernel.org
-References: <20260225084930.1692228-1-pierre.gondois@arm.com>
- <20260225084930.1692228-4-pierre.gondois@arm.com>
- <uggew5u2bjhgfxt5tlt3bjqg7aks7oab3iqnlayol2f26otchn@2xlt74ywbln4>
-Content-Language: en-US
-In-Reply-To: <uggew5u2bjhgfxt5tlt3bjqg7aks7oab3iqnlayol2f26otchn@2xlt74ywbln4>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: PA7P264CA0249.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:102:371::16) To VI0PR08MB10391.eurprd08.prod.outlook.com
- (2603:10a6:800:20c::6)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="c5quMl/y"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773745783; x=1805281783;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=57r2PUUb7zcKOw509zsayq59a7gl7x2rdxjK+W9uTBE=;
+  b=c5quMl/yWY20c3W3geQ0NGmHM7nzv1AxsWQEGyJLZinesdJMNus+sJ/K
+   ciXzEMBCIiXI6q1aRBQONRAHMiK5kyu8Gjqe+AlU0+kDAq5QREZAOxQm0
+   laZb4J60gl2JhhC0FXN7hdpRLf60KmxUom4ypRFyPswX2dbyuC8YZiuTu
+   w6ldGXnXBpW8N5bD9sfHfMahCzzESmVzrHsk8KPSDqd1VyZ0hSrsY1cGO
+   PQG3PqPmUx2XATXDFPTLuGhbaclVV3thyDmIVPY4Pxe6LraJTuT/kTjzw
+   Kumr6TZ9mmWtpBb9QR7Gp8/xg5wacOAd7ltUwTghNFjaBWeYxeXwYrgDM
+   w==;
+X-CSE-ConnectionGUID: 9J0sHiSrRDinSf8ZXzmi7A==
+X-CSE-MsgGUID: 3eOcy/xbTfOWiLrcYFoV8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11731"; a="78380068"
+X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
+   d="scan'208";a="78380068"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2026 04:09:42 -0700
+X-CSE-ConnectionGUID: 4u6VRF2eTQ2Hty5tJwH8HA==
+X-CSE-MsgGUID: LkEx24JITnWZKSWXu6D08g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
+   d="scan'208";a="222184582"
+Received: from baandr0id001.iind.intel.com ([10.49.109.195])
+  by orviesa009.jf.intel.com with ESMTP; 17 Mar 2026 04:09:41 -0700
+From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+To: lenb@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+Subject: [PATCH] tools/power/x86: Add SOC slider and platform profile support
+Date: Tue, 17 Mar 2026 16:36:15 +0530
+Message-Id: <20260317110615.651141-1-kaushlendra.kumar@intel.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|GVXPR08MB7703:EE_|AM3PEPF00009BA2:EE_|AS2PR08MB8382:EE_
-X-MS-Office365-Filtering-Correlation-Id: f47fff1c-300a-4204-9215-08de84101f04
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|1800799024|376014|7416014|366016|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info-Original:
- 8eQJJI02EHN4ykHfRAelPj8Pe+L9LucmNZCPTH1V4unRq+S96PZRxah7NSpNiUY11Uxjd7IHBEaRTgcZCeHm5YVBVIYV0CYFsT0Qt03c+jZD35WPbXUorcMMvrCHNveEWmScIaqqD5MKYMbu1MB26dF+0WD/7qti0LP8uNKAVmeBzV52R4wn5tS5qChrtW8TFR5sMfzLYHYRfkKrbTjB8LIEQY+67yVvnnU3f6LIAaC9GRHKB2rkc2JMAswCIyYVUxIvhc0HHZ4OszWCBUrlTLKGyYE54d2wVrAXIU0vaSqmT7MZs5OBwlymrjw8bsVmKqYNQW46o34AD+96EaIJupNzjNowYXEdqUdALs6rjDObqK5/wtIFgNqhluq/i9Anz/9LlrLF7+JEerB7WyeNDJOVNQs+F4sE1A8jn4z7qkteHDWm2e7kHrrgWXBO86IC+vbB34D+5qFGe3cDOeZk6KgpTTtdCSYhUrUhea3b5xoq1+6Q2T6IFbL8gBFYHgLY71ammRwyEZB/pm2fLmc+yZamNIdDZObV5xJWJqFaqqGnOXSkXjIk7fLQzyuhAftsVyxWfoigDn5CRS2tKxs0qOKJpson9bjvsD0Fr12XEOjno4b4jwRHfVsnZkzI121gjhCGeXArFHtBcctZS6X928uUvcxvM35q2knci3ydF6nKQ4jKqud2M8dS8oaRMQYg4OpsBZ1IeGWOhFuKy7GBWi6wOuO5DG5jd4ZeshsUE6Q=
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-Exchange-RoutingPolicyChecked:
- YGGLCDZ/dSf2aEmZRfYuGS7UrxfQk+iHsznJnhdqJnD9rOMVuTZpsRTJtIwAvK3BqXAGw4/Xg1EJM0IVRJgtVt3OoWtb7XbmSVj6jHXrlBVZe11wVvImM7ni1shKP1uPi4HJui8RexWYTR4jftJxi/eoSYCJxVmNrX97rusafX5NSx/CwYsg7DGt2G48uobo9yuoJkKh9yWha+ooOAVozWapZ92fDViT3aWvuslKuAH4PophxIz4UGtCvPz0KuVBkAe/RLpSkusvr2asVqfGJFo4QgbMe98Kd0SWnCJTB+XP1uLMt6IE221yQBbNGsXF7XNNntdDoTjUL0kkUZKxPA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR08MB7703
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- AM3PEPF00009BA2.eurprd04.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	40c4f9ad-c590-4e95-03b1-08de840ff659
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|82310400026|7416014|36860700016|1800799024|35042699022|14060799003|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	8QdsszqbqHZIRKJBPcUJqcdLNkHrsp85+gjJKSlCvqSHkRfptot2rD4liejvgPmfUD1+3NlIzJCu/3mM8UtfEggUB3JcBJ3MD/f0F2vY+Y0lDhZMpv1ptpN3kHbPm/3AKdn7oJh9iOZGvW0y2qf0AewO/2ka3rASGR9ukonIKrWZez75Fi9tx1FiKLCiPRB/rrFo59HP9Ibg5Pfdf1Sm9xoRTO1WQvLOFuBHcE8JyDa2Wv3bSH1sZVMcVAD33dxtFSZI6ElGE8aO1Nq0IT1VxaUURj/46GggmiqFvtHEENnYKllGjItOy+fZzmN/HxtL/YpWUPaax3y32cwo/ONqBSQH6uLsK5KWeT/tNbdVyxx8z7b9S7/QLmHmtABWKkqMzzG+eRKje0tvguN5jwF7S6VVEaf4fMVeqq9XWvh6IWto1e1H4BDrwS6KANr860wi3/dacE4rD0Rq6VNrOFt6HGR6z+sN6XSJASl/2v++VF0JPatsChJPdhf3AmT8VPSeHTYxV0+GkIhdmShmLvvy5c7INPLV8olm824OcKL3+Inov5BqvhOBPKuUwDGlAo6rTVix8hw7zg2GMTy4mTIV20k2ORqoPHF8Omn7+QrPmm5mGCIzb2QA9DPENEDVBaSSHRoxNY+xy0ZDhO6BiGq6r/FCcC2w4nHNXoE4HmsSd44QDQHXtvA2GZNwP4GXmZ063gJoJBeVKJAL5oYSq8lyGKIQRBWKTTQpPmwDFCXc835DbTa8v/Z8hZpVywFZzzg4eG2/42tCOzhSekhv4C7Asw==
-X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(82310400026)(7416014)(36860700016)(1800799024)(35042699022)(14060799003)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	hk3aDUEeS1GI4cAUEQKJThvwm5hAmmKJ4JeSJOHAP7YxwLqB5ApfH3aQGsFCVhE83UWlnbnGoz0VPGbKb3vUCk6JtjrRwF1rHcit5Re4vW6AAmCQF9iaGVip7YEYC8eSDR3W+ATD8LNOEhjmI23XqYLJTDUQ5Te6MiYVsf/IHcDwM4jsAjn5IuSNDNIV/UvZMUaymtoTnxRRr5l/7KYwmUF+osrO3jRPrKksfadxfeLOJcoKDx9AuS7hE3hroBfvRKNJCimdaL9Nbfp1ffflGx59eHoHdq5ZUPW2YMINjuB0dgFdOrG3Gc5XTfog5HPHV4WlbfDVFLhDWKaIP7MgcAAoN/m/v9y3gdL2WjgjZRctgzukhz+lKhL2GPrekx88BGeUXDddWY2LnNKhdLLcuM680t3YWR4fU8+Jub363jSjC5hYg/k+frf3zFf43hJZ
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 10:29:50.6972
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f47fff1c-300a-4204-9215-08de84101f04
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	AM3PEPF00009BA2.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR08MB8382
+Content-Transfer-Encoding: 8bit
 
+Add support for reading and writing SOC slider parameters and
+platform profile via sysfs in x86_energy_perf_policy.
 
-On 3/13/26 10:22, Viresh Kumar wrote:
-> On 25-02-26, 09:49, Pierre Gondois wrote:
->> policy_set_boost() calls the cpufreq set_boost callback.
->> Update the newly added boost_freq_req request from there:
->> - whenever boost is toggled
->> - to cover all possible paths
->>
->> Signed-off-by: Pierre Gondois<pierre.gondois@arm.com>
->> ---
->>   drivers/cpufreq/cpufreq.c | 13 +++++++++++--
->>   1 file changed, 11 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 50467b938668a..42de32488f422 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -603,10 +603,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
->>   	policy->boost_enabled = enable;
->>   
->>   	ret = cpufreq_driver->set_boost(policy, enable);
->> -	if (ret)
->> +	if (ret) {
->>   		policy->boost_enabled = !policy->boost_enabled;
->> +		return ret;
->> +	}
->>   
->> -	return ret;
->> +	ret = freq_qos_update_request(policy->boost_freq_req, policy->cpuinfo.max_freq);
->> +	if (ret < 0) {
->> +		policy->boost_enabled = !policy->boost_enabled;
->> +		cpufreq_driver->set_boost(policy, policy->boost_enabled);
->> +		return ret;
->> +	}
->> +
->> +	return 0;
-> This can be:
->
->          return ret;
+New command-line options:
+  --soc-slider-balance <value>
+  --soc-slider-offset <value>
+  --platform-profile <name>
 
-Actually the caller expects 0 for success and
-freq_qos_update_request() can return a positive value for success, so 
-the code above should be used I think.
+These options allow control of the processor thermal SOC
+slider balance and offset through the
+processor_thermal_soc_slider module, as well as the
+platform profile class interface.
 
-> and you can then drop 'return ret' from the if block.
->
-> And yes, merge with prev patch as Rafael suggested.
->
+When no update flags are set, the tool now also prints
+the current SOC slider and platform profile values
+alongside existing MSR output.
+
+Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
+---
+ .../x86_energy_perf_policy.c                  | 132 +++++++++++++++++-
+ 1 file changed, 130 insertions(+), 2 deletions(-)
+
+diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
+index ac37132207a4..1f330c82d7c1 100644
+--- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
++++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
+@@ -92,8 +92,18 @@ unsigned int has_hwp_request_pkg;	/* IA32_HWP_REQUEST_PKG */
+ 
+ unsigned int bdx_highest_ratio;
+ 
++unsigned char update_soc_slider_balance;
++unsigned char update_soc_slider_offset;
++unsigned char update_platform_profile;
++int soc_slider_balance;
++int soc_slider_offset;
++char platform_profile[64];
++
+ #define PATH_TO_CPU "/sys/devices/system/cpu/"
+ #define SYSFS_PATH_MAX 255
++#define PATH_SOC_SLIDER_BALANCE "/sys/module/processor_thermal_soc_slider/parameters/slider_balance"
++#define PATH_SOC_SLIDER_OFFSET "/sys/module/processor_thermal_soc_slider/parameters/slider_offset"
++#define PATH_PLATFORM_PROFILE "/sys/class/platform-profile/platform-profile-0/profile"
+ 
+ static int use_android_msr_path;
+ 
+@@ -106,6 +116,7 @@ void usage(void)
+ 	fprintf(stderr, "scope: --cpu cpu-list [--hwp-use-pkg #] | --pkg pkg-list\n");
+ 	fprintf(stderr, "field: --all | --epb | --hwp-epp | --hwp-min | --hwp-max | --hwp-desired\n");
+ 	fprintf(stderr, "other: --hwp-enable | --turbo-enable (0 | 1) | --help | --force\n");
++	fprintf(stderr, "soc-slider: --soc-slider-balance # | --soc-slider-offset # | --platform-profile <name>\n");
+ 	fprintf(stderr,
+ 		"value: ( # | \"normal\" | \"performance\" | \"balance-performance\" | \"balance-power\"| \"power\")\n");
+ 	fprintf(stderr, "--hwp-window usec\n");
+@@ -518,6 +529,23 @@ void for_packages(unsigned long long pkg_set, int (func)(int))
+ 	}
+ }
+ 
++static int parse_cmdline_int(const char *s, int *out)
++{
++	char *endp;
++	long val;
++
++	val = strtol(s, &endp, 0);
++	if (endp == s || errno == ERANGE)
++		return -1;
++	if (*endp != '\0')
++		return -1;
++	if (val < INT_MIN || val > INT_MAX)
++		return -1;
++
++	*out = (int)val;
++	return 0;
++}
++
+ void print_version(void)
+ {
+ 	printf("x86_energy_perf_policy 2025.11.22 Len Brown <lenb@kernel.org>\n");
+@@ -546,12 +574,15 @@ void cmdline(int argc, char **argv)
+ 		{"hwp-use-pkg",	required_argument,	0, 'u'},
+ 		{"version",	no_argument,		0, 'v'},
+ 		{"hwp-window",	required_argument,	0, 'w'},
++		{"soc-slider-balance", required_argument, 0, 'S'},
++		{"soc-slider-offset",  required_argument, 0, 'O'},
++		{"platform-profile",   required_argument, 0, 'F'},
+ 		{0,		0,			0, 0 }
+ 	};
+ 
+ 	progname = argv[0];
+ 
+-	while ((opt = getopt_long_only(argc, argv, "+a:c:dD:E:e:f:m:M:rt:u:vw:",
++	while ((opt = getopt_long_only(argc, argv, "+a:c:dD:E:e:f:m:M:rt:u:vw::S:O:F:",
+ 				long_options, &option_index)) != -1) {
+ 		switch (opt) {
+ 		case 'a':
+@@ -579,12 +610,23 @@ void cmdline(int argc, char **argv)
+ 		case 'D':
+ 			req_update.hwp_desired = parse_cmdline_hwp_desired(parse_optarg_string(optarg));
+ 			break;
++		case 'F':
++			if (strlen(optarg) >= sizeof(platform_profile))
++				errx(1, "--platform-profile: value too long");
++			strcpy(platform_profile, optarg);
++			update_platform_profile = 1;
++			break;
+ 		case 'm':
+ 			req_update.hwp_min = parse_cmdline_hwp_min(parse_optarg_string(optarg));
+ 			break;
+ 		case 'M':
+ 			req_update.hwp_max = parse_cmdline_hwp_max(parse_optarg_string(optarg));
+ 			break;
++		case 'O':
++			if (parse_cmdline_int(optarg, &soc_slider_offset))
++				errx(1, "--soc-slider-offset: invalid value");
++			update_soc_slider_offset = 1;
++			break;
+ 		case 'p':
+ 			parse_cmdline_pkg(optarg);
+ 			break;
+@@ -594,6 +636,11 @@ void cmdline(int argc, char **argv)
+ 		case 'r':
+ 			/* v1 used -r to specify read-only mode, now the default */
+ 			break;
++		case 'S':
++			if (parse_cmdline_int(optarg, &soc_slider_balance))
++				errx(1, "--soc-slider-balance: invalid value");
++			update_soc_slider_balance = 1;
++			break;
+ 		case 't':
+ 			turbo_update_value = parse_cmdline_turbo(parse_optarg_string(optarg));
+ 			break;
+@@ -777,6 +824,31 @@ static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
+ 	return (unsigned int) numwritten;
+ }
+ 
++static int sysfs_read_string(const char *path, char *buf, size_t buflen)
++{
++	unsigned int len;
++	size_t n;
++
++	len = read_sysfs(path, buf, buflen);
++	if (!len)
++		return -1;
++
++	n = strcspn(buf, "\n");
++	buf[n] = '\0';
++	return 0;
++}
++
++static int sysfs_write_string(const char *path, const char *buf)
++{
++	char tmp[128];
++	int len;
++
++	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
++	if (len < 0 || len >= (int)sizeof(tmp))
++		return -1;
++	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
++}
++
+ void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
+ {
+ 	if (cpu != -1)
+@@ -900,6 +972,55 @@ static int set_epb_sysfs(int cpu, int val)
+ 	return (int)val;
+ }
+ 
++static int soc_slider_available(void)
++{
++	if (access(PATH_SOC_SLIDER_BALANCE, R_OK) &&
++			access(PATH_SOC_SLIDER_OFFSET, R_OK) &&
++			access(PATH_PLATFORM_PROFILE, R_OK))
++		return 0;
++
++	return 1;
++}
++
++static void print_soc_slider(void)
++{
++	char buf[64];
++
++	if (!soc_slider_available())
++		return;
++
++	if (sysfs_read_string(PATH_SOC_SLIDER_BALANCE, buf, sizeof(buf)) == 0)
++		printf("soc-slider-balance: %s\n", buf);
++	if (sysfs_read_string(PATH_SOC_SLIDER_OFFSET, buf, sizeof(buf)) == 0)
++		printf("soc-slider-offset: %s\n", buf);
++	if (sysfs_read_string(PATH_PLATFORM_PROFILE, buf, sizeof(buf)) == 0)
++		printf("platform-profile: %s\n", buf);
++}
++
++static int update_soc_slider(void)
++{
++	char tmp[32];
++
++	if (update_soc_slider_balance) {
++		snprintf(tmp, sizeof(tmp), "%d", soc_slider_balance);
++		if (sysfs_write_string(PATH_SOC_SLIDER_BALANCE, tmp))
++			err(1, "soc-slider-balance write failed");
++	}
++
++	if (update_soc_slider_offset) {
++		snprintf(tmp, sizeof(tmp), "%d", soc_slider_offset);
++		if (sysfs_write_string(PATH_SOC_SLIDER_OFFSET, tmp))
++			err(1, "soc-slider-offset write failed");
++	}
++
++	if (update_platform_profile) {
++		if (sysfs_write_string(PATH_PLATFORM_PROFILE, platform_profile))
++			err(1, "platform-profile write failed");
++	}
++
++	return 0;
++}
++
+ int print_cpu_msrs(int cpu)
+ {
+ 	struct msr_hwp_request req;
+@@ -1604,10 +1725,14 @@ int main(int argc, char **argv)
+ 		return -EINVAL;
+ 
+ 	/* display information only, no updates to settings */
+-	if (!update_epb && !update_turbo && !hwp_update_enabled()) {
++	if (!update_epb && !update_turbo && !hwp_update_enabled() &&
++	    !update_soc_slider_balance && !update_soc_slider_offset &&
++	    !update_platform_profile) {
+ 		if (cpu_selected_set)
+ 			for_all_cpus_in_set(cpu_setsize, cpu_selected_set, print_cpu_msrs);
+ 
++		print_soc_slider();
++
+ 		if (has_hwp_request_pkg) {
+ 			if (pkg_selected_set == 0)
+ 				pkg_selected_set = pkg_present_set;
+@@ -1628,5 +1753,8 @@ int main(int argc, char **argv)
+ 	} else if (pkg_selected_set)
+ 		for_packages(pkg_selected_set, update_hwp_request_pkg_msr);
+ 
++	if (update_soc_slider_balance || update_soc_slider_offset || update_platform_profile)
++		update_soc_slider();
++
+ 	return 0;
+ }
+-- 
+2.34.1
+
