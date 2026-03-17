@@ -1,277 +1,197 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90FE315624B
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 00:15:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3D48341ACA;
+	Tue, 17 Mar 2026 02:14:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=192.198.163.10
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773706546; cv=pass; b=hgUC4iVs02sjsvm3ZEW6Dhu3hCkBKtUT6i9C5xfjinjHz51PGxuhebyc5lYC6sv4M+357gFMiEgFdXzDd8siFD3kRKqr1mSsVYCQvMUeyqU9ibr4heu/KdXwZsccaQkekfuTEysTOUB89nyAcIFewuF2iBa4tf/LZeD+FhaJdko=
+	t=1773713696; cv=fail; b=J5+HM1OpfJFWQiStc0tigop5M0AOU0CSilb2FcoBgArZCBX9WPdJ7tTRlZHO8ie++tfq/+72ncmKnkZxeVn5FOp1G/bJ5Po5poOwU6DO8f4GRVt5dir/8SzcAKNgxLgkLr/Wpq4XCmZ/IUuESrandIuI5rrPyVqF7SnRCHwK+bI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773706546; c=relaxed/simple;
-	bh=P3IdbVsgl1xZPAQ6WLAtiQrmftWjSmGNAKX/ISmlVQo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=skhogss6S8MtuGw/KdtIiLJPydZNOH1ipLg1o+XmMaRh0kUeQ7UHTw8F3aMsKJ3z2kIfhE0I/kH1y7U4TNa03Q+fn2fZWi9bL+42CmjMLxwM61hyj3mNNdoNS0wpiIE2FSgx0/CFkBqg4xKvzWhT5hPaIQAme4m9lmJ0SmG62fA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nToDhbq2; arc=pass smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1773713696; c=relaxed/simple;
+	bh=sVRxH7UVZOmeesDR049K9lS+h/cUI2gBTpal2728WzY=;
+	h=From:Date:To:CC:Message-ID:In-Reply-To:References:Subject:
+	 Content-Type:MIME-Version; b=XKAGqQ0vs79vV+MP06gxO98IecRm+x5wzLI0iqu6pdhmo3qLXvTqy4XAPmrzTy17BeWdTvzAXIvhQQo6ULU5ecxXeW7d/Wle/hPvmB9NNbdmdGSk8ljf/OscXRXH3CAvqrcFmpbrXXruo7ED0mwhGLAi2ynRQYxJs95sBAtsz6Q=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=R8yjBRkT; arc=fail smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nToDhbq2"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-439c56e822eso5349099f8f.2
-        for <linux-pm@vger.kernel.org>; Mon, 16 Mar 2026 17:15:44 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773706543; cv=none;
-        d=google.com; s=arc-20240605;
-        b=LnxH03EmQSGrOj+tdy+n8yqtS4x96XLjuXFdljlyUmrm165v8H/BOD4yyMNh13PMxw
-         tnhV7J5lOs3DS0PXUeqhTi/KwhQe4DHV1wO84xjUKBjsKSUbikwu+8uYbN9YuFmIqF2i
-         rftSFLvl2zw1PQnvI3ry75urN05OqFabvG7YzCMfrBf8BSg2vVN5mMkvXLV1qwJRCbp6
-         GxhxmodAIqNb5cS3ha3GPrRDV28109QuJFo5wWER1pNeHO1WMxorr06EP5qMD1MlfSiB
-         kK0AJeoQug6m7gGrKbUjQ9H1KSYT0KXu2vuP9afkMxR9Guc2xPfQK6MlvGETrHdxdDAs
-         V9rA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3nMDLIp8iz1O7/jgBFBaCCI8dMIrwzJfKQb3Q/MIKQ4=;
-        fh=zcu7mq3wb0FmndcBXl0nqs5uLf7mlMeDnD9zEjRb4gg=;
-        b=UgnY7/H4cn2Ua573SFErHxtnSrFJhav9PzAV1gbvbJUmLGg1HmfFR6iVJj11h4ktKI
-         W3DWCCozWDma2ZS23zrmlYdqXYK5nj1XYIf3wjEfqO7qlxRPN/tMn5loo6RkTuTW4SJu
-         ELvR3SaN4SWRZqCsBNsOP85jgomnXhiGn4aujZR+Ba2zG55CrJhisiRTOtV7NNHHwWE/
-         jdpBjGRJpMvw+Duz903ERQlRIuUSXNuHRVZeeAAdkLwa46PfonCILa4deZUD0FX/DUPP
-         kL1Ah0mjruFCaMDSZakmZgz1u2hexLZq8dUBcg5LlWidkST7B1G+QJZ9yljw4KVJOjyu
-         lmYw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773706543; x=1774311343; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3nMDLIp8iz1O7/jgBFBaCCI8dMIrwzJfKQb3Q/MIKQ4=;
-        b=nToDhbq2KsKK20zu6Byc3cm9TLtaOQJU2n2KkGUJJl1SBjWbnj3cNXqK4FBwwpXytF
-         7lh80hxIKHkcvLvfQ8urWredSdcWhQRUp+SWe2jxOH12036dCiFQvQeI00IqqKCn0F3n
-         39cV4KUhJLJqcYfXdOmHQfUIQwhVQShBYKy7p+2J4gTl3dxB2DbQiOTZ2zPIXhy/T1FX
-         Kjd4zfi61PPD1PjN3ZI/cFG4JJB+SADglp781yfXluCDaFL8ADFPiRVkLtUru6XnCDnt
-         F69JhB9Lu2ev3e26GNn6nQ7FAdvZHp0s1+euTBfII/wZZc7NBPVMojdyrhS7KXbCz9n9
-         gx5A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773706543; x=1774311343;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3nMDLIp8iz1O7/jgBFBaCCI8dMIrwzJfKQb3Q/MIKQ4=;
-        b=kw8Nh6AaDVurBIvjLZvQYpBETiKnlzAyiV55yl+XngpiSPWs3xjWfTy8PYTr2Dyon0
-         PIXLQ/SWpFL5jQTzmRIE+TNJyXVb6w3cX58cyG04qMSJJQcUSb11/zswlpejYNWnbKja
-         wtgQio40qs7jCKxI6hUbwSrUR7mZbv47F0r/Lg97/+0VbXrBDHf+zQKuqchbyTbLeRqS
-         Xt75FcMGYbxCJtVKzHvev5josKWQbeiD9rTe/+3lWk/nmraIYdkXyIwhQxTuRvmSd9mF
-         FzjAKdCCcvvTgWtJax2erG62NptYJNPaeFDN9pPrrXalS/NiukeYqllrDYViNfaBpum7
-         ezoQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXesgayrJWt6Ts8mFwPI6odEDw1S6wK06MzBjhN+JfZnawq8sHvgb+9irpWVEupfDCrVPxxoBo6Gw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YztSzwMmc8z140Vkb/Na9VO0y40HZavm8ol4+JS0DtOWAmSQgdS
-	4KAtT+mfsGlxOjzj9RoW7BELVbc9tSLwtiPn5ngvASGbDxgvfN8y4Zb4l8BdXQZNzNvx3gJNUP9
-	waQGe/UVQZsM6+16iLeKKnKfmSp7Vz5M=
-X-Gm-Gg: ATEYQzzSrfe1ReNHDm5OnX1k7CqrA0NJB82CrCYAD00GDl0qaQ8relVvaXVLfSeWgBl
-	RSvjQm3uyp1FgOI+bLg1/HUaf444Hhr81ehO0jdcGDnfRO3Fmbm1cMMYRaHvwAZQVNPD1kceIep
-	dcr/EnsCSkxfa1V5POlxNOWIzZFfWuCMOhcmOmZ0lwhe7vvMaDZA4qYd14ceRYkn78UgO4qeh7d
-	chvQrWU7Frm4smNNbCdWYvVi6ME6PFsvE+OyWi7vN7/5qKAPQcLGUzmaMehgw8IhqKT4X527Oec
-	Hbnd1g==
-X-Received: by 2002:a5d:5f53:0:b0:439:c2b6:d5d8 with SMTP id
- ffacd0b85a97d-43a04db61b8mr26405485f8f.36.1773706542605; Mon, 16 Mar 2026
- 17:15:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="R8yjBRkT"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773713695; x=1805249695;
+  h=from:date:to:cc:message-id:in-reply-to:references:
+   subject:content-transfer-encoding:mime-version;
+  bh=sVRxH7UVZOmeesDR049K9lS+h/cUI2gBTpal2728WzY=;
+  b=R8yjBRkTNzukkPUEf/65QQJhkrtWJaOMYsrOqZnEJrzWV/GZgVrSMOr2
+   13+sFjxanLClzW/JAmcYgTbow/j7mldLZpj++0fPj9XSGr7t7tqVPdoaj
+   IFC1XqDWjYLHH5iqUVMVKE/UlttpYF/ZYBCY+ItwgGJxiIlyf+RN0HhtS
+   79IURz8OAwgRaMa60JeCzc74SJ+Y+tIsMCkk+K7r0QPju7mlu5pGjiWjX
+   zp48qLqkxm/UbRLKwU/KFo7h+6wNW9TBUhiYSEjmGscwe/rCimJbebNNA
+   NME2mJsXAzRyU6q/xa++3iQeo2QOtnOku2uTq9KVKEcT2Kr/la8NXpSeV
+   A==;
+X-CSE-ConnectionGUID: UYMX3uVKQ9+5uVFIuqlu/Q==
+X-CSE-MsgGUID: 9BGLfxKHQjmpxMASM6Sy8Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11731"; a="86094961"
+X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
+   d="scan'208";a="86094961"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Mar 2026 19:14:54 -0700
+X-CSE-ConnectionGUID: cNz5eil1QuOvGdJ2CgOb1g==
+X-CSE-MsgGUID: 7J3uts9rTZuA5X22STTJlQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
+   d="scan'208";a="221138540"
+Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
+  by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Mar 2026 19:14:54 -0700
+Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 16 Mar 2026 19:14:53 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 16 Mar 2026 19:14:53 -0700
+Received: from MW6PR02CU001.outbound.protection.outlook.com (52.101.48.29) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 16 Mar 2026 19:14:53 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Hj47bO/pWZz3Q1/+WSEmt0ijx2QWtM9hfU9VZx7uNlSf73niI+Dcd63lhXvA1l7YnJYW+Dvok699jtnjuwdU9KxQZUMxhQhJttHMz/JVFtCYrWT7nmv9Gh1JrByT6hCgJYV9U/LJZejBV6gXAceL6xp4lfuvLKmCYw/Itx61W6e5+pvsuEP884L4+KMORF5Oofb0tSrM/oo54udjXTuMc2SA8aEat/L045MM88GVKg0icbjpwpMEVB8OgHhEb9Yy84UA1Jw9lKakObS4B/dvUa+FJ0r06d9dY5c7jQHj9nbR28B2lYm9sB6aXfUhlmCQ4sqrHoJrzFcYbFR9kO4PaA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=JNWR/ek7v9Wg7MerjJezgXBxBl9jBXPQmZJSvqqDdP4=;
+ b=gCJHJZfARZEnYuB/UiF0tZJxQhfaSDx6QtjUsE3lRxvxd9d9bwqHzm1WwfQ82xrfOHEVQYeMtl+kVV2WFckEhHgTmHg12r9Z7qIaMOZAouEbrxPE2u0kYnyesuN4Dhpa3j1FY0x97EgtKX6eqKejxS3pvaFJjSoiLtFMkropWyGbfYBBfeKINP8F/Ry18z2Qb/XIItXfES8badwN6TBKZEH5/+Irjt00y7HQ7kAPT61TnF3AcXzzoXYG8O/TOkccdn85IIBzwaTxlRxVpRSESGT5HdXNTl5tD1Bs5Qz4Lht2LkTdmACdT7tzDOrJQtiqBKEvl4CtC65bC5NepgSZRQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by SA3PR11MB7463.namprd11.prod.outlook.com (2603:10b6:806:304::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.8; Tue, 17 Mar
+ 2026 02:14:49 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff%3]) with mapi id 15.20.9723.014; Tue, 17 Mar 2026
+ 02:14:49 +0000
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Mon, 16 Mar 2026 19:14:48 -0700
+To: Alejandro Lucero Palau <alucerop@amd.com>, Dan Williams
+	<dan.j.williams@intel.com>, Smita Koralahalli
+	<Smita.KoralahalliChannabasappa@amd.com>, <linux-cxl@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <nvdimm@lists.linux.dev>,
+	<linux-fsdevel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+CC: Ard Biesheuvel <ardb@kernel.org>, Alison Schofield
+	<alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, "Ira
+ Weiny" <ira.weiny@intel.com>, Jonathan Cameron <jonathan.cameron@huawei.com>,
+	Yazen Ghannam <yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>,
+	Davidlohr Bueso <dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>,
+	Jan Kara <jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown
+	<len.brown@intel.com>, Pavel Machek <pavel@kernel.org>, Li Ming
+	<ming.li@zohomail.com>, Jeff Johnson <jeff.johnson@oss.qualcomm.com>, "Ying
+ Huang" <huang.ying.caritas@gmail.com>, Yao Xingtao <yaoxt.fnst@fujitsu.com>,
+	Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Nathan Fontenot <nathan.fontenot@amd.com>,
+	Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+	Benjamin Cheatham <benjamin.cheatham@amd.com>, Zhijian Li
+	<lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>, Tomasz Wolski
+	<tomasz.wolski@fujitsu.com>
+Message-ID: <69b8b9181bafd_452b100cb@dwillia2-mobl4.notmuch>
+In-Reply-To: <df9cfac5-7e01-422f-bd29-d1b8b3c55623@amd.com>
+References: <20260210064501.157591-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260210064501.157591-4-Smita.KoralahalliChannabasappa@amd.com>
+ <69b1e0aacb9d0_2132100c5@dwillia2-mobl4.notmuch>
+ <69b319d7e6adf_213210086@dwillia2-mobl4.notmuch>
+ <df9cfac5-7e01-422f-bd29-d1b8b3c55623@amd.com>
+Subject: Re: [PATCH v6 3/9] cxl/region: Skip decoder reset on detach for
+ autodiscovered regions
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SJ0PR03CA0016.namprd03.prod.outlook.com
+ (2603:10b6:a03:33a::21) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <Utw_Cjiuq0_XhCoA5EXpzLE9qfRpiA0-fmXEmui7NnBnIeMiCDGOyXWPtE5DkxVNYNSsgiUotB7fsGYnlMQn1xDCx14yx1d0UJqx62vAwp4=@proton.me>
-In-Reply-To: <Utw_Cjiuq0_XhCoA5EXpzLE9qfRpiA0-fmXEmui7NnBnIeMiCDGOyXWPtE5DkxVNYNSsgiUotB7fsGYnlMQn1xDCx14yx1d0UJqx62vAwp4=@proton.me>
-From: Joanne Koong <joannelkoong@gmail.com>
-Date: Mon, 16 Mar 2026 17:15:31 -0700
-X-Gm-Features: AaiRm518jWrlTin3GINGieOMhjnVYOu7wOJglMBudsbg7Ar2KU7MkviWAqR9hNI
-Message-ID: <CAJnrk1YAhWnOt-7yr9gDmHdjANiC74-fC5mKsePC6wFTzwPjUw@mail.gmail.com>
-Subject: Re: [BUG] fuse: wb_wait_for_completion hang on suspend with
- fuse-overlayfs on tmpfs persists in 6.19.6 (AS_NO_DATA_INTEGRITY fix incomplete)
-To: John <therealgraysky@proton.me>
-Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, 
-	"linux-fuse@lists.sourceforge.net" <linux-fuse@lists.sourceforge.net>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Jan Kara <jack@suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|SA3PR11MB7463:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8f4b509b-3eec-46c0-239f-08de83caf7bd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|366016|376014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: WwFyWTmi0/niM+pDwxpCQoLL5n6s1rseuPRqyvElCpmxrLgZl0LhZ7TP7Ygv76Q07inYI+au3HyOS2xoA0y2RG2dDi3wKTgbDjsM8DJhbC4Xu7596JbHnk2J+tBc/gfWRrubboIW5/Z/arDMms4ht9lihnZ0FhA59SCvBQoI5JOLpkerOh8gFKK5nPwXbnd7J3P/Fb/CXzvvUg9E8fNHZBu0njJfm5draGv70t3tjG+/vHn/Rdo+L2gJOQS6LeZ6+4NNWl1SJgk4CXQDNgmQ2JjrXIct9HvJz/ijoMKf2mqf4tpWXhVXaDnH8wVORByAbLwZsNS32JjyKhcixhp9T8+CTIi33ep8hr3E9oopMMYzDvXWOQtKG5Qbd+kCwg6OXoHZMqJ5Kl51lU8EUp+s9sjodlKJzL26U70rNCylnPu8t1EIcVNy3HyfR6asJCjbaf3ne9hgwzSEDu8X3v1WuWSOeHoq4ZCG/Yr2w7n7Mg6f06Xd8gxOhEHFRRDzGUKH7s5bgOKCvsbPC6x4Kdb7fDs/PFus/ySclH58QzoTw0xBmn78yi94GHBwW/LTZ8QMMdgIoQKLmKhOjImNBhuXWLt3DvBeCjGY+pgxmvBjpr9FE3iLHoDHOq5GK3DutIm+adeA/bIz+W2ccEPE7QKdaIdV11GW3yN8Ri27druAG7lPqHZe1YGOT3HdOeRcLz+vfBg3SHNjBTlc2NwcVg7OcuTpwGHwj1PHi10IZwEX+vQ=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(366016)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bnBodlRXcGZzY0JqZXZsS0duR2NxeTM5YkFBcUdEc25CUWJ0RmFEKzdXZTdU?=
+ =?utf-8?B?UUlsRVVsYWQ1TnBMa0hNaEliMmRZNWVwTEIwOUJZdFlmeXZBRlM2ODArUDFC?=
+ =?utf-8?B?NzNYRHBkQjhDMTc0elA0VHU2a1M4bXBBQjBDTkxrN0s5WE9LcDRDUFNXZW91?=
+ =?utf-8?B?NU5QTlhGOXVzR2FCNTFNdGh4c09iV0Q4NVFJM2dpLzVDQW44NElPUmo2Nklr?=
+ =?utf-8?B?WG9tZS83RjJWR284TkNUREJKZWtjb3VGalNyc1dnUWptT3k1ME9xcU9uV1Rh?=
+ =?utf-8?B?cUQ5d2xwbXh4MlNLUzZsV3RTRUlkeXZYcWJqVS9ha0Fhc0Z4c002SWZBYWFJ?=
+ =?utf-8?B?Y3QvbGpnQWJsMXVQYnpwT1V1a3YyN1krdmN5emlqWmhNbXIxTUZXWlBIbFhY?=
+ =?utf-8?B?eWRjbGk4bGpkdVNBK3E1WXlEV1ZSK1ZtSXFRRmx1QUIvQzE5R0I4eU8rdlBT?=
+ =?utf-8?B?V2lJdVFuWllNOWpRc3RkdVJVUlppckRJQy9GTnlKUGVxL04xeW5yNjNKL2pv?=
+ =?utf-8?B?NWZBK1o3c28vQkpSaTlONzVvbHdlMm9Bd3dxTldIbUc4cUt1Ui8vb2tXZlQ5?=
+ =?utf-8?B?bTJnN2pFTGZTZHhZaTEzSmVOV1I3alQwaHNUdHRVQWVyRktMeE9tR1RHWStU?=
+ =?utf-8?B?c0pOTSttbC9NM1A4Z0QwSlBVa2M5TlJHN3lhSUU1NXVjVnM3ajYyVkdZcXdy?=
+ =?utf-8?B?Rk9NSVlaVTlwdFpzQkMrbUQxT3ZINzhmOXV2Y25sS080QXdBcURoUGFrTWMr?=
+ =?utf-8?B?eWlwNDN4SUZEOTJjaXJodWxRZVppZ2tvcjB4N1FKVUxBRFM5Wm9ST1pqN2pl?=
+ =?utf-8?B?cFhSampKaHRNWXNwVFdGbWV4RHdsNjFweUlRZWNFaUpObGRKdWdIdm83MERn?=
+ =?utf-8?B?anFUMDVkUjhCV2IwSHRqSldjSVZXYXRLYzh0NlY3SGpxS2RLbFJDTnV3dmsv?=
+ =?utf-8?B?UmVwK0xJdVJUK08renpMWU9BTHRmWU55eFgxa0JRR08vUk1vdWRrYkIzdEZW?=
+ =?utf-8?B?eTVISmJBQ3JlRlJZbzA5OE1idHEzUS9uek43S3V1alU1N21Ubm5oZ3loK2NS?=
+ =?utf-8?B?OHNOeDRXaUMvVW1aZURoajBCUXpnQ05uZVVQanhYZWQ4anp3eERHQW1Ydldp?=
+ =?utf-8?B?VmZubENYdUZyVDV3V1UrSkxFeG1tK1RzdGl1UndhRHBUemRWN0NXTFl2a3Zx?=
+ =?utf-8?B?bmdIQWxyT0xtUjlQYllLc0l3a3hVK1hDaUxnc05PY21NeUhUVHlDVmVrNDF6?=
+ =?utf-8?B?c1F3SVVLYTQ0YTdQejJjUDRNS1VtblRnaUhEYnJiN3RXeGJRc01oY2J4TU1o?=
+ =?utf-8?B?OE1UUG1JSFVibUZwNnVMUFhtU2tzOXpRVGpuZGsxb0puK2xNenlTcGhWK3ht?=
+ =?utf-8?B?Vm4ycjJiZjYrcHQ0cUk4TS9QUWtDT3VDZTB1aTdUaXQ5TEs0UGNUZmtmY1NW?=
+ =?utf-8?B?Rzd3MnRkRkZOUDJXY0hYRnZPZzI5NkY5WFlGWEU4cCtCT3ZOZXAwTDFaVzFJ?=
+ =?utf-8?B?N1ZUMDZJQnhCaU5EUHUvOG96Tks2bWdQT29qNmpMSjNHaXFLdElJM2VzWTBS?=
+ =?utf-8?B?NzZwdTRBMk14M0N5YjFZRHltdmplcnhIV0ZrSnlXenlqRXM2WGdTcFA3dFdT?=
+ =?utf-8?B?OURrcEt0TUkwWDRUcXA3VUdXcVJIYS9hWE8zSURJNytQNUhaMVZ5MmtUWkNi?=
+ =?utf-8?B?bnhmK0V2SUJsbnA4VFZIV3B6TXNxSERiYnNmdDUwOHFvbUY5SUh0QlZIU2I1?=
+ =?utf-8?B?RS83NUFNdzQvT3RXOTgycWJvdVpUZGxwbXk5L0t1aDFMUkpwQWZKLzAwVjF4?=
+ =?utf-8?B?bGRXKzFST1J0L2JtZ2NzVjVFWWJrMkRyTm1rUVYwWWQxazRJK1kzMDFMQ3hj?=
+ =?utf-8?B?R3ZGdHV6RXlacTMybUp4eTN4dWlxU3kzbmNKYkhod09jOFRSa2ZObjFGaDBr?=
+ =?utf-8?B?bzJ5blpIZVNoZUl6azJhL01RSFJRbDVmeTNVVkVyR1kzQ3Jodk1IMkZUMisz?=
+ =?utf-8?B?M2NuOTAweldZaDhra2RIOWRVYWtBOWhRY1N0U29KTDlTT3Y3bDVCalMzQ2lR?=
+ =?utf-8?B?VktuQW5ucmtzcUppSW96YTQ3VmtVdkcwM3pBY2ZMaEVJeDFHTkVocnoyUmNt?=
+ =?utf-8?B?d0VQc1BSYnNEeFRaMkxYWmZYR3NQdlI4ZHZmdzB0Q0E3cld2K1NLL0h1dWVm?=
+ =?utf-8?B?WTR2alo3UE10OWRuQVdFdWdreWd4eTBzQVNlT2hVVWZIRVF3TXhFa2QyZHJI?=
+ =?utf-8?B?bUZiV2ExS3pJellLOVF0UDNtTjBmbVJhdTVsNWRqQ0E2YlErUDdNaTlZREZj?=
+ =?utf-8?B?clNGLzVOd29LUERVQ053L2ZHZGlSVGVOa3VJR0dUS05LQ1JwMzQ4eHdyakkr?=
+ =?utf-8?Q?L1P4J9LtNdVp2J58=3D?=
+X-Exchange-RoutingPolicyChecked: RX4p+0fkl4gG4a6Sqv+Rz90YLBPNLRrWA5P8ZIgs+WdfSkJYsMggxT1SYhrv/KgRx+xAVUjapVvf4JCIk6zV6LVftFuQIkSmWpYhbQoWJeNWEUuYlEcAllyZvTfRxbaax+n1ajNl4yTSWSlbJuUvwQNYaVUWvUuSmNsOc8NyUBeuTtRkzqL75u0ZfHVDtjNC2URm9c+1GxCtAbxNQOqujF9057uwLYbZ3n9kOMe2Ez0MEs+/UpLbHljsbSDzsD2mPaXqLfcrj/A/MacC5EXS6IV+fe7cNMZcsLyYADQbVdlaYfwkG1Wn6pBFvb0UtJQfH8rpI2HhQlOk/eUTUflIOg==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8f4b509b-3eec-46c0-239f-08de83caf7bd
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 02:14:49.7425
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hSIFtnD/E5+yx7gMR0csMKPmNJ+ryRztns/bSfCvOC4aBtf/kM53hUueJSwIXVJfu/vh2kudRdCQDYWjHdnvVwgzU7avtpUsvEUq2upLMwo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR11MB7463
+X-OriginatorOrg: intel.com
 
-On Sun, Mar 15, 2026 at 4:24=E2=80=AFAM John <therealgraysky@proton.me> wro=
-te:
->
+Alejandro Lucero Palau wrote:
+[..] 
+> This is not the first time I share my frustration, and as when I did so 
+> in the past, I want to finish with a positive last sentence: I will keep 
+> trying to get type2 support and hopefully further CXL stuff, and happy 
+> to discuss the best way to do so with the CXL kernel community.
 
-Hi John,
+I did not mean to imply that the type-2 set was stuck behind a new
+dependency. Apologies.
 
-Thanks for your detailed report.
+It is next in the queue, it needs to go in next cycle with a high
+priority.
 
-> Kernel: 6.19.6-arch1-1
-> Component: fs/fuse, fs/fs-writeback
->
-> --- SUMMARY ---
->
-> A suspend-to-RAM hang in wb_wait_for_completion() via sync_inodes_sb() pe=
-rsists on 6.19.6 when fuse-overlayfs is mounted on tmpfs. The fix introduce=
-d in 6.19~rc6 for Debian bug #1120058 ("fs/writeback: skip AS_NO_DATA_INTEG=
-RITY mappings in wait_sb_inodes()") does not cover this code path.
->
-> --- BACKGROUND ---
->
-> This issue was originally reported in:
-> https://github.com/containers/fuse-overlayfs/issues/386
->
-> The fuse-overlayfs developer identified it as a kernel issue. It was subs=
-equently bisected to commit 0c58a97f919c ("fuse: remove tmp folio for write=
-backs and internal rb tree", merged in 6.16) and tracked in Debian as bug #=
-1120058. The fix applied in 6.19~rc6 targets wait_sb_inodes(), but the hang=
- in the reporter's original trace and in this report occurs in sync_inodes_=
-sb() via a separate code path that the fix does not reach.
->
-> The issue is also known to syzbot as "INFO: task hung in sync_inodes_sb" =
-with open instances on linux-5.15, linux-6.1, and linux-6.6:
->
-> https://syzkaller.appspot.com/bug?extid=3De0232bd63c6e293aaf6a
-> https://syzkaller.appspot.com/bug?extid=3D4983a35cf671e5ed55b3
->
-> --- REPRODUCTION ---
->
-> mkdir -p /dev/shm/test/up
-> mkdir -p /dev/shm/test/tmp
-> mkdir -p /dev/shm/test/data
->
-> fuse-overlayfs -o "static_nlink,noacl,\
->   upperdir=3D/dev/shm/test/up,\
->   lowerdir=3D$HOME/.config/mozilla/firefox,\
->   workdir=3D/dev/shm/test/tmp" \
->   /dev/shm/test/data
->
-> firefox --profile /dev/shm/test/data/PROFILENAME
->
-> Browse to youtube and start playing a video then trigger suspend while th=
-e video is playing in the browser. I used XFCE4 suspend from the menu.
->
-> The display goes blank and does not recover. The system does not enter su=
-spend. Switching to a tty shows the system is alive but X11 is frozen. Rebo=
-ot is blocked:
->
-> # reboot
-> Call to Reboot failed: Action suspend already in progress, refusing reque=
-sted reboot operation.
->
-> --- CALL TRACE (6.19.6) ---
->
-> Mar 15 06:44:42 kernel: INFO: task kworker/u128:0:106160 blocked for more=
- than 122 seconds.
-> Mar 15 06:44:42 kernel:       Not tainted 6.19.6-arch1-1 #1
-> Mar 15 06:44:42 kernel: task:kworker/u128:0  state:D stack:0     pid:1061=
-60 tgid:106160 ppid:2
-> Mar 15 06:44:42 kernel: Workqueue: pm_fs_sync pm_fs_sync_work_fn
-> Mar 15 06:44:42 kernel: Call Trace:
-> Mar 15 06:44:42 kernel:  <TASK>
-> Mar 15 06:44:42 kernel:  __schedule+0x457/0x1720
-> Mar 15 06:44:42 kernel:  schedule+0x27/0xd0
-> Mar 15 06:44:42 kernel:  wb_wait_for_completion+0x97/0xe0
-> Mar 15 06:44:42 kernel:  sync_inodes_sb+0xf8/0x2e0
-> Mar 15 06:44:42 kernel:  __iterate_supers+0xdc/0x160
-> Mar 15 06:44:42 kernel:  ksys_sync+0x43/0xb0
-> Mar 15 06:44:42 kernel:  pm_fs_sync_work_fn+0x17/0xa0
-> Mar 15 06:44:42 kernel:  process_one_work+0x193/0x350
-> Mar 15 06:44:42 kernel:  worker_thread+0x1a1/0x310
-> Mar 15 06:44:42 kernel:  kthread+0xfc/0x240
-> Mar 15 06:44:42 kernel:  ret_from_fork+0x243/0x280
-> Mar 15 06:44:42 kernel:  ret_from_fork_asm+0x1a/0x30
-> Mar 15 06:44:42 kernel:  </TASK>
->
-> --- MORE CONTEXT ---
->
-> Compared to the original report (which ran through systemd-sleep -> pm_su=
-spend -> ksys_sync), the sync call in 6.19 has been moved into a kernel wor=
-kqueue via pm_fs_sync_work_fn. The hang point is identical: wb_wait_for_com=
-pletion() inside sync_inodes_sb() never returns because the FUSE daemon (fu=
-se-overlayfs) is unable to complete writeback while the suspend freezer is =
-in progress.
->
-> The AS_NO_DATA_INTEGRITY fix targets wait_sb_inodes(), which is a separat=
-e function from sync_inodes_sb(). The hung writeback completion wait in syn=
-c_inodes_sb() is not gated by the AS_NO_DATA_INTEGRITY check and remains un=
-addressed.
-
-I'll need to run the repro and verify this is the issue, but I think
-it's because it's hitting this call chain if there's a dirty folio
-that is already under writeback that needs to have writeback issued on
-it again:
-
-wb_workfn()
-  wb_do_writeback()
-    wb_writeback()
-      writeback_sb_inodes()
-        __writeback_single_inode()
-          do_writepages()
-            fuse_writepages()
-              iomap_writepages()
-                writeback_iter()
-                  writeback_get_folio()
-                    folio_prepare_writeback()
-
-where in the folio_prepare_writeback() logic:
-
-        if (!folio_test_dirty(folio))
-                return false;
-
-        if (folio_test_writeback(folio)) {
-                if (wbc->sync_mode =3D=3D WB_SYNC_NONE)
-                        return false;
-                folio_wait_writeback(folio);
-
-
-Could you verify if this fixes the issue?:
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 8f8069fb76ba..4cbb22d80acf 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -1990,9 +1990,13 @@ static long writeback_sb_inodes(struct super_block *=
-sb,
-                 * Don't bother with new inodes or inodes being freed, firs=
-t
-                 * kind does not need periodic writeout yet, and for the la=
-tter
-                 * kind writeout is handled by the freer.
-+                *
-+                * For sync(2), skip inodes whose mappings have no data
-+                * integrity guarantees (eg FUSE).
-                 */
-                spin_lock(&inode->i_lock);
--               if (inode_state_read(inode) & (I_NEW | I_FREEING |
-I_WILL_FREE)) {
-+               if ((inode_state_read(inode) & (I_NEW | I_FREEING |
-I_WILL_FREE)) ||
-+                   (wbc.for_sync &&
-mapping_no_data_integrity(inode->i_mapping))) {
-                        redirty_tail_locked(inode, wb);
-                        spin_unlock(&inode->i_lock);
-                        continue;
-
-I think the changes from commit f9a49aa302a0 ("fs/writeback: skip
-AS_NO_DATA_INTEGRITY mappings in wait_sb_inodes()") are still needed
-even with the above patch since afaics, the writeback we wait on could
-have been from a previous background/periodic writeback run before
-sync was triggered.
-
-Thanks,
-Joanne
-
->
-> Note: prior to commit 0c58a97f919c, sync() on FUSE filesystems was effect=
-ively a no-op, which avoided this hang at the cost of correctness. The regr=
-ession was introduced when that commit made sync() actually wait on FUSE wr=
-iteback completion.
->
-> I am using Arch Linux but users of Fedora F43 and Debian testing are hitt=
-ing this bug also. See refs below.
->
-> References:
-> 1. fuse-overlayfs upstream issue: https://github.com/containers/fuse-over=
-layfs/issues/386
-> 2. profile-sync-daemon issue: https://github.com/graysky2/profile-sync-da=
-emon/issues/411
-> 3. Debian bug #1120058: https://bugs.debian.org/1120058
+In my view this confirmation that Smita's proposed patch addresses PJ's
+test failure cleared one of the last hurdles for this set for me.
