@@ -1,122 +1,158 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19CDA36EAAD
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:17:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDFBF35A395
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773739033; cv=none; b=NrB1Z+DHLhIuhaBC6NQM+BWaYNbPTuXEu13mE5Zpj59kaUcx2eihuHk8uG4V4VY04SEfRVka0OIBlktz1SIf7lArEHlYXz5H8DbBNX+Bbqs9rd/segZAe9ebYap+VMCCeTry41bRF3TW7Y7zFQHMiXXlqqYSgt7ZKUV90Pm40RE=
+	t=1773739231; cv=none; b=FZ0ebACAX3DHG0yk8rFD6vb4RPv6Upb8Uete88eVwKeiUIPLWABKFsVzyo5mNTWr3+s0axmDURCV27DDcrCM2H3Dv5fHCbbV0HNMuirJ/kaFXT+ic9l2r+B8SoWgEt7gzWw1kQZfvte9SyBUl8eA3ggNDm32ehSLHjMyMzi6KZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773739033; c=relaxed/simple;
-	bh=dtTlCI41aozPTprXi9NLFL5XTO3EzPdQWfOwuMTboPk=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hPyVzQ2Bw61gHhPPETywTfyghFEFsOwKBQh2xiyK32ZDMlPAul+NJkYxli2ytagEp6YppFplbFb3m9DWroZEt5fxNukDF5B9oBXTuQKL7pUzKAj3EpND2Xy3LOlk8hdzabXAv/YQIpxtzot3BxRj7ubQkRvwu/BxeXV23XaemCc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fG2q/vtu; arc=none smtp.client-ip=209.85.128.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1773739231; c=relaxed/simple;
+	bh=iBniWLLZnukifzCJcu+oeWa0IDqnSCjoESx57tYs8JU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=S8niiudt+f/wYhAIJi3K+XLYTcwP1N5bIMNY04E5umrouFPykiAbmV4kBszr0c9/mvbMYCJrb0el/3pHUna5pdof1+v2pgRZ6sdRafaqbwCpaW+3eLZ36C/f1PAtnpspR4P3pOZXe/cm+pA20oQQjCpI0IzAUKdZ7Zfvzr6JSc4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ctOeVfXf; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UgNKGPel; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fG2q/vtu"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-485345e1013so3895905e9.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 02:17:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ctOeVfXf";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UgNKGPel"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62H7NM5Z1639254
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=; b=ctOeVfXfm5OPrUt8
+	gpnCJeHMFjzsRsfwApv5JgkdVC/nvQkFZFYkfGkzAYCDS4YUjOfOhrBc1sbiWuoX
+	mOzPiqPvBRFCWOF/pPZKHdQarUvM8Q8WOqpFbzVPbhnyejdKoyTYFzrwt+ESmFY+
+	CrwAleZipnL4LJ8wELa8EC4cH1X3BtKGNBTZBbAgptbTtHYMkhi62NP3o9Gf3idg
+	sUnsXcSYAYRV+bvjLaNGpSx/Cm1dPlLnjdAGcrPJTmcpE+35PNj4wMgSVUSJ+kxG
+	hpkhrYFPijZaGO5KaFpQFk67Ws1mFQIAj0cQPC3szM32WjEZvrgowOrBBjAoMVk6
+	yq4wIg==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cxke0bjqx-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2b06395b8deso11192405ad.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 02:20:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773739028; x=1774343828; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=6M98aQTjWa8T+7ERPNFsSGl3sVEntJ3KUS4g5D7crqo=;
-        b=fG2q/vtuNbzuklQBCk2lkDj0WVbhIZEBgPNCSNifvBQFx+XepfFhvU3S6Hw+SMsd+T
-         ZvPleBcQ8goyWn52ywY8+Xn4wnaQ0aPqoJQbwSyChKxm30GW1zEAkFPRDUsSRjKemlIC
-         CiwrE3HNmyCiEOvqwjXybVFxYyDPkCP81Fpc6dM/mYhDUgRx8lmFyo3X+3F52mSro0/2
-         9QoivY6AcT1W6GtEugGJcPJHbOZkMH8dlotwx7lO9ZsPn/wh58IK1zRhuKDCcv10uQ+i
-         xswq97GzXF0Pb7+PCRlEoqcD46RDvTQ3vphxeN5U2YMCl1JR/qYquwNwrjj/mDl9TDKw
-         WJ0Q==
+        d=oss.qualcomm.com; s=google; t=1773739228; x=1774344028; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=;
+        b=UgNKGPelcUCktwRFuaE1RH2Sn2WmgMTChsEjMild5nyrtadv5Cu6+0aBa2wMai1zr3
+         815sI9m4keLkGgKX/0sYp/Cz6v8QCl/BE0Dv3xpjzQR6w6YVzfH12QrOmZdrWegjPHXY
+         TErjJiqYkUsOyjoxJ2ysKIKtZmlM8WOAzBRaOcH60KK9NiSRUaP7WfqX0uavZMsyQEj2
+         NOZtbHftWesyOcPQQ7lp47ahT9aDlxHDQc9lUJrBuKnRS3cKkO446TO8EgMaI03291Ve
+         TkwfX1Rv+C+EEiExWz1QJNWF3JXBdRdpQEt2d4ABUo8puTTF2WwRiRehmV9lN6XisFgE
+         aIxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773739028; x=1774343828;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=6M98aQTjWa8T+7ERPNFsSGl3sVEntJ3KUS4g5D7crqo=;
-        b=DTmVk4Nj1LwhREElw/njwH52DOE8ymCH78/aLanyh52JM9wtqYQ1bRJVvzofP+GCWP
-         CHdon4pdtkNy2qA9TCKyqSj636OGT9QAskBC140PhV9M0b/10ek3utdelpD1pz0Q8wxG
-         0XHNf2qDgiL7pzfALtY2r+rY5FdBDGJmW20IAFS5BQiCPMTbvNEFbusyfyfUMXfRlUXw
-         t3c51vn8r0QRaK8MHsGqTDrvgOW4Fe07A8jzHjEpk3YgNm/oYJKesj3oJ9WpInoC8YoO
-         WLlDqeqeWdbDxJtYeBV9vgh+T4T/+eotDd2wIXP9L8qAIcNuMK367qxfHkd7K3cmcQfU
-         l/jw==
-X-Forwarded-Encrypted: i=1; AJvYcCVDdDRlnnUpvZotX1hPxG7/v+kdCkFYfEn3ORDpBT/wadVPZB4UBTR3T/ppoi1mdmldZhM5hSbAbw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx7MhTdWHkjqpyeL3uGn4jPdt6ORv30zG/sFUe5T20R+TQxd6yb
-	hYUUX4AaEHh4kTBrFqPKSBd82Zy+iwdbc54J903jvXf2Cpc+4hjln+Q5
-X-Gm-Gg: ATEYQzy2lvIpYRhiy8JAWK0+rQaK6hS23SiY2knpzy+HET0ffzlOXvF8IuJDHRDJ+A+
-	/b3cKVIIh0GR4Cq1Q+r27R+QhpCd4t7vNrMb/CpKfrlJNKH2aVkTBagrsAxsE5O/DKD25qjAdvL
-	2Jvo8Pxb1Fpu7W1t6sDziPUWAUcHpTRnUPeeCNnsD7KtFMooCSz2M8Lx2ayDsVla7crpjSIC+o/
-	DvUDO7cHE4JQQ6SMbhJji8ZPRx8g8JP6UcfPfvhmFzYfnKIvmaXBXXxyr+WteJyqbxnLEeyHAA8
-	K5DJsWaX6Gr3eqM846c5Wwc49qDfZHJ9yytnpe7NpcA4A/hziBVoa6T42+vhT2kJ687+YqwttlD
-	C1RKhDUbxZMFAslTKlnC1DQE4P9ntl00G4hj2fGnTorGrrVeBNcaeIDi6vcfBEeDCUI1PAjD2Sn
-	0lGBXPAbAOws0pSfQizVVRBFtvAcCaJrTWFfTBxsOakvDfguMMnxlJXhj4Cq9vMTRE
-X-Received: by 2002:a05:600c:5249:b0:485:38f1:5cec with SMTP id 5b1f17b1804b1-4856eac2b35mr44375555e9.7.1773739027522;
-        Tue, 17 Mar 2026 02:17:07 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4856ea8fb0dsm99153105e9.3.2026.03.17.02.17.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Mar 2026 02:17:07 -0700 (PDT)
-Date: Tue, 17 Mar 2026 09:17:05 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org, bpf@vger.kernel.org, arnd@arndb.de,
- catalin.marinas@arm.com, will@kernel.org, peterz@infradead.org,
- mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
- rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
- zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com, rdunlap@infradead.org,
- joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
- konrad.wilk@oracle.com
-Subject: Re: [PATCH v10 00/12] barrier: Add
- smp_cond_load_{relaxed,acquire}_timeout()
-Message-ID: <20260317091705.5a64fc56@pumpkin>
-In-Reply-To: <87ms07rlp9.fsf@oracle.com>
-References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
-	<20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
-	<874imftol4.fsf@oracle.com>
-	<20260316233712.7cbfac27@pumpkin>
-	<87ms07rlp9.fsf@oracle.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        d=1e100.net; s=20251104; t=1773739228; x=1774344028;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=;
+        b=Pcl1y6Sw7HTT/CXZ3EhfhQqJUlwNfVAVbZwZ3JDAJfxBZuZ4+pYfnwC4KbT95O1CN9
+         ZfKF3lRwifyx6Gck8zh1YA+ZswlElZS8P89U9fwykSPfCVlZxN7kC11zQjOnRs2cDWkC
+         Of4QHwFPE1hNBl46ra4lP3CvJ2uuMVlUYedZa83EdxQUGgM2v5oUsRu4as/cK9IQ9BgY
+         cjgInr7TKMY73Kabl4LJPq7KUtbIXDGPfFWgeRYHaJOtE7FAHK36tM6KI739AjTNvCo2
+         S4i9p+eSnyyE2bMXvGVYZPvJ+ceeD5D7ncvYFsEvyAOGEbRFxXBP+rBb90QvWKMFnwo+
+         09cg==
+X-Forwarded-Encrypted: i=1; AJvYcCXXL1OqlGvNX6qZAXp16l3j/2PCXd2usvDbIRvI+XMpCSVDNI+YlHudwI3VmRbbFquA+SFc1rqB6w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyI00reA3xOfvJq/wX4YFnEkV8Xvj/6GgYfJmmO2us1hn9D5Q//
+	aIUKJE4LVf7pyIwZNucotsHPInSEQ0tySMrC6TXtvsFewqtjkc2WRlQKjvlPvdQLqP3Bv4/jjFS
+	vSqZx3ta9KRAEYUCLEz8UYMM3UgSs0S9XXMlbIfFYTCuBkEGCy7sYqoFqRX5U+Q==
+X-Gm-Gg: ATEYQzwVlI9yQbh6ZNYIepStzEyy/o+k9TUUaIBOOTvxNIJcDJzqW32u2Dkdj3/iJb+
+	2ahZGNd/y8sKz07ulhROSNsjFcuao/L7SMxOlgGq2lKD92nWy7myMmFAyK51TO0rGBuu2YtYPEX
+	+81ox3wAlMIZa32VFxiNuY9g5c8f/TKtBZ/zN7BndxJDFU6QLMFD+3hOurT0qppcdIYogawt3hU
+	98ozX9nG8uQgTEZh/j/eWJ7+QEyKs9Np96Rrg4+j49GvLP7ijcnQ3baDkwNyM3xEOkY2o3j6gwW
+	/IxeOXV/6xORUMntX8+zy7NlNX2IJMML3l7tpao/OfHdxKra9XvWfKlk2oiEW9/boFD3qzsJXf6
+	NoZ8A47uf5Bs9TtZ3qvI3cQDWzkDN9rSJ5amnJRwCKRrvlTk8eJrcx+XflMU6MCpDWsMpwmtIXR
+	cH8bKO5k2fyAAGtnk/Lg==
+X-Received: by 2002:a17:902:ce10:b0:2b0:6b98:59ec with SMTP id d9443c01a7336-2b06b985bdamr41225ad.34.1773739228456;
+        Tue, 17 Mar 2026 02:20:28 -0700 (PDT)
+X-Received: by 2002:a17:902:ce10:b0:2b0:6b98:59ec with SMTP id d9443c01a7336-2b06b985bdamr40945ad.34.1773739228006;
+        Tue, 17 Mar 2026 02:20:28 -0700 (PDT)
+Received: from [10.133.33.139] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b04e5cb3dbsm105952865ad.25.2026.03.17.02.20.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Mar 2026 02:20:27 -0700 (PDT)
+Message-ID: <e2f6637a-93b0-4f6e-9867-8accf6aa940f@oss.qualcomm.com>
+Date: Tue, 17 Mar 2026 17:20:23 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: optimize policy_is_shared()
+To: Yury Norov <ynorov@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: Yury Norov <yury.norov@gmail.com>, zhongqiu.han@oss.qualcomm.com
+References: <20260314192544.605914-1-ynorov@nvidia.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260314192544.605914-1-ynorov@nvidia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: Zrj_-D_BJAnoHdjDMB5jGEV7jQfR6BOB
+X-Authority-Analysis: v=2.4 cv=aue/yCZV c=1 sm=1 tr=0 ts=69b91cdd cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=Ikd4Dj_1AAAA:8 a=EUspDBNiAAAA:8 a=QQo5Q8axJbk09mazrB4A:9 a=QEXdDO2ut3YA:10
+ a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDA4MiBTYWx0ZWRfX9Wc5Vxd/2cs/
+ 2N6Vi6alAIKuZVuzbY60UF9aPmCYCz5lSrGZEGXUOnQF2SYTMeTwv7YaOkVan+9wJmpqsnZVgBA
+ 6lXEW3R1z/Y8MZ+i9QuPJ9W+BkqnqVRNPZ1cgXQSPffs4MMp2ro/EkXld+YG302QB7N+gUD+yQc
+ 9DyCeJLqtuMHiHZrb+VpA1QRYAigSpED5TqlrDrlj0JpwcS5cuEu0aeokGz90ERzbbVWUJKrWrX
+ heiV66FtdRf64/jrU2Fnc6ghvINAuL0kbVjI4+J3tHwXXJzBnQJUZ0RyeN+3JsDmhooAT356JOV
+ DCCbMZGh/D4QGLjEUMLVSz+cSLDId42ry/dYqjyuKX7/YKAOFqMEDSVRqeuvEGot9g9g32DROIr
+ wbepkBYX+yprhkvialiKzT4iHjvkn+2CSZAJC2PVKOKsrfI5MppS6M9vvUnalYQv9n7voQgYEJd
+ BK9p7gIGkVa3gAsy0LQ==
+X-Proofpoint-GUID: Zrj_-D_BJAnoHdjDMB5jGEV7jQfR6BOB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-17_01,2026-03-16_06,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 adultscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603170082
 
-On Mon, 16 Mar 2026 23:53:22 -0700
-Ankur Arora <ankur.a.arora@oracle.com> wrote:
-
-> David Laight <david.laight.linux@gmail.com> writes:
-...
-> > On arm64 I think you could use explicit sev and wfe - but that will wake all
-> > 'sleeping' cpu; and you may not want the 'thundering herd'.  
+On 3/15/2026 3:25 AM, Yury Norov wrote:
+> The switch to cpumask_nth() over cpumask_weight(), as it may return
+> earlier - as soon as the function counts the required number of CPUs.
 > 
-> Wouldn't we still have the same narrow window where the CPU disregards the IPI?
-
-You need a 'sevl' in the interrupt exit path.
-(Or, more specifically, the ISR needs to exit with the flag set.)
-Actually I think you need one anyway, if the ISR clears the flag
-then the existing code will sleep until the following IRQ if an
-interrupt happens between the ldx and wfe.
-I've not looked at the ISR exit code.
-
-Ignoring the vcu check (which is fairly broken anyway), I think osq_lock()
-would be ok if the 'osq node' were in the right cache line.
-I've some patches pending (I need to sort out lots of comments) that reduce
-the osq_node down to two cpu numbers; 8 bytes but possibly only 4
-although that is harder without 16bit atomics.
-That would work for arm32 (ldx uses a cache-line resolution) but I'm not
-sure about similar functionality on other cpu.
-
-	David
-
+> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> ---
+>   include/linux/cpufreq.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> --
-> ankur
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index cc894fc38971..8ca2bcb3d7ae 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -232,7 +232,7 @@ static inline bool policy_is_inactive(struct cpufreq_policy *policy)
+>   
+>   static inline bool policy_is_shared(struct cpufreq_policy *policy)
+>   {
+> -	return cpumask_weight(policy->cpus) > 1;
+> +	return cpumask_nth(1, policy->cpus) < nr_cpumask_bits;
+>   }
+>   
+>   #ifdef CONFIG_CPU_FREQ
 
+Thanks. While I had a minor readability/API-nit earlier, I'm fine with
+the patch as-is.
+
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+
+-- 
+Thx and BRs,
+Zhongqiu Han
