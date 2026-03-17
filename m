@@ -1,158 +1,228 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDFBF35A395
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id F1BAB364E88;
+	Tue, 17 Mar 2026 10:18:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773739231; cv=none; b=FZ0ebACAX3DHG0yk8rFD6vb4RPv6Upb8Uete88eVwKeiUIPLWABKFsVzyo5mNTWr3+s0axmDURCV27DDcrCM2H3Dv5fHCbbV0HNMuirJ/kaFXT+ic9l2r+B8SoWgEt7gzWw1kQZfvte9SyBUl8eA3ggNDm32ehSLHjMyMzi6KZE=
+	t=1773742713; cv=none; b=jkb1Y0l4Suh+B5mV96ojk/m/ua5clEt9IGJDmeL8GOksD+EL+77uO1pGM9uenChTOsdcCgrlGP7o5TRDaOLLXMbbWrQaQywYqidoxVuadOXlpHgPJuDPELKZLu2zB1ZoEHr6Ua0ber4mloJ5UgwiFgkUORVVQeALdb7hf16l3Cc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773739231; c=relaxed/simple;
-	bh=iBniWLLZnukifzCJcu+oeWa0IDqnSCjoESx57tYs8JU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S8niiudt+f/wYhAIJi3K+XLYTcwP1N5bIMNY04E5umrouFPykiAbmV4kBszr0c9/mvbMYCJrb0el/3pHUna5pdof1+v2pgRZ6sdRafaqbwCpaW+3eLZ36C/f1PAtnpspR4P3pOZXe/cm+pA20oQQjCpI0IzAUKdZ7Zfvzr6JSc4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ctOeVfXf; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UgNKGPel; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ctOeVfXf";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UgNKGPel"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62H7NM5Z1639254
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=; b=ctOeVfXfm5OPrUt8
-	gpnCJeHMFjzsRsfwApv5JgkdVC/nvQkFZFYkfGkzAYCDS4YUjOfOhrBc1sbiWuoX
-	mOzPiqPvBRFCWOF/pPZKHdQarUvM8Q8WOqpFbzVPbhnyejdKoyTYFzrwt+ESmFY+
-	CrwAleZipnL4LJ8wELa8EC4cH1X3BtKGNBTZBbAgptbTtHYMkhi62NP3o9Gf3idg
-	sUnsXcSYAYRV+bvjLaNGpSx/Cm1dPlLnjdAGcrPJTmcpE+35PNj4wMgSVUSJ+kxG
-	hpkhrYFPijZaGO5KaFpQFk67Ws1mFQIAj0cQPC3szM32WjEZvrgowOrBBjAoMVk6
-	yq4wIg==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cxke0bjqx-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 09:20:29 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2b06395b8deso11192405ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 02:20:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773739228; x=1774344028; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=;
-        b=UgNKGPelcUCktwRFuaE1RH2Sn2WmgMTChsEjMild5nyrtadv5Cu6+0aBa2wMai1zr3
-         815sI9m4keLkGgKX/0sYp/Cz6v8QCl/BE0Dv3xpjzQR6w6YVzfH12QrOmZdrWegjPHXY
-         TErjJiqYkUsOyjoxJ2ysKIKtZmlM8WOAzBRaOcH60KK9NiSRUaP7WfqX0uavZMsyQEj2
-         NOZtbHftWesyOcPQQ7lp47ahT9aDlxHDQc9lUJrBuKnRS3cKkO446TO8EgMaI03291Ve
-         TkwfX1Rv+C+EEiExWz1QJNWF3JXBdRdpQEt2d4ABUo8puTTF2WwRiRehmV9lN6XisFgE
-         aIxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773739228; x=1774344028;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=nB8yW7oBg+ycexCmqJuKCMGqgJI/XCsDm+XFn5tPwmU=;
-        b=Pcl1y6Sw7HTT/CXZ3EhfhQqJUlwNfVAVbZwZ3JDAJfxBZuZ4+pYfnwC4KbT95O1CN9
-         ZfKF3lRwifyx6Gck8zh1YA+ZswlElZS8P89U9fwykSPfCVlZxN7kC11zQjOnRs2cDWkC
-         Of4QHwFPE1hNBl46ra4lP3CvJ2uuMVlUYedZa83EdxQUGgM2v5oUsRu4as/cK9IQ9BgY
-         cjgInr7TKMY73Kabl4LJPq7KUtbIXDGPfFWgeRYHaJOtE7FAHK36tM6KI739AjTNvCo2
-         S4i9p+eSnyyE2bMXvGVYZPvJ+ceeD5D7ncvYFsEvyAOGEbRFxXBP+rBb90QvWKMFnwo+
-         09cg==
-X-Forwarded-Encrypted: i=1; AJvYcCXXL1OqlGvNX6qZAXp16l3j/2PCXd2usvDbIRvI+XMpCSVDNI+YlHudwI3VmRbbFquA+SFc1rqB6w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyI00reA3xOfvJq/wX4YFnEkV8Xvj/6GgYfJmmO2us1hn9D5Q//
-	aIUKJE4LVf7pyIwZNucotsHPInSEQ0tySMrC6TXtvsFewqtjkc2WRlQKjvlPvdQLqP3Bv4/jjFS
-	vSqZx3ta9KRAEYUCLEz8UYMM3UgSs0S9XXMlbIfFYTCuBkEGCy7sYqoFqRX5U+Q==
-X-Gm-Gg: ATEYQzwVlI9yQbh6ZNYIepStzEyy/o+k9TUUaIBOOTvxNIJcDJzqW32u2Dkdj3/iJb+
-	2ahZGNd/y8sKz07ulhROSNsjFcuao/L7SMxOlgGq2lKD92nWy7myMmFAyK51TO0rGBuu2YtYPEX
-	+81ox3wAlMIZa32VFxiNuY9g5c8f/TKtBZ/zN7BndxJDFU6QLMFD+3hOurT0qppcdIYogawt3hU
-	98ozX9nG8uQgTEZh/j/eWJ7+QEyKs9Np96Rrg4+j49GvLP7ijcnQ3baDkwNyM3xEOkY2o3j6gwW
-	/IxeOXV/6xORUMntX8+zy7NlNX2IJMML3l7tpao/OfHdxKra9XvWfKlk2oiEW9/boFD3qzsJXf6
-	NoZ8A47uf5Bs9TtZ3qvI3cQDWzkDN9rSJ5amnJRwCKRrvlTk8eJrcx+XflMU6MCpDWsMpwmtIXR
-	cH8bKO5k2fyAAGtnk/Lg==
-X-Received: by 2002:a17:902:ce10:b0:2b0:6b98:59ec with SMTP id d9443c01a7336-2b06b985bdamr41225ad.34.1773739228456;
-        Tue, 17 Mar 2026 02:20:28 -0700 (PDT)
-X-Received: by 2002:a17:902:ce10:b0:2b0:6b98:59ec with SMTP id d9443c01a7336-2b06b985bdamr40945ad.34.1773739228006;
-        Tue, 17 Mar 2026 02:20:28 -0700 (PDT)
-Received: from [10.133.33.139] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b04e5cb3dbsm105952865ad.25.2026.03.17.02.20.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Mar 2026 02:20:27 -0700 (PDT)
-Message-ID: <e2f6637a-93b0-4f6e-9867-8accf6aa940f@oss.qualcomm.com>
-Date: Tue, 17 Mar 2026 17:20:23 +0800
+	s=arc-20240116; t=1773742713; c=relaxed/simple;
+	bh=u6+i37hDT+5A0RUdAM0Au62et5n1kjSlA7ET/g24UA8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Myfq0tHgjMB1pd9c79LN7IR9hrElbUa7RsMssFoZdtMKtiAMr2sf/kKHdYIYiCn/bBDqXL88qFEiaTdM7jFvwDA4Itourd3ph92+TLsAcYw/KOlzDOwt1h1edclGCgbJk8gwh8UEdDkvFHtvpfyCcNS4Wn58LqFqnimZNpS9+xI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4B12B1476;
+	Tue, 17 Mar 2026 03:18:25 -0700 (PDT)
+Received: from e135073.home (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CACD93F7BD;
+	Tue, 17 Mar 2026 03:18:27 -0700 (PDT)
+From: Pierre Gondois <pierre.gondois@arm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jie Zhan <zhanjie9@hisilicon.com>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	Ionela Voinescu <ionela.voinescu@arm.com>,
+	Sumit Gupta <sumitg@nvidia.com>,
+	Pierre Gondois <pierre.gondois@arm.com>,
+	Huang Rui <ray.huang@amd.com>,
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Perry Yuan <perry.yuan@amd.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Len Brown <lenb@kernel.org>,
+	Saravana Kannan <saravanak@kernel.org>,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v6 0/4] cpufreq: Introduce boost frequency QoS
+Date: Tue, 17 Mar 2026 11:17:41 +0100
+Message-ID: <20260317101753.2284763-1-pierre.gondois@arm.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: optimize policy_is_shared()
-To: Yury Norov <ynorov@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc: Yury Norov <yury.norov@gmail.com>, zhongqiu.han@oss.qualcomm.com
-References: <20260314192544.605914-1-ynorov@nvidia.com>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <20260314192544.605914-1-ynorov@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: Zrj_-D_BJAnoHdjDMB5jGEV7jQfR6BOB
-X-Authority-Analysis: v=2.4 cv=aue/yCZV c=1 sm=1 tr=0 ts=69b91cdd cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=Ikd4Dj_1AAAA:8 a=EUspDBNiAAAA:8 a=QQo5Q8axJbk09mazrB4A:9 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDA4MiBTYWx0ZWRfX9Wc5Vxd/2cs/
- 2N6Vi6alAIKuZVuzbY60UF9aPmCYCz5lSrGZEGXUOnQF2SYTMeTwv7YaOkVan+9wJmpqsnZVgBA
- 6lXEW3R1z/Y8MZ+i9QuPJ9W+BkqnqVRNPZ1cgXQSPffs4MMp2ro/EkXld+YG302QB7N+gUD+yQc
- 9DyCeJLqtuMHiHZrb+VpA1QRYAigSpED5TqlrDrlj0JpwcS5cuEu0aeokGz90ERzbbVWUJKrWrX
- heiV66FtdRf64/jrU2Fnc6ghvINAuL0kbVjI4+J3tHwXXJzBnQJUZ0RyeN+3JsDmhooAT356JOV
- DCCbMZGh/D4QGLjEUMLVSz+cSLDId42ry/dYqjyuKX7/YKAOFqMEDSVRqeuvEGot9g9g32DROIr
- wbepkBYX+yprhkvialiKzT4iHjvkn+2CSZAJC2PVKOKsrfI5MppS6M9vvUnalYQv9n7voQgYEJd
- BK9p7gIGkVa3gAsy0LQ==
-X-Proofpoint-GUID: Zrj_-D_BJAnoHdjDMB5jGEV7jQfR6BOB
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-17_01,2026-03-16_06,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
- malwarescore=0 bulkscore=0 priorityscore=1501 adultscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603170082
+Content-Transfer-Encoding: 8bit
 
-On 3/15/2026 3:25 AM, Yury Norov wrote:
-> The switch to cpumask_nth() over cpumask_weight(), as it may return
-> earlier - as soon as the function counts the required number of CPUs.
-> 
-> Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> ---
->   include/linux/cpufreq.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index cc894fc38971..8ca2bcb3d7ae 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -232,7 +232,7 @@ static inline bool policy_is_inactive(struct cpufreq_policy *policy)
->   
->   static inline bool policy_is_shared(struct cpufreq_policy *policy)
->   {
-> -	return cpumask_weight(policy->cpus) > 1;
-> +	return cpumask_nth(1, policy->cpus) < nr_cpumask_bits;
->   }
->   
->   #ifdef CONFIG_CPU_FREQ
+The Power Management Quality of Service (PM QoS) allows to
+aggregate constraints from multiple entities. It is currently
+used to manage the min/max frequency of a given policy.
 
-Thanks. While I had a minor readability/API-nit earlier, I'm fine with
-the patch as-is.
+Frequency constraints can come from:
+- Thermal framework: acpi_thermal_cpufreq_init()
+- Firmware: _PPC objects: acpi_processor_ppc_init()
+- User: by setting policyX/scaling_[min|max]_freq
+The minimum of the max frequency constraints is used to compute
+the resulting maximum allowed frequency.
 
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+When enabling boost frequencies, the same frequency request object
+(policy->max_freq_req) as to handle requests from users is used.
+As a result, when setting:
+- scaling_max_freq
+- boost
+The last sysfs file used overwrites the request from the other
+sysfs file.
 
--- 
-Thx and BRs,
-Zhongqiu Han
+To avoid this:
+1. Create a per-policy boost_freq_req to save the boost
+constraints instead of overwriting the last scaling_max_freq
+constraint.
+
+2. policy_set_boost() calls the cpufreq set_boost callback.
+Update the newly added boost_freq_req request from there:
+- whenever boost is toggled
+- to cover all possible paths
+
+3. In the existing set_boost() callbacks:
+- Don't update policy->max as this is done through the qos notifier
+  cpufreq_notifier_max() which calls cpufreq_set_policy().
+- Remove freq_qos_update_request() calls as the qos request is now
+  done in policy_set_boost() and updates the new boost_freq_req
+
+This patch-set additionally does:
+- if a driver .init() callback sets policy->min and policy->max,
+  these values are used are min/max_freq_req QoS constraints
+- Remove policy->min and policy->max initialization in .init()
+  callback if the value is identical to cpuinfo.min/max_freq
+- RFC: allow decreasing cpuinfo.max_freq when using freq_table.
+
+------------
+
+E.g.:
+On a Juno with available frequencies: 600.000, 1.000.000
+Boost frequencies: 1.200.000
+Using the cppc-cpufreq driver.
+
+---
+Without the patches:
+# ## Init state
+scaling_max_freq:1000000
+cpuinfo_max_freq:1000000
+
+# echo 700000 > scaling_max_freq
+scaling_max_freq:700000
+cpuinfo_max_freq:1000000
+
+# echo 1 > ../boost
+scaling_max_freq:1200000
+cpuinfo_max_freq:1200000
+
+# echo 800000 > scaling_max_freq
+scaling_max_freq:800000
+cpuinfo_max_freq:1200000
+
+# echo 0 > ../boost
+scaling_max_freq:1000000
+cpuinfo_max_freq:1000000
+
+---
+With the patches:
+# ## Init
+scaling_max_freq:1000000
+cpuinfo_max_freq:1000000
+
+# echo 700000 > scaling_max_freq
+scaling_max_freq:700000
+cpuinfo_max_freq:1000000
+
+# echo 1 > ../boost
+scaling_max_freq:700000
+cpuinfo_max_freq:1200000
+
+# echo 800000 > scaling_max_freq
+scaling_max_freq:800000
+cpuinfo_max_freq:1200000
+
+# echo 0 > ../boost
+scaling_max_freq:800000
+cpuinfo_max_freq:1000000
+
+With the patches, the maximum scaling frequency requested is
+conserved even though boosting is enabled/disabled.
+
+---
+
+Note:
+It seems that there is a confusion in the cpufreq framework between:
+- the min/max frequency requested by the user
+- the min/max frequency constraint applied when selecting a frequency.
+
+E.g:
+A.
+$ echo XXX > scaling_max_freq
+updates the max_freq_req QoS request.
+
+B.
+$ cat scaling_max_freq
+shows the content of policy->max, which is the not representing
+the value of the max_freq_req QoS request.
+
+C.
+Whenever policy->max is accessed in the cpufreq framework,
+the aggregation of all the requests on the maximum frequency should
+be used instead.
+
+cpufreq_set_policy() aggregates min/max constraints and
+writes the resulting value in policy->min/max. These values
+are then used in the cpufreq drivers.
+
+Creating a clear distinction would be doable but quite invasive.
+This patchset focuses on handling the boost frequency QoS request
+first and should not change the current behaviour of policy->min
+and max.
+
+---
+
+v1: https://lore.kernel.org/all/20251204101344.192678-1-pierre.gondois@arm.com/#t
+v2: https://lore.kernel.org/all/20251208105933.1369125-1-pierre.gondois@arm.com/#t
+Changes:
+- Fixed error path
+- Integrated [PATCH 1/4] Revert "cpufreq: Fix re-boost issue after hotplugging a CPU"
+  to another patch
+v3:
+Changes:
+- Fixed error path
+- Extracted the revert of:
+  "cpufreq: Fix re-boost issue after hotplugging a CPU"
+  for clarity purpose
+- Set cpuinfo.max_freq as a max_freq_req QoS constraint by default
+New patches:
+- "cpufreq: Allow decreasing cpuinfo.max_freq"
+- "cpufreq: Set policy->min and max as QoS constraints"
+v4:
+- Correct reported issues
+v5:
+- Corrections
+v6:
+- Folded patches:
+  - cpufreq: Centralize boost freq QoS requests
+  - cpufreq: Update .set_boost() callbacks to rely on boost_freq_req
+  inside:
+  - cpufreq: Add boost_freq_req QoS request
+- Simplified allocation handling of boost_freq_req
+- Removed unnecessary bits
+
+Pierre Gondois (4):
+  cpufreq: Remove per-CPU QoS constraint
+  cpufreq: Add boost_freq_req QoS request
+  cpufreq: Set policy->min and max as real QoS constraints
+  cpufreq/freq_table: Allow decreasing cpuinfo.max_freq
+
+ drivers/cpufreq/amd-pstate.c      | 26 ++++++-----
+ drivers/cpufreq/cppc_cpufreq.c    | 21 ++++-----
+ drivers/cpufreq/cpufreq-nforce2.c |  4 +-
+ drivers/cpufreq/cpufreq.c         | 71 +++++++++++++++++++++++--------
+ drivers/cpufreq/freq_table.c      | 14 ++----
+ drivers/cpufreq/gx-suspmod.c      |  9 ++--
+ drivers/cpufreq/intel_pstate.c    |  3 --
+ drivers/cpufreq/pcc-cpufreq.c     |  8 ++--
+ drivers/cpufreq/pxa3xx-cpufreq.c  |  4 +-
+ drivers/cpufreq/sh-cpufreq.c      |  7 +--
+ drivers/cpufreq/virtual-cpufreq.c |  5 +--
+ include/linux/cpufreq.h           |  1 +
+ 12 files changed, 97 insertions(+), 76 deletions(-)
+
+--
+2.43.0
