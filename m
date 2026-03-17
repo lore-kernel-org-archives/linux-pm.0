@@ -1,23 +1,23 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3C86B84039;
-	Tue, 17 Mar 2026 10:18:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3AA5734EF07;
+	Tue, 17 Mar 2026 10:18:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773742718; cv=none; b=LvzwOCkhyJ508xphy7CETzgNIaWlpVnBHfqBSeWhwe6tHc65nViqzAUamcNUEpX3Axqs2xp6sFK1W5NpIXZ52ef99ATwm8U98qVy22CYBkGZsTzApS5jQWeOSKW4Cyz1KyP6miwnnwIFHs841aM+NsfPS8x6448+NMV17XSIH28=
+	t=1773742723; cv=none; b=XkolUq5MDo31RX8ThmqKW3tcMG+c86Tt2EMhdpQbsaO6+RkC12IxQdKEYdDsm9Ke7CKso+b7wqDUrd2WRvld1efauBrQhqEifEGatWHOr2dpYBLa2B4ajpuiP2MeW2r/hmUdRicfSIXQSuNUZ1qJVoGSyutxDTyMhq6kodH6GGQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773742718; c=relaxed/simple;
-	bh=ToV5pdLzuH+qu4hb+UYqtEI15E1YuomlSuXSvI6Zzno=;
+	s=arc-20240116; t=1773742723; c=relaxed/simple;
+	bh=oXhM8+aqNH6sHtihS+w9LJaYBFYlyQaZ7aXHqlmDSEQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NMqCFohBirIZ17dEFBGVqXSJaGn+1obfjEOLNi1oM9FDpvsU1bEm5J5/E0PaEPML7e8UWdAsy3zN1NB4lAAIgdgdf3XHzEV9QgH8Ico+Pz3xFSx/+QdZalZPPRaBCy5W3PxycrXJopjZ8FX0BJ6mGZ34Wbkt6zK1nnJqpWMmaE4=
+	 MIME-Version; b=ZIcBM03QF2YonQ2PsF3ha+XpuX12LrzVbkAO7lyiLdXPw/+OrQxvO1LTAuOPHus95Jv32dhHpRdvUbkAkffFTc6eArFYKFWMuuKzR8mKr7+yVD8avRyhN2qOwbkuhqgzQeEiCpaLJeiyjzfntZlUZcjltmclL1ciN+yplAbBDsg=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 980121477;
-	Tue, 17 Mar 2026 03:18:30 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9C9281476;
+	Tue, 17 Mar 2026 03:18:35 -0700 (PDT)
 Received: from e135073.home (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E80883F7BD;
-	Tue, 17 Mar 2026 03:18:32 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 36A823F7BD;
+	Tue, 17 Mar 2026 03:18:38 -0700 (PDT)
 From: Pierre Gondois <pierre.gondois@arm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jie Zhan <zhanjie9@hisilicon.com>,
@@ -35,9 +35,9 @@ Cc: Jie Zhan <zhanjie9@hisilicon.com>,
 	Len Brown <lenb@kernel.org>,
 	Saravana Kannan <saravanak@kernel.org>,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v6 1/4] cpufreq: Remove per-CPU QoS constraint
-Date: Tue, 17 Mar 2026 11:17:42 +0100
-Message-ID: <20260317101753.2284763-2-pierre.gondois@arm.com>
+Subject: [PATCH v6 2/4] cpufreq: Add boost_freq_req QoS request
+Date: Tue, 17 Mar 2026 11:17:43 +0100
+Message-ID: <20260317101753.2284763-3-pierre.gondois@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260317101753.2284763-1-pierre.gondois@arm.com>
 References: <20260317101753.2284763-1-pierre.gondois@arm.com>
@@ -49,50 +49,237 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-policy->max_freq_req represents the maximum allowed frequency as
-requested by the policyX/scaling_max_freq sysfs file. This request
-applies to all CPUs of the policy. It is not possible to request
-a per-CPU maximum frequency.
+The Power Management Quality of Service (PM QoS) allows to
+aggregate constraints from multiple entities. It is currently
+used to manage the min/max frequency of a given policy.
 
-Thus, the interaction between the policy boost and scaling_max_freq
-settings should be handled by adding a boost specific QoS constraint.
-This will be handled in the following patches.
+Frequency constraints can come for instance from:
+- Thermal framework: acpi_thermal_cpufreq_init()
+- Firmware: _PPC objects: acpi_processor_ppc_init()
+- User: by setting policyX/scaling_[min|max]_freq
+The minimum of the max frequency constraints is used to compute
+the resulting maximum allowed frequency.
 
-This patch reverts of:
-commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
-a CPU")
+When enabling boost frequencies, the same frequency request object
+(policy->max_freq_req) as to handle requests from users is used.
+As a result, when setting:
+- scaling_max_freq
+- boost
+The last sysfs file used overwrites the request from the other
+sysfs file.
+
+To avoid this, create a per-policy boost_freq_req to save the boost
+constraints instead of overwriting the last scaling_max_freq
+constraint.
+
+policy_set_boost() calls the cpufreq set_boost callback.
+Update the newly added boost_freq_req request from there:
+- whenever boost is toggled
+- to cover all possible paths
+
+In the existing .set_boost() callbacks:
+- Don't update policy->max as this is done through the qos notifier
+  cpufreq_notifier_max() which calls cpufreq_set_policy().
+- Remove freq_qos_update_request() calls as the qos request is now
+  done in policy_set_boost() and updates the new boost_freq_req
+
+$ ## Init state
+scaling_max_freq:1000000
+cpuinfo_max_freq:1000000
+
+$ echo 700000 > scaling_max_freq
+scaling_max_freq:700000
+cpuinfo_max_freq:1000000
+
+$ echo 1 > ../boost
+scaling_max_freq:1200000
+cpuinfo_max_freq:1200000
+
+$ echo 800000 > scaling_max_freq
+scaling_max_freq:800000
+cpuinfo_max_freq:1200000
+
+$ ## Final step:
+$ ## Without the patches:
+$ echo 0 > ../boost
+scaling_max_freq:1000000
+cpuinfo_max_freq:1000000
+
+$ ## With the patches:
+$ echo 0 > ../boost
+scaling_max_freq:800000
+cpuinfo_max_freq:1000000
 
 Note:
-I was unable to reproduce the issue initially reported.
-So far it seems that was fixed in:
-commit 121baab7b88e ("cpufreq: Force sync policy boost with
-global boost on sysfs update")
-Another point is that the initial patch states that the error
-comes a max_freq_req request is repeated, but calls to
-freq_qos_update_request() would return 0 and all calls are
-checked against negative values.
+cpufreq_frequency_table_cpuinfo() updates policy->min
+and max from:
+A.
+cpufreq_boost_set_sw()
+\-cpufreq_frequency_table_cpuinfo()
+B.
+cpufreq_policy_online()
+\-cpufreq_table_validate_and_sort()
+  \-cpufreq_frequency_table_cpuinfo()
+Keep these updates as some drivers expect policy->min and
+max to be set through B.
 
-Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 ---
- drivers/cpufreq/cpufreq.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/cpufreq/amd-pstate.c   |  2 --
+ drivers/cpufreq/cppc_cpufreq.c | 10 ++-----
+ drivers/cpufreq/cpufreq.c      | 52 +++++++++++++++++++++++++++-------
+ include/linux/cpufreq.h        |  1 +
+ 4 files changed, 44 insertions(+), 21 deletions(-)
 
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index c45bc98721d24..310d5938cbdf6 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -756,8 +756,6 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
+ 	else if (policy->cpuinfo.max_freq > nominal_freq)
+ 		policy->cpuinfo.max_freq = nominal_freq;
+ 
+-	policy->max = policy->cpuinfo.max_freq;
+-
+ 	if (cppc_state == AMD_PSTATE_PASSIVE) {
+ 		ret = freq_qos_update_request(&cpudata->req[1], policy->cpuinfo.max_freq);
+ 		if (ret < 0)
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 9eac77c4f2944..4c46c7ea318eb 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -775,17 +775,11 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
+ {
+ 	struct cppc_cpudata *cpu_data = policy->driver_data;
+ 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
+-	int ret;
+ 
+ 	if (state)
+-		policy->max = cppc_perf_to_khz(caps, caps->highest_perf);
++		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
+ 	else
+-		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf);
+-	policy->cpuinfo.max_freq = policy->max;
+-
+-	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+-	if (ret < 0)
+-		return ret;
++		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
+ 
+ 	return 0;
+ }
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4472bb1ec83c7..db414c052658b 100644
+index db414c052658b..e4f24754df164 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1481,10 +1481,6 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+@@ -603,10 +603,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+ 	policy->boost_enabled = enable;
  
- 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				CPUFREQ_CREATE_POLICY, policy);
--	} else {
--		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--		if (ret < 0)
--			goto out_destroy_policy;
+ 	ret = cpufreq_driver->set_boost(policy, enable);
+-	if (ret)
++	if (ret) {
+ 		policy->boost_enabled = !policy->boost_enabled;
++		return ret;
++	}
+ 
+-	return ret;
++	ret = freq_qos_update_request(policy->boost_freq_req, policy->cpuinfo.max_freq);
++	if (ret < 0) {
++		policy->boost_enabled = !policy->boost_enabled;
++		cpufreq_driver->set_boost(policy, policy->boost_enabled);
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ static ssize_t store_local_boost(struct cpufreq_policy *policy,
+@@ -1370,6 +1379,9 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 		freq_qos_remove_request(policy->max_freq_req);
  	}
  
- 	if (cpufreq_driver->get && has_target()) {
++	if (policy->boost_freq_req)
++		freq_qos_remove_request(policy->boost_freq_req);
++
+ 	freq_qos_remove_request(policy->min_freq_req);
+ 	kfree(policy->min_freq_req);
+ 
+@@ -1439,12 +1451,15 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+ 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+ 
+ 	if (new_policy) {
++		unsigned int req_nr;
++
+ 		for_each_cpu(j, policy->related_cpus) {
+ 			per_cpu(cpufreq_cpu_data, j) = policy;
+ 			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
+ 		}
+ 
+-		policy->min_freq_req = kzalloc(2 * sizeof(*policy->min_freq_req),
++		req_nr = policy->boost_supported ? 3 : 2;
++		policy->min_freq_req = kzalloc(req_nr * sizeof(*policy->min_freq_req),
+ 					       GFP_KERNEL);
+ 		if (!policy->min_freq_req) {
+ 			ret = -ENOMEM;
+@@ -1479,6 +1494,27 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+ 			goto out_destroy_policy;
+ 		}
+ 
++		if (policy->boost_supported) {
++			policy->boost_freq_req = policy->max_freq_req + 1;
++
++			/*
++			 * If boost is supported,
++			 * init the constraint with cpuinfo.max_freq.
++			 */
++			ret = freq_qos_add_request(&policy->constraints,
++						   policy->boost_freq_req,
++						   FREQ_QOS_MAX,
++						   policy->cpuinfo.max_freq);
++			if (ret < 0) {
++				/*
++				 * So we don't call freq_qos_remove_request() for an
++				 * uninitialized request.
++				 */
++				policy->boost_freq_req = NULL;
++				goto out_destroy_policy;
++			}
++		}
++
+ 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				CPUFREQ_CREATE_POLICY, policy);
+ 	}
+@@ -2782,16 +2818,10 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
+ 		return -ENXIO;
+ 
+ 	ret = cpufreq_frequency_table_cpuinfo(policy);
+-	if (ret) {
++	if (ret)
+ 		pr_err("%s: Policy frequency update failed\n", __func__);
+-		return ret;
+-	}
+-
+-	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+-	if (ret < 0)
+-		return ret;
+ 
+-	return 0;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 0465d1e6f72ac..c292a6a19e4f5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -81,6 +81,7 @@ struct cpufreq_policy {
+ 	struct freq_constraints	constraints;
+ 	struct freq_qos_request	*min_freq_req;
+ 	struct freq_qos_request	*max_freq_req;
++	struct freq_qos_request *boost_freq_req;
+ 
+ 	struct cpufreq_frequency_table	*freq_table;
+ 	enum cpufreq_table_sorting freq_table_sorted;
 -- 
 2.43.0
 
