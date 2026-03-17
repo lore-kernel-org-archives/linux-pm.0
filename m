@@ -1,306 +1,140 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C22034A775
-	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 11:09:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F362C37700F
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 11:52:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773745785; cv=none; b=OY/I8p7udj7CfBXOSZRUgmGBmp70vpcMqY/rzAmPpVL8mdG11GSUlwrL5h2TEIY1zORyffMRMDy2WVzv2cI3FsS5e54apRz4u84i15BbG1Fx/VQWOvXTgAhKz+PPmtlsC8h2iBj0dUbK36K0IF9CdfOmqI8qk1VShKbgR478q30=
+	t=1773748350; cv=none; b=V0iy1ZDbwZ6Dvf+HzNSCoPe8oMkSzH167BnCGYRJ3glWN8IjhfBUV2HrAXUX2HhYzOEiUguyMJILG7hVRBS1IUaM99WRiUC2SFGDPobj9eGoIr0yLm0NizKJXQpuXsIfmCErAWgDiZ+I6Ob1qtk32xW4Z7FKuWDIyBHV75spSJQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773745785; c=relaxed/simple;
-	bh=57r2PUUb7zcKOw509zsayq59a7gl7x2rdxjK+W9uTBE=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=DGXVsD3T4QJdWTYIBpecNHRN5uTQ2jOcVBk/HzcaxJNUmo5sSwtXw9e22fUpM6Nx3u7RLF3dEWwpFyGEu/0L5gT1oucnhDb9r+yNGtykDXbqUX+DLg2OYE+FzEwMUgXsEK8esJMD/nz6ghZGE2I2497Aum0fkGkJOv1V+uhY5kM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=c5quMl/y; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1773748350; c=relaxed/simple;
+	bh=eAHQloBTSSj1F6feGo0j5LkDWh18lo9fPIzeWrdxtnw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=U73aB7Wf6Z7zarihyM0ycEFlQWsI2baCe0IUeFNXHwXyv0mX3d8g6sgXhMG1BH14Adaq4S+RwLciTOVVsLiTSznEL9YCGRw0BHkaUPCS4ga9Y9xpe1cTv7LJd2M4O8jld+jjr6QJGp4DMLAY+yvdJFH9j7gtTaU+VC8FKEoGKHU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ZBaf7bq4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=j/4YcaGt; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="c5quMl/y"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773745783; x=1805281783;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=57r2PUUb7zcKOw509zsayq59a7gl7x2rdxjK+W9uTBE=;
-  b=c5quMl/yWY20c3W3geQ0NGmHM7nzv1AxsWQEGyJLZinesdJMNus+sJ/K
-   ciXzEMBCIiXI6q1aRBQONRAHMiK5kyu8Gjqe+AlU0+kDAq5QREZAOxQm0
-   laZb4J60gl2JhhC0FXN7hdpRLf60KmxUom4ypRFyPswX2dbyuC8YZiuTu
-   w6ldGXnXBpW8N5bD9sfHfMahCzzESmVzrHsk8KPSDqd1VyZ0hSrsY1cGO
-   PQG3PqPmUx2XATXDFPTLuGhbaclVV3thyDmIVPY4Pxe6LraJTuT/kTjzw
-   Kumr6TZ9mmWtpBb9QR7Gp8/xg5wacOAd7ltUwTghNFjaBWeYxeXwYrgDM
-   w==;
-X-CSE-ConnectionGUID: 9J0sHiSrRDinSf8ZXzmi7A==
-X-CSE-MsgGUID: 3eOcy/xbTfOWiLrcYFoV8g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11731"; a="78380068"
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
-   d="scan'208";a="78380068"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2026 04:09:42 -0700
-X-CSE-ConnectionGUID: 4u6VRF2eTQ2Hty5tJwH8HA==
-X-CSE-MsgGUID: LkEx24JITnWZKSWXu6D08g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
-   d="scan'208";a="222184582"
-Received: from baandr0id001.iind.intel.com ([10.49.109.195])
-  by orviesa009.jf.intel.com with ESMTP; 17 Mar 2026 04:09:41 -0700
-From: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-To: lenb@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	Kaushlendra Kumar <kaushlendra.kumar@intel.com>
-Subject: [PATCH] tools/power/x86: Add SOC slider and platform profile support
-Date: Tue, 17 Mar 2026 16:36:15 +0530
-Message-Id: <20260317110615.651141-1-kaushlendra.kumar@intel.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ZBaf7bq4";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="j/4YcaGt"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62H7dV561639514
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 11:52:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	eosohSFi3Dz1sqfuINtAzY5KQfNJfuUSLh38zg2d91w=; b=ZBaf7bq4g7UqvYM/
+	eJqtwzJnKWJkUHCscoaX3NkVvhISC62QtK1229JvWzK2tmIurr7hXWJwJZs5nFwB
+	v/E2h7dLstxcDCRznp5alGGbd8AWeELeZgq2QDkBkM849bqxlw7hJigL/aboWcp4
+	z0Ql/LE3Zqq4aXH9SKHxRxTlR3da/uFBBBjkuF8TZNOr4ZsHubE/NgXJ73wqJ1iY
+	vZ81MV4DvqEStQ1KIz9XrcoLRjM7df/OGZZCSkX0DScZeLcJBDA7YZTLdxL8Tro9
+	Yt+ofkyjt0Y8ktEoEL63J+pint8mzQLnmB3Uh7LNJbKfxzNs1kQQegYseC7EtSM6
+	EDyZDg==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cxke0c316-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 11:52:28 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-8cd7a2c535eso305935485a.3
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 04:52:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1773748347; x=1774353147; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=eosohSFi3Dz1sqfuINtAzY5KQfNJfuUSLh38zg2d91w=;
+        b=j/4YcaGtWkDbIMWvFG32g0VaSwoZMl+SsztKPM6gopFltegRGUg1a/Dyve+/kxNFgm
+         /LiYDZJcENE+itevcMNBO9Lgq6rwvdh9ppTEzLqlD2IreokL0UYPesVypYLVL/6Oy50b
+         YumOB0yWf/xgSffaPK4rMe4ezFb2JjNC+URnnCkwVriFewXwoaRv8+I65QwCyQWP5uWq
+         z3MjdpEz4bHkLAc+cKDKm1ykqwIV0NzQo0dOBhuOpCW/WGcPi7MdBv1eNQUIO0szepgb
+         JBEp6Ey8mgbh8tNbvjVNAwEtohsqCdeIPzUBg/DDC5aGu7SW3zg7T37EnIYBDYbqMb9I
+         pVzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773748347; x=1774353147;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=eosohSFi3Dz1sqfuINtAzY5KQfNJfuUSLh38zg2d91w=;
+        b=Xr9OKB8Gb8kY03/efVP9qr1whUFxl7H+xHnFOGdS1pVTGDvRSBVMRkrrIzoDa+ubQ+
+         fomX5h3ki+kFmELhLWuPk2P0C2TFb4KwimxhCbT/HvERTQgA4dJ1dMEPFniCiHEpRGt+
+         Q2RkQOSs1dUWVPaz89U0ZL4wes4PU0WIDB+SRHnfjWrUojEZiOrOA8IYhJ5B+sU5Ea0L
+         LgO1vNSwqwvYCXNBJLxIb2qVCRJvVY4cVzTn0GS60fHCLhz9PkhchryPQGXTsGEmWIMl
+         Pfr5LldRYFiWeBtbpTbRYCkJKrxk0H8risryMkdIrwaD0hS74PPJjsbil94GnN3ea0MQ
+         0maA==
+X-Forwarded-Encrypted: i=1; AJvYcCWHqehC0rZDN+PJv58Dgkl+xYDVokOMn1EocskMzHCq4cfv2WV0XB/QGAlOO6VJkVKPZsg1Orphdw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyQGCgELKAeXpcTrYgIgpBkKbV8l8XGGHTFlime5QlL1Y3OfyEQ
+	vJx1zfbrFCpUgyro5PD42z98iJgRouskknA4iI7Stxfvk4G7MpB5ZzjzCFwXzKjF6a5KPGwCwZS
+	QQQ+tW/sGOc45t8g862/auPxbjyQZHdaGAy1UnkOGkc2NIMc1xKpexOJKv+AFOQ==
+X-Gm-Gg: ATEYQzwMVnpQPiMkI8rrRMDtNcnrkW4K12tKCQxl1BsgUlKAGE7+Hr7KBlENaZ0w1zo
+	RPB3LikDQXV9VhPXeDO1Ye8ber3yDRr3KPK3Nx/BoiMosjWl8+SrtU72Qg7n938Damp+PJSWzkR
+	+9yaPQfA9DVz2GZEZ9wgFKxHmT3Vyw2V5H+70FAn/ZMqdtKp6Udrx6j01kpiDxHygfyTNEdDhKt
+	Ja+1UbygSgz/2cd8FBxdfaWH4km93OZpSNaySHFEMPSDkpdgcvKBh+d2DPTiWo2qrRj61HzU86a
+	648YUknPQZ2+dFjsZnB1ik75QRlsKm4rowA3sXCy1uNfgf+kP139i/eDpT+Fok7rbPmFoDstvmB
+	AqPtin29NjqTgrhCUGkp/HiIqUrLzo8vsGkMRgNmzcp4ThlaMnRCUGBLBQMguBEJRnPy2IKakyS
+	TFhsY=
+X-Received: by 2002:a05:620a:3193:b0:8cd:923a:87a8 with SMTP id af79cd13be357-8cdb5a2d141mr1692387685a.1.1773748347254;
+        Tue, 17 Mar 2026 04:52:27 -0700 (PDT)
+X-Received: by 2002:a05:620a:3193:b0:8cd:923a:87a8 with SMTP id af79cd13be357-8cdb5a2d141mr1692384885a.1.1773748346837;
+        Tue, 17 Mar 2026 04:52:26 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b97a387694fsm479916766b.49.2026.03.17.04.52.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Mar 2026 04:52:25 -0700 (PDT)
+Message-ID: <ba005fee-7cba-4eb2-a2ed-93383d097ad9@oss.qualcomm.com>
+Date: Tue, 17 Mar 2026 12:52:23 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: qcom: cpr: simplify main allocation
+To: Rosen Penev <rosenp@gmail.com>, linux-pm@vger.kernel.org
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Ulf Hansson
+ <ulf.hansson@linaro.org>,
+        "open list:QUALCOMM CORE POWER REDUCTION (CPR) AVS DRIVER"
+ <linux-arm-msm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+References: <20260315214153.3682-1-rosenp@gmail.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260315214153.3682-1-rosenp@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: zW_hRCY_E2hjuSM_pKOzz_Z2sLTkN_CV
+X-Authority-Analysis: v=2.4 cv=aue/yCZV c=1 sm=1 tr=0 ts=69b9407c cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=1vmHEZbavBHxmJfcV7sA:9 a=QEXdDO2ut3YA:10
+ a=ENiidslfg_8A:10 a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDEwNSBTYWx0ZWRfXyzR3U360YC5T
+ np5FGCwerq+3UbEML3vUI4fRuJc3sv5zcGL3G+IEhAdd/NgMEh6x7+porw7Fwffxn5mMfeTPwu5
+ jDEPam6m/DJgm8vmRthndsDpQuIjFzMtY8uSkGCATAkmD2IfBqHPqhR92v3z3qTm4+bYHd5jrcP
+ G1Zqe/WpVe9ug0xohf1tzXIwgdDJzCy2LNd3yKDFAn2G8bdYLcv09PsQrujYJ1Y9iM0QJr4CZZi
+ En3Sb8ImJ0Odc3KAZ52LH5lcu3wLbrtt9upRJydH0tmLRTpJxE76fJ5W48lgNMEUu6BtbMnz7SE
+ ctMIycINKRkGaiRLa8ZwRfCbqFOHTT54P7y/8OqAgpICSSZRtyMoIBBu3Xe8MHr002TcyhsX2ot
+ vgasRtkEpBkMEzsjERmmlJTAIBk0ceVjy+fbCjBSoQn7c1goOrUbNmE4BMh5Ec11rjHJf7qXuC3
+ NZv3bQuJeug1x/DNWMw==
+X-Proofpoint-GUID: zW_hRCY_E2hjuSM_pKOzz_Z2sLTkN_CV
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-17_01,2026-03-16_06,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 adultscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603170105
 
-Add support for reading and writing SOC slider parameters and
-platform profile via sysfs in x86_energy_perf_policy.
+On 3/15/26 10:41 PM, Rosen Penev wrote:
+> Remove kcalloc by using a flexible array member to combine allocations.
+> 
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
 
-New command-line options:
-  --soc-slider-balance <value>
-  --soc-slider-offset <value>
-  --platform-profile <name>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-These options allow control of the processor thermal SOC
-slider balance and offset through the
-processor_thermal_soc_slider module, as well as the
-platform profile class interface.
-
-When no update flags are set, the tool now also prints
-the current SOC slider and platform profile values
-alongside existing MSR output.
-
-Signed-off-by: Kaushlendra Kumar <kaushlendra.kumar@intel.com>
----
- .../x86_energy_perf_policy.c                  | 132 +++++++++++++++++-
- 1 file changed, 130 insertions(+), 2 deletions(-)
-
-diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-index ac37132207a4..1f330c82d7c1 100644
---- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-+++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
-@@ -92,8 +92,18 @@ unsigned int has_hwp_request_pkg;	/* IA32_HWP_REQUEST_PKG */
- 
- unsigned int bdx_highest_ratio;
- 
-+unsigned char update_soc_slider_balance;
-+unsigned char update_soc_slider_offset;
-+unsigned char update_platform_profile;
-+int soc_slider_balance;
-+int soc_slider_offset;
-+char platform_profile[64];
-+
- #define PATH_TO_CPU "/sys/devices/system/cpu/"
- #define SYSFS_PATH_MAX 255
-+#define PATH_SOC_SLIDER_BALANCE "/sys/module/processor_thermal_soc_slider/parameters/slider_balance"
-+#define PATH_SOC_SLIDER_OFFSET "/sys/module/processor_thermal_soc_slider/parameters/slider_offset"
-+#define PATH_PLATFORM_PROFILE "/sys/class/platform-profile/platform-profile-0/profile"
- 
- static int use_android_msr_path;
- 
-@@ -106,6 +116,7 @@ void usage(void)
- 	fprintf(stderr, "scope: --cpu cpu-list [--hwp-use-pkg #] | --pkg pkg-list\n");
- 	fprintf(stderr, "field: --all | --epb | --hwp-epp | --hwp-min | --hwp-max | --hwp-desired\n");
- 	fprintf(stderr, "other: --hwp-enable | --turbo-enable (0 | 1) | --help | --force\n");
-+	fprintf(stderr, "soc-slider: --soc-slider-balance # | --soc-slider-offset # | --platform-profile <name>\n");
- 	fprintf(stderr,
- 		"value: ( # | \"normal\" | \"performance\" | \"balance-performance\" | \"balance-power\"| \"power\")\n");
- 	fprintf(stderr, "--hwp-window usec\n");
-@@ -518,6 +529,23 @@ void for_packages(unsigned long long pkg_set, int (func)(int))
- 	}
- }
- 
-+static int parse_cmdline_int(const char *s, int *out)
-+{
-+	char *endp;
-+	long val;
-+
-+	val = strtol(s, &endp, 0);
-+	if (endp == s || errno == ERANGE)
-+		return -1;
-+	if (*endp != '\0')
-+		return -1;
-+	if (val < INT_MIN || val > INT_MAX)
-+		return -1;
-+
-+	*out = (int)val;
-+	return 0;
-+}
-+
- void print_version(void)
- {
- 	printf("x86_energy_perf_policy 2025.11.22 Len Brown <lenb@kernel.org>\n");
-@@ -546,12 +574,15 @@ void cmdline(int argc, char **argv)
- 		{"hwp-use-pkg",	required_argument,	0, 'u'},
- 		{"version",	no_argument,		0, 'v'},
- 		{"hwp-window",	required_argument,	0, 'w'},
-+		{"soc-slider-balance", required_argument, 0, 'S'},
-+		{"soc-slider-offset",  required_argument, 0, 'O'},
-+		{"platform-profile",   required_argument, 0, 'F'},
- 		{0,		0,			0, 0 }
- 	};
- 
- 	progname = argv[0];
- 
--	while ((opt = getopt_long_only(argc, argv, "+a:c:dD:E:e:f:m:M:rt:u:vw:",
-+	while ((opt = getopt_long_only(argc, argv, "+a:c:dD:E:e:f:m:M:rt:u:vw::S:O:F:",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
-@@ -579,12 +610,23 @@ void cmdline(int argc, char **argv)
- 		case 'D':
- 			req_update.hwp_desired = parse_cmdline_hwp_desired(parse_optarg_string(optarg));
- 			break;
-+		case 'F':
-+			if (strlen(optarg) >= sizeof(platform_profile))
-+				errx(1, "--platform-profile: value too long");
-+			strcpy(platform_profile, optarg);
-+			update_platform_profile = 1;
-+			break;
- 		case 'm':
- 			req_update.hwp_min = parse_cmdline_hwp_min(parse_optarg_string(optarg));
- 			break;
- 		case 'M':
- 			req_update.hwp_max = parse_cmdline_hwp_max(parse_optarg_string(optarg));
- 			break;
-+		case 'O':
-+			if (parse_cmdline_int(optarg, &soc_slider_offset))
-+				errx(1, "--soc-slider-offset: invalid value");
-+			update_soc_slider_offset = 1;
-+			break;
- 		case 'p':
- 			parse_cmdline_pkg(optarg);
- 			break;
-@@ -594,6 +636,11 @@ void cmdline(int argc, char **argv)
- 		case 'r':
- 			/* v1 used -r to specify read-only mode, now the default */
- 			break;
-+		case 'S':
-+			if (parse_cmdline_int(optarg, &soc_slider_balance))
-+				errx(1, "--soc-slider-balance: invalid value");
-+			update_soc_slider_balance = 1;
-+			break;
- 		case 't':
- 			turbo_update_value = parse_cmdline_turbo(parse_optarg_string(optarg));
- 			break;
-@@ -777,6 +824,31 @@ static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
- 	return (unsigned int) numwritten;
- }
- 
-+static int sysfs_read_string(const char *path, char *buf, size_t buflen)
-+{
-+	unsigned int len;
-+	size_t n;
-+
-+	len = read_sysfs(path, buf, buflen);
-+	if (!len)
-+		return -1;
-+
-+	n = strcspn(buf, "\n");
-+	buf[n] = '\0';
-+	return 0;
-+}
-+
-+static int sysfs_write_string(const char *path, const char *buf)
-+{
-+	char tmp[128];
-+	int len;
-+
-+	len = snprintf(tmp, sizeof(tmp), "%s\n", buf);
-+	if (len < 0 || len >= (int)sizeof(tmp))
-+		return -1;
-+	return write_sysfs(path, tmp, (size_t)len + 1) ? 0 : -1;
-+}
-+
- void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
- {
- 	if (cpu != -1)
-@@ -900,6 +972,55 @@ static int set_epb_sysfs(int cpu, int val)
- 	return (int)val;
- }
- 
-+static int soc_slider_available(void)
-+{
-+	if (access(PATH_SOC_SLIDER_BALANCE, R_OK) &&
-+			access(PATH_SOC_SLIDER_OFFSET, R_OK) &&
-+			access(PATH_PLATFORM_PROFILE, R_OK))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static void print_soc_slider(void)
-+{
-+	char buf[64];
-+
-+	if (!soc_slider_available())
-+		return;
-+
-+	if (sysfs_read_string(PATH_SOC_SLIDER_BALANCE, buf, sizeof(buf)) == 0)
-+		printf("soc-slider-balance: %s\n", buf);
-+	if (sysfs_read_string(PATH_SOC_SLIDER_OFFSET, buf, sizeof(buf)) == 0)
-+		printf("soc-slider-offset: %s\n", buf);
-+	if (sysfs_read_string(PATH_PLATFORM_PROFILE, buf, sizeof(buf)) == 0)
-+		printf("platform-profile: %s\n", buf);
-+}
-+
-+static int update_soc_slider(void)
-+{
-+	char tmp[32];
-+
-+	if (update_soc_slider_balance) {
-+		snprintf(tmp, sizeof(tmp), "%d", soc_slider_balance);
-+		if (sysfs_write_string(PATH_SOC_SLIDER_BALANCE, tmp))
-+			err(1, "soc-slider-balance write failed");
-+	}
-+
-+	if (update_soc_slider_offset) {
-+		snprintf(tmp, sizeof(tmp), "%d", soc_slider_offset);
-+		if (sysfs_write_string(PATH_SOC_SLIDER_OFFSET, tmp))
-+			err(1, "soc-slider-offset write failed");
-+	}
-+
-+	if (update_platform_profile) {
-+		if (sysfs_write_string(PATH_PLATFORM_PROFILE, platform_profile))
-+			err(1, "platform-profile write failed");
-+	}
-+
-+	return 0;
-+}
-+
- int print_cpu_msrs(int cpu)
- {
- 	struct msr_hwp_request req;
-@@ -1604,10 +1725,14 @@ int main(int argc, char **argv)
- 		return -EINVAL;
- 
- 	/* display information only, no updates to settings */
--	if (!update_epb && !update_turbo && !hwp_update_enabled()) {
-+	if (!update_epb && !update_turbo && !hwp_update_enabled() &&
-+	    !update_soc_slider_balance && !update_soc_slider_offset &&
-+	    !update_platform_profile) {
- 		if (cpu_selected_set)
- 			for_all_cpus_in_set(cpu_setsize, cpu_selected_set, print_cpu_msrs);
- 
-+		print_soc_slider();
-+
- 		if (has_hwp_request_pkg) {
- 			if (pkg_selected_set == 0)
- 				pkg_selected_set = pkg_present_set;
-@@ -1628,5 +1753,8 @@ int main(int argc, char **argv)
- 	} else if (pkg_selected_set)
- 		for_packages(pkg_selected_set, update_hwp_request_pkg_msr);
- 
-+	if (update_soc_slider_balance || update_soc_slider_offset || update_platform_profile)
-+		update_soc_slider();
-+
- 	return 0;
- }
--- 
-2.34.1
-
+Konrad
