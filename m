@@ -1,162 +1,184 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 772541EFFB7;
-	Wed, 18 Mar 2026 17:22:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773854572; cv=none; b=Q3OJ6VHcwGMEysximcEOC9z3csCcX+fkVUvWEPVEBD0fi1YHBJZTFPWpRt9RiDhxc6tP0bzhqiTyucwcyfIdJj0OySnyOlCYGMcJ7NXQATryLbLdmzEXShe7Fle1gGxFrYMt9LsE9VQ5L7ubyJHhJwDirmf8FKh/vSgTwozT3HM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773854572; c=relaxed/simple;
-	bh=ynyBnNeJwC1iJq0V3/CMoDF/qT11osJ8LY2W6q765hQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PxzYRQ7erFWLpSMrBJ3TfkGxiYHUVMzpLzOJvF6A1vNeTWydO4kWgQPXP7wKNwDLAY5lVljd3thpEzWps9kRbZptdbBBz91MjMlfl2o+Z56VGXnXtc13Cu+otmU0V3LV2U9AYVdAhHwqmEt2gjch6r6eKHk+WgRnsdqZPaUsQTY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=LyHi1XOm; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0A32360753
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 18:19:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.169
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773857986; cv=pass; b=D3R4wFw6hDcj5yQMdbqijddO/351loCjMOb002ZyQhxN5CsOb4K6Hz6dN7L9tPL9Md9st04+XRuMn/4Bi8Tuzi0npY7vF9toUdv7foHmHsNyI/5AXeKPLDW26W/6zPWNzYll5ItVOFF1X3F3i9+ibl6towjU15+VmfJGlC10CvY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773857986; c=relaxed/simple;
+	bh=PoIXV/SEiAxyp3zTzsVrIIEiDO8ISD+QIm/nqSAV+Co=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nUcDnnGX607uL50rU6hvi1aqRtbmzBGAKHBpSZ1O4PFlGSRaD44ZgXFIHyYrvf5LQtjoxBRXSA+JIG9V13H9+EsSZ2Tyc8tgUL7Kb3oBG7IGWpm+lZZe7kx14+oow+XyHJkwUk5IFgQGQ/l+1ZTSQUSDpDD5YBxbuu+7St11Gd0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Y96hdK+F; arc=pass smtp.client-ip=209.85.208.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="LyHi1XOm"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1773854564;
-	bh=ynyBnNeJwC1iJq0V3/CMoDF/qT11osJ8LY2W6q765hQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LyHi1XOm1XcajxqvX8esnSlpNh+SuznV4YyDPzPfC9JVObF6JgfRs4SwkgSAOF0lv
-	 UGSt5RYxqSzjSPjKlKHDHW00v1tO3jTscIB081PEEy1mov+ontvkNhwayX9+2bqNRU
-	 uKehGX45Du8tFja1zwTWI9Ycc7eQz25D1TX6hNBaPjOS61OaZF0/Ar3V2gJYT4uoJK
-	 N7eZWmXpDW8/0GcgkyOZNoJUy7P7UdOIccATW18cRm0nV8bxRlqX9tdBRXeMTJjpIm
-	 14Jx6vgXSlS3XqONXD83EYEd1Q9Er0WNnjiU2wzQkfOA/d/divMEK14Gswr9AI2ohL
-	 Jn6NbHB4FYxPw==
-Received: from [192.168.1.100] (2-237-20-237.ip236.fastwebnet.it [2.237.20.237])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 68F7617E0E42;
-	Wed, 18 Mar 2026 18:22:43 +0100 (CET)
-Message-ID: <28102417-4a2a-4e29-afbd-d0f2aa76074b@collabora.com>
-Date: Wed, 18 Mar 2026 18:22:42 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y96hdK+F"
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-38bd15d82bdso1266871fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 11:19:44 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773857983; cv=none;
+        d=google.com; s=arc-20240605;
+        b=H4IKzQCVBMpSrzoLIdh9FLVv7S/ndNK1WrZZ9igaCeQPo19xI9wUISCtF0PZhYMuDf
+         Idb7y2pizWWO9FrP7TBte7DTh4WXdYlX67IlPVfbl82/KeuxuvUtKk+8v5EcNXDUXtYK
+         lktDTVVyw8s05uD1UxkbUPX1GrkkJ70vkP7Cygy5XKKZKcsdvoveGFzPnW9SSlZyUASF
+         MYhzSYijn39j1ajR0/fZWfdTGjbfCh0Fivr4eI9CXl12+vgozARYDpS2waVfCpz17gts
+         b1ONnQ28mqeZeh5Pgxbq0sZNmrje0A4+LOkDYPJhi3DEGA4hzjBUl8oi7G6TiwAkkUfW
+         semQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=Sh96NpHK/Gnjs5OHX/qQC171dH+qdnnnJqOoacHs10U=;
+        fh=0fE5dYOpRzCQf1lGfI7ZTafpnKK+sj6y/6Z0uId9Qqg=;
+        b=h1Y+9MnapRcER4a2sv93FdUlmMUd24NExBBH0yotm0ZBSj65FvwS6l4m9zNuu6h1iT
+         ah00b8DGdaGpBirlUrFmmNygZ3nJXPwFvBxBt1cTwo/t9QwSEhyeKGFqK/WZWdFj9/WW
+         01aNVph9E6M+5TwKdYV+MZLB15IiM44PTLj8WRlFu9BYv7IhAKSMyTXb0BJ42zYjyQQn
+         6NKpKKtP+gV5ntVxjR+FnV67ulcwj5y82GMw+aTofYFQ2XTKgxgr4T6tyiS7JPlw5qJF
+         qo7w9UbooHnw5WhdXWSXywJnn6z283I3b/tXkbd4cuZnKlCvLXCRoFyzxCwITYTVUHYq
+         Vo5Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773857983; x=1774462783; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Sh96NpHK/Gnjs5OHX/qQC171dH+qdnnnJqOoacHs10U=;
+        b=Y96hdK+FmAMlEguDsq60cO/prB51d1xrWEArIEKHPkIV50nXwLtM8FbY8WihgQ0Nj7
+         xBP2uD6sHDL4C+6XSE+ES4opC2alwuORuSA5EOa1vLg2PrVgILFoUCAUzoizCueQsIGv
+         oSAQMHV3EJzTPVN8uHTQ7OWx5wzM+tjfHp0dI1TFTbx5aLa+cFaZKDLJsrhMxOKeVrsK
+         YU58d8qALA2cF5Hxs8cb7NnCAiPNgKvwA3mwu0ZsboAu9dC7jW0CBvXAH5b3v7nKmU5R
+         VTSoSTi0I5JUGXe/qKvruwBy2oViRPbCWmOotU9FzAccAgBlxb4JOHnPwQk2u+m7Rdx+
+         tWrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773857983; x=1774462783;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=Sh96NpHK/Gnjs5OHX/qQC171dH+qdnnnJqOoacHs10U=;
+        b=aUPK192UIl4ZXK7Fd09i9rJo/+gLZAlXsuzcdO+fhW040gr0FqBl2fl+C9IBMaVctz
+         T+u+uQranpVZawkeTTTtIYsRfE1orN0FJWmg8CZCGq0jB7Mzhu47Zf289F3Qg0fge/eT
+         NJARxFmuyYckQAPOsd0t2/KeW4e2egfdbSMpwnKu3mW+Ed3kOwntz5cDDxhpTOJZqtnf
+         3rg5E0e6owvU/d087DqaPVSa2UtH8XFJu2qDKkrKAtAeKaQD/fvw6GOQC1nR2NmHQwcL
+         P/VsAfBc6hEtZmQ99EUcROQg+K3FGhgRzWWVRz0xWrDzvGSoUcTwZQeTO2gHN+yQo8pN
+         9MsQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWldNvVhSEh9h+C5J1KbkYd2p8ToofnEKy9sodYIyLgbF64Kxp7k+qc48XFvWBxiAQsyFCnl/QlyA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyDuBUAmmmb0xInaqZtb3LJJSLllWvcgiXGR+2FrsiKATFZ5Zpr
+	jGcaQD+VzZErXGONPu9x198AWTYjs9V92bRtpiKC1vAheSIVJw52hYUjWtz359JFgbYY0v6gVPF
+	0Nig5VoTBal/67yC7vdEMCgCJ+arwvDp9Knw4FHqphJNZgmK5imRWXp8=
+X-Gm-Gg: ATEYQzw6Gp0XCtYSyvdku6lu8450dtHKrJHDWr3XQaSbcwFynTGQ1XOb6fRELprcg8F
+	Ybe1atai5NFLHJjTLafnOeSVa3KKXavTr19IbGbhnUMSJRFst0idUJCqFG5cNvXiw4BTs8qYQA7
+	cF/QGWB7oINTJC3DbwNeK+3Jwh6jtrCm3PPEenJmHt//sVmPTvWRP3kBUM6W/4Z7IxnN+/RwDj6
+	SYGov04phAby2fnFf54KaQLwEpK0Ct41ox4tQ1zMqDJDN0rVlwJYNbZz143UUyn+AqlfgkPcoNK
+	4STd4Gz2
+X-Received: by 2002:a05:651c:b23:b0:383:31cb:e3ae with SMTP id
+ 38308e7fff4ca-38bd57b7f5cmr17915201fa.9.1773857982777; Wed, 18 Mar 2026
+ 11:19:42 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 9/9] arm64: dts: mt6392: add mt6392 PMIC dtsi
-To: wens@kernel.org
-Cc: Luca Leonardo Scorcia <l.scorcia@gmail.com>,
- linux-mediatek@lists.infradead.org, Val Packett <val@packett.cool>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
- Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
- Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- Linus Walleij <linusw@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Gary Bisson <bisson.gary@gmail.com>,
- Julien Massot <julien.massot@collabora.com>,
- Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
- Fabien Parent <parent.f@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>,
- linux-input@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
-References: <20260317184507.523060-1-l.scorcia@gmail.com>
- <20260317184507.523060-10-l.scorcia@gmail.com>
- <c1a425ba-a4ca-49ea-9660-5de74bede124@collabora.com>
- <CAGb2v64+oofwTiJTXDYCuzUEpk=zioi16i8a7iMimc_eZ1RPUQ@mail.gmail.com>
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Content-Language: en-US
-In-Reply-To: <CAGb2v64+oofwTiJTXDYCuzUEpk=zioi16i8a7iMimc_eZ1RPUQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260317-bcm2835-power-timeout-v1-0-19db323c51f9@igalia.com> <20260317-bcm2835-power-timeout-v1-1-19db323c51f9@igalia.com>
+In-Reply-To: <20260317-bcm2835-power-timeout-v1-1-19db323c51f9@igalia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 18 Mar 2026 19:19:06 +0100
+X-Gm-Features: AaiRm510MvoJuvyX_yjMZMwW_dgWQm9TQabqsR1tmMTEGls5Ev4rqc21mGQKDYQ
+Message-ID: <CAPDyKFrBazYFcWxMOrmMThuatqrAq0kFG8nnYi8xQ2OJg3LeXw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] pmdomain: bcm: bcm2835-power: Increase ASB control timeout
+To: =?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Stefan Wahren <wahrenst@gmx.net>, 
+	Rob Herring <robh@kernel.org>, kernel-dev@igalia.com, linux-pm@vger.kernel.org, 
+	linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Il 18/03/26 14:54, Chen-Yu Tsai ha scritto:
-> On Wed, Mar 18, 2026 at 8:39 PM AngeloGioacchino Del Regno
-> <angelogioacchino.delregno@collabora.com> wrote:
->>
->> Il 17/03/26 19:43, Luca Leonardo Scorcia ha scritto:
->>> From: Val Packett <val@packett.cool>
->>>
->>> Add the dts to be included by all boards using the MT6392 PMIC.
->>>
->>> Signed-off-by: Val Packett <val@packett.cool>
->>> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
->>> ---
->>>    arch/arm64/boot/dts/mediatek/mt6392.dtsi | 141 +++++++++++++++++++++++
->>>    1 file changed, 141 insertions(+)
->>>    create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
->>>
->>> diff --git a/arch/arm64/boot/dts/mediatek/mt6392.dtsi b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
->>> new file mode 100644
->>> index 000000000000..fbf6f671524c
->>> --- /dev/null
->>> +++ b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
->>> @@ -0,0 +1,141 @@
->>> +// SPDX-License-Identifier: GPL-2.0
->>> +/*
->>> + * Copyright (c) 2019 MediaTek Inc.
->>> + * Copyright (c) 2024 Val Packett <val@packett.cool>
->>> + */
->>> +
->>> +#include <dt-bindings/input/input.h>
->>> +
->>> +&pwrap {
->>> +     pmic: pmic {
->>> +             compatible = "mediatek,mt6392", "mediatek,mt6323";
->>> +             interrupt-controller;
->>> +             #interrupt-cells = <2>;
->>> +
->>> +             keys {
->>> +                     compatible = "mediatek,mt6392-keys";
->>> +
->>> +                     key-power {
->>> +                             linux,keycodes = <KEY_POWER>;
->>> +                             wakeup-source;
->>> +                     };
->>> +
->>> +                     key-home {
->>> +                             linux,keycodes = <KEY_HOME>;
->>> +                             wakeup-source;
->>> +                     };
->>> +             };
->>> +
->>> +             pio6392: pinctrl {
->>> +                     compatible = "mediatek,mt6392-pinctrl";
->>> +
->>> +                     gpio-controller;
->>> +                     #gpio-cells = <2>;
->>> +             };
->>> +
->>> +             rtc {
->>> +                     compatible = "mediatek,mt6392-rtc",
->>> +                             "mediatek,mt6323-rtc";
->>> +             };
->>> +
->>> +             regulators {
->>> +                     compatible = "mediatek,mt6392-regulator";
->>> +
->>> +                     mt6392_vproc_reg: buck_vproc {
->>
->> s/buck//g
->>
->> Also, no min/max voltages?!
-> 
-> We really shouldn't set min/max voltages in the PMIC dtsi file.
-> 
-> The min/max voltages are supposed to be the intersection of the
-> consumers acceptable operating ranges. The min/max of the regulator
-> itself is already implied by the model / compatible.
-> 
+On Tue, 17 Mar 2026 at 23:42, Ma=C3=ADra Canal <mcanal@igalia.com> wrote:
+>
+> The bcm2835_asb_control() function uses a tight polling loop to wait
+> for the ASB bridge to acknowledge a request. During intensive workloads,
+> this handshake intermittently fails for V3D's master ASB on BCM2711,
+> resulting in "Failed to disable ASB master for v3d" errors during
+> runtime PM suspend. As a consequence, the failed power-off leaves V3D in
+> a broken state, leading to bus faults or system hangs on later accesses.
+>
+> As the timeout is insufficient in some scenarios, increase the polling
+> timeout from 1us to 5us, which is still negligible in the context of a
+> power domain transition. Also, replace the open-coded ktime_get_ns()/
+> cpu_relax() polling loop with readl_poll_timeout_atomic().
+>
+> Cc: stable@vger.kernel.org
+> Fixes: 670c672608a1 ("soc: bcm: bcm2835-pm: Add support for power domains=
+ under a new binding.")
+> Signed-off-by: Ma=C3=ADra Canal <mcanal@igalia.com>
 
-Your point is fair, but it's also true that some of the regulators are not
-really meant to ever output anything different than what they are supposed
-to, though, with slight variations being possible... I guess the best option
-here is to leave declaring voltages to board DTs instead, which is sensible
-in the end.
+Applied for fixes and by re-adding Stefans's reviewed-by tag, thanks!
 
-Okay, agreed. Let's go with no voltages.
+Kind regards
+Uffe
 
-Reminder for myself: there's a bunch of PMIC devicetrees to cleanup in here...
 
-Cheers,
-Angelo
-
+> ---
+>  drivers/pmdomain/bcm/bcm2835-power.c | 12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm/=
+bcm2835-power.c
+> index 0450202bbee2513c9116a36abaa839b460550935..eee87a3005325848547ce1f5f=
+d729b168a641460 100644
+> --- a/drivers/pmdomain/bcm/bcm2835-power.c
+> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/delay.h>
+>  #include <linux/io.h>
+> +#include <linux/iopoll.h>
+>  #include <linux/mfd/bcm2835-pm.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> @@ -153,7 +154,6 @@ struct bcm2835_power {
+>  static int bcm2835_asb_control(struct bcm2835_power *power, u32 reg, boo=
+l enable)
+>  {
+>         void __iomem *base =3D power->asb;
+> -       u64 start;
+>         u32 val;
+>
+>         switch (reg) {
+> @@ -166,8 +166,6 @@ static int bcm2835_asb_control(struct bcm2835_power *=
+power, u32 reg, bool enable
+>                 break;
+>         }
+>
+> -       start =3D ktime_get_ns();
+> -
+>         /* Enable the module's async AXI bridges. */
+>         if (enable) {
+>                 val =3D readl(base + reg) & ~ASB_REQ_STOP;
+> @@ -176,11 +174,9 @@ static int bcm2835_asb_control(struct bcm2835_power =
+*power, u32 reg, bool enable
+>         }
+>         writel(PM_PASSWORD | val, base + reg);
+>
+> -       while (!!(readl(base + reg) & ASB_ACK) =3D=3D enable) {
+> -               cpu_relax();
+> -               if (ktime_get_ns() - start >=3D 1000)
+> -                       return -ETIMEDOUT;
+> -       }
+> +       if (readl_poll_timeout_atomic(base + reg, val,
+> +                                     !!(val & ASB_ACK) !=3D enable, 0, 5=
+))
+> +               return -ETIMEDOUT;
+>
+>         return 0;
+>  }
+>
+> --
+> 2.53.0
+>
+>
