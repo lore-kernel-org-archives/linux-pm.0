@@ -1,561 +1,345 @@
-Received: from mail-oa1-f44.google.com (mail-oa1-f44.google.com [209.85.160.44])
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F55C3B3C1F
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 22:30:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.44
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773873035; cv=none; b=NSJqUQrCpV60jd6wPx/HdAz+Lx2l1Wn8YftoyFWEXQDHUVEZ/F7hw3Jg2bhtZ0GG7KIVVjPwtjxv8LaO28awNE6G1r1W3GCkmczEA5Gc2cP3tGsSB3IWCX8ops0+q7QYVrQwIYooyVwd3t+TIY27HZ+sRdpvHElWkcFGagZfxNQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773873035; c=relaxed/simple;
-	bh=n7a0L+B0nLe/LJ6vA1HhYBkALb1Bi7BahRo6lrt+U3A=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nwaSk4LRaYTMebVhOCufDjK0sNFRFYMigmq4ZE3OWDBu1smnm/0Ck2BKLgB5I7L7b3KldwojxJ/zAsEUhNBELHGuLSRTo8kioKoTgYjBCV0S7D9XttZzV6PNBACWKdaa3+UWJXepAOPpvlMnwosa98OQZlgGdSz18uLd8irxcVw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=e0vPObbJ; arc=none smtp.client-ip=209.85.160.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 489B0284883
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 22:31:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.43
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773873097; cv=pass; b=HkLd+Vf5HMznP3XHeyWbdO5x06Y5dp5PlBp2wnjI5/jL046GACAjBz9TIwCFGSxbfhoLbdTcurcIMwEPlW4y7CEX85pgcXleNclc0xxtKnaSFDyR8IxT2dDIaYXLtdWSubZrsiGQl/xYu+eD06mHcIPS5MXJNICHj1S4gzw/5eM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773873097; c=relaxed/simple;
+	bh=K2jjnq3i842wk/9tQ8/zJ1PMmVCEId5xqEoC7jNBj2g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=a/vkTwDfoXblrZLOAOAjBUbDtBS1GyQzOVgMiqnUfhcT44+kwIM6xP0GB6noaU4FyBE3Z4nEClXLkoawQCALBQPBcYE3cPIuHO9s0YYWx/ZzN/7nH0uzr/5eL/gU4g6Dpm+86wT1IbGo1lFjYXQPc6MWG342VPVkF6awoJBMTEo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KD9M3SrC; arc=pass smtp.client-ip=209.85.221.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e0vPObbJ"
-Received: by mail-oa1-f44.google.com with SMTP id 586e51a60fabf-41708f6aa5fso47095fac.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 15:30:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KD9M3SrC"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-43b4121c40aso186765f8f.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 15:31:35 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773873094; cv=none;
+        d=google.com; s=arc-20240605;
+        b=knRyhUeP9BjjLhtcb8LUi+k/DpxBDS7O9COrs17NwiRBHLih2LyAOciLa2RGORfJK/
+         N1o3pLjukZcBPkeYufxJ2Lk4ykzPLvh7NKLm1hsu08GKRt96zKEqeeY8i7pARr7qKkNb
+         ptn2bbDviuLsjq79GLx3E1uRapwLWd0Q5iPA2Up+/f45jtu/lKSqvqZ/4+sBktC8mn1K
+         ahZSKpuIjg2Cfs1ZnrLsGa/CrqMDXZBUwT+c0liKhNc6lOm76NULIY6D0gVPW7ex02PD
+         DZ80gsLOvQOFjV2qiXWQ3epP+MZCTeFTQUDs680Iyn4OL8ePIImPI7OfsAw2aXKbJ+v9
+         cTkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=SUpcwZUECTtHS+r7HWWixPALoSo6tPVwWIUfR9cu93g=;
+        fh=kOLhA5SNJqUXRh/R/49iVpD17WQUSCYLqDIn70N89pM=;
+        b=fUqwVCUd+J62FHUeqem/8+ZGhmV8ZtILD9qLDp66S+wl22w2NTmtIifOvi6FIuo51M
+         /HZj2PG1PPttL93In0Gi9Tmb2cIysjU8j+lZD6MVZ41VYJ+QFkNHTWb9E4NJPdgiI/Ff
+         UWoyzIRV1laJd4LknbUywbEUMhHXx7KLduDR63cgsVPLrujrW9/MNi9y4XchcsHZGdWY
+         Rb7xrPJ1E2ZiFcM5v+Avyr/qX1Qd2+nuxhiAFYaEkMRDK/J5fGj1At4M6qPmQ3Y1HdPA
+         7Yhu6o2M0ZAqodufKANqMTA7tHvCWjGVUIhfKx/hz85ru4QQIEI7UKaf7Om5cxfPDBng
+         NgwA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773873031; x=1774477831; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1773873094; x=1774477894; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=v+iH5HFisohJxPO0eUw7yFv6IR/DWyPxYEiRGFSd7Iw=;
-        b=e0vPObbJJAu7MNQKYeuccyQ/4d/ATbp44fvYBVd8VDH80V/QwGN4hWXdWguLY64dkU
-         00makkSoMAQq4oPrK2YUAbDWJNba2nHOn70NzNSwaHTgyoQqhvMFS+yAvsvze5bc4lKv
-         a0o5QDw/sF7beWKN8dhPlM+R5zpPYcm+ctrfuh90oA0YcHoWzC2IKtfdcq3RUK5xBof5
-         zoRbd9RrkAi3OvyVQhofcrwu4LKamUBUjedgUVbmQYkCFyGbS5zPGulSmzqp2Z5qmzvx
-         Hswh6benNhfQUSj1+xbBsO7TNsXYkRBgh81J+mqGkzhWh5SbGz7+d2gqBB1P7jIwFsBo
-         sgYg==
+        bh=SUpcwZUECTtHS+r7HWWixPALoSo6tPVwWIUfR9cu93g=;
+        b=KD9M3SrCwh4N+5AgBfm0aV5Gvbgznrvnc+KHZMFfu+AhIME1/ter86VlFSuIaT0mSN
+         2dElyASUjjmP2sGmoiGPD1lH57qkesFjD9OyZ5cCrDFQDCMWE++o7U0/8d+u7IzVt5GT
+         jIVLQ0yiBfmyukwVuVlV3Ngb/rs33XSTmRSXI81tYljgfrBOyeqYWrN1dt/q6FY5ykZD
+         ALSvRR9UyCob5kqOUrktTDhcsYAzFGnnsKTRjfgYRP1xWaCXd6D2zAGdAIsm6kaAuA6N
+         a4Tuy2Zyrc1N0nujm19407VSDpFsTSyRliwALtTAbbBEv7R3251rKFFF6Ra4Y9jHC6+A
+         uMmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773873031; x=1774477831;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1773873094; x=1774477894;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=v+iH5HFisohJxPO0eUw7yFv6IR/DWyPxYEiRGFSd7Iw=;
-        b=kej1GYzCVeahqux4+AcTvimpkXWEMMZ+/86RQ9UeAd6pNnoQ4RPnfkF0DW44rROgKg
-         k6mPBpFzo6Ue2mA58aeDUP/F8WDyf/X6Prm+N0QliFwCLxbBpnACCUIVyC9DtiKddjR/
-         PBeleEFlf6jDZgGVKWYe0VpJkjOGm6SbOx/Etd8v8jKtiqV6jtpxABw0PmDBid0Vp/4W
-         zMIM93Sc0+WarWdcrCthJ9vuqvB22v1HUCvYfIBk3REnzuAt0FckfzgpjtswzZLI3QoN
-         ARQm8ERC0GV9PhMK5wmUp1izcenqlc1bD72POfbqx1P+WnsVSgIh+NpeKK3dH4APLywm
-         3CYQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXmg7xsJiAS5oLY22CWNi/ouViAPh8Jhj+sGmRUepE9VHa3PS0HNZw6huLXhx3jt8v1B/2kKdj14w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwtWVVGxw+mvuyTxMEpSTTScbSoUJdB0yNe5d5NpVEfkUYWqcK3
-	ZBGWKAGAC7h8VmH7baFln7jdCHytHx6YLr+gYZeRXdIHVuGnEGcEMNJZ
-X-Gm-Gg: ATEYQzzDhvzBFotQ8DAhZ0pNNYVNvDqX7cxqnhn1/w0twOUQPP/32ux2NnPhtiYfwaM
-	JojiS8J0H5Jq2WTNsM4oN46cNCilSt9dlr2CVoVfpASUAoc/Z+VbcCvYz7oOR7U+cQf1P4+YqW0
-	e6AKy2eJhgo7CkXszf/n5/kRWxolm8y0QDELAg9d2fUr53ph6YPlTpbDOlumrN9cwXamGs4nWUi
-	TL9tulPqn1B8jEVxySgFAmzbkZjfpg6IR1lCBypQCRtTqwkBCUl9OzJ2ELMXF3cwgSGovK9QVEa
-	K3q+g5oPeSN3yYo84l5q0VCjw4inrLssMmipWjftDQHEA9s36Ol8qld0fkpFd5gk/bJfo6zD2hp
-	m7qF2X5pZa6bkKZTM7CbiYMPmPWUHH5UYZmPQB3ayrGGu/o42L95O5DCoOHDUw8GUoza+lZQTeV
-	gGDyBiOClt7YgzOur6We1/DFOhqcxL6f4DPMXfM2R7wRYoww==
-X-Received: by 2002:a05:6871:286:b0:3e8:98e4:56d with SMTP id 586e51a60fabf-41bd421a979mr3698110fac.41.1773873031027;
-        Wed, 18 Mar 2026 15:30:31 -0700 (PDT)
-Received: from localhost ([2a03:2880:10ff:74::])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-41bd2c3111dsm3703574fac.12.2026.03.18.15.30.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Mar 2026 15:30:30 -0700 (PDT)
-From: Nhat Pham <nphamcs@gmail.com>
-To: kasong@tencent.com
-Cc: Liam.Howlett@oracle.com,
-	akpm@linux-foundation.org,
-	apopple@nvidia.com,
-	axelrasmussen@google.com,
-	baohua@kernel.org,
-	baolin.wang@linux.alibaba.com,
-	bhe@redhat.com,
-	byungchul@sk.com,
-	cgroups@vger.kernel.org,
-	chengming.zhou@linux.dev,
-	chrisl@kernel.org,
-	corbet@lwn.net,
-	david@kernel.org,
-	dev.jain@arm.com,
-	gourry@gourry.net,
-	hannes@cmpxchg.org,
-	hughd@google.com,
-	jannh@google.com,
-	joshua.hahnjy@gmail.com,
-	lance.yang@linux.dev,
-	lenb@kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-pm@vger.kernel.org,
-	lorenzo.stoakes@oracle.com,
-	matthew.brost@intel.com,
-	mhocko@suse.com,
-	muchun.song@linux.dev,
-	npache@redhat.com,
-	nphamcs@gmail.com,
-	pavel@kernel.org,
-	peterx@redhat.com,
-	peterz@infradead.org,
-	pfalcato@suse.de,
-	rafael@kernel.org,
-	rakie.kim@sk.com,
-	roman.gushchin@linux.dev,
-	rppt@kernel.org,
-	ryan.roberts@arm.com,
-	shakeel.butt@linux.dev,
-	shikemeng@huaweicloud.com,
-	surenb@google.com,
-	tglx@kernel.org,
-	vbabka@suse.cz,
-	weixugc@google.com,
-	ying.huang@linux.alibaba.com,
-	yosry.ahmed@linux.dev,
-	yuanchu@google.com,
-	zhengqi.arch@bytedance.com,
-	ziy@nvidia.com,
-	kernel-team@meta.com,
-	riel@surriel.com
-Subject: [PATCH v4 21/21] vswap: batch contiguous vswap free calls
-Date: Wed, 18 Mar 2026 15:29:52 -0700
-Message-ID: <20260318222953.441758-22-nphamcs@gmail.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260318222953.441758-1-nphamcs@gmail.com>
-References: <20260318222953.441758-1-nphamcs@gmail.com>
+        bh=SUpcwZUECTtHS+r7HWWixPALoSo6tPVwWIUfR9cu93g=;
+        b=k6tV7RsWlzT4Uczww6fvOsHSpiQr/z/5Pav5DARkTBJBSf3Gk0bN8KWSswan3f/4S+
+         bP2OhDEVeu0wE6kURt7LUrgpdLUD7QoFLV1LX27OImp+0Wi12pRwxapk6zwlXnQCulKp
+         FkaGMfoe/mSj5JoBGO6RZlCJ4jfpzQSg1EZzDyfuNDhgKPXRbrDzUdjhJDUWYZl9xjGV
+         SAas1jjrTDJlw1+T8tB/6PLC/t7gODzUaYA+uF1HZ4x0CdXsISApt627vXMFFQxUkhzX
+         JC4NiVdxfTwQRAyWSPSCQ8No5gv1N0z+xrGYTP+0KoH8HIAglRR07I4Ye4yR61tZeKV2
+         nLEA==
+X-Forwarded-Encrypted: i=1; AJvYcCXa7VgnS28l6fBbxD2lRtlzL/prSl3bL8CnbIatQpzOPKxO+c7D8IYh07TKP8W1uA/VSVysLvlrCA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz11Uz8M2eispUx+U0izAKal4BaIzItR8l6Zv2MikBcGbvXuZgu
+	63LyxgLCG4KqdYaezjA0atoZ9TEm2jQkfTNN3m45eDqPoo2yoZTzMMh6O+HcbUSJ/c/gQcxfDEg
+	WEXtEMxyiLEA/Y/BZXi7p0SpsxHcxGZjJpfaD
+X-Gm-Gg: ATEYQzx6d2gnReNpIguj7emkH2aITvaTgAK/l+oLx7wVdEoAdJ1LBXAPIBrmc1uoRiF
+	I+I280ca8RvgtOYXs3qyQwTd6xmkmXzzQaUkkydYdXMfQrcRZZ5sVsKgNJWzJ1zzRclRz3qb4Y2
+	aErAXCkffZt1exkOLTfyCp8BFLocjVj2keuDIGhSSRHSz4DlRqhZ5l5gmsOrFp4T5s/Gd9KLl1a
+	cKD63nQ7ZBP7Sq+/iIpoNFR2e5AGUeHtlq6gDADCWZRgxGCJWWvx1RPAbv580rUPdQ3FRI7rHgV
+	DOSD3dWk+C1YbbIe
+X-Received: by 2002:a5d:5d02:0:b0:43b:3bed:f3b with SMTP id
+ ffacd0b85a97d-43b527c4b84mr8746904f8f.34.1773873093451; Wed, 18 Mar 2026
+ 15:31:33 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <Utw_Cjiuq0_XhCoA5EXpzLE9qfRpiA0-fmXEmui7NnBnIeMiCDGOyXWPtE5DkxVNYNSsgiUotB7fsGYnlMQn1xDCx14yx1d0UJqx62vAwp4=@proton.me>
+ <CAJnrk1YAhWnOt-7yr9gDmHdjANiC74-fC5mKsePC6wFTzwPjUw@mail.gmail.com> <CAJnrk1a-asuvfrbKXbEwwDSctvemF+6zfhdnuzO65Pt8HsFSRw@mail.gmail.com>
+In-Reply-To: <CAJnrk1a-asuvfrbKXbEwwDSctvemF+6zfhdnuzO65Pt8HsFSRw@mail.gmail.com>
+From: Joanne Koong <joannelkoong@gmail.com>
+Date: Wed, 18 Mar 2026 15:31:21 -0700
+X-Gm-Features: AaiRm500htcNbun0qLS40OYdda1q_5GxSoOifhAViMgfag0QK5nK47tZgP-9mrw
+Message-ID: <CAJnrk1YMcRfrMRLVc+jVE9RqB9344+mVL0rj+_ESKGzp2ZdMRg@mail.gmail.com>
+Subject: Re: [BUG] fuse: wb_wait_for_completion hang on suspend with
+ fuse-overlayfs on tmpfs persists in 6.19.6 (AS_NO_DATA_INTEGRITY fix incomplete)
+To: John <therealgraysky@proton.me>
+Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, 
+	"linux-fuse@lists.sourceforge.net" <linux-fuse@lists.sourceforge.net>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, Jan Kara <jack@suse.cz>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-In vswap_free(), we release and reacquire the cluster lock for every
-single entry, even for non-disk-swap backends where the lock drop is
-unnecessary. Batch consecutive free operations to avoid this overhead.
+On Tue, Mar 17, 2026 at 4:25=E2=80=AFPM Joanne Koong <joannelkoong@gmail.co=
+m> wrote:
+>
+> On Mon, Mar 16, 2026 at 5:15=E2=80=AFPM Joanne Koong <joannelkoong@gmail.=
+com> wrote:
+> >
+> > On Sun, Mar 15, 2026 at 4:24=E2=80=AFAM John <therealgraysky@proton.me>=
+ wrote:
+> > >
+> >
+> > Hi John,
+> >
+> > Thanks for your detailed report.
+> >
+> > > Kernel: 6.19.6-arch1-1
+> > > Component: fs/fuse, fs/fs-writeback
+> > >
+> > > --- SUMMARY ---
+> > >
+> > > A suspend-to-RAM hang in wb_wait_for_completion() via sync_inodes_sb(=
+) persists on 6.19.6 when fuse-overlayfs is mounted on tmpfs. The fix intro=
+duced in 6.19~rc6 for Debian bug #1120058 ("fs/writeback: skip AS_NO_DATA_I=
+NTEGRITY mappings in wait_sb_inodes()") does not cover this code path.
+> > >
+> > > --- BACKGROUND ---
+> > >
+> > > This issue was originally reported in:
+> > > https://github.com/containers/fuse-overlayfs/issues/386
+> > >
+> > > The fuse-overlayfs developer identified it as a kernel issue. It was =
+subsequently bisected to commit 0c58a97f919c ("fuse: remove tmp folio for w=
+ritebacks and internal rb tree", merged in 6.16) and tracked in Debian as b=
+ug #1120058. The fix applied in 6.19~rc6 targets wait_sb_inodes(), but the =
+hang in the reporter's original trace and in this report occurs in sync_ino=
+des_sb() via a separate code path that the fix does not reach.
+> > >
+> > > The issue is also known to syzbot as "INFO: task hung in sync_inodes_=
+sb" with open instances on linux-5.15, linux-6.1, and linux-6.6:
+> > >
+> > > https://syzkaller.appspot.com/bug?extid=3De0232bd63c6e293aaf6a
+> > > https://syzkaller.appspot.com/bug?extid=3D4983a35cf671e5ed55b3
+> > >
+> > > --- REPRODUCTION ---
+> > >
+> > > mkdir -p /dev/shm/test/up
+> > > mkdir -p /dev/shm/test/tmp
+> > > mkdir -p /dev/shm/test/data
+> > >
+> > > fuse-overlayfs -o "static_nlink,noacl,\
+> > >   upperdir=3D/dev/shm/test/up,\
+> > >   lowerdir=3D$HOME/.config/mozilla/firefox,\
+> > >   workdir=3D/dev/shm/test/tmp" \
+> > >   /dev/shm/test/data
+> > >
+> > > firefox --profile /dev/shm/test/data/PROFILENAME
+> > >
+> > > Browse to youtube and start playing a video then trigger suspend whil=
+e the video is playing in the browser. I used XFCE4 suspend from the menu.
+> > >
+> > > The display goes blank and does not recover. The system does not ente=
+r suspend. Switching to a tty shows the system is alive but X11 is frozen. =
+Reboot is blocked:
+> > >
+> > > # reboot
+> > > Call to Reboot failed: Action suspend already in progress, refusing r=
+equested reboot operation.
+> > >
+> > > --- CALL TRACE (6.19.6) ---
+> > >
+> > > Mar 15 06:44:42 kernel: INFO: task kworker/u128:0:106160 blocked for =
+more than 122 seconds.
+> > > Mar 15 06:44:42 kernel:       Not tainted 6.19.6-arch1-1 #1
+> > > Mar 15 06:44:42 kernel: task:kworker/u128:0  state:D stack:0     pid:=
+106160 tgid:106160 ppid:2
+> > > Mar 15 06:44:42 kernel: Workqueue: pm_fs_sync pm_fs_sync_work_fn
+> > > Mar 15 06:44:42 kernel: Call Trace:
+> > > Mar 15 06:44:42 kernel:  <TASK>
+> > > Mar 15 06:44:42 kernel:  __schedule+0x457/0x1720
+> > > Mar 15 06:44:42 kernel:  schedule+0x27/0xd0
+> > > Mar 15 06:44:42 kernel:  wb_wait_for_completion+0x97/0xe0
+> > > Mar 15 06:44:42 kernel:  sync_inodes_sb+0xf8/0x2e0
+> > > Mar 15 06:44:42 kernel:  __iterate_supers+0xdc/0x160
+> > > Mar 15 06:44:42 kernel:  ksys_sync+0x43/0xb0
+> > > Mar 15 06:44:42 kernel:  pm_fs_sync_work_fn+0x17/0xa0
+> > > Mar 15 06:44:42 kernel:  process_one_work+0x193/0x350
+> > > Mar 15 06:44:42 kernel:  worker_thread+0x1a1/0x310
+> > > Mar 15 06:44:42 kernel:  kthread+0xfc/0x240
+> > > Mar 15 06:44:42 kernel:  ret_from_fork+0x243/0x280
+> > > Mar 15 06:44:42 kernel:  ret_from_fork_asm+0x1a/0x30
+> > > Mar 15 06:44:42 kernel:  </TASK>
+> > >
+> > > --- MORE CONTEXT ---
+> > >
+> > > Compared to the original report (which ran through systemd-sleep -> p=
+m_suspend -> ksys_sync), the sync call in 6.19 has been moved into a kernel=
+ workqueue via pm_fs_sync_work_fn. The hang point is identical: wb_wait_for=
+_completion() inside sync_inodes_sb() never returns because the FUSE daemon=
+ (fuse-overlayfs) is unable to complete writeback while the suspend freezer=
+ is in progress.
+> > >
+> > > The AS_NO_DATA_INTEGRITY fix targets wait_sb_inodes(), which is a sep=
+arate function from sync_inodes_sb(). The hung writeback completion wait in=
+ sync_inodes_sb() is not gated by the AS_NO_DATA_INTEGRITY check and remain=
+s unaddressed.
+> >
+> > I'll need to run the repro and verify this is the issue, but I think
+> > it's because it's hitting this call chain if there's a dirty folio
+> > that is already under writeback that needs to have writeback issued on
+> > it again:
+> >
+> > wb_workfn()
+> >   wb_do_writeback()
+> >     wb_writeback()
+> >       writeback_sb_inodes()
+> >         __writeback_single_inode()
+> >           do_writepages()
+> >             fuse_writepages()
+> >               iomap_writepages()
+> >                 writeback_iter()
+> >                   writeback_get_folio()
+> >                     folio_prepare_writeback()
+> >
+> > where in the folio_prepare_writeback() logic:
+> >
+> >         if (!folio_test_dirty(folio))
+> >                 return false;
+> >
+> >         if (folio_test_writeback(folio)) {
+> >                 if (wbc->sync_mode =3D=3D WB_SYNC_NONE)
+> >                         return false;
+> >                 folio_wait_writeback(folio);
+> >
+>
+> I couldn't get the firefox+youtube scenario running because my VM
+> lacks graphics support and I couldn't figure out how to get that to
+> work, but I reproduced the bug using fuse-overlayfs with a synthetic
+> I/O workload:
 
-Signed-off-by: Nhat Pham <nphamcs@gmail.com>
----
- include/linux/memcontrol.h |   6 ++
- mm/memcontrol.c            |   2 +-
- mm/vswap.c                 | 215 +++++++++++++++++++++++++------------
- 3 files changed, 151 insertions(+), 72 deletions(-)
+(fwiw, my repro triggers the hang even prior to the tmp pages being
+removed, so I think the firefox + youtube scenario you're running into
+is indeed the folio_prepare_writeback() scenario)
 
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 0651865a4564f..0f7f5489e1675 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -827,6 +827,7 @@ static inline unsigned short mem_cgroup_id(struct mem_cgroup *memcg)
- 	return memcg->id.id;
- }
- struct mem_cgroup *mem_cgroup_from_id(unsigned short id);
-+void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n);
- 
- #ifdef CONFIG_SHRINKER_DEBUG
- static inline unsigned long mem_cgroup_ino(struct mem_cgroup *memcg)
-@@ -1289,6 +1290,11 @@ static inline struct mem_cgroup *mem_cgroup_from_id(unsigned short id)
- 	return NULL;
- }
- 
-+static inline void mem_cgroup_id_put_many(struct mem_cgroup *memcg,
-+					  unsigned int n)
-+{
-+}
-+
- #ifdef CONFIG_SHRINKER_DEBUG
- static inline unsigned long mem_cgroup_ino(struct mem_cgroup *memcg)
- {
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 4525c21754e7f..c6d307b8127a8 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -3597,7 +3597,7 @@ void __maybe_unused mem_cgroup_id_get_many(struct mem_cgroup *memcg,
- 	refcount_add(n, &memcg->id.ref);
- }
- 
--static void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n)
-+void mem_cgroup_id_put_many(struct mem_cgroup *memcg, unsigned int n)
- {
- 	if (refcount_sub_and_test(n, &memcg->id.ref)) {
- 		mem_cgroup_id_remove(memcg);
-diff --git a/mm/vswap.c b/mm/vswap.c
-index 96f4615f29a95..f3634449f5427 100644
---- a/mm/vswap.c
-+++ b/mm/vswap.c
-@@ -482,18 +482,18 @@ static void vswap_cluster_free(struct vswap_cluster *cluster)
- 	kvfree_rcu(cluster, rcu);
- }
- 
--static inline void release_vswap_slot(struct vswap_cluster *cluster,
--		unsigned long index)
-+static inline void release_vswap_slot_nr(struct vswap_cluster *cluster,
-+		unsigned long index, int nr)
- {
- 	unsigned long slot_index = VSWAP_IDX_WITHIN_CLUSTER_VAL(index);
- 
- 	VM_WARN_ON(!spin_is_locked(&cluster->lock));
--	cluster->count--;
-+	cluster->count -= nr;
- 
--	bitmap_clear(cluster->bitmap, slot_index, 1);
-+	bitmap_clear(cluster->bitmap, slot_index, nr);
- 
- 	/* we only free uncached empty clusters */
--	if (refcount_dec_and_test(&cluster->refcnt))
-+	if (refcount_sub_and_test(nr, &cluster->refcnt))
- 		vswap_cluster_free(cluster);
- 	else if (cluster->full && cluster_is_alloc_candidate(cluster)) {
- 		cluster->full = false;
-@@ -506,7 +506,7 @@ static inline void release_vswap_slot(struct vswap_cluster *cluster,
- 		}
- 	}
- 
--	atomic_dec(&vswap_used);
-+	atomic_sub(nr, &vswap_used);
- }
- 
- /*
-@@ -528,23 +528,33 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- }
- 
- /*
-- * Caller needs to handle races with other operations themselves.
-+ * release_backing - release the backend storage for a given range of virtual
-+ * swap slots.
-+ *
-+ * Entered with the cluster locked, but might drop the lock in between.
-+ * This is because several operations, such as releasing physical swap slots
-+ * (i.e swap_slot_free_nr()) require the cluster to be unlocked to avoid
-+ * deadlocks.
-  *
-- * Specifically, this function is safe to be called in contexts where the swap
-- * entry has been added to the swap cache and the associated folio is locked.
-- * We cannot race with other accessors, and the swap entry is guaranteed to be
-- * valid the whole time (since swap cache implies one refcount).
-+ * This is safe, because:
-  *
-- * We cannot assume that the backends will be of the same type,
-- * contiguous, etc. We might have a large folio coalesced from subpages with
-- * mixed backend, which is only rectified when it is reclaimed.
-+ * 1. Callers ensure no concurrent modification of the swap entry's internal
-+ *    state can occur. This is guaranteed by one of the following:
-+ *    - For vswap_free_nr() callers: the swap entry's refcnt (swap count and
-+ *      swapcache pin) is down to 0.
-+ *    - For vswap_store_folio(), swap_zeromap_folio_set(), and zswap_entry_store()
-+ *      callers: the folio is locked and in the swap cache.
-+ *
-+ * 2. The swap entry still holds a refcnt to the cluster, keeping the cluster
-+ *    itself valid.
-+ *
-+ * We will exit the function with the cluster re-locked.
-  */
-- static void release_backing(swp_entry_t entry, int nr)
-+static void release_backing(struct vswap_cluster *cluster, swp_entry_t entry,
-+		int nr)
- {
--	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	unsigned long flush_nr, phys_swap_start = 0, phys_swap_end = 0;
--	unsigned long phys_swap_released = 0;
- 	unsigned int phys_swap_type = 0;
- 	bool need_flushing_phys_swap = false;
- 	swp_slot_t flush_slot;
-@@ -552,9 +562,8 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 
- 	VM_WARN_ON(!entry.val);
- 
--	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 
- 		/*
-@@ -574,7 +583,6 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 		if (desc->type == VSWAP_ZSWAP && desc->zswap_entry) {
- 			zswap_entry_free(desc->zswap_entry);
- 		} else if (desc->type == VSWAP_SWAPFILE) {
--			phys_swap_released++;
- 			if (!phys_swap_start) {
- 				/* start a new contiguous range of phys swap */
- 				phys_swap_start = swp_slot_offset(desc->slot);
-@@ -590,56 +598,49 @@ void vswap_rmap_set(struct swap_cluster_info *ci, swp_slot_t slot,
- 
- 		if (need_flushing_phys_swap) {
- 			spin_unlock(&cluster->lock);
--			cluster = NULL;
- 			swap_slot_free_nr(flush_slot, flush_nr);
-+			mem_cgroup_uncharge_swap(entry, flush_nr);
-+			spin_lock(&cluster->lock);
- 			need_flushing_phys_swap = false;
- 		}
- 	}
--	if (cluster)
--		spin_unlock(&cluster->lock);
--	rcu_read_unlock();
- 
- 	/* Flush any remaining physical swap range */
- 	if (phys_swap_start) {
- 		flush_slot = swp_slot(phys_swap_type, phys_swap_start);
- 		flush_nr = phys_swap_end - phys_swap_start;
-+		spin_unlock(&cluster->lock);
- 		swap_slot_free_nr(flush_slot, flush_nr);
-+		mem_cgroup_uncharge_swap(entry, flush_nr);
-+		spin_lock(&cluster->lock);
- 	}
-+}
- 
--	if (phys_swap_released)
--		mem_cgroup_uncharge_swap(entry, phys_swap_released);
-- }
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+		swp_entry_t entry, unsigned int nr_ents);
- 
- /*
-- * Entered with the cluster locked, but might unlock the cluster.
-- * This is because several operations, such as releasing physical swap slots
-- * (i.e swap_slot_free_nr()) require the cluster to be unlocked to avoid
-- * deadlocks.
-- *
-- * This is safe, because:
-- *
-- * 1. The swap entry to be freed has refcnt (swap count and swapcache pin)
-- *    down to 0, so no one can change its internal state
-- *
-- * 2. The swap entry to be freed still holds a refcnt to the cluster, keeping
-- *    the cluster itself valid.
-- *
-- * We will exit the function with the cluster re-locked.
-+ * Entered with the cluster locked. We will exit the function with the cluster
-+ * still locked.
-  */
--static void vswap_free(struct vswap_cluster *cluster, struct swp_desc *desc,
--	swp_entry_t entry)
-+static void vswap_free_nr(struct vswap_cluster *cluster, swp_entry_t entry,
-+		int nr)
- {
--	/* Clear shadow if present */
--	if (xa_is_value(desc->shadow))
--		desc->shadow = NULL;
--	spin_unlock(&cluster->lock);
-+	struct swp_desc *desc;
-+	int i;
-+
-+	for (i = 0; i < nr; i++) {
-+		desc = __vswap_iter(cluster, entry.val + i);
-+		/* Clear shadow if present */
-+		if (xa_is_value(desc->shadow))
-+			desc->shadow = NULL;
-+	}
- 
--	release_backing(entry, 1);
--	mem_cgroup_clear_swap(entry, 1);
-+	release_backing(cluster, entry, nr);
-+	__vswap_swap_cgroup_clear(cluster, entry, nr);
- 
--	/* erase forward mapping and release the virtual slot for reallocation */
--	spin_lock(&cluster->lock);
--	release_vswap_slot(cluster, entry.val);
-+	/* erase forward mapping and release the virtual slots for reallocation */
-+	release_vswap_slot_nr(cluster, entry.val, nr);
- }
- 
- /**
-@@ -818,18 +819,32 @@ static bool vswap_free_nr_any_cache_only(swp_entry_t entry, int nr)
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	bool ret = false;
--	int i;
-+	swp_entry_t free_start;
-+	int i, free_nr = 0;
- 
-+	free_start.val = 0;
- 	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
-+		/* flush pending free batch at cluster boundary */
-+		if (free_nr && !VSWAP_IDX_WITHIN_CLUSTER_VAL(entry.val)) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		desc = vswap_iter(&cluster, entry.val);
- 		VM_WARN_ON(!desc);
- 		ret |= (desc->swap_count == 1 && desc->in_swapcache);
- 		desc->swap_count--;
--		if (!desc->swap_count && !desc->in_swapcache)
--			vswap_free(cluster, desc, entry);
-+		if (!desc->swap_count && !desc->in_swapcache) {
-+			if (!free_nr++)
-+				free_start = entry;
-+		} else if (free_nr) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		entry.val++;
- 	}
-+	if (free_nr)
-+		vswap_free_nr(cluster, free_start, free_nr);
- 	if (cluster)
- 		spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
-@@ -952,19 +967,33 @@ void swapcache_clear(swp_entry_t entry, int nr)
- {
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
--	int i;
-+	swp_entry_t free_start;
-+	int i, free_nr = 0;
- 
- 	if (!nr)
- 		return;
- 
-+	free_start.val = 0;
- 	rcu_read_lock();
- 	for (i = 0; i < nr; i++) {
-+		/* flush pending free batch at cluster boundary */
-+		if (free_nr && !VSWAP_IDX_WITHIN_CLUSTER_VAL(entry.val)) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		desc = vswap_iter(&cluster, entry.val);
- 		desc->in_swapcache = false;
--		if (!desc->swap_count)
--			vswap_free(cluster, desc, entry);
-+		if (!desc->swap_count) {
-+			if (!free_nr++)
-+				free_start = entry;
-+		} else if (free_nr) {
-+			vswap_free_nr(cluster, free_start, free_nr);
-+			free_nr = 0;
-+		}
- 		entry.val++;
- 	}
-+	if (free_nr)
-+		vswap_free_nr(cluster, free_start, free_nr);
- 	if (cluster)
- 		spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
-@@ -1105,11 +1134,13 @@ void vswap_store_folio(swp_entry_t entry, struct folio *folio)
- 	VM_BUG_ON(!folio_test_locked(folio));
- 	VM_BUG_ON(folio->swap.val != entry.val);
- 
--	release_backing(entry, nr);
--
- 	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	release_backing(cluster, entry, nr);
-+
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		desc->type = VSWAP_FOLIO;
- 		desc->swap_cache = folio;
-@@ -1134,11 +1165,13 @@ void swap_zeromap_folio_set(struct folio *folio)
- 	VM_BUG_ON(!folio_test_locked(folio));
- 	VM_BUG_ON(!entry.val);
- 
--	release_backing(entry, nr);
--
- 	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	release_backing(cluster, entry, nr);
-+
- 	for (i = 0; i < nr; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		desc->type = VSWAP_ZERO;
- 	}
-@@ -1773,11 +1806,10 @@ void zswap_entry_store(swp_entry_t swpentry, struct zswap_entry *entry)
- 	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 
--	release_backing(swpentry, 1);
--
- 	rcu_read_lock();
- 	desc = vswap_iter(&cluster, swpentry.val);
- 	VM_WARN_ON(!desc);
-+	release_backing(cluster, swpentry, 1);
- 	desc->zswap_entry = entry;
- 	desc->type = VSWAP_ZSWAP;
- 	spin_unlock(&cluster->lock);
-@@ -1824,17 +1856,22 @@ bool zswap_empty(swp_entry_t swpentry)
- #endif /* CONFIG_ZSWAP */
- 
- #ifdef CONFIG_MEMCG
--static unsigned short vswap_cgroup_record(swp_entry_t entry,
--				unsigned short memcgid, unsigned int nr_ents)
-+/*
-+ * __vswap_cgroup_record - record mem_cgroup for a set of swap entries
-+ *
-+ * Entered with the cluster locked. We will exit the function with the cluster
-+ * still locked.
-+ */
-+static unsigned short __vswap_cgroup_record(struct vswap_cluster *cluster,
-+				swp_entry_t entry, unsigned short memcgid,
-+				unsigned int nr_ents)
- {
--	struct vswap_cluster *cluster = NULL;
- 	struct swp_desc *desc;
- 	unsigned short oldid, iter = 0;
- 	int i;
- 
--	rcu_read_lock();
- 	for (i = 0; i < nr_ents; i++) {
--		desc = vswap_iter(&cluster, entry.val + i);
-+		desc = __vswap_iter(cluster, entry.val + i);
- 		VM_WARN_ON(!desc);
- 		oldid = desc->memcgid;
- 		desc->memcgid = memcgid;
-@@ -1842,6 +1879,37 @@ static unsigned short vswap_cgroup_record(swp_entry_t entry,
- 			iter = oldid;
- 		VM_WARN_ON(iter != oldid);
- 	}
-+
-+	return oldid;
-+}
-+
-+/*
-+ * Clear swap cgroup for a range of swap entries.
-+ * Entered with the cluster locked. Caller must be under rcu_read_lock().
-+ */
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+				      swp_entry_t entry, unsigned int nr_ents)
-+{
-+	unsigned short id;
-+	struct mem_cgroup *memcg;
-+
-+	id = __vswap_cgroup_record(cluster, entry, 0, nr_ents);
-+	memcg = mem_cgroup_from_id(id);
-+	if (memcg)
-+		mem_cgroup_id_put_many(memcg, nr_ents);
-+}
-+
-+static unsigned short vswap_cgroup_record(swp_entry_t entry,
-+				unsigned short memcgid, unsigned int nr_ents)
-+{
-+	struct vswap_cluster *cluster = NULL;
-+	struct swp_desc *desc;
-+	unsigned short oldid;
-+
-+	rcu_read_lock();
-+	desc = vswap_iter(&cluster, entry.val);
-+	VM_WARN_ON(!desc);
-+	oldid = __vswap_cgroup_record(cluster, entry, memcgid, nr_ents);
- 	spin_unlock(&cluster->lock);
- 	rcu_read_unlock();
- 
-@@ -1909,6 +1977,11 @@ unsigned short lookup_swap_cgroup_id(swp_entry_t entry)
- 	rcu_read_unlock();
- 	return ret;
- }
-+#else /* !CONFIG_MEMCG */
-+static void __vswap_swap_cgroup_clear(struct vswap_cluster *cluster,
-+				      swp_entry_t entry, unsigned int nr_ents)
-+{
-+}
- #endif /* CONFIG_MEMCG */
- 
- int vswap_init(void)
--- 
-2.52.0
-
+>
+> (while true; do dd if=3D/dev/urandom
+> of=3D/dev/shm/test/data/test.default/file1 bs=3D1M count=3D10 2>/dev/null=
+;
+> done) &
+> sleep 2
+> systemctl suspend
+>
+> which gave pretty much the same stack trace:
+>
+> [  154.892336] INFO: task kworker/u64:1:119 blocked for more than 100 sec=
+onds.
+> [  154.892967]       Not tainted 7.0.0-rc1-g6dcceeb72856-dirty #1792
+> [  154.893452] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+> disables this message.
+> [  154.894048] task:kworker/u64:1   state:D stack:0     pid:119
+> tgid:119   ppid:2      task_flags:0x4208160 flags:0x00080000
+> [  154.894879] Workqueue: pm_fs_sync pm_fs_sync_work_fn
+> [  154.895309] Call Trace:
+> [  154.895514]  <TASK>
+> [  154.895759]  __schedule+0xeaa/0x3d60
+> [  154.896060]  ? __filemap_fdatawait_range+0xb0/0x160
+> [  154.896435]  ? __pfx___schedule+0x10/0x10
+> [  154.896744]  ? bdi_split_work_to_wbs+0x50b/0x990
+> [  154.897093]  schedule+0x7e/0x2e0
+> [  154.897344]  wb_wait_for_completion+0x14b/0x1e0
+> [  154.897690]  ? __pfx_wb_wait_for_completion+0x10/0x10
+> [  154.898112]  ? __pfx_autoremove_wake_function+0x10/0x10
+> [  154.898550]  ? __pfx_mutex_unlock+0x10/0x10
+> [  154.898915]  ? iput+0x61/0x600
+> [  154.899175]  sync_inodes_sb+0x1be/0x740
+> [  154.899490]  ? __pfx_down_read+0x10/0x10
+> [  154.899814]  ? __pfx_sync_inodes_sb+0x10/0x10
+> [  154.900165]  ? __pfx_super_lock+0x10/0x10
+> [  154.900495]  ? _raw_spin_lock+0x84/0xe0
+> [  154.900826]  ? __pfx__raw_spin_lock+0x10/0x10
+> [  154.901154]  __iterate_supers+0x176/0x280
+> [  154.901455]  ? __pfx_sync_inodes_one_sb+0x10/0x10
+> [  154.901845]  ? _raw_spin_unlock_irq+0xe/0x30
+> [  154.902169]  ksys_sync+0x87/0xf0
+> [  154.902428]  ? __pfx_ksys_sync+0x10/0x10
+> [  154.902772]  ? kvm_clock_get_cycles+0x18/0x30
+> [  154.903131]  ? ktime_get+0x65/0x140
+> [  154.903417]  pm_fs_sync_work_fn+0x17/0xc0
+> [  154.903750]  process_one_work+0x656/0x1150
+> [  154.904083]  ? assign_work+0x122/0x3e0
+> [  154.904367]  worker_thread+0x5de/0xcb0
+> [  154.904670]  ? __pfx_worker_thread+0x10/0x10
+> [  154.905052]  kthread+0x34d/0x450
+>
+> Further debugging showed it's not due to that call chain with the
+> folio_wait_writeback() in folio_prepare_writeback() scenario described
+> in the previous message, but due to the fuse daemon being stuck and
+> thus unable to fully service the ->write_inode() by the wb_workfn:
+>
+> PID 121 (kworker/u64:2+flush-0:51):
+> [<0>] request_wait_answer+0x215/0x560 [fuse]
+> [<0>] __fuse_simple_request+0x341/0xc80 [fuse]
+> [<0>] fuse_flush_times+0x2ff/0x410 [fuse]
+> [<0>] fuse_write_inode+0x93/0x100 [fuse]
+> [<0>] __writeback_single_inode+0x5e1/0x930
+> [<0>] writeback_sb_inodes+0x53e/0xe40
+> [<0>] __writeback_inodes_wb+0xb7/0x200
+> [<0>] wb_writeback+0x571/0x790
+> [<0>] wb_workfn+0x73a/0xb90
+> [<0>] process_one_work+0x656/0x1150
+> [<0>] worker_thread+0x5de/0xcb0
+> [<0>] kthread+0x34d/0x450
+> [<0>] ret_from_fork+0x3ca/0x640
+> [<0>] ret_from_fork_asm+0x1a/0x30
+>
+> In the kernel suspend code though, the sync (pm_sleep_fs_sync())
+> happens before freezing any userspace processes
+> (suspend_freeze_processes()) so it's odd for the fuse daemon to be
+> stuck.
+>
+> It turns out the daemon is stuck because systemd freezes the user
+> session cgroups first before invoking the kernel suspend:
+>
+> > ps aux | grep -i "fuse-overlayfs"
+> vmuser       826  0.0  0.0  12316  2616 ?        Ss   15:02   0:00
+> fuse-overlayfs -o ...
+>
+> > cgroup=3D$(cat /proc/826/cgroup | head -1 | cut -d: -f3)
+> > echo "cgroup: $cgroup"
+> > cat /sys/fs/cgroup${cgroup}/cgroup.freeze 2>/dev/null || echo "No cgrou=
+p freeze file"
+> > cat /sys/fs/cgroup${cgroup}/cgroup.events 2>/dev/null | grep frozen
+> cgroup: /user.slice/user-1001.slice/session-3.scope
+> 1
+> frozen 1
+>
+> Even though the root cause is the cgroup freezer rather than the
+> folio_prepare_writeback() scenario, the fix proposed previously is
+> still the fix for this.
+>
+> Thanks,
+> Joanne
+>
+> >
+> > > Note: prior to commit 0c58a97f919c, sync() on FUSE filesystems was ef=
+fectively a no-op, which avoided this hang at the cost of correctness. The =
+regression was introduced when that commit made sync() actually wait on FUS=
+E writeback completion.
