@@ -1,86 +1,133 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 465B336DA19
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 20:29:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C83A736D4E1;
+	Wed, 18 Mar 2026 20:29:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773865758; cv=none; b=X4zPX7ASIOq39awcnV9D5aVhY5coxXzKwWXayLKLatv8XF85311S5T3vkiVxM8FcXGCHYylpDx+UFXHFmQTg9mAMCEsjFrEEEc35hyQqCLzgg9qe6/Z9KB2Y3gW8Fit3HS8e83hiuyPIA8tCY4dxzQOOIyzXarFYpzGbV7r3olI=
+	t=1773865763; cv=none; b=ngmo5mzqlFKEFDKnRf+TX1rWxs3DgVxhfP1uc2AtndsHTtzkpNr5K4/eibZYDgTXMI+nk2o79FHOzeuU3Ol3etwiJ6wZxse4vwjsaQpJOxL6hhxMquBWl328TvAlxfcIzu8/CfaVRGxaqFR78nTfb7irs9DxhIKDi5B4q5tjHTQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773865758; c=relaxed/simple;
-	bh=C5XJZIUUYTZ9DV8qkJmpbXu441VwHkjYyxJ5/Q2en4s=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qDcg+ONQqjAo96FVKnHKOEWVH+l2Zi4IHepFfIfPWoQ6J+jimCDx5NyLOACm2/2XdpWucVHXkW1HmissMaQPNHdBGdfgbi9mLlJXeD/fjhPahp0UOrS1jaAkdUBivg5/i2kZMnN0OWWTAUTPzslvDpi6DcTEQ14+QRWkTI39AZg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gLU6d/6j; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773865763; c=relaxed/simple;
+	bh=3GBxvjkUjLZS+mY0YDkzk/ovJ5tICqpctmdz74FwzT8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rr5nUfDYig0sIMExKNu1o+jdbXeTjy/NfZSAFcBviWmDMiclnLfB3FyOGm4Alo2KyX+HGZm3b2d4YbO9dVG0DtO2IB9TxN/uAaJDGeKvgE+wlDnrOKV264IUNeuaUndIUB4cS8aQvNP0/uunR2PsPUrCd64Q8tWADWjONUJyRA4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=hnjfVKeq; arc=none smtp.client-ip=195.154.119.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gLU6d/6j"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB065C2BCAF
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 20:29:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773865758;
-	bh=C5XJZIUUYTZ9DV8qkJmpbXu441VwHkjYyxJ5/Q2en4s=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=gLU6d/6jJos2xaoFf3mM6HsMYchZBN6f7CRci/cVQJ3+ulGgv2A7+CXO042Xbwvvr
-	 f4FWrPTDkJ0UFf3/EQo++QH5v/6vVdqEIRmfR7sgOSVEd3t0Pc+bdvp77+KAPF8/P9
-	 S+bgno1o7VJwF4Y42GIeXDHUn1jQ+Q162fJoiQhV/6+DBViU3tmoCaraykLuHveLjH
-	 D4RAN3zweCJnlQPjDeJlhNIL9HHLMdlhCFc6VI56ImRmUQZ2HbVY2O5FiEE3dQOqb+
-	 2gOonMvWNC4Rq5vlAh/FUKwQABkDrM7eiBIpt0204ZfnjcR/nz5UqLV1CXfDX4vhmN
-	 OGTh0y0qKcQcA==
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-467166cb638so164984b6e.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 13:29:17 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yy03A9zYvxkweEeIt7eY3myZHM4iH395uBUu5v8d+7CQCF4PD9W
-	Vg70/hc9ky48mvjobv0a6Febe/VNiXRa2MsCHLexDPmSRHCYu328qNbJdOz47q7mJ82n/3iVlCv
-	NRachysRBL/p3UK1rg1o2T3V7w90o1OM=
-X-Received: by 2002:a05:6820:8185:b0:67b:d547:26e1 with SMTP id
- 006d021491bc7-67c0db0cb57mr3033017eaf.43.1773865756895; Wed, 18 Mar 2026
- 13:29:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="hnjfVKeq"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Type:MIME-Version:References:
+	Message-ID:Subject:Cc:To:From:Date:Content-Transfer-Encoding:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=kMEfzXsB7JKireizXoIe2FQNbvVD/n2jTrp8b4fyj/U=; b=hnjfVKeqsuUHHVlJjlufr4M1xX
+	3YovllmITe/ZWh4+FMjnO+5wyV/T77V6hjaclb5ivDNcIu8I5YZUxrJjkdQHiXnek7vcUxmVMrbFV
+	0UTFYzqE9ua9w/z+ekkp1rrchw9iw9LgybdJE2jTWfCRtrPwcftAc08XdcmbVKmcufWOmUtzevYnQ
+	3iSCNiqL93YKMlS8mjAovmYCrVo54Gs54uulkmjHwBeOLZAOX97rLV4KyBGPpIYuA8iJFEEhyaba5
+	HPgAdWZx8xHoYXW0fBkO/J78RIBzMXIG8zOlTNLPP0zNJkrbmuFGnG3/fK2dzGENRkrB08fTUm0bL
+	b8dU98SQ==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1w2xVu-00000005fov-192c;
+	Wed, 18 Mar 2026 21:29:10 +0100
+Date: Wed, 18 Mar 2026 21:29:09 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Shuwei Wu <shuweiwoo@163.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] thermal: spacemit: Add support for SpacemiT K1 SoC
+ thermal sensor
+Message-ID: <absLFdJ8GypLh8te@aurel32.net>
+Mail-Followup-To: Shuwei Wu <shuweiwoo@163.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+References: <20251127-b4-k1-thermal-v1-0-f32ce47b1aba@163.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260314192544.605914-1-ynorov@nvidia.com> <mzahqtkpyq7eazninszlipmzdgvxnw5ftp5gwhlaxpdqxbyzlz@kdsl4jafdgdq>
-In-Reply-To: <mzahqtkpyq7eazninszlipmzdgvxnw5ftp5gwhlaxpdqxbyzlz@kdsl4jafdgdq>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 18 Mar 2026 21:29:04 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gU8tU+2za5FtvoTyG9qsSZEV11RYhcLv965J46iUV_wQ@mail.gmail.com>
-X-Gm-Features: AaiRm51i3AE8MmsbftgTsjEcnSOHGYTHFEI3GU7JGBkoSsn85nPkV70NttZYfCY
-Message-ID: <CAJZ5v0gU8tU+2za5FtvoTyG9qsSZEV11RYhcLv965J46iUV_wQ@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: optimize policy_is_shared()
-To: Viresh Kumar <viresh.kumar@linaro.org>, Yury Norov <ynorov@nvidia.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Yury Norov <yury.norov@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251127-b4-k1-thermal-v1-0-f32ce47b1aba@163.com>
+User-Agent: Mutt/2.2.13 (2024-03-09)
 
-On Tue, Mar 17, 2026 at 7:47=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
-rg> wrote:
->
-> On 14-03-26, 15:25, Yury Norov wrote:
-> > The switch to cpumask_nth() over cpumask_weight(), as it may return
-> > earlier - as soon as the function counts the required number of CPUs.
-> >
-> > Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> > ---
-> >  include/linux/cpufreq.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index cc894fc38971..8ca2bcb3d7ae 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -232,7 +232,7 @@ static inline bool policy_is_inactive(struct cpufre=
-q_policy *policy)
-> >
-> >  static inline bool policy_is_shared(struct cpufreq_policy *policy)
-> >  {
-> > -     return cpumask_weight(policy->cpus) > 1;
-> > +     return cpumask_nth(1, policy->cpus) < nr_cpumask_bits;
-> >  }
-> >
-> >  #ifdef CONFIG_CPU_FREQ
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi,
 
-Applied as 7.1 material, thanks!
+On 2025-11-27 02:44, Shuwei Wu wrote:
+> Introduce support for the on-die thermal sensor unit (TSU)
+> found on the SpacemiT K1 SoC.
+> 
+> Include the device tree binding documentation in YAML format, the
+> thermal sensor driver implementation, and the device tree changes to
+> enable the sensor on K1 SoC.
+> 
+> Test logs:
+> Hardware: OrangePi-RV2 integrates SpacemiT K1 SoC
+> Kernel: 6.18.0-rc4 mainline
+> 
+> Verified that all five thermal sensors are registered and reporting
+> valid temperatures.
+> 
+> $ cat /sys/class/thermal/thermal_zone*/type
+> soc-thermal
+> package-thermal
+> gpu-thermal
+> cluster0-thermal
+> cluster1-thermal
+> 
+> $ cat /sys/class/thermal/thermal_zone3/temp
+> 28000
+> 
+> Dynamic threshold and interrupt tests passed via sysfs trip_point
+> manipulation.
+> 
+> ---
+> Shuwei Wu (3):
+>       dt-bindings: thermal: Add SpacemiT K1 thermal sensor
+>       thermal: K1: Add driver for K1 SoC thermal sensor
+>       riscv: dts: spacemit: Add thermal sensor for K1 SoC
+> 
+>  .../bindings/thermal/spacemit,k1-thermal.yaml      |  76 +++++
+>  arch/riscv/boot/dts/spacemit/k1.dtsi               | 101 +++++++
+>  drivers/thermal/Kconfig                            |  14 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/k1_thermal.c                       | 307 +++++++++++++++++++++
+>  5 files changed, 499 insertions(+)
+> ---
+> base-commit: f5f2e20b1cbc5f9ea20b372d15967b24921ede19
+> change-id: 20251124-b4-k1-thermal-eca906e6dd7a
+
+Thanks, I confirm this works fine on a Banana PI F3.
+
+Tested-by: Aurelien Jarno <aurelien@aurel32.net>
+
+Regards
+Aurelien
+
+-- 
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
