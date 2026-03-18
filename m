@@ -1,126 +1,304 @@
-Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 596FB285CB9
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 02:48:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 474F71DDE5;
+	Wed, 18 Mar 2026 02:51:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.219
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773802125; cv=none; b=KKQ0sy/i6m+2JdwYPezGs36I4tX4KnlW3e/wjU6s2we5SVn6h1EPwJoHYO3fTKtMFeZr/HNxPWXt+Zi/pba7pHBgFezYZz3kgMhjPu1WFy75mJbJCUJK+gs2rwaefgweXH819fq+r/KDa/Fj04jMgi7OIoRkiqrBc4LBIhjio74=
+	t=1773802266; cv=none; b=MnQyeOjUx8tLxjF9+gMhPIbqiNig100Z3KyH7BcdmKwLKwj4AhB2gRhMgrhA1bQNqOEOXv27t9AmGRf9x9nZdYAa46yDHoQaRpgCbw3rsN0XKOBRnH+qTENVgzGAKqPeHVyxwd7tOJf3MMOU/R3KBjO4lfz2vwbioyW8laVJZB4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773802125; c=relaxed/simple;
-	bh=b4GhCeYtl7uAbYl9+/ANPuQiNaXtSBWnV4gUaeDC3tQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ONkXiDywHOZgtk+PsH8vHK08QzeY/aW7FYnPsEDFsS/ZK3gyOe9aclYC4TXPZAI1cV4ZCBQisGL/oIh0Oj9LZDF2HBRacZ7XtiV/EcrGDqoPUUfODEB3FQIj2NAn2g7HfsTqtw4thiuocC2VT0OxZittQWuxuv9tpYeBmGDzykk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DPd4mUYh; arc=none smtp.client-ip=74.125.82.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1773802266; c=relaxed/simple;
+	bh=pIb+K73An4LsG9JTFlGZwRSQhIxc7mIv1f1eDglvCfk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=ZMA8tLU2CfZ7M+SgnZSJnw8KqS/+tuRdbRLsVNJJwQsFYd/m50+h9mD5leRkVlVRgUcvnghrhWNqqbxnXrMLROIbUOOXkbDh99m6uFdlLLD7qpzxCGGLJ3sPj2zy+sohyBqXTjjfHJu2GbdAneTM9zF76c5jfABNQB90E16DeN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=57J0hkYi; arc=none smtp.client-ip=113.46.200.219
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DPd4mUYh"
-Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-2bd9a485bd6so1328999eec.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 19:48:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773802121; x=1774406921; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Xz8/2qEt8vMzdZArROcCz49QpkswhVDh5Jy8LhjWhmU=;
-        b=DPd4mUYhKb9Yywl9nMVOrnFWLExC3j9U9NuICuUVodvWizzDIceRM2569OR8T7+6wZ
-         4kSKDgU84nCXVguZZr3oZ0qu5WjTrMIrH+NBxUDZghYv2PGGr31DUIn+hYTErKfYrw5H
-         kzOELSBHu/x6dcDVBI1kL8bFdQBp6Ls269Bn97dBdmIoiQ9CYK6iRRnTo9QrwKuXMA9W
-         Y0R4GwJCOBTcgqCvgfji5ZLBQpKK3ktx7P3XxdhVHaqFMHPfY3B4nxIPXZCXLVDooxax
-         LvipgpgozY1ly+LQarGbjlxTkgGdXZyu4oicHx1mxJy876jMw5RXbaP05+zbzyFpLYmK
-         83zw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773802121; x=1774406921;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Xz8/2qEt8vMzdZArROcCz49QpkswhVDh5Jy8LhjWhmU=;
-        b=Tfr8E052Ep+GJLT7cb15wvSKSTWgLYi8gPtLYN88j70kulqyxJXcKXy+MjEmUSUlYa
-         r1XUE7WwdxCd6cebPU9rafEVK6QjzFK+mkVTLC007G+tcJbQO712LDWl5VVE+8KiqJML
-         J0JuWRT0CdRExnTLUVCuT/IZQASxH1bUGE0L2xnnO28VVg7asBixNeZZ1kTFiiEu5f42
-         INCXogT3YQUNAru9jIJPmwHSIIrP4PxjYBQZQww2uhFyw6EsXYsmqhKZ7av5KrpJiCff
-         0CJ7IlOMeNI/5LhKQKKOIDkcoLFvapIOndvo6uZvdc3fMnSWnGU+ijgERTpBNWW8qJiz
-         hZXw==
-X-Forwarded-Encrypted: i=1; AJvYcCVbUVJye50sZOG/wlwEEvXKBgwC8ZnwSKcMhuwREH4UP+uGoAs4aQfcrHdwlA8dcQyp006QxI5O/g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzX6AsSgwBsoR78sLqnw8DLa7TaoUwDuoXTvOpACPusUHpQWwpb
-	KPa32v6DyG6Pv46Y7SiEzyhWzmDPVRszYYK4s/VuAUHuhSo1TBnag+Mi
-X-Gm-Gg: ATEYQzzwfJBgoHTKTKzQByOpJ+3vXj+hAvzVM41bMHJhqvT/pUSo1d8+BWUuK//aeBb
-	Pd//ZrgaDM3rGGrBZ2wn8srtXsFPIRI77TlHTou8T7EENjMcvackIGtg18pOgBIK9Iw87ZXtGMT
-	xoZ4UdaXZPjlQZ4QS3zJnFfnS3CB+KcD1GVKGPhcjNccS01ifv94zSv7Ogq2S+Zl4usKKOLMRRh
-	/7LERMq49DC3QaVPhtzv8XTFe5o4fdEZEIGJvcH5uvSUTtCD/BPydLbh+Pae/iB6kH2AHqGe2BX
-	0ZIFHhLjzybDzSSUYGG/GQKtK/yH82lYRdMTlOnKbEVhk+5PVdcZj4yacWRr25WImLVZ2eZZHxh
-	kBffPQwSF/NZu87mwwpVz1DQUu6o7wJJcOLkXpIYFgmhSy/lEff8dBYJQRGq731T3KRhCJuWfHP
-	TiXadScm7t4VpvT8CDIbi7IjncyfOZ0Hpyn2pzjil+/TllDr+U+gqRk2iUalqahZZ9jilGJZwIb
-	8HKBnHMuD2Zzg4FUjKaXC14yILTQo0Cj6SDHQ2AYpDxCyXeSD3oBgWkaKxvWrxlQJPv9kCv
-X-Received: by 2002:a05:7300:ed0b:b0:2be:833c:1486 with SMTP id 5a478bee46e88-2c0e5020a54mr893060eec.18.1773802121076;
-        Tue, 17 Mar 2026 19:48:41 -0700 (PDT)
-Received: from 2045L.localdomain (130.sub-75-229-251.myvzw.com. [75.229.251.130])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2c0e55cd9cfsm1930911eec.26.2026.03.17.19.48.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Mar 2026 19:48:40 -0700 (PDT)
-From: Gui-Dong Han <hanguidong02@gmail.com>
-To: Georgi Djakov <djakov@kernel.org>
-Cc: Kuan-Wei Chiu <visitorckw@gmail.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	akaieurus@gmail.com,
-	me@ziyao.cc,
-	Gui-Dong Han <hanguidong02@gmail.com>
-Subject: [PATCH] interconnect: debugfs: fix devm_kstrdup and kfree mismatch
-Date: Wed, 18 Mar 2026 10:48:15 +0800
-Message-ID: <20260318024815.7655-1-hanguidong02@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="57J0hkYi"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=veUMzvfyXewTFtoQg1MErc3XWf3soA8VT9aw2qpZtPA=;
+	b=57J0hkYiMfhZN55jnfmuz2138d4TEETAvstIDAiYturtXS3iasd5XIGaoLYOwlulmbwvnITE+
+	3jujp8+UtSs4oshPusGyqRFt26DbLYX/VD/7sp2n0iY8bKW7Xxi6xb9RYPCFWpckV9289O4cczg
+	lCmocnsgOw77phISXE46abE=
+Received: from mail.maildlp.com (unknown [172.19.163.0])
+	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4fbCr56s1Mz1prKb;
+	Wed, 18 Mar 2026 10:45:57 +0800 (CST)
+Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
+	by mail.maildlp.com (Postfix) with ESMTPS id 92B7B4056B;
+	Wed, 18 Mar 2026 10:50:59 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
+ (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 18 Mar
+ 2026 10:50:58 +0800
+Message-ID: <ccc646b2-6af8-48e9-a2d5-9c9b55ae0848@huawei.com>
+Date: Wed, 18 Mar 2026 10:50:58 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 2/4] cpufreq: Add boost_freq_req QoS request
+To: Pierre Gondois <pierre.gondois@arm.com>, <linux-kernel@vger.kernel.org>
+CC: Jie Zhan <zhanjie9@hisilicon.com>, Ionela Voinescu
+	<ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, Huang Rui
+	<ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Mario
+ Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Srinivas Pandruvada
+	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
+ Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>
+References: <20260317101753.2284763-1-pierre.gondois@arm.com>
+ <20260317101753.2284763-3-pierre.gondois@arm.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <20260317101753.2284763-3-pierre.gondois@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ kwepemf200001.china.huawei.com (7.202.181.227)
 
-debugfs_write_file_str() uses standard kfree() to release old strings.
-Initializing src_node and dst_node with devm_kstrdup() creates a memory
-management mismatch. If a user writes to these debugfs nodes, the
-devm-allocated memory is freed via kfree(), leaving a dangling pointer
-in the device resource list that can lead to a double free.
+On 3/17/2026 6:17 PM, Pierre Gondois wrote:
+> The Power Management Quality of Service (PM QoS) allows to
+> aggregate constraints from multiple entities. It is currently
+> used to manage the min/max frequency of a given policy.
+> 
+> Frequency constraints can come for instance from:
+> - Thermal framework: acpi_thermal_cpufreq_init()
+> - Firmware: _PPC objects: acpi_processor_ppc_init()
+> - User: by setting policyX/scaling_[min|max]_freq
+> The minimum of the max frequency constraints is used to compute
+> the resulting maximum allowed frequency.
+> 
+> When enabling boost frequencies, the same frequency request object
+> (policy->max_freq_req) as to handle requests from users is used.
+> As a result, when setting:
+> - scaling_max_freq
+> - boost
+> The last sysfs file used overwrites the request from the other
+> sysfs file.
+> 
+> To avoid this, create a per-policy boost_freq_req to save the boost
+> constraints instead of overwriting the last scaling_max_freq
+> constraint.
+> 
+> policy_set_boost() calls the cpufreq set_boost callback.
+> Update the newly added boost_freq_req request from there:
+> - whenever boost is toggled
+> - to cover all possible paths
+> 
+> In the existing .set_boost() callbacks:
+> - Don't update policy->max as this is done through the qos notifier
+>   cpufreq_notifier_max() which calls cpufreq_set_policy().
+> - Remove freq_qos_update_request() calls as the qos request is now
+>   done in policy_set_boost() and updates the new boost_freq_req
+> 
+> $ ## Init state
+> scaling_max_freq:1000000
+> cpuinfo_max_freq:1000000
+> 
+> $ echo 700000 > scaling_max_freq
+> scaling_max_freq:700000
+> cpuinfo_max_freq:1000000
+> 
+> $ echo 1 > ../boost
+> scaling_max_freq:1200000
+> cpuinfo_max_freq:1200000
+> 
+> $ echo 800000 > scaling_max_freq
+> scaling_max_freq:800000
+> cpuinfo_max_freq:1200000
+> 
+> $ ## Final step:
+> $ ## Without the patches:
+> $ echo 0 > ../boost
+> scaling_max_freq:1000000
+> cpuinfo_max_freq:1000000
+> 
+> $ ## With the patches:
+> $ echo 0 > ../boost
+> scaling_max_freq:800000
+> cpuinfo_max_freq:1000000
+> 
+> Note:
+> cpufreq_frequency_table_cpuinfo() updates policy->min
+> and max from:
+> A.
+> cpufreq_boost_set_sw()
+> \-cpufreq_frequency_table_cpuinfo()
+> B.
+> cpufreq_policy_online()
+> \-cpufreq_table_validate_and_sort()
+>   \-cpufreq_frequency_table_cpuinfo()
+> Keep these updates as some drivers expect policy->min and
+> max to be set through B.
+> 
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> ---
+>  drivers/cpufreq/amd-pstate.c   |  2 --
+>  drivers/cpufreq/cppc_cpufreq.c | 10 ++-----
+>  drivers/cpufreq/cpufreq.c      | 52 +++++++++++++++++++++++++++-------
+>  include/linux/cpufreq.h        |  1 +
+>  4 files changed, 44 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index c45bc98721d24..310d5938cbdf6 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -756,8 +756,6 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
+>  	else if (policy->cpuinfo.max_freq > nominal_freq)
+>  		policy->cpuinfo.max_freq = nominal_freq;
+>  
+> -	policy->max = policy->cpuinfo.max_freq;
+> -
+>  	if (cppc_state == AMD_PSTATE_PASSIVE) {
+>  		ret = freq_qos_update_request(&cpudata->req[1], policy->cpuinfo.max_freq);
+>  		if (ret < 0)
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 9eac77c4f2944..4c46c7ea318eb 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -775,17 +775,11 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
+>  {
+>  	struct cppc_cpudata *cpu_data = policy->driver_data;
+>  	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
+> -	int ret;
+>  
+>  	if (state)
+> -		policy->max = cppc_perf_to_khz(caps, caps->highest_perf);
+> +		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
+>  	else
+> -		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf);
+> -	policy->cpuinfo.max_freq = policy->max;
+> -
+> -	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+> -	if (ret < 0)
+> -		return ret;
+> +		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index db414c052658b..e4f24754df164 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -603,10 +603,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
+>  	policy->boost_enabled = enable;
+>  
+>  	ret = cpufreq_driver->set_boost(policy, enable);
+> -	if (ret)
+> +	if (ret) {
+>  		policy->boost_enabled = !policy->boost_enabled;
+> +		return ret;
+> +	}
+>  
+> -	return ret;
+> +	ret = freq_qos_update_request(policy->boost_freq_req, policy->cpuinfo.max_freq);
+> +	if (ret < 0) {
+> +		policy->boost_enabled = !policy->boost_enabled;
+> +		cpufreq_driver->set_boost(policy, policy->boost_enabled);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+>  
+>  static ssize_t store_local_boost(struct cpufreq_policy *policy,
+> @@ -1370,6 +1379,9 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>  		freq_qos_remove_request(policy->max_freq_req);
+>  	}
+>  
+> +	if (policy->boost_freq_req)
+> +		freq_qos_remove_request(policy->boost_freq_req);
+> +
+>  	freq_qos_remove_request(policy->min_freq_req);
+>  	kfree(policy->min_freq_req);
+>  
+> @@ -1439,12 +1451,15 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+>  	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+>  
+>  	if (new_policy) {
+> +		unsigned int req_nr;
+> +
+>  		for_each_cpu(j, policy->related_cpus) {
+>  			per_cpu(cpufreq_cpu_data, j) = policy;
+>  			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
+>  		}
+>  
+> -		policy->min_freq_req = kzalloc(2 * sizeof(*policy->min_freq_req),
+> +		req_nr = policy->boost_supported ? 3 : 2;
+> +		policy->min_freq_req = kzalloc(req_nr * sizeof(*policy->min_freq_req),
+>  					       GFP_KERNEL);
+>  		if (!policy->min_freq_req) {
+>  			ret = -ENOMEM;
+> @@ -1479,6 +1494,27 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+>  			goto out_destroy_policy;
+>  		}
+>  
+> +		if (policy->boost_supported) {
+> +			policy->boost_freq_req = policy->max_freq_req + 1;
+> +
+> +			/*
+> +			 * If boost is supported,
+> +			 * init the constraint with cpuinfo.max_freq.
+> +			 */
+> +			ret = freq_qos_add_request(&policy->constraints,
+> +						   policy->boost_freq_req,
+> +						   FREQ_QOS_MAX,
+> +						   policy->cpuinfo.max_freq);
+> +			if (ret < 0) {
+> +				/*
+> +				 * So we don't call freq_qos_remove_request() for an
+> +				 * uninitialized request.
+> +				 */
+> +				policy->boost_freq_req = NULL;
+> +				goto out_destroy_policy;
+> +			}
+> +		}
+> +
 
-Fix this by using standard kstrdup() instead. Since the interconnect
-subsystem is strictly built-in and cannot be unloaded as a module, there
-is no exit path requiring manual cleanup of these strings. The error
-handling path is also simplified by taking advantage of the fact that
-kfree(NULL) is a safe no-op.
+Something we discussed before has resurfaced here. CPUFREQ_REMOVE_POLICY
+notification will be sent without sending CPUFREQ_CREATE_POLICY
+notification before if adding boost_freq_req fails.
 
-Fixes: 8cc27f5c6dd1 ("interconnect: debugfs: initialize src_node and dst_node to empty strings")
-Signed-off-by: Gui-Dong Han <hanguidong02@gmail.com>
----
-I noticed this memory management mismatch while working on similar
-debugfs string initialization fixes [1] recently.
+What about adding boost_freq_req before adding min_freq_req and removing it
+after removing min_freq_req?
 
-[1] https://lore.kernel.org/driver-core/20260317185920.43387-1-hanguidong02@gmail.com/
----
- drivers/interconnect/debugfs-client.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/interconnect/debugfs-client.c b/drivers/interconnect/debugfs-client.c
-index 5107bff53173..08df9188ef94 100644
---- a/drivers/interconnect/debugfs-client.c
-+++ b/drivers/interconnect/debugfs-client.c
-@@ -150,10 +150,13 @@ int icc_debugfs_client_init(struct dentry *icc_dir)
- 		return ret;
- 	}
- 
--	src_node = devm_kstrdup(&pdev->dev, "", GFP_KERNEL);
--	dst_node = devm_kstrdup(&pdev->dev, "", GFP_KERNEL);
--	if (!src_node || !dst_node)
-+	src_node = kstrdup("", GFP_KERNEL);
-+	dst_node = kstrdup("", GFP_KERNEL);
-+	if (!src_node || !dst_node) {
-+		kfree(dst_node);
-+		kfree(src_node);
- 		return -ENOMEM;
-+	}
- 
- 	client_dir = debugfs_create_dir("test_client", icc_dir);
- 
--- 
-2.43.0
+>  		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>  				CPUFREQ_CREATE_POLICY, policy);
+>  	}
+> @@ -2782,16 +2818,10 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
+>  		return -ENXIO;
+>  
+>  	ret = cpufreq_frequency_table_cpuinfo(policy);
+> -	if (ret) {
+> +	if (ret)
+>  		pr_err("%s: Policy frequency update failed\n", __func__);
+> -		return ret;
+> -	}
+> -
+> -	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+> -	if (ret < 0)
+> -		return ret;
+>  
+> -	return 0;
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
+>  
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 0465d1e6f72ac..c292a6a19e4f5 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -81,6 +81,7 @@ struct cpufreq_policy {
+>  	struct freq_constraints	constraints;
+>  	struct freq_qos_request	*min_freq_req;
+>  	struct freq_qos_request	*max_freq_req;
+> +	struct freq_qos_request *boost_freq_req;
+>  
+>  	struct cpufreq_frequency_table	*freq_table;
+>  	enum cpufreq_table_sorting freq_table_sorted;
 
