@@ -1,53 +1,53 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D938E27991A
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 03:38:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68B15285CA3
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 03:38:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773805088; cv=none; b=CXUCOjV1VSkZ9wUMMUXvnea2L0td06bjpXdtq53xz8f3I67vB197f0tKRK9pdQZ5YGi8dEkfBB5SoA13rT22aJwL4DKycEaVr8GkiCMCcNloZyhAeLfHD8FeEK+etTWY2jQ0BfEDHlYL94MShlBmbaiP2OzVHgMhlPMv9+3myOo=
+	t=1773805108; cv=none; b=C0tUiqpRr+W+YATdd4x6y9D88KGt8pt6M5FJAz9O6PXumOtNRRveKybX6+nGC0U4j4Wa57jW2Jahy0cwc8PKf6fZxS440T54z/8BXWjtVUjmzvuo3xznDV+JgBAUlCY1mYtqjzjQrhdcRcY7q67gElVa3ax4bZMGcNZtbmw1fTE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773805088; c=relaxed/simple;
+	s=arc-20240116; t=1773805108; c=relaxed/simple;
 	bh=uqmFJenA7NvCwu2QwaHJEmPdclY5/2SsSJ0L2gnM1PQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=sbmbO2cz6yKlljH76oCV1Ab7o04ZTjVlj1lz4cOUHCYQNMrkmQkYigy0tzzokhgYO4aw3Spo+dKpiapDCdqMzsQGcVqr9rdXAqGNoJvEltLrTR+kAwGpys1eQrfaYhw0dhyr8nK0O/h/kC6/jVEZCQ2felWSwrPZVc9AnVQqCn0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QS/VE6XN; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=PFdwwLv0FExdjs6ZuveHDl9kSjM8GK38xNDPu9+D3lwzOvqQTMQlqW8oo3kyOFUdQxJ+s9vicLcdeUj6QDfjt7IBIsPkvdfFhi9XjLDUvQlf/VCRAUBHWLG57yRr6paM+oUhya6dvtb3xTGgyHz92J/Q0Nv5cjVZ7q3HM5eRE4A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ncwipEpe; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QS/VE6XN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3304C2BC87
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 03:38:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ncwipEpe"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EFA8DC2BC87
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 03:38:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773805088;
+	s=k20201202; t=1773805108;
 	bh=uqmFJenA7NvCwu2QwaHJEmPdclY5/2SsSJ0L2gnM1PQ=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=QS/VE6XNMWK641ISU9t4QDTfQr11PbmQRyk2xjFJfjzRAFMxDDNud/Gs0jEbLCqaw
-	 UgabrY/xoXHyBwNneU+nr0TIzsdxsvfGrSNpSkB/NHUwnsyUC6iyW3EzEQY3lGjXAh
-	 1AOcogq1z3/QUdlmU7mPcNXcMMXVzGav0kW7vAoQZeqgoSX7iZd4mDc62tkYwddhe8
-	 G3FYwbFkSLwbawsEbxakvUD+aK0/oPYHgr/W8mz6qYdR8APG1N2/vUn5Y3clSgDvg7
-	 8/XJuMgqyfIa64vTh0tcqLq1bpMz0XiYMX47+Qt7uf4CJmKeQld2szSzczlaQ5+JR4
-	 9ZMBn4ZyWurJA==
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-661cfb9f3aaso9447075a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 20:38:08 -0700 (PDT)
-X-Gm-Message-State: AOJu0YxrAUCq+Eb9jMmGe5lpGY/XFmpJsKGyaSq65Ues1s1XJqk1KTCu
-	BIRcxW1+L15okaUpDaNOXEsYahcnXj3Co7tRfgVKzLVCPbBNM3YAVZv5idhW6FPO3R/uFPuytEy
-	8JrC8yetMlyYg2imuXV26MBPdvvEsScI=
-X-Received: by 2002:a05:6402:268c:b0:667:5336:6b86 with SMTP id
- 4fb4d7f45d1cf-667b18806c2mr1263900a12.5.1773805087529; Tue, 17 Mar 2026
- 20:38:07 -0700 (PDT)
+	b=ncwipEpe5Al3sSvZBvOYtVbbKNx6QanVOKmkJXKUEdVTEb9DnClb+wLWZ77tZTfkI
+	 EMruJfzfMv/WkqwM7FMMQet99CBMXt0h72hMWmQV/VuRR1v8sY35DZ64StO6kw8UUx
+	 43b0McBfAe6wCdSrHclAtT3owV2TFNvT1poZ9FK2l/NRpyL1L33b0SOb+T9f99QcHk
+	 dLwJ4/cBTe0bMTsXEcbB0bNJxdJrh7pOrYFF+KBOp7rNq9HYFPbmOyFkH1s22eVmSl
+	 XyNu2ij6GPKqv1cXPedOzsgrYV05RultIfmO1odB9uuD7SCMf8mZD8VgpaGH18i9uJ
+	 sKVg28kTov9Zw==
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-6644a3029b3so7840203a12.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Mar 2026 20:38:27 -0700 (PDT)
+X-Gm-Message-State: AOJu0YzTyiBOQrzVk7iXFFKgo0kqzJoYS4Xz4N9c92mzJ8o1Hf8Ttcga
+	p0AIQz48nX7qeRK7fIBG3umsr9KKt3JG02JXiKkxuZp8LkvsWxJoLNusPEfzv0YhHZ+vvnQcgNO
+	4CaO/sOGW856yxnq7/x9Cifl/uWnjNEc=
+X-Received: by 2002:a17:907:3f9a:b0:b97:a2c4:69ef with SMTP id
+ a640c23a62f3a-b97f48040b4mr107104766b.18.1773805106739; Tue, 17 Mar 2026
+ 20:38:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260311090035.169539-1-dedekind1@gmail.com> <20260311090035.169539-2-dedekind1@gmail.com>
-In-Reply-To: <20260311090035.169539-2-dedekind1@gmail.com>
+References: <20260311090035.169539-1-dedekind1@gmail.com> <20260311090035.169539-3-dedekind1@gmail.com>
+In-Reply-To: <20260311090035.169539-3-dedekind1@gmail.com>
 From: Len Brown <lenb@kernel.org>
-Date: Tue, 17 Mar 2026 23:37:56 -0400
-X-Gmail-Original-Message-ID: <CAJvTdKkxH=ZUPAtYzGQFDSf5hReC1sVO57iaiqTH9L-bbEC_7A@mail.gmail.com>
-X-Gm-Features: AaiRm50K2GRno4MzVkY8TZRk_GZaw7s_j2wm_5-J2U9XpxGXMI_sOtlJ-9prNpc
-Message-ID: <CAJvTdKkxH=ZUPAtYzGQFDSf5hReC1sVO57iaiqTH9L-bbEC_7A@mail.gmail.com>
-Subject: Re: [PATCH 1/5] tools/power turbostat: add missing print_float_value()
+Date: Tue, 17 Mar 2026 23:38:15 -0400
+X-Gmail-Original-Message-ID: <CAJvTdKkjJuqPK0=T0DhT_0FePK42cqdJ2xTo1TgG-hco8Ecp3Q@mail.gmail.com>
+X-Gm-Features: AaiRm51YMts2R8l1XoiNk0ZyVc_S2Sq7Orco4lRuEOPoP3M0JXnx7NAakalZKpc
+Message-ID: <CAJvTdKkjJuqPK0=T0DhT_0FePK42cqdJ2xTo1TgG-hco8Ecp3Q@mail.gmail.com>
+Subject: Re: [PATCH 2/5] tools/power turbostat: fix incorrect format variable
 To: Artem Bityutskiy <dedekind1@gmail.com>
 Cc: Linux PM Mailing List <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
