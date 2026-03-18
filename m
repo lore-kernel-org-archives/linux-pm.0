@@ -1,177 +1,294 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012034.outbound.protection.outlook.com [52.101.53.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EF3D3B8BAA
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 09:44:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773827093; cv=none; b=nQTcHP/jwYajYZQpev2snN/BdUwbJtnUCtzt77HM4v2gymeI+d4FNXBisGINKLK4cGsCDV0Pr7ig4R+Rw2Mds8P/EjzuLQOooNakM1e55Ro/3iZ/O2y2JXzPCjxgna05TvjNJkuSayhCVrxegP/YfysCPF3LCKK5/P5MQsIuyQI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773827093; c=relaxed/simple;
-	bh=mIywxV+98elXwDiIMtGd5IEKkhRCt5Arbn2dohoh/1U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AW+LbvYNJaT7/LlvpoTsscAfMAYZKlobGeTqEPoH4vwu8pN1HBdeuyaeO5loku5iDqrbclL5Qe97aP7TPreW8C4QvJoWFr9oL/4aD3WQLyw4mv0MdCofTo3+3qLBTmoPZEoEcDJj9THe4uHVs/OxUpDrT81odgL4sQ7jBz9Q+ok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=LqKOsjZ4; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZLdXVj2g; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81FC939E191;
+	Wed, 18 Mar 2026 09:50:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.34
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773827450; cv=fail; b=F5i6taxs0dxAxmsV6wccz2d81bhhfhYgwEG/w1gimklk968YkC5NVb2d33qWWRdCjPrQ8n0Hx8zfsgejGRaPFYcMM1T7r5FA6Lj10N2O0KL4UJbVS1zi66DPqBUUE0ii3L81qtM1pdBeX8zIdG/oanZ9gD74i+aTggP4yNDJWBU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773827450; c=relaxed/simple;
+	bh=oGlctU1FFKr/O6U6sI+DXUfeVfIOoybeOre6gDPTSWA=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=rX6Y6rMOz17V+zZjjV9fC4QeMbH/ZmV+AESqA+UuRV9DGNj4wiTkhx5lpe5QLJNmnNtFvIvv/eLfg5YJ/CoOh/c8fByStnAwOLMRhfxq6+CvLbnGUJSldbuUoWyz4Omm9CnTHdvJJ7trluZvsr6xdtiEKGukeXahx5ii3707ZHk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=ufK7hwbh; arc=fail smtp.client-ip=52.101.53.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="LqKOsjZ4";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZLdXVj2g"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62I8m45H2296910
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 09:44:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4iYQQUUil/57LBAD3eiyFUNUgqmJlQBgw87fPx+tjj4=; b=LqKOsjZ4yUtfuBPr
-	zZuGQ70GagYg5pXHip6JqM5qQncLb4k68YKS1XO0l4eD9cs+/8e0/XuxbT6ik3co
-	EtuYk2u77HLbvJv96Z2YMxyfDcIKDjZjqhvkqbm3tmIe8Oh8dAMP1kHlPjEoyzBU
-	vAA8XfwkiL9Sm2RIeH7rRNx8Nd+FezU0I2NLLIX8CboKo3TGE6nWZTbvQVW2OOV6
-	4yaVwbK2QhklZ7PpUCIgZu7FvPBoGQLkExRGfQeg9wNdhqu8QKuGOK0nA+yZOIkI
-	HZR/pvnrYDD5UimVkqwtu0roE4u10oGhGX+xNt6xnLDbVyPA4MJSMnlyQZUSnuwb
-	y3TUdw==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cya83urr5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 09:44:46 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-5091eadc373so48816101cf.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 02:44:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773827085; x=1774431885; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=4iYQQUUil/57LBAD3eiyFUNUgqmJlQBgw87fPx+tjj4=;
-        b=ZLdXVj2gPodbJIZoEdPiidUe4T0s4gHk+y+hdt8zBoNXzhQ6e9Z/ZPZJwNo4qXKuX0
-         /jaDawN8b7k+0nSWK7B+tc11mKVEyi947CkuIyqR9+mudqqsBPH7NmiqrkKihFba79Or
-         +KR66eIGNuZn9knDkZZSBTko+h7wyNZCge8735r1vKmQeowLWehQKUzy7VmkZxAxHpwI
-         PeXyH1Yb9YzO3dm7Yk/VxA1vb/k3gAlrA4Dlo0EY9cd79b3cvTRTLBGB+pJFuBQvIU2X
-         D2fMIYA0bzGaNapVfWw+Fgjaqmwws5YSI60QqKt+0h6gyAMjGFSW9z78HbbBWqWSNlAV
-         g2+Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773827085; x=1774431885;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4iYQQUUil/57LBAD3eiyFUNUgqmJlQBgw87fPx+tjj4=;
-        b=kt4/skzb29BsLAGppZDW98CJE80dIZSiZXI0ICYFwkY5m1NQ+n09lnv/BH4TDTEBa3
-         iXtaL5M5jPnJO9TCWwdl42F9+6kKezcuDzTR7PwJLs8lJ4GjFSdehfKWUIjBlXudz6X5
-         Xb+VmGdvBqGFw4XVp0m3IIci8aptd7jC+VIh+ns/fmjAieDKAKxVIhn14Egn9aFPSMBT
-         bku12iqebszvWEUtHC2WUCtGHX0kCjuyg6HPkKZGXyi0P7mN80iPoX47UqJxIYLvqxPp
-         12xHoxVZptgi3ed+fNPcqrLZBj3H0ooJ7S/bGG1dTP6ZOD9QPQv54x2E2iTGHmckoiuC
-         D9zw==
-X-Gm-Message-State: AOJu0YzkGgtzzV6a2csEd2ywJjA5dnaeAH7g6tqJRiRP8NztPk/SIUBh
-	1LUnNSLZR2DizRTTRmRX/RGciTDgzgCY7DrSKZgdRm6+wq4fw0mra6zOmG0yAz9axt2wHY22lBQ
-	ai6ErqvT2KNP/FGd0l2D/O3Q2seCP6hKlaiCxMcF8EENQog1n7ucmqqB13qrCsw==
-X-Gm-Gg: ATEYQzz+FNY8FcVJ2R0yPGt0xo7GWaFYWCEoVzJYZHjwtyCyqzso7553EAKJ0t736ry
-	l3VKkFq9Wmdn8i5aekPwfEy2ik2z7z/tBn2HimBj8ilO2hLfibX5sh5bI9vTiOfYEIDaO1B5VX4
-	BvwJdMkL6Aq66jEUXYjHh9kcqUf0NlGg3e5ffqD34a0lUSDr58Bhq/rQoArJ1bFOWMedTJLguIF
-	clpkwDkJPWiX5i2wP4cqXprgK1ctRWyNXrudiy2ZzrOBKeX/9QGMzEAPOeBIx51OxIXgF1krYer
-	G9FAg+9QPT52t/HHH7ZL+oBnd3pfMHfO0PKxBs7lQvTMEAbiPdUksLWIoZ3FdDb7jSYdkotNmfU
-	iqPDmgWe3D4kB/OIvFgUa65XsgZ5zBtufDOr77020RAI8QnVTFib6qxsVBJeNBCy1MPBk4DeX6Z
-	K4Zu4=
-X-Received: by 2002:a05:622a:1899:b0:509:2a92:809f with SMTP id d75a77b69052e-50b1474847emr24335231cf.1.1773827085619;
-        Wed, 18 Mar 2026 02:44:45 -0700 (PDT)
-X-Received: by 2002:a05:622a:1899:b0:509:2a92:809f with SMTP id d75a77b69052e-50b1474847emr24334991cf.1.1773827085200;
-        Wed, 18 Mar 2026 02:44:45 -0700 (PDT)
-Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b97f142cb46sm167704366b.21.2026.03.18.02.44.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Mar 2026 02:44:44 -0700 (PDT)
-Message-ID: <37ba895f-95ac-44f5-ad54-20b04a079250@oss.qualcomm.com>
-Date: Wed, 18 Mar 2026 10:44:39 +0100
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="ufK7hwbh"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ou1Q5wQcL0cjFsopKyXQ99zuvF76kwsYd9SxWnICByYpvzXCrAjhbbofBpvy9waURAIwRTiVo0Hm+qZ4zM90nhr/0osz2A72HDB1mjEXcvCMYzzTvFaaKkaQRKkld+SaYK5ZsGW1GuIO5fzecXLeg0XWN01qPw824ixp3VJEIQarMBDWGJMZ6YDy7xVT+WwA4by1laToJm77EH8RIGq//mGoQPIsy58hWh555w2Sv8lwgdK56GXuuL2B09q8fd1alAdVm9cj8/nEiaxZ4xI47QYzXEeK88ukUQX/ZVL7M/GOAhVNe+btHSoThnWGYSH0q2HODBMb6eO3IUCGPj3Rng==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=mDQd83oGBxmPEzNX0/4pJgYceWXd4uZ+q/2mPlmKYNk=;
+ b=a9oEH43TkjwFJ6wPyjH1WJfhGK70ybZWkU6Uu8XfGfM/eVyFIKKwD/4qgZp1ggZWc8DGgvps/MX2Hn3xOuRy/rmhWn3v26Q0rdC+SC/WeIuCsj0UoOiUJ7UEf+fcMgIGkk0aIh+FfSP8l1YKT/xxU5mH5tPaaP/MZeU6o37XeRF4AVY2soJhkcOUoqdI6OfibNM8rO8Y19QzDxq55MzZZQDlOA++XPOrz9MC48JOFrZhoaGNMX1nftv4y9G0ky6PR9lFdG1qXZx4J9MPOMcwhxTnk0mzZ3Z4hWQe6kjjfcBEkoC+AgIrcgVzoVUij0DIzidA0XCVSmlb/RVgsMPe4g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=mDQd83oGBxmPEzNX0/4pJgYceWXd4uZ+q/2mPlmKYNk=;
+ b=ufK7hwbhpR453XJGeB+k8Lh9SrOcL2+b+KGdib/BF2R+erKZ5HpX6rNROx8XRzdDgG8z0R25wY1QHLm+pVka58JxrKpJw8fjVAHe7uTiUMHuZsD9qy/Oz0STogJ7byqAYsBQpbcvhYcIXwCKcf+nMam6M2+yox33gWXOvPeS3OFA4BXPQQaNb0JRPg9xedur+RCg76L3kvGYait9r8g4MxOiU+b22ik8BRO+Hf2gNO7C8JAZm2fyMzH0LrQJOAeqdAsZ7DzXuMNPWp6ds9Oa1fVtMtRfoiZCSSdgepF1YyhA29HrosWd0rUzxxVkRk7gNX+cbL2jEEcgHZGmNbHMFw==
+Received: from BLAPR03CA0056.namprd03.prod.outlook.com (2603:10b6:208:32d::31)
+ by CH2PR12MB9459.namprd12.prod.outlook.com (2603:10b6:610:27d::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Wed, 18 Mar
+ 2026 09:50:37 +0000
+Received: from BN3PEPF0000B36D.namprd21.prod.outlook.com
+ (2603:10b6:208:32d:cafe::18) by BLAPR03CA0056.outlook.office365.com
+ (2603:10b6:208:32d::31) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.27 via Frontend Transport; Wed,
+ 18 Mar 2026 09:50:15 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ BN3PEPF0000B36D.mail.protection.outlook.com (10.167.243.164) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9745.0 via Frontend Transport; Wed, 18 Mar 2026 09:50:37 +0000
+Received: from rnnvmail202.nvidia.com (10.129.68.7) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 18 Mar
+ 2026 02:50:22 -0700
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail202.nvidia.com
+ (10.129.68.7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 18 Mar
+ 2026 02:50:21 -0700
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
+ Transport; Wed, 18 Mar 2026 02:50:18 -0700
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <lenb@kernel.org>, <viresh.kumar@linaro.org>,
+	<linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>
+CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
+	<jonathanh@nvidia.com>, <bbasu@nvidia.com>, <sumitg@nvidia.com>, "Rafael J .
+ Wysocki" <rafael.j.wysocki@intel.com>
+Subject: [PATCH] ACPI: CPPC: Check cpc_read() return values consistently
+Date: Wed, 18 Mar 2026 15:20:05 +0530
+Message-ID: <20260318095005.2437960-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] arm64: dts: qcom: sm8750: Enable TSENS and thermal
- zones
-To: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        aastha.pandey@oss.qualcomm.com, dipa.mantre@oss.qualcomm.com,
-        Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
-References: <20260313-sm8750_tsens-v1-0-250fcc3794a2@oss.qualcomm.com>
- <20260313-sm8750_tsens-v1-2-250fcc3794a2@oss.qualcomm.com>
- <c4376a88-a490-4b58-bff3-b0f4d2f731b7@oss.qualcomm.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <c4376a88-a490-4b58-bff3-b0f4d2f731b7@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
+X-NVConfidentiality: public
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: lddyitJ6kMJC9RdP_U2sRohjMwgTreUb
-X-Proofpoint-GUID: lddyitJ6kMJC9RdP_U2sRohjMwgTreUb
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE4MDA4MCBTYWx0ZWRfX+3wWdJ5r3RRB
- EXQ8bnrOl4i9qq7tudKlMolr07I1C0bNF+OJ92v/c+fgBTu/64nAakBc0Tf6Ru0oMJG7MQjybz4
- 4PxKbkXoY/dHfkfxogpoQtREr29t10ol4hZm48I7lbhrHtn90HneiHEgIOI63q/dTRpFVN0gQ7Y
- iSS4tQJMaS1uRSUKcf58DmhJxlpzulDUWbGkZoh76srMLlEI0JaEIq3fRJL2VDRdyvqpvntHNVf
- cNqvk/5URs1gaLsa4oZS60tya9OIVDuhqbsIyz6QbYcDndUMFRWs+dXxdfPLg3/JkbfpWJ8RAJg
- wAPmrZ2DfSQywJDGE9lJoO6hB/ylUDt8RTcQP9ODBOjgUHH40OKDzpSuxxoL/KSCgbvO9aEKnr1
- Zd81iNEd4rCHR3Xrv6kRZVcOeuadAOf/wbdjYWY6XYWxAvOBEVqNLTuqMn5fcecOm3t9xvrY99c
- 77HxKgrisFWSsYkXgMQ==
-X-Authority-Analysis: v=2.4 cv=Y8n1cxeN c=1 sm=1 tr=0 ts=69ba740e cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=COk6AnOGAAAA:8 a=EUspDBNiAAAA:8 a=RYkhNht3YKPCQp1dbvQA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-18_01,2026-03-17_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 adultscore=0 bulkscore=0 impostorscore=0 phishscore=0
- clxscore=1015 lowpriorityscore=0 malwarescore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603180080
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN3PEPF0000B36D:EE_|CH2PR12MB9459:EE_
+X-MS-Office365-Filtering-Correlation-Id: 22b6ff61-f8d9-4dfc-7eff-08de84d3cee7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|376014|13003099007|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	fN+kwWh7/3BBBWq4/dmdw3aK8xtxzGP8ZZ4Gc4KCObM7n+YUsn6XP62/JdLCy8lN8IMuo8xnC6y8V7agaBwQqGj4uiWfOdKOJUJ6QBpWjsocke2ZzcaF+jLwXPEmEiiGIThKfXjW/7eeVWHWgmhuXnAFcQ9klnnlZt/TelYDbeseNarkVqMczQP044mwfZsZwZgE+Jk++OYyONd4jcPQjNoeZPBXRqhk9fMGkj1DaywgrDPDhRnJeKnhLbwWs/Z2z5W3eCAwQY5v8ey7lwUdZ9IUOafEonR5+vgzwcy7O7FnoCvvrbawNPuI16oWIUzwlyLagmgecL1ZIWakRaAzl9cUHlrg4DUEQzqhOW42JJhjIrX61bmur6YeE0Qw3q4TDDmLM9NI6N602vxL9w4aOVFDPzCNcUoDveDYYs3JOPvbsNLtaeslRq00rdkDHye1DFC6x5OpGKZTtKMpr6NWeee5X7G7k9HmudihSlBtKQDYXm2O4EFYorccS7H82gx2dQdkQxaDtskQA1BeHtadPlTviDEOuWDK1QG2Z59n1YfE4kS+4MX+hTLu6egxHIcnaYyKlK2uaD9aYF/2FyYkXZi8fChXEFMS3sFg7Fa4jBDwWp7xnyI8HIib1URqSm2gTOjNlpeht1vcLx7oh0j3xbdl24KFDMce3v+MSJoFVvnDh91TuUGvwOntFnkkTWJpOHzL1tb5l87aBao8LlbBFhrWpdRvNSslr4y0GjO6CCzjAwAoVjIYR4F7n/UpKqxos/X9lxi688TeHYizh1dlfg==
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(376014)(13003099007)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	4XTKGr21SlCESGQAF8ZyYz5oY+mtLWmsShhsGnNNUvKDVTQDKn79G/R9gJPKSL6SK5SNajqOS/qbpcJKkJy+44WjsbynNLCIJC7mhK6nVO2wOrjH2Iaxh/IRkkhTJCEzum4B7f2EP2DEb9aLLycSWtkCXw6l+EA7JW2Ue6zL6eoO1iDiG/G+BrrfPZYEnuKBcDBH9/8eJxw7pK1jpvsTNdqVwE6zRCNh6gJpe5hRtf5I/GK48WGKlRr+nQ2Bh9CgpGWa3o3CHZpqb5q9NMRyzXWMUzFKM9V+sjdilXfc3rd0lTwQ4tMSN2DssMTU5Q0DGjX+EBXEhpJFOiJOMGQZs6fX+yECxR6kb7QOylek006bJkLS1H12Yc70tshTxQIlTvGTlw6Z3ZKz6CPzyqSlPBf0b9l8UB0t9YjsAEzKq/0vZqOfMXx7oQMMDPCtX8ze
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2026 09:50:37.5559
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 22b6ff61-f8d9-4dfc-7eff-08de84d3cee7
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN3PEPF0000B36D.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB9459
 
-On 3/18/26 10:44 AM, Konrad Dybcio wrote:
-> On 3/13/26 11:34 AM, Gaurav Kohli wrote:
->> From: Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
->>
->> The sm8750 includes four TSENS instances, with a total of 47 thermal
->> sensors distributed across various locations on the SoC.
->>
->> The TSENS max/reset threshold is configured to 130°C in the hardware.
->> Enable all TSENS instances, and define the thermal zones with a hot trip
->> at 120°C and critical trip at 125°C.
->>
->> Signed-off-by: Manaf Meethalavalappu Pallikunhi <quic_manafm@quicinc.com>
->> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
->> ---
-> 
-> [...]
-> 
->> +		cpu-0-0-0-thermal {
->> +			thermal-sensors = <&tsens0 1>;
->> +
->> +			trips {
->> +				trip-point0 {
->> +					temperature = <120000>;
->> +					hysteresis = <5000>;
->> +					type = "hot";
->> +				};
-> 
-> Are we going to use these trip points for the CPUs? If not, let's only
-> keep the critical ones (again, for CPUs specifically since they get
-> externally throttled)
+Callers of cpc_read() ignore its return value, which can lead
+to using uninitialized or stale values when the read fails.
 
-Other than that:
+Fix this by consistently checking cpc_read() return values in
+cppc_get_perf_caps(), cppc_get_perf_ctrs(), and cppc_get_perf().
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Depends-on: https://lore.kernel.org/lkml/20260206142658.72583-2-sumitg@nvidia.com/
 
-Konrad
+Link: https://lore.kernel.org/lkml/48bdf87e-39f1-402f-a7dc-1a0e1e7a819d@nvidia.com/
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+---
+ drivers/acpi/cppc_acpi.c | 99 +++++++++++++++++++++++++++++-----------
+ 1 file changed, 72 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 5ad922eb937a..053fc6765a59 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1394,45 +1394,66 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
+ 	}
+ 
+-	cpc_read(cpunum, highest_reg, &high);
++	ret = cpc_read(cpunum, highest_reg, &high);
++	if (ret)
++		goto out_err;
+ 	perf_caps->highest_perf = high;
+ 
+-	cpc_read(cpunum, lowest_reg, &low);
++	ret = cpc_read(cpunum, lowest_reg, &low);
++	if (ret)
++		goto out_err;
+ 	perf_caps->lowest_perf = low;
+ 
+-	cpc_read(cpunum, nominal_reg, &nom);
++	ret = cpc_read(cpunum, nominal_reg, &nom);
++	if (ret)
++		goto out_err;
+ 	perf_caps->nominal_perf = nom;
+ 
+ 	/*
+ 	 * If reference perf register is not supported then we should
+ 	 * use the nominal perf value
+ 	 */
+-	if (CPC_SUPPORTED(reference_reg))
+-		cpc_read(cpunum, reference_reg, &ref);
+-	else
++	if (CPC_SUPPORTED(reference_reg)) {
++		ret = cpc_read(cpunum, reference_reg, &ref);
++		if (ret)
++			goto out_err;
++	} else {
+ 		ref = nom;
++	}
+ 	perf_caps->reference_perf = ref;
+ 
+ 	if (guaranteed_reg->type != ACPI_TYPE_BUFFER  ||
+ 	    IS_NULL_REG(&guaranteed_reg->cpc_entry.reg)) {
+ 		perf_caps->guaranteed_perf = 0;
+ 	} else {
+-		cpc_read(cpunum, guaranteed_reg, &guaranteed);
++		ret = cpc_read(cpunum, guaranteed_reg, &guaranteed);
++		if (ret)
++			goto out_err;
+ 		perf_caps->guaranteed_perf = guaranteed;
+ 	}
+ 
+-	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
++	ret = cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
++	if (ret)
++		goto out_err;
+ 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
+ 
+-	if (!high || !low || !nom || !ref || !min_nonlinear)
++	if (!high || !low || !nom || !ref || !min_nonlinear) {
+ 		ret = -EFAULT;
++		goto out_err;
++	}
+ 
+ 	/* Read optional lowest and nominal frequencies if present */
+-	if (CPC_SUPPORTED(low_freq_reg))
+-		cpc_read(cpunum, low_freq_reg, &low_f);
++	if (CPC_SUPPORTED(low_freq_reg)) {
++		ret = cpc_read(cpunum, low_freq_reg, &low_f);
++		if (ret)
++			goto out_err;
++	}
+ 
+-	if (CPC_SUPPORTED(nom_freq_reg))
+-		cpc_read(cpunum, nom_freq_reg, &nom_f);
++	if (CPC_SUPPORTED(nom_freq_reg)) {
++		ret = cpc_read(cpunum, nom_freq_reg, &nom_f);
++		if (ret)
++			goto out_err;
++	}
+ 
+ 	perf_caps->lowest_freq = low_f;
+ 	perf_caps->nominal_freq = nom_f;
+@@ -1526,16 +1547,25 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ 		}
+ 	}
+ 
+-	cpc_read(cpunum, delivered_reg, &delivered);
+-	cpc_read(cpunum, reference_reg, &reference);
++	ret = cpc_read(cpunum, delivered_reg, &delivered);
++	if (ret)
++		goto out_err;
++
++	ret = cpc_read(cpunum, reference_reg, &reference);
++	if (ret)
++		goto out_err;
++
+ 	/*
+ 	 * Per spec, if ctr_wrap_time optional register is unsupported, then the
+ 	 * performance counters are assumed to never wrap during the lifetime of
+ 	 * platform
+ 	 */
+ 	ctr_wrap_time = (u64)(~((u64)0));
+-	if (CPC_SUPPORTED(ctr_wrap_reg))
+-		cpc_read(cpunum, ctr_wrap_reg, &ctr_wrap_time);
++	if (CPC_SUPPORTED(ctr_wrap_reg)) {
++		ret = cpc_read(cpunum, ctr_wrap_reg, &ctr_wrap_time);
++		if (ret)
++			goto out_err;
++	}
+ 
+ 	if (!delivered || !reference) {
+ 		ret = -EFAULT;
+@@ -1811,24 +1841,39 @@ int cppc_get_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	}
+ 
+ 	/* Read optional elements if present */
+-	if (CPC_SUPPORTED(max_perf_reg))
+-		cpc_read(cpu, max_perf_reg, &max);
++	if (CPC_SUPPORTED(max_perf_reg)) {
++		ret = cpc_read(cpu, max_perf_reg, &max);
++		if (ret)
++			goto out_err;
++	}
+ 	perf_ctrls->max_perf = max;
+ 
+-	if (CPC_SUPPORTED(min_perf_reg))
+-		cpc_read(cpu, min_perf_reg, &min);
++	if (CPC_SUPPORTED(min_perf_reg)) {
++		ret = cpc_read(cpu, min_perf_reg, &min);
++		if (ret)
++			goto out_err;
++	}
+ 	perf_ctrls->min_perf = min;
+ 
+-	if (CPC_SUPPORTED(desired_perf_reg))
+-		cpc_read(cpu, desired_perf_reg, &desired_perf);
++	if (CPC_SUPPORTED(desired_perf_reg)) {
++		ret = cpc_read(cpu, desired_perf_reg, &desired_perf);
++		if (ret)
++			goto out_err;
++	}
+ 	perf_ctrls->desired_perf = desired_perf;
+ 
+-	if (CPC_SUPPORTED(energy_perf_reg))
+-		cpc_read(cpu, energy_perf_reg, &energy_perf);
++	if (CPC_SUPPORTED(energy_perf_reg)) {
++		ret = cpc_read(cpu, energy_perf_reg, &energy_perf);
++		if (ret)
++			goto out_err;
++	}
+ 	perf_ctrls->energy_perf = energy_perf;
+ 
+-	if (CPC_SUPPORTED(auto_sel_reg))
+-		cpc_read(cpu, auto_sel_reg, &auto_sel);
++	if (CPC_SUPPORTED(auto_sel_reg)) {
++		ret = cpc_read(cpu, auto_sel_reg, &auto_sel);
++		if (ret)
++			goto out_err;
++	}
+ 	perf_ctrls->auto_sel = (bool)auto_sel;
+ 
+ out_err:
+-- 
+2.34.1
+
