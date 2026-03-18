@@ -1,185 +1,148 @@
-Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F2863C9ED4
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 18:19:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E7443CE4A3
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 18:20:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.49
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773857990; cv=pass; b=hMnTKvWieDnTiIc8H8RpGvThtZ6KTnuGpXxCxWro2sdQTFq8aFFKZmO+Q/8IV1hxBVDOZvb0eNfJ7EOxnNaNeWDWPBy1o9kcMRYcQR/VGk0t1ZNPMFConZS1VKxa6mSqlfgObqcLhopEfQm/GF1OBCgrDKxdEi7WiNDdekhHkZc=
+	t=1773858029; cv=pass; b=pldJJtkBVRXWTt/j9MVu9nysiMq91iqSSD2r9cxEl5fziRze2MkkP4neE3b4CyFYDd3ysdvCC2HkOkdL8pfpxkzZex3AWfUV1n/0+Z3Pi/sMkpF3O8BwzpQUQZG6AXGzD5/t+m1Pz5UUvIqovjLkylu5jqxJMG3AxycmRUuoYZs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773857990; c=relaxed/simple;
-	bh=4oOVK2Ujr3IB7OHZL7BqydDFONcShnL/O0sVh9dCeBM=;
+	s=arc-20240116; t=1773858029; c=relaxed/simple;
+	bh=o2AlAnMddYyM3GRUlR6Czl0IFVIjXXrBXoY3tjJ2NCM=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kT2JV5T+zigfPBp7Ktwg1ZwUF5/C6aqHQqCsHVbyFthkSkiD4qq7d8ohpX3edqsgWcnsdj7nfrcoUspV3ypeygb1VBHxqiNM8rbE6SRIZUADhhdOehgDeqwmqZ1D+FHxyDU5u6Lev9wIRAv/+0gAx1sLnOR+iYBtlUFJc7H/I+k=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=HV/mJafS; arc=pass smtp.client-ip=209.85.167.43
+	 To:Cc:Content-Type; b=oobB32ytZz3c7BYjyIvtIu8QIlbC2/I1wv3nLblhYDYffv2i7pLD6fYfUTPFz9Ia9sDgD7nQqbnAHtjBi6vgyyYkHwHaQ0/Wexd9DUYqykUzZw3xL/ZZ/ftt367uIvdUvDAUVujrWMAYMjMv1OzuRqhHHThG45QMhtLt/n9gqig=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=mI6V35NV; arc=pass smtp.client-ip=209.85.167.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HV/mJafS"
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5a2793d0d6fso160921e87.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 11:19:48 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773857987; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mI6V35NV"
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-59e4a04f059so161097e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 11:20:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773858026; cv=none;
         d=google.com; s=arc-20240605;
-        b=DW1+efTIp3wQPRbk28t4jqrNxgWq5haUYJujucz6yjnDORKAOg5usxQ4JAEuufejdQ
-         WGEuz3BGGaV7lkp8gcDXgma2aOhhEPkLLYFj8lmq/ZzcbTcUbOoDHU2PAhmCv6wWWxxg
-         Ex5l3lBy7zQ55LrM05yrRSDiep26UMRIn3WaDK8xlz9fCNBxq9Ol2+/67vzYtqLBlMHb
-         FiLPvA3xV+ACwBTqdRdANPWnZ0BzZmJBTlw9KF6sdIDNjyavkOqdfGZ4VEgk/7MkUsIt
-         5vwksFjMURxOoiYoAy7VPDbh31fFhUoyVwvv1PMYafyqJO6KqreC2iu6eGPXJ5L+oBoT
-         5c3g==
+        b=BDMgp4Bg4EkW60f+qd2bU4FDH09cpS0BueJUwpCOqMdhyhDsQYYgy0WHhs7f31iA59
+         7Do+xaYP9C6Dww3F/c6x9PMa3yqizrexy3DQ/qmGAt2xAjC/TBF/mby4Tskm4XY1iWzq
+         M5KZgKE2Nl0GlF73Aty92CTf+nyGv0RaEauyRMvCjRMVRk/ndZXEiKEvDMdqpIZqE63v
+         eqczLu0gu9ULiF6B5LgxrLvaNEb8JTPJw+vhlt+6QKWW7loc+FYH3K583vzW0+yYvSQo
+         Pm6rR6JEaSWi6FhufUq12yMtk8TlUWXbrUdp4gdtWylyPjVnupwTtJAPJtNCtmFTc3OX
+         hLyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=NRxDxT2gnBNASiQ3ruLdElFAagcbSYIjGNtCyJjVGWg=;
-        fh=Cfs9L6OABxBjctXqvcWFtWtgQ8cYu7tc3GE3IFkYhZ8=;
-        b=IvekXe+ArQhc3O02lWQwplFj9e/uOGIA80bkhepJtWwE30YWQW8/GL5fvFWSFOk4M1
-         fWSOqAUONmAOT+JBQGOHQv+XNAKXKe2//IY8XVsN/+T5kjFuFl3XxM44pRVDUlY1b4fR
-         +No9JlD2MjuGmISOPen1DWB+O7xach7ZP2wIgB/awfG+ZvGFb6YXuJonZz+CY2x1sN/+
-         xSCHInPDDJu6UvadTQmw11aeJUUQxFkOTqYSQuTSwiFVCHfvu9xbA5WdGD7UgmfHbiTR
-         niVcqg7ZDv49MPOdBchecbX67Ur4Y31niWwW9uZYNCw+3gyHSzYxekHVR7szFe0Ybxe8
-         Whjw==;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
+        fh=q9pYqqmZSSFCoGsH9IOFUAfUQdFwFS3M03SFRgyhPDg=;
+        b=evvSyxXJrRvcvvXsFJGZXVaeDspLk5OcJzcnnKI87KuA1bGMLeQ7RewPH7ME7zEMQa
+         lK1ELs3AtK8aP1gzW1LjkFnAg024g2DAhKVqXE+6qCWj6ANS26vuWtrdqL8/DCodpg5w
+         HgKoTeMQdmWunUSj2+Fbhb3fxVb+U73EORTz3Kdvlf8LsXgZhj3TEcEmfLUcEjfJAM6T
+         rldBL/Lu1lczfMSWUrqrKsoyCL5P6RctcfUlG0rrQQvrav8xbAXQSRzYLVbde0zIw4r5
+         0cGTsCXHY1e2ZDXdXKBPujOVF294+9CuBKMNldOwFo721VDzP3qGp7J/lgkqPMobTUM5
+         oGNQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1773857987; x=1774462787; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NRxDxT2gnBNASiQ3ruLdElFAagcbSYIjGNtCyJjVGWg=;
-        b=HV/mJafSETLKojrCnjxSwkP4Vph73CetiDoc5/LMw+3qfwBLusrKzeyJGN6+xTPw/2
-         9rwfybPOT5Cu+juPm8XCyTmJoESiMSd01O+rdVPz2phi32nSUkQB5/LY+4zDAJisVpMU
-         Dy+gErH/Kb7Sc+RM1mHszNGgPDvCOGfyqT0qpjQfzp21aMkmL9UtDxqB+PHi6p7oOGDs
-         H3CUIGFVHspRBpB2vM/vU8sqUO+PoHEobzmafMA+8TY/Zf6CrT4wdlciqzeDwLMb7Zft
-         tAwNc2hZmGa7gCMXQ5Ye4Ov3yHSFIg6K2nS8cs50dUD/D2dGOjuvMserCEzeSRH59K2V
-         w5yQ==
+        d=linaro.org; s=google; t=1773858026; x=1774462826; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
+        b=mI6V35NV8ZWus1QtxqcWcFu7cx86rkGqhoUIR8ptZvCoq57Y8NoeSWyMY+knpIGMpU
+         BpZStWyG+GeeetaECaDMjqOoC1O3ENiIF1Wlm9VDxhqMkgH8Rrku7JdywhpNwkR+s1oG
+         0CioRCsUFUOkqDYa8KQwPBbqowNfK5mg725LQu3I2VqXzO3QUowqJUcd9Dj3vEW5yMnv
+         dXILrC5+5/lgq0XBYJ9dryfydjoLr8egZEzHj89QPaX4qDocwSI5H+G9/B9EO+e8/4uB
+         qhq8RaiUcRhEV3ltZzwLCKdE5L32BrQaywJo+Oq7we2DimHkOgTO2C5sQU/VQQ10lTH0
+         d2pQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773857987; x=1774462787;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=NRxDxT2gnBNASiQ3ruLdElFAagcbSYIjGNtCyJjVGWg=;
-        b=JaHmWUzgbEUWymCdpQVYZf1kWMBvbcvitBnujWIRJjsIpjursk20Z773hZJqHCM7x6
-         XwBdnSjioY1ilmRp3sz5TnggDOPQ/u4pqiqRhqsGNCmqrgCtIJJvzG/lwsnQ65e6Pdpc
-         wyIa8uu7B4hzzNYBw96UJt3If6cT+rG2W3cdb1CWg/fo6HrbPMQ+He/SfqCrc2qvpQI+
-         gRIxs3nXhVVszFBopqQh/BEcLiD1dYJr4fWcXNYKfH99JmrFGF2AcrxV/zUWA5wPTUs3
-         nFKGetcsCDnkH5EwM8DSl4YcHtTa53P047PCrX1fAzGMYnTfJ2CJooyMV3EY8rzg7q9n
-         OMVg==
-X-Forwarded-Encrypted: i=1; AJvYcCWrhRdljUWvQ26QPbeNP3uZdVQAvUYiE2lbKtDZZ5bQ+BPiNPRXqvSRzXiUun5hVr4wpUM/7wKu6A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YymFFGL9FJAW+SfugBrhyJwFU8h/1qUZ2S3cPol6KAfcM88VfwD
-	Hojj/EnZwRpOTQDNm2hXX3pp3D0H7clrW4KrZLPG1IwXNbTaGbTL42nflkjX4haZhpFKwcq99s3
-	3xSgTDcJD1IhUpg+HFyxbFUQnoUvZ50UMTqg9PQXVzg==
-X-Gm-Gg: ATEYQzxefDs9PElzZwpf1gubBcC4FOyyqlx5KOY4m8e2PPNA3fO/OC6TANheTga/bXa
-	Vi/r94paTRWGyslgNIIV9Q+663eNww9BSljcTHMa+VjSXHc0myFo2/Rt3ejUx6tnDkOMI9hae+2
-	Glu5tgr7SxVnQ+SJqPNe2dbInmbrUBytF2agE1C6JGk9Q24qD54YcxOxzTAeIVy2aW4PY8O01Df
-	FwDtVdDza9s0RmzX9nVmlwYhaY/CmsAouopx7sLYJ3lm7HtaeW0ceDrEfGckOBRayoayxNZwHhv
-	oxSlhsZc
-X-Received: by 2002:a05:6512:2554:b0:59e:171d:a68d with SMTP id
- 2adb3069b0e04-5a2796a8fc7mr1439815e87.27.1773857987280; Wed, 18 Mar 2026
- 11:19:47 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1773858026; x=1774462826;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
+        b=aQemDMIPiVkxEzj4j2SG/ejZZCIw5T2J0EbPPn5dw+mSI3d1U4VxPHUBmgYiBsyTBF
+         kXrHM/UDGlpbBAk1LnU7h6G51WKKDslC7GYMWoqcCVHFY67tY8sHehaWvNTefeBosj7u
+         uvtkd82sUNIMXchrxSe7xmkV6UvgD85z4QGUQVl6wYv/BdFBn09r4LiGGaCKD3fDx3m4
+         dEniTcG/CvSrtK6F4dZkhS580gGKGuOsLEfWPb8lcBuwGu02U7NjBBzwjlQD1qsO+Blj
+         XSLidlgQ5JQQzX6aOvqG41QEKLfIxqOX9VBLfb+VYTycV4NPNlKMc6gRBjuqYr9unS81
+         VwyA==
+X-Forwarded-Encrypted: i=1; AJvYcCW+ZxalovGkhQg5/cgI932phrxy4vkAl/1haNAKsvJs9EMnRCYXNaUVzD5t0QorIjv9Udh5wLEv3A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw7SW7wQE92LcEJR8Xa9mtoMKrtQUPcEZL3bSdl3U2LWecbWlMq
+	ql9ny3uqDn/cc11vi2dMpaeUmAgV79QfhU0lhoafbm8ybbOSUE9z81xb0491z8ch3uvK2KPVZKJ
+	56kHjWHEYQ1XpULQxbH+6tfVKDPIxpUMvwVdArY188Q==
+X-Gm-Gg: ATEYQzyKmDPA87FidoUvmijjpWJZGdBx17jxsExkPkrQ+SEtl93X7iEGt3Oe2ENs54T
+	DNAg74NqOaAEKunj2mIXQ4jhc0FtBxmT649FQ2XXn4/pVRe2HXQK8ioaOxNOwe85wQKuWxnrPgc
+	hzk/1+4UjDhfnoBaRpLhfRDErgPEY8aNDsGsMOmgHTYStJ9LSw3wQOIbZIl2sxa5kuJcrxFcqsh
+	/ECs9bkcOvNfoRK93efe+dqukMbbdA22175Rynf6OYuLqbiMnm2ENfHRsd22h8vxmGPDWSB7WgO
+	9v2q2pOe
+X-Received: by 2002:a05:6512:24c5:20b0:5a1:37cd:7f10 with SMTP id
+ 2adb3069b0e04-5a2795903dcmr1158473e87.10.1773858026058; Wed, 18 Mar 2026
+ 11:20:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260317-bcm2835-power-timeout-v1-0-19db323c51f9@igalia.com> <20260317-bcm2835-power-timeout-v1-2-19db323c51f9@igalia.com>
-In-Reply-To: <20260317-bcm2835-power-timeout-v1-2-19db323c51f9@igalia.com>
+References: <20260305-b4-pck600-a733-v2-0-ba6bbed7d253@gmail.com>
+In-Reply-To: <20260305-b4-pck600-a733-v2-0-ba6bbed7d253@gmail.com>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 18 Mar 2026 19:19:10 +0100
-X-Gm-Features: AaiRm52B3afGivAWtwZPnIEqWUc7ueqawx3ytlYolTm7X3odgd-DJ0WgKKEck8U
-Message-ID: <CAPDyKFoFp-YSqSm2YXJywNk6=nhhdOtijS9ONdaw7PCe+Oj_iA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] pmdomain: bcm: bcm2835-power: Replace open-coded
- polling with readl_poll_timeout_atomic()
-To: =?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
-	Scott Branden <sbranden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Stefan Wahren <wahrenst@gmx.net>, 
-	Rob Herring <robh@kernel.org>, kernel-dev@igalia.com, linux-pm@vger.kernel.org, 
-	linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Date: Wed, 18 Mar 2026 19:19:50 +0100
+X-Gm-Features: AaiRm50uzOde_q8t8Y3YJeSNhx4Hb7KPrmeaUA5JiLmoBH5vpeZt6VfvtJkYLuo
+Message-ID: <CAPDyKFoo7HXuS1OQtt6Ku4O23pvFOvaG3g1_N7SPV8uB+ckt-Q@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] allwinner: a733: Add A733 PCK600 Power Domain
+ Controller Support
+To: Yuanshen Cao <alex.caoys@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 17 Mar 2026 at 23:42, Ma=C3=ADra Canal <mcanal@igalia.com> wrote:
+On Thu, 5 Mar 2026 at 04:34, Yuanshen Cao <alex.caoys@gmail.com> wrote:
 >
-> Replace hand-rolled ktime_get_ns()/cpu_relax() polling loops with
-> readl_poll_timeout_atomic() for the power-on (POWOK), and memory
-> repair (MRDONE) waits.
+> Hi everyone,
 >
-> No functional change intended.
+> This series is to introduce Allwinner A733 PCK600 Power Domain
+> Controller.
 >
-> Signed-off-by: Ma=C3=ADra Canal <mcanal@igalia.com>
+> Allwinner A733 has this one power domain controller, PCK600, which
+> shares the same BSP drivers according to the package provided by
+> Radxa[1]. Unlike A523, A733 does not require the resets, and it also has
+> different delay values. Apart from these, driver wise, everything else
+> is the same.
+>
+> Add support for A733 power domain controller by making resets optional
+> on sun55i-pck600 driver, adding A733 sunxi_pck600_desc and dt-bindings
+> definitions.
+> Tested on Radxa Cubie A7Z.
+>
+> [1] https://github.com/radxa/allwinner-bsp
+>
+> Signed-off-by: Yuanshen Cao <alex.caoys@gmail.com>
+> ---
+> Changes in v2:
+> - Fit the pd_names into two lines
+> - Link to v1: https://lore.kernel.org/r/20260304-b4-pck600-a733-v1-0-2f54efdb8cc2@gmail.com
+>
+> ---
+> Yuanshen Cao (2):
+>       dt-bindings: power: Add Support for Allwinner A733 PCK600 Power Domain Controller
+>       pmdomain: sunxi: Add support for A733 to Allwinner PCK600 driver
+>
+>  .../bindings/power/allwinner,sun20i-d1-ppu.yaml    | 17 ++++++++++-
+>  drivers/pmdomain/sunxi/sun55i-pck600.c             | 35 +++++++++++++++++++---
+>  .../power/allwinner,sun60i-a733-pck-600.h          | 18 +++++++++++
+>  3 files changed, 65 insertions(+), 5 deletions(-)
+> ---
+> base-commit: 0031c06807cfa8aa51a759ff8aa09e1aa48149af
+> change-id: 20260304-b4-pck600-a733-1790e0e48d49
+>
+> Best regards,
+> --
+> Yuanshen Cao <alex.caoys@gmail.com>
+>
 
-Applied for next, thanks!
+The series applied for next, thanks!
 
 Kind regards
 Uffe
-
-
-> ---
->  drivers/pmdomain/bcm/bcm2835-power.c | 25 +++++++++----------------
->  1 file changed, 9 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/pmdomain/bcm/bcm2835-power.c b/drivers/pmdomain/bcm/=
-bcm2835-power.c
-> index eee87a3005325848547ce1f5fd729b168a641460..b76d74e3849be0aff226cfbe3=
-11970c9557eccfa 100644
-> --- a/drivers/pmdomain/bcm/bcm2835-power.c
-> +++ b/drivers/pmdomain/bcm/bcm2835-power.c
-> @@ -215,10 +215,10 @@ static int bcm2835_power_power_on(struct bcm2835_po=
-wer_domain *pd, u32 pm_reg)
->  {
->         struct bcm2835_power *power =3D pd->power;
->         struct device *dev =3D power->dev;
-> -       u64 start;
->         int ret;
->         int inrush;
->         bool powok;
-> +       u32 val;
->
->         /* We don't run this on BCM2711 */
->         if (power->rpivid_asb)
-> @@ -239,12 +239,8 @@ static int bcm2835_power_power_on(struct bcm2835_pow=
-er_domain *pd, u32 pm_reg)
->                          (inrush << PM_INRUSH_SHIFT) |
->                          PM_POWUP);
->
-> -               start =3D ktime_get_ns();
-> -               while (!(powok =3D !!(PM_READ(pm_reg) & PM_POWOK))) {
-> -                       cpu_relax();
-> -                       if (ktime_get_ns() - start >=3D 3000)
-> -                               break;
-> -               }
-> +               powok =3D !readl_poll_timeout_atomic(power->base + pm_reg=
-,
-> +                                                  val, val & PM_POWOK, 0=
-, 3);
->         }
->         if (!powok) {
->                 dev_err(dev, "Timeout waiting for %s power OK\n",
-> @@ -258,15 +254,12 @@ static int bcm2835_power_power_on(struct bcm2835_po=
-wer_domain *pd, u32 pm_reg)
->
->         /* Repair memory */
->         PM_WRITE(pm_reg, PM_READ(pm_reg) | PM_MEMREP);
-> -       start =3D ktime_get_ns();
-> -       while (!(PM_READ(pm_reg) & PM_MRDONE)) {
-> -               cpu_relax();
-> -               if (ktime_get_ns() - start >=3D 1000) {
-> -                       dev_err(dev, "Timeout waiting for %s memory repai=
-r\n",
-> -                               pd->base.name);
-> -                       ret =3D -ETIMEDOUT;
-> -                       goto err_disable_ispow;
-> -               }
-> +       if (readl_poll_timeout_atomic(power->base + pm_reg, val,
-> +                                     val & PM_MRDONE, 0, 1)) {
-> +               dev_err(dev, "Timeout waiting for %s memory repair\n",
-> +                       pd->base.name);
-> +               ret =3D -ETIMEDOUT;
-> +               goto err_disable_ispow;
->         }
->
->         /* Disable functional isolation */
->
-> --
-> 2.53.0
->
