@@ -1,148 +1,157 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
+Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com [209.85.167.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E7443CE4A3
-	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 18:20:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D615D3BED09
+	for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 18:22:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.46
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773858029; cv=pass; b=pldJJtkBVRXWTt/j9MVu9nysiMq91iqSSD2r9cxEl5fziRze2MkkP4neE3b4CyFYDd3ysdvCC2HkOkdL8pfpxkzZex3AWfUV1n/0+Z3Pi/sMkpF3O8BwzpQUQZG6AXGzD5/t+m1Pz5UUvIqovjLkylu5jqxJMG3AxycmRUuoYZs=
+	t=1773858181; cv=pass; b=PBi1qxzDdPUbFWHeyjynCxgKwmdnezIkiQGG+1GEENU+F3Pq/iP+FiTKFRHzrUJqN8xcdfmhoQbLQNH35ZXJuSPxHntEZvVYcwwM0nQG+etZge/DOo4ObqeZ+oc99awIbpqLF11T0G2YJi+z5/hOB0onZrq7xtZoM+QbUI9QdSU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773858029; c=relaxed/simple;
-	bh=o2AlAnMddYyM3GRUlR6Czl0IFVIjXXrBXoY3tjJ2NCM=;
+	s=arc-20240116; t=1773858181; c=relaxed/simple;
+	bh=nyP+gtfZxd9qCAN1bjq0tI03dKg3ytpQ2Du0Rew8xyw=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oobB32ytZz3c7BYjyIvtIu8QIlbC2/I1wv3nLblhYDYffv2i7pLD6fYfUTPFz9Ia9sDgD7nQqbnAHtjBi6vgyyYkHwHaQ0/Wexd9DUYqykUzZw3xL/ZZ/ftt367uIvdUvDAUVujrWMAYMjMv1OzuRqhHHThG45QMhtLt/n9gqig=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=mI6V35NV; arc=pass smtp.client-ip=209.85.167.49
+	 To:Cc:Content-Type; b=AwQkb2lpsl0FOpYGJIOyW0J9JcLnFt0pr0g4hCyzA/TReSrfETUW8uQB1s3In4sD5Ygxho3Qtk8SIRNO8aSak7+ci1AjugpWUxwR8K7V4+ulBVGtrnsRKB+sqLv46Xr+gFRgCNNScFhRXt/ct4n5cpEMJzt7YIj4DFRjKt3oW7w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=YZ4gdx9A; arc=pass smtp.client-ip=209.85.167.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mI6V35NV"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-59e4a04f059so161097e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 11:20:27 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773858026; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YZ4gdx9A"
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-59de8155501so147237e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 11:22:59 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773858178; cv=none;
         d=google.com; s=arc-20240605;
-        b=BDMgp4Bg4EkW60f+qd2bU4FDH09cpS0BueJUwpCOqMdhyhDsQYYgy0WHhs7f31iA59
-         7Do+xaYP9C6Dww3F/c6x9PMa3yqizrexy3DQ/qmGAt2xAjC/TBF/mby4Tskm4XY1iWzq
-         M5KZgKE2Nl0GlF73Aty92CTf+nyGv0RaEauyRMvCjRMVRk/ndZXEiKEvDMdqpIZqE63v
-         eqczLu0gu9ULiF6B5LgxrLvaNEb8JTPJw+vhlt+6QKWW7loc+FYH3K583vzW0+yYvSQo
-         Pm6rR6JEaSWi6FhufUq12yMtk8TlUWXbrUdp4gdtWylyPjVnupwTtJAPJtNCtmFTc3OX
-         hLyA==
+        b=Bz4HWkZOC91lTRhHoyz3u+RkOFVCtZ2CzSZ/Uwyg+CA5LZG5NTdrmTf8z+R21k/pXi
+         moREPnVaFiY2JJ4MrtxAYtHzpCK6ctMdWAUCRwfbdz8qLQSRrkdIPPeFil0kyycLEYUT
+         Fe13koPIFqcLl/DIU9gvFsj5BfScmI39dcvaQgruw4O6cyICo6rA/bOxt+kc2JqybPTp
+         IL5h/zBkzhtGtT/UtteB1QRuQzBHP4P8cuHb0dQt0sipIiGVk4GWPKk3VnjxPN2rr9F1
+         fJ8N/v26OV6ms6PaEkAKVQwiR/vgHknSlnXdY7DDvvZr3zzff2yj1nbelw2YELY6oC5T
+         dUlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
-        fh=q9pYqqmZSSFCoGsH9IOFUAfUQdFwFS3M03SFRgyhPDg=;
-        b=evvSyxXJrRvcvvXsFJGZXVaeDspLk5OcJzcnnKI87KuA1bGMLeQ7RewPH7ME7zEMQa
-         lK1ELs3AtK8aP1gzW1LjkFnAg024g2DAhKVqXE+6qCWj6ANS26vuWtrdqL8/DCodpg5w
-         HgKoTeMQdmWunUSj2+Fbhb3fxVb+U73EORTz3Kdvlf8LsXgZhj3TEcEmfLUcEjfJAM6T
-         rldBL/Lu1lczfMSWUrqrKsoyCL5P6RctcfUlG0rrQQvrav8xbAXQSRzYLVbde0zIw4r5
-         0cGTsCXHY1e2ZDXdXKBPujOVF294+9CuBKMNldOwFo721VDzP3qGp7J/lgkqPMobTUM5
-         oGNQ==;
+        bh=iA23sR2q1qivlc4Reij+0B975e1ViOsO76XTHCFysUI=;
+        fh=pIGoKsITR2fk/fHBHwVIRHiFW3OhJ8E8jG3fcPblFQw=;
+        b=fiS2ZO7tWz6BGaJwM8owrfbdp1/s3GdwxTEzs9WF/8/5+caRT8O0hkWyGO3EPWiUxz
+         THELx5NKIjMOBUrm7WBnv5pHxAJR0hH8I8nQ4bVyWRLY9xP/npNeB6UCkn1kYvF2PEOV
+         kfF05iV68mpzq503bHszCJcgGwQWCkQaslobei4FapjUDkLxlJai2+MQa5KwIp0/Nklx
+         UNn6JaLxA3y4dKrvHcHDtjBva8Spks9RYOBNtxFGuHav5ftzzMuLz6M+Cg7fNYIgGhuh
+         sWV8dn+A+40LePseRcQ4qVNW6PO+VlfZdqDZBSyuUH9t7yHT3HUIW0shIfjcVmgDJ4KO
+         yN4g==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1773858026; x=1774462826; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1773858178; x=1774462978; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
-        b=mI6V35NV8ZWus1QtxqcWcFu7cx86rkGqhoUIR8ptZvCoq57Y8NoeSWyMY+knpIGMpU
-         BpZStWyG+GeeetaECaDMjqOoC1O3ENiIF1Wlm9VDxhqMkgH8Rrku7JdywhpNwkR+s1oG
-         0CioRCsUFUOkqDYa8KQwPBbqowNfK5mg725LQu3I2VqXzO3QUowqJUcd9Dj3vEW5yMnv
-         dXILrC5+5/lgq0XBYJ9dryfydjoLr8egZEzHj89QPaX4qDocwSI5H+G9/B9EO+e8/4uB
-         qhq8RaiUcRhEV3ltZzwLCKdE5L32BrQaywJo+Oq7we2DimHkOgTO2C5sQU/VQQ10lTH0
-         d2pQ==
+        bh=iA23sR2q1qivlc4Reij+0B975e1ViOsO76XTHCFysUI=;
+        b=YZ4gdx9A2rbswMrwxvebnlw+8nWeyXoe1AeBlA1idbva3MG7siL7pMmsbyBwaiBC+4
+         BJcVgkh7IyQi0prgOGkmyBOmS6NKLFbIqoOOCAA6YOXznotAyI1SMn6B7TdSOBUoucv5
+         650d3koZP6OWJbsCIvg9XJCvE7icJ6TljFHiLCywrwxHyoQXAbp9jKiP1r5qAvSD/Pvk
+         uLz9/PYLTPrODfWSvvWu8P1eppaFTb55q54GRStzNvgtvU/9ac8TB8HP1YQIfpwZRwZA
+         K626q+SKnwCGGW7G9dbAywhptkJ8387SfQLd0KQi2DcHlNLglmBAFUu6grONzuHhmVck
+         k/kw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773858026; x=1774462826;
+        d=1e100.net; s=20251104; t=1773858178; x=1774462978;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=iQ1x2ihDMnnywua4CVQQdfzwfLUYhJP99revvTgTk0o=;
-        b=aQemDMIPiVkxEzj4j2SG/ejZZCIw5T2J0EbPPn5dw+mSI3d1U4VxPHUBmgYiBsyTBF
-         kXrHM/UDGlpbBAk1LnU7h6G51WKKDslC7GYMWoqcCVHFY67tY8sHehaWvNTefeBosj7u
-         uvtkd82sUNIMXchrxSe7xmkV6UvgD85z4QGUQVl6wYv/BdFBn09r4LiGGaCKD3fDx3m4
-         dEniTcG/CvSrtK6F4dZkhS580gGKGuOsLEfWPb8lcBuwGu02U7NjBBzwjlQD1qsO+Blj
-         XSLidlgQ5JQQzX6aOvqG41QEKLfIxqOX9VBLfb+VYTycV4NPNlKMc6gRBjuqYr9unS81
-         VwyA==
-X-Forwarded-Encrypted: i=1; AJvYcCW+ZxalovGkhQg5/cgI932phrxy4vkAl/1haNAKsvJs9EMnRCYXNaUVzD5t0QorIjv9Udh5wLEv3A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw7SW7wQE92LcEJR8Xa9mtoMKrtQUPcEZL3bSdl3U2LWecbWlMq
-	ql9ny3uqDn/cc11vi2dMpaeUmAgV79QfhU0lhoafbm8ybbOSUE9z81xb0491z8ch3uvK2KPVZKJ
-	56kHjWHEYQ1XpULQxbH+6tfVKDPIxpUMvwVdArY188Q==
-X-Gm-Gg: ATEYQzyKmDPA87FidoUvmijjpWJZGdBx17jxsExkPkrQ+SEtl93X7iEGt3Oe2ENs54T
-	DNAg74NqOaAEKunj2mIXQ4jhc0FtBxmT649FQ2XXn4/pVRe2HXQK8ioaOxNOwe85wQKuWxnrPgc
-	hzk/1+4UjDhfnoBaRpLhfRDErgPEY8aNDsGsMOmgHTYStJ9LSw3wQOIbZIl2sxa5kuJcrxFcqsh
-	/ECs9bkcOvNfoRK93efe+dqukMbbdA22175Rynf6OYuLqbiMnm2ENfHRsd22h8vxmGPDWSB7WgO
-	9v2q2pOe
-X-Received: by 2002:a05:6512:24c5:20b0:5a1:37cd:7f10 with SMTP id
- 2adb3069b0e04-5a2795903dcmr1158473e87.10.1773858026058; Wed, 18 Mar 2026
- 11:20:26 -0700 (PDT)
+        bh=iA23sR2q1qivlc4Reij+0B975e1ViOsO76XTHCFysUI=;
+        b=QDWmT0rkGixPTIg6FRy1HAikl2gT3+hC0rovxykrKD+NlNISbTvpihfwuw3qw1dib3
+         KdzzlPMGK9xFxfMPoKrVhy1DRqmdBY0VGnC6pEXFbH8YymCDKtJNQTh25IoIuUvCffoC
+         Qcy9VK4oAEXrDzS50jOtfP1evwx3fZmymIwQdu+fDOji8xbuvwtpA0SoLBdrGNLSqGBc
+         +gfWQAZGJEBkoHMPcaQf2N4laMQPVppLvkS8efnxJrUwZNG2DtYkbIOsekuo6IiCp74/
+         RQnLz1fz6C0EKQ4A78bbB3LKy6tqPkaler5PZWgAZnItRm/ZAPbEGZ/Oug3KJhaKXQy4
+         IFEA==
+X-Gm-Message-State: AOJu0Yxet8k6aL9sKHMdzxu1q/AjwdoGLqEJof6NNOjdMsmd2Opb/CYw
+	w1sGlQw1Q5w6sIMPxJu0gEK/Ib7hf2Pj7kj8gIaqSJ4/OHflunrIhXHmR/SXwIPwv+NKZj5KCkW
+	uf/CJEtsUnOREgZkp7MfV6TTbMT46K+7gN0AinulY9w==
+X-Gm-Gg: ATEYQzw8mE1kieITCxoKTZVs2cUE1gVEyzNbhk4zj45IZwN6SLD8ALD2qITY4x7KtJi
+	yNTy954S2atZ3O9nYKEnG08cC7GCnF0MVTkS7u52G6lQPYcQAMusbTVxRE1tVyFUzBy9f1MiWW1
+	xsKd4LQodDucXb0vUp1rWHGvjRco51buode+C9zyHcMnG7oztwgEyCCOCsrdm7bTH5uN1knqoMo
+	Po4cK1WRkgIU0n8u0VyP+An/wNm5XrWBUakS4qPHEIv8bYe7Ow8cQ6v7yHpe30teKzfHKV7qnNp
+	opz5Ts7g
+X-Received: by 2002:a05:6512:39cc:b0:5a2:7c67:4b3 with SMTP id
+ 2adb3069b0e04-5a27c670581mr1032726e87.2.1773858177947; Wed, 18 Mar 2026
+ 11:22:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260305-b4-pck600-a733-v2-0-ba6bbed7d253@gmail.com>
-In-Reply-To: <20260305-b4-pck600-a733-v2-0-ba6bbed7d253@gmail.com>
+References: <20260315214153.3682-1-rosenp@gmail.com>
+In-Reply-To: <20260315214153.3682-1-rosenp@gmail.com>
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 18 Mar 2026 19:19:50 +0100
-X-Gm-Features: AaiRm50uzOde_q8t8Y3YJeSNhx4Hb7KPrmeaUA5JiLmoBH5vpeZt6VfvtJkYLuo
-Message-ID: <CAPDyKFoo7HXuS1OQtt6Ku4O23pvFOvaG3g1_N7SPV8uB+ckt-Q@mail.gmail.com>
-Subject: Re: [PATCH v2 0/2] allwinner: a733: Add A733 PCK600 Power Domain
- Controller Support
-To: Yuanshen Cao <alex.caoys@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
-	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Date: Wed, 18 Mar 2026 19:22:21 +0100
+X-Gm-Features: AaiRm52kpaoiFPpZGuLu4fw_l_zJBBCJEDVi43rk0eejFBLBLds96ejXR6F-tws
+Message-ID: <CAPDyKFr1C_0Eirrx62bkp63ph_y9Ly8FjGbZVjYH9iCtAZGhbw@mail.gmail.com>
+Subject: Re: [PATCH] pmdomain: qcom: cpr: simplify main allocation
+To: Rosen Penev <rosenp@gmail.com>
+Cc: linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, 
+	"open list:QUALCOMM CORE POWER REDUCTION (CPR) AVS DRIVER" <linux-arm-msm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 5 Mar 2026 at 04:34, Yuanshen Cao <alex.caoys@gmail.com> wrote:
+On Sun, 15 Mar 2026 at 22:42, Rosen Penev <rosenp@gmail.com> wrote:
 >
-> Hi everyone,
+> Remove kcalloc by using a flexible array member to combine allocations.
 >
-> This series is to introduce Allwinner A733 PCK600 Power Domain
-> Controller.
->
-> Allwinner A733 has this one power domain controller, PCK600, which
-> shares the same BSP drivers according to the package provided by
-> Radxa[1]. Unlike A523, A733 does not require the resets, and it also has
-> different delay values. Apart from these, driver wise, everything else
-> is the same.
->
-> Add support for A733 power domain controller by making resets optional
-> on sun55i-pck600 driver, adding A733 sunxi_pck600_desc and dt-bindings
-> definitions.
-> Tested on Radxa Cubie A7Z.
->
-> [1] https://github.com/radxa/allwinner-bsp
->
-> Signed-off-by: Yuanshen Cao <alex.caoys@gmail.com>
-> ---
-> Changes in v2:
-> - Fit the pd_names into two lines
-> - Link to v1: https://lore.kernel.org/r/20260304-b4-pck600-a733-v1-0-2f54efdb8cc2@gmail.com
->
-> ---
-> Yuanshen Cao (2):
->       dt-bindings: power: Add Support for Allwinner A733 PCK600 Power Domain Controller
->       pmdomain: sunxi: Add support for A733 to Allwinner PCK600 driver
->
->  .../bindings/power/allwinner,sun20i-d1-ppu.yaml    | 17 ++++++++++-
->  drivers/pmdomain/sunxi/sun55i-pck600.c             | 35 +++++++++++++++++++---
->  .../power/allwinner,sun60i-a733-pck-600.h          | 18 +++++++++++
->  3 files changed, 65 insertions(+), 5 deletions(-)
-> ---
-> base-commit: 0031c06807cfa8aa51a759ff8aa09e1aa48149af
-> change-id: 20260304-b4-pck600-a733-1790e0e48d49
->
-> Best regards,
-> --
-> Yuanshen Cao <alex.caoys@gmail.com>
->
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
 
-The series applied for next, thanks!
+Applied for next, thanks!
 
 Kind regards
 Uffe
+
+
+> ---
+>  drivers/pmdomain/qcom/cpr.c | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/pmdomain/qcom/cpr.c b/drivers/pmdomain/qcom/cpr.c
+> index 3ee8184e4be3..c30690ef6919 100644
+> --- a/drivers/pmdomain/qcom/cpr.c
+> +++ b/drivers/pmdomain/qcom/cpr.c
+> @@ -239,7 +239,6 @@ struct cpr_drv {
+>         u32                     gcnt;
+>         unsigned long           flags;
+>
+> -       struct fuse_corner      *fuse_corners;
+>         struct corner           *corners;
+>
+>         const struct cpr_desc *desc;
+> @@ -247,6 +246,8 @@ struct cpr_drv {
+>         const struct cpr_fuse *cpr_fuses;
+>
+>         struct dentry *debugfs;
+> +
+> +       struct fuse_corner      fuse_corners[];
+>  };
+>
+>  static bool cpr_is_allowed(struct cpr_drv *drv)
+> @@ -1600,19 +1601,15 @@ static int cpr_probe(struct platform_device *pdev)
+>         if (!data || !data->cpr_desc || !data->acc_desc)
+>                 return -EINVAL;
+>
+> -       drv = devm_kzalloc(dev, sizeof(*drv), GFP_KERNEL);
+> +       drv = devm_kzalloc(dev,
+> +                       struct_size(drv, fuse_corners, data->cpr_desc->num_fuse_corners),
+> +                       GFP_KERNEL);
+>         if (!drv)
+>                 return -ENOMEM;
+>         drv->dev = dev;
+>         drv->desc = data->cpr_desc;
+>         drv->acc_desc = data->acc_desc;
+>
+> -       drv->fuse_corners = devm_kcalloc(dev, drv->desc->num_fuse_corners,
+> -                                        sizeof(*drv->fuse_corners),
+> -                                        GFP_KERNEL);
+> -       if (!drv->fuse_corners)
+> -               return -ENOMEM;
+> -
+>         np = of_parse_phandle(dev->of_node, "acc-syscon", 0);
+>         if (!np)
+>                 return -ENODEV;
+> --
+> 2.53.0
+>
