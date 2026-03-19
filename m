@@ -1,307 +1,144 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+Received: from mail-lj1-f179.google.com (mail-lj1-f179.google.com [209.85.208.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFB993EB7E1
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 16:34:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773938055; cv=none; b=tGhWlRpCByibBYUsEN9uKR4z3Zx3UavcERK4Vw1TVi/NOFamL4Qjh97w5HYgP4cUarwNDIloaWWeW/y3B3IAGohpd2A0u1Hlu0ki3WKDLHWGsNpxQIHi4OClTnHl+Cxf7DZ8CAL1vV1sDD2/2eVrkCh0QiOOVv2fnzLnregJ8H4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773938055; c=relaxed/simple;
-	bh=qIByj4XV6PVuqjLtc4TRgUblsmab/R7fqnlGqrwGO74=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uAFuTSbMnUUKZGNJn95JfLeDzApCgtNwWKrizxARPb0GiJCJpKbqG4++W8tozsU1U/g78Y8SI29OVixX7cDwYHwuMaavt6mPzRyS2AthLf6MNLQR9T862UwOd778JBJKQJz7ccsmNkRJLFWp1ZidlY1MhqPCd2EwxNALtaIrzIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Qgpx+Wrv; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2071E3EC2FF
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 16:43:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.179
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773938617; cv=pass; b=Xqn2wZrWjapOogCry6D99I5dgLEuitMptmozE3+1NjBKhePKgfRWhppw3yf33thsxbwAFyLAeAw6aqGIeLDG+TNqVtVscFFpL7AiMN1dMF0pXxrUCkHccv2qXJli2LEZ/UEhOSm1HkiSjoZggO5040tLV3dgncVXFfXUcJtJELo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773938617; c=relaxed/simple;
+	bh=l0eU5c0HgKDSlNJCITX3MHjJtcSK/SPj94MpY96kAVk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RuUy8JkfZl17ioX1J1bbFBzwuJMmU0PsQNaRQLub080BdzdbtS19rcojZ0/i777RTGF/TRbo9SNC0mVx7tLJi9GG5rOAcmGlcxB7cDglWyJK++AXOIMQbTd42M3tOACTGhG9JqbwCtKyqdp8O6czQGGfrvn86PDOB26gmrBAPO0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=gbGhuo/r; arc=pass smtp.client-ip=209.85.208.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qgpx+Wrv"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2ad9516a653so4957615ad.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 09:34:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gbGhuo/r"
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-3878de20527so8793571fa.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 09:43:30 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773938609; cv=none;
+        d=google.com; s=arc-20240605;
+        b=TrD0+ezp+zpvlYuHVi6LCls+iIqDsjlsq6c1+dQwq0Y0qsxYW8SkMMyUolSfSdOoMR
+         D+RwwwuvjOGDoNs41mvBDg07l2LwxL3gaHtVi5CrkTh74r2xWazyu6+ehEaNqrv33ful
+         dlNv6l+McENePi9tpRfWflHUZVqRsR2N2P4+t17hz1W/ssLHpLV7ZNR3T5RSpsK0XuJu
+         GCoBJsSsen/lPGaprQaygz5M/iBVC+jIwetwzQG37gMLJZUGyorqdxUFd18WoDCOu6e0
+         58EruMQ4BvHRWWFBkhz9NRJlrvOq+rKfNPuAhcjJJmgkCv6U08JegdWNcSyP0kZVeiWF
+         A6tg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=l0eU5c0HgKDSlNJCITX3MHjJtcSK/SPj94MpY96kAVk=;
+        fh=iuPWaKv8uAlk4SWGGSGRvo6g7+b0o2iadtptQmDuOMc=;
+        b=dByPFo+oKJjac/Ci94RzEJlrt7q9sJpCkG+SmOpMNWNRJ+a9R84eiKNCXyKJ+SawRf
+         MgwYmRcZGOeA9swuxV1qXNU4rE4P8PYc/Euaf5myeVbFZylq64LxYNIGOb7SlPbIlM6O
+         J//sH2j3kPwbGv3ovXQ0NhLr4T7a0yMcriOxxaqdpR6C1+4pKc7BH+jIDSAy9K1TjvL1
+         ZeNcDqY0CPE+d/RLcV3RyDCmUPT6Viy1L0hrPGT3AM2ujA+PgMSfudBvsUdXUvS4utzi
+         zqiT/u7pfmD/j6mC69HMmz92AtdtE5F8GH5da61DEl44MrX/KFjoGvY1pZJyXCYHS5IW
+         PIdw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773938048; x=1774542848; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=5MgDUr28BswEKjkiFZqRWKfXqvNYWCmZwzQMS8MvJjQ=;
-        b=Qgpx+Wrv0jLH7Ppupy0DemjtsxfOwH8RRgVaF3eY7woX1WH6rqpGogzEmujClGm/uU
-         tUSHKMT4dh0ThXEp8ze+Y2IwCXOHwWAT+4NQ4G/qSVxRG5m5UZLMxNvnldolTFmNLiEQ
-         Grv2pv/BgCNymP49odX3aYMCfDdQo0SFjkeY5YF2bDUbvJEzymOjDHPNQ2kZ2JyWryYP
-         /6ha3pIT7fGk/YpsbO6JqrO1T9aAb6wdTYI1tFQvdueSLdHH4NTrF0eauYadPaYzD56Z
-         /oGi8IfFSO6kwujiQhyBUgZP7Xz3SPSEa53qiAgDBlrTffwvNGfsvP8VbvxJvqCerBev
-         4fpg==
+        d=linaro.org; s=google; t=1773938609; x=1774543409; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=l0eU5c0HgKDSlNJCITX3MHjJtcSK/SPj94MpY96kAVk=;
+        b=gbGhuo/rG1KM01mbmrI/+n1PIhq6yLZERMlC49+Hvy5VWBMsywIYe1BtX10hy6z3NN
+         Wq7WOe5trpwgbz9VXuddO7NeUPzPLCKRqvlYHwRXlj2ypsQt1s7F/4l+uoVfHhs9la5S
+         Y1bb4CQexfezFo5JZPV7ZJ8PE4PVUdw+vPyAj7YcQz7nvo8Am1XPpTyUfE6iUY2pCk1M
+         HU/eH4nTrEPb3S2WVOyONRbuBE8iJsJnubWqzp64+/xrtra6Ih4tNuFaUE7vczLQZSKv
+         zEuHALM0AbYRZ6mkwWYUNcpM0yeSegF2olmHzpb55wWbrwOaqo0XM/X7RFlbmOUIQQj6
+         fKWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773938048; x=1774542848;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=5MgDUr28BswEKjkiFZqRWKfXqvNYWCmZwzQMS8MvJjQ=;
-        b=pVPqY5fsFovLzksBLQ9WhBI7CSRjN6TUHzpp9/TR/ZhfvEJi6GB1/RmDsIiX6M65hG
-         l1kB61uE/ifSJnbw6pDTKvwL3ZO/qHw53HIrn8CO+MQA4jnoHPdvwhW1Nz5BsWTTbrVo
-         I/7HkJwcWI/ujnZljpJYc+advPrZoRNcAI6A6fRJ4BHxabUabMdml7mzJ0Zz5Fc8tou4
-         bo3HVQTC4t+g2GtcM8PIO40I5/N0cNTPeatocQEi3eMQ/xu6u14GyISzxcYNYdskAJZJ
-         KeEeU8fOFkI0FIbkn8rqQED5w3OZ3XHIsYetdeBTFprnKf4Fk4fw7VWS8cNnYwyDMAl0
-         NNRA==
-X-Forwarded-Encrypted: i=1; AJvYcCXQduFubuv64D0iuRSjfFWGYPkbJkC0wc2VBezDFfsHb+2bbouEaQ9rngMdC6ZOqauhyE+0aLD6iw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxnMJZ3tQXr6srNkUJLL2UMGix9YCKgKHJVIwDdKOtlPpMjdurt
-	DgNrl0wAmpUkXsv/fQoUHu4obgSpndeceqaXEhBPTxjq1CMrHnmSFxU0
-X-Gm-Gg: ATEYQzw9+fK/jp4Uql+3qQiHRa5ibU/uJ1gjg8ZHQFy5hAvoNKlxAjyqL4ZpcY7bxLI
-	AZ/VdkL+npRllhjw2Mw3fbYI035/7p7gQYqJg/U7VXZyNhjK1SLxACwWGuiF6HK7CNHx54ml2Ww
-	xOR0praMbN4I+/vzGjAr8avaKoH+/2r+2iHbhHAoUmCWyTQNET0s2hpiltCXaD0TPOdkQbELxRU
-	iMpBgZv3F0fOdFFCNiK2nYORiN3awRERbfIHtyeLd5qqDGPY3fV4WV/wRin4crck421v9Z5ul//
-	wFmBfdGhOSaIP0cOVupTMrOcKhnC7+oQZG2Gq27PNMja3A7MpT1yt9Aw2kYn7sgV/WQLDkRqZuk
-	Ap7SQWZxKlbRSaUGWsRRrLT99uejF+HYEQQeBwH84lzbMMAF1nEDSKLHgvI4478MXzwS9Y+ZVOA
-	4T5SgimC1YzUkjTAQ9ETM8bgODGP8ye49CdI1pdCJrBSTrSvW/bsWxTLZpTUE=
-X-Received: by 2002:a17:903:41d2:b0:2ae:57e6:616c with SMTP id d9443c01a7336-2b06e2d6ef1mr78490245ad.3.1773938048301;
-        Thu, 19 Mar 2026 09:34:08 -0700 (PDT)
-Received: from KASONG-MC4 ([101.32.222.185])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b06e43074esm63732945ad.19.2026.03.19.09.34.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2026 09:34:07 -0700 (PDT)
-Date: Fri, 20 Mar 2026 00:34:02 +0800
-From: Kairui Song <ryncsn@gmail.com>
-To: Youngjun Park <youngjun.park@lge.com>
-Cc: rafael@kernel.org, akpm@linux-foundation.org, chrisl@kernel.org, 
-	kasong@tencent.com, pavel@kernel.org, shikemeng@huaweicloud.com, nphamcs@gmail.com, 
-	bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev, 
-	linux-pm@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v4 1/3] mm/swap, PM: hibernate: fix swapoff race in
- uswsusp by getting swap reference
-Message-ID: <abp7aDgYLrxF3Me8@KASONG-MC4>
-References: <20260317181318.2517015-1-youngjun.park@lge.com>
- <20260317181318.2517015-2-youngjun.park@lge.com>
+        d=1e100.net; s=20251104; t=1773938609; x=1774543409;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=l0eU5c0HgKDSlNJCITX3MHjJtcSK/SPj94MpY96kAVk=;
+        b=FLHm1qxnnG58ms7632EWxMQChOpDE3m+Y2Rn4k/fM976DXTvqNcITQB2Lih8nEBMXr
+         GkEKSV2MN0Y1XnGuZIHJwJDzzH4nPjLpYHChxpw+HIaYm3o/xN2psuH4Y3UQZqwNIuxE
+         sQ9S9Xvn1kIoNIoxp8AeIaqgU+dG3wAH6c7cFBDobJcd3uY9OMU/vjum8OV0FS984Z1V
+         2fONNcOoTQfLoZc8PgMK0MI8251MJ0vZxideWoGL7cbpPuM0+KQGlHGIo0ComdB3iJTA
+         YIrCgLzzu6TwZZuaXSgczPjxiD8gPBOyF1wqzh1rfMnp9a5uruGrgrJDaCZn4uZJTLKn
+         PZyA==
+X-Forwarded-Encrypted: i=1; AJvYcCW2HGRuAcip0IbLZA4WkPuQH4Gy0Rzit1bGWadDk8Sec32N9Ly0QHp1pf0c1Jccbx9RS+J3ezn1jg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzrAbXHEu9QihYg1vT1qIyCiysuBX7x0krPw/eCwaxpmbpm/rVn
+	EsB+ryhjuElYLbuoYGAwT7jL8wD9rC3bmJgpPSj6DCqYfruLrYe5JNbyYQWqyHNdTIwd/PVdYoc
+	5ieG2FgG+ELmsnLAdIVF5WqzK/mqG99yg1op7jioC6Q==
+X-Gm-Gg: ATEYQzwydTisRY1dRM2UNUj/uiEQRIOxcylvJRZsZhN0Dbch/doFCVzLAs6E77/l78W
+	7TN2awAstFGC04eNxk6vmk97yrXMox09NzWd82VuMD4+9vPEMaRRJGvEdLIQxrYY4mPaLM6Gj4H
+	Ba5+iGFr+d6UcdNOMxwqb/efmRcYAaKDWqYcjZm9jPycpbu7dKCVGf956vxm99kFJVuyrLnjoks
+	UjhOWS7kYZznXc8m3/VEnuyvXpqdtkX1DJSVq/KGOGDjrkqNVxqJdMvLbIyPJrISM1s+twPDCmb
+	Y9HjUzT+
+X-Received: by 2002:a05:651c:324d:b0:38b:f0aa:36e7 with SMTP id
+ 38308e7fff4ca-38bf96ddf40mr439181fa.31.1773938608940; Thu, 19 Mar 2026
+ 09:43:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260317181318.2517015-2-youngjun.park@lge.com>
+References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
+ <20260318-gs101-pd-v8-5-241523460b10@linaro.org> <CGME20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba@eucas1p2.samsung.com>
+ <CAPDyKFrprMSLOBMB_BHbi=j6UXV4dXBn-H8M1BsqDWNSCJwvuA@mail.gmail.com>
+ <c5ba58fb-50f1-4067-a099-97169ea81f68@samsung.com> <ae31c62c940e99077d44e1935465dce7db0e4c06.camel@linaro.org>
+ <4809918d-fdf1-48c0-bc10-fcf75837cb81@samsung.com>
+In-Reply-To: <4809918d-fdf1-48c0-bc10-fcf75837cb81@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Thu, 19 Mar 2026 17:42:52 +0100
+X-Gm-Features: AaiRm53oqCm_eJUl4m-8pk5SCQoZ-_Pm5z0ieeorC9RntVzrStWwABAEThg9uu0
+Message-ID: <CAPDyKFp8zsbgRA746Sds+1y4C0FvyohF7AFVsEghVkhukGZafg@mail.gmail.com>
+Subject: Re: [PATCH v8 05/10] pmdomain: samsung: convert to using regmap
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
+	Juan Yescas <jyescas@google.com>, Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
+	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 18, 2026 at 03:13:16AM +0800, Youngjun Park wrote:
-> Hibernation via uswsusp (/dev/snapshot ioctls) has a race: between
-> setting the resume swap area and allocating a swap slot, user-space is
-> not yet frozen, so swapoff can run and cause an incorrect slot allocation.
-> 
-> Fix this by keeping swap_type_of() as a static helper that requires
-> swap_lock to be held, and introducing new interfaces that wrap it with
-> proper locking and reference management:
-> 
-> - get_hibernation_swap_type(): Lookup under swap_lock + acquire a swap
->   device reference to block swapoff (used by uswsusp).
-> - find_hibernation_swap_type(): Lookup under swap_lock only, no
->   reference. Used by the sysfs path where user-space is already frozen,
->   making swapoff impossible.
-> - put_hibernation_swap_type(): Release the reference.
-> 
-> Because the reference is held via get_swap_device(), swapoff will block
-> at wait_for_completion_interruptible() until put_hibernation_swap_type()
-> releases it. The wait is interruptible, so swapoff can be cancelled by
-> a signal.
-> 
-> Signed-off-by: Youngjun Park <youngjun.park@lge.com>
-> ---
->  include/linux/swap.h |  4 +-
->  kernel/power/swap.c  |  2 +-
->  kernel/power/user.c  | 15 ++++++--
->  mm/swapfile.c        | 92 ++++++++++++++++++++++++++++++++++++--------
->  4 files changed, 92 insertions(+), 21 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 7a09df6977a5..cf8cfdaf34a7 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -433,7 +433,9 @@ static inline long get_nr_swap_pages(void)
->  }
->  
->  extern void si_swapinfo(struct sysinfo *);
-> -int swap_type_of(dev_t device, sector_t offset);
-> +int get_hibernation_swap_type(dev_t device, sector_t offset);
-> +int find_hibernation_swap_type(dev_t device, sector_t offset);
-> +void put_hibernation_swap_type(int type);
+On Thu, 19 Mar 2026 at 16:57, Marek Szyprowski <m.szyprowski@samsung.com> w=
+rote:
+>
+> On 19.03.2026 12:58, Andr=C3=A9 Draszik wrote:
+> > On Thu, 2026-03-19 at 11:29 +0100, Marek Szyprowski wrote:
+> >> On 19.03.2026 11:13, Ulf Hansson wrote:
+> >>> As a follow-up patch on top, please consider converting the open-code=
+d
+> >>> polling loop above into a readx_poll_timeout_atomic().
+> >> This has been tried and it doesn't work in all cases required for powe=
+r
+> >> domain driver:
+> >>
+> >> https://lore.kernel.org/all/5c19e4ef-c4fd-4bf5-88b3-46c86751b14e@samsu=
+ng.com/
+> >>
+> >> Probably a comment about that could be added directly to this code to
+> >> avoid such conversion and breakage in the future.
+> > I am planning to revisit this in the future and am hoping that we can
+> > figure out what goes wrong when using regmap_read_poll_timeout().
+> >
+> > Hopefully such a comment would only be short-lived, so maybe not really
+> > worth it? I can add it, though, if you prefer.
+>
+> Well, I think I've already pointed what goes wrong with
+> regmap_read_poll_timeout() in the above mentioned thread. You would need
+> to use regmap_read_poll_timeout_atomic() and modify it the same way as
+> commit 7349a69cf312 did for read_poll_timeout_atomic().
 
-Hi Youngjun,
+Thanks a lot for bringing this to our attention!
 
-Thanks! This set of API looks better that before.
+To me, it looks like the regmap helpers should really use
+readx_poll_timeout_atomic, rather than open-coding the loop from the
+regular iopoll helpers.
 
->  
-> -/*
-> - * Find the swap type that corresponds to given device (if any).
-> - *
-> - * @offset - number of the PAGE_SIZE-sized block of the device, starting
-> - * from 0, in which the swap header is expected to be located.
-> - *
-> - * This is needed for the suspend to disk (aka swsusp).
-> - */
-> -int swap_type_of(dev_t device, sector_t offset)
-> +static int swap_type_of(dev_t device, sector_t offset)
-
-Maybe rename it while at it, it's a internal helper now and
-no one is using it.
-
->  {
->  	int type;
->  
-> +	lockdep_assert_held(&swap_lock);
-> +
->  	if (!device)
->  		return -1;
->  
-> -	spin_lock(&swap_lock);
->  	for (type = 0; type < nr_swapfiles; type++) {
->  		struct swap_info_struct *sis = swap_info[type];
->  
-> @@ -2164,16 +2157,70 @@ int swap_type_of(dev_t device, sector_t offset)
->  		if (device == sis->bdev->bd_dev) {
->  			struct swap_extent *se = first_se(sis);
->  
-> -			if (se->start_block == offset) {
-> -				spin_unlock(&swap_lock);
-> +			if (se->start_block == offset)
->  				return type;
-> -			}
->  		}
->  	}
-> -	spin_unlock(&swap_lock);
->  	return -ENODEV;
->  }
->  
-> +/*
-> + * Finds the swap type and safely acquires a reference to the swap device
-> + * to prevent race conditions with swapoff.
-> + *
-> + * This should be used in environments like uswsusp where a race condition
-> + * exists between configuring the resume device and allocating a swap slot.
-> + * For sysfs hibernation where user-space is frozen (making swapoff
-> + * impossible), use find_hibernation_swap_type() instead.
-> + *
-> + * The caller must drop the reference using put_hibernation_swap_type().
-> + */
-
-You can follow the kernel doc format.
-
-> +int get_hibernation_swap_type(dev_t device, sector_t offset)
-> +{
-> +	int type;
-> +	struct swap_info_struct *sis;
-> +
-> +	spin_lock(&swap_lock);
-> +	type = swap_type_of(device, offset);
-> +	sis = swap_type_to_info(type);
-> +	if (!sis || !get_swap_device_info(sis))
-> +		type = -1;
-> +
-> +	spin_unlock(&swap_lock);
-> +	return type;
-> +}
-> +
-> +/*
-> + * Drops the reference to the swap device previously acquired by
-> + * get_hibernation_swap_type().
-> + */
-> +void put_hibernation_swap_type(int type)
-> +{
-> +	struct swap_info_struct *sis;
-> +
-> +	sis = swap_type_to_info(type);
-> +	if (!sis)
-> +		return;
-
-I think it should never see sis == NULL here?
-
-> +
-> +	put_swap_device(sis);
-> +}
-> +
-> +/*
-> + * Simple lookup without acquiring a reference. Used by the sysfs
-> + * hibernation path where user-space is already frozen, making
-> + * swapoff impossible.
-> + */
-> +int find_hibernation_swap_type(dev_t device, sector_t offset)
-> +{
-> +	int type;
-> +
-> +	spin_lock(&swap_lock);
-> +	type = swap_type_of(device, offset);
-> +	spin_unlock(&swap_lock);
-> +
-> +	return type;
-> +}
-> +
->  int find_first_swap(dev_t *device)
->  {
->  	int type;
-> @@ -2971,10 +3018,23 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
->  	 * spinlock) will be waited too.  This makes it easy to
->  	 * prevent folio_test_swapcache() and the following swap cache
->  	 * operations from racing with swapoff.
-> +	 *
-> +	 * Note: if a hibernation session is actively holding a swap
-> +	 * device reference, swapoff will block here until the reference
-> +	 * is released via put_hibernation_swap_type() or the wait is
-> +	 * interrupted by a signal.
-
-This looks really bad... It means swapoff will hung unless user send a
-signal to stop it? How does that happen?
-
-If hibernate may hold a reference without allocating any slot for a
-long time, then maybe we better introduce a new si->flags bit to
-indicate a device is used by hibernate, so swapoff can abort early
-with a -EBUSY.
-
-If hibernate only holds the swap device reference after it allocated
-any slot, then we can avoid use a flag but use a hibernate type in
-swap table instead:
-
-diff --git a/mm/swap_table.h b/mm/swap_table.h
-index 8415ffbe2b9c..025e004fc2e7 100644
---- a/mm/swap_table.h
-+++ b/mm/swap_table.h
-@@ -25,6 +25,7 @@ struct swap_table {
-  * PFN:      | SWAP_COUNT |------ PFN -------|10| - Cached slot
-  * Pointer:  |----------- Pointer ----------|100| - (Unused)
-  * Bad:      |------------- 1 -------------|1000| - Bad slot
-+ * Exclusive:|---- 0  ----| ------ 1 -----|10000| - Exclusive usage
-  *
-  * SWAP_COUNT is `SWP_TB_COUNT_BITS` long, each entry is an atomic long.
-  *
-@@ -46,6 +47,8 @@ struct swap_table {
-  *   because only the lower three bits can be used as a marker for 8 bytes
-  *   aligned pointers.
-  *
-+ * - Exclusive usage: e.g. for hibernation.
-+ *
-  * - Bad: Swap slot is reserved, protects swap header or holes on swap devices.
-  */
-
-Both readahead and swapoff (unuse scan) will abort upon seeing such slot,
-we solve both readahead and swapoff issue together.
-
-How do you think? We can use the flag idea first.
-
->  	 */
->  	percpu_ref_kill(&p->users);
->  	synchronize_rcu();
-> -	wait_for_completion(&p->comp);
-> +	err = wait_for_completion_interruptible(&p->comp);
-> +	if (err) {
-> +		percpu_ref_resurrect(&p->users);
-> +		synchronize_rcu();
-
-Do we need a synchronize_rcu here? It's required above because we are
-releasing the resources so all RCU readers must exit from grace
-period. But here we are aborting and not releasing anything so
-there is no such need?
-
-> +		reinit_completion(&p->comp);
-> +		reinsert_swap_info(p);
-> +		goto out_dput;
-> +	}
-> +
->  
->  	flush_work(&p->discard_work);
->  	flush_work(&p->reclaim_work);
-> -- 
-> 2.34.1
+Kind regards
+Uffe
