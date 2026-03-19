@@ -1,135 +1,144 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD3A02D8387;
-	Thu, 19 Mar 2026 07:23:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A89A71E8342;
+	Thu, 19 Mar 2026 07:56:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773905038; cv=none; b=ustRJ+6p0Jb4gEjciWHgdhh90TwdYTmbQKvTLr/gTC6HDPq77lh5velqhxn9Y2FUkx03wUYeBCLVgTE6k18W5KBw3LwUeMVJUXju5eq/y8rmZUI/KBmqt35bMKFs4i7NZXHpEe76WnimsrBX7PCTsNTbUNFqCBPaWIaXV5DiAsI=
+	t=1773906989; cv=none; b=pXESVHKV9dgn+Xuifk+umOskbiWxlDo3jr+jw6XZqZRZXs99oOiCLk2h5ONbA+pB/WXYT9PCi0pu1Zp7COgAhbVcHc0ziUtEdKI9w6sd0/I3y27DmmBye2ph7YP3nlUknhufLLdA0S78W330PxbkxfVQbfXOb2+TTZ2sccAYWpg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773905038; c=relaxed/simple;
-	bh=cU/7B5+trniZGMpqS9+DCFtJuwNRKTCkWr5v71COyhM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OO8qN0DGVE4N88dLbHokRELRVzsVmHzvCMkMSI/0bjDmYh+s8Xwnrfl1p2gGVpHyo05JDgkbxee/WNBVmmOSPLwf5lJTj9wGLgGYZA2vidPxOdWEKDM04xzElsxJ8kZE80emA+LcJdtrR+UmIoHE/yqLg+Z9sTa7g1w7ILS3Jtw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mEZNYI94; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773906989; c=relaxed/simple;
+	bh=EEUWZqus7ucXdk/WFGo+NqdisLQY4Uc9jzC7pUbLM4k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gKDczX7YHm+7qRvPkt2ikvAm5+lSEVFooAJrM9DPv0FZIH5IPzNMrP/sUXKXIdttC1nYt3Y8EWEN1ZIML61U+ZTS3ZijoZJGPIOtq1DavvCfM6CeZr9bdCK11syNd9Z+mKQywgXSeeS+lgw7amcck2AM9ri95QUtqDWa4TOPG1A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=kEMuBnl5; arc=none smtp.client-ip=90.155.92.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mEZNYI94"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4F8BC19424;
-	Thu, 19 Mar 2026 07:23:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773905038;
-	bh=cU/7B5+trniZGMpqS9+DCFtJuwNRKTCkWr5v71COyhM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mEZNYI94Wmm+SnPZOx2IIDyk01UzSBppV9nTPTh4opBjj2pB4RtJ9FqJsSgoiAGXz
-	 v+vsbvjgvpfOjyrMfAEle4RXz/+zliTPhLPuaRb3sZqpHoawkAnglcaOBHhmjPHsCC
-	 IUcB0+EUUfE16/HEiQ5cl/YgeiZXa0fKkNN7333YCsWKcnfNqTWQGgRHbDuiLsuhsW
-	 CYfL/qdMByBpZOOsmKpMkjXwVVt5D26uysnwonNE1DwR7+qjgv0N6oG7Zk8OzQ+oWG
-	 rOFVq0RCxzlUARFhkMy9t94wW9HzOoxJOIru2kwc9GyGH3UK/EAb/Xni9YhfV0Gghv
-	 KUn3+4QEJa62A==
-Message-ID: <6e55555c-974b-44ee-aa32-c07de7baf864@kernel.org>
-Date: Thu, 19 Mar 2026 08:23:50 +0100
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kEMuBnl5"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=s8A69keN0dzb00KIbKoLnTjne6XlDApP9njkXdbia9M=; b=kEMuBnl5QdgU2yGgwfMddW2g5p
+	VLX/fnB8GUBtoa0nqe9dfZwrYsqfbEz9RB9gGgt/P0dDr2YcnKNxfN/HMD/y21qYcO9V2lGz8QbPV
+	s4o1WzhrWSr23X18Whfz38aFl1qyitlAD0ID6MBLNDNHzrDJgQDKDWRVllbg95qKyJ1etUU7ta06+
+	Sze/wW8OLJh0rocRdaV0H2nRNLPmarQOJz3a3iCgr6NW2iqrx6D0PhA6AxnCY9aXsFPZ3A4gbvxtx
+	dOL4bASOmjGuVvXm4YOz5TYUNRco6AhAc1//laLG7EvTPVHD004g4y6nm+aqaDGYeQbpweoSVQ7wO
+	ajBWtQwg==;
+Received: from 2001-1c00-8d85-5700-266e-96ff-fe07-7dcc.cable.dynamic.v6.ziggo.nl ([2001:1c00:8d85:5700:266e:96ff:fe07:7dcc] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w38Ex-0000000CyQs-2aX7;
+	Thu, 19 Mar 2026 07:56:23 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id F141F301BD5; Thu, 19 Mar 2026 08:56:21 +0100 (CET)
+Date: Thu, 19 Mar 2026 08:56:21 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nhat Pham <nphamcs@gmail.com>
+Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org,
+	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org,
+	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com,
+	cgroups@vger.kernel.org, chengming.zhou@linux.dev,
+	chrisl@kernel.org, corbet@lwn.net, david@kernel.org,
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org,
+	hughd@google.com, jannh@google.com, joshua.hahnjy@gmail.com,
+	lance.yang@linux.dev, lenb@kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com,
+	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev,
+	npache@redhat.com, pavel@kernel.org, peterx@redhat.com,
+	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com,
+	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com,
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com,
+	surenb@google.com, tglx@kernel.org, vbabka@suse.cz,
+	weixugc@google.com, ying.huang@linux.alibaba.com,
+	yosry.ahmed@linux.dev, yuanchu@google.com,
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com,
+	riel@surriel.com
+Subject: Re: [PATCH v4 09/21] mm: swap: allocate a virtual swap slot for each
+ swapped out page
+Message-ID: <20260319075621.GR3738010@noisy.programming.kicks-ass.net>
+References: <20260318222953.441758-1-nphamcs@gmail.com>
+ <20260318222953.441758-10-nphamcs@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/9] dt-bindings: regulator: Document MediaTek MT6392
- PMIC Regulators
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Luca Leonardo Scorcia <l.scorcia@gmail.com>,
- linux-mediatek@lists.infradead.org,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
- Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
- Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Linus Walleij <linusw@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Julien Massot
- <julien.massot@collabora.com>, Gary Bisson <bisson.gary@gmail.com>,
- Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
- Val Packett <val@packett.cool>, Fabien Parent <parent.f@gmail.com>,
- Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-gpio@vger.kernel.org
-References: <20260317184507.523060-1-l.scorcia@gmail.com>
- <20260317184507.523060-4-l.scorcia@gmail.com>
- <20260318-nickel-serval-of-tolerance-621bad@quoll>
- <CAORyz2Laoo4EiLcHZ-ygLiFGW_h8qV7QxqNsMbueM=nov5zH0A@mail.gmail.com>
- <ad0d1ea1-4c5d-4cfc-af0d-8d843e7e0e9e@kernel.org>
- <CAGXv+5EqUhJ62fjE0R9nLcu6tsfXan8ZEYe7hvkofKnFM7W8NQ@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <CAGXv+5EqUhJ62fjE0R9nLcu6tsfXan8ZEYe7hvkofKnFM7W8NQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260318222953.441758-10-nphamcs@gmail.com>
 
-On 19/03/2026 05:53, Chen-Yu Tsai wrote:
->>> I understood this is that electrical constraints are a matter of the
->>> actual board layout, so if adjustments are needed they have to be in
->>> the board dts. But you also specify "If fixed", so maybe there's an
->>> exception to this rule when the constraint is "absolute" and boards
->>> can't actually set a different value?
->>
->> Now I am confused. You wrote - LDOs with fixed 1.8V output - so board
->> cannot set it to 2.0V for example. They are affixed. This regulator
->> CANNOT physically produce anything else.
-> 
-> As you said, it cannot physically produce anything else. IMO it doesn't
-> even need voltage constraints as it is already implied by the model and
-> regulator output, in which case I would actually recommend rejecting
-> min/max voltage being added to this node.
+On Wed, Mar 18, 2026 at 03:29:40PM -0700, Nhat Pham wrote:
+> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+> index 62cd7b35a29c9..85cb45022e796 100644
+> --- a/include/linux/cpuhotplug.h
+> +++ b/include/linux/cpuhotplug.h
+> @@ -86,6 +86,7 @@ enum cpuhp_state {
+>  	CPUHP_FS_BUFF_DEAD,
+>  	CPUHP_PRINTK_DEAD,
+>  	CPUHP_MM_MEMCQ_DEAD,
+> +	CPUHP_MM_VSWAP_DEAD,
+>  	CPUHP_PERCPU_CNT_DEAD,
+>  	CPUHP_RADIX_DEAD,
+>  	CPUHP_PAGE_ALLOC,
 
-But the text is not helping and not doing much good here. So either this
-should be schema or nothing. I agree though that having here no
-constraints in final DTS is valid.
+> +static int vswap_cpu_dead(unsigned int cpu)
+> +{
+> +	struct vswap_cluster *cluster;
+> +	int order;
+> +
+> +	rcu_read_lock();
 
+nit:
+	guard(rcu)();
 
-Best regards,
-Krzysztof
+> +	for (order = 0; order < SWAP_NR_ORDERS; order++) {
+> +		cluster = per_cpu(percpu_vswap_cluster.clusters[order], cpu);
+> +		if (cluster) {
+> +			per_cpu(percpu_vswap_cluster.clusters[order], cpu) = NULL;
+> +			spin_lock(&cluster->lock);
+
+This breaks on PREEMPT_RT as this is ran with IRQs disabled. This must
+be a raw_spinlock_t.
+
+> +			cluster->cached = false;
+> +			if (refcount_dec_and_test(&cluster->refcnt))
+> +				vswap_cluster_free(cluster);
+
+And this... below.
+
+> +			spin_unlock(&cluster->lock);
+> +		}
+> +	}
+> +	rcu_read_unlock();
+> +
+> +	return 0;
+> +}
+
+> +static void vswap_cluster_free(struct vswap_cluster *cluster)
+> +{
+> +	VM_WARN_ON(cluster->count || cluster->cached);
+> +	VM_WARN_ON(!spin_is_locked(&cluster->lock));
+
+This is terrible, please use:
+
+	lockdep_assert_held(&cluster->lock);
+
+> +	xa_lock(&vswap_cluster_map);
+
+This is again broken, this cannot be from a DEAD callback with IRQs
+disabled.
+
+> +	list_del_init(&cluster->list);
+> +	__xa_erase(&vswap_cluster_map, cluster->id);
+
+Strictly speaking this can end up in xas_alloc(), which is again, not
+allowed in a DEAD callback.
+
+> +	xa_unlock(&vswap_cluster_map);
+> +	rcu_head_init(&cluster->rcu);
+> +	kvfree_rcu(cluster, rcu);
+> +}
+
