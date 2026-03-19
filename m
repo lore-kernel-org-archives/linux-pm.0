@@ -1,104 +1,86 @@
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 405203ED5B2
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 15:57:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 639A538A729;
+	Thu, 19 Mar 2026 16:21:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773935872; cv=none; b=a5bLwf7R/lxse1qYN3DC7SIEAgnxjsgZ5Y25KaiOYvz3ttZ4VNAXqf2y+Fv9iemHZIgJoyuzeaBknl6KB5UtQlKReVsFmUJcGJjLgj0IH1o1k24e2+E/dDvxkZoRm7D+T9/3RI5lcbpS7ELwVfznQWTlVzgkDGcErJRdQmkqVVE=
+	t=1773937286; cv=none; b=czq7a6bvVRkgB1r7Y1ytCZt/uFI+TdIq66CFBROKst+4Ecq2Z9EfjsOtkRGR80DSJbwdjOUggnpI64S43bfdTwFmyl9TuShVvbZIiN8Q+DYpK+kzz4OnXo28Hii4dBws2IJV69wYr/hIzNbYcqqskSsMpHPo34kS7M6m5SxMecY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773935872; c=relaxed/simple;
-	bh=U4GRtIXlAPJ+N8RHPzdWujLWnJfkTsO356fGf3wS/pQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
-	 Content-Type:References; b=e9CjRTZkpJIddKIWn4skwKDEzdzJhTNqGsSYbj1VhMZaG709Jc1MeIPQv2ijWyKaH88dRAYqnSF5PQUZT7+xjM0sgtVzntaloNh23xwDlPESNkbb/Kr9PYaGz0Yaeq5pDtLcezUDvYPO9IyNfzTy/sVW+DNG9Ra228hWyCrVehM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=a4hGFMUj; arc=none smtp.client-ip=210.118.77.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	s=arc-20240116; t=1773937286; c=relaxed/simple;
+	bh=SWuryUrLCruxqK7KPSnDrrfXYe0rzOzozifRFqJ4zdE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=oGO3IhgP3wMjBZVk4E7OYbzbmFaX/TlzpyMcInsWOcmpViGr2dqfxkV+h8r9nhhCejQcCqdHFPBvvnZZ4ARQTfOu4kHneuFd/aVO7BrjkhYXti0nW0M1N33YVhuj67j6UYTkk5TWGPXEsi4L8BGagsxE6XD8UR8uXDaOysdDyGo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hef07Mus; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="a4hGFMUj"
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20260319155748euoutp02eb5a84f8d018b4b32a0664af02ec4161~eSUYLNI5m0120301203euoutp02M
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 15:57:48 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20260319155748euoutp02eb5a84f8d018b4b32a0664af02ec4161~eSUYLNI5m0120301203euoutp02M
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1773935868;
-	bh=/SkmenYWfG03cyx26DQI0pNUhnOeHCO/bc9QSsDFeFI=;
-	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
-	b=a4hGFMUjZQrJxLGlAv0a6Xv+ed/hDSCUPEp52Q1Tvit5ZroQsw4ct7+vBiyJJ/Pxf
-	 KU/6zpu34PEJZXyXo7ze3AsA/qQSBfgxu4byZA1hsdUe9fN02d9xE98rtFPe5YAzoL
-	 5ax71jDAP2+NQbUl51yNA0aGombxO+2o/gEupCCM=
-Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
-	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-	20260319155748eucas1p2b5301f0df591382d4f9d11bd0154335a~eSUX0VwA80213702137eucas1p2V;
-	Thu, 19 Mar 2026 15:57:48 +0000 (GMT)
-Received: from [106.210.134.192] (unknown [106.210.134.192]) by
-	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-	20260319155746eusmtip21015fbb23aff1c944126bee28a18b8b0~eSUW1P7_r0967109671eusmtip2G;
-	Thu, 19 Mar 2026 15:57:46 +0000 (GMT)
-Message-ID: <4809918d-fdf1-48c0-bc10-fcf75837cb81@samsung.com>
-Date: Thu, 19 Mar 2026 16:57:45 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hef07Mus"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D019C19424;
+	Thu, 19 Mar 2026 16:21:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773937286;
+	bh=SWuryUrLCruxqK7KPSnDrrfXYe0rzOzozifRFqJ4zdE=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=hef07MusVcnp2t8J564ll1u+wYC0m2OUObIg5bVNiRf0DMkXUITgxK/oFxN6BCiA1
+	 KgL3T6+GrWN7m+5EdnN330/a/SUiUC0toYsQTDELmz8a+x+BFVVyOZ1wEU1L2Nx02y
+	 OC89WGOTkdpT56I6GVHGalJrrrG9RzVPNuPEwWUCI5mE0LaTCAXMA3wFg3CFUg4qpI
+	 nsYY82XrC4O+8O/nIzZmXsLQF85C7HkdNDSDrE1EyX5fSW2JiQsbQGz3ReUvx4AZt7
+	 1XGKMnUIz98LHRjJQ2oe3WxafNmRsX9xEjxbl9ig7li33yzfu1aNhwdiM1DJnnbN8j
+	 MUDhGgNciC/Rg==
+From: Lee Jones <lee@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
+ Tobias Schrammm <t.schramm@manjaro.org>, Sebastian Reichel <sre@kernel.org>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Dan Carpenter <dan.carpenter@linaro.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>, 
+ Dzmitry Sankouski <dsankouski@gmail.com>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Benson Leung <bleung@chromium.org>, Tzung-Bi Shih <tzungbi@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, driver-core@lists.linux.dev, 
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev, 
+ stable@vger.kernel.org
+In-Reply-To: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v2 00/10] workqueue / drivers: Add
+ device-managed allocate workqueue
+Message-Id: <177393728021.2870619.1816530869958472742.b4-ty@kernel.org>
+Date: Thu, 19 Mar 2026 16:21:20 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Betterbird (Windows)
-Subject: Re: [PATCH v8 05/10] pmdomain: samsung: convert to using regmap
-To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, Ulf Hansson
-	<ulf.hansson@linaro.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Alim Akhtar
-	<alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Liam
-	Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Peter
-	Griffin <peter.griffin@linaro.org>, Tudor Ambarus
-	<tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, Will McVicker
-	<willmcvicker@google.com>, kernel-team@android.com,
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Content-Language: en-US
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <ae31c62c940e99077d44e1935465dce7db0e4c06.camel@linaro.org>
-Content-Transfer-Encoding: 8bit
-X-CMS-MailID: 20260319155748eucas1p2b5301f0df591382d4f9d11bd0154335a
-X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba
-X-EPHeader: CA
-X-CMS-RootMailID: 20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
-	<20260318-gs101-pd-v8-5-241523460b10@linaro.org>
-	<CGME20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba@eucas1p2.samsung.com>
-	<CAPDyKFrprMSLOBMB_BHbi=j6UXV4dXBn-H8M1BsqDWNSCJwvuA@mail.gmail.com>
-	<c5ba58fb-50f1-4067-a099-97169ea81f68@samsung.com>
-	<ae31c62c940e99077d44e1935465dce7db0e4c06.camel@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.15-dev-52d38
 
-On 19.03.2026 12:58, André Draszik wrote:
-> On Thu, 2026-03-19 at 11:29 +0100, Marek Szyprowski wrote:
->> On 19.03.2026 11:13, Ulf Hansson wrote:
->>> As a follow-up patch on top, please consider converting the open-coded
->>> polling loop above into a readx_poll_timeout_atomic().
->> This has been tried and it doesn't work in all cases required for power
->> domain driver:
->>
->> https://lore.kernel.org/all/5c19e4ef-c4fd-4bf5-88b3-46c86751b14e@samsung.com/
->>
->> Probably a comment about that could be added directly to this code to
->> avoid such conversion and breakage in the future.
-> I am planning to revisit this in the future and am hoping that we can
-> figure out what goes wrong when using regmap_read_poll_timeout().
->
-> Hopefully such a comment would only be short-lived, so maybe not really
-> worth it? I can add it, though, if you prefer.
+On Thu, 05 Mar 2026 22:45:39 +0100, Krzysztof Kozlowski wrote:
+> Merging / Dependency
+> ====================
+> All further patches depend on the first one, thus this probably should
+> go via one tree, e.g. power supply.  The first patch might be needed for
+> other trees as well, e.g. if more drivers are discovered, so the best if
+> it is on dedicated branch in case it has to be shared.
+> 
+> [...]
 
-Well, I think I've already pointed what goes wrong with 
-regmap_read_poll_timeout() in the above mentioned thread. You would need 
-to use regmap_read_poll_timeout_atomic() and modify it the same way as 
-commit 7349a69cf312 did for read_poll_timeout_atomic().
+Applied, thanks!
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+[07/10] mfd: ezx-pcap: Drop memory allocation error message
+        commit: 33e0316783a205625b7c55a78041ddc0d5dce7c7
+[08/10] mfd: ezx-pcap: Return directly instead of empty gotos
+        commit: 444e11d9d9e56c994da8a253cdf7f33ac2eeb15b
+[09/10] mfd: ezx-pcap: Avoid rescheduling after destroying workqueue
+        commit: 356ee03f6ae7d04f90d8e2104660193c4f3a071c
+
+--
+Lee Jones [李琼斯]
 
