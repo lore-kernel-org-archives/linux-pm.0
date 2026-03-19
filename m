@@ -1,159 +1,95 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B26D13C3BFD;
-	Thu, 19 Mar 2026 14:35:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD5893D8111
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:53:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773930958; cv=none; b=Q4od4TPQVKyFDjg/tHv8qpAVNpd4Y9eTr3u/2yfOcvU6eH/0JH1EZPn3xgQdzg05aTRAze3wXvO2HZkQ31wDDyXJwUTyhoHkcAFOlLfIIabJq8CTrv2pB2ApSC+79dA1fmwkhw09yiem/gCJaVv0XMjV7IR05QZvWL6VgJgBO80=
+	t=1773932033; cv=none; b=Wdz/J/0++GjMsI0Dyml3z8HFoLIGNrwzTRPxnWIWtHsNTB6mNziIaw7kj3Cur5EclqFQL70I6u5FMMtz3GjzeVg6EpCQYeOVbWmDI8BC6VFjJxkW7DkG2ZSlwswLe5KRURtKburReAmwcVRxWsIbJTuRuJKKxRttEiWGCel+rYk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773930958; c=relaxed/simple;
-	bh=kCFcyI/VQpnscCbjgeBI5ADhG7SSHRdxxGKfbAtuAsA=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=uEWx3inSOlVULNOGcwHqi42wpX4ZfWhHwukTjFRheL5WdbzP9eLZMQEa6adKVnBaF2pBCQVdp9BwmiKUZ8lN9W7edhYnEg3bmEZ6cl7yZMJJaPFkbWnucTmmv3Nyrfs4GFwmcxp6aZXfLsJ9KMj4qdd/rhM302VvUMLHGm5jS1A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.224.83])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTPS id 4fc7Wd15CCzJ46Zg;
-	Thu, 19 Mar 2026 22:34:53 +0800 (CST)
-Received: from dubpeml500005.china.huawei.com (unknown [7.214.145.207])
-	by mail.maildlp.com (Postfix) with ESMTPS id A01A140569;
-	Thu, 19 Mar 2026 22:35:52 +0800 (CST)
-Received: from localhost (10.203.177.15) by dubpeml500005.china.huawei.com
- (7.214.145.207) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 19 Mar
- 2026 14:35:51 +0000
-Date: Thu, 19 Mar 2026 14:35:49 +0000
-From: Jonathan Cameron <jonathan.cameron@huawei.com>
-To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-CC: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Ard Biesheuvel <ardb@kernel.org>, "Alison
- Schofield" <alison.schofield@intel.com>, Vishal Verma
-	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
-	<dan.j.williams@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, "Dave
- Jiang" <dave.jiang@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, "Matthew
- Wilcox" <willy@infradead.org>, Jan Kara <jack@suse.cz>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek
-	<pavel@kernel.org>, Li Ming <ming.li@zohomail.com>, Jeff Johnson
-	<jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
-	Yao Xingtao <yaoxt.fnst@fujitsu.com>, "Peter Zijlstra"
-	<peterz@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Nathan Fontenot <nathan.fontenot@amd.com>, Terry Bowman
-	<terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>, Benjamin Cheatham
-	<benjamin.cheatham@amd.com>, Zhijian Li <lizhijian@fujitsu.com>, Borislav
- Petkov <bp@alien8.de>, Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Subject: Re: [PATCH v7 7/7] dax/hmem: Reintroduce Soft Reserved ranges back
- into the iomem tree
-Message-ID: <20260319143549.00005394@huawei.com>
-In-Reply-To: <20260319011500.241426-8-Smita.KoralahalliChannabasappa@amd.com>
-References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
-	<20260319011500.241426-8-Smita.KoralahalliChannabasappa@amd.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+	s=arc-20240116; t=1773932033; c=relaxed/simple;
+	bh=ZTdwzVwbdm4Sdwy4dxuDY5+TL5HQanmuNj4zGFmocMI=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=BonHw9glGhh5vH9ITlzERD0xN4cdSNAa8mNmxfYqUKagt4fTvIIyVjM+wSgdDIBvGyTL+3ieRmr3fliES4HeDGWh0HnfiYpiAc7PbjlNwTNLDpxGJhpwKMgvsUou/z9oCLtAoolpwek1x6jMSKzcXw+N/iQvah2r+Ilxv1HLScA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KP411hzQ; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KP411hzQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7976BC2BCB0
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:53:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773932033;
+	bh=ZTdwzVwbdm4Sdwy4dxuDY5+TL5HQanmuNj4zGFmocMI=;
+	h=From:Date:Subject:To:Cc:From;
+	b=KP411hzQVnXb7cZug6rOOxjRyt0qQZQTgCfTOnaZkw3ugNWlJJYyru3tqcFxh16oo
+	 adqfIihqiz0YfYOzJmpmKtkvU06DmgTt2gUk1MouS6Qt3LEh9G6PvtwET/I7karWU9
+	 +8wzWT0TLL2r+L/Y2WE4I5j043fohHMxpY+cWT4Zb+sym1M5+MVkGK/d8LW9+9vYDt
+	 z8EcmzOCJEAWsMm3m+jA1LqiVt1Fa6ras4fwSGK5DPXQ73BPPpHa+BqqTTFGDIuqt4
+	 k8UTK9mkj/b1QcjY0XTM0gW6btXgfyJKDIiwQgzkEZ46nDxFhQ9PmcD+L3RWvITLtN
+	 i7kATLipeWVfg==
+Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-417571c6083so706736fac.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 07:53:53 -0700 (PDT)
+X-Gm-Message-State: AOJu0YxRq/Pt6WaAHWbekvFb+/z0vFMDDRgS+PynK7koOFoWiPVyN7mX
+	W3kYVqoGC2+90g4+/UEgfd4cnNbsIvoGCkAUCJE4S+EnKgWPnGGRoplkmnoVXZIF4iy5hCMiM+8
+	EpvwXtAixSsnOEjJu3jF/g89nWqSaszw=
+X-Received: by 2002:a05:6870:fb9e:b0:417:4320:26fd with SMTP id
+ 586e51a60fabf-41bd3e3e95dmr5136544fac.7.1773932032572; Thu, 19 Mar 2026
+ 07:53:52 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: lhrpeml100011.china.huawei.com (7.191.174.247) To
- dubpeml500005.china.huawei.com (7.214.145.207)
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 19 Mar 2026 15:53:41 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jQxkAKLgx9e7FqdWq67EO_97=A9kyT_Yd2QQbDZakUjw@mail.gmail.com>
+X-Gm-Features: AaiRm53RoadodDcdXqjvIKlZ4rPBLotQ8lXrqQ8wxK17ifFAezu4gCraY25W53c
+Message-ID: <CAJZ5v0jQxkAKLgx9e7FqdWq67EO_97=A9kyT_Yd2QQbDZakUjw@mail.gmail.com>
+Subject: [GIT PULL] Power management fixes for v7.0-rc5
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 19 Mar 2026 01:15:00 +0000
-Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
+Hi Linus,
 
-> Reworked from a patch by Alison Schofield <alison.schofield@intel.com>
-> 
-> Reintroduce Soft Reserved range into the iomem_resource tree for HMEM
-> to consume.
-> 
-> This restores visibility in /proc/iomem for ranges actively in use, while
-> avoiding the early-boot conflicts that occurred when Soft Reserved was
-> published into iomem before CXL window and region discovery.
-> 
-> Link: https://lore.kernel.org/linux-cxl/29312c0765224ae76862d59a17748c8188fb95f1.1692638817.git.alison.schofield@intel.com/
-> Co-developed-by: Alison Schofield <alison.schofield@intel.com>
-> Signed-off-by: Alison Schofield <alison.schofield@intel.com>
-> Co-developed-by: Zhijian Li <lizhijian@fujitsu.com>
-> Signed-off-by: Zhijian Li <lizhijian@fujitsu.com>
-> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-> Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-> Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
-One minor update needed as kmalloc_obj() has shown up in meantime.
+Please pull from the tag
 
-Thanks
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-7.0-rc5
 
-Jonathan
-> ---
->  drivers/dax/hmem/hmem.c | 32 +++++++++++++++++++++++++++++++-
->  1 file changed, 31 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
-> index 8c574123bd3b..15e462589b92 100644
-> --- a/drivers/dax/hmem/hmem.c
-> +++ b/drivers/dax/hmem/hmem.c
-> @@ -72,6 +72,34 @@ void dax_hmem_flush_work(void)
->  }
->  EXPORT_SYMBOL_GPL(dax_hmem_flush_work);
->  
-> +static void remove_soft_reserved(void *r)
-> +{
-> +	remove_resource(r);
-> +	kfree(r);
-> +}
-> +
-> +static int add_soft_reserve_into_iomem(struct device *host,
-> +				       const struct resource *res)
-> +{
-> +	int rc;
-> +
-> +	struct resource *soft __free(kfree) =
-> +		kmalloc(sizeof(*res), GFP_KERNEL);
+with top-most commit 9633370653151a0d5637634d1887d2f32511e69f
 
-Update to
+ Merge branch 'pm-runtime'
 
-	struct resource *soft __free(kfree) = kmalloc_obj(*soft);
+on top of commit f338e77383789c0cae23ca3d48adcc5e9e137e3c
 
-Got added in 7.0 with lots of call sites updated via scripting.
+ Linux 7.0-rc4
 
-Not sure why this had sizeof(*res) rather than sizeof(*soft).
-Same type but should have been soft!  If nothing else that would
-probably have broken the scripts looking for where we should
-be using kmalloc_obj().
+to receive power management fixes for 7.0-rc5.
+
+These fix an idle loop issue exposed by recent changes and a race
+condition related to device removal in the runtime PM core code:
+
+ - Consolidate the handling of two special cases in the idle loop that
+   occur when only one CPU idle state is present (Rafael Wysocki)
+
+ - Fix a race condition related to device removal in the runtime PM
+   core code that may cause a stale device object pointer to be
+   dereferenced (Bart Van Assche)
+
+Thanks!
 
 
-	
-> +	if (!soft)
-> +		return -ENOMEM;
-> +
-> +	*soft = DEFINE_RES_NAMED_DESC(res->start, (res->end - res->start + 1),
-> +				      "Soft Reserved", IORESOURCE_MEM,
-> +				      IORES_DESC_SOFT_RESERVED);
-> +
-> +	rc = insert_resource(&iomem_resource, soft);
-> +	if (rc)
-> +		return rc;
-> +
-> +	return devm_add_action_or_reset(host, remove_soft_reserved,
-> +					no_free_ptr(soft));
-> +}
-> +
->  static int hmem_register_device(struct device *host, int target_nid,
->  				const struct resource *res)
->  {
-> @@ -94,7 +122,9 @@ static int hmem_register_device(struct device *host, int target_nid,
->  	if (rc != REGION_INTERSECTS)
->  		return 0;
->  
-> -	/* TODO: Add Soft-Reserved memory back to iomem */
-> +	rc = add_soft_reserve_into_iomem(host, res);
-> +	if (rc)
-> +		return rc;
->  
->  	id = memregion_alloc(GFP_KERNEL);
->  	if (id < 0) {
+---------------
 
+Bart Van Assche (1):
+      PM: runtime: Fix a race condition related to device removal
+
+Rafael J. Wysocki (1):
+      sched: idle: Consolidate the handling of two special cases
+
+---------------
+
+ drivers/base/power/runtime.c |  1 +
+ kernel/sched/idle.c          | 30 +++++++++++++++++++++---------
+ 2 files changed, 22 insertions(+), 9 deletions(-)
