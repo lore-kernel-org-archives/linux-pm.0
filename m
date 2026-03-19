@@ -1,166 +1,191 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 431B63ED127
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 16:59:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773939596; cv=pass; b=p3+FDHWUlLkRUGs5Yo5cjKpw49gtGAvFfiFDniaJho1glL3Avirh3b/fVWMGqT7byBfhNjSea3uYZVNNc+1zZIHhbhv0yZU8iOjl0ImrAlCVTqO7slfLAB48xT0gz+nfvRNc9y+SUry7G6kkHeMhufw1I3Hbj168Qpa0B7amwyw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773939596; c=relaxed/simple;
-	bh=hj0WH+wQcNpKvF2np0hdYd1racOk4kU/YqVOzBmoLd8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MwbAGOJfeW4HPilvaEhVPN5OAHywGqebRM26NMPmGN/KGnZhqPDRRUrfw4JxuOm8bNoCz5ZSpzvMCoZctJAP7xvB0e0hgH8BPHAd6T5EEHKocsti3WXpcq5qNC0V9ql8XnPH1YNQUmOMs17FPQd9JKbo4YLC+MYyLbs193tWboU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tLcS/RCe; arc=pass smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 891C9314D1D;
+	Thu, 19 Mar 2026 17:01:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773939685; cv=none; b=VXKbsHtweI52LsFOi5dioNc+VwpMyzArlJlFFHH/zS3w+P6dTbkzyqNg5h0itgKYxKN5eqLJuQO/i79lrjwZ1G3etpkb0g6qOoS0GQypYb0Gr0RkSz5yiqjVNMfIYSJu9mUkW0gbCXpNAF3ivWs+glxrJluwkBmeekaginIY/2k=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773939685; c=relaxed/simple;
+	bh=YnoHs9DDBDclY2aVIF5CrrB8I8oHOlB+aOrQ+gjX4ao=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=K8tHTJodSMZlseLy1Ko7iwbgAsvIv28APeL5M2rz4q60DaVOGm10fPcHkaOVelNtERVjOSUplOcJf2wzw4k+TgDX7l8oKka0/C3TtvHgz6VCt5lAzhuDnJgoaPNHI4zwP/trTpwk5KpajDa2FktUxyMyhTt/91PgxB7PZsQrFkM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JhL3vCrN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tLcS/RCe"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5a278b4c1a5so1035010e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 09:59:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773939592; cv=none;
-        d=google.com; s=arc-20240605;
-        b=T1oLEoHFSnV5HnHFRsCGN/RfcDzbL+TwzyNs+bh2axWxafFQ7H5SKzQq0+pC22ThH6
-         TjSJBWhaOMqjR3UPC0gk5tHVTsqRPXY5ixgm9dgdG4AF/zkZPmhZHrolAN7NC3hZ57Yf
-         SQbJPm4nNVEnT775/0DoQ1RvtRC4hqepiLAbj3f63RGsMSQQk7aEjF0+eBMtFE3d7dOc
-         hfPsqrbFbwlmghqZZbJyHEF1PiFXJWZmNmhJ90iPO/lU0wd9pcEIPR8gY1+pYGkVTFqT
-         DIAytb1bUTJgM8vVyg7HVKfmXmWICPSj7d132XLzDi4HUjStnbgbYnfMHGVSLC5TmrQm
-         NEXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=27yAPs+HhqFzoHuJl01kUQFhB7PF3j6LuIGuksYyV+o=;
-        fh=32KVj2RhQzzi1198wWLf0cnJFl5IWt3yMwTOY6vWFiU=;
-        b=W6yPsZjmU8Nw6UThPXT8w8BqrpHSD6xjc/HfdcyGXX3otdBnIVvB6ILfd/BiuNjDd0
-         +7kOBzBMXkSKmHKB7Pca9FITn+G0pI3Yp66jhlx7gkKtk0SFWvWHT3A4SxwnCjYKUwnG
-         7Nq0cfRagVbtLKKkgchvOLHqf2+ndaOKQGeSLbB36foDLuj3hfIPLFGNCQpgawbOCTVj
-         nVGDGwLatojYvE/iYnR0yxbf0wdvJsb443FCYjVdNyPT/WZgfi3ICUZSTMsvh3Krh4/R
-         XawF4HSe1PZWp+SA+mqt1tJsnFi5uHxjkFjrMZkSSzJ6flWBjWNZC//+2XOiOSoUn/w9
-         cTEw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1773939592; x=1774544392; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=27yAPs+HhqFzoHuJl01kUQFhB7PF3j6LuIGuksYyV+o=;
-        b=tLcS/RCeRAxCDUrCcF4xsVWuk3GH2bgiUmJQQnpAqLJvGGQnZSLYKZzZWLAZzU1PXC
-         c+xbomPFVIhxmfD7c9W4fU91+hlkVo8GffSMrRqunKSRwOeJeAjMu7y8nT+MGHP3LxyC
-         5G1WzT+xr2SJUGoh7SiU/yQzO8bMdwp0TfiGQ8KDEgvmxIaEOZ3U/NYoDv22woXsSuxX
-         jMmk/gLlY3GMZV4g49YojbsBaVOqxVx/aBy40/IiJs6gR25rw3graToPkxd683q5YP8k
-         ZP4wb4jjW9FTtxTNc/RrBjNr0+0c5s/WZTPxptSXH73DAf793FzroiSeVIS+2mLBotfL
-         kAGw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773939592; x=1774544392;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=27yAPs+HhqFzoHuJl01kUQFhB7PF3j6LuIGuksYyV+o=;
-        b=kJVRW0F/FvGFhkregxZJ5p+KejViZ4vk5bjKDZtdUEK+yhN8Fufwq22AOf4Pp6neJG
-         GPK9G7KvaX9JbMd85/yalCo8Gt+QsHDkCc3TXxg5dc5b8nRzMIlNv74/YgZyBGI4EeQF
-         N38B/WnBVs4g4FzjrHgGMqWG5MO9/t0XqbDzFc+b80yF/UspCPc6fwP3uVCoUfWdh6gv
-         Wf0SxI4QC5GIG2RcnFN/LWw4o8OwTL5zcr/OLO71JMaeHjFKJcdvyl2cONrKT1Mey42b
-         L01H45qYWbJ8zlV6zuXcKEdE8y5gScyQAj5A+P8CLwvFJVzTmqzAMc5WAvUpoqUdPILy
-         9/zQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVWGsNDIF4BwG5+89Wzg9FeaZhT7peHMvayf2vcjJIGEVv1mmQJk7PTl/eNCKi9QSkrZde/CbgJFA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwT2Z3yEl068GYGlYaR+ZUY2X+uKIIBXCcxzcuwudTt4eP+0Gkj
-	EomRXG3Aorumi55U3BHm5ziAAIQL6uAV61rT+QG0hGAbKW0zEN0vbcgmvxdIytR+jZQdL9BbyCU
-	oVkyphPGmAov9JUvdTlfX3cQjNap0Kk6mYIHerTWbWx58S6uSmVE5Zk4=
-X-Gm-Gg: ATEYQzwoMFBGGmysHIUQe3mwFkiAzgo6A6vFfW9TnxtrQX64ldOD2ImMZjbRZI0QmMv
-	vEIJ8tGoNKewHIs0A744JAf6rlksIdwxmA36obt7G6D3mT4P4nVWWpdoVK2NJaC4CUQVFL45iFk
-	wFf8gK/YMp/uY1MEl/jmj2ckoqVi5zezL/bX2z8ZycoCq/aE85XpmlMabcQgBcucuvNKwF58O+B
-	lUpdh+WEeNn4XLpjddOzo3sZYyzSSFAshuvijfM84G/ngcadGR35usmqkBC4+mpU6kTOocMhvbj
-	ATZnmfPO
-X-Received: by 2002:a05:6512:3d10:b0:5a2:7e83:32ff with SMTP id
- 2adb3069b0e04-5a27e833888mr1478227e87.31.1773939592231; Thu, 19 Mar 2026
- 09:59:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JhL3vCrN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21068C19424;
+	Thu, 19 Mar 2026 17:01:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773939685;
+	bh=YnoHs9DDBDclY2aVIF5CrrB8I8oHOlB+aOrQ+gjX4ao=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=JhL3vCrNSHWjEUrEs5mYl/I4UDL+oM7vVzEURoI8D877o72JcfOUMQDLp86/B3YDS
+	 nkC5XB4rowGcrTapLJu99yjS+DL0xASTblBjciHvfrSs7dHsw413YLRwUi5k7BovA/
+	 JBSGdg608vYqXkgEvA3PtwKu6PXk7SzBrqXBSAsN2d1b6QWeGgC4hgZkbeY19s9nVg
+	 SwJwvpp4lNejOMAdCWaPX0pC1lEP0RpEUbFtm14NhltqA6j0Pz7dQl7ZiwoU0Xuz7d
+	 LZRK45EeZ1ZOOYLFcJYRsvQ/61KACUUmvEjZZnxpMsZxW58QrqUHgcTL26YuwizXVH
+	 plsGA2AWL5xGw==
+Date: Thu, 19 Mar 2026 17:01:18 +0000
+From: Lee Jones <lee@kernel.org>
+To: Alexey Charkov <alchark@flipper.net>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Chris Morgan <macromorgan@hotmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 09/11] mfd: bq257xx: Add BQ25792 support
+Message-ID: <20260319170118.GP554736@google.com>
+References: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
+ <20260311-bq25792-v4-9-7213415d9eec@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260303132305.438657-1-ulf.hansson@linaro.org>
-In-Reply-To: <20260303132305.438657-1-ulf.hansson@linaro.org>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 19 Mar 2026 17:59:14 +0100
-X-Gm-Features: AaiRm51ZTbjGFpP143fXcYxyckRNNuh4DLi9mrrTmtm7zrisbOS504AGBpxTqGc
-Message-ID: <CAPDyKFr25L0Omm_uCjZp03_ptnrKR_P2p3e3qxDeUoFFKJg3bQ@mail.gmail.com>
-Subject: Re: [PATCH 0/9] driver core / pmdomain: Add support for fined grained sync_state
-To: Saravana Kannan <saravanak@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
-	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260311-bq25792-v4-9-7213415d9eec@flipper.net>
 
-On Tue, 3 Mar 2026 at 14:23, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> Since the introduction [1] of the common sync_state support for pmdomains
-> (genpd), we have encountered a lot of various interesting problems. In most
-> cases the new behaviour of genpd triggered some weird platform specific bugs.
->
-> That said, in LPC in Tokyo me and Saravana hosted a session to walk through the
-> remaining limitations that we have found for genpd's sync state support. In
-> particular, we discussed the problems we have for the so-called onecell power
-> domain providers, where a single provider typically provides multiple
-> independent power domains, all with their own set of consumers.
->
-> In these cases, the generic sync_state mechanism with fw_devlink isn't fine
-> grained enough, as we end up waiting for all consumers for all power domains
-> before the ->sync_callback gets called for the supplier/provider. In other
-> words, we may end up keeping unused power domains powered-on, for no good
-> reasons.
->
-> The series intends to fix this problem. Please have a look at the commit
-> messages for more details.
->
-> Please help review and test!
+On Wed, 11 Mar 2026, Alexey Charkov wrote:
 
-Saravana, Rafael, Greg - any concerns you see with this approach?
+> Add register definitions and a new 'type' enum to be passed via MFD
+> private data to support the BQ25792, which is a newer variant of the
+> BQ257xx family.
+> 
+> BQ25792 shares similar logic of operation with the already supported
+> BQ25703A but has a completely different register map and different
+> electrical constraints.
+> 
+> Tested-by: Chris Morgan <macromorgan@hotmail.com>
+> Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> ---
+>  drivers/mfd/bq257xx.c       |  54 +++++-
+>  include/linux/mfd/bq257xx.h | 414 ++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 465 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+> index e9d49dac0a16..4445ded5b2eb 100644
+> --- a/drivers/mfd/bq257xx.c
+> +++ b/drivers/mfd/bq257xx.c
+> @@ -39,13 +39,47 @@ static const struct regmap_config bq25703_regmap_config = {
+>  	.val_format_endian = REGMAP_ENDIAN_LITTLE,
+>  };
+>  
+> -static const struct mfd_cell cells[] = {
+> +static const struct regmap_range bq25792_writeable_reg_ranges[] = {
+> +	regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
+> +			 BQ25792_REG18_NTC_CONTROL_1),
+> +	regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
+> +			 BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
+> +};
+> +
+> +static const struct regmap_access_table bq25792_writeable_regs = {
+> +	.yes_ranges = bq25792_writeable_reg_ranges,
+> +	.n_yes_ranges = ARRAY_SIZE(bq25792_writeable_reg_ranges),
+> +};
+> +
+> +static const struct regmap_range bq25792_volatile_reg_ranges[] = {
+> +	regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
+> +			 BQ25792_REG27_FAULT_FLAG_1),
+> +	regmap_reg_range(BQ25792_REG31_IBUS_ADC,
+> +			 BQ25792_REG47_DPDM_DRIVER),
+> +};
+> +
+> +static const struct regmap_access_table bq25792_volatile_regs = {
+> +	.yes_ranges = bq25792_volatile_reg_ranges,
+> +	.n_yes_ranges = ARRAY_SIZE(bq25792_volatile_reg_ranges),
+> +};
+> +
+> +static const struct regmap_config bq25792_regmap_config = {
+> +	.reg_bits = 8,
+> +	.val_bits = 8,
+> +	.max_register = BQ25792_REG48_PART_INFORMATION,
+> +	.cache_type = REGCACHE_MAPLE,
+> +	.wr_table = &bq25792_writeable_regs,
+> +	.volatile_table = &bq25792_volatile_regs,
+> +};
+> +
+> +static struct mfd_cell cells[] = {
 
-Especially I need your confirmation for patch 1 and patch2.
+This was `static const` before. And I don't see any code in here making
+changes to it.  Was the `const` dropped intentionally?
 
-Kind regards
-Uffe
+>  	MFD_CELL_NAME("bq257xx-regulator"),
+>  	MFD_CELL_NAME("bq257xx-charger"),
+>  };
+>  
+>  static int bq257xx_probe(struct i2c_client *client)
+>  {
+> +	const struct regmap_config *rcfg;
+>  	struct bq257xx_device *ddata;
+>  	int ret;
+>  
+> @@ -53,9 +87,21 @@ static int bq257xx_probe(struct i2c_client *client)
+>  	if (!ddata)
+>  		return -ENOMEM;
+>  
+> +	ddata->type = (uintptr_t)device_get_match_data(&client->dev);
 
+This logic seems a bit fragile. For non-DeviceTree platforms,
+`device_get_match_data()` will return `NULL` since the `i2c_device_id`
+table doesn't provide any match data. Casting `NULL` to `uintptr_t` will
+result in `0`, which corresponds to `BQ25703A`. This means the new
+`bq25792` will be misidentified as a `bq25703a` when instantiated
+without a DeviceTree node.  Even with DeviceTree, if a compatible string
+is matched but has no `.data` property, the same misidentification will
+occur.
 
->
-> Kind regards
-> Ulf Hansson
->
-> [1]
-> https://lore.kernel.org/all/20250701114733.636510-1-ulf.hansson@linaro.org/
->
->
-> Ulf Hansson (9):
->   driver core: Enable suppliers to implement fine grained sync_state
->     support
->   driver core: Add dev_set_drv_queue_sync_state()
->   pmdomain: core: Move genpd_get_from_provider()
->   pmdomain: core: Add initial fine grained sync_state support
->   pmdomain: core: Extend fine grained sync_state to more onecell
->     providers
->   pmdomain: core: Export a common function for ->queue_sync_state()
->   pmdomain: renesas: rcar-gen4-sysc: Drop GENPD_FLAG_NO_STAY_ON
->   pmdomain: renesas: rcar-sysc: Drop GENPD_FLAG_NO_STAY_ON
->   pmdomain: renesas: rmobile-sysc: Drop GENPD_FLAG_NO_STAY_ON
->
->  drivers/base/core.c                       |   7 +-
->  drivers/pmdomain/core.c                   | 208 ++++++++++++++++++----
->  drivers/pmdomain/renesas/rcar-gen4-sysc.c |   1 -
->  drivers/pmdomain/renesas/rcar-sysc.c      |   1 -
->  drivers/pmdomain/renesas/rmobile-sysc.c   |   3 +-
->  include/linux/device.h                    |  12 ++
->  include/linux/device/driver.h             |   7 +
->  include/linux/pm_domain.h                 |   3 +
->  8 files changed, 200 insertions(+), 42 deletions(-)
->
-> --
-> 2.43.0
->
+Perhaps it would be safer to explicitly handle the `NULL` case and make the
+identification logic more robust?  Or perhaps start your IDs from 1.
+
+>  	ddata->client = client;
+>  
+> -	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
+> +	switch (ddata->type) {
+> +	case BQ25703A:
+> +		rcfg = &bq25703_regmap_config;
+> +		break;
+> +	case BQ25792:
+> +		rcfg = &bq25792_regmap_config;
+> +		break;
+> +	default:
+> +		return dev_err_probe(&client->dev, -EINVAL, "Unsupported device type\n");
+
+Given the potential for `device_get_match_data()` to return `NULL` (which
+becomes `0`), this `default` case might not be reachable for invalid or
+un-matchable devices. A more explicit check on the match data before this
+`switch` might be better.
+
+> +	}
+> +
+> +	ddata->regmap = devm_regmap_init_i2c(client, rcfg);
+>  	if (IS_ERR(ddata->regmap)) {
+>  		return dev_err_probe(&client->dev, PTR_ERR(ddata->regmap),
+>  				     "Failed to allocate register map\n");
+> @@ -74,12 +120,14 @@ static int bq257xx_probe(struct i2c_client *client)
+>  
+>  static const struct i2c_device_id bq257xx_i2c_ids[] = {
+>  	{ "bq25703a" },
+> +	{ "bq25792" },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
+>  
+>  static const struct of_device_id bq257xx_of_match[] = {
+> -	{ .compatible = "ti,bq25703a" },
+> +	{ .compatible = "ti,bq25703a", .data = (void *)BQ25703A },
+> +	{ .compatible = "ti,bq25792", .data = (void *)BQ25792 },
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(of, bq257xx_of_match);
+
+[...]
+
+-- 
+Lee Jones [李琼斯]
