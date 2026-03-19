@@ -1,206 +1,300 @@
-Received: from mail-oo1-f70.google.com (mail-oo1-f70.google.com [209.85.161.70])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81A263DD51C
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 21:36:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.70
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773956177; cv=none; b=NYHSgd/lfacwa6zoO0+/gG3La0xa1FwDQaTPNMPtSLQy1dhSXPYoZYOOQq12MyCQQticnXcHMT7HiaMRP8RpPGRF/i6SEbaLZjzpuoGMegDqQ7N0lwvVEycQYQ7wzcfD8Meamaq1OdyccHouDCKUzHSMjr9q3StIuW7XksJ5zyI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773956177; c=relaxed/simple;
-	bh=iYv+0JMBhL0Y3n+y6pJw/rt2uBkC/RlMI6Ep70XgoGw=;
-	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
-	 Content-Type; b=rv6LAjgPy9L9t6m1lDRdAA4F7Ho2efLaNNkjpqNV3yiF6cHv1J+3YtzU0b8HvgjQciHNq6gCBX8fFZpjKW2tbD3XCtPw4GNkO/nkfn0VQATgQ+o8VsbkOSHxz/l6j2zA/JaR0PSVnUPOsuNgek6jQ4QmlFSL+htValnKDOcoADQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.70
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oo1-f70.google.com with SMTP id 006d021491bc7-67bb2273d42so20387386eaf.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:36:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773956175; x=1774560975;
-        h=cc:to:from:subject:message-id:in-reply-to:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ynbncJsLJEK7RgBrfoH+8cd27pvPqD1p1MxcDbeHsxs=;
-        b=d2bBrRwuvUUc2K/DNVchg+ZYMJ1NqsknEEDvTV6roUspe8VXq4visE+ly6dMEatLub
-         TGVirIrJSbru1ZoNwkpfz3HeFR4elF5wBeTV+kkCl6ffTUhlVNkvH+EudUDxZg0BIOm5
-         I3+bftecQSNHrCrKJLqf3yDc5KDKkVnAtYUAm6hzXoVZomyVLuCM96AkIpQzH4m/hDCg
-         TbAW7d6U/mGg5TV8f9Vt5jcSBKwei7gHKi9ult6QcZ5Za/wvMbgE2nK2legHgFEaL64J
-         aJSUijJyOmmPc3vgouBl9PEdg+FjLGY/pz8cSOu+smlY/MoUfUmjHia/bDfU4wysdraV
-         Kpdw==
-X-Forwarded-Encrypted: i=1; AJvYcCXjRuwod7/7YovjMcJQGAtiWi1ALkYc2EsYiKDpZ9WDdLAnQq5eYdvccBArqVsdKg/ODNoE3cR1ig==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx4OieaaKTDRxbEVe3ings8YuETjNaAh8y50xLjEZVjcklBA1uL
-	EP9vo7actRRxmDT+ZdYZVtTWzbv/2biaLQ+d/sRed+gYSZ9gJ2OkplA+gFPMNGMsoF97e1HJov+
-	mrFftO+Dtu/kLpXML+RQHKrliWx5FpqneHshbjCe289zS/vbHrsj8thhrKe8=
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A51EF2D8DCA;
+	Thu, 19 Mar 2026 23:07:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=198.175.65.16
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773961680; cv=fail; b=IY2J/YK6Y+y4UH3b4HwwRp5px203qngPW1oTDDlB/5Zlsm+V+FC0brPEYQ/SFZEJ6QKalF4QfB0D8ESm2xW/EZr4frLa3K3nJCmUb++PDSP4+ahX28ByUO8upFOHj4BkFamwB6H81ozkF+qw4UGl6//wu3+V9Phaylo2IhNHddM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773961680; c=relaxed/simple;
+	bh=9tCH6JFiTKkPiTL4M2EIWQRyK2r/RRujVdJC4A52WF8=;
+	h=From:Date:To:CC:Message-ID:In-Reply-To:References:Subject:
+	 Content-Type:MIME-Version; b=d+hJ67PMh9S+ddWTphYeyc+aP2ka7pfqqmlgO8GJB7VMdPqQgfXocxLTI/8wkhziAXUkH9+JOyNPONKjWjDNJlYPx0FpjoajvvlPYvmmTR8ZOKBbu51HBR/yKUvV1wUN6OUpUorOHIGhxSy566hz/SrB8Sd0U3l4c+K0KMO0wNY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PbYwEXcd; arc=fail smtp.client-ip=198.175.65.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PbYwEXcd"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773961678; x=1805497678;
+  h=from:date:to:cc:message-id:in-reply-to:references:
+   subject:content-transfer-encoding:mime-version;
+  bh=9tCH6JFiTKkPiTL4M2EIWQRyK2r/RRujVdJC4A52WF8=;
+  b=PbYwEXcdbUbqgaO4TrVYxjtDtnyt1yGw0K0Z5CnrgIoaRvLQCA9ROLYf
+   puNNfnN6jRzUgisrND6rCLt8/NUvRYyG2nIOfyNxdGjSOlkWS1getAwzW
+   XD2uUXB/09pj4/ZndnQz2Qq2BekQR5Z0u0wSnGL+VJHU3KQgcJQ2Crc+m
+   mAcSOOlBGE4IXnShFNMlF1eTHfiMy2bh9IP91TwtDjKREL3ta4pt61OVd
+   vkrk0K7j4fyA4265yc9cC3sZM7OrWOE5rcvaZzDkVh+TzWvxJPH2OxzOA
+   oViqTZs9KRGk00ZvwYiUwq5RSbT8MJanvC4GM+BlUqbMRQ1dW9TqmdWgx
+   w==;
+X-CSE-ConnectionGUID: Fwo3ex2ERyCrbtSNatd08Q==
+X-CSE-MsgGUID: gJwvmBrPR/CRMzxGYjzD6w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="75232467"
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="75232467"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 16:07:57 -0700
+X-CSE-ConnectionGUID: KlNhcoWUSr6P0Y+Z1liu8Q==
+X-CSE-MsgGUID: 4HKum3hIRkaZQkghTatO/Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="227590487"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 16:07:57 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 19 Mar 2026 16:07:56 -0700
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 19 Mar 2026 16:07:56 -0700
+Received: from SN4PR2101CU001.outbound.protection.outlook.com (40.93.195.52)
+ by edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 19 Mar 2026 16:07:53 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=EF5vE/wVuOvCFXxIdiLKM6d0tSiPEAFLF1rBK6FmmSV132JbCnkwVlpUv7IwhPh20KNtmSVznNqRn+q7vZXZCOuYMk/FggTqkBscYV1GK3MObpwYu/NaUB2pk491/Uq9jCP78Frm3eKhI+tTkI7U0R1wYrvEOUPDcNFb1xzqchVKZO+FHaI2dcVCVInlrQz9smBB3eFwBet6utDibtnjv6VFb/L7ZYcFRHr1DqQ/znE0NPjO/MtSMhZ1sLKCC0pp4tyWE2gJlA5pKEDjBhXuse05S8dal1SrGvyEfGhJaAqPK3ZLd1Uf2kkWkvVJQzLf2AzjIlAKy7vnKhqYXIOQ6g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1nBEn31EMyP2x5Wr0rov6fp1IHDdATa0RhCyO69uTbM=;
+ b=n+Br3CwGZT+ClXKL+bH1+RfhY74O6+DouKC8dNA7RdBrwOwr1Rn4cDuWDG1avVBcfpBDwbAUYjEK8Yh19r69+5NmyVF/bp75eeQC8s4N5YO3oew83YWLkIBYT+kFx5YKYXj1ry246AomQKUrvpdHQSUn0ckZq1UF3TWktmTxyANQ44+C983DXzGv9+nH43GRIs5h+3a2syB+T0l1oGpVTTYRyLbIi1wB6YHhSl1dpI7kRcKNmL10WHZE90JDfATcjI8ubNMYpDXOhU6f3XEcK6MAH6+58kU780fIjlrYJaVqYE6IqIImQJgRCoDVINItqIn8MAvfjCyF6GStQPXHfw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by IA1PR11MB6268.namprd11.prod.outlook.com (2603:10b6:208:3e4::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Thu, 19 Mar
+ 2026 23:07:46 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff%3]) with mapi id 15.20.9723.018; Thu, 19 Mar 2026
+ 23:07:46 +0000
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 19 Mar 2026 16:07:43 -0700
+To: "Koralahalli Channabasappa, Smita" <skoralah@amd.com>, Alison Schofield
+	<alison.schofield@intel.com>, Smita Koralahalli
+	<Smita.KoralahalliChannabasappa@amd.com>, Jonathan Cameron
+	<jonathan.cameron@huawei.com>
+CC: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, Ard Biesheuvel <ardb@kernel.org>, Vishal Verma
+	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
+	<dan.j.williams@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Dave Jiang
+	<dave.jiang@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, Matthew Wilcox
+	<willy@infradead.org>, Jan Kara <jack@suse.cz>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek
+	<pavel@kernel.org>, Li Ming <ming.li@zohomail.com>, Jeff Johnson
+	<jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
+	Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nathan Fontenot
+	<nathan.fontenot@amd.com>, Terry Bowman <terry.bowman@amd.com>, "Robert
+ Richter" <rrichter@amd.com>, Benjamin Cheatham <benjamin.cheatham@amd.com>,
+	Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>, "Tomasz
+ Wolski" <tomasz.wolski@fujitsu.com>
+Message-ID: <69bc81bfa9baa_7ee310093@dwillia2-mobl4.notmuch>
+In-Reply-To: <b56f55b1-4281-4edf-8aa4-27d0500ebd60@amd.com>
+References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260319011500.241426-4-Smita.KoralahalliChannabasappa@amd.com>
+ <abuOLq6bMPa0nNAL@aschofie-mobl2.lan>
+ <3590e2d5-e768-4180-82a0-c972101f3440@amd.com>
+ <b56f55b1-4281-4edf-8aa4-27d0500ebd60@amd.com>
+Subject: Re: [PATCH v7 3/7] dax/cxl, hmem: Initialize hmem early and defer
+ dax_cxl binding
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+X-ClientProxiedBy: MW4PR03CA0178.namprd03.prod.outlook.com
+ (2603:10b6:303:8d::33) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:3104:b0:67b:a667:f51f with SMTP id
- 006d021491bc7-67c22bcbc3emr753879eaf.6.1773956175475; Thu, 19 Mar 2026
- 14:36:15 -0700 (PDT)
-Date: Thu, 19 Mar 2026 14:36:15 -0700
-In-Reply-To: <20260318222953.441758-1-nphamcs@gmail.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <69bc6c4f.050a0220.3bf4de.0001.GAE@google.com>
-Subject: [syzbot ci] Re: Virtual Swap Space
-From: syzbot ci <syzbot+ci0215525ee2c0ed89@syzkaller.appspotmail.com>
-To: akpm@linux-foundation.org, apopple@nvidia.com, axelrasmussen@google.com, 
-	baohua@kernel.org, baolin.wang@linux.alibaba.com, bhe@redhat.com, 
-	byungchul@sk.com, cgroups@vger.kernel.org, chengming.zhou@linux.dev, 
-	chrisl@kernel.org, corbet@lwn.net, david@kernel.org, dev.jain@arm.com, 
-	gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
-	joshua.hahnjy@gmail.com, kasong@tencent.com, kernel-team@meta.com, 
-	lance.yang@linux.dev, lenb@kernel.org, liam.howlett@oracle.com, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
-	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, nphamcs@gmail.com, 
-	pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, 
-	rafael@kernel.org, rakie.kim@sk.com, riel@surriel.com, 
-	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
-	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
-	ying.huang@linux.alibaba.com
-Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|IA1PR11MB6268:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7517a3ed-7c86-4d33-5dff-08de860c553e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|366016|1800799024|18002099003|22082099003|56012099003;
+X-Microsoft-Antispam-Message-Info: gcYxCovS/60fpuTr7lvkAM2O4W5RL8s5lxhHrT50H4pqIh5RlJ/LDMfgW3EdVDIWtrP4RM0DqhruNKo1cl6O5q8oNNLLfgem65ixquhbEKcPGEPfkkTlJ91QnU/3W+hwPXz6NEqf8KG/DJVBgW6sfl5m/VjpY9UJMuEbQO6+KY4Nzy6obl7la3ELyr1JbLUSnIEcF8PYEpEAHBRK3lG0LCIMXHd3K+Qse0R3zbGmCkZHWUytzNmjLogGC05wvB/5b2NTjGr/dtkkyzt19bS+itLtq8Poyl/chxq4CehmJaV/4JWU65uetKNrMwsOct3u1svA34yjH9XolEyJRz3lIQASVLKVLuw8eQUJMBq92snYXngTJ8fSpevvhFC8Fi4l+aDoTQn6FRsjYBV7ZD98O0g4+dDGZH/tANrNt+qqNA+FwSDZRjOIRI6+Gbg7jrqoprb6L9P0eR7p8Ak6rEN+SyA2U7tjFQZ7wKnGV+dogLNFSWk9RbKlgqu+8cn5ump5U5MtxIfNhaYONsmJcVhQxIQ2/j6a+uxAsCITroyba2oFsP/fZ2Rq0etYbCh0MHvV8a4eyP5Qk68nU3njLUJKFCCzQPLLafi0zafsETy13QT5VaqH6UWCol2Xe5Cys+P8+la0mzZcN+epg1y6F3gamjosutSikx+6Yat0unAZCPatUl6HWJeKlP/ny4jvKCeZpF/yBB3GTU5lWrdQQ0K7bEijKbejDcWlcRKGzQXA918=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?REJzaTcreWdhTnNaRndqMTZVWjIvUXF1ZW4wN2l1QWtqVlNrWk1vMGROZzFy?=
+ =?utf-8?B?cEdDVFRkNXFvdmRmNnNlNW96SGpmbjlpZnFKd2VKeFMwRjByc3V3Yk9uenhC?=
+ =?utf-8?B?dU10a1pnQTBJNk55MDNrT3Q0ZlFLUFZLUStXTzNWSUNadTkzNm84Vi9yS0ZZ?=
+ =?utf-8?B?OTgvNkxUOVNOOEVUNTNnelRlNUF2c0RDTUxTVEVES1Mza1JNZUM2VEp3V3lr?=
+ =?utf-8?B?alRqaThKYVM4NmptOGlIYzNsZUliSHcyNGxraXovbDZjUWZqdzl4OWsxckdu?=
+ =?utf-8?B?Umx3d0w5MkZ4c1hESGlVWElQdDlZWW9tWmNNM0VIS24zL1l2WHBLYXNwNldz?=
+ =?utf-8?B?Y2FhZkpTaUVJS211S3dPUE1yM1hmNUFwMGNON2piK0tLL2dZTEdpUEpKZlV2?=
+ =?utf-8?B?ajVJemcwYVFXeFRwWGp2M0VJYi9za0pYMVB1Z3d4WkJDbUxmRUxjUkZxbmJT?=
+ =?utf-8?B?eG9QNmkwQXhOS1hoejNBUmN2d0locFpieGgxUWpmemdpV0Y1ZlV2cFJ4bDNw?=
+ =?utf-8?B?Q2pwR1hDZHlTaW1lM3RsTkd4aXhxMHhHQXhLRGp6Zm9GMlVNSlNXZ2ZjWTNH?=
+ =?utf-8?B?THI3RGFqSVJDZWNodEQ1d0pmcnFUTTV4QmQxWmkvSXc4VnVvYkN6ZEo0RUta?=
+ =?utf-8?B?QUhkVm9ocVZDQ1ljTENaYjEzT3ZmUmk2Z1BQQmIxN2RQR0trWnRCenIwWVl0?=
+ =?utf-8?B?RTJ1RVFQcTE1cGVrc3RqQlF4OUJBUitqbEliMHc0cmtZYnJGc3dzaElmRzZQ?=
+ =?utf-8?B?ZTdyeXhmT3o5Q0tpRXhBS1Nyc094UVFxWjA1VUYrUnJCaUZtbGVpcERmWVQ1?=
+ =?utf-8?B?VE85N1hnM04yZlR2NXpjdDEyODYyK21wVGxIbnpjREh4MjdSR0Zsb1dhSEZE?=
+ =?utf-8?B?VkJuTU9YK1lwdDJmbmdkaTlidUdlc0xZSFN3Y2ZPQW1zaHhqOHRYYVVmZ1JG?=
+ =?utf-8?B?MGRRVDdTQ1o5Ullub2Nia09SMDVaUWlSVUx4L3A4ZTVpTVVGU2xNdkMxWG5C?=
+ =?utf-8?B?TjkxeDZJdWJDcGIzZ3BSanppOVVoc1NUYXdlMHNqWkIybXhHSmFFSWlmbjB5?=
+ =?utf-8?B?MDI4L2tBQ25NS3Z1aDZDQVZ0dWVWMHlYQnBjVFFOYjJ1aUYvQy9Kd2NWSWR1?=
+ =?utf-8?B?NEVTZDJpNW4vUG1ESW1YQjNtT1VZMC8xRmpadms2U0UxWUkvRklnRVByTTgx?=
+ =?utf-8?B?UzFvb3FvTmt1c1grNmFBZFNkSEtaUUhmNkJ2bHFJNGxuTzA3ZW1LY2x4a2VE?=
+ =?utf-8?B?VC9weEI3VFlDWGw3VE9nSnQ0UlFzTHFpOCtNZFNOSHpCd2c2T3FoVXZmSi90?=
+ =?utf-8?B?QVkyVWM4eUp0NVFiSllwbWdnT1VvVCtsMFRrYkFGNFFoOGloRGQzd0pJMlEy?=
+ =?utf-8?B?OExlZUYrSjg3S0VudXM2TFpsMVNGY1NMTWhWY0ZnRlhmV0dTelJhQis5NkQw?=
+ =?utf-8?B?RmZ3Wjh1U3JvS1VmalJsaWZBVHhJUDRTS1hRdmgvV3BxMCtwNFE0MlhuUU1w?=
+ =?utf-8?B?QUNFa2ZKdE02eXpvNDdPTVFxalZ3ekRZOVZOSDBVcTc3SThEL1dzdHJRVXIx?=
+ =?utf-8?B?cjRCcVNXNCtzZnJDSXo1KzRGV1I2SlpUM2R2Z3VRWkd5QXRDc2ZqYW5DOW1p?=
+ =?utf-8?B?M3VUUlNnRjA2cHRLTlRlb25xZ2lGT1FqTjZZTFVTdW04NGZkUGp4QWx1enNB?=
+ =?utf-8?B?RytlRUNmVHNsajdnMi9aU2ZhNEtlQm1QRVJVTjJoMWJIclJSSERoRU56SjYy?=
+ =?utf-8?B?b0p3Smw2dHBNVW51QmNyemYyNEo4RTNXNTZQZmluRitMdFlwbWZvUlo5Vlhw?=
+ =?utf-8?B?aDNnQzNKQkZoK0J3VU1OZlZTN0tuaFUybTUwcmNKYnhHcWtld2JyazVGd0E0?=
+ =?utf-8?B?QjB2dGNZYVFIT2VWVTl2aHpQc1VsMnlhLzlWWlVTNXo3dmduWTMrWG1CMjJ3?=
+ =?utf-8?B?UHdTV0pFVWJaeEUyeG00eUpvRkF0bGM3a1Ezc1U5ZXpyenlWam1WS2lhOFRE?=
+ =?utf-8?B?WkN0eW81NHV3UkF1VEJrOUcxZi9DR0h1OWNOYkQ3VTUxdzBMdmsrek9xQS9x?=
+ =?utf-8?B?TUw3MkFBT3VjZzJKaVRzUVAzVWFYQTVkZ012bmdZcUR5YzdGdXV6SEFONlpW?=
+ =?utf-8?B?N0srWmZrZHpCYlV4LzV4dFJSOHplYm5YQ0lBemtMTTFHVGhZR3Awb1prM0xS?=
+ =?utf-8?B?YzFzK0xqOEpFWGVvbEc2WDh1K2NJSWp0d29LMURBU21UeDdDazZtejFtdTdI?=
+ =?utf-8?B?U2dDMUc4clM5Mzh0cElWN3UzSUYwOU5Mc3d5R2dkNktweitnU1lnaHY0aTdp?=
+ =?utf-8?B?bDRpS3pMSmFDOC96RHM5TGFXMXQ3YURSMUpiOC9oK0pBcUtsTWw5TE0yUTdu?=
+ =?utf-8?Q?X9mHqBAzxoinnomU=3D?=
+X-Exchange-RoutingPolicyChecked: oMBFq0Gzmb79I5AAYv7Q7iGmQhl+AxukU2kjw9IoMCE1hjHlBpLyu3pcczKbB6B2ywAt3a3TlvqQZx37b6aBNvWRTwLoaAuv3CDAJEJB71n0pt3aUyNCcKur7Hf+iG7E1zcpoy4hPVOkjPqhQbhrsKC86hnTEkXg3oBpOclDNxbTaVk6gnW3yytHqYTIZ5EHmuw/loi6TWpD7zUOkEnNpFWXVRI/uUhJ7K1VKPH8i4GEHFZHRriD9bjrpvzOpL/jQjcdKxqclA1izGOEEbn8wYze7kc9HnyzOGq8Idfz+u+truCd98pt9Ml5JGAV9OtmUb8gkE9nopUqVVedZaLr9g==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7517a3ed-7c86-4d33-5dff-08de860c553e
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2026 23:07:46.2417
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: owCkip1faHplL9Squ9C7YqASiZgwKcbMgIMIvbZtxs9eIHibPG0KjIUTPATr/dCRw/GGSWHANELTayL/m+zjw2Q27iFSkAuY+q95uuea/fI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR11MB6268
+X-OriginatorOrg: intel.com
 
-syzbot ci has tested the following series
+Koralahalli Channabasappa, Smita wrote:
+[..]
+> > I agree with Jonathan's comments in Patch 6, using __WORK_INITIALIZER o=
+r=20
+> > initializing work in dax_hmem_init() and gating flush on pdev will fix=
+=20
+> > the WARN =E2=80=94 I will add both for v8. But I think the WARN is like=
+ly=20
+> > indicating an ordering issue here..
 
-[v4] Virtual Swap Space
-https://lore.kernel.org/all/20260318222953.441758-1-nphamcs@gmail.com
-* [PATCH v4 01/21] mm/swap: decouple swap cache from physical swap infrastructure
-* [PATCH v4 02/21] swap: rearrange the swap header file
-* [PATCH v4 03/21] mm: swap: add an abstract API for locking out swapoff
-* [PATCH v4 04/21] zswap: add new helpers for zswap entry operations
-* [PATCH v4 05/21] mm/swap: add a new function to check if a swap entry is in swap cached.
-* [PATCH v4 06/21] mm: swap: add a separate type for physical swap slots
-* [PATCH v4 07/21] mm: create scaffolds for the new virtual swap implementation
-* [PATCH v4 08/21] zswap: prepare zswap for swap virtualization
-* [PATCH v4 09/21] mm: swap: allocate a virtual swap slot for each swapped out page
-* [PATCH v4 10/21] swap: move swap cache to virtual swap descriptor
-* [PATCH v4 11/21] zswap: move zswap entry management to the virtual swap descriptor
-* [PATCH v4 12/21] swap: implement the swap_cgroup API using virtual swap
-* [PATCH v4 13/21] swap: manage swap entry lifecycle at the virtual swap layer
-* [PATCH v4 14/21] mm: swap: decouple virtual swap slot from backing store
-* [PATCH v4 15/21] zswap: do not start zswap shrinker if there is no physical swap slots
-* [PATCH v4 16/21] swap: do not unnecesarily pin readahead swap entries
-* [PATCH v4 17/21] swapfile: remove zeromap bitmap
-* [PATCH v4 18/21] memcg: swap: only charge physical swap slots
-* [PATCH v4 19/21] swap: simplify swapoff using virtual swap
-* [PATCH v4 20/21] swapfile: replace the swap map with bitmaps
-* [PATCH v4 21/21] vswap: batch contiguous vswap free calls
+Yes, Jonathan is right, static initialization is also my expecation.
 
-and found the following issue:
-possible deadlock in vswap_iter
+> > On initial boot, the Makefile ordering ensures dax_hmem_init() runs
+> > before cxl_dax_region_init(), so both work items land on system_long_wq
+> > in the right order and dax_hmem's deferred work is queued before=20
+> > dax_cxl's driver registration work.
 
-Full report is available here:
-https://ci.syzbot.org/series/f8238a2a-370e-404d-b3f7-5945b574bd63
+There is nothing that guarantees that 2 work items in system_long_wq run
+in submission order. Unlikely that matters given the explicit flushing.
 
-***
+> > On module reload which Alison is trying here I dont think, modules are=
+=20
+> > loaded by Makefile order. I think dax_cxl's workqueue is calling=20
+> > dax_hmem_flush_work() before dax_hmem probe has had a chance to queue=20
+> > its work, so flush_work() flushes nothing and dax_cxl registers its=20
+> > driver without waiting.
 
-possible deadlock in vswap_iter
+Module load order does not matter after initial probe completion.
 
-tree:      bpf-next
-URL:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/bpf/bpf-next.git
-base:      05f7e89ab9731565d8a62e3b5d1ec206485eeb0b
-arch:      amd64
-compiler:  Debian clang version 21.1.8 (++20251221033036+2078da43e25a-1~exp1~20251221153213.50), Debian LLD 21.1.8
-config:    https://ci.syzbot.org/builds/cf1517a6-d391-46d8-bfbe-98e6be6b93ce/config
-syz repro: https://ci.syzbot.org/findings/b4e84ae7-17d4-4bf8-9c3f-4c13b10a1e52/syz_repro
+...and dax_hmem is guaranteed to always load before dax_cxl due to the
+symbol dependency of dax_hmem_flush_work().
 
-============================================
-WARNING: possible recursive locking detected
-syzkaller #0 Not tainted
---------------------------------------------
-syz.1.18/6001 is trying to acquire lock:
-ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock include/linux/spinlock.h:351 [inline]
-ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: vswap_iter+0xfa/0x1b0 mm/vswap.c:274
+> > __WORK_INITIALIZER fixes the WARN, but doesn't fix the race I guess if=
+=20
+> > we are hitting that here..
+> >=20
+> > [=C2=A0=C2=A0 34.673051] initcall dax_hmem_init+0x0/0xff0 [dax_hmem] re=
+turned 0=20
+> > after 2225 usecs
+> > [=C2=A0=C2=A0 34.676011] calling=C2=A0 cxl_dax_region_init+0x0/0xff0 [d=
+ax_cxl] @ 1059
+> >=20
+> > These two lines indicate cxl_dax started after dax_hmem_init() returns=
+=20
+> > but I dont think that guarantees dax_hmem_platform_probe() has actually=
+=20
+> > run..
+> >=20
+> > I dont know if wait_for_device_probe() in cxl_dax_region_driver_registe=
+r
+> > might help..
+> >=20
+> > Thanks
+> > Smita
+>=20
+> Actually, thinking about this more..
+>=20
+> dax_hmem_initial_probe lives in device.c (built-in) so it survives=20
+> module reload. On reload it's still true from the first boot. This means=
+=20
+> hmem_register_device() skips the deferral path entirely..
 
-but task is already holding lock:
-ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock_irq include/linux/spinlock.h:376 [inline]
-ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: swap_cache_lock_irq+0xe2/0x190 mm/vswap.c:1529
+Yes, that is the expectation.
 
-other info that might help us debug this:
- Possible unsafe locking scenario:
+> The problem is this bypasses the cxl_region_contains_resource() check=20
+> that the deferred work normally does. On first boot,=20
+> process_defer_work() walks each range and decides per-range: if CXL=20
+> covers it, skip. If not, register with HMEM. On reload, that check never=
+=20
+> happens =E2=80=94 whoever registers first via alloc_dax_region() wins,=20
+> regardless of whether CXL actually covers the range.
 
-       CPU0
-       ----
-  lock(&cluster->lock);
-  lock(&cluster->lock);
+Yes, I think you have hit on a real issue. There is no point in having
+dax_hmem auto-attach on driver reload. If userspace unloads the driver
+it gets to keep the pieces. So that means something like this:
 
- *** DEADLOCK ***
-
- May be due to missing lock nesting notation
-
-3 locks held by syz.1.18/6001:
- #0: ffff8881bb523440 (&mm->mmap_lock){++++}-{4:4}, at: mmap_read_lock include/linux/mmap_lock.h:391 [inline]
- #0: ffff8881bb523440 (&mm->mmap_lock){++++}-{4:4}, at: madvise_lock+0x152/0x2e0 mm/madvise.c:1789
- #1: ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock_irq include/linux/spinlock.h:376 [inline]
- #1: ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: swap_cache_lock_irq+0xe2/0x190 mm/vswap.c:1529
- #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: rcu_lock_acquire include/linux/rcupdate.h:331 [inline]
- #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: rcu_read_lock include/linux/rcupdate.h:867 [inline]
- #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: vswap_cgroup_record+0x41/0x440 mm/vswap.c:1909
-
-stack backtrace:
-CPU: 0 UID: 0 PID: 6001 Comm: syz.1.18 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
-Call Trace:
- <TASK>
- dump_stack_lvl+0xe8/0x150 lib/dump_stack.c:120
- print_deadlock_bug+0x279/0x290 kernel/locking/lockdep.c:3041
- check_deadlock kernel/locking/lockdep.c:3093 [inline]
- validate_chain kernel/locking/lockdep.c:3895 [inline]
- __lock_acquire+0x253f/0x2cf0 kernel/locking/lockdep.c:5237
- lock_acquire+0x106/0x330 kernel/locking/lockdep.c:5868
- __raw_spin_lock include/linux/spinlock_api_smp.h:133 [inline]
- _raw_spin_lock+0x2e/0x40 kernel/locking/spinlock.c:154
- spin_lock include/linux/spinlock.h:351 [inline]
- vswap_iter+0xfa/0x1b0 mm/vswap.c:274
- vswap_cgroup_record+0xeb/0x440 mm/vswap.c:1910
- swap_cgroup_record+0xc5/0x130 mm/vswap.c:1933
- memcg1_swapout+0x358/0x9e0 mm/memcontrol-v1.c:623
- __remove_mapping+0x7d4/0xa70 mm/vmscan.c:762
- shrink_folio_list+0x287c/0x5160 mm/vmscan.c:1518
- reclaim_folio_list+0x100/0x400 mm/vmscan.c:2198
- reclaim_pages+0x45b/0x530 mm/vmscan.c:2235
- madvise_cold_or_pageout_pte_range+0x1eac/0x2220 mm/madvise.c:444
- walk_pmd_range mm/pagewalk.c:130 [inline]
- walk_pud_range mm/pagewalk.c:224 [inline]
- walk_p4d_range mm/pagewalk.c:262 [inline]
- walk_pgd_range+0x1032/0x1d30 mm/pagewalk.c:303
- __walk_page_range+0x14c/0x710 mm/pagewalk.c:410
- walk_page_range_vma_unsafe+0x309/0x410 mm/pagewalk.c:714
- madvise_pageout_page_range mm/madvise.c:622 [inline]
- madvise_pageout mm/madvise.c:647 [inline]
- madvise_vma_behavior+0x2951/0x43c0 mm/madvise.c:1366
- madvise_walk_vmas+0x57a/0xaf0 mm/madvise.c:1721
- madvise_do_behavior+0x386/0x540 mm/madvise.c:1937
- do_madvise+0x1fa/0x2e0 mm/madvise.c:2030
- __do_sys_madvise mm/madvise.c:2039 [inline]
- __se_sys_madvise mm/madvise.c:2037 [inline]
- __x64_sys_madvise+0xa6/0xc0 mm/madvise.c:2037
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xe2/0xf80 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f2b3459c799
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007f2b35495028 EFLAGS: 00000246 ORIG_RAX: 000000000000001c
-RAX: ffffffffffffffda RBX: 00007f2b34815fa0 RCX: 00007f2b3459c799
-RDX: 0000000000000015 RSI: 0000000000600000 RDI: 0000200000000000
-RBP: 00007f2b34632c99 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007f2b34816038 R14: 00007f2b34815fa0 R15: 00007ffcfbbae8f8
- </TASK>
-
-
-***
-
-If these findings have caused you to resend the series or submit a
-separate fix, please add the following tag to your commit message:
-  Tested-by: syzbot@syzkaller.appspotmail.com
+diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
+index 15e462589b92..7478bc78a698 100644
+--- a/drivers/dax/hmem/hmem.c
++++ b/drivers/dax/hmem/hmem.c
+@@ -112,10 +112,12 @@ static int hmem_register_device(struct device *host, =
+int target_nid,
+ 	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
+ 			      IORES_DESC_CXL) !=3D REGION_DISJOINT) {
+ 		if (!dax_hmem_initial_probe) {
+-			dev_dbg(host, "deferring range to CXL: %pr\n", res);
++			dev_dbg(host, "await CXL initial probe: %pr\n", res);
+ 			queue_work(system_long_wq, &dax_hmem_work.work);
+ 			return 0;
+ 		}
++		dev_dbg(host, "deferring range to CXL: %pr\n", res);
++		return 0;
+ 	}
+=20
+ 	rc =3D region_intersects_soft_reserve(res->start, resource_size(res));
 
 ---
-This report is generated by a bot. It may contain errors.
-syzbot ci engineers can be reached at syzkaller@googlegroups.com.
+
+...because if userspace wants to reload the dax_hmem driver, then it
+needs to pick what happens with the CXL intersection. Userspace can
+always unload cxl_acpi to force everything back to dax_hmem.
+
+Now, you might say, "but this means that if the initial probe results in
+a partial result of some regions in dax_hmem and others in dax_cxl, that
+state can not be recovered outside of a reboot". I think that is ok.
+This mechanism is automatic best-effort workaround for bugs / missing
+capabilities in the CXL driver. Module reload fidelity is out of scope.
+
+> So if dax_cxl registers first on reload, it could claim a range that CXL=
+=20
+> doesn't actually cover, and dax_hmem would lose a range it should own..
+
+With the above change, dax_cxl always wins in the "reload" scenario iff
+cxl_acpi is loaded. Otherwise dax_hmem owns all the Soft Reserved.
+
+> I dont know if Im thinking through this right..
+
+You definitely identified the need for that fixup above.=
