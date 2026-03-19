@@ -1,144 +1,206 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oo1-f70.google.com (mail-oo1-f70.google.com [209.85.161.70])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04654402459;
-	Thu, 19 Mar 2026 21:26:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81A263DD51C
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 21:36:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.70
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773955568; cv=none; b=DwLbfP4iPTS305eEuc92MnoO229hdB2o5Pzr2jyFFKh0AGglR9tH8p3lc+wNqP7wJE1KrwgicN8QJwQB8CpErd6nFihhB2gJE5lbfZqFRfRsRm+hmCwmbx57ZKvafZZv+Hp/q9f9d5ph2OkHGAvyY+DR+XnfDptJqG8LUna0/jo=
+	t=1773956177; cv=none; b=NYHSgd/lfacwa6zoO0+/gG3La0xa1FwDQaTPNMPtSLQy1dhSXPYoZYOOQq12MyCQQticnXcHMT7HiaMRP8RpPGRF/i6SEbaLZjzpuoGMegDqQ7N0lwvVEycQYQ7wzcfD8Meamaq1OdyccHouDCKUzHSMjr9q3StIuW7XksJ5zyI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773955568; c=relaxed/simple;
-	bh=86ORD5QxZLT54WM41eJIPD/KeX+xFRSwH9SvtCoJslk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KsRpILPChU76l2qPSeOfZaVrAXmugHEi7zwlzj2dpUUQS/BMGSgfeh3hqs3pWpJifvJ3HAJxSujzxgo4dkWwEz9VP6xBLpXb24pz9ea7IXnNTidaUG8gSP1e5Gml/x6Id6yxXv6TzagEyLdTu26SDti/K1cE9wnjcqsLFME6z7k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aDABmK1b; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aDABmK1b"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77CD7C19424;
-	Thu, 19 Mar 2026 21:26:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773955567;
-	bh=86ORD5QxZLT54WM41eJIPD/KeX+xFRSwH9SvtCoJslk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aDABmK1bZEEjOJaJGu3AGXNEc63v7xNPp+VXwFx0sNoB4BAzkYQQdv3JiE87x8zbq
-	 037JI3rKIt3pJ2Q81C2xG0lJ8MXZK+8+eLj4G3/TQsrvNsfY52FVc/nq+7zPlWgrZS
-	 iP62Ni65CYSaSdAIpkHyoWTu+yorjxVlMwcb/Zc8khP4u9R9yas01i/dh82EhgIe2J
-	 L7K7Het4cwqqp4SuhHHnHAl/b6mX3Ou7A/K42bG4qDT6nT/oJi7e6yzscX0Ov8k0OU
-	 SuwGkOkaXG+MhuP7FWlMS+fsqKwNMk+k4pa11oLG6rY1LrgO6/GCl+sNpsHtrdYXCS
-	 f6uit7rGkk3Ug==
-Message-ID: <1f1dafa7-54c7-4eae-a19e-5ec1be391079@kernel.org>
-Date: Thu, 19 Mar 2026 22:26:03 +0100
+	s=arc-20240116; t=1773956177; c=relaxed/simple;
+	bh=iYv+0JMBhL0Y3n+y6pJw/rt2uBkC/RlMI6Ep70XgoGw=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:Cc:
+	 Content-Type; b=rv6LAjgPy9L9t6m1lDRdAA4F7Ho2efLaNNkjpqNV3yiF6cHv1J+3YtzU0b8HvgjQciHNq6gCBX8fFZpjKW2tbD3XCtPw4GNkO/nkfn0VQATgQ+o8VsbkOSHxz/l6j2zA/JaR0PSVnUPOsuNgek6jQ4QmlFSL+htValnKDOcoADQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.70
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oo1-f70.google.com with SMTP id 006d021491bc7-67bb2273d42so20387386eaf.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:36:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773956175; x=1774560975;
+        h=cc:to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ynbncJsLJEK7RgBrfoH+8cd27pvPqD1p1MxcDbeHsxs=;
+        b=d2bBrRwuvUUc2K/DNVchg+ZYMJ1NqsknEEDvTV6roUspe8VXq4visE+ly6dMEatLub
+         TGVirIrJSbru1ZoNwkpfz3HeFR4elF5wBeTV+kkCl6ffTUhlVNkvH+EudUDxZg0BIOm5
+         I3+bftecQSNHrCrKJLqf3yDc5KDKkVnAtYUAm6hzXoVZomyVLuCM96AkIpQzH4m/hDCg
+         TbAW7d6U/mGg5TV8f9Vt5jcSBKwei7gHKi9ult6QcZ5Za/wvMbgE2nK2legHgFEaL64J
+         aJSUijJyOmmPc3vgouBl9PEdg+FjLGY/pz8cSOu+smlY/MoUfUmjHia/bDfU4wysdraV
+         Kpdw==
+X-Forwarded-Encrypted: i=1; AJvYcCXjRuwod7/7YovjMcJQGAtiWi1ALkYc2EsYiKDpZ9WDdLAnQq5eYdvccBArqVsdKg/ODNoE3cR1ig==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx4OieaaKTDRxbEVe3ings8YuETjNaAh8y50xLjEZVjcklBA1uL
+	EP9vo7actRRxmDT+ZdYZVtTWzbv/2biaLQ+d/sRed+gYSZ9gJ2OkplA+gFPMNGMsoF97e1HJov+
+	mrFftO+Dtu/kLpXML+RQHKrliWx5FpqneHshbjCe289zS/vbHrsj8thhrKe8=
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/1] writeback: don't block sync(2) for filesystems
- with no data integrity guarantees
-To: Joanne Koong <joannelkoong@gmail.com>, brauner@kernel.org
-Cc: linux-fsdevel@vger.kernel.org, jack@suse.cz, miklos@szeredi.hu,
- therealgraysky@proton.me, linux-pm@vger.kernel.org, stable@vger.kernel.org
-References: <20260319194540.3463371-1-joannelkoong@gmail.com>
- <20260319194540.3463371-2-joannelkoong@gmail.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
- dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
- QZLQMzNE74ap+GDK0wnacPQFpcG1AE9RMq3aeErY5tujekBS32jfC/7AnH7I0v1v1TbbK3Gp
- XNeiN4QroO+5qaSr0ID2sz5jtBLRb15RMre27E1ImpaIv2Jw8NJgW0k/D1RyKCwaTsgRdwuK
- Kx/Y91XuSBdz0uOyU/S8kM1+ag0wvsGlpBVxRR/xw/E8M7TEwuCZQArqqTCmkG6HGcXFT0V9
- PXFNNgV5jXMQRwU0O/ztJIQqsE5LsUomE//bLwzj9IVsaQpKDqW6TAPjcdBDPLHvriq7kGjt
- WhVhdl0qEYB8lkBEU7V2Yb+SYhmhpDrti9Fq1EsmhiHSkxJcGREoMK/63r9WLZYI3+4W2rAc
- UucZa4OT27U5ZISjNg3Ev0rxU5UH2/pT4wJCfxwocmqaRr6UYmrtZmND89X0KigoFD/XSeVv
- jwBRNjPAubK9/k5NoRrYqztM9W6sJqrH8+UWZ1Idd/DdmogJh0gNC0+N42Za9yBRURfIdKSb
- B3JfpUqcWwE7vUaYrHG1nw54pLUoPG6sAA7Mehl3nd4pZUALHwARAQABzS5EYXZpZCBIaWxk
- ZW5icmFuZCAoQ3VycmVudCkgPGRhdmlkQGtlcm5lbC5vcmc+wsGQBBMBCAA6AhsDBQkmWAik
- AgsJBBUKCQgCFgICHgUCF4AWIQQb2cqtc1xMOkYN/MpN3hD3AP+DWgUCaYJt/AIZAQAKCRBN
- 3hD3AP+DWriiD/9BLGEKG+N8L2AXhikJg6YmXom9ytRwPqDgpHpVg2xdhopoWdMRXjzOrIKD
- g4LSnFaKneQD0hZhoArEeamG5tyo32xoRsPwkbpIzL0OKSZ8G6mVbFGpjmyDLQCAxteXCLXz
- ZI0VbsuJKelYnKcXWOIndOrNRvE5eoOfTt2XfBnAapxMYY2IsV+qaUXlO63GgfIOg8RBaj7x
- 3NxkI3rV0SHhI4GU9K6jCvGghxeS1QX6L/XI9mfAYaIwGy5B68kF26piAVYv/QZDEVIpo3t7
- /fjSpxKT8plJH6rhhR0epy8dWRHk3qT5tk2P85twasdloWtkMZ7FsCJRKWscm1BLpsDn6EQ4
- jeMHECiY9kGKKi8dQpv3FRyo2QApZ49NNDbwcR0ZndK0XFo15iH708H5Qja/8TuXCwnPWAcJ
- DQoNIDFyaxe26Rx3ZwUkRALa3iPcVjE0//TrQ4KnFf+lMBSrS33xDDBfevW9+Dk6IISmDH1R
- HFq2jpkN+FX/PE8eVhV68B2DsAPZ5rUwyCKUXPTJ/irrCCmAAb5Jpv11S7hUSpqtM/6oVESC
- 3z/7CzrVtRODzLtNgV4r5EI+wAv/3PgJLlMwgJM90Fb3CB2IgbxhjvmB1WNdvXACVydx55V7
- LPPKodSTF29rlnQAf9HLgCphuuSrrPn5VQDaYZl4N/7zc2wcWM7BTQRVy5+RARAA59fefSDR
- 9nMGCb9LbMX+TFAoIQo/wgP5XPyzLYakO+94GrgfZjfhdaxPXMsl2+o8jhp/hlIzG56taNdt
- VZtPp3ih1AgbR8rHgXw1xwOpuAd5lE1qNd54ndHuADO9a9A0vPimIes78Hi1/yy+ZEEvRkHk
- /kDa6F3AtTc1m4rbbOk2fiKzzsE9YXweFjQvl9p+AMw6qd/iC4lUk9g0+FQXNdRs+o4o6Qvy
- iOQJfGQ4UcBuOy1IrkJrd8qq5jet1fcM2j4QvsW8CLDWZS1L7kZ5gT5EycMKxUWb8LuRjxzZ
- 3QY1aQH2kkzn6acigU3HLtgFyV1gBNV44ehjgvJpRY2cC8VhanTx0dZ9mj1YKIky5N+C0f21
- zvntBqcxV0+3p8MrxRRcgEtDZNav+xAoT3G0W4SahAaUTWXpsZoOecwtxi74CyneQNPTDjNg
- azHmvpdBVEfj7k3p4dmJp5i0U66Onmf6mMFpArvBRSMOKU9DlAzMi4IvhiNWjKVaIE2Se9BY
- FdKVAJaZq85P2y20ZBd08ILnKcj7XKZkLU5FkoA0udEBvQ0f9QLNyyy3DZMCQWcwRuj1m73D
- sq8DEFBdZ5eEkj1dCyx+t/ga6x2rHyc8Sl86oK1tvAkwBNsfKou3v+jP/l14a7DGBvrmlYjO
- 59o3t6inu6H7pt7OL6u6BQj7DoMAEQEAAcLBfAQYAQgAJgIbDBYhBBvZyq1zXEw6Rg38yk3e
- EPcA/4NaBQJonNqrBQkmWAihAAoJEE3eEPcA/4NaKtMQALAJ8PzprBEXbXcEXwDKQu+P/vts
- IfUb1UNMfMV76BicGa5NCZnJNQASDP/+bFg6O3gx5NbhHHPeaWz/VxlOmYHokHodOvtL0WCC
- 8A5PEP8tOk6029Z+J+xUcMrJClNVFpzVvOpb1lCbhjwAV465Hy+NUSbbUiRxdzNQtLtgZzOV
- Zw7jxUCs4UUZLQTCuBpFgb15bBxYZ/BL9MbzxPxvfUQIPbnzQMcqtpUs21CMK2PdfCh5c4gS
- sDci6D5/ZIBw94UQWmGpM/O1ilGXde2ZzzGYl64glmccD8e87OnEgKnH3FbnJnT4iJchtSvx
- yJNi1+t0+qDti4m88+/9IuPqCKb6Stl+s2dnLtJNrjXBGJtsQG/sRpqsJz5x1/2nPJSRMsx9
- 5YfqbdrJSOFXDzZ8/r82HgQEtUvlSXNaXCa95ez0UkOG7+bDm2b3s0XahBQeLVCH0mw3RAQg
- r7xDAYKIrAwfHHmMTnBQDPJwVqxJjVNr7yBic4yfzVWGCGNE4DnOW0vcIeoyhy9vnIa3w1uZ
- 3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
- CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
- qIws/H2t
-In-Reply-To: <20260319194540.3463371-2-joannelkoong@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Received: by 2002:a05:6820:3104:b0:67b:a667:f51f with SMTP id
+ 006d021491bc7-67c22bcbc3emr753879eaf.6.1773956175475; Thu, 19 Mar 2026
+ 14:36:15 -0700 (PDT)
+Date: Thu, 19 Mar 2026 14:36:15 -0700
+In-Reply-To: <20260318222953.441758-1-nphamcs@gmail.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <69bc6c4f.050a0220.3bf4de.0001.GAE@google.com>
+Subject: [syzbot ci] Re: Virtual Swap Space
+From: syzbot ci <syzbot+ci0215525ee2c0ed89@syzkaller.appspotmail.com>
+To: akpm@linux-foundation.org, apopple@nvidia.com, axelrasmussen@google.com, 
+	baohua@kernel.org, baolin.wang@linux.alibaba.com, bhe@redhat.com, 
+	byungchul@sk.com, cgroups@vger.kernel.org, chengming.zhou@linux.dev, 
+	chrisl@kernel.org, corbet@lwn.net, david@kernel.org, dev.jain@arm.com, 
+	gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
+	joshua.hahnjy@gmail.com, kasong@tencent.com, kernel-team@meta.com, 
+	lance.yang@linux.dev, lenb@kernel.org, liam.howlett@oracle.com, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
+	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, nphamcs@gmail.com, 
+	pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, 
+	rafael@kernel.org, rakie.kim@sk.com, riel@surriel.com, 
+	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
+	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com
+Cc: syzbot@lists.linux.dev, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On 3/19/26 20:45, Joanne Koong wrote:
-> Add a SB_I_NO_DATA_INTEGRITY superblock flag for filesystems that cannot
-> guarantee data persistence on sync (eg fuse). For superblocks with this
-> flag set, sync(2) kicks off writeback of dirty inodes but does not wait
-> for the flusher threads to complete the writeback.
-> 
-> This replaces the per-inode AS_NO_DATA_INTEGRITY mapping flag added in
-> commit f9a49aa302a0 ("fs/writeback: skip AS_NO_DATA_INTEGRITY mappings
-> in wait_sb_inodes()"). The flag belongs at the superblock level because
-> data integrity is a filesystem-wide property, not a per-inode one.
-> Having this flag at the superblock level allows us to skip the logic in
-> sync_inodes_sb() entirely, rather than iterating every dirty inode in
-> wait_sb_inodes() only to skip each inode individually.
+syzbot ci has tested the following series
 
-Makes sense to me.
+[v4] Virtual Swap Space
+https://lore.kernel.org/all/20260318222953.441758-1-nphamcs@gmail.com
+* [PATCH v4 01/21] mm/swap: decouple swap cache from physical swap infrastructure
+* [PATCH v4 02/21] swap: rearrange the swap header file
+* [PATCH v4 03/21] mm: swap: add an abstract API for locking out swapoff
+* [PATCH v4 04/21] zswap: add new helpers for zswap entry operations
+* [PATCH v4 05/21] mm/swap: add a new function to check if a swap entry is in swap cached.
+* [PATCH v4 06/21] mm: swap: add a separate type for physical swap slots
+* [PATCH v4 07/21] mm: create scaffolds for the new virtual swap implementation
+* [PATCH v4 08/21] zswap: prepare zswap for swap virtualization
+* [PATCH v4 09/21] mm: swap: allocate a virtual swap slot for each swapped out page
+* [PATCH v4 10/21] swap: move swap cache to virtual swap descriptor
+* [PATCH v4 11/21] zswap: move zswap entry management to the virtual swap descriptor
+* [PATCH v4 12/21] swap: implement the swap_cgroup API using virtual swap
+* [PATCH v4 13/21] swap: manage swap entry lifecycle at the virtual swap layer
+* [PATCH v4 14/21] mm: swap: decouple virtual swap slot from backing store
+* [PATCH v4 15/21] zswap: do not start zswap shrinker if there is no physical swap slots
+* [PATCH v4 16/21] swap: do not unnecesarily pin readahead swap entries
+* [PATCH v4 17/21] swapfile: remove zeromap bitmap
+* [PATCH v4 18/21] memcg: swap: only charge physical swap slots
+* [PATCH v4 19/21] swap: simplify swapoff using virtual swap
+* [PATCH v4 20/21] swapfile: replace the swap map with bitmaps
+* [PATCH v4 21/21] vswap: batch contiguous vswap free calls
 
-[...]
+and found the following issue:
+possible deadlock in vswap_iter
 
->  	if (sb->s_user_ns != &init_user_ns)
->  		sb->s_iflags |= SB_I_UNTRUSTED_MOUNTER;
->  	sb->s_flags &= ~(SB_NOSEC | SB_I_VERSION);
-> diff --git a/fs/sync.c b/fs/sync.c
-> index 942a60cfedfb..aedbf723830a 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -73,7 +73,12 @@ EXPORT_SYMBOL(sync_filesystem);
->  
->  static void sync_inodes_one_sb(struct super_block *sb, void *arg)
->  {
-> -	if (!sb_rdonly(sb))
-> +	if (sb_rdonly(sb))
-> +		return;
-> +
+Full report is available here:
+https://ci.syzbot.org/series/f8238a2a-370e-404d-b3f7-5945b574bd63
 
-Should we move some of the comment you deleting over here?
+***
 
-> +	if (sb->s_iflags & SB_I_NO_DATA_INTEGRITY)
-> +		wakeup_flusher_threads_bdi(sb->s_bdi, WB_REASON_SYNC);
-> +	else
->  		sync_inodes_sb(sb);
->  }
-I was wondering whether that handling should be moved to
-sync_inodes_sb(), so it would catch any (existing+future) callers.
+possible deadlock in vswap_iter
 
-Alternatively, we could catch abuse by adding a warning to sync_inodes_sb.
+tree:      bpf-next
+URL:       https://kernel.googlesource.com/pub/scm/linux/kernel/git/bpf/bpf-next.git
+base:      05f7e89ab9731565d8a62e3b5d1ec206485eeb0b
+arch:      amd64
+compiler:  Debian clang version 21.1.8 (++20251221033036+2078da43e25a-1~exp1~20251221153213.50), Debian LLD 21.1.8
+config:    https://ci.syzbot.org/builds/cf1517a6-d391-46d8-bfbe-98e6be6b93ce/config
+syz repro: https://ci.syzbot.org/findings/b4e84ae7-17d4-4bf8-9c3f-4c13b10a1e52/syz_repro
 
--- 
-Cheers,
+============================================
+WARNING: possible recursive locking detected
+syzkaller #0 Not tainted
+--------------------------------------------
+syz.1.18/6001 is trying to acquire lock:
+ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock include/linux/spinlock.h:351 [inline]
+ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: vswap_iter+0xfa/0x1b0 mm/vswap.c:274
 
-David
+but task is already holding lock:
+ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock_irq include/linux/spinlock.h:376 [inline]
+ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: swap_cache_lock_irq+0xe2/0x190 mm/vswap.c:1529
+
+other info that might help us debug this:
+ Possible unsafe locking scenario:
+
+       CPU0
+       ----
+  lock(&cluster->lock);
+  lock(&cluster->lock);
+
+ *** DEADLOCK ***
+
+ May be due to missing lock nesting notation
+
+3 locks held by syz.1.18/6001:
+ #0: ffff8881bb523440 (&mm->mmap_lock){++++}-{4:4}, at: mmap_read_lock include/linux/mmap_lock.h:391 [inline]
+ #0: ffff8881bb523440 (&mm->mmap_lock){++++}-{4:4}, at: madvise_lock+0x152/0x2e0 mm/madvise.c:1789
+ #1: ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: spin_lock_irq include/linux/spinlock.h:376 [inline]
+ #1: ffff88811fba0018 (&cluster->lock){+.+.}-{3:3}, at: swap_cache_lock_irq+0xe2/0x190 mm/vswap.c:1529
+ #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: rcu_lock_acquire include/linux/rcupdate.h:331 [inline]
+ #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: rcu_read_lock include/linux/rcupdate.h:867 [inline]
+ #2: ffffffff8e55a360 (rcu_read_lock){....}-{1:3}, at: vswap_cgroup_record+0x41/0x440 mm/vswap.c:1909
+
+stack backtrace:
+CPU: 0 UID: 0 PID: 6001 Comm: syz.1.18 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.2-debian-1.16.2-1 04/01/2014
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0xe8/0x150 lib/dump_stack.c:120
+ print_deadlock_bug+0x279/0x290 kernel/locking/lockdep.c:3041
+ check_deadlock kernel/locking/lockdep.c:3093 [inline]
+ validate_chain kernel/locking/lockdep.c:3895 [inline]
+ __lock_acquire+0x253f/0x2cf0 kernel/locking/lockdep.c:5237
+ lock_acquire+0x106/0x330 kernel/locking/lockdep.c:5868
+ __raw_spin_lock include/linux/spinlock_api_smp.h:133 [inline]
+ _raw_spin_lock+0x2e/0x40 kernel/locking/spinlock.c:154
+ spin_lock include/linux/spinlock.h:351 [inline]
+ vswap_iter+0xfa/0x1b0 mm/vswap.c:274
+ vswap_cgroup_record+0xeb/0x440 mm/vswap.c:1910
+ swap_cgroup_record+0xc5/0x130 mm/vswap.c:1933
+ memcg1_swapout+0x358/0x9e0 mm/memcontrol-v1.c:623
+ __remove_mapping+0x7d4/0xa70 mm/vmscan.c:762
+ shrink_folio_list+0x287c/0x5160 mm/vmscan.c:1518
+ reclaim_folio_list+0x100/0x400 mm/vmscan.c:2198
+ reclaim_pages+0x45b/0x530 mm/vmscan.c:2235
+ madvise_cold_or_pageout_pte_range+0x1eac/0x2220 mm/madvise.c:444
+ walk_pmd_range mm/pagewalk.c:130 [inline]
+ walk_pud_range mm/pagewalk.c:224 [inline]
+ walk_p4d_range mm/pagewalk.c:262 [inline]
+ walk_pgd_range+0x1032/0x1d30 mm/pagewalk.c:303
+ __walk_page_range+0x14c/0x710 mm/pagewalk.c:410
+ walk_page_range_vma_unsafe+0x309/0x410 mm/pagewalk.c:714
+ madvise_pageout_page_range mm/madvise.c:622 [inline]
+ madvise_pageout mm/madvise.c:647 [inline]
+ madvise_vma_behavior+0x2951/0x43c0 mm/madvise.c:1366
+ madvise_walk_vmas+0x57a/0xaf0 mm/madvise.c:1721
+ madvise_do_behavior+0x386/0x540 mm/madvise.c:1937
+ do_madvise+0x1fa/0x2e0 mm/madvise.c:2030
+ __do_sys_madvise mm/madvise.c:2039 [inline]
+ __se_sys_madvise mm/madvise.c:2037 [inline]
+ __x64_sys_madvise+0xa6/0xc0 mm/madvise.c:2037
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xe2/0xf80 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f2b3459c799
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f2b35495028 EFLAGS: 00000246 ORIG_RAX: 000000000000001c
+RAX: ffffffffffffffda RBX: 00007f2b34815fa0 RCX: 00007f2b3459c799
+RDX: 0000000000000015 RSI: 0000000000600000 RDI: 0000200000000000
+RBP: 00007f2b34632c99 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f2b34816038 R14: 00007f2b34815fa0 R15: 00007ffcfbbae8f8
+ </TASK>
+
+
+***
+
+If these findings have caused you to resend the series or submit a
+separate fix, please add the following tag to your commit message:
+  Tested-by: syzbot@syzkaller.appspotmail.com
+
+---
+This report is generated by a bot. It may contain errors.
+syzbot ci engineers can be reached at syzkaller@googlegroups.com.
