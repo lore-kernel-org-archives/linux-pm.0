@@ -1,93 +1,173 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24B5F22A7F9;
-	Thu, 19 Mar 2026 03:36:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773891365; cv=none; b=iaenxvCxYI3k/F2+WS7v8vnB1+2k2RKX7/bE5kfgNMJ7+dzZiLvAvi/TtM9e9ywpAN8DMvlg+Le0vKhTSwZtW0G6jp+MrYADaQY+7oDNyPo1PS0FMVkr4C/7JFI6YOgk/vFLm//q2qwuvOXC+zo/O7r40jm8+3yGm9fF0WwINYc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773891365; c=relaxed/simple;
-	bh=r57NhHm4EluC+IXDDG39Njq4BRK4thi8SBtEZpnVuzo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dfO7hZyVanlP78TdpNnE1n2oE1T2CcAyfAKWh7evrPN3r0d/RlEaXKRNXyKL/YaXtPY3GpeSsQBr9/nmZE7iprDnc8PdPfgMFjMrGiD0ovvR4vbt/g2D0J6AGT6MccxDNEXiEUUpGHUSlmC1X6vllM/HJCR8o6GWdJEndP6XPCE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NPqRJWir; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DC6A2D46A1
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 04:54:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773896042; cv=pass; b=SR8bW+npF3d85HTWD1cOqNJmCtEQX94mFzESWjKk95Nn06XsJTuef+p3f9FrzV/2kkETO7HuUzp48hLAt2kPZlhPkBLvQXUuqtBgP5RLMOvRy8zuAQ8HuDZS/wD9iQ4Yaou5cWa11PQGW/q90m7C4FDGcvqtBhOqqx/EtW/4Li0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773896042; c=relaxed/simple;
+	bh=EFP3LExiJe++o/o5vN4IaxbEwciH5djcNFNzyfCnjVY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Y9b2PJPVjfzB8hRLodc6q0ARDgmQyLEm+utf3qbkTFbXWDlnGRoBT4BbbZpCOpwxyJ6PHyzlKfeyiATMFJgp9ofWZTcw+/6MA/DNl/nx5nmO9bv2RJhIThAY7T/LImMy6Xf2prZpI7wvc38PveSY7w56sFQLgDha8c36eHIsmas=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=gV+Eq2BI; arc=pass smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NPqRJWir"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D91CCC19425;
-	Thu, 19 Mar 2026 03:36:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773891365;
-	bh=r57NhHm4EluC+IXDDG39Njq4BRK4thi8SBtEZpnVuzo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NPqRJWir3CmR8wRdLLvyzZGLtaW4owq4vYODqxC3JE6QX3G8RcN4AXqaHvdZc3lGf
-	 8UxQgvEy+Ma27uIlX6Tw4UgDSYakMWBIwWi2DpFmLQMSRtqNd9wQXux2e2j6GoU7Cm
-	 W5FE2rLnzk69vR1xzOy9PZuxxcqMsFHyM6OOmaJ1q768NpHT+Ny4VThbK+EAtJ42A1
-	 15XgDx1Ac322ILqGBNRhTAsRXC9ky2v08A+PjceRouLSyobXOQRC6iwfwjtdJPm2IY
-	 VVVlZoxQVfYrGLTGzSsTNcrd2ra1vBI64VK+nCV34fu6AcaIAdBAUj5uh/MP5OM+Le
-	 yx60U1doedVMw==
-Date: Wed, 18 Mar 2026 22:36:00 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Ilia Lin <ilia.lin@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] soc: qcom: pd-mapper: Convert to
- of_machine_get_match()
-Message-ID: <abtvGIWzG-UxN1GD@baldur>
-References: <cover.1772468323.git.geert+renesas@glider.be>
- <0d23a449e62ac85f04ff07bc2758efbaa709c9d1.1772468323.git.geert+renesas@glider.be>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="gV+Eq2BI"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a27eb8311bso466714e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2026 21:54:00 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773896039; cv=none;
+        d=google.com; s=arc-20240605;
+        b=QA675oNUENS6lEbUDbcMoscnzX05ln29Lyp6Ugyhbn9BBjfo/UDR2K5MmZ/lorJLbf
+         CEM7L5Sa9MpvyXaigWGAQFd4Wfq8sltM+k7Y4UZdfCBG2jRnL3o09NrU1vw0cCsgWpFV
+         1dvXGNNVpdr5Dkki82WAdIMJ3OdTLSY/jfkG4FhYn/YTkXH0db8FIYeDuD1Fi10n/DUS
+         H99RU+SiSolUoQT6z8hVhhYcdN6NinnC+wjJEM/uBenznQPYjrzE1u6OPqyDyhUXL7wN
+         djYBQVB6Amos8Tt8UKzpElVwEbMvPuICia95MCO03LUAzb/itu2mIwRLVlOLIWhXBob9
+         dnIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ycSewpuz2GDH8JHlWYt42sU/cLJKsJubh50gU2e8SKI=;
+        fh=r3s2xRebCjDp66z2EKuand2nNd5ApKwspgWQ6+TexX0=;
+        b=GEgwnV2zwPL002PEGjJPcbHAORVPKXC6Kc1GYUclNHx431Qk4taB9GmealP0Hbp0sB
+         zrm5uGmU/xAD6QkOTlJ5CxdEdlOHA/xLMTqmRqD0OF6u44uicQt3JsqUJ+4W27YLivbM
+         9Ky09XoZm653uttoLU7T6wPJZq4dFPGEwzCYW9xPLX2aTz6PCm1zU6mNtU2E/AuE0e5y
+         +yjc+NDFAaPTNZPC0g/Ds52YEcrShWMq2ZIPGrzNaItQlaCtYJejSZroljziJ/i58tSi
+         WAuIgvi109jGarQg4zOiiD0YeUM/Gp7qCXzs2tibhIEP5r0FEJV/C5jOg2uEtiOrV+7X
+         HPZg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1773896039; x=1774500839; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ycSewpuz2GDH8JHlWYt42sU/cLJKsJubh50gU2e8SKI=;
+        b=gV+Eq2BIKKtmoCQOdQC5FlNrQM8p+4HX/PqIIXMiozS+ptENcq+pHxtuZnnbcRm7X4
+         N3XZ08QmOOGKMmgzgiA9MVyuk1xGtfZ3uS9ZrVSTpf3emtCfX5CJ2RcvZTTCdddBBESt
+         LpNq+ENxnX/JCZ6dcP/etaR4pM7hdQ1317nUA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773896039; x=1774500839;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ycSewpuz2GDH8JHlWYt42sU/cLJKsJubh50gU2e8SKI=;
+        b=j1SJ/4xs5J2p7YqK3Gna0KLx3roYX+fZOzBOLT8sjXt+U4NCZdJ3PFbRR3hXbPA2Ks
+         RebUdABcVKQjXeVrcIpeUeNYSff2YGzPxIPe3SYDR24uduZ9FcU7Gkm8wMqH/S1TMdNO
+         kXvqxfLbTnRC/w79eYw+JboSmFh6IjEHn7ZMPZ3OHBhMdzfGWpg9YfZ77AFZefChiyal
+         GLJeOid4GxV0Avyhp7RUrpNaje3obiBxSC+EQ9n68n+jMIIHO48S3VHeyPBwZ953OK7U
+         nm23/pnzD1fsUgIlXBq5gELmESMFsbXgt7ZdSbf+/H+6WUAIK3S7p/HyaqeXmqwiAdHU
+         BqiA==
+X-Forwarded-Encrypted: i=1; AJvYcCVi7C53Z8Rc9uN1iDlEvC2bd4VuFm8rWyo4cM4hw7srrDR87M6kKfg9a3PuUQoUDjT4e3KhB8sDSg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzyaXD5p4YMskvXVYV4Vhi/Bqe9wiAzfwrMgo6wXG6uX//gHKy4
+	8i+XyV7w5RyjExUYeIbzOIxuvY/g7YE6Op3z5tKEs9L1CjzI/y0TJUj18ZExsYjhLNRbYoMzmcX
+	N8zaRfNfnJFyxqYUNHFwXhsdK4P2GvhM0/EEVEluq
+X-Gm-Gg: ATEYQzx5iJT1MCgTzUMUvutDvKkB2xzpCLIEg55/e51NMorJnpFjiuQw3mYQARlm9AN
+	k0JhZTe27Md2Rg9PQcY70twafxnDHsRZo0v8zWX5gnaibcvLrJq/Mkn0yqu4FVjEZJ3RRiEmlBQ
+	ZZs8mh6GNgrik0HMpw3D0Oww1H0EnJ6WItQWdqC4dbhVVygTUeXD2YN0Ov9XrmCMoROQ70lt6sg
+	T9ut3tbItSUc/7M8HbGPBleE5qExufr6syjROmLJ2jpLX4/CBMxDLb/eQ7BCWk/+aMzx+qfCeTN
+	8PLKbUtMRKyejFEUP8lTZlnIuzC5vrG57GXzeA==
+X-Received: by 2002:a05:6512:601:20b0:5a1:76b7:ac06 with SMTP id
+ 2adb3069b0e04-5a279585449mr1694598e87.3.1773896039222; Wed, 18 Mar 2026
+ 21:53:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0d23a449e62ac85f04ff07bc2758efbaa709c9d1.1772468323.git.geert+renesas@glider.be>
+References: <20260317184507.523060-1-l.scorcia@gmail.com> <20260317184507.523060-4-l.scorcia@gmail.com>
+ <20260318-nickel-serval-of-tolerance-621bad@quoll> <CAORyz2Laoo4EiLcHZ-ygLiFGW_h8qV7QxqNsMbueM=nov5zH0A@mail.gmail.com>
+ <ad0d1ea1-4c5d-4cfc-af0d-8d843e7e0e9e@kernel.org>
+In-Reply-To: <ad0d1ea1-4c5d-4cfc-af0d-8d843e7e0e9e@kernel.org>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 19 Mar 2026 12:53:47 +0800
+X-Gm-Features: AaiRm53rEbzUcysiLnjhOdOv1aJMbQDabqUfN6XBRWKQC_wiMRBidNmKXvI9wx8
+Message-ID: <CAGXv+5EqUhJ62fjE0R9nLcu6tsfXan8ZEYe7hvkofKnFM7W8NQ@mail.gmail.com>
+Subject: Re: [PATCH v3 3/9] dt-bindings: regulator: Document MediaTek MT6392
+ PMIC Regulators
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Luca Leonardo Scorcia <l.scorcia@gmail.com>, linux-mediatek@lists.infradead.org, 
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>, 
+	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Lee Jones <lee@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Linus Walleij <linusw@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Julien Massot <julien.massot@collabora.com>, Gary Bisson <bisson.gary@gmail.com>, 
+	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>, Val Packett <val@packett.cool>, 
+	Fabien Parent <parent.f@gmail.com>, Chen Zhong <chen.zhong@mediatek.com>, 
+	linux-input@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 02, 2026 at 05:29:10PM +0100, Geert Uytterhoeven wrote:
-> Use the of_machine_get_match() helper instead of open-coding the same
-> operation.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Thu, Mar 19, 2026 at 6:14=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 18/03/2026 22:25, Luca Leonardo Scorcia wrote:
+> >>
+> >> Drop compatible. Regulator nodes do not have compatibles.
+> >
+> > Thanks for this comment. It took me a while to understand what you
+> > meant as most of the MediaTek PMIC regulator drivers still require the
+> > compatible node to probe, including MT6397 that was the template for
+> > this patch. I compared the driver to MT6359 that does not use it and I
+> > am now working on the driver to not rely on it.
+> >
+> >> With this, you can also drop example as it won't be used.
+> >
+> > Just to be sure - do you mean remove the compatible attribute from the
+> > example, or the whole example section?
+>
+> The entire example because without the compatible it will be no-op.
+>
+> >
+> >>> +
+> >>> +patternProperties:
+> >>> +  "^(buck_)?v(core|proc|sys)$":
+> >>
+> >> Nope, underscores are not allowed. Use only hyphens.
+> >
+> > Got it. I will actually completely remove the (buck_|ldo_) prefix
+> > altogether as suggested in another comment.
+> >
+> >>> +  "^(ldo_)?v(adc18|camio|cn18|io18)$":
+> >>> +    description: LDOs with fixed 1.8V output
+> >>
+> >> If fixed, then encode it in the schema - min/max microvolt.
+> >
+> > If possible I'd like some clarification here. According to Chen-Yu
+> > Tsai comment [1], dtsi shouldn't contain voltage constraints. The way
+>
+> That's odd, because long time in the past I heard that DTS must
+> absolutely set min/max constraints, because these are real hardware
+> (board) constraints for each regulator, unlike the generic and broad
+> ones from the driver.
+>
+> IOW, driver has what datasheet tells. DTS has what actually should be use=
+d.
+>
+> Also, I did not actually require to make min/max required, just they
+> have to be specific/constrained.
+>
+> > I understood this is that electrical constraints are a matter of the
+> > actual board layout, so if adjustments are needed they have to be in
+> > the board dts. But you also specify "If fixed", so maybe there's an
+> > exception to this rule when the constraint is "absolute" and boards
+> > can't actually set a different value?
+>
+> Now I am confused. You wrote - LDOs with fixed 1.8V output - so board
+> cannot set it to 2.0V for example. They are affixed. This regulator
+> CANNOT physically produce anything else.
 
-Acked-by: Bjorn Andersson <andersson@kernel.org>
+As you said, it cannot physically produce anything else. IMO it doesn't
+even need voltage constraints as it is already implied by the model and
+regulator output, in which case I would actually recommend rejecting
+min/max voltage being added to this node.
 
-Regards,
-Bjorn
 
-> ---
-> Compile-tested only.
-> ---
->  drivers/soc/qcom/qcom_pd_mapper.c | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
-> 
-> diff --git a/drivers/soc/qcom/qcom_pd_mapper.c b/drivers/soc/qcom/qcom_pd_mapper.c
-> index dc10bc859ff4170c..8a1a18f8c859496f 100644
-> --- a/drivers/soc/qcom/qcom_pd_mapper.c
-> +++ b/drivers/soc/qcom/qcom_pd_mapper.c
-> @@ -615,15 +615,9 @@ static struct qcom_pdm_data *qcom_pdm_start(void)
->  	const struct qcom_pdm_domain_data * const *domains;
->  	const struct of_device_id *match;
->  	struct qcom_pdm_data *data;
-> -	struct device_node *root;
->  	int ret, i;
->  
-> -	root = of_find_node_by_path("/");
-> -	if (!root)
-> -		return ERR_PTR(-ENODEV);
-> -
-> -	match = of_match_node(qcom_pdm_domains, root);
-> -	of_node_put(root);
-> +	match = of_machine_get_match(qcom_pdm_domains);
->  	if (!match) {
->  		pr_notice("PDM: no support for the platform, userspace daemon might be required.\n");
->  		return ERR_PTR(-ENODEV);
-> -- 
-> 2.43.0
-> 
+ChenYu
