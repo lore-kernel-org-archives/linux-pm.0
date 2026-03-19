@@ -1,144 +1,96 @@
-Received: from desiato.infradead.org (desiato.infradead.org [90.155.92.199])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A89A71E8342;
-	Thu, 19 Mar 2026 07:56:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=90.155.92.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 611BF15B998;
+	Thu, 19 Mar 2026 09:14:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773906989; cv=none; b=pXESVHKV9dgn+Xuifk+umOskbiWxlDo3jr+jw6XZqZRZXs99oOiCLk2h5ONbA+pB/WXYT9PCi0pu1Zp7COgAhbVcHc0ziUtEdKI9w6sd0/I3y27DmmBye2ph7YP3nlUknhufLLdA0S78W330PxbkxfVQbfXOb2+TTZ2sccAYWpg=
+	t=1773911663; cv=none; b=jlZXf3vAWmlzOAURZ3TpzIqr+rfD7qJwBZZcxdWRKdvHzndH69tSAC/EJcntm4dtUt/thqQLoVgdN2Dl8XoyYntvEHc+JF6p8oUMbRKPUbIQfC9DPgD+RJTQK+tAt9TNmcDacXuoBBMQ7jETjGW61mACMcN8KG1j8/vYWfUJot0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773906989; c=relaxed/simple;
-	bh=EEUWZqus7ucXdk/WFGo+NqdisLQY4Uc9jzC7pUbLM4k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gKDczX7YHm+7qRvPkt2ikvAm5+lSEVFooAJrM9DPv0FZIH5IPzNMrP/sUXKXIdttC1nYt3Y8EWEN1ZIML61U+ZTS3ZijoZJGPIOtq1DavvCfM6CeZr9bdCK11syNd9Z+mKQywgXSeeS+lgw7amcck2AM9ri95QUtqDWa4TOPG1A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=kEMuBnl5; arc=none smtp.client-ip=90.155.92.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kEMuBnl5"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=s8A69keN0dzb00KIbKoLnTjne6XlDApP9njkXdbia9M=; b=kEMuBnl5QdgU2yGgwfMddW2g5p
-	VLX/fnB8GUBtoa0nqe9dfZwrYsqfbEz9RB9gGgt/P0dDr2YcnKNxfN/HMD/y21qYcO9V2lGz8QbPV
-	s4o1WzhrWSr23X18Whfz38aFl1qyitlAD0ID6MBLNDNHzrDJgQDKDWRVllbg95qKyJ1etUU7ta06+
-	Sze/wW8OLJh0rocRdaV0H2nRNLPmarQOJz3a3iCgr6NW2iqrx6D0PhA6AxnCY9aXsFPZ3A4gbvxtx
-	dOL4bASOmjGuVvXm4YOz5TYUNRco6AhAc1//laLG7EvTPVHD004g4y6nm+aqaDGYeQbpweoSVQ7wO
-	ajBWtQwg==;
-Received: from 2001-1c00-8d85-5700-266e-96ff-fe07-7dcc.cable.dynamic.v6.ziggo.nl ([2001:1c00:8d85:5700:266e:96ff:fe07:7dcc] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w38Ex-0000000CyQs-2aX7;
-	Thu, 19 Mar 2026 07:56:23 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id F141F301BD5; Thu, 19 Mar 2026 08:56:21 +0100 (CET)
-Date: Thu, 19 Mar 2026 08:56:21 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nhat Pham <nphamcs@gmail.com>
-Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org,
-	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org,
-	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com,
-	cgroups@vger.kernel.org, chengming.zhou@linux.dev,
-	chrisl@kernel.org, corbet@lwn.net, david@kernel.org,
-	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org,
-	hughd@google.com, jannh@google.com, joshua.hahnjy@gmail.com,
-	lance.yang@linux.dev, lenb@kernel.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com,
-	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev,
-	npache@redhat.com, pavel@kernel.org, peterx@redhat.com,
-	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com,
-	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com,
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com,
-	surenb@google.com, tglx@kernel.org, vbabka@suse.cz,
-	weixugc@google.com, ying.huang@linux.alibaba.com,
-	yosry.ahmed@linux.dev, yuanchu@google.com,
-	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com,
-	riel@surriel.com
-Subject: Re: [PATCH v4 09/21] mm: swap: allocate a virtual swap slot for each
- swapped out page
-Message-ID: <20260319075621.GR3738010@noisy.programming.kicks-ass.net>
-References: <20260318222953.441758-1-nphamcs@gmail.com>
- <20260318222953.441758-10-nphamcs@gmail.com>
+	s=arc-20240116; t=1773911663; c=relaxed/simple;
+	bh=d1oYBikAEkNb00Q1HpziOCq6EDorRL2n79XwzlBsLzg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=f5BYQz5UVFvbNZ5+9zANtRi8yMYtPtmm7WhdzlMGZfdoqPN82F08ZTShME9biHN3DQhnssPJPnymNiToFshl5TrVkCKoliZA5Yx2KKo/UH6Zr6ghteYjrqp0a3vYBRS+dDUo/YdE5LPLRxp/L32Y/mun2iHSfYAbpQEAAuKxHqc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: fef2b100237311f1a21c59e7364eecb8-20260319
+X-CTIC-Tags:
+	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
+	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_NAME
+	HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER, HR_SJ_NOR_SYM
+	HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT, HR_TO_DOMAIN_COUNT
+	HR_TO_NO_NAME, IP_UNTRUSTED, SRC_UNTRUSTED, IP_UNFAMILIAR, SRC_UNFAMILIAR
+	DN_TRUSTED, SRC_TRUSTED, SA_TRUSTED, SA_EXISTED, SN_TRUSTED
+	SN_EXISTED, SPF_NOPASS, DKIM_NOPASS, DMARC_NOPASS, CIE_GOOD_SPF
+	CIE_UNKNOWN, GTI_FG_BS, GTI_RG_INFO, GTI_C_BU, AMN_GOOD
+	ABX_MISS_RDNS
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.11,REQID:8380187d-8846-458a-8e4e-0d7c9e545c14,IP:10,
+	URL:0,TC:0,Content:0,EDM:-20,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACT
+	ION:release,TS:-15
+X-CID-INFO: VERSION:1.3.11,REQID:8380187d-8846-458a-8e4e-0d7c9e545c14,IP:10,UR
+	L:0,TC:0,Content:0,EDM:-20,RT:0,SF:-5,FILE:0,BULK:0,RULE:EDM_GE969F26,ACTI
+	ON:release,TS:-15
+X-CID-META: VersionHash:89c9d04,CLOUDID:ee8a729173b08767716b2a378803b6e7,BulkI
+	D:260309195100FOLSBYOQ,BulkQuantity:1,Recheck:0,SF:17|19|38|66|78|102|127|
+	850|898,TC:nil,Content:0|15|50,EDM:1,IP:-2,URL:0,File:nil,RT:nil,Bulk:41,Q
+	S:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,
+	ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_AEC,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: fef2b100237311f1a21c59e7364eecb8-20260319
+X-User: tianyaxiong@kylinos.cn
+Received: from localhost.localdomain [(175.2.81.164)] by mailgw.kylinos.cn
+	(envelope-from <tianyaxiong@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 227506861; Thu, 19 Mar 2026 17:14:13 +0800
+From: Yaxiong Tian <tianyaxiong@kylinos.cn>
+To: myungjoo.ham@samsung.com,
+	kyungmin.park@samsung.com,
+	cw00.choi@samsung.com,
+	nm@ti.com
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Yaxiong Tian <tianyaxiong@kylinos.cn>
+Subject: [PATCH RESEND 0/4] Fix some errors in the devfreq core layer when governor is NULL
+Date: Thu, 19 Mar 2026 17:14:09 +0800
+Message-Id: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260318222953.441758-10-nphamcs@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, Mar 18, 2026 at 03:29:40PM -0700, Nhat Pham wrote:
-> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> index 62cd7b35a29c9..85cb45022e796 100644
-> --- a/include/linux/cpuhotplug.h
-> +++ b/include/linux/cpuhotplug.h
-> @@ -86,6 +86,7 @@ enum cpuhp_state {
->  	CPUHP_FS_BUFF_DEAD,
->  	CPUHP_PRINTK_DEAD,
->  	CPUHP_MM_MEMCQ_DEAD,
-> +	CPUHP_MM_VSWAP_DEAD,
->  	CPUHP_PERCPU_CNT_DEAD,
->  	CPUHP_RADIX_DEAD,
->  	CPUHP_PAGE_ALLOC,
+While doing some development work with devfreq_add_governor()/
+devfreq_remove_governor(), I discovered several bugs caused when
+devfreq->governor is NULL. Specifically:
 
-> +static int vswap_cpu_dead(unsigned int cpu)
-> +{
-> +	struct vswap_cluster *cluster;
-> +	int order;
-> +
-> +	rcu_read_lock();
+1) A possible null pointer issue in devfreq_add_governor(), caused
+by devfreq_remove_governor() setting devfreq->governor to NULL in
+certain situations, while devfreq_add_governor() lacks corresponding
+checks for devfreq->governor.
 
-nit:
-	guard(rcu)();
+2) When operating on governor and available_governors under /sys,
+there are also some unexpected errors.
 
-> +	for (order = 0; order < SWAP_NR_ORDERS; order++) {
-> +		cluster = per_cpu(percpu_vswap_cluster.clusters[order], cpu);
-> +		if (cluster) {
-> +			per_cpu(percpu_vswap_cluster.clusters[order], cpu) = NULL;
-> +			spin_lock(&cluster->lock);
+See the following patches for details.
 
-This breaks on PREEMPT_RT as this is ran with IRQs disabled. This must
-be a raw_spinlock_t.
+Yaxiong Tian (4):
+  PM / devfreq: Fix possible null pointer issue in
+    devfreq_add_governor()
+  PM / devfreq: Fix available_governors_show() when no governor is set
+  PM / devfreq: Fix governor_store() failing when device has no current
+    governor
+  PM / devfreq: Optimize error return value of governor_show()
 
-> +			cluster->cached = false;
-> +			if (refcount_dec_and_test(&cluster->refcnt))
-> +				vswap_cluster_free(cluster);
+ drivers/devfreq/devfreq.c | 46 +++++++++++++++++++++------------------
+ 1 file changed, 25 insertions(+), 21 deletions(-)
 
-And this... below.
-
-> +			spin_unlock(&cluster->lock);
-> +		}
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	return 0;
-> +}
-
-> +static void vswap_cluster_free(struct vswap_cluster *cluster)
-> +{
-> +	VM_WARN_ON(cluster->count || cluster->cached);
-> +	VM_WARN_ON(!spin_is_locked(&cluster->lock));
-
-This is terrible, please use:
-
-	lockdep_assert_held(&cluster->lock);
-
-> +	xa_lock(&vswap_cluster_map);
-
-This is again broken, this cannot be from a DEAD callback with IRQs
-disabled.
-
-> +	list_del_init(&cluster->list);
-> +	__xa_erase(&vswap_cluster_map, cluster->id);
-
-Strictly speaking this can end up in xas_alloc(), which is again, not
-allowed in a DEAD callback.
-
-> +	xa_unlock(&vswap_cluster_map);
-> +	rcu_head_init(&cluster->rcu);
-> +	kvfree_rcu(cluster, rcu);
-> +}
+-- 
+2.25.1
 
