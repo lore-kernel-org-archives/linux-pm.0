@@ -1,74 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76EFC3D8131;
-	Thu, 19 Mar 2026 15:01:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BEC1364EA0
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 15:16:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773932483; cv=none; b=dD3XdsOyuxDDY+2JAFz0yhL/PJOyB+MbUjYdhzQM+V1FeQqya8Dcq8covF1e09yDl+mLsyGI0znuSwoiFdCZK7MiAm3V+uKvaa0mEvJqkCzjEUKEaR+Preh7snKc4jpiHfyAPia14+miDhopjPlTvZIHlSwprNiHo1p/Eamh63Y=
+	t=1773933371; cv=none; b=iFNT14O4f5Lc70pD9dqyWNkdhz2O+3gb7JgR8G5LQ/SFujgYMeQ+Yg1TUSuuGMIiOUYDLG24Qo4ILXcdYx3R7rX0uj9f/LevNfqh7pm5Vf2oJJYo9WNJzPqNaVj6cBXoNQqLdbKM8PNpQHy2AG6z7s6pzfgl7Azp5+Kc/p94DNw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773932483; c=relaxed/simple;
-	bh=Jbl4h7EyS3qPXNKnUxxzVBqe4EY5cH12TK/UrsUq6O4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=j7HoEMF7fdaMFCfpp5PZqUa1kATk3dWY+Z/NNp0X796aF7ZTUOcVfU9Qiagl3W0GYvZ/C5N78LKgzpEU6gaudbIS5NgKYFeM23jmen2A8CyAtIlexPEyQ6ZWdMr5Kez8Fha2B5efuMZ+JnMy1LweHQkurI75KBcp1aQz9s/SJGU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jK71JIEX; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773933371; c=relaxed/simple;
+	bh=rXrA+pF4Oh+RRqzT6nplO+woFz6rjNZB27Fpyk153f4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=apxj3cIe1XN59V9xgWqIBg+lf7cLpqk9RSEOqoMrCc2XOAWBPo7JvkiV9ZS820Dy5wEZb1fgE9diQIH2wOYwl0SM3H00Dnt/A1173Y4hBNvzyAbUALd2WxzkcmlioJLV/92OdlGEki2kVJRhEMPlN1JVk9wB0hGLn+lWvRveI3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LWkB00SQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jK71JIEX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8123BC19424;
-	Thu, 19 Mar 2026 15:01:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LWkB00SQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37678C2BCB0
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 15:16:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773932482;
-	bh=Jbl4h7EyS3qPXNKnUxxzVBqe4EY5cH12TK/UrsUq6O4=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=jK71JIEXp2WMI3m8bAQq3u9SN/366CdtcK1n1IuptDT8k0X9c8BOvw7IBFZUV56Gl
-	 ThjNgR6FdYw3ku5WL600D94vrQykjN/2jPqgo77kgjBaFciosxlgN/aXnCpBHLRjWq
-	 kGFUGcWA1T2SB/VmFD13ldxIn4fajsrIE77i3aZc3idu96L0Gklc2mBFyxrEOWnCRX
-	 SxvhaUVeBCcatwEgebfjWR2pPtJrZ3ITcb7rJ3jUaTm7PzYoGGnmQUT18lkzhKiAY8
-	 Sz9bkUBQwdJ0riME1To9/YuJgNy66KbR89N43zU4zkIcQbB33N/WBKAJauabpNYltk
-	 TzwVpW8GIzNgw==
-From: Benjamin Tissoires <bentiss@kernel.org>
-To: linux-input@vger.kernel.org, Lucas Zampieri <lcasmz54@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jikos@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, Bastien Nocera <hadess@hadess.net>, 
- linux-pm@vger.kernel.org
-In-Reply-To: <20260314010533.110278-1-lcasmz54@gmail.com>
-References: <20260314010533.110278-1-lcasmz54@gmail.com>
-Subject: Re: [PATCH v7 0/3] HID: Add support for multiple batteries per
- device
-Message-Id: <177393246035.125995.2162038231287893815.b4-ty@kernel.org>
-Date: Thu, 19 Mar 2026 16:01:00 +0100
+	s=k20201202; t=1773933371;
+	bh=rXrA+pF4Oh+RRqzT6nplO+woFz6rjNZB27Fpyk153f4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=LWkB00SQJIjdrLElMA5kUAzU3mpdvM1vgLZBC3Doj2enLYg8MkHUMnN+aB1TmaN5W
+	 apbFcsMN4WnTr4EShlWflWABvF7XzUwWCMoykTIZ0EgpEr4nxjl6fLjGk2Ka5BtTLd
+	 pD9U+wnQyWydIcILzwzZlU2pik+Y17NLrg24yy2YGrc8gG9ZsYW7b9T1uDLBT4Dnt9
+	 FktILdCVvJp5Spfc47y95TgL2Gg7ryg/6oIR3GGV7ASmM3z7G2JpXE+mL0YSkZ8p82
+	 8TYnMLuuPptLYJTGW+pGsdQNLnWagYouHcGvCXSlm2wsYXSW0WkVI75htf97laDqQy
+	 ET7fO4et0xIAg==
+Received: by mail-oo1-f51.google.com with SMTP id 006d021491bc7-67bb5c2e0fdso406246eaf.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 08:16:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWZivhzTZkVcB5gAmJWg7LUcoam8IT4wLby6XgLvUwjj/o0Y3NzxkAWXx6JtIQ+5VHYC+8190epyQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzdA/9ptOf84BPNIztdlD9clxtBi2Fs+rL5neeetFi2i5WvamFc
+	/ppxAsZc9xc5anqXvrnQYS4lS7dbE4k/4s9xpWg8faGEyRuPor+JB+tIl9BazAQXq0VcdJRYD7S
+	w6kGmKo07b5GPIhY0sIvjZgf7nfgCPr4=
+X-Received: by 2002:a05:6820:8107:b0:67b:b96c:271f with SMTP id
+ 006d021491bc7-67c0db09c45mr4908560eaf.55.1773933370332; Thu, 19 Mar 2026
+ 08:16:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
+References: <20260314201225.38822-1-ebiggers@kernel.org>
+In-Reply-To: <20260314201225.38822-1-ebiggers@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 19 Mar 2026 16:15:58 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gN+LUqh8eeW8LkDYrnn3KTWoOcLF8azjD4WXZCbMRskQ@mail.gmail.com>
+X-Gm-Features: AaiRm507kB1rE1qtij5eEBSl9kK8lLNMYnEBZ9NZKCIqM1hwWCO7yU8nnEaP8ik
+Message-ID: <CAJZ5v0gN+LUqh8eeW8LkDYrnn3KTWoOcLF8azjD4WXZCbMRskQ@mail.gmail.com>
+Subject: Re: [PATCH] x86, hibernate: Remove inclusion of crypto/hash.h
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	Pavel Machek <pavel@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 14 Mar 2026 01:05:27 +0000, Lucas Zampieri wrote:
-> This series adds support for HID devices with multiple batteries.
-> 
-> Currently, the HID battery reporting subsystem only supports one battery per
-> device. There are several devices with multiple batteries that would benefit
-> from this support:
-> - Gaming headsets with batteries in both the headset and charging dock
-> - Wireless earbuds with per-earbud batteries plus charging case
-> - Split keyboards with per-side batteries
-> 
-> [...]
+On Sat, Mar 14, 2026 at 9:15=E2=80=AFPM Eric Biggers <ebiggers@kernel.org> =
+wrote:
+>
+> hibernate_64.c does not do any cryptographic hashing, so the header
+> crypto/hash.h is not needed at all.
+>
+> Signed-off-by: Eric Biggers <ebiggers@kernel.org>
+> ---
+>  arch/x86/power/hibernate_64.c | 2 --
+>  1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.=
+c
+> index a595953f1d6d8..e72d26acae797 100644
+> --- a/arch/x86/power/hibernate_64.c
+> +++ b/arch/x86/power/hibernate_64.c
+> @@ -12,12 +12,10 @@
+>  #include <linux/suspend.h>
+>  #include <linux/scatterlist.h>
+>  #include <linux/kdebug.h>
+>  #include <linux/pgtable.h>
+>
+> -#include <crypto/hash.h>
+> -
+>  #include <asm/e820/api.h>
+>  #include <asm/init.h>
+>  #include <asm/proto.h>
+>  #include <asm/page.h>
+>  #include <asm/mtrr.h>
+>
+> base-commit: 1c9982b4961334c1edb0745a04cabd34bc2de675
+> --
 
-Applied to https://git.kernel.org/pub/scm/linux/kernel/git/hid/hid.git (for-7.1/core-v2), thanks!
-
-[1/3] HID: input: Convert battery code to devm_*
-      https://git.kernel.org/hid/hid/c/5a9df498581a
-[2/3] HID: input: Introduce struct hid_battery and refactor battery code
-      https://git.kernel.org/hid/hid/c/7a3ac62473f2
-[3/3] HID: input: Add support for multiple batteries per device
-      https://git.kernel.org/hid/hid/c/4a58ae85c3f9
-
-Cheers,
--- 
-Benjamin Tissoires <bentiss@kernel.org>
-
+Applied as 7.1 material, thanks!
