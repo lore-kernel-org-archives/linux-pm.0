@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 744313EC2E9;
-	Thu, 19 Mar 2026 18:23:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D0D03F87EA;
+	Thu, 19 Mar 2026 18:27:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773944621; cv=none; b=IN0KeLIDXB8yvtU79afL2V44HHXo27qdAfWusi2A6/4q+ukMHTuQAQkWvUAS6Xe9nOq/oz6693yUzNN2MAEaGKtdC/XYBT6pGNOm6bjDf3N0VFKfxJ2B5ttdha0jEjNQAQy2l4GivT7DyaMZbkvCZeAZ3Q5MHs9HX0OkDF+w3j4=
+	t=1773944821; cv=none; b=cfKFftHho5FtzVn/MCPW5k0sxiBhu7eKE9uPFZmC2wOB0bNGCl1pTRIP4naMd0/2cd4qqPJruJQEtaNSf2bfGPZAVxDRkl0pxZXo9cPcKj+kRV5UHiLWQWMoGSu/q8kuqyM+WpyEAoDg+7wT4Un4ymgvmtEmCNLq3IK1nqZ2A1g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773944621; c=relaxed/simple;
-	bh=B6ebB/LkkPL6h6P3zLEobxi1daTjkz/u/Q8WHQlgx/A=;
+	s=arc-20240116; t=1773944821; c=relaxed/simple;
+	bh=vG//QuEwoXDfjto1FWbCZN+YHI6cii9jrFft26TT93o=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=aDJg0VWunKpOFIq3HCligDd64THiv5sALCnUls0xyyJHCP7qynwyzKT2OrGCl+gwOwfdo5U5MAv14eEXTETizXiqGlUezWITkCuHaVGZ1LbhI7bLkrAub2fXpDyPZu3g1KlFzOxa7L8yfijrtvfOnrOPEsz3nSfKDZ+CUAyGMMg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RvMfhlDZ; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=Gzb8/iS1AVcc2sHzjX6Wt0lCq9ayJjuZSipPJVeB5xcW1D38F94b8n1NLgoishtU2hDRUXTarAtc/GqxyXE92ZYN+p0kx1fG3PGsx951VVlQYo89H6/gEK7/X0h5BYHQDmw/vqI7qr0k5ChBmFgI5BpzOl1O6jtxkp13YqucfbI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kHlHF4P6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RvMfhlDZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6ECEC19424;
-	Thu, 19 Mar 2026 18:23:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kHlHF4P6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C196CC19424;
+	Thu, 19 Mar 2026 18:26:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773944621;
-	bh=B6ebB/LkkPL6h6P3zLEobxi1daTjkz/u/Q8WHQlgx/A=;
+	s=k20201202; t=1773944821;
+	bh=vG//QuEwoXDfjto1FWbCZN+YHI6cii9jrFft26TT93o=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=RvMfhlDZS4jiIzKe+NuiNEs9IglcMeYWKXbNGdAcIGG1DtoMNG2wNJC7Xo55sPcEq
-	 QpPQUxvrgv6PXVnji+fMcdtinaujC8Bzg6o0QNtDSsGbNxHbccl+bg0WzBnxXfo37B
-	 418R9alS9YtC1mifSd1n4SPbW3uFFQ+gvrwYaJyMDoQgh0cMHA+T/L3SW5u1mDQH4T
-	 cfKVdVu+tuGNagPKf6T35w37pH/MjX4w6JmE6hYJNFDVlmUJp+DTTrrGDegNWeakkE
-	 NF9ACEOty+Ed2KgQ2NbXAbCSScSPxhUEjEVrtnJYb76xUq1wBNCNYSnOy0I9SqMjBh
-	 f+FU3rW0o24nw==
+	b=kHlHF4P6jw/NKnZSzr7h1CCdlintgGtGjUVKTlJBb7DRvLd4ie89f8U7mNjCr0w9C
+	 CR9NGspLGLiV+c6f4VAGrnGm33HImEBZDxbk6niAWJOfKraqOuaGzl0GNhWRiF9L/m
+	 9d7t/4EUIBmagk0lEbQ8AWiwCk6YYyCi/flDfoMAVpVE0k73lIU3Lxg7UgOhDt5qls
+	 NEjmD7mgldOwFL5IkRN5wooTZMTrINMKgZdP3aygk7PwXtTb5oPkUFZks7BK8MiiXI
+	 n0nc3cDSfjrgSQYX3+bbC7fPWol6HnLTCzs4oP2aYpSKuEzHMmeTrnzvdoJ50J8j7H
+	 pgqJxwaph5sow==
 From: Lee Jones <lee@kernel.org>
 To: Linus Walleij <linusw@kernel.org>, 
  Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -40,12 +40,12 @@ To: Linus Walleij <linusw@kernel.org>,
 Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
  linux-rtc@vger.kernel.org
-In-Reply-To: <20260312085258.11431-4-clamor95@gmail.com>
-References: <20260312085258.11431-4-clamor95@gmail.com>
-Subject: Re: (subset) [PATCH v4 3/5] dt-bindings: mfd: max77620: convert to
- DT schema
-Message-Id: <177394461661.2972514.17396038867409824051.b4-ty@kernel.org>
-Date: Thu, 19 Mar 2026 18:23:36 +0000
+In-Reply-To: <20260312085258.11431-5-clamor95@gmail.com>
+References: <20260312085258.11431-5-clamor95@gmail.com>
+Subject: Re: (subset) [PATCH v4 4/5] dt-bindings: mfd: max77620: document
+ optional RTC address for MAX77663
+Message-Id: <177394481646.2975021.2090319450225414852.b4-ty@kernel.org>
+Date: Thu, 19 Mar 2026 18:26:56 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,20 +56,17 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.15-dev-52d38
 
-On Thu, 12 Mar 2026 10:52:56 +0200, Svyatoslav Ryhel wrote:
-> Convert max77620 devicetree bindings from TXT to YAML format. This patch
-> does not change any functionality; the bindings remain the same. The
-> thermal bindings are incorporated into the binding. GPIO controller
-> function in MAX77620 has no dedicated node and is folded into the parent
-> node itself.
+On Thu, 12 Mar 2026 10:52:57 +0200, Svyatoslav Ryhel wrote:
+> Document an optional second I2C address for the MAX77663 PMIC's RTC
+> device, to be used if the MAX77663 RTC is located at a non-default I2C
+> address.
 > 
 > 
-> [...]
 
 Applied, thanks!
 
-[3/5] dt-bindings: mfd: max77620: convert to DT schema
-      commit: 77c8585abf5d7409990b71ba333e839bf4597cb5
+[4/5] dt-bindings: mfd: max77620: document optional RTC address for MAX77663
+      commit: a526075f56fb8f2fd96f791654ff1557e6680bde
 
 --
 Lee Jones [李琼斯]
