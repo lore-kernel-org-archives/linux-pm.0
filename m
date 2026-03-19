@@ -1,175 +1,150 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1DB5386C30;
-	Thu, 19 Mar 2026 13:59:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07BD62D0C97
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:04:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773928773; cv=none; b=hdX3OTjWWJIe1qvbAuPTXmb12FJ0yO0oSVY/GTQW989cswKJY1ZTAM43x5EZJ0KYxnqmef9gll0rzwx0CCotdMriJmilUEtJXVP8D8PJMkLFIL1oHd8FMzVX1leTLMTudN7yLx41nhZS8NZMb8XLuHwloQGSHiB9tkroZCAIC/k=
+	t=1773929050; cv=none; b=IGzYUjRfiFUUv5Jg7WPWSn/50FXFPItZXoSgCkktYjLanC+O3G/EliR2hIB4mA1+KOzHZ6kp0yS7rWRS1YFAgHyTJrfzWWRJhlb9u7y3wKtP3RjV2MI2SIpGgje1Ta0pGgMA47qQrEqBxtKAwhnslCCO8QTb6N1btv8/SMZO8BM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773928773; c=relaxed/simple;
-	bh=TTNzvb3312bF4OJODOgMQqa+yyQSoFloxeONu4CmNao=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eiY2nNaK2dsyN4qm0gfqIXc16YClZkAdw2qxC8yapjkbPrnfsl1o+8Nargu99l/P/PqrzOQhiQLyDL86pT31iQC/dE/O84N6XTznZATUX7V5S0jAmjpOcA/aCBseVEBxd9XQIN8nZKctO4gc5jqKCwVXZjd3v0mIk5V0Hc3hMyM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.224.83])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTPS id 4fc6jb34hCzJ46BP;
-	Thu, 19 Mar 2026 21:58:27 +0800 (CST)
-Received: from dubpeml500005.china.huawei.com (unknown [7.214.145.207])
-	by mail.maildlp.com (Postfix) with ESMTPS id DD35440572;
-	Thu, 19 Mar 2026 21:59:26 +0800 (CST)
-Received: from localhost (10.203.177.15) by dubpeml500005.china.huawei.com
- (7.214.145.207) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 19 Mar
- 2026 13:59:25 +0000
-Date: Thu, 19 Mar 2026 13:59:24 +0000
-From: Jonathan Cameron <jonathan.cameron@huawei.com>
-To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-CC: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Ard Biesheuvel <ardb@kernel.org>, "Alison
- Schofield" <alison.schofield@intel.com>, Vishal Verma
-	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
-	<dan.j.williams@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, "Dave
- Jiang" <dave.jiang@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, "Matthew
- Wilcox" <willy@infradead.org>, Jan Kara <jack@suse.cz>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek
-	<pavel@kernel.org>, Li Ming <ming.li@zohomail.com>, Jeff Johnson
-	<jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
-	Yao Xingtao <yaoxt.fnst@fujitsu.com>, "Peter Zijlstra"
-	<peterz@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Nathan Fontenot <nathan.fontenot@amd.com>, Terry Bowman
-	<terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>, Benjamin Cheatham
-	<benjamin.cheatham@amd.com>, Zhijian Li <lizhijian@fujitsu.com>, Borislav
- Petkov <bp@alien8.de>, Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Subject: Re: [PATCH v7 4/7] dax: Track all dax_region allocations under a
- global resource tree
-Message-ID: <20260319135924.000060c2@huawei.com>
-In-Reply-To: <20260319011500.241426-5-Smita.KoralahalliChannabasappa@amd.com>
-References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
-	<20260319011500.241426-5-Smita.KoralahalliChannabasappa@amd.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+	s=arc-20240116; t=1773929050; c=relaxed/simple;
+	bh=BJDioJ7VTPZdZcrChnvmZGPUKqEzl5xZmpnKkUYNiMg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lL7Azt0ihLbR/GOdPG06YE3M6YcJs7lNe/yY58pdpm3ZbxqLKTucoPLDOXq5t7Ikqouin8oa+j24k3koLU/VtMDVs77Z+MH6dE5HCEHihUu1wPv2KVOEYBfYyiIfZkkJtRFurPjHI6Ynkr5HMo1u0W7wnO2kF9ea8mBmYYGoaSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Mhp9ZqH0; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Mhp9ZqH0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1773929048;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=q6NyLZcL6/89S3l5gs2Exgc21wjIy72JJSu1rERb5B8=;
+	b=Mhp9ZqH0g+iH7oyOOPY6Oqlj+5FAVnbXIJ56940EY21QYVHnJTPRG1RnFrZpCDNn+df+g7
+	750RujGJXLkWkhswl3L1LEK4smiPxBikssbCB0OfA/e6z7N9B2vG9msS4Uk24fTNKVT/QG
+	t9darnQtlPXPfx+JTLhnRb/z9pOA6pI=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-563-MxFyPVTiMNWYtBYto8AHzQ-1; Thu,
+ 19 Mar 2026 10:04:04 -0400
+X-MC-Unique: MxFyPVTiMNWYtBYto8AHzQ-1
+X-Mimecast-MFC-AGG-ID: MxFyPVTiMNWYtBYto8AHzQ_1773929043
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 9A3FB1955F6A;
+	Thu, 19 Mar 2026 14:04:03 +0000 (UTC)
+Received: from dba-icx.bos.redhat.com (prarit2023-dbaguest.khw.eng.bos2.dc.redhat.com [10.26.1.94])
+	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id D94BF1955F21;
+	Thu, 19 Mar 2026 14:04:02 +0000 (UTC)
+From: David Arcari <darcari@redhat.com>
+To: Len Brown <lenb@kernel.org>
+Cc: David Arcari <darcari@redhat.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] tools/power turbostat: Allow execution to continue after perf_l2_init() failure
+Date: Thu, 19 Mar 2026 10:03:07 -0400
+Message-ID: <20260319140307.441950-1-darcari@redhat.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: lhrpeml500009.china.huawei.com (7.191.174.84) To
- dubpeml500005.china.huawei.com (7.214.145.207)
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 
-On Thu, 19 Mar 2026 01:14:57 +0000
-Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
+Currently, if perf_l2_init() fails turbostat exits after issuing the
+following error (which was encountered on AlderLake):
 
-> Introduce a global "DAX Regions" resource root and register each
-> dax_region->res under it via request_resource(). Release the resource on
-> dax_region teardown.
->=20
-> By enforcing a single global namespace for dax_region allocations, this
-> ensures only one of dax_hmem or dax_cxl can successfully register a
-> dax_region for a given range.
->=20
-> Suggested-by: Dan Williams <dan.j.williams@intel.com>
-> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+turbostat: perf_l2_init(cpu0, 0x0, 0xff24) REFS: Invalid argument
 
-The comment below is about the existing code.  If we decide not to tidy that
-up for now and you swap the ordering of release_resource() and sysfs_remove=
-_groups()
-in unregister.
+This occurs because perf_l2_init() calls err(). However, the code has been
+written in such a manner that it is able to perform cleanup and continue.
+Therefore, this issue can be addressed by changing the appropriate calls
+to err() to warnx().
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+Additionally, correct the PMU type arguments passed to the warning strings
+in the ecore and lcore blocks so the logs accurately reflect the failing
+counter type.
 
-> ---
->  drivers/dax/bus.c | 20 +++++++++++++++++---
->  1 file changed, 17 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
-> index c94c09622516..448e2bc285c3 100644
-> --- a/drivers/dax/bus.c
-> +++ b/drivers/dax/bus.c
-> @@ -10,6 +10,7 @@
->  #include "dax-private.h"
->  #include "bus.h"
-> =20
-> +static struct resource dax_regions =3D DEFINE_RES_MEM_NAMED(0, -1, "DAX =
-Regions");
->  static DEFINE_MUTEX(dax_bus_lock);
-> =20
->  /*
-> @@ -625,6 +626,7 @@ static void dax_region_unregister(void *region)
->  {
->  	struct dax_region *dax_region =3D region;
-> =20
-> +	release_resource(&dax_region->res);
+Signed-off-by: David Arcari <darcari@redhat.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ tools/power/x86/turbostat/turbostat.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Should reverse the line above and the line below so we unwind in reverse of
-setup.  I doubt it matters in practice today but keeping ordering like that
-makes it much easier to see if a future patch messes things up.
-
->  	sysfs_remove_groups(&dax_region->dev->kobj,
->  			dax_region_attribute_groups);
->  	dax_region_put(dax_region);
-> @@ -635,6 +637,7 @@ struct dax_region *alloc_dax_region(struct device *pa=
-rent, int region_id,
->  		unsigned long flags)
->  {
->  	struct dax_region *dax_region;
-> +	int rc;
-> =20
->  	/*
->  	 * The DAX core assumes that it can store its private data in
-> @@ -667,14 +670,25 @@ struct dax_region *alloc_dax_region(struct device *=
-parent, int region_id,
->  		.flags =3D IORESOURCE_MEM | flags,
->  	};
-> =20
-> -	if (sysfs_create_groups(&parent->kobj, dax_region_attribute_groups)) {
-> -		kfree(dax_region);
-> -		return NULL;
-> +	rc =3D request_resource(&dax_regions, &dax_region->res);
-> +	if (rc) {
-> +		dev_dbg(parent, "dax_region resource conflict for %pR\n",
-> +			&dax_region->res);
-> +		goto err_res;
->  	}
-> =20
-> +	if (sysfs_create_groups(&parent->kobj, dax_region_attribute_groups))
-> +		goto err_sysfs;
-> +
->  	if (devm_add_action_or_reset(parent, dax_region_unregister, dax_region))
-
-This is curious. The code flips over to a kref_put() based release but we d=
-idn't
-do anything with the kref in the previous call. So whilst not 'buggy' as su=
-ch
-it's definitely inconsistent and we should clean it up.
-
-This should really have been doing the release via dax_region_put() from the
-kref_init().  In practice that means never calling kfree(dax_regions) error=
- paths
-because the kref_init() is just after the allocation. Instead call dax_regi=
-on_put()
-in all those error paths.
-
-=20
-
->  		return NULL;
->  	return dax_region;
-> +
-> +err_sysfs:
-> +	release_resource(&dax_region->res);
-> +err_res:
-> +	kfree(dax_region);
-
-=46rom above I think this should be
-	dax_region_put(dax_region);
-
-> +	return NULL;
->  }
->  EXPORT_SYMBOL_GPL(alloc_dax_region);
-> =20
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 1a2671c28209..f1b8059a4eec 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -9403,13 +9403,13 @@ void perf_l2_init(void)
+ 		if (!is_hybrid) {
+ 			fd_l2_percpu[cpu] = open_perf_counter(cpu, perf_pmu_types.uniform, perf_model_support->first.refs, -1, PERF_FORMAT_GROUP);
+ 			if (fd_l2_percpu[cpu] == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.uniform, perf_model_support->first.refs);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.uniform, perf_model_support->first.refs);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 			retval = open_perf_counter(cpu, perf_pmu_types.uniform, perf_model_support->first.hits, fd_l2_percpu[cpu], PERF_FORMAT_GROUP);
+ 			if (retval == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.uniform, perf_model_support->first.hits);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.uniform, perf_model_support->first.hits);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+@@ -9418,39 +9418,39 @@ void perf_l2_init(void)
+ 		if (perf_pcore_set && CPU_ISSET_S(cpu, cpu_possible_setsize, perf_pcore_set)) {
+ 			fd_l2_percpu[cpu] = open_perf_counter(cpu, perf_pmu_types.pcore, perf_model_support->first.refs, -1, PERF_FORMAT_GROUP);
+ 			if (fd_l2_percpu[cpu] == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->first.refs);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->first.refs);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 			retval = open_perf_counter(cpu, perf_pmu_types.pcore, perf_model_support->first.hits, fd_l2_percpu[cpu], PERF_FORMAT_GROUP);
+ 			if (retval == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->first.hits);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->first.hits);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 		} else if (perf_ecore_set && CPU_ISSET_S(cpu, cpu_possible_setsize, perf_ecore_set)) {
+ 			fd_l2_percpu[cpu] = open_perf_counter(cpu, perf_pmu_types.ecore, perf_model_support->second.refs, -1, PERF_FORMAT_GROUP);
+ 			if (fd_l2_percpu[cpu] == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->second.refs);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.ecore, perf_model_support->second.refs);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 			retval = open_perf_counter(cpu, perf_pmu_types.ecore, perf_model_support->second.hits, fd_l2_percpu[cpu], PERF_FORMAT_GROUP);
+ 			if (retval == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->second.hits);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.ecore, perf_model_support->second.hits);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 		} else if (perf_lcore_set && CPU_ISSET_S(cpu, cpu_possible_setsize, perf_lcore_set)) {
+ 			fd_l2_percpu[cpu] = open_perf_counter(cpu, perf_pmu_types.lcore, perf_model_support->third.refs, -1, PERF_FORMAT_GROUP);
+ 			if (fd_l2_percpu[cpu] == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->third.refs);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) REFS", __func__, cpu, perf_pmu_types.lcore, perf_model_support->third.refs);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+ 			retval = open_perf_counter(cpu, perf_pmu_types.lcore, perf_model_support->third.hits, fd_l2_percpu[cpu], PERF_FORMAT_GROUP);
+ 			if (retval == -1) {
+-				err(-1, "%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.pcore, perf_model_support->third.hits);
++				warnx("%s(cpu%d, 0x%x, 0x%llx) HITS", __func__, cpu, perf_pmu_types.lcore, perf_model_support->third.hits);
+ 				free_fd_l2_percpu();
+ 				return;
+ 			}
+-- 
+2.53.0
 
