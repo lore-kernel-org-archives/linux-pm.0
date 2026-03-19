@@ -1,298 +1,308 @@
-Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C3703644C4
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:24:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13B9F37418B;
+	Thu, 19 Mar 2026 14:29:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773930269; cv=none; b=s2QWFhDWjgHwIBTw3UoyhjXljLJHM+qyAgpvomeq7zXfn1CxWG/2i9CajanMq7XwxrpAeQaGe4kj3V/SchidJJsrKAOK94QlxvBKcIUAmc6oe6Kiuqgc61YS7/5x8MtKpIevZQRk1mo65wiAT8Lm7m6UhZqpeFbkb78UAiYN0Ek=
+	t=1773930560; cv=none; b=eADbLgRAZj9TxRhhTVnD864/HKIY+SsVXiDmdjj5IUHIHTptyl1YC2eKxdhmw3WEj0OBgUIKjOx8H+FhHTDiQOwiBf7ISte0nBcD4x0pNGpAmkH/45PJ5IAR6WRb4995X2BHwDjyuQaeyR1wurvOvlrPBu8idqIaeNU/paymVug=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773930269; c=relaxed/simple;
-	bh=H79aQjrNRz2zp7D81fKCIkl9h2JJZBU7ivgv3lKSPPU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IWmH6ikjkXhaOhCZzFPV32C2xbuHj15p1wxVYp6n4arxOQjNzTinS/cEj0TIYo66VBN3MUdPbcX8/H0BU2cnYopz4wpmLY3+qWHo2qG3GL88UFUTqoLWluhBdIBr/wRGfziZBkPOvtfgWdGUsng0LMi79dH5T+CCGb+2IFNoEFQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
-Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 19 Mar 2026 23:24:20 +0900
-X-Original-SENDERIP: 10.177.112.156
-X-Original-MAILFROM: youngjun.park@lge.com
-From: Youngjun Park <youngjun.park@lge.com>
-To: rafael@kernel.org,
-	akpm@linux-foundation.org
-Cc: chrisl@kernel.org,
-	kasong@tencent.com,
-	pavel@kernel.org,
-	shikemeng@huaweicloud.com,
-	nphamcs@gmail.com,
-	bhe@redhat.com,
-	baohua@kernel.org,
-	youngjun.park@lge.com,
-	usama.arif@linux.dev,
-	linux-mm@kvack.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v5 1/3] mm/swap, PM: hibernate: fix swapoff race in uswsusp by getting swap reference
-Date: Thu, 19 Mar 2026 23:24:02 +0900
-Message-Id: <20260319142404.3683019-2-youngjun.park@lge.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260319142404.3683019-1-youngjun.park@lge.com>
-References: <20260319142404.3683019-1-youngjun.park@lge.com>
+	s=arc-20240116; t=1773930560; c=relaxed/simple;
+	bh=HsUflFa/KdBTD4m+DVDNlymj5Z233GZp9biJt1RyHT0=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qNUyDXT4oEfOdDh8llsxirHfseOi35DS/FG7J9+KBRmNBfMDqdqlFZ4uyfqmlLGTOpiEbte5aSQRHVDLrMgRAWegnOm/oJC9yoPeJn0pix+42y9qrIw7m1TKnHrgBmUL2XmxGwoscviUaIBmlFjn8BnzptxNLJ1z6Nz158jz65g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+Received: from mail.maildlp.com (unknown [172.18.224.150])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTPS id 4fc7Nd2wpZzHnGgg;
+	Thu, 19 Mar 2026 22:28:49 +0800 (CST)
+Received: from dubpeml500005.china.huawei.com (unknown [7.214.145.207])
+	by mail.maildlp.com (Postfix) with ESMTPS id 0BBDE4056E;
+	Thu, 19 Mar 2026 22:29:13 +0800 (CST)
+Received: from localhost (10.203.177.15) by dubpeml500005.china.huawei.com
+ (7.214.145.207) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 19 Mar
+ 2026 14:29:11 +0000
+Date: Thu, 19 Mar 2026 14:29:10 +0000
+From: Jonathan Cameron <jonathan.cameron@huawei.com>
+To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+CC: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, Ard Biesheuvel <ardb@kernel.org>, "Alison
+ Schofield" <alison.schofield@intel.com>, Vishal Verma
+	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
+	<dan.j.williams@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, "Dave
+ Jiang" <dave.jiang@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, "Matthew
+ Wilcox" <willy@infradead.org>, Jan Kara <jack@suse.cz>, "Rafael J . Wysocki"
+	<rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek
+	<pavel@kernel.org>, Li Ming <ming.li@zohomail.com>, Jeff Johnson
+	<jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
+	Yao Xingtao <yaoxt.fnst@fujitsu.com>, "Peter Zijlstra"
+	<peterz@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Nathan Fontenot <nathan.fontenot@amd.com>, Terry Bowman
+	<terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>, Benjamin Cheatham
+	<benjamin.cheatham@amd.com>, Zhijian Li <lizhijian@fujitsu.com>, Borislav
+ Petkov <bp@alien8.de>, Tomasz Wolski <tomasz.wolski@fujitsu.com>
+Subject: Re: [PATCH v7 6/7] dax/hmem, cxl: Defer and resolve Soft Reserved
+ ownership
+Message-ID: <20260319142910.0000113d@huawei.com>
+In-Reply-To: <20260319011500.241426-7-Smita.KoralahalliChannabasappa@amd.com>
+References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
+	<20260319011500.241426-7-Smita.KoralahalliChannabasappa@amd.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: lhrpeml100011.china.huawei.com (7.191.174.247) To
+ dubpeml500005.china.huawei.com (7.214.145.207)
 
-Hibernation via uswsusp (/dev/snapshot ioctls) has a race: between
-setting the resume swap area and allocating a swap slot, user-space is
-not yet frozen, so swapoff can run and cause an incorrect slot allocation.
+On Thu, 19 Mar 2026 01:14:59 +0000
+Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
 
-Fix this by keeping swap_type_of() as a static helper that requires
-swap_lock to be held, and introducing new interfaces that wrap it with
-proper locking and reference management:
+> The current probe time ownership check for Soft Reserved memory based
+> solely on CXL window intersection is insufficient. dax_hmem probing is not
+> always guaranteed to run after CXL enumeration and region assembly, which
+> can lead to incorrect ownership decisions before the CXL stack has
+> finished publishing windows and assembling committed regions.
+> 
+> Introduce deferred ownership handling for Soft Reserved ranges that
+> intersect CXL windows. When such a range is encountered during the
+> initial dax_hmem probe, schedule deferred work to wait for the CXL stack
+> to complete enumeration and region assembly before deciding ownership.
+> 
+> Once the deferred work runs, evaluate each Soft Reserved range
+> individually: if a CXL region fully contains the range, skip it and let
+> dax_cxl bind. Otherwise, register it with dax_hmem. This per-range
+> ownership model avoids the need for CXL region teardown and
+> alloc_dax_region() resource exclusion prevents double claiming.
+> 
+> Introduce a boolean flag dax_hmem_initial_probe to live inside device.c
+> so it survives module reload. Ensure dax_cxl defers driver registration
+> until dax_hmem has completed ownership resolution. dax_cxl calls
+> dax_hmem_flush_work() before cxl_driver_register(), which both waits for
+> the deferred work to complete and creates a module symbol dependency that
+> forces dax_hmem.ko to load before dax_cxl.
+> 
+> Co-developed-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+Hi Smita,
 
-- get_hibernation_swap_type(): Lookup under swap_lock + acquire a swap
-  device reference to block swapoff (used by uswsusp).
-- find_hibernation_swap_type(): Lookup under swap_lock only, no
-  reference. Used by the sysfs path where user-space is already frozen,
-  making swapoff impossible.
-- put_hibernation_swap_type(): Release the reference.
+I think this is very likely to be what is causing the bug Alison
+saw in cxl_test.
 
-Because the reference is held via get_swap_device(), swapoff will block
-at wait_for_completion_interruptible() until put_hibernation_swap_type()
-releases it. The wait is interruptible, so swapoff can be cancelled by
-a signal.
+It looks to be possible to flush work before the work structure has
+been configured.  Even though it's not on a work queue and there is
+nothing to do, there are early sanity checks that fail giving the warning
+Alison reported.
 
-Signed-off-by: Youngjun Park <youngjun.park@lge.com>
----
- include/linux/swap.h |  4 +-
- kernel/power/swap.c  |  2 +-
- kernel/power/user.c  | 15 ++++++--
- mm/swapfile.c        | 92 ++++++++++++++++++++++++++++++++++++--------
- 4 files changed, 92 insertions(+), 21 deletions(-)
+A couple of ways to fix that inline.  I'd be tempted to both initialize
+the function statically and gate against flushing if the whole thing isn't
+set up yet.
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 62fc7499b408..4266356f928c 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -452,7 +452,9 @@ static inline long get_nr_swap_pages(void)
- 
- extern void si_swapinfo(struct sysinfo *);
- extern int add_swap_count_continuation(swp_entry_t, gfp_t);
--int swap_type_of(dev_t device, sector_t offset);
-+int get_hibernation_swap_type(dev_t device, sector_t offset);
-+int find_hibernation_swap_type(dev_t device, sector_t offset);
-+void put_hibernation_swap_type(int type);
- int find_first_swap(dev_t *device);
- extern unsigned int count_swap_pages(int, int);
- extern sector_t swapdev_block(int, pgoff_t);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 2e64869bb5a0..cc4764149e8f 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -341,7 +341,7 @@ static int swsusp_swap_check(void)
- 	 * This is called before saving the image.
- 	 */
- 	if (swsusp_resume_device)
--		res = swap_type_of(swsusp_resume_device, swsusp_resume_block);
-+		res = find_hibernation_swap_type(swsusp_resume_device, swsusp_resume_block);
- 	else
- 		res = find_first_swap(&swsusp_resume_device);
- 	if (res < 0)
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 4401cfe26e5c..3e41544b99d5 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -71,7 +71,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	memset(&data->handle, 0, sizeof(struct snapshot_handle));
- 	if ((filp->f_flags & O_ACCMODE) == O_RDONLY) {
- 		/* Hibernating.  The image device should be accessible. */
--		data->swap = swap_type_of(swsusp_resume_device, 0);
-+		data->swap = get_hibernation_swap_type(swsusp_resume_device, 0);
- 		data->mode = O_RDONLY;
- 		data->free_bitmaps = false;
- 		error = pm_notifier_call_chain_robust(PM_HIBERNATION_PREPARE, PM_POST_HIBERNATION);
-@@ -90,8 +90,10 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 			data->free_bitmaps = !error;
- 		}
- 	}
--	if (error)
-+	if (error) {
-+		put_hibernation_swap_type(data->swap);
- 		hibernate_release();
-+	}
- 
- 	data->frozen = false;
- 	data->ready = false;
-@@ -115,6 +117,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
- 	data = filp->private_data;
- 	data->dev = 0;
- 	free_all_swap_pages(data->swap);
-+	put_hibernation_swap_type(data->swap);
- 	if (data->frozen) {
- 		pm_restore_gfp_mask();
- 		free_basic_memory_bitmaps();
-@@ -235,11 +238,17 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- 		offset = swap_area.offset;
- 	}
- 
-+	/*
-+	 * Put the reference if a swap area was already
-+	 * set by SNAPSHOT_SET_SWAP_AREA.
-+	 */
-+	put_hibernation_swap_type(data->swap);
-+
- 	/*
- 	 * User space encodes device types as two-byte values,
- 	 * so we need to recode them
- 	 */
--	data->swap = swap_type_of(swdev, offset);
-+	data->swap = get_hibernation_swap_type(swdev, offset);
- 	if (data->swap < 0)
- 		return swdev ? -ENODEV : -EINVAL;
- 	data->dev = swdev;
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 94af29d1de88..5069074ab11b 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -133,7 +133,7 @@ static DEFINE_PER_CPU(struct percpu_swap_cluster, percpu_swap_cluster) = {
- /* May return NULL on invalid type, caller must check for NULL return */
- static struct swap_info_struct *swap_type_to_info(int type)
- {
--	if (type >= MAX_SWAPFILES)
-+	if (type < 0 || type >= MAX_SWAPFILES)
- 		return NULL;
- 	return READ_ONCE(swap_info[type]); /* rcu_dereference() */
- }
-@@ -1972,22 +1972,15 @@ void swap_free_hibernation_slot(swp_entry_t entry)
- 	put_swap_device(si);
- }
- 
--/*
-- * Find the swap type that corresponds to given device (if any).
-- *
-- * @offset - number of the PAGE_SIZE-sized block of the device, starting
-- * from 0, in which the swap header is expected to be located.
-- *
-- * This is needed for the suspend to disk (aka swsusp).
-- */
--int swap_type_of(dev_t device, sector_t offset)
-+static int swap_type_of(dev_t device, sector_t offset)
- {
- 	int type;
- 
-+	lockdep_assert_held(&swap_lock);
-+
- 	if (!device)
- 		return -1;
- 
--	spin_lock(&swap_lock);
- 	for (type = 0; type < nr_swapfiles; type++) {
- 		struct swap_info_struct *sis = swap_info[type];
- 
-@@ -1997,16 +1990,70 @@ int swap_type_of(dev_t device, sector_t offset)
- 		if (device == sis->bdev->bd_dev) {
- 			struct swap_extent *se = first_se(sis);
- 
--			if (se->start_block == offset) {
--				spin_unlock(&swap_lock);
-+			if (se->start_block == offset)
- 				return type;
--			}
- 		}
- 	}
--	spin_unlock(&swap_lock);
- 	return -ENODEV;
- }
- 
-+/*
-+ * Finds the swap type and safely acquires a reference to the swap device
-+ * to prevent race conditions with swapoff.
-+ *
-+ * This should be used in environments like uswsusp where a race condition
-+ * exists between configuring the resume device and allocating a swap slot.
-+ * For sysfs hibernation where user-space is frozen (making swapoff
-+ * impossible), use find_hibernation_swap_type() instead.
-+ *
-+ * The caller must drop the reference using put_hibernation_swap_type().
-+ */
-+int get_hibernation_swap_type(dev_t device, sector_t offset)
-+{
-+	int type;
-+	struct swap_info_struct *sis;
-+
-+	spin_lock(&swap_lock);
-+	type = swap_type_of(device, offset);
-+	sis = swap_type_to_info(type);
-+	if (!sis || !get_swap_device_info(sis))
-+		type = -1;
-+
-+	spin_unlock(&swap_lock);
-+	return type;
-+}
-+
-+/*
-+ * Drops the reference to the swap device previously acquired by
-+ * get_hibernation_swap_type().
-+ */
-+void put_hibernation_swap_type(int type)
-+{
-+	struct swap_info_struct *sis;
-+
-+	sis = swap_type_to_info(type);
-+	if (!sis)
-+		return;
-+
-+	put_swap_device(sis);
-+}
-+
-+/*
-+ * Simple lookup without acquiring a reference. Used by the sysfs
-+ * hibernation path where user-space is already frozen, making
-+ * swapoff impossible.
-+ */
-+int find_hibernation_swap_type(dev_t device, sector_t offset)
-+{
-+	int type;
-+
-+	spin_lock(&swap_lock);
-+	type = swap_type_of(device, offset);
-+	spin_unlock(&swap_lock);
-+
-+	return type;
-+}
-+
- int find_first_swap(dev_t *device)
- {
- 	int type;
-@@ -2837,10 +2884,23 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
- 	 * spinlock) will be waited too.  This makes it easy to
- 	 * prevent folio_test_swapcache() and the following swap cache
- 	 * operations from racing with swapoff.
-+	 *
-+	 * Note: if a hibernation session is actively holding a swap
-+	 * device reference, swapoff will block here until the reference
-+	 * is released via put_hibernation_swap_type() or the wait is
-+	 * interrupted by a signal.
- 	 */
- 	percpu_ref_kill(&p->users);
- 	synchronize_rcu();
--	wait_for_completion(&p->comp);
-+	err = wait_for_completion_interruptible(&p->comp);
-+	if (err) {
-+		percpu_ref_resurrect(&p->users);
-+		synchronize_rcu();
-+		reinit_completion(&p->comp);
-+		reinsert_swap_info(p);
-+		goto out_dput;
-+	}
-+
- 
- 	flush_work(&p->discard_work);
- 	flush_work(&p->reclaim_work);
--- 
-2.34.1
+Jonathan
+
+> ---
+>  drivers/dax/bus.h         |  7 +++++
+>  drivers/dax/cxl.c         |  1 +
+>  drivers/dax/hmem/device.c |  3 ++
+>  drivers/dax/hmem/hmem.c   | 66 +++++++++++++++++++++++++++++++++++++--
+>  4 files changed, 75 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/dax/bus.h b/drivers/dax/bus.h
+> index cbbf64443098..ebbfe2d6da14 100644
+> --- a/drivers/dax/bus.h
+> +++ b/drivers/dax/bus.h
+> @@ -49,6 +49,13 @@ void dax_driver_unregister(struct dax_device_driver *dax_drv);
+>  void kill_dev_dax(struct dev_dax *dev_dax);
+>  bool static_dev_dax(struct dev_dax *dev_dax);
+>  
+> +#if IS_ENABLED(CONFIG_DEV_DAX_HMEM)
+> +extern bool dax_hmem_initial_probe;
+> +void dax_hmem_flush_work(void);
+> +#else
+> +static inline void dax_hmem_flush_work(void) { }
+> +#endif
+> +
+>  #define MODULE_ALIAS_DAX_DEVICE(type) \
+>  	MODULE_ALIAS("dax:t" __stringify(type) "*")
+>  #define DAX_DEVICE_MODALIAS_FMT "dax:t%d"
+> diff --git a/drivers/dax/cxl.c b/drivers/dax/cxl.c
+> index a2136adfa186..3ab39b77843d 100644
+> --- a/drivers/dax/cxl.c
+> +++ b/drivers/dax/cxl.c
+> @@ -44,6 +44,7 @@ static struct cxl_driver cxl_dax_region_driver = {
+>  
+>  static void cxl_dax_region_driver_register(struct work_struct *work)
+>  {
+> +	dax_hmem_flush_work();
+>  	cxl_driver_register(&cxl_dax_region_driver);
+>  }
+>  
+> diff --git a/drivers/dax/hmem/device.c b/drivers/dax/hmem/device.c
+> index 56e3cbd181b5..991a4bf7d969 100644
+> --- a/drivers/dax/hmem/device.c
+> +++ b/drivers/dax/hmem/device.c
+> @@ -8,6 +8,9 @@
+>  static bool nohmem;
+>  module_param_named(disable, nohmem, bool, 0444);
+>  
+> +bool dax_hmem_initial_probe;
+> +EXPORT_SYMBOL_GPL(dax_hmem_initial_probe);
+> +
+>  static bool platform_initialized;
+>  static DEFINE_MUTEX(hmem_resource_lock);
+>  static struct resource hmem_active = {
+> diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
+> index 1e3424358490..8c574123bd3b 100644
+> --- a/drivers/dax/hmem/hmem.c
+> +++ b/drivers/dax/hmem/hmem.c
+> @@ -3,6 +3,7 @@
+>  #include <linux/memregion.h>
+>  #include <linux/module.h>
+>  #include <linux/dax.h>
+> +#include <cxl/cxl.h>
+>  #include "../bus.h"
+>  
+>  static bool region_idle;
+> @@ -58,6 +59,19 @@ static void release_hmem(void *pdev)
+>  	platform_device_unregister(pdev);
+>  }
+>  
+> +struct dax_defer_work {
+> +	struct platform_device *pdev;
+> +	struct work_struct work;
+> +};
+> +
+> +static struct dax_defer_work dax_hmem_work;
+
+static struct dax_defer_work dax_hmem_work = {
+	.work = __WORK_INITIALIZER(&dax_hmem_work.work,
+				   process_defer_work),
+};
+or something similar.
+
+
+> +
+> +void dax_hmem_flush_work(void)
+> +{
+> +	flush_work(&dax_hmem_work.work);
+> +}
+> +EXPORT_SYMBOL_GPL(dax_hmem_flush_work);
+> +
+>  static int hmem_register_device(struct device *host, int target_nid,
+>  				const struct resource *res)
+>  {
+> @@ -69,8 +83,11 @@ static int hmem_register_device(struct device *host, int target_nid,
+>  	if (IS_ENABLED(CONFIG_DEV_DAX_CXL) &&
+>  	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
+>  			      IORES_DESC_CXL) != REGION_DISJOINT) {
+> -		dev_dbg(host, "deferring range to CXL: %pr\n", res);
+> -		return 0;
+> +		if (!dax_hmem_initial_probe) {
+> +			dev_dbg(host, "deferring range to CXL: %pr\n", res);
+> +			queue_work(system_long_wq, &dax_hmem_work.work);
+> +			return 0;
+> +		}
+>  	}
+>  
+>  	rc = region_intersects_soft_reserve(res->start, resource_size(res));
+> @@ -123,8 +140,48 @@ static int hmem_register_device(struct device *host, int target_nid,
+>  	return rc;
+>  }
+>  
+> +static int hmem_register_cxl_device(struct device *host, int target_nid,
+> +				    const struct resource *res)
+> +{
+> +	if (region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
+> +			      IORES_DESC_CXL) == REGION_DISJOINT)
+> +		return 0;
+> +
+> +	if (cxl_region_contains_resource((struct resource *)res)) {
+> +		dev_dbg(host, "CXL claims resource, dropping: %pr\n", res);
+> +		return 0;
+> +	}
+> +
+> +	dev_dbg(host, "CXL did not claim resource, registering: %pr\n", res);
+> +	return hmem_register_device(host, target_nid, res);
+> +}
+> +
+> +static void process_defer_work(struct work_struct *w)
+> +{
+> +	struct dax_defer_work *work = container_of(w, typeof(*work), work);
+> +	struct platform_device *pdev = work->pdev;
+If you do the suggested __INITIALIZE_WORK() then I'd add
+a paranoid
+
+	if (!work->pdev)
+		return;
+We don't actually queue the work before pdev is set, but that might
+be obvious once we spilt up assigning the function and the data
+it uses.
+
+> +
+> +	wait_for_device_probe();
+> +
+> +	guard(device)(&pdev->dev);
+> +	if (!pdev->dev.driver)
+> +		return;
+> +
+> +	dax_hmem_initial_probe = true;
+> +	walk_hmem_resources(&pdev->dev, hmem_register_cxl_device);
+> +}
+> +
+>  static int dax_hmem_platform_probe(struct platform_device *pdev)
+>  {
+> +	if (work_pending(&dax_hmem_work.work))
+> +		return -EBUSY;
+> +
+> +	if (!dax_hmem_work.pdev) {
+> +		get_device(&pdev->dev);
+> +		dax_hmem_work.pdev = pdev;
+
+Using the pdev rather than dev breaks the pattern of doing a get_device()
+and assigning in one line. This is a bit ugly.
+
+		dax_hmem_work.pdev = to_pci_dev(get_device(&pdev->dev));
+
+but perhaps makes the association tighter than current code.
+
+> +		INIT_WORK(&dax_hmem_work.work, process_defer_work);
+
+See above. I think assigning the work function should be static
+which should resolve the issue Alison was seeing as then it should
+be fine to call flush_work() on the item that isn't on a work queue
+yet but is initialized.
+
+> +	}
+> +
+>  	return walk_hmem_resources(&pdev->dev, hmem_register_device);
+>  }
+>  
+> @@ -162,6 +219,11 @@ static __init int dax_hmem_init(void)
+>  
+>  static __exit void dax_hmem_exit(void)
+>  {
+> +	flush_work(&dax_hmem_work.work);
+
+I think this needs to be under the if (dax_hmem_work.pdev) 
+Not sure there is any guarantee dax_hmem_platform_probe() has run
+before we get here otherwise.  Alternative is to assign
+the work function statically.
+
+
+
+> +
+> +	if (dax_hmem_work.pdev)
+> +		put_device(&dax_hmem_work.pdev->dev);
+> +
+>  	platform_driver_unregister(&dax_hmem_driver);
+>  	platform_driver_unregister(&dax_hmem_platform_driver);
+>  }
 
