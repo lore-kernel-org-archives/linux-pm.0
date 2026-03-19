@@ -1,21 +1,21 @@
 Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76BF635DA6B
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:24:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D6F83612E4
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 14:24:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773930266; cv=none; b=AbRurW481QduEzDp75ukyBJ7w/ozxK6diCd94Zimjgvui8YKYf1oXuHH+HmOngLbbfR0T83Vmd+bpZqG65Sq8sYkCOaCJem4rpGNNn673lOZGEj1ie2SOTa9iDDaKN/MLYWE12JQesX1azA9vbtulk5OLETuozuCHYE0flzVbX4=
+	t=1773930267; cv=none; b=F3OLLZo/B6L+4MlAHLZx3pIB1hrdnfvPJSg2f9zbkX5Z1t2GK9jovYF6LTwObWNq9bJsbqiPcVFX6MhptM7f8ppLxTASm4zm4RdB56zKq0gTv3u85GulX3MMd0ZNul6NGgoz+GHLyFnmiVM5NPdB2risol7i/sHFJnaqrpm/5yg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773930266; c=relaxed/simple;
-	bh=zdSH+3A9vhcp+O5b472ey7UJYvOHEck6BxeMmVXsUq8=;
+	s=arc-20240116; t=1773930267; c=relaxed/simple;
+	bh=e1J1fkM6AZiTgOcgMFlO3gs3bwXsac0O18rJUTBNO00=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=LPRxibZ0nz56evEz0Lfvo46fkMecVDp0zJ/yVXo5pvzCLnPT8US5146s5Ten1Fak3XrbohXEquwySfAv+iJpIFHNQPNfgQlndS58B9ontcfW1l46EtFTXQyWLuTxSd8UB/SykandKnc34zE0fHkgDE8UW62oSwTwGe3Qtjn0zUk=
+	 MIME-Version; b=FYFAjq7mwBExJgOTze0EI5+rUqaYG+cgkrPG32lNaTz4XbXtsL3qZ5p/LH+dLDt+qOCIFklevY6nC20wxd0nlOIRoaYXdS2Xxks7N7YAoJqdchh3dMTkYZNPiSJhhLheZByUHmpgQ40wpfEriff+q6fs3KcNXXjbU/1JSMYSlBs=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 19 Mar 2026 23:24:22 +0900
+	by 156.147.51.102 with ESMTP; 19 Mar 2026 23:24:23 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
 From: Youngjun Park <youngjun.park@lge.com>
@@ -32,9 +32,9 @@ Cc: chrisl@kernel.org,
 	usama.arif@linux.dev,
 	linux-mm@kvack.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v5 2/3] mm/swap: remove redundant swap device reference in alloc/free
-Date: Thu, 19 Mar 2026 23:24:03 +0900
-Message-Id: <20260319142404.3683019-3-youngjun.park@lge.com>
+Subject: [PATCH v5 3/3] PM: hibernate: fix spurious GFP mask WARNING in uswsusp path
+Date: Thu, 19 Mar 2026 23:24:04 +0900
+Message-Id: <20260319142404.3683019-4-youngjun.park@lge.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260319142404.3683019-1-youngjun.park@lge.com>
 References: <20260319142404.3683019-1-youngjun.park@lge.com>
@@ -46,105 +46,88 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In the previous commit, uswsusp was modified to acquire the swap device
-reference at the time of determining the swap type. As a result, it is
-no longer necessary to repeatedly acquire and release the reference to
-protect against swapoff every time a swap slot is allocated.
+Commit 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask()
+stacking") introduced refcount-based GFP mask management that warns
+when pm_restore_gfp_mask() is called with saved_gfp_count == 0:
 
-For hibernation via the sysfs interface, user-space processes are already
-frozen, making swapoff inherently impossible. Thus, acquiring and
-releasing the reference during allocation is unnecessary. Furthermore,
-even after returning from suspend, processes are not yet thawed when
-swap slots are freed, meaning reference management is not required at
-that stage either.
+  WARNING: kernel/power/main.c:44 at pm_restore_gfp_mask+0xd7/0xf0
+  CPU: 0 UID: 0 PID: 373 Comm: s2disk
+  Call Trace:
+   snapshot_ioctl+0x964/0xbd0
+   __x64_sys_ioctl+0x724/0x1320
+  ...
 
-Therefore, remove the redundant swap device reference acquire and release
-operations from the hibernation swap allocation and free functions.
+The uswsusp path calls pm_restore_gfp_mask() defensively in
+SNAPSHOT_CREATE_IMAGE and SNAPSHOT_UNFREEZE where the GFP mask may
+or may not be restricted depending on context (first call vs retry,
+hibernate vs resume). Before the stacking patch this was a silent
+no-op; now it triggers a WARNING.
 
-Additionally, remove the SWP_WRITEOK check before allocation. This check
-is redundant because the cluster allocation logic already handles it.
+Introduce pm_restore_gfp_mask_safe() that skips the call when
+saved_gfp_count is 0. This is preferred over tracking the restrict
+state in snapshot_ioctl, as incorrect tracking risks leaving the
+GFP mask permanently restricted.
 
+Fixes: 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask() stacking")
 Signed-off-by: Youngjun Park <youngjun.park@lge.com>
 ---
- mm/swapfile.c | 43 ++++++++++++++++++++-----------------------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+ include/linux/suspend.h | 1 +
+ kernel/power/main.c     | 7 +++++++
+ kernel/power/user.c     | 4 ++--
+ 3 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 5069074ab11b..f1188743037a 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -1923,7 +1923,12 @@ void swap_put_entries_direct(swp_entry_t entry, int nr)
- }
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index b02876f1ae38..7777931d88a5 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -454,6 +454,7 @@ extern void pm_report_hw_sleep_time(u64 t);
+ extern void pm_report_max_hw_sleep(u64 t);
+ void pm_restrict_gfp_mask(void);
+ void pm_restore_gfp_mask(void);
++void pm_restore_gfp_mask_safe(void);
  
- #ifdef CONFIG_HIBERNATION
--/* Allocate a slot for hibernation */
-+/*
-+ * Allocate a slot for hibernation.
-+ *
-+ * Note: The caller must ensure the swap device is stable, either by
-+ * holding a reference or by freezing user-space before calling this.
-+ */
- swp_entry_t swap_alloc_hibernation_slot(int type)
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 5f8c9e12eaec..e610a8c8b7ff 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -36,6 +36,13 @@
+ static unsigned int saved_gfp_count;
+ static gfp_t saved_gfp_mask;
+ 
++void pm_restore_gfp_mask_safe(void)
++{
++	if (!saved_gfp_count)
++		return;
++	pm_restore_gfp_mask();
++}
++
+ void pm_restore_gfp_mask(void)
  {
- 	struct swap_info_struct *si = swap_type_to_info(type);
-@@ -1933,43 +1938,35 @@ swp_entry_t swap_alloc_hibernation_slot(int type)
- 	if (!si)
- 		goto fail;
- 
--	/* This is called for allocating swap entry, not cache */
--	if (get_swap_device_info(si)) {
--		if (si->flags & SWP_WRITEOK) {
--			/*
--			 * Grab the local lock to be compliant
--			 * with swap table allocation.
--			 */
--			local_lock(&percpu_swap_cluster.lock);
--			offset = cluster_alloc_swap_entry(si, NULL);
--			local_unlock(&percpu_swap_cluster.lock);
--			if (offset)
--				entry = swp_entry(si->type, offset);
--		}
--		put_swap_device(si);
--	}
-+	/*
-+	 * Grab the local lock to be compliant
-+	 * with swap table allocation.
-+	 */
-+	local_lock(&percpu_swap_cluster.lock);
-+	offset = cluster_alloc_swap_entry(si, NULL);
-+	local_unlock(&percpu_swap_cluster.lock);
-+	if (offset)
-+		entry = swp_entry(si->type, offset);
- fail:
- 	return entry;
- }
- 
--/* Free a slot allocated by swap_alloc_hibernation_slot */
-+/*
-+ * Free a slot allocated by swap_alloc_hibernation_slot.
-+ * As with allocation, the caller must ensure the swap device is stable.
-+ */
- void swap_free_hibernation_slot(swp_entry_t entry)
- {
--	struct swap_info_struct *si;
-+	struct swap_info_struct *si = __swap_entry_to_info(entry);
- 	struct swap_cluster_info *ci;
- 	pgoff_t offset = swp_offset(entry);
- 
--	si = get_swap_device(entry);
--	if (WARN_ON(!si))
--		return;
--
- 	ci = swap_cluster_lock(si, offset);
- 	swap_put_entry_locked(si, ci, offset);
- 	swap_cluster_unlock(ci);
- 
- 	/* In theory readahead might add it to the swap cache by accident */
- 	__try_to_reclaim_swap(si, offset, TTRS_ANYWAY);
--	put_swap_device(si);
- }
- 
- static int swap_type_of(dev_t device, sector_t offset)
+ 	WARN_ON(!mutex_is_locked(&system_transition_mutex));
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 3e41544b99d5..41cff6a89a1c 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -306,7 +306,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen || data->ready)
+ 			break;
+-		pm_restore_gfp_mask();
++		pm_restore_gfp_mask_safe();
+ 		free_basic_memory_bitmaps();
+ 		data->free_bitmaps = false;
+ 		thaw_processes();
+@@ -318,7 +318,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 			error = -EPERM;
+ 			break;
+ 		}
+-		pm_restore_gfp_mask();
++		pm_restore_gfp_mask_safe();
+ 		error = hibernation_snapshot(data->platform_support);
+ 		if (!error) {
+ 			error = put_user(in_suspend, (int __user *)arg);
 -- 
 2.34.1
 
