@@ -1,203 +1,176 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E7A4238150
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 23:28:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8BDB3FFAA5
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 23:55:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.44
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773962894; cv=pass; b=LV8zPskknkW0RWz2lTJUFB8y2ggygeWSv3TciXCOB2JsKhvmFYqWlyJERYKxO3G1lbOSwBUXGodUx+PP7dEm+O4AkNLJL0xXNMn9jqrmlASiPTg4oiNZ3hyNBERcnJhJU5KZpVgnn/9fuRKz2Fe0fRost0I4QxIpdAM5tw5QIWM=
+	t=1773964535; cv=pass; b=OGnWXH1Hf5Shhigm4FHBZeOAEAoGleECL3Zm9K3W5ZrEH+iMFawg+nFKoTyp7y2L4zVc8gN/f/tufAPxFMENwxxFqH2gBjE423ZNGSgdJaqsnv5qVkNFibwECSSIkxipE7L/09KmIIxLQtp0WlMHCWuWQLpDo5WPbAVXZzceIPw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773962894; c=relaxed/simple;
-	bh=/dvPkx/pvBcotP6nSquXBwzk1NIgIOFThsc2f/pMPDo=;
+	s=arc-20240116; t=1773964535; c=relaxed/simple;
+	bh=YqQWHG7sQVFE30nL5cwSU7IIyU4kUNqSrNwlZahbGjc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=N16bfJo3sDsNvYw2KgdeqMNXfGLH2gCOutN92am3TVAsj+kwq5aitcSSJuqQYC/9W9GE4NYSdYhwjrvR73T+0NBHAlkPUmNsWTdxGfvOOeVoljj28pBV7E31WGCGs3XRJo9yMTRZPat5wh3MnoAiH6lOvOUKBYS3znH59wzE13M=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ntpMk/SX; arc=pass smtp.client-ip=209.85.221.41
+	 To:Cc:Content-Type; b=r3pqTayxUd6eC3TzXN9BPV8pzqqDP7fl4mMWFvMnckUHq6mnsdNesXWU7DluwANTT7H3VqeHo7jd66n8P/FEiQMMNf88GDUh/X8fpZ7PvLBYqHiij4xInuQi1TzqQatm3S9OEA1OO/tr7Ec4waWKgCkGNnBMIkIk6dHxpBKnfvM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BCoeykvI; arc=pass smtp.client-ip=209.85.128.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ntpMk/SX"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-439b9cf8cb5so1846045f8f.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 16:28:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773962890; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BCoeykvI"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-485445e80bdso12723205e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 16:55:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773964532; cv=none;
         d=google.com; s=arc-20240605;
-        b=XU1vN96OGc/Oz0UnsR4Fok47FNZTYvG3czNUyFnLVyWASQ8K5lIobjQSWIDqYlYckS
-         aoWueyP/UHmIPo3hZVqBp386dzDO8g0gkIJUnVqBJd/Vtmy0OUp56yVGcoi6z/dHhZbP
-         kIYWAze/1RU7ncnNXCfRAMuPk+wRqGG9JAaC0v0r3RqSFk0eXBy1+uG13mHZXRiY6sCf
-         RjHrb5I2kz/CyxyS2sSxcyZqG7WBEyevaSa8k3WyS62DlrHcy3HNdR9fnWR8GS3IQAFv
-         wsoZy3cBnGjH28oDEWbN1kpRivfaTkUtxlcuNT+bNreoCH1kdx5pFHLf7c0+xOk2QWmu
-         DceA==
+        b=C3YcPH57QqOWQXvbA0HKTYEPCnsLz6ZQ9A0WI03s+wNokbIRdyZNkKmMTipPsnBiyr
+         sM5Qrb9CY2XPL7SilYJNFrG4/eGurwQkbsYGXv4B6I5Z5Gae4oxGeUC0gyJV4NJadN2T
+         iho9dpVbXilMnI0LuR+/mEMKd/iFeCS+wr0V8Tgbluqn3T8ScF1UklbCsbpyAEWC/HQb
+         oedH9mkkcS2AGPDQ/U/BuYc/E6YfdtB1xGBGY4R6HU37s4iOoWASwMZpT4JfozKnx/9y
+         cmK2YRllJOtRREi6x+W3P5pyZsx6dwCjncSmjOk/qGA/OwwArvJ7bNyUKnWjZaC+q/cJ
+         TmNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=K9OWBtdlQRn2CWoGv55axZFQst3AHYCAYnvEd326GJU=;
-        fh=WNCNSUWAW9zUdCfTT2lteO/Uz/ljfQ6bTDFrBadpWBM=;
-        b=afx1MMiGBgld575H+hpSQGB6jpE7wcL4H1es7ZAYm2E7PIpNNFoXmCTMrec/rvluu2
-         J3gpVDqIqINBPg++1TSRiGhTPXs3vfqvNViiSnWbE0TCOAxoLhD0FKJU5+0suMxxMAyl
-         KqxVfyG1ilxOzWhTtcbyUjz12lkZ/4kmNgve0KDrLG/LTJBTu+rc1u/3UQLyCd8Qde6A
-         GPQShq+q92EOK8dHR7cjFdv+GmhoJZEqYjz9iJVDm8wamYj3a6ITcqlUB31BawZo0ITU
-         lm4Yua5xmKglSYels61XRZ3UvZr2cKw+FCLpcinYJiajjz51+776PEyP7twkvRl4d9MB
-         uwhg==;
+        bh=/mhKg6xVvWfMaz63hQEXWdsh4Rp4Y+bSTphJUnzWMR0=;
+        fh=53EaregjP4T6LZ0EBq8qjsd73OFYim4mBn7AUhmmFA4=;
+        b=GBKkZqF2P8pXu3hnQROOGiiNeJ/wq6xQZoLKPA56RNSJAmJiR4vTdFbOhiPIscvCoy
+         P7efu90WJDR5Sy3/4sH6V3+IBJuxyDlQWldIX1F27vfxmqfmaLOEsiQJSVqoPijvrtxk
+         DOJHVdZbci7cug0r1Dbodh053bQiEufa17QfXqgLdRFtmRIQdzVYAv7Hdwd+NafTLW1F
+         ymISV4uHeTL3sOCR1OdRNbcWUS/aKSaQHT7Lt37pdPwnjZUydurbuXloxM1m1gEArny1
+         Jd6UNNR1tSCJ4fXhoJI/Y+8JKDz9lAqlIb/Dhs4qsPmyjuE5zePqwmPd2AgRNggePHTL
+         CYVQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773962890; x=1774567690; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773964532; x=1774569332; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=K9OWBtdlQRn2CWoGv55axZFQst3AHYCAYnvEd326GJU=;
-        b=ntpMk/SXT8L/BMfU1kroeGlMTpVflTCl85zJA1Ri/XLJcf5zwibQhB7rcirXdez8aJ
-         9FqniLfYLEUBkzCdkHfs20VKBtyTpFgEVZwYFnwhj+/BA54+PPBfxqYLV3naEiuxLYup
-         dq75/wic9EmRt3OOCYK6k9NjnYowMCVRQf84j2SmB4JCDhImb8Sic84cEqsvsWX2Av4V
-         rI6NBPbw+SKY3BlDHA/L6VOf/HvhwhlsV1aqUe8otDybTcam0l+Jk+O038pKW2qCDgjh
-         Xz0cqeBA4naGv0AvPb1hPZH0nymqjUj84/MK/YGsGFnWaqUxVZpnRTZTxwqvaK969Nc8
-         DTaw==
+        bh=/mhKg6xVvWfMaz63hQEXWdsh4Rp4Y+bSTphJUnzWMR0=;
+        b=BCoeykvI88QnQL/8jSCcXfFTOwf2O/IBfmBjqBllJqKJdTX+YDgnHKjnoUEE1j3G7l
+         tT8wt3kFWyGjs0GyS/wVMu4O6WIl8UF37kZNLRoPJBE4sAHM3lziHAt2w0I54Eon5jKj
+         xl3HiD+HXmubN6/8F6XE5kZ2DTpK7UJrEkgR1f0Y0ckGSTvOX3maIkry6QZG10f4g1Hz
+         8f6pvoRnIfViKcne0eBgrswOmCIVjgzVpCIJMQoslyUUvy/qidFk6E816I3vI42LOspv
+         J46EGjZKYP/2c9t8/LSVeMzTJypoJ5li56QI0jJMqrQUI3znlB0Ri55bgnXiDF/IL4FG
+         Bu3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773962890; x=1774567690;
+        d=1e100.net; s=20251104; t=1773964532; x=1774569332;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=K9OWBtdlQRn2CWoGv55axZFQst3AHYCAYnvEd326GJU=;
-        b=sUKqfRzgrxdPE0fXaCeAlFqUFseSbbpaJr8TTIDB1/k/ihsOi7GdAjKBgA9ZWfbvot
-         XhQAK1RK9JcgwDhPRNEaZz21cD321eOuTpdnSltuhK6YyjJyXrAhFYezQqVNeI4THf57
-         uNXyEDrTe/jT0vZboY+J+6kGx0BvV638HP8aCN3b31P3tvWaqwwwcEgGX/Rgru9K1GLa
-         bGBEgt20DUrJEPRRN1MVOePoL0p1H4CEmStGGa4iNu3I15CzjpdBd8+vScy7Hh+uWlz0
-         FwqhFuwQ9uuuLfJT4GvsD6Pr2J/DtnLQbnRs7JIdnwdVat2Jk8cRfvuvb2MuvB6vRpz0
-         ib/g==
-X-Forwarded-Encrypted: i=1; AJvYcCURLcjE00Mbzf/ACuRMBRegIk/sYh29UA9AGr69CZjkgyB3PluUB+TrdOqERpBptBQq/ZniYJfZIw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YziXgnRvf1yZ+Wb+V+nex8oioCgKNYTunzDe0q5uYoP7aJszzUV
-	3uhc3QsiyAJEteiA+lHQSTKAA4ZH+oNylqllmQg97ASCDmuCd8tG0TDlN21lE1fujIUUhG207/d
-	MgcSlRGZhV47BPZT66wZLKvWKdVlhuOQ=
-X-Gm-Gg: ATEYQzxdt0TduiaG5CaEskhLbtddyFQvy5Nt9BhQ36iuM+CtjpdCnvn3N72FzlqRPmI
-	tuZcFk2OSseR5fUWKD3f3cDUL4W+VFHjviphFr/DFOCu6hJZph1QGEzSJYiwz2oKKkfw5sSZTDC
-	fsYceORcAJj/qXmUJpEDIaFoYuDFmfNR1IkCOyswSU+KhocC/XDlwe8wpxCWOLlOHZx+RvAlzj+
-	YIR+br36CknQLdZ6zsm5qG2ZIPlC7iCYs9bSUMSOYSNlVjaxg9/ooJAkYFKl9kSVb0RqFhJUg3I
-	xJpgk9KLoJoWMWRF9n6ZGyPb9JlqkOjKyMpw6wY=
-X-Received: by 2002:a05:6000:420c:b0:439:c62a:6dc2 with SMTP id
- ffacd0b85a97d-43b6427973bmr1895992f8f.41.1773962890359; Thu, 19 Mar 2026
- 16:28:10 -0700 (PDT)
+        bh=/mhKg6xVvWfMaz63hQEXWdsh4Rp4Y+bSTphJUnzWMR0=;
+        b=ZfoZhKWHLBCVkCyclckXT2o30ABHsx1NrNV7Ej9IseiUsIM/pZMdzxdAGYi3/5Zu1D
+         IeacpgioN9VvEzOgvwIBYEOTvV4dRA+6Oy3j0Y1MH7W5WIdc3WWS0Tq/g0BneFZGoQZ5
+         0+H6k5MftwdeZUL/zY4ZVnQzZbcn/7yC8lOfiwSune+VXr8PMYdkV8ipZpIVLr2Q0t+0
+         QhsHeK+6Cxjvd/Xue8/h5b2Z+XYvhOgZQMsQ2pcJP6ksGPzyqoC0r/dJ4kA90GVkRzlN
+         1szHJrBAKqimLazF0kp8dqbzCnjZ0tmIKN5rZ1UjhIuCNOwoty7GLVY7IYP3WNwNAdva
+         QxNg==
+X-Forwarded-Encrypted: i=1; AJvYcCUxgQ+ibRPqHcUePB7qVW9+Gvia0SJVsaXnYZOl0rvMv/2q+Qr5p+CCSEsuGobntrESneQtJdjWqA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywf0lHZnDuR4VfilASX2Vs+z+0ZlUvWJ7aq5q1aKHIXExjIBvX+
+	w2ej7x6zTSmia5jkqer1MlO4SLT/M+7j3PzbvDpsjpH1BAnBtcFptQvc4GP75CwUwNPgccIBxHh
+	R6OYL0qIMKucfs+V7YibUXO54b54wi6E=
+X-Gm-Gg: ATEYQzxaGz1DcyeJRfqPnjgR1AYY7t7i4x3xz/vS3LTHVi3TGDaXH7T38W5xhmTE+OP
+	t4c9BrHLxG6mkEOWr/OhhGH/20eYyVh3OHsVNYtKOcDs8TIpFcXg+I9Lco9J+7ZWUu+9TMSE7wN
+	yz0STtRTHbVI0ENCWsCQwdfqbNzAelknvXRuYcI21C+7D6EHa/o8kN40SdR3Hae7WQExCs+0WbP
+	D50iNg17AKTdkyQYPTipv1N0GX9bBGHnlUJ+lQEzq27TtZgP7l6jCj6V7U80lfmi8OsKhF+IuyL
+	MUnbrg==
+X-Received: by 2002:a05:600c:3495:b0:485:3b00:f939 with SMTP id
+ 5b1f17b1804b1-486fedf6b7amr17160365e9.8.1773964531889; Thu, 19 Mar 2026
+ 16:55:31 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260318222953.441758-1-nphamcs@gmail.com> <20260318222953.441758-10-nphamcs@gmail.com>
- <20260319075621.GR3738010@noisy.programming.kicks-ass.net>
- <CAKEwX=MUrLtZAcmwqBau5GLnWQrjL7A_4tYrdZ4TQQaE+hsVkA@mail.gmail.com> <20260319210319.GK3738786@noisy.programming.kicks-ass.net>
-In-Reply-To: <20260319210319.GK3738786@noisy.programming.kicks-ass.net>
-From: Nhat Pham <nphamcs@gmail.com>
-Date: Thu, 19 Mar 2026 16:27:59 -0700
-X-Gm-Features: AaiRm51gvauVsANsKDMAP1QUJ1JVBGH5RQXhUw4QEOuff8EZUUd-LXduXX7csLg
-Message-ID: <CAKEwX=N_oAjYy3pKzXG+oq9arhNrmPVBm6gvVC_Hx2Utvjfr7A@mail.gmail.com>
-Subject: Re: [PATCH v4 09/21] mm: swap: allocate a virtual swap slot for each
- swapped out page
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org, 
-	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
-	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, 
-	cgroups@vger.kernel.org, chengming.zhou@linux.dev, chrisl@kernel.org, 
-	corbet@lwn.net, david@kernel.org, dev.jain@arm.com, gourry@gourry.net, 
-	hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
-	joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
-	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
-	peterx@redhat.com, pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
-	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
-	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
-	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
-	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
-	riel@surriel.com
+References: <20260319194540.3463371-1-joannelkoong@gmail.com>
+ <20260319194540.3463371-2-joannelkoong@gmail.com> <1f1dafa7-54c7-4eae-a19e-5ec1be391079@kernel.org>
+In-Reply-To: <1f1dafa7-54c7-4eae-a19e-5ec1be391079@kernel.org>
+From: Joanne Koong <joannelkoong@gmail.com>
+Date: Thu, 19 Mar 2026 16:55:20 -0700
+X-Gm-Features: AaiRm52BrVoXuXp1mgrMWHCIO62znYxeTnQ2oKGY6jvIBiTwB0i4w5xIYrFYXBI
+Message-ID: <CAJnrk1atiw4v5OHsvE6uov3aWpQPerRW_eo6Rxg3Z6hPO2uC2g@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] writeback: don't block sync(2) for filesystems
+ with no data integrity guarantees
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: brauner@kernel.org, linux-fsdevel@vger.kernel.org, jack@suse.cz, 
+	miklos@szeredi.hu, therealgraysky@proton.me, linux-pm@vger.kernel.org, 
+	stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 19, 2026 at 2:03=E2=80=AFPM Peter Zijlstra <peterz@infradead.or=
-g> wrote:
+On Thu, Mar 19, 2026 at 2:26=E2=80=AFPM David Hildenbrand (Arm)
+<david@kernel.org> wrote:
 >
-> On Thu, Mar 19, 2026 at 11:37:19AM -0700, Nhat Pham wrote:
-> > On Thu, Mar 19, 2026 at 12:56=E2=80=AFAM Peter Zijlstra <peterz@infrade=
-ad.org> wrote:
-> > >
-> > > On Wed, Mar 18, 2026 at 03:29:40PM -0700, Nhat Pham wrote:
-> > > > diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.=
-h
-> > > > index 62cd7b35a29c9..85cb45022e796 100644
-> > > > --- a/include/linux/cpuhotplug.h
-> > > > +++ b/include/linux/cpuhotplug.h
-> > > > @@ -86,6 +86,7 @@ enum cpuhp_state {
-> > > >       CPUHP_FS_BUFF_DEAD,
-> > > >       CPUHP_PRINTK_DEAD,
-> > > >       CPUHP_MM_MEMCQ_DEAD,
-> > > > +     CPUHP_MM_VSWAP_DEAD,
-> > > >       CPUHP_PERCPU_CNT_DEAD,
-> > > >       CPUHP_RADIX_DEAD,
-> > > >       CPUHP_PAGE_ALLOC,
-> > >
-> > > > +static int vswap_cpu_dead(unsigned int cpu)
-> > > > +{
-> > > > +     struct vswap_cluster *cluster;
-> > > > +     int order;
-> > > > +
-> > > > +     rcu_read_lock();
-> > >
-> > > nit:
-> > >         guard(rcu)();
-> > >
-> > > > +     for (order =3D 0; order < SWAP_NR_ORDERS; order++) {
-> > > > +             cluster =3D per_cpu(percpu_vswap_cluster.clusters[ord=
-er], cpu);
-> > > > +             if (cluster) {
-> > > > +                     per_cpu(percpu_vswap_cluster.clusters[order],=
- cpu) =3D NULL;
-> > > > +                     spin_lock(&cluster->lock);
-> > >
-> > > This breaks on PREEMPT_RT as this is ran with IRQs disabled. This mus=
+> On 3/19/26 20:45, Joanne Koong wrote:
+> > Add a SB_I_NO_DATA_INTEGRITY superblock flag for filesystems that canno=
 t
-> > > be a raw_spinlock_t.
-> > >
-> > > > +                     cluster->cached =3D false;
-> > > > +                     if (refcount_dec_and_test(&cluster->refcnt))
-> > > > +                             vswap_cluster_free(cluster);
-> > >
-> > > And this... below.
-> > >
-> > > > +                     spin_unlock(&cluster->lock);
-> > > > +             }
-> > > > +     }
-> > > > +     rcu_read_unlock();
-> > > > +
-> > > > +     return 0;
-> > > > +}
-> > >
-> > > > +static void vswap_cluster_free(struct vswap_cluster *cluster)
-> > > > +{
-> > > > +     VM_WARN_ON(cluster->count || cluster->cached);
-> > > > +     VM_WARN_ON(!spin_is_locked(&cluster->lock));
-> > >
-> > > This is terrible, please use:
-> > >
-> > >         lockdep_assert_held(&cluster->lock);
-> > >
-> > > > +     xa_lock(&vswap_cluster_map);
-> > >
-> > > This is again broken, this cannot be from a DEAD callback with IRQs
-> > > disabled.
-> > >
-> > > > +     list_del_init(&cluster->list);
-> > > > +     __xa_erase(&vswap_cluster_map, cluster->id);
-> > >
-> > > Strictly speaking this can end up in xas_alloc(), which is again, not
-> > > allowed in a DEAD callback.
+> > guarantee data persistence on sync (eg fuse). For superblocks with this
+> > flag set, sync(2) kicks off writeback of dirty inodes but does not wait
+> > for the flusher threads to complete the writeback.
 > >
-> > I see. I'll take a look at this. Thanks for pointing this out, Peter!
+> > This replaces the per-inode AS_NO_DATA_INTEGRITY mapping flag added in
+> > commit f9a49aa302a0 ("fs/writeback: skip AS_NO_DATA_INTEGRITY mappings
+> > in wait_sb_inodes()"). The flag belongs at the superblock level because
+> > data integrity is a filesystem-wide property, not a per-inode one.
+> > Having this flag at the superblock level allows us to skip the logic in
+> > sync_inodes_sb() entirely, rather than iterating every dirty inode in
+> > wait_sb_inodes() only to skip each inode individually.
 >
-> Oh, I think I might have confused DEAD and DYING here. DYING is the
-> tricky one, DEAD should be okay. Sorry about that.
+> Makes sense to me.
+>
+> [...]
+>
+> >       if (sb->s_user_ns !=3D &init_user_ns)
+> >               sb->s_iflags |=3D SB_I_UNTRUSTED_MOUNTER;
+> >       sb->s_flags &=3D ~(SB_NOSEC | SB_I_VERSION);
+> > diff --git a/fs/sync.c b/fs/sync.c
+> > index 942a60cfedfb..aedbf723830a 100644
+> > --- a/fs/sync.c
+> > +++ b/fs/sync.c
+> > @@ -73,7 +73,12 @@ EXPORT_SYMBOL(sync_filesystem);
+> >
+> >  static void sync_inodes_one_sb(struct super_block *sb, void *arg)
+> >  {
+> > -     if (!sb_rdonly(sb))
+> > +     if (sb_rdonly(sb))
+> > +             return;
+> > +
+>
+> Should we move some of the comment you deleting over here?
 
-No worries at all. Thanks for help taking a look - the other comment
-regarding lock-checking still hold regardless, and will be amended in
-the next version :)
+That's a good idea - I'll bring back the comment block that was
+previously in wait_sb_inodes() and move it here
 
-I'll stare at it a bit more while the context of this portion of the
-code is still in my head.
+>
+> > +     if (sb->s_iflags & SB_I_NO_DATA_INTEGRITY)
+> > +             wakeup_flusher_threads_bdi(sb->s_bdi, WB_REASON_SYNC);
+> > +     else
+> >               sync_inodes_sb(sb);
+> >  }
+> I was wondering whether that handling should be moved to
+> sync_inodes_sb(), so it would catch any (existing+future) callers.
+>
+> Alternatively, we could catch abuse by adding a warning to sync_inodes_sb=
+.
+
+Thinking about this some more, I think you're right.
+
+At the vfs layer, the only other relevant callers are
+generic_shutdown_super() when handling an unmount and syncfs for
+syncing a specific fd. For these, I was thinking it'd be more useful
+to return after writeback has actually completed, since the caller has
+to directly invoke the operation on a specific fd/mount. But that's
+wrong, we shouldn't be picking and choosing which syncs are ok vs not
+ok to wait for. And I'm realizing now there's also the
+hibernate/suspend call paths that call filesystems_freeze_callback()
+which can also call into sync_filesystem() -> sync_inodes_sb()...
+
+I'll make this change for v3.
+
+Thanks,
+Joanne
+
+>
+> --
+> Cheers,
+>
+> David
