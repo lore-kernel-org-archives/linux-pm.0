@@ -1,157 +1,163 @@
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE1A3175A6D
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 10:29:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.118.77.11
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773916194; cv=none; b=a6XgHBx4Sqe0otmvRymHtNw5qLPxbDBTiohVWWHt1y9R0EwGN+08hBDOvGrlmKuDTNcXJkOHgTwGJM+cYqZTEspg1K3srQTV1z1vYrg+ZOgi1X8YgHyhilQOoS+eJqA505HYOT++y9o3w0b2KHgvE5fcgZ+0BOnd5P6PEzf/2zE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773916194; c=relaxed/simple;
-	bh=DkSFWv460eF+SLnywqG+PsmtAxUHLUKrZGMYJd32AFA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
-	 Content-Type:References; b=jMOdnNJdoekgbzylPXssl609Ff7tiTbxiuleghneguXMTLh/jsx1e2Z5v8Ww/GLipu93O0AMpvK4XnTiQX7fEEcaVLT/JoSyWFj1czHSH+Tu6A+5gc/qig32tEgWi7TP2i25csGUl0CYkEi18ISIMVZbpQ6jinYjTaapCEg+ffs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=C7xqy6Xa; arc=none smtp.client-ip=210.118.77.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F56E3C3431
+	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 10:44:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.44
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773917091; cv=pass; b=eui5vui5U431gG4WV5bhm1G5lHCLMaKgU0G45CK/5eFsaPn6uvV7eT0JbCs2eDEJqL4uDFJDHuFeE5/mdMIkyc+Uy5b8w485SOopevU6AAcXhK1ZnFXxyMu9vLCwoBO8Ru+WCl16FiUluxIrINo0GwN9WGj7v6pW9K/5rvMxjQM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773917091; c=relaxed/simple;
+	bh=EiYofbmwlMfzv/ArY5NjYo10OUgrpmbug4B8jl033qM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FKZrZ1UB8YmB2ewqZjeC3I8ZAkUrHJrbc+aZw3/bqYDwbQZHLntWMY+Xl46oC7SVEMe/qivTlPfaJ3ROlWv76Qbg0mQHu8zoDoqdcIDdAis9L2ne+v34IxwnbWDd3IuDd4VXffsvlVfOR2b4k3MOcbyDsdQQ72xey9gvVdEoxdo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=chR08dS0; arc=pass smtp.client-ip=209.85.208.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="C7xqy6Xa"
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20260319102949euoutp0133f09c27d08ab5ee9b7b35f267f6bf66~eN2AWdMWB0591805918euoutp015
-	for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 10:29:49 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20260319102949euoutp0133f09c27d08ab5ee9b7b35f267f6bf66~eN2AWdMWB0591805918euoutp015
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-	s=mail20170921; t=1773916189;
-	bh=uKAPmcA2X9Bm9pJ7T+wzs/NFBFfUIopHAZt+of0O0TE=;
-	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
-	b=C7xqy6XartaJebAc/mio76XJgysOea9Dhzs17asXEowNuhnl4+zZPcqEs2aitk7Dw
-	 rx9J3fgwC7hVscoeFHjVoqHtn7LNCEL6lP6m2NHLhc/iouWTgywbvvbRGo6O6wySyS
-	 ADC4nFYUa7UILv6G6+6jFPm9zHvZNkSXdkjjWl+8=
-Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
-	eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-	20260319102948eucas1p19b0586ca5935a60f9d5bcea3bbbccdac~eN1-1Tym32451224512eucas1p1g;
-	Thu, 19 Mar 2026 10:29:48 +0000 (GMT)
-Received: from [106.210.134.192] (unknown [106.210.134.192]) by
-	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-	20260319102947eusmtip1f9e65f8316f14e8d08a56aea54338db7~eN1_23p1d2191621916eusmtip1f;
-	Thu, 19 Mar 2026 10:29:47 +0000 (GMT)
-Message-ID: <c5ba58fb-50f1-4067-a099-97169ea81f68@samsung.com>
-Date: Thu, 19 Mar 2026 11:29:46 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="chR08dS0"
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-667de793310so1448949a12.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 03:44:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773917088; cv=none;
+        d=google.com; s=arc-20240605;
+        b=I6ZP3XEycR5b9oBG9OA0SYyXZHZrk4fYt37u/0nSUrSLtqq4f5vB0mFhgf7k1c3AoS
+         +eJWuvKwq0bqNXQTTt7ozUpoSnEkGfYnXzWSpSRFMW9pcOr8mUuXpZY02mq4VUx/Gk0A
+         4i1F8XEut57zF+TrBUhy/hICxSnnUB+dLhIFkNqBxtexLXx8lsv6fTxWtllmnwgCv4Q4
+         T4KEZyScpN3MNpdlAEH2QECobRQKlAwK16jViQJ4gbtScXEOM5XweuhnyudCrNwrsMR9
+         8/Yp0m+bdRvcYyK9LoWRR20j8ecUrxgV3PuvXs3aJVUyo01sQkZEXOeZQI69j4QVBvHe
+         wZNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=8nsXLrCC8XRALmE6EP9wDlaUdJlORBZ30G/UqxIe1EE=;
+        fh=ipFncFVy5ibWj+Qn6V0j4CeFwBcBveIYhVLDVDapbUI=;
+        b=ASUwVqmbC0z3f4qauvQvbbdEytQceddnnN8xsZqXbfpksmSZ83vd47O0EtVaCeL+ul
+         zHZXjc+km5zMn63p2MgksOO7kKtkxQ74P4IECzLlkof1R7MeQ2zHh0bI0LEm59cZDPqr
+         QRmtEDk30y8AWkK1cMci8bqs1IKsPTDcXoY9tBpX6EGZ9MEHoWIxmVOZv18dTUGGq/dP
+         1IsiHIbt8WpLbNuQkIMsYeAqP8zthqIl1cpoHMStB8dDVqtJ/FTvhChhrZ+PUxXq+psi
+         /7rnoEbKdWprKCIjuyHpkKyr+b4timBLriszX5PJkSHBKJNjmNO+yTIHOF47iRB8xINf
+         Wb/Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773917088; x=1774521888; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=8nsXLrCC8XRALmE6EP9wDlaUdJlORBZ30G/UqxIe1EE=;
+        b=chR08dS04ikmDgU7f5w0IwqvzESzg8c9wODVm8YQoEJF8XxctE+XvO2BjRXbtt5go0
+         wGrHhCxnOJJIMW+ToEXVOXJYVWUOSTR5aicD+ZzGAY0IVcd1IjnMvlbpT2oLhowxBtrU
+         1pBkdYp14DjhdqCKk6r/BpYxS6WOBFSj28GZDivX3vcz1maskS6iEqmrzEO6a7hevf+r
+         6PsTvq1Km6REpPCgYaw2M6jT4SilHYsjufs7BTs1T2mxDspjoH4fUF7cto4KhaYdLu1J
+         gnsFygZosc1laJsMy3BqGFMd3oloxKkFLZ9Sw8DZagvmoAJEIsfzA0DIiiChec/dDzYx
+         1fyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773917088; x=1774521888;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8nsXLrCC8XRALmE6EP9wDlaUdJlORBZ30G/UqxIe1EE=;
+        b=efZSRTuXt9Iq8X9mKxUe/iZSIbiUEHJmfEVN+dAzIoGgUMxk5YrWlGXqLMOrwqJb8L
+         h5qB7KhOJwpbmiFdlmlks5a6ieWZtecDIM3Tt+SmmHJ/Q2KV9ARiWqBsqTrTi4GlsDy2
+         4GjktRYIheHASzFy9Z3RISc1yQh6G3ASFkbyBDNNdElXFumcPvtktEu0fLtlOZfLR6Gw
+         50vy0hL3S2+s2BvHNXMEmYZCYWGW6lSDQXKoZl8vzmLjMriYtOp4ZAEv900SG2jZn5l+
+         IrjOuhFvEKkZ9vAQDS37Xiak1zdQEZVaDL0sSdU9McMqditX6oDajPBkBJbxrNG6fuQz
+         iRSQ==
+X-Forwarded-Encrypted: i=1; AJvYcCV49ar+pHPytVUai0+UnF3J7bVgO0XCjkQbsKRj16/3wVT8FBPGKC8G+B4qn+ECzeWKQKM5i6iCLg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBLn+gBDq9xfwYg8OcZizomaIjdNBeUgxA4uEbu6Wm3LMfsvKH
+	MzCS33VntE759+Ph2NgRdprkOYHfYKc4/84sJoSxmEIWs4wyhFCDYgPd4NSSXlHms8jp/ETiYcv
+	33pYm8Q2tValdwoG67M9w+Hx4B9gx0PA=
+X-Gm-Gg: ATEYQzwTKzt2STqXMFwwAXRMGF05PbS6R6PQPunDbRVb/pUoWBx8u0fDs+8wg2wCNbQ
+	Dfpe1OWylfAIgH9Lfu289ppKrUfv01yyPYPYAvI2ory83rzt8FsnCoGqSbbirtaeR5RX2IrPJR0
+	gpvo5fDkizmdc6Udg/VHyHbpUdYvr35Ls9yGgMxOu4z0LdSsURitsaarI9w7m6r5ejhh35cPLzF
+	rnszYWAJo50xA4HlHhFNflNteNuTfBfPAGHPEej/vjYTb8lJ8di2NNqy+4YMSM+TxRuODr2vcos
+	GB55jA==
+X-Received: by 2002:aa7:ca56:0:b0:667:ddf7:7d9d with SMTP id
+ 4fb4d7f45d1cf-667ddf7835fmr2510617a12.10.1773917087638; Thu, 19 Mar 2026
+ 03:44:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Betterbird (Windows)
-Subject: Re: [PATCH v8 05/10] pmdomain: samsung: convert to using regmap
-To: Ulf Hansson <ulf.hansson@linaro.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?=
-	<andre.draszik@linaro.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Alim Akhtar
-	<alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Liam
-	Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Peter
-	Griffin <peter.griffin@linaro.org>, Tudor Ambarus
-	<tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, Will McVicker
-	<willmcvicker@google.com>, kernel-team@android.com,
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Content-Language: en-US
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <CAPDyKFrprMSLOBMB_BHbi=j6UXV4dXBn-H8M1BsqDWNSCJwvuA@mail.gmail.com>
-Content-Transfer-Encoding: 8bit
-X-CMS-MailID: 20260319102948eucas1p19b0586ca5935a60f9d5bcea3bbbccdac
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba
-X-EPHeader: CA
-X-CMS-RootMailID: 20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
-	<20260318-gs101-pd-v8-5-241523460b10@linaro.org>
-	<CGME20260319101424eucas1p2d5dca06240e8760046fb40507ffb3bba@eucas1p2.samsung.com>
-	<CAPDyKFrprMSLOBMB_BHbi=j6UXV4dXBn-H8M1BsqDWNSCJwvuA@mail.gmail.com>
+References: <20251127-b4-k1-thermal-v1-0-f32ce47b1aba@163.com>
+In-Reply-To: <20251127-b4-k1-thermal-v1-0-f32ce47b1aba@163.com>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Thu, 19 Mar 2026 16:14:30 +0530
+X-Gm-Features: AaiRm52C7IQCXAwHh87UFE9OwrOumGbtL8uwoXCOsBJxz_0fqoGXY7qT2wiZr5Q
+Message-ID: <CANAwSgTp6urWYT9H96XR7viKv7Sy16L4exS2KR5PLq_FJ91xbQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] thermal: spacemit: Add support for SpacemiT K1 SoC
+ thermal sensor
+To: Shuwei Wu <shuweiwoo@163.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 19.03.2026 11:13, Ulf Hansson wrote:
-> On Wed, 18 Mar 2026 at 16:28, André Draszik <andre.draszik@linaro.org> wrote:
->> On platforms such as Google gs101, direct mmio register access to the
->> PMU registers doesn't necessarily work and access must happen via a
->> regmap created by the PMU driver instead.
->>
->> In preparation for supporting such SoCs convert the existing mmio
->> accesses to using a regmap wrapper.
->>
->> With this change in place, a follow-up patch can update the driver to
->> optionally acquire the PMU-created regmap without having to change the
->> rest of the code.
->>
->> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> Signed-off-by: André Draszik <andre.draszik@linaro.org>
-> [...]
+Hi Shuwei,
+
+On Wed, 26 Nov 2025 at 17:27, Shuwei Wu <shuweiwoo@163.com> wrote:
 >
->> @@ -36,31 +35,42 @@ struct exynos_pm_domain {
->>   static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
->>   {
->>          struct exynos_pm_domain *pd;
->> -       void __iomem *base;
->>          u32 timeout, pwr;
->> -       char *op;
->> +       int err;
->>
->>          pd = container_of(domain, struct exynos_pm_domain, pd);
->> -       base = pd->base;
->>
->>          pwr = power_on ? pd->local_pwr_cfg : 0;
->> -       writel_relaxed(pwr, base);
->> +       err = regmap_write(pd->regmap, 0, pwr);
->> +       if (err) {
->> +               pr_err("Regmap write for power domain %s %sable failed: %d\n",
->> +                      domain->name, power_on ? "en" : "dis", err);
->> +               return err;
->> +       }
->>
->>          /* Wait max 1ms */
->>          timeout = 10;
->> -
->> -       while ((readl_relaxed(base + 0x4) & pd->local_pwr_cfg) != pwr) {
->> -               if (!timeout) {
->> -                       op = (power_on) ? "enable" : "disable";
->> -                       pr_err("Power domain %s %s failed\n", domain->name, op);
->> -                       return -ETIMEDOUT;
->> +       while (timeout-- > 0) {
->> +               unsigned int val;
->> +
->> +               err = regmap_read(pd->regmap, 0x4, &val);
->> +               if (err || ((val & pd->local_pwr_cfg) != pwr)) {
->> +                       cpu_relax();
->> +                       usleep_range(80, 100);
->> +                       continue;
->>                  }
->> -               timeout--;
->> -               cpu_relax();
->> -               usleep_range(80, 100);
->> +
->> +               break;
->>          }
->>
-> [...]
+> Introduce support for the on-die thermal sensor unit (TSU)
+> found on the SpacemiT K1 SoC.
 >
-> As a follow-up patch on top, please consider converting the open-coded
-> polling loop above into a readx_poll_timeout_atomic().
+> Include the device tree binding documentation in YAML format, the
+> thermal sensor driver implementation, and the device tree changes to
+> enable the sensor on K1 SoC.
+>
+> Test logs:
+> Hardware: OrangePi-RV2 integrates SpacemiT K1 SoC
+> Kernel: 6.18.0-rc4 mainline
+>
+> Verified that all five thermal sensors are registered and reporting
+> valid temperatures.
+>
+> $ cat /sys/class/thermal/thermal_zone*/type
+> soc-thermal
+> package-thermal
+> gpu-thermal
+> cluster0-thermal
+> cluster1-thermal
+>
+> $ cat /sys/class/thermal/thermal_zone3/temp
+> 28000
+>
+> Dynamic threshold and interrupt tests passed via sysfs trip_point
+> manipulation.
+>
+> ---
+> Shuwei Wu (3):
+>       dt-bindings: thermal: Add SpacemiT K1 thermal sensor
+>       thermal: K1: Add driver for K1 SoC thermal sensor
+>       riscv: dts: spacemit: Add thermal sensor for K1 SoC
+>
+>  .../bindings/thermal/spacemit,k1-thermal.yaml      |  76 +++++
+>  arch/riscv/boot/dts/spacemit/k1.dtsi               | 101 +++++++
+>  drivers/thermal/Kconfig                            |  14 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/k1_thermal.c                       | 307 +++++++++++++++++++++
+>  5 files changed, 499 insertions(+)
+> ---
+> base-commit: f5f2e20b1cbc5f9ea20b372d15967b24921ede19
+> change-id: 20251124-b4-k1-thermal-eca906e6dd7a
+>
+> Best regards,
 
-This has been tried and it doesn't work in all cases required for power 
-domain driver:
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 
-https://lore.kernel.org/all/5c19e4ef-c4fd-4bf5-88b3-46c86751b14e@samsung.com/
+Thanks
+-Anand
 
-Probably a comment about that could be added directly to this code to 
-avoid such conversion and breakage in the future.
-
-> That said, the series looks ready to me, but I am awaiting an ack from
-> a DT maintainer on patch4 before applying.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+> --
+> Shuwei Wu <shuweiwoo@163.com>
+>
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
