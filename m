@@ -1,151 +1,104 @@
-Received: from mail-vk1-f177.google.com (mail-vk1-f177.google.com [209.85.221.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CB3335CB76
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 09:48:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AA7F1CAA7D
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 09:49:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774000092; cv=none; b=OA7oA+QjwRSTA1QNp3t+FGKWzUXwYQ2KDoTyYHyOF0xwzEK2nS+AM2wb5JLFDUQH50TU4HXREG/KypT4k2Eq5laoTRihmBAeQvPg+yAg96fi+lXSOLOrol0GOWjxQ9J+1W2jnQZZRRn7ku1fnM5so1vydDWgXdfSHrxTP+VcR0w=
+	t=1774000153; cv=none; b=iI6fJ7w/lM/R7CUVt2G5iU0PLJUo5MP3bznuz0sklS/nBmPbSILTgM+GRrQXMaGEu+4RrSOoXASDz2whC5z81PJRDnsftCbX7DsAD3g2xGKw802KSADkeJzBnLeJnOmGhsKH3jrYxheU2KgRttoZXr3lmSi8kuYX/eqGpdKHqh8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774000092; c=relaxed/simple;
-	bh=7APFMvqa0gCQJ5T8+qHwOHyoZaMkXMNBK/5TVY+s4UI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=g6AE1gkz3DVq5sn4Re7nggHk1YLbmK7grz377xCuoN2R4P5GLLITIDC5QVBZV4ah4Lp4izVsyle5Rkkz3RgjnQNWWWheE2iMBQ1+i5B1AJstnNzXZ2OTmVwrXXtBXTGdnuvytiVQn6pOiHpJCNw4DiLTKBrIsbrGR0p4fmQjSv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-56ce54c8c82so32546e0c.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:48:11 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774000090; x=1774604890;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2iGUIJ7TvYbGTB2SBBw+JWXRbj4mLmqq0A0KfQHtxXA=;
-        b=GwdvtWvuwiBKMQg88oDI8D+pJjmY4DljBGmk1L24EmluvSAMEf6ieM20XArgTqP38z
-         moXg/gUzdWMlDaucZBvHBrT/sYanDj3NsyhYSwXoNOQ4ZBOIx9Zk6ZUBzgRB7FJdIac/
-         D9DrAwgRgoi1HsMsTk1JGrTF5qb67uoMfEwXG4ZtvK3i84a6zHGIyJDYIuzf6ueox+or
-         C8vGnEo8qk7t7VAEK9GNa720pabLqjvcvbUNUAXeio75PnMNiotMfETOM6LZ3Vh5XHo1
-         bQGuJA7Rs4XHK9oFWY6NwVjfGKWwEjnHCSueoqGwhDIFNsEXLSZnS6Ff/QBC4nAnv0mB
-         dPUA==
-X-Forwarded-Encrypted: i=1; AJvYcCUf6TVkclm869g7sv7gn8a/YLtZkIY6E/GFjPC724ALDuhEMkWb00sj5CdmB8bHJrRjFnrJ/Phmew==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxYzTgUjy4j1xpeX8FxHKNyaf+FOiYke0kHENWXpQmy22q6wuZG
-	azo6WuuLWE2r9bquPwZBGwLxJySfd9v9HvDLz1sxVWGdBucF+65JY6YQZ5/JrCpvgjo=
-X-Gm-Gg: ATEYQzzVjbg/FGtH3sq5X9lsZz6z8ZvKIVvzUcz1dV6rz2j5TH9S2mBwyUKd0YmcUjx
-	o6ru5dCMqZmodawLk4752smMNDxWHYWvwZPztRGa5VmHYTpX8wBwJy2cUMUXsyj5+MniE7CRc/8
-	wbOGF+aeFxNxOg0GjOnKxqBxWqRximB3+GRNRcOy1iJCmmoN5oDbz79YWXKpwRmnSlNvnwsCTU+
-	3QCHODYXD8b4Tf8Jk091wsstiYUJC+o7cKaFFQcvkp7zop66ECq2rEBcHAVNGBdGOqJF3aI34S1
-	EeggFLaJO3Mv5cNW7oZJ9UAGSdWorA9jUN0bZ5PYyC19DvALRlmmn5BpmpzkUEneVHLXXvG0vdt
-	Y8Ut3STPIk4HK6fE5OIaV5cXaugQYDsKGaGrlZTTFVcY7j7xmOkvaMYudnAUkw1/EbCWctu8hUL
-	+WPmZpAYdfkhZqBWeQNYPK+x/Celn7soi4wBkt8Wf0AvtNFlqim2WHebSUxzEx
-X-Received: by 2002:a05:6122:65a0:b0:559:5dbe:fe29 with SMTP id 71dfb90a1353d-56cde323240mr1006086e0c.2.1774000090444;
-        Fri, 20 Mar 2026 02:48:10 -0700 (PDT)
-Received: from mail-vs1-f49.google.com (mail-vs1-f49.google.com. [209.85.217.49])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56cddcc34afsm1433791e0c.16.2026.03.20.02.48.09
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 Mar 2026 02:48:09 -0700 (PDT)
-Received: by mail-vs1-f49.google.com with SMTP id ada2fe7eead31-602903ad849so542937137.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:48:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVgr+U5vaPaUAnRPjQbw2G5K0ulye0Mc2T6C2AS5Ky64xCuWWfURwAvLqBsegrtfG7UlH4TlGysOQ==@vger.kernel.org
-X-Received: by 2002:a05:6102:4b85:b0:602:8ad9:1f6f with SMTP id
- ada2fe7eead31-602aeabedb1mr1161798137.5.1774000089201; Fri, 20 Mar 2026
- 02:48:09 -0700 (PDT)
+	s=arc-20240116; t=1774000153; c=relaxed/simple;
+	bh=Io54O6sl8h6cXg1GfthKvH+E9QCewoNAxgUpDygpDR4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YT6fe5eR7tgm6CnAduF13xt1V6YZD4xxu7EakYh6sGPO4bmU3GbX1kALz7A7LDPpEL868jm+oCjpbLKyi6FeVQkrGq2PkxOJlUbVPuJ2ce81aawZLZpx3LCuhRp90Q+Apt0gwBiHt6hoaaRHT1i4KwIVZJedBaAqOTXm4Fv++VE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
+	by 156.147.51.102 with ESMTP; 20 Mar 2026 18:49:06 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+Date: Fri, 20 Mar 2026 18:49:06 +0900
+From: YoungJun Park <youngjun.park@lge.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rafael@kernel.org, chrisl@kernel.org, kasong@tencent.com,
+	pavel@kernel.org, shikemeng@huaweicloud.com, nphamcs@gmail.com,
+	bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev,
+	linux-mm@kvack.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 0/3] Fix swapoff race and cleanup in hibernation swap
+ path
+Message-ID: <ab0YEn+Fd41q6LM7@yjaykim-PowerEdge-T330>
+References: <20260319142404.3683019-1-youngjun.park@lge.com>
+ <20260319195032.5c3b187d5779cf43cd63fcd0@linux-foundation.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <15510cee649959281d9554965cacd0c06531c1f3.1773308898.git.geert+renesas@glider.be>
- <CAPDyKFrMtsp5tRSAOx=ytfQ0xSONtRbC24gq2v4QdSh2wWSw1A@mail.gmail.com>
-In-Reply-To: <CAPDyKFrMtsp5tRSAOx=ytfQ0xSONtRbC24gq2v4QdSh2wWSw1A@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Mar 2026 10:47:58 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXupFRDV7AQUwem7Jd2MJyepyONUtTXr8Xdow=zB_qcYg@mail.gmail.com>
-X-Gm-Features: AaiRm53jo1Kzi6wdd9BDyM25xGy57mtBCx3HvMxUoZBMKfg4MkiWLGZ43AKoUH4
-Message-ID: <CAMuHMdXupFRDV7AQUwem7Jd2MJyepyONUtTXr8Xdow=zB_qcYg@mail.gmail.com>
-Subject: Re: [PATCH/RFC] PM: domains: Call pm_runtime_barrier() before dev_pm_domain_{attach*,detach}()
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Frank Binns <frank.binns@imgtec.com>, Matt Coster <matt.coster@imgtec.com>, 
-	Marek Vasut <marek.vasut@mailbox.org>, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-renesas-soc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260319195032.5c3b187d5779cf43cd63fcd0@linux-foundation.org>
 
-Hi Ulf,
+On Thu, Mar 19, 2026 at 07:50:32PM -0700, Andrew Morton wrote:
+> On Thu, 19 Mar 2026 23:24:01 +0900 Youngjun Park <youngjun.park@lge.com> wrote:
+> 
+> > Currently, in the uswsusp path, only the swap type value is retrieved at
+> > lookup time without holding a reference. If swapoff races after the type
+> > is acquired, subsequent slot allocations operate on a stale swap device.
+> > 
+> > Additionally, grabbing and releasing the swap device reference on every
+> > slot allocation is inefficient across the entire hibernation swap path.
+> 
+> AI review has questions:
+> 	https://sashiko.dev/#/patchset/20260319142404.3683019-1-youngjun.park%40lge.com
 
-On Thu, 19 Mar 2026 at 11:59, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On Thu, 12 Mar 2026 at 10:54, Geert Uytterhoeven
-> <geert+renesas@glider.be> wrote:
-> > If a device has multiple PM Domains, dev_pm_domain_detach() is called
-> > multiple times on unbind or probe failure.  If the PM Domain is also a
-> > Clock Domain, and thus calls pm_clk_destroy() from its .detach()
-> > callback, dev_pm_put_subsys_data() will set dev->power.subsys_data to
-> > NULL when psd->refcount reaches zero.
-> >
-> > Later/in parallel, default_suspend_ok() calls dev_gpd_data():
-> >
-> >     static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
-> >     {
-> >             return to_gpd_data(dev->power.subsys_data->domain_data);
-> >     }
-> >
-> > which may trigger a NULL pointer dereference.
-> >
-> > All dev_pm_domain_{at,de}tach*() functions document that callers must
-> > ensure proper synchronization of these functions with power management
-> > callbacks.  Unfortunately no callers seem to actually do so.  This
-> > includes dev_pm_domain_attach_list() and dev_pm_domain_detach_list():
-> > they call dev_pm_domain_{attach*,detach}() internally, which means they
-> > should take care of this synchronization themselves.
-> >
-> > Add synchronization to dev_pm_domain_{at,de}tach_list() by calling
-> > pm_runtime_barrier() before dev_pm_domain_{attach*,detach}(), and drop
-> > the now obsolete comments.
->
-> My apologies for not being able to respond earlier to your
-> suggestions/questions. I have started looking into this now, and I
-> will follow up with more replies and perhaps a patch shortly.
->
-> Anyway, the principle is that callers of dev_pm_domain_detach() must
-> manage the runtime PM enabling/disabling for its device. If runtime PM
-> was enabled, it must typically be disabled before calling
-> dev_pm_domain_detach().
->
-> What makes this a bit more complicated is that we have two different
-> scenarious to consider.
->
-> 1) The legacy case, attachment via dev_pm_domain_attach() for the
-> single PM domain case. Runtime PM should be enabled/disabled for the
-> device, from its corresponding driver/bus. I assume this isn't the
-> problem you are facing, right?
+Hi Andrew,
 
-No, this is not the problem I am facing.
+Thanks for sharing the AI review. Some comments are indeed good catches.
 
-> 2) Attachment via dev_pm_domain_attach_by_id|name() (which is called
-> for the *attach_list() case too), for the single/multi PM domain
-> cases. In these cases, runtime PM is enabled in
-> genpd_dev_pm_attach_by_id().
->
-> For 2), I am inclined to think that the proper action is to call
-> pm_runtime_disable() in genpd_dev_pm_detach() before it calls
-> genpd_remove_device(). Although, I need to check more closely how
-> suitable that would be.
+patch 2 comments are wrong.
+patch 3 comments are right.
 
-Thanks, that sounds reasonable: genpd_dev_pm_attach_by_id() calls
-pm_runtime_enable(), but there is no pm_runtime_disable() call to
-balance that...
+Regarding patch 2, the AI review raised the following concerns:
 
-Gr{oetje,eeting}s,
+> If this race occurs, swapoff clears SWP_WRITEOK and calls try_to_unuse()
+> to scan and evict swap slots. Without the SWP_WRITEOK check here, it
+> looks like uswsusp could successfully allocate slots while
+> try_to_unuse() is actively scanning.
 
-                        Geert
+Right. but..
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> If try_to_unuse() encounters these newly allocated slots, wouldn't it
+> attempt to page them in and subsequently free them via
+> folio_free_swap()?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I believe this concern is not valid.
+
+swapoff calls try_to_unuse(), which scans swap_map[] entries:
+(this logic is slightly different from each kerenl version but, fundamental is same)
+    ...
+    for (i = prev + 1; i < si->max; i++) {
+            count = READ_ONCE(si->swap_map[i]);
+            if (count && swap_count(count) != SWAP_MAP_BAD)
+                    break;
+    }
+    ...
+
+However, hibernation allocations marked with SWAP_HAS_CACHE are not
+visible via this swap_map[] scanning logic, so they cannot be found
+or reclaimed in that path.
+
+As a result swapoff keeps retrying while swap_usage_in_pages(si) is
+non-zero until user signal is delivered., rather than freeing those entrie.
+
+I will also verify this behavior at runtime to be absolutely sure.
+
+For patch 3, I agree with the comment and have responded in Rafael’s
+thread.
+
+I will update the series shortly.
+
+Thanks,
+Youngjun Park
