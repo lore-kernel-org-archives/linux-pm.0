@@ -1,63 +1,63 @@
-Received: from mail-oo1-f45.google.com (mail-oo1-f45.google.com [209.85.161.45])
+Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com [209.85.160.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A94E73F1646
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 19:28:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64BD33F23A1
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 19:28:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774034891; cv=none; b=Ix1DTF9e6BCz4pLgyXTnR7MI4S63TJzw96AQJXtZsZArLRUkeStJzHd9n/KD5CRdX4TsEeXCdpN60tGG+rgLzZUrxgDfdXEK+SqwTpkT2EMSf+NQHHQcTQjtyfFYljDA96TxydTnc6L6PcouNZfQ/XSWdB9icAtfEzuTLJ97Psw=
+	t=1774034892; cv=none; b=R+3868SDesAsikvIBoWa1au0BTE81wMd2xhjxDkWx4fBorhnU6bkPnZMSSB5keTBxVbhAeIZKT9QDAtVTfdiSuAIeS5C3LHdnWviW6xAeXZSgtGLkxdWA8InQXkHj9h5GrdOQP3CZGWAvKGIIqGarv0+QoUVOGuwTnwHCLl30bs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774034891; c=relaxed/simple;
-	bh=qex24j/fvB5i2Hxp1YyD8djSdhK+3xIGWCRj2JuMS4Q=;
+	s=arc-20240116; t=1774034892; c=relaxed/simple;
+	bh=fLrqs/MUnUNB7tDySRKUurHQIx3PY5X8jg3B7iWPLHY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uGzBxzz2EqusXAo/BxMc7VPnit3bSMs8iulaz1BFYhufpeawYH1U3LW7NdSKJaHYad4MSq4Ls8aWwdObqEWvHcLWAQX8mdw3A3SlGQdd1B0uC2XWfBv2sMNvxUFOQq8R3I5Jphhb9hZCZs+7+R7CyULVCNgb4DtLq4UEX6CG7iw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SAWdKSgB; arc=none smtp.client-ip=209.85.161.45
+	 MIME-Version; b=C4wU6pC8yo9cpFzd8UmrNnqr01TTjNZqCKONyV3K7Cur6x+M+w19Dke68xyyL7ZoX6fAKbwwdwZkWSWg3uNHCD4Mb+M5lHXi/uQdKJBPisGwd9MMOrAzehFqy256HwH+sQ/27VudZLaO1aBFTW6e4VCw9kWnRsAj8bbZgm5VCkc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EhIUErbB; arc=none smtp.client-ip=209.85.160.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SAWdKSgB"
-Received: by mail-oo1-f45.google.com with SMTP id 006d021491bc7-67c22b05346so694455eaf.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 12:28:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EhIUErbB"
+Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-41c0aae84e5so853577fac.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 12:28:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1774034883; x=1774639683; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1774034887; x=1774639687; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=7LyvvsB8h9QhouSf22weZV/t1lxO86Z5/SzpfGB0vfc=;
-        b=SAWdKSgBfresKLdtiUP9d4x0zrYaY1XrzflOVmYA6mUntCJa1ml4UPiK77qcsS675B
-         FUBlDr8nFlchIQz92pUDrher1KQIkqk3MVXz0oIYrkCQvpb4zNFxuySSqGIDBQm6a8JD
-         DZhXxxlYa5wGq7e4SVNDpLNtg/ByvISIQhOh2s+DgaBVlYi5v9+HcW4rdOWEfHWP2un4
-         WuCURFTool7mpVAOzKzRFFAiUawylixxF/M6Q+Df50yilMv+I4p0z/f9+JSd3tjT+My5
-         4v94xO8vr+qAMM1J6ZdKVeJKIJGvruMK7WwolQSDGeWL1C7+EztEjrFnQFdn5cpMZYiI
-         VVeQ==
+        bh=03afpDvtGuNWbxO8rXYZMIlB93FyoeHq7W5GxGEi1h8=;
+        b=EhIUErbBg+AFHWS0U0U491e3xkKoMi21Qb45PHSr4FWG7KPKO9tlz7t+DJoF4t4eje
+         a27LfUQVkd9jIoPyhzgAXvOj9bqfiltpWO6gKax8ACMIrXKW/FYa9z5D3dokcKiE1+36
+         hr8C9u2JQeKj7WXJ4ambJsyhK+yoTcOU3HKxmRUe4tvDHqfItRNB57hg0fXwLg1aSzby
+         aWNE9JF+ra2ejV+vY4Nza6ZSRscU0Ajg9v+hKZebXzjq67MjK0FJ1k8BL2UpI3mhG6hE
+         KLb9f6UQkj4TA6zPdE2U2W/Iv33Dgc6G5rBfrXZpwJL9bdJRAAJwGJWHkTCoHLnaGt8e
+         tzkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774034883; x=1774639683;
+        d=1e100.net; s=20251104; t=1774034887; x=1774639687;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=7LyvvsB8h9QhouSf22weZV/t1lxO86Z5/SzpfGB0vfc=;
-        b=D6IR61q4l988qUrT0eOtY1MDhTxeVzF9gFK9Pjin5fzvRniKlrDkJltdDDcoTAlov3
-         rhyez88dv/JuJiwfVah6caTwcYr5JCFvLr/VY96eedQ3If4PJyGyEJbqRtkgCO1UNEha
-         M5BhSEGqz3+WXXAq2tL6ljv3l0FzgjS1XkeQZAy5C9uQ4Ewa2FfEkpZvfeUc/tQY7/7p
-         101qCiFguSwApfT+IpKH/C0LDWdZVDyIv7UiZW/5vV2r2kbvtC19pX7mMGPPrFbRY67j
-         R2QJWa10kyRVDMQeS7nAmtaOF759ogc8vwsD6owKEN8TA0E7w9Qtc5wNPwVVZcxp7KL/
-         PRYA==
-X-Forwarded-Encrypted: i=1; AJvYcCWbfZWop2Yptpgk5u6oOYN/vxMGdyWvhQO1nD2pIOF/6dIbA3wxfePt1GX5ETcn9WM/2dmVhO2Chg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwdR3pQlqCG5pySUquaV3j5jdog3myB/XvpElf8g6abQq+zlUWs
-	S9Nhn//HvWmtxgNrl6thdFo9QKg658ZMvAQK6Ho1KRNzTl+KHYLNxrW4
-X-Gm-Gg: ATEYQzyQuEY0qwmcnJ0b4PDH7yhWiQFn5DdC+nziKXtAx/t21+98K5Gd5ORyGc1tJ7z
-	1dz+N/ZthpTlXuRl8QB+Yc2xjs42Diketr8Nu0R/FhaYWhJXsLoARGD38AKCepWgzxd7+ZYn0Wn
-	pqF4IWbVR4RwNr2M1+zD7R5W0SWw3RyBiD9rJoQ1B2cSunUachh2Md9o03/wFtwRPPld1UnxpnH
-	bhqyHTTTikqO7J2HGI63ZKUOlozdrvV07Wz7AqJq5lJ+lPw1qs9UNoB8U471mqOQSQe3IIwl0T0
-	qCwXvmimlVxG5bWLlcmZkRD2QvUdOLOD/beG+o5PMd3z8bovaz/sJcft+aANDH91vK66VqOyl6x
-	I/GmL/agrM/+6BdcrSgTDSJSnPW/AuKBMhigcCKO7tfbxK9F5pPRinN0ItRC0oNAwBD6nxAiXPn
-	9edozAsjGoOIa7EAjaVSl42Tl+60S0j3xSI4c3Ga0WQz7GCg==
-X-Received: by 2002:a4a:e90b:0:b0:67b:af79:4c1c with SMTP id 006d021491bc7-67c22bbb20bmr3072207eaf.2.1774034882969;
-        Fri, 20 Mar 2026 12:28:02 -0700 (PDT)
+        bh=03afpDvtGuNWbxO8rXYZMIlB93FyoeHq7W5GxGEi1h8=;
+        b=S7Feyy8E3UUsslWdFnI8GzOns2GHG5WDs2hFvr+VK7Hmmvo0njoO46Jq3xCE6op+jT
+         JkyWnpF4rb1Ov2s1pmkLZFISIUC5SyAewl+eO8/zV3lAObSPruY02QAgUBtNNC1ITbe8
+         sr6BywMITHcwH6Z9GK28tCxVeXly4lKwJ5jyqsmGk9KR+vJ3g8P4ABLjp0EtrfgZsNrj
+         zTofJzkx8L9nYXHbIbZFO7w6lM4jEb6dgkejybreUC+0nEHhVbRGZsyUsX5uRbaz+Mu8
+         38UvFhtvJYrgv9XNlUzf5ShRz+++45OinSmPNWUB8nPH2izJU3yTKffUBd2A1T0iZKv5
+         CZHw==
+X-Forwarded-Encrypted: i=1; AJvYcCVjmzK0l2VRVCFiRUKjoehBoBjvbjDvJWH9VILTa+RPHzhQQgG8FkkZIQwXWx6nKr3HeM6gtNyDbg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy2+QZ4aDdJX4JSXS4v/Tfwyl00bW7mAI5LnV+ahX8SjdIzOOPk
+	uWWs8DUdxOrHHbs+2KjtjEoyUeZlb8Reh076YWl+WxYX5vnvXYi1lwho
+X-Gm-Gg: ATEYQzz1K7/MY5MnyIMujstwoLUZIldcWUPO5wuDfA627EDC8TYFQ1/d0mOKWxq7pFd
+	kqkj7OwZEh6q74kXMOexbWAMZB7nrzoAtc2PHez9cwF6EaiCSYYzewklYLQPHk3/yDXIs1TjyjF
+	Ou0Y6X/CxdrN8/MOwHpAaYYdODfNcWdokAtf9UY9/j92A0pjj2W3l3rnKE+Dmk2AdfO29xm9FUe
+	9Haysrt4eX5kRS4M8ThKq+TqnQQmeelSlq/2ft6zP6059ErFUbHMV4XjYAwZgrsPyR6HwSG16zN
+	BvJpMsDUJ50qKdxgfFPMH6mVBXgcVa/5de9gh+nVuXtUodcm5S9tP3weDEtBX8t9uko9xAAwJzY
+	AJweLi2FZaaH/FY7ev37AQa+7sMx5LezHCrzhzg9QsmHosMs7iuNtpoaHHbH2LXJxUrZENKcagE
+	4bJRFfxqAiUAURaHkiPFNLZ+ZtNnJiqa03OI3FdvNFUEe+WA==
+X-Received: by 2002:a05:6871:1cf:b0:409:54ac:12ae with SMTP id 586e51a60fabf-41c10f6ae20mr2677223fac.8.1774034886900;
+        Fri, 20 Mar 2026 12:28:06 -0700 (PDT)
 Received: from localhost ([2a03:2880:10ff:41::])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-67c251a58dfsm1621782eaf.0.2026.03.20.12.28.02
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-41c148a5f99sm3030503fac.2.2026.03.20.12.28.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Mar 2026 12:28:02 -0700 (PDT)
+        Fri, 20 Mar 2026 12:28:06 -0700 (PDT)
 From: Nhat Pham <nphamcs@gmail.com>
 To: kasong@tencent.com
 Cc: Liam.Howlett@oracle.com,
@@ -113,9 +113,9 @@ Cc: Liam.Howlett@oracle.com,
 	ziy@nvidia.com,
 	kernel-team@meta.com,
 	riel@surriel.com
-Subject: [PATCH v5 17/21] swapfile: remove zeromap bitmap
-Date: Fri, 20 Mar 2026 12:27:31 -0700
-Message-ID: <20260320192735.748051-18-nphamcs@gmail.com>
+Subject: [PATCH v5 20/21] swapfile: replace the swap map with bitmaps
+Date: Fri, 20 Mar 2026 12:27:34 -0700
+Message-ID: <20260320192735.748051-21-nphamcs@gmail.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260320192735.748051-1-nphamcs@gmail.com>
 References: <20260320192735.748051-1-nphamcs@gmail.com>
@@ -127,140 +127,265 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Zero swap entries are now treated as a separate, decoupled backend in
-the virtual swap layer. The zeromap bitmap of physical swapfile is no
-longer used - remove it. This does not have any behavioral change, and
-save 1 bit per swap page in terms of memory overhead.
+Now that we have moved the swap count state to virtual swap layer, each
+swap map entry only has 3 possible states: free, allocated, and bad.
+Replace the swap map with 2 bitmaps (one for allocated state and one for
+bad state), saving 6 bits per swap entry.
 
 Signed-off-by: Nhat Pham <nphamcs@gmail.com>
 ---
- include/linux/swap.h |  1 -
- mm/swapfile.c        | 30 +++++-------------------------
- 2 files changed, 5 insertions(+), 26 deletions(-)
+ include/linux/swap.h |  3 +-
+ mm/swapfile.c        | 81 +++++++++++++++++++++++---------------------
+ 2 files changed, 44 insertions(+), 40 deletions(-)
 
 diff --git a/include/linux/swap.h b/include/linux/swap.h
-index fa73696733744..cc1ca4ac2946d 100644
+index 21e528d8d3480..3c789149996c5 100644
 --- a/include/linux/swap.h
 +++ b/include/linux/swap.h
-@@ -260,7 +260,6 @@ struct swap_info_struct {
+@@ -259,7 +259,8 @@ struct swap_info_struct {
+ 	struct plist_node list;		/* entry in swap_active_head */
  	signed char	type;		/* strange name for an index */
  	unsigned int	max;		/* extent of the swap_map */
- 	unsigned char *swap_map;	/* vmalloc'ed array of usage counts */
--	unsigned long *zeromap;		/* kvmalloc'ed bitmap to track zero pages */
+-	unsigned char *swap_map;	/* vmalloc'ed array of usage counts */
++	unsigned long *swap_map;	/* bitmap for allocated state */
++	unsigned long *bad_map;		/* bitmap for bad state */
  	struct swap_cluster_info *cluster_info; /* cluster info. Only for SSD */
  	struct list_head free_clusters; /* free clusters list */
  	struct list_head full_clusters; /* full clusters list */
 diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 32aa080d96a4d..aeb3575df8a0b 100644
+index b553652125d11..3e2bfcf1aa789 100644
 --- a/mm/swapfile.c
 +++ b/mm/swapfile.c
-@@ -2320,8 +2320,7 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
- 
- static void setup_swap_info(struct swap_info_struct *si, int prio,
- 			    unsigned char *swap_map,
--			    struct swap_cluster_info *cluster_info,
--			    unsigned long *zeromap)
-+			    struct swap_cluster_info *cluster_info)
+@@ -760,25 +760,19 @@ static bool cluster_reclaim_range(struct swap_info_struct *si,
+ 				  struct swap_cluster_info *ci,
+ 				  unsigned long start, unsigned long end)
  {
- 	si->prio = prio;
- 	/*
-@@ -2332,7 +2331,6 @@ static void setup_swap_info(struct swap_info_struct *si, int prio,
- 	si->avail_list.prio = -si->prio;
- 	si->swap_map = swap_map;
- 	si->cluster_info = cluster_info;
--	si->zeromap = zeromap;
+-	unsigned char *map = si->swap_map;
+ 	unsigned long offset = start;
+ 	int nr_reclaim;
+ 
+ 	spin_unlock(&ci->lock);
+ 	do {
+-		switch (READ_ONCE(map[offset])) {
+-		case 0:
++		if (!test_bit(offset, si->swap_map)) {
+ 			offset++;
+-			break;
+-		case SWAP_MAP_ALLOCATED:
++		} else {
+ 			nr_reclaim = __try_to_reclaim_swap(si, offset, TTRS_ANYWAY);
+ 			if (nr_reclaim > 0)
+ 				offset += nr_reclaim;
+ 			else
+ 				goto out;
+-			break;
+-		default:
+-			goto out;
+ 		}
+ 	} while (offset < end);
+ out:
+@@ -787,11 +781,7 @@ static bool cluster_reclaim_range(struct swap_info_struct *si,
+ 	 * Recheck the range no matter reclaim succeeded or not, the slot
+ 	 * could have been be freed while we are not holding the lock.
+ 	 */
+-	for (offset = start; offset < end; offset++)
+-		if (READ_ONCE(map[offset]))
+-			return false;
+-
+-	return true;
++	return find_next_bit(si->swap_map, end, start) >= end;
  }
  
- static void _enable_swap_info(struct swap_info_struct *si)
-@@ -2350,12 +2348,11 @@ static void _enable_swap_info(struct swap_info_struct *si)
+ static bool cluster_scan_range(struct swap_info_struct *si,
+@@ -800,15 +790,16 @@ static bool cluster_scan_range(struct swap_info_struct *si,
+ 			       bool *need_reclaim)
+ {
+ 	unsigned long offset, end = start + nr_pages;
+-	unsigned char *map = si->swap_map;
+-	unsigned char count;
+ 
+ 	if (cluster_is_empty(ci))
+ 		return true;
+ 
+ 	for (offset = start; offset < end; offset++) {
+-		count = READ_ONCE(map[offset]);
+-		if (!count)
++		/* Bad slots cannot be used for allocation */
++		if (test_bit(offset, si->bad_map))
++			return false;
++
++		if (!test_bit(offset, si->swap_map))
+ 			continue;
+ 
+ 		if (swap_cache_only(si, offset)) {
+@@ -841,7 +832,7 @@ static bool cluster_alloc_range(struct swap_info_struct *si, struct swap_cluster
+ 	if (cluster_is_empty(ci))
+ 		ci->order = order;
+ 
+-	memset(si->swap_map + start, usage, nr_pages);
++	bitmap_set(si->swap_map, start, nr_pages);
+ 	swap_range_alloc(si, nr_pages);
+ 	ci->count += nr_pages;
+ 
+@@ -1407,7 +1398,7 @@ static struct swap_info_struct *_swap_info_get(swp_slot_t slot)
+ 	offset = swp_slot_offset(slot);
+ 	if (offset >= si->max)
+ 		goto bad_offset;
+-	if (data_race(!si->swap_map[swp_slot_offset(slot)]))
++	if (data_race(!test_bit(offset, si->swap_map)))
+ 		goto bad_free;
+ 	return si;
+ 
+@@ -1521,8 +1512,7 @@ static void swap_slots_free(struct swap_info_struct *si,
+ 			      swp_slot_t slot, unsigned int nr_pages)
+ {
+ 	unsigned long offset = swp_slot_offset(slot);
+-	unsigned char *map = si->swap_map + offset;
+-	unsigned char *map_end = map + nr_pages;
++	unsigned long end = offset + nr_pages;
+ 
+ 	/* It should never free entries across different clusters */
+ 	VM_BUG_ON(ci != __swap_offset_to_cluster(si, offset + nr_pages - 1));
+@@ -1530,10 +1520,8 @@ static void swap_slots_free(struct swap_info_struct *si,
+ 	VM_BUG_ON(ci->count < nr_pages);
+ 
+ 	ci->count -= nr_pages;
+-	do {
+-		VM_BUG_ON(!swap_is_last_ref(*map));
+-		*map = 0;
+-	} while (++map < map_end);
++	VM_BUG_ON(find_next_zero_bit(si->swap_map, end, offset) < end);
++	bitmap_clear(si->swap_map, offset, nr_pages);
+ 
+ 	swap_range_free(si, offset, nr_pages);
+ 
+@@ -1744,9 +1732,7 @@ unsigned int count_swap_pages(int type, int free)
+ static bool swap_slot_allocated(struct swap_info_struct *si,
+ 		unsigned long offset)
+ {
+-	unsigned char count = READ_ONCE(si->swap_map[offset]);
+-
+-	return count && swap_count(count) != SWAP_MAP_BAD;
++	return test_bit(offset, si->swap_map);
+ }
+ 
+ /*
+@@ -2067,7 +2053,7 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
+ }
+ 
+ static void setup_swap_info(struct swap_info_struct *si, int prio,
+-			    unsigned char *swap_map,
++			    unsigned long *swap_map,
+ 			    struct swap_cluster_info *cluster_info)
+ {
+ 	si->prio = prio;
+@@ -2095,7 +2081,7 @@ static void _enable_swap_info(struct swap_info_struct *si)
+ }
  
  static void enable_swap_info(struct swap_info_struct *si, int prio,
- 				unsigned char *swap_map,
--				struct swap_cluster_info *cluster_info,
--				unsigned long *zeromap)
-+				struct swap_cluster_info *cluster_info)
+-				unsigned char *swap_map,
++				unsigned long *swap_map,
+ 				struct swap_cluster_info *cluster_info)
  {
  	spin_lock(&swap_lock);
- 	spin_lock(&si->lock);
--	setup_swap_info(si, prio, swap_map, cluster_info, zeromap);
-+	setup_swap_info(si, prio, swap_map, cluster_info);
- 	spin_unlock(&si->lock);
- 	spin_unlock(&swap_lock);
- 	/*
-@@ -2373,7 +2370,7 @@ static void reinsert_swap_info(struct swap_info_struct *si)
- {
- 	spin_lock(&swap_lock);
- 	spin_lock(&si->lock);
--	setup_swap_info(si, si->prio, si->swap_map, si->cluster_info, si->zeromap);
-+	setup_swap_info(si, si->prio, si->swap_map, si->cluster_info);
- 	_enable_swap_info(si);
- 	spin_unlock(&si->lock);
- 	spin_unlock(&swap_lock);
-@@ -2444,7 +2441,6 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+@@ -2188,7 +2174,8 @@ static void flush_percpu_swap_cluster(struct swap_info_struct *si)
+ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
  {
  	struct swap_info_struct *p = NULL;
- 	unsigned char *swap_map;
--	unsigned long *zeromap;
+-	unsigned char *swap_map;
++	unsigned long *swap_map;
++	unsigned long *bad_map;
  	struct swap_cluster_info *cluster_info;
  	struct file *swap_file, *victim;
  	struct address_space *mapping;
-@@ -2539,8 +2535,6 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+@@ -2283,6 +2270,8 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
  	p->swap_file = NULL;
  	swap_map = p->swap_map;
  	p->swap_map = NULL;
--	zeromap = p->zeromap;
--	p->zeromap = NULL;
++	bad_map = p->bad_map;
++	p->bad_map = NULL;
  	maxpages = p->max;
  	cluster_info = p->cluster_info;
  	p->max = 0;
-@@ -2552,7 +2546,6 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+@@ -2293,7 +2282,8 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+ 	mutex_unlock(&swapon_mutex);
  	kfree(p->global_cluster);
  	p->global_cluster = NULL;
- 	vfree(swap_map);
--	kvfree(zeromap);
+-	vfree(swap_map);
++	kvfree(swap_map);
++	kvfree(bad_map);
  	free_cluster_info(cluster_info, maxpages);
  
  	inode = mapping->host;
-@@ -3016,7 +3009,6 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+@@ -2641,18 +2631,20 @@ static unsigned long read_swap_header(struct swap_info_struct *si,
+ 
+ static int setup_swap_map(struct swap_info_struct *si,
+ 			  union swap_header *swap_header,
+-			  unsigned char *swap_map,
++			  unsigned long *swap_map,
++			  unsigned long *bad_map,
+ 			  unsigned long maxpages)
+ {
+ 	unsigned long i;
+ 
+-	swap_map[0] = SWAP_MAP_BAD; /* omit header page */
++	set_bit(0, bad_map); /* omit header page */
++
+ 	for (i = 0; i < swap_header->info.nr_badpages; i++) {
+ 		unsigned int page_nr = swap_header->info.badpages[i];
+ 		if (page_nr == 0 || page_nr > swap_header->info.last_page)
+ 			return -EINVAL;
+ 		if (page_nr < maxpages) {
+-			swap_map[page_nr] = SWAP_MAP_BAD;
++			set_bit(page_nr, bad_map);
+ 			si->pages--;
+ 		}
+ 	}
+@@ -2756,7 +2748,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 	int nr_extents;
  	sector_t span;
  	unsigned long maxpages;
- 	unsigned char *swap_map = NULL;
--	unsigned long *zeromap = NULL;
+-	unsigned char *swap_map = NULL;
++	unsigned long *swap_map = NULL, *bad_map = NULL;
  	struct swap_cluster_info *cluster_info = NULL;
  	struct folio *folio = NULL;
  	struct inode *inode = NULL;
-@@ -3122,17 +3114,6 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+@@ -2852,16 +2844,24 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 	maxpages = si->max;
+ 
+ 	/* OK, set up the swap map and apply the bad block list */
+-	swap_map = vzalloc(maxpages);
++	swap_map = kvcalloc(BITS_TO_LONGS(maxpages), sizeof(long), GFP_KERNEL);
+ 	if (!swap_map) {
+ 		error = -ENOMEM;
+ 		goto bad_swap_unlock_inode;
+ 	}
+ 
+-	error = setup_swap_map(si, swap_header, swap_map, maxpages);
++	bad_map = kvcalloc(BITS_TO_LONGS(maxpages), sizeof(long), GFP_KERNEL);
++	if (!bad_map) {
++		error = -ENOMEM;
++		goto bad_swap_unlock_inode;
++	}
++
++	error = setup_swap_map(si, swap_header, swap_map, bad_map, maxpages);
  	if (error)
  		goto bad_swap_unlock_inode;
  
--	/*
--	 * Use kvmalloc_array instead of bitmap_zalloc as the allocation order might
--	 * be above MAX_PAGE_ORDER incase of a large swap file.
--	 */
--	zeromap = kvmalloc_array(BITS_TO_LONGS(maxpages), sizeof(long),
--				    GFP_KERNEL | __GFP_ZERO);
--	if (!zeromap) {
--		error = -ENOMEM;
--		goto bad_swap_unlock_inode;
--	}
--
++	si->bad_map = bad_map;
++
  	if (si->bdev && bdev_stable_writes(si->bdev))
  		si->flags |= SWP_STABLE_WRITES;
  
-@@ -3199,7 +3180,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
- 	prio = DEF_SWAP_PRIO;
- 	if (swap_flags & SWAP_FLAG_PREFER)
- 		prio = swap_flags & SWAP_FLAG_PRIO_MASK;
--	enable_swap_info(si, prio, swap_map, cluster_info, zeromap);
-+	enable_swap_info(si, prio, swap_map, cluster_info);
- 
- 	pr_info("Adding %uk swap on %s.  Priority:%d extents:%d across:%lluk %s%s%s%s\n",
- 		K(si->pages), name->name, si->prio, nr_extents,
-@@ -3227,7 +3208,6 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+@@ -2955,7 +2955,10 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 	si->swap_file = NULL;
  	si->flags = 0;
  	spin_unlock(&swap_lock);
- 	vfree(swap_map);
--	kvfree(zeromap);
+-	vfree(swap_map);
++	if (swap_map)
++		kvfree(swap_map);
++	if (bad_map)
++		kvfree(bad_map);
  	if (cluster_info)
  		free_cluster_info(cluster_info, maxpages);
  	if (inced_nr_rotate_swap)
