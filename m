@@ -1,110 +1,129 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+Received: from mail-yx1-f41.google.com (mail-yx1-f41.google.com [74.125.224.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DECC4351C3F
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:14:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774001657; cv=none; b=Vjh7ezPAt/dtnrwD5cwrQVl6A6p29sTmlkF45/yWn2ZyZXUHdqwZtBH/RQF0fFoM+WhQJFGSJkIr4qk8ToeML3fnC2QVgC0RvMI/zfZNQDFYHoNMvxubx/D++L1NKp0VhTs7oL9pXPkKtjMoaUltSZQ9iI8XzUbDL3b55KGI0Do=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774001657; c=relaxed/simple;
-	bh=yjYOfP7p2WuxssES6jNsAF/UvHGs6akrwHquMviTrEA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EaZlpm4zhsdl2NZwsj2lQh72oPW4/hvzzrXtnJg9tsod6XJxEqPywS0RhGMHoLdaLLXFuODtLZEmwX6uL4oEsmml4u8tY+heyjpbKLT1BxoImPnO6fdPbo5eB068mPAzZYUgTbVnbP9Fu3ffkTUwyrXvZVb2qtlmX3L1TsmU9QQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=sqgvTqfm; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8C06301474
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:14:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.41
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774001672; cv=pass; b=kcYweo3wJ3zIYJsH1Cuc/Bmji1aOrXlqNnRl9rwpwSstAgo0bm85nmn+23ZRHhL1pTP3QLw5rzoS1Ac9FX6TBKd0zdofI6XZRPknrgInyYhxqXht+ibWM4LeuO6U595Ox77OMMk8koOoO4xpIlQ9Db9xbGIPu5o9pHpZ7zsoWBA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774001672; c=relaxed/simple;
+	bh=uWUs24f4YfJBpA8kqLFbnD7g02+y5LbUXPOXVNIvPYM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DmYTCA2KG2xf6v8/+AX+zs57wb6n87EsxibDXwWW2kSAHPtx0JUBQZGTlYkOGQIAAvxtvpxGlKmVMerJE0d8nfNVECAuMObaH2XyoaUYwh4fuarxbmfYhUejaqBQt5hIRkksD16m4Cvm6y03VyTLWfiLxT5nBgcJk+0vLrvl654=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=CHrxU8ua; arc=pass smtp.client-ip=74.125.224.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sqgvTqfm"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2ab077e3f32so2004355ad.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 03:14:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CHrxU8ua"
+Received: by mail-yx1-f41.google.com with SMTP id 956f58d0204a3-64ea73e7b60so1210945d50.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 03:14:31 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774001671; cv=none;
+        d=google.com; s=arc-20240605;
+        b=TrKzTSuee6c6c9ZbE8ts1xSQVvumkKELHghVVl4006S+ZwwaklfYulnury5K94Y3/S
+         APvRILQub7jAyn5VIwbfAatXTC+1VElNbimOfV3HR/7QQkJn+fqcLAfeCmSLbWLW/xmc
+         CKfE6zWsMbia65pS2CGml0HUuL3DNPGjCpKlXxe16IxDVL8gzuN9gj2rdRgz61G1Oj/x
+         OLOmSN9Nw673jSqHGij9x2k0k+mbyYfx/u4em+CDigei/YXsuNQ8W+3ufjry+Um/Xy1z
+         OrTlr9xhxnnyHS0OWes9XrOLj1Kn9IuB1eJ9EuODCH4NsEv130ETr1YBMYw1sM35yQ9L
+         9jzQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=uWUs24f4YfJBpA8kqLFbnD7g02+y5LbUXPOXVNIvPYM=;
+        fh=bCuccjEq//Z/WSrXjEzhmu4TCrOHz0fB3TSn9VRr2Kg=;
+        b=eUIdeIxnOl9jTKimoWmtzNOzg17LeqD3rxnSFBw+CVnw6UVFzhaKfUQy8wd+CJzflN
+         9ttALz0Hnt1M3AbreawzKO3lfvMqZ0lCVY93OTrrMdpOstXPv4eHSzbY0vsjlQFjYyws
+         nuFJiRg/xwka+gTG2aOQ6upce9gmoE+RG3/lbQcdurXgYJ24k9oRWWfDihFaNZYV4DKx
+         9I/sgQkmEF9a6zEoaUBoLWSvy8CYwILKu7Pdbd1jO9tGiF9VX2MoxksCtgtO9XX6kRQN
+         EjsHM9Xs9TPMoHeyIFFAJbZfAF0CVmp2LWX3yrDQAQVQqpU5wDN3mXPw3AWZo6EdLjHd
+         m8qw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774001656; x=1774606456; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ASEQJGPtDHdOzCAQPV2zVlYlrOF+IFJ01C7xNdXm2i4=;
-        b=sqgvTqfmv/SNi0G45Gme8dAbLQfgskMETF9zGY3re0vJb7B9qFe5R3dOiHaXdUoNCG
-         kZIR+zCOo+Xu1gOyjYYjfGE6rypqy/w0GT72MI8Fb9Mx4c15h8QhdJNvulLx275cXvZf
-         jAj2EbVZOxdti6zY+e0WgjpKnkTkFUYLBJJxjBbuDLXX5HiBzjYjNWOgzSbUiO3/1oZ3
-         LfBZe+PJcX5vR8sg9yjm8e6xun21mUnUTvnkVUhVBoVvulTY3vGfngvK8JzioDqThei9
-         wCQa5ZHTSckIwweHgpYkrqZWTCONfoI41cKXeLQH3IAd7HyDr35+Zp3TV7JvtfSpdOce
-         T2NQ==
+        d=linaro.org; s=google; t=1774001671; x=1774606471; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=uWUs24f4YfJBpA8kqLFbnD7g02+y5LbUXPOXVNIvPYM=;
+        b=CHrxU8uaNEs5Qyna0cjlgg9MbG/veJWg/QXB4EiJzAIOQ9902bWbGBGXzmUNfEub9/
+         1RMk8I9aqbhjPJuBuQyVkXhRWulx4Hc12cFm+3YryYYsVe9i71K5L7oNmw6ZiBlMe36J
+         x6ecrao7gjl1/HGKm9PoclBq03kp0tX54xlALKJr+wSYx7l73TjpC10mJwM1NmVPzsRu
+         qXR5n22fTkCgPVwt1VAuj9/nV8Gj38llbLSXlIeA7wz5h8y0oM38YGwVttn6s7m5yTaA
+         wwmcZ51z7bY+CEYACaw04CwwFMxDRYB9j7vNcD/oGE986g+LNB2xBWFsOl89lVb/FAGT
+         uzFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774001656; x=1774606456;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ASEQJGPtDHdOzCAQPV2zVlYlrOF+IFJ01C7xNdXm2i4=;
-        b=N4C/eLR7etJXoiSyd258ZY1DZo0CvnTHXWRB22YTqmI7skYB2irHuJ6d0jNi0gNutR
-         mnUVWeEwm6hMne5uL5ZHSiY8vkQyEUcRDaVz+VKJncfOpBYt01iRh8WH7Dk9vs1nQ6XS
-         wX8Bge8Rhw7ThXeR/hUU47Mhw0hmHigZ0CQcXpM8Hh7qE2EmBECLvW4Dyxtl82A0u4AN
-         G9S3BKePXqGHmF2kXSLrlXuEPx6Necn1nn+MU/zdENgmKCVpI2ILpIHQhs9IELVi5yyJ
-         OqQPHnDj0kdrUmeVzsd9UmR3JI6R5dcoRRz/CuKF7YfcpcFdvE/Pb+CKezZmL3sQNGLH
-         czsQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWAf3NntUSZJtHe2dhUIry81friuzVXkFyvk4c8i/cbzp3cTmlZ0RNcGcZuAkLzxTPZ9A4tdgPIIA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YygTAXFe28qMCN7E29j7iJZG4i1PsdfWOMmu7KSHlTCqX22aWEw
-	zm7TUGNa/OFKMW+XkecC3ZUFJW9fqPM/2uqefKkdw++tRKUPTjo7R7pE70GgX+QdCGI=
-X-Gm-Gg: ATEYQzxvMoXAfv2ospHKKfclttcP9PSLTVjdPUnCNSbjPUR7xdj2c3JbRYQ/aUugP0g
-	ueqBGILpW70FzRWGju7tlrXcvq8jpoVjaWM002R8hC61eqaGPR/3cBX/WwBzgLmzbgcrs55tS0U
-	K+8tP0XQMAj4M/WB7iWryX4LkGKMSoyeSAGeYMK1WR5cYxKOcFo3gSzzqqbUCvlQoiTvRRFaFLf
-	ckPkQjvZTonv3+vwCOTJxq5OuavKSr8Exxi0caz0gHje9AkNeEDCHRbNBPAp2W4mfO4bG+/S6w+
-	swM7L5EPInU5bf1FX+HrbYso3LjRm6NGla6MIimKWAAK0FHL/CTaQXl9IrnissXRq8ymhnJbTml
-	ZBWDOdzeRcp3yN/AJByuPPfmNoHQFLCG2XcxATSlOk+BJIiBd6Fy/6aEnLpIY5FlMdxARZ86LkG
-	Hdk0xzNcigmPIa8qWTGH1S4xog
-X-Received: by 2002:a17:903:2903:b0:2b0:62dd:3a87 with SMTP id d9443c01a7336-2b0826ffc2fmr15026045ad.10.1774001655983;
-        Fri, 20 Mar 2026 03:14:15 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b08366c3f7sm23397215ad.60.2026.03.20.03.14.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Mar 2026 03:14:15 -0700 (PDT)
-Date: Fri, 20 Mar 2026 15:44:12 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, Ionela Voinescu <ionela.voinescu@arm.com>, 
-	Sumit Gupta <sumitg@nvidia.com>, Huang Rui <ray.huang@amd.com>, 
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v6 3/4] cpufreq: Set policy->min and max as real QoS
- constraints
-Message-ID: <ukxdxr3xv7x6pqnwwafxgvhvfh5n7w67y3zwunhnk7b45tz3t6@d6ehl4vqac6t>
-References: <20260317101753.2284763-1-pierre.gondois@arm.com>
- <20260317101753.2284763-4-pierre.gondois@arm.com>
+        d=1e100.net; s=20251104; t=1774001671; x=1774606471;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uWUs24f4YfJBpA8kqLFbnD7g02+y5LbUXPOXVNIvPYM=;
+        b=sFWzGjazoYR5u6MZeW6B1j2GFrD0OjV+HFukYHTUMLAL0X6ynqXeSsAd4FBser20Z7
+         H75RTaELK9AVQWKesLT3VHImq+R6c3fXBRxShV5/T0nBFzSqFxTaHfPqB63Okq0VDa2G
+         r63mKQQxZ+ul7ZqzVoMj9eFwmStCKFHBmiNnyAVxukQw768H2B6bXq/rsSets0r/plML
+         1V26Wrn1+jrCtC87zOUIt9/wfK7p35zEJ3s7c1twDCpVNbFw7OZ2nNJtGKvDBOxou39W
+         7yQXcAWhu0nu1ZIGgAvoHvQZtrSLdlLrF4KpflvW1wtuqWKtM9svfDXKlq+BE1yX33OS
+         mkhg==
+X-Forwarded-Encrypted: i=1; AJvYcCVftENXH6Pjgr/SoyhSP8ZSyuG4dzA5S7e+lZ0Smf3u/x1nF7QgV+G0ZXraw1cJArYt8MuqSPPhdg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywk7MStMGltEFKUxYzXql3YGZ1gL4BcEtwXxRf7KQY1AVmDpZue
+	q9xyNTx6FiffENqWhGX3JgEQwtnZiEQacexhPsqREmZQFT+Q8vguQr2OUm9+uitpBSGvv0kAhg6
+	/J3N5gIY2TpbuRubq2mf+KH9zKb5AtXOg2f3Qj7IJiQ==
+X-Gm-Gg: ATEYQzywNudq0Taqq0OSOblZ8WX/tkpZUT4xxxZPzNZiWjgnDDs6xkEw9xl2CfrAYlT
+	qb1hVtfyoLOambPJg6K/eGuh2TaQHLUkevX9EPDn2J8dF34JxqBmyFQilUWLIkYiRDrgqPZ/9Ux
+	PwlZg282kN9h2RiMZadw86lSThzn4LnlU0XFPpfz5eBqb7wAzqGjH5YarLj1VtxoetUL5i9aKqL
+	ZC/gJ9LlPA4oJo+aaWWAm6S1QS/YhnIW9VmCW5eB2BuQAX3FCEcFpby7aYzmSdsrxxx+5GpgBSW
+	JVN8aACT
+X-Received: by 2002:a53:e194:0:b0:64e:a737:e1a5 with SMTP id
+ 956f58d0204a3-64eaa797212mr1811888d50.42.1774001670649; Fri, 20 Mar 2026
+ 03:14:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260317101753.2284763-4-pierre.gondois@arm.com>
+References: <20260303132305.438657-1-ulf.hansson@linaro.org>
+ <20260303132305.438657-10-ulf.hansson@linaro.org> <CAMuHMdUK+xePxZc-OXRfDmvQ1v4q5d=HQ9c9aNqUg7gPAMxUAA@mail.gmail.com>
+In-Reply-To: <CAMuHMdUK+xePxZc-OXRfDmvQ1v4q5d=HQ9c9aNqUg7gPAMxUAA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Fri, 20 Mar 2026 11:13:52 +0100
+X-Gm-Features: AQROBzDEPtBNxBgLrC26LFH5ugvz8cl4PrBkxdBc0GOrtjibvOSI_WOUepnh6GQ
+Message-ID: <CAPDyKFoYhvTrSXZqrcsbgNTAMZsnwy8WHr=5=n58fNLrEUxdfQ@mail.gmail.com>
+Subject: Re: [PATCH 9/9] pmdomain: renesas: rmobile-sysc: Drop GENPD_FLAG_NO_STAY_ON
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Saravana Kannan <saravanak@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, 
+	Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 17-03-26, 11:17, Pierre Gondois wrote:
-> cpufreq_set_policy() will ultimately override the policy min/max
-> values written in the .init() callback through:
-> cpufreq_policy_online()
-> \-cpufreq_init_policy()
->   \-cpufreq_set_policy()
->     \-/* Set policy->min/max */
-> Thus the policy min/max values provided are only temporary.
+On Fri, 20 Mar 2026 at 10:37, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Hi Ulf,
+>
+> Thanks for your patch!
+>
+> On Tue, 3 Mar 2026 at 14:23, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > Due to the new fine grained sync_state support for onecell genpd provider
+> > drivers, we should no longer need use the legacy behaviour. Therefore,
+> > let's drop GENPD_FLAG_NO_STAY_ON.
+> >
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Rmobile-sysc is not a onecell provider, and thus never needed this flag.
 
-I am not comfortable with this patch to be honest. policy->min/max are used at
-so many places that it is really difficult to make sure if this patch will break
-something or not.
+I see, thanks for clarifying. I will update the commit message to
+reflect this properly.
 
-For example:
+> Regardless:
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
 
-cpufreq_set_policy()
- cpufreq_driver->verify()
-  cpufreq_frequency_table_verify()
+Thanks!
 
-This uses min/max before it is set by the path you mentioned.
-
-I would suggest dropping this change, or most of it and doing only what is
-really required for this series.
-
--- 
-viresh
+Kind regards
+Uffe
