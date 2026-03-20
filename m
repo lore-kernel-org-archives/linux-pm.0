@@ -1,211 +1,301 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C41AF35F19C;
-	Fri, 20 Mar 2026 10:27:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D323C383C7A;
+	Fri, 20 Mar 2026 10:45:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774002477; cv=none; b=Gk1HXUm+j0tL1nTW55Xv5BwonSzOEqkvJijr+L4Va8VU8Ce673jTYBpbg2RK0pSRA+T0PTpR1JOsMpgHMbqMFNoSJb7h+7IbyAgQwpfOa6mLRaRhyJR3FBP1V+6/UUPD/mJ97KewyosMCh8XEnb+hdZt1IKv7TgYs6F24Eh2uo4=
+	t=1774003522; cv=none; b=QU6nARoahzg/7GTfZU7XSXg2rlxCXOyoJRWK0SWQQ9YvRuoTr3CrmAnIB7Ox4j2xMGGWcFJmrlb6kFSHx/nc9pQwrcEONMlWKruhrchNALnUeZ+31CwT+xuJYtQEf6Muy46lb85PNjJuxK41vr0q8Y6zPxImNgsgYRSD+O75qfE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774002477; c=relaxed/simple;
-	bh=BsOsBC9LFbofD/uU10JIdQ8i22sp99i9Uymom+J1/IM=;
+	s=arc-20240116; t=1774003522; c=relaxed/simple;
+	bh=b4kteH6JleoBB+GZP+0bFFO00PrJc3c+We0TgkJr1Yg=;
 	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=AH2GnRRAFJJp4lLYfM09D1cMNiziOASE6qA9XU2oPVlBnWi0w9ANHIuQoyYbJBxPeuijliEaA5n+nSnJCt3Z6IFMKAEwEqdGzKsAwL1VQccw9rZNlr42xkIuUSSN8XYBs94IegA0scpPpQP+lqW8JHEO9XCuOxLfKTExJBjLvbI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=drMt1vmv; arc=none smtp.client-ip=192.198.163.12
+	 MIME-Version:Content-Type; b=GxqvbH+S2w5h+fQUpTT9WOK/VOU4keM6YdNG4DoKvgKLn2Y4PkRF2XvL2YiMjDEXHNbNakPzD3szluZrm5dHlp4EzApKytHh9lC5KZrZVkoO/5N6X4XKZFv6XJaR1RcGY+ZFehcUFiJXV1iQ/1IFHev+ZbKL1crJYN/yyrdHkQM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=AG+qPg4z; arc=none smtp.client-ip=198.175.65.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="drMt1vmv"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="AG+qPg4z"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774002476; x=1805538476;
+  t=1774003520; x=1805539520;
   h=from:date:to:cc:subject:in-reply-to:message-id:
    references:mime-version;
-  bh=BsOsBC9LFbofD/uU10JIdQ8i22sp99i9Uymom+J1/IM=;
-  b=drMt1vmv4OV3LVQ8al70HMOgatvSBD9OCLfMR37J/jN7EhvP/gXocGVP
-   RgDNh3LEvvAZZPFVF2UnPPiDzQGr2RdCfvrZ3ofom9vTV3m8CFSIcTz6s
-   /JPcFgA+hBJvJbAAeYZZhMBdrpF+/bMF0ZTVQLbcq6GBxc88u8fdowrJI
-   3p7VL459umawOOi0eq4UQSnRCogqhoqLAjgzGl3IImcZQdiScoKMkQ52O
-   rqjhiVtWKGVAxArFniJJkc4nLSYmj/Mw3FEkWPOjEQkfvgKsoyWC+kJLm
-   g/4GSuY3OY+PICchfnzJpp+6RzulvOTA21GVeukF9GMGHz3L+6Q7N7veM
-   Q==;
-X-CSE-ConnectionGUID: 66lYHC9oRPWjSFsZVh6GYw==
-X-CSE-MsgGUID: 0LqufFcFQKOTlX5g/sUiSQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="78989234"
+  bh=b4kteH6JleoBB+GZP+0bFFO00PrJc3c+We0TgkJr1Yg=;
+  b=AG+qPg4z+3EDkBlgVnQEteBP0YIJ6ULQ6j6MhffJbZm3cLrW+BbQ+/lw
+   gAKivuZ9uj41MlUr4babTfvntV0cs9iUzmUhFiPpjqfNSJmWgR/BTRblJ
+   7FgS/ok9VQFXk+ndny730ExJna32b/vXZAW/0Zko9HYYo4PnhiUohTkRU
+   jxiy0bBGP5n94aP5XUpPieqcp97gjqjez4KtbfTzVX/NVo0hsl8vM/a+7
+   yndg0Ts9Z58uLxaueMu2dwGm9NwnKsOUz3a19mM5WG2IDkpSB5Gsd8t8h
+   Oc39F/qFBeu1K2qZtyIHiEtMd54hiqujRaHbFBN/VJQrfbVlUr3E/42v4
+   w==;
+X-CSE-ConnectionGUID: 0/HN/0JbTLS27Q56bbxQrw==
+X-CSE-MsgGUID: Ol6Q5m+qSZKXK8vEKb/WXQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="74968206"
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="78989234"
+   d="scan'208";a="74968206"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:27:55 -0700
-X-CSE-ConnectionGUID: 71itVEgYRda5TFtgc/0Jhg==
-X-CSE-MsgGUID: +nfUFAiXTuKeeiFW2GS2kg==
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:45:20 -0700
+X-CSE-ConnectionGUID: i+djw374Qd6sBarXsr+ocA==
+X-CSE-MsgGUID: jENlCGe2SOOOKXUrRURJPg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="222339260"
+   d="scan'208";a="222343705"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.111])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:27:52 -0700
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:45:18 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 20 Mar 2026 12:27:49 +0200 (EET)
+Date: Fri, 20 Mar 2026 12:45:15 +0200 (EET)
 To: Xi Pardee <xi.pardee@linux.intel.com>
 cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
     platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
     linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/6] platform/x86/intel/pmc: Enable Pkgc blocking residency
- counter
-In-Reply-To: <20260302223214.484585-3-xi.pardee@linux.intel.com>
-Message-ID: <c78bc413-d946-9a2e-ec90-670320e3a8a0@linux.intel.com>
-References: <20260302223214.484585-1-xi.pardee@linux.intel.com> <20260302223214.484585-3-xi.pardee@linux.intel.com>
+Subject: Re: [PATCH 3/6] platform/x86/intel/pmc: Use PCI DID for PMC SSRAM
+ device discovery
+In-Reply-To: <20260302223214.484585-4-xi.pardee@linux.intel.com>
+Message-ID: <60626f08-0214-6748-5a64-31d88d545fc4@linux.intel.com>
+References: <20260302223214.484585-1-xi.pardee@linux.intel.com> <20260302223214.484585-4-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-888350789-1774002469=:1024"
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-888350789-1774002469=:1024
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
 
 On Mon, 2 Mar 2026, Xi Pardee wrote:
 
-> Enable the Package C-state blocking counter in the PMT telemetry
-> region. This counter reports the number of 10=E2=80=AF=C2=B5s intervals d=
-uring
-> which a Package C-state 10.2/3 entry was blocked for the specified
-> reasons.
->=20
+> Update the PMC SSRAM discovery process to identify the device using its
+> PCI Device ID rather than relying on a fixed PCI bus location. The
+> enumeration of integrated devices on the PCI bus is no longer guaranteed
+> to be consistent across CPUs.
+> 
+> On earlier platforms, the IOE and PCH SSRAM devices were hidden from the
+> BIOS, and the SOC SSRAM device is associated to telemetry regions from all
+> available SSRAM devices. Starting with Nova Lake, the IOE and PCH SSRAM
+> devices register their telemetry regions independently, meaning each
+> telemetry region is now linked to its corresponding SSRAM device. A new
+> ssram_hidden attribute has been added to the pmc_dev_info structure to
+> reflect this distinction.
+>
+> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
 > Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 > ---
->  drivers/platform/x86/intel/pmc/core.c | 27 +++++++++++++++++++++++++++
->  drivers/platform/x86/intel/pmc/core.h |  8 ++++++++
->  2 files changed, 35 insertions(+)
->=20
-> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86=
-/intel/pmc/core.c
-> index bf95a1f2ba428..e5b48a68cf495 100644
+>  drivers/platform/x86/intel/pmc/arl.c  |  4 ++--
+>  drivers/platform/x86/intel/pmc/core.c | 16 ++++++++++++----
+>  drivers/platform/x86/intel/pmc/core.h |  6 ++++--
+>  drivers/platform/x86/intel/pmc/lnl.c  |  2 +-
+>  drivers/platform/x86/intel/pmc/mtl.c  |  2 +-
+>  drivers/platform/x86/intel/pmc/ptl.c  |  2 +-
+>  drivers/platform/x86/intel/pmc/wcl.c  |  2 +-
+>  7 files changed, 22 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/platform/x86/intel/pmc/arl.c b/drivers/platform/x86/intel/pmc/arl.c
+> index eb23bc68340ab..95372a0807acf 100644
+> --- a/drivers/platform/x86/intel/pmc/arl.c
+> +++ b/drivers/platform/x86/intel/pmc/arl.c
+> @@ -720,7 +720,6 @@ static int arl_h_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_
+>  
+>  static u32 ARL_PMT_DMU_GUIDS[] = {ARL_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info arl_pmc_dev = {
+> -	.pci_func = 0,
+>  	.dmu_guids = ARL_PMT_DMU_GUIDS,
+>  	.regmap_list = arl_pmc_info_list,
+>  	.map = &arl_socs_reg_map,
+> @@ -729,11 +728,11 @@ struct pmc_dev_info arl_pmc_dev = {
+>  	.resume = arl_resume,
+>  	.init = arl_core_init,
+>  	.sub_req = pmc_core_pmt_get_lpm_req,
+> +	.ssram_hidden = true,
+>  };
+>  
+>  static u32 ARL_H_PMT_DMU_GUIDS[] = {ARL_PMT_DMU_GUID, ARL_H_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info arl_h_pmc_dev = {
+> -	.pci_func = 2,
+>  	.dmu_guids = ARL_H_PMT_DMU_GUIDS,
+>  	.regmap_list = arl_pmc_info_list,
+>  	.map = &mtl_socm_reg_map,
+> @@ -742,4 +741,5 @@ struct pmc_dev_info arl_h_pmc_dev = {
+>  	.resume = arl_h_resume,
+>  	.init = arl_h_core_init,
+>  	.sub_req = pmc_core_pmt_get_lpm_req,
+> +	.ssram_hidden = true,
+>  };
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+> index e5b48a68cf495..7670970c995b9 100644
 > --- a/drivers/platform/x86/intel/pmc/core.c
 > +++ b/drivers/platform/x86/intel/pmc/core.c
-> @@ -1093,6 +1093,28 @@ static int pmc_core_pkgc_ltr_blocker_show(struct s=
-eq_file *s, void *unused)
->  }
->  DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_ltr_blocker);
-> =20
-> +static int pmc_core_pkgc_blocker_residency_show(struct seq_file *s, void=
- *unused)
-> +{
-> +=09struct pmc_dev *pmcdev =3D s->private;
-> +=09const char **pkgc_blocker_counters;
-> +=09u32 counter, offset;
-> +=09unsigned int i;
-> +=09int ret;
-> +
-> +=09offset =3D pmcdev->pkgc_blocker_offset;
-> +=09pkgc_blocker_counters =3D pmcdev->pkgc_blocker_counters;
-> +=09for (i =3D 0; pkgc_blocker_counters[i]; i++, offset++) {
-> +=09=09ret =3D pmt_telem_read32(pmcdev->pc_ep, offset,
-> +=09=09=09=09       &counter, 1);
-> +=09=09if (ret)
-> +=09=09=09return ret;
-> +=09=09seq_printf(s, "%-30s %-30u\n", pkgc_blocker_counters[i], counter);
-> +=09}
-> +
-> +=09return 0;
+> @@ -1660,12 +1660,10 @@ static int pmc_core_get_telem_info(struct pmc_dev *pmcdev, struct pmc_dev_info *
+>  	unsigned int pmc_idx;
+>  	int ret;
+>  
+> -	pcidev = pci_get_domain_bus_and_slot(0, 0, PCI_DEVFN(20, pmc_dev_info->pci_func));
+> -	if (!pcidev)
+> -		return -ENODEV;
+> -
+>  	for (pmc_idx = 0; pmc_idx < ARRAY_SIZE(pmcdev->pmcs); ++pmc_idx) {
+> +		struct pci_dev *pcidev __free(pci_dev_put) = NULL;
 
-I wonder if it would be create a common helper as this looks practically=20
-the same as pmc_core_pkgc_ltr_blocker_show() added in the previous patch?
+Please don't use = NULL; pattern with __free() because it's dangerous in 
+some cases, please see the long comment in cleanup.h for details why.
 
-> +}
-> +DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_blocker_residency);
+Place the declaration where you do the assignment.
+
+>  		struct pmc *pmc;
+> +		u16 devid;
+>  
+>  		pmc = pmcdev->pmcs[pmc_idx];
+>  		if (!pmc)
+> @@ -1674,6 +1672,15 @@ static int pmc_core_get_telem_info(struct pmc_dev *pmcdev, struct pmc_dev_info *
+>  		if (!pmc->map->lpm_req_guid)
+>  			return -ENXIO;
+>  
+> +		if (pmc_dev_info->ssram_hidden)
+> +			devid = pmcdev->pmcs[PMC_IDX_MAIN]->devid;
+> +		else
+> +			devid = pmc->devid;
 > +
->  static int pmc_core_lpm_latch_mode_show(struct seq_file *s, void *unused=
-)
->  {
->  =09struct pmc_dev *pmcdev =3D s->private;
-> @@ -1380,6 +1402,8 @@ void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev=
-, struct pmc_dev_info *pmc_de
->  =09=09pmcdev->pc_ep =3D ep;
->  =09=09pmcdev->pkgc_ltr_blocker_counters =3D pmc_dev_info->pkgc_ltr_block=
-er_counters;
->  =09=09pmcdev->pkgc_ltr_blocker_offset =3D pmc_dev_info->pkgc_ltr_blocker=
-_offset;
-> +=09=09pmcdev->pkgc_blocker_counters =3D pmc_dev_info->pkgc_blocker_count=
-ers;
-> +=09=09pmcdev->pkgc_blocker_offset =3D pmc_dev_info->pkgc_blocker_offset;
->  =09}
-> =20
->  release_dev:
-> @@ -1512,6 +1536,9 @@ static void pmc_core_dbgfs_register(struct pmc_dev =
-*pmcdev, struct pmc_dev_info
->  =09=09debugfs_create_file("pkgc_ltr_blocker_show", 0444,
->  =09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
->  =09=09=09=09    &pmc_core_pkgc_ltr_blocker_fops);
-> +=09=09debugfs_create_file("pkgc_blocker_residency_show", 0444,
-> +=09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
-> +=09=09=09=09    &pmc_core_pkgc_blocker_residency_fops);
->  =09}
-> =20
->  }
-> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86=
-/intel/pmc/core.h
-> index a20aab73c1409..829b1dee3f636 100644
+> +		pcidev = pci_get_device(PCI_VENDOR_ID_INTEL, devid, NULL);
+> +		if (!pcidev)
+> +			return -ENODEV;
+> +
+>  		ep = pmt_telem_find_and_register_endpoint(pcidev, pmc->map->lpm_req_guid, 0);
+>  		if (IS_ERR(ep)) {
+>  			dev_dbg(&pmcdev->pdev->dev, "couldn't get telem endpoint %pe", ep);
+> @@ -1724,6 +1731,7 @@ static int pmc_core_pmc_add(struct pmc_dev *pmcdev, unsigned int pmc_idx)
+>  
+>  	pmc->map = map;
+>  	pmc->base_addr = pmc_ssram_telemetry.base_addr;
+> +	pmc->devid = pmc_ssram_telemetry.devid;
+>  	pmc->regbase = ioremap(pmc->base_addr, pmc->map->regmap_length);
+>  
+>  	if (!pmc->regbase) {
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
+> index 829b1dee3f636..31fe71b01120b 100644
 > --- a/drivers/platform/x86/intel/pmc/core.h
 > +++ b/drivers/platform/x86/intel/pmc/core.h
-> @@ -455,6 +455,8 @@ struct pmc {
+> @@ -425,6 +425,7 @@ struct pmc_info {
+>   * @ltr_ign:		Holds LTR ignore data while suspended
+>   * @num_lpm_modes:	Count of enabled modes
+>   * @lpm_en_modes:	Array of enabled modes from lowest to highest priority
+> + * @devid:		Device ID of the SSRAM device
 >   *
->   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
->   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
-gion
-> + * @pkgc_blocker_counters: Array of PKGC blocker counters
-> + * @pkgc_blocker_offset: Offset to PKGC blocker in telemetry region
->   *
->   * pmc_dev contains info about power management controller device.
+>   * pmc contains info about one power management controller device.
 >   */
-> @@ -480,6 +482,8 @@ struct pmc_dev {
-> =20
->  =09const char **pkgc_ltr_blocker_counters;
->  =09u32 pkgc_ltr_blocker_offset;
-> +=09const char **pkgc_blocker_counters;
-> +=09u32 pkgc_blocker_offset;
+> @@ -436,6 +437,7 @@ struct pmc {
+>  	u32 ltr_ign;
+>  	u8 num_lpm_modes;
+>  	u8 lpm_en_modes[LPM_MAX_NUM_MODES];
+> +	u16 devid;
 >  };
-> =20
->  enum pmc_index {
-> @@ -495,6 +499,7 @@ enum pmc_index {
->   * @dmu_guids:=09=09List of Die Management Unit GUID
->   * @pc_guid:=09=09GUID for telemetry region to read PKGC blocker info
->   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
-gion
-> + * @pkgc_blocker_offset:Offset to PKGC blocker in telemetry region
->   * @regmap_list:=09Pointer to a list of pmc_info structure that could be
->   *=09=09=09available for the platform. When set, this field implies
->   *=09=09=09SSRAM support.
-> @@ -502,6 +507,7 @@ enum pmc_index {
->   *=09=09=09specific attributes of the primary PMC
->   * @sub_req_show:=09File operations to show substate requirements
->   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
-> + * @pkgc_blocker_counters: Array of PKGC blocker counters
->   * @suspend:=09=09Function to perform platform specific suspend
->   * @resume:=09=09Function to perform platform specific resume
->   * @init:=09=09Function to perform platform specific init action
-> @@ -512,10 +518,12 @@ struct pmc_dev_info {
->  =09u32 *dmu_guids;
->  =09u32 pc_guid;
->  =09u32 pkgc_ltr_blocker_offset;
-> +=09u32 pkgc_blocker_offset;
->  =09struct pmc_info *regmap_list;
->  =09const struct pmc_reg_map *map;
->  =09const struct file_operations *sub_req_show;
->  =09const char **pkgc_ltr_blocker_counters;
-> +=09const char **pkgc_blocker_counters;
->  =09void (*suspend)(struct pmc_dev *pmcdev);
->  =09int (*resume)(struct pmc_dev *pmcdev);
->  =09int (*init)(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info=
-);
->=20
+>  
+>  /**
+> @@ -495,7 +497,6 @@ enum pmc_index {
+>  
+>  /**
+>   * struct pmc_dev_info - Structure to keep PMC device info
+> - * @pci_func:		Function number of the primary PMC
+>   * @dmu_guids:		List of Die Management Unit GUID
+>   * @pc_guid:		GUID for telemetry region to read PKGC blocker info
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry region
+> @@ -512,9 +513,9 @@ enum pmc_index {
+>   * @resume:		Function to perform platform specific resume
+>   * @init:		Function to perform platform specific init action
+>   * @sub_req:		Function to achieve low power mode substate requirements
+> + * @ssram_hidden:	Flag to indicate whether SSRAM is hidden
 
---=20
+I'd elaborate this as some of the SSRAM devices are hidden in this case.
+
+IMO, the "Flag to indicate whether" is pretty pointless, the C type 
+information pretty much indicates it's a flag.
+
+>   */
+>  struct pmc_dev_info {
+> -	u8 pci_func;
+>  	u32 *dmu_guids;
+>  	u32 pc_guid;
+>  	u32 pkgc_ltr_blocker_offset;
+> @@ -528,6 +529,7 @@ struct pmc_dev_info {
+>  	int (*resume)(struct pmc_dev *pmcdev);
+>  	int (*init)(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info);
+>  	int (*sub_req)(struct pmc_dev *pmcdev, struct pmc *pmc, struct telem_endpoint *ep);
+> +	bool ssram_hidden;
+>  };
+>  
+>  extern const struct pmc_bit_map msr_map[];
+> diff --git a/drivers/platform/x86/intel/pmc/lnl.c b/drivers/platform/x86/intel/pmc/lnl.c
+> index 1cd81ee54dcf8..18f303af328e3 100644
+> --- a/drivers/platform/x86/intel/pmc/lnl.c
+> +++ b/drivers/platform/x86/intel/pmc/lnl.c
+> @@ -571,7 +571,6 @@ static int lnl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  }
+>  
+>  struct pmc_dev_info lnl_pmc_dev = {
+> -	.pci_func = 2,
+>  	.regmap_list = lnl_pmc_info_list,
+>  	.map = &lnl_socm_reg_map,
+>  	.sub_req_show = &pmc_core_substate_req_regs_fops,
+> @@ -579,4 +578,5 @@ struct pmc_dev_info lnl_pmc_dev = {
+>  	.resume = lnl_resume,
+>  	.init = lnl_core_init,
+>  	.sub_req = pmc_core_pmt_get_lpm_req,
+> +	.ssram_hidden = true,
+>  };
+> diff --git a/drivers/platform/x86/intel/pmc/mtl.c b/drivers/platform/x86/intel/pmc/mtl.c
+> index 57508cbf9cd42..193ebbe584023 100644
+> --- a/drivers/platform/x86/intel/pmc/mtl.c
+> +++ b/drivers/platform/x86/intel/pmc/mtl.c
+> @@ -994,7 +994,6 @@ static int mtl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  
+>  static u32 MTL_PMT_DMU_GUIDS[] = {MTL_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info mtl_pmc_dev = {
+> -	.pci_func = 2,
+>  	.dmu_guids = MTL_PMT_DMU_GUIDS,
+>  	.regmap_list = mtl_pmc_info_list,
+>  	.map = &mtl_socm_reg_map,
+> @@ -1003,4 +1002,5 @@ struct pmc_dev_info mtl_pmc_dev = {
+>  	.resume = mtl_resume,
+>  	.init = mtl_core_init,
+>  	.sub_req = pmc_core_pmt_get_lpm_req,
+> +	.ssram_hidden = true,
+>  };
+> diff --git a/drivers/platform/x86/intel/pmc/ptl.c b/drivers/platform/x86/intel/pmc/ptl.c
+> index 1f48e2bbc699f..6c68772e738c8 100644
+> --- a/drivers/platform/x86/intel/pmc/ptl.c
+> +++ b/drivers/platform/x86/intel/pmc/ptl.c
+> @@ -569,7 +569,6 @@ static int ptl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  }
+>  
+>  struct pmc_dev_info ptl_pmc_dev = {
+> -	.pci_func = 2,
+>  	.regmap_list = ptl_pmc_info_list,
+>  	.map = &ptl_pcdp_reg_map,
+>  	.sub_req_show = &pmc_core_substate_blk_req_fops,
+> @@ -577,4 +576,5 @@ struct pmc_dev_info ptl_pmc_dev = {
+>  	.resume = ptl_resume,
+>  	.init = ptl_core_init,
+>  	.sub_req = pmc_core_pmt_get_blk_sub_req,
+> +	.ssram_hidden = true,
+>  };
+> diff --git a/drivers/platform/x86/intel/pmc/wcl.c b/drivers/platform/x86/intel/pmc/wcl.c
+> index a45707e6364f2..b55069945e9e7 100644
+> --- a/drivers/platform/x86/intel/pmc/wcl.c
+> +++ b/drivers/platform/x86/intel/pmc/wcl.c
+> @@ -493,7 +493,6 @@ static int wcl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  }
+>  
+>  struct pmc_dev_info wcl_pmc_dev = {
+> -	.pci_func = 2,
+>  	.regmap_list = wcl_pmc_info_list,
+>  	.map = &wcl_pcdn_reg_map,
+>  	.sub_req_show = &pmc_core_substate_blk_req_fops,
+> @@ -501,4 +500,5 @@ struct pmc_dev_info wcl_pmc_dev = {
+>  	.resume = wcl_resume,
+>  	.init = wcl_core_init,
+>  	.sub_req = pmc_core_pmt_get_blk_sub_req,
+> +	.ssram_hidden = true,
+>  };
+> 
+
+-- 
  i.
 
---8323328-888350789-1774002469=:1024--
