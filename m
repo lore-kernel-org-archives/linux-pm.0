@@ -1,45 +1,45 @@
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012050.outbound.protection.outlook.com [52.101.43.50])
+Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazon11010062.outbound.protection.outlook.com [52.101.61.62])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E8DF3C73C1;
-	Fri, 20 Mar 2026 14:44:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E69153C3BEC;
+	Fri, 20 Mar 2026 14:44:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.61.62
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774017866; cv=fail; b=T3mfWWYB5BgWv3bH7eTQLM4eaC0LY0mQs027zPA4RhvYqR7wLvfeV1sEMX80I1d6t8YvvkmYIbF1MKQUXubQUnGUvaeYxAGcfUcvuOleBIW2dom66LFxoKpLTPCEFZgHWzRV83vDUFXqFQ1+cVc+NWOV+8k0eDedgJAWr2KdqH4=
+	t=1774017873; cv=fail; b=iPy6zEk2n9+oA+OR8kaqt28Zco2FV2OVGhcohCIfbEJZ73pgzem8FE+kRf2XtrrI2WoPr8sSP03tOPQslsuCcQqrr0o+KK4lb2HTad4BP4+YEABfzd+lVDbTi7LBfEFSVE6Bje0KMCdW3Q7TBfsZUoR8uwUQ//UVAWRCKoJ4qYw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774017866; c=relaxed/simple;
-	bh=P9KB+2X1mAg0Xug4+ksC3lirYjVwaF7qGUY3j3Ik1K8=;
+	s=arc-20240116; t=1774017873; c=relaxed/simple;
+	bh=pRO6Hef/W5q8wXO+XxzdA+8oGANSZIvjexg4kas9inM=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=B3JRkwRaQcGLuqEepQJHj+eAYLWn9+UkDSpNu1KubeObXoGN5Gf4lYa4lFxF4EcsvZ3jaYxtXPw6bXyQOqxQYZjlZZRwipfKS4jw+z7+B+NxH5uCnKAQkwjlMZpuv7m1XYz9WhqkO0vRbB3IkiMX0pEAYSqIi7EDd1hiNoigatU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=E/B+3O2Q; arc=fail smtp.client-ip=52.101.43.50
+	 MIME-Version:Content-Type; b=nFFnzYviuKJnYFgiI8bHcySzdwYyH53O0tVn/7vR4RUa9WNFWxCp+/Qb1nPepnSvhoVWOG/JPeGgKKlY24br3cFL8nt32+aVxu5eidLHNwyQfTlGcKhWyp9A+vohrv+g7G+5wstLc0TrM56cidsumpNtio38GY0rmDSKBoJSBJQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Yvuvk1ky; arc=fail smtp.client-ip=52.101.61.62
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="E/B+3O2Q"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Yvuvk1ky"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vVmG0/URckQDwZ7NbgVwf7ty6Y0OoCk8zoHQGgKhmt9F5gj8JtpITDxOdegLf7JgKJnDpvD1qSdVfyVqs/dC1abpfVAnCgXUGQFMe4DulxXzulMxipEjithyqAf0TEZA1GUrvYcilqfpffzXrgx8iDvXLEgQb2r55pH+m3W0VsCSBw1fewn97yCPNKCX1B1O5zBTxgwXCj2/COPyPG+cn2v/XwfrzPD+SB1wSii+6P2NtDJ1sXmGtGUCH2lE+iiOiHExxH/KNQJmgNAQ10yCJoPz/FuVT3zUeQpQP73Lx7wS1ORAKvp6ivzcXv1WoOEel0XJEsc6z9SwH/L6Akgryg==
+ b=N+zAT4PJs+6m3NBxA8dnovzFTUUwoN6J+p2DpuQQaOBdldYEeZptzS/Mke+ZiyuokH5rIitQ4DzE8rc/mU/LR37eVk+yaIdOccjH1cIIjytzTjWdm93F3vLCNcCRBPciebyQqYowBAENE9yXQoZ1+qt9+HT2tedBY2Zc8mQUwkV+99BedALaMIeAepU2P08/g+Qh6jh6AAFBMrJRc8IlfkpD413TqmN51Z3DnPcYKDx49ctSk0FKfCEq3cQ2mm26uHT5Khdpq/M0dI8O/4QxV4wvg0l9oF1/wQrrsNqshJFwzCPA6GqcDUEOcjTSX4QTWoF8+s4jjrnrLza0cfQCtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GITbD6Y49EzXl7KY5/HMNz/7B6r4x4Llh75aKGlS3rY=;
- b=J3843k2JN5nRRGTV14wWvDLrL4lLd12AKMlXtlXgamXSUcHl3pxTH5DerDq+JyeowwDxqZY5sfgbM/DITqCRtVGZqAE87V7JAJwW/LLbR58fqYJ6IPl92UEQVIzRYbiHQ0YC/NAJH6kmEqks5DetaZPTaG7hPkDarYnIe4KeGCaGk8l53/js7AKZYP28Di4+gMNCMt/Y46yX8+ur731BKGn3NCyKMzVcHlZDDjEhLSA1UE5syhYy5WYEcsIyoiO5gGtY+DuJYUSV/VYaZH56KihrkFCA0ptRt5Bfvu+koGmCfH/zWix1zKWp19Fr6kpRGCEk45ItMKSPmV9wyelmaQ==
+ bh=VQq/T0LPXQnNi6OrDFu4kYQ3IolW7ZrdtsnnH5h6rwA=;
+ b=Uj2Kex1hBUHROXTTrgMZ8I33+64JQmWC7wo99q0P5pqlqkYG9fum7N90fxiRMXnM5cSrShPloLhX0A/sIk4obOYWaezwihgk+Qc609stUMhNYDEkefdfZLt2s5ahQGaEykAMXBqUWEXXAKo4qIu4YPum1GXKneLiuSIfGLu9w0z4VWp2SFR/0/+ruXjJImm2n7dhhXY48UdQixiWsijfjNkBjx4PeSKhH37Mpi/7WDmgEFdn/UO5tpK7PZkQG1Hh9uAnbr6G8ctsQJ9CqA0ifhK4cTgjifXDySAZiD3fkc0NTAjk1PXXGVoB99AZ3v9Z3U1M38gstmNYuctknkRB6A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GITbD6Y49EzXl7KY5/HMNz/7B6r4x4Llh75aKGlS3rY=;
- b=E/B+3O2QURDfDqxsn+dvuQaYnxqA7JkeBEu2t3/gl28OGde9Z6lJl7FNsT0JZyXAa+IH/6rsLZpgLi7U+Ikx6aoBh7J0OgsnbaAuUywy4Dx1+8W62DDgGAVHLTKzZD3EbMzVFhKEYQS7zrVsrTDCJgIyAToSeyIQ0QQWpaiC+zM=
-Received: from BL1P221CA0044.NAMP221.PROD.OUTLOOK.COM (2603:10b6:208:5b5::16)
- by MN6PR12MB8470.namprd12.prod.outlook.com (2603:10b6:208:46d::17) with
+ bh=VQq/T0LPXQnNi6OrDFu4kYQ3IolW7ZrdtsnnH5h6rwA=;
+ b=Yvuvk1kyBT7mE7ydf7yGzjTCwh0i7jEwPwpiJATRjAKwjBidETDCk6rurqjHtgIbLIE+BNXS5Gv0AzbZLeNMZCr+dLeUf99O/zYyszKznFLDnBhsuu1syAH5hUvQ+QeoXVvA7szUIPwOaIVX5FeNpP+hAg7kpoqRLGY/qYOzfuc=
+Received: from BL1P222CA0008.NAMP222.PROD.OUTLOOK.COM (2603:10b6:208:2c7::13)
+ by PH8PR12MB6675.namprd12.prod.outlook.com (2603:10b6:510:1c2::15) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Fri, 20 Mar
- 2026 14:44:21 +0000
-Received: from BL6PEPF0001AB4E.namprd04.prod.outlook.com
- (2603:10b6:208:5b5:cafe::77) by BL1P221CA0044.outlook.office365.com
- (2603:10b6:208:5b5::16) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.24 via Frontend Transport; Fri,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.10; Fri, 20 Mar
+ 2026 14:44:25 +0000
+Received: from BL6PEPF0001AB4D.namprd04.prod.outlook.com
+ (2603:10b6:208:2c7:cafe::a1) by BL1P222CA0008.outlook.office365.com
+ (2603:10b6:208:2c7::13) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.20 via Frontend Transport; Fri,
  20 Mar 2026 14:44:24 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
@@ -48,13 +48,13 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
 Received: from satlexmb07.amd.com (165.204.84.17) by
- BL6PEPF0001AB4E.mail.protection.outlook.com (10.167.242.72) with Microsoft
+ BL6PEPF0001AB4D.mail.protection.outlook.com (10.167.242.71) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9723.19 via Frontend Transport; Fri, 20 Mar 2026 14:44:21 +0000
+ 15.20.9723.19 via Frontend Transport; Fri, 20 Mar 2026 14:44:24 +0000
 Received: from BLRRASHENOY1.amd.com (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Fri, 20 Mar
- 2026 09:44:18 -0500
+ 2026 09:44:21 -0500
 From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
 To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J . Wysocki"
 	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, K Prateek Nayak
@@ -62,9 +62,9 @@ To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J . Wysocki"
 CC: <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, "Gautham R.
  Shenoy" <gautham.shenoy@amd.com>, Jonathan Corbet <corbet@lwn.net>, "Shuah
  Khan" <skhan@linuxfoundation.org>, Mario Limonciello <superm1@kernel.org>
-Subject: [PATCH v3 10/12] Documentation/amd-pstate: List amd_pstate_hw_prefcore sysfs file
-Date: Fri, 20 Mar 2026 20:13:19 +0530
-Message-ID: <20260320144321.18543-11-gautham.shenoy@amd.com>
+Subject: [PATCH v3 11/12] Documentation/amd-pstate: List amd_pstate_prefcore_ranking sysfs file
+Date: Fri, 20 Mar 2026 20:13:20 +0530
+Message-ID: <20260320144321.18543-12-gautham.shenoy@amd.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260320144321.18543-1-gautham.shenoy@amd.com>
 References: <20260320144321.18543-1-gautham.shenoy@amd.com>
@@ -80,65 +80,63 @@ X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
  (10.181.42.216)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL6PEPF0001AB4E:EE_|MN6PR12MB8470:EE_
-X-MS-Office365-Filtering-Correlation-Id: 82d7395b-765c-4b50-6cca-08de868f2c5a
+X-MS-TrafficTypeDiagnostic: BL6PEPF0001AB4D:EE_|PH8PR12MB6675:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9b703a28-ced7-4fca-e501-08de868f2e2a
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|36860700016|82310400026|1800799024|22082099003|56012099003|18002099003;
+	BCL:0;ARA:13230040|376014|1800799024|82310400026|36860700016|56012099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	n4Li+hXY3mHA+it1axqMB9cGFxk9LhCURHvUOP81IiyL2CSzJLUjVjVDmIDK0b4mvvc1WjKDaq8hqSI211aAjt7qFWiketLpeJe2aQurObVSidoLJUeyGcnyc5wJJGaoBR775QHfKl2EPJ5Ye5pxRnDIGd3PCd9qbAGLr71ujJ4A/IVqInAsddmjqyL6wPDOZpRAi5NHYQ5CLtOPH78LnfUGyNCIQuXQmF/exs7rJdbC1QworsKGO6dnWpIjk5klJERHMjmqwRvYM/yHayCLGf04HWuUgZqhgTzSvWemgjhN75tRImqgdzj8g8gLrlpUxdSHi5Hujao7B43HqRqoPq32EAa7uP42sxRns+cSs0M+OqIPAAtri1ttc6mtFD2roIFwU8bYOMQhh/8yEhh1S1UvmXpktMrWPdZkIUsWKjJWVQoa9XAtNlTS1fdhuSvCC1cF+kO/BMocaviqbX64yxGkDAgZgqSGscy9/LeCSX5uKTouwrwtpN4JT2x9UG2SsMopaSa1FeOl89HMoseizHmKPe5Z5ktNOoil/GEcnozQ7pIiZ7qR5i5n8fIItdw/aDGWHZ1qnnzxNjvnKVxQJu6XMCVvvY+/9AueCoC1Lks1agMqIrxIMMdJEySS8ltcEPNBjhS0Q8hooZHzGTrviq+mM3adPg+GHqf9f4Q/e01GvhEkDryorTkjVmzSB2NtqPGKkSFVlD9Kt9iVFFDUgxfUqKE/N6l+5uvSU87hJfoSfm7LF8HQ+zR5cuI1leSvywwO5PxDX9i7NmOU3B5OFw==
+	y9K501+Xo3h7yCVA0pnjg2tPhcBLn7jOf842exsnNizDyfaLZMz4TzZJ0aQ52UqtF6X6JY+jm0e3RkJzpPTfHdsShR70/WROavg6FpKKDiusNikfnOT0jRHu22F5j7mUDrSnkLJ6T3k4iBfyrveE6tkRXLxxNnLEs39VJr2OFr2OVqjwgiIPXMMGlg/Dp6Yq+E8DPzJbjsASjhgRWBi8QJWGvTNDkqZ6H14al9+kLZQkMgf9qiXkTnpfZ21jDSMG41fNxsPO52OT2KAq4Gip0dMmOqgGs9yX1Ger3MK5VrVSK4eYyW3/nYaxPWa+Hs7qixyeiRsKwosVBEmufCcHt48+Hh1lTNF72IXJEF27SAprqg6uIcsxztPFBoTG4IPd+JEG87mn2ouy4RlN7nSJX0+C3JNEGO1eNQUxnkrrYJtRc7bTxNQ/xEusO7SskAxYNWyd2NrDAVOUIUffAKJaVTFCXPPBZC5Ky7G3+U/zuIVh+jc5mDuCvmJAkNrvVxdoDdUzVKXCxfXCipgZj/+HKlTmzPenTQYq0cBFbRmMx9kHSgxwQ/4MwUzkG5M13xRr1X14JaZQQKd+SbrS/sF+zJH2Plk+HcCDZ/WZdwtusTK7nee1UJgk5kOkeifMAkLjsGSy2emxoEPUqBfml8x/k3040UK01lbZgFAiYHNm10BvwYzOXSzxKvXJ/YeolnlXZORCh3UvVlWHaw5LzueozRVQ67+um62Idq8XvX2Eu/azpy5QUaj4D/lwITrMHu0E6QQ6rgCJeZZTvsW3e3xQWw==
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(36860700016)(82310400026)(1800799024)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(82310400026)(36860700016)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	1JU13MIyolgusvbyiSPv75dwrNSshQubfCm1TZ4qUHWUkH1QkxQZBN3nrWaM4gaamKpWWM8Ipxp6Cm/xZnFRBKqVsc8EDfyV7vw9Ln4vz/WvScZnqR8tscwPIqypOA7SuQjI4G4zvZrt2pPPY1HnsL73Op4CY+r/6je3VHlD0o9C3d2OQ1n8M95+EOvj0WbbN67bvPiK0ude7V/kALrsoTaFYn3N2xARC+neRAHQ1/jd5ii/xjWUA2HkR61FLR8cI3d5LS4bmujTN/wmhNGWBEPPqzkdzDRs0PqwX6l1UAmFYNZ8lFLEgnv7/JWuQTZ/Ehqjdx0P3hOIKw52UQ8sqAk9C1xtiCrWwl1P//mcWpFMyhHdLGWtBXHg+4Hes9PIqPygpBB6k5CjAIPgzAU35AORHkeNPf+qINJGQVoAXaQ49ip1u6ShgJisX/bhTtPm
+	yz5vAJx8syMu8SlFNfwSe6yBc2R9ODNbFPSpfYQv3+UQKVQFJm+xqBGOCGII45TOY0URc/P2H+wr++k6DaZe7/MzEvVa8M5fYop6hmROwmhCjnm1t51NFK9iMvIWzquACUYedTXuXr71TEBHO6awhP4tXAlQYAlyUvXAAWPbOcAQEarOMcEB9Fo6ALePHfnRe0X+9OSGnTfxyMZrle556eUhV1jGHjzxQ8pdHZJQ6SpJdXOvgUUv946w2RUCgh+XVxdn/umEwi+PP35hz0EqLR3CYkh/r/YRehkEB0SwV5KKQ1ZarOOgR/D8pY6s+n1QIbAgxENMS5Q0f1k4mndT0BqBNgBh7ehomqllATeyfqd7EIumdu1RbdfU61HTEacB5k8JRKUg+u2r2U81iyFcBqv7BzSKhPO8/SJsO8Wa+bL36xccWasxQYkflnpxBdXY
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 14:44:21.5306
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 14:44:24.5743
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 82d7395b-765c-4b50-6cca-08de868f2c5a
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9b703a28-ced7-4fca-e501-08de868f2e2a
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	BL6PEPF0001AB4E.namprd04.prod.outlook.com
+	BL6PEPF0001AB4D.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN6PR12MB8470
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR12MB6675
 
-Add the missing amd_pstate_hw_prefcore filenames in the sysfs listing
-example leading to the descriptions of these parameters. Clarify when
-will the file be visible.
+Add the missing amd_pstate_prefcore_ranking filenames in the sysfs
+listing example leading to the descriptions of these
+parameters. Clarify when will the file be visible.
 
-Fixes: b96b82d1af7f ("cpufreq: amd-pstate: Add documentation for `amd_pstate_hw_prefcore`")
+Fixes: 15a2b764ea7c ("amd-pstate: Add missing documentation for `amd_pstate_prefcore_ranking`")
 Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
 Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
 ---
- Documentation/admin-guide/pm/amd-pstate.rst | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ Documentation/admin-guide/pm/amd-pstate.rst | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index e1771f2225d5..b8c846cbf301 100644
+index b8c846cbf301..b31a478c28ba 100644
 --- a/Documentation/admin-guide/pm/amd-pstate.rst
 +++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -239,6 +239,7 @@ control its functionality at the system level. They are located in the
- 
-  root@hr-test1:/home/ray# ls /sys/devices/system/cpu/cpufreq/policy0/*amd*
-  /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_highest_perf
-+ /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_hw_prefcore
+@@ -242,6 +242,7 @@ control its functionality at the system level. They are located in the
+  /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_hw_prefcore
   /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_lowest_nonlinear_freq
   /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_max_freq
++ /sys/devices/system/cpu/cpufreq/policy0/amd_pstate_prefcore_ranking
  
-@@ -264,8 +265,9 @@ This attribute is read-only.
  
- ``amd_pstate_hw_prefcore``
+ ``amd_pstate_highest_perf / amd_pstate_max_freq``
+@@ -273,7 +274,8 @@ on platforms which support the preferred core feature.
  
--Whether the platform supports the preferred core feature and it has been
--enabled. This attribute is read-only.
-+Whether the platform supports the preferred core feature and it has
-+been enabled. This attribute is read-only. This file is only visible
-+on platforms which support the preferred core feature.
+ The performance ranking of the core. This number doesn't have any unit, but
+ larger numbers are preferred at the time of reading. This can change at
+-runtime based on platform conditions. This attribute is read-only.
++runtime based on platform conditions. This attribute is read-only. This file
++is only visible on platforms which support the preferred core feature.
  
- ``amd_pstate_prefcore_ranking``
+ ``energy_performance_available_preferences``
  
 -- 
 2.34.1
