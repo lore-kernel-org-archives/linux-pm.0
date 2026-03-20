@@ -1,126 +1,174 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85086399376
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:48:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E360B2EC0BF
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:52:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774007315; cv=none; b=pEStxtRxsG9vSbtqo9TvGCTb+uZ6QZWjR04CuZMujabn5ELiy7aFFa8RzvQrNRBGhBPcfTsyeVxWEDz/y8LnNZ+etcNMFPnj52obbg/BHYt08WocgR6aIVUpnAg/J487avyuqX/L6P2XH55tJoFazSeadZsthL4U23ubu/lRDis=
+	t=1774007533; cv=none; b=AQ+QsghMA8VQRu1hE97MLZtohTm3HTqvE3HUn3GAws1iOPllRNs3+x95iUQCSXMniHCwBDbW3pMWdFHsv+8F71f1+YlQT+uZ3Bu/Gy6tTkJN+eHkadA/Rdd8V/qmJBt+dwO95zqpzIgPBRriAGDAX9p0ONmKJt0df/hTCaxS/AY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774007315; c=relaxed/simple;
-	bh=iZgLe1mru6PFQ6REOTI84wZhvlQ5dixZom1oioQNTDM=;
+	s=arc-20240116; t=1774007533; c=relaxed/simple;
+	bh=/xicRzkzhZvSTA+EO8GiVBeStEymapU+Q07JFhtKQro=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jUYnaP03/RHvyTr+sJYjHGvNK+3DH4fqxn0/4sqPa+gMXdSo2RyRWriLQcWe60CLTla5JfNO7bxzXzX4sNso5qqYW81YC900msaHILK2YlbFUeIzdY3pplNTT13/Q6D2u3Z5aU5u/O1S1FVFP+70aN0yfh3phdB9157s4749st0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dkwa3nhV; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=MSFQlCnWd/7Y+p8e82s3O2I2TJCWLADAPENRioAmuFhCKBSc64MxbW/P7b2KtM4c5YoJHiMEgzGppdy7cbdanLurmPB306ULr6JWNnBiA8Dh44ZKxG6PtGAjM4AUxgOEEfKhRNk6HZnShU/6uDjX9R8pzN5J9CcUqLWQtmSYqK8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dsVne9gR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dkwa3nhV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F4F3C2BCAF
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:48:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dsVne9gR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AD3CC2BCAF
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:52:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774007315;
-	bh=iZgLe1mru6PFQ6REOTI84wZhvlQ5dixZom1oioQNTDM=;
+	s=k20201202; t=1774007532;
+	bh=/xicRzkzhZvSTA+EO8GiVBeStEymapU+Q07JFhtKQro=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=dkwa3nhVU4fLGuE79JTQaIogJajcQs7sjZ1uknR6hLzjlk66BkFmcwyhbKAt4JC7n
-	 V3NllKvY6q5w+174PjiK9ZzP869ZXcpIrkwFlsHquMTOHSLNHcwx2lBxa7RYwT3Cfc
-	 5QbBITJOZU8TdXk71tD3AT4a79OkuJD4O+m7W1510rCdbzot+PMqeWK67obeVdEmYw
-	 3eA2OYjPfFtNHfzUnOLndDuoau8yX0ZrVQ/QiDs4m4VBIUgjSs7c3vSXPyPbIgA2Sg
-	 CcTHsE+erycYmx+wf/yZ3EdBg8aDW610EQGC3WeR0hYuw5pyPh08ryu9VOYdi2r5Bd
-	 Szja4LfwXmXQw==
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7d7e5e8c907so854838a34.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 04:48:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXHg9p7xBKD6jA1uE1RO/btGvTIFz8IQiKaqUdGRX56ogNfJESsjYLR06hfUAliM93GGnCRmAf7FQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwqK4dVQK4ZzJYSHtfzvVyDFocJ7cjbU8PGYPgyIuhPbP9GKXta
-	PWRqdifcq4JJcSkX+z92gLIq6zQ71qHOLhZAikQw5p2InRaqW/T/86NFvr80zBq8YrMjBhvdZ77
-	nuM7Hdy1NW1UfPKCtx72RXVT/3xOMYGM=
-X-Received: by 2002:a05:6830:7301:b0:7d7:d66c:a445 with SMTP id
- 46e09a7af769-7d7eaffe25dmr1691679a34.31.1774007314282; Fri, 20 Mar 2026
- 04:48:34 -0700 (PDT)
+	b=dsVne9gRvxvvYVQ1UG3jqllMyjJ57OlI7xhnLCo9+kQAyUpJ0cvoz9lr1XpVrrU66
+	 wDDqiYmd0m9Qw+vonqLlMByfWibxWLUh5urtOS7Y6/C+VhHkIVS89TqNIdCouU9LUg
+	 HfqPdj56mUTa7HVyKBTsCvXLSRp9U+ImEfk3B8FuOSeYeVecvVK1VxR2EUqipUWXnb
+	 gYruWDl2XGWsKBR6l9igctfi2Ah8ejro+765cnmgzFa2qKL3Hx3bprsY/XRYybn/6X
+	 klXyRuryA9v/EEWwc8s4MvHmdSN+KoD0AqMfBBaB/rlwALXuAcfVs3/BbyxJf7ZgAO
+	 tRLiGqJ+gbeTg==
+Received: by mail-oi1-f181.google.com with SMTP id 5614622812f47-46704fbf62dso1304000b6e.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 04:52:12 -0700 (PDT)
+X-Gm-Message-State: AOJu0Yz8Oz43ReNid6y6Rj2SGBES4661IgZjVmuhiQph2rbtW0Caiglq
+	OkZ1rkvB0Vzx2l5ZE0aa3QBTwxxjW8Yxthvov3fQfjvVFaEkpwYGtrfdo/+IcFbEsb881Y9vuHT
+	kVZ20GKApv4WnRmuBRC9vBHbY/sqD4Zk=
+X-Received: by 2002:a05:6808:4f06:b0:467:2a6e:ada8 with SMTP id
+ 5614622812f47-467e5dec2eemr1513185b6e.25.1774007531651; Fri, 20 Mar 2026
+ 04:52:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <65ba5c45749267c82e8a87af3dc788b37a0b3f48.1773998611.git.viresh.kumar@linaro.org>
-In-Reply-To: <65ba5c45749267c82e8a87af3dc788b37a0b3f48.1773998611.git.viresh.kumar@linaro.org>
+References: <d846a141a98ac0482f20560fcd7525c0f0ec2f30.1773999467.git.viresh.kumar@linaro.org>
+ <4c75f644-2c06-48b1-a72b-1b84be7ba4ab@oss.qualcomm.com>
+In-Reply-To: <4c75f644-2c06-48b1-a72b-1b84be7ba4ab@oss.qualcomm.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 20 Mar 2026 12:48:23 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0j7qbPz1eVu1MANwwS0JjPZYtq7oiZAmXAja9NzsgqGPw@mail.gmail.com>
-X-Gm-Features: AaiRm53kb54e5YWKGvBBOGd1Spv4wexjnlh4X6UrvtuNs_bvJcdBUm1atczSgXs
-Message-ID: <CAJZ5v0j7qbPz1eVu1MANwwS0JjPZYtq7oiZAmXAja9NzsgqGPw@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: Don't skip cpufreq_frequency_table_cpuinfo()
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zihuan Zhang <zhangzihuan@kylinos.cn>, linux-pm@vger.kernel.org, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, 
-	Pierre Gondois <pierre.gondois@arm.com>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org
+Date: Fri, 20 Mar 2026 12:51:59 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0h2+gcCDTRhXPLW7Vgjqdp30w4cvjz3CqG12=u_2X08eQ@mail.gmail.com>
+X-Gm-Features: AaiRm52lpI2d3mWronBoEzk2FRQixo_nSmwY3z-BdTMC2iTzv3XkBdCavAYTgck
+Message-ID: <CAJZ5v0h2+gcCDTRhXPLW7Vgjqdp30w4cvjz3CqG12=u_2X08eQ@mail.gmail.com>
+Subject: Re: [PATCH V2] cpufreq: conservative: Reset requested_freq on limits change
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Sumit Semwal <sumit.semwal@linaro.org>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 20, 2026 at 10:24=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.=
-org> wrote:
+On Fri, Mar 20, 2026 at 11:02=E2=80=AFAM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
 >
-> The commit 6db0f533d320 ("cpufreq: preserve freq_table_sorted across
-> suspend/hibernate") unintentionally made a change where
-> cpufreq_frequency_table_cpuinfo() isn't getting called anymore for old
-> policies getting re-initialized.
+> On 3/20/2026 5:38 PM, Viresh Kumar wrote:
+> > A recently reported issue highlighted that the cached requested_freq
+> > is not guaranteed to stay in sync with policy->cur. If the platform
+> > changes the actual CPU frequency after the governor sets one (e.g.
+> > due to platform-specific frequency scaling) and a re-sync occurs
+> > later, policy->cur may diverge from requested_freq.
+> >
+> > This can lead to incorrect behavior in the conservative governor.
+> > For example, the governor may assume the CPU is already running at
+> > the maximum frequency and skip further increases even though there
+> > is still headroom.
+> >
+> > Avoid this by resetting the cached requested_freq to policy->cur on
+> > detecting a change in policy limits.
+> >
 >
-> This leads to potentially invalid values of policy->max and
-> policy->cpuinfo_max_freq.
->
-> Fix the issue by reverting the original commit and adding the condition
-> for just the sorting function.
->
-> Fixes: 6db0f533d320 ("cpufreq: preserve freq_table_sorted across suspend/=
-hibernate")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c    | 9 +++------
->  drivers/cpufreq/freq_table.c | 4 ++++
->  2 files changed, 7 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 277884d91913..1f794524a1d9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1427,12 +1427,9 @@ static int cpufreq_policy_online(struct cpufreq_po=
-licy *policy,
->                  * If there is a problem with its frequency table, take i=
-t
->                  * offline and drop it.
->                  */
-> -               if (policy->freq_table_sorted !=3D CPUFREQ_TABLE_SORTED_A=
-SCENDING &&
-> -                   policy->freq_table_sorted !=3D CPUFREQ_TABLE_SORTED_D=
-ESCENDING) {
-> -                       ret =3D cpufreq_table_validate_and_sort(policy);
-> -                       if (ret)
-> -                               goto out_offline_policy;
-> -               }
-> +               ret =3D cpufreq_table_validate_and_sort(policy);
-> +               if (ret)
-> +                       goto out_offline_policy;
->
->                 /* related_cpus should at least include policy->cpus. */
->                 cpumask_copy(policy->related_cpus, policy->cpus);
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index 7f251daf03ce..5b364d8da4f9 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -360,6 +360,10 @@ int cpufreq_table_validate_and_sort(struct cpufreq_p=
-olicy *policy)
->         if (policy_has_boost_freq(policy))
->                 policy->boost_supported =3D true;
->
-> +       if (policy->freq_table_sorted =3D=3D CPUFREQ_TABLE_SORTED_ASCENDI=
-NG ||
-> +           policy->freq_table_sorted =3D=3D CPUFREQ_TABLE_SORTED_DESCEND=
-ING)
-> +               return 0;
-> +
->         return set_freq_table_sorted(policy);
->  }
->
-> --
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
 Applied as 7.0-rc material, thanks!
+
+
+> > Reported-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> > Tested-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> > Link: https://lore.kernel.org/all/20260210115458.3493646-1-zhenglifeng1=
+@huawei.com/
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> > [v2]
+> > - Completely different design to solve the problem.
+> >
+> >   drivers/cpufreq/cpufreq_conservative.c | 12 ++++++++++++
+> >   drivers/cpufreq/cpufreq_governor.c     |  3 +++
+> >   drivers/cpufreq/cpufreq_governor.h     |  1 +
+> >   3 files changed, 16 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/c=
+pufreq_conservative.c
+> > index e0e847764511..df01d33993d8 100644
+> > --- a/drivers/cpufreq/cpufreq_conservative.c
+> > +++ b/drivers/cpufreq/cpufreq_conservative.c
+> > @@ -313,6 +313,17 @@ static void cs_start(struct cpufreq_policy *policy=
+)
+> >       dbs_info->requested_freq =3D policy->cur;
+> >   }
+> >
+> > +static void cs_limits(struct cpufreq_policy *policy)
+> > +{
+> > +     struct cs_policy_dbs_info *dbs_info =3D to_dbs_info(policy->gover=
+nor_data);
+> > +
+> > +     /*
+> > +      * The limits have changed, so may have the current frequency. Re=
+set
+> > +      * requested_freq to avoid any unintended outcomes due to the mis=
+match.
+> > +      */
+> > +     dbs_info->requested_freq =3D policy->cur;
+> > +}
+> > +
+> >   static struct dbs_governor cs_governor =3D {
+> >       .gov =3D CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+> >       .kobj_type =3D { .default_groups =3D cs_groups },
+> > @@ -322,6 +333,7 @@ static struct dbs_governor cs_governor =3D {
+> >       .init =3D cs_init,
+> >       .exit =3D cs_exit,
+> >       .start =3D cs_start,
+> > +     .limits =3D cs_limits,
+> >   };
+> >
+> >   #define CPU_FREQ_GOV_CONSERVATIVE   (cs_governor.gov)
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufr=
+eq_governor.c
+> > index 36eb7aee4bcd..acf101878733 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.c
+> > +++ b/drivers/cpufreq/cpufreq_governor.c
+> > @@ -563,6 +563,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_stop);
+> >
+> >   void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+> >   {
+> > +     struct dbs_governor *gov =3D dbs_governor_of(policy);
+> >       struct policy_dbs_info *policy_dbs;
+> >
+> >       /* Protect gov->gdbs_data against cpufreq_dbs_governor_exit() */
+> > @@ -574,6 +575,8 @@ void cpufreq_dbs_governor_limits(struct cpufreq_pol=
+icy *policy)
+> >       mutex_lock(&policy_dbs->update_mutex);
+> >       cpufreq_policy_apply_limits(policy);
+> >       gov_update_sample_delay(policy_dbs, 0);
+> > +     if (gov->limits)
+> > +             gov->limits(policy);
+> >       mutex_unlock(&policy_dbs->update_mutex);
+> >
+> >   out:
+> > diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufr=
+eq_governor.h
+> > index 168c23fd7fca..1462d59277bd 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.h
+> > +++ b/drivers/cpufreq/cpufreq_governor.h
+> > @@ -138,6 +138,7 @@ struct dbs_governor {
+> >       int (*init)(struct dbs_data *dbs_data);
+> >       void (*exit)(struct dbs_data *dbs_data);
+> >       void (*start)(struct cpufreq_policy *policy);
+> > +     void (*limits)(struct cpufreq_policy *policy);
+> >   };
+> >
+> >   static inline struct dbs_governor *dbs_governor_of(struct cpufreq_pol=
+icy *policy)
+>
+>
+> --
+> Thx and BRs,
+> Zhongqiu Han
+>
