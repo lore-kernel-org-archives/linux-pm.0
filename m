@@ -1,209 +1,231 @@
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022118.outbound.protection.outlook.com [40.107.75.118])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C4E42D8DCA;
-	Fri, 20 Mar 2026 09:57:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.118
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774000664; cv=fail; b=REnRKCj8dlFqymLOX1uA8b4GFGsu+7TAzfJMiOwSiaM4bthFVjhNpF8GIONGicZrNpxzL68xDkByXPqgWJT5Ac029JB9gaZZYZ0EwGq3b3ARX7TbOX8Qbuu1njYguBPOJezzytjAbUrr4fHbUwNRsYtAxvokHMTTxdYFoiFE8os=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774000664; c=relaxed/simple;
-	bh=eC7mMNUFrDsFNFc3EqrYYF+r5Km5mW2LiU5QPWJrHXE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=jhvifRkPt3eyHf4hbtq9Fd4hxbakaoJJpDTHaa/yxhYqOe8Zo1bsAr/CX5pKKfCzvO/REGx9ZCDZ0Tt1/ae5t9K3IQj8R31M1/MXhjlRy/X0Dudt2KMG17aRMxKpYk+Wx0y5n1FsHyghe6KK18nMsSIUddG0lgvfMzEVc2OEFjk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=HIdFFHxO; arc=fail smtp.client-ip=40.107.75.118
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qnap.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4415D36683D
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:02:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774000929; cv=none; b=mqX5p/PWnMNMssrKIFe9xatnzyDrPsIKx/uHVM4iYVGAGMCO19jeSTMzQX1Q6liG5Og4sBmt/15suxMG0HtSz5i23AmTQ62+/5XQwGIC7RCdJGGkr/9pY41bBE9OqeyMbbrahBKLNegwRiLuzQxH7c0BAHRAbwZ+N3UO8ThMUjQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774000929; c=relaxed/simple;
+	bh=L+TFQGorEF8gmVxnSnXa6T6rNtrC/G3rGGfrG4WAx5A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CZDoocS6BOD07lcc8L/WrXcOEEIcBXV1uN1Nw3JBD61KyYI2GPerrJZheufaWLEHPKlVP9hQA+w5/j8QMIIXmP6pUP2WPcx2Bt1YpiBLA91cHTOxXNOCOiqfWKSUlYtnYHFOEkvqEU9Zs5RKKa35RtUXaeaHlFdO+Y2/xf6WN6o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=GMlaixtw; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=dQg9nGSq; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="HIdFFHxO"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WxybMobI3EGsVGxd73uWpQVhja0VdnbehpKOqiTz01S9zZpE1rjy4CjeYI3pteMLaha5YfwIx8ak1XWY0R7NRYGDQ+RzQsGQNH/NFOIj5ET2YDJyzr++0pj6H+8mVOVxx5ULie41iiSbgNXoOUqZfa02moltUbuaSYKnYP/El1RA/R0F3W8eRPc3p9RSTc4m//TLGwij4a0RpRSoCep3IWhGGRxAMiIMuTMKTwSb1SAHXOnnYEfCQ5qMdjMsNylynRgfnpZpII7EkkHWrA3i9+mf1leuOeqYyNzcLZqlSIWfNgD1Ya3DOpS7K1MVk4KWEjxk7CcDEaL3FTCDMZSI9g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vmHq8PXkhwFb4M2oG+c5u78Z80KSKZCCPtcJXRiTWFc=;
- b=UDse9d9vCoJXg79MUA3PCofGsCKL9C0OsGj0pDY6WuftY5iIb69JkqQRPupJUQFlXQQ+m98SeZ5IwAfGRw5Dtw8LT4Y/ng1nMpYBpkVjscs4t967EOz/Wvb/ihRsAUtLV3l7Egof7c9JJcZ7of6T9wlU5Gu5EWin+l46CcIRY6Ud5OPaj8wXZWmT9az/HHMREpjrEeexIMD93LD0JBnmoBMLQY6479MQ+XuTCHIi4Fg1k2HYxi7CZdL8HK/FU9GAN1A2tNxboNq9pUudD83vIbliAlIdi0HhpfnVvXdZblU0D1YQTIdCTg1Duk7v6bGNO+IL8MQRsf7OZg7WcmhviA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 122.147.219.42) smtp.rcpttodomain=kernel.org smtp.mailfrom=qnap.com;
- dmarc=fail (p=quarantine sp=quarantine pct=100) action=quarantine
- header.from=qnap.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qnap.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vmHq8PXkhwFb4M2oG+c5u78Z80KSKZCCPtcJXRiTWFc=;
- b=HIdFFHxOYsf4bVQTaIHYCqjRAkeWm7YtdDoHLaWsx6K4NyRQd3KohYhYRAlqxcWvRPNX9ipVE+QHg1u5BOG8ph8G4qpW7zAOk4PAZHf4t9/4dn+FeKjjBnwXQyQBWIHHcA3Xv/dX4qMixvQ5q7zdpNhbk3vbZyuOnZNUjZ0AfN3wSrR1UZX2qkk7TcVPgrKhVnfQi8+kQaA5zJR2j3SwAuo6yCpSp8K6zimRj4jgYF9CeQ5i3lFYvK3L5pUXxf+1G2k+Njde/Efm00FTLkuJMUSuo7WKhuQXqej6kq6zHchOoVUc2jwgun0fuH+4ar7Ajr0HW6vskW14oBQ7HhzfrA==
-Received: from SG2PR06CA0189.apcprd06.prod.outlook.com (2603:1096:4:1::21) by
- OSQPR04MB7946.apcprd04.prod.outlook.com (2603:1096:604:29f::6) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9723.19; Fri, 20 Mar 2026 09:57:37 +0000
-Received: from OSA0EPF000000CB.apcprd02.prod.outlook.com
- (2603:1096:4:1:cafe::f8) by SG2PR06CA0189.outlook.office365.com
- (2603:1096:4:1::21) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.20 via Frontend Transport; Fri,
- 20 Mar 2026 09:57:37 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 122.147.219.42)
- smtp.mailfrom=qnap.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=quarantine header.from=qnap.com;
-Received-SPF: Fail (protection.outlook.com: domain of qnap.com does not
- designate 122.147.219.42 as permitted sender)
- receiver=protection.outlook.com; client-ip=122.147.219.42;
- helo=mail19.qnap.com;
-Received: from mail19.qnap.com (122.147.219.42) by
- OSA0EPF000000CB.mail.protection.outlook.com (10.167.240.57) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.19
- via Frontend Transport; Fri, 20 Mar 2026 09:57:36 +0000
-Received: from localhost (unknown [172.17.22.18])
-	by mail19.qnap.com (Postfix) with ESMTP id 74A861B0;
-	Fri, 20 Mar 2026 17:57:36 +0800 (CST)
-From: Henry Tseng <henrytseng@qnap.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Len Brown <lenb@kernel.org>,
-	linux-pm@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	SW Chen <swchen@qnap.com>,
-	Kevin Ko <kevinko@qnap.com>,
-	Henry Tseng <henrytseng@qnap.com>
-Subject: [PATCH] cpufreq: acpi-cpufreq: use DMI max speed when CPPC is unavailable
-Date: Fri, 20 Mar 2026 17:56:48 +0800
-Message-ID: <20260320095648.3598007-1-henrytseng@qnap.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="GMlaixtw";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="dQg9nGSq"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62K2Y9Xg3558008
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:02:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ND0dBXjqysz5NpSmFZ0lY0fFJs6h5Mzrrxuhwqj/9RY=; b=GMlaixtwPncE6LFd
+	a9/Xl6wmwRMqmxU0kCBjqqeoMFjL29vXb/kpp33mISpUW7XQ+mo5Cz8k7oYItMff
+	cXJihBeE2D79QJiyJS6v5/ZN3u2ZAPJx+fnZ2b7p/Nv8jrBHlAN/UZ9XCrbSPu9J
+	kxKMRDDrpTqD9xrZcU4ZMjNJmSunPsdwFie/eqMVuRicXSjuXDNMLaofWx72+O+6
+	nH8YCeS8igT/+4I0e2eL8KhzDGaJhRT+2RLp3tj6tIRzeETwHYB9mZ2KkeX5gual
+	9ZXcPVlaGnWmcMqYqd000Djb0MF71kafpOWPKb85PL95e5Le5l8BhcNqmb5D0gHc
+	Zv75sg==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d0r1gst2u-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:02:06 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2b064884a7cso115663665ad.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 03:02:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1774000926; x=1774605726; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ND0dBXjqysz5NpSmFZ0lY0fFJs6h5Mzrrxuhwqj/9RY=;
+        b=dQg9nGSqVxC3eSGtfUqIzId0LkW+hCPdYwvOt1dZGQGmZeZtm8U06AID0LtNxsGYF8
+         Ak66HKiT5hsqAqQNSV7XNAWIJQNyYdFlKHaFIPipzha+2mMC6CHHpA/rihgfvudorcP1
+         zhbC8dbE3JpErt+k47nYrkuI0IXTeNtHilAdhRGX6jps8CA9OPaCUTNUokB3iZIh0pTq
+         fCWzmp2s2PKumAv9wK4k/gLUwV/XGUMYqxnw7VO1gaEBSZ9JIfJK3a8TYx0fTbTQDBz1
+         sQI0nFVD2WkQwmRsWo6y9/R/y8aUzJKzAVvhbQOLj9c25ZFZpSldWlJzYBWCIPI8v7VC
+         eOmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774000926; x=1774605726;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ND0dBXjqysz5NpSmFZ0lY0fFJs6h5Mzrrxuhwqj/9RY=;
+        b=l4Nw0hXRMDFX2qOaz7xMC/+7MOu1STzMxSvaX7QbFmimtqgz+Abs15AlWqiGjvKRJW
+         Pg5dBusQM+UwnSXBUvVb4h39fkOJm6kotq9Vi7MXGBxMo1W5AVUWACiM4XG0a8RTUQHX
+         y/vwCGVRTkWQBXJL0KukxbrnsornM75alTVLhu6Gx1yDdxYBxiLGlpD7BC7KiWoeGaV+
+         3wGsMKqfFLeSBS3Y19BnjPzFeG93U1TQI9R3yVWyTNVlk6ogEE9+edVVH2jJAnProiAW
+         BdDNANGDdksnHeP9p9iYzZ6rdP1uq+Yz7TkDVdoYumRyj1wlcvn++eB+lmYVd1Qq9m+D
+         Mk3w==
+X-Gm-Message-State: AOJu0Yym8Q6/IXLZZ0FEURlj8PL1m+zRp1CoZldCgGls0wn/nR1CmAnh
+	RB8Hrk1jz/mSL9ylY/CHuRcc7uVK5J8Xcu0NEj1AoZ8j1GzkgJYmVnCGRI0hgJz6tioQZpYm/oG
+	i3RhPPPu75uAvOiJa0FfUgcjTTPVCZqok/Tqq+rK9OROmJ7rKH1XRbRgoYpSkxQ==
+X-Gm-Gg: ATEYQzxugyYCdMPex9DGY/MBbpXPT5BtVe1rk50zqST8o4O66pw+FTC7HiPBDbBSBg0
+	CZgxgjuemKLbnqyE9xT3CavDauAPAZX/SudAOLK+QXkmlg/6ReaXvJuT5qARU4cKXzcJRE/MCJ5
+	HxZBMyzN9W+krT2IwQSKYlIYAHTuTnOTU1oC5qRIzS4gcMWumWM2ca7+vYZ8rSY2h07/FMevM1N
+	LtZ0rh6WFre3rW5d/yPkCdeiFDmGB5W/uRzsAFlumzv4/mDGLbIj3DhJ3gNgzB9jW7lTJwJ+vej
+	W9/JVcjUWY+KaUsDInp/sjBG5UXJ17Qf6F5Y4BQYu9sYoQSJcXNezLW3ivPDKaAez7aUxUkTiiv
+	Aws/GYNY8XPqnDO2zRIu50v869LW/zJkg8UBfd4xaGgAbAAmSfS4dWle9mXghne7Ph6T3P1PeIr
+	XGC+0nsKtRHJ4+rEQeBA==
+X-Received: by 2002:a17:902:cccc:b0:2b0:54dc:63e with SMTP id d9443c01a7336-2b08279427bmr19906825ad.33.1774000925808;
+        Fri, 20 Mar 2026 03:02:05 -0700 (PDT)
+X-Received: by 2002:a17:902:cccc:b0:2b0:54dc:63e with SMTP id d9443c01a7336-2b08279427bmr19906525ad.33.1774000925348;
+        Fri, 20 Mar 2026 03:02:05 -0700 (PDT)
+Received: from [10.133.33.215] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b083527f84sm17441355ad.18.2026.03.20.03.02.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 20 Mar 2026 03:02:05 -0700 (PDT)
+Message-ID: <4c75f644-2c06-48b1-a72b-1b84be7ba4ab@oss.qualcomm.com>
+Date: Fri, 20 Mar 2026 18:02:00 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OSA0EPF000000CB:EE_|OSQPR04MB7946:EE_
-Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 340e6daa-84c3-42ec-741e-08de86671da5
-X-MS-Exchange-AtpMessageProperties: SA
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|82310400026|36860700016|13003099007|18002099003|56012099003|55112099003;
-X-Microsoft-Antispam-Message-Info:
-	airDbgmxqeDBhydtpqNch4kHifnyA9jA2+73aMzvXlLU/xBPtTf6RrjLD/liL/EmB9oiImRxFfuRudXfuPOzhaBiyDgdw3lQS46oyhzgTo5Krb1haTxrnlfq/BD5zjtC7wemMnUl74fg7QvQ+gPg/P4twyvJCCGvbLoDIsGr7R7FdNkaFXsNlDHW9umBqiFuU67tuGssDL9N31oFAgr5a2GQxPqMyUDOnMYVhd+qOv2EK7kReIEtO6VpTRY6m9AnSLYbWfKPYOWHTw++2emdrhsceHcRjgZWc/+JY7Mikw7drIsoJpoFW9+Bc1z+eqTTbI04VLSY/dj8RrR6VhBgKNeocNmLU8B8e85IMR7e7bo54pkAcpiDM9A0oPhpJ37B+4AvLHVBEbzEua32KdeyRYO+wQ/oUnQzRh2iKj3sI91jj9E1b+Hff/gmY6/VhSSVMU8rk/SCfHb3z80PFAPKUBSyeQxpk79b6zngHMPfWX4iokrAEEzerUKWRxxioJEObyPzliZ/N6NtsVDKV6icYxjOQAibDhvhMu3u4N1otMi7v+aO9XroHiFZ/SO2V3/h6KmEmeyqhH/93g8911vEEJQkMDxavNNcnRYQwE/+WCm6Fw48Oz41ETO8yc3zcQWpp0rXDMrVhYPvT9phb8aRjetFapk4kofZn7/qFAdWIsTVictZrb9HhN54xZQMXX6URoQquGkM1S2bqYXqFdojQ9rFZw7ECBFmWFUix+9/gqsPcy4iTEL9Zk/N+FXxFNrkfJn66V6zW7Sxk3rH6MJAcw==
-X-Forefront-Antispam-Report:
-	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:122-147-219-42.static.sparqnet.net;CAT:NONE;SFS:(13230040)(1800799024)(376014)(82310400026)(36860700016)(13003099007)(18002099003)(56012099003)(55112099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	wWkOJfTQzmKwlAlW+gNfzm0d3+5FHIMA/blsxQIfx7YqtQtLGnS0VM6EdRRBWBNwuts6+iiNOtlSoYwD/jiGTBX4NevSG8zWrG17aFluT9z8MaoSJ9KwseOQvVzYIypWtonhtv0GL1FVFjuXOOW1rK1wjxQgFb5FPuEjjnTp8py6M3fs7k0/m9KE3UNI954wT3bhj7cW5zpzqsi78AZg0wW1sdDqtimG7j1LstaIKtjhi2y/HTYr0Ocr0Cv6ce7ByWMNtpTqINGNDD26aKvN3hn2CFCoqd5a8LbY0741qh166XMsqGp/M40v98YQjEGiST0HPx7zn2q8gJcFTrfqRPb54KNYAmf0HjHW4eZTL2RWmL1kxHbUb5oycr0IFOFJR2vckNXNblK1+L7c9vrLbXKt6rBsl8mtkiYnEeUxRzRA09V1HSbg/+Atu1zLggMU
-X-OriginatorOrg: qnap.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 09:57:36.9096
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 340e6daa-84c3-42ec-741e-08de86671da5
-X-MS-Exchange-CrossTenant-Id: 6eba8807-6ef0-4e31-890c-a6ecfbb98568
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6eba8807-6ef0-4e31-890c-a6ecfbb98568;Ip=[122.147.219.42];Helo=[mail19.qnap.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	OSA0EPF000000CB.apcprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSQPR04MB7946
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V2] cpufreq: conservative: Reset requested_freq on limits
+ change
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
+        Sumit Semwal <sumit.semwal@linaro.org>,
+        Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org,
+        zhongqiu.han@oss.qualcomm.com
+References: <d846a141a98ac0482f20560fcd7525c0f0ec2f30.1773999467.git.viresh.kumar@linaro.org>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <d846a141a98ac0482f20560fcd7525c0f0ec2f30.1773999467.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIwMDA3NyBTYWx0ZWRfX+bOjs6Sa3S0k
+ otfhujDxQ3zpZa3wl7GpHaJUtJqClO0nQzK9boWrZcoDSCtCWSkmybxxQxGvm83mXIe00/ZgT3d
+ sWNGGaeZQIHrDRhfzxmB4cGFGxDg9uVct+k1gGjb8/U7c2Fq9AfE0CbQn7kk5t8jUYfWsVszW0i
+ AHt8uBkOzkxZiwlXppWTyY0Vc+FP1Wo3cZVL0l8PRMb1hki7Yuqfil6k+dKOcRe9DJQde/H4B0u
+ R6zXOcNU6y74RqmOOLvTFo/8BYJzqHZZ9pYFSxyD1wiLAO9Jze11KiF78/2RwBMvoRLx1THu4UA
+ rdzC7LmcP1ekHVCFBPF6hfUZ7XLenzLPFuLUG7G5VUIXR3Q5Riph43ji//NGTzaiAJhgxHKdXm6
+ +fZq56BdJbxmZmHe8PIMkIUF1OGusB12mZyFnUZvBT4OvbktKkzfcqsbX2vxadrH/+2P+b/HHeM
+ Sj1hvTz45iEugQQkCTg==
+X-Proofpoint-GUID: EVubm5Tuxhn6FU7Y-nJR6cOwS2l5hmQ6
+X-Proofpoint-ORIG-GUID: EVubm5Tuxhn6FU7Y-nJR6cOwS2l5hmQ6
+X-Authority-Analysis: v=2.4 cv=Y/D1cxeN c=1 sm=1 tr=0 ts=69bd1b1e cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=VwQbUJbxAAAA:8 a=i0EeH86SAAAA:8 a=EUspDBNiAAAA:8 a=KKAkSRfTAAAA:8
+ a=tFKV1D7yu5sg3FCBrf4A:9 a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-20_01,2026-03-19_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 spamscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
+ malwarescore=0 clxscore=1015 phishscore=0 bulkscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603200077
 
-On AMD Ryzen Embedded V1780B (Family 17h, Zen 1), the BIOS does not
-provide ACPI _CPC objects and the CPU does not support MSR-based CPPC
-(X86_FEATURE_CPPC).  The _PSS table only lists nominal P-states
-(P0 = 3350 MHz), so when get_max_boost_ratio() fails at
-cppc_get_perf_caps(), cpuinfo_max_freq reports only the base frequency
-instead of the rated boost frequency (3600 MHz).
+On 3/20/2026 5:38 PM, Viresh Kumar wrote:
+> A recently reported issue highlighted that the cached requested_freq
+> is not guaranteed to stay in sync with policy->cur. If the platform
+> changes the actual CPU frequency after the governor sets one (e.g.
+> due to platform-specific frequency scaling) and a re-sync occurs
+> later, policy->cur may diverge from requested_freq.
+> 
+> This can lead to incorrect behavior in the conservative governor.
+> For example, the governor may assume the CPU is already running at
+> the maximum frequency and skip further increases even though there
+> is still headroom.
+> 
+> Avoid this by resetting the cached requested_freq to policy->cur on
+> detecting a change in policy limits.
+> 
 
-  dmesg:
-    ACPI CPPC: No CPC descriptor for CPU:0
-    acpi_cpufreq: CPU0: Unable to get performance capabilities (-19)
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
-cppc-cpufreq already has a DMI fallback (cppc_get_dmi_max_khz()) that
-reads the processor max speed from SMBIOS Type 4.  Export it and reuse
-it in acpi-cpufreq as a last-resort source for the boost frequency.
 
-A sanity check ensures the DMI value is above the _PSS P0 frequency
-and within 2x of it; values outside that range are ignored and the
-existing arch_set_max_freq_ratio() path is taken instead.  The 2x
-upper bound is based on a survey of the AMD Ryzen Embedded V1000
-series, where the highest boost-to-base ratio is 1.8x (V1404I:
-2.0 GHz base / 3.6 GHz boost).
 
-Tested on AMD Ryzen Embedded V1780B with v7.0-rc4:
+> Reported-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> Tested-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> Link: https://lore.kernel.org/all/20260210115458.3493646-1-zhenglifeng1@huawei.com/
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> [v2]
+> - Completely different design to solve the problem.
+> 
+>   drivers/cpufreq/cpufreq_conservative.c | 12 ++++++++++++
+>   drivers/cpufreq/cpufreq_governor.c     |  3 +++
+>   drivers/cpufreq/cpufreq_governor.h     |  1 +
+>   3 files changed, 16 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index e0e847764511..df01d33993d8 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -313,6 +313,17 @@ static void cs_start(struct cpufreq_policy *policy)
+>   	dbs_info->requested_freq = policy->cur;
+>   }
+>   
+> +static void cs_limits(struct cpufreq_policy *policy)
+> +{
+> +	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
+> +
+> +	/*
+> +	 * The limits have changed, so may have the current frequency. Reset
+> +	 * requested_freq to avoid any unintended outcomes due to the mismatch.
+> +	 */
+> +	dbs_info->requested_freq = policy->cur;
+> +}
+> +
+>   static struct dbs_governor cs_governor = {
+>   	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+>   	.kobj_type = { .default_groups = cs_groups },
+> @@ -322,6 +333,7 @@ static struct dbs_governor cs_governor = {
+>   	.init = cs_init,
+>   	.exit = cs_exit,
+>   	.start = cs_start,
+> +	.limits = cs_limits,
+>   };
+>   
+>   #define CPU_FREQ_GOV_CONSERVATIVE	(cs_governor.gov)
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 36eb7aee4bcd..acf101878733 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -563,6 +563,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_stop);
+>   
+>   void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+>   {
+> +	struct dbs_governor *gov = dbs_governor_of(policy);
+>   	struct policy_dbs_info *policy_dbs;
+>   
+>   	/* Protect gov->gdbs_data against cpufreq_dbs_governor_exit() */
+> @@ -574,6 +575,8 @@ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+>   	mutex_lock(&policy_dbs->update_mutex);
+>   	cpufreq_policy_apply_limits(policy);
+>   	gov_update_sample_delay(policy_dbs, 0);
+> +	if (gov->limits)
+> +		gov->limits(policy);
+>   	mutex_unlock(&policy_dbs->update_mutex);
+>   
+>   out:
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index 168c23fd7fca..1462d59277bd 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -138,6 +138,7 @@ struct dbs_governor {
+>   	int (*init)(struct dbs_data *dbs_data);
+>   	void (*exit)(struct dbs_data *dbs_data);
+>   	void (*start)(struct cpufreq_policy *policy);
+> +	void (*limits)(struct cpufreq_policy *policy);
+>   };
+>   
+>   static inline struct dbs_governor *dbs_governor_of(struct cpufreq_policy *policy)
 
-  Before: cpuinfo_max_freq = 3350000 (base only)
-  After:  cpuinfo_max_freq = 3600000 (includes boost)
 
-Link: https://www.amd.com/en/products/embedded/ryzen/ryzen-v1000-series.html#specifications
-Signed-off-by: Henry Tseng <henrytseng@qnap.com>
----
- drivers/acpi/cppc_acpi.c       |  3 ++-
- drivers/cpufreq/acpi-cpufreq.c | 21 ++++++++++++++++-----
- include/acpi/cppc_acpi.h       |  1 +
- 3 files changed, 19 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index f0e513e9ed5d..f53de414acf2 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1944,7 +1944,7 @@ static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
- }
- 
- /* Look up the max frequency in DMI */
--static u64 cppc_get_dmi_max_khz(void)
-+u64 cppc_get_dmi_max_khz(void)
- {
- 	u16 mhz = 0;
- 
-@@ -1958,6 +1958,7 @@ static u64 cppc_get_dmi_max_khz(void)
- 
- 	return KHZ_PER_MHZ * mhz;
- }
-+EXPORT_SYMBOL_GPL(cppc_get_dmi_max_khz);
- 
- /*
-  * If CPPC lowest_freq and nominal_freq registers are exposed then we can
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index e7eff6c2f092..9b4638ad27ba 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -849,13 +849,24 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 		policy->cpuinfo.max_freq = freq * max_boost_ratio >> SCHED_CAPACITY_SHIFT;
- 	} else {
-+#ifdef CONFIG_ACPI_CPPC_LIB
-+		unsigned int freq = freq_table[0].frequency;
-+		u64 max_speed = cppc_get_dmi_max_khz();
- 		/*
--		 * If the maximum "boost" frequency is unknown, ask the arch
--		 * scale-invariance code to use the "nominal" performance for
--		 * CPU utilization scaling so as to prevent the schedutil
--		 * governor from selecting inadequate CPU frequencies.
-+		 * Use DMI "Max Speed" if it looks plausible: must be
-+		 * above _PSS P0 frequency and within 2x of it.
- 		 */
--		arch_set_max_freq_ratio(true);
-+		if (max_speed > freq && max_speed < freq * 2)
-+			policy->cpuinfo.max_freq = max_speed;
-+		else
-+#endif
-+			/*
-+			 * If the maximum "boost" frequency is unknown, ask the arch
-+			 * scale-invariance code to use the "nominal" performance for
-+			 * CPU utilization scaling so as to prevent the schedutil
-+			 * governor from selecting inadequate CPU frequencies.
-+			 */
-+			arch_set_max_freq_ratio(true);
- 	}
- 
- 	policy->freq_table = freq_table;
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 4d644f03098e..e6c5ef3173c5 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -156,6 +156,7 @@ extern int cppc_set_enable(int cpu, bool enable);
- extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
- extern bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu);
- extern bool cppc_perf_ctrs_in_pcc(void);
-+extern u64 cppc_get_dmi_max_khz(void);
- extern unsigned int cppc_perf_to_khz(struct cppc_perf_caps *caps, unsigned int perf);
- extern unsigned int cppc_khz_to_perf(struct cppc_perf_caps *caps, unsigned int freq);
- extern bool acpi_cpc_valid(void);
 -- 
-2.43.0
-
+Thx and BRs,
+Zhongqiu Han
