@@ -1,93 +1,188 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A69D3E0C60
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:10:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6A123B2FDC
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:20:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774030235; cv=none; b=HihWEaeuiHHRCbzS3O3MgDmn1YKXrD+TxDPf2CchyF3QR3FVBkXnRGkqqe95HmyT6s8D4jyg8ut7SeEbz3wWep2R9C3diNfR0YyeaLI/B8vi7hrEKn+xMFnH8gyU0kYDU06+EEIjeSh02klNaeLVK49/m6lCCg5Io6UOtaS0UM8=
+	t=1774030836; cv=none; b=GRHQXJdqctIinw+W+2CxYpNA0iMrPXCJkaJr9wDHmtpI+l/STcUxYR12DxIVFFacuNaTAD58RJWCuf9YzwGu/Ri+MPKYsP2pNAxpTUO71DBq5ST6AA+GK9U04vYGm+Xn5lIwGT1lOEpDKClKd3WhSwVV2cA3A5o5cnHRk0BEmdE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774030235; c=relaxed/simple;
-	bh=Jpss/77VJuvh2ZeXsO2jjwNuD4CAxEZi6FGKYUBlSww=;
+	s=arc-20240116; t=1774030836; c=relaxed/simple;
+	bh=/2FmF1+s9+JnUik8tx08R8i2DCSkv7HYbO/lzTxtn9o=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tN371TJ9+2rJ9/47BE20W97cVDfgxfnAma/xfaUolImM6U2UXgvayHuclvaqsK/vGgNs0N1vQoqqJY1IC/47U14C7SZB/m1pMMtgNGGMoST8TQMbV384J/0q+qLIoaFijofCUGdCHy9QUsK8zNWM73Rr0Y1dCPIJws6SfPbjnMw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H8lsQ/sV; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=Xx8DioC6mHf3uMOCzy1rbfL8vx/WVvdLjHxDMtxeYf5S0iz1SpylfVh9NBJzpOx9RU/7HBV3jDoDr4XT82ETpMNhFuBDn6PwjG2weVEM9BtpVgYr4DAR8svgsjChGyrlJU2psy6WYY1jKegLNqyJfQaLi03+uQw+Pwr5QE4ZYPQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qVMqG1mC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H8lsQ/sV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DF91C2BC87
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:10:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qVMqG1mC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60841C4CEF7
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:20:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774030235;
-	bh=Jpss/77VJuvh2ZeXsO2jjwNuD4CAxEZi6FGKYUBlSww=;
+	s=k20201202; t=1774030836;
+	bh=/2FmF1+s9+JnUik8tx08R8i2DCSkv7HYbO/lzTxtn9o=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=H8lsQ/sVFQMBQ+pFsF/VV23y0fNr+qSnh6DY+8jqzmyseoJT2bJY8nw7IuM+i/Rpa
-	 EXXCWEbCGywkPsbsHa3cbxS8BiXBD+SMl9sEOsbGmI7CM710eOR6jbAYtC/dCprr9m
-	 D85GYQE/YaPEvfE7ActUG5bLvbxfD9EezM61qNmHU9WZhz8Hk1dhVkGS9jsaVJklYQ
-	 hsfZvoie4/MKYvpt9/jCzIX1NfilSLxtEW0JdEtKMgraOBpfPQFaKImQR0W8qaGPzh
-	 9gAih6K98EYn1UQB85uXKkaWmFxeyptlbKc/iJucJpFlFau3f24UWMEjpP5cly0MK9
-	 FtcYUWD+6dBtg==
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-7d7eb85fb81so1177195a34.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:10:35 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCU0zXyxUELdqe7AFLz9oYIHfTJtOP2uWl295Ai61kYAKGjeNRD5ZCPomnW/AEqvMGXwylgrZm1JZw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzffkWOPpjMgsPC0CUZvthgeCLV1j56iOK83Yeq0Uc8oEnnWnvq
-	YyxzLiCmA+Kjm43xGSZwWVn+gZEWh7EtNrr6Hs9cXGgha5GENBPB1Kdjw/sFba1slLeM+U8DXid
-	2AhAqtx0qNHcQ8f1HTHNMCWO2koPvppk=
-X-Received: by 2002:a05:6820:4805:b0:67c:250c:ac4c with SMTP id
- 006d021491bc7-67c250cad51mr1731395eaf.31.1774030234300; Fri, 20 Mar 2026
- 11:10:34 -0700 (PDT)
+	b=qVMqG1mCerSIzYCTuYFicWV18EMmjuYGgjXj1gFLkmqNKhYmfOpzbDvL8pk4lKZEo
+	 t+sgjiQUYKtMSaFZ9JDu4IITHwDFHMGbKYwlSyNR8qurIyTp/nGn+kN03BKKq1jKtY
+	 Ow0Dnsf+ZxbAZIovTbiewSShLyruuRfdF49MqnA1vFjkYHF4xBbTak1UlUMgQZlgHL
+	 nZ6kKk1DkqCbNAMcZhzQuq+L6PONmDUntUiqS0PN4cZnk7C2+Oirj+nYlPhIxwqXvD
+	 CXwU/Fiqjk+Fw43KTnMzUK1y/W7myHVvCs016y4us934SnGaaY66ExLNlHOmhICOCT
+	 Kz6jZa5lMCsQg==
+Received: by mail-oi1-f181.google.com with SMTP id 5614622812f47-4670676ba03so802213b6e.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:20:36 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXpZKze7IGjAYLJVh4BhXAtdz4/vpGo4dhlOI3+FfoHl6THKfTNrNfKX4/N1WKHxnM+BbZL9WoFQg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwrOl+reXi1O/NsM/xtTl4Ots9eXHrIGGZQZ5zRuxVftevnx/07
+	Fs8oG29KOyVorRlP4uu3nhZC4zQUXyKaKrcxWhmYGAIHjfdf3JOQS8nQitp7Jv6jBcKcMBw+L0a
+	q4NemT5LuvgdFwOry1saMoEY8aoiEr2g=
+X-Received: by 2002:a05:6808:1645:b0:462:dc57:f8ba with SMTP id
+ 5614622812f47-467e5f095d0mr2208888b6e.27.1774030835503; Fri, 20 Mar 2026
+ 11:20:35 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260313185333.2370733-1-sathyanarayanan.kuppuswamy@linux.intel.com>
- <43d464a89afdf955282ffe3ce0c5acd50e047500.camel@linux.intel.com>
-In-Reply-To: <43d464a89afdf955282ffe3ce0c5acd50e047500.camel@linux.intel.com>
+References: <20260320170313.163386-1-youngjun.park@lge.com> <20260320170313.163386-4-youngjun.park@lge.com>
+In-Reply-To: <20260320170313.163386-4-youngjun.park@lge.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 20 Mar 2026 19:10:23 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hY2BWVqHQK6i_1rRCOrrtaeJq7Pe_OLz6d5Efy6t_cMw@mail.gmail.com>
-X-Gm-Features: AaiRm531sFyfwtcJUJ4G-PgsAXBL0DxRUBLdbV3usF1z8wPkX4KnOzI3GvrLNZM
-Message-ID: <CAJZ5v0hY2BWVqHQK6i_1rRCOrrtaeJq7Pe_OLz6d5Efy6t_cMw@mail.gmail.com>
-Subject: Re: [PATCH v1 0/6] powercap: intel_rapl: Move primitives to interface drivers
-To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Fri, 20 Mar 2026 19:20:24 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gHTPCkVySAuPBkPoV=SwmBRG_c-TtPbz0CNsUUPEkY8w@mail.gmail.com>
+X-Gm-Features: AaiRm51AjAgtOUbYQswu1KWiSaj81rVMqfYBli5jqjANmDWpKKnCsKuexQlpqPY
+Message-ID: <CAJZ5v0gHTPCkVySAuPBkPoV=SwmBRG_c-TtPbz0CNsUUPEkY8w@mail.gmail.com>
+Subject: Re: [PATCH v6 3/3] PM: hibernate: fix spurious GFP mask WARNING in
+ uswsusp path
+To: Youngjun Park <youngjun.park@lge.com>
+Cc: rafael@kernel.org, akpm@linux-foundation.org, chrisl@kernel.org, 
+	kasong@tencent.com, pavel@kernel.org, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev, 
+	linux-pm@vger.kernel.org, linux-mm@kvack.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 20, 2026 at 6:02=E2=80=AFPM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Fri, 2026-03-13 at 11:53 -0700, Kuppuswamy Sathyanarayanan wrote:
-> > RAPL supports multiple interfaces (MSR, MMIO, and TPMI), each with
-> > their
-> > own register layouts and bitmask definitions. Currently, the
-> > primitive
-> > tables and bitmasks for all three interfaces live in the common
-> > driver,
-> > which requires interface-specific handling logic in shared code and
-> > makes
-> > the common layer unnecessarily complex.
-> >
-> > This series cleans this up by moving each interface's primitive
-> > definitions into its own driver, so the common driver no longer needs
-> > to
-> > know anything about per-interface register layouts.
-> >
-> > All patches are no-functional-change refactoring.
-> >
-> > This series is based on top of the earlier RAPL cleanup series:
-> >
-> >
-> > https://lore.kernel.org/linux-pm/20260212233044.329790-1-sathyanarayana=
-n.kuppuswamy@linux.intel.com/T/#t
-> >
->
-> For whole series:
->
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Again, this patch does not appear to depend on the rest of the series,
+in which case there's no need to send the other patches along with it.
 
-Whole series applied as 7.1 material, thanks!
+Please send the next version separately unless there is a dependency
+on the other two patches, but in that case that dependency should be
+explained in the changelog.
+
+On Fri, Mar 20, 2026 at 6:03=E2=80=AFPM Youngjun Park <youngjun.park@lge.co=
+m> wrote:
+>
+> Commit 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask()
+> stacking") introduced refcount-based GFP mask management that warns
+> when pm_restore_gfp_mask() is called with saved_gfp_count =3D=3D 0:
+>
+>   WARNING: kernel/power/main.c:44 at pm_restore_gfp_mask+0xd7/0xf0
+>   CPU: 0 UID: 0 PID: 373 Comm: s2disk
+>   Call Trace:
+>    snapshot_ioctl+0x964/0xbd0
+>    __x64_sys_ioctl+0x724/0x1320
+>   ...
+>
+> The uswsusp path calls pm_restore_gfp_mask() defensively in
+> SNAPSHOT_CREATE_IMAGE, SNAPSHOT_UNFREEZE, and snapshot_release(),
+> where the GFP mask may or may not be restricted depending on the
+> execution path.
+>
+> Before the stacking change this was a silent no-op; it now triggers
+> a WARNING when saved_gfp_count is 0.
+>
+> Introduce pm_restore_gfp_mask_safe(), which skips the call if
+
+It would be better to call this pm_restore_gfp_mask_nowarn() IMV.
+
+> saved_gfp_count is 0. This avoids the warning without requiring
+> state tracking in snapshot_ioctl, which could otherwise leave the
+> GFP mask permanently restricted if mismanaged.
+>
+> Fixes: 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask() stacking")
+> Signed-off-by: Youngjun Park <youngjun.park@lge.com>
+> ---
+>  include/linux/suspend.h |  1 +
+>  kernel/power/main.c     | 18 ++++++++++++++++++
+>  kernel/power/user.c     |  6 +++---
+>  3 files changed, 22 insertions(+), 3 deletions(-)
+>
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index b02876f1ae38..7777931d88a5 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -454,6 +454,7 @@ extern void pm_report_hw_sleep_time(u64 t);
+>  extern void pm_report_max_hw_sleep(u64 t);
+>  void pm_restrict_gfp_mask(void);
+>  void pm_restore_gfp_mask(void);
+> +void pm_restore_gfp_mask_safe(void);
+>
+>  #define pm_notifier(fn, pri) {                         \
+>         static struct notifier_block fn##_nb =3D                  \
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 5f8c9e12eaec..90e9bd56a433 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -36,6 +36,24 @@
+>  static unsigned int saved_gfp_count;
+>  static gfp_t saved_gfp_mask;
+>
+> +/**
+> + * pm_restore_gfp_mask_safe - Conditionally restore the GFP mask
+> + *
+> + * Call pm_restore_gfp_mask() only if a GFP restriction is active.
+> + *
+> + * After GFP mask stacking was introduced, calling
+> + * pm_restore_gfp_mask() without a matching restriction triggers a
+> + * warning. Some hibernation paths invoke restore defensively, so this
+> + * helper avoids spurious warnings when no restriction is in place.
+> + */
+> +void pm_restore_gfp_mask_safe(void)
+> +{
+> +       WARN_ON(!mutex_is_locked(&system_transition_mutex));
+
+Could this be changed to lockdep_assert_held()?
+
+> +       if (!saved_gfp_count)
+> +               return;
+
+Please add an empty line here.
+
+> +       pm_restore_gfp_mask();
+> +}
+> +
+>  void pm_restore_gfp_mask(void)
+>  {
+>         WARN_ON(!mutex_is_locked(&system_transition_mutex));
+> diff --git a/kernel/power/user.c b/kernel/power/user.c
+> index aab9aece1009..88de4b76a9dc 100644
+> --- a/kernel/power/user.c
+> +++ b/kernel/power/user.c
+> @@ -119,7 +119,7 @@ static int snapshot_release(struct inode *inode, stru=
+ct file *filp)
+>         free_all_swap_pages(data->swap);
+>         unpin_hibernation_swap_type(data->swap);
+>         if (data->frozen) {
+> -               pm_restore_gfp_mask();
+> +               pm_restore_gfp_mask_safe();
+>                 free_basic_memory_bitmaps();
+>                 thaw_processes();
+>         } else if (data->free_bitmaps) {
+> @@ -306,7 +306,7 @@ static long snapshot_ioctl(struct file *filp, unsigne=
+d int cmd,
+>         case SNAPSHOT_UNFREEZE:
+>                 if (!data->frozen || data->ready)
+>                         break;
+> -               pm_restore_gfp_mask();
+> +               pm_restore_gfp_mask_safe();
+>                 free_basic_memory_bitmaps();
+>                 data->free_bitmaps =3D false;
+>                 thaw_processes();
+> @@ -318,7 +318,7 @@ static long snapshot_ioctl(struct file *filp, unsigne=
+d int cmd,
+>                         error =3D -EPERM;
+>                         break;
+>                 }
+> -               pm_restore_gfp_mask();
+> +               pm_restore_gfp_mask_safe();
+>                 error =3D hibernation_snapshot(data->platform_support);
+>                 if (!error) {
+>                         error =3D put_user(in_suspend, (int __user *)arg)=
+;
+> --
