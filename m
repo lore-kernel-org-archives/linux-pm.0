@@ -1,21 +1,20 @@
 Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15D2D3D0920
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC1483D0914
 	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 17:03:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774026205; cv=none; b=ChB8JHQftZ10dZTnq9IaiNamrqeLtuKYg8mbqN6SklMQWS6cOIHAKDwNRyPfT6kwiwtPnraoXQgsWLYIPqEOX85ZCtS6CDiLDmZuIdG3fUpTU81DCsC79nc9T/5s4HhHr+ce77NGKFWAA41dMZa1/9t+6iq6mbVOIJ+fR1eVPG0=
+	t=1774026206; cv=none; b=a/nipiTmcfXrpTU5amAwKeoJrBf2oGwYGFFq/hfaMJVpmgYZOsbIgIcF5G6vTrYfSUmfZMTpMOUd6jJsHYnqSA2jJpoTj0C3Zg5SdCVeiShG6kyVjJSFMH5Sr8bHhe22xDiE8hzwBq7LVPuoIB4iUfGO5Y2mA3s3qAIewW/yvyk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774026205; c=relaxed/simple;
-	bh=5LOCeO4tn7HdnP2h2j7RlmfzAkjNRQRUpGyy+cQvCzQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=csQz2G0sErYYdQWj+DjmdBL/5n35N6Kvts1/7EOXno+EN37DWBPLThnmvQTbWXoIcfU3EwO/TgPBc82BBIgWx1BTREDB11U+aJN3U2rG91E4QFzpOWoMp77nffXuBCZY6MP/4JkAbFbqH3DOCCZMy7hL+yxo6Fd7zYDlObzOCsI=
+	s=arc-20240116; t=1774026206; c=relaxed/simple;
+	bh=tOsfc8vGXSTckwD4O/zUMHNKk1lqXzlTXuZPqMotYA0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=EvU+DBWDuJFnjI+IFzBBKU5+NQxuWu2biPNOUAiZJ9f+/1jaXW53M5YuFOs0+aHGvhABrhXF0sWeUmxJF8LMm0dtbY+VBgPz88vwTq7HpdRXUl5JfR/6UX6bGIx9z0XBtI1NYWj8nsUUUqWgJPFhrws5XtopDoAYfIA00ndlTkU=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.103 with ESMTP; 21 Mar 2026 02:03:21 +0900
+	by 156.147.51.103 with ESMTP; 21 Mar 2026 02:03:14 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
 From: Youngjun Park <youngjun.park@lge.com>
@@ -32,12 +31,10 @@ Cc: chrisl@kernel.org,
 	usama.arif@linux.dev,
 	linux-pm@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [PATCH v6 3/3] PM: hibernate: fix spurious GFP mask WARNING in uswsusp path
-Date: Sat, 21 Mar 2026 02:03:13 +0900
-Message-Id: <20260320170313.163386-4-youngjun.park@lge.com>
+Subject: [PATCH v6 0/3] mm/swap, PM: hibernate: fix swapoff race and optimize swap
+Date: Sat, 21 Mar 2026 02:03:10 +0900
+Message-Id: <20260320170313.163386-1-youngjun.park@lge.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260320170313.163386-1-youngjun.park@lge.com>
-References: <20260320170313.163386-1-youngjun.park@lge.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,110 +43,102 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Commit 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask()
-stacking") introduced refcount-based GFP mask management that warns
-when pm_restore_gfp_mask() is called with saved_gfp_count == 0:
+Currently, in the uswsusp path, only the swap type value is retrieved at
+lookup time without holding a reference. If swapoff races after the type
+is acquired, subsequent slot allocations operate on a stale swap device.
 
-  WARNING: kernel/power/main.c:44 at pm_restore_gfp_mask+0xd7/0xf0
-  CPU: 0 UID: 0 PID: 373 Comm: s2disk
-  Call Trace:
-   snapshot_ioctl+0x964/0xbd0
-   __x64_sys_ioctl+0x724/0x1320
-  ...
+Additionally, grabbing and releasing the swap device reference on every
+slot allocation is inefficient across the entire hibernation swap path.
 
-The uswsusp path calls pm_restore_gfp_mask() defensively in
-SNAPSHOT_CREATE_IMAGE, SNAPSHOT_UNFREEZE, and snapshot_release(),
-where the GFP mask may or may not be restricted depending on the
-execution path.
+This patch series addresses these issues:
+- Patch 1: Fixes the swapoff race in uswsusp by pinning the swap device
+  from the point it is looked up until the session completes.
+- Patch 2: Removes the overhead of per-slot reference counting in alloc/free
+  paths and cleans up the redundant SWP_WRITEOK check.
+- Patch 3: Fixes a spurious WARNING in the uswsusp GFP mask restore path.
+  (Found during uswsusp test)
 
-Before the stacking change this was a silent no-op; it now triggers
-a WARNING when saved_gfp_count is 0.
+Links:
+RFC v1: https://lore.kernel.org/linux-mm/20260305202413.1888499-1-usama.arif@linux.dev/T/#m3693d45180f14f441b6951984f4b4bfd90ec0c9d
+RFC v2: https://lore.kernel.org/linux-mm/20260306024608.1720991-1-youngjun.park@lge.com/
+RFC v3: https://lore.kernel.org/linux-mm/20260312112511.3596781-1-youngjun.park@lge.com/
+v4: https://lore.kernel.org/linux-mm/abv+rjgyArqZ2uym@yjaykim-PowerEdge-T330/T/#m924fa3e58d0f0da488300653163ee8db7e870e4a
+v5: https://lore.kernel.org/linux-mm/ab0YEn+Fd41q6LM7@yjaykim-PowerEdge-T330/T/#m8409d470c68cb152b0849940759bff7d7806f397
 
-Introduce pm_restore_gfp_mask_safe(), which skips the call if
-saved_gfp_count is 0. This avoids the warning without requiring
-state tracking in snapshot_ioctl, which could otherwise leave the
-GFP mask permanently restricted if mismanaged.
+Testing:
+- Hibernate/resume via sysfs
+  (echo reboot > /sys/power/disk && echo disk > /sys/power/state)
+- Hibernate with suspend via sysfs
+  (echo suspend > /sys/power/disk && echo disk > /sys/power/state)
+- Hibernate/resume via uswsusp (suspend-utils s2disk/resume on QEMU)
+  - Verified swap I/O works correctly after resume.
+  - Verified swapoff succeeds after snapshot resume completes.
+  - Verified pm_restore_gfp_mask() WARNING no longer triggers (Patch 3).
+  - Verified SNAPSHOT_FREEZE followed by snapshot_release() does not
+    trigger pm_restore_gfp_mask() WARNING (Patch 3).
+- swapoff during active uswsusp session:
+  - Verified swapoff returns -EBUSY while swap device is pinned (Patch 1).
+  - Verified swapoff succeeds after uswsusp process terminates.
 
-Fixes: 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask() stacking")
-Signed-off-by: Youngjun Park <youngjun.park@lge.com>
----
- include/linux/suspend.h |  1 +
- kernel/power/main.c     | 18 ++++++++++++++++++
- kernel/power/user.c     |  6 +++---
- 3 files changed, 22 insertions(+), 3 deletions(-)
+Changelog:
+v5 -> v6:
+ - Replaced get/put reference approach with SWP_HIBERNATION
+   pinning to prevent swapoff, per Kairui's feedback.  Renamed helpers
+   from get/find/put_hibernation_swap_type() to
+   pin/find/unpin_hibernation_swap_type().
+ - Removed swapoff waiting on hibernation reference.
+   swapoff now returns -EBUSY immediately when the swap device is
+   pinned.
+ - Updated function comments per Kairui's review.
+ - Updated commit message.
+ - Fixed pm_restore_gfp_mask_safe() to use saved_gfp_count
+   check instead of saved_gfp_mask, and hold system_transition_mutex
+   for the check.  Addressed AI review finding that SNAPSHOT_FREEZE
+   followed by snapshot_release() could still trigger the WARNING.
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index b02876f1ae38..7777931d88a5 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -454,6 +454,7 @@ extern void pm_report_hw_sleep_time(u64 t);
- extern void pm_report_max_hw_sleep(u64 t);
- void pm_restrict_gfp_mask(void);
- void pm_restore_gfp_mask(void);
-+void pm_restore_gfp_mask_safe(void);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 5f8c9e12eaec..90e9bd56a433 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -36,6 +36,24 @@
- static unsigned int saved_gfp_count;
- static gfp_t saved_gfp_mask;
- 
-+/**
-+ * pm_restore_gfp_mask_safe - Conditionally restore the GFP mask
-+ *
-+ * Call pm_restore_gfp_mask() only if a GFP restriction is active.
-+ *
-+ * After GFP mask stacking was introduced, calling
-+ * pm_restore_gfp_mask() without a matching restriction triggers a
-+ * warning. Some hibernation paths invoke restore defensively, so this
-+ * helper avoids spurious warnings when no restriction is in place.
-+ */
-+void pm_restore_gfp_mask_safe(void)
-+{
-+	WARN_ON(!mutex_is_locked(&system_transition_mutex));
-+	if (!saved_gfp_count)
-+		return;
-+	pm_restore_gfp_mask();
-+}
-+
- void pm_restore_gfp_mask(void)
- {
- 	WARN_ON(!mutex_is_locked(&system_transition_mutex));
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index aab9aece1009..88de4b76a9dc 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -119,7 +119,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
- 	free_all_swap_pages(data->swap);
- 	unpin_hibernation_swap_type(data->swap);
- 	if (data->frozen) {
--		pm_restore_gfp_mask();
-+		pm_restore_gfp_mask_safe();
- 		free_basic_memory_bitmaps();
- 		thaw_processes();
- 	} else if (data->free_bitmaps) {
-@@ -306,7 +306,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 	case SNAPSHOT_UNFREEZE:
- 		if (!data->frozen || data->ready)
- 			break;
--		pm_restore_gfp_mask();
-+		pm_restore_gfp_mask_safe();
- 		free_basic_memory_bitmaps();
- 		data->free_bitmaps = false;
- 		thaw_processes();
-@@ -318,7 +318,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 			error = -EPERM;
- 			break;
- 		}
--		pm_restore_gfp_mask();
-+		pm_restore_gfp_mask_safe();
- 		error = hibernation_snapshot(data->platform_support);
- 		if (!error) {
- 			error = put_user(in_suspend, (int __user *)arg);
+v4 -> v5:
+ - Rebased onto v7.0-rc4 (Rafael J. Wysocki comment)
+ - No functional changes. rebase conflict fix.
+
+rfc v3 -> v4:
+ - Introduced get/find/put_hibernation_swap_type() helpers per Kairui's
+   feedback. find_ for lookup-only, get/put for reference management.
+ - Switched to swap_type_to_info() and added type < 0 check per
+   Kairui's suggestion.
+ - Fixed get_hibernation_swap_type() return when ref == false (Reviewed by Kairui)
+ - Made swapoff wait interruptible to prevent hang when uswsusp
+   holds a swap reference.
+ - Fixed spurious WARN_ON in pm_restore_gfp_mask() by introducing
+   pm_restore_gfp_mask_safe() (Patch 3).
+ - Updated commit messages and added comments for clarity.
+ - Rebased onto latest mm-new tree.
+
+rfc v2 -> rfc v3:
+ - Split into 2 patches per Chris Li's feedback.
+ - Simplified by not holding reference in normal hibernation path
+   per Chris Li's suggestion.
+ - Removed redundant SWP_WRITEOK check.
+ - Rebased onto f543926f9d0c3f6dfb354adfe7fbaeedd1277c6b.
+
+rfc v1 -> rfc v2:
+ - Squashed into single patch per Usama Arif's feedback.
+
+Youngjun Park (3):
+  mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap
+    device
+  mm/swap: remove redundant swap device reference in alloc/free
+  PM: hibernate: fix spurious GFP mask WARNING in uswsusp path
+
+ include/linux/suspend.h |   1 +
+ include/linux/swap.h    |   5 +-
+ kernel/power/main.c     |  18 ++++
+ kernel/power/swap.c     |   2 +-
+ kernel/power/user.c     |  21 +++--
+ mm/swapfile.c           | 178 +++++++++++++++++++++++++++++++---------
+ 6 files changed, 178 insertions(+), 47 deletions(-)
+
+
+base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
 -- 
 2.34.1
 
