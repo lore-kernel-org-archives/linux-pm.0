@@ -1,106 +1,170 @@
-Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com [209.85.221.180])
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD3B02E266C
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 09:37:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60D802E8B64
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 09:38:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773999439; cv=none; b=QegQzgj37G+KUtDQ4Ku9Z2u8b3WtHC0dRrhhn+hzqDWu9AOoZrkpHpgIBSgsvUMjzYJHzzx81bGZTUC4PF8rTpITr/xXhSw0H43203ryQWfXNs4CwjmgQyunki1CONQ7gTLXWMGlEYD3ab0nP3JTulm90OqULFvajLG5SqZdsYE=
+	t=1773999505; cv=none; b=n+J75z1LuqTa2+VWd4Zbbd8l+eag1EPjp3ZFZN4OaOOU7QkzkAO9DRSxGzcQLs7EbKO4buEqaRZwCxssYcgI2WFePrnIxzfNDGsFUqklQSJuM+1vU5B8D8khU/zcCCiOED5I64/sdDrSGJOL2F5nQ6c/btmCIKg7KkX+nC2RQrg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773999439; c=relaxed/simple;
-	bh=OnWjqKpMxVfnZWeaFobxoRZpf7uh+VJc9UOJGP0nSMI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CbTE8XpKgRkJrIVEHcVLdfk2h86E3x024eK8jKB/8It8tHELgDKrPwjiu4hS5AhYLEpDm6NZrk+Y67xcw9ohJVS8PhQGB3cD4o6X197tq+okOyuq2mmGzG5G+M/xCC51+aDCQaHzh+ghdOJcPZ+qbxy9XcUsk1WiEBJjfNfpLfY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f180.google.com with SMTP id 71dfb90a1353d-56cc8a021e2so1265208e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:37:18 -0700 (PDT)
+	s=arc-20240116; t=1773999505; c=relaxed/simple;
+	bh=2YCuEty2unv7N8a/bv0AHivwyDfA6N+PF5ZTIGgY3po=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=R/E4hwqf9QfmN8YKZzVVCzX/CghKof9vx1Jetvo4dSyY684ws7quA0DbcYg4Y8beHC+wSE/tS8BZuc6c5MkPvuoPza34/fm0wKpTSU8+av3yTbucp1j+OWf2IXVKyU/ioi/8Wm1zCRONZ9iAhngE7JfR3d9KdsljDdIYc9cnHJ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=dO7RKIhK; arc=none smtp.client-ip=209.85.214.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dO7RKIhK"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2ad21f437eeso15557665ad.0
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:38:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773999504; x=1774604304; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=vQasu/xrnIk8QOOWcGsoDHIKa5Hw9PFKHEZ6nnxa6ME=;
+        b=dO7RKIhKRoy3Xx7xlqS1MJahw48mmfdFVPT3fZ/rTC37Pnqn/beiPaps75ysAau9Hf
+         B1NHewdaWOCRkr2cXhVS3gsgXD1CfdbicrC8vLzwYIzJ+f6PyLNBL4KgMVNd0BlLEyR+
+         vCDreZO2fbMy8lQNLc12VFt+T3+dVScvEAkavraRmZDfQEqrnancuuZLAYmp6UpeBYZB
+         JfcRes9aPv5t5wmM4pmTNb+d1vFWCveE35X2JfExNBKKhV7t6moxKdIr0KNHHpboTBLL
+         G31LNbWM4bESeNEqTbhr5ArRB7rk3BiQKXKEpsFw6FV+t6ylHPkxKPVGD4dw8b2Nryka
+         JZMQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773999438; x=1774604238;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1773999504; x=1774604304;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=043aRu80oNzZpDNLQsr22bQjNBOCbJEW+dvHRdFYP0s=;
-        b=DagtbdBDPh7pSMB3nIrubLgoqkZ1GcFWo9ULFhaz1TVZKl6+oi6HGeOeCFXSpZxm5Q
-         QwbqY8zqMrV3kQ4KzP2aV2VjWWOzHj/rGjIRlv4osiPeiQoIe0gAn1ojNQD4fPZ+FVSp
-         lRgaivENe9ktt6ISzZWi67xoWYOZz6gLhWXDNoBlCufZEfOxYvghmZs7z52wHXbfzYFG
-         48Vt1CK3qa+7Nlk22HrwslINXlzYpYYga7KOXwyptax91JgbZQDjDW67g5lM+XxDERHJ
-         ybbIJckJOkiPR9ufbcWrk5Ykf1UzpTocQmDmvxOQx0kEAnBqc3jgWm97A5JHcc3MbW3h
-         aoww==
-X-Forwarded-Encrypted: i=1; AJvYcCWEifgEPbvWsAkoQ3fCOt8ZZnr2jrod/bsnvQJWeaksMynpTnxwZLBlZvK25ukMwBAmwHGV10Jteg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx75GTK7Bhmq7LeiK80H1vnuzPhUTA1YP5g+YfF/fNcRJXXFqHa
-	KTQl5Cp/lGoosIY8WV7knyiZki5pDrBBWVPqmhFB5XHSBGHfwl+awqlZI5rigaG/TAs=
-X-Gm-Gg: ATEYQzybVSZ05oXGgUXstV8jHFEWI4CzT7RaW6EVFDuOQWa899akIx+hsgrwAbtkz2n
-	mhGkU+4udgw5N5P0RfRS2a2pNoDOeSig+3Sv94VeWCSZIbQmesBy4mYklh9e5Mr1lyS0aHpJ3OP
-	KEyJE6rO9ESMNBqln9l//9O7ATjgAdNiaChFkEVN4ni8jXd0Nn8IFGw5FBUQ+/ecOcrnzfRCO9H
-	kcfUkN1ONcVjAYq/bbf+kwM/wumpPDgTwhN+D2CgxoO0f/6Jf97LVHMcy/Op2Nk6Qs7bN4maBMW
-	Qontq/aCNj3vBtROAXmoTT2LDnBveavV9iCpowXSwDyKTdZoKbVNjazni5/2sF75TBURdA82IGx
-	QxfvMFqwyvjWGHdgshkGujg6rDJbZk6pfVvQphKpPzs1roU/BV5MNnJmAq0mkOkRniqgn7Smw5S
-	MANl6ja6UZVh5G+FD6zXjl7qMec4+pj/SvgLyuQJD+hYQXlZ2+UC4hDcjWrS5TZQLx
-X-Received: by 2002:a05:6122:45a3:b0:56b:75cd:ec27 with SMTP id 71dfb90a1353d-56cddda1e24mr1241730e0c.0.1773999437619;
-        Fri, 20 Mar 2026 02:37:17 -0700 (PDT)
-Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com. [209.85.221.173])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56cddcb1179sm1225174e0c.14.2026.03.20.02.37.16
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 20 Mar 2026 02:37:16 -0700 (PDT)
-Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-56ccdd0044dso1325245e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:37:16 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUReH8B4X0aWj9aSsJbkWN69Ir5ft0ePo8mmah3FqfjobWrkuisOGdh/XhAmkLWM/dyDLZmqU8Rvw==@vger.kernel.org
-X-Received: by 2002:a05:6102:e08:b0:5ff:ecd0:1d1f with SMTP id
- ada2fe7eead31-60295fbd13emr3475496137.19.1773999436473; Fri, 20 Mar 2026
- 02:37:16 -0700 (PDT)
+        bh=vQasu/xrnIk8QOOWcGsoDHIKa5Hw9PFKHEZ6nnxa6ME=;
+        b=bRvuHFpvM3KlD3urQ6A4ZewyJVuv2exxe1LFV2grrNo4Zfx5OeEl6bIHPtI/ZXYCwb
+         zjhKB6rbahx793ebuVGFwUs/d2et3F1t2kjqZTTRNxi62hL+Q0bOB7U3vg6pMlFkBDFI
+         Qe0QcmPV2wfLWnNC7Jw1cy86V3alpjAJfVcJWJJ6uVUMci0WIi02Ql8DKeOy1no3eEgO
+         VUzfzchtqq0QGbZ56ZyjPzSpw5E9Mm39c3m9mpuhwoblLXV93Vc+/7GmG6VqRYRVRtEm
+         XPYUQyVZ7XcAXYrid1uSK6FftbORrRwlgNeiX22LygQeU27ODJzy4p3jdzwNjt1khU56
+         d4YA==
+X-Gm-Message-State: AOJu0Yyzg8CLwNh5UhRYzuRzEU8VZupiheymSmiuSk/28C1fukRms4xC
+	VZyzO/H1uiqyku8uWLJ/olK6D4y4esQHm5eMFcn4dCd5mBYX3jISRdJ1di16+DEsv+U=
+X-Gm-Gg: ATEYQzwC+O0Zmy81zShQhQTf20tWk8j1MxYj7YX8+6f/EUhYPrb6vgi61kWdje44rS6
+	Wgx7T0cX6ei6lbkB6JND0HJk6HEWXmtqlROiKOuOFVuM/RiOE5HtFgzsIzAap7n9wp5DgCvO49I
+	Ieb/gQjoz99n1ODsiENUPQd46ow3wPaehpEoe+lyFzaWP1OWt2px0EApn+a2PEBNEuY9+17YwnC
+	Wh1FK6F0+LEcus2jNg7BGQ972DzW4n04oEATdBiuZVRVo+HCAHPKVRapRkn/2gp+UvLTqmxzGCZ
+	mP/7eXc1l/J5UdNQD6MbJI06zbKb50gwamBO+olFkCHGx1DP+5nOAZ9VI6ibXsOQ0REF9VWe4wf
+	P8YxfW80iyPetNsJ61N3spNZJb5+40Nl9Oqc2sApfCqPvGAZybGU54v8hJajww/C0L8OAzacB7J
+	eV95mIMnz0J0ve1A8qz6Qf7ys7GYaJuqdC8r0=
+X-Received: by 2002:a17:902:d2c9:b0:2b0:52dc:f1c1 with SMTP id d9443c01a7336-2b0827bd48fmr20166035ad.16.1773999503526;
+        Fri, 20 Mar 2026 02:38:23 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b083655b5dsm23012515ad.52.2026.03.20.02.38.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Mar 2026 02:38:22 -0700 (PDT)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Sumit Semwal <sumit.semwal@linaro.org>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH V2] cpufreq: conservative: Reset requested_freq on limits change
+Date: Fri, 20 Mar 2026 15:08:14 +0530
+Message-Id: <d846a141a98ac0482f20560fcd7525c0f0ec2f30.1773999467.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260303132305.438657-1-ulf.hansson@linaro.org> <20260303132305.438657-10-ulf.hansson@linaro.org>
-In-Reply-To: <20260303132305.438657-10-ulf.hansson@linaro.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Mar 2026 10:37:05 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUK+xePxZc-OXRfDmvQ1v4q5d=HQ9c9aNqUg7gPAMxUAA@mail.gmail.com>
-X-Gm-Features: AaiRm53dJdS28UgcJSslHTg92ZueMj8wSzmPzodj_bB6ak0ZjTNGpHHyRikIKcw
-Message-ID: <CAMuHMdUK+xePxZc-OXRfDmvQ1v4q5d=HQ9c9aNqUg7gPAMxUAA@mail.gmail.com>
-Subject: Re: [PATCH 9/9] pmdomain: renesas: rmobile-sysc: Drop GENPD_FLAG_NO_STAY_ON
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Saravana Kannan <saravanak@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, 
-	Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
-	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Ulf,
+A recently reported issue highlighted that the cached requested_freq
+is not guaranteed to stay in sync with policy->cur. If the platform
+changes the actual CPU frequency after the governor sets one (e.g.
+due to platform-specific frequency scaling) and a re-sync occurs
+later, policy->cur may diverge from requested_freq.
 
-Thanks for your patch!
+This can lead to incorrect behavior in the conservative governor.
+For example, the governor may assume the CPU is already running at
+the maximum frequency and skip further increases even though there
+is still headroom.
 
-On Tue, 3 Mar 2026 at 14:23, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> Due to the new fine grained sync_state support for onecell genpd provider
-> drivers, we should no longer need use the legacy behaviour. Therefore,
-> let's drop GENPD_FLAG_NO_STAY_ON.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Avoid this by resetting the cached requested_freq to policy->cur on
+detecting a change in policy limits.
 
-Rmobile-sysc is not a onecell provider, and thus never needed this flag.
-Regardless:
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reported-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Tested-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Link: https://lore.kernel.org/all/20260210115458.3493646-1-zhenglifeng1@huawei.com/
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+[v2]
+- Completely different design to solve the problem.
 
-Gr{oetje,eeting}s,
+ drivers/cpufreq/cpufreq_conservative.c | 12 ++++++++++++
+ drivers/cpufreq/cpufreq_governor.c     |  3 +++
+ drivers/cpufreq/cpufreq_governor.h     |  1 +
+ 3 files changed, 16 insertions(+)
 
-                        Geert
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index e0e847764511..df01d33993d8 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -313,6 +313,17 @@ static void cs_start(struct cpufreq_policy *policy)
+ 	dbs_info->requested_freq = policy->cur;
+ }
+ 
++static void cs_limits(struct cpufreq_policy *policy)
++{
++	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
++
++	/*
++	 * The limits have changed, so may have the current frequency. Reset
++	 * requested_freq to avoid any unintended outcomes due to the mismatch.
++	 */
++	dbs_info->requested_freq = policy->cur;
++}
++
+ static struct dbs_governor cs_governor = {
+ 	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+ 	.kobj_type = { .default_groups = cs_groups },
+@@ -322,6 +333,7 @@ static struct dbs_governor cs_governor = {
+ 	.init = cs_init,
+ 	.exit = cs_exit,
+ 	.start = cs_start,
++	.limits = cs_limits,
+ };
+ 
+ #define CPU_FREQ_GOV_CONSERVATIVE	(cs_governor.gov)
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 36eb7aee4bcd..acf101878733 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -563,6 +563,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_stop);
+ 
+ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+ {
++	struct dbs_governor *gov = dbs_governor_of(policy);
+ 	struct policy_dbs_info *policy_dbs;
+ 
+ 	/* Protect gov->gdbs_data against cpufreq_dbs_governor_exit() */
+@@ -574,6 +575,8 @@ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+ 	mutex_lock(&policy_dbs->update_mutex);
+ 	cpufreq_policy_apply_limits(policy);
+ 	gov_update_sample_delay(policy_dbs, 0);
++	if (gov->limits)
++		gov->limits(policy);
+ 	mutex_unlock(&policy_dbs->update_mutex);
+ 
+ out:
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 168c23fd7fca..1462d59277bd 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -138,6 +138,7 @@ struct dbs_governor {
+ 	int (*init)(struct dbs_data *dbs_data);
+ 	void (*exit)(struct dbs_data *dbs_data);
+ 	void (*start)(struct cpufreq_policy *policy);
++	void (*limits)(struct cpufreq_policy *policy);
+ };
+ 
+ static inline struct dbs_governor *dbs_governor_of(struct cpufreq_policy *policy)
+-- 
+2.31.1.272.g89b43f80a514
 
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
