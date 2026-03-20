@@ -1,60 +1,70 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61E02620DE;
-	Fri, 20 Mar 2026 03:06:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDA8D40DFC6
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 05:33:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773976001; cv=none; b=tyE/VJFhk4lVAiFJ8JDYTh2IuqttzkEVWvOKbU1ny9tqB2gHsbt7mbA9KgRQGlV/wHKDISORERi5ENFHsL1TH8S4EdDOadTAyWBNoENjVUOG2D6jx2gXALaGjTu2VVusnBfhXEHQgiWas6bX2ZyiFiICM5Co9Z9WgpNIi7ypgG4=
+	t=1773984833; cv=none; b=BBVl49ncURIZFzBpt91Jwu1xSaBqS8u7Zutxsj0fhVsv3ostRk3Kc2gsO4Q4LsLngXgidEfPgAbCiMyO7j0PTDIxa2isldsSQ02QgRCM+TCHwTefrqc1qhamlV88l0M7jRnFgnykNPcQWS5RhliIizDhyeJjSELjBi3Mit1NhXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773976001; c=relaxed/simple;
-	bh=Qa2kKiW2K4o32w52YsMZm0rMqJtB23Cf1BU+wGQGI/c=;
+	s=arc-20240116; t=1773984833; c=relaxed/simple;
+	bh=p4jdjoNZvu9JK5AtQ3lU1aueRQj3/gDHUzJt/cbJm+8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aRWwqy9GwDvipGVgCUPBldqx89IwGye/EQYUNrnSaQlTpma0LOJoylvsvz1NWcBsEUa5VNlaydSYdrruRmadz/6DkTp2kScf3/mofUbMImbdkNRj1527+oqiox3vw3ULjuJg7UA8OU+kIzH/NVtSj2sxwDjyaKquXgQlbStl3M8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VSuW0pWL; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=jNRS9SPc1Nzcwo+e3vo1x7cRp3HfEAPGZBjOY/DTy+RJgsxRtE3zcHLNH66OcB7GyQCLXUBnAv+cxb8W6gLkAonD2uPj142KCFExkOjkdGIDTc1cKIZIFCCtkpV7C/RRGSIJuIrqj2hboO/yNyscyH8FU9cfShLYk34P5yR14o4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LP5caZqJ; arc=none smtp.client-ip=209.85.214.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VSuW0pWL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A240C19424;
-	Fri, 20 Mar 2026 03:06:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773976001;
-	bh=Qa2kKiW2K4o32w52YsMZm0rMqJtB23Cf1BU+wGQGI/c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=VSuW0pWLO3r7l7Zja6MMNkzFI+8A1EBOKMEvtmHHOGIKOoyLKRqdZ/jQukHTWJu9b
-	 Fgx/wyx68udFKnMkZVza6jDMWbJm5ftMtTdj9V9GkEpG0MglFWioFcESAS/DI6X9GM
-	 mGCf2nu+ksWrxIpmWQQewDgsWAoSl6KLfWBW7fiIh0AE+ayV3Iyu7LvHIMZt981W/C
-	 gtTCVNs9ZuvSPL0GldB3BIkKZDrrDyTkHZALx8IPVz8CvH8OPb8mT14PCaZMeWkQSO
-	 eZMs6n6Kmb37cAfq9gU42TqtGO+315YwmgBUo/BkwwQ7KBvJySucgbldHrjtmzEWHv
-	 y1hEKlj1DR/mg==
-Date: Fri, 20 Mar 2026 03:06:35 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>, Tejun Heo <tj@kernel.org>,
-	Lai Jiangshan <jiangshanlai@gmail.com>,
-	Tobias Schrammm <t.schramm@manjaro.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Dan Carpenter <dan.carpenter@linaro.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
-	Dzmitry Sankouski <dsankouski@gmail.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Benson Leung <bleung@chromium.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	driver-core@lists.linux.dev, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev,
-	stable@vger.kernel.org
-Subject: Re: (subset) [PATCH v2 00/10] workqueue / drivers: Add
- device-managed allocate workqueue
-Message-ID: <aby5u_ToXifVwf6B@google.com>
-References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LP5caZqJ"
+Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2aecefc7503so10414825ad.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2026 22:33:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1773984831; x=1774589631; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=xlPfj4bdTLV2Os6t+carSgE77ZFwl6/igW33LG2/Ts4=;
+        b=LP5caZqJP7/wnROLWayOtVVz6IRgghEzspXSqvq2p0zq9C9F3IM0PeD6cV88xMerXC
+         qEFBDqau8MzVSBxlfrC2chiK3Vb6j1BlYcMZAQxEStgEkw6Z7ZXEO77bg93kzNikh+mw
+         1i3lrR/YeG/HiNat/qkmOgttPJmY/f0+bMwkMmTDIzLs1vLE3vR5eqMPbT7gmF/ZzP0J
+         H3J4hSpIdVqWNYUerxTvb2w5ve23fU+30/jmRzsTO3iYLmJuhLPL7w9YuD1EZarKR19e
+         ht+y9GBUDbX1MwosZg6M/iYUoazNUnhG/DNTJjOsmFG37xXD0A1MDS3pvJWMV8bS0hwx
+         YRHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773984831; x=1774589631;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=xlPfj4bdTLV2Os6t+carSgE77ZFwl6/igW33LG2/Ts4=;
+        b=q77sO3ZQmZVzE7Jw19IX3htCzKxocW2xXW05ZTYybi4MavCeGD1OSeUZV+wkp+LFXE
+         cjq+y3CglwH18m+JWe6jBgAil+I29C4g4WtE9xuey+GqRC/1rrLQBamMGIAK2XuG8AyW
+         BF62IDMG9AYoq5dgP/4ugSa5qTzgeGwRV8NtSXcinnZPhhUjlzKDSaYP1xW6wt+uN7gx
+         QoqUmarVHAgew7ijP7Y+FIEBs+cgpD0CKgquHMPvso5rYJF46O5WW7XX0XGElpyI3VDM
+         8UNKM/PBLTCBjptpz7ZXezQHbFeRrGVKBj6ZZ/md1af5y31Rg8f0+FjMVLlK2RRFKU+B
+         Zk6g==
+X-Gm-Message-State: AOJu0Yx5GN3JcyProNzuc10uax1HMS+Y4C4Z9sBietL4LwdAUsAnXMmz
+	7tShZNQqx8Hzv1aW2olkUmx/POhmrloR6V5QB6jIl+uUHAzFrqomCHliOAZL3p0kzr813+ZYxGc
+	9SRRM
+X-Gm-Gg: ATEYQzyC1ZKE0fdNdbINlg2n1GJgYuZQycKKPn30Eu9J0ozlMN3wMKhbiK+H3xGOpMo
+	BPUBw46Qp79jQPDyM5UOITHD7VVzE+g8OyruR2YHePeWrNPnQNvRH8KQwQs+4AzpFEreBQX6K6J
+	Lt/CGoGM2lRsYGPUp7+KFAQhjLkSx10jSaLOLltdDJKxJhU00J7o84ZvAAJIeisyPE3y6JaMbSt
+	oU8p8+cKF1Rv6BSKnoQ3fbtaiGCMnEb6jcXoL0vAFX0Pvlfg9n+R3VstOtLgI1ScTh5zsdMb3ZU
+	Vj5O387bkrHK0sVNOHy1bbVCW7Pwv2GDSroS390NH247MDAmbw0SuK4WM5oOD2goZUDv6vfgXTq
+	jerRD8jiDPRBnEWtF8dDH5jzErdd/h60VN3/JjabMLq/v/ySZbKWKEDM2M8bvaO6yKbK4/wcVST
+	+aq9441k8t7AHMIX9yS3VAT8tH
+X-Received: by 2002:a17:903:1aa4:b0:2b0:7225:d2c0 with SMTP id d9443c01a7336-2b08277cbedmr18459485ad.30.1773984831194;
+        Thu, 19 Mar 2026 22:33:51 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b08352a17asm9904015ad.24.2026.03.19.22.33.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Mar 2026 22:33:50 -0700 (PDT)
+Date: Fri, 20 Mar 2026 11:03:47 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rosen Penev <rosenp@gmail.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpufreq: tegra194: remove COMPILE_TEST
+Message-ID: <mvnvzcjhhwsf7n43zlgsirsmogebkukw4n6biu4movti34i2rp@bui4ndqpgjp3>
+References: <20260318191233.5851-1-rosenp@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,23 +73,32 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
+In-Reply-To: <20260318191233.5851-1-rosenp@gmail.com>
 
-On Thu, Mar 05, 2026 at 10:45:39PM +0100, Krzysztof Kozlowski wrote:
-> Merging / Dependency
-> ====================
-> All further patches depend on the first one, thus this probably should
-> go via one tree, e.g. power supply.  The first patch might be needed for
-> other trees as well, e.g. if more drivers are discovered, so the best if
-> it is on dedicated branch in case it has to be shared.
+On 18-03-26, 12:12, Rosen Penev wrote:
+> The driver needs architecture specific headers to build. Problem gets
+> exposed when TEGRA_BPMP gets COMPILE_TEST added to it.
 > 
-> [...]
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> ---
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 4014bc9dd73a..47c9b031f1b3 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -248,7 +248,7 @@ config ARM_TEGRA186_CPUFREQ
+>  
+>  config ARM_TEGRA194_CPUFREQ
+>  	tristate "Tegra194 CPUFreq support"
+> -	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC || (64BIT && COMPILE_TEST)
+> +	depends on ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC
+>  	depends on TEGRA_BPMP
+>  	default ARCH_TEGRA_194_SOC || ARCH_TEGRA_234_SOC
+>  	help
 
-Applied to
+Applied. Thanks.
 
-    https://git.kernel.org/pub/scm/linux/kernel/git/chrome-platform/linux.git for-next
-
-[10/10] platform/chrome: cros_usbpd_logger: Simplify with devm
-        commit: 168e4b208ca8c2e04de20cc6cb7e2fb035dc1ec8
-
-Thanks!
+-- 
+viresh
