@@ -1,58 +1,85 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8006F285CB6
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 02:50:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61E02620DE;
+	Fri, 20 Mar 2026 03:06:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773975033; cv=none; b=AasdaaF8EKq4x35ks63HjzKCWYlvb1ZeZFcAMJ8NQCa0sao+rJK182DQ8/RfGuDbu7M4iVnrD18mUK9NCkEjjNDr2Pej15vJ+pOOxLVXEb91QOg1PznPgBsoyADa4d/+uk/FM9ttyx0A0UTT+E6hieZwlo/aJMas12rVsZTflEw=
+	t=1773976001; cv=none; b=tyE/VJFhk4lVAiFJ8JDYTh2IuqttzkEVWvOKbU1ny9tqB2gHsbt7mbA9KgRQGlV/wHKDISORERi5ENFHsL1TH8S4EdDOadTAyWBNoENjVUOG2D6jx2gXALaGjTu2VVusnBfhXEHQgiWas6bX2ZyiFiICM5Co9Z9WgpNIi7ypgG4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773975033; c=relaxed/simple;
-	bh=KVGDEI6eseEcgaCSXUJI4ZcpUMbgOitzgm/GxAkzI5g=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=LlmA/d2XrSue8eYq0ddohnczZ5AeCsC0gUzNqRnNQLFK3C6OY5Jp/+kjnKRtRvuiU9pgW3tX4U1fGsevEXOiZ0JIw9kiCro6kWCazsIlbZBo/I2E9DIBFz13KdV7gB0HUnR2oG613FD77PlZUUtICI+HJYWrr+D6Da1QU0D6IOc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=E6TxFQP7; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1773976001; c=relaxed/simple;
+	bh=Qa2kKiW2K4o32w52YsMZm0rMqJtB23Cf1BU+wGQGI/c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aRWwqy9GwDvipGVgCUPBldqx89IwGye/EQYUNrnSaQlTpma0LOJoylvsvz1NWcBsEUa5VNlaydSYdrruRmadz/6DkTp2kScf3/mofUbMImbdkNRj1527+oqiox3vw3ULjuJg7UA8OU+kIzH/NVtSj2sxwDjyaKquXgQlbStl3M8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VSuW0pWL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="E6TxFQP7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACEBCC19424;
-	Fri, 20 Mar 2026 02:50:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1773975033;
-	bh=KVGDEI6eseEcgaCSXUJI4ZcpUMbgOitzgm/GxAkzI5g=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=E6TxFQP7Us5HlcDBS3w1rFIHGHtPxPvGxTJH4au24oBWmb5WdPGXDBC6r4qsM3aD6
-	 JpTdit6mPR52t4ng4EzRvC/xyyYMeDQcybaiGVDgWNBSO1+jy8v8jT77fYccRdTWPC
-	 62tDCIG/2twQCkcLRvwx/+bO4TsEstd5elYdu1BE=
-Date: Thu, 19 Mar 2026 19:50:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Youngjun Park <youngjun.park@lge.com>
-Cc: rafael@kernel.org, chrisl@kernel.org, kasong@tencent.com,
- pavel@kernel.org, shikemeng@huaweicloud.com, nphamcs@gmail.com,
- bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev,
- linux-mm@kvack.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 0/3] Fix swapoff race and cleanup in hibernation swap
- path
-Message-Id: <20260319195032.5c3b187d5779cf43cd63fcd0@linux-foundation.org>
-In-Reply-To: <20260319142404.3683019-1-youngjun.park@lge.com>
-References: <20260319142404.3683019-1-youngjun.park@lge.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VSuW0pWL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A240C19424;
+	Fri, 20 Mar 2026 03:06:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773976001;
+	bh=Qa2kKiW2K4o32w52YsMZm0rMqJtB23Cf1BU+wGQGI/c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=VSuW0pWLO3r7l7Zja6MMNkzFI+8A1EBOKMEvtmHHOGIKOoyLKRqdZ/jQukHTWJu9b
+	 Fgx/wyx68udFKnMkZVza6jDMWbJm5ftMtTdj9V9GkEpG0MglFWioFcESAS/DI6X9GM
+	 mGCf2nu+ksWrxIpmWQQewDgsWAoSl6KLfWBW7fiIh0AE+ayV3Iyu7LvHIMZt981W/C
+	 gtTCVNs9ZuvSPL0GldB3BIkKZDrrDyTkHZALx8IPVz8CvH8OPb8mT14PCaZMeWkQSO
+	 eZMs6n6Kmb37cAfq9gU42TqtGO+315YwmgBUo/BkwwQ7KBvJySucgbldHrjtmzEWHv
+	 y1hEKlj1DR/mg==
+Date: Fri, 20 Mar 2026 03:06:35 +0000
+From: Tzung-Bi Shih <tzungbi@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>, Tejun Heo <tj@kernel.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Tobias Schrammm <t.schramm@manjaro.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Dan Carpenter <dan.carpenter@linaro.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
+	Dzmitry Sankouski <dsankouski@gmail.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Benson Leung <bleung@chromium.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	driver-core@lists.linux.dev, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, chrome-platform@lists.linux.dev,
+	stable@vger.kernel.org
+Subject: Re: (subset) [PATCH v2 00/10] workqueue / drivers: Add
+ device-managed allocate workqueue
+Message-ID: <aby5u_ToXifVwf6B@google.com>
+References: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260305-workqueue-devm-v2-0-66a38741c652@oss.qualcomm.com>
 
-On Thu, 19 Mar 2026 23:24:01 +0900 Youngjun Park <youngjun.park@lge.com> wrote:
-
-> Currently, in the uswsusp path, only the swap type value is retrieved at
-> lookup time without holding a reference. If swapoff races after the type
-> is acquired, subsequent slot allocations operate on a stale swap device.
+On Thu, Mar 05, 2026 at 10:45:39PM +0100, Krzysztof Kozlowski wrote:
+> Merging / Dependency
+> ====================
+> All further patches depend on the first one, thus this probably should
+> go via one tree, e.g. power supply.  The first patch might be needed for
+> other trees as well, e.g. if more drivers are discovered, so the best if
+> it is on dedicated branch in case it has to be shared.
 > 
-> Additionally, grabbing and releasing the swap device reference on every
-> slot allocation is inefficient across the entire hibernation swap path.
+> [...]
 
-AI review has questions:
-	https://sashiko.dev/#/patchset/20260319142404.3683019-1-youngjun.park%40lge.com
+Applied to
+
+    https://git.kernel.org/pub/scm/linux/kernel/git/chrome-platform/linux.git for-next
+
+[10/10] platform/chrome: cros_usbpd_logger: Simplify with devm
+        commit: 168e4b208ca8c2e04de20cc6cb7e2fb035dc1ec8
+
+Thanks!
