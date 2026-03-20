@@ -1,73 +1,86 @@
-Received: from mx0b-0064b401.pphosted.com (mx0b-0064b401.pphosted.com [205.220.178.238])
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011063.outbound.protection.outlook.com [40.93.194.63])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92AE031F992;
-	Fri, 20 Mar 2026 20:30:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.178.238
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43BDE25CC74;
+	Fri, 20 Mar 2026 20:42:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.63
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774038621; cv=fail; b=R0gvicDV5MXhVbfJreGffVQtknTCje4zrHQLppmBw0xoewILsem2j7N64Z5XCIK5HL9wYmtWENdi8NYiWkKIGfLLYDvfkKK8TNSZ6cR9X+hhyso/tNeGoegiVarkNu2plmzLw9XAnZXtcvsY9f6C6kbBqxxVrzc9CfRq92PmZzU=
+	t=1774039339; cv=fail; b=Ji70nDy8GIvxAA+XW7TXGcY65YbNvTqU9p/n9boRn+FYokrPQHL+F1fkFlxHH7UHiHVNl0jXtB0UM9/hTw5PNOIkV/gXQ1+UuaCDq8L0JytILG30JJlx0jrA5yzA7wWuNsde0RsBmKUHmAGWOmbGUyAqL5b+em5ISbZ0IWVnQ34=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774038621; c=relaxed/simple;
-	bh=+OaXg7msG5+GimqW0p5SHuQYe2kz7eKDJKJcLHy2r0U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cXEgVo9OW6W0QXh8o0Ep063VnyeOn5z3GMj6bDz5b8DfSXYKU9Q1c2/PfZnig+m0LcpUe1TSxvY01CRc4uXlVGkKgtu84Mz+AWhTjEgn4cKTFp/aVMjd/f+0u8UwZGGYrLgKxNIXKkFgzBG2Jt5VFADE8nv7elc33pGk8M1eZts=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b=r4BeEHsK; arc=fail smtp.client-ip=205.220.178.238
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=windriver.com
+	s=arc-20240116; t=1774039339; c=relaxed/simple;
+	bh=ifwb3hWY+bXSyFp22Qz/KNefnraPja4ebQr0B9cXCQk=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=VDXp8gObLutQRtHQoO1gA2BvbWjZRizDBJIdwf2ylUU+PLiX9ConCoEeM/0+4no6bjatH/PQkBCLCr3OvHGDtmLJBhcJ+onrlBbgoaHuTVyLsN8d3ApF2MEpuIAjhPVcdQDlT1ziPDWY+eR7ywclcaKxuAd3wvH7ejPTdWuh/wo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=Mn+R2gjf; arc=fail smtp.client-ip=40.93.194.63
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b="r4BeEHsK"
-Received: from pps.filterd (m0250812.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62KDRiO83277586;
-	Fri, 20 Mar 2026 20:29:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com;
-	 h=cc:content-transfer-encoding:content-type:date:from
-	:in-reply-to:message-id:mime-version:references:subject:to; s=
-	PPS06212021; bh=ES4VK4OWxpBu8E6zVBJmJw+BveJkv01MNavKOPfpAok=; b=
-	r4BeEHsKVJDLFjLKRH6yJ4CWOexCMmWXBGmnIZkIUTdV0UFzPL18tW7reAeU8qxc
-	up1pmMvkBSWWKcs5OmoPg2sJd49u8kOo/Vz13keYad3yalE50UJtedRGgk0zmbG0
-	delcDG866mnz/5YtPOfL5bs4EECPFixkmW8eeHRahHs7Bf6v0GqQQBIskMV1ILSl
-	QhIWmOaEZxATu2uomnRWXb1FxFTObKeQZe9ePj9Gx0WQTBF7cdkSiXZvl4VXfTru
-	DFtYSxF1/PdkEHs+jLXNuLUS+dPgT/W7uMzqyC3AHKKeg0Ypke0yjWoIk1Yc4fXo
-	6rErNmEvEIJZOx8MHlYDOw==
-Received: from bl2pr02cu003.outbound.protection.outlook.com (mail-eastusazon11011060.outbound.protection.outlook.com [52.101.52.60])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 4cxm66egdc-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 20 Mar 2026 20:29:34 +0000 (GMT)
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="Mn+R2gjf"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aSp7OB3uE14yTiIg6DSM8IVaw90MKXwiiqGuUOFPRSUAYm695uIefh8chyECJ7q11240ONr2aysjA8kGypTLgO37CAANpkIitgJbNu8yQI8Rb98teJL6IiRZWUqzdweuO1/l7PWjF1h0UxCjjD2d/s4tcDs2wCrMRcHEn06Z2ovBoHOparBp580wkvuyvCmcm/bxI6fmirME+0HBXowJEPpT2zAFU4BKmXdPoL+TFSA4paxorJgjXFWhX73cNV5DrtzHxpCY3q4J0JvZOVnp/E5i4DjTW2XqF94zQvEsTVWuwWbLJGwi6vA7gUu+B7czUT7FkpRkLewMqdSoIw5CEg==
+ b=oysz1pGkDV8Gu37cgiDJ/JZzIl5ik2K+XRtORoveshL8YspcZ7P4XpgjC/h4evk/jPLpB2XNCCNxWqh3o4fIJlBhOfMbNfe9n3X/jm8WsETdjkRzsspfm5AOfds0ALVWL8smKN8HnfcZu6dQhkKg+XYQTCmW0AxCRgKZIy4p8h14sbCfwrTTMCz8lPkvSDTlLI/JiqEIov8NDUgPIJbW3Ios9x3gpFv8BwzrcK6r7DN9hUx2s/LfdERHG7KK8Y5PZ720fF18IarX/FH8cuuJ0P1Eud6SSYQEOX/tpf8gwf4BdC1iopC+TaUS0lywpesOzQDLo6+QXBIE73EY7YN2Zg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ES4VK4OWxpBu8E6zVBJmJw+BveJkv01MNavKOPfpAok=;
- b=cd9ZdDz774KtWTGPFd5Y76EaUe4SdjF54VG1QiEv5HUbVx7DYJaNEjRNjbTORczK/izz19y3tCw0RrWHgB2YLNg4bv+3kn/iFsGg5oTmN+CCA1hKSSZEG4/LRbX8MGyVNjOoWw0FnqfxOIn7QltCueltiAsdtGo4zI8wPsJTy57vMpMUXpKQzPuZb6rGqW+MU1yNubM7vwiQtXAMqbHU7UI/2eybZ9ur/KAC8md6BOGdH51nvbepc3D95HWXhWM9MGWdLV0RDKcsK7lBMsVUrrnSJkCandbupSXPyZ1lWaWFn7PqPdDTYre8kEOyPKPULFmy7dNzclHoOMKd4voomQ==
+ bh=i31aUGda9HUGX+xiejsGfvSlhcsm97u+js6zmP0sF4s=;
+ b=oekhO6aNychUafLObDCCYj7EwLaCq8JrkwoVtYCq4M9/wXhxea1bbkL0bwpYRoHlJoOdkXDsyXkK+gnklKgJbOCD5EBBZaf3PpApbH7n/khYGz6KJkQfjEphC3jaEUI+gnyN/GTTyh11FczcSox3cEi9xIPTpXsW8iuv+z5m2q00af5I+qaWlu6y9VKXwlRYHwAzbQhobnItgmCU+Bax1BWBqK7/AKz1895PRQK5Y9tPrjJSFXy31NuVMh/EYHrEy0jrVmhyGzbs38ErJm7HovOua1mooLyuZVEq2hVMpcbNIz4qS1AD3WoZ+dJFqT3JaoxwckOAVxhbB6JaZBQ5dA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=windriver.com; dmarc=pass action=none
- header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
-Received: from SJ2PR11MB7546.namprd11.prod.outlook.com (2603:10b6:a03:4cc::8)
- by MW4PR11MB6785.namprd11.prod.outlook.com (2603:10b6:303:20c::19) with
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=i31aUGda9HUGX+xiejsGfvSlhcsm97u+js6zmP0sF4s=;
+ b=Mn+R2gjf3DxseCFCsSYiS57i8Y2EwVTbcVfePRS0JOZia1A+ViQcyz/AElQqj87oytWp/fVsSxERRxIDwRqQLb2w8IHAb6rFEjNTIrkQF/zhmX7HXsGi32HvXuBLZ8NkvLxnR3NIHXyL4GFeQLU/+atzwDxycnzyNspXhwMYOZw=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from LV8PR12MB9714.namprd12.prod.outlook.com (2603:10b6:408:2a0::5)
+ by PH0PR12MB7790.namprd12.prod.outlook.com (2603:10b6:510:289::17) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.14; Fri, 20 Mar
- 2026 20:29:32 +0000
-Received: from SJ2PR11MB7546.namprd11.prod.outlook.com
- ([fe80::ca9b:dcf:8881:bced]) by SJ2PR11MB7546.namprd11.prod.outlook.com
- ([fe80::ca9b:dcf:8881:bced%5]) with mapi id 15.20.9745.007; Fri, 20 Mar 2026
- 20:29:32 +0000
-From: Ionut Nechita <ionut.nechita@windriver.com>
-To: stable@vger.kernel.org
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org,
-        christian.loehle@arm.com, artem.bityutskiy@linux.intel.com,
-        quic_zhonhan@quicinc.com, aboorvad@linux.ibm.com
-Subject: [PATCH 6.12.y 5/6] cpuidle: menu: Update documentation after get_typical_interval() changes
-Date: Fri, 20 Mar 2026 22:29:07 +0200
-Message-ID: <20260320202908.24377-6-ionut.nechita@windriver.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260320202908.24377-1-ionut.nechita@windriver.com>
-References: <20260320202908.24377-1-ionut.nechita@windriver.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Fri, 20 Mar
+ 2026 20:42:13 +0000
+Received: from LV8PR12MB9714.namprd12.prod.outlook.com
+ ([fe80::8c9f:3a5b:974b:99c6]) by LV8PR12MB9714.namprd12.prod.outlook.com
+ ([fe80::8c9f:3a5b:974b:99c6%6]) with mapi id 15.20.9745.012; Fri, 20 Mar 2026
+ 20:42:12 +0000
+Message-ID: <d0eda358-d1fa-4ec1-8a0d-53fd6777ff8d@amd.com>
+Date: Fri, 20 Mar 2026 13:42:07 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 3/7] dax/cxl, hmem: Initialize hmem early and defer
+ dax_cxl binding
+To: Dan Williams <dan.j.williams@intel.com>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+ linux-pm@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>,
+ Jan Kara <jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Len Brown <len.brown@intel.com>, Pavel Machek <pavel@kernel.org>,
+ Li Ming <ming.li@zohomail.com>, Jeff Johnson
+ <jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
+ Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nathan Fontenot <nathan.fontenot@amd.com>,
+ Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+ Benjamin Cheatham <benjamin.cheatham@amd.com>,
+ Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
+ Tomasz Wolski <tomasz.wolski@fujitsu.com>
+References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260319011500.241426-4-Smita.KoralahalliChannabasappa@amd.com>
+ <abuOLq6bMPa0nNAL@aschofie-mobl2.lan>
+ <3590e2d5-e768-4180-82a0-c972101f3440@amd.com>
+ <b56f55b1-4281-4edf-8aa4-27d0500ebd60@amd.com>
+ <69bc81bfa9baa_7ee310093@dwillia2-mobl4.notmuch>
+Content-Language: en-US
+From: "Koralahalli Channabasappa, Smita" <skoralah@amd.com>
+In-Reply-To: <69bc81bfa9baa_7ee310093@dwillia2-mobl4.notmuch>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: FR2P281CA0183.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:9f::19) To SJ2PR11MB7546.namprd11.prod.outlook.com
- (2603:10b6:a03:4cc::8)
+X-ClientProxiedBy: SJ0PR05CA0093.namprd05.prod.outlook.com
+ (2603:10b6:a03:334::8) To LV8PR12MB9714.namprd12.prod.outlook.com
+ (2603:10b6:408:2a0::5)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,227 +88,251 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ2PR11MB7546:EE_|MW4PR11MB6785:EE_
-X-MS-Office365-Filtering-Correlation-Id: ae1ceef4-3b33-400a-aff7-08de86bf6515
+X-MS-TrafficTypeDiagnostic: LV8PR12MB9714:EE_|PH0PR12MB7790:EE_
+X-MS-Office365-Filtering-Correlation-Id: 75554cd3-c299-4f54-94d6-08de86c129bc
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|52116014|376014|1800799024|10070799003|366016|56012099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|18002099003|22082099003|56012099003;
 X-Microsoft-Antispam-Message-Info:
-	DWTJjjciA/A4AOrEpfnfHGWPEFEZQ5a+ka6irYrsWllozC43BSx4LK08qwxX0sXo3p1iBDhYsDIJAsXI8EmAs0dOE73VPd+vmmzOmCK5yNRB/G2h7CDv+8bK+ozkGmtUOTsIA7JeFj08yYI20jlBr5D1VZPIazKOyvYufMwEnDIsz8QHV1z9Xuyg4OT/yqIJZWMIueLVW8LKZnfPMwgZUsUotDPYtYuYVgGiVyB0rYVzNMQH7HtQ4xi/Zjd4wWoBzDSUM+TCND7JQsb5IOtthf9Ufg1HGyao7GlCNv2GSGp3o7TnUcOUrgVdJOGvlyOdtJxLzf7kXSZlSb5oP7GMiT6P+Z9eiV2delEhipIi1scVMcro1wQDraQYn0yxsMD48Z38YcDh+NzU/m6XjdfACjfncbykXdTNcQuxBWd5857TIBv3jpqF9l6nKu19p3dWTt8fqkY2ccSjclphaMlfEOhhQb3xNKTWBNTbWBTYBrIKomvZFCoq17+pAqPN+p4OZRG2HIyMUjWJnpKJw0YPxeICf350yv/henNB2/zK8heGTnDzvNsN3G2B/G2IhI3llj1YU8CMR1BiBoZkH88+xtK7tpj6h/FrkuKQDU+zAfKzSCF+3UeROYY+VRzXIG48RXS/INYkLUsFws1iCeqcOynRf4JIncINi7+ua6spWj6F4aa/DsYxrnjDe92YTbkr
+	W2B+70CuqsgL0oz0aP2wNAFH6ySiE0BxPHeMogAvBB1o1nXWaRA0wouoNrjNZn73TAPMANPQSbOy5BIqVstSHrg4m3oeshT9sMBNcYZeA/M0VKck3kChDe5Aj1lFghNtFw5UvNBfGhGW29CGJcZ94loKCkAtiDU0fYWQ/5D/1dMjpVuzUpi/liazMyXc7Fdn29Jv/VfjBb0LozExAOorAlevcwQO5VgZL4PFzUHt3pJmxON1ZvUxRSsqPTSgQVk7mvM4An8p+F5J2Ta/uy+kuw+Mg4bRN0QVo/zKOo/0zulOrq8b2y0y6DsBYtBAdzzITN8RXVT8pzEYNRSO/tw0G7wrvP6vXoUjLWvOUUvbMkSYVLoL26BLvaS0fhAjP8umxRNBB8hbEgCUKvla+vEqlUW52TgyyqOjjM1UDINIILF1ffpuKe8ZEJuJA0rEcij5BU9BCHEO9aRNRzFc0qCgnZHI06qMEJzuqi4hBgnzM1fgyilRxE8dYVooWx0+dil4Ivw6YHGG4TersQG5YzsF9sXw87BQUTEo17OW3oXfSN/z/VQ7PLLiHpcchK9ElJviF0V9roisXJ17yNwKH9LuV7nw933dpZeP1nYNgBUzLrR0NkgWBfTCKknQwz6GFo6Bg03A92kNFtbCpcd3VBa8fntqZneetVvDRPPVTaH+GlShsmSepNuYw2ExOG5wmOMfqGAslL/TPDKIzwZEhtzIV//inh/gdZse8QcLN1gWJDc=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR11MB7546.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(10070799003)(366016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9714.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Zw1SjQ8deus5DKqtjmxVW19D2423i9Zd0Cvc1+rggmK7KrD6BQWwaM+49QTO?=
- =?us-ascii?Q?nFYh2mHbvHX0DG7dL0eWwcLe79XV9FOgjuTGDPIBdrE0RMOxK3iAk0CtIbMA?=
- =?us-ascii?Q?QPWsb2W9OgxfGljA6RXqrWZv8YGzf53Dqd+1STHKKu+2xnhZtLJkOb3SltmL?=
- =?us-ascii?Q?PSst9her83ywkCNlPr/EsXLalwA2aV2l8FNUtNE1E0d6i77wvhyyOQdZshDn?=
- =?us-ascii?Q?+zi2E324RdQv/3CR96f3uvbp4Gs+V0vN6LgLcfw3YM0KnepDi6j9ngiDcOpw?=
- =?us-ascii?Q?1zgDNumE7frtZY3CxfgJGJXOjMtXaJThHtMm39YtfCPHdeZbznScOFsFMXUc?=
- =?us-ascii?Q?t0ujeXuuMaiFnt3QI870bpNadtwnCcrjmzmB9locY1dJPxoLCXgZhTQouhzm?=
- =?us-ascii?Q?ysIOf3vgRtVAWOKFIFHv/6ajVch7RY+LR2rGMphhEo3oEB7A4HAA/mYSJBDd?=
- =?us-ascii?Q?f2VuUs4E9C11a/cVLJE2+uMP3+buZZq6xvWu0hiRVnWP9GQUSHPdSiD8Nz3y?=
- =?us-ascii?Q?nqTS6gKmKp+MI1pj/gbvzyPrt3h7UcHhfeJV8zRfTyYuP7MzBSaDzxA7gOwq?=
- =?us-ascii?Q?JuXEgrYUV/HhHRq2gHgNeunjAqWA7BqlMcRsHJ38bL8/wPUS73vYh0U4OkEm?=
- =?us-ascii?Q?wKupZm9iIr9HwA2uRYQYKtXWCY4Njv9eFFSZZCXntoA3drEtzL6VvN7dIjmX?=
- =?us-ascii?Q?S6otdenUSzxdsaKKquz4wzGsSmyaZehHG4P8hvq7tEGgWt8Js7MHR62ZTCY8?=
- =?us-ascii?Q?daqeMRzonF0JeE9VgWcvk+8yURRezQV/zLppP5woqKXkA9cRGPVzE9X/oL03?=
- =?us-ascii?Q?37ViGpOq2Q3+/iUT8gkVg77lP5CdjZZbz7akPEFWB92xRQ/9NcjZKmveWSaN?=
- =?us-ascii?Q?ItO26R+ZtmwH65K3zj88bjtpDt/1jTlQCSb98TSCxtN8pIKSMgO22Ec0RXc8?=
- =?us-ascii?Q?jcjhn/Ixt+NotRJ4A/+8hLcVbvXTjrJD4F12xoEftVOygC4+AQI+HRJylDjC?=
- =?us-ascii?Q?NBzTfInLQ6h96bXpRidQs0Z+XIn73CnsIWYwJvmTEAG8dRTF+hJycrcRcwbj?=
- =?us-ascii?Q?+nOr+xRHF/znsvQ9XFqL8HAe2ccFPxg3pmfD7B/dBhpigaoh7A749TKpMed/?=
- =?us-ascii?Q?rfkXxvQqrhPk93FC39bUIEjFUzmWVqc8fpM+be60B8Rrdt8barSm0SPYvE6T?=
- =?us-ascii?Q?xVTq9biIHBMC6fo2x0dwMiSbVdxKycvDwJQbEe0AGxuI2xkKNpOgnye8Mb25?=
- =?us-ascii?Q?GG/nxi1cnxsowP29ah/11qyrHePu8z4aJJ3aAcb2NpZ6Qn2umCY5IB4x7Zos?=
- =?us-ascii?Q?T/VFrn+aM0WqDgCI6UKlyoBSBOoUr4CbUp/mmJ9R0/ugc9klkZCEkoksNkau?=
- =?us-ascii?Q?94ODVgkpItYgsrQb8vKd8uUCbFmc0hcrhgQF+J9zbNTjQOqHlYmV/1lq03Cg?=
- =?us-ascii?Q?+aXUqGDrbbAE298SQVdDPYxvIqtYhnaj53XRpiqopAA63+6Xur0sh2Xr+g1r?=
- =?us-ascii?Q?DaLA1VP0IHX963eYR2PeGzDLOmWUkFWguEA7920AR4/na6JfrRBSgYiaIxaf?=
- =?us-ascii?Q?yCbApbKnLjlrnnJmRS99QgMH8s/i/bQc977ly8rt7bc73kQraXaSwE9sDU+O?=
- =?us-ascii?Q?aIVkjo/2RJxbcMEg26UN8WvIFa4cEcuD426QXQqaxDjGn1CiKjad35L6/QaM?=
- =?us-ascii?Q?jqVgi3ZmquLqHTdWAEFrfqUCcsrDzrRwLC6jshmVo2Iv/EVz2r+4/u2lxQE5?=
- =?us-ascii?Q?BPtlK3h7LMFnOxB7w6pLQ74ZLvTWCNn87BENCEyqYIQ2XO0lxCogaYQxAFzm?=
-X-MS-Exchange-AntiSpam-MessageData-1: Xfjv6blH22Tf/TOR/oerVFmH+iGN9dNOYx4=
-X-Exchange-RoutingPolicyChecked:
-	bZS3FI/eVU/r5Ig4Hn/dfMrNTzxD3cKni9Js0RN+TGdL44UtJCSTVb8g4+/awCJkcgvBuqpF4Q2QaXKF7Q6K/+ZKHh3St7TiWVi6/8lyeQ6D6VkYK2ZPB06h/Is9hmoG28KVjJ3QodrordvZsOZUshnubxvn0Kr4MT7onOmLRgKU2TdeClsaRDvEY0Ufpw7YnhYHUlJa6OICyaN3vhuAYvb7yzHDJb+379rfUSYDW1qfUjxkMv02UWpvnTFgTwIZ3RiLoB1MJojEnEft5NEmh9FeW4sFhDMeg4yl3C9viiifppI+6ktSXlVVfsS5MsFydH6++5uGQyKZJ9NihJWLMw==
-X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ae1ceef4-3b33-400a-aff7-08de86bf6515
-X-MS-Exchange-CrossTenant-AuthSource: SJ2PR11MB7546.namprd11.prod.outlook.com
+	=?utf-8?B?Ym4vUDVHVWZBUnVCZ2tjOStxaGphSjIxUzNFM1hsQ0FLbW1Bcyt1dlpzTzA3?=
+ =?utf-8?B?eGpYa2NvVytOWTVaQllIcUpGOHl2ZjVsOXM2cWhSQlJ6MzBRK2d1M3R4d1hX?=
+ =?utf-8?B?c1ljQTVNeGE1anFjOGhKY2QvTUprbzZuczJrUjFjUDU4Mm91SWY4SG1CSkEy?=
+ =?utf-8?B?UjlYWEYvdVIySnZSMnNveVY3N3hSMEJNakc1QmFOL1ZIenczNzFtOWpnQzRU?=
+ =?utf-8?B?Wk5reFhlZUgrYnN1WmViS3dpdE1qRXFnRkRRakxGRnVBdS8rM0RWc1lTRmlK?=
+ =?utf-8?B?V0hjbkplN0NJeWsrMnZEYU9GNkVpazJ4ZURRYUdRRXdkMmYwMEhYMDIzOHd4?=
+ =?utf-8?B?b2k3ZStJZTFiQWVINllPaFVjRFMvRUg0Y2Q5WGxiNXdkMWNFdlUvdWFKcHhP?=
+ =?utf-8?B?SGI4dnJYUHY5WjVHa1JHQjBtUHNJd0hJM2I4WTlBeUhuVytoM3pZRTFFVm1B?=
+ =?utf-8?B?SVJjaXN0emhyYVRLSkZPZkMxMEpRczlBQWxSM3ZnbmFrYTM3cWx5VE5UOU53?=
+ =?utf-8?B?Qk1aSy80YktFaDRSelJneE5hZUdDWW1NQ3I0MTEvcVA5WERNR09aSGZFZ3Zx?=
+ =?utf-8?B?Skw0dlhHaGk4WUZwNnJLRndPZ1dFTU1jOUZEem5LTVdIQS8xK3Z2VHl6MUor?=
+ =?utf-8?B?dzExM2ozWXNYbktjTXltTndjbHdYYzB3b2I5YjJOQ1lwZlJpRUxZanRzMWZO?=
+ =?utf-8?B?NVp1aEZiSkE5aHRSSk84U0xnMzUyTC80cTJIdFNYdS9sQjA4KzI1cDgyUFg3?=
+ =?utf-8?B?WjNxWlFxZTRZVjJ0WXUveGI2aldQZDJEeHVIYXQ5TkpmODB5R3R2YW01QXZJ?=
+ =?utf-8?B?OG9PemNIYTZIMmVLbEF6d0J1TDNveWFjYUlsQ2xDVXZEeEJSQ1BnamNieFp2?=
+ =?utf-8?B?YkUrVy9xNXRLZWREdjhHbXE0cXNxdEI1eXBjMnpLbEdvK0pkblpNK2NYeWpo?=
+ =?utf-8?B?djd6cHVDSUtjZmFxS05BV0NkNVRvajVLWmk0NFBINk9TZG13Um5pYlNORlhT?=
+ =?utf-8?B?RVV3Yy94aGgzdVNTWmlmeGc5UWdvTjdSNEZQMlE1Wi9rRml5Sk1VMzhiTGNW?=
+ =?utf-8?B?anJNSklYRjdjYXVIczFTdGhidnV3Nmt5VHNMV1h4WThqcVNWa05lZzRXTWpz?=
+ =?utf-8?B?L3hiVEVLYmJyb2U4VDZlVUdHeEsrYlV6c0hNKy9hazh0K0Y0dDI2VlZ1SXR6?=
+ =?utf-8?B?elZjZFQ2WkgwdkJTV1JURXpCWGV1ZER5bGxTMmxrU2VtUE1NaXZGb0I1cUJR?=
+ =?utf-8?B?TWxkYnpCeDE0K1NpRDB5Wlk0TnNCOEVqdGdFM0xoTEFnQ3R5aWRJaDBDOHZI?=
+ =?utf-8?B?VjIydC9PQmFMK1JQeDBBS3MyUXdIaDFZdi8zZFFPVDFVbG01Rk8vSVpNL1BI?=
+ =?utf-8?B?SGtjakY4WkFZdmk5Q01mVjc5ZU12dStMc0RMQ3IremFDend4d0k5dXFJYXJC?=
+ =?utf-8?B?N21jMUwxVmMvK0RoYnZ1VVJqME1KaEMzdjVVVHozaW5Ud3k4YUNORU5rUG9W?=
+ =?utf-8?B?UUg0NTNzYzRXZDFQTFNaUXoyR3FkTE5iRG5HcmE5b0ZLSGNSTGlFOHBrUTJQ?=
+ =?utf-8?B?bDc1NDI4UHJXMktERVBobWRpeE9sM2lHQUIwTU9YQVBXWmFNaVhqSm9nRmxL?=
+ =?utf-8?B?L0hvY0YyUjljc20weExRZ1NmZnBHZmV1Q1F1V1N3ZGpBMGoyY2JMalRtYjRS?=
+ =?utf-8?B?YkNCTlFMZHd5aWl0VWxRWkRMNE1jZzY2NmNydzNab0hVVDV3UTVhWDg3ZnZn?=
+ =?utf-8?B?NnBsbDIvcVIwZ1cwZTZLSFQ2dWdrdk9tbXVzSExmS2N3WmZHOWFVOGorem9T?=
+ =?utf-8?B?Q0VFKzRuUEM4SjdqMzYwODhpU1ZlbS9PcmszbmQ3NytXbzZqYmYxSndvYnp1?=
+ =?utf-8?B?MzNCWVRScWF5YUgvaEN3eU1sSnRpYWZFUnIvdGJEMUgzb0lLSTdIWklTczY2?=
+ =?utf-8?B?QVRYMlpLZXF3T1lta2o3RnUra29oWFlndi9ZNnltY3d6OHJPZjRPUk9SOEwv?=
+ =?utf-8?B?ckNLdlZVa2pQeE5VQjZhOHAxWHBna2pIeUxwOTA3akVBNHA1WEN3ZjJ3MGp2?=
+ =?utf-8?B?SW1YN2liRGUvcUdkL1JYT2MwNVVBajFuSDdZOWtDSmhYbUppK3FWVDdCcS83?=
+ =?utf-8?B?TGtkOE91WmxFdy8vMzNDckdBWHY4UlhHR3VJRGd6YVF2TzRNUWxxZGFTZmZi?=
+ =?utf-8?B?VU43V2hxU3cweUxJblZXeVlBWVg3a0h5OENBem9wcHZ5eUY2T3NGblIzRWxz?=
+ =?utf-8?B?QStIakpFM2g2MjBxSmI1czhTNTFUaXlFK2ROL29QMk82YThhWEF0QndFNjZI?=
+ =?utf-8?B?UFQ2S09yN2VEYkoyMmluMGVqTU9QbUdXZXBVN3J6b0w5U1dNbkt6dz09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 75554cd3-c299-4f54-94d6-08de86c129bc
+X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9714.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 20:29:32.7062
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 20:42:12.1837
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: np5+1JIaYe67sLZGczGccl09iw54MN6od6/1hpmjv5crxSzlPBkWFhFxgEJ956tdh5cGBBzC5seTSf4EbFqKlOXPF6BJGOHZiGb4MYKr5Zs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6785
-X-Proofpoint-ORIG-GUID: ca3VqLgu-tw0cIJwANGsHJviERPoyNaW
-X-Proofpoint-GUID: ca3VqLgu-tw0cIJwANGsHJviERPoyNaW
-X-Authority-Analysis: v=2.4 cv=fLk0HJae c=1 sm=1 tr=0 ts=69bdae2e cx=c_pps
- a=AqWYtYKdvuqIQX7AE/aD9Q==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
- a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19
- a=xqWC_Br6kY4A:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=bi6dqmuHe4P4UrxVR6um:22 a=fTW__CHxibyLmBMfj2wP:22 a=bC-a23v3AAAA:8
- a=p-nOP-kxAAAA:8 a=QyXUC8HyAAAA:8 a=7CQSdrXTAAAA:8 a=2lyBwhcKvf4p2rtmxjYA:9
- a=FO4_E8m0qiDe52t0p3_H:22 a=XN2wCei03jY4uMu7D0Wg:22 a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIwMDE2NyBTYWx0ZWRfX+5MUvHUQ5048
- e7cXUFN5KI6+UUDPH25618ZfDeCB9qrhrh1tLsagAl6HzwaJfhLdeFplasT3YAVoL2wKIxux6ro
- UmKPPhyL/vxDiw74enaKeTSCJnD0z6W4t+4dIR8BUbMRVEIzv+wacZS69iLc1DYFiCwCoxHqsaE
- KzbXZh/4IpUiGj3yt55wAa2DOKQmG0ueafNc7TVNoLY91h7H6OBHNfTJLQsQr0EVsXhfiNCBvxt
- GxnO7w1z5GUj4JQ8AWeOoskoytdcnLXfd7bhifCtEiRhIyzHsKGYu/n5LRS4toWiOa0slLT48co
- PBbNUFcSuoH44Dug88CaxvRdfx1I4DjZO3PFWNoKAfC5uB/RECMwLstzp7B/oU/mV0uLLTDazFx
- P+yrzTBXtW+fxMYjBfG+Bc5fx8NrEEBWWOlwgoaNMA1gUuXW2l9e09UM7xxMC+vFLQtpSvxBdCU
- 8XHuZFugkma15wwF0DQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-20_03,2026-03-20_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0
- suspectscore=0 malwarescore=0 priorityscore=1501 adultscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603200167
+X-MS-Exchange-CrossTenant-UserPrincipalName: Jh5xQWi3amlOKMAjf6M7oB2jMnEikcjXd/z+CWuU+ZefNrcSJirKHM3J7EKYe8u8H4YB+J4T39CzQmhC3uQ97Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB7790
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Hi Dan,
 
-The documentation of the menu cpuidle governor needs to be updated
-to match the code behavior after some changes made recently.
+On 3/19/2026 4:07 PM, Dan Williams wrote:
+> Koralahalli Channabasappa, Smita wrote:
+> [..]
+>>> I agree with Jonathan's comments in Patch 6, using __WORK_INITIALIZER or
+>>> initializing work in dax_hmem_init() and gating flush on pdev will fix
+>>> the WARN — I will add both for v8. But I think the WARN is likely
+>>> indicating an ordering issue here..
+> 
+> Yes, Jonathan is right, static initialization is also my expecation.
+> 
+>>> On initial boot, the Makefile ordering ensures dax_hmem_init() runs
+>>> before cxl_dax_region_init(), so both work items land on system_long_wq
+>>> in the right order and dax_hmem's deferred work is queued before
+>>> dax_cxl's driver registration work.
+> 
+> There is nothing that guarantees that 2 work items in system_long_wq run
+> in submission order. Unlikely that matters given the explicit flushing.
+> 
+>>> On module reload which Alison is trying here I dont think, modules are
+>>> loaded by Makefile order. I think dax_cxl's workqueue is calling
+>>> dax_hmem_flush_work() before dax_hmem probe has had a chance to queue
+>>> its work, so flush_work() flushes nothing and dax_cxl registers its
+>>> driver without waiting.
+> 
+> Module load order does not matter after initial probe completion.
+> 
+> ...and dax_hmem is guaranteed to always load before dax_cxl due to the
+> symbol dependency of dax_hmem_flush_work().
+> 
+>>> __WORK_INITIALIZER fixes the WARN, but doesn't fix the race I guess if
+>>> we are hitting that here..
+>>>
+>>> [   34.673051] initcall dax_hmem_init+0x0/0xff0 [dax_hmem] returned 0
+>>> after 2225 usecs
+>>> [   34.676011] calling  cxl_dax_region_init+0x0/0xff0 [dax_cxl] @ 1059
+>>>
+>>> These two lines indicate cxl_dax started after dax_hmem_init() returns
+>>> but I dont think that guarantees dax_hmem_platform_probe() has actually
+>>> run..
+>>>
+>>> I dont know if wait_for_device_probe() in cxl_dax_region_driver_register
+>>> might help..
+>>>
+>>> Thanks
+>>> Smita
+>>
+>> Actually, thinking about this more..
+>>
+>> dax_hmem_initial_probe lives in device.c (built-in) so it survives
+>> module reload. On reload it's still true from the first boot. This means
+>> hmem_register_device() skips the deferral path entirely..
+> 
+> Yes, that is the expectation.
+> 
+>> The problem is this bypasses the cxl_region_contains_resource() check
+>> that the deferred work normally does. On first boot,
+>> process_defer_work() walks each range and decides per-range: if CXL
+>> covers it, skip. If not, register with HMEM. On reload, that check never
+>> happens — whoever registers first via alloc_dax_region() wins,
+>> regardless of whether CXL actually covers the range.
+> 
+> Yes, I think you have hit on a real issue. There is no point in having
+> dax_hmem auto-attach on driver reload. If userspace unloads the driver
+> it gets to keep the pieces. So that means something like this:
+> 
+> diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
+> index 15e462589b92..7478bc78a698 100644
+> --- a/drivers/dax/hmem/hmem.c
+> +++ b/drivers/dax/hmem/hmem.c
+> @@ -112,10 +112,12 @@ static int hmem_register_device(struct device *host, int target_nid,
+>   	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
+>   			      IORES_DESC_CXL) != REGION_DISJOINT) {
+>   		if (!dax_hmem_initial_probe) {
+> -			dev_dbg(host, "deferring range to CXL: %pr\n", res);
+> +			dev_dbg(host, "await CXL initial probe: %pr\n", res);
+>   			queue_work(system_long_wq, &dax_hmem_work.work);
+>   			return 0;
+>   		}
+> +		dev_dbg(host, "deferring range to CXL: %pr\n", res);
+> +		return 0;
+>   	}
 
-No functional impact.
+One issue with the reload fix - At boot, hmem_register_cxl_device() 
+calls hmem_register_device() to register ranges that aren't claimed by 
+CXL. But hmem_register_device() now always returns 0 for those ranges at 
+boot.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Christian Loehle <christian.loehle@arm.com>
-Link: https://patch.msgid.link/4998484.31r3eYUQgx@rjwysocki.net
-[ rjw: More specific subject, two typos fixed in the changelog ]
----
- Documentation/admin-guide/pm/cpuidle.rst | 56 +++++++++++++++---------
- drivers/cpuidle/governors/menu.c         | 29 +++++-------
- 2 files changed, 45 insertions(+), 40 deletions(-)
+I was thinking factoring out registration logic into 
+__hmem_register_device() and have hmem_register_cxl_device() call that 
+directly, bypassing the CXL gating. Something like:
 
-diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
-index 19754beb5a4e6..9fcc35498fb0e 100644
---- a/Documentation/admin-guide/pm/cpuidle.rst
-+++ b/Documentation/admin-guide/pm/cpuidle.rst
-@@ -295,30 +295,44 @@ values and, when predicting the idle duration next time, it computes the average
- and variance of them.  If the variance is small (smaller than 400 square
- milliseconds) or it is small relative to the average (the average is greater
- that 6 times the standard deviation), the average is regarded as the "typical
--interval" value.  Otherwise, the longest of the saved observed idle duration
-+interval" value.  Otherwise, either the longest or the shortest (depending on
-+which one is farther from the average) of the saved observed idle duration
- values is discarded and the computation is repeated for the remaining ones.
-+
- Again, if the variance of them is small (in the above sense), the average is
- taken as the "typical interval" value and so on, until either the "typical
--interval" is determined or too many data points are disregarded, in which case
--the "typical interval" is assumed to equal "infinity" (the maximum unsigned
--integer value).  The "typical interval" computed this way is compared with the
--sleep length multiplied by the correction factor and the minimum of the two is
--taken as the predicted idle duration.
--
--Then, the governor computes an extra latency limit to help "interactive"
--workloads.  It uses the observation that if the exit latency of the selected
--idle state is comparable with the predicted idle duration, the total time spent
--in that state probably will be very short and the amount of energy to save by
--entering it will be relatively small, so likely it is better to avoid the
--overhead related to entering that state and exiting it.  Thus selecting a
--shallower state is likely to be a better option then.   The first approximation
--of the extra latency limit is the predicted idle duration itself which
--additionally is divided by a value depending on the number of tasks that
--previously ran on the given CPU and now they are waiting for I/O operations to
--complete.  The result of that division is compared with the latency limit coming
--from the power management quality of service, or `PM QoS <cpu-pm-qos_>`_,
--framework and the minimum of the two is taken as the limit for the idle states'
--exit latency.
-+interval" is determined or too many data points are disregarded.  In the latter
-+case, if the size of the set of data points still under consideration is
-+sufficiently large, the next idle duration is not likely to be above the largest
-+idle duration value still in that set, so that value is taken as the predicted
-+next idle duration.  Finally, if the set of data points still under
-+consideration is too small, no prediction is made.
-+
-+If the preliminary prediction of the next idle duration computed this way is
-+long enough, the governor obtains the time until the closest timer event with
-+the assumption that the scheduler tick will be stopped.  That time, referred to
-+as the *sleep length* in what follows, is the upper bound on the time before the
-+next CPU wakeup.  It is used to determine the sleep length range, which in turn
-+is needed to get the sleep length correction factor.
-+
-+The ``menu`` governor maintains an array containing several correction factor
-+values that correspond to different sleep length ranges organized so that each
-+range represented in the array is approximately 10 times wider than the previous
-+one.
-+
-+The correction factor for the given sleep length range (determined before
-+selecting the idle state for the CPU) is updated after the CPU has been woken
-+up and the closer the sleep length is to the observed idle duration, the closer
-+to 1 the correction factor becomes (it must fall between 0 and 1 inclusive).
-+The sleep length is multiplied by the correction factor for the range that it
-+falls into to obtain an approximation of the predicted idle duration that is
-+compared to the "typical interval" determined previously and the minimum of
-+the two is taken as the final idle duration prediction.
-+
-+If the "typical interval" value is small, which means that the CPU is likely
-+to be woken up soon enough, the sleep length computation is skipped as it may
-+be costly and the idle duration is simply predicted to equal the "typical
-+interval" value.
- 
- Now, the governor is ready to walk the list of idle states and choose one of
- them.  For this purpose, it compares the target residency of each state with
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 8ab5123c81040..a18477ecce433 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -41,7 +41,7 @@
-  * the  C state is required to actually break even on this cost. CPUIDLE
-  * provides us this duration in the "target_residency" field. So all that we
-  * need is a good prediction of how long we'll be idle. Like the traditional
-- * menu governor, we start with the actual known "next timer event" time.
-+ * menu governor, we take the actual known "next timer event" time.
-  *
-  * Since there are other source of wakeups (interrupts for example) than
-  * the next timer event, this estimation is rather optimistic. To get a
-@@ -50,30 +50,21 @@
-  * duration always was 50% of the next timer tick, the correction factor will
-  * be 0.5.
-  *
-- * menu uses a running average for this correction factor, however it uses a
-- * set of factors, not just a single factor. This stems from the realization
-- * that the ratio is dependent on the order of magnitude of the expected
-- * duration; if we expect 500 milliseconds of idle time the likelihood of
-- * getting an interrupt very early is much higher than if we expect 50 micro
-- * seconds of idle time. A second independent factor that has big impact on
-- * the actual factor is if there is (disk) IO outstanding or not.
-- * (as a special twist, we consider every sleep longer than 50 milliseconds
-- * as perfect; there are no power gains for sleeping longer than this)
-- *
-- * For these two reasons we keep an array of 12 independent factors, that gets
-- * indexed based on the magnitude of the expected duration as well as the
-- * "is IO outstanding" property.
-+ * menu uses a running average for this correction factor, but it uses a set of
-+ * factors, not just a single factor. This stems from the realization that the
-+ * ratio is dependent on the order of magnitude of the expected duration; if we
-+ * expect 500 milliseconds of idle time the likelihood of getting an interrupt
-+ * very early is much higher than if we expect 50 micro seconds of idle time.
-+ * For this reason, menu keeps an array of 6 independent factors, that gets
-+ * indexed based on the magnitude of the expected duration.
-  *
-  * Repeatable-interval-detector
-  * ----------------------------
-  * There are some cases where "next timer" is a completely unusable predictor:
-  * Those cases where the interval is fixed, for example due to hardware
-- * interrupt mitigation, but also due to fixed transfer rate devices such as
-- * mice.
-+ * interrupt mitigation, but also due to fixed transfer rate devices like mice.
-  * For this, we use a different predictor: We track the duration of the last 8
-- * intervals and if the stand deviation of these 8 intervals is below a
-- * threshold value, we use the average of these intervals as prediction.
-- *
-+ * intervals and use them to estimate the duration of the next one.
-  */
- 
- struct menu_device {
--- 
-2.53.0
+
++static int __hmem_register_device(...)
++{
++	/* Remaining in hmem_register_device after the CXL check */
++}
+
+static int hmem_register_device(..)
+{
+	if (IS_ENABLED(CONFIG_DEV_DAX_CXL) && .. {
++		if (!dax_hmem_initial_probe_done) {
++			queue_work(system_long_wq, &dax_hmem_work);
++			return 0;
++		}
++		return 0;
++	}
+
++	return __hmem_register_device(host, target_nid, res);
+}
+
++static int hmem_register_cxl_device(...)
++{
+	...
++	return __hmem_register_device(host, target_nid, res);
++}
+
++static void process_defer_work(...)
++{
++	...
+-	dax_hmem_initial_probe = true;
+-	walk_hmem_resources(&pdev->dev, hmem_register_cxl_device);
++	if (!dax_hmem_initial_probe) {
++		dax_hmem_initial_probe = true;
++		walk_hmem_resources(.., hmem_register_cxl_device);
++	}
+..
++}
+
+Tracing it
+
+At boot:
+
+probe -> walk(hmem_register_device)
+    CXL range, !dax_hmem_initial_probe -> queue_work, return 0
+    non-CXL ranges -> __hmem_register_device -> registers
+
+process_defer_work:
+    !dax_hmem_initial_probe
+       dax_hmem_initial_probe = true
+       walk(hmem_register_cxl_device)
+       CXL covers -> return 0
+       CXL doesn't cover -> __hmem_register_device()
+          no CXL check again, straight to registration..
+
+On reload:
+
+probe -> walk(hmem_register_device)
+    CXL range, dax_hmem_initial_probe = true, "your return 0" -> skips
+    non-CXL ranges -> __hmem_register_device -> registers
+
+process_defer_work:
+    dax_hmem_initial_probe = true -> skip the walk entirely..
+
+Or do you think this can be simplified better and the above approach has 
+some caveats?
+
+Thanks
+Smita
+>   
+>   	rc = region_intersects_soft_reserve(res->start, resource_size(res));
+> 
+> ---
+> 
+> ...because if userspace wants to reload the dax_hmem driver, then it
+> needs to pick what happens with the CXL intersection. Userspace can
+> always unload cxl_acpi to force everything back to dax_hmem.
+> 
+> Now, you might say, "but this means that if the initial probe results in
+> a partial result of some regions in dax_hmem and others in dax_cxl, that
+> state can not be recovered outside of a reboot". I think that is ok.
+> This mechanism is automatic best-effort workaround for bugs / missing
+> capabilities in the CXL driver. Module reload fidelity is out of scope.
+> 
+>> So if dax_cxl registers first on reload, it could claim a range that CXL
+>> doesn't actually cover, and dax_hmem would lose a range it should own..
+> 
+> With the above change, dax_cxl always wins in the "reload" scenario iff
+> cxl_acpi is loaded. Otherwise dax_hmem owns all the Soft Reserved.
+> 
+>> I dont know if Im thinking through this right..
+> 
+> You definitely identified the need for that fixup above.
 
