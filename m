@@ -1,247 +1,268 @@
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011056.outbound.protection.outlook.com [52.101.52.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 351F03D6CC8
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 16:53:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774025598; cv=none; b=SFpa6FtMeUArpKDcsllJUmkH/knPNQuY8ngGlDwynRwnUexWGXFb1jJR5X/5fmwOb5eARuSmP2sY82s/uqt6SEXV2zuVhcZ8yw6s469k9VvJNSd6weT6CK7ZsIHnkVsfWcgkIcxBxcY+pBJoRpHoBoiCrVQ1pLiHXyaJ/up1pGQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774025598; c=relaxed/simple;
-	bh=/yP8Nb//BGM5kOS5LFDVgtJZkN3qI3kE8D2RlQ18ogg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=YjYlN5FNiwMkwmUOvwZVi35do6B/c4GZ2kFZGN3Haanv0skg6E6RgJlPNDSLIszgEHmQCHLETSru65wLRQ6dtHG0E9l2EXzgN/bKJoQbH7jnhTmSi8yMd55Ww2PXSInq878kBB5C2P+9mFZg/AtjvMfYvInO9OenHCOXcR+3SIM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=aBOK43Gg; arc=none smtp.client-ip=185.67.36.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8B842DC791;
+	Fri, 20 Mar 2026 16:58:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.56
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774025905; cv=fail; b=b+t/JFSGKbkXwyQa2ceUZwvM6L5XEa1YNIRiFukhJ+pM/306yUOfNPA6Y1cpMkfkf1WwB/i8BRiSV8+ZQjS+idvmVE8dBUJ856hC18p25F+OeGE3MwD6l0z196rG7TugdQyPRSzijL2/5+wNY2wv8mO+k0BMxk2Lou0TfDHwTDo=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774025905; c=relaxed/simple;
+	bh=YnGrQ1wngMmtuvOpQWQ1l77DUEd8b/Tm/RwDZ7wkYhA=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=SsqkfzVn2IvgYL0fJ+W7LQc/K5oTA0AF0W02oQ3NKsW0ZBcUGS09s8AeeoDRk+MiOQgDgUg8FN1F69fwi9J8d6Blu9rrZb+jVPyMbWCmj4ulKapGPKp0C9XfFDDvDmDqGbqo468yD2GBzR+oMXUni5Vsaw4L3U5HmPr/enWnAqU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=LIO5KP4e; arc=fail smtp.client-ip=52.101.52.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="aBOK43Gg"
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id E6785240103
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 17:53:10 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
-	t=1774025590; bh=aCf96zFKCTs/MdCIPG/ntFu30qX/GsN6O6QXKIbHPJ0=;
-	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP:From;
-	b=aBOK43GgMNzLWb2Pu5TihKB0CbxPOtyVgzKG7eW2fbQpUkOVuH4J1A2GPMaYukHAF
-	 ZiOeLbXmBdiHgs+9wBHng4+IiQW3e2h5zgH7VFf1x4v3rlFRqH6y1uvc+UNntyndTx
-	 6RdYBppZN8NMRAT+hfexzD8dTvdPbkrTTV9TOcgQjB50aqdS6ocvrE0P0EArF4I65t
-	 j3LJ+3tc4keLWKlHovyWhXugo/C58a5nJakn0xsS5brceniDDsS1hXu+1x436F8lTo
-	 evzX/w1FUBY1EJy35cTJzVLTFwl9d24ZxuynvyfutUKCfa8AKAuCVBcp0rNj/BwTVI
-	 nK/Q4STO3t9Tw==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4fcpXf3wYsz6tvk;
-	Fri, 20 Mar 2026 17:53:06 +0100 (CET)
-Message-ID: <9e07a53053d1dd75a4ebe94aaa06e2279ef3701d.camel@posteo.de>
-Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
-From: Markus Probst <markus.probst@posteo.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>, Miguel
- Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron	 <bjorn3_gh@protonmail.com>, Benno
- Lossin <lossin@kernel.org>, Andreas Hindborg	 <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross	 <tmgross@umich.edu>,
- Danilo Krummrich <dakr@kernel.org>, Kari Argillander	
- <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>,
- David Airlie <airlied@gmail.com>,  Simona Vetter <simona@ffwll.ch>,
- linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
-Date: Fri, 20 Mar 2026 16:53:09 +0000
-In-Reply-To: <2026031447-margarita-untamed-e976@gregkh>
-References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
-	 <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
-	 <2026031402-absence-graph-af5d@gregkh>
-	 <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
-	 <2026031422-shaded-matchbook-5078@gregkh>
-	 <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
-	 <2026031447-margarita-untamed-e976@gregkh>
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
- keydata=mQINBGiDvXgBEADAXUceKafpl46S35UmDh2wRvvx+UfZbcTjeQOlSwKP7YVJ4JOZrVs93
- qReNLkOWguIqPBxR9blQ4nyYrqSCV+MMw/3ifyXIm6Pw2YRUDg+WTEOjTixRCoWDgUj1nOsvJ9tVA
- m76Ww+/pAnepVRafMID0rqEfD9oGv1YrfpeFJhyE2zUw3SyyNLIKWD6QeLRhKQRbSnsXhGLFBXCqt
- 9k5JARhgQof9zvztcCVlT5KVvuyfC4H+HzeGmu9201BVyihJwKdcKPq+n/aY5FUVxNTgtI9f8wIbm
- fAjaoT1pjXSp+dszakA98fhONM98pOq723o/1ZGMZukyXFfsDGtA3BB79HoopHKujLGWAGskzClwT
- jRQxBqxh/U/lL1pc+0xPWikTNCmtziCOvv0KA0arDOMQlyFvImzX6oGVgE4ksKQYbMZ3Ikw6L1Rv1
- J+FvN0aNwOKgL2ztBRYscUGcQvA0Zo1fGCAn/BLEJvQYShWKeKqjyncVGoXFsz2AcuFKe1pwETSsN
- 6OZncjy32e4ktgs07cWBfx0v62b8md36jau+B6RVnnodaA8++oXl3FRwiEW8XfXWIjy4umIv93tb8
- 8ekYsfOfWkTSewZYXGoqe4RtK80ulMHb/dh2FZQIFyRdN4HOmB4FYO5sEYFr9YjHLmDkrUgNodJCX
- CeMe4BO4iaxUQARAQABtCdNYXJrdXMgUHJvYnN0IDxtYXJrdXMucHJvYnN0QHBvc3Rlby5kZT6JAl
- QEEwEIAD4CGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AWIQSCdBjE9KxY53IwxHM0dh/4561
- D0gUCaIZ9HQIZAQAKCRA0dh/4561D0pKmD/92zsCfbD+SrvBpNWtbit7J9wFBNr9qSFFm2n/65qen
- NNWKDrCzDsjRbALMHSO8nigMWzjofbVjj8Nf7SDcdapRjrMCnidS0DuW3pZBo6W0sZqV/fLx+AzgQ
- 7PAr6jtBbUoKW/GCGHLLtb6Hv+zjL17KGVO0DdQeoHEXMa48mJh8rS7VlUzVtpbxsWbb1wRZJTD88
- ALDOLTWGqMbCTFDKFfGcqBLdUT13vx706Q29wrDiogmQhLGYKc6fQzpHhCLNhHTl8ZVLuKVY3wTT+
- f9TzW1BDzFTAe3ZXsKhrzF+ud7vr6ff9p1Zl+Nujz94EDYHi/5Yrtp//+N/ZjDGDmqZOEA86/Gybu
- 6XE/v4S85ls0cAe37WTqsMCJjVRMP52r7Y1AuOONJDe3sIsDge++XFhwfGPbZwBnwd4gEVcdrKhnO
- ntuP9TvBMFWeTvtLqlWJUt7n8f/ELCcGoO5acai1iZ59GC81GLl2izObOLNjyv3G6hia/w50Mw9MU
- dAdZQ2MxM6k+x4L5XeysdcR/2AydVLtu2LGFOrKyEe0M9XmlE6OvziWXvVVwomvTN3LaNUmaINhr7
- pHTFwDiZCSWKnwnvD2+jA1trKq1xKUQY1uGW9XgSj98pKyixHWoeEpydr+alSTB43c3m0351/9rYT
- TTi4KSk73wtapPKtaoIR3rOFHLQXbWFya3VzLnByb2JzdEBwb3N0ZW8uZGWJAlEEEwEIADsWIQSCd
- BjE9KxY53IwxHM0dh/4561D0gUCaIO9eAIbAwULCQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgAAKCR
- A0dh/4561D0oHZEACEmk5Ng9+OXoVxJJ+c9slBI2lYxyBO84qkWjoJ/0GpwoHk1IpyL+i+kF1Bb7y
- Hx9Tiz8ENYX7xIPTZzS8hXs1ksuo76FQUyD6onA/69xZIrYZ0NSA5HUo62qzzMSZL7od5e12R6OPR
- lR0PIuc4ecOGCEq3BLRPfZSYrL54tiase8HubXsvb6EBQ8jPI8ZUlr96ZqFEwrQZF/3ihyV6LILLk
- geExgwlTzo5Wv3piOXPTITBuzuFhBJqEnT25q2j8OumGQ+ri8oVeAzx24g1kc11pwpR0sowfa5MvZ
- WrrBcaIL7uJfR/ig7FyGnTQ1nS3btf3p0v8A3fc4eUu/K2No3l2huJp3+LHhCmpmeykOhSB63Mj3s
- 3Q87LD0HE0HBkTEMwp+sD97ZRpO67H5shzJRanUaDTb/mREfzpJmRT1uuec0X2zItL7a6itgMJvYI
- KG29aJLX3fTzzVzFGPgzVZYEdhu4y53p0qEGrrC1JtKR6DRPE1hb/OdWOkjmJ75+PPLD9U5IuRd6y
- sHJWsEBR1F0wkMPkEofWsvMYJzWXx/rvTWO8N4D6HigTgBXAXNgbc3IHpHlkvKoBJptv6DRVRtIrz
- 0G0cfBY0Sm7he4N2IYDWWdGnPBZ3rlLSdj5EiBU2YWgIgtLrb8ZNJ3ZlhYluGnBJDGRqy2jC9s1jY
- 66sLA9rQZMHhJTzMyIDwweGlvMzJAcG9zdGVvLmV1PokCbQQTAQgAVxYhBIJ0GMT0rFjncjDEczR2
- H/jnrUPSBQJpa71VGxSAAAAAAAQADm1hbnUyLDIuNSsxLjExLDIsMgIbAwULCQgHAgIiAgYVCgkIC
- wIEFgIDAQIeBwIXgAAKCRA0dh/4561D0gKJD/9uOQKYlsDoQX65Gd0LiMT0C+5vXgr3VI0PHDOwcv
- 51fJ3A1vNyPZRFPGrz8+mDEXUQOF/INfnz5Tu1QHwf+iYcWcTGAN/FHgVR6ET6VBNU2hJaKhu+Ggo
- kjYyJTOvyX+3yNRUfSny0GjTjIPuPTErjqmHF+BtjXslpgwqnNMznf3lRIuUjRORupos6p3k1DndE
- 5vzUTmXSvMyXyOD2KhBl/kL76k0bHYyAQytZPag12pltrtFbA/r2phDGN2si8PooDT99bSTJjaM45
- MTAAHbHKJfvgfK41bNFD5mMtpWpL195XRtS0Nrxdg3PaYBxN5gtTG0RyZfpYRlkdEhm+jj/8RxuSG
- i/qdhRdbiI7K2IELWeQVHSNDi9JabR/UzlR4NSnhfAjRIVlRM+eFbUl8XwxwVrAkojF5IraH2qRvg
- VCmuFsHUW07FUlrDrzpjXsD73cKppoFGDCdDR0BHJepXbFLS9+AqkT+guRJlnCTg2p+TQtnbwPgKp
- Vj98JixovCl99zRYTsL2bRNU5+q8iET65VMJ1ydyNanvLd5vI/NqDkXhlXLsGmdaDTtu4R21PkToX
- dQNGrZ91M9nlIBKw8Y7c7xZ4098qX2b8JX/CxD+gC1r4C8vuA3GkhFLx+KlkON7LyiJPkrePp6Qky
- jfGillcaQOqFZ3WwVqyzG1BUfTow==
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-g3CbthudwdEXGBh5+IEt"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="LIO5KP4e"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=UnL7oaKlrM2eLykjdiAGRBhgEO3+eWSSLzd1neN1cEuwaoKAz4QpLvaYKrI6XmBxTebMHDwF/jYYjv35QIe/ywnJiYldWTn1DcRX1u9OXznDlk36urg/7n9DaJhJjCvkdbXw4jhHwS/jJkDDGKEVfhdwvXJ4uJFMT7sobgg1UT0FSaNhapObSpOwhQMiIi5BjFL1V5/bMz6prDoHS/OIOZSSitZg0plCvCeJc1ew2cVO8Dkxuuut0zNC2HkVLsYkunfwlFLNN3NEokWFzKQfsqhS663xk8B9vWOqUfuwdMufPFJUg8L7HXo0AShHAwl46A7I9KsejsBIFLPpq2NX7w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=gosjWwrr1kJx63r9pWxhJOUCjkerdzk7p7NEuC7nFrA=;
+ b=JJL+6v0aW6DuH4QXfgqmUamZXPgmCkw7Fd5FQKYYfCRKE0tX+4LlyvKA7X512zFEq2J3rjKgLPDQSIaG9RX0hUaXL9DX4NC4eLHomm8hBDjZROlg8vjYcpQ7nZ0weYnsiJhIoTHGBY23pTq8Q7iT2y3Us1eM8/mg3WLq+5vYxIYCNQcXSnqYM7vaQ63XeQbSC0I9mAjnuP32tH7IaOTiQRiOKi3B+G756QUpP8rjElUbcNjv3ppudiP0oekPcPxYccZs8r4vajwVHcDctNKGPsKpD8QShQAGukOc00CyVShskLiwoklXJGj5IxXcfh3lakXjFTmTaDfqoT6Bd2BeAA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=gosjWwrr1kJx63r9pWxhJOUCjkerdzk7p7NEuC7nFrA=;
+ b=LIO5KP4e3gj0q2fY75f8gIvAANjCuZYdlYdGo/kSTtRJ9FyqsnrtMUhavHdamOmPJxdfqID8QfziTgrcgpEO33j9ppCU9rkVx9j25ixYEbniY1HvTjRJc7/Jhkt/pvJYx41GgjBOUzPFhKO+WsD0FyEKpWzCn5XZHmmlZVcba4E=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from LV8PR12MB9714.namprd12.prod.outlook.com (2603:10b6:408:2a0::5)
+ by DS0PR12MB999079.namprd12.prod.outlook.com (2603:10b6:8:302::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Fri, 20 Mar
+ 2026 16:58:20 +0000
+Received: from LV8PR12MB9714.namprd12.prod.outlook.com
+ ([fe80::8c9f:3a5b:974b:99c6]) by LV8PR12MB9714.namprd12.prod.outlook.com
+ ([fe80::8c9f:3a5b:974b:99c6%6]) with mapi id 15.20.9745.012; Fri, 20 Mar 2026
+ 16:58:20 +0000
+Message-ID: <6e429f60-af0a-47a8-a85d-ac22f50546d3@amd.com>
+Date: Fri, 20 Mar 2026 09:58:18 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 4/7] dax: Track all dax_region allocations under a
+ global resource tree
+To: Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+Cc: linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+ linux-pm@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>,
+ Jan Kara <jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Len Brown <len.brown@intel.com>, Pavel Machek <pavel@kernel.org>,
+ Li Ming <ming.li@zohomail.com>, Jeff Johnson
+ <jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
+ Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nathan Fontenot <nathan.fontenot@amd.com>,
+ Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+ Benjamin Cheatham <benjamin.cheatham@amd.com>,
+ Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
+ Tomasz Wolski <tomasz.wolski@fujitsu.com>
+References: <20260319011500.241426-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260319011500.241426-5-Smita.KoralahalliChannabasappa@amd.com>
+ <20260319135924.000060c2@huawei.com>
+Content-Language: en-US
+From: "Koralahalli Channabasappa, Smita" <skoralah@amd.com>
+In-Reply-To: <20260319135924.000060c2@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SJ2PR07CA0015.namprd07.prod.outlook.com
+ (2603:10b6:a03:505::28) To LV8PR12MB9714.namprd12.prod.outlook.com
+ (2603:10b6:408:2a0::5)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LV8PR12MB9714:EE_|DS0PR12MB999079:EE_
+X-MS-Office365-Filtering-Correlation-Id: 50f33da4-70cb-4291-d802-08de86a1e38a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|7053199007|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	LDI3FIXGJFuJ1LXciZPckCTB92NI0An6Dh2W67FlQuRz6M6hEPznL4ru3LtMgFnNk0FpQCbzvxNCZplC/KO2oUTH5ydDq1OpJUKv+1ZzUnPtoqRTgWDGHrq6IZvQBTpD8uEaJzDxJ+K1uBi6I53auJALkiZGM79Szm2evrLTgwxai1xgWqnDbty42PAe3fNiwvEvIiZEmez2Vfrh+Yh384e4upr075Uz/LxjCyMBZuRQxBtI4Mt2rVTVQkOeopMAukT7EZLpasiymhKT4n0LCrg7kSVwwvaNBe4xXbnhNBgy9dCkg7w9VBZTLEfwqqDfpnGL1me+wBlXhyZTMwWDyBDLt3T1LyQzqavmTIp5QUvaqtl3ouEdKWRR8tens9/VmMQHI0Kz+Wocm/x8cgdNicaUQJmRZuhYfQm5KSZzq5bUaxeZSCAPFRsxyJ55rYWqv2h0MOLIM6yOX8W6wiJwX15O3Yz0tcjWhcDt4Fl3OgA7YYgW4DN/zJ2wHGZZ19paIGlletfItzQxY973sjhtRmbXK6NZrH/Hzs4pMI+bUI4lIWGFqDcjSsAeoNr0lEb0GFeCYBPHQzVO8HrQYQo0uols2fuciY9xS/l8H+D4dnePbOXFbXP/1t67pSwztCxUtTpgSEoCw/pCPmbw91nKHhxUYduZTHiiIIqaEVVutfcXMfNLXQ8kALV+xyEHMM04mIkSw/UIbsY1lCrzsDf+kOpr2KnWplWNz1NTo/HuuWE=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9714.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(7053199007)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?d0xxai9tVFRiVEQ4dXlCRjcrQWYyZEVhRWtSdFg3QmlLRThoQnRhaVNqaERY?=
+ =?utf-8?B?SGxjb2V2K2JtZ2I3KzZrRUpEeXJKdzJRaVR3dWY3N1JpSVVhNVNObmxvTStR?=
+ =?utf-8?B?RlpDa2RrU1Z1UFFFQzN1NktWeEl4K2gvd081dHVaeGh1QkhHMkY4MU9aZ0tS?=
+ =?utf-8?B?Q0oxMU1QamM1cXBuUXJKUjZsZENUenAxSDlyUW95Q2VWems1YkkxeWZpdXRm?=
+ =?utf-8?B?dWZrRUt0UXBmcGo0aGFValI4bDlDK3J2a3BNRi83Zmt3QXpYdlZEOUJ6WHh0?=
+ =?utf-8?B?RWE4WWZLMkV5THdiOGR4M0xua3ppV3lld2Z6bW5kMTZXa21la3hIUGNUYmhv?=
+ =?utf-8?B?Slh0MjI3ZFdjTlhHVm5pa281UnRtVndFdm9pSE1sQnAyR0xxVENFY1NEbk0z?=
+ =?utf-8?B?cGNpNEpqdkNLZDNEWHlPSWxDVWpMeXpDSXBKNGRXNGVwRGREcCtiS2pvUDZL?=
+ =?utf-8?B?TWozUG54WFFCYmUxKzJFcVR1UXFKeitBOHdGeTcwS0o0RkZndjY2REY1QkFO?=
+ =?utf-8?B?L0FHcGFlMzdxZis5UVg5RFRQc3pBS0Y0dC9uaWR5Yi9yT2NmVXJHZWxENU8r?=
+ =?utf-8?B?Q2Q1czY5eUpaZHhGaE5BWjJmMXNYRDlHUy9JSGNJMDM2c2FzT1d2WkdJWlpW?=
+ =?utf-8?B?cnFxWXpLUE11VDdtdTdBTFlEN2NFZytaOEI5dTBreHJYQzBoL3RCM1NmTFdp?=
+ =?utf-8?B?N0s1ZjcyUmpGaVJlR3B4YTdoMy9HaWVWTVlXTStyYmxBTFQwYzN4VDFYcHBX?=
+ =?utf-8?B?WWtMUkFibnBvYnVnRFA2MUd3VHozQkxXWGovRENOY2dhS2UxazBkQzFMMDU0?=
+ =?utf-8?B?cHpoWWhUQ0h1WVJmY29za1RQdVdhejhVczNhRjBKa0laVm9OK1dUNGU0U1pX?=
+ =?utf-8?B?YWtsM0dQWVdGTDg5MVRHL3F1TmUwOERLSkVabW5Lc21rcXlhOTNvMnVRYmRo?=
+ =?utf-8?B?VzFreGlNWWRzbDBobTRIVHlRRFBWYXJ0aktFTzR1dFUxRklOd2VaWXFyYjNo?=
+ =?utf-8?B?cWpUK0JyQmpBQVhId05CbGJGR0FtVHRhaEZkUHdtR1JXWjZpdllHZEVGZVJo?=
+ =?utf-8?B?NkJCdXRjam93clhKeU5CcmFwUW5MRFNvc0UwWSt1Tk9pb1pMekVMVktJeE5i?=
+ =?utf-8?B?MFBacDdmT2xtYmhYOVY1NFBvL09EVDdTUkdCTEd2UHF2bllaQVk1QW5BY2Ey?=
+ =?utf-8?B?RUZuMUZ6Wk9mUUZBY0Q4eTR2Q3FRcmVWYXdidk5DSVRadkdVUTFFTUpuWUJF?=
+ =?utf-8?B?aEJTclhaZy9uZCtYY0F2cURZaGw5eE1NdWZQY2ZhYk12d1Z0S3VjVzhVV2lr?=
+ =?utf-8?B?MUpQaG1KTlZNQlNNNXVuWmgzbHRpOXhnMmlnTmN1QXQ3VXdndmI1MEZ4em9Y?=
+ =?utf-8?B?WE1VY1FiQnd6RU9xRGkyZ0pkRUoxVUUyL2d5MFZFYW9LNnZBc2NBL2duNjNv?=
+ =?utf-8?B?Rm1jMUhXSitnM1dZa1JGUDJ2bjFKaXlKMzdIa1p5N21LL2pMRDRHcWduK2dK?=
+ =?utf-8?B?UG8zZThVR29NM2lqMjcwUGRDTHkwRm9rem9HQUd1MkQ1ZVA0aVN0VkdrWGFt?=
+ =?utf-8?B?NW55YThocjY5VllVdHlWcVF0MitwZXl5Vy9HZmp0cFhEVEVUdlhmemNRVWx5?=
+ =?utf-8?B?YnhSQlovTE8xWkwvbURVdk5rWlN1eVhtbWFTZmYzYzVwV1VtbzN2VjZEZnVl?=
+ =?utf-8?B?T25DMjlZTFZOWW1tZzlGT1ovNjd4eXhZTlVYVEIzdGEwNUtHMTFEa1JPNzQw?=
+ =?utf-8?B?ajJwZmxkU2dNQWN6U2lhVSsxU1pZTlIwRGRvOExQU2NEZW44bXY5VU5mN2pB?=
+ =?utf-8?B?ek5XNVRZdks1dUlQTk05NXZ3aFNOOVhwY2c5cUJjVWZ5bEZyQ2x5d2V1cUhk?=
+ =?utf-8?B?cjBhZlFzd0ZVZHZ2M1VQb0ZEYm5rc2pUZ0FJNW04MzZVcnJWODdWZWN0TEFU?=
+ =?utf-8?B?T1gvUVZzS244QmtHNUpCUWE3Sk5iVHIwRmtvSFZ1S2prTnBGUXNIY3RuTlFJ?=
+ =?utf-8?B?M1dXZEVrMWpzSnYwaTJodnNRR01oTzhTVlVYS0ZtZzZPaGJibStlSkdscTBF?=
+ =?utf-8?B?TjNtQi8wanJId0FFWFZsMUU1L0c1azdBaW5CMFdPSjN2ckg0aENuU0JoTmxz?=
+ =?utf-8?B?RzNGaTYybldQbyt2aFV3Y3VaZHFYSm1CeGJjeEIrSFJ5dFozTmRVVGV1QXRV?=
+ =?utf-8?B?d0VETEgxeFJYbUpSNTdIN0xVeHJVRm01L3ZTbEtERkxIdm9VdXE0QkVUdUQ4?=
+ =?utf-8?B?ZFA1Mi9vTmRicWE4UVVONTJvaTdHVzNGbnhqYmlWaXRZdVlzaTlyOUFYcEtx?=
+ =?utf-8?B?MTRReXN1NnAyaHV1SHRtOWQzMlJFd29vN2JaVFVzU1NvZHVKVk9kZz09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 50f33da4-70cb-4291-d802-08de86a1e38a
+X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9714.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 16:58:20.0215
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EHNQ9chsoFTVFzw68Nh2kp9Z8gTEyFDun9XPuV95AJRNLKm+f6HMvoAs4rssRSviAlJtn9Qi3PzB+J411ofyRw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB999079
 
+On 3/19/2026 6:59 AM, Jonathan Cameron wrote:
+> On Thu, 19 Mar 2026 01:14:57 +0000
+> Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
+> 
+>> Introduce a global "DAX Regions" resource root and register each
+>> dax_region->res under it via request_resource(). Release the resource on
+>> dax_region teardown.
+>>
+>> By enforcing a single global namespace for dax_region allocations, this
+>> ensures only one of dax_hmem or dax_cxl can successfully register a
+>> dax_region for a given range.
+>>
+>> Suggested-by: Dan Williams <dan.j.williams@intel.com>
+>> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+> 
+> The comment below is about the existing code.  If we decide not to tidy that
+> up for now and you swap the ordering of release_resource() and sysfs_remove_groups()
+> in unregister.
 
---=-g3CbthudwdEXGBh5+IEt
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Okay I think I can do both.
 
-On Sat, 2026-03-14 at 14:31 +0100, Greg Kroah-Hartman wrote:
-> On Sat, Mar 14, 2026 at 12:08:09PM +0000, Markus Probst wrote:
-> > On Sat, 2026-03-14 at 12:52 +0100, Greg Kroah-Hartman wrote:
-> > > On Sat, Mar 14, 2026 at 11:42:02AM +0000, Markus Probst wrote:
-> > > > On Sat, 2026-03-14 at 09:07 +0100, Greg Kroah-Hartman wrote:
-> > > > > On Fri, Mar 13, 2026 at 06:12:31PM +0000, Markus Probst wrote:
-> > > > > > Add rust private data to `struct serdev_device`, as it is requi=
-red by the
-> > > > > > rust abstraction added in the following commit
-> > > > > > (rust: add basic serial device bus abstractions).
-> > > > >=20
-> > > > > why is rust "special" here?  What's wrong with the existing priva=
-te
-> > > > > pointer in this structure?  Why must we add another one?
-> > > > Because in rust, the device drvdata will be set after probe has run=
-. In
-> > > > serdev, once the device has been opened, it can receive data. It mu=
-st
-> > > > be opened either inside probe or before probe, because it can only =
-be
-> > > > configured (baudrate, flow control etc.) and data written to after =
-it
-> > > > has been opened. Because it can receive data before drvdata has bee=
-n
-> > > > set yet, we need to ensure it waits on data receival for the probe =
-to
-> > > > be finished. Otherwise this would be a null pointer dereference. To=
- do
-> > > > this, we need to store a `Completion` for it to wait and a `bool` i=
-n
-> > > > case the probe exits with an error. We cannot store this data in th=
-e
-> > > > device drvdata, because this is where the drivers drvdata goes. We =
-also
-> > > > cannot create a wrapper of the drivers drvdata, because
-> > > > `Device::drvdata::<T>()` would always fail in that case. That is wh=
-y we
-> > > > need a "rust_private_data" for this abstraction to store the
-> > > > `Completion` and `bool`.
-> > >=20
-> > > So why is this any different from any other bus type?  I don't see th=
-e
-> > > "uniqueness" here that has not required this to happen for PCI or USB=
- or
-> > > anything else.
-> > >=20
-> > > What am I missing?
-> > In Short:
-> > In serdev, we have to handle incoming device data (serdev calls on a
-> > function pointer we provide in advance), even in the case that the
-> > driver hasn't completed probe yet.
->=20
-> But how is that any different from a USB or PCI driver doing the same
-> thing?  Why is serdev so unique here?=C2=A0
->=20
-In PCI or USB we don't need to provide function pointers for callbacks
-in advance, which will be can be called any time (even while probe).
+> 
+> Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+> 
+>> ---
+>>   drivers/dax/bus.c | 20 +++++++++++++++++---
+>>   1 file changed, 17 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
+>> index c94c09622516..448e2bc285c3 100644
+>> --- a/drivers/dax/bus.c
+>> +++ b/drivers/dax/bus.c
+>> @@ -10,6 +10,7 @@
+>>   #include "dax-private.h"
+>>   #include "bus.h"
+>>   
+>> +static struct resource dax_regions = DEFINE_RES_MEM_NAMED(0, -1, "DAX Regions");
+>>   static DEFINE_MUTEX(dax_bus_lock);
+>>   
+>>   /*
+>> @@ -625,6 +626,7 @@ static void dax_region_unregister(void *region)
+>>   {
+>>   	struct dax_region *dax_region = region;
+>>   
+>> +	release_resource(&dax_region->res);
+> 
+> Should reverse the line above and the line below so we unwind in reverse of
+> setup.  I doubt it matters in practice today but keeping ordering like that
+> makes it much easier to see if a future patch messes things up.
 
-> What specific serdev function
-> causes this
->=20
-drivers/tty/serdev/serdev-ttyport.c basically only wraps the serdev
-calls to tty calls. This isn't directly caused by a serdev function,
-but by the tty part.
+Okay.
 
-> why isn't it an issue with the C api?
->=20
-In C you can set the drvdata inside the probe and even with it not
-being fully initialized.
+> 
+>>   	sysfs_remove_groups(&dax_region->dev->kobj,
+>>   			dax_region_attribute_groups);
+>>   	dax_region_put(dax_region);
+>> @@ -635,6 +637,7 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
+>>   		unsigned long flags)
+>>   {
+>>   	struct dax_region *dax_region;
+>> +	int rc;
+>>   
+>>   	/*
+>>   	 * The DAX core assumes that it can store its private data in
+>> @@ -667,14 +670,25 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
+>>   		.flags = IORESOURCE_MEM | flags,
+>>   	};
+>>   
+>> -	if (sysfs_create_groups(&parent->kobj, dax_region_attribute_groups)) {
+>> -		kfree(dax_region);
+>> -		return NULL;
+>> +	rc = request_resource(&dax_regions, &dax_region->res);
+>> +	if (rc) {
+>> +		dev_dbg(parent, "dax_region resource conflict for %pR\n",
+>> +			&dax_region->res);
+>> +		goto err_res;
+>>   	}
+>>   
+>> +	if (sysfs_create_groups(&parent->kobj, dax_region_attribute_groups))
+>> +		goto err_sysfs;
+>> +
+>>   	if (devm_add_action_or_reset(parent, dax_region_unregister, dax_region))
+> 
+> This is curious. The code flips over to a kref_put() based release but we didn't
+> do anything with the kref in the previous call. So whilst not 'buggy' as such
+> it's definitely inconsistent and we should clean it up.
+> 
+> This should really have been doing the release via dax_region_put() from the
+> kref_init().  In practice that means never calling kfree(dax_regions) error paths
+> because the kref_init() is just after the allocation. Instead call dax_region_put()
+> in all those error paths.
+> 
+>   
+> 
+>>   		return NULL;
+>>   	return dax_region;
+>> +
+>> +err_sysfs:
+>> +	release_resource(&dax_region->res);
+>> +err_res:
+>> +	kfree(dax_region);
+> 
+>  From above I think this should be
+> 	dax_region_put(dax_region);
 
-With Rust the drvdata is only available after the probe.
-But there is the posibility of serdev calling the provided callback
-inside probe.
-
-> Can we change the
-> C code to not require this?
-Serdev is very closely linked to tty.
-
-There are 3 options:
-
-1. Add a `rust_serdev_device_open` and `rust_serdev_device_ready`
-function. `rust_serdev_device_open` would do the same thing as
-`serdev_device_open`, but with calling `tty_buffer_lock_exclusive`
-before opening the underlying tty port. `rust_serdev_device_ready`
-would call `tty_buffer_unlock_exclusive`. Such functions would then
-need to exist for every serdev controller (currently there is only
-ttyport as serdev controller).
-
-2. Rewrite parts of the tty subsystem.
-
-Not sure what would need to be changed there yet. But this could also
-affect the existing tty drivers, which are a lot in comparision to
-serdev.
-
-3. Keep the `rust_private_data` pointer in `serdev_device`.
-
-This seems to be the simplest option to me.
+Thank you for pointing this out. I will have a separate patch for this 
+change first in the series.
 
 Thanks
-- Markus Probst
+Smita
 
->=20
-> thanks,
->=20
-> greg k-h
+> 
+>> +	return NULL;
+>>   }
+>>   EXPORT_SYMBOL_GPL(alloc_dax_region);
+>>   
+> 
 
---=-g3CbthudwdEXGBh5+IEt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmm9e2gbFIAAAAAABAAO
-bWFudTIsMi41KzEuMTEsMiwyAAoJEDR2H/jnrUPSI+kP/3X6te0SF58we5D2EoMb
-7sQZ+9SkMWmv+XeI+5UYyRLUxVk6LunZoBQQQ5Qcz1V/AOrZ+Ai1UzGsY1v82G1a
-HjFbl/6DW+yjhQM/nF6NbHnO04c1NqL7H34WlcP8On6dDPsE8w7qzFxobGcSVa6c
-0HFDdh7SCfnG1aDwMqZmO7X5QoK8Z7ziKbN3UTkJQn2btHIWwCeNr1jx4tszJSHz
-RwosmSy2suRMAufk7I+bTcWatLRQ8+zC0WsxyNK9yS1pocknUg+zKhxD68yhn4lT
-aRBAemFyubZkH1AhDuLtwE68B5Wxte0MUj1q1Ak08Qs5EKMlHBx03Ul8XsyJp0sO
-c1tzdh3/ckO5ts6MYbmTt9BwLzQcTMi6KFN7dnIx/z54ZgOtu6FZm+5YimYsEx+v
-QMEptqHDvtaVUl9UuOoXzcywYhzaDtwPysgjbrYUVye9vY5ewGbAw+TNhenIYGf2
-BH0cUHUT5R/8szuSLBjLudCm4PtczUVJ2AWb0wcxvTfPzrcnyCNSp63O1vOxDbec
-B03ozKBWVyyHXycnlMTL5qZXdAYIK+HkWx/nqsyBdHOb4fAk7oo+qwxezbVkGwaE
-aqWZLVCzoqKuZYpAzt8qAruPV5+FJkgwyMUMucbuadDE434yL6d5Zn+b7cR+mtol
-YjGsdjVLG67iThlLpddT99+F
-=kCMN
------END PGP SIGNATURE-----
-
---=-g3CbthudwdEXGBh5+IEt--
