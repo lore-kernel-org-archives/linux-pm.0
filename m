@@ -1,140 +1,89 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D68D346AD7;
-	Fri, 20 Mar 2026 19:50:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E4C5359A79;
+	Fri, 20 Mar 2026 19:59:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774036217; cv=none; b=N2hEYb4RVXRjB3yEdqDQ6nvM6/MAXKgct5poEFL0vXKqGKWy9ewlAN3j2IwI5sztUbBmfG7IvYkopQGtobvzpkA5AYL3DsepXKF1wKg5n1grFM/CRAy2dLo3IiPQcPRYWFsPz+S5NFxdbWd+/Dn5SEYKwM3Hn97Gy7G7wh1EhiA=
+	t=1774036759; cv=none; b=Pn2TyL6VE+8FniPYBbakuEl5/2rZnnLdDiMLUnJutNBMdAtmp80UdSgSxXz2gi3zerDKJdCrBo6vLOVhZVUYnhOlk8GWeDY9ZasYgJuWR5ihU2z7r5+eCQlwA/X65Cb8siq9U1dwJdY9mNy2AK2Z6i5sKtzd0XGIoB34UHIFhnM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774036217; c=relaxed/simple;
-	bh=B/ky4PGRNNPwvyb7fxbPkwqn5WgnAc0pdjMw1TIYUh8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BCxCptvTdwO0ak5pkgAu+p1YJMMCo3/Q6O9qKgGH99dPg0rQo914YoFj0zv81yUSiTG0DBa0tBWeMX/pl9HQU+0KpmuLy/DiQCACbqci6nCO/P25kOjiBgQSjUNshj14PtmkJ2QD4Gqp6kniTYaZY6jmDHhQtfoie4H0aq+gCJE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=NX0bTnSQ; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+	s=arc-20240116; t=1774036759; c=relaxed/simple;
+	bh=Pfby/JKkt5s6l/ZCXO+9pVjWe6FhJok+BymLoypmp24=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Nb6M17rH7vQKjDKJxTklRKXCvFu2zKV5oAjbYfKDB1RO2qSh36adm+oVVtloe5XojwNweGhNKleJPjPwhKCqW2RiynogZ1isLY9pkedSSlH6whE/BK3QpTNxgjmFbTgqCymkCinT0F3vmP1+2IyxBM1t/p0qNZDhnwq4IVLvNUQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B+bjLR+h; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="NX0bTnSQ"
-Date: Fri, 20 Mar 2026 20:41:30 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1774035696;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TodcsqwI5ROLukzlDCPSJPqsdnPQpyDS0/5H+3q7Ng8=;
-	b=NX0bTnSQab948BmULIE2Ptruv/tMxhE8hiI9Cq2979f+b9JOXCGXh58wsNonDP+c99bq4j
-	70RsjA7KCYuLwXkhSNtG4Ta/i7aX3VOhC4pFQLGt+Mnsa3azDbF6JEGYQunIvPKtXcvksu
-	YEYkfvAtBgZ9XoWxbGSuumofla32noZKW+D8/GRYnTo75kuDwQfmt58gbQLmVBThfHF3qH
-	9C4Oa5gM/2kGpUn9HUdY/7BQw607bij6V0NKE2d+mMmH+mgdeJ7S+c40KxsJ/vKFV6Ehbg
-	N/cY0YKI2RGgopP+xSeCGcipBQXV6bAOPtXCMudm/1eZ0ohjkrTZsS/KMBMsBg==
-From: Otto =?iso-8859-1?Q?Pfl=FCger?= <otto.pflueger@abscue.de>
-To: Lee Jones <lee@kernel.org>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH 4/6] mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
-Message-ID: <ab2i6i2D5q0t0xZ5@abscue.de>
-References: <20260222-sc27xx-mfd-cells-v1-0-69526fe74c77@abscue.de>
- <20260222-sc27xx-mfd-cells-v1-4-69526fe74c77@abscue.de>
- <20260309185856.GZ183676@google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B+bjLR+h"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE966C4CEF7;
+	Fri, 20 Mar 2026 19:59:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774036759;
+	bh=Pfby/JKkt5s6l/ZCXO+9pVjWe6FhJok+BymLoypmp24=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=B+bjLR+hETXZGaeGEhgqOabt/zMNivQ2jyzd+65r5dHZuP7WaMS4MBoEsZCfr0LG+
+	 zGRVCGiv6Ckl7o3Kg0qvntulZ8EETYFqMcrpB3laNzC9ilr2fdRYqP6Lm2U9/BE2tP
+	 Z/zbRuO3C8KVVh3rR64M4N8iA5T2qug9R63Qgpzh5FrE32N6GGRKgXiQfCKz8Y+sb9
+	 TanRYUb9K0fUIYgAy4BOhTe0ys82KO2pLYbrU9x9fuTzoZNwwx/i2tW4YzgjidsxwV
+	 0xUEjr3fB1JrCMcVYcQUkIAtpFe1OYdjO0YmiYgQAIukxhDz6JVVuLQlehSWYqYqxq
+	 sb82vBemY+pYg==
+Message-ID: <b8465b11-7a4a-4842-b292-6e3659bd95b3@kernel.org>
+Date: Fri, 20 Mar 2026 20:59:13 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260309185856.GZ183676@google.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
+To: Markus Probst <markus.probst@posteo.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>,
+ Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
+ =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+ Kari Argillander <kari.argillander@gmail.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+ rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org,
+ driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org
+References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
+ <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
+ <2026031402-absence-graph-af5d@gregkh>
+ <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
+ <2026031422-shaded-matchbook-5078@gregkh>
+ <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
+ <2026031447-margarita-untamed-e976@gregkh>
+ <9e07a53053d1dd75a4ebe94aaa06e2279ef3701d.camel@posteo.de>
+ <2026032048-curtly-refold-e4df@gregkh>
+ <4f4c09d683023df9daef89ca634b17b5c16625f7.camel@posteo.de>
+From: Danilo Krummrich <dakr@kernel.org>
+Content-Language: en-US
+In-Reply-To: <4f4c09d683023df9daef89ca634b17b5c16625f7.camel@posteo.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 09, 2026 at 06:58:56PM +0000, Lee Jones wrote:
-> On Sun, 22 Feb 2026, Otto Pflüger wrote:
+On 3/20/26 6:13 PM, Markus Probst wrote:
+> This is unique for a bus device.
 > 
-> > To allow instantiating subdevices such as the regulator and poweroff
-> > devices that do not have corresponding device tree nodes with a
-> > "compatible" property, use devm_mfd_add_devices() with MFD cells instead
-> > of devm_of_platform_populate(). Since different PMICs in the SC27xx
-> > series contain different components, use separate MFD cell tables for
-> > each PMIC model. Define cells for all components that have upstream
-> > drivers at this point.
+> A class device has its own Data (e. g. PwmOps), i. e. it will only be
+> registered after this Data has been initialized by the driver.
 > 
-> We're not passing one device registration API's data (MFD)
-> through another (Device Tree).
+> The receive_buf callback on the serdev device on the other hand must
+> happen on the drvdata, as there is no place to store its own Data.
 > 
-> Pass an identifier through and match on that instead.
-> 
-> Look at how all of the other drivers in MFD do it.
->
-> [...]
-> > +static const struct mfd_cell sc2730_devices[] = {
-> > +	MFD_CELL_OF("sc2730-adc", NULL, NULL, 0, 0, "sprd,sc2730-adc"),
-> > +	MFD_CELL_OF("sc2730-bltc", NULL, NULL, 0, 0, "sprd,sc2730-bltc"),
-> > +	MFD_CELL_OF("sc2730-efuse", NULL, NULL, 0, 0, "sprd,sc2730-efuse"),
-> > +	MFD_CELL_OF("sc2730-eic", NULL, NULL, 0, 0, "sprd,sc2730-eic"),
-> > +	MFD_CELL_OF("sc2730-fgu", NULL, NULL, 0, 0, "sprd,sc2730-fgu"),
-> > +	MFD_CELL_OF("sc2730-rtc", NULL, NULL, 0, 0, "sprd,sc2730-rtc"),
-> > +	MFD_CELL_OF("sc2730-vibrator", NULL, NULL, 0, 0, "sprd,sc2730-vibrator"),
-> > +};
-> > +
-> > +static const struct mfd_cell sc2731_devices[] = {
-> > +	MFD_CELL_OF("sc2731-adc", NULL, NULL, 0, 0, "sprd,sc2731-adc"),
-> > +	MFD_CELL_OF("sc2731-bltc", NULL, NULL, 0, 0, "sprd,sc2731-bltc"),
-> > +	MFD_CELL_OF("sc2731-charger", NULL, NULL, 0, 0, "sprd,sc2731-charger"),
-> > +	MFD_CELL_OF("sc2731-efuse", NULL, NULL, 0, 0, "sprd,sc2731-efuse"),
-> > +	MFD_CELL_OF("sc2731-eic", NULL, NULL, 0, 0, "sprd,sc2731-eic"),
-> > +	MFD_CELL_OF("sc2731-fgu", NULL, NULL, 0, 0, "sprd,sc2731-fgu"),
-> > +	MFD_CELL_NAME("sc2731-poweroff"),
-> > +	MFD_CELL_NAME("sc2731-regulator"),
-> > +	MFD_CELL_OF("sc2731-rtc", NULL, NULL, 0, 0, "sprd,sc2731-rtc"),
-> > +	MFD_CELL_OF("sc2731-vibrator", NULL, NULL, 0, 0, "sprd,sc2731-vibrator"),
-> >  };
+> The drvdata is only available at the end of the probe in Rust.
 
-Assuming that these tables are the "registration API's data", I don't
-see where it is being passed through the device tree. The device tree
-contains nodes for some of these MFD components, and I've listed their
-compatibles here so that the MFD core finds these nodes and registers
-them with the corresponding devices (which was previously done
-automatically by devm_of_platform_populate).
+In other words, devm_serdev_device_open() relies on the driver having its
+private data set before this is called, since once devm_serdev_device_open() has
+been called, the driver's receive_buf() callback may be called.
 
-> >  
-> >  /*
-> > @@ -59,12 +84,16 @@ static const struct sprd_pmic_data sc2730_data = {
-> >  	.irq_base = SPRD_SC2730_IRQ_BASE,
-> >  	.num_irqs = SPRD_SC2730_IRQ_NUMS,
-> >  	.charger_det = SPRD_SC2730_CHG_DET,
-> > +	.cells = sc2730_devices,
-> > +	.num_cells = ARRAY_SIZE(sc2730_devices),
-> >  };
-> >  
-> >  static const struct sprd_pmic_data sc2731_data = {
-> >  	.irq_base = SPRD_SC2731_IRQ_BASE,
-> >  	.num_irqs = SPRD_SC2731_IRQ_NUMS,
-> >  	.charger_det = SPRD_SC2731_CHG_DET,
-> > +	.cells = sc2731_devices,
-> > +	.num_cells = ARRAY_SIZE(sc2731_devices),
-> >  };
+So, in C it is the driver's responsibility to do things in the correct order, in
+Rust we want to make sure the driver can't do it out of order in the first place.
 
-Here I am simply referencing the tables above in the device-specific
-MFD data. These structs containing device-specific data already exist,
-they are private to the MFD driver, and I wouldn't consider them part
-of the device tree.
-
-I've looked at mt6397-core.c and it seems to be doing the exact same
-thing with its "struct chip_data". Some other drivers use a numeric ID
-for this purpose, but how would that be different from a pointer as long
-as it identifies the same data within the MFD driver?
-
-Could you clarify what should be changed?
+I'm still not sure whether the current approach is the best option. For
+instance, we could also solve this with a separate callback. (Wasn't this even
+what you had in a previous version?)
