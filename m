@@ -1,185 +1,281 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 242A539934D
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:58:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25105399378;
+	Fri, 20 Mar 2026 10:58:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774004327; cv=none; b=jcgBN2R3Z+E081EXE7c/R2tCT8bwtHuDyoS8pN8/qfo2AElDhKC0CaphwGEf/d0lom69raYfFR1dncJxWoT9HCtAYHBUBtNKmHviC+ZJfLgCU1qMDB2Q/DnMcUFP8aJ/H6BvFpOwUWMU6j5cgiT2MFLKHPvo2UUxuht/O6X4hvY=
+	t=1774004336; cv=none; b=mXRDpWA5WzAskXcyMiEx2TCQTNlB/DkntsEt6ZVYnFpMyZEIjrCQJ6+5fhzW/2h+ICrFSgmtYqP10VNvkGQ1XQGOCl+VTMpH+kDLrj+xemFBfiq7kkwnvNvfilFeFLWL6QuBxm5PK7M+vmOLCH2atazRwfsN8Mn59pwwrMgTISo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774004327; c=relaxed/simple;
-	bh=AwmwR+eu6X8nr78nsuwE9tKQ52118WdtCyPewVKlRos=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ahjxvoY5lwdurJclW2A3Nptu+7ZA3uJ8hAssbKaX+7cMUk0wOKkMSOQpbGPt0DCUZOEppy2prtT6CFzpVt86awsO5psJv0jbbwm24/w5xTu0zkvifrnliBG/3dwNaU1UlSG71fl6YWDrq6GSA0c70z5FlfaUb2zp7wZcGs6RD58=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GFH3DDgP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774004336; c=relaxed/simple;
+	bh=6rkL5Y11W8vblxHdinq1mUvdydUtN//15Bik/nVBFkI=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=OUYkJOtLv2FevgGc332ijAMKZIB4WTSSfGlMK9ho4oqdusABGBr2MwA5eUMLg6tRWXbs3TVBNTwNaHj8RgolU+zhbFs6rkfCOjG2WPk2r4vIpULUfBg+upwoaN7vdKlumAhtb9Gs8Gi9SmVjGjQ5ST+fvBonME362DQj3v+3iCU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ctS6KP8E; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GFH3DDgP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 771EBC2BC9E
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 10:58:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774004326;
-	bh=AwmwR+eu6X8nr78nsuwE9tKQ52118WdtCyPewVKlRos=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=GFH3DDgPvgWkiaONLYeGGDTUhApgZD3trcXWnsMofG/zt3HAsYi1lf0FtkdMHLXr4
-	 lcjEtunqK63ThhZYY617eTJ5BUxgmmZXe+Z2bbf1t6fmdFvtQNxgojYE+xxbkc4NkG
-	 UNAu+vRBZ9peZcuZ+MqO1gwS0zeaiYWUqqJlF66hpdB1pGRffaXVT7/f07blb5FIpk
-	 sJ3WTrGzTsGnxB43zYvA1M+dZOjGvV8dPiJ1pmDfGGUGIrxP1BUyfmyWb+xaa7xDRp
-	 VU0N6z2qXyh4+WgfvJbyTBW2rI0NMQYejzIGv30uUbsAwQb5WrvLclnn1pSkVsWu3T
-	 xQpOUzh2kIgZA==
-Received: by mail-ot1-f41.google.com with SMTP id 46e09a7af769-7d750eeaec3so208533a34.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 03:58:46 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXDVvUWRqESmvXfXxxW+lZYolLqUXwU8DF0DBU+ECmTqtu67DoU6G87+yeatrVsZFQH2QZ9wJDBXg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx16KdKHzVWpjw6bVWL00QgVi1jcwwDspUgmFLBELcIm3uPU+4Z
-	qaI/mB7iPzsvu8jo2tjyx+4Wq8wXz3dyUTa5RHoBgZd5QP4LDz9dPVlk/EszApgdbmSiNVdGR+l
-	ITSF7srZ8jv9zZ+RVZUWq8rJY5cLpbSc=
-X-Received: by 2002:a05:6870:2499:b0:417:4164:5eb8 with SMTP id
- 586e51a60fabf-41c114f9a9amr1457515fac.51.1774004325544; Fri, 20 Mar 2026
- 03:58:45 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ctS6KP8E"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774004332; x=1805540332;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=6rkL5Y11W8vblxHdinq1mUvdydUtN//15Bik/nVBFkI=;
+  b=ctS6KP8EzfV2Sd4oILX5bfe3V0ejrGyZvkLJqhYmSGlbz/ffGqXdaKij
+   kHWZ+kqAQhqPga1mfAGW3Htl517vJVZ9ZiCzcBduX+SD2QHb0VOwc42/s
+   DM4wj2JxDjNAioEYKyVqso0HKqJpGgUft2d6Ux3kM3UZ26SNO+wIi7lZn
+   HPwaUC3i8jX2lfiwYSSU60pC5wBrDyphpWAmUwDTkQULOEpPPX6sLHwle
+   o4j0bBX4c9gmr6m13gEgcc8yyvTw+W3ZMjrqztkjhKKrHayce7hO8iUCG
+   aFLdHsxWxCCt5uPW3yK4nqEvtHf5tU1zVC2oH4wXvtbh7M20gNjn80j1/
+   g==;
+X-CSE-ConnectionGUID: O8hTV9jlSo2tWzOhj+uMWA==
+X-CSE-MsgGUID: H/VCKwubRmOcrwF8p3lk0Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="97703410"
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="97703410"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:58:51 -0700
+X-CSE-ConnectionGUID: cWZK5RpzRY6iAbkenogUNA==
+X-CSE-MsgGUID: eTvNnlPiRai9wMXeAX52rA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="228190987"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.111])
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:58:49 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 20 Mar 2026 12:58:46 +0200 (EET)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH 5/6] platform/x86/intel/pmc: Retrieve PMC info only for
+ available PMCs
+In-Reply-To: <20260302223214.484585-6-xi.pardee@linux.intel.com>
+Message-ID: <33f4caaf-8e1a-33d8-8521-357a80a70eb7@linux.intel.com>
+References: <20260302223214.484585-1-xi.pardee@linux.intel.com> <20260302223214.484585-6-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320095648.3598007-1-henrytseng@qnap.com>
-In-Reply-To: <20260320095648.3598007-1-henrytseng@qnap.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 20 Mar 2026 11:58:32 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0h9bydM7wMUQSQx3y4p--cZQxDUYJyfcL7s9W-Y88Xw1A@mail.gmail.com>
-X-Gm-Features: AaiRm51syvkaOTEXr3O6U2Uo1PqXrjIG0moDUcmPa91DcqlC6jLLSs4-30pEPQ8
-Message-ID: <CAJZ5v0h9bydM7wMUQSQx3y4p--cZQxDUYJyfcL7s9W-Y88Xw1A@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: acpi-cpufreq: use DMI max speed when CPPC is unavailable
-To: Henry Tseng <henrytseng@qnap.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	SW Chen <swchen@qnap.com>, Kevin Ko <kevinko@qnap.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
 
-On Fri, Mar 20, 2026 at 10:57=E2=80=AFAM Henry Tseng <henrytseng@qnap.com> =
-wrote:
->
-> On AMD Ryzen Embedded V1780B (Family 17h, Zen 1), the BIOS does not
-> provide ACPI _CPC objects and the CPU does not support MSR-based CPPC
-> (X86_FEATURE_CPPC).  The _PSS table only lists nominal P-states
-> (P0 =3D 3350 MHz), so when get_max_boost_ratio() fails at
-> cppc_get_perf_caps(), cpuinfo_max_freq reports only the base frequency
-> instead of the rated boost frequency (3600 MHz).
->
->   dmesg:
->     ACPI CPPC: No CPC descriptor for CPU:0
->     acpi_cpufreq: CPU0: Unable to get performance capabilities (-19)
->
-> cppc-cpufreq already has a DMI fallback (cppc_get_dmi_max_khz()) that
-> reads the processor max speed from SMBIOS Type 4.  Export it and reuse
-> it in acpi-cpufreq as a last-resort source for the boost frequency.
->
-> A sanity check ensures the DMI value is above the _PSS P0 frequency
-> and within 2x of it; values outside that range are ignored and the
-> existing arch_set_max_freq_ratio() path is taken instead.  The 2x
-> upper bound is based on a survey of the AMD Ryzen Embedded V1000
-> series, where the highest boost-to-base ratio is 1.8x (V1404I:
-> 2.0 GHz base / 3.6 GHz boost).
->
-> Tested on AMD Ryzen Embedded V1780B with v7.0-rc4:
->
->   Before: cpuinfo_max_freq =3D 3350000 (base only)
->   After:  cpuinfo_max_freq =3D 3600000 (includes boost)
->
-> Link: https://www.amd.com/en/products/embedded/ryzen/ryzen-v1000-series.h=
-tml#specifications
-> Signed-off-by: Henry Tseng <henrytseng@qnap.com>
+On Mon, 2 Mar 2026, Xi Pardee wrote:
+
+> Update the Intel PMC Core driver to fetch PMC information only for
+> available PMCs. Previously, the driver attempted to retrieve PMC info
+> even when the corresponding PMC was not present.
+> 
+> This change aligns with recent updates to the Intel SSRAM Telemetry
+> driver. Starting with NVL, the SSRAM Telemetry driver is probed for
+> each individual SSRAM device. The prior implementation could not
+> differentiate between an unavailable PMC and one that had not yet
+> completed information retrieval. To resolve this, the PMC Core driver
+> now skips obtaining PMC info for unavailable PMCs.
+> 
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 > ---
->  drivers/acpi/cppc_acpi.c       |  3 ++-
->  drivers/cpufreq/acpi-cpufreq.c | 21 ++++++++++++++++-----
->  include/acpi/cppc_acpi.h       |  1 +
->  3 files changed, 19 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index f0e513e9ed5d..f53de414acf2 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1944,7 +1944,7 @@ static void cppc_find_dmi_mhz(const struct dmi_head=
-er *dm, void *private)
+>  drivers/platform/x86/intel/pmc/arl.c  |  5 +++++
+>  drivers/platform/x86/intel/pmc/core.c | 19 +++++++++++--------
+>  drivers/platform/x86/intel/pmc/core.h |  2 ++
+>  drivers/platform/x86/intel/pmc/lnl.c  |  3 +++
+>  drivers/platform/x86/intel/pmc/mtl.c  |  3 +++
+>  drivers/platform/x86/intel/pmc/ptl.c  |  3 +++
+>  drivers/platform/x86/intel/pmc/wcl.c  |  3 +++
+>  7 files changed, 30 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/platform/x86/intel/pmc/arl.c b/drivers/platform/x86/intel/pmc/arl.c
+> index 4d91ee010f6d0..34506542c94da 100644
+> --- a/drivers/platform/x86/intel/pmc/arl.c
+> +++ b/drivers/platform/x86/intel/pmc/arl.c
+> @@ -672,6 +672,9 @@ static struct pmc_info arl_pmc_info_list[] = {
+>  	{}
+>  };
+>  
+> +static u8 arl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_IOE, PMC_IDX_PCH, PMC_IDX_MAX};
+> +static u8 arl_h_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_IOE, PMC_IDX_MAX};
+
+This seems a bit dangerous approach if somebody forgets to add that
+PMC_IDX_MAX. It would be better to do it with sizeof() for safety).
+
+> +
+>  #define ARL_NPU_PCI_DEV			0xad1d
+>  #define ARL_GNA_PCI_DEV			0xae4c
+>  #define ARL_H_NPU_PCI_DEV		0x7d1d
+> @@ -721,6 +724,7 @@ static int arl_h_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_
+>  static u32 ARL_PMT_DMU_GUIDS[] = {ARL_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info arl_pmc_dev = {
+>  	.dmu_guids = ARL_PMT_DMU_GUIDS,
+> +	.pmc_list = arl_pmc_list,
+>  	.regmap_list = arl_pmc_info_list,
+>  	.map = &arl_socs_reg_map,
+>  	.sub_req_show = &pmc_core_substate_req_regs_fops,
+> @@ -735,6 +739,7 @@ struct pmc_dev_info arl_pmc_dev = {
+>  static u32 ARL_H_PMT_DMU_GUIDS[] = {ARL_PMT_DMU_GUID, ARL_H_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info arl_h_pmc_dev = {
+>  	.dmu_guids = ARL_H_PMT_DMU_GUIDS,
+> +	.pmc_list = arl_h_pmc_list,
+>  	.regmap_list = arl_pmc_info_list,
+>  	.map = &mtl_socm_reg_map,
+>  	.sub_req_show = &pmc_core_substate_req_regs_fops,
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+> index 7bd0e1eaa32e2..85fff5e3abe0d 100644
+> --- a/drivers/platform/x86/intel/pmc/core.c
+> +++ b/drivers/platform/x86/intel/pmc/core.c
+> @@ -1744,16 +1744,19 @@ static int pmc_core_pmc_add(struct pmc_dev *pmcdev, unsigned int pmc_idx)
+>  	return 0;
 >  }
->
->  /* Look up the max frequency in DMI */
-> -static u64 cppc_get_dmi_max_khz(void)
-> +u64 cppc_get_dmi_max_khz(void)
+>  
+> -static int pmc_core_ssram_get_reg_base(struct pmc_dev *pmcdev)
+> +static int pmc_core_ssram_get_reg_base(struct pmc_dev *pmcdev, u8 *pmc_list)
 >  {
->         u16 mhz =3D 0;
->
-> @@ -1958,6 +1958,7 @@ static u64 cppc_get_dmi_max_khz(void)
->
->         return KHZ_PER_MHZ * mhz;
+> +	unsigned int i;
+>  	int ret;
+>  
+> -	ret = pmc_core_pmc_add(pmcdev, PMC_IDX_MAIN);
+> -	if (ret)
+> -		return ret;
+> -
+> -	pmc_core_pmc_add(pmcdev, PMC_IDX_IOE);
+> -	pmc_core_pmc_add(pmcdev, PMC_IDX_PCH);
+> +	for (i = 0; pmc_list[i] != PMC_IDX_MAX; ++i) {
+> +		if (pmc_list[i] == PMC_IDX_MAIN) {
+> +			ret = pmc_core_pmc_add(pmcdev, pmc_list[i]);
+> +			if (ret)
+> +				return ret;
+> +		} else
+> +			pmc_core_pmc_add(pmcdev, pmc_list[i]);
+
+Isn't this same as:
+
+		/* Non-MAIN PMCs are allowed to fail */
+		ret = pmc_core_pmc_add(pmcdev, pmc_list[i]);
+		if (ret && (pmc_list[i] == PMC_IDX_MAIN))
+			return ret;
+
+
+
+> +	}
+>  
+>  	return 0;
 >  }
-> +EXPORT_SYMBOL_GPL(cppc_get_dmi_max_khz);
->
+> @@ -1775,7 +1778,7 @@ int generic_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
+>  	ssram = pmc_dev_info->regmap_list != NULL;
+>  	if (ssram) {
+>  		pmcdev->regmap_list = pmc_dev_info->regmap_list;
+> -		ret = pmc_core_ssram_get_reg_base(pmcdev);
+> +		ret = pmc_core_ssram_get_reg_base(pmcdev, pmc_dev_info->pmc_list);
+>  		/*
+>  		 * EAGAIN error code indicates Intel PMC SSRAM Telemetry driver
+>  		 * has not finished probe and PMC info is not available yet. Try
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
+> index f09791f866223..c4984e44f7b80 100644
+> --- a/drivers/platform/x86/intel/pmc/core.h
+> +++ b/drivers/platform/x86/intel/pmc/core.h
+> @@ -501,6 +501,7 @@ enum pmc_index {
+>   * @pc_guid:		GUID for telemetry region to read PKGC blocker info
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry region
+>   * @pkgc_blocker_offset:Offset to PKGC blocker in telemetry region
+> + * @pmc_list:		Index list of available PMC
+>   * @regmap_list:	Pointer to a list of pmc_info structure that could be
+>   *			available for the platform. When set, this field implies
+>   *			SSRAM support.
+> @@ -521,6 +522,7 @@ struct pmc_dev_info {
+>  	u32 pc_guid;
+>  	u32 pkgc_ltr_blocker_offset;
+>  	u32 pkgc_blocker_offset;
+> +	u8 *pmc_list;
+>  	struct pmc_info *regmap_list;
+>  	const struct pmc_reg_map *map;
+>  	const struct file_operations *sub_req_show;
+> diff --git a/drivers/platform/x86/intel/pmc/lnl.c b/drivers/platform/x86/intel/pmc/lnl.c
+> index 18f303af328e3..7b09b59e1326c 100644
+> --- a/drivers/platform/x86/intel/pmc/lnl.c
+> +++ b/drivers/platform/x86/intel/pmc/lnl.c
+> @@ -544,6 +544,8 @@ static struct pmc_info lnl_pmc_info_list[] = {
+>  	{}
+>  };
+>  
+> +static u8 lnl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_MAX};
+> +
+>  #define LNL_NPU_PCI_DEV		0x643e
+>  #define LNL_IPU_PCI_DEV		0x645d
+>  
+> @@ -571,6 +573,7 @@ static int lnl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  }
+>  
+>  struct pmc_dev_info lnl_pmc_dev = {
+> +	.pmc_list = lnl_pmc_list,
+>  	.regmap_list = lnl_pmc_info_list,
+>  	.map = &lnl_socm_reg_map,
+>  	.sub_req_show = &pmc_core_substate_req_regs_fops,
+> diff --git a/drivers/platform/x86/intel/pmc/mtl.c b/drivers/platform/x86/intel/pmc/mtl.c
+> index b724dd8c34dba..6438fca266392 100644
+> --- a/drivers/platform/x86/intel/pmc/mtl.c
+> +++ b/drivers/platform/x86/intel/pmc/mtl.c
+> @@ -965,6 +965,8 @@ static struct pmc_info mtl_pmc_info_list[] = {
+>  	{}
+>  };
+>  
+> +static u8 mtl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_IOE, PMC_IDX_MAX};
+> +
+>  #define MTL_GNA_PCI_DEV	0x7e4c
+>  #define MTL_IPU_PCI_DEV	0x7d19
+>  #define MTL_VPU_PCI_DEV	0x7d1d
+> @@ -995,6 +997,7 @@ static int mtl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  static u32 MTL_PMT_DMU_GUIDS[] = {MTL_PMT_DMU_GUID, 0x0};
+>  struct pmc_dev_info mtl_pmc_dev = {
+>  	.dmu_guids = MTL_PMT_DMU_GUIDS,
+> +	.pmc_list = mtl_pmc_list,
+>  	.regmap_list = mtl_pmc_info_list,
+>  	.map = &mtl_socm_reg_map,
+>  	.sub_req_show = &pmc_core_substate_req_regs_fops,
+> diff --git a/drivers/platform/x86/intel/pmc/ptl.c b/drivers/platform/x86/intel/pmc/ptl.c
+> index 6c68772e738c8..538ca5ae2e9ec 100644
+> --- a/drivers/platform/x86/intel/pmc/ptl.c
+> +++ b/drivers/platform/x86/intel/pmc/ptl.c
+> @@ -543,6 +543,8 @@ static struct pmc_info ptl_pmc_info_list[] = {
+>  	{}
+>  };
+>  
+> +static u8 ptl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_MAX};
+> +
+>  #define PTL_NPU_PCI_DEV                0xb03e
+>  #define PTL_IPU_PCI_DEV                0xb05d
+>  
+> @@ -569,6 +571,7 @@ static int ptl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  }
+>  
+>  struct pmc_dev_info ptl_pmc_dev = {
+> +	.pmc_list = ptl_pmc_list,
+>  	.regmap_list = ptl_pmc_info_list,
+>  	.map = &ptl_pcdp_reg_map,
+>  	.sub_req_show = &pmc_core_substate_blk_req_fops,
+> diff --git a/drivers/platform/x86/intel/pmc/wcl.c b/drivers/platform/x86/intel/pmc/wcl.c
+> index b55069945e9e7..429f53f22a89f 100644
+> --- a/drivers/platform/x86/intel/pmc/wcl.c
+> +++ b/drivers/platform/x86/intel/pmc/wcl.c
+> @@ -469,6 +469,8 @@ static struct pmc_info wcl_pmc_info_list[] = {
+>  	{}
+>  };
+>  
+> +static u8 wcl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_MAX};
+> +
+>  #define WCL_NPU_PCI_DEV                0xfd3e
+>  
 >  /*
->   * If CPPC lowest_freq and nominal_freq registers are exposed then we ca=
-n
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufre=
-q.c
-> index e7eff6c2f092..9b4638ad27ba 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -849,13 +849,24 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_pol=
-icy *policy)
->
->                 policy->cpuinfo.max_freq =3D freq * max_boost_ratio >> SC=
-HED_CAPACITY_SHIFT;
->         } else {
-> +#ifdef CONFIG_ACPI_CPPC_LIB
-> +               unsigned int freq =3D freq_table[0].frequency;
-> +               u64 max_speed =3D cppc_get_dmi_max_khz();
->                 /*
-> -                * If the maximum "boost" frequency is unknown, ask the a=
-rch
-> -                * scale-invariance code to use the "nominal" performance=
- for
-> -                * CPU utilization scaling so as to prevent the schedutil
-> -                * governor from selecting inadequate CPU frequencies.
-> +                * Use DMI "Max Speed" if it looks plausible: must be
-> +                * above _PSS P0 frequency and within 2x of it.
->                  */
-> -               arch_set_max_freq_ratio(true);
-> +               if (max_speed > freq && max_speed < freq * 2)
-> +                       policy->cpuinfo.max_freq =3D max_speed;
-> +               else
-> +#endif
-> +                       /*
-> +                        * If the maximum "boost" frequency is unknown, a=
-sk the arch
-> +                        * scale-invariance code to use the "nominal" per=
-formance for
-> +                        * CPU utilization scaling so as to prevent the s=
-chedutil
-> +                        * governor from selecting inadequate CPU frequen=
-cies.
-> +                        */
-> +                       arch_set_max_freq_ratio(true);
+> @@ -494,6 +496,7 @@ static int wcl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_in
+>  
+>  struct pmc_dev_info wcl_pmc_dev = {
+>  	.regmap_list = wcl_pmc_info_list,
+> +	.pmc_list = wcl_pmc_list,
+>  	.map = &wcl_pcdn_reg_map,
+>  	.sub_req_show = &pmc_core_substate_blk_req_fops,
+>  	.suspend = cnl_suspend,
+> 
 
-Please move the code in the else {} block into a separate function.
+-- 
+ i.
 
-Then you'll be able to return early after updating cpuinfo.max_freq.
-
->         }
->
->         policy->freq_table =3D freq_table;
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 4d644f03098e..e6c5ef3173c5 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -156,6 +156,7 @@ extern int cppc_set_enable(int cpu, bool enable);
->  extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
->  extern bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu);
->  extern bool cppc_perf_ctrs_in_pcc(void);
-> +extern u64 cppc_get_dmi_max_khz(void);
->  extern unsigned int cppc_perf_to_khz(struct cppc_perf_caps *caps, unsign=
-ed int perf);
->  extern unsigned int cppc_khz_to_perf(struct cppc_perf_caps *caps, unsign=
-ed int freq);
->  extern bool acpi_cpc_valid(void);
-> --
-> 2.43.0
->
