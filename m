@@ -1,43 +1,45 @@
 Received: from mx0b-0064b401.pphosted.com (mx0b-0064b401.pphosted.com [205.220.178.238])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF12F326D73;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92AE031F992;
 	Fri, 20 Mar 2026 20:30:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.178.238
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774038620; cv=fail; b=H0aag2uKCd0UW13axK7oGAyFLaId1SjL5g9lMVgX8y+BWZILcr8kBakTk7KmO0yx27G7E+wCbyHR/E/jnb/laMDeNjiqyj25Vt2U+38kPmj/EgAxiNG+Sqv15SKOQvi0Yn5QjaAYMRdjx3rVO+mO5yGG5b4QxVFixJsytvqRpro=
+	t=1774038621; cv=fail; b=R0gvicDV5MXhVbfJreGffVQtknTCje4zrHQLppmBw0xoewILsem2j7N64Z5XCIK5HL9wYmtWENdi8NYiWkKIGfLLYDvfkKK8TNSZ6cR9X+hhyso/tNeGoegiVarkNu2plmzLw9XAnZXtcvsY9f6C6kbBqxxVrzc9CfRq92PmZzU=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774038620; c=relaxed/simple;
-	bh=Pi7nrRQut750+spVTyXfaFil9uTXZ/5Vcx1ISPQS1rw=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=L81epD4xd3zxJk2/79Li2RerEav4mxYv22UolhcXMhRyMKZyQCTMbBUEHJQzuT67x0XRQqpeVEkbl2ucg6a7xQ+XYTys39Ymz7DwWJ54Zexw3IO1QF5zaaKpuXV79yx4c58e5cAUJDs2bn2xkV/Km9cyDsjBIr+fT7mqqzHBwdQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b=AaeGxzcy; arc=fail smtp.client-ip=205.220.178.238
+	s=arc-20240116; t=1774038621; c=relaxed/simple;
+	bh=+OaXg7msG5+GimqW0p5SHuQYe2kz7eKDJKJcLHy2r0U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=cXEgVo9OW6W0QXh8o0Ep063VnyeOn5z3GMj6bDz5b8DfSXYKU9Q1c2/PfZnig+m0LcpUe1TSxvY01CRc4uXlVGkKgtu84Mz+AWhTjEgn4cKTFp/aVMjd/f+0u8UwZGGYrLgKxNIXKkFgzBG2Jt5VFADE8nv7elc33pGk8M1eZts=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com; spf=pass smtp.mailfrom=windriver.com; dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b=r4BeEHsK; arc=fail smtp.client-ip=205.220.178.238
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=windriver.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=windriver.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b="AaeGxzcy"
-Received: from pps.filterd (m0250811.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62K8qbZw324122;
-	Fri, 20 Mar 2026 20:29:29 GMT
+	dkim=pass (2048-bit key) header.d=windriver.com header.i=@windriver.com header.b="r4BeEHsK"
+Received: from pps.filterd (m0250812.ppops.net [127.0.0.1])
+	by mx0a-0064b401.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62KDRiO83277586;
+	Fri, 20 Mar 2026 20:29:35 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com;
 	 h=cc:content-transfer-encoding:content-type:date:from
-	:message-id:mime-version:subject:to; s=PPS06212021; bh=2Ha6uppFS
-	BXaPhr0+oDqdyX38JSBFngQQEEj3XP/3Fk=; b=AaeGxzcyYnsOZhTjQC0QQxrHu
-	XT/gRlKrvW2RA+3vyyiRBVvFvXDTJX5Iw1kK/uoebfWq9/slciRzTwB8LjT3P+vk
-	S17PERgRCP7HSoCknIICAbJWk28WqUmMMMhE8DpTO+Mcd/iyIWeltZivtHT+Z6j/
-	tXVAPK1VLTM0D5ClmGCoyinvyLgJTIhq9bxOnkzz5DoRhf6sr1K++qt3eJfqQFkA
-	ppkSXAxHylQ+U2yXxQ8wIqnT9zjZeqXpcscl8rc0Sb+xnfioomLnRvgjOMmxY/5P
-	JDkKJ1lIpwpoew9I1RhP+QjarBD3yppvPXUqOclburNTfnTZ4e1ic0nA+i2LA==
-Received: from bl2pr02cu003.outbound.protection.outlook.com (mail-eastusazon11011023.outbound.protection.outlook.com [52.101.52.23])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 4cy9anw33g-1
+	:in-reply-to:message-id:mime-version:references:subject:to; s=
+	PPS06212021; bh=ES4VK4OWxpBu8E6zVBJmJw+BveJkv01MNavKOPfpAok=; b=
+	r4BeEHsKVJDLFjLKRH6yJ4CWOexCMmWXBGmnIZkIUTdV0UFzPL18tW7reAeU8qxc
+	up1pmMvkBSWWKcs5OmoPg2sJd49u8kOo/Vz13keYad3yalE50UJtedRGgk0zmbG0
+	delcDG866mnz/5YtPOfL5bs4EECPFixkmW8eeHRahHs7Bf6v0GqQQBIskMV1ILSl
+	QhIWmOaEZxATu2uomnRWXb1FxFTObKeQZe9ePj9Gx0WQTBF7cdkSiXZvl4VXfTru
+	DFtYSxF1/PdkEHs+jLXNuLUS+dPgT/W7uMzqyC3AHKKeg0Ypke0yjWoIk1Yc4fXo
+	6rErNmEvEIJZOx8MHlYDOw==
+Received: from bl2pr02cu003.outbound.protection.outlook.com (mail-eastusazon11011060.outbound.protection.outlook.com [52.101.52.60])
+	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 4cxm66egdc-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 20 Mar 2026 20:29:29 +0000 (GMT)
+	Fri, 20 Mar 2026 20:29:34 +0000 (GMT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VwAPjPmGn6TTlRmSRi5x/9j61b/qxDZzePcJzQ7axr8YLSeFqF3ySyEZ4rOiDple2XrYqstbRjJAYXse9ZSW0gbbutFyT9qqbRJiMAEUXhM1ZWmewZrfPxPrzZ/+1OsdQU9LiRWWZrMmJoVDo96/3DXk2WhOGwy+L9I36ak9f9Z065SF35szWB7PYfGQHQHm7h6um7bnvKEeVlZpWLUa9CxtkvS7iii+qM5HxCP8RC0woGb/8bzLpINRgS7Qg/RWLQBfSp35AnHKQx41veiF2eIG+lUxgWyxEzXUyaf3Ytj9AilR0J3B3V2yqkDEiDpCQD9+kdXICL0ZGtOU+10zDQ==
+ b=aSp7OB3uE14yTiIg6DSM8IVaw90MKXwiiqGuUOFPRSUAYm695uIefh8chyECJ7q11240ONr2aysjA8kGypTLgO37CAANpkIitgJbNu8yQI8Rb98teJL6IiRZWUqzdweuO1/l7PWjF1h0UxCjjD2d/s4tcDs2wCrMRcHEn06Z2ovBoHOparBp580wkvuyvCmcm/bxI6fmirME+0HBXowJEPpT2zAFU4BKmXdPoL+TFSA4paxorJgjXFWhX73cNV5DrtzHxpCY3q4J0JvZOVnp/E5i4DjTW2XqF94zQvEsTVWuwWbLJGwi6vA7gUu+B7czUT7FkpRkLewMqdSoIw5CEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=2Ha6uppFSBXaPhr0+oDqdyX38JSBFngQQEEj3XP/3Fk=;
- b=Vh0tZwnfBjSCy1t+LNvEVkE+yQHXGjn3fSq8PiNlqvyWgEmVTlfdWb6CzdzQVmsiPRaJ3E0l9NJdDmHledZAIxcQHCe8agRTKe/PjVPiPWWOthWQPbBm/LH0a8TINRwo/sZOp6lPJnRYQqEBYLqMQ+tSPl838UDEE8BzEX6vubnZiR6SVVDVn9VgsSUOX8QupGUznObQwWP11ZsZTZd5CgK0xKz5z8IG5sKVeQxs3T0OVFUyEb8nbbw7s6OuChtzn6zjWl31S4M4R3Ple78ojPqllKD9IjV3rrarzNeVw6exDJOPRVlUGeOlKBT/ariS0Fo6rkHn7KAD19EEX0174w==
+ bh=ES4VK4OWxpBu8E6zVBJmJw+BveJkv01MNavKOPfpAok=;
+ b=cd9ZdDz774KtWTGPFd5Y76EaUe4SdjF54VG1QiEv5HUbVx7DYJaNEjRNjbTORczK/izz19y3tCw0RrWHgB2YLNg4bv+3kn/iFsGg5oTmN+CCA1hKSSZEG4/LRbX8MGyVNjOoWw0FnqfxOIn7QltCueltiAsdtGo4zI8wPsJTy57vMpMUXpKQzPuZb6rGqW+MU1yNubM7vwiQtXAMqbHU7UI/2eybZ9ur/KAC8md6BOGdH51nvbepc3D95HWXhWM9MGWdLV0RDKcsK7lBMsVUrrnSJkCandbupSXPyZ1lWaWFn7PqPdDTYre8kEOyPKPULFmy7dNzclHoOMKd4voomQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=windriver.com; dmarc=pass action=none
  header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
@@ -45,21 +47,22 @@ Received: from SJ2PR11MB7546.namprd11.prod.outlook.com (2603:10b6:a03:4cc::8)
  by MW4PR11MB6785.namprd11.prod.outlook.com (2603:10b6:303:20c::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.14; Fri, 20 Mar
- 2026 20:29:21 +0000
+ 2026 20:29:32 +0000
 Received: from SJ2PR11MB7546.namprd11.prod.outlook.com
  ([fe80::ca9b:dcf:8881:bced]) by SJ2PR11MB7546.namprd11.prod.outlook.com
  ([fe80::ca9b:dcf:8881:bced%5]) with mapi id 15.20.9745.007; Fri, 20 Mar 2026
- 20:29:21 +0000
+ 20:29:32 +0000
 From: Ionut Nechita <ionut.nechita@windriver.com>
 To: stable@vger.kernel.org
 Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org,
         christian.loehle@arm.com, artem.bityutskiy@linux.intel.com,
-        quic_zhonhan@quicinc.com, aboorvad@linux.ibm.com,
-        Ionut Nechita <ionut_n2001@yahoo.com>
-Subject: [PATCH 6.12.y 0/6] cpuidle: menu: Backport get_typical_interval() improvements
-Date: Fri, 20 Mar 2026 22:29:02 +0200
-Message-ID: <20260320202908.24377-1-ionut.nechita@windriver.com>
+        quic_zhonhan@quicinc.com, aboorvad@linux.ibm.com
+Subject: [PATCH 6.12.y 5/6] cpuidle: menu: Update documentation after get_typical_interval() changes
+Date: Fri, 20 Mar 2026 22:29:07 +0200
+Message-ID: <20260320202908.24377-6-ionut.nechita@windriver.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260320202908.24377-1-ionut.nechita@windriver.com>
+References: <20260320202908.24377-1-ionut.nechita@windriver.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: FR2P281CA0183.DEUP281.PROD.OUTLOOK.COM
@@ -73,133 +76,226 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: SJ2PR11MB7546:EE_|MW4PR11MB6785:EE_
-X-MS-Office365-Filtering-Correlation-Id: b99d8f7a-b6ef-4cd6-3d85-08de86bf5e6c
+X-MS-Office365-Filtering-Correlation-Id: ae1ceef4-3b33-400a-aff7-08de86bf6515
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|52116014|376014|1800799024|10070799003|366016|56012099003|18002099003;
+	BCL:0;ARA:13230040|52116014|376014|1800799024|10070799003|366016|56012099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	ewyYHe2bfbOm57tXgMQumqJ+1GlOt6StNpGnubEXJu059J500weeCP44Vf1qLarTYYZBbFWTIN3jksoBTXRPzuvlmW2nTAQqOm2bFTP72GbdwLs3RTgnanuspkOUJlnVt5un9baJIHBr2V6A9bE+wivE7bWraJqlZ1f67izsx2syTLv0OziQ2IV6s16vSIpy7e8PcT9nf/THys5z2IP9ig3S+M660SMFZgOT+xmCOq06e4+vfE7MnajwEzVbTD+Nc/z9WOBklDmdWv2G3jmdWOBDJCdToJeTLJ5Tcm2yPzWm0U0JinhCd40kgnMWGMcB+nJXbDLJGhY10pCuQiBCVbrBcptwWodlPPMHk91RrfKcZQRkP3PuDpn5GOJ3LHeKKxLD10GmputQe4s3kh0YtFvYcQLaLrVUX7VxrHiYzWme3FTT1QFZFHmhMPU95NJlvvvJzPRmzEXof6RQM0szlxTE0LfD9O8q6ESEArAA1EH+UsV3aPgZGgTsF1VCwUcbkbRAg2M8hJFbpwnme5s4TGvpeyJTcbumMdwChYOQE4JIjYftQrwZ5IZ3FHU9fDqJxSgzOccmOPTBJOMUOKljgJ8uL7f1DPGccOwg9/ywwEFfal8Bp4L59Wkn+RpW1nGMqmeDAl2fHd3VRONOQ/ZjuwkCWZED4AECr+dOQU3b2/Q1r2W3OMfKXpuMPCBVGWmCkiRYNiCS6pE+ws96PU4dCafrvZpn399A8gVoAZATZcw=
+	DWTJjjciA/A4AOrEpfnfHGWPEFEZQ5a+ka6irYrsWllozC43BSx4LK08qwxX0sXo3p1iBDhYsDIJAsXI8EmAs0dOE73VPd+vmmzOmCK5yNRB/G2h7CDv+8bK+ozkGmtUOTsIA7JeFj08yYI20jlBr5D1VZPIazKOyvYufMwEnDIsz8QHV1z9Xuyg4OT/yqIJZWMIueLVW8LKZnfPMwgZUsUotDPYtYuYVgGiVyB0rYVzNMQH7HtQ4xi/Zjd4wWoBzDSUM+TCND7JQsb5IOtthf9Ufg1HGyao7GlCNv2GSGp3o7TnUcOUrgVdJOGvlyOdtJxLzf7kXSZlSb5oP7GMiT6P+Z9eiV2delEhipIi1scVMcro1wQDraQYn0yxsMD48Z38YcDh+NzU/m6XjdfACjfncbykXdTNcQuxBWd5857TIBv3jpqF9l6nKu19p3dWTt8fqkY2ccSjclphaMlfEOhhQb3xNKTWBNTbWBTYBrIKomvZFCoq17+pAqPN+p4OZRG2HIyMUjWJnpKJw0YPxeICf350yv/henNB2/zK8heGTnDzvNsN3G2B/G2IhI3llj1YU8CMR1BiBoZkH88+xtK7tpj6h/FrkuKQDU+zAfKzSCF+3UeROYY+VRzXIG48RXS/INYkLUsFws1iCeqcOynRf4JIncINi7+ua6spWj6F4aa/DsYxrnjDe92YTbkr
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR11MB7546.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(10070799003)(366016)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ2PR11MB7546.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(1800799024)(10070799003)(366016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?qY6QEb3RkhsCDQv4tlDTmFCrpbKgk99E6e8fZHemWzK5ungKS1fg3rG4PPL7?=
- =?us-ascii?Q?/X6bQTAQww8pTrbzykGnmAVjcmP4Bs+FxVmk/JPIZVb15M4MO28Jec6qg0Dj?=
- =?us-ascii?Q?aWi0dE3gb3H/WG6TS9twB8KHwdjvdtGy/RKSAHNC0P2JVYtPP2w8Ub0bciau?=
- =?us-ascii?Q?7IrGQOroI1Bo1unQG02iid2bcYt76q4gJ4wjo2eNHdw4P2F/l8gyrKU28KRn?=
- =?us-ascii?Q?Cxu2K46ujQhHMXkeCaB4WhiXXo4iE6JvKOlwC7TkhoPvpfzJd2pqziqwWnSq?=
- =?us-ascii?Q?XSOcBBKpCiRfPyLUDcWfEBcb4TETxPA9EIhMhmGCc3BQGxWms/+5H69IccJ9?=
- =?us-ascii?Q?B02XmN0A1v4XrhM3CI5IKHy+HZ3j3qJcU0FFZIK6ts5owqZc1j6erL4jRk7h?=
- =?us-ascii?Q?9pNvvapp02pDbWeyXdvlHrOAIHuFE34U+B7hL+X6xRBxtXRZqwoH7x1igy6l?=
- =?us-ascii?Q?CRCQ/KeT1gFDcFh8sCqDELlwWTueM2lafBTaSTcWLTeZQVFbHshkbzkdJAip?=
- =?us-ascii?Q?wD4Yv9YTbVRurKn4Pkb6XPjabZCY74ZNI3aRqEec+EwNSr5SwZFOgkSXF+s+?=
- =?us-ascii?Q?weA8Ch+MoYk53JZLX2b/535MEo159Q+xvlLGtDv0TcIwtFZM6EO83L76NIOS?=
- =?us-ascii?Q?umrvvrbs8SkJrYUL9iySSlMd8u4A49/qOu5xPNmQT53ZbOr0jq5ZUfh1wals?=
- =?us-ascii?Q?NkTAkdmkW7973uDaMplUtEEdw+r/xQvkC90/UQ+qecj55apCmQ7k19a4JmXm?=
- =?us-ascii?Q?jwnhJsnlUNtpZM8hOm/h6sG2KBe/1jPk3d9EaYC+N7VmqhLYMSm9zZ6YnJk7?=
- =?us-ascii?Q?99iz93u68VibhCtt5VVJ7WXBH07NMUNzt75ciLKQ6wUKX6AfRHWMgwsB5p93?=
- =?us-ascii?Q?4uyvl1jU2GbmZrIMIF4Zd/hH+csXXEOiKcDa5mbc2DuwRCsNQC2knuBMTob+?=
- =?us-ascii?Q?aKvM0j8ZT3YwgIvUPsaPo+fsLDSHXaItCOZ3iyNb1DdTy9CFia3d3NklKjEf?=
- =?us-ascii?Q?PD+fPkFlus7hPXMElm8x7BvE6koFepz8aBxwPZRStpzET6zYp+2rsdVpmn3K?=
- =?us-ascii?Q?n8u2Tyusa5gSs/HTVwtmz1mH47gsU3ShkYxIwANUrWfhlnE3hNn0YWFynDH6?=
- =?us-ascii?Q?0WtCemES0mZ/4Tj+x36njFq5T8mV/vOvs983lno4v5OJBl3B99vZQv8qXefn?=
- =?us-ascii?Q?Zb88EnEy1Bp7mRdPZS4XHj1T/hDINTVR3edrGPqMhw8FSh2sqtjjZdyBh4Sd?=
- =?us-ascii?Q?XFezKVLf2G4PfrgbcsiCELv5fPlKYxzQC+1yTEQ+P4VhhaRNh8KjIWFlcTFD?=
- =?us-ascii?Q?9B7x6PK7zRKricOF3C+K0whilIoZa5tk+IYMvhb0Ww2Mn+ZMf7oTZtLv88Mu?=
- =?us-ascii?Q?bnoB4VYJvEblTKrNI5jNUOqkpBr8MXblG6h7mJ1qV6J1UHZDfCvuL40GLZn9?=
- =?us-ascii?Q?+OWkOa40KJcnaeBwYT59gdILWDV3q/uIYTHDERCasY6g4fwTv+n92Oe8N7Rp?=
- =?us-ascii?Q?etAqHD09/A62XsFZ/WErxGhddxHcOc//unCnNYMPFygJJSvU11//i2QGop1s?=
- =?us-ascii?Q?1CxECeVy2uZixWatkxBkAEszyGhJyp+pmBKgzx6WnTl/lAewu10u9FZ2Tsnf?=
- =?us-ascii?Q?RRZt8V2mYEiOpalu7Pas4S0hXpWKq0onI5Wy3LNRdtIvU+/0nzPq4RCr791Z?=
- =?us-ascii?Q?s6kgtM6UtkRs9A2oJhdys+YAjCq3Do0B20RHuAWPH+Ll7afb4jcRxZqWAYrJ?=
- =?us-ascii?Q?aCrCtzNIdlblp6NKFLjCH2Yt6QZXB14F5ASynw0A+wWdQbLBOOUHksUmM+IB?=
-X-MS-Exchange-AntiSpam-MessageData-1: NBFUB/WeJMQARJyHJhTXjQXZvI30BzslIqc=
+	=?us-ascii?Q?Zw1SjQ8deus5DKqtjmxVW19D2423i9Zd0Cvc1+rggmK7KrD6BQWwaM+49QTO?=
+ =?us-ascii?Q?nFYh2mHbvHX0DG7dL0eWwcLe79XV9FOgjuTGDPIBdrE0RMOxK3iAk0CtIbMA?=
+ =?us-ascii?Q?QPWsb2W9OgxfGljA6RXqrWZv8YGzf53Dqd+1STHKKu+2xnhZtLJkOb3SltmL?=
+ =?us-ascii?Q?PSst9her83ywkCNlPr/EsXLalwA2aV2l8FNUtNE1E0d6i77wvhyyOQdZshDn?=
+ =?us-ascii?Q?+zi2E324RdQv/3CR96f3uvbp4Gs+V0vN6LgLcfw3YM0KnepDi6j9ngiDcOpw?=
+ =?us-ascii?Q?1zgDNumE7frtZY3CxfgJGJXOjMtXaJThHtMm39YtfCPHdeZbznScOFsFMXUc?=
+ =?us-ascii?Q?t0ujeXuuMaiFnt3QI870bpNadtwnCcrjmzmB9locY1dJPxoLCXgZhTQouhzm?=
+ =?us-ascii?Q?ysIOf3vgRtVAWOKFIFHv/6ajVch7RY+LR2rGMphhEo3oEB7A4HAA/mYSJBDd?=
+ =?us-ascii?Q?f2VuUs4E9C11a/cVLJE2+uMP3+buZZq6xvWu0hiRVnWP9GQUSHPdSiD8Nz3y?=
+ =?us-ascii?Q?nqTS6gKmKp+MI1pj/gbvzyPrt3h7UcHhfeJV8zRfTyYuP7MzBSaDzxA7gOwq?=
+ =?us-ascii?Q?JuXEgrYUV/HhHRq2gHgNeunjAqWA7BqlMcRsHJ38bL8/wPUS73vYh0U4OkEm?=
+ =?us-ascii?Q?wKupZm9iIr9HwA2uRYQYKtXWCY4Njv9eFFSZZCXntoA3drEtzL6VvN7dIjmX?=
+ =?us-ascii?Q?S6otdenUSzxdsaKKquz4wzGsSmyaZehHG4P8hvq7tEGgWt8Js7MHR62ZTCY8?=
+ =?us-ascii?Q?daqeMRzonF0JeE9VgWcvk+8yURRezQV/zLppP5woqKXkA9cRGPVzE9X/oL03?=
+ =?us-ascii?Q?37ViGpOq2Q3+/iUT8gkVg77lP5CdjZZbz7akPEFWB92xRQ/9NcjZKmveWSaN?=
+ =?us-ascii?Q?ItO26R+ZtmwH65K3zj88bjtpDt/1jTlQCSb98TSCxtN8pIKSMgO22Ec0RXc8?=
+ =?us-ascii?Q?jcjhn/Ixt+NotRJ4A/+8hLcVbvXTjrJD4F12xoEftVOygC4+AQI+HRJylDjC?=
+ =?us-ascii?Q?NBzTfInLQ6h96bXpRidQs0Z+XIn73CnsIWYwJvmTEAG8dRTF+hJycrcRcwbj?=
+ =?us-ascii?Q?+nOr+xRHF/znsvQ9XFqL8HAe2ccFPxg3pmfD7B/dBhpigaoh7A749TKpMed/?=
+ =?us-ascii?Q?rfkXxvQqrhPk93FC39bUIEjFUzmWVqc8fpM+be60B8Rrdt8barSm0SPYvE6T?=
+ =?us-ascii?Q?xVTq9biIHBMC6fo2x0dwMiSbVdxKycvDwJQbEe0AGxuI2xkKNpOgnye8Mb25?=
+ =?us-ascii?Q?GG/nxi1cnxsowP29ah/11qyrHePu8z4aJJ3aAcb2NpZ6Qn2umCY5IB4x7Zos?=
+ =?us-ascii?Q?T/VFrn+aM0WqDgCI6UKlyoBSBOoUr4CbUp/mmJ9R0/ugc9klkZCEkoksNkau?=
+ =?us-ascii?Q?94ODVgkpItYgsrQb8vKd8uUCbFmc0hcrhgQF+J9zbNTjQOqHlYmV/1lq03Cg?=
+ =?us-ascii?Q?+aXUqGDrbbAE298SQVdDPYxvIqtYhnaj53XRpiqopAA63+6Xur0sh2Xr+g1r?=
+ =?us-ascii?Q?DaLA1VP0IHX963eYR2PeGzDLOmWUkFWguEA7920AR4/na6JfrRBSgYiaIxaf?=
+ =?us-ascii?Q?yCbApbKnLjlrnnJmRS99QgMH8s/i/bQc977ly8rt7bc73kQraXaSwE9sDU+O?=
+ =?us-ascii?Q?aIVkjo/2RJxbcMEg26UN8WvIFa4cEcuD426QXQqaxDjGn1CiKjad35L6/QaM?=
+ =?us-ascii?Q?jqVgi3ZmquLqHTdWAEFrfqUCcsrDzrRwLC6jshmVo2Iv/EVz2r+4/u2lxQE5?=
+ =?us-ascii?Q?BPtlK3h7LMFnOxB7w6pLQ74ZLvTWCNn87BENCEyqYIQ2XO0lxCogaYQxAFzm?=
+X-MS-Exchange-AntiSpam-MessageData-1: Xfjv6blH22Tf/TOR/oerVFmH+iGN9dNOYx4=
 X-Exchange-RoutingPolicyChecked:
-	TRTbKGcD+vt0K5TSWf8mTlxL7klSNu/cMkC9GclHkKhOA+J1fzmiLqGtDw/rulSEHFugPuYZFyfE1uimgkb57GEKRcgmkOPt57i/qt2ogjdF7Mbk4tjjS2361CgvE/7HFT8xiXnTub/o+tbSFNpD7BU+gngd9a3hvGHQMwerfto+r1nHMMcffZ3cNq5t0oIG19ZYEokzj3Q3nTTOpVz2lm5cUgBXfk5Mo5LQA0AgnbdlsWYlEnvUHIrYIkrWy0GRSR6WxXIK/2viR7x9eTGvRoXN2ObZaFk5g61dTgXDckc08UP5Y34RquPaP+lf96n3B7afhr5WywrBdPHOSzbN0Q==
+	bZS3FI/eVU/r5Ig4Hn/dfMrNTzxD3cKni9Js0RN+TGdL44UtJCSTVb8g4+/awCJkcgvBuqpF4Q2QaXKF7Q6K/+ZKHh3St7TiWVi6/8lyeQ6D6VkYK2ZPB06h/Is9hmoG28KVjJ3QodrordvZsOZUshnubxvn0Kr4MT7onOmLRgKU2TdeClsaRDvEY0Ufpw7YnhYHUlJa6OICyaN3vhuAYvb7yzHDJb+379rfUSYDW1qfUjxkMv02UWpvnTFgTwIZ3RiLoB1MJojEnEft5NEmh9FeW4sFhDMeg4yl3C9viiifppI+6ktSXlVVfsS5MsFydH6++5uGQyKZJ9NihJWLMw==
 X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b99d8f7a-b6ef-4cd6-3d85-08de86bf5e6c
+X-MS-Exchange-CrossTenant-Network-Message-Id: ae1ceef4-3b33-400a-aff7-08de86bf6515
 X-MS-Exchange-CrossTenant-AuthSource: SJ2PR11MB7546.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 20:29:21.6145
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Mar 2026 20:29:32.7062
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: SxZxxNHRiKgXs2QAOGVgZN6BnE9AAAkssAgySC3eS8MDbVieXpJPbxmIXqCmQPqwakptD2O4vmTRscn8rrto/QV1peWYFwmfDCMALWzhQ/M=
+X-MS-Exchange-CrossTenant-UserPrincipalName: np5+1JIaYe67sLZGczGccl09iw54MN6od6/1hpmjv5crxSzlPBkWFhFxgEJ956tdh5cGBBzC5seTSf4EbFqKlOXPF6BJGOHZiGb4MYKr5Zs=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6785
-X-Authority-Analysis: v=2.4 cv=IrMTsb/g c=1 sm=1 tr=0 ts=69bdae29 cx=c_pps
- a=g4Zu/129bcKSj1q/f/8ScQ==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
+X-Proofpoint-ORIG-GUID: ca3VqLgu-tw0cIJwANGsHJviERPoyNaW
+X-Proofpoint-GUID: ca3VqLgu-tw0cIJwANGsHJviERPoyNaW
+X-Authority-Analysis: v=2.4 cv=fLk0HJae c=1 sm=1 tr=0 ts=69bdae2e cx=c_pps
+ a=AqWYtYKdvuqIQX7AE/aD9Q==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
  a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19
  a=xqWC_Br6kY4A:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=bi6dqmuHe4P4UrxVR6um:22 a=klDOsUkWDRETUCZYPvoE:22 a=CjxXgO3LAAAA:8
- a=doN5y8Ov4thJEN2E-usA:9
-X-Proofpoint-ORIG-GUID: VYahJgoU9ImYrBpNGV3k8N4PB7SQNDpD
-X-Proofpoint-GUID: VYahJgoU9ImYrBpNGV3k8N4PB7SQNDpD
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIwMDE2NyBTYWx0ZWRfXwywqUNhLQ8dJ
- 2sbx6rUstW+l6KUw/ICM6lUNNSxnpdn4P1I8U4wtFzl/Lvq1EfJKpUBTnGb25+xK0TPTGSKqEGT
- 3saZZViWrD2UXzC1/wgTp+z2PgIxUkfIlH4aZ/0HrOp50DvbyYMNAVlIR5YRu4ultNPYW2DLcMK
- GSG/gYonpg8M00LVYwWFV+3xWvSOaWsGe7023Eh/pp0/96OoMYAVQwihE7QKxUSoDdIOF3E5lwb
- 9TUvyCNzHj4uX4J5CNc3sSot9Ps6tC/cadpBRZB5EtT+AUQ39/NsuiWkqrWisqq4FTPCOCqqCej
- zUngFdvzVOqDeDF3BFbglXUbJWhs4AxOtjeEijUJGh8Sg+R3ijbsDx5Yqp30I+0TDHwh2WgYgq7
- V1GWYboTlRXXECqq9Jb3Cda4wWzTd7bnYBMhx0i32hRRwHZHu/8Q43fh0hcuiS4kAjeGkH0xKKU
- J93KamcPFkpC+HGbWzw==
+ a=bi6dqmuHe4P4UrxVR6um:22 a=fTW__CHxibyLmBMfj2wP:22 a=bC-a23v3AAAA:8
+ a=p-nOP-kxAAAA:8 a=QyXUC8HyAAAA:8 a=7CQSdrXTAAAA:8 a=2lyBwhcKvf4p2rtmxjYA:9
+ a=FO4_E8m0qiDe52t0p3_H:22 a=XN2wCei03jY4uMu7D0Wg:22 a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIwMDE2NyBTYWx0ZWRfX+5MUvHUQ5048
+ e7cXUFN5KI6+UUDPH25618ZfDeCB9qrhrh1tLsagAl6HzwaJfhLdeFplasT3YAVoL2wKIxux6ro
+ UmKPPhyL/vxDiw74enaKeTSCJnD0z6W4t+4dIR8BUbMRVEIzv+wacZS69iLc1DYFiCwCoxHqsaE
+ KzbXZh/4IpUiGj3yt55wAa2DOKQmG0ueafNc7TVNoLY91h7H6OBHNfTJLQsQr0EVsXhfiNCBvxt
+ GxnO7w1z5GUj4JQ8AWeOoskoytdcnLXfd7bhifCtEiRhIyzHsKGYu/n5LRS4toWiOa0slLT48co
+ PBbNUFcSuoH44Dug88CaxvRdfx1I4DjZO3PFWNoKAfC5uB/RECMwLstzp7B/oU/mV0uLLTDazFx
+ P+yrzTBXtW+fxMYjBfG+Bc5fx8NrEEBWWOlwgoaNMA1gUuXW2l9e09UM7xxMC+vFLQtpSvxBdCU
+ 8XHuZFugkma15wwF0DQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-20_03,2026-03-20_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 suspectscore=0 clxscore=1011 bulkscore=0
- impostorscore=0 lowpriorityscore=0 phishscore=0 priorityscore=1501
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603200167
+ clxscore=1015 impostorscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 malwarescore=0 priorityscore=1501 adultscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603200167
 
-From: Ionut Nechita <ionut_n2001@yahoo.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-This series backports 6 upstream commits that improve the menu
-governor's get_typical_interval() function to linux-6.12.y stable.
+The documentation of the menu cpuidle governor needs to be updated
+to match the code behavior after some changes made recently.
 
-These patches are already present in linux-6.18.y but were not picked
-up for 6.12.y because they lack Cc: stable tags.
+No functional impact.
 
-The key improvement is in patch 2/6 which merges the two separate loops
-for average and variance computation into a single pass, reducing the
-latency of menu_select() on isolated (nohz_full) cores. The remaining
-patches refactor outlier detection to cover both ends of the sample set,
-update documentation to match the new code, and add a minor bucket
-assignment optimization.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Christian Loehle <christian.loehle@arm.com>
+Link: https://patch.msgid.link/4998484.31r3eYUQgx@rjwysocki.net
+[ rjw: More specific subject, two typos fixed in the changelog ]
+---
+ Documentation/admin-guide/pm/cpuidle.rst | 56 +++++++++++++++---------
+ drivers/cpuidle/governors/menu.c         | 29 +++++-------
+ 2 files changed, 45 insertions(+), 40 deletions(-)
 
-After applying this series, drivers/cpuidle/governors/menu.c matches
-linux-6.18.y exactly.
-
-All patches are clean cherry-picks from mainline with one trivial
-conflict resolution in Documentation/admin-guide/pm/cpuidle.rst
-(patch 5/6).
-
-Upstream commits:
-  d2cd195b57cf ("cpuidle: menu: Drop a redundant local variable")
-  13982929fb08 ("cpuidle: menu: Use one loop for average and variance computations")
-  60256e458e1c ("cpuidle: menu: Tweak threshold use in get_typical_interval()")
-  8de7606f0fe2 ("cpuidle: menu: Eliminate outliers on both ends of the sample set")
-  5c35041099965 ("cpuidle: menu: Update documentation after get_typical_interval() changes")
-  d4a7882f93bf ("cpuidle: menu: Optimize bucket assignment when next_timer_ns equals KTIME_MAX")
-
-Rafael J. Wysocki (5):
-  cpuidle: menu: Drop a redundant local variable
-  cpuidle: menu: Use one loop for average and variance computations
-  cpuidle: menu: Tweak threshold use in get_typical_interval()
-  cpuidle: menu: Eliminate outliers on both ends of the sample set
-  cpuidle: menu: Update documentation after get_typical_interval()
-    changes
-
-Zhongqiu Han (1):
-  cpuidle: menu: Optimize bucket assignment when next_timer_ns equals
-    KTIME_MAX
-
- Documentation/admin-guide/pm/cpuidle.rst |  56 +++++++----
- drivers/cpuidle/governors/menu.c         | 118 +++++++++++------------
- 2 files changed, 91 insertions(+), 83 deletions(-)
-
---
+diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
+index 19754beb5a4e6..9fcc35498fb0e 100644
+--- a/Documentation/admin-guide/pm/cpuidle.rst
++++ b/Documentation/admin-guide/pm/cpuidle.rst
+@@ -295,30 +295,44 @@ values and, when predicting the idle duration next time, it computes the average
+ and variance of them.  If the variance is small (smaller than 400 square
+ milliseconds) or it is small relative to the average (the average is greater
+ that 6 times the standard deviation), the average is regarded as the "typical
+-interval" value.  Otherwise, the longest of the saved observed idle duration
++interval" value.  Otherwise, either the longest or the shortest (depending on
++which one is farther from the average) of the saved observed idle duration
+ values is discarded and the computation is repeated for the remaining ones.
++
+ Again, if the variance of them is small (in the above sense), the average is
+ taken as the "typical interval" value and so on, until either the "typical
+-interval" is determined or too many data points are disregarded, in which case
+-the "typical interval" is assumed to equal "infinity" (the maximum unsigned
+-integer value).  The "typical interval" computed this way is compared with the
+-sleep length multiplied by the correction factor and the minimum of the two is
+-taken as the predicted idle duration.
+-
+-Then, the governor computes an extra latency limit to help "interactive"
+-workloads.  It uses the observation that if the exit latency of the selected
+-idle state is comparable with the predicted idle duration, the total time spent
+-in that state probably will be very short and the amount of energy to save by
+-entering it will be relatively small, so likely it is better to avoid the
+-overhead related to entering that state and exiting it.  Thus selecting a
+-shallower state is likely to be a better option then.   The first approximation
+-of the extra latency limit is the predicted idle duration itself which
+-additionally is divided by a value depending on the number of tasks that
+-previously ran on the given CPU and now they are waiting for I/O operations to
+-complete.  The result of that division is compared with the latency limit coming
+-from the power management quality of service, or `PM QoS <cpu-pm-qos_>`_,
+-framework and the minimum of the two is taken as the limit for the idle states'
+-exit latency.
++interval" is determined or too many data points are disregarded.  In the latter
++case, if the size of the set of data points still under consideration is
++sufficiently large, the next idle duration is not likely to be above the largest
++idle duration value still in that set, so that value is taken as the predicted
++next idle duration.  Finally, if the set of data points still under
++consideration is too small, no prediction is made.
++
++If the preliminary prediction of the next idle duration computed this way is
++long enough, the governor obtains the time until the closest timer event with
++the assumption that the scheduler tick will be stopped.  That time, referred to
++as the *sleep length* in what follows, is the upper bound on the time before the
++next CPU wakeup.  It is used to determine the sleep length range, which in turn
++is needed to get the sleep length correction factor.
++
++The ``menu`` governor maintains an array containing several correction factor
++values that correspond to different sleep length ranges organized so that each
++range represented in the array is approximately 10 times wider than the previous
++one.
++
++The correction factor for the given sleep length range (determined before
++selecting the idle state for the CPU) is updated after the CPU has been woken
++up and the closer the sleep length is to the observed idle duration, the closer
++to 1 the correction factor becomes (it must fall between 0 and 1 inclusive).
++The sleep length is multiplied by the correction factor for the range that it
++falls into to obtain an approximation of the predicted idle duration that is
++compared to the "typical interval" determined previously and the minimum of
++the two is taken as the final idle duration prediction.
++
++If the "typical interval" value is small, which means that the CPU is likely
++to be woken up soon enough, the sleep length computation is skipped as it may
++be costly and the idle duration is simply predicted to equal the "typical
++interval" value.
+ 
+ Now, the governor is ready to walk the list of idle states and choose one of
+ them.  For this purpose, it compares the target residency of each state with
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 8ab5123c81040..a18477ecce433 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -41,7 +41,7 @@
+  * the  C state is required to actually break even on this cost. CPUIDLE
+  * provides us this duration in the "target_residency" field. So all that we
+  * need is a good prediction of how long we'll be idle. Like the traditional
+- * menu governor, we start with the actual known "next timer event" time.
++ * menu governor, we take the actual known "next timer event" time.
+  *
+  * Since there are other source of wakeups (interrupts for example) than
+  * the next timer event, this estimation is rather optimistic. To get a
+@@ -50,30 +50,21 @@
+  * duration always was 50% of the next timer tick, the correction factor will
+  * be 0.5.
+  *
+- * menu uses a running average for this correction factor, however it uses a
+- * set of factors, not just a single factor. This stems from the realization
+- * that the ratio is dependent on the order of magnitude of the expected
+- * duration; if we expect 500 milliseconds of idle time the likelihood of
+- * getting an interrupt very early is much higher than if we expect 50 micro
+- * seconds of idle time. A second independent factor that has big impact on
+- * the actual factor is if there is (disk) IO outstanding or not.
+- * (as a special twist, we consider every sleep longer than 50 milliseconds
+- * as perfect; there are no power gains for sleeping longer than this)
+- *
+- * For these two reasons we keep an array of 12 independent factors, that gets
+- * indexed based on the magnitude of the expected duration as well as the
+- * "is IO outstanding" property.
++ * menu uses a running average for this correction factor, but it uses a set of
++ * factors, not just a single factor. This stems from the realization that the
++ * ratio is dependent on the order of magnitude of the expected duration; if we
++ * expect 500 milliseconds of idle time the likelihood of getting an interrupt
++ * very early is much higher than if we expect 50 micro seconds of idle time.
++ * For this reason, menu keeps an array of 6 independent factors, that gets
++ * indexed based on the magnitude of the expected duration.
+  *
+  * Repeatable-interval-detector
+  * ----------------------------
+  * There are some cases where "next timer" is a completely unusable predictor:
+  * Those cases where the interval is fixed, for example due to hardware
+- * interrupt mitigation, but also due to fixed transfer rate devices such as
+- * mice.
++ * interrupt mitigation, but also due to fixed transfer rate devices like mice.
+  * For this, we use a different predictor: We track the duration of the last 8
+- * intervals and if the stand deviation of these 8 intervals is below a
+- * threshold value, we use the average of these intervals as prediction.
+- *
++ * intervals and use them to estimate the duration of the next one.
+  */
+ 
+ struct menu_device {
+-- 
 2.53.0
 
