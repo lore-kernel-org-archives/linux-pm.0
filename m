@@ -1,134 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6BE1DF755;
-	Fri, 20 Mar 2026 17:00:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E83633CCFAF;
+	Fri, 20 Mar 2026 17:02:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774026034; cv=none; b=XADJGiEfYMCxYtt0O6UrjdOoQWeMm+lVJQW69SqyO4mOAOQLpJ7s6qbBW7tLZf/zxMaABkiOEdvJ+IX+QYCokoddTA3bYeElJX2IXEkSRypWZfI9y8RsxHIltPk6Llzm+hsz21Yhhv3LIWWxFY3+w2YaDk3zDlBz+2gUPMhUlTI=
+	t=1774026168; cv=none; b=rjWBrWAnZxbWkiOuX6BRb+V+hfSoosv9jmGgT6vJVSRdkBTa6lDpHOHLpWhGtLpsG9VsInMFEOmgO20CiwJuI37yKqLuyv8nPaBUyqLzkxOl12eiCSD7l/MBlpa3FasCUdWcr2M697p4qPNyRXKRlJ8W7guaJwUHVJgBUdvhszU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774026034; c=relaxed/simple;
-	bh=IvYbjw9d5nitPx0T3uk2/8jMvQoh90LxpamP/268m38=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Jgh8bfLpOc8+Gv6wuBj0vRwjbfAcqDP83M2wgYwJesz1ZNoVRKPcf386JQm8cji9Ne4REtQij3tuNT5bwJBwbbKVuYZXnKWDgDqOPfKs/47PM5ghq4OCmQt6Et5tG9NZQ8ZHKR/M/2PHjKNbmKA8XHUl3FqRbEHm2yqQKHsalfs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=KX9wkFN2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774026168; c=relaxed/simple;
+	bh=mtXj/5WcTX/XFolbT4MOXQ239Cv99tIh0Jepn1ieNYo=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Xbpy/FVXFHkIcnS21kw5Znv/S5GL0hSIWu+VxP6DDmBp8hQUxo63+beEZ3Xd6g2clK1UAzx9PDgeHaV3R0M4VmdfWPLhQI7/uCa34X/mXz4o25N4noMrFYKzZokynY93GlV9Xzs52NFIyh1nbf/8EsVC6o4MdwOckjmggPI9ohY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=U29s6+5q; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="KX9wkFN2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ED315C4CEF7;
-	Fri, 20 Mar 2026 17:00:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1774026033;
-	bh=IvYbjw9d5nitPx0T3uk2/8jMvQoh90LxpamP/268m38=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=KX9wkFN2ReY5GLgjhUVUM0unKrrYrhTMmEeYXB6QWdYFW71g2TkS4hF/TC7xmkhPa
-	 MMXp9wRxlWzhCjwZ4gXXID84Fd2lRAqT3ZyLt8SbeNkRzhizbiSLSWSnmYAW5pEq8U
-	 IBqmh6z3mPSIQjxNjWU/5TwUcSbSKJGe/cvTDQP8=
-Date: Fri, 20 Mar 2026 17:59:21 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Markus Probst <markus.probst@posteo.de>
-Cc: Rob Herring <robh@kernel.org>, Jiri Slaby <jirislaby@kernel.org>,
-	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Kari Argillander <kari.argillander@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>, linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v3 2/4] serdev: add rust private data to serdev_device
-Message-ID: <2026032048-curtly-refold-e4df@gregkh>
-References: <20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de>
- <20260313-rust_serdev-v3-2-c9a3af214f7f@posteo.de>
- <2026031402-absence-graph-af5d@gregkh>
- <a9618d034bd48ec21bd26060573770a548619402.camel@posteo.de>
- <2026031422-shaded-matchbook-5078@gregkh>
- <fa25ed4ff4688a40bd601d695804def772e47af9.camel@posteo.de>
- <2026031447-margarita-untamed-e976@gregkh>
- <9e07a53053d1dd75a4ebe94aaa06e2279ef3701d.camel@posteo.de>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="U29s6+5q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774026167; x=1805562167;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=mtXj/5WcTX/XFolbT4MOXQ239Cv99tIh0Jepn1ieNYo=;
+  b=U29s6+5qM5xLyWXovy09cjRuuLl7VpWoM/yQJQylvcNNtBATJCVVpbmZ
+   HRKGRw0ZKdfUqcaJA7M7Vc5FzLD+IM1ICI02AIXo1Cs6ShuysD+ORGLrI
+   fiUqvp7HKyxVA2ZIx4kIWuS2VU2x4t9d7UQoB4pk6ElPNF4vpgyE4+LNS
+   i/CkXyRtL5M97ZMtqpR++bHojuWiXVYhayw1Fc6PNNH9j6NpW4QFkIEEH
+   cCRJp9QZdV49UUbVaf19c9bPKk4I8lzLz22x8GF5R9Toy+EOKpzugoCgn
+   kUcXZp+uNeQK5jVfSdTUqEPKU7CYhX8l7e3aWqI3pp2D8e9VHMQm6y2Ad
+   w==;
+X-CSE-ConnectionGUID: Gpf7q11NR/GzRYVqupJmOg==
+X-CSE-MsgGUID: uEQL6q5KSHyolymOUpV1Bw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11735"; a="97736727"
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="97736727"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 10:02:46 -0700
+X-CSE-ConnectionGUID: i5zJ5kYiRPmiL9NcJGWVMg==
+X-CSE-MsgGUID: C0rcFy97SACuUF429wqZ5w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="222436540"
+Received: from unknown (HELO [143.181.48.233]) ([143.181.48.233])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 10:02:46 -0700
+Message-ID: <43d464a89afdf955282ffe3ce0c5acd50e047500.camel@linux.intel.com>
+Subject: Re: [PATCH v1 0/6] powercap: intel_rapl: Move primitives to
+ interface drivers
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+  "Rafael J . Wysocki"	 <rafael@kernel.org>, Daniel Lezcano
+ <daniel.lezcano@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 20 Mar 2026 10:02:45 -0700
+In-Reply-To: <20260313185333.2370733-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+References: 
+	<20260313185333.2370733-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.2 (3.58.2-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9e07a53053d1dd75a4ebe94aaa06e2279ef3701d.camel@posteo.de>
 
-On Fri, Mar 20, 2026 at 04:53:09PM +0000, Markus Probst wrote:
-> On Sat, 2026-03-14 at 14:31 +0100, Greg Kroah-Hartman wrote:
-> > On Sat, Mar 14, 2026 at 12:08:09PM +0000, Markus Probst wrote:
-> > > On Sat, 2026-03-14 at 12:52 +0100, Greg Kroah-Hartman wrote:
-> > > > On Sat, Mar 14, 2026 at 11:42:02AM +0000, Markus Probst wrote:
-> > > > > On Sat, 2026-03-14 at 09:07 +0100, Greg Kroah-Hartman wrote:
-> > > > > > On Fri, Mar 13, 2026 at 06:12:31PM +0000, Markus Probst wrote:
-> > > > > > > Add rust private data to `struct serdev_device`, as it is required by the
-> > > > > > > rust abstraction added in the following commit
-> > > > > > > (rust: add basic serial device bus abstractions).
-> > > > > > 
-> > > > > > why is rust "special" here?  What's wrong with the existing private
-> > > > > > pointer in this structure?  Why must we add another one?
-> > > > > Because in rust, the device drvdata will be set after probe has run. In
-> > > > > serdev, once the device has been opened, it can receive data. It must
-> > > > > be opened either inside probe or before probe, because it can only be
-> > > > > configured (baudrate, flow control etc.) and data written to after it
-> > > > > has been opened. Because it can receive data before drvdata has been
-> > > > > set yet, we need to ensure it waits on data receival for the probe to
-> > > > > be finished. Otherwise this would be a null pointer dereference. To do
-> > > > > this, we need to store a `Completion` for it to wait and a `bool` in
-> > > > > case the probe exits with an error. We cannot store this data in the
-> > > > > device drvdata, because this is where the drivers drvdata goes. We also
-> > > > > cannot create a wrapper of the drivers drvdata, because
-> > > > > `Device::drvdata::<T>()` would always fail in that case. That is why we
-> > > > > need a "rust_private_data" for this abstraction to store the
-> > > > > `Completion` and `bool`.
-> > > > 
-> > > > So why is this any different from any other bus type?  I don't see the
-> > > > "uniqueness" here that has not required this to happen for PCI or USB or
-> > > > anything else.
-> > > > 
-> > > > What am I missing?
-> > > In Short:
-> > > In serdev, we have to handle incoming device data (serdev calls on a
-> > > function pointer we provide in advance), even in the case that the
-> > > driver hasn't completed probe yet.
-> > 
-> > But how is that any different from a USB or PCI driver doing the same
-> > thing?  Why is serdev so unique here? 
-> > 
-> In PCI or USB we don't need to provide function pointers for callbacks
-> in advance, which will be can be called any time (even while probe).
+On Fri, 2026-03-13 at 11:53 -0700, Kuppuswamy Sathyanarayanan wrote:
+> RAPL supports multiple interfaces (MSR, MMIO, and TPMI), each with
+> their
+> own register layouts and bitmask definitions. Currently, the
+> primitive
+> tables and bitmasks for all three interfaces live in the common
+> driver,
+> which requires interface-specific handling logic in shared code and
+> makes
+> the common layer unnecessarily complex.
+>=20
+> This series cleans this up by moving each interface's primitive
+> definitions into its own driver, so the common driver no longer needs
+> to
+> know anything about per-interface register layouts.
+>=20
+> All patches are no-functional-change refactoring.
+>=20
+> This series is based on top of the earlier RAPL cleanup series:
+>=20
+> =C2=A0
+> https://lore.kernel.org/linux-pm/20260212233044.329790-1-sathyanarayanan.=
+kuppuswamy@linux.intel.com/T/#t
+>=20
 
-All class drivers are like this, once you register with them, the
-function pointers you provide can be called before your probe call ends.
-So this isn't unique as far as I can tell.
+For whole series:
 
-> > What specific serdev function
-> > causes this
-> > 
-> drivers/tty/serdev/serdev-ttyport.c basically only wraps the serdev
-> calls to tty calls. This isn't directly caused by a serdev function,
-> but by the tty part.
-> 
-> > why isn't it an issue with the C api?
-> > 
-> In C you can set the drvdata inside the probe and even with it not
-> being fully initialized.
-> 
-> With Rust the drvdata is only available after the probe.
-> But there is the posibility of serdev calling the provided callback
-> inside probe.
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Other classes have this same issue, so why isn't this a problem for HID
-and input and the like?
 
-thanks,
 
-greg k-h
+> Patch Summary:
+> Patch 1/6: Remove unused AVERAGE_POWER primitive and
+> RAPL_PRIMITIVE_DERIVED
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 flag from th=
+e common driver.
+> Patch 2/6: Remove other unused macro definitions from the common
+> driver.
+> Patch 3/6: Move struct rapl_primitive_info, enum unit_type, and
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 PRIMITIVE_IN=
+FO_INIT macro to intel_rapl.h to allow
+> interface
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 drivers to d=
+efine their own primitive tables.
+> Patch 4/6: Move TPMI primitive definitions and associated bitmasks
+> into
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 the TPMI int=
+erface driver.
+> Patch 5/6: Move MMIO primitive definitions and associated bitmasks
+> into
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 the MMIO int=
+erface driver.
+> Patch 6/6: Move MSR primitive definitions and associated bitmasks
+> into
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 the MSR inte=
+rface driver.
+>=20
+> Kuppuswamy Sathyanarayanan (6):
+> =C2=A0 powercap: intel_rapl: Remove unused AVERAGE_POWER primitive
+> =C2=A0 powercap: intel_rapl: Remove unused macro definitions
+> =C2=A0 powercap: intel_rapl: Move primitive info to header for interface
+> =C2=A0=C2=A0=C2=A0 drivers
+> =C2=A0 powercap: intel_rapl: Move TPMI primitives to TPMI driver
+> =C2=A0 thermal: intel: int340x: processor: Move MMIO primitives to MMIO
+> =C2=A0=C2=A0=C2=A0 driver
+> =C2=A0 powercap: intel_rapl: Move MSR primitives to MSR driver
+>=20
+> =C2=A0drivers/powercap/intel_rapl_common.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0 | 206 ----------------
+> --
+> =C2=A0drivers/powercap/intel_rapl_msr.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 99 +++++++++
+> =C2=A0drivers/powercap/intel_rapl_tpmi.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 53 +++++
+> =C2=A0.../int340x_thermal/processor_thermal_rapl.c=C2=A0 |=C2=A0 72 +++++=
++
+> =C2=A0include/linux/intel_rapl.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+ |=C2=A0 33 ++-
+> =C2=A05 files changed, 254 insertions(+), 209 deletions(-)
