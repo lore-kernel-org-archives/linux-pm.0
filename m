@@ -1,133 +1,123 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3934175A9F
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:29:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA712305047
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:55:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774031367; cv=none; b=psjva+hJxgfaFn/xzIW8cNMrdva3CM0yoVpADi582W7m/QKGB6xjRnnly0ze9A+93imcCYYniI4AvKtH5SVtfWvxtC+NZT4iYkpL7DT8v9xPG4i2J0K5bTLXZv7sHjsZWcrRq+bz4bHVMLlSCc4EnaU39nNjQv2tMvNrzlMPXyw=
+	t=1774032911; cv=none; b=mcG3fx8ka5z3ouAGvVU0c2/N8aHg7jvIem6J2iz7cgqqqZnbrMX+ht+ANWd7g0a+fKYgThI/wnhgXPgxhMk2+uRCIjcNgn2utqMIBqEUwMCK226GQSAhMO7jS0F5ePoBuu0MRvWaW6Ay0nzaIRKP0iWX3eG/8Zic5PsJqwni+fc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774031367; c=relaxed/simple;
-	bh=Ui1LMtolXUlaS9y3lEyQSIQB+UiTyBSjgH+rPDVPRG0=;
+	s=arc-20240116; t=1774032911; c=relaxed/simple;
+	bh=rlxuh+g//SWfYZMPKZr79wt1FKZVKm66s2xpgenF3VA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=MJYcshnPZCM0svpqfHYa8vIpeBOx2TxH0ypREufyU8LDLo/5Nb9b9LT8C/QeVGiLww5+BBNv7OSJ2s00y3y1mJf39/rOjD2yRmjBGGfN0Np7rpGd00NUucZakqx9QUoXqgUhEmBkkgQm9UFBNLT0YrYOTVeKzBE8akgyb42lYqU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rBl+rERW; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=W23ZNc4ZsoEEoAGSwpKrGdGrb/3zsMg/mrCywln4UPrFMor7UxdvyRlNWtENBKPKAdnAYkXDHRHHHmoxDX30e7zt//N+mRjibPZHObHSslbSnRAkYjO/DccJ+ODgFFxwDb+pz1YHXKU10Ch/E9vXC3jC7Yb8k50EUUiQJKio48k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=USwJr39F; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rBl+rERW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 609A4C4DDF0
-	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:29:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="USwJr39F"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60CADC2BC9E
+	for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 18:55:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774031367;
-	bh=Ui1LMtolXUlaS9y3lEyQSIQB+UiTyBSjgH+rPDVPRG0=;
+	s=k20201202; t=1774032911;
+	bh=rlxuh+g//SWfYZMPKZr79wt1FKZVKm66s2xpgenF3VA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=rBl+rERWcLrlYKl/SjKqlgPjZl+6AExaY8d0XVznzJZkqKM9GK4BDsOgxXFM1XKwm
-	 hLYXkV/zyIH+giQozNL7buuUWBRVcsyg2I2cR+ZCvjQRozzk3+R+u9toNcQj7kvGd5
-	 NnsXe9NmkdePosVqxmZRUpsNPerYWiF7Hi+aCHjciFdBA4+7sVlX0ewb2MHNCP+kSK
-	 dvisiofeP+whMKa5VdmC7AqFiPIFyURLAK7JYwxwbXWdmPffzjw3mVYlXw+yQIqzBS
-	 A1ugjfdehUY/ckORhtVuOeAg5PIneb0mKvPMiHqyr0+a9qm9RtiBtlCExVB5I0KX5Z
-	 53b1HQr7gB7uQ==
-Received: by mail-oa1-f42.google.com with SMTP id 586e51a60fabf-40946982a78so756478fac.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:29:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXI+ETwukYwiWp4cyNvXH29cFSI37WTNBdzE8bujDNODqv2Z5iqGpgC1JHmDMuHtPr66lDFFZyKqA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz41OVDfR2o7t4OzXAjtdV9tHnZsWLT0NRTbzA+t81SPm9uRJC4
-	6L2weHIz5KbbsAQFU3xtaxeddj3yvFdRbSus/gzI8WvkmfhdEXLL5qPdmdRO7a8aIxBP7YGJp4K
-	hQVeaI9NOLz5ji6UVFwyAuOiKpKCBgHk=
-X-Received: by 2002:a05:6871:3851:b0:41c:25b1:9318 with SMTP id
- 586e51a60fabf-41c25b19ab5mr1162173fac.36.1774031366491; Fri, 20 Mar 2026
- 11:29:26 -0700 (PDT)
+	b=USwJr39FMepzwcaeiuoCIcAgjQDk7ERfSQVCovCPK4VOduuZvVst36iMQOsFzs2R2
+	 UvFTGLAPWUU/vkOWihhIKwuyxhpiqmZHYI+VdSBF+j0ruqsx36sP4wyAV/XgcqneuD
+	 sRLXGUn5plNwlnDoJ2e3zLnW+SZrdda+KvTEmgCAIER6P4h1Exb7JeK6QxL5CqiayG
+	 xwUihHsV2HEUxiU9BzZud0Y3jgSGqDsPV//9XdkRF4GYBrqLl+PZvNVlhWJa6M3aeu
+	 ZPIqooswhRVh5+EOG7sckEjgoJZgRjNdmAjUzBNLhNZ53gkJ1NEbY2wAEQhCT0CXA1
+	 Ep+E4ejzTF+tw==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-40438e0cba6so1603406fac.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2026 11:55:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWr4KZ6qFjD4C24AeBcttkEEQtxozwRM87297ncj/xR+ZfUJ9nQ6Gf/GLqbUukLpnGlGWhXsfEt4Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyyZlIHi8zAyG/yrbqLoha8eRxzoYo1qPHTwXxXZTu95EhU3ccd
+	jWkUDefA9WJQJ3GeUrefP9r7w54WmkRlUgoGNPCP89/OZJwd6tqLQMvZQz6c1mS3lYZ0UEmDkyA
+	MqzpDau4adzun/vNSITnxfpNhnTnAk4o=
+X-Received: by 2002:a05:6870:219c:b0:417:565d:e3e with SMTP id
+ 586e51a60fabf-41c10ee8758mr2515864fac.1.1774032910409; Fri, 20 Mar 2026
+ 11:55:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
-In-Reply-To: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
+References: <cover.1773075892.git.berto@igalia.com> <ef5a7c5e3e3dbd17dcb20efaa0c53a47a23498bb.1773075892.git.berto@igalia.com>
+ <CADyq12xmsk8DoW328dV8GZkcnSu7q4ZqeC21xauMbsN=txDi8w@mail.gmail.com>
+In-Reply-To: <CADyq12xmsk8DoW328dV8GZkcnSu7q4ZqeC21xauMbsN=txDi8w@mail.gmail.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 20 Mar 2026 19:29:15 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hv+t8=mT39-xOkGUS5i6vckJxwfQfqGZ4foxK2rFn8gw@mail.gmail.com>
-X-Gm-Features: AaiRm50lpWFrKCn6KRaJTYKQwv6QBAgtF8jFi_EETMk7a9ySSewrI0ssB9gKKQ4
-Message-ID: <CAJZ5v0hv+t8=mT39-xOkGUS5i6vckJxwfQfqGZ4foxK2rFn8gw@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: Deny idle entry when CPU already have IPI
- interrupt pending
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Christian Loehle <christian.loehle@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org
+Date: Fri, 20 Mar 2026 19:54:59 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iNea=Z2qtfQsJZxVVNMsaxeUNvnnDObwUnwp-0Y26eew@mail.gmail.com>
+X-Gm-Features: AaiRm50NDiXsJUtGIhBarzE3XSSZeXubSZokGG-RbG0Wyj6_6ZXYezbaQq8oyZM
+Message-ID: <CAJZ5v0iNea=Z2qtfQsJZxVVNMsaxeUNvnnDObwUnwp-0Y26eew@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] PM: hibernate: Drain trailing zero pages on
+ userspace restore
+To: Brian Geffon <bgeffon@google.com>, Alberto Garcia <berto@igalia.com>
+Cc: Pavel Machek <pavel@kernel.org>, linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 16, 2026 at 8:38=E2=80=AFAM Maulik Shah
-<maulik.shah@oss.qualcomm.com> wrote:
+On Mon, Mar 9, 2026 at 6:45=E2=80=AFPM Brian Geffon <bgeffon@google.com> wr=
+ote:
 >
-> CPU can get IPI interrupt from another CPU while it is executing
-> cpuidle_select() or about to execute same. The selection do not account
-> for pending interrupts and may continue to enter selected idle state only
-> to exit immediately.
+> On Mon, Mar 9, 2026 at 1:40=E2=80=AFPM Alberto Garcia <berto@igalia.com> =
+wrote:
+> >
+> > Commit 005e8dddd497 ("PM: hibernate: don't store zero pages in the
+> > image file") added an optimization to skip zero-filled pages in the
+> > hibernation image. On restore, zero pages are handled internally by
+> > snapshot_write_next() in a loop that processes them without returning
+> > to the caller.
+> >
+> > With the userspace restore interface, writing the last non-zero page
+> > to /dev/snapshot is followed by the SNAPSHOT_ATOMIC_RESTORE ioctl. At
+> > this point there are no more calls to snapshot_write_next() so any
+> > trailing zero pages are not processed, snapshot_image_loaded() fails
+> > because handle->cur is smaller than expected, the ioctl returns -EPERM
+> > and the image is not restored.
+> >
+> > The in-kernel restore path is not affected by this because the loop in
+> > load_image() in swap.c calls snapshot_write_next() until it returns 0.
+> > It is this final call that drains any trailing zero pages.
+> >
+> > Fixed by calling snapshot_write_next() in snapshot_write_finalize(),
+> > giving the kernel the chance to drain any trailing zero pages.
+> >
+> > Fixes: 005e8dddd497 ("PM: hibernate: don't store zero pages in the imag=
+e file")
+> > Signed-off-by: Alberto Garcia <berto@igalia.com>
 >
-> Example trace collected when there is cross CPU IPI.
->
->  [000] 154.892148: sched_waking: comm=3Dsugov:4 pid=3D491 prio=3D-1 targe=
-t_cpu=3D007
->  [000] 154.892148: ipi_raise: target_mask=3D00000000,00000080 (Function c=
-all interrupts)
->  [007] 154.892162: cpu_idle: state=3D2 cpu_id=3D7
->  [007] 154.892208: cpu_idle: state=3D4294967295 cpu_id=3D7
->  [007] 154.892211: irq_handler_entry: irq=3D2 name=3DIPI
->  [007] 154.892211: ipi_entry: (Function call interrupts)
->  [007] 154.892213: sched_wakeup: comm=3Dsugov:4 pid=3D491 prio=3D-1 targe=
-t_cpu=3D007
->  [007] 154.892214: ipi_exit: (Function call interrupts)
->
-> This impacts performance and the above count increments.
->
-> commit ccde6525183c ("smp: Introduce a helper function to check for pendi=
+> Acked-by: Brian Geffon <bgeffon@google.com>
+
+Applied as 7.0-rc material, thanks!
+
+> > ---
+> >  kernel/power/snapshot.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> >
+> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > index 6e1321837c66..a564650734dc 100644
+> > --- a/kernel/power/snapshot.c
+> > +++ b/kernel/power/snapshot.c
+> > @@ -2855,6 +2855,17 @@ int snapshot_write_finalize(struct snapshot_hand=
+le *handle)
+> >  {
+> >         int error;
+> >
+> > +       /*
+> > +        * Call snapshot_write_next() to drain any trailing zero pages,
+> > +        * but make sure we're in the data page region first.
+> > +        * This function can return PAGE_SIZE if the kernel was expecti=
 ng
-> IPIs") already introduced a helper function to check the pending IPIs and
-> it is used in pmdomain governor to deny the cluster level idle state when
-> there is a pending IPI on any of cluster CPUs.
-
-You seem to be overlooking the fact that resched wakeups need not be
-signaled via IPIs, but they may be updates of a monitored cache line.
-
-> This however does not stop CPU to enter CPU level idle state. Make use of
-> same at CPUidle to deny the idle entry when there is already IPI pending.
->
-> With change observing glmark2 [1] off screen scores improving in the rang=
-e
-> of 25% to 30% on Qualcomm lemans-evk board which is arm64 based having tw=
-o
-> clusters each with 4 CPUs.
->
-> [1] https://github.com/glmark2/glmark2
->
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
-> ---
->  drivers/cpuidle/cpuidle.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index c7876e9e024f9076663063ad21cfc69343fdbbe7..c88c0cbf910d6c2c09697e6a3=
-ac78c081868c2ad 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -224,6 +224,9 @@ noinstr int cpuidle_enter_state(struct cpuidle_device=
- *dev,
->         bool broadcast =3D !!(target_state->flags & CPUIDLE_FLAG_TIMER_ST=
-OP);
->         ktime_t time_start, time_end;
->
-> +       if (cpus_peek_for_pending_ipi(drv->cpumask))
-> +               return -EBUSY;
-> +
-
-So what if the driver handles all CPUs in the system and there are
-many of them (say ~500) and if IPIs occur rarely (because resched
-events are not IPIs)?
-
->         instrumentation_begin();
->
->         /*
->
-> ---
+> > +        * another copy page. Return -ENODATA in that situation.
+> > +        */
+> > +       if (handle->cur > nr_meta_pages + 1) {
+> > +               error =3D snapshot_write_next(handle);
+> > +               if (error)
+> > +                       return error > 0 ? -ENODATA : error;
+> > +       }
+> >         copy_last_highmem_page();
+> >         error =3D hibernate_restore_protect_page(handle->buffer);
+> >         /* Do that only if we have loaded the image entirely */
+> > --
+> > 2.47.3
+> >
