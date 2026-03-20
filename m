@@ -1,292 +1,211 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D45E7259CB2;
-	Fri, 20 Mar 2026 10:25:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C41AF35F19C;
+	Fri, 20 Mar 2026 10:27:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774002325; cv=none; b=rsFuZZLEK4VCXA14vv2TEIF4W+Rfi2fk+hpFxSeF6uIpJebz9EEYQp7vy/qHiYJC+/SizmwhnweUr/KevKdjfU5u2lZy5MthhzpwY3wkRTS+zUw8S3N+5or5CjIlz1m+AeX6LznOxAZRE1Naf0RtyALaAFtVxElekr8LkjvHlYI=
+	t=1774002477; cv=none; b=Gk1HXUm+j0tL1nTW55Xv5BwonSzOEqkvJijr+L4Va8VU8Ce673jTYBpbg2RK0pSRA+T0PTpR1JOsMpgHMbqMFNoSJb7h+7IbyAgQwpfOa6mLRaRhyJR3FBP1V+6/UUPD/mJ97KewyosMCh8XEnb+hdZt1IKv7TgYs6F24Eh2uo4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774002325; c=relaxed/simple;
-	bh=rpPhEUknKDTMI4GdCYFRUf0RudbHHbtJAZ0mPWOaEBE=;
+	s=arc-20240116; t=1774002477; c=relaxed/simple;
+	bh=BsOsBC9LFbofD/uU10JIdQ8i22sp99i9Uymom+J1/IM=;
 	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=lvmSV+Md6N46WkBSiFzUWaDLkq0uYWvP/gm3BE1PQ7VdmUwAk2QqGAnU/5yjVG7TlhJNinrpOdvnNXX+ioM85iMMeOU7kSeNbMDxePKMv9tV7h3wa7Omqi3pj99acN9Y0byEUWOp0c+UApyzIv4RTf7pTrIbCYvHyhriP12YUSU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NB8lnSEY; arc=none smtp.client-ip=198.175.65.11
+	 MIME-Version:Content-Type; b=AH2GnRRAFJJp4lLYfM09D1cMNiziOASE6qA9XU2oPVlBnWi0w9ANHIuQoyYbJBxPeuijliEaA5n+nSnJCt3Z6IFMKAEwEqdGzKsAwL1VQccw9rZNlr42xkIuUSSN8XYBs94IegA0scpPpQP+lqW8JHEO9XCuOxLfKTExJBjLvbI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=drMt1vmv; arc=none smtp.client-ip=192.198.163.12
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NB8lnSEY"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="drMt1vmv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774002323; x=1805538323;
+  t=1774002476; x=1805538476;
   h=from:date:to:cc:subject:in-reply-to:message-id:
    references:mime-version;
-  bh=rpPhEUknKDTMI4GdCYFRUf0RudbHHbtJAZ0mPWOaEBE=;
-  b=NB8lnSEYdaE4zOgOeBiyC0VVawirjmOy9Tq3zrtPqBrUjI7VkZcUYYlA
-   UeiY+0qPDsw5716cRupVOAFFq17Z9J21pXSk22ZG9bIYo6dV5bFKFzh9I
-   uBZ/+weM3wmCUHxJNrKAvuB7220I4e4xUYD3uiZDBj5FfA1ljg1tRxUIf
-   Qklod/JVdGD9hApyeLOZB6v7B3WGnQu2pu4GxehUBlsUNCOOWOzOOOogY
-   LIaXliLk1Qv7tHXpBLdi6Ta+fGQUwbfKOs0iEkNIA3p3hHgHIEwhzG5/c
-   yJTqVqQDRsiX77R6ye78DDh8Y+tP/bh96kr2yT3Z+vvVXyrK711I8G7Ow
+  bh=BsOsBC9LFbofD/uU10JIdQ8i22sp99i9Uymom+J1/IM=;
+  b=drMt1vmv4OV3LVQ8al70HMOgatvSBD9OCLfMR37J/jN7EhvP/gXocGVP
+   RgDNh3LEvvAZZPFVF2UnPPiDzQGr2RdCfvrZ3ofom9vTV3m8CFSIcTz6s
+   /JPcFgA+hBJvJbAAeYZZhMBdrpF+/bMF0ZTVQLbcq6GBxc88u8fdowrJI
+   3p7VL459umawOOi0eq4UQSnRCogqhoqLAjgzGl3IImcZQdiScoKMkQ52O
+   rqjhiVtWKGVAxArFniJJkc4nLSYmj/Mw3FEkWPOjEQkfvgKsoyWC+kJLm
+   g/4GSuY3OY+PICchfnzJpp+6RzulvOTA21GVeukF9GMGHz3L+6Q7N7veM
    Q==;
-X-CSE-ConnectionGUID: 9diw6LIHS9CRAU65XTv+8A==
-X-CSE-MsgGUID: 6zyj16gXQWC3QbCNmwolDg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="85399995"
+X-CSE-ConnectionGUID: 66lYHC9oRPWjSFsZVh6GYw==
+X-CSE-MsgGUID: 0LqufFcFQKOTlX5g/sUiSQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="78989234"
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="85399995"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:25:22 -0700
-X-CSE-ConnectionGUID: IH2XImb9Rm6By3Hbafj2EA==
-X-CSE-MsgGUID: Amr4lcYoQb2tLmwAk1FxYA==
+   d="scan'208";a="78989234"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:27:55 -0700
+X-CSE-ConnectionGUID: 71itVEgYRda5TFtgc/0Jhg==
+X-CSE-MsgGUID: +nfUFAiXTuKeeiFW2GS2kg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="246275365"
+   d="scan'208";a="222339260"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.111])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:25:19 -0700
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:27:52 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 20 Mar 2026 12:25:16 +0200 (EET)
+Date: Fri, 20 Mar 2026 12:27:49 +0200 (EET)
 To: Xi Pardee <xi.pardee@linux.intel.com>
 cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
     platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
     linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/6] platform/x86/intel/pmc: Enable PkgC LTR blocking
+Subject: Re: [PATCH 2/6] platform/x86/intel/pmc: Enable Pkgc blocking residency
  counter
-In-Reply-To: <20260302223214.484585-2-xi.pardee@linux.intel.com>
-Message-ID: <9a428ef0-4511-25df-e8fe-988d96d0e2f6@linux.intel.com>
-References: <20260302223214.484585-1-xi.pardee@linux.intel.com> <20260302223214.484585-2-xi.pardee@linux.intel.com>
+In-Reply-To: <20260302223214.484585-3-xi.pardee@linux.intel.com>
+Message-ID: <c78bc413-d946-9a2e-ec90-670320e3a8a0@linux.intel.com>
+References: <20260302223214.484585-1-xi.pardee@linux.intel.com> <20260302223214.484585-3-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="8323328-888350789-1774002469=:1024"
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-888350789-1774002469=:1024
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 On Mon, 2 Mar 2026, Xi Pardee wrote:
 
-> Enable the Package C-state LTR blocking counter in the PMT telemetry
-> region. This counter records how many times any Package C-state entry
-> is blocked for the specified reasons.
-> 
+> Enable the Package C-state blocking counter in the PMT telemetry
+> region. This counter reports the number of 10=E2=80=AF=C2=B5s intervals d=
+uring
+> which a Package C-state 10.2/3 entry was blocked for the specified
+> reasons.
+>=20
 > Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
 > ---
->  drivers/platform/x86/intel/pmc/core.c | 77 ++++++++++++++++++++++-----
->  drivers/platform/x86/intel/pmc/core.h | 15 +++++-
->  2 files changed, 79 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
-> index 02b303418d185..bf95a1f2ba428 100644
+>  drivers/platform/x86/intel/pmc/core.c | 27 +++++++++++++++++++++++++++
+>  drivers/platform/x86/intel/pmc/core.h |  8 ++++++++
+>  2 files changed, 35 insertions(+)
+>=20
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86=
+/intel/pmc/core.c
+> index bf95a1f2ba428..e5b48a68cf495 100644
 > --- a/drivers/platform/x86/intel/pmc/core.c
 > +++ b/drivers/platform/x86/intel/pmc/core.c
-> @@ -1071,6 +1071,28 @@ static int pmc_core_die_c6_us_show(struct seq_file *s, void *unused)
+> @@ -1093,6 +1093,28 @@ static int pmc_core_pkgc_ltr_blocker_show(struct s=
+eq_file *s, void *unused)
 >  }
->  DEFINE_SHOW_ATTRIBUTE(pmc_core_die_c6_us);
->  
-> +static int pmc_core_pkgc_ltr_blocker_show(struct seq_file *s, void *unused)
+>  DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_ltr_blocker);
+> =20
+> +static int pmc_core_pkgc_blocker_residency_show(struct seq_file *s, void=
+ *unused)
 > +{
-> +	struct pmc_dev *pmcdev = s->private;
-> +	const char **pkgc_ltr_blocker_counters;
-> +	u32 counter, offset;
-> +	unsigned int i;
-> +	int ret;
+> +=09struct pmc_dev *pmcdev =3D s->private;
+> +=09const char **pkgc_blocker_counters;
+> +=09u32 counter, offset;
+> +=09unsigned int i;
+> +=09int ret;
 > +
-> +	offset = pmcdev->pkgc_ltr_blocker_offset;
-> +	pkgc_ltr_blocker_counters = pmcdev->pkgc_ltr_blocker_counters;
-> +	for (i = 0; pkgc_ltr_blocker_counters[i]; i++, offset++) {
-> +		ret = pmt_telem_read32(pmcdev->pc_ep, offset,
-> +				       &counter, 1);
-
-Fits easily to one line. Though, I'm not sure if offset variable improves 
-things, more like it makes this more complex than it need to be. To me it 
-would look more straightforward to do just:
-
-		ret = pmt_telem_read32(pmcdev->pc_ep, 
-				       pmcdev->pkgc_ltr_blocker_offset + i,
-				       ...);
-
-> +		if (ret)
-> +			return ret;
-> +		seq_printf(s, "%-30s %-30u\n", pkgc_ltr_blocker_counters[i], counter);
-> +	}
+> +=09offset =3D pmcdev->pkgc_blocker_offset;
+> +=09pkgc_blocker_counters =3D pmcdev->pkgc_blocker_counters;
+> +=09for (i =3D 0; pkgc_blocker_counters[i]; i++, offset++) {
+> +=09=09ret =3D pmt_telem_read32(pmcdev->pc_ep, offset,
+> +=09=09=09=09       &counter, 1);
+> +=09=09if (ret)
+> +=09=09=09return ret;
+> +=09=09seq_printf(s, "%-30s %-30u\n", pkgc_blocker_counters[i], counter);
+> +=09}
 > +
-> +	return 0;
+> +=09return 0;
+
+I wonder if it would be create a common helper as this looks practically=20
+the same as pmc_core_pkgc_ltr_blocker_show() added in the previous patch?
+
 > +}
-> +DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_ltr_blocker);
+> +DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_blocker_residency);
 > +
->  static int pmc_core_lpm_latch_mode_show(struct seq_file *s, void *unused)
+>  static int pmc_core_lpm_latch_mode_show(struct seq_file *s, void *unused=
+)
 >  {
->  	struct pmc_dev *pmcdev = s->private;
-> @@ -1322,7 +1344,7 @@ static struct telem_endpoint *pmc_core_register_endpoint(struct pci_dev *pcidev,
->  	return ERR_PTR(-ENODEV);
+>  =09struct pmc_dev *pmcdev =3D s->private;
+> @@ -1380,6 +1402,8 @@ void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev=
+, struct pmc_dev_info *pmc_de
+>  =09=09pmcdev->pc_ep =3D ep;
+>  =09=09pmcdev->pkgc_ltr_blocker_counters =3D pmc_dev_info->pkgc_ltr_block=
+er_counters;
+>  =09=09pmcdev->pkgc_ltr_blocker_offset =3D pmc_dev_info->pkgc_ltr_blocker=
+_offset;
+> +=09=09pmcdev->pkgc_blocker_counters =3D pmc_dev_info->pkgc_blocker_count=
+ers;
+> +=09=09pmcdev->pkgc_blocker_offset =3D pmc_dev_info->pkgc_blocker_offset;
+>  =09}
+> =20
+>  release_dev:
+> @@ -1512,6 +1536,9 @@ static void pmc_core_dbgfs_register(struct pmc_dev =
+*pmcdev, struct pmc_dev_info
+>  =09=09debugfs_create_file("pkgc_ltr_blocker_show", 0444,
+>  =09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
+>  =09=09=09=09    &pmc_core_pkgc_ltr_blocker_fops);
+> +=09=09debugfs_create_file("pkgc_blocker_residency_show", 0444,
+> +=09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
+> +=09=09=09=09    &pmc_core_pkgc_blocker_residency_fops);
+>  =09}
+> =20
 >  }
->  
-> -void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev, u32 *guids)
-> +void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
->  {
->  	struct telem_endpoint *ep;
->  	struct pci_dev *pcidev;
-> @@ -1333,17 +1355,35 @@ void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev, u32 *guids)
->  		return;
->  	}
->  
-> -	ep = pmc_core_register_endpoint(pcidev, guids);
-> -	pci_dev_put(pcidev);
-> -	if (IS_ERR(ep)) {
-> -		dev_err(&pmcdev->pdev->dev,
-> -			"pmc_core: couldn't get DMU telem endpoint %ld",
-> -			PTR_ERR(ep));
-> -		return;
-> +	if (pmc_dev_info->dmu_guids) {
-> +		ep = pmc_core_register_endpoint(pcidev, pmc_dev_info->dmu_guids);
-> +		if (IS_ERR(ep)) {
-> +			dev_err(&pmcdev->pdev->dev,
-> +				"pmc_core: couldn't get DMU telem endpoint %ld",
-> +				PTR_ERR(ep));
-> +			goto release_dev;
-> +		}
-> +
-> +		pmcdev->punit_ep = ep;
-> +		pmcdev->die_c6_offset = MTL_PMT_DMU_DIE_C6_OFFSET;
-> +	}
-> +
-> +	if (pmc_dev_info->pc_guid) {
-> +		ep = pmt_telem_find_and_register_endpoint(pcidev, pmc_dev_info->pc_guid, 0);
-> +		if (IS_ERR(ep)) {
-> +			dev_err(&pmcdev->pdev->dev,
-> +				"pmc_core: couldn't get Package C-state telem endpoint %ld",
-> +				PTR_ERR(ep));
-> +			goto release_dev;
-> +		}
-> +
-> +		pmcdev->pc_ep = ep;
-> +		pmcdev->pkgc_ltr_blocker_counters = pmc_dev_info->pkgc_ltr_blocker_counters;
-> +		pmcdev->pkgc_ltr_blocker_offset = pmc_dev_info->pkgc_ltr_blocker_offset;
->  	}
->  
-> -	pmcdev->punit_ep = ep;
-> -	pmcdev->die_c6_offset = MTL_PMT_DMU_DIE_C6_OFFSET;
-> +release_dev:
-> +	pci_dev_put(pcidev);
-
-Use __free(pci_dev_put) instead of complicating the code flow. 
-Please remember to place the variable declaration at the place of 
-assignment (no = NULL; assignments with __free()). You may want to do the 
-__free() conversion in own patch preceeding this.
-
--- 
- i.
-
->  }
->  
->  void pmc_core_set_device_d3(unsigned int device)
-> @@ -1467,6 +1507,13 @@ static void pmc_core_dbgfs_register(struct pmc_dev *pmcdev, struct pmc_dev_info
->  				    pmcdev->dbgfs_dir, pmcdev,
->  				    &pmc_core_die_c6_us_fops);
->  	}
-> +
-> +	if (pmcdev->pc_ep) {
-> +		debugfs_create_file("pkgc_ltr_blocker_show", 0444,
-> +				    pmcdev->dbgfs_dir, pmcdev,
-> +				    &pmc_core_pkgc_ltr_blocker_fops);
-> +	}
-> +
->  }
->  
->  /*
-> @@ -1717,8 +1764,8 @@ int generic_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
->  	}
->  
->  	pmc_core_get_low_power_modes(pmcdev);
-> -	if (pmc_dev_info->dmu_guids)
-> -		pmc_core_punit_pmt_init(pmcdev, pmc_dev_info->dmu_guids);
-> +	if (pmc_dev_info->dmu_guids || pmc_dev_info->pc_guid)
-> +		pmc_core_punit_pmt_init(pmcdev, pmc_dev_info);
->  
->  	if (ssram) {
->  		ret = pmc_core_get_telem_info(pmcdev, pmc_dev_info);
-> @@ -1739,6 +1786,9 @@ int generic_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
->  	if (pmcdev->punit_ep)
->  		pmt_telem_unregister_endpoint(pmcdev->punit_ep);
->  
-> +	if (pmcdev->pc_ep)
-> +		pmt_telem_unregister_endpoint(pmcdev->pc_ep);
-> +
->  	return ret;
->  }
->  
-> @@ -1835,6 +1885,9 @@ static void pmc_core_clean_structure(struct platform_device *pdev)
->  	if (pmcdev->punit_ep)
->  		pmt_telem_unregister_endpoint(pmcdev->punit_ep);
->  
-> +	if (pmcdev->pc_ep)
-> +		pmt_telem_unregister_endpoint(pmcdev->pc_ep);
-> +
->  	platform_set_drvdata(pdev, NULL);
->  }
->  
-> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
-> index 118c8740ad3aa..a20aab73c1409 100644
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86=
+/intel/pmc/core.h
+> index a20aab73c1409..829b1dee3f636 100644
 > --- a/drivers/platform/x86/intel/pmc/core.h
 > +++ b/drivers/platform/x86/intel/pmc/core.h
-> @@ -453,6 +453,9 @@ struct pmc {
->   * @suspend:		Function to perform platform specific suspend
->   * @resume:		Function to perform platform specific resume
+> @@ -455,6 +455,8 @@ struct pmc {
 >   *
-> + * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
-> + * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry region
-> + *
+>   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
+gion
+> + * @pkgc_blocker_counters: Array of PKGC blocker counters
+> + * @pkgc_blocker_offset: Offset to PKGC blocker in telemetry region
+>   *
 >   * pmc_dev contains info about power management controller device.
 >   */
->  struct pmc_dev {
-> @@ -471,8 +474,12 @@ struct pmc_dev {
->  	u8 num_of_pkgc;
->  
->  	u32 die_c6_offset;
-> +	struct telem_endpoint *pc_ep;
->  	struct telem_endpoint *punit_ep;
->  	struct pmc_info *regmap_list;
-> +
-> +	const char **pkgc_ltr_blocker_counters;
-> +	u32 pkgc_ltr_blocker_offset;
+> @@ -480,6 +482,8 @@ struct pmc_dev {
+> =20
+>  =09const char **pkgc_ltr_blocker_counters;
+>  =09u32 pkgc_ltr_blocker_offset;
+> +=09const char **pkgc_blocker_counters;
+> +=09u32 pkgc_blocker_offset;
 >  };
->  
+> =20
 >  enum pmc_index {
-> @@ -486,12 +493,15 @@ enum pmc_index {
->   * struct pmc_dev_info - Structure to keep PMC device info
->   * @pci_func:		Function number of the primary PMC
->   * @dmu_guids:		List of Die Management Unit GUID
-> + * @pc_guid:		GUID for telemetry region to read PKGC blocker info
-> + * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry region
->   * @regmap_list:	Pointer to a list of pmc_info structure that could be
->   *			available for the platform. When set, this field implies
->   *			SSRAM support.
->   * @map:		Pointer to a pmc_reg_map struct that contains platform
->   *			specific attributes of the primary PMC
->   * @sub_req_show:	File operations to show substate requirements
-> + * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
->   * @suspend:		Function to perform platform specific suspend
->   * @resume:		Function to perform platform specific resume
->   * @init:		Function to perform platform specific init action
-> @@ -500,9 +510,12 @@ enum pmc_index {
->  struct pmc_dev_info {
->  	u8 pci_func;
->  	u32 *dmu_guids;
-> +	u32 pc_guid;
-> +	u32 pkgc_ltr_blocker_offset;
->  	struct pmc_info *regmap_list;
->  	const struct pmc_reg_map *map;
->  	const struct file_operations *sub_req_show;
-> +	const char **pkgc_ltr_blocker_counters;
->  	void (*suspend)(struct pmc_dev *pmcdev);
->  	int (*resume)(struct pmc_dev *pmcdev);
->  	int (*init)(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info);
-> @@ -535,7 +548,7 @@ int pmc_core_send_ltr_ignore(struct pmc_dev *pmcdev, u32 value, int ignore);
->  
->  int pmc_core_resume_common(struct pmc_dev *pmcdev);
->  int get_primary_reg_base(struct pmc *pmc);
-> -void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev, u32 *guids);
-> +void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info);
->  void pmc_core_set_device_d3(unsigned int device);
->  
->  int generic_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info);
-> 
+> @@ -495,6 +499,7 @@ enum pmc_index {
+>   * @dmu_guids:=09=09List of Die Management Unit GUID
+>   * @pc_guid:=09=09GUID for telemetry region to read PKGC blocker info
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
+gion
+> + * @pkgc_blocker_offset:Offset to PKGC blocker in telemetry region
+>   * @regmap_list:=09Pointer to a list of pmc_info structure that could be
+>   *=09=09=09available for the platform. When set, this field implies
+>   *=09=09=09SSRAM support.
+> @@ -502,6 +507,7 @@ enum pmc_index {
+>   *=09=09=09specific attributes of the primary PMC
+>   * @sub_req_show:=09File operations to show substate requirements
+>   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
+> + * @pkgc_blocker_counters: Array of PKGC blocker counters
+>   * @suspend:=09=09Function to perform platform specific suspend
+>   * @resume:=09=09Function to perform platform specific resume
+>   * @init:=09=09Function to perform platform specific init action
+> @@ -512,10 +518,12 @@ struct pmc_dev_info {
+>  =09u32 *dmu_guids;
+>  =09u32 pc_guid;
+>  =09u32 pkgc_ltr_blocker_offset;
+> +=09u32 pkgc_blocker_offset;
+>  =09struct pmc_info *regmap_list;
+>  =09const struct pmc_reg_map *map;
+>  =09const struct file_operations *sub_req_show;
+>  =09const char **pkgc_ltr_blocker_counters;
+> +=09const char **pkgc_blocker_counters;
+>  =09void (*suspend)(struct pmc_dev *pmcdev);
+>  =09int (*resume)(struct pmc_dev *pmcdev);
+>  =09int (*init)(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info=
+);
+>=20
+
+--=20
+ i.
+
+--8323328-888350789-1774002469=:1024--
