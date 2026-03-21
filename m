@@ -1,87 +1,168 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8561C38756A;
-	Sat, 21 Mar 2026 13:18:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C45C7391820
+	for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 15:12:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774099083; cv=none; b=qsTTSaA1PJZi9XIv2mRXjqhKh1tmwnWX/0llpJx6lQESv4L9KI0fvQdwTOYFFGQgRQFRIWkeUe5w6JAGhCAg9YyGXRRF3tQ0TJj6kfw2QH6bkKViB0cZtK65D+Mbh9L7h9QvMBziEIpDOwIThT80yg4wWoonJaKUavLUOnULftA=
+	t=1774105940; cv=none; b=dDgEgTGxpjUHF56GfjJRX6HUviU954wAyMKJMeTei3iQwxrJRByzOhJhvDOcPvxCvJKt1ge032ytf7hKWjlXD2UJeFe2K2aewF23RV0ux/jtHt4F5p6pXwf52UhZOo7TYXW9zqH/2hVbD0VO38nm6viUW/z/llOiL1HJKy/g2bI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774099083; c=relaxed/simple;
-	bh=M800nNzUvv0zNmdxOy67LWqFXo6bvZJuekBLzvfcWyE=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ai8R9Ax4uU/fbHVKTgIqLntet7YA5jnxH05H6nnxCjuQ1BnmCT92WXe0BD55UNQ5I5hyv68LWjXKDn97sz0P92SFL/wJ8mUnAFkDw4eB6rCvseGLj1TvbuxqxAdjz3361wxZU6n2KT4iSCbWnElYCOQ0bvGidn9aOG4Kr9s6t50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EDlwbhDy; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774105940; c=relaxed/simple;
+	bh=gD1q6VTwcr3ywJK3thmlj3oefKwCOvFp8KGDVpaIr9s=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PiiEptYTagmIzdo2MrtOYSzSmRAzK8AGx1+KQrfeYwlnmEexR/l6nCr888NPyNNlEkm9+V2sFTgrxvZFkGRlYzaLOI/ShT6kT73EkMWFC7pE+BsRYzrs4cmHZOYDaW0NrSnqxAevqfrHbyChHiIpDLdaDE5gEAbePv+5g46+8uU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sH9TlI3B; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EDlwbhDy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E53BC19421;
-	Sat, 21 Mar 2026 13:17:59 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sH9TlI3B"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80FF5C4AF09
+	for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 15:12:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774099083;
-	bh=M800nNzUvv0zNmdxOy67LWqFXo6bvZJuekBLzvfcWyE=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=EDlwbhDyHF0PzAdik8rVakHd3eUdZ9PyDC8gg3KYnibPnmGvndc0/T/WyHtmaTml5
-	 X3SqDVfGJwBo+Qm5gBDURc1CnoEm5Um87c0huJYm3dN3YZcCcyJ4f9E/OyYZP7fApD
-	 lb0YCk2fHZGsGZ2AJ7Nmn8zluiIQPvb7jWFaKuFZWU2ifsjhMzglWcEZrgzRGzOd1U
-	 4D6Xo0TejsatJ1rDPCPf2GsFXU3roboU1Sa7aPQysyx3pDVjJF1ZrgryvNEi4enLNp
-	 WWpuV2OLOxJfoelZkuhQXouiVtFpLRR6PrD6+hZktEFnIYpbN5QAFpesnIUHRxhnqJ
-	 wTMCiip0SFggA==
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Ulf Hansson <ulf.hansson@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Cc: Peter Griffin <peter.griffin@linaro.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>, 
- Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
-Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
- Google GS101
-Message-Id: <177409907930.268981.5882592990447577348.b4-ty@b4>
-Date: Sat, 21 Mar 2026 14:17:59 +0100
+	s=k20201202; t=1774105940;
+	bh=gD1q6VTwcr3ywJK3thmlj3oefKwCOvFp8KGDVpaIr9s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=sH9TlI3BLUAgQ5noUfDXKLXqORTdkMae+MkhxTq4JKYmhYsWyu1SMcCgmDjU3xIgQ
+	 z8wdri4lAum4xlM+bbceKkSwyVleUcuKcKy+gYI2N0lwUSXAINISDyAtG0tWLk3Bw7
+	 tE1L/WzB5n42AVVydTEUurZKNlvI48l/e7h8X3vJso/ahKGCIucuol9CzF+O2nuwOW
+	 fgF2Ap2YDGu7XxFPbY7/OyiTK/Kn1byNCS5ENJcY1NLL22PTEvKxGj7G4X8El9UYy2
+	 J6Jb13NRG5uwBbvTBMN42+2k2hzO80EyQq0sfT9abPGNvY6cPq09xokxWLyufhNoMR
+	 pl+BlNGBfcTrQ==
+Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-40438e0cba6so1956832fac.1
+        for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 08:12:20 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUO3XIVZxsdxotkGd0YNjEJItfVoTxHujkQrr/siIaeGhlXwvxNjQtgdD6A0acot0wb2RD61LGmjA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxUGBMe6vlYe8K12wconlfNz/ftHsReJpJgmqS618uDbY9ozTzd
+	7bkeQ8E82cqwkDXICYaEYZStgnnPSv8UBCrbpCEks8aetrflAm5tiBVfq1cBkojXGWlUxEQxxi5
+	4c1HKqeDT8wS0KFfEUpC6U+6yfHKU0YQ=
+X-Received: by 2002:a05:6870:f214:b0:417:3936:1c7a with SMTP id
+ 586e51a60fabf-41c11138b63mr4241564fac.24.1774105939612; Sat, 21 Mar 2026
+ 08:12:19 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.15.0
+References: <202603211336.i375F7lD-lkp@intel.com>
+In-Reply-To: <202603211336.i375F7lD-lkp@intel.com>
+From: Chanwoo Choi <chanwoo@kernel.org>
+Date: Sun, 22 Mar 2026 00:11:43 +0900
+X-Gmail-Original-Message-ID: <CAGTfZH0bZMGpdKjvgw7S54NF+KeXPtvhsanKmSs1vHDhx7F7Lg@mail.gmail.com>
+X-Gm-Features: AaiRm50EBCXkYVYAInLz4rhnn5PAPFokSX2lprR94ZFvTJQ1blDiv0BKjixMPe0
+Message-ID: <CAGTfZH0bZMGpdKjvgw7S54NF+KeXPtvhsanKmSs1vHDhx7F7Lg@mail.gmail.com>
+Subject: Re: [chanwoo:devfreq-next 5/5] drivers/devfreq/devfreq.c:1946:37:
+ error: redefinition of 'devfreq_group'
+To: kernel test robot <lkp@intel.com>
+Cc: Jori Koolstra <jkoolstra@xs4all.nl>, llvm@lists.linux.dev, 
+	oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org, 
+	Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+HI Jori,
+
+There are build errors in your patches.
+DId you test it? I hope to fix and test the patch before posting.
+
+On Sat, Mar 21, 2026 at 9:52=E2=80=AFPM kernel test robot <lkp@intel.com> w=
+rote:
+>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git=
+ devfreq-next
+> head:   38aa14f9be920f3fea6fe3f16b69b7a0cd0478a1
+> commit: 38aa14f9be920f3fea6fe3f16b69b7a0cd0478a1 [5/5] PM / devfreq: chan=
+ge devfreq_class to a const struct
+> config: x86_64-kexec (https://download.01.org/0day-ci/archive/20260321/20=
+2603211336.i375F7lD-lkp@intel.com/config)
+> compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0=
+227cb60147a26a1eeb4fb06e3b505e9c7261)
+> reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archi=
+ve/20260321/202603211336.i375F7lD-lkp@intel.com/reproduce)
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new vers=
+ion of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202603211336.i375F7lD-lkp=
+@intel.com/
+>
+> All errors (new ones prefixed by >>):
+>
+> >> drivers/devfreq/devfreq.c:1946:37: error: redefinition of 'devfreq_gro=
+up'
+>     1946 | static const struct attribute_group devfreq_group =3D {
+>          |                                     ^
+>    drivers/devfreq/devfreq.c:40:1: note: previous definition is here
+>       40 | ATTRIBUTE_GROUPS(devfreq);
+>          | ^
+>    include/linux/sysfs.h:291:37: note: expanded from macro 'ATTRIBUTE_GRO=
+UPS'
+>      291 | static const struct attribute_group _name##_group =3D {       =
+    \
+>          |                                     ^
+>    <scratch space>:89:1: note: expanded from here
+>       89 | devfreq_group
+>          | ^
+> >> drivers/devfreq/devfreq.c:1955:38: error: redefinition of 'devfreq_gro=
+ups'
+>     1955 | static const struct attribute_group *devfreq_groups[] =3D {
+>          |                                      ^
+>    drivers/devfreq/devfreq.c:40:1: note: previous definition is here
+>       40 | ATTRIBUTE_GROUPS(devfreq);
+>          | ^
+>    include/linux/sysfs.h:298:11: note: expanded from macro 'ATTRIBUTE_GRO=
+UPS'
+>      298 | };                                                            =
+  \
+>          |                                                               =
+  ^
+>    include/linux/sysfs.h:285:38: note: expanded from macro '\
+>    __ATTRIBUTE_GROUPS'
+>      285 | static const struct attribute_group *_name##_groups[] =3D {   =
+    \
+>          |                                      ^
+>    <scratch space>:93:1: note: expanded from here
+>       93 | devfreq_groups
+>          | ^
+>    2 errors generated.
+>
+>
+> vim +/devfreq_group +1946 drivers/devfreq/devfreq.c
+>
+> 9005b65099ee4f MyungJoo Ham  2011-10-02  1945
+> e4999090951abc Pengjie Zhang 2025-12-16 @1946  static const struct attrib=
+ute_group devfreq_group =3D {
+> e4999090951abc Pengjie Zhang 2025-12-16  1947   .attrs =3D devfreq_attrs,
+> e4999090951abc Pengjie Zhang 2025-12-16  1948  };
+> e4999090951abc Pengjie Zhang 2025-12-16  1949
+> e4999090951abc Pengjie Zhang 2025-12-16  1950  static const struct attrib=
+ute_group gov_attr_group =3D {
+> e4999090951abc Pengjie Zhang 2025-12-16  1951   .attrs =3D governor_attrs=
+,
+> e4999090951abc Pengjie Zhang 2025-12-16  1952   .is_visible =3D gov_attr_=
+visible,
+> e4999090951abc Pengjie Zhang 2025-12-16  1953  };
+> e4999090951abc Pengjie Zhang 2025-12-16  1954
+> e4999090951abc Pengjie Zhang 2025-12-16 @1955  static const struct attrib=
+ute_group *devfreq_groups[] =3D {
+> e4999090951abc Pengjie Zhang 2025-12-16  1956   &devfreq_group,
+> e4999090951abc Pengjie Zhang 2025-12-16  1957   &gov_attr_group,
+> e4999090951abc Pengjie Zhang 2025-12-16  1958   NULL
+> e4999090951abc Pengjie Zhang 2025-12-16  1959  };
+> e4999090951abc Pengjie Zhang 2025-12-16  1960
+>
+> :::::: The code at line 1946 was first introduced by commit
+> :::::: e4999090951abcf39543aa22b7a7a7f13c5a5857 PM / devfreq: use _visibl=
+e attribute to replace create/remove_sysfs_files()
+>
+> :::::: TO: Pengjie Zhang <zhangpengjie2@huawei.com>
+> :::::: CC: Chanwoo Choi <cw00.choi@samsung.com>
+>
+> --
+> 0-DAY CI Kernel Test Service
+> https://github.com/intel/lkp-tests/wiki
+>
 
 
-On Wed, 18 Mar 2026 15:27:45 +0000, André Draszik wrote:
-> This series adds support for the power domains on Google GS101.
-> 
-> There are a few differences compared to SoCs already supported by this
-> driver:
-> * register access does not work via plain ioremap() / readl() /
->   writel().
->   Instead, the regmap created by the PMU driver must be used (which
->   uses Arm SMCC calls under the hood).
-> * DTZPC: a call needs to be made before and after power domain off/on,
->   to inform the EL3 firmware of the request.
-> * power domains can and are fed by a regulator rail and therefore
->   regulator control needed be implemented.
-> 
-> [...]
-
-Applied, thanks!
-
-[01/10] dt-bindings: soc: google: add google,gs101-dtzpc
-        https://git.kernel.org/krzk/linux/c/10084aeadadfab72648f6ed1cc78f7cd87b861ba
-[03/10] dt-bindings: soc: samsung: exynos-pmu: move gs101-pmu into separate binding
-        https://git.kernel.org/krzk/linux/c/3ec3c42b426fe5e2b48ff19c551dec50bc78788c
-[04/10] dt-bindings: soc: google: gs101-pmu: allow power domains as children
-        https://git.kernel.org/krzk/linux/c/c8229a5160eea145b796f54317d6e659cec9b080
-
-Best regards,
--- 
-Krzysztof Kozlowski <krzk@kernel.org>
-
+--=20
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
