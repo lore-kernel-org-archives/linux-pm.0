@@ -1,73 +1,102 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31BD63009D6;
-	Sat, 21 Mar 2026 11:03:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E283A382282
+	for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 11:32:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774091037; cv=none; b=VXqomQU8or2JsnlzTG2bho8rbkdBD2Nr2DjbqdlGMvnmbKWS2PR6jNUgw1K8YoUVTBaKw5yk/zYHzpb1mmW7ObhrVE/IlQoO5t8dK67/H52mFhVjjHikBQ5Xji9L2tYkjqYEm86bAx0XNO7Yzb7xP5OrD9z5BMDxmBNfbVn7p+U=
+	t=1774092778; cv=none; b=lFqew32+21yUqHB2hZpsfvdLGHj9hw6bbgtbiiJSoFOdmr2RF/7d2IJKo6uZ6wifZ+0urmnSLP9g0NE3Ikn/BYlzL6R7JCvtEBkUehImL5zrUNqXSkiD7gjD1DKeY3B0M7/DTo5HNaKTdZePqEeyOLo3i5ch8/pYH1Zs/SyMa40=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774091037; c=relaxed/simple;
-	bh=Cx4rFJasLXPhBYfaKJCA6oLZnWmjXXEJex+iH4kBfYA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EM/X/r/1r4GDt5G5Ts9Lj+AJPaTiohhSlT0wdvH/gmNHCMmDLzCYTBW2+PIaeN+aff8q7HH6SYgHf6M1EEkc5WttZfhTqXKVGcXxO4SGCxVzICDyiY/LKwQXNe2D0lh4fZ4eDedmNwx4TtEPfkaou0f7EoLJcO9iLTgsmNwlr/U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=MTgXGxJ/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774092778; c=relaxed/simple;
+	bh=KAM88FjdiVIi8VSewrRhuQcMYwar3Jb0jVu/scAesWk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tFhTIcKaxbK2hHJQrkkuxyn1GSNnn5hPx+iFn/oDIBrEprs77srJkCSZB6rQAVxUn32EdRo7FHKxpmbNiE8EXdY4FMBm+Jr3Gg+O6+szgtO/2aCLiEYjTnpVvRqYgT9/1N6XXD/fRy+rTnX/SdrZgSC2Z4m/vEQvwTBJxQdSRJs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RCK0Tutn; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="MTgXGxJ/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36A5AC19421;
-	Sat, 21 Mar 2026 11:03:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1774091036;
-	bh=Cx4rFJasLXPhBYfaKJCA6oLZnWmjXXEJex+iH4kBfYA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MTgXGxJ/Y/bRUf4Zl2eENuaC0jjSKkzgeTA/OOSYfWcxW1bp0CeDqGRqG0Z85XdpD
-	 ECCuN+Ld0QLY1gQ6wxow87sWCcaw9BXD7UrJ/z0FSR21A5GmIF7MXls9DWKFb0mW2d
-	 90Py/x6RZGVZXYPQCfa9UDjcAZq71BRlIjha4fXc=
-Date: Sat, 21 Mar 2026 12:03:34 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: "Ionut Nechita (Wind River)" <ionut.nechita@windriver.com>
-Cc: stable@vger.kernel.org, rafael.j.wysocki@intel.com,
-	linux-pm@vger.kernel.org, christian.loehle@arm.com,
-	artem.bityutskiy@linux.intel.com, quic_zhonhan@quicinc.com,
-	aboorvad@linux.ibm.com
-Subject: Re: [PATCH v2 6.12.y 0/6] cpuidle: menu: Backport
- get_typical_interval() improvements
-Message-ID: <2026032124-crabgrass-friday-2788@gregkh>
-References: <20260321103721.35114-1-ionut.nechita@windriver.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RCK0Tutn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83F92C2BCB5
+	for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 11:32:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774092777;
+	bh=KAM88FjdiVIi8VSewrRhuQcMYwar3Jb0jVu/scAesWk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=RCK0TutnkpyNYAkgwcCuwMpJgOfQ3gPoRlwe/X12p2GD1x2ZTdF9FvNCXX1pPxbxe
+	 MMRnLxouUzn9wHZJd02V9aScmnT9zjrcuoKEZj6aB8EpLspc+5+PuyFucNUCS0/oTD
+	 KOdZkKY7awb65aqnPpGSCqqQLyq8F7lpeWsG0MerxI2l4jGh2sMyI8TbwVEqw61ENR
+	 AJ/Uy8gt99dWyzFXY9AmpY+0tbnZ6FELjcHSEEcH/KwsbcuyrzcqQnkrD0kO8F8KP7
+	 2o7S4OMcALYCSNZF8BEzyvb1aVOUXeq+IznS0qoxoreOTK4lMPntvZwdAasFxJ3GVa
+	 nabYQx7IwPk0w==
+Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-417400afaeeso2764037fac.1
+        for <linux-pm@vger.kernel.org>; Sat, 21 Mar 2026 04:32:57 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW6wczIPS771zUu8BA+ZRtJcqGDbzZ9pBAaycm9lt19nh8ZxTxkLw/r8RDZhMjp7tpu8NzlS/TEfQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzQD3ulpBNkop0u5I1mPO3FhqxdTrtvEyQ+G+Wwnqv+JO/viwF+
+	X4eqtr2w67aL/xBhKw5kr/RErGTNuJDmCM473tStynqqq8TXot7Kn2be3t6iabEjEVOasUyPKfA
+	VNhcWoRKvqcfmta5QeODwnlir9DpSRZs=
+X-Received: by 2002:a05:6870:3b88:b0:3e8:926e:bf9f with SMTP id
+ 586e51a60fabf-41c105fc248mr3773776fac.13.1774092776566; Sat, 21 Mar 2026
+ 04:32:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260321103721.35114-1-ionut.nechita@windriver.com>
+References: <20260320170313.163386-1-youngjun.park@lge.com>
+ <20260320170313.163386-4-youngjun.park@lge.com> <CAJZ5v0gHTPCkVySAuPBkPoV=SwmBRG_c-TtPbz0CNsUUPEkY8w@mail.gmail.com>
+ <ab53krr0y981Qyk8@yjaykim-PowerEdge-T330>
+In-Reply-To: <ab53krr0y981Qyk8@yjaykim-PowerEdge-T330>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Sat, 21 Mar 2026 12:32:44 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gVbQQdpyWb72qDcsAoj7vg2v=pXOjdMuWzKHJsdJcHNw@mail.gmail.com>
+X-Gm-Features: AaiRm53bzs5VbehqkGDb-NN8rRSI02pjR5TR3QpNVYJGELTNnMRcKAWlWJyMnWI
+Message-ID: <CAJZ5v0gVbQQdpyWb72qDcsAoj7vg2v=pXOjdMuWzKHJsdJcHNw@mail.gmail.com>
+Subject: Re: [PATCH v6 3/3] PM: hibernate: fix spurious GFP mask WARNING in
+ uswsusp path
+To: YoungJun Park <youngjun.park@lge.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, akpm@linux-foundation.org, chrisl@kernel.org, 
+	kasong@tencent.com, pavel@kernel.org, shikemeng@huaweicloud.com, 
+	nphamcs@gmail.com, bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev, 
+	linux-pm@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Mar 21, 2026 at 12:37:15PM +0200, Ionut Nechita (Wind River) wrote:
-> From: "Ionut Nechita" <ionut.nechita@windriver.com>
-> 
-> This series backports 6 upstream commits that improve the menu
-> governor's get_typical_interval() function to linux-6.12.y stable.
-> 
-> These patches are already present in linux-6.18.y but were not picked
-> up for 6.12.y because they lack Cc: stable tags.
-> 
-> The key improvement is in patch 2/6 which merges the two separate loops
-> for average and variance computation into a single pass, reducing the
-> latency of menu_select() on isolated (nohz_full) cores. The remaining
-> patches refactor outlier detection to cover both ends of the sample set,
-> update documentation to match the new code, and add a minor bucket
-> assignment optimization.
-> 
-> After applying this series, drivers/cpuidle/governors/menu.c matches
-> linux-6.18.y exactly.
-> 
-> All patches are clean cherry-picks from mainline with one trivial
-> conflict resolution in Documentation/admin-guide/pm/cpuidle.rst
-> (patch 5/6).
-> 
-> Changes since v1:
->   - Added upstream commit IDs to each patch (Greg KH)
+On Sat, Mar 21, 2026 at 11:48=E2=80=AFAM YoungJun Park <youngjun.park@lge.c=
+om> wrote:
+>
+> On Fri, Mar 20, 2026 at 07:20:24PM +0100, Rafael J. Wysocki wrote:
+> >...
+>
+> Hi Rafael,
+>
+> Thanks for the review. Sorry for the back and forth on this one.
+> I'm preparing to send the uswsusp GFP mask fix separately as you
+> requested (with _nowarn rename and lockdep_assert_held).
+>
+> Before sending, I wanted to check on the approach. I originally
+> found this WARNING while testing uswsusp and thought it was a
+> localized issue. But AI review has kept uncovering more cases =E2=80=94
+> first SNAPSHOT_FREEZE + snapshot_release(), and now
+> dpm_resume_end() when dpm_prepare() fails.
 
-Still incorrect :(
+dpm_resume_end() should not be called after a failing dpm_prepare().
+
+Which code path is that?
+
+> More callers than I expected use this defensive restore pattern.
+>
+> So I'd like your thoughts on the approach:
+>
+> 1. Introduce pm_restore_gfp_mask_nowarn() and update each caller.
+>
+> 2. Remove the WARN_ON from pm_restore_gfp_mask() itself, restoring
+>    the pre-stacking no-op behavior.
+>
+> I'm leaning towards option 2. Defensive restores are an established
+> pattern in multiple paths, and warning against a legitimate no-op
+> seems counterproductive =E2=80=94 we'd just be playing whack-a-mole with
+> _nowarn conversions as more callers turn up.
+>
+> What do you think?
+
+Using the _nowarn() wariant would help to annotate code paths where
+omitting the warning is legitimate.
