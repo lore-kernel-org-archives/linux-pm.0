@@ -1,104 +1,84 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B31062848AA
-	for <linux-pm@vger.kernel.org>; Sun, 22 Mar 2026 11:31:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F1CA319617
+	for <linux-pm@vger.kernel.org>; Sun, 22 Mar 2026 12:05:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774179092; cv=none; b=QNAAQ/+kASWDbsFcItzopvs70yAcD+aq/ACH9R32MFxH9l+QTy/6KISnXY3Z5sB/zoG8y9CQP0khw+eKMO5NXW8SiEaA6zYqoaJi6TBAEo9jEB4G75Odj/xPAc4HCEb+IU2B2KdLrWv1FfMK55doVfApu8GnR5qCJ1sNGGYAG1s=
+	t=1774181143; cv=none; b=BjIkNoI90wppE2a1K+ol+RUhpQq91vbtDUE/313XlgLP8PZE6KiIDU360HCbJkrs+zKYc6vBquax2VTUrIakr2y2rxk79OL7h1+awUY7KKE+nQNi5xheEb8mw+C82kFyDdWCbvBQlRAruN+qWhAgkA0jcTzW5pstn7scUJ738jw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774179092; c=relaxed/simple;
-	bh=CZXIAphpEoAXPXJOqhiWoTDgIfpM0+mqwqQXnEDj07s=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tRKhAEgTtlbrYJnYktSYoF/4INMMnGswSs6qoK5bKlKdPzEXmoDnBaLQm4IF4kd43xLbW45g83kHyPI9DBCbjDjwYEp92Sd5wKZKq80j/boswabM1ssrOYmFUskAS26gU7cSN+ZDKn7Q55S4CGefijmbjX1RW0RQTXBjSKOGkSU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uQMlHXyh; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uQMlHXyh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AF24C2BCB2
-	for <linux-pm@vger.kernel.org>; Sun, 22 Mar 2026 11:31:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774179092;
-	bh=CZXIAphpEoAXPXJOqhiWoTDgIfpM0+mqwqQXnEDj07s=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=uQMlHXyhsJZG7NGkoYUAvBCrMwmMf+VXI+IvMR9O31GZpRJ0tT7vQTJW1xf7oRt0F
-	 5KxNGyzPe1omNM40tbwWkHrbNriK/lJsipfqO7Vu28yQIA9P9Pli7N0N/EJL0w9h9m
-	 Jq9bBsL8CqJ5jNQEv7k/w9MukfeNIjCZKilCFsMDLwr8A/eyhWdXmHnfr3m5d3FqJ5
-	 sxh+ryUWv8ltmu+ThOsjeTcw9A0eF2nkdvZFukrOCv2CEopTUYF0QGiLFD5l/3WKBf
-	 B/nKeFCdIfH5k0ouSbvR7Giop5mzdOz99k1OV6MT8/fy8R3yz9cyzhoD/D1kZMi331
-	 cNw241Fz9RuDQ==
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-40ef10ec84cso3115627fac.2
-        for <linux-pm@vger.kernel.org>; Sun, 22 Mar 2026 04:31:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXGhv9q0EA8JGysV3aUGoTnKeOhHo7Rmy+jIVPy1G/6NywoCN6q9cjNT06caV141Y54ehPPE1Q4Zg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyVoRHlSlb89KBvn2K/2OdRWza86I8HoX+YUCUJdjkkn2qQ/EbF
-	9TGa24cnZALSMUxyQM0eZ+LitEO4LHn3ILcM6b+7D8+C3ldhWwG6fAg2+BWjB06mWt54/Cdw004
-	4bC7uj5XTCBCavm3td+eUksomZFhg01g=
-X-Received: by 2002:a05:6870:812f:b0:417:6b32:f50 with SMTP id
- 586e51a60fabf-41c114ad093mr5987793fac.50.1774179091364; Sun, 22 Mar 2026
- 04:31:31 -0700 (PDT)
+	s=arc-20240116; t=1774181143; c=relaxed/simple;
+	bh=oshQ5qS4f+NZE6ebvXHFPclLDp2BdWi8rYO4kmK0ubo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Y5M34ssMpAf47IuR/PEb5CLSZaJQtvh+rkhCXDD8v1NokfxbsKzJtGAcPRzIRboGH7V7UQ+i9bCVRER0kkUvK2AasyfKJEORC2M/Jt/7xz7qcxK/odtHpwDWrW/lIpVfmVYjtCDweNmLvPaSjus87oNpc0YimuEP/3BaNh4/eXw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
+	by 156.147.51.102 with ESMTP; 22 Mar 2026 21:05:30 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+From: Youngjun Park <youngjun.park@lge.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	linux-pm@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Youngjun Park <youngjun.park@lge.com>
+Subject: [PATCH] PM: sleep: Drop spurious WARN_ON from pm_restore_gfp_mask()
+Date: Sun, 22 Mar 2026 21:05:28 +0900
+Message-Id: <20260322120528.750178-1-youngjun.park@lge.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320170313.163386-1-youngjun.park@lge.com>
- <20260320170313.163386-4-youngjun.park@lge.com> <CAJZ5v0gHTPCkVySAuPBkPoV=SwmBRG_c-TtPbz0CNsUUPEkY8w@mail.gmail.com>
- <ab53krr0y981Qyk8@yjaykim-PowerEdge-T330> <CAJZ5v0gVbQQdpyWb72qDcsAoj7vg2v=pXOjdMuWzKHJsdJcHNw@mail.gmail.com>
- <CAJZ5v0ge3K4DOZHxJyWARZWu_N96_sAw2T-8nr54zSKH-hOfRA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0ge3K4DOZHxJyWARZWu_N96_sAw2T-8nr54zSKH-hOfRA@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Sun, 22 Mar 2026 12:31:18 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gBHLz7T2qRJRjBfOWY6UXM6L6+Kw8UcsY4+OaB7+qQcg@mail.gmail.com>
-X-Gm-Features: AaiRm53xYV_EZSYGQrEKmhLGtdzk7WdbJ8VpXBo1B9uzpzij2dzrLdLvtlNqx20
-Message-ID: <CAJZ5v0gBHLz7T2qRJRjBfOWY6UXM6L6+Kw8UcsY4+OaB7+qQcg@mail.gmail.com>
-Subject: Re: [PATCH v6 3/3] PM: hibernate: fix spurious GFP mask WARNING in
- uswsusp path
-To: YoungJun Park <youngjun.park@lge.com>
-Cc: akpm@linux-foundation.org, chrisl@kernel.org, kasong@tencent.com, 
-	pavel@kernel.org, shikemeng@huaweicloud.com, nphamcs@gmail.com, 
-	bhe@redhat.com, baohua@kernel.org, usama.arif@linux.dev, 
-	linux-pm@vger.kernel.org, linux-mm@kvack.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sat, Mar 21, 2026 at 12:45=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.o=
-rg> wrote:
->
-> On Sat, Mar 21, 2026 at 12:32=E2=80=AFPM Rafael J. Wysocki <rafael@kernel=
-.org> wrote:
-> >
-> > On Sat, Mar 21, 2026 at 11:48=E2=80=AFAM YoungJun Park <youngjun.park@l=
-ge.com> wrote:
-> > >
-> > > On Fri, Mar 20, 2026 at 07:20:24PM +0100, Rafael J. Wysocki wrote:
-> > > >...
-> > >
-> > > Hi Rafael,
-> > >
-> > > Thanks for the review. Sorry for the back and forth on this one.
-> > > I'm preparing to send the uswsusp GFP mask fix separately as you
-> > > requested (with _nowarn rename and lockdep_assert_held).
-> > >
-> > > Before sending, I wanted to check on the approach. I originally
-> > > found this WARNING while testing uswsusp and thought it was a
-> > > localized issue. But AI review has kept uncovering more cases =E2=80=
-=94
-> > > first SNAPSHOT_FREEZE + snapshot_release(), and now
-> > > dpm_resume_end() when dpm_prepare() fails.
-> >
-> > dpm_resume_end() should not be called after a failing dpm_prepare().
-> >
-> > Which code path is that?
->
-> OK, I see.
->
-> Let me have a deeper look at this.
+Commit 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask()
+stacking") introduced refcount-based GFP mask management that warns
+when pm_restore_gfp_mask() is called with saved_gfp_count == 0.
 
-So I agree with you that the most straightforward way to address the
-spurious warnings is to remove the WARN_ON() around the
-!saved_gfp_count check in pm_restore_gfp_mask() while retaining the
-check itself.
+Some hibernation paths call pm_restore_gfp_mask() defensively where
+the GFP mask may or may not be restricted depending on the execution
+path. For example, the uswsusp interface invokes it in
+SNAPSHOT_CREATE_IMAGE, SNAPSHOT_UNFREEZE, and snapshot_release().
+Before the stacking change this was a silent no-op; it now triggers
+a spurious WARNING.
 
-Please feel free to send a patch making that change.
+Remove the WARN_ON() wrapper from the !saved_gfp_count check while
+retaining the check itself, so that defensive calls remain harmless
+without producing false warnings.
 
-Thanks!
+Fixes: 35e4a69b2003f ("PM: sleep: Allow pm_restrict_gfp_mask() stacking")
+Signed-off-by: Youngjun Park <youngjun.park@lge.com>
+---
+---
+Split from the earlier pm_restore_gfp_mask_nowarn() series and
+agreed upon with Rafael to take this simpler approach instead:
+https://lore.kernel.org/linux-mm/CAJZ5v0gBHLz7T2qRJRjBfOWY6UXM6L6+Kw8UcsY4+OaB7+qQcg@mail.gmail.com/T/#m10ee3346cd8dcd052749105d9a8e2052dbf3bc80
+
+ kernel/power/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 5f8c9e12eaec..5429e9f19b65 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -40,7 +40,7 @@ void pm_restore_gfp_mask(void)
+ {
+ 	WARN_ON(!mutex_is_locked(&system_transition_mutex));
+ 
+-	if (WARN_ON(!saved_gfp_count) || --saved_gfp_count)
++	if (!saved_gfp_count || --saved_gfp_count)
+ 		return;
+ 
+ 	gfp_allowed_mask = saved_gfp_mask;
+
+base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
+-- 
+2.34.1
+
