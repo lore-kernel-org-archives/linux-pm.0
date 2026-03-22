@@ -1,95 +1,110 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52C793164A9;
-	Sun, 22 Mar 2026 23:08:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9017C175A86;
+	Sun, 22 Mar 2026 23:37:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774220888; cv=none; b=N2wLNP0HbY79mr2YVnf5yuhO5rm7r2pcKxuPy4KX2mplpa915u+UXRgIqzpSgYyCEAKAjTjCzD5xFaVkgWtzgCVNcXkYzOLMx7/pKPPEo2cLPjCxCyVD8qHHxkr3P24rE+opEr+ENASHTEJPPucVyD0SpIQnaZRhYakuBd5QwqU=
+	t=1774222634; cv=none; b=mUOayxGd1ZfBUVeEbG1smemsrP4ZxUuWqzIUjATYxYmVukwcIf7M6dqSNqOH4tPLnYya4w+qiiH5HWbM3t0PBbBcbFvmcPOC1SgBoWOEr4XJjeqxKzGBPpO0afuvePpU3nsAeRSjptqiXvYm4UOb1WPk4Fkp3IYtguyVDoSBMTQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774220888; c=relaxed/simple;
-	bh=cS9fnBLUaiAxDgJ4h9rJnb6mgZnkEly0eecDci0Jflo=;
+	s=arc-20240116; t=1774222634; c=relaxed/simple;
+	bh=C+cpYEwtbl8C0q9C0mMalH+TLGhOE8srxZhSJuIwx+g=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kcRd/cr19jDDMpQ/02sSN5PdnE49daN8Udc88SHgGW7Vj0Wj0Z/1lPUeig7Djwcs0JLwRlRe7HD7uoGf2yajdYzAIAXVLt+RLYTzxzYhpbLr/DEongvdkIAsCObBxkAPhPgrFvxcGX+VYASamAlGUaIM8qkISwSiwgmKsyInomQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s1eZG+m4; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=iaGyXhjXCr31IXVxEMo8f0u4qbwwuIAf23hP9TPvLT10MNX5r3Y/RBgJAvprp3/98dPFeLGPEDi3oi75/jbFbHrN7svRIlNkDovNnW1kMa9Q0+ZgbCuqbi9+9dmt6OoP3hQ3r6A8WGeL/XaXqN61HlZwJknAc5YO/UcBXN7lpGw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=d+7WSNmZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s1eZG+m4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B325C19424;
-	Sun, 22 Mar 2026 23:08:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="d+7WSNmZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E31D6C19424;
+	Sun, 22 Mar 2026 23:37:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774220887;
-	bh=cS9fnBLUaiAxDgJ4h9rJnb6mgZnkEly0eecDci0Jflo=;
+	s=k20201202; t=1774222634;
+	bh=C+cpYEwtbl8C0q9C0mMalH+TLGhOE8srxZhSJuIwx+g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=s1eZG+m44A34AAcPnyJ45jYAnlY5Y02ieiSkTpmTSwFgdnMvBM/lUHVsHL35m8+PX
-	 x4OoFyJB26NE2aghErBEbHe1Lj3vIuTl6OqFqkO+7GXEgC6n5QT4xco5B8Vcnk6NmG
-	 2j0RU204vWHN+nexvY0H6qy3U6cQjOk1kqdt9ihLPdD0avNQth2JgM0+Y7vF9DxGo5
-	 B8biCHalnLNM/3wZnqrmwXlSQ+bpzA2iGZnQG2cWUb9KXOwu62AHkwwrhMSKuebV+i
-	 2EnKBT01dsP0aWWJ6ju4oBfqj9Cp6hEsaJ4B/bD0Q9vQTuBU1PV7NCu1WylqdBRsnK
-	 MfXBFXqI3cLPQ==
-Date: Sun, 22 Mar 2026 18:08:06 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
+	b=d+7WSNmZj4S8oSiXYk5eP5KyTbdNiEYggcm6Uj+B/1sYgR/Ce4pTRNKUoSr1Gf26q
+	 A5k+Ilqbqq7SdtpY1NBZzaCqeQZInLxHSsLlO3hj7yq8dEwlhGRo74lYFri8GjW/PT
+	 rSD9CwyrDne9Wza2FNGZtS30s8K30TxX5FaiDedQeVP7C9sP4NfWf47cD849Xp+CvZ
+	 6SXhpdtgnrmxguPMgp9+RUUJDWQyfeF4bYe7iFpkUuC/zauJtzFqqbRBXCEPPcX2Ay
+	 I9Dj54Lg86HRUtj2hxAJajZR2EN/AacRIqEx7dnNHhO6miQ1JvJuyiBA3xdXxNgH0u
+	 9R/zGQG+rUdIQ==
+Date: Sun, 22 Mar 2026 18:37:13 -0500
+From: Rob Herring <robh@kernel.org>
+To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	"Derek J. Clark" <derekjohn.clark@gmail.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	devicetree@vger.kernel.org,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Will McVicker <willmcvicker@google.com>,
-	Mark Brown <broonie@kernel.org>, kernel-team@android.com,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Juan Yescas <jyescas@google.com>
-Subject: Re: [PATCH v8 04/10] dt-bindings: soc: google: gs101-pmu: allow
- power domains as children
-Message-ID: <177422088580.68999.2696628451454506531.robh@kernel.org>
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
- <20260318-gs101-pd-v8-4-241523460b10@linaro.org>
+	Conor Dooley <conor+dt@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
+	Stephan Gerhold <stephan.gerhold@linaro.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA
+ soldered down connector
+Message-ID: <20260322233713.GA98177-robh@kernel.org>
+References: <20260317-pci-m2-e-v6-0-9c898f108d3d@oss.qualcomm.com>
+ <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260318-gs101-pd-v8-4-241523460b10@linaro.org>
+In-Reply-To: <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
 
+On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadhasivam wrote:
+> Lenovo Thinkpad T14s is found to have a soldered down version of M.2 1620
+> LGA connector. Though, there is no 1620 LGA form factor defined in the M.2
+> spec, it looks very similar to the M.2 Key E connector. So add the
+> "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e-connector" fallback
+> to reuse the Key E binding.
 
-On Wed, 18 Mar 2026 15:27:49 +0000, André Draszik wrote:
-> The power domains are a property of / implemented in the PMU. As such,
-> they should be modelled as child nodes of the PMU.
+What is LGA?
+
+If not in the spec, is it really something generic?
+
 > 
-> Note:
-> Because the properties added are 'required', this commit breaks DT
-> validation of the existing DT for Pixel 6, but a) that's simply because
-> the DT is incomplete and b) a DT update will be posted once the binding
-> is accepted.
-> It is not possible to write the binding such that it supports old
-> (incomplete) DTs in addition to the full version, but as per above
-> it's not required to keep supporting old DTs.
-> 
-> Signed-off-by: André Draszik <andre.draszik@linaro.org>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 > ---
-> v8:
-> - move comment from commit message footer into body (Rob)
-> - fix incorrect use of ranges in example (Rob)
+>  .../devicetree/bindings/connector/pcie-m2-e-connector.yaml       | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 > 
-> v7:
-> - really be consistent with quoting (Krzysztof)
-> - drop invalid tested-by tag (Krzysztof)
+> diff --git a/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml b/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+> index f7859aa9b634..d8cf9a9ec7d0 100644
+> --- a/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+> +++ b/Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+> @@ -17,7 +17,14 @@ description:
+>  
+>  properties:
+>    compatible:
+> -    const: pcie-m2-e-connector
+> +    oneOf:
+> +      - items:
+> +          - enum:
+> +              - pcie-m2-1620-lga-connector
+> +          - const: pcie-m2-e-connector
+> +      - items:
+> +          - enum:
+> +              - pcie-m2-e-connector
+>  
+>    vpcie3v3-supply:
+>      description: A phandle to the regulator for 3.3v supply.
 > 
-> v4:
-> - consistent quoting using " (Krzysztof)
-> - add samsung,dtzpc to example
-> ---
->  .../bindings/soc/google/google,gs101-pmu.yaml      | 41 ++++++++++++++++++++++
->  1 file changed, 41 insertions(+)
+> -- 
+> 2.51.0
 > 
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-
