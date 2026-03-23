@@ -1,315 +1,146 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com [209.85.210.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4E213A5E85;
-	Mon, 23 Mar 2026 18:20:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A0B82D8DDB
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 18:31:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774290011; cv=none; b=A1vohmCcK0odmLmgHDUAi/8PUu9SgSI9zATIIVi//gyFVgwYjPBc398CnfDN4iJcDckfsUr2eBmh3ns72yiBomKUKnR19AKLd+n6G1OKcsFpLrlSO6md12W6WXUklKAEmbcCVNa3t0lMmkRzFHki3tWeUK0G2KAOtm29+LxdkmI=
+	t=1774290709; cv=none; b=cnrkQBSH00vDiAyHQT6PSRBfo9z5lkNzlz3MCVZQtn1H8tMsIjO8FRb//CfN68PRHKRuMEBG4d9108nwoKFQiDaZ+5mCcYdqD9sEWaHuL3RLkhORkCVaiQbI3G5LJDHago26df+X3fAV+VCVKXaxyO9DgG8SHabbpd1q5TdGTwE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774290011; c=relaxed/simple;
-	bh=l3TK2fyopYDLeOdwUu55Wa1QN8poSXjvmMWPq7ZQQsQ=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=MazU3jE85HLl1IuleiHlesND3h4oZ7zoC1HZVkUzcW3JIBOqb065Ay0YWwqxEfYtb1MS6K3A8W6oeBQ6c5/qtvVY1ipHmoL69LCBTCFVjkxudgkwWIh87mfYZcgjJ5hXcibbNxmbqc2mWk30SsjZrY5aWgQhCelYLkzhcI9SbkE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HY84Adjj; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1774290709; c=relaxed/simple;
+	bh=bqRgK+7gwbsy7T9nB1J0qJ8gPwKq1G1zEwOxmWI2uCA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=EoQJGH+aMkovKt6eHFJuY1+k5CPC7cBRarRcGOtZUHbIlWHzsmuMmNY1iI7zAaVzmA98GUxzxrs2x4MDevH+nmtN5+B/pvR9IaUxlFFGo9bpMaUegLSb9o9+9ThfBIkfITxu0SOtUd7c3jyS3V2uY3A6jPAbddQpcGJ4pN7cdCo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Qw5HNkPH; arc=none smtp.client-ip=209.85.210.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HY84Adjj"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774290004; x=1805826004;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=l3TK2fyopYDLeOdwUu55Wa1QN8poSXjvmMWPq7ZQQsQ=;
-  b=HY84AdjjomavOhmpFbFY1C63oLVxCz3Yq2+aZ0ezBmhpDK8o9/wgaDXn
-   BgkDETpeDJRVXB4NvZZO5oVNAczd0rc6wss6h6c7F4cVBVHVOFSMyxame
-   BwKA6eJQq5C7y23R7gDx7GXsttBqoa465wxtJuZhyu9Rp4COq8/pjIRk0
-   6cu9CIJDThGCiVqFTCyN9YhNMa8fZCsJOgaMmcvO5HzfJ6I0Cqt+521DZ
-   nHTx2l+DmFD+hRD6QJEBH/YvzWLIugzBcmCYSfXObNErdzUMKUl13k+AR
-   4+vT5//To0TNBIPesXo91w+dwiYvr6o8de57Jow/79gqGUQoo9pkHz35U
-   Q==;
-X-CSE-ConnectionGUID: lxqj5tQbQ0GK/86DNAI0Nw==
-X-CSE-MsgGUID: aCwbP6PmTKa5sr6Nck1Vig==
-X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75205607"
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
-   d="scan'208";a="75205607"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:20:03 -0700
-X-CSE-ConnectionGUID: EgBEBBAkRfKQExM1LDAsNg==
-X-CSE-MsgGUID: C+InbcT4R3KdBrkzjcSrPQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
-   d="scan'208";a="219247471"
-Received: from spandruv-desk2.jf.intel.com ([10.88.27.176])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:20:02 -0700
-Message-ID: <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
-Subject: Re: [PATCH v1] powercap: intel_rapl: Consolidate PL4 and PMU
- support flags into rapl_defaults
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-  "Rafael J . Wysocki"	 <rafael@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 23 Mar 2026 11:20:02 -0700
-In-Reply-To: <20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
-References: 
-	<20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Qw5HNkPH"
+Received: by mail-ot1-f45.google.com with SMTP id 46e09a7af769-7d7fdb922a5so2332378a34.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:31:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1774290707; x=1774895507; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=QVBazjdvY7hpkM99+8EeEVTqO3Ui5pgYU+jZZ/olKb4=;
+        b=Qw5HNkPH9WPlO56hmF/h2u7sS0cTXgs+t0KZjfk3ZjgthctLmE0Z4950uF4iUaSp/o
+         tmWQo7ZSXP/4IAk7tBEkonoEdc8Cc1OvUFWHvZaPnMjZQlnX8QKuIEOOcIXPItlTqgPS
+         86SU9AGArRuvz9lLAjItVSTzYlklPU3Oi/J2o=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774290707; x=1774895507;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QVBazjdvY7hpkM99+8EeEVTqO3Ui5pgYU+jZZ/olKb4=;
+        b=T33anjiZmt6Q8hD6l/lOhlkANfV/gFxdj0JKfK24BS8PYWeOhKf101qcDvapAg4m9j
+         b3loZUS/PMLKyCkazvC7YIItlqp+DDcRwHVHvlZNy/x+BvhOCtdDPAfA3tb20IYktOLe
+         YtAD0PPDu2ANfIVXEhw2oXLvCIeHBQvrW+e0PdK8+3vED59+GnGDFZo1l5s/cWCnzj/9
+         C35REGnlId1sVs/rq+LWRjjpMyxlrmEGWveK/BWTe4Qp7ibSTByYJ/I1mkHE9Ia8R/Zz
+         1hGjU0+tq7isnh+k5V8Kelrp0B78NsnYQUk/VCyXRwKpVXtt1UXuFPvgWEHVlpxMpfP9
+         9awQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVK07W8FwxLNX+wVTq0n+FRQSrKLaWVCdL99NvlXGrqXqMk8Xuh7KPK3svriGwMbMJzk5E0xolyTw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyOpGjJvkLzPKHmIrY3Yz6wIoR9iyGw9fqy3lqk4UNpwgptlRQE
+	kYJP/SQoS9wuHqtc8QV1H0nmglThQY9BPh+lHrkIhlN+EoLxalYGfSnwsoG61y6IKWk=
+X-Gm-Gg: ATEYQzxUPfc8dHLGDIEzKSvYPkKAL5VQXEeQWBk5JSOaFRENd7fgvMbzdB7VHmu/tbP
+	IWRwNDNEW2kutuYp6nV5uX6YCWO4T97OWZbKJsG9p8J22XQH2JHJS8+M/rJbK8WnvWTdx0lS13t
+	jNrAqS//V/NIfCPxJMH15chpkLGXZlz0Mw8KAxVqVYpyT5W6zwDGx+ZK3bpEbWqZ7e94cn2G20W
+	8D2l9GshSEHXxV08bl/EJFGbgRze6wNAM7gkdaS3amf8VKqO8w9kHcenFxj3UVqYv5CK93U9WbY
+	QwR4BkkM2eG3gGxhazq07tlqe+F8Dr8gYqmLAEAZX1yaN4nC8L1ZCAGdoUJJxsQ+NBFM1Fov7C3
+	gbq8UkN1apTCnVVFDmpPDL6GYa1n35SP7e/eB2SQWpnJwo/bbP9bofQvNKQ/4jIIYf3Mzt+XYVA
+	X/2Qp+rI/Wfyye4M1nkNrI5M9bCyyj4bRr1oQ=
+X-Received: by 2002:a05:6830:441f:b0:7d7:49f4:8fce with SMTP id 46e09a7af769-7d7eaf9a720mr9482164a34.19.1774290707230;
+        Mon, 23 Mar 2026 11:31:47 -0700 (PDT)
+Received: from [192.168.1.14] ([38.175.187.108])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7d7fbee2c6dsm7548239a34.1.2026.03.23.11.31.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 23 Mar 2026 11:31:46 -0700 (PDT)
+Message-ID: <1cc868ad-aaf9-4da5-9b20-523ef2da2d1d@linuxfoundation.org>
+Date: Mon, 23 Mar 2026 12:31:44 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/4] cpupower-idle-info.1: fix short option names
+To: Roberto Ricci <io@r-ricci.it>, Thomas Renninger <trenn@suse.com>,
+ Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
+ John Kacur <jkacur@redhat.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
+References: <20260312102029.14980-1-io@r-ricci.it>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <20260312102029.14980-1-io@r-ricci.it>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, 2026-03-13 at 12:00 -0700, Kuppuswamy Sathyanarayanan wrote:
-> Currently, PL4 and MSR-based RAPL PMU support are detected using
-> separate CPU ID tables (pl4_support_ids and pmu_support_ids) in the
-> MSR driver probe path. This creates a maintenance burden since adding
-> a new CPU requires updates in two places: the rapl_ids table and one
-> or both of these capability tables.
->=20
-> Consolidate PL4 and PMU capability information directly into
-> struct rapl_defaults by adding msr_pl4_support and msr_pmu_support
-> flags. This allows per-CPU capability to be expressed in a single
-> place alongside other per-CPU defaults, eliminating the duplicate
-> CPU ID tables entirely.
->=20
-> No functional changes are intended.
->=20
-> Co-developed-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Kuppuswamy Sathyanarayanan
-> <sathyanarayanan.kuppuswamy@linux.intel.com>
+On 3/12/26 04:20, Roberto Ricci wrote:
+> The cpupower-idle-info(1) man page describes '-f' as the short form of
+> the '--silent' option and '-e' as the short form of the '--proc' option.
+> But they are not correct:
+> 
+> $ cpupower idle-info -f
+> idle-info: invalid option -- 'f'
+> invalid or unknown argument
+> $ cpupower idle-info -e
+> idle-info: invalid option -- 'e'
+> invalid or unknown argument
+> 
+> The short form of '--silent' is actually '-s' and the short form of
+> '--proc' is actually 'o':
+> 
+> cpuidle-info.c:
+> 	{"silent", no_argument, NULL, 's'},
+> 	{"proc", no_argument, NULL, 'o'},
+> 
+> Fixes e7d85a934182d5bde1eea865169fbf2e0637a3ed ("cpupower: Add cpupower-idle-info manpage")
+
+There is no need t for Fixes tag in any of these patches.
+Fixes tag is used when you fix a bug in code. Using Fixes
+for every single patch adds lot of churn for stable releases.
+
+Remove Fixes tag from all these 4 patches and run checkpatch
+before sending patches to me adding version information.
+
+Incorrect fixes style in all of these 4 patches. Running checkpatch
+helps you catch these error before I see them.
+
+ERROR: Please use git commit description style 'commit <12+ chars of sha1> ("<title line>")' - ie: 'commit e7d85a934182 ("cpupower: Add cpupower-idle-info manpage")'
+#86:
 
 
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-
+> 
+> Signed-off-by: Roberto Ricci <io@r-ricci.it>
 > ---
-> =C2=A0drivers/powercap/intel_rapl_msr.c | 83 ++++++++++++++--------------=
--
-> --
-> =C2=A0include/linux/intel_rapl.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 2 +
-> =C2=A02 files changed, 38 insertions(+), 47 deletions(-)
->=20
-> diff --git a/drivers/powercap/intel_rapl_msr.c
-> b/drivers/powercap/intel_rapl_msr.c
-> index cfb35973f0b5..a34543e66446 100644
-> --- a/drivers/powercap/intel_rapl_msr.c
-> +++ b/drivers/powercap/intel_rapl_msr.c
-> @@ -216,33 +216,6 @@ static int rapl_msr_write_raw(int cpu, struct
-> reg_action *ra)
-> =C2=A0	return ra->err;
-> =C2=A0}
-> =C2=A0
-> -/* List of verified CPUs. */
-> -static const struct x86_cpu_id pl4_support_ids[] =3D {
-> -	X86_MATCH_VFM(INTEL_ICELAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_TIGERLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_ALDERLAKE, NULL),
-> -	X86_MATCH_VFM(INTEL_ALDERLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT, NULL),
-> -	X86_MATCH_VFM(INTEL_RAPTORLAKE, NULL),
-> -	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, NULL),
-> -	X86_MATCH_VFM(INTEL_METEORLAKE, NULL),
-> -	X86_MATCH_VFM(INTEL_METEORLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_ARROWLAKE_U, NULL),
-> -	X86_MATCH_VFM(INTEL_ARROWLAKE_H, NULL),
-> -	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_NOVALAKE, NULL),
-> -	X86_MATCH_VFM(INTEL_NOVALAKE_L, NULL),
-> -	{}
-> -};
-> -
-> -/* List of MSR-based RAPL PMU support CPUs */
-> -static const struct x86_cpu_id pmu_support_ids[] =3D {
-> -	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
-> -	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
-> -	{}
-> -};
-> -
-> =C2=A0static int rapl_check_unit_atom(struct rapl_domain *rd)
-> =C2=A0{
-> =C2=A0	struct reg_action ra;
-> @@ -420,6 +393,23 @@ static const struct rapl_defaults
-> rapl_defaults_amd =3D {
-> =C2=A0	.check_unit =3D rapl_default_check_unit,
-> =C2=A0};
-> =C2=A0
-> +static const struct rapl_defaults rapl_defaults_core_pl4 =3D {
-> +	.floor_freq_reg_addr =3D 0,
-> +	.check_unit =3D rapl_default_check_unit,
-> +	.set_floor_freq =3D rapl_default_set_floor_freq,
-> +	.compute_time_window =3D rapl_default_compute_time_window,
-> +	.msr_pl4_support =3D 1,
-> +};
-> +
-> +static const struct rapl_defaults rapl_defaults_core_pl4_pmu =3D {
-> +	.floor_freq_reg_addr =3D 0,
-> +	.check_unit =3D rapl_default_check_unit,
-> +	.set_floor_freq =3D rapl_default_set_floor_freq,
-> +	.compute_time_window =3D rapl_default_compute_time_window,
-> +	.msr_pl4_support =3D 1,
-> +	.msr_pmu_support =3D 1,
-> +};
-> +
-> =C2=A0static const struct x86_cpu_id rapl_ids[]=C2=A0 =3D {
-> =C2=A0	X86_MATCH_VFM(INTEL_SANDYBRIDGE,		&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_SANDYBRIDGE_X,		&rapl_defaul
-> ts_core),
-> @@ -443,35 +433,35 @@ static const struct x86_cpu_id rapl_ids[]=C2=A0 =3D=
- {
-> =C2=A0	X86_MATCH_VFM(INTEL_KABYLAKE_L,			&rap
-> l_defaults_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_KABYLAKE,			&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_CANNONLAKE_L,		&rapl_defaul
-> ts_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE,			&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_NNPI,		&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_X,			&rapl_defaul
-> ts_hsw_server),
-> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_D,			&rapl_defaul
-> ts_hsw_server),
-> =C2=A0	X86_MATCH_VFM(INTEL_COMETLAKE_L,		&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_COMETLAKE,			&rapl_defaul
-> ts_core),
-> -
-> 	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_TIGERLAKE,			&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_ROCKETLAKE,			&rap
-> l_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaul
-> ts_core_pl4),
-> +	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaul
-> ts_core_pl4),
-> +	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaul
-> ts_core_pl4),
-> +	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rap
-> l_defaults_core_pl4),
-> +	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,		&rapl_defaul
-> ts_core),
-> =C2=A0	X86_MATCH_VFM(INTEL_BARTLETTLAKE,		&rapl_defaul
-> ts_core),
-> -
-> 	X86_MATCH_VFM(INTEL_METEORLAKE,			&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_METEORLAKE,			&rap
-> l_defaults_core_pl4),
-> +	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,		&rapl_defaul
-> ts_spr_server),
-> =C2=A0	X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,		&rapl_defaul
-> ts_spr_server),
-> =C2=A0	X86_MATCH_VFM(INTEL_LUNARLAKE_M,		&rapl_defaul
-> ts_core),
-> -
-> 	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rapl_defaults_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaul
-> ts_core_pl4_pmu),
-> +	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaul
-> ts_core_pl4_pmu),
-> +	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaul
-> ts_core_pl4),
-> +	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rap
-> l_defaults_core_pl4),
-> +	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_ARROWLAKE,			&rapl_defaul
-> ts_core),
-> -
-> 	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaults_core),
-> +	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaul
-> ts_core_pl4),
-> =C2=A0	X86_MATCH_VFM(INTEL_LAKEFIELD,			&rapl_defaul
-> ts_core),
-> =C2=A0
-> =C2=A0	X86_MATCH_VFM(INTEL_ATOM_SILVERMONT,		&rapl_defaul
-> ts_byt),
-> @@ -498,7 +488,6 @@ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-> =C2=A0
-> =C2=A0static int rapl_msr_probe(struct platform_device *pdev)
-> =C2=A0{
-> -	const struct x86_cpu_id *id =3D
-> x86_match_cpu(pl4_support_ids);
-> =C2=A0	int ret;
-> =C2=A0
-> =C2=A0	switch (boot_cpu_data.x86_vendor) {
-> @@ -518,16 +507,16 @@ static int rapl_msr_probe(struct
-> platform_device *pdev)
-> =C2=A0	rapl_msr_priv->defaults =3D (const struct rapl_defaults
-> *)pdev->dev.platform_data;
-> =C2=A0	rapl_msr_priv->rpi =3D rpi_msr;
-> =C2=A0
-> -	if (id) {
-> +	if (rapl_msr_priv->defaults->msr_pl4_support) {
-> =C2=A0		rapl_msr_priv->limits[RAPL_DOMAIN_PACKAGE] |=3D
-> BIT(POWER_LIMIT4);
-> =C2=A0		rapl_msr_priv-
-> >regs[RAPL_DOMAIN_PACKAGE][RAPL_DOMAIN_REG_PL4].msr =3D
-> =C2=A0			MSR_VR_CURRENT_CONFIG;
-> -		pr_info("PL4 support detected.\n");
-> +		pr_info("PL4 support detected (updated).\n");
-> =C2=A0	}
-> =C2=A0
-> -	if (x86_match_cpu(pmu_support_ids)) {
-> +	if (rapl_msr_priv->defaults->msr_pmu_support) {
-> =C2=A0		rapl_msr_pmu =3D true;
-> -		pr_info("MSR-based RAPL PMU support enabled\n");
-> +		pr_info("MSR-based RAPL PMU support enabled
-> (updated)\n");
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	rapl_msr_priv->control_type =3D
-> powercap_register_control_type(NULL, "intel-rapl", NULL);
-> diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-> index 01f290de3586..328004f605c3 100644
-> --- a/include/linux/intel_rapl.h
-> +++ b/include/linux/intel_rapl.h
-> @@ -135,6 +135,8 @@ struct rapl_defaults {
-> =C2=A0	unsigned int dram_domain_energy_unit;
-> =C2=A0	unsigned int psys_domain_energy_unit;
-> =C2=A0	bool spr_psys_bits;
-> +	bool msr_pl4_support;
-> +	bool msr_pmu_support;
-> =C2=A0};
-> =C2=A0
-> =C2=A0#define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {	\
+
+Adding changes in since patch v1 makes reviewers job easier.
+We can easily our comments are addressed or not.
+
+
+>   tools/power/cpupower/man/cpupower-idle-info.1 | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
+> index 20b6345c53ad..b2f92aba5f5b 100644
+> --- a/tools/power/cpupower/man/cpupower-idle-info.1
+> +++ b/tools/power/cpupower/man/cpupower-idle-info.1
+> @@ -11,10 +11,10 @@ A tool which prints out per cpu idle information helpful to developers and inter
+>   .SH "OPTIONS"
+>   .LP
+>   .TP
+> -\fB\-f\fR \fB\-\-silent\fR
+> +\fB\-s\fR \fB\-\-silent\fR
+>   Only print a summary of all available C-states in the system.
+>   .TP
+> -\fB\-e\fR \fB\-\-proc\fR
+> +\fB\-o\fR \fB\-\-proc\fR
+>   deprecated.
+>   Prints out idle information in old /proc/acpi/processor/*/power format. This
+>   interface has been removed from the kernel for quite some time, do not let
+
+thanks,
+-- Shuah
+
