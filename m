@@ -1,20 +1,21 @@
 Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA5F53B9D9F
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:08:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FE6C257851
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:08:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774282112; cv=none; b=pNPaQFkdHeWEZIvv1txn5xaoEQclXzicV/E6VWMN1ew7Oa81SNtJypznyrGev+5IBjcEEw2HIOlc+sk+efSu4RszNcEpYRIcnLLjHOj9mE/DnxHCUgEbL38U86+zRxCT7V0BVcZzXi5p6Q6TMI+ddvfNcEZlrXlI+erQqbinsOM=
+	t=1774282115; cv=none; b=O495KHKdOlrnzsNjQA5VR8JkXuE12obdtpOKxrFz3LSkdgZhUPP21idUd/DHzrhUFo78pFa9Q9FjM5fYbA6oI7gJM/koUo4cNW4dIc6jhmnRi3nzQzWZ9Z6grHpHLNz+TxmPAaBHJNvxqbqNH18ww0ZplCM3m1T4P4a7QOV6td4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774282112; c=relaxed/simple;
-	bh=58UDlEsUqIyv5uMucWLbnEYkU0DG7+LHUZEfQ2e6YoE=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jDjss6HLudWiE3r2HrCbbcFQz2OOht/ednW8sZuBeXaAUFPZO7EeoYJ5JQx8UvuEzopHwy2dkUOclUsrSj9dCT4/6wjRj2I+q2PrJqZlYxu6HQjHo8Y4FLhI/HiWuoNnarQvjbVqov4L3hgfo7vhaHYQgFgUNYVvGmSmsee6bf0=
+	s=arc-20240116; t=1774282115; c=relaxed/simple;
+	bh=CFFNy8NVnr85Irb9sRU9b6kxd2rOvwey7lAz6CEz3EE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=WuHiKHl4JLxXqg/Z/B5rb3cnXgRBoUr1PlYHFMtzhMSGp+iWpbp98vNv2Y695VGJrbE2m0kMD5AjysGODYghTOYsaYpHpcqQ5H3z6PC8ECP/rbloYeNbXVFP+beLaP6UAZGFs6AA/sc4Tkaded9X6t3YENMguEUO495Tih22T0k=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 24 Mar 2026 01:08:24 +0900
+	by 156.147.51.102 with ESMTP; 24 Mar 2026 01:08:27 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
 From: Youngjun Park <youngjun.park@lge.com>
@@ -31,10 +32,12 @@ Cc: Chris Li <chrisl@kernel.org>,
 	Usama Arif <usama.arif@linux.dev>,
 	linux-pm@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [PATCH v8 0/2] mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap device
-Date: Tue, 24 Mar 2026 01:08:20 +0900
-Message-Id: <20260323160822.1409904-1-youngjun.park@lge.com>
+Subject: [PATCH v8 2/2] mm/swap: remove redundant swap device reference in alloc/free
+Date: Tue, 24 Mar 2026 01:08:22 +0900
+Message-Id: <20260323160822.1409904-3-youngjun.park@lge.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260323160822.1409904-1-youngjun.park@lge.com>
+References: <20260323160822.1409904-1-youngjun.park@lge.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -43,111 +46,135 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently, in the uswsusp path, only the swap type value is retrieved at
-lookup time without holding a reference. If swapoff races after the type
-is acquired, subsequent slot allocations operate on a stale swap device.
+In the previous commit, uswsusp was modified to pin the swap device
+when the swap type is determined, ensuring the device remains valid
+throughout the hibernation I/O path.
 
-Additionally, grabbing and releasing the swap device reference on every
-slot allocation is inefficient across the entire hibernation swap path.
+Therefore, it is no longer necessary to repeatedly get and put the swap
+device reference for each swap slot allocation and free operation.
 
-This patch series addresses these issues:
-- Patch 1: Fixes the swapoff race in uswsusp by pinning the swap device
-  from the point it is looked up until the session completes.
-- Patch 2: Removes the overhead of per-slot reference counting in alloc/free
-  paths and cleans up the redundant SWP_WRITEOK check.
+For hibernation via the sysfs interface, user-space tasks are frozen
+before swap allocation begins, so swapoff cannot race with allocation.
+After resume, tasks remain frozen while swap slots are freed, so
+additional reference management is not required there either.
 
-Rebased onto mm-new per Andrew's suggestion [1]. The si->flags race
-flagged by AI review in v7 (between SWP_HIBERNATION and cont_lock in
-add_swap_count_continuation) and the proposed fixes discussed there
-(atomic ops for si->flags, or serializing with swap_lock) are all moot
-on mm-new since Kairui's series removed that code path entirely.
-kernel/power/ changes are small, so Andrew proposed carrying everything
-through mm-new.
+Remove the redundant swap device get/put operations from the
+hibernation swap allocation and free paths.
 
-Rafael, could you ack the PM-side changes?
+Also remove the SWP_WRITEOK check before allocation, as the cluster
+allocation logic already validates the swap device state.
 
-Re-tested on mm-new (c51ea78c5466) with hibernate/resume cycles and
-uswsusp paths. Also ran an additional round of AI review against the
-rebased version, no new issues found.
+Update function comments to document the caller's responsibility for
+ensuring swap device stability.
 
-[1] https://lore.kernel.org/linux-mm/20260322093038.25a7fd51f5d564b85815db7a@linux-foundation.org/
+Signed-off-by: Youngjun Park <youngjun.park@lge.com>
+---
+ mm/swapfile.c | 68 +++++++++++++++++++++++++++------------------------
+ 1 file changed, 36 insertions(+), 32 deletions(-)
 
-Links:
-RFC v1: https://lore.kernel.org/linux-mm/20260305202413.1888499-1-usama.arif@linux.dev/T/#m3693d45180f14f441b6951984f4b4bfd90ec0c9d
-RFC v2: https://lore.kernel.org/linux-mm/20260306024608.1720991-1-youngjun.park@lge.com/
-RFC v3: https://lore.kernel.org/linux-mm/20260312112511.3596781-1-youngjun.park@lge.com/
-v4: https://lore.kernel.org/linux-mm/abv+rjgyArqZ2uym@yjaykim-PowerEdge-T330/T/#m924fa3e58d0f0da488300653163ee8db7e870e4a
-v5: https://lore.kernel.org/linux-mm/ab0YEn+Fd41q6LM7@yjaykim-PowerEdge-T330/T/#m8409d470c68cb152b0849940759bff7d7806f397
-v6: https://lore.kernel.org/linux-mm/20260320182227.896f9ab62d62961b2caab5f7@linux-foundation.org/T/#m10ee3346cd8dcd052749105d9a8e2052dbf3bc80
-v7: https://lore.kernel.org/linux-mm/ab/20260321103309.439265-1-youngjun.park@lge.com/
-
-Testing:
-- Hibernate/resume via sysfs
-  (echo reboot > /sys/power/disk && echo disk > /sys/power/state)
-- Hibernate with suspend via sysfs
-  (echo suspend > /sys/power/disk && echo disk > /sys/power/state)
-- Hibernate/resume via uswsusp (suspend-utils s2disk/resume on QEMU)
-  - Verified swap I/O works correctly after resume.
-  - Verified swapoff succeeds after snapshot resume completes.
-- swapoff during active uswsusp session:
-  - Verified swapoff returns -EBUSY while swap device is pinned (Patch 1).
-  - Verified swapoff succeeds after uswsusp process terminates.
-
-Changelog:
-v7 -> v8:
- - Rebased onto mm-new per Andrew Morton's suggestion.
- - Clarified function comments (SWP_HIBERNATION pinning).
- - Re-tested and AI-reviewed on mm-new; no new issues found.
-
-v6 -> v7:
- - Dropped Patch 3 (pm_restore_gfp_mask fix) from series as it has
-   no dependency on Patches 1-2. Will be sent separately.
-   (Rafael J. Wysocki feedback)
-
-v5 -> v6:
- - Replaced get/put reference approach with SWP_HIBERNATION
-   pinning to prevent swapoff, per Kairui's feedback.  Renamed helpers
-   from get/find/put_hibernation_swap_type() to
-   pin/find/unpin_hibernation_swap_type().
- - Renamed swap_type_of() to __find_hibernation_swap_type() since
-   it is now an internal helper with no external callers.
- - Removed swapoff waiting on hibernation reference.
-   swapoff now returns -EBUSY immediately when the swap device is
-   pinned.
- - Updated function comments per Kairui's review.
-
-v4 -> v5:
- - Rebased onto v7.0-rc4 (Rafael J. Wysocki comment)
- - No functional changes.
-
-rfc v3 -> v4:
- - Introduced get/find/put_hibernation_swap_type() helpers per Kairui's
-   feedback.
- - Switched to swap_type_to_info() and added type < 0 check.
- - Fixed get_hibernation_swap_type() return when ref == false.
- - Made swapoff wait interruptible to prevent hang when uswsusp
-   holds a swap reference.
-
-rfc v2 -> rfc v3:
- - Split into 2 patches per Chris Li's feedback.
- - Simplified by not holding reference in normal hibernation path.
- - Removed redundant SWP_WRITEOK check.
-
-rfc v1 -> rfc v2:
- - Squashed into single patch per Usama Arif's feedback.
-
-Youngjun Park (2):
-  mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap
-    device
-  mm/swap: remove redundant swap device reference in alloc/free
-
- include/linux/swap.h |   5 +-
- kernel/power/swap.c  |   2 +-
- kernel/power/user.c  |  15 +++-
- mm/swapfile.c        | 203 +++++++++++++++++++++++++++++++++----------
- 4 files changed, 172 insertions(+), 53 deletions(-)
-
-base-commit: c51ea78c5466be89914cbfbe2618dea67026c2b1
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index c5b459a18f43..ff315b752afd 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -2077,7 +2077,16 @@ void swap_put_entries_direct(swp_entry_t entry, int nr)
+ }
+ 
+ #ifdef CONFIG_HIBERNATION
+-/* Allocate a slot for hibernation */
++/**
++ * swap_alloc_hibernation_slot() - Allocate a swap slot for hibernation.
++ * @type: swap device type index to allocate from.
++ *
++ * The caller must ensure the swap device is stable, either by pinning
++ * it (SWP_HIBERNATION) or by freezing user-space.
++ *
++ * Return: a valid swp_entry_t on success, or an empty entry (val == 0)
++ * on failure.
++ */
+ swp_entry_t swap_alloc_hibernation_slot(int type)
+ {
+ 	struct swap_info_struct *pcp_si, *si = swap_type_to_info(type);
+@@ -2088,46 +2097,42 @@ swp_entry_t swap_alloc_hibernation_slot(int type)
+ 	if (!si)
+ 		goto fail;
+ 
+-	/* This is called for allocating swap entry, not cache */
+-	if (get_swap_device_info(si)) {
+-		if (si->flags & SWP_WRITEOK) {
+-			/*
+-			 * Try the local cluster first if it matches the device. If
+-			 * not, try grab a new cluster and override local cluster.
+-			 */
+-			local_lock(&percpu_swap_cluster.lock);
+-			pcp_si = this_cpu_read(percpu_swap_cluster.si[0]);
+-			pcp_offset = this_cpu_read(percpu_swap_cluster.offset[0]);
+-			if (pcp_si == si && pcp_offset) {
+-				ci = swap_cluster_lock(si, pcp_offset);
+-				if (cluster_is_usable(ci, 0))
+-					offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
+-				else
+-					swap_cluster_unlock(ci);
+-			}
+-			if (!offset)
+-				offset = cluster_alloc_swap_entry(si, NULL);
+-			local_unlock(&percpu_swap_cluster.lock);
+-			if (offset)
+-				entry = swp_entry(si->type, offset);
+-		}
+-		put_swap_device(si);
++	/*
++	 * Try the local cluster first if it matches the device. If
++	 * not, try grab a new cluster and override local cluster.
++	 */
++	local_lock(&percpu_swap_cluster.lock);
++	pcp_si = this_cpu_read(percpu_swap_cluster.si[0]);
++	pcp_offset = this_cpu_read(percpu_swap_cluster.offset[0]);
++	if (pcp_si == si && pcp_offset) {
++		ci = swap_cluster_lock(si, pcp_offset);
++		if (cluster_is_usable(ci, 0))
++			offset = alloc_swap_scan_cluster(si, ci, NULL, pcp_offset);
++		else
++			swap_cluster_unlock(ci);
+ 	}
++	if (!offset)
++		offset = cluster_alloc_swap_entry(si, NULL);
++	local_unlock(&percpu_swap_cluster.lock);
++	if (offset)
++		entry = swp_entry(si->type, offset);
++
+ fail:
+ 	return entry;
+ }
+ 
+-/* Free a slot allocated by swap_alloc_hibernation_slot */
++/**
++ * swap_free_hibernation_slot() - Free a swap slot allocated for hibernation.
++ * @entry: swap entry to free.
++ *
++ * The caller must ensure the swap device is stable.
++ */
+ void swap_free_hibernation_slot(swp_entry_t entry)
+ {
+-	struct swap_info_struct *si;
++	struct swap_info_struct *si = __swap_entry_to_info(entry);
+ 	struct swap_cluster_info *ci;
+ 	pgoff_t offset = swp_offset(entry);
+ 
+-	si = get_swap_device(entry);
+-	if (WARN_ON(!si))
+-		return;
+-
+ 	ci = swap_cluster_lock(si, offset);
+ 	__swap_cluster_put_entry(ci, offset % SWAPFILE_CLUSTER);
+ 	__swap_cluster_free_entries(si, ci, offset % SWAPFILE_CLUSTER, 1);
+@@ -2135,7 +2140,6 @@ void swap_free_hibernation_slot(swp_entry_t entry)
+ 
+ 	/* In theory readahead might add it to the swap cache by accident */
+ 	__try_to_reclaim_swap(si, offset, TTRS_ANYWAY);
+-	put_swap_device(si);
+ }
+ 
+ static int __find_hibernation_swap_type(dev_t device, sector_t offset)
 -- 
 2.34.1
 
