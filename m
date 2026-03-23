@@ -1,125 +1,153 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0CE93BE626;
-	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA5F53B9D9F
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:08:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774281857; cv=none; b=J+nEZnY5jCQGINerQLbbKUL7MYP6tEGOcr9MzmNM4aBWHYaderqnMSLEMp/XWklwgOAfHD2F163BLO3z6sNkigJzrS2ePKkxNZAu1huqnVKxY3+2KltLIezcrOQ/LF8BCKATgLy14AplXFBZp4nv8qmzYiipia4YOLwfkYlIkEs=
+	t=1774282112; cv=none; b=pNPaQFkdHeWEZIvv1txn5xaoEQclXzicV/E6VWMN1ew7Oa81SNtJypznyrGev+5IBjcEEw2HIOlc+sk+efSu4RszNcEpYRIcnLLjHOj9mE/DnxHCUgEbL38U86+zRxCT7V0BVcZzXi5p6Q6TMI+ddvfNcEZlrXlI+erQqbinsOM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774281857; c=relaxed/simple;
-	bh=VHMopsrG6Xi22dXMAyiAPvlaIWJqNW9MggRaSuIfstI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cg8/HWQnnw8G6PfioTc70PNcSLu3xVRmb0JH6RCerve0/hVR5VlOrJmv/KgdISCIjLQ5WqFk5/IKsIZGM5xzwBCM7eHxmWtcKOyLiwq95luTPzkGhnTPK89K4Mvloy3ntB7NpmWgnHvf7krtQtv9Z7GGNO845Zkz4IZQ5YqNm5c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KrF8fe1X; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KrF8fe1X"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 877DEC2BCB4;
-	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774281856;
-	bh=VHMopsrG6Xi22dXMAyiAPvlaIWJqNW9MggRaSuIfstI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=KrF8fe1XsxH7ARV7e521gkWrr1ji9P12SsvtABaLHNEN3Wf4AZjCQHRyh+5xdsuIl
-	 31M2XmXgZGn2bZVVAekdjdtEF2H6Jacn40HS0MUbf3eNNQUblWPrNvS/kZwfRNTheL
-	 bpX6rlLMtN0MNvHj+/A7LbGml+MIyzEbyroD64QhU2KIbVxqnbdW1iR2/KGQbPjQhL
-	 xxK/PW1Gs06xcFT4N9MjkNV/NAhEDXr8fKG1INTN42hBWaLwbdNYj4B65foidd2wqo
-	 d7b6uOAQlHjz2MyeNFXQRnZJq3oW8Lyr4wwgkex+fWa5FvHmvMFtb+7EVUV0cz5Gdv
-	 HXh9DaWdbfygw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D5D5F483C1;
-	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
-From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
-Date: Mon, 23 Mar 2026 17:04:06 +0100
-Subject: [PATCH v3 1/2] dt-bindings: power: supply: gpio-charger: add
- support for fast-charge timer
+	s=arc-20240116; t=1774282112; c=relaxed/simple;
+	bh=58UDlEsUqIyv5uMucWLbnEYkU0DG7+LHUZEfQ2e6YoE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jDjss6HLudWiE3r2HrCbbcFQz2OOht/ednW8sZuBeXaAUFPZO7EeoYJ5JQx8UvuEzopHwy2dkUOclUsrSj9dCT4/6wjRj2I+q2PrJqZlYxu6HQjHo8Y4FLhI/HiWuoNnarQvjbVqov4L3hgfo7vhaHYQgFgUNYVvGmSmsee6bf0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
+	by 156.147.51.102 with ESMTP; 24 Mar 2026 01:08:24 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+From: Youngjun Park <youngjun.park@lge.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Li <chrisl@kernel.org>,
+	Kairui Song <kasong@tencent.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>,
+	Baoquan He <bhe@redhat.com>,
+	Barry Song <baohua@kernel.org>,
+	Youngjun Park <youngjun.park@lge.com>,
+	Usama Arif <usama.arif@linux.dev>,
+	linux-pm@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH v8 0/2] mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap device
+Date: Tue, 24 Mar 2026 01:08:20 +0900
+Message-Id: <20260323160822.1409904-1-youngjun.park@lge.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260323-gpio-charger-timer-v3-1-885796d681a5@liebherr.com>
-References: <20260323-gpio-charger-timer-v3-0-885796d681a5@liebherr.com>
-In-Reply-To: <20260323-gpio-charger-timer-v3-0-885796d681a5@liebherr.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
- Dimitri Fedrau <dima.fedrau@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774281855; l=1976;
- i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
- bh=qVR6Vlf2NNZxUIBX8M/euAC/Z+4KL1Wd23n+lTvvOvU=;
- b=qRmAOLjR6UzvKW8cPZJQ3T9OJVvl50z8wxEwmvMLqS2Dra+xb0jUNQ24eg3yq4GfoOvy9EuaO
- cTTFvIKcLkPB1A0Kp3mTsggf0o+4pM3FwQz8WGQ2qhpA1MEOXC22u8g
-X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
- pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
-X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
- with auth_id=290
-X-Original-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
-Reply-To: dimitri.fedrau@liebherr.com
+Content-Transfer-Encoding: 8bit
 
-From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
+Currently, in the uswsusp path, only the swap type value is retrieved at
+lookup time without holding a reference. If swapoff races after the type
+is acquired, subsequent slot allocations operate on a stale swap device.
 
-On some devices like TIs BQ24081 battery charger it is possible to activate
-or deactivate a fast-charge timer that provides a backup safety for charge
-termination via GPIO. In case of the BQ24081 it is a fixed 7-hour timer.
+Additionally, grabbing and releasing the swap device reference on every
+slot allocation is inefficient across the entire hibernation swap path.
 
-Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
----
- .../bindings/power/supply/gpio-charger.yaml        | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+This patch series addresses these issues:
+- Patch 1: Fixes the swapoff race in uswsusp by pinning the swap device
+  from the point it is looked up until the session completes.
+- Patch 2: Removes the overhead of per-slot reference counting in alloc/free
+  paths and cleans up the redundant SWP_WRITEOK check.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
-index 25826bfc289c1c00c338fd0cee2ae6932529cfc3..fefa09cb24ec2f501099f486c9a4eb77e64cda67 100644
---- a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
-@@ -16,7 +16,12 @@ description:
- 
- properties:
-   compatible:
--    const: gpio-charger
-+    oneOf:
-+      - const: gpio-charger
-+      - items:
-+          - enum:
-+              - ti,bq24081
-+          - const: gpio-charger
- 
-   charger-type:
-     enum:
-@@ -62,6 +67,10 @@ properties:
-     description: Default charge current limit. Must be listed in
-       charge-current-limit-mapping.
- 
-+  fast-charge-timer-gpios:
-+    maxItems: 1
-+    description: GPIO used for enabling/disabling the fast-charge timer
-+
- required:
-   - compatible
- 
-@@ -98,3 +107,14 @@ examples:
-                                      <0 0x02>; // 0 mA => GPIO A.11 high
-       charge-current-limit-default-microamp = <700000>;
-     };
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+
-+    charger {
-+      compatible = "ti,bq24081", "gpio-charger";
-+      charger-type = "battery";
-+      charge-status-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
-+      charge-current-limit-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
-+      charge-current-limit-mapping = <206000 0x1>, <0 0x0>;
-+      fast-charge-timer-gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
-+    };
+Rebased onto mm-new per Andrew's suggestion [1]. The si->flags race
+flagged by AI review in v7 (between SWP_HIBERNATION and cont_lock in
+add_swap_count_continuation) and the proposed fixes discussed there
+(atomic ops for si->flags, or serializing with swap_lock) are all moot
+on mm-new since Kairui's series removed that code path entirely.
+kernel/power/ changes are small, so Andrew proposed carrying everything
+through mm-new.
 
+Rafael, could you ack the PM-side changes?
+
+Re-tested on mm-new (c51ea78c5466) with hibernate/resume cycles and
+uswsusp paths. Also ran an additional round of AI review against the
+rebased version, no new issues found.
+
+[1] https://lore.kernel.org/linux-mm/20260322093038.25a7fd51f5d564b85815db7a@linux-foundation.org/
+
+Links:
+RFC v1: https://lore.kernel.org/linux-mm/20260305202413.1888499-1-usama.arif@linux.dev/T/#m3693d45180f14f441b6951984f4b4bfd90ec0c9d
+RFC v2: https://lore.kernel.org/linux-mm/20260306024608.1720991-1-youngjun.park@lge.com/
+RFC v3: https://lore.kernel.org/linux-mm/20260312112511.3596781-1-youngjun.park@lge.com/
+v4: https://lore.kernel.org/linux-mm/abv+rjgyArqZ2uym@yjaykim-PowerEdge-T330/T/#m924fa3e58d0f0da488300653163ee8db7e870e4a
+v5: https://lore.kernel.org/linux-mm/ab0YEn+Fd41q6LM7@yjaykim-PowerEdge-T330/T/#m8409d470c68cb152b0849940759bff7d7806f397
+v6: https://lore.kernel.org/linux-mm/20260320182227.896f9ab62d62961b2caab5f7@linux-foundation.org/T/#m10ee3346cd8dcd052749105d9a8e2052dbf3bc80
+v7: https://lore.kernel.org/linux-mm/ab/20260321103309.439265-1-youngjun.park@lge.com/
+
+Testing:
+- Hibernate/resume via sysfs
+  (echo reboot > /sys/power/disk && echo disk > /sys/power/state)
+- Hibernate with suspend via sysfs
+  (echo suspend > /sys/power/disk && echo disk > /sys/power/state)
+- Hibernate/resume via uswsusp (suspend-utils s2disk/resume on QEMU)
+  - Verified swap I/O works correctly after resume.
+  - Verified swapoff succeeds after snapshot resume completes.
+- swapoff during active uswsusp session:
+  - Verified swapoff returns -EBUSY while swap device is pinned (Patch 1).
+  - Verified swapoff succeeds after uswsusp process terminates.
+
+Changelog:
+v7 -> v8:
+ - Rebased onto mm-new per Andrew Morton's suggestion.
+ - Clarified function comments (SWP_HIBERNATION pinning).
+ - Re-tested and AI-reviewed on mm-new; no new issues found.
+
+v6 -> v7:
+ - Dropped Patch 3 (pm_restore_gfp_mask fix) from series as it has
+   no dependency on Patches 1-2. Will be sent separately.
+   (Rafael J. Wysocki feedback)
+
+v5 -> v6:
+ - Replaced get/put reference approach with SWP_HIBERNATION
+   pinning to prevent swapoff, per Kairui's feedback.  Renamed helpers
+   from get/find/put_hibernation_swap_type() to
+   pin/find/unpin_hibernation_swap_type().
+ - Renamed swap_type_of() to __find_hibernation_swap_type() since
+   it is now an internal helper with no external callers.
+ - Removed swapoff waiting on hibernation reference.
+   swapoff now returns -EBUSY immediately when the swap device is
+   pinned.
+ - Updated function comments per Kairui's review.
+
+v4 -> v5:
+ - Rebased onto v7.0-rc4 (Rafael J. Wysocki comment)
+ - No functional changes.
+
+rfc v3 -> v4:
+ - Introduced get/find/put_hibernation_swap_type() helpers per Kairui's
+   feedback.
+ - Switched to swap_type_to_info() and added type < 0 check.
+ - Fixed get_hibernation_swap_type() return when ref == false.
+ - Made swapoff wait interruptible to prevent hang when uswsusp
+   holds a swap reference.
+
+rfc v2 -> rfc v3:
+ - Split into 2 patches per Chris Li's feedback.
+ - Simplified by not holding reference in normal hibernation path.
+ - Removed redundant SWP_WRITEOK check.
+
+rfc v1 -> rfc v2:
+ - Squashed into single patch per Usama Arif's feedback.
+
+Youngjun Park (2):
+  mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap
+    device
+  mm/swap: remove redundant swap device reference in alloc/free
+
+ include/linux/swap.h |   5 +-
+ kernel/power/swap.c  |   2 +-
+ kernel/power/user.c  |  15 +++-
+ mm/swapfile.c        | 203 +++++++++++++++++++++++++++++++++----------
+ 4 files changed, 172 insertions(+), 53 deletions(-)
+
+base-commit: c51ea78c5466be89914cbfbe2618dea67026c2b1
 -- 
-2.39.5
-
+2.34.1
 
