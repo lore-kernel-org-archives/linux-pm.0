@@ -1,246 +1,213 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D72A3BF691
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:41:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.51
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774284093; cv=pass; b=qiBpitJpWxgEgipXuQAKufRlj5EsKkWYCiPZjGN07fEJWVYMna075X82H5ZTY9HuT3C5GmOXC1S1LIXuL6Yr1DyHs6sPFsUqZA8SgA+18G3RHy52Kqn9X+mDlHeJEimKjX9QO6VVyrAxzpp6uP4XGoNYsVWeOptI2OFEeEPSb/o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774284093; c=relaxed/simple;
-	bh=qfm+jxRDid/tXrKxPwqn57nuEjBnj1DDrZrU+wNae2E=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=W+aWDm9D1IPvXKN7wQSHY6JjTpn8NOVlIoLuydU6w4IU1z+SIPVbiKkkl45xJkdjoqS3hGklt1cHXatSNRDh7hP1tuDJDVWvV9h7PZW9tVR/WRn6Yzxtxpk3JtruljAUAH9O453FZKB6qbCUjKLZKln0Dl4xpaxsnVLR3dK5x5Q=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AQw/Tj+l; arc=pass smtp.client-ip=209.85.218.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA20C3C198E
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:45:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774284323; cv=none; b=Y9ihTqSfAmRbRVMn9IikGonw39kmc0Ovqltaqbok8bbFtoVhuVY3PAChjipVLpeWXGlO4IbNa2ILZo8ykVNZYwJ4otZA0nIQ/JdMHknfv7bcQu5B9U45iEKcQShaEQlCrAl69HkLDvx6m6P2pjhk/Dw8jM0Y9MZSraKdygJqsVI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774284323; c=relaxed/simple;
+	bh=0AXgh7r8UHMnA9Zqa/LXkVlVLU4WWT6w2XAUUJqorWk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MSegrFJH1YBSnhRy+VN25lDhwKmubqI01Pq0V9ZFtlOtQgA5C1E3Ds0DPxsNtV0miYLuovqGp5gcPGS1vzMFqkv1lgJhDcMOGVb8CfaF4Tp7+iPGBFXKTwe2yoe5lYhNVzIp7wiKd6qGuulw6ABGZWB8uewvpGA2OITbfc7rYS0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kXANH8GV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=HSqn8Z2B; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AQw/Tj+l"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-b7cf4a975d2so52912666b.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:41:31 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774284090; cv=none;
-        d=google.com; s=arc-20240605;
-        b=dpj+vFEV06AdDZLJksvcBKvasMogxl/AzgL0YqA3Pk4RsSLfcLo/n9i6zKOX3mqV7X
-         S6NCUi1T5DmvfTMDKPYq5SKifj7lJvebGwFgOn5+e8Q1Rdk8v+e/ntPXE//9xM3SUhPY
-         0enG0J4qsOnsa0srCau+cSnQ+HGFuIueLlScQb43iIYASAi2dNASdfgdR5ZA2ARkOS09
-         hho/SvetZadMX+208kHG1u0kVWbXbYgA4MxDo1m/0o0TmC6SipCQiRAK5/ng/6UZI8ub
-         0UgDSKKlsRxe3VTO2phxOwbqpbpXBP6buUvcfYxpo4ZZ8VJrczNDIVUMu9FISIMpT8EV
-         7+jw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=vmCa6NJatdq+42qe8sVhhvk4aoBatMqzy8mT5DZOBUc=;
-        fh=EhBl/g+lCM1wwvHvkEHQNGx0PC9y+shN9lxN/eqUO60=;
-        b=Ta+s1FDn8BnlvVNIzIJT49Ng0IyJjQLjwZ5/ce7KsHYMDTRh2GRXD9JEtFDr1Q4vgs
-         5IYxMdOPKya31wUqMQUcLwxAFELGj6fsqsThVkb0WQhu+L9ZkS1M737SI4kw8eJjljto
-         dTY8MZyGM/U1uDefE3QR6z7cqvAqPS0D15dkVmnZ++bb5jsdhLLwdo6KHTKEBXIbNS1n
-         dMENm+uzy3HS6EWfDBezEJPR7CLtZU9aOQL5fvgKA1T4RWqtezxquabYVNLbWJ7RSDtI
-         4nIW6bpszDRHQuBJ5AzT2h2empexPYghKIGJpCUVrZrndMFWSnqAeWW4bw3ukcSD0iMb
-         4uBg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kXANH8GV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="HSqn8Z2B"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62NFGW4H3475735
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:45:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Kj+XAZN1TFt3Nwfgt300eR0N4IQOJ3Hc9ynUXTnwTp0=; b=kXANH8GVsr8XcV38
+	dzEshEDfmAP+C2peT7j1blXg1V7Oao0GFS6owsA1AyuZs/SjUOiO19Y/tPnMwww7
+	6l7g8LhdE2p2qfNtKyJyKPx4G2XwgwI2tuGL0kwi0vDvl0hTwzcSJgH9WwaeNRiB
+	41jb3Xit3KmDv01llheLFRbNNzwtieZGlSsCqaOKhbEyw81L2qTwBh3KwIuM9t8F
+	MyzdLmeE2pIJ8jIyq6QLMt2Vb7OtgazJG0kCKSVLpCstvJZ2e8a2FWjaehBVwIFx
+	Fqsk/NKMd5J53d8nHXySy7yPNGBbleuex4CUfdKlp8X69aFdpupVV2iQd2VbaHzi
+	RGwBBg==
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d355w103q-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:45:20 +0000 (GMT)
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-509044f54aaso14304831cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:45:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774284090; x=1774888890; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vmCa6NJatdq+42qe8sVhhvk4aoBatMqzy8mT5DZOBUc=;
-        b=AQw/Tj+lI1htlIyduQK+LigMZe4ERziEeLn9lfuqmPjqbBpqoeZRLKp4k1oAAvbfwY
-         vHjjcuo48HwT0/yCLIP/DM2xX8DfnBxfd24mR+HqP88YTe4n3uj9SkaHV2YKOejJz3Y5
-         olgr6ZYJqiVHo9Y3fSwDb/cE9O60ZexePMb4qPWGnKphqQqnHUuchODbk5TEFJfugPJL
-         OwboUfm0V38awswDw1iSbJZv+S4YeJJgiYXuhEH7E4M58WtUxYyWS9gI7ZDGWRgp0Wcl
-         7uq9ChgUTp5SPI52gxLQxHooBcJj8toMw8+Yhtw07Mbl+xd5wfVzvj3fhhZicjXDUuSn
-         ww0Q==
+        d=oss.qualcomm.com; s=google; t=1774284320; x=1774889120; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Kj+XAZN1TFt3Nwfgt300eR0N4IQOJ3Hc9ynUXTnwTp0=;
+        b=HSqn8Z2BAg/zQRJ6O0AYQV20QJFZjpEAUw8dEU1x668N2oMY5WWfFDqRZ1ZMtdY5Pg
+         vGf9/AdkrGa3uT20/0vWIua4WoVGq5kvYC2KjXeXr3n5Eu4BfBYHg3vcQoGJ8XvF9dl3
+         JOrwqLyyx4be1VLNA9+zzKRZzbu1WRkP3iwYQ1ukWQSU191rgzGT/HJt5jwY4YBZqfkF
+         JAZgB7g3hEvs8KX/p/JudafHC5uo0FF/Pi5nrpiRUV73g62Q8jddpgxIwk2faxNH55eF
+         +aKMWkOp1pQ0GvUd4ExXWU3WEJs2sZDGVZLnHv7eGyZAlbQI1l+rBXrm+CLHZ/dzCr2p
+         XilA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774284090; x=1774888890;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=vmCa6NJatdq+42qe8sVhhvk4aoBatMqzy8mT5DZOBUc=;
-        b=Q58VIUf35Cysb3zXgsDNmbNWzalpYMdPeZSUpipQTXEawY1++kNixSYQeZV8FkdF0H
-         ZpWkfm+8Ndpa3q3A2N9yVJ8ckCxajCFCbAOJcN28Mwi+bV18qYMbjXuUCcn/nvK/mzYX
-         2YKm+rim8CQKZuC/0vvfoefrk0bvpvjcqyGXkonsZSEHXwmQDtHCuhdOeLp5Dg5jNcD9
-         wFfILNbIhmGdO2wudzN4jIGtsb+RQWX4s4+TUjthSOFhGsjtVD2rIDpK3C27jOpqEHs2
-         ZjsZkG1rwC5l28mcxV+KCaUPE8DzkBmpseUov1xcXsrAsI9+STpMOzV5iw3x6RCttMHw
-         vUdg==
-X-Forwarded-Encrypted: i=1; AJvYcCVmewh3D8WhlybKvEvGGsGhIBgLhVLUcspNhPCqOdvIOH6GiNvzdSRhQruv1BHFKkh0OhIT7xRDtg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzAiZpu4KzR72NGujL9rkOQ3sfR5QAGaOJtSr8hpb1JWXeylx5C
-	XFs9/n2D2uFm7II48K/iQRomITzMN9ncU5F05s8O/LaUJHEUC7CCQqw4NBLaYQ2pDhR3ADATadM
-	mt/ZFHKGgehFo5EnJrBXMACbclodQ7fs=
-X-Gm-Gg: ATEYQzwIE/vP/y9CjZJWgqEwfeJPVJkfbA7Q13IecbTNBOtzCID7MX+pR8J0jX1LzIp
-	Y3HFxEjJU2lJO1Jb3ftdj1Ucy3frMmmwe9OU/pKqoWRG/yfDt5Xr5LFch/aGL/3X9SmhkL7V0Nk
-	kRlPQM4audIgr2hISXd60UXTQxcM1yU7YjUDqz/IsASp6nDp92T1fsD3u3ae+PZu7iJ8LbJsL79
-	ViRqeRI/zU+Z7Q1UHsawn9cHBXifSJdbVOO85eR7FS3l/a0mK2z/7WyBNueumwFznd5eUritWEh
-	Dk8qRlkK0+6FpsrbjBa4IIimO2XA4ai/tqNWbaJO
-X-Received: by 2002:a17:906:c398:b0:b97:1009:7536 with SMTP id
- a640c23a62f3a-b982f286a8fmr671723566b.15.1774284089391; Mon, 23 Mar 2026
- 09:41:29 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774284320; x=1774889120;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Kj+XAZN1TFt3Nwfgt300eR0N4IQOJ3Hc9ynUXTnwTp0=;
+        b=c/4wxp7BkZsG9v+/rwLEQHrgLolNQC150i8yrOuNTHFbrbwV+diDqClp8KYgcOFglS
+         AJY3W1AhERKCHoUM0X/aKdBxDeDwehwa2pw7Sgs24ohn6EuwxFHDSpu9VzTfC223ZL3x
+         jI0Ia1sn9uo4g8nCdDEbbfNlgfPFHPfPfbqHQ+ab4KUP4k0wGNb8shvFk4OPCua/l5eh
+         X2lnDVQn6pj76JnWtiucHnFAS2my8mcozix2qX5YW8TsTZmtbR2ts1AsTcHUJe7+eqeY
+         eZXLWDgzqMTT27IbyWS/QqLuYp34vAMATkmYTZQVn4a37oAMXcexCYXtgh7/6HNRbvbs
+         yghA==
+X-Forwarded-Encrypted: i=1; AJvYcCX2cCAUGND0XEjA6mULKd09llTUv/t88Cdz39+3ZbildfttTaaNNF6gz8wYzSj8Whnwi4VzfDjm8w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzb8qjq8yTQHHjpURxzS3OUnsCWaclOkYPybq1XkNeJhDUZVKC2
+	G+JLP/Wo1gU+oAMpgLv0Bs1NPer9XLbMGt6/QNJzhEYO53XQqejz8ecf7F9Hqci46Y7C9gs69yx
+	1IKzZl0umAWwEHdgHw8MSEFwWp3aPeRaVWZKQ8w7DkEzrhWjT4d2oUIf63II4zg==
+X-Gm-Gg: ATEYQzxSD+FxqNxbRZLvM6MbeqxL/ZqUytdBDQNmKmFiRiZUbZs7AtepoZJy+DUGwNQ
+	pAZ+1+SCwet5ASus9eDzYA+teXNa+L1m+gctyZSvat3smRjvbfljYla/N7W50SSt79cblcvU/Ra
+	YLMisYnNtgnwzuu/VJcYmUF3L1FxP8n7fwzwhBmitix/Kh2i0wzZtx8EeQltHSg8LYWEewKVy+U
+	jRKPQA1c5L2LhB6wLb9UahSnGBkw9Pha7YtOVmnIPyqJmVo/fE/b4ZGKmjPMVoYeucEouz+CWbl
+	n3mmfS242+Cl8k6X679WGR1AMVfN3UurT0+tuqP0ua5sGBe1vTJB+O1bWiTC1fJJQF4K5Xd0E1Z
+	/KBLeO1/1iDqV26HZ9OSw20FaM66kZOMui4MRALpocLAGp2dYoFK+H85URKtmE7F5pp8RrcMMon
+	Ti59gsoB9ZR6FSU2T8gPzcdk5ArL//YtFEZuw=
+X-Received: by 2002:a05:622a:4e93:b0:509:2822:670d with SMTP id d75a77b69052e-50b373eaec2mr187522001cf.27.1774284320055;
+        Mon, 23 Mar 2026 09:45:20 -0700 (PDT)
+X-Received: by 2002:a05:622a:4e93:b0:509:2822:670d with SMTP id d75a77b69052e-50b373eaec2mr187520941cf.27.1774284319458;
+        Mon, 23 Mar 2026 09:45:19 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a285207500sm2667386e87.41.2026.03.23.09.45.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Mar 2026 09:45:17 -0700 (PDT)
+Date: Mon, 23 Mar 2026 18:45:15 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: Rob Herring <robh@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nicolas Schier <nicolas.schier@linux.dev>,
+        Hans de Goede <hansg@kernel.org>,
+        Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+        Mark Pearson <mpearson-lenovo@squebb.ca>,
+        "Derek J. Clark" <derekjohn.clark@gmail.com>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Marcel Holtmann <marcel@holtmann.org>,
+        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
+        Stephan Gerhold <stephan.gerhold@linaro.org>,
+        linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA
+ soldered down connector
+Message-ID: <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+References: <20260317-pci-m2-e-v6-0-9c898f108d3d@oss.qualcomm.com>
+ <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
+ <20260322233713.GA98177-robh@kernel.org>
+ <to2mrizprc3hjufqbiplpqyek7f4uutqtn4hx4gkmdgv2rykbc@ybwwjhdec4nm>
+ <CAL_JsqJXrHCJt770bJkMmAUhirSF3kHjYwSzkG7cXp7-eys8Rg@mail.gmail.com>
+ <6aef3xxjjd4nbgrfx6jc6jt6rpqmttoui6hil5zqgdpas2j6gj@ie6j72orenou>
+ <fsvmmgoe5wslmxebhrrwmdg2ldcmhzvj53gjkdfnfg2m2rz2lw@dcfboaakz7ae>
+ <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320192735.748051-1-nphamcs@gmail.com> <CAMgjq7AiUr_Ntj51qoqvV+=XbEATjr7S4MH+rgD32T5pHfF7mg@mail.gmail.com>
- <CAKEwX=PBjMVfMvKkNfqbgiw7o10NFyZBSB62ODzsqogv-WDYKQ@mail.gmail.com>
-In-Reply-To: <CAKEwX=PBjMVfMvKkNfqbgiw7o10NFyZBSB62ODzsqogv-WDYKQ@mail.gmail.com>
-From: Kairui Song <ryncsn@gmail.com>
-Date: Tue, 24 Mar 2026 00:40:52 +0800
-X-Gm-Features: AQROBzD1kpskNn11W5HqnEfFhEQur5XfLuCkDmtbLopJRo-HyQHAInVqxx1Q2Xw
-Message-ID: <CAMgjq7AzySv801qDxfc8mEkEsFDv4P=_qw0rNOTe0n+qy7Fz6A@mail.gmail.com>
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-To: Nhat Pham <nphamcs@gmail.com>
-Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
-	axelrasmussen@google.com, baohua@kernel.org, baolin.wang@linux.alibaba.com, 
-	bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
-	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
-	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
-	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, 
-	lenb@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-mm@kvack.org, linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, 
-	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev, 
-	npache@redhat.com, pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, 
-	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
-	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
-	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
-	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
-	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
-	riel@surriel.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
+X-Authority-Analysis: v=2.4 cv=fq7RpV4f c=1 sm=1 tr=0 ts=69c16e20 cx=c_pps
+ a=WeENfcodrlLV9YRTxbY/uA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8
+ a=dFseMu0FTdCp80lU-T0A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=kacYvNCVWA4VmyqE58fU:22
+X-Proofpoint-ORIG-GUID: WGROXpStTs5dFwCJf_LcxMLEnV7obMJO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDEyNCBTYWx0ZWRfX3bJt4iPRbDnt
+ DRucLyIGpa4y6HRV+F3O3h7j07AEZaFmvSSbgwy5r/yTxspv1qlA2B8r4CpOhyAfPcxb37nOgrs
+ KHJc+R1Akh8/8DEkmtbY1PwtTqJ5EvuP0dEBM02yqf5DXshUK5D72015Epgm9KRD5sxmLkMft9Z
+ R9sDueDtNKjkho6/bZyycGoxEoOJe3qAqohrH3i5j6/dOvGkVUcY6epP8OyIHfMxIOqfgs/+IIU
+ LBQcPZD3xgHm9+q4r+7eGXYohw6vio+Km5XOXkMYZdDCfqWO9TPN+4khcgxI27xsQCB9zO6GtQx
+ X2dMDNkUOa6SrlMagQYqt52MILACeuPN8XQFEMS4cFsjhFU7tFB47M+i876v/cqbeMQWtPwV43f
+ 6j5dw+ZrMvQEr0MqBvKsNq0puOLSEZFCnNESQTiUmWWCNVYHWEduvfVActya+r09WJPDi4eZ/D5
+ ESHjGmTUxLqy8y/uO2w==
+X-Proofpoint-GUID: WGROXpStTs5dFwCJf_LcxMLEnV7obMJO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-23_04,2026-03-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 spamscore=0 adultscore=0 clxscore=1015 impostorscore=0
+ lowpriorityscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603230124
 
-On Mon, Mar 23, 2026 at 11:33=E2=80=AFPM Nhat Pham <nphamcs@gmail.com> wrot=
-e:
->
-> On Mon, Mar 23, 2026 at 6:09=E2=80=AFAM Kairui Song <ryncsn@gmail.com> wr=
-ote:
-> >
-> > On Sat, Mar 21, 2026 at 3:29=E2=80=AFAM Nhat Pham <nphamcs@gmail.com> w=
-rote:
-> > > This patch series is based on 6.19. There are a couple more
-> > > swap-related changes in mainline that I would need to coordinate
-> > > with, but I still want to send this out as an update for the
-> > > regressions reported by Kairui Song in [15]. It's probably easier
-> > > to just build this thing rather than dig through that series of
-> > > emails to get the fix patch :)
-> > >
-> > > Changelog:
-> > > * v4 -> v5:
-> > >     * Fix a deadlock in memcg1_swapout (reported by syzbot [16]).
-> > >     * Replace VM_WARN_ON(!spin_is_locked()) with lockdep_assert_held(=
-),
-> > >       and use guard(rcu) in vswap_cpu_dead
-> > >       (reported by Peter Zijlstra [17]).
-> > > * v3 -> v4:
-> > >     * Fix poor swap free batching behavior to alleviate a regression
-> > >       (reported by Kairui Song).
-> >
->
-> Hi Kairui! Thanks a lot for the testing big boss :) I will focus on
-> the regression in this patch series - we can talk more about
-> directions in another thread :)
+On Mon, Mar 23, 2026 at 09:26:04PM +0530, Manivannan Sadhasivam wrote:
+> On Mon, Mar 23, 2026 at 05:14:30PM +0200, Dmitry Baryshkov wrote:
+> > On Mon, Mar 23, 2026 at 07:14:25PM +0530, Manivannan Sadhasivam wrote:
+> > > On Mon, Mar 23, 2026 at 08:39:55AM -0500, Rob Herring wrote:
+> > > > On Mon, Mar 23, 2026 at 7:16 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> > > > >
+> > > > > On Sun, Mar 22, 2026 at 06:37:13PM -0500, Rob Herring wrote:
+> > > > > > On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadhasivam wrote:
+> > > > > > > Lenovo Thinkpad T14s is found to have a soldered down version of M.2 1620
+> > > > > > > LGA connector. Though, there is no 1620 LGA form factor defined in the M.2
+> > > > > > > spec, it looks very similar to the M.2 Key E connector. So add the
+> > > > > > > "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e-connector" fallback
+> > > > > > > to reuse the Key E binding.
+> > > > > >
+> > > > > > What is LGA?
+> > > > > >
+> > > > >
+> > > > > Land Grid Array
+> > > > >
+> > > > > > If not in the spec, is it really something generic?
+> > > > > >
+> > > > >
+> > > > > Good question. Yes and No! LGA is not something that Lenovo only uses. Other
+> > > > > vendors may also use this form factor. PCIe connectors are full of innovation as
+> > > > > the spec gives room for hardware designers to be as innovative as possible to
+> > > > > save the BOM cost.
+> > > > 
+> > > > innovation == incompatible changes
+> > > > 
+> > > 
+> > > Yes, I was trying to sound nice :)
+> > > 
+> > > > > This is why I do not want to make it Lenovo specific. But if you prefer that, I
+> > > > > can name it as "lenovo,pcie-m2-1620-lga-connector".
+> > > > 
+> > > > Depends if you think that s/w needs to know the differences. Hard to
+> > > > say with a sample size of 1.
+> > > > 
+> > > 
+> > > Sure. Will add the 'lenovo' prefix then.
+> > 
+> > Is it really Lenovo? Or is it some other module vendor, whose LGAs are
+> > being used by Lenovo?
+> > 
+> > I remember that DB820c also used some kind of a module for the WiFi card
+> > (which might be M.2 compatible or might not, I can't find exact docs at
+> > this point).
+> > 
+> 
+> I don't know. These kind of designs might be reused by several vendors. But
+> considering that we should not make it generic, I'd go with Lenovo as that's
+> the only vendor we know as of now.
 
-Hi Nhat,
+... and later we learn that other vendors use the same idea /pinout,
+then nothing stops us from still telling that it's a
+"lenovo,pcie-m2-something-lga". 
 
-> Interesting. Normally "lots of zero-filled page" is a very beneficial
-> case for vswap. You don't need a swapfile, or any zram/zswap metadata
-> overhead - it's a native swap backend. If production workload has this
-> many zero-filled pages, I think the numbers of vswap would be much
-> less alarming - perhaps even matching memory overhead because you
-> don't need to maintain a zram entry metadata (it's at least 2 words
-> per zram entry right?), while there's no reverse map overhead induced
-> (so it's 24 bytes on both side), and no need to do zram-side locking
-> :)
->
-> So I was surprised to see that it's not working out very well here. I
-> checked the implementation of memhog - let me know if this is wrong
-> place to look:
->
-> https://man7.org/linux/man-pages/man8/memhog.8.html
-> https://github.com/numactl/numactl/blob/master/memhog.c#L52
->
-> I think this is what happened here: memhog was populating the memory
-> 0xff, which triggers the full overhead of a swapfile-backed swap entry
-> because even though it's "same-filled" it's not zero-filled! I was
-> following Usama's observation - "less than 1% of the same-filled pages
-> were non-zero" - and so I only handled the zero-filled case here:
->
-> https://lore.kernel.org/all/20240530102126.357438-1-usamaarif642@gmail.co=
-m/
->
-> This sounds a bit artificial IMHO - as Usama pointed out above, I
-> think most samefilled pages are zero pages, in real production
-> workloads. However, if you think there are real use cases with a lot
-
-I vaguely remember some workloads like Java or some JS engine
-initialize their heap with fixed value, same fill might not be that
-common but not a rare thing, it strongly depends on the workload.
-
-> of non-zero samefilled pages, please let me know I can fix this real
-> quick. We can support this in vswap with zero extra metadata overhead
-> - change the VSWAP_ZERO swap entry type to VSWAP_SAME_FILLED, then use
-> the backend field to store that value. I can send you a patch if
-> you're interested.
-
-Actually I don't think that's the main problem. For example, I just
-wrote a few lines C bench program to zerofill ~50G of memory
-and swapout sequentially:
-
-Before:
-Swapout: 4415467us
-Swapin: 49573297us
-
-After:
-Swapout: 4955874us
-Swapin: 56223658us
-
-And vmstat:
-cat /proc/vmstat | grep zero
-thp_zero_page_alloc 0
-thp_zero_page_alloc_failed 0
-swpin_zero 12239329
-swpout_zero 21516634
-
-There are all zero filled pages, but still slower. And what's more, a
-more critical issue, I just found the cgroup and global swap usage
-accounting are both somehow broken for zero page swap,
-maybe because you skipped some allocation? Users can
-no longer see how many pages are swapped out. I don't think you can
-break that, that's one major reason why we use a zero entry instead of
-mapping to a zero readonly page. If that is acceptable, we can have
-a very nice optimization right away with current swap.
-
-That's still just an example. bypassing the accounting and still
-slower is not a good sign. We should focus on the generic
-performance and design.
-
-Yet this is just another new found issue, there are many other parts
-like the folio swap allocation may still occur even if a lower device
-can no longer accept more whole folios, which I'm currently
-unsure how it will affect swap.
-
-> 1. Regarding pmem backend - I'm not sure if I can get my hands on one
-> of these, but if you think SSD has the same characteristics maybe I
-> can give that a try? The problem with SSD is for some reason variance
-> tends to be pretty high, between iterations yes, but especially across
-> reboots. Or maybe zram?
-
-Yeah, ZRAM has a very similar number for some cases, but storage is
-getting faster and faster and swap occurs through high speed networks
-too. We definitely shouldn't ignore that.
-
-> 2. What about the other numbers below? Are they also on pmem? FTR I
-> was running most of my benchmarks on zswap, except for one kernel
-> build benchmark on SSD.
->
-> 3. Any other backends and setup you're interested in?
->
-> BTW, sounds like you have a great benchmark suite - is it open source
-> somewhere? If not, can you share it with us :) Vswap aside, I think
-> this would be a good suite to run all swap related changes for every
-> swap contributor.
-
-I can try to post that somewhere, really nothing fancy just some
-wrapper to make use of systemd for reboot and auto test. But all test
-steps I mentioned before are already posted and publically available.
+-- 
+With best wishes
+Dmitry
