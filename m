@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 844A33C9ED1;
-	Mon, 23 Mar 2026 17:44:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12FB53BD638;
+	Mon, 23 Mar 2026 17:52:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774287892; cv=none; b=u5jTreEZW/M/chc6oCxcD10J/FW9nSMCM9kqSk/LnRrbl8cFNYt1owPSob65qRcTlv1sMPAidAuTnyxvDiPtOFdZV8vMZVA4aXk74EuGozEM0Cpf1jk6ryzpoEbD8zzg71xm8fuj68ALBzGild9b6FY4w1I2OGCDFwLfa42xkmE=
+	t=1774288321; cv=none; b=KYp3tW+nKsi6gMIMCy0GwBk9KkQinG+PYea3fxDjXpCrBlZTj/k6o77USTCHGGm2+BF+0BvtZ91ipeQcTBF+EYhdWwezACa66Lp7Qvi/vftbr0fH4jKHb948MCY+RW5GiTkqX4NcoVsgKy9sasQB1GTkVBiwfh+vywge4NosDgw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774287892; c=relaxed/simple;
-	bh=u/Khsl17x6Xmd5n0KKQ+7kJjdPlgeFr5Ltj5SWPXjok=;
+	s=arc-20240116; t=1774288321; c=relaxed/simple;
+	bh=5hK0lEzqKpD6B7ugeP6Y6wm+od5B652rwYVrsebBxYw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DeCSBU/Qlqz5n041KpLv+U49ngysm9eM4BRXM34T/3/WqSB4o25gtpShtYPTx3xSdPfRgVYpuyJKvZCc+MZ/qCbWQqS6eaLLOkBvYsUFaTHEsntrysFLCbccUhUoQVQOtNg8TqQwLZbdF8MP3COpag2cNSTuT3xIwpcD4O5/328=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QS+RqqJp; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=OBUF78iMihNaiYUyo61jKQAJmbjbOOfFLHlB0agmWuOhO9NkXlbdgxUrlOBjX/ub161iC+YJYFfdE2ZFJQuKo8LOWh7X28JNTGb9fbmXPaX7IkgtIPskvz4b70+E1Sc6gGFbTRtKqvNzqGwxnUMIo3oaSsPeco/gUMbJXWhfGQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hRTaRylF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QS+RqqJp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B7C1C4CEF7;
-	Mon, 23 Mar 2026 17:44:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hRTaRylF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D040BC4CEF7;
+	Mon, 23 Mar 2026 17:51:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774287892;
-	bh=u/Khsl17x6Xmd5n0KKQ+7kJjdPlgeFr5Ltj5SWPXjok=;
+	s=k20201202; t=1774288320;
+	bh=5hK0lEzqKpD6B7ugeP6Y6wm+od5B652rwYVrsebBxYw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=QS+RqqJp4xFBciwjIpM8IvOrkwSEkDs/o/d0JaHh1Zu2Ht7JZeqvqawy+CpTT0ETA
-	 oVPRtWyov7cBBH7RkabLeSHcwZoMSVe6xjGQ/uXZC6deBrAaksnEQGDqPDUjEL5FE1
-	 lT6DK0zBbh9fQvIKuUqR1oEjor8vCZyM2e4+KsdeIoP+rv5dOej6uBljW2d9yUV+7t
-	 +H6JjU4tavbT5GlVpYm2P1fBIyhO6J7qK8A3SYn3bepGyWPu1IdEMCjr3drKq7oKEN
-	 pQZheTC5Or9j0dY4jAg35xY1QBb042TYWEw9+b5H3Qy6GP7i2kyU2ABR1kq4I+AXk3
-	 GKfkufUC224mQ==
-Message-ID: <7b785e34-4d49-48d2-b438-afa1def3ec0f@kernel.org>
-Date: Mon, 23 Mar 2026 18:44:28 +0100
+	b=hRTaRylFaKiULg4U5aE4ktkU7BRuQLdv1usSIlvOyM3oyxczdRVbPv+Pr3eENuc0B
+	 eNT73uQH0QPu3oY+IbPuS1dvOyK2mZihmZ0UpnDjsoN8FJqzyWvG2A0tXjGZiG317m
+	 tbP8sYYAGc0NkxOd7poaHGmvnhf8U6+WFBQ85I1eRmcmFu4ftMRKHaF8L7SIv5/s8c
+	 ZF/oYLz912UjohFG0YBksMiYmu4/SHJUsawsDt9nBkWWWBO4KkprZa8ALqadxd81RG
+	 BgvMsAmxJ9MvZD3XqCHx4Uwwxf7Zu0a7PHi6AjCOgSDlC4eZ5n/FpnMXZI9VnY0H39
+	 pINsESfKgcnZg==
+Message-ID: <54f9b5a7-b8a9-486a-9c12-a910f5287947@kernel.org>
+Date: Mon, 23 Mar 2026 18:51:29 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v11 01/16] set_memory: set_direct_map_* to take address
+Subject: Re: [PATCH v11 02/16] set_memory: add folio_{zap,restore}_direct_map
+ helpers
 To: "Kalyazin, Nikita" <kalyazin@amazon.co.uk>,
  "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
@@ -131,7 +132,7 @@ Cc: "pbonzini@redhat.com" <pbonzini@redhat.com>,
  "Itazuri, Takahiro" <itazur@amazon.co.uk>,
  "Manwaring, Derek" <derekmn@amazon.com>
 References: <20260317141031.514-1-kalyazin@amazon.com>
- <20260317141031.514-2-kalyazin@amazon.com>
+ <20260317141031.514-3-kalyazin@amazon.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -178,28 +179,116 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260317141031.514-2-kalyazin@amazon.com>
+In-Reply-To: <20260317141031.514-3-kalyazin@amazon.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/17/26 15:10, Kalyazin, Nikita wrote:
 > From: Nikita Kalyazin <kalyazin@amazon.com>
 > 
-
-Just a nit while reading over it once more: restate what the patch
-subject says.
-
-Like "Let's convert set_direct_map_*() to take an address instead of a
-page to prepare for adding helpers that operate on folios; it will be
-more efficient to convert from a folio directly to an address without
-going through a page first."
-
-> This is to avoid excessive conversions folio->page->address when adding
-> helpers on top of set_direct_map_valid_noflush() in the next patch.
+> Let's provide folio_{zap,restore}_direct_map helpers as preparation for
+> supporting removal of the direct map for guest_memfd folios.
+> In folio_zap_direct_map(), flush TLB to make sure the data is not
+> accessible.
 > 
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+> The new helpers need to be accessible to KVM on architectures that
+> support guest_memfd (x86 and arm64).
+> 
+> Direct map removal gives guest_memfd the same protection that
+> memfd_secret does, such as hardening against Spectre-like attacks
+> through in-kernel gadgets.
+
+Maybe mention that there might be a double TLB flush on some
+architectures, but that that is something to figure out later. Same
+behavior in secretmem code where this will be used next.
+
+> 
 > Signed-off-by: Nikita Kalyazin <kalyazin@amazon.com>
 > ---
+>  include/linux/set_memory.h | 13 ++++++++++++
+>  mm/memory.c                | 42 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 55 insertions(+)
+> 
+> diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
+> index 1a2563f525fc..24caea2931f9 100644
+> --- a/include/linux/set_memory.h
+> +++ b/include/linux/set_memory.h
+> @@ -41,6 +41,15 @@ static inline int set_direct_map_valid_noflush(const void *addr,
+>  	return 0;
+>  }
+>  
+> +static inline int folio_zap_direct_map(struct folio *folio)
+> +{
+> +	return 0;
+
+Should we return -ENOSYS here or similar?
+
+> +}
+> +
+> +static inline void folio_restore_direct_map(struct folio *folio)
+> +{
+> +}
+> +
+>  static inline bool kernel_page_present(struct page *page)
+>  {
+>  	return true;
+> @@ -57,6 +66,10 @@ static inline bool can_set_direct_map(void)
+>  }
+>  #define can_set_direct_map can_set_direct_map
+>  #endif
+> +
+> +int folio_zap_direct_map(struct folio *folio);
+> +void folio_restore_direct_map(struct folio *folio);
+> +
+>  #endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+>  
+>  #ifdef CONFIG_X86_64
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 07778814b4a8..cab6bb237fc0 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -78,6 +78,7 @@
+>  #include <linux/sched/sysctl.h>
+>  #include <linux/pgalloc.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/set_memory.h>
+>  
+>  #include <trace/events/kmem.h>
+>  
+> @@ -7478,3 +7479,44 @@ void vma_pgtable_walk_end(struct vm_area_struct *vma)
+>  	if (is_vm_hugetlb_page(vma))
+>  		hugetlb_vma_unlock_read(vma);
+>  }
+> +
+> +#ifdef CONFIG_ARCH_HAS_SET_DIRECT_MAP
+> +/**
+> + * folio_zap_direct_map - remove a folio from the kernel direct map
+> + * @folio: folio to remove from the direct map
+> + *
+> + * Removes the folio from the kernel direct map and flushes the TLB.  This may
+> + * require splitting huge pages in the direct map, which can fail due to memory
+> + * allocation.
+
+Best to mention
+
+"So far, only order-0 folios are supported." and then ...
+
+> + *
+> + * Return: 0 on success, or a negative error code on failure.
+> + */
+> +int folio_zap_direct_map(struct folio *folio)
+> +{
+> +	const void *addr = folio_address(folio);
+> +	int ret;
+> +
+
+if (folio_test_large(folio))
+	return -EINVAL;
+
+
+With that,
+
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
