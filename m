@@ -1,143 +1,315 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 106C53B19AC;
-	Mon, 23 Mar 2026 18:18:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4E213A5E85;
+	Mon, 23 Mar 2026 18:20:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774289902; cv=none; b=KsyAlV18GaEwLP1oRF/r1TVabgnDkTbaJKU6jtjk37vs+78f4EAZcsRRJhv8nAkocXvmwLGO5lRjpBbWIsR4439MAyEyOInCcczck+7oFaSUFvM+1/me07e5pIjNJ20PqYA3zJQug57T9mZDfH1e5kMaJFCS7TD7ekAGYJsFo0U=
+	t=1774290011; cv=none; b=A1vohmCcK0odmLmgHDUAi/8PUu9SgSI9zATIIVi//gyFVgwYjPBc398CnfDN4iJcDckfsUr2eBmh3ns72yiBomKUKnR19AKLd+n6G1OKcsFpLrlSO6md12W6WXUklKAEmbcCVNa3t0lMmkRzFHki3tWeUK0G2KAOtm29+LxdkmI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774289902; c=relaxed/simple;
-	bh=3Ln9TJW6v970TdxyUfCmzNIsZKkFWpIYcxuM81XamYM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UTfNCLZ2siTZM/ntbqegwObgyYe9LadHGJJd71G7wVFPx2tfeX/zRyK3dYEYLZd3Qpt0ZhlhL+X9YVWU+8tOJINespFCLONbEuW0giPEYPkId0Q8kVSk0xNdwuYiuo9qW5eJnCZGUBNE73CVOQ29/JvxT3/PL46JQ1xfSveayy8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=laJPMH7j; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774290011; c=relaxed/simple;
+	bh=l3TK2fyopYDLeOdwUu55Wa1QN8poSXjvmMWPq7ZQQsQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=MazU3jE85HLl1IuleiHlesND3h4oZ7zoC1HZVkUzcW3JIBOqb065Ay0YWwqxEfYtb1MS6K3A8W6oeBQ6c5/qtvVY1ipHmoL69LCBTCFVjkxudgkwWIh87mfYZcgjJ5hXcibbNxmbqc2mWk30SsjZrY5aWgQhCelYLkzhcI9SbkE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HY84Adjj; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="laJPMH7j"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BAFCC4CEF7;
-	Mon, 23 Mar 2026 18:18:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774289901;
-	bh=3Ln9TJW6v970TdxyUfCmzNIsZKkFWpIYcxuM81XamYM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=laJPMH7j+hzqYBxUfdtIHfbsfTD1hbQ1VyzSPhxXf2selsi9AXV4PXN/l4g5J239h
-	 iPX6NjS4yNh2oxnKUer7FjZWSGV5VZ02Ma8aID6qrPxn2T44bYzO4nIoRnF4b7aVmN
-	 23YC/w5u7xvbCcFtD0+QSFsbLFnwSOdbrSh9oYfQH2N9AvEblLrio+lA+qd8/NdbwY
-	 KHEJAQbp8Eo1YXDpvBYo653dWoTxDexxSKFsFINweCTWWdCJX8PdCWtV0EDYoQ0Dtb
-	 bly5AufWXT89G685/oICWFyFKnUDSwQAaUvdmQFMqtZtqX9zZNmIxX2l4ZdRZSz7S+
-	 gip0+TfymlULg==
-Date: Mon, 23 Mar 2026 13:18:20 -0500
-From: Rob Herring <robh@kernel.org>
-To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Cc: Sebastian Reichel <sre@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Vinod Koul <vkoul@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Subject: Re: [PATCH v4 1/2] dt-bindings: power: reset: qcom-pon: Add new
- compatible PMM8654AU
-Message-ID: <20260323181820.GA888901-robh@kernel.org>
-References: <20260323-b4-add_pwrkey_and_resin-v4-0-abef4e4dcc3d@oss.qualcomm.com>
- <20260323-b4-add_pwrkey_and_resin-v4-1-abef4e4dcc3d@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HY84Adjj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774290004; x=1805826004;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=l3TK2fyopYDLeOdwUu55Wa1QN8poSXjvmMWPq7ZQQsQ=;
+  b=HY84AdjjomavOhmpFbFY1C63oLVxCz3Yq2+aZ0ezBmhpDK8o9/wgaDXn
+   BgkDETpeDJRVXB4NvZZO5oVNAczd0rc6wss6h6c7F4cVBVHVOFSMyxame
+   BwKA6eJQq5C7y23R7gDx7GXsttBqoa465wxtJuZhyu9Rp4COq8/pjIRk0
+   6cu9CIJDThGCiVqFTCyN9YhNMa8fZCsJOgaMmcvO5HzfJ6I0Cqt+521DZ
+   nHTx2l+DmFD+hRD6QJEBH/YvzWLIugzBcmCYSfXObNErdzUMKUl13k+AR
+   4+vT5//To0TNBIPesXo91w+dwiYvr6o8de57Jow/79gqGUQoo9pkHz35U
+   Q==;
+X-CSE-ConnectionGUID: lxqj5tQbQ0GK/86DNAI0Nw==
+X-CSE-MsgGUID: aCwbP6PmTKa5sr6Nck1Vig==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75205607"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="75205607"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:20:03 -0700
+X-CSE-ConnectionGUID: EgBEBBAkRfKQExM1LDAsNg==
+X-CSE-MsgGUID: C+InbcT4R3KdBrkzjcSrPQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="219247471"
+Received: from spandruv-desk2.jf.intel.com ([10.88.27.176])
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:20:02 -0700
+Message-ID: <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
+Subject: Re: [PATCH v1] powercap: intel_rapl: Consolidate PL4 and PMU
+ support flags into rapl_defaults
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+  "Rafael J . Wysocki"	 <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 23 Mar 2026 11:20:02 -0700
+In-Reply-To: <20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+References: 
+	<20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260323-b4-add_pwrkey_and_resin-v4-1-abef4e4dcc3d@oss.qualcomm.com>
 
-On Mon, Mar 23, 2026 at 04:15:15PM +0530, Rakesh Kota wrote:
-> PMM8654AU is a different PMIC from PMM8650AU, even though both share
-> the same PMIC subtype. Add PON compatible string for PMM8654AU PMIC
-> variant.
-> 
-> The PMM8654AU PON block is compatible with the PMK8350 PON
-> implementation, but PMM8654AU also implements additional PON registers
-> beyond the baseline. Use the PMM8654AU naming to match the compatible
-> string already present in the upstream pinctrl-spmi-gpio driver, keeping
-> device tree and kernel driver naming consistent.
-> 
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+On Fri, 2026-03-13 at 12:00 -0700, Kuppuswamy Sathyanarayanan wrote:
+> Currently, PL4 and MSR-based RAPL PMU support are detected using
+> separate CPU ID tables (pl4_support_ids and pmu_support_ids) in the
+> MSR driver probe path. This creates a maintenance burden since adding
+> a new CPU requires updates in two places: the rapl_ids table and one
+> or both of these capability tables.
+>=20
+> Consolidate PL4 and PMU capability information directly into
+> struct rapl_defaults by adding msr_pl4_support and msr_pmu_support
+> flags. This allows per-CPU capability to be expressed in a single
+> place alongside other per-CPU defaults, eliminating the duplicate
+> CPU ID tables entirely.
+>=20
+> No functional changes are intended.
+>=20
+> Co-developed-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Kuppuswamy Sathyanarayanan
+> <sathyanarayanan.kuppuswamy@linux.intel.com>
+
+
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+
 > ---
-> Changes in v4:
->  - Remove the contain for PMK8350 and new if:then for PMM8654AU as
->    suggested by Krzysztof Kozlowski
-> 
-> Changes in v3:
->  - Update the commit message.
-> 
-> Changes in v2:
->  - Introduces PMM8654AU compatible strings as suggested by Konrad Dybcio.
-> ---
->  .../devicetree/bindings/power/reset/qcom,pon.yaml  | 32 +++++++++++++++++-----
->  1 file changed, 25 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-> index 979a377cb4ffd577bfa51b9a3cd089acc202de0c..2a5d9182b8d5c1a286716ab175c7bb5e39b334e0 100644
-> --- a/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-> +++ b/Documentation/devicetree/bindings/power/reset/qcom,pon.yaml
-> @@ -17,12 +17,16 @@ description: |
->  
->  properties:
->    compatible:
-> -    enum:
-> -      - qcom,pm8916-pon
-> -      - qcom,pm8941-pon
-> -      - qcom,pms405-pon
-> -      - qcom,pm8998-pon
-> -      - qcom,pmk8350-pon
-> +    oneOf:
-> +      - enum:
-> +          - qcom,pm8916-pon
-> +          - qcom,pm8941-pon
-> +          - qcom,pms405-pon
-> +          - qcom,pm8998-pon
-> +          - qcom,pmk8350-pon
-> +      - items:
-> +          - const: qcom,pmm8654au-pon
-> +          - const: qcom,pmk8350-pon
->  
->    reg:
->      description: |
-> @@ -100,7 +104,6 @@ allOf:
->    - if:
->        properties:
->          compatible:
-> -          contains:
->              const: qcom,pmk8350-pon
->      then:
->        properties:
-> @@ -113,6 +116,21 @@ allOf:
->              - const: hlos
->              - const: pbs
->  
-> +  - if:
-> +      properties:
-> +        compatible:
-> +            const: qcom,pmm8654au-pon
-> +    then:
-> +      properties:
-> +        reg:
-> +          minItems: 1
-> +          maxItems: 2
-> +        reg-names:
-> +          minItems: 1
-> +          items:
-> +            - const: hlos
-> +            - const: pbs
-
-I don't understand this. The existing if/then schema did the exact same 
-thing until you removed 'contains'. Now we just have the same schema 
-duplicated.
-
-What does need changing now that I've looked at it is dropping 'reg' 
-in this schema as it just repeats what the top-level schema has.
-
-Rob
+> =C2=A0drivers/powercap/intel_rapl_msr.c | 83 ++++++++++++++--------------=
+-
+> --
+> =C2=A0include/linux/intel_rapl.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0 |=C2=A0 2 +
+> =C2=A02 files changed, 38 insertions(+), 47 deletions(-)
+>=20
+> diff --git a/drivers/powercap/intel_rapl_msr.c
+> b/drivers/powercap/intel_rapl_msr.c
+> index cfb35973f0b5..a34543e66446 100644
+> --- a/drivers/powercap/intel_rapl_msr.c
+> +++ b/drivers/powercap/intel_rapl_msr.c
+> @@ -216,33 +216,6 @@ static int rapl_msr_write_raw(int cpu, struct
+> reg_action *ra)
+> =C2=A0	return ra->err;
+> =C2=A0}
+> =C2=A0
+> -/* List of verified CPUs. */
+> -static const struct x86_cpu_id pl4_support_ids[] =3D {
+> -	X86_MATCH_VFM(INTEL_ICELAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_TIGERLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_ALDERLAKE, NULL),
+> -	X86_MATCH_VFM(INTEL_ALDERLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT, NULL),
+> -	X86_MATCH_VFM(INTEL_RAPTORLAKE, NULL),
+> -	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, NULL),
+> -	X86_MATCH_VFM(INTEL_METEORLAKE, NULL),
+> -	X86_MATCH_VFM(INTEL_METEORLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_ARROWLAKE_U, NULL),
+> -	X86_MATCH_VFM(INTEL_ARROWLAKE_H, NULL),
+> -	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_NOVALAKE, NULL),
+> -	X86_MATCH_VFM(INTEL_NOVALAKE_L, NULL),
+> -	{}
+> -};
+> -
+> -/* List of MSR-based RAPL PMU support CPUs */
+> -static const struct x86_cpu_id pmu_support_ids[] =3D {
+> -	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
+> -	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
+> -	{}
+> -};
+> -
+> =C2=A0static int rapl_check_unit_atom(struct rapl_domain *rd)
+> =C2=A0{
+> =C2=A0	struct reg_action ra;
+> @@ -420,6 +393,23 @@ static const struct rapl_defaults
+> rapl_defaults_amd =3D {
+> =C2=A0	.check_unit =3D rapl_default_check_unit,
+> =C2=A0};
+> =C2=A0
+> +static const struct rapl_defaults rapl_defaults_core_pl4 =3D {
+> +	.floor_freq_reg_addr =3D 0,
+> +	.check_unit =3D rapl_default_check_unit,
+> +	.set_floor_freq =3D rapl_default_set_floor_freq,
+> +	.compute_time_window =3D rapl_default_compute_time_window,
+> +	.msr_pl4_support =3D 1,
+> +};
+> +
+> +static const struct rapl_defaults rapl_defaults_core_pl4_pmu =3D {
+> +	.floor_freq_reg_addr =3D 0,
+> +	.check_unit =3D rapl_default_check_unit,
+> +	.set_floor_freq =3D rapl_default_set_floor_freq,
+> +	.compute_time_window =3D rapl_default_compute_time_window,
+> +	.msr_pl4_support =3D 1,
+> +	.msr_pmu_support =3D 1,
+> +};
+> +
+> =C2=A0static const struct x86_cpu_id rapl_ids[]=C2=A0 =3D {
+> =C2=A0	X86_MATCH_VFM(INTEL_SANDYBRIDGE,		&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_SANDYBRIDGE_X,		&rapl_defaul
+> ts_core),
+> @@ -443,35 +433,35 @@ static const struct x86_cpu_id rapl_ids[]=C2=A0 =3D=
+ {
+> =C2=A0	X86_MATCH_VFM(INTEL_KABYLAKE_L,			&rap
+> l_defaults_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_KABYLAKE,			&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_CANNONLAKE_L,		&rapl_defaul
+> ts_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE,			&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_NNPI,		&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_X,			&rapl_defaul
+> ts_hsw_server),
+> =C2=A0	X86_MATCH_VFM(INTEL_ICELAKE_D,			&rapl_defaul
+> ts_hsw_server),
+> =C2=A0	X86_MATCH_VFM(INTEL_COMETLAKE_L,		&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_COMETLAKE,			&rapl_defaul
+> ts_core),
+> -
+> 	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_TIGERLAKE,			&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_ROCKETLAKE,			&rap
+> l_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaul
+> ts_core_pl4),
+> +	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaul
+> ts_core_pl4),
+> +	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaul
+> ts_core_pl4),
+> +	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rap
+> l_defaults_core_pl4),
+> +	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,		&rapl_defaul
+> ts_core),
+> =C2=A0	X86_MATCH_VFM(INTEL_BARTLETTLAKE,		&rapl_defaul
+> ts_core),
+> -
+> 	X86_MATCH_VFM(INTEL_METEORLAKE,			&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_METEORLAKE,			&rap
+> l_defaults_core_pl4),
+> +	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,		&rapl_defaul
+> ts_spr_server),
+> =C2=A0	X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,		&rapl_defaul
+> ts_spr_server),
+> =C2=A0	X86_MATCH_VFM(INTEL_LUNARLAKE_M,		&rapl_defaul
+> ts_core),
+> -
+> 	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rapl_defaults_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaul
+> ts_core_pl4_pmu),
+> +	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaul
+> ts_core_pl4_pmu),
+> +	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaul
+> ts_core_pl4),
+> +	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rap
+> l_defaults_core_pl4),
+> +	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_ARROWLAKE,			&rapl_defaul
+> ts_core),
+> -
+> 	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaults_core),
+> +	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaul
+> ts_core_pl4),
+> =C2=A0	X86_MATCH_VFM(INTEL_LAKEFIELD,			&rapl_defaul
+> ts_core),
+> =C2=A0
+> =C2=A0	X86_MATCH_VFM(INTEL_ATOM_SILVERMONT,		&rapl_defaul
+> ts_byt),
+> @@ -498,7 +488,6 @@ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+> =C2=A0
+> =C2=A0static int rapl_msr_probe(struct platform_device *pdev)
+> =C2=A0{
+> -	const struct x86_cpu_id *id =3D
+> x86_match_cpu(pl4_support_ids);
+> =C2=A0	int ret;
+> =C2=A0
+> =C2=A0	switch (boot_cpu_data.x86_vendor) {
+> @@ -518,16 +507,16 @@ static int rapl_msr_probe(struct
+> platform_device *pdev)
+> =C2=A0	rapl_msr_priv->defaults =3D (const struct rapl_defaults
+> *)pdev->dev.platform_data;
+> =C2=A0	rapl_msr_priv->rpi =3D rpi_msr;
+> =C2=A0
+> -	if (id) {
+> +	if (rapl_msr_priv->defaults->msr_pl4_support) {
+> =C2=A0		rapl_msr_priv->limits[RAPL_DOMAIN_PACKAGE] |=3D
+> BIT(POWER_LIMIT4);
+> =C2=A0		rapl_msr_priv-
+> >regs[RAPL_DOMAIN_PACKAGE][RAPL_DOMAIN_REG_PL4].msr =3D
+> =C2=A0			MSR_VR_CURRENT_CONFIG;
+> -		pr_info("PL4 support detected.\n");
+> +		pr_info("PL4 support detected (updated).\n");
+> =C2=A0	}
+> =C2=A0
+> -	if (x86_match_cpu(pmu_support_ids)) {
+> +	if (rapl_msr_priv->defaults->msr_pmu_support) {
+> =C2=A0		rapl_msr_pmu =3D true;
+> -		pr_info("MSR-based RAPL PMU support enabled\n");
+> +		pr_info("MSR-based RAPL PMU support enabled
+> (updated)\n");
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	rapl_msr_priv->control_type =3D
+> powercap_register_control_type(NULL, "intel-rapl", NULL);
+> diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
+> index 01f290de3586..328004f605c3 100644
+> --- a/include/linux/intel_rapl.h
+> +++ b/include/linux/intel_rapl.h
+> @@ -135,6 +135,8 @@ struct rapl_defaults {
+> =C2=A0	unsigned int dram_domain_energy_unit;
+> =C2=A0	unsigned int psys_domain_energy_unit;
+> =C2=A0	bool spr_psys_bits;
+> +	bool msr_pl4_support;
+> +	bool msr_pmu_support;
+> =C2=A0};
+> =C2=A0
+> =C2=A0#define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {	\
