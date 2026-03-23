@@ -1,108 +1,275 @@
-Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com [209.85.210.44])
+Received: from mail-vk1-f176.google.com (mail-vk1-f176.google.com [209.85.221.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 369DA2DECCB
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 18:34:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.44
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774290861; cv=none; b=gpG52/Wlir0ySHhCwVELnH3kLEhAWTXKnPF6Wi14TIbBD+BJh4Yn6LHZAfRvgwwqYDPzjxMnb8s4FDYjNC9OvtkMyiZRnfylbr5S66QgZT7M9rSpdEAWFWBVoK3j+ZqCt429nyj/vTWNCTE+qHBn07Uo4v9P540iwnHF4xaNIso=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774290861; c=relaxed/simple;
-	bh=yBcM7aZKODFxjT19UJ4EsfNOvYHO2x+rJA013Wih3Uo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=rx+Y89LY/Ae1sFox71f2t0LH3dUVo97KmpIRqfZ7DDZGWJzoadciu703zBxhCaEr6kYgAQeyKPShEfRjaMnDrI6WYVtLxAwTP8bKOzLuqQNIUl363IUTmaaXf4V8vJpNKqJaqq25YvoR+/QN3X5qMfY8yUiibMwu9piO879eikE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=d1z7Fjm9; arc=none smtp.client-ip=209.85.210.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF4B02FDC27
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 18:43:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.176
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774291416; cv=pass; b=vCmTWAVKtq8QCC6LLqr2RUB9YQ+7JijcWQGHCYq8DhCgYQFnj+bDycqU1c0JpVmU+YoIV+P4H2KcxWRUDO5J2q2RKbp4Qum/mmogvlwPijG7ZL/GLuhzzFSWpFPr8sNOr0QMBj7NK1BS0w257gvAHdLRmCKs5aulgWVu8RwXCn8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774291416; c=relaxed/simple;
+	bh=8iR09lTQ4Edfh1UQkmolcFNIjMuLzSLKVF5JEj/9nwQ=;
+	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XkYUhvRKChiCZzaAvBqKA3Ka05geBJgnCZGGvmIbxer6y3qOxbmjfOEuyC108Ha8NlprujmYBPjtt0G6NvGWXBA05ysF/GTuK/yDXr2xphVOAPco3C3UFJASza14Nm2ZPnHuPSwb9T59/r2+muVjDpzXG2Z67q4dhY66k9jVSzw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=BFE/MqnH; arc=pass smtp.client-ip=209.85.221.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="d1z7Fjm9"
-Received: by mail-ot1-f44.google.com with SMTP id 46e09a7af769-7d7eb85fb81so526179a34.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:34:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="BFE/MqnH"
+Received: by mail-vk1-f176.google.com with SMTP id 71dfb90a1353d-56cde757d3dso1153884e0c.2
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:43:33 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774291413; cv=none;
+        d=google.com; s=arc-20240605;
+        b=dEU7NXzc3Wszqb1SrmdK1xRCRg95jghF129pn6YxhrUr7CIVZwdlwZeKTgk/0W4FVm
+         UVRgM05ufZ3AjmNts5M+oEBz2ePPKBkj0LOmE7N6ac42KGRc/lPtKB82+L03sv4qxO/p
+         QgfRlujlcevE/2xw+JWY8cB8VLYmi1+PtPc+19dQ9PICUWm4JJ3t2mca6mOhF0DTA5Ig
+         grEBSERYQRfWoeLhhi+Kt2nMDnD56zOzFR808pGQ28PiLXQQFQ2+MsJn7ML73oBwdc6t
+         +aRZw1AEUy/aouQChjxNrMEWoIIOkpcZVZR+dUMP6Y98nWbinBeNNSWE6cq6FWIhQ3Ss
+         cQfQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:dkim-signature;
+        bh=jJ1uKbr2A9AcnUKDcibCUYQIsuprIaoAVD4N5Jh2tIQ=;
+        fh=NJibpuqlfPBpsQK8UcBwIgJAdUWUflIwBRHtXRgPDoE=;
+        b=Uet0k2/oG+af2z1SRFK1xfHCkSvDsGGnMDybaWEf+G0eLJe+fowrZFtY+FT4pmMyho
+         AyJguO99WEUgTDYOKjM6wYSmtT3a6TqN5tdBGVHB8q6OLzFlOlx88TY70AJfCtIwW/iL
+         gt0iITriTmWYBCbSPPEA0STtXZCEXuuOFg5Zqb+fus+44QChquL63VpgHQqjG50JRKI7
+         drSRv9YK6YQuFTnl9Z6vUw5N48U38cu66WPV63VVJMbXVS7DG/Nwdx+RAZSTphV2Fbtj
+         amBMuLe12c9KfiUcHbYkDBI5bCq8BwWgI/wONlIpSdmTc0xa65t/sr2IgRvsaS47gOxD
+         WZTw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1774290859; x=1774895659; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=tqCu7kEz9zwd2qtF1CAW/9ScR/xjHRltJKvoLIUB0yE=;
-        b=d1z7Fjm9qphMDNDoEgijehrvA3UEsk1FB0XTX9Dsq06cnvC+9FE1XTJcfJIuQd9Ksu
-         BDpVmebbFTZZGh3YWLZqYh5K0E8jWL/xc2idgs/Wg9sN+UZaQQ831BxyivCzBy14QdTr
-         fJ2eP/JSXyBVDlwh7kmpScoSQtdmEHIK6VGLk=
+        d=google.com; s=20251104; t=1774291413; x=1774896213; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jJ1uKbr2A9AcnUKDcibCUYQIsuprIaoAVD4N5Jh2tIQ=;
+        b=BFE/MqnHyJEb2bXhOAAC42up0lIIBMrfoEaUX8sgL/fCQ+OsWy9jEUrxjg9bcJmPoy
+         fFh8bXLK5ID3vOGVhKEVc7GAF51PL1t9OKV3RWP9X5s8vEosDUsRJlD3uvkHsm8gQJq2
+         yLHP8cRadcr3bXcEbThsxn/zkicUhrGIYaE6OdJ72LqX74hGBAw25CKruf7r9f4qNORH
+         sjBANVlN4x99JT3IOFRxsfjxUDwhL7j/ysJO/DTg5EQHHCWh0q2njy/Tk2gB0a9h0PTK
+         0OzzbUqBAFPI16UIfWf3j6fxHMwr0c5rjIDHEfL9KU6Ipera8Z+VPiV3ARshGnuLrl83
+         3Plw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774290859; x=1774895659;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20251104; t=1774291413; x=1774896213;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=tqCu7kEz9zwd2qtF1CAW/9ScR/xjHRltJKvoLIUB0yE=;
-        b=R9IpqjJGvnvSi6dP92lRqLoOTonV2dvL3OKxw1rPVOI+xsSlLaOhJWaMHDoYWJaMZl
-         NPZNnCARMIKB6teaN9CG+E52pNSxvrV+HKR4m2Hkd5yMTSQ3iOcWgHGZ72U3T16hRo+w
-         W5IRx0ajPDUE3u2VITencV52FSE3xfl3ETqvoeKidZHGxEROJhc3kUTcy5HZBi7sq/hc
-         4LVuNsgRLDyamlE+g8SnmgwIRMIrXLCZD6jG9Nlwth6gomB4uKiLrcLUkXHtStPKitrx
-         vyFHKHt9CKnGjSPhfF+kBdoMb+f7ypVqwBU+q+tAchLtz+xqeSY6RnWyZRPXrMtmJm1d
-         PBKw==
-X-Forwarded-Encrypted: i=1; AJvYcCUz1JV59SG8W7A/pGLT3tNJNp7PpclixCnS2ohFAj9HNQXKLtrR/uv4JW2kuENH0N3NGYc1eCJU7g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxj4b060KjClUCOi2cFHhrg6o0zhCHXnHetmavhm2IeJQoygTuV
-	7AJJTW2booS3ut3aX+aB9JXGumdaGEqkdFAfyvv5Cy6i+us/oq31eUl4AHgYLxaj5SM=
-X-Gm-Gg: ATEYQzxhJ2URW1tLUCVUtPBXZLozo0unqFJAbqG62VJCehbXRWQP0b47Mq4gEYS6+Ug
-	wtR1M+A75apRjliV5nxAnwtIXvEi6fp3Ry8CJijrOJMWV+aZE0oHpylEj0hK7vdS1d40SdqmvOR
-	GC+OcaRsEI5+crMGj7ujJBl4XNgnTUWvuBZFzFH0456+GKo2AeTjHPEoyTOntmWlYt/fP2o6CUl
-	wpbXGNUQGH+8zDJTGIVkVuAH4EfxNwhOHZR+hNKP7lG2gkNFpxsalAsnxQc4wGZRfeMSxQ2ppWZ
-	0ErkTQV3qlq9puBKXKwwR2vAB8GlQLvxYz291OapFjEV/pDshBbuuEQ97t3eqmDVjqtBmE5i6Zx
-	trr4T+ol0t/NB1/PppBXuqT96O8LzXVUEPQHaaxfd5fTG+LSTEclREYMGw1XJOraCyJs11OrEvY
-	LS14TMEiPipSBMRKtERF3njjMGt/X4cz9IwFI=
-X-Received: by 2002:a05:6830:448f:b0:7d7:d50d:b088 with SMTP id 46e09a7af769-7d7eafd8a80mr8670001a34.28.1774290859184;
-        Mon, 23 Mar 2026 11:34:19 -0700 (PDT)
-Received: from [192.168.1.14] ([38.175.187.108])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7d7eae6a554sm9732266a34.27.2026.03.23.11.34.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Mar 2026 11:34:18 -0700 (PDT)
-Message-ID: <2ca2810a-b9f5-40a1-a85a-04e4cd06e1d6@linuxfoundation.org>
-Date: Mon, 23 Mar 2026 12:34:17 -0600
+        bh=jJ1uKbr2A9AcnUKDcibCUYQIsuprIaoAVD4N5Jh2tIQ=;
+        b=AY/ejoDy9zG5kPho6dlSN1YtOl5zxyBn4AkAJ2Yo0IvgDgg7sgMS6Zgj/l5qiYTXA0
+         8YbWGYW05fmzu9yrX9x+IzKDJ6BxeeGTNjzaO6Zl4HiImNNSqFEN2FXA5R+Ya0g7WUBr
+         +hVgoTztyw2+pSEtn7YvnJHn7SXwyYd9w8ChjvdlUg5les2T7fi4S1aacuiPxe7FDpHL
+         ybBWB6kRuyShPvzHzpCac/l7lnayST7hNctJlzC1ClVsqkXbwE9Vlze+qwxq3YHJtmrH
+         MAphwjT8s9Mu0KeCUSzV9RJnM3a6jvwNQluJCEr2Qq6eZf5X2k/bVEiveAZ5ipeuMzmY
+         qzOg==
+X-Forwarded-Encrypted: i=1; AJvYcCXCvhMJVUCKJE1+9KL5+YlhFezi9obZgoFMC8jNA4iTegJk/2iSUuxy1cpbYz3yeYoHMwTx0WcIPw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxcrDDXTkS03iDDmFup/WkHIexDQTfcNleMqIL0ERqPYEbVxunB
+	FNl9GFOk0YBL0Gm9JU1O1iAPaKdFEUCO6CWsB5fhweJz2VIwO7EcZU6Mi6479e8kCpH1yuY86Fw
+	UloXaDdErev1/Nh29j76hO1FgDo+4TVzBzs6jsXyJ
+X-Gm-Gg: ATEYQzxkFJXqCI2Z/Xb0ByKhqMRX0ZNj20njRxpNO377nswe+Tjtt6OTYa0nFVlZVgT
+	Qse2d4eXuDb/fHUhQyuYeaFWz368+4dQSCT7ua+qoT8pbOFndGrUQtObtBOJIiqZ5DIjXL030ZD
+	nXAYPgDsPrKJV5+Cd2fKQ11dcb8iMRVWGHH+WSIFibT3O3ApleDuFPtUkwOEuO1Hnor232HlDfo
+	ehkDlQi/LuuMThPLhYQmEI2QZcz+cNbJpDjDq95N90B8tnmDmlUu5BC5blX8N+PnlnFip7urXQD
+	wmOwdOI/Gbju6ErLK/aVprBgMnQGuW3Y64C1Xsrp46GT7alnE+kA6904AMP1nBNIR0B6gg==
+X-Received: by 2002:a05:6122:3c54:b0:566:2711:d8ab with SMTP id
+ 71dfb90a1353d-56cde344094mr6273796e0c.6.1774291412097; Mon, 23 Mar 2026
+ 11:43:32 -0700 (PDT)
+Received: from 176938342045 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 23 Mar 2026 11:43:31 -0700
+Received: from 176938342045 named unknown by gmailapi.google.com with
+ HTTPREST; Mon, 23 Mar 2026 11:43:31 -0700
+From: Ackerley Tng <ackerleytng@google.com>
+In-Reply-To: <20260317141031.514-3-kalyazin@amazon.com>
+References: <20260317141031.514-1-kalyazin@amazon.com> <20260317141031.514-3-kalyazin@amazon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/4] cpupower-frequency-info.1: document --boost and
- --epp options
-To: Roberto Ricci <io@r-ricci.it>, Thomas Renninger <trenn@suse.com>,
- Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
- John Kacur <jkacur@redhat.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <20260312102029.14980-1-io@r-ricci.it>
- <20260312102029.14980-3-io@r-ricci.it>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260312102029.14980-3-io@r-ricci.it>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Mon, 23 Mar 2026 11:43:31 -0700
+X-Gm-Features: AQROBzAKG1Xpk4hVDWY3sqqSXNvIKws3qrAExzeSImrnNlU_ii0wYSbiIV_SQDw
+Message-ID: <CAEvNRgEFBexkZCjOMFHJRQFHOpiUezD2jbfDVFrGhYXODdpMjg@mail.gmail.com>
+Subject: Re: [PATCH v11 02/16] set_memory: add folio_{zap,restore}_direct_map helpers
+To: "Kalyazin, Nikita" <kalyazin@amazon.co.uk>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
+	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+	"kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, 
+	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, 
+	"bpf@vger.kernel.org" <bpf@vger.kernel.org>, 
+	"linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>, "kernel@xen0n.name" <kernel@xen0n.name>, 
+	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, 
+	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, 
+	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
+	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "pbonzini@redhat.com" <pbonzini@redhat.com>, "corbet@lwn.net" <corbet@lwn.net>, 
+	"maz@kernel.org" <maz@kernel.org>, "oupton@kernel.org" <oupton@kernel.org>, 
+	"joey.gouly@arm.com" <joey.gouly@arm.com>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, 
+	"yuzenghui@huawei.com" <yuzenghui@huawei.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, 
+	"will@kernel.org" <will@kernel.org>, "seanjc@google.com" <seanjc@google.com>, "tglx@kernel.org" <tglx@kernel.org>, 
+	"mingo@redhat.com" <mingo@redhat.com>, "bp@alien8.de" <bp@alien8.de>, 
+	"dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>, 
+	"hpa@zytor.com" <hpa@zytor.com>, "luto@kernel.org" <luto@kernel.org>, 
+	"peterz@infradead.org" <peterz@infradead.org>, "willy@infradead.org" <willy@infradead.org>, 
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>, "david@kernel.org" <david@kernel.org>, 
+	"lorenzo.stoakes@oracle.com" <lorenzo.stoakes@oracle.com>, "vbabka@kernel.org" <vbabka@kernel.org>, 
+	"rppt@kernel.org" <rppt@kernel.org>, "surenb@google.com" <surenb@google.com>, "mhocko@suse.com" <mhocko@suse.com>, 
+	"ast@kernel.org" <ast@kernel.org>, "daniel@iogearbox.net" <daniel@iogearbox.net>, 
+	"andrii@kernel.org" <andrii@kernel.org>, "martin.lau@linux.dev" <martin.lau@linux.dev>, 
+	"eddyz87@gmail.com" <eddyz87@gmail.com>, "song@kernel.org" <song@kernel.org>, 
+	"yonghong.song@linux.dev" <yonghong.song@linux.dev>, 
+	"john.fastabend@gmail.com" <john.fastabend@gmail.com>, "kpsingh@kernel.org" <kpsingh@kernel.org>, 
+	"sdf@fomichev.me" <sdf@fomichev.me>, "haoluo@google.com" <haoluo@google.com>, 
+	"jolsa@kernel.org" <jolsa@kernel.org>, "jgg@ziepe.ca" <jgg@ziepe.ca>, 
+	"jhubbard@nvidia.com" <jhubbard@nvidia.com>, "peterx@redhat.com" <peterx@redhat.com>, 
+	"jannh@google.com" <jannh@google.com>, "pfalcato@suse.de" <pfalcato@suse.de>, 
+	"skhan@linuxfoundation.org" <skhan@linuxfoundation.org>, "riel@surriel.com" <riel@surriel.com>, 
+	"ryan.roberts@arm.com" <ryan.roberts@arm.com>, "jgross@suse.com" <jgross@suse.com>, 
+	"yu-cheng.yu@intel.com" <yu-cheng.yu@intel.com>, "kas@kernel.org" <kas@kernel.org>, 
+	"coxu@redhat.com" <coxu@redhat.com>, "kevin.brodsky@arm.com" <kevin.brodsky@arm.com>, 
+	"yosry@kernel.org" <yosry@kernel.org>, "ajones@ventanamicro.com" <ajones@ventanamicro.com>, 
+	"maobibo@loongson.cn" <maobibo@loongson.cn>, "tabba@google.com" <tabba@google.com>, 
+	"prsampat@amd.com" <prsampat@amd.com>, "wu.fei9@sanechips.com.cn" <wu.fei9@sanechips.com.cn>, 
+	"mlevitsk@redhat.com" <mlevitsk@redhat.com>, "jmattson@google.com" <jmattson@google.com>, 
+	"jthoughton@google.com" <jthoughton@google.com>, "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, 
+	"alex@ghiti.fr" <alex@ghiti.fr>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, 
+	"borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, 
+	"dev.jain@arm.com" <dev.jain@arm.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, 
+	"hca@linux.ibm.com" <hca@linux.ibm.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>, 
+	"pjw@kernel.org" <pjw@kernel.org>, 
+	"shijie@os.amperecomputing.com" <shijie@os.amperecomputing.com>, "svens@linux.ibm.com" <svens@linux.ibm.com>, 
+	"thuth@redhat.com" <thuth@redhat.com>, "wyihan@google.com" <wyihan@google.com>, 
+	"yang@os.amperecomputing.com" <yang@os.amperecomputing.com>, 
+	"Jonathan.Cameron@huawei.com" <Jonathan.Cameron@huawei.com>, 
+	"Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, "urezki@gmail.com" <urezki@gmail.com>, 
+	"zhengqi.arch@bytedance.com" <zhengqi.arch@bytedance.com>, 
+	"gerald.schaefer@linux.ibm.com" <gerald.schaefer@linux.ibm.com>, 
+	"jiayuan.chen@shopee.com" <jiayuan.chen@shopee.com>, "lenb@kernel.org" <lenb@kernel.org>, 
+	"osalvador@suse.de" <osalvador@suse.de>, "pavel@kernel.org" <pavel@kernel.org>, 
+	"rafael@kernel.org" <rafael@kernel.org>, "vannapurve@google.com" <vannapurve@google.com>, 
+	"jackmanb@google.com" <jackmanb@google.com>, "aneesh.kumar@kernel.org" <aneesh.kumar@kernel.org>, 
+	"patrick.roy@linux.dev" <patrick.roy@linux.dev>, "Thomson, Jack" <jackabt@amazon.co.uk>, 
+	"Itazuri, Takahiro" <itazur@amazon.co.uk>, "Manwaring, Derek" <derekmn@amazon.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 3/12/26 04:20, Roberto Ricci wrote:
-> `cpupower frequency-info` supports the '--boost' option since the
-> program was first added with commit
-> 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
-> but the man page lacks it.
-> 
-> '--epp' has been added with commit
-> 5f567afc283f ("cpupower: Add support for showing energy performance preference")
-> but it has never been added to the man page.
-> 
-> cpufreq-info.c:
-> 	{"boost",	 no_argument,		 NULL,	 'b'},
-> 	...
-> 	{"epp",		 no_argument,		 NULL,	 'z'},
-> 
-> Fixes 7fe2f6399a84760a9af8896ac152728250f82adb ("cpupowerutils - cpufrequtils extended with quite some features")
-> Fixes 5f567afc283fc9e7c6a34d013c4fc6c5e8d6afae ("cpupower: Add support for showing energy performance preference")
-> 
+"Kalyazin, Nikita" <kalyazin@amazon.co.uk> writes:
 
-Remove Fixes tag from all these 4 patches and run checkpatch
-before sending patches to me adding version information.
+> From: Nikita Kalyazin <kalyazin@amazon.com>
+>
+> Let's provide folio_{zap,restore}_direct_map helpers as preparation for
+> supporting removal of the direct map for guest_memfd folios.
+> In folio_zap_direct_map(), flush TLB to make sure the data is not
+> accessible.
+>
+> The new helpers need to be accessible to KVM on architectures that
+> support guest_memfd (x86 and arm64).
+>
+> Direct map removal gives guest_memfd the same protection that
+> memfd_secret does, such as hardening against Spectre-like attacks
+> through in-kernel gadgets.
+>
+> Signed-off-by: Nikita Kalyazin <kalyazin@amazon.com>
+> ---
+>  include/linux/set_memory.h | 13 ++++++++++++
+>  mm/memory.c                | 42 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 55 insertions(+)
+>
+> diff --git a/include/linux/set_memory.h b/include/linux/set_memory.h
+> index 1a2563f525fc..24caea2931f9 100644
+> --- a/include/linux/set_memory.h
+> +++ b/include/linux/set_memory.h
+> @@ -41,6 +41,15 @@ static inline int set_direct_map_valid_noflush(const void *addr,
+>  	return 0;
+>  }
+>
+> +static inline int folio_zap_direct_map(struct folio *folio)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void folio_restore_direct_map(struct folio *folio)
+> +{
+> +}
+> +
+>  static inline bool kernel_page_present(struct page *page)
+>  {
+>  	return true;
+> @@ -57,6 +66,10 @@ static inline bool can_set_direct_map(void)
+>  }
+>  #define can_set_direct_map can_set_direct_map
+>  #endif
+> +
+> +int folio_zap_direct_map(struct folio *folio);
+> +void folio_restore_direct_map(struct folio *folio);
+> +
+>  #endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+>
+>  #ifdef CONFIG_X86_64
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 07778814b4a8..cab6bb237fc0 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -78,6 +78,7 @@
+>  #include <linux/sched/sysctl.h>
+>  #include <linux/pgalloc.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/set_memory.h>
+>
+>  #include <trace/events/kmem.h>
+>
+> @@ -7478,3 +7479,44 @@ void vma_pgtable_walk_end(struct vm_area_struct *vma)
+>  	if (is_vm_hugetlb_page(vma))
+>  		hugetlb_vma_unlock_read(vma);
+>  }
+> +
+> +#ifdef CONFIG_ARCH_HAS_SET_DIRECT_MAP
+> +/**
+> + * folio_zap_direct_map - remove a folio from the kernel direct map
+> + * @folio: folio to remove from the direct map
+> + *
+> + * Removes the folio from the kernel direct map and flushes the TLB.  This may
+> + * require splitting huge pages in the direct map, which can fail due to memory
+> + * allocation.
+> + *
+> + * Return: 0 on success, or a negative error code on failure.
+> + */
+> +int folio_zap_direct_map(struct folio *folio)
+> +{
+> +	const void *addr = folio_address(folio);
+> +	int ret;
+> +
+> +	ret = set_direct_map_valid_noflush(addr, folio_nr_pages(folio), false);
+> +	flush_tlb_kernel_range((unsigned long)addr,
+> +			       (unsigned long)addr + folio_size(folio));
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_FOR_MODULES(folio_zap_direct_map, "kvm");
+> +
+> +/**
+> + * folio_restore_direct_map - restore the kernel direct map entry for a folio
+> + * @folio: folio whose direct map entry is to be restored
+> + *
+> + * This may only be called after a prior successful folio_zap_direct_map() on
+> + * the same folio.  Because the zap will have already split any huge pages in
+> + * the direct map, restoration here only updates protection bits and cannot
+> + * fail.
+> + */
+> +void folio_restore_direct_map(struct folio *folio)
+> +{
+> +	WARN_ON_ONCE(set_direct_map_valid_noflush(folio_address(folio),
+> +						  folio_nr_pages(folio), true));
+> +}
+> +EXPORT_SYMBOL_FOR_MODULES(folio_restore_direct_map, "kvm");
+> +#endif /* CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+> --
+> 2.50.1
 
-+ add a cover letter is helpful and makes it easier to comment
-on things common across all patches such as these.
+Reviewed-by: Ackerley Tng <ackerleytng@google.com>
 
-thanks,
--- Shuah
+I also took a look at Sashiko's [1] comments and I think that the
+highmem folio issues should be the responsibility of the caller to
+check.
+
+[1] https://sashiko.dev/#/patchset/20260317141031.514-1-kalyazin%40amazon.com
