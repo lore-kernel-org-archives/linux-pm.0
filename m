@@ -1,160 +1,213 @@
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29FCD394796
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:14:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.42
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774264467; cv=pass; b=JlAixsrs0mFXeuiVQf5sMYq3A/oDH3wmss//VyWHjm5l549OKsx4X7ek6xqi+mtiYcmTka/VVE/VoQLeR4PN9XGRFEKBbOBL9qC007TGA2ph+U32JZRJSBROOvroC+KbYc6L/2ml+p4X3y5V3w+Pvtfgm/yACmKyDbs0ZGWTrZ8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774264467; c=relaxed/simple;
-	bh=YsJoLrLCtXBI6DtmBAjdk5zdQPkh2dEYsn5jbiErAYM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NduE0CBY9XcOrmgTN5MmTPBh4Kf1qDFzNhA9/fQAYbruciLLala2j/o4QlMAbogah5mhq7YFMrJKAiXwGdIjuoAcfgs6FAAvgvqK0zOqtflbRVUc7Snxjn2VqLqFDf1DrFqVVtbrv9AFGEm/FjOv+2k2av6qZK8PyiwJZscqxz0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Bn82Ql8b; arc=pass smtp.client-ip=209.85.167.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D7D8399003
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 12:13:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774268005; cv=none; b=akyJSuSjk/wCoqiaRdasXvq4hOm4Eb7m78UpexZxu0CQ2e4AOOp/gJcG+e2vH1ccJ/zol/TjnM3XzIlUc7SPMQbkfT7ueDlkptf/g73ePBSROxVtIPh02d0Ed1xlAEck2BAox3hNDMroJlDY4fDbmiwyUX9+78BYtGTYGUuB/vc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774268005; c=relaxed/simple;
+	bh=o+JFJtu6y7N5kdyo3DdaubQZRMksn2QckUlkaFBAxlI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ikUVKyBd3UpV2F0THRcGa7dgHZwZuMl/8kF8eD/ifazyoDAOudKI6uNhf6ETNOO4rwzAPAw/u3fbkaLDrgm8n69V6qysPGT6M929pAiLHxdwfSdNnEIeEwONF/BFrSXTEy5bbCOlNFrYpIJcEUZGn1RG4Neymn7G2dLzxBfcYZk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=bmb7UHgU; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Qh3kq8EH; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Bn82Ql8b"
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5a283c44478so2713636e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 04:14:23 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774264462; cv=none;
-        d=google.com; s=arc-20240605;
-        b=CWQKQYt6GrJy3rA2L9+/9HQ3izsc4FigsgSEWEut8WwtaCgInY4qBK+U8kui7iWT9Z
-         WKm+JCGJKMgsiA/JTKdNvtZ1Azbvb2NP+ai8IkylvRIncMxggPbKzl9r7Y6lUSXC3UPG
-         yf7jUp4/aHsYsIVgRQXF6/8KwzkVYyw/mv5lPQQpFQuPiu5rRFVPOLdjTvFb2JxqBoUF
-         5hPgtswRjEVDMBXaxz8Ew9l44D2pnLwct3FOJm9yJf1ARUHXpQ03aUMOHOeDBvfZk5oS
-         PzLSqYPPGa4e7nvorNt4tqxwpkPzu1batnndjtbdsZQCOQzqKBvnjfFTxBnAX1a47mzI
-         /AuQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
-        fh=rSqnwSiy4XWnXY3bcKQAM7dEOYPLLaykizyCVaT3fIo=;
-        b=dH0Xs0R41/Eepb7SGp4PUf5Fsc74oIcswM5hb+v5wv2jECUer4/Wn3J6xN4+FMKPXV
-         wjcV65YT17WC/JRsRxpwWgdxLoLS5EynpzoiaDK9zKV+CYsuT+Pw31eeIHOVOqqLmz7X
-         VnA7lCWEb8LtUxjgqbG95qNoGrrisI0g4KlNhAhsp9hlgFd1jUAY+RtXpVKOna0pEIj5
-         Z4p/DOStCdq3AVMPFzVDPjQ4NDNJkpXpdcSEq31rmoRNiDUE3DpoMiEUg2L6cemt+0Iy
-         p03ArqUCth/tMUa9v/3MSY9g9sCHF62aRB0s2VERxWJdL1C7Jhfh3tMqAhp2sBaPaQJz
-         vdzg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="bmb7UHgU";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Qh3kq8EH"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62N7tdui1627218
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 12:13:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	9kZ8mRHoal7TjebVoiJ3QW1/Vt28tdmOa/xyLh0UN7o=; b=bmb7UHgUYndyvqdS
+	38xJGwuRiN4KyoMiZDow2PhbsOtlhFY7sCSntZgoPsWuiOxbZv6NRZvdBVc2OXfO
+	RAw7fk4CE7BGiBOu82MYlYrCkO/3BVsJhNoSR6Ewob8jYYdoziZKQO94cvh10oaX
+	/LU/jZksG6VhREqdsHgnOEJSK+JLc/xQqpHG09wVjDO4KmW6ZPmVLnMe7nrJ8qYY
+	DqydSs/j+nr1+DLSpd20p6u74aYHiJo7QGnS+alQwbh4MluoVz4e5vN4kHjzlHVE
+	cS5KKMy8dibv1oBy9mxtxO2Sy+DCeiDsNJ5aMHHk/9gsCzz1pBztpvK7gOeIvVJ1
+	oDzX+A==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d31jc0vwc-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 12:13:23 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-35b96fbfc64so15030291a91.2
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 05:13:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774264462; x=1774869262; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
-        b=Bn82Ql8bEbzB7ovYrS2cyKJ7rqnYq5cuNEGH8ulsVoNTcEZ3cTXKEoNT2IH9h6RTF0
-         7jZGxZSi1sN30QazDNR5Y9JpYA01kKZhXFxN26S2LOJv4xR4z6oTxQVs4qFTqgizm71O
-         UBoj7hDw2QnR2iKLbKF7xec1NC/Olc2cCY4m+dLf+7cPHr7KLwU3zGdRL06RydJmTYUW
-         CVTXAMMna7cDto7DWo0QrTV6Qki/b0DvMVVlTmFbVBAspDh+b0CmzQMy1O8DDxRn8Iao
-         GL54wek7J00SOpMExdOYoAz1/jm0/R2EpodH3WLal9z9sECTSFWbAC1+ppymJuyIdz99
-         6yaQ==
+        d=oss.qualcomm.com; s=google; t=1774268002; x=1774872802; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=9kZ8mRHoal7TjebVoiJ3QW1/Vt28tdmOa/xyLh0UN7o=;
+        b=Qh3kq8EHXj3F4QjbCb89HPd7KRRjyXeSpj7tRZ0h3QojPSsX5WN2tsBkFJB3zaQfXo
+         QaYZuYQa8UNULgbBnsR6sr2b7kITqTnJa1NW00me0GXds1DDwy0zZIkNgkVon2Lf6J3t
+         7N71soSeOgPsdrNHnh2iy9WXoeiQmUQZe8w9Kr5n1SAILHHqrsO5w9LjwVAF3x1WtsDo
+         j9L1xnbe9I81IAOHyNm1HOuPbOXZaNJIlsEPAV+rFjXgMieZvQ1Mf3yDMFrw6BKZ883d
+         ZoBtpukm6iP+OrsogkaRJJb+563cYWECbzCe9VWzy2KvAMW1XjdJzQxPlV2k5qIn8jf9
+         Bwgg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774264462; x=1774869262;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
-        b=TzUiVeDywsib0K703yLhk+EYgDVXhT79JWuvs2TrcEPmFitTc3/ZLjVEkFIq0X+C6b
-         WIxZHqwTqp6bbc4L576MmiF4YchWv8XTa4ndqLn+b5IuR7NOyBjxiAktsUwOpHbFmHiv
-         eU+i0Hu0RM4q+PKi86dkF2n7VGJ+lMCi3fB28bfLhigiKw0tMbvC/oxIe0jf/rCTOJEZ
-         KVXqrsery5/QurYjcPeSeOmhJ0YHZDnD+Zev7oC0LK4UiF+3D9EfMOu8aeV8FbAs78Qd
-         xFAKQ4e7wyb0lBUaSQdRkf5IIliWlWpkB8dlRQ2IGM2D6ujB4m4O6NtXOl6J4JaJW9p6
-         e6Hg==
-X-Forwarded-Encrypted: i=1; AJvYcCXBU3+yQ6pcLMBJyhWPD29/mIboEcUbPXKz7ggDO4RC2jt0WRrTTpIzmmQsoj6K5RevWXRokzD+sA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwTIMcaNKis3nfP1n4kcNTRVeqvb9gQgkAbFWPZmrTLIniPxg2p
-	ehziIF779b/J7IcbKhc6hElS1hCaRzRYNQQ4ecFLzVxwDURGR9zra9Jjyfo853hg2p5cqUBfOYV
-	RjiNacH3THnY/FmBfo3THpLXmPjgYH3Yx4Aj/72RYHw==
-X-Gm-Gg: ATEYQzx4K0NVsaU3/8wS2JVlqtjDTSH5ji3xKCmecqFmFzwEdozM/0X5l9NbGWOBfr5
-	yp8x0TEPJw4YHLVYRaNqiwagLcrx6JLy5fGoM/9pus46caNplUikgSSkSdga7jIjFJi86rKVU+B
-	WsqVkquKabggsiKRRjztRQKdUjlO+B96RLvQt16p9CpZyPuMLoD07ElB3fVO5rUprQ6Kd5Fc8m9
-	qhAKCZw6h3lDEkJiRi3sJNKRrET+dAadRXJXAb8kHbg8DnmlOy7vbwjDueZPDAu3rJ9d9W6/bxm
-	+Eq2kI4W
-X-Received: by 2002:a05:6512:10cf:b0:5a1:2b2b:479d with SMTP id
- 2adb3069b0e04-5a285b6125fmr4577456e87.31.1774264462090; Mon, 23 Mar 2026
- 04:14:22 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774268002; x=1774872802;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=9kZ8mRHoal7TjebVoiJ3QW1/Vt28tdmOa/xyLh0UN7o=;
+        b=Rd+jOIjSj56OZkBINETwkCnlqEQ3hDW0/FVLeyK5vJxKoonYyy4v4WEZYEQmNFTSiQ
+         kePYt8JfXsyOtwLTESpPnbpCZbuoUXkb8yEb9nV3o5XAqYTh/Ux8o+C1HGQwBd6tZv+l
+         xvTdzLaS/VvJSTUvJAA681MEOYh6/qzRgvTg8Hi+NOz+3GzosQTOAW8gUWUgv9o1RZho
+         CEDCxzn1dK4oOg453+aNVxZZjqmtI/Ai73mNizfXFqa89qmSZ5Sh3HqKflTrNy/i0ayE
+         iLlxD5iseQH2GRz+uIK8j0saYSgZms3YvlxapWhdU95hFkoZ+i14VegPoM0xJjHF7Mla
+         YjEg==
+X-Forwarded-Encrypted: i=1; AJvYcCWDrOQTC29KOtqk+VXkEvkGB5/QTHCfxj6guWwNUaT65ISS5j8D4a883HnnqqP8nYhVIf7c3kJLfQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz5Nxs9Hpko4PjxmHOa2IABmIF7nLpj0lsEGczQOUWFfwRMwFee
+	Q9J2gGBHFnXVpEhsft2oGQ4ACfG9hMKuomi8oCmcVyUoQuXQHrr94QAIHBKlcRg816ov8Q7ga0k
+	8RTfD2BoVOi4BS8ZkwCa744mrbIflAnxGxa/wQ3MMcLUVDUbm9HhgXt7em0LfFg==
+X-Gm-Gg: ATEYQzy2bUG8GpchXTvggrllRidsWP+7bI6G5ooIk0Qj112LdtdO1cFLKIcElpk94li
+	5ustRnRMtSB5NUb7WEthsgCJxXDnSXxByHUIqOoo1Geeo6v8Xb2EOy9IOTKjnE37IP7P7ggAnPd
+	FFF4eL0C5lo2qoGQA6QdrXP0F+9T+9hcsZQn00vDC4c8aD67JnS0ViYeGx6MgNP9RTtR7WwbA30
+	nwgNFpHXuQtYsQRATRhjhPO/p4iM6clsvOgwAODS2NRKmL4hC5rSmiO4gMmF5kdeauiwO18uAEr
+	ZRHg45kOqclMbR6UMBOHIuDO7JDUbj3/s/e8HsNz+Rs/8wSh2kPrbmUjDT62WClnxmAeh8lUgrD
+	sHeVKOPeJYeM0JFxd+0eNC0iO7BWH+3Kl/ySoz0HBaggKsOHjjZQ=
+X-Received: by 2002:a17:90b:5203:b0:359:8e1c:542 with SMTP id 98e67ed59e1d1-35bd2d217b9mr9330694a91.18.1774268002455;
+        Mon, 23 Mar 2026 05:13:22 -0700 (PDT)
+X-Received: by 2002:a17:90b:5203:b0:359:8e1c:542 with SMTP id 98e67ed59e1d1-35bd2d217b9mr9330655a91.18.1774268001912;
+        Mon, 23 Mar 2026 05:13:21 -0700 (PDT)
+Received: from [10.217.198.242] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35bc6017492sm12976530a91.5.2026.03.23.05.13.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 23 Mar 2026 05:13:21 -0700 (PDT)
+Message-ID: <fcb05fb8-ed4f-4df1-9aa2-18bc3320cad5@oss.qualcomm.com>
+Date: Mon, 23 Mar 2026 17:43:18 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org> <177409907930.268981.5882592990447577348.b4-ty@b4>
-In-Reply-To: <177409907930.268981.5882592990447577348.b4-ty@b4>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 23 Mar 2026 12:13:46 +0100
-X-Gm-Features: AQROBzDb0FyhDsEJ4InmRtciuv9Wo1DbFap7YBMqRE1Hh3qfHVm60c1Z9Vi7vPA
-Message-ID: <CAPDyKFoz-sm0pfvn5iSYFY0mrW38vaGRZsFvrVPqsv7BsYxeWQ@mail.gmail.com>
-Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
- Google GS101
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	=?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
-	Juan Yescas <jyescas@google.com>, Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Krzysztof,
-
-On Sat, 21 Mar 2026 at 14:18, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
->
-> On Wed, 18 Mar 2026 15:27:45 +0000, Andr=C3=A9 Draszik wrote:
-> > This series adds support for the power domains on Google GS101.
-> >
-> > There are a few differences compared to SoCs already supported by this
-> > driver:
-> > * register access does not work via plain ioremap() / readl() /
-> >   writel().
-> >   Instead, the regmap created by the PMU driver must be used (which
-> >   uses Arm SMCC calls under the hood).
-> > * DTZPC: a call needs to be made before and after power domain off/on,
-> >   to inform the EL3 firmware of the request.
-> > * power domains can and are fed by a regulator rail and therefore
-> >   regulator control needed be implemented.
-> >
-> > [...]
->
-> Applied, thanks!
->
-> [01/10] dt-bindings: soc: google: add google,gs101-dtzpc
->         https://git.kernel.org/krzk/linux/c/10084aeadadfab72648f6ed1cc78f=
-7cd87b861ba
-> [03/10] dt-bindings: soc: samsung: exynos-pmu: move gs101-pmu into separa=
-te binding
->         https://git.kernel.org/krzk/linux/c/3ec3c42b426fe5e2b48ff19c551de=
-c50bc78788c
-> [04/10] dt-bindings: soc: google: gs101-pmu: allow power domains as child=
-ren
->         https://git.kernel.org/krzk/linux/c/c8229a5160eea145b796f54317d6e=
-659cec9b080
->
-> Best regards,
-
-Usually I pick up the power-domain related changes for the DT bindings
-and host them via an immutable branch called "dt". If needed, SOC
-maintainers can pull it to apply/test the corresponding DTS changes.
-
-That said, I am open to whatever you think is best here. Perhaps it's
-easier if you can drop the DT patches and provide your acks instead or
-if you can share them via an immutable branch for me to pull?
-
-Kind regards
-Uffe
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpuidle: Deny idle entry when CPU already have IPI
+ interrupt pending
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+References: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
+ <CAJZ5v0hv+t8=mT39-xOkGUS5i6vckJxwfQfqGZ4foxK2rFn8gw@mail.gmail.com>
+Content-Language: en-US
+From: "Maulik Shah (mkshah)" <maulik.shah@oss.qualcomm.com>
+In-Reply-To: <CAJZ5v0hv+t8=mT39-xOkGUS5i6vckJxwfQfqGZ4foxK2rFn8gw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=fKc0HJae c=1 sm=1 tr=0 ts=69c12e63 cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=NEAV23lmAAAA:8 a=EUspDBNiAAAA:8 a=lggpn7pwzXPsZ0vCzx8A:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-GUID: fLM8aJR24jMJZiUGM8p8SOon8rqs7WkZ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA5NSBTYWx0ZWRfX0zDmGfqE+Wjt
+ 7DNuogHJGwqGDxXWIamUfrd32xT6k2g+SHcMYL3ar/2oG9bKTguPUeo/MX/LGeffKfLz/F9ZrBz
+ h95PuyCslPG53FSqqA5BhQVr1mJOTRPmbVwEWEyxq+OyMFuIVplC24g4ObhON+8x5m7VfFbme8k
+ 9OoPKamtcPjKFmwqflAQNL6LJUMoE/zyFpVK9qEiQ+yrqrtVDcYvUb8zQNWH6/oBGS8nGt24i8b
+ QYjJqlIF6FGJ/beerp8ghHy2jIyLU2c3rqVxOGexDuG8H1gPqkTucRQXgzVpQjW831zbm8uNp4N
+ 4MnCtvY3nZ1JjFzdQIU/xgGxYr6bDK37H1i9PX3dxx8iYrHqG5dOglTxTGICiouzoYFDtQuo4Nm
+ dIiQAL6YBfLM2caVNs7ld/NBVOTHCtqF59IlIWP0boKNOD8U2M8PvKXVPSgWzOE6hF7lsTpO/VP
+ r6RzReiBwf5xY8qPtsw==
+X-Proofpoint-ORIG-GUID: fLM8aJR24jMJZiUGM8p8SOon8rqs7WkZ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-23_03,2026-03-20_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 priorityscore=1501 phishscore=0 lowpriorityscore=0
+ adultscore=0 bulkscore=0 spamscore=0 suspectscore=0 malwarescore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603230095
 
 
 
+On 3/20/2026 11:59 PM, Rafael J. Wysocki wrote:
+> On Mon, Mar 16, 2026 at 8:38 AM Maulik Shah
+> <maulik.shah@oss.qualcomm.com> wrote:
+>>
+>> CPU can get IPI interrupt from another CPU while it is executing
+>> cpuidle_select() or about to execute same. The selection do not account
+>> for pending interrupts and may continue to enter selected idle state only
+>> to exit immediately.
+>>
+>> Example trace collected when there is cross CPU IPI.
+>>
+>>  [000] 154.892148: sched_waking: comm=sugov:4 pid=491 prio=-1 target_cpu=007
+>>  [000] 154.892148: ipi_raise: target_mask=00000000,00000080 (Function call interrupts)
+>>  [007] 154.892162: cpu_idle: state=2 cpu_id=7
+>>  [007] 154.892208: cpu_idle: state=4294967295 cpu_id=7
+>>  [007] 154.892211: irq_handler_entry: irq=2 name=IPI
+>>  [007] 154.892211: ipi_entry: (Function call interrupts)
+>>  [007] 154.892213: sched_wakeup: comm=sugov:4 pid=491 prio=-1 target_cpu=007
+>>  [007] 154.892214: ipi_exit: (Function call interrupts)
+>>
+>> This impacts performance and the above count increments.
+>>
+>> commit ccde6525183c ("smp: Introduce a helper function to check for pending
+>> IPIs") already introduced a helper function to check the pending IPIs and
+>> it is used in pmdomain governor to deny the cluster level idle state when
+>> there is a pending IPI on any of cluster CPUs.
+> 
+> You seem to be overlooking the fact that resched wakeups need not be
+> signaled via IPIs, but they may be updates of a monitored cache line.
+> 
+>> This however does not stop CPU to enter CPU level idle state. Make use of
+>> same at CPUidle to deny the idle entry when there is already IPI pending.
+>>
+>> With change observing glmark2 [1] off screen scores improving in the range
+>> of 25% to 30% on Qualcomm lemans-evk board which is arm64 based having two
+>> clusters each with 4 CPUs.
+>>
+>> [1] https://github.com/glmark2/glmark2
+>>
+>> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
+>> ---
+>>  drivers/cpuidle/cpuidle.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index c7876e9e024f9076663063ad21cfc69343fdbbe7..c88c0cbf910d6c2c09697e6a3ac78c081868c2ad 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -224,6 +224,9 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
+>>         bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+>>         ktime_t time_start, time_end;
+>>
+>> +       if (cpus_peek_for_pending_ipi(drv->cpumask))
+>> +               return -EBUSY;
+>> +
+> 
+> So what if the driver handles all CPUs in the system and there are
+> many of them (say ~500) and if IPIs occur rarely (because resched
+> events are not IPIs)?
 
+Missed the case of driver handling multiple CPUs,
+In v2 would fix this as below, which checks pending IPI on single
+CPU trying to enter idle.
 
+     if (cpus_peek_for_pending_ipi(cpumask_of(dev->cpu)))
 
-> --
-> Krzysztof Kozlowski <krzk@kernel.org>
->
+I see IPIs do occur often, in the glmark2 offscreen case
+mentioned in commit text, out of total ~12.2k IPIs across all 8 CPUs,
+~9.6k are function call IPIs, ~2k are IRQ work IPIs, ~560 Timer broadcast
+IPIs while rescheduling IPIs are only 82.
+
+Thanks,
+Maulik
+
+> 
+>>         instrumentation_begin();
+>>
+>>         /*
+>>
+>> ---
+
