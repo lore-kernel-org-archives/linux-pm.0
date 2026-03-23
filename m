@@ -1,346 +1,131 @@
-Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB5DF3BA230
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:08:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774282115; cv=none; b=GdVe479Q9lM9RXbHxSr+LKWFmyUhswnw4BmeLY9h4S8c+Iij7SLcKB+riEgLgpEynHXBuRbphofdjRoH3dCJPagWMjXHNCP/ogqiGlFxN/Hya2+oBs1U8SOSW0pCJOE3ey7lqJO4Ab61xhmVwj5DjeODzFP1a5sXSa4pDPngMfw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774282115; c=relaxed/simple;
-	bh=SoohVzFbhb6Tnoo2r/PWIEvoE++S57sXmQbf6UIN06E=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Y/kxHHzaUZ4Sc3VLV4nGk8MNii1UOzvgmB5FVR6zMDV+71+nweKOjtBbKBCo/kFHigpaSjPgkRi5pYuC8Wh5KySkrYau3oyOVu2nxkOOWDhlqe1pSW8dyho+49rC3RCFfvayXGmRAvbo4nt6csWaKTRNqxLyp9ao35y9JMu+8Ik=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
-Received: from unknown (HELO yjaykim-PowerEdge-T330.lge.net) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 24 Mar 2026 01:08:26 +0900
-X-Original-SENDERIP: 10.177.112.156
-X-Original-MAILFROM: youngjun.park@lge.com
-From: Youngjun Park <youngjun.park@lge.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Li <chrisl@kernel.org>,
-	Kairui Song <kasong@tencent.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>,
-	Baoquan He <bhe@redhat.com>,
-	Barry Song <baohua@kernel.org>,
-	Youngjun Park <youngjun.park@lge.com>,
-	Usama Arif <usama.arif@linux.dev>,
-	linux-pm@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: [PATCH v8 1/2] mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap device
-Date: Tue, 24 Mar 2026 01:08:21 +0900
-Message-Id: <20260323160822.1409904-2-youngjun.park@lge.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260323160822.1409904-1-youngjun.park@lge.com>
-References: <20260323160822.1409904-1-youngjun.park@lge.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE9BA3B9D85
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:20:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774282848; cv=pass; b=rgqoX4ldEid1wtQIj8TvbcnaUma+/hqvm4DcWyKkkHHsa7rBwYzUCbtG/r67LTAyM7rgxE1SwuXw+TVuML6Mbe9WTMXBmjibJEy32md131uiKwo9sjLV5Zs15+kso4+Q2HZG+kBVOuLpKEhGljkRmFE18uIL9UeUfYEcfkuLvkY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774282848; c=relaxed/simple;
+	bh=V94g1pzKL5dHi5fv8nGsDMXp1c7cNO9ZtyC0nibAyPA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Fm3tvphOHUplsEeDSBZgS0pDHyydb328NXmcgE2L7RWxl2GHoJP+XwIp2xWNy49qaTS2zUkqJbDMD/2IkWOMLyrTUQnb0yXp8qxenVZ7O2ID3/khpZffby2OqLq47sbhMMftTqKzVZgAhvepKl/d2nT3r+OuaXsu5UNSpk9M7R8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=tAhw6w9G; arc=pass smtp.client-ip=209.85.208.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="tAhw6w9G"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-660a58841d4so688177a12.0
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:20:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774282845; cv=none;
+        d=google.com; s=arc-20240605;
+        b=W5+hchdm/6UIM+vlsQnfTLr9i4OI5Xd0k0CdTfEXB5E7+BkXhtkYqJabouifULciOz
+         dTddUfsztka9+qGe8ESw/FN85PmCf69hHUFIbV1CpZqp+XsUkvgdgaCkHg2AQaIdfwAL
+         fw0apD3T+YCsWfnobXs1GCDXmlExTupP98Ma9eKcreXESeeCI4cLA1pBN4Jvv+gBtsR1
+         YB7tkyclyne6C+UGhuu/ZE9bixwGNKy1ysu5j0m1CLdVc9SoBIY1L639kBWEWyDoXVNu
+         XEPG2LBskdMrckMV0py924hl1eifajSiT/kOQdPju5pTclsCv6W28aSUgYn1uYvvO+xj
+         GwDw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=V94g1pzKL5dHi5fv8nGsDMXp1c7cNO9ZtyC0nibAyPA=;
+        fh=V/7MpjKzDhsOF9zf5/r8RRs6N5o+jXVvKVCTMFTeT7U=;
+        b=bewoBczt6GAtAe4Y9RUD0Vykk21lrWjxquxir+PBLjr8U3G+NRwVRdPWcThLnSuWkv
+         iiAAh+WvTgYy8Dh7H3jIVlVtOBc5yzvNspdYWps6TrKnP2zLRVWBzYGsFVFP2EV9W8On
+         8wLBKYv2/p7EVkse/HqiWDMDSbAAsBr1BGRaT4bm+B7kkEh8lLoWJoXudUHRzL5VjSLs
+         OwvVIrBFhtFpkA8px3WZmJEtqlUZDceWDM3AXpi1LWjk22QY/1cDbIbi1B9dtayXf1ux
+         FwLdZ12V65FxRS7DRoxS6noHn/rV+R7as6P6/sfRfxbwVEZO9n6edGzB/6B08sHfAPm+
+         IztQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1774282845; x=1774887645; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=V94g1pzKL5dHi5fv8nGsDMXp1c7cNO9ZtyC0nibAyPA=;
+        b=tAhw6w9GKdc3xo2aP/R1zmF2Bg6DHmgYENELQvZe5GZj7w+UyBENW0Z5anZHMfMh24
+         RMxu1/frYTMQOLQG5jHMBFLRKL4TiK7nEcQuN8yjEJlurVUiLFmrFmyq58eXxFj7Rfz/
+         zQzmqAt/pQfPrkmHiHaTw7NAI6czwsYBFMdWL7EadWwMHMoXGcaJheEJYX+cHn/nzkeM
+         uhaIKUYdA6x8t9InJb7gIKXEJzoPSqkDVqsbYEUNF4OSzDb+j9k5yKZ10fol8gCu6ilI
+         jFHokAKCJPcB89wn126XOjLiNFV86nNWpd4M+n0PdIRyYFBLsBujuAGUxnRC9c102arW
+         uKCw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774282845; x=1774887645;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=V94g1pzKL5dHi5fv8nGsDMXp1c7cNO9ZtyC0nibAyPA=;
+        b=ZOvD4QltukJAVtgAJUQUFwou0NXYdHDWP7+CJrXyORx3CMOk66w9NNR3Uye60GxeYf
+         7fOvMAt/Hva5UHTKEX/2UlLDTAvCVfL5mWB/JjASC9EnUnnZ+br5EQALtzSHXoyz+H07
+         xnzFSepkvbhY1Rob+XnMsM4KSJGiiW8+ViSOW5eVhc4ET+pp5nmjzRhBzgF8RRH3Zf3n
+         i4Eay7PyLSqPIS1WBsMO5lGElVnZQ07yoPuSB/3CMVzr4uArS1Ti+44M7lt6bxlP3QfL
+         O4YcNSgRAG7dwcAbf+rQwJtaSg2nV0Oz04Om0vJ36YtMw6agOe91nJN4fbhOkcPjXE8R
+         oOCA==
+X-Forwarded-Encrypted: i=1; AJvYcCWXKWnB1p4OvgCZskXCws2zYZZOjdqnA1E+AcqhRaFKO410T2llJ2EgEeG+wg5BLHcIojuKyGxm8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyjgEJqEVJVsojb5fq3xJY9EWa2RE5n/+kMAdH7J3XMgNwMGInx
+	wmiifD6oXg+1SmK6LqpwVCp0r4vnyIjNS3G+yw0MShZBcB3HN1Jhu+4BB/RgBhn0bYVgZPL8YI1
+	3USV+jHeL1WJZIOq396Ieb6UwUuWjjdt3dMyWeY5Q8al3C6xWfn0rrCEc
+X-Gm-Gg: ATEYQzzwJbVuRSioHvgLCezY3gHM0pbG/uaHmyjljd8L2kPuU01f5CQD+xz1+OrqlVL
+	elzLyUPpYGr+8In78y+Hu7AtC34/IKqDeTJ8swPQbuJW6XtPaduGXhNzx9Iprscp7EjGNQThlY8
+	CDY6sdXSr3AR85vp+LaoKpyACAYr1ihMOu+B26Jx8BP3BSm5dHuK5yr2Iaj+YYm5uvjSNCVgm7e
+	y4XXtEZEp+k7pzeIeY33zZePezTMSOV9BQ/ErnYPYc61rnfsntsSlFMdk12DLJCxNMLukMCecXe
+	ztFMxBp1s0flH4xgIKJIL9PRmhtzo8A19i6ta1UUlao7T5NZuaNp
+X-Received: by 2002:a17:906:919:b0:b83:e7e:3732 with SMTP id
+ a640c23a62f3a-b982f3630e7mr720689166b.30.1774282844692; Mon, 23 Mar 2026
+ 09:20:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260320160055.4114055-1-wusamuel@google.com> <CAP01T77hy3j5BZMBcYdadLfPe7dYb3zEGDF9daUxJHYy=+fcgA@mail.gmail.com>
+In-Reply-To: <CAP01T77hy3j5BZMBcYdadLfPe7dYb3zEGDF9daUxJHYy=+fcgA@mail.gmail.com>
+From: Samuel Wu <wusamuel@google.com>
+Date: Mon, 23 Mar 2026 09:20:35 -0700
+X-Gm-Features: AaiRm52TW1-EKDTCZ2bTgcJapMDIKftRA_vvryAeSsRy_n7c_tkgZmk8jNhLUuc
+Message-ID: <CAG2Kctooz+1ywStvHv=wg0p6ZTbHGm4nf5nGUfcrOnDi6H6KSw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/2] *** Support BPF traversal of wakeup sources ***
+To: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, andrii@kernel.org, 
+	bpf@vger.kernel.org, kernel-team@android.com, linux-pm@vger.kernel.org, 
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hibernation via uswsusp (/dev/snapshot ioctls) has a race window:
-after selecting the resume swap area but before user space is frozen,
-swapoff may run and invalidate the selected swap device.
+On Sat, Mar 21, 2026 at 10:52=E2=80=AFAM Kumar Kartikeya Dwivedi
+<memxor@gmail.com> wrote:
+>
 
-Fix this by pinning the swap device with SWP_HIBERNATION while it is
-in use.  The pin is exclusive, which is sufficient since
-hibernate_acquire() already prevents concurrent hibernation sessions.
+[ ... ]
 
-The kernel swsusp path (sysfs-based hibernate/resume) uses
-find_hibernation_swap_type() which is not affected by the pin.  It
-freezes user space before touching swap, so swapoff cannot race.
+> >
+> > The initial attempts for BPF traversal of wakeup_sources was with BPF
+> > iterators [1]. However, BPF already allows for traversing of a simple l=
+ist
+> > with bpf_for(), and this current patchset has the added benefit of bein=
+g
+> > ~2-3x more performant than BPF iterators.
+>
+> See, it ended up being faster ;-).
 
-Introduce dedicated helpers:
-- pin_hibernation_swap_type(): Look up and pin the swap device.
-  Used by the uswsusp path.
-- find_hibernation_swap_type(): Lookup without pinning.
-  Used by the kernel swsusp path.
-- unpin_hibernation_swap_type(): Clear the hibernation pin.
+Yup, thanks for the suggestion!
 
-While a swap device is pinned, swapoff is prevented from proceeding.
+>
+> That said, I didn't understand why you dropped the test. We still need
+> unit tests that ensure the verifier causes the bpf_ws_lock to be
+> released before exit, and an example program (like the one you
+> benchmarked with) to demonstrate usage. Both are mandatory. See
+> various *_fail.c files in progs/ and RUN_TESTS() macro for running
+> negative tests easily. I doubt we will have any wakeup_sources in the
+> CI environment, but the example has value nonetheless.
+>
+> pw-bot: cr
+>
 
-Signed-off-by: Youngjun Park <youngjun.park@lge.com>
----
- include/linux/swap.h |   5 +-
- kernel/power/swap.c  |   2 +-
- kernel/power/user.c  |  15 ++++-
- mm/swapfile.c        | 135 ++++++++++++++++++++++++++++++++++++++-----
- 4 files changed, 136 insertions(+), 21 deletions(-)
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 7a09df6977a5..1930f81e6be4 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -213,6 +213,7 @@ enum {
- 	SWP_PAGE_DISCARD = (1 << 10),	/* freed swap page-cluster discards */
- 	SWP_STABLE_WRITES = (1 << 11),	/* no overwrite PG_writeback pages */
- 	SWP_SYNCHRONOUS_IO = (1 << 12),	/* synchronous IO is efficient */
-+	SWP_HIBERNATION = (1 << 13),	/* pinned for hibernation */
- 					/* add others here before... */
- };
- 
-@@ -433,7 +434,9 @@ static inline long get_nr_swap_pages(void)
- }
- 
- extern void si_swapinfo(struct sysinfo *);
--int swap_type_of(dev_t device, sector_t offset);
-+extern int pin_hibernation_swap_type(dev_t device, sector_t offset);
-+extern void unpin_hibernation_swap_type(int type);
-+extern int find_hibernation_swap_type(dev_t device, sector_t offset);
- int find_first_swap(dev_t *device);
- extern unsigned int count_swap_pages(int, int);
- extern sector_t swapdev_block(int, pgoff_t);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 2e64869bb5a0..cc4764149e8f 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -341,7 +341,7 @@ static int swsusp_swap_check(void)
- 	 * This is called before saving the image.
- 	 */
- 	if (swsusp_resume_device)
--		res = swap_type_of(swsusp_resume_device, swsusp_resume_block);
-+		res = find_hibernation_swap_type(swsusp_resume_device, swsusp_resume_block);
- 	else
- 		res = find_first_swap(&swsusp_resume_device);
- 	if (res < 0)
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 4401cfe26e5c..4406f5644a56 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -71,7 +71,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	memset(&data->handle, 0, sizeof(struct snapshot_handle));
- 	if ((filp->f_flags & O_ACCMODE) == O_RDONLY) {
- 		/* Hibernating.  The image device should be accessible. */
--		data->swap = swap_type_of(swsusp_resume_device, 0);
-+		data->swap = pin_hibernation_swap_type(swsusp_resume_device, 0);
- 		data->mode = O_RDONLY;
- 		data->free_bitmaps = false;
- 		error = pm_notifier_call_chain_robust(PM_HIBERNATION_PREPARE, PM_POST_HIBERNATION);
-@@ -90,8 +90,10 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 			data->free_bitmaps = !error;
- 		}
- 	}
--	if (error)
-+	if (error) {
-+		unpin_hibernation_swap_type(data->swap);
- 		hibernate_release();
-+	}
- 
- 	data->frozen = false;
- 	data->ready = false;
-@@ -115,6 +117,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
- 	data = filp->private_data;
- 	data->dev = 0;
- 	free_all_swap_pages(data->swap);
-+	unpin_hibernation_swap_type(data->swap);
- 	if (data->frozen) {
- 		pm_restore_gfp_mask();
- 		free_basic_memory_bitmaps();
-@@ -235,11 +238,17 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- 		offset = swap_area.offset;
- 	}
- 
-+	/*
-+	 * Unpin the swap device if a swap area was already
-+	 * set by SNAPSHOT_SET_SWAP_AREA.
-+	 */
-+	unpin_hibernation_swap_type(data->swap);
-+
- 	/*
- 	 * User space encodes device types as two-byte values,
- 	 * so we need to recode them
- 	 */
--	data->swap = swap_type_of(swdev, offset);
-+	data->swap = pin_hibernation_swap_type(swdev, offset);
- 	if (data->swap < 0)
- 		return swdev ? -ENODEV : -EINVAL;
- 	data->dev = swdev;
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 802332850e24..c5b459a18f43 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -133,7 +133,7 @@ static DEFINE_PER_CPU(struct percpu_swap_cluster, percpu_swap_cluster) = {
- /* May return NULL on invalid type, caller must check for NULL return */
- static struct swap_info_struct *swap_type_to_info(int type)
- {
--	if (type >= MAX_SWAPFILES)
-+	if (type < 0 || type >= MAX_SWAPFILES)
- 		return NULL;
- 	return READ_ONCE(swap_info[type]); /* rcu_dereference() */
- }
-@@ -2138,22 +2138,15 @@ void swap_free_hibernation_slot(swp_entry_t entry)
- 	put_swap_device(si);
- }
- 
--/*
-- * Find the swap type that corresponds to given device (if any).
-- *
-- * @offset - number of the PAGE_SIZE-sized block of the device, starting
-- * from 0, in which the swap header is expected to be located.
-- *
-- * This is needed for the suspend to disk (aka swsusp).
-- */
--int swap_type_of(dev_t device, sector_t offset)
-+static int __find_hibernation_swap_type(dev_t device, sector_t offset)
- {
- 	int type;
- 
-+	lockdep_assert_held(&swap_lock);
-+
- 	if (!device)
--		return -1;
-+		return -EINVAL;
- 
--	spin_lock(&swap_lock);
- 	for (type = 0; type < nr_swapfiles; type++) {
- 		struct swap_info_struct *sis = swap_info[type];
- 
-@@ -2163,16 +2156,118 @@ int swap_type_of(dev_t device, sector_t offset)
- 		if (device == sis->bdev->bd_dev) {
- 			struct swap_extent *se = first_se(sis);
- 
--			if (se->start_block == offset) {
--				spin_unlock(&swap_lock);
-+			if (se->start_block == offset)
- 				return type;
--			}
- 		}
- 	}
--	spin_unlock(&swap_lock);
- 	return -ENODEV;
- }
- 
-+/**
-+ * pin_hibernation_swap_type - Pin the swap device for hibernation
-+ * @device: Block device containing the resume image
-+ * @offset: Offset identifying the swap area
-+ *
-+ * Locate the swap device for @device/@offset and mark it as pinned
-+ * for hibernation. While pinned, swapoff() is prevented.
-+ *
-+ * Only one uswsusp context may pin a swap device at a time.
-+ * If already pinned, this function returns -EBUSY.
-+ *
-+ * Return:
-+ * >= 0 on success (swap type).
-+ * -EINVAL if @device is invalid.
-+ * -ENODEV if the swap device is not found.
-+ * -EBUSY if the device is already pinned for hibernation.
-+ */
-+int pin_hibernation_swap_type(dev_t device, sector_t offset)
-+{
-+	int type;
-+	struct swap_info_struct *si;
-+
-+	spin_lock(&swap_lock);
-+
-+	type = __find_hibernation_swap_type(device, offset);
-+	if (type < 0) {
-+		spin_unlock(&swap_lock);
-+		return type;
-+	}
-+
-+	si = swap_type_to_info(type);
-+	if (WARN_ON_ONCE(!si)) {
-+		spin_unlock(&swap_lock);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * hibernate_acquire() prevents concurrent hibernation sessions.
-+	 * This check additionally guards against double-pinning within
-+	 * the same session.
-+	 */
-+	if (WARN_ON_ONCE(si->flags & SWP_HIBERNATION)) {
-+		spin_unlock(&swap_lock);
-+		return -EBUSY;
-+	}
-+
-+	si->flags |= SWP_HIBERNATION;
-+
-+	spin_unlock(&swap_lock);
-+	return type;
-+}
-+
-+/**
-+ * unpin_hibernation_swap_type - Unpin the swap device for hibernation
-+ * @type: Swap type previously returned by pin_hibernation_swap_type()
-+ *
-+ * Clear the hibernation pin on the given swap device, allowing
-+ * swapoff() to proceed normally.
-+ *
-+ * If @type does not refer to a valid swap device, this function
-+ * does nothing.
-+ */
-+void unpin_hibernation_swap_type(int type)
-+{
-+	struct swap_info_struct *si;
-+
-+	spin_lock(&swap_lock);
-+	si = swap_type_to_info(type);
-+	if (!si) {
-+		spin_unlock(&swap_lock);
-+		return;
-+	}
-+	si->flags &= ~SWP_HIBERNATION;
-+	spin_unlock(&swap_lock);
-+}
-+
-+/**
-+ * find_hibernation_swap_type - Find swap type for hibernation
-+ * @device: Block device containing the resume image
-+ * @offset: Offset within the device identifying the swap area
-+ *
-+ * Locate the swap device corresponding to @device and @offset.
-+ *
-+ * Unlike pin_hibernation_swap_type(), this function only performs a
-+ * lookup and does not mark the swap device as pinned for hibernation.
-+ *
-+ * This is safe in the sysfs-based hibernation path where user space
-+ * is already frozen and swapoff() cannot run concurrently.
-+ *
-+ * Return:
-+ * A non-negative swap type on success.
-+ * -EINVAL if @device is invalid.
-+ * -ENODEV if no matching swap device is found.
-+ */
-+int find_hibernation_swap_type(dev_t device, sector_t offset)
-+{
-+	int type;
-+
-+	spin_lock(&swap_lock);
-+	type = __find_hibernation_swap_type(device, offset);
-+	spin_unlock(&swap_lock);
-+
-+	return type;
-+}
-+
- int find_first_swap(dev_t *device)
- {
- 	int type;
-@@ -2936,6 +3031,14 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
- 		spin_unlock(&swap_lock);
- 		goto out_dput;
- 	}
-+
-+	/* Refuse swapoff while the device is pinned for hibernation */
-+	if (p->flags & SWP_HIBERNATION) {
-+		err = -EBUSY;
-+		spin_unlock(&swap_lock);
-+		goto out_dput;
-+	}
-+
- 	if (!security_vm_enough_memory_mm(current->mm, p->pages))
- 		vm_unacct_memory(p->pages);
- 	else {
--- 
-2.34.1
-
+Sounds good, in v2 I can add a test for the lock/unlock kfunc. And
+thanks for the thorough feedback, let me take a look at the *_fail.c
+files and test macros.
