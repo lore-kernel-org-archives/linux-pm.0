@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E33FA3BE62A;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0CE93BE626;
 	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774281857; cv=none; b=kmyJCSQn6hQKp2bku5lAjAofF8QK9roygFVjGE1NbI3Com1II5ZO0hF3kZ9k2uGjUs8atYhhwRCkkYDMpMzr6wu8CYcIKAG/YYSvA02ppiwhhLfSt9Ch2g/7JZeg0yMAP66N+ytBf6+ZVkJySqw9Inm0KThgJTlALwB8xNOq5xU=
+	t=1774281857; cv=none; b=J+nEZnY5jCQGINerQLbbKUL7MYP6tEGOcr9MzmNM4aBWHYaderqnMSLEMp/XWklwgOAfHD2F163BLO3z6sNkigJzrS2ePKkxNZAu1huqnVKxY3+2KltLIezcrOQ/LF8BCKATgLy14AplXFBZp4nv8qmzYiipia4YOLwfkYlIkEs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1774281857; c=relaxed/simple;
-	bh=DXyUYdfAms0oBEZCl+nVQo4RMJB3PO2qlaqMDTHS4w0=;
+	bh=VHMopsrG6Xi22dXMAyiAPvlaIWJqNW9MggRaSuIfstI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WH8x9FoHGwi13eao6Lvp2ETlQcgYG4+R8Ks+uCShDAtlhtxv8YUvZmk0Z0JW+4YI916jACYZMLUKyXpE2hUUpeB35dfHLAYhyv0rSMdiN+STnyQhGKgtG5E6kYHlLefy9kFTGMXaro1GKt5C/YikErl/dPvCrcG0buA0aZvwbxU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Cet5woGL; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=cg8/HWQnnw8G6PfioTc70PNcSLu3xVRmb0JH6RCerve0/hVR5VlOrJmv/KgdISCIjLQ5WqFk5/IKsIZGM5xzwBCM7eHxmWtcKOyLiwq95luTPzkGhnTPK89K4Mvloy3ntB7NpmWgnHvf7krtQtv9Z7GGNO845Zkz4IZQ5YqNm5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KrF8fe1X; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cet5woGL"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 915D3C2BCB5;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KrF8fe1X"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 877DEC2BCB4;
 	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1774281856;
-	bh=DXyUYdfAms0oBEZCl+nVQo4RMJB3PO2qlaqMDTHS4w0=;
+	bh=VHMopsrG6Xi22dXMAyiAPvlaIWJqNW9MggRaSuIfstI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Cet5woGL+COUNIrZkIAzOuyR9nVEGlgBvsbHnJTR0KZWYjQVR4co6p54o/j8gaLln
-	 lWl3RFnQUWyM3YnrkypPoYSArfwJJffsoZgYWmWBT4MbnJ5LYszJz1m8QZw+hhVMju
-	 DyZw50OCXSwAClbhecRaFX/sQs3Edlk2BWHMbXV1iGyNC+ps7HIuJtdSeTDyM6wd4c
-	 r1Whd4H2Dy8tnoPUQkc5zUlOv8fcEmfwa4fyB2iFFq1SMXjkIf7iwNpnRNUDtwoGiq
-	 PbssJ/InzVnG6bqKJEY5MYP5Hge9FL/44uKtfY4t4jpxa37/3J5jgh4j4YqCsTcRM5
-	 +OekkgWN7tw0w==
+	b=KrF8fe1XsxH7ARV7e521gkWrr1ji9P12SsvtABaLHNEN3Wf4AZjCQHRyh+5xdsuIl
+	 31M2XmXgZGn2bZVVAekdjdtEF2H6Jacn40HS0MUbf3eNNQUblWPrNvS/kZwfRNTheL
+	 bpX6rlLMtN0MNvHj+/A7LbGml+MIyzEbyroD64QhU2KIbVxqnbdW1iR2/KGQbPjQhL
+	 xxK/PW1Gs06xcFT4N9MjkNV/NAhEDXr8fKG1INTN42hBWaLwbdNYj4B65foidd2wqo
+	 d7b6uOAQlHjz2MyeNFXQRnZJq3oW8Lyr4wwgkex+fWa5FvHmvMFtb+7EVUV0cz5Gdv
+	 HXh9DaWdbfygw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83E21F483C3;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D5D5F483C1;
 	Mon, 23 Mar 2026 16:04:16 +0000 (UTC)
 From: Dimitri Fedrau via B4 Relay <devnull+dimitri.fedrau.liebherr.com@kernel.org>
-Date: Mon, 23 Mar 2026 17:04:07 +0100
-Subject: [PATCH v3 2/2] power: supply: gpio-charger: add support for
- fast-charge timer
+Date: Mon, 23 Mar 2026 17:04:06 +0100
+Subject: [PATCH v3 1/2] dt-bindings: power: supply: gpio-charger: add
+ support for fast-charge timer
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260323-gpio-charger-timer-v3-2-885796d681a5@liebherr.com>
+Message-Id: <20260323-gpio-charger-timer-v3-1-885796d681a5@liebherr.com>
 References: <20260323-gpio-charger-timer-v3-0-885796d681a5@liebherr.com>
 In-Reply-To: <20260323-gpio-charger-timer-v3-0-885796d681a5@liebherr.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -51,11 +51,11 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, Dimitri Fedrau <dimitri.fedrau@liebherr.com>, 
  Dimitri Fedrau <dima.fedrau@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774281855; l=5009;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774281855; l=1976;
  i=dimitri.fedrau@liebherr.com; s=20241202; h=from:subject:message-id;
- bh=sgtWDyyuZOzl/ITkNr7NiW/b4yVbW9a70XFWcPAqKSc=;
- b=khD+6O5ZJXoDwSEK8kj9wRmS78UwMjnhg11By7S+c8YAjiZAWVzqQXBFviSKR3N9XtCjAsfXk
- Wz3DIG5x82+BP0chcR1TF47YU3QgPrVanpCXqGpgg3lYJ8kjWsVMJlY
+ bh=qVR6Vlf2NNZxUIBX8M/euAC/Z+4KL1Wd23n+lTvvOvU=;
+ b=qRmAOLjR6UzvKW8cPZJQ3T9OJVvl50z8wxEwmvMLqS2Dra+xb0jUNQ24eg3yq4GfoOvy9EuaO
+ cTTFvIKcLkPB1A0Kp3mTsggf0o+4pM3FwQz8WGQ2qhpA1MEOXC22u8g
 X-Developer-Key: i=dimitri.fedrau@liebherr.com; a=ed25519;
  pk=rT653x09JSQvotxIqQl4/XiI4AOiBZrdOGvxDUbb5m8=
 X-Endpoint-Received: by B4 Relay for dimitri.fedrau@liebherr.com/20241202
@@ -67,144 +67,57 @@ From: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 
 On some devices like TIs BQ24081 battery charger it is possible to activate
 or deactivate a fast-charge timer that provides a backup safety for charge
-termination. In case of the BQ24081 it is a fixed 7-hour timer. Add support
-for enabling/disabling the fast-charge timer via GPIO.
+termination via GPIO. In case of the BQ24081 it is a fixed 7-hour timer.
 
 Signed-off-by: Dimitri Fedrau <dimitri.fedrau@liebherr.com>
 ---
- .../ABI/testing/sysfs-class-power-gpio-charger     | 14 ++++++
- drivers/power/supply/gpio-charger.c                | 56 +++++++++++++++++++++-
- 2 files changed, 69 insertions(+), 1 deletion(-)
+ .../bindings/power/supply/gpio-charger.yaml        | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-gpio-charger b/Documentation/ABI/testing/sysfs-class-power-gpio-charger
-new file mode 100644
-index 0000000000000000000000000000000000000000..4a14d1d1bee3b96b6c77865e693c892d9bc3e5d6
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-power-gpio-charger
-@@ -0,0 +1,14 @@
-+What:		/sys/class/power_supply/<supply_name>/fast_charge_timer
-+Date:		March 2026
-+KernelVersion:	7.1.0
-+Contact:	Dimitri Fedrau <dimitri.fedrau@liebherr.com>
-+Description:
-+		This entry enables or disables the timer in fast-charge mode.
-+		When enabled the timer is started with a fixed timeout. After
-+		timing out, charging is disabled. This provides a backup safety
-+		for charge termination. Disabling the timer doesn't have any
-+		impact on charge termination.
-+
-+		Access: Write
-+
-+		Valid values: 0 (disabled) or 1 (enabled)
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 2504190eba82e69b79382320e67de6b8f3dedc77..8b67118be38ffd974a67f8bee3b47973903196c5 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -32,6 +32,7 @@ struct gpio_charger {
- 	struct power_supply_desc charger_desc;
- 	struct gpio_desc *gpiod;
- 	struct gpio_desc *charge_status;
-+	struct gpio_desc *timer;
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+index 25826bfc289c1c00c338fd0cee2ae6932529cfc3..fefa09cb24ec2f501099f486c9a4eb77e64cda67 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+@@ -16,7 +16,12 @@ description:
  
- 	struct gpio_descs *current_limit_gpios;
- 	struct gpio_mapping *current_limit_map;
-@@ -39,6 +40,18 @@ struct gpio_charger {
- 	u32 charge_current_limit;
- };
+ properties:
+   compatible:
+-    const: gpio-charger
++    oneOf:
++      - const: gpio-charger
++      - items:
++          - enum:
++              - ti,bq24081
++          - const: gpio-charger
  
-+struct gpio_charger_data {
-+	bool has_fast_charge_timer;
-+};
-+
-+static const struct gpio_charger_data gpio_charger_data = {
-+	.has_fast_charge_timer = false,
-+};
-+
-+static const struct gpio_charger_data bq24081_data = {
-+	.has_fast_charge_timer = true,
-+};
-+
- static irqreturn_t gpio_charger_irq(int irq, void *devid)
- {
- 	struct power_supply *charger = devid;
-@@ -259,6 +272,36 @@ static int init_charge_current_limit(struct device *dev,
- 	return 0;
- }
+   charger-type:
+     enum:
+@@ -62,6 +67,10 @@ properties:
+     description: Default charge current limit. Must be listed in
+       charge-current-limit-mapping.
  
-+static ssize_t fast_charge_timer_store(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct gpio_charger *gpio_charger = power_supply_get_drvdata(psy);
-+	int ret;
-+	bool en;
++  fast-charge-timer-gpios:
++    maxItems: 1
++    description: GPIO used for enabling/disabling the fast-charge timer
 +
-+	if (kstrtobool(buf, &en))
-+		return -EINVAL;
-+
-+	if (!gpio_charger->timer)
-+		return -ENODEV;
-+
-+	ret = gpiod_set_value_cansleep(gpio_charger->timer, en);
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR_WO(fast_charge_timer);
-+
-+static struct attribute *gpio_charger_attrs[] = {
-+	&dev_attr_fast_charge_timer.attr,
-+	NULL
-+};
-+ATTRIBUTE_GROUPS(gpio_charger);
-+
- /*
-  * The entries will be overwritten by driver's probe routine depending
-  * on the available features. This list ensures, that the array is big
-@@ -274,6 +317,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	const struct gpio_charger_platform_data *pdata = dev->platform_data;
-+	const struct gpio_charger_data *data = device_get_match_data(dev);
- 	struct power_supply_config psy_cfg = {};
- 	struct gpio_charger *gpio_charger;
- 	struct power_supply_desc *charger_desc;
-@@ -308,6 +352,13 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		num_props++;
- 	}
+ required:
+   - compatible
  
-+	gpio_charger->timer = devm_gpiod_get_optional(dev, "fast-charge-timer",
-+						      GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpio_charger->timer)) {
-+		return dev_err_probe(dev, PTR_ERR(gpio_charger->timer),
-+				     "error getting fast-charge timer GPIO descriptor\n");
-+	}
+@@ -98,3 +107,14 @@ examples:
+                                      <0 0x02>; // 0 mA => GPIO A.11 high
+       charge-current-limit-default-microamp = <700000>;
+     };
++  - |
++    #include <dt-bindings/gpio/gpio.h>
 +
- 	charge_status = devm_gpiod_get_optional(dev, "charge-status", GPIOD_IN);
- 	if (IS_ERR(charge_status))
- 		return PTR_ERR(charge_status);
-@@ -336,6 +387,8 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 
- 	psy_cfg.fwnode = dev_fwnode(dev);
- 	psy_cfg.drv_data = gpio_charger;
-+	if (data->has_fast_charge_timer)
-+		psy_cfg.attr_grp = gpio_charger_groups;
- 
- 	if (pdata) {
- 		charger_desc->name = pdata->name;
-@@ -402,7 +455,8 @@ static SIMPLE_DEV_PM_OPS(gpio_charger_pm_ops,
- 		gpio_charger_suspend, gpio_charger_resume);
- 
- static const struct of_device_id gpio_charger_match[] = {
--	{ .compatible = "gpio-charger" },
-+	{ .compatible = "gpio-charger", .data = &gpio_charger_data, },
-+	{ .compatible = "ti,bq24081", .data = &bq24081_data, },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, gpio_charger_match);
++    charger {
++      compatible = "ti,bq24081", "gpio-charger";
++      charger-type = "battery";
++      charge-status-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
++      charge-current-limit-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
++      charge-current-limit-mapping = <206000 0x1>, <0 0x0>;
++      fast-charge-timer-gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
++    };
 
 -- 
 2.39.5
