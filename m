@@ -1,70 +1,92 @@
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A033BED59;
-	Mon, 23 Mar 2026 18:13:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.176.79.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07EAD3BED01;
+	Mon, 23 Mar 2026 18:17:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774289620; cv=none; b=dZP1gWoeukZMD20wMIBKZ/h+4fSdGMa/z7ba5Q5yzTM4MlJnZxnSeJi42Mf9mpV5BtfntzsrMli2aNqiUqmMk4nXiNQcyc/FM0ldc1bM+pmzSmVKb8h17vby8FGbp9t/U07uGeTqUJftdv/ZZguCNmueC0qVXeQ3im1g6nYJF9Q=
+	t=1774289875; cv=none; b=fs0tK1UZ/yg2jiNfs/g4vHyVXmLn154FrhFgLgVfTipNkSiZgQFKw/Ts52zqIyJfz3D1i+xy7rPxcqVkad8S3XVJi40Z4jOKg/jOwEd0BDlUX9KKbq/crYIeT/0GoNqGhbzop8XBgzJOABcDXqsngwbw/Z57pcgL7MIXUtCceH8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774289620; c=relaxed/simple;
-	bh=y9moAdqmvz7D6zSoTFWBxABg1MazcK7d6WPTuhljAyQ=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lsBo48zMU7YTOvgGHdU69RogVPU24ND4VYLnuCK7lr+U9Y6/LyeJK/zznG+T1sxOLUKrD9S4H4VboLuliHrxKnaObxdz5uo2ytYPI4adNNoAoVNwXpXoBtGpQ0J4J6WUUCTqJ5PAAkfWgLabtCq7tHeATQf9Zp/j8KrS5DTawEs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; arc=none smtp.client-ip=185.176.79.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
-Received: from mail.maildlp.com (unknown [172.18.224.107])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTPS id 4ffhB05JdlzJ467T;
-	Tue, 24 Mar 2026 02:13:28 +0800 (CST)
-Received: from dubpeml500005.china.huawei.com (unknown [7.214.145.207])
-	by mail.maildlp.com (Postfix) with ESMTPS id 59F2440584;
-	Tue, 24 Mar 2026 02:13:34 +0800 (CST)
-Received: from localhost (10.203.177.15) by dubpeml500005.china.huawei.com
- (7.214.145.207) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 23 Mar
- 2026 18:13:32 +0000
-Date: Mon, 23 Mar 2026 18:13:31 +0000
-From: Jonathan Cameron <jonathan.cameron@huawei.com>
-To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-CC: <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
-	<linux-pm@vger.kernel.org>, Ard Biesheuvel <ardb@kernel.org>, "Alison
- Schofield" <alison.schofield@intel.com>, Vishal Verma
-	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
-	<dan.j.williams@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, "Dave
- Jiang" <dave.jiang@intel.com>, Davidlohr Bueso <dave@stgolabs.net>, "Matthew
- Wilcox" <willy@infradead.org>, Jan Kara <jack@suse.cz>, "Rafael J . Wysocki"
-	<rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek
-	<pavel@kernel.org>, Li Ming <ming.li@zohomail.com>, Jeff Johnson
-	<jeff.johnson@oss.qualcomm.com>, Ying Huang <huang.ying.caritas@gmail.com>,
-	Yao Xingtao <yaoxt.fnst@fujitsu.com>, "Peter Zijlstra"
-	<peterz@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Nathan Fontenot <nathan.fontenot@amd.com>, Terry Bowman
-	<terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>, Benjamin Cheatham
-	<benjamin.cheatham@amd.com>, Zhijian Li <lizhijian@fujitsu.com>, Borislav
- Petkov <bp@alien8.de>, Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Subject: Re: [PATCH v8 8/9] dax/hmem, cxl: Defer and resolve Soft Reserved
- ownership
-Message-ID: <20260323181331.000018f2@huawei.com>
-In-Reply-To: <20260322195343.206900-9-Smita.KoralahalliChannabasappa@amd.com>
-References: <20260322195343.206900-1-Smita.KoralahalliChannabasappa@amd.com>
-	<20260322195343.206900-9-Smita.KoralahalliChannabasappa@amd.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+	s=arc-20240116; t=1774289875; c=relaxed/simple;
+	bh=LxkiTLjGw6kEzMe0rrNlGTA4mnuY6KWKI1O/JC5XLLM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=A9Jw8NwI/YJkVGDXX+9o9JrRyEa32BAe8JlTksdAU5sPx0Y7nWrUMNCU/6McsIxtav354co+FOKzRRrgySBegft4Uov7AlZmoEe8qFJT4hDTGPdZAU4wv52T/PiYmmYae2wAYDfo1e3926aalDBfVIzTvFd0fizgv+z/x3ZwClU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OxL5mzFs; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OxL5mzFs"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774289869; x=1805825869;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=LxkiTLjGw6kEzMe0rrNlGTA4mnuY6KWKI1O/JC5XLLM=;
+  b=OxL5mzFsgc0PQXtdrJyH+Sz9hFfogNBhazduLARpI+sE+QsGlc7kTqji
+   pWFBCHsLYus9wYRcE+GDuiAJgxlDs8tLG749SaWgjlX7ieZDI6VBjyvVs
+   2MHoXazeX9jc5AFVBs+HhlJCOBExpHuZAr0JzwUIv56pPpJRz1UHGpD2C
+   y5WBmwpG0AeaXG75bX8eQmfyeEBHgI/FhTz5Z/f4IidKV1wls7XwAdIC4
+   q4GGTpeqbU/7CzKvaTBRwCMXQ/gJTQ4r6O+Gal+08arLX0iEKGZ7Mo9vU
+   xImoPYa06oyqTvtu/nhZvsZOx/B4emIrS6oOtHJirX64N8sIGzTeuXEMU
+   g==;
+X-CSE-ConnectionGUID: SSIAvTfdQoa5dqYRorSgIQ==
+X-CSE-MsgGUID: ZYofFSb3Q0uubxAzfx79Lg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="97916854"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="97916854"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:17:47 -0700
+X-CSE-ConnectionGUID: pbA5y5KDR7KI3mjV0IsahQ==
+X-CSE-MsgGUID: uWJsxxAdTcOH32D+1vKinA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="224076025"
+Received: from jdoman-mobl3.amr.corp.intel.com (HELO [10.125.109.216]) ([10.125.109.216])
+  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 11:17:46 -0700
+Message-ID: <462b0061-5fed-49a0-84d3-e1918a7e481d@intel.com>
+Date: Mon, 23 Mar 2026 11:17:44 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 8/9] dax/hmem, cxl: Defer and resolve Soft Reserved
+ ownership
+To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+ linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Cc: Ard Biesheuvel <ardb@kernel.org>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Matthew Wilcox <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>,
+ Pavel Machek <pavel@kernel.org>, Li Ming <ming.li@zohomail.com>,
+ Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
+ Ying Huang <huang.ying.caritas@gmail.com>,
+ Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nathan Fontenot <nathan.fontenot@amd.com>,
+ Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+ Benjamin Cheatham <benjamin.cheatham@amd.com>,
+ Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
+ Tomasz Wolski <tomasz.wolski@fujitsu.com>
+References: <20260322195343.206900-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260322195343.206900-9-Smita.KoralahalliChannabasappa@amd.com>
+Content-Language: en-US
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <20260322195343.206900-9-Smita.KoralahalliChannabasappa@amd.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: lhrpeml100010.china.huawei.com (7.191.174.197) To
- dubpeml500005.china.huawei.com (7.214.145.207)
 
-On Sun, 22 Mar 2026 19:53:41 +0000
-Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
 
+
+On 3/22/26 12:53 PM, Smita Koralahalli wrote:
 > The current probe time ownership check for Soft Reserved memory based
 > solely on CXL window intersection is insufficient. dax_hmem probing is not
 > always guaranteed to run after CXL enumeration and region assembly, which
@@ -93,13 +115,8 @@ Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> wrote:
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 > Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
 
-https://sashiko.dev/#/patchset/20260322195343.206900-1-Smita.KoralahalliChannabasappa%40amd.com
-Might be worth a look.  I think the last comment is potentially correct
-though unlikely a platform_driver_register() actually fails.
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 
-I've not looked too closely at the others. Given this was doing something
-unusual I thought I'd see what it found. Looks like some interesting
-questions if nothing else.
 
 > ---
 >  drivers/dax/bus.h         |  7 ++++
