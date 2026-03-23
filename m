@@ -1,134 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B9E53B2FC6;
-	Mon, 23 Mar 2026 16:52:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB8373C2799;
+	Mon, 23 Mar 2026 17:11:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774284771; cv=none; b=dnLBBXgZgCATGWnhdhQTtDbKDMlglcLJtFBXQXD/fjLnqAK9Q9nRa9JwDPRbtAjCxxcBlOsxsPApAsduICEIXUUr9zWrl9p/YC3JT9XHjNA2cPZZKNci4lKkgRsHMmCXvxzz/iGyiB3Ifvjs5UIC9xpQyeqPy/VspvAQmU+oWpw=
+	t=1774285913; cv=none; b=k+6utR2wd3K6+pmRGrO/fYKL3236NxMgG76qBNYLUZZxvuaxHJFxqYN8i2Pw4IvQvmy8k6z1/6zB2jUPhXXQUm/421hP5RVED87+GaNEo7jz15qvjzBeSf4077sc+BYZi2XflJLJz0fMmW+YjTc9lGpTo7/lclkiVw9vK6fion0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774284771; c=relaxed/simple;
-	bh=Yuk6wk3lZC7gbzp4H6SpZqqgdfs+eRo7k0tXxPzD45k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aaGC7iZtIt8x6+lUsHPOmhgMa2TueyPhF7QAbMV2uwEGS6x7VCz6DWZwy9TvED1NLSEjiTAZ79pmEJ/LJrKvY4n0K09XG1JoHPUMR4OytgQBNhlBsikSNBzPQu6ChrF6SPg0/FYpd8J8FaTpoA9FHkPFJl+Iy+c1aPlCZ9eP2s0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QJtVj+ex; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774285913; c=relaxed/simple;
+	bh=WC5R3R7MjBGZGiXrO/PHhKEP3AXAJXomcLtba1rFets=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HFORFJYqu7QbTkGHgabGSZT+zN8wEEhBkmGSXrhuvz+UWlkqqv01IlZnnQ+Q6yjJWrhHszcY/w/S75Jgjdqv2fix/QtkKXrn6UjWxD0tt5qoPKMAQLAd0zUs6mllicMUzYr/8YqZOFha3ter6E+PUELmmw1+fIWDIqFiTjnm6M4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=f8qAZs5w; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QJtVj+ex"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AE87C4CEF7;
-	Mon, 23 Mar 2026 16:52:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774284771;
-	bh=Yuk6wk3lZC7gbzp4H6SpZqqgdfs+eRo7k0tXxPzD45k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QJtVj+exPIBXiYtXCPaaLfcL7P97OgaSLNzI6lkB+NBESgVd7U+/6I7M0GqxSKchh
-	 z7SX8PSb/fBTY5bISNd7HVk4DCVKIYrv5sTtQJUWirx4ymxSBb7okLUGuMwyo/oCjk
-	 lQXlD6xmOsc4+IayQpxZjNvNIH6+sPKM/oU0n+ysK/z62IW2+5U3knnrF13M1FRJRd
-	 rGSvfsQ/FxANOT2I/vedMjC6zCMRS6iJtdJroPeAatGs4rbp/cRc3hXMEZrqsdcCU+
-	 HRBJrYec2VnfYFBuO1aIosea9vq/Dv+UnUtyZFp61SnVncNmBWSaBQGPZ3xwOv4pUs
-	 VLpIY9BJfOOww==
-Date: Mon, 23 Mar 2026 22:22:33 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Nicolas Schier <nicolas.schier@linux.dev>, Hans de Goede <hansg@kernel.org>, 
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, Mark Pearson <mpearson-lenovo@squebb.ca>, 
-	"Derek J. Clark" <derekjohn.clark@gmail.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Stephan Gerhold <stephan.gerhold@linaro.org>, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA
- soldered down connector
-Message-ID: <m44mupdmg7kgco62n4evcviagqo7wwgyt3gybugbxwesd4ekjz@o24r6v4tpezc>
-References: <20260317-pci-m2-e-v6-0-9c898f108d3d@oss.qualcomm.com>
- <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
- <20260322233713.GA98177-robh@kernel.org>
- <to2mrizprc3hjufqbiplpqyek7f4uutqtn4hx4gkmdgv2rykbc@ybwwjhdec4nm>
- <CAL_JsqJXrHCJt770bJkMmAUhirSF3kHjYwSzkG7cXp7-eys8Rg@mail.gmail.com>
- <6aef3xxjjd4nbgrfx6jc6jt6rpqmttoui6hil5zqgdpas2j6gj@ie6j72orenou>
- <fsvmmgoe5wslmxebhrrwmdg2ldcmhzvj53gjkdfnfg2m2rz2lw@dcfboaakz7ae>
- <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
- <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="f8qAZs5w"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774285911; x=1805821911;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=WC5R3R7MjBGZGiXrO/PHhKEP3AXAJXomcLtba1rFets=;
+  b=f8qAZs5w2bvlwFlfjLXSlUT29mRED2cqe4aMLaUJdzZGgYQWwJRuAqMo
+   Oah9vxELAS8L4CwnwtX/+A+7LE8ckj2jmMjjf65O1UND5jBZoQnrnQ6oW
+   NqbLU0wBx+wrU6w9UtsxQJoyBfRw87hi2vPDIgqdFzxGGAphHnaGorFcK
+   K3eOwuE1Cc9LlL8IQytxV4jl/soCY4JbpU7nKQPhmMFuZQlgvcfK5ScqN
+   AZV0K9ONlDBV8v+M2n2D0X29Sn+40jq/cEFFSTR/vPdkWhzTwycmkr2DJ
+   /5/ioX5da16bJV+vP4n7RQ458dFT/Xic3vQBt+ihNcbm2AztZ4Ny5+vEw
+   Q==;
+X-CSE-ConnectionGUID: 3FReR/UnT6Sf+iqFv2qzOw==
+X-CSE-MsgGUID: UCo6dEhBSUGU2/ytlCEGvA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="62849092"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="62849092"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 10:11:50 -0700
+X-CSE-ConnectionGUID: oVZ9NSwhQROtpb73j9ALIw==
+X-CSE-MsgGUID: vAbpOXkMSseD0QwR/c7PBA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="224097386"
+Received: from jdoman-mobl3.amr.corp.intel.com (HELO [10.125.109.216]) ([10.125.109.216])
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 10:11:48 -0700
+Message-ID: <1f0c192d-1dae-496e-8cdd-4854d685343f@intel.com>
+Date: Mon, 23 Mar 2026 10:11:47 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 1/9] dax/bus: Use dax_region_put() in
+ alloc_dax_region() error path
+To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+ linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Cc: Ard Biesheuvel <ardb@kernel.org>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Matthew Wilcox <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>,
+ Pavel Machek <pavel@kernel.org>, Li Ming <ming.li@zohomail.com>,
+ Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
+ Ying Huang <huang.ying.caritas@gmail.com>,
+ Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nathan Fontenot <nathan.fontenot@amd.com>,
+ Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+ Benjamin Cheatham <benjamin.cheatham@amd.com>,
+ Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
+ Tomasz Wolski <tomasz.wolski@fujitsu.com>
+References: <20260322195343.206900-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260322195343.206900-2-Smita.KoralahalliChannabasappa@amd.com>
+Content-Language: en-US
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <20260322195343.206900-2-Smita.KoralahalliChannabasappa@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 23, 2026 at 06:45:15PM +0200, Dmitry Baryshkov wrote:
-> On Mon, Mar 23, 2026 at 09:26:04PM +0530, Manivannan Sadhasivam wrote:
-> > On Mon, Mar 23, 2026 at 05:14:30PM +0200, Dmitry Baryshkov wrote:
-> > > On Mon, Mar 23, 2026 at 07:14:25PM +0530, Manivannan Sadhasivam wrote:
-> > > > On Mon, Mar 23, 2026 at 08:39:55AM -0500, Rob Herring wrote:
-> > > > > On Mon, Mar 23, 2026 at 7:16 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
-> > > > > >
-> > > > > > On Sun, Mar 22, 2026 at 06:37:13PM -0500, Rob Herring wrote:
-> > > > > > > On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadhasivam wrote:
-> > > > > > > > Lenovo Thinkpad T14s is found to have a soldered down version of M.2 1620
-> > > > > > > > LGA connector. Though, there is no 1620 LGA form factor defined in the M.2
-> > > > > > > > spec, it looks very similar to the M.2 Key E connector. So add the
-> > > > > > > > "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e-connector" fallback
-> > > > > > > > to reuse the Key E binding.
-> > > > > > >
-> > > > > > > What is LGA?
-> > > > > > >
-> > > > > >
-> > > > > > Land Grid Array
-> > > > > >
-> > > > > > > If not in the spec, is it really something generic?
-> > > > > > >
-> > > > > >
-> > > > > > Good question. Yes and No! LGA is not something that Lenovo only uses. Other
-> > > > > > vendors may also use this form factor. PCIe connectors are full of innovation as
-> > > > > > the spec gives room for hardware designers to be as innovative as possible to
-> > > > > > save the BOM cost.
-> > > > > 
-> > > > > innovation == incompatible changes
-> > > > > 
-> > > > 
-> > > > Yes, I was trying to sound nice :)
-> > > > 
-> > > > > > This is why I do not want to make it Lenovo specific. But if you prefer that, I
-> > > > > > can name it as "lenovo,pcie-m2-1620-lga-connector".
-> > > > > 
-> > > > > Depends if you think that s/w needs to know the differences. Hard to
-> > > > > say with a sample size of 1.
-> > > > > 
-> > > > 
-> > > > Sure. Will add the 'lenovo' prefix then.
-> > > 
-> > > Is it really Lenovo? Or is it some other module vendor, whose LGAs are
-> > > being used by Lenovo?
-> > > 
-> > > I remember that DB820c also used some kind of a module for the WiFi card
-> > > (which might be M.2 compatible or might not, I can't find exact docs at
-> > > this point).
-> > > 
-> > 
-> > I don't know. These kind of designs might be reused by several vendors. But
-> > considering that we should not make it generic, I'd go with Lenovo as that's
-> > the only vendor we know as of now.
+
+
+On 3/22/26 12:53 PM, Smita Koralahalli wrote:
+> alloc_dax_region() calls kref_init() on the dax_region early in the
+> function, but the error path for sysfs_create_groups() failure uses
+> kfree() directly to free the dax_region. This bypasses the kref lifecycle.
 > 
-> ... and later we learn that other vendors use the same idea /pinout,
-> then nothing stops us from still telling that it's a
-> "lenovo,pcie-m2-something-lga". 
+> Use dax_region_put() instead to handle kref lifecycle correctly.
 > 
+> Suggested-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
 
-How do you possibly know whether a single vendor has introduced this form factor
-or reused by multiple ones? Atleast, I don't have access to such a source to
-confirm.
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
 
-- Mani
+> ---
+>  drivers/dax/bus.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
+> index c94c09622516..299134c9b294 100644
+> --- a/drivers/dax/bus.c
+> +++ b/drivers/dax/bus.c
+> @@ -668,7 +668,7 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
+>  	};
+>  
+>  	if (sysfs_create_groups(&parent->kobj, dax_region_attribute_groups)) {
+> -		kfree(dax_region);
+> +		dax_region_put(dax_region);
+>  		return NULL;
+>  	}
+>  
 
--- 
-மணிவண்ணன் சதாசிவம்
