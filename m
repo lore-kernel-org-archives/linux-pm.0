@@ -1,108 +1,160 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47538370D62
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:06:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774263972; cv=none; b=E1giKbO5O+hiyia6ywGOhs4mk9arRZSI9OOy0GOIpA6D4mr4mHjE45aQSYN+tHSKLJ6Nub+dVDITHrZyMKcN3JuLPBq+8EtDZGXfP3mZGXCiMaPRybx9WUUZMfA4D5LpfQVfAqcXz2a3wKxkhcHKTTT33NXPWhNHGnuE8AbnJf0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774263972; c=relaxed/simple;
-	bh=a4vGQ+/SWHex0ls1Ruj0cc3OQTi0sTyk6KfrDSMU7W8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bf12Q6A3lvwDONRvfkMeIdqmpt5b9BejasbaXL9zND2vVywZJUe8rgO5wf6X61pA45oNBzQOQWaSH2ihpnbwbaMVsESU31UYIRChC2oQ9z0aslsXEQb/26AtzAmRDtqy8+TSsAqYnNUR4rG43izXAPAE8J0VUHwiWf8at+Ka64o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=LnxQ5lEL; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29FCD394796
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:14:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774264467; cv=pass; b=JlAixsrs0mFXeuiVQf5sMYq3A/oDH3wmss//VyWHjm5l549OKsx4X7ek6xqi+mtiYcmTka/VVE/VoQLeR4PN9XGRFEKBbOBL9qC007TGA2ph+U32JZRJSBROOvroC+KbYc6L/2ml+p4X3y5V3w+Pvtfgm/yACmKyDbs0ZGWTrZ8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774264467; c=relaxed/simple;
+	bh=YsJoLrLCtXBI6DtmBAjdk5zdQPkh2dEYsn5jbiErAYM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NduE0CBY9XcOrmgTN5MmTPBh4Kf1qDFzNhA9/fQAYbruciLLala2j/o4QlMAbogah5mhq7YFMrJKAiXwGdIjuoAcfgs6FAAvgvqK0zOqtflbRVUc7Snxjn2VqLqFDf1DrFqVVtbrv9AFGEm/FjOv+2k2av6qZK8PyiwJZscqxz0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Bn82Ql8b; arc=pass smtp.client-ip=209.85.167.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LnxQ5lEL"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2b042533de1so21037585ad.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 04:06:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Bn82Ql8b"
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5a283c44478so2713636e87.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 04:14:23 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774264462; cv=none;
+        d=google.com; s=arc-20240605;
+        b=CWQKQYt6GrJy3rA2L9+/9HQ3izsc4FigsgSEWEut8WwtaCgInY4qBK+U8kui7iWT9Z
+         WKm+JCGJKMgsiA/JTKdNvtZ1Azbvb2NP+ai8IkylvRIncMxggPbKzl9r7Y6lUSXC3UPG
+         yf7jUp4/aHsYsIVgRQXF6/8KwzkVYyw/mv5lPQQpFQuPiu5rRFVPOLdjTvFb2JxqBoUF
+         5hPgtswRjEVDMBXaxz8Ew9l44D2pnLwct3FOJm9yJf1ARUHXpQ03aUMOHOeDBvfZk5oS
+         PzLSqYPPGa4e7nvorNt4tqxwpkPzu1batnndjtbdsZQCOQzqKBvnjfFTxBnAX1a47mzI
+         /AuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
+        fh=rSqnwSiy4XWnXY3bcKQAM7dEOYPLLaykizyCVaT3fIo=;
+        b=dH0Xs0R41/Eepb7SGp4PUf5Fsc74oIcswM5hb+v5wv2jECUer4/Wn3J6xN4+FMKPXV
+         wjcV65YT17WC/JRsRxpwWgdxLoLS5EynpzoiaDK9zKV+CYsuT+Pw31eeIHOVOqqLmz7X
+         VnA7lCWEb8LtUxjgqbG95qNoGrrisI0g4KlNhAhsp9hlgFd1jUAY+RtXpVKOna0pEIj5
+         Z4p/DOStCdq3AVMPFzVDPjQ4NDNJkpXpdcSEq31rmoRNiDUE3DpoMiEUg2L6cemt+0Iy
+         p03ArqUCth/tMUa9v/3MSY9g9sCHF62aRB0s2VERxWJdL1C7Jhfh3tMqAhp2sBaPaQJz
+         vdzg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774263970; x=1774868770; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Lo1eBxMnrHwc5Y6ZZ3Y/REQwM+N7KKc6DT8+g4EMiCY=;
-        b=LnxQ5lELEiW7D79kl+o7Rt7TgCg1TzsYH4G9tMLYgfjvmfE1kjIoJv1WExifUuHOiv
-         lRYDQ8rGyZZU6Y82VRGRKZq+qQx0WcKjvKqysLViti/tQA9tXcZ13KA6KVuBVfFLl8eV
-         /gvYAxZXsFEhb4ItFdfVSvbCi/07v1awgnGSipHx577QVemOm5UnP7J9+9/OLyABRcqg
-         SI9vNY71zFmEQCErm20BZn0C633gi7HYvvfVnUwBgqiEUsJQaQelA2U8voYNH1wcYBcC
-         cjrfiQgM7hdh6rVKi+qQYzVfKPxPtNP+PYngbjjpylpEuc0SwFyLMgPDBhZv2UdoZ6eA
-         Zw4w==
+        d=linaro.org; s=google; t=1774264462; x=1774869262; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
+        b=Bn82Ql8bEbzB7ovYrS2cyKJ7rqnYq5cuNEGH8ulsVoNTcEZ3cTXKEoNT2IH9h6RTF0
+         7jZGxZSi1sN30QazDNR5Y9JpYA01kKZhXFxN26S2LOJv4xR4z6oTxQVs4qFTqgizm71O
+         UBoj7hDw2QnR2iKLbKF7xec1NC/Olc2cCY4m+dLf+7cPHr7KLwU3zGdRL06RydJmTYUW
+         CVTXAMMna7cDto7DWo0QrTV6Qki/b0DvMVVlTmFbVBAspDh+b0CmzQMy1O8DDxRn8Iao
+         GL54wek7J00SOpMExdOYoAz1/jm0/R2EpodH3WLal9z9sECTSFWbAC1+ppymJuyIdz99
+         6yaQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774263970; x=1774868770;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Lo1eBxMnrHwc5Y6ZZ3Y/REQwM+N7KKc6DT8+g4EMiCY=;
-        b=XbXboyDMbxd8gbHtd5D603yafokPEIu6y6lTeW2Hfv6NzeimxRnycB/SqHpj8hvzqZ
-         yi4ubsjlvk0SsYwddOz9JepRFV2M80qvEYUqBtiCKJLyBbbBCiqzYLXopDbe+qSBXIGP
-         MudqSu+aUclPoiLpnK8nTCX0l9kGxpE+2DVtSoVqSXWE1d2d1cUi26walHTxPRj/8zvI
-         RXFSz+7XPe5ZbmObImr032+R7KE+irN3tYJnffY7wtC8UJvOwRexuzbL0xp/9H4ojQ+7
-         vPEACFpBdSioyT3+L6fP3qsKzfWWeeuYDPnuMzlpW1i+2msuqXEAnbedQ/RmiVbiDWMc
-         ORKw==
-X-Forwarded-Encrypted: i=1; AJvYcCXoFGIyZJe92OIOBE51hRwB29nN93A7wKGwyQVPKt8fwPXflUfrJ/aDGjJBv9LtyIn5hjiVyw2QNw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyPWUAN3wYaZPsP+bpkM9sYucifFd0Trdo5roj7xJf/4QyVZzJL
-	YVaYnM9wqYeeDvQ17z4MxHRC9w6q1hs0mMNr14EEJQeUwB3rHsby6KC9MSsOB1MTR5I=
-X-Gm-Gg: ATEYQzx27R7ZfZt4/x9QVwKHBT8fuOShQP1evh/B3pjwO7zK1EzYTRfmqZcMXnYUeEO
-	85VqWttidvHRz5UIZsffUfO1uMCSZ36Uli982oQpQNCiikFOjjlPFWLoOGFLsITVurPDk1jpVFG
-	gNQhc18JiNxS9hZVnfsSf2vtjm2GZo8tbseY1uTOk8/DmC17XtPnKwrvSfYCotoaXgIT+E9r6VI
-	uSh4lIM9uCaURgP+hJnqi49L69sGbZQPy4Os/jLvz3fEkQvvsKSCi3M+evXpoWX1zrCiZsvJ+Fx
-	wuU4it57+4sOIQmc8DvUWgWOcX/PzrA80WUNOmobGODVScaDajE5Tr/fDlLVFFbYtX9MmFdDr6n
-	PnBA3cRqgU2zPeH4YxT+/aPVXk4R/itjuJ3Fysw8yZ6gRtyQWw2Zlu2670ugKYGs1c6nZfdWtJx
-	s4v36/jnUrr9RQrM4YZx1RU2Za
-X-Received: by 2002:a17:902:ce82:b0:2b0:6e8f:8e79 with SMTP id d9443c01a7336-2b0827f231dmr113578375ad.42.1774263970385;
-        Mon, 23 Mar 2026 04:06:10 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b08351675esm135873885ad.14.2026.03.23.04.06.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Mar 2026 04:06:09 -0700 (PDT)
-Date: Mon, 23 Mar 2026 16:36:07 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: Xuewen Yan <xuewen.yan@unisoc.com>, rui.zhang@intel.com, 
-	rafael@kernel.org, linux-pm@vger.kernel.org, amit.kachhap@gmail.com, 
-	daniel.lezcano@kernel.org, linux-kernel@vger.kernel.org, ke.wang@unisoc.com, 
-	di.shen@unisoc.com, jeson.gao@unisoc.com, xuewen.yan94@gmail.com
-Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx
- in get_load()
-Message-ID: <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
-References: <20260320113148.7308-1-xuewen.yan@unisoc.com>
- <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
- <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
- <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com>
- <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
- <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com>
+        d=1e100.net; s=20251104; t=1774264462; x=1774869262;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=+IJUWFVuRtnRrcxOAe+qH0nHesEXlr9bnFCdCu3nBCU=;
+        b=TzUiVeDywsib0K703yLhk+EYgDVXhT79JWuvs2TrcEPmFitTc3/ZLjVEkFIq0X+C6b
+         WIxZHqwTqp6bbc4L576MmiF4YchWv8XTa4ndqLn+b5IuR7NOyBjxiAktsUwOpHbFmHiv
+         eU+i0Hu0RM4q+PKi86dkF2n7VGJ+lMCi3fB28bfLhigiKw0tMbvC/oxIe0jf/rCTOJEZ
+         KVXqrsery5/QurYjcPeSeOmhJ0YHZDnD+Zev7oC0LK4UiF+3D9EfMOu8aeV8FbAs78Qd
+         xFAKQ4e7wyb0lBUaSQdRkf5IIliWlWpkB8dlRQ2IGM2D6ujB4m4O6NtXOl6J4JaJW9p6
+         e6Hg==
+X-Forwarded-Encrypted: i=1; AJvYcCXBU3+yQ6pcLMBJyhWPD29/mIboEcUbPXKz7ggDO4RC2jt0WRrTTpIzmmQsoj6K5RevWXRokzD+sA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTIMcaNKis3nfP1n4kcNTRVeqvb9gQgkAbFWPZmrTLIniPxg2p
+	ehziIF779b/J7IcbKhc6hElS1hCaRzRYNQQ4ecFLzVxwDURGR9zra9Jjyfo853hg2p5cqUBfOYV
+	RjiNacH3THnY/FmBfo3THpLXmPjgYH3Yx4Aj/72RYHw==
+X-Gm-Gg: ATEYQzx4K0NVsaU3/8wS2JVlqtjDTSH5ji3xKCmecqFmFzwEdozM/0X5l9NbGWOBfr5
+	yp8x0TEPJw4YHLVYRaNqiwagLcrx6JLy5fGoM/9pus46caNplUikgSSkSdga7jIjFJi86rKVU+B
+	WsqVkquKabggsiKRRjztRQKdUjlO+B96RLvQt16p9CpZyPuMLoD07ElB3fVO5rUprQ6Kd5Fc8m9
+	qhAKCZw6h3lDEkJiRi3sJNKRrET+dAadRXJXAb8kHbg8DnmlOy7vbwjDueZPDAu3rJ9d9W6/bxm
+	+Eq2kI4W
+X-Received: by 2002:a05:6512:10cf:b0:5a1:2b2b:479d with SMTP id
+ 2adb3069b0e04-5a285b6125fmr4577456e87.31.1774264462090; Mon, 23 Mar 2026
+ 04:14:22 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com>
+References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org> <177409907930.268981.5882592990447577348.b4-ty@b4>
+In-Reply-To: <177409907930.268981.5882592990447577348.b4-ty@b4>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Mon, 23 Mar 2026 12:13:46 +0100
+X-Gm-Features: AQROBzDb0FyhDsEJ4InmRtciuv9Wo1DbFap7YBMqRE1Hh3qfHVm60c1Z9Vi7vPA
+Message-ID: <CAPDyKFoz-sm0pfvn5iSYFY0mrW38vaGRZsFvrVPqsv7BsYxeWQ@mail.gmail.com>
+Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
+ Google GS101
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	=?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
+	Juan Yescas <jyescas@google.com>, Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
+	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 23-03-26, 10:52, Lukasz Luba wrote:
-> > How is that okay ? What am I missing ?
+Hi Krzysztof,
 
-I was missing !SMP :)
+On Sat, 21 Mar 2026 at 14:18, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>
+>
+> On Wed, 18 Mar 2026 15:27:45 +0000, Andr=C3=A9 Draszik wrote:
+> > This series adds support for the power domains on Google GS101.
+> >
+> > There are a few differences compared to SoCs already supported by this
+> > driver:
+> > * register access does not work via plain ioremap() / readl() /
+> >   writel().
+> >   Instead, the regmap created by the PMU driver must be used (which
+> >   uses Arm SMCC calls under the hood).
+> > * DTZPC: a call needs to be made before and after power domain off/on,
+> >   to inform the EL3 firmware of the request.
+> > * power domains can and are fed by a regulator rail and therefore
+> >   regulator control needed be implemented.
+> >
+> > [...]
+>
+> Applied, thanks!
+>
+> [01/10] dt-bindings: soc: google: add google,gs101-dtzpc
+>         https://git.kernel.org/krzk/linux/c/10084aeadadfab72648f6ed1cc78f=
+7cd87b861ba
+> [03/10] dt-bindings: soc: samsung: exynos-pmu: move gs101-pmu into separa=
+te binding
+>         https://git.kernel.org/krzk/linux/c/3ec3c42b426fe5e2b48ff19c551de=
+c50bc78788c
+> [04/10] dt-bindings: soc: google: gs101-pmu: allow power domains as child=
+ren
+>         https://git.kernel.org/krzk/linux/c/c8229a5160eea145b796f54317d6e=
+659cec9b080
+>
+> Best regards,
 
-> Right, there is a mix of two things.
-> The 'i' left but should be removed as well, since
-> this is !SMP code with only 1 cpu and i=0.
-> 
-> The whole split which has been made for getting
-> the load or utilization from CPU(s) needs to be
-> cleaned. The compiled code looks different since
-> it knows there is non-SMP config used.
+Usually I pick up the power-domain related changes for the DT bindings
+and host them via an immutable branch called "dt". If needed, SOC
+maintainers can pull it to apply/test the corresponding DTS changes.
 
-Right, we are allocating that for num_cpus (which should be 1 CPU
-anyway). The entire thing must be cleaned.
+That said, I am open to whatever you think is best here. Perhaps it's
+easier if you can drop the DT patches and provide your acks instead or
+if you can share them via an immutable branch for me to pull?
 
-> Do you want to clean that or I should do this?
+Kind regards
+Uffe
 
-It would be helpful if you can do it :)
 
--- 
-viresh
+
+
+
+
+> --
+> Krzysztof Kozlowski <krzk@kernel.org>
+>
