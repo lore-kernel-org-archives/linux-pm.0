@@ -1,127 +1,108 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4251D387371;
-	Mon, 23 Mar 2026 09:20:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BBCF386C14
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:40:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774257634; cv=none; b=THvY/xPUtqBSkUN1RkfT2lhDW1KdYoe1776FiYe691mn25yDQBSzA8u5+8vnqkFfzJkKZEr/UCZ5EuhPTB5/1Xtgcm5oyyxcwUyecth8hS4uY12TzkZo+SbuDhtcfiGKl+ptIpc8D6vA4gAjIXDCF0NTMScRGZwDGMSuC/YcNlg=
+	t=1774258835; cv=none; b=iFQ4/8c59avwjx2ijIO01WzysbgKouBqt7rQRvj22jsrydhTJGDdUEdynW1BdIJCS8uadGJc0cQw1GuqiISTrccDPbcgBhVaHH6O3y65hvTn1wchh8im/EtCpFB7tEWRhWv28JUBj2CY90YdJCxEFcnR7TJeOaBFSBvs3w7y5Vw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774257634; c=relaxed/simple;
-	bh=iVUSSd7ssbGwFm3ZYJXyowu6VgSYWkKDPL/9Ad8FaXQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XGyYJXiU5d5QSi2jvWT3g3xFihfQZDwjwu6SirGvQYa3VDXbUniTd/l6fUBLkL9UJ+Qnltp4k5tAb+Um2QT1vYdXrZkqnUYhPOYk+ONkxBYH4vfRtRu3RGM5KNK5emk+hnjOdZrIu5d0+3+s0951vdhBd894k4AP5PF941rM/Xg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6D3AB1516;
-	Mon, 23 Mar 2026 02:20:25 -0700 (PDT)
-Received: from [10.57.17.171] (unknown [10.57.17.171])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 987C73F885;
-	Mon, 23 Mar 2026 02:20:28 -0700 (PDT)
-Message-ID: <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com>
-Date: Mon, 23 Mar 2026 09:20:45 +0000
+	s=arc-20240116; t=1774258835; c=relaxed/simple;
+	bh=InFf+pZHROpxHQ0YFMA7CyIrioqbD8SqYfZclS1XbEg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WW8anzNr9jhEBlbhQnWISRK4+wpFK0MjZK99s4Zxp8d7e690DEjtjWC7//LzXG/L9L9L/ta7LJ7rmAtqMqFjfYXwGEdB4fICbbHijmj7tI050FXvRpsfs4cRreAK/mDDRQ3Twr2L0i5xw3TOSShtFADNVOwB+puXzPsSqPKYNXg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dv3AErnj; arc=none smtp.client-ip=209.85.216.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dv3AErnj"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-35b9d29480aso2121008a91.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 02:40:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1774258832; x=1774863632; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ecGp/dA0Yu9oZZFz93r7/hSVGYyEetqpqN5wTpj3AUI=;
+        b=dv3AErnj9tHQ5on9TnKeGJeRVBtIfuJk6Mh8KSq2Wav1vNJAFl/EPoviDyb++jDlp0
+         JVLcjEWrxwBb8EhXLUXCv12m2RlR4awUGChvJAqguQWKmB/aksCXrpnmU8u+k5z7VHe9
+         c1PpcZ4AWb6f8mqdI3HKvyWd/dgK/rt7wtjAVpMzfMv31cwe/9l9yU9T1w3orudS9/eD
+         OaCZYHdGPOhvU0QLnVyLNhPKNZbvOxrWOG7awrGnSrH+0ox5qgcU/DYylhlTMjMpnDNH
+         YHp0jGtjw/fN5+siNp386/UmPxhQzPszE+AUF+RycGiL4Vd4hUafrF9icgnA4mLHUJRb
+         Eo2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774258832; x=1774863632;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ecGp/dA0Yu9oZZFz93r7/hSVGYyEetqpqN5wTpj3AUI=;
+        b=NTPuGl4ntomDodb9Xh74XHaYaeIR/W4ITukpCs/VqVqzaRht/vTfpw0xmnoPGhAH8C
+         q6EiZNZnQZwG2mH25VYkDM+CzydDwBrq+5QuOHOfh651KN9Nmpj7T1Da+P5NZRE2biN8
+         bAZnF4NebLRe9Qd36RseGCSpnwv3h4rY76XUNKJV7Y6Vi9puT7uGCmzhoDzwQD64cl0G
+         k6ETXyayGj19vXCFWXKg+vK/3/bNm9sy0yYmOfCsn5IEjEu2CugjJ2kr9C3UiKcwG/Z7
+         SsmcOwPktKiYe3RiNI0BMvvR/hudKySsKy4AMt9lvqqLiCj2C884bfI3Zfd8WV/TmgzF
+         Tw5g==
+X-Forwarded-Encrypted: i=1; AJvYcCULLEFHO6dh55SObTReKSejI2WqxM3bIBp3x2ivQ0+wbQANPHMi0WMgAUgxv0kra4eFGSbXTBUzaQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0hqDrMpv9bTyC7q/I16ERjefnAMpQfdcDBWDDyH2liHvvw38l
+	hSDMZSxP7auONbMBGbiAPzvYcCZaV1ENYk9pB+0VroNYqJSX/pE0yU2Y
+X-Gm-Gg: ATEYQzw/heQ1wlyEyMOC9Jj21zInItuU5eJ1yNiQYpSaI1s0tMIbkGkw/4BENqFRoZm
+	avimwoWzv7PDC7EvOIgJbSHq3tzYYwf9KMCxwifbpMkyyOW1g+iJ7Ubo1PbrNw5BJJEx8gjH+jR
+	T0CGSRV2/s+3CYv947wmOIbzGV/VXu/dd6u8sT9IYNh7uP8b8VAxzNO6A64+rw7ICvalaqXd6SV
+	jDfVfBZcAyrvzx9O2WlBHVUDoAo/mW+7f+gDA5JWx2Qg7Vlkao0KJgvhtwGLlm0g+sA9IPeNhSE
+	xmElr9OOPwkdtU9rhjx9Y8EoNBKz//JpImYpyVd7pz/aB0Tmbx/hehnoJ1sobgyE2H1spTBUqvH
+	OARIsjDnkYlIG1GDNAJ4nZ1Q+h+5fOzC4kB+NHpWKNlDf8srGM62pa21LspLqShg8D9wxJBF6LE
+	RvINJ9N2ksH1z0E7ZJXA2FVc75oA==
+X-Received: by 2002:a17:903:3890:b0:2b0:6638:b357 with SMTP id d9443c01a7336-2b0826c751dmr118483915ad.11.1774258832443;
+        Mon, 23 Mar 2026 02:40:32 -0700 (PDT)
+Received: from ubuntu.. ([152.58.131.87])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b08351675esm131984965ad.14.2026.03.23.02.40.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Mar 2026 02:40:32 -0700 (PDT)
+From: Anas Iqbal <mohd.abd.6602@gmail.com>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org
+Cc: rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Anas Iqbal <mohd.abd.6602@gmail.com>
+Subject: [PATCH] thermal: devfreq_cooling: avoid unnecessary kfree of freq_table
+Date: Mon, 23 Mar 2026 09:40:18 +0000
+Message-ID: <20260323094018.2264-1-mohd.abd.6602@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in
- get_load()
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Xuewen Yan <xuewen.yan@unisoc.com>, rui.zhang@intel.com,
- rafael@kernel.org, linux-pm@vger.kernel.org, amit.kachhap@gmail.com,
- daniel.lezcano@kernel.org, linux-kernel@vger.kernel.org, ke.wang@unisoc.com,
- di.shen@unisoc.com, jeson.gao@unisoc.com, xuewen.yan94@gmail.com
-References: <20260320113148.7308-1-xuewen.yan@unisoc.com>
- <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
- <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi Viresh,
+dfc->freq_table is only allocated in the non-EM path via
+devfreq_cooling_gen_tables(). In the EM path, it remains NULL.
 
-On 3/23/26 05:34, Viresh Kumar wrote:
-> On 20-03-26, 12:32, Lukasz Luba wrote:
->> Hi Xuewen,
->>
->> On 3/20/26 11:31, Xuewen Yan wrote:
->>> From: Di Shen <di.shen@unisoc.com>
->>>
->>> The cpu_idx variable in the get_load function is now
->>> unused and can be safely removed.
->>>
->>> No code logic is affected.
->>>
->>> Signed-off-by: Di Shen <di.shen@unisoc.com>
->>> ---
->>>    drivers/thermal/cpufreq_cooling.c | 13 +++++--------
->>>    1 file changed, 5 insertions(+), 8 deletions(-)
->>>
->>> diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
->>> index 32bf5ab44f4a..d030dbeb2973 100644
->>> --- a/drivers/thermal/cpufreq_cooling.c
->>> +++ b/drivers/thermal/cpufreq_cooling.c
->>> @@ -151,26 +151,23 @@ static u32 cpu_power_to_freq(struct cpufreq_cooling_device *cpufreq_cdev,
->>>     * get_load() - get load for a cpu
->>>     * @cpufreq_cdev: struct cpufreq_cooling_device for the cpu
->>>     * @cpu: cpu number
->>> - * @cpu_idx: index of the cpu in time_in_idle array
->>>     *
->>>     * Return: The average load of cpu @cpu in percentage since this
->>>     * function was last called.
->>>     */
->>>    #ifdef CONFIG_SMP
->>> -static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
->>> -		    int cpu_idx)
->>> +static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu)
->>>    {
->>>    	unsigned long util = sched_cpu_util(cpu);
->>>    	return (util * 100) / arch_scale_cpu_capacity(cpu);
->>>    }
->>>    #else /* !CONFIG_SMP */
->>> -static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
->>> -		    int cpu_idx)
->>> +static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu)
->>>    {
->>>    	u32 load;
->>>    	u64 now, now_idle, delta_time, delta_idle;
->>> -	struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu_idx];
->>> +	struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu];
->>
->> This is a bug. We allocate 'num_cpus' size of array based on
->> number of CPU in the cpumask for a given cpufreq policy.
->> If there are 4 cpus in the CPU cluster but CPUs have ids:
->> CPU4-7 then accessing it with this change would explode.
-> 
-> I think following commit introduced a bug by removing `i++`.
-> 
-> commit 3f7ced7ac9af ("drivers/thermal/cpufreq_cooling : Refactor thermal_power_cpu_get_power tracing")
-> 
+Avoid calling kfree() unnecessarily when freq_table was never allocated.
 
-Thanks for monitoring the development (it's always good
-to have extra engineer opinion)!
+This resolves a Smatch warning:
+calling kfree() when 'dfc->freq_table' is always NULL.
 
-I've checked the commit that you referred to and the 'i++' there.
-It's safe. That commit removed the heavy operation for only
-tracing purpose, namely:
-- allocate buffer for N CPUs for 'load_cpu' pointer
-- populate CPUs' load from the idle fwk
-- put that info into the trace
-- free the 'load_cpu' buffer
+Signed-off-by: Anas Iqbal <mohd.abd.6602@gmail.com>
+---
+ drivers/thermal/devfreq_cooling.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-That has been redesigned since it was just for tracing
-and introducing extra time spent for code run in the
-throttling phase.
-
-The code in get_load() is OK with the commit that you
-mentioned.
-
-Regards,
-Lukasz
-
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 597e86d16a4e..1c7dffc8d45f 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -472,7 +472,8 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+ remove_qos_req:
+ 	dev_pm_qos_remove_request(&dfc->req_max_freq);
+ free_table:
+-	kfree(dfc->freq_table);
++	if (!dfc->em_pd)
++		kfree(dfc->freq_table);
+ free_dfc:
+ 	kfree(dfc);
+ 
+-- 
+2.43.0
 
