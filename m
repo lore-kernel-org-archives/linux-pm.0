@@ -1,155 +1,226 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from flow-b2-smtp.messagingengine.com (flow-b2-smtp.messagingengine.com [202.12.124.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48E313BE640;
-	Mon, 23 Mar 2026 17:14:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA59A3C73CA;
+	Mon, 23 Mar 2026 17:23:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.137
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774286098; cv=none; b=Bw5uxBaL/ASYkd7+uyYqvhCOJ4ewTtak01Kg3tAUIr7nt0T51I4gkX2KT50VeHhJtusr4NW/h1+1wPNEkoJRtdw4T5UWF7ue6PbVjXazwUYgwAq3w46mz2EHwWcot6RS53yOgRqd3mwwZ3qMYbi/3MQxrvuds9kurm8KfOFVAes=
+	t=1774286614; cv=none; b=Z0/ddQ3qr4EjY976BgpBfF0s/pQnuSsVIsubjf+r0yvEEu04+g/v06vLldOoi19mftr998MvQ1tpAdb/jIpXfBYooNewJOTsodSSXMk1KdsFybrFOVKOWVLTrlbal4wc+bfhMKL4h4/Fmv+AS7R6GXqlBg73+IwY/sozNtzR5/s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774286098; c=relaxed/simple;
-	bh=Pywn2oFcwft0vBnQp/98LvBTMyGYLc+1nw2xhJHXC9c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PvQQ1rSQprg2ETtH1G4NiZWkCpdxIahZ5dd1ms6Fr8Joxqg6nfnlVEMRaAOoH+aLg0NnNhLNb7xhwD34HddAHUMoo4f5x1zQUAU4anj698L6Pobosgw260eh59C3SD/Rbn9mx55hvXhWcS5TnHTUrnEvTJ8vkR+mRk6gOzKpJTc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=WMOcd9HZ; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1774286614; c=relaxed/simple;
+	bh=8F5DHzbZOkiE60z+INX/R3wfwDAeDzgLhwAv/Br77fM=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=slFg596lTpC1nIF2BSH/RRGoQFVDwioNpCm1owGA8nvqo8bJEpKJe5/Furdz7JwcPox1nWt+0wz/PiXjWUeX7Ur4b9F1F1qwqhZGqNTmfnQmms3pdjXJz/6WiOlBnaTxd/aPAYV4lyy+JIxskmX5plDVLW0DMyFZfmyQaUohkGo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=squebb.ca; spf=pass smtp.mailfrom=squebb.ca; dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b=d0w2WMuA; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=T39gwOEy; arc=none smtp.client-ip=202.12.124.137
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=squebb.ca
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=squebb.ca
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="WMOcd9HZ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774286094; x=1805822094;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=Pywn2oFcwft0vBnQp/98LvBTMyGYLc+1nw2xhJHXC9c=;
-  b=WMOcd9HZBHWnxJIDhK8HWmpFO/7QP+121+yyb3Fqp9YjMfV6Xhn/VYEk
-   dCY/bcKoWXDItUJscB1IosCH/PK6GyBvlwLxYZuD3QC19swTawosfrFED
-   fjuYYVg4H6wgMup3dnrBAAxVKU8BwhIDAlHefZiTQsH6dLaSGtiP70hji
-   ALbujjTMsKefcVG+wsknn63Z9BRm6plTEJ1B9ObJsY7zw8TnzpeeWvTHa
-   qaYE9EhCw2UgET04pCTUs9z1ti58UmTzjfAYEDQyCVsH3/mcLaBRXxuoH
-   3vcStq7t+9RA0Z3LJNtCYxA83sDpgoRLyRL/HvkKSl5eG6X23sUilXYTm
-   g==;
-X-CSE-ConnectionGUID: aC4PSOCVTTqCuC6H5wPRTQ==
-X-CSE-MsgGUID: REaQ+lPgS0WZz2Zg2O3cQg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="62849301"
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
-   d="scan'208";a="62849301"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 10:14:53 -0700
-X-CSE-ConnectionGUID: RmXqzBsDTN+qkaDGSV7/MA==
-X-CSE-MsgGUID: 02uuQAASRgiHmfogFtiHZQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
-   d="scan'208";a="224097691"
-Received: from jdoman-mobl3.amr.corp.intel.com (HELO [10.125.109.216]) ([10.125.109.216])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 10:14:51 -0700
-Message-ID: <8edb1f80-de1e-4fa7-9eb8-80def1cb111d@intel.com>
-Date: Mon, 23 Mar 2026 10:14:50 -0700
+	dkim=pass (2048-bit key) header.d=squebb.ca header.i=@squebb.ca header.b="d0w2WMuA";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="T39gwOEy"
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailflow.stl.internal (Postfix) with ESMTP id AEAE71300250;
+	Mon, 23 Mar 2026 13:23:29 -0400 (EDT)
+Received: from phl-imap-08 ([10.202.2.84])
+  by phl-compute-02.internal (MEProxy); Mon, 23 Mar 2026 13:23:30 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=squebb.ca; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1774286609;
+	 x=1774293809; bh=8F5DHzbZOkiE60z+INX/R3wfwDAeDzgLhwAv/Br77fM=; b=
+	d0w2WMuASvhIHc8a3ZfS0bSovZpUguTxsV12SkJzLl/HgFTO96E8OsN6d6PFrRYr
+	XHyKTm84Vlu7Tme/FZTaw0VGpuJ8bd9SIFnBq7bZWD1TgSXMwEt+Ap2P5Cr5y5rb
+	kh48eiYnLAe4C36R9y9XZ5Zg6lxDvpLGPh8KJGh1qX4WXsw8iq3GoopxXo0wdcIy
+	SKgjzMBKuf2OLoWajsbw2F4ld+LPm1ydhX7IWHymLKSmvFTHk5G5DuniFfqplcMy
+	65xiZdyuVFv3n4Cp6M4NViPWZR5xC134H6qqy1/2RPbWvmUWLHoufcPqtdKvun5t
+	+UoyEGPxVxwM8podnx9RfQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1774286609; x=
+	1774293809; bh=8F5DHzbZOkiE60z+INX/R3wfwDAeDzgLhwAv/Br77fM=; b=T
+	39gwOEyRtCyYoMOGxdB1aekPredjoXFLaW3m6i6BbkmcD3TENUY+rGnLBscpaGLD
+	pl/gY6Wad3V5npcJa+8/w3KHGhFEusITcXXc49+4OiqXWkkWqj7GgJH8XTM5yjo+
+	jKGeMvnm+u6AMx2msR1uFbO17rxuPrmWriiZvC9roJIKLpAsGlrFIxypDrEAkvQE
+	F6iQHUCna5dGO3+Oq4eQOTcYpv/U7VYXNNXsjILB4Q+VfMN88xaCKhgGUbalORTP
+	SesNWUyY8BIA+Br7/XSafGCp3A8lFxKcYM8/VZdx2BHUUeCTZCFBxS+/3nO3hbbr
+	+ysYeMBoP68cYbvX3Krdg==
+X-ME-Sender: <xms:EHfBaaVOuDeremT5Xu0AuWObJubLqQ2Wnl5vZlfNhouYJf7BwlCLnQ>
+    <xme:EHfBaRaOzMH4ETuoxDhEO01_PK1EegNYbN5kOqpTOp4DbfEiYa3UCxuGHG8QuabyD
+    S4ouWK2fowUUjV5WyYISt_lOKBh6aIkxJ0nstyLSSjysmnUY8SnNDg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdefudelfedtucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedfofgrrhhk
+    ucfrvggrrhhsohhnfdcuoehmphgvrghrshhonhdqlhgvnhhovhhosehsqhhuvggssgdrtg
+    grqeenucggtffrrghtthgvrhhnpefhveekjeeuueekfefhleeljeehuedugfetffdvteek
+    ffejudelffdvjeekfeehvdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmh
+    grihhlfhhrohhmpehmphgvrghrshhonhdqlhgvnhhovhhosehsqhhuvggssgdrtggrpdhn
+    sggprhgtphhtthhopedvledpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepsghrgh
+    hlsegsghguvghvrdhplhdprhgtphhtthhopeguvghrvghkjhhohhhnrdgtlhgrrhhksehg
+    mhgrihhlrdgtohhmpdhrtghpthhtoheplhhuihiirdguvghnthiisehgmhgrihhlrdgtoh
+    hmpdhrtghpthhtohepmhgrrhgtvghlsehhohhlthhmrghnnhdrohhrghdprhgtphhtthho
+    pegsrhhglheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheptghonhhorhdoughtsehkvg
+    hrnhgvlhdrohhrghdprhgtphhtthhopehhrghnshhgsehkvghrnhgvlhdrohhrghdprhgt
+    phhtthhopehjihhrihhslhgrsgihsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehkrh
+    iikhdoughtsehkvghrnhgvlhdrohhrgh
+X-ME-Proxy: <xmx:EHfBaSqJKl4O8U5DXXnUHJ4ARuuLtgpyod5Zu0bYenGxtsS85upgIQ>
+    <xmx:EHfBaS_HCcsciKk7yEWlaATTUB0CHoip4D6Rvf83VxqBWMmapLm_VQ>
+    <xmx:EHfBaV5mRbon4XVx5UyVqJ7B0Up2zUVFC-vVEljM-RiIxKDNHEp84g>
+    <xmx:EHfBae0fWgVJV-sLFsw6aUUf4UNq6Juf-hZdi3M7ZrPWNpzYulPmdw>
+    <xmx:EXfBaaZiou-wWxJxEAUqaRa4s0NByc4B1hm1naWmg3Gc55SFVLDUw_Ug>
+Feedback-ID: ibe194615:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 94F912CE0078; Mon, 23 Mar 2026 13:23:28 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 2/9] dax/hmem: Factor HMEM registration into
- __hmem_register_device()
-To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
- linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org,
- nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Cc: Ard Biesheuvel <ardb@kernel.org>,
- Alison Schofield <alison.schofield@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Yazen Ghannam <yazen.ghannam@amd.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Matthew Wilcox <willy@infradead.org>, Jan Kara <jack@suse.cz>,
- "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>,
- Pavel Machek <pavel@kernel.org>, Li Ming <ming.li@zohomail.com>,
- Jeff Johnson <jeff.johnson@oss.qualcomm.com>,
- Ying Huang <huang.ying.caritas@gmail.com>,
- Yao Xingtao <yaoxt.fnst@fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nathan Fontenot <nathan.fontenot@amd.com>,
- Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
- Benjamin Cheatham <benjamin.cheatham@amd.com>,
- Zhijian Li <lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>,
- Tomasz Wolski <tomasz.wolski@fujitsu.com>
-References: <20260322195343.206900-1-Smita.KoralahalliChannabasappa@amd.com>
- <20260322195343.206900-3-Smita.KoralahalliChannabasappa@amd.com>
-Content-Language: en-US
-From: Dave Jiang <dave.jiang@intel.com>
-In-Reply-To: <20260322195343.206900-3-Smita.KoralahalliChannabasappa@amd.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-ThreadId: AJPKs3BxgghB
+Date: Mon, 23 Mar 2026 13:23:07 -0400
+From: "Mark Pearson" <mpearson-lenovo@squebb.ca>
+To: "Manivannan Sadhasivam" <mani@kernel.org>,
+ "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>
+Cc: "Rob Herring" <robh@kernel.org>,
+ "Manivannan Sadhasivam" <manivannan.sadhasivam@oss.qualcomm.com>,
+ "Greg KH" <gregkh@linuxfoundation.org>,
+ "Jiri Slaby" <jirislaby@kernel.org>,
+ "Nathan Chancellor" <nathan@kernel.org>,
+ "Nicolas Schier" <nicolas.schier@linux.dev>,
+ "Hans de Goede" <hansg@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ "Derek J . Clark" <derekjohn.clark@gmail.com>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>,
+ "Marcel Holtmann" <marcel@holtmann.org>,
+ "Luiz Augusto von Dentz" <luiz.dentz@gmail.com>,
+ "Bartosz Golaszewski" <brgl@bgdev.pl>,
+ "Andy Shevchenko" <andriy.shevchenko@linux.intel.com>,
+ "Bartosz Golaszewski" <brgl@kernel.org>, linux-serial@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ "platform-driver-x86@vger.kernel.org"
+ <platform-driver-x86@vger.kernel.org>, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
+ "Stephan Gerhold" <stephan.gerhold@linaro.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Message-Id: <3faffec9-dc9d-4eec-a652-a84d30d85c96@app.fastmail.com>
+In-Reply-To: 
+ <m44mupdmg7kgco62n4evcviagqo7wwgyt3gybugbxwesd4ekjz@o24r6v4tpezc>
+References: <20260317-pci-m2-e-v6-0-9c898f108d3d@oss.qualcomm.com>
+ <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
+ <20260322233713.GA98177-robh@kernel.org>
+ <to2mrizprc3hjufqbiplpqyek7f4uutqtn4hx4gkmdgv2rykbc@ybwwjhdec4nm>
+ <CAL_JsqJXrHCJt770bJkMmAUhirSF3kHjYwSzkG7cXp7-eys8Rg@mail.gmail.com>
+ <6aef3xxjjd4nbgrfx6jc6jt6rpqmttoui6hil5zqgdpas2j6gj@ie6j72orenou>
+ <fsvmmgoe5wslmxebhrrwmdg2ldcmhzvj53gjkdfnfg2m2rz2lw@dcfboaakz7ae>
+ <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
+ <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+ <m44mupdmg7kgco62n4evcviagqo7wwgyt3gybugbxwesd4ekjz@o24r6v4tpezc>
+Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA soldered down
+ connector
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
 
-On 3/22/26 12:53 PM, Smita Koralahalli wrote:
-> Separate the CXL overlap check from the HMEM registration path and keep
-> the platform-device setup in a dedicated __hmem_register_device().
-> 
-> This makes hmem_register_device() the policy entry point for deciding
-> whether a range should be deferred to CXL, while __hmem_register_device()
-> handles the HMEM registration flow.
-> 
-> No functional changes.
-> 
-> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+On Mon, Mar 23, 2026, at 12:52 PM, Manivannan Sadhasivam wrote:
+> On Mon, Mar 23, 2026 at 06:45:15PM +0200, Dmitry Baryshkov wrote:
+>> On Mon, Mar 23, 2026 at 09:26:04PM +0530, Manivannan Sadhasivam wrote:
+>> > On Mon, Mar 23, 2026 at 05:14:30PM +0200, Dmitry Baryshkov wrote:
+>> > > On Mon, Mar 23, 2026 at 07:14:25PM +0530, Manivannan Sadhasivam w=
+rote:
+>> > > > On Mon, Mar 23, 2026 at 08:39:55AM -0500, Rob Herring wrote:
+>> > > > > On Mon, Mar 23, 2026 at 7:16=E2=80=AFAM Manivannan Sadhasivam=
+ <mani@kernel.org> wrote:
+>> > > > > >
+>> > > > > > On Sun, Mar 22, 2026 at 06:37:13PM -0500, Rob Herring wrote:
+>> > > > > > > On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadh=
+asivam wrote:
+>> > > > > > > > Lenovo Thinkpad T14s is found to have a soldered down v=
+ersion of M.2 1620
+>> > > > > > > > LGA connector. Though, there is no 1620 LGA form factor=
+ defined in the M.2
+>> > > > > > > > spec, it looks very similar to the M.2 Key E connector.=
+ So add the
+>> > > > > > > > "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e=
+-connector" fallback
+>> > > > > > > > to reuse the Key E binding.
+>> > > > > > >
+>> > > > > > > What is LGA?
+>> > > > > > >
+>> > > > > >
+>> > > > > > Land Grid Array
+>> > > > > >
+>> > > > > > > If not in the spec, is it really something generic?
+>> > > > > > >
+>> > > > > >
+>> > > > > > Good question. Yes and No! LGA is not something that Lenovo=
+ only uses. Other
+>> > > > > > vendors may also use this form factor. PCIe connectors are =
+full of innovation as
+>> > > > > > the spec gives room for hardware designers to be as innovat=
+ive as possible to
+>> > > > > > save the BOM cost.
+>> > > > >=20
+>> > > > > innovation =3D=3D incompatible changes
+>> > > > >=20
+>> > > >=20
+>> > > > Yes, I was trying to sound nice :)
+>> > > >=20
+>> > > > > > This is why I do not want to make it Lenovo specific. But i=
+f you prefer that, I
+>> > > > > > can name it as "lenovo,pcie-m2-1620-lga-connector".
+>> > > > >=20
+>> > > > > Depends if you think that s/w needs to know the differences. =
+Hard to
+>> > > > > say with a sample size of 1.
+>> > > > >=20
+>> > > >=20
+>> > > > Sure. Will add the 'lenovo' prefix then.
+>> > >=20
+>> > > Is it really Lenovo? Or is it some other module vendor, whose LGA=
+s are
+>> > > being used by Lenovo?
+>> > >=20
+>> > > I remember that DB820c also used some kind of a module for the Wi=
+Fi card
+>> > > (which might be M.2 compatible or might not, I can't find exact d=
+ocs at
+>> > > this point).
+>> > >=20
+>> >=20
+>> > I don't know. These kind of designs might be reused by several vend=
+ors. But
+>> > considering that we should not make it generic, I'd go with Lenovo =
+as that's
+>> > the only vendor we know as of now.
+>>=20
+>> ... and later we learn that other vendors use the same idea /pinout,
+>> then nothing stops us from still telling that it's a
+>> "lenovo,pcie-m2-something-lga".=20
+>>=20
+>
+> How do you possibly know whether a single vendor has introduced this f=
+orm factor
+> or reused by multiple ones? Atleast, I don't have access to such a sou=
+rce to
+> confirm.
+>
+I've not really been following this thread/patchset in detail; but want =
+me to try and check with the T14s platform team if this device is specif=
+ically made for us (Lenovo) or not?
+I doubt it is - we just don't do that usually, but I can go and ask the =
+question if it will help resolve this (with the caveat that it could hol=
+d up the review for a bit and I may not be able to get a straight answer)
 
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+My vote (for what little it's worth) would be to make it non-Lenovo spec=
+ific. Then when the same part causes issues on another vendors platform =
+I won't get asked questions about why Lenovo is breaking <other vendor> =
+:)
 
-> ---
->  drivers/dax/hmem/hmem.c | 24 +++++++++++++++---------
->  1 file changed, 15 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/dax/hmem/hmem.c b/drivers/dax/hmem/hmem.c
-> index 1cf7c2a0ee1c..a3d45032355c 100644
-> --- a/drivers/dax/hmem/hmem.c
-> +++ b/drivers/dax/hmem/hmem.c
-> @@ -58,21 +58,14 @@ static void release_hmem(void *pdev)
->  	platform_device_unregister(pdev);
->  }
->  
-> -static int hmem_register_device(struct device *host, int target_nid,
-> -				const struct resource *res)
-> +static int __hmem_register_device(struct device *host, int target_nid,
-> +				  const struct resource *res)
->  {
->  	struct platform_device *pdev;
->  	struct memregion_info info;
->  	long id;
->  	int rc;
->  
-> -	if (IS_ENABLED(CONFIG_CXL_REGION) &&
-> -	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
-> -			      IORES_DESC_CXL) != REGION_DISJOINT) {
-> -		dev_dbg(host, "deferring range to CXL: %pr\n", res);
-> -		return 0;
-> -	}
-> -
->  	rc = region_intersects_soft_reserve(res->start, resource_size(res));
->  	if (rc != REGION_INTERSECTS)
->  		return 0;
-> @@ -123,6 +116,19 @@ static int hmem_register_device(struct device *host, int target_nid,
->  	return rc;
->  }
->  
-> +static int hmem_register_device(struct device *host, int target_nid,
-> +				const struct resource *res)
-> +{
-> +	if (IS_ENABLED(CONFIG_CXL_REGION) &&
-> +	    region_intersects(res->start, resource_size(res), IORESOURCE_MEM,
-> +			      IORES_DESC_CXL) != REGION_DISJOINT) {
-> +		dev_dbg(host, "deferring range to CXL: %pr\n", res);
-> +		return 0;
-> +	}
-> +
-> +	return __hmem_register_device(host, target_nid, res);
-> +}
-> +
->  static int dax_hmem_platform_probe(struct platform_device *pdev)
->  {
->  	return walk_hmem_resources(&pdev->dev, hmem_register_device);
-
+Mark
