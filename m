@@ -1,147 +1,85 @@
-Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com [209.85.210.53])
+Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEDCF3B892D
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:00:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF5C03B8920
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 16:01:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774281660; cv=none; b=XiahkkqfdwuXslkS8RXBEcBS/ngBqditv2rqK0XOZyN8fWVpo8JlBxwdS7j2sInWOU2ITwdRn2cgTIXpKQeTfQrsCkcLQGL7SCpOkgrNr8z30gY+P1J4+6w7U/Pj8Mpea5LJhPTFO/ZHOckkUxm8EJ6KRunLfoXr+qqfvhzivq8=
+	t=1774281678; cv=none; b=Mnv9Zu8+TcxcAntGNXoULMHy/dpRPgx4ZEPv45MyeAemwR4DcN7tH1+W/JuSPriaEm25gENS9I9p6znqwT5xzrpM9dK6TQiYQ3CPG4VeyV4s27SGInZCaCd+JRQYmS8VT+9yBF5JhQpSIMyHxj3INx8aTwDeO/LsjZ5NTOKi6i0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774281660; c=relaxed/simple;
-	bh=Bz3Ots6yk9ZczWzMqmrxecnG8LNR/r4o3HZXwJKixbA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FboY/DUkT/NcCD9oqRaPZ+/IadrLrAA2pv5knGiZmNLBo7mCOmGRSdLoSJ+nWLjOB0VAfse9FiQxBcsVe1oxVyHaPOu75Q1Q/i46Wcgqe6uN00m0IbCBm10vITXbyCyc5KiHKgBUn03aDrzdmIq3rkN7lGQwOEj376dcP63i/Hw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org; spf=pass smtp.mailfrom=bitbyteword.org; dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b=icTJgAMR; arc=none smtp.client-ip=209.85.210.53
+	s=arc-20240116; t=1774281678; c=relaxed/simple;
+	bh=UYWQZ2GP0U++mha636tNmQDeDr1xCrJ4Hne/HQIGbQk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=OG/uOLiS1KcHPzuivpjd5F9kCGZ5ZOo52GMoFGMHwT4jflR14eGdiA0n2E+LLe2ck2MbgzFuzar8UoSc4HQXHvR314SWRUYZROY8RC793F+sbKJsE10HFlBpuqasmZ2Zej5PZa57865jAx14c+PeDFmmY1QzviZjmQXtzSZjjZw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org; spf=pass smtp.mailfrom=bitbyteword.org; dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b=MRJeYg/5; arc=none smtp.client-ip=209.85.161.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bitbyteword.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b="icTJgAMR"
-Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-7d7f9285560so1263460a34.1
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:00:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b="MRJeYg/5"
+Received: by mail-oo1-f50.google.com with SMTP id 006d021491bc7-67c2db63127so174867eaf.2
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 09:01:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bitbyteword.org; s=google; t=1774281658; x=1774886458; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=7SscKSPRtp5r0bOyZYtc8orw97P+lM4BuDDRyRnpM2Q=;
-        b=icTJgAMR0oeLmZ/KWfLwRrhOP+EsA5wl9eKYkctdG+jFUxkdpinSnf2VcJjIGT1ldW
-         8faZggbpkd8NYEieO4mYUuOAYj1+A72IArYttf9BWOIrU4rwJLJd/miC42tsAVwEFVJy
-         66Ti2OFUfy/HXBknYPGxqAyu+UL+6AmHQvZtAuPzlGc2n9aEOOhgemTQdsIzkot+rZHD
-         zOeSlK/xnyBwjh+Jf5Ptj0RpSg2E2UhK3v9S/T/JaoGb3ta+awmnU4NQq9NLF3jIbmcd
-         y7nTnDhmLABhFmA4CKzRMvPexu2BOZf5R0MoCXYf+kvlR/rpgKaIXkVRCw2S1/CKv+FF
-         J2mw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774281658; x=1774886458;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=bitbyteword.org; s=google; t=1774281675; x=1774886475; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=7SscKSPRtp5r0bOyZYtc8orw97P+lM4BuDDRyRnpM2Q=;
-        b=mKZsqjOaqakj//PGL7b1jgK/hbSZ+yMKR81oTOmnz0FzMCar/E+u0ZzTUBuDAau4vF
-         GDvnZRwA+8hliEjk4LwiIo7ogAOXxAFLMqRStiSs4oMtgbDcSiEMtLXut0cSUAX+kX3B
-         cSgSWT1+JFOtPKK+QJkAtA+BzWDxScZiDhpHuSkP1yXGWhpiU5rEdMNBpj3vMCjhcE4Y
-         DyZUc+EmWSdyUTsU2HLh3B13+ApMkRKSVZXdPf0C4OGQBEK6JiXN4xjelVNDhBYxcUST
-         1jOGcy6NB1h8uLoStK/LSUX/B0OwfANSi8cc5EC8sHrOWfjND5SHg+/5kxI3QtlF73/J
-         Y3RQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWHLhb60+D8KXhAYfCpnI6gjNW40DufSajf8b83GyS2+gvxR3ETdOfENHjeDQI+q0ZKEM3BSkRLBw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxXSNT9uwGfreCRdATb+WBpithOfbIlTm9eVEW2OVgtekTl9cyu
-	HJdw4NgwOciu9OR4eK78gXEmO6q0NiA0oGuK4J/MrMH5xU56Ir3UU7lN1jP/tFEfmAg=
-X-Gm-Gg: ATEYQzwnVcW+f7CFZWDlnZeVTXRLWkL1IDlLGccOGV2G4qDXobUcoHOZElM/hqW7rwb
-	Kq106mDNOTmO+9vrWNuHFlgPNBVaYaOdrQM+Q5ci2xp4OBIQKbq8U97iN/PeBRoAoueXDC+rk6Y
-	hpVRj46/cZPSIygATWXLaaALjW7WJMHwp9lfioSw8vZ6giFE6LopYNs8BZwlQrHHL4FoHFrcXGq
-	8Pbzf0kJJ1M78WdqVIhEwWFUHsld1JFvSWAnCjIibnF2zYfJlGLTsiKutO2mos/NqItlFI9KfI/
-	izM24qA1q5EbQK0aychIuifGOsPoHtJ1mka3h75mzl92hj3XUVP8NHgREEySL1nZzkVXcH1Bph4
-	jd0SgCoM5QwIZddoExABMuF8tYZCFnAFQGE9waepy8ePJ2a0NretWoyG/Q/2IiMzQiAauRdnzE4
-	9IwfksaJFzlElUWWkkx49oaF4jpHw59lFfRfxOHSTqya63rp1d7Q52fpByCHJLyLfHLw==
-X-Received: by 2002:a05:6820:3091:b0:67d:9cc0:968 with SMTP id 006d021491bc7-67d9cc00e0dmr6486936eaf.63.1774281657494;
-        Mon, 23 Mar 2026 09:00:57 -0700 (PDT)
+        bh=alZhVdYENKaCgEyuFWCx1ONcWxmGf0Z0mu4iI7gLWPk=;
+        b=MRJeYg/53vCtQQdVZ5EGQ7rzA+mX1UXmCi8u38vZSN1PYY7KKlq25mnhrJGEoqSJTt
+         6/jmy57s5FIbDh0shGos4MkijwsPQJU7CflSO56jAS5naxUG+NAp7Tdu2WjGEtWQqCN0
+         HeXUCFFNUbeM6LRFjkI3Y1edH9JTHvjI5pqdEJboiuAScB/JI7zgrSAG8eHPcJ5qiGTi
+         JJTlYDxlUSjDs7Dm4VapwPFU0XgLi78A8Ty5M+Wzhm2NV8BmO4CYcJPGZvwEaDILXUsB
+         RyMeUxDP1j5wQ5RlyZlM/zEsWLhW6PcPpVuA/m4p9Vr5reHLRhKIX54Cz6mKnJjpMi8J
+         m8DA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774281675; x=1774886475;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=alZhVdYENKaCgEyuFWCx1ONcWxmGf0Z0mu4iI7gLWPk=;
+        b=i0NyzOSwCXCVG25yqmWd0aovRBWXYaKwMwB5RlgeKiPSePW46BoO+OrFPx2fRK8LkH
+         N0yHb30Okz/CRqHjprdKYPlI6TZH/lQO7oT9z0V/nRK8htyB/4din0Mw9KMgoLPfNq3H
+         n07I9VidFgnoVgcYSVQd4XjNxlrJ9ycCCXaVXIjzg+8Zsm0ebn45okmqvzzJ407Fh2ox
+         68jOXdhzYAHbXHUKq6otxwOEH0Yj7OoFnVBfihSnf6YZSyNdiF4IvKP7vEi8VJYgnBQQ
+         m0GZpkKbd6A5WG+FPqqfhzwKrY1bRFroMtCuaCpu6k14Wo7Z3wB4O0zCBUaKbOATcX23
+         eLdA==
+X-Forwarded-Encrypted: i=1; AJvYcCUI4I3ZBq/eTJpTb9xl5npoOuuuh0W7rQVzfDprFYVvnuaMA7Zqty/4S01wWJSCqRCykX9z6UrRYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywq/f0IJnl3KIzcyRzsL/nzPS0ySDHM89O7z48O6yw2Cuxo0gpC
+	55E85eg5t02JV8IctPlh9jaPidgh3IhmdvLTUA8Fs7CPH4UZvcsgWnRmbXi0hCqYSpg=
+X-Gm-Gg: ATEYQzxB9MGMUP5cDV3Cfh7QEtKXPsi+t6aTYWI4PPe2U2bIU0owum2zd7eknWYQ19O
+	BBQHfETe6SFTbOdmAKAhArSsVwBLqMx9HKhwngKPnwrExbeOCqfebh6IM3II+e15wd5eBwhNqgj
+	6Fycz4pMNu6KXs0GuPnLuhFaST1yMmO4bo0Q9yidIs1yfdWa79hgx7gRr7gyrWP/HoRl4Iq5paV
+	7cg1mNYAT5/enIm4p5VWLiOqRx1eglK/kkxW8Y2ufRC+MlXqrqlZLKDc3mmA9WerSJsImVH6zB8
+	P6R3PKcUi/ONxJIe2ySleql6IT72J++vyj4CTW0S+Iwg0UfgTSQdEDRNx+4kNonmL4hzJ9RN4jS
+	y232ZaDUKIcpnw+Dp+icJrcvIIWHuSTFbqyJcpUI5ucLOMQ1RWh8wyVDw0y++9YkXlfRi/Ukscu
+	r220A9Sr8dI0HptMmgJiQsHTEB0kLLEplJfw+6doRacyUJRELABYy20aN2tLuluQNXeA==
+X-Received: by 2002:a05:6820:1a03:b0:67b:f147:4cdc with SMTP id 006d021491bc7-67c22fe7998mr10114283eaf.64.1774281675182;
+        Mon, 23 Mar 2026 09:01:15 -0700 (PDT)
 Received: from vinmini.lan (c-73-143-21-186.hsd1.vt.comcast.net. [73.143.21.186])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8cfc9088df1sm843364185a.25.2026.03.23.09.00.53
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-8cfc9088df1sm843364185a.25.2026.03.23.09.01.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Mar 2026 09:00:56 -0700 (PDT)
+        Mon, 23 Mar 2026 09:01:14 -0700 (PDT)
 From: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
-To: Steven Rostedt <rostedt@goodmis.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Dmitry Ilvokhin <d@ilvokhin.com>
+To: 
 Cc: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jens Axboe <axboe@kernel.dk>,
-	io-uring@vger.kernel.org,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
-	Xin Long <lucien.xin@gmail.com>,
-	Jon Maloy <jmaloy@redhat.com>,
-	Aaron Conole <aconole@redhat.com>,
-	Eelco Chaudron <echaudro@redhat.com>,
-	Ilya Maximets <i.maximets@ovn.org>,
-	netdev@vger.kernel.org,
-	bpf@vger.kernel.org,
-	linux-sctp@vger.kernel.org,
-	tipc-discussion@lists.sourceforge.net,
-	dev@openvswitch.org,
-	Jiri Pirko <jiri@resnulli.us>,
-	Oded Gabbay <ogabbay@kernel.org>,
-	Koby Elbaz <koby.elbaz@intel.com>,
-	dri-devel@lists.freedesktop.org,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Huang Rui <ray.huang@amd.com>,
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Perry Yuan <perry.yuan@amd.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
-	Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Len Brown <lenb@kernel.org>,
 	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Len Brown <lenb@kernel.org>,
 	linux-pm@vger.kernel.org,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Kyungmin Park <kyungmin.park@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-	Sumit Semwal <sumit.semwal@linaro.org>,
-	linaro-mm-sig@lists.linaro.org,
-	Eddie James <eajames@linux.ibm.com>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Joel Stanley <joel@jms.id.au>,
-	linux-fsi@lists.ozlabs.org,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Philipp Stanner <phasta@kernel.org>,
-	Harry Wentland <harry.wentland@amd.com>,
-	Leo Li <sunpeng.li@amd.com>,
-	amd-gfx@lists.freedesktop.org,
-	Jiri Kosina <jikos@kernel.org>,
-	Benjamin Tissoires <bentiss@kernel.org>,
-	linux-input@vger.kernel.org,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	linux-i2c@vger.kernel.org,
-	Mark Brown <broonie@kernel.org>,
-	Michael Hennerich <michael.hennerich@analog.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	linux-spi@vger.kernel.org,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org,
-	Chris Mason <clm@fb.com>,
-	David Sterba <dsterba@suse.com>,
-	linux-btrfs@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	SeongJae Park <sj@kernel.org>,
-	linux-mm@kvack.org,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 00/19] tracepoint: Avoid double static_branch evaluation at guarded call sites
-Date: Mon, 23 Mar 2026 12:00:19 -0400
-Message-ID: <20260323160052.17528-1-vineeth@bitbyteword.org>
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org
+Subject: [PATCH v2 06/19] cpufreq: Use trace_call__##name() at guarded tracepoint call sites
+Date: Mon, 23 Mar 2026 12:00:25 -0400
+Message-ID: <20260323160052.17528-7-vineeth@bitbyteword.org>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260323160052.17528-1-vineeth@bitbyteword.org>
+References: <20260323160052.17528-1-vineeth@bitbyteword.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -150,122 +88,97 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When a caller already guards a tracepoint with an explicit enabled check:
-
-  if (trace_foo_enabled() && cond)
-      trace_foo(args);
-
-trace_foo() internally re-evaluates the static_branch_unlikely() key.
-Since static branches are patched binary instructions the compiler cannot
-fold the two evaluations, so every such site pays the cost twice.
-
-This series introduces trace_call__##name() as a companion to
-trace_##name().  It calls __do_trace_##name() directly, bypassing the
-redundant static-branch re-check, while preserving all other correctness
-properties of the normal path (RCU-watching assertion, might_fault() for
-syscall tracepoints).  The internal __do_trace_##name() symbol is not
-leaked to call sites; trace_call__##name() is the only new public API.
-
-  if (trace_foo_enabled() && cond)
-      trace_call__foo(args);   /* calls __do_trace_foo() directly */
-
-The first patch adds the three-location change to
-include/linux/tracepoint.h (__DECLARE_TRACE, __DECLARE_TRACE_SYSCALL,
-and the !TRACEPOINTS_ENABLED stub).  The remaining 18 patches
-mechanically convert all guarded call sites found in the tree:
-kernel/, io_uring/, net/, accel/habanalabs, cpufreq/, devfreq/,
-dma-buf/, fsi/, drm/, HID, i2c/, spi/, scsi/ufs/, btrfs/,
-net/devlink/, kernel/time/, kernel/trace/, mm/damon/, and arch/x86/.
-
-This series is motivated by Peter Zijlstra's observation in the discussion
-around Dmitry Ilvokhin's locking tracepoint instrumentation series, where
-he noted that compilers cannot optimize static branches and that guarded
-call sites end up evaluating the static branch twice for no reason, and
-by Steven Rostedt's suggestion to add a proper API instead of exposing
-internal implementation details like __do_trace_##name() directly to
-call sites:
-
-  https://lore.kernel.org/linux-trace-kernel/8298e098d3418cb446ef396f119edac58a3414e9.1772642407.git.d@ilvokhin.com
+Replace trace_foo() with the new trace_call__foo() at sites already
+guarded by trace_foo_enabled(), avoiding a redundant
+static_branch_unlikely() re-evaluation inside the tracepoint.
+trace_call__foo() calls the tracepoint callbacks directly without
+utilizing the static branch again.
 
 Suggested-by: Steven Rostedt <rostedt@goodmis.org>
 Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
+Assisted-by: Claude:claude-sonnet-4-6
+---
+ drivers/cpufreq/amd-pstate.c   | 10 +++++-----
+ drivers/cpufreq/cpufreq.c      |  2 +-
+ drivers/cpufreq/intel_pstate.c |  2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-Changes in v2:
-- Renamed trace_invoke_##name() to trace_call__##name() (double
-  underscore) per review comments.
-- Added 4 new patches covering sites missed in v1, found using
-  coccinelle to scan the tree (Keith Busch):
-    * net/devlink: guarded tracepoint_enabled() block in trap.c
-    * kernel/time: early-return guard in tick-sched.c (tick_stop)
-    * kernel/trace: early-return guard in trace_benchmark.c
-    * mm/damon: early-return guard in core.c
-    * arch/x86: do_trace_*() wrapper functions in lib/msr.c, which
-      are called exclusively from tracepoint_enabled()-guarded sites
-      in asm/msr.h
-
-v1: https://lore.kernel.org/linux-trace-kernel/abSqrJ1J59RQC47U@kbusch-mbp/
-
-Vineeth Pillai (Google) (19):
-  tracepoint: Add trace_call__##name() API
-  kernel: Use trace_call__##name() at guarded tracepoint call sites
-  io_uring: Use trace_call__##name() at guarded tracepoint call sites
-  net: Use trace_call__##name() at guarded tracepoint call sites
-  accel/habanalabs: Use trace_call__##name() at guarded tracepoint call
-    sites
-  cpufreq: Use trace_call__##name() at guarded tracepoint call sites
-  devfreq: Use trace_call__##name() at guarded tracepoint call sites
-  dma-buf: Use trace_call__##name() at guarded tracepoint call sites
-  fsi: Use trace_call__##name() at guarded tracepoint call sites
-  drm: Use trace_call__##name() at guarded tracepoint call sites
-  HID: Use trace_call__##name() at guarded tracepoint call sites
-  i2c: Use trace_call__##name() at guarded tracepoint call sites
-  spi: Use trace_call__##name() at guarded tracepoint call sites
-  scsi: ufs: Use trace_call__##name() at guarded tracepoint call sites
-  btrfs: Use trace_call__##name() at guarded tracepoint call sites
-  net: devlink: Use trace_call__##name() at guarded tracepoint call
-    sites
-  kernel: time, trace: Use trace_call__##name() at guarded tracepoint
-    call sites
-  mm: damon: Use trace_call__##name() at guarded tracepoint call sites
-  x86: msr: Use trace_call__##name() at guarded tracepoint call sites
-
- arch/x86/lib/msr.c                                |  6 +++---
- drivers/accel/habanalabs/common/device.c          | 12 ++++++------
- drivers/accel/habanalabs/common/mmu/mmu.c         |  3 ++-
- drivers/accel/habanalabs/common/pci/pci.c         |  4 ++--
- drivers/cpufreq/amd-pstate.c                      | 10 +++++-----
- drivers/cpufreq/cpufreq.c                         |  2 +-
- drivers/cpufreq/intel_pstate.c                    |  2 +-
- drivers/devfreq/devfreq.c                         |  2 +-
- drivers/dma-buf/dma-fence.c                       |  4 ++--
- drivers/fsi/fsi-master-aspeed.c                   |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_cs.c            |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c            |  4 ++--
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c |  2 +-
- drivers/gpu/drm/scheduler/sched_entity.c          |  4 ++--
- drivers/hid/intel-ish-hid/ipc/pci-ish.c           |  2 +-
- drivers/i2c/i2c-core-slave.c                      |  2 +-
- drivers/spi/spi-axi-spi-engine.c                  |  4 ++--
- drivers/ufs/core/ufshcd.c                         | 12 ++++++------
- fs/btrfs/extent_map.c                             |  4 ++--
- fs/btrfs/raid56.c                                 |  4 ++--
- include/linux/tracepoint.h                        | 11 +++++++++++
- io_uring/io_uring.h                               |  2 +-
- kernel/irq_work.c                                 |  2 +-
- kernel/sched/ext.c                                |  2 +-
- kernel/smp.c                                      |  2 +-
- kernel/time/tick-sched.c                          | 12 ++++++------
- kernel/trace/trace_benchmark.c                    |  2 +-
- mm/damon/core.c                                   |  2 +-
- net/core/dev.c                                    |  2 +-
- net/core/xdp.c                                    |  2 +-
- net/devlink/trap.c                                |  2 +-
- net/openvswitch/actions.c                         |  2 +-
- net/openvswitch/datapath.c                        |  2 +-
- net/sctp/outqueue.c                               |  2 +-
- net/tipc/node.c                                   |  2 +-
- 35 files changed, 74 insertions(+), 62 deletions(-)
-
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index 5aa9fcd80cf51..4c47324aa2f73 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -247,7 +247,7 @@ static int msr_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+ 	if (trace_amd_pstate_epp_perf_enabled()) {
+ 		union perf_cached perf = READ_ONCE(cpudata->perf);
+ 
+-		trace_amd_pstate_epp_perf(cpudata->cpu,
++		trace_call__amd_pstate_epp_perf(cpudata->cpu,
+ 					  perf.highest_perf,
+ 					  epp,
+ 					  min_perf,
+@@ -298,7 +298,7 @@ static int msr_set_epp(struct cpufreq_policy *policy, u8 epp)
+ 	if (trace_amd_pstate_epp_perf_enabled()) {
+ 		union perf_cached perf = cpudata->perf;
+ 
+-		trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf,
++		trace_call__amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf,
+ 					  epp,
+ 					  FIELD_GET(AMD_CPPC_MIN_PERF_MASK,
+ 						    cpudata->cppc_req_cached),
+@@ -343,7 +343,7 @@ static int shmem_set_epp(struct cpufreq_policy *policy, u8 epp)
+ 	if (trace_amd_pstate_epp_perf_enabled()) {
+ 		union perf_cached perf = cpudata->perf;
+ 
+-		trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf,
++		trace_call__amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf,
+ 					  epp,
+ 					  FIELD_GET(AMD_CPPC_MIN_PERF_MASK,
+ 						    cpudata->cppc_req_cached),
+@@ -507,7 +507,7 @@ static int shmem_update_perf(struct cpufreq_policy *policy, u8 min_perf,
+ 	if (trace_amd_pstate_epp_perf_enabled()) {
+ 		union perf_cached perf = READ_ONCE(cpudata->perf);
+ 
+-		trace_amd_pstate_epp_perf(cpudata->cpu,
++		trace_call__amd_pstate_epp_perf(cpudata->cpu,
+ 					  perf.highest_perf,
+ 					  epp,
+ 					  min_perf,
+@@ -588,7 +588,7 @@ static void amd_pstate_update(struct amd_cpudata *cpudata, u8 min_perf,
+ 	}
+ 
+ 	if (trace_amd_pstate_perf_enabled() && amd_pstate_sample(cpudata)) {
+-		trace_amd_pstate_perf(min_perf, des_perf, max_perf, cpudata->freq,
++		trace_call__amd_pstate_perf(min_perf, des_perf, max_perf, cpudata->freq,
+ 			cpudata->cur.mperf, cpudata->cur.aperf, cpudata->cur.tsc,
+ 				cpudata->cpu, fast_switch);
+ 	}
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 277884d91913c..58901047eae5a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2222,7 +2222,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+ 
+ 	if (trace_cpu_frequency_enabled()) {
+ 		for_each_cpu(cpu, policy->cpus)
+-			trace_cpu_frequency(freq, cpu);
++			trace_call__cpu_frequency(freq, cpu);
+ 	}
+ 
+ 	return freq;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 11c58af419006..70be952209144 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3132,7 +3132,7 @@ static void intel_cpufreq_trace(struct cpudata *cpu, unsigned int trace_type, in
+ 		return;
+ 
+ 	sample = &cpu->sample;
+-	trace_pstate_sample(trace_type,
++	trace_call__pstate_sample(trace_type,
+ 		0,
+ 		old_pstate,
+ 		cpu->pstate.current_pstate,
 -- 
 2.53.0
 
