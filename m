@@ -1,208 +1,323 @@
-Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com [209.85.217.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33B42311C35
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 18:46:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.217.47
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774291566; cv=pass; b=C+0C4mus1xmPBr+RnTo8Zo+yjuqMTveFwMx9r3V1WZzYo5FE3CM82ygKBsfdsHNRaentHr/FSzm1MdrMgaen1NEgcoDSFZPpNcHgxipEhCyxiBcbInEXFbtvhN1zVn8s1VtRWYrlykOGHBqiq7kqKtHAQPTcCGiUp/t2le9tybk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774291566; c=relaxed/simple;
-	bh=s+RmDqI+TsxZ+2VgJOew5FS3wS8MDadFq7MLa6vXhF0=;
-	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pmUo06KNpRquADHFEwpzTRPXyBtuHVgcBpH11oMO+boFKZdVx9ulyy8gTZJkr/CZU5JS31/7y78F7qAnnakMZcpTlkhDo61nLzB0ica4NxIby1c6kYW8yYIAdCzxw9fpDlrEsrW2yIj3m50LncpeJbzmAKrchlHnYQKmLwfZBXU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=vPOleV2z; arc=pass smtp.client-ip=209.85.217.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73978313267
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:22:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774293747; cv=none; b=ogFbvgHKQUiZTQjpyFmWleen5bKUz2xPeSno5lxoCkFUp4p2Hk/nEmrIMnmugFDxBfW9FONZivMACx4CpQoY6Z8iAf1rF6vBhOQd7ctLV+tXUvmm6yp7CWZOPt/rMXIHhBS8wSaD4W9L98ZbKw/zQ9zrGRyTxll+amt8YVVphw0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774293747; c=relaxed/simple;
+	bh=KCvUJ+n935Vi45vqw4sJBx7G8qvm9UZbujs0tn3T1ME=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JgtEDxuY3/vthRof2VvdtZuredm559rDQYKZ7Sgh7vZNXnjW4OCb7Hp4cvBq6u8KwPUy/Cc2rfZ6sgG/cznNzFkNKJhSD+ixNRxNEBHD0gUyYZQ9vDLuOkupmWVyL9Aw0peZFA8/hnMLUzlO05AE4eITVcT2PaVeyHKyCDv4ivU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YFOZ7IN3; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="vPOleV2z"
-Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-6027ef7e068so332111137.1
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 11:46:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774291564; cv=none;
-        d=google.com; s=arc-20240605;
-        b=SoddcICHb218hSVuJQxQIbQf0GHIrs/4uJnaUpPYWN5BkxlNjz3ET2dV0q9eTlRJ/k
-         rXSIlxCWhqAvDms3cECTSoKNJ0GbjTttVeEna6IQzXuNcZQH+pexYImPeDOv8x+MIoby
-         Eg5cxCphuGxa6Q9D9D0m9GGR5z5gwL1HBIM1LU6BhH21I/Bh6x8Z2LLsJVXZtq0qx5y/
-         +bKg4Tlc8FURgLxY3MJlqV0x4S8LVK/3rM/Bnf+EIJcw6jqCVgXO9DVcM3tBPvkyIscF
-         x2EQ//sKgsw9Zu8mbDArSAHsiSfUF5G3X5O5pzs4pE1l7xPuR32B8Z9aXpc6k3H4WulZ
-         nPuw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:dkim-signature;
-        bh=xr0QXHWwKEApSlK6QljqZmiVGPlsHc0lfppFGa1RJnk=;
-        fh=gk+PKsoB1MBhfvMoH44YRypoM7cr4iBo9N/3DqNNDmU=;
-        b=XohF2EINfb0FVQzxboLgaeshV+J99Xqi9vJBz9uyRN6+8UOstcv5t7wJUmY/shuCXB
-         Jri1NjZk1TOvZv5B4tGKDAfsF/cDiUnjygS4RKXLSWbbnCoz9lChN10GLTsb9PXIUkSs
-         V4fqU/CExfZdHs35YzF3AHxZhx1JqY6JdWslG09wdO9ieYINzCCWmWfMQi0ss8q1hqs9
-         DTqxyk3k1sE1c5YUyHwrNDn+3HT4u7EJVKAdDsO1nrnyGy4EGwVe731MkSieA16/MOgS
-         kHn0DhvmHOwi5VpOzx1uzhjuaUj0cvpDwR0Ts41L/UfjutF3Sd+pA4Qtj9kzdq6S2t8k
-         uvxg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774291564; x=1774896364; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xr0QXHWwKEApSlK6QljqZmiVGPlsHc0lfppFGa1RJnk=;
-        b=vPOleV2zGY8OBGxA3efRkv8jcLPxrM4fnjs9NKftkybWve4Vj9ubgZfSzf0yIMxjsH
-         q0EbVlrkdVCyqQrJRXNHpSxBYvTFJ/XQaNlYVkOEdeOo1kif9egbkhAnPHIeGiT9jS7O
-         6V10B5R4TSHVae04PNPQUiBhB99us/JmvvLnlPZUkf5cHVMCmh8wSdtoMPjYGr/SQsp/
-         MDUPEJbGdDimb+Jw6capZeBDBldbucXV84h8vRjUUkMRYry8AS8RaweT+Tz/Z0LqIjYb
-         M1Ke+BtIl4404To6EledIl8n42DqmEDSLyxjRdrWckKT/i+UskywAJfK7IfaQrN+9Lp+
-         QNgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774291564; x=1774896364;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xr0QXHWwKEApSlK6QljqZmiVGPlsHc0lfppFGa1RJnk=;
-        b=dmdFJ4L3WNrcYs3UCdm1N6KI9qzDl+rrKdjjM7KNZlAQsLwNMuQD02Qp1nwNPy8iVZ
-         d+V97t1LEP2h0L2aK2MAIgdjo5OZz9ndicTPcx5zK3Q4sucv236uh46OLUe6EZn2Ki7E
-         iKpAVWTNPKa6E9XId9s5Ar8s2bMAYt5yXpN5lXt+iWfk0A+p7BqY0hbvbe/9+Q27WHoJ
-         D+rQbV6GWiXYdzZmSNzH6X93brBn8OByWADg8GSxp/mi4aaBZ37ZNxrMQ8b8xQTXr1in
-         s2oYjByuXMtxgr/alYCbwDXNB2ybewV+GL8/dmRZlzU4K0j+lfxr6eIGqnWKV7DJ8v0H
-         LMtw==
-X-Forwarded-Encrypted: i=1; AJvYcCVhR8M3b9xO2FgJJafTuafh0qliGiy6Ksg7vsCefFsZqjoRFPnOL6jHRd0z+ekmr4Gk22oHtz1LCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YypogAlCuAWEW62aV6qmYCQQ4Kp2KW02TeKpnq2tS2ZM54e2ByU
-	GJj2E1imaN4bKlRJ5eL0wCrC9HMacUErDM5OaRTPilvb3iYyoLMKBf5Jy328kj2bqu5E6OIvfL2
-	BOUyypCMKgto2Mfh64DYCHNkzOLvt92t+n02K1oAy
-X-Gm-Gg: ATEYQzwTTKM5qQro9w2IMv2UAz5x0VS+35YbALxZmDJAg2cG8nwEpEBLKxsa7oesk6H
-	ml0YMFJL1Tb9rEmxT2Gkgg8MrERwcyTEzwOgNoOC3R8XDoRJM/fuo/VTjPTqtYb3x2nvFHJNo5T
-	vcib1P10tJIsT12yuXH91qbFcLT926gr/YJmGUeNN8o/ytJLCYWokUG2S1V0IXrvSoVOv4NfEox
-	KEgLpuqRxsvP3ljf8cl+vJMPXyKOLJv9qBwPKf+DJmt0tnqYuRbxZ69YjdIa6PMuy6phrsD0ey1
-	N2BpVMUSeYng+WWxKD9XHHBMEMCMaXGe2kkuVd86aRa4yZ/eOs4HvsGeXDFfPbSgD1jvIw==
-X-Received: by 2002:a05:6102:1610:b0:5ef:8ae:85a5 with SMTP id
- ada2fe7eead31-602aeb231f5mr7205779137.16.1774291563158; Mon, 23 Mar 2026
- 11:46:03 -0700 (PDT)
-Received: from 176938342045 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 23 Mar 2026 11:46:02 -0700
-Received: from 176938342045 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 23 Mar 2026 11:46:02 -0700
-From: Ackerley Tng <ackerleytng@google.com>
-In-Reply-To: <20260317141031.514-4-kalyazin@amazon.com>
-References: <20260317141031.514-1-kalyazin@amazon.com> <20260317141031.514-4-kalyazin@amazon.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YFOZ7IN3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 259B7C4CEF7
+	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:22:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774293747;
+	bh=KCvUJ+n935Vi45vqw4sJBx7G8qvm9UZbujs0tn3T1ME=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=YFOZ7IN3XeVgdCNRjbj1ckZuCDW0wqd5yrjMjn3bylGiQfj5Wgzpg/MDB3+qYsbh3
+	 uUmZOua8hNgQ/oYsWBv4oT+JU7Anb7x8A2CYJ4lnnmTiWOWNR4OHhAfWA7yia6BXJ2
+	 Dm4gkDyQxzHxeX40exKalghvWZWHRwKn8CZ0JuVlYdWTZAtFB3N3SA1nH4yDXN481d
+	 MJfeBICk1ETNsN2Mvf5YtLRtdF89usX/Bgr1owuVEV6CtVVcwNZvgEdkBUr/n05c/u
+	 h2nTw0MbhMJPRt7O24+Mh4Gm5XWwt0LzWLLMrituBgWwdY/1QEM0a/tqSHl/pHdBPT
+	 fKID8irguKqgQ==
+Received: by mail-oo1-f43.google.com with SMTP id 006d021491bc7-67ba5921b84so1814714eaf.3
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 12:22:27 -0700 (PDT)
+X-Gm-Message-State: AOJu0YyjGIJJRIwkk6kDAcBKCrinBpoSfESvit+Bbqis7jp/i4fZrd2y
+	1Rt0dMv+88Nv+ImTMEAMpYCAaV9SyZwPHG7uS/b4j+S2gCoIxHweRUZXsrJ6ORFd1I44/7ht+Hq
+	77sW/VU9a6Rbxe/BTXVZyvHtu4U7kYeA=
+X-Received: by 2002:a05:6820:180e:b0:67b:dad6:dbdc with SMTP id
+ 006d021491bc7-67c22fbd5bamr9703467eaf.55.1774293746222; Mon, 23 Mar 2026
+ 12:22:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Mon, 23 Mar 2026 11:46:02 -0700
-X-Gm-Features: AQROBzCRQmL2CFh0hL8G9T_h4E5mqLNycY6Q5fv3k8u-7tLVQqZDWt6l_fOQ864
-Message-ID: <CAEvNRgEBdi49ZkfGo0xmM+J1yzKOzfT2ThAXEN=S0j7vC7Fu3w@mail.gmail.com>
-Subject: Re: [PATCH v11 03/16] mm/secretmem: make use of folio_{zap,restore}_direct_map
-To: "Kalyazin, Nikita" <kalyazin@amazon.co.uk>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
-	"kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, 
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, 
-	"bpf@vger.kernel.org" <bpf@vger.kernel.org>, 
-	"linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>, "kernel@xen0n.name" <kernel@xen0n.name>, 
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, 
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, 
-	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "pbonzini@redhat.com" <pbonzini@redhat.com>, "corbet@lwn.net" <corbet@lwn.net>, 
-	"maz@kernel.org" <maz@kernel.org>, "oupton@kernel.org" <oupton@kernel.org>, 
-	"joey.gouly@arm.com" <joey.gouly@arm.com>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, 
-	"yuzenghui@huawei.com" <yuzenghui@huawei.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, 
-	"will@kernel.org" <will@kernel.org>, "seanjc@google.com" <seanjc@google.com>, "tglx@kernel.org" <tglx@kernel.org>, 
-	"mingo@redhat.com" <mingo@redhat.com>, "bp@alien8.de" <bp@alien8.de>, 
-	"dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>, 
-	"hpa@zytor.com" <hpa@zytor.com>, "luto@kernel.org" <luto@kernel.org>, 
-	"peterz@infradead.org" <peterz@infradead.org>, "willy@infradead.org" <willy@infradead.org>, 
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>, "david@kernel.org" <david@kernel.org>, 
-	"lorenzo.stoakes@oracle.com" <lorenzo.stoakes@oracle.com>, "vbabka@kernel.org" <vbabka@kernel.org>, 
-	"rppt@kernel.org" <rppt@kernel.org>, "surenb@google.com" <surenb@google.com>, "mhocko@suse.com" <mhocko@suse.com>, 
-	"ast@kernel.org" <ast@kernel.org>, "daniel@iogearbox.net" <daniel@iogearbox.net>, 
-	"andrii@kernel.org" <andrii@kernel.org>, "martin.lau@linux.dev" <martin.lau@linux.dev>, 
-	"eddyz87@gmail.com" <eddyz87@gmail.com>, "song@kernel.org" <song@kernel.org>, 
-	"yonghong.song@linux.dev" <yonghong.song@linux.dev>, 
-	"john.fastabend@gmail.com" <john.fastabend@gmail.com>, "kpsingh@kernel.org" <kpsingh@kernel.org>, 
-	"sdf@fomichev.me" <sdf@fomichev.me>, "haoluo@google.com" <haoluo@google.com>, 
-	"jolsa@kernel.org" <jolsa@kernel.org>, "jgg@ziepe.ca" <jgg@ziepe.ca>, 
-	"jhubbard@nvidia.com" <jhubbard@nvidia.com>, "peterx@redhat.com" <peterx@redhat.com>, 
-	"jannh@google.com" <jannh@google.com>, "pfalcato@suse.de" <pfalcato@suse.de>, 
-	"skhan@linuxfoundation.org" <skhan@linuxfoundation.org>, "riel@surriel.com" <riel@surriel.com>, 
-	"ryan.roberts@arm.com" <ryan.roberts@arm.com>, "jgross@suse.com" <jgross@suse.com>, 
-	"yu-cheng.yu@intel.com" <yu-cheng.yu@intel.com>, "kas@kernel.org" <kas@kernel.org>, 
-	"coxu@redhat.com" <coxu@redhat.com>, "kevin.brodsky@arm.com" <kevin.brodsky@arm.com>, 
-	"yosry@kernel.org" <yosry@kernel.org>, "ajones@ventanamicro.com" <ajones@ventanamicro.com>, 
-	"maobibo@loongson.cn" <maobibo@loongson.cn>, "tabba@google.com" <tabba@google.com>, 
-	"prsampat@amd.com" <prsampat@amd.com>, "wu.fei9@sanechips.com.cn" <wu.fei9@sanechips.com.cn>, 
-	"mlevitsk@redhat.com" <mlevitsk@redhat.com>, "jmattson@google.com" <jmattson@google.com>, 
-	"jthoughton@google.com" <jthoughton@google.com>, "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, 
-	"alex@ghiti.fr" <alex@ghiti.fr>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, 
-	"borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, 
-	"dev.jain@arm.com" <dev.jain@arm.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, 
-	"hca@linux.ibm.com" <hca@linux.ibm.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>, 
-	"pjw@kernel.org" <pjw@kernel.org>, 
-	"shijie@os.amperecomputing.com" <shijie@os.amperecomputing.com>, "svens@linux.ibm.com" <svens@linux.ibm.com>, 
-	"thuth@redhat.com" <thuth@redhat.com>, "wyihan@google.com" <wyihan@google.com>, 
-	"yang@os.amperecomputing.com" <yang@os.amperecomputing.com>, 
-	"Jonathan.Cameron@huawei.com" <Jonathan.Cameron@huawei.com>, 
-	"Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, "urezki@gmail.com" <urezki@gmail.com>, 
-	"zhengqi.arch@bytedance.com" <zhengqi.arch@bytedance.com>, 
-	"gerald.schaefer@linux.ibm.com" <gerald.schaefer@linux.ibm.com>, 
-	"jiayuan.chen@shopee.com" <jiayuan.chen@shopee.com>, "lenb@kernel.org" <lenb@kernel.org>, 
-	"osalvador@suse.de" <osalvador@suse.de>, "pavel@kernel.org" <pavel@kernel.org>, 
-	"rafael@kernel.org" <rafael@kernel.org>, "vannapurve@google.com" <vannapurve@google.com>, 
-	"jackmanb@google.com" <jackmanb@google.com>, "aneesh.kumar@kernel.org" <aneesh.kumar@kernel.org>, 
-	"patrick.roy@linux.dev" <patrick.roy@linux.dev>, "Thomson, Jack" <jackabt@amazon.co.uk>, 
-	"Itazuri, Takahiro" <itazur@amazon.co.uk>, "Manwaring, Derek" <derekmn@amazon.com>
+References: <20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+ <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
+In-Reply-To: <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 23 Mar 2026 20:22:15 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iZwyY923=tAGFVmjWk2JpddppdCqNv3rAoSiQ14xM_-Q@mail.gmail.com>
+X-Gm-Features: AQROBzDc1_3lstBQ6vU2t66tvvvFudVLYPXqlczJPiOWByeCMJekagKjn-eYLYQ
+Message-ID: <CAJZ5v0iZwyY923=tAGFVmjWk2JpddppdCqNv3rAoSiQ14xM_-Q@mail.gmail.com>
+Subject: Re: [PATCH v1] powercap: intel_rapl: Consolidate PL4 and PMU support
+ flags into rapl_defaults
+To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>, 
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-"Kalyazin, Nikita" <kalyazin@amazon.co.uk> writes:
+On Mon, Mar 23, 2026 at 7:20=E2=80=AFPM srinivas pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> On Fri, 2026-03-13 at 12:00 -0700, Kuppuswamy Sathyanarayanan wrote:
+> > Currently, PL4 and MSR-based RAPL PMU support are detected using
+> > separate CPU ID tables (pl4_support_ids and pmu_support_ids) in the
+> > MSR driver probe path. This creates a maintenance burden since adding
+> > a new CPU requires updates in two places: the rapl_ids table and one
+> > or both of these capability tables.
+> >
+> > Consolidate PL4 and PMU capability information directly into
+> > struct rapl_defaults by adding msr_pl4_support and msr_pmu_support
+> > flags. This allows per-CPU capability to be expressed in a single
+> > place alongside other per-CPU defaults, eliminating the duplicate
+> > CPU ID tables entirely.
+> >
+> > No functional changes are intended.
+> >
+> > Co-developed-by: Zhang Rui <rui.zhang@intel.com>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > Signed-off-by: Kuppuswamy Sathyanarayanan
+> > <sathyanarayanan.kuppuswamy@linux.intel.com>
+>
+>
+> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-> From: Nikita Kalyazin <kalyazin@amazon.com>
->
-> Signed-off-by: Nikita Kalyazin <kalyazin@amazon.com>
-> ---
->  mm/secretmem.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
->
-> diff --git a/mm/secretmem.c b/mm/secretmem.c
-> index fd29b33c6764..27b176af8fc4 100644
-> --- a/mm/secretmem.c
-> +++ b/mm/secretmem.c
-> @@ -53,7 +53,6 @@ static vm_fault_t secretmem_fault(struct vm_fault *vmf)
->  	struct inode *inode = file_inode(vmf->vma->vm_file);
->  	pgoff_t offset = vmf->pgoff;
->  	gfp_t gfp = vmf->gfp_mask;
-> -	unsigned long addr;
->  	struct folio *folio;
->  	vm_fault_t ret;
->  	int err;
-> @@ -72,7 +71,7 @@ static vm_fault_t secretmem_fault(struct vm_fault *vmf)
->  			goto out;
->  		}
->
-> -		err = set_direct_map_invalid_noflush(folio_address(folio));
-> +		err = folio_zap_direct_map(folio);
->  		if (err) {
->  			folio_put(folio);
->  			ret = vmf_error(err);
-> @@ -87,7 +86,7 @@ static vm_fault_t secretmem_fault(struct vm_fault *vmf)
->  			 * already happened when we marked the page invalid
->  			 * which guarantees that this call won't fail
->  			 */
-> -			set_direct_map_default_noflush(folio_address(folio));
-> +			folio_restore_direct_map(folio);
->  			folio_put(folio);
->  			if (err == -EEXIST)
->  				goto retry;
-> @@ -95,9 +94,6 @@ static vm_fault_t secretmem_fault(struct vm_fault *vmf)
->  			ret = vmf_error(err);
->  			goto out;
->  		}
-> -
-> -		addr = (unsigned long)folio_address(folio);
-> -		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
->  	}
->
->  	vmf->page = folio_file_page(folio, vmf->pgoff);
-> --
-> 2.50.1
+Applied as 7.1 material, thanks!
 
-Reviewed-by: Ackerley Tng <ackerleytng@google.com>
+> > ---
+> >  drivers/powercap/intel_rapl_msr.c | 83 ++++++++++++++---------------
+> > --
+> >  include/linux/intel_rapl.h        |  2 +
+> >  2 files changed, 38 insertions(+), 47 deletions(-)
+> >
+> > diff --git a/drivers/powercap/intel_rapl_msr.c
+> > b/drivers/powercap/intel_rapl_msr.c
+> > index cfb35973f0b5..a34543e66446 100644
+> > --- a/drivers/powercap/intel_rapl_msr.c
+> > +++ b/drivers/powercap/intel_rapl_msr.c
+> > @@ -216,33 +216,6 @@ static int rapl_msr_write_raw(int cpu, struct
+> > reg_action *ra)
+> >       return ra->err;
+> >  }
+> >
+> > -/* List of verified CPUs. */
+> > -static const struct x86_cpu_id pl4_support_ids[] =3D {
+> > -     X86_MATCH_VFM(INTEL_ICELAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_TIGERLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_ALDERLAKE, NULL),
+> > -     X86_MATCH_VFM(INTEL_ALDERLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_ATOM_GRACEMONT, NULL),
+> > -     X86_MATCH_VFM(INTEL_RAPTORLAKE, NULL),
+> > -     X86_MATCH_VFM(INTEL_RAPTORLAKE_P, NULL),
+> > -     X86_MATCH_VFM(INTEL_METEORLAKE, NULL),
+> > -     X86_MATCH_VFM(INTEL_METEORLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_ARROWLAKE_U, NULL),
+> > -     X86_MATCH_VFM(INTEL_ARROWLAKE_H, NULL),
+> > -     X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_NOVALAKE, NULL),
+> > -     X86_MATCH_VFM(INTEL_NOVALAKE_L, NULL),
+> > -     {}
+> > -};
+> > -
+> > -/* List of MSR-based RAPL PMU support CPUs */
+> > -static const struct x86_cpu_id pmu_support_ids[] =3D {
+> > -     X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
+> > -     X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
+> > -     {}
+> > -};
+> > -
+> >  static int rapl_check_unit_atom(struct rapl_domain *rd)
+> >  {
+> >       struct reg_action ra;
+> > @@ -420,6 +393,23 @@ static const struct rapl_defaults
+> > rapl_defaults_amd =3D {
+> >       .check_unit =3D rapl_default_check_unit,
+> >  };
+> >
+> > +static const struct rapl_defaults rapl_defaults_core_pl4 =3D {
+> > +     .floor_freq_reg_addr =3D 0,
+> > +     .check_unit =3D rapl_default_check_unit,
+> > +     .set_floor_freq =3D rapl_default_set_floor_freq,
+> > +     .compute_time_window =3D rapl_default_compute_time_window,
+> > +     .msr_pl4_support =3D 1,
+> > +};
+> > +
+> > +static const struct rapl_defaults rapl_defaults_core_pl4_pmu =3D {
+> > +     .floor_freq_reg_addr =3D 0,
+> > +     .check_unit =3D rapl_default_check_unit,
+> > +     .set_floor_freq =3D rapl_default_set_floor_freq,
+> > +     .compute_time_window =3D rapl_default_compute_time_window,
+> > +     .msr_pl4_support =3D 1,
+> > +     .msr_pmu_support =3D 1,
+> > +};
+> > +
+> >  static const struct x86_cpu_id rapl_ids[]  =3D {
+> >       X86_MATCH_VFM(INTEL_SANDYBRIDGE,                &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_SANDYBRIDGE_X,              &rapl_defaul
+> > ts_core),
+> > @@ -443,35 +433,35 @@ static const struct x86_cpu_id rapl_ids[]  =3D {
+> >       X86_MATCH_VFM(INTEL_KABYLAKE_L,                 &rap
+> > l_defaults_core),
+> >       X86_MATCH_VFM(INTEL_KABYLAKE,                   &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_CANNONLAKE_L,               &rapl_defaul
+> > ts_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_ICELAKE_L,                  &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_ICELAKE_L,                  &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_ICELAKE,                    &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_ICELAKE_NNPI,               &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_ICELAKE_X,                  &rapl_defaul
+> > ts_hsw_server),
+> >       X86_MATCH_VFM(INTEL_ICELAKE_D,                  &rapl_defaul
+> > ts_hsw_server),
+> >       X86_MATCH_VFM(INTEL_COMETLAKE_L,                &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_COMETLAKE,                  &rapl_defaul
+> > ts_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_TIGERLAKE_L,                &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_TIGERLAKE_L,                &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_TIGERLAKE,                  &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_ROCKETLAKE,                 &rap
+> > l_defaults_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_ALDERLAKE,                  &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_ALDERLAKE_L,                &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,             &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_RAPTORLAKE,                 &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_RAPTORLAKE_P,               &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_ALDERLAKE,                  &rapl_defaul
+> > ts_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_ALDERLAKE_L,                &rapl_defaul
+> > ts_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,             &rapl_defaul
+> > ts_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_RAPTORLAKE,                 &rap
+> > l_defaults_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_RAPTORLAKE_P,               &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_RAPTORLAKE_S,               &rapl_defaul
+> > ts_core),
+> >       X86_MATCH_VFM(INTEL_BARTLETTLAKE,               &rapl_defaul
+> > ts_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_METEORLAKE,                 &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_METEORLAKE_L,               &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_METEORLAKE,                 &rap
+> > l_defaults_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_METEORLAKE_L,               &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,           &rapl_defaul
+> > ts_spr_server),
+> >       X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,            &rapl_defaul
+> > ts_spr_server),
+> >       X86_MATCH_VFM(INTEL_LUNARLAKE_M,                &rapl_defaul
+> > ts_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_PANTHERLAKE_L,              &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_WILDCATLAKE_L,              &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_NOVALAKE,                   &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_NOVALAKE_L,                 &rapl_defaults_co=
+re),
+> > -
+> >       X86_MATCH_VFM(INTEL_ARROWLAKE_H,                &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_PANTHERLAKE_L,              &rapl_defaul
+> > ts_core_pl4_pmu),
+> > +     X86_MATCH_VFM(INTEL_WILDCATLAKE_L,              &rapl_defaul
+> > ts_core_pl4_pmu),
+> > +     X86_MATCH_VFM(INTEL_NOVALAKE,                   &rapl_defaul
+> > ts_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_NOVALAKE_L,                 &rap
+> > l_defaults_core_pl4),
+> > +     X86_MATCH_VFM(INTEL_ARROWLAKE_H,                &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_ARROWLAKE,                  &rapl_defaul
+> > ts_core),
+> > -
+> >       X86_MATCH_VFM(INTEL_ARROWLAKE_U,                &rapl_defaults_co=
+re),
+> > +     X86_MATCH_VFM(INTEL_ARROWLAKE_U,                &rapl_defaul
+> > ts_core_pl4),
+> >       X86_MATCH_VFM(INTEL_LAKEFIELD,                  &rapl_defaul
+> > ts_core),
+> >
+> >       X86_MATCH_VFM(INTEL_ATOM_SILVERMONT,            &rapl_defaul
+> > ts_byt),
+> > @@ -498,7 +488,6 @@ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+> >
+> >  static int rapl_msr_probe(struct platform_device *pdev)
+> >  {
+> > -     const struct x86_cpu_id *id =3D
+> > x86_match_cpu(pl4_support_ids);
+> >       int ret;
+> >
+> >       switch (boot_cpu_data.x86_vendor) {
+> > @@ -518,16 +507,16 @@ static int rapl_msr_probe(struct
+> > platform_device *pdev)
+> >       rapl_msr_priv->defaults =3D (const struct rapl_defaults
+> > *)pdev->dev.platform_data;
+> >       rapl_msr_priv->rpi =3D rpi_msr;
+> >
+> > -     if (id) {
+> > +     if (rapl_msr_priv->defaults->msr_pl4_support) {
+> >               rapl_msr_priv->limits[RAPL_DOMAIN_PACKAGE] |=3D
+> > BIT(POWER_LIMIT4);
+> >               rapl_msr_priv-
+> > >regs[RAPL_DOMAIN_PACKAGE][RAPL_DOMAIN_REG_PL4].msr =3D
+> >                       MSR_VR_CURRENT_CONFIG;
+> > -             pr_info("PL4 support detected.\n");
+> > +             pr_info("PL4 support detected (updated).\n");
+> >       }
+> >
+> > -     if (x86_match_cpu(pmu_support_ids)) {
+> > +     if (rapl_msr_priv->defaults->msr_pmu_support) {
+> >               rapl_msr_pmu =3D true;
+> > -             pr_info("MSR-based RAPL PMU support enabled\n");
+> > +             pr_info("MSR-based RAPL PMU support enabled
+> > (updated)\n");
+> >       }
+> >
+> >       rapl_msr_priv->control_type =3D
+> > powercap_register_control_type(NULL, "intel-rapl", NULL);
+> > diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
+> > index 01f290de3586..328004f605c3 100644
+> > --- a/include/linux/intel_rapl.h
+> > +++ b/include/linux/intel_rapl.h
+> > @@ -135,6 +135,8 @@ struct rapl_defaults {
+> >       unsigned int dram_domain_energy_unit;
+> >       unsigned int psys_domain_energy_unit;
+> >       bool spr_psys_bits;
+> > +     bool msr_pl4_support;
+> > +     bool msr_pmu_support;
+> >  };
+> >
+> >  #define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {      \
