@@ -1,323 +1,193 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73978313267
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:22:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774293747; cv=none; b=ogFbvgHKQUiZTQjpyFmWleen5bKUz2xPeSno5lxoCkFUp4p2Hk/nEmrIMnmugFDxBfW9FONZivMACx4CpQoY6Z8iAf1rF6vBhOQd7ctLV+tXUvmm6yp7CWZOPt/rMXIHhBS8wSaD4W9L98ZbKw/zQ9zrGRyTxll+amt8YVVphw0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774293747; c=relaxed/simple;
-	bh=KCvUJ+n935Vi45vqw4sJBx7G8qvm9UZbujs0tn3T1ME=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JgtEDxuY3/vthRof2VvdtZuredm559rDQYKZ7Sgh7vZNXnjW4OCb7Hp4cvBq6u8KwPUy/Cc2rfZ6sgG/cznNzFkNKJhSD+ixNRxNEBHD0gUyYZQ9vDLuOkupmWVyL9Aw0peZFA8/hnMLUzlO05AE4eITVcT2PaVeyHKyCDv4ivU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YFOZ7IN3; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37816317173;
+	Mon, 23 Mar 2026 19:37:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=198.175.65.19
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774294648; cv=fail; b=dmCXhaTfa8SvAZY5Iun7MlVG4cAoAhN8dbjwbJazp7nl/eQX76XmHMPcqjuhqdUdv+0V0NDPd9uSFbR1w5TWi08SBVZCdA4LNWY8hE8TpJ1FtE9hZL3dQ1iYb7ww6AoWdxxQWfz02iYDfsS3RmBFv/vowyVrYzU4tEiksENBXBE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774294648; c=relaxed/simple;
+	bh=Q0gtYEABJWpQDv/ZIQP/r+Cg4xRB3HQGUvHNs13nY4c=;
+	h=From:Date:To:CC:Message-ID:In-Reply-To:References:Subject:
+	 Content-Type:MIME-Version; b=op7sNxZ5swOEVeDXG7faBBbGtOnP2zYUhkRJeFzxUsD6uAf7FxOvt9x01GLlo9MrEe3eOjw1EtvxXWmmdDgPBzfWv8QU0XAT2aXn1a95BNVKduUdHs0hor/iYHtuJvQ+N7qfT0MXSnUT95tl09/xwo46dnNmyiQ3NLV2Bsroing=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ayO9PiaV; arc=fail smtp.client-ip=198.175.65.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YFOZ7IN3"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 259B7C4CEF7
-	for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:22:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774293747;
-	bh=KCvUJ+n935Vi45vqw4sJBx7G8qvm9UZbujs0tn3T1ME=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=YFOZ7IN3XeVgdCNRjbj1ckZuCDW0wqd5yrjMjn3bylGiQfj5Wgzpg/MDB3+qYsbh3
-	 uUmZOua8hNgQ/oYsWBv4oT+JU7Anb7x8A2CYJ4lnnmTiWOWNR4OHhAfWA7yia6BXJ2
-	 Dm4gkDyQxzHxeX40exKalghvWZWHRwKn8CZ0JuVlYdWTZAtFB3N3SA1nH4yDXN481d
-	 MJfeBICk1ETNsN2Mvf5YtLRtdF89usX/Bgr1owuVEV6CtVVcwNZvgEdkBUr/n05c/u
-	 h2nTw0MbhMJPRt7O24+Mh4Gm5XWwt0LzWLLMrituBgWwdY/1QEM0a/tqSHl/pHdBPT
-	 fKID8irguKqgQ==
-Received: by mail-oo1-f43.google.com with SMTP id 006d021491bc7-67ba5921b84so1814714eaf.3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 12:22:27 -0700 (PDT)
-X-Gm-Message-State: AOJu0YyjGIJJRIwkk6kDAcBKCrinBpoSfESvit+Bbqis7jp/i4fZrd2y
-	1Rt0dMv+88Nv+ImTMEAMpYCAaV9SyZwPHG7uS/b4j+S2gCoIxHweRUZXsrJ6ORFd1I44/7ht+Hq
-	77sW/VU9a6Rbxe/BTXVZyvHtu4U7kYeA=
-X-Received: by 2002:a05:6820:180e:b0:67b:dad6:dbdc with SMTP id
- 006d021491bc7-67c22fbd5bamr9703467eaf.55.1774293746222; Mon, 23 Mar 2026
- 12:22:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ayO9PiaV"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774294646; x=1805830646;
+  h=from:date:to:cc:message-id:in-reply-to:references:
+   subject:content-transfer-encoding:mime-version;
+  bh=Q0gtYEABJWpQDv/ZIQP/r+Cg4xRB3HQGUvHNs13nY4c=;
+  b=ayO9PiaVsparLPm6ZWxLoWNfagCdzgEizMWX3wodrQMf9RNzEsmNxT08
+   YeqqqixN7EggVOmGU5tkshMx+YzFVy5uCzBha4QfFVvYjrIFno3Kv4Jmu
+   CEOZRRlZRgQzuZpTRJktKAvH+qmiUpSG++WpEDSyRB02CRqalZKzTOPR/
+   JpL1Jqea9ug0MZpYfUE1PelZxz8D2SI/gB99m9fSaIlSltFOwLx9hTTCW
+   cJYNe7+DpzkOPRuQp69O+AhWJlcpevlRddukm6MLPUmkDLSnhhZfhEze6
+   rCPU9+hp/g/1kk0Hps1hS+L4L2wk5l0TKP95UadyEpEVHNDMvDoFvQsyP
+   A==;
+X-CSE-ConnectionGUID: NctoA85KRXSq9XGKnK6Jew==
+X-CSE-MsgGUID: ZM8WPtW+SNqO81cYMyb7/A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75183845"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="75183845"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 12:37:25 -0700
+X-CSE-ConnectionGUID: 3ieJaH69Sq+OTqx6RrJavg==
+X-CSE-MsgGUID: 5fpB9ke6Qdu2jU0Ao+vDag==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; 
+   d="scan'208";a="219718751"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+  by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 12:37:23 -0700
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 23 Mar 2026 12:37:22 -0700
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 23 Mar 2026 12:37:22 -0700
+Received: from BL2PR02CU003.outbound.protection.outlook.com (52.101.52.11) by
+ edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 23 Mar 2026 12:37:22 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=NqVvE4q1SwG9wpHUOqKaRyB7ac4NE5uaJHytIGLswswO2YSyn0Kj8GToKtg46ei+gyxZzSehTiutug0MRB6p6L7Pcg0nO7lxqhGKSSwv673jBOe8a/52dogRopV+CGGZsVtCWRsSSiRH2OAiYyiPv52hXLpq0ZPE24CcuHcnIsk4mhfKFbof0SNAIw+XC2i4QXnAZggsRu0ZQFlhRgaLPsaOsFS8buJa/7IaMEE0v6zkMlLAaaHx3g6IGd0t+Ab21NzHjX3kwrmgmsDoYiKh5mNdzpdMlU7AvtDhUOYhs0Na0fL+GyRn5qnXvjHuLLp9pPn1ft+dQOHejFKndoIcaw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=efP1mmhdevhHP7UJIhfwdAhsMQo71n546IYpboBT21g=;
+ b=G5mHyAGO3XgL4183wDJ2JhooIUvrqSn/Z7dwroreuEjfaLyYa4IhtqAvEPRIMiz3BwZC586ufi6JFcmtakffp1QZWgpz42hvHafQ8Y0a0XIVJbyswv0hZqdHWek+W/SbZBhl02+Bj7OQ10mhBl2cvTMcV89ywylgF4MOVd0PCfts0uO6yiuapzJwDPMOWoNSFlOLARN55qH/1r6qUMHcfjgoMJtAB+fqH1YT65y/FkCfKZkiNr2fTKvoJnXaKAissE5pTx5q67U44OaZujsZaz/iLHkXPfquj4SdZOr2nO5zrjyeL2HHqfEOfMuOLPDY/jyKF4XHWHUUiJDMwCClfg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by BY1PR11MB7984.namprd11.prod.outlook.com (2603:10b6:a03:531::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Mon, 23 Mar
+ 2026 19:37:18 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::1ff:1e09:994b:21ff%3]) with mapi id 15.20.9745.019; Mon, 23 Mar 2026
+ 19:37:18 +0000
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Mon, 23 Mar 2026 12:37:15 -0700
+To: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+	<linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<nvdimm@lists.linux.dev>, <linux-fsdevel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>
+CC: Ard Biesheuvel <ardb@kernel.org>, Alison Schofield
+	<alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, "Ira
+ Weiny" <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Yazen Ghannam
+	<yazen.ghannam@amd.com>, Dave Jiang <dave.jiang@intel.com>, Davidlohr Bueso
+	<dave@stgolabs.net>, Matthew Wilcox <willy@infradead.org>, Jan Kara
+	<jack@suse.cz>, "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown
+	<len.brown@intel.com>, Pavel Machek <pavel@kernel.org>, Li Ming
+	<ming.li@zohomail.com>, Jeff Johnson <jeff.johnson@oss.qualcomm.com>, "Ying
+ Huang" <huang.ying.caritas@gmail.com>, Yao Xingtao <yaoxt.fnst@fujitsu.com>,
+	Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Nathan Fontenot <nathan.fontenot@amd.com>,
+	Terry Bowman <terry.bowman@amd.com>, Robert Richter <rrichter@amd.com>,
+	Benjamin Cheatham <benjamin.cheatham@amd.com>, Zhijian Li
+	<lizhijian@fujitsu.com>, Borislav Petkov <bp@alien8.de>, Smita Koralahalli
+	<Smita.KoralahalliChannabasappa@amd.com>, Tomasz Wolski
+	<tomasz.wolski@fujitsu.com>
+Message-ID: <69c1966bba13_7ee31000@dwillia2-mobl4.notmuch>
+In-Reply-To: <20260322195343.206900-2-Smita.KoralahalliChannabasappa@amd.com>
+References: <20260322195343.206900-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20260322195343.206900-2-Smita.KoralahalliChannabasappa@amd.com>
+Subject: Re: [PATCH v8 1/9] dax/bus: Use dax_region_put() in
+ alloc_dax_region() error path
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR04CA0064.namprd04.prod.outlook.com
+ (2603:10b6:303:6b::9) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260313190052.2370963-1-sathyanarayanan.kuppuswamy@linux.intel.com>
- <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
-In-Reply-To: <ed821010a38d535bd123e3d1999d3fd722ccd1ba.camel@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 23 Mar 2026 20:22:15 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iZwyY923=tAGFVmjWk2JpddppdCqNv3rAoSiQ14xM_-Q@mail.gmail.com>
-X-Gm-Features: AQROBzDc1_3lstBQ6vU2t66tvvvFudVLYPXqlczJPiOWByeCMJekagKjn-eYLYQ
-Message-ID: <CAJZ5v0iZwyY923=tAGFVmjWk2JpddppdCqNv3rAoSiQ14xM_-Q@mail.gmail.com>
-Subject: Re: [PATCH v1] powercap: intel_rapl: Consolidate PL4 and PMU support
- flags into rapl_defaults
-To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>, 
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|BY1PR11MB7984:EE_
+X-MS-Office365-Filtering-Correlation-Id: b6151669-45ca-48ce-ed71-08de89139800
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info: a6yanbmgHBcIrD6IfwYouaKclqLssSJxDANuOPJ5Iikw2TPEOA1ZakFk/dx6lgytMeWvWdLn6KNt2ZztGHUfYYqm0NROJwadW2oOd4hA2YeeGrxo0TcsI/n55PUaJ5xfGT+b2oOL3PWaifCthVeTMPh39zbxEVHBXxw0GNqejTHnUk8XgK/6IOwY3FshOpsyb3ALiZwqucq/duX7mH7aPuG5PaTYHDG3Y7Bc1yDqfF9fseb2ovlkrgh5nkqYE+Mp26FlQcEAgznVJqLONbWL4hqyYUoC6A5qxmOXDTSTmFUSyx50zktSK7Hk5UtT7T1L4WYd014DUzdS/RXVf0k38iQ9LpBYRMPZTdPgiczeR8/Ag8ZsFetKgqtQ5cNtMQhxPVMVlB6a2TqiwHcnLe5cTxolsO5Mcd/wATD/32pi/wFpI78TWAGgPDu1+5YhFD3x4KCDtaHo+/lgl+0TH7jQktd3UG90H1zCtieYY2W8OWLh6IXW+EuxvWilR8rnG1y2W2LRk9dRjTqdNOSZhsS31rQRgbiVORqtPYTx0H7ioyMuSogZENzM+feiu1rmtCswz5inWFd+p6frwEH9QCwzxth1W0OU97IgimnJzDwkQMHMOuAj69zP0c678U3Ia5pvbkIZ5Jax6MMnpEFypWH7L9/OpPdyX1p2yD6SniJ9qgjl9PyLMQMBtYY9Z/yqaG5Gw/EqS+2YM/GS0bEDhcJLAB7EjYhR9CULDWXTfzKS//A=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cHJvbE9BQm15eFVoYnpyRnB2ZUU3Ym9rcXF2VE81a1VTTFVLd2xHN1FtbXdX?=
+ =?utf-8?B?UDQwdmp0T201KzlIZ2lwUmdhNVo1NDc5Y001UE1CVTRWZldlbXA2ZCtIQzBp?=
+ =?utf-8?B?NXBDN2hSVjF5THVSSUZZUjNqZTJxcW5jUDZaOFVtMUhHTWh4VTRpVkNtdHF2?=
+ =?utf-8?B?SGt2MjZlc0wrY29RNnF2T1QrNTZIRjc2UzFxQWVDdHp3WlhNN1NIaFhQMlpD?=
+ =?utf-8?B?Ujh5bkJYSFFpekx0ZVVRYVNYeFEvNk9yNUE2bkxmVGZGS2ZYejh3NEs0L0N3?=
+ =?utf-8?B?UnZDT1BIM0daaGt4M1VjU2VlVHJJNU9YR0pPN3ZPK2NONEVISWxhUlVLckZK?=
+ =?utf-8?B?T0Y2R2QwUHY0dDl0RTJ3cTVxMlRXMnJneGhQMFk1RnUvbDBqVllJTHRtajdv?=
+ =?utf-8?B?L05ydVpJS1R0RkRXbXB1WEMwZUh5S2dhRk1TU2VoN1VteHVzZEx2emM2bE1h?=
+ =?utf-8?B?VWFUTjFsRFlDZ01LazhZTzNVVmlGTStLZkNaR09WSGovcVYxWE1FeDFINk9U?=
+ =?utf-8?B?TWFZMFpETThVdGJEUTA3c1JCSmlSUGh0V3pJd0Z1dEFJdWExNnVPdGs1dGFw?=
+ =?utf-8?B?SXFZOVNaQ3VUNzdxYndCV0pDYTN1b1R6Sll3NEJLamkyanAwVjBSdEQ3TEs2?=
+ =?utf-8?B?NE9CNmloelNnU1VtS3BXY1hJSVZYdVI3cWNvS0ZQajAvckhqWjhKN2lTYmVl?=
+ =?utf-8?B?UjNQWFAzdXErSnlHRlNiZTlEUCt1RVFGWFZxaHRZRVJPdThsZlVZNWkwLzFX?=
+ =?utf-8?B?MkU4TThnQmZuYlFId0NzNGlFZHNWQ0tJMm8weG5YMCtEdy9EZ1FQMDlrR3o5?=
+ =?utf-8?B?UzZabllXcE52Mk1ZU2JjSUk4QVJlaUI3bGRXY0psQVNDcVlKYUR5aDlma1hN?=
+ =?utf-8?B?MzhraThWZC8zTUJZdWJIRXFlcUlEVWJ6cWRWUVpaRzFJYlROTXZkVFJIdE5m?=
+ =?utf-8?B?UTNCZ1JuRUV6c1Y2b2UxdUUvZGlxVjFpSThvenQxT0NjTVYwSkF1RC80L0Uv?=
+ =?utf-8?B?STJ1REdEdE1aZWhKdjVaRjQ4RzQ4RTVyTzIzcGMwSk96MFk3dDlqbTVtaE5J?=
+ =?utf-8?B?bXp2WGsvQkpZc1c0ZWNLYjQ0S3FqVGh5Ty9zRG5WRlJFV01ydFZCSXRSVm5l?=
+ =?utf-8?B?empXczlMU2EwOHhIditmSXp5djVMdUhCMEF6MEgwNE9LWWlaSXNFNDIrQjA5?=
+ =?utf-8?B?NHRRVEZJdld3M0ZhajdlUFh2RW9BWFFqdzR2LzQybE5aaE94Ui9LWDU3WllO?=
+ =?utf-8?B?QWNCYkdnNGtNQ1lkU2NNNnVmQ2JPSFI3Ni9SMUdVOThaM1dtTVBKVFNhNXJ2?=
+ =?utf-8?B?cVNISHNwL1RkaUFrcUhhc1BSUGd4aHRGVkFJUzVnQU1NRHhyaTF3YnA0ZE1q?=
+ =?utf-8?B?cWhUZU9icjRiNlIzZlE4bmxQaHJUc21GU0RjMkxPaE1qWnN5Ri8yOU5CcHpT?=
+ =?utf-8?B?bzFuMGJQR0pjbkJ0NEJvdVRqck1UTUdReVJQUDJMTVdPQnNQQ3lBZ2puanBy?=
+ =?utf-8?B?bFlsUXFHd2xBQkk3bStiWFArdkRTSFVkOFhZMWhDL0NRWllsT2p3VkppN0VE?=
+ =?utf-8?B?RFJUUForMTVScmhsbHhsbXpkeWxhRmh4UjhNZ3lQNWxPdmVPUVoxdGxFN2Zr?=
+ =?utf-8?B?NGJvN1lVaVJ4RS9XUlQ0ZFpHYTJPNnBSYXV3WGVEYU1RVU9jUkIwK2VXaHpF?=
+ =?utf-8?B?UWlBUG4zUTZDVTFVYVFQVU9XZWUvOUlQZnNENmtESjdLYlhqOSsxc2REMVFv?=
+ =?utf-8?B?bzYwNWU4OW9xTEpSN1lXOGFGNUNlY1hnT3VKSEVHeDdQSDJGWVk0Q3g1TG5E?=
+ =?utf-8?B?VEcrU044SU52aC9YWlliQkdpUi90MEFOMWorUi91YUN6cVZiRVlIZW5kcHJz?=
+ =?utf-8?B?V0dabGg2bGM3aWFkK0hkZDlvUVhPbzM1Q21DRzFOeWtsRXcyOVRVZVVzSGxy?=
+ =?utf-8?B?N0FNaWFMQ0hxc1hZUFlrbHRzVmZhNFllcGEycFJsdmlXR2xldUU3VmFYdmhB?=
+ =?utf-8?B?Ynd4cE9NMElMelhEdXZGQjRyeldEQ0R0V2U2QXBMRURSdWFXc2daaGx6ZFd6?=
+ =?utf-8?B?SFM4ZFZwZzlmWExLRGdCSWhxNFJpMitCVHozNndlak5ESThMRDBXdklna3hH?=
+ =?utf-8?B?TzdrOXg5aFNtVW52ZDVLZXZoVTRyOWVmSHpZai9UVXVueFlveUd1ZllnTThh?=
+ =?utf-8?B?ZzN3WDZ1RFRhVmxtVUYra0M5ajk4UlZpNVMwUlNCLy9FYm11ZzRsdEJwYkVv?=
+ =?utf-8?B?RHNvYnNibSt3dlp6VG5nT1FJdlBqZnBMZmJhcDd6WlJMbzNkVWFGbWNZdjlR?=
+ =?utf-8?B?MjZVbyt3cWh1S0c4U3BSOHM0UnYrNmVIS3BHajVQaW9iNmVqakRjVndmY3F4?=
+ =?utf-8?Q?/KaWWc5pGQI4XXXA=3D?=
+X-Exchange-RoutingPolicyChecked: P3Wwz8sjlBhGyRtjpJoVDtVi/DfVIVMrEz3NIBhmBLMD4d1Ey6HsCycTRLZwtfWOeaffU8w5XC175VjjDye9sCSjACksK1GSgx+ReLBQadOgQQBWBRf4/5SWekcHsmLjA8XvKlTX7/lMJBiBsLsv4hweN7OTZGmu4v4ENdywFqjoZSxmDi5mRb/V/kFV0OpmxM8DUtUEnTEsr/C2QyOhbFPeMAaGdqqasFA9VfjO/3ckaY9gQ8glXOmkMy4Q2caAO007Dya/obZc8HoagRP9NpqrjqIu1XDYLdOQ93mZ66S25S/eJVBCGY9e57WMJJ6c55WDehP6B27u3x1SqUoJ+g==
+X-MS-Exchange-CrossTenant-Network-Message-Id: b6151669-45ca-48ce-ed71-08de89139800
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Mar 2026 19:37:18.5411
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: TNxvNK3XEK6NEQkT7ig31tIPEFTx+U6tlzvFhFrfiGM5djJyc3FOV1Uqs9KjJpK4l20sCiLFKief3/gTz9dbSG7bTACeADi09NyFxLbp6Oo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY1PR11MB7984
+X-OriginatorOrg: intel.com
 
-On Mon, Mar 23, 2026 at 7:20=E2=80=AFPM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Fri, 2026-03-13 at 12:00 -0700, Kuppuswamy Sathyanarayanan wrote:
-> > Currently, PL4 and MSR-based RAPL PMU support are detected using
-> > separate CPU ID tables (pl4_support_ids and pmu_support_ids) in the
-> > MSR driver probe path. This creates a maintenance burden since adding
-> > a new CPU requires updates in two places: the rapl_ids table and one
-> > or both of these capability tables.
-> >
-> > Consolidate PL4 and PMU capability information directly into
-> > struct rapl_defaults by adding msr_pl4_support and msr_pmu_support
-> > flags. This allows per-CPU capability to be expressed in a single
-> > place alongside other per-CPU defaults, eliminating the duplicate
-> > CPU ID tables entirely.
-> >
-> > No functional changes are intended.
-> >
-> > Co-developed-by: Zhang Rui <rui.zhang@intel.com>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > Signed-off-by: Kuppuswamy Sathyanarayanan
-> > <sathyanarayanan.kuppuswamy@linux.intel.com>
->
->
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Smita Koralahalli wrote:
+> alloc_dax_region() calls kref_init() on the dax_region early in the
+> function, but the error path for sysfs_create_groups() failure uses
+> kfree() directly to free the dax_region. This bypasses the kref lifecycle.
+> 
+> Use dax_region_put() instead to handle kref lifecycle correctly.
 
-Applied as 7.1 material, thanks!
+There is no correctness issue here, the object was never published.
 
-> > ---
-> >  drivers/powercap/intel_rapl_msr.c | 83 ++++++++++++++---------------
-> > --
-> >  include/linux/intel_rapl.h        |  2 +
-> >  2 files changed, 38 insertions(+), 47 deletions(-)
-> >
-> > diff --git a/drivers/powercap/intel_rapl_msr.c
-> > b/drivers/powercap/intel_rapl_msr.c
-> > index cfb35973f0b5..a34543e66446 100644
-> > --- a/drivers/powercap/intel_rapl_msr.c
-> > +++ b/drivers/powercap/intel_rapl_msr.c
-> > @@ -216,33 +216,6 @@ static int rapl_msr_write_raw(int cpu, struct
-> > reg_action *ra)
-> >       return ra->err;
-> >  }
-> >
-> > -/* List of verified CPUs. */
-> > -static const struct x86_cpu_id pl4_support_ids[] =3D {
-> > -     X86_MATCH_VFM(INTEL_ICELAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_TIGERLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_ALDERLAKE, NULL),
-> > -     X86_MATCH_VFM(INTEL_ALDERLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_ATOM_GRACEMONT, NULL),
-> > -     X86_MATCH_VFM(INTEL_RAPTORLAKE, NULL),
-> > -     X86_MATCH_VFM(INTEL_RAPTORLAKE_P, NULL),
-> > -     X86_MATCH_VFM(INTEL_METEORLAKE, NULL),
-> > -     X86_MATCH_VFM(INTEL_METEORLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_ARROWLAKE_U, NULL),
-> > -     X86_MATCH_VFM(INTEL_ARROWLAKE_H, NULL),
-> > -     X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_NOVALAKE, NULL),
-> > -     X86_MATCH_VFM(INTEL_NOVALAKE_L, NULL),
-> > -     {}
-> > -};
-> > -
-> > -/* List of MSR-based RAPL PMU support CPUs */
-> > -static const struct x86_cpu_id pmu_support_ids[] =3D {
-> > -     X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
-> > -     X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
-> > -     {}
-> > -};
-> > -
-> >  static int rapl_check_unit_atom(struct rapl_domain *rd)
-> >  {
-> >       struct reg_action ra;
-> > @@ -420,6 +393,23 @@ static const struct rapl_defaults
-> > rapl_defaults_amd =3D {
-> >       .check_unit =3D rapl_default_check_unit,
-> >  };
-> >
-> > +static const struct rapl_defaults rapl_defaults_core_pl4 =3D {
-> > +     .floor_freq_reg_addr =3D 0,
-> > +     .check_unit =3D rapl_default_check_unit,
-> > +     .set_floor_freq =3D rapl_default_set_floor_freq,
-> > +     .compute_time_window =3D rapl_default_compute_time_window,
-> > +     .msr_pl4_support =3D 1,
-> > +};
-> > +
-> > +static const struct rapl_defaults rapl_defaults_core_pl4_pmu =3D {
-> > +     .floor_freq_reg_addr =3D 0,
-> > +     .check_unit =3D rapl_default_check_unit,
-> > +     .set_floor_freq =3D rapl_default_set_floor_freq,
-> > +     .compute_time_window =3D rapl_default_compute_time_window,
-> > +     .msr_pl4_support =3D 1,
-> > +     .msr_pmu_support =3D 1,
-> > +};
-> > +
-> >  static const struct x86_cpu_id rapl_ids[]  =3D {
-> >       X86_MATCH_VFM(INTEL_SANDYBRIDGE,                &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_SANDYBRIDGE_X,              &rapl_defaul
-> > ts_core),
-> > @@ -443,35 +433,35 @@ static const struct x86_cpu_id rapl_ids[]  =3D {
-> >       X86_MATCH_VFM(INTEL_KABYLAKE_L,                 &rap
-> > l_defaults_core),
-> >       X86_MATCH_VFM(INTEL_KABYLAKE,                   &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_CANNONLAKE_L,               &rapl_defaul
-> > ts_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_ICELAKE_L,                  &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_ICELAKE_L,                  &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_ICELAKE,                    &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_ICELAKE_NNPI,               &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_ICELAKE_X,                  &rapl_defaul
-> > ts_hsw_server),
-> >       X86_MATCH_VFM(INTEL_ICELAKE_D,                  &rapl_defaul
-> > ts_hsw_server),
-> >       X86_MATCH_VFM(INTEL_COMETLAKE_L,                &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_COMETLAKE,                  &rapl_defaul
-> > ts_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_TIGERLAKE_L,                &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_TIGERLAKE_L,                &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_TIGERLAKE,                  &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_ROCKETLAKE,                 &rap
-> > l_defaults_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_ALDERLAKE,                  &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_ALDERLAKE_L,                &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,             &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_RAPTORLAKE,                 &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_RAPTORLAKE_P,               &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_ALDERLAKE,                  &rapl_defaul
-> > ts_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_ALDERLAKE_L,                &rapl_defaul
-> > ts_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,             &rapl_defaul
-> > ts_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_RAPTORLAKE,                 &rap
-> > l_defaults_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_RAPTORLAKE_P,               &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_RAPTORLAKE_S,               &rapl_defaul
-> > ts_core),
-> >       X86_MATCH_VFM(INTEL_BARTLETTLAKE,               &rapl_defaul
-> > ts_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_METEORLAKE,                 &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_METEORLAKE_L,               &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_METEORLAKE,                 &rap
-> > l_defaults_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_METEORLAKE_L,               &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,           &rapl_defaul
-> > ts_spr_server),
-> >       X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,            &rapl_defaul
-> > ts_spr_server),
-> >       X86_MATCH_VFM(INTEL_LUNARLAKE_M,                &rapl_defaul
-> > ts_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_PANTHERLAKE_L,              &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_WILDCATLAKE_L,              &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_NOVALAKE,                   &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_NOVALAKE_L,                 &rapl_defaults_co=
-re),
-> > -
-> >       X86_MATCH_VFM(INTEL_ARROWLAKE_H,                &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_PANTHERLAKE_L,              &rapl_defaul
-> > ts_core_pl4_pmu),
-> > +     X86_MATCH_VFM(INTEL_WILDCATLAKE_L,              &rapl_defaul
-> > ts_core_pl4_pmu),
-> > +     X86_MATCH_VFM(INTEL_NOVALAKE,                   &rapl_defaul
-> > ts_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_NOVALAKE_L,                 &rap
-> > l_defaults_core_pl4),
-> > +     X86_MATCH_VFM(INTEL_ARROWLAKE_H,                &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_ARROWLAKE,                  &rapl_defaul
-> > ts_core),
-> > -
-> >       X86_MATCH_VFM(INTEL_ARROWLAKE_U,                &rapl_defaults_co=
-re),
-> > +     X86_MATCH_VFM(INTEL_ARROWLAKE_U,                &rapl_defaul
-> > ts_core_pl4),
-> >       X86_MATCH_VFM(INTEL_LAKEFIELD,                  &rapl_defaul
-> > ts_core),
-> >
-> >       X86_MATCH_VFM(INTEL_ATOM_SILVERMONT,            &rapl_defaul
-> > ts_byt),
-> > @@ -498,7 +488,6 @@ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-> >
-> >  static int rapl_msr_probe(struct platform_device *pdev)
-> >  {
-> > -     const struct x86_cpu_id *id =3D
-> > x86_match_cpu(pl4_support_ids);
-> >       int ret;
-> >
-> >       switch (boot_cpu_data.x86_vendor) {
-> > @@ -518,16 +507,16 @@ static int rapl_msr_probe(struct
-> > platform_device *pdev)
-> >       rapl_msr_priv->defaults =3D (const struct rapl_defaults
-> > *)pdev->dev.platform_data;
-> >       rapl_msr_priv->rpi =3D rpi_msr;
-> >
-> > -     if (id) {
-> > +     if (rapl_msr_priv->defaults->msr_pl4_support) {
-> >               rapl_msr_priv->limits[RAPL_DOMAIN_PACKAGE] |=3D
-> > BIT(POWER_LIMIT4);
-> >               rapl_msr_priv-
-> > >regs[RAPL_DOMAIN_PACKAGE][RAPL_DOMAIN_REG_PL4].msr =3D
-> >                       MSR_VR_CURRENT_CONFIG;
-> > -             pr_info("PL4 support detected.\n");
-> > +             pr_info("PL4 support detected (updated).\n");
-> >       }
-> >
-> > -     if (x86_match_cpu(pmu_support_ids)) {
-> > +     if (rapl_msr_priv->defaults->msr_pmu_support) {
-> >               rapl_msr_pmu =3D true;
-> > -             pr_info("MSR-based RAPL PMU support enabled\n");
-> > +             pr_info("MSR-based RAPL PMU support enabled
-> > (updated)\n");
-> >       }
-> >
-> >       rapl_msr_priv->control_type =3D
-> > powercap_register_control_type(NULL, "intel-rapl", NULL);
-> > diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-> > index 01f290de3586..328004f605c3 100644
-> > --- a/include/linux/intel_rapl.h
-> > +++ b/include/linux/intel_rapl.h
-> > @@ -135,6 +135,8 @@ struct rapl_defaults {
-> >       unsigned int dram_domain_energy_unit;
-> >       unsigned int psys_domain_energy_unit;
-> >       bool spr_psys_bits;
-> > +     bool msr_pl4_support;
-> > +     bool msr_pmu_support;
-> >  };
-> >
-> >  #define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {      \
+I am ok with the change, but be clear that this is for pure symmetry
+reasons, not correctness.
+
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
