@@ -1,68 +1,68 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75AA93EDACD
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 11:38:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C6FD3EAC74
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 11:38:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774352310; cv=none; b=RdZzu7vmgebam5D9aLUPVC9vyXvLiqY8nt9SFhEGCLL1y9hX13SdxWhmUsDhjifsT7OXdIyKJXKAH9U9Cn/CX783oRknQs5SIlrhPdxVCI7T/nDLNU1u+QntgDZLX5rswqFV8Vxqoi6wl5EHHbaHL38b747VG8ixVxdJ9XfZ1No=
+	t=1774352313; cv=none; b=O+bncOafqOH9AmGjT9t9Q5elqYneaXyrnBUceJQp8FbMiJOOa/XQ38EjFmE7tW4ZsTT8Xf+ln+3sSaSO95djpbPye7uNu7cXuxSjAAV7jHCGhZz4qPikqo/PfCyfDynIn8pS0dVv5Uq/U2RDKV+QcKpQaXaduALKm70hBzMbr0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774352310; c=relaxed/simple;
-	bh=DcG8KW5Fnk3rc/f7uk3dyHKO5i3tnn1nAb2IeSenCzU=;
+	s=arc-20240116; t=1774352313; c=relaxed/simple;
+	bh=1uAjKjH8Mriiu2XHqXVfsDGlgQSHnV96d3u/aQzpXDo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Sb3ml2SyZ9zR/SAIRbNDKb+ZoJlCmTTZweOLIkZbLTLxA7sJw4XoVpilbi+3+q/J625Cypcb1Hqxkf/4TGvW1LLB5f3SX6ksf9m/jLY44+V5E8pJGp5XaE4kuljChHGydA1dZqEaPBwpdamTpqZjdyXaICrijAstqOqX3b3AlxQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=vNKDZEjy; arc=none smtp.client-ip=209.85.128.45
+	 In-Reply-To:To:Cc; b=Fsrpp5w1kOq976SJc0b4TcZ6n1wm5+XMC3wXV2rwa+8R8shkHJsVayKagp+KlkAHzA5ka/aLU17H35MMsdEohSm58fbMAQ8ohr9ZXAdcUBRt5990RIxOm6cO5gmzECN0RSu9mlsKO1NYedqpASXx/pjEdvvCfEoKtQScWq2whxg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=LoxWdPsh; arc=none smtp.client-ip=209.85.128.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="vNKDZEjy"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-486fd27754bso9578305e9.3
-        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 04:38:29 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="LoxWdPsh"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-48704db565eso29809225e9.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 04:38:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1774352308; x=1774957108; darn=vger.kernel.org;
+        d=flipper.net; s=google; t=1774352310; x=1774957110; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=jCpuZJNVNsInRc1C9w8uAr8XhXxWVpiElBj6DPaFINQ=;
-        b=vNKDZEjycG/LdeTJ9wbuWhQQp/Mqyk1skRDVv9wXyU/Q5qk/ByhovZFDOQZAr+5OVG
-         8Aox31IQmm6FTnfLs5sla3z5TEW+06nQdLb+N15OkWlIDsNXMvt2W5q7GrkY9PZbiVdh
-         dave+OIvgpNJS89M9GJNK7Pn+OX51REBZ0sVvpIvai1uccf/PeJ3Vo0a5VV05PxjEXZA
-         30PDkr+4wS0i8Xo2UjHREcCV/lCVRVYAJNGXkeWh+C5gJ20Tkp9Dh7Arqex4iwzN4fu8
-         kcNJ1sEJKaRaCKwNJZaPnElRpJLY5AO4dzqTRMBgsMkNyVWeb42Uoo/m9hr7Fop+URk+
-         OJPQ==
+        bh=veDJydETiE9Gv6g2pRG32dl9Jb7Mpm7Du1gG7k28aTM=;
+        b=LoxWdPsh6BjiTuvi12E25hu0JCTEt6cVS7lNv90ueKFeHmMYU2kjIowpu953fNiu8x
+         ZhKDF9xDPBWxUSZopo1AB0hjHIoliPxHbjaUHq0rVPc9kZoL34CNfptTRvJzgRbw5o2A
+         vZo/Bxc+ozxUMm4Ry+60CNxi8pLqiPJ+5EVJafB8SIZQyuZoht8MUu5/I+EpNj9YEJt0
+         DsArQsjWNuQfgsA3FFmqwxfj1TenwEUexmgH+FKLkShE4ReUj+CrPGvSqtUdOFz3+YWa
+         ovK0IBBGnD7ytEPLMy0qntNUYyifkX6qWo6QeNqcyeE/8zKT0w+olBVZEP8NC9i2ERNm
+         Oi6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774352308; x=1774957108;
+        d=1e100.net; s=20251104; t=1774352310; x=1774957110;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=jCpuZJNVNsInRc1C9w8uAr8XhXxWVpiElBj6DPaFINQ=;
-        b=Y+eAKpfx17kDx2XpzfHyjoZbNwqLzpj1ZLAW2FnAPpza36SWgzPGTJZlnyjRCGlWJh
-         z5S8csXAxewrbRD7Mpp9YclSTpJL7ZYmGQVYqaxxBEyQE/U1YRA4Bbhy9pdsTHzpGy6o
-         oj29Qti9FxAv5bf1ZXD6s/tM/HYlkVoZKqv6MAs1dItYfq9S215Af8HwSqWKHlw01jI7
-         f1fsTvc6jYfuIr0t1jv9eRQumLJ2zMUB+XZ37QedywVC664R6/3suvbtieSP2SGmiacq
-         Q0tMIPq4CcaxamQe++X1ttOE7y6kuMDqnzVhzepc9zS9NqvO4U/OgLraRR66wK/ZUdhZ
-         8kKg==
-X-Forwarded-Encrypted: i=1; AJvYcCUrM0K78WmTOs1dsZXUc8Hu5+9wQRLXNAgJkpp0176MiQPHnho+u3QmzKJOkjL2V6RmdMqQZqufdw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwArvEzDOkwEhuSyBtXtgYiAqlSvJ49gxuS3EJRDj0jM74s4roU
-	xmd4vbS6uN1FHI5WCnuBLCktk/fylFIq++Q7GBdGjikES2eTGtbvjODPLhTGiLFi10M=
-X-Gm-Gg: ATEYQzw+VWfmys2wU9o0RnwgIELAp6TDaFWnPaHnz/oW+QX+NLeGyNMKgz+ILxTp2o5
-	o8wDuXtcZxBp0zNuL6Lfa+neozjv9m1pCePjIoWPxKRomRJ3Y72u8LRvZ2FtwLIGx1TLY47jjb9
-	JRVNETi5pY6pAGzyHsr9SYRiLXtdNpClM0Agc+R3Yzeo87WKU+ngDSYDQ2EhJcZnZeY3tDrcHbV
-	/Ih5nPMi3HGNHv7yvV3wwzNACrDbyX6KFfrtGt502lJoZ/YWqtW5ywFq6hTk/8m85lHofhRkfob
-	qZrKBrFVdo1zn+uf5DaRn7xWfrSnNt02CnS8sPLuOILdwSFIdRbhe9HmDiMuK4/NVboPC+izCe8
-	TyRU74aWYOvMWA+MBjxdGJFFkByWm8SMSYxHYl4cujY3fC8KPCDeZEuOP+49pPIHen7MjgEm074
-	+5Q96ycoW9YU13okYa3+tAVKi6e7Itjez74PTgbd+ihEm1hp/+k+c6Y5ldS262tJlcFpk3FH5MF
-	qD6qw==
-X-Received: by 2002:a05:600c:3f16:b0:485:3f38:3de3 with SMTP id 5b1f17b1804b1-486fedab1aamr219446515e9.3.1774352307887;
-        Tue, 24 Mar 2026 04:38:27 -0700 (PDT)
+        bh=veDJydETiE9Gv6g2pRG32dl9Jb7Mpm7Du1gG7k28aTM=;
+        b=a/3sukLE7o2/r0RKvR2Vl6qvul3+lCP+ghzm+v+z8t5R2UMj6Oz1YeqT/3PEH6Tea+
+         gvZlqeNBZWJEQqQPsBxz8ff2VxOm56LnPHOw2Pb/sTwVOQjhVqUA9QpUuuIHp2W/00LT
+         ZoJShiGFH2Q5WHxJ+GaCX4A46r7iBHKAl34N21QvUZIJu9aeWzRzyO8wNaDgMd2zKVd8
+         DE3CSEs9NT1tFugxbkJHX+5wz4l6jDek/dRZB1Bqkaa7APS+whK8YuaDcqTOA3yhkIMz
+         xrh6/lW5go8RpDuXP6oeuKCMHZeZ+8GCrQN5aA/eHL5VsWHl8fPWb/ICXObm2tL68Of9
+         vfMw==
+X-Forwarded-Encrypted: i=1; AJvYcCWImjgE6yoQ9hHiAZyjZ+PQbCfN/i6Wf3/Rw08H91H4rYXnTfYlFE4wEzUnC3zpKltXIsIYyjJ2SA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzvJJx3rUGcB89Ur2a5tLBb2y0bXUsidGHj21X2QfU3RRRujcxu
+	20GbnCYWdRSXQVILJVLP6P4myOcyn0pXYDMAk51A3KRih/kPGGaBQctUDSZFMOXJqA8=
+X-Gm-Gg: ATEYQzylpoz8Wfbge5a18WkB9HFIJFq0bcSZsDEa6cYJoxd0XQHjjX5o1JLi7TVmFPN
+	H/0Yg2vKNNXXhMUOwpR9OTH8kIygW/E54oT+1VtnRQWNOK48IFGwCALK7FE454qkMYGI0hnQ7ex
+	XLPLiY44UMGq6EX5xGPZ3rjXTLPMDJITi1WD60i2Mv1yzdo7KL9rcbZ+3CWBt0uY0ctSYqypkWS
+	H5ppE0hForXWN8xsH1SsUwtoRXKzt75kVj3dNFMIaBSN2m2zOXik4LElIyJiSukXLB+7Lz+TygN
+	/cbyDSJCZofxzo4RzY84U23rXSILehvT/Odm/jENMottdhvjnLgVoYYoBHY4HtzVH/NljulY/gb
+	pf72eAC28TQUTQ0ypDHWsSZGmNH3hVhru1i6O2fOEvexDxtStwibjEsF8HVAVa9z+sKSfv9N9LW
+	cebCt0P+aBtPEP44uZz5E9eCbADapW/yEq8WPhpE9VdHD6OHGVzgwWpBSvLqoU3eD+Spl961e7s
+	eBZRw==
+X-Received: by 2002:a05:600c:8b31:b0:485:40a4:364 with SMTP id 5b1f17b1804b1-486fee1af50mr221443735e9.26.1774352310539;
+        Tue, 24 Mar 2026 04:38:30 -0700 (PDT)
 Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4870f6c0fa6sm20846715e9.1.2026.03.24.04.38.25
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4870f6c0fa6sm20846715e9.1.2026.03.24.04.38.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Mar 2026 04:38:27 -0700 (PDT)
+        Tue, 24 Mar 2026 04:38:30 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Date: Tue, 24 Mar 2026 15:38:07 +0400
-Subject: [PATCH v5 02/11] regulator: bq257xx: Remove reference to the
- parent MFD's dev
+Date: Tue, 24 Mar 2026 15:38:08 +0400
+Subject: [PATCH v5 03/11] regulator: bq257xx: Drop the regulator_dev from
+ the driver data
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +71,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260324-bq25792-v5-2-0a2eb58cf11d@flipper.net>
+Message-Id: <20260324-bq25792-v5-3-0a2eb58cf11d@flipper.net>
 References: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
 In-Reply-To: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -83,86 +83,58 @@ Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
  linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2756; i=alchark@flipper.net;
- h=from:subject:message-id; bh=DcG8KW5Fnk3rc/f7uk3dyHKO5i3tnn1nAb2IeSenCzU=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQeKl8rViMv/XX2sYXax7y3pAv/Xhd8nDVQ4jRHkl9/f
- sZSh4q1HRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
- oaGOsY4RAxenAEz1tVsM/6yei39g79P+260asTuzM/eh8i7OipfWLFpPXhpdE2ea1s7wV1CiYaH
- Qj19ysyI9eWfpHTqz4WkQX//jY7+btA55aT6u5AQA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1643; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=1uAjKjH8Mriiu2XHqXVfsDGlgQSHnV96d3u/aQzpXDo=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQeKl8bE7h14Z3g1uhf17mkmTYxbLs9Rzhw84QMT22+Z
+ qmVvM1pHRNZGMS4GCzFFFnmfltiO9WIb9YuD4+vMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ oaGOsY4RAxenAEz152cM/11dK333mmwI/bU2OpH7ESNv/vu7gTKVv6uvCOq2dCYe/szIMOXO089
+ NQqcPyvffbd6ao9s1N3jKR7M+ScXOIGnfxo5PDAA=
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-Drop the ->bq field from the platform data of the bq257xx regulator driver,
-which was only used to get the regmap of the parent MFD device, and use the
-regmap from the regulator_dev instead, slimming down the code a bit.
+The field was not used anywhere in the driver, so just drop it. This helps
+further slim down the platform data structure.
 
 Acked-by: Mark Brown <broonie@kernel.org>
 Tested-by: Chris Morgan <macromorgan@hotmail.com>
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
- drivers/regulator/bq257xx-regulator.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/regulator/bq257xx-regulator.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/regulator/bq257xx-regulator.c b/drivers/regulator/bq257xx-regulator.c
-index dab8f1ab4450..812938e565e3 100644
+index 812938e565e3..674dae6109e9 100644
 --- a/drivers/regulator/bq257xx-regulator.c
 +++ b/drivers/regulator/bq257xx-regulator.c
 @@ -15,7 +15,6 @@
  #include <linux/regulator/of_regulator.h>
  
  struct bq257xx_reg_data {
--	struct bq257xx_device *bq;
- 	struct regulator_dev *bq257xx_reg;
+-	struct regulator_dev *bq257xx_reg;
  	struct gpio_desc *otg_en_gpio;
  	struct regulator_desc desc;
-@@ -23,11 +22,11 @@ struct bq257xx_reg_data {
- 
- static int bq25703_vbus_get_cur_limit(struct regulator_dev *rdev)
- {
--	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
-+	struct regmap *regmap = rdev_get_regmap(rdev);
- 	int ret;
- 	unsigned int reg;
- 
--	ret = regmap_read(pdata->bq->regmap, BQ25703_OTG_CURRENT, &reg);
-+	ret = regmap_read(regmap, BQ25703_OTG_CURRENT, &reg);
- 	if (ret)
- 		return ret;
- 	return FIELD_GET(BQ25703_OTG_CUR_MASK, reg) * BQ25703_OTG_CUR_STEP_UA;
-@@ -40,7 +39,7 @@ static int bq25703_vbus_get_cur_limit(struct regulator_dev *rdev)
- static int bq25703_vbus_set_cur_limit(struct regulator_dev *rdev,
- 				      int min_uA, int max_uA)
- {
--	struct bq257xx_reg_data *pdata = rdev_get_drvdata(rdev);
-+	struct regmap *regmap = rdev_get_regmap(rdev);
- 	unsigned int reg;
- 
- 	if ((min_uA > BQ25703_OTG_CUR_MAX_UA) || (max_uA < 0))
-@@ -52,7 +51,7 @@ static int bq25703_vbus_set_cur_limit(struct regulator_dev *rdev,
- 	if ((reg * BQ25703_OTG_CUR_STEP_UA) < min_uA)
- 		return -EINVAL;
- 
--	return regmap_write(pdata->bq->regmap, BQ25703_OTG_CURRENT,
-+	return regmap_write(regmap, BQ25703_OTG_CURRENT,
- 			    FIELD_PREP(BQ25703_OTG_CUR_MASK, reg));
- }
- 
-@@ -137,7 +136,6 @@ static void bq257xx_reg_dt_parse_gpio(struct platform_device *pdev)
- static int bq257xx_regulator_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
--	struct bq257xx_device *bq = dev_get_drvdata(pdev->dev.parent);
+ };
+@@ -139,6 +138,7 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
  	struct bq257xx_reg_data *pdata;
  	struct device_node *np = dev->of_node;
  	struct regulator_config cfg = {};
-@@ -149,7 +147,6 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
- 	if (!pdata)
- 		return -ENOMEM;
++	struct regulator_dev *rdev;
  
--	pdata->bq = bq;
- 	pdata->desc = bq25703_vbus_desc;
+ 	pdev->dev.of_node = pdev->dev.parent->of_node;
+ 	pdev->dev.of_node_reused = true;
+@@ -159,9 +159,9 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
+ 	if (!cfg.regmap)
+ 		return -ENODEV;
  
- 	platform_set_drvdata(pdev, pdata);
+-	pdata->bq257xx_reg = devm_regulator_register(dev, &pdata->desc, &cfg);
+-	if (IS_ERR(pdata->bq257xx_reg)) {
+-		return dev_err_probe(&pdev->dev, PTR_ERR(pdata->bq257xx_reg),
++	rdev = devm_regulator_register(dev, &pdata->desc, &cfg);
++	if (IS_ERR(rdev)) {
++		return dev_err_probe(&pdev->dev, PTR_ERR(rdev),
+ 				     "error registering bq257xx regulator");
+ 	}
+ 
 
 -- 
 2.52.0
