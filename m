@@ -1,107 +1,167 @@
-Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDC053624BC;
-	Tue, 24 Mar 2026 14:28:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9349040DFBC;
+	Tue, 24 Mar 2026 14:53:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774362484; cv=none; b=h3iPYxXvfn0HYV7ftl81qTGxxKBG2lf/F0Qg3hhLshSQL1MV+BSDizgUyiJkbdJF8qy9SuWMkK5899VCqoQB1EaX96zgWHQF6KepC4Gx91RDol7GHEAcNut1k0//iKz8e5Ii9c2aB5p5PFtDfVWYCeU/kwz/EuZgs3WGn8PkyAk=
+	t=1774363984; cv=none; b=XR8RQi1hzwyX7zkgxb0GX133G8FiF0QibXIplCGQ7QMdVRuQIrI2E/PfW1mAjOtI5v5eEi/7LjcK7M98macH3jYdG6MUwyKk2LmA+lvoe4skdp9lRKpqoqOCgrs9wiXegMpKu6xYwHq0G/YXMrxmRwmeMT8MvJMBBWyRtgjhAsg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774362484; c=relaxed/simple;
-	bh=Tli2X3y0LVZah9JzvHCs3qERanTby0V0BrV4nXSA3Js=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EDiC7YBWVSVjd1xuN7MVDRcf1lwlemnAX/FkCSHp/Ezdt1+m+mPid5mVMNdulCjbxsxh4eT78D7rBs8HwjJ/iKvV8gjj9zg0VDoo27Fby5ccARnIYHDa1LrGYzOUjtE/gLloBphqYFyF+ujqub7B3s3H2caxCrixTxF3dwC49Ng=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
-Received: from omf02.hostedemail.com (a10.router.float.18 [10.200.18.1])
-	by unirelay09.hostedemail.com (Postfix) with ESMTP id 1F17D9396F;
-	Tue, 24 Mar 2026 14:27:53 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf02.hostedemail.com (Postfix) with ESMTPA id DC83180011;
-	Tue, 24 Mar 2026 14:27:20 +0000 (UTC)
-Date: Tue, 24 Mar 2026 10:28:02 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Ingo Molnar <mingo@redhat.com>, Jens
- Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
- <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo
- Leitner <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon
- Maloy <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco
- Chaudron <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
- netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Jiri Pirko
- <jiri@resnulli.us>, Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz
- <koby.elbaz@intel.com>, dri-devel@lists.freedesktop.org, "Rafael J.
- Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Huang Rui
- <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, Len
- Brown <lenb@kernel.org>, Srinivas Pandruvada
- <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org, MyungJoo
- Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, Christian =?UTF-8?B?S8O2bmln?=
- <christian.koenig@amd.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- linaro-mm-sig@lists.linaro.org, Eddie James <eajames@linux.ibm.com>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>,
- linux-fsi@lists.ozlabs.org, David Airlie <airlied@gmail.com>, Simona Vetter
- <simona@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>, Danilo
- Krummrich <dakr@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
- Philipp Stanner <phasta@kernel.org>, Harry Wentland
- <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
- amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
- Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
- <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
- Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K.
- Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
- Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
- linux-btrfs@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Andrew
- Morton <akpm@linux-foundation.org>, SeongJae Park <sj@kernel.org>,
- linux-mm@kvack.org, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 00/19] tracepoint: Avoid double static_branch
- evaluation at guarded call sites
-Message-ID: <20260324102802.4f8af148@gandalf.local.home>
-In-Reply-To: <20260323160052.17528-1-vineeth@bitbyteword.org>
-References: <20260323160052.17528-1-vineeth@bitbyteword.org>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1774363984; c=relaxed/simple;
+	bh=5PsP7SJiyg6c43hMnhXO1J/nNC4IiO59ALlt88PNREE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=J08QshwfDqc2UPSOcj6uo0FqeSR8LuNOgfU8hXBkavG5daRH+nRbjlUSeZTD5UYBbcG5xiTI/6vePLWrZZXeo475TCIQ9xDT3qOEURmhVAxNyiQryuV1tQtKSNLFtOMhbZE+W/Fvgm1IRcg/BuQmMVPl0fvMi6gbPorQN4AStQ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vM6QVJSx; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vM6QVJSx"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3ECC8C19424;
+	Tue, 24 Mar 2026 14:53:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774363983;
+	bh=5PsP7SJiyg6c43hMnhXO1J/nNC4IiO59ALlt88PNREE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=vM6QVJSxgx96Yi3fdbsB8ETxK9h5VZ8zZV42xFiAKj4E7VeW8F3aHlbtIXjlWVx5m
+	 9MvUIiFq7dLq85ZKui4M+h2uhxY/4j0kMtJn+npADLp35mR317Q51pVYGyhhf6ucJH
+	 BFt7NDLckBbS8fpsfTZg/aAnGstXVSIyCtHatX1MYLrHav4PMlUTjJjgaQa98ypH6Q
+	 00d8W2DzEFpXevZH4N4B6h6ymHlLO6o2GyvH7TENhZ58gvEy0ucrpBU5JhnABy8nxB
+	 U96CPZWqkSd0iD24e01QU5qiJlpu2r1SDDxxBJCl1XyXTJqv+KQe3zSvXbv0j/OaRk
+	 DNpKNXyQaYRBw==
+Date: Tue, 24 Mar 2026 15:53:01 +0100
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Jan Kiszka <jan.kiszka@siemens.com>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 15/15] sched/cputime: Handle dyntick-idle steal time
+ correctly
+Message-ID: <acKlTdXRUMTXBk1X@localhost.localdomain>
+References: <20260206142245.58987-1-frederic@kernel.org>
+ <20260206142245.58987-16-frederic@kernel.org>
+ <be30e259-a690-4530-996c-0c092833bb66@linux.ibm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: rgnt1g9q8d9rzsk6azwgoui85joqhwik
-X-Rspamd-Server: rspamout04
-X-Rspamd-Queue-Id: DC83180011
-X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
-X-Session-ID: U2FsdGVkX19u4yDoihzmlvbQbp4GBKk4Sx0FsrK0H8g=
-X-HE-Tag: 1774362440-296898
-X-HE-Meta: U2FsdGVkX18Kg3NfvHLPV0rnp3UrERb/HeySVgjR0PuCDys+LVJ4s2L8fsy1rJHv82yu9UO4h+xU9iEx3z3YFKVS1OFx2Vvti4rEmq0enV2xaTwbpZ+YWf60TFzb8QMlheid4NsXOVqOYcFPHCn+ZrWqPDCdrmq0l+tkyLSeYhbpJixFuANIjXhtSBZInyEBtAAqHPqUuWZ3PdZupXAY7JMTASH2KNw+CMFxYOXnDTbb38gpzJzBKiUcyoxK6GlO0db0aEPLlOAMHWKzcQEu5msgaweBGFFWtD9G0uWRbe+OcS9gBl+SI1CDJFvGCt0Z8gh5xinNWW7KF0gSIEh3ZlA0AO0+B5wCRjivVxgdquYH5bWbk7CtReb5es0u0tOp
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <be30e259-a690-4530-996c-0c092833bb66@linux.ibm.com>
 
-On Mon, 23 Mar 2026 12:00:19 -0400
-"Vineeth Pillai (Google)" <vineeth@bitbyteword.org> wrote:
-
-> When a caller already guards a tracepoint with an explicit enabled check:
+Le Tue, Mar 03, 2026 at 04:47:45PM +0530, Shrikanth Hegde a écrit :
 > 
->   if (trace_foo_enabled() && cond)
->       trace_foo(args);
+> 
+> On 2/6/26 7:52 PM, Frederic Weisbecker wrote:
+> > The dyntick-idle steal time is currently accounted when the tick
+> > restarts but the stolen idle time is not substracted from the idle time
+> > that was already accounted. This is to avoid observing the idle time
+> > going backward as the dyntick-idle cputime accessors can't reliably know
+> > in advance the stolen idle time.
+> > 
+> > In order to maintain a forward progressing idle cputime while
+> > substracting idle steal time from it, keep track of the previously
+> > accounted idle stolen time and substract it from _later_ idle cputime
+> > accounting.
+> > 
+> 
+> s/substract/subtract ?
 
-Thanks Vineeth!
+Right.
 
-I'm going to start pulling in this series. I'll take the first patch, and
-then any patch that has an Acked-by or Reviewed-by from the maintainer.
+> 
+> > Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> > ---
+> >   include/linux/kernel_stat.h |  1 +
+> >   kernel/sched/cputime.c      | 21 +++++++++++++++------
+> >   2 files changed, 16 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+> > index 512104b0ff49..24a54a6151ba 100644
+> > --- a/include/linux/kernel_stat.h
+> > +++ b/include/linux/kernel_stat.h
+> > @@ -39,6 +39,7 @@ struct kernel_cpustat {
+> >   	bool		idle_elapse;
+> >   	seqcount_t	idle_sleeptime_seq;
+> >   	u64		idle_entrytime;
+> > +	u64		idle_stealtime;
+> >   #endif
+> >   	u64		cpustat[NR_STATS];
+> >   };
+> > diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+> > index 92fa2f037b6e..7e79288eb327 100644
+> > --- a/kernel/sched/cputime.c
+> > +++ b/kernel/sched/cputime.c
+> > @@ -424,19 +424,25 @@ static inline void irqtime_account_process_tick(struct task_struct *p, int user_
+> >   static void kcpustat_idle_stop(struct kernel_cpustat *kc, u64 now)
+> >   {
+> >   	u64 *cpustat = kc->cpustat;
+> > -	u64 delta;
+> > +	u64 delta, steal, steal_delta;
+> >   	if (!kc->idle_elapse)
+> >   		return;
+> >   	delta = now - kc->idle_entrytime;
+> > +	steal = steal_account_process_time(delta);
+> >   	write_seqcount_begin(&kc->idle_sleeptime_seq);
+> > +	steal_delta = min_t(u64, kc->idle_stealtime, delta);
+> > +	delta -= steal_delta;
+> 
+> I didn;t get this logic. Why do we need idle_stealtime?
+> 
+> Lets say 10ms was steal time and 50ms was delta. but idle_stealtime is
+> sum of past accumulated steal time. we only need to subtract steal time there no?
+> 
+> Shouldn't this be delta -= steal ?
 
-For patches without acks, I'll leave alone and then after the first patch
-gets merged into mainline, the maintainers could pull in their own patches
-at their own convenience. Unless of course they speak up now if they want
-me to take them ;-)
+That would be a risk to observe backward idle accounting:
 
--- Steve
+Time        CPU 0                                  CPU 1
+----        -----                                  -----
+0 sec       kcpustat_idle_start()
+            <#VMEXIT>
+            ...
+1 sec       </#VMEXIT>                             
+            arch_cpu_idle()                        // returns 2
+2 sec       kcpustat_idle_stop()                   kcpustat_field(CPUTIME_IDLE, 0)
+               cpustat[CPUTIME_IDLE] = 2 - 1
+                                                   // returns 1
+                                                   kcpustat_field(CPUTIME_IDLE, 0)
+
+We could instead read remotely the paravirt clock, but then
+steal_account_process_time() would need to always hold the ->idle_sleeptime_seq,
+though it should happen to work without given the ordering.
+
+Anyway to avoid any surprise I accumulate the steal time of an idle cycle to be
+substracted on the next idle cycle.
+
+Thanks.
+
+-- 
+Frederic Weisbecker
+SUSE Labs
