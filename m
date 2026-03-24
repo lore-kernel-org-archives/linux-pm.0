@@ -1,159 +1,235 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazon11023086.outbound.protection.outlook.com [40.107.44.86])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ABD13DA7F5
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 09:04:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774343075; cv=none; b=HC5lQIEbnQ8ntiCjemM9WD8UF/oZ4Le8smlQHWqrEDZBkfN9KeRGnrlfAUIVhzleBkV2MtC+2s4t6sUVZLg+mHDxDpUywAxrPT8U3ZZ7zlI1KfOqx3KODE+Gw2QzFKdGwA+xNa6g7bgFhjgZ3Z6WE54Dx4msLrTzgBdDv+ZLyC8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774343075; c=relaxed/simple;
-	bh=jsWgh1Ti4adaFW3/HADaqw2MCIKnBpjGviAHd/Q/Jb4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kjSnZvp/J05cUi1b7Js5wDfD8lxf8JnKJ4/1R2V7OzCKnJDupuXZ7+PldgpPFVSMLY+7hvWNhr0tnJHbqc+giT+jPvRHj2fNdzBq3FR7ZP4TCkmIxx8okzwv8v6rCCliLU2wC2MbTiqzeKllOEQomRXa1JflVT2DJ3VjY9tFu0o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eobWxcRq; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Pdcz4TQ2; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9152C3DB63A;
+	Tue, 24 Mar 2026 09:11:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.44.86
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774343475; cv=fail; b=kx88UaKO1TBh6ERRf6ZZ3d4uGLd3Uiv+SosxCHxQQngOhXmd3ffDuVl8Zm3oaUNElFLn7hZ0xQvJ2g4XqghJzp8AE2APamJ+Xpz1nbiDKYoqcWSdcYBUaX4UFJ9RjdVtSihdzRgqO+A+AdenCCtBzc2NArl7h6ng8c1BTc40u9E=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774343475; c=relaxed/simple;
+	bh=xgATc/WPXo53DbFalpCjRSrGMTJTi9rmDp2mFgv3vVY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eQ7ZFiwNs8c7/fPdt8TnM3gdwmVdzbSQfvufsOV1pWlw5kYhWwksgKuEzqzIYxA2kwU0dJaiu+0YFW8A3mcCmoyZHZUJvL+tuxEsO/7bLU8vGvng8Sm8tbWZJeMux+okhwTHD/63/ut+29J6j1Q4carLJPTFfNP0kx43mye+RY0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=b5QnRBUJ; arc=fail smtp.client-ip=40.107.44.86
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qnap.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eobWxcRq";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Pdcz4TQ2"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62O3ocxR3170682
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 09:04:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	WPfigo46/ROFQ4N/tJ88i4ZYjoNiquVe9blKzLVTqFw=; b=eobWxcRqzLnx6L7E
-	Sf1sa9GOx1ymukjiv7nmvyorMZyFEEEIWs5RIwb9MhQ6f2z/otzZBsq8jJkDb1uN
-	rVybLrcZFmWgBaVQEKfGaGdmCjqIkTL/rfzcAy60xjCyyad/DpMXyVq6ZdoG+0Ia
-	wEQMp0mCSpTNigow6FiwQ4SnRpux5RaoBsg3nhVrZjRIxswYoMCF30A9N/gR2UrV
-	nNnicvThy2P2BYx3zvbu6YRcY63WHOOlQBb48RRhCsPT5JbQaRR0lW1OF6ZzCZE5
-	rnqUWAbSs+lrAlApu0Io40IGtc6+u0BehQY9LiRi21gOw2zrXLE0Ym/0KUY5enIi
-	Bxz+2Q==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d35r23wkh-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 09:04:28 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-5091327215dso245659401cf.1
-        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 02:04:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1774343068; x=1774947868; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WPfigo46/ROFQ4N/tJ88i4ZYjoNiquVe9blKzLVTqFw=;
-        b=Pdcz4TQ2A8JQo+sQADgNLJlPzAqPdNE1x5+fvHArq4z4q3KEqF8naQR+hesVMHlhqg
-         9XU7GmhdSBLMg4ISD7t1slg3D6kGELGeUpoHfC7mGjCEsh72ICQ8u/TGJ7l2gv/MWeLL
-         pTACFBAAZztElujiZIwbztD0phsFJ680zXxULpg9u0xpazpokwbIOusQidvRo3Gj+9GX
-         GMaXJZgDMA7jIHNTx6yJ8U4sufoaYeLhi1GOMegbgq+1MF6evk5e5kQsYw3uJwesmiGd
-         rOjyeMCUn3A2TLPcNR+xqpGNL3qepEXtJrgw9uoQ7wtQp+/mYuzwvJnZnhmrFqiJSidn
-         ovbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774343068; x=1774947868;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=WPfigo46/ROFQ4N/tJ88i4ZYjoNiquVe9blKzLVTqFw=;
-        b=b93Dg1srJezGuBapzL/vUY9HZReV7/I6UPj7ZYnLigRTsyJXmqmQOn6cqws3fRlQ2E
-         nm4WTPIKs/cFCZ3PEukSHo1nMa1ArMydHyYU35Q9MtuWdl+rm6hWXEnu40wIYfDtCvgk
-         u2eGxeQHoT7NROHfwEMkKcTbCSx9e6gi4C/FQJlmSnwEcOfiNGQK/sC+NmlQpfIO20zr
-         55G2I6NA/GPQaah8DJvXq6yw3hOFNOBVtrUcXhHtomun2eyfZ7qSKHqNeEJnq+5an2JU
-         sA3o4uKG25z09I1Z6n/lPUKZABKlNtvl13pH9mfWcVP9mxQy0+YqK8NtQhDiNED9LhIa
-         Iokw==
-X-Forwarded-Encrypted: i=1; AJvYcCWadGmfYQ2wGPhu/1/h1l+jcxpoY3slrffSItZS29ec6rSv7arAVMFsea4bpAiv4VagQJIby+zlag==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxhc0rIUBH/r2/g628IrvtLOUgd45LWZBpfw667ZO71YChucEsd
-	J9kD1vTijNGpKzug2lFAGotNYPtpF8gGrqtv4PJhRbEBcjoWvpWZGV6DSefXf3dO82l7bfkCA8k
-	tqpxRPLOyQUi8sRUCiDXKi0pRn5RvVoCDfKHW9BNdxCC3ddVLWGNzLNgfrtCsGw==
-X-Gm-Gg: ATEYQzxAO4VHaMKEZSDqNHyWCI8iQ2YLM7QoATntBrO9sBKZFFLY6DZEz5pGG/DhbsS
-	7nVUe1uYamg+HPcr1MiJoRbvSXGIi8m0+rEqgztHVSoL69B8OiJh9vYqrByzqsJEjccjtiZbdfk
-	wVpqTy1t7w2AczWJ346IvM8JfOu9psdlhxzeAPYb44Oq/hdLokO3jxbRsJ+RMI4M9wQUXEz6qhu
-	53XvecCEes86VFXwj1t5rZbePHTR3PG7GqXYbQUBN+jSUyoHFanjDCGPlYW3XuCZAONTarOM7cQ
-	gP6eMn+nQY6czoL+diFzu99MxQ66KiNzuLSsR+HyK6kXKJDCk/AzJFlQtDBKck6QSfVvvwVPia6
-	lP3oS3HtU/tgaGqrtiW04FJHcB0MGUQrVlyuPX1/nF3kkaBPxg/4=
-X-Received: by 2002:a05:622a:154:b0:50b:51e9:2e8b with SMTP id d75a77b69052e-50b51e9310emr133853201cf.11.1774343067825;
-        Tue, 24 Mar 2026 02:04:27 -0700 (PDT)
-X-Received: by 2002:a05:622a:154:b0:50b:51e9:2e8b with SMTP id d75a77b69052e-50b51e9310emr133852721cf.11.1774343067138;
-        Tue, 24 Mar 2026 02:04:27 -0700 (PDT)
-Received: from brgl-qcom.home ([2a01:cb1d:dc:7e00:99ae:5c2c:ddf7:d77a])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-487116c086dsm40007565e9.8.2026.03.24.02.04.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Mar 2026 02:04:26 -0700 (PDT)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
-        Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>, Linus Walleij <linusw@kernel.org>,
-        Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: brgl@kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-pm@vger.kernel.org
-Subject: Re: (subset) [PATCH v2 0/9] gpio: remove uneeded Kconfig dependencies on OF_GPIO
-Date: Tue, 24 Mar 2026 10:04:24 +0100
-Message-ID: <177434305814.8385.4412622204610388581.b4-ty@oss.qualcomm.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260316-gpio-of-kconfig-v2-0-de2f4b00a0e4@oss.qualcomm.com>
-References: <20260316-gpio-of-kconfig-v2-0-de2f4b00a0e4@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="b5QnRBUJ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Jtqz8jCd+AXyRAlRvQslDG3916Rwf3b6S7D1ZmhFFWQCxr6OoqgFs2jlLE7keu/sJhKzRomBNsWvryxhSk46GpLs1rtjb5dNVir4wdcS1a+fHWgY1kdL9u16xDmlwXQDK/2wl/snEM2x4qxxAIb9aHquJ5bfsKWumfbEHa18QU3kmFFmKdlspNs7iYFNOFHvw63PUIIEAYwQjTh3QbYumGHOvo+lQ0Ou+b5EmBbrX1tYT4XnH9VnJz0qyzXfaC8FwV5X23ouN/z9TB1EFMwcuGF1vlhFmvHCBIHvK+/mxe1w259mFeNhCfaG2SWCBZTLkfMmIeGgHLS/XSiZBaAeMw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RDPITf1rIsNCukMW9/F0pVyuRVbxckr59pHEOxvQLbQ=;
+ b=aThzFsVTJ6powcJ2PKE0ZU9VUNA+bwQuIuCc6Yk3TsFhKGtCQ433ge7ddEMobujp3Jj+yZJDXQnDaodmRhAMWrGh1IfcPK+8WVLcpLHvU2PE3IHFYxBJrLrObewzMZ7QQGE3ebnWyZ79bsJ1cU/VvzLQKtgfW9TYkkvAe71HfpIrlfEIz5CY0gDl29+BYmnaG+w156+GG/rLFjPa7k7y51nbiDNBWQYJmRbjKVb9KfJLLRAfRzWykmaOu0BX83EZsXSSIWtcuG/1/kWCskja0T82qOp6QtfMF0wkzfHWenS2s6yAZkipxZQc2hOg0t12dsOKCX9rEie5Vt87m8PpdQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 122.147.219.42) smtp.rcpttodomain=kernel.org smtp.mailfrom=qnap.com;
+ dmarc=fail (p=quarantine sp=quarantine pct=100) action=quarantine
+ header.from=qnap.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qnap.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RDPITf1rIsNCukMW9/F0pVyuRVbxckr59pHEOxvQLbQ=;
+ b=b5QnRBUJ7MrFxNGNtNI4e7MGSDvNppEa8gJWC7IVMpwGB+axePUQlEMvTmU6ojYwU4tPUHNC9W8Bb1aKdwjcAscW9s2O033ZArjKueqwgCKOP1CSKjDcuRfgB5jhkXdQnC7MmpiJKujEhRXMAGxxiTstb8YOjWGvt56PWEQCXoq36Mro0ZYm0oQWoLQX735wScKC/G0Bw++9E50y7Cqnxq1Rz1J2Mr7dS3yfR7ZzVfXzvl5ynKKLuLcA6f2icYi1L7GtE3wlyBlc3mHSkwurpIibZhRhE3vKpr98+1FR5vKI3u4N7iE2seRD3fdEuEWr4xbl90m8xjgJ6CIqCzOPEg==
+Received: from SG2PR03CA0103.apcprd03.prod.outlook.com (2603:1096:4:7c::31) by
+ SI6PR04MB8344.apcprd04.prod.outlook.com (2603:1096:4:232::12) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9723.31; Tue, 24 Mar 2026 09:11:06 +0000
+Received: from SG2PEPF000B66D0.apcprd03.prod.outlook.com
+ (2603:1096:4:7c:cafe::75) by SG2PR03CA0103.outlook.office365.com
+ (2603:1096:4:7c::31) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.31 via Frontend Transport; Tue,
+ 24 Mar 2026 09:11:06 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 122.147.219.42)
+ smtp.mailfrom=qnap.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=quarantine header.from=qnap.com;
+Received-SPF: Fail (protection.outlook.com: domain of qnap.com does not
+ designate 122.147.219.42 as permitted sender)
+ receiver=protection.outlook.com; client-ip=122.147.219.42;
+ helo=mail19.qnap.com;
+Received: from mail19.qnap.com (122.147.219.42) by
+ SG2PEPF000B66D0.mail.protection.outlook.com (10.167.240.26) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.19
+ via Frontend Transport; Tue, 24 Mar 2026 09:11:06 +0000
+Received: from localhost (unknown [172.17.22.18])
+	by mail19.qnap.com (Postfix) with ESMTP id 181EC2AD;
+	Tue, 24 Mar 2026 17:11:06 +0800 (CST)
+From: Henry Tseng <henrytseng@qnap.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Len Brown <lenb@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	SW Chen <swchen@qnap.com>,
+	Kevin Ko <kevinko@qnap.com>,
+	Henry Tseng <henrytseng@qnap.com>
+Subject: [PATCH v2] cpufreq: acpi-cpufreq: use DMI max speed when CPPC is unavailable
+Date: Tue, 24 Mar 2026 17:09:48 +0800
+Message-ID: <20260324090948.1667340-1-henrytseng@qnap.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=VvUuwu2n c=1 sm=1 tr=0 ts=69c2539c cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=_HlkyUIfcI8kue4dcD0A:9 a=QEXdDO2ut3YA:10
- a=uxP6HrT_eTzRwkO_Te1X:22
-X-Proofpoint-GUID: M-gIgF0dV6DGek5FVOj57mtfqpyGBzUc
-X-Proofpoint-ORIG-GUID: M-gIgF0dV6DGek5FVOj57mtfqpyGBzUc
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI0MDA3MSBTYWx0ZWRfX35CwfaeeqyHd
- etRhHbkRZWVin3COZlO2TlovslK+A/j2KxqgY0rx0kdf5lxbtlltxYXRgvpEbUzc7Djhq0aXqXP
- hz+2M78Mq1Gd3LvmwIrk3Y5RlumNERHw9nVqsM2i8mN1nRnqlbbYUU8lLb6nNTN1Jxr5IIIbFlE
- 3rDy89F+jAnAwIA3edi6dVKhwYRyzVccPOVqbcLTIOy7fFfSI1I/2jYWXG6Q3yDCGHffPZ8kqmr
- LzufRhlQhVdILUzd6a8RklwIpyvaGwEAcWrBSn6adrhPKNRqQVNGv3cz1Gh1qw9yX96lsD3dAds
- Nhg8kYgYcNgx8HLH/5oZYZU1eSw85xQRaORb6p30+FiD9BW6I/Xaa4rBRbsW5qa/eHFq1GNeS6C
- Epp0PdUqRq/RSl4OG+camVpKAVvVL5d+1iGrshIElMOK4P26sTYXju36n0Ue8zuAXQXJGIN0+sE
- 5rdxd8D8gZH4jTqGydQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-24_02,2026-03-23_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 spamscore=0 adultscore=0 lowpriorityscore=0
- impostorscore=0 bulkscore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603240071
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SG2PEPF000B66D0:EE_|SI6PR04MB8344:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 4031e0b7-aa69-4f6c-0f1c-08de8985482c
+X-MS-Exchange-AtpMessageProperties: SA
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|82310400026|1800799024|36860700016|13003099007|56012099003|18002099003|55112099003;
+X-Microsoft-Antispam-Message-Info:
+	XKjHgwdURzK6waW25BNkDfYb1HgooMJ1s0cWDfLsmj1gq0glZc3r741lLge9nWM8Ee6NN+0RZuK3AwCeUlHHQHMsc0Ts6jLGDDGQ1nyNBuwMXx3l0d7PdF/xoLWJh3tMdKRU/MHWBphhcQseoGY6aZxm35mflVQm/cIOGZ2NRZPaxOYkUFe2YZNTbRELVIw54pV9h/GrVbwCVURoUZxUr+bth0ndVNKFJJ7Yr/5ZK8pAlTM+8vcNjhcdg9vAQJ8GwG5EEnzJbeMA/RHWuU/1Vqrvu1vnZ9KnVijWrzp5UqeoV7YLl7+1/8aTQC2n8fcBCUQNRIxRUPw8Do+nZ1JVD9Rz1Ujna40IImdep3qIvd7Vkfiry9qeY1zRaZ8kq/xfsenrBIXw2hA2o442CiCHF88OTyg1Z5aZDTXsnNtfV35EcfyJvG7K2u6jiiPyYa7zCROuyAMtfnUG6U+iXFNhEp89IAIJEiSYh8v9iPpVk+uPJzNEo9ISXT8uSk0ktkXilGd+oXPaef8eEytntWx0TZuFn7qg733OgrewhdBFRwstomVvGTJTYFtb8dtPE1hwhpA11/QUJ3baTVY4T2kEsqeptE/+cSTNsJifXhRxeoegPRvG8vJZqRXG2xJzfQ8bKuGnB6+4PHsWrcODMWm9JOPXRAaq60+yPJHpS01xyCUm9RGpVQjvhwhX1oQ7ukfp+LO2kePvXLdbfKID/i23SQLC2I/+JYXfcqRG/yVFJ20ThV3ZvM2pEfD2wZXupbosoofno9L7HJKamzV/D5My9Q==
+X-Forefront-Antispam-Report:
+	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:122-147-219-42.static.sparqnet.net;CAT:NONE;SFS:(13230040)(376014)(82310400026)(1800799024)(36860700016)(13003099007)(56012099003)(18002099003)(55112099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	wf1xS+HiM8T0Se9z00pBbImOAZ3c9z+4Lk+be95JqxoxYFcvEWSOHlZ02fkkdwSWupggP8Gu2fvcXJa8YmAdhrdV2KtnRV00XSEaoueQKC1BaFDYEFFSOuuxd+X/zYxsCr7AuAwLgt9Wq9FC7zcI+r+J5pX18aiHO5CHrGT5aN05/BJgYewIfftaT15t48UnahnqEEZzio7OoKOFH8aUyaVYjw5fARBfbm1FxvPhrM+ClnMVAXE6BLmn8COlYc90ifBfty3qRD+onmSrUapVOgZKmhZC6XT3uh9EcEdxZMLCrvXeBXSVY0uOJytPn9cjxgBl8FYN/b3/2W0eZHqUpK6Qz1cgN+rF7o95lhMIJUEHHhkQmgLaPQHL3uxoZ0oLe1PVYFzn6acajymmTsRH8TjVgWTai+ZCq6KxFKeSFd8ilApz1HAn1M07erHP5Tu0
+X-OriginatorOrg: qnap.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Mar 2026 09:11:06.6276
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4031e0b7-aa69-4f6c-0f1c-08de8985482c
+X-MS-Exchange-CrossTenant-Id: 6eba8807-6ef0-4e31-890c-a6ecfbb98568
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6eba8807-6ef0-4e31-890c-a6ecfbb98568;Ip=[122.147.219.42];Helo=[mail19.qnap.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SG2PEPF000B66D0.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI6PR04MB8344
 
+On AMD Ryzen Embedded V1780B (Family 17h, Zen 1), the BIOS does not
+provide ACPI _CPC objects and the CPU does not support MSR-based CPPC
+(X86_FEATURE_CPPC).  The _PSS table only lists nominal P-states
+(P0 = 3350 MHz), so when get_max_boost_ratio() fails at
+cppc_get_perf_caps(), cpuinfo_max_freq reports only the base frequency
+instead of the rated boost frequency (3600 MHz).
 
-On Mon, 16 Mar 2026 10:45:20 +0100, Bartosz Golaszewski wrote:
-> NOTE: Each patch in this series can be picked up independently into
-> maintainer trees.
-> 
-> CONFIG_OF_GPIO is a switch that enables the compilation of the gpiolib-of
-> module. The module itself handles GPIO lookup via the OF-node tree and
-> is automatically enabled on all OF systems. It does not export any
-> public symbols to drivers. There is no reason for them to select or
-> depend on it in Kconfig.
-> 
-> [...]
+  dmesg:
+    ACPI CPPC: No CPC descriptor for CPU:0
+    acpi_cpufreq: CPU0: Unable to get performance capabilities (-19)
 
-Applied, thanks!
+cppc-cpufreq already has a DMI fallback (cppc_get_dmi_max_khz()) that
+reads the processor max speed from SMBIOS Type 4.  Export it and reuse
+it in acpi-cpufreq as a last-resort source for the boost frequency.
 
-[3/9] gpio: drop unneeded Kconfig dependencies on OF_GPIO
-      https://git.kernel.org/brgl/c/7803501e5754dc4b295ab22b20562e2b965358ba
+A sanity check ensures the DMI value is above the _PSS P0 frequency
+and within 2x of it; values outside that range are ignored and the
+existing arch_set_max_freq_ratio() path is taken instead.  The 2x
+upper bound is based on a survey of the AMD Ryzen Embedded V1000
+series, where the highest boost-to-base ratio is 1.8x (V1404I:
+2.0 GHz base / 3.6 GHz boost).
 
-Best regards,
+The DMI lookup and sanity check are wrapped in a helper,
+acpi_cpufreq_resolve_max_freq(), which falls through to
+arch_set_max_freq_ratio() if the DMI value is absent or
+out of range.
+
+Tested on AMD Ryzen Embedded V1780B with v7.0-rc4:
+
+  Before: cpuinfo_max_freq = 3350000 (base only)
+  After:  cpuinfo_max_freq = 3600000 (includes boost)
+
+Link: https://www.amd.com/en/products/embedded/ryzen/ryzen-v1000-series.html#specifications
+Signed-off-by: Henry Tseng <henrytseng@qnap.com>
+---
+v2:
+  - Extract else block into acpi_cpufreq_resolve_max_freq()
+    to avoid #ifdef in the main init path (Rafael)
+v1:
+  - https://lore.kernel.org/linux-pm/20260320095648.3598007-1-henrytseng@qnap.com/
+
+ drivers/acpi/cppc_acpi.c       |  3 ++-
+ drivers/cpufreq/acpi-cpufreq.c | 31 ++++++++++++++++++++++++-------
+ include/acpi/cppc_acpi.h       |  1 +
+ 3 files changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index f0e513e9ed5d..f53de414acf2 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1944,7 +1944,7 @@ static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
+ }
+ 
+ /* Look up the max frequency in DMI */
+-static u64 cppc_get_dmi_max_khz(void)
++u64 cppc_get_dmi_max_khz(void)
+ {
+ 	u16 mhz = 0;
+ 
+@@ -1958,6 +1958,7 @@ static u64 cppc_get_dmi_max_khz(void)
+ 
+ 	return KHZ_PER_MHZ * mhz;
+ }
++EXPORT_SYMBOL_GPL(cppc_get_dmi_max_khz);
+ 
+ /*
+  * If CPPC lowest_freq and nominal_freq registers are exposed then we can
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index e7eff6c2f092..21639d9ac753 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -675,6 +675,29 @@ static inline u64 get_max_boost_ratio(unsigned int cpu, u64 *nominal_freq)
+ }
+ #endif
+ 
++static void acpi_cpufreq_resolve_max_freq(struct cpufreq_policy *policy,
++					  unsigned int pss_max_freq)
++{
++#ifdef CONFIG_ACPI_CPPC_LIB
++	u64 max_speed = cppc_get_dmi_max_khz();
++	/*
++	 * Use DMI "Max Speed" if it looks plausible: must be
++	 * above _PSS P0 frequency and within 2x of it.
++	 */
++	if (max_speed > pss_max_freq && max_speed < pss_max_freq * 2) {
++		policy->cpuinfo.max_freq = max_speed;
++		return;
++	}
++#endif
++	/*
++	 * If the maximum "boost" frequency is unknown, ask the arch
++	 * scale-invariance code to use the "nominal" performance for
++	 * CPU utilization scaling so as to prevent the schedutil
++	 * governor from selecting inadequate CPU frequencies.
++	 */
++	arch_set_max_freq_ratio(true);
++}
++
+ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_frequency_table *freq_table;
+@@ -849,13 +872,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 		policy->cpuinfo.max_freq = freq * max_boost_ratio >> SCHED_CAPACITY_SHIFT;
+ 	} else {
+-		/*
+-		 * If the maximum "boost" frequency is unknown, ask the arch
+-		 * scale-invariance code to use the "nominal" performance for
+-		 * CPU utilization scaling so as to prevent the schedutil
+-		 * governor from selecting inadequate CPU frequencies.
+-		 */
+-		arch_set_max_freq_ratio(true);
++		acpi_cpufreq_resolve_max_freq(policy, freq_table[0].frequency);
+ 	}
+ 
+ 	policy->freq_table = freq_table;
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 4d644f03098e..e6c5ef3173c5 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -156,6 +156,7 @@ extern int cppc_set_enable(int cpu, bool enable);
+ extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
+ extern bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu);
+ extern bool cppc_perf_ctrs_in_pcc(void);
++extern u64 cppc_get_dmi_max_khz(void);
+ extern unsigned int cppc_perf_to_khz(struct cppc_perf_caps *caps, unsigned int perf);
+ extern unsigned int cppc_khz_to_perf(struct cppc_perf_caps *caps, unsigned int freq);
+ extern bool acpi_cpc_valid(void);
 -- 
-Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+2.43.0
+
