@@ -1,95 +1,70 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BF243A453E;
-	Tue, 24 Mar 2026 09:22:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774344178; cv=pass; b=dH/P+E0z1ko/6nYwkWkcvtI+c5hjsIJIoFZars58k09NiBXU9Nb4aUm/7JaWjBDj8EVvoAzg0yRUxgjZReXQohjP+SY6JIl+uGemYvtfU8k/PRIegNuxKNRaKYaBPVWxYEpFrpsPtJeKGfKbx/YPMf8b2FzS5A+bzPLldpw4S9U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774344178; c=relaxed/simple;
-	bh=XMjQMvSLAPYoMJKsHhFABYEKFjYgbM14/9BIR23QQks=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=dG+VTgeMaqe0Sba/6U6QA9IkRu8TBfjrzDnyFztNcSEYMyL8ZCHZnkS9YFwkQ5GwOpGWnPniFiy69PGw3IIhNLPLpSqYd9+htqXcJMs72fXGdgQ7wgVLmsJkxm0NVRDaaLi9X2lr5kyeH/dq52US1W4J9gcgeTzf+Jfv5DDlK8I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b=Egrr7Ox/; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19E253D6465;
+	Tue, 24 Mar 2026 09:26:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774344381; cv=none; b=hhEi8CwkNTV2NMYq82i0fp9Vqb2H5/MDvQAQsqwGN5t4bVbOVg7vSmtXoDwZYOhQUpXVG+nDJmxpdSsi+QonN2IBcRodGDsgRTF8ZK9ns8b2fU/kndiWHHLJYT9lhAk4lyYUcoFjfgA8r7Nr0Ip3LA/TPeey2FOgqplIJnuMxMY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774344381; c=relaxed/simple;
+	bh=4kWn0YZJb4i01Ir/4InQFgfX4Z1CwGSc0CpGCKJSBVM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JtY575a6tip9xjPVD3L7saoV7fcIVRLYelR1Es3WDmo9zgjDyNvNl1idlSNl2GEO6l/pxGy+6PHjrXVZpgiMz6F4m1B/tHEMyaxPLeAlvpAK6rdnajtCcwg8LsQjXNg5+R3JDdK6YVBaEiGbRg3tAHSN3QgThG0wJz7Qb378vwQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XgbZ5flO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b="Egrr7Ox/"
-ARC-Seal: i=1; a=rsa-sha256; t=1774344149; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=nB6PbigBV0gHvbArjUfAi3MEzXfB/AZ/v0khH16LpGAzyakrR8mBZKumTOfjx88EUH85YOOnHW0WPTQgJBmc7h2yTpYWrORdnJzXwsC/vgZxzXy/eU0YrLEhhWlWfHa8KygiN0wD+Nh9PpInApuiLlVHbfbpeP0n/LlFFlD8Cuo=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1774344149; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=OG3L5SWRw6ozXi3QG/O75rfThacLjQgD1c0C5pb08jc=; 
-	b=GVKPsAqzGvK2vijrzT8t1x4St0EO8Zzzy5RHb3keDosF75cgUJY/DT92NjT9iw3iVVJkEk1Flmsih4AY7DHZzGwoAfJX6BI/kxlo/17b3t0+9D0JEBFuKcoMqjCNg6WNCSrOKwqieEPCrid8h16/R9bopn7Bg8pkUf/E0J1yJeU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=matthew.leach@collabora.com;
-	dmarc=pass header.from=<matthew.leach@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1774344149;
-	s=zohomail; d=collabora.com; i=matthew.leach@collabora.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:In-Reply-To:References:Date:Date:Message-ID:MIME-Version:Content-Type:Message-Id:Reply-To;
-	bh=OG3L5SWRw6ozXi3QG/O75rfThacLjQgD1c0C5pb08jc=;
-	b=Egrr7Ox/R1++YAYYTQM7059M70OAdUM86QeU2Fzb7lTmEwvhcxfSTb2qy7+8NVqi
-	BqFnYdsMg9+NXq3TRNz2q/Vv2RVpjiM1ExIrP00e5N5i5FEu6qKP2o9aASKlXlpGCsm
-	uxg9Z+nSZfKVOLn1YDtQSqGJ9szLonpVtDFRx4wk=
-Received: by mx.zohomail.com with SMTPS id 1774344146821527.6913733658973;
-	Tue, 24 Mar 2026 02:22:26 -0700 (PDT)
-From: Matthew Leach <matthew.leach@collabora.com>
-To: YoungJun Park <youngjun.park@lge.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,  Pavel Machek
- <pavel@kernel.org>,  Len Brown <lenb@kernel.org>,  Mario Limonciello
- <mario.limonciello@amd.com>,  linux-pm@vger.kernel.org,
-  linux-kernel@vger.kernel.org,  kernel@collabora.com
-Subject: Re: [PATCH] PM: hibernate: call preallocate_image after freeze prepare
-In-Reply-To: <acFa5+ihROC9/0Va@yjaykim-PowerEdge-T330> (YoungJun Park's
-	message of "Tue, 24 Mar 2026 00:23:19 +0900")
-References: <20260321-hibernation-fixes-v1-1-5fe9637b6ff9@collabora.com>
-	<acFa5+ihROC9/0Va@yjaykim-PowerEdge-T330>
-User-Agent: mu4e 1.12.15; emacs 30.2
-Date: Tue, 24 Mar 2026 09:22:23 +0000
-Message-ID: <87ikalshtc.fsf@collabora.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XgbZ5flO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDC89C19424;
+	Tue, 24 Mar 2026 09:26:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774344380;
+	bh=4kWn0YZJb4i01Ir/4InQFgfX4Z1CwGSc0CpGCKJSBVM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XgbZ5flOMOM0DOOaoa9asHdHwqPMbkAPF/BFyPi6SGFqxqv6LvKJRLnYf/1/cmxSM
+	 GJq9ASMBuGA+274txopcYntJZ9cJ8uB0/dHPNqdl7xYFdE3LAsQlRtHyv7SsYddSgq
+	 dRzSrxTc2MtnWiBtRov8cm8sNtXM8si3Q1vQkXtbUnsrrN9AYkarwHkK7Dpr4kdsEb
+	 IBrewTBbkwRo9K1yLHOKHBjuun0ksO5BgNli5lh+UadJpc9NH06Gpvz5tHmc7Apxmi
+	 uvvasKFHyuLzRTJnuLj+bqr14apLQwXmTd9afb6P1acgaSQrfYtWWoQ+UsEererpTx
+	 vzNxi2GnGa5TQ==
+Date: Tue, 24 Mar 2026 10:26:17 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Gopi Krishna Menon <krishnagopi487@gmail.com>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com, 
+	lukasz.luba@arm.com, robh@kernel.org, krzk+dt@kernel.org, vireshk@kernel.org, 
+	conor+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, soc@lists.linux.dev, 
+	daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, m-chawdhry@ti.com
+Subject: Re: [PATCH 2/2] ARM: dts: st: spear: fix dtbs warning on spear
+ thermal sensor
+Message-ID: <20260324-smoky-radical-hyrax-1274a9@quoll>
+References: <20260323133814.14152-1-krishnagopi487@gmail.com>
+ <20260323133814.14152-3-krishnagopi487@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-ZohoMailClient: External
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260323133814.14152-3-krishnagopi487@gmail.com>
 
-YoungJun Park <youngjun.park@lge.com> writes:
+On Mon, Mar 23, 2026 at 07:08:09PM +0530, Gopi Krishna Menon wrote:
+> Running DTBS checks on st/spear1340-evb.dtb results in the following
+> warning:
+> 
+> thermal@e07008c4 (st,thermal-spear1340): Unevaluated properties are not allowed ('thermal_flags' was unexpected)
+>   from schema $id: http://devicetree.org/schemas/thermal/st,thermal-spear1340.yaml
 
-> On Sat, Mar 21, 2026 at 08:51:31AM +0000, Matthew Leach wrote:
->
-> Hi Matthew,
+How is it possible if there is no such file?
 
-Hi Youngjun,
+Did you just add new warning in patch #1 and then claim in patch #2 that
+you fix it?
 
-Thanks for the review.
+You completely miss the point why this change is needed: how could the
+DTS work before? It could not. And that should be your justification for
+the patch, with explanation why it could not work.
 
->> +     /* Preallocate image memory before shutting down devices. */
->> +     error = hibernate_preallocate_memory();
->
-> The shrink_shmem_memory() below is also intended to run after
-> dpm_prepare(), and the motivation is the same. Since
-> hibernate_preallocate_memory() already does shrinking internally,
-> how about pulling out the shrink-related parts and consolidating
-> them together?
+Best regards,
+Krzysztof
 
-Agreed. I'll remove shrink_shmem_memory() completely since
-hibernate_preallocate_memory() will have swapped out as many pages as is
-required to construct the image in system RAM. There's no point doing
-another reclaim.
-
->> +     if (error)
->> +             goto Thaw;
->
-> Don't we need to call dpm_complete(PMSG_RECOVER) in this error path?
-
-Yes, good catch.
-
-Regards,
--- 
-Matt
