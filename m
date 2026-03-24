@@ -1,147 +1,150 @@
-Received: from mail-qk1-f179.google.com (mail-qk1-f179.google.com [209.85.222.179])
+Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8D9D37BE67
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 02:09:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.179
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774318192; cv=none; b=LvqiG4QvTEgwFdanyQhH29SlTcM8dpGI4EUkVzgoCkiCQSFzSQA02NnEiSt5tnoHPCOdLhXLzijpxJ1/bleHFzH5G43++IxydkCsVP25m6Nmd9TFywo1Z+YHRPh8isM+kmQ9eiqL/Pxz6kWt19c/FC7vr3lMlWgXwjO94RN/TcY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774318192; c=relaxed/simple;
-	bh=37vPBBAzTZ3/lo9gvOGeuopFoiWJS0MKCuHWiza282c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=l8BU5irZ3dRgTEW8KI23o56o41m5xawRDe6jQBrRclu9wnbssNJFlGgzgwCaOECTuCvDs3luYrQ8lBPELi5fUR4DIkU++mIiMmhLMsfVBPuU3d/VfR1LiWz2PqWq3llYFPqAPfYfl2FVU810gOeZHAOLM4Ga4lv3y5sjoyRJzds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=me.ssier.org; spf=pass smtp.mailfrom=me.ssier.org; dkim=pass (2048-bit key) header.d=me-ssier-org.20230601.gappssmtp.com header.i=@me-ssier-org.20230601.gappssmtp.com header.b=MHkybLtX; arc=none smtp.client-ip=209.85.222.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=me.ssier.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=me.ssier.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 652A3386C09
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 02:20:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.169
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774318851; cv=pass; b=FZz3ASxCZNUUI1OrgTOYu+H1RUKeQhHou5TSasarqDnesm/OZkSmQCpBI20pod1BDErY6wDhVwqILFK/XyWvs8exGLK60zTYr4ZRBowihtGURKe32Ia67bQgjgI7IfuDS9rpomzJjO0oEOp4PCtNKTxeeaeZK+/RbCyMKJ9gGOA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774318851; c=relaxed/simple;
+	bh=85X2O4LzjMd9F3MewKaUBRwXGQ7wlJ40lao7QqFFo/0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=o4LKD7nyiJDQ8CNIQMmiaN8K830XsnOaiMA+MBlKYA9EBLMLSwV8X05pTtjuuk+HPBFT2Vkro7qp8SMSFRR3pdTQgl01zHpiejSApEN2c6GXKnNQn3oxsbCsjendGdtf1vxm+MqwQlhlmqe+H922W8w5m7kzNIFM/jgcc/JBkQY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VZsaRiZu; arc=pass smtp.client-ip=209.85.160.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=me-ssier-org.20230601.gappssmtp.com header.i=@me-ssier-org.20230601.gappssmtp.com header.b="MHkybLtX"
-Received: by mail-qk1-f179.google.com with SMTP id af79cd13be357-8cd8a189f44so484317385a.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:09:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VZsaRiZu"
+Received: by mail-qt1-f169.google.com with SMTP id d75a77b69052e-5062fc5d86aso39691681cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 19:20:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774318848; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Hax2jLyWwQhGIz2GAf5anSPGg7o6VvQklwmXeqxZR60rbAVaQFg9fsRN3THtfKfhh3
+         PSJ00uLWPMA57z2R8PvKPe+kyTnohEgZuj3sUhPTLZ6KAAWYQhHGfSkmogkztryJeaq/
+         x3JsBihoLLSL3lv9MHXMYzMYEpAotLzi25fYswNXgpq4Vp52R/bIKurSCyxM8zL0tjsv
+         0ufoxsodO1HAyxnJkvB5AfYYI4GCNW71+tFMy85b6njyssvDguGLM94CnpwtVGMudIYq
+         F/XK6/FaL+/Ogkk2Ve8y+dBAkimikbkQmPWpCo7iU5RUeZqFIdiJxy3409Z9HhkYrsqK
+         WXew==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=85X2O4LzjMd9F3MewKaUBRwXGQ7wlJ40lao7QqFFo/0=;
+        fh=W8yexwHEXvsugnbtE5keTWX/f4lsFdivDtzBfnPOXh4=;
+        b=JZHwxnXyc6V6yhJuPsWenHfupVgsEUf+LeIJJGmWZltjFAO5KiatvAVmtE6v3IU7YK
+         IAMUEQFeki/8us2/D1CD0LYUsJbC0SZmxYkz7U2MndaJrpSNdmhx9vpHbk5yogUYoXxc
+         PFvGwjB7d6s2dMzcxIFVcsKEJNTcKqDhG5W/biOXMSVaFds+riHMO7qCN0p3qMidM8n5
+         AV25Zt9oFEwHOAGjEerpzxdtnzPLFuy4Hy1RDJ3PAaHV4kprB5eYRRC3tlduQHZERVC5
+         ldPQ4PNLK0lY38PUpFytMeVDtQNGjbyl6OuZd59yZv8mWXZirkIZ+Bd2EhbO7DoywF4D
+         2QPA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=me-ssier-org.20230601.gappssmtp.com; s=20230601; t=1774318189; x=1774922989; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=C5ZJoTMOV2ASUMfnuWTwy6IQmOeUZviHlyu/QYJ4be0=;
-        b=MHkybLtXVRRLGzpOSeBqelcAdO3Pzem+zCiOVSWVeqcSeubTOBGeFw2uuV88w4FB0U
-         0kr0AV6D8OMLFejDNwtbT0mH6MYBgBvw3GShgagKRcf+SI30sXIkQzGNAi55yo9fms8Z
-         RU459C6RzoZ4Rw/ZCv1YerYd1chNjYI1Bnr5fW1WNSo8Gxqrox1p15Gk5sxyS3G9LYbk
-         7qlXf1cwpgPuKQ6ldF1CzidtzAdrBqNQAmrZmC/rSUg3oFQJDMGgq0+x7sHsC4TrmNUi
-         ByOYlT/yZSk/w/DZ0clpknczd5ZcdqJyfAiqnoYD8B3ah+kVtFfPZtfQFL7yCIur+0y+
-         rR9w==
+        d=gmail.com; s=20251104; t=1774318848; x=1774923648; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=85X2O4LzjMd9F3MewKaUBRwXGQ7wlJ40lao7QqFFo/0=;
+        b=VZsaRiZudfFnxWD8ziIEFNYV1SIw0XIoxCEzGJbeOlMDlnNSsFQ+6iDM0pI75YnicL
+         FzhfST+oNqMNITaXSJli32ub/+QNKLw8c5Yushm20JCv96/P1MpyftH+PvAmVxJsFwe1
+         jqtg0+FhSfOkxCwRy5IrI+zvV5cMCh2cWR3zGCo0iCu4/2Vc3dvf+HllNYV/NYlMfshb
+         i2pGflrEKtQvKkLJ0OpZP6TuFBSlX9DDcUvjOLI893azn7apsiMoaNO5Fr2Cr/SywTrL
+         sjIqwqE4xJ+8sirVL0ObYI9ixr/5ZflHAuM4AngvkIYbW0bVuwFY3gb60wRqyN4yM7eb
+         cD5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774318189; x=1774922989;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=C5ZJoTMOV2ASUMfnuWTwy6IQmOeUZviHlyu/QYJ4be0=;
-        b=lXqS98kvAiR0iIFjaYp/brAeQjPBQgq2c3bYt+ZcnpGXJ6taapi9lSCCj9CtboYzPU
-         qpZnCsG+PtobHe3KgaRwJa61n2R3BUCxNlKT7GYskY7WXo68mK6RfBR+Fhk4j1sUdmwr
-         FuyUNTR0lWEOC7LMzO3Fy8lPeHMUKKIovYBWezJgTpeIajsRoxr+i1Mo6mP81Wbjnjt3
-         GlxgsrBrge9ejmqHsE/FbmCNU+k+SfOGFJTVpxXBNqTyIJNNqacDNaay50TaE8qc3e8p
-         p78xRPHKeXxoEC2kIFreCwUbdAyodtKhT3n2vzMBondf2ni+i3+uGU6nw+fAltpQosvY
-         VILQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVjPltut+g8t6PpIxFJyVpj18xB7GGH41Y9F8Nf7LRkM56r9fVCzM2WsQcEEdZp7bCp9jLP0kFFpA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzM6uhr3mnkPDTRhiUc1ImCG77fPIWcNjnUfzTRKfQQYL8SKP43
-	YvT8+4+3cOVji48DUTM5cufk2sqEchAQ8LS5BBBX8BM9AGA6htMo3XCf9tFFazKabDk=
-X-Gm-Gg: ATEYQzwY2HZs5cSPH2HxmuscAHkw1pjw51ykyYev9wPWDMMbjRYr2AYiDpOe3xKKBsl
-	oOdA12EUTRUgpzQk5HqaMMesequsx6brBKMZngMtD7ccEHSTRNAwfD1y8wZhVJHOZH0vbmPzx1G
-	0bHfDpyDp5OIgRjdBtMCygA522vPvP29hnl31q6dEytMvyhLTDJED8OHQqub7rAgnivqa/zpSVK
-	Cj4OPU60jYEhrKoPMDCckw+leWCEYr08qVQdxuATvxZwWrZLLplxvzwj9M5sFDmr4grIqp9mJKd
-	Ix0sqbWUYQnF5rNRMbFOv3O4DFVtKSfQH9SSdkA4UgAYluo4aODN0Tg5HJzNV6feM+YBx2WRvZy
-	q9+e0s/arD7Qnj93o4Qn+GtXrUQKMC66RAm5cO5eODJUsP28ge9Gr8X82Y/pLJqobt+J+vhyVFE
-	v2gn7mcoI/cUKb0AqQ8tvn62HUESWCbUE=
-X-Received: by 2002:a05:620a:1987:b0:8cf:bd15:b537 with SMTP id af79cd13be357-8cfc80bbb08mr2160211785a.60.1774318188297;
-        Mon, 23 Mar 2026 19:09:48 -0700 (PDT)
-Received: from [192.168.2.8] ([74.14.125.72])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8cfc8f5f979sm895014685a.6.2026.03.23.19.09.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 23 Mar 2026 19:09:47 -0700 (PDT)
-Message-ID: <b09a51bf-26b8-4c88-ab23-c92ddc1fb801@me.ssier.org>
-Date: Mon, 23 Mar 2026 22:09:35 -0400
+        d=1e100.net; s=20251104; t=1774318848; x=1774923648;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=85X2O4LzjMd9F3MewKaUBRwXGQ7wlJ40lao7QqFFo/0=;
+        b=nuc9ElaNG8ccIajyHSel9Kmniwp7C2TcJeXjKKQMgOiW658db49WNAr5Y9iW0ga/5o
+         ySZ0L4aWgyDFwInOxtn9GTD110KoLucsKaJ16jaybt2SAthAYi9KRd1Difs7RQpoze0c
+         ov3ND1mb1ZX03e3uxKNxlRarNt5RPAay8rz8DzdBe9ciO25m18sKzKQIR2ej4AvmK9eU
+         G8YSNryueQFRfhxp3TFqGbnSD/RjXFniiItavhKIIT4ItmggOnvgtcBSJrx3F1Gw1IhQ
+         BrkZ+BOgcDwIKpwkUh9rRgl4eRc6+FiQ//mUazc3l0iEJe0qfHX8El9rl6WgU99srJia
+         C7rw==
+X-Forwarded-Encrypted: i=1; AJvYcCW3b6koUZVPitBmKYCPXEvFPbIfKhsw07AdXWNmJI42TkdrQ1/qyFUfKlmojUDZbwB63KRrZf4nzA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxpQ9bdHKSx7+5vL94v7AGcBetlz4ZBVbP02YUGJ8So/d69BIJG
+	EpOI2HacbwWRA6V6uC0W01+0N8SLy2+942jfbEG1nCh/IyMImXDNP+66HtzBs4/D+2LkwXcMxO9
+	RmA9bz5pf8t2t5K8PoaVDuRn6PZyAB/Geym7E
+X-Gm-Gg: ATEYQzxuu4r7mc1Z3WAHuIv+GuZpU3JrYkbXPfnsGoWVvw/1R80aMooTdzK7Kg7EM+a
+	r0ZfshhnLS6y+dqAqtGeymk+p3TRXi9zEI61zHRReh1Qy0N2pEY2pWQJ9SrTtjpcEd5Q2k2q9oT
+	/swh3a3YQIxrbL1jQygvQlwZ26tYCxx87QiGLU4yYx77qdaEEirHtoJ7HIBlXfBjL+nruZ+H58C
+	De+YvLWMT/RKB433cjGjHK+JbgfIrlQkqCYk7R97s138NT5wa4EhZpSWACy33LJlomKf8CH4YXp
+	6d7aV7Oy
+X-Received: by 2002:ac8:5f4c:0:b0:50b:567a:e915 with SMTP id
+ d75a77b69052e-50b567aef06mr109828651cf.64.1774318848198; Mon, 23 Mar 2026
+ 19:20:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/9] interconnect: qcom: let MSM8974 interconnect work
- again
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Georgi Djakov <djakov@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Bjorn Andersson <andersson@kernel.org>, Luca Weiss
- <luca.weiss@fairphone.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Brian Masney <masneyb@onstation.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Brian Masney <bmasney@redhat.com>,
- Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-References: <20260324-msm8974-icc-v2-0-527280043ad8@oss.qualcomm.com>
-Content-Language: en-US
-From: Alexandre Messier <alex@me.ssier.org>
-In-Reply-To: <20260324-msm8974-icc-v2-0-527280043ad8@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260320113148.7308-1-xuewen.yan@unisoc.com> <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
+ <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
+ <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com> <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
+ <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com> <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
+ <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com>
+In-Reply-To: <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com>
+From: Xuewen Yan <xuewen.yan94@gmail.com>
+Date: Tue, 24 Mar 2026 10:20:37 +0800
+X-Gm-Features: AaiRm53M1O0RJ3BWdQu4jnh_MovgTnsVo5TxknTiw_fQ2ycLM245YfVxVT5T4SA
+Message-ID: <CAB8ipk_7MGUza9_izMypMxPFUjAoB34ZZp0-ts4w6eJ+tr+MDw@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in get_load()
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xuewen Yan <xuewen.yan@unisoc.com>, rui.zhang@intel.com, 
+	rafael@kernel.org, linux-pm@vger.kernel.org, amit.kachhap@gmail.com, 
+	daniel.lezcano@kernel.org, linux-kernel@vger.kernel.org, ke.wang@unisoc.com, 
+	di.shen@unisoc.com, jeson.gao@unisoc.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-03-23 20:10, Dmitry Baryshkov wrote:
-> Commit d6edc31f3a68 ("clk: qcom: smd-rpm: Separate out interconnect bus
-> clocks") moved control over several RPM resources from the clk-smd-rpm
-> driver to the icc-rpm.c interconnect helpers. Most of the platforms were
-> fixed before that commit or shortly after. However the MSM8974 was left
-> as a foster child in broken state. Fix the loose ends and reenable
-> interconnects on that platform.
-> 
-> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - Swapped order of clocks and clock-names properties (Konrad)
-> - Corrected the ocmem comment regarding core clock (Konrad)
-> - Link to v1: https://lore.kernel.org/r/20260323-msm8974-icc-v1-0-7892b8d5f2ea@oss.qualcomm.com
-> 
-> ---
-> Dmitry Baryshkov (9):
->       dt-bindings: interconnect: qcom,msm8974: drop bus clocks
->       dt-bindings: interconnect: qcom,msm8974: use qcom,rpm-common
->       interconnect: qcom: drop unused is_on flag
->       interconnect: qcom: icc-rpm: allow overwriting get_bw callback
->       interconnect: qcom: define OCMEM bus resource
->       interconnect: qcom: let platforms declare their bugginess
->       interconnect: qcom: msm8974: switch to the main icc-rpm driver
->       interconnect: qcom: msm8974: expand DEFINE_QNODE macros
->       ARM: dts: qcom: msm8974: Drop RPM bus clocks
-> 
->  .../bindings/interconnect/qcom,msm8974.yaml        |   28 +-
->  arch/arm/boot/dts/qcom/qcom-msm8974.dtsi           |   21 +-
->  drivers/interconnect/qcom/icc-rpm-clocks.c         |    6 +
->  drivers/interconnect/qcom/icc-rpm.c                |   18 +-
->  drivers/interconnect/qcom/icc-rpm.h                |    7 +-
->  drivers/interconnect/qcom/msm8974.c                | 1637 +++++++++++++++-----
->  6 files changed, 1274 insertions(+), 443 deletions(-)
-> ---
-> base-commit: 8e5a478b6d6a5bb0a3d52147862b15e4d826af19
-> change-id: 20260322-msm8974-icc-0ac4c28e139a
-> 
-> Best regards,
-> --  
-> With best wishes
-> Dmitry
-> 
-> 
+On Mon, Mar 23, 2026 at 9:25=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> w=
+rote:
+>
+>
+>
+> On 3/23/26 11:06, Viresh Kumar wrote:
+> > On 23-03-26, 10:52, Lukasz Luba wrote:
+> >>> How is that okay ? What am I missing ?
+> >
+> > I was missing !SMP :)
+> >
+> >> Right, there is a mix of two things.
+> >> The 'i' left but should be removed as well, since
+> >> this is !SMP code with only 1 cpu and i=3D0.
 
-Tried this patch series on top of 7.0-rc5, using "htc,m8", and can confirm the device boots properly now!
+That's also why we sent out patch 1/2; after all, it is always 0 on
+!SMP systems.
 
-I do see these messages in the kernel log now:
+> >>
+> >> The whole split which has been made for getting
+> >> the load or utilization from CPU(s) needs to be
+> >> cleaned. The compiled code looks different since
+> >> it knows there is non-SMP config used.
+> >
+> > Right, we are allocating that for num_cpus (which should be 1 CPU
+> > anyway). The entire thing must be cleaned.
+> >
+> >> Do you want to clean that or I should do this?
+> >
+> > It would be helpful if you can do it :)
+> >
+>
+> OK, I will. Thanks for your involvement Viresh!
+>
+> Xuewen please wait with your v2, I will send
+> a redesign of this left code today.
 
-[    0.692540] ocmem fdd00000.sram: error -ENOENT: Unable to get core clock
-[    0.692582] ocmem fdd00000.sram: probe with driver ocmem failed with error -2
-[   24.173125] mmcc-msm8974 fd8c0000.clock-controller: sync_state() pending due to fdd00000.sram
-
-I do not know if that error was expected or not.
-
-In any case:
-
-Tested-by: Alexandre Messier <alex@me.ssier.org>
+Okay, and Qais's point is also worth considering: do we actually need
+sched_cpu_util()?
+The way I see it, generally speaking, the request_power derived from
+idle_time might be higher than what we get from sched_cpu_util().
+Take this scenario as an example:
+Consider a CPU running at the lowest frequency with 50% idle time,
+versus one running at the highest frequency with the same 50% idle
+time.
+In this case, using idle_time yields the same load value for both.
+However, sched_cpu_util() would report a lower load when the CPU
+frequency is low. This results in a smaller request_power...
