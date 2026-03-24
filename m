@@ -1,210 +1,207 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011062.outbound.protection.outlook.com [52.101.65.62])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com [209.85.160.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A07B13EC2FB;
-	Tue, 24 Mar 2026 11:41:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.62
-ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774352475; cv=fail; b=k6wb4ySidB6oLaqcayyPDtWbMPzuianN2KcAHbeFXbB7Xw3nmy3dBbkmbPLAVvF43RgroYJbHVxp2idokHwInKmzj3wxIBCX4bWiWoPPT16tRxXHvxIcJcyUH1QlsQU1U40QDOZdFlee/nAqfrGtFLmFtdWip39c4mgb/tmtntU=
-ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774352475; c=relaxed/simple;
-	bh=ItZ5q+f+VwCnCaOH8Marh0pqMcBH7rPoUKAfszZt+Aw=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=tqF1EO+lM5OjDfsrxGJwzeO0nxkrg0A7qxx1oojMCKFZ3VHE0JIVyN723nilWA8UA0B63LYiSgQ19gRxEMj3XOBy1YZ/3wZ2kUySOue7hV1zT7nYaSJ49EtJXQwzyEm9mLGG4CN8ldESNZTgiP93J809n6KvDjgop9n67z7zEZM=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rxs5HKJc; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rxs5HKJc; arc=fail smtp.client-ip=52.101.65.62
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB5C525785D
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 12:03:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.178
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774353823; cv=pass; b=L/JE5OlnFo/b9Ivoy5buFI4ptoxZB5/DQW4RR23nB1gwAZlBxsYaAvZTjp/SrAXI2kX48ARRtOmsNF6DVsP2XiVkxhD8vdDJPP2po2jJALch+xAej1cslhG+Irb+ga+MoINnVDpSUrZDUR5oCvxnmPEVz0R12chCfzAkcZthezM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774353823; c=relaxed/simple;
+	bh=xht2//06apJ5sa0rNqEN/FMso5uXuLZ/poM1328nqeg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZOVfVpZzNlO18KfAEVX/r94KoRigkC2cX78LvODn/2J3TU3oni+2wf/w23b7/dVYN4qpo5xsWAGpZSmxhN5p2Cr7FgP+YoqBnlmvr5Oh7tNm1jLp8b5IuAbFMtyb5DB1JPbbEzb8WIQr/lm32FWxLfoP3I+YcFudkibwHZeXeDw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Icbp+Uft; arc=pass smtp.client-ip=209.85.160.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rxs5HKJc";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rxs5HKJc"
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=b23TcmusWKyJtsQ1dxdUf7OJqkYzkSGiFrHzuev0zyX62AdVJwt7BlDNj5jWRuBMfnyvX8q64Gpfa2bESVK8LP5jaQ60G2EzcEU0+8u57A6sxBMRF3jSJkvU9Qb5KbZoAr9GNO+2Pbz+ue3w/dsNzrgGp/x/2PLyXzZfrxNV5TUsJmEYUa6KT/PmrWKOzHelE9eG4t6hyFA/uIG6DMCS1cLaB2wnJAzOmE5qRqvkoy+9oLWM3IdKAwnxtD3wj2FqOjp0Sk2n8Q7yg8XydmpIJHeSRYLfmYKnECvviXPsUeDfhktdPrmKfDyOLQnu63oOMVX8RZ5xrHS+rgXV+BKWbQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vlSjShPnpfpcEUABLhdTAZYSKB5EK/VJ/KmDVuNEhRg=;
- b=E5oKswtDtWm5rxxDsmXEPb3f6ycYUvTScoNebOdSBKp8010a02sevA5ed5+CEJyLXrJqqcqvH2kWFLJfgNO+0owaK3So2p752gk+U/KM6PCZVkeMdg0lT8RevMjwhrFUdOLo44LJAhC2KcctWhBsC2ZoMon+c5fIwgHNKgRcBXoVeqXOQhD1bkyLOwQZGkhPhPkafa4s0QA5rz3E0EcIhRpeYqFcZamlXOBCucm8cQ/FpUB7Ve3Smdl49sI4YcRgl7P8t6vAuT/WUj9tkNCtJ7fcoPuuQe0S2v2RuI0oztJ5yLR42j+UvatoTjUGDGht5e6ekOrB8E3cpXUlfhxnOQ==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=linaro.org smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vlSjShPnpfpcEUABLhdTAZYSKB5EK/VJ/KmDVuNEhRg=;
- b=rxs5HKJcYgVdkQz2VjkV/V8VE/UmCfPnvKI/RzRnfXuGkrL2Lrb+HfQ7e7Bd8rMsP0bbOqPmpaIRfWfkBsKeAGVqVBTkhfcU06SrB56CoAMJzhGbcKW6+GrJ19A6Uyug69n/mnE0xqO8xLJ22+e1KvrXaJzXzj2KbedjB12kh6c=
-Received: from DB3PR08CA0032.eurprd08.prod.outlook.com (2603:10a6:8::45) by
- DU0PR08MB8163.eurprd08.prod.outlook.com (2603:10a6:10:3ee::12) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9723.31; Tue, 24 Mar 2026 11:41:08 +0000
-Received: from DU6PEPF0000952A.eurprd02.prod.outlook.com
- (2603:10a6:8:0:cafe::58) by DB3PR08CA0032.outlook.office365.com
- (2603:10a6:8::45) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.31 via Frontend Transport; Tue,
- 24 Mar 2026 11:41:09 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- DU6PEPF0000952A.mail.protection.outlook.com (10.167.8.11) with Microsoft SMTP
- Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.19 via
- Frontend Transport; Tue, 24 Mar 2026 11:41:08 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=zLMyV3tpj3e+0FBnk0M2DDrHaY/wiyvugKAF2wIo/UuAas7sHFHFMJW4hi8mWKNf6v2z2qhve8FVBMeBbNNKCPgyCmYtjv0Sz5wC2UoD7P/H2kRRfjo3nKmieXYSQGlOw02c403rZWjNg1ehCcMFE0Nd4yP8LotAXBUP5RHD/uN863PIshmJn7tW85BvTbCdyAwvPUg64LTxjjhJri7b2k1ma7tP/mXNrMkUlh+GzZXu/NZwq1vrDaN6fgiMvNywTf89UAOc9w+Og93n0mevvh8IlIyqHfloAtBCgP3C2FxaIYF4ytM5yyS5bveFBI4BwctBzqsW4AEZgZE7lH/8CA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vlSjShPnpfpcEUABLhdTAZYSKB5EK/VJ/KmDVuNEhRg=;
- b=YqKLJVO2CqMtbyWjVBckOCLB0e4i11xy1IHU2xK5glh5D+ozc+sLuLRZjJ+E2XXrPJP3bGFR1khRxpt0hXAVNyzF9sprtUbSx2IAIhgjzvWQrebXEoeRRuiacL7HaKr8gb/ydKcsbXEJemyqgcWtvtZNi3ojdUs7Q7sbxxCh8QcuUVL5w7sRUdsSYhJRVjImFTF2hCGVC9p0ZDvPI5SRc5CPNxfEXXUgKSbAk2SArSIaOMNGCjfjT0LpcYOmZ4/vwLvOjAlLZn2l8E3oPMUqakBrTTKAcw5W55i/w+4gCUqBMDwFVUTs/xTO6G6Sspe+mekUOHn81UjFkDadgMLGHg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vlSjShPnpfpcEUABLhdTAZYSKB5EK/VJ/KmDVuNEhRg=;
- b=rxs5HKJcYgVdkQz2VjkV/V8VE/UmCfPnvKI/RzRnfXuGkrL2Lrb+HfQ7e7Bd8rMsP0bbOqPmpaIRfWfkBsKeAGVqVBTkhfcU06SrB56CoAMJzhGbcKW6+GrJ19A6Uyug69n/mnE0xqO8xLJ22+e1KvrXaJzXzj2KbedjB12kh6c=
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by DB9PR08MB8339.eurprd08.prod.outlook.com (2603:10a6:10:3dc::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.31; Tue, 24 Mar
- 2026 11:40:03 +0000
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.20.9723.030; Tue, 24 Mar 2026
- 11:40:03 +0000
-Message-ID: <ab06e8d6-d430-483b-a2a4-9e7d197aa6b6@arm.com>
-Date: Tue, 24 Mar 2026 12:40:01 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 3/4] cpufreq: Set policy->min and max as real QoS
- constraints
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>,
- Lifeng Zheng <zhenglifeng1@huawei.com>,
- Ionela Voinescu <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
- Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
- Mario Limonciello <mario.limonciello@amd.com>,
- Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
- linux-pm@vger.kernel.org
-References: <20260317101753.2284763-1-pierre.gondois@arm.com>
- <20260317101753.2284763-4-pierre.gondois@arm.com>
- <ukxdxr3xv7x6pqnwwafxgvhvfh5n7w67y3zwunhnk7b45tz3t6@d6ehl4vqac6t>
-Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <ukxdxr3xv7x6pqnwwafxgvhvfh5n7w67y3zwunhnk7b45tz3t6@d6ehl4vqac6t>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: LO4P302CA0007.GBRP302.PROD.OUTLOOK.COM
- (2603:10a6:600:2c2::14) To VI0PR08MB10391.eurprd08.prod.outlook.com
- (2603:10a6:800:20c::6)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Icbp+Uft"
+Received: by mail-qt1-f178.google.com with SMTP id d75a77b69052e-506a7bbe9d0so39166941cf.0
+        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 05:03:41 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774353820; cv=none;
+        d=google.com; s=arc-20240605;
+        b=EUk3xbm2kmvxt+2cXS0xi4Kl+uCxNyLErhg41VZa3wqcY0Sh9kTdtUNWwVxZhL2QXH
+         hroyIoix2HYHBRe44l0GrjNYjgvljkkNPQLH2/74IsOI+0DPqnV6pXQu4ZHbvIkZtkuD
+         HAeyZ2H0y2Uv2/el+Ggd8k0LZJrGkiK/I8HxoHdOUt1RAxJXo8nL2qXYIwdrGy19kUc8
+         eFmNiz5aEvwWeS/EsnB1uWuwOEpaVePw5/XMVePJkPSf/20ZdNBMeLnn4p+j4t2rdh1Z
+         2OjK9C/nqZY0PAAv/WCTZtAYCsi/40AoJi9Sey74oS37pwy4/TDSnp7xcbL/o+LmTjRj
+         YeUQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
+        fh=78vpv8B9iPc2/fH1nG0o2GGk595u6xgOs3uPOvOiY90=;
+        b=TGvRPm5oZOC+tR7jHHhUp/G81YQlHoUZIfC/Bd1Z3M37UGT+fE3W0sx3FNODsg3flQ
+         ATmcjwvaH9ndsk07sZtkP3g1SLM6o3lcIw0plVg2Ckuj7TZxY/YuQeL4N+gQ8mKXPae9
+         +rRRAsP8G9kD3JBuzylzoWA7rrxf/tesFMgqpj7YAZraZM59HF9LMyDvCCTkmqJ+YMht
+         l3/KsJeJft04K1Ke8tdWKAQAGEI1/rNyCY4D3Cs3u0n6Gr9KAMGq2p9uNc0/lOI0u5Yc
+         8tcst82kK87MNzS64tMxYaf6NoMY1XsPe999PSeVioy0en99fxRQVr9SD4e4STcXnQ9H
+         3Wnw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774353820; x=1774958620; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
+        b=Icbp+UftoKedEP+N919TqqfnFiINVP4bY80Vi9H3JRrn5VnhYs2juSQ1IkdTLQpGeB
+         Ye0d/7NkIiANR2Yez63mg5NRGD5KdSmy+R1KmbGvEYenpVXOH8ZVEfRKUV8GZIvB+bPI
+         7Dm7zpIKOd2sBOM8qL1JAhAjV0y+FDlAWA0I+XN/StAxO0qAU+h0quV255q5QPfaxSS3
+         AMivR8d2O8MdGOsLCSVvfOPnStvsxVcqYmWoKODAa545cHKGcJwBVECEfP17lCWuyxlU
+         7iBV45yN8Od4Ilk1G9Ihwu2iyqK4PPsYHSw3HoPak3UtKV4cuTtXah/uKRzhondszdc/
+         W7yQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774353820; x=1774958620;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
+        b=l1bdJ/PV2LUXwz/wMHXsUYYhSqHoxBAfRGXpvBuvR58mxCmK4anECXXwDu2ogHGGm5
+         iaz0cThlhda2rpZF5NSGKYQxDPbLNcNyEkJ8qrR7IR+XdszlfqG7ZVeY97KFbvFG9wYG
+         ZN3gATQtx8OPOI9+2qwqLqZfHJ6l59XMyo4BSfxBucHFB0fxQ8skrpCMHy9XF7eZCFTh
+         WaonOBFWgYWdCaG++h/4KYbHpSgJ6blMUpie0dO8dB8ks0MmMnOWMCcKBTHG1YgrVQIY
+         z3O++0tm2FMto2gdD4bUT625mi9wkHP/BQPa1Gdr8qZ/BnUazbDHESZsgmOqD+wj+Tsm
+         cvyA==
+X-Forwarded-Encrypted: i=1; AJvYcCWEZF1x87s7GMx/rZy7yJDyJuATZ2LCx626xfz6sacWr4kX1JItFmGZBWUfN+9kXxJbm/8+Ss2W5A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw7aqp8lmbe8yeiuROBJNwQHem3YXAadYEjdcetL97YK/WLNwTu
+	dxCRKsNvBivOq/jZbZ5kIy775R//HRaBoY09cjiHWCquCh79cElpoCKdealB3xwhrOTanxBvLDN
+	calSmkJi9cTAIySf5lg2PpZVKj/C6BSY=
+X-Gm-Gg: ATEYQzxcsnqan2IPOJ/UXfM/VBaoq0UNl86T9qBZbiDRJDVKK/0MzblXdUw2Wwnbb2f
+	Ef9fW9TEc6+pPyMAHOjGNOK9iP6uKfOwG0U/97fleJgbKorupqW+E7ayt2aHmLjMoFg0QD0gKow
+	XezNT6FfJYlJTz9rAdPgoWYFnTt7dKEf+5uVRSL5Oexv1Pn8Efw7h4OFcrV85m616NFiu6m5LOW
+	92bq/PIqFVpyhOFTuXm1Tr5wpEdd9KeKitdkpKGEgVPK7E/y1J7E0EB+qVfSACN+OQtbcQNZVNz
+	sh3lFaaV
+X-Received: by 2002:a05:622a:8e15:b0:50b:33c7:5d97 with SMTP id
+ d75a77b69052e-50b374f5c91mr221708461cf.37.1774353820361; Tue, 24 Mar 2026
+ 05:03:40 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|DB9PR08MB8339:EE_|DU6PEPF0000952A:EE_|DU0PR08MB8163:EE_
-X-MS-Office365-Filtering-Correlation-Id: dee8d9d8-3163-4eeb-6d3e-08de899a3dba
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|366016|1800799024|7416014|376014|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info-Original:
- 1U67S2QaQ229/PmfjlBbtlAqMzydMRc3TdGpD56rh6jLJQ1MNXOGJxaCwGcl+XRRp1Oiqqome97QdoSkiVUvaAwiFhHsJ+vVdRIJlIllDdc0kdgH5U+gnRbBt+ZfB0Psq50amjyygJFiEu4oe/RqoK1aCiLfLMnBEgkpo+hkmFx/+vUxENSOiTrz/y+tz/tNsbZXxdDXr5V5JTuyP+1W5RD26ornn4ed7BJHnX7lF9nN1lXIv37VMr7wW3YLhrwwTxhloik7VYxcR998ZVzglhgcFlHtCLBa5DnGWkCP0q7Pxznneqza8OnGKsQj3N/TXgX0O4aoqM7U35VHFVBPxCr6IMEYFd+LtfzLCvDGfaj6SkiCCT/IyHODwmyvRisfvWPZtgG798BTTNXWk728vMvPjIvmwkmROxUJ6hdMnBUe3xyhVNx88iQYMhLGLLOsnIniWO0r0ZkQoYAagRQwSWomIBlfGTFmJx01729y0hvMhjNEf8nqn0hW+zhmwT1+i3OMw5Kwq7jSNy7RSIL4sFUL+2gQ5Q1sSICMRg3aswDKuvVQTrY0UTQe1yAblAK0+QZ3/yhqiD+7WKThGn1azpXYMZSSlGEydPYMdN7wIVerTBk2UM/qQUbN77avbMLB+PBioh7bA4UrcRMx+0887YsE6jNtfZOH+vNipc4HJFjWtmUm5xZBuzGzF/IFHq/H
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-Exchange-RoutingPolicyChecked:
- pt6h9cA51x99Y5xMcaIIexwrTunlJRg/yQnJbaXFfqXakq0aJcHgQFoZBHiN442VDNBZyNezQxsBawJwvWbULrvWjsd2H2CouPh4jTs1caY5bUYG2udMUqRmTxlTQ8EOKTyBHqNThuPm10dLofmOXCxZP7LzKR6eL5PWAE1d+NAowrglodlJFtaPGtwq3XHZC/pKpauFEHYHZM3NDLz2Zju5Z6VcVVmfxmnu04xrdmfbxud8vjYjLmPRxq/trYS9KeKmyjARt1zOtVne4+VVDSTOMXCzwMx96c+25w28SzaIb3CPsoya9KJ32diEd/AN3EwaJ/Wo0fghB/3zYyyydg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR08MB8339
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DU6PEPF0000952A.eurprd02.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	6dc00b51-7d71-4648-2fff-08de899a16c0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|14060799003|36860700016|35042699022|376014|1800799024|82310400026|7416014|13003099007|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	NaZOlPkwHHf/5w+RS+XSZ+RDwwKvzObf5maMSiy+Esz+26TyGw5YVj2ZUkE9RRs6M7ET4yE3kUJ/3PO/m5T1Vbl3xwxD8//H+DLtO9xxMYSXlu+sJBpnhmYmgTcTbmcnk/i02er/q3iUR4DZOL+Uq7jG1Q1NICYiD7/A8OigMIKNcyq8CPViDAT4K+/MrFYx1kUAkrmshTkaaRCxcUkOlD9f0cOpogHe1AZUF2Dop28g09Wr4poMkT0U2X10gNwn146P77gYKYRa6RwuKksi36CtW+/Zv2tbM75itT/yQvIELW4ulMKoPixtayVyWH7B2ggoTXsE/SPikRUyjQFh67p//Jm96fsfQHCfpJQZhCrKuwZLkehrS2Au0cNRxWtcmtJ8VxjAr0mO76G34CMFsvZQXKdIhtk1ejpDYk/+UcZkzlGFBYlQw+owIWcuCX074vMkTgrxle1Zl+q5Baoxzb48/IwxITMOQSH+siRZC9DjTuFe84ypWRPyjVDlcAE2HkqcpRiKQsFtkHPi/0SGpTlnkyr9ymBFs9EDkMRhNj+k/c1yj4IwpSHSRvBHBZ88UhWC/pjlGgpy/rxFbb+wq7m1V1UgjbbwOZh4G/Q6PkWmmK+rkleMvbNB3vmjIPw5hC2WHnsn3ohl1+b0E+xu+sh/vPNJk+HlO4oRUNilXYNOvf409trjbtmVb+yLUDQMvCRfjyYM8MSJc4jhfo+KSPVLBUpJ6vjZevdPIWTMqDc=
-X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(14060799003)(36860700016)(35042699022)(376014)(1800799024)(82310400026)(7416014)(13003099007)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	O/jyzX8kamrA2trwZ6HGUE1G+eCnAnnV5npxGnav1kiLoxi/s2RMSn1o/rKbCaC1KVp/f/kMrJSg+mZfRKVDif2NDb10wGgbfliShWvUK3e85XHHIORYK0h9YkUOaFGY1ESC6RKeJoDr961Nr66xKvbG+TooSJr0DUE394+2N+nOXAfi78tBFqUSsWp8xFIjQKTfLJqEVR7Wm0d5rRKvL6y/2OBHnDb7tdDeK8SQ1x/QNbOsKfwW11Z2F16Rvq4DbU225oN6tYZb+kANkoYqA7afmVxwh5ypN9Wj5Q+hkOnHyJag39nOzgihJP9CRQG1OsibLU9dtpH65SGpaZQ0/pjSJ4jj3Lg+0cG7S0Uf2lqyWfZFN+IHMAJsVN6SzEeuko8zA7lvuQAIKV7wzXYPB21GvW0EMWeqWKTk2UVFQ4qU3Cq6RwUUSOMNfuHy53zy
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Mar 2026 11:41:08.5819
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: dee8d9d8-3163-4eeb-6d3e-08de899a3dba
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DU6PEPF0000952A.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB8163
+References: <20260320113148.7308-1-xuewen.yan@unisoc.com> <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
+ <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
+ <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com> <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
+ <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com> <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
+ <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com> <CAB8ipk_7MGUza9_izMypMxPFUjAoB34ZZp0-ts4w6eJ+tr+MDw@mail.gmail.com>
+ <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
+In-Reply-To: <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
+From: Xuewen Yan <xuewen.yan94@gmail.com>
+Date: Tue, 24 Mar 2026 20:03:27 +0800
+X-Gm-Features: AaiRm529CioeCv2wAkTMW67vGkmaLJzrBEh645HIXNHAypmBn-ao8gEf8RRAPg4
+Message-ID: <CAB8ipk_VftSn4U+Vzdv_ST7apiONVoYy4PTe7usRetXry6uSOQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in get_load()
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xuewen Yan <xuewen.yan@unisoc.com>, rui.zhang@intel.com, 
+	rafael@kernel.org, linux-pm@vger.kernel.org, amit.kachhap@gmail.com, 
+	daniel.lezcano@kernel.org, linux-kernel@vger.kernel.org, ke.wang@unisoc.com, 
+	di.shen@unisoc.com, jeson.gao@unisoc.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-On 3/20/26 11:14, Viresh Kumar wrote:
-> On 17-03-26, 11:17, Pierre Gondois wrote:
->> cpufreq_set_policy() will ultimately override the policy min/max
->> values written in the .init() callback through:
->> cpufreq_policy_online()
->> \-cpufreq_init_policy()
->>    \-cpufreq_set_policy()
->>      \-/* Set policy->min/max */
->> Thus the policy min/max values provided are only temporary.
-> I am not comfortable with this patch to be honest. policy->min/max are used at
-> so many places that it is really difficult to make sure if this patch will break
-> something or not.
+On Tue, Mar 24, 2026 at 6:45=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> w=
+rote:
 >
-> For example:
 >
-> cpufreq_set_policy()
->   cpufreq_driver->verify()
->    cpufreq_frequency_table_verify()
 >
-> This uses min/max before it is set by the path you mentioned.
+> On 3/24/26 02:20, Xuewen Yan wrote:
+> > On Mon, Mar 23, 2026 at 9:25=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.co=
+m> wrote:
+> >>
+> >>
+> >>
+> >> On 3/23/26 11:06, Viresh Kumar wrote:
+> >>> On 23-03-26, 10:52, Lukasz Luba wrote:
+> >>>>> How is that okay ? What am I missing ?
+> >>>
+> >>> I was missing !SMP :)
+> >>>
+> >>>> Right, there is a mix of two things.
+> >>>> The 'i' left but should be removed as well, since
+> >>>> this is !SMP code with only 1 cpu and i=3D0.
+> >
+> > That's also why we sent out patch 1/2; after all, it is always 0 on
+> > !SMP systems.
+> >
+> >>>>
+> >>>> The whole split which has been made for getting
+> >>>> the load or utilization from CPU(s) needs to be
+> >>>> cleaned. The compiled code looks different since
+> >>>> it knows there is non-SMP config used.
+> >>>
+> >>> Right, we are allocating that for num_cpus (which should be 1 CPU
+> >>> anyway). The entire thing must be cleaned.
+> >>>
+> >>>> Do you want to clean that or I should do this?
+> >>>
+> >>> It would be helpful if you can do it :)
+> >>>
+> >>
+> >> OK, I will. Thanks for your involvement Viresh!
+> >>
+> >> Xuewen please wait with your v2, I will send
+> >> a redesign of this left code today.
+> >
+> > Okay, and Qais's point is also worth considering: do we actually need
+> > sched_cpu_util()?
+> > The way I see it, generally speaking, the request_power derived from
+> > idle_time might be higher than what we get from sched_cpu_util().
+> > Take this scenario as an example:
+> > Consider a CPU running at the lowest frequency with 50% idle time,
+> > versus one running at the highest frequency with the same 50% idle
+> > time.
+> > In this case, using idle_time yields the same load value for both.
+> > However, sched_cpu_util() would report a lower load when the CPU
+> > frequency is low. This results in a smaller request_power...
 >
-> I would suggest dropping this change, or most of it and doing only what is
-> really required for this series.
+> Right, there are 2 things to consider:
+> 1. what is the utilization when the CPU still have idle time, e.g.
+>     this 50% that you mentioned
+> 2. what is the utilization when there is no idle time and CPU
+>     is fully busy (and starts throttling due to heat)
 >
-Being able to set the min/max_freq_req from the driver might be
-something that is needed, cf:
-https://lore.kernel.org/lkml/20260213100633.15413-1-zhangpengjie2@huawei.com/
+> In this thermal fwk we are mostly in the 2nd case. In that case the
+> utilization on CPU's runqueue goes to 1024 no mater the CPU's frequency.
 
-It would also allow to have a common way to set policy->min/max values
-as they are set to the the cpuinfo.min/max_freq.
+Haha, indeed. When we debug IPA, we also keep the CPU constantly
+running with basically no idle time.
+In this scenario, we tested using both sched_cpu_util() and idle_time,
+and for thermal control purposes, there was basically no difference
+(likely because the load was at 100%).
+Maybe we can cook up a test case where the CPU is overheating despite
+having some idle time? That way we can compare how the two interfaces
+perform.
 
-On the other hand I agree that I didn't test all the possible paths
-for this change, so this is a bit audacious.
+> We know which highest frequency was allowed to run and we pick the power
+> value from EM for it. That's why the estimation is not that bad (apart
+> from power variation for different flavors of workloads: heavy SIMD vs.
+> normal integer/load).
+>
+> In 1st case scenario we might underestimate the power, but that
+> is not the thermal stress situation anyway, so the max OPP is
+> still allowed.
+>
+> So far it is hard to find the best power model to use and robust CPU
+> load mechanisms. Adding more complexity and creating some
+> over-engineered code in the kernel to maintain might not have sense.
+> The thermal solutions are solved in the Firmware nowadays since the
+> kernel won't react that fast for some rapid changes.
+>
+> We have to balance the complexity here.
+> Let's improve the situation a bit. It would be very much appreciated if
+> you could share information if those changes help your platform
+> (some older boards might not show any benefit with the new code).
+>
+Understood. We appreciate the balance between complexity and accuracy.
+We could test these changes on our platforms and let you know if we
+see any improvements in thermal stability or power estimation. Expect
+an update from us in a few days.
 
+Thanks!
+---
 
-What about adding the following to have the values set for all drivers:
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-
-index 70814c567243b..3a1e5f58a301f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1530,6 +1530,9 @@ static int cpufreq_policy_online(struct 
-cpufreq_policy *policy,
-                                 CPUFREQ_CREATE_POLICY, policy);
-         }
-
-+       policy->max = policy->cpuinfo.max_freq;
-+       policy->min = policy->cpuinfo.min_freq;
-+
-         if (cpufreq_driver->get && has_target()) {
-                 policy->cur = cpufreq_driver->get(policy->cpu);
-                 if (!policy->cur) {
-
+> Regards,
+> Lukasz
+>
