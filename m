@@ -1,750 +1,303 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013022.outbound.protection.outlook.com [40.107.162.22])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 915C83F211A
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 11:38:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774352337; cv=none; b=LP9JrM7Q/LpdBlhlbnrwIK3OccjjaQyKJ+vdiOkxU+aQavySTu+wO/OMHFMEkDUXFrQdkhNfZya2TQ68j3GywcjjpNGC3OCXkJyb4hU848R6lIgoUZ9k6Ey+5iSWyjc3bP1K+5+TLaEBQfAjoRdDYLRcQeYITLJGzV1hNDDmKb4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774352337; c=relaxed/simple;
-	bh=VW4PGKQbMprs05QZjLUFAcp7NQ6qIj6tfIjDvxiwqeE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FC1zwNfrD53uVCsPR/up6FatxRslPOKoJJ+JmWmTDjq5x+MEJj85iA4YPuf4yvktVJbByFuL5kB78MfV3OGw7DBLS9BS7mv0nxldTG0Fs7uuGo4ev6OqdK4gtvBYXvBfxN6RNR+BXwqTHZLVZHGWWYrhKOqJbxd5jLz6GE+zd5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=g/Y9sYH3; arc=none smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68F4635F61E;
+	Tue, 24 Mar 2026 11:41:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.22
+ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774352472; cv=fail; b=h2ggYHYJ7dv9GtAARmmHilEgoBPjPbrtQpvelriMxBBo+yB8pjpuZ/glfB7gkVWgKg5xHNlnGxO26V/llLXraiQ3RA6iIg6IeI6RTqEx4VlZwEc6OHh6tg3WkOMJUXNK3NHM1oAPj3RLkIwGrGgyhboQep0cAoijU5nIsZcXnS8=
+ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774352472; c=relaxed/simple;
+	bh=9YICpHLuy/qTYZYbjIVbtcI/WBwsybhKmycfhXxopeg=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Az3s5wsPsT3w2fjJYsTZX+XNI2Dt9zsLMPxW+heGeOVWek9hC760zfMvHcm04giylvo31qqHZNujt7QA+dV7jEJ95QmkLo2tGXDxy31M0sIUp6g4YR7Uupn0lYpXk4XqSq/245yZZa8Kiyi8X6/jcduRzhTU943dVXtXE7F45TY=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=paTfN52u; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=paTfN52u; arc=fail smtp.client-ip=40.107.162.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="g/Y9sYH3"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-486b96760easo10661205e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 04:38:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1774352334; x=1774957134; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HJBOPz5cenCqobIA2pP3hpiRljJx71ZTKxf/DvRJSFg=;
-        b=g/Y9sYH3vZLd2YlqDYaEmSKIBtDQx3QI5BcXSmkR3+7n+l1gcluEXkeI7uFQnCGadH
-         82sc6IEGi+BR5ifPsVzn+JbupOrQMXpYrm9MaV17NT+LfE3YTtbJtRJKG6cMB84HpLP3
-         kBnVRsaX8N6UeLbp2Snnx7qTIz4wsjxC4QGYNNJr5RX7es6J0L9wMdT/AB5KI80RDnyQ
-         jYTJz9bU3cHKZk4m9CZdgbB8wNpGDB7qlGNC8HiZL/Ud7mEvtHuc12DbGCvX2Ad/rTq7
-         ZY2QCkuZKehRMOZwhnxuc5QvxqBiVNSkSJ6mUQb2gCEIYGp8QjdyIRG01opex9nCNdmr
-         82rA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774352334; x=1774957134;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=HJBOPz5cenCqobIA2pP3hpiRljJx71ZTKxf/DvRJSFg=;
-        b=tR/Ocnd601/Ia9G3udTABSa65aZ4KFOL/TYpHg1Yh5CRLdVge31TgpoJ8bL1Aj4o8/
-         OQMKFs44W+bv5limE1Y61f28WfkDolP+uBav3/JYDQ6op7T7TgdZIvtRzY0LfS5oq81R
-         LYu3Q+pOweSbTe9w8/B98hHapALvMdNRo7r8MB8HAN8NpuN/UgfZv5jgFahLzFGKfLg9
-         AuKzrlPQXFCdKG8K1vQT8fhSSJAIA9Q0sxl9ln4q5ZiKWmagU++xjgg2OzGF+zAA35Jr
-         jnvYF3HDbgzglGZ9xJSS26QadlYJk2aIZyymwzLdL4H+mctBrrZj2mQdvRZcxqj8CFde
-         SLug==
-X-Forwarded-Encrypted: i=1; AJvYcCUCMAeCUOqPmrjf65t4ONNz36kQK0PyuICIuHujtHzFGSEoCXGFszg9C6cd+VsuP4NFotwRy5J67w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw0qlO1KjIS3OwADwIMQiy64fBKj1yN7vVtmOfWxnTmw8sd+xlu
-	aesyHtk5kQh8IarAoOipAJa9oLyHbRAKShObVZaGty5Ym0g5UM5C0k/SGOLkxmb3QYw=
-X-Gm-Gg: ATEYQzwADBZtTSbbnQicJZGpP7U4z9Kl7xKCdp2pyWvxmd03FWc0kVG7a1prgU9blrr
-	T30MGRd8SFuu8kJyt8v1TgLONeI8FHrw8s1WTFABnuzH9TfjWPMSn6DZWGTt/KoEFvEBk3SjSDy
-	/LMw+VAF6x2mUA+9pLSRFoolibtMNzuO6n+bLeBiWvcJ4sChfblfqd3pX4kipoZubw1dJjcuWbS
-	v5yoUQ3vlPAuvrTGkPL3sqH67ckqeQCKPwnO+Zx6XgELz3UBxhEEe6JxawEH3QOAKO9MQBSgKqX
-	Lkz41iTYyrDexfM5D499sUirZvgUVZZPlpaUa0JX9Uj5Qf8qSgeuGwZA8TmV0GJbjGnF4uQp1/1
-	g5TqTAB8lI2pEJs+CCqUuElA9EuuoPFzn8PsKAGBvrFdtqvbuGCVEIFYgo15sSh40fiDbFxwu2J
-	OVoXHHLDgi0HN65gpSP9kFusAr2Rd2ihkglWqTysI43IyjHDk7dbowO0ZguqzfKdGWMuy6zstaa
-	N34xQ==
-X-Received: by 2002:a05:600c:608c:b0:487:1114:d42f with SMTP id 5b1f17b1804b1-4871114d526mr28933925e9.1.1774352333551;
-        Tue, 24 Mar 2026 04:38:53 -0700 (PDT)
-Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4870f6c0fa6sm20846715e9.1.2026.03.24.04.38.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Mar 2026 04:38:53 -0700 (PDT)
-From: Alexey Charkov <alchark@flipper.net>
-Date: Tue, 24 Mar 2026 15:38:16 +0400
-Subject: [PATCH v5 11/11] power: supply: bq257xx: Add support for BQ25792
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="paTfN52u";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="paTfN52u"
+ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
+ b=U8YRrCW6g05spW5eQq4EYTUAtYUlVCnEXdTs/r+Ftcv3yjwBDYabqe5C03/C+HVvGTw+Aeklkkmt8sFm4l7Gmh+M/w3fwJmUsn/GaGMJgBZj7ZN1ERniC2LGyxMImNc+CKUzqAa79ft3cp7/0RnJoQ7aUOHJSLw0qHV4vop+hi5ZfYR/zvhZb1IrvaKroIAJvxHwpZORETfvftQiAp90AdXi0b70NBQ8iA6ttBjkBUJXdSC89+DVhAGnZ3E7Ur4PCqS+227QgaTAz9/STe3Uo1h+tAC9/jk1ynTfC0RcH74wIqZ6SEUw85W7nCwAv5aA4d73fEkaufVkintjLIWbeA==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AxrjJFIZ1zx7x5s3UsG6ZIY34Eg9y7CoV064emNc5J0=;
+ b=Rf6hmbJvAaQsz93gqYWtvnuvJDeEaPI14IRSNkskl93oUUs3qVey3j2R2+WuZp3p6Fzc5KXGVfo9B2D+4y+rHs7E2VLr3NSm25JOezJWNwr+5cR0/LfxkfCc2UqBofbliD41oWJig7ucqhqc6Dwcg1WvtcD2PGP4+iyevm2mfZrYgwfvd8QBy4oln//s2Z+TOGs+OztMbHk7I8UK7mY/dd61PPapjryHQGHJNHShpqHBPzIiKCFf7xWtcaCnKywDuIBwWR8I/gx1WWCGz05mfvF/3oRRRelVXZ+pNwpgHGm/NNhQsYNQdsvR22oMoZcjSGkWHtxLmOufjnK/dZ1ypA==
+ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
+ 4.158.2.129) smtp.rcpttodomain=linaro.org smtp.mailfrom=arm.com; dmarc=pass
+ (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
+ (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
+ dmarc=[1,1,header.from=arm.com])
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AxrjJFIZ1zx7x5s3UsG6ZIY34Eg9y7CoV064emNc5J0=;
+ b=paTfN52uF4lIlEx0QbFAWDNd8XIYoY81aZLHD+6J7UBYCLv0PqvFafnfWW2QXUaqn2orulXdXvJdwvH25HS3NirY1Wp9kGkYJFHEBSTIK0w0k2Y4fBFsWKjOYL9gfYYRzLsXCLccuV9rcI/s+nprCsp7xpXyKudQAI3UhnTLwKE=
+Received: from DB7PR05CA0026.eurprd05.prod.outlook.com (2603:10a6:10:36::39)
+ by DU0PR08MB9488.eurprd08.prod.outlook.com (2603:10a6:10:44f::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.28; Tue, 24 Mar
+ 2026 11:41:01 +0000
+Received: from DU6PEPF0000A7E3.eurprd02.prod.outlook.com
+ (2603:10a6:10:36:cafe::1f) by DB7PR05CA0026.outlook.office365.com
+ (2603:10a6:10:36::39) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.31 via Frontend Transport; Tue,
+ 24 Mar 2026 11:41:01 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
+ smtp.mailfrom=arm.com; dkim=pass (signature was verified)
+ header.d=arm.com;dmarc=pass action=none header.from=arm.com;
+Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
+ 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
+ client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
+Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
+ DU6PEPF0000A7E3.mail.protection.outlook.com (10.167.8.41) with Microsoft SMTP
+ Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.19 via
+ Frontend Transport; Tue, 24 Mar 2026 11:41:01 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Qt99LemKlsA6bETUwMy+hAICj3Nj4LgDQt9HVg0eFaRHus2lAXTu/rMKo9CE2sDS+dbNGdR1+xlWoWMAGqhQY4g29Vfc5zEBam+nV6LOaXXPh5kxnZi0sDLX8Le8gajZLFDJpfXR6PUc4DYZyfK0BLB9jmtYYZsWXZk2KIeLdqzE1qH8VFex/bguBTXq4nVjCmbBJxQrCIj+bVT0kbVpop2bBsh2DXrkVqGIXW3vGlmjJGitqwo0ea+DZ60ZJIDlI6iik70kVL8XWrtbqgrzFYui4tmjXOL7j94115U0uNXAPFQtWe5k2LrpyqGEi2cRB+yel1J/eTTX0r+U3xBL5Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AxrjJFIZ1zx7x5s3UsG6ZIY34Eg9y7CoV064emNc5J0=;
+ b=Oc/cFlwyoN7eS/X2q/N9HKeyKbOtQnYmHieAEaf0AHYbLzOvsrJDv/VYwgzzIX4byxRt54mdds9lWisaIbx3bja/wJURmlTLobp4TBI8Dej8zVYmzGV0DbMS2cTGVyg7dM7C0G6DWoRPsRK/xb0ugXH6EjPaMFyRZeqfsBbU5V2a1lxPByFDfwvLogPgf630//UOMx5LQ6nIXku6zWaVxz/0yEujtJULfXinK5Jg1kx/1jnGq5giaD7x+GhUxrH4EGvQHutDCkdcWBlIuIxDnQCc2/nHQh0VJ5zqibbZ62RwHSKcZYt/jhFSbsPxt9+SCW01T03KlyCCp3cl45u+0A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
+ header.d=arm.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AxrjJFIZ1zx7x5s3UsG6ZIY34Eg9y7CoV064emNc5J0=;
+ b=paTfN52uF4lIlEx0QbFAWDNd8XIYoY81aZLHD+6J7UBYCLv0PqvFafnfWW2QXUaqn2orulXdXvJdwvH25HS3NirY1Wp9kGkYJFHEBSTIK0w0k2Y4fBFsWKjOYL9gfYYRzLsXCLccuV9rcI/s+nprCsp7xpXyKudQAI3UhnTLwKE=
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=arm.com;
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
+ by AM7PR08MB5381.eurprd08.prod.outlook.com (2603:10a6:20b:105::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.31; Tue, 24 Mar
+ 2026 11:39:57 +0000
+Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
+ ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.20.9723.030; Tue, 24 Mar 2026
+ 11:39:55 +0000
+Message-ID: <86aab895-5945-47a1-bc58-12747c7d8f48@arm.com>
+Date: Tue, 24 Mar 2026 12:39:53 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/4] cpufreq: Remove per-CPU QoS constraint
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org,
+ Jie Zhan <zhanjie9@hisilicon.com>, Ionela Voinescu
+ <ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>,
+ Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Len Brown <lenb@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
+ linux-pm@vger.kernel.org
+References: <20260317101753.2284763-1-pierre.gondois@arm.com>
+ <20260317101753.2284763-2-pierre.gondois@arm.com>
+ <46wu76e25pscn5tkes6uabtgsqxev6wvi5pihrlozobyadmuqq@ffvqv43nys23>
+ <ad23c89f-776e-4788-88ee-08583c0aadaf@arm.com>
+ <5ulxqpnblsbxhcg5m2rfscrvkokd43wwg5sihml4oytcsswh43@lqdwn5tqopf3>
+Content-Language: en-US
+From: Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <5ulxqpnblsbxhcg5m2rfscrvkokd43wwg5sihml4oytcsswh43@lqdwn5tqopf3>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: LO4P302CA0013.GBRP302.PROD.OUTLOOK.COM
+ (2603:10a6:600:2c2::20) To VI0PR08MB10391.eurprd08.prod.outlook.com
+ (2603:10a6:800:20c::6)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260324-bq25792-v5-11-0a2eb58cf11d@flipper.net>
-References: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
-In-Reply-To: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=20378; i=alchark@flipper.net;
- h=from:subject:message-id; bh=VW4PGKQbMprs05QZjLUFAcp7NQ6qIj6tfIjDvxiwqeE=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWQeKl+ny7M77a+6w9l1uoE3a3oU2UKd9z681SusKPKbf
- d62mo1POiayMIhxMViKKbLM/bbEdqoR36xdHh5fYeawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
- Q0MdYx0jBi5OAZjqnhSG/8Edjn/ua0cax6mpt3JrJN+4wLL7+6LbOgK/mJYEP5i3MoGRYdlhpsS
- f/jNf5DL+ZFiTw5h4eUv0r+wDO9+9FJ/aUjHhMS8A
-X-Developer-Key: i=alchark@flipper.net; a=openpgp;
- fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
+X-MS-TrafficTypeDiagnostic:
+	VI0PR08MB10391:EE_|AM7PR08MB5381:EE_|DU6PEPF0000A7E3:EE_|DU0PR08MB9488:EE_
+X-MS-Office365-Filtering-Correlation-Id: 935a5e93-a721-4dfe-728a-08de899a39a4
+x-checkrecipientrouted: true
+NoDisclaimer: true
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted:
+ BCL:0;ARA:13230040|7416014|376014|1800799024|366016|22082099003|18002099003|56012099003;
+X-Microsoft-Antispam-Message-Info-Original:
+ a5/Lw5HAVuk5/b72j/9KSnpT+EYQPHT0gwgN2eth//OvkDjjufL9Sm2NWW2s5my3CtbYw6mLRCNjF9DRAbR8Ly3bhI/2X3baNrMVEpYAofbIqKb+3sGgDVWeTVK/w/mAadn6dG1yPx6AiORI6gSCv6AOGzgOF15AsEymdyPCIY3oCEMvL1llRR2mBFVb8ongyEMuXxI1Nl3oXGHMMoonj1b8+er/7FK6DTJAOokwwRcFUAaV8Qd8ObeEqYuJW8vM0RZG7iesy6y8CSb0moKdTjNXIfsNOaOjoH6bPYTonySGVsADx1qvdsJ8+b+wnDktUhvJxZMrni8i9zDo5ALVsIes6Iu0U0t13cTVjjEVTyAHvvnFwAfJ/1/SC1let4cmm9DyW6e7I6QG6VyGX2hm7c6yTXnxVaMR54HczbnOKfwpgaYy7eueIcTRHqNVmmEhZfVeO4Fz5NoGaqzIXIQP+hJ589ANPDFzYU0KLxk7+aw0hAl486eGrpQoHolK1GqfjT7OAtrL4I88FqFjkWIj5VNmOW4VVSalrwkC8Of3s/7q9SbfOcMTaDTNUJCeNI0UGXzT32/XTHeOKh0Yi8m7P6KWSvM0arx/RrcOLtxYjJKn/MKeaxCib6szFiF6KOd/8PfFHmRMGtXL5St0MoLkSMhpk9H6L11NS+h5MFa16LwyOcOOiC4vPcftLvM4L4PIddciA641r8fiUTkxWnf6/U33GSyRTGoEnx/tWdVx8bE=
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
+X-Exchange-RoutingPolicyChecked:
+ kUByh2Velb2LpykINYqAQgEY5T31EJcDE9PO6lJF0+mWYoUMoE3q4jbB1prN/3c4MwsskKojBKd1dQ0hgf9wuaWfZ0m3ZviR4uR1UbEiWuz33HbKhNjGnzByrXOrXXSKZxLgbzev6int6DB6hpWsK1tkhJWM9m53GOqUnajWUUaJsanPulNKPJEE/ExIYroBk59cmw3uxDC6QsALekA+1uGJwntKfbpMQGJ+txyOmmrXiyp7/4LL0O90fXmazV6GGOdW62ySRH+xydxs8hoN+cB/wRK6BMwO5a/xCggJydrQYYrgFZimzj3F0m1B6KoAXZ3CT200RqLGL/xD3X/WxQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR08MB5381
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ DU6PEPF0000A7E3.eurprd02.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	d72d5ba6-3f6a-4b4c-785b-08de899a11f7
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|35042699022|82310400026|36860700016|1800799024|376014|14060799003|13003099007|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	AC8ILbh6gZuOuvgKNeyyiLuDa3sfdxmOOuWy7yrGPmTy9Ic+c6/YQsiL49sXFX/rTwC9qWPclSA3kmS0sKECMNrcylRJNBQrw1Rl3CDAqjJi/ow++CNHbneP4ep2Jr1VvrddQvtN29xmEVlnUCW04uIpm6pRZOl2a152kEYeajfE4Wt+3+c/YZTi9AzVj56ztnT6l5ZgLpxAdz52wBFZy1JEuaGyWSwT0Lv8HLSxKMDdXfWNe1TUmI3LLZOLg1QNCnmNfdqorOtt0hrKfZT9IoFIfNQvojfR+uJmdwjoeYaHw/VGFaYQp1rpRSWEyEAqLTuIBcN6comQ2QFDCFO5VqoubjCCkHZpQO/zqi9zd0IQ0Nv9K6+CTEC2ByNhBCoKPq/YPMDrK4nBOhGkftJ+YcuWAteFA8zDWaUTdVhHTdFFdiXdLz5auZOqs78sNKpetKcICMUcFfk2CCCY564GfRpKfmIj5Q46P4L4H+ab3x94lAxrkBoXx/mKN2DEDI+nqATa7i9EyQFlD/O0KsLxdWZvNWDu44qa9VDXctNmaVMeu6G0usAIX7ynI13kR69EsgWTcJyjUUyFyqOD6rXFh+P9TB53V6oPebTBsAh4qRwSoK0Giooan12JgUoHdcv6RfYpJ/FaxxA2gAwtKdCJNZo6pfYZYlNX4sTLrJMmVd+7tboWecPCQqCSAZfFVZlnM6NIlW4R0ZqljWq3nkydmZg4HdkGUcJkaicHAB8dEJtBVqNwdBhK4XvKe4mH+f9FSo7+UjO8Nxin5oCXXayFTw==
+X-Forefront-Antispam-Report:
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(35042699022)(82310400026)(36860700016)(1800799024)(376014)(14060799003)(13003099007)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	nNWMRtVsZ14WvfhteTcXdk4LH0sLrnwo18SHRnsAlGhbQtIFiEr5mdD/ZfaoIWu6R+8lT+FEO/4rveprzowspbzQDJvwTZv7u7pvHa20A3lSdTxmO7xvmIMjvQIUAPLQTzMQVdZIOBx2bwYtZNiGxIjK1EsF9VcoNJzM4OPosvyTlnAdkZ1pqadq3MH/9QgPH2qRPlr3smMZnCYZK8XTmArokgrmRJWHs2sccTRM3exSeQu3BkdiDPVPewQvAWZRreyJVay8Ob4mg/YXquXkryCue+rpxXxFgwdNlWq0BO29nOHeCRpxJ+vvjHDySF7uCpCAXa2DAkYIIay+7ksYUMjf1Fj1MqfSVXwc9BB3/UcWYRJE6moo68ZI4/cevWY5wdln8qCzj9h1SknamFPSaPxJImvaKTswkiYxhQi/TpWWLNxd8pJrj68xU2nQoADz
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Mar 2026 11:41:01.7144
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 935a5e93-a721-4dfe-728a-08de899a39a4
+X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DU6PEPF0000A7E3.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR08MB9488
 
-Add support for TI BQ25792 integrated battery charger and buck-boost
-converter.
+Hello Viresh,
 
-It shares high-level logic of operation with the already supported
-BQ25703A, but has a different register map, bit definitions and some of
-the lower-level hardware states.
+On 3/20/26 10:18, Viresh Kumar wrote:
+> On 19-03-26, 10:30, Pierre Gondois wrote:
+>> On 3/18/26 12:13, Viresh Kumar wrote:
+>>> On 17-03-26, 11:17, Pierre Gondois wrote:
+>>>> policy->max_freq_req represents the maximum allowed frequency as
+>>>> requested by the policyX/scaling_max_freq sysfs file. This request
+>>>> applies to all CPUs of the policy. It is not possible to request
+>>>> a per-CPU maximum frequency.
+>>>>
+>>>> Thus, the interaction between the policy boost and scaling_max_freq
+>>>> settings should be handled by adding a boost specific QoS constraint.
+>>>> This will be handled in the following patches.
+>>> I don't think the above is required anymore. This patch is removing stale code
+>>> now which isn't useful anymore. It has nothing to do with a boost specific QOS
+>>> constraint.
+>> Yes ok
+>>> And it would be better to know for sure why this isn't required anymore and
+>>> which patch exactly fixed this issue.
+>>>
+>> On a kernel based on 1608f0230510~, and replicating the
+>> process described in the commit message of
+>>
+>> commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
+>> a CPU")
+>>
+>> I could not see any issue regarding the values of:
+>>
+>> - policy1/cpuinfo_max_freq
+>> - policy1/scaling_max_freq
+> The commit message (of 1608f0230510) is confusing. The issue was discussed
+> properly in the following thread.
+>
+> https://lore.kernel.org/all/20250120082723.am7rxujmdvzz4eky@vireshk-i7/
+>
+> The problem is that policy->max and policy->cpuinfo_max_freq are incorrect after
+> the sequence mentioned in the commit, while max_freq_req is correct.
 
-Tested-by: Chris Morgan <macromorgan@hotmail.com>
-Signed-off-by: Alexey Charkov <alchark@flipper.net>
----
- drivers/power/supply/bq257xx_charger.c | 482 ++++++++++++++++++++++++++++++++-
- 1 file changed, 481 insertions(+), 1 deletion(-)
+I experimented a bit more and it seems the following happens:
 
-diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/supply/bq257xx_charger.c
-index 9c082865e745..b9a41fe6f00e 100644
---- a/drivers/power/supply/bq257xx_charger.c
-+++ b/drivers/power/supply/bq257xx_charger.c
-@@ -5,6 +5,7 @@
-  */
- 
- #include <linux/bitfield.h>
-+#include <linux/byteorder/generic.h>
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/mfd/bq257xx.h>
-@@ -88,6 +89,53 @@ struct bq257xx_chg {
- 	u32 vsys_min;
- };
- 
-+/**
-+ * bq25792_read16() - Read a 16-bit value from device register
-+ * @pdata: driver platform data
-+ * @reg: register address to read from
-+ * @val: pointer to store the register value
-+ *
-+ * Read a 16-bit big-endian value from the BQ25792 device via regmap
-+ * and convert to CPU byte order.
-+ *
-+ * Return: Returns 0 on success or error on failure to read.
-+ */
-+static int bq25792_read16(struct bq257xx_chg *pdata, unsigned int reg, u16 *val)
-+{
-+	__be16 regval;
-+	int ret;
-+
-+	ret = regmap_raw_read(pdata->bq->regmap, reg, &regval, sizeof(regval));
-+	if (ret)
-+		return ret;
-+
-+	*val = be16_to_cpu(regval);
-+	return 0;
-+}
-+
-+/**
-+ * bq25792_write16() - Write a 16-bit value to device register
-+ * @pdata: driver platform data
-+ * @reg: register address to write to
-+ * @val: 16-bit value to write in CPU byte order
-+ *
-+ * Convert the value to big-endian and write a 16-bit value to the
-+ * BQ25792 device via regmap.
-+ *
-+ * Return: Returns 0 on success or error on failure to write.
-+ */
-+static int bq25792_write16(struct bq257xx_chg *pdata, unsigned int reg, u16 val)
-+{
-+	__be16 regval = cpu_to_be16(val);
-+	int ret;
-+
-+	ret = regmap_raw_write(pdata->bq->regmap, reg, &regval, sizeof(regval));
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
- /**
-  * bq25703_get_state() - Get the current state of the device
-  * @pdata: driver platform data
-@@ -119,6 +167,43 @@ static int bq25703_get_state(struct bq257xx_chg *pdata)
- 	return 0;
- }
- 
-+/**
-+ * bq25792_get_state() - Get the current state of the device
-+ * @pdata: driver platform data
-+ *
-+ * Get the current state of the BQ25792 charger by reading status
-+ * registers. Updates the online, charging, overvoltage, and fault
-+ * status fields in the driver data structure.
-+ *
-+ * Return: Returns 0 on success or error on failure to read device.
-+ */
-+static int bq25792_get_state(struct bq257xx_chg *pdata)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25792_REG1B_CHARGER_STATUS_0, &reg);
-+	if (ret)
-+		return ret;
-+
-+	pdata->online = reg & BQ25792_REG1B_PG_STAT;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25792_REG1C_CHARGER_STATUS_1, &reg);
-+	if (ret)
-+		return ret;
-+
-+	pdata->charging = reg & BQ25792_REG1C_CHG_STAT_MASK;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25792_REG20_FAULT_STATUS_0, &reg);
-+	if (ret)
-+		return ret;
-+
-+	pdata->overvoltage = reg & BQ25792_REG20_OVERVOLTAGE_MASK;
-+	pdata->oc_fault = reg & BQ25792_REG20_OVERCURRENT_MASK;
-+
-+	return 0;
-+}
-+
- /**
-  * bq25703_get_min_vsys() - Get the minimum system voltage
-  * @pdata: driver platform data
-@@ -142,6 +227,31 @@ static int bq25703_get_min_vsys(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_min_vsys() - Get the minimum system voltage
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the minimum voltage value
-+ *
-+ * Read the current minimum system voltage setting from the device
-+ * and return it in microvolts.
-+ *
-+ * Return: Returns 0 on success or error on failure to read.
-+ */
-+static int bq25792_get_min_vsys(struct bq257xx_chg *pdata, int *intval)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(pdata->bq->regmap, BQ25792_REG00_MIN_SYS_VOLTAGE, &reg);
-+	if (ret)
-+		return ret;
-+
-+	reg = FIELD_GET(BQ25792_REG00_VSYSMIN_MASK, reg);
-+	*intval = (reg * BQ25792_MINVSYS_STEP_UV) + BQ25792_MINVSYS_MIN_UV;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_set_min_vsys() - Set the minimum system voltage
-  * @pdata: driver platform data
-@@ -166,6 +276,29 @@ static int bq25703_set_min_vsys(struct bq257xx_chg *pdata, int vsys)
- 			    reg);
- }
- 
-+/**
-+ * bq25792_set_min_vsys() - Set the minimum system voltage
-+ * @pdata: driver platform data
-+ * @vsys: voltage value to set in uV
-+ *
-+ * Set the minimum system voltage by clamping the requested value
-+ * between device limits and writing to the appropriate register.
-+ *
-+ * Return: Returns 0 on success or error on failure to write.
-+ */
-+static int bq25792_set_min_vsys(struct bq257xx_chg *pdata, int vsys)
-+{
-+	unsigned int reg;
-+	int vsys_min = pdata->vsys_min;
-+
-+	vsys = clamp(vsys, vsys_min, BQ25792_MINVSYS_MAX_UV);
-+	reg = ((vsys - BQ25792_MINVSYS_MIN_UV) / BQ25792_MINVSYS_STEP_UV);
-+	reg = FIELD_PREP(BQ25792_REG00_VSYSMIN_MASK, reg);
-+
-+	return regmap_write(pdata->bq->regmap,
-+			    BQ25792_REG00_MIN_SYS_VOLTAGE, reg);
-+}
-+
- /**
-  * bq25703_get_cur() - Get the reported current from the battery
-  * @pdata: driver platform data
-@@ -195,6 +328,30 @@ static int bq25703_get_cur(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_cur() - Get the reported current from the battery
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the battery current value
-+ *
-+ * Read the current ADC value from the device representing the battery
-+ * charge or discharge current and return it in microamps.
-+ *
-+ * Return: Returns 0 on success or error on failure to read.
-+ */
-+static int bq25792_get_cur(struct bq257xx_chg *pdata, int *intval)
-+{
-+	u16 reg;
-+	int ret;
-+
-+	ret = bq25792_read16(pdata, BQ25792_REG33_IBAT_ADC, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	*intval = (s16)reg * BQ25792_ADCIBAT_STEP_UA;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_get_ichg_cur() - Get the maximum reported charge current
-  * @pdata: driver platform data
-@@ -218,6 +375,30 @@ static int bq25703_get_ichg_cur(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_ichg_cur() - Get the maximum reported charge current
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the maximum charge current value
-+ *
-+ * Read the programmed maximum charge current limit from the device.
-+ *
-+ * Return: Returns 0 on success or error on failure to read value.
-+ */
-+static int bq25792_get_ichg_cur(struct bq257xx_chg *pdata, int *intval)
-+{
-+	u16 reg;
-+	int ret;
-+
-+	ret = bq25792_read16(pdata, BQ25792_REG03_CHARGE_CURRENT_LIMIT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	*intval = FIELD_GET(BQ25792_REG03_ICHG_MASK, reg) *
-+		  BQ25792_ICHG_STEP_UA;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_set_ichg_cur() - Set the maximum charge current
-  * @pdata: driver platform data
-@@ -242,6 +423,28 @@ static int bq25703_set_ichg_cur(struct bq257xx_chg *pdata, int ichg)
- 			    reg);
- }
- 
-+/**
-+ * bq25792_set_ichg_cur() - Set the maximum charge current
-+ * @pdata: driver platform data
-+ * @ichg: current value to set in uA
-+ *
-+ * Set the maximum charge current by clamping the requested value
-+ * between device limits and writing to the appropriate register.
-+ *
-+ * Return: Returns 0 on success or error on failure to write.
-+ */
-+static int bq25792_set_ichg_cur(struct bq257xx_chg *pdata, int ichg)
-+{
-+	int ichg_max = pdata->ichg_max;
-+	u16 reg;
-+
-+	ichg = clamp(ichg, BQ25792_ICHG_MIN_UA, ichg_max);
-+	reg = FIELD_PREP(BQ25792_REG03_ICHG_MASK,
-+			 (ichg / BQ25792_ICHG_STEP_UA));
-+
-+	return bq25792_write16(pdata, BQ25792_REG03_CHARGE_CURRENT_LIMIT, reg);
-+}
-+
- /**
-  * bq25703_get_chrg_volt() - Get the maximum set charge voltage
-  * @pdata: driver platform data
-@@ -265,6 +468,30 @@ static int bq25703_get_chrg_volt(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_chrg_volt() - Get the maximum set charge voltage
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the maximum charge voltage value
-+ *
-+ * Read the current charge voltage limit from the device.
-+ *
-+ * Return: Returns 0 on success or error on failure to read value.
-+ */
-+static int bq25792_get_chrg_volt(struct bq257xx_chg *pdata, int *intval)
-+{
-+	u16 reg;
-+	int ret;
-+
-+	ret = bq25792_read16(pdata, BQ25792_REG01_CHARGE_VOLTAGE_LIMIT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	*intval = FIELD_GET(BQ25792_REG01_VREG_MASK, reg) *
-+		  BQ25792_VBATREG_STEP_UV;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_set_chrg_volt() - Set the maximum charge voltage
-  * @pdata: driver platform data
-@@ -291,6 +518,29 @@ static int bq25703_set_chrg_volt(struct bq257xx_chg *pdata, int vbat)
- 			    reg);
- }
- 
-+/**
-+ * bq25792_set_chrg_volt() - Set the maximum charge voltage
-+ * @pdata: driver platform data
-+ * @vbat: voltage value to set in uV
-+ *
-+ * Set the maximum charge voltage by clamping the requested value
-+ * between device limits and writing to the appropriate register.
-+ *
-+ * Return: Returns 0 on success or error on failure to write.
-+ */
-+static int bq25792_set_chrg_volt(struct bq257xx_chg *pdata, int vbat)
-+{
-+	int vbat_max = pdata->vbat_max;
-+	u16 reg;
-+
-+	vbat = clamp(vbat, BQ25792_VBATREG_MIN_UV, vbat_max);
-+
-+	reg = FIELD_PREP(BQ25792_REG01_VREG_MASK,
-+			 (vbat / BQ25792_VBATREG_STEP_UV));
-+
-+	return bq25792_write16(pdata, BQ25792_REG01_CHARGE_VOLTAGE_LIMIT, reg);
-+}
-+
- /**
-  * bq25703_get_iindpm() - Get the maximum set input current
-  * @pdata: driver platform data
-@@ -319,6 +569,30 @@ static int bq25703_get_iindpm(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_iindpm() - Get the maximum set input current
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the maximum input current value
-+ *
-+ * Read the current input current limit from the device.
-+ *
-+ * Return: Returns 0 on success or error on failure to read value.
-+ */
-+static int bq25792_get_iindpm(struct bq257xx_chg *pdata, int *intval)
-+{
-+	u16 reg;
-+	int ret;
-+
-+	ret = bq25792_read16(pdata, BQ25792_REG06_INPUT_CURRENT_LIMIT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	reg = FIELD_GET(BQ25792_REG06_IINDPM_MASK, reg);
-+	*intval = reg * BQ25792_IINDPM_STEP_UA;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_set_iindpm() - Set the maximum input current
-  * @pdata: driver platform data
-@@ -344,6 +618,29 @@ static int bq25703_set_iindpm(struct bq257xx_chg *pdata, int iindpm)
- 			    FIELD_PREP(BQ25703_IINDPM_MASK, reg));
- }
- 
-+/**
-+ * bq25792_set_iindpm() - Set the maximum input current
-+ * @pdata: driver platform data
-+ * @iindpm: current value in uA
-+ *
-+ * Set the maximum input current by clamping the requested value
-+ * between device limits and writing to the appropriate register.
-+ *
-+ * Return: Returns 0 on success or error on failure to write.
-+ */
-+static int bq25792_set_iindpm(struct bq257xx_chg *pdata, int iindpm)
-+{
-+	u16 reg;
-+	int iindpm_max = pdata->iindpm_max;
-+
-+	iindpm = clamp(iindpm, BQ25792_IINDPM_MIN_UA, iindpm_max);
-+
-+	reg = iindpm / BQ25792_IINDPM_STEP_UA;
-+
-+	return bq25792_write16(pdata, BQ25792_REG06_INPUT_CURRENT_LIMIT,
-+			       FIELD_PREP(BQ25792_REG06_IINDPM_MASK, reg));
-+}
-+
- /**
-  * bq25703_get_vbat() - Get the reported voltage from the battery
-  * @pdata: driver platform data
-@@ -368,6 +665,30 @@ static int bq25703_get_vbat(struct bq257xx_chg *pdata, int *intval)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_get_vbat() - Get the reported voltage from the battery
-+ * @pdata: driver platform data
-+ * @intval: pointer to store the battery voltage value
-+ *
-+ * Read the current ADC value representing the battery voltage
-+ * and return it in microvolts.
-+ *
-+ * Return: Returns 0 on success or error on failure to read value.
-+ */
-+static int bq25792_get_vbat(struct bq257xx_chg *pdata, int *intval)
-+{
-+	u16 reg;
-+	int ret;
-+
-+	ret = bq25792_read16(pdata, BQ25792_REG3B_VBAT_ADC, &reg);
-+	if (ret)
-+		return ret;
-+
-+	*intval = reg * BQ25792_ADCVSYSVBAT_STEP_UV;
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_hw_init() - Set all the required registers to init the charger
-  * @pdata: driver platform data
-@@ -434,6 +755,62 @@ static int bq25703_hw_init(struct bq257xx_chg *pdata)
- 	return ret;
- }
- 
-+/**
-+ * bq25792_hw_init() - Initialize BQ25792 hardware
-+ * @pdata: driver platform data
-+ *
-+ * Initialize the BQ25792 by disabling the watchdog, enabling discharge
-+ * current sensing with 5A limit, and configuring input current regulation.
-+ * Set the charge current, charge voltage, minimum system voltage, and
-+ * input current limit from platform data. Enable and configure the ADC
-+ * to measure all available channels.
-+ *
-+ * Return: Returns 0 on success or error code on error.
-+ */
-+static int bq25792_hw_init(struct bq257xx_chg *pdata)
-+{
-+	struct regmap *regmap = pdata->bq->regmap;
-+	int ret = 0;
-+
-+	/* Disable watchdog (TODO: make it work instead) */
-+	regmap_write(regmap, BQ25792_REG10_CHARGER_CONTROL_1, 0);
-+
-+	/*
-+	 * Enable battery discharge current sensing, 5A discharge current
-+	 * limit, input current regulation and ship FET functions
-+	 */
-+	regmap_write(regmap, BQ25792_REG14_CHARGER_CONTROL_5,
-+		     BQ25792_REG14_SFET_PRESENT |
-+		     BQ25792_REG14_EN_IBAT |
-+		     BQ25792_IBAT_5A |
-+		     BQ25792_REG14_EN_IINDPM);
-+
-+	ret = pdata->chip->bq257xx_set_ichg(pdata, pdata->ichg_max);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_set_vbatreg(pdata, pdata->vbat_max);
-+	if (ret)
-+		return ret;
-+
-+	ret = bq25792_set_min_vsys(pdata, pdata->vsys_min);
-+	if (ret)
-+		return ret;
-+
-+	ret = pdata->chip->bq257xx_set_iindpm(pdata, pdata->iindpm_max);
-+	if (ret)
-+		return ret;
-+
-+	/* Enable the ADC. */
-+	regmap_write(regmap, BQ25792_REG2E_ADC_CONTROL, BQ25792_REG2E_ADC_EN);
-+
-+	/* Clear per-channel ADC disable bits - enable all channels */
-+	regmap_write(regmap, BQ25792_REG2F_ADC_FUNCTION_DISABLE_0, 0);
-+	regmap_write(regmap, BQ25792_REG30_ADC_FUNCTION_DISABLE_1, 0);
-+
-+	return ret;
-+}
-+
- /**
-  * bq25703_hw_shutdown() - Set registers for shutdown
-  * @pdata: driver platform data
-@@ -446,6 +823,30 @@ static void bq25703_hw_shutdown(struct bq257xx_chg *pdata)
- 			   BQ25703_EN_LWPWR, BQ25703_EN_LWPWR);
- }
- 
-+/**
-+ * bq25792_hw_shutdown() - Shutdown BQ25792 hardware
-+ * @pdata: driver platform data
-+ *
-+ * Perform hardware shutdown for the BQ25792. Currently a no-op
-+ * as the device does not require special shutdown configuration.
-+ */
-+static void bq25792_hw_shutdown(struct bq257xx_chg *pdata)
-+{
-+	/* Nothing to do here */
-+}
-+
-+/**
-+ * bq257xx_set_charger_property() - Set a power supply property
-+ * @psy: power supply device
-+ * @prop: power supply property to set
-+ * @val: value to set for the property
-+ *
-+ * Handle requests to set power supply properties such as input current
-+ * limit, constant charge voltage, and constant charge current. Routes
-+ * the request to the chip-specific implementation.
-+ *
-+ * Return: Returns 0 on success or -EINVAL if property is not supported.
-+ */
- static int bq257xx_set_charger_property(struct power_supply *psy,
- 		enum power_supply_property prop,
- 		const union power_supply_propval *val)
-@@ -469,6 +870,19 @@ static int bq257xx_set_charger_property(struct power_supply *psy,
- 	return -EINVAL;
- }
- 
-+/**
-+ * bq257xx_get_charger_property() - Get a power supply property
-+ * @psy: power supply device
-+ * @psp: power supply property to get
-+ * @val: pointer to store the property value
-+ *
-+ * Handle requests to get power supply properties, including status,
-+ * health, manufacturer, online state, and various voltage/current
-+ * measurements. Reads current device state and routes chip-specific
-+ * property requests to appropriate handlers.
-+ *
-+ * Return: Returns 0 on success or -EINVAL if property is not supported.
-+ */
- static int bq257xx_get_charger_property(struct power_supply *psy,
- 				enum power_supply_property psp,
- 				union power_supply_propval *val)
-@@ -550,6 +964,17 @@ static enum power_supply_property bq257xx_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_USB_TYPE,
- };
- 
-+/**
-+ * bq257xx_property_is_writeable() - Check if a property is writeable
-+ * @psy: power supply device
-+ * @prop: power supply property to check
-+ *
-+ * Determines which power supply properties can be written to. Only
-+ * charge current limit, charge voltage limit, and input current
-+ * limit are writeable.
-+ *
-+ * Return: Returns 1 if property is writeable, 0 otherwise.
-+ */
- static int bq257xx_property_is_writeable(struct power_supply *psy,
- 					 enum power_supply_property prop)
- {
-@@ -622,6 +1047,17 @@ static void bq257xx_external_power_changed(struct power_supply *psy)
- 	power_supply_changed(psy);
- }
- 
-+/**
-+ * bq257xx_irq_handler_thread() - Handle charger interrupt
-+ * @irq: interrupt number
-+ * @private: pointer to driver private data
-+ *
-+ * Thread handler for charger interrupts. Triggers re-evaluation of
-+ * external power status and updates power supply state in response
-+ * to charger events.
-+ *
-+ * Return: Returns IRQ_HANDLED if interrupt was processed.
-+ */
- static irqreturn_t bq257xx_irq_handler_thread(int irq, void *private)
- {
- 	struct bq257xx_chg *pdata = private;
-@@ -662,6 +1098,22 @@ static const struct bq257xx_chip_info bq25703_chip_info = {
- 		.bq257xx_get_min_vsys = &bq25703_get_min_vsys,
- };
- 
-+static const struct bq257xx_chip_info bq25792_chip_info = {
-+		.default_iindpm_uA = BQ25792_IINDPM_DEFAULT_UA,
-+		.bq257xx_hw_init = &bq25792_hw_init,
-+		.bq257xx_hw_shutdown = &bq25792_hw_shutdown,
-+		.bq257xx_get_state = &bq25792_get_state,
-+		.bq257xx_get_ichg = &bq25792_get_ichg_cur,
-+		.bq257xx_set_ichg = &bq25792_set_ichg_cur,
-+		.bq257xx_get_vbatreg = &bq25792_get_chrg_volt,
-+		.bq257xx_set_vbatreg = &bq25792_set_chrg_volt,
-+		.bq257xx_get_iindpm = &bq25792_get_iindpm,
-+		.bq257xx_set_iindpm = &bq25792_set_iindpm,
-+		.bq257xx_get_cur = &bq25792_get_cur,
-+		.bq257xx_get_vbat = &bq25792_get_vbat,
-+		.bq257xx_get_min_vsys = &bq25792_get_min_vsys,
-+};
-+
- /**
-  * bq257xx_parse_dt() - Parse the device tree for required properties
-  * @pdata: driver platform data
-@@ -707,6 +1159,17 @@ static int bq257xx_parse_dt(struct bq257xx_chg *pdata,
- 	return 0;
- }
- 
-+/**
-+ * bq257xx_charger_probe() - Probe routine for charger platform device
-+ * @pdev: platform device
-+ *
-+ * Probe the charger device, allocate driver data structure, select the
-+ * appropriate chip-specific function pointers, register the power supply,
-+ * parse device tree properties for battery limits, initialize hardware,
-+ * and set up the interrupt handler if available.
-+ *
-+ * Return: Returns 0 on success or error code on failure.
-+ */
- static int bq257xx_charger_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -722,7 +1185,17 @@ static int bq257xx_charger_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	pdata->bq = bq;
--	pdata->chip = &bq25703_chip_info;
-+
-+	switch (bq->type) {
-+	case BQ25703A:
-+		pdata->chip = &bq25703_chip_info;
-+		break;
-+	case BQ25792:
-+		pdata->chip = &bq25792_chip_info;
-+		break;
-+	default:
-+		return dev_err_probe(dev, -EINVAL, "Unknown chip type\n");
-+	}
- 
- 	platform_set_drvdata(pdev, pdata);
- 
-@@ -760,6 +1233,13 @@ static int bq257xx_charger_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
-+/**
-+ * bq257xx_charger_shutdown() - Shutdown routine for charger platform device
-+ * @pdev: platform device
-+ *
-+ * Called during system shutdown to perform charger cleanup, including
-+ * disabling watchdog timers or other chip-specific shutdown procedures.
-+ */
- static void bq257xx_charger_shutdown(struct platform_device *pdev)
- {
- 	struct bq257xx_chg *pdata = platform_get_drvdata(pdev);
+1. boost all CPUs: echo 1 > /sys/devices/system/cpu/cpufreq/boost
+2. offline one CPU: echo 0 > /sys/devices/system/cpu/cpuX/online
+3. deboost all CPUs: echo 0 > /sys/devices/system/cpu/cpufreq/boost
 
--- 
-2.52.0
+cpufreq_boost_trigger_state()
+\-for_each_active_policy()
+   \-cpufreq_driver->set_boost()
+doesn't act on the policy where there are no more online CPUs,
+so the max/cpuinfo.max/max_freq_req is left to the actual
+boost freq.
 
+4. online CPUX: echo 1 > /sys/devices/system/cpu/cpuX/online
+
+cpufreq_online()
+\-cpufreq_driver->init()
+   \-cppc_cpufreq_cpu_init()
+There:
+- policy->max
+- policy->cpuinfo.max_freq
+are set to the maximal non-boost freq., which is the correct value.
+
+However, max_freq_req is left to the boosted frequency, so this
+is effectively an incorrect state.
+Also in cpufreq_set_policy(), policy->max is set to:
+   min(max_freq_req, cpuinfo.max_freq)
+(cf. verify() cb), so the incorrect state of max_freq_req is not
+visible.
+
+5. boost all CPUs again: echo 1 > /sys/devices/system/cpu/cpufreq/boost
+
+As the max_freq_req value and the new boost value are equal,
+cpufreq_notifier_max() won't be called, which means that if the
+CPU needed to raise its freq., it won't be notified until another
+event trigger a re-evaluation of the freq. selection.
+
+To observe that, I had to:
+- use the performance governor to be sure to select the max. available
+   freq.
+- observe scaling_cur_freq to see the last requested freq. for the CPU
+
+So IMO the issue was actually fixed by:
+dd016f379ebc ("cpufreq: Introduce a more generic way to set default
+per-policy boost flag")
+which sets the correct max_freq_req value when putting back an
+inactive policy.
+
+
+>
+> I think another commit has fixed that (incorrectly and unintentionally):
+> commit 6db0f533d320 ("cpufreq: preserve freq_table_sorted across suspend/hibernate")
+>
+> @@ -1421,9 +1421,12 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+>                   * If there is a problem with its frequency table, take it
+>                   * offline and drop it.
+>                   */
+> -               ret = cpufreq_table_validate_and_sort(policy);
+> -               if (ret)
+> -                       goto out_offline_policy;
+> +               if (policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_ASCENDING &&
+> +                   policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_DESCENDING) {
+> +                       ret = cpufreq_table_validate_and_sort(policy);
+> +                       if (ret)
+> +                               goto out_offline_policy;
+> +               }
+>
+> This skipped calling cpufreq_table_validate_and_sort() completely on online and
+> so max/cpuinfo_max_freq, max_freq_req are all in sync.
+>
+> That change should be fixed with:
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 277884d91913..1f794524a1d9 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1427,12 +1427,9 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+>                   * If there is a problem with its frequency table, take it
+>                   * offline and drop it.
+>                   */
+> -               if (policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_ASCENDING &&
+> -                   policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_DESCENDING) {
+> -                       ret = cpufreq_table_validate_and_sort(policy);
+> -                       if (ret)
+> -                               goto out_offline_policy;
+> -               }
+> +               ret = cpufreq_table_validate_and_sort(policy);
+> +               if (ret)
+> +                       goto out_offline_policy;
+>
+>                  /* related_cpus should at least include policy->cpus. */
+>                  cpumask_copy(policy->related_cpus, policy->cpus);
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index 7f251daf03ce..5b364d8da4f9 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -360,6 +360,10 @@ int cpufreq_table_validate_and_sort(struct cpufreq_policy *policy)
+>          if (policy_has_boost_freq(policy))
+>                  policy->boost_supported = true;
+>
+> +       if (policy->freq_table_sorted == CPUFREQ_TABLE_SORTED_ASCENDING ||
+> +           policy->freq_table_sorted == CPUFREQ_TABLE_SORTED_DESCENDING)
+> +               return 0;
+> +
+>          return set_freq_table_sorted(policy);
+>   }
+>
