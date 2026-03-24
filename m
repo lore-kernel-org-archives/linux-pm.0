@@ -1,34 +1,34 @@
-Received: from out-178.mta1.migadu.com (out-178.mta1.migadu.com [95.215.58.178])
+Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [95.215.58.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 950B13750AB
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 01:36:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E5438372EEA
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 01:36:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774316183; cv=none; b=f9Xj4Q62SFkiX08FkLWwToK4oHZuE0dbdrfmbledAy9OCIvy/uFaP3DhYpUDflB+Ss3I6K7c81bv4dxSBYklnbZbj0KuuSx6QGNYFx8Hab4l6UoF7bX3N/1O5Ay26XrU1NIstW9YhHCb94GtQsxT/6m3VJ808e/b1XgQ2SZLS8g=
+	t=1774316186; cv=none; b=X2weCxoo/rYvn8BHpZUScf2qcLkr+UfTcgFNmV+LRGCtaLR9G30ICXZL76HSpHUp+EMEPK5ZpRwnbzX20QydQiNDMLq2/gr0MQNqMwuXeTQtdu4gEsvvj1gsVoSr+2JRofT/5HUXNGDzHnx/9HAllIqyeboRGGgZDGLEPRE3PVM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774316183; c=relaxed/simple;
-	bh=Y5BcBGtNUQLVYQs3QRDux4aVEbLP0dNAyrhRkmk5nfU=;
+	s=arc-20240116; t=1774316186; c=relaxed/simple;
+	bh=CCsJSzdjoIzvSysH/lVvJDxs9dn6ULCxrrgKN1aeb8A=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ejFXsV6yHfnoK0FX6XoVpflZwB557o++j35syE3bjPK3cR6AaRTVnoDHPQfzVa4FOHAK+c1MoLgPI7LV6AH1tWv5zo/Ok0eizrJQDK4GQed3JG798cTXavzAInfWTVsz5by+k+KJWvCkQmT2g5NBkasLPBY80UYTJBOoiqMJ1QU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it; spf=pass smtp.mailfrom=r-ricci.it; dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b=X49awb2O; arc=none smtp.client-ip=95.215.58.178
+	 MIME-Version; b=lcSuQgj97nLfgsVrkHKWA4/pEaMgoOHZccTSuuVuz1zwo5bj6jys7cAdVE0weDcxnEky/0e7L+bwSl9qOF/a0OZDuvmb7kCqjpEiK9ziQk3L7Q+Yt6bEjPA6TH7sNNVHGYbgNct0ie/TYy7b6Uu5IuePwQvdZ9Bw91ZkvHFNa6E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it; spf=pass smtp.mailfrom=r-ricci.it; dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b=HRoEPFKe; arc=none smtp.client-ip=95.215.58.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=r-ricci.it
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=r-ricci.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b="X49awb2O"
+	dkim=pass (2048-bit key) header.d=r-ricci.it header.i=@r-ricci.it header.b="HRoEPFKe"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=r-ricci.it; s=key1;
-	t=1774316178;
+	t=1774316182;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=v+yK+9OINSKQwlx/h5ZhN8aAxMviN5G+FIJiHwexRSI=;
-	b=X49awb2OTv2O35HrkvB/Xse0dQjIGyZ8iLosjXZbP6raIgwS00tB57EbY0IaMMJL3Bw0un
-	scroOpf/tjafdZ9lek3hFxTuzjqVG8kj9GfjDuadSIsP6OzFW7kHPZPKwctsE+OaKIp5yb
-	zkTwEtaYH66BL0fGz82z+pL8Ot35HYA5PgpeoyS71Q7cHNIfpIqPeMjWqiTS52YcSf5XkC
-	CO2WGA44LHSO8UPk9G0k+V1IbjdphWYFvxphJqLowUM8iBO8L9jR+nAbrVwtJ+cnGZjR4q
-	doinZDwZecI3edmEPH60DPNMfLkFZfPJjmNpkRUaYN5tIGU919nmELtVwNvROQ==
+	bh=pv50I02xcEaHi9CnK9QZv6zTKNMyBH8zXsZ3w3vHXiU=;
+	b=HRoEPFKeHvXzLPLQl1f6chwe0wwA5rW4nOHj+Mn1bqsNEZiUI7EmU2cpH4bcAXPr421l74
+	gy9qajzW43kgysFQjKY5asgZ0DSyTM9EwgXc6JjodurmDOweQx81/0vavkFylbtov8zqJr
+	ec+vYTXAYHBBWG7At23u1e6b8w3D+QjJe4SOkBtI69iWhNMGx2yYf50rEWJhn/8uc4YaD0
+	b7f5uYtBYFhRVVhBdm5XoemI16ylrIXkfMpjJJkbqohrcX+y5juEhJb3bTx4+jooTJ1RLQ
+	2bpv5hAlzt4h8EDW/2HUjFD8qp6roA51TSoauad4hrw7n7BUHsFoRBiKioB4UQ==
 From: Roberto Ricci <io@r-ricci.it>
 To: Thomas Renninger <trenn@suse.com>,
 	Shuah Khan <shuah@kernel.org>,
@@ -37,9 +37,9 @@ To: Thomas Renninger <trenn@suse.com>,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 Cc: Roberto Ricci <io@r-ricci.it>
-Subject: [PATCH v4 2/6] cpupower-idle-info.1: fix short option names
-Date: Tue, 24 Mar 2026 02:35:39 +0100
-Message-ID: <20260324013543.4776-3-io@r-ricci.it>
+Subject: [PATCH v4 3/6] cpupower-frequency-info.1: trim trailing whitespace
+Date: Tue, 24 Mar 2026 02:35:40 +0100
+Message-ID: <20260324013543.4776-4-io@r-ricci.it>
 In-Reply-To: <20260324013543.4776-1-io@r-ricci.it>
 References: <20260324013543.4776-1-io@r-ricci.it>
 Precedence: bulk
@@ -51,46 +51,127 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-The cpupower-idle-info(1) man page describes '-f' as the short form of the
-'--silent' option and '-e' as the short form of the '--proc' option.
-But they are not correct:
-
-$ cpupower idle-info -f
-idle-info: invalid option -- 'f'
-invalid or unknown argument
-$ cpupower idle-info -e
-idle-info: invalid option -- 'e'
-invalid or unknown argument
-
-The short form of '--silent' is actually '-s' and the short form of
-'--proc' is actually '-o':
-
-cpuidle-info.c:
-	{"silent", no_argument, NULL, 's'},
-	{"proc", no_argument, NULL, 'o'},
+Remove useless spaces at the end of some lines in
+cpupower-frequency-info.1.
 
 Signed-off-by: Roberto Ricci <io@r-ricci.it>
 ---
- tools/power/cpupower/man/cpupower-idle-info.1 | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../cpupower/man/cpupower-frequency-info.1    | 56 +++++++++----------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
-index 20b6345c53ad..b2f92aba5f5b 100644
---- a/tools/power/cpupower/man/cpupower-idle-info.1
-+++ b/tools/power/cpupower/man/cpupower-idle-info.1
-@@ -11,10 +11,10 @@ A tool which prints out per cpu idle information helpful to developers and inter
+diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
+index 47fdd7218748..e4173417b7c6 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-info.1
++++ b/tools/power/cpupower/man/cpupower-frequency-info.1
+@@ -1,80 +1,80 @@
+ .TH "CPUPOWER\-FREQUENCY\-INFO" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+-.LP 
++.LP
+ cpupower\-frequency\-info \- Utility to retrieve cpufreq kernel information
+ .SH "SYNTAX"
+-.LP 
++.LP
+ cpupower [ \-c cpulist ] frequency\-info [\fIoptions\fP]
+ .SH "DESCRIPTION"
+-.LP 
++.LP
+ A small tool which prints out cpufreq information helpful to developers and interested users.
  .SH "OPTIONS"
- .LP
+-.LP 
+-.TP  
++.LP
++.TP
+ \fB\-e\fR \fB\-\-debug\fR
+ Prints out debug information.
+-.TP  
++.TP
+ \fB\-f\fR \fB\-\-freq\fR
+ Get frequency the CPU currently runs at, according to the cpufreq core.
+-.TP  
++.TP
+ \fB\-w\fR \fB\-\-hwfreq\fR
+ Get frequency the CPU currently runs at, by reading it from hardware (only available to root).
+-.TP  
++.TP
+ \fB\-l\fR \fB\-\-hwlimits\fR
+ Determine the minimum and maximum CPU frequency allowed.
+-.TP  
++.TP
+ \fB\-d\fR \fB\-\-driver\fR
+ Determines the used cpufreq kernel driver.
+-.TP  
++.TP
+ \fB\-p\fR \fB\-\-policy\fR
+ Gets the currently used cpufreq policy.
+-.TP  
++.TP
+ \fB\-g\fR \fB\-\-governors\fR
+ Determines available cpufreq governors.
+-.TP  
++.TP
+ \fB\-r\fR \fB\-\-related\-cpus\fR
+ Determines which CPUs run at the same hardware frequency.
+-.TP  
++.TP
+ \fB\-a\fR \fB\-\-affected\-cpus\fR
+ Determines which CPUs need to have their frequency coordinated by software.
+-.TP  
++.TP
+ \fB\-s\fR \fB\-\-stats\fR
+ Shows cpufreq statistics if available.
+-.TP  
++.TP
+ \fB\-y\fR \fB\-\-latency\fR
+ Determines the maximum latency on CPU frequency changes.
+-.TP  
++.TP
+ \fB\-o\fR \fB\-\-proc\fR
+ Prints out information like provided by the /proc/cpufreq interface in 2.4. and early 2.6. kernels.
+-.TP  
++.TP
+ \fB\-m\fR \fB\-\-human\fR
+ human\-readable output for the \-f, \-w, \-s and \-y parameters.
+-.TP  
++.TP
+ \fB\-n\fR \fB\-\-no-rounding\fR
+ Output frequencies and latencies without rounding off values.
+-.TP  
++.TP
+ \fB\-c\fR \fB\-\-perf\fR
+ Get performances and frequencies capabilities of CPPC, by reading it from hardware (only available on the hardware with CPPC).
  .TP
--\fB\-f\fR \fB\-\-silent\fR
-+\fB\-s\fR \fB\-\-silent\fR
- Only print a summary of all available C-states in the system.
- .TP
--\fB\-e\fR \fB\-\-proc\fR
-+\fB\-o\fR \fB\-\-proc\fR
- deprecated.
- Prints out idle information in old /proc/acpi/processor/*/power format. This
- interface has been removed from the kernel for quite some time, do not let
+ .SH "REMARKS"
+-.LP 
++.LP
+ By default only values of core zero are displayed. How to display settings of
+ other cores is described in the cpupower(1) manpage in the \-\-cpu option section.
+-.LP 
++.LP
+ You can't specify more than one of the output specific options \-o \-e \-a \-g \-p \-d \-l \-w \-f \-y.
+-.LP 
++.LP
+ You also can't specify the \-o option combined with the \-c option.
+ .SH "FILES"
+-.nf 
+-\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP  
+-\fI/proc/cpufreq\fP (deprecated) 
++.nf
++\fI/sys/devices/system/cpu/cpu*/cpufreq/\fP
++\fI/proc/cpufreq\fP (deprecated)
+ \fI/proc/sys/cpu/\fP (deprecated)
+-.fi 
++.fi
+ .SH "AUTHORS"
+ .nf
+-Dominik Brodowski <linux@brodo.de> \- author 
++Dominik Brodowski <linux@brodo.de> \- author
+ Mattia Dongili<malattia@gmail.com> \- first autolibtoolization
+ .fi
+ .SH "SEE ALSO"
+-.LP 
++.LP
+ cpupower\-frequency\-set(1), cpupower(1)
 -- 
 2.53.0
 
