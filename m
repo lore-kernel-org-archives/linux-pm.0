@@ -1,207 +1,258 @@
-Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com [209.85.160.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB5C525785D
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 12:03:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.178
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774353823; cv=pass; b=L/JE5OlnFo/b9Ivoy5buFI4ptoxZB5/DQW4RR23nB1gwAZlBxsYaAvZTjp/SrAXI2kX48ARRtOmsNF6DVsP2XiVkxhD8vdDJPP2po2jJALch+xAej1cslhG+Irb+ga+MoINnVDpSUrZDUR5oCvxnmPEVz0R12chCfzAkcZthezM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774353823; c=relaxed/simple;
-	bh=xht2//06apJ5sa0rNqEN/FMso5uXuLZ/poM1328nqeg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZOVfVpZzNlO18KfAEVX/r94KoRigkC2cX78LvODn/2J3TU3oni+2wf/w23b7/dVYN4qpo5xsWAGpZSmxhN5p2Cr7FgP+YoqBnlmvr5Oh7tNm1jLp8b5IuAbFMtyb5DB1JPbbEzb8WIQr/lm32FWxLfoP3I+YcFudkibwHZeXeDw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Icbp+Uft; arc=pass smtp.client-ip=209.85.160.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 993523F7870
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 12:05:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774353905; cv=none; b=dvA2nPD+xqilwwEDgHIVE7Lo8qLRDfkWduyBC39rA7Wt8b6RUtgc07N69RWYE1/vy/PHyBBavpny1cV2021agEhBcCeFjwgxPmRDUlG+R5bZi56AasZTRaTsiF//4WFY3uiqElA/SSsVQr5FkCZND9MvanLnTxuOSvczTCCV7s8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774353905; c=relaxed/simple;
+	bh=INmeiGJKMXk+0PJEej2mrgVEmYRHxRGrlBMc5p0a5aY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=o8zjpJiPzz+Tl9TkXO/POpgGuXeCKG+o2sRGZSxBz8PctYzMpc/ZsEgle7UWjTQwMAMc+X6bBu67nQFm2HZ7CGeBumU2O8NatAn2VHr1gZWAiggJVPYBlNIRo8UOtKZmi+72aQ1HgF7doCC+ooGEnK/MTnAXxn3DUWG0BRVF1s8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eiiwG5ed; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=WbRi+ybS; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Icbp+Uft"
-Received: by mail-qt1-f178.google.com with SMTP id d75a77b69052e-506a7bbe9d0so39166941cf.0
-        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 05:03:41 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774353820; cv=none;
-        d=google.com; s=arc-20240605;
-        b=EUk3xbm2kmvxt+2cXS0xi4Kl+uCxNyLErhg41VZa3wqcY0Sh9kTdtUNWwVxZhL2QXH
-         hroyIoix2HYHBRe44l0GrjNYjgvljkkNPQLH2/74IsOI+0DPqnV6pXQu4ZHbvIkZtkuD
-         HAeyZ2H0y2Uv2/el+Ggd8k0LZJrGkiK/I8HxoHdOUt1RAxJXo8nL2qXYIwdrGy19kUc8
-         eFmNiz5aEvwWeS/EsnB1uWuwOEpaVePw5/XMVePJkPSf/20ZdNBMeLnn4p+j4t2rdh1Z
-         2OjK9C/nqZY0PAAv/WCTZtAYCsi/40AoJi9Sey74oS37pwy4/TDSnp7xcbL/o+LmTjRj
-         YeUQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
-        fh=78vpv8B9iPc2/fH1nG0o2GGk595u6xgOs3uPOvOiY90=;
-        b=TGvRPm5oZOC+tR7jHHhUp/G81YQlHoUZIfC/Bd1Z3M37UGT+fE3W0sx3FNODsg3flQ
-         ATmcjwvaH9ndsk07sZtkP3g1SLM6o3lcIw0plVg2Ckuj7TZxY/YuQeL4N+gQ8mKXPae9
-         +rRRAsP8G9kD3JBuzylzoWA7rrxf/tesFMgqpj7YAZraZM59HF9LMyDvCCTkmqJ+YMht
-         l3/KsJeJft04K1Ke8tdWKAQAGEI1/rNyCY4D3Cs3u0n6Gr9KAMGq2p9uNc0/lOI0u5Yc
-         8tcst82kK87MNzS64tMxYaf6NoMY1XsPe999PSeVioy0en99fxRQVr9SD4e4STcXnQ9H
-         3Wnw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eiiwG5ed";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="WbRi+ybS"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62O9mmOJ890470
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 12:05:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	E5IUEO5PyBIerJfWjfzoqFirzXsSOD9hNzXQV1mXr0E=; b=eiiwG5edacFrpRTZ
+	EtFrpYBAz2dzEh8QgxuzMve34/TbRlhIqFNx0EIQC9p4hZ2Sc1R0WIg2sTP6BzrM
+	ZMpxlfMwVzsguvbqR5NsG0MiTxuaUDz7gQK9z/PxTLu1TEuNtp0aZM+jWN5B0FTG
+	cAEb6aMA1eo/Z0VWzsnyIojgSv0Q7zlmm7vQ+g3Jors7pW4zXq4WIA+Gen1trqxO
+	8FKevj/nVzz62rhyId8j2AORT2bDOzfq1W9g4Gu+AsQMotjMluRzjhztxSKw7emf
+	qjozK5HoD7x8HTa7uMYLbYLYuYjcsGG4hg2oWm9+adG+aTQzddUtS3YHqtw1B3gb
+	YkEiWw==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d3k1x9qy9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 12:05:00 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2b091c3f891so29674025ad.3
+        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 05:05:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774353820; x=1774958620; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
-        b=Icbp+UftoKedEP+N919TqqfnFiINVP4bY80Vi9H3JRrn5VnhYs2juSQ1IkdTLQpGeB
-         Ye0d/7NkIiANR2Yez63mg5NRGD5KdSmy+R1KmbGvEYenpVXOH8ZVEfRKUV8GZIvB+bPI
-         7Dm7zpIKOd2sBOM8qL1JAhAjV0y+FDlAWA0I+XN/StAxO0qAU+h0quV255q5QPfaxSS3
-         AMivR8d2O8MdGOsLCSVvfOPnStvsxVcqYmWoKODAa545cHKGcJwBVECEfP17lCWuyxlU
-         7iBV45yN8Od4Ilk1G9Ihwu2iyqK4PPsYHSw3HoPak3UtKV4cuTtXah/uKRzhondszdc/
-         W7yQ==
+        d=oss.qualcomm.com; s=google; t=1774353832; x=1774958632; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=E5IUEO5PyBIerJfWjfzoqFirzXsSOD9hNzXQV1mXr0E=;
+        b=WbRi+ybSq4e9zxeIDKMB3zYpcvgUUZIDXnZf7g73kTxLpOos5gPMNHtFs8UOfh6Tod
+         sJXw+70MV4V4CiKrPAeMebBf5hDrh4ZHj0mCt2ndeBdCwxTg06Z7dQBmTDqKVprUtU5D
+         rz1xNVDdL8Nv3fJwxoSHudHmmUbM3dBlaVhvI0/lyMygDCfcJL32pDOvY9b27HWATsbr
+         xmSQYf1/mGl9mWEG7pHObsRYc31JMTnTmOGYj8ZsS9F4N+hFZa61vJ1dUJfpzUFDxkqC
+         65U56QXJF2weVzss9W8nWdYl1WoFBxiy6WNY18D43gxgHne7TxYr2s1J8yCdAFLausxw
+         qxgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774353820; x=1774958620;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=xuwQvbZgeHRDoxB8YZdL4R9Du7ZDiP5uzm/KqRYSGaA=;
-        b=l1bdJ/PV2LUXwz/wMHXsUYYhSqHoxBAfRGXpvBuvR58mxCmK4anECXXwDu2ogHGGm5
-         iaz0cThlhda2rpZF5NSGKYQxDPbLNcNyEkJ8qrR7IR+XdszlfqG7ZVeY97KFbvFG9wYG
-         ZN3gATQtx8OPOI9+2qwqLqZfHJ6l59XMyo4BSfxBucHFB0fxQ8skrpCMHy9XF7eZCFTh
-         WaonOBFWgYWdCaG++h/4KYbHpSgJ6blMUpie0dO8dB8ks0MmMnOWMCcKBTHG1YgrVQIY
-         z3O++0tm2FMto2gdD4bUT625mi9wkHP/BQPa1Gdr8qZ/BnUazbDHESZsgmOqD+wj+Tsm
-         cvyA==
-X-Forwarded-Encrypted: i=1; AJvYcCWEZF1x87s7GMx/rZy7yJDyJuATZ2LCx626xfz6sacWr4kX1JItFmGZBWUfN+9kXxJbm/8+Ss2W5A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw7aqp8lmbe8yeiuROBJNwQHem3YXAadYEjdcetL97YK/WLNwTu
-	dxCRKsNvBivOq/jZbZ5kIy775R//HRaBoY09cjiHWCquCh79cElpoCKdealB3xwhrOTanxBvLDN
-	calSmkJi9cTAIySf5lg2PpZVKj/C6BSY=
-X-Gm-Gg: ATEYQzxcsnqan2IPOJ/UXfM/VBaoq0UNl86T9qBZbiDRJDVKK/0MzblXdUw2Wwnbb2f
-	Ef9fW9TEc6+pPyMAHOjGNOK9iP6uKfOwG0U/97fleJgbKorupqW+E7ayt2aHmLjMoFg0QD0gKow
-	XezNT6FfJYlJTz9rAdPgoWYFnTt7dKEf+5uVRSL5Oexv1Pn8Efw7h4OFcrV85m616NFiu6m5LOW
-	92bq/PIqFVpyhOFTuXm1Tr5wpEdd9KeKitdkpKGEgVPK7E/y1J7E0EB+qVfSACN+OQtbcQNZVNz
-	sh3lFaaV
-X-Received: by 2002:a05:622a:8e15:b0:50b:33c7:5d97 with SMTP id
- d75a77b69052e-50b374f5c91mr221708461cf.37.1774353820361; Tue, 24 Mar 2026
- 05:03:40 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774353832; x=1774958632;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=E5IUEO5PyBIerJfWjfzoqFirzXsSOD9hNzXQV1mXr0E=;
+        b=EMO6mCYz3aNOHTVVZ0oyUFJwFqfMy9Ms5FVYiMZF7nn4/2d7OLTl0wgjmga71KIUR8
+         mhHpC+pEDIAVIksdMM+OVVYsYVaZZbvlkiJNTcoIoQtP1AeSSIvOlBZYRYSENeA20M5/
+         I9yzgCj523iD8C9zTRexMV9QZwuFMwZbBFCWn/bh4sjQuT4QjVP9atIizKE32vMRyMwi
+         wGWbXfsOWsU6yNqANr1653wif9u4pP0WkVcEUGvk1jQyaZklNtAvefJesgknYPqJ08vi
+         mAkncdhKLHFiPOp6YfiW+ENwohmgclArAYssEmvqD7AfrpOReyFHvyj4+EIuieoHckuX
+         YtKg==
+X-Forwarded-Encrypted: i=1; AJvYcCU76g625II2YOKcBTKmEhQbJ8DQwxBPu2G7OgKOC8FyPUdxq9uC0gLjjipSp4IZArJneIdSG2Jaww==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzaimPI6rvxImwfk9tD/NQqCELKZTn+l0RPiO3MCpcWAWrrOave
+	V6/Mr62Ua3P7TEZxCvlFw2F+XPYDJzvczkQuNSDX5WJWp2ycdqVHOjifdxRJpgRil9AayZmCOH/
+	3Gq1AIHSgo3bLCOlF4J0N83nLKHK0d1gGI7vPX1WLMhE+utt/7vnanqfO8g40yQ==
+X-Gm-Gg: ATEYQzwAzJYhwBZiZjSuTV8fcbeG5h/r5+V1g/z6UfpwcseSFtt125J+FUd36Kd6Dn7
+	c1n5cE8G+wlHyVK9bvWg6noSqeKLuQh7O74eNi/BOLD+wG6iD3yxW5Inqvk8Jmvjf2MUGkIXudx
+	ECGvftZUlKEFbTfU8ru7ZUR3/+K4P4rPEhAtngmgPyZcWdSW6tj5/DpiVjP5SLAh28Z5ZLrXfNR
+	Rdg36kiKZVDLmBL0HRJ719SxRs4+NLByEa73yU7ozL2phWrfR/GJ6zLxBFPSJCDKUGFgLxfuIzp
+	NAxC2c4LRU25chU82Y2HBO/iFagpDDws7BbG7auPE9Q4j9pRNFrjQTz1vaUgVHgK5AVonmv5iGu
+	sv6m05+AfLiqUf16r8Q6VwERlCjDaidWr9N/QitxdwyGO10ls1ok7Dg==
+X-Received: by 2002:a17:903:3ba5:b0:2b0:5aab:c40a with SMTP id d9443c01a7336-2b08277aecamr143662595ad.31.1774353831149;
+        Tue, 24 Mar 2026 05:03:51 -0700 (PDT)
+X-Received: by 2002:a17:903:3ba5:b0:2b0:5aab:c40a with SMTP id d9443c01a7336-2b08277aecamr143662045ad.31.1774353830506;
+        Tue, 24 Mar 2026 05:03:50 -0700 (PDT)
+Received: from [10.218.35.45] ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b083656f65sm208995095ad.45.2026.03.24.05.03.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 24 Mar 2026 05:03:50 -0700 (PDT)
+Message-ID: <f97c6dfa-55dc-4792-95d6-4aa1bce3694d@oss.qualcomm.com>
+Date: Tue, 24 Mar 2026 17:33:42 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320113148.7308-1-xuewen.yan@unisoc.com> <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
- <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
- <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com> <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
- <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com> <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
- <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com> <CAB8ipk_7MGUza9_izMypMxPFUjAoB34ZZp0-ts4w6eJ+tr+MDw@mail.gmail.com>
- <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
-In-Reply-To: <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
-From: Xuewen Yan <xuewen.yan94@gmail.com>
-Date: Tue, 24 Mar 2026 20:03:27 +0800
-X-Gm-Features: AaiRm529CioeCv2wAkTMW67vGkmaLJzrBEh645HIXNHAypmBn-ao8gEf8RRAPg4
-Message-ID: <CAB8ipk_VftSn4U+Vzdv_ST7apiONVoYy4PTe7usRetXry6uSOQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in get_load()
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xuewen Yan <xuewen.yan@unisoc.com>, rui.zhang@intel.com, 
-	rafael@kernel.org, linux-pm@vger.kernel.org, amit.kachhap@gmail.com, 
-	daniel.lezcano@kernel.org, linux-kernel@vger.kernel.org, ke.wang@unisoc.com, 
-	di.shen@unisoc.com, jeson.gao@unisoc.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 3/3] PCI: Add support for PCIe WAKE# interrupt
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+        Pavel Machek <pavel@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Danilo Krummrich <dakr@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Bartosz Golaszewski <brgl@bgdev.pl>, Linus Walleij <linusw@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>,
+        Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-gpio@vger.kernel.org, quic_vbadigan@quicinc.com,
+        sherry.sun@nxp.com, driver-core@lists.linux.dev,
+        devicetree@vger.kernel.org
+References: <20260313-wakeirq_support-v8-0-48a0a702518a@oss.qualcomm.com>
+ <20260313-wakeirq_support-v8-3-48a0a702518a@oss.qualcomm.com>
+ <4n5heks4oymfz75wiajyc5zuzzulmwyfj2couudbi7gi67h2rk@smpnmyhdjkns>
+Content-Language: en-US
+From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+In-Reply-To: <4n5heks4oymfz75wiajyc5zuzzulmwyfj2couudbi7gi67h2rk@smpnmyhdjkns>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI0MDA5NiBTYWx0ZWRfX/CziBRVf1+Rj
+ kf78jHXGt2W9HiUHwl1bunlvC/aAhjLXnP0s7Y6NI6d8bNXjzJf//TYQe30XpC6rG43VFzm+n+v
+ bN2Y2HPChqMei8yHX/OlnRkJyFRev03GQXM8e32kVmoWCGw0PdcvwBDvrFoVdGqoW4DwCQZxXks
+ iVfTE1nJbhGRv17KHdkA7/D4xiTXUHGLy5S9cOMtFjbTozd0x19E7rDCCdw8T5wmJzECNzPkBwu
+ 30Hfr5Wuj7EPA2hhnA+FwHrjAors3K1Zny+kHUIaXRRPmbl2vRjZ+nuK1/q4N0rVel5HciHk8qi
+ dZmFs/ETNJAmLThOpCpbXVKpstFeY7sJZhV1IR2VTrZNsK1TQ+slpmDNEPUIF+j6njccgNrssCc
+ KLIcFA4ZdP+UFiaMdgQJTo5/0rGe+qgjtpdre3NN+A3lUSDERsj2KguolHCL/WmXKZu7qUuF2j0
+ 7rXfcT10Bu5D6e5TmOg==
+X-Proofpoint-ORIG-GUID: tZ0-42F0EMVnG2es_wPsAG8mJgfWnLf4
+X-Authority-Analysis: v=2.4 cv=O880fR9W c=1 sm=1 tr=0 ts=69c27dec cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=NEAV23lmAAAA:8 a=KKAkSRfTAAAA:8
+ a=rFA5VEQNUbPbIC_WhckA:9 a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-GUID: tZ0-42F0EMVnG2es_wPsAG8mJgfWnLf4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-24_02,2026-03-23_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0 malwarescore=0
+ clxscore=1015 phishscore=0 adultscore=0 priorityscore=1501 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603240096
 
-On Tue, Mar 24, 2026 at 6:45=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.com> w=
-rote:
->
->
->
-> On 3/24/26 02:20, Xuewen Yan wrote:
-> > On Mon, Mar 23, 2026 at 9:25=E2=80=AFPM Lukasz Luba <lukasz.luba@arm.co=
-m> wrote:
-> >>
-> >>
-> >>
-> >> On 3/23/26 11:06, Viresh Kumar wrote:
-> >>> On 23-03-26, 10:52, Lukasz Luba wrote:
-> >>>>> How is that okay ? What am I missing ?
-> >>>
-> >>> I was missing !SMP :)
-> >>>
-> >>>> Right, there is a mix of two things.
-> >>>> The 'i' left but should be removed as well, since
-> >>>> this is !SMP code with only 1 cpu and i=3D0.
-> >
-> > That's also why we sent out patch 1/2; after all, it is always 0 on
-> > !SMP systems.
-> >
-> >>>>
-> >>>> The whole split which has been made for getting
-> >>>> the load or utilization from CPU(s) needs to be
-> >>>> cleaned. The compiled code looks different since
-> >>>> it knows there is non-SMP config used.
-> >>>
-> >>> Right, we are allocating that for num_cpus (which should be 1 CPU
-> >>> anyway). The entire thing must be cleaned.
-> >>>
-> >>>> Do you want to clean that or I should do this?
-> >>>
-> >>> It would be helpful if you can do it :)
-> >>>
-> >>
-> >> OK, I will. Thanks for your involvement Viresh!
-> >>
-> >> Xuewen please wait with your v2, I will send
-> >> a redesign of this left code today.
-> >
-> > Okay, and Qais's point is also worth considering: do we actually need
-> > sched_cpu_util()?
-> > The way I see it, generally speaking, the request_power derived from
-> > idle_time might be higher than what we get from sched_cpu_util().
-> > Take this scenario as an example:
-> > Consider a CPU running at the lowest frequency with 50% idle time,
-> > versus one running at the highest frequency with the same 50% idle
-> > time.
-> > In this case, using idle_time yields the same load value for both.
-> > However, sched_cpu_util() would report a lower load when the CPU
-> > frequency is low. This results in a smaller request_power...
->
-> Right, there are 2 things to consider:
-> 1. what is the utilization when the CPU still have idle time, e.g.
->     this 50% that you mentioned
-> 2. what is the utilization when there is no idle time and CPU
->     is fully busy (and starts throttling due to heat)
->
-> In this thermal fwk we are mostly in the 2nd case. In that case the
-> utilization on CPU's runqueue goes to 1024 no mater the CPU's frequency.
 
-Haha, indeed. When we debug IPA, we also keep the CPU constantly
-running with basically no idle time.
-In this scenario, we tested using both sched_cpu_util() and idle_time,
-and for thermal control purposes, there was basically no difference
-(likely because the load was at 100%).
-Maybe we can cook up a test case where the CPU is overheating despite
-having some idle time? That way we can compare how the two interfaces
-perform.
 
-> We know which highest frequency was allowed to run and we pick the power
-> value from EM for it. That's why the estimation is not that bad (apart
-> from power variation for different flavors of workloads: heavy SIMD vs.
-> normal integer/load).
->
-> In 1st case scenario we might underestimate the power, but that
-> is not the thermal stress situation anyway, so the max OPP is
-> still allowed.
->
-> So far it is hard to find the best power model to use and robust CPU
-> load mechanisms. Adding more complexity and creating some
-> over-engineered code in the kernel to maintain might not have sense.
-> The thermal solutions are solved in the Firmware nowadays since the
-> kernel won't react that fast for some rapid changes.
->
-> We have to balance the complexity here.
-> Let's improve the situation a bit. It would be very much appreciated if
-> you could share information if those changes help your platform
-> (some older boards might not show any benefit with the new code).
->
-Understood. We appreciate the balance between complexity and accuracy.
-We could test these changes on our platforms and let you know if we
-see any improvements in thermal stability or power estimation. Expect
-an update from us in a few days.
+On 3/17/2026 12:56 PM, Manivannan Sadhasivam wrote:
+> On Fri, Mar 13, 2026 at 12:38:42PM +0530, Krishna Chaitanya Chundru wrote:
+>> According to the PCI Express specification (PCIe r7.0, Section 5.3.3.2),
+>> two link wakeup mechanisms are defined: Beacon and WAKE#. Beacon is a
+>> hardware-only mechanism and is invisible to software (PCIe r7.0,
+>> Section 4.2.7.8.1). This change adds support for the WAKE# mechanism in
+>> the PCI core.
+>>
+>> According to the PCIe specification, multiple WAKE# signals can exist in
+>> a system or each component in the hierarchy could share a single WAKE#
+>> signal. In configurations involving a PCIe switch, each downstream port
+>> (DSP) of the switch may be connected to a separate WAKE# line, allowing
+>> each endpoint to signal WAKE# independently. From figure 5.4 in sec
+>> 5.3.3.2, WAKE# can also be terminated at the switch itself. To support
+>> this, the WAKE# should be described in the device tree node of the
+>> endpoint/bridge. If all endpoints share a single WAKE# line, then each
+>> endpoint node should describe the same WAKE# signal or a single WAKE# in
+>> the Root Port node.
+>>
+>> In pci_device_add(), PCI framework will search for the WAKE# in device
+>> node, If not found, it searches in its upstream port only if upstream port
+>> is Root Port. Once found, register for the wake IRQ in shared mode, as the
+>> WAKE# may be shared among multiple endpoints.
+>>
+>> dev_pm_set_dedicated_shared_wake_irq() associates a wakeup IRQ with a
+>> device and requests it, but the PM core keeps the IRQ disabled by default.
+>> The IRQ is enabled only when the device is permitted to wake the system,
+>> i.e. during system suspend and after runtime suspend, and only when device
+>> wakeup is enabled.
+>>
+>> When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume() to
+>> bring the device back to an active power state, such as transitioning from
+>> D3cold to D0. Once the device is active and the link is usable, the
+>> endpoint may generate a PME, which is then handled by the PCI core through
+>> PME polling or the PCIe PME service driver to complete the wakeup of the
+>> endpoint.
+>>
+>> WAKE# is added in dts schema and merged based on below links.
+>>
+>> Link: https://lore.kernel.org/all/20250515090517.3506772-1-krishna.chundru@oss.qualcomm.com/
+>> Link: https://github.com/devicetree-org/dt-schema/pull/170
+>> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+>> Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+>> ---
+>>   drivers/pci/of.c       | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>>   drivers/pci/pci.c      | 10 +++++++
+>>   drivers/pci/pci.h      |  2 ++
+>>   drivers/pci/probe.c    |  2 ++
+>>   drivers/pci/remove.c   |  1 +
+>>   include/linux/of_pci.h |  4 +++
+>>   include/linux/pci.h    |  2 ++
+>>   7 files changed, 95 insertions(+)
+>>
+>> diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+>> index 9f8eb5df279ed28db7a3b2fd29c65da9975c2efa..b7199d3598b31b62245716c178a5a73565efc89e 100644
+>> --- a/drivers/pci/of.c
+>> +++ b/drivers/pci/of.c
+>> @@ -7,6 +7,7 @@
+>>   #define pr_fmt(fmt)	"PCI: OF: " fmt
+>>   
+>>   #include <linux/cleanup.h>
+>> +#include <linux/gpio/consumer.h>
+>>   #include <linux/irqdomain.h>
+>>   #include <linux/kernel.h>
+>>   #include <linux/pci.h>
+>> @@ -15,6 +16,7 @@
+>>   #include <linux/of_address.h>
+>>   #include <linux/of_pci.h>
+>>   #include <linux/platform_device.h>
+>> +#include <linux/pm_wakeirq.h>
+>>   #include "pci.h"
+>>   
+>>   #ifdef CONFIG_PCI
+>> @@ -586,6 +588,78 @@ int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin)
+>>   	return irq_create_of_mapping(&oirq);
+>>   }
+>>   EXPORT_SYMBOL_GPL(of_irq_parse_and_map_pci);
+>> +
+>> +static void pci_configure_wake_irq(struct pci_dev *pdev, struct gpio_desc *wake)
+>> +{
+>> +	int ret, wake_irq;
+>> +
+>> +	wake_irq = gpiod_to_irq(wake);
+>> +	if (wake_irq < 0) {
+>> +		pci_err(pdev, "Failed to get wake irq: %d\n", wake_irq);
+>> +		return;
+>> +	}
+>> +
+>> +	device_init_wakeup(&pdev->dev, true);
+> Just set wakeup only if dev_pm_set_dedicated_shared_wake_irq() succeeds.
+ack.
+>> +
+>> +	/*
+>> +	 * dev_pm_set_dedicated_shared_wake_irq() associates a wakeup IRQ with the
+>> +	 * device and requests it, but the PM core keeps it disabled by default.
+>> +	 * The IRQ is enabled only when the device is allowed to wake the system
+>> +	 * (during system suspend and after runtime suspend), and only if device
+>> +	 * wakeup is enabled.
+>> +	 *
+>> +	 * When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume()
+>> +	 * to bring the device back to an active power state (e.g. from D3cold to D0).
+>> +	 * Once the device is active and the link is usable, the endpoint may signal
+>> +	 * a PME, which is then handled by the PCI core (either via PME polling or the
+>> +	 * PCIe PME service driver) to wakeup particular endpoint.
+>> +	 */
+>> +	ret = dev_pm_set_dedicated_shared_wake_irq(&pdev->dev, wake_irq,
+>> +						   IRQ_TYPE_EDGE_FALLING);
+> Isn't WAKE# a level triggered signal?
+Ack. I will change IRQ_TYPE_EDGE_FALLING to IRQ_TYPE_LEVEL_LOW.
+>> +	if (ret < 0) {
+>> +		pci_err(pdev, "Failed to set wake IRQ: %d\n", ret);
+> s/wake/WAKE#
+ack.
 
-Thanks!
----
-
-> Regards,
-> Lukasz
+- Krishna Chaitanya.
+> - Mani
 >
+
