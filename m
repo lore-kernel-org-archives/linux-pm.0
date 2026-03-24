@@ -1,112 +1,117 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from n169-112.mail.139.com (n169-112.mail.139.com [120.232.169.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9753B3C6607
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 06:49:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 67D3D363095;
+	Tue, 24 Mar 2026 08:21:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=120.232.169.112
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774335012; cv=none; b=aP7XswHwIc11A5rliNB8AghvVVywwmWgnVaWNU6M/bvVPQB1GGe0pQ6NmQMrSMh5ecOdn31DcqPk8u/I9Q0qYiBS2QwQwXuy1mqEJWzklJKiQOrIvuSq22z5jVV0iceKDOxVD23oxBZ1rj+XHxsRrZvK8ofD7U3vNXh0Fdzqnds=
+	t=1774340524; cv=none; b=AEhZ7nQbyX4xbN/pVC76XPJEPEBjfP7LJH3t7u5ra+Xx+d+YexhU5UnGQjscuePOqvZM620O8d41vdZytsyz1VnaB3UjWpbNsPwSK8lo44iNmKVR+2E2a3CN1gd9ptc8a2+9O1cKCBc7NzxZIEraryaEtcD8zqrHx9bCNt18hkc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774335012; c=relaxed/simple;
-	bh=mwFOGE+bU77F79Y64GOx+68vYMTCo8BK19WdU3ivPxs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m+KxqJQ2zGEuyh7ggTslDMv+hVh3d81slL8LMaW4iPtnkU0jOpgiTfupNf8ufbtNRa8ln0NMPHcNKr0ofVj4h8BwIlNmGcnGOjqYfVg+iYxSdyHpCuGo3kAftZoOXVr1HJgfPQ0Bg9/va+WuB0eLXXkIvjBhUf6YGxj3t7SYFe0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=H6HGHKCO; arc=none smtp.client-ip=209.85.214.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774340524; c=relaxed/simple;
+	bh=RresJ9cJ7rbHNFImXUvswdjykY8j00URXG6gtoRG/Dw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Rnh0zRBwceDMHVqoDMA4JIWnwtrvGUc3d5gxZyYnmpq0aD0A0vc3Zoe8q3wD7X3tQJGolHcw8l+3eox5er6D5C8i3zvpmB7fUaW2N1YFa+ZYjMS1zwal6t7PE+YwJ6u1PrQPXDXGnLr13D4wzASRmeM8QALy1QXEUWFadCaeQOQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=139.com; spf=pass smtp.mailfrom=139.com; dkim=pass (1024-bit key) header.d=139.com header.i=@139.com header.b=YjcVDFN5; arc=none smtp.client-ip=120.232.169.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=139.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=139.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H6HGHKCO"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2aecefc7503so37396135ad.1
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 23:49:58 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=139.com header.i=@139.com header.b="YjcVDFN5"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774334998; x=1774939798; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=9BtRgbo5SYoBF3YUHMOjmQ4qRhqYMdpWB9iGrbsQFLk=;
-        b=H6HGHKCOgu+u4u4AuZvbhWfyBwdNt/LnAr30srgWx2PX3IzN41usgMbLEHlgRoUrNw
-         O0nT2CsIwXxb7BEoCi8lfIlF7prpXjESr7TohcmPssZ1rUdUUVwzskiVDVQ2fPZQyELi
-         QcnUNDc2Pl2aNkUi2aUBsCSRtWeeKFCHeiTnVQCXmW2I3Djt27WCfG4uxV7U8P1kq3Wg
-         7QEIc1uYJnyRq2RAJliH/u+4e0x0eeL1Z4KsK5Y6jokBUAq7ZMFYqq5Ta0r0IPwCRllC
-         j7OOk1TjvEpYoBlyt6lNluaz4x5D4/bWSQYgJsidE1/FMwsmdekhIDDpH+ArKyESyPo2
-         sf7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774334998; x=1774939798;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=9BtRgbo5SYoBF3YUHMOjmQ4qRhqYMdpWB9iGrbsQFLk=;
-        b=s4cvt+Q8dcWNz6Ne7KxNDZ49QeK7jG2erD4yerT+MH9B/1MrTTtvBXITnaRSa0NyV+
-         u4wu50oWEjkkDcabixe22wdB3SncHX6I0JdmDI0KEKfEbAn5vaM8svcQ9pFX+9vUZ9Qy
-         PQnvKvbAwOEM4iXg1sv52fsTxfTLqsLHRpMPc+eevGV++8U0D0CXwcA6CMeUyHoWa0vx
-         zqfBkK5YgyLaMAh435U7qo7k7lCM8z3V5Pn09PPAWf1SNpYaqUazfuQrd8VeQz64rR7J
-         Oz5Y1ST+HTVBfUUh/PdSMhVKfyxoBmGKnICbS12+eTkHegnwlxSP0cwmiC5+nbsZEM7r
-         9Xww==
-X-Forwarded-Encrypted: i=1; AJvYcCXQ9O7nKHyyoIhiYqU7FJOLRQZ5q0Wn48P0egHGYVCmF9LKvd5gpyu0g9BbIb/uuE5gy+15fZrX1A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx99Rrgx5UhdIDIQU0oi33LQaMctXznNOYgDJUAADHORteoaiip
-	UoA/xKVWnE/zgvxPzWgY3GJZLliIHJ2iDlp04GhjG+IO0Q9rGrsDFO26
-X-Gm-Gg: ATEYQzzLuz5xhblE+9AriIMZA+lIwYz2YDv+dwNyJBg4WdaEqag+/gimF+augHusvz8
-	GNpZc0cMkxeXiOSYq5Mui6Oj1KfCC/jN6LKoLJHxZHhfF7fwMYqAfvzHF1Qr3yZRFV1RZ1tv8uE
-	95SMy9nmnn/H3/XUeXYWvCK8KlIqj15nhS19xLJhv0ipNLYGQth3PEwOx8AYhuscrBAyUPVHNu2
-	6bfVsm2rQFMA8PNo8ezUMj48AaCTqV1ihOLhtrLzC1kH3JYkWqMb3SHDHLIULIjVsyXDTzvShkh
-	23Raxwj8tVqP4A7bF8Xt/iiCnxN2ahnrCJeOj13yj2ZY5Vh99lm6TIAuZfK7602okzXz7iLywux
-	yjwClvCx9Hb1Sj/QVL/LEswW1tsNZbMSnqs7Z87+fvd6Kc8LfRzwFZTCCkftFsMqk/02+JF22rc
-	o6A8aoN9gHNuaV7uu+zUA+u8wq73YBfTzd8nXAMf2TWh0IwTiD0QiO00NPZ2at6JELi7px
-X-Received: by 2002:a17:902:f70e:b0:2ae:478f:2ec with SMTP id d9443c01a7336-2b08277b109mr133450355ad.29.1774334997612;
-        Mon, 23 Mar 2026 23:49:57 -0700 (PDT)
-Received: from KASONG-MC4 ([43.132.141.21])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b083655b45sm180639635ad.42.2026.03.23.23.49.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Mar 2026 23:49:57 -0700 (PDT)
-Date: Tue, 24 Mar 2026 14:49:52 +0800
-From: Kairui Song <ryncsn@gmail.com>
-To: Youngjun Park <youngjun.park@lge.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Pavel Machek <pavel@kernel.org>, Kemeng Shi <shikemeng@huaweicloud.com>, 
-	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>, Barry Song <baohua@kernel.org>, 
-	Usama Arif <usama.arif@linux.dev>, linux-pm@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v8 2/2] mm/swap: remove redundant swap device reference
- in alloc/free
-Message-ID: <acIm_7vtj4XETdyP@KASONG-MC4>
-References: <20260323160822.1409904-1-youngjun.park@lge.com>
- <20260323160822.1409904-3-youngjun.park@lge.com>
+	d=139.com; s=dkim; l=0;
+	h=from:subject:message-id:to:cc:mime-version;
+	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
+	b=YjcVDFN5z5uzo/k8DE4g7Frzr5isbsDD8zkHT+hB70ld07OWo/9FvjVbMD4hytSDeQhy6ua/v2v3f
+	 bX3InMIs3vkcnyD5Hqp+pOhRsfEOIq3CqqK87ZvqDdgjprc96jDSFZLAbA+7HrsY0cI4P+WaEISUY7
+	 /l54smaWbwV+Dfts=
+X-RM-TagInfo: emlType=0                                       
+X-RM-SPAM:                                                                                        
+X-RM-SPAM-FLAG:00000000
+Received:from Ubuntu24 (unknown[2409:8A00:DD3:9760:10A3:2606:149F:AFFC])
+	by rmsmtp-lg-appmail-19-12022 (RichMail) with SMTP id 2ef669c249927e1-01800;
+	Tue, 24 Mar 2026 16:21:45 +0800 (CST)
+X-RM-TRANSID:2ef669c249927e1-01800
+From: Bin Lan <lanbincn@139.com>
+To: gregkh@linuxfoundation.org,
+	stable@vger.kernel.org
+Cc: linux-pm@vger.kernel.org,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Rob Herring <robh@kernel.org>,
+	Bin Lan <lanbincn@139.com>
+Subject: [PATCH 5.15.y 1/2] of: Add cleanup.h based auto release via __free(device_node) markings
+Date: Tue, 24 Mar 2026 16:21:12 +0800
+Message-ID: <20260324082113.6275-1-lanbincn@139.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260323160822.1409904-3-youngjun.park@lge.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 24, 2026 at 01:08:22AM +0800, Youngjun Park wrote:
-> In the previous commit, uswsusp was modified to pin the swap device
-> when the swap type is determined, ensuring the device remains valid
-> throughout the hibernation I/O path.
-> 
-> Therefore, it is no longer necessary to repeatedly get and put the swap
-> device reference for each swap slot allocation and free operation.
-> 
-> For hibernation via the sysfs interface, user-space tasks are frozen
-> before swap allocation begins, so swapoff cannot race with allocation.
-> After resume, tasks remain frozen while swap slots are freed, so
-> additional reference management is not required there either.
-> 
-> Remove the redundant swap device get/put operations from the
-> hibernation swap allocation and free paths.
-> 
-> Also remove the SWP_WRITEOK check before allocation, as the cluster
-> allocation logic already validates the swap device state.
-> 
-> Update function comments to document the caller's responsibility for
-> ensuring swap device stability.
-> 
-> Signed-off-by: Youngjun Park <youngjun.park@lge.com>
-> ---
->  mm/swapfile.c | 68 +++++++++++++++++++++++++++------------------------
->  1 file changed, 36 insertions(+), 32 deletions(-)
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-Thanks!
+[ Upstream commit 9448e55d032d99af8e23487f51a542d51b2f1a48 ]
 
-Reviewed-by: Kairui Song <kasong@tencent.com>
+The recent addition of scope based cleanup support to the kernel
+provides a convenient tool to reduce the chances of leaking reference
+counts where of_node_put() should have been called in an error path.
+
+This enables
+	struct device_node *child __free(device_node) = NULL;
+
+	for_each_child_of_node(np, child) {
+		if (test)
+			return test;
+	}
+
+with no need for a manual call of of_node_put().
+A following patch will reduce the scope of the child variable to the
+for loop, to avoid an issues with ordering of autocleanup, and make it
+obvious when this assigned a non NULL value.
+
+In this simple example the gains are small but there are some very
+complex error handling cases buried in these loops that will be
+greatly simplified by enabling early returns with out the need
+for this manual of_node_put() call.
+
+Note that there are coccinelle checks in
+scripts/coccinelle/iterators/for_each_child.cocci to detect a failure
+to call of_node_put(). This new approach does not cause false positives.
+Longer term we may want to add scripting to check this new approach is
+done correctly with no double of_node_put() calls being introduced due
+to the auto cleanup. It may also be useful to script finding places
+this new approach is useful.
+
+Signed-off-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/20240225142714.286440-2-jic23@kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Bin Lan <lanbincn@139.com>
+---
+ include/linux/of.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 29f657101f4f..3c840c487995 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -13,6 +13,7 @@
+  */
+ #include <linux/types.h>
+ #include <linux/bitops.h>
++#include <linux/cleanup.h>
+ #include <linux/errno.h>
+ #include <linux/kobject.h>
+ #include <linux/mod_devicetable.h>
+@@ -128,6 +129,7 @@ static inline struct device_node *of_node_get(struct device_node *node)
+ }
+ static inline void of_node_put(struct device_node *node) { }
+ #endif /* !CONFIG_OF_DYNAMIC */
++DEFINE_FREE(device_node, struct device_node *, if (_T) of_node_put(_T))
+ 
+ /* Pointer for first entry in chain of all nodes. */
+ extern struct device_node *of_root;
+-- 
+2.43.0
+
+
