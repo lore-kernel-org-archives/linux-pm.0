@@ -1,142 +1,253 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C34F274B4D
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 05:53:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F5A83AD50E;
+	Tue, 24 Mar 2026 06:14:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774331620; cv=none; b=QNDYq7AP6XqctxDeMFSmnxEutEGVQ/qgCXm3E9sojyEMq/yWrfHl7xi1GMyAtr23/I3Du+kZXd2I8T4rRRu1L2tsgOrB9B3mW0DR94PWP3YKoE/Rmuz97z4E+biEMj0ZoJabHwIk8VUrSvpqs/PwWxSjs5EGLKuQ0kRlvgAepK8=
+	t=1774332856; cv=none; b=EXyY6mrKx99MkYxQR4DxF3n4wWFAqSx9ZaZi7RxCLCLNiiMeZYda9e36eZvKMgNpVaPfoiUio4s/UbuY9iroulz5mffg4DdFI8mzCZ8iuX0kGp6i/7hKEyQRBEzeLEg5IT8qtmBsZmdzSjqv1iPGInprUuJLUIL2pGQWz3Il0M8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774331620; c=relaxed/simple;
-	bh=ovU9FIMdPboyZUBnOOMg6cl+QBtI03tFkK3Z0PkwlKM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iY1tv+Po/oAzakPsDocJ+ffiFgxbwTsAC/kbrnXqZ/TIx9Reiz4Pwp9ijLpVZDxR1rd/pExnizxnVOV3N0wrkyIwpsA+cw9odx2Px5awDgOSw3eDGlsdnTFsU6WUQum7HozFOysThbYeBrWygTPTmIz1qbPe2ujOfpIujtUpp8s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S/MOkSRq; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774332856; c=relaxed/simple;
+	bh=Iwq2cwr7dAzcZnLYoGYChkCFzJyBzxpZXeObZe1KG6k=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=TWGNB3qA3WxdSEZqC3c+L3Q3QRfLfaSzoEfwvVG38Grx0MOZDHpLVXfgjnUtXGJ8XTOrYKwPadlp61gFWXwrkCyMCGHC4iJMk3JwjIuCp7IkfZVqQ28P1gwW79qUWwx/KcIRExnniXfbK2a5X7RkPqFJVXojmqfehJwj4bgFaIw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=NtNeK6xv; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S/MOkSRq"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2ad9516a653so4361465ad.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2026 22:53:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774331619; x=1774936419; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=CzbNzyvofSkHDrmxsguNNuZmsCaCuOfcET+64uHO95w=;
-        b=S/MOkSRqmM+IXt4Tmr7FemVApCsNMenLN0yctJniGmEY24SSkYQcw7fujHZAkR3xT5
-         N6YOnPVPzv6oiWMGXt9X+Wdi9+GZQbhjOM6XcCOXmI24dIpdWqBx+7JR/NSQ1yKAxEtB
-         a8iW6A3YVK7pRhh6EFXyUtmei3xeeeSc1EhrEUhp2wD7+4zYBSiFOdxcSeRKzEObk8V+
-         AVITKYe1QxuRo5Tz+/dskxjtmK3y+LnA65xln2FL/yHxoZ8cPJr6C9nqWhIeBT3qMgf/
-         TlEdL26u4lmNgg191ARaPgkY9qz7215mSEH/G7DTRC1X3c5mrr90mYgcolCBYHtDKGAr
-         rExQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774331619; x=1774936419;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CzbNzyvofSkHDrmxsguNNuZmsCaCuOfcET+64uHO95w=;
-        b=FGCQgoGqhNPuPzBXDsumaz1KI7HMlCthRTj0qZy15eNveg3jMDjT0jG44wMQMsKtyK
-         jKC3+Zgr+qohl4xo3/C41goEr7zE66xVAyJ8A9kcq3TqJATaqvtzMHgxZwEVvsBBWhc0
-         VYZgbXg+Weqq1tlm83mo9kKYBfzgKrjF9j6R7C+G4ma1gIX0hxdpHqwXFhNLhRGkgTua
-         LMOTRcKBgHDR33rMyKUtPx/x9HkWd8mDKhLfXGJVXu0FKHaBWLdrgD9dn22hHSW92Q1Z
-         Vn+a7A1R2C/yUHx3wSCzrCy7VGn+hpb1AfJcFUs20zWCjOQkEUi/83uVd0+BcVLpEfPL
-         EjBg==
-X-Forwarded-Encrypted: i=1; AJvYcCWLfHigrW7TQbNtQ7NRgLrgnEhGuaRKRXgshpeqIUPoaWI6UX8t/nb7r/myuI6MairMS60pSjfoNQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyK8UKfkjkEl5CN3iRky4l9G9wBlCIQWYikI4qflMuLGeX1Jxgu
-	IvwQ4VOf41+OSjvkoB/iUQO4TM+SlZZwErCdL1cXQjtfi+WNnwiFdtrGaj7E1TL/B4c=
-X-Gm-Gg: ATEYQzwUgxynLSrgnABv3og38LrFgB+E1g6W/37t1tCqQFXqdR0cphUTtQ6cRF4Vpw7
-	vKj9tGjYeTct+h1JzqofHAbYoLCPrnN/9ea6apnMM9eCZk5L2NVfCWJZt68b8EE/MYqf7ix+Kfd
-	sFa5gNmSZm5+LcUJV3j9qTBflYbkMqWGQWBLpCRx9ogd8Oc1agBSk+W3s3XFUr86FS/3EOLYTIP
-	NpLLMmHTD7A7RnpdP9h+1Qw8eoGmwKAKcKndhAhkNYkbmVJfhRfMomG2WJhRPZ4DxXm6EH9rsIM
-	WyTax1bQtuIGEWj8uECQ4BkGymoCnGnMWd8q+izQSaH7IVzOjdftvDny9VyU6ygEx0t3z/n91G0
-	m4X6TE/n3XK2iPmOeZGuyRvU0gDBA45/xA266QXwQj+/3ANJM3kQNV4tOYiNMxEajf92kIIfp6A
-	rwHOH82gf1JtkMkVwvKF4vf2QaUsHCp5/766u2L44bzh5rLh4Ogs+BLCW/AJuCAiQMo/b1
-X-Received: by 2002:a17:902:d582:b0:2b0:708f:4dc7 with SMTP id d9443c01a7336-2b08278afb0mr138908715ad.29.1774331618826;
-        Mon, 23 Mar 2026 22:53:38 -0700 (PDT)
-Received: from KASONG-MC4 ([43.132.141.21])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b083516194sm128476465ad.4.2026.03.23.22.53.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Mar 2026 22:53:38 -0700 (PDT)
-Date: Tue, 24 Mar 2026 13:53:33 +0800
-From: Kairui Song <ryncsn@gmail.com>
-To: Youngjun Park <youngjun.park@lge.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Pavel Machek <pavel@kernel.org>, Kemeng Shi <shikemeng@huaweicloud.com>, 
-	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>, Barry Song <baohua@kernel.org>, 
-	Usama Arif <usama.arif@linux.dev>, linux-pm@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v8 1/2] mm/swap, PM: hibernate: fix swapoff race in
- uswsusp by pinning swap device
-Message-ID: <acH_svpUwaNtFeJN@KASONG-MC4>
-References: <20260323160822.1409904-1-youngjun.park@lge.com>
- <20260323160822.1409904-2-youngjun.park@lge.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="NtNeK6xv"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774332855; x=1805868855;
+  h=date:from:to:cc:subject:message-id;
+  bh=Iwq2cwr7dAzcZnLYoGYChkCFzJyBzxpZXeObZe1KG6k=;
+  b=NtNeK6xvHdeclrNRXK/v7B+rL7wA80lUiJsfSeDVvmQaUY+hDWrQb0Be
+   mOOTEOZnhZSO0Uhi0AU592m5JZOB7dft94qcel19J1NI+kG4GfY9D7Mwv
+   gzrPEmYrIMmLg85Vf/Bn7bCZSKAAarg6RBKO75fEjAUdIJmA8IP1DVAFN
+   Xj88bjLgCTIuXA1eJNUNR+mLwPFlvghUX9OcovFd5Ic+rqN4QHpU8EmWW
+   7pyTAemK350bMg6XPwSuucHqh13S7C1AIInMQv95iGzt28bth4bbg9axQ
+   nkGrUOM8UfR+rHoMX6z53HpqpI2IHyiwO290ZVnHIIuDzWBAc8qKb4ZXM
+   w==;
+X-CSE-ConnectionGUID: G6gDwTYNSaGULU9ZTIJC7g==
+X-CSE-MsgGUID: YnDAirjHSniDgtL/RkBzVw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75411491"
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="75411491"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2026 23:14:13 -0700
+X-CSE-ConnectionGUID: eTe4gXIKTauLYRmQYglzmQ==
+X-CSE-MsgGUID: bfDvZmsLQmupaNqMUsdk+A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="247332867"
+Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
+  by fmviesa002.fm.intel.com with ESMTP; 23 Mar 2026 23:14:12 -0700
+Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w4v1l-000000003xn-3ODq;
+	Tue, 24 Mar 2026 06:14:09 +0000
+Date: Tue, 24 Mar 2026 14:13:24 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 786153f3385f8a88f0360ade89a2a07991807c48
+Message-ID: <202603241416.w6QzDq7K-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260323160822.1409904-2-youngjun.park@lge.com>
 
-On Tue, Mar 24, 2026 at 01:08:21AM +0800, Youngjun Park wrote:
-> Hibernation via uswsusp (/dev/snapshot ioctls) has a race window:
-> after selecting the resume swap area but before user space is frozen,
-> swapoff may run and invalidate the selected swap device.
-> 
-> Fix this by pinning the swap device with SWP_HIBERNATION while it is
-> in use.  The pin is exclusive, which is sufficient since
-> hibernate_acquire() already prevents concurrent hibernation sessions.
-> 
-> The kernel swsusp path (sysfs-based hibernate/resume) uses
-> find_hibernation_swap_type() which is not affected by the pin.  It
-> freezes user space before touching swap, so swapoff cannot race.
-> 
-> Introduce dedicated helpers:
-> - pin_hibernation_swap_type(): Look up and pin the swap device.
->   Used by the uswsusp path.
-> - find_hibernation_swap_type(): Lookup without pinning.
->   Used by the kernel swsusp path.
-> - unpin_hibernation_swap_type(): Clear the hibernation pin.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 786153f3385f8a88f0360ade89a2a07991807c48  Merge branches 'pm-cpufreq-fixes' and 'pm-sleep-fixes' into fixes
 
-Looks good to me, thanks!
+elapsed time: 728m
 
-Reviewed-by: Kairui Song <kasong@tencent.com>
+configs tested: 176
+configs skipped: 1
 
-Just one trivial nit picks below.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> +/**
-> + * unpin_hibernation_swap_type - Unpin the swap device for hibernation
-> + * @type: Swap type previously returned by pin_hibernation_swap_type()
-> + *
-> + * Clear the hibernation pin on the given swap device, allowing
-> + * swapoff() to proceed normally.
-> + *
-> + * If @type does not refer to a valid swap device, this function
-> + * does nothing.
-> + */
-> +void unpin_hibernation_swap_type(int type)
-> +{
-> +	struct swap_info_struct *si;
-> +
-> +	spin_lock(&swap_lock);
-> +	si = swap_type_to_info(type);
-> +	if (!si) {
-> +		spin_unlock(&swap_lock);
-> +		return;
-> +	}
-> +	si->flags &= ~SWP_HIBERNATION;
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-15.2.0
+arc                              allmodconfig    clang-16
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    clang-23
+arc                              allyesconfig    gcc-15.2.0
+arc                                 defconfig    gcc-15.2.0
+arc                   randconfig-001-20260324    gcc-8.5.0
+arc                   randconfig-002-20260324    gcc-8.5.0
+arm                               allnoconfig    clang-23
+arm                               allnoconfig    gcc-15.2.0
+arm                              allyesconfig    clang-16
+arm                                 defconfig    gcc-15.2.0
+arm                           h3600_defconfig    gcc-15.2.0
+arm                   randconfig-001-20260324    gcc-8.5.0
+arm                   randconfig-002-20260324    gcc-8.5.0
+arm                   randconfig-003-20260324    gcc-8.5.0
+arm                   randconfig-004-20260324    gcc-8.5.0
+arm64                            allmodconfig    clang-19
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-15.2.0
+arm64                 randconfig-001-20260324    gcc-13.4.0
+arm64                 randconfig-002-20260324    gcc-13.4.0
+arm64                 randconfig-003-20260324    gcc-13.4.0
+arm64                 randconfig-004-20260324    gcc-13.4.0
+csky                             allmodconfig    gcc-15.2.0
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-15.2.0
+csky                  randconfig-001-20260324    gcc-13.4.0
+csky                  randconfig-002-20260324    gcc-13.4.0
+hexagon                          allmodconfig    clang-17
+hexagon                          allmodconfig    gcc-15.2.0
+hexagon                           allnoconfig    clang-23
+hexagon                           allnoconfig    gcc-15.2.0
+hexagon                             defconfig    gcc-15.2.0
+i386                             allmodconfig    clang-20
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                              allnoconfig    gcc-15.2.0
+i386                             allyesconfig    clang-20
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260324    gcc-12
+i386        buildonly-randconfig-002-20260324    gcc-12
+i386        buildonly-randconfig-003-20260324    gcc-12
+i386        buildonly-randconfig-004-20260324    gcc-12
+i386        buildonly-randconfig-005-20260324    gcc-12
+i386        buildonly-randconfig-006-20260324    gcc-12
+i386                                defconfig    gcc-15.2.0
+i386                  randconfig-001-20260324    clang-20
+i386                  randconfig-002-20260324    clang-20
+i386                  randconfig-003-20260324    clang-20
+i386                  randconfig-004-20260324    clang-20
+i386                  randconfig-005-20260324    clang-20
+i386                  randconfig-006-20260324    clang-20
+i386                  randconfig-007-20260324    clang-20
+loongarch                        allmodconfig    clang-19
+loongarch                        allmodconfig    clang-23
+loongarch                         allnoconfig    clang-23
+loongarch                         allnoconfig    gcc-15.2.0
+loongarch                           defconfig    clang-19
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    clang-16
+m68k                                defconfig    clang-19
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    clang-19
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+mips                           mtx1_defconfig    clang-23
+mips                          rb532_defconfig    clang-18
+nios2                            allmodconfig    clang-23
+nios2                             allnoconfig    clang-23
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    clang-19
+openrisc                         allmodconfig    clang-23
+openrisc                          allnoconfig    clang-23
+openrisc                          allnoconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    clang-23
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    clang-19
+parisc                randconfig-001-20260324    gcc-12.5.0
+parisc                randconfig-001-20260324    gcc-8.5.0
+parisc                randconfig-002-20260324    gcc-10.5.0
+parisc                randconfig-002-20260324    gcc-8.5.0
+parisc64                            defconfig    clang-19
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    clang-23
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc               randconfig-001-20260324    gcc-8.5.0
+powerpc               randconfig-002-20260324    gcc-8.5.0
+powerpc64             randconfig-001-20260324    gcc-14.3.0
+powerpc64             randconfig-001-20260324    gcc-8.5.0
+powerpc64             randconfig-002-20260324    gcc-8.5.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    clang-23
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                 randconfig-001-20260324    clang-23
+riscv                 randconfig-002-20260324    clang-23
+s390                             allmodconfig    clang-19
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                  randconfig-001-20260324    gcc-12.5.0
+s390                  randconfig-002-20260324    clang-23
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    clang-23
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    clang-19
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-14
+sh                    randconfig-001-20260324    gcc-15.2.0
+sh                    randconfig-002-20260324    gcc-15.2.0
+sparc                             allnoconfig    clang-23
+sparc                             allnoconfig    gcc-15.2.0
+sparc                 randconfig-001-20260324    gcc-14
+sparc                 randconfig-002-20260324    gcc-14
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260324    gcc-14
+sparc64               randconfig-002-20260324    gcc-14
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                               allyesconfig    gcc-15.2.0
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260324    gcc-14
+um                    randconfig-002-20260324    gcc-14
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-20
+x86_64                            allnoconfig    clang-23
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20260324    gcc-14
+x86_64      buildonly-randconfig-002-20260324    gcc-14
+x86_64      buildonly-randconfig-003-20260324    gcc-14
+x86_64      buildonly-randconfig-004-20260324    gcc-14
+x86_64      buildonly-randconfig-005-20260324    gcc-14
+x86_64      buildonly-randconfig-006-20260324    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                                  kexec    clang-20
+x86_64                randconfig-001-20260324    clang-20
+x86_64                randconfig-002-20260324    clang-20
+x86_64                randconfig-003-20260324    clang-20
+x86_64                randconfig-004-20260324    clang-20
+x86_64                randconfig-005-20260324    clang-20
+x86_64                randconfig-006-20260324    clang-20
+x86_64                randconfig-011-20260324    gcc-14
+x86_64                randconfig-012-20260324    gcc-14
+x86_64                randconfig-013-20260324    gcc-14
+x86_64                randconfig-014-20260324    gcc-14
+x86_64                randconfig-015-20260324    gcc-14
+x86_64                randconfig-016-20260324    gcc-14
+x86_64                randconfig-071-20260324    gcc-12
+x86_64                randconfig-072-20260324    gcc-12
+x86_64                randconfig-073-20260324    gcc-12
+x86_64                randconfig-074-20260324    gcc-12
+x86_64                randconfig-075-20260324    gcc-12
+x86_64                randconfig-076-20260324    gcc-12
+x86_64                               rhel-9.4    clang-20
+x86_64                           rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-func    clang-20
+x86_64                    rhel-9.4-kselftests    clang-20
+x86_64                         rhel-9.4-kunit    gcc-14
+x86_64                           rhel-9.4-ltp    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    clang-23
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                           allyesconfig    clang-23
+xtensa                randconfig-001-20260324    gcc-14
+xtensa                randconfig-002-20260324    gcc-14
 
-Will the code will be simpler if you just:
-
-if (si)
-	si->flags &= ~SWP_HIBERNATION;
-
-Just personal taste, free feel to ignore.
-
-And as you mentioned this is on top of swap table p3 so you based
-it on mm-new - but isn't p3 already in mm-unstable? Maybe we can
-have it there? Not sure how much conflict are there with PM.
-
-The code and design looks OK.
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
