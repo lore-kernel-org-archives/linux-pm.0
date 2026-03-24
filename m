@@ -1,169 +1,158 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
+Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85BF9345CB0
-	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 15:46:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774367204; cv=pass; b=jiufz6Nbn+jZzngD1mJ4ogI6Z8crMjU1m9pfpXxiMMhif+7zKkGf/xJTK+psv74sbobqLbFKsHPG1cPVwicxw44euzS9R94XFX+h1XU0WNmslg0WnjktOjw3I1sycxSGKGsF4CD8boF8OKx9etTbJY8nMtN36e9gSt2avND8Bm4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774367204; c=relaxed/simple;
-	bh=myealnjHRpNkrPuC+NI071bKS4zheQrDWTxXlU2rEuE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Y3yrDijzHlmBOoUXAKiwmWmFgfk4761fPqHPuqu5RGXa1+xYfr0gDv+VPL8WupkPq9AoCyOpLlBPe3inUOjzJPAYeylj3JiytADqeT2y5NC/0tW2sQd4Bj7G5b0nWzEv+SL2Ln+oPmkhzW5lUo15B2lksMSaw/XcBe8vM2nZrrs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Y1lXF4ad; arc=pass smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEE5E37F733
+	for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 15:59:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774367993; cv=none; b=brmODaHglDkOA9O1k1v6Hxsx3Rd37QXVrXX/oBR2yDKkAhdLnHJG5xkPhQiVacSBu0w0P2EuMruSL5cPUpuwUKEnES/ZougTnW7uCI73oW2IwOGOc5grVTTgBoxPaPgjCsruhhuhwQKtHKQr/FT8oN4X262Z5wGz9RbU4rJGp5U=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774367993; c=relaxed/simple;
+	bh=8KPPZhUzqh96jYNd2rJBExLV22pVBjiyuGvVLIon7zA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NYkfh8An8GtEz6Qnu0ZtMt1PQGEv+PbvFv7Vqbew9LUPqBrzGpcJRsrf6+X0vmn18GXhvarPro5snr896Hh3b+EQPcfMZy4yv7uOwK/GfI4J9D/hvvwJZpfSB2VpN4gJnL/3uNzqZDNDq9OsA6r3evKi7Z04fv+jIT0CROEu/78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=G/FASzF5; arc=none smtp.client-ip=209.85.215.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y1lXF4ad"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5a12cd0bcd8so5042103e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 08:46:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774367199; cv=none;
-        d=google.com; s=arc-20240605;
-        b=O/wibnnwkfZQ2RaTfgRcX35hnPC8niaKMb3JQu6Itj4cCxFj0NEWkJysAjDxgpEqMR
-         tOVkr6C6aONVlaAVbfCyuFqv+rVlAg7g32DtL4hnbwnnNJSO4BjlNEFIWr8gDE7RyInc
-         UNJOFfWG2CKFpPxSeucUp5RDJd3SGUxThNiRfPKw3JkFyXTNmfx3SDlSdKJ1Dv964z7m
-         HI38sG7KGbdpA6UL0A+bO/JuJ/KVUh+zmqxiM9+uIOm1xY0bs0H/g6ropE8MXbUdnifz
-         rpVQaXiIG/lWzTGpQwJNYriCHBNS2Eg0lwUhe9R5uxUIgGxojdg3P6T5N5GkR5x/sfZh
-         3pJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=ZM1xEwGx87iUs7rsSEz5+XXJ45+mZ7eY/kl/Zbvofbc=;
-        fh=3M2eiVpgmISUgAdi4vmgFbcSFkXsNPXvqchGrP8IbqI=;
-        b=cArrOQfr/jf1FigS7XYyy5rt/ncFYEBOC/5D8yGHdBXn8E928s1odEOzGoBDukGCeJ
-         rUTy9nQRvZC0OGEUDg9GLLJMchuEtx3lQ+628QS9HLYmwueyy3UU9CABM7EBii9Mbkdl
-         NJaI+VkCWsFouPoAxgZ6m92D9JLH7na8DKuWQTXBD8yCO/fAxuL8D7ruNwD2pVf+fxDe
-         F/So3/Bs7yp6ObsgmFqAOC2qxA0fMIAfroxeM5urQTkSuI5GcaZiwFAABVXzORpfdCzX
-         Z1yycm+ItjJOnlkcv3iEbFdTfctYlIyxkC0bQXBmVr5AUse1n8f00KK/psHRc/McBk6f
-         k/VQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G/FASzF5"
+Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c742d7c8acfso674016a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Mar 2026 08:59:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774367199; x=1774971999; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZM1xEwGx87iUs7rsSEz5+XXJ45+mZ7eY/kl/Zbvofbc=;
-        b=Y1lXF4ad/OTUIeHjeYU7ap56/TZnzdQQsrJDJDlQMjG8udHYjzKh81AIai+evDe0FN
-         SwyX85unoW137PvEKo6UeGyHV7ImzN0WwFIqD4hwhaQxx9ybTVlW+2QLXoTEm85zK3cN
-         trsDo1en0ob4NfAYsf51sbR2GtbL+gmh1fr0fWyuCiHj05Cz6AHQtDErHrcEx7PtQMz4
-         CLDbb+Zigi/PbIxR6f7JQ/C3svSAs/zLtXCZc5ghJt0IMdi+ynFJoZOowPbVwqvNDF3H
-         G8AZGsDa8zfAQy39gRTZcudHdIF/YWPQnQY3aNKk8QvxeI3RcAvttdoNwKYJ/d3KLlHU
-         IJBg==
+        d=gmail.com; s=20251104; t=1774367991; x=1774972791; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Yc7wk42EADhvDIltPVK1lZfj6uphT+tiZ2F0l3KerEk=;
+        b=G/FASzF5mGztd422oGgvKGuUqXAJ7XA6Bp+wowAWUGrhDMChyMt4St638oxyzQ1L2j
+         DyMBk+OWGdV3tQ8VKFK+sAQOufQMA3ncCSzqrnIaPsK7AU8SD9LQYyxtsrHh+di4TU7k
+         TovUXi3eI3oXYMG9rlnoDe1VlU4N+t7fnWjKtg0uxpqcz72PB8g1/n3yEtciiVdNdFOi
+         dm/2Sc0yDo2Zmc1lhYTCtVeE9d/1rR/7xf8tATNOmhOyTdFgQhR/GNhdO8h9NQwrG4Og
+         dgEQpXsiPu9yNcTuBnBgwdc0nFl2Nqq+2WBx4IPPQ7S/huYfByz3cvtM/DEa5M/cpAEs
+         JoCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774367199; x=1774971999;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1774367991; x=1774972791;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ZM1xEwGx87iUs7rsSEz5+XXJ45+mZ7eY/kl/Zbvofbc=;
-        b=AsRSMxIzSn9pIeLnqsT6znXVkIEq8f1LGGWdHdbIcRSIO/yb8NEmRmSbniH2Pu5qIu
-         FwQ+73a1lNFe9pg5N3W35lcefnqT8kDe+gSlRXuwcZk71bEBxdFSYkHA3wv/Ajcd4iX4
-         ZkA6G47u3I4hnvpJZPnQibuwPbFZOSLCmgNPvs4AoW4hZOhIiuNk8JJCy6UsoKA/j8ni
-         j9NH4mqpXECnjKZHd7G1ptLnsnmsUf6MmkIZETmFeeKrjBAjHZsh7X1Fe4jF4hl2VIBd
-         ax46zr+BheH0sxyaMabLSSGN0rOF1HnfDDgQlgH1cpmc0EEjDh7XXXA6ZIBMu7yuM0Q0
-         DtKg==
-X-Forwarded-Encrypted: i=1; AJvYcCVVM7bv3UqWqFklf/t9n6RQQ3vGmDzBylsTYROsejdWU0TJr38tmj9aAziVBwpmHcDEZUQsq7/EKg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyo08++PtP8+/33iQPMRHJimx8n7nGxQnmrzda3sI5E9szf7V7K
-	jzTwHVVMBzHj2qne/Q156ecTKCwP55OHj23CgUeq/PH8gmzHCez+Z9YEetMhAg0WQEAXXJoEqvp
-	apmi7BTv1IebKkSfzn/rU3sw+qVRU++216PAX+1L6Ag==
-X-Gm-Gg: ATEYQzyMZ7SoMizLEOVnmJvVelFAqY2/db4KfMeP7n5HLQbiHklmlskRscvRSAKJbcF
-	fflVjepsUhHvl4lfmIkROZovra+RwpyK4sWQDQqKysvMg2EYhx+0+JJDqXTI5oPcBxNStxsx9ea
-	Ni9GmSHxb0OsDhVfWrTJmPyETX6nrypREGiVJnxqnvRrIusDCLKD4XEfCJ95GUq5cY+D9ONlCKO
-	sFgnH3YFjoQi16AxvQMdASVVSlMoNakjLY3dZz5E5u/b+U14UyZsY51Lmub/JreZzzrJqWs1Brz
-	QkfBGyCD
-X-Received: by 2002:a05:6512:3b13:b0:5a2:77d4:1043 with SMTP id
- 2adb3069b0e04-5a285b54b7dmr5517789e87.22.1774367198561; Tue, 24 Mar 2026
- 08:46:38 -0700 (PDT)
+        bh=Yc7wk42EADhvDIltPVK1lZfj6uphT+tiZ2F0l3KerEk=;
+        b=Lm0jwSrwz0pX3MzmzO6/b8Eli8ILb04QOSehZYwtfYTrJU/UXeV2yv6kf8mWetmzTr
+         XBzrV5t9nogbHnlqn5FxoX8qqcRhkhRRxBPiS7yTojCXjwFoKV5P+1sW496Vtv1oqYhW
+         gTmeGpusmOZc9RshQIDiWWlFrsUKW9mTDZPFB0cHs6uDZkRbit8ff8lxe6BpAM8ALeoE
+         3b/2IaZfD68icAeQIQ8w8K4gkEpMMqSAABrgYzEeSujRRNttjLqmAr/EPqFx3Ai2njuS
+         dj3C9EBz4KsOM+F+q1DeNTeCdRCQ00yK+BEZUdBc0KITgxZVf5RkNiksEK/Ggt3jaI/U
+         9f1Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXUsIXGsxdRC4itZTlr7YKoNZyDyz8RkqqsJSpJkrHU9M3RvrthsDPMlJ7ia6NpoJuV+BeyGWUZcw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzD0/FJAXmoffbKri2eDxJ7cFnb+OYeQI6DVc6ykIV3zrN4qPxz
+	Y0Z8jtmvwwpjGB7tLwcHFMUkthno9soypC/Y+U39XgnL9swtPN/KAnmIYDWaHqcsDAk=
+X-Gm-Gg: ATEYQzwNKoilPk1W/L8Yqko1BcLiJ0vHTVkve/nj17mQg2+Otmg23WD6Kv42Rfm/0tB
+	zOkZ1EdXm3V4bEgF8/w/fMbA7qFioxc0VayT95wvmMp6dDKb++mqGVy5Lcjl/L2EfaxsNMoJkGE
+	DFRM+horuAWD8ggmW6a/AF6APwd7QSQE338SxiBhTzjmorfEaMHdjRumKpQueR5yJqTdaKq6D0D
+	k03PhUplemzoqc1NK7nRFFgsxbR/WDNxzDAkQodFUsuVtgI3BqHkHvDKIDnezE+ZaaL6t1eNXPv
+	3AUit596sx1RUdKVhAaOQyLtg2jAaogOOButdT8iTTysU/kPUMDYDiMquTL/jh8L0hGEQfzZyDv
+	GsYJx318Gyjbjat7qpO7AZmkicjrj9AzVY+RTcArSlP0HNNl4qjxZDQEq6bn8TC3xuvu0W5vu4T
+	0QbsIgtfygQmODZn3Sk7naPL4On3U2pmIrnQjbMfNdpIWMj7uzxx+PSChw6aaLl2suvxmBt4GoB
+	0k=
+X-Received: by 2002:a05:6a21:6d82:b0:39c:cdb:5d82 with SMTP id adf61e73a8af0-39c4ad6540bmr304311637.38.1774367991049;
+        Tue, 24 Mar 2026 08:59:51 -0700 (PDT)
+Received: from toolbx.gk.pfsense.com ([103.70.166.143])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82b040da3easm12352116b3a.41.2026.03.24.08.59.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Mar 2026 08:59:50 -0700 (PDT)
+From: Gopi Krishna Menon <krishnagopi487@gmail.com>
+To: sre@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	lee@kernel.org,
+	conor+dt@kernel.org
+Cc: Gopi Krishna Menon <krishnagopi487@gmail.com>,
+	daniel.baluta@nxp.com,
+	simona.toaca@nxp.com,
+	d-gole@ti.com,
+	m-chawdhry@ti.com,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: reset: st: convert to dtschema
+Date: Tue, 24 Mar 2026 21:29:30 +0530
+Message-ID: <20260324155935.183952-1-krishnagopi487@gmail.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
-In-Reply-To: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 24 Mar 2026 16:46:02 +0100
-X-Gm-Features: AQROBzArOop2zxB1wGihvKREx53zwjJBE38Iy4OR1x3l_zaCLa4QZf1aF6IScrQ
-Message-ID: <CAPDyKFqJX3rN0GY1j3-RDXGc0jCcMTG=OmWzi9+2y7CXJOvY3A@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: Deny idle entry when CPU already have IPI
- interrupt pending
-To: Maulik Shah <maulik.shah@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Christian Loehle <christian.loehle@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Mon, 16 Mar 2026 at 08:38, Maulik Shah <maulik.shah@oss.qualcomm.com> wrote:
->
-> CPU can get IPI interrupt from another CPU while it is executing
-> cpuidle_select() or about to execute same. The selection do not account
-> for pending interrupts and may continue to enter selected idle state only
-> to exit immediately.
->
-> Example trace collected when there is cross CPU IPI.
->
->  [000] 154.892148: sched_waking: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->  [000] 154.892148: ipi_raise: target_mask=00000000,00000080 (Function call interrupts)
->  [007] 154.892162: cpu_idle: state=2 cpu_id=7
->  [007] 154.892208: cpu_idle: state=4294967295 cpu_id=7
->  [007] 154.892211: irq_handler_entry: irq=2 name=IPI
->  [007] 154.892211: ipi_entry: (Function call interrupts)
->  [007] 154.892213: sched_wakeup: comm=sugov:4 pid=491 prio=-1 target_cpu=007
->  [007] 154.892214: ipi_exit: (Function call interrupts)
->
-> This impacts performance and the above count increments.
->
-> commit ccde6525183c ("smp: Introduce a helper function to check for pending
-> IPIs") already introduced a helper function to check the pending IPIs and
-> it is used in pmdomain governor to deny the cluster level idle state when
-> there is a pending IPI on any of cluster CPUs.
->
-> This however does not stop CPU to enter CPU level idle state. Make use of
-> same at CPUidle to deny the idle entry when there is already IPI pending.
->
-> With change observing glmark2 [1] off screen scores improving in the range
-> of 25% to 30% on Qualcomm lemans-evk board which is arm64 based having two
-> clusters each with 4 CPUs.
->
-> [1] https://github.com/glmark2/glmark2
->
-> Signed-off-by: Maulik Shah <maulik.shah@oss.qualcomm.com>
-> ---
->  drivers/cpuidle/cpuidle.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index c7876e9e024f9076663063ad21cfc69343fdbbe7..c88c0cbf910d6c2c09697e6a3ac78c081868c2ad 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -224,6 +224,9 @@ noinstr int cpuidle_enter_state(struct cpuidle_device *dev,
->         bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
->         ktime_t time_start, time_end;
->
-> +       if (cpus_peek_for_pending_ipi(drv->cpumask))
-> +               return -EBUSY;
+Convert the STiH4xx reset controller bindings to DT schema.
 
-As other reviews already pointed out, this must be called only for the
-current CPU.
+Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
+Suggested-by: Dhruva Gole <d-gole@ti.com>
+Signed-off-by: Gopi Krishna Menon <krishnagopi487@gmail.com>
+---
+Note:
+* This patch is part of the GSoC2026 application process for device tree bindings conversions
+* https://github.com/LinuxFoundationGSoC/ProjectIdeas/wiki/GSoC-2026-Device-Tree-Bindings
 
-That said, did you play with bailing out just before the call to the
-target_state->enter()? It would be interesting to know if that changes
-the "stats" somehow.
+ .../power/reset/st,stih407-restart.yaml       | 31 +++++++++++++++++++
+ .../bindings/power/reset/st-reset.txt         | 11 -------
+ 2 files changed, 31 insertions(+), 11 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/reset/st-reset.txt
 
-> +
->         instrumentation_begin();
->
->         /*
->
-> ---
-> base-commit: b84a0ebe421ca56995ff78b66307667b62b3a900
-> change-id: 20260316-cpuidle_ipi-4c64036f9a48
->
-> Best regards,
-> --
-> Maulik Shah <maulik.shah@oss.qualcomm.com>
->
+diff --git a/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+new file mode 100644
+index 000000000000..d7adbc00f5c3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+@@ -0,0 +1,31 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/st,stih407-restart.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ST SW reset controller
++
++maintainers:
++  - Lee Jones <lee@kernel.org>
++
++properties:
++  compatible:
++    const: st,stih407-restart
++
++  st,syscfg:
++    description: phandle of the syscfg node
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++required:
++  - compatible
++  - st,syscfg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    reset {
++      compatible = "st,stih407-restart";
++      st,syscfg = <&syscfg_sbc_reg>;
++    };
+diff --git a/Documentation/devicetree/bindings/power/reset/st-reset.txt b/Documentation/devicetree/bindings/power/reset/st-reset.txt
+deleted file mode 100644
+index b63948737d80..000000000000
+--- a/Documentation/devicetree/bindings/power/reset/st-reset.txt
++++ /dev/null
+@@ -1,11 +0,0 @@
+-*Device-Tree bindings for ST SW reset functionality
+-
+-Required properties:
+-- compatible: should be "stih407-restart".
+-- st,syscfg: should be a phandle of the syscfg node.
+-
+-Example node:
+-	restart {
+-		compatible = "st,stih407-restart";
+-		st,syscfg = <&syscfg_sbc_reg>;
+-	};
+-- 
+2.52.0
 
-Kind regards
-Uffe
