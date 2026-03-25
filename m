@@ -1,154 +1,160 @@
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 657CD3E315D;
-	Wed, 25 Mar 2026 14:44:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B184A3DB644;
+	Wed, 25 Mar 2026 14:58:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774449857; cv=none; b=NaMmfr6R38m2MYYdjYBQuL+RGLQXMmUfJnAlDtiyyp1CDIOWszWiOdCYqAQLbjR05WhnIz0o8vmd4iPVP0FAfUXXBzX2dW6paPJIJWuaFI4IPNk1KIVnXpCGjGQEnSzZs92EyEsCdTZrEUv+t/1aF778KEq7rFL70wqZCgtmS0A=
+	t=1774450733; cv=none; b=W5uYcEVAXxKUif13HKcKci4cTIy/Cfl1lBwneabpOBHC1SgRu8dRHb4moIFAqyRNqZb84775rB/JsyDbgeT0QnO4Ne2VXjt3qmaqKDE7NG0W4ClHBYdOxf/iCgjjRdmsDSRuQM0ADXqmvEZXFfYbzt6/IvEfKsfEQhZhspfsJ+U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774449857; c=relaxed/simple;
-	bh=jT14jpW+74aFxWT5k0JsiKiyPP15AQVRZS7/5fdgNS0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=pwxEeCaP+ai/eI1w8dxCgsbmo+yN/Y6FMQedj71gHARqo0JqKkOBplORWasMSSVe+I7bGc3U28tNPtBeHqOn8gQjQ2P6keKlm3iaUWVTACY9Ax+bvtm0zwJrvgqJasXsrdld3OIhIgGK74usQNUWu3OyQp0P/b3ybqkuE3RZ8sM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=gqvjBLpm; arc=none smtp.client-ip=185.246.84.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1774450733; c=relaxed/simple;
+	bh=Q7Y7TIr5LpH0Ie+lGeQIaP4vsrzzTVRfvln8R9Xm3mI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=I11kNrDO0GcefvY2qyu6X5qOZBGc9sgyDX6N0j6+fzm/UaSFy0rsuC85uvNrpGI3frY3sb8Qa5XhorV44aI3lNUWrNYSP6uR2y45MReq6F7z8nY5tQliIh+m/uFfJF27nLDL3GP+CoCUfIctn3+ubvZJ/1P/onxd30yFp6kXiGU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I43VyWvU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="gqvjBLpm"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 4AF2F1A2F95;
-	Wed, 25 Mar 2026 14:44:15 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 217C9601FA;
-	Wed, 25 Mar 2026 14:44:15 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 56D7D10451522;
-	Wed, 25 Mar 2026 15:43:55 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1774449852; h=from:subject:date:message-id:to:cc:mime-version:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=JD+Fs5XfMyLydBRoehNihG/5lsm5NM0S4zMf8NGpirs=;
-	b=gqvjBLpmkSLJAYbmDeGzZRLD9Ccx0kGJ+DN1N+YpWxaW5rwGSimaQrzjJDOYlV9EYSCJXC
-	EGclYReSW/RNCSO1Hu4WTUKD57Ziz1RKr8cPgpsfGmAP4WEPw+vgCwWkjKY9MSUY9LEVJ5
-	6tZHX14Ux3GOzP2naksiasYRWY6SGCxOeInkkhKHnjF3KzqTlDE/RonHW77l2feenMrKtZ
-	cSTYd0V7ODBlSM4QX1RMj5id3x2Ob313sCSnE3Hd+xGsT3juXCzJcIYBFohtcxaPyYLz+X
-	eKq3F87xw+izeQvuGGtry4ygCvsiMBpIw+2Bl/K7VPxnw+SA0SbnFtvGb6ObSA==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Andrew Lunn <andrew@lunn.ch>,
-	Rob Herring <robh@kernel.org>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I43VyWvU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF3FFC2BCB2;
+	Wed, 25 Mar 2026 14:58:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774450733;
+	bh=Q7Y7TIr5LpH0Ie+lGeQIaP4vsrzzTVRfvln8R9Xm3mI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=I43VyWvUYyWmv/3FJuYZZsdDxXr19VOjCy5ldO7lQsh/kprsrY7EQrRXKkIPuPDxN
+	 r5hdgtYKSRO6UPhQk34MwMvPTzofuTvelcJd8MxQwrBjFccKrPAIJGqR7xC5kUBACS
+	 8/tXY6iBXcLjJUHIlld31norhL65jSQgz+Z1lz5Nwsce7VuibNsI3vSK+zyZPVI+Sn
+	 GYzSOqo96sH4DobOhWAsSmiqhLZVKtxCOoR44wbfXKNpqz1C0PwONeSdZGrb8UG/2j
+	 1Pz3AsEEdo3ywSYu3nIjEGpaUzXhSzX5gSyUkWFeW9UN3qvn3RadOZUPp+hRqdURW9
+	 0MAt1fcMbAusg==
+Date: Wed, 25 Mar 2026 14:58:45 +0000
+From: Lee Jones <lee@kernel.org>
+To: Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Kalle Niemi <kaleposti@gmail.com>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Peter Rosin <peda@axentia.se>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Herve Codina <herve.codina@bootlin.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Mark Brown <broonie@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Daniel Scally <djrscally@gmail.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Ira Weiny <ira.weiny@intel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Shawn Guo <shawnguo@kernel.org>
-Cc: Wolfram Sang <wsa@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-clk@vger.kernel.org,
-	linux-i2c@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	patches@opensource.cirrus.com,
-	linux-gpio@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-spi@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-cxl@vger.kernel.org,
-	Allan Nielsen <allan.nielsen@microchip.com>,
-	Horatiu Vultur <horatiu.vultur@microchip.com>,
-	Steen Hegelund <steen.hegelund@microchip.com>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-Subject: [PATCH v6 27/27] misc: lan966x_pci: Add drivers needed to support SFPs in Kconfig help
-Date: Wed, 25 Mar 2026 15:35:54 +0100
-Message-ID: <20260325143555.451852-28-herve.codina@bootlin.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260325143555.451852-1-herve.codina@bootlin.com>
-References: <20260325143555.451852-1-herve.codina@bootlin.com>
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Nam Tran <trannamatk@gmail.com>, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+	linux-rtc@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH v3 09/13] leds: flash: add support for Samsung S2M series
+ PMIC flash LED device
+Message-ID: <20260325145845.GC1141718@google.com>
+References: <20260225-s2mu005-pmic-v3-0-b4afee947603@disroot.org>
+ <20260225-s2mu005-pmic-v3-9-b4afee947603@disroot.org>
+ <20260310113835.GG183676@google.com>
+ <DH1XVOS6IIOE.HGIH6JQRHNAM@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+In-Reply-To: <DH1XVOS6IIOE.HGIH6JQRHNAM@disroot.org>
 
-Recently, new device-tree nodes were added in the overlay to add support
-for SFPs on LAN966x PCI device.
+On Sat, 14 Mar 2026, Kaustabh Chakraborty wrote:
 
-The LAN966X Kconfig help section mentions drivers related to devices
-added based on the overlay description.
+> On 2026-03-10 11:38 +00:00, Lee Jones wrote:
+> > On Wed, 25 Feb 2026, Kaustabh Chakraborty wrote:
+> >
+> >> Add support for flash LEDs found in certain Samsung S2M series PMICs.
+> >> The device has two channels for LEDs, typically for the back and front
+> >> cameras in mobile devices. Both channels can be independently
+> >> controlled, and can be operated in torch or flash modes.
+> >> 
+> >> The driver includes initial support for the S2MU005 PMIC flash LEDs.
+> >> 
+> >> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+> >> ---
+> >>  drivers/leds/flash/Kconfig          |  12 +
+> >>  drivers/leds/flash/Makefile         |   1 +
+> >>  drivers/leds/flash/leds-s2m-flash.c | 429 ++++++++++++++++++++++++++++++++++++
+> >>  3 files changed, 442 insertions(+)
+> >> 
+> >> diff --git a/drivers/leds/flash/Kconfig b/drivers/leds/flash/Kconfig
+> >> index 5e08102a67841..be62e05277429 100644
+> >> --- a/drivers/leds/flash/Kconfig
+> >> +++ b/drivers/leds/flash/Kconfig
+> >> @@ -114,6 +114,18 @@ config LEDS_RT8515
+> >>  	  To compile this driver as a module, choose M here: the module
+> >>  	  will be called leds-rt8515.
+> >>  
+> >> +config LEDS_S2M_FLASH
+> >> +	tristate "Samsung S2M series PMICs flash/torch LED support"
+> >> +	depends on LEDS_CLASS
+> >> +	depends on MFD_SEC_CORE
+> >> +	depends on V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS
+> >> +	select REGMAP_IRQ
+> >> +	help
+> >> +	  This option enables support for the flash/torch LEDs found in
+> >> +	  certain Samsung S2M series PMICs, such as the S2MU005. It has
+> >> +	  a LED channel dedicated for every physical LED. The LEDs can
+> >> +	  be controlled in flash and torch modes.
+> >> +
+> >>  config LEDS_SGM3140
+> >>  	tristate "LED support for the SGM3140"
+> >>  	depends on V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS
+> >> diff --git a/drivers/leds/flash/Makefile b/drivers/leds/flash/Makefile
+> >> index 712fb737a428e..44e6c1b4beb37 100644
+> >> --- a/drivers/leds/flash/Makefile
+> >> +++ b/drivers/leds/flash/Makefile
+> >> @@ -10,6 +10,7 @@ obj-$(CONFIG_LEDS_MAX77693)	+= leds-max77693.o
+> >>  obj-$(CONFIG_LEDS_QCOM_FLASH)	+= leds-qcom-flash.o
+> >>  obj-$(CONFIG_LEDS_RT4505)	+= leds-rt4505.o
+> >>  obj-$(CONFIG_LEDS_RT8515)	+= leds-rt8515.o
+> >> +obj-$(CONFIG_LEDS_S2M_FLASH)	+= leds-s2m-flash.o
+> >>  obj-$(CONFIG_LEDS_SGM3140)	+= leds-sgm3140.o
+> >>  obj-$(CONFIG_LEDS_SY7802)	+= leds-sy7802.o
+> >>  obj-$(CONFIG_LEDS_TPS6131X)	+= leds-tps6131x.o
 
-Add drivers related to devices described by those new nodes in the
-already existing driver list.
+[...]
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
----
- drivers/misc/Kconfig | 5 +++++
- 1 file changed, 5 insertions(+)
+> >> +static int s2mu005_fled_torch_brightness_set(struct led_classdev *cdev,
+> >> +					     enum led_brightness value)
+> >> +{
+> >> +	struct s2m_fled *priv = to_led_priv(to_cdev_flash(cdev));
+> >> +	struct regmap *regmap = priv->regmap;
+> >> +	int ret;
+> >> +
+> >> +	mutex_lock(&priv->lock);
+> >> +
+> >> +	if (value == LED_OFF) {
+> >
+> > These defines are deprecated.
+> >
+> > From include/linux/leds.h:
+> >
+> > /* This is obsolete/useless. We now support variable maximum brightness. */
+> > enum led_brightness {
+> >         LED_OFF         = 0,
+> >         LED_ON          = 1,
+> >         LED_HALF        = 127,
+> >         LED_FULL        = 255,
+> > };
+> >
+> 
+> Let me know what am I supposed to use then. The
+> brightness_set_blocking() function is defined as such:
+> 
+> 	int (*brightness_set_blocking)(struct led_classdev *led_cdev,
+> 				       enum led_brightness brightness);
+> 
+> Which has enum led_brightness as one of its params.
+> 
+> Do I just ignore the 'obsolete' param for now and replace ` == LED_OFF`
+> with a logical NOT?
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 9c285a7c88ba..69825dc0f85e 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -635,13 +635,18 @@ config MCHP_LAN966X_PCI
- 	  Even if this driver does not depend on those other drivers, in order
- 	  to have a fully functional board, the following drivers are needed:
- 	    - fixed-clock (COMMON_CLK)
-+	    - i2c-mux-pinctrl (I2C_MUX_PINCTRL)
- 	    - lan966x-cpu-syscon (MFD_SYSCON)
-+	    - lan966x-gck (COMMON_CLK_LAN966X)
- 	    - lan966x-miim (MDIO_MSCC_MIIM)
- 	    - lan966x-oic (LAN966X_OIC)
- 	    - lan966x-pinctrl (PINCTRL_OCELOT)
- 	    - lan966x-serdes (PHY_LAN966X_SERDES)
- 	    - lan966x-switch (LAN966X_SWITCH)
- 	    - lan966x-switch-reset (RESET_MCHP_SPARX5)
-+	    - sam9x60-i2c (I2C_AT91)
-+	    - sama5d2-flexcom (MFD_ATMEL_FLEXCOM)
-+	    - sfp (SFP)
- 
- source "drivers/misc/c2port/Kconfig"
- source "drivers/misc/eeprom/Kconfig"
+I'm pretty sure most places just treat this as a u8 these days.
+
 -- 
-2.53.0
-
+Lee Jones [李琼斯]
