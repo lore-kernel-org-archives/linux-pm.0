@@ -1,38 +1,38 @@
 Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B7AE3EF0CF;
-	Wed, 25 Mar 2026 14:43:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C59A3EF670;
+	Wed, 25 Mar 2026 14:43:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.171.202.116
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774449786; cv=none; b=TQBQ039lnQ9IFI0ANV/R+zV03fL7zab7uIThHxEFqS+aWhJh7OHCEgi1QdrwuJdgyqrMGySzuatLInURiJaDDc4fw0i4JJ7leUlSTDW5W7KFyVz9zHl80iGgZ/K+s13IP63GDG8RaKzW0QHyoqleWV9HE6/3WlVodyH98AUjYh4=
+	t=1774449808; cv=none; b=PL2E8Wm8OaEPlGhmtJbHs1rmeWd5wKrHiT5zlIx9jvwoVclZnB5N3GjtAFwmFoY8c0a/YYdAYg5wX+pOmd+4bOGfBag1MDmrl9D5Kv+bD5gU7LLmA0J5zZuOovMDzR9wJuhXDEarml+hvMI+44TtZKqgyIEsPpU4sR4wX+BK7oE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774449786; c=relaxed/simple;
-	bh=WDPFl6m6bRz8Thl6Qu9+NScWd7/JsGzUXYclLG80RUY=;
+	s=arc-20240116; t=1774449808; c=relaxed/simple;
+	bh=NTK3i5tT9QWPEOEZ2JcdNqTuIHC5BhBkEo4P1dG/bNY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DhycxfHIlLF8DOLeVP49qH5IauHv/wUN4TDCaYY+pLq0prMEDRe8F1ubOskHzM+zuBuZvv/TZF52yl+UCchsstG6soF9ckiofNrSeemY0g/IUPzgcry+9PytJbMHU1F4HpUq0mdgPNyKJ8v6GINYEkgsY2FFC69WVFwFlCfB1Qg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=STNluz80; arc=none smtp.client-ip=185.171.202.116
+	 MIME-Version; b=U4H2h0g7rpCNHvL2wKcutdhZ7s1CoaIIQegXSsrqC5sNB6wCRMYXUILY9SP+lQCYngO7q2k7A3Cy6jstKCm/0iV181qzxic8URNyD63wowO1lmgtHueDJ4k4jyrtySAJBkUqn93JDCx4EbghwodOWyxITmyNRGMpK/6laTsGLGE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=eJ4BmFcA; arc=none smtp.client-ip=185.171.202.116
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="STNluz80"
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="eJ4BmFcA"
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 53968C580B1;
-	Wed, 25 Mar 2026 14:43:32 +0000 (UTC)
+	by smtpout-04.galae.net (Postfix) with ESMTPS id 678E5C580B1;
+	Wed, 25 Mar 2026 14:43:51 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 8AE77601FA;
-	Wed, 25 Mar 2026 14:43:04 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 988C8104513C1;
-	Wed, 25 Mar 2026 15:42:44 +0100 (CET)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 9F3A3601FA;
+	Wed, 25 Mar 2026 14:43:23 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 9A1EE10451522;
+	Wed, 25 Mar 2026 15:43:02 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1774449781; h=from:subject:date:message-id:to:cc:mime-version:
+	t=1774449800; h=from:subject:date:message-id:to:cc:mime-version:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=oI3ulT6gceg7nbKUJ1bD8cGXzZxk2WnR3vcjhMGr/6Y=;
-	b=STNluz80BfRRMUe4pR6IxW/I6NIOsCDo02S4Lv/PmVYC5TfHHrPVtzJfPBrK+6SFzZTQ5t
-	JS2hE+8I7YcHxT9Ch1MAmcXa+WN5KcCQ0Wj0W3II0tC2Llq10uSFAHcviaLOvth9aqkrDl
-	jzFx1d/m7OhSjyNBlwlfD6ewaWCCZwgy7n+JQN1Jl90sLOiVHn1VyTS6HsYEjm0Jemkc8Y
-	OEsw/Gm8uAhsvoLnvkWHGuL1qQrqD2j4twTZ195huIrnhnP2rmCTZw1ZN5taDyB9DxWXmE
-	ss1BCcYGgDpMKAKwnvH5FYB34kD7F586PnVB2teOqXWjUmuP4qqq1Af4k5CrvQ==
+	bh=dyU2PMsXAmj3EbT2+UZQ+YSlvbKU0N9ZIMJJlxdw490=;
+	b=eJ4BmFcAjAHO1RljChWdOyoj3omI/HuwZmTpXXHQa1umyn9qPlvXMX0qFWHX41OtrKkEA1
+	GvBSGgfM4yrx92BviPWee8JItzhEODZaOjL49ET1ZPQJiTDPdWu67AmxZcwfgAM7RHexh8
+	BBfjF9gNBx3YobP5vg27CSbfUTTHQgebXMzwb/Y9URTy9Fp70//V99F42kh0Q7vhs0OoVB
+	ZvGI2Rl+HJieKsxTPvtA4ZlBtkBHUg3o5akZuVa9XdzJTMNomY3mmyUIb3q7OOjh9BmaDO
+	wfp9AO3ccuHOnRdShguOtsQSJoF8butGZEl8ck8Nswog14Pj0jSZOuIP7WrmCw==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Andrew Lunn <andrew@lunn.ch>,
 	Rob Herring <robh@kernel.org>,
@@ -97,9 +97,9 @@ Cc: Wolfram Sang <wsa@kernel.org>,
 	Steen Hegelund <steen.hegelund@microchip.com>,
 	Luca Ceresoli <luca.ceresoli@bootlin.com>,
 	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-Subject: [PATCH v6 23/27] PCI: Add Microchip LAN9662 PCI Device ID
-Date: Wed, 25 Mar 2026 15:35:50 +0100
-Message-ID: <20260325143555.451852-24-herve.codina@bootlin.com>
+Subject: [PATCH v6 24/27] misc: lan966x_pci: Introduce board specific data
+Date: Wed, 25 Mar 2026 15:35:51 +0100
+Message-ID: <20260325143555.451852-25-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260325143555.451852-1-herve.codina@bootlin.com>
 References: <20260325143555.451852-1-herve.codina@bootlin.com>
@@ -112,58 +112,95 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Last-TLS-Session-Version: TLSv1.3
 
-Existing code uses the 0x9660 value (LAN9662 PCI Device ID) in several
-places.
+Only one device-tree overlay (lan966x_evb_lan9662_nic.dtbo) is handled
+and this overlay is directly referenced in lan966x_pci_load_overlay().
 
-Avoid this direct use of the 0x9660 value replacing it by defined PCI
-Device ID.
+This avoid to use the code for an other board.
+
+In order to be more generic and to allow support for other boards (PCI
+Vendor/Device IDs), introduce the lan966x_pci_info structure and attach
+it to PCI Vendor/Device IDs handled by the driver.
+
+This structure contains information related to the PCI board such as
+information related to the dtbo describing the board we have to load.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/misc/lan966x_pci.c | 2 +-
- drivers/pci/quirks.c       | 2 +-
- include/linux/pci_ids.h    | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/misc/lan966x_pci.c | 30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/misc/lan966x_pci.c b/drivers/misc/lan966x_pci.c
-index bbd87c89663d..e6d1fce0b116 100644
+index e6d1fce0b116..041e92f924c4 100644
 --- a/drivers/misc/lan966x_pci.c
 +++ b/drivers/misc/lan966x_pci.c
-@@ -197,7 +197,7 @@ static void lan966x_pci_remove(struct pci_dev *pdev)
+@@ -18,10 +18,6 @@
+ #include <linux/pci_ids.h>
+ #include <linux/slab.h>
+ 
+-/* Embedded dtbo symbols created by cmd_wrap_S_dtb in scripts/Makefile.lib */
+-extern char __dtbo_lan966x_evb_lan9662_nic_begin[];
+-extern char __dtbo_lan966x_evb_lan9662_nic_end[];
+-
+ struct pci_dev_intr_ctrl {
+ 	struct pci_dev *pci_dev;
+ 	struct irq_domain *irq_domain;
+@@ -118,17 +114,23 @@ static int devm_pci_dev_create_intr_ctrl(struct pci_dev *pdev)
+ 	return devm_add_action_or_reset(&pdev->dev, devm_pci_dev_remove_intr_ctrl, intr_ctrl);
  }
  
++struct lan966x_pci_info {
++	void *dtbo_begin;
++	void *dtbo_end;
++};
++
+ struct lan966x_pci {
+ 	struct device *dev;
+ 	int ovcs_id;
++	const struct lan966x_pci_info *info;
+ };
+ 
+ static int lan966x_pci_load_overlay(struct lan966x_pci *data)
+ {
+-	u32 dtbo_size = __dtbo_lan966x_evb_lan9662_nic_end - __dtbo_lan966x_evb_lan9662_nic_begin;
+-	void *dtbo_start = __dtbo_lan966x_evb_lan9662_nic_begin;
++	const struct lan966x_pci_info *info = data->info;
+ 
+-	return of_overlay_fdt_apply(dtbo_start, dtbo_size, &data->ovcs_id, dev_of_node(data->dev));
++	return of_overlay_fdt_apply(info->dtbo_begin, info->dtbo_end - info->dtbo_begin,
++				    &data->ovcs_id, dev_of_node(data->dev));
+ }
+ 
+ static void lan966x_pci_unload_overlay(struct lan966x_pci *data)
+@@ -169,6 +171,9 @@ static int lan966x_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 
+ 	pci_set_drvdata(pdev, data);
+ 	data->dev = dev;
++	data->info = (const struct lan966x_pci_info *)id->driver_data;
++	if (!data->info)
++		return -EINVAL;
+ 
+ 	ret = lan966x_pci_load_overlay(data);
+ 	if (ret)
+@@ -196,8 +201,17 @@ static void lan966x_pci_remove(struct pci_dev *pdev)
+ 	lan966x_pci_unload_overlay(data);
+ }
+ 
++/* Embedded dtbo symbols created by cmd_wrap_S_dtb in scripts/Makefile.lib */
++extern char __dtbo_lan966x_evb_lan9662_nic_begin[];
++extern char __dtbo_lan966x_evb_lan9662_nic_end[];
++
++static struct lan966x_pci_info evb_lan9662_nic_info = {
++	.dtbo_begin = __dtbo_lan966x_evb_lan9662_nic_begin,
++	.dtbo_end = __dtbo_lan966x_evb_lan9662_nic_end,
++};
++
  static struct pci_device_id lan966x_pci_ids[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_EFAR, 0x9660) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_EFAR, PCI_DEVICE_ID_EFAR_LAN9662) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_EFAR, PCI_DEVICE_ID_EFAR_LAN9662) },
++	{ PCI_DEVICE_DATA(EFAR, LAN9662, &evb_lan9662_nic_info) },
  	{ }
  };
  MODULE_DEVICE_TABLE(pci, lan966x_pci_ids);
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index a63c24d3901d..cdb81f90f91f 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -6358,7 +6358,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0xa76e, dpc_log_size);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5020, of_pci_make_dev_node);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5021, of_pci_make_dev_node);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_REDHAT, 0x0005, of_pci_make_dev_node);
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_EFAR, 0x9660, of_pci_make_dev_node);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_EFAR, PCI_DEVICE_ID_EFAR_LAN9662, of_pci_make_dev_node);
- 
- /*
-  * Devices known to require a longer delay before first config space access
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 406abf629be2..766684176a51 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -934,6 +934,7 @@
- #define PCI_VENDOR_ID_EFAR		0x1055
- #define PCI_DEVICE_ID_EFAR_SLC90E66_1	0x9130
- #define PCI_DEVICE_ID_EFAR_SLC90E66_3	0x9463
-+#define PCI_DEVICE_ID_EFAR_LAN9662	0x9660
- 
- #define PCI_VENDOR_ID_MOTOROLA		0x1057
- #define PCI_DEVICE_ID_MOTOROLA_MPC105	0x0001
 -- 
 2.53.0
 
