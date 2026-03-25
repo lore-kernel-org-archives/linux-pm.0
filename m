@@ -1,39 +1,40 @@
 Received: from srv01.abscue.de (abscue.de [89.58.28.240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5CC43D4126;
-	Wed, 25 Mar 2026 13:55:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33EAA3D9DAC;
+	Wed, 25 Mar 2026 13:55:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774446904; cv=none; b=nX8gMNg5kj6bSlAcbfLGTyfGyWb6ViVVe1QlcQ15m49DWFZQOCj700ifOOlTLBTYzZblpJJBLvutbZ0EVUUgP7JNT3upiPMWxyv/J1avWZZVZExxqLV0EvYqSYM4P+KR7NaMiTbgYbBgIKlNdTeeSohbydiQ4JY2Tfj7cgxzbak=
+	t=1774446904; cv=none; b=judxVH/ez2zYjKiZuCfyp0BHM2Ej+DgbV3d0KELrqg7/WjPjFf/nJA5K77hEOot+tbc4xSIRyRwiCCLMMG+mLb5EGmIinEuk3vL+/OXbL/EkCj79AfnMI9mzp/wS8XIfCMtFlAmZnF6RlBkBYi2QFf3ui0sofIT9Tt1pGcpgTW0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1774446904; c=relaxed/simple;
-	bh=idYORfntNzscJgnzmbLt4sQ7MvG6p9h0c0IYsRJwjYY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=OAJ7oCPzSc2VTjTbxR9vHrL22Ry066M3iIjFPoeOEDuQSJaJlIXjzdtdip4tempMO6NySekwnO/TCotdi0CwJUSKhYirgz+bKO+XNkPyPT5BCGbmwm43X1ipEQdgsebi4GrqFfBWU0OVAa3bx2j44oZiv2OadkXGBiCzlT6pv/k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=ga0YwnPA; arc=none smtp.client-ip=89.58.28.240
+	bh=MHHt2ANc8Qe7TWRx8Im5NLPa2izmN2X0SM9HOq6qFMs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=QbTYxcBawB+2hZpmoDlwya3MihQMkxY8VwCokCy13DKRU9Io6HUgU9gfB+WMMzEJeiIuztk1iGQi3BjDWfNcYtF2sPjPQRveTMdBr+UkQ5sjdY1Dwy0h3Rune/86atjKDYd/mMrkbiOIM1dVLXKXsN4J4S+qSidYHRXlvt5W2IU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=oDnO0ecr; arc=none smtp.client-ip=89.58.28.240
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="ga0YwnPA"
+	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="oDnO0ecr"
 Received: from fluffy-mammal.metal.fwg-cag.de (unknown [IPv6:2001:9e8:cde0:9600:8d27:ae39:1dce:2212])
-	by srv01.abscue.de (Postfix) with ESMTPSA id 8D1501C0068;
-	Wed, 25 Mar 2026 14:54:50 +0100 (CET)
+	by srv01.abscue.de (Postfix) with ESMTPSA id 477E01C0070;
+	Wed, 25 Mar 2026 14:54:53 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1774446892;
+	t=1774446893;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=NySrszc54viDvcCf1q3Lb9Q3LydmegdeNJJpYp0AhEs=;
-	b=ga0YwnPAJAUb4JVDCYPVEMw5uZJPPXQq6YFeNnPsBDH8uPPnsqNqEcD4mWsFON6aV1TE+R
-	M+D/l+sRE2lsufQvhoZSRZyJ4V6xgtH9FENyZI1oeK3CMmh4reh1kHQRWZiVnSKx06lTQc
-	hw5E0y2oDN+Xm7NEOWmeoO577eERezi3orJ0ZKDx3Hys4fpiNJG9squCqY1nJ0KiEZvD9r
-	m/5KOQ8OGfUAWtyyVyd3yce0W0rOyvnQbo5G0Q4fIIgvTvk9ed3/Frmdl8tDjaemxN3BAG
-	6/b4uIkgk6MnRG/ocbrIK5Eq59+e6oO31So1yNfq3JcWI4dNMa2kiLfb5g4ZCA==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BHiWGAaKNrxwaOndt6yaXs1hWGrtAVLI4xI13GIu7Wg=;
+	b=oDnO0ecrYR0J/FrYgYVtWmkcSwG6qHARik+Ul2lS3JLp5XkfteNTui5t9DOzy40L0Kvxk3
+	6hjOCnfdN48U1pxh/jUU/j2m12YJ+InRPxkl5oQKWOoXQN8qNnApq42NiPbZOcK593OfIP
+	k8cjRAymTLYeND+A2vUI3qMfVfysLGpYR3qV3YMKBCxRreT1d3CBLcxQGE33w7QHy3CVMe
+	XW1g+Z+oO2wTyC7g803iWGZeAknCDMm+3KN97+/Cf2dEUpg8FYYgvLndyeVh5uJPmyNOGg
+	5jPEIDAeaV/cFanaWLAT9+vqX9G8tHOWlgVpSyZBGsHAIMkA3AxhMOCpcsmt9g==
 From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Subject: [PATCH v2 0/5] mfd: sc27xx: Use MFD cells and
- devm_mfd_add_devices()
-Date: Wed, 25 Mar 2026 14:53:42 +0100
-Message-Id: <20260325-sc27xx-mfd-cells-v2-0-d0ebb60aa4a7@abscue.de>
+Date: Wed, 25 Mar 2026 14:53:44 +0100
+Subject: [PATCH v2 2/5] regulator: dt-bindings: sc2731: Deprecate
+ compatible property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,11 +43,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAObow2kC/2WNQQ6CMBBFr0Jm7ZgyCg2uvIdhUdqpNEEgHW0wh
- LtbSVy5fC/5768gHAMLXIoVIqcgYRoz0KEA25vxzhhcZiBFtSIqUSzpZcGHd2h5GASd6XSjKn8
- yhiHP5sg+LHvy1mbugzyn+N4fUvm1vxj9x1KJCuumotqzPlutr6YT++KjY2i3bfsA2AKHPbAAA
- AA=
-X-Change-ID: 20260221-sc27xx-mfd-cells-dab7905f3aae
+Message-Id: <20260325-sc27xx-mfd-cells-v2-2-d0ebb60aa4a7@abscue.de>
+References: <20260325-sc27xx-mfd-cells-v2-0-d0ebb60aa4a7@abscue.de>
+In-Reply-To: <20260325-sc27xx-mfd-cells-v2-0-d0ebb60aa4a7@abscue.de>
 To: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
@@ -57,96 +56,58 @@ To: Alexandre Belloni <alexandre.belloni@bootlin.com>,
 Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
  linux-pm@vger.kernel.org, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
+ =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
 X-Mailer: b4 0.14.3
 
-These changes resulted from the need to decouple the the Linux device
-driver hierarchy from the device tree bindings for two different series
-introducing regulator [1] and poweroff [2] support for the SC2730 PMIC.
+The node containing the regulators is always a child of the main PMIC
+node, which already has a compatible property identifying the type of
+PMIC. This makes the compatible in the child node redundant. Mark it
+as deprecated and remove it from the required property list and the
+examples.
 
-There are different PMICs in the SC27xx series, including SC2730 and
-SC2731. These have a lot of similarities, but some differences too. For
-instance, they contain compatible RTC blocks, but completely different
-sets of regulators.
-
-On the Linux side, each PMIC block needs its own driver. The MFD driver
-currently uses devm_of_platform_populate() to load the drivers for the
-components of the PMIC, which only works when each component has its own
-sub-node with a "compatible" property that is used to select a driver
-for the device.
-
-When viewed from the device tree side, the parent node representing the
-PMIC already contains a "compatible" property that distinguishes the
-different PMICs. While the device tree bindings currently do require a
-separate "compatible" property for each sub-node (ADC, fuel gauge,
-regulators, ...), this is essentially redundant since the node name and
-the parent compatible uniquely identify the component. Moreover, some
-parts of the PMIC such as the poweroff/reboot controller do not even
-need a corresponding device tree node.
-
-Change the MFD driver to use MFD cells instead, which allows it to
-instantiate sub-devices both with and without device tree nodes.
-Devices that do not have a separate device tree node with its own
-"compatible" property can be matched by their platform device ID.
-Use this to hook up the existing SC2731 poweroff and regulator drivers,
-which were previously not loaded at all due to the lack of an ID table.
-
-In the device tree bindings, deprecate the redundant "compatible"
-property for the "regulators" node. While it might make sense to do this
-for the other components too, there are a few reasons to only change the
-regulators at this point:
- - The regulators node is special since it is not as independent as the
-   other components. For instance, it is the only child node of the PMIC
-   that does not have a "reg" property. The set of regulators also
-   differs much more between different PMIC models than the register
-   layout of the other components.
- - We already have some other PMICs where only the regulators are
-   treated specially like this, such as MediaTek MT6359 and MT6370.
- - It was suggested to remove the "compatible" property for the new
-   SC2730 regulator bindings I am preparing in [2]. The bindings for
-   the other components do not need any significant changes at the
-   moment.
- - Unlike the poweroff and regulator components, the other parts are
-   already working with the existing drivers and bindings.
-
-For the other components that still have a "compatible" property used
-for matching MFD cells, ensure that an SC2730-specific compatible is
-defined in the bindings so that it can be listed in the SC2730-specific
-device table in the MFD driver.
-
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Acked-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
-
-[1]: https://lore.kernel.org/all/20250926-sc2730-reboot-v1-0-62ebfd3d31bb@abscue.de/
-[2]: https://lore.kernel.org/all/20260220-sc2730-regulators-v1-0-3f2bbc9ecf14@abscue.de/
-
 ---
-Changes in v2:
-- Changed PMIC type matching in MFD driver to use an identifier like
-  other drivers instead of passing pointers through of_device_id.
-- Rebased on next-20260324.
-- Link to v1: https://lore.kernel.org/r/20260222-sc27xx-mfd-cells-v1-0-69526fe74c77@abscue.de
+ Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml                | 2 --
+ .../devicetree/bindings/regulator/sprd,sc2731-regulator.yaml          | 4 +---
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
----
-Otto Pflüger (5):
-      dt-bindings: rtc: sc2731: Add compatible for SC2730
-      regulator: dt-bindings: sc2731: Deprecate compatible property
-      mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
-      power: reset: sc27xx: Add platform_device_id table
-      regulator: sc2731: Add platform_device_id table
+diff --git a/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml b/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
+index b023e1ef8d3c..12b3258daef5 100644
+--- a/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
++++ b/Documentation/devicetree/bindings/mfd/sprd,sc2731.yaml
+@@ -222,8 +222,6 @@ examples:
+         };
+ 
+         regulators {
+-          compatible = "sprd,sc2731-regulator";
+-
+           BUCK_CPU0 {
+             regulator-name = "vddarm0";
+             regulator-min-microvolt = <400000>;
+diff --git a/Documentation/devicetree/bindings/regulator/sprd,sc2731-regulator.yaml b/Documentation/devicetree/bindings/regulator/sprd,sc2731-regulator.yaml
+index 9bd752bab68e..7af20a4781b7 100644
+--- a/Documentation/devicetree/bindings/regulator/sprd,sc2731-regulator.yaml
++++ b/Documentation/devicetree/bindings/regulator/sprd,sc2731-regulator.yaml
+@@ -26,6 +26,7 @@ description: |
+ 
+ properties:
+   compatible:
++    deprecated: true
+     const: sprd,sc2731-regulator
+ 
+ patternProperties:
+@@ -39,8 +40,5 @@ patternProperties:
+     $ref: regulator.yaml#
+     unevaluatedProperties: false
+ 
+-required:
+-  - compatible
+-
+ additionalProperties: false
+ ...
 
- .../devicetree/bindings/mfd/sprd,sc2731.yaml       |  2 -
- .../bindings/regulator/sprd,sc2731-regulator.yaml  |  4 +-
- .../devicetree/bindings/rtc/sprd,sc2731-rtc.yaml   |  7 ++-
- drivers/mfd/sprd-sc27xx-spi.c                      | 62 ++++++++++++++++++----
- drivers/power/reset/sc27xx-poweroff.c              |  8 +++
- drivers/regulator/sc2731-regulator.c               | 10 +++-
- 6 files changed, 77 insertions(+), 16 deletions(-)
----
-base-commit: 85964cdcad0fac9a0eb7b87a0f9d88cc074b854c
-change-id: 20260221-sc27xx-mfd-cells-dab7905f3aae
-
-Best regards,
 -- 
-Otto Pflüger <otto.pflueger@abscue.de>
+2.51.0
 
