@@ -1,103 +1,160 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E3713D5660
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 12:48:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 390DC3D16E2
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 13:06:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774442892; cv=none; b=BEYfoYEk9kO7r61coRYIN+2KMthM7UW6TF0rnH0zSpeMe6whZEZWPIPSGkbfTkUq5W4tYJZr0ieikZ4cp7Y2e8dg9MIRrTT/bznDmvj5nMDzplRP5WHqcn6Zvj1VXbzlh3qfAr4OEMwDc7wrNYxdbud/bPpeg5x+wFJhCWCWNAU=
+	t=1774443999; cv=none; b=eBDn7gr+pGhm51QJCfO8aj7ksRNJqqd3LgN9WgpSwP/9AOMWRsJFDJKSvACC1LPUxwq8mFHwpDN5poyG0knkvMUSv3YFlJDVVfvZ7NzuoNJ/j+zCuCPRBjy2wqxPNLIexcsDzp/38NrWDxrH2xdZ1awbeVxvvibrsNKnaNcGSwM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774442892; c=relaxed/simple;
-	bh=snlC/IBOeUi8hwiOX6kljNOdSdN6bRjLI2GlNzJ2ggE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eklaMgRwd+1kjvMJ9pnxbexlK3NYr8Rb/I2WLJlkkD9QL10QsPZ2Y6M+/y5KHjMp71FBVYYnVdbHNgYWT0GKYGC4AkzdB4o9VOvqf4iZEPqnmh3jQUjDMHeU2L/fS6xEUOJ4wnL5YQRbrX4eAMz8DgQsNX5fa6JfiQwUA5lLNCM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OLSPPOO7; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774443999; c=relaxed/simple;
+	bh=DCs64t6ILvp1G2L1GiCl9DEexyP+6/3Iz6bAhpmkNTk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZLDudb3DVzd0R3f542U3EIDiZ6khOv5SqcQl3ejfTqOqTnfyoGUiukbjl4sda3uWNiBgc6WVe2PMutHS0yu8kQ9rHV3eu4k7aOrH4mPOIX0CssQ1CE6DYeuJmUxSRgdT09G4u395evW8N6XKXS4CfE+qtJVPMpfd7mX+9iAiyPI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DOy4y46a; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OLSPPOO7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5109FC2BCB0
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 12:48:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774442892;
-	bh=snlC/IBOeUi8hwiOX6kljNOdSdN6bRjLI2GlNzJ2ggE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=OLSPPOO7x1QkOd7XBl04YlqVv2enAGDJiWe6QvCmr87vZ6FT+kWKFZzgPnADmit+m
-	 n88TaNjDSg2oDuQ/tMROQLr0JiJ8AD+FzYK57gEVZ/yOLamFtBPcjpjcL6KWf9YyCw
-	 x++dPHP5Xrhc7sHnFXUR0twnlu64ZuTbEszYRgQySomidR4uXR4if0ZNoupmAStk+H
-	 MJtGe5rjNamSxN+bn+ep4DFG5H5rHmlynU+iBXVO91izbRNg61XvAcKaiZqUrTOSDn
-	 CkHWn94tQsmuZABkwK1rGALVhBFKzct+GFh+T+qP2L2rZLH84kRdETy2zPeINjfD4h
-	 ZlLgNS+Q1LOlA==
-Received: by mail-oi1-f175.google.com with SMTP id 5614622812f47-466f00535cfso3853171b6e.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 05:48:12 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUEd6wcPVEKFJQaAqIhKFI4hYFWWTr+vWVub6jfZeI7w49vyIMDBD1e2sgljuafqBL6C6ihO5ed0w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxzMfCNbCs8lPuONHtj0TI3eII0knIqQJK3etKuJMknFD7ZgKzP
-	JJz1hHPDVcqDedKmuseCCxqbptb6Xyr5OqxU3ZelWnGVniK7DU5/YEFMK/DSI+S1c/ixeQTqWV/
-	V7Ry4PgvuEMJarpePu6+2RphMmBsJZUg=
-X-Received: by 2002:a05:6808:1b2b:b0:467:e5a2:a9ef with SMTP id
- 5614622812f47-46a5c719a55mr1503022b6e.38.1774442891426; Wed, 25 Mar 2026
- 05:48:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DOy4y46a"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ad9516a653so12514175ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 06:06:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774443997; x=1775048797; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=2a6VH5mySpW506GVneDmVFhcW10r6kZBilzxo1xGBaY=;
+        b=DOy4y46auRf2pARfIaX1XeCOy0cQ/jpoVHCgWOVH8NxJZTBxS0InfgEtM3jjX+HFh0
+         G/Y8+to/dBzHqxepuRm8iTA/SyWIHYd1V0pj+bydZ+j52yecRA09ewSIO9Gps98MGwX+
+         PboiHv5fw7wdoRubhm3I8EA2/SkJ6Ppf2u077zkh1V9fRvIJ0TBxoFhpbfuWFo4bnHdH
+         PANIdg2T6ysrPJM6uaEKOl3TTItiQl22u6L2i83+CYKPxYlL4GvXbncFOZmFjko+wAaq
+         +5bKn7C7SriWkNlAX8rn+rB7C5gGiTjebfbcaRBr5g7CYc254e/0DYkdBOuUfm/8SaaB
+         4ohQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774443997; x=1775048797;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2a6VH5mySpW506GVneDmVFhcW10r6kZBilzxo1xGBaY=;
+        b=ec6Pv+2c1LoGqiarnz530eFZZ4DdqUax4lf3xs+CGYG5rvx2PFucxdv+jL5fTmibC9
+         Hx1R6Y877Y1wAliYUGMp32WNKepQ+rymrkRESDzvN+2X6qs81cPxST+z2y7EcNoyZ4dy
+         pElQELa7nEr3N1vOnUY9fEEyGbOQ4kRm2AOA6PsHvkzarU42DJVAk3HkN9OFpaRigm4t
+         FhCHp+9ozUwNT9GYE4EwLpfJ4LFlBUMGiugKYy+mIg/FsXsY+IdFoN8/oA4DVGgP8XsT
+         R2fnzl1X6oeJcp/Hj6+cfOAvvilCzQPUt89yQgM219jHT36qgAQjbubx6P7v3aYyfuDu
+         YTAw==
+X-Forwarded-Encrypted: i=1; AJvYcCUSMfBhW0EewCxXqUUhuDfvxWFVOzQQXu7ARe3lgXx8I6d1LfhZ4cWG/NWm1bYjBpxbF0rgzrP30g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyhHKH8v2QXFXTYPvTSaRya+CWdaa4+oggmN74RuEDzIs5Bio+8
+	Oi01rUesmFLySKUm1VCopvaQBMlXgATeCV9T3SLIQCofBFudcxL4x7Xu
+X-Gm-Gg: ATEYQzwuag6qAEHvFpC/2dOYLJuigSXUy/IEk1FrIeOCVsOZ06KAxBJb0TKoCuYMYgz
+	Mt9IEFSNVhLpNP/asOEbdx9H2zTuUm0E4aXaa8uOrBdbCwx8sN1QfKBHbHBqoaEtSNVuotItwHZ
+	a8gFf1BJYIbLx+dIM5Wp22EscS+XVFjIhm51v6zZcPqfamlKrduJflkvRlxXXrNSjYQLVmF1cTH
+	Bhaon+Qa1T0g20SsZdsxeH7oIwmhGJNfz0nUnbBU/McqO6ONEzbuqR24mDc7SMhhIqo5rUS6pzj
+	zxM25gVdcjx0JwtyqRSpy1ivfrQJ4AQMatclt753pIKX0+nIaNmfkj0n3ke94dcnJ7TQdEhX2La
+	trToVwZ0iCmdV9Zton+gOSH+Oi0VxW35IEJ3oJ0d6l2Mc4/RB6FKznLuvFSLy9Avq/rlnH5j6g5
+	Iul1zD9LoYsroohMf/rSurwAoUuKnAvmCKGycqKRT2GVOglq5CZuNVMvSJx8hzFTRCu94OoiJ72
+	bA=
+X-Received: by 2002:a17:903:1aa5:b0:2ae:8253:1452 with SMTP id d9443c01a7336-2b0b098902dmr38868845ad.11.1774443997437;
+        Wed, 25 Mar 2026 06:06:37 -0700 (PDT)
+Received: from toolbx.gk.pfsense.com ([103.70.166.143])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b08369617dsm234356445ad.71.2026.03.25.06.06.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Mar 2026 06:06:35 -0700 (PDT)
+From: Gopi Krishna Menon <krishnagopi487@gmail.com>
+To: sre@kernel.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	lee@kernel.org,
+	conor+dt@kernel.org
+Cc: Gopi Krishna Menon <krishnagopi487@gmail.com>,
+	daniel.baluta@nxp.com,
+	simona.toaca@nxp.com,
+	d-gole@ti.com,
+	m-chawdhry@ti.com,
+	linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] dt-bindings: reset: st: convert to dtschema
+Date: Wed, 25 Mar 2026 18:36:21 +0530
+Message-ID: <20260325130623.36710-1-krishnagopi487@gmail.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com>
- <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
-In-Reply-To: <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 25 Mar 2026 13:47:59 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
-X-Gm-Features: AaiRm50UZe_MGNwYAvyU0MWvQAL2QvlTOXHkHEoVTVk07kPSEDtHWjxoOagyJzo
-Message-ID: <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
-Subject: Re: [PATCH] thermal: core: fix use-after-free due to init/cancel
- delayed_work race
-To: Mauricio Faria de Oliveira <mfo@igalia.com>
-Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, kernel-dev@igalia.com, 
-	syzbot+3b3852c6031d0f30dfaf@syzkaller.appspotmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Mar 25, 2026 at 1:10=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
-g> wrote:
->
-> On Wed, Mar 25, 2026 at 12:51=E2=80=AFAM Mauricio Faria de Oliveira
-> <mfo@igalia.com> wrote:
-> >
-> > If INIT_DELAYED_WORK() is called for a currently running work item,
-> > cancel_delayed_work_sync() is unable to cancel/wait for it anymore,
-> > as the work item's data bits required for that are cleared.
-> >
-> > In the resume path, INIT_DELAYED_WORK() is called twice:
-> > 1) to replace the work function: thermal_zone_device_check/resume()
-> > 2) to restore it.
-> >
-> > Both cases might race with the unregister path and bypass the call to
-> > cancel_delayed_work_sync(),
->
-> So this is the problem, isn't it?
->
-> > after which struct thermal_zone_device *tz
-> > is freed, and the non-canceled/non-waited for work hits use-after-free.
->
-> Which basically means that a TZ_STATE_FLAG_EXIT check is missing in
-> both thermal_zone_pm_complete() and thermal_zone_device_resume().
+Convert the STiH4xx reset controller bindings to DT schema.
 
-Actually, thermal_zone_pm_complete() runs under thermal_list_lock and
-thermal_zone_device_unregister() removes the zone from
-thermal_tz_list, also under thermal_list_lock, before calling
-cancel_delayed_work_sync().
+Signed-off-by: Gopi Krishna Menon <krishnagopi487@gmail.com>
+---
+Changes since v1:
+- Changed unevaluatedProperties to additionalProperties
+- Removed the Suggested-by tags
 
-So either thermal_zone_device_unregister() removes the zone from the
-list before thermal_zone_pm_complete() can run, in which case the
-latter won't run for the given zone at all because that zone is not
-there in thermal_tz_list, or the cancel_delayed_work_sync() will see
-the work item queued up by thermal_zone_pm_complete().
+Note:
+* This patch is part of the GSoC2026 application process for device tree bindings conversions
+* https://github.com/LinuxFoundationGSoC/ProjectIdeas/wiki/GSoC-2026-Device-Tree-Bindings
 
-So where's the race between thermal_zone_pm_complete() and
-thermal_zone_device_unregister()?
+ .../power/reset/st,stih407-restart.yaml       | 31 +++++++++++++++++++
+ .../bindings/power/reset/st-reset.txt         | 11 -------
+ 2 files changed, 31 insertions(+), 11 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+ delete mode 100644 Documentation/devicetree/bindings/power/reset/st-reset.txt
 
-I can see the one between thermal_zone_device_unregister() and
-thermal_zone_device_resume(), but that can be addressed by adding a
-TZ_STATE_FLAG_EXIT check to the latter AFAICS.
+diff --git a/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+new file mode 100644
+index 000000000000..0dd7f5e98157
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
+@@ -0,0 +1,31 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/st,stih407-restart.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ST SW reset controller
++
++maintainers:
++  - Lee Jones <lee@kernel.org>
++
++properties:
++  compatible:
++    const: st,stih407-restart
++
++  st,syscfg:
++    description: phandle of the syscfg node
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++required:
++  - compatible
++  - st,syscfg
++
++additionalProperties: false
++
++examples:
++  - |
++    reset {
++      compatible = "st,stih407-restart";
++      st,syscfg = <&syscfg_sbc_reg>;
++    };
+diff --git a/Documentation/devicetree/bindings/power/reset/st-reset.txt b/Documentation/devicetree/bindings/power/reset/st-reset.txt
+deleted file mode 100644
+index b63948737d80..000000000000
+--- a/Documentation/devicetree/bindings/power/reset/st-reset.txt
++++ /dev/null
+@@ -1,11 +0,0 @@
+-*Device-Tree bindings for ST SW reset functionality
+-
+-Required properties:
+-- compatible: should be "stih407-restart".
+-- st,syscfg: should be a phandle of the syscfg node.
+-
+-Example node:
+-	restart {
+-		compatible = "st,stih407-restart";
+-		st,syscfg = <&syscfg_sbc_reg>;
+-	};
+-- 
+2.52.0
+
