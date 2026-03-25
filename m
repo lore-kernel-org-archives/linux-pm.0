@@ -1,116 +1,205 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABA4E3DB65B
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 13:13:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B4502494D8
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 13:32:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774444398; cv=none; b=MxQmCtiaYwVmdNo3XO/s0yf3NNcY4t7OMPU0xug3PBPIRllsFX5aQklGlVnM/iKgRTczMnPJfQdx3NJDkhY1YBBgWvUxNNvqw3mYlWRijiNgZOVf9+RMNwajGjEoe/51CBsGDzY9A5sdKdXm+jSx08W0zJKZcm4yaBSqRNFsZW4=
+	t=1774445546; cv=none; b=rSaV/XAGuO9TWtedM+1c16Im1le5PJkqoybAxm0VZOVQGWzKfwZSPXS1IRMShu/8WYbSOv9/+7OsvdvbSo7WseUr/y1L9ARCh+rUtovHmim9tJwX9FBxQXX0MLejwWUneKg7JHrOkST3ygLRIhjM5wX0iVRx+5cmFXDBju0dUyg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774444398; c=relaxed/simple;
-	bh=p1CgH2aPFFSSIU0nL8Z5QCpMo08bn0aEmyIzHWVtXmY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FK5oP0USfRw+UQ+++Bh/SASMBsDS5XUpY7Sj0c89/7scF7kX+ZqhpXcOdUYSej/sI15mKJ5Fa+/+sgiA7lh6OLdhVfepofI57MsXLfL08q9DAQAiE4o09gJQCAgZoDB3/U4gyeBSKqWFjTdGYfdHNWRgyYL04xWjHr/Qd2lxA3Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S073oI7S; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774445546; c=relaxed/simple;
+	bh=XY73DpzMPzwxeFdhnv17+xRoeqE3UsGbq7QiCS2vh0M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=q5qG9LMy/c6nivlMkqJrT49vjymGIM6lnHElgJnRfTO/Q+xecgCmaHtFEJDTjd97ROjsIzdKuv09dDStoWZ3hW91W3WEDUupck89adRGX5eLxOf55SAb0p8pa3MC7p5/RlfotNMUH6v+M52VUr5zwu3jlsbw3eZ8AKqfzv6/KMY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UQZH1cAN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S073oI7S"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2b0586d5bb8so47259475ad.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 06:13:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774444397; x=1775049197; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=HXlIM/W5QtMeF1TTKLDLvCNleh8kdupGPpwsdQWbjac=;
-        b=S073oI7ScH7/nc3zKWmse8udWnKtrGdCsWrr8dgh9LYJJ74D8lufB3vCnmkc6tPk2M
-         AOdcwVsIIzbiJPz22C+YHPEw9+Gu09/daKM3dTg8j+QNFxh4DmCFEkP/noHxC7JZTMP5
-         nV0O8aivE8zffMIW6avzwckbPgJjBEglWLiy5sxcgbKU7oz09Aa7DHp7tBFzFDMfG246
-         1y0i4VaUmypb5AZj0pk0tixkRr/b4xy3JYgFafdlKJ3fDcrfUJG9eBIryKoNYVbxidD7
-         fMHa+5PoWvAG1sF3Fml9TbDlcQSD3kn+rHYbV2Ib5Y3AnT+jdjvpb1xHy2CUaqhTfPr3
-         nTWA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774444397; x=1775049197;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HXlIM/W5QtMeF1TTKLDLvCNleh8kdupGPpwsdQWbjac=;
-        b=MOuNEAKtXpi46ttLrTz1DSO+w9EPYbWZMgZ3o5bRXpKPoGgsn9TZR5JMn26XA7R7Wr
-         eKmZW+X7sZCQrJR7KzTUbQI7gZ+O0JYMGhfcaCMibELkuB2/ISfzLMpGHyarFzQsrvoA
-         3rqm33B73Viea16KTiCaS+UsmE8YIk4HeziOyH1aow82WM6Hp5s6XlcoxUhpo06Z1VVX
-         GarE0RL+OMNEWV74ayV/eOf1/QKInCUBWfYoIGSfRvHXt5tsC8JGOx+P/oqT/CUP3Xrs
-         DQNBxTDRdvZsn+6kmS1Q2+AyPJeFGjI2gGfgKmDr9BHCgfqXhuj529FOfBczI/v6upgy
-         QVcQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWKVQ+G85FRScbes7Owd/GXSC53YP4YurNCuTU+bCKxGVFjXz4FGFIvNmJdacsMDr5p2NrFz/vzLQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzP5/9zp9E4Xr68CTMYg9lktdf6D82pE+ZVlsN0nlAWG7Uz7TnP
-	JB4iVm/Cdxz0Y8UGh1SwsO85STw+MS+6/qu35XHuKuTM2HLeslpTIG+h
-X-Gm-Gg: ATEYQzxFeWBsc2VcPmi8HYUk1rkTtYd10O6/UQdS5E4TDUhVZH9gQFMLSJNxAze5u9g
-	Um1Q5t783RDU5Ey+QhzNUpIcHhvs9iOwgdCHBGohjmGPGeJibdgwF3+FVPYquFF6eQ3LuDtPvjl
-	i9BsEvIvvmSfgq4w4FQ6GFBXNKoSOQxnG8G6rsXVa0YVdhcmL4H4ZOQVw1WNvJ+WinHHrYllfae
-	6PO9Wtqp3hizzel/lVzmmkCBeykIkFpxndzAagYe49QCAg2T+wKXomCvL1BRKEaCdozf0ArzsVk
-	GtCVVOcQtel/hdjMlM8OJglv3aGEbW/wNzcIrnhpQfwrPHFJAZNv5o9xir0fP+mhNiKzmMLgf7e
-	6iEo4FYjfia2Zx+wn3EIQGyaNhj/8l3GimH1rDG1qH6Q+RWjbSgRs1yaLF/ms5LjIXJEKLfsOIR
-	dY5wS2YKLxxITHotpahk16fPtqbAMQEcznjybVGKd4VCtFRrsTwU0OI44ytKk=
-X-Received: by 2002:a17:902:f550:b0:2ab:230d:2d96 with SMTP id d9443c01a7336-2b0b0a0f86cmr37207665ad.11.1774444396928;
-        Wed, 25 Mar 2026 06:13:16 -0700 (PDT)
-Received: from localhost ([103.70.166.143])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b0836ace98sm182577905ad.80.2026.03.25.06.13.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 06:13:16 -0700 (PDT)
-Date: Wed, 25 Mar 2026 18:43:11 +0530
-From: Gopi Krishna Menon <krishnagopi487@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, lee@kernel.org, 
-	conor+dt@kernel.org, daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, 
-	m-chawdhry@ti.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: reset: st: convert to dtschema
-Message-ID: <acPebHSUdu16bzw-@toolbx>
-References: <20260324155935.183952-1-krishnagopi487@gmail.com>
- <20260325-speedy-amethyst-beaver-08a3a4@quoll>
- <acPMx9NZBehAzkBp@toolbx>
- <57e3e846-d679-4201-921c-69cdd4040d13@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UQZH1cAN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15692C2BCB2
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 13:32:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774445546;
+	bh=XY73DpzMPzwxeFdhnv17+xRoeqE3UsGbq7QiCS2vh0M=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=UQZH1cAN80Cwf0FaZfDSV9U4r7zKBN+ounWtJs242Wqhjy14p3C3lEmHepOcxwONZ
+	 YUM2owXUIpeIGCpwukb+YxQTZi6+MDHHbjGaOgCZNth/deCmtmXKbYdLOpRNjjPugk
+	 SCxZkNjhvBSSyQvalXlaC4rfLa5p0xpRe4t+HJyPbC0cADKv8PHnQxN+5zRn+hU6H8
+	 1z0381vHveyEIvsuf8s+BFRjDF3aNvVTjIpJsyI9m+SR+MC4PcgPVnKBV33d7mGApU
+	 KZnMBZu2D0ii0eva8hebV4/7l3RFoQGEIU5LiFYiqJYvh+wWoyKNjGKrayy1ta8IV/
+	 MD/dfWBmbC+eQ==
+Received: by mail-ot1-f53.google.com with SMTP id 46e09a7af769-7d4c383f2fcso5470600a34.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 06:32:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW9Ii37couXJ8kxgpQAd3v07cEiU1yldkMB5HCvV+92AQAbuR4i6QFXAxYwTNnpGWfvk3l7iU9Jxg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyx5jMUQUT+piXn8zdCbDjMSEc3fgVdi8F6H7TSUnSdB5MkdJTL
+	5YD5TGOYO1kUvTUDahohuZPinGb0niJiC6HKe9AJDQw3ZrW+GcdF//IfRVCScE8Q1RPfJukNxwX
+	fmTneNxc+Qc+p4d4DgIhD1WnN3LOi7Go=
+X-Received: by 2002:a05:6870:d30a:b0:416:b429:28e with SMTP id
+ 586e51a60fabf-41ca6e47cb8mr1881156fac.20.1774445545149; Wed, 25 Mar 2026
+ 06:32:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57e3e846-d679-4201-921c-69cdd4040d13@kernel.org>
+References: <20260324090948.1667340-1-henrytseng@qnap.com>
+In-Reply-To: <20260324090948.1667340-1-henrytseng@qnap.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 25 Mar 2026 14:32:14 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0hT_FJ48z0bCTcgNHgUHp-reUZGa4877MnNAGC6UTd5MA@mail.gmail.com>
+X-Gm-Features: AQROBzCheUiE8Qqxed4qz1HhnN9ekihoy1ekq0S_GnHGApOpqbV_AxhifGw4QcY
+Message-ID: <CAJZ5v0hT_FJ48z0bCTcgNHgUHp-reUZGa4877MnNAGC6UTd5MA@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: acpi-cpufreq: use DMI max speed when CPPC is unavailable
+To: Henry Tseng <henrytseng@qnap.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	SW Chen <swchen@qnap.com>, Kevin Ko <kevinko@qnap.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 25, 2026 at 01:36:15PM +0100, Krzysztof Kozlowski wrote:
+On Tue, Mar 24, 2026 at 10:11=E2=80=AFAM Henry Tseng <henrytseng@qnap.com> =
+wrote:
+>
+> On AMD Ryzen Embedded V1780B (Family 17h, Zen 1), the BIOS does not
+> provide ACPI _CPC objects and the CPU does not support MSR-based CPPC
+> (X86_FEATURE_CPPC).  The _PSS table only lists nominal P-states
+> (P0 =3D 3350 MHz), so when get_max_boost_ratio() fails at
+> cppc_get_perf_caps(), cpuinfo_max_freq reports only the base frequency
+> instead of the rated boost frequency (3600 MHz).
+>
+>   dmesg:
+>     ACPI CPPC: No CPC descriptor for CPU:0
+>     acpi_cpufreq: CPU0: Unable to get performance capabilities (-19)
+>
+> cppc-cpufreq already has a DMI fallback (cppc_get_dmi_max_khz()) that
+> reads the processor max speed from SMBIOS Type 4.  Export it and reuse
+> it in acpi-cpufreq as a last-resort source for the boost frequency.
+>
+> A sanity check ensures the DMI value is above the _PSS P0 frequency
+> and within 2x of it; values outside that range are ignored and the
+> existing arch_set_max_freq_ratio() path is taken instead.  The 2x
+> upper bound is based on a survey of the AMD Ryzen Embedded V1000
+> series, where the highest boost-to-base ratio is 1.8x (V1404I:
+> 2.0 GHz base / 3.6 GHz boost).
+>
+> The DMI lookup and sanity check are wrapped in a helper,
+> acpi_cpufreq_resolve_max_freq(), which falls through to
+> arch_set_max_freq_ratio() if the DMI value is absent or
+> out of range.
+>
+> Tested on AMD Ryzen Embedded V1780B with v7.0-rc4:
+>
+>   Before: cpuinfo_max_freq =3D 3350000 (base only)
+>   After:  cpuinfo_max_freq =3D 3600000 (includes boost)
+>
+> Link: https://www.amd.com/en/products/embedded/ryzen/ryzen-v1000-series.h=
+tml#specifications
+> Signed-off-by: Henry Tseng <henrytseng@qnap.com>
+> ---
+> v2:
+>   - Extract else block into acpi_cpufreq_resolve_max_freq()
+>     to avoid #ifdef in the main init path (Rafael)
+> v1:
+>   - https://lore.kernel.org/linux-pm/20260320095648.3598007-1-henrytseng@=
+qnap.com/
+>
+>  drivers/acpi/cppc_acpi.c       |  3 ++-
+>  drivers/cpufreq/acpi-cpufreq.c | 31 ++++++++++++++++++++++++-------
+>  include/acpi/cppc_acpi.h       |  1 +
+>  3 files changed, 27 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index f0e513e9ed5d..f53de414acf2 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1944,7 +1944,7 @@ static void cppc_find_dmi_mhz(const struct dmi_head=
+er *dm, void *private)
+>  }
+>
+>  /* Look up the max frequency in DMI */
+> -static u64 cppc_get_dmi_max_khz(void)
+> +u64 cppc_get_dmi_max_khz(void)
+>  {
+>         u16 mhz =3D 0;
+>
+> @@ -1958,6 +1958,7 @@ static u64 cppc_get_dmi_max_khz(void)
+>
+>         return KHZ_PER_MHZ * mhz;
+>  }
+> +EXPORT_SYMBOL_GPL(cppc_get_dmi_max_khz);
+>
+>  /*
+>   * If CPPC lowest_freq and nominal_freq registers are exposed then we ca=
+n
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufre=
+q.c
+> index e7eff6c2f092..21639d9ac753 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -675,6 +675,29 @@ static inline u64 get_max_boost_ratio(unsigned int c=
+pu, u64 *nominal_freq)
+>  }
+>  #endif
+>
+> +static void acpi_cpufreq_resolve_max_freq(struct cpufreq_policy *policy,
+> +                                         unsigned int pss_max_freq)
+> +{
+> +#ifdef CONFIG_ACPI_CPPC_LIB
+> +       u64 max_speed =3D cppc_get_dmi_max_khz();
+> +       /*
+> +        * Use DMI "Max Speed" if it looks plausible: must be
+> +        * above _PSS P0 frequency and within 2x of it.
+> +        */
+> +       if (max_speed > pss_max_freq && max_speed < pss_max_freq * 2) {
+> +               policy->cpuinfo.max_freq =3D max_speed;
+> +               return;
+> +       }
+> +#endif
+> +       /*
+> +        * If the maximum "boost" frequency is unknown, ask the arch
+> +        * scale-invariance code to use the "nominal" performance for
+> +        * CPU utilization scaling so as to prevent the schedutil
+> +        * governor from selecting inadequate CPU frequencies.
+> +        */
+> +       arch_set_max_freq_ratio(true);
+> +}
+> +
+>  static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  {
+>         struct cpufreq_frequency_table *freq_table;
+> @@ -849,13 +872,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_poli=
+cy *policy)
+>
+>                 policy->cpuinfo.max_freq =3D freq * max_boost_ratio >> SC=
+HED_CAPACITY_SHIFT;
+>         } else {
+> -               /*
+> -                * If the maximum "boost" frequency is unknown, ask the a=
+rch
+> -                * scale-invariance code to use the "nominal" performance=
+ for
+> -                * CPU utilization scaling so as to prevent the schedutil
+> -                * governor from selecting inadequate CPU frequencies.
+> -                */
+> -               arch_set_max_freq_ratio(true);
+> +               acpi_cpufreq_resolve_max_freq(policy, freq_table[0].frequ=
+ency);
+>         }
+>
+>         policy->freq_table =3D freq_table;
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 4d644f03098e..e6c5ef3173c5 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -156,6 +156,7 @@ extern int cppc_set_enable(int cpu, bool enable);
+>  extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
+>  extern bool cppc_perf_ctrs_in_pcc_cpu(unsigned int cpu);
+>  extern bool cppc_perf_ctrs_in_pcc(void);
+> +extern u64 cppc_get_dmi_max_khz(void);
+>  extern unsigned int cppc_perf_to_khz(struct cppc_perf_caps *caps, unsign=
+ed int perf);
+>  extern unsigned int cppc_khz_to_perf(struct cppc_perf_caps *caps, unsign=
+ed int freq);
+>  extern bool acpi_cpc_valid(void);
+> --
 
-> On 25/03/2026 13:04, Gopi Krishna Menon wrote:
-> > On Wed, Mar 25, 2026 at 12:39:36PM +0100, Krzysztof Kozlowski wrote:
-> > 
-> >> On Tue, Mar 24, 2026 at 09:29:30PM +0530, Gopi Krishna Menon wrote:
-> >>> Convert the STiH4xx reset controller bindings to DT schema.
-> >>>
-> >>> Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
-> >>> Suggested-by: Dhruva Gole <d-gole@ti.com>
-> >>
-> >> Both suggested you to write this patch?
-> >>
-> > Hi Krzysztof,
-> > 
-> > Thanks for the review, They helped me to improve the PATCH,
-> > 
-> > - Dhruva suggested me to change the subject from dt-bindings: power:
-> >   reset: st: convert to dtschema to dt-bindings: reset: st: convert to
-> >   dtschema as that was the general trend followed with similar files.
-> > - Daniel suggested me to use the word 'reset' instead of 'restart' in
-> >   the patch (whereever possible) as that is more accurate here.
-> > 
-> > That's why I added those Suggested-by tags.
-> 
-> This is not the meaning of Suggested-by. Drop the tags.
-> 
-Understood. Will remove it and send the v2.
-> I gave you now review, so you will add "Suggested-by: Krzysztof ..."?
-> 
-Earlier I would have. Didnt understand the use and meaning of this tag properly.
-But will take care not to let this happen in future.
-> Best regards,
-> Krzysztof
+Applied as 7.1 material, thanks!
