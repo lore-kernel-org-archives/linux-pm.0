@@ -1,28 +1,29 @@
-Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
+Received: from lgeamrelo07.lge.com (lgeamrelo07.lge.com [156.147.51.103])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F9B6322B8F
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 18:36:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 871BA34887B
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 18:53:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.103
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774463814; cv=none; b=COo0gaTq22oUNxI/KiM3PGhIGdTKUd5bx5xdPTsBBXDJ36WKrA/cVeX8IlnKyxSKZdITTp1W97nGLgE5FGELv7W/kDvcrFA+KeF25G55rauk7vTJUH3JdNLbe9r/Gnj8iIUXxq5d/M4HAEcyNFCNT2MnKeSE/aI3DhMADJNRp2c=
+	t=1774464833; cv=none; b=S+Az9dQRn10xBa7fRSr7dyQXb3iH/po50f8gKGiPXuNcaMQcp5OvSpynJMRH+bFc1UFhQ5eBnzfBVBB9NgBO7DkfBPrs0Qnq1pgf7PLwpzA6aEY+h3slO3XM0g+29CFFRa+ALC6McEZeET11l5k66tXT7X/LBAm6Ux5bp4AFzXs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774463814; c=relaxed/simple;
-	bh=caD87+u92zEtkpCjBqLx1b1xohIodhH4i7hTlROlaGc=;
+	s=arc-20240116; t=1774464833; c=relaxed/simple;
+	bh=UEoTyIJYna8viJe9xzaww5o+VrPLcSrda7wcuEf6C3k=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WBalaqtsD6aHRmvtSMlQF1m83wKCZ+lFquXcX/p94ADjsbaRlOnd/Gq22Oe5PQBFTVNyvI4+gLX2OO6qNHFELau0IgUx8GiJczgU77OxKjyCVLwZVRvgPyykAWFNoU7ZugCNuTeTZHIWp2h/x2KOtHBX6g6dDs07J/tdZ+WwrpU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
+	 Content-Type:Content-Disposition:In-Reply-To; b=CLfuwGhqRdvovcgFhA2e2Mr47vN2GLndivGWLFGbUDjiWJM8pgZZ9LyDJjtm74uJWuQt276O1b+dnI5z52x6d5Cx6mTeVcqPeb6WwnjhFDn9fPW8gIlae/gNyHQmzQk0xNyZyylfTkzQZHJBQKPZD7e9qi5doiab2NNyaux2LOo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.103
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
 Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 26 Mar 2026 03:36:49 +0900
+	by 156.147.51.103 with ESMTP; 26 Mar 2026 03:53:41 +0900
 X-Original-SENDERIP: 10.177.112.156
 X-Original-MAILFROM: youngjun.park@lge.com
-Date: Thu, 26 Mar 2026 03:36:49 +0900
+Date: Thu, 26 Mar 2026 03:53:41 +0900
 From: YoungJun Park <youngjun.park@lge.com>
 To: Nhat Pham <nphamcs@gmail.com>
-Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org,
-	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org,
+Cc: Kairui Song <ryncsn@gmail.com>, Liam.Howlett@oracle.com,
+	akpm@linux-foundation.org, apopple@nvidia.com,
+	axelrasmussen@google.com, baohua@kernel.org,
 	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com,
 	cgroups@vger.kernel.org, chengming.zhou@linux.dev,
 	chrisl@kernel.org, corbet@lwn.net, david@kernel.org,
@@ -42,8 +43,10 @@ Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org,
 	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com,
 	riel@surriel.com
 Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-Message-ID: <acQrQYHJgqof0yx4@yjaykim-PowerEdge-T330>
+Message-ID: <acQvNRLpHwnHt7i+@yjaykim-PowerEdge-T330>
 References: <20260320192735.748051-1-nphamcs@gmail.com>
+ <CAMgjq7AiUr_Ntj51qoqvV+=XbEATjr7S4MH+rgD32T5pHfF7mg@mail.gmail.com>
+ <CAKEwX=PBjMVfMvKkNfqbgiw7o10NFyZBSB62ODzsqogv-WDYKQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,105 +55,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260320192735.748051-1-nphamcs@gmail.com>
+In-Reply-To: <CAKEwX=PBjMVfMvKkNfqbgiw7o10NFyZBSB62ODzsqogv-WDYKQ@mail.gmail.com>
 
-On Fri, Mar 20, 2026 at 12:27:14PM -0700, Nhat Pham wrote:
+On Mon, Mar 23, 2026 at 11:32:57AM -0400, Nhat Pham wrote:
+
+> Interesting. Normally "lots of zero-filled page" is a very beneficial
+> case for vswap. You don't need a swapfile, or any zram/zswap metadata
+> overhead - it's a native swap backend. If production workload has this
+> many zero-filled pages, I think the numbers of vswap would be much
+> less alarming - perhaps even matching memory overhead because you
+> don't need to maintain a zram entry metadata (it's at least 2 words
+> per zram entry right?), while there's no reverse map overhead induced
+> (so it's 24 bytes on both side), and no need to do zram-side locking
+> :)
 > 
-> This patch series is based on 6.19. There are a couple more
-> swap-related changes in mainline that I would need to coordinate
-> with, but I still want to send this out as an update for the
-> regressions reported by Kairui Song in [15]. It's probably easier
-> to just build this thing rather than dig through that series of
-> emails to get the fix patch :)
+> So I was surprised to see that it's not working out very well here. I
+> checked the implementation of memhog - let me know if this is wrong
+> place to look:
+> 
+> https://man7.org/linux/man-pages/man8/memhog.8.html
+> https://github.com/numactl/numactl/blob/master/memhog.c#L52
+> 
+> I think this is what happened here: memhog was populating the memory
+> 0xff, which triggers the full overhead of a swapfile-backed swap entry
+> because even though it's "same-filled" it's not zero-filled! I was
+> following Usama's observation - "less than 1% of the same-filled pages
+> were non-zero" - and so I only handled the zero-filled case here:
+> 
+> https://lore.kernel.org/all/20240530102126.357438-1-usamaarif642@gmail.com/
+> 
+> This sounds a bit artificial IMHO - as Usama pointed out above, I
+> think most samefilled pages are zero pages, in real production
+> workloads. However, if you think there are real use cases with a lot
+> of non-zero samefilled pages, please let me know I can fix this real
+> quick. We can support this in vswap with zero extra metadata overhead
+> - change the VSWAP_ZERO swap entry type to VSWAP_SAME_FILLED, then use
+> the backend field to store that value. I can send you a patch if
+> you're interested.
 
-Hi Nhat,
-
-I wanted to fully understand the patches before asking questions,
-but reviewing everything takes time, and I didn't want to miss the
-timing. So let me share some thoughts and ask about your direction. 
-
-These are the perspectives I'm coming from:
-
-Pros:
-- The architecture is very clean.
-- Zero entries currently consume swap space, which can prevent
-  actual swap usage in some cases.
-- It resolves zswap's dependency on swap device size.
-- And so on.
-
-Cons:
-- An additional virtual allocation step is introduced per every swap.
-- not easy to merge (change swap infrastructure totally?)
-
-To address the cons, I think if we can demonstrate that the
-benefits always outweigh the costs, it could fully replace the
-existing mechanism. However, if this can be applied selectively,
-we get only the pros without the cons.
-
-1. Modularization
-
-You removed CONFIG_* and went with a unified approach. I recall
-you were also considering a module-based structure at some point.
-What are your thoughts on that direction?
-
-If we take that approach, we could extend the recent swap ops
-patchset (https://lore.kernel.org/linux-mm/20260302104016.163542-1-bhe@redhat.com/)
-as follows:
-- Make vswap a swap module
-- Have cluster allocation functions reside in swapops
-- Enable vswap through swapon
-
-I think this could result in a similar structure. An additional
-benefit would be that it enables various configurations:
-
-- vswap + regular swap together
-- vswap only
-- And other combinations
-
-And merge is not that hard. it is not the total change of swap infra structure.
-
-But, swapoff fastness might disappear? it is not that critical as I think.
-
-2. Flash-friendly swap integration (for my use case)
-
-I've been thinking about the flash-friendly swap concept that
-I mentioned before and recently proposed:
-(https://lore.kernel.org/linux-mm/aZW0voL4MmnMQlaR@yjaykim-PowerEdge-T330/)
-
-One of its core functions requires buffering RAM-swapped pages
-and writing them sequentially at an appropriate time -- not
-immediately, but in proper block-sized units, sequentially.
-
-This means allocated offsets must essentially be virtual, and
-physical offsets need to be managed separately at the actual
-write time.
-
-If we integrate this into the current vswap, we would either
-need vswap itself to handle the sequential writes (bypassing
-the physical device and receiving pages directly), or swapon
-a swap device and have vswap obtain physical offsets from it.
-But since those offsets cannot be used directly (due to
-buffering and sequential write requirements), they become
-virtual too, resulting in:
-
-  virtual -> virtual -> physical
-
-This triple indirection is not ideal.
-
-However, if the modularization from point 1 is achieved and
-vswap acts as a swap device itself, then we can cleanly
-establish a:
-
-  virtual -> physical
-
-relationship within it.
-
-I noticed you seem to be exploring collaboration with Kairui
-as well. I'm curious whether you have a compromise direction
-in mind, or if you plan to stick with the current approach.
-
-P.S. I definitely want to review the vswap code in detail
-when I get the time. great work and code.
-
+This brings back memories -- I'm pretty sure we talked about
+exactly this at LPC. Our custom swap device already handles both
+zero-filled and same-filled pages on its own, so what we really
+wanted was a way to tell the swap layer "just skip the detection
+and let it through."
+ 
+I looked at two approaches back then but never submitted either:
+ 
+  - A per-swap_info flag to opt out of zero/same-filled handling.
+    But this felt wrong from vswap's perspective -- if even one
+    device opts out of the zeromap, the model gets messy.
+ 
+  - Revisiting Usama's patch 2 approach.
+    Sounded good in theory, but as you said,
+    it's not as simple to verify in practice. And it is more clean design
+    swapout time zero check as I see. So,  I gave up on it.
+ 
+Seeing this come up again is actually kind of nice :)
+ 
+One thought -- maybe a compile-time CONFIG or a boot param to
+control the scope? e.g. zero-only, same-filled, or disabled.
+That way vendors like us just turn it off, and setups like
+Kairui's can opt into broader detection. Just an idea though --
+open to other approaches if you have something in mind.
+ 
 Thanks,
 Youngjun Park
