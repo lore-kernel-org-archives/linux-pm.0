@@ -1,140 +1,111 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6995A3FA5C9;
-	Wed, 25 Mar 2026 16:32:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-vk1-f174.google.com (mail-vk1-f174.google.com [209.85.221.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08A5E3FCB22
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 16:35:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774456377; cv=none; b=a4oBzkXvw/BD+VoEOL21XN4yK0iEjFmQ9KVJPHkEMhtFU0kXoo1CvzmQtTqL/0KYCfnMbJxaDHu2kr/q3zqBly4RZkfiCWwM13iRVMQIYnw5fozr9SNOc33bzxMQNbjtUkdp2NLqNRq12vTkY9ah9Y3NIRfbjxs+KzKAsq+TNg8=
+	t=1774456561; cv=none; b=gttxUplft95pQ5CUZkxLKsX/GN8gtYHFdFuBo1VXCa8WTHetnTUuDNGa+T3hKIcYnuwLsz3E/yD3pQIMFVw0UX2YuAmSQKR/O+1Ja8fsSfUjQrootizgOXnXDRxRQO7riLMaz3GBm20xk+LwujkrzuHR09M5Dua9HFna7iuoLn8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774456377; c=relaxed/simple;
-	bh=8KromqTmRdEzC0f/nh0v6DgYME2PY+4qjNyQaiTrV7o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EAmxx0YQkSmhx/guy9alHzQd9IRTlMOr1VobeAa0XcHz3uk8Hq8Nn5U0Rgv18Z4g+63wn/J/TqbDHw/K60PZWz4CxWMSwaj1Gbt3lHSoDuXhzNYVNqeWPPElhrPjoXi2yQXfGB0RP69EX8jxXpnexiipzwlBGwkUNn7eiLfYsow=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ALxPshRs; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ALxPshRs"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C378C25DD;
-	Wed, 25 Mar 2026 09:32:49 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 59D2A3F915;
-	Wed, 25 Mar 2026 09:32:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774456375; bh=8KromqTmRdEzC0f/nh0v6DgYME2PY+4qjNyQaiTrV7o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ALxPshRsDFuzUUSrAQLYb5oMb0tvtkxDp5jIXxdqmiTlZeXMf5KdiIGX4O1ZRzOAl
-	 aVHoJK/TwY8rW5hry6myIKboXKXRBeNCqnA6deW64JfWx1LBRlJOFK+43TxYKT1ESK
-	 YVwBkC6CymUCz98Qtl2lU+AYLcsJQEAvlp9zfpWc=
-Date: Wed, 25 Mar 2026 16:32:49 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Ankur Arora <ankur.a.arora@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	bpf@vger.kernel.org, arnd@arndb.de, will@kernel.org,
-	peterz@infradead.org, mark.rutland@arm.com, harisokn@amazon.com,
-	cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
-	daniel.lezcano@linaro.org, memxor@gmail.com,
-	zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
-	rdunlap@infradead.org, joao.m.martins@oracle.com,
-	boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
-Subject: Re: [PATCH v10 00/12] barrier: Add
- smp_cond_load_{relaxed,acquire}_timeout()
-Message-ID: <acQOMZMk0OMfIgFO@arm.com>
-References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
- <20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
- <874imftol4.fsf@oracle.com>
- <20260316233712.7cbfac27@pumpkin>
- <87ms07rlp9.fsf@oracle.com>
- <20260317091705.5a64fc56@pumpkin>
- <acPo7l_pd5rnHpSX@arm.com>
- <20260325154210.79a621df@pumpkin>
+	s=arc-20240116; t=1774456561; c=relaxed/simple;
+	bh=vX6p1CDvWad+GoKbzvthJkwyI07/wTijn9ZWHgYK/o4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=sLNeyl/TtD5dd5qM+RnjtHdOcuFGxgzHlObaZNuP2rgcAvm8bmEr5MbJZ0tuZ6DkQ7Wjov2yXY9Y/DGGZihT90ZxgPMNG528XJch9A9zPFVXNH8qVEH82f7EGHCkmgoitk8yIaKUjQ1smn72HeRgmRLicTdSSOhiV23q4/ajCws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-56a9a7e762bso101366e0c.3
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 09:35:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774456559; x=1775061359;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sDjwaAywwU03wv0+eLKkG3IGOSH5Z69cyrkxX7M6ckw=;
+        b=CkPGTPPs5Qirb5+GsUpsm8iZcKDo1R2fFQt5NQlTKk/xUAfyel9B8Et+UXBhrH8jra
+         UmfSc0E9qSq5o2cuXNnFqT/Fzst1cf5paVcvqAhmE/9l/NVGy3CGNUrpJO7aisvCLjNs
+         /W2wKEowlwu8Q7+isD2x/uVJDBIq3wowXDxD0OvyBAG1+hV2ZJxEGNKhOQAN1mdq87rH
+         hGqRWOVVEgUIG9So5NwEI0FV8WRQk7XmOqQcpSZQysqSiiG/xfITbDRxepDPOa1zMvF2
+         xDztOHpVFmVMptb3P7uylJY7Jy6WeT3e/U0Iz8B5JZjL8mNcqdqy1KaSARRPMlpRzkTG
+         wveA==
+X-Forwarded-Encrypted: i=1; AJvYcCVE14YHYtT+59YXNV+Rr3JRRwdKvkUDHYetUuQXBcAHpMDA6pVIOvizXDIjLQ1xvPHTkmEF3xfQHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx67G/K6wYR5WO0xm7XPH6EafmVNKTQgpETC9EN8SsWgg98GyBb
+	RNb00Gkq6QBuhpjXAcKl1pDglfbpf5JTW/jTeSd3x0E2UTKATryd1fDGH2lrwJeV1kw=
+X-Gm-Gg: ATEYQzzQY0OvlT3ggx9V2Thx8BvwPIrgV98ac1uk0TsoIP742viidVuW38E3rJfPtEa
+	dbbDbNh/nLuptxIKNPVGgo82DNg4vnUyUSiPW4yD7Bpuyh9FyWVty9ZV37ZGJfTze6tg3f3EY1h
+	dEj3oUSYyrT9noa2ZeNLrT7Zvia8OliIoyZrxsjauhno8z/AMFP+wuzALYuCXYmPzJArq0Mk1ON
+	Xke2ZJpJRO+3SR7B3T4ZoFygGIDtM0cJhw5UhEkfGwfJ4WKn2grU7wUb7hWxH2nRLuxyRMFYEAm
+	fxnh8Jj1bsiGH18feaggti9aLkSJPYtEQhAvWNFC2oo+qDLJOtcShzSreHFv5HKCDFol7jwF7yQ
+	7QQVD3sAJozDSR8mLRbBVSTppSOXz2La5uZRoC0m6sO5m3FGIMce93a+uYS0ilBKil78OXVnX/f
+	Ybui0MY/6hJ6kTbwYAPm0yKbj0TId19Q7puC8n9INQgWTBBrCsjQm9StEfKaTbHTXNP6DVD7A=
+X-Received: by 2002:a05:6122:218e:b0:56c:8e80:7191 with SMTP id 71dfb90a1353d-56d21f2956cmr2436408e0c.3.1774456558955;
+        Wed, 25 Mar 2026 09:35:58 -0700 (PDT)
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com. [209.85.217.42])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56d31bf7190sm460242e0c.3.2026.03.25.09.35.57
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 25 Mar 2026 09:35:58 -0700 (PDT)
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-60406d330feso816836137.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 09:35:57 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWoNz6BnPkj+UfwDPciIhI9ofX+H8riHrxYUfTMofQjsk19F9BcRHuKU6Dx+539GnqFdYh3m2eCQw==@vger.kernel.org
+X-Received: by 2002:a67:e703:0:b0:5ff:ea89:44b5 with SMTP id
+ ada2fe7eead31-6038753a92emr2391289137.32.1774456557341; Wed, 25 Mar 2026
+ 09:35:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260325154210.79a621df@pumpkin>
+References: <cover.1772468323.git.geert+renesas@glider.be> <10876b30a8bdb7d1cfcc2f23fb859f2ffea335fe.1772468323.git.geert+renesas@glider.be>
+ <20260313215912.GA3415767-robh@kernel.org>
+In-Reply-To: <20260313215912.GA3415767-robh@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 25 Mar 2026 17:35:45 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXFd5Sva4Hu7KufgMfiiF02Z1z+UgLyJH=KYPvch4673Q@mail.gmail.com>
+X-Gm-Features: AQROBzAa9n7pyJe-8mgf6m8MWZ5EBfxKw9iKFNekZ5OaRcP6UMYY0cGuEWeDl6U
+Message-ID: <CAMuHMdXFd5Sva4Hu7KufgMfiiF02Z1z+UgLyJH=KYPvch4673Q@mail.gmail.com>
+Subject: Re: [PATCH 7/7] soc: renesas: Convert to of_machine_get_match()
+To: Rob Herring <robh@kernel.org>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Saravana Kannan <saravanak@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Ilia Lin <ilia.lin@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Mar 25, 2026 at 03:42:10PM +0000, David Laight wrote:
-> On Wed, 25 Mar 2026 13:53:50 +0000
-> Catalin Marinas <catalin.marinas@arm.com> wrote:
-> 
-> > On Tue, Mar 17, 2026 at 09:17:05AM +0000, David Laight wrote:
-> > > On Mon, 16 Mar 2026 23:53:22 -0700
-> > > Ankur Arora <ankur.a.arora@oracle.com> wrote:  
-> > > > David Laight <david.laight.linux@gmail.com> writes:  
-> > > > > On arm64 I think you could use explicit sev and wfe - but that will wake all
-> > > > > 'sleeping' cpu; and you may not want the 'thundering herd'.    
-> > > > 
-> > > > Wouldn't we still have the same narrow window where the CPU disregards the IPI?  
-> > > 
-> > > You need a 'sevl' in the interrupt exit path.  
-> > 
-> > No need to, see the rule below in
-> > https://developer.arm.com/documentation/ddi0487/maa/2983-beijhbbd:
-> > 
-> > R_XRZRK
-> >   The Event Register for a PE is set by any of the following:
-> >   [...]
-> >   - An exception return.
-> > 
-> 
-> It is a shame the pages for the SEV and WFE instructions don't mention that.
-> And the copy I found doesn't have working hyperlinks to any other sections.
-> (Not even references to related instructions...)
+Hi Rob,
 
-The latest architecture spec (M.a.a) has working hyperlinks.
+On Fri, 13 Mar 2026 at 22:59, Rob Herring <robh@kernel.org> wrote:
+> On Mon, Mar 02, 2026 at 05:29:11PM +0100, Geert Uytterhoeven wrote:
+> > Use the of_machine_get_match() helper to avoid accessing of_root
+> > directly, which is planned to become private.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > This is an alternative solution to "[PATCH v2 8/9] soc: renesas: don't
+> > access of_root directly"
+> > https://lore.kernel.org/20260223-soc-of-root-v2-8-b45da45903c8@oss.qualcomm.com
+>
+> Greg applied this, so you'll have to respin on top of that. Next cycle I
+> guess. Unless you get him to revert it.
 
-> You do need to at least comment that the "msr s0_3_c1_c0_0, %[ecycles]" is
-> actually WFET.
-> Is that using an absolute cycle count?
+That was my impression, too, but apparently he skipped that patch.
+So you can still apply this patch, too.
 
-Yes, compared to CNTVCT.
+> I'm applying the rest of the series.
 
-> If so does it work if the time has already passed?
+Thanks!
 
-Yes, it exits immediately. These counters are not going to wrap in our
-(or device's) lifetime.
+Gr{oetje,eeting}s,
 
-> If it is absolute do you need to recalculate it every time around the loop?
-
-No but you do need to read CNTVCT, that's what __delay_cycles() does (it
-does not wait).
-
-> __delay_cycles() contains guard(preempt_notrace()). I haven't looked what
-> that does but is it needed here since preemption is disabled?
-
-The guard was added recently by commit e5cb94ba5f96 ("arm64: Fix
-sampling the "stable" virtual counter in preemptible section"). It's
-needed for the udelay() case but probably not for Ankur's series. Maybe
-we can move the guard in the caller?
-
-> Looking at the code I think the "sevl; wfe" pair should be higher up.
-
-Yes, I replied to your other message. We could move it higher indeed,
-before the condition check, but I can't get my head around the ordering.
-Can need_resched() check be speculated before the WFE? I need to think
-some more.
-
-> I also wonder how long it takes the cpu to leave any low power state.
-> We definitely found that was an issue on some x86 cpu and had to both
-> disable the lowest low power state and completely rework some wakeup
-> code that really wanted a 'thundering herd' rather than the very gentle
-> 'bring each cpu out of low power one at a time' that cv_broadcast()
-> gave it.
-
-WFE is a very shallow power state where all hardware state is retained.
-We have an even stream broadcast to all CPUs regularly already (10KHz)
-and I haven't heard people complaining about power degradation. If a CPU
-is a WFI state or even deeper into firmware (following a PSCI call), an
-exclusive monitor event won't wake it up. It's only for those cores
-waiting in WFE.
+                        Geert
 
 -- 
-Catalin
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
