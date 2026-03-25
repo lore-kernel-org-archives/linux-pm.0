@@ -1,253 +1,398 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com [209.85.167.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEE3C3A1D05;
-	Wed, 25 Mar 2026 10:16:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774433781; cv=none; b=py2hyeVSJAGCzjLI+dGGBQeE65JxGFoVqbtfZv2ovVqOYQ2jexulbIGs0D5aUzqqpO4nwVpOavqewRD0bvgnlMtJvyHRI0yK21Y1qsbs/NFThkSj1GZlK6/4ASUya6EooNOJygKKeoxsjzdz5ukRGNabEApelZyvX2bv2F0KhH4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774433781; c=relaxed/simple;
-	bh=J1W/W6dgugIFTw8lc+XnBxr8W9IvNju4+ItfTBX6Hyk=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=EeaG7cETxd1Zq4w6jP9SgCVykXMDlwo0rqHvdRYH+JeMpcKw7DPiB+upWCabKfkZWBeyc4d7CPOuBO8DZdi5+Vzx5Chr9ePJ1AOUxoEl5VSb1iZ98eH4xR1aJ7AzLXUCYX+ibJHTx/dXoOu0yL/gwXj3GJQZcz2fFkizey9dT9Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ntO5bAju; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C430E344DB9
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 10:23:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.45
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774434203; cv=pass; b=nTeP7gktFe1PPbOX03l0DnAeK7ojPhE1lKmHCqybeMUtxQq41cGgdu5GSIp+HgAI9o7c+IF5kDAD8NKPufVxp9glFr7rNAVpR1qPgZ5lblIPAqtXExc2ASZKYmwkQ+fhj94+n8vVJk8lTrUM2QzoI05AyLhWJRWVQyNhgUSwGLA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774434203; c=relaxed/simple;
+	bh=RH8gtxQV2NDhn+3rg6SQRgAvdcumKOkFkd1aWYgdyA8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=m6Rtzd/Cw3eSrcYHr8ZLAb3FYGlZstXtJa8gRxC75s6izPZKaSODyGEuUqemvYpXHd2+ncBTco25sKLXFMSsje0+ZCAu0iWnKiyikMypOpHFH/3yltWzAR5PRSOIJXEd+UjkVS6zptUH9f6zNMCFe9ngH+7qzBzCDFUWU+5f1Z4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IWelJUfL; arc=pass smtp.client-ip=209.85.167.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ntO5bAju"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774433780; x=1805969780;
-  h=date:from:to:cc:subject:message-id;
-  bh=J1W/W6dgugIFTw8lc+XnBxr8W9IvNju4+ItfTBX6Hyk=;
-  b=ntO5bAjuFuk6poymIvfAvpYfVcJv1P54+H8t28wEJv9qndF6e7rQgbXt
-   NGYEFBAE0XPnvF6FHGkGYa6Lp57cHzijDbEEy+eKIsxAQZl3R05if/OfL
-   8NGXXGJ5oFXpvqQUs6n6dr4QyGkn1A1zoExoq51fAETZ9mxPP5LKtYvgU
-   qO98J4FRXQBEgy31Qh9iZBt8iveJ+U3yk4/k3ODCinpIHh6Mc8GgQ/xka
-   BH2KTOF2lXjRqIALSJ5rnygT0Iuji+rKuFORnPWn+h6C8q4BJ/OBYo+N5
-   BKc8vrk+7n8jcxeR24AXEsj2lO08MTKOoKvXYESH6wKxu7r1SWmdvBMqx
-   A==;
-X-CSE-ConnectionGUID: mnejOEFyRQqGD9fRjrLDDw==
-X-CSE-MsgGUID: uSGXP/ugSKyJMWo6qsSLEA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="75488606"
-X-IronPort-AV: E=Sophos;i="6.23,139,1770624000"; 
-   d="scan'208";a="75488606"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 03:16:20 -0700
-X-CSE-ConnectionGUID: ShJuyI4OQGmEPQEFMN9r1Q==
-X-CSE-MsgGUID: aJWeaUsuSoay1v/0XcKlcw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,139,1770624000"; 
-   d="scan'208";a="224894166"
-Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 25 Mar 2026 03:16:18 -0700
-Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w5LHb-000000006cD-1yli;
-	Wed, 25 Mar 2026 10:16:15 +0000
-Date: Wed, 25 Mar 2026 18:15:25 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:fixes] BUILD SUCCESS
- 4354f16141fb93bdea922285dfbdbe997cdfba15
-Message-ID: <202603251817.F3wuNlcb-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IWelJUfL"
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5a12cd0bd79so2561043e87.2
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 03:23:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774434200; cv=none;
+        d=google.com; s=arc-20240605;
+        b=dkiGp27LAbdonKJ2t1CW+l2ftW14F05TK0aRsSqoMiV6oftPMWCAcz0orickZOnFu/
+         j1sMcbGSjCeXSjYcOBX6fVY1MkgGtjcECKlijVTI0Lvx6aStKzfalNfHYbpqUMn1UXOt
+         8x9cQVzAeCFI0JCYcV1ijO68gnJwoYNmknM6zjvzoWIfeojL1Y6CyML1y3Bs1/3+SzC2
+         yzM1l/2Xt18B19Yd3KqKaGg990Iqcj+4W9df0oMj4jECe0PuEaZG17V+7BYBSPPNG97R
+         cE1UbKguA3wdB0n+/csge/dMWy8GzlZJ2LJr7rYm0d6hdhN3aw4/91q7eQmGSv+5e+1a
+         B3Xg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=mBp8RLEDVIlzkv1F9VuUM1ruuuUZPFdkClJzuEAiKOA=;
+        fh=9nZoz2WBhoSAABy5BR+xjy25O2R6pVvel8W/iAkpT4o=;
+        b=bsgW47rTEl08OxsoUL7w4Gopsx7n+usaxhjqcKTGTLFpWgXUt8IOwX6YORGaJsKfcU
+         uXLHUSt99dYsbZUL3dMtM6yhSTFg/1amxIpedqB3AQPyB5gxPYIySgbO39UIDinDl0SG
+         4GHxlWdlD4mOF/S3cZy4qzDU4OhasffDAuyXO3Qp+SnZWb5/sUgL5pALNpaRjbQO+x0I
+         4gAt/DQYJmMiT1lGqnzidIkajO7yd0u4lY2o0oh2Ahy9BRdyoRJEH0iaTY8kqkjkmGZF
+         cqRqL2MMAf7dmxL31q4NX1f/dQ8tuqo/NOF8js9sdPD6CbGEWMCmrWbJvorHO7HQNP5U
+         2OBA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1774434200; x=1775039000; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=mBp8RLEDVIlzkv1F9VuUM1ruuuUZPFdkClJzuEAiKOA=;
+        b=IWelJUfLPxPiUDmgFdiz6JEChAmhJVM8b3R+N8WVcUZCXauLyZQ5pMtzrXJ6hOGdaA
+         DAY964fXPUsXhVaPPhUF/wsOYG3eiNLhi78XTzNXKy882stoP75rMCn3v6Sq/gJ8XEQQ
+         mdPugHj/RJfnlpvv93qo1X3HVGCvj8kBwpCJ1bFe2KJlbZi5PXpo3N0VYuTGzAYmCMwq
+         a/45HNerz3+rv6/2p7RHaYPbs8dJ5IOSNWO0FVE3iRtvNR5R6MePkw95w5qpoWoqkgQA
+         YjKAy8Cd4sNJxciXrJcEBAAGsgUmNYIFMWeNxCOVojERF9Trz1LDX+dJYbjO1eWRkrxA
+         wyQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774434200; x=1775039000;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mBp8RLEDVIlzkv1F9VuUM1ruuuUZPFdkClJzuEAiKOA=;
+        b=nhefpfg2EIZrmqltvZVMLU0tUztnqXlps5R84KgTuXfDOZid83ot4FtZHPHX0hvqe3
+         XBkJYd35yjhPY28SJIzGAPx9FP1SCx2RPl5iT/2nodItk+XrL6m1+SZIcWQBE0LNDlq1
+         L6oJb0R7WIpwLcfhF2K/9ISem3+Zf496Emje8moumwpxZ1oE3XOT4y8f3GEluvxLlRoP
+         Js/EC2h0pY9uQ+NOG5dHqkIrKVMsaFZbWsO3ougnJYa7W1RD3k3JABM8kqN6t62DefCC
+         Hd08C4/FlCmAAa3S7mPnj9QpsN+1TWgo1sSwhPfqPxLBp7zPgXEjHMLkrTIrrIANiBz6
+         7SOw==
+X-Forwarded-Encrypted: i=1; AJvYcCUXNjPPRxAQnJQ/ZOF80JSxD+Bckw4FcyJNEr/1k0UBkuIyIfIA31vbJdsilIGioDKNdd2Nml+PPQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy54Off2XVRHOl7IxUMKGs+PSW3m6Fe9+65IfrDUTNM83Dd5WRF
+	F9BmMigEKlP658F/dSbCA9Z1pwZH+mKV504KDo/ZzgZ+OH85s6xL2+RoSf7YaPfG9YCivpED0nw
+	vcIa6DPANZVQAuCmg9ALacCmic/w2KvDc2si49IdiLA33W0sNnThE8khwLQ==
+X-Gm-Gg: ATEYQzxRbfCejqZ0B8CyQp8vY+Tq7fpapl+XVHco7cfVOAYhChiGlWlLFajylMuE/xd
+	0cfrKsZvjcAAlWytW7ffZ4D+VclTyAETlwcx1qkjoy9mr4z61UKNemljhaFevDl+Fa1uuCvzDzj
+	IhYKTIyp7Ec7YsZSA6nH9N4EdRzbNrDfr0Pk0W7Jbz1C2wZXJ+PIbNx7Sz6lzCLrLAlHLuyFZNh
+	LbuCs25ZAYm90cZjc6l9hHyf6/aHxs5O81i8b7KB9B2yxbr4ArwEYoectcYRkQ0K1Y1kGnNfTjX
+	DQpAIEdl
+X-Received: by 2002:a05:6512:39cc:b0:5a2:7f4b:8e87 with SMTP id
+ 2adb3069b0e04-5a29b97d9cfmr1256395e87.3.1774434199644; Wed, 25 Mar 2026
+ 03:23:19 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+ <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
+In-Reply-To: <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 25 Mar 2026 11:22:43 +0100
+X-Gm-Features: AQROBzCAhrnkHE2n7Vl-AWMRhbzCM0xZ4JtiJNaCMCH2pRumSmgZhFKQaLi64kk
+Message-ID: <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] pmdomain: core: add support for power-domains-child-ids
+To: "Kevin Hilman (TI)" <khilman@baylibre.com>
+Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
-branch HEAD: 4354f16141fb93bdea922285dfbdbe997cdfba15  Merge branch 'thermal-intel-fixes' into fixes
+On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
+>
+> Currently, PM domains can only support hierarchy for simple
+> providers (e.g. ones with #power-domain-cells = 0).
+>
+> Add support for oncell providers as well by adding a new property
+> `power-domains-child-ids` to describe the parent/child relationship.
+>
+> For example, an SCMI PM domain provider has multiple domains, each of
+> which might be a child of diffeent parent domains. In this example,
+> the parent domains are MAIN_PD and WKUP_PD:
+>
+>     scmi_pds: protocol@11 {
+>         reg = <0x11>;
+>         #power-domain-cells = <1>;
+>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
+>         power-domains-child-ids = <15>, <19>;
+>     };
+>
+> With this example using the new property, SCMI PM domain 15 becomes a
+> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
+> WKUP_PD.
+>
+> To support this feature, add two new core functions
+>
+> - of_genpd_add_child_ids()
+> - of_genpd_remove_child_ids()
+>
+> which can be called by pmdomain providers to add/remove child domains
+> if they support the new property power-domains-child-ids.
+>
+> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
 
-elapsed time: 939m
+Thanks for working on this! It certainly is a missing feature!
 
-configs tested: 176
-configs skipped: 2
+> ---
+>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h |  16 ++++++++++++++++
+>  2 files changed, 185 insertions(+)
+>
+> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> index 61c2277c9ce3..acb45dd540b7 100644
+> --- a/drivers/pmdomain/core.c
+> +++ b/drivers/pmdomain/core.c
+> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
+>         return genpd;
+>  }
+>
+> +/**
+> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
+> + * @np: Device node pointer associated with the PM domain provider.
+> + * @data: Pointer to the onecell data associated with the PM domain provider.
+> + *
+> + * Parse the power-domains and power-domains-child-ids properties to establish
+> + * parent-child relationships for PM domains. The power-domains property lists
+> + * parent domains, and power-domains-child-ids lists which child domain IDs
+> + * should be associated with each parent.
+> + *
+> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I think we should avoid returning specific error codes for specific
+errors, simply because it usually becomes messy.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260325    gcc-8.5.0
-arc                   randconfig-002-20260325    gcc-8.5.0
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                                 defconfig    gcc-15.2.0
-arm                       netwinder_defconfig    gcc-15.2.0
-arm                           omap1_defconfig    gcc-15.2.0
-arm                   randconfig-001-20260325    gcc-8.5.0
-arm                   randconfig-002-20260325    gcc-8.5.0
-arm                   randconfig-003-20260325    gcc-8.5.0
-arm                   randconfig-004-20260325    gcc-8.5.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260325    clang-23
-arm64                 randconfig-002-20260325    clang-23
-arm64                 randconfig-003-20260325    clang-23
-arm64                 randconfig-004-20260325    clang-23
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260325    clang-23
-csky                  randconfig-002-20260325    clang-23
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260325    gcc-11.5.0
-hexagon               randconfig-002-20260325    gcc-11.5.0
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386        buildonly-randconfig-001-20260325    gcc-14
-i386        buildonly-randconfig-002-20260325    gcc-14
-i386        buildonly-randconfig-003-20260325    gcc-14
-i386        buildonly-randconfig-004-20260325    gcc-14
-i386        buildonly-randconfig-005-20260325    gcc-14
-i386        buildonly-randconfig-006-20260325    gcc-14
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260325    clang-20
-i386                  randconfig-002-20260325    clang-20
-i386                  randconfig-003-20260325    clang-20
-i386                  randconfig-004-20260325    clang-20
-i386                  randconfig-005-20260325    clang-20
-i386                  randconfig-006-20260325    clang-20
-i386                  randconfig-007-20260325    clang-20
-i386                  randconfig-011-20260325    clang-20
-i386                  randconfig-012-20260325    clang-20
-i386                  randconfig-013-20260325    clang-20
-i386                  randconfig-014-20260325    clang-20
-i386                  randconfig-015-20260325    clang-20
-i386                  randconfig-016-20260325    clang-20
-i386                  randconfig-017-20260325    clang-20
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260325    gcc-11.5.0
-loongarch             randconfig-002-20260325    gcc-11.5.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260325    gcc-11.5.0
-nios2                 randconfig-002-20260325    gcc-11.5.0
-openrisc                         allmodconfig    clang-23
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-19
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260325    clang-23
-parisc                randconfig-002-20260325    clang-23
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc               randconfig-001-20260325    clang-23
-powerpc               randconfig-002-20260325    clang-23
-powerpc                     taishan_defconfig    clang-17
-powerpc64             randconfig-001-20260325    clang-23
-powerpc64             randconfig-002-20260325    clang-23
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260325    gcc-8.5.0
-riscv                 randconfig-002-20260325    gcc-8.5.0
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260325    gcc-8.5.0
-s390                  randconfig-002-20260325    gcc-8.5.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-19
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260325    gcc-8.5.0
-sh                    randconfig-002-20260325    gcc-8.5.0
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260325    gcc-13
-sparc                 randconfig-002-20260325    gcc-13
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260325    gcc-13
-sparc64               randconfig-002-20260325    gcc-13
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260325    gcc-13
-um                    randconfig-002-20260325    gcc-13
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260325    gcc-14
-x86_64      buildonly-randconfig-002-20260325    gcc-14
-x86_64      buildonly-randconfig-003-20260325    gcc-14
-x86_64      buildonly-randconfig-004-20260325    gcc-14
-x86_64      buildonly-randconfig-005-20260325    gcc-14
-x86_64      buildonly-randconfig-006-20260325    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260325    gcc-12
-x86_64                randconfig-002-20260325    gcc-12
-x86_64                randconfig-003-20260325    gcc-12
-x86_64                randconfig-004-20260325    gcc-12
-x86_64                randconfig-005-20260325    gcc-12
-x86_64                randconfig-006-20260325    gcc-12
-x86_64                randconfig-011-20260325    clang-20
-x86_64                randconfig-012-20260325    clang-20
-x86_64                randconfig-013-20260325    clang-20
-x86_64                randconfig-014-20260325    clang-20
-x86_64                randconfig-015-20260325    clang-20
-x86_64                randconfig-016-20260325    clang-20
-x86_64                randconfig-071-20260325    gcc-14
-x86_64                randconfig-072-20260325    gcc-14
-x86_64                randconfig-073-20260325    gcc-14
-x86_64                randconfig-074-20260325    gcc-14
-x86_64                randconfig-075-20260325    gcc-14
-x86_64                randconfig-076-20260325    gcc-14
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    clang-23
-xtensa                           allyesconfig    gcc-15.2.0
-xtensa                randconfig-001-20260325    gcc-13
-xtensa                randconfig-002-20260325    gcc-13
+If I understand correctly the intent here is to allow the caller to
+check for -ENOENT and potentially avoid bailing out as it may not
+really be an error, right?
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Perhaps a better option is to return the number of children for whom
+we successfully assigned parents. Hence 0 or a positive value allows
+the caller to understand what happened. More importantly, a negative
+error code then really becomes an error for the caller to consider.
+
+> + */
+> +int of_genpd_add_child_ids(struct device_node *np,
+> +                          struct genpd_onecell_data *data)
+> +{
+> +       struct of_phandle_args parent_args;
+> +       struct generic_pm_domain *parent_genpd, *child_genpd;
+> +       struct of_phandle_iterator it;
+> +       const struct property *prop;
+> +       const __be32 *item;
+> +       u32 child_id;
+> +       int ret;
+> +
+> +       /* Check if both properties exist */
+> +       if (of_count_phandle_with_args(np, "power-domains", "#power-domain-cells") <= 0)
+> +               return -ENOENT;
+> +
+> +       prop = of_find_property(np, "power-domains-child-ids", NULL);
+> +       if (!prop)
+> +               return -ENOENT;
+> +
+> +       item = of_prop_next_u32(prop, NULL, &child_id);
+
+Perhaps it's easier to check if of_property_count_u32_elems() returns
+the same number as of_count_phandle_with_args() above? If it doesn't,
+something is wrong, and there is no need to continue.
+
+This way you also know the number of loops upfront that must iterate
+through all indexes. This should allow us to use a simpler for-loop
+below, I think. In this case you can also use
+of_property_read_u32_index() instead.
+
+> +
+> +       /* Iterate over power-domains phandles and power-domains-child-ids in lockstep */
+> +       of_for_each_phandle(&it, ret, np, "power-domains", "#power-domain-cells", 0) {
+> +               if (!item) {
+> +                       pr_err("power-domains-child-ids shorter than power-domains for %pOF\n", np);
+> +                       ret = -EINVAL;
+> +                       goto err_put_node;
+> +               }
+> +
+> +               /*
+> +                * Fill parent_args from the iterator. it.node is released by
+> +                * the next of_phandle_iterator_next() call at the top of the
+> +                * loop, or by the of_node_put() on the error path below.
+> +                */
+> +               parent_args.np = it.node;
+> +               parent_args.args_count = of_phandle_iterator_args(&it, parent_args.args,
+> +                                                                 MAX_PHANDLE_ARGS);
+> +
+> +               /* Get the parent domain */
+> +               parent_genpd = genpd_get_from_provider(&parent_args);
+
+Before getting the parent_genpd like this, we need to take the
+gpd_list_lock. The lock must be held when genpd_add_subdomain() is
+being called.
+
+> +               if (IS_ERR(parent_genpd)) {
+> +                       pr_err("Failed to get parent domain for %pOF: %ld\n",
+> +                              np, PTR_ERR(parent_genpd));
+> +                       ret = PTR_ERR(parent_genpd);
+> +                       goto err_put_node;
+> +               }
+> +
+> +               /* Validate child ID is within bounds */
+> +               if (child_id >= data->num_domains) {
+> +                       pr_err("Child ID %u out of bounds (max %u) for %pOF\n",
+> +                              child_id, data->num_domains - 1, np);
+> +                       ret = -EINVAL;
+> +                       goto err_put_node;
+> +               }
+> +
+> +               /* Get the child domain */
+> +               child_genpd = data->domains[child_id];
+> +               if (!child_genpd) {
+> +                       pr_err("Child domain %u is NULL for %pOF\n", child_id, np);
+> +                       ret = -EINVAL;
+> +                       goto err_put_node;
+> +               }
+> +
+> +               /* Establish parent-child relationship */
+> +               ret = genpd_add_subdomain(parent_genpd, child_genpd);
+> +               if (ret) {
+> +                       pr_err("Failed to add child domain %u to parent in %pOF: %d\n",
+> +                              child_id, np, ret);
+> +                       goto err_put_node;
+> +               }
+> +
+> +               pr_debug("Added child domain %u (%s) to parent %s for %pOF\n",
+> +                        child_id, child_genpd->name, parent_genpd->name, np);
+> +
+> +               item = of_prop_next_u32(prop, item, &child_id);
+> +       }
+> +
+> +       /* of_for_each_phandle returns -ENOENT at natural end-of-list */
+> +       if (ret && ret != -ENOENT)
+> +               return ret;
+> +
+> +       /* All power-domains phandles were consumed; check for trailing child IDs */
+> +       if (item) {
+> +               pr_err("power-domains-child-ids longer than power-domains for %pOF\n", np);
+> +               return -EINVAL;
+> +       }
+> +
+> +       return 0;
+> +
+> +err_put_node:
+
+This isn't a suffient error handling.
+
+If we successfully added child domains using genpd_add_subdomain(), we
+must remove them here, by calling pm_genpd_remove_subdomain() in the
+reverse order as we just added them.
+
+> +       of_node_put(it.node);
+> +       return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_add_child_ids);
+> +
+> +/**
+> + * of_genpd_remove_child_ids() - Remove parent-child PM domain relationships
+> + * @np: Device node pointer associated with the PM domain provider.
+> + * @data: Pointer to the onecell data associated with the PM domain provider.
+> + *
+> + * Reverses the effect of of_genpd_add_child_ids() by parsing the same
+> + * power-domains and power-domains-child-ids properties and calling
+> + * pm_genpd_remove_subdomain() for each established relationship.
+> + *
+> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error
+> + * code on failure.
+> + */
+> +int of_genpd_remove_child_ids(struct device_node *np,
+> +                          struct genpd_onecell_data *data)
+> +{
+> +       struct of_phandle_args parent_args;
+> +       struct generic_pm_domain *parent_genpd, *child_genpd;
+> +       struct of_phandle_iterator it;
+> +       const struct property *prop;
+> +       const __be32 *item;
+> +       u32 child_id;
+> +       int ret;
+> +
+> +       /* Check if both properties exist */
+> +       if (of_count_phandle_with_args(np, "power-domains", "#power-domain-cells") <= 0)
+> +               return -ENOENT;
+> +
+> +       prop = of_find_property(np, "power-domains-child-ids", NULL);
+> +       if (!prop)
+> +               return -ENOENT;
+> +
+> +       item = of_prop_next_u32(prop, NULL, &child_id);
+
+Similar comments as for of_genpd_add_child_ids().
+
+Moreover, I think we should remove the children in the reverse order
+of how we added them.
+
+> +
+> +       of_for_each_phandle(&it, ret, np, "power-domains", "#power-domain-cells", 0) {
+> +               if (!item)
+> +                       break;
+> +
+> +               parent_args.np = it.node;
+> +               parent_args.args_count = of_phandle_iterator_args(&it, parent_args.args,
+> +                                                                 MAX_PHANDLE_ARGS);
+> +
+> +               if (child_id >= data->num_domains || !data->domains[child_id]) {
+> +                       item = of_prop_next_u32(prop, item, &child_id);
+> +                       continue;
+> +               }
+> +
+> +               parent_genpd = genpd_get_from_provider(&parent_args);
+> +               if (IS_ERR(parent_genpd)) {
+> +                       item = of_prop_next_u32(prop, item, &child_id);
+> +                       continue;
+> +               }
+> +
+> +               child_genpd = data->domains[child_id];
+> +               pm_genpd_remove_subdomain(parent_genpd, child_genpd);
+> +
+> +               item = of_prop_next_u32(prop, item, &child_id);
+> +       }
+> +
+> +       return (ret == -ENOENT) ? 0 : ret;
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_remove_child_ids);
+> +
+>  /**
+>   * of_genpd_add_device() - Add a device to an I/O PM domain
+>   * @genpdspec: OF phandle args to use for look-up PM domain
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index f67a2cb7d781..b44615d79af6 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -465,6 +465,10 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+>  int of_genpd_parse_idle_states(struct device_node *dn,
+>                                struct genpd_power_state **states, int *n);
+>  void of_genpd_sync_state(struct device_node *np);
+> +int of_genpd_add_child_ids(struct device_node *np,
+> +                          struct genpd_onecell_data *data);
+> +int of_genpd_remove_child_ids(struct device_node *np,
+> +                             struct genpd_onecell_data *data);
+>
+>  int genpd_dev_pm_attach(struct device *dev);
+>  struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+> @@ -534,6 +538,18 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+>  {
+>         return ERR_PTR(-EOPNOTSUPP);
+>  }
+> +
+> +static inline int of_genpd_add_child_ids(struct device_node *np,
+> +                                        struct genpd_onecell_data *data)
+> +{
+> +       return -EOPNOTSUPP;
+> +}
+> +
+> +static inline int of_genpd_remove_child_ids(struct device_node *np,
+> +                                           struct genpd_onecell_data *data)
+> +{
+> +       return -EOPNOTSUPP;
+> +}
+>  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+>
+>  #ifdef CONFIG_PM
+>
+> --
+> 2.51.0
+>
+
+Kind regards
+Uffe
