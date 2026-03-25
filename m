@@ -1,154 +1,153 @@
-Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 400AB3D16F8
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 12:04:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFEDB3CEB85;
+	Wed, 25 Mar 2026 12:06:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774440255; cv=none; b=szm4Zj/l6PY39sCAf+nkR92HKPEo1SF60/EBAavWVqc21JBZqGdViehC5hjscSNi1YU/j+Q+ybpyCCd7PC59tFjTb70L+g6VS0fC+h0ugKwOlZakcUiJJLIRwIyT0p+wM5Do+uiAkndBqnija6qac+Pd2VEcf8hojPzK5XPOYkM=
+	t=1774440381; cv=none; b=enb83HUOEJZa7qJqcmMsAu/muV8oHgc+HeByi7eR8zC8lXG3FGUUXZsTWL+M8Ym2zbdBi3PpSis2hjS82zZIQDlTwi9A57XJhUkq3Lp2K89hZcy+6d87aJocv37lqwvAsblejTOx2ovwYuHN6CbKxqbUodfrMJxAjkkBEW9smMk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774440255; c=relaxed/simple;
-	bh=5SYUb3BbQ7TBlOXQSr0mq1lzSbFyyEnEuic7IaJqgVA=;
+	s=arc-20240116; t=1774440381; c=relaxed/simple;
+	bh=ueF0hrvRluFMJ/+IsNDv2TY9qAQLpZVCChvf6GImWMk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gAQJoZVM9dlCdKV9ZMm6D+yZT1kUI8xpCAnIJPQFFT8dpe4BzZoJ6fL2+iUdAm73YdspXZ/3GeZ4L078Zsy6pMjAyQzi1y68EQ5EixXA1SZiNhlIADtbdaqF1pG3ReXxRuzdtWBobs6pufO7xQvUhgThL4GrXMzo8d8lx2v5UF0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Wdhcdea8; arc=none smtp.client-ip=209.85.216.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=UePQYMMHUF/w8im0JJRCGP8h++AX33oeb2sMfRAch2CTvkZnnX/RQjpaJe9ZCqUtZXTY0mBolr4AD1TseUHjJwYkCH6lLc9I1+/U2YuwnLyfOaxQY85cECeCrvYVBPxO38SFSHrowpm/K9TT9JRrjTml+7m9OlhyIieIf77S+dw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b64J3S/9; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Wdhcdea8"
-Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-35b905e9dc0so1396608a91.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 05:04:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774440253; x=1775045053; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iiuMY7qjsJ2FyszxcbRHj2zaPzXNgme/X+VTGrgnsxs=;
-        b=Wdhcdea8qyOPbMaROSRK5xhNrAcNaY1afcf83u+QZ2gjQ5FxGjH6pZxipuFougqQOT
-         DZTAw0D55veCtEgtQxsbeD4lcyojTnCFPg+7m3OnWIHOQI8pD1fxp9egQC36r8FFpOf2
-         ej29wtj5EAg/wcMDIjlqZcbmKOuzIu0YO1JBxJvPoeJOwXGK1QzTDqNUeKcg8ohzcg7f
-         mvGne8rESiGyks5//d8SFw/Gn5DYbcvWnNkaeNsuwYnY2jxk/I+hPWPrvZNzLEF5dcRd
-         FtoMSR71A5gv3684TfToBPJYD0PeVByToYLVqhsAw+WhgPrhCN7Xs4pu/pp+h1/iy0M6
-         VOfA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774440253; x=1775045053;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=iiuMY7qjsJ2FyszxcbRHj2zaPzXNgme/X+VTGrgnsxs=;
-        b=BVj2x5N4VyPmJU+fx+vy277Nwk7E2hE/s5bDCv/jN+x8GgH76neHrkm+lE7+tu5o43
-         e0TgEOTBxf0QDgZHCbcpoUDXUmFAh9LZE7fCtAC/fm5hdAfWN1TTC2y314qP5koU8+l1
-         w3bOB9eakSlYt1kU8JMxalmpj2E3B7/V8e+AvtB4ToVO1vyXYds1XmQrid/bovdczoMT
-         uOwJTCPzhMRmsRNtMtN8BVs1C7mxDymBfob1yCZBTv5OEXQBAWXIPLKx1M3umJHZB/kZ
-         a3CLwEIUh0Yy5QQh75Gh4pAyMlzZiFcBkoUYmOrB19o62RPdLmKvFwOCSfyDsxvHpLeL
-         oqsA==
-X-Forwarded-Encrypted: i=1; AJvYcCUQGkdwhBlZDYWFTkS6nuKXljtpoJez5CEfmk9URfGq1goqj+wetPLZdEQrENUsyj2dIhXm82FEzw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxKslvAhSVEPZFK+naQbS+IJ1bzCRY1gletOVfwXwWBp69GtFAC
-	2ZXPTgUIDtmZ0zkJBkmCFKC68iO96vqbZVHgfLfiPgPKw8yyXxs+p15f
-X-Gm-Gg: ATEYQzz8WE3J8SrVcPyL6TNG238+BheB2qF2D9lfhjeygsmzSAGhGmTF6G3kVO5MFoC
-	dbDmmGlmTluLUvBtBEERprYfVD6mMFFktwsFedqtfNCeJCHUhhgHrSKsovhgJE6QBT8O6qCQCB3
-	GcDan0fmieG1B+mw11ol1TPhNYd9R//AqfKNijzcqcprL0+awZyax5hJvGRcslIVqkiBJDIK+e4
-	nEymzasR1GOfZLT80cXfpZJVZp/hBQ/KdKOTB/AORWXfJx8RkbT49UHVgUbu81zyNvhXF12G/8N
-	cGq1ucCT3b4oSsTF8KCT3iJHCwW1BCAMY+vU6HJBr1AfM2HBOxDfi0+zXH9vj/2F7OWBA8MmgCP
-	NkrX48lPBLoWL7ZYzYw7eFGa+PiDkLkRcr7TG/BKYTgVrdF1kZHxEstZKOnngoh3i426G//yqaT
-	PKz48o0H4OTGl0OUPlwJhR/p8wOOMwafYc25eZAi9uXFWR26EpReRUzKe1+sE=
-X-Received: by 2002:a17:90b:2b4f:b0:35b:99f8:966d with SMTP id 98e67ed59e1d1-35c0ddc3f25mr2750442a91.24.1774440253469;
-        Wed, 25 Mar 2026 05:04:13 -0700 (PDT)
-Received: from localhost ([103.70.166.143])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35c0ea59e43sm765837a91.11.2026.03.25.05.04.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 05:04:12 -0700 (PDT)
-Date: Wed, 25 Mar 2026 17:34:07 +0530
-From: Gopi Krishna Menon <krishnagopi487@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, lee@kernel.org, 
-	conor+dt@kernel.org, daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, 
-	m-chawdhry@ti.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: reset: st: convert to dtschema
-Message-ID: <acPMx9NZBehAzkBp@toolbx>
-References: <20260324155935.183952-1-krishnagopi487@gmail.com>
- <20260325-speedy-amethyst-beaver-08a3a4@quoll>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b64J3S/9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFB30C4CEF7;
+	Wed, 25 Mar 2026 12:06:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774440381;
+	bh=ueF0hrvRluFMJ/+IsNDv2TY9qAQLpZVCChvf6GImWMk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=b64J3S/9wMpdMbsb28lUju0wP16mAjZXdtTfStiNijzPEkHs1QwjQqNJn9Vm96m4G
+	 SesNnOOhFr1Av4MG+5BeUKnlWQbTn7LgkfIEGssQYGwMJXp7uc7C3mqUl+mJqux3Mz
+	 7GVqbaVqgjEGvz6Dkath/TBSnChu4Yci0FfgPm2vMcRNKaevXioRglINXVrTJZU9MW
+	 NstZ4onOipYfdbdsAS/lY7IdpfwvbAM5L8zb11Se6dTjuxRPVKptHkfpZpHB14zIix
+	 egtrB549HcgGNnuMLCUyzdeVWiCIdft3TDwdf/Teh6A6NpfuRpF0LvSmjfIaruYB8r
+	 /NaH//k6jNhlQ==
+Date: Wed, 25 Mar 2026 17:36:08 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Mark Pearson <mpearson-lenovo@squebb.ca>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Rob Herring <robh@kernel.org>, Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+	Greg KH <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	Hans de Goede <hansg@kernel.org>, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
+	"Derek J . Clark" <derekjohn.clark@gmail.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
+	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
+	"platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Stephan Gerhold <stephan.gerhold@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH v6 6/9] dt-bindings: connector: m2: Add M.2 1620 LGA
+ soldered down connector
+Message-ID: <cvqdbqnzjmzoowxkvz2lyv4avropu5jw7h2r6zng3ecf245hgg@fsysjqflqd35>
+References: <20260317-pci-m2-e-v6-6-9c898f108d3d@oss.qualcomm.com>
+ <20260322233713.GA98177-robh@kernel.org>
+ <to2mrizprc3hjufqbiplpqyek7f4uutqtn4hx4gkmdgv2rykbc@ybwwjhdec4nm>
+ <CAL_JsqJXrHCJt770bJkMmAUhirSF3kHjYwSzkG7cXp7-eys8Rg@mail.gmail.com>
+ <6aef3xxjjd4nbgrfx6jc6jt6rpqmttoui6hil5zqgdpas2j6gj@ie6j72orenou>
+ <fsvmmgoe5wslmxebhrrwmdg2ldcmhzvj53gjkdfnfg2m2rz2lw@dcfboaakz7ae>
+ <bguhzabwryayyqkv4ilzwr3ixwv6bzxncblo3ircz2wm3fs52k@66zvcrfcb4oe>
+ <blhm4csjyw6r667cleljgzd6rpwagttjo5rau7wjrlnjakq2qm@ekyhc4jvwmwf>
+ <m44mupdmg7kgco62n4evcviagqo7wwgyt3gybugbxwesd4ekjz@o24r6v4tpezc>
+ <3faffec9-dc9d-4eec-a652-a84d30d85c96@app.fastmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260325-speedy-amethyst-beaver-08a3a4@quoll>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3faffec9-dc9d-4eec-a652-a84d30d85c96@app.fastmail.com>
 
-On Wed, Mar 25, 2026 at 12:39:36PM +0100, Krzysztof Kozlowski wrote:
+On Mon, Mar 23, 2026 at 01:23:07PM -0400, Mark Pearson wrote:
+> 
+> 
+> On Mon, Mar 23, 2026, at 12:52 PM, Manivannan Sadhasivam wrote:
+> > On Mon, Mar 23, 2026 at 06:45:15PM +0200, Dmitry Baryshkov wrote:
+> >> On Mon, Mar 23, 2026 at 09:26:04PM +0530, Manivannan Sadhasivam wrote:
+> >> > On Mon, Mar 23, 2026 at 05:14:30PM +0200, Dmitry Baryshkov wrote:
+> >> > > On Mon, Mar 23, 2026 at 07:14:25PM +0530, Manivannan Sadhasivam wrote:
+> >> > > > On Mon, Mar 23, 2026 at 08:39:55AM -0500, Rob Herring wrote:
+> >> > > > > On Mon, Mar 23, 2026 at 7:16 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> >> > > > > >
+> >> > > > > > On Sun, Mar 22, 2026 at 06:37:13PM -0500, Rob Herring wrote:
+> >> > > > > > > On Tue, Mar 17, 2026 at 09:59:56AM +0530, Manivannan Sadhasivam wrote:
+> >> > > > > > > > Lenovo Thinkpad T14s is found to have a soldered down version of M.2 1620
+> >> > > > > > > > LGA connector. Though, there is no 1620 LGA form factor defined in the M.2
+> >> > > > > > > > spec, it looks very similar to the M.2 Key E connector. So add the
+> >> > > > > > > > "pcie-m2-1620-lga-connector" compatible with "pcie-m2-e-connector" fallback
+> >> > > > > > > > to reuse the Key E binding.
+> >> > > > > > >
+> >> > > > > > > What is LGA?
+> >> > > > > > >
+> >> > > > > >
+> >> > > > > > Land Grid Array
+> >> > > > > >
+> >> > > > > > > If not in the spec, is it really something generic?
+> >> > > > > > >
+> >> > > > > >
+> >> > > > > > Good question. Yes and No! LGA is not something that Lenovo only uses. Other
+> >> > > > > > vendors may also use this form factor. PCIe connectors are full of innovation as
+> >> > > > > > the spec gives room for hardware designers to be as innovative as possible to
+> >> > > > > > save the BOM cost.
+> >> > > > > 
+> >> > > > > innovation == incompatible changes
+> >> > > > > 
+> >> > > > 
+> >> > > > Yes, I was trying to sound nice :)
+> >> > > > 
+> >> > > > > > This is why I do not want to make it Lenovo specific. But if you prefer that, I
+> >> > > > > > can name it as "lenovo,pcie-m2-1620-lga-connector".
+> >> > > > > 
+> >> > > > > Depends if you think that s/w needs to know the differences. Hard to
+> >> > > > > say with a sample size of 1.
+> >> > > > > 
+> >> > > > 
+> >> > > > Sure. Will add the 'lenovo' prefix then.
+> >> > > 
+> >> > > Is it really Lenovo? Or is it some other module vendor, whose LGAs are
+> >> > > being used by Lenovo?
+> >> > > 
+> >> > > I remember that DB820c also used some kind of a module for the WiFi card
+> >> > > (which might be M.2 compatible or might not, I can't find exact docs at
+> >> > > this point).
+> >> > > 
+> >> > 
+> >> > I don't know. These kind of designs might be reused by several vendors. But
+> >> > considering that we should not make it generic, I'd go with Lenovo as that's
+> >> > the only vendor we know as of now.
+> >> 
+> >> ... and later we learn that other vendors use the same idea /pinout,
+> >> then nothing stops us from still telling that it's a
+> >> "lenovo,pcie-m2-something-lga". 
+> >> 
+> >
+> > How do you possibly know whether a single vendor has introduced this form factor
+> > or reused by multiple ones? Atleast, I don't have access to such a source to
+> > confirm.
+> >
+> I've not really been following this thread/patchset in detail; but want me to try and check with the T14s platform team if this device is specifically made for us (Lenovo) or not?
+> I doubt it is - we just don't do that usually, but I can go and ask the question if it will help resolve this (with the caveat that it could hold up the review for a bit and I may not be able to get a straight answer)
+> 
 
-> On Tue, Mar 24, 2026 at 09:29:30PM +0530, Gopi Krishna Menon wrote:
-> > Convert the STiH4xx reset controller bindings to DT schema.
-> > 
-> > Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
-> > Suggested-by: Dhruva Gole <d-gole@ti.com>
-> 
-> Both suggested you to write this patch?
-> 
-Hi Krzysztof,
+I can drop this specific patch in the meantime.
 
-Thanks for the review, They helped me to improve the PATCH,
+> My vote (for what little it's worth) would be to make it non-Lenovo specific. Then when the same part causes issues on another vendors platform I won't get asked questions about why Lenovo is breaking <other vendor> :)
+> 
 
-- Dhruva suggested me to change the subject from dt-bindings: power:
-  reset: st: convert to dtschema to dt-bindings: reset: st: convert to
-  dtschema as that was the general trend followed with similar files.
-- Daniel suggested me to use the word 'reset' instead of 'restart' in
-  the patch (whereever possible) as that is more accurate here.
+Even if Lenovo prefix is used, it won't break other vendors. Just that we will
+end up adding more compatibles.
 
-That's why I added those Suggested-by tags.
+Anyhow, I'll wait for your reply and drop this patch for next revision.
 
-> > Signed-off-by: Gopi Krishna Menon <krishnagopi487@gmail.com>
-> > ---
-> > Note:
-> > * This patch is part of the GSoC2026 application process for device tree bindings conversions
-> > * https://github.com/LinuxFoundationGSoC/ProjectIdeas/wiki/GSoC-2026-Device-Tree-Bindings
-> > 
-> >  .../power/reset/st,stih407-restart.yaml       | 31 +++++++++++++++++++
-> >  .../bindings/power/reset/st-reset.txt         | 11 -------
-> >  2 files changed, 31 insertions(+), 11 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/power/reset/st-reset.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
-> > new file mode 100644
-> > index 000000000000..d7adbc00f5c3
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/reset/st,stih407-restart.yaml
-> > @@ -0,0 +1,31 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/power/reset/st,stih407-restart.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: ST SW reset controller
-> > +
-> > +maintainers:
-> > +  - Lee Jones <lee@kernel.org>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: st,stih407-restart
-> > +
-> > +  st,syscfg:
-> > +    description: phandle of the syscfg node
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
-> > +
-> > +required:
-> > +  - compatible
-> > +  - st,syscfg
-> > +
-> > +unevaluatedProperties: false
-> 
-> additionalProperties instead
-> 
-Ok will send a V2 for this.
-> 
-> Best regards,
-> Krzysztof
-> 
-Thanks,
-Gopi Krishna Menon
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
