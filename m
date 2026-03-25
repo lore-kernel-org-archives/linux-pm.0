@@ -1,93 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D122B1FD4;
-	Wed, 25 Mar 2026 13:45:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8D15D23507C;
+	Wed, 25 Mar 2026 13:53:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774446308; cv=none; b=pfE0nvkjHQazp3U1OonlSWybDnauY0ll+NBor5VaKFvZ1kZYp3bbSVcRbCNjOOmfxyG2P+fzyvyjN9goCLgI+6XUDy1xgpg7nOSf8J7KZX9Zn7OIgPRzfXus6TPBwRqHVv9kdgEGRieNGlb+y4wC3qkQfeYMpfuteSgU/0PK6sc=
+	t=1774446838; cv=none; b=kt9cf0mBD//WlM1Nl+uqAnlwWQFLtQEbXXW4dGxl3AkyNagjljdjbjFQkMmKLnaiHYaejKBdJ5PsbH4DgacnQw/Dtfoiu5grs+mjX0JiduTww/8M0CcZwB8l53uD1/DtLI4NujlSQgechx1aVZg2MNz+tFS3CcHjrElqzGOlVzE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774446308; c=relaxed/simple;
-	bh=zKis/CQLvh5YZsyeps6qK+9CG+oh5iNfz+RPkBDcT8E=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n7SoJ/eQvIVjxvRsQyNonl/Jgvl+6bMlSiMx2w1t/Aq9z8nkuY5Xu/0MQWubeCeCIIRxWG+I0n3kxR3rqhcsQnfa1mOeejVQE/jbwjKZgJhi9NZRmH2jHXh6kEoqg0z1JQLeg2W+mjKxGKLExPBF3oMkTFS5QWs4CaGsAfLuY+o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=T9X35OZT; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774446838; c=relaxed/simple;
+	bh=rTpz50E+4PJ6RioGt1JBhmHx0qMuH5Sl7wjDXLEJHn8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aMRZlpF2zRU9HoCFfZqHpJ/iNtrs2TnVoTtRBpUzsBN+wUe4DR2qZV5fSVMOKkKkXqKwsPWicNINSSs8BRuxbbhs5RSeXW7I4TlZuLoltb0nXjapX8yG6vLACxvYQbm+hSRQsLdd242HC41JtAC7Mqh4k02iXIsysD69Ljpolw4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=F3S2Aixy; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="T9X35OZT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C62AC4CEF7;
-	Wed, 25 Mar 2026 13:45:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774446308;
-	bh=zKis/CQLvh5YZsyeps6qK+9CG+oh5iNfz+RPkBDcT8E=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=T9X35OZT/jI+mVLsmSZX4Fx8DFLv3YJ9Lk62GITI8IIwGniHpBxF1ta9AhRDwx3ao
-	 QeVy9QWE6KexZz/Er92eN9JYYV6pnbwUg9qxRBWAJVBw/aFJnKjWKdEleQAqmnEaNz
-	 Pt9jhclC0T2DSmdfKJF63w13ZP6446Abx+bzEjd4WVezIW3k1n73bM+zJ/3J2kIhYY
-	 zTs71oJdlR7W+yA9ejyDs75/hCociOW9KZ3DtIz1dLeNJefVb++fEQ/nWoKGIjHP9p
-	 TGFr/bwZul4zXUcO63YY+CwCkUMrekii2JsFzsbrBU44qeFobhEaqraJv3s8twb4yJ
-	 IHfTh071rxz3A==
-Message-ID: <b69cc187-6ef3-4390-a0cb-f36a2295c6f2@kernel.org>
-Date: Wed, 25 Mar 2026 08:45:05 -0500
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="F3S2Aixy"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EA21E1CDD;
+	Wed, 25 Mar 2026 06:53:50 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 712F83F836;
+	Wed, 25 Mar 2026 06:53:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774446836; bh=rTpz50E+4PJ6RioGt1JBhmHx0qMuH5Sl7wjDXLEJHn8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=F3S2AixyqhIuvb8mv8t2FHXLeYL9B2PwbydxQJsk+j50mWFPm3DNRdGMWKQ16/2k6
+	 weCqqFChyZQPX537W7n5cnvAWcGK9jd+cQdtzw8wzA9Eh5HfC5UyqLTWEbBLh/76EH
+	 xjaFdyHFtCq85BBXLQ7eZIVbpTx5hrKWok8PXOv8=
+Date: Wed, 25 Mar 2026 13:53:50 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Ankur Arora <ankur.a.arora@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+	bpf@vger.kernel.org, arnd@arndb.de, will@kernel.org,
+	peterz@infradead.org, mark.rutland@arm.com, harisokn@amazon.com,
+	cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
+	daniel.lezcano@linaro.org, memxor@gmail.com,
+	zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
+	rdunlap@infradead.org, joao.m.martins@oracle.com,
+	boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
+Subject: Re: [PATCH v10 00/12] barrier: Add
+ smp_cond_load_{relaxed,acquire}_timeout()
+Message-ID: <acPo7l_pd5rnHpSX@arm.com>
+References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
+ <20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
+ <874imftol4.fsf@oracle.com>
+ <20260316233712.7cbfac27@pumpkin>
+ <87ms07rlp9.fsf@oracle.com>
+ <20260317091705.5a64fc56@pumpkin>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 08/12] amd-pstate-ut: Add ability to run a single
- testcase
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- "Gautham R. Shenoy" <gautham.shenoy@amd.com>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-References: <20260320144321.18543-1-gautham.shenoy@amd.com>
- <20260320144321.18543-9-gautham.shenoy@amd.com>
- <0b1f1901-8ea0-4b68-8887-29e88e86ab60@kernel.org>
- <acITFNYfjSMc/K1I@BLRRASHENOY1.amd.com>
- <554baa52-c181-4dcc-a77a-ef8f4e0be763@amd.com>
-Content-Language: en-US
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <554baa52-c181-4dcc-a77a-ef8f4e0be763@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260317091705.5a64fc56@pumpkin>
 
-
-
-On 3/24/26 23:28, K Prateek Nayak wrote:
-> Hello Gautham,
+On Tue, Mar 17, 2026 at 09:17:05AM +0000, David Laight wrote:
+> On Mon, 16 Mar 2026 23:53:22 -0700
+> Ankur Arora <ankur.a.arora@oracle.com> wrote:
+> > David Laight <david.laight.linux@gmail.com> writes:
+> > > On arm64 I think you could use explicit sev and wfe - but that will wake all
+> > > 'sleeping' cpu; and you may not want the 'thundering herd'.  
+> > 
+> > Wouldn't we still have the same narrow window where the CPU disregards the IPI?
 > 
-> On 3/24/2026 9:59 AM, Gautham R. Shenoy wrote:
->> +static bool test_in_list(const char *list, const char *name)
->> +{
->> +       size_t name_len = strlen(name);
->> +       const char *p = list;
->> +
->> +       while (*p) {
->> +               const char *sep = strchr(p, ';');
-> 
-> Any particular reason for using a ";" as the separator instead of ","?
-> 
-> I personally prefer "," because with ";", I need to explicitly add
-> '' around the test_list otherwise bash thinks the command ends at ";"
-> but with "," that is avoided.
-> 
-> Thoughts?
-> 
+> You need a 'sevl' in the interrupt exit path.
 
-Sure, that sounds like a good reason to use a comma instead.
+No need to, see the rule below in
+https://developer.arm.com/documentation/ddi0487/maa/2983-beijhbbd:
 
->> +               size_t token_len = sep ? sep - p : strlen(p);
->> +
->> +               if (token_len == name_len && !strncmp(p, name, token_len))
->> +                       return true;
->> +
->> +               if (!sep)
->> +                       break;
->> +               p = sep + 1;
->> +       }
->> +
->> +       return false;
->> +}
+R_XRZRK
+  The Event Register for a PE is set by any of the following:
+  [...]
+  - An exception return.
 
+-- 
+Catalin
