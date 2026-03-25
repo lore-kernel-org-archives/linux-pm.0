@@ -1,30 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 295EF3FADF0;
-	Wed, 25 Mar 2026 16:53:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id D95793FAE1C;
+	Wed, 25 Mar 2026 16:53:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774457616; cv=none; b=DNx3ZsaXj6K/svfDVbnze4fh99a4as7PCkH04CGKqH8Y7idNkDb3DoL2hbLLDQiA7PAA+wvSnwZPztVfPne1MjToJq+GqxxZdHmOoEihMgqNIWcO9e3batDfonr0B6EK+NWj63Tfu6wslQh07pkFBmG1sdt3+V5p1ETsj2T3cjI=
+	t=1774457617; cv=none; b=o1DcpfIWaI/39pVPxfiKDQ13xTK4KEO77v5b9+xbYAe5Ne4j7LP4TR+SYx9N24iZAmnKyChw0EqbuInInYOVZDyBRTQzcNjMoNTLbhKgwJ6u/ri1TsP9K+uqI7EmZMBWjQyjwhI+y8iAPZjUZH4Env6rUlPlmSalMHP2OP91o2s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774457616; c=relaxed/simple;
-	bh=3KplQQmy7xFrMQNjJwaheV+EmjyQI3Xmp2EjAgJeaqg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rSfPtLfCZIvaPqeeYzP4t6mF5IWf6kMW0r6LPfpq8PI0MSDkDonFHlRefOBNoIW45NiwPdfOw+1XddRlrYgcoWrU18D97/TEtQiK4ng8EoshzshJOW0tKo0eNfhL4yAsj+pNrtpGQjJf5Pq/MrIY/Hw4JZzn0If0pGIZ8xTJU18=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=QMi5N3Uj; arc=none smtp.client-ip=217.140.110.172
+	s=arc-20240116; t=1774457617; c=relaxed/simple;
+	bh=AMUQsfaGXp8dcD/oLlo/vJx8ZqljtdWdRDXTcXLIm9s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=GfUJLpgZ+ZcYkoZCXxhSbWSZ7c8Gvt8QPzNN88f91Ov5WqDlYkj0vy16lwGJgk5bd+COFPXi0tlIDuRhu5fpMayTG6Y0Ou4qifByG3oaKr600LGbuSCLQpRLBQfFZlXMIgv9B0geKwxlvAfvvNlQMfTmW3TOxEoQJj5aF9CsMUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=gWIO0Ur5; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="QMi5N3Uj"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="gWIO0Ur5"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ED1952444;
-	Wed, 25 Mar 2026 09:53:23 -0700 (PDT)
-Received: from e135073.arm.com (unknown [10.57.76.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 728643F915;
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0BBB32576;
 	Wed, 25 Mar 2026 09:53:27 -0700 (PDT)
+Received: from e135073.arm.com (unknown [10.57.76.144])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id BD9D73F915;
+	Wed, 25 Mar 2026 09:53:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774457609; bh=3KplQQmy7xFrMQNjJwaheV+EmjyQI3Xmp2EjAgJeaqg=;
-	h=From:To:Cc:Subject:Date:From;
-	b=QMi5N3Uj6PWFgNbPIUjP36YfcIQgkQytA2Z6cfT5DORzOksaTLVVaorXsekxe3b1J
-	 uxAdGffxqFkpq0Qhp8C1u3qMjDgyiJIx15wbGsrHCg0rIp2fEwalR2RD599T8ykQy0
-	 6kZyLMHPH5LWlBlp6F5EkD8N3qdC6La01lUUCol8=
+	t=1774457613; bh=AMUQsfaGXp8dcD/oLlo/vJx8ZqljtdWdRDXTcXLIm9s=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=gWIO0Ur5lnFZzkdmXydyy8gGYI3ce8FLbi5zImknVhhAyw9pkaQJPIhwspD93hyop
+	 Fe4qhOeVRO0xtU/+nJ+8QPqSpwJ3MLV/9dM3T5WmjaFlyEFKyDq46VXo3l/orORH1e
+	 HdzX7Gev1cxxfLQ5G6lFfC0wfmBIdCGzEB68FZiA=
 From: Pierre Gondois <pierre.gondois@arm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Lifeng Zheng <zhenglifeng1@huawei.com>,
@@ -36,10 +37,12 @@ Cc: Lifeng Zheng <zhenglifeng1@huawei.com>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v7 0/2] cpufreq: Introduce boost frequency QoS
-Date: Wed, 25 Mar 2026 17:52:51 +0100
-Message-ID: <20260325165255.386576-1-pierre.gondois@arm.com>
+Subject: [PATCH v7 1/2] cpufreq: Remove per-CPU QoS constraint
+Date: Wed, 25 Mar 2026 17:52:52 +0100
+Message-ID: <20260325165255.386576-2-pierre.gondois@arm.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260325165255.386576-1-pierre.gondois@arm.com>
+References: <20260325165255.386576-1-pierre.gondois@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,174 +51,60 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Power Management Quality of Service (PM QoS) allows to
-aggregate constraints from multiple entities. It is currently
-used to manage the min/max frequency of a given policy.
+policy->max_freq_req QoS constraint represents the maximal allowed
+frequency than can be requested. It is set by:
+- writing to policyX/scaling_max sysfs file
+- toggling the cpufreq/boost sysfs file
 
-Frequency constraints can come from:
-- Thermal framework: acpi_thermal_cpufreq_init()
-- Firmware: _PPC objects: acpi_processor_ppc_init()
-- User: by setting policyX/scaling_[min|max]_freq
-The minimum of the max frequency constraints is used to compute
-the resulting maximum allowed frequency.
+Upon calling freq_qos_update_request(), a successful update
+of the max_freq_req value triggers cpufreq_notifier_max(),
+followed by cpufreq_set_policy() which update the requested
+frequency for the policy.
+If the new max_freq_req value is not different from the
+original value, no frequency update is triggered.
 
-When enabling boost frequencies, the same frequency request object
-(policy->max_freq_req) as to handle requests from users is used.
-As a result, when setting:
-- scaling_max_freq
-- boost
-The last sysfs file used overwrites the request from the other
-sysfs file.
+In a specific sequence of toggling:
+- cpufreq/boost sysfs file
+- CPU hot-plugging
+a CPU could end up with boost enabled but running at the
+maximal non-boost frequency, cpufreq_notifier_max() not being
+triggered. The following fixed that:
+commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
+a CPU")
 
-To avoid this:
-1. Create a per-policy boost_freq_req to save the boost
-constraints instead of overwriting the last scaling_max_freq
-constraint.
+The following:
+commit dd016f379ebc ("cpufreq: Introduce a more generic way to
+set default per-policy boost flag")
+also fixed the issue by correctly setting the max_freq_req
+constraint of a policy that is re-activated. This makes the
+first fix unnecessary.
 
-2. policy_set_boost() calls the cpufreq set_boost callback.
-Update the newly added boost_freq_req request from there:
-- whenever boost is toggled
-- to cover all possible paths
+As the original issue is fixed by another method,
+this patch reverts:
+commit 1608f0230510 ("cpufreq: Fix re-boost issue after hotplugging
+a CPU")
 
-3. In the existing set_boost() callbacks:
-- Don't update policy->max as this is done through the qos notifier
-  cpufreq_notifier_max() which calls cpufreq_set_policy().
-- Remove freq_qos_update_request() calls as the qos request is now
-  done in policy_set_boost() and updates the new boost_freq_req
-
+Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 ---
+ drivers/cpufreq/cpufreq.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-E.g.:
-On a Juno with available frequencies: 600.000, 1.000.000
-Boost frequencies: 1.200.000
-Using the cppc-cpufreq driver.
-
----
-Without the patches:
-# ## Init state
-scaling_max_freq:1000000
-cpuinfo_max_freq:1000000
-
-# echo 700000 > scaling_max_freq
-scaling_max_freq:700000
-cpuinfo_max_freq:1000000
-
-# echo 1 > ../boost
-scaling_max_freq:1200000
-cpuinfo_max_freq:1200000
-
-# echo 800000 > scaling_max_freq
-scaling_max_freq:800000
-cpuinfo_max_freq:1200000
-
-# echo 0 > ../boost
-scaling_max_freq:1000000
-cpuinfo_max_freq:1000000
-
----
-With the patches:
-# ## Init
-scaling_max_freq:1000000
-cpuinfo_max_freq:1000000
-
-# echo 700000 > scaling_max_freq
-scaling_max_freq:700000
-cpuinfo_max_freq:1000000
-
-# echo 1 > ../boost
-scaling_max_freq:700000
-cpuinfo_max_freq:1200000
-
-# echo 800000 > scaling_max_freq
-scaling_max_freq:800000
-cpuinfo_max_freq:1200000
-
-# echo 0 > ../boost
-scaling_max_freq:800000
-cpuinfo_max_freq:1000000
-
-With the patches, the maximum scaling frequency requested is
-conserved even though boosting is enabled/disabled.
-
----
-
-Note:
-It seems that there is a confusion in the cpufreq framework between:
-- the min/max frequency requested by the user
-- the min/max frequency constraint applied when selecting a frequency.
-
-E.g:
-A.
-$ echo XXX > scaling_max_freq
-updates the max_freq_req QoS request.
-
-B.
-$ cat scaling_max_freq
-shows the content of policy->max, which is the not representing
-the value of the max_freq_req QoS request.
-
-C.
-Whenever policy->max is accessed in the cpufreq framework,
-the aggregation of all the requests on the maximum frequency should
-be used instead.
-
-cpufreq_set_policy() aggregates min/max constraints and
-writes the resulting value in policy->min/max. These values
-are then used in the cpufreq drivers.
-
-Creating a clear distinction would be doable but quite invasive.
-This patchset focuses on handling the boost frequency QoS request
-first and should not change the current behaviour of policy->min
-and max.
-
----
-
-v1: https://lore.kernel.org/all/20251204101344.192678-1-pierre.gondois@arm.com/#t
-v2: https://lore.kernel.org/all/20251208105933.1369125-1-pierre.gondois@arm.com/#t
-Changes:
-- Fixed error path
-- Integrated [PATCH 1/4] Revert "cpufreq: Fix re-boost issue after hotplugging a CPU"
-  to another patch
-v3:
-Changes:
-- Fixed error path
-- Extracted the revert of:
-  "cpufreq: Fix re-boost issue after hotplugging a CPU"
-  for clarity purpose
-- Set cpuinfo.max_freq as a max_freq_req QoS constraint by default
-New patches:
-- "cpufreq: Allow decreasing cpuinfo.max_freq"
-- "cpufreq: Set policy->min and max as QoS constraints"
-v4:
-- Correct reported issues
-v5:
-- Corrections
-v6:
-- Folded patches:
-  - cpufreq: Centralize boost freq QoS requests
-  - cpufreq: Update .set_boost() callbacks to rely on boost_freq_req
-  inside:
-  - cpufreq: Add boost_freq_req QoS request
-- Simplified allocation handling of boost_freq_req
-- Removed unnecessary bits
-v7:
-- Removed the following patches to submit them separately
-  - cpufreq: Set policy->min and max as real QoS constraints
-  - cpufreq/freq_table: Allow decreasing cpuinfo.max_freq
-- Fixed blocking_notifier_call_chain() call order when removing
-  a policy.
-- Updated the commit message of:
-  - cpufreq: Remove per-CPU QoS constraint
-
-Pierre Gondois (2):
-  cpufreq: Remove per-CPU QoS constraint
-  cpufreq: Add boost_freq_req QoS request
-
- drivers/cpufreq/amd-pstate.c   |  2 --
- drivers/cpufreq/cppc_cpufreq.c | 10 ++-----
- drivers/cpufreq/cpufreq.c      | 55 ++++++++++++++++++++++++----------
- include/linux/cpufreq.h        |  1 +
- 4 files changed, 43 insertions(+), 25 deletions(-)
-
---
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 277884d91913c..5757f12633d16 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1487,10 +1487,6 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
+ 
+ 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				CPUFREQ_CREATE_POLICY, policy);
+-	} else {
+-		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+-		if (ret < 0)
+-			goto out_destroy_policy;
+ 	}
+ 
+ 	if (cpufreq_driver->get && has_target()) {
+-- 
 2.43.0
+
