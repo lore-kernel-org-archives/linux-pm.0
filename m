@@ -1,136 +1,117 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72804308F38
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 20:24:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7509D322B7B;
+	Wed, 25 Mar 2026 22:22:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774470243; cv=none; b=TxNQoRx6Nn4yqOkstr/+G/Y5jKNsOamhjjEFJPZIK+i5oyrlMCmwVVTyvgJ8qCtAnKf3fyqwVQPw0Y2wZR5xvSqO9wHgLx8+KQ7k7jTDpxdMFT/6mELsbpnKbPE8M9TZxmKoHoM3AamgKtcs27okk4Ef9zdXUZoGODh4v0YdQMc=
+	t=1774477355; cv=none; b=qtMgbhJMX5q+6LYfunU8YS1hvupoUcpeTvf6WpMs0DRcwjsWcuN7NFz9moZq1sZPsjwYjoiQHlwYzRosSe8Z3Tx6czenkjJMVUJ72w4V9LY9Yt+fvpGP7PEmjoQTH1fItvxWWUmvPWhYGg/t8mF69EPdSKfcy1MZDg+XCAVFT5w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774470243; c=relaxed/simple;
-	bh=yLQmvGZ9qUpeV/RlqPnpEBWWJVhN3ND5IbWmVgrZ9hc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=q50B+9Jg8KUDjwPo9oaoWT2FPE9RrHssAsuO0E4ZuLzVa+M70pX8FtOJmtj+6nSE4wv3Viayo4VbSh8mT6H+qY1ou9RwNcfIJ/WHioRecoGBBoyVr0+KiyVk2zyOBRgtCIzvpt0Bl6gcIFy19ZIq60kzerRCnHmaXZQDy/R6K3U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ud6j+46n; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774477355; c=relaxed/simple;
+	bh=2aya4qzSBOnrqFcF0qCiQffRH1oUsnDZtVMTEa3jgnE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IBzY1qykXeZgqFkQi60g7qryJ/32A899e0A7amhiloGBM+/v9s33LGFY84Ku9aHqapBGH4sEul5nOjQp7UocvkR1fyBX/CpZZZA4DVngP0XDS6hPtxafgNICQfSfMxytztzj60PnYBDb4QC0VgH0XmQAMhHnVStHx8U0huEhf7w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ml0wSrig; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ud6j+46n"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4853c1ca73aso3028435e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 13:24:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774470240; x=1775075040; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gXPaSk6rOeSHzsuBeOwJ4iqoWQAtJOAov6388j1L0Ko=;
-        b=Ud6j+46n3VJTG/W17THyEbW2e7ncYy5oZMQV/zIS4NWA6K41fRt8pGOa0mZHDls0Ho
-         tAnoqx818c1OPDdszo6POX6hDOYA5MArxKOD2ks9ohbhzsbtLhMB5E0f48+qcmtHQXdB
-         cc5+wW5wrEN449Uvk6PsvIiXxs65BeCk8dbppKk6rhVegLfzFq2mWRvqCt5WfZhDis6z
-         YYIJMMc4+ONjPnmSe+46jOZZsxQDb42mcXES6s7IRWpwHayST7GJxYc2Iat7rCJmgwoh
-         wdrKmBfOo3Zvu8butllgBCGlzd7zAlmaEKqr+RaBLjpIuaVI+C/Acsezbh155UecLcaG
-         gqSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774470240; x=1775075040;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=gXPaSk6rOeSHzsuBeOwJ4iqoWQAtJOAov6388j1L0Ko=;
-        b=QTRcIuwNnQ7rZOLasZoOyToQEr79wTHix2eFtWWSFQFgjaQmYH98s8e7ZoZAbIJ8Vd
-         mKsu/PXM8s+WCuOMp1TzOpfNNVgvhGtbFlOnzvGnwTBFHVR77/q5i/OAVaXxQCkY9e5Y
-         x6O2SmAMyMOmCghzK7P4IXuL2BcI96um+WxrGFNFdrUUnAoCQZ1hBT9Ko3nOA0CQ5ULi
-         5pm7HhpBNz69xkO8qxi8K88+M0ckyRu7v2jmBpxSfV0zCkUR/aTKSHU4E1SLD8oqXqn4
-         J/SolnEh+TLXFAVCMRb/PTgFK688JJ9TkoIxWPgUB1qJeUmh9iMBTe9cPlhgsKG5Gmx9
-         3j5w==
-X-Forwarded-Encrypted: i=1; AJvYcCWr0N+mwzdNkqPhbBqkGUIKQm0/IDBifdTsQ8iySY81yNVvK57LhGQ6j5Ka5C3q6oTo0KLW4VdgYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxhwIP0eYeA1Ze2apJ5a9NdVBb/5u4lqu9Ya2wlh3+j8wdQ8S/s
-	8DYZE548JUdLkFsKr+TV/C/Bp5f01kzJJff49MxERWL0Zd3AJR+W28JT
-X-Gm-Gg: ATEYQzxRDaHfMvszRyT8UvueU06LhDWtfeGoiUqrEGgu7it5gQabQqW2VpzPJKQpyaW
-	2jpVEuR//xjpZbHE1SsVmjsN1dLiXyeANVZgFPiqEWpT4qrM6TkUef2G6m7Wz1d7FIwXKUl9Er0
-	e3tOuVL5/JZzPaKctkUFMmzcFPQgpewhzlUoju1Du5hlpbKlUYFr3Fz0h2L7U194QJNRL4aLDTd
-	TTiFzmvChd36jmbd5hwtJ+SB+afDZpCHwocoC17TqpmJQsgsk7MNYWQkV3mzoFwpha48SVlJnHJ
-	RvqWHgynixlwKwqr9Dvq8x1jQ8TNqjxAcUaeIDWPwFZQuqZW8MgnUmPG3qVYphKFwil6Z5z7vSt
-	Qg5DHpUwupiuMQq7MOz0rJhFHa/a8Gq3oQqussIc/kXRBVncwJObpeHW+hfJIkOO9dtGMQxetbP
-	/SE/1r8Xt6JKtVTUKhuKm9YicMOtcKsBCo+XLeaYRZjWKc6+U3Gfx1US3Uv02uQqqe
-X-Received: by 2002:a05:600c:4685:b0:47d:8479:78d5 with SMTP id 5b1f17b1804b1-48715fc38e8mr75859145e9.7.1774470239711;
-        Wed, 25 Mar 2026 13:23:59 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4871fbca47dsm2239685e9.1.2026.03.25.13.23.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 13:23:59 -0700 (PDT)
-Date: Wed, 25 Mar 2026 20:23:57 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ankur Arora <ankur.a.arora@oracle.com>, Andrew Morton
- <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-pm@vger.kernel.org, bpf@vger.kernel.org, arnd@arndb.de,
- will@kernel.org, peterz@infradead.org, mark.rutland@arm.com,
- harisokn@amazon.com, cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
- daniel.lezcano@linaro.org, memxor@gmail.com, zhenglifeng1@huawei.com,
- xueshuai@linux.alibaba.com, rdunlap@infradead.org,
- joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
- konrad.wilk@oracle.com
-Subject: Re: [PATCH v10 00/12] barrier: Add
- smp_cond_load_{relaxed,acquire}_timeout()
-Message-ID: <20260325202357.3e203314@pumpkin>
-In-Reply-To: <acQOMZMk0OMfIgFO@arm.com>
-References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
-	<20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
-	<874imftol4.fsf@oracle.com>
-	<20260316233712.7cbfac27@pumpkin>
-	<87ms07rlp9.fsf@oracle.com>
-	<20260317091705.5a64fc56@pumpkin>
-	<acPo7l_pd5rnHpSX@arm.com>
-	<20260325154210.79a621df@pumpkin>
-	<acQOMZMk0OMfIgFO@arm.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ml0wSrig"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 405E1C2BCB4;
+	Wed, 25 Mar 2026 22:22:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774477355;
+	bh=2aya4qzSBOnrqFcF0qCiQffRH1oUsnDZtVMTEa3jgnE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=ml0wSrigpR2DeHga6KHr4v8dLcTUo6ZEco/FPiw8erY70q6kzf7ChYRCbB2s0ofgb
+	 lyASFqjbGMUfN5L6AdvdLHLN7ekJi2XNYkYSeRz73uM+dINv+ffNxuhLPoY5sqgm1G
+	 GEr3N5/5sNx+cHyIGzHr6yMKnnTbnzkPkufn4cWvHLeR9XAOpkOmZKfTLzO36OYgsP
+	 cBW53YtJBPDamav8JExn4XpIJlywsnnNtXUSkG6HWFHaIagdQaLq7AnYGwqPdyBJ8B
+	 mkqQoVWtVaal+uwX2jwTyhi+eI5Y7kLlw69SuVKN5XhyndQ8uz28iY7hhuQmKOOWS+
+	 sTBdrObXYChgg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34FD4109E529;
+	Wed, 25 Mar 2026 22:22:35 +0000 (UTC)
+From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
+Date: Wed, 25 Mar 2026 22:22:23 +0000
+Subject: [PATCH v9 2/6] dt-bindings: usb: maxim,max33359: Add supply
+ property for vbus
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20260325-max77759-charger-v9-2-4486dd297adc@google.com>
+References: <20260325-max77759-charger-v9-0-4486dd297adc@google.com>
+In-Reply-To: <20260325-max77759-charger-v9-0-4486dd297adc@google.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Lee Jones <lee@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Badhri Jagan Sridharan <badhri@google.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, Mark Brown <broonie@kernel.org>, 
+ Matti Vaittinen <mazziesaccount@gmail.com>, 
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-usb@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
+ RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>, 
+ Amit Sunil Dhamne <amitsd@google.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774477354; l=1273;
+ i=amitsd@google.com; s=20241031; h=from:subject:message-id;
+ bh=xHGJ1Vk5ohekxV/HkgsFaQ5FhplVGnbXa8tx/HTuhSE=;
+ b=CTTOsuHGqVUcu4uWfAFuYbSqHf/2gLAtRaF9QcKDjxZI511TxrXnXqTcN5uL2O40X58LVgvhg
+ 2xQrghgR95LAiEQ4UxBVsFYDj/kEO+8Q7PFMWxrkTvQlb05IeA8qpkG
+X-Developer-Key: i=amitsd@google.com; a=ed25519;
+ pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
+X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
+ auth_id=262
+X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
+Reply-To: amitsd@google.com
 
-On Wed, 25 Mar 2026 16:32:49 +0000
-Catalin Marinas <catalin.marinas@arm.com> wrote:
+From: Amit Sunil Dhamne <amitsd@google.com>
 
-> On Wed, Mar 25, 2026 at 03:42:10PM +0000, David Laight wrote:
-...
-> > Looking at the code I think the "sevl; wfe" pair should be higher up.  
-> 
-> Yes, I replied to your other message. We could move it higher indeed,
-> before the condition check, but I can't get my head around the ordering.
-> Can need_resched() check be speculated before the WFE? I need to think
-> some more.
+Add a regulator supply property for vbus. This notifies the regulator
+provider to source vbus when Type-C operates in Source power mode,
+while turn off sourcing vbus when operating in Sink mode or
+disconnected.
 
-I don't think speculation can matter.
-Both SEVL and WFE must be serialised against any other instructions
-that can change the event flag (as well as each other) otherwise
-everything is broken.
-Apart from that it doesn't matter, what matters is the instruction
-boundary the interrupt happens at.
+Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+ Documentation/devicetree/bindings/usb/maxim,max33359.yaml | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Actually both SEVL and WFE may be synchronising instructions and very slow.
-So you may not want to put them in the fast path where the condition
-is true on entry (or even true after a retry).
-So the code might have to look like:
-	for (;;) {
-		VAL = mem;
-		if (cond(VAL)) return;
-		SEVL; WFE;
-		if (cond(VAL)) return;
-		v1 = LDX(mem);
-		if (v1 == VAL)
-			WFE;
-	}
+diff --git a/Documentation/devicetree/bindings/usb/maxim,max33359.yaml b/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
+index 3de4dc40b791..e652a24902ea 100644
+--- a/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
++++ b/Documentation/devicetree/bindings/usb/maxim,max33359.yaml
+@@ -32,6 +32,9 @@ properties:
+     description:
+       Properties for usb c connector.
+ 
++  vbus-supply:
++    description: Regulator to control sourcing Vbus.
++
+ required:
+   - compatible
+   - reg
+@@ -53,6 +56,7 @@ examples:
+             reg = <0x25>;
+             interrupt-parent = <&gpa8>;
+             interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
++            vbus-supply = <&chgin_otg_reg>;
+ 
+             connector {
+                 compatible = "usb-c-connector";
 
-Definitely needs a comment that both 'return from exception' and
-losing the exclusive access set the event flag.
+-- 
+2.53.0.1018.g2bb0e51243-goog
 
-The asm probably ought to have a full "memory" clobber.
-Just in case the compiler gets lively with re-ordering.
 
-	David
