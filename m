@@ -1,123 +1,103 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B1833CCFBA;
-	Wed, 25 Mar 2026 12:36:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E3713D5660
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 12:48:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774442180; cv=none; b=Hu7oqNEeXmqC2NkmZH2F47I6wSmv7Abn//2gBBJpiSFNy9PyAlJ+4AlA3EabKmJOjZHQtuw1FLnpWJ88FAnb7lmaBIvlEbia8WNF+X5Bh6Wus6SHpppYGqIjWhlfsTA8MzVZ6aS1zEvVw5VV+Ovg1CrYQgQJfVLG4TUSzZPXmlc=
+	t=1774442892; cv=none; b=BEYfoYEk9kO7r61coRYIN+2KMthM7UW6TF0rnH0zSpeMe6whZEZWPIPSGkbfTkUq5W4tYJZr0ieikZ4cp7Y2e8dg9MIRrTT/bznDmvj5nMDzplRP5WHqcn6Zvj1VXbzlh3qfAr4OEMwDc7wrNYxdbud/bPpeg5x+wFJhCWCWNAU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774442180; c=relaxed/simple;
-	bh=nUIKBGrlINd0Aqt02dXQQMuwK2Hj20wXs3Y6ofz1n88=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WBUqB7CVRvOgMl01i0nZLfGaPdPSJCoozdGpLsjOfVZ2CDbXEiFrJ8URUGwvOhu8LC2YaJbBbZ/VCps/PHRekgNIeyxDA1IiDtwNyrGBFLBWuC9Gv6fK4Jv1AYFcITUZeZYWRI6egLGLfmwZPKKDfWxtIzGPZvMm5xhrXxHpNS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AimVXysN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774442892; c=relaxed/simple;
+	bh=snlC/IBOeUi8hwiOX6kljNOdSdN6bRjLI2GlNzJ2ggE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eklaMgRwd+1kjvMJ9pnxbexlK3NYr8Rb/I2WLJlkkD9QL10QsPZ2Y6M+/y5KHjMp71FBVYYnVdbHNgYWT0GKYGC4AkzdB4o9VOvqf4iZEPqnmh3jQUjDMHeU2L/fS6xEUOJ4wnL5YQRbrX4eAMz8DgQsNX5fa6JfiQwUA5lLNCM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OLSPPOO7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AimVXysN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04697C4CEF7;
-	Wed, 25 Mar 2026 12:36:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OLSPPOO7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5109FC2BCB0
+	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 12:48:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774442179;
-	bh=nUIKBGrlINd0Aqt02dXQQMuwK2Hj20wXs3Y6ofz1n88=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=AimVXysNQKkYUBc/XSuZ8cd+iJA25JXSHYtoN6adJCFGOpeFfLIBG+YLyj46fWRXL
-	 mKo3gw0f/Rr99zUldIBlIQlI+APut9IEmed/BZMmmKllf/innvSLoBgYEo+M/Wqw6j
-	 9RLf3VrYkb78cRAX+2kjBu72LuHLTxcDLKT0mgrOFMNoLGIHFib5R7DwlX78xUz82d
-	 UHHe2djD+JaT7LnrWbbbHvQp4FNK51/VmuXr5GapkYSKSbhRrJrdBedS4k3Sg5+Nrp
-	 kDMGCTguviKpqYpvCyQzjskBzsIvyKeZTPy+hnkvE5SE3/hNOu9ETLUhEhNE/I5wAH
-	 7Xc04i9EnfGiQ==
-Message-ID: <57e3e846-d679-4201-921c-69cdd4040d13@kernel.org>
-Date: Wed, 25 Mar 2026 13:36:15 +0100
+	s=k20201202; t=1774442892;
+	bh=snlC/IBOeUi8hwiOX6kljNOdSdN6bRjLI2GlNzJ2ggE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=OLSPPOO7x1QkOd7XBl04YlqVv2enAGDJiWe6QvCmr87vZ6FT+kWKFZzgPnADmit+m
+	 n88TaNjDSg2oDuQ/tMROQLr0JiJ8AD+FzYK57gEVZ/yOLamFtBPcjpjcL6KWf9YyCw
+	 x++dPHP5Xrhc7sHnFXUR0twnlu64ZuTbEszYRgQySomidR4uXR4if0ZNoupmAStk+H
+	 MJtGe5rjNamSxN+bn+ep4DFG5H5rHmlynU+iBXVO91izbRNg61XvAcKaiZqUrTOSDn
+	 CkHWn94tQsmuZABkwK1rGALVhBFKzct+GFh+T+qP2L2rZLH84kRdETy2zPeINjfD4h
+	 ZlLgNS+Q1LOlA==
+Received: by mail-oi1-f175.google.com with SMTP id 5614622812f47-466f00535cfso3853171b6e.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 05:48:12 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUEd6wcPVEKFJQaAqIhKFI4hYFWWTr+vWVub6jfZeI7w49vyIMDBD1e2sgljuafqBL6C6ihO5ed0w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxzMfCNbCs8lPuONHtj0TI3eII0knIqQJK3etKuJMknFD7ZgKzP
+	JJz1hHPDVcqDedKmuseCCxqbptb6Xyr5OqxU3ZelWnGVniK7DU5/YEFMK/DSI+S1c/ixeQTqWV/
+	V7Ry4PgvuEMJarpePu6+2RphMmBsJZUg=
+X-Received: by 2002:a05:6808:1b2b:b0:467:e5a2:a9ef with SMTP id
+ 5614622812f47-46a5c719a55mr1503022b6e.38.1774442891426; Wed, 25 Mar 2026
+ 05:48:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] dt-bindings: reset: st: convert to dtschema
-To: Gopi Krishna Menon <krishnagopi487@gmail.com>
-Cc: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, lee@kernel.org,
- conor+dt@kernel.org, daniel.baluta@nxp.com, simona.toaca@nxp.com,
- d-gole@ti.com, m-chawdhry@ti.com, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260324155935.183952-1-krishnagopi487@gmail.com>
- <20260325-speedy-amethyst-beaver-08a3a4@quoll> <acPMx9NZBehAzkBp@toolbx>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJoF1BKBQkWlnSaAAoJEBuTQ307
- QWKbHukP/3t4tRp/bvDnxJfmNdNVn0gv9ep3L39IntPalBFwRKytqeQkzAju0whYWg+R/rwp
- +r2I1Fzwt7+PTjsnMFlh1AZxGDmP5MFkzVsMnfX1lGiXhYSOMP97XL6R1QSXxaWOpGNCDaUl
- ajorB0lJDcC0q3xAdwzRConxYVhlgmTrRiD8oLlSCD5baEAt5Zw17UTNDnDGmZQKR0fqLpWy
- 786Lm5OScb7DjEgcA2PRm17st4UQ1kF0rQHokVaotxRM74PPDB8bCsunlghJl1DRK9s1aSuN
- hL1Pv9VD8b4dFNvCo7b4hfAANPU67W40AaaGZ3UAfmw+1MYyo4QuAZGKzaP2ukbdCD/DYnqi
- tJy88XqWtyb4UQWKNoQqGKzlYXdKsldYqrLHGoMvj1UN9XcRtXHST/IaLn72o7j7/h/Ac5EL
- 8lSUVIG4TYn59NyxxAXa07Wi6zjVL1U11fTnFmE29ALYQEXKBI3KUO1A3p4sQWzU7uRmbuxn
- naUmm8RbpMcOfa9JjlXCLmQ5IP7Rr5tYZUCkZz08LIfF8UMXwH7OOEX87Y++EkAB+pzKZNNd
- hwoXulTAgjSy+OiaLtuCys9VdXLZ3Zy314azaCU3BoWgaMV0eAW/+gprWMXQM1lrlzvwlD/k
- whyy9wGf0AEPpLssLVt9VVxNjo6BIkt6d1pMg6mHsUEVzsFNBFVDXDQBEADNkrQYSREUL4D3
- Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
- MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
- OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
- GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
- 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
- YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
- 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
- BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
- JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
- 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
- YpsFAmgXUF8FCRaWWyoACgkQG5NDfTtBYptO0w//dlXJs5/42hAXKsk+PDg3wyEFb4NpyA1v
- qmx7SfAzk9Hf6lWwU1O6AbqNMbh6PjEwadKUk1m04S7EjdQLsj/MBSgoQtCT3MDmWUUtHZd5
- RYIPnPq3WVB47GtuO6/u375tsxhtf7vt95QSYJwCB+ZUgo4T+FV4hquZ4AsRkbgavtIzQisg
- Dgv76tnEv3YHV8Jn9mi/Bu0FURF+5kpdMfgo1sq6RXNQ//TVf8yFgRtTUdXxW/qHjlYURrm2
- H4kutobVEIxiyu6m05q3e9eZB/TaMMNVORx+1kM3j7f0rwtEYUFzY1ygQfpcMDPl7pRYoJjB
- dSsm0ZuzDaCwaxg2t8hqQJBzJCezTOIkjHUsWAK+tEbU4Z4SnNpCyM3fBqsgYdJxjyC/tWVT
- AQ18NRLtPw7tK1rdcwCl0GFQHwSwk5pDpz1NH40e6lU+NcXSeiqkDDRkHlftKPV/dV+lQXiu
- jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
- zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
- XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <acPMx9NZBehAzkBp@toolbx>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com>
+ <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 25 Mar 2026 13:47:59 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
+X-Gm-Features: AaiRm50UZe_MGNwYAvyU0MWvQAL2QvlTOXHkHEoVTVk07kPSEDtHWjxoOagyJzo
+Message-ID: <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
+Subject: Re: [PATCH] thermal: core: fix use-after-free due to init/cancel
+ delayed_work race
+To: Mauricio Faria de Oliveira <mfo@igalia.com>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, kernel-dev@igalia.com, 
+	syzbot+3b3852c6031d0f30dfaf@syzkaller.appspotmail.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 25/03/2026 13:04, Gopi Krishna Menon wrote:
-> On Wed, Mar 25, 2026 at 12:39:36PM +0100, Krzysztof Kozlowski wrote:
-> 
->> On Tue, Mar 24, 2026 at 09:29:30PM +0530, Gopi Krishna Menon wrote:
->>> Convert the STiH4xx reset controller bindings to DT schema.
->>>
->>> Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
->>> Suggested-by: Dhruva Gole <d-gole@ti.com>
->>
->> Both suggested you to write this patch?
->>
-> Hi Krzysztof,
-> 
-> Thanks for the review, They helped me to improve the PATCH,
-> 
-> - Dhruva suggested me to change the subject from dt-bindings: power:
->   reset: st: convert to dtschema to dt-bindings: reset: st: convert to
->   dtschema as that was the general trend followed with similar files.
-> - Daniel suggested me to use the word 'reset' instead of 'restart' in
->   the patch (whereever possible) as that is more accurate here.
-> 
-> That's why I added those Suggested-by tags.
+On Wed, Mar 25, 2026 at 1:10=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
+g> wrote:
+>
+> On Wed, Mar 25, 2026 at 12:51=E2=80=AFAM Mauricio Faria de Oliveira
+> <mfo@igalia.com> wrote:
+> >
+> > If INIT_DELAYED_WORK() is called for a currently running work item,
+> > cancel_delayed_work_sync() is unable to cancel/wait for it anymore,
+> > as the work item's data bits required for that are cleared.
+> >
+> > In the resume path, INIT_DELAYED_WORK() is called twice:
+> > 1) to replace the work function: thermal_zone_device_check/resume()
+> > 2) to restore it.
+> >
+> > Both cases might race with the unregister path and bypass the call to
+> > cancel_delayed_work_sync(),
+>
+> So this is the problem, isn't it?
+>
+> > after which struct thermal_zone_device *tz
+> > is freed, and the non-canceled/non-waited for work hits use-after-free.
+>
+> Which basically means that a TZ_STATE_FLAG_EXIT check is missing in
+> both thermal_zone_pm_complete() and thermal_zone_device_resume().
 
-This is not the meaning of Suggested-by. Drop the tags.
+Actually, thermal_zone_pm_complete() runs under thermal_list_lock and
+thermal_zone_device_unregister() removes the zone from
+thermal_tz_list, also under thermal_list_lock, before calling
+cancel_delayed_work_sync().
 
-I gave you now review, so you will add "Suggested-by: Krzysztof ..."?
+So either thermal_zone_device_unregister() removes the zone from the
+list before thermal_zone_pm_complete() can run, in which case the
+latter won't run for the given zone at all because that zone is not
+there in thermal_tz_list, or the cancel_delayed_work_sync() will see
+the work item queued up by thermal_zone_pm_complete().
 
-Best regards,
-Krzysztof
+So where's the race between thermal_zone_pm_complete() and
+thermal_zone_device_unregister()?
+
+I can see the one between thermal_zone_device_unregister() and
+thermal_zone_device_resume(), but that can be addressed by adding a
+TZ_STATE_FLAG_EXIT check to the latter AFAICS.
