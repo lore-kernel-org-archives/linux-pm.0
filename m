@@ -1,115 +1,175 @@
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7304B30C366
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 08:18:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3D20C32D452;
+	Wed, 25 Mar 2026 08:30:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774426740; cv=none; b=XSQScWMuJxuPf9h9ChHTxlO1VfunWNm7rxsfoNGGptj4eEsAFDtrJyirhnOOVaZ5b6jMoUz10bbMs8QqIHh6mX0V+WWaxUV7Ntccf9u82HWsUQa5zdMKhhfhWqGBp5lAjh/ks0uR4oLkkhcw8bA8dcVtli9KXabhTj4Ayli9RoU=
+	t=1774427459; cv=none; b=kP6JC2BGclzR+XYnn97wQ28LSLKXKJEO9o5UQsS9FH1PsZscmJTdId0zfuFPb41yOuXeXpJiq5sBqBwq16o9okq1DA8CWx+nbVDuy5ke0gQHwd7P5MH1KQuA9EdNgOUBHdzJ6YHqmU58WvZc4Vi8Y2CRqij6MMc422Tjyvnk5d0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774426740; c=relaxed/simple;
-	bh=V1rebkYkH0xbbTSdHSmSsIS4Wj4McbCBjLT5yNCpazA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=reUfgyVM2vTeevtugqqoxm3RCDFGoiUBFY4ZbYdpG3XfVLlhP301taeKTE6be6X0Ma8QbzFn+yRI8jz6yrax3oOgSIGP43A9bVRUHM/OERWA+qTvj6Bzx4dFkQxcbDL0pAMfDuPtwT0KtIPruYT5kEJ9YVOOBrq0VVeKthkRtoc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P+xUsyxb; arc=none smtp.client-ip=209.85.210.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774427459; c=relaxed/simple;
+	bh=EqXSuD1lusRAIw+MCvdqKYnYl9VtMceezX3djiH5qKM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Geq02lXBCnR66hv2As8RsuIQtAihY+u+cZBFAM9wOiluV7vZVBYfF1ETHQBpPcaxmu5NcdghhglqYZZ9dw61kTni2JQVeP0eohB0P74vz3itJyh9Rl5TxtuZKIC+V2Xx89wrPFOqSgBNgePpRobnUouD711gR+FTgzd2QtGVX9k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=fGqw//Za; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P+xUsyxb"
-Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-82985f42664so1366360b3a.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 01:18:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774426739; x=1775031539; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=OYyBTHqBgdWNzLcMu4J26nJ5nXtlUdcoysDntT0XCb4=;
-        b=P+xUsyxbTaAzrETj5SzMYIsGM4bSBhIO75vjRqBtBBAvpsrKy4i7pAruHjmkmn5QA3
-         xGjXDsRnG1J4CWi+Q2edxe24zLU6CTvDMruqRDtgI7wSqPuB6msRvUMMdQF48q8G0iNe
-         dB/lLuJRNqqgUtNQgwq5QG6XyiFucvR4cZy+9jAGptwMedUzRI3s6PdKjRF4Lrd8suW9
-         eVIp2sKStqwtHJ+8UXYMX7NVXYaU1q+Xt++02r7mU+VzirkAyZ1FIYpiQNRhVrPKMbos
-         ja9X5HFeJVT/wlTYPXZdklOV1iodkVR8BI4yyJotouENhbj8OaTXDnZ45fXKR5SDYzDm
-         ItZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774426739; x=1775031539;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OYyBTHqBgdWNzLcMu4J26nJ5nXtlUdcoysDntT0XCb4=;
-        b=r4ZLf9mGGHl0Zfv2lfoWVDUFSGCfDYkDahOtDReMBoI/RnX05hNtbe7aaP0zCL1FhU
-         w1sTbeDlmEtTxxuGTbTd7HL+JAOqjuInSrSQWvh0hJaQyucIN3xfMSKB7Pxmr0SPC8IH
-         gubZHjQfC3lFZfGsJfWDX02aTjCw+XzHHgvukvoMzUt7B+O+62jCiurqAcele3RpqpAV
-         ssQqNfJpBeneGKMe6i7FFEPpK3ZdgHD/dIzpehU3TOIc9obqqYHXIqdfQzYS06VqT756
-         HW9xhjpaL0+pHPX+VkAyK9ZUcjN/alfyddPPGOI08QMFXfcTNqWhx/rM4jMQLn1dWd18
-         eg4A==
-X-Forwarded-Encrypted: i=1; AJvYcCX/Wf5rvqSa2hbG7rjwwXAbzN4A3XrqPohPvAnPF2fj4rxWhrQaLi+CQan26ILCjhyvZEW0Q5YLYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzwHdUWSTBqeN4TNQ3Fs62g20Z2+061Kz6tMuRdj7l/VjCGczWh
-	sngXmklKM8rlCVaPP9Z9/2euElK54sSft5nCe1uo54dzk+5OqjkK2osLWCX4yJ6WwgE=
-X-Gm-Gg: ATEYQzxbUj/V1J249xUeogEaaT4aCAT567mXrIX4yRRhdkx3GUJLVzJHsJq6oR48eoQ
-	6H48zfmsDk7LFJuXXuHXwADhhXQRMRbJ7eHldljKcb35+W2mvB3vkwl43k5D8EbrAVfRmsZsvEs
-	y0eVFcoOJvRmnMIthFI37hphoKR0MWFJDqzixdTr7ccU9nRcLSitfbBzVtK3hwXWvZMTdXeNysL
-	xS0XAVMLslUBCuSooBMe7l+KXpdyEIqChg55LIEaJtSyL/PT8Rn6A5rkq+aV0Noqgp2jhCV13s+
-	kMwmHj86fKYBhLi8ajiijOxjjknDjHBP1zA+gqnV1DCdc9y1WRLgaU/5uyF/46JhdyZ56lfSiMs
-	e1lEDHoC8riBWShfRtkewILp2XgcK+a4gUSKSxE/lkZ+r93RxCFMZXNJETYbEBmGdbTc1dBTAwz
-	Zf+579P5+rTNECbDlWZ3qoAj2xsVZJq5FDHF9rQZZm4v3t4USPY2233uY6xh+UJaxagWISzgDDN
-	3/O9g==
-X-Received: by 2002:a05:6a00:844:b0:824:9ffc:256c with SMTP id d2e1a72fcca58-82c6e0d0d2cmr2445949b3a.43.1774426738715;
-        Wed, 25 Mar 2026 01:18:58 -0700 (PDT)
-Received: from toolbx.auup.amity.edu.in ([202.12.103.66])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82b03aa9fc6sm15454426b3a.7.2026.03.25.01.18.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 01:18:58 -0700 (PDT)
-From: Gopi Krishna Menon <krishnagopi487@gmail.com>
-To: rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com
-Cc: Gopi Krishna Menon <krishnagopi487@gmail.com>,
-	daniel.baluta@nxp.com,
-	simona.toaca@nxp.com,
-	d-gole@ti.com,
-	m-chawdhry@ti.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: fix error condition for reading st,thermal-flags
-Date: Wed, 25 Mar 2026 13:48:42 +0530
-Message-ID: <20260325081844.13829-1-krishnagopi487@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="fGqw//Za"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 69AA614BF;
+	Wed, 25 Mar 2026 01:30:46 -0700 (PDT)
+Received: from [10.57.13.94] (unknown [10.57.13.94])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3AD0E3FB90;
+	Wed, 25 Mar 2026 01:30:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774427452; bh=EqXSuD1lusRAIw+MCvdqKYnYl9VtMceezX3djiH5qKM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=fGqw//ZaOB49H4UQyph6NIObP/iCkVdXsk7f75Y13TTn0iE+wMeb0jnYLp3WHdFRN
+	 mOkOkz0/oeIixrwawckUoAaGRwJB/nePZDrjEb1XOjEt3AeO+k79VEUH3UuV36BpnJ
+	 8/wQ9xymnjNQpLvwBWQxkqDGYEO9PumQ+uEUJKE4=
+Message-ID: <fa386a12-cec1-426d-bca2-37e1c9badf91@arm.com>
+Date: Wed, 25 Mar 2026 08:31:06 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in
+ get_load()
+To: Xuewen Yan <xuewen.yan94@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xuewen Yan
+ <xuewen.yan@unisoc.com>, rui.zhang@intel.com, rafael@kernel.org,
+ linux-pm@vger.kernel.org, amit.kachhap@gmail.com, daniel.lezcano@kernel.org,
+ linux-kernel@vger.kernel.org, ke.wang@unisoc.com, di.shen@unisoc.com,
+ jeson.gao@unisoc.com
+References: <20260320113148.7308-1-xuewen.yan@unisoc.com>
+ <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
+ <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
+ <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com>
+ <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
+ <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com>
+ <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
+ <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com>
+ <CAB8ipk_7MGUza9_izMypMxPFUjAoB34ZZp0-ts4w6eJ+tr+MDw@mail.gmail.com>
+ <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
+ <CAB8ipk_VftSn4U+Vzdv_ST7apiONVoYy4PTe7usRetXry6uSOQ@mail.gmail.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <CAB8ipk_VftSn4U+Vzdv_ST7apiONVoYy4PTe7usRetXry6uSOQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-of_property_read_u32 returns 0 on success. The current check returns
--EINVAL if the property is read successfully.
 
-Fix the check by removing ! from of_property_read_u32
 
-Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
-Signed-off-by: Gopi Krishna Menon <krishnagopi487@gmail.com>
----
-Note:
-* This patch is part of the GSoC2026 application process for device tree bindings conversions
-* https://github.com/LinuxFoundationGSoC/ProjectIdeas/wiki/GSoC-2026-Device-Tree-Bindings
-* Changes have only been compile tested
+On 3/24/26 12:03, Xuewen Yan wrote:
+> On Tue, Mar 24, 2026 at 6:45 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>
+>>
+>>
+>> On 3/24/26 02:20, Xuewen Yan wrote:
+>>> On Mon, Mar 23, 2026 at 9:25 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>>>
+>>>>
+>>>>
+>>>> On 3/23/26 11:06, Viresh Kumar wrote:
+>>>>> On 23-03-26, 10:52, Lukasz Luba wrote:
+>>>>>>> How is that okay ? What am I missing ?
+>>>>>
+>>>>> I was missing !SMP :)
+>>>>>
+>>>>>> Right, there is a mix of two things.
+>>>>>> The 'i' left but should be removed as well, since
+>>>>>> this is !SMP code with only 1 cpu and i=0.
+>>>
+>>> That's also why we sent out patch 1/2; after all, it is always 0 on
+>>> !SMP systems.
+>>>
+>>>>>>
+>>>>>> The whole split which has been made for getting
+>>>>>> the load or utilization from CPU(s) needs to be
+>>>>>> cleaned. The compiled code looks different since
+>>>>>> it knows there is non-SMP config used.
+>>>>>
+>>>>> Right, we are allocating that for num_cpus (which should be 1 CPU
+>>>>> anyway). The entire thing must be cleaned.
+>>>>>
+>>>>>> Do you want to clean that or I should do this?
+>>>>>
+>>>>> It would be helpful if you can do it :)
+>>>>>
+>>>>
+>>>> OK, I will. Thanks for your involvement Viresh!
+>>>>
+>>>> Xuewen please wait with your v2, I will send
+>>>> a redesign of this left code today.
+>>>
+>>> Okay, and Qais's point is also worth considering: do we actually need
+>>> sched_cpu_util()?
+>>> The way I see it, generally speaking, the request_power derived from
+>>> idle_time might be higher than what we get from sched_cpu_util().
+>>> Take this scenario as an example:
+>>> Consider a CPU running at the lowest frequency with 50% idle time,
+>>> versus one running at the highest frequency with the same 50% idle
+>>> time.
+>>> In this case, using idle_time yields the same load value for both.
+>>> However, sched_cpu_util() would report a lower load when the CPU
+>>> frequency is low. This results in a smaller request_power...
+>>
+>> Right, there are 2 things to consider:
+>> 1. what is the utilization when the CPU still have idle time, e.g.
+>>      this 50% that you mentioned
+>> 2. what is the utilization when there is no idle time and CPU
+>>      is fully busy (and starts throttling due to heat)
+>>
+>> In this thermal fwk we are mostly in the 2nd case. In that case the
+>> utilization on CPU's runqueue goes to 1024 no mater the CPU's frequency.
+> 
+> Haha, indeed. When we debug IPA, we also keep the CPU constantly
+> running with basically no idle time.
+> In this scenario, we tested using both sched_cpu_util() and idle_time,
+> and for thermal control purposes, there was basically no difference
+> (likely because the load was at 100%).
+> Maybe we can cook up a test case where the CPU is overheating despite
+> having some idle time? That way we can compare how the two interfaces
+> perform.
 
- drivers/thermal/spear_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I wish we could involve the GPU in those stress scenarios. Then we could
+have some load (e.g. 70% on CPUs) and heavy computation on GPU which
+heats up the whole silicon. In such experiment you could observe the
+difference from those two methods of input power estimation.
 
-diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
-index 603dadcd3df5..5e3e9c1f32f8 100644
---- a/drivers/thermal/spear_thermal.c
-+++ b/drivers/thermal/spear_thermal.c
-@@ -93,7 +93,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
- 	struct device_node *np = pdev->dev.of_node;
- 	int ret = 0, val;
- 
--	if (!np || !of_property_read_u32(np, "st,thermal-flags", &val)) {
-+	if (!np || of_property_read_u32(np, "st,thermal-flags", &val)) {
- 		dev_err(&pdev->dev, "Failed: DT Pdata not passed\n");
- 		return -EINVAL;
- 	}
--- 
-2.52.0
+Unfortunately, for the GPU it's hard to craft such benchmark
+(at least for me lacking GPU programming experience at that level).
+Ideally we could have something which controls the amount of GPU
+computation and created heat...
 
+
+> 
+>> We know which highest frequency was allowed to run and we pick the power
+>> value from EM for it. That's why the estimation is not that bad (apart
+>> from power variation for different flavors of workloads: heavy SIMD vs.
+>> normal integer/load).
+>>
+>> In 1st case scenario we might underestimate the power, but that
+>> is not the thermal stress situation anyway, so the max OPP is
+>> still allowed.
+>>
+>> So far it is hard to find the best power model to use and robust CPU
+>> load mechanisms. Adding more complexity and creating some
+>> over-engineered code in the kernel to maintain might not have sense.
+>> The thermal solutions are solved in the Firmware nowadays since the
+>> kernel won't react that fast for some rapid changes.
+>>
+>> We have to balance the complexity here.
+>> Let's improve the situation a bit. It would be very much appreciated if
+>> you could share information if those changes help your platform
+>> (some older boards might not show any benefit with the new code).
+>>
+> Understood. We appreciate the balance between complexity and accuracy.
+> We could test these changes on our platforms and let you know if we
+> see any improvements in thermal stability or power estimation. Expect
+> an update from us in a few days.
+> 
+
+Sounds great, thanks!
