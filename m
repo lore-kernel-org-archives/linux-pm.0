@@ -1,142 +1,123 @@
-Received: from mail.ilvokhin.com (mail.ilvokhin.com [178.62.254.231])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9373D8119;
-	Wed, 25 Mar 2026 12:14:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.62.254.231
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B1833CCFBA;
+	Wed, 25 Mar 2026 12:36:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774440885; cv=none; b=tic8bulMvBqOPWuuWaw1IAw+HizphRNtf7+C7mG7GK1kA80V+YGJj2hvpSOzZoXA3TeuHlreoi2eQfjDzqgcc8g6ihnVrSzvViMzAUOVEnthCEsMDcT58G3WETk6oOg0SNNjCmq4XTZvQuDvp2vmr4tmEOcSf2SYxHoMXsaE/jY=
+	t=1774442180; cv=none; b=Hu7oqNEeXmqC2NkmZH2F47I6wSmv7Abn//2gBBJpiSFNy9PyAlJ+4AlA3EabKmJOjZHQtuw1FLnpWJ88FAnb7lmaBIvlEbia8WNF+X5Bh6Wus6SHpppYGqIjWhlfsTA8MzVZ6aS1zEvVw5VV+Ovg1CrYQgQJfVLG4TUSzZPXmlc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774440885; c=relaxed/simple;
-	bh=gjypWeTl+X1LsDsptq0XisCHeTLCc5QNbcnmmT9hU1M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Svodz+5CRhwoh3LVLbnKiRZH3VC/LlTE+rivQ3GfuQk6ivylTNDCgirOuFWYLWfYUVseG34MiEwmjcyKCZr4AqE/DwCObOx7ubYanR0y63EMxathtQFSSVpvhYHn/+/5qziWg4vqYkgt6HURfGqmFSYoGLcoTPTaDfDj3kUS8ZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; spf=pass smtp.mailfrom=ilvokhin.com; dkim=pass (1024-bit key) header.d=ilvokhin.com header.i=@ilvokhin.com header.b=zu6ayGgX; arc=none smtp.client-ip=178.62.254.231
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ilvokhin.com
+	s=arc-20240116; t=1774442180; c=relaxed/simple;
+	bh=nUIKBGrlINd0Aqt02dXQQMuwK2Hj20wXs3Y6ofz1n88=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WBUqB7CVRvOgMl01i0nZLfGaPdPSJCoozdGpLsjOfVZ2CDbXEiFrJ8URUGwvOhu8LC2YaJbBbZ/VCps/PHRekgNIeyxDA1IiDtwNyrGBFLBWuC9Gv6fK4Jv1AYFcITUZeZYWRI6egLGLfmwZPKKDfWxtIzGPZvMm5xhrXxHpNS8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AimVXysN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ilvokhin.com header.i=@ilvokhin.com header.b="zu6ayGgX"
-Received: from shell.ilvokhin.com (shell.ilvokhin.com [138.68.190.75])
-	(Authenticated sender: d@ilvokhin.com)
-	by mail.ilvokhin.com (Postfix) with ESMTPSA id 6AD19BDCF2;
-	Wed, 25 Mar 2026 12:14:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ilvokhin.com;
-	s=mail; t=1774440876;
-	bh=qlG0lXGt3ihgGzr2zmzy5cEjDh7Y5/V+vvfJk0BQROA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=zu6ayGgXCX0hcZJvTh3J9FChG/6KiLH3P1J7k0JVvWTPTPwZtvYJVhLyJS5uBHtdC
-	 6CcIxgxYmZBERel4KjS0dtjFi+Cizpjmz764CTTjAyJAxloip9zr3IM5unS/Ll578z
-	 Qr+w0As2/AEnYMg2xU6dWsULHH5gulRX1tOolGdk=
-Date: Wed, 25 Mar 2026 12:14:35 +0000
-From: Dmitry Ilvokhin <d@ilvokhin.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	David Hildenbrand <david@kernel.org>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Axel Rasmussen <axelrasmussen@google.com>,
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Brendan Jackman <jackmanb@google.com>,
-	Johannes Weiner <hannes@cmpxchg.org>, Zi Yan <ziy@nvidia.com>,
-	Oscar Salvador <osalvador@suse.de>,
-	Qi Zheng <zhengqi.arch@bytedance.com>,
-	Shakeel Butt <shakeel.butt@linux.dev>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 0/5] mm: zone lock tracepoint instrumentation
-Message-ID: <acPRq1YPeGR8EqMB@shell.ilvokhin.com>
-References: <cover.1772206930.git.d@ilvokhin.com>
- <aa7G1nD7Rd9F4eBH@casper.infradead.org>
- <aa7XdpIVtLFS3FIu@shell.ilvokhin.com>
- <aa7dgQDMEz34eadj@casper.infradead.org>
- <20260309151317.7bba06dd@gandalf.local.home>
- <aa8xawMxLeUjkyHx@casper.infradead.org>
- <20260309171700.063318b5@gandalf.local.home>
- <abhAoF5EpiPigsx7@shell.ilvokhin.com>
- <abv4riGLlubast8v@shell.ilvokhin.com>
- <20260324163918.1a3c5c960d85a4243c9ae314@linux-foundation.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AimVXysN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04697C4CEF7;
+	Wed, 25 Mar 2026 12:36:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774442179;
+	bh=nUIKBGrlINd0Aqt02dXQQMuwK2Hj20wXs3Y6ofz1n88=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=AimVXysNQKkYUBc/XSuZ8cd+iJA25JXSHYtoN6adJCFGOpeFfLIBG+YLyj46fWRXL
+	 mKo3gw0f/Rr99zUldIBlIQlI+APut9IEmed/BZMmmKllf/innvSLoBgYEo+M/Wqw6j
+	 9RLf3VrYkb78cRAX+2kjBu72LuHLTxcDLKT0mgrOFMNoLGIHFib5R7DwlX78xUz82d
+	 UHHe2djD+JaT7LnrWbbbHvQp4FNK51/VmuXr5GapkYSKSbhRrJrdBedS4k3Sg5+Nrp
+	 kDMGCTguviKpqYpvCyQzjskBzsIvyKeZTPy+hnkvE5SE3/hNOu9ETLUhEhNE/I5wAH
+	 7Xc04i9EnfGiQ==
+Message-ID: <57e3e846-d679-4201-921c-69cdd4040d13@kernel.org>
+Date: Wed, 25 Mar 2026 13:36:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260324163918.1a3c5c960d85a4243c9ae314@linux-foundation.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: reset: st: convert to dtschema
+To: Gopi Krishna Menon <krishnagopi487@gmail.com>
+Cc: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, lee@kernel.org,
+ conor+dt@kernel.org, daniel.baluta@nxp.com, simona.toaca@nxp.com,
+ d-gole@ti.com, m-chawdhry@ti.com, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260324155935.183952-1-krishnagopi487@gmail.com>
+ <20260325-speedy-amethyst-beaver-08a3a4@quoll> <acPMx9NZBehAzkBp@toolbx>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <acPMx9NZBehAzkBp@toolbx>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 24, 2026 at 04:39:18PM -0700, Andrew Morton wrote:
-> On Thu, 19 Mar 2026 13:22:54 +0000 Dmitry Ilvokhin <d@ilvokhin.com> wrote:
+On 25/03/2026 13:04, Gopi Krishna Menon wrote:
+> On Wed, Mar 25, 2026 at 12:39:36PM +0100, Krzysztof Kozlowski wrote:
 > 
-> > On Mon, Mar 16, 2026 at 05:40:50PM +0000, Dmitry Ilvokhin wrote:
-> > 
-> > [...]
-> > 
-> > > A possible generic solution is a trace_contended_release() for spin
-> > > locks, for example:
-> > > 
-> > >     if (trace_contended_release_enabled() &&
-> > >         atomic_read(&lock->val) & ~_Q_LOCKED_MASK)
-> > >         trace_contended_release(lock);
-> > > 
-> > > This might work on x86, but could increase code size and regress
-> > > performance on arches where spin_unlock() is inlined, such as arm64
-> > > under !PREEMPTION.
-> > 
-> > I took a stab at this idea and submitted an RFC [1].
-> > 
-> > The implementation builds on your earlier observation from Matthew that
-> > _raw_spin_unlock() is not inlined in most configurations. In those
-> > cases, when the tracepoint is disabled, this adds a single NOP on the
-> > fast path, with the conditional check staying out of line. The measured
-> > text size increase in this configuration is +983 bytes.
-> > 
-> > For configurations where _raw_spin_unlock() is inlined, the
-> > instrumentation does increase code size more noticeably
-> > (+71 KB in my measurements), since the check and out of line call is
-> > replicated at each call site.
-> > 
-> > This provides a generic release-side signal for contended locks,
-> > allowing: correlation of lock holders with waiters and measurement of
-> > contended hold times
-> > 
-> > This RFC addressing the same visibility gap without introducing per-lock
-> > instrumentation.
-> > 
-> > If this tradeoff is acceptable, this could be a generic alternative to
-> > lock-specific tracepoints.
-> > 
-> > [1]: https://lore.kernel.org/all/51aad0415b78c5a39f2029722118fa01eac77538.1773858853.git.d@ilvokhin.com 
+>> On Tue, Mar 24, 2026 at 09:29:30PM +0530, Gopi Krishna Menon wrote:
+>>> Convert the STiH4xx reset controller bindings to DT schema.
+>>>
+>>> Suggested-by: Daniel Baluta <daniel.baluta@nxp.com>
+>>> Suggested-by: Dhruva Gole <d-gole@ti.com>
+>>
+>> Both suggested you to write this patch?
+>>
+> Hi Krzysztof,
 > 
-> That submission has met a disappointing response.
+> Thanks for the review, They helped me to improve the PATCH,
 > 
-> How should I proceed with this series "mm: zone lock tracepoint
-> instrumentation"?  It's not urgent so I'm inclined to put this on hold
-> while you pursue "locking: Add contended_release tracepoint to spinning
-> locks"?
-
-Thanks for the follow-up, Andrew.
-
-My current plan is to focus on the "locking: Add contended_release
-tracepoint to spinning locks" work and drive it to a clear conclusion:
-either by getting feedback that it's not a good direction, or by getting
-it into mainline.
-
-In the meantime, it seems reasonable to drop the "mm: zone lock
-tracepoint instrumentation" patchset from mm-new to avoid confusion
-until the direction is clearer. I can revisit and respin it if the more
-generic locking approach doesn't pan out.
-
+> - Dhruva suggested me to change the subject from dt-bindings: power:
+>   reset: st: convert to dtschema to dt-bindings: reset: st: convert to
+>   dtschema as that was the general trend followed with similar files.
+> - Daniel suggested me to use the word 'reset' instead of 'restart' in
+>   the patch (whereever possible) as that is more accurate here.
 > 
-> Please send that v2 sometime and hopefully Steven can help push it along?
+> That's why I added those Suggested-by tags.
 
-I'll send the next version of the generic locking series soon. Any help
-in pushing it along would be appreciated.
+This is not the meaning of Suggested-by. Drop the tags.
+
+I gave you now review, so you will add "Suggested-by: Krzysztof ..."?
+
+Best regards,
+Krzysztof
