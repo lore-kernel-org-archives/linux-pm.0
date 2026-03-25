@@ -1,123 +1,220 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 211B73DDDC0;
-	Wed, 25 Mar 2026 13:55:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 391A23A874B;
+	Wed, 25 Mar 2026 14:18:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774446906; cv=none; b=sJTKx5Smliw/C/yL5Hb6bQ79eDjsoztY7+QYdBaBicGUTu8V/DFBH0kWFVl4AyYkN8W7yryc++2P9J93+DYtP4AMemUiJgZWOh+IzgQAZRIe/KmYxRSG0Erb0rMDE1iXCyzOPOBTtmU/K9nGjJCAN2sY122qpGNllB4dCIYRT2g=
+	t=1774448283; cv=none; b=bezfFbLcHE4mn5+PW/f4P2bur2qJuZcjO+JqsnxUV9lMlfwRQMX+ZgpnuGHjyo29Zk2iF1+DAWIayYM4CSW3E0nhBauvKlO/QIeLzRY2e10QvHhB/LmRvP1V5bybX5gPwC6pr7mOHkQb1Vwzav6vaM9Zklqac/52NKdU5Jzyfsk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774446906; c=relaxed/simple;
-	bh=iDKvaeDvnMyZNEDCO+iH5La4SPaeOS8gVVZsISM+/78=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jOmPqG4msEieK545DXm0a1oEcgqs/jXifen73JJ2m9TzoZLow/OP7nIzcrpdA/VZtyRlAm+R5RYWcJDBoo3FuQPzlKaSs7LRRtnYCXazzUBNxlPS7Evy5Gh3ZZ+THAggS56i7OywBL7ON8dBTyMCdr8ronyGjVLtJFA2vSjDBls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=FRoR1cQ9; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+	s=arc-20240116; t=1774448283; c=relaxed/simple;
+	bh=6fLvbno2zMp660HjQ2GNpWDPogmQO9L1G8K4jOVuONI=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=GxYBytZ+NKToPheKdb3BYdwtwPc54HeKQbs+RpZht6vsWmRt2YV/b18H7FCgE7jK33XSNoRLM5UrH0EaUWp3kAo7RagDNdvfSyRbQi9rlPuUrx6/1xZrRYyD5FR5c9Z9ZhMSAPdca0qfwj8uYdwR2eafU0PR2cJPGPmQfmYtgMY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=i01KFJMP; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="FRoR1cQ9"
-Received: from fluffy-mammal.metal.fwg-cag.de (unknown [IPv6:2001:9e8:cde0:9600:8d27:ae39:1dce:2212])
-	by srv01.abscue.de (Postfix) with ESMTPSA id 93D7E1C3A8B;
-	Wed, 25 Mar 2026 14:54:55 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1774446895;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4Vvz9BBCdCjmAKX3x6b5LHDmFkQb7BZeGItD0dshHTs=;
-	b=FRoR1cQ9xfDn68CQwKYxV7tH5hnWgj9zu9G9i7k3rUs4SZ3Drfe7AXK2vPw0Gt/2ed38YG
-	9dYIYc66WmjmbxWQCmVAYxH6wEKxcRKBgJsOIaDtOdaXxmYdYAg5tXNnyY+JONWDZgR00/
-	00Yprj+4KWWRkPdW32sxcrbAbtYOZKi/UJWofvW1XY7r23vERCPEWHxigic5mIPbJVQd72
-	zdCb9+aBGOsy27L+MUifumctiYAFXWTzh9AhFwSa2BQDBt82NyVVIzTEbHCcaii7B1dyjV
-	bNZ0EFRxRazNrxFrWote6ckkZmkkxnNnrohBgrDMdR3X7n5VWkP7wYEowsSdfw==
-From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Date: Wed, 25 Mar 2026 14:53:47 +0100
-Subject: [PATCH v2 5/5] regulator: sc2731: Add platform_device_id table
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="i01KFJMP"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:Message-ID:References:
+	In-Reply-To:Subject:Cc:To:From:Date:MIME-Version:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=2kF3M4rKuIujHd8+vAEaZvkIB+re++6Y1UHInRBFRLw=; b=i01KFJMPeo4xFmnDNwOhv1ErMo
+	7UJO6oGkEAe54JFRjUtPPxDJEPS4eQ9rw8drhUI+0mMFxLdLYnOP7pBkRIiGqydm6SroS+rsf0HTt
+	USIoHoEuBZaVUEcuJTPCTWaT/AA6NYPHUfIfx2U5UsEAV+kw78wGPWpvA31WV9qP7M+Z/wBA6auzn
+	KJp+yA0ALZow/whgBJVCCAt2//95fLxS0cyhjTjgecptYGYBjfW4G+jOxrzqv/r9ahsZK4zAWbny3
+	VMfPQF4VlpgHH4auLhexr9OMD83iWrvuLP3o3LKu8vE1H9DgjFmyyBa5UR03TV2/e8EwQFraVV+LO
+	Gme0D3kQ==;
+Received: from maestria.local.igalia.com ([192.168.10.14] helo=mail.igalia.com)
+	by fanzine2.igalia.com with esmtps 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1w5P3N-005rut-8i; Wed, 25 Mar 2026 15:17:49 +0100
+Received: from webmail.service.igalia.com ([192.168.21.45])
+	by mail.igalia.com with esmtp (Exim)
+	id 1w5P3L-007YX0-1d; Wed, 25 Mar 2026 15:17:49 +0100
+Received: from localhost ([127.0.0.1] helo=webmail.igalia.com)
+	by webmail with esmtp (Exim 4.96)
+	(envelope-from <mfo@igalia.com>)
+	id 1w5P3K-00AhX2-1r;
+	Wed, 25 Mar 2026 15:17:46 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Wed, 25 Mar 2026 11:17:46 -0300
+From: Mauricio Faria de Oliveira <mfo@igalia.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
+ <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kernel-dev@igalia.com, syzbot+3b3852c6031d0f30dfaf@syzkaller.appspotmail.com
+Subject: Re: [PATCH] thermal: core: fix use-after-free due to init/cancel
+ delayed_work race
+In-Reply-To: <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
+References: <20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com>
+ <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
+ <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
+Message-ID: <772a77c80b6ad216dec4cc10d3fbb133@igalia.com>
+X-Sender: mfo@igalia.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260325-sc27xx-mfd-cells-v2-5-d0ebb60aa4a7@abscue.de>
-References: <20260325-sc27xx-mfd-cells-v2-0-d0ebb60aa4a7@abscue.de>
-In-Reply-To: <20260325-sc27xx-mfd-cells-v2-0-d0ebb60aa4a7@abscue.de>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-X-Mailer: b4 0.14.3
+X-Spam-Report: NO, Score=-4.1, Tests=ALL_TRUSTED=-3,AWL=-1.854,BAYES_50=0.8
+X-Spam-Score: -40
+X-Spam-Bar: ----
 
-Make the regulator driver for the SC2731 PMIC probe automatically. Using
-a platform_device_id table instead of DT compatible matching avoids the
-need for a separate compatible property in the "regulators" node, which
-simplifies the DT bindings and makes the parent MFD device responsible
-for selecting the correct regulator driver for the PMIC.
+Thanks for looking into this.
 
-However, this means that the regulator device is not automatically
-associated with the "regulators" node. Tell the regulator core to
-perform device tree lookups using the parent MFD device instead of
-the regulator sub-device and set the .regulators_node member in all
-regulator definitions so that the "regulators" sub-node is used.
+On 2026-03-25 09:47, Rafael J. Wysocki wrote:
+> On Wed, Mar 25, 2026 at 1:10 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>> On Wed, Mar 25, 2026 at 12:51 AM Mauricio Faria de Oliveira
+>> <mfo@igalia.com> wrote:
+>> >
+>> > If INIT_DELAYED_WORK() is called for a currently running work item,
+>> > cancel_delayed_work_sync() is unable to cancel/wait for it anymore,
+>> > as the work item's data bits required for that are cleared.
+>> >
+>> > In the resume path, INIT_DELAYED_WORK() is called twice:
+>> > 1) to replace the work function: thermal_zone_device_check/resume()
+>> > 2) to restore it.
+>> >
+>> > Both cases might race with the unregister path and bypass the call to
+>> > cancel_delayed_work_sync(),
+>>
+>> So this is the problem, isn't it?
+>>
+>> > after which struct thermal_zone_device *tz
+>> > is freed, and the non-canceled/non-waited for work hits use-after-free.
+>>
+>> Which basically means that a TZ_STATE_FLAG_EXIT check is missing in
+>> both thermal_zone_pm_complete() and thermal_zone_device_resume().
+> 
+> Actually, thermal_zone_pm_complete() runs under thermal_list_lock and
+> thermal_zone_device_unregister() removes the zone from
+> thermal_tz_list, also under thermal_list_lock, before calling
+> cancel_delayed_work_sync().
+> 
+> So either thermal_zone_device_unregister() removes the zone from the
+> list before thermal_zone_pm_complete() can run, in which case the
+> latter won't run for the given zone at all because that zone is not
+> there in thermal_tz_list, or the cancel_delayed_work_sync() will see
+> the work item queued up by thermal_zone_pm_complete().
 
-Acked-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
----
- drivers/regulator/sc2731-regulator.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+(I think this reply clarifies your previous points too; or tell me.)
 
-diff --git a/drivers/regulator/sc2731-regulator.c b/drivers/regulator/sc2731-regulator.c
-index 5447e1a47d15..93c8156c5110 100644
---- a/drivers/regulator/sc2731-regulator.c
-+++ b/drivers/regulator/sc2731-regulator.c
-@@ -131,6 +131,7 @@ static const struct regulator_ops sc2731_regu_linear_ops = {
- 			  vstep, vmin, vmax) {			\
- 	.name			= #_id,				\
- 	.of_match		= of_match_ptr(#_id),		\
-+	.regulators_node	= of_match_ptr("regulators"),	\
- 	.ops			= &sc2731_regu_linear_ops,	\
- 	.type			= REGULATOR_VOLTAGE,		\
- 	.id			= SC2731_##_id,			\
-@@ -226,7 +227,7 @@ static int sc2731_regulator_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	config.dev = &pdev->dev;
-+	config.dev = pdev->dev.parent;
- 	config.regmap = regmap;
- 
- 	for (i = 0; i < ARRAY_SIZE(regulators); i++) {
-@@ -242,12 +243,19 @@ static int sc2731_regulator_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct platform_device_id sc2731_regulator_id_table[] = {
-+	{ "sc2731-regulator" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, sc2731_regulator_id_table);
-+
- static struct platform_driver sc2731_regulator_driver = {
- 	.driver = {
- 		.name = "sc27xx-regulator",
- 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
- 	},
- 	.probe = sc2731_regulator_probe,
-+	.id_table = sc2731_regulator_id_table,
- };
- 
- module_platform_driver(sc2731_regulator_driver);
+Regarding the latter: yes, cancel_delayed_work_sync() will see the
+work item queued up by thermal_zone_pm_complete(), but the issue is
+it will not see the _previously queued up (and running)_ work item,
+due to the INIT_DELAYED_WORK() in thermal_zone_pm_complete().
+
+That work item, thermal_zone_device_check() might be past a check
+for TZ_STATE_FLAG_EXIT by the time it is set. Please read on.
+
+> So where's the race between thermal_zone_pm_complete() and
+> thermal_zone_device_unregister()?
+
+I'll append a more detailed view below, but the summary is:
+
+thermal_pm_notify_complete() can acquire thermal_list_lock before
+thermal_zone_device_unregister() -> thermal_zone_exit() does,
+thus proceed to thermal_zone_pm_complete() which calls
+INIT_DELAYED_WORK().
+
+This makes future calls to cancel_delayed_work_sync() to wait only
+for the newly initialized work function, not a previous one, which
+might be running -- in this case, thermal_zone_device_check().
+
+Then thermal_zone_pm_complete() and thermal_pm_notify_complete()
+return, releasing thermal_list_lock.
+
+Now, thermal_zone_device_unregister() -> thermal_zone_exit()
+can set finally set TZ_STATE_FLAG_EXIT, but it might be too late.
+
+The previously queued, currently running, work item might be past
+any check for it (say, it acquired the lock to read it earlier,
+or before thermal_zone_device_unregister() was even called).
+
+So, thermal_zone_device_unregister() reaches cancel_delayed_work_sync(),
+which waits for thermal_zone_device_resume() (new work function),
+but _not_ for thermal_zone_device_check() (old work function).
+
+That finishes, tz is freed, and now the old work funtion continues
+to run and accesses tz -- hitting a use-after-free.
+
+> I can see the one between thermal_zone_device_unregister() and
+> thermal_zone_device_resume(), but that can be addressed by adding a
+> TZ_STATE_FLAG_EXIT check to the latter AFAICS.
+
+In the example describe above and detailed below, apparently that
+is not sufficient, if I'm not missing anything. See, if _resume()
+is reached with thermal_list_lock held, thermal_zone_device_exit()
+is waiting for thermal_list_lock before setting TZ_STATE_FLAG_EXIT,
+thus a check for it in _resume() would find it clear yet.
+
+Hope this helps. Please let me know your thoughts. Thanks!
+
+Detailed view)
+
+Thread A:
+  ...
+  WORK: tz->poll_queue
+    thermal_zone_device_check() // started running before
+TZ_STATE_FLAG_EXIT could be set  
+      ... // wait a bit
+      
+Thread B:
+
+  thermal_pm_notify()
+    thermal_pm_notify_complete()
+      guard(mutex)(&thermal_list_lock)  // acquires the lock
+      ...
+      
+Thread C:
+
+  thermal_zone_device_unregister()
+    thermal_zone_exit()
+      guard(mutex)(&thermal_list_lock)  // blocks waiting for the lock
+        ...
+        tz->state |= TZ_STATE_FLAG_EXIT // not run yet
+        list_del_init(&tz->node)        // not run yet
+
+Thread B: // continues with tz in thermal_tz_list and without
+TZ_STATE_FLAG_EXIT
+      ...
+      list_for_each_entry(tz, &thermal_tz_list, node)
+        thermal_zone_pm_complete(tz)
+          cancel_delayed_work(&tz->poll_queue) // does not wait for
+thermal_zone_device_check() to finish
+          INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume)
+      ...
+      returns, releases the thermal_list_lock.
+      
+From now on, cancel_delayed_work_sync(&tz->poll_queue)
+will _not_ wait for thermal_zone_device_check() anymore 
+(note it _is_ running in Thread A)
+it will only wait for thermal_zone_device_resume().
+
+Thread C:
+
+        tz->state |= TZ_STATE_FLAG_EXIT
+        list_del_init(&tz->node)
+
+These are now set, but no longer effective for the already running
+thermal_zone_device_check().
+
+      cancel_delayed_work_sync(&tz->poll_queue) // as mentioned, waits
+for the other function.
+      kfree(tz)
+      
+Thread A: // not waited for
+       ...
+       thermal_zone_device_update()
+         // access to tz (freed)
 
 -- 
-2.51.0
-
+Mauricio
