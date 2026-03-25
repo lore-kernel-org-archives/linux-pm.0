@@ -1,230 +1,130 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FF3B407107;
-	Wed, 25 Mar 2026 17:37:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B99A038C2C4;
+	Wed, 25 Mar 2026 18:13:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774460245; cv=none; b=V2yEQAg26pMEaweWeR29D7VLPoOOPIfm4k6smt/xwG8youV/TKlCnrXqIDzX9mLlyddL9QxdDIH2ESh0tzi+TC4dw0oGWWwrWDL0uu3EWIcWRDUhFRMzKAsrP1aFsIHra39B93IQPqbp1iB+e3Ff1XOgfhuQMSZK1nT+GgCIeT0=
+	t=1774462408; cv=none; b=QeAhf9rB71ApmwokChpnJAFZPImQgx9RK7w1JZucOIQm+4bxaphrY6sDwOeJkbc2k3Ixizyo0rfGcPJxwgAAx637tWBzbOyn74WRPYn0jLqspD57vs0GNFDzvshitTWdCmWhpPovs1zvb5pfmSpaCXwJ9QPuMEU0W7BBVLzmr8o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774460245; c=relaxed/simple;
-	bh=p/fgokrH2AN55tfNwoCxAMr+6XsIyIZTChoqOYjEmMY=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=e+DeEJW+zZjqWaTWMGsZOu+t93Yo4t0Lza2QVdFC1P0CzHL5FcVrogYgahpfdC3LB2Y8Bl6JmoykVe6MhMBvSZl1s+ht2GiW0GZZqd7MOudyDPKT8MSlnG6M0TzinePwVcS8hc8xGA5p2xC9RCNTEPWeoC2fSeTTDUaxXljN1z4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=CKljfBYO; arc=none smtp.client-ip=198.175.65.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1774462408; c=relaxed/simple;
+	bh=lLBSARj3QF22ma0FdZySKFhXnBOJArvWWi9yJJq9lwc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=KLkwCUrejiGoEucKoD+5fJ08kkuMxkYXkIPf6V3aQwDgGYzmkvVoRPVZOTNdGgC1lCicHaxzwfv+pfX9k1BBaGmeW5yskjd3FN2wegr35KymjCqtfH9gezod88nanV8lN+AmOc9tNQ8F6dXUK64BCboK+VrPtZikFAoQMY/PrgQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=MEnHLZ5W; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="CKljfBYO"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774460240; x=1805996240;
-  h=date:from:to:cc:subject:message-id;
-  bh=p/fgokrH2AN55tfNwoCxAMr+6XsIyIZTChoqOYjEmMY=;
-  b=CKljfBYOgLjvWa64SwGNXGua02QpaFQlxBGDgHOwk5d3WAW8usETOVcJ
-   86ylMtpKjT4FnHKo/84sAbLnIiFNwbCCU7oeu2HaTjrWvXDT0r6tXqWNx
-   UmzE7khe8qGTI+oWzPFGewJxL3hexul0I125BcOkR6Kmj30u99ajWdpVj
-   35eCmR4u9FGanYijTYPVbqRQB+yvvepfwEI72K7WRK2mExOtTlVJgQjnX
-   rWzRDlwAiPJODAM8+zBdablFZSRCAi6vj2DDQ3DJ2TwiWASCJkOLB0HIX
-   jp4uZfvSpsGpIx31OBq+DIxo+DKubxzLtxIpYpe+XU8ZNZ/9ouTeEno5J
-   g==;
-X-CSE-ConnectionGUID: Bk18dZP/QMCJWADalyHqlg==
-X-CSE-MsgGUID: eIexSTu/Sjav8qU5r5wjNA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11740"; a="86985670"
-X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
-   d="scan'208";a="86985670"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 10:37:19 -0700
-X-CSE-ConnectionGUID: 2IMAijpXR6SI68b5bNP9qA==
-X-CSE-MsgGUID: /XgqxJAuQm+umuAKjGrIIA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
-   d="scan'208";a="226389218"
-Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
-  by fmviesa004.fm.intel.com with ESMTP; 25 Mar 2026 10:37:17 -0700
-Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w5SAM-000000007QL-1cvI;
-	Wed, 25 Mar 2026 17:37:14 +0000
-Date: Thu, 26 Mar 2026 01:37:03 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- 877556758cf5718848fe4ff01c93109f51ce715b
-Message-ID: <202603260154.xenzGRA1-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="MEnHLZ5W"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3D96216F2;
+	Wed, 25 Mar 2026 11:13:20 -0700 (PDT)
+Received: from e127648.arm.com (unknown [10.57.83.185])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 302783F836;
+	Wed, 25 Mar 2026 11:13:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774462406; bh=lLBSARj3QF22ma0FdZySKFhXnBOJArvWWi9yJJq9lwc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=MEnHLZ5WBM9ZOgDuPz1k6yJ7fsBlEHXq+zo4XHG03JNi0mXWoumf2AfGynhwZKSMe
+	 l77ubzmsQCckgav9dbuvfSvuDSaUNCU53FxDwyoULJWhXUohd3NV1UhJ2mwR7em0Jj
+	 fDDRiY8KeBBWarNtF07oBUBUuL/sczphVyd/8cEA=
+From: Christian Loehle <christian.loehle@arm.com>
+To: arighi@nvidia.com
+Cc: peterz@infradead.org,
+	vincent.guittot@linaro.org,
+	dietmar.eggemann@arm.com,
+	valentin.schneider@arm.com,
+	mingo@redhat.com,
+	rostedt@goodmis.org,
+	segall@google.com,
+	mgorman@suse.de,
+	catalin.marinas@arm.com,
+	will@kernel.org,
+	sudeep.holla@arm.com,
+	rafael@kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	juri.lelli@redhat.com,
+	kobak@nvidia.com,
+	fabecassis@nvidia.com,
+	Christian Loehle <christian.loehle@arm.com>
+Subject: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC asymmetry
+Date: Wed, 25 Mar 2026 18:13:11 +0000
+Message-Id: <20260325181314.3875909-1-christian.loehle@arm.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: 877556758cf5718848fe4ff01c93109f51ce715b  Merge branch 'experimental/acpi-driver-conversion' into bleeding-edge
+The scheduler currently handles CPU performance asymmetry via either:
 
-elapsed time: 1258m
+- SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
+- SD_ASYM_CPUCAPACITY: capacity-aware scheduling
 
-configs tested: 153
-configs skipped: 10
+On arm64, capacity-aware scheduling is used for any detected capacity
+differences.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Some systems expose small per-CPU performance differences via CPPC
+highest_perf (e.g. due to chip binning), resulting in slightly different
+capacities (<~5%). These differences are sufficient to trigger
+SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
+symmetric.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260325    gcc-15.2.0
-arc                   randconfig-002-20260325    gcc-8.5.0
-arm                               allnoconfig    clang-23
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    clang-23
-arm                            mmp2_defconfig    gcc-15.2.0
-arm                   randconfig-001-20260325    gcc-8.5.0
-arm                   randconfig-002-20260325    clang-23
-arm                   randconfig-003-20260325    clang-23
-arm                   randconfig-004-20260325    clang-17
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260325    clang-23
-arm64                 randconfig-002-20260325    gcc-11.5.0
-arm64                 randconfig-003-20260325    gcc-8.5.0
-arm64                 randconfig-004-20260325    clang-23
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260325    gcc-10.5.0
-csky                  randconfig-002-20260325    gcc-12.5.0
-hexagon                          allmodconfig    clang-17
-hexagon                           allnoconfig    clang-23
-hexagon                             defconfig    clang-23
-hexagon               randconfig-001-20260325    clang-19
-hexagon               randconfig-002-20260325    clang-23
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260325    gcc-14
-i386        buildonly-randconfig-002-20260325    gcc-14
-i386        buildonly-randconfig-003-20260325    clang-20
-i386        buildonly-randconfig-004-20260325    clang-20
-i386        buildonly-randconfig-005-20260325    clang-20
-i386        buildonly-randconfig-006-20260325    clang-20
-i386                                defconfig    clang-20
-i386                  randconfig-001-20260325    clang-20
-i386                  randconfig-002-20260325    clang-20
-i386                  randconfig-003-20260325    gcc-14
-i386                  randconfig-004-20260325    clang-20
-i386                  randconfig-005-20260325    gcc-14
-i386                  randconfig-006-20260325    clang-20
-i386                  randconfig-007-20260325    clang-20
-i386                  randconfig-011-20260325    gcc-14
-i386                  randconfig-012-20260325    gcc-14
-i386                  randconfig-013-20260325    gcc-14
-i386                  randconfig-014-20260325    gcc-14
-i386                  randconfig-015-20260325    clang-20
-i386                  randconfig-016-20260325    clang-20
-i386                  randconfig-017-20260325    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                         allnoconfig    clang-23
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260325    clang-23
-loongarch             randconfig-002-20260325    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    gcc-15.2.0
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    gcc-11.5.0
-nios2                 randconfig-001-20260325    gcc-8.5.0
-nios2                 randconfig-002-20260325    gcc-11.5.0
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260325    gcc-8.5.0
-parisc                randconfig-002-20260325    gcc-14.3.0
-parisc64                            defconfig    gcc-15.2.0
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc               randconfig-001-20260325    clang-23
-powerpc               randconfig-002-20260325    clang-23
-powerpc64             randconfig-001-20260325    clang-23
-powerpc64             randconfig-002-20260325    clang-23
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    clang-23
-riscv                 randconfig-001-20260325    clang-20
-riscv                 randconfig-002-20260325    gcc-14.3.0
-s390                             allmodconfig    clang-18
-s390                              allnoconfig    clang-23
-s390                                defconfig    clang-23
-s390                  randconfig-001-20260325    clang-23
-s390                  randconfig-002-20260325    gcc-8.5.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-15.2.0
-sh                    randconfig-001-20260325    gcc-15.2.0
-sh                    randconfig-002-20260325    gcc-15.2.0
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260325    gcc-8.5.0
-sparc                 randconfig-002-20260325    gcc-14.3.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    clang-20
-sparc64               randconfig-001-20260325    clang-23
-sparc64               randconfig-002-20260325    clang-23
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                                  defconfig    clang-23
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260325    gcc-13
-um                    randconfig-002-20260325    gcc-14
-um                           x86_64_defconfig    clang-23
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260325    gcc-14
-x86_64      buildonly-randconfig-002-20260325    gcc-14
-x86_64      buildonly-randconfig-003-20260325    gcc-14
-x86_64      buildonly-randconfig-004-20260325    gcc-14
-x86_64      buildonly-randconfig-005-20260325    gcc-14
-x86_64      buildonly-randconfig-006-20260325    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                randconfig-001-20260325    gcc-14
-x86_64                randconfig-002-20260325    gcc-14
-x86_64                randconfig-003-20260325    clang-20
-x86_64                randconfig-004-20260325    clang-20
-x86_64                randconfig-005-20260325    gcc-14
-x86_64                randconfig-006-20260325    gcc-12
-x86_64                randconfig-011-20260325    clang-20
-x86_64                randconfig-012-20260325    gcc-13
-x86_64                randconfig-013-20260325    gcc-14
-x86_64                randconfig-014-20260325    gcc-14
-x86_64                randconfig-015-20260325    clang-20
-x86_64                randconfig-016-20260325    gcc-13
-x86_64                randconfig-071-20260325    clang-20
-x86_64                randconfig-072-20260325    gcc-14
-x86_64                randconfig-073-20260325    clang-20
-x86_64                randconfig-074-20260325    gcc-14
-x86_64                randconfig-075-20260325    gcc-14
-x86_64                randconfig-076-20260325    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                randconfig-001-20260325    gcc-13.4.0
-xtensa                randconfig-002-20260325    gcc-12.5.0
+For such small deltas, capacity-aware scheduling is unnecessarily
+complex. A simpler priority-based approach, similar to x86 ITMT, is
+sufficient.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+This series introduces support for using asymmetric packing in that case:
+
+- derive per-CPU priorities from CPPC highest_perf
+- detect when CPUs differ but not enough to form distinct capacity classes
+- suppress SD_ASYM_CPUCAPACITY for such domains
+- enable SD_ASYM_PACKING and use CPPC-based priority ordering instead
+
+The asympacking flag is exposed at all topology levels; domains with
+equal priorities are unaffected, while domains spanning CPUs with
+different priorities can honor the ordering.
+
+RFC:
+I'm not entirely sure if this is the best way to implement this.
+Currently this is baked into CPPC and arm64, while neither are strictly
+necessary, we could also use cpu_capacity directly to derive the
+ordering and enable this for non-CPPC and/or non-arm64.
+RFT:
+Andrea, please give this a try. This should perform better in particular
+for single-threaded workloads and workloads that do not utilize all
+cores (all the time anyway).
+Capacity-aware scheduling wakeup works very different to the SMP path
+used now, some workloads will benefit, some regress, it would be nice
+to get some test results for these.
+We already discussed DCPerf MediaWiki seems to benefit from
+capacity-aware scheduling wakeup behavior, but others (most?) should
+benefit from this series.
+
+I don't know if we can also be clever about ordering amongst SMT siblings.
+That would be dependent on the uarch and I don't have a platform to
+experiment with this though, so consider this series orthogonal to the
+idle-core SMT considerations.
+On platforms with SMT though asympacking makes a lot more sense than
+capacity-aware scheduling, because arguing about capacity without
+considering utilization of the sibling(s) (and the resulting potential
+'stolen' capacity we perceive) isn't theoretically sound.
+
+Christian Loehle (3):
+  sched/topology: Introduce arch hooks for asympacking
+  arch_topology: Export CPPC-based asympacking prios
+  arm64/sched: Enable CPPC-based asympacking
+
+ arch/arm64/include/asm/topology.h |  6 +++++
+ arch/arm64/kernel/topology.c      | 34 ++++++++++++++++++++++++++
+ drivers/base/arch_topology.c      | 40 +++++++++++++++++++++++++++++++
+ include/linux/arch_topology.h     | 24 +++++++++++++++++++
+ include/linux/sched/topology.h    |  9 +++++++
+ kernel/sched/fair.c               | 16 -------------
+ kernel/sched/topology.c           | 34 ++++++++++++++++++++------
+ 7 files changed, 140 insertions(+), 23 deletions(-)
+
+-- 
+2.34.1
+
