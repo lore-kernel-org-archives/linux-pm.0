@@ -1,129 +1,140 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E1CD3E1CE2
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 16:24:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6995A3FA5C9;
+	Wed, 25 Mar 2026 16:32:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774455893; cv=none; b=PaYhMSg2wyO8YGgCDlRRAFyVwikHa10+wln5T1qpAlhW4RLwfIclJI4VuCDX0QMIem91uixAj5PRSIyHZEnqKBlaermgFsvQxAHT7QnsWJPta8fbC0wiYPKWAzwVCPqqJE3eHc0WdNckaJSB2A+DjeGgM/CMg5ZF9wXPAHR96/o=
+	t=1774456377; cv=none; b=a4oBzkXvw/BD+VoEOL21XN4yK0iEjFmQ9KVJPHkEMhtFU0kXoo1CvzmQtTqL/0KYCfnMbJxaDHu2kr/q3zqBly4RZkfiCWwM13iRVMQIYnw5fozr9SNOc33bzxMQNbjtUkdp2NLqNRq12vTkY9ah9Y3NIRfbjxs+KzKAsq+TNg8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774455893; c=relaxed/simple;
-	bh=pJWe+PbuYzwyKyTT6QZKc5jnPh3dqAjxLyvs/4gkA6U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZSijeKk+9+Drh44REXJkZaTJzSPQmvlm+LIGmWxdkbqGDqjHWan981gWDXcmPHV/4HGKtgH6uyF5zlFRpoaKHnvj2Qfv29B8ZSefa43cGiEvrvDW8R78krdMTKF5QpK5OHQKcnjebfrKAbGjc1uLUUktAU3p37Qa56ffRSLIAqk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PagBb1Bd; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774456377; c=relaxed/simple;
+	bh=8KromqTmRdEzC0f/nh0v6DgYME2PY+4qjNyQaiTrV7o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=EAmxx0YQkSmhx/guy9alHzQd9IRTlMOr1VobeAa0XcHz3uk8Hq8Nn5U0Rgv18Z4g+63wn/J/TqbDHw/K60PZWz4CxWMSwaj1Gbt3lHSoDuXhzNYVNqeWPPElhrPjoXi2yQXfGB0RP69EX8jxXpnexiipzwlBGwkUNn7eiLfYsow=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ALxPshRs; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PagBb1Bd"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 203A7C2BCB0
-	for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 16:24:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774455893;
-	bh=pJWe+PbuYzwyKyTT6QZKc5jnPh3dqAjxLyvs/4gkA6U=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=PagBb1BdaTCTf1QTXuw+7hSIHuMITki8bVms3Z/DcSgjrC8m1J1T/Oexb9Qy5r7mC
-	 vaJbcIUj9Ve3p84kDobQBsGkGEBIvRy8u0VG1Lj/kWUCN1ygtlAaUVPPVFHo6SoC5k
-	 SXrgTFSfL/M0qtvG4aIkxRUsHTbMxE1MV2U9MoFF3gnm4n5/vbHfo89Eq5D4JlDbe5
-	 cwBlybwYER7tZi+Oz27Piy/+HROqin3andsYdW8kYb3eVjyBJqxkZt/pc5c3p8PDid
-	 dUeBIPizyoz0+OemIaIHbR7zU7lbVJ4IzkxtZ3cY86bxzdbb3U7HBNN5GuRjkUgsLI
-	 moq8VRJrapUPw==
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-40efc77933fso21739fac.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 09:24:53 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXEqu2jyMGONbAb1B13Zif/1rONkwrLj5t8ZHCsmD2Lj2j3EAwtTafDOTbOzxcLssya+YyJ+ujv2A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyeG0dAUUoR4EKYGANVmkqG4Ho/8DDLYOIHothR0Ew0VSgk17zv
-	3LGHgW1tQdMx5WVdJC52ggLIhHEp3hmJuGSSwkT74+lgOe4/o39BzrucXFSIFvD/XgA4jcXAjbJ
-	jkIKlAENQ9RaBrvKgkYwuwLv51lJgong=
-X-Received: by 2002:a05:687c:3084:b0:41c:9844:1baf with SMTP id
- 586e51a60fabf-41ca722a011mr1812497fac.30.1774455892225; Wed, 25 Mar 2026
- 09:24:52 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ALxPshRs"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C378C25DD;
+	Wed, 25 Mar 2026 09:32:49 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 59D2A3F915;
+	Wed, 25 Mar 2026 09:32:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774456375; bh=8KromqTmRdEzC0f/nh0v6DgYME2PY+4qjNyQaiTrV7o=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ALxPshRsDFuzUUSrAQLYb5oMb0tvtkxDp5jIXxdqmiTlZeXMf5KdiIGX4O1ZRzOAl
+	 aVHoJK/TwY8rW5hry6myIKboXKXRBeNCqnA6deW64JfWx1LBRlJOFK+43TxYKT1ESK
+	 YVwBkC6CymUCz98Qtl2lU+AYLcsJQEAvlp9zfpWc=
+Date: Wed, 25 Mar 2026 16:32:49 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Ankur Arora <ankur.a.arora@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+	bpf@vger.kernel.org, arnd@arndb.de, will@kernel.org,
+	peterz@infradead.org, mark.rutland@arm.com, harisokn@amazon.com,
+	cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
+	daniel.lezcano@linaro.org, memxor@gmail.com,
+	zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
+	rdunlap@infradead.org, joao.m.martins@oracle.com,
+	boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
+Subject: Re: [PATCH v10 00/12] barrier: Add
+ smp_cond_load_{relaxed,acquire}_timeout()
+Message-ID: <acQOMZMk0OMfIgFO@arm.com>
+References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
+ <20260315184925.b6f93386e918ca79614843e3@linux-foundation.org>
+ <874imftol4.fsf@oracle.com>
+ <20260316233712.7cbfac27@pumpkin>
+ <87ms07rlp9.fsf@oracle.com>
+ <20260317091705.5a64fc56@pumpkin>
+ <acPo7l_pd5rnHpSX@arm.com>
+ <20260325154210.79a621df@pumpkin>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com>
- <CAJZ5v0h8Q-Cs-05hwKUF9wPbOzg2gyG8yH6tOfzJgXQCh5Ohbg@mail.gmail.com>
- <CAJZ5v0iBh6BjtwhS7RK_GE8QmYLAwW71P+YpA92SiGu4wy+syw@mail.gmail.com>
- <772a77c80b6ad216dec4cc10d3fbb133@igalia.com> <52d861b9a215150424ae4d49b4e2c90b@igalia.com>
- <a61c19043dcf579e46f7d4f124013e60@igalia.com>
-In-Reply-To: <a61c19043dcf579e46f7d4f124013e60@igalia.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 25 Mar 2026 17:24:39 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jcK0eg1fjSmMDDhTqNqFxUmhdNs=exs13nduRivCiLQQ@mail.gmail.com>
-X-Gm-Features: AQROBzBJxr8EXOSZHL3xbhmtiZ62doG9HlfCtZzg0QVADkpMuxYSqnlFDB8_p-I
-Message-ID: <CAJZ5v0jcK0eg1fjSmMDDhTqNqFxUmhdNs=exs13nduRivCiLQQ@mail.gmail.com>
-Subject: Re: [PATCH] thermal: core: fix use-after-free due to init/cancel
- delayed_work race
-To: Mauricio Faria de Oliveira <mfo@igalia.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, kernel-dev@igalia.com, 
-	syzbot+3b3852c6031d0f30dfaf@syzkaller.appspotmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260325154210.79a621df@pumpkin>
 
-On Wed, Mar 25, 2026 at 4:13=E2=80=AFPM Mauricio Faria de Oliveira
-<mfo@igalia.com> wrote:
->
-> On 2026-03-25 11:28, Mauricio Faria de Oliveira wrote:
-> > On 2026-03-25 11:17, Mauricio Faria de Oliveira wrote:
-> >> Thanks for looking into this.
-> >>
-> >> On 2026-03-25 09:47, Rafael J. Wysocki wrote:
-> >>> I can see the one between thermal_zone_device_unregister() and
-> >>> thermal_zone_device_resume(), but that can be addressed by adding a
-> >>> TZ_STATE_FLAG_EXIT check to the latter AFAICS.
-> >>
-> >
-> > Please disregard this paragraph; I incorrectly read/wrote _resume()
-> > as thermal_zone_pm_complete() discussed above. The rest should be
-> > right. I'll review this and get back shortly.
-> >
-> >> In the example describe above and detailed below, apparently that
-> >> is not sufficient, if I'm not missing anything. See, if _resume()
-> >> is reached with thermal_list_lock held, thermal_zone_device_exit()
-> >> is waiting for thermal_list_lock before setting TZ_STATE_FLAG_EXIT,
-> >> thus a check for it in _resume() would find it clear yet.
->
-> Ok, similarly:
->
-> Say, thermal_pm_notify() -> thermal_pm_notify_complete() ->
-> thermal_zone_pm_complete()
-> run before thermal_zone_device_unregister() is called;
-> thermal_zone_device_resume()
-> starts, and by now thermal_zone_device_unregister() is called.
->
-> If thermal_zone_device_resume() wins the race over thermal_zone_exit()
-> for guard(thermal_zone(tz) (tz->lock), it sees TZ_STATE_FLAG_EXIT clear;
-> note its callees (eg, thermal_zone_device_init()) run with tz->lock
-> held,
-> so they see it clear as well.
->
-> So, thermal_zone_device_init() calls INIT_DELAYED_WORK(), everything
-> returns, tz->lock is released and the thermal_zone_device_unregister()
-> -> thermal_zone_exit() path can continue to run.
->
-> Only now thermal_zone_exit() sets TZ_STATE_FLAG_EXIT (too late),
-> returns.
-> cancel_delayed_work_sync() does not wait for
-> thermal_zone_device_resume()
-> due to INIT_DELAYED_WORK() in thermal_zone_device_init(); and kfree(tz).
->
-> Then, thermal_zone_device_resume() accesses tz and hits use-after-free.
->
-> Hope this clarifies. Please let me know your thoughts. Thanks!
+On Wed, Mar 25, 2026 at 03:42:10PM +0000, David Laight wrote:
+> On Wed, 25 Mar 2026 13:53:50 +0000
+> Catalin Marinas <catalin.marinas@arm.com> wrote:
+> 
+> > On Tue, Mar 17, 2026 at 09:17:05AM +0000, David Laight wrote:
+> > > On Mon, 16 Mar 2026 23:53:22 -0700
+> > > Ankur Arora <ankur.a.arora@oracle.com> wrote:  
+> > > > David Laight <david.laight.linux@gmail.com> writes:  
+> > > > > On arm64 I think you could use explicit sev and wfe - but that will wake all
+> > > > > 'sleeping' cpu; and you may not want the 'thundering herd'.    
+> > > > 
+> > > > Wouldn't we still have the same narrow window where the CPU disregards the IPI?  
+> > > 
+> > > You need a 'sevl' in the interrupt exit path.  
+> > 
+> > No need to, see the rule below in
+> > https://developer.arm.com/documentation/ddi0487/maa/2983-beijhbbd:
+> > 
+> > R_XRZRK
+> >   The Event Register for a PE is set by any of the following:
+> >   [...]
+> >   - An exception return.
+> > 
+> 
+> It is a shame the pages for the SEV and WFE instructions don't mention that.
+> And the copy I found doesn't have working hyperlinks to any other sections.
+> (Not even references to related instructions...)
 
-Thanks for the analysis, it sounds accurate.
+The latest architecture spec (M.a.a) has working hyperlinks.
 
-I'd say that thermal_zone_device_unregister() needs to flush the
-workqueue before calling cancel_delayed_work_sync() to get rid of the
-stuff that may be running out of it that hasn't seen the changes made
-by thermal_zone_exit().
+> You do need to at least comment that the "msr s0_3_c1_c0_0, %[ecycles]" is
+> actually WFET.
+> Is that using an absolute cycle count?
 
-This should take care of all of the existing races because if anything
-is running out of the workqueue when thermal_zone_device_unregister()
-runs, it will be waited for after calling thermal_zone_exit() and any
-leftover stuff will be caught by cancel_delayed_work_sync().
+Yes, compared to CNTVCT.
 
-Of course, it's better to switch over to using a dedicated workqueue
-in the thermal core for that.
+> If so does it work if the time has already passed?
+
+Yes, it exits immediately. These counters are not going to wrap in our
+(or device's) lifetime.
+
+> If it is absolute do you need to recalculate it every time around the loop?
+
+No but you do need to read CNTVCT, that's what __delay_cycles() does (it
+does not wait).
+
+> __delay_cycles() contains guard(preempt_notrace()). I haven't looked what
+> that does but is it needed here since preemption is disabled?
+
+The guard was added recently by commit e5cb94ba5f96 ("arm64: Fix
+sampling the "stable" virtual counter in preemptible section"). It's
+needed for the udelay() case but probably not for Ankur's series. Maybe
+we can move the guard in the caller?
+
+> Looking at the code I think the "sevl; wfe" pair should be higher up.
+
+Yes, I replied to your other message. We could move it higher indeed,
+before the condition check, but I can't get my head around the ordering.
+Can need_resched() check be speculated before the WFE? I need to think
+some more.
+
+> I also wonder how long it takes the cpu to leave any low power state.
+> We definitely found that was an issue on some x86 cpu and had to both
+> disable the lowest low power state and completely rework some wakeup
+> code that really wanted a 'thundering herd' rather than the very gentle
+> 'bring each cpu out of low power one at a time' that cv_broadcast()
+> gave it.
+
+WFE is a very shallow power state where all hardware state is retained.
+We have an even stream broadcast to all CPUs regularly already (10KHz)
+and I haven't heard people complaining about power degradation. If a CPU
+is a WFI state or even deeper into firmware (following a PSCI call), an
+exclusive monitor event won't wake it up. It's only for those cores
+waiting in WFE.
+
+-- 
+Catalin
