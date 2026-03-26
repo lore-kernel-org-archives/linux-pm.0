@@ -1,101 +1,98 @@
-Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A145C324B2D
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:40:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A3C13C2793
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:48:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774514421; cv=none; b=PtfYlRkQgTfP9plSX1ZW3L8QbdPc3OFws3pVJqPa8qJIUB3SGGAQ4FfgXTGllcL70Q8KXerSWNLyk8tbe7X96wJdTYq+c2fCJmv3U1VdiiMFx7Dengbu3pfapWZU89C/CLQWi7gxIMiiCYKz2j9SrU44PDxLkCoAR5baV3ntpiQ=
+	t=1774514913; cv=none; b=a9DEzQd+tu66q7VyZ4TlgK0qVN6NKtDFrGm3KPVwmfskWn+Fuur3hIodmcctSagOp4jIvqr4YoE63w5ZzGxAhgz6y6vTM2MPwCJznpCNuDQp8J1nt3bXVGVRyjFgfb0dEFtwS0ecoyJswW3ZGJ4V3X7ms6CiyszQFOq0zkgOHSc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774514421; c=relaxed/simple;
-	bh=DSZJ2FwwLCPp/kiav+J8XQ2j4Vg+s2bemEyFG4suHpo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZYpfhZbl7xoK0Vcvvsdtb8HHOqH8JuCXNAnnuTjcrCf8QHfM1V7+hf4IAq1IIU9jr/Q53Y2lKbaZ7wPEN4D3uKSvDa2AeEaujC+fUU9n3KFxUFysZjKsH5m9QK5Ly5VNHPrSSwR9zOiy145wN5rbzrNwllw4HhrtKcl3iYn0Pl4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hw+0YcLs; arc=none smtp.client-ip=209.85.216.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1774514913; c=relaxed/simple;
+	bh=xDpz5toXT9+YnrNMtuCC5O0FW4S4IE6N5NmMAjyruQI=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=jKU3BabBRS7yA22rXJoUyRyZeuHNVNqbOQ50cS4ovh2rSZAkccBa/wLD1bcWJP95bzydf4sFUutUYO4GyPJ8X9Oc+PX2B88vLgWCXEECRRdKHLU3Jwf28Cngx9DOT41+MBk/f+5LhQWmVNco//dZaDGA4d0Ga4jngeIBlWcVhvs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ls/2dVtd; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hw+0YcLs"
-Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-35a1d4a095bso405454a91.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:40:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774514420; x=1775119220; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8KL2NgmrtORdxgjLm4ixtWYKY0+c3l9qFuzavLC+ycg=;
-        b=hw+0YcLszGBzuqZT6hHb0s8xuokfEdgSDnLvWcl8BD9anaZgrSjOUJo6yXC5i7wC4D
-         /6WQl3eGKi1tIgPooe8YkXiOrGXPKwlKv6ochaKfxCqG28D+h6BgTxScAmqa0fiq9L7a
-         TiI9SjWTr49nUyRnEyK62umMfjAjgtEMqEvjoO8qVnYw7hmviUJysPrjPQQaQ8ORh+Qu
-         CwSLrl5EqAfThexSTAgoJsQhvSlztxR2Zg+6WSTxy1ErzcqTGR9TYp5I8NeMudrRtSq6
-         cfMMhNxxaOjwht1V9Nkp70eYBbZfBtJDFlsBsmwbzzaDS65GQx94P8wbWFeNkzd5z9Q0
-         6z6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774514420; x=1775119220;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8KL2NgmrtORdxgjLm4ixtWYKY0+c3l9qFuzavLC+ycg=;
-        b=IlW9M5JTPzP98Wrvl+qTzRxAB7couMOGMbPDZn+FluFMgd+yjvbhZIVuQx/b258JXR
-         F8aHkXIXmFr78pEjqg3NYq855GDco30RXJNZ0yK2dWS/yWKTqjqXJgcsPT9fy4xGpOCd
-         uo35gc4GjVbKfaii20rh7JB7h/bgyKXzLkXEh3CImEPYJ5XNTm0X2WR03uUOijtuv/18
-         n8XWhnR8CDUqiDptJI9ntDdzUWhEV8Lq7Mh7Yxu9N0oQUuWui2fykQ+Si3NXW1F3SuAq
-         HWYGDmiXeqk7/B0heYpmO5p75KHB3wpYW1rbAZWztzF++cv+XFHre4n/V5chPvFfRUmb
-         2eqw==
-X-Forwarded-Encrypted: i=1; AJvYcCXCHkmCH21HIuLydrMZpVurUgPIsyixE1Bth57ufi9XT1z42bjnDf6NOdFH+DzqSUJs/SxzZLC3Pg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyUBica6ArSUqI8gRpnmCVnfE1xIrBneKHlPBcph4lGDl44HQl5
-	elVlXpqhYNFrwv0WXHoJkaEOruWssfL3zPQuqJJZSjHNeM7q/A811/xuUtqmxGul9sCGaJUbb7m
-	SYPzB
-X-Gm-Gg: ATEYQzwgpdcQijQCMFMQ/4H6v4SOWpdGYp54DJgezJowZYToPTxqkdyitFXfxCU/kiO
-	OoCQjCL/WHDCmvoHCePWgUN3dCmQLpPre3PUEoG8Xfp7FfsqGy2FvRF5NzETZwzgcxMOeno39Vz
-	s8X26eZhkZliE1csoYlz+2NdsHtx/zqGWuNanuC0YEz0zewt5Tfz/ZZj8Y5W1hLO2BcRsoM0xhE
-	OgWyjWYEUYA7ayheNKfox0JVHA4gXLouAH5/cRf6CRUPw676IvEtpCZDn6T6ncaDSZA3yFF+qw5
-	g1eJWzoOggTF8WO+98T65T7jIiLmo9tf/re9uvUNCxQKnurmnKqNRLfiSjhpj9YpNVxbMSPT/lX
-	sjdxd8cxuuIOiSaXR1QTMRo9k/Sr+b9AsdNUfGhkie2WFpb8wcvGk0Pq1LJ+ISvoEzFR/dwRZ1u
-	tKUmVldjrOf5UI/3yzgsnNlgA24DMRKsg44SY=
-X-Received: by 2002:a17:90b:384b:b0:35b:9d0c:a2f3 with SMTP id 98e67ed59e1d1-35c2291577emr724375a91.15.1774514419872;
-        Thu, 26 Mar 2026 01:40:19 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35c22d09573sm917543a91.16.2026.03.26.01.40.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Mar 2026 01:40:19 -0700 (PDT)
-Date: Thu, 26 Mar 2026 14:10:16 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v7 2/2] cpufreq: Add boost_freq_req QoS request
-Message-ID: <m7ovxlp75wxeah4ia3m7aqyrs5h7mxs5fmokfgstewdbnhnkgz@i4cezzzpnrq5>
-References: <20260325165255.386576-1-pierre.gondois@arm.com>
- <20260325165255.386576-3-pierre.gondois@arm.com>
- <6vfexdrwtftix7k4zcyftxxdzbxyrcisegrcuukyy4cbuuioo4@zi6qlmloj4kg>
- <b9029378-7c8e-4700-9ded-5fd80aa73fd8@arm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ls/2dVtd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C9C9DC2BCC4
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:48:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774514912;
+	bh=xDpz5toXT9+YnrNMtuCC5O0FW4S4IE6N5NmMAjyruQI=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
+	b=Ls/2dVtdnHLwYF3B4kiQyaJlXONuHLts6cQQ2mr0Co9Gd7w6hr3oBtUh9FXdCpEE6
+	 Dj381/ZxqtIOPm/DJCvMGnojS7YqXZEod4NbwHmQSkic7lpdCuoIUl2OXM9CXaj3JZ
+	 ugLAAGl/BZSvCm18UbxX6kBY9+4MtpC5ShgNgcm8eolJ9VOInYpscluQhuQ/U04M4X
+	 VzhdvUyg3zHF7Mdx/zsdQoA1m32bYH9MlCem+iPgAHU0x0c3ktkLVnjdET2uiJsjuS
+	 iG692SrWU+QRlwyhq/emAymNL5sodIdQbUS4RXjgP2RuH28Cht4Z+5orRn4rjsyFoN
+	 J2Xl2A5mj/sbg==
+Received: by mail-lj1-f179.google.com with SMTP id 38308e7fff4ca-386b553c70eso5465361fa.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:48:32 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXavBGBrAgPhvwGoHkvW2LjL4wNu07b1Ms7lyio4QbUzcCUQzcG7+Tkutj+Eb5GzvGu5JJoUYxb0A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUPs3ta7vvBC5wiI3P3ZkCMSYFzQptgQfLx2akmL7m6Bb5Amrx
+	K4ANnkk8pX8pn28y2J9iU4m44j5r/nk1UJb6UpqcM9vGFmuLagEL32dT3M9BGJaIr/xUbYOUidz
+	1tUYBdRiLY8HiM9pLpSTfmqFBE3+mumYAt2p+Kh2tsw==
+X-Received: by 2002:a05:651c:1587:b0:38a:332c:777a with SMTP id
+ 38308e7fff4ca-38c43206b02mr27254831fa.34.1774514911324; Thu, 26 Mar 2026
+ 01:48:31 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 26 Mar 2026 01:48:29 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 26 Mar 2026 01:48:29 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260326-pci-m2-e-v7-5-43324a7866e6@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b9029378-7c8e-4700-9ded-5fd80aa73fd8@arm.com>
+References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com> <20260326-pci-m2-e-v7-5-43324a7866e6@oss.qualcomm.com>
+Date: Thu, 26 Mar 2026 01:48:29 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MfcT2hLOQ6yVQrvdgimsA1oDzGM3e_7nAWyUAFoOyhH6A@mail.gmail.com>
+X-Gm-Features: AQROBzDDnGGEISO25bRpZEkvayXNWHPvGoERJaG_tDIkHVVI5jwB71NCISyV7hU
+Message-ID: <CAMRc=MfcT2hLOQ6yVQrvdgimsA1oDzGM3e_7nAWyUAFoOyhH6A@mail.gmail.com>
+Subject: Re: [PATCH v7 5/8] dt-bindings: connector: Add PCIe M.2 Mechanical
+ Key E connector
+To: manivannan.sadhasivam@oss.qualcomm.com
+Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
+	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	Rob Herring <robh@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Nicolas Schier <nicolas.schier@linux.dev>, Hans de Goede <hansg@kernel.org>, 
+	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	Bartosz Golaszewski <brgl@bgdev.pl>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-On 26-03-26, 09:10, Pierre Gondois wrote:
-> I thought there was an issue by adding boost last:
-> not all policies support boost frequencies (and thus requests).
-> 
-> So blocking_notifier_call_chain() should be called if:
-> 
-> + if ((policy->max_freq_req && !policy->boost_supported) || +
-> policy->boost_freq_req) {
-> 
-> This was in an earlier version, but Rafael and Lifeng suggested
-> to add boost_freq_req first to simplify the logic:
-> 
-> https://lore.kernel.org/all/20260225084930.1692228-3-pierre.gondois@arm.com/
+On Thu, 26 Mar 2026 09:06:33 +0100, Manivannan Sadhasivam via B4 Relay
+<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
+> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+>
+> Add the devicetree binding for PCIe M.2 Mechanical Key E connector defined
+> in the PCI Express M.2 Specification, r4.0, sec 5.1.2. This connector
+> provides interfaces like PCIe or SDIO to attach the WiFi devices to the
+> host machine, USB or UART+PCM interfaces to attach the Bluetooth (BT)
+> devices. Spec also provides an optional interface to connect the UIM card,
+> but that is not covered in this binding.
+>
+> The connector provides a primary power supply of 3.3v, along with an
+> optional 1.8v VIO supply for the Adapter I/O buffer circuitry operating at
+> 1.8v sideband signaling.
+>
+> The connector also supplies optional signals in the form of GPIOs for fine
+> grained power management.
+>
+> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> ---
 
-Makes sense.
-
--- 
-viresh
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
