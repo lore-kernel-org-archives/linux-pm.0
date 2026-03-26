@@ -1,121 +1,184 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8A60D2F6922;
-	Thu, 26 Mar 2026 09:24:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 07A493BFE4D
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 10:24:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774517051; cv=none; b=keP3/lk6qiMGLyasv5VzzrnaKrCs8v2v6aRPB1+3SVNI0uIVemIF39GsUaA+gi4gpSOCfvRr8Mcc8OJK8P9/R6S0EStUHwdb1tiM7u9M2feUpFUox2JZjJ123jdCknxb8W5Uy4DHvb3zCP6aB39LwJ0V4VXTlSnNQTwywtaGALs=
+	t=1774520655; cv=none; b=TZhc9W0C/+5W/PNe1PUMFJRBSRAREtVEBWFtTXchklS0UKXpefujgGQpaWIZiaFG3rzomkasETNXvbKzmVrEJpnDqC7lKOkeeX/8MdRRzFO2Y4moC1/j1xLjQKug8J0rVwzQ/+JGQNd2f9nIBdJmeXr6Z+w2NXQaaFb7Kh8uH/Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774517051; c=relaxed/simple;
-	bh=1k/f6P6g6/rTaH7YRnpmFbR/xe5ixPQdd2Bf2f8rbqw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LD9GYp2hIaP1iin/gYOmW5f4ETMi/3wmxP4wONiujJphjypvn77lmcS6YvFUI3avmWKEUrRPRUN97Tuk8cufeHIi8CrDhbXd4r8A+wxVxKcVA26O/rVdoq9AeSiSNl6j5CNXyvgbtgmw/zGWUfk4IBwC8P7pzTD+g1tydLGeKho=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=eQCjYsNu; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1774520655; c=relaxed/simple;
+	bh=8z9kuFohHFAEDa+n13oQhOek4ZBpOYRRIr229FgbWHY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=sV/aTgP4W8lGAhhxmO21ev3ogU5FjZJnMhBuB1/PXpWfCwY6yDzr5IvPjqQTBn/BxZ7MF9ed0KdMBShPFttpFZeJvNObTOpw5Dpmc3RdC+c7VU05CaWjohAqMrUJuHS+uUOzgdbN9Bl/uje/1AXaUQAO0pvy8R/VXDlwR05MjmQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=p2+2dj+0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="eQCjYsNu"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 01B2116F3;
-	Thu, 26 Mar 2026 02:24:03 -0700 (PDT)
-Received: from [10.1.33.38] (unknown [10.1.33.38])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 22EFF3F915;
-	Thu, 26 Mar 2026 02:24:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774517048; bh=1k/f6P6g6/rTaH7YRnpmFbR/xe5ixPQdd2Bf2f8rbqw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=eQCjYsNu5LkhnGC7d6GjRpbYwfzlhgLUqTXqAq3knEeiV6whdpQKcgnNc4FSPzU6t
-	 ppJBgZfUUWG9EmN4tM3P9VcWWcC+FPi+cctfgb0AnV+N85qjH6U7RCl+2OWiVseaqH
-	 dyCWoCO7WhExjjom7u8LB7nSghIMdSJnfysC6xOI=
-Message-ID: <7eccf54f-5a99-40ce-8fbc-b755b4e2d312@arm.com>
-Date: Thu, 26 Mar 2026 09:24:03 +0000
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="p2+2dj+0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D17FFC4AF0B
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 10:24:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774520654;
+	bh=8z9kuFohHFAEDa+n13oQhOek4ZBpOYRRIr229FgbWHY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=p2+2dj+0q0hQLPRMMCaGYy+F2mUnFcMtfymh/Jfge6lcuCM53B3nD5ZNUIm57FdDa
+	 n9pvB4PH2uS6SZMogDMMS0JLYSKCoXHa6M0dQg8wtYaohBidhpUgoaG1r83Tt6fZpp
+	 nU2qNVRvSSAnKBvBUh1svpRJK34H6WIZhwbF/VIrQzwSUnb5wREEVOBOjlQ+vlM3mi
+	 rrHjMu9vrZxFF7JnUj/GR1NB9vHpUcNTG5NnfxfcPMM6HOSKQNQ+WYb8BHanjEiF7I
+	 KTcDkUfWT0+80NiXzWkjnSbKBZ1nnKz9fVL68+te/H0dq9cvIG7VY7/OmfwfeMVjTM
+	 vxux6vHvGYShg==
+Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-40f387a688dso683177fac.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 03:24:14 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU40quSBkVm0H/rH71fsMzcpy2pH93PZ2ALR+bSBf5Pa8aJ17Rj3I6n75fH7vdtthG0kDxebm75yw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyLG3KpuTN3RN/+54rcP55HyJIriOSMjvwDZPvvJvTQ8XSXSaFX
+	fae7i/EygowzEqmcB18tnateLwl5I8w80/WOlZVgtyjoAVUVqiaLKll9d+7vzdu81CsKRUKA2MA
+	3mjoC0DaewBL83PkYJeKHsL1NQ0SNKas=
+X-Received: by 2002:a05:6870:612a:b0:409:54ac:12ae with SMTP id
+ 586e51a60fabf-41ca6d77a2emr3980285fac.8.1774520653834; Thu, 26 Mar 2026
+ 03:24:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC
- asymmetry
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: arighi@nvidia.com, peterz@infradead.org, dietmar.eggemann@arm.com,
- valentin.schneider@arm.com, mingo@redhat.com, rostedt@goodmis.org,
- segall@google.com, mgorman@suse.de, catalin.marinas@arm.com,
- will@kernel.org, sudeep.holla@arm.com, rafael@kernel.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- juri.lelli@redhat.com, kobak@nvidia.com, fabecassis@nvidia.com
-References: <20260325181314.3875909-1-christian.loehle@arm.com>
- <CAKfTPtAOd2+e1Wyy1uhCzLANh9-KJpR5zc_RSSt+dQvHHxhmMQ@mail.gmail.com>
- <d40e57e0-aeff-45fb-82c0-6cefc4f4899d@arm.com>
- <CAKfTPtA+rcVCLe5XOKwu+0bsc8_ZXc1TH4qrYo4x5tNwz9ZO5Q@mail.gmail.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <CAKfTPtA+rcVCLe5XOKwu+0bsc8_ZXc1TH4qrYo4x5tNwz9ZO5Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260323160052.17528-1-vineeth@bitbyteword.org> <20260323160052.17528-7-vineeth@bitbyteword.org>
+In-Reply-To: <20260323160052.17528-7-vineeth@bitbyteword.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 26 Mar 2026 11:24:02 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0gkDLLgom1QmAGJ=7UgOt2Dg2sLBtTvU4MExtm31fd6dw@mail.gmail.com>
+X-Gm-Features: AQROBzCJWDEQWM3cP1V3UK44WrPSHg8H9ezEhWFsIFWxE8oG7Mtz9hjw6hhoxOA
+Message-ID: <CAJZ5v0gkDLLgom1QmAGJ=7UgOt2Dg2sLBtTvU4MExtm31fd6dw@mail.gmail.com>
+Subject: Re: [PATCH v2 06/19] cpufreq: Use trace_call__##name() at guarded
+ tracepoint call sites
+To: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-trace-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 3/26/26 08:24, Vincent Guittot wrote:
-> On Thu, 26 Mar 2026 at 09:16, Christian Loehle <christian.loehle@arm.com> wrote:
->>
->> On 3/26/26 07:53, Vincent Guittot wrote:
->>> On Wed, 25 Mar 2026 at 19:13, Christian Loehle <christian.loehle@arm.com> wrote:
->>>>
->>>> The scheduler currently handles CPU performance asymmetry via either:
->>>>
->>>> - SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
->>>> - SD_ASYM_CPUCAPACITY: capacity-aware scheduling
->>>>
->>>> On arm64, capacity-aware scheduling is used for any detected capacity
->>>> differences.
->>>>
->>>> Some systems expose small per-CPU performance differences via CPPC
->>>> highest_perf (e.g. due to chip binning), resulting in slightly different
->>>> capacities (<~5%). These differences are sufficient to trigger
->>>> SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
->>>> symmetric.
->>>>
->>>> For such small deltas, capacity-aware scheduling is unnecessarily
->>>> complex. A simpler priority-based approach, similar to x86 ITMT, is
->>>> sufficient.
->>>
->>> I'm not convinced that moving to  SD_ASYM_PACKING is the right way to
->>> move forward.
->>> t
->>> 1st of all, do you target all kind of system or only SMT? It's not
->>> clear in your cover letter
->>
->> AFAIK only Andrea has access to an unreleased asymmetric SMT system,
->> I haven't done any tests on such a system (as the cover-letter mentions
->> under RFT section).
->>
->>>
->>> Moving on asym pack for !SMT doesn't make sense to me. If you don't
->>> want EAS enabled, you can disable it with
->>> /proc/sys/kernel/sched_energy_aware
->>
->> Sorry, what's EAS got to do with it? The system I care about here
->> (primarily nvidia grace) has no EM.
-> 
-> I tried to understand the end goal of this patch
-> 
-> SD_ASYM_CPUCAPACITY works fine with !SMT system so why enabling
-> SD_ASYM_PACKING for <5% diff ?
-> 
-> That doesn't make sense to me
-I don't know if "works fine" describes the situation accurately.
-I guess I should've included the context in the cover letter, but you
-are aware of them (you've replied to them anyway):
-https://lore.kernel.org/lkml/20260324005509.1134981-1-arighi@nvidia.com/
-https://lore.kernel.org/lkml/20260318092214.130908-1-arighi@nvidia.com/
+On Mon, Mar 23, 2026 at 5:01=E2=80=AFPM Vineeth Pillai (Google)
+<vineeth@bitbyteword.org> wrote:
+>
+> Replace trace_foo() with the new trace_call__foo() at sites already
+> guarded by trace_foo_enabled(), avoiding a redundant
+> static_branch_unlikely() re-evaluation inside the tracepoint.
+> trace_call__foo() calls the tracepoint callbacks directly without
+> utilizing the static branch again.
+>
+> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
+> Assisted-by: Claude:claude-sonnet-4-6
 
-Andrea sees an improvement even when force-equalizing CPUs to remove
-SD_ASYM_CPUCAPACITY, so I'd argue it doesn't "work fine" on these platforms.
-To me it seems more reasonable to attempt to get these minor improvements
-of minor asymmetries through asympacking and leave SD_ASYM_CPUCAPACITY
-to the actual 'true' asymmetry (e.g. different uArch or vastly different
-performance levels).
-SD_ASYM_CPUCAPACITY handling is also arguably broken if no CPU pair in
-the system fulfills capacity_greater(), the call sites in fair.c give
-a good overview.
-Is $subject the right approach to deal with these platforms instead?
-I don't know, that's why it's marked RFC and RFT.
+Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org> # cpufreq core
+& intel_pstate
+
+> ---
+>  drivers/cpufreq/amd-pstate.c   | 10 +++++-----
+>  drivers/cpufreq/cpufreq.c      |  2 +-
+>  drivers/cpufreq/intel_pstate.c |  2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 5aa9fcd80cf51..4c47324aa2f73 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -247,7 +247,7 @@ static int msr_update_perf(struct cpufreq_policy *pol=
+icy, u8 min_perf,
+>         if (trace_amd_pstate_epp_perf_enabled()) {
+>                 union perf_cached perf =3D READ_ONCE(cpudata->perf);
+>
+> -               trace_amd_pstate_epp_perf(cpudata->cpu,
+> +               trace_call__amd_pstate_epp_perf(cpudata->cpu,
+>                                           perf.highest_perf,
+>                                           epp,
+>                                           min_perf,
+> @@ -298,7 +298,7 @@ static int msr_set_epp(struct cpufreq_policy *policy,=
+ u8 epp)
+>         if (trace_amd_pstate_epp_perf_enabled()) {
+>                 union perf_cached perf =3D cpudata->perf;
+>
+> -               trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf=
+,
+> +               trace_call__amd_pstate_epp_perf(cpudata->cpu, perf.highes=
+t_perf,
+>                                           epp,
+>                                           FIELD_GET(AMD_CPPC_MIN_PERF_MAS=
+K,
+>                                                     cpudata->cppc_req_cac=
+hed),
+> @@ -343,7 +343,7 @@ static int shmem_set_epp(struct cpufreq_policy *polic=
+y, u8 epp)
+>         if (trace_amd_pstate_epp_perf_enabled()) {
+>                 union perf_cached perf =3D cpudata->perf;
+>
+> -               trace_amd_pstate_epp_perf(cpudata->cpu, perf.highest_perf=
+,
+> +               trace_call__amd_pstate_epp_perf(cpudata->cpu, perf.highes=
+t_perf,
+>                                           epp,
+>                                           FIELD_GET(AMD_CPPC_MIN_PERF_MAS=
+K,
+>                                                     cpudata->cppc_req_cac=
+hed),
+> @@ -507,7 +507,7 @@ static int shmem_update_perf(struct cpufreq_policy *p=
+olicy, u8 min_perf,
+>         if (trace_amd_pstate_epp_perf_enabled()) {
+>                 union perf_cached perf =3D READ_ONCE(cpudata->perf);
+>
+> -               trace_amd_pstate_epp_perf(cpudata->cpu,
+> +               trace_call__amd_pstate_epp_perf(cpudata->cpu,
+>                                           perf.highest_perf,
+>                                           epp,
+>                                           min_perf,
+> @@ -588,7 +588,7 @@ static void amd_pstate_update(struct amd_cpudata *cpu=
+data, u8 min_perf,
+>         }
+>
+>         if (trace_amd_pstate_perf_enabled() && amd_pstate_sample(cpudata)=
+) {
+> -               trace_amd_pstate_perf(min_perf, des_perf, max_perf, cpuda=
+ta->freq,
+> +               trace_call__amd_pstate_perf(min_perf, des_perf, max_perf,=
+ cpudata->freq,
+>                         cpudata->cur.mperf, cpudata->cur.aperf, cpudata->=
+cur.tsc,
+>                                 cpudata->cpu, fast_switch);
+>         }
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 277884d91913c..58901047eae5a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2222,7 +2222,7 @@ unsigned int cpufreq_driver_fast_switch(struct cpuf=
+req_policy *policy,
+>
+>         if (trace_cpu_frequency_enabled()) {
+>                 for_each_cpu(cpu, policy->cpus)
+> -                       trace_cpu_frequency(freq, cpu);
+> +                       trace_call__cpu_frequency(freq, cpu);
+>         }
+>
+>         return freq;
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
+e.c
+> index 11c58af419006..70be952209144 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -3132,7 +3132,7 @@ static void intel_cpufreq_trace(struct cpudata *cpu=
+, unsigned int trace_type, in
+>                 return;
+>
+>         sample =3D &cpu->sample;
+> -       trace_pstate_sample(trace_type,
+> +       trace_call__pstate_sample(trace_type,
+>                 0,
+>                 old_pstate,
+>                 cpu->pstate.current_pstate,
+> --
+> 2.53.0
+>
