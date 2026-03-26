@@ -1,146 +1,158 @@
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F8F73B634E
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:20:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6260E384248
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:24:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.51
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774513261; cv=pass; b=tmwWrymBYB7A2ynrFAzdUJoewMj9UIonWSFMf9D4r3ZMqwhAJtRPeZkjpvos1mLtZmRJ6CD6TCe2psgDvW044e9bczi7S2fikHGbWUGwQiCqiEP5Yfj410ySM9Uc0mydayJutB8EZa/maLNOnjzGP6fOzj695vO8wk5f9I/MVuU=
+	t=1774513475; cv=pass; b=kcjydt/e20rfXf7fi0vREpIscyVCRpmZVwf3f/fU8gdwSbu97am4r2o3IvuxzDbgRkvGu+kKGJutKlUs+nknxc3Y7b0DQolg2NKLvxFTDgDgyTYMr2cw4pImInJXREAcG6kVYkv7W3nWYrtZQhJXFSDufwXOBfMMp8MA/9ydTT8=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774513261; c=relaxed/simple;
-	bh=h4YjjJIfRpCRbGq3Jz8rzDKxe41BHzLGaI4jB8ndqkI=;
+	s=arc-20240116; t=1774513475; c=relaxed/simple;
+	bh=brpxdB1vAd5vzNXTPizWqf7RtOgCA2SwUuZei1Zx9RI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=K29QLKr2dTvgGAnHe/uApUSN07+yMK7QYWH5J3NPDP9+vvqfSGHKrqZwnwgsaVKGREuTnS7/f4wRqK/eZSXZ7eQLIU5OPufYCBUyyYpyDxT73VTsmbgIcSzlacGqTopDYgO+SvbydOqO4fNum/IAOYGfeaSQgMDChedGmHecmSg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zEqN6i+d; arc=pass smtp.client-ip=209.85.208.42
+	 To:Cc:Content-Type; b=BByApIZJOioLXeAo5K67uq9otUs+6R+CrcfYLkTfMjSrvMFS98DBpQ5vii4OG5T5VXiDoYExS6A/cfWMYKk3+6Ry7pF0sEi0TOF3GlvmRJ+bDS6HTsIx3CQR+kG+yZHNIys0rNIx2dywhvr32+q3nznw9jrVfzJogMduxycfU/0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rB0KRKVy; arc=pass smtp.client-ip=209.85.218.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zEqN6i+d"
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-66a33f61d80so1205459a12.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:20:59 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774513258; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rB0KRKVy"
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-b9961e4f71bso108135066b.3
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:24:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774513473; cv=none;
         d=google.com; s=arc-20240605;
-        b=Zog19fArZtv0R+R6iYFvPU2/fIL8pbEVW44B0vxKBgtkKHIZB1xsBFlnE9GmGb/2cs
-         jp6pqNmp+2cqIsUVyKPLKlKL1jVQboRP3y+ry5PC8G71D2ATfV7m7KA++PsF6Rhpyz5L
-         mxN3TQG2KEaDTmYE2yIC8XEWQ45DQsRvZbWgWywemsZm6h6kOMoq7I+K4oXRl18ikeQo
-         2M3iSpeudYYomYSCEZHt4SaGiOyanbQ81hc72QljOrRVci52FcL69pKg2DAFXm+wuFQ0
-         AQW4ULDZ3RVei4BsSZaX9rDq+m3ho3hG+Tey1V0CyE99xRQ6PojZSya6uMFOL1K2FJNg
-         bu7g==
+        b=KwDck9CrbNTh4ne2R5QdSElPtktD5768YcF6HECkE9/ENy3a9x7jOItSqc/yMlkmrT
+         fK+nJPZ+DDcLrLE1N17Bp+Z4/EWyPebvtzfJcd8YvMEnCZnJOs9tlDeN2ojm6yNcQmm4
+         RsEBdUiXdaRx+8FT3myt8sCJ/ufevcrJfJZEpuE1bxX+aaxQLueMc+xfZS4V7houmsa5
+         6TnCVkht1EUUBD8pPwo/dm08qJ8ooFtKm1wOZWUnL31mqCTDZimySGUJAFKbkvxywdtW
+         7qrhOSF2sA8QUaj0dItUbhGKIik4z2F52VL5p5c9igufZ0aLRof3QWkVmJ3pBt1HrNit
+         bCAA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=h4YjjJIfRpCRbGq3Jz8rzDKxe41BHzLGaI4jB8ndqkI=;
-        fh=fKUB+DRnaIzMUeGgQG7+5Iiy/fbHww7YtPj8qP/9o8A=;
-        b=LeDPnJQIyuzg4OAyxitYs3N/Qwsi5nv3Le/C7YM4opYq6/aqvz2YmL6sSIQwQkqjZ8
-         4XP0OcBViyNqX4mBcD8KvLiUpFZqGhoKRMsyOElNgBWhP4x6EhHZbHcYJsfKXq0fdbOI
-         zaqJK0uvNQBYcYRpB3OFwnJf0xJAJGk/0+nu8O54HQxUsY8JNvBFx0WCIVMAwHAAhTsR
-         FYHLuikuKHZuAZ6TxoJyKXrTqgFEAOVFZcn/miSrUQucwCUKmsH8Q0jj8BPhokkYO+aL
-         4v2BgOt8VKqyuUjq3lwR7628xd2bTEz3TL9cQtVtKIKGer1IkgtzfU5FJf5iiJ+G5KLN
-         Bffw==;
+        bh=loSpBIFFJ4Yff2Sj92mHvsVD93OiQGALKP93Z38iAlU=;
+        fh=cn+UxduwdeJkOdKRoQnFSi84Tzd+ul6KWP2Wjk4fq20=;
+        b=XSv0OMG3lDoRirZsklURFtsdBJwQI+c904jU0l2xonKLalWIk1hTw+kjDwchcckUMo
+         F4YAhumi52zgkfp75AZ5Z9xHenWwxJZKRTjUukdMbYXc8WFrP/AI/j8J/oMXN5JWVHmJ
+         K8EFLFpi5OxnApUaszT8Skljjj6Kgg5KVIzDltHnKWLOqtVPN5KljnsVXsbfTAgjc0Ln
+         jTQzUCloQSBX01N+P73xxmkkyQLr9RDl/+uLVCjdjTxInzTYf1Lc1netxc/5b/QUCC9T
+         AdYieKv6xJA3n4A4c4RrAgYBQrhHF5Y8o+fUUUdKz3qCTp7i3/Sq6x1J9+gndNzPIQLL
+         Bnpw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774513258; x=1775118058; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1774513473; x=1775118273; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=h4YjjJIfRpCRbGq3Jz8rzDKxe41BHzLGaI4jB8ndqkI=;
-        b=zEqN6i+dM9XfZBY6odQaYkaAJMPFRKuR6FMEQHhv+/R4nnEvZzDVWzfwjePPze7UUi
-         czAYB4XSLzVhsMKjiHkIlUEDjoOpk9Z9nBmr5km60LRslemWC1nLYHoMbw9iN6XlMxRW
-         bfaw7/9HlNKs4mhKIP5YYWT21uEHZUtfvYG0Z/6rhMlvDtqpOTpAM5Q5pBYealrriwXD
-         qwggRTQC2VcnEDcoqCfZ5zgaiuaTlBwxtVrQj/LNiRUGy1DmcXhcuwWNcM77GckAIXP+
-         DXNz41J9PfJ42uACbOtKYKDJJBZ4AJxCICmzsGwEoFTxRt6zZq5LHYob0sT15GebLNg0
-         14QQ==
+        bh=loSpBIFFJ4Yff2Sj92mHvsVD93OiQGALKP93Z38iAlU=;
+        b=rB0KRKVy5iUVi2ksU1XlrgENEAiR8pQiAMsPske44Qt/IZSSY3fb4g+DvqbL7PrQ2k
+         bUMIFPmu1EuZ1LqHpFYIx15HdAxxrgG+yJNqLF8ykoSw3UDmicV9f+plm7Fhq096seGu
+         /fnOWEhGXis4EyilDO7+QTVJUDlYQxwyFgTeg0lCkniu/+NVzpv5qzX0AHRiK59t17AK
+         X6WERbZmtJrzbdjnbqzMK08ImP1ZMN9/iETkau2/RHkLCjHIMn0H8vq+0yXCSFT3movo
+         nxKZZXT2Xg74tWfbz8xIQTpJhRCFlVPCXmzNx1VVIBPs4c0b0K1MioAbCeal9UA/tsK2
+         aRzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774513258; x=1775118058;
+        d=1e100.net; s=20251104; t=1774513473; x=1775118273;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=h4YjjJIfRpCRbGq3Jz8rzDKxe41BHzLGaI4jB8ndqkI=;
-        b=HRnpBw80w3Op4N6+i8uW+npMaC+Ivu3cxpxXzpRYVvewZg4argZ4GYkYxrzyEPcvUk
-         lOrW1D3XATGa9kdraCE5UjlXJxADqBu6dwNDanLlfbiQnf0GEJ+0tyLzIt2FYeotXGmt
-         E555XZPSsN/6udM4lve62kXTo7clOMnW37ormlNCs3By/ZCjokFKpMrXNq/TIR0mi0sU
-         AIVQ+p0y7R2s7kUQ0Q+DbqmOKShhK13FFtOJTSoFgzxrAhIRuUG0ScDnc/oN0liC7/w9
-         zPNG3Ua8ZizJznHBmYzpbF85AWoiTDgwpjN2mB1VrmY1/R0NxkVKp9I6/TvrsaDlM/Ik
-         sqyg==
-X-Forwarded-Encrypted: i=1; AJvYcCV7kk+Roj3hATfD5VH97NPiW9AgKH2MqS3AbKm6tGmrp1u1iAnZ6l3Rw4GIxMJUuDYfM4Hnkz4NpQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzdyMs8w2kMKqw8Lq8MjkIJsurz/i90VRHPPJeBqG+/OFC/1gXb
-	It3hOTTMlcRNyDvSXhkoTrhjPVc7W7uoO3dvL0Y2RJr9H4ojmDbRWt+v1I7FF+TJ3rD1tukVBaz
-	k9TiR1II8Stuu406C4wKaGTEbh7fJ/DlcjVTIA4ZHXw==
-X-Gm-Gg: ATEYQzzoaBw+s3DXk6DXjL7ZF6BIE56Lwb+VkNJ4XmEEAcIhw5u/vMBJrru7QQuu/NE
-	VgBYb8b4QZKrNd2lgJIPh4XgNOUE8gzZRT/6IQJsoxh7s69Zyn4IrfIcvsXUPaGDCjIAvmhsDPY
-	TivkTM9nT2K8MivEQ6jQySi9qqb1jluzYSbYFuDQo1T/S3nSrDnvc0dKQw/kdJ5BlJE0BolyDr6
-	5YiWjh8Z8MItVbq6l/fH4dyn7AMeVVGTyqIr8jwWBLDGexLOixkEU0mSnJIX2iDs6WLC5PaUEA7
-	GD1fwSSeORteNC96NFgg0qg9EaeWALgrh0GL
-X-Received: by 2002:a17:907:1b05:b0:b96:eb7e:bc55 with SMTP id
- a640c23a62f3a-b9a3f166391mr484776166b.10.1774513257612; Thu, 26 Mar 2026
- 01:20:57 -0700 (PDT)
+        bh=loSpBIFFJ4Yff2Sj92mHvsVD93OiQGALKP93Z38iAlU=;
+        b=V8YzPmDcnLyfrPUk2nVSC/8nuT5lMft3L5D9OOnMaYf/Ec+2m9glh8FgKR366QJUsg
+         eVu/MPxDF96Cdq1ttfMHgWRyPqryksbhSZvrlqw+mxadfquiz4ziUIZgWlMTKZb2G9J4
+         TAW2VahhVT/azoNk6erZX4uGeqNrW8hqiVKNbsxledEWI9MPvng0WrJdw1Ylz/PHIRPU
+         vyuBQ+/P6fobbm3F8KT/UWjfoCVoxwTOpsMsy8I9C+BNH4scQwVcwIMgaf4te68FI28b
+         EsVKvaPWp70gbYJha7g2fgMJTZGuulG5S9vVtPmtSUkV9aPn10xDX1W2cyHG0XPvaZs3
+         laIg==
+X-Forwarded-Encrypted: i=1; AJvYcCWvVEX3sEfze9ZCcg/7WsJU+izq8qIZXHHyu9ARIhMvScG2GkAq8z9gcQOtLPaTJqoes2dq2olIxw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy3zgjRD6TScMPbgC7+NOJFFNKhym13+Re2L4wvtaIvitURcwZx
+	A3+02Yr9AEbdpJ/12uldV84CbEPfz7ILqs+IODwoEUAD3NUs6xrXjwaqpRH4yEquJurttQbxV+4
+	yQyOQTpkN+ljeEZkuL+Wc+XjMlCB7eXCq2fjL1zkeTA==
+X-Gm-Gg: ATEYQzw9ZdzMZavwbbGYR0zFLyLQkgmbO4ekArgAnFs4r9/pTE9Anneeh37650G8cKY
+	PNb9KsPbfsibxsJn0b+xcruG5r+hnWA1XcQ8mKarNm4pjl2OKNMHwMQ6OnVXisYUC3DMOplp0xE
+	I0zktb7M4nSJhYzG/ICh6hce4L3f/SX92y6nhDe3XQrPuaZXtqXfzjdeup9Dz2JdUjGj8hksStY
+	lAV/0tXRFtjMqeKDkW+TRorpX8ItiC3RvS4NWylQECNksLVMBxI+ZZdPH+GxUBGl9PvcrAXxg2d
+	nVxoZTJEyDoeBlHzInyBhwwxkfD5f8cMEhO/
+X-Received: by 2002:a17:907:61a7:b0:b97:464:956e with SMTP id
+ a640c23a62f3a-b9a5423686bmr385754466b.34.1774513472552; Thu, 26 Mar 2026
+ 01:24:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260325181314.3875909-1-christian.loehle@arm.com> <acTqSVd-FhywPQ6t@gpd4>
-In-Reply-To: <acTqSVd-FhywPQ6t@gpd4>
+References: <20260325181314.3875909-1-christian.loehle@arm.com>
+ <CAKfTPtAOd2+e1Wyy1uhCzLANh9-KJpR5zc_RSSt+dQvHHxhmMQ@mail.gmail.com> <d40e57e0-aeff-45fb-82c0-6cefc4f4899d@arm.com>
+In-Reply-To: <d40e57e0-aeff-45fb-82c0-6cefc4f4899d@arm.com>
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 26 Mar 2026 09:20:45 +0100
-X-Gm-Features: AQROBzAH46vdHWifsJCVvcXfSlCSS6CXqPEq-wpcopYabSOb3o4T-SK8-t_2J4s
-Message-ID: <CAKfTPtDmnnGONJhrQPNh2rhe3-KvMkX1nW8-JYN+otNLQYSU-w@mail.gmail.com>
+Date: Thu, 26 Mar 2026 09:24:20 +0100
+X-Gm-Features: AQROBzD8dxwWh8JTO_dZdabbrem4zaQ_KsFGOVVLc97XQXFMB4qzILPu0AOs_iA
+Message-ID: <CAKfTPtA+rcVCLe5XOKwu+0bsc8_ZXc1TH4qrYo4x5tNwz9ZO5Q@mail.gmail.com>
 Subject: Re: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC asymmetry
-To: Andrea Righi <arighi@nvidia.com>
-Cc: Christian Loehle <christian.loehle@arm.com>, peterz@infradead.org, 
-	dietmar.eggemann@arm.com, valentin.schneider@arm.com, mingo@redhat.com, 
-	rostedt@goodmis.org, segall@google.com, mgorman@suse.de, 
-	catalin.marinas@arm.com, will@kernel.org, sudeep.holla@arm.com, 
-	rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	juri.lelli@redhat.com, kobak@nvidia.com, fabecassis@nvidia.com
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: arighi@nvidia.com, peterz@infradead.org, dietmar.eggemann@arm.com, 
+	valentin.schneider@arm.com, mingo@redhat.com, rostedt@goodmis.org, 
+	segall@google.com, mgorman@suse.de, catalin.marinas@arm.com, will@kernel.org, 
+	sudeep.holla@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, juri.lelli@redhat.com, kobak@nvidia.com, 
+	fabecassis@nvidia.com
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 26 Mar 2026 at 09:12, Andrea Righi <arighi@nvidia.com> wrote:
+On Thu, 26 Mar 2026 at 09:16, Christian Loehle <christian.loehle@arm.com> wrote:
 >
-> Hi Christian,
->
-> On Wed, Mar 25, 2026 at 06:13:11PM +0000, Christian Loehle wrote:
-> ...
-> > RFT:
-> > Andrea, please give this a try. This should perform better in particular
-> > for single-threaded workloads and workloads that do not utilize all
-> > cores (all the time anyway).
-> > Capacity-aware scheduling wakeup works very different to the SMP path
-> > used now, some workloads will benefit, some regress, it would be nice
-> > to get some test results for these.
-> > We already discussed DCPerf MediaWiki seems to benefit from
-> > capacity-aware scheduling wakeup behavior, but others (most?) should
-> > benefit from this series.
+> On 3/26/26 07:53, Vincent Guittot wrote:
+> > On Wed, 25 Mar 2026 at 19:13, Christian Loehle <christian.loehle@arm.com> wrote:
+> >>
+> >> The scheduler currently handles CPU performance asymmetry via either:
+> >>
+> >> - SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
+> >> - SD_ASYM_CPUCAPACITY: capacity-aware scheduling
+> >>
+> >> On arm64, capacity-aware scheduling is used for any detected capacity
+> >> differences.
+> >>
+> >> Some systems expose small per-CPU performance differences via CPPC
+> >> highest_perf (e.g. due to chip binning), resulting in slightly different
+> >> capacities (<~5%). These differences are sufficient to trigger
+> >> SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
+> >> symmetric.
+> >>
+> >> For such small deltas, capacity-aware scheduling is unnecessarily
+> >> complex. A simpler priority-based approach, similar to x86 ITMT, is
+> >> sufficient.
 > >
-> > I don't know if we can also be clever about ordering amongst SMT siblings.
-> > That would be dependent on the uarch and I don't have a platform to
-> > experiment with this though, so consider this series orthogonal to the
-> > idle-core SMT considerations.
-> > On platforms with SMT though asympacking makes a lot more sense than
-> > capacity-aware scheduling, because arguing about capacity without
-> > considering utilization of the sibling(s) (and the resulting potential
-> > 'stolen' capacity we perceive) isn't theoretically sound.
+> > I'm not convinced that moving to  SD_ASYM_PACKING is the right way to
+> > move forward.
+> > t
+> > 1st of all, do you target all kind of system or only SMT? It's not
+> > clear in your cover letter
 >
-> I did some early testing with this patch set. On Vera I'm getting much
-> better performance that SD_ASYM_CPUCAPACITY of course (~1.5x avg speedup),
-> mostly because we avoid using both SMT siblings. It's still not the same
-> improvement that I get equalizing the capacity using the 5% threshold
-> (~1.8x speedup).
+> AFAIK only Andrea has access to an unreleased asymmetric SMT system,
+> I haven't done any tests on such a system (as the cover-letter mentions
+> under RFT section).
+>
+> >
+> > Moving on asym pack for !SMT doesn't make sense to me. If you don't
+> > want EAS enabled, you can disable it with
+> > /proc/sys/kernel/sched_energy_aware
+>
+> Sorry, what's EAS got to do with it? The system I care about here
+> (primarily nvidia grace) has no EM.
 
-IIRC the tests that you shared in your patch, you get an additonal
-improvement when adding some SMT awarness to SD_ASYM_CPUCAPACITY
-compared to equalizing the capacity
+I tried to understand the end goal of this patch
+
+SD_ASYM_CPUCAPACITY works fine with !SMT system so why enabling
+SD_ASYM_PACKING for <5% diff ?
+
+That doesn't make sense to me
 
 >
-> Of course I need to test with more workloads and I haven't tested it on
-> Grace yet, to check if we're regressing something, but in general it seems
-> functional.
+> >
+> > For SMT system and small capacity difference, I would prefer that we
+> > look at supporting SMT in SD_ASYM_CPUCAPACITY. Starting with
+> > select_idle_capacity
 >
-> Now it depends if SD_ASYM_PACKING is the route we want to take or if we
-> should start addressing SMT in SD_ASYM_CPUCAPACITY, as pointed by Vincent.
-> In general I think I agree with Vincent, independently on this particular
-> case, it'd be nice to start improving SD_ASYM_CPUCAPACITY to support SMT.
+> This series is actually targeted for primarily the !SMT case, although
+> it may or may not be useful for some of the SMT woes, too!
+> (Again, I wouldn't know, I don't have such a system to test with)
 >
-> Thanks,
-> -Andrea
+> >[snip]
