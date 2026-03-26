@@ -1,285 +1,152 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 469F63A6F0F;
-	Thu, 26 Mar 2026 20:44:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E5382DF707;
+	Thu, 26 Mar 2026 22:45:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774557867; cv=none; b=KVTdngR2BhZzPVPYBHUrE63kHV0GUoHt+3qr5zplyvKKACsgqXGDKHFbHSZxoHAKQLC8jXI0drzaP3KMfv6dAExcYGKzEWPtjDgu4g69EFaYQMLv0cU5yrbnHnrm2YI1xLUUcnWZbYeBPMWkPz+dm9ifPlWZI46dRe6f9mcAc4M=
+	t=1774565106; cv=none; b=B2Dtvj0Ex8V5nNkywLHkXGnamHeH9rgcB6a635I2TgwEBV/up7zmpuT9mNUkbEzLYuB9hpe2j6P0Md8oLz8jK176FLI5y21sIu1UutI83Dgb2WTs0f4K7fw6/mNCMV6iLaRTvg5WlULnK0sZ7RU3dNkISWJmipDkWo6jS6gQXyY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774557867; c=relaxed/simple;
-	bh=QPNoHOc4zyKps4AWF2ksUbyGyC65HZlam4h3oWneHn4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SDiGwYcMXw//uffEBMqo8eO1GHDfOjkMUO6lR1wzcmPwclqmHxucv55KGD6o0oZJ4kKfcHWhkEXHztkOh+mlRPIkvo+BxpeHYdCGYHUSltMYDXMOgKWzBgrXIYSop6gt5uC6T/7g5du0sqhB+bVqEoEg9QVkuUvCbjpVzTkv0vk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rIBns0c3; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1774565106; c=relaxed/simple;
+	bh=VoRNhyD9naTtB3TuugQkll0lgJBrUNM1tIyMLQNofBY=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=kkgoJtEi3GrnUxePwAIDOHFFGq9F15p5X0r1kBXQxlAuss89KLJnLmttnRRS/pnk621XLWwYZLJHHPHk30MRMWRmMOUwxpcKllDJQuk7qikf5ObOuxXmA7Yt0PncxzVu+OAmeVS6a/D//SFtC/MFn3QdBug9uwYea0YpiqL0D9w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=ZBZ08oqN; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rIBns0c3"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BC34332CF;
-	Thu, 26 Mar 2026 13:44:15 -0700 (PDT)
-Received: from e135073.arm.com (unknown [10.57.84.88])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 519773F641;
-	Thu, 26 Mar 2026 13:44:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774557861; bh=QPNoHOc4zyKps4AWF2ksUbyGyC65HZlam4h3oWneHn4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rIBns0c3jj967aKZjelDeiMRudq1J4Bf5NTSon3rHhnGjJVzDsyeU38wkHuqK01DA
-	 liXDlsShjxQsBAaFicQsWm1Y9P5iuQlp4PZWVYmV+XD7355qCPLJtHwxzu13gSwqm3
-	 Bw+VzJ1Wwy+Khe+Yo5h41s1wnHcfj7zIAPxQ10b4=
-From: Pierre Gondois <pierre.gondois@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Huang Rui <ray.huang@amd.com>,
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v8 2/2] cpufreq: Add boost_freq_req QoS request
-Date: Thu, 26 Mar 2026 21:44:01 +0100
-Message-ID: <20260326204404.1401849-3-pierre.gondois@arm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260326204404.1401849-1-pierre.gondois@arm.com>
-References: <20260326204404.1401849-1-pierre.gondois@arm.com>
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="ZBZ08oqN"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:Message-ID:References:
+	In-Reply-To:Subject:Cc:To:From:Date:MIME-Version:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=8Ypkmi4vlellxMlLT0KviA15se13i3AI70w4vi7qa1E=; b=ZBZ08oqNMhoKggflYLnoyHnj4+
+	Q6SpHSbocMgWTz25pvQSN//F8rDmyhn6lu/+MYaZ/fFW22V628odmE5JoelLiV49hlCb+cWmvP640
+	/qG6y1c63I4Ey3xqh/BTlgFpAIhaA7cbyQRwUrW/TPcMK4u9VQe0EceVBTD3V0X0Y79lPxB2rJIM/
+	Q+icH+bxKN5j8aRO7JG1Ln+D1dmU6mtuU7IIbNWRxUrNqzn94P/k1Dvaen5O5FOMEMnLd/9p++72T
+	44iE2G0c/c9dB5AFIIjmAFCjfIshpa/LncxwZAgBh388+rPFQuYyWe/ocrEenT9GB6jR5Y4348oT5
+	8LhAxbbw==;
+Received: from maestria.local.igalia.com ([192.168.10.14] helo=mail.igalia.com)
+	by fanzine2.igalia.com with esmtps 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1w5tRj-006uEk-NM; Thu, 26 Mar 2026 23:44:59 +0100
+Received: from webmail.service.igalia.com ([192.168.21.45])
+	by mail.igalia.com with esmtp (Exim)
+	id 1w5tRh-009jCw-Iz; Thu, 26 Mar 2026 23:44:59 +0100
+Received: from localhost ([127.0.0.1] helo=webmail.igalia.com)
+	by webmail with esmtp (Exim 4.96)
+	(envelope-from <mfo@igalia.com>)
+	id 1w5tRh-00B4TH-0N;
+	Thu, 26 Mar 2026 23:44:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Date: Thu, 26 Mar 2026 19:44:57 -0300
+From: Mauricio Faria de Oliveira <mfo@igalia.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML
+ <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH v1] thermal: core: Address thermal zone removal races with
+ resume
+In-Reply-To: <CAJZ5v0hmkRsz2A0sh4PdEY9V=gLJejWH=kMJH6hR_bh=Q9ZdfA@mail.gmail.com>
+References: <12876512.O9o76ZdvQC@rafael.j.wysocki>
+ <4f1186a042ed78f06d8f2ce1eb6f3ce3@igalia.com>
+ <CAJZ5v0hmkRsz2A0sh4PdEY9V=gLJejWH=kMJH6hR_bh=Q9ZdfA@mail.gmail.com>
+Message-ID: <dba615418ad4e1a2944f06860e22d150@igalia.com>
+X-Sender: mfo@igalia.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Spam-Report: NO, Score=-4.0, Tests=ALL_TRUSTED=-3,AWL=-2.486,BAYES_60=1.5,URIBL_BLOCKED=0.001
+X-Spam-Score: -39
+X-Spam-Bar: ----
 
-The Power Management Quality of Service (PM QoS) allows to
-aggregate constraints from multiple entities. It is currently
-used to manage the min/max frequency of a given policy.
+On 2026-03-26 16:03, Rafael J. Wysocki wrote:
+> On Thu, Mar 26, 2026 at 7:35 PM Mauricio Faria de Oliveira
+> <mfo@igalia.com> wrote:
+>>
+>> On 2026-03-26 08:45, Rafael J. Wysocki wrote:
+>> > Address the first failing scenario by ensuring that no thermal work
+>> > items will be running when thermal_pm_notify_complete() is called.
+>> > For this purpose, first move the cancel_delayed_work() call from
+>> > thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
+>> > new work from entering the workqueue going forward.  Next, switch
+>> > over to using a dedicated workqueue for thermal events and update
+>> > the code in thermal_pm_notify() to flush that workqueue after
+>> > thermal_pm_notify_prepare() has returned which will take care of
+>> > all leftover thermal work already on the workqueue (that leftover
+>> > work would do nothing useful anyway because all of the thermal zones
+>> > have been flagged as suspended).
+>>
+>> Thanks for coming up with this alternative. I spent some time earlier
+>> today thinking of corner cases in that it might fail, and it held OK.
+>>
+>> However, slightly unrelated: apparently, flushing the workqueue in
+>> thermal_pm_notify() reintroduces the issue addressed by the Fixes:
+>> commit, but moving it from PM_POST_* to PM_*_PREPARE?
+> 
+> Note that the work in question will be thermal_zone_device_check(),
+> which simply calls thermal_zone_device_update() that essentially
+> invokes __thermal_zone_device_update() under tz->lock.
+> 
+> Thus thermal_zone_device_update() can only run as a whole before or
+> after thermal_zone_pm_complete() for the given zone because the latter
 
-Frequency constraints can come for instance from:
-- Thermal framework: acpi_thermal_cpufreq_init()
-- Firmware: _PPC objects: acpi_processor_ppc_init()
-- User: by setting policyX/scaling_[min|max]_freq
-The minimum of the max frequency constraints is used to compute
-the resulting maximum allowed frequency.
+      ^ thermal_zone_pm_prepare(), you mean? 
+        (in PM_*_PREPARE path; sets TZ_STATE_FLAG_SUSPENDED mentioned
+below.)
 
-When enabling boost frequencies, the same frequency request object
-(policy->max_freq_req) as to handle requests from users is used.
-As a result, when setting:
-- scaling_max_freq
-- boost
-The last sysfs file used overwrites the request from the other
-sysfs file.
+> also acquires tz->lock and releases it at the end.  If it runs before
+> the latter, it will be waited for because the latter will block on the
+> lock, but that happens without the changes in the $subject patch.  If
 
-To avoid this, create a per-policy boost_freq_req to save the boost
-constraints instead of overwriting the last scaling_max_freq
-constraint.
+Ok, right; that already happens.
 
-policy_set_boost() calls the cpufreq set_boost callback.
-Update the newly added boost_freq_req request from there:
-- whenever boost is toggled
-- to cover all possible paths
+> it runs after the latter, __thermal_zone_device_update() will see that
+> tz->state is not TZ_STATE_READY (because TZ_STATE_FLAG_SUSPENDED is
+> set) and it will bail out immediately.
+> 
+> So I don't see the problem here.
 
-In the existing .set_boost() callbacks:
-- Don't update policy->max as this is done through the qos notifier
-  cpufreq_notifier_max() which calls cpufreq_set_policy().
-- Remove freq_qos_update_request() calls as the qos request is now
-  done in policy_set_boost() and updates the new boost_freq_req
+Well, __thermal_zone_device_update() taking long might indeed impact
+the PM_*_PREPARE path too (the former case, "it will be waited for"),
+however, as you said, it happens without this patch, and it is not
+fixed with the patch I proposed either. :)
 
-$ ## Init state
-scaling_max_freq:1000000
-cpuinfo_max_freq:1000000
+> PM_POST_* is different because thermal_zone_device_resume() calls
+> __thermal_zone_device_update() when tz->state is TZ_STATE_READY and
+> that may take time.
+> 
+>> IIIUC, that issue is __thermal_zone_device_update() might take long
+>> thus block other thermal zones and other PM notifiers after thermal.
+>>
+>> Apparently, at least the latter also applies to PM_*_PREPARE?
+> 
+> Not at the point when the flush_workqueue() is called.
 
-$ echo 700000 > scaling_max_freq
-scaling_max_freq:700000
-cpuinfo_max_freq:1000000
+Thanks for clarifying.
 
-$ echo 1 > ../boost
-scaling_max_freq:1200000
-cpuinfo_max_freq:1200000
+>> Say, a currently running work item (i.e., that cancel_delayed_work()
+>> cannot cancel) wins the race for tz->lock and doesn't see tz->state
+>> TZ_STATE_FLAG_SUSPENDED set, so it runs, and say it might take long.
+>>
+>> Now, the workqueue flush blocks on it, also taking long, which thus
+>> blocks other PM notifiers.
+>>
+>> > The second failing scenario is addressed by adding a tz->state check
+>> > to thermal_zone_device_resume() to prevent it from reinitializing
+>> > the poll_queue delayed work if the thermal zone is going away.
+>>
+>> This also held OK in the thinking of corner cases.
+> 
+> Thanks for the feedback!
 
-$ echo 800000 > scaling_max_freq
-scaling_max_freq:800000
-cpuinfo_max_freq:1200000
+Glad to help!
 
-$ ## Final step:
-$ ## Without the patches:
-$ echo 0 > ../boost
-scaling_max_freq:1000000
-cpuinfo_max_freq:1000000
-
-$ ## With the patches:
-$ echo 0 > ../boost
-scaling_max_freq:800000
-cpuinfo_max_freq:1000000
-
-Note:
-cpufreq_frequency_table_cpuinfo() updates policy->min
-and max from:
-A.
-cpufreq_boost_set_sw()
-\-cpufreq_frequency_table_cpuinfo()
-B.
-cpufreq_policy_online()
-\-cpufreq_table_validate_and_sort()
-  \-cpufreq_frequency_table_cpuinfo()
-Keep these updates as some drivers expect policy->min and
-max to be set through B.
-
-Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
-Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
----
- drivers/cpufreq/amd-pstate.c   |  2 --
- drivers/cpufreq/cppc_cpufreq.c | 10 ++------
- drivers/cpufreq/cpufreq.c      | 46 +++++++++++++++++++++++-----------
- include/linux/cpufreq.h        |  1 +
- 4 files changed, 34 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 5aa9fcd80cf51..d0675d6a19fe1 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -769,8 +769,6 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
- 	else if (policy->cpuinfo.max_freq > nominal_freq)
- 		policy->cpuinfo.max_freq = nominal_freq;
- 
--	policy->max = policy->cpuinfo.max_freq;
--
- 	if (cppc_state == AMD_PSTATE_PASSIVE) {
- 		ret = freq_qos_update_request(&cpudata->req[1], policy->cpuinfo.max_freq);
- 		if (ret < 0)
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 011f35cb47b94..f4f574fbe547b 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -807,17 +807,11 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- {
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
--	int ret;
- 
- 	if (state)
--		policy->max = cppc_perf_to_khz(caps, caps->highest_perf);
-+		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
- 	else
--		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf);
--	policy->cpuinfo.max_freq = policy->max;
--
--	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--	if (ret < 0)
--		return ret;
-+		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
- 
- 	return 0;
- }
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5757f12633d16..d2f393d738a39 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -609,10 +609,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
- 	policy->boost_enabled = enable;
- 
- 	ret = cpufreq_driver->set_boost(policy, enable);
--	if (ret)
-+	if (ret) {
- 		policy->boost_enabled = !policy->boost_enabled;
-+		return ret;
-+	}
- 
--	return ret;
-+	ret = freq_qos_update_request(policy->boost_freq_req, policy->cpuinfo.max_freq);
-+	if (ret < 0) {
-+		policy->boost_enabled = !policy->boost_enabled;
-+		cpufreq_driver->set_boost(policy, policy->boost_enabled);
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- static ssize_t store_local_boost(struct cpufreq_policy *policy,
-@@ -1377,6 +1386,7 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 	}
- 
- 	freq_qos_remove_request(policy->min_freq_req);
-+	freq_qos_remove_request(policy->boost_freq_req);
- 	kfree(policy->min_freq_req);
- 
- 	cpufreq_policy_put_kobj(policy);
-@@ -1445,26 +1455,38 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
- 
- 	if (new_policy) {
-+		unsigned int count;
-+
- 		for_each_cpu(j, policy->related_cpus) {
- 			per_cpu(cpufreq_cpu_data, j) = policy;
- 			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
- 		}
- 
--		policy->min_freq_req = kzalloc(2 * sizeof(*policy->min_freq_req),
-+		count = policy->boost_supported ? 3 : 2;
-+		policy->min_freq_req = kzalloc(count * sizeof(*policy->min_freq_req),
- 					       GFP_KERNEL);
- 		if (!policy->min_freq_req) {
- 			ret = -ENOMEM;
- 			goto out_destroy_policy;
- 		}
- 
-+		if (policy->boost_supported) {
-+			policy->boost_freq_req = policy->min_freq_req + 2;
-+
-+			ret = freq_qos_add_request(&policy->constraints,
-+						   policy->boost_freq_req,
-+						   FREQ_QOS_MAX,
-+						   policy->cpuinfo.max_freq);
-+			if (ret < 0) {
-+				policy->boost_freq_req = NULL;
-+				goto out_destroy_policy;
-+			}
-+		}
-+
- 		ret = freq_qos_add_request(&policy->constraints,
- 					   policy->min_freq_req, FREQ_QOS_MIN,
- 					   FREQ_QOS_MIN_DEFAULT_VALUE);
- 		if (ret < 0) {
--			/*
--			 * So we don't call freq_qos_remove_request() for an
--			 * uninitialized request.
--			 */
- 			kfree(policy->min_freq_req);
- 			policy->min_freq_req = NULL;
- 			goto out_destroy_policy;
-@@ -2788,16 +2810,10 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
- 		return -ENXIO;
- 
- 	ret = cpufreq_frequency_table_cpuinfo(policy);
--	if (ret) {
-+	if (ret)
- 		pr_err("%s: Policy frequency update failed\n", __func__);
--		return ret;
--	}
--
--	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--	if (ret < 0)
--		return ret;
- 
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index cc894fc389710..89157e367eefa 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -81,6 +81,7 @@ struct cpufreq_policy {
- 	struct freq_constraints	constraints;
- 	struct freq_qos_request	*min_freq_req;
- 	struct freq_qos_request	*max_freq_req;
-+	struct freq_qos_request *boost_freq_req;
- 
- 	struct cpufreq_frequency_table	*freq_table;
- 	enum cpufreq_table_sorting freq_table_sorted;
 -- 
-2.43.0
-
+Mauricio
