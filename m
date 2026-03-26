@@ -1,195 +1,201 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012043.outbound.protection.outlook.com [52.101.48.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0471A382F0C;
-	Thu, 26 Mar 2026 11:59:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774526388; cv=none; b=ibrNJw0/nlBB53jSZc26t/7T05oiAno0mCXzWj4KOz1EIUhG9niDmmtb541iRVnd3TRkaDf8CxDyqQLFuhZ3/oyhNwKyp0yOqRf7Bahc6dQBeak9mm0b2hZhJQMVP/zL/lvrQIzmhcFeftwoi8fbAxMRqwi2ryHDwolgMTZOF7U=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774526388; c=relaxed/simple;
-	bh=exBUxg/W5ACsTUYcMPI8TgHtkxtmkFsu0fV9m7uVmsY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=h0VjyhjZPin5LWWLtGRagdvucMU0STbJ0aa/Vz7QEIZRx3TyFSiiKtDVRAxjuIT7DElmv4oyC9eVH9/tNToznZdIDyteSmsKQ0FBDW08S7uP2t+gc0plEjjFYPFZ2FDZUiqPE3TW728HdI+LZpmFTCBRuAtVybK2uBHPvnRzUBU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=niYj8y8P; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBAD31D45E8;
+	Thu, 26 Mar 2026 12:03:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.43
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774526595; cv=fail; b=s78wM9KeoOs+jG0KtxwQWvUqFGzGXZkuOKkv/kWSol8qM8qOshjo1KBYxQQt1J26fxP4Ut95RBDk3lfysKJGX7nqtbt9MRNnNasSwlZr3U8Zf5G1rRPv6j+xpwXfDAd1u/nJikp0p92TN5LJA/Y9ycIGVCNKWAuy5uSnOQ8B0es=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774526595; c=relaxed/simple;
+	bh=devu44nN1swgIBKzDdLu38Lys3PvIpXbFtpeBJUBjfQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=a+vjxImx7RyNuaLBwprnUu6TpVjOUXSaCjeBbjXBpkvOGN2q5s0OJ65SJI4GrKmSGxFgI3SDr7V1scxHlSgFUnBNshSdleY3oUJ8YDa/DmxiCXb25j0z0XFTq/E3uz47lAM6Z43br3FIovYsHSxjifjaxgWyMhg9p0zWamfdf0w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=PEf8WqyJ; arc=fail smtp.client-ip=52.101.48.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="niYj8y8P"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AE34C116C6;
-	Thu, 26 Mar 2026 11:59:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774526387;
-	bh=exBUxg/W5ACsTUYcMPI8TgHtkxtmkFsu0fV9m7uVmsY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=niYj8y8PVhY1Ef/+WtKggxwC6kdgKy2CHLAJsEm5cEUZ7AhLIId7B8OJaTasd01Rs
-	 Y1seLS3D/76aadALID6s7e37jcqzWr8QLb9g/Z10sd8llsaDH98JrYPnW6l2WmcaaU
-	 qa42cgDxZ0BVVkXk1tvjZHysOmDXwXP4ZgvTxp1BVM6XPpITzOSOKyuk/OoRwxCi3Q
-	 Jlay44S3BzauOLHY37m+KiGtU2hlt0fzhIxFgzbuHjnaO1ihIk4em7Vq4Ma71ff5RM
-	 P+lk54dy/2Kh8zDk8bbYV1sQqw330vEvTzOerhYzO1fKq3+cHrF2opSrqYMxmFHsIe
-	 2ZXhbJCUpnCwA==
-From: Puranjay Mohan <puranjay@kernel.org>
-To: Samuel Wu <wusamuel@google.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek
- <pavel@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
- <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Eduard
- Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
- <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, KP
- Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
- <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, Shuah Khan
- <shuah@kernel.org>
-Cc: memxor@gmail.com, Samuel Wu <wusamuel@google.com>,
- kernel-team@android.com, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bpf@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] PM: wakeup: Add kfuncs to traverse over
- wakeup_sources
-In-Reply-To: <20260326112521.2827500-2-wusamuel@google.com>
-References: <20260326112521.2827500-1-wusamuel@google.com>
- <20260326112521.2827500-2-wusamuel@google.com>
-Date: Thu, 26 Mar 2026 11:59:43 +0000
-Message-ID: <m2y0jeg5sg.fsf@kernel.org>
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="PEf8WqyJ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wjSA0mZr0IIFM7zHlNIeIkgJklNZeeobzoG9FvP3nLB4ZUV/ejVxf9ualgm/Uzp2msRYQ8MEoJFXMnQbW1lL+16Jn8Yqx9bVN1jsob8hCp8XkOrcMHWFKLkByZy0Lv+DN0g/XFRa2dEdoO2j9aRDLwK8GbevKNqpZyjk11RO7jxpEZoenztOEe4hwPwar5kBdR8G96NTaht9/G2rp56sOZQEzD5sMvBr0FIUMt5A5AyKvmP4ifU3fKwOViyznMRYpDuUH/9vz/B22Jb65yNgEd9bPkqeAhHWdQfi50Y276sO7qXRCQpy8u45J2zIvuBRKc0b/sazwoS2DprHuEInpg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Jd/9WHLEmbo6MDCSFhrg3Y3k/Y0OW7s1eIv3UO7DKb8=;
+ b=Q6jp8E2Hh9c0xD+8vKx/VWRJcFW37VMkF+rcf2jhNcqs8VajpDZOzV9QsiuA84NDpeFjpJ1KDT9GFhVlFhpf7WI6pumf3JOBfsAVVr9conDa3VjEP8YuEKUNEJB8pbcGRSYGJlRWlIIa5AxtCs9PbcqnaBNQOwKhvaoI3HGmTRu0/hu+AmTINhGmCG6acTj1pzoSl6ctGVFpvc8+YEM4B8xJy8KN+k6S9hbA683vLXNvt+C4hWQwHNeGbNmEU1sQRJ7bZQrm+EvHW/9be94o+10eM/xEhru1uFaNZfoeewM0KZ0OSidX2oop9gD7MIGxgBj8XKnoS1mJzJkP6vw3HQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Jd/9WHLEmbo6MDCSFhrg3Y3k/Y0OW7s1eIv3UO7DKb8=;
+ b=PEf8WqyJm896f5T0ewVCfO5/7MNPpSlO42WAC3M3kuWxTCW7hc18vWpnVpPsK5mOtr1AGgtKCremiIDeD9AWcq//BLlfxPXeN0WB6BPXMKlyEaNNN4ivRkzYZrsN7TbWsk5FRRkDBpEBuI0gXu3HLvnnr2jLJ9R6J52hWGBZZVY=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DS7PR12MB8252.namprd12.prod.outlook.com (2603:10b6:8:ee::7) by
+ IA0PPF7D094C5BF.namprd12.prod.outlook.com (2603:10b6:20f:fc04::bd4) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.13; Thu, 26 Mar
+ 2026 12:03:10 +0000
+Received: from DS7PR12MB8252.namprd12.prod.outlook.com
+ ([fe80::e5e2:6cab:5755:bc1a]) by DS7PR12MB8252.namprd12.prod.outlook.com
+ ([fe80::e5e2:6cab:5755:bc1a%3]) with mapi id 15.20.9769.006; Thu, 26 Mar 2026
+ 12:03:10 +0000
+Date: Thu, 26 Mar 2026 17:33:00 +0530
+From: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+To: K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Huang Rui <ray.huang@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Clark Williams <clrkwllms@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+	linux-rt-devel@lists.linux.dev,
+	Mario Limonciello <superm1@kernel.org>
+Subject: Re: [PATCH v4 1/2] cpufreq/amd-pstate: Pass the policy to
+ amd_pstate_update()
+Message-ID: <acUgdId8HnEfReor@BLRRASHENOY1.amd.com>
+References: <20260316081849.19368-1-kprateek.nayak@amd.com>
+ <20260316081849.19368-2-kprateek.nayak@amd.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260316081849.19368-2-kprateek.nayak@amd.com>
+X-ClientProxiedBy: PN4PR01CA0094.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:2af::7) To IA1PR12MB8240.namprd12.prod.outlook.com
+ (2603:10b6:208:3f2::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB8252:EE_|IA0PPF7D094C5BF:EE_
+X-MS-Office365-Filtering-Correlation-Id: 979d4300-ec3c-4e04-d32e-08de8b2fa5cb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	Vs9g8IzlEBXIEMQYGrzgwzvmqM8FVTlQr7tWIzAAqW9NyPsclfup1vFOXphSW1wBphc+7SAfOz0b5Y83YjyhwRPWxdGMUHhYfPZVSYcwuJ8hrs64yx6VUrtwkXFl84lObuTFj7z1rKJAQMURGCXUdmaEDh06bbiHwQptsbGCf8XV8T/ZTUvMEXqJYLSKwtUtFgM0JyVgc/yO/wd8DI/HXVie9sqsvkS8pSVG9k7F7R7/7s2+EFx2ItNBShSmQCfSwFwMJDFhE/x+vcTJUrCuGxgD+rjt/jHh+l4t/CDDiMcrOvvPtAe49FlHPS4YTLn52OPKga4Jvfwd8A+B6sZOVNnd/xsuxmqd8yuTIJO1LNo2ZLyHuvhcYJZHb9NX07UCNaKC9ea5QT3q2ivHlDTk66O43IdicaVsnp/hDmaDvD6ho3BBRniDekh1V+4EnIFrPOz3ZAgDq6i/h/V/kKyOvj9jAs45IEYQl0NFVXST1mhlL+0bmgL/ZNC+MmwXqO7W/JYgZ4pPhb/f1M/SxqH1eswNsfQee5iuZhlhFWAfJL2gl1NTlhrmJPL4nlsQc/m35XbYQubJtWGUdE409QniSnqiuHgN9xE+loSVp378pMo+wuSNirVjU5AH5fLchicoW/JYNuv2QR0VRvt3MKhEYB7+0u+cvHG25K7uwnxT80tIyJUendu2i4CC/WjNUfuFfFbAC1KDHITVqST1inOsNE37mz4LWCbdX7JeShOcsrI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB8252.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?juU9Dfwbp3K/ne+27MqZeT+J9BiqDWgj96GInMg5t/GUjcYHVClIxpDWokSI?=
+ =?us-ascii?Q?FnFrIZ0wqRToeNuZdkpKngKiiKVAloYdqy/vnHMwbC3fc3Tfec5UJeXqxYy9?=
+ =?us-ascii?Q?vSRw2YQtH5IZR8VuYAExq+bWdt6YSoZABoSje4bpPm5aZ6zqdnSZ0PSE24tx?=
+ =?us-ascii?Q?ODq7zzuWRmMisHV9S1Tg9UAUEyKix5IqSNbZVa/vKUKRz/Jx8yB9U6lsEJZP?=
+ =?us-ascii?Q?guGZ2m19URq06jOdY8r6Y5KJ/YnT9AZ9P0dMgRXAksSgKSrkx4EMEoJ83737?=
+ =?us-ascii?Q?8M87HurWZPnIdJ1J/VH47glzkEiepGScsSCyyne/ZSFSnIJZtZ9oMXg7KxDl?=
+ =?us-ascii?Q?gCRfidrVIAxD2xIY5GehEFPWM+fkIhlZEG5hC4EXvCja2jpChRX2MZ5eVJJ8?=
+ =?us-ascii?Q?TRvN+sgxq/P6YiJf5aHGhVyVt5NlX/2tVmbsK6KX0LL5H4y7QYPyIRimweTq?=
+ =?us-ascii?Q?+ObsUqmxrnSlOEDTbt4hcRlJNmzt2aevwVVX6nZIGn9BOdvZ6QeSREgarLs1?=
+ =?us-ascii?Q?GahaLEg5fbGqZIOXbLr4jSjDB5ZWe6yPHmoQKXAaJKRigR6LFpxBFTsXmfda?=
+ =?us-ascii?Q?YxCgoRi5RRjWibHUrR8bMrPuDKUYKTdR74GRRT00Bsd9owUceWrF5kIO2ibE?=
+ =?us-ascii?Q?bkjQxXhYK6UgjjTsCRDCEiRes82k/VJA/JyG0x2CuisZjkH6Itz5qn9n5bsO?=
+ =?us-ascii?Q?lNbotTxb6I4bwUbbVWMpD0i8aYsw/DzZuzhqkJ0tXi8nDm14/mQmg3OaeJQ5?=
+ =?us-ascii?Q?BTD81IyQZcPo16w33cHbbLhKRK1lE96QHwtlvT5exAxVFK6ddKYsXNNezfk+?=
+ =?us-ascii?Q?rEgPjtlGoccjEG8UdUHUew2MSwShBDOorGcV98pgFbiHQgHA2ZIxGg0AvDno?=
+ =?us-ascii?Q?WG6cq3i5EHEeNSKVZkOOGWSSKBuuUScoAD7WpJ7t7qszQicHg1YIfKV5h8bc?=
+ =?us-ascii?Q?ZZoqc4ab07+Opm7AOIgqpA2E2DiUhHcgObxbPizSSj06XHM7Fs2wX8lxGe0/?=
+ =?us-ascii?Q?EcieiWIMAKdI3OtZMWzv+ocj++t1UnjzfOfMTn8YBY4BwdttHcEiioi1N4bu?=
+ =?us-ascii?Q?Zww3qCA+VsCM8WxwSD7WE+a5cogOVBzPMn2Jly+TpZcBIhTXCKfy9gnBSQ6u?=
+ =?us-ascii?Q?/Ro/3ZCWiiQudv+evx2waWdEqnQYzLFiaq7SeSLqSLHMUj0g7FPQiahJGJuq?=
+ =?us-ascii?Q?Qugi5wD8cjKD3F0yAqj4ewOxPM3V/xCojRu/nCHKV1bVNNNfcyj+tg4pgCxm?=
+ =?us-ascii?Q?ySjvlgEx6iZ4CQ2YGj5uQE4y2+GNSyxKtgbwyGXR9IczBx/AJLlBJBpFJgLM?=
+ =?us-ascii?Q?HS3o++3LkXj2TpvcsZmOmaLZrICHrcLbxSJIGIT2itIA3CMt8AgaM1S7cUSH?=
+ =?us-ascii?Q?LzuRIeTGEskV3ghxAOYtFNP1s1cFwdfxHWAaV7+OkI+OL+WEXzg7fpPNcV1J?=
+ =?us-ascii?Q?NF8hiuCKhnzksGst14W6AJOQHsz0Avz/A0BczVZJxJoUDiGAC/C4LsShvOGJ?=
+ =?us-ascii?Q?UNgUidTQrK2ui8xqAoJPgMkfmfObelChQp9uaxMMr2Y6ATXZ236I7V/c6wI8?=
+ =?us-ascii?Q?nadXK7LD28RLtIryHgHBOAiTdlZGZ3ve2HG5/sg1aRNKFf2t/T4zpXoEXjF1?=
+ =?us-ascii?Q?RJSJ24b/8ju7O5Ko0w45/D6/1zEKsoSuGJjaRj4kGaZzy+qdour5GPBT1Za+?=
+ =?us-ascii?Q?PK6LNjDa31ulYdoecZI39I6oJPjVIxwtu9FvvFx2HYjA3A4Du6QEwDLYNsHy?=
+ =?us-ascii?Q?8lMCByfcYw=3D=3D?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 979d4300-ec3c-4e04-d32e-08de8b2fa5cb
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR12MB8240.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 12:03:10.3716
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: q35FAMN2kmic6Pcrg/R66f3k+OO85WgRGpIm97I8cAJxKDIaWRyL07X7qnrsFO8pmO0YAc8bmzyIH3f5K4jK0A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PPF7D094C5BF
 
-Samuel Wu <wusamuel@google.com> writes:
+On Mon, Mar 16, 2026 at 08:18:48AM +0000, K Prateek Nayak wrote:
+> All callers of amd_pstate_update() already have a reference to the
+> cpufreq_policy object.
+> 
+> Pass the entire policy object and grab the cpudata using
+> "policy->driver_data" instead of passing the cpudata and unnecessarily
+> grabbing another read-side reference to the cpufreq policy object when
+> it is already available in the caller.
+> 
+> No functional changes intended.
+> 
+> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 
-> Iterating through wakeup sources via sysfs or debugfs can be inefficient
-> or restricted. Introduce BPF kfuncs to allow high-performance and safe
-> in-kernel traversal of the wakeup_sources list.
->
-> The new kfuncs include:
-> - bpf_wakeup_sources_get_head() to obtain the list head.
-> - bpf_wakeup_sources_read_lock/unlock() to manage the SRCU lock.
->
-> For verifier safety, the underlying SRCU index is wrapped in an opaque
-> 'struct bpf_ws_lock' pointer. This enables the use of KF_ACQUIRE and
-> KF_RELEASE flags, allowing the BPF verifier to strictly enforce paired
-> lock/unlock cycles and prevent resource leaks.
->
-> Signed-off-by: Samuel Wu <wusamuel@google.com>
+Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+
 > ---
->  drivers/base/power/power.h  |  7 ++++
->  drivers/base/power/wakeup.c | 72 +++++++++++++++++++++++++++++++++++--
->  2 files changed, 77 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-> index 922ed457db19..ced563286ac5 100644
-> --- a/drivers/base/power/power.h
-> +++ b/drivers/base/power/power.h
-> @@ -168,3 +168,10 @@ static inline void device_pm_init(struct device *dev)
->  	device_pm_sleep_init(dev);
->  	pm_runtime_init(dev);
+> changelog v3..v4:
+> 
+> o No changes.
+> ---
+>  drivers/cpufreq/amd-pstate.c | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 5aa9fcd80cf5..5faccb3d6b14 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -565,15 +565,12 @@ static inline bool amd_pstate_sample(struct amd_cpudata *cpudata)
+>  	return true;
 >  }
-> +
-> +#ifdef CONFIG_BPF_SYSCALL
-> +struct bpf_ws_lock { };
-> +struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void);
-> +void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock);
-> +struct list_head *bpf_wakeup_sources_get_head(void);
-> +#endif
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index b8e48a023bf0..27a26a30b6ee 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -1168,11 +1168,79 @@ static const struct file_operations wakeup_sources_stats_fops = {
->  	.release = seq_release_private,
->  };
 >  
-> -static int __init wakeup_sources_debugfs_init(void)
-> +#ifdef CONFIG_BPF_SYSCALL
-> +#include <linux/btf.h>
-> +
-> +__bpf_kfunc_start_defs();
-> +
-> +/**
-> + * bpf_wakeup_sources_read_lock - Acquire the SRCU lock for wakeup sources
-> + *
-> + * The underlying SRCU lock returns an integer index. However, the BPF verifier
-> + * requires a pointer (PTR_TO_BTF_ID) to strictly track the state of acquired
-> + * resources using KF_ACQUIRE and KF_RELEASE semantics. We use an opaque
-> + * structure pointer (struct bpf_ws_lock *) to satisfy the verifier while
-> + * safely encoding the integer index within the pointer address itself.
-> + *
-> + * Return: An opaque pointer encoding the SRCU lock index + 1 (to avoid NULL).
-> + */
-> +__bpf_kfunc struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void)
-> +{
-> +	return (struct bpf_ws_lock *)(long)(wakeup_sources_read_lock() + 1);
-> +}
-> +
-> +/**
-> + * bpf_wakeup_sources_read_unlock - Release the SRCU lock for wakeup sources
-> + * @lock: The opaque pointer returned by bpf_wakeup_sources_read_lock()
-> + *
-> + * The BPF verifier guarantees that @lock is a valid, unreleased pointer from
-> + * the acquire function. We decode the pointer back into the integer SRCU index
-> + * by subtracting 1 and release the lock.
-> + */
-> +__bpf_kfunc void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock)
-> +{
-> +	wakeup_sources_read_unlock((int)(long)lock - 1);
-> +}
-> +
-> +/**
-> + * bpf_wakeup_sources_get_head - Get the head of the wakeup sources list
-> + *
-> + * Return: The head of the wakeup sources list.
-> + */
-> +__bpf_kfunc struct list_head *bpf_wakeup_sources_get_head(void)
-> +{
-> +	return &wakeup_sources;
-> +}
-
-What stops a bpf program from using this kfunc to get the wakeup_sources
-pointer and iterating this list without taking the srcu lock? 
-
-An open-coded iterator would solve this by internalizing the lock:
-  // Iterator new() acquires SRCU lock
-  // Iterator next() returns next wakeup_source
-  // Iterator destroy() releases SRCU lock
-
-> +
-> +__bpf_kfunc_end_defs();
-> +
-> +BTF_KFUNCS_START(wakeup_source_kfunc_ids)
-> +BTF_ID_FLAGS(func, bpf_wakeup_sources_read_lock, KF_ACQUIRE)
-
-I think this needs KF_RET_NULL as well.
-
-> +BTF_ID_FLAGS(func, bpf_wakeup_sources_read_unlock, KF_RELEASE)
-> +BTF_ID_FLAGS(func, bpf_wakeup_sources_get_head)
-> +BTF_KFUNCS_END(wakeup_source_kfunc_ids)
-> +
-> +static const struct btf_kfunc_id_set wakeup_source_kfunc_set = {
-> +	.owner = THIS_MODULE,
-> +	.set   = &wakeup_source_kfunc_ids,
-> +};
-> +
-> +static void __init wakeup_sources_bpf_init(void)
-> +{
-> +	if (register_btf_kfunc_id_set(BPF_PROG_TYPE_SYSCALL, &wakeup_source_kfunc_set))
-> +		pm_pr_dbg("Wakeup: failed to register BTF kfuncs\n");
-> +}
-> +#else
-> +static inline void wakeup_sources_bpf_init(void) {}
-> +#endif /* CONFIG_BPF_SYSCALL */
-> +
-> +static int __init wakeup_sources_init(void)
+> -static void amd_pstate_update(struct amd_cpudata *cpudata, u8 min_perf,
+> +static void amd_pstate_update(struct cpufreq_policy *policy, u8 min_perf,
+>  			      u8 des_perf, u8 max_perf, bool fast_switch, int gov_flags)
 >  {
->  	debugfs_create_file("wakeup_sources", 0444, NULL, NULL,
->  			    &wakeup_sources_stats_fops);
-> +	wakeup_sources_bpf_init();
-> +
->  	return 0;
+> -	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(cpudata->cpu);
+> +	struct amd_cpudata *cpudata = policy->driver_data;
+>  	union perf_cached perf = READ_ONCE(cpudata->perf);
+>  
+> -	if (!policy)
+> -		return;
+> -
+>  	/* limit the max perf when core performance boost feature is disabled */
+>  	if (!cpudata->boost_supported)
+>  		max_perf = min_t(u8, perf.nominal_perf, max_perf);
+> @@ -688,7 +685,7 @@ static int amd_pstate_update_freq(struct cpufreq_policy *policy,
+>  	if (!fast_switch)
+>  		cpufreq_freq_transition_begin(policy, &freqs);
+>  
+> -	amd_pstate_update(cpudata, perf.min_limit_perf, des_perf,
+> +	amd_pstate_update(policy, perf.min_limit_perf, des_perf,
+>  			  perf.max_limit_perf, fast_switch,
+>  			  policy->governor->flags);
+>  
+> @@ -750,7 +747,7 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
+>  	if (max_perf < min_perf)
+>  		max_perf = min_perf;
+>  
+> -	amd_pstate_update(cpudata, min_perf, des_perf, max_perf, true,
+> +	amd_pstate_update(policy, min_perf, des_perf, max_perf, true,
+>  			policy->governor->flags);
 >  }
 >  
-> -postcore_initcall(wakeup_sources_debugfs_init);
-> +postcore_initcall(wakeup_sources_init);
 > -- 
-> 2.53.0.1018.g2bb0e51243-goog
+> 2.34.1
+> 
+
+-- 
+Thanks and Regards
+gautham.
