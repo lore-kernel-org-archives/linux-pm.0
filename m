@@ -1,366 +1,219 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011054.outbound.protection.outlook.com [40.93.194.54])
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013006.outbound.protection.outlook.com [40.93.201.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 040FD3358D3;
-	Thu, 26 Mar 2026 19:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86D3432AAA0;
+	Thu, 26 Mar 2026 19:39:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.6
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774553700; cv=fail; b=ZH04d2Qobyc1DU0GyjfEAU2rEvoQCoHNXDbzIm+wvl5Fdy3c7cDU2A/OE5x5CHeobwHklH0CDWgb8pj8cx49AaeUsAewVaNNJ1kFP1F4Dn16iEhmKMltedlBwA4a8DfKNV5tuRSz2vETY9NPcfwa+qUGlw965mGA7NanbrVT/LU=
+	t=1774553948; cv=fail; b=h73JJTLhCLDNOJ7QSwKCNLg07H3R42gqebVWEL2/iy/wu15J2HTmc8Mw5tgV6bfNeULRG2Z37OE+Uz/AdCBGxRTmNt9hmrBIsegAGAnCfqK/5R6/4oZL4vkmj7XdzfQ/vN+JjgJKaWl0IEFiGNi0wONJ0XxtGiaTyixsagBqHpo=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774553700; c=relaxed/simple;
-	bh=nWhpn+pHxraTyTJa7hQ/c2awkC/LPJnr863mws1FHaE=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=u2uoqsSnuLEWSdD5uBczmh/65USGx80Dc66r9yTUuqElwXALW3wIugYL/yKtgWEe5tVEWWLNcNuLJZfRc1253QgHrMm6I4AcnKJTSOjE8fFaZwAUF7tzwjY7F8pMjVpcEBUSST2oN8ZdCPSl4vvdg/LBAfiYHFCJ56SFOiHB3y8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=a0SZjSgm; arc=fail smtp.client-ip=40.93.194.54
+	s=arc-20240116; t=1774553948; c=relaxed/simple;
+	bh=BhYkMck4nm9DDexKf/kzN81BlFaH1k69T3KHKqogvPs=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Ts90BdC1h/K9bC3WH6iIHXwh9/ELW4lasXtu/FPnpR3EYhhwH0Z/UJX/7/fO0QLVyESoUh+oygJ2n5C9mGukvkGWsDliHtgM8RfC2J6OSVRj3gpgYZZCX0wFPpVwxmEBpI2S1rpKsi2vyvSQ6RHfu5ht6YYzb9TKBLnRNqTIc3s=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=gbwzReH3; arc=fail smtp.client-ip=40.93.201.6
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="a0SZjSgm"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="gbwzReH3"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=garrkJR/Cs2EGHKGEY+inCoIspVJPucz1CpVjd0dBPQC6ZMZY89OJ8oflyDjKhwwMZoDinpncOii22VMyz+4vDfdb30WWleYpixryTbSjFzgvKFrlDaCTZxuxJ5dutsxszF8ELoVSJXqqA46IO373sYWaKOR4yjes0qBrsWNPYbgB3r9SYvhEATCYUYIEevqpGRReEI6MnDRh6JvZsymCbdJxIazy46rXbUfLu9APuZ0rXnjqGu2vPmjkqtExQf3uaIal7ug7dcURH8aJ5D3H/dGgiWFibTV/D6iZ71xdSlGbrNNf2ApclPd3G2z5C3cfgG54s46DCRdOSobrouuIw==
+ b=LCduKzaJOyhjtk7IX0N5f2RKQ0IRKhwFfVKZ/vGoxNaeJx2t0/AGw9CFpI05fBgT2fm58kcgrbnMdDMgTEex1u+373jI2TPUdzaXtBbvoT1U7D0DcwBBK8byyhQ9ATmyXxCYjjlUqkRP3RbX5gX7Dg6YS6msJFOX9hKDIPWGha45JCEhAaabzmR+iDGQOwLvPILdg9VgYq9+T9e6q9dKmZ3fXlCWwSf3PTrvElqhtRzbbDLHe5IWe16wM8cLkntyoDIrcXSa2ASfw2rlPNj2na5jcf1yRs44oSmjmUHgP478qpYAaplI0Ir2h/Z8gnS6mzXqpF6HZHU9nfOhcsihBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1MTpOFr+CABxk1XTVuUuCXlvu6uJpr9nNPCjtXU+ULk=;
- b=mkfQKgm1Upv4CgedEygFAroAGpCefw1TAu2SPBVD0XfrDEwUPNfCaKVXAATwDhQZvMaqCjOa7ahwIef8tA+lxRvCxDNggVVfs/GVxhMhM594s5Lj1lwlli4A8YTaX5MdLbRTo6QoY7fCJ3N2HcCbSCvrm8OD2VJY09EYykNFHLjNpJUGjYG9iFbxahoNwv0ue8oz15hK5XyuHsMc6kuS0sHAO6ajltvhQRWRBo0zY/slQwRMIEnY3I213wh8TWU91yKbjt5NZodrn/TxagMdFCs7qefY521zk+bOixoGp3Y9zjCRIKt8FyWAhA/qXrwX1hg8HrT7OOm8i9jQC2Pddg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
+ bh=UAh5Qi73PlJYt8MEbpCRWdbp6GIz7QDmLlX2bsQYWhw=;
+ b=r0xgPK5ZHlbI9a3gpAKkJhnAnUN2FuvzhwWqFftBnwl75kCFggzP6HF4giPSZABl0N6CROatfeJUTXb5ucpQLiwym0yfi4cOrDo5Db6UrnlbAuvMGHKnO/tVMjMwB08JKmYNSbCf2q0KhsXFMnqnxm6kIByTGqxh6NXHmbH3xl74m4hvjOxsTuSCQHBNZpFDuMErZI2fQRkjFkulKh/W50+0B+h9hRf2qvZjJmilt8UxbQEm3Md0ZTwohzxq4qLEomcCz+alaCWHvBiTW18go6lzWjopcFvMaCFHGqstjL+th2OpGBWlpKPOHjqX9+urznLeXQIn/sEFSKYuWEXGnQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1MTpOFr+CABxk1XTVuUuCXlvu6uJpr9nNPCjtXU+ULk=;
- b=a0SZjSgmkkchjpXWs7GHsl2GB1eaYOQMFmgZYubmz5IogElOFdAU79Fz+fafA8v9PiizoZ0kn0Q6KDLsXtyaUDS/r+HdvAtEGYbsrvfkav+k2Ct8VoC/kQeq2oMzsd5X/eehviOzkoh+tugCZ7GxTp+MYIm7OF4tp3LJDJk9Npg=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from SA0PR12MB4557.namprd12.prod.outlook.com (2603:10b6:806:9d::10)
- by DS0PR12MB8477.namprd12.prod.outlook.com (2603:10b6:8:15b::18) with
+ bh=UAh5Qi73PlJYt8MEbpCRWdbp6GIz7QDmLlX2bsQYWhw=;
+ b=gbwzReH3dM68WgRhwadW+S4ZFCfeeDFVNzZh+PEXuXLd55NULnFEF//uU1JhVmhHT+VJTicRg0D3Kjn2Y36xSAY7NdNdODw1bZCOqmz5i+LBbPJ/qL7nV+TKNGttZR7iLuAGJ9xVny5mKp1FzkiTReZ3JTntiBwb0r7GFnDdAdg=
+Received: from CH0PR03CA0415.namprd03.prod.outlook.com (2603:10b6:610:11b::26)
+ by DS0PR12MB8562.namprd12.prod.outlook.com (2603:10b6:8:164::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.7; Thu, 26 Mar
- 2026 19:34:55 +0000
-Received: from SA0PR12MB4557.namprd12.prod.outlook.com
- ([fe80::885a:79b3:8288:287]) by SA0PR12MB4557.namprd12.prod.outlook.com
- ([fe80::885a:79b3:8288:287%5]) with mapi id 15.20.9769.006; Thu, 26 Mar 2026
- 19:34:55 +0000
-Message-ID: <6ff31c1b-8d97-4e63-9397-c2e04ae997ed@amd.com>
-Date: Thu, 26 Mar 2026 14:34:52 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 09/12] amd-pstate-ut: Add a testcase to validate the
- visibility of driver attributes
-To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
- "Rafael J . Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260326114756.20374-1-gautham.shenoy@amd.com>
- <20260326114756.20374-10-gautham.shenoy@amd.com>
-Content-Language: en-US
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Thu, 26 Mar
+ 2026 19:39:03 +0000
+Received: from CH2PEPF00000145.namprd02.prod.outlook.com
+ (2603:10b6:610:11b:cafe::75) by CH0PR03CA0415.outlook.office365.com
+ (2603:10b6:610:11b::26) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9723.32 via Frontend Transport; Thu,
+ 26 Mar 2026 19:39:03 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ CH2PEPF00000145.mail.protection.outlook.com (10.167.244.102) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9745.21 via Frontend Transport; Thu, 26 Mar 2026 19:39:03 +0000
+Received: from dogwood-dvt-marlim.amd.com (10.180.168.240) by
+ satlexmb07.amd.com (10.181.42.216) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17; Thu, 26 Mar 2026 14:39:03 -0500
 From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <20260326114756.20374-10-gautham.shenoy@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DM6PR08CA0014.namprd08.prod.outlook.com
- (2603:10b6:5:80::27) To SA0PR12MB4557.namprd12.prod.outlook.com
- (2603:10b6:806:9d::10)
+To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
+CC: Perry Yuan <perry.yuan@amd.com>, "open list:X86 ARCHITECTURE (32-BIT AND
+ 64-BIT)" <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY SCALING
+ FRAMEWORK" <linux-pm@vger.kernel.org>, "Mario Limonciello (AMD)"
+	<superm1@kernel.org>
+Subject: [PATCH v3] cpufreq/amd-pstate: Cache the max frequency in cpudata
+Date: Thu, 26 Mar 2026 14:36:20 -0500
+Message-ID: <20260326193620.649441-1-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA0PR12MB4557:EE_|DS0PR12MB8477:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7c9aa61c-5e62-4766-3645-08de8b6ec20c
+X-MS-TrafficTypeDiagnostic: CH2PEPF00000145:EE_|DS0PR12MB8562:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9139ebc0-2b2b-479c-a0f7-08de8b6f562c
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|366016|18002099003|22082099003|56012099003;
+	BCL:0;ARA:13230040|1800799024|36860700016|376014|82310400026|56012099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	X4KAWaZeK9+Ig15l+e9KCYCQDTOCZ/espxgqfN8lFWbiSqyjhuOPWybl/FZrYl2KVga9GhY1kJWXb/zOCOuGC92RCnj2J7MdYFWgKW18yK4ZVO75ODBjqaTNWSwkEI/QFBhdE1I+fcz/k+Q/wYvdNkZl5F7vDFGsAGQWdHH+94u+3gfc1wDpsjYaRG1cG/NGZbfGjbmcVFAAXPCDYK11wFtBBveyp7aiaPv8BomP5bW/7X9E7zz2juiu0hpJuX/GeAKOZI3WA4X8A9q4wnVHvPYkTF+/4IeXYlntmOqLZ0NRt66vdR5rGJUEnE1uVY9YAaWaQiK9fWFX1+8+kEQ55Itsuk6lZ+P3AYAMTPy2+c6R5TzmuS1iY63HAKgw+WwkFWNt1jESCmG/K57QG1YRj9JJwqqUbdeK608eWrzgX7Tge9lF3rFEZGwu1I/kxffCpTzZtQqbI38CCUuKEL8SYKyj+j5Wcy9o/xCl8XcRRvmGfUPrF9mwcBOJQBFOAjmSZXo8Cbdg+nNVMNodJSc9d0p9xl6Atrv5giCEq2JnfSC3HMPCI8lmJNapeb3dOLVZy6qa+fcBHorf1ecjc3PIcVTZYbUvumz6GRYR0rsjAPsI9/SGXJNxA8/ElUH6GzXKahwsszeFfVx/KZAOWTCc08z62Pn887p2nSAs+JLhOLb5XW4QoYPOnmWy0yx8UbfFzaDk+P4YgYUlb78exZH8d3VaUlIcEsRESyRtAuN3ULE=
+	ut4FTNSK8+8omvdkI6y08FB7gVxlNpYqEEMCdEZ+Vs3RMi8hSRnw/Q597KO10zGfmpZDIW8QgNvS4+CyE43MuaopGj8IbWT9A0xtVnakCUOz7sJl3mMYvumlDhzfzwHr+7lTeDgNSXv56pPuJ2PggeTYE9tOZ/FyrEdsO9d1ILK2jP70hlqjniqVjHkt1d8RtSUEPk+mB78rOTP7SFJy57PiEpJVXKZnPR6wTqvi9etzAqo4OD9f1blqwlifaHzgZCzvisp/cZN5OOwo2a8j2eXOjlZEuMNB4HJRd4XYNFBIv+p8PJpBTOvl69rUMMNBQ1euGqS1LP5l0g6cvs6D6yYbC0YsVhU4anA9/tkkFZYAzeZ+Bz8DG6p++AR+o51hHhTc1sabLrCttuZSlN9uC0PXgSI8JTicfKcdam2luJ3bG5e2zydrlMiccjP8JcdFDYz+DWNVjzPPpPY8FkhxiFEiEXC1fVMwVW8lwyh9MQ9q6xK1y7uroxXeY/qqePuECin/3CNeR+CShvHhVpUJjcnq9FgviOAI5lKoPAFtLgndlWYkDZ0VxxxQZysWWJTK/UeVxieTKi5Gl4Z3aZd3Uw5ipdh8KaM0XrHwiPJi9t65hjphMx5lfTVRgUCRnkPVlBj0GcnFUSEBwyRVBn8q3Zu0hKlUzKAl0KhFua6qv2PsSX5P4fBdehF97p6j5nj1aHYNcfV2JMNK+VEGT0PcMn79giz9OQyIL/G70bbp3WjcH+ziWm8xtQ7MVWbGCp3lhHZdNtivF9IlR9P5uJGpCg==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA0PR12MB4557.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(376014)(82310400026)(56012099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UXlIUHovb1BzRWt3REZWV0ZyTUxtY3FEOU5sRVZsQ1JFM2MwdGlkS3p0Y1NC?=
- =?utf-8?B?Y1ZscnlvcFh1SGlwaithdXIxRjcxNXd3WFBWT01QZjVXejRURitNc0FXZXc2?=
- =?utf-8?B?U2h5UTBieThSZzhoRStndlFFdUFLZkhlREpVS0RiK282UzZRV01DSVByc2g1?=
- =?utf-8?B?S01qUyszSmJORW1ONFRwbW96OU1oM0N5REdlTktydkJBWjdtSExmRVhrb1Y3?=
- =?utf-8?B?T2tUVlltN1JMNVcvMmU1cGN0Wkk5SkpmU1YwRzlNV2R2UE84RDNZc2lGMmQ1?=
- =?utf-8?B?RnVHbC9EdmFLVjFOZ0xKSmRIekJCalY3Ui9zY2V6Y1QvN3ptUXJMbzg5V2VE?=
- =?utf-8?B?eTB5QW4rN1BZVWlmZ0N0dlNKYnc2blhscERkbUZOdndybW1DUFhrZkxsWUxm?=
- =?utf-8?B?YVU1L2svc1g1bzIzRktzallnc2I4em03RG04d0lBMWxNTlBoT0NyNDlkb1VY?=
- =?utf-8?B?ekNCR1gzbnZkZGgvZmJrcUxLQ0NyRmZZOWwwak93QnBlQ2t4YzBjNlhyRXZl?=
- =?utf-8?B?ckhsR0VkZitUak1sK0kxazZQdE0zZjFkZVo4ZUd6Ynd1cTNTS1BJYkdCM3p2?=
- =?utf-8?B?Nzc1OWwwdE44NVFSMmpCOEZYVkxwTmhUVS9Ucm1QSDV3Q2NwQ0p1WjBRTVBi?=
- =?utf-8?B?SUZVMUpOdFIwUXduazllcnpzOWpzSU1JSFBTSFp1U2lBUCtnM1VLbUNLZ3di?=
- =?utf-8?B?ZFkvVWMwMzM4aGx0cG93M0xWOTBLNWlBbmU2TVZ4Nld2NUU4R3hQNHdBdXBz?=
- =?utf-8?B?L3NlRkthYUZjZEtUdWRXenh1Y2VvOFdSZVJVYUdTaDZ5VDRkQ0RReTdwOGc2?=
- =?utf-8?B?TThIM2N6RGhONURQUEZjcnRpdXFJQmRTSkk3dE9oSWJBc2IyK091YUtjUVVn?=
- =?utf-8?B?MlFhMmhBZ3hQZW80UXlvVHJnMHdhK2VnaSs0YkYxVWVSTzRJc0hsTFk4eTFj?=
- =?utf-8?B?aVk5MEt0bjdlY0RUTWwyU3BQaVJLdkJScWVJcDNzelp1Q284QWdYTUpiZjMv?=
- =?utf-8?B?RHpRR2NtNXdzVTFjN2hzNGhydU5DSkpWWU54MFdTa0liRFBsR3pTTithNzc4?=
- =?utf-8?B?TU5JS0MwMVk2c3dzZ29BeG1uS25sajlaS0ZQdGRRbG5UYXltdi93aXhEdDd5?=
- =?utf-8?B?aE9vdXRJQnRoc09nQ0FISjZQTUJWVDM2a09BSHRFNkhXUCtjQXhFR29Mb2Ur?=
- =?utf-8?B?M0VZdzREb2VSNXVmc0tPM0w2UGFFa2lrZUJPbURDTGtkVVVRelN6MlRRaG84?=
- =?utf-8?B?dW1SQVU3dkZJcjNiNDZLaXkyblRBQUh4a1hNV0s0U3ZZNTJsWVo1czRjR2RE?=
- =?utf-8?B?ZDl5TjZTa0NjVXFrcWQzUGZYVWQ0MjlaQUpoNmVTNXlQVzRZOFdjZmxOcVE4?=
- =?utf-8?B?S0Y0VXJFMTlZV1RuOXFpblBzY00vSDJlN0tIdi9HY0tRNFJrTmszWkVZM0or?=
- =?utf-8?B?ZkRTN0I1Yk1vZVlVYWFkclFtQzk0eGhXLy83akhnTExTWnBodFZ5QjRMNkpD?=
- =?utf-8?B?dXlaZmtrNTFCbmw2NFZ0cVl2KzVYckdmQzJjZnErTU5Bc1R6d3JINGd2LzNi?=
- =?utf-8?B?cFk1TTJCdjA0eHpmRERKQmxJWVpXdEIzRWVZN0dnaFAwSVMzdXV0ejdtaFZu?=
- =?utf-8?B?ZzVRb0JSNHdxaitxVGU1MisxeERIZlZlYlllMEZIc0xTUzNnVlI1UURWTmFs?=
- =?utf-8?B?MVNkL0tXcVk5TjhiQlhIMDc2aVhWd0t4QnViSFFRaHJneHlrTm53Zi9IN1Ev?=
- =?utf-8?B?UTI1UE5zYnY4aEpUUHkyT2ZxMlFyNmZ4UThoaUhTeVEySngreHppT1JlQmkx?=
- =?utf-8?B?Wms1dHE4UGpPVDJxSHpXTkZpYXVrNUJoZFVCNHFFNmlzU3RVczNnbXAyUXlj?=
- =?utf-8?B?aTFKUWRHV2xodVVtK3dOSmlueWRxMEs5bVR0NnRPRTBlclNndjNHM0JucG92?=
- =?utf-8?B?TGsxK0NYd0dzdjBqRzVwanhSWmJtdUNTR25mUHBPWG1XZ2hSZFlwNmViZUhk?=
- =?utf-8?B?OWJVQmFSemtkUXBWbWdhZWhyWUlZQVJDMnNiVkpzaitzaEpvbDc3aUlNdzlR?=
- =?utf-8?B?Z1ZMY2xIY2lUbGxjT3JRMk1VbGhiMitSNXBvV0ozeUlOWERYSlRIUTB2c1NX?=
- =?utf-8?B?aVhJV3IzRG1keVZlMUVrWGdyYUVGWDA1T2FWU3RQcndYYjFKMFpIYkRCSFc0?=
- =?utf-8?B?QktMNVA4V1hVQ1Q4T0t1aGZXM3BMb3UxT3h0NDUyQ1MxL1A5aDlLZmZHY1RT?=
- =?utf-8?B?K2QvYVB4dzdWV2pxZ2R3T3I0U1VkWlVsV2dsVXorTlpzMjA4d2paU2IzdWlS?=
- =?utf-8?B?ZEFsU1UrbTZWMG5rNm1MeUZ4YXFWVzZUTm5DL0d0S1pycG1iYXFYUT09?=
+	WQKA8cJ19HnLw2bu+FxK0fekkXROgfcOgsx6TD/nA/MAykCMHobuPLOqdb4cjmnwG6ikIp8AFdjauyVL7gGIJmlmIYH7lzGHBa9PUrD8OnnMghnQCEZnET30+LCkEvU8slzXPWuR1NX0oLT6qBi95VvcMxRNq+t6COUssPObo8AWedQCs4bduDIBvl0tC7+MkNT4wnjO0+6UrrDguGkeoWQ3cUQwazCtc+lqamiHMiwmRVVI0lfTKDSQ0E85GWjqwLEtlVhrKFyks/NIP7sxDjZLVyjJt6k5UBpbsSG+iXncc25Vkr6F3GM/wZ8v8sBr8d9VVs5gi5Yv9fCxJQQQ4OU2djTioOqEKj56U0Vg3r+SZKSaoS7sLo5q20PKUujulU7BsLuTZi+QyJSCJ3I/PR1j07nb7MxHn1N9c++a6RpJD6bCoo92Zvr7S0FgEE5R
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7c9aa61c-5e62-4766-3645-08de8b6ec20c
-X-MS-Exchange-CrossTenant-AuthSource: SA0PR12MB4557.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 19:34:55.3498
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 19:39:03.6320
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9139ebc0-2b2b-479c-a0f7-08de8b6f562c
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: vAPdThkFaYx2KEhmDAlTLSAS+GN3GdSshFYQSXFZEKsK4vRHxC9c8gQd6hzMynv3UKjyWI1IdfUjWMtAXqi/rA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8477
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH2PEPF00000145.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8562
 
+From: "Mario Limonciello (AMD)" <superm1@kernel.org>
 
+The value of maximum frequency is fixed and never changes. Doing
+calculations every time based off of perf is unnecessary.
 
-On 3/26/26 06:47, Gautham R. Shenoy wrote:
-> amd-pstate driver has per-attribute visibility functions to
-> dynamically control which sysfs freq_attrs are exposed based on the
-> platform capabilities and the current amd_pstate mode. However, there
-> is no test coverage to validate that the driver's live attribute list
-> matches the expected visibility for each mode.
-> 
-> Add amd_pstate_ut_check_freq_attrs() to the amd-pstate unit test
-> module. For each enabled mode (passive, active, guided), the test
-> independently derives the expected visibility of each attribute:
->    - Core attributes (max_freq, lowest_nonlinear_freq, highest_perf)
->      are always expected.
->    - Prefcore attributes (prefcore_ranking, hw_prefcore) are expected
->      only when cpudata->hw_prefcore indicates platform support.
->    - EPP attributes (energy_performance_preference,
->      energy_performance_available_preferences) are expected only in
->      active mode.
->    - Floor frequency attributes (floor_freq, floor_count) are expected
->      only when X86_FEATURE_CPPC_PERF_PRIO is present.
-> 
-> Compare these independent expectations against the live driver's attr
-> array, catching bugs such as attributes leaking into wrong modes or
-> visibility functions checking incorrect conditions.
-> 
-> Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
-Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
-> ---
->   drivers/cpufreq/amd-pstate-ut.c | 139 ++++++++++++++++++++++++++++++--
->   drivers/cpufreq/amd-pstate.c    |   8 ++
->   drivers/cpufreq/amd-pstate.h    |   4 +
->   3 files changed, 146 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-> index 3dcdf56883a6..1f62ab6438b4 100644
-> --- a/drivers/cpufreq/amd-pstate-ut.c
-> +++ b/drivers/cpufreq/amd-pstate-ut.c
-> @@ -23,6 +23,8 @@
->   #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->   
->   #include <linux/bitfield.h>
-> +#include <linux/cpufeature.h>
-> +#include <linux/cpufreq.h>
->   #include <linux/kernel.h>
->   #include <linux/module.h>
->   #include <linux/moduleparam.h>
-> @@ -53,13 +55,15 @@ static int amd_pstate_ut_check_enabled(u32 index);
->   static int amd_pstate_ut_check_perf(u32 index);
->   static int amd_pstate_ut_check_freq(u32 index);
->   static int amd_pstate_ut_check_driver(u32 index);
-> +static int amd_pstate_ut_check_freq_attrs(u32 index);
->   
->   static struct amd_pstate_ut_struct amd_pstate_ut_cases[] = {
-> -	{"amd_pstate_ut_acpi_cpc_valid",   amd_pstate_ut_acpi_cpc_valid   },
-> -	{"amd_pstate_ut_check_enabled",    amd_pstate_ut_check_enabled    },
-> -	{"amd_pstate_ut_check_perf",       amd_pstate_ut_check_perf       },
-> -	{"amd_pstate_ut_check_freq",       amd_pstate_ut_check_freq       },
-> -	{"amd_pstate_ut_check_driver",	   amd_pstate_ut_check_driver     }
-> +	{"amd_pstate_ut_acpi_cpc_valid",    amd_pstate_ut_acpi_cpc_valid   },
-> +	{"amd_pstate_ut_check_enabled",     amd_pstate_ut_check_enabled    },
-> +	{"amd_pstate_ut_check_perf",        amd_pstate_ut_check_perf       },
-> +	{"amd_pstate_ut_check_freq",        amd_pstate_ut_check_freq       },
-> +	{"amd_pstate_ut_check_driver",      amd_pstate_ut_check_driver     },
-> +	{"amd_pstate_ut_check_freq_attrs",  amd_pstate_ut_check_freq_attrs },
->   };
->   
->   static bool test_in_list(const char *list, const char *name)
-> @@ -293,6 +297,131 @@ static int amd_pstate_ut_check_driver(u32 index)
->   	return ret;
->   }
->   
-> +enum attr_category {
-> +	ATTR_ALWAYS,
-> +	ATTR_PREFCORE,
-> +	ATTR_EPP,
-> +	ATTR_FLOOR_FREQ,
-> +};
-> +
-> +static const struct {
-> +	const char	*name;
-> +	enum attr_category category;
-> +} expected_freq_attrs[] = {
-> +	{"amd_pstate_max_freq",				ATTR_ALWAYS},
-> +	{"amd_pstate_lowest_nonlinear_freq",		ATTR_ALWAYS},
-> +	{"amd_pstate_highest_perf",			ATTR_ALWAYS},
-> +	{"amd_pstate_prefcore_ranking",			ATTR_PREFCORE},
-> +	{"amd_pstate_hw_prefcore",			ATTR_PREFCORE},
-> +	{"energy_performance_preference",		ATTR_EPP},
-> +	{"energy_performance_available_preferences",	ATTR_EPP},
-> +	{"amd_pstate_floor_freq",			ATTR_FLOOR_FREQ},
-> +	{"amd_pstate_floor_count",			ATTR_FLOOR_FREQ},
-> +};
-> +
-> +static bool attr_in_driver(struct freq_attr **driver_attrs, const char *name)
-> +{
-> +	int j;
-> +
-> +	for (j = 0; driver_attrs[j]; j++) {
-> +		if (!strcmp(driver_attrs[j]->attr.name, name))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
-> +/*
-> + * Verify that for each mode the driver's live ->attr array contains exactly
-> + * the attributes that should be visible.  Expected visibility is derived
-> + * independently from hw_prefcore, cpu features, and the current mode —
-> + * not from the driver's own visibility functions.
-> + */
-> +static int amd_pstate_ut_check_freq_attrs(u32 index)
-> +{
-> +	enum amd_pstate_mode orig_mode = amd_pstate_get_status();
-> +	static const enum amd_pstate_mode modes[] = {
-> +		AMD_PSTATE_PASSIVE, AMD_PSTATE_ACTIVE, AMD_PSTATE_GUIDED,
-> +	};
-> +	bool has_prefcore, has_floor_freq;
-> +	int m, i, ret;
-> +
-> +	has_floor_freq = cpu_feature_enabled(X86_FEATURE_CPPC_PERF_PRIO);
-> +
-> +	/*
-> +	 * Determine prefcore support from any online CPU's cpudata.
-> +	 * hw_prefcore reflects the platform-wide decision made at init.
-> +	 */
-> +	has_prefcore = false;
-> +	for_each_online_cpu(i) {
-> +		struct cpufreq_policy *policy __free(put_cpufreq_policy) = NULL;
-> +		struct amd_cpudata *cpudata;
-> +
-> +		policy = cpufreq_cpu_get(i);
-> +		if (!policy)
-> +			continue;
-> +		cpudata = policy->driver_data;
-> +		has_prefcore = cpudata->hw_prefcore;
-> +		break;
-> +	}
-> +
-> +	for (m = 0; m < ARRAY_SIZE(modes); m++) {
-> +		struct freq_attr **driver_attrs;
-> +
-> +		ret = amd_pstate_set_mode(modes[m]);
-> +		if (ret)
-> +			goto out;
-> +
-> +		driver_attrs = amd_pstate_get_current_attrs();
-> +		if (!driver_attrs) {
-> +			pr_err("%s: no driver attrs in mode %s\n",
-> +			       __func__, amd_pstate_get_mode_string(modes[m]));
-> +			ret = -EINVAL;
-> +			goto out;
-> +		}
-> +
-> +		for (i = 0; i < ARRAY_SIZE(expected_freq_attrs); i++) {
-> +			bool expected, found;
-> +
-> +			switch (expected_freq_attrs[i].category) {
-> +			case ATTR_ALWAYS:
-> +				expected = true;
-> +				break;
-> +			case ATTR_PREFCORE:
-> +				expected = has_prefcore;
-> +				break;
-> +			case ATTR_EPP:
-> +				expected = (modes[m] == AMD_PSTATE_ACTIVE);
-> +				break;
-> +			case ATTR_FLOOR_FREQ:
-> +				expected = has_floor_freq;
-> +				break;
-> +			default:
-> +				expected = false;
-> +				break;
-> +			}
-> +
-> +			found = attr_in_driver(driver_attrs,
-> +					       expected_freq_attrs[i].name);
-> +
-> +			if (expected != found) {
-> +				pr_err("%s: mode %s: attr %s expected %s but is %s\n",
-> +				       __func__,
-> +				       amd_pstate_get_mode_string(modes[m]),
-> +				       expected_freq_attrs[i].name,
-> +				       expected ? "visible" : "hidden",
-> +				       found ? "visible" : "hidden");
-> +				ret = -EINVAL;
-> +				goto out;
-> +			}
-> +		}
-> +	}
-> +
-> +	ret = 0;
-> +out:
-> +	amd_pstate_set_mode(orig_mode);
-> +	return ret;
-> +}
-> +
->   static int __init amd_pstate_ut_init(void)
->   {
->   	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 5eae74a67aeb..ed9fd4155a25 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -1390,6 +1390,14 @@ static struct freq_attr_visibility amd_pstate_attr_visibility[] = {
->   	{&amd_pstate_floor_count, floor_freq_visibility},
->   };
->   
-> +struct freq_attr **amd_pstate_get_current_attrs(void)
-> +{
-> +	if (!current_pstate_driver)
-> +		return NULL;
-> +	return current_pstate_driver->attr;
-> +}
-> +EXPORT_SYMBOL_GPL(amd_pstate_get_current_attrs);
-> +
->   static struct freq_attr **get_freq_attrs(void)
->   {
->   	bool attr_visible[ARRAY_SIZE(amd_pstate_attr_visibility)];
-> diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-> index 453adfb445f8..faead0b19a8a 100644
-> --- a/drivers/cpufreq/amd-pstate.h
-> +++ b/drivers/cpufreq/amd-pstate.h
-> @@ -134,4 +134,8 @@ const char *amd_pstate_get_mode_string(enum amd_pstate_mode mode);
->   int amd_pstate_get_status(void);
->   int amd_pstate_update_status(const char *buf, size_t size);
->   
-> +struct freq_attr;
-> +
-> +struct freq_attr **amd_pstate_get_current_attrs(void);
-> +
->   #endif /* _LINUX_AMD_PSTATE_H */
+Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
+---
+v3:
+ * rebase on Gautham's CPPC perf priority series
+ * add kdoc
+---
+ drivers/cpufreq/amd-pstate.c | 27 +++++++++------------------
+ drivers/cpufreq/amd-pstate.h |  2 ++
+ 2 files changed, 11 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+index ed9fd4155a256..f207252eb5f5f 100644
+--- a/drivers/cpufreq/amd-pstate.c
++++ b/drivers/cpufreq/amd-pstate.c
+@@ -826,15 +826,13 @@ static void amd_pstate_adjust_perf(unsigned int cpu,
+ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
+ {
+ 	struct amd_cpudata *cpudata = policy->driver_data;
+-	union perf_cached perf = READ_ONCE(cpudata->perf);
+-	u32 nominal_freq, max_freq;
++	u32 nominal_freq;
+ 	int ret = 0;
+ 
+ 	nominal_freq = READ_ONCE(cpudata->nominal_freq);
+-	max_freq = perf_to_freq(perf, cpudata->nominal_freq, perf.highest_perf);
+ 
+ 	if (on)
+-		policy->cpuinfo.max_freq = max_freq;
++		policy->cpuinfo.max_freq = cpudata->max_freq;
+ 	else if (policy->cpuinfo.max_freq > nominal_freq)
+ 		policy->cpuinfo.max_freq = nominal_freq;
+ 
+@@ -1021,13 +1019,15 @@ static int amd_pstate_init_freq(struct amd_cpudata *cpudata)
+ 
+ 	WRITE_ONCE(cpudata->nominal_freq, nominal_freq);
+ 
++	/* max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf */
+ 	max_freq = perf_to_freq(perf, nominal_freq, perf.highest_perf);
++	WRITE_ONCE(cpudata->max_freq, max_freq);
++
+ 	lowest_nonlinear_freq = perf_to_freq(perf, nominal_freq, perf.lowest_nonlinear_perf);
+ 	WRITE_ONCE(cpudata->lowest_nonlinear_freq, lowest_nonlinear_freq);
+ 
+ 	/**
+ 	 * Below values need to be initialized correctly, otherwise driver will fail to load
+-	 * max_freq is calculated according to (nominal_freq * highest_perf)/nominal_perf
+ 	 * lowest_nonlinear_freq is a value between [min_freq, nominal_freq]
+ 	 * Check _CPC in ACPI table objects if any values are incorrect
+ 	 */
+@@ -1090,9 +1090,7 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
+ 							      cpudata->nominal_freq,
+ 							      perf.lowest_perf);
+-	policy->cpuinfo.max_freq = policy->max = perf_to_freq(perf,
+-							      cpudata->nominal_freq,
+-							      perf.highest_perf);
++	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
+ 
+ 	policy->driver_data = cpudata;
+ 	ret = amd_pstate_cppc_enable(policy);
+@@ -1167,14 +1165,9 @@ static void amd_pstate_cpu_exit(struct cpufreq_policy *policy)
+ static ssize_t show_amd_pstate_max_freq(struct cpufreq_policy *policy,
+ 					char *buf)
+ {
+-	struct amd_cpudata *cpudata;
+-	union perf_cached perf;
+-
+-	cpudata = policy->driver_data;
+-	perf = READ_ONCE(cpudata->perf);
++	struct amd_cpudata *cpudata = policy->driver_data;
+ 
+-	return sysfs_emit(buf, "%u\n",
+-			  perf_to_freq(perf, cpudata->nominal_freq, perf.highest_perf));
++	return sysfs_emit(buf, "%u\n", cpudata->max_freq);
+ }
+ 
+ static ssize_t show_amd_pstate_lowest_nonlinear_freq(struct cpufreq_policy *policy,
+@@ -1702,9 +1695,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
+ 							      cpudata->nominal_freq,
+ 							      perf.lowest_perf);
+-	policy->cpuinfo.max_freq = policy->max = perf_to_freq(perf,
+-							      cpudata->nominal_freq,
+-							      perf.highest_perf);
++	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
+ 	policy->driver_data = cpudata;
+ 
+ 	ret = amd_pstate_cppc_enable(policy);
+diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
+index faead0b19a8a4..32b8b26ce388f 100644
+--- a/drivers/cpufreq/amd-pstate.h
++++ b/drivers/cpufreq/amd-pstate.h
+@@ -73,6 +73,7 @@ struct amd_aperf_mperf {
+  * @min_limit_freq: Cached value of policy->min (in khz)
+  * @max_limit_freq: Cached value of policy->max (in khz)
+  * @nominal_freq: the frequency (in khz) that mapped to nominal_perf
++ * @max_freq: in ideal conditions the maximum frequency (in khz) possible frequency
+  * @lowest_nonlinear_freq: the frequency (in khz) that mapped to lowest_nonlinear_perf
+  * @floor_freq: Cached value of the user requested floor_freq
+  * @cur: Difference of Aperf/Mperf/tsc count between last and current sample
+@@ -103,6 +104,7 @@ struct amd_cpudata {
+ 	u32	min_limit_freq;
+ 	u32	max_limit_freq;
+ 	u32	nominal_freq;
++	u32	max_freq;
+ 	u32	lowest_nonlinear_freq;
+ 	u32	floor_freq;
+ 
+-- 
+2.53.0
 
