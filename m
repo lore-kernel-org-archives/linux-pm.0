@@ -1,29 +1,29 @@
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D01783EFD3D
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 12:39:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7C9331714B
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 12:39:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774528778; cv=none; b=UHCvVY750rbP+re6vONUTsDrTTxy4ii7aR69pKYB6n7JtkKWDOX1EnTumltMV6zLfh1dqX5qq2X+9n5HHjE1/KXOqndepJJGHsfhO1VRyED7e5801kWO/+92Wo/tVyQqPV+ce5MZELMFBPCgqmbCvbAkDCDEYYyGrho1Ep/dcy4=
+	t=1774528778; cv=none; b=MZxgJct69gs3nVvt83uevNPgCJ6ltNDHt0xm6uhEB4+HiM8vdkV/qdHk3Oz/NMRaya1N91UWP5R7Ot64ekk5sCuO+iVgQdWW+iT0wfCEzxfTEJcbQRM91+E/ApA+m6/iqcpR49w50NIICvUfL39XDlyOlJ7/I4LZgbMG0ZKevzw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1774528778; c=relaxed/simple;
-	bh=XzExxJ0V4iYErSn7UfRFdvuX/OfogLUQ8mA+EbmIGXc=;
+	bh=Ezuwea1JoIadOyaU5kEJTQPeRiIwexWclA2coM7PU8g=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UrDP5ZzRFBiijjy6fePczR0JBbhyYzN4hT1TwErQW/I6mHnBNwfdmi/dhFI1UZiX2MJ0Lchp/2UtM4TV8TId4gcrn/I1FTTmPzTW/ASuD5PkMkjz63egbUAcylhvO4i1p+5gsgcUQApOEqLTp8wE+l+qdG5EhSfhJaK+z/sNBI0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.227
+	 MIME-Version:Content-Type; b=EYEJjik4/cBytvjAKh+GHjOm4ju5I8qwFNHSDX/BbZgHtkrCRiEALy0fTCyaKlNCJR3oS55iVD/KopIcmTjivHlURRY+RJjem1GF+f9G7u5hXuOI80V/Qbva+BfsVxX/DAONyoQzup5f/8dMrldR77oK2IiOpfQekQXC6WFWKlQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.222
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.200])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4fhNW05H7PznTVZ;
-	Thu, 26 Mar 2026 20:34:04 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.214])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4fhNVK3x3QzLlTn;
+	Thu, 26 Mar 2026 20:33:29 +0800 (CST)
 Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id B6CD440563;
-	Thu, 26 Mar 2026 20:39:31 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 04C8E4056C;
+	Thu, 26 Mar 2026 20:39:35 +0800 (CST)
 Received: from localhost.localdomain (10.50.163.32) by
  kwepemf200017.china.huawei.com (7.202.181.10) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 26 Mar 2026 20:39:31 +0800
+ 15.2.1544.11; Thu, 26 Mar 2026 20:39:34 +0800
 From: Jie Zhan <zhanjie9@hisilicon.com>
 To: <cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
 	<kyungmin.park@samsung.com>, <tianyaxiong@kylinos.cn>
@@ -32,9 +32,9 @@ CC: <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<jonathan.cameron@huawei.com>, <zhenglifeng1@huawei.com>,
 	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
 	<prime.zeng@hisilicon.com>
-Subject: [PATCH v1 01/10] devfreq: Use mutex guard in governor_store()
-Date: Thu, 26 Mar 2026 20:34:19 +0800
-Message-ID: <20260326123428.800407-2-zhanjie9@hisilicon.com>
+Subject: [PATCH v1 09/10] devfreq: Allow showing available_governors when device governor is NULL
+Date: Thu, 26 Mar 2026 20:34:27 +0800
+Message-ID: <20260326123428.800407-10-zhanjie9@hisilicon.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260326123428.800407-1-zhanjie9@hisilicon.com>
 References: <20260326123428.800407-1-zhanjie9@hisilicon.com>
@@ -49,85 +49,51 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
  kwepemf200017.china.huawei.com (7.202.181.10)
 
-Use mutex guard in governor_store() so as to simplify the locking logic.
+From: Zhi Wang <wangzhi12@huawei.com>
 
-No functional impact intended.
+Allow showing available_governors via sysfs when a device's governor is
+NULL, enabling reconfiguration of the device's governor.
 
+Before:
+$: echo simple_ondemand > governor
+$: rmmod -f governor_simpleondemand
+$: cat available_governors
+cat: available_governors: Invalid argument
+
+After:
+$: echo simple_ondemand > governor
+$: rmmod -f governor_simpleondemand
+$: cat available_governors
+hisi_platform userspace powersave performance
+
+Signed-off-by: Zhi Wang <wangzhi12@huawei.com>
 Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
 ---
- drivers/devfreq/devfreq.c | 36 +++++++++++++++---------------------
- 1 file changed, 15 insertions(+), 21 deletions(-)
+ drivers/devfreq/devfreq.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fcad3edceeea..21aa9661de0b 100644
+index c6b670b8fd22..5aebb32e89b0 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1431,20 +1431,17 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 	if (ret != 1)
- 		return -EINVAL;
+@@ -1461,16 +1461,13 @@ static ssize_t available_governors_show(struct device *d,
+ 	struct devfreq *df = to_devfreq(d);
+ 	ssize_t count = 0;
  
--	mutex_lock(&devfreq_list_lock);
-+	guard(mutex)(&devfreq_list_lock);
- 	governor = try_then_request_governor(str_governor);
--	if (IS_ERR(governor)) {
--		ret = PTR_ERR(governor);
--		goto out;
--	}
--	if (df->governor == governor) {
--		ret = 0;
--		goto out;
--	} else if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)
--		|| IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE)) {
--		ret = -EINVAL;
--		goto out;
--	}
-+	if (IS_ERR(governor))
-+		return PTR_ERR(governor);
-+
-+	if (df->governor == governor)
-+		return count;
-+
-+	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
-+	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
-+		return -EINVAL;
- 
- 	/*
- 	 * Stop the current governor and remove the specific sysfs files
-@@ -1454,7 +1451,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 	if (ret) {
- 		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
- 			 __func__, df->governor->name, ret);
--		goto out;
-+		return ret;
- 	}
- 
- 	/*
-@@ -1476,7 +1473,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 				"%s: reverting to Governor %s failed (%d)\n",
- 				__func__, prev_governor->name, ret);
- 			df->governor = NULL;
--			goto out;
-+			return ret;
- 		}
- 	}
- 
-@@ -1485,13 +1482,10 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 	 * the new governor, restore the sysfs files of previous governor.
- 	 */
- 	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
-+	if (ret)
-+		return ret;
- 
--out:
--	mutex_unlock(&devfreq_list_lock);
+-	if (!df->governor)
+-		return -EINVAL;
 -
--	if (!ret)
--		ret = count;
--	return ret;
-+	return count;
- }
- static DEVICE_ATTR_RW(governor);
+ 	mutex_lock(&devfreq_list_lock);
  
+ 	/*
+ 	 * The devfreq with immutable governor (e.g., passive) shows
+ 	 * only own governor.
+ 	 */
+-	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)) {
++	if (df->governor && IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)) {
+ 		count = scnprintf(&buf[count], DEVFREQ_NAME_LEN,
+ 				  "%s ", df->governor->name);
+ 	/*
 -- 
 2.43.0
 
