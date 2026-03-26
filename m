@@ -1,108 +1,126 @@
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71985325485;
-	Thu, 26 Mar 2026 18:35:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8966C33EAEC;
+	Thu, 26 Mar 2026 18:46:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774550142; cv=none; b=LcWwBI1H7SefGX678yqyCSUtMKjj4/0oMzAH4AMV1UqkBEJntRddNodAbfndH8Fw/zKmDk/7Z450nTPQOpNRmr0LOEHBFn540O4U6EDSHGuP7/YK0FoBSC9RcYbRWZgQTgkIDiY6IVzO3opTTymv7nvhmDjMtkTHHoeONDwKYLk=
+	t=1774550763; cv=none; b=eE53VvHZPqK9//DY/yEfN03PdUo5QpCTZOaPxpkKkIGl+oUvL1S0YD/+wmbxjX6H6Vxa854xEMabUk588O25g0xhjKVOErskBgUL1pYNUR61CbyxlrauRyyECboLi10+9/nfwpQ078OCKUwQ4UlZuBzmLzP88ftaAx/3G2imTXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774550142; c=relaxed/simple;
-	bh=vHha5uSPppJRH9Cr5SjpZFkwBe67YHMFD0UZ/nXKkrg=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=W9lM6dG/r8rT/2cgakrJSodiQ1+zUqxwhNn7J9MGwxuWVf29nIDdBzgMz61xDC+PTI9W9rsOB1QvgktQt3I+Iho4b6liVxPLsZ+rVWBtd8XdXPAUzYxYaJuK2NGqgr8olUUJJ+HeYsumRdtN8BZQMwbx0hwXiiBQNZC9YheLla4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=BoIzKYjp; arc=none smtp.client-ip=213.97.179.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
+	s=arc-20240116; t=1774550763; c=relaxed/simple;
+	bh=knxK1IEXKLxGl5G7uj89Lngwqteee4c5YVwGm1klXSk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PraFYNqQ/GEQIkjclNZyN3lUO/6K2YWudD0MYR5WcEs9fSp1pX4QjqFKtAVHbMKPHd8h4gBENRFsWPfp1p/JYtaEhTiMLEjELJgI6WgvaemmTNlH/9K9FM4+37v5/9yYjDgTOXN6BY/UL1E5Y+PbaEE846eE5DfD925BJwax4x4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hNVMdGb8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="BoIzKYjp"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:Content-Type:Message-ID:References:
-	In-Reply-To:Subject:Cc:To:From:Date:MIME-Version:Sender:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=kozB2guDU85YZS51UheWIQ7xwVQInVRSv73o8iTZSqw=; b=BoIzKYjpHU7flZXUAWdty26Dmo
-	fpYGiOJQh/YevXkpshqCeBnpfYuAA8cXghcJAP0WWMVijVWC5p5LJIfnT7s4DXymmFysHMYPNz/Lg
-	pcfdZSjxCjawzed6tdOSnTiCtAsgTv50K04ujSJrzP8Nr0aHSmvvQG22PtElkP6At4qIAGgKwnq9e
-	IWLUquVgdSHgHG4ynqa3cGgqfu/DjAG+MzD0EptEAzWhbiEhtgCWVmoVTyPlFQlFW2U3a+/BBze3v
-	GJGwW0YKMAPv0nFgEqEU7iNMVE9cWejGvv3RJ37JHGaaDyWmx1utctFuK96a750Y00k+HRWSvDkkX
-	OHKdvu4Q==;
-Received: from maestria.local.igalia.com ([192.168.10.14] helo=mail.igalia.com)
-	by fanzine2.igalia.com with esmtps 
-	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
-	id 1w5pYM-006Yz5-1h; Thu, 26 Mar 2026 19:35:34 +0100
-Received: from webmail.service.igalia.com ([192.168.21.45])
-	by mail.igalia.com with esmtp (Exim)
-	id 1w5pYJ-009RZ4-Uq; Thu, 26 Mar 2026 19:35:33 +0100
-Received: from localhost ([127.0.0.1] helo=webmail.igalia.com)
-	by webmail with esmtp (Exim 4.96)
-	(envelope-from <mfo@igalia.com>)
-	id 1w5pYJ-00B1we-1Y;
-	Thu, 26 Mar 2026 19:35:31 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hNVMdGb8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFD42C116C6;
+	Thu, 26 Mar 2026 18:46:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774550763;
+	bh=knxK1IEXKLxGl5G7uj89Lngwqteee4c5YVwGm1klXSk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=hNVMdGb8dc9ILDKOQ7AwmapFHvDTRjJNhNrwMXRPBQPHMdeHttq3Nrd14TBqm/HCt
+	 JQQ2lGyAxuAPm/6hLPcDSrTgPo+lwj36ZAj24WCIiLoTQ28e4/bgwQgidhJJVc+t/X
+	 A91bYtjUzw/IidpNgqINwAmA8HUUuE9Q15jQ4SM+I8TY+jL6Ln+KB1+J7hYpWTx011
+	 P2e24LAHsM2NIb8Hzjp7AB1gIvYsiwfbLwXm9t3yAuN7lCQtysSZpCaASRSct1rrUW
+	 goEMxSFo+k6VwhVZrocQIeW9vGuwTULR7kjZA41ZBnhRU9b9DrRyAnQW9DtsW6/+pI
+	 O8Oi01EsRUz0g==
+Message-ID: <e7210e30-05e1-4125-99f6-55ac38591ca1@kernel.org>
+Date: Thu, 26 Mar 2026 13:46:01 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Thu, 26 Mar 2026 15:35:31 -0300
-From: Mauricio Faria de Oliveira <mfo@igalia.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML
- <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
- Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH v1] thermal: core: Address thermal zone removal races with
- resume
-In-Reply-To: <12876512.O9o76ZdvQC@rafael.j.wysocki>
-References: <12876512.O9o76ZdvQC@rafael.j.wysocki>
-Message-ID: <4f1186a042ed78f06d8f2ce1eb6f3ce3@igalia.com>
-X-Sender: mfo@igalia.com
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 08/12] amd-pstate-ut: Add module parameter to select
+ testcases
+To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260326114756.20374-1-gautham.shenoy@amd.com>
+ <20260326114756.20374-9-gautham.shenoy@amd.com>
+Content-Language: en-US
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <20260326114756.20374-9-gautham.shenoy@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Report: NO, Score=-4.4, Tests=ALL_TRUSTED=-3,AWL=-2.900,BAYES_60=1.5
-X-Spam-Score: -43
-X-Spam-Bar: ----
 
-On 2026-03-26 08:45, Rafael J. Wysocki wrote:
-> Address the first failing scenario by ensuring that no thermal work
-> items will be running when thermal_pm_notify_complete() is called.
-> For this purpose, first move the cancel_delayed_work() call from
-> thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
-> new work from entering the workqueue going forward.  Next, switch
-> over to using a dedicated workqueue for thermal events and update
-> the code in thermal_pm_notify() to flush that workqueue after
-> thermal_pm_notify_prepare() has returned which will take care of
-> all leftover thermal work already on the workqueue (that leftover
-> work would do nothing useful anyway because all of the thermal zones
-> have been flagged as suspended).
 
-Thanks for coming up with this alternative. I spent some time earlier
-today thinking of corner cases in that it might fail, and it held OK.
 
-However, slightly unrelated: apparently, flushing the workqueue in
-thermal_pm_notify() reintroduces the issue addressed by the Fixes:
-commit, but moving it from PM_POST_* to PM_*_PREPARE?
+On 3/26/26 06:47, Gautham R. Shenoy wrote:
+> Currently when amd-pstate-ut test module is loaded, it runs all the
+> tests from amd_pstate_ut_cases[] array.
+> 
+> Add a module parameter named "test_list" that accepts a
+> comma-delimited list of test names, allowing users to run a
+> selected subset of tests. When the parameter is omitted or empty, all
+> tests are run as before.
+> 
+> Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> ---
+>   drivers/cpufreq/amd-pstate-ut.c | 31 ++++++++++++++++++++++++++++++-
+>   1 file changed, 30 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+> index 447b9aa5ce40..3dcdf56883a6 100644
+> --- a/drivers/cpufreq/amd-pstate-ut.c
+> +++ b/drivers/cpufreq/amd-pstate-ut.c
+> @@ -35,6 +35,10 @@
+>   
+>   #include "amd-pstate.h"
+>   
+> +static char *test_list;
+> +module_param(test_list, charp, 0444);
+> +MODULE_PARM_DESC(test_list,
+> +	"Comma-delimited list of tests to run (empty means run all tests)");
+>   
+>   struct amd_pstate_ut_struct {
+>   	const char *name;
+> @@ -58,6 +62,25 @@ static struct amd_pstate_ut_struct amd_pstate_ut_cases[] = {
+>   	{"amd_pstate_ut_check_driver",	   amd_pstate_ut_check_driver     }
+>   };
+>   
+> +static bool test_in_list(const char *list, const char *name)
+> +{
+> +	size_t name_len = strlen(name);
+> +	const char *p = list;
+> +
+> +	while (*p) {
+> +		const char *sep = strchr(p, ',');
+> +		size_t token_len = sep ? sep - p : strlen(p);
+> +
+> +		if (token_len == name_len && !strncmp(p, name, token_len))
+> +			return true;
+> +		if (!sep)
+> +			break;
+> +		p = sep + 1;
+> +	}
+> +
+> +	return false;
+> +}
+> +
+>   static bool get_shared_mem(void)
+>   {
+>   	bool result = false;
+> @@ -275,7 +298,13 @@ static int __init amd_pstate_ut_init(void)
+>   	u32 i = 0, arr_size = ARRAY_SIZE(amd_pstate_ut_cases);
+>   
+>   	for (i = 0; i < arr_size; i++) {
+> -		int ret = amd_pstate_ut_cases[i].func(i);
+> +		int ret;
+> +
+> +		if (test_list && *test_list &&
+> +		    !test_in_list(test_list, amd_pstate_ut_cases[i].name))
+> +			continue;
+> +
+> +		ret = amd_pstate_ut_cases[i].func(i);
+>   
+>   		if (ret)
+>   			pr_err("%-4d %-20s\t fail: %d!\n", i+1, amd_pstate_ut_cases[i].name, ret);
 
-IIIUC, that issue is __thermal_zone_device_update() might take long
-thus block other thermal zones and other PM notifiers after thermal.
-
-Apparently, at least the latter also applies to PM_*_PREPARE?
-
-Say, a currently running work item (i.e., that cancel_delayed_work() 
-cannot cancel) wins the race for tz->lock and doesn't see tz->state
-TZ_STATE_FLAG_SUSPENDED set, so it runs, and say it might take long.
-
-Now, the workqueue flush blocks on it, also taking long, which thus
-blocks other PM notifiers.
- 
-> The second failing scenario is addressed by adding a tz->state check
-> to thermal_zone_device_resume() to prevent it from reinitializing
-> the poll_queue delayed work if the thermal zone is going away.
-
-This also held OK in the thinking of corner cases.
-
-Thanks,
-
--- 
-Mauricio
