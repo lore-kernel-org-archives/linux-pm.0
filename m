@@ -1,40 +1,33 @@
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D510B2D3EEE;
-	Thu, 26 Mar 2026 13:09:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AF1B50276;
+	Thu, 26 Mar 2026 13:10:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774530578; cv=none; b=BsrDXzpsPOZKjpnxihnTovAXL+XA5rSe3gjAcbuMXilMr5YteLEYO0cDvYnr/ZsxkpJzaywpsCh02EDoOt6e7bAz6qrmexCe0JLjznNLmTzFUILoImseMiUfyL1xRP4xHVg2bqAD1FSnlAinHmgk9dlm7HhtlLNG0DYdsP1QBaQ=
+	t=1774530601; cv=none; b=HHxk2TA1f5B1v9sFcJnCbWIDbckZ0gHeozQIdZX0cCwyhJBeNGZQL2rlbRGxd7M6vNDFMuNN20iORBooagogw55XMpkWauhKB7ZAMZTgTiUpePJ3dV3UoZn0hVCQwYLZ3zrAkhaf+xVjoJ66TWT96VAozbp3d7gNOobgj/YuzYw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774530578; c=relaxed/simple;
-	bh=PAjiefSKHVafRFrRMPeKtgiEwKWXnP6tUrycxp7IRfk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=D6FDLFK6SMBhSu3TpXPAw7LxlG6j5HdptDmw41veV1IBHWoap2c/wi83AvKNsu76vEzabo7VxBghVEimTPfO+l6JVnXcBNchUkJxpkZMgt58rFZk1Ou0KByZws0Y67BRxUD1lejQXwLUAiba6mprlVH6SMX0nCe+EZWq1HRNHC8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=lD6CD1jM; arc=none smtp.client-ip=113.46.200.218
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1774530601; c=relaxed/simple;
+	bh=KKziiV0nVCF6spf7tHtvmQufCwFhtFREGY7iDXHOqvE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=h6EovhiAdxehj8plfnXhdl7sINg/CR8GD0BXqYvRUf7ettBOUMtBue8zCJoxA7ABf4NhvWKG3T31iizlfQ7m4ODslLG70yGT8mq0r8QUJYNg6YWrXhc6535zwYTnG0JwjupzZ+4ug29Ia8JVkI4eEnRDoQIicchb7PblmOP2nTQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qKp8vOgV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="lD6CD1jM"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=1u5CTeBApLtqNHfC8jcliNhvHIhSKK2FMXS4Bcm+Iro=;
-	b=lD6CD1jMszUfqvYl2hxcqhCsiS1yiSUxPCPE1+kDbhYwcP4pNecUYeViLBcdQERRC0pMiu7Pf
-	96i9OvEy6OVYpT0LLU3Z0CyYRX4Enzg7TzlL21U/t/jyazd030AcpmWQ4Tc6CLd6lvMXQtcWQYq
-	fgs4gSnp2canHkqyUOfIuo8=
-Received: from mail.maildlp.com (unknown [172.19.162.223])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4fhP9M5lyZzpT0N;
-	Thu, 26 Mar 2026 21:03:51 +0800 (CST)
-Received: from kwepemf200001.china.huawei.com (unknown [7.202.181.227])
-	by mail.maildlp.com (Postfix) with ESMTPS id A24D740569;
-	Thu, 26 Mar 2026 21:09:29 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf200001.china.huawei.com
- (7.202.181.227) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 26 Mar
- 2026 21:09:28 +0800
-Message-ID: <a38be245-9049-4f38-a9aa-33271a74961b@huawei.com>
-Date: Thu, 26 Mar 2026 21:09:28 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qKp8vOgV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C41BAC116C6;
+	Thu, 26 Mar 2026 13:10:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774530601;
+	bh=KKziiV0nVCF6spf7tHtvmQufCwFhtFREGY7iDXHOqvE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=qKp8vOgVGeWdYuScDBw38nLrEyTEsal46k7gr6NO0wu75JLkx+LkXxkw5zJ2x/mWr
+	 PcUV/XwaAIVONJP9jMjVicR/gGer+NCg4mBVAuxqlvs6o7M9RAwkkNTNJZMdbyTGKI
+	 190Yr5568MmodqkQnvWiGpnxoziFAaUi9fY5oHfLtsBNZFuyXuFeqkek1PVyCm4Xbv
+	 5bRqYzyiCdTC4DYrmV68aKr99LPjQa0IM6q1o9KZowV/SjOuVPe4EnOXyIudeurksA
+	 eE9BpiOXWjG6pkyW+wMKuzyPc/HbPo/AhlqLLjnOWXfT/7YkEurQO1uOExObg4xztl
+	 /xNcAmdy771rA==
+Message-ID: <8b982cba-be6f-46ad-9a97-87be30280696@kernel.org>
+Date: Thu, 26 Mar 2026 08:09:59 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,253 +35,145 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 2/2] cpufreq: Add boost_freq_req QoS request
-To: Pierre Gondois <pierre.gondois@arm.com>, <linux-kernel@vger.kernel.org>
-CC: Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy"
-	<gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>
-References: <20260325165255.386576-1-pierre.gondois@arm.com>
- <20260325165255.386576-3-pierre.gondois@arm.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <20260325165255.386576-3-pierre.gondois@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v2] PM: hibernate: call preallocate_image after freeze
+ prepare
+To: Matthew Leach <matthew.leach@collabora.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ YoungJun Park <youngjun.park@lge.com>, kernel@collabora.com
+References: <20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com>
+Content-Language: en-US
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf200001.china.huawei.com (7.202.181.227)
 
-This patch looks good to me now.
 
-Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 
-On 3/26/2026 12:52 AM, Pierre Gondois wrote:
-> The Power Management Quality of Service (PM QoS) allows to
-> aggregate constraints from multiple entities. It is currently
-> used to manage the min/max frequency of a given policy.
+On 3/26/26 06:36, Matthew Leach wrote:
+> [You don't often get email from matthew.leach@collabora.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> Frequency constraints can come for instance from:
-> - Thermal framework: acpi_thermal_cpufreq_init()
-> - Firmware: _PPC objects: acpi_processor_ppc_init()
-> - User: by setting policyX/scaling_[min|max]_freq
-> The minimum of the max frequency constraints is used to compute
-> the resulting maximum allowed frequency.
+> Certain drivers release resources (pinned pages, etc.) into system
+> memory during the prepare freeze PM op, making them swappable.
+> Currently, hibernate_preallocate_memory is called before prepare freeze,
+> so those drivers have no opportunity to release resources first. If a
+> driver is holding a large amount of unswappable system RAM, this can
+> cause hibernate_preallocate_memory to fail.
 > 
-> When enabling boost frequencies, the same frequency request object
-> (policy->max_freq_req) as to handle requests from users is used.
-> As a result, when setting:
-> - scaling_max_freq
-> - boost
-> The last sysfs file used overwrites the request from the other
-> sysfs file.
+> Move the call to hibernate_preallocate_memory after prepare freeze.
+> According to the documentation for the prepare callback, devices should
+> be left in a usable state, so storage drivers should still be able to
+> service I/O requests. This allows drivers to release unswappable
+> resources prior to preallocation, so they can be swapped out through
+> hibernate_preallocate_memory's reclaim path. Also remove
+> shrink_shmem_memory since hibernate_preallocate_memory will have
+> reclaimed enough memory for the hibernation image.
 > 
-> To avoid this, create a per-policy boost_freq_req to save the boost
-> constraints instead of overwriting the last scaling_max_freq
-> constraint.
-> 
-> policy_set_boost() calls the cpufreq set_boost callback.
-> Update the newly added boost_freq_req request from there:
-> - whenever boost is toggled
-> - to cover all possible paths
-> 
-> In the existing .set_boost() callbacks:
-> - Don't update policy->max as this is done through the qos notifier
->   cpufreq_notifier_max() which calls cpufreq_set_policy().
-> - Remove freq_qos_update_request() calls as the qos request is now
->   done in policy_set_boost() and updates the new boost_freq_req
-> 
-> $ ## Init state
-> scaling_max_freq:1000000
-> cpuinfo_max_freq:1000000
-> 
-> $ echo 700000 > scaling_max_freq
-> scaling_max_freq:700000
-> cpuinfo_max_freq:1000000
-> 
-> $ echo 1 > ../boost
-> scaling_max_freq:1200000
-> cpuinfo_max_freq:1200000
-> 
-> $ echo 800000 > scaling_max_freq
-> scaling_max_freq:800000
-> cpuinfo_max_freq:1200000
-> 
-> $ ## Final step:
-> $ ## Without the patches:
-> $ echo 0 > ../boost
-> scaling_max_freq:1000000
-> cpuinfo_max_freq:1000000
-> 
-> $ ## With the patches:
-> $ echo 0 > ../boost
-> scaling_max_freq:800000
-> cpuinfo_max_freq:1000000
-> 
-> Note:
-> cpufreq_frequency_table_cpuinfo() updates policy->min
-> and max from:
-> A.
-> cpufreq_boost_set_sw()
-> \-cpufreq_frequency_table_cpuinfo()
-> B.
-> cpufreq_policy_online()
-> \-cpufreq_table_validate_and_sort()
->   \-cpufreq_frequency_table_cpuinfo()
-> Keep these updates as some drivers expect policy->min and
-> max to be set through B.
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> Signed-off-by: Matthew Leach <matthew.leach@collabora.com>
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
 > ---
->  drivers/cpufreq/amd-pstate.c   |  2 --
->  drivers/cpufreq/cppc_cpufreq.c | 10 ++-----
->  drivers/cpufreq/cpufreq.c      | 51 ++++++++++++++++++++++++++--------
->  include/linux/cpufreq.h        |  1 +
->  4 files changed, 43 insertions(+), 21 deletions(-)
+> Changes in v2:
+> - Removed shrink_shmem_memory.
+> - Fixed missing call to dpm_prepare in error path.
+> - Link to v1: https://lore.kernel.org/r/20260321-hibernation-fixes-v1-1-5fe9637b6ff9@collabora.com
+> ---
+>   kernel/power/hibernate.c | 46 +++++++++-------------------------------------
+>   1 file changed, 9 insertions(+), 37 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 5aa9fcd80cf51..d0675d6a19fe1 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -769,8 +769,6 @@ static int amd_pstate_cpu_boost_update(struct cpufreq_policy *policy, bool on)
->  	else if (policy->cpuinfo.max_freq > nominal_freq)
->  		policy->cpuinfo.max_freq = nominal_freq;
->  
-> -	policy->max = policy->cpuinfo.max_freq;
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index af8d07bafe02..39b0a8ea4024 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -392,23 +392,6 @@ static int create_image(int platform_mode)
+>          return error;
+>   }
+> 
+> -static void shrink_shmem_memory(void)
+> -{
+> -       struct sysinfo info;
+> -       unsigned long nr_shmem_pages, nr_freed_pages;
 > -
->  	if (cppc_state == AMD_PSTATE_PASSIVE) {
->  		ret = freq_qos_update_request(&cpudata->req[1], policy->cpuinfo.max_freq);
->  		if (ret < 0)
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 011f35cb47b94..f4f574fbe547b 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -807,17 +807,11 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
->  {
->  	struct cppc_cpudata *cpu_data = policy->driver_data;
->  	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
-> -	int ret;
->  
->  	if (state)
-> -		policy->max = cppc_perf_to_khz(caps, caps->highest_perf);
-> +		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->highest_perf);
->  	else
-> -		policy->max = cppc_perf_to_khz(caps, caps->nominal_perf);
-> -	policy->cpuinfo.max_freq = policy->max;
+> -       si_meminfo(&info);
+> -       nr_shmem_pages = info.sharedram; /* current page count used for shmem */
+> -       /*
+> -        * The intent is to reclaim all shmem pages. Though shrink_all_memory() can
+> -        * only reclaim about half of them, it's enough for creating the hibernation
+> -        * image.
+> -        */
+> -       nr_freed_pages = shrink_all_memory(nr_shmem_pages);
+> -       pr_debug("requested to reclaim %lu shmem pages, actually freed %lu pages\n",
+> -                       nr_shmem_pages, nr_freed_pages);
+> -}
 > -
-> -	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-> -	if (ret < 0)
-> -		return ret;
-> +		policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, caps->nominal_perf);
->  
->  	return 0;
->  }
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5757f12633d16..947ed87cf8d76 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -609,10 +609,19 @@ static int policy_set_boost(struct cpufreq_policy *policy, bool enable)
->  	policy->boost_enabled = enable;
->  
->  	ret = cpufreq_driver->set_boost(policy, enable);
-> -	if (ret)
-> +	if (ret) {
->  		policy->boost_enabled = !policy->boost_enabled;
-> +		return ret;
-> +	}
->  
-> -	return ret;
-> +	ret = freq_qos_update_request(policy->boost_freq_req, policy->cpuinfo.max_freq);
-> +	if (ret < 0) {
-> +		policy->boost_enabled = !policy->boost_enabled;
-> +		cpufreq_driver->set_boost(policy, policy->boost_enabled);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
->  }
->  
->  static ssize_t store_local_boost(struct cpufreq_policy *policy,
-> @@ -1377,6 +1386,8 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
->  	}
->  
->  	freq_qos_remove_request(policy->min_freq_req);
-> +	if (policy->boost_freq_req)
-> +		freq_qos_remove_request(policy->boost_freq_req);
->  	kfree(policy->min_freq_req);
->  
->  	cpufreq_policy_put_kobj(policy);
-> @@ -1445,18 +1456,42 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
->  	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
->  
->  	if (new_policy) {
-> +		unsigned int req_nr;
-> +
->  		for_each_cpu(j, policy->related_cpus) {
->  			per_cpu(cpufreq_cpu_data, j) = policy;
->  			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
->  		}
->  
-> -		policy->min_freq_req = kzalloc(2 * sizeof(*policy->min_freq_req),
-> +		req_nr = policy->boost_supported ? 3 : 2;
-> +		policy->min_freq_req = kzalloc(req_nr * sizeof(*policy->min_freq_req),
->  					       GFP_KERNEL);
->  		if (!policy->min_freq_req) {
->  			ret = -ENOMEM;
->  			goto out_destroy_policy;
->  		}
->  
-> +		if (policy->boost_supported) {
-> +			policy->boost_freq_req = policy->min_freq_req + 2;
-> +
-> +			/*
-> +			 * If boost is supported,
-> +			 * init the constraint with cpuinfo.max_freq.
-> +			 */
-> +			ret = freq_qos_add_request(&policy->constraints,
-> +						   policy->boost_freq_req,
-> +						   FREQ_QOS_MAX,
-> +						   policy->cpuinfo.max_freq);
-> +			if (ret < 0) {
-> +				/*
-> +				 * So we don't call freq_qos_remove_request() for an
-> +				 * uninitialized request.
-> +				 */
-> +				policy->boost_freq_req = NULL;
-> +				goto out_destroy_policy;
-> +			}
-> +		}
-> +
->  		ret = freq_qos_add_request(&policy->constraints,
->  					   policy->min_freq_req, FREQ_QOS_MIN,
->  					   FREQ_QOS_MIN_DEFAULT_VALUE);
-> @@ -2788,16 +2823,10 @@ int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
->  		return -ENXIO;
->  
->  	ret = cpufreq_frequency_table_cpuinfo(policy);
-> -	if (ret) {
-> +	if (ret)
->  		pr_err("%s: Policy frequency update failed\n", __func__);
-> -		return ret;
-> -	}
+>   /**
+>    * hibernation_snapshot - Quiesce devices and create a hibernation image.
+>    * @platform_mode: If set, use platform driver to prepare for the transition.
+> @@ -425,14 +408,9 @@ int hibernation_snapshot(int platform_mode)
+>          if (error)
+>                  goto Close;
+> 
+> -       /* Preallocate image memory before shutting down devices. */
+> -       error = hibernate_preallocate_memory();
+> -       if (error)
+> -               goto Close;
 > -
-> -	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-> -	if (ret < 0)
-> -		return ret;
->  
-> -	return 0;
-> +	return ret;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_boost_set_sw);
->  
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index cc894fc389710..89157e367eefa 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -81,6 +81,7 @@ struct cpufreq_policy {
->  	struct freq_constraints	constraints;
->  	struct freq_qos_request	*min_freq_req;
->  	struct freq_qos_request	*max_freq_req;
-> +	struct freq_qos_request *boost_freq_req;
->  
->  	struct cpufreq_frequency_table	*freq_table;
->  	enum cpufreq_table_sorting freq_table_sorted;
+>          error = freeze_kernel_threads();
+>          if (error)
+> -               goto Cleanup;
+> +               goto Close;
+> 
+>          if (hibernation_test(TEST_FREEZER)) {
+> 
+> @@ -441,23 +419,17 @@ int hibernation_snapshot(int platform_mode)
+>                   * successful freezer test.
+>                   */
+>                  freezer_test_done = true;
+> -               goto Thaw;
+> +               goto ThawKThreads;
+>          }
+> 
+>          error = dpm_prepare(PMSG_FREEZE);
+> -       if (error) {
+> -               dpm_complete(PMSG_RECOVER);
+> +       if (error)
+>                  goto Thaw;
+> -       }
+> 
+> -       /*
+> -        * Device drivers may move lots of data to shmem in dpm_prepare(). The shmem
+> -        * pages will use lots of system memory, causing hibernation image creation
+> -        * fail due to insufficient free memory.
+> -        * This call is to force flush the shmem pages to swap disk and reclaim
+> -        * the system memory so that image creation can succeed.
+> -        */
+> -       shrink_shmem_memory();
+> +       /* Preallocate image memory before shutting down devices. */
+> +       error = hibernate_preallocate_memory();
+> +       if (error)
+> +               goto Thaw;
+> 
+>          console_suspend_all();
+>          pm_restrict_gfp_mask();
+> @@ -493,9 +465,9 @@ int hibernation_snapshot(int platform_mode)
+>          return error;
+> 
+>    Thaw:
+> +       dpm_complete(PMSG_RECOVER);
+> + ThawKThreads:
+>          thaw_kernel_threads();
+> - Cleanup:
+> -       swsusp_free();
+>          goto Close;
+>   }
+> 
+> 
+> ---
+> base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
+> change-id: 20260321-hibernation-fixes-69bca2ee5b65
+> 
+> Best regards,
+> --
+> Matt
+> 
 
