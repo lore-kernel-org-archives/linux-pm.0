@@ -1,115 +1,108 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90FC5224B05
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 18:12:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71985325485;
+	Thu, 26 Mar 2026 18:35:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774548741; cv=none; b=sLBK352Pj+twXFXIt1RuzgESRciCbac5i1PgnAWM2rtaeg5Jsm5XfT/wYTF13LO4qRStf3fgwfiy0YX0BviRKJ8Aj/lgr1pfDqlrnrtdenN+lwsVQWmU7qP+uI3+qPLPeTE8dW8lGknonIqKJAjKHnwHs+s+lFsS7WE+R6tewzY=
+	t=1774550142; cv=none; b=LcWwBI1H7SefGX678yqyCSUtMKjj4/0oMzAH4AMV1UqkBEJntRddNodAbfndH8Fw/zKmDk/7Z450nTPQOpNRmr0LOEHBFn540O4U6EDSHGuP7/YK0FoBSC9RcYbRWZgQTgkIDiY6IVzO3opTTymv7nvhmDjMtkTHHoeONDwKYLk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774548741; c=relaxed/simple;
-	bh=XTP+/Kf6Zl5lAXcpm51YWfDBcRpPnJiQNtjjPz1qPss=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=A7nEa4D3yf0jti6HCFFltaJwJPqFCasFzPlX1AnadeqV/gsxjSeczt53/lP+DeNQnjSBDVbyKzMBbe01wpxt6wrZ08BYyfZ7ir66Re7a67jsbNNhB5ZQtQpoocZM34Ssv6APLgd3lHZRX51+BE5jy3sXhPkwk4pG7ARmN3Qgx4w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dskddAnb; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774550142; c=relaxed/simple;
+	bh=vHha5uSPppJRH9Cr5SjpZFkwBe67YHMFD0UZ/nXKkrg=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=W9lM6dG/r8rT/2cgakrJSodiQ1+zUqxwhNn7J9MGwxuWVf29nIDdBzgMz61xDC+PTI9W9rsOB1QvgktQt3I+Iho4b6liVxPLsZ+rVWBtd8XdXPAUzYxYaJuK2NGqgr8olUUJJ+HeYsumRdtN8BZQMwbx0hwXiiBQNZC9YheLla4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=BoIzKYjp; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dskddAnb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 771C3C4AF0C
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 18:12:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774548741;
-	bh=XTP+/Kf6Zl5lAXcpm51YWfDBcRpPnJiQNtjjPz1qPss=;
-	h=From:Date:Subject:To:Cc:From;
-	b=dskddAnb0u0N8gNdESSluG+BC6Gw/olizmaEzbfFhVjLVo5GSwDLF/JcFpH+22Aop
-	 Z7woP5FNgV0hKyCXGSE3P8IjNLa87RtJtEl4JDvhtlaYiqOMxK43CH4epX9AawJfTA
-	 vifqM0UVW9JC9GqgnyhdvZPpIRf3MTF5FcyWWljv3Z2coebhfCYs8fdtV17jk5hXbZ
-	 RsaW4pLkmNeXkbyxbzDBWutGuXVN2wQqNnoqlWOO+Du+hshhiOwzl6qFTKgMr8+6je
-	 rk7Oe6obXUf63sDRU/LGaVgiN0/XatjQkH3I3yxB/Ant2am+1Tsts4YE6GKw7D6Jks
-	 NiZ3F6LRNM6ig==
-Received: by mail-oi1-f173.google.com with SMTP id 5614622812f47-467161c4ba7so735760b6e.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 11:12:21 -0700 (PDT)
-X-Gm-Message-State: AOJu0YzdjlKuRMe4CRBb7DWE7dqxj/oyluhenY5sACuHElBXirJvS1W6
-	3iwLnTDOuXnd6xL8F6zpZUzLGKfAuZxQvrk0kdPB3YDNPRSZIGAIFMaFi2Kf/lAeaAXI+rLHdxk
-	CQ4Ih12mNjtMcuLWHFG9B0spFDGmbXTU=
-X-Received: by 2002:a05:6808:6f91:b0:467:ed6b:4f28 with SMTP id
- 5614622812f47-46a7a9bac9fmr1085500b6e.20.1774548740565; Thu, 26 Mar 2026
- 11:12:20 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="BoIzKYjp"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:Message-ID:References:
+	In-Reply-To:Subject:Cc:To:From:Date:MIME-Version:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=kozB2guDU85YZS51UheWIQ7xwVQInVRSv73o8iTZSqw=; b=BoIzKYjpHU7flZXUAWdty26Dmo
+	fpYGiOJQh/YevXkpshqCeBnpfYuAA8cXghcJAP0WWMVijVWC5p5LJIfnT7s4DXymmFysHMYPNz/Lg
+	pcfdZSjxCjawzed6tdOSnTiCtAsgTv50K04ujSJrzP8Nr0aHSmvvQG22PtElkP6At4qIAGgKwnq9e
+	IWLUquVgdSHgHG4ynqa3cGgqfu/DjAG+MzD0EptEAzWhbiEhtgCWVmoVTyPlFQlFW2U3a+/BBze3v
+	GJGwW0YKMAPv0nFgEqEU7iNMVE9cWejGvv3RJ37JHGaaDyWmx1utctFuK96a750Y00k+HRWSvDkkX
+	OHKdvu4Q==;
+Received: from maestria.local.igalia.com ([192.168.10.14] helo=mail.igalia.com)
+	by fanzine2.igalia.com with esmtps 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1w5pYM-006Yz5-1h; Thu, 26 Mar 2026 19:35:34 +0100
+Received: from webmail.service.igalia.com ([192.168.21.45])
+	by mail.igalia.com with esmtp (Exim)
+	id 1w5pYJ-009RZ4-Uq; Thu, 26 Mar 2026 19:35:33 +0100
+Received: from localhost ([127.0.0.1] helo=webmail.igalia.com)
+	by webmail with esmtp (Exim 4.96)
+	(envelope-from <mfo@igalia.com>)
+	id 1w5pYJ-00B1we-1Y;
+	Thu, 26 Mar 2026 19:35:31 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 26 Mar 2026 19:12:09 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jqdP-n4H+RXvVPyHhtGLCWs2gma_FCrDOrtb0QqcKJHQ@mail.gmail.com>
-X-Gm-Features: AQROBzDLSOE3mDYww3FTZAqfgW_bLQDwwq1WMGjAlrHUpiKOSnIn1To5jky47r8
-Message-ID: <CAJZ5v0jqdP-n4H+RXvVPyHhtGLCWs2gma_FCrDOrtb0QqcKJHQ@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v7.0-rc6
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Mar 2026 15:35:31 -0300
+From: Mauricio Faria de Oliveira <mfo@igalia.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML
+ <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH v1] thermal: core: Address thermal zone removal races with
+ resume
+In-Reply-To: <12876512.O9o76ZdvQC@rafael.j.wysocki>
+References: <12876512.O9o76ZdvQC@rafael.j.wysocki>
+Message-ID: <4f1186a042ed78f06d8f2ce1eb6f3ce3@igalia.com>
+X-Sender: mfo@igalia.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Spam-Report: NO, Score=-4.4, Tests=ALL_TRUSTED=-3,AWL=-2.900,BAYES_60=1.5
+X-Spam-Score: -43
+X-Spam-Bar: ----
 
-Hi Linus,
+On 2026-03-26 08:45, Rafael J. Wysocki wrote:
+> Address the first failing scenario by ensuring that no thermal work
+> items will be running when thermal_pm_notify_complete() is called.
+> For this purpose, first move the cancel_delayed_work() call from
+> thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
+> new work from entering the workqueue going forward.  Next, switch
+> over to using a dedicated workqueue for thermal events and update
+> the code in thermal_pm_notify() to flush that workqueue after
+> thermal_pm_notify_prepare() has returned which will take care of
+> all leftover thermal work already on the workqueue (that leftover
+> work would do nothing useful anyway because all of the thermal zones
+> have been flagged as suspended).
 
-Please pull from the tag
+Thanks for coming up with this alternative. I spent some time earlier
+today thinking of corner cases in that it might fail, and it held OK.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.0-rc6
+However, slightly unrelated: apparently, flushing the workqueue in
+thermal_pm_notify() reintroduces the issue addressed by the Fixes:
+commit, but moving it from PM_POST_* to PM_*_PREPARE?
 
-with top-most commit 042f99c493c2cef3b15de2df19c06df514d39ac7
+IIIUC, that issue is __thermal_zone_device_update() might take long
+thus block other thermal zones and other PM notifiers after thermal.
 
- Merge branch 'pm-sleep'
+Apparently, at least the latter also applies to PM_*_PREPARE?
 
-on top of commit c369299895a591d96745d6492d4888259b004a9e
+Say, a currently running work item (i.e., that cancel_delayed_work() 
+cannot cancel) wins the race for tz->lock and doesn't see tz->state
+TZ_STATE_FLAG_SUSPENDED set, so it runs, and say it might take long.
 
- Linux 7.0-rc5
+Now, the workqueue flush blocks on it, also taking long, which thus
+blocks other PM notifiers.
+ 
+> The second failing scenario is addressed by adding a tz->state check
+> to thermal_zone_device_resume() to prevent it from reinitializing
+> the poll_queue delayed work if the thermal zone is going away.
 
-to receive power management fixes for 7.0-rc6.
+This also held OK in the thinking of corner cases.
 
-These fix two cpufreq issues, one in the core and one in the
-conservative governor, and two issues related to system sleep:
+Thanks,
 
- - Restore the cpufreq core behavior changed inadvertently during the
-   6.19 development cycle to call cpufreq_frequency_table_cpuinfo()
-   for cpufreq policies getting re-initialized which ensures that
-   policy->max and policy->cpuinfo_max_freq will be valid going
-   forward (Viresh Kumar)
-
- - Adjust the cached requested frequency in the conservative cpufreq
-   governor on policy limits changes to prevent it from becoming stale
-   in some cases (Viresh Kumar)
-
- - Prevent pm_restore_gfp_mask() from triggering a WARN_ON() in some
-   code paths in which it is legitimately called without invoking
-   pm_restrict_gfp_mask() previously (Youngjun Park)
-
- - Update snapshot_write_finalize() to take trailing zero pages into
-   account properly which prevents user space restore from failing
-   subsequently in some cases (Alberto Garcia)
-
-Thanks!
-
-
----------------
-
-Alberto Garcia (1):
-      PM: hibernate: Drain trailing zero pages on userspace restore
-
-Viresh Kumar (2):
-      cpufreq: Don't skip cpufreq_frequency_table_cpuinfo()
-      cpufreq: conservative: Reset requested_freq on limits change
-
-Youngjun Park (1):
-      PM: sleep: Drop spurious WARN_ON() from pm_restore_gfp_mask()
-
----------------
-
- drivers/cpufreq/cpufreq.c              |  9 +++------
- drivers/cpufreq/cpufreq_conservative.c | 12 ++++++++++++
- drivers/cpufreq/cpufreq_governor.c     |  3 +++
- drivers/cpufreq/cpufreq_governor.h     |  1 +
- drivers/cpufreq/freq_table.c           |  4 ++++
- kernel/power/main.c                    |  2 +-
- kernel/power/snapshot.c                | 11 +++++++++++
- 7 files changed, 35 insertions(+), 7 deletions(-)
+-- 
+Mauricio
