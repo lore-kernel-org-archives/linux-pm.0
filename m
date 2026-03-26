@@ -1,198 +1,187 @@
-Received: from mail-pf1-f182.google.com (mail-pf1-f182.google.com [209.85.210.182])
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56B503A3E84
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 05:43:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.182
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774503805; cv=none; b=lhm2Hr8/4cYlk2FVeo2xBp8ahb8oaz83ijJl2Zj0utpFaVCyCIlJ98RAJeEyGQQNRLJ5mwxwNUuFb22it16foA4kca8tx7xuKwMLtlljiZ+QgADVks6/5JawTbTQwYNe6wCQFWtMchgfr9zUiz627mehD1nLmIA2PpegVxZ7BFk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774503805; c=relaxed/simple;
-	bh=s27fcGErMBzKxY6t96v5alAOcgMfI4+l2mcmFG7QKYY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DO8lx2f5JNxUsYwMnFTZFGOIRZLv5xQY+Ucilz4Yvm1ffxO/JB/vSQSpuhlTrL9Ce1ZWZH38jyVnu+D5r7ftBuB+59aV04+H7tq8BztVykFuzWiV+egFuP1XIhqbR9P1K3kA1nhwjupIhwX+gq02/H/1hXTvfc0BAQ+9/F2rLI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=j9VIybWW; arc=none smtp.client-ip=209.85.210.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 881BC3B4EBD
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 07:53:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.45
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774511610; cv=pass; b=n47RYjv5OJcLPpw03xhO8YuWG85COk8aJ+pCEoAn/g3smUtJ8pZ9Lp+zBLdLK8NHTfi0SGH5jQpv2sbrPbzOf1rg2P2umwUekQWCRLXC1G/2EYu7VPpx+cTUQUGM5n73obxevj9pcls77S3ehPQ69Fmpi9tOwS//biI+kCDHjWc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774511610; c=relaxed/simple;
+	bh=ZgKh7R3yoZBzmnGDqa0HkBuDw/s+y/0BkqB5boGgvVM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZSI9PK/6zndr9O9yUcV31VD+p7z4m2jsmx1qux4lww/F4ZSmF5WfkWBWisDS1ubjx4XBeHH4tjG9IJNHfm9sv8Bc01D2+eTX0xGuode5BPhCW/f7yNF7Z4eOiCoYqzx3Uhwc6XlKOR3ARmVui2/crGs4KCbMvEVroBsk+iJuKiQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rZ5eLiR+; arc=pass smtp.client-ip=209.85.208.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="j9VIybWW"
-Received: by mail-pf1-f182.google.com with SMTP id d2e1a72fcca58-82418b0178cso291977b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2026 22:43:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rZ5eLiR+"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-66132b22182so827871a12.2
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 00:53:28 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774511607; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Nz9chkBsQL7U7X+QQwffy/Oaha1hdkjL8gStzDcYsHmbBN9iXC9sqrEbo1fp8fB0uK
+         Ft1GXmzyTT5ac9yEalexmIsZOIP7MlRAl9tnabJPBUiJnvWblZnTjdNgXXm+cu75m0i+
+         394HGUiHx3FGwgfYafCSyJPymoajYlK1k0h0lmTstTrsiTSaxK+qTzz24vu71fYjLm5p
+         5fHg79Il8tUe4KU4i0K8LCoyxB91vXrzyrPKA7s4ugItNfcrdsH6NWksfxrwY7JzhsB9
+         6/tBbQAiWrS1VQbJGMWY4d/fHjRCXUgRcfMvi3fznwew/weIEKhs9wivnm6mFSsssx0c
+         RFQQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
+        fh=K5JZH2eItZJ753i4/U3CCPBGRblFPmEUh+P2yeku4xQ=;
+        b=YMq/j15WaX/cpieV+IeYUc78m+yfLozpE/ugNJnhRXF5ucxvrO8EcY06Ri84L00LEv
+         4VD34KnBRNUr00yqUA3/5oIoqefb9r9/8jyWzqij80rhlsIwwdi+uP1vVPoFqxgMROTL
+         tLb6cOnxWD6RlVZds7lfywCfT9XlNhYM7unV23vvShtspE4xhme8xoldAYG3gGlObK94
+         +g0hR2JygoHHfOK3HtOfSQeRmRuqHh53ejev9dx9OlqGGo14a8h8NARu/bprITRyWAdZ
+         n6QPXiHPRT5E31OBGJTmys9u8o3Aq1WmsB4JdyV5O4McIx+XX8nnxG+kqzIjYqnCfRcc
+         VBFw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1774503804; x=1775108604; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=MC8YZMrpOiVQXaQsK16bopjggMD7NER7fOf0qrCs7A0=;
-        b=j9VIybWWMartLF4E6u3VULN362czlBOTKyMl0iyYmmoAGbIhvg3XMOa6JDr0RwEPfv
-         0s8bBNttKoQKhSHOwxycdbFzFsjM8f4Qcx+/rh0wlb2A2z2EFLB7wyAFHpMid1CKZCF3
-         ODrhVtSkmB2Jc+j7xaCNZFM9E3NOxLvsHVvls=
+        d=linaro.org; s=google; t=1774511607; x=1775116407; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
+        b=rZ5eLiR+WWJ4SpY1ZO8JQwJlv/6SmLmUIT9THT/QsKBnuvZbt2tjaQ4wDPrwckqOY5
+         4yo4pHEMjrgAx1fUt8j2IdB81tnVgCjrwaKQuWwjlmoidvjFVphhIeqsMRT4ZGEt4N8c
+         uYcaADbXkzQNBqRjWbYfZ0agWvwUI6QC8d7T8/ccMLQAIChNCh9j4CNtSXSqeioALdCg
+         z04Y6lcsbHD/B6jQOS51MiuRIGlNDpY3K0eQoh0QWWjOQOlrUsxqZfjgG4KSN+oTOPI5
+         24QY+l3Ik6IpI7EWEK7X5ZT2pYF1Y3y3/TV14QlxuLxxenJ+UtG8KX3HRrzNpp8KXwzx
+         ZMUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774503804; x=1775108604;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=MC8YZMrpOiVQXaQsK16bopjggMD7NER7fOf0qrCs7A0=;
-        b=oxX1cVP0s+7WH0mocKOnKvndcYQfSEDC5aRqbANfPX0Z7NoLTchIg8r9Um5DRNjoBj
-         nND1dsOAt1NBr+5ze/P/Pq9O0Qb7EF/baCRa3tEGLDa74nMU5jV21a5GciGgA1OgtSJ4
-         QBFwHuNATJmJa0+pTsJldxd1XD0P1gfH10ExGAm6460ddRW+ZdKt5EVw3FCwHDIIx3fe
-         VAy7U/smVnzPWzc7GoRcmVHEezQ5ioyCEFC2+w0hyyOJ8nwWo3qTYNAyeIH+B3WEb3EY
-         zS69uVWXg3Fg2JKD272rTt5qaCFXcWGLhsjMZuSiYsfQuEuMKo68rOlUoHXDfu1VBepQ
-         Ndug==
-X-Forwarded-Encrypted: i=1; AJvYcCVLhGRD/Ql7Fn2q6DwYHSW8pWv/2w29u3Siqrls+qX5OiIo0u0lok0qIRC9YC2vBd6FBwshVAjO6Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz5YzIpTU7B9bXS8WDMy9zLNaCEKLwKrDx7zcXy7A1MhE7vw+aA
-	7Xyy47/4WJCRoUUtAD1L0dHTZp+33WTqrL87/jzYvzY96S9a/Vyxt+8iLkjzzEn6jA==
-X-Gm-Gg: ATEYQzwN9vn5l8sj1jwRLc+W5Nsc0kpr1/xpNaWnoSU4YPSjxIAT3Q17S5bPNz9lEdj
-	NAU2esjvJjrvvDF+RqWt1yyBZZJjqs3b8qfSXhFv/2+NIlOxZ0p4DoUINKlLr56KDs4qisWMdaf
-	/bRgcLLQUMAzCMMPPQcjqR0iYay84twdDxuSkUG00ha9eRzBLXdUNzen+7YiSBXdU2hgU2MAXds
-	CuwV1pS+JXzU9p9+heAUB+WwdKULT/6lkn1p+GuL5yTq1ikG/VpxJmLDUbgabBl5t4e29KwWhnf
-	SBykwAiZx7hNPwEoqSJ07cRptQkOXsCG82j2dz63aAB712dmHLu6s9ZEPyNkmQzigDu0KzMolCw
-	zOQuO1RviT7YZqpvB8U8xHG4YlJRfYkQA4ois3y8NQR2HxIhGZxxQj4WG9RpfEDbf49vfN5lTNi
-	fkdQiXGuSzswkf0s8+eqYvYt2Kj0dd/GkfMKWGACCvJM11CSKjVdERYuA=
-X-Received: by 2002:a05:6a00:1ac7:b0:820:2f9b:fe31 with SMTP id d2e1a72fcca58-82c6dfb1e09mr6141757b3a.30.1774503803653;
-        Wed, 25 Mar 2026 22:43:23 -0700 (PDT)
-Received: from google.com ([2a00:79e0:201d:8:3ed5:7e63:b37c:a7d7])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82c7d5d89b5sm1411849b3a.41.2026.03.25.22.43.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 22:43:23 -0700 (PDT)
-Date: Thu, 26 Mar 2026 13:43:16 +0800
-From: Chen-Yu Tsai <wenst@chromium.org>
-To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: wens@kernel.org, Luca Leonardo Scorcia <l.scorcia@gmail.com>,
-	linux-mediatek@lists.infradead.org, Val Packett <val@packett.cool>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Gary Bisson <bisson.gary@gmail.com>,
-	Julien Massot <julien.massot@collabora.com>,
-	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
-	Fabien Parent <parent.f@gmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>, linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org
-Subject: Re: [PATCH v3 9/9] arm64: dts: mt6392: add mt6392 PMIC dtsi
-Message-ID: <20260326054316.GB910813@google.com>
-References: <20260317184507.523060-1-l.scorcia@gmail.com>
- <20260317184507.523060-10-l.scorcia@gmail.com>
- <c1a425ba-a4ca-49ea-9660-5de74bede124@collabora.com>
- <CAGb2v64+oofwTiJTXDYCuzUEpk=zioi16i8a7iMimc_eZ1RPUQ@mail.gmail.com>
- <28102417-4a2a-4e29-afbd-d0f2aa76074b@collabora.com>
+        d=1e100.net; s=20251104; t=1774511607; x=1775116407;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
+        b=s6Z1oRzHuYj6rcc8VGozyn+If9h4beMjIeTUZoN1V8Lw5WDG78+YhgYUFvHgO8dqie
+         YmcoJ0jQC+NUAiCspyCEIz2oEszfqdUp/dWcNpMvrnP6SvCzKG/g4q1u0dHTkORbdJiq
+         c0RcaDndCDubyS3fbIY7+7dWOYWSLm8Mxg5DE43uO9h3m4cc7dLUkVsGzU0QSBOR5Bb/
+         gvgQ43QH9TVigr9bINKTUPDW0W5danozijDDoTONpuS++OLinPPp9V6oFjYg38nlGbSP
+         bmhKH8vupwSmaHDT86/udXm0Aa1d9c6fDKUk/ToETT+9BiFNZ3ZMdD5rIfr6JoarP3k5
+         dy+A==
+X-Forwarded-Encrypted: i=1; AJvYcCVJh1SGetwBVsviexkSIodf+Ui5Uf1z+wYMY1lpDfVqdbZmAL/Kw6vQCxoyjs0VO6HypgtOvJYp2w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyigpgtYYhIgPYbH7z/v8L8IPvx61qm9Sw1QpVvT9OidfUtjIAt
+	mjuK/VXdHVA+ftMxVQNzIGwclLIshYAWWMeYCIFXxF8JlVzZyOKEkmR4aAEyqgq9UWFM7M+hNaX
+	k7Lw+NIUX4CIob3ozOn6Zzx3xXKs6pwB/xrYPh//gDQ==
+X-Gm-Gg: ATEYQzxog4mM8KD4WHbg4B5WksSsYf+pDv+LQr+DW0WDTilqAxfFrEtLKsPv+kgrVcA
+	xlw4AUQGN/+ETHf+SRvZEwGOSoS2YQoV4KzlZpiwl1DNaQl7f56fyBQB2f3h6CGBQ8M0SIUuhXC
+	VtvjoOJswROeHrf2Tx4razv5alcwqMwByB9F9Gv8Er7MtFyT580HmaX98sKUJ7Y42czHcq8deD6
+	1wziICMSbN2ThuE03806YIBktef+DGECtj03Z4xlKLa6AkyqkUS3YkYC3ZowYpEMgATifJH8vbo
+	cgGYbNWEPbOaFPhVUn9Ckobl2x0dkd/f5613
+X-Received: by 2002:a05:6402:1d4e:b0:668:6121:c691 with SMTP id
+ 4fb4d7f45d1cf-66a8262af1fmr4793819a12.8.1774511606747; Thu, 26 Mar 2026
+ 00:53:26 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28102417-4a2a-4e29-afbd-d0f2aa76074b@collabora.com>
+References: <20260325181314.3875909-1-christian.loehle@arm.com>
+In-Reply-To: <20260325181314.3875909-1-christian.loehle@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Thu, 26 Mar 2026 08:53:14 +0100
+X-Gm-Features: AQROBzBkN5VwVv9HjwQFvvEawhTfid1FbsE1ZxvEgRuevcSmF44ZSXhYD0XyXXk
+Message-ID: <CAKfTPtAOd2+e1Wyy1uhCzLANh9-KJpR5zc_RSSt+dQvHHxhmMQ@mail.gmail.com>
+Subject: Re: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC asymmetry
+To: Christian Loehle <christian.loehle@arm.com>
+Cc: arighi@nvidia.com, peterz@infradead.org, dietmar.eggemann@arm.com, 
+	valentin.schneider@arm.com, mingo@redhat.com, rostedt@goodmis.org, 
+	segall@google.com, mgorman@suse.de, catalin.marinas@arm.com, will@kernel.org, 
+	sudeep.holla@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, juri.lelli@redhat.com, kobak@nvidia.com, 
+	fabecassis@nvidia.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Mar 18, 2026 at 06:22:42PM +0100, AngeloGioacchino Del Regno wrote:
-> Il 18/03/26 14:54, Chen-Yu Tsai ha scritto:
-> > On Wed, Mar 18, 2026 at 8:39 PM AngeloGioacchino Del Regno
-> > <angelogioacchino.delregno@collabora.com> wrote:
-> > > 
-> > > Il 17/03/26 19:43, Luca Leonardo Scorcia ha scritto:
-> > > > From: Val Packett <val@packett.cool>
-> > > > 
-> > > > Add the dts to be included by all boards using the MT6392 PMIC.
-> > > > 
-> > > > Signed-off-by: Val Packett <val@packett.cool>
-> > > > Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-> > > > ---
-> > > >    arch/arm64/boot/dts/mediatek/mt6392.dtsi | 141 +++++++++++++++++++++++
-> > > >    1 file changed, 141 insertions(+)
-> > > >    create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
-> > > > 
-> > > > diff --git a/arch/arm64/boot/dts/mediatek/mt6392.dtsi b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-> > > > new file mode 100644
-> > > > index 000000000000..fbf6f671524c
-> > > > --- /dev/null
-> > > > +++ b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-> > > > @@ -0,0 +1,141 @@
-> > > > +// SPDX-License-Identifier: GPL-2.0
-> > > > +/*
-> > > > + * Copyright (c) 2019 MediaTek Inc.
-> > > > + * Copyright (c) 2024 Val Packett <val@packett.cool>
-> > > > + */
-> > > > +
-> > > > +#include <dt-bindings/input/input.h>
-> > > > +
-> > > > +&pwrap {
-> > > > +     pmic: pmic {
-> > > > +             compatible = "mediatek,mt6392", "mediatek,mt6323";
-> > > > +             interrupt-controller;
-> > > > +             #interrupt-cells = <2>;
-> > > > +
-> > > > +             keys {
-> > > > +                     compatible = "mediatek,mt6392-keys";
-> > > > +
-> > > > +                     key-power {
-> > > > +                             linux,keycodes = <KEY_POWER>;
-> > > > +                             wakeup-source;
-> > > > +                     };
-> > > > +
-> > > > +                     key-home {
-> > > > +                             linux,keycodes = <KEY_HOME>;
-> > > > +                             wakeup-source;
-> > > > +                     };
-> > > > +             };
-> > > > +
-> > > > +             pio6392: pinctrl {
-> > > > +                     compatible = "mediatek,mt6392-pinctrl";
-> > > > +
-> > > > +                     gpio-controller;
-> > > > +                     #gpio-cells = <2>;
-> > > > +             };
-> > > > +
-> > > > +             rtc {
-> > > > +                     compatible = "mediatek,mt6392-rtc",
-> > > > +                             "mediatek,mt6323-rtc";
-> > > > +             };
-> > > > +
-> > > > +             regulators {
-> > > > +                     compatible = "mediatek,mt6392-regulator";
-> > > > +
-> > > > +                     mt6392_vproc_reg: buck_vproc {
-> > > 
-> > > s/buck//g
-> > > 
-> > > Also, no min/max voltages?!
-> > 
-> > We really shouldn't set min/max voltages in the PMIC dtsi file.
-> > 
-> > The min/max voltages are supposed to be the intersection of the
-> > consumers acceptable operating ranges. The min/max of the regulator
-> > itself is already implied by the model / compatible.
-> > 
-> 
-> Your point is fair, but it's also true that some of the regulators are not
-> really meant to ever output anything different than what they are supposed
-> to, though, with slight variations being possible... I guess the best option
-> here is to leave declaring voltages to board DTs instead, which is sensible
-> in the end.
-> 
-> Okay, agreed. Let's go with no voltages.
-> 
-> Reminder for myself: there's a bunch of PMIC devicetrees to cleanup in here...
+On Wed, 25 Mar 2026 at 19:13, Christian Loehle <christian.loehle@arm.com> wrote:
+>
+> The scheduler currently handles CPU performance asymmetry via either:
+>
+> - SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
+> - SD_ASYM_CPUCAPACITY: capacity-aware scheduling
+>
+> On arm64, capacity-aware scheduling is used for any detected capacity
+> differences.
+>
+> Some systems expose small per-CPU performance differences via CPPC
+> highest_perf (e.g. due to chip binning), resulting in slightly different
+> capacities (<~5%). These differences are sufficient to trigger
+> SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
+> symmetric.
+>
+> For such small deltas, capacity-aware scheduling is unnecessarily
+> complex. A simpler priority-based approach, similar to x86 ITMT, is
+> sufficient.
 
-And to be honest, even the default names are not needed. They are again
-implied by the compatible, and even the regulator's own node name.
+I'm not convinced that moving to  SD_ASYM_PACKING is the right way to
+move forward.
 
-So either we could have a whole bunch of empty regulator nodes with
-labels for easy reference, or just have the upper level "regulators"
-wrapper node with a "mt63??_regulators" label for board dts files
-to reference and add the _used_ regulators to.
+1st of all, do you target all kind of system or only SMT? It's not
+clear in your cover letter
 
-If you agree, I can do the cleanup work.
+Moving on asym pack for !SMT doesn't make sense to me. If you don't
+want EAS enabled, you can disable it with
+/proc/sys/kernel/sched_energy_aware
 
-ChenYu
+For SMT system and small capacity difference, I would prefer that we
+look at supporting SMT in SD_ASYM_CPUCAPACITY. Starting with
+select_idle_capacity
+
+
+>
+> This series introduces support for using asymmetric packing in that case:
+>
+> - derive per-CPU priorities from CPPC highest_perf
+> - detect when CPUs differ but not enough to form distinct capacity classes
+> - suppress SD_ASYM_CPUCAPACITY for such domains
+> - enable SD_ASYM_PACKING and use CPPC-based priority ordering instead
+>
+> The asympacking flag is exposed at all topology levels; domains with
+> equal priorities are unaffected, while domains spanning CPUs with
+> different priorities can honor the ordering.
+>
+> RFC:
+> I'm not entirely sure if this is the best way to implement this.
+> Currently this is baked into CPPC and arm64, while neither are strictly
+> necessary, we could also use cpu_capacity directly to derive the
+> ordering and enable this for non-CPPC and/or non-arm64.
+> RFT:
+> Andrea, please give this a try. This should perform better in particular
+> for single-threaded workloads and workloads that do not utilize all
+> cores (all the time anyway).
+> Capacity-aware scheduling wakeup works very different to the SMP path
+> used now, some workloads will benefit, some regress, it would be nice
+> to get some test results for these.
+> We already discussed DCPerf MediaWiki seems to benefit from
+> capacity-aware scheduling wakeup behavior, but others (most?) should
+> benefit from this series.
+>
+> I don't know if we can also be clever about ordering amongst SMT siblings.
+> That would be dependent on the uarch and I don't have a platform to
+> experiment with this though, so consider this series orthogonal to the
+> idle-core SMT considerations.
+> On platforms with SMT though asympacking makes a lot more sense than
+> capacity-aware scheduling, because arguing about capacity without
+> considering utilization of the sibling(s) (and the resulting potential
+> 'stolen' capacity we perceive) isn't theoretically sound.
+>
+> Christian Loehle (3):
+>   sched/topology: Introduce arch hooks for asympacking
+>   arch_topology: Export CPPC-based asympacking prios
+>   arm64/sched: Enable CPPC-based asympacking
+>
+>  arch/arm64/include/asm/topology.h |  6 +++++
+>  arch/arm64/kernel/topology.c      | 34 ++++++++++++++++++++++++++
+>  drivers/base/arch_topology.c      | 40 +++++++++++++++++++++++++++++++
+>  include/linux/arch_topology.h     | 24 +++++++++++++++++++
+>  include/linux/sched/topology.h    |  9 +++++++
+>  kernel/sched/fair.c               | 16 -------------
+>  kernel/sched/topology.c           | 34 ++++++++++++++++++++------
+>  7 files changed, 140 insertions(+), 23 deletions(-)
+>
+> --
+> 2.34.1
+>
