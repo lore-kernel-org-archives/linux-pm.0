@@ -1,134 +1,134 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f73.google.com (mail-dl1-f73.google.com [74.125.82.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28AA13CEB8F
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 10:33:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F2B738F23A
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 11:25:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774521212; cv=none; b=kgRl9p0ShcF1n0PBoSB23eFaeLxGwmdiT1lNzy2xtdwTF4ES7UhFXNma9CgBWTlq5z58YnLl8HPm3qaW5q7039kgNcpaDIzKAlAP30UvJfOw6Q8Ki0Plkkm1yT+rDjpKsIyqvc4XyaUD+VhG3LFcNxr3kpmDMBSZtdG4xSH+sk8=
+	t=1774524331; cv=none; b=sM58S+hWmnVm6558lzP+rG4nsPRzsEflfbFwKdcCQfVVrfSSurFizL2hGBqqI4VuWiawJH78Qzm6SfZnSbXHtaWvr1Du2Yq+l37T0hX9pwE/e8dmQgbN/w2sQfs7RoQ2GDatmzv51aIjndIBdUPMkBQXBp+hIArgIyBC7ITnXFs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774521212; c=relaxed/simple;
-	bh=ZudevnbvHxuJFNRVUgY0l6TTlPYj57cCXzQfq18RxyU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RGND5Tk6sZo1QNAWUHcn9RSbt38jLPeNhR8XF9Cb4S54x6BT6xA9q7QDA9xvhqmDWev3uMpDjXwCa77UJlEbsvthk0ZGFLHAYe1NwaTAsiQ3VuoY1knVUCkYkUrl2M+aZWVkgJABCKeMTovZrAfCWdTH7MmhMsnkuIF2oxKZJ8w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jC0Ag65m; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774524331; c=relaxed/simple;
+	bh=xg9KEybftToIhyeKvi3LSZ8BdXiuPOyUQjSLweID3Q8=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=G3PtcRMsJ+vPBBYclL4fgufc2Kk3CBOj6cuWDKC19Ze1Qoni8im2woYcXwSocZpz4JYUK+RwIoPmkVshOu4D+xnlQUH8y1x0OEuZgPSokqgHRZPkVYJzXvHzVGwSrW9MRwbApowR9JGQ57zVNcVDmL7gD4tRPfA/aTSZvAe0E5k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=G7sdNnQ7; arc=none smtp.client-ip=74.125.82.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jC0Ag65m"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EADEC2BCC7
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 10:33:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774521212;
-	bh=ZudevnbvHxuJFNRVUgY0l6TTlPYj57cCXzQfq18RxyU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=jC0Ag65mbvl7GVM2XEvFH/Tju8dtTgsO2dh8f9fVQi9TQGw5WW7VjK1TgliJa+42y
-	 c5TSTRrUnj/mfXVfUG2aLlWVKyfFYq7kK0TrKkUF4T/pDwzuE71HVJw777hh4ByqPs
-	 nLdgxvTuWg0LPvwb+Da6/QotDVRQkLe5HzJQ5OcH1Uy9CUtTpqeZ76WCAVG75cr35V
-	 yvV0Gtql5Ph64yJ5sAPTsI2NaxJBb6KPZvAa0V436nZbcgZczadW8nLsvkYF0bEw70
-	 wCTsqxBVPqQKGv8LHEp/9DVRIfXbyqets0TvwguIzhq8O0fZGvBKYW89QQq0zDfXBD
-	 hcmWvreO0AOLA==
-Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-794719afcd4so8774967b3.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 03:33:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXakvreN5Nfh1vTHCszl90gGCKDReMqPXM9n+FabdnrQzlhm0CvyvfPAzIjqBpx7dn9SmkR3sqFGg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxWhv2K5P2yC6obm6R6JjUWg9eWgQLh7XKBWsyOTGLReb6B2cFd
-	hXAaauJ+zgqlse78TrrLytpxclOc+/X26zZy7oh0OWLrVjTNUoUxBO9uzvXJ194fAU4el4um2Kq
-	nu6A8wij/MKfp37S3rT2DFrQXLpetFXA=
-X-Received: by 2002:a05:690c:6086:b0:79a:69bc:f20f with SMTP id
- 00721157ae682-79acf3a8b76mr76387137b3.21.1774521210579; Thu, 26 Mar 2026
- 03:33:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="G7sdNnQ7"
+Received: by mail-dl1-f73.google.com with SMTP id a92af1059eb24-128ba70cc99so520233c88.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 04:25:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1774524329; x=1775129129; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Ay8G1oJZ1K8BN/IzLR5Hr0MTltSuhb2JjZXdZm6J5LQ=;
+        b=G7sdNnQ7PPRKiCxYgh50WtjrxRaZxXRmQWV0/4yjP5wGA5FT0BG+kRMBqKTHGOFezN
+         aj1rttuqcAKz8nTnqXldE/bQ+YHNMc9faPXa2AthAtwNKbRWprwbaIFFQ7IuQSBQfKPb
+         8vJUu9dgY7oct9HZUZuu8C+QqcH3GYYeP8SZigmmu1HYB3LDPyB6GZJ1lSn2imB5Lpd9
+         AeGpjDdVulJnPgm9ki8ryU6WlKT8CsaQTohjGV2Auk9U9fNvPSK3WPV11qnlHVe5IaZK
+         4VKhlvpo79jXP7oGHH1sArAqktE8PgguDcEIpfDECErSUJCp17qdnfTqtIRSL2ppl4yW
+         kUwA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774524329; x=1775129129;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Ay8G1oJZ1K8BN/IzLR5Hr0MTltSuhb2JjZXdZm6J5LQ=;
+        b=WruBhU7e1R/hrcpMXQX1t7/PmlcgMVvETv+Tqc8bYolqMmRuFR/2+r3yYn8OOC4XTt
+         6hlOPG3PUHxfp81f9y0nO6yxNkFem7XJLm2L6OjfAMoI30hiqwhjTSE8DAHoqIrdXL1u
+         +NtP08CpglB/Ba6tndms9FXoXNzE9nb63qD9bsIadAp8Gst2yrRVdc7A1pT0KZOlHMUK
+         1Bg9s+f74aUvV/tgXJynpajp7gVS9qWjg2o7l7d7stznFUixFTKIsMtcywya005z8Qpm
+         B+dPVU0HY3F1dO8iU3lnkZMGx17q2YxXdloignpxHL3p27oo9Iw8yFksdVYMIeD/Oupj
+         HMkA==
+X-Forwarded-Encrypted: i=1; AJvYcCXSTGmmy9rx/6cBeVsK2LRy15886HrdT0r3pmXI7aPbh3CVD2+YxP1k6qoEbZs+rHSJKo/6iReF+w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yylmo8RNKCkhDACnwPOtptacjit1QMFin3ZYhnZl2Kuq6U02tdP
+	OXFjeODF+ZaK526/LI/xe+UFWvZ0/AOHwgJM2eIa8RiemzE7+LHxxXKZdxMV6qpkaXrc0bdLuVm
+	TPZwOPt0NumDKPg==
+X-Received: from dlec13-n1.prod.google.com ([2002:a05:701b:428d:10b0:127:89b6:8d2a])
+ (user=wusamuel job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:7022:125:b0:128:d084:e921 with SMTP id a92af1059eb24-12a96e5d6famr3734825c88.14.1774524328974;
+ Thu, 26 Mar 2026 04:25:28 -0700 (PDT)
+Date: Thu, 26 Mar 2026 04:25:18 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260325143555.451852-1-herve.codina@bootlin.com> <20260325143555.451852-21-herve.codina@bootlin.com>
-In-Reply-To: <20260325143555.451852-21-herve.codina@bootlin.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Thu, 26 Mar 2026 11:33:19 +0100
-X-Gmail-Original-Message-ID: <CAD++jLkFu+Z22QBFiaa9S+Epeh=RJZOYX8BOLVDFw4bhEoYF1Q@mail.gmail.com>
-X-Gm-Features: AQROBzC4i_eE97sXtt89YSs_3fVQUuKW8eO9nnDvhVba5azUhozyRvIt7ceD-wY
-Message-ID: <CAD++jLkFu+Z22QBFiaa9S+Epeh=RJZOYX8BOLVDFw4bhEoYF1Q@mail.gmail.com>
-Subject: Re: [PATCH v6 20/27] misc: lan966x_pci: Fix dtso nodes ordering
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Kalle Niemi <kaleposti@gmail.com>, 
-	Matti Vaittinen <mazziesaccount@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
-	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
-	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
-	Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
-	Sakari Ailus <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, 
-	Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, 
-	Alison Schofield <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, 
-	Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, 
-	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org, 
-	driver-core@lists.linux.dev, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
-	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
-	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.53.0.1018.g2bb0e51243-goog
+Message-ID: <20260326112521.2827500-1-wusamuel@google.com>
+Subject: [PATCH v2 0/2] Support BPF traversal of wakeup sources
+From: Samuel Wu <wusamuel@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
+	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
+	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>
+Cc: memxor@gmail.com, Samuel Wu <wusamuel@google.com>, kernel-team@android.com, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	driver-core@lists.linux.dev, bpf@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Herve,
+This patchset adds requisite kfuncs for BPF programs to safely traverse
+wakeup_sources, and puts a config flag around the sysfs interface.
 
-this is nitpicking, but if you respin the series consider the following:
+Currently, a traversal of wakeup sources require going through
+/sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
+sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
+wakeup source also having multiple attributes. debugfs is unstable and
+insecure.
 
-On Wed, Mar 25, 2026 at 3:42=E2=80=AFPM Herve Codina <herve.codina@bootlin.=
-com> wrote:
->
-> Nodes available in the dtso are not ordered by their unit address.
->
-> Fix that re-ordering them according to their unit address.
->
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-(...)
-> +                               switch: switch@e0000000 {
+Adding kfuncs to lock/unlock wakeup sources allows BPF program to safely
+traverse the wakeup sources list. The head address of wakeup_sources can
+safely be resolved through BPF helper functions or variable attributes.
 
-Recommended practice is:
+On a quiescent Pixel 6 traversing 150 wakeup_sources, I am seeing ~34x
+speedup (sampled 75 times in table below). For a device under load, the
+speedup is greater.
++-------+----+----------+----------+
+|       | n  | AVG (ms) | STD (ms) |
++-------+----+----------+----------+
+| sysfs | 75 | 44.9     | 12.6     |
++-------+----+----------+----------+
+| BPF   | 75 | 1.3      | 0.7      |
++-------+----+----------+----------+
 
-ethernet-switch@...
+The initial attempts for BPF traversal of wakeup_sources was with BPF
+iterators [1]. However, BPF already allows for traversing of a simple list
+with bpf_for(), and this current patchset has the added benefit of being
+~2-3x more performant than BPF iterators.
 
-> +                                       compatible =3D "microchip,lan966x=
--switch";
-> +                                       reg =3D <0xe0000000 0x0100000>,
-> +                                             <0xe2000000 0x0800000>;
-> +                                       reg-names =3D "cpu", "gcb";
-> +
-> +                                       interrupt-parent =3D <&oic>;
-> +                                       interrupts =3D <12 IRQ_TYPE_LEVEL=
-_HIGH>,
-> +                                                    <9 IRQ_TYPE_LEVEL_HI=
-GH>;
-> +                                       interrupt-names =3D "xtr", "ana";
-> +
-> +                                       resets =3D <&reset 0>;
-> +                                       reset-names =3D "switch";
-> +
-> +                                       pinctrl-names =3D "default";
-> +                                       pinctrl-0 =3D <&tod_pins>;
-> +
-> +                                       ethernet-ports {
-> +                                               #address-cells =3D <1>;
-> +                                               #size-cells =3D <0>;
-> +
-> +                                               port0: port@0 {
+[1]: https://lore.kernel.org/all/20260225210820.177674-1-wusamuel@google.com/
 
-Recommended practice is:
-ethernet-port@...
+Changes in v2:
+- Dropped CONFIG_PM_WAKEUP_STATS_SYSFS patch for future patchset
+- Added declarations for kfuncs to .h to fix sparse and checkpatch warnings
+- Added kfunc to get address of wakeup_source's head
+- Added example bpf prog selftest for traversal of wakeup sources per Kumar
+- Added *_fail.c selftest per Kumar
+- More concise commit message in patch 1/2
+- v1 link: https://lore.kernel.org/all/20260320160055.4114055-1-wusamuel@google.com/
 
-Yours,
-Linus Walleij
+Samuel Wu (2):
+  PM: wakeup: Add kfuncs to traverse over wakeup_sources
+  selftests/bpf: Add tests for wakeup_sources kfuncs
+
+ drivers/base/power/power.h                    |   7 ++
+ drivers/base/power/wakeup.c                   |  72 +++++++++++-
+ tools/testing/selftests/bpf/config            |   3 +-
+ .../selftests/bpf/prog_tests/wakeup_source.c  | 101 +++++++++++++++++
+ .../selftests/bpf/progs/test_wakeup_source.c  | 107 ++++++++++++++++++
+ .../selftests/bpf/progs/wakeup_source.h       |  22 ++++
+ .../selftests/bpf/progs/wakeup_source_fail.c  |  63 +++++++++++
+ 7 files changed, 372 insertions(+), 3 deletions(-)
+ create mode 100644 tools/testing/selftests/bpf/prog_tests/wakeup_source.c
+ create mode 100644 tools/testing/selftests/bpf/progs/test_wakeup_source.c
+ create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source.h
+ create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source_fail.c
+
+-- 
+2.53.0.1018.g2bb0e51243-goog
+
