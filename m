@@ -1,33 +1,33 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4BF0B330B09;
-	Thu, 26 Mar 2026 09:21:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8A60D2F6922;
+	Thu, 26 Mar 2026 09:24:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774516898; cv=none; b=k96FzQ1XzAfwRUVzNLEksDL39VpeUgMBt6KMfD+mqudmt+/BpdSsz2YKxZOBl9vlyTGkqi037JZWBOc0Mw3WJKpp/V3eMMDjo+m6LwAp1cweuYzhGxpAttXhTeE3iF1fqEb/fN2d1fMuYtckw0ppR+1meW0Cqmn6iJqL8taRPbk=
+	t=1774517051; cv=none; b=keP3/lk6qiMGLyasv5VzzrnaKrCs8v2v6aRPB1+3SVNI0uIVemIF39GsUaA+gi4gpSOCfvRr8Mcc8OJK8P9/R6S0EStUHwdb1tiM7u9M2feUpFUox2JZjJ123jdCknxb8W5Uy4DHvb3zCP6aB39LwJ0V4VXTlSnNQTwywtaGALs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774516898; c=relaxed/simple;
-	bh=7OTVafjmyVnxgcgdn09d70Z6scwb+pRRb5oNN0xBKDE=;
+	s=arc-20240116; t=1774517051; c=relaxed/simple;
+	bh=1k/f6P6g6/rTaH7YRnpmFbR/xe5ixPQdd2Bf2f8rbqw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hOWQI91ShqmHspRFF3DDRSg4WOhMoYbo7p8Adv3CNn8a+ztCyAtEVYJ5HLNL9CL7gYkLq7aSwdhTGSUlPLc/RbV5fludz3LC5ptLcXMqLgGeShDyGhTaoDakkBzcpCHQa1ilXm0TyUgWOPwL4dpc4yJP+7VSY+OW+wgDfkuKis0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=K/SgzzoL; arc=none smtp.client-ip=217.140.110.172
+	 In-Reply-To:Content-Type; b=LD9GYp2hIaP1iin/gYOmW5f4ETMi/3wmxP4wONiujJphjypvn77lmcS6YvFUI3avmWKEUrRPRUN97Tuk8cufeHIi8CrDhbXd4r8A+wxVxKcVA26O/rVdoq9AeSiSNl6j5CNXyvgbtgmw/zGWUfk4IBwC8P7pzTD+g1tydLGeKho=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=eQCjYsNu; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="K/SgzzoL"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="eQCjYsNu"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3146416F3;
-	Thu, 26 Mar 2026 02:21:29 -0700 (PDT)
-Received: from [10.57.16.191] (unknown [10.57.16.191])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EE4093F915;
-	Thu, 26 Mar 2026 02:21:31 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 01B2116F3;
+	Thu, 26 Mar 2026 02:24:03 -0700 (PDT)
+Received: from [10.1.33.38] (unknown [10.1.33.38])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 22EFF3F915;
+	Thu, 26 Mar 2026 02:24:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774516895; bh=7OTVafjmyVnxgcgdn09d70Z6scwb+pRRb5oNN0xBKDE=;
+	t=1774517048; bh=1k/f6P6g6/rTaH7YRnpmFbR/xe5ixPQdd2Bf2f8rbqw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=K/SgzzoLfTThcNqTZXvweRYslfrAC8Q1XtiQVRv0VuZeOfn57LcMS1+i/Jo8NbblY
-	 DOvJ0InMup9wuuDAOIWkU3ZLDT0pv54mEuT4fIhIZ9l7TbBoXw7szUW6Fp+BpX3Mvl
-	 lLQqkvRyjDlhsEUfGpJwt8jHykH69SVQ63vAk7vk=
-Message-ID: <c816757a-3169-4d5f-942b-4c49be89ebe1@arm.com>
-Date: Thu, 26 Mar 2026 09:21:49 +0000
+	b=eQCjYsNu5LkhnGC7d6GjRpbYwfzlhgLUqTXqAq3knEeiV6whdpQKcgnNc4FSPzU6t
+	 ppJBgZfUUWG9EmN4tM3P9VcWWcC+FPi+cctfgb0AnV+N85qjH6U7RCl+2OWiVseaqH
+	 dyCWoCO7WhExjjom7u8LB7nSghIMdSJnfysC6xOI=
+Message-ID: <7eccf54f-5a99-40ce-8fbc-b755b4e2d312@arm.com>
+Date: Thu, 26 Mar 2026 09:24:03 +0000
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,166 +35,87 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 1/2] thermal/cpufreq_cooling: remove unused cpu_idx in
- get_load()
-To: Qais Yousef <qyousef@layalina.io>
-Cc: Xuewen Yan <xuewen.yan94@gmail.com>,
- Viresh Kumar <viresh.kumar@linaro.org>, Xuewen Yan <xuewen.yan@unisoc.com>,
- rui.zhang@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org,
- amit.kachhap@gmail.com, daniel.lezcano@kernel.org,
- linux-kernel@vger.kernel.org, ke.wang@unisoc.com, di.shen@unisoc.com,
- jeson.gao@unisoc.com, Peter Zijlstra <peterz@infradead.org>,
- Vincent Guittot <vincent.guittot@linaro.org>
-References: <20260320113148.7308-1-xuewen.yan@unisoc.com>
- <031562ee-b88f-49b9-8b1e-dbbbe1a508c6@arm.com>
- <ajjgf7xg5fwo6uk5ualkzoupuyj3pmp3l5yb2i2zfhop3msfkg@ieoosfn35gth>
- <3daf28ca-48c2-477f-ad06-5704b17b880e@arm.com>
- <sbtbzkzrtgrmqhxnwcqrvxprgzytkzwcsanooyukhphymgt4t6@telvhz3yolx3>
- <c19fc390-ca3e-4ad9-92e8-e30dfd6fc95b@arm.com>
- <psrlnsgdg4afrbk7u3vq35bsqc5msncrfifrl6ee45usn27r7y@fwjklu6mcutw>
- <2a71d446-3277-4b8e-9b29-b77ebd3a4381@arm.com>
- <CAB8ipk_7MGUza9_izMypMxPFUjAoB34ZZp0-ts4w6eJ+tr+MDw@mail.gmail.com>
- <35d472ac-8a58-44c5-a0b1-5e1de8ac6cfc@arm.com>
- <20260326090554.jerlaudbe3rkovsi@airbuntu>
+Subject: Re: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC
+ asymmetry
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: arighi@nvidia.com, peterz@infradead.org, dietmar.eggemann@arm.com,
+ valentin.schneider@arm.com, mingo@redhat.com, rostedt@goodmis.org,
+ segall@google.com, mgorman@suse.de, catalin.marinas@arm.com,
+ will@kernel.org, sudeep.holla@arm.com, rafael@kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ juri.lelli@redhat.com, kobak@nvidia.com, fabecassis@nvidia.com
+References: <20260325181314.3875909-1-christian.loehle@arm.com>
+ <CAKfTPtAOd2+e1Wyy1uhCzLANh9-KJpR5zc_RSSt+dQvHHxhmMQ@mail.gmail.com>
+ <d40e57e0-aeff-45fb-82c0-6cefc4f4899d@arm.com>
+ <CAKfTPtA+rcVCLe5XOKwu+0bsc8_ZXc1TH4qrYo4x5tNwz9ZO5Q@mail.gmail.com>
 Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260326090554.jerlaudbe3rkovsi@airbuntu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <CAKfTPtA+rcVCLe5XOKwu+0bsc8_ZXc1TH4qrYo4x5tNwz9ZO5Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-
-
-On 3/26/26 09:05, Qais Yousef wrote:
-> On 03/24/26 10:46, Lukasz Luba wrote:
+On 3/26/26 08:24, Vincent Guittot wrote:
+> On Thu, 26 Mar 2026 at 09:16, Christian Loehle <christian.loehle@arm.com> wrote:
 >>
->> On 3/24/26 02:20, Xuewen Yan wrote:
->>> On Mon, Mar 23, 2026 at 9:25 PM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>> On 3/26/26 07:53, Vincent Guittot wrote:
+>>> On Wed, 25 Mar 2026 at 19:13, Christian Loehle <christian.loehle@arm.com> wrote:
 >>>>
+>>>> The scheduler currently handles CPU performance asymmetry via either:
 >>>>
+>>>> - SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
+>>>> - SD_ASYM_CPUCAPACITY: capacity-aware scheduling
 >>>>
->>>> On 3/23/26 11:06, Viresh Kumar wrote:
->>>>> On 23-03-26, 10:52, Lukasz Luba wrote:
->>>>>>> How is that okay ? What am I missing ?
->>>>>
->>>>> I was missing !SMP :)
->>>>>
->>>>>> Right, there is a mix of two things.
->>>>>> The 'i' left but should be removed as well, since
->>>>>> this is !SMP code with only 1 cpu and i=0.
+>>>> On arm64, capacity-aware scheduling is used for any detected capacity
+>>>> differences.
+>>>>
+>>>> Some systems expose small per-CPU performance differences via CPPC
+>>>> highest_perf (e.g. due to chip binning), resulting in slightly different
+>>>> capacities (<~5%). These differences are sufficient to trigger
+>>>> SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
+>>>> symmetric.
+>>>>
+>>>> For such small deltas, capacity-aware scheduling is unnecessarily
+>>>> complex. A simpler priority-based approach, similar to x86 ITMT, is
+>>>> sufficient.
 >>>
->>> That's also why we sent out patch 1/2; after all, it is always 0 on
->>> !SMP systems.
+>>> I'm not convinced that moving to  SD_ASYM_PACKING is the right way to
+>>> move forward.
+>>> t
+>>> 1st of all, do you target all kind of system or only SMT? It's not
+>>> clear in your cover letter
+>>
+>> AFAIK only Andrea has access to an unreleased asymmetric SMT system,
+>> I haven't done any tests on such a system (as the cover-letter mentions
+>> under RFT section).
+>>
 >>>
->>>>>>
->>>>>> The whole split which has been made for getting
->>>>>> the load or utilization from CPU(s) needs to be
->>>>>> cleaned. The compiled code looks different since
->>>>>> it knows there is non-SMP config used.
->>>>>
->>>>> Right, we are allocating that for num_cpus (which should be 1 CPU
->>>>> anyway). The entire thing must be cleaned.
->>>>>
->>>>>> Do you want to clean that or I should do this?
->>>>>
->>>>> It would be helpful if you can do it :)
->>>>>
->>>>
->>>> OK, I will. Thanks for your involvement Viresh!
->>>>
->>>> Xuewen please wait with your v2, I will send
->>>> a redesign of this left code today.
->>>
->>> Okay, and Qais's point is also worth considering: do we actually need
->>> sched_cpu_util()?
->>> The way I see it, generally speaking, the request_power derived from
->>> idle_time might be higher than what we get from sched_cpu_util().
->>> Take this scenario as an example:
->>> Consider a CPU running at the lowest frequency with 50% idle time,
->>> versus one running at the highest frequency with the same 50% idle
->>> time.
->>> In this case, using idle_time yields the same load value for both.
->>> However, sched_cpu_util() would report a lower load when the CPU
->>> frequency is low. This results in a smaller request_power...
-> 
-> Invariance will cause settling time to stretch longer, but it should settle to
-> the correct value eventually. But generally another case against util is that
-> it has grown to be a description of compute demand more than true idleness of
-> the system.
-> 
+>>> Moving on asym pack for !SMT doesn't make sense to me. If you don't
+>>> want EAS enabled, you can disable it with
+>>> /proc/sys/kernel/sched_energy_aware
 >>
->> Right, there are 2 things to consider:
->> 1. what is the utilization when the CPU still have idle time, e.g.
->>     this 50% that you mentioned
->> 2. what is the utilization when there is no idle time and CPU
->>     is fully busy (and starts throttling due to heat)
+>> Sorry, what's EAS got to do with it? The system I care about here
+>> (primarily nvidia grace) has no EM.
 > 
-> Hmm I think what you're trying to say here we need to distinguish between two
-> cases 50% or fully busy? I think how idle the system is a better question to
-> ask rather than what is the utilization (given the ubiquity of the signal
-> nowadays)
-
-Yes, these two cases, which are different and util signal is not the
-best for that idleness one.
-
-
+> I tried to understand the end goal of this patch
 > 
->>
->> In this thermal fwk we are mostly in the 2nd case. In that case the
+> SD_ASYM_CPUCAPACITY works fine with !SMT system so why enabling
+> SD_ASYM_PACKING for <5% diff ?
 > 
-> But from power allocator perspective (which I think is the context, right?),
-> you want to know if you can shift power?
+> That doesn't make sense to me
+I don't know if "works fine" describes the situation accurately.
+I guess I should've included the context in the cover letter, but you
+are aware of them (you've replied to them anyway):
+https://lore.kernel.org/lkml/20260324005509.1134981-1-arighi@nvidia.com/
+https://lore.kernel.org/lkml/20260318092214.130908-1-arighi@nvidia.com/
 
-I would like to know the avg power in the last X ms window, then
-allocate, shift, set.
-
-> 
->> utilization on CPU's runqueue goes to 1024 no mater the CPU's frequency.
->> We know which highest frequency was allowed to run and we pick the power
->> value from EM for it. That's why the estimation is not that bad (apart
->> from power variation for different flavors of workloads: heavy SIMD vs.
->> normal integer/load).
->>
->> In 1st case scenario we might underestimate the power, but that
->> is not the thermal stress situation anyway, so the max OPP is
->> still allowed.
->>
->> So far it is hard to find the best power model to use and robust CPU
->> load mechanisms. Adding more complexity and creating some
->> over-engineered code in the kernel to maintain might not have sense.
->> The thermal solutions are solved in the Firmware nowadays since the
->> kernel won't react that fast for some rapid changes.
->>
->> We have to balance the complexity here.
-> 
-> I am not verse in all the details, so not sure what complexity you are
-> referring to. IMHO the idle time is a more stable view for how much a breathing
-> room the cpu has. It also deals better with long decay of blocked load
-> over-estimating the utilization. AFAICS just sample the idle over a window when
-> you need to take a decision and you'd solve several problems in one go.
-
-We have issues in estimating power in that X ms window due to fast
-frequency changes. You know how often we can change the frequency,
-almost per-task enqueue (and e.g. uclamp pushes that even harder).
-
-Simple approach for assuming that the frequency we see now on CPU
-has been there for the whole Xms period is 'not the best'.
-The util information w/o uclamp information is not helping
-much (even we we would try to derive the freq out of it).
-
-Now even more complex - the FW can change the freq way often
-than the kernel. So the question is how far we have to push
-the whole kernel and those frameworks to deal with those new
-platforms.
-
-Then add the power variation due to different computation types
-e.g. SIMD heavy vs simple logging task (high power vs. low power
-usage at the same OPP).
-
-IMHO we have to find a balance since even more complex models
-in kernel won't be able to handle that.
-
-I have been experimenting with the Active Stats patch set for
-quite a while, but then FW came into the equation and complicated
-the situation. It will be still better for such platform
-where FW doesn't change the freq, so this approach based on
-idle stats is worth to add IMO.
+Andrea sees an improvement even when force-equalizing CPUs to remove
+SD_ASYM_CPUCAPACITY, so I'd argue it doesn't "work fine" on these platforms.
+To me it seems more reasonable to attempt to get these minor improvements
+of minor asymmetries through asympacking and leave SD_ASYM_CPUCAPACITY
+to the actual 'true' asymmetry (e.g. different uArch or vastly different
+performance levels).
+SD_ASYM_CPUCAPACITY handling is also arguably broken if no CPU pair in
+the system fulfills capacity_greater(), the call sites in fair.c give
+a good overview.
+Is $subject the right approach to deal with these platforms instead?
+I don't know, that's why it's marked RFC and RFT.
