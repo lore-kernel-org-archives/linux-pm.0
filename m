@@ -1,91 +1,124 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38CE936B047
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:50:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04E1334C140
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:54:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774515058; cv=none; b=Y8LIZz18wRtbL8UB90j8i91iLycaH7fhBVUjSh543RCOwFiDEsTXY6HdrdnEpfIlsyh1oWGctHh+Z5raHv8hb2qIg6XPIfK3CylX4MDM7Mmu3l61poFNjMHlB8u6lSn9NtuQr4i7a39pyQKmk2tJ0UQIA9kz5QY6NXl+K88LdjI=
+	t=1774515287; cv=none; b=n0dPNaQslDa+xf5sCGJUKwqlFgLVSxAigcGILcpTs3uIDWwP36xLi23N5TTeyaDB10kXBmOdA7O8pRV3kJWbfAVLihk+WxXtH7pQuKtBF5seQGM/tTDoEp33vQcBwnC9VR2hRVgQYckacQMXNc63iCuW1x3zVHLpek0020wuf5M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774515058; c=relaxed/simple;
-	bh=ImkBVCkUBEKyey0QPJ4F16DDe4F5bx1S/JvLX2EXDB0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LCloRaAyGDPfITvx5R6caOmxy5mtmcopkUhshOikw9rnr+bz+hej9P2ix5tWdYAwRUdeDr2w+U6vSBFgxDcZPFUrsqghkXdM+uRkiXsHYPge8xzqosVq0feLKS+BIzdUBI2UeJYtbyP5wTJbohTSUDJEzLuiL8ECegiuJqAoUqM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hOSN6MkE; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1774515287; c=relaxed/simple;
+	bh=pVOvWW6/8RbPMOuNt3in1cuWQXC6AAst+EwzEiwLSEg=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KfCQoXS68Jb87C/NWKAhi/SoEJ0qxDXp8jZUBYt4Kee1IqP0tbJvRzgfTyJuxgOglfihAfZgE18V+IpqHgxQqc4Ebzisoei1uVvSKTnR5eDcqVFgHBv4XfdOLY7YSKQ1zymLs4CqHSoabXy4smN6LDDIoOgGOOpRJVNtNDIfy5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TV/SLegR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hOSN6MkE"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2ab46931cf1so14005285ad.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:50:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774515056; x=1775119856; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=EhsBpGc02o/BwRxqolRHgVJCSvjvY7/JYjQ8yR2KTos=;
-        b=hOSN6MkEMKCwT9NkQvdLbnGbr8ySjSGgBNwBx4RFlfUfyDGhHweYJrXoCiepM/8VAY
-         0gAW6R52/aYsqg64mQnqorPfvVyfZnMZhS36XisaY/y64Vs2k0ichDj8rwQOzzRhxwdx
-         cTqyNQ5Z5GGORKKEKW4jzoMcVXhOrtacdOqbNK1Qdn/fyZjG+pxJATvZq/zCzk5/VxSj
-         zZzkQM9FW4b2NofnFNaLk4M63etxJRM58jcTYLrGB9SIAysuE4jpBvhAY5MAgalCnvJa
-         SORxfmCQ+oCBTzjZKFOWArbUQS12u162VuPdH9En1dNhkFlddeMQjgrxCp3zc7DGHowy
-         lbwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774515056; x=1775119856;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EhsBpGc02o/BwRxqolRHgVJCSvjvY7/JYjQ8yR2KTos=;
-        b=bn+xbYRXGnj6Bv4S7rBTgtE7mGX+qXpsPuUH5XxE1pHHAm6qWewDJB7ucCJX/AWnrr
-         j06yixH+y0wq5Aph8DJMPhQI6GZyF65aeQrOUEPKW/GX1+ggwZbJnYFKvMCSETy0/1Xu
-         w1RweTJX9liUvC4luaRKrwMl49erDfmU0O53wIK0Q6HE7NNaFiYhnUGcloOmPmGCa3NZ
-         A9re3qEM6qBDQ/CvNrYjs/07yoVsS3EiGHaHAgCdZWKdgY+Q9tV9dBYCnz02l99JG0eh
-         Xb7hYbTq4dC5OaUHgSkdNuXsa93NaAf8PMLwpOT8JimJPmhHzoz22SFRzO7tmU6O9z2g
-         Xpww==
-X-Forwarded-Encrypted: i=1; AJvYcCVM1ws4VxuLb2v7Om8N7QdQuAMpFdRpCVsp9V0wjQJlHoyl4B+U+pk9h7HUKJ1er8Qg0qx8r+QYhQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywagcmo2Ry+JCkty/SI/Y064QT5Sfy1qoKU1RZ3SaVUX41HCSgk
-	vd57U9d4/uJsPkccJ4ZncXiqsua59qw9NsMmB5cgBtQWMZV/HcisJC9p3FvvXqR0Gc0=
-X-Gm-Gg: ATEYQzxszOraYypbhcLvVi4KWkV2IYK82biLeYk6XQeRsqD0BAr5RLQS7+FeJdWbHew
-	HxPgKXIVJTbTctWaE6xyw6IB1zvj5s/sCI2tymz/zsVzWFehXmQtHRRjNTK48prWcc8qe5vm+yz
-	yO/2ygPoJZY7qwS1rmC6g91V3XBgiU7EWrAiwBNTh5mbzfnUvmvkvgGqpc+Z1zbt9eS1qQy4dr3
-	7iXW0pnmh/7pE8NZDWawtlrHTfVzjbdZ6l+XwxyUxOUm6xntzd9vVWIsyf4irIECUd+0ZTpmzv9
-	YYObQMLgV0LGfxBN5qbdxLsVZ2UFCIA512QZlB3i/5K7ua1WPqjYZJi0PNgckDcJmuhyXDXD37j
-	bP00hdrLdQ0paIkVtc+Y+d+6DEwHN/VjwxbwDh83WHM3lSGw1hHl/q782/ds110oNe+pDQgUx4t
-	EpHMhDPIxycdt9jAV4Ogj+bSu6
-X-Received: by 2002:a17:902:f542:b0:2b0:52dc:f1c1 with SMTP id d9443c01a7336-2b0c48ad790mr7946495ad.16.1774515056390;
-        Thu, 26 Mar 2026 01:50:56 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b0bc8be006sm22777975ad.60.2026.03.26.01.50.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Mar 2026 01:50:55 -0700 (PDT)
-Date: Thu, 26 Mar 2026 14:20:53 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: Pierre Gondois <pierre.gondois@arm.com>, linux-kernel@vger.kernel.org, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, Huang Rui <ray.huang@amd.com>, 
-	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Perry Yuan <perry.yuan@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v7 2/2] cpufreq: Add boost_freq_req QoS request
-Message-ID: <odpfr3sz5ualy2wnwpnpfbkjjjcmcydwm744aew2vnpbsnajdh@xd7pbkwnkwmu>
-References: <20260325165255.386576-1-pierre.gondois@arm.com>
- <20260325165255.386576-3-pierre.gondois@arm.com>
- <a382a832-d71b-4227-a469-07c96b70c372@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TV/SLegR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2801C19423
+	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 08:54:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774515286;
+	bh=pVOvWW6/8RbPMOuNt3in1cuWQXC6AAst+EwzEiwLSEg=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
+	b=TV/SLegRcizv12x0IPKzeUfFQMf/dB5JF4rfekrIVqdFxc1pV3wJFX09vTg9axUIf
+	 HRmdBRmn/vr/bMZrXHq9PP1CwSpuBXn1xMa5MA6FApmSWD2WTTEO4pvtMjPcQoEFHY
+	 yT8wNkSsgjShxxZKrv43HGqPR/CYirdJnlCt+/Nr2zGXQI/du1BF42mbn3JSG5EHRV
+	 8BnD94NZlKhwewW8f0gI/fRQKvpToaiRfFN8q7la93cx3LB0fdwZJWIyfarmBIMZtU
+	 D7aM3iq0qJBwONhxvqF2/aXh0y94jrdJvjD941VUGT9FpNCMEMI9uBTphlpQ49esNn
+	 q9GyByiYDeJbQ==
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5a27daa652fso933644e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 01:54:46 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWk9smrPKX1wavLxpUTNYkPO+k+rIUvB4Sw2k38NZ0ZiSocWW1eigoJlBm/CtSoB8m8LyGJw01u9g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/sWf1TFGADyJF5JEs4aRyzftCSjmezdrQJ0UgDelenf59mxvZ
+	llznonyGRSD2R9ofWbeeBrTgpKTkvvyPYVqUBKvpXZS0cHCAMMRzHR7xhXpgDNorvM603Mk1DRl
+	jRG035jkplph94GmjVHoQNmLfR1Ibxmvr/7RYFrswnw==
+X-Received: by 2002:ac2:46f4:0:b0:5a2:a024:e6c2 with SMTP id
+ 2adb3069b0e04-5a2a024e734mr805672e87.44.1774515285384; Thu, 26 Mar 2026
+ 01:54:45 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 26 Mar 2026 01:54:44 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 26 Mar 2026 01:54:44 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a382a832-d71b-4227-a469-07c96b70c372@oss.qualcomm.com>
+References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+Date: Thu, 26 Mar 2026 01:54:44 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MeFPpO77ew4pbPjqo0E3fjos_B=t1AgooB7xrF5CWPeJA@mail.gmail.com>
+X-Gm-Features: AQROBzCb320XuFwbgeojakGVPIHtnFnx1cQ_VrqUrXaxSXRJoOgSnNC2mrU3j3w
+Message-ID: <CAMRc=MeFPpO77ew4pbPjqo0E3fjos_B=t1AgooB7xrF5CWPeJA@mail.gmail.com>
+Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E connectors
+ in devicetree
+To: manivannan.sadhasivam@oss.qualcomm.com
+Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
+	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
+	Hans de Goede <johannes.goede@oss.qualcomm.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	Bartosz Golaszewski <brgl@bgdev.pl>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On 26-03-26, 16:18, Zhongqiu Han wrote:
-> Would it be reasonable to add a NULL check for policy->boost_freq_req in
-> policy_set_boost() before calling freq_qos_update_request(), even though
-> callers already check policy->boost_supported? Thanks
+On Thu, 26 Mar 2026 09:06:28 +0100, Manivannan Sadhasivam via B4 Relay
+<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
+> Hi,
+>
+> This series is the continuation of the series [1] that added the initial support
+> for the PCIe M.2 connectors. This series extends it by adding support for Key E
+> connectors. These connectors are used to connect the Wireless Connectivity
+> devices such as WiFi, BT, NFC and GNSS devices to the host machine over
+> interfaces such as PCIe/SDIO, USB/UART and NFC. This series adds support for
+> connectors that expose PCIe interface for WiFi and UART interface for BT. Other
+> interfaces are left for future improvements.
+>
+> Serdev device support for BT
+> ============================
+>
+> Adding support for the PCIe interface was mostly straightforward and a lot
+> similar to the previous Key M connector. But adding UART interface has proved to
+> be tricky. This is mostly because of the fact UART is a non-discoverable bus,
+> unlike PCIe which is discoverable. So this series relied on the PCI notifier to
+> create the serdev device for UART/BT. This means the PCIe interface will be
+> brought up first and after the PCIe device enumeration, the serdev device will
+> be created by the pwrseq driver. This logic is necessary since the connector
+> driver and DT node don't describe the device, but just the connector. So to make
+> the connector interface Plug and Play, the connector driver uses the PCIe device
+> ID to identify the card and creates the serdev device. This logic could be
+> extended in the future to support more M.2 cards. Even if the M.2 card uses SDIO
+> interface for connecting WLAN, a SDIO notifier could be added to create the
+> serdev device.
+>
+> Testing
+> =======
+>
+> This series, together with the devicetree changes [2] was tested on the
+> Qualcomm X1e based Lenovo Thinkpad T14s Laptop which has the WCN7850 WLAN/BT
+> 1620 LGA card connected over PCIe and UART.
+>
+> Merge Strategy
+> ==============
+>
+> Due to the API dependency, both the serdev and pwrseq patches need to go through
+> a single tree, maybe through pwrseq tree. So the serdev patches need Ack from
+> Greg. But Bluetooth patch can be merged separately.
 
-Not required. policy_set_boost() should only be called if boost is supported.
+I think Rob Herring is the man in charge here. The power sequencing parts look
+good to me now so with an Ack on the serdev changes I can queue them for v7.1.
+I can also put it on an immutable branch if needed.
 
--- 
-viresh
+Bart
