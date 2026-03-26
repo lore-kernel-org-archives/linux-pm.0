@@ -1,187 +1,154 @@
-Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 881BC3B4EBD
-	for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 07:53:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.45
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774511610; cv=pass; b=n47RYjv5OJcLPpw03xhO8YuWG85COk8aJ+pCEoAn/g3smUtJ8pZ9Lp+zBLdLK8NHTfi0SGH5jQpv2sbrPbzOf1rg2P2umwUekQWCRLXC1G/2EYu7VPpx+cTUQUGM5n73obxevj9pcls77S3ehPQ69Fmpi9tOwS//biI+kCDHjWc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774511610; c=relaxed/simple;
-	bh=ZgKh7R3yoZBzmnGDqa0HkBuDw/s+y/0BkqB5boGgvVM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ZSI9PK/6zndr9O9yUcV31VD+p7z4m2jsmx1qux4lww/F4ZSmF5WfkWBWisDS1ubjx4XBeHH4tjG9IJNHfm9sv8Bc01D2+eTX0xGuode5BPhCW/f7yNF7Z4eOiCoYqzx3Uhwc6XlKOR3ARmVui2/crGs4KCbMvEVroBsk+iJuKiQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=rZ5eLiR+; arc=pass smtp.client-ip=209.85.208.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9951433ADAC;
+	Thu, 26 Mar 2026 08:06:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774512400; cv=none; b=pGopi+wxqmKjlpJtyxhQ/J+FOj5SVFwOd9935hkpHAdcjhxdv/hJ2JhDE3D4PO/6tCjk0Vw7Q7hTvbcToQVzMhWrWrCr+MOlveQMcdIUd+ghzJtmVupVJdp7eHIVJISnWPS+Uc54sbC4XXumMP2yMsyUvO3v4ZnIvGd8RApsqL4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774512400; c=relaxed/simple;
+	bh=90rMoHNtpikEEOX4hxu7KxohYPZTjuhD8cCrdkwCho4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=CJrNPvnsp9k4EW1l5pAZGjGUfb/VsViAAbGQWYCcBILAzN8DqVa7fZh5osQzWJsQfwtVvF7HsyZh1tIJyAxX8MeNydUOxZRr4hhatGOYli5oUqsBuDiqxC57HoGr4q0R7ntJTc2MRtlweBPalh0Bp0xKg+44yBFFnG4X3Y80ub4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VSUoMf7R; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rZ5eLiR+"
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-66132b22182so827871a12.2
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 00:53:28 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774511607; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Nz9chkBsQL7U7X+QQwffy/Oaha1hdkjL8gStzDcYsHmbBN9iXC9sqrEbo1fp8fB0uK
-         Ft1GXmzyTT5ac9yEalexmIsZOIP7MlRAl9tnabJPBUiJnvWblZnTjdNgXXm+cu75m0i+
-         394HGUiHx3FGwgfYafCSyJPymoajYlK1k0h0lmTstTrsiTSaxK+qTzz24vu71fYjLm5p
-         5fHg79Il8tUe4KU4i0K8LCoyxB91vXrzyrPKA7s4ugItNfcrdsH6NWksfxrwY7JzhsB9
-         6/tBbQAiWrS1VQbJGMWY4d/fHjRCXUgRcfMvi3fznwew/weIEKhs9wivnm6mFSsssx0c
-         RFQQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
-        fh=K5JZH2eItZJ753i4/U3CCPBGRblFPmEUh+P2yeku4xQ=;
-        b=YMq/j15WaX/cpieV+IeYUc78m+yfLozpE/ugNJnhRXF5ucxvrO8EcY06Ri84L00LEv
-         4VD34KnBRNUr00yqUA3/5oIoqefb9r9/8jyWzqij80rhlsIwwdi+uP1vVPoFqxgMROTL
-         tLb6cOnxWD6RlVZds7lfywCfT9XlNhYM7unV23vvShtspE4xhme8xoldAYG3gGlObK94
-         +g0hR2JygoHHfOK3HtOfSQeRmRuqHh53ejev9dx9OlqGGo14a8h8NARu/bprITRyWAdZ
-         n6QPXiHPRT5E31OBGJTmys9u8o3Aq1WmsB4JdyV5O4McIx+XX8nnxG+kqzIjYqnCfRcc
-         VBFw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774511607; x=1775116407; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
-        b=rZ5eLiR+WWJ4SpY1ZO8JQwJlv/6SmLmUIT9THT/QsKBnuvZbt2tjaQ4wDPrwckqOY5
-         4yo4pHEMjrgAx1fUt8j2IdB81tnVgCjrwaKQuWwjlmoidvjFVphhIeqsMRT4ZGEt4N8c
-         uYcaADbXkzQNBqRjWbYfZ0agWvwUI6QC8d7T8/ccMLQAIChNCh9j4CNtSXSqeioALdCg
-         z04Y6lcsbHD/B6jQOS51MiuRIGlNDpY3K0eQoh0QWWjOQOlrUsxqZfjgG4KSN+oTOPI5
-         24QY+l3Ik6IpI7EWEK7X5ZT2pYF1Y3y3/TV14QlxuLxxenJ+UtG8KX3HRrzNpp8KXwzx
-         ZMUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774511607; x=1775116407;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Fs0ckFcIGc18m+PGaMF8kDIPPgkZYsCQaNssDllF0Mc=;
-        b=s6Z1oRzHuYj6rcc8VGozyn+If9h4beMjIeTUZoN1V8Lw5WDG78+YhgYUFvHgO8dqie
-         YmcoJ0jQC+NUAiCspyCEIz2oEszfqdUp/dWcNpMvrnP6SvCzKG/g4q1u0dHTkORbdJiq
-         c0RcaDndCDubyS3fbIY7+7dWOYWSLm8Mxg5DE43uO9h3m4cc7dLUkVsGzU0QSBOR5Bb/
-         gvgQ43QH9TVigr9bINKTUPDW0W5danozijDDoTONpuS++OLinPPp9V6oFjYg38nlGbSP
-         bmhKH8vupwSmaHDT86/udXm0Aa1d9c6fDKUk/ToETT+9BiFNZ3ZMdD5rIfr6JoarP3k5
-         dy+A==
-X-Forwarded-Encrypted: i=1; AJvYcCVJh1SGetwBVsviexkSIodf+Ui5Uf1z+wYMY1lpDfVqdbZmAL/Kw6vQCxoyjs0VO6HypgtOvJYp2w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyigpgtYYhIgPYbH7z/v8L8IPvx61qm9Sw1QpVvT9OidfUtjIAt
-	mjuK/VXdHVA+ftMxVQNzIGwclLIshYAWWMeYCIFXxF8JlVzZyOKEkmR4aAEyqgq9UWFM7M+hNaX
-	k7Lw+NIUX4CIob3ozOn6Zzx3xXKs6pwB/xrYPh//gDQ==
-X-Gm-Gg: ATEYQzxog4mM8KD4WHbg4B5WksSsYf+pDv+LQr+DW0WDTilqAxfFrEtLKsPv+kgrVcA
-	xlw4AUQGN/+ETHf+SRvZEwGOSoS2YQoV4KzlZpiwl1DNaQl7f56fyBQB2f3h6CGBQ8M0SIUuhXC
-	VtvjoOJswROeHrf2Tx4razv5alcwqMwByB9F9Gv8Er7MtFyT580HmaX98sKUJ7Y42czHcq8deD6
-	1wziICMSbN2ThuE03806YIBktef+DGECtj03Z4xlKLa6AkyqkUS3YkYC3ZowYpEMgATifJH8vbo
-	cgGYbNWEPbOaFPhVUn9Ckobl2x0dkd/f5613
-X-Received: by 2002:a05:6402:1d4e:b0:668:6121:c691 with SMTP id
- 4fb4d7f45d1cf-66a8262af1fmr4793819a12.8.1774511606747; Thu, 26 Mar 2026
- 00:53:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VSUoMf7R"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6C1F4C2BCB1;
+	Thu, 26 Mar 2026 08:06:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774512400;
+	bh=90rMoHNtpikEEOX4hxu7KxohYPZTjuhD8cCrdkwCho4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=VSUoMf7RhRL6XWXGd4mB8B+FTVTqYZfDUov0jI/YT+tcrFj+ZqPFSmCYkQgAij6od
+	 ZvMhHeQLKBsDKRVJ/VdKqApFKQegyaggZYQrqwTlSf4NsPyxfo+ReuW3afaP66NqYn
+	 fs1N2SReU+iI5+bblk1v0A2Qq395tYa2zA8oSVhmoCFDE2eL6NVANUmYQPXkrboUN4
+	 n/08EUj0c/EiET7vBeT1ptYl9DPCN9hD83CE/BfoGBZzNE1QNeUYZN8kxMkKbb8DUl
+	 L/pZOJ9by1ekkiAV5z0EL+hbPZlUhS4mmkl4yDUFZgbhwTBoPUAzYIsV7hhnIHPM8Z
+	 IAiHN910O4OoA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55653106F2F3;
+	Thu, 26 Mar 2026 08:06:40 +0000 (UTC)
+From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
+Date: Thu, 26 Mar 2026 13:36:30 +0530
+Subject: [PATCH v7 2/8] serdev: Add an API to find the serdev controller
+ associated with the devicetree node
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260325181314.3875909-1-christian.loehle@arm.com>
-In-Reply-To: <20260325181314.3875909-1-christian.loehle@arm.com>
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Date: Thu, 26 Mar 2026 08:53:14 +0100
-X-Gm-Features: AQROBzBkN5VwVv9HjwQFvvEawhTfid1FbsE1ZxvEgRuevcSmF44ZSXhYD0XyXXk
-Message-ID: <CAKfTPtAOd2+e1Wyy1uhCzLANh9-KJpR5zc_RSSt+dQvHHxhmMQ@mail.gmail.com>
-Subject: Re: [RFC][RFT][PATCH 0/3] arm64: Enable asympacking for minor CPPC asymmetry
-To: Christian Loehle <christian.loehle@arm.com>
-Cc: arighi@nvidia.com, peterz@infradead.org, dietmar.eggemann@arm.com, 
-	valentin.schneider@arm.com, mingo@redhat.com, rostedt@goodmis.org, 
-	segall@google.com, mgorman@suse.de, catalin.marinas@arm.com, will@kernel.org, 
-	sudeep.holla@arm.com, rafael@kernel.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, juri.lelli@redhat.com, kobak@nvidia.com, 
-	fabecassis@nvidia.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260326-pci-m2-e-v7-2-43324a7866e6@oss.qualcomm.com>
+References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+In-Reply-To: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+To: Rob Herring <robh@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+ Nicolas Schier <nicolas.schier@linux.dev>, Hans de Goede <hansg@kernel.org>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Mark Pearson <mpearson-lenovo@squebb.ca>, 
+ "Derek J. Clark" <derekjohn.clark@gmail.com>, 
+ Manivannan Sadhasivam <mani@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+ Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+ Bartosz Golaszewski <brgl@bgdev.pl>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Bartosz Golaszewski <brgl@kernel.org>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-kbuild@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Stephan Gerhold <stephan.gerhold@linaro.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+ linux-acpi@vger.kernel.org, 
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+ Hans de Goede <johannes.goede@oss.qualcomm.com>, 
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+X-Mailer: b4 0.15.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2248;
+ i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
+ bh=rr2lmVP0IC6lUnB67NHw0qDXlaCs5LnvUTeOalg9qug=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpxOkNFnPCY8rlImwmoav5x6RK0WOCh1k67UnkK
+ tWxcXlgZmSJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCacTpDQAKCRBVnxHm/pHO
+ 9XKQB/9CSXeRJwS5NhVSb4wiX3OflP1zFS299ahwT+wJ/WPmuWbeRd7xFOmfaCHyxHa3z7q4+Z4
+ uOwpqWolIy+p2mDbVuDufH1pTUjYCZ4V3z63MWM6tUB4cWaUqf0Bqv09LwOiaJ60fSvgGk3I8+3
+ /DhHBpnSID+mbL/nQxvlIqoWDvsi1RCHAl3TJzup7yyJq6507KDw3lXW2SesGmy1DnH3k96xt6i
+ u2KunrYZaUQZx47kXE8MdNR3dQKI6oDdWNK+IjhhoHYmJUErD7jTq8Mmd33VXoKteKBL+Knjh5v
+ RmR7FAslGJokUbE6ad1rbPmMnYzzLYQBQl2yY3iF+HY9GgYr
+X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
+ fpr=C668AEC3C3188E4C611465E7488550E901166008
+X-Endpoint-Received: by B4 Relay for
+ manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
+X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-On Wed, 25 Mar 2026 at 19:13, Christian Loehle <christian.loehle@arm.com> wrote:
->
-> The scheduler currently handles CPU performance asymmetry via either:
->
-> - SD_ASYM_PACKING: simple priority-based task placement (x86 ITMT)
-> - SD_ASYM_CPUCAPACITY: capacity-aware scheduling
->
-> On arm64, capacity-aware scheduling is used for any detected capacity
-> differences.
->
-> Some systems expose small per-CPU performance differences via CPPC
-> highest_perf (e.g. due to chip binning), resulting in slightly different
-> capacities (<~5%). These differences are sufficient to trigger
-> SD_ASYM_CPUCAPACITY, even though the system is otherwise effectively
-> symmetric.
->
-> For such small deltas, capacity-aware scheduling is unnecessarily
-> complex. A simpler priority-based approach, similar to x86 ITMT, is
-> sufficient.
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-I'm not convinced that moving to  SD_ASYM_PACKING is the right way to
-move forward.
+Add of_find_serdev_controller_by_node() API to find the serdev controller
+device associated with the devicetree node.
 
-1st of all, do you target all kind of system or only SMT? It's not
-clear in your cover letter
+Tested-by: Hans de Goede <johannes.goede@oss.qualcomm.com> # ThinkPad T14s gen6 (arm64)
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ drivers/tty/serdev/core.c | 19 +++++++++++++++++++
+ include/linux/serdev.h    |  9 +++++++++
+ 2 files changed, 28 insertions(+)
 
-Moving on asym pack for !SMT doesn't make sense to me. If you don't
-want EAS enabled, you can disable it with
-/proc/sys/kernel/sched_energy_aware
+diff --git a/drivers/tty/serdev/core.c b/drivers/tty/serdev/core.c
+index 8f25510f89b6..bf88b95f7458 100644
+--- a/drivers/tty/serdev/core.c
++++ b/drivers/tty/serdev/core.c
+@@ -514,6 +514,25 @@ struct serdev_controller *serdev_controller_alloc(struct device *host,
+ }
+ EXPORT_SYMBOL_GPL(serdev_controller_alloc);
+ 
++#ifdef CONFIG_OF
++/**
++ * of_find_serdev_controller_by_node() - Find the serdev controller associated
++ *					 with the devicetree node
++ * @node:	Devicetree node
++ *
++ * Return: Pointer to the serdev controller associated with the node. NULL if
++ * the controller is not found. Caller is responsible for calling
++ * serdev_controller_put() to drop the reference.
++ */
++struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node)
++{
++	struct device *dev = bus_find_device_by_of_node(&serdev_bus_type, node);
++
++	return (dev && dev->type == &serdev_ctrl_type) ? to_serdev_controller(dev) : NULL;
++}
++EXPORT_SYMBOL_GPL(of_find_serdev_controller_by_node);
++#endif
++
+ static int of_serdev_register_devices(struct serdev_controller *ctrl)
+ {
+ 	struct device_node *node;
+diff --git a/include/linux/serdev.h b/include/linux/serdev.h
+index 0c7d3c27d1f8..188c0ba62d50 100644
+--- a/include/linux/serdev.h
++++ b/include/linux/serdev.h
+@@ -334,4 +334,13 @@ static inline bool serdev_acpi_get_uart_resource(struct acpi_resource *ares,
+ }
+ #endif /* CONFIG_ACPI */
+ 
++#ifdef CONFIG_OF
++struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node);
++#else
++static inline struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node)
++{
++	return NULL;
++}
++#endif /* CONFIG_OF */
++
+ #endif /*_LINUX_SERDEV_H */
 
-For SMT system and small capacity difference, I would prefer that we
-look at supporting SMT in SD_ASYM_CPUCAPACITY. Starting with
-select_idle_capacity
+-- 
+2.51.0
 
 
->
-> This series introduces support for using asymmetric packing in that case:
->
-> - derive per-CPU priorities from CPPC highest_perf
-> - detect when CPUs differ but not enough to form distinct capacity classes
-> - suppress SD_ASYM_CPUCAPACITY for such domains
-> - enable SD_ASYM_PACKING and use CPPC-based priority ordering instead
->
-> The asympacking flag is exposed at all topology levels; domains with
-> equal priorities are unaffected, while domains spanning CPUs with
-> different priorities can honor the ordering.
->
-> RFC:
-> I'm not entirely sure if this is the best way to implement this.
-> Currently this is baked into CPPC and arm64, while neither are strictly
-> necessary, we could also use cpu_capacity directly to derive the
-> ordering and enable this for non-CPPC and/or non-arm64.
-> RFT:
-> Andrea, please give this a try. This should perform better in particular
-> for single-threaded workloads and workloads that do not utilize all
-> cores (all the time anyway).
-> Capacity-aware scheduling wakeup works very different to the SMP path
-> used now, some workloads will benefit, some regress, it would be nice
-> to get some test results for these.
-> We already discussed DCPerf MediaWiki seems to benefit from
-> capacity-aware scheduling wakeup behavior, but others (most?) should
-> benefit from this series.
->
-> I don't know if we can also be clever about ordering amongst SMT siblings.
-> That would be dependent on the uarch and I don't have a platform to
-> experiment with this though, so consider this series orthogonal to the
-> idle-core SMT considerations.
-> On platforms with SMT though asympacking makes a lot more sense than
-> capacity-aware scheduling, because arguing about capacity without
-> considering utilization of the sibling(s) (and the resulting potential
-> 'stolen' capacity we perceive) isn't theoretically sound.
->
-> Christian Loehle (3):
->   sched/topology: Introduce arch hooks for asympacking
->   arch_topology: Export CPPC-based asympacking prios
->   arm64/sched: Enable CPPC-based asympacking
->
->  arch/arm64/include/asm/topology.h |  6 +++++
->  arch/arm64/kernel/topology.c      | 34 ++++++++++++++++++++++++++
->  drivers/base/arch_topology.c      | 40 +++++++++++++++++++++++++++++++
->  include/linux/arch_topology.h     | 24 +++++++++++++++++++
->  include/linux/sched/topology.h    |  9 +++++++
->  kernel/sched/fair.c               | 16 -------------
->  kernel/sched/topology.c           | 34 ++++++++++++++++++++------
->  7 files changed, 140 insertions(+), 23 deletions(-)
->
-> --
-> 2.34.1
->
