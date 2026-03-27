@@ -1,263 +1,138 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E63162DCF41
-	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 14:50:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E9FA31326A
+	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 15:44:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774623038; cv=none; b=VsXbqlVQLD7BiTfQcFsZyb2b2pTn6QNCp2Ej7c9GXOkwkg8yqKgSgo+kL9dVHjRjcwghtaudiNRuIRpORI8hWJrxshyYiqtVxOxfyNT1wzPrzdMINcX7tSyoZS0s8pSt2jHDV/Y24H/ujNUiUoiqKTTApaqN4QbB+hM6XgtPnQ8=
+	t=1774626268; cv=none; b=NpGY4IjAgLSCKrKw9e6Rd/ZEt1KpCO9Mhd+Eas8ivXjIdP/Y+mbUafqlwXNBh1f0SlfgyAzoLMdLY511IDwp6zQ6pr4JsMPqgtMPt0oYRvqLqcIjXk6b/iQ3oUYQC84MegFft1jUbU4a4i7F/NxDMn9AwtO/Qyv6OqPAkxbKQsU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774623038; c=relaxed/simple;
-	bh=XmY2ZYHEqS/t8NJRHRB/bZIOo4mw36BvNz8aMj1pZBY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=L8eh3BsdmcQR0b6pk7WiZBcvPdut1jBv/wMkNtpucbQljKnUsV4Bp63G2tZLGbXgKMKo13sKY6hXPzjuK5hhuTzMCcaxSJEx/S3mdDHvTHXQmDN3PXCrIaDHL5CsxBkrMAd4T1PaPv2iLBHyi/RjEE50uo354TjClaKZChx9w98=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fN6eo4t2; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774626268; c=relaxed/simple;
+	bh=P39BRN7Sh2CZmlMFqSC6/0b8PlNroAnbQYQ26b/k/Z8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=SdIL7bQT3wJlmZqM1Bwp6Sg//txWWuVrkztxG6T8/lOlh+OXlrDOJ5+SbloCjcHVYwMwcJtzpJI9aSeAmG36vQhULOb7c1a1gteRXekw8hdxMg+szgNT663zkQ87FXGLBlql/3P6wN3s0jJJxb3jvRlZvi6Zwvduu29CVRVQpbg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=WX6TE85p; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=AG82TW82; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fN6eo4t2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88590C2BCB3
-	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 14:50:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774623037;
-	bh=XmY2ZYHEqS/t8NJRHRB/bZIOo4mw36BvNz8aMj1pZBY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=fN6eo4t2o093hUA4wfZWZonDZdmT1KtQ/RZ3bmqkexoQUYtVbx2PJDDKZgBtgc85i
-	 vavtpZxN5aRNAJmu1zeX2d4g2LTDPrkFPLhBtzUkwpPzCtJEAsPWcS6Qwy+FtFqXXr
-	 l/DUl8kQs++QEEfDOaaMdGQeabVyzZfLiMJAeveKQOM5aOOc8GiA4fIxZgZcgxMdWn
-	 /n8h2aAlUu1qQqDukB57M2WYIFRDiCAffRmUaZRUX+j/uWg6q1QgXjrXbqUFLg37nb
-	 1iYuRdJiFTX0eYXnp5sgjWi9dFES5R0yQMEhoz4+m8Hhn+HH3jLef1DIrWOZJUG+S6
-	 jVVUAVo5dkThA==
-Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-4043b909ed4so1381940fac.3
-        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 07:50:37 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVaMAIyN8F0tnY4ZJZbJJXUOAYUnHQEyDGNc+OPeYK9a2oPCpJKzr4CRPJx8Cv3eQV9r6FP+JmO0g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwuCGpo8O2XRmn/7TXsDwQMcfgWYYXLzK8meWJxZjgTDrfmg321
-	W9dUYj/IaCNHVPq2KU9Dks8pn+u/r1MqiGY11ejL6TuibKU/4WYMe7kxZzEz8uZT1rfDScpSwlp
-	z46lJGRW0/vzJ6buxCRdvCkCcgYtyNI4=
-X-Received: by 2002:a05:6870:5115:b0:417:ab68:fbaf with SMTP id
- 586e51a60fabf-41cec173ca8mr1576664fac.20.1774623036517; Fri, 27 Mar 2026
- 07:50:36 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="WX6TE85p";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="AG82TW82"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1774626264;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xo3+FMGXxrujtjtoyKZbBg5+fD0RN0d7dP/Sl3CYs+c=;
+	b=WX6TE85pEi1S2fPiWG83yVIGo6V7p+Tbn0rBs3q9ezPufAdcX8wMb6STiAi3qiklgXUkVL
+	JrdqskVUJC286RwOMav9e2RiQB2A9M4gYR53euHtEdCwwss3So84+D1gZXY00u7v2xN3wB
+	eP8KSDFLa4sSjI+wUHtO2RueWRQY3S4=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-621-XyPXeysvPQSpVdY7Y_vmEw-1; Fri, 27 Mar 2026 11:44:23 -0400
+X-MC-Unique: XyPXeysvPQSpVdY7Y_vmEw-1
+X-Mimecast-MFC-AGG-ID: XyPXeysvPQSpVdY7Y_vmEw_1774626262
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4853b5b0fafso31978055e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 08:44:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1774626261; x=1775231061; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xo3+FMGXxrujtjtoyKZbBg5+fD0RN0d7dP/Sl3CYs+c=;
+        b=AG82TW82Rvol1Jn0MwxFQiKr5GZZfBgp1H7bLT2pOJowX6w1b+QozXf1prC0rby9g6
+         0z7GZXovg0Yxr/z3og7b+WSvvLyBFoxFJppHegPuM7jdLxXpuN54zfH6PbE/Zjequ4Kn
+         N4AnU+rHjKjcGrNobTba5wDYv+egGMdK2d2b4Ip+33uMqa2fWy6MqCXOHCtDgkZ/sdgB
+         ZfM/a6iAU27MRwfwz/5wc+cDfJkncs1GY0eydbLywwXywePS9lT70zJJez7IAunTdHKE
+         Y0yhU7Zx23AHuupM36Pjd7759TlYuWzGpyBHUxBnOE4f39nStWwlJuZ2x3EnSLAhGHFz
+         MdsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774626261; x=1775231061;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xo3+FMGXxrujtjtoyKZbBg5+fD0RN0d7dP/Sl3CYs+c=;
+        b=GXYoDW9O/BfoG7Zeqtuz79VCaAe7eaJ6yL4EJdIm0Eb7h+JnqNYYqdwQv63zALMO+k
+         ZpbFE/UP75Noe3q6MjYjQW6GkRmlZnkKbaNibeV2+R4kf/SDF6ANaC+qR2bvTf0+pXrx
+         0wWlQfRiT4lhfGkwa5gvWgw83oXvTuLoWJIth6E7cjAiy/rV829F3YLvS0SUS2cHL03H
+         OSW9oR/3V4cjMt5Iojp4HPWeaQYHscHoYkgWZmEbscGz7sAUNAn60Jx/kGsBHEbt+weS
+         qdWCCdwS0vD5jW5VsZPCw4oYAwlPqE+jFgxnIDVmJzY3ajiipefb8X8qYYreZl16IJGV
+         JsZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXUD4/tStCswy+tTCqQERjiIfRhAki1LBXf66So+pmNsWisbibi4pj6d6mlshqUHBP9/KF1+erTow==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxCg0+1e1ymI+qEP0FgLCex/a/nKzKNlVQE1DKo6R8fyg4kSSKi
+	jTRq9Ta8BhnFe8Ma5ywzJ8eChGLjFq2xP4V2q6i4rIut/yGSLW+8mO6GBy0Hej/8BCzsLnSRckY
+	/IlXhzIBHHLAGhQfOPRWgoz9B3DpXbAlhlwG84n6g3/SWHVWqDrm10SuXgUFhRtznTvdZ
+X-Gm-Gg: ATEYQzxfME4VYob0xatrWzYZxVCCKvsnjdGjjQuNQt1wv0vLVQFrjrhKgB+GpT9JKu2
+	AJq7p4tAdai0YSjtJ4mP9TzPv6EdzR/IUWuet1Dqxx8i45OukU9QnSCa+XwH1FcaU/yC7o0aiLQ
+	pfgJ6+gnqfxowSR54DqjH/YMTamxe1+pPIWOijI/bF5hD/oUofj3OufLG2P9P0SVsQ/Jb/g8Z6H
+	2MimozwSLdXuL0DAc1Ab7SfxLL2Z34XtX7KjLsdCN5vvVI2a1P/9RbOYcegEIOWd1TKm7BPHzu5
+	nMGm0iylfO4pCRmS/6wvZJZiTgN2M9O6V2s27vp7+bZioAlNSvNgxqqkb2O4kICtTVUL9aO50xw
+	YUNCPiTsAm52TzNESnPw8CuvBv3IwJdYJeRqRtZAMhTEOGhSQ5bKHnTirlbrTUE3KZBOfvXKP9t
+	dM4NoRhr0=
+X-Received: by 2002:a05:600d:d:b0:485:40a4:364 with SMTP id 5b1f17b1804b1-48727ecf3edmr41346995e9.26.1774626261513;
+        Fri, 27 Mar 2026 08:44:21 -0700 (PDT)
+X-Received: by 2002:a05:600d:d:b0:485:40a4:364 with SMTP id 5b1f17b1804b1-48727ecf3edmr41346615e9.26.1774626261105;
+        Fri, 27 Mar 2026 08:44:21 -0700 (PDT)
+Received: from vschneid-thinkpadt14sgen2i.remote.csb (213-44-135-146.abo.bbox.fr. [213.44.135.146])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48722c9f0afsm178875865e9.10.2026.03.27.08.44.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Mar 2026 08:44:20 -0700 (PDT)
+From: Valentin Schneider <vschneid@redhat.com>
+To: Christian Loehle <christian.loehle@arm.com>, arighi@nvidia.com
+Cc: peterz@infradead.org, vincent.guittot@linaro.org,
+ dietmar.eggemann@arm.com, valentin.schneider@arm.com, mingo@redhat.com,
+ rostedt@goodmis.org, segall@google.com, mgorman@suse.de,
+ catalin.marinas@arm.com, will@kernel.org, sudeep.holla@arm.com,
+ rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ juri.lelli@redhat.com, kobak@nvidia.com, fabecassis@nvidia.com, Christian
+ Loehle <christian.loehle@arm.com>
+Subject: Re: [PATCH 3/3] arm64/sched: Enable CPPC-based asympacking
+In-Reply-To: <20260325181314.3875909-4-christian.loehle@arm.com>
+References: <20260325181314.3875909-1-christian.loehle@arm.com>
+ <20260325181314.3875909-4-christian.loehle@arm.com>
+Date: Fri, 27 Mar 2026 16:44:19 +0100
+Message-ID: <xhsmhy0jdffak.mognet@vschneid-thinkpadt14sgen2i.remote.csb>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <6267615.lOV4Wx5bFT@rafael.j.wysocki> <00a83964cc75f86bed096bac6256b890@igalia.com>
-In-Reply-To: <00a83964cc75f86bed096bac6256b890@igalia.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 27 Mar 2026 15:50:25 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0gM1H4ajBO4STzBeLBqk+5rjf1vP=iV8KW6Yj6kjfu_2g@mail.gmail.com>
-X-Gm-Features: AQROBzAo-J66Qsur4mDexNUI-f7viFPbHQnQqCsV7Z83TqLFMW5XrzGtgtc8Qts
-Message-ID: <CAJZ5v0gM1H4ajBO4STzBeLBqk+5rjf1vP=iV8KW6Yj6kjfu_2g@mail.gmail.com>
-Subject: Re: [PATCH v2] thermal: core: Address thermal zone removal races with resume
-To: Mauricio Faria de Oliveira <mfo@igalia.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>, 
-	LKML <linux-kernel@vger.kernel.org>, Kernel Dev <kernel-dev@igalia.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Fri, Mar 27, 2026 at 3:47=E2=80=AFPM Mauricio Faria de Oliveira
-<mfo@igalia.com> wrote:
+On 25/03/26 18:13, Christian Loehle wrote:
+> @@ -1753,7 +1760,7 @@ static inline int topology_arch_sched_asym_flags(void)
+>  #ifdef CONFIG_SCHED_SMT
+>  int cpu_smt_flags(void)
+>  {
+> -	return SD_SHARE_CPUCAPACITY | SD_SHARE_LLC;
+> +	return SD_SHARE_CPUCAPACITY | SD_SHARE_LLC | arch_sched_asym_flags();
+>  }
+>  
+>  const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
+> @@ -1765,7 +1772,7 @@ const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cp
+>  #ifdef CONFIG_SCHED_CLUSTER
+>  int cpu_cluster_flags(void)
+>  {
+> -	return SD_CLUSTER | SD_SHARE_LLC;
+> +	return SD_CLUSTER | SD_SHARE_LLC | arch_sched_asym_flags();
+>  }
+>  
+>  const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+> @@ -1777,7 +1784,7 @@ const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cp
+>  #ifdef CONFIG_SCHED_MC
+>  int cpu_core_flags(void)
+>  {
+> -	return SD_SHARE_LLC;
+> +	return SD_SHARE_LLC | arch_sched_asym_flags();
+>  }
 >
-> On 2026-03-27 06:49, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Since thermal_zone_pm_complete() and thermal_zone_device_resume()
-> > re-initialize the poll_queue delayed work for the given thermal zone,
-> > the cancel_delayed_work_sync() in thermal_zone_device_unregister()
-> > may miss some already running work items and the thermal zone may
-> > be freed prematurely [1].
-> >
-> > There are two failing scenarios that both start with
-> > running thermal_pm_notify_complete() right before invoking
-> > thermal_zone_device_unregister() for one of the thermal zones.
-> >
-> > In the first scenario, there is a work item already running for
-> > the given thermal zone when thermal_pm_notify_complete() calls
-> > thermal_zone_pm_complete() for that thermal zone and it continues to
-> > run when thermal_zone_device_unregister() starts.  Since the poll_queue
-> > delayed work has been re-initialized by thermal_pm_notify_complete(), t=
-he
-> > running work item will be missed by the cancel_delayed_work_sync() in
-> > thermal_zone_device_unregister() and if it continues to run past the
-> > freeing of the thermal zone object, a use-after-free will occur.
-> >
-> > In the second scenario, thermal_zone_device_resume() queued up by
-> > thermal_pm_notify_complete() runs right after the thermal_zone_exit()
-> > called by thermal_zone_device_unregister() has returned.  The poll_queu=
-e
-> > delayed work is re-initialized by it before cancel_delayed_work_sync() =
-is
-> > called by thermal_zone_device_unregister(), so it may continue to run
-> > after the freeing of the thermal zone object, which also leads to a
-> > use-after-free.
-> >
-> > Address the first failing scenario by ensuring that no thermal work
-> > items will be running when thermal_pm_notify_complete() is called.
-> > For this purpose, first move the cancel_delayed_work() call from
-> > thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
-> > new work from entering the workqueue going forward.  Next, switch
-> > over to using a dedicated workqueue for thermal events and update
-> > the code in thermal_pm_notify() to flush that workqueue after
-> > thermal_pm_notify_prepare() has returned which will take care of
-> > all leftover thermal work already on the workqueue (that leftover
-> > work would do nothing useful anyway because all of the thermal zones
-> > have been flagged as suspended).
-> >
-> > The second failing scenario is addressed by adding a tz->state check
-> > to thermal_zone_device_resume() to prevent it from re-initializing
-> > the poll_queue delayed work if the thermal zone is going away.
-> >
-> > Note that the above changes will also facilitate relocating the suspend
-> > and resume of thermal zones closer to the suspend and resume of devices=
-,
-> > respectively.
-> >
-> > Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronousl=
-y")
-> > Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
-> > Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init=
-_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
->
-> I spent some hours reviewing and thinking of corner cases for this
-> patch,
-> and found the code to correctly handle all cases I thought of.
->
-> I also tested it with the synthetic reproducers for the 2 cases reported
-> in [1], and it prevented the errors.
->
-> Please feel free to add:
->
-> Reviewed-by: Mauricio Faria de Oliveira <mfo@igalia.com>
-> Tested-by: Mauricio Faria de Oliveira <mfo@igalia.com>
->
-> And please carry these from [1], if that's OK with you:
->
-> Reported-by: syzbot+3b3852c6031d0f30dfaf@syzkaller.appspotmail.com
-> Closes: https://syzbot.org/bug?extid=3D3b3852c6031d0f30dfaf
 
-I will, thank you!
+So while the binning problem applies to more than one architecture, I'm not
+sure we want this to be generally applied to all topology levels. This is
+/technically/ not a problem since even if a topology level has
+SD_ASYM_PACKING, all CPUs at that level can have the same priority, but
+in that case it's a bit wasteful.
 
-> >
-> > v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocat=
-ion
-> >    fails (Sashiko)
-> >
-> > Lukasz, Daniel, I'm quite confident about this patch, but I would appre=
-ciate
-> > your feedback.
-> >
-> > ---
-> >  drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
-> >  1 file changed, 26 insertions(+), 5 deletions(-)
-> >
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
-> >
-> >  static bool thermal_pm_suspended;
-> >
-> > +static struct workqueue_struct *thermal_wq __ro_after_init;
-> > +
-> >  /*
-> >   * Governor section: set of functions to handle thermal governors
-> >   *
-> > @@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
-> >       if (delay > HZ)
-> >               delay =3D round_jiffies_relative(delay);
-> >
-> > -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_q=
-ueue, delay);
-> > +     mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
-> >  }
-> >
-> >  static void thermal_zone_recheck(struct thermal_zone_device *tz, int e=
-rror)
-> > @@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
-> >
-> >       guard(thermal_zone)(tz);
-> >
-> > +     /* If the thermal zone is going away, there's nothing to do. */
-> > +     if (tz->state & TZ_STATE_FLAG_EXIT)
-> > +             return;
-> > +
-> >       tz->state &=3D ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING=
-);
-> >
-> >       thermal_debug_tz_resume(tz);
-> > @@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
-> >       }
-> >
-> >       tz->state |=3D TZ_STATE_FLAG_SUSPENDED;
-> > +
-> > +     /* Prevent new work from getting to the workqueue subsequently. *=
-/
-> > +     cancel_delayed_work(&tz->poll_queue);
-> >  }
-> >
-> >  static void thermal_pm_notify_prepare(void)
-> > @@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
-> >  {
-> >       guard(thermal_zone)(tz);
-> >
-> > -     cancel_delayed_work(&tz->poll_queue);
-> > -
-> >       reinit_completion(&tz->resume);
-> >       tz->state |=3D TZ_STATE_FLAG_RESUMING;
-> >
-> > @@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
-> >        */
-> >       INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
-> >       /* Queue up the work without a delay. */
-> > -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_q=
-ueue, 0);
-> > +     mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
-> >  }
-> >
-> >  static void thermal_pm_notify_complete(void)
-> > @@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
-> >       case PM_RESTORE_PREPARE:
-> >       case PM_SUSPEND_PREPARE:
-> >               thermal_pm_notify_prepare();
-> > +             /*
-> > +              * Allow any leftover thermal work items already on the
-> > +              * worqueue to complete so they don't get in the way late=
-r.
-> > +              */
-> > +             flush_workqueue(thermal_wq);
-> >               break;
-> >       case PM_POST_HIBERNATION:
-> >       case PM_POST_RESTORE:
-> > @@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
-> >       if (result)
-> >               goto error;
-> >
-> > +     thermal_wq =3D alloc_workqueue("thermal_events",
-> > +                                   WQ_FREEZABLE | WQ_POWER_EFFICIENT |=
- WQ_PERCPU, 0);
-> > +     if (!thermal_wq) {
-> > +             result =3D -ENOMEM;
-> > +             goto unregister_netlink;
-> > +     }
-> > +
-> >       result =3D thermal_register_governors();
-> >       if (result)
-> > -             goto unregister_netlink;
-> > +             goto destroy_workqueue;
-> >
-> >       thermal_class =3D kzalloc_obj(*thermal_class);
-> >       if (!thermal_class) {
-> > @@ -1938,6 +1957,8 @@ static int __init thermal_init(void)
-> >
-> >  unregister_governors:
-> >       thermal_unregister_governors();
-> > +destroy_workqueue:
-> > +     destroy_workqueue(thermal_wq);
-> >  unregister_netlink:
-> >       thermal_netlink_exit();
-> >  error:
->
-> --
-> Mauricio
+I don't have any better ideas ATM to keep this arch-specific via
+set_sched_topology(), like how x86 and powerpc handle asym packing.
+
