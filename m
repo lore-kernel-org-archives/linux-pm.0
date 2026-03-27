@@ -1,39 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E1BF3D9045;
-	Fri, 27 Mar 2026 09:49:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ADE5399002;
+	Fri, 27 Mar 2026 09:52:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774604996; cv=none; b=uuGZAA53w8m/BWTu1wKjNzjScGpGFA+QPkwfB/9REZBcYT18ALnXsaqt9e6SCY8zgKjXwai5V+3IwZ1ia97SizrYT7sA/JYuOyYg3v1ByBvYEgG/VFMgCDrXehyl2h8VJ4slXij7wSojgDyCpDKAzzJKrPaMwm37K74wAnuLyXU=
+	t=1774605124; cv=none; b=NhabMHq8JAKKowp36UwERJawL7UzkcWdpxN6lQL18Irb64fZ6N5SFQrCda4YrG1ujl3E14hwX+h9Zntke5Yi1s35uiPS2chzC334A9M+WQ+1GQUs36cIiFVGAjfzC0/ihsGPB4wtFKkjQ6YOwMq3UBx8LsiOxBVfpSpvuyQtT0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774604996; c=relaxed/simple;
-	bh=V9D/je/3dq/FkNs/GXhMLrcWvkhQNHNDQGhW2GWmafk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=sypcuITksFpxYSeLuKZZw1L8da/x85Hg1WbJIdl8w9DMU3cBjbMz3uxlqmeBKwgDgOjbnJccwC72vBKz1k0LkAKwoycX7ISlgLNvhIbBW9DXMcGDSe0DttNVlACk+h25BSc+Mt3gAcnHut7CY1cFwF22JPXF9DzXRgnO6iWsVts=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e0W59P6l; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774605124; c=relaxed/simple;
+	bh=affQBU+zm+5N2Yof7U/miUHwDKSJuB6P4ntIJZ3Y1qo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=f51ZWwrAoglu2zTmND7Ta0rZqZagWIgbv46KHDDqg8BmfyJHHVcGktuZ1ZSodSLDdn9AMDZu40vep+AKuwkUyzLo+DD5a5EQyEqMfq/c+DqlDHlkYNuAyZa/Ht7DyCPpCsdScs4A3+yUd2YFk6D6FMe4KjK5c3DPLzyUNmSJw9k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BgXX0G0l; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e0W59P6l"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D23FC19424;
-	Fri, 27 Mar 2026 09:49:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BgXX0G0l"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09C37C2BC87;
+	Fri, 27 Mar 2026 09:52:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774604995;
-	bh=V9D/je/3dq/FkNs/GXhMLrcWvkhQNHNDQGhW2GWmafk=;
+	s=k20201202; t=1774605123;
+	bh=affQBU+zm+5N2Yof7U/miUHwDKSJuB6P4ntIJZ3Y1qo=;
 	h=From:To:Cc:Subject:Date:From;
-	b=e0W59P6lb71lp6LCvQpgWaCA3tIclv4s2CnIsWVUGacV+9OQkz98hx3bf2XzR2DHg
-	 c5fjJQolr2n1xFmDRtKhIy0e1iKxSa7ajFEHrbS9k1vneFdVyZQ8grYshEwp2OgLKs
-	 iUnrcXn3/H3d9jXrl+kxVGgm2HZWrko+08SGoc30TIxzuKFK/z0WWaEItySInpEpHm
-	 Efa+BWthuo3fJlZbX4/RtqDC2Bh0+cYBb5pTAVKD0FleZE5/dtZlbOe6LKMHe+Ztf9
-	 dsv4mvKuigQlyFYzIDyEa8sp/IRNLOsshwj9xKxBby3CeqYBdfCFEGcHW7XhAfG8Ao
-	 YWSACzxsxJ3UQ==
+	b=BgXX0G0lAOGQdzPSWiDAw5qx5kQo95/b2BcFMRqbrv8g1kBzbVCTdvu3Opk1AUUD3
+	 CD29HWXfvVPoJ463Hbpm9NRzMCBwzmkkteeQjISTh28F1qL4KeTDdcmEfZvomP2G3O
+	 Hgc11+UHf4wsKcYbpCSk1F9i3R9PRdrtoYLyOeu+zM7vErUCCVuH+LCNSz4iDr/vmX
+	 03qWDjdYBGgzAolsWVb0Qj776qhX5z5oIwb6QpQT9Im0wyy7iji2kAX5ADda/SQgMR
+	 +9Q8Wk/bggilBCw4AV7xnM5t0ei2GqLdWF4nGWkqGlR6shyfWAxSi9ASRdl+JYI+TJ
+	 7e7Io+C7i13IQ==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: Mauricio Faria de Oliveira <mfo@igalia.com>,
- LKML <linux-kernel@vger.kernel.org>
-Subject:
- [PATCH v2] thermal: core: Address thermal zone removal races with resume
-Date: Fri, 27 Mar 2026 10:49:52 +0100
-Message-ID: <6267615.lOV4Wx5bFT@rafael.j.wysocki>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Danilo Krummrich <dakr@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ Linux Driver Core Development <driver-core@lists.linux.dev>
+Subject: [PATCH v1] driver core: auxiliary bus: Drop auxiliary_dev_pm_ops
+Date: Fri, 27 Mar 2026 10:51:59 +0100
+Message-ID: <4738700.LvFx2qVVIh@rafael.j.wysocki>
 Organization: Linux Kernel Development
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -46,167 +45,42 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since thermal_zone_pm_complete() and thermal_zone_device_resume()
-re-initialize the poll_queue delayed work for the given thermal zone,
-the cancel_delayed_work_sync() in thermal_zone_device_unregister()
-may miss some already running work items and the thermal zone may
-be freed prematurely [1].
+Since the PM core automatically falls back to using the driver PM
+callbacks directly if no bus type callbacks are present, it is not
+necessary to define a struct dev_pm_ops for a bus type that will only
+invoke driver PM callbacks from its PM callbacks.
 
-There are two failing scenarios that both start with
-running thermal_pm_notify_complete() right before invoking
-thermal_zone_device_unregister() for one of the thermal zones.
+Accordingly, auxiliary_dev_pm_ops is redundant, so drop it.
 
-In the first scenario, there is a work item already running for
-the given thermal zone when thermal_pm_notify_complete() calls
-thermal_zone_pm_complete() for that thermal zone and it continues to
-run when thermal_zone_device_unregister() starts.  Since the poll_queue
-delayed work has been re-initialized by thermal_pm_notify_complete(), the
-running work item will be missed by the cancel_delayed_work_sync() in
-thermal_zone_device_unregister() and if it continues to run past the
-freeing of the thermal zone object, a use-after-free will occur.
+No intentional functional impact.
 
-In the second scenario, thermal_zone_device_resume() queued up by
-thermal_pm_notify_complete() runs right after the thermal_zone_exit()
-called by thermal_zone_device_unregister() has returned.  The poll_queue
-delayed work is re-initialized by it before cancel_delayed_work_sync() is
-called by thermal_zone_device_unregister(), so it may continue to run
-after the freeing of the thermal zone object, which also leads to a
-use-after-free.
-
-Address the first failing scenario by ensuring that no thermal work
-items will be running when thermal_pm_notify_complete() is called.
-For this purpose, first move the cancel_delayed_work() call from
-thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
-new work from entering the workqueue going forward.  Next, switch
-over to using a dedicated workqueue for thermal events and update
-the code in thermal_pm_notify() to flush that workqueue after
-thermal_pm_notify_prepare() has returned which will take care of
-all leftover thermal work already on the workqueue (that leftover
-work would do nothing useful anyway because all of the thermal zones
-have been flagged as suspended).
-
-The second failing scenario is addressed by adding a tz->state check
-to thermal_zone_device_resume() to prevent it from re-initializing
-the poll_queue delayed work if the thermal zone is going away.
-
-Note that the above changes will also facilitate relocating the suspend
-and resume of thermal zones closer to the suspend and resume of devices,
-respectively.
-
-Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronously")
-Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
-Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/base/auxiliary.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocation
-   fails (Sashiko)
-
-Lukasz, Daniel, I'm quite confident about this patch, but I would appreciate
-your feedback.
-
----
- drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
- 1 file changed, 26 insertions(+), 5 deletions(-)
-
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
- 
- static bool thermal_pm_suspended;
- 
-+static struct workqueue_struct *thermal_wq __ro_after_init;
-+
- /*
-  * Governor section: set of functions to handle thermal governors
-  *
-@@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
- 	if (delay > HZ)
- 		delay = round_jiffies_relative(delay);
- 
--	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, delay);
-+	mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
+--- a/drivers/base/auxiliary.c
++++ b/drivers/base/auxiliary.c
+@@ -207,11 +207,6 @@ static int auxiliary_uevent(const struct
+ 			      (int)(p - name), name);
  }
  
- static void thermal_zone_recheck(struct thermal_zone_device *tz, int error)
-@@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
- 
- 	guard(thermal_zone)(tz);
- 
-+	/* If the thermal zone is going away, there's nothing to do. */
-+	if (tz->state & TZ_STATE_FLAG_EXIT)
-+		return;
-+
- 	tz->state &= ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING);
- 
- 	thermal_debug_tz_resume(tz);
-@@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
- 	}
- 
- 	tz->state |= TZ_STATE_FLAG_SUSPENDED;
-+
-+	/* Prevent new work from getting to the workqueue subsequently. */
-+	cancel_delayed_work(&tz->poll_queue);
- }
- 
- static void thermal_pm_notify_prepare(void)
-@@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
- {
- 	guard(thermal_zone)(tz);
- 
--	cancel_delayed_work(&tz->poll_queue);
+-static const struct dev_pm_ops auxiliary_dev_pm_ops = {
+-	SET_RUNTIME_PM_OPS(pm_generic_runtime_suspend, pm_generic_runtime_resume, NULL)
+-	SET_SYSTEM_SLEEP_PM_OPS(pm_generic_suspend, pm_generic_resume)
+-};
 -
- 	reinit_completion(&tz->resume);
- 	tz->state |= TZ_STATE_FLAG_RESUMING;
+ static int auxiliary_bus_probe(struct device *dev)
+ {
+ 	const struct auxiliary_driver *auxdrv = to_auxiliary_drv(dev->driver);
+@@ -258,7 +253,6 @@ static const struct bus_type auxiliary_b
+ 	.shutdown = auxiliary_bus_shutdown,
+ 	.match = auxiliary_match,
+ 	.uevent = auxiliary_uevent,
+-	.pm = &auxiliary_dev_pm_ops,
+ };
  
-@@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
- 	 */
- 	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
- 	/* Queue up the work without a delay. */
--	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
-+	mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
- }
- 
- static void thermal_pm_notify_complete(void)
-@@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
- 	case PM_RESTORE_PREPARE:
- 	case PM_SUSPEND_PREPARE:
- 		thermal_pm_notify_prepare();
-+		/*
-+		 * Allow any leftover thermal work items already on the
-+		 * worqueue to complete so they don't get in the way later.
-+		 */
-+		flush_workqueue(thermal_wq);
- 		break;
- 	case PM_POST_HIBERNATION:
- 	case PM_POST_RESTORE:
-@@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto error;
- 
-+	thermal_wq = alloc_workqueue("thermal_events",
-+				      WQ_FREEZABLE | WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
-+	if (!thermal_wq) {
-+		result = -ENOMEM;
-+		goto unregister_netlink;
-+	}
-+
- 	result = thermal_register_governors();
- 	if (result)
--		goto unregister_netlink;
-+		goto destroy_workqueue;
- 
- 	thermal_class = kzalloc_obj(*thermal_class);
- 	if (!thermal_class) {
-@@ -1938,6 +1957,8 @@ static int __init thermal_init(void)
- 
- unregister_governors:
- 	thermal_unregister_governors();
-+destroy_workqueue:
-+	destroy_workqueue(thermal_wq);
- unregister_netlink:
- 	thermal_netlink_exit();
- error:
+ /**
 
 
 
