@@ -1,99 +1,96 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A76831C84CB
-	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 02:06:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59D7636CE1C
+	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 03:43:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774577181; cv=none; b=fguzPkfdAH9gYEWF91zLUrhtjS1wojALF6nYLPfEieX2ULtEWXEzIrnUWd5A0KEH8XW1WrGcKsxWrClbiqy7eKQiSAsq4CqlYft9+0tt+hofkDT9jRLrEN3Jj+T5b38wRqnun3MQEJlI1tiIT1JGCNa8nq2IaejQTGSVEj1NjVE=
+	t=1774583039; cv=none; b=DnIPDlO02wJvLS2qQr3t8dIYCyhkFcVQHniw0O+cWG+7j8/gQ2kS6uw0db6wbA4uBtGAN8fmmPV/JQdqpzazTvCGh4ZxA+5nQEbKfssZPfFS60WeGEI+5IZrZXdMDTRqces/za7RXs5mA6Po1caL7G4ssremCjqiPppXiT39Lts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774577181; c=relaxed/simple;
-	bh=akRa2NIZL9H+rwSwwVDigSKhFRZ7C3lMMNNi7rvCIyg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KxEmfC2kSLUdHq3/mNLLR1DgmyUekC2BoxY4PfaNmN+0XOMgbbqKbR5TZlMvBv+fkGNqoYUEgfAVFA87wdCKnvk8NAemL696CuUrPw7jNTM7IHRNIYp2keabqfbgorEHsD8zE0om4B52qWxAftKmJMYKrc+vUwvOj7aITDVer5s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 88cfe52e298111f1a21c59e7364eecb8-20260327
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.11,REQID:47f67297-d4c4-4a22-95d6-f026f0d123cf,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:89c9d04,CLOUDID:6e92079a5dc80ba334bbc31596d1fe50,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|898,TC:nil,Content:0|15|
-	52,EDM:-3,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OS
-	I:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 88cfe52e298111f1a21c59e7364eecb8-20260327
-X-User: tianyaxiong@kylinos.cn
-Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <tianyaxiong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 1468667143; Fri, 27 Mar 2026 10:06:14 +0800
-Message-ID: <2f9ab345-5940-4298-87a5-bf9121fe219e@kylinos.cn>
-Date: Fri, 27 Mar 2026 10:06:12 +0800
+	s=arc-20240116; t=1774583039; c=relaxed/simple;
+	bh=Ff88YU9olI1AcQtF34nU+dqKfqNS8M+q3UTO5aU7lXw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m1cqQzaaFUhAElxNyCVWqYy4/EBNPzmAOwU38FAAvaeUTE6CwkDdim11Zyt1tZcDSAHYKetsaRXUqGQVoGKvozSsRUfJ4wuY9BqkmlLeSnYBnIw7cMnREI7IOfSewT57NsvtFHZpJURcEPoC8rOByEF1dG2dza/TjfHo0TdyJcM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=vUaBDIfl; arc=none smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vUaBDIfl"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2b06c43e6a7so8393265ad.2
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2026 20:43:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1774583037; x=1775187837; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=547eAIb9ehebEHqANvGnVVe3TrWGzT3WuNgHvwzcDsQ=;
+        b=vUaBDIflofPFa1RIx9TVnlr8GlB1AacH+w2NDg3/WZZhYSoEsSwM99VN+b0QnU3b6k
+         tfdd8yNhEexhpxgPj+PuXv87JKSN5B+43giESLw5rnhPTkzLf8OOBk8NpcASa2NGH6QU
+         cONUUxvvb5AZQMYPwaDiIfvvbGtgePsS2BdgIlazh/VIREloJU3B+cmv8+0xpSF5OEfR
+         cvzkPxOQBL4l6kz+qry35sulJVIBMMma9B+OKRRVi3D/xK5xp4IofoosMy6r6hPlcO4q
+         DGvuUjSX6hwUe/7KlJBqVrYtfFu7CXMCYYsLj18e3/nEREU/dLT/xTY59zmsdBbf8NFu
+         rRcQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774583037; x=1775187837;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=547eAIb9ehebEHqANvGnVVe3TrWGzT3WuNgHvwzcDsQ=;
+        b=ieKK4l2o6MalM72nskf+ccRKarhnGNa2k9Q90WoU3clyl3x7ram/YfjoseCUOEUs6r
+         p3p+ZlR6eLfOf2KLmWgJ2yju91ZPaObRXY9ApNjSx37IJ9QPl2CGMrOSqexnmnwwefpZ
+         6D6kZTbz5XNX6uSEIbbcU3leqRS9eZ/mr3T3PGyEA/ZgC1sa9e3zGqdlYEPdCozUciNH
+         +aYexe0Z9P+uBOBCEbTtR5lfOQVCFTG+hSoY3A4Jdwo5+5TuXNlgLtpjUJHBFtp/Qp3c
+         aYbhZjnNP6slw0T/zSxeIfl+BGqs6Oe8qaSa3KG5nIkmIdRHrh8+kV7qHuXPYcvNoXO0
+         XL8A==
+X-Forwarded-Encrypted: i=1; AJvYcCUgPzxisVUNKaT789dekS+EE2NXc9YoJJV4IxS5SEyse8WTkEtEhyVBP8NjNILXMs1zwLyvO2EKyA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywf1qkfyP4UkV6BsGBuLGn9YilYtWUK9bWlU1pXFtQrGFy06qug
+	PYKuEBx7GdwXX/Ydh5Ad9xtdqAjDbUD3qp9Ep2sLkBmz3tS9oFjcZp9S1d/HpEDS480=
+X-Gm-Gg: ATEYQzy17QZkLCO72h9H/LiomOQyhoE9ylOeAC3JO8nkx26x6fctcRhuK6D+5yPjH8f
+	cCCcqGyxF8F6Iold6/YqT9noaA8SjVSRwJ1gc6gZ4rmeXALcu9v8c9J3axHR2PVe8F4gcMAC7gn
+	yU7XvWRMsAbhN8+pFjNF3wxrU26b6SnQ9GWDnt6CEk6WHiLgxx6aRNl156A+uXsjQ0bj28lx1An
+	J9GREGPvshfW4zLu9za57S/AOgQTK9KTm4GBzamAByNzAm802zwkUzYp52NPLDRb9viZuqwA+RQ
+	gCFynz6FjR1uMqlMw6rUIxuB0ieGE87Ep103ExZyTaAdjj+TwJPx4QoErxgY6btXt5fTiHPFkDt
+	sBsBVa3Pr4OftNyzyLCMsWCtsuk0MDowQLpg44rmC7ScVAo5dy9ZRgKgKynpOnc6JhaRUfZ5uXX
+	bCSmXenohKQ5SBxJpQJQKg6y06
+X-Received: by 2002:a17:902:ccd2:b0:2b0:5520:f497 with SMTP id d9443c01a7336-2b0cdc0f454mr11895185ad.9.1774583037448;
+        Thu, 26 Mar 2026 20:43:57 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b0bc883c0asm47539305ad.45.2026.03.26.20.43.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Mar 2026 20:43:55 -0700 (PDT)
+Date: Fri, 27 Mar 2026 09:13:53 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, Lifeng Zheng <zhenglifeng1@huawei.com>, 
+	Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy" <gautham.shenoy@amd.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v8 0/2] cpufreq: Introduce boost frequency QoS
+Message-ID: <mv7ham5nlret74v6kvstourb2f7d4zxurbgpqm57w7c3hzdw2c@w2rx5r2t5vyg>
+References: <20260326204404.1401849-1-pierre.gondois@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 00/10] devfreq: Fix NULL pointer dereference when a
- governor module is unloaded
-To: Jie Zhan <zhanjie9@hisilicon.com>, cw00.choi@samsung.com,
- myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxarm@huawei.com, jonathan.cameron@huawei.com, zhenglifeng1@huawei.com,
- zhangpengjie2@huawei.com, lihuisong@huawei.com, prime.zeng@hisilicon.com
-References: <20260326123428.800407-1-zhanjie9@hisilicon.com>
- <1774576755240654.100.seg@mailgw.kylinos.cn>
-Content-Language: en-US
-From: Yaxiong Tian <tianyaxiong@kylinos.cn>
-In-Reply-To: <1774576755240654.100.seg@mailgw.kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260326204404.1401849-1-pierre.gondois@arm.com>
 
+On 26-03-26, 21:43, Pierre Gondois wrote:
+> Pierre Gondois (2):
+>   cpufreq: Remove max_freq_req update for pre-existing policy
+>   cpufreq: Add boost_freq_req QoS request
+> 
+>  drivers/cpufreq/amd-pstate.c   |  2 --
+>  drivers/cpufreq/cppc_cpufreq.c | 10 ++-----
+>  drivers/cpufreq/cpufreq.c      | 50 +++++++++++++++++++++-------------
+>  include/linux/cpufreq.h        |  1 +
+>  4 files changed, 34 insertions(+), 29 deletions(-)
 
-在 2026/3/26 21:14, Jie Zhan 写道:
->
-> On 3/26/2026 8:34 PM, Jie Zhan wrote:
->> When compiled as a kernel module, the governor module can be dynamically
->> inserted or removed.  'devfreq->governor' would become NULL if the governor
->> module is removed when it's in use, and NULL pointer dereference would be
->> triggered.  A similar issue was also reported in [1].
->>
->> To address this issue:
->>
->> Patch 1-5 rework mutex, factor out a common governor setting function, and
->> clean up some unreachable code.
->>
->> Patch 6-8 prevent a governor module in use from being removed (except for
->> force unload) by getting/putting a refcount of the governor's module when
->> switching governors.
->>
->> Patch 9-10 allow 'governor' and 'available_governors' to work normally even
->> when a governor module in use is force unloaded.
->>
->> Note that this series is based on [1] or devfreq-next, otherwise code
+Thanks Pierre for your patience.
 
-Sorry, please ignore the "remember to CC me on the patches." in my 
-previous email.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-  In my opinion, it would be better to prioritize the FIX first before 
-proceeding with the lock mechanism optimizations and other work. This 
-would make it easier to backport the patches to lower-version kernels. I 
-noticed the patch is already in the devfreq-testing branch. I hope the 
-FIX work can be moved forward smoothly to resolve the null pointer and 
-other bugs. Thank you!
-
-
-
-> sorry, based on [2] or devfreq-next
->> would conflict.
->>
->> [1] https://lore.kernel.org/all/20260319091409.998397-1-tianyaxiong@kylinos.cn/
->> [2] https://lore.kernel.org/all/20251216031153.2242306-1-zhangpengjie2@huawei.com/
+-- 
+viresh
