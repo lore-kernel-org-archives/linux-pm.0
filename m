@@ -1,106 +1,211 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B203339B486
-	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 13:59:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65C57289E06;
+	Fri, 27 Mar 2026 14:07:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774619960; cv=none; b=pGItKCP8y1OCdzwTpSR8qCOmnoYW8x82DLU9h9BrjOjXkgAdiE7QvaxL2Pwg8uZ2ab9U4OPmwwai2Deg2lyVPSBVbK384hNatLCeBtOOrWX6IdxCZjdAYOh40KzB0VHiP5ROAPChSq2bpxwfTtE05RKsZBJQutg1iMJq8uYV6P0=
+	t=1774620433; cv=none; b=q9tFEd4T9/JcTwwS42N7vZXpj0W4ySje/uqDIiUfo1exXlv8/zta/H5ipNXWbjtVnSm5RYSgWIV50dXcFxwhpKhu81xN/UHEIo5ch4EUKfevJGfauFhjUurXGl514oGio6rIUR48P1WFo+Cp4gPs92+CL/WckKO1oUCj7499jvQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774619960; c=relaxed/simple;
-	bh=8xzdYoi3gi518bjSufdEEG4WtJrX0WYlJOv7k2yVMAI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rV/pTMW9VqDq7RRkTEl8cxqIPAkvNV0YSmHgppDeb+9Kva9hJ4xFRiepksnuVrLPk/BgW27oLeoOCJuGVXMKUUcdweMpkN/6U9/JHZpvr3CiStMVuctYtnUjIMDB6p/OUlvdS/o/6x5MTNAkfsedfXoJ7r3G1G30IgJG3JlKYII=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NZKNTyI/; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774620433; c=relaxed/simple;
+	bh=hWJlZNKlAaItYJvhnDmGAEIGtys9dKI210vA5dw6Gqw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UXQrFzTSvoB9lqPYc9Ga8ItcGyS91RDMil5KB6hTarHX46dVArQpl/IsOspvYKxJcijT8/E6w/b6zPB6mgIFIfKFLifjnd2/47nglfCG9o+qK3KEiBsE4o4NDmym8bB/RqGFEh5UgYhqBZ+1gwEYJVDfplJIJc8Df1NgqyT2iec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gN1C4vUY; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NZKNTyI/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 969D8C2BCC9
-	for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 13:59:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gN1C4vUY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 846BAC19423;
+	Fri, 27 Mar 2026 14:07:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774619960;
-	bh=8xzdYoi3gi518bjSufdEEG4WtJrX0WYlJOv7k2yVMAI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=NZKNTyI/kBAnIR0HZvkBqOTDvrCbjhLEUS/OH0E+5lR+Fw4M4UKzhS87SAxD944QF
-	 Zls3jH8x6EPxptfI+8vWACCOiBccBJbkMTp7utd0irXgITCxyauMELtC+u1H2XVFzx
-	 wB1SdRI0gvIsrprLra9WIPbabuHAuDsAGz0VmyOtipr7WtCysuTeWO/O13xKx77Lf7
-	 W5FFA6bjO5D3X2oC9Kzmd8pnb1lYs8uGFOjfOYD3lsSAF92ep+YKUVfBNF77w544Te
-	 cPtUZfoUuH3xkUKxCp5/RJQE43CzZXibvnaISxkT6ZxSe8HU6EOAfAiaRe3mOGMLjl
-	 42Tu60owotsGQ==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5a2ad56dbb2so464566e87.3
-        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 06:59:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUv08vVCfzgTQNqqO+qABDV14CWRJ3Vq7Z5G9Arch0YahbSaEmUELUQhRTL7BMJps/pdJ2N5I2Irg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyughV9YLSgd9YHDbeGWSMTUSFUgfR08zA0+A4OpdKGOpu3/CIp
-	64LFyZBHjYXMh+akMSmYt4HV+BjbZnXzPJjuxHQLwvWJbt/G8KX7ZCLnDrIuPIcRmeoVGFilqLv
-	G7fnd5GJ19Y3nDfDcRvuhtq0K+u4fFqZjS5b4hOlmfQ==
-X-Received: by 2002:a05:6512:318f:b0:5a2:8450:edad with SMTP id
- 2adb3069b0e04-5a2ab93f8b8mr904034e87.45.1774619958969; Fri, 27 Mar 2026
- 06:59:18 -0700 (PDT)
+	s=k20201202; t=1774620433;
+	bh=hWJlZNKlAaItYJvhnDmGAEIGtys9dKI210vA5dw6Gqw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gN1C4vUYUXB+7UEawc1PcM+V8n2yDJnE8RUs/p6dPiHH0hrRvfvdNZ6V+WGrqVpiE
+	 WjvpKR3uJl98bo9JYdDDaAmciiqnUpbLX8HKPq/ggFpHJYh80gfJbNyZV/1KebQjRK
+	 +NgkrXqvhN+gD2loKoMpnVFDOOlDpxi/X/qUK4zWDNvk5idq5pbHo/orDJGyySwOQL
+	 pJjn22TiFoR/rnyF+ZVJUBXDbgfmPb2K2C3YHqHsjqteRsXMDwXX6CWMhyVRQcoNKQ
+	 OLPZzK6vboSLI4XKmuFeWJdI+QTkto4qUzB7O2JVXrj+dnxsUTCfPXXzJnza1N84Dl
+	 1AQd9BRpLhScA==
+Date: Fri, 27 Mar 2026 15:07:04 +0100
+From: Lorenzo Pieralisi <lpieralisi@kernel.org>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Bjorn Andersson <andersson@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>
+Subject: Re: [PATCH v20 04/10] firmware: psci: Introduce command-based reset
+ in psci_sys_reset
+Message-ID: <acaPCJnX6lb9lxPy@lpieralisi>
+References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
+ <20260304-arm-psci-system_reset2-vendor-reboots-v20-4-cf7d346b8372@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
- <20260304-arm-psci-system_reset2-vendor-reboots-v20-6-cf7d346b8372@oss.qualcomm.com>
- <acaMPgRALnoUIHMC@lpieralisi>
-In-Reply-To: <acaMPgRALnoUIHMC@lpieralisi>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Fri, 27 Mar 2026 14:59:06 +0100
-X-Gmail-Original-Message-ID: <CAMRc=MfRWDava8jyT90ah1LBK3udAgcTCc7q-S_Kb4U3CR5smg@mail.gmail.com>
-X-Gm-Features: AQROBzAnj1Wvu_HThCZA2lw78sbVKD9HXLQMgd3NlSn5WjYR9EmBsH-p5sQhJxg
-Message-ID: <CAMRc=MfRWDava8jyT90ah1LBK3udAgcTCc7q-S_Kb4U3CR5smg@mail.gmail.com>
-Subject: Re: [PATCH v20 06/10] power: reset: Add psci-reboot-mode driver
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>
-Cc: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	Mark Rutland <mark.rutland@arm.com>, Conor Dooley <conor+dt@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, John Stultz <john.stultz@linaro.org>, 
-	Moritz Fischer <moritz.fischer@ettus.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	Srinivas Kandagatla <srini@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260304-arm-psci-system_reset2-vendor-reboots-v20-4-cf7d346b8372@oss.qualcomm.com>
 
-On Fri, Mar 27, 2026 at 2:55=E2=80=AFPM Lorenzo Pieralisi <lpieralisi@kerne=
-l.org> wrote:
->
-> > +
-> > +static int __init psci_reboot_mode_init(void)
-> > +{
-> > +     struct device_node *psci_np;
-> > +     struct faux_device *fdev;
-> > +     struct device_node *np;
-> > +     int ret;
-> > +
-> > +     psci_np =3D of_find_compatible_node(NULL, NULL, "arm,psci-1.0");
-> > +     if (!psci_np)
-> > +             return -ENODEV;
-> > +     /*
-> > +      * Look for reboot-mode in the psci node. Even if the reboot-mode
-> > +      * node is not defined in psci, continue to register with the
-> > +      * reboot-mode driver and let the dev.ofnode be set as NULL.
-> > +      */
-> > +     np =3D of_find_node_by_name(psci_np, "reboot-mode");
-> > +
-> > +     fdev =3D faux_device_create("psci-reboot-mode", NULL, NULL);
->
-> Same comment as Bartosz (have you picked up his work and working towards
-> a solution) ?
->
+On Wed, Mar 04, 2026 at 11:33:04PM +0530, Shivendra Pratap wrote:
+> PSCI currently supports only COLD reset and ARCH WARM reset based on the
+> Linux reboot_mode variable. The PSCI specification now includes
+> SYSTEM_RESET2 for vendor-specific resets, but there's no mechanism to
+> issue these through psci_sys_reset.
+> 
+> Add a command-based reset mechanism that allows external drivers to set
+> the psci reset command via a new psci_set_reset_cmd() function.
+> 
+> The psci command-based reset is disabled by default and the
+> psci_sys_reset follows its original flow until a psci_reset command is
+> set. In kernel panic path, psci_reset command is ignored.
 
-Hi Lorenzo!
+If it is function calls you should add parenthesis (eg psci_sys_reset ->
+psci_sys_reset()).
 
-Yes, I suggested creating an MFD driver binding to the "arm,psci-1.0"
-compatible node which will have two cells: one for the existing
-cpuidle-domain functionality and a second for the new reboot-mode
-driver. This way we'll simply add a platform device as Greg suggested.
+You must explain why the kernel panic path requires separate handling
+here AND in the code - think about looking at this years down the line
+and figure out why kernel panics are special here.
 
-Bart
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> ---
+>  drivers/firmware/psci/psci.c | 45 ++++++++++++++++++++++++++++++++++++++++++--
+>  include/linux/psci.h         |  2 ++
+>  2 files changed, 45 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> index 38ca190d4a22d6e7e0f06420e8478a2b0ec2fe6f..ae6f7a0aead913d740070080d4b2a3da15b29485 100644
+> --- a/drivers/firmware/psci/psci.c
+> +++ b/drivers/firmware/psci/psci.c
+> @@ -51,6 +51,15 @@ static int resident_cpu = -1;
+>  struct psci_operations psci_ops;
+>  static enum arm_smccc_conduit psci_conduit = SMCCC_CONDUIT_NONE;
+>  
+> +struct psci_sys_reset_params {
+> +	u32 system_reset;
+> +	u32 reset_type;
+> +	u32 cookie;
+> +	bool cmd;
+> +};
+> +
+> +static struct psci_sys_reset_params psci_reset;
+> +
+>  bool psci_tos_resident_on(int cpu)
+>  {
+>  	return cpu == resident_cpu;
+> @@ -80,6 +89,28 @@ static u32 psci_cpu_suspend_feature;
+>  static bool psci_system_reset2_supported;
+>  static bool psci_system_off2_hibernate_supported;
+>  
+> +/**
+> + * psci_set_reset_cmd - Sets the psci_reset_cmd for command-based
+> + * reset which will be used in psci_sys_reset call.
+> + *
+> + * @cmd_sys_rst2: Set to true for SYSTEM_RESET2 based resets.
+> + * @cmd_reset_type: Set the reset_type argument for psci_sys_reset.
+> + * @cmd_cookie: Set the cookie argument for psci_sys_reset.
+> + */
+> +void psci_set_reset_cmd(bool cmd_sys_rst2, u32 cmd_reset_type, u32 cmd_cookie)
+> +{
+
+I don't think cmd_sys_rst2 is needed, as a replied in a different thread.
+
+> +	if (cmd_sys_rst2 && psci_system_reset2_supported) {
+> +		psci_reset.system_reset = PSCI_FN_NATIVE(1_1, SYSTEM_RESET2);
+> +		psci_reset.reset_type = cmd_reset_type;
+> +		psci_reset.cookie = cmd_cookie;
+> +	} else {
+> +		psci_reset.system_reset = PSCI_0_2_FN_SYSTEM_RESET;
+> +		psci_reset.reset_type = 0;
+> +		psci_reset.cookie = 0;
+> +	}
+> +	psci_reset.cmd = true;
+> +}
+> +
+>  static inline bool psci_has_ext_power_state(void)
+>  {
+>  	return psci_cpu_suspend_feature &
+> @@ -309,14 +340,24 @@ static int get_set_conduit_method(const struct device_node *np)
+>  static int psci_sys_reset(struct notifier_block *nb, unsigned long action,
+>  			  void *data)
+>  {
+> -	if ((reboot_mode == REBOOT_WARM || reboot_mode == REBOOT_SOFT) &&
+> -	    psci_system_reset2_supported) {
+> +	if (((reboot_mode == REBOOT_WARM || reboot_mode == REBOOT_SOFT) &&
+> +	     psci_system_reset2_supported) && (panic_in_progress() || !psci_reset.cmd)) {
+>  		/*
+>  		 * reset_type[31] = 0 (architectural)
+>  		 * reset_type[30:0] = 0 (SYSTEM_WARM_RESET)
+>  		 * cookie = 0 (ignored by the implementation)
+>  		 */
+>  		invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2), 0, 0, 0);
+> +	} else if (!panic_in_progress() && psci_reset.cmd) {
+> +		/*
+> +		 * Commands are being set in psci_set_reset_cmd
+> +		 * This issues, SYSTEM_RESET2 arch warm reset or
+> +		 * SYSTEM_RESET2 vendor-specific reset or
+> +		 * a SYSTEM_RESET cold reset in accordance with
+> +		 * the reboot-mode command.
+> +		 */
+> +		invoke_psci_fn(psci_reset.system_reset, psci_reset.reset_type,
+> +			       psci_reset.cookie, 0);
+>  	} else {
+>  		invoke_psci_fn(PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
+
+This is very hard to parse. IMO, what you should do is:
+
+- Split this into two different paths: reboot_mode vs psci_reset.cmd == true.
+- Document very clearly why a panic needs separate handling.
+
+Something like:
+
+if (psci_reset.cmd)
+	handle_reset_cmd();
+else
+	handle_reboot_mode();
+
+I don't think we are far from converging but I want to be able to maintain
+this code going forward.
+
+Thanks,
+Lorenzo
+
+>  	}
+> diff --git a/include/linux/psci.h b/include/linux/psci.h
+> index 4ca0060a3fc42ba1ca751c7862fb4ad8dda35a4c..d13ceca88eab8932894051e7c86e806c2ad8a73a 100644
+> --- a/include/linux/psci.h
+> +++ b/include/linux/psci.h
+> @@ -45,8 +45,10 @@ struct psci_0_1_function_ids get_psci_0_1_function_ids(void);
+>  
+>  #if defined(CONFIG_ARM_PSCI_FW)
+>  int __init psci_dt_init(void);
+> +void psci_set_reset_cmd(bool cmd_sys_rst2, u32 cmd_reset_type, u32 cmd_cookie);
+>  #else
+>  static inline int psci_dt_init(void) { return 0; }
+> +static inline void psci_set_reset_cmd(bool cmd_sys_rst2, u32 cmd_reset_type, u32 cmd_cookie) { }
+>  #endif
+>  
+>  #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
+> 
+> -- 
+> 2.34.1
+> 
