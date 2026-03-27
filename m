@@ -1,37 +1,36 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9473739183F;
-	Fri, 27 Mar 2026 20:11:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9539B393DE2;
+	Fri, 27 Mar 2026 20:12:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774642320; cv=none; b=kHGPqCivLI4KVNRfjGLcCYSxDzaKSr0OeJX+QkAVidoVUMqqVR5PGYobDutVIJbqXrxCRllH7pcdlS57LBZwUdpclkJRCZBXm0FDuw6WSUuvyklDmmkYH3Q08/X7tlXpTV3R5aan47xTKKOOUvMZvlST/2NdgQltZsBZVqtr/DY=
+	t=1774642323; cv=none; b=pn3NktgZa0gR4DhMMN/cOz2ID19GrOs6AfunumjJiJCY3OfwtwDg1kaPn6Nh5TOWxBEMdKxFKinM2o6vIxiit4WViD/WpUW2mVG2RGgQh7AhYD7Ekz0Ikle83d8/XRB12+K5CxfLcq13z33kOog03+Fn5IxKWn5ufm0G1N8AfFs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774642320; c=relaxed/simple;
-	bh=leWueILz2D9bvmlLtxcGgMya2lBrvbtuQxNQCFT+mtI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WfmvTuLZLo8xu0AmIUET1s6QD+/G6i1GLEF/FBDq8C4uXToE9el8ZZB9Ur3IV0WNw1Qb87FkajhgMWcXhUg1INcg+myRPOViiY8H3+V9IlG9wYixP9FzuFgXRydr07QJMU6HV4vnLI82BqMLaRzfGpNkugqNfvtPcLQBNaLjMNE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=YNKGVol3; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=MAbjuk9+; arc=none smtp.client-ip=5.75.144.95
+	s=arc-20240116; t=1774642323; c=relaxed/simple;
+	bh=wp85Izuvgs1/BBpNSpDNM8HQ3t2NnPm3AnGl4AKRDXI=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=aUZeqXWl1aBavMiO97lwNfh7w0pLi83cK43AyXRJInPr0J6o+xvz3ARABYTH8hy6t3uhzznziWXBilKUvpUKk6VtNKC5wibUQBQD0LgVr80LTHQF00WJpo/CCGOFeexl0xGkFghjcKRKS0j13m7YLpmpxn/sH908hkGUBiCJksA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=sSptJLDs; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=OVJUCQ0b; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="YNKGVol3";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="MAbjuk9+"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="sSptJLDs";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="OVJUCQ0b"
 DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1774642309; bh=32f60bOucWIIJ3GZoRCSsjs
-	Hg+gha0XcooZHoLc7cks=; b=YNKGVol31hKnF1s6kEvFMkh5rYX5mArCb6MZYTFN59qa142j1j
-	CK11Wu3Vjfx0UPbX5EisobR9s+6m/tztpLo7jCm3iQgDVjhjShcUUmQY9tS0DzpuaT6PE2TmPOo
-	nHJsWCEkjppMOtNx049sTCcyLe3MdRTIfNtSS6RINuJb9VpE4bx+870lBJBqcWyYHj4lIU1oVwh
-	175iMAONOR44LffRVDrSfs3pQzkZg/2ECXPnCgZe1OoWqOC3AvLBTfy5XvgPW3BjQzhOV0okmpz
-	qVlRAbZ4F2gerrmluy208vZl1X8Qpl/Mt49wt+CO+e+VlBw94XIj9kd21ZatvR6r7Ew==;
+	h=To:Message-Id:Date:Subject:From; t=1774642307; bh=4h88egP+wMClL/kBIddRbIy
+	9tren44YmNHTekhaFBm4=; b=sSptJLDsW51cArja/uh7/OxtiLyBaM3kqaJ98LIm6xiGdkv3nS
+	BbzVyWBPh6q5E4UgMtLBPMU5s79VqnkfBb9basevPnvKmCaz22nFAnLWInlIcfX1/mgL+xkxbsI
+	VIGI7eQBG6mbv5Vcxv3IRHuptSKbD1XjE05hnCLTJld4gCuF03wC/Gz8iwLL1+xriWFQnfIO2RH
+	3JBEmNu9L1Qw5ZAXDoWwuc1rBJN8V4wyzrH0j5pf+H+Q4rKu+v55676AVwXAfVImiUngdp61mTV
+	+9Jz83r1rPovEdfS8ZDsVIaiHiUObx1Nz9zijx8noTrlX89XYfg8H/ii/oyg8BmJ2cA==;
 DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1774642309; bh=32f60bOucWIIJ3GZoRCSsjs
-	Hg+gha0XcooZHoLc7cks=; b=MAbjuk9+5lHGuZNGKuCFQ7Gx4kt/epDHHsUJ1iLFOqsWBeQHNH
-	5wLN7CE4FClgyRDbmJ4rGkwFpvYj0PS7D4Aw==;
+	h=To:Message-Id:Date:Subject:From; t=1774642307; bh=4h88egP+wMClL/kBIddRbIy
+	9tren44YmNHTekhaFBm4=; b=OVJUCQ0bw33Rx7lncuCQ09eKdD7EGl1z1mjJk7xZEWCNYVCnBU
+	BcJEkOkt18YZOpYlCJLomQZihM5mpRPx0FBA==;
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Fri, 27 Mar 2026 21:11:45 +0100
-Subject: [PATCH 3/7] remoteproc: qcom_q6v5_mss: Use mss as regulator for
- MSM8953
+Subject: [PATCH 0/7] MSM8953/SDM632 rpmpd/mss fixes
+Date: Fri, 27 Mar 2026 21:11:42 +0100
+Message-Id: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,9 +39,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260327-sdm632-rpmpd-v1-3-6098dc997d66@mainlining.org>
-References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
-In-Reply-To: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDY0NL3eKUXDNjI92igtyCFN1kg1Tj1CRTE4s0UwsloJaCotS0zAqwcdG
+ xtbUAZLisIF4AAAA=
+X-Change-ID: 20260319-sdm632-rpmpd-c0e3eb548f58
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
  Ulf Hansson <ulf.hansson@linaro.org>, 
@@ -54,49 +54,49 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-remoteproc@vger.kernel.org, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774642307; l=952;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774642307; l=1659;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=leWueILz2D9bvmlLtxcGgMya2lBrvbtuQxNQCFT+mtI=;
- b=uzA7dPCGT+h8nFN/wmw3OglRlxMqidSdER1v9CUGiJkV1NIYyRZ/u5Jwi4dm1Nf+B05IIG3vM
- ZA+NQPOUqiHC71FXEKziSxZ7jrQEoiM3zcPOsIszL7M8DahLcxJd/H4
+ bh=wp85Izuvgs1/BBpNSpDNM8HQ3t2NnPm3AnGl4AKRDXI=;
+ b=iXfKb+Fuw9GT7dLNVUFNY64r0T24USPXZFdxR7up9Lz7xRh1RhGAxXbQBuXJ0j6pgICD+ellm
+ +8RIC4Wv0N1C8eiv/JJ/4ku2vJocrAekH4HrZSZYUdXzidNGY0ak3C1
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-MSM8953 MSS is using mss-supply as regulator what is usually pm8953_s1.
+SDM632 pm domains are different from MSM8953 because MSM8953
+is defining pm8953_s1 as regulator but SDM632 is defining it
+as pm domain.
+
+This patch series correcting the pm domains defined in rpmpd
+driver and splitting the MSS resources for the both SoC to match
+the reality.
+
+These changes was discussed in a previous threads:
+https://lore.kernel.org/all/2b057aa5-4416-4fd4-aeab-6bc23acbb53d@oss.qualcomm.com/
 
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- drivers/remoteproc/qcom_q6v5_mss.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Barnabás Czémán (7):
+      dt-bindings: power: qcom-rpmpd: Split MSM8953 and SDM632
+      pmdomain: qcom: rpmpd: Split SDM632 pm domains from MSM8953
+      remoteproc: qcom_q6v5_mss: Use mss as regulator for MSM8953
+      arm64: dts: qcom: msm8953: fix modem pm domains
+      dt-bindings: remoteproc: qcom,msm8916-mss-pil: Add SDM632
+      remoteproc: qcom_q6v5_mss: Add SDM632 MSS
+      arm64: dts: qcom: sdm632: Correct power domains
 
-diff --git a/drivers/remoteproc/qcom_q6v5_mss.c b/drivers/remoteproc/qcom_q6v5_mss.c
-index 4e9eb5bd11fa..86edd826ede8 100644
---- a/drivers/remoteproc/qcom_q6v5_mss.c
-+++ b/drivers/remoteproc/qcom_q6v5_mss.c
-@@ -2705,6 +2705,14 @@ static const struct rproc_hexagon_res msm8953_mss = {
- 		},
- 		{}
- 	},
-+	.active_supply = (struct qcom_mss_reg_res[]) {
-+		{
-+			.supply = "mss",
-+			.uV = 1050000,
-+			.uA = 100000,
-+		},
-+		{}
-+	},
- 	.proxy_clk_names = (char*[]){
- 		"xo",
- 		NULL
-@@ -2718,7 +2726,6 @@ static const struct rproc_hexagon_res msm8953_mss = {
- 	.proxy_pd_names = (char*[]) {
- 		"cx",
- 		"mx",
--		"mss",
- 		NULL
- 	},
- 	.need_mem_protection = false,
+ .../devicetree/bindings/power/qcom,rpmpd.yaml      |  1 +
+ .../bindings/remoteproc/qcom,msm8916-mss-pil.yaml  |  9 ++--
+ arch/arm64/boot/dts/qcom/msm8953.dtsi              |  5 +-
+ arch/arm64/boot/dts/qcom/sdm632.dtsi               | 31 ++++++++++++
+ drivers/pmdomain/qcom/rpmpd.c                      | 39 ++++++++-------
+ drivers/remoteproc/qcom_q6v5_mss.c                 | 56 ++++++++++++++++++++--
+ include/dt-bindings/power/qcom-rpmpd.h             | 20 +++++---
+ 7 files changed, 127 insertions(+), 34 deletions(-)
+---
+base-commit: 8e42d2514a7e8eb8d740d0ba82339dd6c0b6463f
+change-id: 20260319-sdm632-rpmpd-c0e3eb548f58
 
--- 
-2.53.0
+Best regards,
+--  
+Barnabás Czémán <barnabas.czeman@mainlining.org>
 
