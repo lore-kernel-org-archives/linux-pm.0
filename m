@@ -1,123 +1,119 @@
-Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E1392836AF
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 19:18:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2C9924B28
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 21:28:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774725509; cv=none; b=DwQUOWTGa/ZXFYV07XriNiIFAuy+HTu5nU4xXOGpDxlV1OiyjkWZotdCjp1aUUJH2BsaEdj8dij6p08NRx/9dFguO8PLpu4JF29PUYsiFzzzFL7B4EJdYVw+gUnNwuHpY8x3xsic9wXi6Q1O04SKamq7uS/i5VwaPfn2p+PRU6k=
+	t=1774733330; cv=none; b=T1kLEvfvfdUMxcnjc8HULU1r+hNVEp9ZEmkVlThMjqHSBlxtwEUK9wpJO7n1VQE8D+ykI0tqYULErGMe7ZfQ2hXLo8Q82tgMPmuzixKowohnqYc0rt0IsgxLHekt6MHBUpnZMJ3RBLwxZf6Qq7HcswouvHQTxBNfBTIpTjK7TZo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774725509; c=relaxed/simple;
-	bh=JZcLUYCLYEhZcBKzzSCYlJLv9uoFBvbrytjcn306C04=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S4e3KosLidjLSIufx6/VZNg60bsiJ3fCLHwRjhXcsS8/ZcOqdWHtKS5UaB6/GYATos71bIpPrOqZKvVk3PDG8cqHO8muykl/ONrT+FFnz4j9LwvpWcWQZdORnTjg6Jagqy+lSwtR+mxa27uc0YCyBA1PFzgMg4Jn8CcwfWxAMBw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C8mvyrBR; arc=none smtp.client-ip=209.85.216.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774733330; c=relaxed/simple;
+	bh=u2LfZ8ZJv9ojvw26Q6CAN5gF2pjVh0mrd37Q6nfnnsQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UimgeToeBPwNpUuJtdeFBzls2TnHho+tYS6+SaIO0h685+qFcN6vlOtoILZGisfd5sDouuA9g5jGLZLjIuNgesYDnUkFNZtdGNmf+aLyqGcj+bV6xZyYNGjEIgJd2mwAX8ZfXWYGaP01SipbzEm/Zi+p1IhxEExwCLz1nhA7Agk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DvM7IuS7; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C8mvyrBR"
-Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-35d9749c26dso424987a91.2
-        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 12:18:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774725507; x=1775330307; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WA9Y0VWD6q8BWRqcW8ZuOdPM6JPIhso+ucpZhyQ2OAA=;
-        b=C8mvyrBRrU49GTfLJAXWWCZRdy+aeykgcJ9h7TWos7zP8jX/gScPNAD8cb2iyens6t
-         PY1o1VJL47l/nnXEx25hfMaZtO/MBhsPBzjEwiMR1Ye619d5iFQaNkV/YvOnYxrAk00n
-         3eE1rcYYmxah46170Ym+0bqQA1TnSDR6sJwFPZuQgrL182arqSgtjGjj/AbAYN3kcgNE
-         OLTWYJVCuh1kXKIZTm90VVuKPBYfNccwcL7MUSyDQFoNMGy4OB7DpUlyGVIkA/TezL2m
-         mDyNTkhXvxyjdzvvsWfAEZq/w7xiYXRw3kdYc5L6Q/uKZCibRilI4i/fuqYWFL3MZpeN
-         BSyw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774725507; x=1775330307;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=WA9Y0VWD6q8BWRqcW8ZuOdPM6JPIhso+ucpZhyQ2OAA=;
-        b=dTUIeb27nnnt2QtQVkMTsyjqF+E5gd2K+gQmsz9NtlAtKreMgGoSOgK5ssPYvSbSxn
-         HxCdA2z4GC8Iye9oK+zKzqQOkzwtXBMHzT373ZjZ03UVDJIypQkPQ1DQI+ztR5gtEEJm
-         f3JF57flF1Q3WXdyUJSkMs81/OBCbqid7yro8iTLc30bTkeUitIBvJSsEfx1DgsRQj0P
-         pucKEOh4sOuJc/8EjNoNetCTR9ckNIPATW55oo3fzDVs59LQSrmeMudSo0uVMyiI2zs4
-         qXPFcwuui8ecpCURISa2vZBJ+U6Fc2l/6fJB7cu3jU00KSJLAqIWiX+SfPJ3uSVVWTst
-         g9KQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWYEnge0B0jgPP/ou6eGy0xRB5+BF4tBJ2Nm3VjNf3RHapylW76IplsbAL0ONwrGqYFKAmWrgIHjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwwqhF3GlAEr1VG18tz72LatPkPbe7p+Zf4rxORtQjE9Gb9hhIx
-	Y14AYunbZZega6ah6TsxZEh5Zl7bbyBS+9IX2R9uloSkk/pwJTl7vglK
-X-Gm-Gg: ATEYQzxMfuCidjLNUBk/ZkgbyMmuAwnLSUMkAeUNsqAy/0A1ZcGOd98D61a9zJy6+uO
-	STaSZRo+v7LDLpnTQbvX+1dJELLs70ojxQd4vJP2KPDaHqT7jaiEUlhxQE3mKyaSPJqQBCrVOTj
-	7EgBuGPPIUUvdCOPytJW2xwrkcvsjHJGDsJDqHumVw9Jd+G0NwT7Mijxk8TtdxwM3K2Br1uA2JM
-	2KifZnPaeozc4ejrMz2jeGw5Hdaw7R2/RHOIdTPXm3Ew44ZETA09DknqSv1Icgv9afCVTmbI92/
-	W9xWWJMG0OBNFPFMEK/SJvCKsgzPrwCz8/7qECuZLq+k1cZ662xw4MLY1Ez98OsMOL4cVEXwSpm
-	qz6QQvLmx0r+eCs50NRc+cRDZEAyv23CNPziDbLtKhDIqnnwKKSWhBhWx3FrHRxz+qAp8pz+ez/
-	vpHf81iL22QITcGgzKGM56DNsOH3F00TLr2EGfpKPN/Q75PXZ5i/Iyag==
-X-Received: by 2002:a17:90a:dfce:b0:35d:9f60:827 with SMTP id 98e67ed59e1d1-35d9f6009acmr431713a91.29.1774725506725;
-        Sat, 28 Mar 2026 12:18:26 -0700 (PDT)
-Received: from debian.killsync.com ([103.38.13.110])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9507d739sm2684165a91.11.2026.03.28.12.18.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Mar 2026 12:18:26 -0700 (PDT)
-From: aravindanilraj0702@gmail.com
-To: rafael@kernel.org,
-	linux-pm@vger.kernel.org
-Cc: daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	srinivas.pandruvada@linux.intel.com,
-	linux-kernel@vger.kernel.org,
-	Aravind Anilraj <aravindanilraj0702@gmail.com>
-Subject: [PATCH 2/2] thermal: intel: int340x: Check return value of ptc_create_groups()
-Date: Sat, 28 Mar 2026 15:18:06 -0400
-Message-ID: <20260328191806.8675-3-aravindanilraj0702@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
-References: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DvM7IuS7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C74EC2BCB0
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 21:28:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774733330;
+	bh=u2LfZ8ZJv9ojvw26Q6CAN5gF2pjVh0mrd37Q6nfnnsQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=DvM7IuS7Mxgrrm+z4aLxaJ4zdLUnxnJuTfA3NOyRSthlcwc/50WkMpZOpe5V3fjqm
+	 nTpNrrHDhDLRQGg4dj16gbRSHOG0CBSXtPCAcCzBpEAM7RpY1Rjf7tU6fJfrcJydGh
+	 lbVLUws5Ka+Xw1gJriIR+amMFh0musjZV33DCwoz4LShSiFRuNo5M3IWAMOESb4B4P
+	 dmkKc9/E5TN3mLnXV+TF9MdfiWS2CDQ/pA2nayqVl5vkT78ptKagYN9okMcwNuut3E
+	 Ro18Cm8BvUTmtmn7xYjpyU7AGjrKLLG1YfLzeuOVTX2qEaQdplG+/9F4K3hC2YrBIz
+	 M3I5aZH6Hvg3g==
+Received: by mail-yx1-f44.google.com with SMTP id 956f58d0204a3-64937edbc9eso3285316d50.2
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 14:28:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVuJgHJTn8OOrV8Vq5M5ZiLWzhJMmvTzTS8nl/zMTc51CyYbtGTkdwQCE6OdvPDTUcddNZ7oxh1cg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YySc9O4AmMVV/sJGWitwe550i6o92tAbxjhSlyK7eNdmS8W15n+
+	2K2q22shM7Kt2yORXgKDPx2Pt5CoQN0vm/V0MsvJoGUMWRC2zz46DNSMI3xgGeKRvusbzul6ebO
+	fO1SmDmXoZJVcun/VRK1KlJJApZFIWeI=
+X-Received: by 2002:a05:690c:c4f9:b0:79e:1fe4:80ed with SMTP id
+ 00721157ae682-79e1fe48949mr1648177b3.1.1774733329955; Sat, 28 Mar 2026
+ 14:28:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260328124707.141209-1-khushalchitturi@gmail.com>
+ <177470797266.1536342.6967120656934552033.robh@kernel.org>
+ <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com> <3fa4fad0-d918-4de0-ad80-dad2141d2617@kernel.org>
+In-Reply-To: <3fa4fad0-d918-4de0-ad80-dad2141d2617@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Sat, 28 Mar 2026 22:28:39 +0100
+X-Gmail-Original-Message-ID: <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
+X-Gm-Features: AQROBzDO4_qbhnWFNVGZ4F3qRHWcIdRD6YybFnRr_U6GSwMhBoMzuoz7d-b9aSM
+Message-ID: <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: power: reset: cortina,gemini-power-controller:
+ convert to DT schema
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Rob Herring (Arm)" <robh@kernel.org>, Khushal Chitturi <khushalchitturi@gmail.com>, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Aravind Anilraj <aravindanilraj0702@gmail.com>
+On Sat, Mar 28, 2026 at 6:31=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+> On 28/03/2026 17:12, Linus Walleij wrote:
+> > On Sat, Mar 28, 2026 at 3:26=E2=80=AFPM Rob Herring (Arm) <robh@kernel.=
+org> wrote:
+> >
+> >> dtschema/dtc warnings/errors:
+> >> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/binding=
+s/power/reset/cortina,gemini-power-controller.example.dtb: power-controller=
+@4b000000 (cortina,gemini-power-controller): '#power-domain-cells' is a req=
+uired property
+> >>         from schema $id: http://devicetree.org/schemas/power/power-dom=
+ain.yaml
+> >
+> > Weird, this power controller does not handle power domains whatsoever,
+> > it handles the mains power. So it should not have any power domain
+> > cells.
+> >
+> > Is this the result of some regexp gone stray?
+>
+> The name "power controller" is used for power domain controller, so
+> that's why this name must not be used for other use cases. Usual
+> replacement is power-management, reboot, restart or poweroff, depending
+> on what is the purpose of this device.
 
-proc_thermal_ptc_add() ignores the return value of ptc_create_groups(),
-causing the driver to silenty continue even if sysfs group creation
-fails. The thermal control interface would be unavailable with no
-indication of failure.
+So in this case this is just a conversion of the 9 years old text document
+which is an as valid binding as any:
 
-Check the return value and on failure clean up any sysfs groups that
-were successfully created before the error, then propagate the error to
-the caller which already handles it correctly via goto err_rem_rapl.
+commit ba443b5ab454a9b5f49229a94b2dadf06ac8b79e
+Author: Linus Walleij <linusw@kernel.org>
+Date:   Sun Mar 12 23:36:01 2017 +0100
 
-Signed-off-by: Aravind Anilraj <aravindanilraj0702@gmail.com>
----
- .../intel/int340x_thermal/platform_temperature_control.c    | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+    power: reset: Add Gemini poweroff DT bindings
 
-diff --git a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-index 18ac5014d8dc..caed572c6061 100644
---- a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-+++ b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-@@ -278,12 +278,14 @@ static void ptc_delete_debugfs(void)
- int proc_thermal_ptc_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv)
- {
- 	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_PTC) {
--		int i;
-+		int i, ret;
- 
- 		for (i = 0; i < PTC_MAX_INSTANCES; i++) {
- 			ptc_instance[i].offset = ptc_offsets[i];
- 			ptc_instance[i].pdev = pdev;
--			ptc_create_groups(pdev, i, &ptc_instance[i]);
-+			ret = ptc_create_groups(pdev, i, &ptc_instance[i]);
-+			if (ret)
-+				return ret;
- 		}
- 
- 		ptc_create_debugfs();
--- 
-2.47.3
+    This adds device tree bindings to the power management controller
+    in the Gemini SoC.
 
+    Cc: devicetree@vger.kernel.org
+    Cc: Janos Laube <janos.dev@gmail.com>
+    Cc: Paulius Zaleckas <paulius.zaleckas@gmail.com>
+    Cc: Hans Ulli Kroll <ulli.kroll@googlemail.com>
+    Cc: Florian Fainelli <f.fainelli@gmail.com>
+    Acked-by: Rob Herring <robh@kernel.org>
+    Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+    Signed-off-by: Sebastian Reichel <sre@kernel.org>
+
+The text document was conspiciously named "gemini-poweroff.txt" while the
+compatible is ""cortina,gemini-power-controller".
+
+I don't know what came first, this binding or the convention of
+*-power-controller,
+but it's solidly there for a while so we need to accomodate this, I guess w=
+orst
+case simply special-casing it?
+
+Yours,
+Linus Walleij
