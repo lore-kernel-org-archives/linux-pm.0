@@ -1,61 +1,63 @@
-Received: from mail-pj1-f43.google.com (mail-pj1-f43.google.com [209.85.216.43])
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50C0A2E401
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 19:18:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 393BF2836AF
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 19:18:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774725500; cv=none; b=k2bXi65HM23hSApFPqMiKOyP0VQFu2Nxh5ogsN/0AxOKYsHXDNTdrss2gIKotRJYW7wmhRShHLdC4RPZj8sgqfDi6TpsyRpKxRqxJOZaQ8mPRBpURUT84yol1tPe1akWkFCiJwKb6kOfcOhH5j99U7cpwJCAZTV2e4IID4BPjVo=
+	t=1774725504; cv=none; b=usgxDBQjdh82tm0F1c7LiBVhex29ysDmDNVyYOJbQGLWf2QGYoU+dwWU0aGshDE5o6AcGw411sUDplCeWDoQu3J3KQxvFj0RyYfpV3JOlRciYSRe1sGktqndtRmksRXktiqTnmtXVcAP48uh2p5cBcjU3octj7qrZrgopihotyI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774725500; c=relaxed/simple;
-	bh=+njfDE+d/+DbKNu9dnzB8coSsVy/ZcduwUqqwxMDGB8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KOL2gbph0gbWo5BZWHjEOZFmzNLeidqEZmxxjxXMj2MSIxuiOxPpXCsmgiwwa4w5LLDdXGgejxJe3RPAet0QxzeXWXpVVlrBCq013noInJazYV7mxrm69kZfbRPG1Z3KL0AEEhVgr84+cyQGLGBHH9dGNJyJNupv0YO0btAOvDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E34KxagE; arc=none smtp.client-ip=209.85.216.43
+	s=arc-20240116; t=1774725504; c=relaxed/simple;
+	bh=TIUrJlohH7zzcX5wL9kNLLx0H8njEDL4nmQhrrq1NaU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=rXkNDVtv+l2pN8///AGiUUpZwrHuQhdMg3NqGUCWQMyLD9OnC6RjD4HLqUcEeZGHFbXUCLgnZvl1kbJBK0AKBgFZFPk5WHs5tksXSTsFP6hdrMd+mwGILU2jDB7nAdqfsgkuxDQV0Hj9vWoFIhvHidU4t25IZn+8UiyyvV8rXF8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZoDqehKT; arc=none smtp.client-ip=209.85.216.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E34KxagE"
-Received: by mail-pj1-f43.google.com with SMTP id 98e67ed59e1d1-35d965648a2so449966a91.0
-        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 12:18:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZoDqehKT"
+Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-358e3cc5e7eso1598086a91.0
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 12:18:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774725498; x=1775330298; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jbXirP83s8MPI71aj6vXhwnr22UpiIKn/ZG7t6sfp4w=;
-        b=E34KxagE/TS3rggoNwDRrfyRivDOd/9jVKU7G9rFZKtcqM3rChDt/IQepRqg0uPvai
-         BUWW1yGgir4QV7ZZ79f7ezsEnTeGFUn8Tn83wQz0rpD+0pV/4zDlKJyTt4ljjT8IyiMA
-         tgH+YlUvSqj8bjutzXHkD2hhc1rCLQiKwvDdqb6u0tno1XDwwIqsZ+iGnRSO1vsWlCSK
-         TmfFYihcaLKDE+pongcaqzvf5QJAXPhyl0P3x3wqvZvOnTc10sAR75o230bEdugjUjfn
-         2kvJkzzohg59I1sxPYERGHN/pa+GZDqZFPx6R9C0BV9lF+OipDmKhwFToei3R2MtiDFx
-         16VA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774725498; x=1775330298;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1774725502; x=1775330302; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=jbXirP83s8MPI71aj6vXhwnr22UpiIKn/ZG7t6sfp4w=;
-        b=DaDUYKbzDREk7hKPC3IUKxnLwSPDH86HS/+AJ5vVZ5Ze3W7ZEQOjypxuUJhwJD0+lR
-         h7YAo/hJmWbAOKpGB8IbrbtNQwGoAlpoSa2kB0aNcl8RehaBwFid8LygZX7daatWCxO3
-         EiWjCeZp0D8Bopuv3tc6gd0zjjUUTXOztZi6NzX1fHjdXGk2mSjY+e9IoMK194+xRG4N
-         til0tvZ3E42ZtvSL5KnwKitSkgpTTrMWwiNdmb9fZaCCAwte6Yiz7SRxdWddsEETKTth
-         fA23unDk4ylYgHp4QEIkgeVeDMbgi5biXCCd0yHC7j2zWBEMMPJdnunLrUIgQe+wyzZs
-         Bm6w==
-X-Forwarded-Encrypted: i=1; AJvYcCXMM8Dpl5BQiVAtknYBWnx1GLaOmU6IwoP3zB3/17e2BGHk5frffEIO1jx6/bG3SFC2DpH60aCO4w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxUMIUOPyH8inkKlJAVtgw45uB6svJuKTjxyD5884NlRSbYj13P
-	JJSOMXQGbzh8qTHZsEZaysG0LLYOyQ/lgqTD+5eprXNLu6ivm75Aiwp2
-X-Gm-Gg: ATEYQzzdmr5FG2Fbcj5DyKYzRnqQPcjKXKMPtF6DKt+2a6fO1jurfi8FdOHIyHxeaE0
-	t1gZ12U8liWtg8DvxGBemfhA2g2715mJyWNUCXeD83qZjN+U2fhYmKhX6pYPryCnw93f6JlcK7A
-	A7h88G1dxtZsqjSecPlheCqIaC7+3I5qbFCjDc6DkwZMVW/O1UuBBvOIjXx4cfL4EzNJDKAq8TO
-	3fVglS471alhfQlin+nn58rBuvc3+GxlX2uUad7NNeBK07t/nae7wVcXsWHWyVZwSSKPchWE4zn
-	32exWmRkpkB/hjR3bX/PYceyPo/1XeYO04uJ5nfAsZSDUo9I3CKYuu5SvjE1vkzNjbHrMv2Tf0H
-	E6liFZZARCu6/mebweqVFC/dIhQnfa4eo/xwtg+yOy0su5e1c7Lu4S2lEGf6x1zKAHv8FiVTRWI
-	SQjT7ig7XmPo4lMG7QGXRCzNPJyb1uyHezjSV4QaievldcCQxlB2ANYA==
-X-Received: by 2002:a17:90a:e70e:b0:359:3426:c60a with SMTP id 98e67ed59e1d1-35c2ff07dddmr6442795a91.4.1774725498426;
-        Sat, 28 Mar 2026 12:18:18 -0700 (PDT)
+        bh=X/Kc/rqS3O8FcnFqoMXkBJLowbwjhPQjCnPmNyfgP7g=;
+        b=ZoDqehKTM7Df0VULo5ckJhalU41/QfXu2ZetmY57DoxkSTTpvY2b2Vjxftu1ZeCy3v
+         7a9N6ocwFKkokOfCZjpbg9mIQ+2DALjvDARimaD93CPa8S4o+9Yz8+SpHsLogU6kEkuN
+         UroEfSFiDjSJbT5bIaiGm74k7ErbmeeguQZbeY7JcMyxF+4HwW4FAW5WvVoGR5whM6DK
+         k43K9Uengqga4EgPANop7eb8L4hs1Zn3dKqGQU0jxVPfkUNEsANibblCv69Gavg44hsp
+         3AKvs04xGfmnxlHPD2bnULN5QcRH2xOgEWJzK+Q5f99q/a923BvP6V2uFJWczN1RNgUd
+         mUEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774725502; x=1775330302;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=X/Kc/rqS3O8FcnFqoMXkBJLowbwjhPQjCnPmNyfgP7g=;
+        b=Pm4Sdapo7YHeUxZbmK1QYrrMPJezNpqGYJknD80rQ+W7SDdSe+nmgpuMoBwoeEgl9f
+         3CSjKJmQEBR+OPk8ewkQPWOQeaPX5tccH8gEWrOnk3Uj3sKKqNSaj8pI7S27JVrBSH4P
+         b8fFlslEaXsAeEIopqLmkyx3Ajc5fl22pp1MhdAVVnarSwPm1jXVwykBEBzTHd0QP1xc
+         Z5NbseUCL67I6GmR5Cpy2syHUFXv3QgMuqEWwiauRpAp3dgI/wY3a+uINW0Q/1G++4Ot
+         V7/jcxRgapPfB80OmocFPF/ODG53l2IHORXeOUV4XqtXkozQsUmKOJZD8b551u8EmOrv
+         myGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUDXWpOIap4oM6VtJ1TQZLCv4JDLK/ZNJ4mc+rGgIDrp9fiRbolWhJ2bxPgj+ISZJel+KW9E/hSkQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzzJU6OL8GeO+etNJPvMMJK4pT7KSUQKlfurj4GjowQZEYJSn+8
+	PzcSS/24iXjHxRw+/uLvnyYH+Ai9Hc/03qFw8U4WYSJ2RB4wOVaMis0nE8eF2DA5
+X-Gm-Gg: ATEYQzxyVwbF8DGtSftMTPYl0NQR9q0sJ0++C4R/CO7q9k6259fsJAOhc4ziv6x0+tI
+	xmyHgAN2k5rIdCWcgoUdhOHgEGL9X5RXBgEx/ZYddiP7H3iMFCH4J9zIMrhUEBoxcbuFuBiyO2M
+	zY/DfKYGGuzOYaCWq1aBt/0A2x0JG+VJ0ViuhKhMUNZFqUKo6ErPIbNihWkJBCjmHlTeauzEPjr
+	1AQ44eOCUnyk2oG/Pa0TwC4uje0UH3U/55HNkVVwGxBssr9Rp/t2oBE31EOIJatXJ4pNs9Ji8mi
+	n9h6kVEQNGzGsgsVIXzAQ8N7yhTXN95HPKNk6Gc+0i4z1MP7Dh9FCMVx8dP1FeZfBZrxrb77QrW
+	JfH6C1Y/algzSQ1AV/LVwDZNvEikwghiYTdShMd2q+Rwcj54trV1Gg/pLzdOhL2WFxHhBqrS3w8
+	iR/U2Gx70w5m9d/BAZukAhmqRRfALcHeSmD+wUf5P6AMldAlNrO8Ugsg==
+X-Received: by 2002:a17:90b:3e81:b0:35b:a8cf:7969 with SMTP id 98e67ed59e1d1-35c30000104mr7222978a91.11.1774725502396;
+        Sat, 28 Mar 2026 12:18:22 -0700 (PDT)
 Received: from debian.killsync.com ([103.38.13.110])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9507d739sm2684165a91.11.2026.03.28.12.18.14
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9507d739sm2684165a91.11.2026.03.28.12.18.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Mar 2026 12:18:18 -0700 (PDT)
+        Sat, 28 Mar 2026 12:18:22 -0700 (PDT)
 From: aravindanilraj0702@gmail.com
 To: rafael@kernel.org,
 	linux-pm@vger.kernel.org
@@ -65,10 +67,12 @@ Cc: daniel.lezcano@kernel.org,
 	srinivas.pandruvada@linux.intel.com,
 	linux-kernel@vger.kernel.org,
 	Aravind Anilraj <aravindanilraj0702@gmail.com>
-Subject: [PATCH 0/2] thermal: intel: int340x: Fix bugs in
-Date: Sat, 28 Mar 2026 15:18:04 -0400
-Message-ID: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
+Subject: [PATCH 1/2] thermal: intel: int340x: Fix potential shift overflow in ptc_mmio_write
+Date: Sat, 28 Mar 2026 15:18:05 -0400
+Message-ID: <20260328191806.8675-2-aravindanilraj0702@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
+References: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -79,24 +83,29 @@ Content-Transfer-Encoding: 8bit
 
 From: Aravind Anilraj <aravindanilraj0702@gmail.com>
 
-This series fixes two issues in the Intel int340x platform temperature
-control driver.
+The value parameter is u32 but is shifted into a u64 register value
+without casting first. If the shift amount pushes bits beyond 32, they
+are lost. Cast value to u64 before shifting to ensure all bits are
+preserved.
 
-Patch 1 fixes a potential shift overflow where a u32 value is shifted
-into a u64 register without casting, leading to incorrect results.
+Signed-off-by: Aravind Anilraj <aravindanilraj0702@gmail.com>
+---
+ .../intel/int340x_thermal/platform_temperature_control.c        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch 2 checks and propagates the return value of ptc_create_groups() in
-proc_thermal_ptc_add(). It also ensures proper cleanup of any previously
-created sysfs groups on the error path.
-
-Aravind Anilraj (2):
-  thermal: intel: int340x: Fix potential shift overflow in
-    ptc_mmio_write
-  thermal: intel: int340x: Check return value of ptc_create_groups()
-
- .../intel/int340x_thermal/platform_temperature_control.c  | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
+index 0ccc72c93499..18ac5014d8dc 100644
+--- a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
++++ b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
+@@ -138,7 +138,7 @@ static void ptc_mmio_write(struct pci_dev *pdev, u32 offset, int index, u32 valu
+ 
+ 	reg_val = readq((void __iomem *) (proc_priv->mmio_base + offset));
+ 	reg_val &= ~mask;
+-	reg_val |= (value << ptc_mmio_regs[index].shift);
++	reg_val |= ((u64)value << ptc_mmio_regs[index].shift);
+ 	writeq(reg_val, (void __iomem *) (proc_priv->mmio_base + offset));
+ }
+ 
 -- 
 2.47.3
 
