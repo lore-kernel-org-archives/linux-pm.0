@@ -1,79 +1,73 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C0ED33E374
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:12:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65FC733FE12
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:13:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774714348; cv=none; b=FRh1F6wcWTvqZURGUvmpmTuQwfH64WplrpSX7WthFX+d4qsWgN0l11DLvEAb9N3dUJsgPaWH9pb70wFnGbmnYrX95FONxAds7Z33ujm1CSymYFdXumzGg0E13MYmzFrgwj1oNChuqpuMbDEVdZYKMfMi2gJyBAmtceSIx3S6Dm0=
+	t=1774714391; cv=none; b=BYAN/2h4fpVSdVvc7xB/Q5Jy2Xgv3szgT+BO++JzZ58SI3wBjhRxdTgDYKLDxJmNb/tb5d/i7aH/gb/2vI3Y56w0cJpjAP9jcVcCQPNI5RUVzjWiw4Y68kIuVnrIQZme/FTIWtYB51cDDF+H0GmXduA7hqJp1I28EQ+0uE6Xn8M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774714348; c=relaxed/simple;
-	bh=SDYHbKXHfX9Y2pe1dgvuoInQbKO/zXiJtMq7qwolnww=;
+	s=arc-20240116; t=1774714391; c=relaxed/simple;
+	bh=4Z+mFQAbnt4C6pZCMBBWs9iSlcqzXB+lmQjLlU8/2bs=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GivubBW+/22CK8dIhthgpDgHCVKa88wGFpR9bklR8HpAik0g+1YibaRKxzM1S691jY3JcOJWRlr5ada7OGLav1jtG0gjrQsCBFT95MTUCvRPvys3h3/e5SD3FgU2nFJou4THrEUKYbaslLiz24B2AsEYvUazpkMYvSj5WtST4kQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BUWven3t; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=u7lLp9mEzkN/gGVexNqQ/5Q2xK59UvVcdZb5sWmJTfN0NnoAPcrSk0djD1KeXjeWFOdosf0j3bHbFEEZem5M3PS/ZOmq5FzIMDL/OH0G/QpPP7m2BPkG6IArf8uj1ViJwr4maEYp1pKnRg9CTf34Y4BsVoL3N3BgJQpkFL6B9kw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XIU8fSPm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BUWven3t"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4E73C2BCB5
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:12:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XIU8fSPm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19C60C4AF0B
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:13:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774714347;
-	bh=SDYHbKXHfX9Y2pe1dgvuoInQbKO/zXiJtMq7qwolnww=;
+	s=k20201202; t=1774714391;
+	bh=4Z+mFQAbnt4C6pZCMBBWs9iSlcqzXB+lmQjLlU8/2bs=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=BUWven3tTY39LHzZKvDQ5YFSR7pWGb6ZZYXckmR9WiLzGf+QxzV0ZpeM+SvCz0OSh
-	 M9jVnx7iRO0cfBf0D82j9N5gY4ClIG3DpTGybw/4NTiWUK9edgYZoUfISvVM7RVxud
-	 qIfsGGLad/hWnrqKyYu7NbRWkYNTLx/J0j8ZrSqtU38AfN36olkuCCJLNLEl3q+NvP
-	 4fiwYbk07NZ4uosNwP5Qc4diVl2elWRMpL4dgXNiAj8X0ml3wKyWo6aIWYUbJiGjm+
-	 nLCnKLR9848mWc0tjd/TJb2WVehYzPPjRUahvmwmXL6/Gm9ygtioZqljNddiTaPcPQ
-	 uPUul/6i6un6w==
-Received: by mail-yx1-f48.google.com with SMTP id 956f58d0204a3-6500eae6d2fso502564d50.1
-        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 09:12:27 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUkOpz0i0VVu221Le3SeAJgOmjo/7AEt6hx1X1TwBreEVfrRQSpzm2WPKv1tIXcLooE80VEew1voQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyzlPprz/zP8WsAq8tFzgQJdhPcwImDB90n0NNFSkcXUZipWOwR
-	Ise3ayV7NzSpWR7cWBuYjYgVEkOXZ0ioDK2irtGP1W1oedjcka42AZcDR30iWNRU7BMdQyZmYuj
-	dKQ3h1bQdSP7QQmi85a8ZX4G5UU0OoQE=
-X-Received: by 2002:a05:690c:c509:b0:79a:d0a0:a883 with SMTP id
- 00721157ae682-79bdda0e935mr68324137b3.0.1774714347027; Sat, 28 Mar 2026
- 09:12:27 -0700 (PDT)
+	b=XIU8fSPmvCa1mSgtuKlJsfoukx3RvSzIpkmGNQxSqxV8mHLL0DwZ/jWcguvZu1VtE
+	 I9P5zEr+6vI1C1n7iGyWr01wl500T2TvqnhADDLstVkdpSECIARTThLDiJYvfMaR76
+	 rQFy9yPWTzvqZSzhIk51xPEXztzNDNIW6P177n0m8Q6y1Wu6vCmnxW2IZHrNlf12H2
+	 nISqs9736x+YG3VjDciyQ0Fg6EYx6CEqo840zhYwYOcyoNvwqsFy+0/48BWsurVSZn
+	 eeovDDfkKSbQT0voT/EHpwM+iuu0C60YeI4g1xBQoMopM8lsIMoElW25WSGyEfTBrT
+	 dc8vrRG1Y3g7A==
+Received: by mail-yx1-f51.google.com with SMTP id 956f58d0204a3-65013b72ae3so42933d50.0
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 09:13:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCU1IXz0k+q7oIYmE5lYo9xgyj+QlrGUQU/oIDKap9KQOByOMsZAId0Wy4rh35oTp383BRM8MC8ohg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyhdMA0olkur9biPh9xhFsnj2oihg8CpzWx36YgpLgmnEhl+lkg
+	LK6FyTjsYyGZ3JxfWB3skvBiEcoYaDHPzPebIuRyggWcw54bH20oFLm6whMUMSfX6Ib/7ztXcnq
+	JWbcttt2IDLc+3tPQ/vAZbG8EX1laz5o=
+X-Received: by 2002:a05:690c:112:b0:79c:3750:4894 with SMTP id
+ 00721157ae682-79c37504d8dmr47928027b3.51.1774714390488; Sat, 28 Mar 2026
+ 09:13:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260328124707.141209-1-khushalchitturi@gmail.com> <177470797266.1536342.6967120656934552033.robh@kernel.org>
-In-Reply-To: <177470797266.1536342.6967120656934552033.robh@kernel.org>
+References: <20260328124707.141209-1-khushalchitturi@gmail.com>
+In-Reply-To: <20260328124707.141209-1-khushalchitturi@gmail.com>
 From: Linus Walleij <linusw@kernel.org>
-Date: Sat, 28 Mar 2026 17:12:15 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
-X-Gm-Features: AQROBzBmxlgNPR4lwnOObl4JeVoYuUZVuS6Wk8AtiSoqbvygkl-i3j0IOlp_ErY
-Message-ID: <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
+Date: Sat, 28 Mar 2026 17:12:59 +0100
+X-Gmail-Original-Message-ID: <CAD++jL=iVu1S8evU9=sV=k71u7n5jTMZ8YrMJk5icJY_+mnPOQ@mail.gmail.com>
+X-Gm-Features: AQROBzDklq-GQh5NZyXhDrVjjCLpLGzhk6urwqG_znvsVqpJXZmDneHSYF7yTSQ
+Message-ID: <CAD++jL=iVu1S8evU9=sV=k71u7n5jTMZ8YrMJk5icJY_+mnPOQ@mail.gmail.com>
 Subject: Re: [PATCH] dt-bindings: power: reset: cortina,gemini-power-controller:
  convert to DT schema
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Khushal Chitturi <khushalchitturi@gmail.com>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>
+To: Khushal Chitturi <khushalchitturi@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Mar 28, 2026 at 3:26=E2=80=AFPM Rob Herring (Arm) <robh@kernel.org>=
- wrote:
+On Sat, Mar 28, 2026 at 1:47=E2=80=AFPM Khushal Chitturi
+<khushalchitturi@gmail.com> wrote:
 
-> dtschema/dtc warnings/errors:
-> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/p=
-ower/reset/cortina,gemini-power-controller.example.dtb: power-controller@4b=
-000000 (cortina,gemini-power-controller): '#power-domain-cells' is a requir=
-ed property
->         from schema $id: http://devicetree.org/schemas/power/power-domain=
-.yaml
+> Convert the Cortina Systems Gemini Poweroff Controller bindings to
+> DT schema.
+>
+> Signed-off-by: Khushal Chitturi <khushalchitturi@gmail.com>
 
-Weird, this power controller does not handle power domains whatsoever,
-it handles the mains power. So it should not have any power domain
-cells.
+Looks good to me, and thanks for looking into this!
 
-Is this the result of some regexp gone stray?
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
 Yours,
 Linus Walleij
