@@ -1,103 +1,79 @@
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 029B4946C
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 15:15:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C0ED33E374
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:12:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774710941; cv=none; b=t7ueHAAETfnNaqgKwFc/xjfStcpMfw+MFXYb4pKThLeM7rkKOhniTllauyyFQI8CEYHUCbAvX6OhWuEl/g7pBJWZNpi10gQpLsfbvOIXjsNTfx6aPT1PWaeg1y773BM45K4IImFY2p/8tK3eKd673Ooif8HcFJIxSf7+pQoGuog=
+	t=1774714348; cv=none; b=FRh1F6wcWTvqZURGUvmpmTuQwfH64WplrpSX7WthFX+d4qsWgN0l11DLvEAb9N3dUJsgPaWH9pb70wFnGbmnYrX95FONxAds7Z33ujm1CSymYFdXumzGg0E13MYmzFrgwj1oNChuqpuMbDEVdZYKMfMi2gJyBAmtceSIx3S6Dm0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774710941; c=relaxed/simple;
-	bh=ICqzzqLxaQ0oD8cZsvkZ1Auyp2BNEN+4P7TyZ9353cc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pwQE7+h//oeRFD9aImSLuEOFJDR7bC2fP81taNhUXbM3mbm1/UqsgTbOKQBCw+pP1VCGLTw1FiL6kN+hkVGyYLZHMhQQlnYqXusNSaVVBy4hScAIhOYjGihGih9ffl/cQoQkTtdbDF48lP9lOPHL8lOeZ5ziZD02GY03ppFbsH4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dA+R35wl; arc=none smtp.client-ip=209.85.222.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774714348; c=relaxed/simple;
+	bh=SDYHbKXHfX9Y2pe1dgvuoInQbKO/zXiJtMq7qwolnww=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GivubBW+/22CK8dIhthgpDgHCVKa88wGFpR9bklR8HpAik0g+1YibaRKxzM1S691jY3JcOJWRlr5ada7OGLav1jtG0gjrQsCBFT95MTUCvRPvys3h3/e5SD3FgU2nFJou4THrEUKYbaslLiz24B2AsEYvUazpkMYvSj5WtST4kQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BUWven3t; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dA+R35wl"
-Received: by mail-qk1-f180.google.com with SMTP id af79cd13be357-8c9f6b78ca4so419426585a.0
-        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 08:15:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774710939; x=1775315739; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=/kDUry0xFE9vHvVj18ny7RFWBuEEHB+W5Lxw16DJs+g=;
-        b=dA+R35wlUXZthVYGFUmdvTh3S5roPveh3Y/N6QKO297DQmVZkjvhRagCSqIcVWYsfA
-         Jf2DdqM0E9BzSrjkYKH/SiUvBSVtlCIyzbs2YsmjOJcby4VyB3/YLft/0BVno25gdlg+
-         HuDDa/S4epzZ9or/feRGuInInpPyldD7dUI9yEpDk94OEoE4g1AWrJIjWSMq86K3ZHco
-         CFM2AHFPLB/3OInhMbyxiXzyVyUWocSA5Lk853bSg9YgKzKj/9IJhRg4kCT6Iufua3Vd
-         A+SLJM3IO/8VBNdN19oB4ybvAIpCymqHbuQ8z04WUjxOm+UI7Z7DPOmeCFOMLPVid0bJ
-         Pzuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774710939; x=1775315739;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/kDUry0xFE9vHvVj18ny7RFWBuEEHB+W5Lxw16DJs+g=;
-        b=G9DvZ1yf4HUabUmZoK6F8W1WhrMB0jHY12lPCkNFWdje6ZVQDdll0sdbJOJ0r767FT
-         2c5F8THn42sJESd0yNRL1bRVRn5JGj04GBGKJBxTjC+5i1ua/wj/hRli8yL0oDaJxKFy
-         EMI7nzgEsADdxXHiHyn9leQW90nS8E4wyxw2l60XV3K0Oka4jH962YsM7zMmGgb9HvxV
-         8L0YuehHejlOAAkdTBSi9VnToKMM8gvzCPnLaqotN2X1v1FMHwCEiTXPmXteV9uiFQEy
-         pVnIdFW4WL5nH4Lr4pS16fm1+jjaNrQtZU49wlhj6x+FS/ytBdrRPQRL7FOyqKC1pz98
-         /2BQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXetiAAUdscK/pi6w7ztoAXVZskmo8+b3iOTCme7+KJj7Dss4+vcd8ZX65T8qSoIQkCTo4iiIXirw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxtRbpZ3gnKQGgldNU+io7zirsoFHrsCSgsT4xaQ9vQnKcnZuZL
-	YEWAMfNDDt9fULcjy5bblLC7dOgMdUGxpuaIb/TR2Jio00P/y4zzx+nr
-X-Gm-Gg: ATEYQzxpH6xuV4YTgv04K5UGuOcHrMWsZq+Nnrl5hZdZncLa2jDYfMceOMPtK/W9Uma
-	Ts9GMsT9cs04yIWc1PnLijt/cWEfS0pjiCR2aQi2SsMXuThM9cbxDzah4JCc3BBJVdaHo6vdqzs
-	NC/FGSj+ylmKqXUCKmIyddFcfpwROtUtHHxIHYtS+8WsQ/+w6f4d2qydCCkC8abeakEKVqSHYRl
-	7qHTcWWbpuNEl6tZf79AGKJQfIj7KTcDKkMIs4Ilbxqrcs7hh3Igw7lrwfJ/Rbo3DPEsrvzbGhB
-	qFNonYET3ilClFnqZuoTtqddRSVMd285o0l29V27d2tYZE/Tu4L8jAXcuRtdxkgmoTVDTTQqieZ
-	X56jazUH7oWmGN/++Kwi+PR3YGyMmazDaZoymtW/3IZOG9L+rqgdDjqwZ/qIa8pnfTtCM/dfy3A
-	3XiJ4NR66xC+GrZ97ud2Rxp/6jcA==
-X-Received: by 2002:a05:620a:4446:b0:8cf:e0fe:f217 with SMTP id af79cd13be357-8d01c60d34cmr849118585a.20.1774710938926;
-        Sat, 28 Mar 2026 08:15:38 -0700 (PDT)
-Received: from localhost ([184.144.58.243])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8d02808677dsm181603085a.42.2026.03.28.08.15.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Mar 2026 08:15:38 -0700 (PDT)
-Date: Sat, 28 Mar 2026 11:16:14 -0400
-From: Richard Acayan <mailingradian@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: Re: [PATCH v4 2/4] dt-bindings: thermal: lmh: Add SDM670 compatible
-Message-ID: <acfwvk8ptnBrGmVx@rdacayan>
-References: <20260328014041.83777-1-mailingradian@gmail.com>
- <20260328014041.83777-3-mailingradian@gmail.com>
- <20260328-resilient-smilodon-of-improvement-a8619f@quoll>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BUWven3t"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4E73C2BCB5
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 16:12:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774714347;
+	bh=SDYHbKXHfX9Y2pe1dgvuoInQbKO/zXiJtMq7qwolnww=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=BUWven3tTY39LHzZKvDQ5YFSR7pWGb6ZZYXckmR9WiLzGf+QxzV0ZpeM+SvCz0OSh
+	 M9jVnx7iRO0cfBf0D82j9N5gY4ClIG3DpTGybw/4NTiWUK9edgYZoUfISvVM7RVxud
+	 qIfsGGLad/hWnrqKyYu7NbRWkYNTLx/J0j8ZrSqtU38AfN36olkuCCJLNLEl3q+NvP
+	 4fiwYbk07NZ4uosNwP5Qc4diVl2elWRMpL4dgXNiAj8X0ml3wKyWo6aIWYUbJiGjm+
+	 nLCnKLR9848mWc0tjd/TJb2WVehYzPPjRUahvmwmXL6/Gm9ygtioZqljNddiTaPcPQ
+	 uPUul/6i6un6w==
+Received: by mail-yx1-f48.google.com with SMTP id 956f58d0204a3-6500eae6d2fso502564d50.1
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 09:12:27 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUkOpz0i0VVu221Le3SeAJgOmjo/7AEt6hx1X1TwBreEVfrRQSpzm2WPKv1tIXcLooE80VEew1voQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyzlPprz/zP8WsAq8tFzgQJdhPcwImDB90n0NNFSkcXUZipWOwR
+	Ise3ayV7NzSpWR7cWBuYjYgVEkOXZ0ioDK2irtGP1W1oedjcka42AZcDR30iWNRU7BMdQyZmYuj
+	dKQ3h1bQdSP7QQmi85a8ZX4G5UU0OoQE=
+X-Received: by 2002:a05:690c:c509:b0:79a:d0a0:a883 with SMTP id
+ 00721157ae682-79bdda0e935mr68324137b3.0.1774714347027; Sat, 28 Mar 2026
+ 09:12:27 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260328-resilient-smilodon-of-improvement-a8619f@quoll>
+References: <20260328124707.141209-1-khushalchitturi@gmail.com> <177470797266.1536342.6967120656934552033.robh@kernel.org>
+In-Reply-To: <177470797266.1536342.6967120656934552033.robh@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Sat, 28 Mar 2026 17:12:15 +0100
+X-Gmail-Original-Message-ID: <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
+X-Gm-Features: AQROBzBmxlgNPR4lwnOObl4JeVoYuUZVuS6Wk8AtiSoqbvygkl-i3j0IOlp_ErY
+Message-ID: <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: power: reset: cortina,gemini-power-controller:
+ convert to DT schema
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Khushal Chitturi <khushalchitturi@gmail.com>, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Mar 28, 2026 at 01:20:43PM +0100, Krzysztof Kozlowski wrote:
-> On Fri, Mar 27, 2026 at 09:40:39PM -0400, Richard Acayan wrote:
-> > Document the SDM670 LMh.
-> > 
-> > Signed-off-by: Richard Acayan <mailingradian@gmail.com>
-> 
-> Why are you sending patches already applied 18 days ago?
+On Sat, Mar 28, 2026 at 3:26=E2=80=AFPM Rob Herring (Arm) <robh@kernel.org>=
+ wrote:
 
-This one in particular was applied with the assumption that there were
-no driver changes to support SDM670, so I re-sent it in case the
-different CPU clusters change the suitability of the fallback
-compatible.
+> dtschema/dtc warnings/errors:
+> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/p=
+ower/reset/cortina,gemini-power-controller.example.dtb: power-controller@4b=
+000000 (cortina,gemini-power-controller): '#power-domain-cells' is a requir=
+ed property
+>         from schema $id: http://devicetree.org/schemas/power/power-domain=
+.yaml
 
-I'll drop them next time, and patch over this if necessary.
+Weird, this power controller does not handle power domains whatsoever,
+it handles the mains power. So it should not have any power domain
+cells.
+
+Is this the result of some regexp gone stray?
+
+Yours,
+Linus Walleij
