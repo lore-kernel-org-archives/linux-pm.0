@@ -1,141 +1,134 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B876374726;
-	Sat, 28 Mar 2026 08:22:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 340C729BDB1
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 11:51:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774686145; cv=none; b=Gmia1xgYKR0OuPyM1Pjb0Hl+AQY7HYw/wug1wEH9j8B82iZScmxGKDo3OUMDKTftCvcDjlCC/yJ7AG1Ri5dxLgdEFlsA4kVrZ6/wF3UigyhXxR3ksAs+/HXdO4sMJ+ztEpoj+LIc6MIXTUuwUGZd7exCDtmooDmUT0PtHvWuxKY=
+	t=1774698672; cv=none; b=O+CNlK4syH2SiOKU6EXDrcJvAA2K3g+UUruiNh42oYRmuPdkjcFRi4bbpXgCxMo9N+PnwNZMO1YzNVnfBej7wl0k0rReKwxmwmjYt7AuGkaOfR94Jm/caLgaBYsDTy1LrEdz54xTnmSyDP/qnWeyVhHwBaOOx2d1k/IJM3ITpwc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774686145; c=relaxed/simple;
-	bh=KN9F0rAgEEeooiwR8R0K20dqkZ/BBUYU8vQkKLLJeKs=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=rO5CSJl15DD+T4Dwq1gjuIZ4Qtxk9GBSkFuIrTjrwN1t6EFbw82VB3HlmTJhxhRnhZVuW1EeugdbwTUSiucCW/BFjpSvxJmY2mkWka2UqNLymSrGKS2TwSA+9+/v3PGJQ7+URFPiUVwnvCNQUWa0QWdPpcyGbaq6jjlu3exrqZw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=YII2ExQh; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=wKxJTK1t; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1774698672; c=relaxed/simple;
+	bh=m1UQ6A6/nyzOvMaXawlTdhUjXddjW5mxh8Ovi3r+whQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=X8Zdma9rg5143aFzoD4nspIWy42teseMyCKfXdQND/8s3hpkriE7NTfE+vOLRN8J3NV4VgKi85jocnMKgM6O9A10kbztmPs5uI6f9fDiwuS5Zn9jUr/pD1XiMWkjbukScqySZyvFHm/g4EZKX7dWuqy4jYeUhkd8jYsEn0aJ5Is=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dYXbTuSS; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="YII2ExQh";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="wKxJTK1t"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1774686139; bh=W0G6vVypT7WW4cj/8+0X35c
-	3ULPZjzWVK3rrCsz2NtY=; b=YII2ExQhlJZqkqhu6OacYAKhnb/ibgXffuiZdZ5kqUDwyexuOD
-	iNxw57wtIEPPJWyJ7UqSWvgSJ+/JaHZrFT9VELAsKdkkzEkuuYlIFLIWj8/6oonDLh9FNzZdmLj
-	ffkj3Vl83kM/PxWKm29/P4k0IjxRKILEhmnSLwmhmN6v1khN97OP5bZm7mWnGw3ZqUAA0iRRYfC
-	7yqPS0EtwDO7kdHXBDXmiNTXn67jOkNiMhGnUkeFyZtpxAA33nxfI60K6AhmYmAIiR2LJPYgzpg
-	BcT3JlSm8iZXJT+W7wfH56WSbirJ8jfqbvOrR8xFEoyFYnZ2VQc0PFUn28KsteiQf0Q==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1774686139; bh=W0G6vVypT7WW4cj/8+0X35c
-	3ULPZjzWVK3rrCsz2NtY=; b=wKxJTK1tLuFEEM71aPfxksWqmhXhO6ZV0qnrHl7Va3We0Onij6
-	VqQacg8iTqUJ8nttC9qGQKcaP+9uwjEG5oAw==;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dYXbTuSS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1FEDC2BCB1
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 11:51:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774698672;
+	bh=m1UQ6A6/nyzOvMaXawlTdhUjXddjW5mxh8Ovi3r+whQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=dYXbTuSSItTLDJzIzwmKw3wB4cCnWVcjHSwrS/zTeAjrZ1DpiyG9V2NW8EUNXExwW
+	 EvGIFyEaW3Y5qArQAPdlm/aNRZEmzp6fLEBXKrAoXYLvu/xf64GoDQD+hpZyonVtKZ
+	 TvYuH6nmT6WWd901D9n71eY5END+ups35tRwha9FJexNHN+rUdb7zYxN6BZGDnenal
+	 daj94KWYnU4QK9Xh9EDEYsdV6Q/XWtrnAJj0kros7DiCqDay6rB5Tgv4x1lp6U6yEu
+	 gOzfIabbtauGBH69YgATH2QkxsIoVonH1nGvC/mdPmwKSVhdC/h3cIWoeMvmphLcP2
+	 m3Thh2EOrUGng==
+Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-467161c4b89so1679964b6e.3
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 04:51:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWkUEwpwTLP174cnab8T99bQ7C35eoUqK+Im7ipIfvplfetJZ3ZUNsReU+wbo2bggzw6JkRec3gVg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzgNVoAcRZQOzJZEFyAnAQvFFe89oDa94Uugvwod1TmC6Uy/l2k
+	BOKIkrFSlk9bAYOQcwFaXRmB9ucX7Pkt0QxY5xJVJl+dkuNkU+IG63X0mex+29EAmenc3bRQitG
+	ui8bAn3fdAP1ojw8H/YLoZBkukXp1ako=
+X-Received: by 2002:a05:6808:1787:b0:466:f25d:3289 with SMTP id
+ 5614622812f47-46a8a59ada9mr2555190b6e.36.1774698671112; Sat, 28 Mar 2026
+ 04:51:11 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Sat, 28 Mar 2026 09:22:19 +0100
-From: =?UTF-8?Q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?=
- <barnabas.czeman@mainlining.org>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Mathieu Poirier
- <mathieu.poirier@linaro.org>, Konrad Dybcio <konradybcio@kernel.org>,
- Stephan Gerhold <stephan@gerhold.net>, linux-arm-msm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org
-Subject: Re: [PATCH 1/7] dt-bindings: power: qcom-rpmpd: Split MSM8953 and
- SDM632
-In-Reply-To: <ocrzwxmr256h3ef7ifwx3z6jgtzubiha3forfi7nao6gakb6wu@recertxxhlip>
-References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
- <20260327-sdm632-rpmpd-v1-1-6098dc997d66@mainlining.org>
- <ocrzwxmr256h3ef7ifwx3z6jgtzubiha3forfi7nao6gakb6wu@recertxxhlip>
-Message-ID: <39a320e472ddc6d44c950a995b577e77@mainlining.org>
-X-Sender: barnabas.czeman@mainlining.org
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
+References: <12876512.O9o76ZdvQC@rafael.j.wysocki> <202603280307.P9324SuS-lkp@intel.com>
+In-Reply-To: <202603280307.P9324SuS-lkp@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Sat, 28 Mar 2026 12:50:59 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0jv-qk=GS5GxULV-XpY8_8iNCtL-qs1j7O-wg3775-WNA@mail.gmail.com>
+X-Gm-Features: AQROBzCoO8RbHvi91ay3Tbm0Ce4dhfcdhPXZ9-MSHP7fVv33wA0072HY5xcFZFU
+Message-ID: <CAJZ5v0jv-qk=GS5GxULV-XpY8_8iNCtL-qs1j7O-wg3775-WNA@mail.gmail.com>
+Subject: Re: [PATCH v1] thermal: core: Address thermal zone removal races with resume
+To: Dan Carpenter <error27@gmail.com>
+Cc: oe-kbuild@lists.linux.dev, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, lkp@intel.com, oe-kbuild-all@lists.linux.dev, 
+	Mauricio Faria de Oliveira <mfo@igalia.com>, LKML <linux-kernel@vger.kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 2026-03-27 21:26, Dmitry Baryshkov wrote:
-> On Fri, Mar 27, 2026 at 09:11:43PM +0100, Barnabás Czémán wrote:
->> Remove modem related bindings from MSM8953 rpmpd because MSM8953 MSS
->> is using mss-supply as a regulator usually it is pm8953_s1.
->> Split SDM632 bindings from MSM8953 because SDM632 is using mss-supply
->> as a pm domain.
->> 
->> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
->> ---
->>  .../devicetree/bindings/power/qcom,rpmpd.yaml        |  1 +
->>  include/dt-bindings/power/qcom-rpmpd.h               | 20 
->> +++++++++++++-------
->>  2 files changed, 14 insertions(+), 7 deletions(-)
->> 
->> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml 
->> b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
->> index 8174ceeab572..659936d6a46e 100644
->> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
->> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
->> @@ -48,6 +48,7 @@ properties:
->>            - qcom,sc7280-rpmhpd
->>            - qcom,sc8180x-rpmhpd
->>            - qcom,sc8280xp-rpmhpd
->> +          - qcom,sdm632-rpmpd
->>            - qcom,sdm660-rpmpd
->>            - qcom,sdm670-rpmhpd
->>            - qcom,sdm845-rpmhpd
->> diff --git a/include/dt-bindings/power/qcom-rpmpd.h 
->> b/include/dt-bindings/power/qcom-rpmpd.h
->> index 4371ac941f29..2d82434b993c 100644
->> --- a/include/dt-bindings/power/qcom-rpmpd.h
->> +++ b/include/dt-bindings/power/qcom-rpmpd.h
->> @@ -84,13 +84,11 @@
->>  #define QM215_VDDMX_AO		MSM8917_VDDMX_AO
->> 
->>  /* MSM8953 Power Domain Indexes */
->> -#define MSM8953_VDDMD		0
->> -#define MSM8953_VDDMD_AO	1
->> -#define MSM8953_VDDCX		2
->> -#define MSM8953_VDDCX_AO	3
->> -#define MSM8953_VDDCX_VFL	4
->> -#define MSM8953_VDDMX		5
->> -#define MSM8953_VDDMX_AO	6
->> +#define MSM8953_VDDCX		RPMPD_VDDCX
->> +#define MSM8953_VDDCX_AO	RPMPD_VDDCX_AO
->> +#define MSM8953_VDDCX_VFL	RPMPD_VDDCX_VFL
->> +#define MSM8953_VDDMX		RPMPD_VDDMX
->> +#define MSM8953_VDDMX_AO	RPMPD_VDDMX_AO
-> 
-> Well, no. This is an ABI break. It will make previous DT to stop from
-> working. You can drop unused indices, but you can not change the values
-> used by the existing domains.
-Do these indices never can be changed?
-> 
->> 
->>  /* MSM8974 Power Domain Indexes */
->>  #define MSM8974_VDDCX		0
->> @@ -156,6 +154,14 @@
->>  #define QCS404_LPIMX		5
->>  #define QCS404_LPIMX_VFL	6
->> 
->> +/* SDM632 Power Domain Indexes */
->> +#define SDM632_VDDMD		0
->> +#define SDM632_VDDCX		1
->> +#define SDM632_VDDCX_AO		2
->> +#define SDM632_VDDCX_VFL	3
->> +#define SDM632_VDDMX		4
->> +#define SDM632_VDDMX_AO		5
-> 
-> Please use RPMHPD_* instead of introducing new entries.
-I do not understand completely, should I use RPHPD bindings in rpmpd 
-driver or
-I should use rpmhpd driver for SDM632?
-> 
->> +
->>  /* SDM660 Power Domains */
->>  #define SDM660_VDDCX		RPMPD_VDDCX
->>  #define SDM660_VDDCX_AO		RPMPD_VDDCX_AO
->> 
->> --
->> 2.53.0
->> 
+Hi,
+
+On Sat, Mar 28, 2026 at 9:03=E2=80=AFAM Dan Carpenter <error27@gmail.com> w=
+rote:
+>
+> Hi Rafael,
+>
+> kernel test robot noticed the following build warnings:
+>
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>
+> url:    https://github.com/intel-lab-lkp/linux/commits/Rafael-J-Wysocki/t=
+hermal-core-Address-thermal-zone-removal-races-with-resume/20260327-222101
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.g=
+it thermal
+> patch link:    https://lore.kernel.org/r/12876512.O9o76ZdvQC%40rafael.j.w=
+ysocki
+> patch subject: [PATCH v1] thermal: core: Address thermal zone removal rac=
+es with resume
+> config: i386-randconfig-141-20260328 (https://download.01.org/0day-ci/arc=
+hive/20260328/202603280307.P9324SuS-lkp@intel.com/config)
+> compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0=
+227cb60147a26a1eeb4fb06e3b505e9c7261)
+> smatch: v0.5.0-9004-gb810ac53
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new vers=
+ion of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Reported-by: Dan Carpenter <error27@gmail.com>
+> | Closes: https://lore.kernel.org/r/202603280307.P9324SuS-lkp@intel.com/
+>
+> smatch warnings:
+> drivers/thermal/thermal_core.c:1913 thermal_init() warn: missing error co=
+de 'result'
+>
+> vim +/result +1913 drivers/thermal/thermal_core.c
+>
+> 203d3d4aa48233 drivers/thermal/thermal.c      Zhang Rui         2008-01-1=
+7  1900  static int __init thermal_init(void)
+> 203d3d4aa48233 drivers/thermal/thermal.c      Zhang Rui         2008-01-1=
+7  1901  {
+> 80a26a5c22b90a drivers/thermal/thermal_core.c Zhang Rui         2013-03-2=
+6  1902        int result;
+> 80a26a5c22b90a drivers/thermal/thermal_core.c Zhang Rui         2013-03-2=
+6  1903
+> 755113d7678681 drivers/thermal/thermal_core.c Daniel Lezcano    2024-01-0=
+9  1904        thermal_debug_init();
+> 755113d7678681 drivers/thermal/thermal_core.c Daniel Lezcano    2024-01-0=
+9  1905
+> d2a89b52839597 drivers/thermal/thermal_core.c Daniel Lezcano    2020-07-1=
+7  1906        result =3D thermal_netlink_init();
+> d2a89b52839597 drivers/thermal/thermal_core.c Daniel Lezcano    2020-07-1=
+7  1907        if (result)
+> d2a89b52839597 drivers/thermal/thermal_core.c Daniel Lezcano    2020-07-1=
+7  1908                goto error;
+> d2a89b52839597 drivers/thermal/thermal_core.c Daniel Lezcano    2020-07-1=
+7  1909
+> f777132b791874 drivers/thermal/thermal_core.c Rafael J. Wysocki 2026-03-2=
+6  1910        thermal_wq =3D alloc_workqueue("thermal_events",
+> f777132b791874 drivers/thermal/thermal_core.c Rafael J. Wysocki 2026-03-2=
+6  1911                                      WQ_FREEZABLE | WQ_POWER_EFFICI=
+ENT | WQ_PERCPU, 0);
+> f777132b791874 drivers/thermal/thermal_core.c Rafael J. Wysocki 2026-03-2=
+6  1912        if (!thermal_wq)
+> f777132b791874 drivers/thermal/thermal_core.c Rafael J. Wysocki 2026-03-2=
+6 @1913                goto unregister_netlink;
+>
+> result =3D -ENOMEM;
+>
+>
+> --
+
+This has been fixed in the v2:
+https://lore.kernel.org/linux-pm/6267615.lOV4Wx5bFT@rafael.j.wysocki/
