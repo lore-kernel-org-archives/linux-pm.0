@@ -1,63 +1,63 @@
-Received: from mail-qv1-f43.google.com (mail-qv1-f43.google.com [209.85.219.43])
+Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com [209.85.160.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1F02258EFF
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 01:40:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6649A33BBA2
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 01:40:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774662033; cv=none; b=Mxeeu0uPSamU/REliXrpOX158co55ygRMsHGpV4H1j/hoCyNGzkSzWB1SFAK6LO40LJE3+yvSIqmEPAMpgIZnitdWj1nDJlrBu3L9Aw1i+wIbJLagxcILRmXk9CS3w/ONp6Wql9R5m9YVu4VCKrdOCJEA8/U2nReFMcOaQAAFhA=
+	t=1774662047; cv=none; b=JfSUE+C6/6MXkPkA38foJ7irbTC5IJgv4/Vg47Wk390E8wp/8kRqpkUG2sDIFxZ9r5NzQRyWlePzxTQjDvlEVM/vDPLC9Wh3wFAVnLMaGJvbvuybTZGy8AO45EiK7j5weyxJIhRTHAk1aVz6GJPUrS9h168uoLo2/3Ec13JpjCc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774662033; c=relaxed/simple;
-	bh=YKU/DnmNIxKk/G4FaBPJrYaaIFx5k+4NkZwdBNpIKdU=;
+	s=arc-20240116; t=1774662047; c=relaxed/simple;
+	bh=P+sgtflT7HpNTLl3SREork3SLX9AzxBIvEm30I4maL4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hXJh4x2Qhop2h7nLji8boHa6fUfyiikkbLbVpYKzhxBBxxLU5g9qKqzUDPlmzTajtWKx+7QZilXWWjveE6YJ+bIO7EnpVo7IlnQL11kwVsDopaVhMeuQM2t5P3/AzGXxy5w/Gr6BYLhFpDLZ2coQ4Ue0oNqB4EBtFzSNKT61B4I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RDpfsk8h; arc=none smtp.client-ip=209.85.219.43
+	 MIME-Version; b=KCfAdFghzZwyfyQuxYJKcr6OjqO1XW1+lQlhgdpYH90Gnh1e9uYMgA4pd3WCPJWYLcWqo+hGSSgT/ymrDKZ1R7mcvBQHFvotlgPTddJHIJe5jym65a4bueoSr29cdPN9pMTaezl/UgKpV8ngIjJ1q72Ez+adDkDYMQXqmaAJFcw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hfFo7Euy; arc=none smtp.client-ip=209.85.160.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RDpfsk8h"
-Received: by mail-qv1-f43.google.com with SMTP id 6a1803df08f44-89a000f5adeso40158496d6.3
-        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 18:40:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hfFo7Euy"
+Received: by mail-qt1-f180.google.com with SMTP id d75a77b69052e-509134ab2d2so22789121cf.0
+        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2026 18:40:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774662032; x=1775266832; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1774662045; x=1775266845; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=fMK0diFp+y5MtkQk4eP+T+xRtrAK1MN5VxTGJH3Ujrk=;
-        b=RDpfsk8hWxIWsHxjL6W0kYjPUu+r37UPgSDgPJNBsU7h1sKwTEOpLbNQ7iOzWS5jkW
-         NZqzBBnPYlZmK9T7VIudNhZE3AAIPwY5pASu4/ROS0BzlnaVaD5SsCZnxrt14dgY/q0z
-         2S3HOUevslJK7nGrlNTm7vU1c6QDDn9b9u8k3eI8vN/7IymnmZqUwFGol3AZW2NSiOYG
-         PskScbo9Ml+KUS/vmQpLlpVRVc61wO8pbQQaSe57S/vmtdfLII/meLw6W67bxvI0MY8e
-         7uh94qFTW4rT4IefRa3FHR7L+xRSiQgypTWXwrgPF0SaYYgMDHcXNcvra5IPHRVgh7FG
-         GyXA==
+        bh=cBBLWCcZ87q82/idzSnceVUwnwhBcq1HPoO/59tEn18=;
+        b=hfFo7EuytdGqbNdcKUUaCWOL6owG+TacYy4CGxjTdHxmJxm3UyigIEZeVO7/k/7EgI
+         ovJVRrf+GQHDvpTlvcGyHbFWW4OhJGqKSPrEMIewBqZ49nDgkiQuFf/nHc1vQh36ua+I
+         LuiBXHUcrQCNgO2oPVBeGJys9j9yPzKje88ZS8VmgWi2QztNppCoizdNtXb1XbCcg9UM
+         pKKABGczJsZb4GZarBN76ZxQ/uIkDWok3nRoUTEB6xhekTKz/lKufpuMna0KPiBBkWgm
+         Xy1KvNIxRcdyJqtBh3xD/TtSdZk2DxcO8hYsT6Ce0wEJpFaS6rknf6Xs4/zpgb2KslJo
+         SnSQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774662032; x=1775266832;
+        d=1e100.net; s=20251104; t=1774662045; x=1775266845;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=fMK0diFp+y5MtkQk4eP+T+xRtrAK1MN5VxTGJH3Ujrk=;
-        b=Ubg4CtQ053fdQZ+i4+y1RcWuCsLfRuDZX5AKyM752lqsRj849oYUJ+MDJHnTGfBDSf
-         VHVKtlgI8rk0kBrvxC0RfXNIT2aiZxxh50wr40ZG+CAKIQy6spWanFlX5T2aRsTJT0BV
-         PFfnXkicJgLVgMZrQw373RUkAPEsA63oGXMQ8s331yC0nOA5/dnTHZfPRsc59oUqshwZ
-         MaF+dSd7+kAdggGaci25jIta8TEhN/hrBy7XHqhlppPvy+UxPYZ6fN2FeImXUieOLgHC
-         XOw4HNdP0mBMFsGLKBt4mSCkB5czNDGgAyRtuFnQysVrP67DfNH5iFld1q9FMHp26gpy
-         ydqg==
-X-Forwarded-Encrypted: i=1; AJvYcCW0jvd7fhfdR7sIgXyrti+1BwFSoRNSoC8tbBdfvx6q1jslU9Q7ZZPykGfZklMkCdkuMt3yQjBriw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx8Z1G93pVVnFGWipYrZmsKa+wG+/xpbbTQ+Nb3S68P53pmjmuK
-	jI6wui5mZsVLcLrXC51ARAqSJZAOtzcNX7NvITGB46Xfb9Gsuyx3UYqV
-X-Gm-Gg: ATEYQzydMC2uMExI1Kr2zo+r0nibqkeCZmgQ+Nyl+iBpAimltdX+IyfBFDdGaLHV4aG
-	8UkECgFj7bbRrGVkFy5S5gx6lS5e7YvHr2uPgnSWedlUWThT+QZK3UntJSWgg54mvjdalV6pfYZ
-	gKNRz6JlbRIP9oaG3KdxYJcesAvS++eXHxz7cdtFrB5icADbKBwah40YRbnP2pmZCa2MjmciFfy
-	hBFZOjONL69GodpG1KGv+H61VV9uPSMomx5p8cy8uyUCKpZwuF/V8Lk3VWE17AE7KNI7gqdzWeb
-	Yr0bspah6Z0+xS0FzkICug+FaCpBkhBtDwsgMmcapdD5eqsEYmFEVofXzngxAU/J89ioDLMukWk
-	xKv1iKjMb2w1bBV+UjukcciUuT6bDt1zukpvRVVMJ3q+dbnCdmpJBRMoN/w5FKhnENTXkMxeJ0j
-	RNX/eI3Ce/W1p5sT8AlX+wPAu5EzmHnMIG32T9
-X-Received: by 2002:a05:6214:f2b:b0:89c:df61:7a10 with SMTP id 6a1803df08f44-89ce8f02e4bmr68450336d6.58.1774662031691;
-        Fri, 27 Mar 2026 18:40:31 -0700 (PDT)
+        bh=cBBLWCcZ87q82/idzSnceVUwnwhBcq1HPoO/59tEn18=;
+        b=sj1cwGnzqpk36wNQh7cSnJTx6E6Coj4RyMbLEvJUEzDWpDFobAhXNzQ+Sx0uosi1zt
+         CorhF3ACa+lBnR4Bi0x+et5o/TCJ42uWRBKXGYLWkJLeROqxjp8gVjd2+yxEU+9W6VKk
+         LkbIxwWCRc3ExpUa7T+qxdKJ+JWhJ0pFm15cr4bov0iXvSeelR9WHfOw4Ofk/Y3BUq0j
+         /S/60tJe0R0popzrLKB8A5gemSSfcNZFAIPjXnpUJSGGF8N9Jq1gBAiGziIYMTNGLuWy
+         hOReKKHtWPYRg0ZZYQArgWnUX4w9TTSPmdQHiu7VM6nOekhKLItI9k319R5GA3iUosep
+         SHYw==
+X-Forwarded-Encrypted: i=1; AJvYcCVi/3Ih2+FoUOWkzHGuTEbP100JduxuACstx7y+MwFyyaaf67b5Sg5H8c/nT2PzNYxe4uV+plrjxw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxSFYPpDY2Mjr1Ms8LhsChEC5ruUaHclolv57gHWBtegqKcYRsy
+	JRiWaUjFHGdGHmcj/jURNrbD/BHnD6X4Dtjng89tEEIftTWbNEuXuAuk
+X-Gm-Gg: ATEYQzw67lMnAz2vjbfxVhcKnGRKP4Nmp1MNDcefJToBYotbkV1pnt1mpqhfOusoVVc
+	rUsfTLRRMpVcKufR1TJ3wcDM2nTDS85R5lf0XLxdd9t/8tqQz0OZCDStbhy0R/ltBNVg7o8GURd
+	lJ+jcC1/8AGGPtxbQQpJmpd/c7TItBHqplQROOQtMDjthE7kpjHeMz3WPZGIpbzEzwYMmqwdVab
+	lmi5mLn7z2faevu5y64zC1n4eID1+IlZqCQKfcuaeQg4K7gZ9JmLjcV4dPeIp2DW/oDFOQUn4Oy
+	f6tFo5lzQxS6d13fKXN/fBAsfc2JmqFHmOv4oCpq/KrU2Ft2iVO7vU7GDMrmwr2SMvyUoOGzyiP
+	F6s9yM5EbjzgwgNtcRsyU7+ei00P5ISKWGVXYcK5EktbGK4yj6YeXb8/Y0QbHVEtqRRGfPZ8xw3
+	Wq5kCg0OC5wys8W+sL4JHEtD4k+w==
+X-Received: by 2002:a05:622a:64b:b0:509:61:b22 with SMTP id d75a77b69052e-50ba39c17a1mr66304681cf.57.1774662045438;
+        Fri, 27 Mar 2026 18:40:45 -0700 (PDT)
 Received: from localhost ([184.144.58.243])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89ecf95f3c1sm6396276d6.40.2026.03.27.18.40.29
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-50bb2c67d1fsm8092411cf.1.2026.03.27.18.40.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Mar 2026 18:40:30 -0700 (PDT)
+        Fri, 27 Mar 2026 18:40:43 -0700 (PDT)
 From: Richard Acayan <mailingradian@gmail.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
@@ -74,9 +74,9 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org
 Cc: Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v4 2/4] dt-bindings: thermal: lmh: Add SDM670 compatible
-Date: Fri, 27 Mar 2026 21:40:39 -0400
-Message-ID: <20260328014041.83777-3-mailingradian@gmail.com>
+Subject: [PATCH v4 3/4] thermal/qcom/lmh: support SDM670 and its CPU clusters
+Date: Fri, 27 Mar 2026 21:40:40 -0400
+Message-ID: <20260328014041.83777-4-mailingradian@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260328014041.83777-1-mailingradian@gmail.com>
 References: <20260328014041.83777-1-mailingradian@gmail.com>
@@ -88,27 +88,136 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Document the SDM670 LMh.
+The LMh driver was made for Qualcomm SoCs with clusters of 4 CPUs, but
+some SoCs divide the CPUs into different sizes of clusters. In SDM670,
+the first 6 CPUs are in the little cluster and the next 2 are in the big
+cluster. Define the clusters in the match data and define the different
+cluster configuration for SDM670.
+
+Currently, this only supports 8 CPUs and tolerates linking to any CPU in
+the cluster.
 
 Signed-off-by: Richard Acayan <mailingradian@gmail.com>
 ---
- Documentation/devicetree/bindings/thermal/qcom-lmh.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/qcom/lmh.c | 69 +++++++++++++++++++++++++++++++-------
+ 1 file changed, 56 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-index 1175bb358382..ce72347e29d1 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-lmh.yaml
-@@ -22,6 +22,9 @@ properties:
-           - qcom,sc8180x-lmh
-           - qcom,sdm845-lmh
-           - qcom,sm8150-lmh
-+      - items:
-+          - const: qcom,sdm670-lmh
-+          - const: qcom,sdm845-lmh
-       - items:
-           - const: qcom,qcm2290-lmh
-           - const: qcom,sm8150-lmh
+diff --git a/drivers/thermal/qcom/lmh.c b/drivers/thermal/qcom/lmh.c
+index 3d072b7a4a6d..46c1e301f6c8 100644
+--- a/drivers/thermal/qcom/lmh.c
++++ b/drivers/thermal/qcom/lmh.c
+@@ -30,14 +30,17 @@
+ 
+ #define LMH_REG_DCVS_INTR_CLR		0x8
+ 
+-#define LMH_ENABLE_ALGOS		1
+-
+ struct lmh_hw_data {
+ 	void __iomem *base;
+ 	struct irq_domain *domain;
+ 	int irq;
+ };
+ 
++struct lmh_soc_data {
++	bool enable_algos;
++	u32 node_ids[8];
++};
++
+ static irqreturn_t lmh_handle_irq(int hw_irq, void *data)
+ {
+ 	struct lmh_hw_data *lmh_data = data;
+@@ -100,8 +103,8 @@ static int lmh_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct device_node *cpu_node;
+ 	struct lmh_hw_data *lmh_data;
++	const struct lmh_soc_data *match_data;
+ 	int temp_low, temp_high, temp_arm, cpu_id, ret;
+-	unsigned int enable_alg;
+ 	u32 node_id;
+ 
+ 	if (!qcom_scm_is_available())
+@@ -144,10 +147,9 @@ static int lmh_probe(struct platform_device *pdev)
+ 	 * for other platforms, revisit this to check if the <cpu-id, node-id> should be part
+ 	 * of a dt match table.
+ 	 */
+-	if (cpu_id == 0) {
+-		node_id = LMH_CLUSTER0_NODE_ID;
+-	} else if (cpu_id == 4) {
+-		node_id = LMH_CLUSTER1_NODE_ID;
++	match_data = of_device_get_match_data(dev);
++	if (cpu_id >= 0 && cpu_id < 8) {
++		node_id = match_data->node_ids[cpu_id];
+ 	} else {
+ 		dev_err(dev, "Wrong CPU id associated with LMh node\n");
+ 		return -EINVAL;
+@@ -156,9 +158,7 @@ static int lmh_probe(struct platform_device *pdev)
+ 	if (!qcom_scm_lmh_dcvsh_available())
+ 		return -EINVAL;
+ 
+-	enable_alg = (uintptr_t)of_device_get_match_data(dev);
+-
+-	if (enable_alg) {
++	if (match_data->enable_algos) {
+ 		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_CRNT, LMH_ALGO_MODE_ENABLE, 1,
+ 					 LMH_NODE_DCVS, node_id, 0);
+ 		if (ret)
+@@ -231,10 +231,53 @@ static int lmh_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct lmh_soc_data sdm670_lmh_data = {
++	.enable_algos = true,
++	.node_ids = {
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++	},
++};
++
++static const struct lmh_soc_data sdm845_lmh_data = {
++	.enable_algos = true,
++	.node_ids = {
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++	},
++};
++
++static const struct lmh_soc_data sm8150_lmh_data = {
++	.enable_algos = false,
++	.node_ids = {
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER0_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++		LMH_CLUSTER1_NODE_ID,
++	},
++};
++
+ static const struct of_device_id lmh_table[] = {
+-	{ .compatible = "qcom,sc8180x-lmh", },
+-	{ .compatible = "qcom,sdm845-lmh", .data = (void *)LMH_ENABLE_ALGOS},
+-	{ .compatible = "qcom,sm8150-lmh", },
++	{ .compatible = "qcom,sc8180x-lmh", .data = &sm8150_lmh_data },
++	{ .compatible = "qcom,sdm670-lmh", .data = &sdm670_lmh_data },
++	{ .compatible = "qcom,sdm845-lmh", .data = &sdm845_lmh_data },
++	{ .compatible = "qcom,sm8150-lmh", .data = &sm8150_lmh_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, lmh_table);
 -- 
 2.53.0
 
