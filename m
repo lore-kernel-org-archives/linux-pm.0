@@ -1,63 +1,63 @@
-Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 393BF2836AF
-	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 19:18:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E1392836AF
+	for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 19:18:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774725504; cv=none; b=usgxDBQjdh82tm0F1c7LiBVhex29ysDmDNVyYOJbQGLWf2QGYoU+dwWU0aGshDE5o6AcGw411sUDplCeWDoQu3J3KQxvFj0RyYfpV3JOlRciYSRe1sGktqndtRmksRXktiqTnmtXVcAP48uh2p5cBcjU3octj7qrZrgopihotyI=
+	t=1774725509; cv=none; b=DwQUOWTGa/ZXFYV07XriNiIFAuy+HTu5nU4xXOGpDxlV1OiyjkWZotdCjp1aUUJH2BsaEdj8dij6p08NRx/9dFguO8PLpu4JF29PUYsiFzzzFL7B4EJdYVw+gUnNwuHpY8x3xsic9wXi6Q1O04SKamq7uS/i5VwaPfn2p+PRU6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774725504; c=relaxed/simple;
-	bh=TIUrJlohH7zzcX5wL9kNLLx0H8njEDL4nmQhrrq1NaU=;
+	s=arc-20240116; t=1774725509; c=relaxed/simple;
+	bh=JZcLUYCLYEhZcBKzzSCYlJLv9uoFBvbrytjcn306C04=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=rXkNDVtv+l2pN8///AGiUUpZwrHuQhdMg3NqGUCWQMyLD9OnC6RjD4HLqUcEeZGHFbXUCLgnZvl1kbJBK0AKBgFZFPk5WHs5tksXSTsFP6hdrMd+mwGILU2jDB7nAdqfsgkuxDQV0Hj9vWoFIhvHidU4t25IZn+8UiyyvV8rXF8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZoDqehKT; arc=none smtp.client-ip=209.85.216.46
+	 MIME-Version; b=S4e3KosLidjLSIufx6/VZNg60bsiJ3fCLHwRjhXcsS8/ZcOqdWHtKS5UaB6/GYATos71bIpPrOqZKvVk3PDG8cqHO8muykl/ONrT+FFnz4j9LwvpWcWQZdORnTjg6Jagqy+lSwtR+mxa27uc0YCyBA1PFzgMg4Jn8CcwfWxAMBw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C8mvyrBR; arc=none smtp.client-ip=209.85.216.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZoDqehKT"
-Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-358e3cc5e7eso1598086a91.0
-        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 12:18:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C8mvyrBR"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-35d9749c26dso424987a91.2
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 12:18:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774725502; x=1775330302; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1774725507; x=1775330307; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=X/Kc/rqS3O8FcnFqoMXkBJLowbwjhPQjCnPmNyfgP7g=;
-        b=ZoDqehKTM7Df0VULo5ckJhalU41/QfXu2ZetmY57DoxkSTTpvY2b2Vjxftu1ZeCy3v
-         7a9N6ocwFKkokOfCZjpbg9mIQ+2DALjvDARimaD93CPa8S4o+9Yz8+SpHsLogU6kEkuN
-         UroEfSFiDjSJbT5bIaiGm74k7ErbmeeguQZbeY7JcMyxF+4HwW4FAW5WvVoGR5whM6DK
-         k43K9Uengqga4EgPANop7eb8L4hs1Zn3dKqGQU0jxVPfkUNEsANibblCv69Gavg44hsp
-         3AKvs04xGfmnxlHPD2bnULN5QcRH2xOgEWJzK+Q5f99q/a923BvP6V2uFJWczN1RNgUd
-         mUEA==
+        bh=WA9Y0VWD6q8BWRqcW8ZuOdPM6JPIhso+ucpZhyQ2OAA=;
+        b=C8mvyrBRrU49GTfLJAXWWCZRdy+aeykgcJ9h7TWos7zP8jX/gScPNAD8cb2iyens6t
+         PY1o1VJL47l/nnXEx25hfMaZtO/MBhsPBzjEwiMR1Ye619d5iFQaNkV/YvOnYxrAk00n
+         3eE1rcYYmxah46170Ym+0bqQA1TnSDR6sJwFPZuQgrL182arqSgtjGjj/AbAYN3kcgNE
+         OLTWYJVCuh1kXKIZTm90VVuKPBYfNccwcL7MUSyDQFoNMGy4OB7DpUlyGVIkA/TezL2m
+         mDyNTkhXvxyjdzvvsWfAEZq/w7xiYXRw3kdYc5L6Q/uKZCibRilI4i/fuqYWFL3MZpeN
+         BSyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774725502; x=1775330302;
+        d=1e100.net; s=20251104; t=1774725507; x=1775330307;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=X/Kc/rqS3O8FcnFqoMXkBJLowbwjhPQjCnPmNyfgP7g=;
-        b=Pm4Sdapo7YHeUxZbmK1QYrrMPJezNpqGYJknD80rQ+W7SDdSe+nmgpuMoBwoeEgl9f
-         3CSjKJmQEBR+OPk8ewkQPWOQeaPX5tccH8gEWrOnk3Uj3sKKqNSaj8pI7S27JVrBSH4P
-         b8fFlslEaXsAeEIopqLmkyx3Ajc5fl22pp1MhdAVVnarSwPm1jXVwykBEBzTHd0QP1xc
-         Z5NbseUCL67I6GmR5Cpy2syHUFXv3QgMuqEWwiauRpAp3dgI/wY3a+uINW0Q/1G++4Ot
-         V7/jcxRgapPfB80OmocFPF/ODG53l2IHORXeOUV4XqtXkozQsUmKOJZD8b551u8EmOrv
-         myGQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUDXWpOIap4oM6VtJ1TQZLCv4JDLK/ZNJ4mc+rGgIDrp9fiRbolWhJ2bxPgj+ISZJel+KW9E/hSkQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzzJU6OL8GeO+etNJPvMMJK4pT7KSUQKlfurj4GjowQZEYJSn+8
-	PzcSS/24iXjHxRw+/uLvnyYH+Ai9Hc/03qFw8U4WYSJ2RB4wOVaMis0nE8eF2DA5
-X-Gm-Gg: ATEYQzxyVwbF8DGtSftMTPYl0NQR9q0sJ0++C4R/CO7q9k6259fsJAOhc4ziv6x0+tI
-	xmyHgAN2k5rIdCWcgoUdhOHgEGL9X5RXBgEx/ZYddiP7H3iMFCH4J9zIMrhUEBoxcbuFuBiyO2M
-	zY/DfKYGGuzOYaCWq1aBt/0A2x0JG+VJ0ViuhKhMUNZFqUKo6ErPIbNihWkJBCjmHlTeauzEPjr
-	1AQ44eOCUnyk2oG/Pa0TwC4uje0UH3U/55HNkVVwGxBssr9Rp/t2oBE31EOIJatXJ4pNs9Ji8mi
-	n9h6kVEQNGzGsgsVIXzAQ8N7yhTXN95HPKNk6Gc+0i4z1MP7Dh9FCMVx8dP1FeZfBZrxrb77QrW
-	JfH6C1Y/algzSQ1AV/LVwDZNvEikwghiYTdShMd2q+Rwcj54trV1Gg/pLzdOhL2WFxHhBqrS3w8
-	iR/U2Gx70w5m9d/BAZukAhmqRRfALcHeSmD+wUf5P6AMldAlNrO8Ugsg==
-X-Received: by 2002:a17:90b:3e81:b0:35b:a8cf:7969 with SMTP id 98e67ed59e1d1-35c30000104mr7222978a91.11.1774725502396;
-        Sat, 28 Mar 2026 12:18:22 -0700 (PDT)
+        bh=WA9Y0VWD6q8BWRqcW8ZuOdPM6JPIhso+ucpZhyQ2OAA=;
+        b=dTUIeb27nnnt2QtQVkMTsyjqF+E5gd2K+gQmsz9NtlAtKreMgGoSOgK5ssPYvSbSxn
+         HxCdA2z4GC8Iye9oK+zKzqQOkzwtXBMHzT373ZjZ03UVDJIypQkPQ1DQI+ztR5gtEEJm
+         f3JF57flF1Q3WXdyUJSkMs81/OBCbqid7yro8iTLc30bTkeUitIBvJSsEfx1DgsRQj0P
+         pucKEOh4sOuJc/8EjNoNetCTR9ckNIPATW55oo3fzDVs59LQSrmeMudSo0uVMyiI2zs4
+         qXPFcwuui8ecpCURISa2vZBJ+U6Fc2l/6fJB7cu3jU00KSJLAqIWiX+SfPJ3uSVVWTst
+         g9KQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWYEnge0B0jgPP/ou6eGy0xRB5+BF4tBJ2Nm3VjNf3RHapylW76IplsbAL0ONwrGqYFKAmWrgIHjA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwwqhF3GlAEr1VG18tz72LatPkPbe7p+Zf4rxORtQjE9Gb9hhIx
+	Y14AYunbZZega6ah6TsxZEh5Zl7bbyBS+9IX2R9uloSkk/pwJTl7vglK
+X-Gm-Gg: ATEYQzxMfuCidjLNUBk/ZkgbyMmuAwnLSUMkAeUNsqAy/0A1ZcGOd98D61a9zJy6+uO
+	STaSZRo+v7LDLpnTQbvX+1dJELLs70ojxQd4vJP2KPDaHqT7jaiEUlhxQE3mKyaSPJqQBCrVOTj
+	7EgBuGPPIUUvdCOPytJW2xwrkcvsjHJGDsJDqHumVw9Jd+G0NwT7Mijxk8TtdxwM3K2Br1uA2JM
+	2KifZnPaeozc4ejrMz2jeGw5Hdaw7R2/RHOIdTPXm3Ew44ZETA09DknqSv1Icgv9afCVTmbI92/
+	W9xWWJMG0OBNFPFMEK/SJvCKsgzPrwCz8/7qECuZLq+k1cZ662xw4MLY1Ez98OsMOL4cVEXwSpm
+	qz6QQvLmx0r+eCs50NRc+cRDZEAyv23CNPziDbLtKhDIqnnwKKSWhBhWx3FrHRxz+qAp8pz+ez/
+	vpHf81iL22QITcGgzKGM56DNsOH3F00TLr2EGfpKPN/Q75PXZ5i/Iyag==
+X-Received: by 2002:a17:90a:dfce:b0:35d:9f60:827 with SMTP id 98e67ed59e1d1-35d9f6009acmr431713a91.29.1774725506725;
+        Sat, 28 Mar 2026 12:18:26 -0700 (PDT)
 Received: from debian.killsync.com ([103.38.13.110])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9507d739sm2684165a91.11.2026.03.28.12.18.18
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9507d739sm2684165a91.11.2026.03.28.12.18.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Mar 2026 12:18:22 -0700 (PDT)
+        Sat, 28 Mar 2026 12:18:26 -0700 (PDT)
 From: aravindanilraj0702@gmail.com
 To: rafael@kernel.org,
 	linux-pm@vger.kernel.org
@@ -67,9 +67,9 @@ Cc: daniel.lezcano@kernel.org,
 	srinivas.pandruvada@linux.intel.com,
 	linux-kernel@vger.kernel.org,
 	Aravind Anilraj <aravindanilraj0702@gmail.com>
-Subject: [PATCH 1/2] thermal: intel: int340x: Fix potential shift overflow in ptc_mmio_write
-Date: Sat, 28 Mar 2026 15:18:05 -0400
-Message-ID: <20260328191806.8675-2-aravindanilraj0702@gmail.com>
+Subject: [PATCH 2/2] thermal: intel: int340x: Check return value of ptc_create_groups()
+Date: Sat, 28 Mar 2026 15:18:06 -0400
+Message-ID: <20260328191806.8675-3-aravindanilraj0702@gmail.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
 References: <20260328191806.8675-1-aravindanilraj0702@gmail.com>
@@ -83,29 +83,41 @@ Content-Transfer-Encoding: 8bit
 
 From: Aravind Anilraj <aravindanilraj0702@gmail.com>
 
-The value parameter is u32 but is shifted into a u64 register value
-without casting first. If the shift amount pushes bits beyond 32, they
-are lost. Cast value to u64 before shifting to ensure all bits are
-preserved.
+proc_thermal_ptc_add() ignores the return value of ptc_create_groups(),
+causing the driver to silenty continue even if sysfs group creation
+fails. The thermal control interface would be unavailable with no
+indication of failure.
+
+Check the return value and on failure clean up any sysfs groups that
+were successfully created before the error, then propagate the error to
+the caller which already handles it correctly via goto err_rem_rapl.
 
 Signed-off-by: Aravind Anilraj <aravindanilraj0702@gmail.com>
 ---
- .../intel/int340x_thermal/platform_temperature_control.c        | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../intel/int340x_thermal/platform_temperature_control.c    | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-index 0ccc72c93499..18ac5014d8dc 100644
+index 18ac5014d8dc..caed572c6061 100644
 --- a/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
 +++ b/drivers/thermal/intel/int340x_thermal/platform_temperature_control.c
-@@ -138,7 +138,7 @@ static void ptc_mmio_write(struct pci_dev *pdev, u32 offset, int index, u32 valu
+@@ -278,12 +278,14 @@ static void ptc_delete_debugfs(void)
+ int proc_thermal_ptc_add(struct pci_dev *pdev, struct proc_thermal_device *proc_priv)
+ {
+ 	if (proc_priv->mmio_feature_mask & PROC_THERMAL_FEATURE_PTC) {
+-		int i;
++		int i, ret;
  
- 	reg_val = readq((void __iomem *) (proc_priv->mmio_base + offset));
- 	reg_val &= ~mask;
--	reg_val |= (value << ptc_mmio_regs[index].shift);
-+	reg_val |= ((u64)value << ptc_mmio_regs[index].shift);
- 	writeq(reg_val, (void __iomem *) (proc_priv->mmio_base + offset));
- }
+ 		for (i = 0; i < PTC_MAX_INSTANCES; i++) {
+ 			ptc_instance[i].offset = ptc_offsets[i];
+ 			ptc_instance[i].pdev = pdev;
+-			ptc_create_groups(pdev, i, &ptc_instance[i]);
++			ret = ptc_create_groups(pdev, i, &ptc_instance[i]);
++			if (ret)
++				return ret;
+ 		}
  
+ 		ptc_create_debugfs();
 -- 
 2.47.3
 
