@@ -1,143 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6174930DEB0
-	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 16:13:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01845371051
+	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 16:14:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774800811; cv=none; b=nVFfSCH0hPnSxJdXwwzl/EMtVQY0QgAWsk9seqzuQIBWi6cZVODixgobmHjQimiLhELf4LWZBx861AOnDCbSpaOZkJszpGNmZNMYYrwD1nm63hciJXFvvO6zZxxbxsFRJY/0UY6PdS3diuS2hnGpMBUBE91IYaHUYhw3GxNdkBA=
+	t=1774800861; cv=none; b=i1h+o1Qi9pUiT7DnwHSkN/GFwXa8NdrjxekIYzpb38/gA6CpF+LWqQHSgiJoP1wUiE9rxy8NcRazsL3pYB0yms33CtoEZe771ML3PUeaS+dvVeTlmrcw62pMVfbhL862wTvEP7TZjmOD+NR9G/o91d7M2QSSfPmDPGQjKkouvjk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774800811; c=relaxed/simple;
-	bh=ABS0ls43nQ7JSVHwa69/og8GfhW9NoXluxBav/WSMzY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=txn4IljG7HjGLyM7QHbm+6HsEXMB3NosralfM496J8rnjQC0ppuKja4rSbkDtOZr/z0jZSDlK5vwYzsqdy+k6hmXG34f4kzFWr9lWJ+XPITHlCmjd4ylcaWGLhzkRCWt/8He8kOSQ8ZEyTLRN8PGY549m+8bSZwXitjS6RnMHvI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Yop6keue; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774800861; c=relaxed/simple;
+	bh=idD9jv7uFW521itEPBe4KyylCkWc7f46VoJ7nLJFmS8=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:Content-Type; b=h7HX4x9VW2gIvYO10WXFAEqYBhZGbVrMsqDo+/nlDFP2dqfYNUO/D0SB3VXyr/NXIJDNpqwWCC94OZ/WQ9Va+qZI0vdy6H4grhIIB7XmsYr6CWKrad7i2UxuSCaKzps0TQyWzd4+FBlRmKWuiFlgogsBBVf9r5bs17gEuw3zOJU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VJCDj2ro; arc=none smtp.client-ip=209.85.221.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Yop6keue"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13D23C2BCB3
-	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 16:13:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774800811;
-	bh=ABS0ls43nQ7JSVHwa69/og8GfhW9NoXluxBav/WSMzY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Yop6keueuv6JYO5I+qG4BbIccKJ8dFhjjtdZ0vtoYbSBQbbVBIiCHQZ+0GGjFvzus
-	 cMI7RSAp1fP9Dv0MFP+/bGe68ASqP/9VT0LvSrpAskxLL94jO/bfCeoxHZhHFyiLsX
-	 QMMp/EhgAJn1liYJjBgZCFEpirstP6otVTXLlSVVMCmcmzY44J51n4KU2bLE4g5I/h
-	 YuI8H2C7ipv0+rdug7DIWjthOYVDOt8PFvk/BBfHL1rzOMC6GmUI6WtRZ5uJkkvxBr
-	 DBf/Zy9/0LZbSaVQ1/HPsSEQk47f2DmDJEK83UGU6SIIcrbCnHFQU+X/mYbZOZqRlw
-	 gSlKfwXwRGjlg==
-Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-40423dbe98bso1393810fac.2
-        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 09:13:31 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVfE8e5NicBtGvoxQySdJH0ZI5Vgx3IhKu8tNzjx3dfB1ogAh8BRLDWSbRwy/MXnxH1z2so6hr1MA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzhlRst92npaoM7O/uFtJ+rOIysc+CQo3WxXfKChXlAorTdiemP
-	5hrErxqs+79ntNhQ+qSgM2gMRNdnhYZpSUszg7iNDjOOXp232fNDRiQ7FBoJQURNle0vOAwCuk8
-	+5DARiAaSynSxeN2J7OAWaN/gb8J5nWo=
-X-Received: by 2002:a05:6820:4d0a:b0:661:1188:4b99 with SMTP id
- 006d021491bc7-67e185f1ec8mr4986425eaf.3.1774800810209; Sun, 29 Mar 2026
- 09:13:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VJCDj2ro"
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-43b88b7ca76so3078806f8f.3
+        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 09:14:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774800857; x=1775405657; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:from:content-language
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sV1NVYu2CUk772hs5pUuIWfRYtmEoiUvAReCjlabyeY=;
+        b=VJCDj2roUoflIBITOnWHn8f7qRRTzNDbgtA7mcLTxMmULV6Xs0wBMlT+g27wr1jA7u
+         PFMEW5pkMDA9cHEKcTnFD+smZTA5ZdS22o2Hv5BMhpy6q1HWAOeueeoS4HvEnmZgtSqu
+         3mm8uN4mKI4oGq3oI7OaHZrjAbA1p13qUGm6758hcyzqSZ570LiitC1+RId3CS92f8Un
+         fv6zPoMG0Fd5LnGDtmem3DGVPsqRI0+3gxsmFVbXGEEBXq/84LpoQlUzhzXiSZDEgjRI
+         JTY0qcOblSU5M+4foxbPuGgq1UaX3/KdK3m1AlblEopmxNsoVxdsMt/Gp3x0F5bhUhXe
+         S+hQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774800857; x=1775405657;
+        h=content-transfer-encoding:cc:to:subject:from:content-language
+         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=sV1NVYu2CUk772hs5pUuIWfRYtmEoiUvAReCjlabyeY=;
+        b=beQV0NkVL1qDao9s0a3r4+6Cf6qijlldKukWyvZLYjagZX+hlexyG6NyyKXsg8Qj0p
+         4kwnCOv88LIVMSm6L3RxQEcD9hiXCDYaUabHohdgNQe1POmkV9t+9AM1AT8gonba8yLw
+         EHGe9ObTXf7lI/WZGxPeHvD4pYuURCJn++xm9HHfmIs2VxS8mu4cF+eCuGMjqAWIkAyS
+         cUypIcSTeG8519ilrfD4T9PYhyNsY5oPkU50iM4bVCvPObl31M9vXv0o3NO2fsMnkhcp
+         8v9MsIcXX7QcSwsI+Bkd7NanB4g44RUAX2IQ5jwcVusqLUBYFEtQf6gcXuLSYIfKHhDs
+         ZQ+g==
+X-Gm-Message-State: AOJu0Yz3IxWJZCQoiU9waVVioqCsQrwFiiP32D5T5lEqNZBAylfjHRZe
+	E/W0krBkl+2T5aee6qVmuJrltrY7N8UNySblijTAmKQonhJpmJILeyV7
+X-Gm-Gg: ATEYQzwHrGvNFB07wMoHtHfu8xAfE4TKZ9vtm/0trppJ3gcJ2mHG+XShHSZRkyG211K
+	rJML5hs5NVV+hcxVXVviioYRxfaknyDbr9nJW1g4xh9GrD9VS/qtCOInr62/Fv4LYBpuTO0LO7h
+	SDbIb+LWHIQ01EDejnYSzrzRIfVvEo6SqqXqzuhoXcWL4qw8e8riZ2B66OuwqD5JjLeDbUtsR6B
+	JdKMxyKG0K4MvZTopY2nYy+pvXgMUa4YCJEinLvtKRphk9ilkyUzXx60UESwnxxykF4heEOW1ch
+	2WnrDezabw3/wbrqEjdCgANPIMEwmJaxET+aiImRGiW14XjfwacxpAL+0RnCfmzQnVKAcTjV+SQ
+	bFGm6mjm2A8pUV40USEj4vpHCD5x9qepSwC9Gp56QUcJTvy4XdcFFhIvlFVFORAo4zfYCpowOIn
+	0Dg+wce7214EXIN+gjERk/Z8Xh7rU729y/lmQagxRtQA1GxvJbuxPSP1na/KQ4tPFidX8RlIWkx
+	Pf6BJMaWmxZqalrLl6LS/SNhQvwzo6f0PodI1zSJael6lgA6Mk4fC3MLPM+o2X8/g==
+X-Received: by 2002:a05:6000:18a3:b0:43c:fe66:43fb with SMTP id ffacd0b85a97d-43cfe66466emr1830837f8f.17.1774800856677;
+        Sun, 29 Mar 2026 09:14:16 -0700 (PDT)
+Received: from ?IPV6:2003:ea:8f09:ff00:e94a:abd6:53f0:1fe4? (p200300ea8f09ff00e94aabd653f01fe4.dip0.t-ipconnect.de. [2003:ea:8f09:ff00:e94a:abd6:53f0:1fe4])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43cf1db08e6sm20250282f8f.0.2026.03.29.09.14.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 29 Mar 2026 09:14:16 -0700 (PDT)
+Message-ID: <0fe1b679-ab28-4505-b0db-14e7ac3ba749@gmail.com>
+Date: Sun, 29 Mar 2026 18:14:15 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260326145720.3937252-1-alexander.usyskin@intel.com>
- <CAJZ5v0hvf_q=g-PzerYnqZBjnDEsnnA405ZnD-BumPJG56HHoA@mail.gmail.com> <CY5PR11MB6366E99764D582E2845DDE90ED55A@CY5PR11MB6366.namprd11.prod.outlook.com>
-In-Reply-To: <CY5PR11MB6366E99764D582E2845DDE90ED55A@CY5PR11MB6366.namprd11.prod.outlook.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Sun, 29 Mar 2026 18:13:18 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gYosZMpGiEu9rGM1PWhgJe=miUTHV0i7EGP8Os9YECYg@mail.gmail.com>
-X-Gm-Features: AQROBzAuPMXW4pYE6wIDLQOHjZIMt4_3kZmJrTaAw6pPCY6iuSOx1k3DOJJMUek
-Message-ID: <CAJZ5v0gYosZMpGiEu9rGM1PWhgJe=miUTHV0i7EGP8Os9YECYg@mail.gmail.com>
-Subject: Re: [char-misc v3] mei: me: reduce the scope on unexpected reset
-To: "Usyskin, Alexander" <alexander.usyskin@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Adin, Menachem" <menachem.adin@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Todd Brandt <todd.e.brandt@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Subject: [PATCH] PM / wakeup: Allocate class wakeup_class statically
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, driver-core@lists.linux.dev
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Sun, Mar 29, 2026 at 4:30=E2=80=AFPM Usyskin, Alexander
-<alexander.usyskin@intel.com> wrote:
->
-> > Subject: Re: [char-misc v3] mei: me: reduce the scope on unexpected res=
-et
-> >
-> > On Thu, Mar 26, 2026 at 4:14=E2=80=AFPM Alexander Usyskin
-> > <alexander.usyskin@intel.com> wrote:
-> > >
-> > > After commit 2cedb296988c ("mei: me: trigger link reset if hw ready i=
-s
-> > unexpected")
-> > > some devices started to show long resume times (5-7 seconds).
-> > > This happens as mei falsely detects unready hardware,
-> > > starts parallel link reset flow and triggers link reset timeouts
-> > > in the resume callback.
-> > >
-> > > Address it by performing detection of unready hardware only
-> > > when driver is in the ENABLED state instead of blacklisting
-> > > states as done in the original patch.
-> > >
-> > > Reported-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-> > > Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D221023
-> > > Tested-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-> > > Fixes: 2cedb296988c ("mei: me: trigger link reset if hw ready is unex=
-pected")
-> > > Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
-> > > ---
-> > >
-> > > V3: reword commit message, add Rafael and PM list
-> > >
-> > > V2: rebase over v7.0-rc4
-> > >
-> > >  drivers/misc/mei/hw-me.c | 14 ++++----------
-> > >  1 file changed, 4 insertions(+), 10 deletions(-)
-> > >
-> > > diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
-> > > index d4612c659784..1e4a41ac428f 100644
-> > > --- a/drivers/misc/mei/hw-me.c
-> > > +++ b/drivers/misc/mei/hw-me.c
-> > > @@ -1337,19 +1337,13 @@ irqreturn_t mei_me_irq_thread_handler(int
-> > irq, void *dev_id)
-> > >         /*  check if we need to start the dev */
-> > >         if (!mei_host_is_ready(dev)) {
-> > >                 if (mei_hw_is_ready(dev)) {
-> > > -                       /* synchronized by dev mutex */
-> >
-> > I think that the comment above is still valid, isn't it?  If so, why re=
-move it?
-> >
-> > > -                       if (waitqueue_active(&dev->wait_hw_ready)) {
-> > > -                               dev_dbg(&dev->dev, "we need to start =
-the dev.\n");
-> > > -                               dev->recvd_hw_ready =3D true;
-> > > -                               wake_up(&dev->wait_hw_ready);
-> > > -                       } else if (dev->dev_state !=3D MEI_DEV_UNINIT=
-IALIZED &&
-> > > -                                  dev->dev_state !=3D MEI_DEV_POWERI=
-NG_DOWN &&
-> > > -                                  dev->dev_state !=3D MEI_DEV_POWER_=
-DOWN) {
-> > > +                       if (dev->dev_state =3D=3D MEI_DEV_ENABLED) {
-> > >                                 dev_dbg(&dev->dev, "Force link reset.=
-\n");
-> > >                                 schedule_work(&dev->reset_work);
-> > >                         } else {
-> >
-> > Isn't the waitqueue_active() check needed any more?
-> >
->
-> The fix simplifies original patch as in MEI_DEV_ENABLED state there will =
-be no active waitqueue.
-> This also removes need for comment about waitqueue synchronization.
+Allocating wakeup_class statically avoids a little runtime overhead.
+Define groups and device release function as part of the class, so that
+we don't have to repeat this for each class device.
+Whilst at it, constify wakeup_source_attrs[].
 
-I see, thanks.
+Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+---
+ drivers/base/power/wakeup_stats.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-It would be good to add the above information to the patch changelog.
+diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wakeup_stats.c
+index 308f8bde9..72beb8fce 100644
+--- a/drivers/base/power/wakeup_stats.c
++++ b/drivers/base/power/wakeup_stats.c
+@@ -18,8 +18,6 @@
+ 
+ #include "power.h"
+ 
+-static struct class *wakeup_class;
+-
+ #define wakeup_attr(_name)						\
+ static ssize_t _name##_show(struct device *dev,				\
+ 			    struct device_attribute *attr, char *buf)	\
+@@ -114,7 +112,7 @@ static ssize_t prevent_suspend_time_ms_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(prevent_suspend_time_ms);
+ 
+-static struct attribute *wakeup_source_attrs[] = {
++static const struct attribute *const wakeup_source_attrs[] = {
+ 	&dev_attr_name.attr,
+ 	&dev_attr_active_count.attr,
+ 	&dev_attr_event_count.attr,
+@@ -135,6 +133,12 @@ static void device_create_release(struct device *dev)
+ 	kfree(dev);
+ }
+ 
++static const struct class wakeup_class = {
++	.name = "wakeup",
++	.dev_release = device_create_release,
++	.dev_groups = wakeup_source_groups,
++};
++
+ static struct device *wakeup_source_device_create(struct device *parent,
+ 						  struct wakeup_source *ws)
+ {
+@@ -149,10 +153,8 @@ static struct device *wakeup_source_device_create(struct device *parent,
+ 
+ 	device_initialize(dev);
+ 	dev->devt = MKDEV(0, 0);
+-	dev->class = wakeup_class;
++	dev->class = &wakeup_class;
+ 	dev->parent = parent;
+-	dev->groups = wakeup_source_groups;
+-	dev->release = device_create_release;
+ 	dev_set_drvdata(dev, ws);
+ 	device_set_pm_not_required(dev);
+ 
+@@ -212,8 +214,6 @@ void wakeup_source_sysfs_remove(struct wakeup_source *ws)
+ 
+ static int __init wakeup_sources_sysfs_init(void)
+ {
+-	wakeup_class = class_create("wakeup");
+-
+-	return PTR_ERR_OR_ZERO(wakeup_class);
++	return class_register(&wakeup_class);
+ }
+ postcore_initcall(wakeup_sources_sysfs_init);
+-- 
+2.53.0
 
-With that, please feel free to add
-
-Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-
-to the patch.
