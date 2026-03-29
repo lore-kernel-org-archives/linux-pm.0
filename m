@@ -1,149 +1,198 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA3118DB1A;
-	Sun, 29 Mar 2026 02:09:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5FF40DFA9;
+	Sun, 29 Mar 2026 02:44:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774750168; cv=none; b=r4ZIsJmq72QNTP8k4a8TERFYE2CxMJnkz4RTImF/4LFDuwyF9VPFANrY18cjCF1N+0LDtJqAmmNOA8fCKn3LJTBlYSdnSWVu3QjoMpXEOnMfgi2ZfiVo8Lt+vipqXZcnkZVxhqaO7+iQjfZea8Txn2L7PyEXio0g7AiJmW2iXl0=
+	t=1774752268; cv=none; b=XP7zEIhKCfBER6YYHYW++oQVazt7zOnxjU1BMmgK5eEfaQRjk78MigEwur/Ek0H4L7EqG5vdXR7E0dtqQygkP+ny097CAIPczs2P8jZ3AOJ21B+jSnYe+fuILMQrC8QphoFBDl6IU2guJuzKLkYRJ8Mzq5b8qg06CzBKm4Jm4nY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774750168; c=relaxed/simple;
-	bh=N0Ctz2J8oPvKls81ucEZB5qGoRQfvViEmfax2GeVhNw=;
+	s=arc-20240116; t=1774752268; c=relaxed/simple;
+	bh=zP8pKciSR07cE+zE4CuckNxlz1naeSv/P8AgYFY+L+0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jwBYVSoygFRnatbdMk8U9MGKAKCq/MtoEdPiWJRak8jJh5miKP0XHOS1+k29iva4AOKPus1o5oaX7NC4w2wG9JQlIYbXoEKLOGjYac4mssz1HvkM0Ch8v0kvqtted4uM75nOqm8pq4pUYSaBFjK2TmmoalwFCZg9YCN4xMQYJ2Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=h2P6V5Tc; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=gLYtwKSSZWt1ledKCaCiy/yyzO10aSX3HyLnjTSNOAG2bX2y2Pe65d+Mf/V9DOilkKvr1UBc+f8nQtPMDXZxV5Kl0NRL6VMi6s9ipgQ9lSRwuD0akWVJ0erWSUNA/uOV/PKIHcJQBtCrjhmU5maiPhyndw72YaFvYhCZSffdp7M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lJWFP9vO; arc=none smtp.client-ip=198.175.65.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="h2P6V5Tc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0737FC4CEF7;
-	Sun, 29 Mar 2026 02:09:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774750168;
-	bh=N0Ctz2J8oPvKls81ucEZB5qGoRQfvViEmfax2GeVhNw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=h2P6V5Tc0PYTUED1/KmH0DY8uN8EtK4d5oSvm4YwJZyFqWE6ocbcCiw2bHA65ILKf
-	 crrjMN/09y7rmZz/59IuERQ8nH7cLByyVoRzW6m69yA4Ypi0QphB6uNo7lPdYSfShr
-	 rR6NVnoGxccwPyB8MX3oKuo+abnb3gA5ybZPle9MU3EhY3QHRyvt+AnQFB4+YqMFjc
-	 T+prbf6b/prfqVcPpt4lkSXmazWlr77R8y8ypMtei7gZCiNpHGv1ugclqkDLmyWTqS
-	 WVNGKVPBcZFvACOvyLMYO+CMEXjS/3F4KmVAndBiM4BtPiFLJv6P+N5knmgujCuY2B
-	 UNcB77KVP+nGg==
-Received: by venus (Postfix, from userid 1000)
-	id E9CFC182F82; Sun, 29 Mar 2026 04:09:25 +0200 (CEST)
-Date: Sun, 29 Mar 2026 04:09:25 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, 
-	"Rob Herring (Arm)" <robh@kernel.org>, Khushal Chitturi <khushalchitturi@gmail.com>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Subject: Re: [PATCH] dt-bindings: power: reset:
- cortina,gemini-power-controller: convert to DT schema
-Message-ID: <aciItMCdBbrVvMKB@venus>
-References: <20260328124707.141209-1-khushalchitturi@gmail.com>
- <177470797266.1536342.6967120656934552033.robh@kernel.org>
- <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
- <3fa4fad0-d918-4de0-ad80-dad2141d2617@kernel.org>
- <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lJWFP9vO"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774752266; x=1806288266;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=zP8pKciSR07cE+zE4CuckNxlz1naeSv/P8AgYFY+L+0=;
+  b=lJWFP9vOPi5B8ij+TirJ1RfGtpFn6xCB76oo7hfifZMHJoQhF4YR8MVW
+   6tNSR15i+UzUwSRySedtAIs8P7JFqz/uqQIq8h3kYBliN/4PqHWZ6AwEq
+   trWPnIEqXhMP0eKhK7ZGwmVPKSJg4jvZ9lOd695/SXfqn2lbabOFMJAY/
+   vgYepJGigPl0AUAwPL+uLKtAuNR13BBtMLKlftnDTw/3gH0AW7AA8LvrH
+   +pokTqnVGG0FD7Z4LcyXmZEBjTHrk7ifRwaCgYfT1+1n+i0XlEfIsQ2ZS
+   7WdKHNDfKqYk09taY5vYBG35rK/EraQiVWa1emwackQY3cBm3zjpnOwPn
+   g==;
+X-CSE-ConnectionGUID: P2/rlQQSQNmcRVVys6UmGg==
+X-CSE-MsgGUID: 0lQYCxcmQMSqs0nqI1FF+Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11742"; a="93165221"
+X-IronPort-AV: E=Sophos;i="6.23,147,1770624000"; 
+   d="scan'208";a="93165221"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Mar 2026 19:44:25 -0700
+X-CSE-ConnectionGUID: /GOkUf93RbSK9TYX5Vm+Zw==
+X-CSE-MsgGUID: PiBYSUfHRqK2zAYwZmdP0g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,147,1770624000"; 
+   d="scan'208";a="224730212"
+Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
+  by orviesa006.jf.intel.com with ESMTP; 28 Mar 2026 19:44:21 -0700
+Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w6g8P-00000000C1B-46D9;
+	Sun, 29 Mar 2026 02:44:17 +0000
+Date: Sun, 29 Mar 2026 10:43:38 +0800
+From: kernel test robot <lkp@intel.com>
+To: Otto =?iso-8859-1?Q?Pfl=FCger?= <otto.pflueger@abscue.de>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Orson Zhai <orsonzhai@gmail.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Otto =?iso-8859-1?Q?Pfl=FCger?= <otto.pflueger@abscue.de>
+Subject: Re: [PATCH v2 3/5] mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
+Message-ID: <202603291013.6DnmGjG3-lkp@intel.com>
+References: <20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7@abscue.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="3ymhluvcv553maph"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
+In-Reply-To: <20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7@abscue.de>
+
+Hi Otto,
+
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on 85964cdcad0fac9a0eb7b87a0f9d88cc074b854c]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Otto-Pfl-ger/dt-bindings-rtc-sc2731-Add-compatible-for-SC2730/20260327-162827
+base:   85964cdcad0fac9a0eb7b87a0f9d88cc074b854c
+patch link:    https://lore.kernel.org/r/20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7%40abscue.de
+patch subject: [PATCH v2 3/5] mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
+config: sparc64-allmodconfig (https://download.01.org/0day-ci/archive/20260329/202603291013.6DnmGjG3-lkp@intel.com/config)
+compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 054e11d1a17e5ba88bb1a8ef32fad3346e80b186)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260329/202603291013.6DnmGjG3-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202603291013.6DnmGjG3-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/mfd/sprd-sc27xx-spi.c:188:14: warning: cast to smaller integer type 'enum sprd_pmic_type' from 'const void *' [-Wvoid-pointer-to-enum-cast]
+     188 |         pmic_type = (enum sprd_pmic_type)of_device_get_match_data(&spi->dev);
+         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   1 warning generated.
 
 
---3ymhluvcv553maph
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] dt-bindings: power: reset:
- cortina,gemini-power-controller: convert to DT schema
-MIME-Version: 1.0
+vim +188 drivers/mfd/sprd-sc27xx-spi.c
 
-Hi,
+   179	
+   180	static int sprd_pmic_probe(struct spi_device *spi)
+   181	{
+   182		struct sprd_pmic *ddata;
+   183		enum sprd_pmic_type pmic_type;
+   184		const struct sprd_pmic_data *pdata;
+   185		const struct mfd_cell *cells;
+   186		int ret, i, num_cells;
+   187	
+ > 188		pmic_type = (enum sprd_pmic_type)of_device_get_match_data(&spi->dev);
+   189	
+   190		switch (pmic_type) {
+   191		case PMIC_TYPE_SC2730:
+   192			pdata = &sc2730_data;
+   193			cells = sc2730_devices;
+   194			num_cells = ARRAY_SIZE(sc2730_devices);
+   195			break;
+   196		case PMIC_TYPE_SC2731:
+   197			pdata = &sc2731_data;
+   198			cells = sc2731_devices;
+   199			num_cells = ARRAY_SIZE(sc2731_devices);
+   200			break;
+   201		default:
+   202			dev_err(&spi->dev, "Invalid device ID\n");
+   203			return -EINVAL;
+   204		}
+   205	
+   206		ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
+   207		if (!ddata)
+   208			return -ENOMEM;
+   209	
+   210		ddata->regmap = devm_regmap_init(&spi->dev, &sprd_pmic_regmap,
+   211						 &spi->dev, &sprd_pmic_config);
+   212		if (IS_ERR(ddata->regmap)) {
+   213			ret = PTR_ERR(ddata->regmap);
+   214			dev_err(&spi->dev, "Failed to allocate register map %d\n", ret);
+   215			return ret;
+   216		}
+   217	
+   218		spi_set_drvdata(spi, ddata);
+   219		ddata->dev = &spi->dev;
+   220		ddata->irq = spi->irq;
+   221		ddata->pdata = pdata;
+   222	
+   223		ddata->irq_chip.name = dev_name(&spi->dev);
+   224		ddata->irq_chip.status_base =
+   225			pdata->irq_base + SPRD_PMIC_INT_MASK_STATUS;
+   226		ddata->irq_chip.unmask_base = pdata->irq_base + SPRD_PMIC_INT_EN;
+   227		ddata->irq_chip.ack_base = 0;
+   228		ddata->irq_chip.num_regs = 1;
+   229		ddata->irq_chip.num_irqs = pdata->num_irqs;
+   230	
+   231		ddata->irqs = devm_kcalloc(&spi->dev,
+   232					   pdata->num_irqs, sizeof(struct regmap_irq),
+   233					   GFP_KERNEL);
+   234		if (!ddata->irqs)
+   235			return -ENOMEM;
+   236	
+   237		ddata->irq_chip.irqs = ddata->irqs;
+   238		for (i = 0; i < pdata->num_irqs; i++)
+   239			ddata->irqs[i].mask = BIT(i);
+   240	
+   241		ret = devm_regmap_add_irq_chip(&spi->dev, ddata->regmap, ddata->irq,
+   242					       IRQF_ONESHOT, 0,
+   243					       &ddata->irq_chip, &ddata->irq_data);
+   244		if (ret) {
+   245			dev_err(&spi->dev, "Failed to add PMIC irq chip %d\n", ret);
+   246			return ret;
+   247		}
+   248	
+   249		ret = devm_mfd_add_devices(&spi->dev, PLATFORM_DEVID_AUTO,
+   250					   cells, num_cells, NULL, 0,
+   251					   regmap_irq_get_domain(ddata->irq_data));
+   252		if (ret) {
+   253			dev_err(&spi->dev, "Failed to populate sub-devices %d\n", ret);
+   254			return ret;
+   255		}
+   256	
+   257		ret = devm_device_init_wakeup(&spi->dev);
+   258		if (ret)
+   259			return dev_err_probe(&spi->dev, ret, "Failed to init wakeup\n");
+   260	
+   261		return 0;
+   262	}
+   263	
 
-On Sat, Mar 28, 2026 at 10:28:39PM +0100, Linus Walleij wrote:
-> On Sat, Mar 28, 2026 at 6:31=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.=
-org> wrote:
-> > On 28/03/2026 17:12, Linus Walleij wrote:
-> > > On Sat, Mar 28, 2026 at 3:26=E2=80=AFPM Rob Herring (Arm) <robh@kerne=
-l.org> wrote:
-> > >
-> > >> dtschema/dtc warnings/errors:
-> > >> /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindi=
-ngs/power/reset/cortina,gemini-power-controller.example.dtb: power-controll=
-er@4b000000 (cortina,gemini-power-controller): '#power-domain-cells' is a r=
-equired property
-> > >>         from schema $id: http://devicetree.org/schemas/power/power-d=
-omain.yaml
-> > >
-> > > Weird, this power controller does not handle power domains whatsoever,
-> > > it handles the mains power. So it should not have any power domain
-> > > cells.
-> > >
-> > > Is this the result of some regexp gone stray?
-> >
-> > The name "power controller" is used for power domain controller, so
-> > that's why this name must not be used for other use cases. Usual
-> > replacement is power-management, reboot, restart or poweroff, depending
-> > on what is the purpose of this device.
->=20
-> So in this case this is just a conversion of the 9 years old text document
-> which is an as valid binding as any:
->=20
-> commit ba443b5ab454a9b5f49229a94b2dadf06ac8b79e
-> Author: Linus Walleij <linusw@kernel.org>
-> Date:   Sun Mar 12 23:36:01 2017 +0100
->=20
->     power: reset: Add Gemini poweroff DT bindings
->=20
->     This adds device tree bindings to the power management controller
->     in the Gemini SoC.
->=20
->     Cc: devicetree@vger.kernel.org
->     Cc: Janos Laube <janos.dev@gmail.com>
->     Cc: Paulius Zaleckas <paulius.zaleckas@gmail.com>
->     Cc: Hans Ulli Kroll <ulli.kroll@googlemail.com>
->     Cc: Florian Fainelli <f.fainelli@gmail.com>
->     Acked-by: Rob Herring <robh@kernel.org>
->     Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->     Signed-off-by: Sebastian Reichel <sre@kernel.org>
->=20
-> The text document was conspiciously named "gemini-poweroff.txt" while the
-> compatible is ""cortina,gemini-power-controller".
->=20
-> I don't know what came first, this binding or the convention of
-> *-power-controller, but it's solidly there for a while so we need
-> to accomodate this, I guess worst case simply special-casing it?
-
-The problem is the node name (power-controller@4b000000), which is
-reserved for power domains. You can keep the compatible.
-
-Greetings,
-
--- Sebastian
-
---3ymhluvcv553maph
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmnIickACgkQ2O7X88g7
-+prjpQ//bcgyFf6rWXsP0eTn33ApGxRHQt+k48z+5yHgyrWGiEsof+GvGhuWihRr
-RAwhrhKYJv9Klz7RbQXnKzyObtWNXi3D8hjuHnZiAv/ZZaogof5hFw8Hy8hFBGB3
-QBmhabdsE5rkEZCmPwvOCw5JvOgiPL5k42weR5hh5RcYOeYHHmi5FoFTOyidXfpB
-JuOR9l4Gg5LToBzl7hVldQvwGy5tkaPjZav6uNyRd3Zi/Zua7brsK6iOuOprZEeD
-LxgWTqW4c6HJ9uWxKr9KV/ad89icUswYqWTAuMZQ9a5LP8NkZnezg6Fp0rtHoju7
-lzDB6LNaGoAQqRD8m1KzIBt2xcXZC8hT2W60ZPe2k1YB4V/70peOg8oChRslr1ew
-QTdSvC/gZVXS7g87GNdjUIn04WA8iW/IsaF+I2uupOsjGg5RVuk2F2v2rMNTUV2E
-Bg5+OLEwSZTS13ysRcX5U+exM/Pk2Y6sOTdhmXnVikgwQEez7LEM+/551K5nR04M
-eDbspHMwCBw5C2WtZLmKy58RKRbYlQQbOpjhh0NqtgbXVXrM1FUA9/3uI1RgK/VM
-6biWh/IClVnxQVITtNTxE6Im1p7PU2OutdQiGDHZiF6FvYsddpD96QIVNgJ5S52n
-Ith3J9MIt7PjH16QMBEcoW6DQ76H7UNLAl3hkkMArmJjakGgXrI=
-=b1TC
------END PGP SIGNATURE-----
-
---3ymhluvcv553maph--
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
