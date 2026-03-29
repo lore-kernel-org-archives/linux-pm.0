@@ -1,118 +1,119 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A7B11FF1C7;
-	Sun, 29 Mar 2026 09:34:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6E802D5A01;
+	Sun, 29 Mar 2026 09:37:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774776853; cv=none; b=dsGzoQ2XhBshE7n9YC1obcVhkrc+dWkoc1rJ7I+pGA558KRKmVAwjklWhzYjLU4TUAZj+w5c6cvviANS62e41t4FDrZ1VH2ir62YJgPtcCQ1dAn1uSIc6zmAo5c+3knpyBqfzSMUhmJ7E3mJJGYE67oqn0SORP6Syv1el8ACFFg=
+	t=1774777024; cv=none; b=IqBRgXN66JBmlWqWBq2eUYukffD67+5tWQJlz3cUPkyVIlHFuXv0TeT0Fj6R8qE/+tQ9phzh1cYxQ6vUQwsClPPVCvO/x4RFNMXS1w+9ETjEBAWN72Bse5zm6gPzKwgBFFSSccfaN69Os5NG7Hi/fXDFt1yK3YxOncX5R08b4cg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774776853; c=relaxed/simple;
-	bh=LS/QS7iV0n5jm5cv+YwNJ0MZWhINJTrzTF0fp02kI70=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=BvoPPuAyN57TUN89jiR8EgJ1YkOFEuL4IWjHeMyGrVbt3hD3KSCLt4q9Vd5Qxq8363XZ8xBgoFdkGYwl48owrVSCYEmY1IhH6CsHwO4y+KEgt9n5ksgEVgEp6LO602x9yxqouF5gtjADZ+GWxhVZo12ko6kArMtxs140uMYhbDY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oVVI+Esl; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774777024; c=relaxed/simple;
+	bh=38BTjpQcax0ZCYP1lDp/Ft2uW0t+mkFokRZ+7qkz5dY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HX+p2imIiyDKvsGxGp6iRyrG6R78Rk/d9/+bFMAluANp3lY7MMzI01TeqxQ3isioGBJBAU2YKHCnpKSUU+43u8vAoTvqWVzEIcfwGJMXgXaRf3R+Nl2tQkLJAU36afBqKeoQBnys8kKZB9H47Mz+RryqK3Igb9/frefp0GI1yi0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pHhOecos; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oVVI+Esl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67384C116C6;
-	Sun, 29 Mar 2026 09:34:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pHhOecos"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C841CC116C6;
+	Sun, 29 Mar 2026 09:37:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774776853;
-	bh=LS/QS7iV0n5jm5cv+YwNJ0MZWhINJTrzTF0fp02kI70=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
-	b=oVVI+EslkEIG5fSNKKAQ9G+G98f7FnmtWgFwRVslpJyY3WoqgxbDJ0A2p+j8o4IOz
-	 JvATu000ZIY3qN0aHG5PQpB/XJV8bZAEQ4dvZHxOiiAQuXSejVgHctq1lH1oOEMGbD
-	 jdx3OIrqKUOoaeDsC11DtQxsLvsz6cv94/0PLxgU9ipr69g6P6qD7CYxfIkTYirhEa
-	 F3q3dMpf1E+SWOt8JZN1nFmXsJCApIE997iroleo4qv9ISl6vruLgP22FwPIBBYnnZ
-	 zxU0mgW3pHptd9u1pR81oKUsapJaug1LnV4qijFPiWtI4cBOQzpkzur4npy/25uAgf
-	 jIHgTpLs0k/Aw==
-Message-ID: <9c162b3f-59d3-4fcd-893c-5efd625732d7@kernel.org>
-Date: Sun, 29 Mar 2026 11:34:07 +0200
+	s=k20201202; t=1774777024;
+	bh=38BTjpQcax0ZCYP1lDp/Ft2uW0t+mkFokRZ+7qkz5dY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=pHhOecosjfc3lVzDyF1HmyndhSnr6ABorhtITFMZinGi0JiiT0+SnHodMYnZz2XJC
+	 qn4PKDSiYL5brBuGCdWCSAtH9JLmxAZoQHP0Nss4jueuA31DDVNYe7alkfaS1LYPvj
+	 186fr+qJRtBUZXt5yyQ+IFuqsw917jOc5eblHhpoJDsSj+Q6erd3MpHQ058B7Z8OsI
+	 mMlLiZydqQs//OOngsi3OA10H54WYBGCNKGVkG/6i36vFNBoUkT2DISrUqw6QurhdZ
+	 fQeBpp3dVHXD9HAmbdL+UiluSlZ/iXYSu73BbtkaRXbU/zFnzEcMEJeoBvBqtm6nMG
+	 oOBj16+EsvfeA==
+Date: Sun, 29 Mar 2026 11:37:01 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
+	Mathieu Poirier <mathieu.poirier@linaro.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Stephan Gerhold <stephan@gerhold.net>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org
+Subject: Re: [PATCH 1/7] dt-bindings: power: qcom-rpmpd: Split MSM8953 and
+ SDM632
+Message-ID: <20260329-romantic-daft-myna-df3dfa@quoll>
+References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
+ <20260327-sdm632-rpmpd-v1-1-6098dc997d66@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] ARM: dts: st: spear: rename thermal_flags to
- st,thermal-flags
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Gopi Krishna Menon <krishnagopi487@gmail.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com,
- lukasz.luba@arm.com, robh@kernel.org, krzk+dt@kernel.org,
- vireshk@kernel.org, conor+dt@kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, soc@lists.linux.dev,
- daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, m-chawdhry@ti.com
-References: <20260329061523.98346-1-krishnagopi487@gmail.com>
- <20260329061523.98346-3-krishnagopi487@gmail.com>
- <20260329-starfish-of-eternal-storm-f16de5@quoll>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260329-starfish-of-eternal-storm-f16de5@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260327-sdm632-rpmpd-v1-1-6098dc997d66@mainlining.org>
 
-On 29/03/2026 11:31, Krzysztof Kozlowski wrote:
-> On Sun, Mar 29, 2026 at 11:45:20AM +0530, Gopi Krishna Menon wrote:
->> st,thermal-flags is a required property in SPEAr Thermal Sensor node,
->> which is incorrectly written as thermal_flags in spear13xx.dtsi.
->>
->> Rename thermal_flags to st,thermal-flags to fix the property name
-> 
-> Does this have an impact? If yes, then why no fixes? If no, then why
-> not? How this could ever worked? Maybe this is completely unnecessary.
-> 
-> We already talked about this and I don't get why this change is neeeded
-> and why we discuss the same problem.
+On Fri, Mar 27, 2026 at 09:11:43PM +0100, Barnab=C3=A1s Cz=C3=A9m=C3=A1n wr=
+ote:
+> Remove modem related bindings from MSM8953 rpmpd because MSM8953 MSS
+> is using mss-supply as a regulator usually it is pm8953_s1.
+> Split SDM632 bindings from MSM8953 because SDM632 is using mss-supply
+> as a pm domain.
+>=20
+> Signed-off-by: Barnab=C3=A1s Cz=C3=A9m=C3=A1n <barnabas.czeman@mainlining=
+=2Eorg>
+> ---
+>  .../devicetree/bindings/power/qcom,rpmpd.yaml        |  1 +
+>  include/dt-bindings/power/qcom-rpmpd.h               | 20 +++++++++++++-=
+------
+>  2 files changed, 14 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Do=
+cumentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> index 8174ceeab572..659936d6a46e 100644
+> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> @@ -48,6 +48,7 @@ properties:
+>            - qcom,sc7280-rpmhpd
+>            - qcom,sc8180x-rpmhpd
+>            - qcom,sc8280xp-rpmhpd
+> +          - qcom,sdm632-rpmpd
+>            - qcom,sdm660-rpmpd
+>            - qcom,sdm670-rpmhpd
+>            - qcom,sdm845-rpmhpd
+> diff --git a/include/dt-bindings/power/qcom-rpmpd.h b/include/dt-bindings=
+/power/qcom-rpmpd.h
+> index 4371ac941f29..2d82434b993c 100644
+> --- a/include/dt-bindings/power/qcom-rpmpd.h
+> +++ b/include/dt-bindings/power/qcom-rpmpd.h
+> @@ -84,13 +84,11 @@
+>  #define QM215_VDDMX_AO		MSM8917_VDDMX_AO
+> =20
+>  /* MSM8953 Power Domain Indexes */
+> -#define MSM8953_VDDMD		0
 
-and by "this change" I meant, "rename" part, instead of "removal".
+ABI break / impact and due to two changes combined I don't really
+understand why. Why MSS using mss-supply makes this ABI invalid/wrong?
 
-Your task is analyze entire code, understand what was wrong and provide
-proper solution.
+> -#define MSM8953_VDDMD_AO	1
+> -#define MSM8953_VDDCX		2
+> -#define MSM8953_VDDCX_AO	3
+> -#define MSM8953_VDDCX_VFL	4
+> -#define MSM8953_VDDMX		5
+> -#define MSM8953_VDDMX_AO	6
+> +#define MSM8953_VDDCX		RPMPD_VDDCX
+> +#define MSM8953_VDDCX_AO	RPMPD_VDDCX_AO
+> +#define MSM8953_VDDCX_VFL	RPMPD_VDDCX_VFL
+> +#define MSM8953_VDDMX		RPMPD_VDDMX
+> +#define MSM8953_VDDMX_AO	RPMPD_VDDMX_AO
+
+I don't see how this is related to new compatible and SDM632.
+
+> =20
+>  /* MSM8974 Power Domain Indexes */
+>  #define MSM8974_VDDCX		0
+> @@ -156,6 +154,14 @@
+>  #define QCS404_LPIMX		5
+>  #define QCS404_LPIMX_VFL	6
 
 Best regards,
 Krzysztof
+
