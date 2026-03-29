@@ -1,123 +1,92 @@
-Received: from srv01.abscue.de (abscue.de [89.58.28.240])
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8ECBD2DA749;
-	Sun, 29 Mar 2026 07:28:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.58.28.240
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95F8E1CDFCA;
+	Sun, 29 Mar 2026 07:36:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.97.179.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774769283; cv=none; b=Unl1RzPV3dW9suABDyEZC65gWDl15T8Rma+u/iu4gwEBQB2+5OYuvO0qOvohMpTNyZKfO3SPQxiSbwa9fiKce8JbLX4y+sIDO2LHXoOY01GauBE1wQihzjpGGwRFJ2FuscgRPTfuDqzoE/dVzEIeivW9525MAL9imgdRwDOz19M=
+	t=1774769795; cv=none; b=n1J6BxrL6BXEwOjLKbF9+zWG10cIL97tSHxxIo67j2Z8vNJ+GHfVylA7r6xbYITvW8coMxlvbLsBr6WQm94r7whDkbBAwvuW882+EKyyi0je3x+8mRICZenHOMH5ea/PZkiRuqZn8K8tc2N6wCDruxkpjbMWrilw8ox3CH4aqmg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774769283; c=relaxed/simple;
-	bh=iDKvaeDvnMyZNEDCO+iH5La4SPaeOS8gVVZsISM+/78=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=diyexcfx8Vqprtr7o/VZ5gIdAeAS0xiFKTVox00dwl1zK2oQuK02kqvIX/yAjv+vmXanC7i0IloqNYC43i89+68LqmzkU9Bb6YCStx2w9817jEuMxkzTTutqSsQjVPBbgw9bbSBTIX6irnj0psz+PqH5+NZ6GXXArSWEoa6sgW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de; spf=pass smtp.mailfrom=abscue.de; dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b=A5L7Y0Df; arc=none smtp.client-ip=89.58.28.240
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=abscue.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=abscue.de
+	s=arc-20240116; t=1774769795; c=relaxed/simple;
+	bh=LZw1up+vUGUObLZw4MGaZ4Xsyjo96wRDbjmvSJ0nBx4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=i3dxh2Bz5nBq19/UjWRnUQxVQxYfT1wxrjP25DPcwwPxUsoZuoSVPg6RcDUbVaUe5PWTnYNXmmUaCTmr99z9ae703Fp8ENrxqbiJfJgkYP0rO3FUYc+kgEldbC6/RVrw9XNf30c94HEdoRUC4yAQxseJr8hQNvJZ7NPVY9r0CIw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com; spf=pass smtp.mailfrom=igalia.com; dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b=rOD2QyP0; arc=none smtp.client-ip=213.97.179.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=igalia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=igalia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=abscue.de header.i=@abscue.de header.b="A5L7Y0Df"
-Received: from fluffy-mammal.metal.fwg-cag.de (87-94-78-46.co.dnainternet.fi [87.94.78.46])
-	by srv01.abscue.de (Postfix) with ESMTPSA id AFACD1C264D;
-	Sun, 29 Mar 2026 09:27:54 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=abscue.de; s=dkim;
-	t=1774769275;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4Vvz9BBCdCjmAKX3x6b5LHDmFkQb7BZeGItD0dshHTs=;
-	b=A5L7Y0Df3dXJXLFLiWXtYgDZNnYKLUGKTe3f9C6TKHrCFqlu6/9NjjXsCKRAuMPK5nbBXe
-	a2+ITl7jSeoEyj4a/MUVaADh1x/rRcICKMEJZaowzSLO/EyZyFFcLZ+3rcB/yyaXqw+4JM
-	szhMZy8NhTS10P6QMMJwjHrgkIPosrP2/wC98XBdu0tcXzogMR5neLVLnYT+OP0b0u+n5j
-	KkTrlFkb8PiNfABjoyFGwII4beDjwSb/FN2WzcWBr2ro6anpdC680EJ1mRF7QXRfb7rQee
-	iicPwT3PLfp5yHA3OyvrV6/7jXYyFbttN2mLQ6lt98lQRwoX7YLuwb17/cH+5A==
-From: =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-Date: Sun, 29 Mar 2026 09:27:49 +0200
-Subject: [PATCH v3 5/5] regulator: sc2731: Add platform_device_id table
+	dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com header.b="rOD2QyP0"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:
+	Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=q6ZwaroGeSRVTmrek/vsFvZNjYseP+LFK/q1uwnQxmc=; b=rOD2QyP0bFvyrh3FmNzmBUz/um
+	w4sUlKjUuRPwuK1EyNkYigZ4nxjydsUJmx38sL2Z6swnYNbIn6cpjhgtfJ24YaTZEv2AYJaXb+rvX
+	RCKRFv1ja2+a5LOOwFRfB/2XP/ZGYgAntrTun5i2UJWPNqeV71dDl3LBVO/Mw46l3HDFCLzIItFu2
+	vGiQ6HS1BYRo0OpWY3D8ZVhgutIDJiLMwEsHKHGj+GumsQ2yBHP7WH7pDsuWQi5MHkEph7kJ7Aym2
+	k16xoPhuH9j/74u+Mmngf5+N7SgajxICEcu976qwFjLKrBtrGw7DB8sma14z3cMOEHX9+FeRBAD+J
+	4e7VdqmA==;
+Received: from [175.114.83.198] (helo=localhost)
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1w6kh4-008TRQ-9Y; Sun, 29 Mar 2026 09:36:23 +0200
+From: Changwoo Min <changwoo@igalia.com>
+To: lukasz.luba@arm.com,
+	rafael@kernel.org,
+	lenb@kernel.org,
+	pavel@kernel.org,
+	donald.hunter@gmail.com
+Cc: kernel-dev@igalia.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Changwoo Min <changwoo@igalia.com>,
+	Yi Lai <yi1.lai@linux.intel.com>
+Subject: [PATCH] PM: EM: Fix null-ptr-deref in get-perf-domains when ID is not found
+Date: Sun, 29 Mar 2026 16:36:15 +0900
+Message-ID: <20260329073615.649976-1-changwoo@igalia.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260329-sc27xx-mfd-cells-v3-5-9158dee41f74@abscue.de>
-References: <20260329-sc27xx-mfd-cells-v3-0-9158dee41f74@abscue.de>
-In-Reply-To: <20260329-sc27xx-mfd-cells-v3-0-9158dee41f74@abscue.de>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Orson Zhai <orsonzhai@gmail.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
- linux-pm@vger.kernel.org, 
- =?utf-8?q?Otto_Pfl=C3=BCger?= <otto.pflueger@abscue.de>
-X-Mailer: b4 0.14.3
 
-Make the regulator driver for the SC2731 PMIC probe automatically. Using
-a platform_device_id table instead of DT compatible matching avoids the
-need for a separate compatible property in the "regulators" node, which
-simplifies the DT bindings and makes the parent MFD device responsible
-for selecting the correct regulator driver for the PMIC.
+dev_energymodel_nl_get_perf_domains_doit() calls
+em_perf_domain_get_by_id() but does not check the return value before
+passing it to __em_nl_get_pd_size(). When a caller supplies a
+non-existent perf domain ID, em_perf_domain_get_by_id() returns NULL,
+and __em_nl_get_pd_size() immediately dereferences pd->cpus
+(struct offset 0x30), causing a null-pointer dereference.
 
-However, this means that the regulator device is not automatically
-associated with the "regulators" node. Tell the regulator core to
-perform device tree lookups using the parent MFD device instead of
-the regulator sub-device and set the .regulators_node member in all
-regulator definitions so that the "regulators" sub-node is used.
+The sister handler dev_energymodel_nl_get_perf_table_doit() already
+handles this correctly via __em_nl_get_pd_table_id(), which returns
+NULL and causes the caller to return -EINVAL. Add the same NULL check
+in the get-perf-domains do handler.
 
-Acked-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Otto Pflüger <otto.pflueger@abscue.de>
+Fixes: 380ff27af25e ("PM: EM: Add dump to get-perf-domains in the EM YNL spec")
+Reported-by: Yi Lai <yi1.lai@linux.intel.com>
+Closes: https://lore.kernel.org/lkml/aXiySM79UYfk+ytd@ly-workstation/
+Signed-off-by: Changwoo Min <changwoo@igalia.com>
 ---
- drivers/regulator/sc2731-regulator.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ kernel/power/em_netlink.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/regulator/sc2731-regulator.c b/drivers/regulator/sc2731-regulator.c
-index 5447e1a47d15..93c8156c5110 100644
---- a/drivers/regulator/sc2731-regulator.c
-+++ b/drivers/regulator/sc2731-regulator.c
-@@ -131,6 +131,7 @@ static const struct regulator_ops sc2731_regu_linear_ops = {
- 			  vstep, vmin, vmax) {			\
- 	.name			= #_id,				\
- 	.of_match		= of_match_ptr(#_id),		\
-+	.regulators_node	= of_match_ptr("regulators"),	\
- 	.ops			= &sc2731_regu_linear_ops,	\
- 	.type			= REGULATOR_VOLTAGE,		\
- 	.id			= SC2731_##_id,			\
-@@ -226,7 +227,7 @@ static int sc2731_regulator_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+diff --git a/kernel/power/em_netlink.c b/kernel/power/em_netlink.c
+index 5a611d3950fd..4d4fd29bd2be 100644
+--- a/kernel/power/em_netlink.c
++++ b/kernel/power/em_netlink.c
+@@ -109,6 +109,8 @@ int dev_energymodel_nl_get_perf_domains_doit(struct sk_buff *skb,
  
--	config.dev = &pdev->dev;
-+	config.dev = pdev->dev.parent;
- 	config.regmap = regmap;
+ 	id = nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF_DOMAIN_ID]);
+ 	pd = em_perf_domain_get_by_id(id);
++	if (!pd)
++		return -EINVAL;
  
- 	for (i = 0; i < ARRAY_SIZE(regulators); i++) {
-@@ -242,12 +243,19 @@ static int sc2731_regulator_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct platform_device_id sc2731_regulator_id_table[] = {
-+	{ "sc2731-regulator" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(platform, sc2731_regulator_id_table);
-+
- static struct platform_driver sc2731_regulator_driver = {
- 	.driver = {
- 		.name = "sc27xx-regulator",
- 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
- 	},
- 	.probe = sc2731_regulator_probe,
-+	.id_table = sc2731_regulator_id_table,
- };
- 
- module_platform_driver(sc2731_regulator_driver);
-
+ 	__em_nl_get_pd_size(pd, &msg_sz);
+ 	msg = genlmsg_new(msg_sz, GFP_KERNEL);
 -- 
-2.51.0
+2.53.0
 
