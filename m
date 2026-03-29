@@ -1,198 +1,117 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5FF40DFA9;
-	Sun, 29 Mar 2026 02:44:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A25385C4A
+	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 06:15:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774752268; cv=none; b=XP7zEIhKCfBER6YYHYW++oQVazt7zOnxjU1BMmgK5eEfaQRjk78MigEwur/Ek0H4L7EqG5vdXR7E0dtqQygkP+ny097CAIPczs2P8jZ3AOJ21B+jSnYe+fuILMQrC8QphoFBDl6IU2guJuzKLkYRJ8Mzq5b8qg06CzBKm4Jm4nY=
+	t=1774764939; cv=none; b=rfp5PJEPU/vlRUVfMenKwFnqdNQeqpVKrqPSTQJcxF50NLkqmfmsUiAP91uh+a7Cqg2otsOt3bnKCwujimqXxKbBiLWTaQArHe3GhBp3/azNT6ehZoO0NO/iXZ3YgXWz58YLaEYiXSwiQKA+PTLZcch6ysqpz3LeSVm9hbV8Bvw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774752268; c=relaxed/simple;
-	bh=zP8pKciSR07cE+zE4CuckNxlz1naeSv/P8AgYFY+L+0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gLYtwKSSZWt1ledKCaCiy/yyzO10aSX3HyLnjTSNOAG2bX2y2Pe65d+Mf/V9DOilkKvr1UBc+f8nQtPMDXZxV5Kl0NRL6VMi6s9ipgQ9lSRwuD0akWVJ0erWSUNA/uOV/PKIHcJQBtCrjhmU5maiPhyndw72YaFvYhCZSffdp7M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lJWFP9vO; arc=none smtp.client-ip=198.175.65.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1774764939; c=relaxed/simple;
+	bh=tLCX5T/5BD+D5hhrc5IQpY464+LnQSj92xbe4tJBm+Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AjaHeZ7yENIUTbXg5wNzESZwbzmlsOJIq2EGLeVJlRWIj+7QWIUyyDkAfdQ4H7L2CwlxnWlDaw/15BVoW7gg5XgTBC5vfWJnh4pJ389ZsDDOLx1qUFXNmMOuFqHuewVS9FBkeMHCdDbgKDdO1lz5vjURBruuhNgF+/wsZdI8Eo0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a24G1ZOX; arc=none smtp.client-ip=209.85.210.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lJWFP9vO"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774752266; x=1806288266;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=zP8pKciSR07cE+zE4CuckNxlz1naeSv/P8AgYFY+L+0=;
-  b=lJWFP9vOPi5B8ij+TirJ1RfGtpFn6xCB76oo7hfifZMHJoQhF4YR8MVW
-   6tNSR15i+UzUwSRySedtAIs8P7JFqz/uqQIq8h3kYBliN/4PqHWZ6AwEq
-   trWPnIEqXhMP0eKhK7ZGwmVPKSJg4jvZ9lOd695/SXfqn2lbabOFMJAY/
-   vgYepJGigPl0AUAwPL+uLKtAuNR13BBtMLKlftnDTw/3gH0AW7AA8LvrH
-   +pokTqnVGG0FD7Z4LcyXmZEBjTHrk7ifRwaCgYfT1+1n+i0XlEfIsQ2ZS
-   7WdKHNDfKqYk09taY5vYBG35rK/EraQiVWa1emwackQY3cBm3zjpnOwPn
-   g==;
-X-CSE-ConnectionGUID: P2/rlQQSQNmcRVVys6UmGg==
-X-CSE-MsgGUID: 0lQYCxcmQMSqs0nqI1FF+Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11742"; a="93165221"
-X-IronPort-AV: E=Sophos;i="6.23,147,1770624000"; 
-   d="scan'208";a="93165221"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Mar 2026 19:44:25 -0700
-X-CSE-ConnectionGUID: /GOkUf93RbSK9TYX5Vm+Zw==
-X-CSE-MsgGUID: PiBYSUfHRqK2zAYwZmdP0g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,147,1770624000"; 
-   d="scan'208";a="224730212"
-Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
-  by orviesa006.jf.intel.com with ESMTP; 28 Mar 2026 19:44:21 -0700
-Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w6g8P-00000000C1B-46D9;
-	Sun, 29 Mar 2026 02:44:17 +0000
-Date: Sun, 29 Mar 2026 10:43:38 +0800
-From: kernel test robot <lkp@intel.com>
-To: Otto =?iso-8859-1?Q?Pfl=FCger?= <otto.pflueger@abscue.de>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>, Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a24G1ZOX"
+Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-82c2239140aso1377574b3a.0
+        for <linux-pm@vger.kernel.org>; Sat, 28 Mar 2026 23:15:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774764937; x=1775369737; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=rpxvjrCfKfWKOT/ha83hU/ESLCv8PWJ47jL6ccG2o9A=;
+        b=a24G1ZOXgYDETqrQfPOkz/XkTO9l7DT22yrEtVj6ar8rE9XHLMY5ZuXDiUaAhSeRKW
+         g3T9A7a2SOKQDQHsZ9rUL4b78zgqWqNjf5QNUoXfGP0dCj6k8EilnOMMawh+lPQmMxW5
+         GINVVHixO0PSTZBmYQ2h9AN+N8whiyN9kvPG0dNWuD9X+Z+JNVLQz1Vhq+17QjHAZOjL
+         zM7X96i3WUsNmv4S57a3xCTVfHENFsXjOZwFmNKsl+mbkeUE8BJG66B6tcnqQLmHYcQr
+         IveRTsnZjo/DOB29nhVipmurGS7jJWRCnYWZvT+3ZtMDxD7Mq6zNR3UhQ+a4b4zK8WjN
+         yZYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774764937; x=1775369737;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rpxvjrCfKfWKOT/ha83hU/ESLCv8PWJ47jL6ccG2o9A=;
+        b=XOsBuYPqXZSiT5BBawxEOPslC4I5uLnSHL+I9625FxJVwW1syKNRxDcCBH5z8Mb29t
+         p45mjPpimgiAFMwGzSki5fFFFZ97b3oHtA94DMNoPIOe1D4j9kz1xLX4Ha3eBZc9jdZk
+         Jud+/RIywH9eZqPdAwc1su7HPboBF0avmULReI7IqEDCnxVMuMv8g9bW7F5uShx7cRL/
+         3mwsQFMM3SWARIHRyHt6w9aVBRstmQxZ86aenWebQYLS6CgaOHlPssbeaLN0yn9MgujC
+         0m1o8FQwOnjEVwY3snOYFYdS1jAQc5LmxP4nezlZuZHhJQGsVjyPMh5/d1O6c7jL7W4t
+         +dRA==
+X-Forwarded-Encrypted: i=1; AJvYcCWTikmQeCDnLMwR3ljXul6Dr//2PZG0HvCj8Aawp8wRE6KHVD61gd0QDv09ocYEBokwhOSZdcZ82Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxXJ8kjy2b2KJ+6G4RrzXGDmGXRjgDPjIYYVtwUsWoEErvsWK+5
+	JHu/oyBeCqXPbWUe3PnKuYAGUwAh32l2ZfyEkj02lktUxgO947NvcMfV
+X-Gm-Gg: ATEYQzzTXjnJJmfhr5viZXJRXDPGmhvisG9LrJ7yCd1MB/FmlSFNN/I3CPPwdTzoa+P
+	TWIDc5Rl/CQw8IaTeDSlewo3qre0I3ydWbjE63PVIVuM4Gihtz5ItMrs1G6a9IT3fnUu8mEhyxG
+	hdMTdcxKPJgniD3QvPIfI5k84nzCVIDGVkQrponffvUuPKob7uz4NGZUwjXoAXaPUwDCziIgRtL
+	WrhfiiJMP2Wx+tzpBb9V9k3arghHVAB2Q3oZ+U48xduKzVVGK7eSU4IyZngGL29lD0QOc0vz5g1
+	OmxHYhjhNDH5TDFMnDSuAj+v7Ma6noTYW71mZ7y0SposCMa2ZsL1A+b46boJydXcdTmaaJWL9JT
+	UKpFbkYdQZV9kYS6BJx6pJdpXnFI3Xnb/gS0xQLxDap9B06hKdTQV4/e5XimaDKhSwZXzKzOiul
+	taszQ9wZkQJegmSKkfVB6h5MrPwCKgfq1Qo4To7SLlP+Bxseta8SwWXlRd57aF5tDRO+I88ChmC
+	u1BX3JhVBfnbg==
+X-Received: by 2002:a05:6a00:3e16:b0:823:b1f:892e with SMTP id d2e1a72fcca58-82c9607f5b1mr7817427b3a.43.1774764937194;
+        Sat, 28 Mar 2026 23:15:37 -0700 (PDT)
+Received: from toolbx.gk.pfsense.com ([103.70.166.143])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82ca8436f19sm3709731b3a.9.2026.03.28.23.15.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 28 Mar 2026 23:15:36 -0700 (PDT)
+From: Gopi Krishna Menon <krishnagopi487@gmail.com>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	vireshk@kernel.org,
+	conor+dt@kernel.org
+Cc: Gopi Krishna Menon <krishnagopi487@gmail.com>,
 	linux-pm@vger.kernel.org,
-	Otto =?iso-8859-1?Q?Pfl=FCger?= <otto.pflueger@abscue.de>
-Subject: Re: [PATCH v2 3/5] mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
-Message-ID: <202603291013.6DnmGjG3-lkp@intel.com>
-References: <20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7@abscue.de>
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	soc@lists.linux.dev,
+	daniel.baluta@nxp.com,
+	simona.toaca@nxp.com,
+	d-gole@ti.com,
+	m-chawdhry@ti.com
+Subject: [PATCH v2 0/2] dt-bindings: thermal: st,thermal-spear1340: convert to dtschema
+Date: Sun, 29 Mar 2026 11:45:18 +0530
+Message-ID: <20260329061523.98346-1-krishnagopi487@gmail.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7@abscue.de>
+Content-Transfer-Encoding: 8bit
 
-Hi Otto,
+This patch series converts SPEAr Thermal Sensor bindings to DT schema
+and corrects the thermal_flags property in spear13xx.dtsi to
+st,thermal-flags.
 
-kernel test robot noticed the following build warnings:
+Changes since v1:
+- Changed unevaluatedProperties to additionalProperties in the binding
+- Reword the commit message and subject in the second patch
 
-[auto build test WARNING on 85964cdcad0fac9a0eb7b87a0f9d88cc074b854c]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Otto-Pfl-ger/dt-bindings-rtc-sc2731-Add-compatible-for-SC2730/20260327-162827
-base:   85964cdcad0fac9a0eb7b87a0f9d88cc074b854c
-patch link:    https://lore.kernel.org/r/20260325-sc27xx-mfd-cells-v2-3-d0ebb60aa4a7%40abscue.de
-patch subject: [PATCH v2 3/5] mfd: sprd-sc27xx: Switch to devm_mfd_add_devices()
-config: sparc64-allmodconfig (https://download.01.org/0day-ci/archive/20260329/202603291013.6DnmGjG3-lkp@intel.com/config)
-compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 054e11d1a17e5ba88bb1a8ef32fad3346e80b186)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260329/202603291013.6DnmGjG3-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202603291013.6DnmGjG3-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> drivers/mfd/sprd-sc27xx-spi.c:188:14: warning: cast to smaller integer type 'enum sprd_pmic_type' from 'const void *' [-Wvoid-pointer-to-enum-cast]
-     188 |         pmic_type = (enum sprd_pmic_type)of_device_get_match_data(&spi->dev);
-         |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   1 warning generated.
+Note:
+* This patch is part of the GSoC2026 application process for device tree bindings conversions
+* https://github.com/LinuxFoundationGSoC/ProjectIdeas/wiki/GSoC-2026-Device-Tree-Bindings
 
 
-vim +188 drivers/mfd/sprd-sc27xx-spi.c
+Gopi Krishna Menon (2):
+  dt-bindings: thermal: st,thermal-spear1340: convert to dtschema
+  ARM: dts: st: spear: rename thermal_flags to st,thermal-flags
 
-   179	
-   180	static int sprd_pmic_probe(struct spi_device *spi)
-   181	{
-   182		struct sprd_pmic *ddata;
-   183		enum sprd_pmic_type pmic_type;
-   184		const struct sprd_pmic_data *pdata;
-   185		const struct mfd_cell *cells;
-   186		int ret, i, num_cells;
-   187	
- > 188		pmic_type = (enum sprd_pmic_type)of_device_get_match_data(&spi->dev);
-   189	
-   190		switch (pmic_type) {
-   191		case PMIC_TYPE_SC2730:
-   192			pdata = &sc2730_data;
-   193			cells = sc2730_devices;
-   194			num_cells = ARRAY_SIZE(sc2730_devices);
-   195			break;
-   196		case PMIC_TYPE_SC2731:
-   197			pdata = &sc2731_data;
-   198			cells = sc2731_devices;
-   199			num_cells = ARRAY_SIZE(sc2731_devices);
-   200			break;
-   201		default:
-   202			dev_err(&spi->dev, "Invalid device ID\n");
-   203			return -EINVAL;
-   204		}
-   205	
-   206		ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
-   207		if (!ddata)
-   208			return -ENOMEM;
-   209	
-   210		ddata->regmap = devm_regmap_init(&spi->dev, &sprd_pmic_regmap,
-   211						 &spi->dev, &sprd_pmic_config);
-   212		if (IS_ERR(ddata->regmap)) {
-   213			ret = PTR_ERR(ddata->regmap);
-   214			dev_err(&spi->dev, "Failed to allocate register map %d\n", ret);
-   215			return ret;
-   216		}
-   217	
-   218		spi_set_drvdata(spi, ddata);
-   219		ddata->dev = &spi->dev;
-   220		ddata->irq = spi->irq;
-   221		ddata->pdata = pdata;
-   222	
-   223		ddata->irq_chip.name = dev_name(&spi->dev);
-   224		ddata->irq_chip.status_base =
-   225			pdata->irq_base + SPRD_PMIC_INT_MASK_STATUS;
-   226		ddata->irq_chip.unmask_base = pdata->irq_base + SPRD_PMIC_INT_EN;
-   227		ddata->irq_chip.ack_base = 0;
-   228		ddata->irq_chip.num_regs = 1;
-   229		ddata->irq_chip.num_irqs = pdata->num_irqs;
-   230	
-   231		ddata->irqs = devm_kcalloc(&spi->dev,
-   232					   pdata->num_irqs, sizeof(struct regmap_irq),
-   233					   GFP_KERNEL);
-   234		if (!ddata->irqs)
-   235			return -ENOMEM;
-   236	
-   237		ddata->irq_chip.irqs = ddata->irqs;
-   238		for (i = 0; i < pdata->num_irqs; i++)
-   239			ddata->irqs[i].mask = BIT(i);
-   240	
-   241		ret = devm_regmap_add_irq_chip(&spi->dev, ddata->regmap, ddata->irq,
-   242					       IRQF_ONESHOT, 0,
-   243					       &ddata->irq_chip, &ddata->irq_data);
-   244		if (ret) {
-   245			dev_err(&spi->dev, "Failed to add PMIC irq chip %d\n", ret);
-   246			return ret;
-   247		}
-   248	
-   249		ret = devm_mfd_add_devices(&spi->dev, PLATFORM_DEVID_AUTO,
-   250					   cells, num_cells, NULL, 0,
-   251					   regmap_irq_get_domain(ddata->irq_data));
-   252		if (ret) {
-   253			dev_err(&spi->dev, "Failed to populate sub-devices %d\n", ret);
-   254			return ret;
-   255		}
-   256	
-   257		ret = devm_device_init_wakeup(&spi->dev);
-   258		if (ret)
-   259			return dev_err_probe(&spi->dev, ret, "Failed to init wakeup\n");
-   260	
-   261		return 0;
-   262	}
-   263	
+ .../bindings/thermal/spear-thermal.txt        | 14 --------
+ .../thermal/st,thermal-spear1340.yaml         | 36 +++++++++++++++++++
+ arch/arm/boot/dts/st/spear13xx.dtsi           |  2 +-
+ 3 files changed, 37 insertions(+), 15 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/thermal/spear-thermal.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/st,thermal-spear1340.yaml
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.52.0
+
