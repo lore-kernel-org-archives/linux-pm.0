@@ -1,77 +1,84 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D04E158DCF
-	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 18:58:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D32432D060C;
+	Sun, 29 Mar 2026 20:38:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774810683; cv=none; b=d6mjy8VWQb5kaQgwhIjWdI5leZGBw1DRryPnmLzOkq9ue8KZ8QFxuTAc8/SSOUftyi+DWJo5VHHMGmMYrH037lHL+Czk0luZrr89dSPXF3moTUgJrfQsupiX8f6Av8O3DYeIOQsVpqH7Uk481iRSjNzS0gcq1gIT5SOhzHxSWpE=
+	t=1774816704; cv=none; b=ROdNuO1I3eIrdALWiD0oXFgHbSoChMgtxy80EMUoUonxR8NUVWmpM1lcg3GFcA5OHxlAyURSheGSWSIgq+a/r+OReK5tFGCfkITrisl//q/nln7ELqqpUWBiXR6PjaaM6NzXXsiVHmD0N6rr4ej6hD2UCxiWirjhX6b0/Bt7n0I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774810683; c=relaxed/simple;
-	bh=Ghe/jUUjVDW2L4xnqDOkzXXcs8fY2TKEnFZTUKI/5JI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=m33uQLWXQ9pQTXGWEifHTaP+WHgfejwA9hLhOU0WmnkD6K1QiYD+RNKzertmGCxNncD2DxV5LF6Dfqj4p8SCZp6DKbpCSOV2XOeXpT+uUtTKbtmXFG3eOZqMJuhCMHiWTwySzhnBcr+pearEQmbcOi9c9nEhTtangSD72hZPiFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BDFLSuWk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774816704; c=relaxed/simple;
+	bh=wbS6SBr/SlYKqS0Y4ons/0vvnEtpbPmxPqcWzRhOmZw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=h1/z8b3ykiAvmhQqUjM2XnIL6WEIfhmnJTx6cjH7Cin+J2YmHwSwzohOYnYg3Kst2TTzHuy3KrQpDV9EPT3Je9ddvIjAdH6pyrCT2y2NHgoBLTQ945F4z3Ot461TKNj6Gllqg7RavwNFSGuPmTFPeL1EwiCXiTxqKYDn04mar98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eMofo5xp; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BDFLSuWk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5A13C2BCB4
-	for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 18:58:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eMofo5xp"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB3BBC116C6;
+	Sun, 29 Mar 2026 20:38:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774810682;
-	bh=Ghe/jUUjVDW2L4xnqDOkzXXcs8fY2TKEnFZTUKI/5JI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=BDFLSuWkJpfjn++ImUs539O9NjNKsEALgIoopk3NGDCleLws031FgcGlAnajunY23
-	 2YSmXk+5xyyLe2AKhrSm50w5YuMkZuJugkFuSZngJwprMOTOGxZEs9d9D/kLOY04mA
-	 BDfPcI8+bLc88/ua2PFrp0CR/ASbJ6LFD0toIkiVeYCZNO0RxrSFg9UpiQXAkT1TZz
-	 +X/Aq1SxBeCVFBwT+Ehef39d9JY0FOreBPy8SeGpGDDmD9RKzDlmPfxaNwxQxPsa8P
-	 JpJ2sHc0en3Dkl8DOse5j7llC4N4s1Ch+ZEGR7AM0UAwAtrgwzJ5Qbktq4fFbMdkD9
-	 nR1lFOOt98rlA==
-Received: by mail-yx1-f53.google.com with SMTP id 956f58d0204a3-6500040f172so3001645d50.1
-        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2026 11:58:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXHBhQsTz1gv7BuTPDOOe12QVey2CODNPecaXV5iri6zpFxGCaC10JBuqhJe4pdNqeBW5BnBcXQ+Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwZPOMNo3ZjYaawpkMSsUwAGVGH7+ffqqUUz7dTgH0h9HZpWjqO
-	+jPDwDDi8OwMtkgZTJjovUpXyEYpDPuyfxR+qoYGW6ihQFpCwNT0ZL/+baPKgSADtxgNnSUdClp
-	q6Vgroabj9HEi/ELHJ7STnES2iixZTLg=
-X-Received: by 2002:a05:690c:6e87:b0:79a:bf27:fe65 with SMTP id
- 00721157ae682-79bde0a01f5mr98501667b3.35.1774810682145; Sun, 29 Mar 2026
- 11:58:02 -0700 (PDT)
+	s=k20201202; t=1774816704;
+	bh=wbS6SBr/SlYKqS0Y4ons/0vvnEtpbPmxPqcWzRhOmZw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=eMofo5xpU6W/RssZLGnVmRvYEW7fUSiKcIul1xCh9BCV8hRfTxb6DzyW6qy42D4S4
+	 FYgLhidp/FZ5o6vb9Mrbq6EqE99+U1tvmYt/iSifnuXTRIwvvgMFQ1qqFZF703i5YL
+	 FsUw1Y0w8Xsn5lm+o3ZdkriMXK+rZQf1TbRzGFdnWKR8Ej5n/9xWjmNiDlTVn3mFe3
+	 IjSm9yxJjWiOjYiaFoYUxk7J0OI1bST4tiZ/SH0VS5PRqjBVikoQHRnR+OyiMWh9YC
+	 MujEeQTxxrVCIZS0WtYF3uLGj826oklEy/UFRqdAvZS6XLNJrlWEuHivI7Y1MZ5JjF
+	 J2nm1lwGx0B5Q==
+From: "Mario Limonciello (AMD)" <superm1@kernel.org>
+To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
+Cc: Perry Yuan <perry.yuan@amd.com>,
+	linux-kernel@vger.kernel.org (open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)),
+	linux-pm@vger.kernel.org (open list:CPU FREQUENCY SCALING FRAMEWORK),
+	"Mario Limonciello (AMD)" <superm1@kernel.org>
+Subject: [PATCH v6 0/5] amd-pstate Dynamic EPP and raw EPP
+Date: Sun, 29 Mar 2026 15:38:06 -0500
+Message-ID: <20260329203811.2590633-1-superm1@kernel.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260328124707.141209-1-khushalchitturi@gmail.com>
- <177470797266.1536342.6967120656934552033.robh@kernel.org>
- <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
- <3fa4fad0-d918-4de0-ad80-dad2141d2617@kernel.org> <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
- <aciItMCdBbrVvMKB@venus>
-In-Reply-To: <aciItMCdBbrVvMKB@venus>
-From: Linus Walleij <linusw@kernel.org>
-Date: Sun, 29 Mar 2026 20:57:51 +0200
-X-Gmail-Original-Message-ID: <CAD++jLn5qQqx5nAOWNifJcNPb00B_CtM=xF16qjB4qXGENmL9Q@mail.gmail.com>
-X-Gm-Features: AQROBzBuNEJozOlp-XpTGjISujTF0by1_WHh_XBOvopTnZtKwpdl_n91dqbbiDc
-Message-ID: <CAD++jLn5qQqx5nAOWNifJcNPb00B_CtM=xF16qjB4qXGENmL9Q@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: power: reset: cortina,gemini-power-controller:
- convert to DT schema
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, "Rob Herring (Arm)" <robh@kernel.org>, 
-	Khushal Chitturi <khushalchitturi@gmail.com>, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sun, Mar 29, 2026 at 4:09=E2=80=AFAM Sebastian Reichel <sre@kernel.org> =
-wrote:
+Dynamic EPP allows the kernel to register amd-pstate as part of
+a platform profile. It will change EPP modes matching the user's
+preference to the platform profile sysfs files as well as power
+adapter state.
 
-> The problem is the node name (power-controller@4b000000), which is
-> reserved for power domains. You can keep the compatible.
+Raw EPP allows userspace to write integers to
+energy_performance_preference.
 
-Ah, sweet, Khushal can you change this?
+This is based off superm1/linux-next + [1]
 
-I think you can use gemini-poweroff@4b000000 because
-this is pretty much a poweroff thingie.
+Note: v5 had some feedback to always default dynamic EPP to disabled for
+server, but I think that's very confusing if the kconfig or kernel command
+line option don't work for server but do for client.
+Server effectively be a no-op because the platform profile will start
+in performance anyway.
 
-Yours,
-Linus Walleij
+v5: [2]
+
+Link: https://lore.kernel.org/linux-pm/20260326193620.649441-1-mario.limonciello@amd.com/ [1]
+Link: https://lore.kernel.org/linux-pm/20260106051441.60093-1-superm1@kernel.org/ [2]
+
+Mario Limonciello (AMD) (5):
+  cpufreq/amd-pstate: Add dynamic energy performance preference
+  cpufreq/amd-pstate: add kernel command line to override dynamic epp
+  cpufreq/amd-pstate: Add support for platform profile class
+  cpufreq/amd-pstate: Add support for raw EPP writes
+  cpufreq/amd-pstate-ut: Add a unit test for raw EPP
+
+ .../admin-guide/kernel-parameters.txt         |   7 +
+ Documentation/admin-guide/pm/amd-pstate.rst   |  41 ++-
+ drivers/cpufreq/Kconfig.x86                   |  13 +
+ drivers/cpufreq/amd-pstate-ut.c               | 109 +++++++
+ drivers/cpufreq/amd-pstate.c                  | 287 ++++++++++++++++--
+ drivers/cpufreq/amd-pstate.h                  |  21 +-
+ 6 files changed, 449 insertions(+), 29 deletions(-)
+
+-- 
+2.43.0
+
