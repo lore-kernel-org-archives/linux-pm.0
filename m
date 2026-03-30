@@ -1,31 +1,33 @@
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BA8D1B4F0A
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 06:29:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BF6237E2EE;
+	Mon, 30 Mar 2026 06:36:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774852166; cv=none; b=gF+0x63riVqXEmFX4LM3Mc9BALCmLB9CxB8r+gQmuGgvXrcTZWiwJp6kIEbUvjsiG8lxKfRH9jfbmwQvXAA8U9nIJoRC7IT4PRoeEvZS2zyUYwQmKartC1+tyvpHF1Fg9IESiKDAWPyW2LxABzDXcvlr2aTtrN4UJSujmLzC3+Q=
+	t=1774852603; cv=none; b=fetyISpDr/MR8YgREeqS5VfjhFFJlUyw4MJ4hYtpr0GjDp+mCx3Oi7PnGJlWxK1sRC4NPBbkhq9z/waQSeNdkuuAEUBIdO56WMdUn/oAuwzgqt+F+XkbxidtACi4PE7AS7JgB+I7xFMA/o0YIR7pdK27Ob7LfUHYn5MWE+heh/U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774852166; c=relaxed/simple;
-	bh=0DFyfvWmG3s9IP3Fmv+qC/Fd7V/d9btSUp69SUM56mQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=jchDuWUkkLP0/NGrt07rbwPSmLCzbcwQUKGA/Soat3bwQj+ytXVxKUUn2mY0/SJYIilta6md0jwfasn0cBtSyBsIOmxml/fXfrIzt1jXkk4Q0GTa0QKuQzesNUbLT2Hv45OubkxpfAbkZ8qIB5j1uFwdYT7339ApVgmhWCsPrV0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.222
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4fkh5D18SWzLm2K;
-	Mon, 30 Mar 2026 14:23:12 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id DF2C240565;
-	Mon, 30 Mar 2026 14:29:19 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 30 Mar
- 2026 14:29:19 +0800
-Message-ID: <47b32b11-fbc8-4e9c-9b04-da3d1465ae7c@hisilicon.com>
-Date: Mon, 30 Mar 2026 14:29:18 +0800
+	s=arc-20240116; t=1774852603; c=relaxed/simple;
+	bh=WQGozcPVOmHXsmy0M+0Xqiud1Yr5AI2xCXzTxu9+5FU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NoaJu2nlKvISI2sYPsVMuiQQDwzHZFXXoWnFUrwKTetRjxbmrnFEw5Jv54OFRQ/UU2FaUgbhs1LrhNe9+4ZmFyQW/yOSvdA8UW6ZebZ0QHdndu07RK8ylKI86AIRCTW0mL41ZXJJCs+VmfNTQnlphIWKqEodd0BZK+Xj8iNC9ZE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YHf9AyVi; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YHf9AyVi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D23CC4CEF7;
+	Mon, 30 Mar 2026 06:36:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774852603;
+	bh=WQGozcPVOmHXsmy0M+0Xqiud1Yr5AI2xCXzTxu9+5FU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YHf9AyVi0iNmhS4tQMpiqSgzT1L0tgFDq61lZFQlrL/SUDW8X9YyuQhC2xY60wgxX
+	 2fgz8NNZTTuE3mxTPT/h2OqmhSwFx46Zv6Tq8Uu6aOa4sxqDQUtae8zgdbMoFCe4lo
+	 0d/+N9K/vFr8WG2K20k+g11xzqnQUTRsoix5y2VpEIO5evMsokcpe9gIrgTwJYmjCb
+	 5lo4UektVPQ9bfLvkQg1mRmZHhQusSBWGrnB1apeMHw2tFbYy1sKc15cSPCDe1FRFO
+	 31jWrebbZYq3+Axx0btNLDTi4rQVOGSK8pCwO5C5o+p1Erk2g3iJ3Ip+y6DGKZzX2t
+	 En4Mye+7d4pxQ==
+Message-ID: <e397d9e0-2dfb-4e6b-8c00-03e1b0a53be5@kernel.org>
+Date: Mon, 30 Mar 2026 08:36:39 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,88 +35,81 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 00/10] devfreq: Fix NULL pointer dereference when a
- governor module is unloaded
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <cw00.choi@samsung.com>,
-	<myungjoo.ham@samsung.com>, <kyungmin.park@samsung.com>
-CC: <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linuxarm@huawei.com>, <jonathan.cameron@huawei.com>,
-	<zhenglifeng1@huawei.com>, <zhangpengjie2@huawei.com>,
-	<lihuisong@huawei.com>, <prime.zeng@hisilicon.com>
-References: <20260326123428.800407-1-zhanjie9@hisilicon.com>
- <1774576755240654.100.seg@mailgw.kylinos.cn>
- <2f9ab345-5940-4298-87a5-bf9121fe219e@kylinos.cn>
+Subject: Re: [PATCH] dt-bindings: power: reset:
+ cortina,gemini-power-controller: convert to DT schema
+To: Linus Walleij <linusw@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: "Rob Herring (Arm)" <robh@kernel.org>,
+ Khushal Chitturi <khushalchitturi@gmail.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+References: <20260328124707.141209-1-khushalchitturi@gmail.com>
+ <177470797266.1536342.6967120656934552033.robh@kernel.org>
+ <CAD++jL=_rCmW=eSV0kvck50sC2xaQnGQoEOy=DNcwkFvvWYUUw@mail.gmail.com>
+ <3fa4fad0-d918-4de0-ad80-dad2141d2617@kernel.org>
+ <CAD++jLnxoS-OGBSAXxgGPaME7eMTwCQ-C+uzub6m0o9ZgXL_aA@mail.gmail.com>
+ <aciItMCdBbrVvMKB@venus>
+ <CAD++jLn5qQqx5nAOWNifJcNPb00B_CtM=xF16qjB4qXGENmL9Q@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <2f9ab345-5940-4298-87a5-bf9121fe219e@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <CAD++jLn5qQqx5nAOWNifJcNPb00B_CtM=xF16qjB4qXGENmL9Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- kwepemf200017.china.huawei.com (7.202.181.10)
 
-
-
-On 3/27/2026 10:06 AM, Yaxiong Tian wrote:
+On 29/03/2026 20:57, Linus Walleij wrote:
+> On Sun, Mar 29, 2026 at 4:09 AM Sebastian Reichel <sre@kernel.org> wrote:
 > 
-> 在 2026/3/26 21:14, Jie Zhan 写道:
->>
->> On 3/26/2026 8:34 PM, Jie Zhan wrote:
->>> When compiled as a kernel module, the governor module can be dynamically
->>> inserted or removed.  'devfreq->governor' would become NULL if the governor
->>> module is removed when it's in use, and NULL pointer dereference would be
->>> triggered.  A similar issue was also reported in [1].
->>>
->>> To address this issue:
->>>
->>> Patch 1-5 rework mutex, factor out a common governor setting function, and
->>> clean up some unreachable code.
->>>
->>> Patch 6-8 prevent a governor module in use from being removed (except for
->>> force unload) by getting/putting a refcount of the governor's module when
->>> switching governors.
->>>
->>> Patch 9-10 allow 'governor' and 'available_governors' to work normally even
->>> when a governor module in use is force unloaded.
->>>
->>> Note that this series is based on [1] or devfreq-next, otherwise code
+>> The problem is the node name (power-controller@4b000000), which is
+>> reserved for power domains. You can keep the compatible.
 > 
-> Sorry, please ignore the "remember to CC me on the patches." in my previous email.
+> Ah, sweet, Khushal can you change this?
 > 
->  In my opinion, it would be better to prioritize the FIX first before proceeding with the lock mechanism optimizations and other work. This would make it easier to backport the patches to lower-version kernels. I noticed the patch is already in the devfreq-testing branch. I hope the FIX work can be moved forward smoothly to resolve the null pointer and other bugs. Thank you!
+> I think you can use gemini-poweroff@4b000000 because
+> this is pretty much a poweroff thingie.
 
-Hi Yaxiong,
+So as I said - poweroff.
 
-I don't think this issue is urgent because it can only possibly happen when
-governors are built as loadable modules, which is typically used for
-development rather than production.
-
-For downstream kernels, feel free to go ahead with quick fixes.  For the
-upstream kernel, however, I'd prefer to make the devfreq core clean and
-sensible.
-
-Your approach is to prevent kernel panics when unloading governor modules
-before changing governors.
-
-This patchset achieves that, and additionally let userspace get a friendly
-warning when trying to remove a governor module in use, e.g. 
-"rmmod: ERROR: Module governor_performance is in use".
-This requires using the module refcount stuff, and brings out a set of
-cleanups and refactoring.  BTW, cpufreq implements a similar mechanism like
-this.
-
-I may carry your fourth patch that changes the return code of
-governor_show() in v2 and address some Sashiko review comments along the
-way.
-
-Please let me know if this works for you?
-
-Regards,
-Jie
-> 
-> 
-> 
->> sorry, based on [2] or devfreq-next
->>> would conflict.
->>>
->>> [1] https://lore.kernel.org/all/20260319091409.998397-1-tianyaxiong@kylinos.cn/
->>> [2] https://lore.kernel.org/all/20251216031153.2242306-1-zhangpengjie2@huawei.com/
+Best regards,
+Krzysztof
