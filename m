@@ -1,119 +1,128 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D83D73C661D
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:02:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2DB93BD242;
+	Mon, 30 Mar 2026 11:03:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774868532; cv=none; b=frTGCFlFhWd9imsKAX1PKwqje4815TPjbFnXiYEzrG1czs7UWsM6573gRKjh/CpyAfYt9a3pZ4tsGnnW8fMrttdDspJeyEMwqRCzVazgkmC/RyMa7y51ryaT+udbEG3wnCv8se0TcFnEdcduwHdwLHs4KVMh14WRZVonb8RkehE=
+	t=1774868626; cv=none; b=giO73WUUyU+wDFa0/Dt0R6DtV2fgPK5ljxiC7k1IEkGSALZVdwnPKKrVvDEGb9mSFLLgFqDjKNj9N+T1eBvG91GFTX7w6JlMAf1UihmZE0nYH5U42UxgSVswyB/dY6ZkvnnT+Y5nY2faSAUCos/QEOa2co+aiSPciisdpZTc+Qg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774868532; c=relaxed/simple;
-	bh=mxrzICpe5NIe8GjG8dLZQudvhcALWguXqUHhxL6pajo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Io78HZOumwoIqPL0RYgdV1o1+Rfk4riiL7p6xEcAGfgYQaXVdhn1fZVTwFhMLaUCjnglY7ANRi58E/EvcHoQwgVxU/+IEw7q64oZjQb/H4pdZzfI5e6FbL4bp7Kf4gBua7FX4iJasDLVo3Fig5D0cvG34z7Ws1uR1gsAQSHnDcY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EljSkCwG; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774868626; c=relaxed/simple;
+	bh=5lKM5SSrSGTsRvZYw5eh+ZRs2MIRklPVcXrX35ocOik=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jph1+adPl2iIGtORDyXq16sN24rbVB3DGlRNp37JQATIbL3TvrLJgyHKMxKs7KfRKj4ssVy2sicWfj00ISWi4CPfDp7ad6qWkInHyDvoOforPOYUH1ignbFpMln8Fizq3rEw+GwVOC+53FwX0ilm7pGaaMJaxXPZMQyXyXszcsk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gGVYWM7k; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EljSkCwG"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2a7a9b8ed69so42872935ad.2
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 04:02:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774868526; x=1775473326; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=YVSxqj5+EI9WDl5Sz6NGHvDhkfU3nzyVbqnqzEf09AE=;
-        b=EljSkCwGHe33EG5TPHSsFeTKynciLg+bctTqTdHhQgmfn4/n79PWTz1xcsOmXWMcEl
-         BR4XxxFtGD3J8zP/yOwoHBho9PlqUVd10f0zivop0I1jkNHXPWGwV6qdqISb8IErqbSP
-         Y4ZpmudGwcKEECRC4fytDZRae1+wG3ksK+Ss1AQ9h+w9xHjUpJKNk6u5G61GkO2iNBji
-         Ix13LgkHrTSw4ZLqXPzuASTxqGsnqwmht3eTckg/5iAxYe9yiNCaUvIOQ9/okWEGVneC
-         2lK068IJAbpimJW9nHcbb5dW98QogjDedDXb5cjyCD93KXFrDbkAajfeSvIKwbBRet72
-         q7aw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774868526; x=1775473326;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=YVSxqj5+EI9WDl5Sz6NGHvDhkfU3nzyVbqnqzEf09AE=;
-        b=ULtK+M89xkFhIskyAApFLrSu5fNjj5002dN15ATkHiNzCE2imsf+DW7OVb9mdacFky
-         /15145EuXWWI7aTHsH2z4nYd8ok1PXvM41Q/pCTOQzF8aMTzttBNe/ctNJgVDvT50csv
-         0ECH7ghoW9CHUNZYHxE/PxxQWTwrgpMlPTGxeaAxlNEGDxRZCLNeEbRUziIsJubVlN23
-         5utiR7D2WHp2X8u0bUfwrRVV+p2RSON9lXR0+77ETO6K17HY4nbT6VrKvcsLGnb0m+GU
-         NbHf/Gbt0UbYI1JechKCN/Mv+3ViN8MTxL1qc8HW+ZCS+fyFpfgFPmfy2eh4xCv6K899
-         wwsg==
-X-Forwarded-Encrypted: i=1; AJvYcCU/GBCB1GiImPtI1Lyolq/ly44nCuMZyo5BMMfiPnGMeyAQ0qZ/Q2/wBQKp3kOYxrQee7VkuxZnRg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz2pNFrhUAdGHRqQU1m6rj6RQN46I1BjJEJL2xPbx3v6xDj0jPF
-	/BJn/anFhJsd/bqmAhBPxMSd8CuogeCQva7TgyAPIcSODMUhKVWd0sFh
-X-Gm-Gg: ATEYQzxrGXL9NfqSWAZpVrFFevpOON5VfXBsZL/jNxzEsBTvYgMK8T3v9QuGZBcV6wo
-	l4jtVOCC5rlE9/1ThjFIed+csFZne3lBfJxHtj97i1tRVy1ypq6W/8LFeNxpQDadgwEfQFucnwk
-	90Mrieik5f9s/B7qebyFOBHNhe+DKhge71TrNnLliLf4sh11R3cioUxDPjrYr4Ury5TVLAw2Tj6
-	UkuJv5Mt5dtPZE+p8XPJpxxoBN06psxb0elbd1b5mT3loKYbap02BgJ61kcg5MLj/aqZ9x1ZVHH
-	BHNtl7/DHLQSPXi6dCiufaRLGYo4JknwReZLOvPucydk8LJpvjkOWjTiUdMfuYgMFco9kDMz7bk
-	sWTylGLDHxbBnay4sbBpTOgOAqvEWw3lrtJQUVmSOKJ9gcpTTOLH3VQTOTl3m6+6oWADd6u6GGH
-	DbqWJfKpX9azpaQ8oVd6XNaWiIlWkk/f4dcQIPyig=
-X-Received: by 2002:a17:902:ef48:b0:2b2:470d:6d18 with SMTP id d9443c01a7336-2b2470d70bbmr78007655ad.8.1774868526411;
-        Mon, 30 Mar 2026 04:02:06 -0700 (PDT)
-Received: from snowman ([2401:4900:646d:9a6e:3eae:13fa:fe3c:864])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b24279113fsm77701375ad.60.2026.03.30.04.02.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 04:02:06 -0700 (PDT)
-From: Khushal Chitturi <khushalchitturi@gmail.com>
-To: sre@kernel.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	ulli.kroll@googlemail.com,
-	linusw@kernel.org
-Cc: daniel.baluta@nxp.com,
-	simona.toaca@nxp.com,
-	d-gole@ti.com,
-	m-chawdhry@ti.com,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Khushal Chitturi <khushalchitturi@gmail.com>
-Subject: [PATCH v3 2/2] ARM: dts: gemini: Rename power controller node to poweroff
-Date: Mon, 30 Mar 2026 16:31:35 +0530
-Message-ID: <20260330110135.10316-3-khushalchitturi@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260330110135.10316-1-khushalchitturi@gmail.com>
-References: <20260330110135.10316-1-khushalchitturi@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gGVYWM7k"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FD63C4CEF7;
+	Mon, 30 Mar 2026 11:03:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774868626;
+	bh=5lKM5SSrSGTsRvZYw5eh+ZRs2MIRklPVcXrX35ocOik=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gGVYWM7klos1gWC/kA6Sahgfsvagl5DCQRaTKdru+m8KUoq+swsPDmo2NXrL9zl9Z
+	 TKj8UrgM+0li+WlDOoz4SkVhLQQS1yLG1H9y0c4QDvchM7ax6JO7TFd0cGhFvFD9MU
+	 Iu728fdQK4zdA3iGXXm0NyaS0hb0pQr2CuBfjC+7808tYAF0RoBnz9nTVZe1sGmKHV
+	 xf03m3/ywJcOz0qLfgrF2Ey42tNyBo8q9O55333XsI0oJmpz3zXfpPYqV5Bz9ud4Bw
+	 /gWHAxFzDsTMI27/ZkX9W8Z8WL2wgL2X6m5Oy8Xn4HTZihHEZFy/7ej6QkPfiPDE2Q
+	 lnIhMfKGqWfWQ==
+Message-ID: <a47d48c8-090b-4001-ab27-756d8b76c8ec@kernel.org>
+Date: Mon, 30 Mar 2026 13:03:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 02/10] dt-bindings: power: samsung: add google,gs101-pd
+To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Peter Griffin <peter.griffin@linaro.org>,
+ Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>,
+ Will McVicker <willmcvicker@google.com>, kernel-team@android.com,
+ linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
+References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
+ <20260318-gs101-pd-v8-2-241523460b10@linaro.org>
+ <177409897339.266364.69715997034739052.b4-review@b4>
+ <6f0be0a71c74e7a7959e9ad02e93aff1cb8ef712.camel@linaro.org>
+ <b66d7230-a495-40a4-ac75-378d0727afed@kernel.org>
+ <abeff7983dc08c3aeee8b504f34b71b1a2fcdb78.camel@linaro.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <abeff7983dc08c3aeee8b504f34b71b1a2fcdb78.camel@linaro.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Update the node name for the Cortina Gemini power controller from
-power-controller to poweroff since node "power controller" is
-reserved for power domain controller.
+On 30/03/2026 12:59, André Draszik wrote:
+> On Mon, 2026-03-30 at 12:55 +0200, Krzysztof Kozlowski wrote:
+>> On 30/03/2026 12:52, André Draszik wrote:
+>>>> Your patchset is organized in odd way - first patch for me, then not for
+>>>> me, then again two patches for me. Please keep it consistent. Or better,
+>>>> decouple since there are no dependencies according to cover letter.
+>>>
+>>> I'll update the cover letter to describe the dependencies. 4 depends on 2,
+>>
+>>
+>> How 4 (soc) patch depends on 2 (pm domains)? What is exactly the dependency?
+> 
+> 4 updates the soc-level pmu binding of gs101 to have gs101-power-domain
+> child-nodes, which are introduced in 2
+> 
 
-Signed-off-by: Khushal Chitturi <khushalchitturi@gmail.com>
----
-Changelog:
-v2 -> v3:
-- Used generic node name "poweroff" instead of "gemini-poweroff".
+You described what the patch is doing, but that was not my question.
+What is the dependency exactly.
 
- arch/arm/boot/dts/gemini/gemini.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This is ping pong, so I finish discussions here, but to be clear -
+entire patchset cannot be merged.
 
-diff --git a/arch/arm/boot/dts/gemini/gemini.dtsi b/arch/arm/boot/dts/gemini/gemini.dtsi
-index befe322bd7de..910faabf76ef 100644
---- a/arch/arm/boot/dts/gemini/gemini.dtsi
-+++ b/arch/arm/boot/dts/gemini/gemini.dtsi
-@@ -228,7 +228,7 @@ intcon: interrupt-controller@48000000 {
- 			#interrupt-cells = <2>;
- 		};
- 
--		power-controller@4b000000 {
-+		poweroff@4b000000 {
- 			compatible = "cortina,gemini-power-controller";
- 			reg = <0x4b000000 0x100>;
- 			interrupts = <26 IRQ_TYPE_EDGE_RISING>;
--- 
-2.53.0
-
+Best regards,
+Krzysztof
