@@ -1,542 +1,151 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EEC62EACF2;
-	Mon, 30 Mar 2026 14:33:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEDB132A3DE
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 14:55:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774881211; cv=none; b=Y/yTS2PQqTLiPvAeSWW2bUmQ0JILdwPsh9mE/ucrCfo8Dt6NiQj8jtEiPUNb56kS9NcOI1kAG/zbmrT0b+mHx0hZJIc3PuEle0BXr+Uy3fgzcOufOmU0FMJ6XcuqHdcoxWfcmUqhKLoqeeoTolGWMA3ayL7p73GGndSgOQ5onV8=
+	t=1774882544; cv=none; b=Xc3bhEeivneKbi6I8SveHekoIzM0cpp18eM21yPmHNB6zN084N/L0nj7f0PkTLNtk1ivQTpFYxa7NiegfqIM6Bmq8WsldQBow3AinukOERs5qRAFYCgSzebqZRS33QMJXr8yTs6BGYnpwbbgt97jRyojMsbIPaZwGh+a1yH3uog=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774881211; c=relaxed/simple;
-	bh=VNuSexgnG7KPB4i5OsVfyHCENyzgXgGesZiYynDQSRg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Cc+kSeeDDdi2ETLDpn7loOws+KRSbCMi9sxWyslCgkSV8e3djdSe8Dv9kQwV+lurTbD068keVK4r3PsMcbORemZcKMcOCqBOKMWdyWFJNqOd1T3PCEXOrhCuOdRTgiqs63wajTJeeE9SyxZ30yrfXzoDDrSD+AYCjN4VuwUxLrk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mce1AT0Q; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774882544; c=relaxed/simple;
+	bh=ALD3uDNicTlrTjfpZN84frj9IWM1PUG20b/GPPZcjkw=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=E1nefVk3tBNntorAi1P++pokKhBRVAm8J+dUYaaAdKO6iEjJDXV7v5Dnq6YwtUGWzyZ6RdpfGc/s4yPEZoT2PaDy+VlgvbTLbZ5aU5ror/b4SoQ77YZ2eO+31v9v6JfRBUSK9/xCzxmONqBY+6wQVDAAWCRZItl+768aJJVOA5c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=D0xGysUO; arc=none smtp.client-ip=209.85.218.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mce1AT0Q"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 945BAC4CEF7;
-	Mon, 30 Mar 2026 14:33:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774881210;
-	bh=VNuSexgnG7KPB4i5OsVfyHCENyzgXgGesZiYynDQSRg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Mce1AT0QJcoE9xOJNSchvLpMEt5fgK4gGFkQLQ3ZyKV63rq3lcwzi6qsMB3vSfEK6
-	 ZETXSLaGlav3g6CkbeEnkCI/fK/PO30gfnwP4uYqnOoZ27Q6G2S0Nh9ZLxkDnHkNCR
-	 9APODYOU3n6raG11EvFGrhik0Auwtt1sOULQDG9H2gtA1pvu+P+5FZqdpF2ygp9PHv
-	 3OXSkcn/e2eYYF85xhXUmtHpMjEsEOwXyKrKLPeWD+UK35gesFQ77YJTlGndAHoPvZ
-	 VnSKSrk3zdVahSc9xtFBD9mSQqZ3/RjQcN9QkPK0bInbHKIaWIIJ5VUXo9Ja/vUGbU
-	 jgbSuZkFtpUGw==
-Date: Mon, 30 Mar 2026 09:33:26 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: webgeek1234@gmail.com
-Cc: Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Georgi Djakov <djakov@kernel.org>, Sibi Sankar <sibi.sankar@oss.qualcomm.com>, 
-	linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Subject: Re: [PATCH v3 2/2] arm64: dts: qcom: sm8550: add cpu OPP table with
- DDR, LLCC & L3 bandwidths
-Message-ID: <acqJWzQHi7ajuzml@baldur>
-References: <20260219-sm8550-ddr-bw-scaling-v3-0-75c19152e921@gmail.com>
- <20260219-sm8550-ddr-bw-scaling-v3-2-75c19152e921@gmail.com>
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="D0xGysUO"
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-b97c44417ffso482518266b.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 07:55:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fairphone.com; s=fair; t=1774882541; x=1775487341; darn=vger.kernel.org;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=469O081Aaa7aoFYWvcsfiJCJp8arQcJSe+eDYXLPnyA=;
+        b=D0xGysUO4tD9ilbCGSWDFxnbQ1YttanWFBZtidn+/fV6kkOfmpuTCaqgcStYnN/A2f
+         1rV0HvtQDwqgger5BwCPl1z0/A5QiF8mpqOwHvVM26IKlxdEWlHrq2QsyUjSm3XreuWJ
+         7m0vMn+w8eBNjZJv78Tvn1CWzBi9yrdl1xaI7McMKv1iivjDm98W4GZQE4sSLNoQd2as
+         ddYUeuhvPl/Qn/SsN8lKz6FqtyQ5j9YzybZeMG8R6MAv3AVgxAu7gONb+I5chp7MjUqy
+         wKaNgfYHJP2dE8xptw+CggpzCmROvoQgM/VbSsYCIo/D2/bknx4Tp30Br4NK0qz4vE1B
+         FeLQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774882541; x=1775487341;
+        h=in-reply-to:references:cc:to:from:subject:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=469O081Aaa7aoFYWvcsfiJCJp8arQcJSe+eDYXLPnyA=;
+        b=LGPWT3i0GKhWTZzXisj4LHxaT06/uYjCfysqsBx+CsI7320W5o54i2oHwJhayUrsYM
+         sudb+akBheRN+g4SSljffaHWDDFb1E4Im0gqYTS0XL0bN3qGJvbKg8H1iVWG4mj9Jcoi
+         IccnyqTRSX554aZrEs2UCL8TWt6XQ8EvImYObmkBHHHoFWgImabkumRQCYj0+ZdeyV6j
+         iC+6/SJxfrM98tuW7ICDqDlux52rciwLliNIuxcfs8VRPTIucG9Dj/IP5bdo8zrUXr8z
+         dLDiBc7cRBPDnHTgo4BiabVzQ6vQepxNUpR+OxZigryEsrdMXcEl5xmuaijx7Alugg/1
+         wWHw==
+X-Forwarded-Encrypted: i=1; AJvYcCXXt4KVnBSNjVCX/TUXo6HTCsO6lSnKHmRYd9eIX4lgL4W0oSBtHgRk4yfcV6wa/tTEdHCa+qCQsQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyj+E6W10iL03LUJjH+fHwucrgF/UNoCb1kToGZ8FW9UPmZ63rf
+	NuDDy6HYs7zmxZ1Hm8aS9ZD3HVLZQzndDf1dqU2c9CokTCWbbDGGxI4GhFXBJ3M72mw=
+X-Gm-Gg: ATEYQzxFjXY4BSY2f26vYfOSzlpcgy6S0GfjZfHxQb8zI2wmJ8wdAooowW0zR3yD935
+	3CjNP0XPmf0tKJWbvG/450qGxoBjfdtBrn0b2Vz/CCrNi8yzx+vvqdh3plrnh8d7Ra4Gay9makM
+	XMpTXsFLKy7+pxIjWHzgSHP9nioPlvGZSQNRlC7qTds+NRA+ryjyJYEAb9Nob/56XLlfJhM7zwC
+	WzNjcyyf1EZbXzphaE7E5ZC32WaE04mEKePx/alJb6Wdi86zjeQaVkl3JK83e4RWR7xGA8s3tZ8
+	Krbt9MQt7vV9mD3YvtadU3QP6REX3m7m31ZPYvjR0EL/ujqibrrFM25P7S210kURSWubWUg9x0z
+	aH7mjtCQ8Z/A8n7m1zGxlR0eRaBGpG1+OIyRZti6v7Gb2XFtxpYbVueEGU3afVxg+tgfQ1w7VWG
+	SsRcV6z7LOuqzmn5/GzqXgOHBjk00VfS+GPNn6exPpK9NGDaVdcKHWWePJ2ocpGRl+JzMg
+X-Received: by 2002:a17:907:7a89:b0:b98:9da:4d94 with SMTP id a640c23a62f3a-b9b5095e40amr877735966b.48.1774882541028;
+        Mon, 30 Mar 2026 07:55:41 -0700 (PDT)
+Received: from localhost (144-178-202-139.static.ef-service.nl. [144.178.202.139])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b9b7b1a5fbesm301940766b.37.2026.03.30.07.55.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 30 Mar 2026 07:55:40 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260219-sm8550-ddr-bw-scaling-v3-2-75c19152e921@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 30 Mar 2026 16:55:40 +0200
+Message-Id: <DHG7CMLREKDF.2L5V5VQCEYDKH@fairphone.com>
+Subject: Re: [PATCH 2/5] dt-bindings: clock: qcom,milos-camcc: Document
+ interconnect path
+From: "Luca Weiss" <luca.weiss@fairphone.com>
+To: "Mike Tipton" <mike.tipton@oss.qualcomm.com>, "Konrad Dybcio"
+ <konrad.dybcio@oss.qualcomm.com>
+Cc: "Krzysztof Kozlowski" <krzk@kernel.org>, "Luca Weiss"
+ <luca.weiss@fairphone.com>, "Taniya Das" <taniya.das@oss.qualcomm.com>,
+ "Georgi Djakov" <djakov@kernel.org>, "Bjorn Andersson"
+ <andersson@kernel.org>, "Michael Turquette" <mturquette@baylibre.com>,
+ "Stephen Boyd" <sboyd@kernel.org>, "Rob Herring" <robh@kernel.org>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor Dooley"
+ <conor+dt@kernel.org>, <~postmarketos/upstreaming@lists.sr.ht>,
+ <phone-devel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+ <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20260116-milos-camcc-icc-v1-0-400b7fcd156a@fairphone.com>
+ <20260116-milos-camcc-icc-v1-2-400b7fcd156a@fairphone.com>
+ <20260117-efficient-fractal-sloth-aaf7c2@quoll>
+ <59d9f7ff-4111-4304-a76c-40f4000545f5@oss.qualcomm.com>
+ <9f8619d4-43ac-4bc0-9598-c498d59a27b8@oss.qualcomm.com>
+ <acH7aEBvSbiNwhBz@hu-mdtipton-lv.qualcomm.com>
+In-Reply-To: <acH7aEBvSbiNwhBz@hu-mdtipton-lv.qualcomm.com>
 
-On Thu, Feb 19, 2026 at 10:07:40PM -0600, Aaron Kling via B4 Relay wrote:
-> From: Aaron Kling <webgeek1234@gmail.com>
-> 
-> Add the OPP tables for each CPU clusters (cpu0-1-2, cpu3-4-5-6 & cpu7)
-> to permit scaling the Last Level Cache Controller (LLCC), DDR and L3 cache
-> frequency by aggregating bandwidth requests of all CPU core with referenc
-> to the current OPP they are configured in by the LMH/EPSS hardware.
-> 
-> The effect is a proper caches & DDR frequency scaling when CPU cores
-> changes frequency.
-> 
-> The OPP tables were built using the downstream memlat ddr, llcc & l3
-> tables for each cluster types with the actual EPSS cpufreq LUT tables
-> from running a QCS8550 device.
-> 
-> Also add the OSC L3 Cache controller node.
-> 
-> Also add the interconnect entry for each cpu, with 3 different paths:
-> - CPU to Last Level Cache Controller (LLCC)
-> - Last Level Cache Controller (LLCC) to DDR
-> - L3 Cache from CPU to DDR interface
-> 
+Hi Mike,
 
-"8 out of 11 hunks FAILED", it seems things moved since you wrote this.
-Can you please help me by rebasing this onto linux-next and resubmitting
-it?
+On Tue Mar 24, 2026 at 3:48 AM CET, Mike Tipton wrote:
+> On Mon, Jan 19, 2026 at 11:28:07AM +0100, Konrad Dybcio wrote:
+>>=20
+>>=20
+>> On 1/19/26 11:20 AM, Konrad Dybcio wrote:
+>> > On 1/17/26 12:46 PM, Krzysztof Kozlowski wrote:
+>> >> On Fri, Jan 16, 2026 at 02:17:21PM +0100, Luca Weiss wrote:
+>> >>> Document an interconnect path for camcc that's required to enable
+>> >>> the CAMSS_TOP_GDSC power domain.
+>> >>
+>> >> I find it confusing. Enabling GDSC power domains is done via power
+>> >> domains, not via interconnects. Do not represent power domains as
+>> >> interconnects, it's something completely different.
+>> >=20
+>> > The name of the power domains is CAMSS_TOP_GDSC (seems you misread)
+>> >=20
+>> > For the power domain to successfully turn on, the MNoC needs to be
+>> > turned on (empirical evidence). The way to do it is to request a
+>> > nonzero vote on this interconnect path
+>> >=20
+>> > (presumably because the GDSC or its invisible providers require
+>> > something connected over that bus to carry out their enable sequences)=
+.
+>
+> The GDSC itself shouldn't depend on MMNOC in order to turn on properly.
+> It should turn on just fine without it. There *is* a dependency between
+> CAM_TOP_GDSC and MMNOC, but it's in the opposite direction.
 
-Regards,
-Bjorn
+I can personally just write from practical experience, as Qualcomm
+doesn't share any relevant documentation with OEMs.
 
-> Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8550-HDK
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Signed-off-by: Aaron Kling <webgeek1234@gmail.com>
-> ---
->  arch/arm64/boot/dts/qcom/sm8550.dtsi | 367 +++++++++++++++++++++++++++++++++++
->  1 file changed, 367 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/sm8550.dtsi b/arch/arm64/boot/dts/qcom/sm8550.dtsi
-> index e3f93f4f412ded9583a6bc9215185a0daf5f1b57..de4d43f7b8d2416997db70c98b0fc36d25f3c2a6 100644
-> --- a/arch/arm64/boot/dts/qcom/sm8550.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/sm8550.dtsi
-> @@ -17,6 +17,7 @@
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
->  #include <dt-bindings/interconnect/qcom,icc.h>
->  #include <dt-bindings/interconnect/qcom,sm8550-rpmh.h>
-> +#include <dt-bindings/interconnect/qcom,osm-l3.h>
->  #include <dt-bindings/mailbox/qcom-ipcc.h>
->  #include <dt-bindings/power/qcom-rpmpd.h>
->  #include <dt-bindings/power/qcom,rpmhpd.h>
-> @@ -78,6 +79,13 @@ cpu0: cpu@0 {
->  			qcom,freq-domain = <&cpufreq_hw 0>;
->  			capacity-dmips-mhz = <1024>;
->  			dynamic-power-coefficient = <100>;
-> +			operating-points-v2 = <&cpu0_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_0: l2-cache {
->  				compatible = "cache";
-> @@ -104,6 +112,13 @@ cpu1: cpu@100 {
->  			qcom,freq-domain = <&cpufreq_hw 0>;
->  			capacity-dmips-mhz = <1024>;
->  			dynamic-power-coefficient = <100>;
-> +			operating-points-v2 = <&cpu0_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_100: l2-cache {
->  				compatible = "cache";
-> @@ -125,6 +140,13 @@ cpu2: cpu@200 {
->  			qcom,freq-domain = <&cpufreq_hw 0>;
->  			capacity-dmips-mhz = <1024>;
->  			dynamic-power-coefficient = <100>;
-> +			operating-points-v2 = <&cpu0_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_200: l2-cache {
->  				compatible = "cache";
-> @@ -146,6 +168,13 @@ cpu3: cpu@300 {
->  			qcom,freq-domain = <&cpufreq_hw 1>;
->  			capacity-dmips-mhz = <1792>;
->  			dynamic-power-coefficient = <270>;
-> +			operating-points-v2 = <&cpu3_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_300: l2-cache {
->  				compatible = "cache";
-> @@ -167,6 +196,13 @@ cpu4: cpu@400 {
->  			qcom,freq-domain = <&cpufreq_hw 1>;
->  			capacity-dmips-mhz = <1792>;
->  			dynamic-power-coefficient = <270>;
-> +			operating-points-v2 = <&cpu3_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_400: l2-cache {
->  				compatible = "cache";
-> @@ -188,6 +224,13 @@ cpu5: cpu@500 {
->  			qcom,freq-domain = <&cpufreq_hw 1>;
->  			capacity-dmips-mhz = <1792>;
->  			dynamic-power-coefficient = <270>;
-> +			operating-points-v2 = <&cpu3_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_500: l2-cache {
->  				compatible = "cache";
-> @@ -209,6 +252,13 @@ cpu6: cpu@600 {
->  			qcom,freq-domain = <&cpufreq_hw 1>;
->  			capacity-dmips-mhz = <1792>;
->  			dynamic-power-coefficient = <270>;
-> +			operating-points-v2 = <&cpu3_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_600: l2-cache {
->  				compatible = "cache";
-> @@ -230,6 +280,13 @@ cpu7: cpu@700 {
->  			qcom,freq-domain = <&cpufreq_hw 2>;
->  			capacity-dmips-mhz = <1894>;
->  			dynamic-power-coefficient = <588>;
-> +			operating-points-v2 = <&cpu7_opp_table>;
-> +			interconnects = <&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &gem_noc SLAVE_LLCC QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&mc_virt MASTER_LLCC QCOM_ICC_TAG_ACTIVE_ONLY
-> +					 &mc_virt SLAVE_EBI1 QCOM_ICC_TAG_ACTIVE_ONLY>,
-> +					<&epss_l3 MASTER_EPSS_L3_APPS
-> +					 &epss_l3 SLAVE_EPSS_L3_SHARED>;
->  			#cooling-cells = <2>;
->  			l2_700: l2-cache {
->  				compatible = "cache";
-> @@ -397,6 +454,306 @@ memory@a0000000 {
->  		reg = <0 0xa0000000 0 0>;
->  	};
->  
-> +	cpu0_opp_table: opp-table-cpu0 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-307200000 {
-> +			opp-hz = /bits/ 64 <307200000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (307200 * 32)>;
-> +		};
-> +
-> +		opp-441600000 {
-> +			opp-hz = /bits/ 64 <441600000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (384000 * 32)>;
-> +		};
-> +
-> +		opp-556800000 {
-> +			opp-hz = /bits/ 64 <556800000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-672000000 {
-> +			opp-hz = /bits/ 64 <672000000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-787200000 {
-> +			opp-hz = /bits/ 64 <787200000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (729600 * 32)>;
-> +		};
-> +
-> +		opp-902400000 {
-> +			opp-hz = /bits/ 64 <902400000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (844800 * 32)>;
-> +		};
-> +
-> +		opp-1017600000 {
-> +			opp-hz = /bits/ 64 <1017600000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (940800 * 32)>;
-> +		};
-> +
-> +		opp-1113600000 {
-> +			opp-hz = /bits/ 64 <1113600000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (1056000 * 32)>;
-> +		};
-> +
-> +		opp-1228800000 {
-> +			opp-hz = /bits/ 64 <1228800000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (1152000 * 32)>;
-> +		};
-> +
-> +		opp-1344000000 {
-> +			opp-hz = /bits/ 64 <1344000000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1459200000 {
-> +			opp-hz = /bits/ 64 <1459200000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1555200000 {
-> +			opp-hz = /bits/ 64 <1555200000>;
-> +			opp-peak-kBps = <(466000 * 16) (768000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-1670400000 {
-> +			opp-hz = /bits/ 64 <1670400000>;
-> +			opp-peak-kBps = <(466000 * 16) (768000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-1785600000 {
-> +			opp-hz = /bits/ 64 <1785600000>;
-> +			opp-peak-kBps = <(466000 * 16) (768000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-1900800000 {
-> +			opp-hz = /bits/ 64 <1900800000>;
-> +			opp-peak-kBps = <(466000 * 16) (768000 * 4) (1689600 * 32)>;
-> +		};
-> +
-> +		opp-2016000000 {
-> +			opp-hz = /bits/ 64 <2016000000>;
-> +			opp-peak-kBps = <(600000 * 16) (1555000 * 4) (1804800 * 32)>;
-> +		};
-> +	};
-> +
-> +	cpu3_opp_table: opp-table-cpu3 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-499200000 {
-> +			opp-hz = /bits/ 64 <499200000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (307200 * 32)>;
-> +		};
-> +
-> +		opp-614400000 {
-> +			opp-hz = /bits/ 64 <614400000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-729600000 {
-> +			opp-hz = /bits/ 64 <729600000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-844800000 {
-> +			opp-hz = /bits/ 64 <844800000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-940800000 {
-> +			opp-hz = /bits/ 64 <940800000>;
-> +			opp-peak-kBps = <(300000 * 16) (768000 * 4) (729600 * 32)>;
-> +		};
-> +
-> +		opp-1056000000 {
-> +			opp-hz = /bits/ 64 <1056000000>;
-> +			opp-peak-kBps = <(300000 * 16) (768000 * 4) (729600 * 32)>;
-> +		};
-> +
-> +		opp-1171200000 {
-> +			opp-hz = /bits/ 64 <1171200000>;
-> +			opp-peak-kBps = <(466000 * 16) (1555000 * 4) (940800 * 32)>;
-> +		};
-> +
-> +		opp-1286400000 {
-> +			opp-hz = /bits/ 64 <1286400000>;
-> +			opp-peak-kBps = <(466000 * 16) (1555000 * 4) (940800 * 32)>;
-> +		};
-> +
-> +		opp-1401600000 {
-> +			opp-hz = /bits/ 64 <1401600000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1056000 * 32)>;
-> +		};
-> +
-> +		opp-1536000000 {
-> +			opp-hz = /bits/ 64 <1536000000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1056000 * 32)>;
-> +		};
-> +
-> +		opp-1651200000 {
-> +			opp-hz = /bits/ 64 <1651200000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1785600000 {
-> +			opp-hz = /bits/ 64 <1785600000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1920000000 {
-> +			opp-hz = /bits/ 64 <1920000000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-2054400000 {
-> +			opp-hz = /bits/ 64 <2054400000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2188800000 {
-> +			opp-hz = /bits/ 64 <2188800000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2323200000 {
-> +			opp-hz = /bits/ 64 <2323200000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2457600000 {
-> +			opp-hz = /bits/ 64 <2457600000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2592000000 {
-> +			opp-hz = /bits/ 64 <2592000000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2707200000 {
-> +			opp-hz = /bits/ 64 <2707200000>;
-> +			opp-peak-kBps = <(933000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2803200000 {
-> +			opp-hz = /bits/ 64 <2803200000>;
-> +			opp-peak-kBps = <(933000 * 16) (3686000 * 4) (1689600 * 32)>;
-> +		};
-> +	};
-> +
-> +	cpu7_opp_table: opp-table-cpu7 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-595200000 {
-> +			opp-hz = /bits/ 64 <595200000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (307200 * 32)>;
-> +		};
-> +
-> +		opp-729600000 {
-> +			opp-hz = /bits/ 64 <729600000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-864000000 {
-> +			opp-hz = /bits/ 64 <864000000>;
-> +			opp-peak-kBps = <(300000 * 16) (547000 * 4) (499200 * 32)>;
-> +		};
-> +
-> +		opp-998400000 {
-> +			opp-hz = /bits/ 64 <998400000>;
-> +			opp-peak-kBps = <(300000 * 16) (768000 * 4) (729600 * 32)>;
-> +		};
-> +
-> +		opp-1132800000 {
-> +			opp-hz = /bits/ 64 <1132800000>;
-> +			opp-peak-kBps = <(300000 * 16) (768000 * 4) (729600 * 32)>;
-> +		};
-> +
-> +		opp-1248000000 {
-> +			opp-hz = /bits/ 64 <1248000000>;
-> +			opp-peak-kBps = <(466000 * 16) (1555000 * 4) (940800 * 32)>;
-> +		};
-> +
-> +		opp-1363200000 {
-> +			opp-hz = /bits/ 64 <1363200000>;
-> +			opp-peak-kBps = <(466000 * 16) (1555000 * 4) (940800 * 32)>;
-> +		};
-> +
-> +		opp-1478400000 {
-> +			opp-hz = /bits/ 64 <1478400000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1056000 * 32)>;
-> +		};
-> +
-> +		opp-1593600000 {
-> +			opp-hz = /bits/ 64 <1593600000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1056000 * 32)>;
-> +		};
-> +
-> +		opp-1708800000 {
-> +			opp-hz = /bits/ 64 <1708800000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1843200000 {
-> +			opp-hz = /bits/ 64 <1843200000>;
-> +			opp-peak-kBps = <(600000 * 16) (1708000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-1977600000 {
-> +			opp-hz = /bits/ 64 <1977600000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1267200 * 32)>;
-> +		};
-> +
-> +		opp-2092800000 {
-> +			opp-hz = /bits/ 64 <2092800000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2227200000 {
-> +			opp-hz = /bits/ 64 <2227200000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2342400000 {
-> +			opp-hz = /bits/ 64 <2342400000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2476800000 {
-> +			opp-hz = /bits/ 64 <2476800000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2592000000 {
-> +			opp-hz = /bits/ 64 <2592000000>;
-> +			opp-peak-kBps = <(806000 * 16) (2736000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2726400000 {
-> +			opp-hz = /bits/ 64 <2726400000>;
-> +			opp-peak-kBps = <(933000 * 16) (3686000 * 4) (1478400 * 32)>;
-> +		};
-> +
-> +		opp-2841600000 {
-> +			opp-hz = /bits/ 64 <2841600000>;
-> +			opp-peak-kBps = <(933000 * 16) (3686000 * 4) (1689600 * 32)>;
-> +		};
-> +
-> +		opp-2956800000 {
-> +			opp-hz = /bits/ 64 <2956800000>;
-> +			opp-peak-kBps = <(933000 * 16) (3686000 * 4) (1689600 * 32)>;
-> +		};
-> +
-> +		opp-3187200000 {
-> +			opp-hz = /bits/ 64 <3187200000>;
-> +			opp-peak-kBps = <(933000 * 16) (3686000 * 4) (1689600 * 32)>;
-> +		};
-> +	};
-> +
->  	pmu-a510 {
->  		compatible = "arm,cortex-a510-pmu";
->  		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW &ppi_cluster0>;
-> @@ -5437,6 +5794,16 @@ rpmhpd_opp_turbo_l1: opp-416 {
->  			};
->  		};
->  
-> +		epss_l3: interconnect@17d90000 {
-> +			compatible = "qcom,sm8550-epss-l3", "qcom,epss-l3";
-> +			reg = <0 0x17d90000 0 0x1000>;
-> +
-> +			clocks = <&bi_tcxo_div2>, <&gcc GCC_GPLL0>;
-> +			clock-names = "xo", "alternate";
-> +
-> +			#interconnect-cells = <1>;
-> +		};
-> +
->  		cpufreq_hw: cpufreq@17d91000 {
->  			compatible = "qcom,sm8550-cpufreq-epss", "qcom,cpufreq-epss";
->  			reg = <0 0x17d91000 0 0x1000>,
-> 
-> -- 
-> 2.52.0
-> 
-> 
+Without this patch the GDSC refuses to turn on.
+
+[  291.055839] ------------[ cut here ]------------
+[  291.055860] cam_cc_camss_top_gdsc status stuck at 'off'
+[  291.055878] WARNING: drivers/clk/qcom/gdsc.c:178 at gdsc_toggle_logic+0x=
+138/0x144, CPU#4: hexdump/1995
+
+With the patch it turns on just fine, no issues seen.
+
+As Konrad has written, originally I didn't see any issue because that
+interconnect was being kept alive by simple-framebuffer where I've added
+'interconnects' to keep the framebuffer alive. However when testing
+without this, the GDSC would refuse to turn on, which led me to this
+patch series.
+
+Additionally you can see in downstream devicetree you can also see an
+interconnect defined for the "cam_cc_camss_top_gdsc" node:
+
+https://gerrit-public.fairphone.software/plugins/gitiles/platform/vendor/qc=
+om/proprietary/devicetree/+/refs/heads/odm/rc/target/15/fp6/fps_overlay/vol=
+cano.dtsi#2943
+
+Regards
+Luca
