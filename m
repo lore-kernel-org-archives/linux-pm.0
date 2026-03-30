@@ -1,97 +1,60 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37C273B2FF8
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 08:36:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0845F3AEF4B;
+	Mon, 30 Mar 2026 08:56:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774859801; cv=none; b=skFW1ZX4g/CCotZ/pT71d2Xba/uFPPAsDjGIefBFkGhSN3HNsIDyIDYLP777yGzYDgZ3sdwIddryqwENyP8a3R21SCxo40toh3rTMQY0NXUyS1fVooGul4fOGtm9k04CNKS+cbmpbTLv6H3Urbwh3wtj/DEBa63hotC8hCs0V68=
+	t=1774860964; cv=none; b=MzC6u7jn2JR3IYbEvazosDAFS7vJVZvtFXQF7Yfqxr7wObvL1lrly7etALrzulcmMV0ErKfC4PNc2qDWTW2+ZpMwBCMMaVabHTyGMs+DzbvemwLbxGiJEGhrdkH6Ck9sjDRPvLnxGahVoHIdGeMrvn1II2w9axL09PfXJBeBn5M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774859801; c=relaxed/simple;
-	bh=ferQ/I0Y9PK2QH16FMGnGF2+/wylIAM94hfiAZxJn5o=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tSoCkTmBO8z48wHuaXzLMpp4tjwweW2lsz6kwPUIF2Yr192cSEqdwb/gcmV+PtRf4UYhiPIjFPMgUbfxHPtq4vvSWvzjg3bvGDM39jxjK95fJMvS2b6AoG61FDGiSO4WuV0o9wT8RZbmtXooxedlLDtKfa1onulreE2qiLeXC+E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sOBYvrff; arc=none smtp.client-ip=209.85.128.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774860964; c=relaxed/simple;
+	bh=XEEybzyu5k8Pmf1bWB1fQ/xJQAPqd7cjCRaxAStvkZ8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FAsZwaavCbt4kY0sIjbRsRiochT4x5JytA/MUUIs1S26YTLBViKHvMR+5Y54S4SD1T3EutQTMCi6GT52iqslAS08tCu9rVxN+Kv2VV8Aq7yAgeFTErOSVvZLdnAlDEcGlheuYlASXTJJTN92T4jdRbQVD1XDuiES7rWCG87/LI8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lFmKcC0R; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sOBYvrff"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4852e9ca034so40001875e9.2
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 01:36:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774859794; x=1775464594; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pXtK/Bb6scSWKAWFi8Dh0zrFz4wUjG5d2vtkn8qVfbU=;
-        b=sOBYvrffy2quhHrgmrX4S3D/PvEsXUo8xNIRXw+Aj86DYHf2h9JTjgOKT5kb0wqiSy
-         eTHeH43yjOuIUqTm6BrDXqf6Ijy7Qtq9CvH6WxvOfoxBc15VA/Qm8r9uCMbPGDmn9RVu
-         g7Jup+tI8g0Kw7mMEJ6tygU9FAwJtOPsF9LwS4e5UL0S6FySGV7lV2wmBHfw7Gzfpqzf
-         M2ubKh84t+++qOAzWWjOUNTqpSwujRko7UN0+6yAPMe4qqEfHG/PW6gUwmGvS1eNrWIr
-         X6wOrX129451gISarVPylOe89PJ01C/hYhV7yHP3LyR0UeWva0splGXJHiTJwjTx2sWb
-         nZcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774859794; x=1775464594;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=pXtK/Bb6scSWKAWFi8Dh0zrFz4wUjG5d2vtkn8qVfbU=;
-        b=sC5UNpNXygFb4zfAccpBbOzhf6l4D9+W5RIEZ8l5X0MWLXvAxXkczwzA3LVm0YlhXP
-         RXFjmL6NZFaL21WE3peM0UADN3Q6fGNZ0yyrvYwgHarGAls9PFzP+3AKHftKfO1pajLX
-         MMry3fLfpKu5RV9B9fA4ZXSMa8kLxXlNldynAWMqVzOXoZljZkYEK0AhNHfi5+ltGEBx
-         awsSqRwAcqpbrYXng0+pAF/h+hD4DzuxNNMR8DUj1IUOL1QX7u3Dd1Y0/VoD0zYx4r0D
-         3jIqfgB/3DcDylbxuiEyz6nYuyU9GD3d1AUjdoxoJgtDjySHSkHDf/u6KBIVdtnww+rp
-         Ifrg==
-X-Forwarded-Encrypted: i=1; AJvYcCVgmsZjyOEcnf1gKmMKmbk+ULb5I+CrcpQrM6iQmmxgxX+7auOU1pInUjGq5ysCkadGAKcc6xf+9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyDdQ6e4i7OCw4WHybP//TgAF63g+BIluhTLck6LilmjK4Ayl2/
-	DxomuxFlLQ2hU7zYL9aCVvErc+mVgTqMt0GR/76RVCb4K5Vzcv1mh/EK
-X-Gm-Gg: ATEYQzw2Hm7PaNGSzS47DcunaMYHnovaKRdyo0DkgZ8uC7bjAd9l5YSJbu1Qnu3DmkQ
-	8q7ZyYM3vBJBy0o/KD0iVnyKhUQJUVF3ZAFQ4/PX0WoRleGwQgp2QTwI8M0QnpoGl8v9Rol38Hu
-	1v+Q8zIOWT77bjX/0hYRufxcD0P2pcp46CWXx/xk7cxGbXwZriSIlXVmM0UXN8URqwiyUKfjm9v
-	4yGhA624YXuxLbhC+xZVdXLLIIlUymhkd6msT3Nd/ALxHd6lC00X+ohKT0jKD8UxKOJo6lW3/zd
-	/V6E4UC8b/SSoZ+VTiQMkDU0+/Z4vA1pSu4eUdYULMGQxtrOOeG9fsFvNQ2gZU+bx0BAM6CpkMA
-	EemzsOfiR9pYV1bBOL1tRDU6MVy68rJO5UW5TBA1E4cO3L19tZ0NevNGVYBw7f8H3uqkTZbkW5P
-	XIlmHsg+7XKi6oeqfx/Q207PY63zsPXA==
-X-Received: by 2002:a05:600c:6386:b0:485:3ff1:d5ed with SMTP id 5b1f17b1804b1-48727ee5720mr183078015e9.1.1774859794164;
-        Mon, 30 Mar 2026 01:36:34 -0700 (PDT)
-Received: from luca-vm.lan ([154.61.61.58])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48722c6b495sm508329995e9.2.2026.03.30.01.36.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 01:36:33 -0700 (PDT)
-From: Luca Leonardo Scorcia <l.scorcia@gmail.com>
-To: linux-mediatek@lists.infradead.org
-Cc: Val Packett <val@packett.cool>,
-	Luca Leonardo Scorcia <l.scorcia@gmail.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sen Chu <sen.chu@mediatek.com>,
-	Sean Wang <sean.wang@mediatek.com>,
-	Macpaul Lin <macpaul.lin@mediatek.com>,
-	Lee Jones <lee@kernel.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Linus Walleij <linusw@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Julien Massot <julien.massot@collabora.com>,
-	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
-	Gary Bisson <bisson.gary@gmail.com>,
-	Fabien Parent <parent.f@gmail.com>,
-	Chen Zhong <chen.zhong@mediatek.com>,
-	linux-input@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lFmKcC0R"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774860963; x=1806396963;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=XEEybzyu5k8Pmf1bWB1fQ/xJQAPqd7cjCRaxAStvkZ8=;
+  b=lFmKcC0RBJJodLMlkep0ldCVDLI1u4LT0DW0zMnm0+MWFs+tD/bIIf/l
+   q7SVrV09IEsOchUbm5EUV9q+cEQg2o94K8+OQTs4eY//YF1Usd14bOvvr
+   kjEd6wGXH3BhK8iHQjgKwHggO8ne9Pfszw85x2zeZrHScyvRMKvg55P0A
+   D/G6objFPUtSpTaljTz3IFWIEfK8Tp1LCCMwuWFsmjapaPAUGyzkwVoQB
+   sqMP7YXooRoUhMOEWiN+6SjIj1cZamfks0ksW8XAxo2qoaMrDr73Tl5tm
+   kOmh3VSpwuS8Z6GJwgyUPpmHg+BpwpKBiGjH0F4mgLSRWYUNstZDTB5dd
+   Q==;
+X-CSE-ConnectionGUID: WwonwTgNSAeMIiTN4z6Vtw==
+X-CSE-MsgGUID: Mix1JiR8T8SFaaqPhyU+ew==
+X-IronPort-AV: E=McAfee;i="6800,10657,11743"; a="63400390"
+X-IronPort-AV: E=Sophos;i="6.23,149,1770624000"; 
+   d="scan'208";a="63400390"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2026 01:56:03 -0700
+X-CSE-ConnectionGUID: ZHdbIs7BSjOafzjbHUNQCg==
+X-CSE-MsgGUID: +jNbuSSlRG6/3dxzcfhA1A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,149,1770624000"; 
+   d="scan'208";a="225010571"
+Received: from sannilnx-dsk.jer.intel.com ([10.12.231.107])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2026 01:56:00 -0700
+From: Alexander Usyskin <alexander.usyskin@intel.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Menachem Adin <menachem.adin@intel.com>,
+	Alexander Usyskin <alexander.usyskin@intel.com>,
+	"Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
 	linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org
-Subject: [PATCH v4 9/9] arm64: dts: mediatek: Add MediaTek MT6392 PMIC dtsi
-Date: Mon, 30 Mar 2026 09:29:43 +0100
-Message-ID: <20260330083429.359819-10-l.scorcia@gmail.com>
+	linux-kernel@vger.kernel.org,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: [char-misc v4] mei: me: reduce the scope on unexpected reset
+Date: Mon, 30 Mar 2026 11:38:30 +0300
+Message-ID: <20260330083830.536056-1-alexander.usyskin@intel.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260330083429.359819-1-l.scorcia@gmail.com>
-References: <20260330083429.359819-1-l.scorcia@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -100,96 +63,63 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Val Packett <val@packett.cool>
+After commit 2cedb296988c ("mei: me: trigger link reset if hw ready is unexpected")
+some devices started to show long resume times (5-7 seconds).
+This happens as mei falsely detects unready hardware,
+starts parallel link reset flow and triggers link reset timeouts
+in the resume callback.
 
-Add the dts to be included by all boards using the MT6392 PMIC.
+Address it by performing detection of unready hardware only
+when driver is in the MEI_DEV_ENABLED state instead of blacklisting
+states as done in the original patch.
+This eliminates active waitqueue check as in MEI_DEV_ENABLED state
+there will be no active waitqueue.
 
-Signed-off-by: Val Packett <val@packett.cool>
-Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+Reported-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+Closes: https://bugzilla.kernel.org/show_bug.cgi?id=221023
+Tested-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+Fixes: 2cedb296988c ("mei: me: trigger link reset if hw ready is unexpected")
+Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 ---
- arch/arm64/boot/dts/mediatek/mt6392.dtsi | 73 ++++++++++++++++++++++++
- 1 file changed, 73 insertions(+)
- create mode 100644 arch/arm64/boot/dts/mediatek/mt6392.dtsi
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt6392.dtsi b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-new file mode 100644
-index 000000000000..750ee9b2856f
---- /dev/null
-+++ b/arch/arm64/boot/dts/mediatek/mt6392.dtsi
-@@ -0,0 +1,73 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2019 MediaTek Inc.
-+ * Copyright (c) 2024 Val Packett <val@packett.cool>
-+ */
-+
-+#include <dt-bindings/input/input.h>
-+
-+&pwrap {
-+	pmic: pmic {
-+		compatible = "mediatek,mt6392", "mediatek,mt6323";
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		keys {
-+			compatible = "mediatek,mt6392-keys";
-+
-+			key-power {
-+				linux,keycodes = <KEY_POWER>;
-+				wakeup-source;
-+			};
-+
-+			key-home {
-+				linux,keycodes = <KEY_HOME>;
-+				wakeup-source;
-+			};
-+		};
-+
-+		pio6392: pinctrl {
-+			compatible = "mediatek,mt6392-pinctrl";
-+
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
-+
-+		rtc {
-+			compatible = "mediatek,mt6392-rtc",
-+				"mediatek,mt6323-rtc";
-+		};
-+
-+		mt6392regulators: regulators {
-+			/* Fixed supply defined in the data sheet */
-+			avddldo-supply = <&mt6392_vsys_reg>;
-+
-+			mt6392_vcore_reg: vcore { };
-+			mt6392_vproc_reg: vproc { };
-+			mt6392_vsys_reg: vsys { };
-+			mt6392_vaud28_reg: vaud28 { };
-+			mt6392_vxo22_reg: vxo22 { };
-+			mt6392_vaud22_reg: vaud22 { };
-+			mt6392_vadc18_reg: vadc18 { };
-+			mt6392_vcama_reg: vcama { };
-+			mt6392_vcn35_reg: vcn35 { };
-+			mt6392_vio28_reg: vio28 { };
-+			mt6392_vusb_reg: vusb { };
-+			mt6392_vmc_reg: vmc { };
-+			mt6392_vmch_reg: vmch { };
-+			mt6392_vemc3v3_reg: vemc3v3 { };
-+			mt6392_vcamaf_reg: vcamaf { };
-+			mt6392_vgp1_reg: vgp1 { };
-+			mt6392_vgp2_reg: vgp2 { };
-+			mt6392_vefuse_reg: vefuse { };
-+			mt6392_vm25_reg: vm25 { };
-+			mt6392_vdig18_reg: vdig18 { };
-+			mt6392_vm_reg: vm { };
-+			mt6392_vio18_reg: vio18 { };
-+			mt6392_vcn18_reg: vcn18 { };
-+			mt6392_vcamd_reg: vcamd { };
-+			mt6392_vcamio_reg: vcamio { };
-+			mt6392_vrtc_reg: vrtc {	};
-+		};
-+	};
-+};
+V4: extend commit message, add Rafael's r-b
+
+V3: reword commit message, add Rafael and PM list
+
+V2: rebase over v7.0-rc4
+
+ drivers/misc/mei/hw-me.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
+index d4612c659784..1e4a41ac428f 100644
+--- a/drivers/misc/mei/hw-me.c
++++ b/drivers/misc/mei/hw-me.c
+@@ -1337,19 +1337,13 @@ irqreturn_t mei_me_irq_thread_handler(int irq, void *dev_id)
+ 	/*  check if we need to start the dev */
+ 	if (!mei_host_is_ready(dev)) {
+ 		if (mei_hw_is_ready(dev)) {
+-			/* synchronized by dev mutex */
+-			if (waitqueue_active(&dev->wait_hw_ready)) {
+-				dev_dbg(&dev->dev, "we need to start the dev.\n");
+-				dev->recvd_hw_ready = true;
+-				wake_up(&dev->wait_hw_ready);
+-			} else if (dev->dev_state != MEI_DEV_UNINITIALIZED &&
+-				   dev->dev_state != MEI_DEV_POWERING_DOWN &&
+-				   dev->dev_state != MEI_DEV_POWER_DOWN) {
++			if (dev->dev_state == MEI_DEV_ENABLED) {
+ 				dev_dbg(&dev->dev, "Force link reset.\n");
+ 				schedule_work(&dev->reset_work);
+ 			} else {
+-				dev_dbg(&dev->dev, "Ignore this interrupt in state = %d\n",
+-					dev->dev_state);
++				dev_dbg(&dev->dev, "we need to start the dev.\n");
++				dev->recvd_hw_ready = true;
++				wake_up(&dev->wait_hw_ready);
+ 			}
+ 		} else {
+ 			dev_dbg(&dev->dev, "Spurious Interrupt\n");
 -- 
 2.43.0
 
