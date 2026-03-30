@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC32C3CF675;
-	Mon, 30 Mar 2026 13:21:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7918A3D3491;
+	Mon, 30 Mar 2026 13:22:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774876901; cv=none; b=GMWvlk7Tp7ghn14OF2PzfH+gZk9M9UAP8Itp8zN+UsWlUrd2yFhmS2iKZ7qrNKd4WNQus30Pdn6VPckjFSjm1TTnmSquQjIr4drbva7C3ngQXkYnKrKVBUIZL3oNqZvJW0W0AqQ6d8/LrBmTio6pu59ymcCcXaXyoeQVCrvk0xA=
+	t=1774876953; cv=none; b=fO31aknwBZXmutoaWsrWd+LceDCD1ri6Jk4oO7x7l5OJFtMJMDTyDm4oddGbVtg4ztjFECFfMLMNUk5E19QVL60LWwPolisb4WWXt8ouNcF9apGfbH4/kjWyFi5AUZIXg+iah+RtlDLeDL8gQSUFzDMEMi4kzdPOyi4UuET1lnE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774876901; c=relaxed/simple;
-	bh=xF+UxuXwGgvKdaU0z3Ax0YsRHe04xz94LJZOl/LSU4o=;
+	s=arc-20240116; t=1774876953; c=relaxed/simple;
+	bh=nLOPrs7U75JidMBlqOihmcogpSv3DBnnNFkK3D0ESns=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Khz5qWcS3kr0DWPsUCM7eYvVG7+bUVR4qY0NEBwU7T/Eux7mrB7f/tAk0izcYH3EZT70WCMqysGCL5/zO64dyEAZm7KAH9RgZPJw/PKn8fsYoaVjZZXUKW8V879IQ+3L9VNfPIIqNguqM15BZptSnNOKdxy0tDOtQAQkqosDstE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TMWStYd6; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=o0bAyOjoiq8RVkJgcpeNNChEWV0bg1hT0HSmmZbSLJCrn6eIByo1uZvL74nQIMBUwofaO7G8sQfGTUfPiZyKtau6X5bkTPHHecE+16qkc73rZqXgVzuLWXym/s9K9XFeXr0+leGA6qGVAqltn+9ZBRBU0RUPw6PW5ST5YBA8SvI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=avMIa3I0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TMWStYd6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9747DC4CEF7;
-	Mon, 30 Mar 2026 13:21:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="avMIa3I0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69063C4CEF7;
+	Mon, 30 Mar 2026 13:22:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774876901;
-	bh=xF+UxuXwGgvKdaU0z3Ax0YsRHe04xz94LJZOl/LSU4o=;
+	s=k20201202; t=1774876953;
+	bh=nLOPrs7U75JidMBlqOihmcogpSv3DBnnNFkK3D0ESns=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=TMWStYd6i8vGeqkHDj6L+dz/9FhEqqtlJk9R2YDe9ZoWRTTUI+WnZNEbcja/w/1Pb
-	 7x8s523X5Y7H+dc1Lbh3GpucpQqTg1DkM9I0ydCoNt59kaH9o3oTrQHd9uwCCHnE2g
-	 29my9pYbvXXJOkEku/Svvd6vJ80HStQAtggEs4kIrTjiv/vRQqyMQn0W8OI8dDNFdM
-	 DEgJ1s++n/bDQOcPuQQ7RMNR+4ojs87gIC5AJT2OJlpzAfTgpd/X3NUkJYoB/pXSqY
-	 Pfl9s7PMCo/8KeYCpDnxphAQIrQkoR8PE3nCzfwc8ESs2rFVWu/QOMlHFOEFsrQif+
-	 OYWeMQ5RCCGMg==
-Message-ID: <706b84b5-1262-4fa8-a37d-6e48bd5c8b06@kernel.org>
-Date: Mon, 30 Mar 2026 15:21:35 +0200
+	b=avMIa3I06doTRPc49LWb5xR5CP5Fk/Z6hmky22y17O1n9l/d7lEGmD+GG2m+ZZ9eA
+	 mgtl5lHpfSMR5y3ncdjODvwTJPY+Rvm0mU+0PrOWWcvq9nJaYnyd3q47bHWQ5ntK55
+	 nYdBXE/oT4q4k+tPiQQRf34ljWW10FxDEVFyj6ou5KTQrjmnShQ17SP/Mrfu5JlbUb
+	 WWrgAFVon+nWBJwuNBps+Usrcpt2zTAJMgmhzw3isFfsLd9Kb/xpG5XW8OS/KcZhDO
+	 rOWbvWGlR+4CHlccHOpuTULY9N+zyNvoOf/rFVhQe23JofAk2vqCP0sI97FvHqWzSa
+	 Sm1+G1F3ut09Q==
+Message-ID: <da225ab1-d659-455d-b3c9-e7ff4864119e@kernel.org>
+Date: Mon, 30 Mar 2026 15:22:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,7 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] arm64: dts: ti: k3-am62a7: Add ti,soc-info to OPP
- table
+Subject: Re: [PATCH 5/5] cpufreq: ti: Add device link to k3-socinfo
 To: Akashdeep Kaur <a-kaur@ti.com>, praneeth@ti.com, nm@ti.com,
  vigneshr@ti.com, kristo@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, rafael@kernel.org, viresh.kumar@linaro.org,
@@ -44,7 +43,7 @@ To: Akashdeep Kaur <a-kaur@ti.com>, praneeth@ti.com, nm@ti.com,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, d-gole@ti.com
 Cc: vishalm@ti.com, sebin.francis@ti.com, k-willis@ti.com
 References: <20260330120105.2985200-1-a-kaur@ti.com>
- <20260330120105.2985200-4-a-kaur@ti.com>
+ <20260330120105.2985200-6-a-kaur@ti.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -90,29 +89,27 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260330120105.2985200-4-a-kaur@ti.com>
+In-Reply-To: <20260330120105.2985200-6-a-kaur@ti.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 30/03/2026 14:01, Akashdeep Kaur wrote:
-> Link CPU OPP table to k3-socinfo driver for dependency tracking.
-> 
-> Signed-off-by: Akashdeep Kaur <a-kaur@ti.com>
-> ---
->  arch/arm64/boot/dts/ti/k3-am62a7.dtsi | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/boot/dts/ti/k3-am62a7.dtsi b/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-> index b6e5eee99370..6d1459e9ea71 100644
-> --- a/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-> +++ b/arch/arm64/boot/dts/ti/k3-am62a7.dtsi
-> @@ -109,6 +109,7 @@ a53_opp_table: opp-table {
->  		compatible = "operating-points-v2-ti-cpu";
->  		opp-shared;
->  		syscon = <&opp_efuse_table>;
-> +		ti,soc-info = <&chipid>;
+>  	opp_data->cpu_dev = get_cpu_device(0);
+>  	if (!opp_data->cpu_dev) {
+> @@ -560,6 +563,42 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
+>  	if (ret)
+>  		goto fail_put_node;
+>  
+> +	/* Create device link to k3-socinfo if specified in DT */
+> +	if (opp_data->soc_data == &am625_soc_data ||
+> +	    opp_data->soc_data == &am62a7_soc_data ||
+> +	    opp_data->soc_data == &am62l3_soc_data ||
+> +	    opp_data->soc_data == &am62p5_soc_data) {
+> +		struct device_node *socinfo_np;
+> +
+> +		socinfo_np = of_parse_phandle(opp_data->opp_node, "ti,soc-info", 0);
 
-You should have tested this before sending. It obviously fails checks.
+Undocumented ABI.
 
 Best regards,
 Krzysztof
