@@ -1,86 +1,101 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC087398913;
-	Mon, 30 Mar 2026 19:29:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4399439B976
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 19:46:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774898943; cv=none; b=sFj2UG4GI3C30WIkTmJDYQQI9Sf1DjCWX9t4AlQ6wrWPuRdElhxmV+lQOTbCNjS19zx5CUjuP8A8ddKW3DVy+m0sDW+fW6w+BBISZMQyO2mR8TuYefq0f2G7vSfF7wQww9HxXE0DPPg3C00i+FQ+AHTbYqFw+qENo2s20O4+Ubc=
+	t=1774900011; cv=none; b=u690ZZbaHb5BweOPi2TnbxhXsvFhGBZ9ldLHrrtaG7AjgSZurauFIjcu5HUjSn6S0u0MRvG28WrOch72Tg0isYJJ+7sCwEXws0HiWnR4AokP9rPlXTW1S2ohDjykBCHvUlekqR1uqV8OIVagYlNQpUZ6N/kx4GScBmmw5x8cW84=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774898943; c=relaxed/simple;
-	bh=E0RLxJJrw67wJuY60fVQfxoypYoTIwbFBDWHVW1jYlI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tiVrHQQVVUg2HTNnAcI1neE9UHvLrq6cRdQ0RPleeQJoXSfA1n3X0RiFb2IVg/kdodUeRDq/wws4y+9ECVvvJJ4oFcSFbqk0OMj5sNYIC5SfLerUvfU2ApPJK5ivHJjko7MNUZ3II0wwmSpEGA9sCo5RjxryYp/7DnvtWJUVuX0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pnoPkjrx; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774900011; c=relaxed/simple;
+	bh=gEjmJtrD7vuSYZLRM5tauXihVF7NoHm+GngemMbDLc8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eXI4sS/7us+5TnDFkk1rXQ8C8Dw/6Qqna0EFPh+wWnzHXhxSWDy6c8RGONSzYcgE6Ba9ZkoQlzyy4LXQBvAXVP/FgN0vpOYjfkZTjBC2x7qgA5fCL598VTTcL3omYznjD4UQlVvL9A6Jggmz5prIlEspfq5oCysZh7NpA/yGXg8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eQtXr6EH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pnoPkjrx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AEDEC4CEF7;
-	Mon, 30 Mar 2026 19:29:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eQtXr6EH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEA57C2BCB2
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 19:46:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774898943;
-	bh=E0RLxJJrw67wJuY60fVQfxoypYoTIwbFBDWHVW1jYlI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pnoPkjrxcSLdlWE2zIiYcdi+jasVFGOt6Vag/crGDrN7OyF8c3feo65nUOEvFcA7m
-	 FuFkP6LY2KhEX/NoLLkMVA0h0MgwSIazoDv5CRD75y84GbmhkW9NqfkBmq+dWx/W6D
-	 8UpGEb8q9wuFW1FQ4v9pDkRF4lZ8qTrn89C1gAEKcxql1Erq04T4tMuSON5Sl285Fd
-	 oAev9X+0ZM+0Uuesjt7JTcf0Kkhtljz9Vggtl5fpGX3lLD6bAfOuv2z2h9i5akwK5i
-	 vbwXO3wKE3W0k6zflU7D5KU6aXezZxY2nZmP4BXMImCPz0sdlKywU9lBj8dhu98T1T
-	 nhQlhjFEqLN1A==
-Date: Mon, 30 Mar 2026 14:29:01 -0500
-From: Rob Herring <robh@kernel.org>
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicolas Schier <nicolas.schier@linux.dev>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Mark Pearson <mpearson-lenovo@squebb.ca>,
-	"Derek J. Clark" <derekjohn.clark@gmail.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
-	Stephan Gerhold <stephan.gerhold@linaro.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	linux-acpi@vger.kernel.org,
-	Hans de Goede <johannes.goede@oss.qualcomm.com>
-Subject: Re: [PATCH v7 3/8] serdev: Do not return -ENODEV from
- of_serdev_register_devices() if external connector is used
-Message-ID: <20260330192901.GC3107726-robh@kernel.org>
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
- <20260326-pci-m2-e-v7-3-43324a7866e6@oss.qualcomm.com>
+	s=k20201202; t=1774900011;
+	bh=gEjmJtrD7vuSYZLRM5tauXihVF7NoHm+GngemMbDLc8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=eQtXr6EHun6QSDewcByzjSOFIBOsF1WbVIamDCetZ1pBgQRgGpeyx0cKytqbBd3xg
+	 k15ASlnWVGSswxC4recCO1oAQg7WopoOLo5jgtXFLf22lqDAuP36WXJYRnI/cooW6P
+	 qjOa58MYEXPkO3UIEQeve0SgUfXDGLcwo+4/ibHDzQURijftWcl7lCvnjJrnfRRsRC
+	 vXWJkUGXcim476jNyXJBNmrzrX5pRtG7rMIeqEN2tVqkAH59KvITY93QJqHGuth8ZH
+	 2oep4fNUoUYMj1uxnBacbgZUJAdLGICE4sRNQq6l4+qENu5oAc6TWLBJAnYHzSinbj
+	 ezCArvvFQLwmQ==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-404254ffe8aso2966079fac.0
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 12:46:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW/RRYJ8CFANnddK4BU+txn2WNRc4eI9J680wlBNOHGThlvG79/haVaDPg28+JWSzQyzNjQEOAHzw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/P3MvQ5ccHT17Wfqf9HwhPECG4pge2LW2+kB7pfjjpFv68TON
+	HYXZTvTr+OgQl2CRlD2jRpKhRq1Xu54Aoo4IPIND+vW4jlbho+Bk7lCoTuiZYvV79uFVO2aRdSj
+	+/eQy7o89YD1/W7h/fqz/DP7PRuobDxQ=
+X-Received: by 2002:a05:6870:240e:b0:417:14d3:399f with SMTP id
+ 586e51a60fabf-422a3b60bc6mr512517fac.2.1774900009892; Mon, 30 Mar 2026
+ 12:46:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260326-pci-m2-e-v7-3-43324a7866e6@oss.qualcomm.com>
+References: <20260329073615.649976-1-changwoo@igalia.com>
+In-Reply-To: <20260329073615.649976-1-changwoo@igalia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 30 Mar 2026 21:46:38 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i6kEWjo=EFUOtRxwWWgXXmwq8Zco9FSpf5dVa4wtAm7w@mail.gmail.com>
+X-Gm-Features: AQROBzCeET41haBhyhSnYEFL8W09UTH9KXL6qKsSxLxmMXzP0Y3LgAP4nDW__34
+Message-ID: <CAJZ5v0i6kEWjo=EFUOtRxwWWgXXmwq8Zco9FSpf5dVa4wtAm7w@mail.gmail.com>
+Subject: Re: [PATCH] PM: EM: Fix null-ptr-deref in get-perf-domains when ID is
+ not found
+To: Changwoo Min <changwoo@igalia.com>
+Cc: lukasz.luba@arm.com, rafael@kernel.org, lenb@kernel.org, pavel@kernel.org, 
+	donald.hunter@gmail.com, kernel-dev@igalia.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Yi Lai <yi1.lai@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 26, 2026 at 01:36:31PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> 
-> If an external connector like M.2 is connected to the serdev controller
-> in DT, then the serdev devices may be created dynamically by the connector
-> driver. So do not return -ENODEV from of_serdev_register_devices() if the
-> static nodes are not found and the graph node is used.
-> 
-> Tested-by: Hans de Goede <johannes.goede@oss.qualcomm.com> # ThinkPad T14s gen6 (arm64)
-> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+On Sun, Mar 29, 2026 at 9:36=E2=80=AFAM Changwoo Min <changwoo@igalia.com> =
+wrote:
+>
+> dev_energymodel_nl_get_perf_domains_doit() calls
+> em_perf_domain_get_by_id() but does not check the return value before
+> passing it to __em_nl_get_pd_size(). When a caller supplies a
+> non-existent perf domain ID, em_perf_domain_get_by_id() returns NULL,
+> and __em_nl_get_pd_size() immediately dereferences pd->cpus
+> (struct offset 0x30), causing a null-pointer dereference.
+>
+> The sister handler dev_energymodel_nl_get_perf_table_doit() already
+> handles this correctly via __em_nl_get_pd_table_id(), which returns
+> NULL and causes the caller to return -EINVAL. Add the same NULL check
+> in the get-perf-domains do handler.
+>
+> Fixes: 380ff27af25e ("PM: EM: Add dump to get-perf-domains in the EM YNL =
+spec")
+> Reported-by: Yi Lai <yi1.lai@linux.intel.com>
+> Closes: https://lore.kernel.org/lkml/aXiySM79UYfk+ytd@ly-workstation/
+> Signed-off-by: Changwoo Min <changwoo@igalia.com>
 > ---
->  drivers/tty/serdev/core.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+>  kernel/power/em_netlink.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/kernel/power/em_netlink.c b/kernel/power/em_netlink.c
+> index 5a611d3950fd..4d4fd29bd2be 100644
+> --- a/kernel/power/em_netlink.c
+> +++ b/kernel/power/em_netlink.c
+> @@ -109,6 +109,8 @@ int dev_energymodel_nl_get_perf_domains_doit(struct s=
+k_buff *skb,
+>
+>         id =3D nla_get_u32(info->attrs[DEV_ENERGYMODEL_A_PERF_DOMAIN_PERF=
+_DOMAIN_ID]);
+>         pd =3D em_perf_domain_get_by_id(id);
+> +       if (!pd)
+> +               return -EINVAL;
+>
+>         __em_nl_get_pd_size(pd, &msg_sz);
+>         msg =3D genlmsg_new(msg_sz, GFP_KERNEL);
+> --
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Applied as 7.0-rc material, thanks!
