@@ -1,590 +1,152 @@
-Received: from mail-qk1-f182.google.com (mail-qk1-f182.google.com [209.85.222.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF7CB3914E4
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 16:52:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C81D3DEAD6
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 18:44:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774889527; cv=none; b=d2XljtO1iULMCwtae5FJWAXUEUGsTiHbNVCJexrn5x7OFKleXHA49HVQ7VzJS8mmcAjpO7UGRR/kNsR2DtNxwOiRam6G7gh9oDj72cPoonFLZ0ASpb1IgzTqn1kX71qq2OJpEwSi3/ghZGVA4DMBCRL0/HspnqPPMQ4hVZor5TM=
+	t=1774896242; cv=none; b=rjYrr2V76ZE5GN1k7Su9oVs9w/9EcF9BEuQWf7fRcS0RpOdUStYp8mOn/oTLhin4bHA6jl0enLAIde3Zzu+cMD8qDPjTn9jnt+7xWWSS59d78s3YDIhxRKJo4DXw76jHPekEgpk43D7JaIrTExbAC6BmJ8L1+MUIo4jd0QYpg5g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774889527; c=relaxed/simple;
-	bh=ldfChzN1uSXhCMGPYXDm8BcwE4V0pQzO6G3r6/xavw4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NkRv++G4uIK98Fsg99HM3y1v4XgocWWFG0M+RsSxZqkiSfkkNJa9/P7KCUv9u+zJyflrztaoO6TgFq7iCeIdp6UMD1FbdLRqxjugGGCxQqrpNusley4IuzV0be5yjP2Txc+vgNPiY/kxYd0xDM3wLK5iqjyC7CSC9BcpX2i7i28=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MFBnh2mN; arc=none smtp.client-ip=209.85.222.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1774896242; c=relaxed/simple;
+	bh=7S74te/iaHvs9X36jFLbxBSxTSMIKGssJ56y7866vC0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YKIREAcMDRDKVec2e5ve4A0XE4jqtTR002YuZVSZPmDRYJCegholtAQq+feF18sXpskOSzRo2kitwehc9qS4fNPIRioA5GJFNTwoM/qeEjOB6gWYHOZAi1bJcEEOA+o4RTb/qomAlLQskXtHchJSD+M4tsq+g7uj0HtngGTMuw8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pBU/Enpx; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Z4pm9gfG; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MFBnh2mN"
-Received: by mail-qk1-f182.google.com with SMTP id af79cd13be357-8cfc137464dso631131985a.2
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:52:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pBU/Enpx";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Z4pm9gfG"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62UH17E34014022
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 18:44:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=0/gLIt6Ee4AwsPWRgQM3o8gl
+	QvL8D3oR5sRGXMhyo3U=; b=pBU/EnpxrbO1qAYrTV6alchWS6IZvUXDAdTWhucT
+	EOgq3gPtzBW6x3pG6Yi6qlO0nXkcnNwo0yOT5uaYUOYuPSfxHVrlt4Wa9lG6Fbn3
+	hmUpVdGXwitG0s4gOPr4hDEDzTmQXwVveuWqO/zrd+oE+4YBtuuGywLh/Ma2WfQw
+	+qanVdZoa+5ImKEt3trvLXJ3sGpWdZwGEvcw4RmVN2U8HRkW29T25gJI0vNks/US
+	W3iScwxsfQagjtuwhltkhEuQ1V35pkE4VObKuX0kPacVIJl+7b+/GCwy1a+A6w4a
+	71HhP3JaYyTbHMu+k/Hf1bmIE/lNk0VSqm5vNR3zoi4Xhg==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d7regsr6b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 18:44:00 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-5093787e2fdso239918961cf.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:44:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774889524; x=1775494324; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HC6qv58XpG4CW/zjPsDlD07R3yCVlsOVxBcMpliJEEE=;
-        b=MFBnh2mNS09vCaZMC0N/A1YnuUsX7cVw2fvGUJuOK8Z+UTFw6Qhm3VS9JBrdM0LA4i
-         Kx3DhoVxx8E9rFDA3ZXu9aR6wiOkNZbn/jW48Mssg/bvG/CdJ4PX4RuXqzTJjWycaMcJ
-         grOpv1/8+kc9ggp2omuaNkGfRWtm12mlPpOQWkd1cRbW30WxiDtY5Eg8S/JB7VifjzU9
-         EACDWhN/ZX8PwXUNsxltBQRwTUSf2BP0HvIZYubQ23l5BKHsPf3zz87jm/8cgILfXb0s
-         MkgRH1u0MA4V77LJJF1ROWjNwBIwyHM4opkq/xrKRAZSx1aku4xPJmeNzWAGJ5Lx0+Js
-         X0qg==
+        d=oss.qualcomm.com; s=google; t=1774896239; x=1775501039; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=0/gLIt6Ee4AwsPWRgQM3o8glQvL8D3oR5sRGXMhyo3U=;
+        b=Z4pm9gfGFCCrqC8GnA/PVtd64Emw63wLvOS/+O6MVY3HN2luD088QjrWV66IxpL9r2
+         iUakiRhf6QFSQt4AhMI0YJZyLti6OMnjcHKuSNcDcgpfkLPEeHS0NXrz3eaopTWJEiVF
+         9/hSz6bmOxMgoC2vZQBipm5DuvtXnFlyaaf+rgH6SQ7BQq0aoBvq50ZgCyBKuIS+F9+E
+         XY8MIugg6/ZaY1Ujwh04w35PXlsh8tBOmr3BwIZsF43Zor176/CejUoYO8UF1jV8g70g
+         nqYCThjliqjj4ScSsVd4t4XqBjBJgu5Nj7IMPKNqUze8e7S2rn/EBR4RuaEa7YUyVqZ4
+         53sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774889524; x=1775494324;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HC6qv58XpG4CW/zjPsDlD07R3yCVlsOVxBcMpliJEEE=;
-        b=lH3ydfviRWza4CkFjFM+94Ugo8Axms8C/6Y+rSOizmTE24wuHMDGM7NBCmHOCcztpO
-         uopnUiG29y+KmmNr4e/tJ9MBmpbso1skI/A7Seb0Y7Fwi4BMis1ADfEXzWsRZB90UXEe
-         BPaA+1vDJOZg/Kj5WKIFnTbbzkjsWJwEeull/i28ffGrupbItSLP4SIIKy3T+gEV0/JJ
-         SpL73w4Tho7AuoPdoMRzvUql3Z98idJVGQueTVlLdh0NjKzfei5pyo2GqUR5MjfxW1X0
-         ntT09/0ctBGurwKO5asH/1HdSBKmM69tieBuPJWFYicNAM3g+4Sb1y0CMeSt0SEu+Pt4
-         4dlQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWpW5icqOGEbIae1ifVpWG0BLXb1d54Es0xMLc1eRU9309vqHlqwnX7bS7LAnHrO2j3ilKItDpMIA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzH3EGY26cuAfhmy7izPIxiIa/oG0EKxwiR0nHcWrJocJ+MdbuT
-	1+JNTZA0ur8oroJhrlcAPLHvNCmBux42Jd1+99X+r9oCRIxp6pNh5qor
-X-Gm-Gg: ATEYQzw9++lXweKcRmHaXJkbTvm0+Al++Kmv4p8H7FgRa9CAYvp7wOd1OW9zgXavyW0
-	FkgIladRUVnOYk07ZlSYvkuHgWtnPuOi8QHnY/lhXFX4w0C7JRwz/fJMRO/glMRGbHcpC+3m4Ml
-	Im8bPu8SfSYtIXE0fhgEcNy95Lw+h5tiTAGjEmZnKGhlZR+xFhWcJYpa9E2TOK3SQ7Al2bkf0hI
-	2zaSXwKOoz3YMurEqOY1EZXsqWMQ+dHreLKDrz9NA57/rg1BW8lBe6djGaJnliU4eUIjEWzoVjx
-	sQnTiO/qh2B0ys1m3SHfXKWQjkcti88d07vTOrfYr2gwseceXGtOnQ0PMYiWJeZKsimFn7iGFYz
-	V5evPz7twInEXJipQ4gLl/saJBpskubD128bUIbBPNvQ88Yg01rxbvSkJPGiccCsqX2nkvxKtDs
-	lM83ZpFn4UMvFj60JHHz9rlroDQuQwzjh5Zw==
-X-Received: by 2002:a05:620a:4092:b0:8ca:41af:32d6 with SMTP id af79cd13be357-8d01c84a6fbmr1675670985a.70.1774889523692;
-        Mon, 30 Mar 2026 09:52:03 -0700 (PDT)
-Received: from localhost ([199.7.157.54])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8d02e697689sm548961885a.16.2026.03.30.09.52.02
+        d=1e100.net; s=20251104; t=1774896239; x=1775501039;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0/gLIt6Ee4AwsPWRgQM3o8glQvL8D3oR5sRGXMhyo3U=;
+        b=Ek4wbSyzSQ0jsPO8qhGHEVkxqbDuUJc9M1HrfDKkMsptWB43V7aNN3oZwdX56Sz949
+         6PHLDiWAETauiF+QwyaqxXHPnFd+aNVzTRyHwXflfbRBTnvQ3Rx88qsheeoSbEf2ZE7u
+         e20ONPX1K+JtEYEulUfQ4JUypqrSm1RZIntxeks9ZjDHYTD/bFE8qi508ft2ez7DlrGG
+         jMUtphfTQFmIalJjbOFK4BWEoh+k4C/nIAiJxU5U4G+nDE4iZkxy2FfKpy9avqvZaAgF
+         h5+s8AjI3Bv6H89lCjyNihQOhT9L1HMif8f76qA3WS6f+1XzX138kzHJX8FN0zm5kYIj
+         XfsA==
+X-Forwarded-Encrypted: i=1; AJvYcCVXT+zj+f0eCNxZ3GGIIOli3OVJI61S/hudClTA2VxDnb0qxAUqpKsRHBeDUy/YXOXv7BwOn+RbBA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwhWIZfJF+8GMuxNM0OvpHzgSKhH74xVJtDPjQgEX1etkZheTl9
+	V1qzTzffWU8+mPBzreutGrmDAMpnfdxBKv2bBuIoWjv+MZdmlGx4kueV+EFLZdXnDoGyxyJM9Jm
+	rcMQ9WhenlmUhr2uDC9qDPuUgZI/FZQ1l/TvL2LOl4nstBBbNiQwKtmfA6NvcXw==
+X-Gm-Gg: ATEYQzwMowHh0gJGeW9v02uZvFNymDZ5HruiVoOGADcG0NiS4uMJ4JhfdmlfQmBIODh
+	X3kjXwGDlQwudMA/wda1A9NmF3habfHwXNdyakuHHOJEiU8skv1idrXIn6eTiOfdQA9vy8c3nGu
+	tcMtUqtm4WSxlhbWJBXLsk7p34ywG2iGhNlYsR1NpoT6dOn0nPfH874D10C4R7HGi+peXCRLdg3
+	U3BHj9rgYDm/f37XToFqLmoaNJgXTu2J+qMU6slVPjMAZp+Ps7cncSn/rZie7LJoq+pz1VlDbPY
+	kL1Nqof4cpTLxSpicW2B3+HmlfxmMKGT8vj1KxrOUeb0qvYgDlfSurTyKOIHkwTLszcAlqJZ+j4
+	lodFNseZ1vdQozGgOeVY61if0jx+Ljs+WpqaJik695AyPvx9I/e6S2f7L8WY2Mlo/gpwSNtTc40
+	o5YDWiMi7vC5ZpwzH2tCZos0AGADWcSyeRySk=
+X-Received: by 2002:a05:622a:4cb:b0:509:456e:a179 with SMTP id d75a77b69052e-50ba39524f7mr170166111cf.64.1774896239428;
+        Mon, 30 Mar 2026 11:43:59 -0700 (PDT)
+X-Received: by 2002:a05:622a:4cb:b0:509:456e:a179 with SMTP id d75a77b69052e-50ba39524f7mr170165781cf.64.1774896238931;
+        Mon, 30 Mar 2026 11:43:58 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2b13f4312sm1808455e87.16.2026.03.30.11.43.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 09:52:03 -0700 (PDT)
-From: Richard Acayan <mailingradian@gmail.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v5 2/2] arm64: dts: qcom: sdm670: add thermal zones and thermal devices
-Date: Mon, 30 Mar 2026 12:52:37 -0400
-Message-ID: <20260330165237.101045-3-mailingradian@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260330165237.101045-1-mailingradian@gmail.com>
+        Mon, 30 Mar 2026 11:43:57 -0700 (PDT)
+Date: Mon, 30 Mar 2026 21:43:56 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Richard Acayan <mailingradian@gmail.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 1/2] thermal/qcom/lmh: support SDM670 and its CPU
+ clusters
+Message-ID: <gelqawu7bhlhx5n6bc4oy4b3xxaqjehmove77dah5rnwrnfdlh@vz3e2vgvj4c6>
 References: <20260330165237.101045-1-mailingradian@gmail.com>
+ <20260330165237.101045-2-mailingradian@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260330165237.101045-2-mailingradian@gmail.com>
+X-Authority-Analysis: v=2.4 cv=G6wR0tk5 c=1 sm=1 tr=0 ts=69cac470 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=pGLkceISAAAA:8
+ a=EUspDBNiAAAA:8 a=P_9oW8mKO7fl2W-26g4A:9 a=CjuIK1q_8ugA:10
+ a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMwMDE1NCBTYWx0ZWRfX+js7lrScGa9b
+ hfPMy6K3iLP/4SiGoojtOjAh2CEMwurZJ+xGfLOp33AeLLGpVIkk7DtCkQ1r+jt5YzEUrRCo1Hr
+ 9Ry0S6eg8CmS1NnAXH/oKGaWCYHO4cnS3zHCCGwY3MYCLWxYknJGHoaeikpt06v6Gf5f7pEm2pW
+ 4YlM4R1cHCA2mQERca358FM8A1Nyf9UbLYscgGtAtzXQxXUKKKWIvwxDe+oAt2RQ+/zzsegVhzQ
+ mYjJ7431wODnWAZAN3KB8ZB3VPYSo2TjT9arN9xUcd2OqV3/tYAXKJ16VoWqgI1n5rDB9SHFqow
+ DZABgnVU6iYSgXHOmXF/RP4KZiqFUOZLxwSeay8G+tbihj96nHLO483qIQRuUW9FuEenwMjOkY8
+ 6AY5R6yQ39aURKo3hyCWHv5EvfULcONQTpk/OC+0JuP72MkWx6yQQDozBT+4uKByTK1YNHSLLpm
+ R4mwWVdU7vpsAVjTsdg==
+X-Proofpoint-ORIG-GUID: t_YQ-4CYcIHZfJLDrOED94Qswsq1iGVf
+X-Proofpoint-GUID: t_YQ-4CYcIHZfJLDrOED94Qswsq1iGVf
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-30_01,2026-03-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 clxscore=1015 suspectscore=0 bulkscore=0
+ malwarescore=0 adultscore=0 spamscore=0 priorityscore=1501 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603300154
 
-Add thermal zones to safeguard from overheating to high temperatures,
-along with the thermal sensors (TSENS) and CPU frequency limits (LMh).
-The temperatures are very high, but should still be safeguard for
-devices that do not specify their own thermal zones.
+On Mon, Mar 30, 2026 at 12:52:36PM -0400, Richard Acayan wrote:
+> The LMh driver was made for Qualcomm SoCs with clusters of 4 CPUs, but
+> some SoCs divide the CPUs into different sizes of clusters. In SDM670,
+> the first 6 CPUs are in the little cluster and the next 2 are in the big
+> cluster. Define the clusters in the match data and define the different
+> cluster configuration for SDM670.
+> 
+> Currently, this tolerates linking to any CPU in a given cluster.
+> 
+> Signed-off-by: Richard Acayan <mailingradian@gmail.com>
+> ---
+>  drivers/thermal/qcom/lmh.c | 54 ++++++++++++++++++++++++--------------
+>  1 file changed, 34 insertions(+), 20 deletions(-)
+> 
 
-Signed-off-by: Richard Acayan <mailingradian@gmail.com>
----
- arch/arm64/boot/dts/qcom/sdm670.dtsi | 400 +++++++++++++++++++++++++++
- 1 file changed, 400 insertions(+)
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm670.dtsi b/arch/arm64/boot/dts/qcom/sdm670.dtsi
-index f115bc6e64f3..c5f7655421a3 100644
---- a/arch/arm64/boot/dts/qcom/sdm670.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm670.dtsi
-@@ -20,6 +20,7 @@
- #include <dt-bindings/phy/phy-qcom-qusb2.h>
- #include <dt-bindings/power/qcom-rpmpd.h>
- #include <dt-bindings/soc/qcom,rpmh-rsc.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	interrupt-parent = <&intc>;
-@@ -62,6 +63,7 @@ cpu0: cpu@0 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd0>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_0>;
- 			l2_0: l2-cache {
- 				compatible = "cache";
-@@ -89,6 +91,7 @@ cpu1: cpu@100 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd1>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_100>;
- 			l2_100: l2-cache {
- 				compatible = "cache";
-@@ -111,6 +114,7 @@ cpu2: cpu@200 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd2>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_200>;
- 			l2_200: l2-cache {
- 				compatible = "cache";
-@@ -133,6 +137,7 @@ cpu3: cpu@300 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd3>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_300>;
- 			l2_300: l2-cache {
- 				compatible = "cache";
-@@ -155,6 +160,7 @@ cpu4: cpu@400 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd4>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_400>;
- 			l2_400: l2-cache {
- 				compatible = "cache";
-@@ -177,6 +183,7 @@ cpu5: cpu@500 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd5>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_500>;
- 			l2_500: l2-cache {
- 				compatible = "cache";
-@@ -199,6 +206,7 @@ cpu6: cpu@600 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd6>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_600>;
- 			l2_600: l2-cache {
- 				compatible = "cache";
-@@ -221,6 +229,7 @@ cpu7: cpu@700 {
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			power-domains = <&cpu_pd7>;
- 			power-domain-names = "psci";
-+			#cooling-cells = <2>;
- 			next-level-cache = <&l2_700>;
- 			l2_700: l2-cache {
- 				compatible = "cache";
-@@ -1408,6 +1417,8 @@ gpu: gpu@5000000 {
- 			nvmem-cells = <&gpu_speed_bin>;
- 			nvmem-cell-names = "speed_bin";
- 
-+			#cooling-cells = <2>;
-+
- 			status = "disabled";
- 
- 			gpu_zap_shader: zap-shader {
-@@ -2100,6 +2111,28 @@ dispcc: clock-controller@af00000 {
- 			#power-domain-cells = <1>;
- 		};
- 
-+		tsens0: thermal-sensor@c263000 {
-+			compatible = "qcom,sdm670-tsens", "qcom,tsens-v2";
-+			reg = <0 0x0c263000 0 0x1000>,
-+			      <0 0x0c222000 0 0x1000>;
-+			interrupts-extended = <&pdc 26 IRQ_TYPE_EDGE_RISING>,
-+					      <&pdc 28 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "uplow", "critical";
-+			#thermal-sensor-cells = <1>;
-+			#qcom,sensors = <13>;
-+		};
-+
-+		tsens1: thermal-sensor@c265000 {
-+			compatible = "qcom,sdm670-tsens", "qcom,tsens-v2";
-+			reg = <0 0x0c265000 0 0x1000>,
-+			      <0 0x0c223000 0 0x1000>;
-+			interrupts-extended = <&pdc 27 IRQ_TYPE_EDGE_RISING>,
-+					      <&pdc 29 IRQ_TYPE_EDGE_RISING>;
-+			interrupt-names = "uplow", "critical";
-+			#thermal-sensor-cells = <1>;
-+			#qcom,sensors = <8>;
-+		};
-+
- 		apps_smmu: iommu@15000000 {
- 			compatible = "qcom,sdm670-smmu-500", "qcom,smmu-500", "arm,mmu-500";
- 			reg = <0 0x15000000 0 0x80000>;
-@@ -2289,5 +2322,372 @@ cpufreq_hw: cpufreq@17d43000 {
- 
- 			#freq-domain-cells = <1>;
- 		};
-+
-+		lmh_cluster1: lmh@17d70800 {
-+			compatible = "qcom,sdm670-lmh", "qcom,sdm845-lmh";
-+			reg = <0 0x17d70800 0 0x400>;
-+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&cpu6>;
-+			qcom,lmh-temp-arm-millicelsius = <65000>;
-+			qcom,lmh-temp-low-millicelsius = <94500>;
-+			qcom,lmh-temp-high-millicelsius = <95000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+
-+		lmh_cluster0: lmh@17d78800 {
-+			compatible = "qcom,sdm670-lmh", "qcom,sdm845-lmh";
-+			reg = <0 0x17d78800 0 0x400>;
-+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-+			cpus = <&cpu0>;
-+			qcom,lmh-temp-arm-millicelsius = <65000>;
-+			qcom,lmh-temp-low-millicelsius = <94500>;
-+			qcom,lmh-temp-high-millicelsius = <95000>;
-+			interrupt-controller;
-+			#interrupt-cells = <1>;
-+		};
-+	};
-+
-+	thermal-zones {
-+		aoss0-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 0>;
-+
-+			trips {
-+				aoss0_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu0-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 1>;
-+
-+			trips {
-+				cpu0_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu1-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 2>;
-+
-+			trips {
-+				cpu1_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu2-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 3>;
-+
-+			trips {
-+				cpu2_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu3-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 4>;
-+
-+			trips {
-+				cpu3_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cluster0-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 5>;
-+
-+			trips {
-+				cluster0_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cluster1-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 6>;
-+
-+			trips {
-+				cluster1_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu4-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 7>;
-+
-+			trips {
-+				cpu4_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu5-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 8>;
-+
-+			trips {
-+				cpu5_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu6-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 9>;
-+
-+			trips {
-+				cpu6_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu7-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 10>;
-+
-+			trips {
-+				cpu7_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu0-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 11>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&gpu0_alert0>;
-+					cooling-device = <&gpu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				gpu0_alert0: trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+
-+				gpu0_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		gpu1-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens0 12>;
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&gpu1_alert0>;
-+					cooling-device = <&gpu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+
-+			trips {
-+				gpu1_alert0: trip-point0 {
-+					temperature = <95000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+
-+				gpu1_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		aoss1-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 0>;
-+
-+			trips {
-+				aoss1_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		q6-modem-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 1>;
-+
-+			trips {
-+				q6_modem_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		mem-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 2>;
-+
-+			trips {
-+				mem_crit: trip-point1 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		wlan-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 3>;
-+
-+			trips {
-+				wlan_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		q6-hvx-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 4>;
-+
-+			trips {
-+				q6_hvx_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		camera-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 5>;
-+
-+			trips {
-+				camera_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		video-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 6>;
-+
-+			trips {
-+				video_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		modem-thermal {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens1 7>;
-+
-+			trips {
-+				modem_crit: trip-point0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
-+		};
- 	};
- };
+
 -- 
-2.53.0
-
+With best wishes
+Dmitry
