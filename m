@@ -1,33 +1,87 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 98E3E84039;
-	Mon, 30 Mar 2026 09:14:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A3603AEF2E
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:24:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774862087; cv=none; b=VcZLOl2RqTpwaxc3LQyb6DO4JWCP1DWQ8QgrKh3w7DAXHIjdPx9coh//uPY2zbP3JbK8YOyIoDaKI7tdOvCFJGli+t+1luQpOYVWRYDcntBjTE3E8kf7PZJZ2ox6q6O/Q70dY1GpYwc0Ubq4VoXDoN1Xanw8Ks9/Fjd5cZh+xRU=
+	t=1774862673; cv=none; b=dw93n+Oks13M7J14cw7E3O1tP2gaF4cUBAgJpkh5I8t3p4rrXP42GcqjLsHcDUcIY94cjiad7nlPIMyK4XUrhVSZPFRuKGznJgh7Hr/jgXD4gNq+2pMXbvz1HMJWDc/b5iy8mZzww5f2FcLy51BrkpSYt/KFbMznAXlHtnDcVBI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774862087; c=relaxed/simple;
-	bh=f8/BwshsYMnwx+EW19kSiHhopy5IVdDUPJgs11/Wxpw=;
+	s=arc-20240116; t=1774862673; c=relaxed/simple;
+	bh=8FQXuUJcpQtjfEVJtChfXvc2WhQ4oxNz4YnKC3fcVzA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nQwbrmAoz6MvlvvGX5oM5kyiMWgtrG2V4rzVjb/kXxmbA48oagSevhc4f1xFYBE+9aA+5qmLg3K6pVNJGW3tsKtpfyq8wxLOoxdiMaInxBvvQUexnmBQbEotSEMqvMKac29fCLKiUueL/sskisHmEP5e4X3XLijGLZmPNrCQ+6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=LIzdztfk; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=pJUU74YJPyfGTYd7oZyF7xVmsXFP6J5TomCyIX1RSZQVx/oHKg78IKqdQhWGBgZukEU7+VeDO1DTLXqjMznU+WpZQlPb7IvlvDfptzVz0rZCoFPwFlr4tXi2nLcQvZW4X7MpBZLiFkSjC43W8BaL0wiV+Ds8uKFpC/RnL6vX2To=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=W0A7UMcQ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=fLFhXUWt; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="LIzdztfk"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 37D8C1C01;
-	Mon, 30 Mar 2026 02:14:39 -0700 (PDT)
-Received: from [10.57.19.7] (unknown [10.57.19.7])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4421C3F641;
-	Mon, 30 Mar 2026 02:14:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774862085; bh=f8/BwshsYMnwx+EW19kSiHhopy5IVdDUPJgs11/Wxpw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LIzdztfk8YMcdIT3+wFB4DSOM/hGFMsPLHUTRKhSuw2GfO9qH06Gq86o2oFI7lxb9
-	 dz2EZDXG7UN2iSxjZEO8b9frWL1bRgMm/n6H7rk/9Ap2lu9JfQLuxbOTRuA10JVU1D
-	 O6lLThDIYOiml7fJWVqUdXsPSOOMmLJkfsuJ/MBk=
-Message-ID: <5321acf9-0de4-4b8a-811d-e1d71b152887@arm.com>
-Date: Mon, 30 Mar 2026 10:15:04 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="W0A7UMcQ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="fLFhXUWt"
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62U4IUGO103746
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:24:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	8FQXuUJcpQtjfEVJtChfXvc2WhQ4oxNz4YnKC3fcVzA=; b=W0A7UMcQUcZUv9aq
+	AmNzC5rDL+GDEARwmB09E08qB+h0snZhmcJjHjPAo/7oRj2pTpgytzz40wDAZzyh
+	0E/2UgGa8tS7CtYDrlJD65vootkyH8+x5dG4Du+OOA6/ZdyCdet3pn0dKCN/c9nN
+	WBN+Q7mrjwjeFIAr9V1JmVQxTrP9cOHv6cZZZPns1uhWziOtoaI+iIl8lTZdhCon
+	EL5sBdNWzSS7U5RHcuRTsBGMx+N1xPrm8vC6lzKE0/ZmkdGXUT5Tx9H/OKFOzzG6
+	RLvH4UfLG92KbAD6jPLvtXo1Z1Z69I0wHiYlpIzZdBaaQX/JhTKjkk5c/0ARPUJK
+	NXuNxg==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d67715emv-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:24:31 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-50b86b756c4so11221431cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 02:24:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1774862670; x=1775467470; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=8FQXuUJcpQtjfEVJtChfXvc2WhQ4oxNz4YnKC3fcVzA=;
+        b=fLFhXUWtqiHKWy+V+zgc0cxlOw1rdIstZF2YAxMNfg1eSCM0pwyuPlCj/myFuXpAhM
+         6mwZnHoYJcbTtNvgh3ncpT4dEqI0xUEJWriGdhlT/TmanR/YljHfkyLqGkYiWrThQQFP
+         xLCJc+OAu7hw3GLYw6vVLAfclTCIkY4MAhDMnhJYfVkZvnyLITjGniwUnPBLKWfCcsoF
+         RyOz0JvG9FqB+pN/n6PCfDTnsz+gO/d0fOa/FOT4K4l91k1oo9HbXwOMVMb24Iz9YfY5
+         jLwBco5/sLRRhGF64BlsAPPodVoDNlj13As7fFyHuARHjk82N/PLEiXnAscnF3Ds1Er/
+         EXeA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774862670; x=1775467470;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8FQXuUJcpQtjfEVJtChfXvc2WhQ4oxNz4YnKC3fcVzA=;
+        b=tNmxaAnIxkvKo6UIQRLtQZ24DlJl7uFA1fGGvYunjpJggPZyRFTi2UbaUPyOEOBLvs
+         MJK0KRiuh0RbOCrShkBNvk2RYTrGIEqL49dvvmfYZ3fG59veY6caae5ULD4mm3hChPUL
+         rIzWx5j5jBYx8oNkWG7aEFwXdRf5/g6u6z97skkXFRTu/H/4FYPbTN5uLONrC3nH1KNQ
+         o5ChYBD885Y3Z3pQoVHNnPwedoiBlJH7lRxpLpfqSxT1kzCxlbeQ3hsm++YV/NFVv6jE
+         sZhOtQQdEWtk0g1au1+27Nb/iv7zkAO5UB375S3Y5MbUy8exoG9ZXg+piUvMoUzdffOy
+         kELQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW8w/nyuOk7cv6IqSleJQQk2p4UPY9rn+0e+Cnx4zxjc+nCmBLDDSCA2Rd9Ho1yAiKLcMeQ5xbT6Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBtH4uuANUWMjZX1NyUhEgBDVI/UC1nzhIEoaWQn3irRL2W5e4
+	2w1elNJo5fsDsGSAjz4sKE8pTMPJzOTKSQXHuDDJNPDJsak+qqTswAryN1cbQBiWy57a+DMMq9T
+	0hPJ454V3/STPYUYOdt3nYbyxKM8l9Ycp5isWVtIVYZuuzFoN82IAKSwQNOPCQg==
+X-Gm-Gg: ATEYQzxq479NvJllFPt7ac0GynZqSQgF4dLqf+5EbcWkamULfipatebcKLvx2EqexRI
+	rAcbatpeA50ykpOfDWMprh3Sk4bgofXyZSDIWeQ9UTHzFrva3D7FctTmSVWqbVaPngpUqADAkbT
+	JzKPpCeZ2wRbodt3GHdGdqzql5lXLdDT1eRmEe0Bl8NDq1cKYJJQe5spLwW1jk/7yVSba7S+r7M
+	bSaLvkfw1x/+ESIhTfICtoyxIhoO2Xvg4UrLkSIFRrsxIBvtfzPc90wzTS/IDtQpK5ZjN+RUZp0
+	nTEuNQBCFUsIoFvCi2Jn8N7tOBKqmJvv+0xQp1HtgFr5jfD7Py/zlUzht9lvOltnDjGtbnUtJBw
+	7Y5Tis04x1d4WDPifZStaMb1X5LWBJNf+BkO7m4HJOeVh8AmB91hngH+GI/eeKDGM5zrDJoNbd0
+	/dM8k=
+X-Received: by 2002:ac8:7c53:0:b0:509:47e2:9df3 with SMTP id d75a77b69052e-50ba3819907mr122971881cf.1.1774862670338;
+        Mon, 30 Mar 2026 02:24:30 -0700 (PDT)
+X-Received: by 2002:ac8:7c53:0:b0:509:47e2:9df3 with SMTP id d75a77b69052e-50ba3819907mr122971711cf.1.1774862669917;
+        Mon, 30 Mar 2026 02:24:29 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b9b7ae24151sm263968066b.8.2026.03.30.02.24.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 30 Mar 2026 02:24:29 -0700 (PDT)
+Message-ID: <5de59ab0-4249-4396-85c9-e8501bfcc35b@oss.qualcomm.com>
+Date: Mon, 30 Mar 2026 11:24:26 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,198 +89,113 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] thermal: core: Address thermal zone removal races with
- resume
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
- Mauricio Faria de Oliveira <mfo@igalia.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-References: <6267615.lOV4Wx5bFT@rafael.j.wysocki>
+Subject: Re: [PATCH 1/7] dt-bindings: power: qcom-rpmpd: Split MSM8953 and
+ SDM632
+To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Stephan Gerhold
+ <stephan@gerhold.net>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org
+References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
+ <20260327-sdm632-rpmpd-v1-1-6098dc997d66@mainlining.org>
+ <ocrzwxmr256h3ef7ifwx3z6jgtzubiha3forfi7nao6gakb6wu@recertxxhlip>
+ <39a320e472ddc6d44c950a995b577e77@mainlining.org>
 Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <6267615.lOV4Wx5bFT@rafael.j.wysocki>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <39a320e472ddc6d44c950a995b577e77@mainlining.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: KNX-y-kmV_7jFQjmpvNhOBBG_Vw01oHx
+X-Authority-Analysis: v=2.4 cv=efYwvrEH c=1 sm=1 tr=0 ts=69ca414f cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=OuZLqq7tAAAA:8 a=svdJbqrqvjlJHIucFT4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=dawVfQjAaf238kedN5IG:22 a=AKGiAy9iJ-JzxKVHQNES:22
+X-Proofpoint-ORIG-GUID: KNX-y-kmV_7jFQjmpvNhOBBG_Vw01oHx
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMwMDA3MyBTYWx0ZWRfX9o/9r6zhv6pT
+ nBe04D3QOlfESBwUrxpcls1F4TFBhRoQr4qD1blIGRTfdeGSJMvPO2U9WmBS1P7VhokpsvHbBYh
+ VT+1sS91tEVRDXTpSPj8Gt48cXuLa2avoTfGPa5VszNRsJgfyFWewVptuGH3aAWKtbdkghwaZdO
+ DA0x2woxnBhME2Bdd0CX3wWzvSjjWbliD4woneP/nmkU2lpvqtuZSWlHBlcDV2v+GSOv+s28ohg
+ syFo5eIRL1lC2Yo9yOhEJ/0RGeJNE6U/ZfRyrEVKo7oS0XIP9pnTPnFGPyr8j2JyUMIslwg2Vmw
+ lMH2FMkzamw+EVcMz0jgaY5V6yzzNcz9mqxpSu8t0plD5xnY2RNQeywgmRNf+pAi8/5E6S8bE5j
+ /y30gMG3z0+zN+ppoExjWLiloOidnOdIukGwAipsrTe/siWcVq6Sdlm+sS5nXoK560sB/ge4wO4
+ 6VVKr0FNYJ6zZ4QXZEQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-29_05,2026-03-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 adultscore=0 clxscore=1015 spamscore=0
+ priorityscore=1501 impostorscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603300073
 
+On 3/28/26 9:22 AM, Barnabás Czémán wrote:
+> On 2026-03-27 21:26, Dmitry Baryshkov wrote:
+>> On Fri, Mar 27, 2026 at 09:11:43PM +0100, Barnabás Czémán wrote:
+>>> Remove modem related bindings from MSM8953 rpmpd because MSM8953 MSS
+>>> is using mss-supply as a regulator usually it is pm8953_s1.
+>>> Split SDM632 bindings from MSM8953 because SDM632 is using mss-supply
+>>> as a pm domain.
+>>>
+>>> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+>>> ---
+>>>  .../devicetree/bindings/power/qcom,rpmpd.yaml        |  1 +
+>>>  include/dt-bindings/power/qcom-rpmpd.h               | 20 +++++++++++++-------
+>>>  2 files changed, 14 insertions(+), 7 deletions(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+>>> index 8174ceeab572..659936d6a46e 100644
+>>> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+>>> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+>>> @@ -48,6 +48,7 @@ properties:
+>>>            - qcom,sc7280-rpmhpd
+>>>            - qcom,sc8180x-rpmhpd
+>>>            - qcom,sc8280xp-rpmhpd
+>>> +          - qcom,sdm632-rpmpd
+>>>            - qcom,sdm660-rpmpd
+>>>            - qcom,sdm670-rpmhpd
+>>>            - qcom,sdm845-rpmhpd
+>>> diff --git a/include/dt-bindings/power/qcom-rpmpd.h b/include/dt-bindings/power/qcom-rpmpd.h
+>>> index 4371ac941f29..2d82434b993c 100644
+>>> --- a/include/dt-bindings/power/qcom-rpmpd.h
+>>> +++ b/include/dt-bindings/power/qcom-rpmpd.h
+>>> @@ -84,13 +84,11 @@
+>>>  #define QM215_VDDMX_AO        MSM8917_VDDMX_AO
+>>>
+>>>  /* MSM8953 Power Domain Indexes */
+>>> -#define MSM8953_VDDMD        0
+>>> -#define MSM8953_VDDMD_AO    1
+>>> -#define MSM8953_VDDCX        2
+>>> -#define MSM8953_VDDCX_AO    3
+>>> -#define MSM8953_VDDCX_VFL    4
+>>> -#define MSM8953_VDDMX        5
+>>> -#define MSM8953_VDDMX_AO    6
+>>> +#define MSM8953_VDDCX        RPMPD_VDDCX
+>>> +#define MSM8953_VDDCX_AO    RPMPD_VDDCX_AO
+>>> +#define MSM8953_VDDCX_VFL    RPMPD_VDDCX_VFL
+>>> +#define MSM8953_VDDMX        RPMPD_VDDMX
+>>> +#define MSM8953_VDDMX_AO    RPMPD_VDDMX_AO
+>>
+>> Well, no. This is an ABI break. It will make previous DT to stop from
+>> working. You can drop unused indices, but you can not change the values
+>> used by the existing domains.
+> Do these indices never can be changed?
 
+Yes, values in include/dt-bindings are supposed to never change
 
-On 3/27/26 09:49, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Since thermal_zone_pm_complete() and thermal_zone_device_resume()
-> re-initialize the poll_queue delayed work for the given thermal zone,
-> the cancel_delayed_work_sync() in thermal_zone_device_unregister()
-> may miss some already running work items and the thermal zone may
-> be freed prematurely [1].
-> 
-> There are two failing scenarios that both start with
-> running thermal_pm_notify_complete() right before invoking
-> thermal_zone_device_unregister() for one of the thermal zones.
-> 
-> In the first scenario, there is a work item already running for
-> the given thermal zone when thermal_pm_notify_complete() calls
-> thermal_zone_pm_complete() for that thermal zone and it continues to
-> run when thermal_zone_device_unregister() starts.  Since the poll_queue
-> delayed work has been re-initialized by thermal_pm_notify_complete(), the
-> running work item will be missed by the cancel_delayed_work_sync() in
-> thermal_zone_device_unregister() and if it continues to run past the
-> freeing of the thermal zone object, a use-after-free will occur.
-> 
-> In the second scenario, thermal_zone_device_resume() queued up by
-> thermal_pm_notify_complete() runs right after the thermal_zone_exit()
-> called by thermal_zone_device_unregister() has returned.  The poll_queue
-> delayed work is re-initialized by it before cancel_delayed_work_sync() is
-> called by thermal_zone_device_unregister(), so it may continue to run
-> after the freeing of the thermal zone object, which also leads to a
-> use-after-free.
-> 
-> Address the first failing scenario by ensuring that no thermal work
-> items will be running when thermal_pm_notify_complete() is called.
-> For this purpose, first move the cancel_delayed_work() call from
-> thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
-> new work from entering the workqueue going forward.  Next, switch
-> over to using a dedicated workqueue for thermal events and update
-> the code in thermal_pm_notify() to flush that workqueue after
-> thermal_pm_notify_prepare() has returned which will take care of
-> all leftover thermal work already on the workqueue (that leftover
-> work would do nothing useful anyway because all of the thermal zones
-> have been flagged as suspended).
-> 
-> The second failing scenario is addressed by adding a tz->state check
-> to thermal_zone_device_resume() to prevent it from re-initializing
-> the poll_queue delayed work if the thermal zone is going away.
-> 
-> Note that the above changes will also facilitate relocating the suspend
-> and resume of thermal zones closer to the suspend and resume of devices,
-> respectively.
-> 
-> Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronously")
-> Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
-> Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocation
->     fails (Sashiko)
-> 
-> Lukasz, Daniel, I'm quite confident about this patch, but I would appreciate
-> your feedback.
+Here you're e.g. changing the "msm8953 domain 0" from translating into
+VDDMD to translating into VDDCX (because RPMPD_VDDCX is defined as 0)
 
-My apologies for delay...
+Some other older platforms were converted to use these macros, because
+the indices happened to match
 
-> 
-> ---
->   drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
->   1 file changed, 26 insertions(+), 5 deletions(-)
-> 
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
->   
->   static bool thermal_pm_suspended;
->   
-> +static struct workqueue_struct *thermal_wq __ro_after_init;
-> +
->   /*
->    * Governor section: set of functions to handle thermal governors
->    *
-> @@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
->   	if (delay > HZ)
->   		delay = round_jiffies_relative(delay);
->   
-> -	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, delay);
-> +	mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
->   }
->   
->   static void thermal_zone_recheck(struct thermal_zone_device *tz, int error)
-> @@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
->   
->   	guard(thermal_zone)(tz);
->   
-> +	/* If the thermal zone is going away, there's nothing to do. */
-> +	if (tz->state & TZ_STATE_FLAG_EXIT)
-> +		return;
-> +
->   	tz->state &= ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING);
->   
->   	thermal_debug_tz_resume(tz);
-> @@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
->   	}
->   
->   	tz->state |= TZ_STATE_FLAG_SUSPENDED;
-> +
-> +	/* Prevent new work from getting to the workqueue subsequently. */
-> +	cancel_delayed_work(&tz->poll_queue);
->   }
->   
->   static void thermal_pm_notify_prepare(void)
-> @@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
->   {
->   	guard(thermal_zone)(tz);
->   
-> -	cancel_delayed_work(&tz->poll_queue);
-> -
->   	reinit_completion(&tz->resume);
->   	tz->state |= TZ_STATE_FLAG_RESUMING;
->   
-> @@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
->   	 */
->   	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
->   	/* Queue up the work without a delay. */
-> -	mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
-> +	mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
->   }
->   
->   static void thermal_pm_notify_complete(void)
-> @@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
->   	case PM_RESTORE_PREPARE:
->   	case PM_SUSPEND_PREPARE:
->   		thermal_pm_notify_prepare();
-> +		/*
-> +		 * Allow any leftover thermal work items already on the
-> +		 * worqueue to complete so they don't get in the way later.
-> +		 */
-> +		flush_workqueue(thermal_wq);
->   		break;
->   	case PM_POST_HIBERNATION:
->   	case PM_POST_RESTORE:
-> @@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
->   	if (result)
->   		goto error;
->   
-> +	thermal_wq = alloc_workqueue("thermal_events",
-> +				      WQ_FREEZABLE | WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
-
-
-Why we need those workqueue instances per-cpu?
-It isn't a concurrent work, only one CPU can manage the cpufreq domain.
-
-I would drop that flag and allow to have single instance and migrate
-between cpus (to not wake up the one which queued the work).
-
-
-> +	if (!thermal_wq) {
-> +		result = -ENOMEM;
-> +		goto unregister_netlink;
-> +	}
-> +
->   	result = thermal_register_governors();
->   	if (result)
-> -		goto unregister_netlink;
-> +		goto destroy_workqueue;
->   
->   	thermal_class = kzalloc_obj(*thermal_class);
->   	if (!thermal_class) {
-> @@ -1938,6 +1957,8 @@ static int __init thermal_init(void)
->   
->   unregister_governors:
->   	thermal_unregister_governors();
-> +destroy_workqueue:
-> +	destroy_workqueue(thermal_wq);
->   unregister_netlink:
->   	thermal_netlink_exit();
->   error:
-> 
-> 
-> 
-
+Konrad
