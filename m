@@ -1,66 +1,65 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FA3D3BAD9A
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 10:52:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B5493BFE24
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 10:53:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774867935; cv=none; b=Nf9Jqi42FZN062/Mkjlape2aFlE6KjXx4iCdvTGRT9XhvKVJhuegwX+BTyDsS6/tydSn21FnNbUBLvgJ+lSlsC/jagjMYA9OjZE0oNModsS+pxhIGjg2ieNti35X7DuiwCE4CAinyKGuoQF9vX4sMWGvRvAIM7WF4Jr+ZYbIhuU=
+	t=1774867987; cv=none; b=JpoiqY2I+TXG3ND0qihusD6YKVrIu2sG25stZ0pWY8/hmLHn0KXe4t5/bBUT24h2dF9QDCz3Ip6QAcCiRUHhKk/y6Kxcj/tMh69mMnm9kk6UF6p2rDmCvOpYYOZngPyKBNLs0BdI+/yvs9MqnER7Q8p9cvaZEmH13m70ChiVZiU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774867935; c=relaxed/simple;
-	bh=8tGCl9H2u0kxygEigoVcToA6cJ97rZF07Am4vKOJmbs=;
+	s=arc-20240116; t=1774867987; c=relaxed/simple;
+	bh=BNYWE4ZNfeLRGblM3h9jfVP9WIaSB0fZFyHZKbb2/BY=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Z1URjv/DvM4cRaAW7l6gXiP/2kQ4uY0yZN2s4Ekm0FiRnlRxV8UfOVAqQtgvQEhzuMAuWKkfIWVV8EdxczjYBayCf3No8X+RECYza708H6fC128NpvY0FV14HmqBQAp7f72AVOyZCDnoA1WAqNEgITtGbhy8G24dVMByJwlb5Rs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VCvcQwNg; arc=none smtp.client-ip=209.85.128.44
+	 Content-Type:MIME-Version; b=PeIijloVliaAIXtlT1ZappzHunBTgjt3iQid2Wndz6doVwBQFnzDJpb3VPs3eiRMWvWulLAB2o5D89j3NJCcPF5B5UsRqYh0XCRTGQ4+GkQZBH2S9wnQabKHnmHplZNePAKz50c/uKZT06BnyO35lYpFLlZOAGh97mk2EY0RpYg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=TATXPP8o; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VCvcQwNg"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-487012ce896so26179135e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 03:52:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TATXPP8o"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-43d04fc3bf2so225004f8f.3
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 03:53:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774867931; x=1775472731; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1774867983; x=1775472783; darn=vger.kernel.org;
         h=mime-version:user-agent:content-transfer-encoding:references
          :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=8tGCl9H2u0kxygEigoVcToA6cJ97rZF07Am4vKOJmbs=;
-        b=VCvcQwNgAwvtg6k5HaKlSk/DWAF287dpGwC0Rn8Ss871lQXbEI2DnRHtdW2xQXmJGh
-         1n0yxr/aQ7X9PEd4x3a4rdhGLkK8/yVBNvq/kuJYFQ/MqrzWYRoAMq0xX/DVTmC4Ef4G
-         Ytn4u/JkAGZur15HRZCJ9Q9rd2wC1JarucW9f8TKbKsDHtZcFgFZ0ziNyBOcbbhK+8At
-         QJ/v1XvY0HOiHEfB7VRo3ZltFUZatWUXSOcapmU7lLnuSArdccf/tC+4RBLE2i4MmZW9
-         Zwrac2m2GafZGJRLTfO56KACyfl0NUTm6Wm28CV/gxR9yv4YqTGJ/1i/uWgHcUK5SVtI
-         TWYA==
+        bh=nzbPas/zVRhWvMIP9KSmda2kkwwqeTULljeMJhCNvcc=;
+        b=TATXPP8oQZLLpCL5KsAbv7XDn7cKmg9nSldOrFdSaePhsGrjiYktxRxakmzU3qRWsw
+         diGnL0KCwMdRNb7Y1dbl0Jbzg56l/L40ZsBuiXIg4bIJsq+BJQPmpxeRrpZWzaWP0DmC
+         XMB05gv3bTPzZKNxjqS01cAcNiOzBzIVKVDvWsWqgy0GIRRD8pI9rCvIK228Bc4+e0Hp
+         u12CZLOVWdxGJOnAEeccPFC9mhaEDyNIoY6hJIpOOp4WA0Cpgby51JjrA0gYuQnTq8bO
+         SOpvtVO8U9wEycMtYHDp0Plko4SZ0hbUAHWeWg4iChXZ+t+kH0cPUEvov2yD0c4kP/ia
+         q5Zw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774867931; x=1775472731;
+        d=1e100.net; s=20251104; t=1774867983; x=1775472783;
         h=mime-version:user-agent:content-transfer-encoding:references
          :in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=8tGCl9H2u0kxygEigoVcToA6cJ97rZF07Am4vKOJmbs=;
-        b=rcYBjIIb0jJ3kq3PhvRc68W/+P9288hpaajDAFWcY0f+r88JZcPblnMSE9Zg79DnlN
-         xH4K4Ywm+HHWYNS9DqzfHhDa4CCQujNFe4hzRffLXI1VVOuIFfs0hif1SJ+AcFwIqDRP
-         B1MzyKnC4M0AplpwDISUPFspCOKts76RodvdSCe2TGGmwYKB+EP5OyFmVWo5mmBerzwO
-         W7lG10nCqJf0BF2FCb/2XVjmeDy1vKZ9+3xN6CsoAygXp/XeWo9Xj3qB2p4d/ftLrOwC
-         0IDEK0uPGm1PHXP0f6f4wmAYQK9fywljSUy8gFozupbBLHcs3liZvZ6RAs907GcNRSJv
-         17Gg==
-X-Forwarded-Encrypted: i=1; AJvYcCUFFqJbd+As2GELgGGOWo7PaQ786MkyPjexvqBwWRYTWX7TH+Okd2zYr39dpDMbu8ag8I3Jp5N/Qg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxIblWXpPd0yVIEtOxGczK0f9NtzAh9SqfW07/b15kWCjl0jkOg
-	miFUpeMOtvwJLaXy/goHo5+A5WuKkeBb2MIj54QMaJbI/5B0LPS6kis1+5spqaHdUUU=
-X-Gm-Gg: ATEYQzxndJK4fNn/hwFuwyhHAxUyOvn06gCCmdJ6ACShn4Dtf+t03akZN4L6t+mkh37
-	EI+9R5Bpw1caLQM/ARTamQVdPG6JII3LbpdNIvdJpgMthG3sMNN8FFPOgeJJTUBGulKdf6qeOs4
-	iAAXne5JFZO8OlI88+DKFl29N3ghsyeF/hObNIskvUBCR/tqgRB+k9o8f1TfY/RgzvM5r/RsSNB
-	jfVoznefbC67e58E3WT7aDnF2JFTldq3Eb27aw22B+OmCvDeOPwyXoyqa+H7uh1T1OMTcXw9k8W
-	Dlro2rWj7zAR9ELQwB0VPNlTr9gglO830wRbDstxbAv/klYT+iOoNA7tqeBQ/k+hvDdEL8bExcr
-	1r+IiCxliy3ZyXXTDh6daM4jiekywPCjo+gLlF2Ad4fCT0xdbmgrbzTNng3bO0f0r3ONcO/6IHc
-	Pn18rGWqEnSTcFlNx4v28S68d4JLqY
-X-Received: by 2002:a05:600c:a108:b0:485:3a27:a961 with SMTP id 5b1f17b1804b1-48727c82082mr167788605e9.0.1774867930830;
-        Mon, 30 Mar 2026 03:52:10 -0700 (PDT)
+        bh=nzbPas/zVRhWvMIP9KSmda2kkwwqeTULljeMJhCNvcc=;
+        b=jwB2KE8FtgDDYLwp9ZHBbIjr1uYGrtPqZRssY0ijiOud4zkW42SEiRfTv0anct+WId
+         H/lGe+fgq+yUP7RtjKHuSq9XZjG9DOW05N2UVLlYlb2xOouOfov+15YxFo6opUMT830k
+         66E5s/AF5vmN1yOg7pOdD3K1O8vf9zzLJ1+WLWepbAhKb6zrnT4ANGCVXWAKa+itR1Wo
+         55KczoemD2Q5IN7NH9ZVPepuerVS/PnKnO/PJoqJpgOBMkOLAEkrN9VjK3QrIF9Ze0yJ
+         Mkcu/MsMS8rgB3iP0hodZsJMuPi+41dcFuo0WCkBvGcWnnN0tSklAosMzrEwnSSTmsKn
+         e/yQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXBXQZE6ab3fqeguvVp0rSfpfyf40POMelzL+rseL+GvNaC39vBnWPylhkrt0fkMXOxBD8mUWaoWg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyrudo+8gHZT8nPzuehBEkWjI1RH0PtizJpBS44p8Z3ptf+SoMD
+	cMVJ1R5FH5G8Q3phWYecPhaNAjRHOQz2wAE3dxL5HYTJdkcaQ+OOO6jh7h1DCkceNV8=
+X-Gm-Gg: ATEYQzy85fM1K1BLjChj4QL35L09h2o782ZggI4hBUdfs+eRqpjneQBNKzRMhp7yBLp
+	k9hPBrdhObSr3Cej/qWLMgJjn3G+A6FxcH6ebISjRPz3Z3JQLwBxU8u9Zxa9GZhwu242cwv1BLi
+	b+uqeQeB6WgG7lW0l4GDIP7UYxvscHLDtXvVhaXdqZhsPzcWKZmLx2FSfONVCW2hNEREs0XtyXd
+	9eqx1ubJ1jmnJcvQaJmHfN4vQackrrSrBzvayi5m2hpPbXiHt0bT0gE81u5ASB4CfsiVCygjYdI
+	GNuMsxDXdeLeO0Dmw2aAT8u/9qFqfkUZqd0ee0fj+fPOud4FXDQcgdNdT4e5solyU+vNdObgmif
+	I+9pHvxKuqlIBwO61ZiWagHUfwb7y/ZOe3Z2RuvGyKXQIC7ZZ3+C2GlgFO3CVFtmT9m/SWMGqgP
+	sZzHyrHGlANkWZ2MmzzVUx1Z6fV59/
+X-Received: by 2002:a5d:64e6:0:b0:43b:8fa4:1937 with SMTP id ffacd0b85a97d-43b9e9d5ea1mr20787372f8f.5.1774867983379;
+        Mon, 30 Mar 2026 03:53:03 -0700 (PDT)
 Received: from draszik.lan ([212.129.78.46])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4873ab203e9sm78932785e9.0.2026.03.30.03.52.07
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43cf330872asm16354366f8f.17.2026.03.30.03.53.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 03:52:10 -0700 (PDT)
-Message-ID: <6f0be0a71c74e7a7959e9ad02e93aff1cb8ef712.camel@linaro.org>
-Subject: Re: [PATCH v8 02/10] dt-bindings: power: samsung: add
- google,gs101-pd
+        Mon, 30 Mar 2026 03:53:02 -0700 (PDT)
+Message-ID: <61f4ba09a77a255008078a8655e8f4791e4c87ff.camel@linaro.org>
+Subject: Re: [PATCH v8 05/10] pmdomain: samsung: convert to using regmap
 From: =?ISO-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
@@ -71,12 +70,13 @@ Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>,
  Yescas <jyescas@google.com>, Will McVicker	 <willmcvicker@google.com>,
  kernel-team@android.com, 	linux-arm-kernel@lists.infradead.org,
  linux-samsung-soc@vger.kernel.org, 	devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, 	linux-pm@vger.kernel.org
-Date: Mon, 30 Mar 2026 11:52:08 +0100
-In-Reply-To: <177409897339.266364.69715997034739052.b4-review@b4>
+ linux-kernel@vger.kernel.org, 	linux-pm@vger.kernel.org, Marek Szyprowski
+ <m.szyprowski@samsung.com>
+Date: Mon, 30 Mar 2026 11:53:03 +0100
+In-Reply-To: <177409897341.266364.2957933304869869135.b4-review@b4>
 References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
-	 <20260318-gs101-pd-v8-2-241523460b10@linaro.org>
-	 <177409897339.266364.69715997034739052.b4-review@b4>
+	 <20260318-gs101-pd-v8-5-241523460b10@linaro.org>
+	 <177409897341.266364.2957933304869869135.b4-review@b4>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-8+build1 
@@ -87,43 +87,27 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 
-Hi Krzysztof,
-
-
 On Sat, 2026-03-21 at 14:16 +0100, Krzysztof Kozlowski wrote:
-> On Wed, 18 Mar 2026 15:27:47 +0000, Andr=C3=A9 Draszik <andre.draszik@lin=
+> On Wed, 18 Mar 2026 15:27:50 +0000, Andr=C3=A9 Draszik <andre.draszik@lin=
 aro.org> wrote:
-> > diff --git a/Documentation/devicetree/bindings/power/pd-samsung.yaml b/=
-Documentation/devicetree/bindings/power/pd-samsung.yaml
-> > index 9c2c51133457..3f1a2dc17862 100644
-> > --- a/Documentation/devicetree/bindings/power/pd-samsung.yaml
-> > +++ b/Documentation/devicetree/bindings/power/pd-samsung.yaml
-> > @@ -44,11 +45,28 @@ properties:
-> > =C2=A0=C2=A0 power-domains:
-> > =C2=A0=C2=A0=C2=A0=C2=A0 maxItems: 1
-> > =C2=A0
-> > +=C2=A0 samsung,dtzpc:
-> > +=C2=A0=C2=A0=C2=A0 $ref: /schemas/types.yaml#/definitions/phandle
-> > +=C2=A0=C2=A0=C2=A0 description:
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Distributed TrustZone Protection Contro=
-l (DTZPC) node.
+> > diff --git a/drivers/pmdomain/samsung/exynos-pm-domains.c b/drivers/pmd=
+omain/samsung/exynos-pm-domains.c
+> > index 5c3aa8983087..68b1e7ba8729 100644
+> > --- a/drivers/pmdomain/samsung/exynos-pm-domains.c
+> > +++ b/drivers/pmdomain/samsung/exynos-pm-domains.c
+> > @@ -120,9 +140,26 @@ static int exynos_pd_probe(struct platform_device =
+*pdev)
+> > [ ... skip 20 lines ... ]
+> > +
+> > +	reg_config.max_register =3D resource_size(res) - reg_config.reg_strid=
+e;
+> > +	pd->regmap =3D devm_regmap_init_mmio(dev, base, &reg_config);
+> > +	if (IS_ERR(pd->regmap))
+> > +		return dev_err_probe(dev, PTR_ERR(base),
+> > +				=C2=A0=C2=A0=C2=A0=C2=A0 "failed to init regmap\n");
 >=20
-> For what purpose?
+> PTR_ERR(pd->regmap)
 
-It is part of the domain.
+Thanks!
 
-Furthermore, TZ configuration is lost as part of power-domain power
-cycle, so this allows a driver to take necessary actions (inform the
-EL3 firmware). I believe this handle to be similar to e.g. the existing
-samsung,sysreg
-
-> Your patchset is organized in odd way - first patch for me, then not for
-> me, then again two patches for me. Please keep it consistent. Or better,
-> decouple since there are no dependencies according to cover letter.
-
-I'll update the cover letter to describe the dependencies. 4 depends on 2,
-and 2 depends on 1, hence the ordering.
-
-
-Cheers,
-Andre
+A.
