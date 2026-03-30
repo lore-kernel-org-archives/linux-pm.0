@@ -1,210 +1,217 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F3313BE627
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:13:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774869200; cv=pass; b=Nd/QGt0vSqNUhON5+a+HU6E0HNoxQ/tR+f/O/2PcgK6ehqUBTEVunTnaaXyx2jfy9PFLJAklMgq4xEEiZE49pJDb8VQZEkjEFRW4mFhox6UIkRUIdRJaB1vKQ4/YKauBlyGJbs6MxCuiP9zOlXJzFScXXEa4AFEodjJs+66ActU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774869200; c=relaxed/simple;
-	bh=dlgA3vHp/tCZZP6x+MyvcYNS73Ufva6+EVngsEM6VdY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=stjpl5TYr5vCvrFNSn5WVXGf93OuiwO5hKPge/1uGc6Se/nAo4wiHknAW1RDYvPR+mkPYUL4vK6DRX861KLZbzAeSBiyA2747MRtaqjJ+X55+scQ+6Xxx76yPUyPgycYZgXG4G6K/GS/WkE+aGTOibBu2BLw3viFFptKEElIB+4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hCsadkBg; arc=pass smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89CCB3B38B8
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:15:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774869340; cv=none; b=JY49DOyeqznRK3+Hdl3tdLI9OG7XW6wTfe5Rti68FiIAakLl+FqkCp0DcAil3lJb8zTr5V71+IjmKBCgxMGCpUANM1qxkNQWaRahJTi5zbnjGwqrTCg83x9QTUTmRWxlM0WKIL/6lhyopKyEkxbXXXRMCK+iNSzTn6sSVuLZ4bU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774869340; c=relaxed/simple;
+	bh=tr1+vZrmofnSpYn90Eztx0OhSCniztRM0zdtPMgCtUs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JOJmN5rVM0LJiFtdxLeHoU5hp29SR4AJoZC/ABSHnxe9jwL7Trdn8da9zpgbmq8sdeZPaZJUgjojloPKR4RSNaoFwkiYEcgZ6IdvlzXbq3C+LSThmJFAWzLQS+zmn1xCiM39X9iBaJd0A7Vog4aJdO0seBACjOUVvUT/69LkAeA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=PUzTz+HD; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Z76CFxAC; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hCsadkBg"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a126c8aab9so5179478e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 04:13:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774869195; cv=none;
-        d=google.com; s=arc-20240605;
-        b=exYrFzqXY0emqle2Ccx9nI+RcKIPcw/jlhsHTswGeYaCp5/yMWxg3Uq/pHc9Q4u7Ak
-         WUk8VMjl9qbfYKsxPLUyg+7bzWxkkLdNj71lJ0mMksyvqNcE4/FEtw7am9n2H2B0ZkU+
-         fs15RD+jqa/yscZLsuw9nCS541QvFPNfV2EamfQR1TJgj5Pqcmu8yQpd7KJYbyu3BKMI
-         UZhb1hnZM5mJteRMFZIUQzjAlgdHz+DER8/BVd4TSyDFJZOiNa7Js1o605uiEeg/AdLT
-         y0sCC5UbbfA0DdlV7wJwX38xzSIZtNsN8ILfhcpw+SNYNdd5uEtqjYOnpTs+ZUWScC+D
-         fVNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=JOM+v3hkRUPIxwZnJzq8Dzd0DMU9QR03z+xYMXNAkMc=;
-        fh=j+C6XMFfzp+jHpGMQLX5MmfDgzjVdSxiQd7qwmnS2Zg=;
-        b=Kg6OTGqRFK5iJjSjI1AhGcyiJLZ9oRILOXS+OZ/OvTDr46AFxiyaTLOzg8YeuO9AcN
-         CiFFU7XhAm5V2MFkJ4GEBFIn6nBFGoS8JGbVMSIk4LBg34MimozH7eEroMeEkf2r1Fre
-         Edyd44lnS7pV/w5HfWpe6UW2mdU3jCPesNPtfm4wHU2Zxgzp3fGqLR6QZPGIrT0pxo+T
-         4pkoQY4TqAaOGlRcb9pE9XE72yUyuSIQSDGtKtWeqK1dAJKUbadtOop9kA+GGQRpj525
-         u+cYhiYLGFkWnu8VCAq0tAgpXKtVz6A3bADO51KVmYlhlMhOfybqOgrjv0js4YSaNjn1
-         dALA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="PUzTz+HD";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Z76CFxAC"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62U9nH5l3722183
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:15:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ogPJDkAzaFSmdt2dEX3iL6F7G9X1L2BalMH8sF2B1Ro=; b=PUzTz+HDRFT2Hlw2
+	duCtE2XerKDJzQ0jr30gwqNyn3cimdZUrvRnjMlPvU4Ygail7LR49sddtPz+t/bf
+	i5chtgUV5L3nMJnq/LZ8RKz9YJx/nwOz+MpGnaO2dCRlwy3u0xvA+bYeQ57Zxw9U
+	dhxjNNzvvYLh85/hGl1Z2jARuFAlg5cDCmfDHJFV4KXGRPL1DBergakYyXM+NGkI
+	mGnDGOFxXJy/0Yq/0E9wTiRMJCSEnJEajrW5CDYKUXKJ89olvVFlqk30vBSTjGHM
+	uu/NofAR24a+lrQjntYQ9UP3/LdHTetgBFh7aOmW0h7XUhHkMP012frE4Rl6l2YQ
+	5yfMKg==
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d7pvmr9w7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:15:35 +0000 (GMT)
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-50b3544bc7bso59100221cf.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 04:15:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1774869195; x=1775473995; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JOM+v3hkRUPIxwZnJzq8Dzd0DMU9QR03z+xYMXNAkMc=;
-        b=hCsadkBgAmi+9tAT9KksvfkxwpsYqeTRsfRyUxAUIcHE8RGB9HD0sWgd8sCmWvcB1r
-         UI07jD81jbCf75euSTuXQDsISj4krH1/XvuehjtCH1w7u/HcagjkA2LEIo+zn6FDTOCI
-         LitEGYYLljS0josW8buvHBitH3eTJqQRQkQeGCWGa8XQI6J/veFyDR23q22xR4EsExfi
-         p6BnlQ9Y2qj69Q3I8b1CK13Yynx7zcGYkjwzL70QcmMnWCLxEk1/mfDj6C7mOUVEhab3
-         kXmticgIFLgroGP3qEsSkOrE78Hh3XmEGwTCunQBQAx9vYBV1K5YON0Wc6BPxk+rYBhj
-         XT0Q==
+        d=oss.qualcomm.com; s=google; t=1774869335; x=1775474135; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=ogPJDkAzaFSmdt2dEX3iL6F7G9X1L2BalMH8sF2B1Ro=;
+        b=Z76CFxACwNsGhNqTX76broBwXUabr1nNPd6njPaLK4U1BNBuSIOTWNGjln5vvdeH6c
+         P+abJlCiij7BmpppFg/rsDCy/d72YDPHHct/5CjzB8Hop/T9cysI3XKym7+Mlq3HODbr
+         /+vTAqiEG2TUniVjEaNkAaM6NkUTISQ2rIQWfI+5D3QC8DVRTMYqHuoQRpid+Zqvj0gx
+         kJHh/P55Wtl6krr5SABPTPP8iUe7IF/UE33hKxvhTtWA3ImT4Np9CvqE4z+mOzAtgf8n
+         YfMEJ9RIqr0BbpAvnWcTRw78UAIdVL2Efj16kDIW92MWkKYPtWhnSc05tzYkCR1ZZ5Dd
+         VXyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774869195; x=1775473995;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=JOM+v3hkRUPIxwZnJzq8Dzd0DMU9QR03z+xYMXNAkMc=;
-        b=prad1roFqbQuRW/wHkfjH8WqYNPZDO8Nq6/3HQBqUYQbMRLtLA7lL+5eCCUpWxZdW5
-         B7PJfUw6NowBcyQVxwrJ+sM1seYP0owMEWYAnvCWC9ybGYbfBNbGiQPacYakP68HalIe
-         B3DZlLJrZqRQBUJoPyjLKp4BFl5UGPuHs2jVopkuWr2bxxgOIfVV15Jhay0wABEMryFp
-         nkAkkCFvMWJ66dAq0Qvidw+R3SN0mqULpgq9ghbsmncgDReZZAfozb2VDCWyfnDwTOah
-         yldyDyH6bNinNJ3SyObj9eaOU/N2fMOHHwlp2kjYaGXXv4TlMOq3BZV8AAYBhSSUsFNc
-         u7Nw==
-X-Forwarded-Encrypted: i=1; AJvYcCXFVQnTYtCpX/OE5Eg3Ycp2/E39MAwSk4kYUUxIP5zH1pQxQB+RHrrWOsJR/PwRqbLu5pdRu9cGMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyBikyc+dLTbXZGx56HgM6Dks97xGAm6Hp0kFnhNAw/G/toqrdn
-	/i4UnXFe0f/NeIKhLDF1yJJ5k/iqg1xQxq76EN9eeHIzV75OSRoUuoJOssm7vOIg6l2LuYsVsl0
-	bGMNYBbcBdjqbRcd6Udf2ItDAQhm5YKJrkZBujE/dwQ==
-X-Gm-Gg: ATEYQzwTYNZwHztlw3e9KJNO9cL3BGWz6PPmv6H2LMbs2V+B0EcRqySOkuFKQPgutUZ
-	aBRQGTc2kWQx7BXHNR+Jcq1+jZw7H7hFnOdr0UGNarNAiGEANMlqOo8195K/VQzqJ5AKLoAyeZb
-	5cxMkk5Z9kUoNMLqr4QjqPxefkcS7eG48ctp+LCJByAa52hPdHuuMmsaYWv7Wdejo2JBmHCcmD/
-	V2osRWBgRqeDy37m47LaQPg8pg4jUWUrLtd7jmIo0FsdA87gXcYVpacCzNwuLKNA85/8GDJ++fv
-	IWv805tPixfTeuoo3+o=
-X-Received: by 2002:a05:6512:685:b0:5a2:9d61:f710 with SMTP id
- 2adb3069b0e04-5a2ab92634bmr3995988e87.28.1774869195094; Mon, 30 Mar 2026
- 04:13:15 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774869335; x=1775474135;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ogPJDkAzaFSmdt2dEX3iL6F7G9X1L2BalMH8sF2B1Ro=;
+        b=BO6G3BU7rk2FzX5RVwqbFeFZCPTKG3udQORH/bF0+ADJFG/EWDZ7c8yt9qKGugXdB4
+         kdsl/6Ft85WA560igPqqyb+M732hlHG+GdMryLTPGfDArW0WUJr2r4Vw65qf5J0zsfBK
+         ER7oBegouhJ839BePxPNSOVcz+g4grtZRPmfcqfCxAdCZZB/KSx66T392AREv+VKf38L
+         Ub4CbPbczO6iUog11Guef9UGDSSlI8NuIQzdZ53zwamlibknQo6sxc+fkidg1m25ZL2m
+         n4/JfWouD6dcPOKUtC3UT6pgTcoJN1rPsW8DB0/aJ8VdPD24AGgYhZOu4dP1VBYF/N78
+         kCOw==
+X-Forwarded-Encrypted: i=1; AJvYcCVp+94iZwRhexObR9lqFKtkrSCxhKb4xRd+btBlsDGiLBJ1QhxarcihNqPbkApN2ndh0ZzysW+XIw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzCRCGndRw1Ct3IsO/4VjCeX6KAznXa0P+HrowuK99EXBMPf2Jj
+	jUHb39O8fVZbLmx9fj4RpOqXhw2wtzeFi41OMDCQfOYIuIkpkz886fS3wgvqAJN/5tdf778A1Oy
+	liV1Os2/OINPZ4unuyoLmN53Su+4m4ddbGzXBnc+LPvVbIv/IP32RydTN7/c36g==
+X-Gm-Gg: ATEYQzyOvjbXlp/953uq8ZreZNGD7+qJJAM3zd89j1zHOIjsPx+6d7uX1JcWgYuwu75
+	aG51qBbw3Ji9uule8YNSOxNQOBl0aS4OXvGxNW9orJQyzC8zk1QLwSwFZsx4I6EKRs+8S0lQuW9
+	xP8yDGDbZd85mP0ExflHloa7QN1aPMIYwe9Z7Uhu7Ykdax/EELPhWpO1YfnU4P3QvtHiW5JiAi0
+	AaAv1iBhTAxW32vmy6yTsiH6y5Bch69YVIVEgS+gGnZprfFcTkjnvwwvBCt+pYAGGoSlXOrcBuD
+	8s0/DsazWsccbsjMVYMXUcOHZ4Ubhmw539DahHKJiHrm+bmvK8y+rJJtPRkSAGseqv1vmkcOh+t
+	xD4ZCwzRh8T4w/m86d2o7O0JYF67UhmseiAGAmSBDsC7HrP3XRIExwcIvA0EAKDoR6QIUYWffe9
+	0DBPOh5kyoQ74RHMh97Gc2a0LkJWPjnm1ntAw=
+X-Received: by 2002:ac8:5744:0:b0:50b:42fe:d2a2 with SMTP id d75a77b69052e-50ba3836e2dmr178221111cf.18.1774869335161;
+        Mon, 30 Mar 2026 04:15:35 -0700 (PDT)
+X-Received: by 2002:ac8:5744:0:b0:50b:42fe:d2a2 with SMTP id d75a77b69052e-50ba3836e2dmr178220361cf.18.1774869334457;
+        Mon, 30 Mar 2026 04:15:34 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2b13f435bsm1572580e87.9.2026.03.30.04.15.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Mar 2026 04:15:33 -0700 (PDT)
+Date: Mon, 30 Mar 2026 14:15:31 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Taniya Das <quic_tdas@quicinc.com>,
+        Jonathan Marek <jonathan@marek.ca>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bryan O'Donoghue <bod@kernel.org>,
+        Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+        Abhinav Kumar <abhinav.kumar@linux.dev>,
+        Hans Verkuil <hverkuil@kernel.org>,
+        Stefan Schmidt <stefan.schmidt@linaro.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
+        Dikshita Agarwal <dikshita@qti.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
+        Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Subject: Re: [PATCH v5 2/5] media: iris: scale MMCX power domain on SM8250
+Message-ID: <x5gv6dxdum5klzfjyo7xjqull6o43okkmkn7avssg26epbvrz6@z2brpssbk7iv>
+References: <20260209-iris-venus-fix-sm8250-v5-0-0a22365d3585@oss.qualcomm.com>
+ <20260209-iris-venus-fix-sm8250-v5-2-0a22365d3585@oss.qualcomm.com>
+ <5e2635ac-35de-645b-b5e7-235923f844ce@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
- <177409907930.268981.5882592990447577348.b4-ty@b4> <CAPDyKFoz-sm0pfvn5iSYFY0mrW38vaGRZsFvrVPqsv7BsYxeWQ@mail.gmail.com>
- <1fbf5c54-8793-4585-be33-ded77019adb2@kernel.org> <CAPDyKFrK3NLwaii-9FEmyaTzUAuVkMkLL3rWBQwQvT-M+PzEHA@mail.gmail.com>
- <3bb6b71e-947b-4248-95ba-79852f743c1d@kernel.org>
-In-Reply-To: <3bb6b71e-947b-4248-95ba-79852f743c1d@kernel.org>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 30 Mar 2026 13:12:39 +0200
-X-Gm-Features: AQROBzCzpsR16OKFH2Q1YSJwCONrrQEcDC_w0lPdIFqdSp0pO1DGRu9LhJ5vXKQ
-Message-ID: <CAPDyKFpOPC2stAJ262jdap-=ByY09AeQ0kj6p_9FTGJBx+Tu-Q@mail.gmail.com>
-Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
- Google GS101
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	=?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
-	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
-	Juan Yescas <jyescas@google.com>, Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
-	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5e2635ac-35de-645b-b5e7-235923f844ce@oss.qualcomm.com>
+X-Proofpoint-GUID: 3Qe_MCl_glARLl0BDXIdiuK6resix0cN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMwMDA4OCBTYWx0ZWRfX54oDPRdeJ3/E
+ 8QqagQ87MNHXAGVJxVNW3D51bfc7oTJDE3UpbmPkgs3Ib8/URplyoJURuN19XXDTA7nKiZn9LEH
+ qafkfPJGwxFkGtGscV0Nj39xt4lA5w0W120DuVdUGObjhPGSY7rq8y9yka/a1cNYPCkXGNH2BAz
+ OxcD877pY7floOaR3TJMlXksHG9KlfPB3jzRMTw7v4UJWZt2h1o0T4mHfrUmdNvYXTfIjgoGp7Q
+ 0hjCjRJMWNECqCOXnCL5Wu7n9A30DtRrUp05DaK7HHKRhIVJCNaaInO1WyMrqVd1JY3WUuQkcul
+ x07D3igQbzAHDCUAmAkeRRZf6hSzs87a1Y0U4VGmffHaUY1p1P8K3rc9sfEMRrYfFdiDwhUMIfk
+ 5fFFgZNRaJBiysil5shdUAdYI2PxTMoOifWFbm5rbbFBfw6T+H/mTLz58jxCpM/BwnXYuhRSzqk
+ tXiT1aONjdTtlEiR/iA==
+X-Proofpoint-ORIG-GUID: 3Qe_MCl_glARLl0BDXIdiuK6resix0cN
+X-Authority-Analysis: v=2.4 cv=S9rUAYsP c=1 sm=1 tr=0 ts=69ca5b58 cx=c_pps
+ a=WeENfcodrlLV9YRTxbY/uA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
+ a=9MiheJ026npgdNaa-0UA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=kacYvNCVWA4VmyqE58fU:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-29_05,2026-03-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 bulkscore=0 clxscore=1015 adultscore=0 spamscore=0
+ suspectscore=0 lowpriorityscore=0 phishscore=0 priorityscore=1501
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603300088
 
-On Mon, 30 Mar 2026 at 12:17, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> On 30/03/2026 12:13, Ulf Hansson wrote:
-> > On Mon, 30 Mar 2026 at 11:54, Krzysztof Kozlowski <krzk@kernel.org> wro=
-te:
-> >>
-> >> On 23/03/2026 12:13, Ulf Hansson wrote:
-> >>> Hi Krzysztof,
-> >>>
-> >>> On Sat, 21 Mar 2026 at 14:18, Krzysztof Kozlowski <krzk@kernel.org> w=
-rote:
-> >>>>
-> >>>>
-> >>>> On Wed, 18 Mar 2026 15:27:45 +0000, Andr=C3=A9 Draszik wrote:
-> >>>>> This series adds support for the power domains on Google GS101.
-> >>>>>
-> >>>>> There are a few differences compared to SoCs already supported by t=
-his
-> >>>>> driver:
-> >>>>> * register access does not work via plain ioremap() / readl() /
-> >>>>>   writel().
-> >>>>>   Instead, the regmap created by the PMU driver must be used (which
-> >>>>>   uses Arm SMCC calls under the hood).
-> >>>>> * DTZPC: a call needs to be made before and after power domain off/=
-on,
-> >>>>>   to inform the EL3 firmware of the request.
-> >>>>> * power domains can and are fed by a regulator rail and therefore
-> >>>>>   regulator control needed be implemented.
-> >>>>>
-> >>>>> [...]
-> >>>>
-> >>>> Applied, thanks!
-> >>>>
-> >>>> [01/10] dt-bindings: soc: google: add google,gs101-dtzpc
-> >>>>         https://git.kernel.org/krzk/linux/c/10084aeadadfab72648f6ed1=
-cc78f7cd87b861ba
-> >>>> [03/10] dt-bindings: soc: samsung: exynos-pmu: move gs101-pmu into s=
-eparate binding
-> >>>>         https://git.kernel.org/krzk/linux/c/3ec3c42b426fe5e2b48ff19c=
-551dec50bc78788c
-> >>>> [04/10] dt-bindings: soc: google: gs101-pmu: allow power domains as =
-children
-> >>>>         https://git.kernel.org/krzk/linux/c/c8229a5160eea145b796f543=
-17d6e659cec9b080
-> >>>>
-> >>>> Best regards,
-> >>>
-> >>> Usually I pick up the power-domain related changes for the DT binding=
-s
-> >>> and host them via an immutable branch called "dt". If needed, SOC
-> >>> maintainers can pull it to apply/test the corresponding DTS changes.
-> >>>
-> >>> That said, I am open to whatever you think is best here. Perhaps it's
-> >>> easier if you can drop the DT patches and provide your acks instead o=
-r
-> >>> if you can share them via an immutable branch for me to pull?
-> >>
-> >>
-> >> I did not pick up any pmdomain binding patches. I picked up only soc a=
-nd
-> >> according to cover letter there are no dependencies between anything h=
-ere.
-> >
-> > As I understand it, they are all related and some even depend on each
->
-> I raised exactly that questions but no answers.
->
-> > other. I think keeping all four DT patches together makes sense.
->
-> Why? What is the dependency?
+On Mon, Mar 30, 2026 at 10:55:02AM +0530, Dikshita Agarwal wrote:
+> 
+> 
+> On 2/9/2026 7:02 AM, Dmitry Baryshkov wrote:
+> > On SM8250 most of the video clocks are powered by the MMCX domain, while
+> > the PLL is powered on by the MX domain. Extend the driver to support
+> > scaling both power domains, while keeping compatibility with the
+> > existing DTs, which define only the MX domain.
+> > 
+> > Fixes: 79865252acb6 ("media: iris: enable video driver probe of SM8250 SoC")
+> > Reviewed-by: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>
+> > Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> > ---
+> >  drivers/media/platform/qcom/iris/iris_platform_gen1.c | 2 +-
+> >  drivers/media/platform/qcom/iris/iris_probe.c         | 7 +++++++
+> >  2 files changed, 8 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/media/platform/qcom/iris/iris_platform_gen1.c b/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > index df8e6bf9430e..aa71f7f53ee3 100644
+> > --- a/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > +++ b/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > @@ -281,7 +281,7 @@ static const struct bw_info sm8250_bw_table_dec[] = {
+> >  
+> >  static const char * const sm8250_pmdomain_table[] = { "venus", "vcodec0" };
+> >  
+> > -static const char * const sm8250_opp_pd_table[] = { "mx" };
+> > +static const char * const sm8250_opp_pd_table[] = { "mx", "mmcx" };
+> >  
+> >  static const struct platform_clk_data sm8250_clk_table[] = {
+> >  	{IRIS_AXI_CLK,  "iface"        },
+> > diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/drivers/media/platform/qcom/iris/iris_probe.c
+> > index 7b612ad37e4f..74ec81e3d622 100644
+> > --- a/drivers/media/platform/qcom/iris/iris_probe.c
+> > +++ b/drivers/media/platform/qcom/iris/iris_probe.c
+> > @@ -64,6 +64,13 @@ static int iris_init_power_domains(struct iris_core *core)
+> >  		return ret;
+> >  
+> >  	ret =  devm_pm_domain_attach_list(core->dev, &iris_opp_pd_data, &core->opp_pmdomain_tbl);
+> > +	/* backwards compatibility for incomplete ABI SM8250 */
+> > +	if (ret == -ENODEV &&
+> > +	    of_device_is_compatible(core->dev->of_node, "qcom,sm8250-venus")) {
+> > +		iris_opp_pd_data.num_pd_names--;
+> > +		ret = devm_pm_domain_attach_list(core->dev, &iris_opp_pd_data,
+> > +						 &core->opp_pmdomain_tbl);
+> > +	}
+> >  	if (ret < 0)
+> >  		return ret;
+> >  
+> > 
+> 
+> Hitting below compilation error on latest kernel
+> 
+> drivers/media/platform/qcom/iris/iris_probe.c: In function
+> ‘iris_init_power_domains’:
+> drivers/media/platform/qcom/iris/iris_probe.c:71:46: error: decrement of
+> read-only member ‘num_pd_names’
+>    71 |                 iris_opp_pd_data.num_pd_names--;
 
-I defer to Andr=C3=A9 to clarify this for us.
+See commit 7ad7f43e568b ("pmdomain: de-constify fields struct
+dev_pm_domain_attach_data")
 
->
-> >
-> > Although, as I said, if you think it's best to funnel them through
-> > your tree, please do and then share them via an immutable branch, so I
-> > can apply the pmdomain driver changes.
->
-> soc must go via my tree, but there is no reason to take the pmdomain
-> binding patch. So I did not take.
+> 
+> Could you please check and fix.
+> 
+> Thanks,
+> Dikshita
 
-Yes, they belong to soc/platform, which is common for most
-power-domain providers.
-
-To allow us to merge/maintain power-domain provider *driver* changes
-separately, we needed a way to manage the corresponding DT bindings.
-That's why I am hosting the immutable "dt" branch for these, which
-soc/platform maintainers can pull-in when they need it.
-
-Of course, doing it the other way around is also possible. Just let me
-know what you prefer.
-
->
-> But anyway, I just noticed that I dropped everything: this introduces
-> new warnings which were nowhere addressed or explained. So regardless
-> how this should go, please do not apply anything - it's broken and
-> author is silent.
-
-Right, I will await your confirmation!
-
-Kind regards
-Uffe
+-- 
+With best wishes
+Dmitry
