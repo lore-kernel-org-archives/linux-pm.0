@@ -1,140 +1,241 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A7713C5DB0;
-	Mon, 30 Mar 2026 11:24:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 250A18635D
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:41:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774869898; cv=none; b=lHe3fo2r07y8cyrTFeZdYdE5iDiA9uP5DvkoNVTSVT3qvsRWrH6NsBu1HN8ejC/Fpmilp8mun4LmzYncnenqpxRkfJAltz2Te75rFtR7ArjNEtTKNbEgM+hedIAA9Bse67sBILKmSNX5TxFI9gesVuFjxrJELhzSXuNDPWQjAs8=
+	t=1774870887; cv=none; b=ao30s1I+w8SypvyvbzH0OR2OPlr8cMA0kNYmaP1dSHZCogTdJRaKa0Nsnw7kCYHUfaKVNR2j+TB771vpdObrJ++5UITSbUz1QpE/xTDpnRtW5wqkQlcGXfPtdWluoMtOsOT0AvWSAxvgWGOj7lxSLiXszpKGUlYQ+9OBB/oq1zc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774869898; c=relaxed/simple;
-	bh=M8CScpDmH0ajIuZyf8Mc+wJzc+UflAvvb2OG9+HyOEk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UOV/gs6WlI2S6GJ8pui6nzs1wsilut1UvhXhonOCKG0gv5+sb2omb+luI/sMp6j7f1indY6nHHWi8EaTZhP2kswu55q3f51OkBIt6WihMgTlVLsyrY/ZEKxupPgCUpmt5qnhhLTXkpYMm4CshQlfUc9+qYBvi3UhR5CAjYWH4q4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lwxofH1V; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774870887; c=relaxed/simple;
+	bh=3ZsH28Jc/O1zHfos9IyDvnhBI+5B1Gn1wG8BmmCljP0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SxpU/pIbnI85AmHS4mGBClBPy276MoRycQ7UesCjeBo2VMI/jH381JKhegUqhySjEAbZCk8Gy1cYEzIgkCKPmCfM0Q0odibR3IsfqWc+CDPrQ8a0A8l5IAZqr5N/vMdhAnMK2NSS1LNsintMv5VuDyCrZ+QCIbn+P5vSfq66zwo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=id3Slb/l; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lwxofH1V"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D71FBC4CEF7;
-	Mon, 30 Mar 2026 11:24:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="id3Slb/l"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09CF9C2BCB5
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 11:41:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774869898;
-	bh=M8CScpDmH0ajIuZyf8Mc+wJzc+UflAvvb2OG9+HyOEk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=lwxofH1V68wHFmAB1VXwJWEHaXjrif8D2GuDhi8juq86XF1PpRc3U5I/liSKfsMsH
-	 5usHZU7KdUFx3GKlhlzxHEN/ZP0zBUGYUYUEPL118YCzuCocVFGSkD7LcmAuStNdjz
-	 oFdsur/bJf7kxoy6nfCOcGiI7/5QYNrZeQrG7Me1V/kbYEhVtNNrttTx38Krh8Y6/1
-	 Gk4v+h9jk7Av6WJZKaSb+kDyZ+4lo6nI0fFGc9Lp0IafgPosGLK/iVTBrKDfnJRal1
-	 R8hUtH1HKTxYHE5budGOfP/bDebFeueM31Q7ObofrBZuZcPC2IfGWG2VkxC7AesHll
-	 9Ctyk+H0k8DkQ==
-Message-ID: <a417e45b-1632-4b14-9e3c-f7110db53190@kernel.org>
-Date: Mon, 30 Mar 2026 13:24:49 +0200
+	s=k20201202; t=1774870887;
+	bh=3ZsH28Jc/O1zHfos9IyDvnhBI+5B1Gn1wG8BmmCljP0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=id3Slb/l98R80JxvVIG3mqM3QGZF5h69GyAWEYvAWoz3pwn7giVKw3AHZ1BemaQOp
+	 wsQYvjJ/WL9be8iKW3wLiuZdb7cVQWFPg++QfpOvKc/hTh70eiB+DM6NtZm8f1urkq
+	 bl6bXCL9FGutGz5AdQf3NwwbIMbB/huD2K0eWcZBYaNRf6fHBqcrUWtB/zq285AOB2
+	 46X1lRFj7J1CzekIh4R/XrjgZwE8QGPkFDRur8fQCBVSoow0+xFxuiATi8eWQkf4Mk
+	 IR2N5octXLbV9bf4Sf6Pk7i5D5joUagM/5LWRIG3N4K6H4KhWNqeSR7xHDlZ0gVHXr
+	 oyMxhWcSfaYyg==
+Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-415c8a4d2e6so1722802fac.0
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 04:41:26 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUFnBun5CUZjWwEOxJKUlSZAfXEHNWEi8LxmYdyLKZwao78TfVqNyMQou1rLo5xvAbWEsfZb8Ocqw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz/BqMaKn62oe/umj4hb8tO/oYP2xU1IhtttBB0MRzDFKIDA4DT
+	Ecr7MLBxBQ9VGya+cEWg1gejvYNMOMR0kJJdDDcsLfeZ+Rdbfp65Wnw35B2s30t3SX2CW/NDBMi
+	Y7spPgMqbXq5KRe1awJWkhw8yuRNQyAs=
+X-Received: by 2002:a05:6871:7415:b0:417:4888:3292 with SMTP id
+ 586e51a60fabf-41cec2aa529mr6978690fac.27.1774870885976; Mon, 30 Mar 2026
+ 04:41:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
- Google GS101
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, Peter Griffin <peter.griffin@linaro.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>, Juan Yescas <jyescas@google.com>,
- Will McVicker <willmcvicker@google.com>, kernel-team@android.com,
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
-References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
- <177409907930.268981.5882592990447577348.b4-ty@b4>
- <CAPDyKFoz-sm0pfvn5iSYFY0mrW38vaGRZsFvrVPqsv7BsYxeWQ@mail.gmail.com>
- <1fbf5c54-8793-4585-be33-ded77019adb2@kernel.org>
- <CAPDyKFrK3NLwaii-9FEmyaTzUAuVkMkLL3rWBQwQvT-M+PzEHA@mail.gmail.com>
- <3bb6b71e-947b-4248-95ba-79852f743c1d@kernel.org>
- <CAPDyKFpOPC2stAJ262jdap-=ByY09AeQ0kj6p_9FTGJBx+Tu-Q@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <CAPDyKFpOPC2stAJ262jdap-=ByY09AeQ0kj6p_9FTGJBx+Tu-Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <6267615.lOV4Wx5bFT@rafael.j.wysocki> <5321acf9-0de4-4b8a-811d-e1d71b152887@arm.com>
+In-Reply-To: <5321acf9-0de4-4b8a-811d-e1d71b152887@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 30 Mar 2026 13:41:14 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
+X-Gm-Features: AQROBzBdYALw-vxnNM-MZRAaSfVoKObpkfwYsBVfjIH7VnsiZD2dUncOXnvJeo0
+Message-ID: <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
+Subject: Re: [PATCH v2] thermal: core: Address thermal zone removal races with resume
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mauricio Faria de Oliveira <mfo@igalia.com>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, LKML <linux-kernel@vger.kernel.org>, 
+	Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 30/03/2026 13:12, Ulf Hansson wrote:
-> 
->>
->>>
->>> Although, as I said, if you think it's best to funnel them through
->>> your tree, please do and then share them via an immutable branch, so I
->>> can apply the pmdomain driver changes.
->>
->> soc must go via my tree, but there is no reason to take the pmdomain
->> binding patch. So I did not take.
-> 
-> Yes, they belong to soc/platform, which is common for most
-> power-domain providers.
+On Mon, Mar 30, 2026 at 11:14=E2=80=AFAM Lukasz Luba <lukasz.luba@arm.com> =
+wrote:
+>
+>
+>
+> On 3/27/26 09:49, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Since thermal_zone_pm_complete() and thermal_zone_device_resume()
+> > re-initialize the poll_queue delayed work for the given thermal zone,
+> > the cancel_delayed_work_sync() in thermal_zone_device_unregister()
+> > may miss some already running work items and the thermal zone may
+> > be freed prematurely [1].
+> >
+> > There are two failing scenarios that both start with
+> > running thermal_pm_notify_complete() right before invoking
+> > thermal_zone_device_unregister() for one of the thermal zones.
+> >
+> > In the first scenario, there is a work item already running for
+> > the given thermal zone when thermal_pm_notify_complete() calls
+> > thermal_zone_pm_complete() for that thermal zone and it continues to
+> > run when thermal_zone_device_unregister() starts.  Since the poll_queue
+> > delayed work has been re-initialized by thermal_pm_notify_complete(), t=
+he
+> > running work item will be missed by the cancel_delayed_work_sync() in
+> > thermal_zone_device_unregister() and if it continues to run past the
+> > freeing of the thermal zone object, a use-after-free will occur.
+> >
+> > In the second scenario, thermal_zone_device_resume() queued up by
+> > thermal_pm_notify_complete() runs right after the thermal_zone_exit()
+> > called by thermal_zone_device_unregister() has returned.  The poll_queu=
+e
+> > delayed work is re-initialized by it before cancel_delayed_work_sync() =
+is
+> > called by thermal_zone_device_unregister(), so it may continue to run
+> > after the freeing of the thermal zone object, which also leads to a
+> > use-after-free.
+> >
+> > Address the first failing scenario by ensuring that no thermal work
+> > items will be running when thermal_pm_notify_complete() is called.
+> > For this purpose, first move the cancel_delayed_work() call from
+> > thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
+> > new work from entering the workqueue going forward.  Next, switch
+> > over to using a dedicated workqueue for thermal events and update
+> > the code in thermal_pm_notify() to flush that workqueue after
+> > thermal_pm_notify_prepare() has returned which will take care of
+> > all leftover thermal work already on the workqueue (that leftover
+> > work would do nothing useful anyway because all of the thermal zones
+> > have been flagged as suspended).
+> >
+> > The second failing scenario is addressed by adding a tz->state check
+> > to thermal_zone_device_resume() to prevent it from re-initializing
+> > the poll_queue delayed work if the thermal zone is going away.
+> >
+> > Note that the above changes will also facilitate relocating the suspend
+> > and resume of thermal zones closer to the suspend and resume of devices=
+,
+> > respectively.
+> >
+> > Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronousl=
+y")
+> > Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
+> > Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init=
+_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocat=
+ion
+> >     fails (Sashiko)
+> >
+> > Lukasz, Daniel, I'm quite confident about this patch, but I would appre=
+ciate
+> > your feedback.
+>
+> My apologies for delay...
+>
+> >
+> > ---
+> >   drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
+> >   1 file changed, 26 insertions(+), 5 deletions(-)
+> >
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
+> >
+> >   static bool thermal_pm_suspended;
+> >
+> > +static struct workqueue_struct *thermal_wq __ro_after_init;
+> > +
+> >   /*
+> >    * Governor section: set of functions to handle thermal governors
+> >    *
+> > @@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
+> >       if (delay > HZ)
+> >               delay =3D round_jiffies_relative(delay);
+> >
+> > -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_q=
+ueue, delay);
+> > +     mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
+> >   }
+> >
+> >   static void thermal_zone_recheck(struct thermal_zone_device *tz, int =
+error)
+> > @@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
+> >
+> >       guard(thermal_zone)(tz);
+> >
+> > +     /* If the thermal zone is going away, there's nothing to do. */
+> > +     if (tz->state & TZ_STATE_FLAG_EXIT)
+> > +             return;
+> > +
+> >       tz->state &=3D ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING=
+);
+> >
+> >       thermal_debug_tz_resume(tz);
+> > @@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
+> >       }
+> >
+> >       tz->state |=3D TZ_STATE_FLAG_SUSPENDED;
+> > +
+> > +     /* Prevent new work from getting to the workqueue subsequently. *=
+/
+> > +     cancel_delayed_work(&tz->poll_queue);
+> >   }
+> >
+> >   static void thermal_pm_notify_prepare(void)
+> > @@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
+> >   {
+> >       guard(thermal_zone)(tz);
+> >
+> > -     cancel_delayed_work(&tz->poll_queue);
+> > -
+> >       reinit_completion(&tz->resume);
+> >       tz->state |=3D TZ_STATE_FLAG_RESUMING;
+> >
+> > @@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
+> >        */
+> >       INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
+> >       /* Queue up the work without a delay. */
+> > -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_q=
+ueue, 0);
+> > +     mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
+> >   }
+> >
+> >   static void thermal_pm_notify_complete(void)
+> > @@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
+> >       case PM_RESTORE_PREPARE:
+> >       case PM_SUSPEND_PREPARE:
+> >               thermal_pm_notify_prepare();
+> > +             /*
+> > +              * Allow any leftover thermal work items already on the
+> > +              * worqueue to complete so they don't get in the way late=
+r.
+> > +              */
+> > +             flush_workqueue(thermal_wq);
+> >               break;
+> >       case PM_POST_HIBERNATION:
+> >       case PM_POST_RESTORE:
+> > @@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
+> >       if (result)
+> >               goto error;
+> >
+> > +     thermal_wq =3D alloc_workqueue("thermal_events",
+> > +                                   WQ_FREEZABLE | WQ_POWER_EFFICIENT |=
+ WQ_PERCPU, 0);
+>
+>
+> Why we need those workqueue instances per-cpu?
 
-What does belong to soc/platform? pmdomain changes? No, they do not...
+That's to limit the changes in this fix to what's needed to address
+the problem at hand.
 
-> 
-> To allow us to merge/maintain power-domain provider *driver* changes
-> separately, we needed a way to manage the corresponding DT bindings.
+The previously used workqueue was also per-CPU and freezable.
 
-Nothing stops that, there is no dependency. For a week I am saying there
-are no dependencies. If there are, please provide any sort of
-argument/proof, otherwise there is nothing to do here.
+> It isn't a concurrent work, only one CPU can manage the cpufreq domain.
+>
+> I would drop that flag and allow to have single instance and migrate
+> between cpus (to not wake up the one which queued the work).
 
-> That's why I am hosting the immutable "dt" branch for these, which
-> soc/platform maintainers can pull-in when they need it.
-> 
-> Of course, doing it the other way around is also possible. Just let me
-> know what you prefer.
+I have a separate patch for that on top of this one, will post it later.
 
-Nothing like that is necessary.
-
-Best regards,
-Krzysztof
+Let's avoid mixing fixes with changes that aren't directly related to them.
