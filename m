@@ -1,61 +1,63 @@
-Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
+Received: from mail-qv1-f49.google.com (mail-qv1-f49.google.com [209.85.219.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 080583DA7ED
-	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 16:51:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6213B376483
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 16:52:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774889517; cv=none; b=RIqJsdN3rQ7ayzJOI4VyGCE5D90eGY0l8+8Rd2ZNRW1n8jnhfQkZVObUK6wTCNPD4xAwCxqKeX84YKdaGYOsZtP+OMleRLeqzpxhsutUA522ocxEEFS90J1oe24hoUgutPQZRyEuutGl4ErVcM/hb9MZ0cEBNWL0wuzokCpRSuU=
+	t=1774889522; cv=none; b=pE93K2oY1OQIU25kwfC2sDjRtSiJgopZG/e3KcbROBNT2gvjYyEOLoLjerRnLZwLRCHmtTGrzwiOFjCzyB47zmgjFBlJKhLsTdUMA/R0G8gJn2XP6ZlKjHTY8Is/7sUXlRg4fKY0ow0rNPHu8MNX0VzPNvwLJdFS4csDPs2cNgY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774889517; c=relaxed/simple;
-	bh=yzn1qwpZMJkPgigRBzeYMyZVhMPbZ4A5hdI7do7E8HE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fq/uAXlbyhwcoekl2Au0sw1REU7g5qlaD30B0m6m/5afOm9icgbaOSl8awPW66Ov2F7RiCVJVJvgf7+mS/ySFzIAqPiKc6oKOwhOvhOZZq6rQFqKjEw83shP38gsmwKgrCgc2uK1z6ZKqbYeagVXJ16/GY6TZM5Z/zIc5N+1d2w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pONveiMG; arc=none smtp.client-ip=209.85.160.172
+	s=arc-20240116; t=1774889522; c=relaxed/simple;
+	bh=XwLSuwNXEZjBIW+yA2bhoMct5gmlj+ljgCDuHwRDYZM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KlIPWPH87WQlCnud4V6uHYZ2hTw+l+1zGQdfPqoX3t4tquBOp4vbiATnur9NHyVCuFDr5Cm6HlaZa0UcKGtnIwuIdYNjNIWrXWrENbAO+1ZRMW6vr+aOReXy3Vij9RaDcUSV1IAjLrThwykTUXV+Fx+EM5L8pO8g08jPHtG9m0Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=qDqBlWKf; arc=none smtp.client-ip=209.85.219.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pONveiMG"
-Received: by mail-qt1-f172.google.com with SMTP id d75a77b69052e-50b266413fbso39698611cf.1
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:51:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qDqBlWKf"
+Received: by mail-qv1-f49.google.com with SMTP id 6a1803df08f44-8a00566c11bso24925706d6.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 09:52:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774889515; x=1775494315; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZIZbf+qqROsD0LmW3EiPB41zllSjbGoJgs0L3HB6kjY=;
-        b=pONveiMGnp+w9UO+MaWMRMfxNrvO3StceMz80q21u3D+rqPs4+Y8qXBAcVi60DkbbN
-         gFvyOdPuJEn9p8yeC6e+avYQvc2wmB7enQtBNYyE2SE7PmS9rEGWj1TfIIYO4Z172258
-         UmqXy3n9VvC5F4tE39Z1smHg326yIZLhswPlQT8yH+MWiR0uwOAbEdgBU9iGbCYuTb6Q
-         oy5v+o+0S2hwjPh/du5+WXrLWj2vGBTyOySv6WNvFRe2IZn4i2FGTcuYX7T7PP1h9GbV
-         sgZTxsvA2cihVohOKUD3IKFFb0lz20jl2KsNMt2gvfqifMQilGD4L8H3d5CKkt/UK4iK
-         rUmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774889515; x=1775494315;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1774889519; x=1775494319; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ZIZbf+qqROsD0LmW3EiPB41zllSjbGoJgs0L3HB6kjY=;
-        b=lMDWlwkhniIqHspqX3NU6iUWjGEKi7X99pu4v84uFtFGDyrO1xW1nOlSA8hfWGkdbR
-         ZXlFc36NsaqOXB8kSsMCF5xBBdDPplroSS8bSwCP/5nPB53g0xgtuq15o0dnBTBikjDF
-         nEIyRXjYUMiOhY0GcSJiZp3m3Tu34DdNtuH51ST9CGAPt6NN7akWXpJDvqGlJrCx04vu
-         eOPIc7TbXlZ7QWyfcUg/QwQw7SB8tVXRdr2Dmtc5Y/RYA4JES0smuHUpJJ+1qS2jnXKJ
-         VGL2tH1HsUKyvITTjsqEhIxEnVnTZs1/waIHKRtEtAHPQL4/wz11SZMc7LEW2cJOVQPd
-         nHxA==
-X-Forwarded-Encrypted: i=1; AJvYcCX/jel7knAOXivoPQ0X3YILfq2vjFZfiQtN8/PqkOrlz4RYAx1d4nObk/NQLIrRIPb8cqApD6Apdw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyN6Mhewk2pAOle8gs7YGPqFgt/fiC1dzvq3yW+kwWXOt0o3MyD
-	TL9pU7bk3V6PeXKAp8VKr0QCdy/XqzDObEtDqe7eKAdW9YmfBJrzuVQB
-X-Gm-Gg: ATEYQzyyLTvgcrMppNPXbsQ9YlrALITWCe+1J+1ym22y4pNdbtLFlBmmE6z1y6xOz/g
-	IkgBBk6UiRnrjBzk7reCAjs8vDwJYWlkYlCGY/39b/nz6lqMaZTuwG5SoOualjTzR3FWFAnteiG
-	kmNi7ptA0u3WlSbEoub9nerRGAALqV+otBnbFjV1enFI979hjL49bALELev6wWF75JLfWkI4eYf
-	x7//HqWaQfNsgMmKueSX5OSg7O1dGggRiP2AeFW/6N0xglo0HfLKoWWbmG4/bFSMpNiYh+CnSTo
-	tiGlZMKhU+nOntpttv2aAhunGsD1+e4xxCYrLr08REbI2fgWCDNr7Pae2vldYwpooIBmbUFEYqu
-	Vm+5URT9YlWfbEBsclIYPbVa4wF4P5PvaJNHufhqPf8KDYk9sS1iU9ovrnFnsp2R0ECu70t4DbA
-	i/NiCcZLmBIF1yn5OMorntQnM=
-X-Received: by 2002:a05:622a:18a8:b0:509:20de:4ad1 with SMTP id d75a77b69052e-50ba3818222mr175000561cf.10.1774889514877;
-        Mon, 30 Mar 2026 09:51:54 -0700 (PDT)
+        bh=jBXeNBZyHgjVgtu2Bum5En+w/w6aOZhbfuK0R+dyuuw=;
+        b=qDqBlWKf15CKHkzTbFujokeZJ5L1gMg6+gajC0BOWsbLNrMyDudxfhWF5kiAOqI4Br
+         I45YlpTG7GlbEaTgcuaUgQGC95gcZusftN3vfaSyP/ZVDhaujMzv/m5MjXIqMY3b+Uh+
+         3nkjvU3A9BnpHKWIxHsceXaw2wwJleuZpQJjgNIOMkNwGi+URnpCGfck506GRzr8U3eC
+         e7AHisgAa23jxWrTNPR60qmXSYjM9OUQlK3YHHX6LKWLvLpZkINsZKaN0pUoycVCiyZu
+         8wrNS/JXTBRIbYgeYpoSeUSYlao+93HsPaUPzA5m1C1MJCrJmRGZsxxP7dPzeqJU7/gE
+         dfTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774889519; x=1775494319;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=jBXeNBZyHgjVgtu2Bum5En+w/w6aOZhbfuK0R+dyuuw=;
+        b=cuFyqOf7lubxFki2T2mcUOqpS8vWX6RS5X210zjRUl7+4ZcCqLBBehblJCleR1G9bc
+         HuYZhG+4rxc9tLTjMhFLj55M/RMv556GZqqE61sV4NVssBQbe0wtYfQZwe6Zp4oXLJfO
+         CRnidZpB5zJekcohU+Y65+xxdMqnQkVIDJqI6ysWtz8m4pnDV2DF2pkYF0E6qoFpI45w
+         +PQ5lrDQCIsDprHaAELprBiTH4n1Wma9J6IS36O5u1Ao8bysB6eblorZbUCRJJRCwGAt
+         OLtKx0rX/iZknrb0vSLAebvsxpw2mtHOHfh9SqfH5yMa1zZNPeHEl1JJ1dkG3ehlhVRs
+         /RrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX6mYK48WERsvq+tk827JwTs6nB0YGzpirQVNJiPRMl5cQJ28Q2p4iA0sv34BiEadZLh/xyjv+WPQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzeHlYdCpDhSAUfYsfa7dxUv1E9lwrVaYBxN/igSXakI5loncGH
+	K3zsxqiod29nRKm4vr7Mebb/j8oYGkhCVyMdNp2wycPEB5/CRGMYTAPp
+X-Gm-Gg: ATEYQzwQtKMs/ul1ovTieGBWRFK1R2uQCDNzBPLoDMRHGwuY/oxnyZTDjGOSMO1p5oM
+	IixTnqEX41xakz1YosOdc+BCD5DS1z3VMhEAIDUJwkTULtNv1MDlnly7f2F4R1GWQMcjJ7D5Nmf
+	oIHivmkLjUfxOnm3SIABfmvj9Ps2AxYrR86tRv0M9aL/8XXoZOAQSqZy0cFL1q64bUR/0tz9Koi
+	FwIdgqzFz9w5svO8LfFj3PW7AGx4UNxdW39YHHuGMTBNQl8NRlh5/S3h7b2fb6wov8W527SVip5
+	jYQE0Xx4+ZTpvOO8x99VSh6SMz+RmrfFik4DC7l6Xe3UlPJl/1gAJumsZHCh4JKTJh9jYTm2gWG
+	9rsVS6TkUXlkpQ8q9sBion4wk2xQv6DTlFI7IDh/jGEhnDiYjEtWvgn253hM/hLQyJFERU/PXDP
+	/k8hPzyWZ6flnKBpRa0EwfUnY=
+X-Received: by 2002:a05:6214:1d07:b0:89c:8681:36fa with SMTP id 6a1803df08f44-89ce8dc159bmr212374466d6.32.1774889519213;
+        Mon, 30 Mar 2026 09:51:59 -0700 (PDT)
 Received: from localhost ([199.7.157.54])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-50bb2cc79d8sm68292771cf.12.2026.03.30.09.51.54
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89ecb5cb530sm71400926d6.7.2026.03.30.09.51.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 09:51:54 -0700 (PDT)
+        Mon, 30 Mar 2026 09:51:58 -0700 (PDT)
 From: Richard Acayan <mailingradian@gmail.com>
 To: Bjorn Andersson <andersson@kernel.org>,
 	Konrad Dybcio <konradybcio@kernel.org>,
@@ -72,10 +74,12 @@ To: Bjorn Andersson <andersson@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-pm@vger.kernel.org
 Cc: Richard Acayan <mailingradian@gmail.com>
-Subject: [PATCH v5 0/2] SDM670 Basic SoC thermal zones
-Date: Mon, 30 Mar 2026 12:52:35 -0400
-Message-ID: <20260330165237.101045-1-mailingradian@gmail.com>
+Subject: [PATCH v5 1/2] thermal/qcom/lmh: support SDM670 and its CPU clusters
+Date: Mon, 30 Mar 2026 12:52:36 -0400
+Message-ID: <20260330165237.101045-2-mailingradian@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260330165237.101045-1-mailingradian@gmail.com>
+References: <20260330165237.101045-1-mailingradian@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -84,31 +88,126 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This adds support for the thermal sensor, for thermal-based CPU
-throttling via LMh, and for thermal zones.
+The LMh driver was made for Qualcomm SoCs with clusters of 4 CPUs, but
+some SoCs divide the CPUs into different sizes of clusters. In SDM670,
+the first 6 CPUs are in the little cluster and the next 2 are in the big
+cluster. Define the clusters in the match data and define the different
+cluster configuration for SDM670.
 
-Changes since v4 (https://lore.kernel.org/r/20260328014041.83777-1-mailingradian@gmail.com):
-- use simple comparison to differentiate between cluster 0 and 1 (1/2)
-- drop applied dt-bindings patches (previously 1-2/4)
+Currently, this tolerates linking to any CPU in a given cluster.
 
-Changes since v3 (https://lore.kernel.org/r/20260310002037.1863-1-mailingradian@gmail.com):
-- support LMh clusters starting at CPU 6 (dt-bindings tag dropped) (3/4)
+Signed-off-by: Richard Acayan <mailingradian@gmail.com>
+---
+ drivers/thermal/qcom/lmh.c | 54 ++++++++++++++++++++++++--------------
+ 1 file changed, 34 insertions(+), 20 deletions(-)
 
-Changes since v2 (https://lore.kernel.org/r/20260304014530.27775-1-mailingradian@gmail.com):
-- remove cooling from memory thermal zone (3/3)
-
-Changes since v1 (https://lore.kernel.org/r/20260210021607.12576-1-mailingradian@gmail.com):
-- add review tag from Krzysztof (1/3)
-- replace CPU thermal zones with lmh (2/3, 3/3)
-
-Richard Acayan (2):
-  thermal/qcom/lmh: support SDM670 and its CPU clusters
-  arm64: dts: qcom: sdm670: add thermal zones and thermal devices
-
- arch/arm64/boot/dts/qcom/sdm670.dtsi | 400 +++++++++++++++++++++++++++
- drivers/thermal/qcom/lmh.c           |  54 ++--
- 2 files changed, 434 insertions(+), 20 deletions(-)
-
+diff --git a/drivers/thermal/qcom/lmh.c b/drivers/thermal/qcom/lmh.c
+index 3d072b7a4a6d..81ab2f0be9c8 100644
+--- a/drivers/thermal/qcom/lmh.c
++++ b/drivers/thermal/qcom/lmh.c
+@@ -30,14 +30,17 @@
+ 
+ #define LMH_REG_DCVS_INTR_CLR		0x8
+ 
+-#define LMH_ENABLE_ALGOS		1
+-
+ struct lmh_hw_data {
+ 	void __iomem *base;
+ 	struct irq_domain *domain;
+ 	int irq;
+ };
+ 
++struct lmh_soc_data {
++	bool enable_algos;
++	unsigned int clus1_start_idx;
++};
++
+ static irqreturn_t lmh_handle_irq(int hw_irq, void *data)
+ {
+ 	struct lmh_hw_data *lmh_data = data;
+@@ -100,8 +103,8 @@ static int lmh_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct device_node *cpu_node;
+ 	struct lmh_hw_data *lmh_data;
++	const struct lmh_soc_data *match_data;
+ 	int temp_low, temp_high, temp_arm, cpu_id, ret;
+-	unsigned int enable_alg;
+ 	u32 node_id;
+ 
+ 	if (!qcom_scm_is_available())
+@@ -121,6 +124,11 @@ static int lmh_probe(struct platform_device *pdev)
+ 	cpu_id = of_cpu_node_to_id(cpu_node);
+ 	of_node_put(cpu_node);
+ 
++	if (cpu_id < 0) {
++		dev_err(dev, "Wrong CPU id associated with LMh node\n");
++		return -EINVAL;
++	}
++
+ 	ret = of_property_read_u32(np, "qcom,lmh-temp-high-millicelsius", &temp_high);
+ 	if (ret) {
+ 		dev_err(dev, "missing qcom,lmh-temp-high-millicelsius property\n");
+@@ -139,26 +147,16 @@ static int lmh_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	/*
+-	 * Only sdm845 has lmh hardware currently enabled from hlos. If this is needed
+-	 * for other platforms, revisit this to check if the <cpu-id, node-id> should be part
+-	 * of a dt match table.
+-	 */
+-	if (cpu_id == 0) {
++	match_data = of_device_get_match_data(dev);
++	if (cpu_id < match_data->clus1_start_idx)
+ 		node_id = LMH_CLUSTER0_NODE_ID;
+-	} else if (cpu_id == 4) {
++	else
+ 		node_id = LMH_CLUSTER1_NODE_ID;
+-	} else {
+-		dev_err(dev, "Wrong CPU id associated with LMh node\n");
+-		return -EINVAL;
+-	}
+ 
+ 	if (!qcom_scm_lmh_dcvsh_available())
+ 		return -EINVAL;
+ 
+-	enable_alg = (uintptr_t)of_device_get_match_data(dev);
+-
+-	if (enable_alg) {
++	if (match_data->enable_algos) {
+ 		ret = qcom_scm_lmh_dcvsh(LMH_SUB_FN_CRNT, LMH_ALGO_MODE_ENABLE, 1,
+ 					 LMH_NODE_DCVS, node_id, 0);
+ 		if (ret)
+@@ -231,10 +229,26 @@ static int lmh_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct lmh_soc_data sdm670_lmh_data = {
++	.enable_algos = true,
++	.clus1_start_idx = 6,
++};
++
++static const struct lmh_soc_data sdm845_lmh_data = {
++	.enable_algos = true,
++	.clus1_start_idx = 4,
++};
++
++static const struct lmh_soc_data sm8150_lmh_data = {
++	.enable_algos = false,
++	.clus1_start_idx = 4,
++};
++
+ static const struct of_device_id lmh_table[] = {
+-	{ .compatible = "qcom,sc8180x-lmh", },
+-	{ .compatible = "qcom,sdm845-lmh", .data = (void *)LMH_ENABLE_ALGOS},
+-	{ .compatible = "qcom,sm8150-lmh", },
++	{ .compatible = "qcom,sc8180x-lmh", .data = &sm8150_lmh_data },
++	{ .compatible = "qcom,sdm670-lmh", .data = &sdm670_lmh_data },
++	{ .compatible = "qcom,sdm845-lmh", .data = &sdm845_lmh_data },
++	{ .compatible = "qcom,sm8150-lmh", .data = &sm8150_lmh_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, lmh_table);
 -- 
 2.53.0
 
