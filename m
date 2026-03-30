@@ -1,223 +1,445 @@
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013016.outbound.protection.outlook.com [40.93.201.16])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAAFE2D97B7;
-	Mon, 30 Mar 2026 12:01:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.16
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774872111; cv=fail; b=Mvo3xp+pu6YLoGU9+Y0WTPFFLov4XjeS3Vz00bY/tagPq8EElHjpoySjYprjif5ewbQDMK42KalZFMinNwJTGyDmXYUAT9qQ1FqKPb+7K943b4B92TcAvDjdCEJWHKd38PUFmMTdqzNaRY/LRZCIJgNwoCHJguhlElA94Kn/Mrc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774872111; c=relaxed/simple;
-	bh=cfmdnrS/oAx/T48/yu4KVqn9Gn+Z/fw7ZFNnyt7C4oo=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VT7bkxXekVFBQg7I/Z7W5JU3D8ycutAE0aWXBbv4M5xIkMumJQBB1RztMnm/2N0YcVdYSMJSDfFQ5HyccS7IaTQo924F/a7VsIlneEn1d5r2aiVQHz/Gxt0sVylbC5vUxLiAhdMuJau2U84aKI6kF4DpUA1wGAa6zPRMcqU1ZUI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=k/i+kjaR; arc=fail smtp.client-ip=40.93.201.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4458C1FF1C7
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 12:06:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774872396; cv=none; b=GYPmHwb8b11w6oJNaGxk9FjMTRbYCDdTRgbs3SROj3hFRlZnxh6JT+tDehHR8/sYpzXbM0yKn9/f7Hrji80EBCj3x0b76o3U6r1Bho2XZWR8fn/3z75n2YuSjf7n+Ea40SWt/6QVuZMfR1MzgNhxmEUjbc5zxpDkJ4oVvho45yY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774872396; c=relaxed/simple;
+	bh=EJBKkZCO8MPILnI/4UqblC0w07xQhU9DuYoFlAM97jM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Y7dikadzAFrRpgmK7CTAauFm++8gjMMd2ig1a7eQOhKhI1fGAoMdjLE6zO9/GSdkMw6m7exc75BmJ4z8agGsekD06wUjKBpMmA8X+8xaDwkag2j+0YKqHIdYL8qUmdngrb8tL+lL7oSExDw/kYrvXJ7T1wxfBBs7ifiT9JuyofQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q4mnksjf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="k/i+kjaR"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=JSnLLYXqCLAlpl4z7yx6SHRMKLcFAMA6Rdv+6EbM77RTqKK9pWpGIYYFbmtavpotrUAk+jiaMqbOx6SUk6D4W/MdL/wdtr5GGWeRPNqNd82EU2S7e9k2mHLZCFOqpOgd9IKEGtdnODYGT4o8Ppt+qsmOGDczPz+wpqSM5JgeS7eNLwvtVBwXilEystI5xtwSj4RIwmZoIcUJiuEbtF8bOzEJ0oqU2mkuEPhJMqZ3txfQwgsWANPx0CPguWL74szISUYGZKRWAAAyGJ2yGtxhPLwjcYZLfkWGdxwaTWrVe1ZGfZuJS8DulSD40F3+nLERv84Kln27BEwchlSg6c0tOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GyGUdfru8BhZNF6lOXOajU5NYmjRGLG+nMElz4Hnr4Q=;
- b=NQnsMrHjWsLTeK83f86RKvIJuPKgH85Kfeo/Kfb3CsckgVCqiXcu+bLKRwclZl+6dfYKd9AvP7CUi2PJVKf/Hb+LAJP8ocdJVH8zWt6s7iTwE8qKABm5I6MoVJi9ppB6xQCS3HomucwZi6TfXuJrKydZR8EG3SC15rFbxIupPTTzhV+mGMMcmVGSI87pqoCbG35P4JulTEJDhKryvTUfIPqrN6gKnJAGJ29DmmXTwtEFj9Pn7KStC6qu4F9eWuVdoLuuXsxwIrUExbE9yd+y4uQ+1Yl9LNgC25G5yPWrmRGX+L1YE5LXv8hvRs7OssfDAh5PTSPocu4ZKKPBtsmPCw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.23.194) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
- dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GyGUdfru8BhZNF6lOXOajU5NYmjRGLG+nMElz4Hnr4Q=;
- b=k/i+kjaRGYPaVAKlv5FhqNIJzoSPKToBJys5y9RvyfDgTmTnFJJhI70aEKv0+FvbQIxrSxLW2DaYKNWp09fviwS7rLINd91d4lMwNYVac4wRPtpZzSSXrE/mEzSI3p7ojjEknGlDSK5KYX2+gyyjbvWlTpKBgdQ8jKnsvk8rZVQ=
-Received: from SJ0PR03CA0008.namprd03.prod.outlook.com (2603:10b6:a03:33a::13)
- by PH7PR10MB6281.namprd10.prod.outlook.com (2603:10b6:510:1a7::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.28; Mon, 30 Mar
- 2026 12:01:47 +0000
-Received: from SJ1PEPF00001CEA.namprd03.prod.outlook.com
- (2603:10b6:a03:33a:cafe::32) by SJ0PR03CA0008.outlook.office365.com
- (2603:10b6:a03:33a::13) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9745.28 via Frontend Transport; Mon,
- 30 Mar 2026 12:01:47 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.194)
- smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
- action=none header.from=ti.com;
-Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.23.194 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.23.194; helo=lewvzet200.ext.ti.com; pr=C
-Received: from lewvzet200.ext.ti.com (198.47.23.194) by
- SJ1PEPF00001CEA.mail.protection.outlook.com (10.167.242.26) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9745.21 via Frontend Transport; Mon, 30 Mar 2026 12:01:47 +0000
-Received: from DLEE201.ent.ti.com (157.170.170.76) by lewvzet200.ext.ti.com
- (10.4.14.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Mon, 30 Mar
- 2026 07:01:44 -0500
-Received: from DLEE213.ent.ti.com (157.170.170.116) by DLEE201.ent.ti.com
- (157.170.170.76) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Mon, 30 Mar
- 2026 07:01:44 -0500
-Received: from lelvem-mr06.itg.ti.com (10.180.75.8) by DLEE213.ent.ti.com
- (157.170.170.116) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
- Transport; Mon, 30 Mar 2026 07:01:44 -0500
-Received: from akashdeep-HP-Z2-Tower-G5-Workstation.dhcp.ti.com (akashdeep-hp-z2-tower-g5-workstation.dhcp.ti.com [10.24.68.91])
-	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 62UC18tH242506;
-	Mon, 30 Mar 2026 07:01:39 -0500
-From: Akashdeep Kaur <a-kaur@ti.com>
-To: <praneeth@ti.com>, <nm@ti.com>, <vigneshr@ti.com>, <kristo@kernel.org>,
-	<robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
-	<rafael@kernel.org>, <viresh.kumar@linaro.org>,
-	<linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, <d-gole@ti.com>
-CC: <vishalm@ti.com>, <sebin.francis@ti.com>, <k-willis@ti.com>,
-	<a-kaur@ti.com>
-Subject: [PATCH 5/5] cpufreq: ti: Add device link to k3-socinfo
-Date: Mon, 30 Mar 2026 17:31:05 +0530
-Message-ID: <20260330120105.2985200-6-a-kaur@ti.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260330120105.2985200-1-a-kaur@ti.com>
-References: <20260330120105.2985200-1-a-kaur@ti.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q4mnksjf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C76CBC4CEF7
+	for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 12:06:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774872395;
+	bh=EJBKkZCO8MPILnI/4UqblC0w07xQhU9DuYoFlAM97jM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Q4mnksjf+cMTUmubzG6mpb2GMqeo1aKoAOUuSzBlUH0bYncSayQaFz8EopIpxVW2L
+	 uVbZVL0XMZv+hspDmzcGlRnA5BFkzYv5E5VQ2NzbzMuNr7TmrtIvERFNvHK4n/N1Yb
+	 Ph5pF4GBT2S3DSp7XOWilKreEBLqNy61kx9LEleDdDVizQIrMJwNxPLDBaN+L3ZQim
+	 VgbuXBVRh2uhwwFrYtHEKOqT8ETZGWmDq5KIHVqYolullVW7A3k4kvroY1h5QygJqm
+	 CSmMwqgKxnfC7iRZoxhSWD4rE18CRPoES6qA6h2yWOGoBiUD5ZPIWkGP4b5EzE+/RD
+	 ijopdhNMAGh6w==
+Received: by mail-oi1-f169.google.com with SMTP id 5614622812f47-467161c4b7aso1583188b6e.1
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2026 05:06:35 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUbYkNqRH2lQoqBtYwph5CYx6esH+FM0sUFEhYL/BLb+rkG5q8YI8/19U3UiydTKsvv4NKlQgtjXQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy6fb1db6X1ybCvCMclqbpC6iuaoq/pnnkt8AMVTib7Lrjvf11z
+	r4Bn9U264Lm+hvCRk+k3AVT9KDro/B5V1F14av+qJTwF5j8gyK43qR3uPZUcKwwlaB5BUod8aZe
+	6/gEHJy6gtg1ckAYT7xwkJZjwQi/LaqI=
+X-Received: by 2002:a05:6808:5294:b0:467:ebc8:6b3b with SMTP id
+ 5614622812f47-46a8a3f2e8dmr6352590b6e.4.1774872394832; Mon, 30 Mar 2026
+ 05:06:34 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CEA:EE_|PH7PR10MB6281:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8a57cb02-ffa2-409b-5ab4-08de8e541e71
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|7416014|376014|22082099003|18002099003|56012099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	2FZqYSZ+07za4BEh0autsA/UcOQSMsXMrx6xY/1fSJy+sY1XtHh7PDIBeXtKoBh5t+kYt1XSLchvd8ENOhvXTB0yMT+7M6wOxjhnaqPNADuj6BEbT4q4p0XISo9OdyiMZhybpkfcdHJT3EpJ9viUWdkjJypJ2hmL6hffn52Chocpl1XG7DGHBvf1vcPo9ufiLYZh94s1QY81p7+98FgV/xBmNc8f53upgEughyfHTVVYwDGx5HNffV+6U5qZVpRN7QdysbiULHRaUDC18JT13apYG3SBT6R4nYQkRlQ8H2vG21DZDpyyGx0DiGwsk9IppFTnh0lQXMV/fqoqDQYKCWgW6CPDlpN07HqiuJrbwqLjHZYN43KevzSIeMxaf6xwAbvM4xYmQp8YLpjNy2an6QbDVqVKtbQlZl/E4X2zxCv77JcWDjHG7DICdGlN4dORp+ig/ot6FDYiM4e2t9xOZm1sRvu/RYCh4VF9W2hOXhSc5D3V2xrENfRNucDZhxknV5+gXyi0zmHb9HhWu8MxRjYoMoNrgrAe02CqkHNnUhiMI0Ze6X5M8udqKYPQDvfU5fmNY4+ohIP53lLxoVAYQhVI6bnfeGd80ikNUwaPnCNLp34Cl7JZvgo0t9SNKc3apIfVQ7f4jrT7Cnph1V/Vqe2NsziMU5EkJO0IvKEx06saAddV8cmBfMh1u1HM/YL85KFYWnZa2qJ1JQvOv35f1K72yHIiwfxpo85OPIz+LKA9uTZiadeGOTU7pNPZWZpzStAh5dx30mnAjgYzCbNc/2EtI9rnzTvQ/UhOxmHO/UkVRelXqJE3Hyd3xr2vwixw
-X-Forefront-Antispam-Report:
-	CIP:198.47.23.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet200.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(7416014)(376014)(22082099003)(18002099003)(56012099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	W8V15dIAEUGF2F/Yn/dMPHaD+v2gvGSlzXJIplJcU5tBbpDPMIcLIMLpUK3Xz5qZ24PRQgCQ+c7Ma6feniDGJjmzj3rUlrp0FLUYNwn7iWFq/ZHufHsjfH65N+ul6ROvXrV6nPREZMpK4iXG5+OrNqK0tHF5yhu4DgXPhMRltz+l2SXb2YVqNxO6vy+sHwdToQGbO6YaBbSHis49iCOFeSjbhfL09oGhZgXZNROobdGZWolwNMenyfVv5bV04cgAM69GJta+iAWGh8loKMdiZkzcfANpbaWwR+jDVl9LfEg8DOj8vtKf8I37/oXnY1efDM8LxnKWfXHIhfDOh1Xc9rJJTAxya+Q0aUjoo4tiM2ggQsgUIWwFSm3RH3vmVmhERNVAr2LGkxuEjezHJEQ6HFK66NCnY68KtcqbDdE203Xx4+yCRDbcn9H3H5RQpABJ
-X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Mar 2026 12:01:47.1024
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8a57cb02-ffa2-409b-5ab4-08de8e541e71
-X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.194];Helo=[lewvzet200.ext.ti.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF00001CEA.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR10MB6281
+References: <202603300921.b5dc709c-lkp@intel.com>
+In-Reply-To: <202603300921.b5dc709c-lkp@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 30 Mar 2026 14:06:23 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i4h7zgcgY0Rc1jrrnn1pyUR0xX_CT7Gjig-ofWBDUVZg@mail.gmail.com>
+X-Gm-Features: AQROBzBwJUAbyb1q1HOEedtbEvQO7fzIiE_yCPJx-KaXDIXhEIWtrnyod5cWi8U
+Message-ID: <CAJZ5v0i4h7zgcgY0Rc1jrrnn1pyUR0xX_CT7Gjig-ofWBDUVZg@mail.gmail.com>
+Subject: Re: [linux-next:master] [powercap] 42dde4365f: WARNING:possible_circular_locking_dependency_detected
+To: kernel test robot <oliver.sang@intel.com>, 
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: oe-lkp@lists.linux.dev, lkp@intel.com, 
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Zhang Rui <rui.zhang@intel.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Create explicit device link when OPP table has ti,soc-info property.
-Prevents unbinding k3-socinfo while ti-cpufreq is using it.
+Hi,
 
-Signed-off-by: Akashdeep Kaur <a-kaur@ti.com>
+On Mon, Mar 30, 2026 at 9:52=E2=80=AFAM kernel test robot <oliver.sang@inte=
+l.com> wrote:
+>
+>
+>
+> Hello,
+>
+> kernel test robot noticed "WARNING:possible_circular_locking_dependency_d=
+etected" on:
+>
+> commit: 42dde4365f89dce91bdc07fd1bca047d71dd162e ("powercap: intel_rapl: =
+Register PM notifier only when RAPL package exists")
+> https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git master
+>
+> [test failed on linux-next/master 85964cdcad0fac9a0eb7b87a0f9d88cc074b854=
+c]
+>
+> in testcase: kernel-selftests
+> version: kernel-selftests-x86_64-9f2693489ef8-1_20260201
+> with following parameters:
+>
+>         group: breakpoints
+>
+>
+>
+> config: x86_64-rhel-9.4-kselftests
+> compiler: gcc-14
+> test machine: 16 threads Intel(R) Core(TM) i7-13620H (Raptor Lake) with 3=
+2G memory
+>
+> (please refer to attached dmesg/kmsg for entire log/backtrace)
+>
+>
+> If you fix the issue in a separate patch/commit (i.e. not just a new vers=
+ion of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <oliver.sang@intel.com>
+> | Closes: https://lore.kernel.org/oe-lkp/202603300921.b5dc709c-lkp@intel.=
+com
+>
+>
+>
+> kern  :warn  : [   74.925211] [   T2261] WARNING: possible circular locki=
+ng dependency detected
+> kern  :warn  : [   74.925213] [   T2261] 7.0.0-rc2-00011-g42dde4365f89 #1=
+ Tainted: G S      W
+> kern  :err   : [   74.937766] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ba000-0x3f7bafff], go=
+t write-back
+> kern  :warn  : [   74.939962] [   T2261] --------------------------------=
+----------------------
+> kern  :warn  : [   74.939963] [   T2261] sh/2261 is trying to acquire loc=
+k:
+> kern  :warn  : [   74.939964] [   T2261] ffffffff8557ed28
+> kern  :err   : [   74.952510] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7b9000-0x3f7b9fff], go=
+t write-back
+> kern  :warn  : [   74.959121] [   T2261]  (cpu_add_remove_lock){+.+.}-{4:=
+4}, at: cpu_hotplug_pm_callback (kernel/cpu.c:571 kernel/cpu.c:2011)
+> kern  :err   : [   74.971676] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7af000-0x3f7affff], go=
+t write-back
+> kern  :warn  : [   74.973877] [   T2261]
+> but task is already holding lock:
+> kern  :warn  : [   74.973878] [   T2261] ffffffff85605e30 ((pm_chain_head=
+).rwsem
+> kern  :err   : [   74.986428] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ad000-0x3f7adfff], go=
+t write-back
+> kern  :warn  : [   74.990882] [   T2261] ){++++}-{4:4}, at: blocking_noti=
+fier_call_chain_robust (kernel/notifier.c:120 kernel/notifier.c:345 kernel/=
+notifier.c:333)
+> kern  :err   : [   75.003437] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f8e5000-0x3f8e5fff], go=
+t write-back
+> kern  :warn  : [   75.008321] [   T2261]
+> which lock already depends on the new lock.
+>
+> kern  :warn  : [   75.008322] [   T2261]
+> the existing dependency chain (in reverse order) is:
+> kern  :warn  : [   75.008322] [   T2261]
+> -> #3
+> user  :notice: [   75.017865] [    T418] Created symlink '/etc/systemd/sy=
+stem/sockets.target.wants/uuidd.socket' =E2=86=92 '/usr/lib/systemd/system/=
+uuidd.socket'.
+>
+> user  :notice: [   75.018570] [    T418] /usr/sbin/policy-rc.d returned 1=
+01, not running 'start uuidd.service uuidd.socket'
+>
+> kern  :err   : [   75.020879] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ac000-0x3f7acfff], go=
+t write-back
+> kern  :warn  : [   75.023062] [   T2261]  ((pm_chain_head).rwsem){++++}-{=
+4:4}
+> kern  :err   : [   75.035631] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ab000-0x3f7abfff], go=
+t write-back
+> kern  :warn  : [   75.042492] [   T2261] :
+> kern  :warn  : [   75.042494] [   T2261]        __lock_acquire (kernel/lo=
+cking/lockdep.c:5237 (discriminator 1))
+> kern  :err   : [   75.053565] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f880000-0x3f880fff], go=
+t write-back
+> kern  :warn  : [   75.057172] [   T2261]        lock_acquire (include/tra=
+ce/events/lock.h:24 (discriminator 15) include/trace/events/lock.h:24 (disc=
+riminator 15) kernel/locking/lockdep.c:5831 (discriminator 15))
+> kern  :err   : [   75.069731] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f881000-0x3f881fff], go=
+t write-back
+> kern  :warn  : [   75.076607] [   T2261]        down_write (arch/x86/incl=
+ude/asm/preempt.h:80 (discriminator 10) kernel/locking/rwsem.c:1315 (discri=
+minator 10) kernel/locking/rwsem.c:1326 (discriminator 10) kernel/locking/r=
+wsem.c:1591 (discriminator 10))
+> kern  :err   : [   75.081798] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d8000-0x3f7d8fff], go=
+t write-back
+> kern  :warn  : [   75.085380] [   T2261]        blocking_notifier_chain_r=
+egister (kernel/notifier.c:264 kernel/notifier.c:282)
+> kern  :err   : [   75.097937] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d7000-0x3f7d7fff], go=
+t write-back
+> kern  :warn  : [   75.106461] [   T2261] rapl_add_package_cpuslocked (dri=
+vers/powercap/intel_rapl_common.c:2267) intel_rapl_common
+> kern  :err   : [   75.119046] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d1000-0x3f7d1fff], go=
+t write-back
+> kern  :warn  : [   75.126242] [   T2261] rapl_cpu_online (drivers/powerca=
+p/intel_rapl_msr.c:81) intel_rapl_msr
+> kern  :err   : [   75.131871] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ce000-0x3f7cefff], go=
+t write-back
+> kern  :warn  : [   75.144377] [   T2261]        cpuhp_invoke_callback (ke=
+rnel/cpu.c:194)
+> kern  :err   : [   75.152251] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ca000-0x3f7cafff], go=
+t write-back
+> kern  :warn  : [   75.164759] [   T2261]        cpuhp_thread_fun (kernel/=
+cpu.c:1109 (discriminator 1))
+> kern  :warn  : [   75.164762] [   T2261]        smpboot_thread_fn (kernel=
+/smpboot.c:160)
+> kern  :err   : [   75.175063] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7bc000-0x3f7bcfff], go=
+t write-back
+> kern  :warn  : [   75.183928] [   T2261]        kthread (kernel/kthread.c=
+:467)
+> kern  :err   : [   75.188770] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7bb000-0x3f7bbfff], go=
+t write-back
+> kern  :warn  : [   75.200932] [   T2261]        ret_from_fork (arch/x86/k=
+ernel/process.c:164)
+> kern  :err   : [   75.203171] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ba000-0x3f7bafff], go=
+t write-back
+> kern  :warn  : [   75.212468] [   T2261]        ret_from_fork_asm (arch/x=
+86/entry/entry_64.S:255)
+> kern  :err   : [   75.214715] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7b9000-0x3f7b9fff], go=
+t write-back
+> kern  :warn  : [   75.227219] [   T2261]
+> -> #2 (cpuhp_state-up){+.+.}-{0:0}
+> kern  :err   : [   75.232580] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7af000-0x3f7affff], go=
+t write-back
+> kern  :warn  : [   75.245099] [   T2261] :
+> kern  :warn  : [   75.245100] [   T2261]        __lock_acquire (kernel/lo=
+cking/lockdep.c:5237 (discriminator 1))
+> kern  :err   : [   75.247416] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ad000-0x3f7adfff], go=
+t write-back
+> kern  :warn  : [   75.252473] [   T2261]        lock_acquire (include/tra=
+ce/events/lock.h:24 (discriminator 15) include/trace/events/lock.h:24 (disc=
+riminator 15) kernel/locking/lockdep.c:5831 (discriminator 15))
+> kern  :warn  : [   75.252475] [   T2261]        cpuhp_thread_fun (kernel/=
+cpu.c:1088)
+> kern  :err   : [   75.265022] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f8e5000-0x3f8e5fff], go=
+t write-back
+> kern  :warn  : [   75.270422] [   T2261]        smpboot_thread_fn (kernel=
+/smpboot.c:160)
+> kern  :warn  : [   75.270424] [   T2261]        kthread (kernel/kthread.c=
+:467)
+> kern  :err   : [   75.282979] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ac000-0x3f7acfff], go=
+t write-back
+> kern  :warn  : [   75.287599] [   T2261]        ret_from_fork (arch/x86/k=
+ernel/process.c:164)
+> kern  :warn  : [   75.287602] [   T2261]        ret_from_fork_asm (arch/x=
+86/entry/entry_64.S:255)
+> kern  :err   : [   75.300163] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ab000-0x3f7abfff], go=
+t write-back
+> kern  :warn  : [   75.306600] [   T2261]
+> -> #1 (cpu_hotplug_lock){++++}-{0:0}
+> kern  :err   : [   75.319409] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x4035f000-0x40360fff], go=
+t write-back
+> kern  :warn  : [   75.327073] [   T2261] :
+> kern  :warn  : [   75.327074] [   T2261]        __lock_acquire (kernel/lo=
+cking/lockdep.c:5237 (discriminator 1))
+> kern  :warn  : [   75.327077] [   T2261]        lock_acquire (include/tra=
+ce/events/lock.h:24 (discriminator 15) include/trace/events/lock.h:24 (disc=
+riminator 15) kernel/locking/lockdep.c:5831 (discriminator 15))
+> kern  :err   : [   75.343199] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f880000-0x3f880fff], go=
+t write-back
+> kern  :warn  : [   75.346150] [   T2261]        percpu_down_write (kernel=
+/locking/percpu-rwsem.c:235)
+> kern  :err   : [   75.358708] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f881000-0x3f881fff], go=
+t write-back
+> kern  :warn  : [   75.364461] [   T2261]        _cpu_up (include/asm-gene=
+ric/bitops/instrumented-non-atomic.h:141 include/linux/cpumask.h:649 includ=
+e/linux/cpumask.h:1246 kernel/cpu.c:1624)
+> kern  :warn  : [   75.364462] [   T2261]        cpu_up (kernel/cpu.c:1706=
+)
+> kern  :warn  : [   75.364464] [   T2261]        cpuhp_bringup_mask (kerne=
+l/cpu.c:1772 (discriminator 1))
+> kern  :err   : [   75.377019] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d8000-0x3f7d8fff], go=
+t write-back
+> kern  :warn  : [   75.382247] [   T2261]        bringup_nonboot_cpus (ker=
+nel/cpu.c:1851 kernel/cpu.c:1876)
+> kern  :err   : [   75.387605] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d7000-0x3f7d7fff], go=
+t write-back
+> kern  :warn  : [   75.400124] [   T2261]        smp_init (include/linux/b=
+itmap.h:461 include/linux/nodemask.h:244 include/linux/nodemask.h:424 kerne=
+l/smp.c:1003)
+> kern  :err   : [   75.404613] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d1000-0x3f7d1fff], go=
+t write-back
+> kern  :warn  : [   75.417126] [   T2261]        kernel_init_freeable (ini=
+t/main.c:1685)
+> kern  :err   : [   75.422136] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ce000-0x3f7cefff], go=
+t write-back
+> kern  :warn  : [   75.434649] [   T2261]        kernel_init (init/main.c:=
+1584)
+> kern  :warn  : [   75.434652] [   T2261]        ret_from_fork (arch/x86/k=
+ernel/process.c:164)
+> kern  :err   : [   75.439834] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ca000-0x3f7cafff], go=
+t write-back
+> kern  :warn  : [   75.452350] [   T2261]        ret_from_fork_asm (arch/x=
+86/entry/entry_64.S:255)
+> kern  :warn  : [   75.452352] [   T2261]
+> -> #0 (
+> user  :err   : [   75.458360] [    T420] error: dpkg -i /opt/deb/python3_=
+3.13.5-1_amd64.deb failed.
+>
+> kern  :err   : [   75.459704] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7bc000-0x3f7bcfff], go=
+t write-back
+> kern  :warn  : [   75.472214] [   T2261] cpu_add_remove_lock){+.+.}-{4:4}=
+:
+> kern  :warn  : [   75.472217] [   T2261]        check_prev_add (kernel/lo=
+cking/lockdep.c:3166 (discriminator 2))
+> kern  :err   : [   75.474541] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7bb000-0x3f7bbfff], go=
+t write-back
+> kern  :warn  : [   75.479596] [   T2261]        validate_chain (kernel/lo=
+cking/lockdep.c:3285 kernel/locking/lockdep.c:3908)
+> kern  :warn  : [   75.479598] [   T2261]        __lock_acquire (kernel/lo=
+cking/lockdep.c:5237 (discriminator 1))
+> kern  :err   : [   75.492148] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ba000-0x3f7bafff], go=
+t write-back
+> kern  :warn  : [   75.497554] [   T2261]        lock_acquire (include/tra=
+ce/events/lock.h:24 (discriminator 15) include/trace/events/lock.h:24 (disc=
+riminator 15) kernel/locking/lockdep.c:5831 (discriminator 15))
+> kern  :warn  : [   75.497556] [   T2261]        __mutex_lock (arch/x86/in=
+clude/asm/jump_label.h:37 include/trace/events/lock.h:95 kernel/locking/mut=
+ex.c:616 kernel/locking/mutex.c:776)
+> kern  :err   : [   75.502747] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7b9000-0x3f7b9fff], go=
+t write-back
+> kern  :warn  : [   75.515254] [   T2261]        cpu_hotplug_pm_callback (=
+kernel/cpu.c:571 kernel/cpu.c:2011)
+> kern  :err   : [   75.520613] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7af000-0x3f7affff], go=
+t write-back
+> kern  :warn  : [   75.525062] [   T2261]        notifier_call_chain (kern=
+el/notifier.c:87)
+> kern  :err   : [   75.537613] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ad000-0x3f7adfff], go=
+t write-back
+> kern  :warn  : [   75.542580] [   T2261]        blocking_notifier_call_ch=
+ain_robust (kernel/notifier.c:121 kernel/notifier.c:345 kernel/notifier.c:3=
+33)
+> kern  :warn  : [   75.542583] [   T2261]        pm_notifier_call_chain_ro=
+bust (include/linux/notifier.h:207 kernel/power/main.c:174)
+> kern  :err   : [   75.547762] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f8e5000-0x3f8e5fff], go=
+t write-back
+> kern  :warn  : [   75.560278] [   T2261]        enter_state (kernel/power=
+/suspend.c:381 kernel/power/suspend.c:609)
+> kern  :warn  : [   75.560281] [   T2261]        pm_suspend (kernel/power/=
+suspend.c:645 kernel/power/suspend.c:636)
+> kern  :err   : [   75.567809] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ac000-0x3f7acfff], go=
+t write-back
+> kern  :warn  : [   75.580320] [   T2261]        state_store (kernel/power=
+/main.c:828 (discriminator 1))
+> kern  :warn  : [   75.580322] [   T2261]        kernfs_fop_write_iter (fs=
+/kernfs/file.c:88 fs/kernfs/file.c:356)
+> kern  :err   : [   75.582645] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ab000-0x3f7abfff], go=
+t write-back
+> kern  :warn  : [   75.587701] [   T2261]        vfs_write (fs/read_write.=
+c:596 (discriminator 1) fs/read_write.c:688 (discriminator 1))
+> kern  :warn  : [   75.587703] [   T2261]        ksys_write (fs/read_write=
+.c:740)
+> kern  :err   : [   75.595073] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f880000-0x3f880fff], go=
+t write-back
+> kern  :warn  : [   75.605660] [   T2261]        do_syscall_64 (arch/x86/e=
+ntry/syscall_64.c:63 arch/x86/entry/syscall_64.c:94)
+> kern  :err   : [   75.610934] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f881000-0x3f881fff], go=
+t write-back
+> kern  :warn  : [   75.623438] [   T2261]        entry_SYSCALL_64_after_hw=
+frame (arch/x86/entry/entry_64.S:130)
+> kern  :warn  : [   75.623441] [   T2261]
+> other info that might help us debug this:
+>
+> kern  :err   : [   75.627851] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d8000-0x3f7d8fff], go=
+t write-back
+> kern  :warn  : [   75.632216] [   T2261] Chain exists of:
+> cpu_add_remove_lock -->
+> kern  :err   : [   75.637575] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d7000-0x3f7d7fff], go=
+t write-back
+> kern  :warn  : [   75.650084] [   T2261] cpuhp_state-up --> (pm_chain_hea=
+d).rwsem
+> kern  :err   : [   75.655616] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7d1000-0x3f7d1fff], go=
+t write-back
+> kern  :warn  : [   75.668127] [   T2261]
+>
+> kern  :warn  : [   75.668127] [   T2261]  Possible unsafe locking scenari=
+o:
+>
+> kern  :warn  : [   75.668128] [   T2261]        CPU0                    C=
+PU1
+> kern  :warn  : [   75.668129] [   T2261]        ----                    -=
 ---
- drivers/cpufreq/ti-cpufreq.c | 48 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+> kern  :warn  : [   75.668130] [   T2261]   rlock(
+> kern  :err   : [   75.672531] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ce000-0x3f7cefff], go=
+t write-back
+> kern  :warn  : [   75.685039] [   T2261] (pm_chain_head).rwsem);
+> kern  :warn  : [   75.685041] [   T2261]                                l=
+ock(cpuhp_state-up
+> kern  :err   : [   75.690656] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7ca000-0x3f7cafff], go=
+t write-back
+> kern  :warn  : [   75.703171] [   T2261] );
+> kern  :warn  : [   75.703172] [   T2261]                                l=
+ock((pm_chain_head).rwsem);
+> kern  :err   : [   75.707918] [   T2140] x86/PAT: bmc-watchdog:2140 map p=
+fn expected mapping type uncached-minus for [mem 0x3f7bc000-0x3f7bcfff], go=
+t write-back
+> kern  :warn  : [   75.712887] [   T2261]   lock(cpu_add_remove_lock);
+> kern  :warn  : [   75.712889] [   T2261]
+> *** DEADLOCK ***
+>
+>
+>
+> The kernel config and materials to reproduce are available at:
+> https://download.01.org/0day-ci/archive/20260330/202603300921.b5dc709c-lk=
+p@intel.com
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 88f7912ef6a8..60c34b0da0c5 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/of.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/regmap.h>
-@@ -111,6 +112,7 @@ struct ti_cpufreq_data {
- 	struct device_node *opp_node;
- 	struct regmap *syscon;
- 	const struct ti_cpufreq_soc_data *soc_data;
-+	struct device_link *soc_link;
- };
- 
- static unsigned long amx3_efuse_xlate(struct ti_cpufreq_data *opp_data,
-@@ -542,6 +544,7 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	opp_data->soc_data = match->data;
-+	platform_set_drvdata(pdev, opp_data);
- 
- 	opp_data->cpu_dev = get_cpu_device(0);
- 	if (!opp_data->cpu_dev) {
-@@ -560,6 +563,42 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto fail_put_node;
- 
-+	/* Create device link to k3-socinfo if specified in DT */
-+	if (opp_data->soc_data == &am625_soc_data ||
-+	    opp_data->soc_data == &am62a7_soc_data ||
-+	    opp_data->soc_data == &am62l3_soc_data ||
-+	    opp_data->soc_data == &am62p5_soc_data) {
-+		struct device_node *socinfo_np;
-+
-+		socinfo_np = of_parse_phandle(opp_data->opp_node, "ti,soc-info", 0);
-+		if (socinfo_np) {
-+			struct platform_device *socinfo_pdev;
-+			struct device_link *link;
-+
-+			socinfo_pdev = of_find_device_by_node(socinfo_np);
-+			of_node_put(socinfo_np);
-+
-+			if (!socinfo_pdev) {
-+				ret = -EPROBE_DEFER;
-+				goto fail_put_node;
-+			}
-+
-+			if (!socinfo_pdev->dev.driver) {
-+				put_device(&socinfo_pdev->dev);
-+				ret = -EPROBE_DEFER;
-+				goto fail_put_node;
-+			}
-+
-+			link = device_link_add(opp_data->cpu_dev,
-+					       &socinfo_pdev->dev,
-+					       DL_FLAG_STATELESS);
-+			if (link)
-+				opp_data->soc_link = link;
-+
-+			put_device(&socinfo_pdev->dev);
-+		}
-+	}
-+
- 	/*
- 	 * OPPs determine whether or not they are supported based on
- 	 * two metrics:
-@@ -600,6 +639,14 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
-+static void ti_cpufreq_remove(struct platform_device *pdev)
-+{
-+	struct ti_cpufreq_data *opp_data = platform_get_drvdata(pdev);
-+
-+	if (opp_data && opp_data->soc_link)
-+		device_link_del(opp_data->soc_link);
-+}
-+
- static int __init ti_cpufreq_init(void)
- {
- 	const struct of_device_id *match;
-@@ -616,6 +663,7 @@ module_init(ti_cpufreq_init);
- 
- static struct platform_driver ti_cpufreq_driver = {
- 	.probe = ti_cpufreq_probe,
-+	.remove = ti_cpufreq_remove,
- 	.driver = {
- 		.name = "ti-cpufreq",
- 	},
--- 
-2.34.1
+The report is correct.
 
+rapl_pm_notifier cannot be registered with CPUs locked because CPU
+hotplug has its own PM notifier which locks CPUs under
+(pm_chain_head).rwsem.
+
+I'm dropping commit 42dde4365f89 ("powercap: intel_rapl: Register PM
+notifier only when RAPL package exists") along all of the commits that
+depend on it from my linux-next branch.
+
+Thanks!
