@@ -1,40 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37A83449EA4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECAFD44B69C;
 	Tue, 31 Mar 2026 19:59:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774987157; cv=none; b=PJX/7ql7AtKL4BnkBz0qcAt6/dr4aFKmyt67dTlTE5zZkfaiQ7GngPFYUcfQMujxdoBoSXAIUiTgW4WLORqgMtiGHoXh7YkCt8gHQ8MNT8QTnuysQyf3UL9k5peOk58/azWx46tsxxDArxcNty7Kt2GyTrlDp9G2VE+c2HuGBJ8=
+	t=1774987158; cv=none; b=M7UqhyR+VgYO3cSehmjPUez67ghF1C0FQMCugfjvPRillcVXGvMxx454hzDmehjFfu21HwLo/jaoBj9ugRB+iEpdtKDrbk+xFnB2uGW+ET/dvgqMox9xbdO1mPvCrKgKekqiU0gbS4sg0+NeOklDviP/Jz7eb8D9OU1Wwi5+Srw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774987157; c=relaxed/simple;
-	bh=AikkHmmAxNcJR+FHXE7h+S7D9pSLPgTAiDurSpCHMl4=;
+	s=arc-20240116; t=1774987158; c=relaxed/simple;
+	bh=AFcKf9FuptOE5/WZiSx/Mj+LSnpMrnu6CfHwBxPpOR0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=i6FZIA5sbgDE82HqE5QZrnRIWH4rEtufNRkw8g+XdgYF0kCodE/7mec/LdhHmGhQ+Ye4d4RktRgKM6cDQssVx1m9jzKsWEyCcNRLUJXjM+J+nFpF2qH41L5jxJVCZGsjI/Y6uwZPpRZ3xHwL5FaPu8lKMUejWyAFWibA2FkUlvA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tWGMcvGj; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=ctv9UaV4Jql99+gcDG5bL469oIjzM+2srOjOE2/He5OwxmbZQj22zoTWxXcaol8qMGt+SECA/cAhi2COtXw7slnOYSWaFnJMBlH3DRywivANQIvpi0K1XLHgoAfOwubVfKNy8eWKhG/F6XdrPhFwRRtik03xDnrZ7GsOBJ4HKTA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=odI5dzNU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tWGMcvGj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65382C2BCB2;
-	Tue, 31 Mar 2026 19:59:16 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="odI5dzNU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A69DC2BCB0;
+	Tue, 31 Mar 2026 19:59:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1774987157;
-	bh=AikkHmmAxNcJR+FHXE7h+S7D9pSLPgTAiDurSpCHMl4=;
+	bh=AFcKf9FuptOE5/WZiSx/Mj+LSnpMrnu6CfHwBxPpOR0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tWGMcvGjI67vIma0GclsYigRNhbx3ifC3PZOSIKfBo03WzBQQdjjj6w6SfuV2zUnm
-	 52ncT+a9kDeYhvf2o/2Zk7zLfLnrsA8LeIqpub+hqrdfDFgMHcy3JFiCgUc+r5E4+W
-	 F7G9vaBcgUe1VUFBRLnClCP8ZrIZPNkxjXgixch/MOlpjE1bnOQfEXa/jWVUWfm3I8
-	 bk6lhco0NJ9QqhzUjYrjdPE/X8LBMueOwZ7h4cbb1X71VXjK9EuJkdlKC+t9s77sLO
-	 11TM5IjdP06I44B17bkyJQOMsD854QglhxX0n6k8ZKiaXa1sq98OW6FzUWvbzALUOc
-	 2pHIJKqycAUGw==
+	b=odI5dzNU1oDCEge01ZXjzf7Aq6YgEhFI2ou99ObcEg66c33GDTfJouQ0+Mo4sT9iE
+	 /tUkKv4DKB3udwzO5TIhQp3xBv4xKqXSuhFm49P/XJIkeLOxMmyfoCh+7GSPxRzsAC
+	 Fh3T8H9fMMUfK+OqmGRzZs5GggBM1QbLW0bZXz4YiqbM3WZMNrwJFLwaHssBCKiDks
+	 bbtcroEef+A0RFcB3cSp5dW2mSoUPSWTWeOEX0lR5KmrkjsQndT+4yozQwvDjBCJIl
+	 k/Q15vbtMYtxI9u+gjiopbWPa3PFiA8objLV4SjC74XNnpwwdEwPayEX9njONbMLrj
+	 F2c6p5iiRtHzA==
 From: "Mario Limonciello (AMD)" <superm1@kernel.org>
 To: "Gautham R . Shenoy" <gautham.shenoy@amd.com>
 Cc: Perry Yuan <perry.yuan@amd.com>,
 	linux-kernel@vger.kernel.org (open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)),
 	linux-pm@vger.kernel.org (open list:CPU FREQUENCY SCALING FRAMEWORK),
 	"Mario Limonciello (AMD)" <superm1@kernel.org>
-Subject: [PATCH v7 1/5] cpufreq/amd-pstate: Add dynamic energy performance preference
-Date: Tue, 31 Mar 2026 14:59:03 -0500
-Message-ID: <20260331195907.2557193-2-superm1@kernel.org>
+Subject: [PATCH v7 2/5] cpufreq/amd-pstate: add kernel command line to override dynamic epp
+Date: Tue, 31 Mar 2026 14:59:04 -0500
+Message-ID: <20260331195907.2557193-3-superm1@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260331195907.2557193-1-superm1@kernel.org>
 References: <20260331195907.2557193-1-superm1@kernel.org>
@@ -46,334 +46,78 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Dynamic energy performance preference changes the EPP profile based on
-whether the machine is running on AC or DC power.
-
-A notification chain from the power supply core is used to adjust EPP
-values on plug in or plug out events.
-
-When enabled, the driver exposes a sysfs toggle for dynamic EPP, blocks
-manual writes to energy_performance_preference, and keeps the policy in
-performance mode while it "owns" the EPP updates.
-
-For non-server systems:
-    * the default EPP for AC mode is `performance`.
-    * the default EPP for DC mode is `balance_performance`.
-
-For server systems dynamic EPP is mostly a no-op.
+Add `amd_dynamic_epp=enable` and `amd_dynamic_epp=disable` to override
+the kernel configuration option `CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`
+locally.
 
 Signed-off-by: Mario Limonciello (AMD) <superm1@kernel.org>
+Reviewed-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
 ---
-v6->v7:
- * Fix accidental casualty of floor perf from rebase (Gautham)
- * Adjust documentation (Gautham)
----
- Documentation/admin-guide/pm/amd-pstate.rst |  18 ++-
- drivers/cpufreq/Kconfig.x86                 |  12 ++
- drivers/cpufreq/amd-pstate.c                | 131 +++++++++++++++++++-
- drivers/cpufreq/amd-pstate.h                |  10 +-
- 4 files changed, 163 insertions(+), 8 deletions(-)
+ Documentation/admin-guide/kernel-parameters.txt |  7 +++++++
+ Documentation/admin-guide/pm/amd-pstate.rst     |  7 +++++++
+ drivers/cpufreq/amd-pstate.c                    | 11 +++++++++++
+ 3 files changed, 25 insertions(+)
 
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 03a550630644f..9552819051cd8 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -493,6 +493,13 @@ Kernel parameters
+ 			disable
+ 			  Disable amd-pstate preferred core.
+ 
++	amd_dynamic_epp=
++			[X86]
++			disable
++			  Disable amd-pstate dynamic EPP.
++			enable
++			  Enable amd-pstate dynamic EPP.
++
+ 	amijoy.map=	[HW,JOY] Amiga joystick support
+ 			Map of devices attached to JOY0DAT and JOY1DAT
+ 			Format: <a>,<b>
 diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index b43675b7f739b..bb1341763882b 100644
+index bb1341763882b..01e6ab10f996e 100644
 --- a/Documentation/admin-guide/pm/amd-pstate.rst
 +++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -325,7 +325,7 @@ and user can change current preference according to energy or performance needs
- Please get all support profiles list from
- ``energy_performance_available_preferences`` attribute, all the profiles are
- integer values defined between 0 to 255 when EPP feature is enabled by platform
--firmware, if EPP feature is disabled, driver will ignore the written value
-+firmware, but if the dynamic EPP feature is enabled, driver will block writes.
- This attribute is read-write.
+@@ -474,6 +474,13 @@ For systems that support ``amd-pstate`` preferred core, the core rankings will
+ always be advertised by the platform. But OS can choose to ignore that via the
+ kernel parameter ``amd_prefcore=disable``.
  
- ``boost``
-@@ -347,6 +347,22 @@ boost or `1` to enable it, for the respective CPU using the sysfs path
- Other performance and frequency values can be read back from
- ``/sys/devices/system/cpu/cpuX/acpi_cppc/``, see :ref:`cppc_sysfs`.
++``amd_dynamic_epp``
++
++When AMD pstate is in auto mode, dynamic EPP will control whether the kernel
++autonomously changes the EPP mode. The default is configured by
++``CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`` but can be explicitly enabled with
++``amd_dynamic_epp=enable`` or disabled with ``amd_dynamic_epp=disable``.
++
+ User Space Interface in ``sysfs`` - General
+ ===========================================
  
-+Dynamic energy performance profile
-+==================================
-+The amd-pstate driver supports dynamically selecting the energy performance
-+profile based on whether the machine is running on AC or DC power.
-+
-+Whether this behavior is enabled by default depends on the kernel
-+config option `CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`. This behavior can also be overridden
-+at runtime by the sysfs file ``/sys/devices/system/cpu/cpufreq/policyX/dynamic_epp``.
-+
-+When set to enabled, the driver will select a different energy performance
-+profile when the machine is running on battery or AC power.
-+When set to disabled, the driver will not change the energy performance profile
-+based on the power source and will not react to user desired power state.
-+
-+Attempting to manually write to the ``energy_performance_preference`` sysfs
-+file will fail when ``dynamic_epp`` is enabled.
- 
- ``amd-pstate`` vs ``acpi-cpufreq``
- ======================================
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 2c5c228408bf2..cdaa8d858045a 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -68,6 +68,18 @@ config X86_AMD_PSTATE_DEFAULT_MODE
- 	  For details, take a look at:
- 	  <file:Documentation/admin-guide/pm/amd-pstate.rst>.
- 
-+config X86_AMD_PSTATE_DYNAMIC_EPP
-+	bool "AMD Processor P-State dynamic EPP support"
-+	depends on X86_AMD_PSTATE
-+	default n
-+	help
-+	  Allow the kernel to dynamically change the energy performance
-+	  value from events like ACPI platform profile and AC adapter plug
-+	  events.
-+
-+	  This feature can also be changed at runtime, this configuration
-+	  option only sets the kernel default value behavior.
-+
- config X86_AMD_PSTATE_UT
- 	tristate "selftest for AMD Processor P-State driver"
- 	depends on X86 && ACPI_PROCESSOR
 diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index f207252eb5f5f..d3c8eaab88286 100644
+index d3c8eaab88286..de22d9bd28cc6 100644
 --- a/drivers/cpufreq/amd-pstate.c
 +++ b/drivers/cpufreq/amd-pstate.c
-@@ -36,6 +36,7 @@
- #include <linux/io.h>
- #include <linux/delay.h>
- #include <linux/uaccess.h>
-+#include <linux/power_supply.h>
- #include <linux/static_call.h>
- #include <linux/topology.h>
- 
-@@ -86,6 +87,11 @@ static struct cpufreq_driver amd_pstate_driver;
- static struct cpufreq_driver amd_pstate_epp_driver;
- static int cppc_state = AMD_PSTATE_UNDEFINED;
- static bool amd_pstate_prefcore = true;
-+#ifdef CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP
-+static bool dynamic_epp = CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP;
-+#else
-+static bool dynamic_epp;
-+#endif
- static struct quirk_entry *quirks;
- 
- /*
-@@ -1155,6 +1161,74 @@ static void amd_pstate_cpu_exit(struct cpufreq_policy *policy)
- 	kfree(cpudata);
+@@ -2230,8 +2230,19 @@ static int __init amd_prefcore_param(char *str)
+ 	return 0;
  }
  
-+static int amd_pstate_get_balanced_epp(struct cpufreq_policy *policy)
++static int __init amd_dynamic_epp_param(char *str)
 +{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+
-+	if (power_supply_is_system_supplied())
-+		return cpudata->epp_default_ac;
-+	else
-+		return cpudata->epp_default_dc;
-+}
-+
-+static int amd_pstate_power_supply_notifier(struct notifier_block *nb,
-+					    unsigned long event, void *data)
-+{
-+	struct amd_cpudata *cpudata = container_of(nb, struct amd_cpudata, power_nb);
-+	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(cpudata->cpu);
-+	u8 epp;
-+	int ret;
-+
-+	if (event != PSY_EVENT_PROP_CHANGED)
-+		return NOTIFY_OK;
-+
-+	epp = amd_pstate_get_balanced_epp(policy);
-+
-+	ret = amd_pstate_set_epp(policy, epp);
-+	if (ret)
-+		pr_warn("Failed to set CPU %d EPP %u: %d\n", cpudata->cpu, epp, ret);
-+
-+	return NOTIFY_OK;
-+}
-+static void amd_pstate_clear_dynamic_epp(struct cpufreq_policy *policy)
-+{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+
-+	if (cpudata->power_nb.notifier_call)
-+		power_supply_unreg_notifier(&cpudata->power_nb);
-+	cpudata->dynamic_epp = false;
-+}
-+
-+static int amd_pstate_set_dynamic_epp(struct cpufreq_policy *policy)
-+{
-+	struct amd_cpudata *cpudata = policy->driver_data;
-+	int ret;
-+	u8 epp;
-+
-+	policy->policy = CPUFREQ_POLICY_PERFORMANCE;
-+	epp = amd_pstate_get_balanced_epp(policy);
-+	ret = amd_pstate_set_epp(policy, epp);
-+	if (ret)
-+		return ret;
-+
-+	/* only enable notifier if things will actually change */
-+	if (cpudata->epp_default_ac != cpudata->epp_default_dc) {
-+		cpudata->power_nb.notifier_call = amd_pstate_power_supply_notifier;
-+		ret = power_supply_reg_notifier(&cpudata->power_nb);
-+		if (ret)
-+			goto cleanup;
-+	}
-+
-+	cpudata->dynamic_epp = true;
++	if (!strcmp(str, "disable"))
++		dynamic_epp = false;
++	if (!strcmp(str, "enable"))
++		dynamic_epp = true;
 +
 +	return 0;
-+
-+cleanup:
-+	amd_pstate_clear_dynamic_epp(policy);
-+
-+	return ret;
 +}
 +
- /* Sysfs attributes */
+ early_param("amd_pstate", amd_pstate_param);
+ early_param("amd_prefcore", amd_prefcore_param);
++early_param("amd_dynamic_epp", amd_dynamic_epp_param);
  
- /*
-@@ -1244,14 +1318,19 @@ static ssize_t store_energy_performance_preference(
- 	ssize_t ret;
- 	u8 epp;
- 
-+	if (cpudata->dynamic_epp) {
-+		pr_debug("EPP cannot be set when dynamic EPP is enabled\n");
-+		return -EBUSY;
-+	}
-+
- 	ret = sysfs_match_string(energy_perf_strings, buf);
- 	if (ret < 0)
- 		return -EINVAL;
- 
--	if (!ret)
--		epp = cpudata->epp_default;
--	else
-+	if (ret)
- 		epp = epp_values[ret];
-+	else
-+		epp = amd_pstate_get_balanced_epp(policy);
- 
- 	if (epp > 0 && policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		pr_debug("EPP cannot be set under performance policy\n");
-@@ -1259,6 +1338,8 @@ static ssize_t store_energy_performance_preference(
- 	}
- 
- 	ret = amd_pstate_set_epp(policy, epp);
-+	if (ret)
-+		return ret;
- 
- 	return ret ? ret : count;
- }
-@@ -1620,12 +1701,40 @@ static ssize_t prefcore_show(struct device *dev,
- 	return sysfs_emit(buf, "%s\n", str_enabled_disabled(amd_pstate_prefcore));
- }
- 
-+static ssize_t dynamic_epp_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	return sysfs_emit(buf, "%s\n", str_enabled_disabled(dynamic_epp));
-+}
-+
-+static ssize_t dynamic_epp_store(struct device *a, struct device_attribute *b,
-+				 const char *buf, size_t count)
-+{
-+	bool enabled;
-+	int ret;
-+
-+	ret = kstrtobool(buf, &enabled);
-+	if (ret)
-+		return ret;
-+
-+	if (dynamic_epp == enabled)
-+		return -EINVAL;
-+
-+	/* reinitialize with desired dynamic EPP value */
-+	dynamic_epp = enabled;
-+	ret = amd_pstate_change_driver_mode(cppc_state);
-+
-+	return ret ? ret : count;
-+}
-+
- static DEVICE_ATTR_RW(status);
- static DEVICE_ATTR_RO(prefcore);
-+static DEVICE_ATTR_RW(dynamic_epp);
- 
- static struct attribute *pstate_global_attributes[] = {
- 	&dev_attr_status.attr,
- 	&dev_attr_prefcore.attr,
-+	&dev_attr_dynamic_epp.attr,
- 	NULL
- };
- 
-@@ -1715,13 +1824,17 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	if (amd_pstate_acpi_pm_profile_server() ||
- 	    amd_pstate_acpi_pm_profile_undefined()) {
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
--		cpudata->epp_default = amd_pstate_get_epp(cpudata);
-+		cpudata->epp_default_ac = cpudata->epp_default_dc = amd_pstate_get_epp(cpudata);
- 	} else {
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
--		cpudata->epp_default = AMD_CPPC_EPP_BALANCE_PERFORMANCE;
-+		cpudata->epp_default_ac = AMD_CPPC_EPP_PERFORMANCE;
-+		cpudata->epp_default_dc = AMD_CPPC_EPP_BALANCE_PERFORMANCE;
- 	}
- 
--	ret = amd_pstate_set_epp(policy, cpudata->epp_default);
-+	if (dynamic_epp)
-+		ret = amd_pstate_set_dynamic_epp(policy);
-+	else
-+		ret = amd_pstate_set_epp(policy, amd_pstate_get_balanced_epp(policy));
- 	if (ret)
- 		goto free_cpudata1;
- 
-@@ -1753,6 +1866,8 @@ static void amd_pstate_epp_cpu_exit(struct cpufreq_policy *policy)
- 		amd_pstate_update_perf(policy, perf.bios_min_perf, 0U, 0U, 0U, false);
- 		amd_pstate_set_floor_perf(policy, cpudata->bios_floor_perf);
- 
-+		if (cpudata->dynamic_epp)
-+			amd_pstate_clear_dynamic_epp(policy);
- 		kfree(cpudata);
- 		policy->driver_data = NULL;
- 	}
-@@ -1790,6 +1905,10 @@ static int amd_pstate_epp_set_policy(struct cpufreq_policy *policy)
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
- 
-+	/* policy can't be changed to powersave policy while dynamic epp is enabled */
-+	if (policy->policy == CPUFREQ_POLICY_POWERSAVE && cpudata->dynamic_epp)
-+		return -EBUSY;
-+
- 	cpudata->policy = policy->policy;
- 
- 	ret = amd_pstate_epp_update_limit(policy, true);
-diff --git a/drivers/cpufreq/amd-pstate.h b/drivers/cpufreq/amd-pstate.h
-index 32b8b26ce388f..d929ae3163b3d 100644
---- a/drivers/cpufreq/amd-pstate.h
-+++ b/drivers/cpufreq/amd-pstate.h
-@@ -85,6 +85,11 @@ struct amd_aperf_mperf {
-  * 		  AMD P-State driver supports preferred core featue.
-  * @epp_cached: Cached CPPC energy-performance preference value
-  * @policy: Cpufreq policy value
-+ * @suspended: If CPU core if offlined
-+ * @epp_default_ac: Default EPP value for AC power source
-+ * @epp_default_dc: Default EPP value for DC power source
-+ * @dynamic_epp: Whether dynamic EPP is enabled
-+ * @power_nb: Notifier block for power events
-  *
-  * The amd_cpudata is key private data for each CPU thread in AMD P-State, and
-  * represents all the attributes and goals that AMD P-State requests at runtime.
-@@ -118,7 +123,10 @@ struct amd_cpudata {
- 	/* EPP feature related attributes*/
- 	u32	policy;
- 	bool	suspended;
--	u8	epp_default;
-+	u8	epp_default_ac;
-+	u8	epp_default_dc;
-+	bool	dynamic_epp;
-+	struct notifier_block power_nb;
- };
- 
- /*
+ MODULE_AUTHOR("Huang Rui <ray.huang@amd.com>");
+ MODULE_DESCRIPTION("AMD Processor P-state Frequency Driver");
 -- 
 2.43.0
 
