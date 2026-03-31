@@ -1,66 +1,68 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCDB7411618
-	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:43:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 842F541B340
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:43:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774971831; cv=none; b=EN4NgG064MxHooM5B4uUIBNiVpwRWWw0N6jvhWx7OtmzBGboz/Nc9JFZ2aaHHiQc2JxoGGrw4DVrM3PFIsv+xgfeA2edLufHlorpH9OkAEAUXllJ+cZ0FKwEez6WVWXynWe5PTVSeKfQsrC5wQ1fkDuz02tJWgw1mcwSb/tcgzo=
+	t=1774971833; cv=none; b=W+WOUZtQnecWL/IAbDZ7upuSMP59MQAawSqnlUAexubDwJc+JmReRdlU9GzOZ1NacHCA7G6w+pA2RrMP5fTzmEd6HbqObSkF52rVkycYzRHLhxzcQG/FbEbySPPnWJZ06VLrIJha1HhqGIjyq/2HUFgAv7ZpMF+Jw9NAVQmeSbA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774971831; c=relaxed/simple;
-	bh=Lak4zcWpFwfXjCXPbBnc4yBKiesb3cWUXZkq+I+QBCM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=jKPw1GqTiuQtiDdq25eRbKxTMCeyTOIJfdISIZhvBlikYzgRb77UO6guzZJqytHVyTET5cat+2cExYMCrztjD6NdlJy1bY5sxwoulbvuY26aPYjavdZ1tW4zueX8zYE1iflmCnr5sNVktfKqtFCVj3gIQIDD+Sr2gRM6kWTFk38=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=MknPGXTr; arc=none smtp.client-ip=209.85.128.45
+	s=arc-20240116; t=1774971833; c=relaxed/simple;
+	bh=Kch86XWLNpsoWXsiUYScxG9+qZq2PDWJ+mVUNiuprdY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=V0/eRPmG884oW/Lfe9i3PxaZz85XpAFWQVRDubE1B48hpFZsVcQLYjoxWAInd+N4RNNtJtiIVFW4aN7ewoQx+Dx/d2dYK5zMoiNGEx+zwlV5y/5A8wq+2QrvuL2XSX91RuYB2IcRube0UlFJp4JhD6eqkWXc70llukNgGnpUKLY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=SBJvd74k; arc=none smtp.client-ip=209.85.128.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="MknPGXTr"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4853c1ca73aso60556385e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:43:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="SBJvd74k"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-486fb14227cso77163395e9.3
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:43:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1774971827; x=1775576627; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=py3e1w6KMUuyJpztK2fw9vXLuizsBVQDCyepeMdTu4I=;
-        b=MknPGXTrRCR8++ycFypzpqIkF9kCxkjzGSp2X8DCtBFyeUiY4AltsaGEOBUuqAplUV
-         8DZ0N2bXO8bISlOVt80YV6NMDtTljI0l3AwcnamV9zu1PxPr24nW+zBmXI2IL4YNTjcb
-         e3UPhDaEpvZQAa0i00oHvQKJ19xcP2nBxUlm1hsuXNngg25JGEmFwVTors2rNgfujgWI
-         GVWF+Y22BnjYHStSop2j+jOFqBulBB75s981TaUmZSL7FtdkBm5tSVXCxHwc40oQkEFm
-         MKa9hR/XOvUTfzJCVusI1CbPyqKvYvniDt7/iRWCI4R8J2m+6vUm7pw2mayqC4+l3YVU
-         y4Bg==
+        d=flipper.net; s=google; t=1774971830; x=1775576630; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=a3tePfAp0V+6zfOlKlirFvJa8IZ0hYoxL5FVcQEbR28=;
+        b=SBJvd74kiLcY8RlHk0XC95rT+rG1H/QJ9eHW7mLJTA0jTELVftETWRwBap6qGGLXoo
+         4PBwA3vp4pWlSncXJKmaUVe/2a73AGKBjzvfwp68blpMdtPDCSbIQp+CWzvL1mbKBYQN
+         11zx1de7/JalUwkugmfoxZAI7NiImHnfKPlXns2m2Sh6s5aMccqedPC6MJYThPrQycCW
+         JxTebjlsBDgQ+bhlZUsJkfc18li30ASnQv14+dqifBt0m8taAVX6UFoseXXb7R1hE3dx
+         YZonYaFKgmAnlZG/N6P9flleVgxIfTAr3whJp05NzV9H2eHM13oDFhzMb5aJ+HO7KzhI
+         4YkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774971827; x=1775576627;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=py3e1w6KMUuyJpztK2fw9vXLuizsBVQDCyepeMdTu4I=;
-        b=QTqHqfRWqIao+KCZkcG+aP/7pUa6n0fh/PlIoAAr83gIUrxc8oBlxxtFX+d2IGsFI6
-         0cvJv6jD4FbSkmSZ4zFqiq++7u9GxkCyi4tBrCab43gSL97zAFIShKynQQxoq7OTb+Qu
-         TzgiPA6SdUI2HsosuLcyvYrvAQGRcFzFfVIwL9Vx23OlbwyGaRe3aJcvfrMJCWpql3KW
-         maDh9jAyLE5PV1EonmVC/yM/NouymF66hBcCY/Y8qWSfAGGC1iY1S6Yjzl/t8gwb3DRL
-         iPdOjF03ktj/0shrjoUhSrrNTK3aGcw9Xh6AUB4Xu8irrDjm2P2vzLtVmcFFFGrLGmag
-         bAGg==
-X-Forwarded-Encrypted: i=1; AJvYcCVE3fj79UcO8E3ldLfewZS5Y7cwKxGGTqubvG/HUyJbhKRKHQC82cxkc6HOyVvJPcQppOlESg4/cg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyIT9tLVxrm1UQ5/xmBrc30G8bBhADOtPmjQks71KXIaR/68cJ4
-	LPZ5UhnGwycuFeGqtwhe1YG68+IzRsYgs9sKZPu//zO+LaMPJfWcQqxarVj8SWQYeRg=
-X-Gm-Gg: ATEYQzzC/3TuojE9/guCpRYUWqlLJa9eDmPxxT58oDHCYcCiPIbsjisEBfn0w57lY8W
-	XdsS/nAH0SQ08uc56sU8sKoFaG4JUTUeiW4SxgL21cCVstd1TMmn/DXkOlyYw0XubHVbjYsL4kA
-	1oNsLSg8lJ1BXvjwtRtlUoaoD43U9EZL94lhQOJnKy8oHN3thavQ/CTBXiUff+1CR3cSY5pd0AS
-	DgBbJIYI5YyVZiYXYXRPYvsyoUPPTwFrWK3hVLt9iJn+JJA2kCJcm/e+SNK+UqtG6dpYgWCm3cq
-	uic0RiAgaPfk9CPcoHOvsm/gHzP1KqoU5LT0crfjnzC4aIXWUbQHvFGSKbbp20kqnODY1FKPHeT
-	OnTmsaQwfZN1vO8EiNdszIOAuOruyQsvWvZe52clUcce/YhFhNVddQ8fXuC7UYryhwXP8HOBwmq
-	plMrcDz7c3eJq8DkDxry3AWSB0EyUNIFyZM0YVS9eU+ENCcgw/t8+ap06bHS6zR4riAwwoNwCR5
-	FtTCQ==
-X-Received: by 2002:a05:600c:4744:b0:485:2a4b:7bc3 with SMTP id 5b1f17b1804b1-48727d5d6femr284014105e9.4.1774971827114;
-        Tue, 31 Mar 2026 08:43:47 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774971830; x=1775576630;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=a3tePfAp0V+6zfOlKlirFvJa8IZ0hYoxL5FVcQEbR28=;
+        b=suCv49DUaw/47TiJ2UjfBAHPi9SmltlQzuVmlsFbEOTNHXjeC+hGXWH4A8nngvS4yz
+         1ce3SLgQK9m8h8r13cchFNwYoHl/MiobSopuiOg6aATffvZcVR7gOgRqY/0jF/vB1C/G
+         4ZGv5me207eQQqUis9O6WXzveV/SKDzzPRYEBb4yDO2d3uDTtct0aPMiKDyb/5htHFuk
+         68lxM/61gqxsAJ9eMr64YTsSTZzMmoDZjlPLiZydIetQpZObz6tUnCeWhLkIR80cZYaM
+         /a8TwpgGBp8F8eocDyXNJsutKGYKOb6WQswPbKtCiPUzvjUQZqVTolO8Q2XmZiB9wQ28
+         yiTQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUuI1NSKau6iLQaH1vAS+J7K14pP1vnS/VhDLJ00Hce5cwwYrwQAR2UBLbCozhL4xRUL42mR5l6Pw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw8BI166/JCC7WIr2LmWdJXmZen0gzgSwNxPdixcaiFnVHhLANP
+	143WJEHH7/rO0OljkBB78s+VniZ45rgUKZk2XL39P9/yagcrjwYMjnCUm4Rb7qSdQAE=
+X-Gm-Gg: ATEYQzxW5+W24VXFTgOJ0plwwpRKyZQ9VFRuOZYm2g0jB6Kxk6OKXMAS7bHMCrsWEdm
+	ebcogXPuAhRdDsduOH5sn22J8Q2L7CWVBam5hS/au5fM43uojDeggpQla7N2kPICJWudpSc1Ll4
+	H7frK5wueWkb4iahLlunytpcd5WvttsfBeLIsxcYufz75UODsgGw8H8bjiKVQh6CWMuC+0btj8z
+	qdEDNiEJU1HStlfRvn4pw9KGLrKFW3O71u4fRPDD+zSz6xtIuZkMmqYQXl1zg4x2VRFICay0bRK
+	Zbg+wpFm9OQJSbgwxUt6x0QaJYpNXt1A5t3cbQsWYMTP7X5GwlqgW7UJJX6C0k6ezd9rNrUKN0x
+	9FGKS7JdBDCTUpwpKu3+vHYD9TFjltFs+3CXUVZoM8srw8QP/iZQcZcLiPSXjGudvigXnNrgA3s
+	W9imWfGcY9NA8YoiuTCU31WnDNaWZxNAz0Mgh9oEQdSujIeMgwgz0VBmaXaANyu1dudYgF+uDzP
+	ANqJQCIUOrsFrdo
+X-Received: by 2002:a05:600c:3b27:b0:485:3aa1:a7f1 with SMTP id 5b1f17b1804b1-48727d5a252mr294923335e9.7.1774971829849;
+        Tue, 31 Mar 2026 08:43:49 -0700 (PDT)
 Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887c8852a5sm48412605e9.9.2026.03.31.08.43.43
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887c8852a5sm48412605e9.9.2026.03.31.08.43.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 Mar 2026 08:43:46 -0700 (PDT)
+        Tue, 31 Mar 2026 08:43:49 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Subject: [PATCH v6 00/11] Add support for the TI BQ25792 battery charger
-Date: Tue, 31 Mar 2026 19:43:37 +0400
-Message-Id: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
+Date: Tue, 31 Mar 2026 19:43:38 +0400
+Subject: [PATCH v6 01/11] dt-bindings: mfd: ti,bq25703a: Expand to include
+ BQ25792
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,12 +71,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAKnry2kC/2XOwW6DMAwG4Fepcl4mx47dsNPeY9oBiLNGmigNF
- dpU8e4LvcDE8bf8/fbDTFqyTubt9DBF5zzl61CDvJxMf2mHL7U51mwQUICAbHdDPjdowRG2fZD
- gJZq6PRZN+efZ9PFZ8yVP92v5fRbPbp0eO2ZnwaooKwCR5/CevvM4ankd9G7Wlhn3UjZZH7DCD
- aNvoqiko6SddLBJqhIwBUXCKNQdpd9Lt0lf5RkdecexUe2PkncS/SZ5vdmidhz65Fz8L5dl+QN
- rVXNriAEAAA==
-X-Change-ID: 20260303-bq25792-0132ac86846d
+Message-Id: <20260331-bq25792-v6-1-0278fba33eb9@flipper.net>
+References: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
+In-Reply-To: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
@@ -83,99 +82,143 @@ To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
  linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- stable@vger.kernel.org
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4161; i=alchark@flipper.net;
- h=from:subject:message-id; bh=Lak4zcWpFwfXjCXPbBnc4yBKiesb3cWUXZkq+I+QBCM=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSefr1eLv3I3dnefgoarKt4n7KHOEy9dbDoh5O+2zIL0
- Z7729KPdExkYRDjYrAUU2SZ+22J7VQjvlm7PDy+wsxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
- hoY6xjpGDFycAjDV3OEM/+zWzTi/Q4HD43+z4WI1+YKao0p5Zzflb9lwLOynA8PTTy8ZGSaIufx
- SE7bIaXr1TbZO/M8C2Vvf1sVUu4plyFzYeGBjBgcA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3922; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=Kch86XWLNpsoWXsiUYScxG9+qZq2PDWJ+mVUNiuprdY=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSefr3edDpbxWsjpTPhaqe2KMzNvBRvXLWtwtxa5cMFo
+ w/7GL3/d0xkYRDjYrAUU2SZ+22J7VQjvlm7PDy+wsxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
+ hoY6xjpGDFycAjDVeSqMDOftfsW83SDvWNwUMOnUhAVe0n5LRE/7ntH2exdflL8q7ATD/5BZqY3
+ BoRJKf6xn7ky5/DvF7s36NQXSt55t6VPN/dLMxgwA
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-This adds support for the TI BQ25792 battery charger, which is similar in
-overall logic to the BQ25703A, but has a different register layout and
-slightly different lower-level programming logic.
+TI BQ25792 is similar in operation to BQ25703A, but has a different
+register layout and different current/voltage capabilities.
 
-The series is organized as follows:
-- Patch 1 adds the new variant to the existing DT binding, including the
-  changes in electrical characteristics
-- Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
-  driver, slimming down the code and making it more reusable for the new
-  BQ25792 variant
-- Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
-  (this is a standalone fix which can be applied independently and may be
-  backported to stable)
-- Patches 6-8 are slight refactoring of the existing BQ25703A charger
-  driver to make it more reusable for the new BQ25792 variant
-- Patch 9 adds platform data to distinguish between the two variants in
-  the parent MFD driver, and binds it to the new compatible string
-- Patches 10-11 add variant-specific code to support the new BQ25792
-  variant in the regulator part and the charger part respectively,
-  selected by the platform data added in patch 9
+Expand the existing BQ25703A binding to include BQ25792, and move the
+voltage and current limits into per-variant conditional statements.
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Tested-by: Chris Morgan <macromorgan@hotmail.com>
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
-Changes in v6:
-- Changed -EINVAL to -ENODEV for non-match cases in the MFD driver, to stay
-  in line with what other drivers do in similar situations (Lee Jones)
-- Link to v5: https://lore.kernel.org/r/20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net
+ .../devicetree/bindings/mfd/ti,bq25703a.yaml       | 73 +++++++++++++++++++---
+ 1 file changed, 63 insertions(+), 10 deletions(-)
 
-Changes in v5:
-- Added non-OF match data and switched to i2c_get_match_data() to support
-  non-OF platforms (Lee Jones)
-- Shifted the types in the enum to start at 1 to avoid confusion with
-  zero-initialized data and non-match cases (Lee Jones)
-- Reinstated the const qualifier on the MFD cell array (Lee Jones)
-- Link to v4: https://lore.kernel.org/r/20260311-bq25792-v4-0-7213415d9eec@flipper.net
+diff --git a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
+index ba14663c9266..cdce83f05804 100644
+--- a/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
++++ b/Documentation/devicetree/bindings/mfd/ti,bq25703a.yaml
+@@ -4,17 +4,16 @@
+ $id: http://devicetree.org/schemas/mfd/ti,bq25703a.yaml#
+ $schema: http://devicetree.org/meta-schemas/core.yaml#
+ 
+-title: BQ25703A Charger Manager/Buck/Boost Converter
++title: BQ257xx Charger Manager/Buck/Boost Converter
+ 
+ maintainers:
+   - Chris Morgan <macromorgan@hotmail.com>
+ 
+-allOf:
+-  - $ref: /schemas/power/supply/power-supply.yaml#
+-
+ properties:
+   compatible:
+-    const: ti,bq25703a
++    enum:
++      - ti,bq25703a
++      - ti,bq25792
+ 
+   reg:
+     const: 0x6b
+@@ -25,7 +24,6 @@ properties:
+       powering the device.
+     minimum: 50000
+     maximum: 6400000
+-    default: 3250000
+ 
+   interrupts:
+     maxItems: 1
+@@ -57,11 +55,11 @@ properties:
+             minimum: 0
+             maximum: 6350000
+           regulator-min-microvolt:
+-            minimum: 4480000
+-            maximum: 20800000
++            minimum: 2800000
++            maximum: 22000000
+           regulator-max-microvolt:
+-            minimum: 4480000
+-            maximum: 20800000
++            minimum: 2800000
++            maximum: 22000000
+           enable-gpios:
+             description:
+               The BQ25703 may require both a register write and a GPIO
+@@ -74,6 +72,61 @@ properties:
+           - regulator-min-microvolt
+           - regulator-max-microvolt
+ 
++allOf:
++  - $ref: /schemas/power/supply/power-supply.yaml#
++  - if:
++      properties:
++        compatible:
++          const: ti,bq25703a
++    then:
++      properties:
++        input-current-limit-microamp:
++          minimum: 50000
++          maximum: 6400000
++          default: 3250000
++        regulators:
++          properties:
++            vbus:
++              properties:
++                regulator-min-microamp:
++                  minimum: 0
++                  maximum: 6350000
++                regulator-max-microamp:
++                  minimum: 0
++                  maximum: 6350000
++                regulator-min-microvolt:
++                  minimum: 4480000
++                  maximum: 20800000
++                regulator-max-microvolt:
++                  minimum: 4480000
++                  maximum: 20800000
++  - if:
++      properties:
++        compatible:
++          const: ti,bq25792
++    then:
++      properties:
++        input-current-limit-microamp:
++          minimum: 100000
++          maximum: 3300000
++          default: 3000000
++        regulators:
++          properties:
++            vbus:
++              properties:
++                regulator-min-microamp:
++                  minimum: 0
++                  maximum: 3320000
++                regulator-max-microamp:
++                  minimum: 0
++                  maximum: 3320000
++                regulator-min-microvolt:
++                  minimum: 2800000
++                  maximum: 22000000
++                regulator-max-microvolt:
++                  minimum: 2800000
++                  maximum: 22000000
++
+ unevaluatedProperties: false
+ 
+ required:
 
-Changes in v4:
-- Avoid additional data structures and pass 'type' within the existing
-  struct bq257xx_device instead (Lee Jones)
-- Move comments for new struct fields to the patches where those fields
-  are added (Sebastian Reichel)
-- Collect tags from Sebastian Reichel (thanks!)
-- Link to v3: https://lore.kernel.org/r/20260310-bq25792-v3-0-02f8e232d63b@flipper.net
-
-Changes in v3:
-- Move MFD cell definitions back out of the probe function (Lee Jones)
-- Collect tags from Mark Brown, Krzysztof Kozlowski and Chris Morgan (thanks!)
-- Enable ship FET functionality at init for BQ25792
-- Link to v2: https://lore.kernel.org/r/20260306-bq25792-v2-0-6595249d6e6f@flipper.net
-
-Changes in v2:
-- Fix an error in DT schema (thanks Rob's bot)
-- Ensure the broadest constraints for all variants remain in the common
-  part of the schema, per writing-schema doc (thanks Krzysztof)
-- Link to v1: https://lore.kernel.org/r/20260303-bq25792-v1-0-e6e5e0033458@flipper.net
-
----
-Alexey Charkov (11):
-      dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
-      regulator: bq257xx: Remove reference to the parent MFD's dev
-      regulator: bq257xx: Drop the regulator_dev from the driver data
-      regulator: bq257xx: Make OTG enable GPIO really optional
-      power: supply: bq257xx: Fix VSYSMIN clamping logic
-      power: supply: bq257xx: Make the default current limit a per-chip attribute
-      power: supply: bq257xx: Consistently use indirect get/set helpers
-      power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' states
-      mfd: bq257xx: Add BQ25792 support
-      regulator: bq257xx: Add support for BQ25792
-      power: supply: bq257xx: Add support for BQ25792
-
- .../devicetree/bindings/mfd/ti,bq25703a.yaml       |  73 ++-
- drivers/mfd/bq257xx.c                              |  54 ++-
- drivers/power/supply/bq257xx_charger.c             | 534 ++++++++++++++++++++-
- drivers/regulator/bq257xx-regulator.c              | 121 ++++-
- include/linux/mfd/bq257xx.h                        | 412 ++++++++++++++++
- 5 files changed, 1156 insertions(+), 38 deletions(-)
----
-base-commit: 36ece9697e89016181e5ae87510e40fb31d86f2b
-change-id: 20260303-bq25792-0132ac86846d
-
-Best regards,
 -- 
-Alexey Charkov <alchark@flipper.net>
+2.52.0
 
