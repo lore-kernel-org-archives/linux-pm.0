@@ -1,68 +1,67 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0C6541B365
-	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:44:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F601423A83
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:44:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774971851; cv=none; b=KPAdqJmsj5sYVfcBWPxNH0R/LzBOKONXpRSuvL/jpQFuNfbC+mHc+ORfRhFQEam+IY9fTchGf2ywWSFZVOLS8jRWlEDtDBnIr6/K2Elc4AgC8n4osPOUisjafi9/8AV8suakMUtXhNSDg3hoYtqLg+oJp4R39cs/pT/JjTJFSJ8=
+	t=1774971854; cv=none; b=l2t+W/C7iuzOTUmJIJjwFFQQH3TqFaNh2QQbzxUYGlt5r9ZZTGjiuZ19fvSkQc6H6t70NEABlL9CwHSlvZToHuFm+sonNytVCfaofj/xmxRU+dJa/Q6pdrASYXVjPboeRhgLZhmj+oMJ9IRt7ZnWLzVYOQQyT60yrqhpCDX21bI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774971851; c=relaxed/simple;
-	bh=xDe5OwkC59HG0l6E9h1OwEErzx9ysv39/KByzvSAFgU=;
+	s=arc-20240116; t=1774971854; c=relaxed/simple;
+	bh=035uLfC/qCk1SQCGRS8BdnBZsGiJRDyEfYBPzln/PUA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kj3PvIDKVqfqyepEABllDrxA0Kwsc6Os1yD6DvBraKyvHqy8QGdPnkntE8mFZWqgVQKp+u//qImyxVWdjyQ/oEsorUix8NJj005s7/3vD1cpDeqecIxHQOi6D83nGW1DcAOOsauGhRHN5ZH4LhUq7iqLPB99PkpO3woCvjaThCg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=gcjGgUu7; arc=none smtp.client-ip=209.85.128.43
+	 In-Reply-To:To:Cc; b=aoLiKcdLC3sKhCDztYXmwYFiktLPwOOGzxwD6euYW/FvuxqxOos6Gf2/XGnePFZM3hkc33WJf8o4UYO3E6SeRrXADB/AkyX2s7DpyljQdtMtnZ06wJ+pjVYU9mHlTPzc7q32mMAVIYjgY2UzVexMlFNg77GvmgItR6v4OJmc34o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=XYGkR5Qi; arc=none smtp.client-ip=209.85.128.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="gcjGgUu7"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4852a9c6309so49702495e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:44:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="XYGkR5Qi"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-48558d6ef83so59369745e9.3
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:44:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1774971848; x=1775576648; darn=vger.kernel.org;
+        d=flipper.net; s=google; t=1774971851; x=1775576651; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=3AEOePYJtU4kn4mkWQfK7NUJrP7JZP+VFvVN1gskxyo=;
-        b=gcjGgUu74+HcPcTyOi3RpUvw/uvDG5hgfiTvbEBW3FkGnfQC8Z0bvbVWKznNHCWcp/
-         mNVMv2jw/NMQnTstZx4XUNbHOhQ8HmX1YsMFKpVPO0zqvX3ol1IB4+R27W9AOiI/sWqD
-         BMHSVN2pEDHxPhQKmbl3OHvJkuWIo6wsorK0zohlaOI7WdfMmxFIDExYmLtSksAouujC
-         2VmsN2XsMlyvLCqN/0U6m9tSLG6IN+sC/62UKhzJM39k+clUYDgn8RDdZ88GMyDLQZHw
-         0NFlNv2pLef3v0BxY14icfsxwNETSgZrSAud41M2TUC2nJ24HC706IHpW8ODhANlvzD1
-         wUbA==
+        bh=5H6NE98km+QlKXSyTbbjh+9YCr+zJjMBCTzhaVC/y8I=;
+        b=XYGkR5Qi5baSR8tCcce+QsIvohl9ol+MqRKnXgNyGaZcnsG4J8va0jPkP3ZS/uToRF
+         RSmGnfgtKWmWA2On17dUOyZJoxg9Lypi77Pl7pxJi88ORrculKRnlNGcNJGlBOeuzK5o
+         zgtKmHV75O7q3Fsp0shh1SETBlRzEbI41+SNWZKHhI0Iro1/wtQlXor9cWuaG48x3W8D
+         mqjXSAcL9O4Op5OPVhXfIsENivD4YrcYu2UiLwi+7F7+sbwoi0C5sEJsgaY9T8rXCLWI
+         rDMAzITKiKHGGzsdzV/5s5CxufytY785Jq6h8OK9Mw+weSXDUMWUi3npNe8liYQUfrb6
+         Ls7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774971848; x=1775576648;
+        d=1e100.net; s=20251104; t=1774971851; x=1775576651;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=3AEOePYJtU4kn4mkWQfK7NUJrP7JZP+VFvVN1gskxyo=;
-        b=erBWhCgEeFQThpfkEYoGoriPyYSTlxHovTYaROp3JTaT5tc2557sXTZ3TvEsrppZd1
-         QNr94GgCkShoeSlzQKl/JWOzCRjUmOTTHihtylUVEGkov2ZgHvZQ/aUHlyu2RyyWqdi+
-         qOiYBHkGNHn5T/+oou3H+HY6bAnIoMXPPBnb3ipVPLHn4CLpAkPFpnU4Zph6hBXmtXD6
-         G/QjVkTtN11lOyr26eGbtVvFExSEL/MDRK9QvGZQptSMFZGu42seIWOdngRgmIOzQMyV
-         KjWrADvyTCHc5LwOj6ciM+R98XhGwURz1wDqm2oqK10ReKBdi/JLEyw8M4Xh7mjtLY+S
-         ptfA==
-X-Forwarded-Encrypted: i=1; AJvYcCWT8LBQwTkZSrfJ9JLJpDhmjFIyk/heTJSGCmwxrdbv1wJQCkHw65SpjIXGITMwB9RkIKo6zxLwSw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwcMzUjQWz55RZ6Dt75YYox9nanl7zwIRi3S9srFJbr7rpFZcWT
-	8T6De7od5hV0j3Ux/iTQjQrw+9FpktnEb42EZhmJW8kixyeYmgu1goeg7WIwfcTBz6M=
-X-Gm-Gg: ATEYQzzObaomtExcIIYwvUEpVPTiB7pv09CwXJ3gc1FwXVir1q7PI/W9yby2jJ+w6V6
-	CxyJrSNJumh6a9Tjf9acjIS2WJwdnaVbLYB3aLCLoR5Uw+CGhK5z8YOKgfxtUdopU8FQ8G85YVM
-	50ZyensKMUttAnuuPzYxmJbJhLmq34iE6OQ0TseZrGR9ySJHAHTLl2oNW4mECDUsRkgyEIlGsjX
-	a0PqygaSzjcNDP97BOwiq62BfYujwaWfb601O7WOGQQonByyyrOJu1lFESS6ErqnO+eyv1rzE4g
-	MJ8y4/2slDmqX8azeTP4+iIGvANsNRy0+0LIalzBwW/DEqXWFSfviIQ25ofSxoBFaVOUsw4TcVH
-	vM+WU8IhFqorWVu4QfZ6lrArSEsdOsM5Tu40tsF0Xhvcqn/uBIrlR0jtWToXtKf2SxYiFk0wt4q
-	slQddUB/Yakj6ECtFAUtgTg/a8OBfhMshi2rSDd24ZmlxDk3C0+mQ0H3glCdeATGvwPQ/wn1FSi
-	OtwHg==
-X-Received: by 2002:a05:600c:45d4:b0:488:79a3:f04c with SMTP id 5b1f17b1804b1-48879a3f26cmr61666005e9.27.1774971848032;
-        Tue, 31 Mar 2026 08:44:08 -0700 (PDT)
+        bh=5H6NE98km+QlKXSyTbbjh+9YCr+zJjMBCTzhaVC/y8I=;
+        b=H83QQYz4uCoTUl8cJM5gkkgN2xuUb6+WiPUJ3Ai01/YheW6jhz8KFd9gYf8UnYYaZv
+         9wpp5nrzKDFjP5SS3RM6rakpvsxXw7eO4mKEnNVAAjm6l8ETp2v914cMjj9RvefqYL6V
+         RNMCkGcLRDZSuWIOT+bSbyzLMzLYuDg+gndtQc2/Ur7DFQ3uBICaaicnKNmj3GyUUhQY
+         LJCcC4EV8jev9Ini0WFzWAe/lVLp/nGfo/Wm5JJk86N1h30wyDVwhSRlP9fujoohT0uI
+         Bas+OhyRAVHP2QhDCWvb3Yzl64DNjXPpzM4Y+OqHpnJDr+w2/KN5k+Prit6fwZt0B4Xu
+         yKEw==
+X-Forwarded-Encrypted: i=1; AJvYcCWv9kkrvuDy4nXOJSe1cN8dUnMvzp44+bBMMpJ68xlTLbfAFnx3SFl4ukq1o6UEwWU2JrUKrw0Ayw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzF4Fu+3Lq1xf1anpwAlVr+ZF2oxTfY6sx1qGk0wZncoEmcr4eX
+	HyuWG1vap+NmBiF4Le6pdt5LiG0Os5Wx/tzQ3f3YHIOjO45KEFWXv0ZycGGztfEYfY8=
+X-Gm-Gg: ATEYQzzPTJIrYxfzdOZaF//4cuUtW+mfZklbcULNbQ9gPWmW5q+6lNOgYfp0Cw9Eyq6
+	gRwfAPFsaCj4BWsvfwJxqyppEppYoSXRsIW4w5fFciUWlUsmJQbZGxWLI5tTOvB/X8ryQii/gL3
+	vQ1NbMOFyMdjZK7oUjEG4eTla+U3u+xXPSY014Nc4/dhnPpr09gvpG/8gefHhSUmPnjuB7zXYfP
+	yaI3lqo2YE63MiDFmvuMjIVj1Ug55OZgCte1v6959vU8bQBC4CQfv5E3TvHUMNJgZR0svfQkkUt
+	AI6ON+FC+9cYAM8fLE6PvdZRa28Hz5pH/H8oE4W3XmgixpNpBp9jb8MxVC1qp56lum3ErPaekKQ
+	lTqhXPTVYivevr8iPyB83pgnR3KFXDBDz/p4MzPQ9H+bD0i0cjl/F0g/Uns+/UAorq8L0/n7mpR
+	niOiMfYPDywGaEc5Ny/3VhuQwx9O6rIsaBCCvQsmt/DhbhoMFSa/jhsuZ1l7kM+iw2YhRP6kZgb
+	FtBKQ==
+X-Received: by 2002:a05:600c:8b03:b0:486:fdca:ea8d with SMTP id 5b1f17b1804b1-48727ef5550mr313728095e9.25.1774971850721;
+        Tue, 31 Mar 2026 08:44:10 -0700 (PDT)
 Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887c8852a5sm48412605e9.9.2026.03.31.08.44.05
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887c8852a5sm48412605e9.9.2026.03.31.08.44.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 Mar 2026 08:44:07 -0700 (PDT)
+        Tue, 31 Mar 2026 08:44:10 -0700 (PDT)
 From: Alexey Charkov <alchark@flipper.net>
-Date: Tue, 31 Mar 2026 19:43:45 +0400
-Subject: [PATCH v6 08/11] power: supply: bq257xx: Add fields for 'charging'
- and 'overvoltage' states
+Date: Tue, 31 Mar 2026 19:43:46 +0400
+Subject: [PATCH v6 09/11] mfd: bq257xx: Add BQ25792 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,7 +70,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260331-bq25792-v6-8-0278fba33eb9@flipper.net>
+Message-Id: <20260331-bq25792-v6-9-0278fba33eb9@flipper.net>
 References: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
 In-Reply-To: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
 To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -83,89 +82,547 @@ Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
  Sebastian Reichel <sebastian.reichel@collabora.com>, 
  linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3105; i=alchark@flipper.net;
- h=from:subject:message-id; bh=xDe5OwkC59HG0l6E9h1OwEErzx9ysv39/KByzvSAFgU=;
- b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSefr3e/5L0mRfBFafkf65duuv2+rO7r1a57Cqo+xMje
- P/DIVZZn46JLAxiXAyWYoosc78tsZ1qxDdrl4fHV5g5rEwgQ6RFGhiAgIWBLzcxr9RIx0jPVNtQ
- z9BQx1jHiIGLUwCmuuMfI8N5s3DZXKHF7Cc2LG3L2ik4P68hWvH/fc0otrNLlr6MSgxj+GfYW6f
- R2HZfVbKFQ4dV17zy5bMc26ULMs5tYok/MX2WDCsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=19368; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=035uLfC/qCk1SQCGRS8BdnBZsGiJRDyEfYBPzln/PUA=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSefr2+IXyBIpMNR/fCwHWPHm56e9Un5t6WJ5OzfkqKp
+ dS99sjc0jGRhUGMi8FSTJFl7rcltlON+Gbt8vD4CjOHlQlkiLRIAwMQsDDw5SbmlRrpGOmZahvq
+ GRrqGOsYMXBxCsBUt/EzMux6xjg/O3fHlq4l7I8Ev+a/1jYJvxY4xThq03M1WbE5d44yMnRqaTI
+ kbpFTlr5ppS55RHjHpxUPnnapv8rZsa9TsbluCTcA
 X-Developer-Key: i=alchark@flipper.net; a=openpgp;
  fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-The driver currently reports the 'charging' and 'overvoltage' states based
-on a logical expression in the get_charger_property() wrapper function.
-This doesn't scale well to other chip variants, which may have a different
-number and type of hardware reported conditions which fall into these
-broad power supply states.
+Add register definitions and a new 'type' enum to be passed via MFD
+private data to support the BQ25792, which is a newer variant of the
+BQ257xx family.
 
-Move the logic for determining 'charging' and 'overvoltage' states into
-chip-specific accessors, which can be overridden by each variant as
-needed.
-
-This helps keep the get_charger_property() wrapper function chip-agnostic
-while allowing for new chip variants to be added bringing their own logic.
+BQ25792 shares similar logic of operation with the already supported
+BQ25703A but has a completely different register map and different
+electrical constraints.
 
 Tested-by: Chris Morgan <macromorgan@hotmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
- drivers/power/supply/bq257xx_charger.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/mfd/bq257xx.c       |  54 +++++-
+ include/linux/mfd/bq257xx.h | 412 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 463 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/bq257xx_charger.c b/drivers/power/supply/bq257xx_charger.c
-index 0765673728e4..9c082865e745 100644
---- a/drivers/power/supply/bq257xx_charger.c
-+++ b/drivers/power/supply/bq257xx_charger.c
-@@ -54,8 +54,10 @@ struct bq257xx_chip_info {
-  * @bq: parent MFD device
-  * @charger: power supply device
-  * @online: charger input is present
-+ * @charging: charger is actively charging the battery
-  * @fast_charge: charger is in fast charge mode
-  * @pre_charge: charger is in pre-charge mode
-+ * @overvoltage: overvoltage fault detected
-  * @ov_fault: charger reports over voltage fault
-  * @batoc_fault: charger reports battery over current fault
-  * @oc_fault: charger reports over current fault
-@@ -71,8 +73,10 @@ struct bq257xx_chg {
- 	struct bq257xx_device *bq;
- 	struct power_supply *charger;
- 	bool online;
-+	bool charging;
- 	bool fast_charge;
- 	bool pre_charge;
-+	bool overvoltage;
- 	bool ov_fault;
- 	bool batoc_fault;
- 	bool oc_fault;
-@@ -106,8 +110,10 @@ static int bq25703_get_state(struct bq257xx_chg *pdata)
- 	pdata->online = reg & BQ25703_STS_AC_STAT;
- 	pdata->fast_charge = reg & BQ25703_STS_IN_FCHRG;
- 	pdata->pre_charge = reg & BQ25703_STS_IN_PCHRG;
-+	pdata->charging = pdata->fast_charge || pdata->pre_charge;
- 	pdata->ov_fault = reg & BQ25703_STS_FAULT_ACOV;
- 	pdata->batoc_fault = reg & BQ25703_STS_FAULT_BATOC;
-+	pdata->overvoltage = pdata->ov_fault || pdata->batoc_fault;
- 	pdata->oc_fault = reg & BQ25703_STS_FAULT_ACOC;
+diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+index e9d49dac0a16..054342c60b73 100644
+--- a/drivers/mfd/bq257xx.c
++++ b/drivers/mfd/bq257xx.c
+@@ -39,6 +39,39 @@ static const struct regmap_config bq25703_regmap_config = {
+ 	.val_format_endian = REGMAP_ENDIAN_LITTLE,
+ };
  
- 	return 0;
-@@ -478,14 +484,14 @@ static int bq257xx_get_charger_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_STATUS:
- 		if (!pdata->online)
- 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
--		else if (pdata->fast_charge || pdata->pre_charge)
-+		else if (pdata->charging)
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else
- 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		break;
++static const struct regmap_range bq25792_writeable_reg_ranges[] = {
++	regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
++			 BQ25792_REG18_NTC_CONTROL_1),
++	regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
++			 BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
++};
++
++static const struct regmap_access_table bq25792_writeable_regs = {
++	.yes_ranges = bq25792_writeable_reg_ranges,
++	.n_yes_ranges = ARRAY_SIZE(bq25792_writeable_reg_ranges),
++};
++
++static const struct regmap_range bq25792_volatile_reg_ranges[] = {
++	regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
++			 BQ25792_REG27_FAULT_FLAG_1),
++	regmap_reg_range(BQ25792_REG31_IBUS_ADC,
++			 BQ25792_REG47_DPDM_DRIVER),
++};
++
++static const struct regmap_access_table bq25792_volatile_regs = {
++	.yes_ranges = bq25792_volatile_reg_ranges,
++	.n_yes_ranges = ARRAY_SIZE(bq25792_volatile_reg_ranges),
++};
++
++static const struct regmap_config bq25792_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	.max_register = BQ25792_REG48_PART_INFORMATION,
++	.cache_type = REGCACHE_MAPLE,
++	.wr_table = &bq25792_writeable_regs,
++	.volatile_table = &bq25792_volatile_regs,
++};
++
+ static const struct mfd_cell cells[] = {
+ 	MFD_CELL_NAME("bq257xx-regulator"),
+ 	MFD_CELL_NAME("bq257xx-charger"),
+@@ -46,6 +79,7 @@ static const struct mfd_cell cells[] = {
  
- 	case POWER_SUPPLY_PROP_HEALTH:
--		if (pdata->ov_fault || pdata->batoc_fault)
-+		if (pdata->overvoltage)
- 			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
- 		else if (pdata->oc_fault)
- 			val->intval = POWER_SUPPLY_HEALTH_OVERCURRENT;
+ static int bq257xx_probe(struct i2c_client *client)
+ {
++	const struct regmap_config *rcfg;
+ 	struct bq257xx_device *ddata;
+ 	int ret;
+ 
+@@ -53,9 +87,21 @@ static int bq257xx_probe(struct i2c_client *client)
+ 	if (!ddata)
+ 		return -ENOMEM;
+ 
++	ddata->type = (uintptr_t)i2c_get_match_data(client);
+ 	ddata->client = client;
+ 
+-	ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
++	switch (ddata->type) {
++	case BQ25703A:
++		rcfg = &bq25703_regmap_config;
++		break;
++	case BQ25792:
++		rcfg = &bq25792_regmap_config;
++		break;
++	default:
++		return dev_err_probe(&client->dev, -ENODEV, "Unsupported device type\n");
++	}
++
++	ddata->regmap = devm_regmap_init_i2c(client, rcfg);
+ 	if (IS_ERR(ddata->regmap)) {
+ 		return dev_err_probe(&client->dev, PTR_ERR(ddata->regmap),
+ 				     "Failed to allocate register map\n");
+@@ -73,13 +119,15 @@ static int bq257xx_probe(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id bq257xx_i2c_ids[] = {
+-	{ "bq25703a" },
++	{ "bq25703a", BQ25703A },
++	{ "bq25792", BQ25792 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(i2c, bq257xx_i2c_ids);
+ 
+ static const struct of_device_id bq257xx_of_match[] = {
+-	{ .compatible = "ti,bq25703a" },
++	{ .compatible = "ti,bq25703a", .data = (void *)BQ25703A },
++	{ .compatible = "ti,bq25792", .data = (void *)BQ25792 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, bq257xx_of_match);
+diff --git a/include/linux/mfd/bq257xx.h b/include/linux/mfd/bq257xx.h
+index 1d6ddc7fb09f..4ec72eb920f2 100644
+--- a/include/linux/mfd/bq257xx.h
++++ b/include/linux/mfd/bq257xx.h
+@@ -98,7 +98,419 @@
+ 
+ #define BQ25703_EN_OTG_MASK			BIT(12)
+ 
++#define BQ25792_REG00_MIN_SYS_VOLTAGE		0x00
++#define BQ25792_REG01_CHARGE_VOLTAGE_LIMIT	0x01
++#define BQ25792_REG03_CHARGE_CURRENT_LIMIT	0x03
++#define BQ25792_REG05_INPUT_VOLTAGE_LIMIT	0x05
++#define BQ25792_REG06_INPUT_CURRENT_LIMIT	0x06
++#define BQ25792_REG08_PRECHARGE_CONTROL		0x08
++#define BQ25792_REG09_TERMINATION_CONTROL	0x09
++#define BQ25792_REG0A_RECHARGE_CONTROL		0x0a
++#define BQ25792_REG0B_VOTG_REGULATION		0x0b
++#define BQ25792_REG0D_IOTG_REGULATION		0x0d
++#define BQ25792_REG0E_TIMER_CONTROL		0x0e
++#define BQ25792_REG0F_CHARGER_CONTROL_0		0x0f
++#define BQ25792_REG10_CHARGER_CONTROL_1		0x10
++#define BQ25792_REG11_CHARGER_CONTROL_2		0x11
++#define BQ25792_REG12_CHARGER_CONTROL_3		0x12
++#define BQ25792_REG13_CHARGER_CONTROL_4		0x13
++#define BQ25792_REG14_CHARGER_CONTROL_5		0x14
++/* REG15 reserved */
++#define BQ25792_REG16_TEMPERATURE_CONTROL	0x16
++#define BQ25792_REG17_NTC_CONTROL_0		0x17
++#define BQ25792_REG18_NTC_CONTROL_1		0x18
++#define BQ25792_REG19_ICO_CURRENT_LIMIT		0x19
++#define BQ25792_REG1B_CHARGER_STATUS_0		0x1b
++#define BQ25792_REG1C_CHARGER_STATUS_1		0x1c
++#define BQ25792_REG1D_CHARGER_STATUS_2		0x1d
++#define BQ25792_REG1E_CHARGER_STATUS_3		0x1e
++#define BQ25792_REG1F_CHARGER_STATUS_4		0x1f
++#define BQ25792_REG20_FAULT_STATUS_0		0x20
++#define BQ25792_REG21_FAULT_STATUS_1		0x21
++#define BQ25792_REG22_CHARGER_FLAG_0		0x22
++#define BQ25792_REG23_CHARGER_FLAG_1		0x23
++#define BQ25792_REG24_CHARGER_FLAG_2		0x24
++#define BQ25792_REG25_CHARGER_FLAG_3		0x25
++#define BQ25792_REG26_FAULT_FLAG_0		0x26
++#define BQ25792_REG27_FAULT_FLAG_1		0x27
++#define BQ25792_REG28_CHARGER_MASK_0		0x28
++#define BQ25792_REG29_CHARGER_MASK_1		0x29
++#define BQ25792_REG2A_CHARGER_MASK_2		0x2a
++#define BQ25792_REG2B_CHARGER_MASK_3		0x2b
++#define BQ25792_REG2C_FAULT_MASK_0		0x2c
++#define BQ25792_REG2D_FAULT_MASK_1		0x2d
++#define BQ25792_REG2E_ADC_CONTROL		0x2e
++#define BQ25792_REG2F_ADC_FUNCTION_DISABLE_0	0x2f
++#define BQ25792_REG30_ADC_FUNCTION_DISABLE_1	0x30
++#define BQ25792_REG31_IBUS_ADC			0x31
++#define BQ25792_REG33_IBAT_ADC			0x33
++#define BQ25792_REG35_VBUS_ADC			0x35
++#define BQ25792_REG37_VAC1_ADC			0x37
++#define BQ25792_REG39_VAC2_ADC			0x39
++#define BQ25792_REG3B_VBAT_ADC			0x3b
++#define BQ25792_REG3D_VSYS_ADC			0x3d
++#define BQ25792_REG3F_TS_ADC			0x3f
++#define BQ25792_REG41_TDIE_ADC			0x41
++#define BQ25792_REG43_DP_ADC			0x43
++#define BQ25792_REG45_DM_ADC			0x45
++#define BQ25792_REG47_DPDM_DRIVER		0x47
++#define BQ25792_REG48_PART_INFORMATION		0x48
++
++/* Minimal System Voltage */
++#define BQ25792_REG00_VSYSMIN_MASK		GENMASK(5, 0)
++
++#define BQ25792_MINVSYS_MIN_UV			2500000
++#define BQ25792_MINVSYS_STEP_UV			250000
++#define BQ25792_MINVSYS_MAX_UV			16000000
++
++/* Charge Voltage Limit */
++#define BQ25792_REG01_VREG_MASK			GENMASK(10, 0)
++
++#define BQ25792_VBATREG_MIN_UV			3000000
++#define BQ25792_VBATREG_STEP_UV			10000
++#define BQ25792_VBATREG_MAX_UV			18800000
++
++/* Charge Current Limit */
++#define BQ25792_REG03_ICHG_MASK			GENMASK(8, 0)
++
++#define BQ25792_ICHG_MIN_UA			50000
++#define BQ25792_ICHG_STEP_UA			10000
++#define BQ25792_ICHG_MAX_UA			5000000
++
++/* Input Voltage Limit */
++#define BQ25792_REG05_VINDPM_MASK		GENMASK(7, 0)
++
++/* Input Current Limit */
++#define BQ25792_REG06_IINDPM_MASK		GENMASK(8, 0)
++#define BQ25792_IINDPM_DEFAULT_UA		3000000
++#define BQ25792_IINDPM_STEP_UA			10000
++#define BQ25792_IINDPM_MIN_UA			100000
++#define BQ25792_IINDPM_MAX_UA			3300000
++
++/* Precharge Control */
++#define BQ25792_REG08_VBAT_LOWV_MASK		GENMASK(7, 6)
++#define BQ25792_REG08_IPRECHG_MASK		GENMASK(5, 0)
++
++/* Termination Control */
++#define BQ25792_REG09_REG_RST			BIT(6)
++#define BQ25792_REG09_ITERM_MASK		GENMASK(4, 0)
++
++/* Re-charge Control */
++#define BQ25792_REG0A_CELL_MASK			GENMASK(7, 6)
++#define BQ25792_REG0A_TRECHG_MASK		GENMASK(5, 4)
++#define BQ25792_REG0A_VRECHG_MASK		GENMASK(3, 0)
++
++/* VOTG regulation */
++#define BQ25792_REG0B_VOTG_MASK			GENMASK(10, 0)
++
++#define BQ25792_OTG_VOLT_MIN_UV			2800000
++#define BQ25792_OTG_VOLT_STEP_UV		10000
++#define BQ25792_OTG_VOLT_MAX_UV			22000000
++#define BQ25792_OTG_VOLT_NUM_VOLT		((BQ25792_OTG_VOLT_MAX_UV \
++						  - BQ25792_OTG_VOLT_MIN_UV) \
++						  / BQ25792_OTG_VOLT_STEP_UV + 1)
++
++/* IOTG regulation */
++#define BQ25792_REG0D_PRECHG_TMR		BIT(7)
++#define BQ25792_REG0D_IOTG_MASK			GENMASK(6, 0)
++
++#define BQ25792_OTG_CUR_MIN_UA		120000
++#define BQ25792_OTG_CUR_STEP_UA		40000
++#define BQ25792_OTG_CUR_MAX_UA		3320000
++
++/* Timer Control */
++#define BQ25792_REG0E_TOPOFF_TMR_MASK		GENMASK(7, 6)
++#define BQ25792_REG0E_EN_TRICHG_TMR		BIT(5)
++#define BQ25792_REG0E_EN_PRECHG_TMR		BIT(4)
++#define BQ25792_REG0E_EN_CHG_TMR		BIT(3)
++#define BQ25792_REG0E_CHG_TMR_MASK		GENMASK(2, 1)
++#define BQ25792_REG0E_TMR2X_EN			BIT(0)
++
++/* Charger Control 0 */
++#define BQ25792_REG0F_EN_AUTO_IBATDIS		BIT(7)
++#define BQ25792_REG0F_FORCE_IBATDIS		BIT(6)
++#define BQ25792_REG0F_EN_CHG			BIT(5)
++#define BQ25792_REG0F_EN_ICO			BIT(4)
++#define BQ25792_REG0F_FORCE_ICO			BIT(3)
++#define BQ25792_REG0F_EN_HIZ			BIT(2)
++#define BQ25792_REG0F_EN_TERM			BIT(1)
++/* bit0 reserved */
++
++/* Charger Control 1 */
++#define BQ25792_REG10_VAC_OVP_MASK		GENMASK(5, 4)
++#define BQ25792_REG10_WD_RST			BIT(3)
++#define BQ25792_REG10_WATCHDOG_MASK		GENMASK(2, 0)
++
++/* Charger Control 2 */
++#define BQ25792_REG11_FORCE_INDET		BIT(7)
++#define BQ25792_REG11_AUTO_INDET_EN		BIT(6)
++#define BQ25792_REG11_EN_12V			BIT(5)
++#define BQ25792_REG11_EN_9V			BIT(4)
++#define BQ25792_REG11_HVDCP_EN			BIT(3)
++#define BQ25792_REG11_SDRV_CTRL_MASK		GENMASK(2, 1)
++#define BQ25792_REG11_SDRV_DLY			BIT(0)
++
++/* Charger Control 3 */
++#define BQ25792_REG12_DIS_ACDRV			BIT(7)
++#define BQ25792_REG12_EN_OTG			BIT(6)
++#define BQ25792_REG12_PFM_OTG_DIS		BIT(5)
++#define BQ25792_REG12_PFM_FWD_DIS		BIT(4)
++#define BQ25792_REG12_WKUP_DLY			BIT(3)
++#define BQ25792_REG12_DIS_LDO			BIT(2)
++#define BQ25792_REG12_DIS_OTG_OOA		BIT(1)
++#define BQ25792_REG12_DIS_FWD_OOA		BIT(0)
++
++/* Charger Control 4 */
++#define BQ25792_REG13_EN_ACDRV2			BIT(7)
++#define BQ25792_REG13_EN_ACDRV1			BIT(6)
++#define BQ25792_REG13_PWM_FREQ			BIT(5)
++#define BQ25792_REG13_DIS_STAT			BIT(4)
++#define BQ25792_REG13_DIS_VSYS_SHORT		BIT(3)
++#define BQ25792_REG13_DIS_VOTG_UVP		BIT(2)
++#define BQ25792_REG13_FORCE_VINDPM_DET		BIT(1)
++#define BQ25792_REG13_EN_IBUS_OCP		BIT(0)
++
++/* Charger Control 5 */
++#define BQ25792_REG14_SFET_PRESENT		BIT(7)
++/* bit6 reserved */
++#define BQ25792_REG14_EN_IBAT			BIT(5)
++#define BQ25792_REG14_IBAT_REG_MASK		GENMASK(4, 3)
++#define BQ25792_REG14_EN_IINDPM			BIT(2)
++#define BQ25792_REG14_EN_EXTILIM		BIT(1)
++#define BQ25792_REG14_EN_BATOC			BIT(0)
++
++#define BQ25792_IBAT_3A				FIELD_PREP(BQ25792_REG14_IBAT_REG_MASK, 0)
++#define BQ25792_IBAT_4A				FIELD_PREP(BQ25792_REG14_IBAT_REG_MASK, 1)
++#define BQ25792_IBAT_5A				FIELD_PREP(BQ25792_REG14_IBAT_REG_MASK, 2)
++#define BQ25792_IBAT_UNLIM			FIELD_PREP(BQ25792_REG14_IBAT_REG_MASK, 3)
++
++/* Temperature Control */
++#define BQ25792_REG16_TREG_MASK			GENMASK(7, 6)
++#define BQ25792_REG16_TSHUT_MASK		GENMASK(5, 4)
++#define BQ25792_REG16_VBUS_PD_EN		BIT(3)
++#define BQ25792_REG16_VAC1_PD_EN		BIT(2)
++#define BQ25792_REG16_VAC2_PD_EN		BIT(1)
++
++/* NTC Control 0 */
++#define BQ25792_REG17_JEITA_VSET_MASK		GENMASK(7, 5)
++#define BQ25792_REG17_JEITA_ISETH_MASK		GENMASK(4, 3)
++#define BQ25792_REG17_JEITA_ISETC_MASK		GENMASK(2, 1)
++
++/* NTC Control 1 */
++#define BQ25792_REG18_TS_COOL_MASK		GENMASK(7, 6)
++#define BQ25792_REG18_TS_WARM_MASK		GENMASK(5, 4)
++#define BQ25792_REG18_BHOT_MASK			GENMASK(3, 2)
++#define BQ25792_REG18_BCOLD			BIT(1)
++#define BQ25792_REG18_TS_IGNORE			BIT(0)
++
++/* ICO Current Limit */
++#define BQ25792_REG19_ICO_ILIM_MASK		GENMASK(8, 0)
++
++/* Charger Status 0 */
++#define BQ25792_REG1B_IINDPM_STAT		BIT(7)
++#define BQ25792_REG1B_VINDPM_STAT		BIT(6)
++#define BQ25792_REG1B_WD_STAT			BIT(5)
++#define BQ25792_REG1B_POORSRC_STAT		BIT(4)
++#define BQ25792_REG1B_PG_STAT			BIT(3)
++#define BQ25792_REG1B_AC2_PRESENT_STAT		BIT(2)
++#define BQ25792_REG1B_AC1_PRESENT_STAT		BIT(1)
++#define BQ25792_REG1B_VBUS_PRESENT_STAT		BIT(0)
++
++/* Charger Status 1 */
++#define BQ25792_REG1C_CHG_STAT_MASK		GENMASK(7, 5)
++#define BQ25792_REG1C_VBUS_STAT_MASK		GENMASK(4, 1)
++#define BQ25792_REG1C_BC12_DONE_STAT		BIT(0)
++
++/* Charger Status 2 */
++#define BQ25792_REG1D_ICO_STAT_MASK		GENMASK(7, 6)
++#define BQ25792_REG1D_TREG_STAT			BIT(2)
++#define BQ25792_REG1D_DPDM_STAT			BIT(1)
++#define BQ25792_REG1D_VBAT_PRESENT_STAT		BIT(0)
++
++/* Charger Status 3 */
++#define BQ25792_REG1E_ACRB2_STAT		BIT(7)
++#define BQ25792_REG1E_ACRB1_STAT		BIT(6)
++#define BQ25792_REG1E_ADC_DONE_STAT		BIT(5)
++#define BQ25792_REG1E_VSYS_STAT			BIT(4)
++#define BQ25792_REG1E_CHG_TMR_STAT		BIT(3)
++#define BQ25792_REG1E_TRICHG_TMR_STAT		BIT(2)
++#define BQ25792_REG1E_PRECHG_TMR_STAT		BIT(1)
++
++/* Charger Status 4 */
++#define BQ25792_REG1F_VBATOTG_LOW_STAT		BIT(4)
++#define BQ25792_REG1F_TS_COLD_STAT		BIT(3)
++#define BQ25792_REG1F_TS_COOL_STAT		BIT(2)
++#define BQ25792_REG1F_TS_WARM_STAT		BIT(1)
++#define BQ25792_REG1F_TS_HOT_STAT		BIT(0)
++
++/* FAULT Status 0 */
++#define BQ25792_REG20_IBAT_REG_STAT		BIT(7)
++#define BQ25792_REG20_VBUS_OVP_STAT		BIT(6)
++#define BQ25792_REG20_VBAT_OVP_STAT		BIT(5)
++#define BQ25792_REG20_IBUS_OCP_STAT		BIT(4)
++#define BQ25792_REG20_IBAT_OCP_STAT		BIT(3)
++#define BQ25792_REG20_CONV_OCP_STAT		BIT(2)
++#define BQ25792_REG20_VAC2_OVP_STAT		BIT(1)
++#define BQ25792_REG20_VAC1_OVP_STAT		BIT(0)
++
++#define BQ25792_REG20_OVERVOLTAGE_MASK		(BQ25792_REG20_VBAT_OVP_STAT | \
++						 BQ25792_REG20_VAC2_OVP_STAT | \
++						 BQ25792_REG20_VAC1_OVP_STAT)
++#define BQ25792_REG20_OVERCURRENT_MASK		(BQ25792_REG20_IBAT_OCP_STAT | \
++						 BQ25792_REG20_CONV_OCP_STAT)
++
++/* FAULT Status 1 */
++#define BQ25792_REG21_VSYS_SHORT_STAT		BIT(7)
++#define BQ25792_REG21_VSYS_OVP_STAT		BIT(6)
++#define BQ25792_REG21_OTG_OVP_STAT		BIT(5)
++#define BQ25792_REG21_OTG_UVP_STAT		BIT(4)
++#define BQ25792_REG21_TSHUT_STAT		BIT(2)
++
++
++/* Charger Flag 0 */
++#define BQ25792_REG22_IINDPM_FLAG		BIT(7)
++#define BQ25792_REG22_VINDPM_FLAG		BIT(6)
++#define BQ25792_REG22_WD_FLAG			BIT(5)
++#define BQ25792_REG22_POORSRC_FLAG		BIT(4)
++#define BQ25792_REG22_PG_FLAG			BIT(3)
++#define BQ25792_REG22_AC2_PRESENT_FLAG		BIT(2)
++#define BQ25792_REG22_AC1_PRESENT_FLAG		BIT(1)
++#define BQ25792_REG22_VBUS_PRESENT_FLAG		BIT(0)
++
++/* Charger Flag 1 */
++#define BQ25792_REG23_CHG_FLAG			BIT(7)
++#define BQ25792_REG23_ICO_FLAG			BIT(6)
++#define BQ25792_REG23_VBUS_FLAG			BIT(4)
++#define BQ25792_REG23_TREG_FLAG			BIT(2)
++#define BQ25792_REG23_VBAT_PRESENT_FLAG		BIT(1)
++#define BQ25792_REG23_BC12_DONE_FLAG		BIT(0)
++
++/* Charger Flag 2 */
++#define BQ25792_REG24_DPDM_DONE_FLAG		BIT(6)
++#define BQ25792_REG24_ADC_DONE_FLAG		BIT(5)
++#define BQ25792_REG24_VSYS_FLAG			BIT(4)
++#define BQ25792_REG24_CHG_TMR_FLAG		BIT(3)
++#define BQ25792_REG24_TRICHG_TMR_FLAG		BIT(2)
++#define BQ25792_REG24_PRECHG_TMR_FLAG		BIT(1)
++#define BQ25792_REG24_TOPOFF_TMR_FLAG		BIT(0)
++
++/* Charger Flag 3 */
++#define BQ25792_REG25_VBATOTG_LOW_FLAG		BIT(4)
++#define BQ25792_REG25_TS_COLD_FLAG		BIT(3)
++#define BQ25792_REG25_TS_COOL_FLAG		BIT(2)
++#define BQ25792_REG25_TS_WARM_FLAG		BIT(1)
++#define BQ25792_REG25_TS_HOT_FLAG		BIT(0)
++
++/* FAULT Flag 0 */
++#define BQ25792_REG26_IBAT_REG_FLAG		BIT(7)
++#define BQ25792_REG26_VBUS_OVP_FLAG		BIT(6)
++#define BQ25792_REG26_VBAT_OVP_FLAG		BIT(5)
++#define BQ25792_REG26_IBUS_OCP_FLAG		BIT(4)
++#define BQ25792_REG26_IBAT_OCP_FLAG		BIT(3)
++#define BQ25792_REG26_CONV_OCP_FLAG		BIT(2)
++#define BQ25792_REG26_VAC2_OVP_FLAG		BIT(1)
++#define BQ25792_REG26_VAC1_OVP_FLAG		BIT(0)
++
++/* FAULT Flag 1 */
++#define BQ25792_REG27_VSYS_SHORT_FLAG		BIT(7)
++#define BQ25792_REG27_VSYS_OVP_FLAG		BIT(6)
++#define BQ25792_REG27_OTG_OVP_FLAG		BIT(5)
++#define BQ25792_REG27_OTG_UVP_FLAG		BIT(4)
++#define BQ25792_REG27_TSHUT_FLAG		BIT(2)
++
++/* Charger Mask 0 */
++#define BQ25792_REG28_IINDPM_MASK		BIT(7)
++#define BQ25792_REG28_VINDPM_MASK		BIT(6)
++#define BQ25792_REG28_WD_MASK			BIT(5)
++#define BQ25792_REG28_POORSRC_MASK		BIT(4)
++#define BQ25792_REG28_PG_MASK			BIT(3)
++#define BQ25792_REG28_AC2_PRESENT_MASK		BIT(2)
++#define BQ25792_REG28_AC1_PRESENT_MASK		BIT(1)
++#define BQ25792_REG28_VBUS_PRESENT_MASK		BIT(0)
++
++/* Charger Mask 1 */
++#define BQ25792_REG29_CHG_MASK			BIT(7)
++#define BQ25792_REG29_ICO_MASK			BIT(6)
++#define BQ25792_REG29_VBUS_MASK			BIT(4)
++#define BQ25792_REG29_TREG_MASK			BIT(2)
++#define BQ25792_REG29_VBAT_PRESENT_MASK		BIT(1)
++#define BQ25792_REG29_BC12_DONE_MASK		BIT(0)
++
++/* Charger Mask 2 */
++#define BQ25792_REG2A_DPDM_DONE_MASK		BIT(6)
++#define BQ25792_REG2A_ADC_DONE_MASK		BIT(5)
++#define BQ25792_REG2A_VSYS_MASK			BIT(4)
++#define BQ25792_REG2A_CHG_TMR_MASK		BIT(3)
++#define BQ25792_REG2A_TRICHG_TMR_MASK		BIT(2)
++#define BQ25792_REG2A_PRECHG_TMR_MASK		BIT(1)
++#define BQ25792_REG2A_TOPOFF_TMR_MASK		BIT(0)
++
++/* Charger Mask 3 */
++#define BQ25792_REG2B_VBATOTG_LOW_MASK		BIT(4)
++#define BQ25792_REG2B_TS_COLD_MASK		BIT(3)
++#define BQ25792_REG2B_TS_COOL_MASK		BIT(2)
++#define BQ25792_REG2B_TS_WARM_MASK		BIT(1)
++#define BQ25792_REG2B_TS_HOT_MASK		BIT(0)
++
++/* FAULT Mask 0 */
++#define BQ25792_REG2C_IBAT_REG_MASK		BIT(7)
++#define BQ25792_REG2C_VBUS_OVP_MASK		BIT(6)
++#define BQ25792_REG2C_VBAT_OVP_MASK		BIT(5)
++#define BQ25792_REG2C_IBUS_OCP_MASK		BIT(4)
++#define BQ25792_REG2C_IBAT_OCP_MASK		BIT(3)
++#define BQ25792_REG2C_CONV_OCP_MASK		BIT(2)
++#define BQ25792_REG2C_VAC2_OVP_MASK		BIT(1)
++#define BQ25792_REG2C_VAC1_OVP_MASK		BIT(0)
++
++/* FAULT Mask 1 */
++#define BQ25792_REG2D_VSYS_SHORT_MASK		BIT(7)
++#define BQ25792_REG2D_VSYS_OVP_MASK		BIT(6)
++#define BQ25792_REG2D_OTG_OVP_MASK		BIT(5)
++#define BQ25792_REG2D_OTG_UVP_MASK		BIT(4)
++#define BQ25792_REG2D_TSHUT_MASK		BIT(2)
++
++/* ADC Control */
++#define BQ25792_REG2E_ADC_EN			BIT(7)
++#define BQ25792_REG2E_ADC_RATE			BIT(6)
++#define BQ25792_REG2E_ADC_SAMPLE_MASK		GENMASK(5, 4)
++#define BQ25792_REG2E_ADC_AVG			BIT(3)
++#define BQ25792_REG2E_ADC_AVG_INIT		BIT(2)
++
++/* ADC Function Disable 0 */
++#define BQ25792_REG2F_IBUS_ADC_DIS		BIT(7)
++#define BQ25792_REG2F_IBAT_ADC_DIS		BIT(6)
++#define BQ25792_REG2F_VBUS_ADC_DIS		BIT(5)
++#define BQ25792_REG2F_VBAT_ADC_DIS		BIT(4)
++#define BQ25792_REG2F_VSYS_ADC_DIS		BIT(3)
++#define BQ25792_REG2F_TS_ADC_DIS		BIT(2)
++#define BQ25792_REG2F_TDIE_ADC_DIS		BIT(1)
++
++/* ADC Function Disable 1 */
++#define BQ25792_REG30_DP_ADC_DIS		BIT(7)
++#define BQ25792_REG30_DM_ADC_DIS		BIT(6)
++#define BQ25792_REG30_VAC2_ADC_DIS		BIT(5)
++#define BQ25792_REG30_VAC1_ADC_DIS		BIT(4)
++
++/* 0x31-0x45: ADC result registers (16-bit, RO): single full-width field */
++
++#define BQ25792_ADCVSYSVBAT_STEP_UV		1000
++#define BQ25792_ADCIBAT_STEP_UA			1000
++
++/* DPDM Driver */
++#define BQ25792_REG47_DPLUS_DAC_MASK		GENMASK(7, 5)
++#define BQ25792_REG47_DMINUS_DAC_MASK		GENMASK(4, 2)
++
++/* Part Information */
++#define BQ25792_REG48_PN_MASK			GENMASK(5, 3)
++#define BQ25792_REG48_DEV_REV_MASK		GENMASK(2, 0)
++
++enum bq257xx_type {
++	BQ25703A = 1,
++	BQ25792,
++};
++
+ struct bq257xx_device {
+ 	struct i2c_client *client;
+ 	struct regmap *regmap;
++	enum bq257xx_type type;
+ };
 
 -- 
 2.52.0
