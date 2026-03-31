@@ -1,33 +1,31 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 845C53D75CE;
-	Tue, 31 Mar 2026 08:48:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEB463C3438;
+	Tue, 31 Mar 2026 08:50:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774946904; cv=none; b=jq0SpbT12hbmtRJGi/SInj3R9ohP3bIOF+vAud8I01ylhOTKeFV9Cc4JjKavX1XSN1JYW/LdVWLizNF9kq17DNMd7okEZENteWrifmNEZ0KnsVF1unF8CT3ITNbpIxtGyXXwWRY9M4KieYUmnfdgq5xbWNkjm0FNmbUl0YzNSmk=
+	t=1774947010; cv=none; b=c2WWfKNpnJBye50OcRPT0ZM9fZjMCe1ow/dE/4yu2B/KKpCcnh692aUL22Xaf5hzgggnbc5Idfb/qz8vUlHCGS64sBt0Sg7GFtlzttpXcd9NB807jiEugWG+B1qA1O4f61D5/O6qXYnyUOAJf55/S4G9wueLos/8QdGhHFwbZw0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774946904; c=relaxed/simple;
-	bh=cHjdnYe9CFoie/F3uPwlRuL8x8GUhvytNWlsXgJqznQ=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Wvra5yj8vMR31cv0HXijjEn1HRzwH3KF0zYM+QcSWGQQzztJIpYkd75Iiibdz3LDtzl144at5YG9VcZD5wPcg/cBmXypINvYBFq4J7jCoBgzFxA7NjyMkQoAU1AlsE2yiQ5BUqDrHiW0vEwtwkQ3F0C0wz1Fuf08YQnHyYGeTgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JdrwEWgH; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JdrwEWgH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AC2AC19423;
-	Tue, 31 Mar 2026 08:48:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774946904;
-	bh=cHjdnYe9CFoie/F3uPwlRuL8x8GUhvytNWlsXgJqznQ=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
-	b=JdrwEWgH+qNiWxHAC0T9gA+ZOx9jWpvy85iSL1aAJHTzSvQCnJYDaWNDaPXL6JwTR
-	 ZM52lE+IYTL/4sRDldcd3J7UxeW0N0c9IT4C2gx5zBmiae1ErWNdjsVH5MRgWd4pr0
-	 Akoy5IWM7kYqxNZ43SDpZLuHhR5FH2PrjHk24iHJ4AhjbkhBqPhlWauWEd46G+FNF8
-	 Ir0Vd97oc86XlKlplcVhfhRvekX0avjl3o95tkcAhEhrJJNlC6v+FKmv8YVFP9Poal
-	 RWGu/e9NtKYcFrw7RZcVyBGJ6SCKFNuolO7PI1PGP6SZfDOUguK5Y1yAiEX8a35WxQ
-	 cBLz1x6QGZJKQ==
-Message-ID: <05d36d60-8a50-4968-9dde-194f2646a1d1@kernel.org>
-Date: Tue, 31 Mar 2026 10:48:20 +0200
+	s=arc-20240116; t=1774947010; c=relaxed/simple;
+	bh=WfFsxWv+/kCrWHaKOoAXTGcd7FJeVN9RmnXQ0ZFGJig=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=ke5UI1Dfz9rcvonJQvUxATGd0YdumnzYQWPbNMTdOFhIBzI8z+7TtrxLEY9wSQWyRIX3lIo0iVRUTCRitp0O/8G0y0WImSDzpPbP+2Lrd0J+zmzRSEEzUqv6yYuspiD7QnHIYzT9U0ioIxsby7pWgNkQ2m/x6D6/Qg+e7MIy8Wo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.220
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4flM9t2P4Fz12LFm;
+	Tue, 31 Mar 2026 16:44:34 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 39B8B203D0;
+	Tue, 31 Mar 2026 16:49:58 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 31 Mar
+ 2026 16:49:57 +0800
+Message-ID: <a7c1c3ce-7938-4dcf-83be-32cf4aceb965@hisilicon.com>
+Date: Tue, 31 Mar 2026 16:49:57 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,90 +33,141 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] interconnect: qcom: add Hawi interconnect provider
- driver
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Mike Tipton <mike.tipton@oss.qualcomm.com>
-References: <20260330-icc-hawi-v1-0-4b54a9e7d38c@oss.qualcomm.com>
- <20260330-icc-hawi-v1-2-4b54a9e7d38c@oss.qualcomm.com>
- <20260331-sly-centipede-of-opportunity-590509@quoll>
+Subject: Re: [PATCH RESEND 1/4] PM / devfreq: Fix possible null pointer issue
+ in devfreq_add_governor()
+To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
+	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
+ <20260319091653.1005878-1-tianyaxiong@kylinos.cn>
+ <f167d24d-73f9-4463-889e-89fb9f1e4a1a@hisilicon.com>
+ <aa7ee42d-0685-4a70-a084-bf0bdfa82e4a@kylinos.cn>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJoF1BKBQkWlnSaAAoJEBuTQ307
- QWKbHukP/3t4tRp/bvDnxJfmNdNVn0gv9ep3L39IntPalBFwRKytqeQkzAju0whYWg+R/rwp
- +r2I1Fzwt7+PTjsnMFlh1AZxGDmP5MFkzVsMnfX1lGiXhYSOMP97XL6R1QSXxaWOpGNCDaUl
- ajorB0lJDcC0q3xAdwzRConxYVhlgmTrRiD8oLlSCD5baEAt5Zw17UTNDnDGmZQKR0fqLpWy
- 786Lm5OScb7DjEgcA2PRm17st4UQ1kF0rQHokVaotxRM74PPDB8bCsunlghJl1DRK9s1aSuN
- hL1Pv9VD8b4dFNvCo7b4hfAANPU67W40AaaGZ3UAfmw+1MYyo4QuAZGKzaP2ukbdCD/DYnqi
- tJy88XqWtyb4UQWKNoQqGKzlYXdKsldYqrLHGoMvj1UN9XcRtXHST/IaLn72o7j7/h/Ac5EL
- 8lSUVIG4TYn59NyxxAXa07Wi6zjVL1U11fTnFmE29ALYQEXKBI3KUO1A3p4sQWzU7uRmbuxn
- naUmm8RbpMcOfa9JjlXCLmQ5IP7Rr5tYZUCkZz08LIfF8UMXwH7OOEX87Y++EkAB+pzKZNNd
- hwoXulTAgjSy+OiaLtuCys9VdXLZ3Zy314azaCU3BoWgaMV0eAW/+gprWMXQM1lrlzvwlD/k
- whyy9wGf0AEPpLssLVt9VVxNjo6BIkt6d1pMg6mHsUEVzsFNBFVDXDQBEADNkrQYSREUL4D3
- Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
- MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
- OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
- GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
- 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
- YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
- 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
- BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
- JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
- 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
- YpsFAmgXUF8FCRaWWyoACgkQG5NDfTtBYptO0w//dlXJs5/42hAXKsk+PDg3wyEFb4NpyA1v
- qmx7SfAzk9Hf6lWwU1O6AbqNMbh6PjEwadKUk1m04S7EjdQLsj/MBSgoQtCT3MDmWUUtHZd5
- RYIPnPq3WVB47GtuO6/u375tsxhtf7vt95QSYJwCB+ZUgo4T+FV4hquZ4AsRkbgavtIzQisg
- Dgv76tnEv3YHV8Jn9mi/Bu0FURF+5kpdMfgo1sq6RXNQ//TVf8yFgRtTUdXxW/qHjlYURrm2
- H4kutobVEIxiyu6m05q3e9eZB/TaMMNVORx+1kM3j7f0rwtEYUFzY1ygQfpcMDPl7pRYoJjB
- dSsm0ZuzDaCwaxg2t8hqQJBzJCezTOIkjHUsWAK+tEbU4Z4SnNpCyM3fBqsgYdJxjyC/tWVT
- AQ18NRLtPw7tK1rdcwCl0GFQHwSwk5pDpz1NH40e6lU+NcXSeiqkDDRkHlftKPV/dV+lQXiu
- jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
- zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
- XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260331-sly-centipede-of-opportunity-590509@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <aa7ee42d-0685-4a70-a084-bf0bdfa82e4a@kylinos.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-On 31/03/2026 10:45, Krzysztof Kozlowski wrote:
-> On Mon, Mar 30, 2026 at 05:40:01PM -0700, Vivek Aknurwar wrote:
->> Add driver for the Qualcomm interconnect buses found in Hawi
->> based platforms. The topology consists of several NoCs that are
->> controlled by a remote processor that collects the aggregated
->> bandwidth for each master-slave pairs.
+
+
+On 3/31/2026 3:49 PM, Yaxiong Tian wrote:
+> 
+> 在 2026/3/31 15:04, Jie Zhan 写道:
 >>
->> Signed-off-by: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
->> ---
->>  drivers/interconnect/qcom/Kconfig  |    9 +
->>  drivers/interconnect/qcom/Makefile |    2 +
->>  drivers/interconnect/qcom/hawi.c   | 2021 ++++++++++++++++++++++++++++++++++++
+>> On 3/19/2026 5:16 PM, Yaxiong Tian wrote:
+>>> When a user removes a governor using devfreq_remove_governor(), if
+>>> the current device is using this governor, devfreq->governor will
+>>> be set to NULL. When the user registers any governor
+>>> using devfreq_add_governor(), since devfreq->governor is NULL, a
+>>> null pointer error occurs in strncmp().
+>>>
+>>> For example: A user loads the userspace gov through a module, then
+>>> a device selects userspace. When unloading the userspace module and
+>>> then loading it again, the null pointer error occurs:
+>>>
+>>> Unable to handle kernel NULL pointer dereference at virtual address
+>>> 0000000000000010
+>>> Mem abort info:
+>>> ESR = 0x0000000096000004
+>>> EC = 0x25: DABT (current EL), IL = 32 bits
+>>> *******************skip *********************
+>>> Call trace:
+>>> __pi_strncmp+0x20/0x1b8
+>>> devfreq_userspace_init+0x1c/0xff8 [governor_userspace]
+>>> do_one_initcall+0x4c/0x278
+>>> do_init_module+0x5c/0x218
+>>> load_module+0x1f1c/0x1fc8
+>>> init_module_from_file+0x8c/0xd0
+>>> __arm64_sys_finit_module+0x220/0x3d8
+>>> invoke_syscall+0x48/0x110
+>>> el0_svc_common.constprop.0+0xbc/0xe8
+>>> do_el0_svc+0x20/0x30
+>>> el0_svc+0x24/0xb8
+>>> el0t_64_sync_handler+0xb8/0xc0
+>>> el0t_64_sync+0x14c/0x150
+>>>
+>>> To fix this issue, modify the relevant logic in devfreq_add_governor():
+>>> Only check whether the new governor matches the existing one when
+>>> devfreq->governor exists. When devfreq->governor is NULL, directly
+>>> select the new governor and perform the DEVFREQ_GOV_START operation.
+>>>
+>>> Fixes: 1b5c1be2c88e ("PM / devfreq: map devfreq drivers to governor using name")
+>>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+>>> ---
+>>>   drivers/devfreq/devfreq.c | 24 +++++++++++-------------
+>>>   1 file changed, 11 insertions(+), 13 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index 54f0b18536db..63ce6e25abe2 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -1288,23 +1288,21 @@ int devfreq_add_governor(struct devfreq_governor *governor)
+>>>           int ret = 0;
+>>>           struct device *dev = devfreq->dev.parent;
+>>>   -        if (!strncmp(devfreq->governor->name, governor->name,
+>>> +        if (devfreq->governor && !strncmp(devfreq->governor->name, governor->name,
+>>>                    DEVFREQ_NAME_LEN)) {
+>> Probaly do:
+>> if (!devfreq->governor)
+>>     continue;
+>> so as to keep the line short and the "else if (!devfreq->governor) {" below
+>> can be removed.
+> If that's the case, a dev without a governor would not be able to add a new governor.
+It's not about adding.
+
+The whole point here (the block inside list_for_each_entry()) is a very
+rare safe check that you're adding a governor of the same name of a
+governor used by an existing devfreq device.  If so, stop the old one and
+start the new one.
+
+Therefore, it doesn't have to start/restart it if devfreq->governor is
+NULL.
+>>
+>> and also:
+>> if (!strncmp(devfreq->governor->name, governor->name,
+>>     DEVFREQ_NAME_LEN))
+>>     continue;
+>> so we don't have to indent that much.
 > 
-> Can you finally stop sending code based on downstream?
+> Currently, governor->name can be set arbitrarily, so duplicate names are possible.
 > 
-> You just made same mistakes I have been fixing for more than 3 years
-> now.
+> But they could still be two different governors. Leaving it unchanged seems fine to me.
+> 
+Sorry, my mistake!
 
-Oh, no, I was wrong - my grep pattern was incomplete. The code is
-finally fixed!
+I mean:
+if (strncmp(devfreq->governor->name, governor->name,
+	DEVFREQ_NAME_LEN))
+	continue;
 
-Sorry for the noise.
-
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-
-Best regards,
-Krzysztof
+>>
+>>>               /* The following should never occur */
+>>> -            if (devfreq->governor) {
+>>> +            dev_warn(dev,
+>>> +                 "%s: Governor %s already present\n",
+>>> +                 __func__, devfreq->governor->name);
+>>> +            ret = devfreq->governor->event_handler(devfreq,
+>>> +                        DEVFREQ_GOV_STOP, NULL);
+>>> +            if (ret) {
+>>>                   dev_warn(dev,
+>>> -                     "%s: Governor %s already present\n",
+>>> -                     __func__, devfreq->governor->name);
+>>> -                ret = devfreq->governor->event_handler(devfreq,
+>>> -                            DEVFREQ_GOV_STOP, NULL);
+>>> -                if (ret) {
+>>> -                    dev_warn(dev,
+>>> -                         "%s: Governor %s stop = %d\n",
+>>> -                         __func__,
+>>> -                         devfreq->governor->name, ret);
+>>> -                }
+>>> -                /* Fall through */
+>>> +                     "%s: Governor %s stop = %d\n",
+>>> +                     __func__,
+>>> +                     devfreq->governor->name, ret);
+>>>               }
+>>> +        } else if (!devfreq->governor) {
+>>>               devfreq->governor = governor;
+>>>               ret = devfreq->governor->event_handler(devfreq,
+>>>                           DEVFREQ_GOV_START, NULL);
