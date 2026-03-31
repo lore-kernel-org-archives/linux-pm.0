@@ -1,158 +1,553 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4906E3E639F;
-	Tue, 31 Mar 2026 13:17:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 212C73DD50E;
+	Tue, 31 Mar 2026 13:17:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774963032; cv=none; b=hrdAgoE+8k6K7sGoebf1pxHEV+H9KjzYSEQANeLFwz4Tskl3qSuT2rDvpnhOuZfvFZZa8UAO/6zOHvrdnvWoEQTS5TaEovk9+UMZAhGMGZpcBbEzQA8cUC8KIv0uR/zUtZ8H6JQWxUFkHnkPDbp1ggWbuYT+hzPdPpIke7zlcdE=
+	t=1774963038; cv=none; b=j/ByVqn6n4iQE5r4dqy/KS/gL1AFe3/xyIaK5U5G2QbtzDaXOuMlf8S6efJepLZxH5p7djtcquKEOjQvLMynVtd7zA6Qq1ghJd+m4nhsZKoGPl8YczGv7RtO4o6JfmHXQW0K27Kkvo+YbJtmaiQxiavDkxA+E2eyyZhFpqG97hE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774963032; c=relaxed/simple;
-	bh=wfkM9H8lnswPA5KiysJl/MsElmwbu8d/sHC6jNfO0GU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HpDUnMx0DRN/Vl8cr3+Z8Nkhl8lsxp52yUaQ0j4CCTbcQ7eGbLUrMSRJ3cPE94kdpo78UBie4GZXW58I3Ync+SrBZsOq+e2VQTnESxIMwJpi+KBRMCfa46JxwXI/B3LXFkeYE6t50K9BLWchfdKJRPLmoUYu3sdl3oEXge7i4Bg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CEbxPOAo; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774963038; c=relaxed/simple;
+	bh=V9WWlCuXZNggckfE8ISKLn5MtYlSjxloP98rAv/GZCY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=eSosWoQZTK3lG3rEXnuNeM4B++z/EiIllf5iGw/A0W+OADUERN8ue79M7S6fCX03RFRvJ5gKMmac+1wHZuRpXsMxe4Uf/xgtDgHQlXnsxejRCRCLsqjw4yXuT+0nbARR4JSM8cv8sK2vwFNcwhJwYMEoYcetxus7ExLCwVqI54M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NjGfNqTY; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CEbxPOAo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71271C2BC9E;
-	Tue, 31 Mar 2026 13:17:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NjGfNqTY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BADD9C2BCB1;
+	Tue, 31 Mar 2026 13:17:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774963032;
-	bh=wfkM9H8lnswPA5KiysJl/MsElmwbu8d/sHC6jNfO0GU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CEbxPOAoA8ORT2e5y9YYLZ2GnEwvS8UvLz+e1VcDBd2PTP9ZMnwxYAEaUO6oAEepb
-	 2cPyk6GBPA+n0TVDDzmJQ62Gv/sYMGd8VbwwARmKTVjvzFxB1dpbqvPa7p+6kA0j60
-	 3MAtIV/WYa3pUwKZpuiCd9Y3Ddun9kE3PRBvTZaozBxSvd6qvj7Ai50Xq1966JPazL
-	 Qpiw0hiMGyGGetKxS3W0DIcH1cCoYmTADApbdFzAK7HojH2RW0nqy47C7fkjMmtwjI
-	 X6u5hOw+K8JNWjjJqmn17Q/JiVqMMvO1JfDxhBTfNhk4XJe+3Ju/FmmRiA2ofnRUli
-	 02m13PZB0Wlbw==
-Date: Tue, 31 Mar 2026 14:17:06 +0100
-From: Lee Jones <lee@kernel.org>
-To: Alexey Charkov <alchark@flipper.net>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chris Morgan <macromorgan@hotmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Sebastian Reichel <sebastian.reichel@collabora.com>,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 09/11] mfd: bq257xx: Add BQ25792 support
-Message-ID: <20260331131706.GH3795166@google.com>
-References: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
- <20260324-bq25792-v5-9-0a2eb58cf11d@flipper.net>
- <20260331102710.GB3795166@google.com>
- <CAKTNdwE4omfEkd6FNdj=hZUY2ZwLprXzUu1L4juFhWCxbWEjpQ@mail.gmail.com>
+	s=k20201202; t=1774963037;
+	bh=V9WWlCuXZNggckfE8ISKLn5MtYlSjxloP98rAv/GZCY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=NjGfNqTYHCzBAhZNeQV9Q40UUniXY9uuLVdzLWvSMLMhbRugEjhJu3ils32yJw5RF
+	 N5PuQTzAZCRY+T199jKi2tftd+yEar6O1Zioy65RHqDYV9dSBaIbnQXMl5bqyREhsz
+	 L1LScojWu7ea7BokCXuN/GiLarxuj60oYAta4orXHXQnoOdpE0F4FLG+QRUSm2SAek
+	 Bye+xyVm7XAngDFlfXQ/XtcsmKrUgOJMh9prUycIjBkE9zoFoSf7yQieM2kVXLHp1R
+	 UUPXnxVn3Mco7OT5dXtCysFDsvgQnXH+QRKIUv9Q4df2c5bHrhrVXYP2uQE/pEvk3c
+	 7df93M7DZPsIg==
+From: Frederic Weisbecker <frederic@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Frederic Weisbecker <frederic@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Ben Segall <bsegall@google.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jan Kiszka <jan.kiszka@siemens.com>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Xin Zhao <jackzxcui1989@163.com>,
+	linux-pm@vger.kernel.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 06/14] tick/sched: Unify idle cputime accounting
+Date: Tue, 31 Mar 2026 15:16:14 +0200
+Message-ID: <20260331131622.30505-7-frederic@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260331131622.30505-1-frederic@kernel.org>
+References: <20260331131622.30505-1-frederic@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAKTNdwE4omfEkd6FNdj=hZUY2ZwLprXzUu1L4juFhWCxbWEjpQ@mail.gmail.com>
 
-On Tue, 31 Mar 2026, Alexey Charkov wrote:
+The non-vtime dynticks-idle cputime accounting is a big mess that
+accumulates within two concurrent statistics, each having their own
+shortcomings:
 
-> On Tue, Mar 31, 2026 at 2:27 PM Lee Jones <lee@kernel.org> wrote:
-> >
-> > On Tue, 24 Mar 2026, Alexey Charkov wrote:
-> >
-> > > Add register definitions and a new 'type' enum to be passed via MFD
-> > > private data to support the BQ25792, which is a newer variant of the
-> > > BQ257xx family.
-> > >
-> > > BQ25792 shares similar logic of operation with the already supported
-> > > BQ25703A but has a completely different register map and different
-> > > electrical constraints.
-> > >
-> > > Tested-by: Chris Morgan <macromorgan@hotmail.com>
-> > > Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> > > ---
-> > >  drivers/mfd/bq257xx.c       |  54 +++++-
-> > >  include/linux/mfd/bq257xx.h | 412 ++++++++++++++++++++++++++++++++++++++++++++
-> > >  2 files changed, 463 insertions(+), 3 deletions(-)
-> > >
-> > > diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
-> > > index e9d49dac0a16..31654925afa5 100644
-> > > --- a/drivers/mfd/bq257xx.c
-> > > +++ b/drivers/mfd/bq257xx.c
-> > > @@ -39,6 +39,39 @@ static const struct regmap_config bq25703_regmap_config = {
-> > >       .val_format_endian = REGMAP_ENDIAN_LITTLE,
-> > >  };
-> > >
-> > > +static const struct regmap_range bq25792_writeable_reg_ranges[] = {
-> > > +     regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
-> > > +                      BQ25792_REG18_NTC_CONTROL_1),
-> > > +     regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
-> > > +                      BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
-> > > +};
-> > > +
-> > > +static const struct regmap_access_table bq25792_writeable_regs = {
-> > > +     .yes_ranges = bq25792_writeable_reg_ranges,
-> > > +     .n_yes_ranges = ARRAY_SIZE(bq25792_writeable_reg_ranges),
-> > > +};
-> > > +
-> > > +static const struct regmap_range bq25792_volatile_reg_ranges[] = {
-> > > +     regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
-> > > +                      BQ25792_REG27_FAULT_FLAG_1),
-> > > +     regmap_reg_range(BQ25792_REG31_IBUS_ADC,
-> > > +                      BQ25792_REG47_DPDM_DRIVER),
-> > > +};
-> > > +
-> > > +static const struct regmap_access_table bq25792_volatile_regs = {
-> > > +     .yes_ranges = bq25792_volatile_reg_ranges,
-> > > +     .n_yes_ranges = ARRAY_SIZE(bq25792_volatile_reg_ranges),
-> > > +};
-> > > +
-> > > +static const struct regmap_config bq25792_regmap_config = {
-> > > +     .reg_bits = 8,
-> > > +     .val_bits = 8,
-> > > +     .max_register = BQ25792_REG48_PART_INFORMATION,
-> > > +     .cache_type = REGCACHE_MAPLE,
-> > > +     .wr_table = &bq25792_writeable_regs,
-> > > +     .volatile_table = &bq25792_volatile_regs,
-> > > +};
-> > > +
-> > >  static const struct mfd_cell cells[] = {
-> > >       MFD_CELL_NAME("bq257xx-regulator"),
-> > >       MFD_CELL_NAME("bq257xx-charger"),
-> > > @@ -46,6 +79,7 @@ static const struct mfd_cell cells[] = {
-> > >
-> > >  static int bq257xx_probe(struct i2c_client *client)
-> > >  {
-> > > +     const struct regmap_config *rcfg;
-> > >       struct bq257xx_device *ddata;
-> > >       int ret;
-> > >
-> > > @@ -53,9 +87,21 @@ static int bq257xx_probe(struct i2c_client *client)
-> > >       if (!ddata)
-> > >               return -ENOMEM;
-> > >
-> > > +     ddata->type = (uintptr_t)i2c_get_match_data(client);
-> > >       ddata->client = client;
-> > >
-> > > -     ddata->regmap = devm_regmap_init_i2c(client, &bq25703_regmap_config);
-> > > +     switch (ddata->type) {
-> > > +     case BQ25703A:
-> > > +             rcfg = &bq25703_regmap_config;
-> > > +             break;
-> > > +     case BQ25792:
-> > > +             rcfg = &bq25792_regmap_config;
-> > > +             break;
-> > > +     default:
-> > > +             return dev_err_probe(&client->dev, -EINVAL, "Unsupported device type\n");
-> >
-> > Nit: Shouldn't we be returning '-ENODEV' here for an unsupported device?
-> 
-> Hi Lee,
-> 
-> Indeed, I've had a quick look and other drivers seem to return -ENODEV
-> in similar situations. Shall I respin a new version with that change?
+* The accounting for online CPUs which is based on the delta between
+  tick_nohz_start_idle() and tick_nohz_stop_idle().
 
-Yes please.  And add a change log so I am reminded of it.
+  Pros:
+       - Works when the tick is off
 
+       - Has nsecs granularity
+
+  Cons:
+       - Account idle steal time but doesn't substract it from idle
+         cputime.
+
+       - Assumes CONFIG_IRQ_TIME_ACCOUNTING by not accounting IRQs but
+         the IRQ time is simply ignored when
+         CONFIG_IRQ_TIME_ACCOUNTING=n
+
+       - The windows between 1) idle task scheduling and the first call
+         to tick_nohz_start_idle() and 2) idle task between the last
+         tick_nohz_stop_idle() and the rest of the idle time are
+         blindspots wrt. cputime accounting (though mostly insignificant
+         amount)
+
+       - Relies on private fields outside of kernel stats, with specific
+         accessors.
+
+* The accounting for offline CPUs which is based on ticks and the
+  jiffies delta during which the tick was stopped.
+
+  Pros:
+       - Handles steal time correctly
+
+       - Handle CONFIG_IRQ_TIME_ACCOUNTING=y and
+         CONFIG_IRQ_TIME_ACCOUNTING=n correctly.
+
+       - Handles the whole idle task
+
+       - Accounts directly to kernel stats, without midlayer accumulator.
+
+   Cons:
+       - Doesn't elapse when the tick is off, which doesn't make it
+         suitable for online CPUs.
+
+       - Has TICK_NSEC granularity (jiffies)
+
+       - Needs to track the dyntick-idle ticks that were accounted and
+         substract them from the total jiffies time spent while the tick
+         was stopped. This is an ugly workaround.
+
+Having two different accounting for a single context is not the only
+problem: since those accountings are of different natures, it is
+possible to observe the global idle time going backward after a CPU goes
+offline.
+
+Clean up the situation with introducing a hybrid approach that stays
+coherent and works for both online and offline CPUs:
+
+* Tick based or native vtime accounting operate before the idle loop
+  is entered and resume once the idle loop prepares to exit.
+
+* When the idle loop starts, switch to dynticks-idle accounting as is
+  done currently, except that the statistics accumulate directly to the
+  relevant kernel stat fields.
+
+* Private dyntick cputime accounting fields are removed.
+
+* Works on both online and offline case.
+
+Further improvement will include:
+
+* Only switch to dynticks-idle cputime accounting when the tick actually
+  goes in dynticks mode.
+
+* Handle CONFIG_IRQ_TIME_ACCOUNTING=n correctly such that the
+  dynticks-idle accounting still elapses while on IRQs.
+
+* Correctly substract idle steal cputime from idle time
+
+Reported-by: Xin Zhao <jackzxcui1989@163.com>
+Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+ include/linux/kernel_stat.h | 24 ++++++++++---
+ include/linux/vtime.h       |  7 +++-
+ kernel/sched/cputime.c      | 62 ++++++++++++++++----------------
+ kernel/time/tick-sched.c    | 71 +++++++++++--------------------------
+ 4 files changed, 76 insertions(+), 88 deletions(-)
+
+diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+index dd020ecaf67b..ba65aad308a1 100644
+--- a/include/linux/kernel_stat.h
++++ b/include/linux/kernel_stat.h
+@@ -34,6 +34,9 @@ enum cpu_usage_stat {
+ };
+ 
+ struct kernel_cpustat {
++#ifdef CONFIG_NO_HZ_COMMON
++	int idle_dyntick;
++#endif
+ 	u64 cpustat[NR_STATS];
+ };
+ 
+@@ -99,6 +102,20 @@ static inline unsigned long kstat_cpu_irqs_sum(unsigned int cpu)
+ 	return kstat_cpu(cpu).irqs_sum;
+ }
+ 
++#ifdef CONFIG_NO_HZ_COMMON
++extern void kcpustat_dyntick_start(void);
++extern void kcpustat_dyntick_stop(void);
++static inline bool kcpustat_idle_dyntick(void)
++{
++	return __this_cpu_read(kernel_cpustat.idle_dyntick);
++}
++#else
++static inline bool kcpustat_idle_dyntick(void)
++{
++	return false;
++}
++#endif /* CONFIG_NO_HZ_COMMON */
++
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+ extern u64 kcpustat_field(enum cpu_usage_stat usage, int cpu);
+ extern void kcpustat_cpu_fetch(struct kernel_cpustat *dst, int cpu);
+@@ -113,7 +130,7 @@ static inline void kcpustat_cpu_fetch(struct kernel_cpustat *dst, int cpu)
+ 	*dst = kcpustat_cpu(cpu);
+ }
+ 
+-#endif
++#endif /* !CONFIG_VIRT_CPU_ACCOUNTING_GEN */
+ 
+ extern void account_user_time(struct task_struct *, u64);
+ extern void account_guest_time(struct task_struct *, u64);
+@@ -127,14 +144,13 @@ extern u64 get_idle_time(struct kernel_cpustat *kcs, int cpu);
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ static inline void account_process_tick(struct task_struct *tsk, int user)
+ {
+-	vtime_flush(tsk);
++	if (!kcpustat_idle_dyntick())
++		vtime_flush(tsk);
+ }
+ #else
+ extern void account_process_tick(struct task_struct *, int user);
+ #endif
+ 
+-extern void account_idle_ticks(unsigned long ticks);
+-
+ #ifdef CONFIG_SCHED_CORE
+ extern void __account_forceidle_time(struct task_struct *tsk, u64 delta);
+ #endif
+diff --git a/include/linux/vtime.h b/include/linux/vtime.h
+index 61b94c12d7dd..a4506336002d 100644
+--- a/include/linux/vtime.h
++++ b/include/linux/vtime.h
+@@ -31,6 +31,11 @@ static inline bool vtime_generic_enabled_cpu(int cpu)
+ 	return context_tracking_enabled_cpu(cpu);
+ }
+ 
++static inline bool vtime_generic_enabled_this_cpu(void)
++{
++	return context_tracking_enabled_this_cpu();
++}
++
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ extern void vtime_account_idle(struct task_struct *tsk);
+ extern void vtime_account_irq(struct task_struct *tsk, unsigned int offset);
+@@ -90,7 +95,7 @@ static inline bool vtime_accounting_enabled_cpu(int cpu)
+ 
+ static inline bool vtime_accounting_enabled_this_cpu(void)
+ {
+-	return context_tracking_enabled_this_cpu();
++	return vtime_generic_enabled_this_cpu();
+ }
+ 
+ extern void vtime_task_switch_generic(struct task_struct *prev);
+diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+index d91b495457ec..4934c537f5e3 100644
+--- a/kernel/sched/cputime.c
++++ b/kernel/sched/cputime.c
+@@ -414,16 +414,30 @@ static void irqtime_account_process_tick(struct task_struct *p, int user_tick,
+ 	}
+ }
+ 
+-static void irqtime_account_idle_ticks(int ticks)
+-{
+-	irqtime_account_process_tick(current, 0, ticks);
+-}
+ #else /* !CONFIG_IRQ_TIME_ACCOUNTING: */
+-static inline void irqtime_account_idle_ticks(int ticks) { }
+ static inline void irqtime_account_process_tick(struct task_struct *p, int user_tick,
+ 						int nr_ticks) { }
+ #endif /* !CONFIG_IRQ_TIME_ACCOUNTING */
+ 
++#ifdef CONFIG_NO_HZ_COMMON
++void kcpustat_dyntick_start(void)
++{
++	if (!vtime_generic_enabled_this_cpu()) {
++		vtime_dyntick_start();
++		__this_cpu_write(kernel_cpustat.idle_dyntick, 1);
++	}
++}
++
++void kcpustat_dyntick_stop(void)
++{
++	if (!vtime_generic_enabled_this_cpu()) {
++		__this_cpu_write(kernel_cpustat.idle_dyntick, 0);
++		vtime_dyntick_stop();
++		steal_account_process_time(ULONG_MAX);
++	}
++}
++#endif /* CONFIG_NO_HZ_COMMON */
++
+ /*
+  * Use precise platform statistics if available:
+  */
+@@ -437,11 +451,15 @@ void vtime_account_irq(struct task_struct *tsk, unsigned int offset)
+ 		vtime_account_hardirq(tsk);
+ 	} else if (pc & SOFTIRQ_OFFSET) {
+ 		vtime_account_softirq(tsk);
+-	} else if (!IS_ENABLED(CONFIG_HAVE_VIRT_CPU_ACCOUNTING_IDLE) &&
+-		   is_idle_task(tsk)) {
+-		vtime_account_idle(tsk);
++	} else if (!kcpustat_idle_dyntick()) {
++		if (!IS_ENABLED(CONFIG_HAVE_VIRT_CPU_ACCOUNTING_IDLE) &&
++		    is_idle_task(tsk)) {
++			vtime_account_idle(tsk);
++		} else {
++			vtime_account_kernel(tsk);
++		}
+ 	} else {
+-		vtime_account_kernel(tsk);
++		vtime_reset();
+ 	}
+ }
+ 
+@@ -483,6 +501,9 @@ void account_process_tick(struct task_struct *p, int user_tick)
+ 	if (vtime_accounting_enabled_this_cpu())
+ 		return;
+ 
++	if (kcpustat_idle_dyntick())
++		return;
++
+ 	if (irqtime_enabled()) {
+ 		irqtime_account_process_tick(p, user_tick, 1);
+ 		return;
+@@ -504,29 +525,6 @@ void account_process_tick(struct task_struct *p, int user_tick)
+ 		account_idle_time(cputime);
+ }
+ 
+-/*
+- * Account multiple ticks of idle time.
+- * @ticks: number of stolen ticks
+- */
+-void account_idle_ticks(unsigned long ticks)
+-{
+-	u64 cputime, steal;
+-
+-	if (irqtime_enabled()) {
+-		irqtime_account_idle_ticks(ticks);
+-		return;
+-	}
+-
+-	cputime = ticks * TICK_NSEC;
+-	steal = steal_account_process_time(ULONG_MAX);
+-
+-	if (steal >= cputime)
+-		return;
+-
+-	cputime -= steal;
+-	account_idle_time(cputime);
+-}
+-
+ /*
+  * Adjust tick based cputime random precision against scheduler runtime
+  * accounting.
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 7224a50d9c44..2c0f0b81f452 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -285,8 +285,6 @@ static void tick_sched_handle(struct tick_sched *ts, struct pt_regs *regs)
+ 	if (IS_ENABLED(CONFIG_NO_HZ_COMMON) &&
+ 	    tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
+ 		touch_softlockup_watchdog_sched();
+-		if (is_idle_task(current))
+-			ts->idle_jiffies++;
+ 		/*
+ 		 * In case the current tick fired too early past its expected
+ 		 * expiration, make sure we don't bypass the next clock reprogramming
+@@ -753,8 +751,12 @@ static void tick_nohz_update_jiffies(ktime_t now)
+ 
+ static void tick_nohz_stop_idle(struct tick_sched *ts, ktime_t now)
+ {
++	u64 *cpustat = kcpustat_this_cpu->cpustat;
+ 	ktime_t delta;
+ 
++	if (vtime_generic_enabled_this_cpu())
++		return;
++
+ 	if (WARN_ON_ONCE(!tick_sched_flag_test(ts, TS_FLAG_IDLE_ACTIVE)))
+ 		return;
+ 
+@@ -762,9 +764,9 @@ static void tick_nohz_stop_idle(struct tick_sched *ts, ktime_t now)
+ 
+ 	write_seqcount_begin(&ts->idle_sleeptime_seq);
+ 	if (nr_iowait_cpu(smp_processor_id()) > 0)
+-		ts->iowait_sleeptime = ktime_add(ts->iowait_sleeptime, delta);
++		cpustat[CPUTIME_IOWAIT] = ktime_add(cpustat[CPUTIME_IOWAIT], delta);
+ 	else
+-		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
++		cpustat[CPUTIME_IDLE] = ktime_add(cpustat[CPUTIME_IDLE], delta);
+ 
+ 	ts->idle_entrytime = now;
+ 	tick_sched_flag_clear(ts, TS_FLAG_IDLE_ACTIVE);
+@@ -775,18 +777,21 @@ static void tick_nohz_stop_idle(struct tick_sched *ts, ktime_t now)
+ 
+ static void tick_nohz_start_idle(struct tick_sched *ts)
+ {
++	if (vtime_generic_enabled_this_cpu())
++		return;
++
+ 	write_seqcount_begin(&ts->idle_sleeptime_seq);
+ 	ts->idle_entrytime = ktime_get();
+ 	tick_sched_flag_set(ts, TS_FLAG_IDLE_ACTIVE);
+ 	write_seqcount_end(&ts->idle_sleeptime_seq);
+-
+ 	sched_clock_idle_sleep_event();
+ }
+ 
+-static u64 get_cpu_sleep_time_us(int cpu, enum cpu_usage_stat idx, ktime_t *sleeptime,
++static u64 get_cpu_sleep_time_us(int cpu, enum cpu_usage_stat idx,
+ 				 bool compute_delta, u64 *last_update_time)
+ {
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
++	u64 *cpustat = kcpustat_cpu(cpu).cpustat;
+ 	ktime_t now, idle;
+ 	unsigned int seq;
+ 
+@@ -808,9 +813,9 @@ static u64 get_cpu_sleep_time_us(int cpu, enum cpu_usage_stat idx, ktime_t *slee
+ 		if (tick_sched_flag_test(ts, TS_FLAG_IDLE_ACTIVE) && compute_delta) {
+ 			ktime_t delta = ktime_sub(now, ts->idle_entrytime);
+ 
+-			idle = ktime_add(*sleeptime, delta);
++			idle = ktime_add(cpustat[idx], delta);
+ 		} else {
+-			idle = *sleeptime;
++			idle = cpustat[idx];
+ 		}
+ 	} while (read_seqcount_retry(&ts->idle_sleeptime_seq, seq));
+ 
+@@ -837,9 +842,7 @@ static u64 get_cpu_sleep_time_us(int cpu, enum cpu_usage_stat idx, ktime_t *slee
+  */
+ u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time)
+ {
+-	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-
+-	return get_cpu_sleep_time_us(cpu, CPUTIME_IDLE, &ts->idle_sleeptime,
++	return get_cpu_sleep_time_us(cpu, CPUTIME_IDLE,
+ 				     !nr_iowait_cpu(cpu), last_update_time);
+ }
+ EXPORT_SYMBOL_GPL(get_cpu_idle_time_us);
+@@ -863,9 +866,7 @@ EXPORT_SYMBOL_GPL(get_cpu_idle_time_us);
+  */
+ u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time)
+ {
+-	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-
+-	return get_cpu_sleep_time_us(cpu, CPUTIME_IOWAIT, &ts->iowait_sleeptime,
++	return get_cpu_sleep_time_us(cpu, CPUTIME_IOWAIT,
+ 				     nr_iowait_cpu(cpu), last_update_time);
+ }
+ EXPORT_SYMBOL_GPL(get_cpu_iowait_time_us);
+@@ -1265,10 +1266,8 @@ void tick_nohz_idle_stop_tick(void)
+ 		ts->idle_sleeps++;
+ 		ts->idle_expires = expires;
+ 
+-		if (!was_stopped && tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
+-			ts->idle_jiffies = ts->last_jiffies;
++		if (!was_stopped && tick_sched_flag_test(ts, TS_FLAG_STOPPED))
+ 			nohz_balance_enter_idle(cpu);
+-		}
+ 	} else {
+ 		tick_nohz_retain_tick(ts);
+ 	}
+@@ -1297,6 +1296,7 @@ void tick_nohz_idle_enter(void)
+ 	WARN_ON_ONCE(ts->timer_expires_base);
+ 
+ 	tick_sched_flag_set(ts, TS_FLAG_INIDLE);
++	kcpustat_dyntick_start();
+ 	tick_nohz_start_idle(ts);
+ 
+ 	local_irq_enable();
+@@ -1422,37 +1422,12 @@ unsigned long tick_nohz_get_idle_calls_cpu(int cpu)
+ 	return ts->idle_calls;
+ }
+ 
+-static void tick_nohz_account_idle_time(struct tick_sched *ts,
+-					ktime_t now)
+-{
+-	unsigned long ticks;
+-
+-	ts->idle_exittime = now;
+-
+-	if (vtime_accounting_enabled_this_cpu())
+-		return;
+-	/*
+-	 * We stopped the tick in idle. update_process_times() would miss the
+-	 * time we slept, as it does only a 1 tick accounting.
+-	 * Enforce that this is accounted to idle !
+-	 */
+-	ticks = jiffies - ts->idle_jiffies;
+-	/*
+-	 * We might be one off. Do not randomly account a huge number of ticks!
+-	 */
+-	if (ticks && ticks < LONG_MAX)
+-		account_idle_ticks(ticks);
+-}
+-
+ void tick_nohz_idle_restart_tick(void)
+ {
+ 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+ 
+-	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED)) {
+-		ktime_t now = ktime_get();
+-		tick_nohz_restart_sched_tick(ts, now);
+-		tick_nohz_account_idle_time(ts, now);
+-	}
++	if (tick_sched_flag_test(ts, TS_FLAG_STOPPED))
++		tick_nohz_restart_sched_tick(ts, ktime_get());
+ }
+ 
+ static void tick_nohz_idle_update_tick(struct tick_sched *ts, ktime_t now)
+@@ -1461,8 +1436,6 @@ static void tick_nohz_idle_update_tick(struct tick_sched *ts, ktime_t now)
+ 		__tick_nohz_full_update_tick(ts, now);
+ 	else
+ 		tick_nohz_restart_sched_tick(ts, now);
+-
+-	tick_nohz_account_idle_time(ts, now);
+ }
+ 
+ /**
+@@ -1504,6 +1477,7 @@ void tick_nohz_idle_exit(void)
+ 
+ 	if (tick_stopped)
+ 		tick_nohz_idle_update_tick(ts, now);
++	kcpustat_dyntick_stop();
+ 
+ 	local_irq_enable();
+ }
+@@ -1640,20 +1614,15 @@ void tick_setup_sched_timer(bool hrtimer)
+ void tick_sched_timer_dying(int cpu)
+ {
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-	ktime_t idle_sleeptime, iowait_sleeptime;
+ 	unsigned long idle_calls, idle_sleeps;
+ 
+ 	/* This must happen before hrtimers are migrated! */
+ 	if (tick_sched_flag_test(ts, TS_FLAG_HIGHRES))
+ 		hrtimer_cancel(&ts->sched_timer);
+ 
+-	idle_sleeptime = ts->idle_sleeptime;
+-	iowait_sleeptime = ts->iowait_sleeptime;
+ 	idle_calls = ts->idle_calls;
+ 	idle_sleeps = ts->idle_sleeps;
+ 	memset(ts, 0, sizeof(*ts));
+-	ts->idle_sleeptime = idle_sleeptime;
+-	ts->iowait_sleeptime = iowait_sleeptime;
+ 	ts->idle_calls = idle_calls;
+ 	ts->idle_sleeps = idle_sleeps;
+ }
 -- 
-Lee Jones [李琼斯]
+2.53.0
+
