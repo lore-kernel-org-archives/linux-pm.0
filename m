@@ -1,39 +1,41 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9F85223DE9;
-	Tue, 31 Mar 2026 19:19:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE1A03A7837;
+	Tue, 31 Mar 2026 19:19:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774984784; cv=none; b=DsXfvyoyQgUm8X0tCWtJqWX0M3AkSa6N/JPPEdDBFampxAxzQWNYPk/bvaswqat/lCLc9Gx8CcZFJTThbOzZ6OEyLFI6d9xH12qZbYbdRj8g+b7cWlK9bauRnugNVDhfUvUhPHKgpxZwjKcoYQ5rof0hy6TMCHq5mbzJdq+CNB4=
+	t=1774984787; cv=none; b=NuzMVKyLgWyvfrv8U62XEBKTNwF3Gk1coGT/MNf/IkUOr53OgcRz7EAQnV9uujZ+KbhHEqMH0YNGyAmBlTvyswMHxSdITmu3Xv/5LNd31RH/OrnLCupaNhGNKHnfkC3p+0n/KPfHV85zs4+NtwhQFBkW8XtKi/es0NaRy0QrjHo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774984784; c=relaxed/simple;
-	bh=89u1sDi155+FGDfGF1Eq332TTmXb5lRvJsvSLEiSOgQ=;
+	s=arc-20240116; t=1774984787; c=relaxed/simple;
+	bh=C4eM6maAQlXInY1KrPdyLe1rRLeVRCxjgXJ9OqOz01o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Q6HhLtWTalk5BCuKnsgzkIrQvY8qFUukLns4pYnDfcvYNGqffMmxxgcoudaENjf4mr/JNL62tM74NErrjnmCg3MeKXsRWYdH/DSEh5jll0Boyy6sYSi7gJK655aQ9mznoOqlLSe9H1u5NxZBYvxLQdsP3HsHriqGYyXHfJlbPZk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RHo91JQJ; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=VRMVpu5hi9tS4c10g5O5eD7beAuWaDu8NQ239cFqu2hZNAmfrCJbomtQvTq3iMI8CRn+CMNbyxFlp4tbd6bKeLKLSfdELbDBca1KOe6GzjVZRhbCXobXzV4BRUKY/4R5fsm7PyBOVxOywoCnV0z0k/hYlAW/mEhSRCe8/o00mr4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EiBGTk2p; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RHo91JQJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1783EC19423;
-	Tue, 31 Mar 2026 19:19:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EiBGTk2p"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8982AC19423;
+	Tue, 31 Mar 2026 19:19:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774984784;
-	bh=89u1sDi155+FGDfGF1Eq332TTmXb5lRvJsvSLEiSOgQ=;
+	s=k20201202; t=1774984787;
+	bh=C4eM6maAQlXInY1KrPdyLe1rRLeVRCxjgXJ9OqOz01o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=RHo91JQJebX6EZ8xJfZcJdvk51TfGTO5on2ej3A2iPBSZVJq4BNvnvjhWLJF8cM7I
-	 JdxCf2mx4tTq95nJzeTjQamgd19ayXTeJxvElCe5ldMmbm0GlLUsNE0UCfZcGyJG38
-	 QLFDhDAN4tws7KOH+oRDXncos4OxzwUf9NiG4hqlFUVrHlAGvKJl3zSDndwV+hmYPI
-	 /LYQXqxmFntRjvjiE047N5Lm9TBJqWyrqU+VM/RiKiTn6pJ7py139DyOooGBM3JEOV
-	 dnEOFvdGlrkKIY+c675Huyrv2LyRlHWpu9oE6iT2cEj7BlnMy6ov02IYcZ7XG3xMyV
-	 PxC9gGyGkmKkg==
+	b=EiBGTk2pFtmUICHGNv+b3yPInsrP33uiCCzKzJiGqyUIsTUThb0cB0LuwQoLrJDyj
+	 nmNexqejRld4iDOx3jpuUKt3Oqwi5JIFGItRyRmcqRDPLiY3tu6qPaqOA94iaUMBk8
+	 Ni17oiLfYkzVtn3SQQaHDQnz81irY4EpwB/8yMzBC9sozHTdVEwiqFYZ3dpuYs3IFl
+	 n6wPvONH8+cYPXd6S807dvzcGyudGxwR9aCxtwU1nTTmLJbsfwB3hRvoGZgra1e2w7
+	 EU3qBT5JYtoImjmjxnVl1ESeMD8yvYlzwCSVHvMP//nAEWOhIeT0p8XA3K8E7qF6cx
+	 fiYZkQ06ylSwg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Armin Wolf <w_armin@gmx.de>
-Subject: [PATCH v1 4/4] thermal: core: Allocate thermal_class statically
-Date: Tue, 31 Mar 2026 21:19:17 +0200
-Message-ID: <3431854.44csPzL39Z@rafael.j.wysocki>
+Subject:
+ [PATCH v1 3/4] thermal: core: Suspend thermal zones later and resume them
+ earlier
+Date: Tue, 31 Mar 2026 21:18:20 +0200
+Message-ID: <3059135.e9J7NaK4W3@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <4745677.LvFx2qVVIh@rafael.j.wysocki>
 References: <4745677.LvFx2qVVIh@rafael.j.wysocki>
@@ -48,87 +50,165 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Define thermal_class as a static structure to simplify thermal_init().
+To avoid some undesirable interactions between thermal zone suspend
+and resume with user space that is running when those operations are
+carried out, move them closer to the suspend and resume of devices,
+respectively, by updating dpm_prepare() to carry out thermal zone
+suspend and dpm_complete() to start thermal zone resume (that will
+continue asynchronously).
+
+This also makes the code easier to follow by removing one, arguably
+redundant, level of indirection represented by the thermal PM notifier.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   29 ++++++++++-------------------
- 1 file changed, 10 insertions(+), 19 deletions(-)
+ drivers/base/power/main.c      |    6 ++++
+ drivers/thermal/thermal_core.c |   54 +++++++++--------------------------------
+ include/linux/thermal.h        |    6 ++++
+ 3 files changed, 24 insertions(+), 42 deletions(-)
 
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -977,7 +977,10 @@ static void thermal_release(struct devic
- 	}
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -33,6 +33,7 @@
+ #include <trace/events/power.h>
+ #include <linux/cpufreq.h>
+ #include <linux/devfreq.h>
++#include <linux/thermal.h>
+ #include <linux/timer.h>
+ #include <linux/nmi.h>
+ 
+@@ -1284,6 +1285,8 @@ void dpm_complete(pm_message_t state)
+ 
+ 	/* Allow device probing and trigger re-probing of deferred devices */
+ 	device_unblock_probing();
++	/* Start resuming thermal control */
++	thermal_pm_complete();
+ 	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
  }
  
--static struct class *thermal_class;
-+static const struct class thermal_class = {
-+	.name = "thermal",
-+	.dev_release = thermal_release,
-+};
+@@ -2212,6 +2215,9 @@ int dpm_prepare(pm_message_t state)
  
- static inline
- void print_bind_err_msg(struct thermal_zone_device *tz,
-@@ -1070,7 +1073,7 @@ __thermal_cooling_device_register(struct
- 	    !ops->set_cur_state)
- 		return ERR_PTR(-EINVAL);
+ 	trace_suspend_resume(TPS("dpm_prepare"), state.event, true);
  
--	if (!thermal_class)
-+	if (!class_is_registered(&thermal_class))
- 		return ERR_PTR(-ENODEV);
++	/* Suspend thermal control. */
++	thermal_pm_prepare();
++
+ 	/*
+ 	 * Give a chance for the known devices to complete their probes, before
+ 	 * disable probing of devices. This sync point is important at least
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1830,7 +1830,7 @@ static void thermal_zone_pm_prepare(stru
+ 	cancel_delayed_work(&tz->poll_queue);
+ }
  
- 	cdev = kzalloc_obj(*cdev);
-@@ -1094,7 +1097,7 @@ __thermal_cooling_device_register(struct
- 	cdev->np = np;
- 	cdev->ops = ops;
- 	cdev->updated = false;
--	cdev->device.class = thermal_class;
-+	cdev->device.class = &thermal_class;
- 	cdev->devdata = devdata;
+-static void thermal_pm_notify_prepare(void)
++static void __thermal_pm_prepare(void)
+ {
+ 	struct thermal_zone_device *tz;
  
- 	ret = cdev->ops->get_max_state(cdev, &cdev->max_state);
-@@ -1542,7 +1545,7 @@ thermal_zone_device_register_with_trips(
- 	if (polling_delay && passive_delay > polling_delay)
- 		return ERR_PTR(-EINVAL);
+@@ -1842,6 +1842,16 @@ static void thermal_pm_notify_prepare(vo
+ 		thermal_zone_pm_prepare(tz);
+ }
  
--	if (!thermal_class)
-+	if (!class_is_registered(&thermal_class))
- 		return ERR_PTR(-ENODEV);
++void thermal_pm_prepare(void)
++{
++	__thermal_pm_prepare();
++	/*
++	 * Allow any leftover thermal work items already on the worqueue to
++	 * complete so they don't get in the way later.
++	 */
++	flush_workqueue(thermal_wq);
++}
++
+ static void thermal_zone_pm_complete(struct thermal_zone_device *tz)
+ {
+ 	guard(thermal_zone)(tz);
+@@ -1858,7 +1868,7 @@ static void thermal_zone_pm_complete(str
+ 	mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
+ }
  
- 	tz = kzalloc_flex(*tz, trips, num_trips);
-@@ -1578,7 +1581,7 @@ thermal_zone_device_register_with_trips(
- 	if (!tz->ops.critical)
- 		tz->ops.critical = thermal_zone_device_critical;
+-static void thermal_pm_notify_complete(void)
++void thermal_pm_complete(void)
+ {
+ 	struct thermal_zone_device *tz;
  
--	tz->device.class = thermal_class;
-+	tz->device.class = &thermal_class;
- 	tz->devdata = devdata;
- 	tz->num_trips = num_trips;
- 	for_each_trip_desc(tz, td) {
-@@ -1900,21 +1903,9 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto destroy_workqueue;
+@@ -1870,41 +1880,6 @@ static void thermal_pm_notify_complete(v
+ 		thermal_zone_pm_complete(tz);
+ }
  
--	thermal_class = kzalloc_obj(*thermal_class);
--	if (!thermal_class) {
--		result = -ENOMEM;
--		goto unregister_governors;
+-static int thermal_pm_notify(struct notifier_block *nb,
+-			     unsigned long mode, void *_unused)
+-{
+-	switch (mode) {
+-	case PM_HIBERNATION_PREPARE:
+-	case PM_RESTORE_PREPARE:
+-	case PM_SUSPEND_PREPARE:
+-		thermal_pm_notify_prepare();
+-		/*
+-		 * Allow any leftover thermal work items already on the
+-		 * worqueue to complete so they don't get in the way later.
+-		 */
+-		flush_workqueue(thermal_wq);
+-		break;
+-	case PM_POST_HIBERNATION:
+-	case PM_POST_RESTORE:
+-	case PM_POST_SUSPEND:
+-		thermal_pm_notify_complete();
+-		break;
+-	default:
+-		break;
 -	}
+-	return 0;
+-}
 -
--	thermal_class->name = "thermal";
--	thermal_class->dev_release = thermal_release;
+-static struct notifier_block thermal_pm_nb = {
+-	.notifier_call = thermal_pm_notify,
+-	/*
+-	 * Run at the lowest priority to avoid interference between the thermal
+-	 * zone resume work items spawned by thermal_pm_notify() and the other
+-	 * PM notifiers.
+-	 */
+-	.priority = INT_MIN,
+-};
 -
--	result = class_register(thermal_class);
--	if (result) {
--		kfree(thermal_class);
--		thermal_class = NULL;
-+	result = class_register(&thermal_class);
-+	if (result)
+ static int __init thermal_init(void)
+ {
+ 	int result;
+@@ -1941,11 +1916,6 @@ static int __init thermal_init(void)
  		goto unregister_governors;
--	}
+ 	}
  
+-	result = register_pm_notifier(&thermal_pm_nb);
+-	if (result)
+-		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
+-			result);
+-
  	return 0;
  
+ unregister_governors:
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -273,6 +273,9 @@ bool thermal_trip_is_bound_to_cdev(struc
+ int thermal_zone_device_enable(struct thermal_zone_device *tz);
+ int thermal_zone_device_disable(struct thermal_zone_device *tz);
+ void thermal_zone_device_critical(struct thermal_zone_device *tz);
++
++void thermal_pm_prepare(void);
++void thermal_pm_complete(void);
+ #else
+ static inline struct thermal_zone_device *thermal_zone_device_register_with_trips(
+ 					const char *type,
+@@ -350,6 +353,9 @@ static inline int thermal_zone_device_en
+ 
+ static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
+ { return -ENODEV; }
++
++static inline void thermal_pm_prepare(void) {}
++static inline void thermal_pm_complete(void) {}
+ #endif /* CONFIG_THERMAL */
+ 
+ #endif /* __THERMAL_H__ */
 
 
 
