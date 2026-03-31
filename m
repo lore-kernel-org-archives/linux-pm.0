@@ -1,434 +1,181 @@
-Received: from mail-dy1-f202.google.com (mail-dy1-f202.google.com [74.125.82.202])
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4A5B421F02
-	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:34:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.202
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCDB7411618
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 15:43:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774971302; cv=none; b=NJiaZTmgFvJpjOU05bHcvuJU+mLUdLwYeycNa4GBcplKSDArEkOomDKj9jeQE+DTF/ZQOHhvMNU2nzDyFIy0+7tTMGdFwe3fdF8WTSpX+d7Buu5TudNZyPn/4CEH/nFxKTLAwwo2hjcQXQJTB2s9ANxLpRWdRx0Gqla3+WVrC0Q=
+	t=1774971831; cv=none; b=EN4NgG064MxHooM5B4uUIBNiVpwRWWw0N6jvhWx7OtmzBGboz/Nc9JFZ2aaHHiQc2JxoGGrw4DVrM3PFIsv+xgfeA2edLufHlorpH9OkAEAUXllJ+cZ0FKwEez6WVWXynWe5PTVSeKfQsrC5wQ1fkDuz02tJWgw1mcwSb/tcgzo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774971302; c=relaxed/simple;
-	bh=hqnvAUyRD//uDsghjeO9XTcRE/oWX3SD/127id8yotY=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=mPUp5u9/lF48uVRHc8++s6Z2MoDuQzI1WJ3ot6k6avUetFeqG/+DelapxuC/KemvKnJ0atkMaS9lm/DqIqZeolst4FPr4lXY3k1nFf0weYUUH1nps08McRy2kGoAjOQsafjFPhe8Oq2JcQ44DM1hRk6jbl90S5QGmpQ7F2bvZNk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=uf+Q21rv; arc=none smtp.client-ip=74.125.82.202
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com
+	s=arc-20240116; t=1774971831; c=relaxed/simple;
+	bh=Lak4zcWpFwfXjCXPbBnc4yBKiesb3cWUXZkq+I+QBCM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=jKPw1GqTiuQtiDdq25eRbKxTMCeyTOIJfdISIZhvBlikYzgRb77UO6guzZJqytHVyTET5cat+2cExYMCrztjD6NdlJy1bY5sxwoulbvuY26aPYjavdZ1tW4zueX8zYE1iflmCnr5sNVktfKqtFCVj3gIQIDD+Sr2gRM6kWTFk38=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=MknPGXTr; arc=none smtp.client-ip=209.85.128.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="uf+Q21rv"
-Received: by mail-dy1-f202.google.com with SMTP id 5a478bee46e88-2ba8013a9e3so5080145eec.0
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:34:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="MknPGXTr"
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4853c1ca73aso60556385e9.2
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 08:43:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774971298; x=1775576098; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=oKdyQZxERM7zX00CvQx5rmQ/yM+uYmSc+NIq9/dspVA=;
-        b=uf+Q21rvAXqnL1spCKc1aC7Jk5QtpsQVXMAPbL8omoJbYpVJH44IgdOYUr9TcR+wzv
-         rFsNXmPSrkdu+96sMSV5+OFVhcCkMdpohQ9LCsr2oyouV+AkvLZsr0RkKNxb6GgCQGat
-         SPXOZqq6gnkRUWwtSIvA3nsFTIvyEbejprmZPQ8koRlcAEa7+WmTovkOaNDSxP5d4+kC
-         mcvM4xvNS9BvMZZ/GMH2ksqywD9n7HBpUUrWdsXyZLQSh1OWjqsKj8l62TjwqmJ+n8hB
-         LZjOrGnwJvArW7koRSr2O3zSwBSBymj7E/x/jN+CRtd4N5N5dwxHtxPZOXOeWGs7iAKt
-         15ww==
+        d=flipper.net; s=google; t=1774971827; x=1775576627; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=py3e1w6KMUuyJpztK2fw9vXLuizsBVQDCyepeMdTu4I=;
+        b=MknPGXTrRCR8++ycFypzpqIkF9kCxkjzGSp2X8DCtBFyeUiY4AltsaGEOBUuqAplUV
+         8DZ0N2bXO8bISlOVt80YV6NMDtTljI0l3AwcnamV9zu1PxPr24nW+zBmXI2IL4YNTjcb
+         e3UPhDaEpvZQAa0i00oHvQKJ19xcP2nBxUlm1hsuXNngg25JGEmFwVTors2rNgfujgWI
+         GVWF+Y22BnjYHStSop2j+jOFqBulBB75s981TaUmZSL7FtdkBm5tSVXCxHwc40oQkEFm
+         MKa9hR/XOvUTfzJCVusI1CbPyqKvYvniDt7/iRWCI4R8J2m+6vUm7pw2mayqC4+l3YVU
+         y4Bg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774971298; x=1775576098;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=oKdyQZxERM7zX00CvQx5rmQ/yM+uYmSc+NIq9/dspVA=;
-        b=G+rUT1gv9HMT9lonvQcqnyHWRt3TPFFJM+WvmblA7I9ZWrAr7B6TmXDLUaTmxTluur
-         HI4BkXhbIqER7Emo3RpfOUbNbW7KHE6pwQ0haxr4B5e8TkEp4MmQspDPnpi/Bj+kOxIj
-         Otu8t2BXRBu3sMu4hghOPJwfjV3eTeCJ8f5z4YdLE8UbH4dO8J5qdq+Gh8ztEbKjqybv
-         4t0QKAYcxvCNdzmeonSkgPjsJSMGBLa/PWSZTYuB3Pl9x59nsJ2h8MvUXMHM1HrnpGcS
-         Lt/bUWo311heTqNb/UINPsAVf6E9L0ceEMY0oBbyYb9MOdDApGazYvo5j/4rNBps7Pzl
-         4HhQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXUY2GrEHVQNvubD0nEdlFblUwoI6X++GFwUB9NK5Sxghe7FITkvkFFWg7MeZnGDn8LNiqXj4EeSA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzTDonrkNWu2H287IeMdl30TKKyrgsJNEyrYztUCGZwkDcAoq+w
-	TorYtLVwuz855Zx3LvhXlwbeyzRNk7SgPCQvv5ZQA2FSwQAwxLxIKKSNweKGkMJWYN+/tQ5X+kV
-	rWhLeJd3yt+tkPA==
-X-Received: from dycmo5.prod.google.com ([2002:a05:693c:26c5:b0:2c6:af43:29fd])
- (user=wusamuel job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:7301:4909:b0:2c3:f58a:77c5 with SMTP id 5a478bee46e88-2c3f58a877emr3793737eec.30.1774971297340;
- Tue, 31 Mar 2026 08:34:57 -0700 (PDT)
-Date: Tue, 31 Mar 2026 08:34:11 -0700
-In-Reply-To: <20260331153413.2469218-1-wusamuel@google.com>
+        d=1e100.net; s=20251104; t=1774971827; x=1775576627;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=py3e1w6KMUuyJpztK2fw9vXLuizsBVQDCyepeMdTu4I=;
+        b=QTqHqfRWqIao+KCZkcG+aP/7pUa6n0fh/PlIoAAr83gIUrxc8oBlxxtFX+d2IGsFI6
+         0cvJv6jD4FbSkmSZ4zFqiq++7u9GxkCyi4tBrCab43gSL97zAFIShKynQQxoq7OTb+Qu
+         TzgiPA6SdUI2HsosuLcyvYrvAQGRcFzFfVIwL9Vx23OlbwyGaRe3aJcvfrMJCWpql3KW
+         maDh9jAyLE5PV1EonmVC/yM/NouymF66hBcCY/Y8qWSfAGGC1iY1S6Yjzl/t8gwb3DRL
+         iPdOjF03ktj/0shrjoUhSrrNTK3aGcw9Xh6AUB4Xu8irrDjm2P2vzLtVmcFFFGrLGmag
+         bAGg==
+X-Forwarded-Encrypted: i=1; AJvYcCVE3fj79UcO8E3ldLfewZS5Y7cwKxGGTqubvG/HUyJbhKRKHQC82cxkc6HOyVvJPcQppOlESg4/cg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyIT9tLVxrm1UQ5/xmBrc30G8bBhADOtPmjQks71KXIaR/68cJ4
+	LPZ5UhnGwycuFeGqtwhe1YG68+IzRsYgs9sKZPu//zO+LaMPJfWcQqxarVj8SWQYeRg=
+X-Gm-Gg: ATEYQzzC/3TuojE9/guCpRYUWqlLJa9eDmPxxT58oDHCYcCiPIbsjisEBfn0w57lY8W
+	XdsS/nAH0SQ08uc56sU8sKoFaG4JUTUeiW4SxgL21cCVstd1TMmn/DXkOlyYw0XubHVbjYsL4kA
+	1oNsLSg8lJ1BXvjwtRtlUoaoD43U9EZL94lhQOJnKy8oHN3thavQ/CTBXiUff+1CR3cSY5pd0AS
+	DgBbJIYI5YyVZiYXYXRPYvsyoUPPTwFrWK3hVLt9iJn+JJA2kCJcm/e+SNK+UqtG6dpYgWCm3cq
+	uic0RiAgaPfk9CPcoHOvsm/gHzP1KqoU5LT0crfjnzC4aIXWUbQHvFGSKbbp20kqnODY1FKPHeT
+	OnTmsaQwfZN1vO8EiNdszIOAuOruyQsvWvZe52clUcce/YhFhNVddQ8fXuC7UYryhwXP8HOBwmq
+	plMrcDz7c3eJq8DkDxry3AWSB0EyUNIFyZM0YVS9eU+ENCcgw/t8+ap06bHS6zR4riAwwoNwCR5
+	FtTCQ==
+X-Received: by 2002:a05:600c:4744:b0:485:2a4b:7bc3 with SMTP id 5b1f17b1804b1-48727d5d6femr284014105e9.4.1774971827114;
+        Tue, 31 Mar 2026 08:43:47 -0700 (PDT)
+Received: from alchark-surface.localdomain (bba-86-98-192-109.alshamil.net.ae. [86.98.192.109])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887c8852a5sm48412605e9.9.2026.03.31.08.43.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Mar 2026 08:43:46 -0700 (PDT)
+From: Alexey Charkov <alchark@flipper.net>
+Subject: [PATCH v6 00/11] Add support for the TI BQ25792 battery charger
+Date: Tue, 31 Mar 2026 19:43:37 +0400
+Message-Id: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260331153413.2469218-1-wusamuel@google.com>
-X-Mailer: git-send-email 2.53.0.1018.g2bb0e51243-goog
-Message-ID: <20260331153413.2469218-3-wusamuel@google.com>
-Subject: [PATCH v3 2/2] selftests/bpf: Add tests for wakeup_sources kfuncs
-From: Samuel Wu <wusamuel@google.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
-	Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>, 
-	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
-	Shuah Khan <shuah@kernel.org>
-Cc: Samuel Wu <wusamuel@google.com>, kernel-team@android.com, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, bpf@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAKnry2kC/2XOwW6DMAwG4Fepcl4mx47dsNPeY9oBiLNGmigNF
+ dpU8e4LvcDE8bf8/fbDTFqyTubt9DBF5zzl61CDvJxMf2mHL7U51mwQUICAbHdDPjdowRG2fZD
+ gJZq6PRZN+efZ9PFZ8yVP92v5fRbPbp0eO2ZnwaooKwCR5/CevvM4ankd9G7Wlhn3UjZZH7DCD
+ aNvoqiko6SddLBJqhIwBUXCKNQdpd9Lt0lf5RkdecexUe2PkncS/SZ5vdmidhz65Fz8L5dl+QN
+ rVXNriAEAAA==
+X-Change-ID: 20260303-bq25792-0132ac86846d
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, Alexey Charkov <alchark@flipper.net>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ stable@vger.kernel.org
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4161; i=alchark@flipper.net;
+ h=from:subject:message-id; bh=Lak4zcWpFwfXjCXPbBnc4yBKiesb3cWUXZkq+I+QBCM=;
+ b=owGbwMvMwCW2adGNfoHIK0sZT6slMWSefr1eLv3I3dnefgoarKt4n7KHOEy9dbDoh5O+2zIL0
+ Z7729KPdExkYRDjYrAUU2SZ+22J7VQjvlm7PDy+wsxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
+ hoY6xjpGDFycAjDV3OEM/+zWzTi/Q4HD43+z4WI1+YKao0p5Zzflb9lwLOynA8PTTy8ZGSaIufx
+ SE7bIaXr1TbZO/M8C2Vvf1sVUu4plyFzYeGBjBgcA
+X-Developer-Key: i=alchark@flipper.net; a=openpgp;
+ fpr=9DF6A43D95320E9ABA4848F5B2A2D88F1059D4A5
 
-Introduce a set of BPF selftests to verify the safety and functionality
-of wakeup_source kfuncs.
+This adds support for the TI BQ25792 battery charger, which is similar in
+overall logic to the BQ25703A, but has a different register layout and
+slightly different lower-level programming logic.
 
-The suite includes:
-1. A functional test (test_wakeup_source.c) that iterates over the
-   global wakeup_sources list. It uses CO-RE to read timing statistics
-   and validates them in user-space via the BPF ring buffer.
-2. A negative test suite (wakeup_source_fail.c) ensuring the BPF
-   verifier correctly enforces reference tracking and type safety.
-3. Enable CONFIG_PM_WAKELOCKS in the test config, allowing creation of
-   wakeup sources via /sys/power/wake_lock.
+The series is organized as follows:
+- Patch 1 adds the new variant to the existing DT binding, including the
+  changes in electrical characteristics
+- Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
+  driver, slimming down the code and making it more reusable for the new
+  BQ25792 variant
+- Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
+  (this is a standalone fix which can be applied independently and may be
+  backported to stable)
+- Patches 6-8 are slight refactoring of the existing BQ25703A charger
+  driver to make it more reusable for the new BQ25792 variant
+- Patch 9 adds platform data to distinguish between the two variants in
+  the parent MFD driver, and binds it to the new compatible string
+- Patches 10-11 add variant-specific code to support the new BQ25792
+  variant in the regulator part and the charger part respectively,
+  selected by the platform data added in patch 9
 
-A shared header (wakeup_source.h) is introduced to ensure consistent
-memory layout for the Ring Buffer data between BPF and user-space.
-
-Signed-off-by: Samuel Wu <wusamuel@google.com>
+Signed-off-by: Alexey Charkov <alchark@flipper.net>
 ---
- tools/testing/selftests/bpf/config            |   3 +-
- .../selftests/bpf/prog_tests/wakeup_source.c  | 101 ++++++++++++++++++
- .../selftests/bpf/progs/test_wakeup_source.c  |  92 ++++++++++++++++
- .../selftests/bpf/progs/wakeup_source.h       |  22 ++++
- .../selftests/bpf/progs/wakeup_source_fail.c  |  76 +++++++++++++
- 5 files changed, 293 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/bpf/prog_tests/wakeup_source.c
- create mode 100644 tools/testing/selftests/bpf/progs/test_wakeup_source.c
- create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source.h
- create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source_fail.c
+Changes in v6:
+- Changed -EINVAL to -ENODEV for non-match cases in the MFD driver, to stay
+  in line with what other drivers do in similar situations (Lee Jones)
+- Link to v5: https://lore.kernel.org/r/20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net
 
-diff --git a/tools/testing/selftests/bpf/config b/tools/testing/selftests/bpf/config
-index 24855381290d..bac60b444551 100644
---- a/tools/testing/selftests/bpf/config
-+++ b/tools/testing/selftests/bpf/config
-@@ -130,4 +130,5 @@ CONFIG_INFINIBAND=y
- CONFIG_SMC=y
- CONFIG_SMC_HS_CTRL_BPF=y
- CONFIG_DIBS=y
--CONFIG_DIBS_LO=y
-\ No newline at end of file
-+CONFIG_DIBS_LO=y
-+CONFIG_PM_WAKELOCKS=y
-diff --git a/tools/testing/selftests/bpf/prog_tests/wakeup_source.c b/tools/testing/selftests/bpf/prog_tests/wakeup_source.c
-new file mode 100644
-index 000000000000..ff2899cbf3a8
---- /dev/null
-+++ b/tools/testing/selftests/bpf/prog_tests/wakeup_source.c
-@@ -0,0 +1,101 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright 2026 Google LLC */
-+
-+#include <test_progs.h>
-+#include <fcntl.h>
-+#include "test_wakeup_source.skel.h"
-+#include "wakeup_source_fail.skel.h"
-+#include "progs/wakeup_source.h"
-+
-+static int lock_ws(const char *name)
-+{
-+	int fd;
-+	ssize_t bytes;
-+
-+	fd = open("/sys/power/wake_lock", O_WRONLY);
-+	if (!ASSERT_OK_FD(fd, "open /sys/power/wake_lock"))
-+		return -1;
-+
-+	bytes = write(fd, name, strlen(name));
-+	close(fd);
-+	if (!ASSERT_EQ(bytes, strlen(name), "write to wake_lock"))
-+		return -1;
-+
-+	return 0;
-+}
-+
-+static void unlock_ws(const char *name)
-+{
-+	int fd;
-+
-+	fd = open("/sys/power/wake_unlock", O_WRONLY);
-+	if (fd < 0)
-+		return;
-+
-+	write(fd, name, strlen(name));
-+	close(fd);
-+}
-+
-+struct rb_ctx {
-+	const char *name;
-+	bool found;
-+	long long active_time_ns;
-+	long long total_time_ns;
-+};
-+
-+static int process_sample(void *ctx, void *data, size_t len)
-+{
-+	struct rb_ctx *rb_ctx = ctx;
-+	struct wakeup_event_t *e = data;
-+
-+	if (strcmp(e->name, rb_ctx->name) == 0) {
-+		rb_ctx->found = true;
-+		rb_ctx->active_time_ns = e->active_time_ns;
-+		rb_ctx->total_time_ns = e->total_time_ns;
-+	}
-+	return 0;
-+}
-+
-+void test_wakeup_source(void)
-+{
-+	if (test__start_subtest("iterate_and_verify_times")) {
-+		struct test_wakeup_source *skel;
-+		struct ring_buffer *rb = NULL;
-+		struct rb_ctx rb_ctx = {
-+			.name = "bpf_selftest_ws_times",
-+			.found = false,
-+		};
-+		int err;
-+
-+		skel = test_wakeup_source__open_and_load();
-+		if (!ASSERT_OK_PTR(skel, "skel_open_and_load"))
-+			return;
-+
-+		rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), process_sample, &rb_ctx, NULL);
-+		if (!ASSERT_OK_PTR(rb, "ring_buffer__new"))
-+			goto destroy;
-+
-+		/* Create a temporary wakeup source */
-+		if (!ASSERT_OK(lock_ws(rb_ctx.name), "lock_ws"))
-+			goto unlock;
-+
-+		err = bpf_prog_test_run_opts(bpf_program__fd(
-+				skel->progs.iterate_wakeupsources), NULL);
-+		ASSERT_OK(err, "bpf_prog_test_run");
-+
-+		ring_buffer__consume(rb);
-+
-+		ASSERT_TRUE(rb_ctx.found, "found_test_ws_in_rb");
-+		ASSERT_GT(rb_ctx.active_time_ns, 0, "active_time_gt_0");
-+		ASSERT_GT(rb_ctx.total_time_ns, 0, "total_time_gt_0");
-+
-+unlock:
-+		unlock_ws(rb_ctx.name);
-+destroy:
-+		if (rb)
-+			ring_buffer__free(rb);
-+		test_wakeup_source__destroy(skel);
-+	}
-+
-+	RUN_TESTS(wakeup_source_fail);
-+}
-diff --git a/tools/testing/selftests/bpf/progs/test_wakeup_source.c b/tools/testing/selftests/bpf/progs/test_wakeup_source.c
-new file mode 100644
-index 000000000000..fd2fb6aebd82
---- /dev/null
-+++ b/tools/testing/selftests/bpf/progs/test_wakeup_source.c
-@@ -0,0 +1,92 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright 2026 Google LLC */
-+
-+#include "vmlinux.h"
-+#include <bpf/bpf_helpers.h>
-+#include <bpf/bpf_core_read.h>
-+#include "bpf_experimental.h"
-+#include "bpf_misc.h"
-+#include "wakeup_source.h"
-+
-+#define MAX_LOOP_ITER 1000
-+#define RB_SIZE (16384 * 4)
-+
-+struct {
-+	__uint(type, BPF_MAP_TYPE_RINGBUF);
-+	__uint(max_entries, RB_SIZE);
-+} rb SEC(".maps");
-+
-+struct bpf_ws_lock;
-+struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void) __ksym;
-+void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock) __ksym;
-+void *bpf_wakeup_sources_get_head(void) __ksym;
-+
-+SEC("syscall")
-+__success __retval(0)
-+int iterate_wakeupsources(void *ctx)
-+{
-+	struct list_head *head = bpf_wakeup_sources_get_head();
-+	struct list_head *pos = head;
-+	struct bpf_ws_lock *lock;
-+	int i;
-+
-+	lock = bpf_wakeup_sources_read_lock();
-+	if (!lock)
-+		return 0;
-+
-+	bpf_for(i, 0, MAX_LOOP_ITER) {
-+		if (bpf_core_read(&pos, sizeof(pos), &pos->next) || !pos || pos == head)
-+			break;
-+
-+		struct wakeup_event_t *e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
-+
-+		if (!e)
-+			break;
-+
-+		struct wakeup_source *ws = bpf_core_cast(
-+				(void *)pos - bpf_core_field_offset(struct wakeup_source, entry),
-+				struct wakeup_source);
-+		s64 active_time = 0;
-+		bool active = BPF_CORE_READ_BITFIELD(ws, active);
-+		bool autosleep_enable = BPF_CORE_READ_BITFIELD(ws, autosleep_enabled);
-+		s64 last_time = ws->last_time;
-+		s64 max_time = ws->max_time;
-+		s64 prevent_sleep_time = ws->prevent_sleep_time;
-+		s64 total_time = ws->total_time;
-+
-+		if (active) {
-+			s64 curr_time = bpf_ktime_get_ns();
-+			s64 prevent_time = ws->start_prevent_time;
-+
-+			if (curr_time > last_time)
-+				active_time = curr_time - last_time;
-+
-+			total_time += active_time;
-+			if (active_time > max_time)
-+				max_time = active_time;
-+			if (autosleep_enable && curr_time > prevent_time)
-+				prevent_sleep_time += curr_time - prevent_time;
-+		}
-+
-+		e->active_count = ws->active_count;
-+		e->active_time_ns = active_time;
-+		e->event_count = ws->event_count;
-+		e->expire_count = ws->expire_count;
-+		e->last_time_ns = last_time;
-+		e->max_time_ns = max_time;
-+		e->prevent_sleep_time_ns = prevent_sleep_time;
-+		e->total_time_ns = total_time;
-+		e->wakeup_count = ws->wakeup_count;
-+
-+		if (bpf_probe_read_kernel_str(
-+				e->name, WAKEUP_NAME_LEN, ws->name) < 0)
-+			e->name[0] = '\0';
-+
-+		bpf_ringbuf_submit(e, 0);
-+	}
-+
-+	bpf_wakeup_sources_read_unlock(lock);
-+	return 0;
-+}
-+
-+char _license[] SEC("license") = "GPL";
-diff --git a/tools/testing/selftests/bpf/progs/wakeup_source.h b/tools/testing/selftests/bpf/progs/wakeup_source.h
-new file mode 100644
-index 000000000000..cd74de92c82f
---- /dev/null
-+++ b/tools/testing/selftests/bpf/progs/wakeup_source.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright 2026 Google LLC */
-+
-+#ifndef __WAKEUP_SOURCE_H__
-+#define __WAKEUP_SOURCE_H__
-+
-+#define WAKEUP_NAME_LEN 128
-+
-+struct wakeup_event_t {
-+	unsigned long active_count;
-+	long long active_time_ns;
-+	unsigned long event_count;
-+	unsigned long expire_count;
-+	long long last_time_ns;
-+	long long max_time_ns;
-+	long long prevent_sleep_time_ns;
-+	long long total_time_ns;
-+	unsigned long wakeup_count;
-+	char name[WAKEUP_NAME_LEN];
-+};
-+
-+#endif /* __WAKEUP_SOURCE_H__ */
-diff --git a/tools/testing/selftests/bpf/progs/wakeup_source_fail.c b/tools/testing/selftests/bpf/progs/wakeup_source_fail.c
-new file mode 100644
-index 000000000000..0f8d29865a01
---- /dev/null
-+++ b/tools/testing/selftests/bpf/progs/wakeup_source_fail.c
-@@ -0,0 +1,76 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright 2026 Google LLC */
-+
-+#include <vmlinux.h>
-+#include <bpf/bpf_helpers.h>
-+#include "bpf_misc.h"
-+
-+struct bpf_ws_lock;
-+
-+struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void) __ksym;
-+void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock) __ksym;
-+void *bpf_wakeup_sources_get_head(void) __ksym;
-+
-+SEC("syscall")
-+__failure __msg("BPF_EXIT instruction in main prog would lead to reference leak")
-+int wakeup_source_lock_no_unlock(void *ctx)
-+{
-+	struct bpf_ws_lock *lock;
-+
-+	lock = bpf_wakeup_sources_read_lock();
-+	if (!lock)
-+		return 0;
-+
-+	return 0;
-+}
-+
-+SEC("syscall")
-+__failure __msg("access beyond struct")
-+int wakeup_source_access_lock_fields(void *ctx)
-+{
-+	struct bpf_ws_lock *lock;
-+	int val;
-+
-+	lock = bpf_wakeup_sources_read_lock();
-+	if (!lock)
-+		return 0;
-+
-+	val = *(int *)lock;
-+
-+	bpf_wakeup_sources_read_unlock(lock);
-+	return val;
-+}
-+
-+SEC("syscall")
-+__failure __msg("type=scalar expected=fp")
-+int wakeup_source_unlock_no_lock(void *ctx)
-+{
-+	struct bpf_ws_lock *lock = (void *)0x1;
-+
-+	bpf_wakeup_sources_read_unlock(lock);
-+
-+	return 0;
-+}
-+
-+SEC("syscall")
-+__failure __msg("Possibly NULL pointer passed to trusted arg0")
-+int wakeup_source_unlock_null(void *ctx)
-+{
-+	bpf_wakeup_sources_read_unlock(NULL);
-+
-+	return 0;
-+}
-+
-+SEC("syscall")
-+__failure __msg("R0 invalid mem access 'scalar'")
-+int wakeup_source_unsafe_dereference(void *ctx)
-+{
-+	struct list_head *head = bpf_wakeup_sources_get_head();
-+
-+	if (head->next)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+char _license[] SEC("license") = "GPL";
+Changes in v5:
+- Added non-OF match data and switched to i2c_get_match_data() to support
+  non-OF platforms (Lee Jones)
+- Shifted the types in the enum to start at 1 to avoid confusion with
+  zero-initialized data and non-match cases (Lee Jones)
+- Reinstated the const qualifier on the MFD cell array (Lee Jones)
+- Link to v4: https://lore.kernel.org/r/20260311-bq25792-v4-0-7213415d9eec@flipper.net
+
+Changes in v4:
+- Avoid additional data structures and pass 'type' within the existing
+  struct bq257xx_device instead (Lee Jones)
+- Move comments for new struct fields to the patches where those fields
+  are added (Sebastian Reichel)
+- Collect tags from Sebastian Reichel (thanks!)
+- Link to v3: https://lore.kernel.org/r/20260310-bq25792-v3-0-02f8e232d63b@flipper.net
+
+Changes in v3:
+- Move MFD cell definitions back out of the probe function (Lee Jones)
+- Collect tags from Mark Brown, Krzysztof Kozlowski and Chris Morgan (thanks!)
+- Enable ship FET functionality at init for BQ25792
+- Link to v2: https://lore.kernel.org/r/20260306-bq25792-v2-0-6595249d6e6f@flipper.net
+
+Changes in v2:
+- Fix an error in DT schema (thanks Rob's bot)
+- Ensure the broadest constraints for all variants remain in the common
+  part of the schema, per writing-schema doc (thanks Krzysztof)
+- Link to v1: https://lore.kernel.org/r/20260303-bq25792-v1-0-e6e5e0033458@flipper.net
+
+---
+Alexey Charkov (11):
+      dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
+      regulator: bq257xx: Remove reference to the parent MFD's dev
+      regulator: bq257xx: Drop the regulator_dev from the driver data
+      regulator: bq257xx: Make OTG enable GPIO really optional
+      power: supply: bq257xx: Fix VSYSMIN clamping logic
+      power: supply: bq257xx: Make the default current limit a per-chip attribute
+      power: supply: bq257xx: Consistently use indirect get/set helpers
+      power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' states
+      mfd: bq257xx: Add BQ25792 support
+      regulator: bq257xx: Add support for BQ25792
+      power: supply: bq257xx: Add support for BQ25792
+
+ .../devicetree/bindings/mfd/ti,bq25703a.yaml       |  73 ++-
+ drivers/mfd/bq257xx.c                              |  54 ++-
+ drivers/power/supply/bq257xx_charger.c             | 534 ++++++++++++++++++++-
+ drivers/regulator/bq257xx-regulator.c              | 121 ++++-
+ include/linux/mfd/bq257xx.h                        | 412 ++++++++++++++++
+ 5 files changed, 1156 insertions(+), 38 deletions(-)
+---
+base-commit: 36ece9697e89016181e5ae87510e40fb31d86f2b
+change-id: 20260303-bq25792-0132ac86846d
+
+Best regards,
 -- 
-2.53.0.1018.g2bb0e51243-goog
+Alexey Charkov <alchark@flipper.net>
 
