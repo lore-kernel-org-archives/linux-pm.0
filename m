@@ -1,115 +1,135 @@
-Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84E4A3E5ED1;
-	Tue, 31 Mar 2026 08:53:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774947198; cv=none; b=cs5Ge5fp17Kq243HIZdhP5thB95+ehyg24Dbzj/twpzzqz/ZirkcQQXfNK93ApBpBN7xEGsODLORmwDwAqlWQkOZwyqM8Nv7K3b/rDLA0Hj1bwmdAcNlRv503XAbaSw/g40Uiuap1RGCKD3CPp7DcYusYcxW9ILH0t0SmPWBZ8g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774947198; c=relaxed/simple;
-	bh=82LQYYuo2k0AX1jLBFg4W3qXrbApwY8fCGDMoHWrYhg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ZmF8KLbJPrOGyl5xeK0PTg/SMrMjpnEgfw+dDY8IZhxBFAWUr2Upn7FJuirb2hV6RP68XmYd6eaf1dbiAsNQcgU34xltzCMZrJ25/Q45TC2GDnLy71D3TcnegbgDPfGwZ30Mr6G6/3gVxBYJ+VAwm/Gxe4TJ1aJ8aWKe4WB4gzQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.226
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4flMDk30QLzKm4Y;
-	Tue, 31 Mar 2026 16:47:02 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 73F2040539;
-	Tue, 31 Mar 2026 16:53:13 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 31 Mar
- 2026 16:53:12 +0800
-Message-ID: <d6c69fc9-d504-4c62-8181-f531276c7443@hisilicon.com>
-Date: Tue, 31 Mar 2026 16:53:12 +0800
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 522933E0C66
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 09:02:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.48
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774947730; cv=pass; b=YgJVvgGbBbvZ9EAJBZbrg69WTz53DA35XOTYr19XuXomG2yGzkYi6ED1+3cWKHdssxaSDFU98/UByXxewZR4W38lQubP2pb2W9ZQvlXwC0Wkacg6sOcPPY2J6cZcyyWmaNvCZ76jLbuJPfcUN62dE/Rh+YWR1VX2uwyqs0kpBrc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774947730; c=relaxed/simple;
+	bh=QuCvn599COW//1DtmRcEag0zAJukE3mULPcfdxWmbHI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tcySHCWoghahhi/WRI2JlR491/ExeSy/fCfqcz7DLHHZJ0pHF33D0azLVF16g50io3f0JGnGWQQ1Oa//zIRxiHSHKF3bYbc1QMccxpuJSCxGzlDRdW1vIxMaMnUShtIAAY9dGc9urJ8ZedeJ+KGhC7tEeBZ/XMyS2z1nli7ifdQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WyW8aOgY; arc=pass smtp.client-ip=209.85.167.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WyW8aOgY"
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a0fc5e2c59so6212865e87.1
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 02:02:09 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774947727; cv=none;
+        d=google.com; s=arc-20240605;
+        b=G6TEH+0e4K6f1qYpNgT3vjT2301yIqCJZQ0VjVgYtBoGRE3zor9G+H4M494Lu/pv4e
+         2nJPnMYUbOQN6t1gdEJjHi+SAR44nT9vqDtu9p26r1c9k4fMPX2jWKdoGm68T8GeRK/+
+         xijlyaQ2Lv5kEBgZ53FDZy7njJ2Ja1eTLntS63ucucbZoeSXuEulTzBra9urNIA0imGU
+         9pEjQmtRAF7qmyWQsB4InqTIK2W7R22U1f1VSKGiLADPzoCcu2nc5BKUmlKP8JyBO/Kf
+         0qVHYcaQpAl2+BETYEkhHTX3B6iUdNQDZQppfR3le8zZbcyWCSLcvPllRkKyn+wndQH8
+         iBXw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=QuCvn599COW//1DtmRcEag0zAJukE3mULPcfdxWmbHI=;
+        fh=IeiY5fKFdnE1to/uHF/TfZ9n0O2nQOcXHQr0UMCum68=;
+        b=cILLKiB1CSjEP5N5uZKZkmvuqYyFGv8cgo/CNbDs268s7Ad+s4tifKWti+ZnfPpOUs
+         +RTWhUbDpKavDBdSkUiDzsqMEKTM2tCxNRe+n8u4BkGDeFP6OGPxhuDPtTLDcG5r2iq0
+         gZMVDoqWn02oiLQjP8vxe0S6CrekqqmudjG9v4eQh8nHI+N/T+gDMdeo4AJgCKKpqpjo
+         G+yfntJyda+JvGu1AYTZxE37tK7PpF43FPjbbCCG6MkZRCDFHpIggNVX0CokzEIZ3eTI
+         1oErgpTFfpvKfXgZX5Yo80rrTSPjxEQ/9wjeIKnhRvH0pp5ZkugkNzhJvaRI5M+jSraX
+         SZqw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1774947727; x=1775552527; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=QuCvn599COW//1DtmRcEag0zAJukE3mULPcfdxWmbHI=;
+        b=WyW8aOgYi8MVszoV+uXI6HpIqbblZcKFU61V67eBcX0jra4k/WaoEzrxKrnHaF2MdE
+         5yyvdXkmBYkkOR+wbXPEtQ4ZtCbilrZeEuoFlyIaC56gAYJMxzM155shYE78fY1pfj7G
+         M21H3Noe1GilKjaI1f40ma2GRIq3IP/2N8jl66/to2eiiEHlf2H/KUwUAEG+q9OE7M23
+         Y6guly5IqcdEGm8HB6jN3l3OVon6JTBgQ4ia+/aH1ridr7GXTgTKKBI5ZHpMBsRWGIMv
+         PMIf8w9+mVbgLeNUjVPRZL4CqVVS+M/mAgAcdQ3110A2jQIp0PM66DQ18sRdsVh9xnqE
+         gUcg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774947727; x=1775552527;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QuCvn599COW//1DtmRcEag0zAJukE3mULPcfdxWmbHI=;
+        b=qgX37sBuZabDSPkySYh5wuKZqfHcbU6shFC+37uUDTLe6jBQszqeQviKqLRphx1rkb
+         nv+ZBvz1DyhBcpN7S3KTJ1516dNx2E+dKnZ0I39FUcPeMGsMVzUauv9b1XgrCzyodRje
+         +zJTDIiL0eFDg0ESJ8lPBvtNpkE2RNAuNvuQanaxDzUx34xpNlLFpKJxOQGY+Tu1meul
+         C5LGEa+mkvZaLgDJ2UCdJZi5zHIH6WasldBqJf3VP6U7pxZJNdflqJHn1kxv6TIVQTGW
+         pAi3W6YvLNWrnMhnZv0VvH2a8tqySuvi8d3u+iFwJajExzTKr5foxcO3yQYjVT2OHRjn
+         ZLBw==
+X-Forwarded-Encrypted: i=1; AJvYcCUXRMXbKnVPElMlesGq3ePlKPMs0w90csPFGD2UAFIqi6DUSyvYAGCu3B6OdN/8IeH0mM+WHIS9Vg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YywoJsWBv5Lz3Cth2nNBipZcYZNYgBAM4YjNOPnfB8BcB4zTIEU
+	JE24qxaVfg5+ZnhihS0sn2pg9cxrhjOAh3jipkxj9DuxyO5wSbcY+RGMcYa67XVbptpfDQqMvnu
+	GoxX8ESK/X6t6G/sMImEbROKjO1tjzm4aFnx/j/6qbQ==
+X-Gm-Gg: ATEYQzz8vDToNJEJIYVKNfEHEMP7qCJGefo0X4AQquYPWGtfZzMQgO7Cmy7YtK0W/7/
+	kG6TL0FxKJ1flCvG8VcY0+RaBQzrzX6ksUFcwVVUnJtWVWZMCVjJVCLZVwm/C9XWg5eOrrqDra8
+	4n7PPpu8h9V/15Jzk10sy25oRJE9gWk+xqtonlyH5KvIrSoCjW6Oq2lfwuPglaHW6VvYpbVNirS
+	L1xnxAXsP4ADmLroaU75wu+qp+v2u7za/+MBL+m5nnarEKnDRyVg3gSIuTMjBPzQ6EQLQUXE45Q
+	EQS/oLlA
+X-Received: by 2002:a05:6512:3b95:b0:5a2:78f8:60aa with SMTP id
+ 2adb3069b0e04-5a2ab92e0a6mr5921259e87.37.1774947727265; Tue, 31 Mar 2026
+ 02:02:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 3/4] PM / devfreq: Fix governor_store() failing
- when device has no current governor
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
- <20260319091710.1006814-1-tianyaxiong@kylinos.cn>
- <5ac69894-aa0d-475f-8950-a0ff98f9fa2e@hisilicon.com>
- <ebee5d1c-f42f-4b51-aa98-2a015ee61706@kylinos.cn>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <ebee5d1c-f42f-4b51-aa98-2a015ee61706@kylinos.cn>
+References: <20260318-gs101-pd-v8-0-241523460b10@linaro.org>
+ <177409907930.268981.5882592990447577348.b4-ty@b4> <CAPDyKFoz-sm0pfvn5iSYFY0mrW38vaGRZsFvrVPqsv7BsYxeWQ@mail.gmail.com>
+ <1fbf5c54-8793-4585-be33-ded77019adb2@kernel.org> <CAPDyKFrK3NLwaii-9FEmyaTzUAuVkMkLL3rWBQwQvT-M+PzEHA@mail.gmail.com>
+ <3bb6b71e-947b-4248-95ba-79852f743c1d@kernel.org> <CAPDyKFpOPC2stAJ262jdap-=ByY09AeQ0kj6p_9FTGJBx+Tu-Q@mail.gmail.com>
+ <a417e45b-1632-4b14-9e3c-f7110db53190@kernel.org> <CAPDyKFomzokuF+UL8d0+Syk1FCG3jnUfy7rVr+3iC1GPZmH1UQ@mail.gmail.com>
+ <c4d6b758-474b-409d-b553-fa4ec1df494e@kernel.org>
+In-Reply-To: <c4d6b758-474b-409d-b553-fa4ec1df494e@kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 31 Mar 2026 11:01:30 +0200
+X-Gm-Features: AQROBzB7d4a8fUYE9ADAwNJgppR-qAENvrUiLIFB9dQe-2GMylgbIm_d4czfNl4
+Message-ID: <CAPDyKFrwxVcLByHef7GjbyB+Du0bRbD=6_ELmmnMWW-TsjMhCQ@mail.gmail.com>
+Subject: Re: (subset) [PATCH v8 00/10] pmdomain: samsung: add support for
+ Google GS101
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Alim Akhtar <alim.akhtar@samsung.com>, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	=?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+	Peter Griffin <peter.griffin@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, 
+	Juan Yescas <jyescas@google.com>, Will McVicker <willmcvicker@google.com>, kernel-team@android.com, 
+	linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf200017.china.huawei.com (7.202.181.10)
 
+On Mon, 30 Mar 2026 at 15:38, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>
+> On 30/03/2026 15:30, Ulf Hansson wrote:
+> >
+> > Usually we want bindings to go along with their respective drivers on
+> > a subsystem basis.
+> >
+> > Both patch2 and patch4 updates DT bindings for the power-domain providers.
+>
+> Patch 2 yes. Patch 4 not. That's why I did not take patch 2.
+>
+> >
+> > Why shouldn't the bindings go along with the driver changes here?
+>
+> Patch #2 is pmdomain, so with pmdomain drivers thus your tree. Patch #4
+> is not pmdomain, so not with pmdomain drivers, so not your tree... At
+> least I do not see any pmdomain parts in that patch #4. It's a Samsung
+> SoC PMU driver and none of further driver patches touch that PMU driver.
 
+Yes, you are right that the PMU driver isn't touched.
 
-On 3/31/2026 4:02 PM, Yaxiong Tian wrote:
-> 
-> 在 2026/3/31 15:16, Jie Zhan 写道:
->>
->> On 3/19/2026 5:17 PM, Yaxiong Tian wrote:
->>> Since devfreq_remove_governor() may clear the device's current governor
->>> in certain situations, while governors actually exist independently
->>> of the device, directly returning EINVAL in this case is inaccurate.
->>>
->>> To fix this issue, remove this check and add relevant logic for when
->>> df->governor is NULL.
->>>
->>> Fixes: 483d557ee9a3 ("PM / devfreq: Clean up the devfreq instance name in sysfs attr")
->>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
->>> ---
->>>   drivers/devfreq/devfreq.c | 15 ++++++++++++---
->>>   1 file changed, 12 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 0bf320123e3a..4a312f3c2421 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -1425,9 +1425,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>       char str_governor[DEVFREQ_NAME_LEN + 1];
->>>       const struct devfreq_governor *governor, *prev_governor;
->>>   -    if (!df->governor)
->>> -        return -EINVAL;
->>> -
->>>       ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>>       if (ret != 1)
->>>           return -EINVAL;
->>> @@ -1438,6 +1435,18 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>           ret = PTR_ERR(governor);
->>>           goto out;
->>>       }
->>> +
->>> +    if (!df->governor) {
->>> +        df->governor = governor;
->>> +        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>> +        if (ret) {
->>> +            dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>> +                __func__, df->governor->name, ret);
->>> +            df->governor = NULL;
->>> +        }
->>> +        goto out;
->>> +    }
->>> +
->> The sequence that starts the governor, and stops, and then re-starts looks
->> quite weird.
->> Can you do a NULL pointer check before the IMMUTABLE flag check and
->> stopping governor, rather than this?
-> 
-> This patch only addresses the issue raised in the commit message. As for the original
-> 
-> start, stop, and then restart sequence, I haven't found any problems with it so far.
-> 
-You just added the first 'start' here.
-Please see the other process in governor_store().
->>>       if (df->governor == governor) {
->>>           ret = 0;
->>>           goto out;
+Although, the PMU DT description added in patch3 and extended in
+patch4, allows power-domain providers to be described in its child
+nodes. Those child nodes use the same compatible string as the
+power-domain providers described in patch2.
+
+Kind regards
+Uffe
