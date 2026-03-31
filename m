@@ -1,202 +1,196 @@
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B099273463
-	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 12:37:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.48
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774960672; cv=pass; b=muvzP4ucN2sSFxuLGN72dvGmttHEy8dZ14KjqZ6IAS3uIGNZSJ2XyhWjphOAp5nD3Lk+/RXqRsIlaI9BbmFEdTdQsYLELKg9dOMGthCjprG0Z1xRIJVWnRDsF8duwLE3CZXe4yHYo/7vyuGOKVFMdnNb5ssxB8dbS/eJYqovooU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774960672; c=relaxed/simple;
-	bh=jPbNg7vnffslAngWLp1YXKpgROU2PnXJpaYVtorkLMk=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 709463E1D0E
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 12:45:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774961148; cv=none; b=HMtsS/tJNIW2laYmX592jYnRpOW45gQswb6VVJTzy1LVe12657dDxHBpq3Dt3My8GgKyro4LgeoulLJHPSVYGrMeGsp5TWEKIKeyZrnsUG7DNNtRZYxIt5WLnhSxz4/hm/W11xC1AYLSA1hTfjjQApDTP4B38ulxPTcUZT8o4IU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774961148; c=relaxed/simple;
+	bh=63xAkHfhONGpFnJuCZYgYjWIcctaOjWDhbc90DUQ1ts=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FgWKa7oFf7c5bn+wNT4y2YWgNX+5RDU/PLQHjpB1um3COnLxhjMIloG1pVgu4Rt2KmYIrX6qQCsjEvgpiVj8inv8sw2WSPsSfIuXTHF1zZF3+lnEF0avYzKOVtW70UyIGbLR8QhvxxH4xx2gnjsLQf8PGIh+kbrjQmTucqLuFIQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=OHFU5U3j; arc=pass smtp.client-ip=209.85.218.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
+	 To:Cc:Content-Type; b=jQ8yowi0mh29nBF2qiqd9vgvocaNyPmJHHENo3D6dzWG/ZOK0qH86QQTU9wROfCw8gcuLOLBC+pTdM5C7+RzukOxakW7IYERHUprSn1fiuTLI1jC38BIkeNDXjB5VFIIALHGI3040ycjjbXtN5/nn9PMPE6eVCW0yGF0qmfPgYE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NP6hcOWQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="OHFU5U3j"
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-b980b35534eso1032144066b.1
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 05:37:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774960668; cv=none;
-        d=google.com; s=arc-20240605;
-        b=TnjQFWGzaI06lJ2nAk5go7TuRTVbp3FL5hpInjTJP7JV+cK8SGv9YhTDqd5gNBPMzn
-         +uy9nArZ72RjG1M8gDlArRXzmXOQk8raHVOEPM5eJoreuEgTJS0G+O5GT3Z1ha4UuExl
-         VkCXK42yO2AD396XV6aLmDMMaq7KwlaMAtXkGPIioxbtgHd9cw2zrK72eRKAV+6OBE1G
-         QqPStiwflfcdOpZHN8dqmJ8E3bXlYAVfIODcNGPo9zZ2p+BzMYN4tTFuEGXmzgV1PfXF
-         7KUvMt+qvgYk0eTT+nbiEtbDUWIfcEFZZCBriw9TNwWqy1i4S96zfpxGNzSUlDPMIfOg
-         Tdjg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
-        fh=8gS4agLeOhGhRdgUGgYmZUvB8eBC8miWFYiMe5D1DZU=;
-        b=Xcox9N0gLb5eo6O56NaK9OLfBjaC3d5SonCpusXrNHztgNU56swe54JMkL38MfNG6z
-         Z9bL9rV+5+7rEKwtZq6YR5nYEQ0evubdpqdwyN4JBcSmSr3WLK+eo+kz/yg+2D6mr/5y
-         wVaz6Nt102/UuG9pwxvC0YH52boxgH8Mzu8FCN/Z/az+duN4ZVcMgj1ObWB3QOe/nyUl
-         oEHltRqAt7Oe4z6z1FGDGSpqgfj14qDenlUyTLHWadideh7hdeO7lw9T8SCd84QDpM/D
-         kQLMVWXfPgMs9tYDYCSxRJk1j+ksVB51tBb/9tFAHZD+78qYBVf5Nqr+G1ZVWAFJgfmx
-         CRCg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=flipper.net; s=google; t=1774960668; x=1775565468; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
-        b=OHFU5U3j66PbvMavlSF+a6mpP45beTwgYQnPzHAdFNx0leuJLj5waAEmp4l9tkgnrT
-         pNvR7PtQo85qheqJR39ZyW0Mups/YVBmIV2XTaoUazYWfzEeQHBYnaEMJGasa6b5fmNw
-         jfa75bC3De8hZ7wju11xbrgk3XyItkeJNvutjovRhS4GL8LjXYWQSTk9+HlhC1j/BWFW
-         12LsFxyxtdOQHd6kOVIfGvnXpYAFKn3e/5wOjuYCaBcKc1lm5ok8e5okhmlilT1iN0tu
-         IB3gIQ6KASqksjWF5seja8ZdiGGYmjYScSFudcWC/0Jgoak+g48Ve5iMAnRwRej9WvWo
-         uS5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774960668; x=1775565468;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
-        b=XpzotYllblCXaf+Hj1UMjQuuV+XxuXsI6VNICNSxPqgqyW4P5cbtK4q0w2YpwzphVN
-         KXxpkv1G2dRa3h4QKPumCeyuB5/YlCPDvsZ99G6R/dhDLcghZftZLdgLc54DtSn4H682
-         YnLtirCa16IcCvrHaUaQFj+JKddv8R2lwHDDJ6vJUNVF0b4NqumwB24pdLscFoU/IW9I
-         Vf0hcCLoVuA1jEgQ7eRPculaNsEiiL1dSe8kUg5g5MRkm41dbchEuRMofCC3Z9gwLOX3
-         90FCxk9wbYE8fBOUsCyqIU7d1AndnTKD69clW6IFc2Nh0kHC1jdO4GT9S1XMn4+6+Xj4
-         RFyA==
-X-Forwarded-Encrypted: i=1; AJvYcCVMG92nY/lBlzxZMrwBKgWpTo1avMNYtHtjQGLp3/u7lWW/1Aym6pCaLxlu/zG9bzQDoKsei73BAw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy0jkkaL04STXZlX3/9oTwTauSbEv959zW0X3jR0ECGNQ+WdLjc
-	SMvq4B6sXlAf0XI25/4QlCoY/i1clHikbTCqqBD2l/KycaAmKEeoDNHzPpapeOBuS8vFNlntlXs
-	j+ysNTNZ6Pkg6MoVZEQsrwVp6aX1wg/H4dhsbZ64RGg==
-X-Gm-Gg: ATEYQzxwN1gSwhIxSbtOy0r4+Q9ZuXlEVsGKReAV0H26Bzhll61baP6HybDNVRjBJqO
-	bQmzygSnROnk/WiO8rlJ0Nxd62A1C5JXCLQs3QGSHBV2Tzq4fqqSCjimvWFLf21Ncd354bF2Tct
-	TDehZIgUQHvW8FVuOqGlPvH+5ijRjKeduA+htPkK4iQund8RZjkcQUSj5MVS/wKm4JyFyaTQtsK
-	hP27XP7Mab76+2bh6hqdMRT5Q2+cPdwE0jBiYPdOMFxQaymd8/FUq4YuGF/rnP7zWaMRaSa/bDS
-	Laqk6HE=
-X-Received: by 2002:a17:907:7245:b0:b90:4838:46ff with SMTP id
- a640c23a62f3a-b9be855a7cfmr188103066b.21.1774960668061; Tue, 31 Mar 2026
- 05:37:48 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NP6hcOWQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D320C2BC9E
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 12:45:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774961148;
+	bh=63xAkHfhONGpFnJuCZYgYjWIcctaOjWDhbc90DUQ1ts=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=NP6hcOWQrvmYyRaNcd5iPE4Ay0UY71j7NfhAR4LL8HQQOts3PsxNlvyA4zncHp0zY
+	 HuTorn2+fF7egy2bPxK3fZ8m2tFz0C7dUc3dRHS1cv7gGo+pIttdcSM80EsxlWTYGU
+	 jAf5EQ6wMfqGZjGg17HWS61bWsgEDVpXa2Q6oKvMCDFEFuLw/3ilA84QxMAfwGdU1n
+	 KbbyslYN2xYVakMKdeakDW9CZNCaFMVT3BV+hf6xG5Eqn3dq+UG54F7Cpi2AsTNcDJ
+	 IIJ77QOlhPthI1XMa/7Aq2KYmqBcA8ipUA7m/VfhSkTGHEu+BBWfFcvzKBA/YA3+O5
+	 R+cTzbnUK0QMg==
+Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-40f387a688dso4433413fac.0
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 05:45:48 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUgMsNXORJmgKz7sNMPZPUAbULj0+gG/lRpdtArxFuQIJfNhdN0KT/QMkFUkHvmALJtllv+r6IlRw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxeUdtsiVKpYIr8Lw7Mkw7rC/6KjaADv1IXF+LGMajuLimj1vzG
+	RvMb3tWNvBiy32tVrStH7EN2RkPLjAerfyOt9SratDqon5l/z4artM0P0j60UKpkhQcojgDRGuJ
+	ryzWsWmjn7A6P61/sh1MewG0ctcTCAq0=
+X-Received: by 2002:a05:6870:2042:b0:417:56da:593c with SMTP id
+ 586e51a60fabf-41cec38bcdcmr9271615fac.45.1774961147332; Tue, 31 Mar 2026
+ 05:45:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
- <20260324-bq25792-v5-9-0a2eb58cf11d@flipper.net> <20260331102710.GB3795166@google.com>
-In-Reply-To: <20260331102710.GB3795166@google.com>
-From: Alexey Charkov <alchark@flipper.net>
-Date: Tue, 31 Mar 2026 16:37:38 +0400
-X-Gm-Features: AQROBzBsOkDwD-_sfwvUc3QMEB-ceAPpDa8MP94cdzSz0KL5-FxEUULnB7SLa5s
-Message-ID: <CAKTNdwE4omfEkd6FNdj=hZUY2ZwLprXzUu1L4juFhWCxbWEjpQ@mail.gmail.com>
-Subject: Re: [PATCH v5 09/11] mfd: bq257xx: Add BQ25792 support
-To: Lee Jones <lee@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org
+References: <20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com>
+In-Reply-To: <20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 31 Mar 2026 14:45:35 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hjaMFezGQx+pF-TuLBQ-8wNYzd8ZBu+6XCV0=YgEx0Ew@mail.gmail.com>
+X-Gm-Features: AQROBzDDopFWGVRgx8adIRknC1Taf7UgKV39Bmuz3W-ercJieJiaTYCiTzTShA8
+Message-ID: <CAJZ5v0hjaMFezGQx+pF-TuLBQ-8wNYzd8ZBu+6XCV0=YgEx0Ew@mail.gmail.com>
+Subject: Re: [PATCH v2] PM: hibernate: call preallocate_image after freeze prepare
+To: Matthew Leach <matthew.leach@collabora.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Mario Limonciello <mario.limonciello@amd.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, YoungJun Park <youngjun.park@lge.com>, kernel@collabora.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 31, 2026 at 2:27=E2=80=AFPM Lee Jones <lee@kernel.org> wrote:
+On Thu, Mar 26, 2026 at 12:37=E2=80=AFPM Matthew Leach
+<matthew.leach@collabora.com> wrote:
 >
-> On Tue, 24 Mar 2026, Alexey Charkov wrote:
+> Certain drivers release resources (pinned pages, etc.) into system
+> memory during the prepare freeze PM op, making them swappable.
+> Currently, hibernate_preallocate_memory is called before prepare freeze,
+> so those drivers have no opportunity to release resources first. If a
+> driver is holding a large amount of unswappable system RAM, this can
+> cause hibernate_preallocate_memory to fail.
 >
-> > Add register definitions and a new 'type' enum to be passed via MFD
-> > private data to support the BQ25792, which is a newer variant of the
-> > BQ257xx family.
-> >
-> > BQ25792 shares similar logic of operation with the already supported
-> > BQ25703A but has a completely different register map and different
-> > electrical constraints.
-> >
-> > Tested-by: Chris Morgan <macromorgan@hotmail.com>
-> > Signed-off-by: Alexey Charkov <alchark@flipper.net>
-> > ---
-> >  drivers/mfd/bq257xx.c       |  54 +++++-
-> >  include/linux/mfd/bq257xx.h | 412 ++++++++++++++++++++++++++++++++++++=
-++++++++
-> >  2 files changed, 463 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
-> > index e9d49dac0a16..31654925afa5 100644
-> > --- a/drivers/mfd/bq257xx.c
-> > +++ b/drivers/mfd/bq257xx.c
-> > @@ -39,6 +39,39 @@ static const struct regmap_config bq25703_regmap_con=
-fig =3D {
-> >       .val_format_endian =3D REGMAP_ENDIAN_LITTLE,
-> >  };
-> >
-> > +static const struct regmap_range bq25792_writeable_reg_ranges[] =3D {
-> > +     regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
-> > +                      BQ25792_REG18_NTC_CONTROL_1),
-> > +     regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
-> > +                      BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
-> > +};
-> > +
-> > +static const struct regmap_access_table bq25792_writeable_regs =3D {
-> > +     .yes_ranges =3D bq25792_writeable_reg_ranges,
-> > +     .n_yes_ranges =3D ARRAY_SIZE(bq25792_writeable_reg_ranges),
-> > +};
-> > +
-> > +static const struct regmap_range bq25792_volatile_reg_ranges[] =3D {
-> > +     regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
-> > +                      BQ25792_REG27_FAULT_FLAG_1),
-> > +     regmap_reg_range(BQ25792_REG31_IBUS_ADC,
-> > +                      BQ25792_REG47_DPDM_DRIVER),
-> > +};
-> > +
-> > +static const struct regmap_access_table bq25792_volatile_regs =3D {
-> > +     .yes_ranges =3D bq25792_volatile_reg_ranges,
-> > +     .n_yes_ranges =3D ARRAY_SIZE(bq25792_volatile_reg_ranges),
-> > +};
-> > +
-> > +static const struct regmap_config bq25792_regmap_config =3D {
-> > +     .reg_bits =3D 8,
-> > +     .val_bits =3D 8,
-> > +     .max_register =3D BQ25792_REG48_PART_INFORMATION,
-> > +     .cache_type =3D REGCACHE_MAPLE,
-> > +     .wr_table =3D &bq25792_writeable_regs,
-> > +     .volatile_table =3D &bq25792_volatile_regs,
-> > +};
-> > +
-> >  static const struct mfd_cell cells[] =3D {
-> >       MFD_CELL_NAME("bq257xx-regulator"),
-> >       MFD_CELL_NAME("bq257xx-charger"),
-> > @@ -46,6 +79,7 @@ static const struct mfd_cell cells[] =3D {
-> >
-> >  static int bq257xx_probe(struct i2c_client *client)
-> >  {
-> > +     const struct regmap_config *rcfg;
-> >       struct bq257xx_device *ddata;
-> >       int ret;
-> >
-> > @@ -53,9 +87,21 @@ static int bq257xx_probe(struct i2c_client *client)
-> >       if (!ddata)
-> >               return -ENOMEM;
-> >
-> > +     ddata->type =3D (uintptr_t)i2c_get_match_data(client);
-> >       ddata->client =3D client;
-> >
-> > -     ddata->regmap =3D devm_regmap_init_i2c(client, &bq25703_regmap_co=
-nfig);
-> > +     switch (ddata->type) {
-> > +     case BQ25703A:
-> > +             rcfg =3D &bq25703_regmap_config;
-> > +             break;
-> > +     case BQ25792:
-> > +             rcfg =3D &bq25792_regmap_config;
-> > +             break;
-> > +     default:
-> > +             return dev_err_probe(&client->dev, -EINVAL, "Unsupported =
-device type\n");
+> Move the call to hibernate_preallocate_memory after prepare freeze.
+> According to the documentation for the prepare callback, devices should
+> be left in a usable state, so storage drivers should still be able to
+> service I/O requests. This allows drivers to release unswappable
+> resources prior to preallocation, so they can be swapped out through
+> hibernate_preallocate_memory's reclaim path. Also remove
+> shrink_shmem_memory since hibernate_preallocate_memory will have
+> reclaimed enough memory for the hibernation image.
 >
-> Nit: Shouldn't we be returning '-ENODEV' here for an unsupported device?
+> Signed-off-by: Matthew Leach <matthew.leach@collabora.com>
+> ---
+> Changes in v2:
+> - Removed shrink_shmem_memory.
+> - Fixed missing call to dpm_prepare in error path.
+> - Link to v1: https://lore.kernel.org/r/20260321-hibernation-fixes-v1-1-5=
+fe9637b6ff9@collabora.com
+> ---
+>  kernel/power/hibernate.c | 46 +++++++++---------------------------------=
+----
+>  1 file changed, 9 insertions(+), 37 deletions(-)
+>
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index af8d07bafe02..39b0a8ea4024 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -392,23 +392,6 @@ static int create_image(int platform_mode)
+>         return error;
+>  }
+>
+> -static void shrink_shmem_memory(void)
+> -{
+> -       struct sysinfo info;
+> -       unsigned long nr_shmem_pages, nr_freed_pages;
+> -
+> -       si_meminfo(&info);
+> -       nr_shmem_pages =3D info.sharedram; /* current page count used for=
+ shmem */
+> -       /*
+> -        * The intent is to reclaim all shmem pages. Though shrink_all_me=
+mory() can
+> -        * only reclaim about half of them, it's enough for creating the =
+hibernation
+> -        * image.
+> -        */
+> -       nr_freed_pages =3D shrink_all_memory(nr_shmem_pages);
+> -       pr_debug("requested to reclaim %lu shmem pages, actually freed %l=
+u pages\n",
+> -                       nr_shmem_pages, nr_freed_pages);
+> -}
+> -
+>  /**
+>   * hibernation_snapshot - Quiesce devices and create a hibernation image=
+.
+>   * @platform_mode: If set, use platform driver to prepare for the transi=
+tion.
+> @@ -425,14 +408,9 @@ int hibernation_snapshot(int platform_mode)
+>         if (error)
+>                 goto Close;
+>
+> -       /* Preallocate image memory before shutting down devices. */
+> -       error =3D hibernate_preallocate_memory();
+> -       if (error)
+> -               goto Close;
+> -
+>         error =3D freeze_kernel_threads();
+>         if (error)
+> -               goto Cleanup;
+> +               goto Close;
+>
+>         if (hibernation_test(TEST_FREEZER)) {
+>
+> @@ -441,23 +419,17 @@ int hibernation_snapshot(int platform_mode)
+>                  * successful freezer test.
+>                  */
+>                 freezer_test_done =3D true;
+> -               goto Thaw;
+> +               goto ThawKThreads;
 
-Hi Lee,
+Do not change the name of this label.
 
-Indeed, I've had a quick look and other drivers seem to return -ENODEV
-in similar situations. Shall I respin a new version with that change?
+>         }
+>
+>         error =3D dpm_prepare(PMSG_FREEZE);
+> -       if (error) {
+> -               dpm_complete(PMSG_RECOVER);
+> +       if (error)
+>                 goto Thaw;
 
-Thanks a lot,
-Alexey
+But add a new label called "Complete" for this jump.
+
+> -       }
+>
+> -       /*
+> -        * Device drivers may move lots of data to shmem in dpm_prepare()=
+. The shmem
+> -        * pages will use lots of system memory, causing hibernation imag=
+e creation
+> -        * fail due to insufficient free memory.
+> -        * This call is to force flush the shmem pages to swap disk and r=
+eclaim
+> -        * the system memory so that image creation can succeed.
+> -        */
+> -       shrink_shmem_memory();
+> +       /* Preallocate image memory before shutting down devices. */
+> +       error =3D hibernate_preallocate_memory();
+> +       if (error)
+> +               goto Thaw;
+>
+>         console_suspend_all();
+>         pm_restrict_gfp_mask();
+> @@ -493,9 +465,9 @@ int hibernation_snapshot(int platform_mode)
+>         return error;
+>
+>   Thaw:
+
+swsusp_free() needs to be called here AFAICS or you'll see memory
+allocation failures subsequently in some cases.
+
+> +       dpm_complete(PMSG_RECOVER);
+> + ThawKThreads:
+>         thaw_kernel_threads();
+> - Cleanup:
+> -       swsusp_free();
+>         goto Close;
+>  }
+>
+>
+> ---
