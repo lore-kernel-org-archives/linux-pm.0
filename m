@@ -1,109 +1,202 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 022753A7840;
-	Tue, 31 Mar 2026 12:31:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774960306; cv=none; b=MH0P1NkILRjokRl/Zmbk3UYJRkRE6NUmGQObu/UGT1Ml4v7RzViTvm6JvbdlD8UadJCB2Zx5VZ116eYvelKfkjsNc5Klg0XSc5s1sIECyQvvDkwPoA63pltbRNLIUf95Gu4nD3qfmTpbSggCEtirrWl6Zi+Lo+aJtUNtOqg7yN0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774960306; c=relaxed/simple;
-	bh=D5/3xk1fp4FeAb9Blzw/Ddwbf2aw5cJA1gRZc9Dui5o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KMPsGCwk3+SqqiyTuyj5gZBmnYM7o/IHuYIpbyQnHajCQjM0GCDD1JMNn+a6xvdvaeqlrU3VCsCxnZniUJbrx0n+8zRbsy3ygPv3QHWvZEI6UERUR9+hylUHrZA8/AZRFR0M4Y6ehzszVq8udSlRvXiciTXsuPzudgbrNLsY+RI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JeZmfUXJ; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B099273463
+	for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 12:37:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.48
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1774960672; cv=pass; b=muvzP4ucN2sSFxuLGN72dvGmttHEy8dZ14KjqZ6IAS3uIGNZSJ2XyhWjphOAp5nD3Lk+/RXqRsIlaI9BbmFEdTdQsYLELKg9dOMGthCjprG0Z1xRIJVWnRDsF8duwLE3CZXe4yHYo/7vyuGOKVFMdnNb5ssxB8dbS/eJYqovooU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1774960672; c=relaxed/simple;
+	bh=jPbNg7vnffslAngWLp1YXKpgROU2PnXJpaYVtorkLMk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FgWKa7oFf7c5bn+wNT4y2YWgNX+5RDU/PLQHjpB1um3COnLxhjMIloG1pVgu4Rt2KmYIrX6qQCsjEvgpiVj8inv8sw2WSPsSfIuXTHF1zZF3+lnEF0avYzKOVtW70UyIGbLR8QhvxxH4xx2gnjsLQf8PGIh+kbrjQmTucqLuFIQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net; spf=pass smtp.mailfrom=flipper.net; dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b=OHFU5U3j; arc=pass smtp.client-ip=209.85.218.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=flipper.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flipper.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JeZmfUXJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51F94C2BC9E;
-	Tue, 31 Mar 2026 12:31:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774960305;
-	bh=D5/3xk1fp4FeAb9Blzw/Ddwbf2aw5cJA1gRZc9Dui5o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JeZmfUXJlpPYISkPKqERcAolc05szSMZRt9nhT12TH9URKkMk+w2B+W7BZ17XItfk
-	 XcNLFtDwSyNrFBduWXcYJa5380Lf7XUX+midjgd+iyy57I57AcdLtABuxMX2KRc0bP
-	 H6d02jmzpTbhA3juTB2XvKiFeZApE487rQevjDHjhiTdcD828tkla1Nnc711b8+2pG
-	 XSdFSH/e+zhOwASztRQvEeZ8AhAMkJDE5qaVeYfHs6qlRlZmbGEpTJ+gUA6nu1DULH
-	 or0u9EGt0jrXbbr/KClkZG5ojZhOneIzPIuCNPv0y1Xr0WTA03PHlvHkZy2zZVh+dN
-	 OvaI8+vB3QwvA==
-Date: Tue, 31 Mar 2026 13:31:38 +0100
-From: Lee Jones <lee@kernel.org>
-To: amitsd@google.com
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Badhri Jagan Sridharan <badhri@google.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Mark Brown <broonie@kernel.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Subject: Re: [PATCH v9 3/6] mfd: max77759: add register bitmasks and modify
- irq configs for charger
-Message-ID: <20260331123138.GE3795166@google.com>
-References: <20260325-max77759-charger-v9-0-4486dd297adc@google.com>
- <20260325-max77759-charger-v9-3-4486dd297adc@google.com>
+	dkim=pass (2048-bit key) header.d=flipper.net header.i=@flipper.net header.b="OHFU5U3j"
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-b980b35534eso1032144066b.1
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 05:37:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774960668; cv=none;
+        d=google.com; s=arc-20240605;
+        b=TnjQFWGzaI06lJ2nAk5go7TuRTVbp3FL5hpInjTJP7JV+cK8SGv9YhTDqd5gNBPMzn
+         +uy9nArZ72RjG1M8gDlArRXzmXOQk8raHVOEPM5eJoreuEgTJS0G+O5GT3Z1ha4UuExl
+         VkCXK42yO2AD396XV6aLmDMMaq7KwlaMAtXkGPIioxbtgHd9cw2zrK72eRKAV+6OBE1G
+         QqPStiwflfcdOpZHN8dqmJ8E3bXlYAVfIODcNGPo9zZ2p+BzMYN4tTFuEGXmzgV1PfXF
+         7KUvMt+qvgYk0eTT+nbiEtbDUWIfcEFZZCBriw9TNwWqy1i4S96zfpxGNzSUlDPMIfOg
+         Tdjg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
+        fh=8gS4agLeOhGhRdgUGgYmZUvB8eBC8miWFYiMe5D1DZU=;
+        b=Xcox9N0gLb5eo6O56NaK9OLfBjaC3d5SonCpusXrNHztgNU56swe54JMkL38MfNG6z
+         Z9bL9rV+5+7rEKwtZq6YR5nYEQ0evubdpqdwyN4JBcSmSr3WLK+eo+kz/yg+2D6mr/5y
+         wVaz6Nt102/UuG9pwxvC0YH52boxgH8Mzu8FCN/Z/az+duN4ZVcMgj1ObWB3QOe/nyUl
+         oEHltRqAt7Oe4z6z1FGDGSpqgfj14qDenlUyTLHWadideh7hdeO7lw9T8SCd84QDpM/D
+         kQLMVWXfPgMs9tYDYCSxRJk1j+ksVB51tBb/9tFAHZD+78qYBVf5Nqr+G1ZVWAFJgfmx
+         CRCg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=flipper.net; s=google; t=1774960668; x=1775565468; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
+        b=OHFU5U3j66PbvMavlSF+a6mpP45beTwgYQnPzHAdFNx0leuJLj5waAEmp4l9tkgnrT
+         pNvR7PtQo85qheqJR39ZyW0Mups/YVBmIV2XTaoUazYWfzEeQHBYnaEMJGasa6b5fmNw
+         jfa75bC3De8hZ7wju11xbrgk3XyItkeJNvutjovRhS4GL8LjXYWQSTk9+HlhC1j/BWFW
+         12LsFxyxtdOQHd6kOVIfGvnXpYAFKn3e/5wOjuYCaBcKc1lm5ok8e5okhmlilT1iN0tu
+         IB3gIQ6KASqksjWF5seja8ZdiGGYmjYScSFudcWC/0Jgoak+g48Ve5iMAnRwRej9WvWo
+         uS5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774960668; x=1775565468;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=APk6GhrrYthp1r3qG0lb9C4gKQqFk3Q9Fs1Ji6JZing=;
+        b=XpzotYllblCXaf+Hj1UMjQuuV+XxuXsI6VNICNSxPqgqyW4P5cbtK4q0w2YpwzphVN
+         KXxpkv1G2dRa3h4QKPumCeyuB5/YlCPDvsZ99G6R/dhDLcghZftZLdgLc54DtSn4H682
+         YnLtirCa16IcCvrHaUaQFj+JKddv8R2lwHDDJ6vJUNVF0b4NqumwB24pdLscFoU/IW9I
+         Vf0hcCLoVuA1jEgQ7eRPculaNsEiiL1dSe8kUg5g5MRkm41dbchEuRMofCC3Z9gwLOX3
+         90FCxk9wbYE8fBOUsCyqIU7d1AndnTKD69clW6IFc2Nh0kHC1jdO4GT9S1XMn4+6+Xj4
+         RFyA==
+X-Forwarded-Encrypted: i=1; AJvYcCVMG92nY/lBlzxZMrwBKgWpTo1avMNYtHtjQGLp3/u7lWW/1Aym6pCaLxlu/zG9bzQDoKsei73BAw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy0jkkaL04STXZlX3/9oTwTauSbEv959zW0X3jR0ECGNQ+WdLjc
+	SMvq4B6sXlAf0XI25/4QlCoY/i1clHikbTCqqBD2l/KycaAmKEeoDNHzPpapeOBuS8vFNlntlXs
+	j+ysNTNZ6Pkg6MoVZEQsrwVp6aX1wg/H4dhsbZ64RGg==
+X-Gm-Gg: ATEYQzxwN1gSwhIxSbtOy0r4+Q9ZuXlEVsGKReAV0H26Bzhll61baP6HybDNVRjBJqO
+	bQmzygSnROnk/WiO8rlJ0Nxd62A1C5JXCLQs3QGSHBV2Tzq4fqqSCjimvWFLf21Ncd354bF2Tct
+	TDehZIgUQHvW8FVuOqGlPvH+5ijRjKeduA+htPkK4iQund8RZjkcQUSj5MVS/wKm4JyFyaTQtsK
+	hP27XP7Mab76+2bh6hqdMRT5Q2+cPdwE0jBiYPdOMFxQaymd8/FUq4YuGF/rnP7zWaMRaSa/bDS
+	Laqk6HE=
+X-Received: by 2002:a17:907:7245:b0:b90:4838:46ff with SMTP id
+ a640c23a62f3a-b9be855a7cfmr188103066b.21.1774960668061; Tue, 31 Mar 2026
+ 05:37:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260325-max77759-charger-v9-3-4486dd297adc@google.com>
+References: <20260324-bq25792-v5-0-0a2eb58cf11d@flipper.net>
+ <20260324-bq25792-v5-9-0a2eb58cf11d@flipper.net> <20260331102710.GB3795166@google.com>
+In-Reply-To: <20260331102710.GB3795166@google.com>
+From: Alexey Charkov <alchark@flipper.net>
+Date: Tue, 31 Mar 2026 16:37:38 +0400
+X-Gm-Features: AQROBzBsOkDwD-_sfwvUc3QMEB-ceAPpDa8MP94cdzSz0KL5-FxEUULnB7SLa5s
+Message-ID: <CAKTNdwE4omfEkd6FNdj=hZUY2ZwLprXzUu1L4juFhWCxbWEjpQ@mail.gmail.com>
+Subject: Re: [PATCH v5 09/11] mfd: bq257xx: Add BQ25792 support
+To: Lee Jones <lee@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 25 Mar 2026, Amit Sunil Dhamne via B4 Relay wrote:
+On Tue, Mar 31, 2026 at 2:27=E2=80=AFPM Lee Jones <lee@kernel.org> wrote:
+>
+> On Tue, 24 Mar 2026, Alexey Charkov wrote:
+>
+> > Add register definitions and a new 'type' enum to be passed via MFD
+> > private data to support the BQ25792, which is a newer variant of the
+> > BQ257xx family.
+> >
+> > BQ25792 shares similar logic of operation with the already supported
+> > BQ25703A but has a completely different register map and different
+> > electrical constraints.
+> >
+> > Tested-by: Chris Morgan <macromorgan@hotmail.com>
+> > Signed-off-by: Alexey Charkov <alchark@flipper.net>
+> > ---
+> >  drivers/mfd/bq257xx.c       |  54 +++++-
+> >  include/linux/mfd/bq257xx.h | 412 ++++++++++++++++++++++++++++++++++++=
+++++++++
+> >  2 files changed, 463 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/mfd/bq257xx.c b/drivers/mfd/bq257xx.c
+> > index e9d49dac0a16..31654925afa5 100644
+> > --- a/drivers/mfd/bq257xx.c
+> > +++ b/drivers/mfd/bq257xx.c
+> > @@ -39,6 +39,39 @@ static const struct regmap_config bq25703_regmap_con=
+fig =3D {
+> >       .val_format_endian =3D REGMAP_ENDIAN_LITTLE,
+> >  };
+> >
+> > +static const struct regmap_range bq25792_writeable_reg_ranges[] =3D {
+> > +     regmap_reg_range(BQ25792_REG00_MIN_SYS_VOLTAGE,
+> > +                      BQ25792_REG18_NTC_CONTROL_1),
+> > +     regmap_reg_range(BQ25792_REG28_CHARGER_MASK_0,
+> > +                      BQ25792_REG30_ADC_FUNCTION_DISABLE_1),
+> > +};
+> > +
+> > +static const struct regmap_access_table bq25792_writeable_regs =3D {
+> > +     .yes_ranges =3D bq25792_writeable_reg_ranges,
+> > +     .n_yes_ranges =3D ARRAY_SIZE(bq25792_writeable_reg_ranges),
+> > +};
+> > +
+> > +static const struct regmap_range bq25792_volatile_reg_ranges[] =3D {
+> > +     regmap_reg_range(BQ25792_REG19_ICO_CURRENT_LIMIT,
+> > +                      BQ25792_REG27_FAULT_FLAG_1),
+> > +     regmap_reg_range(BQ25792_REG31_IBUS_ADC,
+> > +                      BQ25792_REG47_DPDM_DRIVER),
+> > +};
+> > +
+> > +static const struct regmap_access_table bq25792_volatile_regs =3D {
+> > +     .yes_ranges =3D bq25792_volatile_reg_ranges,
+> > +     .n_yes_ranges =3D ARRAY_SIZE(bq25792_volatile_reg_ranges),
+> > +};
+> > +
+> > +static const struct regmap_config bq25792_regmap_config =3D {
+> > +     .reg_bits =3D 8,
+> > +     .val_bits =3D 8,
+> > +     .max_register =3D BQ25792_REG48_PART_INFORMATION,
+> > +     .cache_type =3D REGCACHE_MAPLE,
+> > +     .wr_table =3D &bq25792_writeable_regs,
+> > +     .volatile_table =3D &bq25792_volatile_regs,
+> > +};
+> > +
+> >  static const struct mfd_cell cells[] =3D {
+> >       MFD_CELL_NAME("bq257xx-regulator"),
+> >       MFD_CELL_NAME("bq257xx-charger"),
+> > @@ -46,6 +79,7 @@ static const struct mfd_cell cells[] =3D {
+> >
+> >  static int bq257xx_probe(struct i2c_client *client)
+> >  {
+> > +     const struct regmap_config *rcfg;
+> >       struct bq257xx_device *ddata;
+> >       int ret;
+> >
+> > @@ -53,9 +87,21 @@ static int bq257xx_probe(struct i2c_client *client)
+> >       if (!ddata)
+> >               return -ENOMEM;
+> >
+> > +     ddata->type =3D (uintptr_t)i2c_get_match_data(client);
+> >       ddata->client =3D client;
+> >
+> > -     ddata->regmap =3D devm_regmap_init_i2c(client, &bq25703_regmap_co=
+nfig);
+> > +     switch (ddata->type) {
+> > +     case BQ25703A:
+> > +             rcfg =3D &bq25703_regmap_config;
+> > +             break;
+> > +     case BQ25792:
+> > +             rcfg =3D &bq25792_regmap_config;
+> > +             break;
+> > +     default:
+> > +             return dev_err_probe(&client->dev, -EINVAL, "Unsupported =
+device type\n");
+>
+> Nit: Shouldn't we be returning '-ENODEV' here for an unsupported device?
 
-> From: Amit Sunil Dhamne <amitsd@google.com>
-> 
-> Add register bitmasks for charger function.
-> In addition split the charger IRQs further such that each bit represents
-> an IRQ downstream of charger regmap irq chip. In addition populate the
-> ack_base to offload irq ack to the regmap irq chip framework.
-> 
-> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
-> Reviewed-by: André Draszik <andre.draszik@linaro.org>
-> ---
->  drivers/mfd/max77759.c       |  95 ++++++++++++++++++++++---
->  include/linux/mfd/max77759.h | 166 +++++++++++++++++++++++++++++++++++--------
->  2 files changed, 222 insertions(+), 39 deletions(-)
-> 
+Hi Lee,
 
-[...]
+Indeed, I've had a quick look and other drivers seem to return -ENODEV
+in similar situations. Shall I respin a new version with that change?
 
-> +/*
-> + * enum max77759_chgr_chgin_dtls_status - Charger Input Status
-> + * @MAX77759_CHGR_CHGIN_DTLS_VBUS_UNDERVOLTAGE:
-> + *     Charger input voltage (Vchgin) < Under Voltage Threshold (Vuvlo)
-> + * @MAX77759_CHGR_CHGIN_DTLS_VBUS_MARGINAL_VOLTAGE: Vchgin > Vuvlo and
-> + *     Vchgin < (Battery Voltage (Vbatt) + system voltage (Vsys))
-> + * @MAX77759_CHGR_CHGIN_DTLS_VBUS_OVERVOLTAGE:
-> + *     Vchgin > Over Voltage threshold (Vovlo)
-> + * @MAX77759_CHGR_CHGIN_DTLS_VBUS_VALID:
-> + *     Vchgin > Vuvlo, Vchgin < Vovlo and Vchgin > (Vsys + Vbatt)
-> + */
-
-This comment is masquerading as a kernel-doc header, but isn't actually
-kernel-doc.  Either change the formatting or adapt the formatting to use
-/** and use W=1 to check it.
-
-> +enum max77759_chgr_chgin_dtls_status {
-> +	MAX77759_CHGR_CHGIN_DTLS_VBUS_UNDERVOLTAGE,
-> +	MAX77759_CHGR_CHGIN_DTLS_VBUS_MARGINAL_VOLTAGE,
-> +	MAX77759_CHGR_CHGIN_DTLS_VBUS_OVERVOLTAGE,
-> +	MAX77759_CHGR_CHGIN_DTLS_VBUS_VALID,
-> +};
-
--- 
-Lee Jones [李琼斯]
+Thanks a lot,
+Alexey
