@@ -1,78 +1,62 @@
-Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 150853A16BE;
-	Tue, 31 Mar 2026 07:21:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.225
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D79383BFE26;
+	Tue, 31 Mar 2026 07:22:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774941693; cv=none; b=LAoS8OIuv2tkjXDw9Hn2bar/g9iyFq4f8NWUxEs64b+OJ3lZ63DOTDepdr/uULHmg4NaXTEd/86Q+sNE8MaqGk819en/f/KmQsHMDE4UIG1XIr7fs6WO2RBoH64u8PhwfqHTnrKsfgdo0ruWMSaC+oPk55neMcUIohdEzpPooSI=
+	t=1774941736; cv=none; b=pPfn2YOlUIUJrtV1DtM3v6oPUXfCfi+1SVAzs01njSd1aNtEialzGKsSi2ZPghxrQlK90hxzjZpP8W3DJUGFTEGP1YzJtLkoBWidiIF1WdmHT0dLGmxM8XvDMrQ/RR1ZJMhERGZVsh4lYwQUMFZzym49pf4HaMfpE/WgRZFBvzU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774941693; c=relaxed/simple;
-	bh=dvqTyph6b8G+W8CHdo5hfmvbmwhG8H2t8g/2wLtI5M4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=f1mLS4JwPxM2m8DPc0vdLHfQ+MCbdKf8HM3B5iOgWwBfvjk0ir/tIyhgaN6PE7wc1oYOT5RDkNjgkGpr3djVv/AtKsmj7JCqrrDPYOzkxhEvQXZlJo7XxkUeQC4Su34Tj3CWQ7P+dqvqPgPkXRAdNJEA7cF2h4yL7Lo9/8PcEeg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.225
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4flKBy0QcXz1K9W2;
-	Tue, 31 Mar 2026 15:15:22 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id E59DF402AB;
-	Tue, 31 Mar 2026 15:21:28 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 31 Mar
- 2026 15:21:28 +0800
-Message-ID: <9f58b042-d420-4e9b-a26b-b95bc6e11fac@hisilicon.com>
-Date: Tue, 31 Mar 2026 15:21:27 +0800
+	s=arc-20240116; t=1774941736; c=relaxed/simple;
+	bh=cAhfPY2nlrEvbPh4MsPAlD8tOnaKqYTDsn/2Pmn3kAA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rY8deu6yHQf8SRli+EuL9LSZZjtkTBNnJXKZ7gXYP4LDSctjG96r7nc13acmy6H9trVMUTCkTP3hbUn8wDsVOHQWk2mVFy9JbWm/T15OUf0hSi+f2WmOsuc/EB/hsZYz42fA4n4N7McbIJiojGEqOuD4hmRPBTeiuPvSQCCOhlo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ml9Kx8Ff; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ml9Kx8Ff"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6F43C19423;
+	Tue, 31 Mar 2026 07:22:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774941736;
+	bh=cAhfPY2nlrEvbPh4MsPAlD8tOnaKqYTDsn/2Pmn3kAA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ml9Kx8FfN1P7y9DKSLbTjPNUdC92APM15X5WMz1zjiaCDxeK10k+DSBoZequrmuxG
+	 f2iYYM0UYsxnpEl5vjRL9nl9hkaePvauuRz4Hgcw49ZL8Btnt5LPVJhptCXq2atX/5
+	 /xXdJ9mtVy+FO+6pRAfisFfp+Fxx2dTEIJUKaZADCyhU96oY9V/Nd+Nwoy3GnVIMP3
+	 edDfr2FlXQM/gEBvzjLaWtw3/QLr85BvkhIfko0hvqxjEXYgjRQcDLIgMyINt/k196
+	 WRLRZjZGV60A/5gaFwU6aS6ALFyzx/fpopdlRy1XF5kBaMJkRFduiPx70+ksNcWXVF
+	 d6MYgj80iSItA==
+Date: Tue, 31 Mar 2026 09:22:13 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Khushal Chitturi <khushalchitturi@gmail.com>
+Cc: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, ulli.kroll@googlemail.com, linusw@kernel.org, 
+	daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, m-chawdhry@ti.com, 
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] dt-bindings: power: reset:
+ cortina,gemini-power-controller: convert to DT schema
+Message-ID: <20260331-acoustic-rousing-lyrebird-ab3cfd@quoll>
+References: <20260330110135.10316-1-khushalchitturi@gmail.com>
+ <20260330110135.10316-2-khushalchitturi@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 4/4] PM / devfreq: Optimize error return value of
- governor_show()
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
- <20260319091719.1007244-1-tianyaxiong@kylinos.cn>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <20260319091719.1007244-1-tianyaxiong@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260330110135.10316-2-khushalchitturi@gmail.com>
 
+On Mon, Mar 30, 2026 at 04:31:34PM +0530, Khushal Chitturi wrote:
+> Convert the Cortina Systems Gemini Poweroff Controller bindings to
+> DT schema.
+> 
+> Signed-off-by: Khushal Chitturi <khushalchitturi@gmail.com>
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-On 3/19/2026 5:17 PM, Yaxiong Tian wrote:
-> When df->governor is NULL, governor_show() returns -EINVAL, which
-> confuses users.
-> 
-> To fix this issue, return -ENOENT to indicate that no governor is
-> currently set for the device.
-> 
-> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
-> ---
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 4a312f3c2421..7cc60711fafd 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -1412,7 +1412,7 @@ static ssize_t governor_show(struct device *dev,
->  	struct devfreq *df = to_devfreq(dev);
->  
->  	if (!df->governor)
-> -		return -EINVAL;
-> +		return -ENOENT;
-What about -ENODEV?
->  
->  	return sprintf(buf, "%s\n", df->governor->name);
->  }
+Best regards,
+Krzysztof
+
