@@ -1,31 +1,33 @@
-Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C62043DEACB;
-	Tue, 31 Mar 2026 09:28:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A5EA03ED5DE;
+	Tue, 31 Mar 2026 09:28:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774949289; cv=none; b=U1tLhfzRh4iKAvwGHMykGlqXdkkqTiHzY2xGbxpmN/G7adQJQeM+N+DDmiHMPuj47X+xrxl05tuLdt9UPL6+0T0xCkSQgLeF5vdwtqh4oPimDgjFGtEG6Z+ivB0wG1g6PfmotkRht0lD9zfLA4MJo0laYt56sXUSQ4rmJSER1D0=
+	t=1774949294; cv=none; b=L8k7+WPeygKZyXAc+rR2+dTejw5faB5B/LkhsieLfA26+EjAkN9Icjdh1mbEwxjqiFQ0v7JyIF4VE3EQF1+KHJdZFmFT/pUf2nf0O5BuidwHHhrXdP9xe0uaPqXSf1vdBOf/0OwdNM3hBd9ZFCCxwqGdI02JAORdmR+iDPsKH8A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774949289; c=relaxed/simple;
-	bh=3zFY743DQL4koFq8Ao+iMe4QYI2O0shF3C7PAuqcudc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=J6f22jzCHGznzqm8zSLn4gKR8R51z12ofA9cgl7eDww9znSgqP/oHT1pSNAyxrYy0ARWHZJYWzjE6+BZeckWPhM+cp+zXiCmSYcolASHUsq1tI3jxOOREA08eFnRKZeeFHYpWAZY9Rri5+wblUUxEIovLv/dsZQlUMiJ1UTLpW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.226
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.200])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4flN0v290GzKmBG;
-	Tue, 31 Mar 2026 17:21:51 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 57BBF4055B;
-	Tue, 31 Mar 2026 17:28:02 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 31 Mar
- 2026 17:28:01 +0800
-Message-ID: <a5bbaefd-dd61-4eac-bc14-0655b6d98f04@hisilicon.com>
-Date: Tue, 31 Mar 2026 17:28:00 +0800
+	s=arc-20240116; t=1774949294; c=relaxed/simple;
+	bh=zN8QNV8pP0y9QlTzvYjQC4x7mBUek3E6/zcKwqVIUYk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=tZ6rFML4Ih+g2NyhpfKRGiA15Es7TQPgF2GGMaLbcah7T+NpPAUHlwricEkyiRxznVPcBI8FCljfxFjgIfgRLnADQNaqMkQT0hjA3LFzTcQgi/FLrtLBH6izMEAIRY9rzuPThlo9XzDSzyFdSQWFEFI1Wvw3DOZwk326b/hwoO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=gVxBpbb/; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="gVxBpbb/"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 900B5288E;
+	Tue, 31 Mar 2026 02:28:03 -0700 (PDT)
+Received: from [10.57.17.68] (unknown [10.57.17.68])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6CC683F641;
+	Tue, 31 Mar 2026 02:28:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774949289; bh=zN8QNV8pP0y9QlTzvYjQC4x7mBUek3E6/zcKwqVIUYk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gVxBpbb/207a5HHnn2mbrwa+5HcEeKbQQQXjsVrXClKAOPliPqBh1B0HeYvFPaZMa
+	 UspjZZOcfI01BWoD4VljWBmrUmfaajkbn5TAguawtqnE3a6NekDN9+n95R28fP/85P
+	 1nuRzdK+LznzbsfUSLLGOCcbXTnbi+Ws23G2IXuk=
+Message-ID: <6dc1841b-f944-44d8-9a65-75d8f66b5d2a@arm.com>
+Date: Tue, 31 Mar 2026 10:28:27 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,153 +35,194 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 1/4] PM / devfreq: Fix possible null pointer issue
- in devfreq_add_governor()
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
- <20260319091653.1005878-1-tianyaxiong@kylinos.cn>
- <f167d24d-73f9-4463-889e-89fb9f1e4a1a@hisilicon.com>
- <aa7ee42d-0685-4a70-a084-bf0bdfa82e4a@kylinos.cn>
- <a7c1c3ce-7938-4dcf-83be-32cf4aceb965@hisilicon.com>
- <d5853c28-fd17-439b-b4c2-c3ae949f7636@kylinos.cn>
+Subject: Re: [PATCH v2] thermal: core: Address thermal zone removal races with
+ resume
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Mauricio Faria de Oliveira <mfo@igalia.com>,
+ LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+References: <6267615.lOV4Wx5bFT@rafael.j.wysocki>
+ <5321acf9-0de4-4b8a-811d-e1d71b152887@arm.com>
+ <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
 Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <d5853c28-fd17-439b-b4c2-c3ae949f7636@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
- kwepemf200017.china.huawei.com (7.202.181.10)
 
 
 
-On 3/31/2026 5:17 PM, Yaxiong Tian wrote:
-> 
-> 在 2026/3/31 16:49, Jie Zhan 写道:
+On 3/30/26 12:41, Rafael J. Wysocki wrote:
+> On Mon, Mar 30, 2026 at 11:14 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
 >>
->> On 3/31/2026 3:49 PM, Yaxiong Tian wrote:
->>> 在 2026/3/31 15:04, Jie Zhan 写道:
->>>> On 3/19/2026 5:16 PM, Yaxiong Tian wrote:
->>>>> When a user removes a governor using devfreq_remove_governor(), if
->>>>> the current device is using this governor, devfreq->governor will
->>>>> be set to NULL. When the user registers any governor
->>>>> using devfreq_add_governor(), since devfreq->governor is NULL, a
->>>>> null pointer error occurs in strncmp().
->>>>>
->>>>> For example: A user loads the userspace gov through a module, then
->>>>> a device selects userspace. When unloading the userspace module and
->>>>> then loading it again, the null pointer error occurs:
->>>>>
->>>>> Unable to handle kernel NULL pointer dereference at virtual address
->>>>> 0000000000000010
->>>>> Mem abort info:
->>>>> ESR = 0x0000000096000004
->>>>> EC = 0x25: DABT (current EL), IL = 32 bits
->>>>> *******************skip *********************
->>>>> Call trace:
->>>>> __pi_strncmp+0x20/0x1b8
->>>>> devfreq_userspace_init+0x1c/0xff8 [governor_userspace]
->>>>> do_one_initcall+0x4c/0x278
->>>>> do_init_module+0x5c/0x218
->>>>> load_module+0x1f1c/0x1fc8
->>>>> init_module_from_file+0x8c/0xd0
->>>>> __arm64_sys_finit_module+0x220/0x3d8
->>>>> invoke_syscall+0x48/0x110
->>>>> el0_svc_common.constprop.0+0xbc/0xe8
->>>>> do_el0_svc+0x20/0x30
->>>>> el0_svc+0x24/0xb8
->>>>> el0t_64_sync_handler+0xb8/0xc0
->>>>> el0t_64_sync+0x14c/0x150
->>>>>
->>>>> To fix this issue, modify the relevant logic in devfreq_add_governor():
->>>>> Only check whether the new governor matches the existing one when
->>>>> devfreq->governor exists. When devfreq->governor is NULL, directly
->>>>> select the new governor and perform the DEVFREQ_GOV_START operation.
->>>>>
->>>>> Fixes: 1b5c1be2c88e ("PM / devfreq: map devfreq drivers to governor using name")
->>>>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
->>>>> ---
->>>>>    drivers/devfreq/devfreq.c | 24 +++++++++++-------------
->>>>>    1 file changed, 11 insertions(+), 13 deletions(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>> index 54f0b18536db..63ce6e25abe2 100644
->>>>> --- a/drivers/devfreq/devfreq.c
->>>>> +++ b/drivers/devfreq/devfreq.c
->>>>> @@ -1288,23 +1288,21 @@ int devfreq_add_governor(struct devfreq_governor *governor)
->>>>>            int ret = 0;
->>>>>            struct device *dev = devfreq->dev.parent;
->>>>>    -        if (!strncmp(devfreq->governor->name, governor->name,
->>>>> +        if (devfreq->governor && !strncmp(devfreq->governor->name, governor->name,
->>>>>                     DEVFREQ_NAME_LEN)) {
->>>> Probaly do:
->>>> if (!devfreq->governor)
->>>>      continue;
->>>> so as to keep the line short and the "else if (!devfreq->governor) {" below
->>>> can be removed.
->>> If that's the case, a dev without a governor would not be able to add a new governor.
->> It's not about adding.
 >>
->> The whole point here (the block inside list_for_each_entry()) is a very
->> rare safe check that you're adding a governor of the same name of a
->> governor used by an existing devfreq device.  If so, stop the old one and
->> start the new one.
 >>
->> Therefore, it doesn't have to start/restart it if devfreq->governor is
->> NULL.
-> In the current patch, it directly start when devfreq->governor is NULL, and only follows the same-name logic you mentioned when it is non-NULL.
-> 
-> There isn't the issue you mentioned.
-> 
-Ok, so create_sysfs_files() is skipped...
-For example, setting 'userspace' as the governor won't create its belonging
-files.
-
-I'd recommend sticking with the existing logic here and avoid adding a new
-block."
-
->>>> and also:
->>>> if (!strncmp(devfreq->governor->name, governor->name,
->>>>      DEVFREQ_NAME_LEN))
->>>>      continue;
->>>> so we don't have to indent that much.
->>> Currently, governor->name can be set arbitrarily, so duplicate names are possible.
+>> On 3/27/26 09:49, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>>
->>> But they could still be two different governors. Leaving it unchanged seems fine to me.
+>>> Since thermal_zone_pm_complete() and thermal_zone_device_resume()
+>>> re-initialize the poll_queue delayed work for the given thermal zone,
+>>> the cancel_delayed_work_sync() in thermal_zone_device_unregister()
+>>> may miss some already running work items and the thermal zone may
+>>> be freed prematurely [1].
 >>>
->> Sorry, my mistake!
+>>> There are two failing scenarios that both start with
+>>> running thermal_pm_notify_complete() right before invoking
+>>> thermal_zone_device_unregister() for one of the thermal zones.
+>>>
+>>> In the first scenario, there is a work item already running for
+>>> the given thermal zone when thermal_pm_notify_complete() calls
+>>> thermal_zone_pm_complete() for that thermal zone and it continues to
+>>> run when thermal_zone_device_unregister() starts.  Since the poll_queue
+>>> delayed work has been re-initialized by thermal_pm_notify_complete(), the
+>>> running work item will be missed by the cancel_delayed_work_sync() in
+>>> thermal_zone_device_unregister() and if it continues to run past the
+>>> freeing of the thermal zone object, a use-after-free will occur.
+>>>
+>>> In the second scenario, thermal_zone_device_resume() queued up by
+>>> thermal_pm_notify_complete() runs right after the thermal_zone_exit()
+>>> called by thermal_zone_device_unregister() has returned.  The poll_queue
+>>> delayed work is re-initialized by it before cancel_delayed_work_sync() is
+>>> called by thermal_zone_device_unregister(), so it may continue to run
+>>> after the freeing of the thermal zone object, which also leads to a
+>>> use-after-free.
+>>>
+>>> Address the first failing scenario by ensuring that no thermal work
+>>> items will be running when thermal_pm_notify_complete() is called.
+>>> For this purpose, first move the cancel_delayed_work() call from
+>>> thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
+>>> new work from entering the workqueue going forward.  Next, switch
+>>> over to using a dedicated workqueue for thermal events and update
+>>> the code in thermal_pm_notify() to flush that workqueue after
+>>> thermal_pm_notify_prepare() has returned which will take care of
+>>> all leftover thermal work already on the workqueue (that leftover
+>>> work would do nothing useful anyway because all of the thermal zones
+>>> have been flagged as suspended).
+>>>
+>>> The second failing scenario is addressed by adding a tz->state check
+>>> to thermal_zone_device_resume() to prevent it from re-initializing
+>>> the poll_queue delayed work if the thermal zone is going away.
+>>>
+>>> Note that the above changes will also facilitate relocating the suspend
+>>> and resume of thermal zones closer to the suspend and resume of devices,
+>>> respectively.
+>>>
+>>> Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronously")
+>>> Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
+>>> Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>
+>>> v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocation
+>>>      fails (Sashiko)
+>>>
+>>> Lukasz, Daniel, I'm quite confident about this patch, but I would appreciate
+>>> your feedback.
 >>
->> I mean:
->> if (strncmp(devfreq->governor->name, governor->name,
->>     DEVFREQ_NAME_LEN))
->>     continue;
+>> My apologies for delay...
 >>
->>>>>                /* The following should never occur */
->>>>> -            if (devfreq->governor) {
->>>>> +            dev_warn(dev,
->>>>> +                 "%s: Governor %s already present\n",
->>>>> +                 __func__, devfreq->governor->name);
->>>>> +            ret = devfreq->governor->event_handler(devfreq,
->>>>> +                        DEVFREQ_GOV_STOP, NULL);
->>>>> +            if (ret) {
->>>>>                    dev_warn(dev,
->>>>> -                     "%s: Governor %s already present\n",
->>>>> -                     __func__, devfreq->governor->name);
->>>>> -                ret = devfreq->governor->event_handler(devfreq,
->>>>> -                            DEVFREQ_GOV_STOP, NULL);
->>>>> -                if (ret) {
->>>>> -                    dev_warn(dev,
->>>>> -                         "%s: Governor %s stop = %d\n",
->>>>> -                         __func__,
->>>>> -                         devfreq->governor->name, ret);
->>>>> -                }
->>>>> -                /* Fall through */
->>>>> +                     "%s: Governor %s stop = %d\n",
->>>>> +                     __func__,
->>>>> +                     devfreq->governor->name, ret);
->>>>>                }
->>>>> +        } else if (!devfreq->governor) {
->>>>>                devfreq->governor = governor;
->>>>>                ret = devfreq->governor->event_handler(devfreq,
->>>>>                            DEVFREQ_GOV_START, NULL);
+>>>
+>>> ---
+>>>    drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
+>>>    1 file changed, 26 insertions(+), 5 deletions(-)
+>>>
+>>> --- a/drivers/thermal/thermal_core.c
+>>> +++ b/drivers/thermal/thermal_core.c
+>>> @@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
+>>>
+>>>    static bool thermal_pm_suspended;
+>>>
+>>> +static struct workqueue_struct *thermal_wq __ro_after_init;
+>>> +
+>>>    /*
+>>>     * Governor section: set of functions to handle thermal governors
+>>>     *
+>>> @@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
+>>>        if (delay > HZ)
+>>>                delay = round_jiffies_relative(delay);
+>>>
+>>> -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, delay);
+>>> +     mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
+>>>    }
+>>>
+>>>    static void thermal_zone_recheck(struct thermal_zone_device *tz, int error)
+>>> @@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
+>>>
+>>>        guard(thermal_zone)(tz);
+>>>
+>>> +     /* If the thermal zone is going away, there's nothing to do. */
+>>> +     if (tz->state & TZ_STATE_FLAG_EXIT)
+>>> +             return;
+>>> +
+>>>        tz->state &= ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING);
+>>>
+>>>        thermal_debug_tz_resume(tz);
+>>> @@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
+>>>        }
+>>>
+>>>        tz->state |= TZ_STATE_FLAG_SUSPENDED;
+>>> +
+>>> +     /* Prevent new work from getting to the workqueue subsequently. */
+>>> +     cancel_delayed_work(&tz->poll_queue);
+>>>    }
+>>>
+>>>    static void thermal_pm_notify_prepare(void)
+>>> @@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
+>>>    {
+>>>        guard(thermal_zone)(tz);
+>>>
+>>> -     cancel_delayed_work(&tz->poll_queue);
+>>> -
+>>>        reinit_completion(&tz->resume);
+>>>        tz->state |= TZ_STATE_FLAG_RESUMING;
+>>>
+>>> @@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
+>>>         */
+>>>        INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
+>>>        /* Queue up the work without a delay. */
+>>> -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
+>>> +     mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
+>>>    }
+>>>
+>>>    static void thermal_pm_notify_complete(void)
+>>> @@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
+>>>        case PM_RESTORE_PREPARE:
+>>>        case PM_SUSPEND_PREPARE:
+>>>                thermal_pm_notify_prepare();
+>>> +             /*
+>>> +              * Allow any leftover thermal work items already on the
+>>> +              * worqueue to complete so they don't get in the way later.
+>>> +              */
+>>> +             flush_workqueue(thermal_wq);
+>>>                break;
+>>>        case PM_POST_HIBERNATION:
+>>>        case PM_POST_RESTORE:
+>>> @@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
+>>>        if (result)
+>>>                goto error;
+>>>
+>>> +     thermal_wq = alloc_workqueue("thermal_events",
+>>> +                                   WQ_FREEZABLE | WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
+>>
+>>
+>> Why we need those workqueue instances per-cpu?
+> 
+> That's to limit the changes in this fix to what's needed to address
+> the problem at hand.
+> 
+> The previously used workqueue was also per-CPU and freezable.
+> 
+>> It isn't a concurrent work, only one CPU can manage the cpufreq domain.
+>>
+>> I would drop that flag and allow to have single instance and migrate
+>> between cpus (to not wake up the one which queued the work).
+> 
+> I have a separate patch for that on top of this one, will post it later.
+> 
+> Let's avoid mixing fixes with changes that aren't directly related to them.
+
+Thanks Rafael for clarification. With that in mind feel free to
+add:
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+
