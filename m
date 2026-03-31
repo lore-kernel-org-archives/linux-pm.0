@@ -1,33 +1,40 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id A5EA03ED5DE;
-	Tue, 31 Mar 2026 09:28:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BACDE3ED5CD;
+	Tue, 31 Mar 2026 09:30:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774949294; cv=none; b=L8k7+WPeygKZyXAc+rR2+dTejw5faB5B/LkhsieLfA26+EjAkN9Icjdh1mbEwxjqiFQ0v7JyIF4VE3EQF1+KHJdZFmFT/pUf2nf0O5BuidwHHhrXdP9xe0uaPqXSf1vdBOf/0OwdNM3hBd9ZFCCxwqGdI02JAORdmR+iDPsKH8A=
+	t=1774949432; cv=none; b=W2Dxxk1X44ritZlFxSMlkrjzusD71IYSDah/ZWvbQ9J340z19pDEmzqZyipn89z1w57o5f40t+8fbdlT7PHl9Y6rcYbn7bKQyZ7OwhOJTw157zq3TyCJw9lg6cq/yqizRpXZNxsIN5JNIPfmaynmV2xfSqkNpH1tleKo9pcA18c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774949294; c=relaxed/simple;
-	bh=zN8QNV8pP0y9QlTzvYjQC4x7mBUek3E6/zcKwqVIUYk=;
+	s=arc-20240116; t=1774949432; c=relaxed/simple;
+	bh=tCcFV7UsIazPIkAWJ8jZF1p/YDnHm2sj+kpw//p9y24=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=tZ6rFML4Ih+g2NyhpfKRGiA15Es7TQPgF2GGMaLbcah7T+NpPAUHlwricEkyiRxznVPcBI8FCljfxFjgIfgRLnADQNaqMkQT0hjA3LFzTcQgi/FLrtLBH6izMEAIRY9rzuPThlo9XzDSzyFdSQWFEFI1Wvw3DOZwk326b/hwoO4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=gVxBpbb/; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="gVxBpbb/"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 900B5288E;
-	Tue, 31 Mar 2026 02:28:03 -0700 (PDT)
-Received: from [10.57.17.68] (unknown [10.57.17.68])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6CC683F641;
-	Tue, 31 Mar 2026 02:28:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1774949289; bh=zN8QNV8pP0y9QlTzvYjQC4x7mBUek3E6/zcKwqVIUYk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=gVxBpbb/207a5HHnn2mbrwa+5HcEeKbQQQXjsVrXClKAOPliPqBh1B0HeYvFPaZMa
-	 UspjZZOcfI01BWoD4VljWBmrUmfaajkbn5TAguawtqnE3a6NekDN9+n95R28fP/85P
-	 1nuRzdK+LznzbsfUSLLGOCcbXTnbi+Ws23G2IXuk=
-Message-ID: <6dc1841b-f944-44d8-9a65-75d8f66b5d2a@arm.com>
-Date: Tue, 31 Mar 2026 10:28:27 +0100
+	 In-Reply-To:Content-Type; b=HZ3hXdOccRZb9N1DZpM6dWEKK1yUM2jFD9llTnSN9lqgVjdxf+85p1ewJtRPjzROhUWdTJXyotBY/yIY2J1F7m7XGtZ2rhS5zGxRYQ3GA83gwZc/TSmtV11ADuUCpdYrT4Sd5e2Gl9u4J/vjg6qi3bJmbUuUN2YvdKZA09Y8lHw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 3c9b23382ce411f1aa26b74ffac11d73-20260331
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:aa0705ed-e1ec-47b1-8b50-6d5102834049,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:e9a3049094644b7571781103b23568e0,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|898,TC:nil,Content:0|15|
+	52,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0
+	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 3c9b23382ce411f1aa26b74ffac11d73-20260331
+X-User: tianyaxiong@kylinos.cn
+Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <tianyaxiong@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
+	with ESMTP id 1873808177; Tue, 31 Mar 2026 17:30:20 +0800
+Message-ID: <f954648e-33d0-4b07-977d-96af182fc2ef@kylinos.cn>
+Date: Tue, 31 Mar 2026 17:30:18 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,194 +42,83 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] thermal: core: Address thermal zone removal races with
- resume
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
- Mauricio Faria de Oliveira <mfo@igalia.com>,
- LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-References: <6267615.lOV4Wx5bFT@rafael.j.wysocki>
- <5321acf9-0de4-4b8a-811d-e1d71b152887@arm.com>
- <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
+Subject: Re: [PATCH RESEND 3/4] PM / devfreq: Fix governor_store() failing
+ when device has no current governor
+To: Jie Zhan <zhanjie9@hisilicon.com>, myungjoo.ham@samsung.com,
+ kyungmin.park@samsung.com, cw00.choi@samsung.com, nm@ti.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
+ <20260319091710.1006814-1-tianyaxiong@kylinos.cn>
+ <5ac69894-aa0d-475f-8950-a0ff98f9fa2e@hisilicon.com>
+ <ebee5d1c-f42f-4b51-aa98-2a015ee61706@kylinos.cn>
+ <d6c69fc9-d504-4c62-8181-f531276c7443@hisilicon.com>
 Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <CAJZ5v0i82o40kS8=KsWjpB1QaCWLTrk9jmM8ZymW_tdz6b0sRA@mail.gmail.com>
+From: Yaxiong Tian <tianyaxiong@kylinos.cn>
+In-Reply-To: <d6c69fc9-d504-4c62-8181-f531276c7443@hisilicon.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
-
-On 3/30/26 12:41, Rafael J. Wysocki wrote:
-> On Mon, Mar 30, 2026 at 11:14 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+在 2026/3/31 16:53, Jie Zhan 写道:
+>
+> On 3/31/2026 4:02 PM, Yaxiong Tian wrote:
+>> 在 2026/3/31 15:16, Jie Zhan 写道:
+>>> On 3/19/2026 5:17 PM, Yaxiong Tian wrote:
+>>>> Since devfreq_remove_governor() may clear the device's current governor
+>>>> in certain situations, while governors actually exist independently
+>>>> of the device, directly returning EINVAL in this case is inaccurate.
+>>>>
+>>>> To fix this issue, remove this check and add relevant logic for when
+>>>> df->governor is NULL.
+>>>>
+>>>> Fixes: 483d557ee9a3 ("PM / devfreq: Clean up the devfreq instance name in sysfs attr")
+>>>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+>>>> ---
+>>>>    drivers/devfreq/devfreq.c | 15 ++++++++++++---
+>>>>    1 file changed, 12 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>> index 0bf320123e3a..4a312f3c2421 100644
+>>>> --- a/drivers/devfreq/devfreq.c
+>>>> +++ b/drivers/devfreq/devfreq.c
+>>>> @@ -1425,9 +1425,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>        char str_governor[DEVFREQ_NAME_LEN + 1];
+>>>>        const struct devfreq_governor *governor, *prev_governor;
+>>>>    -    if (!df->governor)
+>>>> -        return -EINVAL;
+>>>> -
+>>>>        ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>>        if (ret != 1)
+>>>>            return -EINVAL;
+>>>> @@ -1438,6 +1435,18 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>            ret = PTR_ERR(governor);
+>>>>            goto out;
+>>>>        }
+>>>> +
+>>>> +    if (!df->governor) {
+>>>> +        df->governor = governor;
+>>>> +        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>>> +        if (ret) {
+>>>> +            dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>>> +                __func__, df->governor->name, ret);
+>>>> +            df->governor = NULL;
+>>>> +        }
+>>>> +        goto out;
+>>>> +    }
+>>>> +
+>>> The sequence that starts the governor, and stops, and then re-starts looks
+>>> quite weird.
+>>> Can you do a NULL pointer check before the IMMUTABLE flag check and
+>>> stopping governor, rather than this?
+>> This patch only addresses the issue raised in the commit message. As for the original
 >>
+>> start, stop, and then restart sequence, I haven't found any problems with it so far.
 >>
->>
->> On 3/27/26 09:49, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> Since thermal_zone_pm_complete() and thermal_zone_device_resume()
->>> re-initialize the poll_queue delayed work for the given thermal zone,
->>> the cancel_delayed_work_sync() in thermal_zone_device_unregister()
->>> may miss some already running work items and the thermal zone may
->>> be freed prematurely [1].
->>>
->>> There are two failing scenarios that both start with
->>> running thermal_pm_notify_complete() right before invoking
->>> thermal_zone_device_unregister() for one of the thermal zones.
->>>
->>> In the first scenario, there is a work item already running for
->>> the given thermal zone when thermal_pm_notify_complete() calls
->>> thermal_zone_pm_complete() for that thermal zone and it continues to
->>> run when thermal_zone_device_unregister() starts.  Since the poll_queue
->>> delayed work has been re-initialized by thermal_pm_notify_complete(), the
->>> running work item will be missed by the cancel_delayed_work_sync() in
->>> thermal_zone_device_unregister() and if it continues to run past the
->>> freeing of the thermal zone object, a use-after-free will occur.
->>>
->>> In the second scenario, thermal_zone_device_resume() queued up by
->>> thermal_pm_notify_complete() runs right after the thermal_zone_exit()
->>> called by thermal_zone_device_unregister() has returned.  The poll_queue
->>> delayed work is re-initialized by it before cancel_delayed_work_sync() is
->>> called by thermal_zone_device_unregister(), so it may continue to run
->>> after the freeing of the thermal zone object, which also leads to a
->>> use-after-free.
->>>
->>> Address the first failing scenario by ensuring that no thermal work
->>> items will be running when thermal_pm_notify_complete() is called.
->>> For this purpose, first move the cancel_delayed_work() call from
->>> thermal_zone_pm_complete() to thermal_zone_pm_prepare() to prevent
->>> new work from entering the workqueue going forward.  Next, switch
->>> over to using a dedicated workqueue for thermal events and update
->>> the code in thermal_pm_notify() to flush that workqueue after
->>> thermal_pm_notify_prepare() has returned which will take care of
->>> all leftover thermal work already on the workqueue (that leftover
->>> work would do nothing useful anyway because all of the thermal zones
->>> have been flagged as suspended).
->>>
->>> The second failing scenario is addressed by adding a tz->state check
->>> to thermal_zone_device_resume() to prevent it from re-initializing
->>> the poll_queue delayed work if the thermal zone is going away.
->>>
->>> Note that the above changes will also facilitate relocating the suspend
->>> and resume of thermal zones closer to the suspend and resume of devices,
->>> respectively.
->>>
->>> Fixes: 5a5efdaffda5 ("thermal: core: Resume thermal zones asynchronously")
->>> Reported-by: Mauricio Faria de Oliveira <mfo@igalia.com>
->>> Closes: https://lore.kernel.org/linux-pm/20260324-thermal-core-uaf-init_delayed_work-v1-1-6611ae76a8a1@igalia.com/ [1]
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>
->>> v1 -> v2: Return -ENOMEM from thermal_init() when the workqueue allocation
->>>      fails (Sashiko)
->>>
->>> Lukasz, Daniel, I'm quite confident about this patch, but I would appreciate
->>> your feedback.
->>
->> My apologies for delay...
->>
->>>
->>> ---
->>>    drivers/thermal/thermal_core.c |   31 ++++++++++++++++++++++++++-----
->>>    1 file changed, 26 insertions(+), 5 deletions(-)
->>>
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -42,6 +42,8 @@ static struct thermal_governor *def_gove
->>>
->>>    static bool thermal_pm_suspended;
->>>
->>> +static struct workqueue_struct *thermal_wq __ro_after_init;
->>> +
->>>    /*
->>>     * Governor section: set of functions to handle thermal governors
->>>     *
->>> @@ -314,7 +316,7 @@ static void thermal_zone_device_set_poll
->>>        if (delay > HZ)
->>>                delay = round_jiffies_relative(delay);
->>>
->>> -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, delay);
->>> +     mod_delayed_work(thermal_wq, &tz->poll_queue, delay);
->>>    }
->>>
->>>    static void thermal_zone_recheck(struct thermal_zone_device *tz, int error)
->>> @@ -1795,6 +1797,10 @@ static void thermal_zone_device_resume(s
->>>
->>>        guard(thermal_zone)(tz);
->>>
->>> +     /* If the thermal zone is going away, there's nothing to do. */
->>> +     if (tz->state & TZ_STATE_FLAG_EXIT)
->>> +             return;
->>> +
->>>        tz->state &= ~(TZ_STATE_FLAG_SUSPENDED | TZ_STATE_FLAG_RESUMING);
->>>
->>>        thermal_debug_tz_resume(tz);
->>> @@ -1825,6 +1831,9 @@ static void thermal_zone_pm_prepare(stru
->>>        }
->>>
->>>        tz->state |= TZ_STATE_FLAG_SUSPENDED;
->>> +
->>> +     /* Prevent new work from getting to the workqueue subsequently. */
->>> +     cancel_delayed_work(&tz->poll_queue);
->>>    }
->>>
->>>    static void thermal_pm_notify_prepare(void)
->>> @@ -1843,8 +1852,6 @@ static void thermal_zone_pm_complete(str
->>>    {
->>>        guard(thermal_zone)(tz);
->>>
->>> -     cancel_delayed_work(&tz->poll_queue);
->>> -
->>>        reinit_completion(&tz->resume);
->>>        tz->state |= TZ_STATE_FLAG_RESUMING;
->>>
->>> @@ -1854,7 +1861,7 @@ static void thermal_zone_pm_complete(str
->>>         */
->>>        INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_resume);
->>>        /* Queue up the work without a delay. */
->>> -     mod_delayed_work(system_freezable_power_efficient_wq, &tz->poll_queue, 0);
->>> +     mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
->>>    }
->>>
->>>    static void thermal_pm_notify_complete(void)
->>> @@ -1877,6 +1884,11 @@ static int thermal_pm_notify(struct noti
->>>        case PM_RESTORE_PREPARE:
->>>        case PM_SUSPEND_PREPARE:
->>>                thermal_pm_notify_prepare();
->>> +             /*
->>> +              * Allow any leftover thermal work items already on the
->>> +              * worqueue to complete so they don't get in the way later.
->>> +              */
->>> +             flush_workqueue(thermal_wq);
->>>                break;
->>>        case PM_POST_HIBERNATION:
->>>        case PM_POST_RESTORE:
->>> @@ -1909,9 +1921,16 @@ static int __init thermal_init(void)
->>>        if (result)
->>>                goto error;
->>>
->>> +     thermal_wq = alloc_workqueue("thermal_events",
->>> +                                   WQ_FREEZABLE | WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
->>
->>
->> Why we need those workqueue instances per-cpu?
-> 
-> That's to limit the changes in this fix to what's needed to address
-> the problem at hand.
-> 
-> The previously used workqueue was also per-CPU and freezable.
-> 
->> It isn't a concurrent work, only one CPU can manage the cpufreq domain.
->>
->> I would drop that flag and allow to have single instance and migrate
->> between cpus (to not wake up the one which queued the work).
-> 
-> I have a separate patch for that on top of this one, will post it later.
-> 
-> Let's avoid mixing fixes with changes that aren't directly related to them.
-
-Thanks Rafael for clarification. With that in mind feel free to
-add:
-
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-
+> You just added the first 'start' here.
+> Please see the other process in governor_store().
+Could you explain what you mean?
+Wouldn't it be correct to directly operate on the devices without a 
+governor first and then exit?
+>>>>        if (df->governor == governor) {
+>>>>            ret = 0;
+>>>>            goto out;
