@@ -1,31 +1,31 @@
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEB463C3438;
-	Tue, 31 Mar 2026 08:50:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84E4A3E5ED1;
+	Tue, 31 Mar 2026 08:53:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774947010; cv=none; b=c2WWfKNpnJBye50OcRPT0ZM9fZjMCe1ow/dE/4yu2B/KKpCcnh692aUL22Xaf5hzgggnbc5Idfb/qz8vUlHCGS64sBt0Sg7GFtlzttpXcd9NB807jiEugWG+B1qA1O4f61D5/O6qXYnyUOAJf55/S4G9wueLos/8QdGhHFwbZw0=
+	t=1774947198; cv=none; b=cs5Ge5fp17Kq243HIZdhP5thB95+ehyg24Dbzj/twpzzqz/ZirkcQQXfNK93ApBpBN7xEGsODLORmwDwAqlWQkOZwyqM8Nv7K3b/rDLA0Hj1bwmdAcNlRv503XAbaSw/g40Uiuap1RGCKD3CPp7DcYusYcxW9ILH0t0SmPWBZ8g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774947010; c=relaxed/simple;
-	bh=WfFsxWv+/kCrWHaKOoAXTGcd7FJeVN9RmnXQ0ZFGJig=;
+	s=arc-20240116; t=1774947198; c=relaxed/simple;
+	bh=82LQYYuo2k0AX1jLBFg4W3qXrbApwY8fCGDMoHWrYhg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ke5UI1Dfz9rcvonJQvUxATGd0YdumnzYQWPbNMTdOFhIBzI8z+7TtrxLEY9wSQWyRIX3lIo0iVRUTCRitp0O/8G0y0WImSDzpPbP+2Lrd0J+zmzRSEEzUqv6yYuspiD7QnHIYzT9U0ioIxsby7pWgNkQ2m/x6D6/Qg+e7MIy8Wo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.220
+	 In-Reply-To:Content-Type; b=ZmF8KLbJPrOGyl5xeK0PTg/SMrMjpnEgfw+dDY8IZhxBFAWUr2Upn7FJuirb2hV6RP68XmYd6eaf1dbiAsNQcgU34xltzCMZrJ25/Q45TC2GDnLy71D3TcnegbgDPfGwZ30Mr6G6/3gVxBYJ+VAwm/Gxe4TJ1aJ8aWKe4WB4gzQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.226
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4flM9t2P4Fz12LFm;
-	Tue, 31 Mar 2026 16:44:34 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4flMDk30QLzKm4Y;
+	Tue, 31 Mar 2026 16:47:02 +0800 (CST)
 Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 39B8B203D0;
-	Tue, 31 Mar 2026 16:49:58 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 73F2040539;
+	Tue, 31 Mar 2026 16:53:13 +0800 (CST)
 Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
  (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 31 Mar
- 2026 16:49:57 +0800
-Message-ID: <a7c1c3ce-7938-4dcf-83be-32cf4aceb965@hisilicon.com>
-Date: Tue, 31 Mar 2026 16:49:57 +0800
+ 2026 16:53:12 +0800
+Message-ID: <d6c69fc9-d504-4c62-8181-f531276c7443@hisilicon.com>
+Date: Tue, 31 Mar 2026 16:53:12 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,18 +33,18 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 1/4] PM / devfreq: Fix possible null pointer issue
- in devfreq_add_governor()
+Subject: Re: [PATCH RESEND 3/4] PM / devfreq: Fix governor_store() failing
+ when device has no current governor
 To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
 	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
 CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
 References: <20260319091409.998397-1-tianyaxiong@kylinos.cn>
- <20260319091653.1005878-1-tianyaxiong@kylinos.cn>
- <f167d24d-73f9-4463-889e-89fb9f1e4a1a@hisilicon.com>
- <aa7ee42d-0685-4a70-a084-bf0bdfa82e4a@kylinos.cn>
+ <20260319091710.1006814-1-tianyaxiong@kylinos.cn>
+ <5ac69894-aa0d-475f-8950-a0ff98f9fa2e@hisilicon.com>
+ <ebee5d1c-f42f-4b51-aa98-2a015ee61706@kylinos.cn>
 Content-Language: en-US
 From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <aa7ee42d-0685-4a70-a084-bf0bdfa82e4a@kylinos.cn>
+In-Reply-To: <ebee5d1c-f42f-4b51-aa98-2a015ee61706@kylinos.cn>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
@@ -52,122 +52,64 @@ X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
 
 
 
-On 3/31/2026 3:49 PM, Yaxiong Tian wrote:
+On 3/31/2026 4:02 PM, Yaxiong Tian wrote:
 > 
-> 在 2026/3/31 15:04, Jie Zhan 写道:
+> 在 2026/3/31 15:16, Jie Zhan 写道:
 >>
->> On 3/19/2026 5:16 PM, Yaxiong Tian wrote:
->>> When a user removes a governor using devfreq_remove_governor(), if
->>> the current device is using this governor, devfreq->governor will
->>> be set to NULL. When the user registers any governor
->>> using devfreq_add_governor(), since devfreq->governor is NULL, a
->>> null pointer error occurs in strncmp().
+>> On 3/19/2026 5:17 PM, Yaxiong Tian wrote:
+>>> Since devfreq_remove_governor() may clear the device's current governor
+>>> in certain situations, while governors actually exist independently
+>>> of the device, directly returning EINVAL in this case is inaccurate.
 >>>
->>> For example: A user loads the userspace gov through a module, then
->>> a device selects userspace. When unloading the userspace module and
->>> then loading it again, the null pointer error occurs:
+>>> To fix this issue, remove this check and add relevant logic for when
+>>> df->governor is NULL.
 >>>
->>> Unable to handle kernel NULL pointer dereference at virtual address
->>> 0000000000000010
->>> Mem abort info:
->>> ESR = 0x0000000096000004
->>> EC = 0x25: DABT (current EL), IL = 32 bits
->>> *******************skip *********************
->>> Call trace:
->>> __pi_strncmp+0x20/0x1b8
->>> devfreq_userspace_init+0x1c/0xff8 [governor_userspace]
->>> do_one_initcall+0x4c/0x278
->>> do_init_module+0x5c/0x218
->>> load_module+0x1f1c/0x1fc8
->>> init_module_from_file+0x8c/0xd0
->>> __arm64_sys_finit_module+0x220/0x3d8
->>> invoke_syscall+0x48/0x110
->>> el0_svc_common.constprop.0+0xbc/0xe8
->>> do_el0_svc+0x20/0x30
->>> el0_svc+0x24/0xb8
->>> el0t_64_sync_handler+0xb8/0xc0
->>> el0t_64_sync+0x14c/0x150
->>>
->>> To fix this issue, modify the relevant logic in devfreq_add_governor():
->>> Only check whether the new governor matches the existing one when
->>> devfreq->governor exists. When devfreq->governor is NULL, directly
->>> select the new governor and perform the DEVFREQ_GOV_START operation.
->>>
->>> Fixes: 1b5c1be2c88e ("PM / devfreq: map devfreq drivers to governor using name")
+>>> Fixes: 483d557ee9a3 ("PM / devfreq: Clean up the devfreq instance name in sysfs attr")
 >>> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
 >>> ---
->>>   drivers/devfreq/devfreq.c | 24 +++++++++++-------------
->>>   1 file changed, 11 insertions(+), 13 deletions(-)
+>>>   drivers/devfreq/devfreq.c | 15 ++++++++++++---
+>>>   1 file changed, 12 insertions(+), 3 deletions(-)
 >>>
 >>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 54f0b18536db..63ce6e25abe2 100644
+>>> index 0bf320123e3a..4a312f3c2421 100644
 >>> --- a/drivers/devfreq/devfreq.c
 >>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -1288,23 +1288,21 @@ int devfreq_add_governor(struct devfreq_governor *governor)
->>>           int ret = 0;
->>>           struct device *dev = devfreq->dev.parent;
->>>   -        if (!strncmp(devfreq->governor->name, governor->name,
->>> +        if (devfreq->governor && !strncmp(devfreq->governor->name, governor->name,
->>>                    DEVFREQ_NAME_LEN)) {
->> Probaly do:
->> if (!devfreq->governor)
->>     continue;
->> so as to keep the line short and the "else if (!devfreq->governor) {" below
->> can be removed.
-> If that's the case, a dev without a governor would not be able to add a new governor.
-It's not about adding.
-
-The whole point here (the block inside list_for_each_entry()) is a very
-rare safe check that you're adding a governor of the same name of a
-governor used by an existing devfreq device.  If so, stop the old one and
-start the new one.
-
-Therefore, it doesn't have to start/restart it if devfreq->governor is
-NULL.
->>
->> and also:
->> if (!strncmp(devfreq->governor->name, governor->name,
->>     DEVFREQ_NAME_LEN))
->>     continue;
->> so we don't have to indent that much.
+>>> @@ -1425,9 +1425,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>       char str_governor[DEVFREQ_NAME_LEN + 1];
+>>>       const struct devfreq_governor *governor, *prev_governor;
+>>>   -    if (!df->governor)
+>>> -        return -EINVAL;
+>>> -
+>>>       ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>       if (ret != 1)
+>>>           return -EINVAL;
+>>> @@ -1438,6 +1435,18 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>           ret = PTR_ERR(governor);
+>>>           goto out;
+>>>       }
+>>> +
+>>> +    if (!df->governor) {
+>>> +        df->governor = governor;
+>>> +        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>> +        if (ret) {
+>>> +            dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>> +                __func__, df->governor->name, ret);
+>>> +            df->governor = NULL;
+>>> +        }
+>>> +        goto out;
+>>> +    }
+>>> +
+>> The sequence that starts the governor, and stops, and then re-starts looks
+>> quite weird.
+>> Can you do a NULL pointer check before the IMMUTABLE flag check and
+>> stopping governor, rather than this?
 > 
-> Currently, governor->name can be set arbitrarily, so duplicate names are possible.
+> This patch only addresses the issue raised in the commit message. As for the original
 > 
-> But they could still be two different governors. Leaving it unchanged seems fine to me.
+> start, stop, and then restart sequence, I haven't found any problems with it so far.
 > 
-Sorry, my mistake!
-
-I mean:
-if (strncmp(devfreq->governor->name, governor->name,
-	DEVFREQ_NAME_LEN))
-	continue;
-
->>
->>>               /* The following should never occur */
->>> -            if (devfreq->governor) {
->>> +            dev_warn(dev,
->>> +                 "%s: Governor %s already present\n",
->>> +                 __func__, devfreq->governor->name);
->>> +            ret = devfreq->governor->event_handler(devfreq,
->>> +                        DEVFREQ_GOV_STOP, NULL);
->>> +            if (ret) {
->>>                   dev_warn(dev,
->>> -                     "%s: Governor %s already present\n",
->>> -                     __func__, devfreq->governor->name);
->>> -                ret = devfreq->governor->event_handler(devfreq,
->>> -                            DEVFREQ_GOV_STOP, NULL);
->>> -                if (ret) {
->>> -                    dev_warn(dev,
->>> -                         "%s: Governor %s stop = %d\n",
->>> -                         __func__,
->>> -                         devfreq->governor->name, ret);
->>> -                }
->>> -                /* Fall through */
->>> +                     "%s: Governor %s stop = %d\n",
->>> +                     __func__,
->>> +                     devfreq->governor->name, ret);
->>>               }
->>> +        } else if (!devfreq->governor) {
->>>               devfreq->governor = governor;
->>>               ret = devfreq->governor->event_handler(devfreq,
->>>                           DEVFREQ_GOV_START, NULL);
+You just added the first 'start' here.
+Please see the other process in governor_store().
+>>>       if (df->governor == governor) {
+>>>           ret = 0;
+>>>           goto out;
