@@ -1,246 +1,141 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C52D4611C9;
-	Tue, 31 Mar 2026 21:20:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2F26426D26;
+	Tue, 31 Mar 2026 22:20:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774992012; cv=none; b=UikGr0nJftWMKaAbhqbOnBYRAq+M1Vew5WfLTHtgFNkNdRIh0ttLqgdjcNuvq7gc2VsPenRYD3Nt6ZCq75CxWMkQTquJ23KjJiw+LaeNwOOPJHK79GEnJBJl0g5rE0NBaU4k36CDjFzkJ2f1xbHUWB3UCYoFm+1hnyU4PrQYXiI=
+	t=1774995633; cv=none; b=na+LFHlF4jj3P20sBu1UpYGHlbGRBYsD28qPfBJSZt8773Nf9ehfqaocm5MRYDM+9iqAr+t0FQBRZgfX4D3Ej4oAkM5wqYcSa2rL4hP8kEq6M0R6MRDiw73wj7rhtYrXV9ftyP1fWIUfrE0fCmk8HCzHEIkpa4xPHFjOw0jo2oA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774992012; c=relaxed/simple;
-	bh=8b2yVV/7GRGLn0g7MEzZw35eJUa7CnQ2WI5ca/mfSH0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fJ6pJg31dDnbTPjohVdyEWThRq/OiOIA3ufE48aBZ8xDd4ObfFsxcRJM4FLBCwF3WscOK+GC3ttYSWGfCmOK91ygMtWkzRFy4g0AEvE4eutb6LJZ4FNkXhmhrde0mV5/jDE+yH3hK+nVr1vPhpDIKao5ZxGaJUUzrKVMaDfA4TY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=GesD+8QW; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1774995633; c=relaxed/simple;
+	bh=djBmP9Nro7XmQ9K/Sg1Ln48TcB3O+Me93DLr6qxtC4s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=o8jyR1ksxA13gYsaxkV6QbkHmSfdXK3BHp8oNCmelbOuAWdq3BEMKotXQuycnJxehAE7e4lrONKkS7tnRt/FuPalQiqqa6XsQ5haRrnihQ9Hqz6XeaqaZejkWsQQYECWOZ3f39L1rKBk1KdRoCYuNbsmbVD0L1yjZ7XhYM55dB4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=o4pE/6bt; arc=none smtp.client-ip=195.154.119.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="GesD+8QW"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774992010; x=1806528010;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=8b2yVV/7GRGLn0g7MEzZw35eJUa7CnQ2WI5ca/mfSH0=;
-  b=GesD+8QWIx/+GeFa+gXqQRF/ukZcPEdTl9K4vyXhbgULRtllCJ0ARSZF
-   xhWpYLx3HvjhFG6/8/ek2LF2Gn/nBVVhw+9mGOTQy1fszTHhjlHDO33Zt
-   E0BopYgc4whDkSxLgoRjTIhF/+qjrRVPYuHzuKKJWEHe7XHEi6l5KSepU
-   5lLojSyK4aM2U9qiLQ12QZu+GZ+nY8JGX/qAs8ZGMqSwdiX2UWFZkN6K+
-   FuXbK5v9pG6eKtWTY1mvQxjQdlN7cUlDvS30v9N2zC/K+e8u3m4lRsthn
-   qCjdNrv5OMGSZddGW3Ctjut0xcHnwwFQa2QOnIRdb3TBHxmnJJ76Z/pvi
-   Q==;
-X-CSE-ConnectionGUID: Pxq8kEvITD+h0KpB9r96Aw==
-X-CSE-MsgGUID: AQP9zeZUSsiJr8n610TibA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11745"; a="79625026"
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="79625026"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 14:20:06 -0700
-X-CSE-ConnectionGUID: gueX6qIuQGiVb6ALTioxVg==
-X-CSE-MsgGUID: +NTYWDmKRm+9cszVL7kZpA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="221627130"
-Received: from skuppusw-desk2.jf.intel.com ([10.165.154.101])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 14:20:06 -0700
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 7/7] powercap: intel_rapl: Consolidate PL4 and PMU support flags into rapl_defaults
-Date: Tue, 31 Mar 2026 14:19:50 -0700
-Message-ID: <20260331211950.3329932-8-sathyanarayanan.kuppuswamy@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260331211950.3329932-1-sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <20260331211950.3329932-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="o4pE/6bt"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Transfer-Encoding:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=8QrORnPZaSGq5GzeR6qKATdKLTvS76Qgu9+YPtMIjC8=; b=o4pE/6btLzmop8vRahnPZ56JUj
+	g7qOZUw0bka/N9w+c19mYpJANyH6R3uZ3+xlgS1ViFpgwyPwSA/cf/D609vGluyL1pQiticJYQtS3
+	Oa4c+Ucr8yNN4lrLvZbsYHD2oy3eQE7PV09D/EEdf/TGEWgoUwXCut/gpqUn7w0EmTSF/2r/OxzCm
+	Rr9mqtU7yahwvDtLim/9FhG5nDIaQGceB5Z7+Jms1k4nvWLSxS57xZELhiS9Y52kKnhvNj09dDxeF
+	9aKfuepw71XHJsriFvnBRdDo1M6BETlu7TW5qb1Rl/9P6yepiwuJbXbqKIdx3q6B1i3uAs+CVOFbr
+	L4SX8f/g==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1w7hRV-00000005Pud-1BAP;
+	Wed, 01 Apr 2026 00:20:13 +0200
+Date: Wed, 1 Apr 2026 00:20:12 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Lee Jones <lee@kernel.org>
+Cc: Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	Yixun Lan <dlan@gentoo.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	linux-pm@vger.kernel.org
+Subject: Re: (subset) [PATCH v5 0/2] driver: reset: spacemit-p1: add driver
+ for poweroff/reboot
+Message-ID: <acxInP3_rU9H8Q5V@aurel32.net>
+Mail-Followup-To: Lee Jones <lee@kernel.org>,
+	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	Yixun Lan <dlan@gentoo.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	linux-pm@vger.kernel.org
+References: <20251102230352.914421-1-aurelien@aurel32.net>
+ <176213091347.301408.11587695003687450479.b4-ty@collabora.com>
+ <FA447DF1D2398A79+aQlVuEbrLMCiGMpc@kernel.org>
+ <20251105093347.GD8064@google.com>
+ <E205F88FB1EE06C5+aQscI0Uy7pgiMzEt@kernel.org>
+ <20251105100856.GG8064@google.com>
+ <20251105101149.GH8064@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20251105101149.GH8064@google.com>
+User-Agent: Mutt/2.2.13 (2024-03-09)
 
-Currently, PL4 and MSR-based RAPL PMU support are detected using
-separate CPU ID tables (pl4_support_ids and pmu_support_ids) in the
-MSR driver probe path. This creates a maintenance burden since adding
-a new CPU requires updates in two places: the rapl_ids table and one
-or both of these capability tables.
+Hi Lee,
 
-Consolidate PL4 and PMU capability information directly into
-struct rapl_defaults by adding msr_pl4_support and msr_pmu_support
-flags. This allows per-CPU capability to be expressed in a single
-place alongside other per-CPU defaults, eliminating the duplicate
-CPU ID tables entirely.
+On 2025-11-05 10:11, Lee Jones wrote:
+> On Wed, 05 Nov 2025, Lee Jones wrote:
+>=20
+> > On Wed, 05 Nov 2025, Troy Mitchell wrote:
+> >=20
+> > > On Wed, Nov 05, 2025 at 09:34:21AM +0000, Lee Jones wrote:
+> > > > On Tue, 04 Nov 2025, Troy Mitchell wrote:
+> > > >=20
+> > > > > On Mon, Nov 03, 2025 at 01:48:33AM +0100, Sebastian Reichel wrote:
+> > > > > >=20
+> > > > > > On Mon, 03 Nov 2025 00:01:58 +0100, Aurelien Jarno wrote:
+> > > > > > > This adds poweroff/reboot support for the SpacemiT P1 PMIC ch=
+ip, which is
+> > > > > > > commonly paired with the SpacemiT K1 SoC.
+> > > > > > >=20
+> > > > > > > Note: For reliable operation, this driver depends on a this p=
+atch that adds
+> > > > > > > atomic transfer support to the SpacemiT I2C controller driver:
+> > > > > > >   https://lore.kernel.org/spacemit/20251009-k1-i2c-atomic-v4-=
+1-a89367870286@linux.spacemit.com/
+> > > ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > dependency is here.
+> > > > > > >=20
+> > > > > > > [...]
+> > > > > >=20
+> > > > > > Applied, thanks!
+> > > > > >=20
+> > > > > > [1/2] driver: reset: spacemit-p1: add driver for poweroff/reboot
+> > > > > >       commit: 28124cc0fb8c7dc01a6834d227351e25d9a92c58
+> > > > > Should we apply it now? The dependency patch hasn=E2=80=99t been =
+merged yet...
+> > > >=20
+> > > > What is the dependency?
+> > > I point it out above.
+> > > Without this patch, reboot and shutdown would end up calling the non-=
+atomic i2c_transfer.
+> >=20
+> > Okay, thanks.  I was mostly checking that you weren't referring to the
+> > MFD patch, which doesn't represent a true dependency.
+>=20
+> To save Sebastian some trouble, let's keep the reboot patch applied.
+>=20
+> I'll hold off on the MFD one, which will ensure that reboot isn't probed.
+>=20
+> Let me know when the dep is merged and I'll hoover up the rest of the set.
 
-No functional changes are intended.
+The dependency is still not yet merged, although it has been ready for=20
+weeks, and I am just crossing fingers that it will get picked-up for
+for 7.1.
 
-Co-developed-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
----
- drivers/powercap/intel_rapl_msr.c | 83 ++++++++++++++-----------------
- include/linux/intel_rapl.h        |  2 +
- 2 files changed, 38 insertions(+), 47 deletions(-)
+That said it's not a hard dependency, in most cases reboot will work,=20
+which is an improvement over no reboot driver. The missing I2C PIO=20
+patches are just there to make it reliable.
 
-diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-index cfb35973f0b5..a34543e66446 100644
---- a/drivers/powercap/intel_rapl_msr.c
-+++ b/drivers/powercap/intel_rapl_msr.c
-@@ -216,33 +216,6 @@ static int rapl_msr_write_raw(int cpu, struct reg_action *ra)
- 	return ra->err;
- }
- 
--/* List of verified CPUs. */
--static const struct x86_cpu_id pl4_support_ids[] = {
--	X86_MATCH_VFM(INTEL_ICELAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_TIGERLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_ALDERLAKE, NULL),
--	X86_MATCH_VFM(INTEL_ALDERLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT, NULL),
--	X86_MATCH_VFM(INTEL_RAPTORLAKE, NULL),
--	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, NULL),
--	X86_MATCH_VFM(INTEL_METEORLAKE, NULL),
--	X86_MATCH_VFM(INTEL_METEORLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_ARROWLAKE_U, NULL),
--	X86_MATCH_VFM(INTEL_ARROWLAKE_H, NULL),
--	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_NOVALAKE, NULL),
--	X86_MATCH_VFM(INTEL_NOVALAKE_L, NULL),
--	{}
--};
--
--/* List of MSR-based RAPL PMU support CPUs */
--static const struct x86_cpu_id pmu_support_ids[] = {
--	X86_MATCH_VFM(INTEL_PANTHERLAKE_L, NULL),
--	X86_MATCH_VFM(INTEL_WILDCATLAKE_L, NULL),
--	{}
--};
--
- static int rapl_check_unit_atom(struct rapl_domain *rd)
- {
- 	struct reg_action ra;
-@@ -420,6 +393,23 @@ static const struct rapl_defaults rapl_defaults_amd = {
- 	.check_unit = rapl_default_check_unit,
- };
- 
-+static const struct rapl_defaults rapl_defaults_core_pl4 = {
-+	.floor_freq_reg_addr = 0,
-+	.check_unit = rapl_default_check_unit,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
-+	.msr_pl4_support = 1,
-+};
-+
-+static const struct rapl_defaults rapl_defaults_core_pl4_pmu = {
-+	.floor_freq_reg_addr = 0,
-+	.check_unit = rapl_default_check_unit,
-+	.set_floor_freq = rapl_default_set_floor_freq,
-+	.compute_time_window = rapl_default_compute_time_window,
-+	.msr_pl4_support = 1,
-+	.msr_pmu_support = 1,
-+};
-+
- static const struct x86_cpu_id rapl_ids[]  = {
- 	X86_MATCH_VFM(INTEL_SANDYBRIDGE,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_SANDYBRIDGE_X,		&rapl_defaults_core),
-@@ -443,35 +433,35 @@ static const struct x86_cpu_id rapl_ids[]  = {
- 	X86_MATCH_VFM(INTEL_KABYLAKE_L,			&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_KABYLAKE,			&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_CANNONLAKE_L,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_ICELAKE_L,			&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_ICELAKE,			&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_ICELAKE_NNPI,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_ICELAKE_X,			&rapl_defaults_hsw_server),
- 	X86_MATCH_VFM(INTEL_ICELAKE_D,			&rapl_defaults_hsw_server),
- 	X86_MATCH_VFM(INTEL_COMETLAKE_L,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_COMETLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_TIGERLAKE_L,		&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_TIGERLAKE,			&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_ROCKETLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_ALDERLAKE,			&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_ALDERLAKE_L,		&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_ATOM_GRACEMONT,		&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_RAPTORLAKE,			&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,		&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,		&rapl_defaults_core),
- 	X86_MATCH_VFM(INTEL_BARTLETTLAKE,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_METEORLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_METEORLAKE,			&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_METEORLAKE_L,		&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_SAPPHIRERAPIDS_X,		&rapl_defaults_spr_server),
- 	X86_MATCH_VFM(INTEL_EMERALDRAPIDS_X,		&rapl_defaults_spr_server),
- 	X86_MATCH_VFM(INTEL_LUNARLAKE_M,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,		&rapl_defaults_core_pl4_pmu),
-+	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,		&rapl_defaults_core_pl4_pmu),
-+	X86_MATCH_VFM(INTEL_NOVALAKE,			&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_NOVALAKE_L,			&rapl_defaults_core_pl4),
-+	X86_MATCH_VFM(INTEL_ARROWLAKE_H,		&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_ARROWLAKE,			&rapl_defaults_core),
--	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaults_core),
-+	X86_MATCH_VFM(INTEL_ARROWLAKE_U,		&rapl_defaults_core_pl4),
- 	X86_MATCH_VFM(INTEL_LAKEFIELD,			&rapl_defaults_core),
- 
- 	X86_MATCH_VFM(INTEL_ATOM_SILVERMONT,		&rapl_defaults_byt),
-@@ -498,7 +488,6 @@ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
- 
- static int rapl_msr_probe(struct platform_device *pdev)
- {
--	const struct x86_cpu_id *id = x86_match_cpu(pl4_support_ids);
- 	int ret;
- 
- 	switch (boot_cpu_data.x86_vendor) {
-@@ -518,16 +507,16 @@ static int rapl_msr_probe(struct platform_device *pdev)
- 	rapl_msr_priv->defaults = (const struct rapl_defaults *)pdev->dev.platform_data;
- 	rapl_msr_priv->rpi = rpi_msr;
- 
--	if (id) {
-+	if (rapl_msr_priv->defaults->msr_pl4_support) {
- 		rapl_msr_priv->limits[RAPL_DOMAIN_PACKAGE] |= BIT(POWER_LIMIT4);
- 		rapl_msr_priv->regs[RAPL_DOMAIN_PACKAGE][RAPL_DOMAIN_REG_PL4].msr =
- 			MSR_VR_CURRENT_CONFIG;
--		pr_info("PL4 support detected.\n");
-+		pr_info("PL4 support detected (updated).\n");
- 	}
- 
--	if (x86_match_cpu(pmu_support_ids)) {
-+	if (rapl_msr_priv->defaults->msr_pmu_support) {
- 		rapl_msr_pmu = true;
--		pr_info("MSR-based RAPL PMU support enabled\n");
-+		pr_info("MSR-based RAPL PMU support enabled (updated)\n");
- 	}
- 
- 	rapl_msr_priv->control_type = powercap_register_control_type(NULL, "intel-rapl", NULL);
-diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-index 01f290de3586..328004f605c3 100644
---- a/include/linux/intel_rapl.h
-+++ b/include/linux/intel_rapl.h
-@@ -135,6 +135,8 @@ struct rapl_defaults {
- 	unsigned int dram_domain_energy_unit;
- 	unsigned int psys_domain_energy_unit;
- 	bool spr_psys_bits;
-+	bool msr_pl4_support;
-+	bool msr_pmu_support;
- };
- 
- #define PRIMITIVE_INFO_INIT(p, m, s, i, u, f) {	\
--- 
-2.43.0
+Therefore given the 7.1 merge window approaching, I believe it's better=20
+to merge this simple MFD patch and to not wait more.
 
+Thanks
+Aurelien
+
+--=20
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
