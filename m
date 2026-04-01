@@ -1,97 +1,121 @@
-Received: from mail-m49196.qiye.163.com (mail-m49196.qiye.163.com [45.254.49.196])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B55721A3160;
-	Wed,  1 Apr 2026 01:23:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.196
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB1C235E95A
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 02:45:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775006590; cv=none; b=Ek8zrhvQXNn4GuoT96U8U5O5afMM/yGpO1Qo5PBUcHxdQHYYyQAB45b0wcz7D018lqlLwXEFmLnnPCHFB8xWmLhfGNK/joX6wx01hXjKqDuMuW3l9UxpjG7iEgN8A0f5mrLszJyMsuwibmCZStJIf2YH0f0kCKdoqjkZKp2tk9Y=
+	t=1775011557; cv=none; b=UmP/KB5Z9nzLRdjMCou9iaEZNaLn3ysEBDFk9qqvpIZIvzGevxLcH4YfGeYZVGPdL3ahotIhqfmjgq7z9CrTBP2XSzbPf/KFTqiVfIJ8pf1esC2zwIyiVZeQd35hfMBxsL7y4IxFf2WC8bw2Tp2zZGDbmiDOQCOJscvTyjcx2Xc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775006590; c=relaxed/simple;
-	bh=YSGyW/KdWD7TJVeXuAE2a0yxacvnVpCIMiy7wXRxOlA=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=q2KZGLbbCy8nFB9XlptFUuLbR408sw0ZGTotDHqtBviIwLwQkzXxkic6DQWHpwem+wdu3yy5kBt64HlyPMOJI65Gy2cYS52tOPyWEcRZt9+07DJDheclBcc98AiHT21wkE4PlTT8zh4TlLqUpIyxFTuu6UsHH4mfjewrJJA4Obs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=NoDHYN/y; arc=none smtp.client-ip=45.254.49.196
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	s=arc-20240116; t=1775011557; c=relaxed/simple;
+	bh=5rqZFu4m0DhI2LCQIRiD6LzWwdcNiXgBJGJBIxfmWzc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PcSu5gPXH5FEOIn+77H+Ld5H98h5G99HnzwEc9dN0PYarOY3W9Moy1i07AUQG3qG3IHd1Cf3imQgef8MxIoVXKMYVU0UFnwxZsLPKf3EXi+Znc8gRMMgSB0riY8CrqHUNY2Wr6d79ngXQfQx7OxkSXIq51bL3FNs8NwfLCZgw/0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NbDlBhbU; arc=none smtp.client-ip=209.85.216.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="NoDHYN/y"
-Received: from [172.16.12.17] (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 39100b138;
-	Wed, 1 Apr 2026 09:17:48 +0800 (GMT+08:00)
-Message-ID: <5c8732a3-6cc9-5d02-f56b-fc7ba29c7ce0@rock-chips.com>
-Date: Wed, 1 Apr 2026 09:17:45 +0800
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NbDlBhbU"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-35d965648a2so2627814a91.0
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2026 19:45:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775011546; x=1775616346; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=k0AMRHVKUvntR7Icz/Ehum0LT86VVv3YWOGS3oQyg8k=;
+        b=NbDlBhbUmm7ubGPH3omzSFJPvC1KYng04JkvHBvP3dHNAkq7Nuy1IumMShbzu+cJ5C
+         E571R/G6mSuSyy1rPwBDiTP+dGaUJ3NhWV6MjSGqP7z9tUOgi+4Sqk6BvHFUahB8wfrH
+         LH6iW3GdFEzzaDhZneuE+SuWoHBzr0wE6h8cbSd6iDr0XzUNbd/feqdu9B67xgFY/aQ7
+         PE3x7umuOQHgx1ZfODfuDFGpNdh3Qir9Wx7rR8Kjajzlwh4jkv/k6dC9oYynWYcQBSC0
+         xBHpSXjzd7LPf/2pN8xDi9K1qSD+IPtt+5pZpzpNgE93kTJD5kE9GXn7mP19W3J1Ewbh
+         ygOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775011546; x=1775616346;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k0AMRHVKUvntR7Icz/Ehum0LT86VVv3YWOGS3oQyg8k=;
+        b=pUAdqvLB81huy1ku/bk6AIexa/NuMJ2sDEQ98pYu348UiYbeB0Fu/9eyiY4djXNf+a
+         ocGicagrpiqH0QUgXWYPiheRKoJ/lYhgIOalKj2CAKUte0KnfK288i7/juvGa8jBdanP
+         vSxDXqi9WuQ8nggIUR/6LPTzhNcXsgbxi+0snn8oHdel0GwiLtqn1JxNdInmD2cHIsme
+         i7JcnbAsqk5w6LiIsGyWzxPIA9Q5f0nLlkcKfe1KVvh1H7JDB6rCPRp/+940z7dYtJAF
+         qwG5ao9M6KgoYn+cNUXesptW+elKEYqBx8c8r1qA+2QqpYadsJBA5Gfge7rJf2jcFDum
+         JLCg==
+X-Forwarded-Encrypted: i=1; AJvYcCWq99r/q9xt1pZblUKPVYyQWPfS7BxkfYVlK+gRhpe98D1gkXAJLNOod9WbW/zhcQg9yLS9SXfBiw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyKB8EWZhpQy7OIW2vJs2kMLRrWNBGzHVAC0HP6cpAm7pQq49WD
+	qBLxwL5h5zlSP122Nb86H3OAtShkKhOMFjC3N2GYUn4eGQvB/73EcDfw
+X-Gm-Gg: ATEYQzyafQzfZpIaTYkTT027w3F4ecTtiQYqODpjxSTt045QLB+GWxJUlF7Pkmsm++s
+	2sKP1hnU+A36KSegZXqb9yAo5OQ2WPovq04ScTUI824wgyDJTFVsC80Wg9lUZ3OZ3OmjWlZesWa
+	E7zPVDPTdU6EIhzymVFhqz/FHQZg8A6LI8x8eY9RB+FQaMODTGcVrWjcYlmlqv98/c+zfIzQAcW
+	algzIiM9XgeMMazmVQN68+EUVsWmqkCuTb+gKmzMmywtw4srs/YrCRY04rhaJvSP+S4RsMc5izB
+	uMWv520PhodFLjZCGr06oUx28q3q1gLYureggbKkfzo6piQS01EiJgl0vkhH9we72bj8Ue02a1q
+	TSgyVEoG4FfJD4G3bregqT+Lz3qpWQJWP7jqT3TjUk5a1QsC9Cxplj8gzBD7KvswbrGuX9VEpDg
+	mpARmWu79cwxHLzUU=
+X-Received: by 2002:a17:90b:3f8f:b0:359:fe72:3559 with SMTP id 98e67ed59e1d1-35dc6f7feacmr1597549a91.21.1775011546230;
+        Tue, 31 Mar 2026 19:45:46 -0700 (PDT)
+Received: from lgs.. ([199.182.234.55])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35dba590d49sm1572450a91.2.2026.03.31.19.45.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Mar 2026 19:45:45 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	"Tobin C. Harding" <tobin@kernel.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Guangshuo Li <lgs201920130244@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] cpufreq: governor: fix double free in cpufreq_dbs_governor_init() error path
+Date: Wed,  1 Apr 2026 10:45:35 +0800
+Message-ID: <20260401024535.1395801-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.1
-Cc: shawn.lin@rock-chips.com, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kernel@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de
-Subject: Re: [PATCH 1/2] pmdomain/rockchip: skip QoS operations for idle-only
- domains
-To: Daniel Bozeman <daniel@orb.net>
-References: <20260331180223.1682283-1-daniel@orb.net>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-In-Reply-To: <20260331180223.1682283-1-daniel@orb.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9d469e3dd509cckunmbd42e9a8f80c51
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGU5OTFYeQ0pNTkpCH08dS05WFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=NoDHYN/y933X4usXs+vkbBkTesgf6cA+1duQalmTmx8Gn1TlLa2iKxI9gxB2vzmj/EpBNVcqd2LwvQdVxfUI7IitMgL0RgSAQD273Zo83qkzWNQeo8Zr2LzW2FU09PAtpMH7/oXcg/HAIEyH9Ioq942sWk7KYCzlTLjwk6dyDZA=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=84tddcSLoInqnr4qLcDW/JZ/jewF+U0Wxnidmb7LaMs=;
-	h=date:mime-version:subject:message-id:from;
 
-Hi Daniel,
+When kobject_init_and_add() fails, cpufreq_dbs_governor_init() calls
+kobject_put(&dbs_data->attr_set.kobj).
 
-在 2026/04/01 星期三 2:02, Daniel Bozeman 写道:
-> Idle-only power domains (pwr_mask == 0) cannot actually be powered
-> on or off. rockchip_do_pmu_set_power_domain() already returns early
-> for these domains, but rockchip_pd_power() still attempts QoS save
-> and idle requests before reaching that check.
-> 
-> On RK3528, the idle-only domains (PD_RKVENC, PD_VO, PD_VPU) have
-> QoS registers that may be inaccessible when the generic power domain
-> framework attempts to power them off, leading to synchronous external
-> aborts.
-> 
+The kobject release callback cpufreq_dbs_data_release() calls
+gov->exit(dbs_data) and kfree(dbs_data), but the current error path
+then calls gov->exit(dbs_data) and kfree(dbs_data) again, causing a
+double free.
 
-Is it the real abort happened on your RK3528 board? I am trying to
-understand the problem first. Even with idle-only powerdomain, the code
-also save the QoS registers before set idle to the powerdomain, so
-how the QoS registers become inaccessible?
+Keep the direct kfree(dbs_data) for the gov->init() failure path, but
+after kobject_init_and_add() has been called, let kobject_put() handle
+the cleanup through cpufreq_dbs_data_release().
 
-> Return early from rockchip_pd_power() when pwr_mask is zero, matching
-> the existing guard in rockchip_do_pmu_set_power_domain().
-> 
-> Fixes: 1fe767a56c32 ("soc: rockchip: power-domain: allow domains only handling idle requests")
-> Signed-off-by: Daniel Bozeman <daniel@orb.net>
-> ---
->   drivers/pmdomain/rockchip/pm-domains.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-> index 490bbb1d1d..2eecae092a 100644
-> --- a/drivers/pmdomain/rockchip/pm-domains.c
-> +++ b/drivers/pmdomain/rockchip/pm-domains.c
-> @@ -640,6 +640,9 @@ static int rockchip_pd_power(struct rockchip_pm_domain *pd, bool power_on)
->   	if (rockchip_pmu_domain_is_on(pd) == power_on)
->   		return 0;
->   
-> +	if (pd->info->pwr_mask == 0)
-> +		return 0;
-> +
->   	ret = clk_bulk_enable(pd->num_clks, pd->clks);
->   	if (ret < 0) {
->   		dev_err(pmu->dev, "failed to enable clocks\n");
-> 
-> base-commit: bc330699801d3b4f99110365512caed5adcfaca3
+Fixes: 4ebe36c94aed ("cpufreq: Fix kobject memleak")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+---
+ drivers/cpufreq/cpufreq_governor.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 1a7fcaf39cc9..3ad51a986781 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -468,13 +468,13 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+ 	/* Failure, so roll back. */
+ 	pr_err("initialization failed (dbs_data kobject init error %d)\n", ret);
+ 
+-	kobject_put(&dbs_data->attr_set.kobj);
+-
+ 	policy->governor_data = NULL;
+ 
+ 	if (!have_governor_per_policy())
+ 		gov->gdbs_data = NULL;
+-	gov->exit(dbs_data);
++
++	kobject_put(&dbs_data->attr_set.kobj);
++	goto free_policy_dbs_info;
+ 
+ free_dbs_data:
+ 	kfree(dbs_data);
+-- 
+2.43.0
+
