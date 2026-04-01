@@ -1,121 +1,124 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 221AF1AE877
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 11:05:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 903DC3EC2CB;
+	Wed,  1 Apr 2026 11:19:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775041520; cv=none; b=ppsG1vIvLiksdmfufrkIKT6KHDCmm1kJzT8WoLgRYAa+Syyh7kxPAXH1EtmR4QzJ89PylXneQlD3lwTNDricylotS5kp9Wgm882N1D6mqsOgu2d4nQE74eEL0GdemIZeXRP5aBrfUgb2YhHJwht87KFnvr7QFBHEYEwsMTd0nvY=
+	t=1775042374; cv=none; b=VyVxAw35eN9xn/guNPIlQ9IT315dxdrQbMW/cSsZYro+1s4UF2kthh/VW16KMAzgKYaE7qGmfuBZkZ3c49kEhz0vub5OFBoXgY54dH5ZPlQVHGErYdcfRQQOfWg4H//D9SRVldKKWBfEveqpRXN7ZuX8JLZaSFb6doYJ/b8mflk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775041520; c=relaxed/simple;
-	bh=om1doAdG2PMAv9rQ6C/z/VNO3DmdhRZwcmQFk9Vnqy8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hHs+0xbN6YNvG3+atCXH7IhjhRqBUKyTD20iYIxW/Loru+xOocBNbCz8oTtTQdQbCzJwgXYsLBubEfHKSPTQfMeIxy+bJ9qLAIJ38jvmz8a0IeHtN/ZEmNJ+B15/UmV6oygWgh3TIZKGryWVeJPEjkHmGjFRwbHoDvTP5CQ1X7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MwxJJyLQ; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1775042374; c=relaxed/simple;
+	bh=MUw9F7L0J9ORxUWBcBPbTTFGPGevrUNSWpXB+OHXCuM=;
+	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ag1WoA3UgJSSLV+lmhBtGlXwnpa2kZr6Rhqp42eyk9uVVnl4AFMEuy2VrzQPb5vpRghliQ7ZFvuTv8cC0EStRD6bOfdxZpRqmHdPAn3g8LuLbw9aUFhxHU3+ff5L4/Nx+IFGKCmibjVaea2vSU76MTJsuyL/+TwZrj3mWhj5HaU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IeatE6Bh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MwxJJyLQ"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-48558d6ef83so67566345e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 04:05:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775041517; x=1775646317; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=HBGBJDQ/gRb2ZWiVOaSaUlUwjskXrH5SbODqYF4ayW4=;
-        b=MwxJJyLQ7TkzsOQEuDMS3aQ5MCPLtNV05Zx7ZFJQJg1+cVgFzygzln6QmIjgLNv4Uk
-         8eVxWSAMDMl447kLXj8sPezmkQkx5BokGxstHbLMHww10lotwivBq8E3oNWX9w6sxbw3
-         kf+Y4RwtfwJavFB8EQHmaDANJ5vOT3AFd4Wpv89/nKIpFIiE21A5bgiCGAaOplgJX3U4
-         3Y35VYdJORWmUdKA8c4ghTAPnXhQhdrJ34oX6lZYgsmL6muUHgcMP54kAP1FGUhlXNz7
-         9+AC1ajqXHKG3CMEDJRoUh/kJkLj8twvztJHq0xqHCWI9kKmQRP66TxrtRfiO/Zaw7K+
-         K7kQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775041517; x=1775646317;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HBGBJDQ/gRb2ZWiVOaSaUlUwjskXrH5SbODqYF4ayW4=;
-        b=r8uxIxRKnFgOzB2Hic45FP97MTzKcf0TQ6GASh6oIl9nCEF8O21TuYrfZ4YS+jQcPT
-         av1EEUvnwQn17gL4TdbVdMEov0H4zXfto0ZcTlzjWluTnvI4weZvYBQwGG2ym76YhHXw
-         hbRK5AGU1d9zEG/u3YWw1mXcIlylUEwdNqNa42gL/QIygec+8QW8gAP3cOUpywFW2CK8
-         zNqi3+omNaokz1YmS5KDYv2Wj1B1INMMA54t8y3DDQcqEo6OQBdt3iNBx4g43ik2ECkc
-         dfjM5PCMmLr34vJuGV/b+R0FhoeS4CBVMcURM5fVl+tZSRIlZsmstxfXFhURupZzyRRQ
-         inhQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU5tmnMqnRxD4kGi73kU/dcfO9onub05t963IMiTd8fNk8ILmr61OqeK8gOcGHnc4FFlrN+W59PfQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcpsP4pacHxmOrj3TvYcgGx8Xq3h97IAPCFNPuGNeOgP5OEWck
-	/HF++maV+n0ATFPb6nlPzbPmwafAaFr7Frz+owdDGoDhZhf8waI/DZDkQnAQH5dHeCo=
-X-Gm-Gg: ATEYQzwq8lLeNdu4WvgbzPoQOqmPK8DvkS6+QJn6Hq/GI0IxzxJpxvskyINcKFMUf6f
-	08g9uH4wFXoy4DWtdh9QznwPUN7QUaORxhCXQDQSzFWRzB0CZaW9QAoPimvNnQZNjFVsOCmINg4
-	K9EXbwOkLl1w40tmnIGaNBAhyKfwNnyZseK2gVTULeiTalzMHOazV8qNrI3obZKEabXFAw6XZVz
-	xRvH92t6zA3wC+kGedeKMskq/sRv7hK0DE/DN0Cj5LT7MsNDVivGQdTq9B5LwxRexbksr5WoBEs
-	QKwnSodtuEqk0U3Fyt5CrxllpBkBe7/agkp8aNYUCKzO5XRTgOX1YzS6++jvotYJxTaov5K2oSP
-	WdJ0lhiuLZDTzJ7ZPdHMOlH5v+hv1FLjoaL4sWINaWTuQvdkyzD4zN5WaDsu1zhK3PxItiSUvcs
-	CRlPQxI+8xmuuDptCEHviKjvmUfc4f119M8Qw=
-X-Received: by 2002:a05:600c:4594:b0:486:ffa3:55f with SMTP id 5b1f17b1804b1-488835d0f0cmr51363045e9.27.1775041517450;
-        Wed, 01 Apr 2026 04:05:17 -0700 (PDT)
-Received: from [192.168.0.167] ([109.76.235.19])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43cf90424fcsm30627349f8f.32.2026.04.01.04.05.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Apr 2026 04:05:16 -0700 (PDT)
-Message-ID: <69b993ce-07b8-4071-ace3-9a33147670af@linaro.org>
-Date: Wed, 1 Apr 2026 12:05:15 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IeatE6Bh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4C80C4CEF7;
+	Wed,  1 Apr 2026 11:19:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775042374;
+	bh=MUw9F7L0J9ORxUWBcBPbTTFGPGevrUNSWpXB+OHXCuM=;
+	h=Date:From:To:Subject:References:In-Reply-To:From;
+	b=IeatE6BhXvOPtlR5BL/B3g8KiwutSpzA+lAIq3i1KJqMCnl6KvqFrrGyqV5TrxFDF
+	 HG+F+fp3brjvWi820RtywzsDd6aSNnke0I6q0jEKO67YveDW/w7Zi8crY7j9X+wotL
+	 USZylAZr7JE2xB5OE+TKhRyMEL1Ofx+q/Jx20RTkvfWNb1UwmGDm0pYQjH1CdA3XSk
+	 SQhrjwH5npoOnGhC4ysABRL1geNFGj5PwDTmBazE41gZLotuYLlKa5wPLrIc2tdySq
+	 YL12VJCl9xalT/uGJOFT+kldw3ZcBMOTAR2cs8mShAmpuV58kSERWSsQn35NJkO01u
+	 QCwjic5jSh1CA==
+Date: Wed, 1 Apr 2026 12:19:28 +0100
+From: Lee Jones <lee@kernel.org>
+To: Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+	Sebastian Reichel <sebastian.reichel@collabora.com>,
+	linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	Yixun Lan <dlan@gentoo.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
+	linux-pm@vger.kernel.org
+Subject: Re: (subset) [PATCH v5 0/2] driver: reset: spacemit-p1: add driver
+ for poweroff/reboot
+Message-ID: <20260401111928.GM3795166@google.com>
+References: <20251102230352.914421-1-aurelien@aurel32.net>
+ <176213091347.301408.11587695003687450479.b4-ty@collabora.com>
+ <FA447DF1D2398A79+aQlVuEbrLMCiGMpc@kernel.org>
+ <20251105093347.GD8064@google.com>
+ <E205F88FB1EE06C5+aQscI0Uy7pgiMzEt@kernel.org>
+ <20251105100856.GG8064@google.com>
+ <20251105101149.GH8064@google.com>
+ <acxInP3_rU9H8Q5V@aurel32.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/5] media: iris: scale MMCX power domain on SM8250
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
- Bjorn Andersson <andersson@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Taniya Das <quic_tdas@quicinc.com>,
- Jonathan Marek <jonathan@marek.ca>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Bryan O'Donoghue <bod@kernel.org>,
- Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Stanimir Varbanov <stanimir.varbanov@linaro.org>,
- Abhinav Kumar <abhinav.kumar@linux.dev>, Hans Verkuil <hverkuil@kernel.org>,
- Stefan Schmidt <stefan.schmidt@linaro.org>,
- Konrad Dybcio <konradybcio@kernel.org>,
- Dikshita Agarwal <dikshita@qti.qualcomm.com>, linux-arm-msm@vger.kernel.org,
- linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-media@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-References: <20260209-iris-venus-fix-sm8250-v5-0-0a22365d3585@oss.qualcomm.com>
- <20260209-iris-venus-fix-sm8250-v5-2-0a22365d3585@oss.qualcomm.com>
- <5e2635ac-35de-645b-b5e7-235923f844ce@oss.qualcomm.com>
- <x5gv6dxdum5klzfjyo7xjqull6o43okkmkn7avssg26epbvrz6@z2brpssbk7iv>
- <0b41ee7c-83fe-d604-b750-8a5a0bd62bf8@oss.qualcomm.com>
- <CAPDyKFrO3DzfG0aW4z4w87j_iWM=3dpvp=2Wgr4MX1Bin5-6ZA@mail.gmail.com>
- <6yfn6ux3gbin2dtopdxxv4okinspueryuey5vfdq633gsewc6r@ttp56brnpgvr>
- <CAPDyKFpm7ujNw51dVpPaHCwssjgYe1JVBEyrQ_1CsPbDJuW0Ww@mail.gmail.com>
- <4fiyjcqt5smotudsfzyqrevxxnx3sf5grbgfluzkndbp2od6pq@vlyikcvl3xkb>
-From: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Content-Language: en-US
-In-Reply-To: <4fiyjcqt5smotudsfzyqrevxxnx3sf5grbgfluzkndbp2od6pq@vlyikcvl3xkb>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <acxInP3_rU9H8Q5V@aurel32.net>
 
-On 01/04/2026 12:01, Dmitry Baryshkov wrote:
->> Right.
->>
->> Since it's my mistake, let me reconsider. If I rebase my branch and
->> share the necessary commit through an immutable branch that you can
->> pull in. Would that work for you?
-> I think that question goes to Vikash, Dikshita, Bryan and linux-media
-> maintainers.  Bryan, what is the plan for this patchset? Should Ulf
-> rebase the branch? Or is this patchset delayed for some other reasons?
+On Wed, 01 Apr 2026, Aurelien Jarno wrote:
 
-Yeah no it's grand, immutable tag works fine.
+> Hi Lee,
+> 
+> On 2025-11-05 10:11, Lee Jones wrote:
+> > On Wed, 05 Nov 2025, Lee Jones wrote:
+> > 
+> > > On Wed, 05 Nov 2025, Troy Mitchell wrote:
+> > > 
+> > > > On Wed, Nov 05, 2025 at 09:34:21AM +0000, Lee Jones wrote:
+> > > > > On Tue, 04 Nov 2025, Troy Mitchell wrote:
+> > > > > 
+> > > > > > On Mon, Nov 03, 2025 at 01:48:33AM +0100, Sebastian Reichel wrote:
+> > > > > > > 
+> > > > > > > On Mon, 03 Nov 2025 00:01:58 +0100, Aurelien Jarno wrote:
+> > > > > > > > This adds poweroff/reboot support for the SpacemiT P1 PMIC chip, which is
+> > > > > > > > commonly paired with the SpacemiT K1 SoC.
+> > > > > > > > 
+> > > > > > > > Note: For reliable operation, this driver depends on a this patch that adds
+> > > > > > > > atomic transfer support to the SpacemiT I2C controller driver:
+> > > > > > > >   https://lore.kernel.org/spacemit/20251009-k1-i2c-atomic-v4-1-a89367870286@linux.spacemit.com/
+> > > > ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > > dependency is here.
+> > > > > > > > 
+> > > > > > > > [...]
+> > > > > > > 
+> > > > > > > Applied, thanks!
+> > > > > > > 
+> > > > > > > [1/2] driver: reset: spacemit-p1: add driver for poweroff/reboot
+> > > > > > >       commit: 28124cc0fb8c7dc01a6834d227351e25d9a92c58
+> > > > > > Should we apply it now? The dependency patch hasn’t been merged yet...
+> > > > > 
+> > > > > What is the dependency?
+> > > > I point it out above.
+> > > > Without this patch, reboot and shutdown would end up calling the non-atomic i2c_transfer.
+> > > 
+> > > Okay, thanks.  I was mostly checking that you weren't referring to the
+> > > MFD patch, which doesn't represent a true dependency.
+> > 
+> > To save Sebastian some trouble, let's keep the reboot patch applied.
+> > 
+> > I'll hold off on the MFD one, which will ensure that reboot isn't probed.
+> > 
+> > Let me know when the dep is merged and I'll hoover up the rest of the set.
+> 
+> The dependency is still not yet merged, although it has been ready for 
+> weeks, and I am just crossing fingers that it will get picked-up for
+> for 7.1.
+> 
+> That said it's not a hard dependency, in most cases reboot will work, 
+> which is an improvement over no reboot driver. The missing I2C PIO 
+> patches are just there to make it reliable.
+> 
+> Therefore given the 7.1 merge window approaching, I believe it's better 
+> to merge this simple MFD patch and to not wait more.
 
----
-bod
+It's too late for v7.1 now.
+
+I think this set has been well and truly forgotten.
+
+Please rebase and submit a [RESEND] with the info in the cover letter.
+
+-- 
+Lee Jones [李琼斯]
