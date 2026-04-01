@@ -1,44 +1,40 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 935A43DEFF6;
-	Wed,  1 Apr 2026 14:51:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C66603B9DAA;
+	Wed,  1 Apr 2026 14:51:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775055103; cv=none; b=Q/NGGjCxAzn/lySlKJ/xnzl0UveazxlAhMhXQxOvCrB+CX7tkb6sXj2zMHmu+oqwmgsVgDPl+blAWXBKOZnAOAchhKiXqIzxabHvMDRQTe8Rnhc4ZVkV8XHuv+/UiorGtObAFHnXrFxaVA4OQILa6anS6hq9l/edA1LflCuJNpQ=
+	t=1775055106; cv=none; b=Sdir5LOx94Ix/UAP+jL0+RFcFZphw4xZpUxrYkLW+FNvJ6KoDrQa6iSgdP7fmJ6Uswon+MaAHf491uS4e3I0AQYcXLDJ/9LiwVNmBGIr6l69Owh6MUogleejT3ACWq4StftBknMHyGh7k+xlygw6xAbvHrEEVIFWQGfAziCyRCI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775055103; c=relaxed/simple;
-	bh=Yhrtbp/k92ahaHlAi6531bQrgJS5kO/zOPxTHik69LE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QcjAhS/whrS2fyS7/GsAEwlo3c0I7jRdvHOQKSri7RF+kyxL8aI2b0mug9+0BfGyVkEDf7DbWMZxTbX3QjOIak1pw44m/tvYVWNW4C0k+BvQn5G1wQ4fVNN+c0YUGq4cEidU4fj5aJKgvtwfSOp1p4hvKWtn9TX7K6TCuxzYM5w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DP11yPzZ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775055106; c=relaxed/simple;
+	bh=qC3pqqL20WPD4j24+FqyUnsgjxX6qkBp+hFH+T15ZDY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=sMeMC4BR6ITwZLA3qP5xacovy10/P+f2O5l2oHY/SoEfXF7Q2qxexHZ9h+seogGOHW08M4mPnJD1UkKIf+wkDN8DfmDuG30jD1qPySMfD7Scodp16i/OM3KH7jerlm2BQ5F+fJdVAPaCTqfTxaGKtpaThc+Akz7ci/+hGXaU2jI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hfgY1gR5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DP11yPzZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E8A1C4CEF7;
-	Wed,  1 Apr 2026 14:51:40 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hfgY1gR5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F112C2BCAF;
+	Wed,  1 Apr 2026 14:51:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775055103;
-	bh=Yhrtbp/k92ahaHlAi6531bQrgJS5kO/zOPxTHik69LE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DP11yPzZwvcYUS0bXQWrx1mARUrx9VrIkDb/REpqcy1aeYoEP8KK5mNjzNLGae++h
-	 pyRAp/Vu56pf6T8MVkd7/bD+3Z6BWmCtxafvQqO8JlEDbAh0oDgxECl3hoV34WYGs+
-	 z87qKdQ6xKOXXTryy3YlMWCWsJ2ZnchKuJzxuLDAmHF2otcHfe3SeOQiQYn3Nji/MP
-	 6DYpasMkkv4aLM4BxJxFLVWwk+31p4CQ/YRFSxDgmhcs4khQGJGXAF/aSAeLyhOpkK
-	 SFtrqBBANZ25AA6qfznj87AvnTWC4/2ikKr6qYtpVqnJD/5yM665RwxDMQYhBE7gi7
-	 rDHRvvkogk0YQ==
+	s=k20201202; t=1775055106;
+	bh=qC3pqqL20WPD4j24+FqyUnsgjxX6qkBp+hFH+T15ZDY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=hfgY1gR5eu+oNf8TXGlmVe7KkFTVwlBeCMFGOGC3Xubi+ItRfWH5GOXOlaAtiDjUf
+	 yxjXcMLJ+uckL8F4xajufbJO8LNdH8oqo/u/jwrJsDWxm5lTXf3K7DZc+oQRt00IpD
+	 UdkoLlqp1JLIh0ZjTVx1Eps2cQ66Sxjhu0IwmqZ1lTXhzoyklLWuMyJiWbQL+qTm3Y
+	 r7FSkDSQ7mW5lgABoFSzgXkn0WHzEolbMSkv6rSAlRytFukF2C2AX25k76VB+cNyOx
+	 yJthsBKuWh7tV+hgDSZpFvuVTyCzqkrxAEZQEdT6dJZEblmV2oCbeIJTTyfreySvgb
+	 omq+eJi4gPRFg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Armin Wolf <w_armin@gmx.de>
 Subject:
- [PATCH v2 1/4] thermal: core: Drop redundant check from
- thermal_zone_device_update()
-Date: Wed, 01 Apr 2026 16:37:36 +0200
-Message-ID: <4748678.LvFx2qVVIh@rafael.j.wysocki>
+ [PATCH v2 0/4] thermal: core: Simplifications and suspend/resume relocation
+Date: Wed, 01 Apr 2026 16:36:24 +0200
+Message-ID: <6277980.lOV4Wx5bFT@rafael.j.wysocki>
 Organization: Linux Kernel Development
-In-Reply-To: <6277980.lOV4Wx5bFT@rafael.j.wysocki>
-References: <6277980.lOV4Wx5bFT@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -48,55 +44,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Since __thermal_zone_device_update() checks if tz->state is
-TZ_STATE_READY and bails out immediately otherwise, it is not
-necessary to check the thermal_zone_is_present() return value in
-thermal_zone_device_update().  Namely, tz->state is equal to
-TZ_STATE_FLAG_INIT initially and that flag is only cleared in
-thermal_zone_init_complete() after adding tz to the list of thermal
-zones, and thermal_zone_exit() sets TZ_STATE_FLAG_EXIT in tz->state
-while removing tz from that list.  Thus tz->state is not TZ_STATE_READY
-when tz is not in the list and the check mentioned above is redundant.
+This is an update of
 
-Accordingly, drop the redundant thermal_zone_is_present() check from
-thermal_zone_device_update() and drop the former altogether because it
-has no more users.
+https://lore.kernel.org/linux-pm/4745677.LvFx2qVVIh@rafael.j.wysocki/
 
-No intentional functional impact.
+that reorders the last two patches and modifies them to address Sashiko
+review feedback.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+This series is intended for 7.1 (it applies on top of linux-next).
 
-v1 -> v2: No changes
+It removes a redundant check (patch [1/4]), changes the thermal workqueue
+to an unbound and non-freezable one (patch [2/4]), relocates the suspend
+and resume of thermal zones closer to the suspend and resume of devices,
+respectively (patch [3/4]), and changes the allocation of thermal_class to
+static (patch [4/4]).
 
----
- drivers/thermal/thermal_core.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -702,18 +702,12 @@ int thermal_zone_device_disable(struct t
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
- 
--static bool thermal_zone_is_present(struct thermal_zone_device *tz)
--{
--	return !list_empty(&tz->node);
--}
--
- void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
- 	guard(thermal_zone)(tz);
- 
--	if (thermal_zone_is_present(tz))
--		__thermal_zone_device_update(tz, event);
-+	__thermal_zone_device_update(tz, event);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
- 
+Thanks!
 
 
 
