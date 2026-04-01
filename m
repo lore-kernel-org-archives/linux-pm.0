@@ -1,178 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com [209.85.160.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A5D547A0C7
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 17:33:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C6BD47CC87
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 18:53:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775064788; cv=none; b=M7AdJ5RKxwoiP1bpFeY3h+w+KJjrcKqG50hXdI8v5CMqILpRdAJIDP6W+nmeGKFMVsXfWsb1B10Cw5hYqASGwMLOmWOt8Z36CvxW082aUlGLvgHeLzb5/ig6z8X7rnb1aGjUJnjUmXjLxN54X/Y+IWIv7EARbGER770CRpdTeYA=
+	t=1775069600; cv=none; b=lcK959siaKJ4ReZvdMHJcvgtpPDHuLHNc+Mi9g+G+JOWJbzLC118/DoC1/mo1uIB3X7zseH6a87UjEZLWcZw/G/IUdU5ZUSs+oQBFMhAzx4HAa7JSIDPf1z01zeIVrQGYet7X7UDvxRPO7olfHZdXt+Ga7cue280mhfWypTVHtA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775064788; c=relaxed/simple;
-	bh=sEkgNEoNFrwBslL4sVxb0uVvIjOiGbn5x3ZhU2UpNyk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oipAzhQTIuqCAgoeaQauXeBE1xS4YVK2QzpUTMykTu3dRGzzjMvvcBlAOleSmYaNKGxJjXnPYlf7iss72q0jgW3QcRKgUacNd8qCB0cAY5PJE+oGVSR7ls2MDkr9p9lIbPhxyWA49sxhZ2L+rhDKp7jChXGTYQq1WId3JifDuTU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IR5+hFgR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775069600; c=relaxed/simple;
+	bh=kC5OouIe8JLFNvSAHb0QM0kS2o0uDCv9ZT+G6Yh3kCM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=g+zAL29KjkSBjBQvCmGS4sP6BYWYwvpRD13/obHte8gY272rs6CoryvNdt55np2jK5WYNxJwKhgEfj/sSn2hMe+QVojYAuNnO/yizPokYirddhLDvL2NB4Lvxb/tGIohD1sdReEb75ge72xap2txFhm7/JVpM/mvoJ/IPLXaziU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=g/fYh67q; arc=none smtp.client-ip=209.85.160.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IR5+hFgR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4001AC2BCB3
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 17:33:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775064788;
-	bh=sEkgNEoNFrwBslL4sVxb0uVvIjOiGbn5x3ZhU2UpNyk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=IR5+hFgR/Bgu6mAZ+dbgdnXzKtA0jhoG45fRxB9dsOQtWxXHRHgupPBYYcgiqGCfM
-	 CSq663dDJ4CYpj3koGn1Ex4pYtF970QEUKRLMNhN0ZiG8WW6XJfjzr+gXT3c1U3D2k
-	 Ax5IVniDiSXdP1SDYTWkvamxTSIPaWW+yHCaNoSecp5Q/8blG2z1vGCMN6eFu1FLZb
-	 NdEqvetWdbfLH7tfmAAGeh6zyggk/NZIcx9PgX4HrDaeErN297+yCeomQqgCv1Y+9y
-	 Q5zGQyIICnmS02TOhusEQXHU1tssWBJKVcE0+B+cd8HyWd1Weic/nrt2lOnuhJc4g/
-	 wqq+hN3KPjiig==
-Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-41c4d660b19so7573fac.1
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 10:33:08 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXWjbKDCQDMpna+4WYsonvHnQywpzCo6fNRR1Xftg+FFqqOP52MZmYrZZsJMei3+q2LWJPYjLj8PQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyHeP8bYduzvpnvfzUiBpC8sNGg8ghlwbBiMgCJdQOe8Wopi4gH
-	XE+o4ZTGAA4glXS4M31gkWL2lMi749yfMtqzll3aea6xaF2bRtJmrLeE5nm2zHcPOZxN8RBNL0+
-	vpEqw2FKDFT2c8zWqVtapP+aza8g9jMU=
-X-Received: by 2002:a05:6870:e9a9:b0:408:9c83:5b1a with SMTP id
- 586e51a60fabf-422ec4b18d6mr320595fac.4.1775064787326; Wed, 01 Apr 2026
- 10:33:07 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="g/fYh67q"
+Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-40ea611d1a4so38970fac.2
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 11:53:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1775069598; x=1775674398; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ermOPMI7gPtP86hr7nxX3Quhh4GuerIQcTNRh/kJzK4=;
+        b=g/fYh67qgUOPJJ+Mmsu444eNr4mefTrXZW+3th1+SzmvjCIutWMK252jUCKR/gbKSZ
+         1PiVOX5DMfnnDPIUP8NUoLIQkTg9lkOjidowN+Kk9CCeZCHTS4sAAOEfntCuIIz9d92X
+         fo+P/p067aQr/8Lj2OH4D4kKXUmNcDxBaxLq4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775069598; x=1775674398;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ermOPMI7gPtP86hr7nxX3Quhh4GuerIQcTNRh/kJzK4=;
+        b=c5erlRx3+21LMmsbfIQrSFtHbvsJF8v+xGttRFs/Shtyo2tSxGHpo4nFEhgSKTgh3H
+         j2WvGWa4GYFcU5EetY3e/iYKwd6cChYy0KfJnLZyHJFA9kTsjq+HRt4TaiMWHn76kVel
+         KNL17sstSlOUlH5EpE4qb1SnjwSiZXKWlpVdORhTKGOSk8VnZmYJn3mM/n7pjSBFXgom
+         bZNkyGscuka6OEYImtX2qzQvfV6Q7sX+8FJSwQCCgPKOb3SYOzcNpX7TXZ83yfOHvonw
+         DFtHDXFYGM6ZMch0AG9R4V0oh39yRlJ/jV9E3VCHP5xiZTCzkU9Iy9+mVUSdCjTamHRU
+         A2rg==
+X-Gm-Message-State: AOJu0YyrGyba/xY5wnOfiIIp5U8vUcjHDtQtYjEdsvKilg7d/VQTYPqA
+	XDn+TwOmaCvsd3mrtqea3MzrI9ikRrhZdv/iQkqC9VlGd1BbaDov6fk3r+KMB3wi9i0=
+X-Gm-Gg: ATEYQzzUybHjHuYbrcyun6G32yoCOAYl4ErpFMaSVW1dvQT1sMsudbMnGl2cOF9UFed
+	6zHuW/vq/XA9xjvjbhIjzcrbypbWaX4ADiArwq+ZP6TS27oxmfpBR/z0ImUFDoyMSfuuyDBORIr
+	pd902mYtXEa2nLlhwuOn4xV73EpyBFmZ9xUqAIXVZDNxoeUANbfFQYDT0WNkbu8P5RCSpyO/SDz
+	iADc0kQsRHTT3hKuM9EFthqhgLKnxXoO6Gx47e/GBRBsrQ7d5nVKiXFxv2U15kndZqSHZcof9rs
+	/yXw9JKcT1DZP2Hs2OkfcyIlMcvFosgmgt6ut7tdRa3Toa2qD2n0QXbE4WfUHx2ZXGu5JjRV1nV
+	e4Ls9O0nv7Nn3AAC/fylK8azg24fdJCYDD0nBdhyyvwLIfu1FE5njlLi68xsB7vIsNjd0LxMGra
+	2VskD0yTL9U8GvXwo5krG42HvW1GZrl6USWBA=
+X-Received: by 2002:a05:6870:1b87:b0:404:3ecf:9ae5 with SMTP id 586e51a60fabf-422cfedaeeemr2881535fac.40.1775069598284;
+        Wed, 01 Apr 2026 11:53:18 -0700 (PDT)
+Received: from [192.168.1.14] ([38.175.187.108])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-422eab0ef68sm478476fac.0.2026.04.01.11.53.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Apr 2026 11:53:17 -0700 (PDT)
+Message-ID: <f0bcad85-81e9-451d-8267-729b60531590@linuxfoundation.org>
+Date: Wed, 1 Apr 2026 12:53:16 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <0fe1b679-ab28-4505-b0db-14e7ac3ba749@gmail.com>
- <CAJZ5v0iMfiqjkkvOMU6jWEZ+nBvcRtWNwjvBW0pEva1G_owFcg@mail.gmail.com> <744440a6-e1cb-4792-a848-57755de0686b@gmail.com>
-In-Reply-To: <744440a6-e1cb-4792-a848-57755de0686b@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 1 Apr 2026 19:32:55 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i5dSuQ7f8Okb-Ch5igzNn=L_Fj5d3H4pftvxoEVBaDUw@mail.gmail.com>
-X-Gm-Features: AQROBzDhTBIFu7dvBt4y-4eQwrO9u7phnBAcNBILEjL4e8VqcC1EcoI93TH9aRk
-Message-ID: <CAJZ5v0i5dSuQ7f8Okb-Ch5igzNn=L_Fj5d3H4pftvxoEVBaDUw@mail.gmail.com>
-Subject: Re: [PATCH] PM / wakeup: Allocate class wakeup_class statically
-To: Heiner Kallweit <hkallweit1@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Linux PM <linux-pm@vger.kernel.org>, driver-core@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpupower: remove extern declarations in cmd_set()
+To: "Kumar, Kaushlendra" <kaushlendra.kumar@intel.com>,
+ "shuah@kernel.org" <shuah@kernel.org>, "jwyatt@redhat.com"
+ <jwyatt@redhat.com>, "jkacur@redhat.com" <jkacur@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Shuah Khan <skhan@linuxfoundation.org>
+References: <20260331045906.1935188-1-kaushlendra.kumar@intel.com>
+ <3c2101df-c3a8-4761-80d1-ca7b7c6aaac6@linuxfoundation.org>
+ <LV3PR11MB87682C0658A16EC72B47FB72F550A@LV3PR11MB8768.namprd11.prod.outlook.com>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <LV3PR11MB87682C0658A16EC72B47FB72F550A@LV3PR11MB8768.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 1, 2026 at 5:45=E2=80=AFPM Heiner Kallweit <hkallweit1@gmail.co=
-m> wrote:
->
-> On 01.04.2026 16:19, Rafael J. Wysocki wrote:
-> > On Sun, Mar 29, 2026 at 6:14=E2=80=AFPM Heiner Kallweit <hkallweit1@gma=
-il.com> wrote:
-> >>
-> >> Allocating wakeup_class statically avoids a little runtime overhead.
-> >> Define groups and device release function as part of the class, so tha=
-t
-> >> we don't have to repeat this for each class device.
-> >> Whilst at it, constify wakeup_source_attrs[].
-> >>
-> >> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
-> >
-> > Can you please have a look at this and let me know what you think:
-> >
-> > https://sashiko.dev/#/patchset/0fe1b679-ab28-4505-b0db-14e7ac3ba749%40g=
-mail.com
-> >
-> Interesting finding! I think the diagnosis is right.
->
-> But: I would say the current behavior isn't a nice solution as well:
+On 3/31/26 20:49, Kumar, Kaushlendra wrote:
+> On 4/1/26 XX:XX, Shuah Khan wrote:
+>> Okay - are there errors from compilers or static checkers? How did you find the problem?
+> 
+> No errors from compilers or static checkers. We found this while doing
+> local code modifications to the file. During the review of the changes,
+> we noticed the redundant extern declarations and cleaned them up as part
+> of good housekeeping.
 
-It is not fantastic, but it doesn't have this issue.
+There are a few other places in cpupower that can be fixed. Send
+me a patch that removes just the extern declarations without the
+parse_int_range() stuff
 
-> wakeup_source_device_create() does: dev->class =3D wakeup_class;
-> I think no reader will expect that wakeup_class may be NULL here due to
-> initcall ordering. In addition this behavior results in such early
-> wakeup sources not being shown in sysfs.
+extern char *optarg;
+extern int optind, opterr, optopt;
 
-They are registered too early to show up in sysfs, but they can work regard=
-less.
-
-I think that it's just pointless to call device_register() for a given
-wakeup source if wakeup_class has not been registered yet.
-
-> But I'm not sure whether registering class "wakeup" (and registering
-> classes in general) would be possible early enough (core_initcall,
-> or even pure_initcall).
-
-driver_init() is called before do_initcalls() is do_basic_setup(), so
-class registration should work for all initcall levels AFAICS.
-
-> >> ---
-> >>  drivers/base/power/wakeup_stats.c | 18 +++++++++---------
-> >>  1 file changed, 9 insertions(+), 9 deletions(-)
-> >>
-> >> diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wa=
-keup_stats.c
-> >> index 308f8bde9..72beb8fce 100644
-> >> --- a/drivers/base/power/wakeup_stats.c
-> >> +++ b/drivers/base/power/wakeup_stats.c
-> >> @@ -18,8 +18,6 @@
-> >>
-> >>  #include "power.h"
-> >>
-> >> -static struct class *wakeup_class;
-> >> -
-> >>  #define wakeup_attr(_name)                                           =
-  \
-> >>  static ssize_t _name##_show(struct device *dev,                      =
-          \
-> >>                             struct device_attribute *attr, char *buf) =
-  \
-> >> @@ -114,7 +112,7 @@ static ssize_t prevent_suspend_time_ms_show(struct=
- device *dev,
-> >>  }
-> >>  static DEVICE_ATTR_RO(prevent_suspend_time_ms);
-> >>
-> >> -static struct attribute *wakeup_source_attrs[] =3D {
-> >> +static const struct attribute *const wakeup_source_attrs[] =3D {
-> >>         &dev_attr_name.attr,
-> >>         &dev_attr_active_count.attr,
-> >>         &dev_attr_event_count.attr,
-> >> @@ -135,6 +133,12 @@ static void device_create_release(struct device *=
-dev)
-> >>         kfree(dev);
-> >>  }
-> >>
-> >> +static const struct class wakeup_class =3D {
-> >> +       .name =3D "wakeup",
-> >> +       .dev_release =3D device_create_release,
-> >> +       .dev_groups =3D wakeup_source_groups,
-> >> +};
-> >> +
-> >>  static struct device *wakeup_source_device_create(struct device *pare=
-nt,
-> >>                                                   struct wakeup_source=
- *ws)
-> >>  {
-> >> @@ -149,10 +153,8 @@ static struct device *wakeup_source_device_create=
-(struct device *parent,
-> >>
-> >>         device_initialize(dev);
-> >>         dev->devt =3D MKDEV(0, 0);
-> >> -       dev->class =3D wakeup_class;
-> >> +       dev->class =3D &wakeup_class;
-> >>         dev->parent =3D parent;
-> >> -       dev->groups =3D wakeup_source_groups;
-> >> -       dev->release =3D device_create_release;
-> >>         dev_set_drvdata(dev, ws);
-> >>         device_set_pm_not_required(dev);
-> >>
-> >> @@ -212,8 +214,6 @@ void wakeup_source_sysfs_remove(struct wakeup_sour=
-ce *ws)
-> >>
-> >>  static int __init wakeup_sources_sysfs_init(void)
-> >>  {
-> >> -       wakeup_class =3D class_create("wakeup");
-> >> -
-> >> -       return PTR_ERR_OR_ZERO(wakeup_class);
-> >> +       return class_register(&wakeup_class);
-> >>  }
-> >>  postcore_initcall(wakeup_sources_sysfs_init);
-> >> --
-> >> 2.53.0
-> >>
->
+thanks,
+-- Shuah
