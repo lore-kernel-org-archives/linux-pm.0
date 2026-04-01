@@ -1,68 +1,218 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 024AD3DEFF4;
-	Wed,  1 Apr 2026 10:44:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775040280; cv=none; b=L5uA8rB/D1h7p8coiP+pyuIDkemE2CtlrGvBLQnTdWImjbyY+jD5WlG7Il1uqWesE7vIpDRaJ6hMhyfBiZzPq3LvOCwIZCKXOScqEEOyLH2yovAV3pAnJzb38ZxvLv0KPtBPRicZAQmUedtysvyggnSiNh/X9YsMfV97TymPFf4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775040280; c=relaxed/simple;
-	bh=vpIPJp6qKXZs2RoYHC30XBTLU8o8yKndpTBkfQ9uCE0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tEBIXEhXL4HzIxhtgtHxV2JJAarenCYOXa5hrQvmrV5CacMtfHfsVcBpPZcieQAz6OcsY/f7eKQKWJHmoFCOS9vjTe4R7Tmy+Lbt0VE+avem2/ffEI8AuB6/WZHVOve304uDbwuw231WsHVZkVDGiPGO6NF1Gwvl/8DtXIhMlVg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ZoRRizeY; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58A383C7DF2
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 10:46:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775040402; cv=pass; b=GQd3CR4mn4LlM+j0XeA3YYH0mOwOza35rIAKGxtpCdhtDj6fkfJ51yKiIddNwh+5Xuyx1zoVNhdnxHtZUMZ9CrUpEWzuKusjg7/+innhCCh5mv8Cqy6i1KbbzWEUzj+Ju41K3+jfnEGCuzl5jUMa1oE/nVUjZ/nGvQIBymrBc9U=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775040402; c=relaxed/simple;
+	bh=40aqi1I55Vmq2m60iYFNVNuV+Shkhm9O7nHBPNLlR0s=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JlTc4B+LO70AmmGguDFq1g6vUf7AJtqdYlkguo0E0ZTPZVzuYWrZEIvWDiHr4LJidxGoU2tHzGPYSOGEabzBEmKwXaMrCjbAI/eiWq5dNIQO6DmxiuSixbhhU5Htvhm6Luzu89Ej215XmNEqvn+bIwor00kWDLyTX/JaB+3Jcws=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=focpdnG0; arc=pass smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ZoRRizeY"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7597E168F;
-	Wed,  1 Apr 2026 03:44:31 -0700 (PDT)
-Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7DCC73F915;
-	Wed,  1 Apr 2026 03:44:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1775040277; bh=vpIPJp6qKXZs2RoYHC30XBTLU8o8yKndpTBkfQ9uCE0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZoRRizeYLglzeTWg3NXrJlo14WJTIqN/m55Cvxkvhiz92W/IyUVqSTBtiJWR4Deiu
-	 LW6Wupi0xY2S7259D4eQOAbY76ZfplaFH/S99iESGJZ9FUEOAHwQKM1rGDvlWT8ES7
-	 t7zSd3BH41VQIvZz0gd5AMdunBMrD1He+F4Dm3uI=
-Date: Wed, 1 Apr 2026 11:44:31 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	bpf@vger.kernel.org, arnd@arndb.de, will@kernel.org,
-	peterz@infradead.org, akpm@linux-foundation.org,
-	mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org,
-	ast@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
-	memxor@gmail.com, zhenglifeng1@huawei.com,
-	xueshuai@linux.alibaba.com, rdunlap@infradead.org,
-	david.laight.linux@gmail.com, joao.m.martins@oracle.com,
-	boris.ostrovsky@oracle.com, konrad.wilk@oracle.com
-Subject: Re: [PATCH v10 04/12] arm64: support WFET in
- smp_cond_load_relaxed_timeout()
-Message-ID: <acz3D1SkqDqyH0Dy@arm.com>
-References: <20260316013651.3225328-1-ankur.a.arora@oracle.com>
- <20260316013651.3225328-5-ankur.a.arora@oracle.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="focpdnG0"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a0faa0d15cso7171421e87.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 03:46:41 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775040400; cv=none;
+        d=google.com; s=arc-20240605;
+        b=BqriYoKd+fmI2DAezkwOgeGfZbnwlQcktHxXYvYjIHGUolTYJKxK2uEL0dRPu6jrph
+         Cu4UlUrM+IAc5uqkdcjj8MnJOxGKMwcQp1lcPyXGfOM9Ou8OWqUhBYOahVxHCwQXtve+
+         DY9i/k+bSmvmbgaqXRZjxiTclnFiHo3oU5ryEK6qrFR8MTVC1idoXFfZtYxxE4YrbL4z
+         b7b3DEBnkerOUMvyyn5BQhOSQcWX8Zdc33uYQxI5maAkuLVtcPXXPPVBriuI4lbV2IyF
+         SRLbHxs8MOXLUoj0te9sgIbW42HRl89JiVmV4RtaXiUqNJWrZiOOu68ZDqQoqlWTeuPW
+         QNDw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=gSozclW0x9vuMSqSBfuRXxbpTpkomr2e0lWVw9uMgPE=;
+        fh=fQMcHz0ro/7u42xUvwf85pAdhRURJilMni12tzeq8iI=;
+        b=S17BExVilo37hKcjWmp5mIbVeiGavtN2cYCMiulkW/MVXn3tJwC0GsM5CJUyfUV9p+
+         RjOIy796yya/CAODuXfi35AioMpS82XJUkpvQkNqf0gcpcUPoWkyyE063KgwcNYLjoG2
+         AozEc1vEpYIqihOjZqohQCQyp3BwlEd8sdcMtO1mnfCvzPc5RJlDjVX7bFWL/CzT2/C4
+         KJTFgeyIZ4F+0H1XtBiPZBP077gmSN72CBcPjrHx95lAEpDdIJr8IdIjF4EovM9EqKSM
+         7PAhH8At1C7VdbhRWjMwfpuuKkRguWlFd4Hg/jKHGmaw+KJ3ftCqLEURDz0RxStG5zib
+         IT4g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1775040400; x=1775645200; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gSozclW0x9vuMSqSBfuRXxbpTpkomr2e0lWVw9uMgPE=;
+        b=focpdnG0GNhSC5kPZtsCRM+qqdNyOoozw55topTHlqkT64idlswtImyxxhINAityZZ
+         bcEtkg/HPSTytTw7A7MPNY4KkVmXLrzLkLNNTKPj37Twvjaz0onaXbAptuv2B9tBXsAm
+         2WmpmwS0pSogb9M4YXD79tOwcd2o4l3CaB+9FpQ6EEUXLJpEW1fTksCZp8+MxDx6LzWn
+         /DvY6EnxnogHltjx+1SbFhTNABu/66GEItPQ49kbEvm7oKb30fBNNsEW4HE5wkNotULc
+         FLaFedn5Z7OazQsO17FVTAh0EzOKMFAMPfBNzn7W+Usd+sa5n4vjcA/biSE5Ua6XReIz
+         Q5RQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775040400; x=1775645200;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=gSozclW0x9vuMSqSBfuRXxbpTpkomr2e0lWVw9uMgPE=;
+        b=jDMgAGLkcOq0bnvzPQyym5RkUgWXjU/bl7lHUROYlfKGow0lsSL5L+p3HZ2V0h9X5e
+         HTdY9fMHgwg1VdB8Eoo/PQQoSVcaZdjC0OZeoGDN8QtFPCM4ZQwVDza9YYH10OMXaCbM
+         o9E/2qY1BZ1rZ4VITyxoQ8FgOtFGYdOC3L+dUiokcJlKM7GHgiw3cGlmEVrkAaYE7s6s
+         ZrNc/m1niErfyAsthKEQ9tlViVViePAcXo4a2/Ef9CtZwPjFFGqqP3fCmjpnuQOpxyKu
+         plihl34g5inNJe+T94pPADvnYYxe12jxWFGN2Glz1TLJ52kNZNUEs5M0sOa79N5mv5vL
+         jfhQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX00wffOfWXT2QJTP9iiCR1O1vQlPxvC3Bnt33X+LOTXoa/dSpjn+NEBbVRaYzvNFf0NckCvafC+Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxuFDq0r+JFAIvmi/+KQwyjH5SNzJ06zEdnbmk2S/tBwBKc+iv5
+	RGZ8yU9J/lJrs5e+zI43JneLY4xo5Atl333D2j1dOmgEst6cXZPOliykTY+UjiiCYLpMwMRSvWt
+	D84Z2N4H4Jv3sYi+x0HtGp9bqzjrKl1BWNCCj1/e+9Q==
+X-Gm-Gg: ATEYQzxr4v4st5ngVCcSgJ1adGedTM3K6z4LzBm09lCz5GjkgojuQJLNPqT6pVTznN4
+	iMw3Dgk2OKq8Ka6PQ6JuWMluFIr8wJeK1xJ7/FWn52QSgz9dhPz/loEQWSJogg8E/7ihfm/QkcI
+	84yhAEzhS4St4mpq6s92WD6i36/WugXiAtvyMDs5dk+lD3183XLMYiUc8fhZtV/Sq5AVLAQPc/o
+	lA/qd8vUnL+PXNKCWYyT8JWHI873cVzJCrySJ5SCdeJdqevWWJMpjj+rnQUAW3c08mm64DDrE6T
+	s2oavcnk
+X-Received: by 2002:a05:6512:1254:b0:5a2:c0b6:729e with SMTP id
+ 2adb3069b0e04-5a2c1ee82b3mr1132629e87.4.1775040399387; Wed, 01 Apr 2026
+ 03:46:39 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260316013651.3225328-5-ankur.a.arora@oracle.com>
+References: <20260209-iris-venus-fix-sm8250-v5-0-0a22365d3585@oss.qualcomm.com>
+ <20260209-iris-venus-fix-sm8250-v5-2-0a22365d3585@oss.qualcomm.com>
+ <5e2635ac-35de-645b-b5e7-235923f844ce@oss.qualcomm.com> <x5gv6dxdum5klzfjyo7xjqull6o43okkmkn7avssg26epbvrz6@z2brpssbk7iv>
+ <0b41ee7c-83fe-d604-b750-8a5a0bd62bf8@oss.qualcomm.com> <CAPDyKFrO3DzfG0aW4z4w87j_iWM=3dpvp=2Wgr4MX1Bin5-6ZA@mail.gmail.com>
+ <6yfn6ux3gbin2dtopdxxv4okinspueryuey5vfdq633gsewc6r@ttp56brnpgvr>
+In-Reply-To: <6yfn6ux3gbin2dtopdxxv4okinspueryuey5vfdq633gsewc6r@ttp56brnpgvr>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 1 Apr 2026 12:46:01 +0200
+X-Gm-Features: AQROBzANxupbHHkAqu8GJiUFFGG603SVUVTYVg4H2FBCM1h61nXzlIOx_SK4W6w
+Message-ID: <CAPDyKFpm7ujNw51dVpPaHCwssjgYe1JVBEyrQ_1CsPbDJuW0Ww@mail.gmail.com>
+Subject: Re: [PATCH v5 2/5] media: iris: scale MMCX power domain on SM8250
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Taniya Das <quic_tdas@quicinc.com>, Jonathan Marek <jonathan@marek.ca>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, "Bryan O'Donoghue" <bod@kernel.org>, 
+	Vikash Garodia <vikash.garodia@oss.qualcomm.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, 
+	Abhinav Kumar <abhinav.kumar@linux.dev>, Hans Verkuil <hverkuil@kernel.org>, 
+	Stefan Schmidt <stefan.schmidt@linaro.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	"Bryan O'Donoghue" <bryan.odonoghue@linaro.org>, Dikshita Agarwal <dikshita@qti.qualcomm.com>, 
+	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-media@vger.kernel.org, 
+	Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Mar 15, 2026 at 06:36:43PM -0700, Ankur Arora wrote:
-> To handle WFET use __cmpwait_timeout() similarly to __cmpwait(). These
-> call out to the respective __cmpwait_case_timeout_##sz(),
-> __cmpwait_case_##sz() functions.
-> 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+On Tue, 31 Mar 2026 at 20:46, Dmitry Baryshkov
+<dmitry.baryshkov@oss.qualcomm.com> wrote:
+>
+> On Tue, Mar 31, 2026 at 01:33:35PM +0200, Ulf Hansson wrote:
+> > On Mon, 30 Mar 2026 at 15:06, Dikshita Agarwal
+> > <dikshita.agarwal@oss.qualcomm.com> wrote:
+> > >
+> > >
+> > >
+> > > On 3/30/2026 4:45 PM, Dmitry Baryshkov wrote:
+> > > > On Mon, Mar 30, 2026 at 10:55:02AM +0530, Dikshita Agarwal wrote:
+> > > >>
+> > > >>
+> > > >> On 2/9/2026 7:02 AM, Dmitry Baryshkov wrote:
+> > > >>> On SM8250 most of the video clocks are powered by the MMCX domain=
+, while
+> > > >>> the PLL is powered on by the MX domain. Extend the driver to supp=
+ort
+> > > >>> scaling both power domains, while keeping compatibility with the
+> > > >>> existing DTs, which define only the MX domain.
+> > > >>>
+> > > >>> Fixes: 79865252acb6 ("media: iris: enable video driver probe of S=
+M8250 SoC")
+> > > >>> Reviewed-by: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>
+> > > >>> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.co=
+m>
+> > > >>> ---
+> > > >>>  drivers/media/platform/qcom/iris/iris_platform_gen1.c | 2 +-
+> > > >>>  drivers/media/platform/qcom/iris/iris_probe.c         | 7 ++++++=
++
+> > > >>>  2 files changed, 8 insertions(+), 1 deletion(-)
+> > > >>>
+> > > >>> diff --git a/drivers/media/platform/qcom/iris/iris_platform_gen1.=
+c b/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > > >>> index df8e6bf9430e..aa71f7f53ee3 100644
+> > > >>> --- a/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > > >>> +++ b/drivers/media/platform/qcom/iris/iris_platform_gen1.c
+> > > >>> @@ -281,7 +281,7 @@ static const struct bw_info sm8250_bw_table_d=
+ec[] =3D {
+> > > >>>
+> > > >>>  static const char * const sm8250_pmdomain_table[] =3D { "venus",=
+ "vcodec0" };
+> > > >>>
+> > > >>> -static const char * const sm8250_opp_pd_table[] =3D { "mx" };
+> > > >>> +static const char * const sm8250_opp_pd_table[] =3D { "mx", "mmc=
+x" };
+> > > >>>
+> > > >>>  static const struct platform_clk_data sm8250_clk_table[] =3D {
+> > > >>>     {IRIS_AXI_CLK,  "iface"        },
+> > > >>> diff --git a/drivers/media/platform/qcom/iris/iris_probe.c b/driv=
+ers/media/platform/qcom/iris/iris_probe.c
+> > > >>> index 7b612ad37e4f..74ec81e3d622 100644
+> > > >>> --- a/drivers/media/platform/qcom/iris/iris_probe.c
+> > > >>> +++ b/drivers/media/platform/qcom/iris/iris_probe.c
+> > > >>> @@ -64,6 +64,13 @@ static int iris_init_power_domains(struct iris=
+_core *core)
+> > > >>>             return ret;
+> > > >>>
+> > > >>>     ret =3D  devm_pm_domain_attach_list(core->dev, &iris_opp_pd_d=
+ata, &core->opp_pmdomain_tbl);
+> > > >>> +   /* backwards compatibility for incomplete ABI SM8250 */
+> > > >>> +   if (ret =3D=3D -ENODEV &&
+> > > >>> +       of_device_is_compatible(core->dev->of_node, "qcom,sm8250-=
+venus")) {
+> > > >>> +           iris_opp_pd_data.num_pd_names--;
+> > > >>> +           ret =3D devm_pm_domain_attach_list(core->dev, &iris_o=
+pp_pd_data,
+> > > >>> +                                            &core->opp_pmdomain_=
+tbl);
+> > > >>> +   }
+> > > >>>     if (ret < 0)
+> > > >>>             return ret;
+> > > >>>
+> > > >>>
+> > > >>
+> > > >> Hitting below compilation error on latest kernel
+> > > >>
+> > > >> drivers/media/platform/qcom/iris/iris_probe.c: In function
+> > > >> =E2=80=98iris_init_power_domains=E2=80=99:
+> > > >> drivers/media/platform/qcom/iris/iris_probe.c:71:46: error: decrem=
+ent of
+> > > >> read-only member =E2=80=98num_pd_names=E2=80=99
+> > > >>    71 |                 iris_opp_pd_data.num_pd_names--;
+> > > >
+> > > > See commit 7ad7f43e568b ("pmdomain: de-constify fields struct
+> > > > dev_pm_domain_attach_data")
+> >
+> > The intent was for this patch to be part of v7.0-rc1, but I failed
+> > with my pull-request to Linus.
+> >
+> > Instead this will be part of v7.1-rc1, assuming everything goes as expe=
+cted.
+> >
+> > Is it possible to drop/defer these changes until v7.2?
+>
+> It would be very sad.
 
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Right.
+
+Since it's my mistake, let me reconsider. If I rebase my branch and
+share the necessary commit through an immutable branch that you can
+pull in. Would that work for you?
+
+Kind regards
+Uffe
