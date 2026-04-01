@@ -1,164 +1,174 @@
-Received: from mail-m83187.xmail.ntesmail.com (mail-m83187.xmail.ntesmail.com [156.224.83.187])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6F0B3242AB;
-	Wed,  1 Apr 2026 02:54:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.224.83.187
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775012075; cv=none; b=rk3sqxKcPi2CR4978RtGdSYDaI9MfT6rMFLsBPyKDzzQp5qIYISk+2DeJofscbewxyoqy6RTvDB45r2HR/nBtXg2ODkbQEDcncjOfaSts0VWFoLavkI70GMFHnRR0HHviDSqfYGfEhuMIGsVtyeCk14NMMBTsBwxEM15hkWyDls=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775012075; c=relaxed/simple;
-	bh=3aGaRah8f41O9g2ZXjdNh3i1RAkLp0reRltP0LPa2WU=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=AeXb7mHnA95j3jFOQZY45e6o6tE0II1AIg76+Itir7onT6FzjngX3kWyt9+nmqSD1jr/uifS1Is5oWNo4pMYp/of1+GRsHjguIS9MyIhtUVKf2MDY/0WF0hX7gx740xO4Rx/MGuCH0EfDCvg6h7ERnGZVdFkg8I1zxEggjyDurE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; spf=pass smtp.mailfrom=rock-chips.com; dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b=ZtfglWvV; arc=none smtp.client-ip=156.224.83.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=rock-chips.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA77B223DFF
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 02:58:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=192.198.163.13
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775012290; cv=fail; b=Z71tJBUdOhUNu+nNTG/kA3ElSEfDE+Q6ikkT0g9GSGfHrqanlhCCOoGAuqdxRzVnyXE0BfPH11GGfwzmwp+W6cSp1BbA7WXeSydN04MUaCFyKkRB5mGGJfQo/qnWN4h9CJVBZpZcZcmfFmaAjdLwP0voRNJPQ9JZH61PHMeiXmg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775012290; c=relaxed/simple;
+	bh=XHaxpbKE6cG57K5waLuzKW6VJXLNkodJb0HfI3UcrVY=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=nn9WSnBTOGqr6qU2xxNQK4yLYxubcXHrdQzdn8ubquJ6d8PpbAgVYuabFLcpdUopKFmHVq5qxHFjC1lOqOwdZhylFV2qimNuCtBcNpXkd4BPXtKmvvdUWEyYavTvl6HOVOEKkuxOv7b71Ub0+sJ1rqAZMXDjo6nLmekFSQQoPwo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=IkiUGBZx; arc=fail smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=rock-chips.com header.i=@rock-chips.com header.b="ZtfglWvV"
-Received: from [172.16.12.17] (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 39142f724;
-	Wed, 1 Apr 2026 10:54:14 +0800 (GMT+08:00)
-Message-ID: <fc6f00fa-10b0-44c8-d8b4-694f8ff3b9ea@rock-chips.com>
-Date: Wed, 1 Apr 2026 10:54:13 +0800
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="IkiUGBZx"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1775012288; x=1806548288;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=XHaxpbKE6cG57K5waLuzKW6VJXLNkodJb0HfI3UcrVY=;
+  b=IkiUGBZxg27AflCY/OuMlLRr2Ydzs4KiZG+u71eUwoT3wPNJ0OluWzAh
+   bCVfOxjU+v4vKhlqMLQ+ko2eBOd+kFd0IZWRxjeJH9GI7sW0UJsk/Ur+1
+   Bt1STjKViSzjFPMTT0Jy3Dh/fZm3x0CGeNIf0kAL6agu6Noa09WRkd9KS
+   Ej6NwxuD4YC2LddkuNzt6n9bYqvqlRmjWkXGOgakF1vO/mTASfC09Y5zf
+   +SsmgSmhM41rkp4pza2vpV/ORsVdYwD9yqzEwHDxXvRjVRCPrudJjUFwd
+   ZG5N7U5i5g5cLbTKqDJcsZujH0hkUjdRFed4z3zucqX5TLdZ2qHfCNofz
+   Q==;
+X-CSE-ConnectionGUID: vvBPrKtARfSUSn6d/DYNvg==
+X-CSE-MsgGUID: y5eES2EjQV+fuLDQIwINVg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11745"; a="78634866"
+X-IronPort-AV: E=Sophos;i="6.23,153,1770624000"; 
+   d="scan'208";a="78634866"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 19:58:06 -0700
+X-CSE-ConnectionGUID: BmaCZua3QZOE5ZV1v32JBg==
+X-CSE-MsgGUID: 1cdKzM3bTcyrTSoexi+K3A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,153,1770624000"; 
+   d="scan'208";a="264476661"
+Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
+  by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 19:58:06 -0700
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Tue, 31 Mar 2026 19:58:05 -0700
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Tue, 31 Mar 2026 19:58:05 -0700
+Received: from BL0PR03CU003.outbound.protection.outlook.com (52.101.53.4) by
+ edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Tue, 31 Mar 2026 19:58:03 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=NXByYR5EkPSH0S/tFMqwiLXTXZ+7r46K3PtHisbXRQDh5/KtpEvcrwI8gdZmmCy9Git/5bsrj/a0OCCM23zPX0evvxK53G5p3AxRSZYAnU5gL87mgoEv4wZ+QOwRs4uVj4NQLFKC9P15ejJw5Xh97CVmPDVvX2Ci8QItuM+3egtB/k7jlno66CLIAalyeXkiBjCbx+htrtmBh/V3+nZhYNnQJ6HAjslwWi0gLR6GB9RFCWM7cviKMiFKzPFIVZ1Qrxtaj2lPg4rPQfkyZsO5hoC7JjjzlgmROyE2k8mfPZjPkCqZcDA9bEqRk5ANwOyDGPhYDATpYAXDHSCLfa2U0g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=XHaxpbKE6cG57K5waLuzKW6VJXLNkodJb0HfI3UcrVY=;
+ b=oP7d+lfsebRqQzbgbswOs347gd93Fc6/lOOhLyE0Ihu/R+015ehafNrWzZPGxgJEw4TfwjXiiKuFWjKqhfIARN/NfURogYiwHiDoeGtU8k08idSFgMzzlDrXFRhQgdMYg8c0Dr2r0tYhC5UkRxGelXjybflunIfAA6WQXNRmc2sQSWNkF18DmvS7zmdKTkNw1M1XJ/BPgvucETZEmrfsAFWavHMkRL6720ztFX5u6PdEWkAGTLJZ78+HeMk9cW1/zSfLH6j1+zg7MUSiy9ZxbGxpYcVcMPSTcQo5VzODJ/SwD7Gw0I53IXQsNjXA00V1PsxEpq0u5pXdAuWt1uvlhw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from LV3PR11MB8768.namprd11.prod.outlook.com (2603:10b6:408:211::19)
+ by LV8PR11MB8772.namprd11.prod.outlook.com (2603:10b6:408:200::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.16; Wed, 1 Apr
+ 2026 02:57:56 +0000
+Received: from LV3PR11MB8768.namprd11.prod.outlook.com
+ ([fe80::b22e:7955:ed0d:54f5]) by LV3PR11MB8768.namprd11.prod.outlook.com
+ ([fe80::b22e:7955:ed0d:54f5%6]) with mapi id 15.20.9769.016; Wed, 1 Apr 2026
+ 02:57:56 +0000
+From: "Kumar, Kaushlendra" <kaushlendra.kumar@intel.com>
+To: Shuah Khan <skhan@linuxfoundation.org>, "shuah@kernel.org"
+	<shuah@kernel.org>, "jwyatt@redhat.com" <jwyatt@redhat.com>,
+	"jkacur@redhat.com" <jkacur@redhat.com>
+CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: RE: [PATCH] cpupower: replace atoi() with validated parse_int_range()
+ helper
+Thread-Topic: [PATCH] cpupower: replace atoi() with validated
+ parse_int_range() helper
+Thread-Index: AQHcwWmSXuZJ+MCXOkmQFTcVSM1hZLXJgu2g
+Date: Wed, 1 Apr 2026 02:57:55 +0000
+Message-ID: <LV3PR11MB876851AB8BD22392350BA7A9F550A@LV3PR11MB8768.namprd11.prod.outlook.com>
+References: <20260331042859.1920369-1-kaushlendra.kumar@intel.com>
+ <42aaa8e5-509f-4d98-88da-9df10588e348@linuxfoundation.org>
+In-Reply-To: <42aaa8e5-509f-4d98-88da-9df10588e348@linuxfoundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: LV3PR11MB8768:EE_|LV8PR11MB8772:EE_
+x-ms-office365-filtering-correlation-id: 93c963a1-ebb5-4532-19fe-08de8f9a798a
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;ARA:13230040|376014|1800799024|366016|38070700021|22082099003|18002099003|56012099003;
+x-microsoft-antispam-message-info: FRU2yaD82cTFGKYh8S9AyUF7bSB16ynGT08V+kJ8u1MofTyejT3NyNmyvMlMIpCDeyqnj6xWU/FMVuAB8RnIqukBpxucKRq9c2K4A+X/N1DJ69mtVUDhtSiQG6+zKHbY1fIsoUR38WOXDXwP1jTSPUomxdTLi86EvAPDalmhIgZVmuUhwUrUcWLaW88Zepai3FhGhPjp77sSJsRjaE3L0MKu+NhFu9e+hWtUwt7rVadTKkRTVoJfhZ8v496GP8PMfd2hk2vvzgisVkQN17AX+kIWUbg9NdAIFmibp9wHUNNAV9oSzAXS3CQV7N4zUFbDm44NwsR4B6TKMqZT9IxtUHdIYs7lTodoC8oYYbj+B/8fyD5VxRvovYgvNonFD44XKy7jgMOtqgP9KDh5nk8hLsLNxlLWr//eZF0OiayCl1HarwzRjQHZzznxciSZIiXW5UG7fV+gaxbNaGwHMQl8ccjsj5f8A/mNuMzbdKOULhEpHQNvs0xhMpS5TndJ/z7qT6YwKx6b74EHC9+Tnn6jdugzrsuXIhEp+1BbnDjsuINsnOVgSOUqQqJ62myRR2IqlSAaDoqZaN6s8QSIt1/OXCRGk6x9mspKWusjqmrRObXt79JKivDBs40MMHshrv2vuFQtGdOIbkBnXNyxQJ43AtsZvHCvlRuj686JUbAdfR0fs1kNVlAJOlpuWeFYtV20Trt9Ej6UZ6cQXwPYQ+hvoQcO3pTJW0wnIvywwyYor4Pxo8fjWbWUEPE7udIuJlXlOfSvJZHxtUojDemcoQG/Bk6lNLFS+owcvQBXYoFW8Qg=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR11MB8768.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(38070700021)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?eFpzSlNVcXZBbXh4UEoyeERKblhkTG9oQkxtVmppbTREekdDQStjTFl3UE1S?=
+ =?utf-8?B?WXFNbzNhNnUxenhDWmllUXlua3BtSjMvY2FZTU4xZU1EZW1CWXVNU054ZFJK?=
+ =?utf-8?B?TWRsbDJlS2g1dUtVRTJvUDJEeDl6TWNTQXZtQUZqdWhXdC9YT2xWUmpvK2hF?=
+ =?utf-8?B?WGZIcFBQS3pycy9pL2wydkE2LzRQZVQvdTZOWEhVdC9hY3ZSdEt2OTVVbGF5?=
+ =?utf-8?B?ak12c0h4L1hqbUdGUGQ2VzFSWlVudWpCMDV2aE9EZkk5Q0JYRXRrTHFmbWFX?=
+ =?utf-8?B?bXNQb2p2QXJqV000bDkvVFFxNWdRRE95YW9jYUhNYWZBQS9sNGl6akxUZ0VN?=
+ =?utf-8?B?NlZyYjJVYzJJdmUxN0ZrUkc1UzROUUptRzAxVFo3VHdrRmZSRklKdk1adDJs?=
+ =?utf-8?B?eFIrcEFvOS9pU0hNbFFUeGcxNC8wbjNRejljUm9hVllZRWZUNzRnRExJN0x5?=
+ =?utf-8?B?VTZ2M3VGZ2w0UmFPU2xZWHhtVFN5OXlKQ1Z0RUE4a0ZNcEw5VUhlTXdNVXRF?=
+ =?utf-8?B?RGdnajhoOHBNUHNxeit1VkdKN1l0SnduVjdOSFlrWTZLTHB6VzlKV3k5R3Ux?=
+ =?utf-8?B?NlRRazJVZlRsSGtPN0lqT3lCTWJlTGh0anJ6cHZmUU9qY3BrV04xN0pjVHZ3?=
+ =?utf-8?B?aTllUzJteTQ5K2JONEwrUGsydGdzK29kN3p1dkhzTzJrWGoxMWYxeDJwVDN0?=
+ =?utf-8?B?Z1liVnFnVlkxOG02MWl4eDdRVnBacnZOWEpqUlVtemJab3dkb0RBaVJjZEMz?=
+ =?utf-8?B?azMxVEw5ZmZSZnVtK3YyVnFFRy9ZOFM4UklmL1VFUjVqd296YTNIMFBOK1Bz?=
+ =?utf-8?B?VVBtWE02blkrOXB5R0wzaXBtNUpnOG1ZUi81bWpYRW9iZUs2R3lZak1DZDBn?=
+ =?utf-8?B?RXV0SmVoTEVML3dqRUtyN3FFL3lXWVNPMFJvYzdFTnplbmg4d3l1bGo4WTUx?=
+ =?utf-8?B?R2FpNUxweXdWbitUOWNMa0pIVUpySk5Bd3JNVjAwUEhBZ2ZFTHNjK3VkVDNK?=
+ =?utf-8?B?dU10c2ZkMkNURHRHcU1OcDRHaTBPdjI4c0Z0Zml1SmxqSVJESzVrcTYvNm1s?=
+ =?utf-8?B?emJDN3pSRys5MEJxWHNJV0VIWVlkcC8yeUJaM1dib05oNjh5MVllcXJjOU1q?=
+ =?utf-8?B?YWd3dHowL21JUGNhR3plaDZLTXpDMExVRUtINXRHanVicElwRmNFRWdxdHAy?=
+ =?utf-8?B?RWdYK1FLaDJ0ak9sWUhUOEhxdkZMWDVDK0JPZmdqY2RpWE5KcnU4b1VGdFMw?=
+ =?utf-8?B?akJhUE5ROE5EQnJCRTVMSGp1dFdUK0V4RmI0bDBIK1FDbXNjVS9yajhNL0Nr?=
+ =?utf-8?B?SHEwT2NYUmpiRDJTenM3SFdHdVFWYjJ0ZjBBZ2FGQVE4djdteHYwNkp1bW9K?=
+ =?utf-8?B?UWlUY1dhOWNKN25EcVQyTjZwSjUzRzJRdnVnUWhublBLWjJ4YW10RDJYL3RM?=
+ =?utf-8?B?UHZLdjJXL09ZRWx4bjNhVXgvazVrSUlhRUVoWE5RQS9KeHNtV21Ibi83R2Yx?=
+ =?utf-8?B?YkZFTGx2RGZzMjBFYWI1NGJEREN0TDNib0dySm9QdW9CNC9HQ2xJL1RMNjhM?=
+ =?utf-8?B?OWFoOTdZZUpVSFNXcW5WM0M1dHFjcGtqWHVESXZTdDVxTDZIeFlMWVRVY0gz?=
+ =?utf-8?B?bjlSQ2lHRitOOTZ6cVdYVnhFYmJIclNLWVUxQWdyY2VMMlNwcm1PZXFOVzNJ?=
+ =?utf-8?B?ZmIvZjI0TmhlLzYva09BVHJncy9NSEh2QmVPWnJiZC9GZTJ4RzNBQkZBRTNY?=
+ =?utf-8?B?cVEzWERTMkJrYjNVSEIwdnpwTkVFenVRUGVuaFBucVM0WmE1UytIak1VSjJm?=
+ =?utf-8?B?bVQyd3NSNkpnWjZia3AwYStPd2xZdmE2a3paajdRZDJzbUdLOGtDU3NFdGZi?=
+ =?utf-8?B?ZGl5V09mMGd3VHdEczBGbmtlTlZybis0WFVRSlpBZGZ0cUxqKzRrbmZwNG9Z?=
+ =?utf-8?B?RHYvM21iQ0kwZ1RsazRoa1c5V08rMG9VbjNlUjZ2N2k4d2ZlSWQxaU56eUox?=
+ =?utf-8?B?N2lvRXBqMjFvYVFaSWlvQUJmT3R6dzVvTFp4dTcrdEZnMGt4ano3dWFBb3VM?=
+ =?utf-8?B?V28wMWt5SXRzcEhhMThjNjh5Q0JPNEFCSW9LVlJBU2NYaTVaUUZLOHZaM3cy?=
+ =?utf-8?B?MlUrOGFwMFp6OHZMVmdkVTcyQ3NJTDNlSENJLzR1L0NWUTR4WHViUFVBUk5X?=
+ =?utf-8?B?STUyemZWZ3p1eFVpRVpsSllDdHJ5bjRZRUZCTWs4V2NnY1BKRkVxQUlSMzNz?=
+ =?utf-8?B?cHRaei9ESktMQ2dFUG5na1hsanRsSDZmcy90ZE1Lc0U5TmdGZGJLTmptSGhI?=
+ =?utf-8?B?TDZiQ2ppNElKeUU3c3F1NkVmK3hCMzBveGR2WTVJaVpaUG5Mb0QyUT09?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.1
-Cc: shawn.lin@rock-chips.com, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
- linux-kernel@vger.kernel.org, ulf.hansson@linaro.org, heiko@sntech.de
-Subject: Re: [PATCH 1/2] pmdomain/rockchip: skip QoS operations for idle-only
- domains
-To: Daniel Bozeman <daniel@orb.net>
-References: <20260331180223.1682283-1-daniel@orb.net>
- <5c8732a3-6cc9-5d02-f56b-fc7ba29c7ce0@rock-chips.com>
- <CAG+Ngm+xJCCQMPddZx8AbPEeH3rUrn3GKF575zXpGPJrnELvMw@mail.gmail.com>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-In-Reply-To: <CAG+Ngm+xJCCQMPddZx8AbPEeH3rUrn3GKF575zXpGPJrnELvMw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9d46f6852f09cckunm2fad582df958e2
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZGkNPTVYdT08aHk8YQh5PHUlWFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=ZtfglWvVHDfRtUw1SGTqDQJJHeX/aurreDJr4KQff0OoDgR89JsUrhEFc8FCjs5g8RPp27wEGrwnqmNg0IRiYMUTxB4r9R++FGmn7rUDODjd+KScvBb8+3N5Wgfcz9rBpYzs1gcGfPI5Ia8uZTJTw/AMZD3Tm8Gf5Nt4C2LveZ0=; s=default; c=relaxed/relaxed; d=rock-chips.com; v=1;
-	bh=P9bx0JSQN5urEQ0kGf5GT9ZdgXv8ZZPvBz0eFEf+7pA=;
-	h=date:mime-version:subject:message-id:from;
+X-Exchange-RoutingPolicyChecked: PjTp8Sa6o+Zkj539GZH+P+kxRLx2g/UVvL7w6NKZq4YGGq5icl5OS/QWNezDWHK+ysoniWXDveMCTzHoUFOl/4NarViZbFTCvyjAI4McYBpC2tFhRhnhEPGANcwlDLSemTBtsJv0G8Z9iDvybKMlkdDoEn7Qd4WHp5JCSmbI+3MUB54X9PrMMRgFTf6GTAUR/JIJ2is/Ki12xErKH4wRliisrywCjE6Kw7Ts/nws5ux+WCaHmeGPN5KDoVf4m2JySQYhMXzEh4MMQrxrv20dWxUCtxtq3LEvtut5ucamkO+ptg819nSAUx25qaffr00WdTeRbMSS9tfjPa8+rBiH9w==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8768.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 93c963a1-ebb5-4532-19fe-08de8f9a798a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Apr 2026 02:57:55.9457
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: S6n3pjJRmkZrjyTcGO3/2gYyUBKOHf31p6z+JMlgqHNmmx3eO4fv4U2rdODKD1C7VEg7s5RotQkVjhzJwrdUW25pFPSYRUTR/zh1i9RKPBk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR11MB8772
+X-OriginatorOrg: intel.com
 
-在 2026/04/01 星期三 10:34, Daniel Bozeman 写道:
-> The NanoPi Zero2 (RK3528) kernel panics during boot when a
-> GPIO-controlled USB VBUS regulator is defined on GPIO4 (which
-> is in PD_RKVENC). The goal of this series is to make USB host
-> power work on boards that use GPIO4 for regulator control.
-> 
-> The root cause is a probe ordering issue. On RK3528, the power
-> domain controller's first probe attempt fails because PD_GPU's
-> clock lookup returns -EPROBE_DEFER (CRU hasn't probed yet).
-> The driver then tears down all domains, including PD_RKVENC
-> which would have registered successfully (it has no clock
-> requirements). During this window, the USB regulator driver
-> probes and requests GPIO4, which is in the now-unregistered
-> PD_RKVENC. This triggers a synchronous external abort.
-> 
-> With patch 2 alone (skipping deferred domains), the idle-only
-> domains register successfully. But the genpd framework then
-> attempts to power them off via genpd_power_off_work_fn. This
-> calls rockchip_pd_power(), which does QoS save and idle
-> requests on domains with pwr_mask == 0 that cannot actually
-> be powered off.
-> 
-> To your question about why QoS registers become inaccessible
-> on idle-only domains: I have not root-caused that specifically.
-> What I can confirm is the crash trace below, which occurs when
-> patch 2 is applied without patch 1. The abort happens during
-
-
-This sounds like a parent-child dependency which hasn't been sorted
-out. My another question will be: with patch 1 applied, how to save-
-restore qos registers during normal S2R usage?
-
-> rockchip_pmu_set_idle_request on an idle-only domain:
-> 
->    Internal error: synchronous external abort: 0000000096000010
->    CPU: 2 PID: 60 Comm: kworker/2:3
->    Workqueue: pm genpd_power_off_work_fn
->    pc : regmap_mmio_read32le+0x8/0x20
->    lr : regmap_mmio_read+0x44/0x70
->    Call trace:
->     regmap_mmio_read32le+0x8/0x20
->     _regmap_bus_reg_read+0x6c/0xac
->     _regmap_read+0x60/0xd8
->     regmap_read+0x4c/0x7c
->     rockchip_pmu_set_idle_request.isra.0+0x94/0x1b4
->     rockchip_pd_power+0x37c/0x608
->     rockchip_pd_power_off+0x14/0x38
->     genpd_power_off.isra.0+0x1f0/0x2f0
->     genpd_power_off_work_fn+0x34/0x54
-> 
-> The two patches work together: patch 1 prevents QoS access
-> on idle-only domains, and patch 2 prevents the full probe
-> teardown when a single domain defers.
-> 
-> Tested on NanoPi Zero2 (fixes panic) and Radxa E20C (no
-> regression).
-> 
-> On Tue, Mar 31, 2026 at 6:17 PM Shawn Lin <shawn.lin@rock-chips.com 
-> <mailto:shawn.lin@rock-chips.com>> wrote:
-> 
->     Hi Daniel,
-> 
->     在 2026/04/01 星期三 2:02, Daniel Bozeman 写道:
->      > Idle-only power domains (pwr_mask == 0) cannot actually be powered
->      > on or off. rockchip_do_pmu_set_power_domain() already returns early
->      > for these domains, but rockchip_pd_power() still attempts QoS save
->      > and idle requests before reaching that check.
->      >
->      > On RK3528, the idle-only domains (PD_RKVENC, PD_VO, PD_VPU) have
->      > QoS registers that may be inaccessible when the generic power domain
->      > framework attempts to power them off, leading to synchronous external
->      > aborts.
->      >
-> 
->     Is it the real abort happened on your RK3528 board? I am trying to
->     understand the problem first. Even with idle-only powerdomain, the code
->     also save the QoS registers before set idle to the powerdomain, so
->     how the QoS registers become inaccessible?
-> 
->      > Return early from rockchip_pd_power() when pwr_mask is zero, matching
->      > the existing guard in rockchip_do_pmu_set_power_domain().
->      >
->      > Fixes: 1fe767a56c32 ("soc: rockchip: power-domain: allow domains
->     only handling idle requests")
->      > Signed-off-by: Daniel Bozeman <daniel@orb.net
->     <mailto:daniel@orb.net>>
->      > ---
->      >   drivers/pmdomain/rockchip/pm-domains.c | 3 +++
->      >   1 file changed, 3 insertions(+)
->      >
->      > diff --git a/drivers/pmdomain/rockchip/pm-domains.c
->     b/drivers/pmdomain/rockchip/pm-domains.c
->      > index 490bbb1d1d..2eecae092a 100644
->      > --- a/drivers/pmdomain/rockchip/pm-domains.c
->      > +++ b/drivers/pmdomain/rockchip/pm-domains.c
->      > @@ -640,6 +640,9 @@ static int rockchip_pd_power(struct
->     rockchip_pm_domain *pd, bool power_on)
->      >       if (rockchip_pmu_domain_is_on(pd) == power_on)
->      >               return 0;
->      >
->      > +     if (pd->info->pwr_mask == 0)
->      > +             return 0;
->      > +
->      >       ret = clk_bulk_enable(pd->num_clks, pd->clks);
->      >       if (ret < 0) {
->      >               dev_err(pmu->dev, "failed to enable clocks\n");
->      >
->      > base-commit: bc330699801d3b4f99110365512caed5adcfaca3
-> 
+T24gMy8zMC8yNiAyMjoyOCwgU2h1YWggS2hhbiB3cm90ZToNCj4gQWRkaW5nIGEgcm91dGluZSBs
+aWtlIHRoaXMgaXMgbm90IHRoZSByaWdodCBkaXJlY3Rpb24gYmVjYXVzZSBpdCBhZGRzDQo+IGNv
+ZGUgdGhhdCBuZWVkcyB0byBiZSBtYWludGFpbmVkLg0KDQo+IEkgYW0gbm90IGNvbnZpbmNlZCB0
+aGVyZSBpcyBuZWVkIGZvciBhIG5ldyByb3V0aW5lIHRvIGRvIHRoZSBjaGVja3MuDQoNCkFncmVl
+ZC4NCg0KPiBUaGUgYWJvdmUgbG9naWMgcmFuZ2UgY2hlY2tzIG9uIHBlcmZfYmlhcyAtIElzIHRo
+ZXJlIGEgcHJvYmxlbSBpbg0KPiB0aGlzIGxvZ2ljPw0KDQpObywgdGhlcmUgaXMgbm8gcHJvYmxl
+bSB3aXRoIHRoZSBleGlzdGluZyByYW5nZSBjaGVjayBsb2dpYy4gDQpXZSB3aWxsIHJldmVydCB0
+byB0aGUgb3JpZ2luYWwgYXBwcm9hY2guDQoNClRoYW5rcywNCkthdXNobGVuZHJhIEt1bWFyDQo=
