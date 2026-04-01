@@ -1,93 +1,130 @@
-Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.184])
+Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.168])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4E41477E4A
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 16:54:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.121.94.184
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 297473939B5
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 16:56:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.121.94.168
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775062456; cv=none; b=iwQ/Vz0wsI6c5ys5FxzOX8C3UX/oV/nx9IDgxsRasvd9KLPDfxWR0PHlftS5q6Kxo8Vm8GnBEIc5/9qtknwDPNqx/FRX1+IuAOLqSKiQHo1+02Iz95w4o+EjzKu231FwtdYAMVj2Q61oUusez5FTnQbbAUynL+9ZTpOREI38HKs=
+	t=1775062590; cv=none; b=Mt3aGna1T4kH8GkW7Ph5gvn3cgQHalHql6XLeH200hYwpR1jdNuITYlndlNqSwup8xc3nxllywDSAEDlcPzkfoxVOuUjuUqXuc2+LYgoLCMoxQfLBsuUdGuJLz9G5GraCbAU9Yq1bi6rD5BLwwro2Yx+P/D/paHMy7VAC5k/ZhI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775062456; c=relaxed/simple;
-	bh=xPdtfsh6DtiJKw3NNWgGtI+kfvS8+Uh8OTR0ljg4pcE=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=bAAvak0kWgvu3z1Kgs5peB4SOUNLK7d81tsn4ObwPzeI9wklj1JQnuOcspaxO5wE9qOmYBxfcRN0L4g1kdxVZRcC3PkO1iGPt4L/QAzIYQw0eTQaXja+yT5Du+WO68RCZRQtZ2rcX9oyyowFly4GMImrdf7qahgj6p/xvWaGjrE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl; spf=pass smtp.mailfrom=xs4all.nl; dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b=OnyUhngE; arc=none smtp.client-ip=195.121.94.184
+	s=arc-20240116; t=1775062590; c=relaxed/simple;
+	bh=dZlGgiNJR+pthvIMaRy0AOvoVGUKu3DW6sw/TqMaq0c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WL+4qMOgRpTKQIAFXE9Jt1fFRHkDJYGq+wewRaPk6UF0KL+8SqVBgKqE93KtW5lQaWPDacC2z6T5fkymcdxFkrgsGl53/SJTndAAY0QXV/1WiHz2sO90cQ6R9h9NGWFwWE6+V4+tZZNUGn0Ofeke7IPK4/jbKqHg2WFMnfyWQWU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl; spf=pass smtp.mailfrom=xs4all.nl; dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b=mCsBNaGK; arc=none smtp.client-ip=195.121.94.168
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xs4all.nl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b="OnyUhngE"
-X-KPN-MessageId: 683a3a0b-2deb-11f1-afda-005056994fde
-Received: from mta.kpnmail.nl (unknown [10.31.161.188])
+	dkim=pass (2048-bit key) header.d=xs4all.nl header.i=@xs4all.nl header.b="mCsBNaGK"
+X-KPN-MessageId: 911249d4-2deb-11f1-92a9-005056aba152
+Received: from smtp.kpnmail.nl (unknown [10.31.155.37])
 	by ewsoutbound.so.kpn.org (Halon) with ESMTPS
-	id 683a3a0b-2deb-11f1-afda-005056994fde;
-	Wed, 01 Apr 2026 18:54:11 +0200 (CEST)
-Received: from mtaoutbound.kpnmail.nl (unknown [10.128.135.190])
-	by mta.kpnmail.nl (Halon) with ESMTP
-	id 683a189e-2deb-11f1-80ef-00505699693e;
-	Wed, 01 Apr 2026 18:54:11 +0200 (CEST)
+	id 911249d4-2deb-11f1-92a9-005056aba152;
+	Wed, 01 Apr 2026 18:55:19 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=xs4all.nl; s=xs4all01;
-	h=content-type:mime-version:subject:message-id:to:from:date;
-	bh=JDtkHVtdaqDtGFKDRrHTKel3gvzMpvxr6qe6ySWOnTM=;
-	b=OnyUhngEPxjY2LVqiLsAIx0O9Xc6lrcXncXCGcSJqn48S97IVQjVmqtDrwTRHiavPWSl3hmS5D01I
-	 yKo8hfybwkcVObiH7tlv/To4GUpiU3CRWU730JETAaAQZpNWEmZ0gbuutLLAAAtVwJNe1UUlyFKQEN
-	 aEa/OT623DXRLYz/inaUVpTQJ9NoF6bl+x4IYrAhyk74cZUcNrnl9wOK6VX2hHjPr4FAD0Rh6RsKYZ
-	 CNAckyvV6UMRVP6fGfJS6xKKGXDyT4F6W3YwhyT6LY6lUcpIUkO+i5nY05Q7ha8tfyRANzxhZSZNVE
-	 yaLsInZQzAiKSrnBaTCTnom32FJngew==
-X-KPN-MID: 33|JYhc+jiArJy7o/gsp9OstXSXwoeGBS8y4SNW5FdgI/rF8etAF2G9bICdgE6YjWZ
- lRJT4xGYVcl8Okz08m8m1iqxV91WprD9VwusCmN46Vj4=
-X-CMASSUN: 33|jQXQ+v9pdp0jGDjz0K2w3iDs8dqB7d6UDlXmDn1qDOLXRLozaL96xX17LG3gKNC
- IWF+Tg31S2nNxYXwmB4zbSQ==
+	h=mime-version:message-id:date:subject:to:from;
+	bh=hjIQKQc09Ty4ZuPFqA4sflWylIiFqAt4knIEFLnMnCk=;
+	b=mCsBNaGKrcGr9iA2v4Zn4uI3vZW1ONpVRB9wyNNvKdFA1eepmD3eefiVJNIWy788QLhtwitCile2J
+	 1WZuK7YYRQ+lU6wVbK7xCQsJPO7vzmycqOdkqZErrSAP7jNP9vInmmEOnYy/VmAowGpYuhjFwdwfU7
+	 2Nm6sUoNmfkT1om5agN0exqracUeZr0XNvsavnwQ/q9Bi8zK+7ZRrUwMw2SB5sPIMntX9R7rYJLs2Z
+	 vY1RYSLcc2cUMAMvvmkgObQkuh2IKKclZwm4bl353oXeyffPv+9ma+9DrLK808JCFTcPTWsfuDvmYo
+	 YjavapehGgh5uuqIkOv7F9A83DNCo/Q==
+X-KPN-MID: 33|Z2mlv25z5aXT/aaAwB0yoliKC8HCdW0/BWmawlFHKblaT6SwIeJZPUjeNl5gyix
+ /bxFr0peMrRsvj38BBMNeG4eQcPsfBoXYsNWvHkyHOtY=
 X-KPN-VerifiedSender: Yes
-Received: from cpxoxapps-mh04 (cpxoxapps-mh04.personalcloud.so.kpn.org [10.128.135.210])
-	by mtaoutbound.kpnmail.nl (Halon) with ESMTPSA
-	id 682fc9fc-2deb-11f1-b8d7-005056995d6c;
-	Wed, 01 Apr 2026 18:54:11 +0200 (CEST)
-Date: Wed, 1 Apr 2026 18:54:11 +0200 (CEST)
+X-CMASSUN: 33|7xgZbEoVUcxvZHXTz+CJbCJ6J75ncoo9ginBHhZem4cmWMmw7M+QYEIvD57OjUa
+ HuLRXPec9j0JRq5l1Cf1S6w==
+Received: from daedalus.home (unknown [178.227.141.37])
+	by smtp.xs4all.nl (Halon) with ESMTPSA
+	id 8e442dd4-2deb-11f1-bdad-005056ab1411;
+	Wed, 01 Apr 2026 18:55:19 +0200 (CEST)
 From: Jori Koolstra <jkoolstra@xs4all.nl>
-To: Chanwoo Choi <chanwoo@kernel.org>, kernel test robot <lkp@intel.com>,
-	"gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
-Message-ID: <890652743.852439.1775062451369@kpc.webmail.kpnmail.nl>
-In-Reply-To: <CAGTfZH0bZMGpdKjvgw7S54NF+KeXPtvhsanKmSs1vHDhx7F7Lg@mail.gmail.com>
-References: <202603211336.i375F7lD-lkp@intel.com>
- <CAGTfZH0bZMGpdKjvgw7S54NF+KeXPtvhsanKmSs1vHDhx7F7Lg@mail.gmail.com>
-Subject: Re: [chanwoo:devfreq-next 5/5] drivers/devfreq/devfreq.c:1946:37:
- error: redefinition of 'devfreq_group'
+To: Chanwoo Choi <cw00.choi@samsung.com>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Jori Koolstra <jkoolstra@xs4all.nl>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] devfreq: change devfreq_event_class to a const struct
+Date: Wed,  1 Apr 2026 18:55:18 +0200
+Message-ID: <20260401165519.3842485-1-jkoolstra@xs4all.nl>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-Importance: Normal
+Content-Transfer-Encoding: 8bit
 
+The class_create() call has been deprecated in favor of class_register()
+as the driver core now allows for a struct class to be in read-only
+memory. Change devfreq_event_class to be a const struct class and drop
+the class_create() call. Compile tested.
 
-> Op 21-03-2026 16:11 CET schreef Chanwoo Choi <chanwoo@kernel.org>:
-> 
->  
-> HI Jori,
-> 
-> There are build errors in your patches.
-> DId you test it? I hope to fix and test the patch before posting.
-> 
+Link: https://lore.kernel.org/all/2023040244-duffel-pushpin-f738@gregkh/
 
-Yes, I have no built issues. Can it be the test bot did not apply the patch
-correctly?
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Jori Koolstra <jkoolstra@xs4all.nl>
+---
+ drivers/devfreq/devfreq-event.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-Looking at the build error it seems that ATTRIBUTE_GROUPS(devfreq) is duplicated,
-not moved.
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index 179de3cf6d6c..9e183cd8818c 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -17,7 +17,13 @@
+ #include <linux/list.h>
+ #include <linux/of.h>
+ 
+-static struct class *devfreq_event_class;
++static struct attribute *devfreq_event_attrs[];
++ATTRIBUTE_GROUPS(devfreq_event);
++
++static const struct class devfreq_event_class = {
++	.name		= "devfreq-event",
++	.dev_groups	= devfreq_event_groups
++};
+ 
+ /* The list of all devfreq event list */
+ static LIST_HEAD(devfreq_event_list);
+@@ -321,7 +327,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
+ 	edev->desc = desc;
+ 	edev->enable_count = 0;
+ 	edev->dev.parent = dev;
+-	edev->dev.class = devfreq_event_class;
++	edev->dev.class = &devfreq_event_class;
+ 	edev->dev.release = devfreq_event_release_edev;
+ 
+ 	dev_set_name(&edev->dev, "event%d", atomic_inc_return(&event_no));
+@@ -461,18 +467,15 @@ static struct attribute *devfreq_event_attrs[] = {
+ 	&dev_attr_enable_count.attr,
+ 	NULL,
+ };
+-ATTRIBUTE_GROUPS(devfreq_event);
+ 
+ static int __init devfreq_event_init(void)
+ {
+-	devfreq_event_class = class_create("devfreq-event");
+-	if (IS_ERR(devfreq_event_class)) {
+-		pr_err("%s: couldn't create class\n", __FILE__);
+-		return PTR_ERR(devfreq_event_class);
+-	}
++	int err;
+ 
+-	devfreq_event_class->dev_groups = devfreq_event_groups;
++	err = class_register(&devfreq_event_class);
++	if (err)
++		pr_err("%s: couldn't create class\n", __FILE__);
+ 
+-	return 0;
++	return err;
+ }
+ subsys_initcall(devfreq_event_init);
 
-> 
-> 
-> -- 
-> Best Regards,
-> Chanwoo Choi
-> Samsung Electronics
+base-commit: d466c332e106fe666d1e2f5a24d08e308bebbfa1
+-- 
+2.53.0
 
-Thanks,
-Jori.
