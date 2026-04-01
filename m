@@ -1,149 +1,149 @@
-Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010027.outbound.protection.outlook.com [52.101.85.27])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A35E73BD633
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 10:53:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D6E93DDDAE;
+	Wed,  1 Apr 2026 10:54:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.27
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775040788; cv=pass; b=jIsl2yi/EcW6uYGACsFKuYJr56wDQmFDHucC0AfTikgBYjrP0W5XoJP5j3/YtJJuyaR/vQ7S5fj79BOL6FKCT+e0ONsMK8lhkw7T3TOuOXYXZr6mPuxDYaOswBiGVYKkZq+o3j1Ox3jWj6C5ukS3kyKLfJHzBqQ1O9sNUpG91Vs=
+	t=1775040864; cv=fail; b=kPeBelc2VN+TTjlNswzlTZf2oP+j6T8KatCYw+rGhLuD5xn7rt/oryuc+q7ZeSjZCROcJ+d8RJT1b2fu0wdlbRS9TZ5IbPFZE+RrLf45cdEH/+H6CkD4hL26PSAiw1GCh0rqTq+ie2VGh+P4Z0oLTx7ma1AB7Mk6WtyEQMHw6vA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775040788; c=relaxed/simple;
-	bh=l0faMTnRkJlF5B9vpnXXp/ODNCleyJdWxYZ75rZZEH4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PSnl7ZulNVG2YdMj5BPr/HF0wSIVusQdixrB3WwmSopyMzwLohRXki44TGMCkNT+jqmuXI//uD3dSOl56qObqnoDPj7sGyI442wtliqNESF4u6XV55hJAtkRVBQTzYhoEJ1GQwf71y8RpHUd11hJ53YlGyYkAfGNUIpPRc6p9tk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=i80WsaGh; arc=pass smtp.client-ip=209.85.167.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1775040864; c=relaxed/simple;
+	bh=MQ/BSqjg4xN3ExhO4CcwkvKDHFaLcBJRM92Gt83UC8I=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NMR7W8stVY1cJEoFLBKvGeO0tr5PbxzAuj2UDT1KyplvtugNSuJ0F1lfUb31g/pa5lEnzOWsubH5kH+OdtmSBSJJfrdQaijlV2YyPCH/oWDEhgMe+OQGdpwBDPSeUe8bgpJ6D7NTL53Uoddy5EFi04v+ZWH9fsBvk2N0mufwsr0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=wDRilfH9; arc=fail smtp.client-ip=52.101.85.27
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="i80WsaGh"
-Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5a2b383cefaso4575695e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 03:53:06 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775040785; cv=none;
-        d=google.com; s=arc-20240605;
-        b=XHiz6sSm9DxA/rCpK8ztdFwRCXYnCWps5TMI6gbJQivXmGT92Io5NvN7aPnjiU24sq
-         Em68XUT0pNthAF1ugR/wDInZkC5sR7g/mLDW7s4ULZHBF/IvvReDo2sh83ymn/vJ4OPI
-         F9ZS0Qu06tONAVdJ4oiUX/6EIfbWa8i69Un2rNFBGdruWUnVU8zNDqTzXnrbmIDRqVGt
-         tFdxxkjVYSsGH1Br8eyAgcw1qjedr9WCUTqP+4FBhuuLtmEV/nYKrUbHVkrJ85hEfUrC
-         6Bz6yLak5B2JB5b8XDUvE0q8pf95M81B5fIyAm9g8SGijPZbP3BSX3TnIyuNQ+L1wVYd
-         D1zQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=qwWb6hPajDLQOtpfwOIrFtAsL1zH7jbJZ3Y7FZqrZlk=;
-        fh=fgOKjUNBXY1yoYmghrKThmnEBbIipE0uOQbQIyvqva8=;
-        b=JCu1tNMrd7K6sFc0L/EWGTr5LKcqrS6h1d+4UQD1lYJuxrbbxsOuiew3apORTRbGPo
-         JEaxphVmnyxAPW+R01kvvxl6rpt33M6iJYrbrKcpu+Tr0ARwfJuCumLu/cJBverizfDW
-         2jPf0p74kavBTc+vLQhUVFbNQQBSObuBDu+h4LMxkEqwFj/HnEzycwzRuM6bxBHclQ6x
-         lRyvenf18y08/NDfbEnlZh29X2yqfwUoZFxjzUZMYdfrvUh5xOU0+w3ZkVKRB2yRHl6L
-         TngPJULA1xBetzEEQYWfDhjjX0tB5k0hmyuxn7NVGiJp8uu2Ra5xf+73Ejt4LLNgo6hr
-         XAJg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775040785; x=1775645585; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=qwWb6hPajDLQOtpfwOIrFtAsL1zH7jbJZ3Y7FZqrZlk=;
-        b=i80WsaGh30CIuep0tGX+iAWdtNlX5AAtFTcoh6ihwK2oa44KhK6RtOd0t/rYStgE7L
-         MH2Q5UQxuRwsGbhCTwfzh0mYBnTz4yq+FyQrUZ+4aPSrIMylmhubQByDh5coIEdKYbSZ
-         1MQyHorhcFcuhys/ZbT4iS1H7ntDGIU0XsrucT40SJxOxwuhv7MyUHKYcKaVTLV3FKX0
-         LadjWZWf3mMePAeKZyvPvp0/RKBoDp7w4tLhcCYflUYptgKKlGoeGYuX/y6lTL8F+kHh
-         NAnhQpQhVfstPfZPAlGnTkpVILUBETwIXdYqDVDmRDVSZAwuK7ulTOoSeqZZGw2PME85
-         3/Qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775040785; x=1775645585;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=qwWb6hPajDLQOtpfwOIrFtAsL1zH7jbJZ3Y7FZqrZlk=;
-        b=fW6QOh9Nwen+zBvnYRiT2i6ptZS6HQMSWoyiAiFkQQcmp96ovrhposanhBe3boa4FA
-         4kfb+s78XVRdQuff0VwRn2m0sMhmak6hXTNH1/5Nbo7kh3ephoWu95nnZbr/GVM6aT5M
-         487gRxNnsxPER7j83vxxem4Yncy+yzFgfmRFgfNxWvN8aVRjgPfNaX1qdSH1UXZNfeYn
-         OhKctZx2jVGTUMMNWoH84J1lxAVa8srpKkDPnhkb2YgNDGnyScVNfbzkkjBu1ZCRrs70
-         kHknfdz5w/g0Shol0nb93QkFSJmwFsAg+WabZjCtmCNv5BLCKFDTKKm9mKm39IDahDgA
-         EG+A==
-X-Forwarded-Encrypted: i=1; AJvYcCXy6PnF3982/h+OSNlmoRrTD64OLB/ScXESnCm0Up6Nh0AUfywXh4OkjTOo8iu915xixirIQrTOkg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyoVLwjfpFqYHjXNtdR/wZ47XLMWLdDmoo3gD1+7KdEWwPQ8q08
-	rYjcgNcm0dL3WOqTvBBOJN7IjOYNNhsIR9NRj5I5K7l5bPwgCuVOZqVYrJeXKkUACwWYGKuL8Nn
-	v7XZ7owbu3IYnIye3YZpmTRucuh7GTAtbGnMyBuj23A==
-X-Gm-Gg: ATEYQzyAT6EZYgIGxPAVuMNV9Z17AJjvtKwIaRgiS9rd8k3BhrRuxTau4ghUeCfkUSS
-	kIoPvLsy6Ze8fycSkIxvB+NAJyirUiz5gTlfbZdi2ASbXw0rsIe6g/HCC0VbI6mCzkbuJby8bD8
-	9ebFKfStFhzEzZMYrNfljVcCb6KuQH+agsC4YaVDlB4DDiF96LKAFXTLnAd4PzI2wpoGzFl8zDv
-	GjQJ9T0cIOgkS4WeQsIAe1xiTjbRUsZSNvE7Frlub92wiOghmVUCc/B+eOQneMd08RRQ7VLfSnw
-	PgaiaEUR
-X-Received: by 2002:a05:6512:3053:b0:5a1:337b:4af2 with SMTP id
- 2adb3069b0e04-5a2c1ef85afmr1126928e87.10.1775040784655; Wed, 01 Apr 2026
- 03:53:04 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="wDRilfH9"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=eaq+NHtDcgh7BK8uQrEDBe5iNTMuR6fh9viZvCrpSOXupOpdrQn3YwBwrw9GeZS0zSm3V0S1dSURrBIMtJ9YpTElJFZZneQvRt6c+ziACGiP6Kf9KCkPn3Xjvjk5NBT5twllVjR+Dd3o+QBcIZfEOhZlHpzHS2fFaPLOZAJKoB/1FL1Bw21bTNdKGRsPRg5Q70bnZwHXCzcCqJOY0E8MJac7X+tjkRcHl+JIoyFu2s9jlhK1jSTmmNMxqUfJhqpPq2f7FRYlJxz+KJD9Vs2sZPdwk02mKBjNyn0bLx14+yWCf+J4ZYPqhscwJb9XPc4sRxqbHIK5Ek4nm6NLAEujZw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=98WxTkibNx2XjSK+a9yGkPg+4DzgWf74Kod9CtRK6Mk=;
+ b=o5GqMTZIuTV045Mv0V9WZstk3UaXRBf12dOiCpjOeyapPYox1c+/hPwWo02CRwbRJTXTY5xnQ17QRfGMO1HxlxrZ4aozoAAPDzOm2dI0ZAu+zW1pEcaZluWE33IKU/OUV9LHnc6RZXmpmjXWd0PNY7JetYMZwUFpFQHJQR1tliQsKDjr3qJHfVrpNDZ320ppYB15mA7jWzyvIMnF8iFuce/QTRqo3oz3Z3l3CqsWcqyqnWN1sAPrkobsrr4fSWDNaHZ/9Nfv4t267YL/FX8ZDpIgrVVT6sTSugP8IUGTPmwwEnLmsPTvUF0zYQ2kmFDeD1i6D5mRyFLu6oKTV4ykRw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 198.47.23.195) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
+ dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=98WxTkibNx2XjSK+a9yGkPg+4DzgWf74Kod9CtRK6Mk=;
+ b=wDRilfH91VOSOGDYxVCZe2BVxj8GImW+fObGBQdAs9DaJAiJtc13jffpphr3wgQfdZb32w4TkUfGwE4xPVwjxDilD+adYrd18jUdveOR5uBaWgPTMKUPQRC/VPeW5tPhiL0rCxBPJRyMVOBg9Qq60zp4Tx07HlQ6qZ4Pbd8g5xE=
+Received: from SN1PR12CA0049.namprd12.prod.outlook.com (2603:10b6:802:20::20)
+ by MN2PR10MB4224.namprd10.prod.outlook.com (2603:10b6:208:1d1::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.15; Wed, 1 Apr
+ 2026 10:54:20 +0000
+Received: from SA2PEPF000015C7.namprd03.prod.outlook.com
+ (2603:10b6:802:20:cafe::c) by SN1PR12CA0049.outlook.office365.com
+ (2603:10b6:802:20::20) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9745.29 via Frontend Transport; Wed,
+ 1 Apr 2026 10:54:21 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.195)
+ smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
+ action=none header.from=ti.com;
+Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
+ 198.47.23.195 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.23.195; helo=lewvzet201.ext.ti.com; pr=C
+Received: from lewvzet201.ext.ti.com (198.47.23.195) by
+ SA2PEPF000015C7.mail.protection.outlook.com (10.167.241.197) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9769.17 via Frontend Transport; Wed, 1 Apr 2026 10:54:19 +0000
+Received: from DLEE205.ent.ti.com (157.170.170.85) by lewvzet201.ext.ti.com
+ (10.4.14.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 1 Apr
+ 2026 05:54:19 -0500
+Received: from DLEE202.ent.ti.com (157.170.170.77) by DLEE205.ent.ti.com
+ (157.170.170.85) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 1 Apr
+ 2026 05:54:18 -0500
+Received: from lelvem-mr06.itg.ti.com (10.180.75.8) by DLEE202.ent.ti.com
+ (157.170.170.77) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
+ Transport; Wed, 1 Apr 2026 05:54:18 -0500
+Received: from akashdeep-HP-Z2-Tower-G5-Workstation.dhcp.ti.com (akashdeep-hp-z2-tower-g5-workstation.dhcp.ti.com [10.24.68.91])
+	by lelvem-mr06.itg.ti.com (8.18.1/8.18.1) with ESMTP id 631As6KN4132409;
+	Wed, 1 Apr 2026 05:54:14 -0500
+From: Akashdeep Kaur <a-kaur@ti.com>
+To: <krzk@kernel.org>, <praneeth@ti.com>, <nm@ti.com>, <vigneshr@ti.com>,
+	<kristo@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+	<conor+dt@kernel.org>, <rafael@kernel.org>, <viresh.kumar@linaro.org>,
+	<linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>, <d-gole@ti.com>
+CC: <vishalm@ti.com>, <sebin.francis@ti.com>, <k-willis@ti.com>,
+	<a-kaur@ti.com>
+Subject: [PATCH v2 1/6] cpufreq: ti: Add EPROBE_DEFER for K3 SoCs
+Date: Wed, 1 Apr 2026 16:23:59 +0530
+Message-ID: <20260401105404.1194717-2-a-kaur@ti.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260401105404.1194717-1-a-kaur@ti.com>
+References: <20260401105404.1194717-1-a-kaur@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260401091847.305294-1-arnd@kernel.org>
-In-Reply-To: <20260401091847.305294-1-arnd@kernel.org>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 1 Apr 2026 12:52:27 +0200
-X-Gm-Features: AQROBzDnlDhL3CPC6t3e6D3yLO3B1qc8eoFxAH1pkWXcytS4EAMsXnENli5d0-I
-Message-ID: <CAPDyKFqYeZAdbtVDFBW3XtMs7E-MCdYOvy-DrBFUpQ5Gh2+vSQ@mail.gmail.com>
-Subject: Re: [PATCH] power: sequencing: pcie-m2: enforce PCI and OF dependencies
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Michal Wilczynski <m.wilczynski@samsung.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA2PEPF000015C7:EE_|MN2PR10MB4224:EE_
+X-MS-Office365-Filtering-Correlation-Id: 45734874-3c2d-4c26-688a-08de8fdd06b1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|36860700016|7416014|376014|1800799024|18002099003|56012099003|22082099003|921020;
+X-Microsoft-Antispam-Message-Info:
+	fvWYrgpcVPZAe0s50/7aS0mSXVK8bCuw78pAt185DMrg3hqzph6QBsjWqeVUnDcQztk015vdhT0n5n4A5Dzu0FmOUkz4YvUfXAKWhDvWm2APBFZW/6V5g8MqvvUGkTvHQjvn87FoWaBN5+OVcNUHwTl5QqNVe1zfMV9QmRrdWEPTGjweGHWlgSycaffpfxQipF0ojTZ/n9vhWgPk6+pMIm4mQXMxBP64TYd4ou+BxdUK/Hmkp1u8Da2hLvaiMvYjLzN0TMI2Q+IMCZTGBtsy6R2x1eKHytXVYhRmx4qc//ObJ7K5Vj85IVvqKJSEd0YqynOZN6BzVl791TvPG2ZOu1R+YxK0yXBOyWMavVsLWH5iNTm6fDEYl6osXMAlku1wJMm9Pm4ncb7RQLRZ6pcfCTrjT41++wjtMXg9ULlymJU9KXUXzNP19zgK86emxHx1JaRPH5tgm4XxzjsPjLRM1AqnKGEm+Sk6sVKVQnAvDmJylryGZ3/XpqBdS6ermJNdLUUtRgzpnW3TycURbGMQg7pT7QM99B1efHpadC/tDP2eR/cnenSch6CrcAPE2TSzCQu/Q5p9xsgSEA3/IbhovocuTxIxNDbViYMsbi4+kYcLWg4muTXTAJhzZ5HC4Gn+6Zw+LZvjKZV/HW9s4C59bKl/Qw5niPTrS2vbv2qCa553xYSTtNUwUqN6m3Aem6sAQLel+haBmNo7jOyf0toyE12MrEFJqhU1iz70Hf9h0FuJnWU8wGJ/LcvSRnYPMxoMYeVm1UUPFweFIVanOJBh+94DBEOq2hKWFvaS9dkenqfDtaJAhJp58/XZJGkeN4HZ
+X-Forefront-Antispam-Report:
+	CIP:198.47.23.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet201.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(7416014)(376014)(1800799024)(18002099003)(56012099003)(22082099003)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	NME2SvWSoFXV4W1JT4fF7ZB10Xl6P8YkundeFByDJSaHHtbMl3ZV96Q0PWAbLqM53Fc4cNgbmy6AQp8A+RBnDxowqjJo9lkw2KMJ7YBBmQR0/1gXhDmMZFCJ5/0azklyD4zTOy18v3iWsopNio7RCZKXvo0QJHabPdbYNRfqhbUmDlUKOHPsjxGANWYay+R3zLagDSUdrHpV0MrWP5R1X2Zg7d2a+33P2mrliURu3pg23PZ6qkXHzYWsSnK911P28wj+4FDjqlKu54xooZ3Jry2Y1xH2HXfjVomrspY53/OXD/gYXX50m9Em4X9OfqANu4LsnUbok3WE3WU4a6MyTyWIom+CuvZwdN8ASlqMRgRew9SJ5aaPkXD//F/KoLfEAmjywAsZiWscb9rw3vgxswVXlpbkAyN81YWT5RsRqSQAkSIO1ZHzRaMcRRrMa3az
+X-OriginatorOrg: ti.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2026 10:54:19.5312
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 45734874-3c2d-4c26-688a-08de8fdd06b1
+X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.195];Helo=[lewvzet201.ext.ti.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SA2PEPF000015C7.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR10MB4224
 
-On Wed, 1 Apr 2026 at 11:19, Arnd Bergmann <arnd@kernel.org> wrote:
->
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The driver fails to build when PCI is disabled:
->
-> drivers/power/sequencing/pwrseq-pcie-m2.c: In function 'pwrseq_pcie_m2_register_notifier':
-> drivers/power/sequencing/pwrseq-pcie-m2.c:368:54: error: 'pci_bus_type' undeclared (first use in this function); did you mean 'pci_pcie_type'?
->   368 |                         ret = bus_register_notifier(&pci_bus_type, &ctx->nb);
->       |                                                      ^~~~~~~~~~~~
->       |                                                      pci_pcie_type
->
-> Similarly, when CONFIG_OF is disabled:
->
-> drivers/power/sequencing/pwrseq-pcie-m2.c: In function 'pwrseq_m2_pcie_create_bt_node':
-> drivers/power/sequencing/pwrseq-pcie-m2.c:191:9: error: implicit declaration of function 'of_changeset_init' [-Wimplicit-function-declaration]
->   191 |         of_changeset_init(ctx->ocs);
->       |         ^~~~~~~~~~~~~~~~~
->
-> Make both dependencies unconditional to prevent compile-testing
-> in either configuration.
->
-> Fixes: 3f736aecbdc8 ("power: sequencing: pcie-m2: Create serdev device for WCN7850 bluetooth")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Defer probe when k3-socinfo hasn't registered the SoC device yet.
+Fixes incorrect revision detection when ti-cpufreq probes first.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Akashdeep Kaur <a-kaur@ti.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Kind regards
-Uffe
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 3d1129aeed02..88f7912ef6a8 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -441,6 +441,15 @@ static int ti_cpufreq_get_rev(struct ti_cpufreq_data *opp_data,
+ 		 */
+ 		*revision_value = 0x1;
+ 		goto done;
++	} else if (opp_data->soc_data == &am625_soc_data ||
++		   opp_data->soc_data == &am62a7_soc_data ||
++		   opp_data->soc_data == &am62l3_soc_data ||
++		   opp_data->soc_data == &am62p5_soc_data) {
++		/*
++		 * For K3 SoCs, if soc_device_match fails, socinfo hasn't
++		 * probed yet. Defer probe to wait for it.
++		 */
++		return -EPROBE_DEFER;
+ 	}
+ 
+ 	ret = regmap_read(opp_data->syscon, opp_data->soc_data->rev_offset,
+-- 
+2.34.1
 
-> ---
->  drivers/power/sequencing/Kconfig | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/Kconfig
-> index 1ec142525a4a..77c6d9227251 100644
-> --- a/drivers/power/sequencing/Kconfig
-> +++ b/drivers/power/sequencing/Kconfig
-> @@ -37,8 +37,9 @@ config POWER_SEQUENCING_TH1520_GPU
->
->  config POWER_SEQUENCING_PCIE_M2
->         tristate "PCIe M.2 connector power sequencing driver"
-> -       depends on (PCI && OF) || COMPILE_TEST
-> -       select OF_DYNAMIC if OF
-> +       depends on OF
-> +       depends on PCI
-> +       select OF_DYNAMIC
->         help
->           Say Y here to enable the power sequencing driver for PCIe M.2
->           connectors. This driver handles the power sequencing for the M.2
-> --
-> 2.39.5
->
