@@ -1,141 +1,247 @@
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 994773D0903
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 11:43:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB400449EB1
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 13:56:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775043819; cv=none; b=mYIAV78dhZnECG3IkykS4iDBNHNevNLXgOgiTo3IiKJcJZVT+ue7ghPW8/ll+G5Ti0xsNaFmc0QLCpCxzI5GmE9vOZIwlNzHrpLDCNrgqzqVvVaiU/jJHl21YVGP6j3qGaPFoNwOORy+pqk1C/UcxGcsFIJ5Oz2uko5wNK0CvWA=
+	t=1775051768; cv=none; b=EoVmzdQu8bMFK/vE4l2z6ofW/z7LO3YK+h3DWzNuTBIu1lSFPAPXNfYodw+luCmsIT5D4ug+lrxplH+vHRncVo7ByB6Ytb+lD62xhuv/7O29KRmG213Lv5CYNtjYJWTbD1CcMN3y/DPIFJvcbmKLYQ78AI3mcihCuGHDq6sLzPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775043819; c=relaxed/simple;
-	bh=DR7P1aIkksGz5fJP1gbEDWYgLqBB6bN1oZVyA7AF31Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y/ZKPVVFC4bO4scXRAimx19tbqg705OaF8JQz0sA5SyRs1wD/dWKbO8n9Yfce8i7PppujfTmyZal+ehY5y1w6LFy3f8a1Uw+99eCQi/pxv4kPV+0n3vFOIwsGPRDcEn4wO0pyNnyrHLjWV476eDYgX3HAw19iJLB1ykIs4/UhSA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=vKJa5LvJ; arc=none smtp.client-ip=209.85.221.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1775051768; c=relaxed/simple;
+	bh=v3sEGXTmIUXn5NquOmj378H/4qazuJUJ0JHIHykFzsQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=H9IbxwanhMVH2SoNpO/fTr37EeYXRFPQV1dqVv2eM0yiB6+vsInJSkF+LowpMdYpnrnCBzolUfJf3+GpK/kVqeNt+3yDMjW0lyJ1H+HTxWUzQFHG2RgLtxVCp+rDkw9wi5ynm6D4ANd7Z868jZv/IRbBsoaHZBMWZpJe8hQvlw0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AXdrH1Ah; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vKJa5LvJ"
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-43cfd1f9fd1so2233496f8f.3
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 04:43:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775043817; x=1775648617; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=R7XkTmsVnKsGBJ3bVNB0W4W6t/Rs8a6UCi6Zycut7Yk=;
-        b=vKJa5LvJ3xSouy4MKgUcDXQeOAOYueOQjvSmKrlCN0WUaSkJekHZ5g1eNySj/NX8V6
-         WkR23m1T9fLU0UtPiGZBiJf8ezotAMrvqCT99Qz/u66Bg/86/oYd7TOqGwuboRcEW4MJ
-         AqXbmCNw6JaBW0tgVwBcXHL9EAH9uhyXkz49XtMP+j7emuseQ8/REdFz3RSJkxwFTbCQ
-         r4G663U2/8eb/IniM6pMOVRCIuQzDlCOEOaBinZfEKfIq+cHbrMn3Z3ivFzyIVfB15kE
-         ZyK7WSN5aEjY83gsuVxmtmsyS4CotIeYX3PEsm/jUDaknlYm3iUM4Eio7B6i1nklYsOx
-         FSsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775043817; x=1775648617;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=R7XkTmsVnKsGBJ3bVNB0W4W6t/Rs8a6UCi6Zycut7Yk=;
-        b=mmvvvNS8Ea2z6WNCYQf8WtuAMTIY4zuj7zkyotuMojQRhfJZxzs09FVGihQ6zDco8N
-         qayCUOU7FG0UHWZyQ+AO0yFWkaloDdhbLl7huIa1InQSabx1Q1vApiE1+zOIlFW1xjCe
-         TZxvsqiRpFr6bike3j1eZD4P8lCaLaXouqfVpUhMh6ppAw47W0T0t50eNvJE4InQzCAq
-         RLe6VUX3FIN7mx8pwBAJxmq1uWcJpSayiO3p/hM1dYLeGCBQmi4dTuJQAOWi/am6IgqS
-         2QoNBKejOUPZQDCvza3gtHsyaiLGnSIyO5Mp2uRVOaALOnbHbV7pTRx9Pn7A5pIl3Gf5
-         zYRg==
-X-Forwarded-Encrypted: i=1; AJvYcCW0cCKiho1PxLZ4fjJTOTf0vy5mk2xy85heyZvxY5xlZn5cEY4JeLyqebXHZil3FP2aRcNzX0WP3w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YznYePWp7B+mBzM6fZb4++UZ4k8/LJgS3LgU2d9+l6rO+yQFbfJ
-	8kxDGOIkhHumZDaP3unmRgBNwzWe88/dMRIwt/+j2oBkFPo3KK5N6BHBhdtgjUc01tM=
-X-Gm-Gg: ATEYQzzBAgTmkslmDhpPPupQ05qRjn/VExUQ+8pAuhizQHl+kugo7zgbHhY3RraFsJ7
-	QZb5hkZzKqCGr9FnN8I0VJIg2yXyQPo5F3XiV14v0rZK+vvwcufdAJA6x5w9zKnKnymBKdlTZSB
-	x8huUooAgKJex1Kv6auFfoUkSJHEJn29JdkBi5ofOjPAK8FCsZtwswWJwLR2pQ9cfxL8HZf/d9Y
-	uKfiJWqnIqA4C6UVI3rCJN40yY8XXTPQVgLIx+aphvhn0OKSdzGcEuO8zG6OrJ54CQS6GR71hXK
-	efwqVcA4uBLYsm8kDHXwM+A1Wt5jYmDbNyKZO36Qs/7+K+2ZF36F9DmNJ3ayxgz19Kg41YPLmNB
-	LGGfuT5o4Q9yNHT5vvM5kRh4/Z4zsocylWkxTRJVLOctdMSfOY8/6H6khscLm/iomkLqs02ANxP
-	4YKinpj8FRIPs2JQgTlPEtzIQC90SF4gfvRwo=
-X-Received: by 2002:a05:6000:310a:b0:43c:f40f:6c91 with SMTP id ffacd0b85a97d-43d15047eecmr5731562f8f.10.1775043816883;
-        Wed, 01 Apr 2026 04:43:36 -0700 (PDT)
-Received: from [192.168.0.167] ([109.76.235.19])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d14c53928sm6998899f8f.5.2026.04.01.04.43.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Apr 2026 04:43:36 -0700 (PDT)
-Message-ID: <9ed8dee4-315f-47fd-bddd-cff0d096a9e9@linaro.org>
-Date: Wed, 1 Apr 2026 12:43:34 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AXdrH1Ah"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F9E6C116C6
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 13:56:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775051768;
+	bh=v3sEGXTmIUXn5NquOmj378H/4qazuJUJ0JHIHykFzsQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=AXdrH1Ah9EX4k9bdaxVIwYmE2on2UQ7czRLAdXidaYSFIolHYC2UWn/Ir7aNPjrHP
+	 GCx9lgvK+jrtttdRyfJUQKK8FsWaO29uQkieBASFx4c9UUojDdt1vBhaKrvcovcalO
+	 O3W4mZ4fKFaj0cNLDx09MwAKo+D8cBd3NBlMiAXd1XlW0RgLrwCx4OFYpcHitOa7Az
+	 IDGV1UWbJvMBchPL4wDudyO+NnfOVTlQ2np5fFKByucInkqenf5PE8nTEpitw3i/A6
+	 DFUSyEs/y081/dfvQ9y6IXQByR/P2g4XKcr+sbR2YgHDXlGZxVPqRuXDdvn4bD+AVO
+	 bL3ftpz3uWE7w==
+Received: by mail-oa1-f52.google.com with SMTP id 586e51a60fabf-415c8a4d2e6so2879194fac.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 06:56:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVKYywjvtCbze05jhR4CCjKVdC8JDOQ+lQYFtx5VoTpnkOsKqLHzxzYB1R1We/n6wGlHHB7Alyzwg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw18R01z0RJhxcY/rRRt8hdmSGjOIhflcF+xKSynt5VKgy8mF0g
+	cyOblbmIbZqw/inA8Bb5zLpKR5kBoG3KsNs8nA22le5kGR6YFr7BDEwCuQNlXJSUjZg0N0NLFrk
+	hX/lTLC/2S7GcMLEVzpuMrtDepy8uw2M=
+X-Received: by 2002:a05:6870:970c:b0:3f1:664f:e8db with SMTP id
+ 586e51a60fabf-422cfeb9060mr2207480fac.23.1775051767674; Wed, 01 Apr 2026
+ 06:56:07 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/5] media: iris: scale MMCX power domain on SM8250
-To: Ulf Hansson <ulf.hansson@linaro.org>, Bryan O'Donoghue <bod@kernel.org>
-Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
- Bjorn Andersson <andersson@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Taniya Das <quic_tdas@quicinc.com>,
- Jonathan Marek <jonathan@marek.ca>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Stanimir Varbanov <stanimir.varbanov@linaro.org>,
- Abhinav Kumar <abhinav.kumar@linux.dev>, Hans Verkuil <hverkuil@kernel.org>,
- Stefan Schmidt <stefan.schmidt@linaro.org>,
- Konrad Dybcio <konradybcio@kernel.org>,
- Dikshita Agarwal <dikshita@qti.qualcomm.com>, linux-arm-msm@vger.kernel.org,
- linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-media@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-References: <20260209-iris-venus-fix-sm8250-v5-0-0a22365d3585@oss.qualcomm.com>
- <20260209-iris-venus-fix-sm8250-v5-2-0a22365d3585@oss.qualcomm.com>
- <5e2635ac-35de-645b-b5e7-235923f844ce@oss.qualcomm.com>
- <x5gv6dxdum5klzfjyo7xjqull6o43okkmkn7avssg26epbvrz6@z2brpssbk7iv>
- <0b41ee7c-83fe-d604-b750-8a5a0bd62bf8@oss.qualcomm.com>
- <CAPDyKFrO3DzfG0aW4z4w87j_iWM=3dpvp=2Wgr4MX1Bin5-6ZA@mail.gmail.com>
- <6yfn6ux3gbin2dtopdxxv4okinspueryuey5vfdq633gsewc6r@ttp56brnpgvr>
- <gX7v5Lyaw6K_7HLFrWAPRIukMU5BJ9bGDg4RNePhYxZ4A9KcMe1HWULG-XqG1czNCzN3e2BMPQV85a2184NwPQ==@protonmail.internalid>
- <CAPDyKFpm7ujNw51dVpPaHCwssjgYe1JVBEyrQ_1CsPbDJuW0Ww@mail.gmail.com>
- <39b31606-b4e1-48bb-b9cc-911c1ac350fc@kernel.org>
- <CAPDyKFrkVbvZcnbhxbLqFySn4V+USCKAjooT3yXN56jq+D9XGw@mail.gmail.com>
-From: Bryan O'Donoghue <bryan.odonoghue@linaro.org>
-Content-Language: en-US
-In-Reply-To: <CAPDyKFrkVbvZcnbhxbLqFySn4V+USCKAjooT3yXN56jq+D9XGw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <a293f29d841b86c51f34699c6e717e01858d8ada.1774933424.git.viresh.kumar@linaro.org>
+In-Reply-To: <a293f29d841b86c51f34699c6e717e01858d8ada.1774933424.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 1 Apr 2026 15:55:55 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hXHFDKZejtPH2T3Yo1FrJe9+5bNgnP1nMmdMLBKJ8oXg@mail.gmail.com>
+X-Gm-Features: AQROBzD4sO0R3wVxbBXW0gXfxo02wy_mujNeuwbyrBAr6ZUyoZVxg6EOBGMuFnw
+Message-ID: <CAJZ5v0hXHFDKZejtPH2T3Yo1FrJe9+5bNgnP1nMmdMLBKJ8oXg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: Allocate QoS freq_req objects with policy
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pierre Gondois <pierre.gondois@arm.com>, 
+	Lifeng Zheng <zhenglifeng1@huawei.com>, linux-pm@vger.kernel.org, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, 
+	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 01/04/2026 12:41, Ulf Hansson wrote:
-> On Wed, 1 Apr 2026 at 12:58, Bryan O'Donoghue <bod@kernel.org> wrote:
->>
->> On 01/04/2026 11:46, Ulf Hansson wrote:
->>>>> The intent was for this patch to be part of v7.0-rc1, but I failed
->>>>> with my pull-request to Linus.
->>>>>
->>>>> Instead this will be part of v7.1-rc1, assuming everything goes as expected.
->>>>>
->>>>> Is it possible to drop/defer these changes until v7.2?
->>>> It would be very sad.
->>> Right.
->>>
->>> Since it's my mistake, let me reconsider. If I rebase my branch and
->>> share the necessary commit through an immutable branch that you can
->>> pull in. Would that work for you?
->>>
->>> Kind regards
->>> Uffe
->>
->> Yes. Please go ahead.
-> 
-> The patch is available for you to pull from the immutable branch:
-> 
-> git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git pmdomain
-> 
-> Kind regards
-> Uffe
+On Tue, Mar 31, 2026 at 7:04=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.o=
+rg> wrote:
+>
+> A recent change exposed a bug in the error path: if
+> freq_qos_add_request(boost_freq_req) fails, min_freq_req may remain a
+> valid pointer even though it was never successfully added. During policy
+> teardown, this leads to an unconditional call to
+> freq_qos_remove_request(), triggering a WARN.
+>
+> The current design allocates all three freq_req objects together, making
+> the lifetime rules unclear and error handling fragile.
+>
+> Simplify this by allocating the QoS freq_req objects at policy
+> allocation time. The policy itself is dynamically allocated, and two of
+> the three requests are always needed anyway. This ensures consistent
+> lifetime management and eliminates the inconsistent state in failure
+> paths.
+>
+> Reported-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Fixes: 6e39ba4e5a82 ("cpufreq: Add boost_freq_req QoS request")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 53 +++++++++++----------------------------
+>  include/linux/cpufreq.h   |  6 ++---
+>  2 files changed, 17 insertions(+), 42 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index c0aa970c7a67..f4a949f1e48f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -614,7 +614,7 @@ static int policy_set_boost(struct cpufreq_policy *po=
+licy, bool enable)
+>                 return ret;
+>         }
+>
+> -       ret =3D freq_qos_update_request(policy->boost_freq_req, policy->c=
+puinfo.max_freq);
+> +       ret =3D freq_qos_update_request(&policy->boost_freq_req, policy->=
+cpuinfo.max_freq);
+>         if (ret < 0) {
+>                 policy->boost_enabled =3D !policy->boost_enabled;
+>                 cpufreq_driver->set_boost(policy, policy->boost_enabled);
+> @@ -769,7 +769,7 @@ static ssize_t store_##file_name                     =
+               \
+>         if (ret)                                                        \
+>                 return ret;                                             \
+>                                                                         \
+> -       ret =3D freq_qos_update_request(policy->object##_freq_req, val);\
+> +       ret =3D freq_qos_update_request(&policy->object##_freq_req, val);=
+ \
+>         return ret >=3D 0 ? count : ret;                                 =
+ \
+>  }
+>
+> @@ -1374,7 +1374,7 @@ static void cpufreq_policy_free(struct cpufreq_poli=
+cy *policy)
+>         /* Cancel any pending policy->update work before freeing the poli=
+cy. */
+>         cancel_work_sync(&policy->update);
+>
+> -       if (policy->max_freq_req) {
+> +       if (freq_qos_request_active(&policy->max_freq_req)) {
+>                 /*
+>                  * Remove max_freq_req after sending CPUFREQ_REMOVE_POLIC=
+Y
+>                  * notification, since CPUFREQ_CREATE_POLICY notification=
+ was
+> @@ -1382,12 +1382,13 @@ static void cpufreq_policy_free(struct cpufreq_po=
+licy *policy)
+>                  */
+>                 blocking_notifier_call_chain(&cpufreq_policy_notifier_lis=
+t,
+>                                              CPUFREQ_REMOVE_POLICY, polic=
+y);
+> -               freq_qos_remove_request(policy->max_freq_req);
+> +               freq_qos_remove_request(&policy->max_freq_req);
+>         }
+>
+> -       freq_qos_remove_request(policy->min_freq_req);
+> -       freq_qos_remove_request(policy->boost_freq_req);
+> -       kfree(policy->min_freq_req);
+> +       if (freq_qos_request_active(&policy->min_freq_req))
+> +               freq_qos_remove_request(&policy->min_freq_req);
+> +       if (freq_qos_request_active(&policy->boost_freq_req))
+> +               freq_qos_remove_request(&policy->boost_freq_req);
+>
+>         cpufreq_policy_put_kobj(policy);
+>         free_cpumask_var(policy->real_cpus);
+> @@ -1452,57 +1453,31 @@ static int cpufreq_policy_online(struct cpufreq_p=
+olicy *policy,
+>         cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+>
+>         if (new_policy) {
+> -               unsigned int count;
+> -
+>                 for_each_cpu(j, policy->related_cpus) {
+>                         per_cpu(cpufreq_cpu_data, j) =3D policy;
+>                         add_cpu_dev_symlink(policy, j, get_cpu_device(j))=
+;
+>                 }
+>
+> -               count =3D policy->boost_supported ? 3 : 2;
+> -               policy->min_freq_req =3D kzalloc(count * sizeof(*policy->=
+min_freq_req),
+> -                                              GFP_KERNEL);
+> -               if (!policy->min_freq_req) {
+> -                       ret =3D -ENOMEM;
+> -                       goto out_destroy_policy;
+> -               }
+> -
+>                 if (policy->boost_supported) {
+> -                       policy->boost_freq_req =3D policy->min_freq_req +=
+ 2;
+> -
+>                         ret =3D freq_qos_add_request(&policy->constraints=
+,
+> -                                                  policy->boost_freq_req=
+,
+> +                                                  &policy->boost_freq_re=
+q,
+>                                                    FREQ_QOS_MAX,
+>                                                    policy->cpuinfo.max_fr=
+eq);
+> -                       if (ret < 0) {
+> -                               policy->boost_freq_req =3D NULL;
+> +                       if (ret < 0)
+>                                 goto out_destroy_policy;
+> -                       }
+>                 }
+>
+>                 ret =3D freq_qos_add_request(&policy->constraints,
+> -                                          policy->min_freq_req, FREQ_QOS=
+_MIN,
+> +                                          &policy->min_freq_req, FREQ_QO=
+S_MIN,
+>                                            FREQ_QOS_MIN_DEFAULT_VALUE);
+> -               if (ret < 0) {
+> -                       kfree(policy->min_freq_req);
+> -                       policy->min_freq_req =3D NULL;
+> +               if (ret < 0)
+>                         goto out_destroy_policy;
+> -               }
+> -
+> -               /*
+> -                * This must be initialized right here to avoid calling
+> -                * freq_qos_remove_request() on uninitialized request in =
+case
+> -                * of errors.
+> -                */
+> -               policy->max_freq_req =3D policy->min_freq_req + 1;
+>
+>                 ret =3D freq_qos_add_request(&policy->constraints,
+> -                                          policy->max_freq_req, FREQ_QOS=
+_MAX,
+> +                                          &policy->max_freq_req, FREQ_QO=
+S_MAX,
+>                                            FREQ_QOS_MAX_DEFAULT_VALUE);
+> -               if (ret < 0) {
+> -                       policy->max_freq_req =3D NULL;
+> +               if (ret < 0)
+>                         goto out_destroy_policy;
+> -               }
+>
+>                 blocking_notifier_call_chain(&cpufreq_policy_notifier_lis=
+t,
+>                                 CPUFREQ_CREATE_POLICY, policy);
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index b6f6c7d06912..9b10eb486ece 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -79,9 +79,9 @@ struct cpufreq_policy {
+>                                          * called, but you're in IRQ cont=
+ext */
+>
+>         struct freq_constraints constraints;
+> -       struct freq_qos_request *min_freq_req;
+> -       struct freq_qos_request *max_freq_req;
+> -       struct freq_qos_request *boost_freq_req;
+> +       struct freq_qos_request min_freq_req;
+> +       struct freq_qos_request max_freq_req;
+> +       struct freq_qos_request boost_freq_req;
+>
+>         struct cpufreq_frequency_table  *freq_table;
+>         enum cpufreq_table_sorting freq_table_sorted;
+> --
 
-Awesome, thank you.
-
----
-bod
+Applied as 7.1 material, thanks!
