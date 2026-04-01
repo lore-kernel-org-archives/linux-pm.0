@@ -1,82 +1,82 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B90C636655D
-	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 07:07:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F05AE368951
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 07:07:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775027275; cv=none; b=C5YUGKkxHtrKOEXn6Gl8MsdKgCgMKMEd/3o7i+Ub5KBQBpY6P5QsnO+jDm2ekXl4+K6vux7/WGhuLtkQArUjxws8gn7RtQgOEQyYdSUZMEC5r+j2bf4N8flPxQZ/JmbpeFO/uqGoJrutfGOw6aTfa5eLoNKiYLlKieZ5EFqoFsU=
+	t=1775027279; cv=none; b=ZSPtz2wpMx/BUZGKC9A1GLtm/5hZwBR85SaTBuL0COM3+qzggbktb3xxLdNG2kQNTqFv//3GaXYJXGM5ejFAShHhoXBsGH6ToCQXaCWIP4lrHe1drt2/qx76lmcKKLEKugwHQBGiDH1KfiA0pm95TSdZ1flSHPlVkK0BjvDeYZ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775027275; c=relaxed/simple;
-	bh=T+IWKxfeCPkpA1AnDHhXeuS/tHjUqOlcH1i0llq8gp4=;
+	s=arc-20240116; t=1775027279; c=relaxed/simple;
+	bh=BSCNS1UNMXIGtFM+QUX7Rbto0UCstaR3LYY/zZnmgvg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sQVMZfIMJ4RiMnum51P+7nDSJ1QEQcUjjqWYWLODBxw54KSb5yMm/Bhbc2Qt08kFFsM8OUkVC2i8nbfoTa5tP/mozLTXd+Qm931E8aQ5NqSzdxdM3nWvbOTxhNiqt5tidk089o+YaW12pqBBchPxu8YcOt04uk/42qSAx9TlCj0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=W5mzHLnK; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=bK2a5bS3; arc=none smtp.client-ip=205.220.180.131
+	 MIME-Version; b=JTLaHVt2mqVOgobvlr49OozTyFxc8WkuluoKWN4n/RlKDwLZmsCZnkqfqljOmX0BH+9R53u4YmYnOUUVaKPcka4b8fC+zhlaVatCSXAWTjvT+84cnmCP7KQAxQ3ECUXZbAL8YVIpsb9a96QM2VaGXpBmIUaCf6I82nYLcdCJCiY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hxtuUiMV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=NSLy9ZUT; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="W5mzHLnK";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="bK2a5bS3"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6314SI0k3364203
-	for <linux-pm@vger.kernel.org>; Wed, 1 Apr 2026 07:07:53 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hxtuUiMV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="NSLy9ZUT"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6314O5Uk1562598
+	for <linux-pm@vger.kernel.org>; Wed, 1 Apr 2026 07:07:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=o3ofgjDB/Fu
-	qgWrFRH0SxfEDOyGzS/rdc4+8I6d2b2I=; b=W5mzHLnK4o5YZdk5oEXDbVUe9Hz
-	heEeXKtoMp8rsi7hzoovX/6hdI+U0f3ubcjRMvUKatBi+OPF/Uu5WoP7kdD6ZX6E
-	2z4TVl08VMC/Oj+84lnAoo1jsQdbVdTEtu7L8PzrPLHrpFxx9EKGzRS9G4nkOFTb
-	jzUQncKypB8NkwyVNSoi9k2HLHX/BSpGQaJRFOesdX1hCkqvEBKcofwKbCCBe8CT
-	x8HfDV0dAcgd+GWsVJQOXjHuwQzcRedzQvwVYxR5FRKVhs7L+lBtIfFD4R1u4kmv
-	JkYgvK5bHslndswUGYEXfizOr4T1Z22xEqDeI6H73Tb4wzS8mJlu7hKTv3Q==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d8nddj49y-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=h6zxdLf6xUW
+	szA6KhrhvifDZ0ndILcCybaBSzNjg60A=; b=hxtuUiMVdgvrUovJ6tJEdaYYz9E
+	I2c7cYpZD2KHUFZrCBe3rEYROwp8345L6XyV8WUcqrW3BKAkG5kgGVhaJ0idN3s1
+	khGeKmX7CNeYmasPtVkAd78i0b3O28LAAWFVI7cN76Tis7sCTJV+BE0iEqeCq1lN
+	eUeuXnNARsJHpZ3kX5balEu4P/VtLMa//K/A2zzaON9NLId0PHP7H3dPpFDfZ0rK
+	pbORauWx783oDWG2QBZQ1iF5OkFUaH/8yDhcihIXylA6IEPkPoC23hqSa2GSFPS+
+	Ja8Qc0ZhgrXIbNyF+LnTe92F3jlJeGyFNgkBYtFRV2GWB5Ea6Forly4i6wg==
+Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d8va3rke8-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 07:07:52 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3568090851aso20474866a91.1
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 00:07:52 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 07:07:56 +0000 (GMT)
+Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-35d9e67f6dcso10066730a91.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 00:07:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1775027272; x=1775632072; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1775027275; x=1775632075; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=o3ofgjDB/FuqgWrFRH0SxfEDOyGzS/rdc4+8I6d2b2I=;
-        b=bK2a5bS3uZseaP0N5j/IyN4hTCBl7dVRek7rSV7ptkahqv6PbtkCo/g1PP6H3GmRn6
-         vCEB4RndA6CD1ZWrzthwa8FnqAJEJYCPrDvrN8/SQ6etySb4W5GDlLL0ToNFNZvr1AYv
-         SZBGWowNqEjTChkby+6/Q2pUJA7gDDdGzfhR9hmNeGa5PnvCl8Vo3q9O1lID5dqEz/qS
-         B5P3nk4LpIc1nRAUzbP/3wliBTTbLSWThRJ/NJjukflkrI3GOqpzpXlXgpmkQCknPct2
-         L+WUz32s1npLyCledLtNf5qXW/s+aNFAgoxiC6/XVx/l06Z5GRRhYKjAdLByTaqiQi4n
-         o6+w==
+        bh=h6zxdLf6xUWszA6KhrhvifDZ0ndILcCybaBSzNjg60A=;
+        b=NSLy9ZUTLvHPPBqhpw5wPklQwgr+LJ6v/+Bvh71Oc2YPeRSgo0neI0TeILx4IaBz6K
+         mjD1Cb6zC6GdHxjc5Hci2hrZxlH/7jtJiIAfzE55gpi4Rp7fi83hCqTJqlLnhcZ9C0Ej
+         RSY8gGgeRaygT8atTpna6vsmoAPZQDLehhOs/fkOLaWGy96PF4I1wqHD0I9Q4Rd8DAnT
+         c7f3pwQYcT9rBNq5Nfe0MSXEErJDesyuAZlhIHy33Lw8ywNpA5nn3CLAu7QzsltgwfF+
+         NaAbmkBSj3UPnbJsBh69r/BHog73R8igqJ88+RWhxAVytmwXni+jfJbntcdcIIEOl7oB
+         7z8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775027272; x=1775632072;
+        d=1e100.net; s=20251104; t=1775027275; x=1775632075;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=o3ofgjDB/FuqgWrFRH0SxfEDOyGzS/rdc4+8I6d2b2I=;
-        b=jFjt2v2av2BKyIu76+5DzDyVNn2tUFrFKysy/+EhVsMk88j2iadvOU7gy5y9RXvTAZ
-         fNIHqTFR1lgSvL5NmVq9/0f3uAlUwIQJweJDtAsia0IeTNpte/tI1n9zvfrJ+Z+yRR9X
-         k5QHZZKYf4YQVVr67d7/KNH+1xtMgij0qL7A9sPmNBfX09lAwhGrZq5OrT7Wj57kiEBN
-         Vf76USva/d3dFyuozLvG2HZtHOb62P2+VoEkArnN7c5bs4GJVV19jvHw6g65NblnKY+k
-         yfFDXD5iGFcbdXm77KM3oiLZCit098LZ3mOlLs3p0fkWoraRjRyMoFjGYaxr5lXD7/Ge
-         DfyQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWVSKv8APaQRjZ7hjvA2lFALLSbx6th0h1kgIUS7bsG342GZB9WlfGDPVHrx2S7OQelArPhqHJ0Hw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxtypT/yyIYUlICzxZbm8bpwmrNzBoDlQZmbPX+991J2U00XVhh
-	SeSH9mrzL8IwIhpCyfPlfw+OhPkfWvRrl48yWk88s6barpPMm7Z+5QaKDhdu0jo1/WYY0lHHeqW
-	FozGcpDkuhPSWbL+XIZJ/d7XIFirsq++50Hi9JNk4XgqEYsUVrV7sluV4N54oMg==
-X-Gm-Gg: ATEYQzyK633Kbmrq/AEKnIQmqUBfUr2XtWgfzUUO5oC3JQ4VvP3Yzwsaeuhkr3OrRmP
-	/qs4GV19YO8MyWyeh6XgW/S6jSDQYkj8m9riaKJPnIlcmdkKijSN0iZdaY3yTu4hato96d34jBe
-	i75f23ju/Ys0x43hMD39BDmPkKU3w8YJynFTZrSwBEcHDQbmxVwz3jonk4ljUZpgOrKDkCMxBnY
-	lWA73eCYzgry90/XwfKzUfGDjAM7SFCPc9gdv4RRbfnoNoibJDB6uAI8qxVEHLLUZ60V3v3l0n/
-	Cee3/uYPsXKY9z31Yf/2nmAiv8GyEGgFL2VfjkMpqKaFJFhJm6wVilLpn0FAHHPWeV/dl1FF1nz
-	cclogal+OjDQiK6rjdDv/Lb6XQzy7hQsyvNC+
-X-Received: by 2002:a17:90b:268f:b0:35d:a9bb:1e33 with SMTP id 98e67ed59e1d1-35dc6eb9dd7mr2548382a91.11.1775027271488;
-        Wed, 01 Apr 2026 00:07:51 -0700 (PDT)
-X-Received: by 2002:a17:90b:268f:b0:35d:a9bb:1e33 with SMTP id 98e67ed59e1d1-35dc6eb9dd7mr2548336a91.11.1775027270961;
-        Wed, 01 Apr 2026 00:07:50 -0700 (PDT)
+        bh=h6zxdLf6xUWszA6KhrhvifDZ0ndILcCybaBSzNjg60A=;
+        b=Ph2mP8lEPV5QRE6+wV6wvWHWfmaQXsGob99Aepq+JXla4wWH/fk2XRl9qNRK3RIYzM
+         E5X0g2MzQX+Dhl+gqoodq6wrMVpvFAxbHX+KoQKBEQ+qHxXFEffgMDduYqao2VpVCxXT
+         HY8kZsDJuhmSHAt79AxwO5Ub31QefkTQtUwRx7VaZpQLATmGchnCQm7WXCzy4xoQDYUH
+         zyeazqvpgtnJEr9JSMQ/XA5296tycO/PTQYUqgWN/ZsG/SHcVvl5ylN6dsBQEQmoY1cI
+         LEv/fRwN4ytMhoPgz31keb8ozeE5Ujei7RjmB7Tv5dBq5VXBNZ+88sPj8QpGtetKeCrw
+         CkHg==
+X-Forwarded-Encrypted: i=1; AJvYcCXC+emiQ2W7LUgyjAMYeyGxcJbnK6D/6yZ8ku9qdzRt//3SGPqvisopqB/BwQavBmU/As0TEWrnGw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyjEu17rPCxcdvpkmHskOnPhUbuUTSaoHLHXFDsZ/2oLVUFN/Cn
+	jrGRoQzjEr+WJQmLRXuQOBsAlV8eTgdCubSkaLB/CH8h5GYxDnhaIuXcv6FXWaH2gvLSWMRax8/
+	z06sGX7EYOZyucbKpBG0njgngZW/1UxGi8oE2Qc/ALqKpT6xkxRbNTX75PI1tmg==
+X-Gm-Gg: ATEYQzxLLCZvzCu2quqC9qKmOgi61VUjqbo1XUxI5YmnIR/U8+iqaP84EOLv1/EHBpa
+	3GiTF19ifGt57DUoQeGSzxHhnq+MGd6FI7UMTCplWE9WTFbeZPsUce0XeAqDBhiEHyHGX3Qvf4q
+	AcSj3xifAbx1MMMUfGibm4948coX/fG5zbIaIx4aODDDM9UgGXgLBTbrHYZLNPU95uzx3pbfppV
+	3EzHlS2gv/xQOxs6OAbzuvUNOicHddF+X+5F/6ITG/9k80Fb7CT9WEuQ+O/mAltiX/pF6l2G89W
+	R7wV5JK4bfHLLj44bL7KT6nSWicZWLmYk8iGeI00hsNJw6k00oaVILxDLghWCgGPsl4oW0Htpyh
+	EsqGFZfg1dJec1YU0UiD7giBPYW+BxD01AHyu
+X-Received: by 2002:a17:90b:4b05:b0:35d:943e:3c2c with SMTP id 98e67ed59e1d1-35dc6e77ee9mr2279400a91.5.1775027275088;
+        Wed, 01 Apr 2026 00:07:55 -0700 (PDT)
+X-Received: by 2002:a17:90b:4b05:b0:35d:943e:3c2c with SMTP id 98e67ed59e1d1-35dc6e77ee9mr2279369a91.5.1775027274518;
+        Wed, 01 Apr 2026 00:07:54 -0700 (PDT)
 Received: from work ([120.60.63.102])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35dbe6e2fc9sm3956464a91.15.2026.04.01.00.07.47
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35dbe6e2fc9sm3956464a91.15.2026.04.01.00.07.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Apr 2026 00:07:50 -0700 (PDT)
+        Wed, 01 Apr 2026 00:07:54 -0700 (PDT)
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 To: brgl@kernel.org, robh@kernel.org
 Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
@@ -84,9 +84,9 @@ Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
         mani@kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
         kernel test robot <lkp@intel.com>
-Subject: [PATCH 1/3] serdev: Add missing stubs for serdev APIs when CONFIG_SERIAL_DEV_BUS is not selected
-Date: Wed,  1 Apr 2026 12:37:33 +0530
-Message-ID: <20260401070735.107162-2-manivannan.sadhasivam@oss.qualcomm.com>
+Subject: [PATCH 2/3] serdev: Add CONFIG_SERIAL_DEV_BUS guard for of_find_serdev_controller_by_node() API
+Date: Wed,  1 Apr 2026 12:37:34 +0530
+Message-ID: <20260401070735.107162-3-manivannan.sadhasivam@oss.qualcomm.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260401070735.107162-1-manivannan.sadhasivam@oss.qualcomm.com>
 References: <20260401070735.107162-1-manivannan.sadhasivam@oss.qualcomm.com>
@@ -97,118 +97,69 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=ZfUQ98VA c=1 sm=1 tr=0 ts=69ccc448 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=zTATW481NYPnotdwU90osA==:17
+X-Proofpoint-GUID: jlkvAU4VClOAOLWDdXpJqDAEv2R-D9oV
+X-Proofpoint-ORIG-GUID: jlkvAU4VClOAOLWDdXpJqDAEv2R-D9oV
+X-Authority-Analysis: v=2.4 cv=B/C0EetM c=1 sm=1 tr=0 ts=69ccc44c cx=c_pps
+ a=0uOsjrqzRL749jD1oC5vDA==:117 a=zTATW481NYPnotdwU90osA==:17
  a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=VwQbUJbxAAAA:8
- a=QyXUC8HyAAAA:8 a=EUspDBNiAAAA:8 a=JxTtsak3BgR7EskHxGAA:9
- a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-GUID: 3mnNb0n1NJPf51sDp8XVPEOtb3mLLbYb
-X-Proofpoint-ORIG-GUID: 3mnNb0n1NJPf51sDp8XVPEOtb3mLLbYb
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDA2MSBTYWx0ZWRfXy8aN7xHLzlGc
- wavCebA9WPl4iTT984aX4SZ12T9HxzD2SemjoNVqaFDudDnyqJZ5fky5d0jLGh0xLMrHmgdyovK
- 4z/YeX+irDuGQuMUKPBjVRla+ctB5N4eT9/TmkxasjKTPmrkyTkAU5B95kuRaBkOtAgdOz5eFBU
- GVwclXttft1gDDRDdBacX/b7anKSI0HY59zYHpoaIHxMs5unlIXJaElz9hI/BHfVKEgnAgGLfi8
- FoD2xS978rEN+5euL7+U1Tft8KeJjbCgnN05wMC1V8RIyJ9rxM4qor9TEATEIJRWejr7n9l1w4N
- QtrGIn9i71pKwmVnsR7pG/T+ckpsJkXelS/9UmoeK5wf9LJHI3d5ekerys2+DLhZg/GSPAJyCcp
- jeG7PkFMI758lpP032X3Mys6LVIZtrbOs3tIV5y1KRh9+9d4N8VLQ+kFWjzqLUs/hJFDfu2wzmA
- J/oOo1UrdFTU+Z50dkw==
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=VwQbUJbxAAAA:8
+ a=QyXUC8HyAAAA:8 a=EUspDBNiAAAA:8 a=b1-ATBUx8nBV-T_5hXwA:9
+ a=mQ_c8vxmzFEMiUWkPHU9:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDA2MSBTYWx0ZWRfX4igM7tvZsCAx
+ LoqRCiP5C1DjkjfAbp+dMvFBD7ukkYQi75wk0zowcAkSeOS85Z0g+/EL8VhicNqXtENNPBRhcix
+ C2QoN7qHO0yrN41ovG/CdSewsSoQM76cTOAnjBlAK0w6D+JJOOBTpTHNBCHWi01S+ESTrOyGjqR
+ nkY8AL7FMBTf3h4uQ9CeOPClwGcdG9xP8yL/Kd6Fy9LtmSXUKuMkeKlNr3/w24N2J1tVxehUQDW
+ rCN9dUJDbkQByjuCZnCrcQsnmLFBdbhbjwwScjcTnuRCBZbAwOTaLVg9seucoe4Ixid1J5wMjlY
+ eKiPd0C6wvESPxX5rqkRx5Ub8a7FwGV3hCoLp/o8EK2bF4WgVaRyxHCNV2kIeREjqRgRz9iZQ3C
+ NhRgDyJcVXVS/I2kq0D6WFtGZLZQd/DFMXrLOe6Fa9W1jOG5Q5yByAqxDkVhh9kH/9RMUySUptC
+ 3tvd6gTnHThk5K+aMKA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-01_02,2026-03-31_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 spamscore=0
- clxscore=1015 bulkscore=0 suspectscore=0 impostorscore=0 adultscore=0
+ spamscore=0 priorityscore=1501 bulkscore=0 phishscore=0 malwarescore=0
+ lowpriorityscore=0 adultscore=0 clxscore=1011 impostorscore=0 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604010061
 
-Some of the serdev APIs are not guarded by CONFIG_SERIAL_DEV_BUS and also
-missing the stubs when the symbol is not selected. This leads to the below
-build errors:
+Currently, this API is only guarded by CONFIG_OF. But the function
+definition is guarded by CONFIG_SERIAL_DEV_BUS symbol in the .c file. This
+causes below build error if CONFIG_SERIAL_DEV_BUS is not selected but only
+CONFIG_OF:
 
-   drivers/power/sequencing/pwrseq-pcie-m2.o: in function `pwrseq_pcie_m2_remove_serdev':
->> pwrseq-pcie-m2.c:(.text+0x260): undefined reference to `serdev_device_remove'
-   powerpc64-linux-ld: drivers/power/sequencing/pwrseq-pcie-m2.o: in function `pwrseq_m2_pcie_notify':
->> powerpc64-linux-ld: pwrseq-pcie-m2.c:(.text+0x9c8): undefined reference to `serdev_device_alloc'
->> powerpc64-linux-ld: pwrseq-pcie-m2.c:(.text+0xc00): undefined reference to `serdev_device_add'
+pwrseq-pcie-m2.c:(.text+0x924): undefined reference to `of_find_serdev_controller_by_node'
 
-Fix these issues by adding the CONFIG_SERIAL_DEV_BUS guard to function
-prototypes and stubs when the symbol is not selected.
+Fix this issue by adding the CONFIG_SERIAL_DEV_BUS guard to the function
+prototype.
 
 Reported-by: kernel test robot <lkp@intel.com>
 Closes: https://lore.kernel.org/oe-kbuild-all/202604011226.KGNn5974-lkp@intel.com/
+Fixes: a2b4814190af ("serdev: Add an API to find the serdev controller associated with the devicetree node")
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- include/linux/serdev.h | 42 ++++++++++++++++++++++++++++++++----------
- 1 file changed, 32 insertions(+), 10 deletions(-)
+ include/linux/serdev.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/include/linux/serdev.h b/include/linux/serdev.h
-index 188c0ba62d50..0de261a26284 100644
+index 0de261a26284..58f000534bdb 100644
 --- a/include/linux/serdev.h
 +++ b/include/linux/serdev.h
-@@ -156,16 +156,6 @@ static inline void serdev_controller_put(struct serdev_controller *ctrl)
- 		put_device(&ctrl->dev);
+@@ -356,13 +356,13 @@ static inline bool serdev_acpi_get_uart_resource(struct acpi_resource *ares,
  }
+ #endif /* CONFIG_ACPI */
  
--struct serdev_device *serdev_device_alloc(struct serdev_controller *);
--int serdev_device_add(struct serdev_device *);
--void serdev_device_remove(struct serdev_device *);
--
--struct serdev_controller *serdev_controller_alloc(struct device *host,
--						  struct device *parent,
--						  size_t size);
--int serdev_controller_add(struct serdev_controller *);
--void serdev_controller_remove(struct serdev_controller *);
--
- static inline void serdev_controller_write_wakeup(struct serdev_controller *ctrl)
+-#ifdef CONFIG_OF
++#if IS_ENABLED(CONFIG_OF) && IS_ENABLED(CONFIG_SERIAL_DEV_BUS)
+ struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node);
+ #else
+ static inline struct serdev_controller *of_find_serdev_controller_by_node(struct device_node *node)
  {
- 	struct serdev_device *serdev = ctrl->serdev;
-@@ -204,6 +194,16 @@ void serdev_device_write_wakeup(struct serdev_device *);
- ssize_t serdev_device_write(struct serdev_device *, const u8 *, size_t, long);
- void serdev_device_write_flush(struct serdev_device *);
- 
-+struct serdev_device *serdev_device_alloc(struct serdev_controller *);
-+int serdev_device_add(struct serdev_device *);
-+void serdev_device_remove(struct serdev_device *);
-+
-+struct serdev_controller *serdev_controller_alloc(struct device *host,
-+						  struct device *parent,
-+						  size_t size);
-+int serdev_controller_add(struct serdev_controller *);
-+void serdev_controller_remove(struct serdev_controller *);
-+
- /*
-  * serdev device driver functions
-  */
-@@ -264,6 +264,28 @@ static inline ssize_t serdev_device_write(struct serdev_device *sdev,
+ 	return NULL;
  }
- static inline void serdev_device_write_flush(struct serdev_device *sdev) {}
+-#endif /* CONFIG_OF */
++#endif /* CONFIG_OF && CONFIG_SERIAL_DEV_BUS */
  
-+static inline struct serdev_device *serdev_device_alloc(struct serdev_controller *)
-+{
-+	return NULL;
-+}
-+static inline int serdev_device_add(struct serdev_device *)
-+{
-+	return -ENODEV;
-+}
-+static inline void serdev_device_remove(struct serdev_device *) {}
-+
-+static inline struct serdev_controller *serdev_controller_alloc(struct device *host,
-+						  struct device *parent,
-+						  size_t size)
-+{
-+	return NULL;
-+}
-+static inline int serdev_controller_add(struct serdev_controller *)
-+{
-+	return -ENODEV;
-+}
-+static inline void serdev_controller_remove(struct serdev_controller *) {}
-+
- #define serdev_device_driver_register(x)
- #define serdev_device_driver_unregister(x)
- 
+ #endif /*_LINUX_SERDEV_H */
 -- 
 2.51.0
 
