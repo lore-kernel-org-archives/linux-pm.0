@@ -1,33 +1,67 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0358028725A;
-	Wed,  1 Apr 2026 15:19:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F4623F0AB1
+	for <linux-pm@vger.kernel.org>; Wed,  1 Apr 2026 15:45:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775056786; cv=none; b=GlYJKnGrt647OOkIIrWAJYy7AyCkoc0DjQ0j/k78To5kEfuSRx95lecEq6PN7S62X6iA78CbAFm6R7pZm5eRCikWW/jES4GYbC42cO/AAm5eoAuw+d6ckZiw4dgeuMXPm64P5IUvBbBdzT598QvfxMY5THH9Y4wgxIZgdoTIzY4=
+	t=1775058343; cv=none; b=KYZ/jn+Dul4adgI7dx1AYw3MI2JSCjjhixNg79eo/+v4P3n9OY4ZJ2MrEOyb20uFhB147qDdhfNqGRews2bwDVqKJGB6anl6wGJsrF8S/IGekgRChavbf6R7EoiE1yEKoZ/g1shDyHy2rV7eh9LqHVUMP8DQ7OWuKq/hzlRyPRU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775056786; c=relaxed/simple;
-	bh=0n6QUhLSn4u6mJHrfZLnICw0951wBVsr/UfSncMxpKc=;
+	s=arc-20240116; t=1775058343; c=relaxed/simple;
+	bh=NM5uFeeSvuv7adnI5V60GGtN5WPUAUteTNbrV3VO9pg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bz6FfLUIYYIDcbwAOA7bRupIyTTkyEM1RSYtQUCXTn2Zey/OjWjZc30WsOD4RQNvY17cAvWq+UVzxIN6vE/0Ae5HpppUJ8fi1f7oe+FkmVYcW6JjaiY6Dn9F+lsmzEDqLbr9QdsyhOZuFMPOvz0Rn0GBJWWNYcAzaoj0R8ctjSA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WOSf+c8T; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=XAvBRiITGNcIWt/rJOsLRrn1vmYDika/Ihcnar3NcsTdCzsEkBc485dVvyTiZ1fzU7CnEpMjoCNn++bh13Q5ORn1et+ocZO2qik9NVWi3Z7dFQv8QkwB3Wg3gdYsCsoI8UUkYIRoq2Va+qPgV4TxbtuvUCQPVGpRxHZkONtSBDE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Zp7xGtqJ; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WOSf+c8T"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2981DC4CEF7;
-	Wed,  1 Apr 2026 15:19:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775056785;
-	bh=0n6QUhLSn4u6mJHrfZLnICw0951wBVsr/UfSncMxpKc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=WOSf+c8TzlKbkZRCaxSvWp3BySeo8yn8pugDmRsNTvlcrHkZA81VAJyjkdePm1g/4
-	 uq0yK9BjapEXOUw5rUqGLO6PPJ7iMgAtJT5hFIaGFiZr3thTP74k16hZtQJCpBHmbO
-	 PbPKlHzM30c44vc+hzJ4oV4m3KewNcaCdc/zVrQbS7ugaU6JJC2Ycp/61LIkgL7C8z
-	 JXBzHfp9jOXjLwYyiaLO/bw/HwhI8kc3G5gPxxyyXn9mBwTTBO01nR0LAELW08+PZ1
-	 BLs0AfX2jiBWgjjnnCut1pfEgH5472SARXhbaJZ03+4TuebuH0963WCf4oQizGInpw
-	 cCkfnPORF4Njg==
-Message-ID: <be9db30a-ee64-4457-8722-b9f456911ad3@kernel.org>
-Date: Wed, 1 Apr 2026 17:19:38 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zp7xGtqJ"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-43d029f346eso2572791f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 08:45:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775058340; x=1775663140; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=5jkjla8CaRyFo0jGmemy9X4FUXjSTK/5CQirIzXT0fE=;
+        b=Zp7xGtqJK8NHfK8BPOUXMC7sXDQtwlDs/CPc93iGuoZj+AD43N4BDsciz5XwIWk+UL
+         v5wkNjcntqiyQQF6JkcrM9XWXNtw+++IjYebL1SnUd0IbBQgHviOOeOmGRJ8dvOAcBfA
+         Iuv9TJ6A3u84FNG63SWCjO/5edbbljafgvmOQcX1Us6FPm8uIQ2poT2OW+F9BCcaWeHx
+         mYUKDxgNMQ2Q73M8Z6dL4deS7yYRuVp3qx2fBFBOqOj/40HYk6ULmH0SlIfKNFNaxXnt
+         /ZVLyMrq3e+w51XiBX9R363ynwo1liOzrD4JAvvphE77Kuuw86IR2GGw07GtK7JyMZkw
+         vIzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775058340; x=1775663140;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=5jkjla8CaRyFo0jGmemy9X4FUXjSTK/5CQirIzXT0fE=;
+        b=kJQGgGvqe/8cahwNwp7XGXLL2fuqnDJmpcG8I8ez/l1R5Ann6va8FYieIGEXBfBMDg
+         pI9XmCm1Ihqj+vPddSRI8up85lQD4siu6hJeebMl0Llev2+tEt08xnmb8lIUO7Mui5fW
+         mEkRlrXt48UzJqfqdUfAGIwWFxM56Nzy8czFX60Qkn/OnYswcdVgGb/1sXDbr7mXG4Fp
+         Dm1gldYDw6ZfPeep2xJWnx7slcysbNjWVBxKFTeebGaLbcc+zYA92uK6BUouzaVBJPa2
+         Ilv8rouxML61WGwEBN5D0FdlZ7kqmPb0UYxtS6R/vc1hX7EFbBkriy/ZpT9ppXmnpn1s
+         QkmA==
+X-Forwarded-Encrypted: i=1; AJvYcCX9FXuYYoQBOMd+HuYmhtDn7kw2VnOKRWfRPwmM6HyC3tFuoIZdXdxqOD4YiLxsvNfxtthoeRuB3Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzeEe+9zmGqWsgVk+UgRKK/b+XEB+gQKe4SeAxSuepa18QI89PI
+	wtG6xmeBamKP9mNjduNdKDUANg6bVYnguB2X2UIjJFHnr3zUxI+LHHVW
+X-Gm-Gg: ATEYQzyiGCP5hw8JtOcM7sUbOfQBwYrIQgJQmDD9n0IhyST+oAEC9dX5IJFZQ59O7qI
+	e/LTZ5KkYZ8yTemIVbtfBoQbB2Zfm0fNVDuq6EPEPw67Wb8vrdMxFdj1k5qoys+l9OY6BJkIEuo
+	z0uyYVJpD5BQe7E9tDDoN3pCaFDZvfu/3glrLefVl1TpJiS4o5FGOvCz5/FodbEiYUBxs6uassO
+	5Dcq5pUoMcMWJfeGUMturLpkEoCpXcZEo0Gw6ZoPB3KitFacVoW4nuXaT8e4sDbeaIt0wwF4d0W
+	d5IKTCtIuE1lTR7v+snQfFYNknfU3m8XTMHtcwT/OwsHL+HggXiXAScwJMw60q2wzry81YmkrUi
+	sJYaOc8HaGCCxhit/wlKywl9iB3N7OrOR86csASNLdE6TJbElCELzwDeE+UWcEVV3DIcsjT4j+m
+	4QATJOlHpUC51/eK0vixCA0bUlbASfFTMmqWFiFXLqRnLO2uwrHWNkkwks+0HehblCvVKPRbfbD
+	RH/NoTGGfi+mH9+O/vzy9Fl6Gk3lzxu1v3U/7JMOLRwx6ubN5nSBijEpcELLxY=
+X-Received: by 2002:a5d:5c84:0:b0:43c:f45f:dcc7 with SMTP id ffacd0b85a97d-43d150419afmr7950699f8f.3.1775058324254;
+        Wed, 01 Apr 2026 08:45:24 -0700 (PDT)
+Received: from ?IPV6:2003:ea:8f29:9c00:4967:922d:98a9:84a? (p200300ea8f299c004967922d98a9084a.dip0.t-ipconnect.de. [2003:ea:8f29:9c00:4967:922d:98a9:84a])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d1e4e221bsm657273f8f.29.2026.04.01.08.45.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Apr 2026 08:45:23 -0700 (PDT)
+Message-ID: <744440a6-e1cb-4792-a848-57755de0686b@gmail.com>
+Date: Wed, 1 Apr 2026 17:45:22 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,98 +69,107 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v20 01/10] power: reset: reboot-mode: Remove devres based
- allocations
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Bjorn Andersson <andersson@kernel.org>, Sebastian Reichel <sre@kernel.org>,
- Rob Herring <robh@kernel.org>,
- Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Andy Yan
- <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Mark Rutland <mark.rutland@arm.com>, Conor Dooley <conor+dt@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, John Stultz
- <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>,
- Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
- Andre Draszik <andre.draszik@linaro.org>,
- Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- devicetree@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>
-References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
- <20260304-arm-psci-system_reset2-vendor-reboots-v20-1-cf7d346b8372@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] PM / wakeup: Allocate class wakeup_class statically
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Danilo Krummrich <dakr@kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
+ driver-core@lists.linux.dev
+References: <0fe1b679-ab28-4505-b0db-14e7ac3ba749@gmail.com>
+ <CAJZ5v0iMfiqjkkvOMU6jWEZ+nBvcRtWNwjvBW0pEva1G_owFcg@mail.gmail.com>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260304-arm-psci-system_reset2-vendor-reboots-v20-1-cf7d346b8372@oss.qualcomm.com>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+In-Reply-To: <CAJZ5v0iMfiqjkkvOMU6jWEZ+nBvcRtWNwjvBW0pEva1G_owFcg@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 04/03/2026 19:03, Shivendra Pratap wrote:
-> Devres APIs are intended for use in drivers, where the managed lifetime
-> of resources is tied directly to the driver attach/detach cycle. In
-> shared subsystem code, there is no guarantee that the subsystem
-> functions will only be called after a driver has been attached, nor that
-> they will not be referenced after the managed resources have been
-> released during driver detach.
+On 01.04.2026 16:19, Rafael J. Wysocki wrote:
+> On Sun, Mar 29, 2026 at 6:14 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+>>
+>> Allocating wakeup_class statically avoids a little runtime overhead.
+>> Define groups and device release function as part of the class, so that
+>> we don't have to repeat this for each class device.
+>> Whilst at it, constify wakeup_source_attrs[].
+>>
+>> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
 > 
-> To ensure correct lifetime handling, avoid using devres-based
-> allocations in the reboot-mode and explicitly handle allocation and
-> cleanup of resources.
+> Can you please have a look at this and let me know what you think:
 > 
-> Fixes: 4fcd504edbf7 ("power: reset: add reboot mode driver")
+> https://sashiko.dev/#/patchset/0fe1b679-ab28-4505-b0db-14e7ac3ba749%40gmail.com
+> 
+Interesting finding! I think the diagnosis is right.
 
-I don't think this is correct tag.
+But: I would say the current behavior isn't a nice solution as well:
+wakeup_source_device_create() does: dev->class = wakeup_class;
+I think no reader will expect that wakeup_class may be NULL here due to
+initcall ordering. In addition this behavior results in such early
+wakeup sources not being shown in sysfs.
+But I'm not sure whether registering class "wakeup" (and registering
+classes in general) would be possible early enough (core_initcall,
+or even pure_initcall).
 
-That commit added code which was a driver, not subsystem level things.
-Using devres, as you pointed out, in platform_driver is correct.
+>> ---
+>>  drivers/base/power/wakeup_stats.c | 18 +++++++++---------
+>>  1 file changed, 9 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wakeup_stats.c
+>> index 308f8bde9..72beb8fce 100644
+>> --- a/drivers/base/power/wakeup_stats.c
+>> +++ b/drivers/base/power/wakeup_stats.c
+>> @@ -18,8 +18,6 @@
+>>
+>>  #include "power.h"
+>>
+>> -static struct class *wakeup_class;
+>> -
+>>  #define wakeup_attr(_name)                                             \
+>>  static ssize_t _name##_show(struct device *dev,                                \
+>>                             struct device_attribute *attr, char *buf)   \
+>> @@ -114,7 +112,7 @@ static ssize_t prevent_suspend_time_ms_show(struct device *dev,
+>>  }
+>>  static DEVICE_ATTR_RO(prevent_suspend_time_ms);
+>>
+>> -static struct attribute *wakeup_source_attrs[] = {
+>> +static const struct attribute *const wakeup_source_attrs[] = {
+>>         &dev_attr_name.attr,
+>>         &dev_attr_active_count.attr,
+>>         &dev_attr_event_count.attr,
+>> @@ -135,6 +133,12 @@ static void device_create_release(struct device *dev)
+>>         kfree(dev);
+>>  }
+>>
+>> +static const struct class wakeup_class = {
+>> +       .name = "wakeup",
+>> +       .dev_release = device_create_release,
+>> +       .dev_groups = wakeup_source_groups,
+>> +};
+>> +
+>>  static struct device *wakeup_source_device_create(struct device *parent,
+>>                                                   struct wakeup_source *ws)
+>>  {
+>> @@ -149,10 +153,8 @@ static struct device *wakeup_source_device_create(struct device *parent,
+>>
+>>         device_initialize(dev);
+>>         dev->devt = MKDEV(0, 0);
+>> -       dev->class = wakeup_class;
+>> +       dev->class = &wakeup_class;
+>>         dev->parent = parent;
+>> -       dev->groups = wakeup_source_groups;
+>> -       dev->release = device_create_release;
+>>         dev_set_drvdata(dev, ws);
+>>         device_set_pm_not_required(dev);
+>>
+>> @@ -212,8 +214,6 @@ void wakeup_source_sysfs_remove(struct wakeup_source *ws)
+>>
+>>  static int __init wakeup_sources_sysfs_init(void)
+>>  {
+>> -       wakeup_class = class_create("wakeup");
+>> -
+>> -       return PTR_ERR_OR_ZERO(wakeup_class);
+>> +       return class_register(&wakeup_class);
+>>  }
+>>  postcore_initcall(wakeup_sources_sysfs_init);
+>> --
+>> 2.53.0
+>>
 
-Otherwise please specify what bug from that commit is being fixed.
-
-Best regards,
-Krzysztof
