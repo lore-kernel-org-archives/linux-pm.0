@@ -1,40 +1,69 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010060.outbound.protection.outlook.com [52.101.201.60])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D5DB309F09;
-	Thu,  2 Apr 2026 05:47:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775108883; cv=none; b=lFuIPNFp9krvv/yCd60+TKVsFtM6NMogRkYb9zCgA9+7RP8Fs3mMGTDISND2nzg8oXbMdcUm/xV5eWD22xUC4bJ1X0QSXjdITZ1Dt32qDmcIBweQFQ2IpIuyq68DK7J1jTN0+gdUpVuXab2HeGj24+81/LFz5eCAynr8KZUTxzE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775108883; c=relaxed/simple;
-	bh=chACCJt1IKkEWjgP7E28dkcm0bEKSHUtDpOAmfHWmi4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Vus4uIJMMk5SK0fZQ079opRzjhwPIeCUCiwjn4b/1V6BVqNiHcKfFZj+mOHA0Z6xGPz3R9kgO6K7SlE3YaaqNzjnbEhqE1Jh5pH7AJ5NlQ77Ka3W4Pfq71VsNcCI/dWJAVm9FQDNQfhJNAGe5US6mDPU7Wq5MSkMRpU9Akotnpg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 7b3e8b422e5711f1aa26b74ffac11d73-20260402
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:6b473771-6e44-4ad0-86f1-c04c34e5788d,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:0c7eb77382a74c2a8a3659a9596b3598,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|898,TC:nil,Content:0|15|
-	52,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0
-	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 7b3e8b422e5711f1aa26b74ffac11d73-20260402
-X-User: tianyaxiong@kylinos.cn
-Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <tianyaxiong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 1940902015; Thu, 02 Apr 2026 13:47:48 +0800
-Message-ID: <daa71f81-cb36-4a9a-abf8-6a435ae79676@kylinos.cn>
-Date: Thu, 2 Apr 2026 13:47:46 +0800
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E400F1DE2D3;
+	Thu,  2 Apr 2026 06:01:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.60
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775109668; cv=fail; b=ilT3j4zBrOMk5qhFuXFzRRiFHuQ0o47aHABi1FIKSZULMKP9/Co4wmtuf8LVx2MDFzQn1dQeZH6ak47w9rryyMSEO25MIsWC/UpMXktn+1soIuQxiU4FFbABebTJXAy1lqNNzV3WJryGp1qgtwQ6bkP/+z4ww3R1c/L61YjX/Js=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775109668; c=relaxed/simple;
+	bh=mnJPPxvqTr4sVAsE2zOpyB7BjoUcelHMf4De2ylPze0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=oK4bvx0pNn+wQDSZK4GXyiO0VvfZwbFWLhVISStH3LCGRikp5UbrI0V5a01BjvS6fEG13iGO85+ZpsWJmJc0o5ZJ4Z1wc87W6kBW8nhb1Jx/fbScOYVOpTfIRmsyniH+MS8RDe5F/AxNq3BLdL5T5rGkEZlpp5El5U0tF8PIDEQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=uSrFsjUA; arc=fail smtp.client-ip=52.101.201.60
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="uSrFsjUA"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=PXxbXAW82tlHLlDFF//GJKBIWSwWNL/sfHAw3s1U3nBrWG1qzCMct6xr5MI0fcanpexWNMJjDcCz0CXvTvPw6RuW2lxAsvq3u1QuQTzhcedw+Nib2Qj0GLsVG7im0oCb8RcOA+mBV69Y4s/qCoHb3LL1+9r2jzDbqw0Dk+3adjtVSIoeeNXrzBU6bt5xhjYU9iSASP8NrXVDNM4pgLTBYmrMJbqL3Ijl4u5tzMQTGfuomlNOkfSL1h7Mubiey2vZGK+1ffKmO+6GyMpTd+/jszsSMur+6JVLt7k9wtO0LB4RzTmlOtnzaoPAFLG+O+n3inccvpPRSypN8rlqFEsZWw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IzNTWdtd161NmuHqyeLYksgO0och32rI8KHeaHlpb1w=;
+ b=U/qDMy42/DSHbSMhTrvA9vgcHrnQb50lds3uB1xgMXuJtU/8O7tet5MShQP+2/Y7KnVIFG420rRkN9nK+DiffXE2CafIJ7xNo3Xq7FCAQNr7yYSwc+oAEBRbw06JHNQIpK+qcKgYClJiBJSr5+t8aKFtP+Ujp3Mhccu+Yoi/L6dukO//nj/bbgTZ1wk9TGLm9jLa7wYbsUSjPf9KRzSBLZNE7Anr4QMCj65BPhT3QcunIRONHA1HLqsqIW5MwD82Ju9fHk5SaRnHfD3plpwnqWrRKB+u1sdJa5JaZw2mrWsJqjSxdjdIYuB421KV8y51dIdOtCXsRBLZOVeIfMOzEg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IzNTWdtd161NmuHqyeLYksgO0och32rI8KHeaHlpb1w=;
+ b=uSrFsjUAo+2Mnxc5xTmLIDdNbiG7K539EAh1gni7KBXVylCt2G6EQvJKIzZt7uTFQzTOn0zpO+h41u5yda0GzGbF07uJzDGscdGH2XlprAQULzbmRJK0YMOLoP4VgRH9An+JwSgz8b47mWPf1Ok39/ytavqWGafjdj1bI3+sZWo=
+Received: from SJ0PR13CA0236.namprd13.prod.outlook.com (2603:10b6:a03:2c1::31)
+ by DS0PR12MB8453.namprd12.prod.outlook.com (2603:10b6:8:157::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.18; Thu, 2 Apr
+ 2026 06:00:57 +0000
+Received: from CO1PEPF000066EC.namprd05.prod.outlook.com
+ (2603:10b6:a03:2c1:cafe::59) by SJ0PR13CA0236.outlook.office365.com
+ (2603:10b6:a03:2c1::31) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9769.16 via Frontend Transport; Thu,
+ 2 Apr 2026 06:00:57 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ CO1PEPF000066EC.mail.protection.outlook.com (10.167.249.8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9769.17 via Frontend Transport; Thu, 2 Apr 2026 06:00:56 +0000
+Received: from SATLEXMB04.amd.com (10.181.40.145) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.2562.17; Thu, 2 Apr
+ 2026 01:00:55 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Thu, 2 Apr
+ 2026 01:00:55 -0500
+Received: from [10.136.42.52] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.17 via Frontend
+ Transport; Thu, 2 Apr 2026 01:00:48 -0500
+Message-ID: <dc8af5fc-61cf-4560-8f6e-5ba81f371054@amd.com>
+Date: Thu, 2 Apr 2026 11:30:46 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,125 +71,82 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/4] PM / devfreq: Fix governor_store() failing when
- device has no current governor
-To: Jie Zhan <zhanjie9@hisilicon.com>, myungjoo.ham@samsung.com,
- kyungmin.park@samsung.com, cw00.choi@samsung.com, nm@ti.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260401032838.66168-1-tianyaxiong@kylinos.cn>
- <20260401033119.67821-1-tianyaxiong@kylinos.cn>
- <a9edebc1-6a28-4ab3-8016-793c585da9c4@hisilicon.com>
+Subject: Re: [PATCH v4 0/2] cpufreq/amd-pstate: Prevent scheduling when atomic
+ on PREEMPT_RT
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, "Gautham R. Shenoy"
+	<gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Clark Williams
+	<clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, "Srinivas
+ Pandruvada" <srinivas.pandruvada@linux.intel.com>, Len Brown
+	<lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra
+	<peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot
+	<vincent.guittot@linaro.org>, Miguel Ojeda <ojeda@kernel.org>
+CC: Perry Yuan <perry.yuan@amd.com>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <rust-for-linux@vger.kernel.org>,
+	<linux-rt-devel@lists.linux.dev>, Dietmar Eggemann
+	<dietmar.eggemann@arm.com>, Ben Segall <bsegall@google.com>, Mel Gorman
+	<mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, Boqun Feng
+	<boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, Benno Lossin
+	<lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl
+	<aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, Danilo Krummrich
+	<dakr@kernel.org>
+References: <20260316081849.19368-1-kprateek.nayak@amd.com>
 Content-Language: en-US
-From: Yaxiong Tian <tianyaxiong@kylinos.cn>
-In-Reply-To: <a9edebc1-6a28-4ab3-8016-793c585da9c4@hisilicon.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <20260316081849.19368-1-kprateek.nayak@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Received-SPF: None (SATLEXMB04.amd.com: kprateek.nayak@amd.com does not
+ designate permitted sender hosts)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PEPF000066EC:EE_|DS0PR12MB8453:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0f3471fa-620b-4fce-7a54-08de907d351d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|376014|1800799024|7416014|82310400026|56012099003|22082099003|18002099003|13003099007|921020;
+X-Microsoft-Antispam-Message-Info:
+	0QWDOziNoHM2SiijkmQdH93NmDd4m/w+5fgjimd+RRlU/K0oPVArdgmnJLZvND9Y4yZYpqp58pBYB+hSL+miGDKA7P6QD+41HIjC7SN3AfC+kt+bb3xOlE+zuZQvUJCQzYF/26P1LJOpqYvNQMmWZObjSvS+QMkFCJcJ1C0O6G7lYS5C84fMeWeq8T9ZS7EfuXYmPJEdQm3i+ea5Py18PKBxRucINvwJ5Aoedp0udtmaDdI7h2zGTNixfTa1eksAxS+N/ZMNQmXPeRQiQ2k9Uj/4IRoevvQpkYwJsKo+xMV6tlGurz9Rmbx2pK9nrgF4h9JLmt6/hibR05nAQnbVV4iATb/LXc6hj5vGeL3DJRI8HPYUbuGrLZ/52j8OcPsayIRFd/e1ix4rqgjavCOU7ukgBZejShUyVdstlivDM/fTp5cxo/1aIVcdm5OGR4kXpkF4V+OMTK0io2vi64+mvZ24sgxTnu/hUrDkBEBcAgIJK7RwYMWwnkInlcebtUz1CJxTsfa/oS0nnIgWQa6EAStd1kWlaalTL+6Mb+dED+PCy4zLNJ8UYeYLpMuPeRfy26749SIN40JfSN8T2Oty9mV7wELWrE1myTGD0NCRB4zj0rySd/MTWq/jEa4HqMhmviK+CqwBil9FIpOO3WFVNh/h131Bh8kl8YK+pVEzu1NGkyOBX1QlgkJwa8Pz7NmReaDWE0ZsSKyFPueWhIJbFzd+2KOuUDlJy2gYputxLsjuSateW23hH6HgB89GX+pKinicr88qjXE//0EERW8VFXlDRlN2AoyCXZFnhBg2Wt9TrgZobdQeD/aWGnhKWNmr
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(1800799024)(7416014)(82310400026)(56012099003)(22082099003)(18002099003)(13003099007)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	wpbe/eZZryBBe4jmxQZEaUrxaQqvn5XVuQzO7XV/i9UbCFPYlBiH5h3VTeZDK5XZji2dBji91S+aSWEXEgD7g7Lvul101WgcnjJ9G81lImVcz2OByP6n0OKDgYrSmUG6IxUKF86n50JlXOHkI2LfZGHvzB7PRtYAmFg05xdJ/yQltphxbwJXeP8uUl58gwXCplascQKl5PCU2eIK7H9et8FvSFVN9TDxOHsIXCF3zpLqaIoE4jRG6WrRByjkAcYjAGSTvMrKrkOkYG3P+cARIIjqef6Ug3DiddodSzq4AVURej3NXDBY2oAzNCm+ObeNsJ81/Wklrc2Z3LRe01POgNtyFi7OhvhdadPMD+TMGWq3tBUJh/LI132W/wDtLEJTC3Wc9oqR2mpS6QzhJ/OpGy2Ff413yPPt1NT0ENjLXDEaacg4tzQ9e+SYN7uLCN2P
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2026 06:00:56.8293
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0f3471fa-620b-4fce-7a54-08de907d351d
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CO1PEPF000066EC.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8453
 
+Hello Rafael, Viresh,
 
-在 2026/4/2 11:21, Jie Zhan 写道:
->
-> On 4/1/2026 11:31 AM, Yaxiong Tian wrote:
->> Since devfreq_remove_governor() may clear the device's current governor
->> in certain situations, while governors actually exist independently
->> of the device, directly returning EINVAL in this case is inaccurate.
->>
->> To fix this issue, remove this check and add relevant logic for when
->> df->governor is NULL.
->>
->> Fixes: 483d557ee9a3 ("PM / devfreq: Clean up the devfreq instance name in sysfs attr")
->> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
->> ---
->>   drivers/devfreq/devfreq.c | 17 ++++++++++++++---
->>   1 file changed, 14 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 2977b07be939..975f82d7a9d1 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -1390,9 +1390,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>   	char str_governor[DEVFREQ_NAME_LEN + 1];
->>   	const struct devfreq_governor *governor, *prev_governor;
->>   
->> -	if (!df->governor)
->> -		return -EINVAL;
->> -
->>   	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>   	if (ret != 1)
->>   		return -EINVAL;
->> @@ -1403,6 +1400,20 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>   		ret = PTR_ERR(governor);
->>   		goto out;
->>   	}
->> +
->> +	if (!df->governor) {
->> +		df->governor = governor;
->> +		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->> +		if (ret) {
->> +			dev_warn(dev, "%s: Governor %s not started(%d)\n",
->> +				__func__, df->governor->name, ret);
->> +			df->governor = NULL;
->> +		} else {
->> +			ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
->> +		}
->> +		goto out;
->> +	}
->> +
->>   	if (df->governor == governor) {
->>   		ret = 0;
->>   		goto out;
-> Hi Yaxiong,
->
-> I'd suggest something like this, such that the main body of the function is
-> not changed.
->
-> Note that this is just an example. Not tested or carefully checked.
-"I still prefer my modification. It's clearer and more straightforward, 
-and the increase in code size is very small compared to the 
-alternatives. Moreover, if we later want to implement 'cannot unload the 
-last governor' (which might be the module reference approach you 
-mentioned), we can simply remove this code."
+On 3/16/2026 1:48 PM, K Prateek Nayak wrote:
+> Patches are based on:
+> 
+>   git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> 
+> at commit 18ca40891b83 ("Merge branch 'pm-cpuidle-fixes' into
+> bleeding-edge") (14-03-2026).
 
+Gentle ping!
 
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 2977b07be939..aa0f1db3225c 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -1390,9 +1390,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->          char str_governor[DEVFREQ_NAME_LEN + 1];
->          const struct devfreq_governor *governor, *prev_governor;
->
-> -       if (!df->governor)
-> -               return -EINVAL;
-> -
->          ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->          if (ret != 1)
->                  return -EINVAL;
-> @@ -1403,6 +1400,10 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->                  ret = PTR_ERR(governor);
->                  goto out;
->          }
-> +
-> +       if (!df->governor)
-> +               goto skip_stop;
-> +
->          if (df->governor == governor) {
->                  ret = 0;
->                  goto out;
-> @@ -1423,6 +1424,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->                  goto out;
->          }
->
-> +skip_stop:
->          /*
->           * Start the new governor and create the specific sysfs files
->           * which depend on the new governor.
-> @@ -1435,6 +1437,8 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->                           __func__, df->governor->name, ret);
->
->                  /* Restore previous governor */
-> +               if (!prev_governor)
-> +                       goto out;
->                  df->governor = prev_governor;
->                  ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->                  if (ret) {
+They still apply cleanly on top of bleeding-edge at commit 8afc50268253
+("Merge branch 'experimental/acpi-driver-conversion' into
+bleeding-edge")
+
+If you are looking for specific Acks from other maintainers, please let
+me know and I'll try to coax them into taking a look at the series :-)
+
+-- 
+Thanks and Regards,
+Prateek
+
