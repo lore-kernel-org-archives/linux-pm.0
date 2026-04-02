@@ -1,176 +1,109 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01A4537C0FD
-	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 06:15:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD3492D978C
+	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 06:37:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775110544; cv=none; b=T9Aq4tmQi9djOwVhXXlPMBm50AgacdjteNcvXViwubnV52SnMIRUs97uZze7zrjgKiftbFG9RcRtfdbJ3I+6Bj1Y2uP/hoWW/3nPCTzf+Xc83UfyTYurhv6f7jgf8IZo54tIFgyE9KlHug7Uz5XDXdjasFXhsCLTeFZqC9j4weM=
+	t=1775111837; cv=none; b=gZ+uuV4/RpV3Ko0RO33p1jPNNUo3CgGVG6tbiVMk2t3Jt4JRkGSetakgK27l8lvd1KLYsjpsqFCucFtVpSnwQf+3XICuSNQcclzkdjrzmyl2kFv8DY9gtJQU5PdrK/r2SvY7Ket4KYIqXC3wZ7V8/vs+71kkqyh/gFE/cw8tLFQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775110544; c=relaxed/simple;
-	bh=l1loiawBIn+Nx/k/dA29xAyzkExLzj0o5+J/2k7RVgI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nZWrvtvDgwPs+5esNGgVPFMInsTJZLLwS4YCDtlV4TjX3Pb1af0pK4QidOvvW6f+8HtPKI4PSeCgfHRKjgS2WSpJxqXZmWJQLTZgVFBn80jl9IJ8/l/48lSRNwjLCvQYEgbIZCjN5Smxo4ng3m5vCpM4F+4lJe7AExasE80btBo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=c8bHzOo2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hZXiD0dj; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1775111837; c=relaxed/simple;
+	bh=2ID5HnImRXBwq7m2lS4nX4rs2HBuzrgCxIPBw39/5jA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aLrh2oUNuFps4GrOW8NHvqEvK8aHzeeEyp9HHA/TSGq0jdyV8jQctGuM4/aj2QFFDNmGnqz7mcxB3yF7Za8eC+katDMNT3y1QsGWe0a682JZY2a/hzuk1DEkliGqI6nVneXMVmtSKZGs1SWAQLmQVCaOG2+JjcyY7gHEkTDgDf8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=akfIW7Ce; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="c8bHzOo2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hZXiD0dj"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631M4DNH3746285
-	for <linux-pm@vger.kernel.org>; Thu, 2 Apr 2026 06:15:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	aRHUYded+TYp1esSjYtekH/rdFjnY9CsQjfogYeamHw=; b=c8bHzOo2Owcne8i4
-	ePx8ePExa+MRg9dXSvXV9+XMQ+EJyz3WNvSshCsttH74t56HFmLBZvE9txWeth1s
-	QIXKRwa1R+laOy2am9B1eWOPsotau2zBgKPN8KeDR8L4oDofkeNLtsmQtSNCGPnM
-	0S7YCtaB1qW3a8Kq/Wg/Ut3cSzNws1FrHiIG8GRQ9XcA7xeCEJyGTAkm4R351QdH
-	ogqyKu8RlS0MyYpvEhUHYNht+FGGVta8hX9LkGEvInydyGKiaovL3eN6H7zEA2jZ
-	BYHuNeZHTWgRTWEEmHy06deecWJxrvg3MNZcHbHZRPwuQOAY4eG44FoaQfUA21Y7
-	Ii3v8g==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4d9324kpdr-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2026 06:15:42 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82c83bd48afso255180b3a.3
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 23:15:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="akfIW7Ce"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2a9296b3926so2844095ad.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2026 23:37:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1775110542; x=1775715342; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=aRHUYded+TYp1esSjYtekH/rdFjnY9CsQjfogYeamHw=;
-        b=hZXiD0djI2ie92tB/TOFgMOK1/ZtzPW3Gf4e2839fsG10IK1NjDF2LzIDdOun4a+Kw
-         qLeVjx+gndrz4ZJxqEVmCzzsBj1T3c0mNbBleo7Ul6DcARgjxwT7B/EsbMwXQ3NJ9YGc
-         6TPeTWpsdskY5WYKyAzer3NXOMVCrQa4l6AKxZFTYUK1jxb5F1ovVHnE1XSlyEJjsWd1
-         T25v0R0yEn+zgKz0G5MqtZzO0Bo+vzBVlnikOaz93mTsKBn+PewwdV4oUNkUqngLRxK1
-         l8Rqzw7FHEljpxZ2QBCQewmPTp04hl96Ek2VjOJpyJNU8BSIIrQ3cej4+IEZqcncOzAh
-         +JMw==
+        d=linaro.org; s=google; t=1775111835; x=1775716635; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=K8/3v+kCVvzkJZkARRBkgOLxtlDKiOvmDPq30N7asvM=;
+        b=akfIW7CeGmdyA2MoGFcwcjliX7UHzOsvxi+mYUw/QR7IjBDHW4rWQMaRnvAcT0QSmS
+         5QDOAW4Dd2uKTvLKe6ZhQATXRz6ZQXoJir432UlGkmGPxjHiZmuPdju1YwPD1I95EB8X
+         tdncDLhQ9JbRX1eoZl+zA2Jp9qVMgc4cby8PwKcWojR+E4SQ4X/YF0qgWqs280y0DKs2
+         6mloYPlS4cZv5E9JohWbJyAL4pecXDVY2yniC7H5L9BOzDGROXbP+tgYDIyQgOeAxfnI
+         6imRnN9NbW59m1hZIGeMOEPqBmLEtPowhreLc5Zn1kC1QwuWa/r9uPhjPqndf1CrYd7g
+         HIxA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775110542; x=1775715342;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=aRHUYded+TYp1esSjYtekH/rdFjnY9CsQjfogYeamHw=;
-        b=UwKv/ey2xMLoKdmi5X0EHxeip6Yp8Li5eAGRrE7O4CE4xTaMc3PHn0tNbZsYk4UrEJ
-         IKh71XQFQu1w51Sj6P0dPykJ+w0xeBlFg55GSTO6Y4jcU8suPtWNbW9aVPQd2W4MT4WC
-         hqPu5LqaJopY3XxwI7MaCLu9+l3f38fmCYLG5CB6jAraIf3FAX3sebro1PYWnZ2LyIPo
-         Gs+9LOqP2anOdB2jWOizAauATSp14pcDn3EkqmGtdKyBsEvcbZ1iV30TgSEV41JIKxoJ
-         Z6LnPVz2p2m0BRtUbZeTf0uRAqZVLAM8IJOEtwGyaRsYUCzrmQ832xu3mMR8cLQ8LJju
-         ugwQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUeyAPjbcIsHB7WWs6OetgUwMOMtXlIs9dHnKLqsOATeEiRatMXgXVKTPWfVuaoiZR+sS4yeQx+hA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzlsvtwQiZhc3WRHIzoI6Z8lCWGje09kPyKP+j6+D8hRw0n9HAH
-	ikbad8poHiwKACOS+S23OgMa58AwG5BGSICrIKaMcSoTAkf3XPrbAWBZEf45nztjP8g09fpTGqM
-	mF9FVQtO8vfsRozKhEQT3eR0lqbQqRr5NC8aYlxPQ0u7jXY2u3gNZvP4eOCRrVA==
-X-Gm-Gg: ATEYQzyE5OvnYa17Psa2EAON59gkk0+GoR27svb9wjro2hr6xvLIzkFDW3JnoFqfKOY
-	UZZ6zAv0IVkh5dhpZ08Wn+US2IiRZV7E8jMrfjIW6L1gdG8o7hH46xKgbIbGafA3mz2vzQ2BE2u
-	tBcrSKrqb+qF9asWUN3Z7BxRaRXi6ZDM8Yz8saJuBohhiD9Qhv4aYabyg9TUTRoYo4ZCB+CKqPN
-	SAhmXQBReGFQNbGQcmp/P9pUxuyH1D28cag4O2yg1aQgmbvKdy/L9+mBo9meQCJXCkvK9mqgxDg
-	RLl3oIpQU3fzJNoYkizM/S9uTbR1QI2LM0GWsi85RKMwNfcehHQRfDKLXN0FxNjgMgv9kBU9JFx
-	xVZMoLVwRnHnQTkP/VcS34yxhfs0fWSSP909MEidmNdqWenupZh8z/A+n
-X-Received: by 2002:a05:6a00:ccf:b0:81f:3c34:fa83 with SMTP id d2e1a72fcca58-82ce8b39b7emr6362570b3a.57.1775110541670;
-        Wed, 01 Apr 2026 23:15:41 -0700 (PDT)
-X-Received: by 2002:a05:6a00:ccf:b0:81f:3c34:fa83 with SMTP id d2e1a72fcca58-82ce8b39b7emr6362522b3a.57.1775110541169;
-        Wed, 01 Apr 2026 23:15:41 -0700 (PDT)
-Received: from [10.219.57.134] ([202.46.23.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9c3ce13sm1854075b3a.38.2026.04.01.23.15.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Apr 2026 23:15:40 -0700 (PDT)
-Message-ID: <043066aa-64ad-4b7c-8592-ca3074beb7fb@oss.qualcomm.com>
-Date: Thu, 2 Apr 2026 11:45:32 +0530
+        d=1e100.net; s=20251104; t=1775111835; x=1775716635;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K8/3v+kCVvzkJZkARRBkgOLxtlDKiOvmDPq30N7asvM=;
+        b=C549quxr60CbEAj2UZgGBefVNrsRWeTHWSaw28HA6vIj0M7lNCWKie69336UU3666A
+         dhAJ1DtYBxmVIWwFVMw4jg4EV29g7V3voOzVVldnwel9lI8VeJ328AZ5VFtcPDIcCBLO
+         fwpAxNNDMMGiqBxHs8hH/WB4WcCDehdxly20ypc3Q4loFfUzLuqGuAU9u++fCnNpuLPS
+         MZGmNpGd+xL4ZWE9/73B00H+hpLNGe/wssZPsjaz0Ufr0Y51erIArJNNia+1ncuNuQ1N
+         ODp3HEu3DYSn3enkqCe9U4iPD2X9/cyLN6IiN06Q3SlnngvcptySge5bMz5Z8XzyU4Py
+         nRTg==
+X-Forwarded-Encrypted: i=1; AJvYcCX49vB5QV52w55Gj+qzPA3QlYG6REirUIosOaXK1aHYjmpfO0/9EVYieE1lxqL4zUQLs7RlTzU2ZQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9QQDCYfIM+rUGUvJnl/04TkuGWHezy/yByoAYsjOrd8DZ/NqJ
+	8LWFlL0YfwvcjELotr097565kotX0HGc/lKRX7FYpS5TQ1VCNwgalVOcz3Ry6fC0jJs=
+X-Gm-Gg: AeBDievEqOQnmxb5el/lBFtFOmzmzS5NQGOEnaIAWLUZlNWBcWwbPLJyEhDgFr129/a
+	PM0w8CS2UjNYgdcABzGiTjtVU74vanqMAhjKWc3tTISh/4kZjoBeeWJTHfWlVWMtUk2bWg6GlBt
+	L7fGJeU0KwcRAfnplgQ7uKNnQxyoCWRk1y4em5eZThRT9na503ArltEsMdLf3F93GxzJ0QCJ0Fl
+	5UKmQh0n/2D7nIfQlCELJ5RjuYMktekui0A0oHZNDUiNL25EGTk88ZiZpXdYdXC3uWcpoMg+uC+
+	cyQbpfuYml95kAeTLv6X29h8gQl7lamtE8+l3f/jjEaszxh7nI+6gT+t93OvAJAO5LIPkuzzTH3
+	B6jEBLDSbAsUvFcCqHHhNyp8jghmQwMNyc2xPT4MHbxNQ4yxVds+UhSzQIwMKQkyf9GW/etn+6m
+	tvHGRd17TuLnrZtpgxoo0PBR2p
+X-Received: by 2002:a17:903:198d:b0:2b2:58b6:3dae with SMTP id d9443c01a7336-2b269d14011mr58436245ad.46.1775111835057;
+        Wed, 01 Apr 2026 23:37:15 -0700 (PDT)
+Received: from localhost ([122.172.81.200])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b27477c54bsm22677075ad.27.2026.04.01.23.37.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Apr 2026 23:37:14 -0700 (PDT)
+Date: Thu, 2 Apr 2026 12:07:11 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Huang Rui <ray.huang@amd.com>, 
+	"Gautham R. Shenoy" <gautham.shenoy@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Clark Williams <clrkwllms@kernel.org>, 
+	Steven Rostedt <rostedt@goodmis.org>, Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, linux-rt-devel@lists.linux.dev, 
+	Mario Limonciello <superm1@kernel.org>
+Subject: Re: [PATCH v4 1/2] cpufreq/amd-pstate: Pass the policy to
+ amd_pstate_update()
+Message-ID: <hin33mzxwjjycw7oonq4klqmgmgavqpoe7r2ml6qalytxfpntk@me7d6q6yiec7>
+References: <20260316081849.19368-1-kprateek.nayak@amd.com>
+ <20260316081849.19368-2-kprateek.nayak@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v20 01/10] power: reset: reboot-mode: Remove devres based
- allocations
-To: Krzysztof Kozlowski <krzk@kernel.org>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>, Bjorn Andersson <andersson@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Andy Yan
- <andy.yan@rock-chips.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        John Stultz
- <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>
-References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
- <20260304-arm-psci-system_reset2-vendor-reboots-v20-1-cf7d346b8372@oss.qualcomm.com>
- <be9db30a-ee64-4457-8722-b9f456911ad3@kernel.org>
-Content-Language: en-US
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <be9db30a-ee64-4457-8722-b9f456911ad3@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: x1nxa-589R1Ik9ISlW2PaUZnjs7MS99I
-X-Authority-Analysis: v=2.4 cv=TKBIilla c=1 sm=1 tr=0 ts=69ce098e cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=8-yduQQsOBGYcPy-76YA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
- a=2VI0MkxyNR6bbpdq8BZq:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDA1MyBTYWx0ZWRfXxfHsPrpT2jrl
- TcOlRaYTCffPYxv3YMs24MCh0kNdafNOaoudgBFVkLzoIaT/mdyqp+ZvBJTRkXXvskd7V94Od9b
- u7WejxfA0rOTnxt4u12x2u4oD8oQZdBK4bM1MxGFzR/U9IC2vdCk5SaDpRDcxcg6HRkV0H8YqAq
- LAYm6TcXyCFjj1KPq3JgfnCwA8fqBB0bJlRouCG2QAD5ZF/v+73m/jf5B1LyVtLHkDpwYWvMBT8
- xVaz+rJ3T3FqhJruVLRLK5HoSkKob+8ENKeNbwROhmlabaT1UJdq1cYQE3DxvEW5Z8V8fr1dI5B
- 4JpBSGHuffQnPAVh97U4V61o7lA5VYuwUsL+KcA9zbR7oQ1eqPT7PvtFrC3tpFlIIbThtFdj+lK
- UmjOGQu6T/Qrw3dyEAGgqxDT27FihNs26/2MGNMsq8aP6yq2Bw7mG71CFmpSbEiTExWVw5I2OeY
- MIi6v8bDa2RB39x8KiA==
-X-Proofpoint-ORIG-GUID: x1nxa-589R1Ik9ISlW2PaUZnjs7MS99I
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-02_01,2026-04-01_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604020053
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260316081849.19368-2-kprateek.nayak@amd.com>
 
-
-
-On 01-04-2026 20:49, Krzysztof Kozlowski wrote:
-> On 04/03/2026 19:03, Shivendra Pratap wrote:
->> Devres APIs are intended for use in drivers, where the managed lifetime
->> of resources is tied directly to the driver attach/detach cycle. In
->> shared subsystem code, there is no guarantee that the subsystem
->> functions will only be called after a driver has been attached, nor that
->> they will not be referenced after the managed resources have been
->> released during driver detach.
->>
->> To ensure correct lifetime handling, avoid using devres-based
->> allocations in the reboot-mode and explicitly handle allocation and
->> cleanup of resources.
->>
->> Fixes: 4fcd504edbf7 ("power: reset: add reboot mode driver")
+On 16-03-26, 08:18, K Prateek Nayak wrote:
+> All callers of amd_pstate_update() already have a reference to the
+> cpufreq_policy object.
 > 
-> I don't think this is correct tag.
+> Pass the entire policy object and grab the cpudata using
+> "policy->driver_data" instead of passing the cpudata and unnecessarily
+> grabbing another read-side reference to the cpufreq policy object when
+> it is already available in the caller.
 > 
-> That commit added code which was a driver, not subsystem level things.
-> Using devres, as you pointed out, in platform_driver is correct.
+> No functional changes intended.
+> 
+> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+> ---
+> changelog v3..v4:
+> 
+> o No changes.
+> ---
+>  drivers/cpufreq/amd-pstate.c | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
 
-sure. thanks. will remove the Fixes tag.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-thanks,
-Shivendra
+-- 
+viresh
