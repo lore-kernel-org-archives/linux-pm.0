@@ -1,58 +1,57 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6A722156C;
-	Thu,  2 Apr 2026 22:14:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 801823612F6;
+	Thu,  2 Apr 2026 22:15:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775168100; cv=none; b=jESlAA+ocY7TMugvVfUVyPxW1kSVV1DOUqBM6KTcawOyiQHK59k2SYNRN70tnxKkK9nL1X7OUx5ts1YqzftFXC61GsT3e0Vpj/b1RWZbOutvIZG5kUCVFIjT2sUv7wh3PzbBo+46Jh3dofSJguAhY2ki/AH6zSWqTHpWPeXJkjE=
+	t=1775168159; cv=none; b=tBnVu2XcU47EP3fEYYFIXTJC9O9FrAVQe1uOnA7CwWzOWeB8qeUZvsFm5w9QTOa6sh/I8w5pbbTdpZf3DMPHyqHjH7RQZs5MN8gLXhMWqZSv0RNJAq2f+JdyXKH3Z3PTAM4wBAeP6uJQAisTmprj4+RagTDDhlAKyj1M8LNDCQc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775168100; c=relaxed/simple;
-	bh=+5HVIjyjVs3wwcST3Gk3VNYlHNkbECdItuePqBKf+5A=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=a5aqLxVdpettHWY++GGwJwU7HAE5I+rCxpC6aMsOT40DIWDY/QzU/Nz1bE7r9nqMRxi25uBEUBPh5Kjs5loI+0gSpK9mCNFwXsLscObrmAEsWHtfPjsIqMSSBGNjrQHdF4D4DFwdkOcFrTXW54LHR4tUCtWCy3Ngte+ZeozFs3I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=V2ej+4gn; arc=none smtp.client-ip=192.198.163.11
+	s=arc-20240116; t=1775168159; c=relaxed/simple;
+	bh=QW2dUG1AskI3qM2+tw+Vq/k3E2OPnZfV1ZdIH40LSJI=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=Q31yUjGCRpt6ngpPjDsmXvNs5YSVJXNidVrsH4X83ZV1gj5Fap/ov7wB0w9q10+FHhwIfsU5Ln/2zHU6QltIibPaBqC3tRfp9S5mvyMwLfZ593LiWUFyD+viK2AKaSuUu8aYN92BdPbXrVVDHiUbH+PEtBzOPpdcJ6TwkVMh2BY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RQSw1D6L; arc=none smtp.client-ip=198.175.65.9
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="V2ej+4gn"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RQSw1D6L"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775168098; x=1806704098;
+  t=1775168157; x=1806704157;
   h=date:from:to:cc:subject:message-id;
-  bh=+5HVIjyjVs3wwcST3Gk3VNYlHNkbECdItuePqBKf+5A=;
-  b=V2ej+4gnM3QECqULltbp9bLDnvLifmpWZ2Xa0+ZMRTbh5S49WvNuQdhe
-   FMfFiaxy7ZXF58jQIt9rqA/LBnezl2nFgYBbnX+VKygFivZVQX917eDZB
-   wZoymZ4UMZIpI2AEa/uCz9Hdy8JXZve5dTrk2AmftIXWEputkF4e9Pwxr
-   iMALlWpaiPXOGFLbS9im9frXReoGXDZv8m5ZcNC2b2yues9ncA6v8UgDB
-   s7b8Ttf2CSvB4qcSWgqk8DkufDHGUlFCtlJ7vDrskKRKQ70DcPVF8f5Fc
-   u4fY15bXSjjBcCsTxv2p538jvNOEYvYfk/ZQMQ+6eMAEbHchAVFYfi7jk
-   g==;
-X-CSE-ConnectionGUID: dMtljO4dSUKb45Y6xxXakw==
-X-CSE-MsgGUID: PlaewLOCQoiJNqCr4pv43A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="86857048"
+  bh=QW2dUG1AskI3qM2+tw+Vq/k3E2OPnZfV1ZdIH40LSJI=;
+  b=RQSw1D6LKmHwpz5l+9saP7a3onkO/DhH3ZxsgF8nNtSJFrz//tUzZdJA
+   jQ2JEmxyXCRAfsCDexKKdn4QttXFeode6FCTWj0VqQRJ6vWZRliBphNvH
+   Wp9kT6oxoUQlsOPnatqNs3diWiuzLXS4aDfT48lvOdQH/3eOwB+NchbHu
+   pkJY0NfPgTjpopArXL4Oh82t5NEBf0PwIGwehH/lRRVJYAe2Ck6aeujJ/
+   5Iq47nEdjyTNmJ6S8c0SdwxDgdqw6FNl1jKdttmfeBjTyzmLhUSxYoAYu
+   Eu6CY684dj9m5Q6dJGX9XVfjo0RXJ2Nq1LQ6LuXreFKbcKocx39qe9ScB
+   Q==;
+X-CSE-ConnectionGUID: af9s8BA+RKeBL3e+FOa1pg==
+X-CSE-MsgGUID: tddi0kSpRs+3aSS0u9g78w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="98849283"
 X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="86857048"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 15:14:57 -0700
-X-CSE-ConnectionGUID: 5hL4nNm5RKahZ1bsq5IdXQ==
-X-CSE-MsgGUID: YdCRCIWZTrqyNmhMWzb6vA==
-X-Ironport-Invalid-End-Of-Message: True
+   d="scan'208";a="98849283"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 15:15:57 -0700
+X-CSE-ConnectionGUID: FtbsE3JFSGaxbha+KODN1A==
+X-CSE-MsgGUID: CWAAg7CLToetyWMPYUp5cA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="227036643"
+   d="scan'208";a="265027463"
 Received: from lkp-server01.sh.intel.com (HELO 064ad336901d) ([10.239.97.150])
-  by orviesa008.jf.intel.com with ESMTP; 02 Apr 2026 15:14:56 -0700
+  by orviesa001.jf.intel.com with ESMTP; 02 Apr 2026 15:15:56 -0700
 Received: from kbuild by 064ad336901d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1w8QJR-000000000UZ-08BI;
-	Thu, 02 Apr 2026 22:14:53 +0000
-Date: Fri, 03 Apr 2026 06:14:51 +0800
+	id 1w8QKP-000000000Uh-0QMB;
+	Thu, 02 Apr 2026 22:15:53 +0000
+Date: Fri, 03 Apr 2026 06:15:23 +0800
 From: kernel test robot <lkp@intel.com>
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
- d8d394c43391141e6369ccfa5e40b88841a6d939
-Message-ID: <202604030642.DKaf1FZx-lkp@intel.com>
+Subject: [rafael-pm:fixes] BUILD SUCCESS
+ 3cc0b373bfce228551d54404eb2e763a1fd1968d
+Message-ID: <202604030614.5gkIUtyF-lkp@intel.com>
 User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -60,8 +59,8 @@ List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-branch HEAD: d8d394c43391141e6369ccfa5e40b88841a6d939  Merge branch 'experimental/acpi-driver-conversion' into bleeding-edge
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
+branch HEAD: 3cc0b373bfce228551d54404eb2e763a1fd1968d  Merge branch 'thermal-core-fixes' into fixes
 
 elapsed time: 733m
 
