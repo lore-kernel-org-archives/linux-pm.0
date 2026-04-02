@@ -1,254 +1,67 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4FA13242BD;
-	Thu,  2 Apr 2026 07:15:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49BB118FDDE;
+	Thu,  2 Apr 2026 07:39:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775114154; cv=none; b=dT4msT3N6Gd5p5m4mY+P/lpSwWs2UQLqYSzDiaZnSvMiAzhjKOxde9PFYwtTSrgA3wkWHcOi8H3Jc1A77HABhxu/KZuF94u3Ow3p9kgln3iqDY9Gp/n5dF+xZFsTlveJueN/CSYqfupiMRBzPye2eBsWXccVVZgD9qYKHuMTq+c=
+	t=1775115561; cv=none; b=ZJ96Z9tW3VJSne08t2QrW8LZFBHgX+UvhtB8a5mUjFZ9uF5Ex9+Oim7v3MSDshguAe6Dg13HMyPb3x7viCF64Vv/BFHyXp4w4DxoP/TV2UHtas0ZwEQEKxiWZcwkw3LTrmjDtbJ8vji3E6uHe562GA0zQsWTukrLb5zvshmta18=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775114154; c=relaxed/simple;
-	bh=cy1rJY3lSecevucVCMq4/107OEQfGsVu0eTYQYUqRcw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=LqAO1deAhjf4awEu9nUKA2+JyNWbt2ODMMjdlES9K+7OYGh8ixs+ky7Js5oxfXcV0nViBL6eLoI9g4qhQ73kfhtxGR2lB2o6fG6XGx9z7yFuKPWymmRHPBmSbgCAQDWqhPpFqpD7J+OJM0cSISOJV9oJLWr7EOKepPDxX3vy+2c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=REYM9YSb; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775115561; c=relaxed/simple;
+	bh=no6QOf/VFhguYHVORKuUHdwtLtBKZ2459unNnteq/hY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WlZIDIBjF0+2TQpX7bdz9v53oDj9sDx8rrEdGt+xcsuG+R+82fV2Fwfd3nueWgdS5iSY9OUzZqDTdIkMA17OzCbAg/guwq5vs0aVHN+ZMsAJrZQfZbs3gj6xQVabjhriEm+FF2Dml4my3dUvzqwvjrAP0JwkBuCxmfXUNOY2e0c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VBnzc+PX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="REYM9YSb"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 62B71C2BC9E;
-	Thu,  2 Apr 2026 07:15:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VBnzc+PX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 584F9C2BC9E;
+	Thu,  2 Apr 2026 07:39:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775114154;
-	bh=cy1rJY3lSecevucVCMq4/107OEQfGsVu0eTYQYUqRcw=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=REYM9YSboF92FkiqTDVXpi2awTDiV+esI2AmGlajTWCbf/C50Fl20QHT/h8gFkfGG
-	 6mTaGBSN4VSu1mrSOQNPnZzAsgRswZpSAODhWBqnHSPXmOEIQ7dZIW/G1qSNLgdlTK
-	 VLgkvacFU7aTx4i99M/q6RcHqaoDG6/MnrKto9vXHSG7EwxbW3LgYeDndONHL45VsU
-	 D91uz0fZ2GWXN4Az0FIFNlGdKKBrjhgOyKCBhcE3yWAKZzHmWhMuhbzwDg0SiFuF1k
-	 zc0Y+mNwLwzqUD51WWakmy7/s7SIKaWiWxiFLvum9jkLg7Wz8V+Jm4BaqSysj9WJOV
-	 U6jUjmzgdjmcA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C2DCCC6B01;
-	Thu,  2 Apr 2026 07:15:54 +0000 (UTC)
-From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Thu, 02 Apr 2026 07:15:29 +0000
-Subject: [PATCH] power: supply: max77759_charger: fix voltage scale (mV ->
- uV)
+	s=k20201202; t=1775115560;
+	bh=no6QOf/VFhguYHVORKuUHdwtLtBKZ2459unNnteq/hY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=VBnzc+PXAxhL6UdbS47xiK1BwjKryy20q1Pgr+/C6MN38wbFYU56toFcHxODXn0T7
+	 iXlH0O7X2+kz8nzHtc04NSUetwgJPs4pzEKF+SCRaqZABPls9tSs8CFAxYuhEJBSDI
+	 n8eQFP5D56x6YNeaHdFKzA/zqvxwpRaKpM/dnvDCBukxZM8diEqyUBXbGbfFNoxpsJ
+	 GAFQLmX0QUaLAy0nMAhreIMcrhKk3LVpPLdpe7tOIeXEXxMuA3rYAK+31ioTj3NFIa
+	 LbiqVvi9XmsyY0RVB7BE+H8P6nCAzZ3DHjbXa1cE5QZmzrz1o6ng1Djpqf9AiehDH9
+	 qDd6ZFdbuqGUA==
+Date: Thu, 2 Apr 2026 09:39:18 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Akashdeep Kaur <a-kaur@ti.com>
+Cc: praneeth@ti.com, nm@ti.com, vigneshr@ti.com, kristo@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, rafael@kernel.org, 
+	viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, d-gole@ti.com, vishalm@ti.com, 
+	sebin.francis@ti.com, k-willis@ti.com
+Subject: Re: [PATCH v2 2/6] dt-bindings: opp: ti-cpu: Add ti,soc-info property
+Message-ID: <20260402-sweet-wise-coyote-138ff8@quoll>
+References: <20260401105404.1194717-1-a-kaur@ti.com>
+ <20260401105404.1194717-3-a-kaur@ti.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260402-fix-psy-max77759-usb-next-v1-1-427f5af566c3@google.com>
-X-B4-Tracking: v=1; b=H4sIAJAXzmkC/x2MQQ5AMBAAvyJ7tkk1KL4iDsViD0q6SEX8XeM4y
- cw8IOSZBJrkAU8XC28uQpYmMCzWzYQ8RgatdKlypXHigLvcuNpgjClqPKVHR+HArLD5VJVWVQN
- B7HdPUf7fbfe+H7R8EV1rAAAA
-X-Change-ID: 20260402-fix-psy-max77759-usb-next-15a4f86a08ce
-To: Amit Sunil Dhamne <amitsd@google.com>, 
- Sebastian Reichel <sre@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
- linux-usb@vger.kernel.org, Badhri Jagan Sridharan <badhri@google.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1775114153; l=7748;
- i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=59/AjsdipPHEtmFIyA3h6KhCPPrrp72LTkD5FeZMk/k=;
- b=/cA759Ui37lFsiIJWmlVx2MCaJTghbsbPALCnqg5ZDIL2DNiM8O/pyvhr+gyXCG/Xp4fsMAjZ
- UHXBmKbWx0UDXG4jIzLEBlTLOfiuX4O3QWvUQVTt7ch7Qbe1TZkuYEE
-X-Developer-Key: i=amitsd@google.com; a=ed25519;
- pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
-X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
- auth_id=262
-X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
-Reply-To: amitsd@google.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260401105404.1194717-3-a-kaur@ti.com>
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+On Wed, Apr 01, 2026 at 04:24:00PM +0530, Akashdeep Kaur wrote:
+> Add ti,soc-info property to allow OPP tables to reference the SoC info
+> device (chipid) for establishing device link dependencies.
+> 
+> This is used on K3 SoCs (AM625, AM62A7, AM62L3, AM62P5) to ensure proper
+> probe ordering between ti-cpufreq and k3-socinfo drivers. The ti-cpufreq
 
-CONSTANT_CHARGE_VOLTAGE_MAX property incorrectly uses mV instead of uV.
-Add fix to use uV as per the power-supply subsystem convention.
+Nope, sorry, DT purpose is not to perform probe ordering.
 
-Also, add a note indicating all the properties use non negative values.
-A negative value indicates failure with the appropriate error value. In
-that case, it should not be taken as a measurement value or status.
+If I change Linux to load k3-socinfo before ti-cpufreq, then the binding
+becomes invalid?
 
-Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
----
-This patch is a follow-up to the series [1]. [1] has been accepted in
-the USB subsystem tree (usb-next). However, since Sebastian has additional
-feedback [2], I am sending this patch to address it. Please note that this
-patch is based out of usb-next branch on usb tree. This patch should be
-applied on top of 70d7dd27f6dc ("power: supply: max77759: add charger driver").
-
-[1] https://lore.kernel.org/all/20260325-max77759-charger-v9-0-4486dd297adc@google.com/
-[2] https://lore.kernel.org/all/ac2jYUA2F5oQsA2g@venus/#t
----
-Output of power supply selftest:
-root@google-gs:/data/power_supply# ./test_power_supply_properties.sh
-TAP version 13
-1..66
- # Testing device max77759-charger
-ok 1 max77759-charger.exists
-ok 2 max77759-charger.uevent.NAME
-ok 3 max77759-charger.sysfs.type
-ok 4 max77759-charger.uevent.TYPE
-ok 5 max77759-charger.sysfs.usb_type # SKIP
- # Reported: '1' ()
-ok 6 max77759-charger.sysfs.online
- # Reported: '1' ()
-ok 7 max77759-charger.sysfs.present
- # Reported: 'Charging'
-ok 8 max77759-charger.sysfs.status
-ok 9 max77759-charger.sysfs.capacity # SKIP
-ok 10 max77759-charger.sysfs.capacity_level # SKIP
-ok 11 max77759-charger.sysfs.model_name # SKIP
-ok 12 max77759-charger.sysfs.manufacturer # SKIP
-ok 13 max77759-charger.sysfs.serial_number # SKIP
-ok 14 max77759-charger.sysfs.technology # SKIP
-ok 15 max77759-charger.sysfs.cycle_count # SKIP
-ok 16 max77759-charger.sysfs.scope # SKIP
- # Reported: '3000000' uA (3000 mA)
-ok 17 max77759-charger.sysfs.input_current_limit
-ok 18 max77759-charger.sysfs.input_voltage_limit # SKIP
-ok 19 max77759-charger.sysfs.voltage_now # SKIP
-ok 20 max77759-charger.sysfs.voltage_min # SKIP
-ok 21 max77759-charger.sysfs.voltage_max # SKIP
-ok 22 max77759-charger.sysfs.voltage_min_design # SKIP
-ok 23 max77759-charger.sysfs.voltage_max_design # SKIP
-ok 24 max77759-charger.sysfs.current_now # SKIP
-ok 25 max77759-charger.sysfs.current_max # SKIP
-ok 26 max77759-charger.sysfs.charge_now # SKIP
-ok 27 max77759-charger.sysfs.charge_full # SKIP
-ok 28 max77759-charger.sysfs.charge_full_design # SKIP
-ok 29 max77759-charger.sysfs.power_now # SKIP
-ok 30 max77759-charger.sysfs.energy_now # SKIP
-ok 31 max77759-charger.sysfs.energy_full # SKIP
-ok 32 max77759-charger.sysfs.energy_full_design # SKIP
-ok 33 max77759-charger.sysfs.energy_full_design # SKIP
- # Testing device tcpm-source-psy-1-0025
-ok 34 tcpm-source-psy-1-0025.exists
-ok 35 tcpm-source-psy-1-0025.uevent.NAME
-ok 36 tcpm-source-psy-1-0025.sysfs.type
-ok 37 tcpm-source-psy-1-0025.uevent.TYPE
- # Reported: 'C [PD] PD_PPS PD_SPR_AVS PD_PPS_SPR_AVS' ()
-ok 38 tcpm-source-psy-1-0025.sysfs.usb_type
- # Reported: '1' ()
-ok 39 tcpm-source-psy-1-0025.sysfs.online
-ok 40 tcpm-source-psy-1-0025.sysfs.present # SKIP
-ok 41 tcpm-source-psy-1-0025.sysfs.status # SKIP
-ok 42 tcpm-source-psy-1-0025.sysfs.capacity # SKIP
-ok 43 tcpm-source-psy-1-0025.sysfs.capacity_level # SKIP
-ok 44 tcpm-source-psy-1-0025.sysfs.model_name # SKIP
-ok 45 tcpm-source-psy-1-0025.sysfs.manufacturer # SKIP
-ok 46 tcpm-source-psy-1-0025.sysfs.serial_number # SKIP
-ok 47 tcpm-source-psy-1-0025.sysfs.technology # SKIP
-ok 48 tcpm-source-psy-1-0025.sysfs.cycle_count # SKIP
-ok 49 tcpm-source-psy-1-0025.sysfs.scope # SKIP
-ok 50 tcpm-source-psy-1-0025.sysfs.input_current_limit # SKIP
-ok 51 tcpm-source-psy-1-0025.sysfs.input_voltage_limit # SKIP
- # Reported: '5000000' uV (5 V)
-ok 52 tcpm-source-psy-1-0025.sysfs.voltage_now
- # Reported: '5000000' uV (5 V)
-ok 53 tcpm-source-psy-1-0025.sysfs.voltage_min
- # Reported: '5000000' uV (5 V)
-ok 54 tcpm-source-psy-1-0025.sysfs.voltage_max
-ok 55 tcpm-source-psy-1-0025.sysfs.voltage_min_design # SKIP
-ok 56 tcpm-source-psy-1-0025.sysfs.voltage_max_design # SKIP
- # Reported: '3000000' uA (3000 mA)
-ok 57 tcpm-source-psy-1-0025.sysfs.current_now
- # Reported: '3000000' uA (3000 mA)
-ok 58 tcpm-source-psy-1-0025.sysfs.current_max
-ok 59 tcpm-source-psy-1-0025.sysfs.charge_now # SKIP
-ok 60 tcpm-source-psy-1-0025.sysfs.charge_full # SKIP
-ok 61 tcpm-source-psy-1-0025.sysfs.charge_full_design # SKIP
-ok 62 tcpm-source-psy-1-0025.sysfs.power_now # SKIP
-ok 63 tcpm-source-psy-1-0025.sysfs.energy_now # SKIP
-ok 64 tcpm-source-psy-1-0025.sysfs.energy_full # SKIP
-ok 65 tcpm-source-psy-1-0025.sysfs.energy_full_design # SKIP
-ok 66 tcpm-source-psy-1-0025.sysfs.energy_full_design # SKIP
- # 47 skipped test(s) detected.  Consider enabling relevant config options to improve coverage.
- # Totals: pass:19 fail:0 xfail:0 xpass:0 skip:47 error:0
----
- drivers/power/supply/max77759_charger.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/power/supply/max77759_charger.c b/drivers/power/supply/max77759_charger.c
-index 9bb414599f16..58594bb78426 100644
---- a/drivers/power/supply/max77759_charger.c
-+++ b/drivers/power/supply/max77759_charger.c
-@@ -26,7 +26,7 @@
- 
- /* Default values for Fast Charge Current & Float Voltage */
- #define CHG_CC_DEFAULT_UA			2266770
--#define CHG_FV_DEFAULT_MV			4300
-+#define CHG_FV_DEFAULT_UV			4300000
- 
- #define MAX_NUM_RETRIES				3
- #define PSY_WORK_RETRY_DELAY_MS			10
-@@ -61,10 +61,10 @@ static const struct linear_range chgcc_limit_ranges[] = {
- 	LINEAR_RANGE(200000, 0x3, 0x3C, 66670),
- };
- 
--/* Charge Termination Voltage Limits (in mV) */
-+/* Charge Termination Voltage Limits (in uV) */
- static const struct linear_range chg_cv_prm_ranges[] = {
--	LINEAR_RANGE(3800, 0x38, 0x39, 100),
--	LINEAR_RANGE(4000, 0x0, 0x32, 10),
-+	LINEAR_RANGE(3800000, 0x38, 0x39, 100000),
-+	LINEAR_RANGE(4000000, 0x0, 0x32, 10000),
- };
- 
- /* USB input current limits (in uA) */
-@@ -310,14 +310,14 @@ static int get_float_voltage(struct max77759_charger *chg)
- 	return ret ? ret : val;
- }
- 
--static int set_float_voltage_limit(struct max77759_charger *chg, u32 fv_mv)
-+static int set_float_voltage_limit(struct max77759_charger *chg, u32 fv_uv)
- {
- 	u32 regval;
- 	bool found;
- 
- 	linear_range_get_selector_high_array(chg_cv_prm_ranges,
- 					     ARRAY_SIZE(chg_cv_prm_ranges),
--					     fv_mv, &regval, &found);
-+					     fv_uv, &regval, &found);
- 	if (!found)
- 		return -EINVAL;
- 
-@@ -370,6 +370,11 @@ static const enum power_supply_property max77759_charger_props[] = {
- 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
- };
- 
-+/*
-+ * Note: None of the properties in this driver support usage of negative values.
-+ * If you do see one, it's because the function is reporting an error value and
-+ * should not be taken as a measurement value or status.
-+ */
- static int max77759_charger_get_property(struct power_supply *psy,
- 					 enum power_supply_property psp,
- 					 union power_supply_propval *pval)
-@@ -557,10 +562,10 @@ static int max77759_charger_init(struct max77759_charger *chg)
- 		return ret;
- 
- 	if (power_supply_get_battery_info(chg->psy, &info)) {
--		fv = CHG_FV_DEFAULT_MV;
-+		fv = CHG_FV_DEFAULT_UV;
- 		fast_chg_curr = CHG_CC_DEFAULT_UA;
- 	} else {
--		fv = info->constant_charge_voltage_max_uv / 1000;
-+		fv = info->constant_charge_voltage_max_uv;
- 		fast_chg_curr = info->constant_charge_current_max_ua;
- 	}
- 
-
----
-base-commit: 81ebd43cc0d6d106ce7b6ccbf7b5e40ca7f5503d
-change-id: 20260402-fix-psy-max77759-usb-next-15a4f86a08ce
+Not a DT property, drop.
 
 Best regards,
--- 
-Amit Sunil Dhamne <amitsd@google.com>
-
+Krzysztof
 
