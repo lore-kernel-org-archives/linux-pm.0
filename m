@@ -1,317 +1,297 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 238FB24A06A;
-	Thu,  2 Apr 2026 21:52:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775166755; cv=pass; b=E+0zVeprIVGOB0E0dPGQpdJyGlaE4gy1PKEdSxlnduKJltdrDeEIoz2sdsePja1NiWSzVmwYXixZ9+peiqfAG4s0rlxJCz2p45/VrjwQ6CvJz8kXQ+c8M0v/kW8gJB29gaJPt/oIfSE9fnx//DrztL+HbOGiQ+YnYAe3HgmhtgQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775166755; c=relaxed/simple;
-	bh=Hd64mnTQC54j4sK7QP5ykQ2oWewTj3xchF+/GPlTM6Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aktrhm4ug4HmYL4B3NCJcnF9J6FJXFvUjUgM1LX72MsQD9Wl1d9Xu/ghzVVrfUgWugbtWfP8tpUsKinNvY/UeJvmcYjaF3WEqPlMFwGOwB4az5nXhZ6FJGD9tTi+JFAGYRlL4xpnF+Z4NflZOzaLSGxu92d3KzK1AouHYWohp78=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b=dxQsmrJy; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6A722156C;
+	Thu,  2 Apr 2026 22:14:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775168100; cv=none; b=jESlAA+ocY7TMugvVfUVyPxW1kSVV1DOUqBM6KTcawOyiQHK59k2SYNRN70tnxKkK9nL1X7OUx5ts1YqzftFXC61GsT3e0Vpj/b1RWZbOutvIZG5kUCVFIjT2sUv7wh3PzbBo+46Jh3dofSJguAhY2ki/AH6zSWqTHpWPeXJkjE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775168100; c=relaxed/simple;
+	bh=+5HVIjyjVs3wwcST3Gk3VNYlHNkbECdItuePqBKf+5A=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=a5aqLxVdpettHWY++GGwJwU7HAE5I+rCxpC6aMsOT40DIWDY/QzU/Nz1bE7r9nqMRxi25uBEUBPh5Kjs5loI+0gSpK9mCNFwXsLscObrmAEsWHtfPjsIqMSSBGNjrQHdF4D4DFwdkOcFrTXW54LHR4tUCtWCy3Ngte+ZeozFs3I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=V2ej+4gn; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=sebastian.reichel@collabora.com header.b="dxQsmrJy"
-ARC-Seal: i=1; a=rsa-sha256; t=1775166741; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=TSOJVVincdKiqkFQg4TZ6Hxj0Mk/jBhd7xCxhcjrM0Hpd7JPzMC5ZA5xUppNAZz2ZTDD7Yp1ocBzkHPipa3k87zCYx+EYk/vL21vmHG6K9SzAccNdgUnQSYRvjNrc9TjUBmWiLGauh/sVdkSri8antZmbLzQNNLwYXyKAETVbBQ=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1775166741; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=hNntrYgwhE2yuKEwu9jxpH/EM0IQsdWohxXsHIWzN9o=; 
-	b=TZqv3n1He+SB6dwkmNi6vZF4HZG16FOtnBgWt1oG3JXKi22wkm+NRZNMJYVQ6C1HPuny3krbZwxsUoHEB42q+XqYlAAqu1rbhK5GBZG8F6DoYs6n4mtKUUdaRQi8yt7GMskrHilmAzoLL0jaxvWqHB+0NQz0jO8Qd77TWt11SFQ=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=sebastian.reichel@collabora.com;
-	dmarc=pass header.from=<sebastian.reichel@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1775166741;
-	s=zohomail; d=collabora.com; i=sebastian.reichel@collabora.com;
-	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
-	bh=hNntrYgwhE2yuKEwu9jxpH/EM0IQsdWohxXsHIWzN9o=;
-	b=dxQsmrJyLRW0ZNd0d6UAGzLxxY+JMlp7KqYBa9TYW48c+UB5pQsY+d+WRv8uqBR+
-	ulDMcxBrtGVJ0Jdy02Ov15NX7KSv2xilzktULFeEEt9e3ZAR2dGDJ/dE5dwk9X6bnO1
-	r2mpDozsDiBihkAgcwLTblVA/ICb9/3iSJLgN+Dc=
-Received: by mx.zohomail.com with SMTPS id 1775166738733728.6517643282676;
-	Thu, 2 Apr 2026 14:52:18 -0700 (PDT)
-Received: by venus (Postfix, from userid 1000)
-	id 286321812B2; Thu, 02 Apr 2026 23:52:15 +0200 (CEST)
-Date: Thu, 2 Apr 2026 23:52:14 +0200
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: Kuan-Wei Chiu <visitorckw@gmail.com>
-Cc: geert@linux-m68k.org, jserv@ccns.ncku.edu.tw, eleanor15x@gmail.com, 
-	daniel@0x0f.com, laurent@vivier.eu, linux-kernel@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] power: reset: Add QEMU virt-ctrl driver
-Message-ID: <ac7kP64nbhZzwbJV@venus>
-References: <20260222173225.1105572-1-visitorckw@gmail.com>
- <20260222173225.1105572-2-visitorckw@gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="V2ej+4gn"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1775168098; x=1806704098;
+  h=date:from:to:cc:subject:message-id;
+  bh=+5HVIjyjVs3wwcST3Gk3VNYlHNkbECdItuePqBKf+5A=;
+  b=V2ej+4gnM3QECqULltbp9bLDnvLifmpWZ2Xa0+ZMRTbh5S49WvNuQdhe
+   FMfFiaxy7ZXF58jQIt9rqA/LBnezl2nFgYBbnX+VKygFivZVQX917eDZB
+   wZoymZ4UMZIpI2AEa/uCz9Hdy8JXZve5dTrk2AmftIXWEputkF4e9Pwxr
+   iMALlWpaiPXOGFLbS9im9frXReoGXDZv8m5ZcNC2b2yues9ncA6v8UgDB
+   s7b8Ttf2CSvB4qcSWgqk8DkufDHGUlFCtlJ7vDrskKRKQ70DcPVF8f5Fc
+   u4fY15bXSjjBcCsTxv2p538jvNOEYvYfk/ZQMQ+6eMAEbHchAVFYfi7jk
+   g==;
+X-CSE-ConnectionGUID: dMtljO4dSUKb45Y6xxXakw==
+X-CSE-MsgGUID: PlaewLOCQoiJNqCr4pv43A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="86857048"
+X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
+   d="scan'208";a="86857048"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 15:14:57 -0700
+X-CSE-ConnectionGUID: 5hL4nNm5RKahZ1bsq5IdXQ==
+X-CSE-MsgGUID: YdCRCIWZTrqyNmhMWzb6vA==
+X-Ironport-Invalid-End-Of-Message: True
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
+   d="scan'208";a="227036643"
+Received: from lkp-server01.sh.intel.com (HELO 064ad336901d) ([10.239.97.150])
+  by orviesa008.jf.intel.com with ESMTP; 02 Apr 2026 15:14:56 -0700
+Received: from kbuild by 064ad336901d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w8QJR-000000000UZ-08BI;
+	Thu, 02 Apr 2026 22:14:53 +0000
+Date: Fri, 03 Apr 2026 06:14:51 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ d8d394c43391141e6369ccfa5e40b88841a6d939
+Message-ID: <202604030642.DKaf1FZx-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ffgufuw4dmg3s7ce"
-Content-Disposition: inline
-In-Reply-To: <20260222173225.1105572-2-visitorckw@gmail.com>
-X-Zoho-Virus-Status: 1
-X-Zoho-AV-Stamp: zmail-av-0.2.2.1.5.2/275.160.75
-X-ZohoMailClient: External
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: d8d394c43391141e6369ccfa5e40b88841a6d939  Merge branch 'experimental/acpi-driver-conversion' into bleeding-edge
 
---ffgufuw4dmg3s7ce
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v3 1/2] power: reset: Add QEMU virt-ctrl driver
-MIME-Version: 1.0
+elapsed time: 733m
 
-Hi,
+configs tested: 219
+configs skipped: 2
 
-On Sun, Feb 22, 2026 at 05:32:24PM +0000, Kuan-Wei Chiu wrote:
-> Add a new driver for the 'virt-ctrl' device found on QEMU virt machines
-> (e.g. m68k). This device provides a simple interface for system reset
-> and power off [1].
->=20
-> This driver utilizes the modern system-off API to register callbacks
-> for both system restart and power off. It also registers a reboot
-> notifier to catch SYS_HALT events, ensuring that LINUX_REBOOT_CMD_HALT
-> is properly handled. It is designed to be generic and can be reused by
-> other architectures utilizing this QEMU device.
->=20
-> Link: https://gitlab.com/qemu-project/qemu/-/blob/v10.2.0/hw/misc/virt_ct=
-rl.c [1]
-> Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
-> ---
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I think this should be merged with the second patch via the m68k
-tree:
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-15.2.0
+arc                              allmodconfig    clang-16
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    clang-23
+arc                                 defconfig    gcc-15.2.0
+arc                   randconfig-001-20260402    gcc-11.5.0
+arc                   randconfig-001-20260403    gcc-10.5.0
+arc                   randconfig-002-20260402    gcc-11.5.0
+arc                   randconfig-002-20260403    gcc-10.5.0
+arm                               allnoconfig    gcc-15.2.0
+arm                              allyesconfig    clang-16
+arm                                 defconfig    gcc-15.2.0
+arm                         orion5x_defconfig    clang-23
+arm                   randconfig-001-20260402    gcc-11.5.0
+arm                   randconfig-001-20260403    gcc-10.5.0
+arm                   randconfig-002-20260402    gcc-11.5.0
+arm                   randconfig-002-20260403    gcc-10.5.0
+arm                   randconfig-003-20260402    gcc-11.5.0
+arm                   randconfig-003-20260403    gcc-10.5.0
+arm                   randconfig-004-20260402    gcc-11.5.0
+arm                   randconfig-004-20260403    gcc-10.5.0
+arm                       spear13xx_defconfig    gcc-15.2.0
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-15.2.0
+arm64                 randconfig-001-20260402    gcc-15.2.0
+arm64                 randconfig-001-20260403    gcc-13.4.0
+arm64                 randconfig-002-20260402    gcc-15.2.0
+arm64                 randconfig-002-20260403    gcc-13.4.0
+arm64                 randconfig-003-20260402    gcc-15.2.0
+arm64                 randconfig-003-20260403    gcc-13.4.0
+arm64                 randconfig-004-20260402    gcc-15.2.0
+arm64                 randconfig-004-20260403    gcc-13.4.0
+csky                             allmodconfig    gcc-15.2.0
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-15.2.0
+csky                  randconfig-001-20260402    gcc-15.2.0
+csky                  randconfig-001-20260403    gcc-13.4.0
+csky                  randconfig-002-20260402    gcc-15.2.0
+csky                  randconfig-002-20260403    gcc-13.4.0
+hexagon                          allmodconfig    gcc-15.2.0
+hexagon                           allnoconfig    gcc-15.2.0
+hexagon                             defconfig    gcc-15.2.0
+hexagon               randconfig-001-20260402    clang-18
+hexagon               randconfig-001-20260403    clang-23
+hexagon               randconfig-002-20260402    clang-18
+hexagon               randconfig-002-20260403    clang-23
+i386                             allmodconfig    clang-20
+i386                              allnoconfig    gcc-15.2.0
+i386                             allyesconfig    clang-20
+i386        buildonly-randconfig-001-20260402    clang-20
+i386        buildonly-randconfig-001-20260403    gcc-14
+i386        buildonly-randconfig-002-20260402    clang-20
+i386        buildonly-randconfig-002-20260403    gcc-14
+i386        buildonly-randconfig-003-20260402    clang-20
+i386        buildonly-randconfig-003-20260403    gcc-14
+i386        buildonly-randconfig-004-20260402    clang-20
+i386        buildonly-randconfig-004-20260403    gcc-14
+i386        buildonly-randconfig-005-20260402    clang-20
+i386        buildonly-randconfig-005-20260403    gcc-14
+i386        buildonly-randconfig-006-20260402    clang-20
+i386        buildonly-randconfig-006-20260403    gcc-14
+i386                                defconfig    gcc-15.2.0
+i386                  randconfig-001-20260402    clang-20
+i386                  randconfig-002-20260402    clang-20
+i386                  randconfig-003-20260402    clang-20
+i386                  randconfig-004-20260402    clang-20
+i386                  randconfig-005-20260402    clang-20
+i386                  randconfig-006-20260402    clang-20
+i386                  randconfig-007-20260402    clang-20
+i386                  randconfig-011-20260402    clang-20
+i386                  randconfig-012-20260402    clang-20
+i386                  randconfig-013-20260402    clang-20
+i386                  randconfig-014-20260402    clang-20
+i386                  randconfig-015-20260402    clang-20
+i386                  randconfig-016-20260402    clang-20
+i386                  randconfig-017-20260402    clang-20
+loongarch                        allmodconfig    clang-23
+loongarch                         allnoconfig    gcc-15.2.0
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20260402    clang-18
+loongarch             randconfig-001-20260403    clang-23
+loongarch             randconfig-002-20260402    clang-18
+loongarch             randconfig-002-20260403    clang-23
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    clang-16
+m68k                                defconfig    clang-19
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    clang-19
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+nios2                            allmodconfig    clang-23
+nios2                             allnoconfig    clang-23
+nios2                               defconfig    clang-19
+nios2                 randconfig-001-20260402    clang-18
+nios2                 randconfig-001-20260403    clang-23
+nios2                 randconfig-002-20260402    clang-18
+nios2                 randconfig-002-20260403    clang-23
+openrisc                         allmodconfig    clang-23
+openrisc                          allnoconfig    clang-23
+openrisc                            defconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    clang-23
+parisc                           allyesconfig    clang-19
+parisc                              defconfig    gcc-15.2.0
+parisc                randconfig-001-20260402    clang-20
+parisc                randconfig-001-20260403    gcc-10.5.0
+parisc                randconfig-002-20260402    clang-20
+parisc                randconfig-002-20260403    gcc-10.5.0
+parisc64                            defconfig    clang-19
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    clang-23
+powerpc               randconfig-001-20260402    clang-20
+powerpc               randconfig-001-20260403    gcc-10.5.0
+powerpc               randconfig-002-20260402    clang-20
+powerpc               randconfig-002-20260403    gcc-10.5.0
+powerpc64             randconfig-001-20260402    clang-20
+powerpc64             randconfig-001-20260403    gcc-10.5.0
+powerpc64             randconfig-002-20260402    clang-20
+powerpc64             randconfig-002-20260403    gcc-10.5.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    clang-23
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    gcc-15.2.0
+riscv                 randconfig-001-20260402    clang-23
+riscv                 randconfig-001-20260403    clang-23
+riscv                 randconfig-002-20260402    clang-23
+riscv                 randconfig-002-20260403    clang-23
+s390                             allmodconfig    clang-19
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    gcc-15.2.0
+s390                  randconfig-001-20260402    clang-23
+s390                  randconfig-001-20260403    clang-23
+s390                  randconfig-002-20260402    clang-23
+s390                  randconfig-002-20260403    clang-23
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    clang-23
+sh                               allyesconfig    clang-19
+sh                                  defconfig    gcc-14
+sh                    randconfig-001-20260402    clang-23
+sh                    randconfig-001-20260403    clang-23
+sh                    randconfig-002-20260402    clang-23
+sh                    randconfig-002-20260403    clang-23
+sparc                             allnoconfig    clang-23
+sparc                               defconfig    gcc-15.2.0
+sparc                 randconfig-001-20260402    gcc-14
+sparc                 randconfig-001-20260403    clang-20
+sparc                 randconfig-002-20260402    gcc-14
+sparc                 randconfig-002-20260403    clang-20
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260402    gcc-14
+sparc64               randconfig-001-20260403    clang-20
+sparc64               randconfig-002-20260402    gcc-14
+sparc64               randconfig-002-20260403    clang-20
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-15.2.0
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260402    gcc-14
+um                    randconfig-001-20260403    clang-20
+um                    randconfig-002-20260402    gcc-14
+um                    randconfig-002-20260403    clang-20
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-23
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20260402    clang-20
+x86_64      buildonly-randconfig-001-20260403    clang-20
+x86_64      buildonly-randconfig-002-20260402    clang-20
+x86_64      buildonly-randconfig-002-20260403    clang-20
+x86_64      buildonly-randconfig-003-20260402    clang-20
+x86_64      buildonly-randconfig-003-20260403    clang-20
+x86_64      buildonly-randconfig-004-20260402    clang-20
+x86_64      buildonly-randconfig-004-20260403    clang-20
+x86_64      buildonly-randconfig-005-20260402    clang-20
+x86_64      buildonly-randconfig-005-20260403    clang-20
+x86_64      buildonly-randconfig-006-20260402    clang-20
+x86_64      buildonly-randconfig-006-20260403    clang-20
+x86_64                              defconfig    gcc-14
+x86_64                                  kexec    clang-20
+x86_64                randconfig-001-20260402    gcc-14
+x86_64                randconfig-002-20260402    gcc-14
+x86_64                randconfig-003-20260402    gcc-14
+x86_64                randconfig-004-20260402    gcc-14
+x86_64                randconfig-005-20260402    gcc-14
+x86_64                randconfig-006-20260402    gcc-14
+x86_64                randconfig-011-20260402    clang-20
+x86_64                randconfig-012-20260402    clang-20
+x86_64                randconfig-013-20260402    clang-20
+x86_64                randconfig-014-20260402    clang-20
+x86_64                randconfig-015-20260402    clang-20
+x86_64                randconfig-016-20260402    clang-20
+x86_64                randconfig-071-20260402    clang-20
+x86_64                randconfig-072-20260402    clang-20
+x86_64                randconfig-073-20260402    clang-20
+x86_64                randconfig-074-20260402    clang-20
+x86_64                randconfig-075-20260402    clang-20
+x86_64                randconfig-076-20260402    clang-20
+x86_64                               rhel-9.4    clang-20
+x86_64                           rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-func    clang-20
+x86_64                    rhel-9.4-kselftests    clang-20
+x86_64                         rhel-9.4-kunit    gcc-14
+x86_64                           rhel-9.4-ltp    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    clang-23
+xtensa                           allyesconfig    clang-23
+xtensa                randconfig-001-20260402    gcc-14
+xtensa                randconfig-001-20260403    clang-20
+xtensa                randconfig-002-20260402    gcc-14
+xtensa                randconfig-002-20260403    clang-20
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-Greetings,
-
--- Sebastian
-
-> Changes in v3:
-> - Add a reboot notifier to handle SYS_HALT.
-> - Implement virt_ctrl_write32() to handle native endianness.
->=20
-> I noticed devm_register_sys_off_handler() currently lacks a
-> SYS_OFF_MODE_HALT. Therefore, I registered a standard reboot notifier
-> for SYS_HALT, while keeping restart and power-off on the sys-off API.
->=20
->  MAINTAINERS                          |   6 ++
->  drivers/power/reset/Kconfig          |  10 +++
->  drivers/power/reset/Makefile         |   1 +
->  drivers/power/reset/qemu-virt-ctrl.c | 122 +++++++++++++++++++++++++++
->  4 files changed, 139 insertions(+)
->  create mode 100644 drivers/power/reset/qemu-virt-ctrl.c
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 55af015174a5..aa9eb8540637 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -21441,6 +21441,12 @@ S:	Maintained
->  F:	drivers/firmware/qemu_fw_cfg.c
->  F:	include/uapi/linux/qemu_fw_cfg.h
-> =20
-> +QEMU VIRT MACHINE SYSTEM CONTROLLER DRIVER
-> +M:	Kuan-Wei Chiu <visitorckw@gmail.com>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +F:	drivers/power/reset/qemu-virt-ctrl.c
-> +
->  QLOGIC QL41xxx FCOE DRIVER
->  M:	Saurav Kashyap <skashyap@marvell.com>
->  M:	Javed Hasan <jhasan@marvell.com>
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index f6c1bcbb57de..99e3334726a5 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -354,4 +354,14 @@ config POWER_MLXBF
->  	help
->  	  This driver supports reset or low power mode handling for Mellanox Bl=
-ueField.
-> =20
-> +config POWER_RESET_QEMU_VIRT_CTRL
-> +	tristate "QEMU Virt Machine System Controller"
-> +	depends on HAS_IOMEM
-> +	help
-> +	  This driver supports the system reset and power off functionality
-> +	  provided by the QEMU 'virt-ctrl' device.
-> +
-> +	  Say Y here if you are running Linux on a QEMU virtual machine that
-> +	  provides this controller, such as the m68k virt machine.
-> +
->  endif
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index 0e4ae6f6b5c5..d7ae97241a83 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -41,3 +41,4 @@ obj-$(CONFIG_SYSCON_REBOOT_MODE) +=3D syscon-reboot-mod=
-e.o
->  obj-$(CONFIG_POWER_RESET_SC27XX) +=3D sc27xx-poweroff.o
->  obj-$(CONFIG_NVMEM_REBOOT_MODE) +=3D nvmem-reboot-mode.o
->  obj-$(CONFIG_POWER_MLXBF) +=3D pwr-mlxbf.o
-> +obj-$(CONFIG_POWER_RESET_QEMU_VIRT_CTRL) +=3D qemu-virt-ctrl.o
-> diff --git a/drivers/power/reset/qemu-virt-ctrl.c b/drivers/power/reset/q=
-emu-virt-ctrl.c
-> new file mode 100644
-> index 000000000000..f40d04afd4e3
-> --- /dev/null
-> +++ b/drivers/power/reset/qemu-virt-ctrl.c
-> @@ -0,0 +1,122 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * QEMU Virt Machine System Controller Driver
-> + *
-> + * Copyright (C) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/mod_devicetable.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reboot.h>
-> +
-> +/* Registers */
-> +#define VIRT_CTRL_REG_FEATURES	0x00
-> +#define VIRT_CTRL_REG_CMD	0x04
-> +
-> +/* Commands */
-> +#define CMD_NOOP	0
-> +#define CMD_RESET	1
-> +#define CMD_HALT	2
-> +#define CMD_PANIC	3
-> +
-> +struct qemu_virt_ctrl {
-> +	void __iomem *base;
-> +	struct notifier_block reboot_nb;
-> +};
-> +
-> +static inline void virt_ctrl_write32(u32 val, void __iomem *addr)
-> +{
-> +	if (IS_ENABLED(CONFIG_CPU_BIG_ENDIAN))
-> +		iowrite32be(val, addr);
-> +	else
-> +		iowrite32(val, addr);
-> +}
-> +
-> +static int qemu_virt_ctrl_power_off(struct sys_off_data *data)
-> +{
-> +	void __iomem *base =3D data->cb_data;
-> +
-> +	virt_ctrl_write32(CMD_HALT, base + VIRT_CTRL_REG_CMD);
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int qemu_virt_ctrl_restart(struct sys_off_data *data)
-> +{
-> +	void __iomem *base =3D data->cb_data;
-> +
-> +	virt_ctrl_write32(CMD_RESET, base + VIRT_CTRL_REG_CMD);
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int qemu_virt_ctrl_reboot_notify(struct notifier_block *nb,
-> +					unsigned long action, void *data)
-> +{
-> +	struct qemu_virt_ctrl *ctrl =3D container_of(nb, struct qemu_virt_ctrl,=
- reboot_nb);
-> +
-> +	if (action =3D=3D SYS_HALT)
-> +		virt_ctrl_write32(CMD_HALT, ctrl->base + VIRT_CTRL_REG_CMD);
-> +
-> +	return NOTIFY_DONE;
-> +}
-> +
-> +static int qemu_virt_ctrl_probe(struct platform_device *pdev)
-> +{
-> +	struct qemu_virt_ctrl *ctrl;
-> +	int ret;
-> +
-> +	ctrl =3D devm_kzalloc(&pdev->dev, sizeof(*ctrl), GFP_KERNEL);
-> +	if (!ctrl)
-> +		return -ENOMEM;
-> +
-> +	ctrl->base =3D devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(ctrl->base))
-> +		return PTR_ERR(ctrl->base);
-> +
-> +	ret =3D devm_register_sys_off_handler(&pdev->dev,
-> +					    SYS_OFF_MODE_RESTART,
-> +					    SYS_OFF_PRIO_DEFAULT,
-> +					    qemu_virt_ctrl_restart,
-> +					    ctrl->base);
-> +	if (ret)
-> +		return dev_err_probe(&pdev->dev, ret,
-> +				     "cannot register restart handler\n");
-> +
-> +	ret =3D devm_register_sys_off_handler(&pdev->dev,
-> +					    SYS_OFF_MODE_POWER_OFF,
-> +					    SYS_OFF_PRIO_DEFAULT,
-> +					    qemu_virt_ctrl_power_off,
-> +					    ctrl->base);
-> +	if (ret)
-> +		return dev_err_probe(&pdev->dev, ret,
-> +				     "cannot register power-off handler\n");
-> +
-> +	ctrl->reboot_nb.notifier_call =3D qemu_virt_ctrl_reboot_notify;
-> +	ret =3D devm_register_reboot_notifier(&pdev->dev, &ctrl->reboot_nb);
-> +	if (ret)
-> +		return dev_err_probe(&pdev->dev, ret, "cannot register reboot notifier=
-\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct platform_device_id qemu_virt_ctrl_id[] =3D {
-> +	{ "qemu-virt-ctrl", 0 },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(platform, qemu_virt_ctrl_id);
-> +
-> +static struct platform_driver qemu_virt_ctrl_driver =3D {
-> +	.probe =3D qemu_virt_ctrl_probe,
-> +	.driver =3D {
-> +		.name =3D "qemu-virt-ctrl",
-> +	},
-> +	.id_table =3D qemu_virt_ctrl_id,
-> +};
-> +module_platform_driver(qemu_virt_ctrl_driver);
-> +
-> +MODULE_AUTHOR("Kuan-Wei Chiu <visitorckw@gmail.com>");
-> +MODULE_DESCRIPTION("QEMU Virt Machine System Controller Driver");
-> +MODULE_LICENSE("GPL");
-> --=20
-> 2.53.0.345.g96ddfc5eaa-goog
->=20
-
---ffgufuw4dmg3s7ce
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmnO5QcACgkQ2O7X88g7
-+pq62xAAgx6BpLHcu/yz35xgJEamyr/x9F/FpYwJ8ZrrGT6w5zFfbBB6OU9Nbq5R
-NKObno/58BHIJ2rqCNe+GcaXkMWXDufxGcOgjB15Inu3DGN4mbt6X65shHToQg9q
-1rSVD9NEMg9RcGXyDkbHw2rlPzohQIL3IDJsUwb+ncKyNW+tu7ZXKHPMiKdR8l3G
-Wcn+2DxEQS3ZN/1JjfRt3fl2W5t2JcddvLWShzdxNqlygRjUyJkT+jpDNAVO/0Tm
-BpBCiL15VDFXWcHxuUTCMOS0o5+JY038w0l+Fvaj8gnZ+zOuJDrFCWOrRv2JeVA2
-Wr0hHy86xBdNyj+MI63fUeAS1ShUWH4baRF+xSjwwG9HYGFDxjP6WM6fO6VxXOqm
-mew/LWvj6UtQhNmfHfw3LyOOkjsv31ifRqQkX8o+pIwiFj6FwZbaY+szpNOPhLA7
-nb+Lg5+362F6iXW2akco+W370HK1I4OKd/c+eG22j+Tg6BtSaqZNP4U3+AEb3CKP
-6tbnNw9aev5rPUmsVZBAKOq2EL8kinO/8I/R6BYOXpWRRrtzGXHzlNcGiWCxXW19
-bTTvS6dIzwvlwO2vaTwO6sBix8KG1Svsla8CKZQUW11UfoVN6YaDJLFzdsY213B1
-CEhcQ+b+7KScnZZ9TH40RKk7qipemmtJ/z7Ua0SLx9k+dpviric=
-=nTBP
------END PGP SIGNATURE-----
-
---ffgufuw4dmg3s7ce--
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
