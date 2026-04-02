@@ -1,107 +1,114 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77F553264F5;
-	Thu,  2 Apr 2026 14:34:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 286C32D2385
+	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 15:39:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775140466; cv=none; b=nhf9fZrGarPhYRAx8ljXWKsk1uK9L6sdXArzNKEu0uUCDIKf2ff9wbS0xPfIoPsG2LBmTa7pNxHPLr20kT4PRAMqxU21FE01AbLHZ7xTdD8jJ+Zzj+3/eKg77AgKX52m3WEaPIN8opEA8sFVjawMKYclgbv/LAfMa/ZSiO3fLRE=
+	t=1775144351; cv=none; b=lXLbyv/ANQAyaLZh25FLXJ518jei8toBfDn1AS1+0O9U/SmxFdjmcbRU4btZ6jJ1lFy78rDGinrq++IE6SE+B1VL17xAcsVAsrcRjfNildjxN28MsI1oAHaxMANEWzfFqW/kbiSsvI+ve3ZEAAUCYOt6SsSk3BkdG5ybYKVkAzs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775140466; c=relaxed/simple;
-	bh=x8FTCBu1ZLI3XgysCKTdvPU6t29kanGzc/hDoIDWGbY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=i0jJ6d2LXXzMrBh3WCb1yQN0bwWgtTWDOpQv/esTcJiLgRf2eiRCCyj29EtLMtMNKiUWGvuf1GgeQI6knnNrk1BoJfPgIOmhDakomR1ZQkxBpSJiEHaEPK4y/wcI6PRRM0UaX/2NO9bBiDycltzjfsOI4SCIXfWYtuQ/so3r3ZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EjIY+mhc; arc=none smtp.client-ip=198.175.65.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1775144351; c=relaxed/simple;
+	bh=LUZRbB/e5IA1r0sYzL1ym7iUF2Ma0Q/dKqS2pFekDjQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VUJYuS8j0UFYExPR17RYJEN+PXL7NaGtL003bfnl1bpd4j72kFEv4IXmIcKxkql1KGS7kH39FG5/hCT07vSG6c7r1XWvpUIjUD3G26XiqJPX1VMC07olJ88AuQX9Ecoin1iecP/PvWPckuYSeyAVgEFclZiM+jtrAKFMG93UBdI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oM9Y0cQX; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EjIY+mhc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775140465; x=1806676465;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=x8FTCBu1ZLI3XgysCKTdvPU6t29kanGzc/hDoIDWGbY=;
-  b=EjIY+mhcI75LgVxPYHgJ2V4TP+l49VgS2LfFxavGz2DHhnDQ5i0v57gg
-   /O64Uzk/SYCg07Mb6jjlCj44aN+LERXhlY0fnwKfAxbC6ZIyxD58rPkcs
-   FhpdLuceIH4Y3vxzWarNvs7bSsiqJYst8hYlzZpDf3jVqiO/1GvGTHjCS
-   qkLj4CbaItlXDLSPKN2D5pCsIFOV4HPdrcFxsgLeVkWHTn2As8R31SFMm
-   5R8W5cVwU2nYHdvuZ9rcFd04E2qKTX8IH3iZuZ2cGeL5tku1S4En85ksa
-   WQf+4ooR9cB6ggU5AsTS3E2PT9X3z3I4pelULqT2Ju7txO2cxmiPOvyPr
-   Q==;
-X-CSE-ConnectionGUID: vz1A3FZ2SZuwwmTum+/nJg==
-X-CSE-MsgGUID: ht2ZhEF8RUW9vf2xXSG7yA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11746"; a="75919745"
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="75919745"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 07:34:24 -0700
-X-CSE-ConnectionGUID: IRj/dYM7SrK+dXdHhMcULw==
-X-CSE-MsgGUID: r//BrWwvSb+p2ltV6o1Cnw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="227258049"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by orviesa007.jf.intel.com with ESMTP; 02 Apr 2026 07:34:19 -0700
-Received: by black.igk.intel.com (Postfix, from userid 1008)
-	id CF25D95; Thu, 02 Apr 2026 16:34:17 +0200 (CEST)
-Date: Thu, 2 Apr 2026 17:33:31 +0300
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-To: amitsd@google.com
-Cc: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jagan Sridharan <badhri@google.com>,
-	Mark Brown <broonie@kernel.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Subject: Re: [PATCH v10 6/6] usb: typec: tcpm/tcpci_maxim: deprecate WAR for
- setting charger mode
-Message-ID: <ac5-OzwQkczTWtMg@kuha>
-References: <20260331-max77759-charger-v10-0-76f59233c369@google.com>
- <20260331-max77759-charger-v10-6-76f59233c369@google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oM9Y0cQX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDEAFC116C6
+	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 15:39:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775144350;
+	bh=LUZRbB/e5IA1r0sYzL1ym7iUF2Ma0Q/dKqS2pFekDjQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=oM9Y0cQXib4qf8YlZgEK8172SNIB6QHm9GwqBvLDQf3B0ZfDhVr9de51mkUyV8a5R
+	 lZ7wF7ENRvq0CakCuvAukXq/H3t/4HS/cxLvhlcKZLAfCpDHEEDKdLLZFSFFPyg9mF
+	 PACMW60Azuyn2s6cM7gSF4IiKW8Wq0H3s40wmuQOigTefj+4PYG+h5MepcFb7OaLHo
+	 eTKGZJDn9OOLRG92n/HcxrBNUL5uoclTfjz7QRKJltPlljcyR8qPUK5xIQpSh9fW4V
+	 jvJj6aPuTsPZXBg5XKwZYKbPzAawgH1MpRnKUZgDR39Ymza19aT5xEtRLCygdVRrka
+	 o7kxPXKnDULeQ==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5a2a5236811so1193832e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2026 08:39:10 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUvMCkgvVmteEybPSd2JuLQ1txNMcfd7+q2yC446fAoK4yiWe2rCfCVJKUncg7i5CdEVn97oNxWzw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzLPNFsv6G/5EntcjSAfLB5P+4oN81F5Ky929g0ikkMf487lhL3
+	L7ktgoClVXsoPKyefhmIyzhvxzhQ7AnPqxh1q1tMUVzqU5sRviYuDK1fNa7fLfzy9lasp862V/Q
+	En98vbqJ/XcHJh6mbZsI6p6NgaxSnjOaPwJH+PQhhcQ==
+X-Received: by 2002:a05:6512:a86:b0:5a2:b536:6b8b with SMTP id
+ 2adb3069b0e04-5a2c1eec554mr3164371e87.3.1775144349551; Thu, 02 Apr 2026
+ 08:39:09 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260331-max77759-charger-v10-6-76f59233c369@google.com>
+References: <20260401191030.948046-1-arnd@kernel.org>
+In-Reply-To: <20260401191030.948046-1-arnd@kernel.org>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Thu, 2 Apr 2026 17:38:57 +0200
+X-Gmail-Original-Message-ID: <CAMRc=Meu4DjZ0=r1FRnBGXGN67VxK74x3AjO_T0J7NcA6koCRQ@mail.gmail.com>
+X-Gm-Features: AQROBzCnEFEvk-zv9v5zLQWjdx3ajdiLjU0gfS8s0fgV9pWfpIqfd8Dz0iZXDxE
+Message-ID: <CAMRc=Meu4DjZ0=r1FRnBGXGN67VxK74x3AjO_T0J7NcA6koCRQ@mail.gmail.com>
+Subject: Re: [PATCH] power: sequencing: pcie-m2: add SERIAL_DEV_BUS dependency
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Ulf Hansson <ulf.hansson@linaro.org>, Michal Wilczynski <m.wilczynski@samsung.com>, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Amit,
+On Wed, Apr 1, 2026 at 9:10=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wrot=
+e:
+>
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The newly added serdev code fails to link when serdev is turned off:
+>
+> arm-linux-gnueabi-ld: drivers/power/sequencing/pwrseq-pcie-m2.o: in funct=
+ion `pwrseq_pcie_m2_remove_serdev':
+> pwrseq-pcie-m2.c:(.text+0xc8): undefined reference to `serdev_device_remo=
+ve'
+> arm-linux-gnueabi-ld: drivers/power/sequencing/pwrseq-pcie-m2.o: in funct=
+ion `pwrseq_m2_pcie_notify':
+> pwrseq-pcie-m2.c:(.text+0x69c): undefined reference to `of_find_serdev_co=
+ntroller_by_node'
+> arm-linux-gnueabi-ld: pwrseq-pcie-m2.c:(.text+0x6f8): undefined reference=
+ to `serdev_device_alloc'
+> arm-linux-gnueabi-ld: pwrseq-pcie-m2.c:(.text+0x724): undefined reference=
+ to `serdev_device_add'
+>
+> Add another Kconfig dependency for this
+>
+> Fixes: 3f736aecbdc8 ("power: sequencing: pcie-m2: Create serdev device fo=
+r WCN7850 bluetooth")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> I noticed this one only after I had already sent the patch to add the oth=
+er
+> two dependency, feel free to combine the patches into one
+> ---
+>  drivers/power/sequencing/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/power/sequencing/Kconfig b/drivers/power/sequencing/=
+Kconfig
+> index 77c6d9227251..1c5f5820f5b7 100644
+> --- a/drivers/power/sequencing/Kconfig
+> +++ b/drivers/power/sequencing/Kconfig
+> @@ -39,6 +39,7 @@ config POWER_SEQUENCING_PCIE_M2
+>         tristate "PCIe M.2 connector power sequencing driver"
+>         depends on OF
+>         depends on PCI
+> +       depends on SERIAL_DEV_BUS
+>         select OF_DYNAMIC
+>         help
+>           Say Y here to enable the power sequencing driver for PCIe M.2
+> --
+> 2.39.5
+>
 
-> +static int get_vbus_regulator_handle(struct max_tcpci_chip *chip)
-> +{
-> +	if (IS_ERR_OR_NULL(chip->vbus_reg)) {
-> +		chip->vbus_reg = devm_regulator_get_exclusive(chip->dev,
-> +							      "vbus");
+I assume with this patch[1] from Mani, we no longer need this one?
 
-Sorry to go back to this, but why can't you just get the regulator in
-max_tcpci_probe()?
+Bart
 
-thanks,
-
-> +		if (IS_ERR_OR_NULL(chip->vbus_reg)) {
-> +			dev_err(chip->dev,
-> +				"Failed to get vbus regulator handle\n");
-> +			return -ENODEV;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-
--- 
-heikki
+[1] https://lore.kernel.org/all/20260401070735.107162-2-manivannan.sadhasiv=
+am@oss.qualcomm.com/
