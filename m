@@ -1,139 +1,165 @@
-Received: from mail-dy1-f169.google.com (mail-dy1-f169.google.com [74.125.82.169])
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9556F3C1409
-	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 18:47:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.169
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775155656; cv=none; b=mcDAnDwaE1vFQgrsZSn0H4NWKm8sM/LkOk7nPO4rebehh++NSUHhaRSJl2+lLJZM1fM4R4qIXCVBTI5Th2YOPoBMrcJXMztkx3ojgI1zXct1qvL2BVkFngvZdiJTgnZwScKfYxHCp7YS+GT0LsTxifYhKpgexw1i8eR2kDX1l5I=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775155656; c=relaxed/simple;
-	bh=OVudXei1XMX+Hk0vFE/KI/maetr0rgXz6TaXIWcvCYw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=N3VtgWBHWAWUMrgUd+YjMhGSne4sdhHyzA8185iuQ0YtQirEdg9X5k+vLWRPJjBNjo928uWobV5hw7W93YpSsoq8vtuF57fOSpXmMLZeY8S8jz2Gkcu+Fs1qg30FzCUbI9fd7F9JUJO+qX3riAqiTQ/bqHU7KiBLGUuy5simfZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=owql1B9m; arc=none smtp.client-ip=74.125.82.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FE062737FC
+	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 19:37:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775158647; cv=pass; b=FtfRyU3uSt0v2uWdftoxWqyaURDdC/fjhE66xQAV0tdDK69VFQoK7W8FYc3ea3Bt8fCu7E5uhztPWCQxMCHZAZP1b3Vklg5HJjIJ3I7cEYPW7CZ1BATcw3r6zZ/nBK/6za9jbnPBoLCwK1sLof9IH+5wRb7MNbolc/1lY8WAWVc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775158647; c=relaxed/simple;
+	bh=doMwYSTuXe/JETZRl1N7Raoz/ERAK0foPnDNZyFizSk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=tXF0CLscuJxHHdKHaeC2WuPdSfLTFJTfDCeMu/o8Nr7XiWQr2PjyGbmJb5HFjgpac8kuZmswG4WJfsaeypwejAMoaKu4VPNDNp9bFLvQ4ZLF8A5tVCpVEn33VHz/4bXyNyF/COWF43aXRq2WMjKO0Zn3yGWKeW5VgDv2xysPD2I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=JODTMHvv; arc=pass smtp.client-ip=209.85.218.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="owql1B9m"
-Received: by mail-dy1-f169.google.com with SMTP id 5a478bee46e88-2c56aa62931so2681586eec.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2026 11:47:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="JODTMHvv"
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-b9c603ec2dfso46905866b.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2026 12:37:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775158644; cv=none;
+        d=google.com; s=arc-20240605;
+        b=gI/ivkqZWAP+dQ3rwOwT9SeyT0lTXML5MBOWr+YJPxv4K5Tw3HN1ja/xGyjMmoN1LA
+         23UqB8mR5QZhcTi1kqrgqXU1PfN3s43LQC149yyNCuCUVjKe6OmoF+w8+1dBFqLm/Qz9
+         2AJGZcGxFf625v/7zBTdmYLn0hhcjPlnmeJZezRQ5PbIk4Vn/bRkdbtYqyP5WTktYqjj
+         uakgEkNhUpUV1TZHOsPwhKB5NJECNT4eEGP4pvV6UHWQYeNHuhStdDWSWz0UgWwFaxlL
+         Mu+uSxzMdl6u3UvapYYyPZ+fZhbCgMgVqxJeo+1NkRRdGIhggdRBCmyuMUkmHuNz5xWd
+         Gdhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=VvxBK4KP6iOeP3Xbm2ZCHQUuUvym2Uan3OJJLKtWlWc=;
+        fh=MN9gZjNpFHboL1u248tb+EIxrKOx09K3XMqpCiqQ2dU=;
+        b=h9rZWTj2ihYQF4Mvnvs7b7e6sKSv9uMmrRnqCMC3vQnIiKb7WdOrhDYOOhtTwNu3AV
+         hHPE9lfcukHsqYBUgtm99FRo1zwvboiIYyE+gMTHeSy8roAq+CzqPX2JPy4sRL6Ukc9T
+         NJs5E4u9EXHNz3/0+tItJR/HFQ8a8W7daVCYshM1Lr3RbxhpGpQER8WFcjDZCzUTrvra
+         nSChgPs84A6s3dVFjsitTZhKgVMm1c4OCg+KdklcECfwcsrWDnh0k9rvDBwbU+a3KLAu
+         h2vrjt8t2mE0B+3pwvIQXKnisRPX3CvtyTHj4tXZqKrntZlyIp50aTegqTEl7C1NHum7
+         sCIA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1775155654; x=1775760454; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MpykImWK6bjT2nlpOYqPcIo7o07mstIYTD+Wq8ULKFw=;
-        b=owql1B9mcaC0eOg4VNCiuhWkg/5iwr+DNvkHZxi74p7vcNh9DPI4i07VvHU+En21OV
-         JAUuKT0JDx6TZuVOtXRpCE/0xDlh2MVYPJrILlRAb3k81bHYVpWhwptxA3ZVwbDuR5VX
-         gy8HWzaysceZNknsMiL2bEF9dTt7vz6FrbuFZhbaZTjgxx69m7YgQi/ARDsBSy/PqAf8
-         o1EreyeoCam0/B0LrFd3QvOysLr3QcU0hoyPo0mTnfm16nHWic0BNWhXFe8jU/9nDi96
-         giuIi/h5SowRAI2FEma/5EgETouteSIOZiszBjvyro1Y7U9XLZkD0p4glfnsrjYkRSPC
-         h2Lw==
+        d=google.com; s=20251104; t=1775158644; x=1775763444; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VvxBK4KP6iOeP3Xbm2ZCHQUuUvym2Uan3OJJLKtWlWc=;
+        b=JODTMHvvyZqxvt1TS85u6XFqiirfBpBno+oIjSasOSVMES9Ugs6IIdMyDMzgvaY0rU
+         qHlFkrSgW4attLx/GnfXy1VtKquehTbbtUPwnot0S9Le2Hy3Cou1OCysyB6/8vqnYuTB
+         SLs74p1eieESlFXQ3d7mQQ3JAI3CYWXwFmxyBqiRb6AwSLYWDkkDMSHWfEPSfxjF/7KH
+         CBsYDXyYhqug6UdzOqYVdbVN+cXfZV8jYCR4d9p15s3trB5hhytMS7L9VGnbs5K6cn2H
+         JQdlyO8Kodqo5shWMien+4CWf3WqPGdDzEsy/tcIW1y4/YVWVT9Oa9Lau0AF8fuFpeqU
+         2Qfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775155654; x=1775760454;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MpykImWK6bjT2nlpOYqPcIo7o07mstIYTD+Wq8ULKFw=;
-        b=izRk6Q+XnAeLk20fRT4Heyil26h3tKMfp4zqgMmo0FxJYfm5flT5OFi//C0tfBg9Ib
-         1IzoQTp/TB8BwuZHZh5e4RInKNTCsXaB2uzli1CMisv6VytqOYApV6UFu7iNHJatEyY6
-         nEJD8p6gwxEUCJwWBHgERXurqLDpZ/2nm1bBmMT6pFbr9gEGUcMXNxSzxV0fXXbZ1tHj
-         2ooOgygG4G0g+09n+dwTJRrOidzYyH5BiFDGrwi1HGctQLMGc1rInr/lWChfBGmeJBLb
-         uuBgUBU8TUOuCzvJ+7gz2/xLiJ+jtpD0vIOEI5l3hpfaH5vlELdddJ0O0gV9iRURRNmX
-         754A==
-X-Forwarded-Encrypted: i=1; AJvYcCXh5+43AOt685EULTKTmtJPPtDVePxq4S7lp/vkFQA3qUG1Um/tQl0ihQsY1SZLRmDXtwdpj0iZNg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzSK5fpPoQ3DCfxTZr+upwSZ2sUoGMpkfp6f9hvoKV1eUcvuYB4
-	qQ9uVmGRtdncU3dxbQJEMfQjSTNHI9MW0R47t8VkqTEUENk/DtGLCAei2pFmNBEXVg==
-X-Gm-Gg: AeBDiettciXMk39PFH1CgMkjIkTVcctcM4Ngg6/64yP/kOvCbFBg2saK4/GpKfADW6X
-	eHFVciYqykfvhqjPoVp8Y6BT+jWql/hUNgwl/gmBx4m5FypE/svaJ5XVzgraKqnJBvVbe3hO9iQ
-	bcxbKorsvCpm63SORIzXomQT5OVQ2+FQ76zRJ0/UJeoRKq+Hfnt9v9vThirSznz/0zocgw5iwis
-	DlQpqeMzLpwO+x7SxdnyQrFYgvvFOgJQdxLvlBnRKfUldW5m1enTrINjmzV/x+pQwpRJfs/NEjn
-	16QqZksecIS/qM/EppCnQbDkJBu25TNuDUH2o1grU4KjDILyX6/Cigi2gDWdm+ZW9e10jlKjIgB
-	8mcUFSLYVrVUag77521puBlMVEalNR7RGSHL/1t5ydigHOXOdE/KwDx2n58/P7HhESx7oOp/1cp
-	Sk4Na4Yppv0n2U/GSM55YPJsk4fdvMYxmEJhnh/5MLvgolvX3b4Fl0k1pTp4OXBM0jkgm/k4Jex
-	Uwi9RVv2mV1sRZB+u8j2R7lYA==
-X-Received: by 2002:a05:7300:e8a7:b0:2c6:31f0:a025 with SMTP id 5a478bee46e88-2cbfc4623eemr138794eec.27.1775155653050;
-        Thu, 02 Apr 2026 11:47:33 -0700 (PDT)
-Received: from ?IPV6:2a00:79e0:2e7c:8:2412:bdd2:9fa6:2acc? ([2a00:79e0:2e7c:8:2412:bdd2:9fa6:2acc])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca7c20b2b1sm3319049eec.18.2026.04.02.11.47.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Apr 2026 11:47:32 -0700 (PDT)
-Message-ID: <017b8552-87e2-4409-ae34-9a3ab7365a68@google.com>
-Date: Thu, 2 Apr 2026 11:47:30 -0700
+        d=1e100.net; s=20251104; t=1775158644; x=1775763444;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=VvxBK4KP6iOeP3Xbm2ZCHQUuUvym2Uan3OJJLKtWlWc=;
+        b=jJJexVLjBM9O4IxjoWEdGBSOc1ltF/F+zP+sIMCq032gGJfQUc/XYgNcbC/zpP6bho
+         agMgfr8IWJO6pGrqZFcdP1nRBnjpjRjWMLPGKncbpQ4YQOTGgmUhz9btDla/bPVPp6u2
+         BHhwu8JwwlzHF1V/oLpxATTTZNlXgVBtd+FBGjqCbDTqkY5sRT22O2d66owHzj1NAQy9
+         eEOGVEnTEyzAvvb2eotnKh6H7G4WHjvStXrIRzFhyXXcFPKq8NmUBVKDpWBNUOYmmfBv
+         HDp8G7MZD0PYoO0mtx+j9hr6HMg/15HmrRcmSFb+1Q9YeYA5W3JoAg61QIhFqMUFKz5b
+         Ezpg==
+X-Forwarded-Encrypted: i=1; AJvYcCVvBoiUrTjbXcuRtrg77QjB1q705VjCTgLxoRUFDQ4gjLNqiKjlAxarRvABnHw9wWVl+tC+EdCoKA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxDvaJD6d5fmAwcG+p+/4vqMq3oTR/gK6Q6Mg+iE6VWECvIXzKf
+	xwllHlQqzY3B4Q4j3nPl5KbMBc4DE36l/0sl6WVuHt+VEdCzHf43GDBHr/PFUb6Jzo10AxOgTEN
+	rkFLuezoXqtWglkGC50XRsw1g7huQ5yM5L/iA9/CC
+X-Gm-Gg: ATEYQzzVt2pNJVRENUtGgbGYLTlHxCXkz7TLBTVhuwZzqwjsHpD79UQBWN0fahpVJEF
+	YajatAZjSh0YTzAy3lxTQJIwTfAYCY7/StfByKeyd51v+u85z3zsoXY//tuSdEw5bBEJyQYjLLN
+	KQWnDKJaAj+3pdm2A4j1FafHHPpuI5lHo7q3hKLEDRD860Pc16EteFnCP2icLLPYkVYSuvUuJGN
+	9Hs7EAl3WxUcg7BlDg5dr/vK77Fw0KznW19o7S9kbskUs0gXJwzEHFfjGRrV8n3QVX2+3ZE2RxT
+	AkO0iarTYj1djqfmNJ+XXouGce6oTGG1I60ydX3oANPlY89F
+X-Received: by 2002:a17:906:9fc5:b0:b94:cfd:f37b with SMTP id
+ a640c23a62f3a-b9c67b99e79mr7310666b.45.1775158643949; Thu, 02 Apr 2026
+ 12:37:23 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 6/6] usb: typec: tcpm/tcpci_maxim: deprecate WAR for
- setting charger mode
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Cc: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jagan Sridharan <badhri@google.com>, Mark Brown <broonie@kernel.org>,
- Matti Vaittinen <mazziesaccount@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>, Sebastian Reichel
- <sre@kernel.org>, Peter Griffin <peter.griffin@linaro.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, RD Babiera <rdbabiera@google.com>,
- Kyle Tso <kyletso@google.com>
-References: <20260331-max77759-charger-v10-0-76f59233c369@google.com>
- <20260331-max77759-charger-v10-6-76f59233c369@google.com>
- <ac5-OzwQkczTWtMg@kuha>
-Content-Language: en-US
-From: Amit Sunil Dhamne <amitsd@google.com>
-In-Reply-To: <ac5-OzwQkczTWtMg@kuha>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260331153413.2469218-1-wusamuel@google.com> <2026040136-ocelot-simply-8981@gregkh>
+ <CAG2KctokEVVuhrs6tYuMjFF4ALR=tX80iZHrt4bhVvEKyoHzRQ@mail.gmail.com> <2026040236-kiln-carat-bb6d@gregkh>
+In-Reply-To: <2026040236-kiln-carat-bb6d@gregkh>
+From: Samuel Wu <wusamuel@google.com>
+Date: Thu, 2 Apr 2026 12:37:12 -0700
+X-Gm-Features: AQROBzBlWCEOhUiKVBdAOMQhIYruKxtYmNT9c2ETd_EsKRwXfwQK638DgBnNr5M
+Message-ID: <CAG2Kctpr7vBm_=Xz4H5FHYAfFxg=bDt35j6B4EprfUGio=Ftew@mail.gmail.com>
+Subject: Re: [PATCH v3 0/2] Support BPF traversal of wakeup sources
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
+	Shuah Khan <shuah@kernel.org>, kernel-team@android.com, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev, bpf@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Heikki,
-
-On 4/2/26 7:33 AM, Heikki Krogerus wrote:
-> Hi Amit,
+On Wed, Apr 1, 2026 at 9:06=E2=80=AFPM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
 >
->> +static int get_vbus_regulator_handle(struct max_tcpci_chip *chip)
->> +{
->> +	if (IS_ERR_OR_NULL(chip->vbus_reg)) {
->> +		chip->vbus_reg = devm_regulator_get_exclusive(chip->dev,
->> +							      "vbus");
-> Sorry to go back to this, but why can't you just get the regulator in
-> max_tcpci_probe()?
-
-Thanks for calling this out. This was an intentional design decision to 
-break a circular dependency.
-
-The charger driver is guaranteed to probe after the TCPC driver due to a 
-power supply dependency (the TCPC is a supplier of power for the Battery 
-Charger). However, the charger driver is also the regulator provider for 
-VBUS out (when Type-C goes into source mode).
-
-Because of this, the regulator handle will not be available during the 
-TCPC driver's probe. If we tried to fetch it in max_tcpci_probe() and 
-returned -EPROBE_DEFER, it would create a probe deadlock, as the charger 
-would then never probe. Therefore, I made the decision to get the 
-regulator handle lazily and on-demand.
-
-Thanks,
-Amit
-
+> On Wed, Apr 01, 2026 at 12:07:12PM -0700, Samuel Wu wrote:
+> > On Wed, Apr 1, 2026 at 2:15=E2=80=AFAM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> > >
+> > > On Tue, Mar 31, 2026 at 08:34:09AM -0700, Samuel Wu wrote:
+> > > > This patchset adds requisite kfuncs for BPF programs to safely trav=
+erse
+> > > > wakeup_sources, and puts a config flag around the sysfs interface.
+> > > >
+> > > > Currently, a traversal of wakeup sources require going through
+> > > > /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls t=
+o query
+> > > > sysfs is inefficient, as there can be hundreds of wakeup_sources, w=
+ith each
+> > > > wakeup source also having multiple attributes. debugfs is unstable =
+and
+> > > > insecure.
+> > >
+> > > Describe "inefficient" please?
+> >
+> > Ack; I=E2=80=99ll provide a more detailed breakdown in the v4 cover let=
+ter. To
+> > summarize: the "inefficiency" isn't just the number of sources (150),
+> > but the fact that each source has 10 attributes. We are looking at
+> > 1,500+ sysfs nodes to get a full snapshot of the system.
 >
-> thanks,
->
->> +		if (IS_ERR_OR_NULL(chip->vbus_reg)) {
->> +			dev_err(chip->dev,
->> +				"Failed to get vbus regulator handle\n");
->> +			return -ENODEV;
->> +		}
->> +	}
->> +
->> +	return 0;
->> +}
+> Wait, no, something is wrong here.  You should NEVER be wanting to
+> combine multiple sysfs files at the same time into a "snapshot" of the
+> system because by virtue of how this works, it's going to change while
+> you are actually traversing all of those files!
+
+Agree, the current approach with sysfs might have stale values. The
+BPF approach holds a lock while traversing the list. It's not a
+perfect snapshot, but it's internally consistent and arguably better
+than the current sysfs implementation.
+
+> Why are you trying to read 1500+ sysfs files at once, and what are you
+> doing with that information?  And if you really need it "all at once",
+> why can't we provide it for you in a sane manner, instead of being
+> forced to either walk the whole sysfs tree, or rely on a bpf script?
+
+The data is fundamental for debugging and improving power at scale.
+The original discussion and patch [1] provide more context of the
+intent. To summarize the history, debugfs was unstable and insecure,
+leading to the current sysfs implementation. However, sysfs has the
+constraint of one attribute per node, requiring 10 sysfs accesses per
+wakeup source.
+
+That said, I completely agree that reading 1500+ sysfs files at once
+is unreasonable. Perhaps the sysfs approach was manageable at the time
+of [1], but moving forward we need a more scalable solution. This is
+the main motivator and makes BPF the sane approach, as it improves
+traversal in nearly every aspect (e.g. cycles, memory, simplicity,
+scalability).
+
+[1]: https://lore.kernel.org/all/20190715214348.81865-1-trong@android.com/
+
+Thanks!
+Sam
