@@ -1,98 +1,95 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E72630CDAE;
-	Thu,  2 Apr 2026 03:38:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D83F934EF08;
+	Thu,  2 Apr 2026 04:06:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775101099; cv=none; b=oepeviJIYArIZnmdaz22K3kpiEDT/j82GESgo7w0KGoR91i24ndnz26xipHkOPxGwUW5LzZONYB9AuQ1NuDwaPVrvqhELcdqJ+7zAhv/hdS4kw6jc2gwgDHaNKGmDV21Dm99ccDq5pA8eP3gXMc+iapFTiBMQQt9ZXNeCLdLxI4=
+	t=1775102811; cv=none; b=sDCIHPP3M2mHZ16fESAhhiyhWvpDwxDIWvvunUG8UZ4JO0vo5ONmwMviZfq2M8cUt9irHHqIuxC9nfHcBtcMjZwh+X3a1wrZ7KK6cFmXo+o1n++Yhr2gCKcBXD/8z4wwcnlcIO6/XvvZOZxkn7UVUNlRQnqQtsksPPILp1o09AM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775101099; c=relaxed/simple;
-	bh=AzgXWgrPrY9STrDRxJ+zT8u4PTfxAZRNOgvK2g3dwtc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=WEsNafvWRMDs4U9yARjgvH+4CCjjXoeYDWz5PGgd2S6oDMXGlRU8DWGurKes70KeQvfAZBb6fXauBtDR0a1gYTpqKC9jtyrhIy2TjA+6R6ik1avDP2HJvZ8TQxC/ZunFUmbpdml2x1DfljmwgaKzqpacEe6cCuw93Xv4CgQ4z5o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=45.249.212.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from canpmsgout03.his.huawei.com (unknown [172.19.92.159])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4fmSH65yD5z1BG1g;
-	Thu,  2 Apr 2026 11:37:54 +0800 (CST)
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4fmS8g28fYzpTLL;
-	Thu,  2 Apr 2026 11:32:19 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 979FB40538;
-	Thu,  2 Apr 2026 11:38:08 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 2 Apr
- 2026 11:38:07 +0800
-Message-ID: <7fddbd0f-0d17-4e4b-925d-155964ad45b3@hisilicon.com>
-Date: Thu, 2 Apr 2026 11:38:07 +0800
+	s=arc-20240116; t=1775102811; c=relaxed/simple;
+	bh=UKVHWahi0fbxbYI6ys1MP8/QXMc97IMmvnDflgapZOs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mMxEeRRBP6Il82HQX09mVkz5zp0+XxSPNmTN6pxhjUCFfELEXgX51F9i32OybuqMrDO1K/g/r2d0isuQLqV03j7glQBxiNmL1YZIdJrftNJcDWiAfQBwb2uze+dZaU8hexzYh0pCM58TY6nkX9BmTRnVBt8nkQC7CvCxfVQFxNc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=YvEHhBmX; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="YvEHhBmX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0B08C19423;
+	Thu,  2 Apr 2026 04:06:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1775102810;
+	bh=UKVHWahi0fbxbYI6ys1MP8/QXMc97IMmvnDflgapZOs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YvEHhBmXANVWMbSDMVncIB6qfTjgyq7oPFhn4ZChI2qpM+mPpXdrZEmzqP7YTYTOg
+	 0o11r2Nnqe9EmO6EcYz3yOyp2ekICkDympqvHA8DxAZ4+u/3CS5Ei0Q16moOu8xAYu
+	 nGDOZKC34utjZGQRQtZEaQ67BxhKjsB3YXn56NZM=
+Date: Thu, 2 Apr 2026 06:06:48 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Samuel Wu <wusamuel@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
+	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
+	kernel-team@android.com, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+	bpf@vger.kernel.org, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v3 0/2] Support BPF traversal of wakeup sources
+Message-ID: <2026040236-kiln-carat-bb6d@gregkh>
+References: <20260331153413.2469218-1-wusamuel@google.com>
+ <2026040136-ocelot-simply-8981@gregkh>
+ <CAG2KctokEVVuhrs6tYuMjFF4ALR=tX80iZHrt4bhVvEKyoHzRQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/4] PM / devfreq: Optimize error return value of
- governor_show()
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <cw00.choi@samsung.com>, <nm@ti.com>
-CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20260401032838.66168-1-tianyaxiong@kylinos.cn>
- <20260401033128.67925-1-tianyaxiong@kylinos.cn>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <20260401033128.67925-1-tianyaxiong@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAG2KctokEVVuhrs6tYuMjFF4ALR=tX80iZHrt4bhVvEKyoHzRQ@mail.gmail.com>
 
-
-
-On 4/1/2026 11:31 AM, Yaxiong Tian wrote:
-> When df->governor is NULL, governor_show() returns -EINVAL, which
-> confuses users.
+On Wed, Apr 01, 2026 at 12:07:12PM -0700, Samuel Wu wrote:
+> On Wed, Apr 1, 2026 at 2:15 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Tue, Mar 31, 2026 at 08:34:09AM -0700, Samuel Wu wrote:
+> > > This patchset adds requisite kfuncs for BPF programs to safely traverse
+> > > wakeup_sources, and puts a config flag around the sysfs interface.
+> > >
+> > > Currently, a traversal of wakeup sources require going through
+> > > /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
+> > > sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
+> > > wakeup source also having multiple attributes. debugfs is unstable and
+> > > insecure.
+> >
+> > Describe "inefficient" please?
 > 
-> To fix this issue, return -ENOENT to indicate that no governor is
-> currently set for the device.
-> 
-> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
-> ---
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 975f82d7a9d1..c40568d2a4dc 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -1377,7 +1377,7 @@ static ssize_t governor_show(struct device *dev,
->  	struct devfreq *df = to_devfreq(dev);
->  
->  	if (!df->governor)
-> -		return -EINVAL;
-> +		return -ENOENT;
-Hi Yaxiong,
+> Ack; I’ll provide a more detailed breakdown in the v4 cover letter. To
+> summarize: the "inefficiency" isn't just the number of sources (150),
+> but the fact that each source has 10 attributes. We are looking at
+> 1,500+ sysfs nodes to get a full snapshot of the system.
 
-Usually we don't change sysfs error code because that might break userspace
-if it depends on this to do some specific handling (although it shouldn't
-do so!)
+Wait, no, something is wrong here.  You should NEVER be wanting to
+combine multiple sysfs files at the same time into a "snapshot" of the
+system because by virtue of how this works, it's going to change while
+you are actually traversing all of those files!
 
-Besides that, from a user-friendliness point of view, I'd still prefer
-ENODEV.
+Why are you trying to read 1500+ sysfs files at once, and what are you
+doing with that information?  And if you really need it "all at once",
+why can't we provide it for you in a sane manner, instead of being
+forced to either walk the whole sysfs tree, or rely on a bpf script?
 
-A user terminal is supposed to get "No such file" on -ENOENT and "No such
-device" on -ENODEV.
+So, what problem are you trying to solve that looking at all of these
+files solves for you at the moment?
 
-I guess the latter is more meaningful since 'device' can mean 'object'?
-"No such file" is a bit confusing because the sysfs file or entry is
-clearly there.
+thanks,
 
-Thanks,
-Jie
->  
->  	return sprintf(buf, "%s\n", df->governor->name);
->  }
+greg k-h
