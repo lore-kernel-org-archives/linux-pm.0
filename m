@@ -1,200 +1,175 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazon11013060.outbound.protection.outlook.com [40.93.201.60])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68D523D6CBE
-	for <linux-pm@vger.kernel.org>; Thu,  2 Apr 2026 13:05:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775135142; cv=none; b=LIC00tpTtt2aYxGAKhczvyULW6Yv8gArJq8BlV72zSGbKm+kaFqig8TRT45636Q128FzWTOiXOUqlMX1B9P4/G/rMMRfGFYIwxtVGLB5NhSqvaRd3kjiiMRDSN5NU+DF4XmfhJnIcgEvbCTv12noeYbD0Orf+wCIdRohqabKfD0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775135142; c=relaxed/simple;
-	bh=DqOdxgdcCLGaldkHkXFgo5J0eGj1Kpcn2M6cxW6F0hY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ed0f05OOYxOv41p1ql1KU7GBRbutLZEvq1bnPGKcN79FFLzqJg67KQS64pOKXDrVKncFb/7Z0QTnHBYxTXMrs1EgpYDyOhxLmpvsAPiYSDkusCQhPzSnUrJafBUfSI56RMp0JT48KHGJJFu1TAvcKFsRKumh6RBP4PPS6CZJlWc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Z0aAkjn8; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C5EA3019DC;
+	Thu,  2 Apr 2026 13:52:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.201.60
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775137977; cv=fail; b=gbIXvarYMeonExaL9SPmr+0FZmrTMKFek1yDVFu3H3WiCaBY6tmCeEj2cHf7Zhm0fVjhsrP2DL9vYxPs3x1ToZEhy3BzaiTmkw4WszCUlhHpZx8GixYLF5hq9j+/+YYruD8MS3Ee5u3SSjBQ3gD20VW+XVW8lyfmiliEGs6so4E=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775137977; c=relaxed/simple;
+	bh=fQYgex27XXq+afen1HBh9+KYDhdKnp7smplgo0C/sY8=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=fSo213LMgVoREaR3bIIZUdP4aEJCh3bOBXjpNf3N3fKyK7kJuB5Bt0jtW10jOiyMx3oWOw7iqptfk5WjrNKF/tn3LkgOoE0qFkQMHhQ1Tzwjog/GB+zCxtFvii2BB3BTKV0qhPte1cqj15KXzsoKT1Qx3ls5SnMECUXkTNUL1Jg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=rPFkjbJo; arc=fail smtp.client-ip=40.93.201.60
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z0aAkjn8"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-486507134e4so11077215e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2026 06:05:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775135134; x=1775739934; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=NPakThXcqJ7PCNMa7VzjIxV+o2G6zNPbZH8YS7//hxs=;
-        b=Z0aAkjn8sRxQ1SUsWFRY3pz43uCr5x3x7iyFsz+64eDxrWKdJKV2YEHuvp7qI+xHWx
-         ac+8/OxMRZ8oaWVdTioYDzARLCd599cZ6elPlleE7y64Tcz+V149KsKmvo5pm09mKFOU
-         J9mA4vogfw0XNZJzFDBvXaAA4sLonYJBeXNZ8asiwk8KLoItgvJ2+o+56JnelqPM3LG7
-         oD34k+2KkaIs6F59pn6EBHlFYnQZ0mWeUnjHGP+Z1r72jm/aLKa25hYDIaHKlJvFIzo/
-         VKAVp8M5kB+pDWSFEdmyj+tcPPLYleCq+jG1Jc2FRNNGw1L0Uzv0fuKJANw7Lv4MNhmm
-         pBMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775135134; x=1775739934;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=NPakThXcqJ7PCNMa7VzjIxV+o2G6zNPbZH8YS7//hxs=;
-        b=SNlMV2kvl+8whPAO+aAtreM8G6WgJjRMXgOjGbex+bnW87Pbx2US6dWQ+GjXkir7mS
-         MXdiBIAf0B3RvXIcY+MQJB7b0awF1Gr95aTvk4O4hyzWjvwXcG7H30HcjSf/Shh7/RzZ
-         VuJW91oRZm2zfnI4uysTbmDk7sUZYIc1JMXj5x+03xMr+YxkIS8w5zGADgO9qgNG/q0f
-         XOZ5KZcQVu4TIWhpQ+tT8PY6wICONxeeMVqR6fLs3oCggmdzUm73ddd7147N/Q9GZVTp
-         rgdGXgDHwLTMgWpcalrZDamCE1OPomMTgnbmrFu11AhpZQFMtZAfV3WF0UNRw7FXooHS
-         ZXhw==
-X-Forwarded-Encrypted: i=1; AJvYcCXquQLTqcLOUvynRzUhLx/RX83HWSfwRuVp3O4xtyXBjQ4uposu0hbiQUlEqyp+qDyy8iCMQLpyoQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwvOo+tDi1C/G5WvPvRcSoptAafgWGCstQaBlD2VDMKsd02gdzc
-	NTaMbB+9glgZgiEnLtyZ4eooCcfwuD2THoIU7iiFK3ucOvUb6VI+Q4lh
-X-Gm-Gg: ATEYQzytw+RN0y8labZBhQ1nqbaZwqmdLdMb2Zk9GVAkMvW9AYGyNzEK27Bt+biVguB
-	gnE+DMW3V9xQnInzJWVEwSBxI2DScZgtlMJ60MwiM0QnJwOm3VBvIrIlnr0rbtWOEGIXGqanjfP
-	C7MBoMrv2ZOR23Hw8lc9QjyrKMbej1GfiwY8laiBc8NW+kDPjDOJGs7GR2JrCEof6wz280D7eJj
-	L8ofH0DshL9q4DxAOYYml9S+PhuQP9x5xul5KgmhzE4rJHdR2lqdtjUbvqEgNlujyIJdT1KaIDv
-	ZMK+xFwzv6fjc1lTFGKxREyy59PGrRspJya3xNR5Z5OHzYVFhG78Jsw3E79jkRV/K2ZuW60wJDx
-	O6KVbwbmlsfUB6KN+Th+IEcI8AyASOJVi98Lw6VxohsNs5RO/iHS3GAjmd9bEnJ4UyfRmUcwtgX
-	s6xdM8lTsBtkJ3w/0Uil6JfD4DbIgyFlLQNXfh1CyOGWp17eU9k2dPllK2Y0MRwmynxd1+ghhJ3
-	R1o5RSrNNl6KAuxZW3Vf4viGWZjsdDJxumLPpJhBOKJkKMTbY5qqscDUhzQGPYrQg==
-X-Received: by 2002:a05:600c:c056:b0:485:3a03:ceca with SMTP id 5b1f17b1804b1-488835b30a7mr87662745e9.23.1775135133581;
-        Thu, 02 Apr 2026 06:05:33 -0700 (PDT)
-Received: from ?IPV6:2003:ea:8f19:9500:c168:ad27:2fdd:9334? (p200300ea8f199500c168ad272fdd9334.dip0.t-ipconnect.de. [2003:ea:8f19:9500:c168:ad27:2fdd:9334])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4888a626100sm121936195e9.1.2026.04.02.06.05.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Apr 2026 06:05:32 -0700 (PDT)
-Message-ID: <0758441c-e88d-475a-80ef-061b227ae7fc@gmail.com>
-Date: Thu, 2 Apr 2026 15:05:31 +0200
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="rPFkjbJo"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=VjsE8LA2uYOOwkgan2y4Q1sI2dSN6xrnnuw5yGxih04AX5Dmhbu+QwTW4jmUR6zaX3W+BLHcCrRsyDEBZGrOMNhIihbv1kVWbuAIDg5i/GhJDKc9mBrax1I8fKlwRINuNpi2HOaoJ+UER4MIKVcwVM/SXPpWJyTXe+JJ8JMVaPx9Fd38uaj25AlQV0D/3HhpcPPNd9uKZdDsuvW989lTRJbLqBU9uy0nK4rLdEF+Le0jEer61Sf0k74hoQMmRHqwPESf08RDfxuvWiXcwegWuWsFC3yfh58V6ZTx3dtePB9+pqHBTGP2pme5yE0PhMH0Yre7vmgAcNbI6n3yG/N6LQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=t0lu5KA1J+RdzuDqUM6T5s3+jNGB6PIv2paKc/emYI8=;
+ b=sYu0ZPxRvIgl7DEtYNltkD/C+yYkpJ0o6S7CasElovaGICdk+Uznxnh6TQ4WmIB/iDRfmZn74XuQTgHrmxP4OKkwhzgl937cSyndfIeUGsIaEW5QAEze74YrhJhEsVwIpSfG5GPXc8mw4sKIb0wfgb3HlZ3X8hVAmtGivOfm4CoonBCRS2f4ybPHQcbh0wio3a4NY2u6nz8z2Tt5x+t5V8lwuMtQEZBRqHtnO/zfi6l8Ka6UwsSKr5QpGYC5PFsKCTBvCb1mmuycx8PFsSGrxXH2cKXniaS//EN3EXrEkVrYe6CGQP3i9XY55p5rlfUXg3Oyy0fOLwGNxQVjrFRBgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=t0lu5KA1J+RdzuDqUM6T5s3+jNGB6PIv2paKc/emYI8=;
+ b=rPFkjbJoODH2HAF0l+/s1B0jGj3SMQAaAErpPBCgmBx4RQhqZAS/XymJ8GAqErCZQQDAX0Hn4GzUNYBkdc2DSsGOHZKqaPoCEQQHQgQOLjBcZS4pnSTCnJpPcrsi3YZfs0x1G1SW5JugtFzybbqP25eGauiacmKTUYE7ZUf+We4=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from SA0PR12MB4557.namprd12.prod.outlook.com (2603:10b6:806:9d::10)
+ by IA1PR12MB7757.namprd12.prod.outlook.com (2603:10b6:208:422::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Thu, 2 Apr
+ 2026 13:52:50 +0000
+Received: from SA0PR12MB4557.namprd12.prod.outlook.com
+ ([fe80::885a:79b3:8288:287]) by SA0PR12MB4557.namprd12.prod.outlook.com
+ ([fe80::885a:79b3:8288:287%5]) with mapi id 15.20.9769.018; Thu, 2 Apr 2026
+ 13:52:50 +0000
+Message-ID: <178f3a55-6faf-4070-9e38-85c547b27a03@amd.com>
+Date: Thu, 2 Apr 2026 08:52:47 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/2] cpufreq/amd-pstate: Pass the policy to
+ amd_pstate_update()
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Huang Rui <ray.huang@amd.com>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Clark Williams <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Perry Yuan <perry.yuan@amd.com>, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+ linux-rt-devel@lists.linux.dev, Mario Limonciello <superm1@kernel.org>
+References: <20260316081849.19368-1-kprateek.nayak@amd.com>
+ <20260316081849.19368-2-kprateek.nayak@amd.com>
+ <hin33mzxwjjycw7oonq4klqmgmgavqpoe7r2ml6qalytxfpntk@me7d6q6yiec7>
+ <4bwfgnjiywkm4dyslhzmk6lvar3a6rhvtcyyruc7okybckuwuf@mkdc5dlconx4>
+Content-Language: en-US
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <4bwfgnjiywkm4dyslhzmk6lvar3a6rhvtcyyruc7okybckuwuf@mkdc5dlconx4>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR03CA0119.namprd03.prod.outlook.com
+ (2603:10b6:610:cd::34) To SA0PR12MB4557.namprd12.prod.outlook.com
+ (2603:10b6:806:9d::10)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PM / wakeup: Allocate class wakeup_class statically
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Linux PM <linux-pm@vger.kernel.org>,
- driver-core@lists.linux.dev
-References: <0fe1b679-ab28-4505-b0db-14e7ac3ba749@gmail.com>
- <CAJZ5v0iMfiqjkkvOMU6jWEZ+nBvcRtWNwjvBW0pEva1G_owFcg@mail.gmail.com>
- <744440a6-e1cb-4792-a848-57755de0686b@gmail.com>
- <CAJZ5v0i5dSuQ7f8Okb-Ch5igzNn=L_Fj5d3H4pftvxoEVBaDUw@mail.gmail.com>
-Content-Language: en-US
-From: Heiner Kallweit <hkallweit1@gmail.com>
-In-Reply-To: <CAJZ5v0i5dSuQ7f8Okb-Ch5igzNn=L_Fj5d3H4pftvxoEVBaDUw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SA0PR12MB4557:EE_|IA1PR12MB7757:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0e1d4372-1199-464d-ef92-08de90bf2103
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	Hh5miZ0bsY6v4hhfH8X4wj3jEXKXWZp2Y8WMg6D2r23TPLcg4/fU2oAPWKGIShZRMocHOKH/fiTI8mgK+D/MofsrGZY3Yb0/WWPejns7ztJYAQYzWqlN3wBrfOemHbGjIaFqwRisUWZ9567VU8HLNSjiJBvOL4GhM1mEjPMw2Hc99zazsN5wMqDn81yfIfLO/Qi8Wzba5XQO4pf2piqyn3ccdFXWxHe2QkUbJBgwTQLAixtyL4tHIzsrTe5XaFoBsT/YJzt+WBkWhEe8IhdugsHiPZnCcRcPkTZY0r3pHxEADNhg/7ottniLgXu8hEh44Oy8Nk5hr54SsaRAHeFrixeiOGC7xZbkFx3reF6Oxsuv06L3G/KYQPp6txjJyy39i8Odgh83vyQJh2rHw3XYYlkrD+OzYX/DyRj3Mmr1zmvimDeJtRnBCB0QCHwG/YXHOYnr+Tni/aXpR0raoer0JQX8Eqd+rXkUcY8Mrj2mfrhEBPbiavH8RG1hQh8CawnrLOs4/uU0VcbQZRjnM9lVxUeP1yu0nVuhE6kcclIZtmdYyLg3SslAB3A13x3CIuFb5lGA5o1TXHKqVqjz45bYWoaBjHe1CPnFoJgY+xtX3jfibf8hN40Pv6AM7MJ5sl85Y6ScsNBOosd9MuW3gmVtmulpsM+802HfB10hlgXCsltV8wFID+TLhy8fvTVWV1iLMNYVk46qgWQC1clEzXvloh5H3PBl/6eEveUqOeVf7Co=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA0PR12MB4557.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?YUlPSE5CS0V3WmtiaVdPQ21oSGFtbDM4TnFOaVl6SytIeVVreVFpTTdmeGE4?=
+ =?utf-8?B?UldzVlp4eE9BMkNRWVV3aUU2dko5ZFk5YXMzVGhRdDRZamtBa2hyNG1weXJx?=
+ =?utf-8?B?cWt2MWs3RTdPTU1rL0hKQ1N0Rm1KTFQvT2VoaWlIMTR6aU1mek5FS3hFd1da?=
+ =?utf-8?B?T0w4eUZVQ1NCcHdZbmQ2UldFcVJaYTRZYmVSZmpIK1FNdklrbnhzc3NyMjA2?=
+ =?utf-8?B?ckJSeG1ZVGFKT1lUc2VHVk9VQm5lV2ZUa0VLTDQ0cC9sNjhwRXVwY2cyb1lN?=
+ =?utf-8?B?SUdtUkRpaW1iRFBWUGYvYkFoSHVocFRqYUJFZWNhSjdjMGs5QktQRndkQ2Rs?=
+ =?utf-8?B?d1VHNjR5RFY0dVN1M1dJMWlWaHc3VTVQTzFFYWczTysyY3JQMmR0OXRWMGlp?=
+ =?utf-8?B?NklXd3RLS1Q5eTY4Wk1MZ0hsMTlqRS9uUmRDYXZnOVY5SFNTdHRQNCtOTGg4?=
+ =?utf-8?B?TVJIS0hZcDhMNy9TZHRVMCtSbW9Dcm51NjRKWFB5ZmR1RzRjZUNsMDF5YzAz?=
+ =?utf-8?B?ZkFEUEdOZEI2OEtYR0pUMFd5cGl2a09UdVBXQUNpUVYzNDVOb2RWYnFKM05o?=
+ =?utf-8?B?QnJsRjdLMEZpaGhuN2llbTQybHFBZjdiSmZNMlhvdnlkNmNCSEdQNHdCK09F?=
+ =?utf-8?B?Z1dybTFFdkpKSFZIcDE4cWFIYlh5U2xwSDRjWkhDSEFmenVKM3pNcGlpQ2N5?=
+ =?utf-8?B?OE9EbmlHL3lXSFdINjVvckxzUjZjbDlmWTFHUks5NnNNd08xNTZUZVptRlpR?=
+ =?utf-8?B?SU1lOXFjSnQvNVd2Sy96ajFtMUltWGc5Q0piQmpHMHZxanFZckJMNTVSaGJ6?=
+ =?utf-8?B?NFdBT1lrb1UwSlBmWTRaRmZDUlZ4dHZxeVV5d0U3ako1VjhXOE1KV3Nvbko5?=
+ =?utf-8?B?N3pNMXZaa3VRVzRJbnl0clZHdXN0TG8ra3FNRDV0QkF4bk8wZVpheTdJOGIr?=
+ =?utf-8?B?MjZWdDh2ODhFQVczRjgvTDFjcGFiZEhwRmhJYkNXVC9kbVc1MmRsMjI3cDB2?=
+ =?utf-8?B?R1QweXlHVDhlUjFjSjc1T0FhTGhCMmJiWEU3MHJIMm5vSHUxWVNhbG9oUEIw?=
+ =?utf-8?B?SW5ib3BVN3c3TVhoVEVzMEh4dENLa0pQMVRWS2FudWRYTGR3UHhYQXF4eWFz?=
+ =?utf-8?B?UWo4MXVvTXQ0ZnZBdmtvdEY2ZDBybmtTTlRWMVMrbWkwanI4Uy9aa0VGQkFk?=
+ =?utf-8?B?cjlXbDJIdXd4Nlo1WDBVK3lzNklORGNjV0ZaQ0owdmpZS3JEd2VGYnVJaGY5?=
+ =?utf-8?B?MENpSFZURGFXaDNuNFJqMGdBNGdEWDNyQlpaUnh1RmtSQ09uR21xVUxDRXpP?=
+ =?utf-8?B?OXpQaS9wWVlPenEwTEFpZFVrUWIwWjkyVzNDZlBqRjNCRXgwM05QVlFSdERr?=
+ =?utf-8?B?RjU5Y2xQMGF5Ky91VHJXTm9qOGV5Ryt4WmhlY1lNRkhCZGFhWG9zcmNzOGtV?=
+ =?utf-8?B?YVpoYU1LQXRWeW5NQS96MjVBand3bm96TVFBeWxvcnNHdWVYNWxJbjh2K1pR?=
+ =?utf-8?B?WW53MGl0dkVwSHgza1g1elE3bVlVTjZLZGoyLzN3cTcrZnowazB1WXJ4YzFy?=
+ =?utf-8?B?RXBDaEF4KzlaOWI4aTA2aW1HN0NrL1o1SWhHY1Z0U1dGa21JR0ZVaEYrVHdL?=
+ =?utf-8?B?NmJZZ3MzSkJ6bXpxMStWWkZ0RFpEY1pwalA1VGhsa1l5QkQwYWdhZm1aQ01H?=
+ =?utf-8?B?NXBJZjl5UUtMdGRPcTd0NWlSdUJ1ZnpuWS9rbzJFcWlJdGppdU1Bd1RJQkds?=
+ =?utf-8?B?UWdYVjk0ejJYak45Q2h1ekR2T0UwTXVxN29kM3lNRW1wZEFCMWROTEdaVnNz?=
+ =?utf-8?B?Q0I2K041aWFpelV4ZXhvSEd4cXFFM0ducEJCLzdkcFNKRGtXSkpnYy9xeVdu?=
+ =?utf-8?B?dVdUVExyRzRmWCtNNUV6ck1FNmI1bTRBRm5Ma2xRdmRCOFZkYkV2UTdlTVFO?=
+ =?utf-8?B?RHJnTXVOUEM3ZnVUQVAzbXluVTNQV0xzS2FBZzd4KzBVNXB1YWdaMDZEK3Iy?=
+ =?utf-8?B?M1NBcHNLWWVsdTF1emoyR0JtelJWR1EvK3NrZEJZQmN4SmRwTll4VDluZWdo?=
+ =?utf-8?B?LzFhTkJLK2dsMHRHTGJhcE16czlzU3pUWWhGUkxoWkJ5K3BjVFhSU2txQXNr?=
+ =?utf-8?B?aGxSbmpSM1BaT3hYa3BrVkVGamwyQ0RtK0xvUjF5VlpmQk1yZXNEdDFDZTBV?=
+ =?utf-8?B?YnR6eG1FTTEyMjgwTDZzWFpHN0lCcE9pdWRPblBUeVF0bG9qaFl0Rk0zaW5T?=
+ =?utf-8?B?bmExSXJQdytsTVZPTGpLVVp6RXVseGRSQWZJUEV4QSs4djBKa1ZUQmtJTGxN?=
+ =?utf-8?B?L1o2bmdkTFArMDl6cm00UUtvV1VTbGFnemx0TkkrVXpYUWVGSUlXdz09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0e1d4372-1199-464d-ef92-08de90bf2103
+X-MS-Exchange-CrossTenant-AuthSource: SA0PR12MB4557.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2026 13:52:50.2029
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 8wpZi30a0NuZ39Ko8RTKdKhsnKTdAP53ghG393S87QnVNZQdFxDeZt9PTkMsrtozJXGmqPk601fj0C/XTMEPRA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7757
 
-On 01.04.2026 19:32, Rafael J. Wysocki wrote:
-> On Wed, Apr 1, 2026 at 5:45 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
->>
->> On 01.04.2026 16:19, Rafael J. Wysocki wrote:
->>> On Sun, Mar 29, 2026 at 6:14 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
->>>>
->>>> Allocating wakeup_class statically avoids a little runtime overhead.
->>>> Define groups and device release function as part of the class, so that
->>>> we don't have to repeat this for each class device.
->>>> Whilst at it, constify wakeup_source_attrs[].
->>>>
->>>> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
->>>
->>> Can you please have a look at this and let me know what you think:
->>>
->>> https://sashiko.dev/#/patchset/0fe1b679-ab28-4505-b0db-14e7ac3ba749%40gmail.com
->>>
->> Interesting finding! I think the diagnosis is right.
->>
->> But: I would say the current behavior isn't a nice solution as well:
-> 
-> It is not fantastic, but it doesn't have this issue.
-> 
->> wakeup_source_device_create() does: dev->class = wakeup_class;
->> I think no reader will expect that wakeup_class may be NULL here due to
->> initcall ordering. In addition this behavior results in such early
->> wakeup sources not being shown in sysfs.
-> 
-> They are registered too early to show up in sysfs, but they can work regardless.
-> 
-> I think that it's just pointless to call device_register() for a given
-> wakeup source if wakeup_class has not been registered yet.
-> 
->> But I'm not sure whether registering class "wakeup" (and registering
->> classes in general) would be possible early enough (core_initcall,
->> or even pure_initcall).
-> 
-> driver_init() is called before do_initcalls() is do_basic_setup(), so
-> class registration should work for all initcall levels AFAICS.
-> 
-When testing the current code on my system, autosleep is the first wakeup
-source, registered in a core_initcall, and it's not shown in sysfs.
-Same result when class wakeup is registered in a core_initcall
-(instead of postcore_initcall). Registering class wakeup in a pure_initcall
-works and fixes the issue. So, would this be an acceptable solution for the
-discussed issue? 
 
->>>> ---
->>>>  drivers/base/power/wakeup_stats.c | 18 +++++++++---------
->>>>  1 file changed, 9 insertions(+), 9 deletions(-)
->>>>
->>>> diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wakeup_stats.c
->>>> index 308f8bde9..72beb8fce 100644
->>>> --- a/drivers/base/power/wakeup_stats.c
->>>> +++ b/drivers/base/power/wakeup_stats.c
->>>> @@ -18,8 +18,6 @@
->>>>
->>>>  #include "power.h"
->>>>
->>>> -static struct class *wakeup_class;
->>>> -
->>>>  #define wakeup_attr(_name)                                             \
->>>>  static ssize_t _name##_show(struct device *dev,                                \
->>>>                             struct device_attribute *attr, char *buf)   \
->>>> @@ -114,7 +112,7 @@ static ssize_t prevent_suspend_time_ms_show(struct device *dev,
->>>>  }
->>>>  static DEVICE_ATTR_RO(prevent_suspend_time_ms);
->>>>
->>>> -static struct attribute *wakeup_source_attrs[] = {
->>>> +static const struct attribute *const wakeup_source_attrs[] = {
->>>>         &dev_attr_name.attr,
->>>>         &dev_attr_active_count.attr,
->>>>         &dev_attr_event_count.attr,
->>>> @@ -135,6 +133,12 @@ static void device_create_release(struct device *dev)
->>>>         kfree(dev);
->>>>  }
->>>>
->>>> +static const struct class wakeup_class = {
->>>> +       .name = "wakeup",
->>>> +       .dev_release = device_create_release,
->>>> +       .dev_groups = wakeup_source_groups,
->>>> +};
->>>> +
->>>>  static struct device *wakeup_source_device_create(struct device *parent,
->>>>                                                   struct wakeup_source *ws)
->>>>  {
->>>> @@ -149,10 +153,8 @@ static struct device *wakeup_source_device_create(struct device *parent,
->>>>
->>>>         device_initialize(dev);
->>>>         dev->devt = MKDEV(0, 0);
->>>> -       dev->class = wakeup_class;
->>>> +       dev->class = &wakeup_class;
->>>>         dev->parent = parent;
->>>> -       dev->groups = wakeup_source_groups;
->>>> -       dev->release = device_create_release;
->>>>         dev_set_drvdata(dev, ws);
->>>>         device_set_pm_not_required(dev);
->>>>
->>>> @@ -212,8 +214,6 @@ void wakeup_source_sysfs_remove(struct wakeup_source *ws)
->>>>
->>>>  static int __init wakeup_sources_sysfs_init(void)
->>>>  {
->>>> -       wakeup_class = class_create("wakeup");
->>>> -
->>>> -       return PTR_ERR_OR_ZERO(wakeup_class);
->>>> +       return class_register(&wakeup_class);
->>>>  }
->>>>  postcore_initcall(wakeup_sources_sysfs_init);
->>>> --
->>>> 2.53.0
->>>>
->>
 
+On 4/2/26 01:39, Viresh Kumar wrote:
+> On 02-04-26, 12:07, Viresh Kumar wrote:
+>> On 16-03-26, 08:18, K Prateek Nayak wrote:
+>>> All callers of amd_pstate_update() already have a reference to the
+>>> cpufreq_policy object.
+>>>
+>>> Pass the entire policy object and grab the cpudata using
+>>> "policy->driver_data" instead of passing the cpudata and unnecessarily
+>>> grabbing another read-side reference to the cpufreq policy object when
+>>> it is already available in the caller.
+>>>
+>>> No functional changes intended.
+>>>
+>>> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+>>> ---
+>>> changelog v3..v4:
+>>>
+>>> o No changes.
+>>> ---
+>>>   drivers/cpufreq/amd-pstate.c | 11 ++++-------
+>>>   1 file changed, 4 insertions(+), 7 deletions(-)
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Oops, I already Acked it once :)
+> 
+> It is ready for Rafael to pick now.
+> 
+
+I'm sending an amd-pstate PR later today after some more testing.
+
+I'll pick this up in my PR that goes to Rafael.
