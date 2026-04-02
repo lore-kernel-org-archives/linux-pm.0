@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAB2A28CF77;
-	Thu,  2 Apr 2026 16:00:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E753D23EAB2;
+	Thu,  2 Apr 2026 16:09:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775145639; cv=none; b=avqCtRQ5jZ6naG80tXJQZmVa/FJ6ROtNldXe8NU4MjCbqdlCsWgUgGKOnQhS8XeWYrsAMCOk1QBQBP0qsDSipHxE13rBfHMyRsTuZJ3klCoesp6gVZT5bLTWWpTJLAF6jkZJFMj81ZJcaJC3igthPRMhdH9Vu4bjc63BfMVFqBA=
+	t=1775146189; cv=none; b=dmyEFz6FtAHdbjidIKEcIMoJlMUA3ul8M6JFPeWau7IT6Tqgm/+/5mr3x3Qz1zQzWiBZQ3ECdZbiyUZkhKNnM6I3wLoCDu7d9QkakFBry+xMO87sNy1f4nZz862Y+rgGoLNKmroLBltHKKiR5R4bBHpU3Gp9sawjRnk6Cp52LF0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775145639; c=relaxed/simple;
-	bh=3l87Zv114WGszX1lbArCHdmGrdNnlRC9AdluTFBw9xQ=;
+	s=arc-20240116; t=1775146189; c=relaxed/simple;
+	bh=y8eZqB1rZ3yBvlJJOwwgV+2EmhjYmsdHR3Va7vTYEcI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pme1Xh6Q2iVdEYuTcBGkIAcUNccZrQwVwZkpi674E6/TYh5SyDK6ZDhfyJ4USEdTvBeRx4tKgRGgQYc9TTcUe620xBod9/Oz2c5z4qZfK9eh4hVnXNDnz4uoTRwjhBh1g0j4YNbNMnBbPslAyEHj6Nyjvsi79Ha6uLXfWAUE3Bg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hE0Yc0pE; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=i3vuaISUaXD8iRPghafRo+PfQHKWFca527z7mEp4nP3ZMuoi10lYHdOAbGFBgh4SVoOpQ54RXZpnHtxQNy4FEgkXmfenrvCyXexZkrP79IUFOEgjV578Hf0N2riouXTMvp6IKRKJ4DgGnoY7wkI4Fnbhsnd2Pu+wggHkmSLHKZs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AXXfrSuC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hE0Yc0pE"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15D58C116C6;
-	Thu,  2 Apr 2026 16:00:37 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AXXfrSuC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9EB6C116C6;
+	Thu,  2 Apr 2026 16:09:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775145639;
-	bh=3l87Zv114WGszX1lbArCHdmGrdNnlRC9AdluTFBw9xQ=;
+	s=k20201202; t=1775146188;
+	bh=y8eZqB1rZ3yBvlJJOwwgV+2EmhjYmsdHR3Va7vTYEcI=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hE0Yc0pE2yNfg6BLuZk7lvsZ9dlO0eXAJRiUalOLKB7J5MOlOddimi5/lEramRh2D
-	 tkJ65OcUmSmqZwxjSIuHj4bYTOxROYlTPukIALnlVb2P4RhL8cTTWcxWg7SB++0aPN
-	 SJB8vzqShKZMslsU3TwvfJ+YdA3M9JeG8EwUJC/386WXqR6AKvhwOZfV5g3FL07KeX
-	 gcLPnaD7NzCwn9ICZ3xLHczNVY4OO0szNfnay1nRvsYi83hASclmINJaEAtyVnAQyb
-	 pjrbxYOUlAPMoKn63gxaBjgULVvZVIngT3Znvf4RSNjtIw9O4itvEKhdqYiZx+1fPV
-	 15ruRUnCAMG8Q==
-Message-ID: <01a921b7-4b8d-4df6-9840-300a8c143e71@kernel.org>
-Date: Thu, 2 Apr 2026 19:00:34 +0300
+	b=AXXfrSuCqd5w2EKia5kWbZDzaq/rdQzQvFphF9Ky38sePoDHYlzULS/qR/swGyaEa
+	 moqDXzCVe80huq5HfUkwgJLJiCOHDLhtYQMXKEuyDrPAYTR159rAnJKNSszLxlSej3
+	 LW+mr+ugDePNHJWEoZ7YkdSLam+HGgLYHxITftOLoWLRtJIl1QrkHBRWcaPCUstM+o
+	 at0i/hapI08zJ3Txs2ateQb+bLXXmjUKZJYJbUa4KJWlBSNk6OAvXPDhaQqL6Frsjp
+	 om24y5CzMgJbzeTv4gQaMxwQ5KQHZ9uSwLoErvVe8fg3TQrXKD6bgJ7HOH53U9dBBZ
+	 rhDkwEDVrgWlw==
+Message-ID: <eea2ce3c-5c8a-4740-b700-90b29f0ffe25@kernel.org>
+Date: Thu, 2 Apr 2026 11:09:46 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,55 +35,47 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] interconnect: debugfs: fix devm_kstrdup and kfree
- mismatch
-To: Gui-Dong Han <hanguidong02@gmail.com>
-Cc: Kuan-Wei Chiu <visitorckw@gmail.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, akaieurus@gmail.com, me@ziyao.cc
-References: <20260318024815.7655-1-hanguidong02@gmail.com>
- <CALbr=LYyNh0AwC+8ni6iS=9UiTyVz9+r_gM7M=ohacCv97ujOw@mail.gmail.com>
-From: Georgi Djakov <djakov@kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: amd-pstate: Step down as maintainer, add
+ Prateek as reviewer
+To: "Gautham R. Shenoy" <gautham.shenoy@amd.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ gautham.shenoy@gmail.com, K Prateek Nayak <kprateek.nayak@amd.com>,
+ rafael@kernel.org, viresh.kumar@linaro.org, ray.huang@amd.com,
+ perry.yuan@amd.com
+References: <20260402102611.16519-1-gautham.shenoy@amd.com>
+ <31d6da20-c0d8-4ccf-90e0-7484e6f07264@amd.com>
 Content-Language: en-US
-In-Reply-To: <CALbr=LYyNh0AwC+8ni6iS=9UiTyVz9+r_gM7M=ohacCv97ujOw@mail.gmail.com>
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <31d6da20-c0d8-4ccf-90e0-7484e6f07264@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 4/2/26 6:42 PM, Gui-Dong Han wrote:
-> On Wed, Mar 18, 2026 at 10:48 AM Gui-Dong Han <hanguidong02@gmail.com> wrote:
->>
->> debugfs_write_file_str() uses standard kfree() to release old strings.
->> Initializing src_node and dst_node with devm_kstrdup() creates a memory
->> management mismatch. If a user writes to these debugfs nodes, the
->> devm-allocated memory is freed via kfree(), leaving a dangling pointer
->> in the device resource list that can lead to a double free.
->>
->> Fix this by using standard kstrdup() instead. Since the interconnect
->> subsystem is strictly built-in and cannot be unloaded as a module, there
->> is no exit path requiring manual cleanup of these strings. The error
->> handling path is also simplified by taking advantage of the fact that
->> kfree(NULL) is a safe no-op.
->>
->> Fixes: 8cc27f5c6dd1 ("interconnect: debugfs: initialize src_node and dst_node to empty strings")
->> Signed-off-by: Gui-Dong Han <hanguidong02@gmail.com>
->> ---
->> I noticed this memory management mismatch while working on similar
->> debugfs string initialization fixes [1] recently.
->>
->> [1] https://lore.kernel.org/driver-core/20260317185920.43387-1-hanguidong02@gmail.com/
+On 4/2/26 6:21 AM, K Prateek Nayak wrote:
+> Hello Gautham,
 > 
-> Hello Georgi,
+> On 4/2/2026 3:56 PM, Gautham R. Shenoy wrote:
+>> Mario Limonciello has led amd-pstate maintenance in recent years and
+>> has done excellent work. The amd-pstate driver is in good hands with
+>> him. I am stepping down as co-maintainer as I move on to other things.
 > 
-> Gentle ping on this patch.
+> Thank you for helping build the strong foundations that amd-pstate rests
+> on. What was once a house of cards is now a fortress thanks to all your
+> hard work!
 > 
-> Just wanted to note that my other related fix has already been accepted [1].
+> _I'm not crying. Just sweating from my eyes_
 > 
-> Could you please let me know if this fell through the cracks, or if
-> you have any feedback or modification requests? I'd be very happy to
-> address them.
+>>
+>> Add K Prateek Nayak as a reviewer. He has been actively contributing
+>> to the driver including preferred-core and ITMT improvements, and has
+>> been helping review amd-pstate patches for a while now.
+>>
+>> Signed-off-by: Gautham R. Shenoy <gautham.shenoy@amd.com>
+> 
+> Acked-by: K Prateek Nayak <kprateek.nayak@amd.com>
+> 
 
-Hello,
+If I don't Ack, you have to stay right?
 
-Thanks for the patch! I applied it already and it's available in today's linux-next.
+But seriously, thank you for all your contributions.
 
-Thanks,
-Georgi
+Acked-by: Mario Limonciello (AMD) <superm1@kernel.org>
