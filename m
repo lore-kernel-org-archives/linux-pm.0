@@ -1,33 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4311E3B9D8D;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4325F3CBE61;
 	Thu,  2 Apr 2026 22:54:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775170492; cv=none; b=qimF0/q5MOruhAcVNChwAztsBG4uNZnKQ5NeymQizLTMhwknAAz1c16mUgwuA2Fa/dmzPNeX+sS3RJ/VYtYXzWtJcddY85cdk5OlHhgU2+lylNUMudl4c1VGj16A9+LceeAu/ghecrgjKAnkG3C3ULDCrzbyB0W68jOK3/Naci8=
+	t=1775170492; cv=none; b=tfS1pQWVeHhhhebkLlx63q9fDTXc+ypoF63YQVy+YI4yn7N/hhDn4L50I+7bdN3e3tqvmg2u1nfPVDoCGhkYZFOJHS3Q1Dhshf80nvAdVcFs/cnTc7uLJs+i+TTWVjanf79uHctDDo1YYbRqj6k460jkLYB97PH31Qr6c0bF+2g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1775170492; c=relaxed/simple;
-	bh=jJZwKH1DTda9QewBiiZyZ8xSpdukrdIOYigr+ioGxuU=;
+	bh=gTJzfjLipQ7RVXKjNF0EoUEwnvSwwbF6J4IG1xgIxDA=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=QL7ZiKaQgp540vNamYNV51XyDKV+gm7XDlRUH7K2iscOxy9wAlW/GCiF5BV3tGGaCCV6IFwqQLNXD2oncrPxn8ZZi3D3H7stJ0V8n4IRkpTZdbHzXL9stM0QOhRf56ILZ/IqQBrJdCssKPTm8gW0i2/uTo8ENYh+/RkRa35xxA8=
+	 MIME-Version:Content-Type; b=VrSkdBinimfGCfontQ7uukZWeLxC1ywPFvF058BHKaZkMS1POnfyCoZGbldLKzkoEzLQ5GCn0tIguaR2IdYCcMtWmemrwO+bhLs4SeYqj0lqV9TgsMQ/59qdv9SESMHi7d1dzG2C4K2OaD745ZYU8ALAQh3/XelVCFtZo4zNx6A=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB059C19424;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D41C3C2BCB0;
 	Thu,  2 Apr 2026 22:54:51 +0000 (UTC)
 Received: by venus (Postfix, from userid 1000)
-	id 2CF801812B5; Fri, 03 Apr 2026 00:54:50 +0200 (CEST)
+	id 4D9EC1812B8; Fri, 03 Apr 2026 00:54:50 +0200 (CEST)
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-To: sre@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
- conor+dt@kernel.org, ulli.kroll@googlemail.com, linusw@kernel.org, 
- Khushal Chitturi <khushalchitturi@gmail.com>
-Cc: daniel.baluta@nxp.com, simona.toaca@nxp.com, d-gole@ti.com, 
- m-chawdhry@ti.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20260330110135.10316-1-khushalchitturi@gmail.com>
-References: <20260330110135.10316-1-khushalchitturi@gmail.com>
-Subject: Re: (subset) [PATCH v3 0/2] dt-bindings: power: reset: cortina:
- Convert to DT schema and rename node
-Message-Id: <177517049015.464276.4179544371896712365.b4-ty@collabora.com>
+To: Casey Connolly <casey.connolly@linaro.org>, 
+ Sebastian Reichel <sre@kernel.org>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
+ David Heidelberg <david@ixit.cz>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, phone-devel@vger.kernel.org
+In-Reply-To: <20260315-smb2-cherry-pick-v1-1-b2710e470490@ixit.cz>
+References: <20260315-smb2-cherry-pick-v1-1-b2710e470490@ixit.cz>
+Subject: Re: [PATCH] power: supply: qcom_smbx: allow disabling charging
+Message-Id: <177517049029.464276.9815426789369592499.b4-ty@collabora.com>
 Date: Fri, 03 Apr 2026 00:54:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -40,15 +39,17 @@ Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
 
-On Mon, 30 Mar 2026 16:31:33 +0530, Khushal Chitturi wrote:
-> Convert the Cortina Systems Gemini Poweroff Controller bindings to
-> DT schema and update corresponding dtsi file with new node name
+On Sun, 15 Mar 2026 20:40:16 +0100, David Heidelberg wrote:
+> Hook up USBIN_CMD_IL so that writing "0" to the status register will
+> disable charging, this is useful to let users limit charging
+> automatically.
+> 
 > 
 
 Applied, thanks!
 
-[1/2] dt-bindings: power: reset: cortina,gemini-power-controller: convert to DT schema
-      commit: 64a97c98f93e344be00d4ff10fef4119973938bd
+[1/1] power: supply: qcom_smbx: allow disabling charging
+      commit: 98d68b74ebb9d5f145960ff7d96ce8e7a39fb965
 
 Best regards,
 -- 
