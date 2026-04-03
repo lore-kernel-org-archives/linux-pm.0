@@ -1,31 +1,31 @@
 Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69FA83CC9FD;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7A003CEBA7;
 	Fri,  3 Apr 2026 16:09:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775232569; cv=none; b=HgIfQr0Yn0SZdleojEpCXMsie0cOKPOd5Irr/JgPe1Jrei2g2Yg/po2abymuRj277yZQvK4ynp2zIGGVvqsqRrfFrWV83uPrWRje4pF7lpog0uI1Zyj7yMJBFLR2N6o5uBovfKa/b9SLm9Xh2sUqSz0ha29nvT8yI3D71WxP5Bs=
+	t=1775232569; cv=none; b=Yb8le7Vbd/toXSxEO46Xd6vg9jU79H6diHYPlMQgAxIPo9VeUE2Iqni61GgGzaSnMOj99urunN1CPZSog/dOB/aW+WSbbHjhGRF8H/8U/HTRq9KcKZiTBfkGKPlNOjQMGF59PaRULfJYltBUIZLqXNMSoRBW6COXDnYdFDvWUV0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1775232569; c=relaxed/simple;
-	bh=Y66wwsu4uCJ5vCnrkH5iYoYFi2DeQ8efaTE8Rt+0Rik=;
+	bh=seZTIBpCrIa88Q5I5ls9lWfgh7ETpuTsfLV3IO6SlWs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hvQm9Qcid89PKCpxwBfNQjyx+zNXZmUocEI6531XiZYec6xg8CqDYy6MyerBzNjbesTBcqrNLyaz//ODw2ZbmBAR/ga745jKc5wfiVDWWziXJuPtuCEHlgkUOMTsYdRTOkB6ORqrnnXXhOOeBtEUrKJ+6fOSEMfZ4hmG93vq3qM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=LnTvwpkM; arc=none smtp.client-ip=65.21.61.41
+	 In-Reply-To:To:Cc; b=bDOKmI5+nCCCpbbC2kcEVEFUHnjbFqoUviOYC6NMnhw+c8sibOV/aBPlLNM4sRj6AmW35FZxUaicljn+VAf2Y4pwTNc5Xlsgc8C4l/7rvAy/dz1GVDrckcMFWxzyTIIyDn9U//hqRg0mddkSQzvRqcfKdSUZChIZQFMweIk7F5w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=B3JVvnab; arc=none smtp.client-ip=65.21.61.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="LnTvwpkM"
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="B3JVvnab"
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1775232561;
-	bh=Y66wwsu4uCJ5vCnrkH5iYoYFi2DeQ8efaTE8Rt+0Rik=;
+	s=courrier-s1; t=1775232562;
+	bh=seZTIBpCrIa88Q5I5ls9lWfgh7ETpuTsfLV3IO6SlWs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=LnTvwpkMx771x6nRMdFlVudAEKFabKfAf9/d0xkkrYpRZWgqam3aViXjyt8shUWDu
-	 GJbBHxwtoybWR+mL8YHwO685pYILWhjVCeAPHoVJ58u3W1HrDLQjsu1ec/yxxVbU/P
-	 Lvd3uyDWUMlk1KZsAO3V7Woudt4xm8Q/DyXamun4=
-Date: Fri, 03 Apr 2026 18:08:39 +0200
-Subject: [PATCH v2 6/8] arm64: dts: amlogic: t7: Add i2c pinctrl node
+	b=B3JVvnabQxDwsh19RiSPZx3E36kxP762zqVO4Yr1cyAAw/Wh6DqhPQTCrMS6VXdwn
+	 Vw+i3C6t6gL6b+vzraNgIBvGaXxcqwjMCc83Mhxi9ojSpTU94YVYwaHkzouqpH+g9d
+	 B4CkzF43RmFfaQSj+K9iAvPj5I/oYp8Rbn5DpAVU=
+Date: Fri, 03 Apr 2026 18:08:40 +0200
+Subject: [PATCH v2 7/8] arm64: dts: amlogic: t7: Add i2c controller node
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +34,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260403-add-mcu-fan-khadas-vim4-v2-6-70536b22439a@aliel.fr>
+Message-Id: <20260403-add-mcu-fan-khadas-vim4-v2-7-70536b22439a@aliel.fr>
 References: <20260403-add-mcu-fan-khadas-vim4-v2-0-70536b22439a@aliel.fr>
 In-Reply-To: <20260403-add-mcu-fan-khadas-vim4-v2-0-70536b22439a@aliel.fr>
 To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
@@ -52,17 +52,20 @@ Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openssh-sha256; t=1775232553; l=835;
+X-Developer-Signature: v=1; a=openssh-sha256; t=1775232553; l=1096;
  i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
- bh=Y66wwsu4uCJ5vCnrkH5iYoYFi2DeQ8efaTE8Rt+0Rik=;
+ bh=seZTIBpCrIa88Q5I5ls9lWfgh7ETpuTsfLV3IO6SlWs=;
  b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
  BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QPsdm36JJcZByW1pADuyo5JpuH9aWQy2RcwjJ+3DsRcX8aJUcMiuWkoxy6rs3MsOcOzR0qTWkVM
- R0IKuLXm1ZAw=
+ QEXDRGAyNmRXaacwFkUGeJSbSzPfxyNgWiYooeL9HDttqmyXS731nvLpUBxymTmcuz/IWYX8mmf
+ S5FdnAmaZWgQ=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
  fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-Add the T7 pinctrl used by the Khadas VIM4 for MCU communication.
+Add the T7 i2c controller node used by the Khadas VIM4
+for MCU communication.
+
+Use amlogic,meson-axg-i2c as fallback compatible.
 
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
@@ -70,26 +73,26 @@ Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
  1 file changed, 10 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-index 7fe72c94ed623..e96fe10b251a0 100644
+index e96fe10b251a0..560c9dce35266 100644
 --- a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
 +++ b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-@@ -376,6 +376,16 @@ mux {
- 					};
- 				};
+@@ -711,6 +711,16 @@ pwm_ao_cd: pwm@60000 {
+ 				status = "disabled";
+ 			};
  
-+				i2c0_ao_d_pins: i2c0-ao-d {
-+					mux {
-+						groups = "i2c0_ao_sck_d",
-+							 "i2c0_ao_sda_d";
-+						function = "i2c0_ao";
-+						bias-disable;
-+						drive-strength-microamp = <3000>;
-+					};
-+				};
++			i2c_m_ao_a: i2c@76000 {
++				compatible = "amlogic,t7-i2c", "amlogic,meson-axg-i2c";
++				reg = <0x0 0x76000 0x0 0x48>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				interrupts = <GIC_SPI 330 IRQ_TYPE_EDGE_RISING>;
++				clocks = <&clkc_periphs CLKID_SYS_I2C_AO_A>;
++				status = "disabled";
++			};
 +
- 				pwm_a_pins: pwm-a {
- 					mux {
- 						groups = "pwm_a";
+ 			sd_emmc_a: mmc@88000 {
+ 				compatible = "amlogic,t7-mmc", "amlogic,meson-axg-mmc";
+ 				reg = <0x0 0x88000 0x0 0x800>;
 
 -- 
 2.49.0
