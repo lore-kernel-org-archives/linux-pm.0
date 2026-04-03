@@ -1,265 +1,182 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DECE9355F43
-	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 05:18:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 359B436DA0A;
+	Fri,  3 Apr 2026 07:36:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775193520; cv=none; b=ZVyjLrlPCs4TNmFiwl0kYcT3u1L5MRG+WG4r1IsVMqj6eFMQKSih+65sqlDQhu3govG5QlDqupHkxOsLGAZZC+P+/qdpjqB5Wt/hNYQrTIbShFo/ymgauWwtdKN6hL6qM8r+3chftXawLzketxxJjROq68SW+yelGnjTTH5LSyg=
+	t=1775201811; cv=none; b=Kq+EL6SrMe2HjBQ6xVpW4VcwUlVLnfQZcEnGokRD2jYo1Cstd5yukPXS9fmL8CMnCCikVc3sUY/+/RT22g1WNXFzx+fh0WRicW6wcUuNRrdTAoRWjt+Uz1xptZYDLmuKftcK1wpLy15ArS+3GzV0iB+GVK8VZIlMib0OTslbjFA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775193520; c=relaxed/simple;
-	bh=yJg1sOVQEM736NXfcqMZZgQbdFPysttXLLbu0nIskBI=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=CYeWVzmeOAmFt1DLGxuS1VZg9BCId7iBvHq0d2BQFNv1cjowOBrb4CHIwcakN1lz02ARccUSwA+a6ZONyim0ALdqVnQ34bfWfhIUdYjvBH9KDKTgGFxLHBlEzrSOn3UDSrDi3CqaulZIWwHWW2+e0XPxB4Klyx3mF+C8Gysz5Mo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=KW36jw8W; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1775201811; c=relaxed/simple;
+	bh=eo26JsyZmpNnH/g5aS7cOZ4Vuwt7sdpIlqkX4T/ccLg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=O4qeSz1PlahaM4pegFe8UOI/7b4QOOEYjRFf7DVwPoPkDQ8ixCA/Dd2RFf9HwwgD2bQ6+MvIatm+DJNDqizsih+3u717zA49o+H/zEFytAVNHcPQCaO8GvGz9joLM6tpQ9cbVh5V/JPlSbBcMEQm6joCW/T5AfqJVeF+5w+dN2M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=PJRvQgb3; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="KW36jw8W"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775193517; x=1806729517;
-  h=date:from:to:cc:subject:message-id;
-  bh=yJg1sOVQEM736NXfcqMZZgQbdFPysttXLLbu0nIskBI=;
-  b=KW36jw8Wkjc1XkQas3uqwg+j1tQdaZYOV45bqpf6KOFzn+mz/nhYV3gr
-   bTEQxWzfpPc+wmvqdpX5dO/2Z7BuKDhvuJI9jsFfsaaTqDUFRceQHMvKV
-   IyHzj3iCI2Zlftr1Ft6itsGxuBCMkyZ7kP55aPtdb2/Rgw4mNd4EEWgh3
-   AMu6eWYosb63QFi+9S66YkA/DAUoeZZ9aCbbe5t6dnfDL5/mvm2gADyD+
-   2qqzkq3It/IV55xniUdtkGOwa8hj4vBZbqJmfQPellGu3aFiZxAaVt2/D
-   RPrDGVk1SQfgLFbumzbgnN7eO9Ypry0H8YEMwA1+nDaJ41VtLjgurSIOu
-   Q==;
-X-CSE-ConnectionGUID: g+q7w+FJS8GQy6syg6jsNQ==
-X-CSE-MsgGUID: ILi42XrHTv2CeuBsUOvY5Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="76228574"
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="76228574"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 22:18:37 -0700
-X-CSE-ConnectionGUID: +Wkv22JPSUWf77ICERk9VA==
-X-CSE-MsgGUID: AFPpBImSTZOdeNI5c3dFKg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="265101032"
-Received: from lkp-server01.sh.intel.com (HELO 064ad336901d) ([10.239.97.150])
-  by orviesa001.jf.intel.com with ESMTP; 02 Apr 2026 22:18:35 -0700
-Received: from kbuild by 064ad336901d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w8WvQ-000000000rB-2B45;
-	Fri, 03 Apr 2026 05:18:32 +0000
-Date: Fri, 03 Apr 2026 13:17:37 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Subject: [amd-pstate:bleeding-edge] BUILD SUCCESS
- 9487e2a00e7b3c6f258c5c99953f470eba6fb61d
-Message-ID: <202604031329.A4JxzM6o-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="PJRvQgb3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1775201808;
+	bh=eo26JsyZmpNnH/g5aS7cOZ4Vuwt7sdpIlqkX4T/ccLg=;
+	h=From:Date:Subject:To:Cc:From;
+	b=PJRvQgb39888FUy9QBDFGCYnTBVFBmAloAzuXlnHjY/DWZ2/IOF/zdpugV3jhzFI6
+	 Dz6qFebHvi7gShP2xfHOKE+b+C2M1kDdajUTrdeTFrxh4OR7P4hqLk9m14ARvCndi9
+	 GfRHoUAYU3VsnRjprV4bg23sSTt6p+vy+m5iaUB+P4slYnutPnyVZHNPi0r6Dpg02n
+	 j2uyCbHeqEMC3pL8lJvBbbAWDhilPetMhbQS5JlRuM4CIaTjL2VOJsnSc7k5M7YtXr
+	 YZBGL5ecJbSsR7SllOlfl1jyULXRjsKQusuL/IV6rAaE3oAk3GXXLaQLz0Tfq/GU64
+	 SXASNsjh6IGiA==
+Received: from [192.168.1.53] (unknown [IPv6:2a01:6243:628:0:43ea:f64d:fc7e:3a2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: mattl)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id D525117E8457;
+	Fri,  3 Apr 2026 09:36:47 +0200 (CEST)
+From: Matthew Leach <matthew.leach@collabora.com>
+Date: Fri, 03 Apr 2026 08:36:30 +0100
+Subject: [PATCH v3] PM: hibernate: call preallocate_image after freeze
+ prepare
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NwQrCMAwG4FeRnq2sGWudJ99DPDRd6gpzlXYUZ
+ ezdzXYSFI9/kv/LLDKlQFmcdrNIVEIOceRQ73fC9Xa8kQwdZwEV6KoGJfuAlEY78Z304UlZ6ha
+ dBaIGdSO490i0Lbh2uXLuQ55iem0vilqn/7SipJKNp1bXBrX37dnFYbAYkz24eBerWOBT0b8UY
+ MVrU5nuCGjwS1mW5Q2tZAPe/AAAAA==
+X-Change-ID: 20260321-hibernation-fixes-69bca2ee5b65
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+ Mario Limonciello <mario.limonciello@amd.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ YoungJun Park <youngjun.park@lge.com>, kernel@collabora.com, 
+ Matthew Leach <matthew.leach@collabora.com>
+X-Mailer: b4 0.15.1
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-branch HEAD: 9487e2a00e7b3c6f258c5c99953f470eba6fb61d  MAINTAINERS: amd-pstate: Step down as maintainer, add Prateek as reviewer
+Certain drivers release resources (pinned pages, etc.) into system
+memory during the prepare freeze PM op, making them swappable.
+Currently, hibernate_preallocate_memory is called before prepare freeze,
+so those drivers have no opportunity to release resources first. If a
+driver is holding a large amount of unswappable system RAM, this can
+cause hibernate_preallocate_memory to fail.
 
-elapsed time: 747m
+Move the call to hibernate_preallocate_memory after prepare freeze.
+According to the documentation for the prepare callback, devices should
+be left in a usable state, so storage drivers should still be able to
+service I/O requests. This allows drivers to release unswappable
+resources prior to preallocation, so they can be swapped out through
+hibernate_preallocate_memory's reclaim path. Also remove
+shrink_shmem_memory since hibernate_preallocate_memory will have
+reclaimed enough memory for the hibernation image.
 
-configs tested: 188
-configs skipped: 2
+Signed-off-by: Matthew Leach <matthew.leach@collabora.com>
+---
+Changes in v3:
+- Changed error label names to 'Thaw' and 'Complete'.
+- Link to v2: https://patch.msgid.link/20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Changes in v2:
+- Removed shrink_shmem_memory.
+- Fixed missing call to dpm_prepare in error path.
+- Link to v1: https://lore.kernel.org/r/20260321-hibernation-fixes-v1-1-5fe9637b6ff9@collabora.com
+---
+ kernel/power/hibernate.c | 46 +++++++++-------------------------------------
+ 1 file changed, 9 insertions(+), 37 deletions(-)
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260403    gcc-10.5.0
-arc                   randconfig-002-20260403    gcc-10.5.0
-arm                               allnoconfig    clang-23
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    gcc-15.2.0
-arm                         orion5x_defconfig    clang-23
-arm                   randconfig-001-20260403    gcc-10.5.0
-arm                   randconfig-002-20260403    gcc-10.5.0
-arm                   randconfig-003-20260403    gcc-10.5.0
-arm                   randconfig-004-20260403    gcc-10.5.0
-arm                         vf610m4_defconfig    gcc-15.2.0
-arm64                            allmodconfig    clang-19
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260403    gcc-13.4.0
-arm64                 randconfig-002-20260403    gcc-13.4.0
-arm64                 randconfig-003-20260403    gcc-13.4.0
-arm64                 randconfig-004-20260403    gcc-13.4.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260403    gcc-13.4.0
-csky                  randconfig-002-20260403    gcc-13.4.0
-hexagon                          allmodconfig    clang-17
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    clang-23
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260403    clang-23
-hexagon               randconfig-002-20260403    clang-23
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386        buildonly-randconfig-001-20260403    gcc-14
-i386        buildonly-randconfig-002-20260403    gcc-14
-i386        buildonly-randconfig-003-20260403    gcc-14
-i386        buildonly-randconfig-004-20260403    gcc-14
-i386        buildonly-randconfig-005-20260403    gcc-14
-i386        buildonly-randconfig-006-20260403    gcc-14
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260403    gcc-14
-i386                  randconfig-002-20260403    gcc-14
-i386                  randconfig-003-20260403    gcc-14
-i386                  randconfig-004-20260403    gcc-14
-i386                  randconfig-005-20260403    gcc-14
-i386                  randconfig-006-20260403    gcc-14
-i386                  randconfig-007-20260403    gcc-14
-i386                  randconfig-011-20260403    clang-20
-i386                  randconfig-012-20260403    clang-20
-i386                  randconfig-013-20260403    clang-20
-i386                  randconfig-014-20260403    clang-20
-i386                  randconfig-015-20260403    clang-20
-i386                  randconfig-016-20260403    clang-20
-i386                  randconfig-017-20260403    clang-20
-loongarch                        allmodconfig    clang-19
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260403    clang-23
-loongarch             randconfig-002-20260403    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260403    clang-23
-nios2                 randconfig-002-20260403    clang-23
-openrisc                         allmodconfig    clang-23
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-19
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260403    gcc-10.5.0
-parisc                randconfig-002-20260403    gcc-10.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc               randconfig-001-20260403    gcc-10.5.0
-powerpc               randconfig-002-20260403    gcc-10.5.0
-powerpc                     tqm5200_defconfig    gcc-15.2.0
-powerpc64             randconfig-001-20260403    gcc-10.5.0
-powerpc64             randconfig-002-20260403    gcc-10.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260403    clang-23
-riscv                 randconfig-002-20260403    clang-23
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260403    clang-23
-s390                  randconfig-002-20260403    clang-23
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-19
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sh                     magicpanelr2_defconfig    gcc-15.2.0
-sh                    randconfig-001-20260403    clang-23
-sh                    randconfig-002-20260403    clang-23
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260403    clang-20
-sparc                 randconfig-002-20260403    clang-20
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260403    clang-20
-sparc64               randconfig-002-20260403    clang-20
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260403    clang-20
-um                    randconfig-002-20260403    clang-20
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260403    clang-20
-x86_64      buildonly-randconfig-002-20260403    clang-20
-x86_64      buildonly-randconfig-003-20260403    clang-20
-x86_64      buildonly-randconfig-004-20260403    clang-20
-x86_64      buildonly-randconfig-005-20260403    clang-20
-x86_64      buildonly-randconfig-006-20260403    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260403    clang-20
-x86_64                randconfig-002-20260403    clang-20
-x86_64                randconfig-003-20260403    clang-20
-x86_64                randconfig-004-20260403    clang-20
-x86_64                randconfig-005-20260403    clang-20
-x86_64                randconfig-006-20260403    clang-20
-x86_64                randconfig-011-20260403    gcc-14
-x86_64                randconfig-012-20260403    gcc-14
-x86_64                randconfig-013-20260403    gcc-14
-x86_64                randconfig-014-20260403    gcc-14
-x86_64                randconfig-015-20260403    gcc-14
-x86_64                randconfig-016-20260403    gcc-14
-x86_64                randconfig-071-20260403    gcc-14
-x86_64                randconfig-072-20260403    gcc-14
-x86_64                randconfig-073-20260403    gcc-14
-x86_64                randconfig-074-20260403    gcc-14
-x86_64                randconfig-075-20260403    gcc-14
-x86_64                randconfig-076-20260403    gcc-14
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    clang-23
-xtensa                randconfig-001-20260403    clang-20
-xtensa                randconfig-002-20260403    clang-20
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index af8d07bafe02..d2479c69d71a 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -392,23 +392,6 @@ static int create_image(int platform_mode)
+ 	return error;
+ }
+ 
+-static void shrink_shmem_memory(void)
+-{
+-	struct sysinfo info;
+-	unsigned long nr_shmem_pages, nr_freed_pages;
+-
+-	si_meminfo(&info);
+-	nr_shmem_pages = info.sharedram; /* current page count used for shmem */
+-	/*
+-	 * The intent is to reclaim all shmem pages. Though shrink_all_memory() can
+-	 * only reclaim about half of them, it's enough for creating the hibernation
+-	 * image.
+-	 */
+-	nr_freed_pages = shrink_all_memory(nr_shmem_pages);
+-	pr_debug("requested to reclaim %lu shmem pages, actually freed %lu pages\n",
+-			nr_shmem_pages, nr_freed_pages);
+-}
+-
+ /**
+  * hibernation_snapshot - Quiesce devices and create a hibernation image.
+  * @platform_mode: If set, use platform driver to prepare for the transition.
+@@ -425,14 +408,9 @@ int hibernation_snapshot(int platform_mode)
+ 	if (error)
+ 		goto Close;
+ 
+-	/* Preallocate image memory before shutting down devices. */
+-	error = hibernate_preallocate_memory();
+-	if (error)
+-		goto Close;
+-
+ 	error = freeze_kernel_threads();
+ 	if (error)
+-		goto Cleanup;
++		goto Close;
+ 
+ 	if (hibernation_test(TEST_FREEZER)) {
+ 
+@@ -445,19 +423,13 @@ int hibernation_snapshot(int platform_mode)
+ 	}
+ 
+ 	error = dpm_prepare(PMSG_FREEZE);
+-	if (error) {
+-		dpm_complete(PMSG_RECOVER);
+-		goto Thaw;
+-	}
++	if (error)
++		goto Complete;
+ 
+-	/*
+-	 * Device drivers may move lots of data to shmem in dpm_prepare(). The shmem
+-	 * pages will use lots of system memory, causing hibernation image creation
+-	 * fail due to insufficient free memory.
+-	 * This call is to force flush the shmem pages to swap disk and reclaim
+-	 * the system memory so that image creation can succeed.
+-	 */
+-	shrink_shmem_memory();
++	/* Preallocate image memory before shutting down devices. */
++	error = hibernate_preallocate_memory();
++	if (error)
++		goto Complete;
+ 
+ 	console_suspend_all();
+ 	pm_restrict_gfp_mask();
+@@ -492,10 +464,10 @@ int hibernation_snapshot(int platform_mode)
+ 	platform_end(platform_mode);
+ 	return error;
+ 
++ Complete:
++	dpm_complete(PMSG_RECOVER);
+  Thaw:
+ 	thaw_kernel_threads();
+- Cleanup:
+-	swsusp_free();
+ 	goto Close;
+ }
+ 
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+---
+base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
+change-id: 20260321-hibernation-fixes-69bca2ee5b65
+
+Best regards,
+--  
+Matt
+
