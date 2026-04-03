@@ -1,396 +1,321 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A072F3D412B
-	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 17:34:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F09723590C3
+	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 17:45:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775237649; cv=none; b=hI/UxgNDGkJRqFmVo7JC0D5hkEJoaQy6GvSxqFbv8YKeOgrzSglMXxGXNi0/ud7whwjUKJ6eYIQ+OyhC01Q1b+JGb2+1O4W64QdF+/xPH8v0BoqAks8iMGeltNtsuSPB/zQlPsq2wwhj3zzSO8o5tNKDtNYwmchH7FrrFfqqv+k=
+	t=1775238346; cv=none; b=CpWP3XSHj4k9MhoVylSW0RhPmjqZN1WN3qUrnBEH/TBC+oAE7RZuAnSmnDfIpR8JPf9yFMn8CxPx/tWqMCX3c4uRGo2kZBtx7Heg9UQFxDZeIQgl5B19m7oAxiJyFdPulBXRvbJ4w0G+g+SM+wsCXo6jvHSfmEtgmlKkY9CA8U8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775237649; c=relaxed/simple;
-	bh=BswqjKSE0ZPr7l8CqajQN/6PIFNVHGX3Hga0DwKabto=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ddSskkYOuK4RGL6SwB0SWVC6lXd9SK61mlVl1dSL9RTjkdczZf0g76bB6vYaRrdEnx2gGui92kMWthwQK9rCEXzeOgC+YdRttDxlE8YZ/tYmcltfvOee/zKy64URcuNwE97CknTvLFgSZIFPQkK2OsXC5uw6p+ixXwRMUR7lDTc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gTZpm2eh; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=O3MMt8d/; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1775238346; c=relaxed/simple;
+	bh=793ilWMo0AtuO5x03/HxCDAGDn8y9fcCAsLObzmOWQo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XFUsmNjPvM6WrccTqfQA23fpGtyNSa4wweX07OXG1eQax4WcK/iSUC4INKEjHmi7yDxfmDnL3USx/OgusjvqPkmR6LNPnZMcdKzBgxp+POtKH8DIx9zoc42E5P32YfKk/Yrx4oXFirnckAyob90+JVZ5IvFabiT7bDuXYNmMxV0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=KFRVUBvZ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=d/WuHH5l; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gTZpm2eh";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="O3MMt8d/"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 633Fuxgo258380
-	for <linux-pm@vger.kernel.org>; Fri, 3 Apr 2026 17:34:05 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="KFRVUBvZ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="d/WuHH5l"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 633FDNYG3449844
+	for <linux-pm@vger.kernel.org>; Fri, 3 Apr 2026 17:45:44 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	cS4DEz8Mt35qtFStKmkL4fllgbCdtEZk/8Dp6lQ4xAE=; b=gTZpm2ehytKDxwEr
-	ERNZ7dJt6s6UAnDyeEs9htoGSCKZBNd5Xhmakm3InV9G+pu91OrlBv7QvdRYj7zj
-	iehK5+thhtYXXkmEgZ1KUgPsNpr0eOBE+9Fk34xegN2BnFfFGZlCGZhLu1Ml1Wl5
-	fNZRiQjmAnQDVnkA9d5FpJ+uueZnKA0SQXuEEaULgrQM8wdRRmPeeZlA0TglFtUe
-	s5RvKc49bDNZmWbSmLrL++6VFc6DT7e8g9aJ2qSIj2dJU0ympXj7AyTVfJ1KYLaH
-	RYCu4HinXTfWOgiYe3fqnl/ejGjfgzsRvve4aUmb0Jn9gdZhj6CeRWzipg9YeVYo
-	epSvuQ==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dagn2096e-1
+	BcRbm4HgwKmiNI6qxpLJK0dsTMaJBwVAMn+5K7yoUOs=; b=KFRVUBvZOe2C0zgk
+	e8tSDQsHTE3yxdNVLr4Csc4+WzEaw/yFbEGpPxRr+o7SdiPO2uIIxWKQCeYai7f1
+	8VOMvMRjoCwtBIUerLOoj9EIwHjuwwSTCOM+n8NEBK9k2LpOXYsnYFEq4UVeHXgo
+	zTddW1L4sMsncNekJEOFJRldvhmP9CZ5P+LmbXbOzdhhL3C4+h55g2JlKYGkLV/D
+	GAMkmb1gg+b5j3buQe28PQ4EOlv1T0oEU6s97UklIjxIouG54erk5HZ22DEMRwpt
+	Jrec8/3gieGPqSQDQx6j5q9oY/aGigao8fza4VtqinJco7GEd5+5YKwuRqfdVzE4
+	EOH/Zw==
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4da8u59spd-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 17:34:05 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-c6e7f45e2ddso2882521a12.1
-        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 10:34:05 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 17:45:43 +0000 (GMT)
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-c76b6db8bb2so999629a12.3
+        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 10:45:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1775237644; x=1775842444; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=cS4DEz8Mt35qtFStKmkL4fllgbCdtEZk/8Dp6lQ4xAE=;
-        b=O3MMt8d/vy2HPCUtDKYtgmbJAeLNWr3g/ldpNHYPSks2sjDf7pgEIPV7+9yTEYszfg
-         JpG/Lf84EzIGHzEVGZFjDrgqX7UKAxV4eLY6sjNsquGQIUwzrtD+taFm9L7sY0xpIe7x
-         L/+1yBd+yZhiZacwFS99XeTJwB2vy+VXTwhyMsoYivkooA8Foln5EC0HBFzZnD87p8ba
-         NJC6oDrjLBpfT9JTySyX4K6J89KbL14dqi6iox6To7QwaLrhVzt/F4NQ00qPK1i+V7EC
-         WZYfdhN2GPZ4TOHkpEnW36bpzP5R6yyGGWf4RJqDZc9ct/BkTD56yo6gAvRaBsNjGUvD
-         OVBQ==
+        d=oss.qualcomm.com; s=google; t=1775238343; x=1775843143; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=BcRbm4HgwKmiNI6qxpLJK0dsTMaJBwVAMn+5K7yoUOs=;
+        b=d/WuHH5lFxa8ac31yVvkE1mnCTTbt+vrZMSrmCXUiQq566hCa3A4uVvz4SPwS5sQHR
+         7uo2++yErR0dd1xrQk+P+kEF1LWOZSwWaen6qRTFo/5A6KY66qdef+2KUEYnvZiyxfrV
+         9PFQ0sntFFrEWVWDy+Xpess6qbBMoWdJUrbmbsEMwMGH/vmQZEmKjumthP1OiVMy2Khn
+         6OmBhtjSwNrCzL+HbPB2kxXoe2ZVRJOvXbqNweWIqduUXD6ifcAsOc1Dn/ALFmdBwKFA
+         wQ3XLfm6BNDlfJVgIAUHeCo+dH3hUJWP8oBx25Kj/Ugwg0IojjP8h80ebxB7Jp0L0XuF
+         JdOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775237644; x=1775842444;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=cS4DEz8Mt35qtFStKmkL4fllgbCdtEZk/8Dp6lQ4xAE=;
-        b=lWpC2AOR2YG/kxsjJ1Zh+L6PN89MEUJyPIe7mZpmToIDl/UiElnrH55asfjGzXWnIf
-         Il+NIOFMMXxt+mT/RSHMaH2LMMdFuJZOvL5ehaz3uHRGwXo91Shwzi1d2V7kd5Wt8G9J
-         BbQZw0aBsbiR6g4ZtpqnUCwUuMcFajJYv1BVRtDvwZ866oHxVXjMAmyNuUBFEihDzZzm
-         lu9r26n+Vw9jHqjVO6BGzQTvBehRJOc3Yh1n86qQGMi/B/BhOFFyRynNGmEA8JssbYhX
-         pi5tJzpm9LOY3ez8b36q4iHIYGMpsFuVpS3XxfczuzXrc7BLZJwYEYJpdqWAlj3qw5qb
-         NLww==
-X-Gm-Message-State: AOJu0YwB/C80hAvFToBhUdKoOuuB212rspewXNeCFkgSwovMMwNENnMK
-	33Pg9l0sZAKp9GO+IbLjpj89P8CTC1YaIrTShJDn95MJWjJ9eJyrKQzeK6xn5WVWnMbIwU1LbsO
-	qTaKULwcC5VjBSIDTwfP7M9h6uWC45KfDx2dBkWpOC/RdkAoyWHqkNNJV6mU6bQ==
-X-Gm-Gg: AeBDiesgL4Z4i50WRC2LDj9eaN0h2odIUzIDPaibNTNUq/8QuytznaDlWXIihjMJ99f
-	QREH6gTBfY9UPK4dNpeUqALCqkrtL6k+ldUVP+lqQCRhrUc0YifktjH1xaYK3dc5aoNiZx+83T9
-	vXr7EEw4ukd6Vz6uw4l1qB3YH5L66X4hUg35crF/+xpIjh/BJCLiC1hT+a7M7WwZXZFSRRKwYUt
-	d6iIyFIgvXQHo6T52DZMXhu3PP5JQtuGR4ApqNe94pZ6P+7+VwJy3eVxkTq7kBvY+kcKSzUEI01
-	ylgAQWpLZR9QsvuhzdzM+BHu3ncORLz0E0DHX1Z9jltYjsx8ul++NHezVImgHMTzOTAVdFXgvS9
-	Z7QE4pXMqvVyri3S/YkZljwnLbDfsWE2Ojcx07MCXWDDzDfI/zUJao2bc
-X-Received: by 2002:a05:6a00:aa85:b0:829:6f9f:ea44 with SMTP id d2e1a72fcca58-82d0da8ba21mr3650316b3a.17.1775237644419;
-        Fri, 03 Apr 2026 10:34:04 -0700 (PDT)
-X-Received: by 2002:a05:6a00:aa85:b0:829:6f9f:ea44 with SMTP id d2e1a72fcca58-82d0da8ba21mr3650271b3a.17.1775237643823;
-        Fri, 03 Apr 2026 10:34:03 -0700 (PDT)
-Received: from hu-krichai-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9b3e169sm6359125b3a.18.2026.04.03.10.33.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Apr 2026 10:34:03 -0700 (PDT)
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Date: Fri, 03 Apr 2026 23:03:35 +0530
-Subject: [PATCH v9 3/3] PCI: Add support for PCIe WAKE# interrupt
+        d=1e100.net; s=20251104; t=1775238343; x=1775843143;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BcRbm4HgwKmiNI6qxpLJK0dsTMaJBwVAMn+5K7yoUOs=;
+        b=SWEHhrmvtttJNcisGZnL8BZP34WO2FQH90VtK/VQ9kxl0pRz1Nqf+7PW/A9HGcxrZl
+         FLGhzzU9fGKB8GHGqeJNzLCzhO+uxY+jtvmnJrXFDeDusWN9aAa/G+YjkPV9QlxPZyAO
+         r0QaSODAvL1+j/98UpzZ9UMTcnTZHw6Qm7Kb4hIusMlaJGJhV4qbiwVrPePsnWb0EeuT
+         FHLkWQkJVMEntoDqc4r6WiuvUbzWGhLqo0RySc1AbN4h3IGFfTEI8coNKfUl3Z9CNp7N
+         B+QB0FupITSwBVVnQQQaUFcKSeeQc3S4mkOh6aBh5Mnhgqw+5GCSNOJ/1vqbaTrt9ixs
+         BXXg==
+X-Forwarded-Encrypted: i=1; AJvYcCVmqynAu2XltODBftia61Z4DhRWzXcBmcS8vAYnV5rfkS6JuJtMdvTmNbPNTf3lrB0Mb78ZkTWaEg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxlsjkuP+CnBsPRsrlXnp6Tm8GAxj/g8FCebqNjDl1ITZTidvVJ
+	brv5Zti/gY+QVdqXzoTAyuP1nk1BoldqXt1L/zgXkMeF1jPfhAQO1xZETkxXkNxFN52ka3ETaXt
+	QF/g5c8pqTwHd2KmpUWOT8meOpYrE461Q8ss3rBzzjRq8Xtnh30iH7ccDqRK04A==
+X-Gm-Gg: ATEYQzxKeAyxrsFoKpoO4lSotgtWQXHMtJDyI8zCtm7SUDh8E+k3FTnGh7fxCQKw3+F
+	JkHuDxa4EcaYRK4VTglBnSwSt/WDTvu7z4QdRf8K+OtS7qlXV3SBuHmNFJHTw1mxz8Cud6J1/qo
+	KSufPFfwWjFilyoZsfuBVcqvdTdffoY5hBhqfHfbkUix5/qOvKPJSlEKDxlD7y8T+Q1L7x756Ir
+	bEzQX8pRdJCKLlU2/mlUyFoezPoRlKbYpHiq92uRdnUSB7ZNFEDBSRE2fmFy3GuKf4zOlES2rD2
+	EtSnaCNiZd9JCTozmt66W3hx/m2EdnYPthfFXRM4M9YhbyWw+pY0hBQvZVcclKFvehVcvKNu6rB
+	I+UC/0r11iKgcyvmZ0WbmCxGMg0Wg91ymDCT6Taak5f4S77UqJaUCNPLZ
+X-Received: by 2002:a05:6a21:9995:b0:39c:4ca1:345b with SMTP id adf61e73a8af0-39f2efadfc1mr3753185637.38.1775238342813;
+        Fri, 03 Apr 2026 10:45:42 -0700 (PDT)
+X-Received: by 2002:a05:6a21:9995:b0:39c:4ca1:345b with SMTP id adf61e73a8af0-39f2efadfc1mr3753157637.38.1775238342245;
+        Fri, 03 Apr 2026 10:45:42 -0700 (PDT)
+Received: from [192.168.29.31] ([49.43.227.38])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c76c6563597sm6988128a12.16.2026.04.03.10.45.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Apr 2026 10:45:41 -0700 (PDT)
+Message-ID: <547c006b-231c-430c-a69e-f80334c4f81f@oss.qualcomm.com>
+Date: Fri, 3 Apr 2026 23:15:32 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v20 06/10] power: reset: Add psci-reboot-mode driver
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Bjorn Andersson <andersson@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
+        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Andy Yan
+ <andy.yan@rock-chips.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        John Stultz
+ <john.stultz@linaro.org>,
+        Moritz Fischer <moritz.fischer@ettus.com>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Sudeep Holla
+ <sudeep.holla@kernel.org>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+        Andre Draszik <andre.draszik@linaro.org>,
+        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, Srinivas Kandagatla <srini@kernel.org>
+References: <20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com>
+ <20260304-arm-psci-system_reset2-vendor-reboots-v20-6-cf7d346b8372@oss.qualcomm.com>
+ <acaMPgRALnoUIHMC@lpieralisi>
+ <93a78bc2-4fd1-41bd-bf4a-b433b06fc218@oss.qualcomm.com>
+ <ac0trUGsRBLPS+ux@lpieralisi>
+ <da6f4566-a719-409b-80a9-40ca89e3e721@oss.qualcomm.com>
+ <ac/hru3IIiU0+Lp9@lpieralisi>
+Content-Language: en-US
+From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+In-Reply-To: <ac/hru3IIiU0+Lp9@lpieralisi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260403-wakeirq_support-v9-3-1cbecf3b58d7@oss.qualcomm.com>
-References: <20260403-wakeirq_support-v9-0-1cbecf3b58d7@oss.qualcomm.com>
-In-Reply-To: <20260403-wakeirq_support-v9-0-1cbecf3b58d7@oss.qualcomm.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-        Pavel Machek <pavel@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Bartosz Golaszewski <brgl@bgdev.pl>, Linus Walleij <linusw@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>, Rob Herring <robh@kernel.org>,
-        Saravana Kannan <saravanak@kernel.org>,
-        Linus Walleij <linusw@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-gpio@vger.kernel.org,
-        quic_vbadigan@quicinc.com, sherry.sun@nxp.com,
-        driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-        Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1775237619; l=9559;
- i=krishna.chundru@oss.qualcomm.com; s=20230907; h=from:subject:message-id;
- bh=BswqjKSE0ZPr7l8CqajQN/6PIFNVHGX3Hga0DwKabto=;
- b=pVJaDEIVyCYsRjLoOdV+ozcPmLpciI51NBeTwG4tfB8XVBRF6FRa0ehgQDSNsUjBcEXHth3ar
- s0c9kgZp6wJBV95/lEUubAriMtA0xndknzRipBvddEmPXjcRFTRhmT8
-X-Developer-Key: i=krishna.chundru@oss.qualcomm.com; a=ed25519;
- pk=10CL2pdAKFyzyOHbfSWHCD0X0my7CXxj8gJScmn1FAg=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE1NiBTYWx0ZWRfX3VpNI5DRHhkq
- v7HYULK8m1aFNxTJXAALsn4sLPrrTcDj5Y3R4pSv0YIidev+g0r2yaqmrSwiqPwQDirxwSq7Tyh
- iCB3MPFZBFSZNeVHFMp70mSsKr4AvxpCc3eP7hv5OcLkfaQHUPlBfU8y0Ok3Qfu9oBYCkJGAe0R
- 0e0CsUrlD8elZ1lbQoTNZw7/HnfJ8+FybPTckdK4yrapFdSqWFfFXi15xqcEDayRkgGSF9fLWz4
- VbOvUiTYglVtVlFulvGd3pQJjSTuT+v+WRRnp249R2EKm8G51uiNYXeNgfvd+Nr1Od1zg0BKSnn
- vv6W3/YlilgV72iRA9YsO8VVIkywgSqOEXN7/KavdLUG5SeGA66QRbbNCaSaJoh2a9LfuSqLJUG
- V/WWh9W0CnPZHl38udjJToxxjRd8PQKriib7sxKp2uMPCJBmMu4Y5mpYcZ6eNlu5/sF104g2YIw
- QDisg+gzg6ktxJnrK6w==
-X-Authority-Analysis: v=2.4 cv=Cc4FJbrl c=1 sm=1 tr=0 ts=69cffa0d cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE1OCBTYWx0ZWRfX9RYPsbO/1VRe
+ 1aMmUtHjOGvxU8OJu7N4pkQKXyhdhFBmeqQDqVyX8O1XPW/+xYKyAhi1MjO4L7w3octbPr7WNYA
+ +BPD+viCWYtAiaK2I2IfSQhs1O6kNHJNBiGqtC928EmQ0lzSJrYfrxtgm3bifOwCnQ2JI7yVixS
+ SiNUITRQMgCk0V7+UvM5pSOK0hqZnkac/4GDjZyovBELTFDzDVr4xgx4aMNvOaIlnl3KkJkvUga
+ 9gBe8TXNssC97ZUypwb9yGryH5EjcQvCY1yJbkSQXOUkSiorXY+iNXU7t9kXVDerPezIpxWdZjI
+ nm6/wtUXuz+5eTtE1NseGxvDUOpKWFhKkg0dXgLBfcqzZXwTjWbkClSL032EM2ZFu9hH6WSaEVK
+ Fumy3ZWjf8WUPoi9hDvgeSgxc05yRKJPFgPL62049T9Vfm0Uj6Vr9KxhTekU2RUeRn+PbM0hAK3
+ 5sR7ZILSL2XcXIOpMVg==
+X-Authority-Analysis: v=2.4 cv=W5g1lBWk c=1 sm=1 tr=0 ts=69cffcc7 cx=c_pps
+ a=rz3CxIlbcmazkYymdCej/Q==:117 a=2dos1RgzJhmu1+008kacPQ==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=NEAV23lmAAAA:8 a=KKAkSRfTAAAA:8
- a=XVdArZcsv8hm62BSzCUA:9 a=QEXdDO2ut3YA:10 a=3WC7DwWrALyhR5TkjVHa:22
- a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-GUID: wVMbsUSglBZ-dbxr-7LXAERo0-7rSRTZ
-X-Proofpoint-ORIG-GUID: wVMbsUSglBZ-dbxr-7LXAERo0-7rSRTZ
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=F0Qtw4M1lXcpx3oWCRwA:9 a=QEXdDO2ut3YA:10 a=bFCP_H2QrGi7Okbo017w:22
+X-Proofpoint-ORIG-GUID: mnoj_ru_ptbB-gOi5wiWWpqxbPakxt12
+X-Proofpoint-GUID: mnoj_ru_ptbB-gOi5wiWWpqxbPakxt12
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-03_05,2026-04-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 impostorscore=0 suspectscore=0
- lowpriorityscore=0 bulkscore=0 phishscore=0 spamscore=0 clxscore=1015
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2604030156
+ bulkscore=0 suspectscore=0 clxscore=1015 phishscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 adultscore=0 spamscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604030158
 
-According to the PCI Express specification (PCIe r7.0, Section 5.3.3.2),
-two link wakeup mechanisms are defined: Beacon and WAKE#. Beacon is a
-hardware-only mechanism and is invisible to software (PCIe r7.0,
-Section 4.2.7.8.1). This change adds support for the WAKE# mechanism in
-the PCI core.
 
-According to the PCIe specification, multiple WAKE# signals can exist in
-a system or each component in the hierarchy could share a single WAKE#
-signal. In configurations involving a PCIe switch, each downstream port
-(DSP) of the switch may be connected to a separate WAKE# line, allowing
-each endpoint to signal WAKE# independently. From figure 5.4 in sec
-5.3.3.2, WAKE# can also be terminated at the switch itself. To support
-this, the WAKE# should be described in the device tree node of the
-endpoint/bridge. If all endpoints share a single WAKE# line, then each
-endpoint node should describe the same WAKE# signal or a single WAKE# in
-the Root Port node.
 
-In pci_device_add(), PCI framework will search for the WAKE# in device
-node, If not found, it searches in its upstream port only if upstream port
-is Root Port. Once found, register for the wake IRQ in shared mode, as the
-WAKE# may be shared among multiple endpoints.
+On 03-04-2026 21:20, Lorenzo Pieralisi wrote:
+> On Fri, Apr 03, 2026 at 12:05:27AM +0530, Shivendra Pratap wrote:
+>>
+>>
+>> On 01-04-2026 20:07, Lorenzo Pieralisi wrote:
+>>> On Tue, Mar 31, 2026 at 11:30:09PM +0530, Shivendra Pratap wrote:
+>>>>
+>>>>
+>>>> On 27-03-2026 19:25, Lorenzo Pieralisi wrote:
+>>>>> On Wed, Mar 04, 2026 at 11:33:06PM +0530, Shivendra Pratap wrote:
+>>>>>> PSCI supports different types of resets like COLD reset, ARCH WARM
+>>
+>> [snip..]
+>>
+>>>>>> + * Predefined reboot-modes are defined as per the values
+>>>>>> + * of enum reboot_mode defined in the kernel: reboot.c.
+>>>>>> + */
+>>>>>> +static struct mode_info psci_resets[] = {
+>>>>>> +	{ .mode = "warm", .magic = REBOOT_WARM},
+>>>>>> +	{ .mode = "soft", .magic = REBOOT_SOFT},
+>>>>>> +	{ .mode = "cold", .magic = REBOOT_COLD},
+>>>
+>>> These strings match the command userspace issue right ? I think that we
+>>> should make them match the corresponding PSCI reset types, the list above
+>>> maps command to reboot_mode values and those can belong to any reboot
+>>> mode driver to be honest they don't make much sense in a PSCI reboot
+>>> mode driver only.
+>>>
+>>> It is a question for everyone here: would it make sense to make these
+>>> predefined resets a set of strings, eg:
+>>>
+>>> psci-system-reset
+>>> psci-system-reset2-arch-warm-reset
+>>>
+>>> and then vendor resets:
+>>>
+>>> psci-system-reset2-vendor-reset
+>>
+>> Can you share bit more details on this? We are already defining the string
+>> from userspace in the struct - eg: ".mode = "warm".
+> 
+> "warm","soft","cold" are not strictly speaking PSCI concepts and mean nothing
+> well defined to user space and even if they did, they would not belong in
+> the PSCI reboot mode driver but in generic code.
+> 
+> Spelling out what a reset is might help instead, again, this is just my
+> opinion, I don't know how the semantics of resets have been handled thus
+> far.
+> 
+> If userspace issues a LINUX_REBOOT_CMD_RESTART2 with arg, say,
+> "psci-system-reset2-arch-warm-reset" it is pretty clear what it wants
+> to do in PSCI.
 
-dev_pm_set_dedicated_shared_wake_irq() associates a wakeup IRQ with a
-device and requests it, but the PM core keeps the IRQ disabled by default.
-The IRQ is enabled only when the device is permitted to wake the system,
-i.e. during system suspend and after runtime suspend, and only when device
-wakeup is enabled.
+ok. got it.
 
-When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume() to
-bring the device back to an active power state, such as transitioning from
-D3cold to D0. Once the device is active and the link is usable, the
-endpoint may generate a PME, which is then handled by the PCI core through
-PME polling or the PCIe PME service driver to complete the wakeup of the
-endpoint.
+so it predef-modes.
 
-WAKE# is added in dts schema and merged based on below links.
+reboot psci-system-reset2-arch-warm-reset =>goes for => ARCH WARM RESET.
+etc..
 
-Link: https://lore.kernel.org/all/20250515090517.3506772-1-krishna.chundru@oss.qualcomm.com/
-Link: https://github.com/devicetree-org/dt-schema/pull/170
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
----
- drivers/pci/of.c       | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.c      | 10 +++++++
- drivers/pci/pci.h      |  2 ++
- drivers/pci/probe.c    |  2 ++
- drivers/pci/remove.c   |  1 +
- include/linux/of_pci.h |  4 +++
- include/linux/pci.h    |  2 ++
- 7 files changed, 95 insertions(+)
+> 
+> Again, it is a suggestion, comments welcome.
+> 
+>> yes we can move away from enum reboot_mode and use custom psci defines one -
+>> Ack.
+>>
+>>>
+>>
+>> [snip ..]
+>>
+>>>>>> +
+>>>>>> +/*
+>>>>>> + * arg1 is reset_type(Low 32 bit of magic).
+>>>>>> + * arg2 is cookie(High 32 bit of magic).
+>>>>>> + * If reset_type is 0, cookie will be used to decide the reset command.
+>>>>>> + */
+>>>>>> +static int psci_reboot_mode_write(struct reboot_mode_driver *reboot, u64 magic)
+>>>>>> +{
+>>>>>> +	u32 reset_type = REBOOT_MODE_ARG1(magic);
+>>>>>> +	u32 cookie = REBOOT_MODE_ARG2(magic);
+>>>>>> +
+>>>>>> +	if (reset_type == 0) {
+>>>>>> +		if (cookie == REBOOT_WARM || cookie == REBOOT_SOFT)
+>>>>>> +			psci_set_reset_cmd(true, 0, 0);
+>>>>>> +		else
+>>>>>> +			psci_set_reset_cmd(false, 0, 0);
+>>>>>> +	} else {
+>>>>>> +		psci_set_reset_cmd(true, reset_type, cookie);
+>>>>>> +	}
+>>>>>
+>>>>> I don't think that psci_set_reset_cmd() has the right interface (and this
+>>>>> nested if is too complicated for my taste). All we need to pass is reset-type
+>>>>> and cookie (and if the reset is one of the predefined ones, reset-type is 0
+>>>>> and cookie is the REBOOT_* cookie).
+>>>>>
+>>>>> Then the PSCI firmware driver will take the action according to what
+>>>>> resets are available.
+>>>>>
+>>>>> How does it sound ?
+>>>>
+>>>> So we mean these checks will move to the psci driver? Sorry for re-iterating
+>>>> the question.
+>>>
+>>> Given what I say above, I believe that something we can do is mapping the magic
+>>> to an enum like:
+>>>
+>>> PSCI_SYSTEM_RESET
+>>> PSCI_SYSTEM_RESET2_ARCH_SYSTEM_WARM_RESET
+>>> PSCI_SYSTEM_RESET2_VENDOR_RESET
+>>>
+>>> and can add a probe function into PSCI driver similar to psci_has_osi_support() but
+>>> to probe for SYSTEM_RESET2 and initialize the predefined strings accordingly,
+>>> depending on its presence.
+>>
+>> Not able to get it cleanly.
+>>
+>> 1. Will move away from reboot_mode enum for pre-defined modes and define new
+>> enum defining these modes- fine.
+>> 2. get SYSTEM_RESET2 is supported from psci exported function -- fine, but
+>> how we use it here now, as we do not want to send the reset_cmd from
+>> psci_set_reset_cmd now?
+> 
+> You do keep psci_set_reset_cmd() but all it is used for is setting a struct
+> shared with the PSCI driver where you initialize the enum above, possibly
+> with a cookie if it is a vendor reset.
+> 
+>> 3. For pre-defined modes, warm/soft or cold - reset_type and cookie, both
+>> are zero, sys_reset2 or sys_reset2 decides the ARCH reset vs cold reset.
+>> 4. For vendor-rest , we use sys_reset2 with reset_type and cookie.
+> 
+> Yes.
 
-diff --git a/drivers/pci/of.c b/drivers/pci/of.c
-index 9f8eb5df279ed28db7a3b2fd29c65da9975c2efa..1678e82962b78ac206829a3a1fc121b0142b993b 100644
---- a/drivers/pci/of.c
-+++ b/drivers/pci/of.c
-@@ -7,6 +7,7 @@
- #define pr_fmt(fmt)	"PCI: OF: " fmt
- 
- #include <linux/cleanup.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/irqdomain.h>
- #include <linux/kernel.h>
- #include <linux/pci.h>
-@@ -15,6 +16,7 @@
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_wakeirq.h>
- #include "pci.h"
- 
- #ifdef CONFIG_PCI
-@@ -586,6 +588,78 @@ int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin)
- 	return irq_create_of_mapping(&oirq);
- }
- EXPORT_SYMBOL_GPL(of_irq_parse_and_map_pci);
-+
-+static void pci_configure_wake_irq(struct pci_dev *pdev, struct gpio_desc *wake)
-+{
-+	int ret, wake_irq;
-+
-+	wake_irq = gpiod_to_irq(wake);
-+	if (wake_irq < 0) {
-+		pci_err(pdev, "Failed to get wake irq: %d\n", wake_irq);
-+		return;
-+	}
-+
-+	/*
-+	 * dev_pm_set_dedicated_shared_wake_irq() associates a wakeup IRQ with the
-+	 * device and requests it, but the PM core keeps it disabled by default.
-+	 * The IRQ is enabled only when the device is allowed to wake the system
-+	 * (during system suspend and after runtime suspend), and only if device
-+	 * wakeup is enabled.
-+	 *
-+	 * When the wake IRQ fires, the wakeirq handler invokes pm_runtime_resume()
-+	 * to bring the device back to an active power state (e.g. from D3cold to D0).
-+	 * Once the device is active and the link is usable, the endpoint may signal
-+	 * a PME, which is then handled by the PCI core (either via PME polling or the
-+	 * PCIe PME service driver) to wakeup particular endpoint.
-+	 */
-+	ret = dev_pm_set_dedicated_shared_wake_irq(&pdev->dev, wake_irq,
-+						   IRQ_TYPE_LEVEL_LOW);
-+	if (ret < 0) {
-+		pci_err(pdev, "Failed to set WAKE# IRQ: %d\n", ret);
-+		return;
-+	}
-+
-+	device_init_wakeup(&pdev->dev, true);
-+}
-+
-+void pci_configure_of_wake_gpio(struct pci_dev *dev)
-+{
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+	struct pci_dev *upstream;
-+	struct gpio_desc *gpio;
-+
-+	if (!dn)
-+		return;
-+
-+	/*
-+	 * The devices in a hierarchy expose wakeup capability through the 'wake-gpios'
-+	 * property defined either in the device node or in the Slot node. So first check
-+	 * for the property in device node and if not available, check in the Slot node.
-+	 */
-+	gpio = fwnode_gpiod_get(of_fwnode_handle(dn), "wake",
-+				GPIOD_IN | GPIOD_FLAGS_BIT_NONEXCLUSIVE, NULL);
-+	if (IS_ERR(gpio)) {
-+		upstream = pci_upstream_bridge(dev);
-+		if (upstream && pci_is_root_bus(upstream->bus) && upstream->wake)
-+			pci_configure_wake_irq(dev, upstream->wake);
-+	} else {
-+		dev->wake = gpio;
-+		pci_configure_wake_irq(dev, gpio);
-+	}
-+}
-+
-+void pci_remove_of_wake_gpio(struct pci_dev *dev)
-+{
-+	struct device_node *dn = pci_device_to_OF_node(dev);
-+
-+	if (!dn)
-+		return;
-+
-+	dev_pm_clear_wake_irq(&dev->dev);
-+	device_init_wakeup(&dev->dev, false);
-+	gpiod_put(dev->wake);
-+	dev->wake = NULL;
-+}
- #endif	/* CONFIG_OF_IRQ */
- 
- static int pci_parse_request_of_pci_ranges(struct device *dev,
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 8479c2e1f74f1044416281aba11bf071ea89488a..3d858f36ab48a6daec645574ca9027d9d6f071de 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -17,6 +17,7 @@
- #include <linux/lockdep.h>
- #include <linux/msi.h>
- #include <linux/of.h>
-+#include <linux/of_pci.h>
- #include <linux/pci.h>
- #include <linux/pm.h>
- #include <linux/slab.h>
-@@ -1123,6 +1124,15 @@ static inline bool platform_pci_bridge_d3(struct pci_dev *dev)
- 	return acpi_pci_bridge_d3(dev);
- }
- 
-+void platform_pci_configure_wake(struct pci_dev *dev)
-+{
-+	return pci_configure_of_wake_gpio(dev);
-+}
-+
-+void platform_pci_remove_wake(struct pci_dev *dev)
-+{
-+	return pci_remove_of_wake_gpio(dev);
-+}
- /**
-  * pci_update_current_state - Read power state of given device and cache it
-  * @dev: PCI device to handle.
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 13d998fbacce6698514d92500dfea03cc562cdc2..65ca9551e558d2e3331fab0a968620d6b2a2522a 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -282,6 +282,8 @@ void pci_msix_init(struct pci_dev *dev);
- bool pci_bridge_d3_possible(struct pci_dev *dev);
- void pci_bridge_d3_update(struct pci_dev *dev);
- int pci_bridge_wait_for_secondary_bus(struct pci_dev *dev, char *reset_type);
-+void platform_pci_configure_wake(struct pci_dev *dev);
-+void platform_pci_remove_wake(struct pci_dev *dev);
- 
- static inline bool pci_bus_rrs_vendor_id(u32 l)
- {
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index bccc7a4bdd794384b7877d453c7989941471c999..372b0d2f4531ea53c0570608306a547101d59e7b 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2771,6 +2771,8 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
- 	/* Establish pdev->tsm for newly added (e.g. new SR-IOV VFs) */
- 	pci_tsm_init(dev);
- 
-+	platform_pci_configure_wake(dev);
-+
- 	pci_npem_create(dev);
- 
- 	pci_doe_sysfs_init(dev);
-diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-index e9d519993853f92f1810d3eff9f44ca7e3e1abd9..d781b41e57c4444077075690cec926a9fe15334f 100644
---- a/drivers/pci/remove.c
-+++ b/drivers/pci/remove.c
-@@ -35,6 +35,7 @@ static void pci_destroy_dev(struct pci_dev *dev)
- 	if (pci_dev_test_and_set_removed(dev))
- 		return;
- 
-+	platform_pci_remove_wake(dev);
- 	pci_doe_sysfs_teardown(dev);
- 	pci_npem_remove(dev);
- 
-diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
-index 29658c0ee71ff10122760214d04ee2bab01709fd..0efd6e9cb4d3d3beaafb42ea411303139f1150d5 100644
---- a/include/linux/of_pci.h
-+++ b/include/linux/of_pci.h
-@@ -30,12 +30,16 @@ static inline void of_pci_check_probe_only(void) { }
- 
- #if IS_ENABLED(CONFIG_OF_IRQ)
- int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin);
-+void pci_configure_of_wake_gpio(struct pci_dev *dev);
-+void pci_remove_of_wake_gpio(struct pci_dev *dev);
- #else
- static inline int
- of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin)
- {
- 	return 0;
- }
-+static inline void pci_configure_of_wake_gpio(struct pci_dev *dev) { }
-+static inline void pci_remove_of_wake_gpio(struct pci_dev *dev) { }
- #endif
- 
- #endif
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 1c270f1d512301de4d462fe7e5097c32af5c6f8d..d1e08df8a8deaa87780589f23242767fdcdba541 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -586,6 +586,8 @@ struct pci_dev {
- 	/* These methods index pci_reset_fn_methods[] */
- 	u8 reset_methods[PCI_NUM_RESET_METHODS]; /* In priority order */
- 
-+	struct gpio_desc *wake; /* Holds WAKE# gpio */
-+
- #ifdef CONFIG_PCIE_TPH
- 	u16		tph_cap;	/* TPH capability offset */
- 	u8		tph_mode;	/* TPH mode */
+Ack.
 
--- 
-2.34.1
 
+>> All above is done in reboot_notifier call at psci-reboot-mode.
+>> --
+>>
+>> Now in the final restart_notifier->psci_sys_reset --
+>>
+>> If panic is in progress, we do not use any of the cmd based reset params and
+>> go with the legacy reset. So we need to preserve the values that were set
+>> from psci-reboot-mode.
+>>
+>> Did not understand the proposed suggestion in above usecase. Need more input
+>> on this.
+> 
+> I explained above. The reboot mode driver sets the command to carry out
+> depending on the string coming from user space and whether PSCI supports
+> SYSTEM_RESET2 or not.
+
+got it. working on it. thanks.
+
+
+>> --
+>>
+>> One other option is to have a restart_notifier in psci-reboot-mode, with
+>> lesser priority than psci_sys_rest and then handle all the case including
+>> panic and sys_reset2.
+> 
+> No.
+
+Ack.
+
+thanks,
+Shivendra
