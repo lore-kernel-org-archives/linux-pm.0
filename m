@@ -1,125 +1,131 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C3BD382F1F;
-	Fri,  3 Apr 2026 10:04:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7640310651;
+	Fri,  3 Apr 2026 10:34:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775210675; cv=none; b=fxPUHkxIIovro3SIDSfE9RZvdbYhuxJHcAuR3YUw8dw11DrPudMSG4xIyyw13oo5d+ArAUlpyNoAadW9r5iGHMW1KdtQbAnBkRJnWYCkbbyO8OUrocb7gP5VdXHw26oaNHMbVjUPj8zIF1YCCqS2LK3mkVCOwJI/4B6/pcPltE4=
+	t=1775212491; cv=none; b=YbkEtdvnMXtz7umsMSkdnUsNg72fkAE9TiUpyPR1PlftbjiGBEqW3+X6evxfLHrhqY/9nufy3k+Kh9WDbYHi3rUHcZPyzCvlNruAe2+cN38POyrueQublI5tnwkSoz2PJlZm8nCE/xujQYsIiDY77uBdfSk+xw0Tl/4Sv5y8onM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775210675; c=relaxed/simple;
-	bh=nCK2cjRjdUkyaUHFwq1pM3cPECQPLn84HA5G9U6CD88=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bEU/HrXo/98WuXLwAL7q+911AolE3M1Ob1JkmAJC1kcxJ60tYdSaDMyAmoE13ZUYJy0x7Ubtdk5L2sbCElMPDTK01vtGysp42ih5EVd4j6uf9CPCNCzg0k0k49s1+rzF4QjjG+Elbm05qJc0UOIBwI8JSReclEM5TlNeS2QARHc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=E48qU7OC; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="E48qU7OC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 604F4C4CEF7;
-	Fri,  3 Apr 2026 10:04:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1775210672;
-	bh=nCK2cjRjdUkyaUHFwq1pM3cPECQPLn84HA5G9U6CD88=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=E48qU7OC6xFjPerUSUZYJ12mNKtop1wOk8mjGiOxGihJzLPR99CmmQsqzAPL4jua2
-	 YXOll3riGP6uYNeratDMe58sSulLppbzuCCqCoH/lz1Xn/hQN3N16ULHTmvhbx+oLV
-	 91V/M1EdSu3aWdj5+7VSZi3R5sAtlwqgZlJubCuU=
-Date: Fri, 3 Apr 2026 12:04:30 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Samuel Wu <wusamuel@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Martin KaFai Lau <martin.lau@linux.dev>,
-	Eduard Zingerman <eddyz87@gmail.com>,
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-	Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
-	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
-	kernel-team@android.com, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
-	bpf@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v3 0/2] Support BPF traversal of wakeup sources
-Message-ID: <2026040357-undefined-gave-c98e@gregkh>
-References: <20260331153413.2469218-1-wusamuel@google.com>
- <2026040136-ocelot-simply-8981@gregkh>
- <CAG2KctokEVVuhrs6tYuMjFF4ALR=tX80iZHrt4bhVvEKyoHzRQ@mail.gmail.com>
- <2026040236-kiln-carat-bb6d@gregkh>
- <CAG2Kctpr7vBm_=Xz4H5FHYAfFxg=bDt35j6B4EprfUGio=Ftew@mail.gmail.com>
+	s=arc-20240116; t=1775212491; c=relaxed/simple;
+	bh=3NFeOsyY0UGtptXKycEdwjVY7uJYeTTny9+Lsg73KHI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=VuXEAbH08WKD0tFPFy0t6klOgIbE5KNkGLsjHFKMie794VzZF5euBSB014X1XloWEHZ/B0QMsteF+yTlqn9N+KU0XuKx2Q+ISpQhhvwaNIgrbhOJ8BeCV0Zqd3cMEc1XPGbLS5nlI8XemNHzVD1szyz0cv9BHA9dKJRBuJo0dIY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from [127.0.0.2] (unknown [210.73.43.101])
+	by APP-01 (Coremail) with SMTP id qwCowAB3HmrDl89pcuQPDA--.2057S2;
+	Fri, 03 Apr 2026 18:34:43 +0800 (CST)
+From: Vivian Wang <wangruikang@iscas.ac.cn>
+Date: Fri, 03 Apr 2026 18:34:29 +0800
+Subject: [PATCH] dt-bindings: opp-v2: Fix example 3 CPU reg value
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAG2Kctpr7vBm_=Xz4H5FHYAfFxg=bDt35j6B4EprfUGio=Ftew@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260403-dt-bindings-opp-v2-hex-cpu-reg-v1-1-38a4968ab515@iscas.ac.cn>
+X-B4-Tracking: v=1; b=H4sIALSXz2kC/yXNMQ7CMAxA0atUnrGUusDAVRADjk1qhjSK26pS1
+ bsTYHzL/zu4VlOHW7dD1dXcptzQnzqI4zMnRZNmoEDXcA4DyoxsWSwnx6kUXAlH3TCWBasmJCF
+ hjYG5v0CLlKov236D++NvX/itcf5W4Tg+J8z8PYIAAAA=
+X-Change-ID: 20260403-dt-bindings-opp-v2-hex-cpu-reg-2d2dbec0bb15
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Vivian Wang <wangruikang@iscas.ac.cn>
+X-Mailer: b4 0.15.0
+X-CM-TRANSID:qwCowAB3HmrDl89pcuQPDA--.2057S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7tw15Cr4UJw17Gw45Gw47CFg_yoW8Kry8pF
+	4Ikay3Ja1Yqr45W3Z0q3W0gr1fWFykAF4jkFnYvry8tas8XF9YvrWayF1UGFyUWF1xXFZx
+	ZF43GrWrJwnrAF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9C14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr
+	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
+	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW8twCF04k20xvY0x0EwIxGrw
+	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
+	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
+	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
+	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
+	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUQvttUUUUU=
+X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
 
-On Thu, Apr 02, 2026 at 12:37:12PM -0700, Samuel Wu wrote:
-> On Wed, Apr 1, 2026 at 9:06 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Wed, Apr 01, 2026 at 12:07:12PM -0700, Samuel Wu wrote:
-> > > On Wed, Apr 1, 2026 at 2:15 AM Greg Kroah-Hartman
-> > > <gregkh@linuxfoundation.org> wrote:
-> > > >
-> > > > On Tue, Mar 31, 2026 at 08:34:09AM -0700, Samuel Wu wrote:
-> > > > > This patchset adds requisite kfuncs for BPF programs to safely traverse
-> > > > > wakeup_sources, and puts a config flag around the sysfs interface.
-> > > > >
-> > > > > Currently, a traversal of wakeup sources require going through
-> > > > > /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
-> > > > > sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
-> > > > > wakeup source also having multiple attributes. debugfs is unstable and
-> > > > > insecure.
-> > > >
-> > > > Describe "inefficient" please?
-> > >
-> > > Ack; I’ll provide a more detailed breakdown in the v4 cover letter. To
-> > > summarize: the "inefficiency" isn't just the number of sources (150),
-> > > but the fact that each source has 10 attributes. We are looking at
-> > > 1,500+ sysfs nodes to get a full snapshot of the system.
-> >
-> > Wait, no, something is wrong here.  You should NEVER be wanting to
-> > combine multiple sysfs files at the same time into a "snapshot" of the
-> > system because by virtue of how this works, it's going to change while
-> > you are actually traversing all of those files!
-> 
-> Agree, the current approach with sysfs might have stale values. The
-> BPF approach holds a lock while traversing the list. It's not a
-> perfect snapshot, but it's internally consistent and arguably better
-> than the current sysfs implementation.
-> 
-> > Why are you trying to read 1500+ sysfs files at once, and what are you
-> > doing with that information?  And if you really need it "all at once",
-> > why can't we provide it for you in a sane manner, instead of being
-> > forced to either walk the whole sysfs tree, or rely on a bpf script?
-> 
-> The data is fundamental for debugging and improving power at scale.
-> The original discussion and patch [1] provide more context of the
-> intent. To summarize the history, debugfs was unstable and insecure,
-> leading to the current sysfs implementation. However, sysfs has the
-> constraint of one attribute per node, requiring 10 sysfs accesses per
-> wakeup source.
+Example 3 is a dual-cluster example, meaning that the CPU nodes should
+have reg values 0x0, 0x1, 0x100, 0x101. The example incorrectly uses
+decimal 0, 1, 100, 101 instead, which seems unintended. Use the correct
+hexadecimal values.
 
-Ok, as the sysfs api doesn't work your use case anymore, why do we need
-to keep it around at all?
+Even though the value doesn't change for the first two CPUs, 0 and 1 in
+example 3 are changed to 0x0 and 0x1 respectively for consistency. Other
+examples all have reg less than 10, so they have not been changed.
 
-> That said, I completely agree that reading 1500+ sysfs files at once
-> is unreasonable. Perhaps the sysfs approach was manageable at the time
-> of [1], but moving forward we need a more scalable solution. This is
-> the main motivator and makes BPF the sane approach, as it improves
-> traversal in nearly every aspect (e.g. cycles, memory, simplicity,
-> scalability).
+Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
+---
+Found while trying to figure out if cpu@* unit addresses are supposed to
+be decimal or hexadecimal. This is AFAICT the only place in-tree where
+an arm/arm64 DTS uses multi-digit decimal. See also:
 
-I'm all for making this more scalable and work for your systems now, but
-consider if you could drop the sysfs api entirely, would you want this
-to be a different type of api entirely instead of having to plug through
-these using ebpf?
+- https://lore.kernel.org/devicetree-spec/00ddad5a-02f5-474e-af9c-11ce7716ddfc@iscas.ac.cn/
+- https://github.com/devicetree-org/devicetree-specification/issues/86
+---
+ Documentation/devicetree/bindings/opp/opp-v2.yaml | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-thanks,
+diff --git a/Documentation/devicetree/bindings/opp/opp-v2.yaml b/Documentation/devicetree/bindings/opp/opp-v2.yaml
+index 6972d76233aa..10000a758572 100644
+--- a/Documentation/devicetree/bindings/opp/opp-v2.yaml
++++ b/Documentation/devicetree/bindings/opp/opp-v2.yaml
+@@ -172,7 +172,7 @@ examples:
+         cpu@0 {
+             compatible = "arm,cortex-a7";
+             device_type = "cpu";
+-            reg = <0>;
++            reg = <0x0>;
+             next-level-cache = <&L2>;
+             clocks = <&clk_controller 0>;
+             clock-names = "cpu";
+@@ -183,7 +183,7 @@ examples:
+         cpu@1 {
+             compatible = "arm,cortex-a7";
+             device_type = "cpu";
+-            reg = <1>;
++            reg = <0x1>;
+             next-level-cache = <&L2>;
+             clocks = <&clk_controller 0>;
+             clock-names = "cpu";
+@@ -194,7 +194,7 @@ examples:
+         cpu@100 {
+             compatible = "arm,cortex-a15";
+             device_type = "cpu";
+-            reg = <100>;
++            reg = <0x100>;
+             next-level-cache = <&L2>;
+             clocks = <&clk_controller 1>;
+             clock-names = "cpu";
+@@ -205,7 +205,7 @@ examples:
+         cpu@101 {
+             compatible = "arm,cortex-a15";
+             device_type = "cpu";
+-            reg = <101>;
++            reg = <0x101>;
+             next-level-cache = <&L2>;
+             clocks = <&clk_controller 1>;
+             clock-names = "cpu";
 
-greg k-h
+---
+base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
+change-id: 20260403-dt-bindings-opp-v2-hex-cpu-reg-2d2dbec0bb15
+
+Best regards,
+--  
+Vivian "dramforever" Wang
+
