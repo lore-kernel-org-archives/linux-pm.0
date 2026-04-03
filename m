@@ -1,182 +1,100 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 359B436DA0A;
-	Fri,  3 Apr 2026 07:36:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28610311967;
+	Fri,  3 Apr 2026 08:46:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775201811; cv=none; b=Kq+EL6SrMe2HjBQ6xVpW4VcwUlVLnfQZcEnGokRD2jYo1Cstd5yukPXS9fmL8CMnCCikVc3sUY/+/RT22g1WNXFzx+fh0WRicW6wcUuNRrdTAoRWjt+Uz1xptZYDLmuKftcK1wpLy15ArS+3GzV0iB+GVK8VZIlMib0OTslbjFA=
+	t=1775205964; cv=none; b=r1zyYQXSHOMbqfCw7jAsX23K8aQAyRUYfL095XABLS6UEcxdpwFA5MyFgIZbufzwGpqvK17XY+1QtOeyYGpPCVkv+CuKDc9a11TK5uIArzlEfylMo8BbE4fXsH78FFi7E2AMONG6lhkKAXMTftzh995qFZcQejrhYyy1/NIslvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775201811; c=relaxed/simple;
-	bh=eo26JsyZmpNnH/g5aS7cOZ4Vuwt7sdpIlqkX4T/ccLg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=O4qeSz1PlahaM4pegFe8UOI/7b4QOOEYjRFf7DVwPoPkDQ8ixCA/Dd2RFf9HwwgD2bQ6+MvIatm+DJNDqizsih+3u717zA49o+H/zEFytAVNHcPQCaO8GvGz9joLM6tpQ9cbVh5V/JPlSbBcMEQm6joCW/T5AfqJVeF+5w+dN2M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=PJRvQgb3; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1775205964; c=relaxed/simple;
+	bh=dGzvD3WMZ7ApgfNMnWpS6QRAoMFpStksJNke3nP04jI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jNbLsFuUMqBBrzQueI/iIx9AlVXihY/4zq+/NWr69SpsO2KrisYe9QsZdbps0hO8SHWMygiGcrM7u55vTKT5VSdxtLHQ7IOlnYzJoD9tf1IfrlGzJH7EJ61XeFi9EYfeB4hOksRjEYfmqZnRrZBZh+2dReaCIxTsJd0bBDogHGw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mjvpktfc; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="PJRvQgb3"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1775201808;
-	bh=eo26JsyZmpNnH/g5aS7cOZ4Vuwt7sdpIlqkX4T/ccLg=;
-	h=From:Date:Subject:To:Cc:From;
-	b=PJRvQgb39888FUy9QBDFGCYnTBVFBmAloAzuXlnHjY/DWZ2/IOF/zdpugV3jhzFI6
-	 Dz6qFebHvi7gShP2xfHOKE+b+C2M1kDdajUTrdeTFrxh4OR7P4hqLk9m14ARvCndi9
-	 GfRHoUAYU3VsnRjprV4bg23sSTt6p+vy+m5iaUB+P4slYnutPnyVZHNPi0r6Dpg02n
-	 j2uyCbHeqEMC3pL8lJvBbbAWDhilPetMhbQS5JlRuM4CIaTjL2VOJsnSc7k5M7YtXr
-	 YZBGL5ecJbSsR7SllOlfl1jyULXRjsKQusuL/IV6rAaE3oAk3GXXLaQLz0Tfq/GU64
-	 SXASNsjh6IGiA==
-Received: from [192.168.1.53] (unknown [IPv6:2a01:6243:628:0:43ea:f64d:fc7e:3a2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: mattl)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id D525117E8457;
-	Fri,  3 Apr 2026 09:36:47 +0200 (CEST)
-From: Matthew Leach <matthew.leach@collabora.com>
-Date: Fri, 03 Apr 2026 08:36:30 +0100
-Subject: [PATCH v3] PM: hibernate: call preallocate_image after freeze
- prepare
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mjvpktfc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1775205963; x=1806741963;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=dGzvD3WMZ7ApgfNMnWpS6QRAoMFpStksJNke3nP04jI=;
+  b=mjvpktfcEkfO7KN9UthY9URzvb0VJBITBygHCct6pz/8w1E0m6sIp1xb
+   4cITCt30ViHWY93NtIqcB8X/0UEeUIMiWqFVXWxzuS4rs1Bru5wrBXefO
+   dPAPpbKXB2qzY3RFgjbuIG6P+oYtXZYAELwScq0TQC8pRMgKj/4cmPLkv
+   eWM54pDziFD4nm/RIssyUsaJ6pgdA1kzU1Jr9XwIfsLyfBqLfSYAG5Eiz
+   86fDiAdHq+uGm4tSOUKU1H4hVb0+lU3cGChTauB2UIuERjbAcLStu00TT
+   KLpGFI6r9IEZJNfJtDnmhpkNSfLsYiYKzqoZuMcbgJk6UmC+eUpracYw9
+   A==;
+X-CSE-ConnectionGUID: Ea9F8h5rRzu5+QTFUe327w==
+X-CSE-MsgGUID: IlLIHZFbQ8OmDZp2LE9aQQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="86889045"
+X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
+   d="scan'208";a="86889045"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2026 01:46:01 -0700
+X-CSE-ConnectionGUID: EslWojyKRh+qDZ3ITd05Sw==
+X-CSE-MsgGUID: N93IYWjPRiC1dISNdbkVxQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
+   d="scan'208";a="226368975"
+Received: from lkp-server01.sh.intel.com (HELO 064ad336901d) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 03 Apr 2026 01:45:59 -0700
+Received: from kbuild by 064ad336901d with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w8aA8-0000000015x-1jED;
+	Fri, 03 Apr 2026 08:45:56 +0000
+Date: Fri, 3 Apr 2026 16:45:26 +0800
+From: kernel test robot <lkp@intel.com>
+To: Maulik Shah <maulik.shah@oss.qualcomm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ulf Hansson <ulf.hansson@linaro.org>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	Maulik Shah <maulik.shah@oss.qualcomm.com>
+Subject: Re: [PATCH] cpuidle: Deny idle entry when CPU already have IPI
+ interrupt pending
+Message-ID: <202604031016.SQiyhL8h-lkp@intel.com>
+References: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NwQrCMAwG4FeRnq2sGWudJ99DPDRd6gpzlXYUZ
- ezdzXYSFI9/kv/LLDKlQFmcdrNIVEIOceRQ73fC9Xa8kQwdZwEV6KoGJfuAlEY78Z304UlZ6ha
- dBaIGdSO490i0Lbh2uXLuQ55iem0vilqn/7SipJKNp1bXBrX37dnFYbAYkz24eBerWOBT0b8UY
- MVrU5nuCGjwS1mW5Q2tZAPe/AAAAA==
-X-Change-ID: 20260321-hibernation-fixes-69bca2ee5b65
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
- Mario Limonciello <mario.limonciello@amd.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- YoungJun Park <youngjun.park@lge.com>, kernel@collabora.com, 
- Matthew Leach <matthew.leach@collabora.com>
-X-Mailer: b4 0.15.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260316-cpuidle_ipi-v1-1-d0ff6350f4e2@oss.qualcomm.com>
 
-Certain drivers release resources (pinned pages, etc.) into system
-memory during the prepare freeze PM op, making them swappable.
-Currently, hibernate_preallocate_memory is called before prepare freeze,
-so those drivers have no opportunity to release resources first. If a
-driver is holding a large amount of unswappable system RAM, this can
-cause hibernate_preallocate_memory to fail.
+Hi Maulik,
 
-Move the call to hibernate_preallocate_memory after prepare freeze.
-According to the documentation for the prepare callback, devices should
-be left in a usable state, so storage drivers should still be able to
-service I/O requests. This allows drivers to release unswappable
-resources prior to preallocation, so they can be swapped out through
-hibernate_preallocate_memory's reclaim path. Also remove
-shrink_shmem_memory since hibernate_preallocate_memory will have
-reclaimed enough memory for the hibernation image.
+kernel test robot noticed the following build warnings:
 
-Signed-off-by: Matthew Leach <matthew.leach@collabora.com>
----
-Changes in v3:
-- Changed error label names to 'Thaw' and 'Complete'.
-- Link to v2: https://patch.msgid.link/20260326-hibernation-fixes-v2-1-f6707d82b7b9@collabora.com
+[auto build test WARNING on b84a0ebe421ca56995ff78b66307667b62b3a900]
 
-Changes in v2:
-- Removed shrink_shmem_memory.
-- Fixed missing call to dpm_prepare in error path.
-- Link to v1: https://lore.kernel.org/r/20260321-hibernation-fixes-v1-1-5fe9637b6ff9@collabora.com
----
- kernel/power/hibernate.c | 46 +++++++++-------------------------------------
- 1 file changed, 9 insertions(+), 37 deletions(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Maulik-Shah/cpuidle-Deny-idle-entry-when-CPU-already-have-IPI-interrupt-pending/20260316-155453
+base:   b84a0ebe421ca56995ff78b66307667b62b3a900
+patch link:    https://lore.kernel.org/r/20260316-cpuidle_ipi-v1-1-d0ff6350f4e2%40oss.qualcomm.com
+patch subject: [PATCH] cpuidle: Deny idle entry when CPU already have IPI interrupt pending
+config: x86_64-allmodconfig (https://download.01.org/0day-ci/archive/20260403/202604031016.SQiyhL8h-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260403/202604031016.SQiyhL8h-lkp@intel.com/reproduce)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index af8d07bafe02..d2479c69d71a 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -392,23 +392,6 @@ static int create_image(int platform_mode)
- 	return error;
- }
- 
--static void shrink_shmem_memory(void)
--{
--	struct sysinfo info;
--	unsigned long nr_shmem_pages, nr_freed_pages;
--
--	si_meminfo(&info);
--	nr_shmem_pages = info.sharedram; /* current page count used for shmem */
--	/*
--	 * The intent is to reclaim all shmem pages. Though shrink_all_memory() can
--	 * only reclaim about half of them, it's enough for creating the hibernation
--	 * image.
--	 */
--	nr_freed_pages = shrink_all_memory(nr_shmem_pages);
--	pr_debug("requested to reclaim %lu shmem pages, actually freed %lu pages\n",
--			nr_shmem_pages, nr_freed_pages);
--}
--
- /**
-  * hibernation_snapshot - Quiesce devices and create a hibernation image.
-  * @platform_mode: If set, use platform driver to prepare for the transition.
-@@ -425,14 +408,9 @@ int hibernation_snapshot(int platform_mode)
- 	if (error)
- 		goto Close;
- 
--	/* Preallocate image memory before shutting down devices. */
--	error = hibernate_preallocate_memory();
--	if (error)
--		goto Close;
--
- 	error = freeze_kernel_threads();
- 	if (error)
--		goto Cleanup;
-+		goto Close;
- 
- 	if (hibernation_test(TEST_FREEZER)) {
- 
-@@ -445,19 +423,13 @@ int hibernation_snapshot(int platform_mode)
- 	}
- 
- 	error = dpm_prepare(PMSG_FREEZE);
--	if (error) {
--		dpm_complete(PMSG_RECOVER);
--		goto Thaw;
--	}
-+	if (error)
-+		goto Complete;
- 
--	/*
--	 * Device drivers may move lots of data to shmem in dpm_prepare(). The shmem
--	 * pages will use lots of system memory, causing hibernation image creation
--	 * fail due to insufficient free memory.
--	 * This call is to force flush the shmem pages to swap disk and reclaim
--	 * the system memory so that image creation can succeed.
--	 */
--	shrink_shmem_memory();
-+	/* Preallocate image memory before shutting down devices. */
-+	error = hibernate_preallocate_memory();
-+	if (error)
-+		goto Complete;
- 
- 	console_suspend_all();
- 	pm_restrict_gfp_mask();
-@@ -492,10 +464,10 @@ int hibernation_snapshot(int platform_mode)
- 	platform_end(platform_mode);
- 	return error;
- 
-+ Complete:
-+	dpm_complete(PMSG_RECOVER);
-  Thaw:
- 	thaw_kernel_threads();
-- Cleanup:
--	swsusp_free();
- 	goto Close;
- }
- 
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202604031016.SQiyhL8h-lkp@intel.com/
 
----
-base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
-change-id: 20260321-hibernation-fixes-69bca2ee5b65
+All warnings (new ones prefixed by >>):
 
-Best regards,
---  
-Matt
+>> vmlinux.o: warning: objtool: cpuidle_enter_state+0x3d: call to cpus_peek_for_pending_ipi() leaves .noinstr.text section
 
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
