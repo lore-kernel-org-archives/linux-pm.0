@@ -1,131 +1,120 @@
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7640310651;
-	Fri,  3 Apr 2026 10:34:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42D653A6F14
+	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 10:45:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775212491; cv=none; b=YbkEtdvnMXtz7umsMSkdnUsNg72fkAE9TiUpyPR1PlftbjiGBEqW3+X6evxfLHrhqY/9nufy3k+Kh9WDbYHi3rUHcZPyzCvlNruAe2+cN38POyrueQublI5tnwkSoz2PJlZm8nCE/xujQYsIiDY77uBdfSk+xw0Tl/4Sv5y8onM=
+	t=1775213159; cv=none; b=hRk94vpmuJjvCzQCtHhE4c1REWB0w1NaRfCluuvmLEtmriAU5FzamkYQTevWqImWHOg56FDumV9d1trhDO+Y52qb0C5p7Jr0DEA+Dp6pd2RLmcUIFvdC3LNl1FHEICAPotFqaJdrAzpEJ80hualH8mRHR+uxG7oCEoZ9NG3F9pQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775212491; c=relaxed/simple;
-	bh=3NFeOsyY0UGtptXKycEdwjVY7uJYeTTny9+Lsg73KHI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=VuXEAbH08WKD0tFPFy0t6klOgIbE5KNkGLsjHFKMie794VzZF5euBSB014X1XloWEHZ/B0QMsteF+yTlqn9N+KU0XuKx2Q+ISpQhhvwaNIgrbhOJ8BeCV0Zqd3cMEc1XPGbLS5nlI8XemNHzVD1szyz0cv9BHA9dKJRBuJo0dIY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from [127.0.0.2] (unknown [210.73.43.101])
-	by APP-01 (Coremail) with SMTP id qwCowAB3HmrDl89pcuQPDA--.2057S2;
-	Fri, 03 Apr 2026 18:34:43 +0800 (CST)
-From: Vivian Wang <wangruikang@iscas.ac.cn>
-Date: Fri, 03 Apr 2026 18:34:29 +0800
-Subject: [PATCH] dt-bindings: opp-v2: Fix example 3 CPU reg value
+	s=arc-20240116; t=1775213159; c=relaxed/simple;
+	bh=0o84pYdxTQQzYs6glMpMj/UUvehhD/P8bC+lS8pjvkM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RDfZPGjOxtff00bdOKeGyiJit53GWN373DIReyrOLz1P3hwEkBv66KTUXZbmOcjq2vwE6Vtvkx6SyzouusNNNxGlgp35ON8A2Zhr1ngRYaJwqadAbzwgTU8uOrQ8JwENp7jvbQ/86XdYlhS7Cg/dXj5RkUvTrGP/+0AFVq3tvrg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Chq1h7bQ; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Chq1h7bQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6897C4CEF7
+	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 10:45:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775213158;
+	bh=0o84pYdxTQQzYs6glMpMj/UUvehhD/P8bC+lS8pjvkM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Chq1h7bQyYnJ1usc+d7kA5zr/GL4tnW3cPC9ClzhIMSMf9xFCS1Z9LQ1b+6gqDXO7
+	 unbipXDtuYwFJIkbcmAV/84E0ietPCSag8k5YNBIbPBVYp4iMWfU4FsJ87+bd6awNj
+	 Boa3d+pw5boyF8qaKkgiKOZHZWdr6OLTXCY4XleUkOcnhcv6gQayfos0ibRBCJ97NZ
+	 RuPaHc2i9wmj5nyHIVrD9gf4KgI0bw++jIqp4e45XR0c/HW9Ia5ypW9f7h1m3OQdk8
+	 bpNTYuVmkbDe936kyMo3+XdP26XU5+Btl84X2UsMla4B6ubL1OoFa2F/VfMlxlUZb0
+	 AoeXYWoXOoT/g==
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-417c34b0509so1372554fac.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 03:45:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVR9HRkiY3JdWPBLK16aZ7itE4LO4HVAHHl1WSnCJrW03vAsn2eBp8CeuHvk5XFQOe3OsfuHS+5cw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx64S+RQItyuP3IVhopgHvSFI0FT1baU834JJwErPM9Hwn85d08
+	m0208tlrPIKa2B4yDB7aZoeVXKHIQK1qgWqKH4DSmdsA78qyxUizOk1YeARnC8YXXF8qhh8jm9V
+	CM1+8TckD6fS0Z6q5O1QiG0fz+OAlkJw=
+X-Received: by 2002:a05:6871:7bc7:b0:404:42e:92f with SMTP id
+ 586e51a60fabf-4230fe43eacmr1298230fac.5.1775213158066; Fri, 03 Apr 2026
+ 03:45:58 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260403-dt-bindings-opp-v2-hex-cpu-reg-v1-1-38a4968ab515@iscas.ac.cn>
-X-B4-Tracking: v=1; b=H4sIALSXz2kC/yXNMQ7CMAxA0atUnrGUusDAVRADjk1qhjSK26pS1
- bsTYHzL/zu4VlOHW7dD1dXcptzQnzqI4zMnRZNmoEDXcA4DyoxsWSwnx6kUXAlH3TCWBasmJCF
- hjYG5v0CLlKov236D++NvX/itcf5W4Tg+J8z8PYIAAAA=
-X-Change-ID: 20260403-dt-bindings-opp-v2-hex-cpu-reg-2d2dbec0bb15
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Vivian Wang <wangruikang@iscas.ac.cn>
-X-Mailer: b4 0.15.0
-X-CM-TRANSID:qwCowAB3HmrDl89pcuQPDA--.2057S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7tw15Cr4UJw17Gw45Gw47CFg_yoW8Kry8pF
-	4Ikay3Ja1Yqr45W3Z0q3W0gr1fWFykAF4jkFnYvry8tas8XF9YvrWayF1UGFyUWF1xXFZx
-	ZF43GrWrJwnrAF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9C14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
-	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW8twCF04k20xvY0x0EwIxGrw
-	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
-	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
-	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
-	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
-	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUQvttUUUUU=
-X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
+References: <0fe1b679-ab28-4505-b0db-14e7ac3ba749@gmail.com>
+ <CAJZ5v0iMfiqjkkvOMU6jWEZ+nBvcRtWNwjvBW0pEva1G_owFcg@mail.gmail.com>
+ <744440a6-e1cb-4792-a848-57755de0686b@gmail.com> <CAJZ5v0i5dSuQ7f8Okb-Ch5igzNn=L_Fj5d3H4pftvxoEVBaDUw@mail.gmail.com>
+ <0758441c-e88d-475a-80ef-061b227ae7fc@gmail.com>
+In-Reply-To: <0758441c-e88d-475a-80ef-061b227ae7fc@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 3 Apr 2026 12:45:45 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jTTdJDPDk3ACVpjP=S5nrA-vddfKBnFRyWSbHCuWWKQQ@mail.gmail.com>
+X-Gm-Features: AQROBzDMajT-PTryobqCCYVLkZW11PnyntEq6PmPGmp9K46vmX4cNThO38lcrbw
+Message-ID: <CAJZ5v0jTTdJDPDk3ACVpjP=S5nrA-vddfKBnFRyWSbHCuWWKQQ@mail.gmail.com>
+Subject: Re: [PATCH] PM / wakeup: Allocate class wakeup_class statically
+To: Heiner Kallweit <hkallweit1@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, driver-core@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Example 3 is a dual-cluster example, meaning that the CPU nodes should
-have reg values 0x0, 0x1, 0x100, 0x101. The example incorrectly uses
-decimal 0, 1, 100, 101 instead, which seems unintended. Use the correct
-hexadecimal values.
+On Thu, Apr 2, 2026 at 3:05=E2=80=AFPM Heiner Kallweit <hkallweit1@gmail.co=
+m> wrote:
+>
+> On 01.04.2026 19:32, Rafael J. Wysocki wrote:
+> > On Wed, Apr 1, 2026 at 5:45=E2=80=AFPM Heiner Kallweit <hkallweit1@gmai=
+l.com> wrote:
+> >>
+> >> On 01.04.2026 16:19, Rafael J. Wysocki wrote:
+> >>> On Sun, Mar 29, 2026 at 6:14=E2=80=AFPM Heiner Kallweit <hkallweit1@g=
+mail.com> wrote:
+> >>>>
+> >>>> Allocating wakeup_class statically avoids a little runtime overhead.
+> >>>> Define groups and device release function as part of the class, so t=
+hat
+> >>>> we don't have to repeat this for each class device.
+> >>>> Whilst at it, constify wakeup_source_attrs[].
+> >>>>
+> >>>> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> >>>
+> >>> Can you please have a look at this and let me know what you think:
+> >>>
+> >>> https://sashiko.dev/#/patchset/0fe1b679-ab28-4505-b0db-14e7ac3ba749%4=
+0gmail.com
+> >>>
+> >> Interesting finding! I think the diagnosis is right.
+> >>
+> >> But: I would say the current behavior isn't a nice solution as well:
+> >
+> > It is not fantastic, but it doesn't have this issue.
+> >
+> >> wakeup_source_device_create() does: dev->class =3D wakeup_class;
+> >> I think no reader will expect that wakeup_class may be NULL here due t=
+o
+> >> initcall ordering. In addition this behavior results in such early
+> >> wakeup sources not being shown in sysfs.
+> >
+> > They are registered too early to show up in sysfs, but they can work re=
+gardless.
+> >
+> > I think that it's just pointless to call device_register() for a given
+> > wakeup source if wakeup_class has not been registered yet.
+> >
+> >> But I'm not sure whether registering class "wakeup" (and registering
+> >> classes in general) would be possible early enough (core_initcall,
+> >> or even pure_initcall).
+> >
+> > driver_init() is called before do_initcalls() is do_basic_setup(), so
+> > class registration should work for all initcall levels AFAICS.
+> >
+> When testing the current code on my system, autosleep is the first wakeup
+> source, registered in a core_initcall, and it's not shown in sysfs.
+> Same result when class wakeup is registered in a core_initcall
+> (instead of postcore_initcall). Registering class wakeup in a pure_initca=
+ll
+> works and fixes the issue. So, would this be an acceptable solution for t=
+he
+> discussed issue?
 
-Even though the value doesn't change for the first two CPUs, 0 and 1 in
-example 3 are changed to 0x0 and 0x1 respectively for consistency. Other
-examples all have reg less than 10, so they have not been changed.
-
-Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
----
-Found while trying to figure out if cpu@* unit addresses are supposed to
-be decimal or hexadecimal. This is AFAICT the only place in-tree where
-an arm/arm64 DTS uses multi-digit decimal. See also:
-
-- https://lore.kernel.org/devicetree-spec/00ddad5a-02f5-474e-af9c-11ce7716ddfc@iscas.ac.cn/
-- https://github.com/devicetree-org/devicetree-specification/issues/86
----
- Documentation/devicetree/bindings/opp/opp-v2.yaml | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/opp/opp-v2.yaml b/Documentation/devicetree/bindings/opp/opp-v2.yaml
-index 6972d76233aa..10000a758572 100644
---- a/Documentation/devicetree/bindings/opp/opp-v2.yaml
-+++ b/Documentation/devicetree/bindings/opp/opp-v2.yaml
-@@ -172,7 +172,7 @@ examples:
-         cpu@0 {
-             compatible = "arm,cortex-a7";
-             device_type = "cpu";
--            reg = <0>;
-+            reg = <0x0>;
-             next-level-cache = <&L2>;
-             clocks = <&clk_controller 0>;
-             clock-names = "cpu";
-@@ -183,7 +183,7 @@ examples:
-         cpu@1 {
-             compatible = "arm,cortex-a7";
-             device_type = "cpu";
--            reg = <1>;
-+            reg = <0x1>;
-             next-level-cache = <&L2>;
-             clocks = <&clk_controller 0>;
-             clock-names = "cpu";
-@@ -194,7 +194,7 @@ examples:
-         cpu@100 {
-             compatible = "arm,cortex-a15";
-             device_type = "cpu";
--            reg = <100>;
-+            reg = <0x100>;
-             next-level-cache = <&L2>;
-             clocks = <&clk_controller 1>;
-             clock-names = "cpu";
-@@ -205,7 +205,7 @@ examples:
-         cpu@101 {
-             compatible = "arm,cortex-a15";
-             device_type = "cpu";
--            reg = <101>;
-+            reg = <0x101>;
-             next-level-cache = <&L2>;
-             clocks = <&clk_controller 1>;
-             clock-names = "cpu";
-
----
-base-commit: f338e77383789c0cae23ca3d48adcc5e9e137e3c
-change-id: 20260403-dt-bindings-opp-v2-hex-cpu-reg-2d2dbec0bb15
-
-Best regards,
---  
-Vivian "dramforever" Wang
-
+I don't see why not.
