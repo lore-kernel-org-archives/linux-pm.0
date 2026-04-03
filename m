@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BB3517555
-	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 12:32:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2212A1F131A
+	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 12:34:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775219573; cv=none; b=o8u2D8psKMEydha4hCuyi4ofnvFnpUJ2QUz7R4w+4TGNt91HPOuDW1RcO4bu4qWskFPF9MP/WLg9r0OlxHq9YZ3m/gDJbvapnDSyR62VOWUXZ3WjROygZ6C8/r3MDQ6K4Aydaz1YKycPKXityptRyaANBpqR9VKq+kMp5R2Kavw=
+	t=1775219664; cv=none; b=qiEy71fjDsM6/l3D6iuVopBd0v8cPl8I3SQgeu2RPQkMb5fryTY2qPUpLkAB4ay+HV/uFPoww0zXvNg8/vDqt/6RpqRwqvwL7IuL4RZof+n2EQgO+Wh84pmP0Gsizn04rBAm22xlJEb7/BNMyteLGFZA15MW7XChT4VBhpWmFNw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775219573; c=relaxed/simple;
-	bh=WyRkeMA0kDe4LYIAyjmQb2NSmwGQPBCyqti3+rXezoM=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=qL6++ouOfSwGVxgK4Frm2DC/y19UFTM2UdQvtCCnwcqBsztq5tqtNSEAFi3DFTaAIH8vGoGH+Q3WtDOLLcXDCibzUakUpfn4uQvTjnSFJmbu6UeO/u8sirtuVt202sWjwrOxadIG93LGwfyHH58HPMB/mGQw1HrShqwKoH3TzOM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=q4H35gap; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775219664; c=relaxed/simple;
+	bh=55lzqmaWC5ky5ds8WgZPiX3QEYZo3j5IuJlsxx73AuQ=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=GOSPd2u6qCjD3WhToTacmdPk4ntf1KF+QqixXwBcMktRFCxcJ7VCubd+Jm/kaNFWjRnxJazWgFOwMlc50B2zO3TGDRCWiqWnB3jObydsXEeXO9dzPjIuRLrmyW98Gd3pXs7Mi/WO/W6GvF/zikK1gQkjzy1/MNDZAUAHvc58syI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=L/AJzNOo; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="q4H35gap"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A3AAC2BCB1
-	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 12:32:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="L/AJzNOo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9560C2BCB1
+	for <linux-pm@vger.kernel.org>; Fri,  3 Apr 2026 12:34:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775219573;
-	bh=WyRkeMA0kDe4LYIAyjmQb2NSmwGQPBCyqti3+rXezoM=;
+	s=k20201202; t=1775219663;
+	bh=55lzqmaWC5ky5ds8WgZPiX3QEYZo3j5IuJlsxx73AuQ=;
 	h=From:Date:Subject:To:Cc:From;
-	b=q4H35gapf5yXB6YDSK2XmSNwwfJRh2IKoCCYjpT2VEEeg+Uz1+WaSS7TjqvvQBKU4
-	 BZEyw4DwLhRuklGnUCviucegl+HDzpZBzqsyHUdI7RDvW5CU0Asp7GULZL1/PpOW2J
-	 mpGN6y94M8P/atyvxAiWghflSVi/8WacZZxloQ6GGFQCnN4K8z1sqExY/uWRek5oEo
-	 7Qx9ho4dPaGjc4X/w7tGmZeyxUhdpCi/Yjt1CxIKSAvvJvzLA4n1Mz9kLXMnYjoSKW
-	 32MCyS9UJP++ZPLKb/tBSLVQ3fWAKslTuprEgDsAxTSHd0zjBJ+XfBr7mNl/dyB40K
-	 GYMqTfd9F7I2A==
-Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-4152698e745so782604fac.1
-        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 05:32:53 -0700 (PDT)
-X-Gm-Message-State: AOJu0YxmyeMGHxlH8KjmcwSIpQO/KvldY6LapiXEES3JwuAdkAUNFAFw
-	FRDHRTWHch0hRJw/4ylwLXdk6f/87Sbylh1zvB7WJxDln9g9UttYrwsy6E5C44YjMwU/ddWbPNx
-	MTXVB7A9xD9DpzLK+Q13Icbbg4RUugU0=
-X-Received: by 2002:a05:6808:309d:b0:467:32c1:acf1 with SMTP id
- 5614622812f47-46ef7d147d1mr1431094b6e.39.1775219572210; Fri, 03 Apr 2026
- 05:32:52 -0700 (PDT)
+	b=L/AJzNOo1lbC1Szo1bxIE5gvfQEGxtnX5YILgUpeNqwfdvHEna8q7ntCLZ8McFLjJ
+	 CqbQCrxAGmtbipra8rDbweyWgeO5JSnRFimqa4PTKBlGYojAc11moE/1KD7p3DuiXr
+	 1A4G+mqKqr7MjWix34oHe8jsb2iCqdQgQS62YKVuJ053em03csu6z/1QrVuxMBF7qu
+	 kZxXzx4ynSoEO4j9urj7TwZVhKyXHbRWfNDqiMP8c/A7wmLMO8vvdqfuW2MmkrSWtd
+	 Jt1SWIA/Vj6uhmiUqjd+LEMq3dnFKt1fDy5FXIoFQG6bceYcJ2rXXiA9QooP2Nfydt
+	 6RneNLqD/Jvqw==
+Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-42321c8b8f5so191604fac.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2026 05:34:23 -0700 (PDT)
+X-Gm-Message-State: AOJu0YwIfST7Knww9oGr16R+McnId5ba+60pBuqp9xYzdtbYJBSm6USl
+	7CcDzdELEJqoQ3Qy3qrCIKL8+988QSmsCopDsgL4tIA+AM0rn2MTDH0tIYEJSuP8GvIbqqEABXO
+	KPJLczKqD+Nn3UQQGZWrjfn6AvMkiQTw=
+X-Received: by 2002:a05:6871:ac04:b0:41c:92c:bd92 with SMTP id
+ 586e51a60fabf-4230e02dcecmr1522464fac.11.1775219662901; Fri, 03 Apr 2026
+ 05:34:22 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,14 +40,14 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 3 Apr 2026 14:32:41 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g23pA9urxBundpRAb0O67=UFSM29SDiudXNa2S18sBZA@mail.gmail.com>
-X-Gm-Features: AQROBzCxBYkTwla6muI-pnl9KWSYSUyAIKr66htYTe12fpfxuZC-odr117SjGPo
-Message-ID: <CAJZ5v0g23pA9urxBundpRAb0O67=UFSM29SDiudXNa2S18sBZA@mail.gmail.com>
-Subject: [GIT PULL] Thermal control fixes for v7.0-rc7
+Date: Fri, 3 Apr 2026 14:34:11 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hh83q-F1Y-13a_3-AopnRRmhM91FCnNrMrKYwjqAiJcw@mail.gmail.com>
+X-Gm-Features: AQROBzB0pU6UWxBoCScK5wlEbjC8G3Qz8WvuBwdIeK5qRDsL9rmlWZ82AqshzHI
+Message-ID: <CAJZ5v0hh83q-F1Y-13a_3-AopnRRmhM91FCnNrMrKYwjqAiJcw@mail.gmail.com>
+Subject: [GIT PULL] Power management fixes for v7.0-rc7
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
 
 Hi Linus,
@@ -55,32 +55,43 @@ Hi Linus,
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- thermal-7.0-rc7
+ pm-7.0-rc7
 
-with top-most commit 9e07e3b81807edd356e1f794cffa00a428eff443
+with top-most commit 744d5721d2d7abc84e5131c16002039c53465c89
 
- thermal: core: Fix thermal zone device registration error path
+ Merge branch 'pm-em'
 
 on top of commit 7aaa8047eafd0bd628065b15757d9b48c5f9c07d
 
  Linux 7.0-rc6
 
-to receive thermal control fixes for 7.0-rc7.
+to receive power management fixes for 7.0-rc7.
 
-These address potential races between thermal zone removal and system
-resume that may lead to a use-after-free (in two different ways) and
-a potential use-after-free in the thermal zone unregistration path.
+These fix a potential NULL pointer dereference in the energy model
+netlink interface and a potential double free in an error path in
+the common cpufreq governor management code:
+
+ - Fix a NULL pointer dereference in the energy model netlink
+   interface that may occur if a given perf domain ID is not
+   recognized (Changwoo Min)
+
+ - Avoid double free in the cpufreq_dbs_governor_init() error path
+   when kobject_init_and_add() fails (Guangshuo Li)
 
 Thanks!
 
 
 ---------------
 
-Rafael J. Wysocki (2):
-      thermal: core: Address thermal zone removal races with resume
-      thermal: core: Fix thermal zone device registration error path
+Changwoo Min (1):
+      PM: EM: Fix NULL pointer dereference when perf domain ID is not found
+
+Guangshuo Li (1):
+      cpufreq: governor: fix double free in
+cpufreq_dbs_governor_init() error path
 
 ---------------
 
- drivers/thermal/thermal_core.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 6 +++---
+ kernel/power/em_netlink.c          | 2 ++
+ 2 files changed, 5 insertions(+), 3 deletions(-)
