@@ -1,117 +1,125 @@
-Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outbound.mr.icloud.com (p-west2-cluster2-host12-snip4-10.eps.apple.com [57.103.68.223])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3806A390220
-	for <linux-pm@vger.kernel.org>; Mon,  6 Apr 2026 18:45:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.52
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775501146; cv=pass; b=Xff+raROFe1Q1m77aJwzs2K9hXj3vkyx1/BwL/JptVgWQf2gx5ydJKIJpYEWX5Sz3AqEW91odnYMUmQmsTYXiT+xuF2aZaPAH1FsimNxcUNOO7UwrPwCSrDYdHz3px4i9JAM3wGp/11qZe2fvBFCcQe9261R68OIbAgXBzX/2wM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775501146; c=relaxed/simple;
-	bh=9pmHTV4TADk0gWWUpG8M/E5ZGSDVjZD7cI5hHNpdlIc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JbhYPTY/eQhz8kDPKeIatzf/Zd3BUguGKr3onIkCSltjN+fSi0SASNCVEXdyGw+E8lFtTCESRnvvusSv/lzHNwG6WwSYy86xbfMtmZDq+hjQb/Zq+moMHNwNEV7xgJXAZiw4UvHYiahijBJz0Cdn68DgjpL+eS7VzzKxyy4RsRg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TvID6AOh; arc=pass smtp.client-ip=209.85.208.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D7A32BE65B
+	for <linux-pm@vger.kernel.org>; Mon,  6 Apr 2026 20:58:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=57.103.68.223
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775509099; cv=none; b=g5Qp/nDq4olNBHtCVIB9ekaQv8xRPa8Be6j2WmKdbdN7U8gaAC0OOFZfDUpqks7RgrY2jTEMJAKKCxwvq0jMr3nvckg0OfZMbaq2pjVZB855Lm0CEbqDfZKd2hQMTWoNYcqaVhz9Tl5GBGdhiksWLo6/47SNpFGr+45SpseZpuc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775509099; c=relaxed/simple;
+	bh=vjpDDUqu0q1OuSXJcQG7IiQyAMD/OLqdN3k05PyqZsM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=W4N23mEm8FqB/FeuVVYD15etP5HfDdjTHwffsuf0LkLRYHzp9Gfwg+UyghRMJB1uOhne0IfYRYRJ98YwS69re7wQDE/VuSYbHEjtbj5pCTP48w0xg1oShixE8qGqp5jWDTL7pupHX3Iscqnk7VvyEy4/774bd3MRDDnwNV2lkJo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com; spf=pass smtp.mailfrom=icloud.com; dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b=pzzGGjk7; arc=none smtp.client-ip=57.103.68.223
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=icloud.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=icloud.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TvID6AOh"
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-66dd0531d01so6366895a12.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 11:45:44 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775501143; cv=none;
-        d=google.com; s=arc-20240605;
-        b=d0XJCWfmnHCbkkt9IPMef15Jr6jry1Cyr/Hxys1f5A4P8kMeCCP11VXwIL8YmgpaKJ
-         2vH43tQx5He0X6+JDmfafkg7DFbUiCKt9zCtN3VkYEEwwP4pE+65BIeL4drkCcPw6w40
-         Q8KGZm3JMEcy8IWxxqQHyI+GZmJSSa/6ilReGwZXVwQxpCWdK9yW/gC4Wo4cojdm2YXO
-         0+w5lwHj9wuojJbckb+H12B2/hK7m5SOojAkQ752nwqfCdxXH7Dz9vBHkOg3NjmGJ8ld
-         GWC6m59LKYJ6IKJHijNrXZ/7pTu8NnYQiK0KgZozQMK7sTgIG15OuLU2DD0GZ90M3txS
-         lmUQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=9pmHTV4TADk0gWWUpG8M/E5ZGSDVjZD7cI5hHNpdlIc=;
-        fh=z48hCmtC/IRR9Qc4lBjRVuYtB7haPTVk2QIf6pa7Qos=;
-        b=bpld3oPUFHS1PReCIuGh415WLl7+AgDI6RUu+yg2PbGA1fdljCNKC4rpNLOIvoJSjE
-         yVKcREO9pE+eIOERCTFRXj5/5EL+qhma/D5lipSHfPOnd/9dYlbGkDMqdXJCyIiccgmL
-         Wc3g86S+tPqccUg3qpAb6tsgI0yLMoNl2UH6HPCnEuDD3TWUA3idTcoQe5Ox9J3pacAl
-         bqN5s9R/m/5gpT3Tuo0kTzD+XCYQDtbwJVOqo+/c06eFJwo7sXvTnjWExCCRD/ZObxAO
-         6XIsFMpdXaX90sS5By7GgVVyl5PXRN0GQxetyn/gPdzPXdy/eKxf0/lopDZ36t24u1pJ
-         Fdew==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775501143; x=1776105943; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=9pmHTV4TADk0gWWUpG8M/E5ZGSDVjZD7cI5hHNpdlIc=;
-        b=TvID6AOhWa+L4+gvoy9mzK4z699+6jD2IQeK5WXq21Tn0aQdJvHTE8YK6aHBKcHpG2
-         O/5ibJDgLOwKzWl+Cw/1puXZGbHukwGVRlBqRRXSWYwf8kZatytM/zzBqLqeuFjQXQgi
-         l33gUTl3xdFrJpXxR+xWsRDr2L1+TZoWqw2eguVIF/eaYsNHmPvej5pRRsYxZelc31sp
-         JfMehFtinjigL+HBsCT45DvWnkDKer3TLdfNnBns76DfjL9Mrjn+BcRcWfbt1wZRT4o6
-         jSHIsvx4HLp5VFxlhCfaxJTwLj0+f2//XoOV7lVkjo1fHaoS8aP9RRhyLLC4wzFiHYF7
-         OGUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775501143; x=1776105943;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9pmHTV4TADk0gWWUpG8M/E5ZGSDVjZD7cI5hHNpdlIc=;
-        b=Knw1jc5zi4ddwsQq1rCXrJWhya6JzdmDHK95vbbQUv/ELFnY7bn/FxFEDOKi07mCVe
-         qo6QIkdKgFhs5wjG61V4pNJZuEGs/whBkWpi5wO/RrrskEo8jtmx7UzFxelOhxHBJ0Oc
-         T4WX5J63RTXHqsUlVjpQ3QNp8mptxeqN2HydNWgJ8llM9hxGUP834/sAhacgp2ppQ11N
-         pnMJNmqAERXMOQ7KdGdBOKKy8s3fuaAx4NW71W6PCi0WcnHRPqj80XWue8mBnnzS8+bk
-         77Uk89Q53MAwUHR4ggmRuc8MMXVAAIdwdAGoP6q7qrypPRU3ZKuLu6mAo11J/yncFaRp
-         MxMQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUPEeY2vSqEwoFECKP2ubNKM6rX+GbP1jZeAvaCn/5Ej0XPAYAwLjrXuNJcfCummxpsSnmAp+SdWg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxHYt+7qyIQHbO2ePcZCyvAg7IXCyKYrq3GRjIwN3d0yRt0GfEl
-	rOJaz1eiN1B4SYUGklnwJydBsn0wHspld7Ppy7vpj9qbRIfcMP/kKQ4kvBIukUDDosbtStnsyqH
-	Y+ym33jkH6Kgum0YHg77osZRuT7rtVbI=
-X-Gm-Gg: AeBDiescDVk4CHOI/FysSQE+v9ouYaChlQ36P24ca/atQpdCMTxP3/5Jqdl5xZmz+XF
-	ilXRgC9ID5eFftk/6iIgINbfCVDCcS1Eqret10nVe+FGGPDyx9EiBR/daV68xSmOD+lFJQcaTvm
-	VB340j6CzGrW1mfX7yFuOz8GyfaTzRFCZkfrDglSQ/Hxpqzr4fWsvMUPQyYsfOn503Q+cFa8IxQ
-	JPljSEDDdCj2wteaNv3hTa4TKbTH2kLhGkXkAAtXYeGs+/GNZAwmhN0wUyl/WHXf8WJ191XDEJl
-	Nvth8Q==
-X-Received: by 2002:a05:6402:a215:20b0:66e:4372:73e9 with SMTP id
- 4fb4d7f45d1cf-66e4372747bmr4169926a12.1.1775501143298; Mon, 06 Apr 2026
- 11:45:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=icloud.com header.i=@icloud.com header.b="pzzGGjk7"
+Received: from outbound.mr.icloud.com (unknown [127.0.0.2])
+	by p00-icloudmta-asmtp-us-west-2a-100-percent-3 (Postfix) with ESMTPS id 0F6601800252;
+	Mon, 06 Apr 2026 20:58:13 +0000 (UTC)
+Dkim-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icloud.com; s=1a1hai; t=1775509096; x=1778101096; bh=JkkfJFoCq0pJa8F5Q6jp/1rU49pogxgcYao6Gw2dDiE=; h=From:To:Subject:Date:Message-ID:MIME-Version:x-icloud-hme; b=pzzGGjk7cZM60y1dPkHXhom/jgoWuIBqBz7B5bqRcbIpOyS4bhJ95Mm66A4I/uLngB+5bTXl5XDSFnNqiGxl4oIS0RnRYJMKmmC78BxMBss9gfsMmPWTeSMU5PMv6mTP4b6I/kPY8uoH5hHlX8NfDZR6aRBgLTmnLUsaxwicuwVVKdTP9BlBm9Lpnw/g6secEBwNRNkgAiHmQqPEgm/gBeSAyPxZs7e3RYdmJY0Irw870zvwe1tpBnudWblF3/WJwoXU5/4r9uLDnT6biMpVdLoOo/oTo3eS1rQNgFYm1nnJsQCCPMOjOFe8KcaC98ztHBprhxB+5F9l0RWovy3CFA==
+Received: from bigre.tail98293.ts.net (unknown [17.57.152.38])
+	by p00-icloudmta-asmtp-us-west-2a-100-percent-3 (Postfix) with ESMTPSA id 6FA54180025D;
+	Mon, 06 Apr 2026 20:58:12 +0000 (UTC)
+From: Vincent Cloutier <vincent.cloutier@icloud.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+	Purism Kernel Team <kernel@puri.sm>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Vincent Cloutier <vincent@cloutier.co>
+Subject: [PATCH v1 0/9] power: supply: max17042_battery: improve MAX17055 support
+Date: Mon,  6 Apr 2026 16:57:48 -0400
+Message-ID: <20260406205759.493288-1-vincent.cloutier@icloud.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260119-patchv2-k1-thermal-v3-0-3d82c9ebe8a4@163.com> <20260119-patchv2-k1-thermal-v3-2-3d82c9ebe8a4@163.com>
-In-Reply-To: <20260119-patchv2-k1-thermal-v3-2-3d82c9ebe8a4@163.com>
-From: Anand Moon <linux.amoon@gmail.com>
-Date: Tue, 7 Apr 2026 00:15:26 +0530
-X-Gm-Features: AQROBzAP5CclShOimKNLKPr2Da3Hb2vm1DFd1fAAdE9Rewzt50idvfVsjIHzHvI
-Message-ID: <CANAwSgRUM0HJSKr2zLYkv=LnWv85gvbc0_WD9gXywQqHcU=EaA@mail.gmail.com>
-Subject: Re: [PATCH v3 2/3] thermal: spacemit: k1: Add thermal sensor support
-To: Shuwei Wu <shuweiwoo@163.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: UrdRb3gdyp0Sc6fbRyrAzrtKFl9fs8Uj
+X-Proofpoint-ORIG-GUID: UrdRb3gdyp0Sc6fbRyrAzrtKFl9fs8Uj
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDIwNiBTYWx0ZWRfX/gj8E5nf5OXc
+ o4dqx+CndZDioikgkRGn2/McsoIWGrEE7xdhnLIo4ONSdL5DnRrgf7a2CVS46VsrAwu9E0T44ix
+ xUUwuy/ryJDuj8CvR/iSogm7zxn8hxHOR5TY2xAfCWIszbWqp9Q1tKwCQ9tfRO2p4lwjPNOSs44
+ 5LRi7cx4cWLbkp9owGELQ3NXeutYrZ5Fx/Y1bIELCmadaFP7as2/P9+CAOv+x+3n4mNFvMZ+qz1
+ ZsKzjA2KG+QvOQ3GpkqSuvBjyO74tFYa8q1o+nuZjA2AYbE9wngWJwSvfnD4dvRXwB8hTjQC2eL
+ QAPlM6RNjsdjWujy/pi226xzPlm1rDlLEsNZFT+IuYvv3oCPulqA7RR2QNoSEQ=
+X-Authority-Info-Out: v=2.4 cv=W9w1lBWk c=1 sm=1 tr=0 ts=69d41e66
+ cx=c_apl:c_pps:t_out a=9OgfyREA4BUYbbCgc0Y0oA==:117
+ a=9OgfyREA4BUYbbCgc0Y0oA==:17 a=A5OVakUREuEA:10 a=x7bEGLp0ZPQA:10
+ a=5j__JWfIoqoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8
+ a=XLd-czCsBCJP9l5d9uUA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-06_04,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ malwarescore=0 adultscore=0 mlxlogscore=999 bulkscore=0 mlxscore=0
+ suspectscore=0 lowpriorityscore=0 spamscore=0 clxscore=1011 classifier=spam
+ authscore=0 adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2604060206
 
-Hi Shuwei,
+From: Vincent Cloutier <vincent@cloutier.co>
 
-On Mon, 19 Jan 2026 at 08:13, Shuwei Wu <shuweiwoo@163.com> wrote:
->
-> The thermal sensor on K1 supports monitoring five temperature zones.
-> The driver registers these sensors with the thermal framework
-> and supports standard operations:
-> - Reading temperature (millidegree Celsius)
-> - Setting high/low thresholds for interrupts
->
-> Signed-off-by: Shuwei Wu <shuweiwoo@163.com>
+Hi,
 
-Reviewed-by: Anand Moon <linux.amoon@gmail.com>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+This series refreshes the Librem 5 MAX17055 fuel-gauge work for upstream
+on top of current `mainline/master`.
 
-Thanks
--Anand
+Original series:
+https://lore.kernel.org/lkml/20220318001048.20922-1-sebastian.krzyszkowiak@puri.sm/
+
+Compared to the earlier posted version, the main follow-up changes are:
+
+- keep the original arithmetic form of the fractional `MAX17042_*_LSB`
+  expressions while still moving the unit conversions into shared defines
+- remove the unused board-file style platform-data wrapper from the driver
+- factor the `monitored-battery` parser behind a generic
+  `devm_power_supply_get_battery_info()` helper so MAX17042 can read DT
+  battery data before registration
+- keep `voltage-max-design-microvolt` as an explicit MAX17055
+  `ModelCfg.VChg` setting so batteries at or below 4.25 V clear the
+  default bit
+
+The attribution split is intentional:
+
+- patches 1, 2, and 7 preserve the original signed Purism downstream work
+  from Sebastian Krzyszkowiak
+- the remaining patches are cleanups and follow-ups on top of current
+  mainline code
+
+Tested on Librem 5.
+
+Sebastian Krzyszkowiak (3):
+  power: supply: max17042_battery: Put LSB units into defines
+  power: supply: max17042_battery: Use Current register in get_status
+  power: supply: max17042_battery: use ModelCfg refresh on max17055
+
+Vincent Cloutier (6):
+  power: supply: max17042_battery: Use dev_err_probe for power supply
+    registration
+  power: supply: max17042_battery: Route MAX17055 SOC alerts through
+    dSOCi
+  power: supply: max17042_battery: Keep only critical alerts during
+    suspend
+  power: supply: max17042_battery: Remove unused platform-data plumbing
+  power: supply: Read MAX17042 battery info before registration
+  power: supply: max17042_battery: Treat MAX17055 VChg as explicit DT
+    setting
+
+ drivers/power/supply/max17042_battery.c  | 428 ++++++++++++++---------
+ drivers/power/supply/power_supply_core.c | 188 ++++++----
+ include/linux/power/max17042_battery.h   |  33 +-
+ include/linux/power_supply.h             |  10 +
+ 4 files changed, 393 insertions(+), 266 deletions(-)
+
+
+base-commit: 46b513250491a7bfc97d98791dbe6a10bcc8129d
+-- 
+2.53.0
