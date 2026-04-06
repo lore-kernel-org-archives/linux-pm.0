@@ -1,75 +1,59 @@
-Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B4E32DC789
-	for <linux-pm@vger.kernel.org>; Mon,  6 Apr 2026 11:01:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C94793128A2;
+	Mon,  6 Apr 2026 12:07:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775473289; cv=none; b=lXd2sokdjlAO2iVOKen1KxYa+j8OJCtw42bJYT7FjPnQU73lLKowhhe07GkSbbitrOsQ1+lCaup4TvH4nxqqD1PCxFWz6B3oiGYgirI5tsv37u+WWaXb4I7/N/amMrEdR+ysO4x25sv01EVZr2iVvJvR7FMn1v5Vnjr7gl0TOcE=
+	t=1775477220; cv=none; b=k2aRsYSe6BOgq0FYD7wW9uDsmmlXyJ8I0PvW6XC/DtEymecemasA60IFFEhcFM8fwbsFSGV8sosb5RR0zDvDPMVuGhnVPAQc/vpB/hyPiwSvrRexeFblkI/YvHoe2lxrKyc51Ui/PCYUmvyi8PRsoHAoS+JrAYd7nqhIC8CE00g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775473289; c=relaxed/simple;
-	bh=2M2cg0EH3aMng+aBU0Rrs9UT5yeB4nWoOPww1b7rrbE=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=CaxKIu8mysnVmPid9qcDrMjph/AqxObBBnT/6dXqTaGnvsxqiycKpuTnXvib1aLRMOs66SFwHt1cAZ9NTYoJ6guDN2lanw8Hq8HGFhnCTkMlxwKp+DY/TVKa4GTukA118NVad14XXeaxD/q+2OlD2xzssgqGgNKluw4WgnLG+8Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Y0alqhnt; arc=none smtp.client-ip=209.85.215.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1775477220; c=relaxed/simple;
+	bh=XHczrTpuNqudPlLgOVVc4LQlybErzfbvBYRTP1/ofnY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ttmyn0m2qh0M8MjJsgfCNvCcOBDZCdEhTjbuvXDhGMvQJTeKXigvVndxPmJTduPX+i3Z/qUOzZQGruli4Ee4Bv9IpvA3wQGMyBNgAAtgwUNaAsAb4mlQGmPzTvRia0k0znIdDk2TSO4KoX+W+dTFbbEm+O4NXzKb29tvb0I+zWI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=J4C+79Ik; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y0alqhnt"
-Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c70f91776fcso1428898a12.0
-        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 04:01:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775473288; x=1776078088; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=v7KP9ImoUmNOJElPjjxO5LiEgKEfV2sq1fEI8IanqHo=;
-        b=Y0alqhntPu/ZBUfGl1eXDKgmVv6XOmy2e7MUZZp7BImLRBQZqO443Tds3m2KhExQdg
-         6PVZKBtr6I/j30KIn2QSMxeN5Q25s/0e6RBe2n3PTTQcz5jIDrgIKYeXwXvTxEyik99Q
-         j7cWp2r8pZOQLwWgOSvOXopprzqoX0MNzeYc6S9y4+FZ7oVTBKbhmE9exdkmFj/f4VeR
-         2lLah8HNUE2/6Xa2IgIw+2jGqBx1pNeTUu471kTepcXlUI5yCgUnFnHhqZObHPSvl/PL
-         mKXjdpGlDutp5IRgw8VifmBhnXuYcHksJ99P5ZYk7+sett+mvXWoN7/PYgq/o+9I8wAA
-         o5Rw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775473288; x=1776078088;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=v7KP9ImoUmNOJElPjjxO5LiEgKEfV2sq1fEI8IanqHo=;
-        b=aVZZo9HK4P4OGdt454+q7ekWedciCaGNWT7IITK0XGoJIfPETWD116zT8WFC9Whc4D
-         DvD5Cs5s9phpw94fXYsj7WqhAkZBWCzHe7ZA3+3m4hm+HKmviB1nTC/+HvTul+di/kJD
-         omIdwUjFcFRaKNQ6vhaqCUJe40j/N8Tsi1R79HPakAFmYs5q6fBiEJhve9xtiSZTh4Lv
-         J84riUSuUrrrSypwe3+VpvaSL/n+aGxm07Eg54iwFVyEPuq6di+1dCUmJ2CxxeR8KOzb
-         uyJQS4RnwnL76Q0E2KSPzc2Bv518SqLXjMm9V4A3SawEC94ABb3nyXn85cEDExuWQWXw
-         ZbGQ==
-X-Gm-Message-State: AOJu0YxnBDrbYXJjrB/HMKAdQcgWJ5NUbsBhFx3gd32RhBvn9E0VNfVC
-	A7iXx6aLww592Mbe9JcN+KTPTWcF8pDhLGRsVq348hm4n2IFUBY4CoA/dxEq28o6HFY=
-X-Gm-Gg: AeBDies/nldaKTfWRvl2Iw8QyFLARSmQdQGqRe9N8xOsxdPt67suffhi/CN7/S/KXYz
-	BX7lJ2eGkdhl98fs/dCIfElHnkq1vZRojB2QWeGFbOUUWxT7C6v6i9RlT2LJS8hRugE6uOTeB+p
-	CRp+1JVch6PMVYL+jwXC4REqq/FhrpVOph119OTqHO8Hq7scMrdUcTl/byNyRtHlB6kLziDs6b4
-	pquITStKpqwS7LHthqxiSuvKGZ9g8L/X2Bum/X10/uPPovDSWNjhbf3CSD4qAzgmege2VpbkqZq
-	/r5dpOt4dwB01MygLbarii49LWW47MXIm3QMEmFGpUQWPLsEx/8Dmvh2OJ/pL+Xz747U6tWz05T
-	x9hjIvl1zqSRnJnQe+Bv/SL7lOt+2F6bYIOxTBV4yHt9JzfkfjmnNKNA+vaCtTpbh+gtn/32pSM
-	MwAZBLjxB+jtCARjsPG0JfGgPa
-X-Received: by 2002:a17:903:2f08:b0:2b0:6365:21a9 with SMTP id d9443c01a7336-2b281789ec2mr132192585ad.31.1775473287290;
-        Mon, 06 Apr 2026 04:01:27 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749cbd85sm133034655ad.74.2026.04.06.04.01.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Apr 2026 04:01:26 -0700 (PDT)
-Date: Mon, 6 Apr 2026 16:31:24 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] cpufreq/arm updates for 7.1
-Message-ID: <a4lvsuklad2ab3tynq34oiuu36rn53fkf6ert7al2tuvgyjziw@wkiqji6svbdj>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="J4C+79Ik"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D154C4CEF7;
+	Mon,  6 Apr 2026 12:06:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775477220;
+	bh=XHczrTpuNqudPlLgOVVc4LQlybErzfbvBYRTP1/ofnY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=J4C+79IkHbYx5r6P5ueOMMqRhdjAb3cwjRNzClZpRLn2TEhCB7yD3GhR+xrKwf3dW
+	 EHKijg0j37SMIWRv3zXJyjPqNV3PdsGvFDW0laPbjckvCa8rNkR/oL6VPl2A8hWCJF
+	 32SqrPDWYZ6u1fwOWrJV77XWP5cogcs8rzDrUIj/6bwrxQoN7EXVYwfxQphJlDWhqm
+	 Wp9x4c/AYkBPbSEOS6FV/xijNZgq8UKTr/ukVxY7N5lYFGauP1IvXgdhr4C1zomNla
+	 D6VAycF0a4l6d7h3OAVeqvigvuOCm60jGlIJtwrn2mxRIUveVxCfvG9MnxSlhPfmVF
+	 f2ngloyZgnUJw==
+From: Georgi Djakov <djakov@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	djakov@kernel.org
+Subject: [GIT PULL] interconnect changes for 7.1
+Date: Mon,  6 Apr 2026 15:06:52 +0300
+Message-Id: <20260406120652.1219527-1-djakov@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+Hello Greg,
+
+This is the pull request with interconnect changes for the v7.1-rc1 merge
+window. As always, the summary is in the signed tag.
+
+All patches have been tested in the last few linux-next releases. There
+are currently no reported issues. Please pull into char-misc-next when
+possible.
+
+Thanks,
+Georgi
+
 
 The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
 
@@ -77,47 +61,93 @@ The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
 
 are available in the Git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git tags/cpufreq-arm-updates-7.1-rc1
+  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-7.1-rc1
 
-for you to fetch changes up to 8655a4e35cda5534f93303af393eac4e71704701:
+for you to fetch changes up to 0436cd305d0be28cde59efb137d15d1bc6af4b12:
 
-  cpufreq: tegra194: remove COMPILE_TEST (2026-03-20 11:03:33 +0530)
-
-----------------------------------------------------------------
-CPUFreq arm updates for 7.1
-
-- Update qcom-hw DT bindings to include Eliza hardware (Abel Vesa).
-
-- Update cpufreq-dt-platdev blocklist (Faruque Ansari).
-
-- Minor updates to driver and dt-bindings for Tegra (Thierry Reding and Rosen Penev).
-
-- Add MAINTAINERS entry for CPPC driver (Viresh Kumar).
+  MAINTAINERS: Add interconnect kunit test entry (2026-04-02 10:39:01 +0300)
 
 ----------------------------------------------------------------
+This pull request contains the interconnect changes for the 7.1-rc1
+merge window. They are listed below:
+
+- New driver for Mahua SoC
+- New driver for Eliza SoC
+- Enable QoS support for QCS8300 and QCS615 SoCs
+- Add L3 cache scaling compatibles for SM8550 and Eliza SoCs
+- Fix multiple issues in the msm8974 driver
+- Fix kfree mismatch
+- Misc cleanups
+- Add maintainer entry for the interconnect KUnit tests
+
+Signed-off-by: Georgi Djakov <djakov@kernel.org>
+
+----------------------------------------------------------------
+Aaron Kling (1):
+      dt-bindings: interconnect: OSM L3: Document sm8550 OSM L3 compatible
+
 Abel Vesa (1):
-      dt-bindings: cpufreq: qcom-hw: document Eliza cpufreq hardware
+      dt-bindings: interconnect: OSM L3: Add Eliza EPSS L3 compatible
 
-Faruque Ansari (1):
-      cpufreq: Add QCS8300 to cpufreq-dt-platdev blocklist
+Dmitry Baryshkov (8):
+      dt-bindings: interconnect: qcom,msm8974: drop bus clocks
+      dt-bindings: interconnect: qcom,msm8974: use qcom,rpm-common
+      interconnect: qcom: drop unused is_on flag
+      interconnect: qcom: icc-rpm: allow overwriting get_bw callback
+      interconnect: qcom: define OCMEM bus resource
+      interconnect: qcom: let platforms declare their bugginess
+      interconnect: qcom: msm8974: switch to the main icc-rpm driver
+      interconnect: qcom: msm8974: expand DEFINE_QNODE macros
 
-Rosen Penev (1):
-      cpufreq: tegra194: remove COMPILE_TEST
+Georgi Djakov (5):
+      Merge branch 'icc-eliza' into icc-next
+      Merge branch 'icc-mahua' into icc-next
+      Merge branch 'icc-qcs8300' into icc-next
+      Merge branch 'icc-qcs615' into icc-next
+      Merge branch 'icc-msm8974' into icc-next
 
-Thierry Reding (2):
-      dt-bindings: arm: nvidia: Document the Tegra238 CCPLEX cluster
-      cpufreq: tegra194: Rename Tegra239 to Tegra238
+Gui-Dong Han (1):
+      interconnect: debugfs: fix devm_kstrdup and kfree mismatch
 
-Viresh Kumar (1):
-      cpufreq: Add MAINTAINERS entry for CPPC driver
+Krzysztof Kozlowski (2):
+      dt-bindings: interconnect: qcom,glymur-rpmh: De-acronymize SoC name
+      interconnect: qcom: De-acronymize SoC names
 
- Documentation/devicetree/bindings/arm/tegra/nvidia,tegra-ccplex-cluster.yaml |  1 +
- Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.yaml               |  1 +
- MAINTAINERS                                                                  | 23 +++++++++++++++++------
- drivers/cpufreq/Kconfig.arm                                                  |  2 +-
- drivers/cpufreq/cpufreq-dt-platdev.c                                         |  1 +
- drivers/cpufreq/tegra194-cpufreq.c                                           |  4 ++--
- 6 files changed, 23 insertions(+), 9 deletions(-)
+Kuan-Wei Chiu (1):
+      MAINTAINERS: Add interconnect kunit test entry
 
--- 
-viresh
+Odelu Kukatla (6):
+      dt-bindings: interconnect: qcom,qcs8300-rpmh: add clocks property to enable QoS
+      interconnect: qcom: qcs8300: enable QoS configuration
+      dt-bindings: interconnect: document the RPMh Network-On-Chip interconnect in Eliza SoC
+      interconnect: qcom: Add Eliza interconnect provider driver
+      dt-bindings: interconnect: qcom,qcs615-rpmh: add clocks property to enable QoS
+      interconnect: qcom: qcs615: enable QoS configuration
+
+Raviteja Laggyshetty (2):
+      dt-bindings: interconnect: document the RPMh Network-On-Chip interconnect in Mahua SoC
+      interconnect: qcom: glymur: Add Mahua SoC support
+
+ .../devicetree/bindings/interconnect/qcom,eliza-rpmh.yaml      |  142 +
+ .../devicetree/bindings/interconnect/qcom,glymur-rpmh.yaml     |  136 +-
+ .../devicetree/bindings/interconnect/qcom,msm8974.yaml         |   28 +-
+ .../devicetree/bindings/interconnect/qcom,osm-l3.yaml          |    2 +
+ .../devicetree/bindings/interconnect/qcom,qcs615-rpmh.yaml     |   23 +
+ .../devicetree/bindings/interconnect/qcom,qcs8300-rpmh.yaml    |   63 +
+ MAINTAINERS                                                    |    6 +
+ drivers/interconnect/debugfs-client.c                          |    9 +-
+ drivers/interconnect/qcom/Kconfig                              |   13 +-
+ drivers/interconnect/qcom/Makefile                             |    2 +
+ drivers/interconnect/qcom/eliza.c                              | 1585 +++++++
+ drivers/interconnect/qcom/glymur.c                             |   40 +-
+ drivers/interconnect/qcom/icc-rpm-clocks.c                     |    6 +
+ drivers/interconnect/qcom/icc-rpm.c                            |   18 +-
+ drivers/interconnect/qcom/icc-rpm.h                            |    7 +-
+ drivers/interconnect/qcom/msm8974.c                            | 1637 ++++++--
+ drivers/interconnect/qcom/qcs615.c                             |  247 ++
+ drivers/interconnect/qcom/qcs8300.c                            |  375 ++
+ include/dt-bindings/interconnect/qcom,eliza-rpmh.h             |  136 +
+ 19 files changed, 4014 insertions(+), 461 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,eliza-rpmh.yaml
+ create mode 100644 drivers/interconnect/qcom/eliza.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,eliza-rpmh.h
