@@ -1,436 +1,260 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012038.outbound.protection.outlook.com [52.101.48.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com [209.85.160.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFFB52C0307;
-	Mon,  6 Apr 2026 18:08:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.38
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775498903; cv=fail; b=R/EgsfjCBKi2X5ms76vdXGqW6QyYpVke8fzbHaEifSBuLHir4AsgaW7s8gGg/Pi02M+BUVKuw2DKk6QI9k/B16zeAjV/Be+xY8DcjcZcwLr+RfgNj2vFXtgCoz6rU5QR0XSfGn3KkDO1Vpy172fhXofUcPCOsSwBagzvtl9gOgk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775498903; c=relaxed/simple;
-	bh=XMbthKumVc2GJR+gLiHGO7LEQkQfC4eA4dSQc6VQqTc=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=Uoic9PNS4rFVjMevadziI9C8Khnt0rZ1keXg/4I0HIrmWTsWFoHDi68VgcXN7ziruai2F/zPh3ST49jidlsHG+Y50fLMMsJvfJ7qwFH/mUrhb40lywdERkU8llxvvTyihPekqFbUdTVd+7a/rxr/nn4JHuqWspGZYBAVrAQGBF4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=pc7jh9Ii; arc=fail smtp.client-ip=52.101.48.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37B7A38B7CF
+	for <linux-pm@vger.kernel.org>; Mon,  6 Apr 2026 18:40:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.50
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775500829; cv=none; b=Zrg01u1RNxjwFFDjQDTCuoNvEu2oB5PE8ajtJ3oCX9c5o8cRHpFO1UBvCAuk9zgkgUtVWRuAxuS7/lR+y5O1T6v3tGZA1oNS4Ae09aAr3D6sHwv5BcKv4Al3A9SCtP9rEeoJXFR7pO4bnaXcCZeY1Y7lBwwfBnj5s0tfB0d6xz8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775500829; c=relaxed/simple;
+	bh=8kUQZCNs26FSinhtPMK6ly0PzsQalFP0oGuZvAN9RP0=;
+	h=Content-Type:Message-ID:Date:MIME-Version:To:Cc:From:Subject; b=WizVMppLMoNgIKp3LiiY4dFQSGB3Xps3JgLnduySIrvxeydp24QkGU35yddUCLPZto3OlLk17F1Z9KyeceKU8JDrzyr5jbUKl/Wr9UNdAPNnBpiLm1UPDI9dmonFMJTw7ZLcfLoaJnEVFzsVJ5dx2jP4PPWhpER5bU/k9EOPQDE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=BxI/Y828; arc=none smtp.client-ip=209.85.160.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="pc7jh9Ii"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=o18lo2GMyKKM/wmdS/svUBbM89FvDuAEcceSYCgx0PyNDzweugRiqrczdmiRhokYly1pN0hDubi2+Aihxb1vCDzU3Rlp3hcqaPBmFCr2zBT3c+dF8F/fsmPifylfSeu1Vy5pRVp+WWWMTGaOChhpTL60BM9r9kw1Nym00DTtHq8yMo5Wwbb8G9Tk+UTv7s2QQnZwwOkO0V9rcsDXdpH7YGGID7IhxZvT61LB/XPa94R5CDumm0GLa5bM8bXVNyMl0gIE5vrofSJEs+MGhRGhFEXk6EmWM874ZIUlZSpLXLai+dAgBroTH5Jz56glMMRW5B2RnfhxNHH0ZzEyJw2vZQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=J+z00k8JhrP0Vcbmwo4aPhjAfiyyu1ElqmQDxjSnh24=;
- b=EpsiuTxWSNi5h+I2UZxm1UpM8TUhHO6jRIM0Y24+nZNbRhatLPRm0Wrc2KTd2Op65qv34YfiD/vH66zuJXEEE3AFCdh1bj1cfJwmc/5LZXWOdVfnyYpH+cYtpTN8B/+EG0rYE9qc64vqlOyeW8BM7drLYHE/my4rwdZgm/szcSzJa/848a1dGl9PtG+Cc7PzIh7kwX+SSH/mPWwXTlyAPCjTH0437mGYPQ1IpTBD6p28b2EF6ub/PCg/Hf9k6oS8uOhl6nAsacErz9+DGaHAKgRnZdakHvbsQ6asI7122/XcjAw0i4NFxidb1sR4xDCPVO4GVig2PjLgDHqFDvtCCw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=J+z00k8JhrP0Vcbmwo4aPhjAfiyyu1ElqmQDxjSnh24=;
- b=pc7jh9Ii4hYr2FEZbByiwGXSUY+YXd7UyiG2920s2bsi8qwTvzFYw2+r3psGTl2Tl/4W4sukYmQvgYx91xrQkXES/SfTpd2nF5wt9SOgsJI0I4h6SqzAS5HQlIo0q7X0O+34XWNBw4FFDcYXXza8lt863h2e+5VhYLKRL40RREVhEACHIsMpodjzOVdfr5Bbmo9nKKjy/uA/+kHHV/oweCaXcWglg9vspuuKKCFrCH92XsiAOH3j5z337seNFtptQzF1qxisF+UhRkvHw1rjXLNeanmlnH4NEHRxgw7EVJqZSjxYtzmbb7STiHRktBbVOgUsO/mHWlaz+urNT5EooA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by IA0PR12MB7722.namprd12.prod.outlook.com (2603:10b6:208:432::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.20; Mon, 6 Apr
- 2026 18:08:14 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%6]) with mapi id 15.20.9769.016; Mon, 6 Apr 2026
- 18:08:14 +0000
-Message-ID: <b8debb30-67a5-4d2b-8c08-8fd287f7258e@nvidia.com>
-Date: Mon, 6 Apr 2026 23:38:03 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: CPPC: add autonomous mode boot parameter support
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, zhenglifeng1@huawei.com, treding@nvidia.com,
- viresh.kumar@linaro.org, jonathanh@nvidia.com, vsethi@nvidia.com,
- ionela.voinescu@arm.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- zhanjie9@hisilicon.com, corbet@lwn.net, mochs@nvidia.com,
- skhan@linuxfoundation.org, bbasu@nvidia.com, rdunlap@infradead.org,
- linux-pm@vger.kernel.org, mario.limonciello@amd.com, rafael@kernel.org,
- sumitg@nvidia.com
-References: <20260317151053.2361475-1-sumitg@nvidia.com>
- <4b1f100b-e699-43c1-a06b-5545056d174c@arm.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <4b1f100b-e699-43c1-a06b-5545056d174c@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5PR01CA0236.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1f4::10) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="BxI/Y828"
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-4233e152457so1272826fac.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 11:40:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1775500823; x=1776105623; darn=vger.kernel.org;
+        h=subject:from:cc:to:content-language:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=DtrwOauEZjp1CSrLrgAWLX4O2rHkQdkPBv1alt/99Bw=;
+        b=BxI/Y8283tyqHuXwvx8UMDGbv6XGhOuLBFyCl/150sO3jAzhVJwqI3klm5sUvVBNH/
+         h+YmVuedJKFG0o0rNf0NNssLYfiIFNFt7pPZ7nLfNPoPbV33QM5bhuM8z19nmfFMec+s
+         NKjUS2Yr5E3E9nJ3QGoYrAmrtu9+QmeiAy51g=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775500823; x=1776105623;
+        h=subject:from:cc:to:content-language:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DtrwOauEZjp1CSrLrgAWLX4O2rHkQdkPBv1alt/99Bw=;
+        b=dKjVzpcAq7YSlCg0KLOfRIA2hejI/fEH++iIkHSxQoMcs+3yBo/HK0387i+H8/ScoE
+         w7uhM3kMKyMyYWsDMR/FUpeY78pwA7SZ5bg0zHp5NjglKxjYhHORjdVE0ZzSFuFvH+tu
+         zA2ZT8SnSJtXi2vc4etosUAoj9fdhcyGfwNXhjCnr2P6RlxUCJH7RKPnpVTfvyFAorCS
+         AkMwHu4L4mJg9L72iPllJLjyzw1eH1AtVqDXtEstOzTLtLG3iZNRQDTD2XvJ8lq4PPUA
+         i6TRhHoenwq3GWw7ae5HxES82SmPRGrOmr43jnfUdhCQb4cfsLkC2GLK2eq+NePq0o1W
+         1NNQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUyzffHI54R9U6+0vOgyKfLxGc8kwQk3PrCL1IrnSXoXerXnEIMrJdXIwgzif2qthL1WUlJ7v34Yw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyK/e4FyEUCfykfP4ZtUxwtQVbwpAkQA9UdLiDYERdU9PqNXgaS
+	cpRdo7VpMWgd5XYCXpIIIkC3VLHPJqoeIxHpKQCesmn3lLcjylDxm+1ckZYDXB7MviE=
+X-Gm-Gg: AeBDiesjqvFdi5arItSiuy5A470kscdQWax2glrzwL5Gd4AP9uheYxglJwO6NSzVQG9
+	vkRqnBv+VdZHU/fmBvG0jPEq59I9bjg3nmch2LulSoMw5sKIL4LML8hEQuHUMX6aV1efnLxgJMF
+	sBiI4oJgOaeBaV8JSpKMl2YEy9PTJ2H2MANp7luzE4SdWrfL6u+6IHhGGTFjEyxcE8/yuT+RU+8
+	AdApVxzO67xyBwL+0boBLI72psVF2emnGM3yVzNxvR22WN0EFZPKGjSE9SfIO3nBHM+qjF3ER6C
+	WtJiMoMylaEDRbpGvshKpfbX9NHAU/iY186IjfrrGrciQ7iXleoCeRF1/2VI9mYl8UjlgQ2RMIX
+	N8Oc5HpICwpMJ0Q4YlM4tt7ukv9BFhi5N5EBgspRqVB6koTBQ+JWaBmt9IcbtyFmNu5UxiKgnz9
+	scjHFHfiXC0mr+GxhgVhdcLlNzRTPwarHZWZM=
+X-Received: by 2002:a05:6820:1908:b0:67b:b0bd:8bd2 with SMTP id 006d021491bc7-6822083d572mr7194905eaf.59.1775500823611;
+        Mon, 06 Apr 2026 11:40:23 -0700 (PDT)
+Received: from [192.168.1.14] ([38.175.187.108])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-680a882d978sm8932531eaf.10.2026.04.06.11.40.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Apr 2026 11:40:22 -0700 (PDT)
+Content-Type: multipart/mixed; boundary="------------FJdVjfzVVDNpa7SwD4CvphGL"
+Message-ID: <651e317c-dc31-4895-ac09-2f12398ed3be@linuxfoundation.org>
+Date: Mon, 6 Apr 2026 12:40:22 -0600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|IA0PR12MB7722:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5ae64953-95c9-4fe7-ce17-08de94077880
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|366016|7416014|13003099007|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	U8D10ZAYnA542W2vWITYtSDjOhezX+Ii9Ixy9m4xCGxS1jPhyVPjfHTVC0q54H8tErf2duqOlvii7G/y/nZQiJVUs7UT4iBE5/FRsK3/rxtBCNuQdu/hDur7U4oBFQ9nCtlOLsPaLeMHihpY1MFsCdsj50wmbsXCSRcHBEzmqm9HcdCBO2/oAvljeFCeiWYMiFb5LJuOPumQckG3cdt5pc5F/fc0zbD11FFygf0sa6HCf/rrfp6vNsMm9pwOdlT156KQQyWd8RPN1rI4lP7IkOTYqI9HTw+QXSGTkXZts3os/iEFlL82sb9XTB9ZFuksTDlvaRXp/+lGrAHb1tJDCYmNXAkmIlW7svzc9l5qRjcB/MfS/9nASyCnhbvb/gGSx/1A2Am8oL3pInZW0Yi29jzb2ja/NQmwZX+feCEVf1N7vGZYeE5X+gwClprwO8AqmDBQMux5+TFg5jSGlFinNE7FioUT/vL20IEnR/dWoslxsruc5Oej3IAkSQO1CEkYas2P2iWnKe7qeGmLMVTLwLilH9/kzbdzDgRVYgutlTJR7xt5uAI2mnVfkk7HMNKVtf5ZfeC5yARu5jSCamP+Sup9F8alJFI2BDNirfBgZVH13PsLTpLmLYSkLOSgkyXnXRBdXtkyvnN2msXegOmk+fFCQSjlaQcR2KWGHYv4PwK5LmC1GdT9wRedzcga2KLM7h012b5+E6MF20P7zGkoaYA+S+NTrUNcgXAdcoDABOw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(7416014)(13003099007)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?amZXUEVDSFNjblVFWGFtMEczZDdDRUg1cTFJWXI5S1JrMmc3eGVpbW00WGRJ?=
- =?utf-8?B?ZFNqMG1NWnpYbzZxSkV4N3pGcXpaOTJzYXFKdDFUNStjSmhocjE0SkhtU1Ji?=
- =?utf-8?B?azh5emwrRGxaVmwvNHBxdUJFN3Yra3lyUlNJR3orMStuNWo4OE5LTVk1SENu?=
- =?utf-8?B?aGFOZ3YwMU5lMi9TQXBGWVIwWDlBVEwvWWxYR04rYU1FU3hBRk9ZSHRJZW5m?=
- =?utf-8?B?U3A3ZGdwY3QxYkk0Z3ZCMnBpOGxTTWpSSzVDL2l2cWZVbVUrc1JiUjIzYjBL?=
- =?utf-8?B?MkYzTXBhUTRBckVPc09kdDFPbldhWkFCejZjS1ZQUzJzNU5KdlI1a3hRc29H?=
- =?utf-8?B?cmJST1pkbUp2UXEwSjBKeGhZNiszV0daOTQ1aTlEejVQYUVWYm9iTmxZZlZi?=
- =?utf-8?B?blRRZzY4L0M4R0tYdk1pZ1JCdDI4eXgvRTBqS3F1TlA5eU1GTDQxcmU1SGU5?=
- =?utf-8?B?RC82a1R1OTZqWWVQamtjekxnTUVUVGpBNkt1TkhjT3JkeXpBd0Jlbk5rUDhL?=
- =?utf-8?B?bFFpZ05sY1hld1JhYm5SdjYvTWd3YklrYmY5ZHBpM0I0aU5yRTArcUY3emo3?=
- =?utf-8?B?S1FvU1RmZnlRVHhIZXJmZHFIam40LzVWVVV2Tzl2a2dvSHA1VFZXMHZIRHFX?=
- =?utf-8?B?L0YzV0tObEdqeWVWYUdwN0t2QjE3VkJzZm9FN3FDZkhSSHRLQkpXeXlUNEp0?=
- =?utf-8?B?UWNGS3EvWm5sRWR2RUQwZlh1TVRMbHl6N0xaejFFTXg5RkF6T0pVTVZabkZh?=
- =?utf-8?B?Y2N5dWVLZFZmMDdNWGRWTUozaHNXMTdOWU1mVEJqdllUdE82MEZEQ01iRmVl?=
- =?utf-8?B?WDRHTkExTFNzNEpRVXNvQUtIVU44ZGRuU012dndnbng2Mm5KOXpaRm85OERC?=
- =?utf-8?B?b2tLZGxwR2xEdGg0cUlVVjE0VytOWXUwS2N3Y3dhbzRGYXFqOWJVYnkxYmpD?=
- =?utf-8?B?RlZoLzhSQlVHZjZ5RVE3TUdtY0ZSb0JhZFZvSGpjTllMZ3pycWxqbDZkeE5j?=
- =?utf-8?B?TE9Tbmw4SVFkUWNUb1F3ZGVjM2lsR0syeUtSOVg0bmNyT01MWDBzaXJScUhV?=
- =?utf-8?B?R2tVaDIvbDJDL3l2cW1EVndDbHVmSlRDUTJNSGZmbStCUDlDZkpKekVzMm13?=
- =?utf-8?B?ZU42MTliUkRhRm8vMUdjTEwxVnpSZDRyV0NoZjZDT2dNNVJKUk5VYWNtRUI0?=
- =?utf-8?B?Mk8xUTYzSWJTcEdDTVU2dnlBUzExZk9hNXpYb2R5bW5ZMldXUldlTVhPUDVl?=
- =?utf-8?B?UmMzSGNndkJEVS9WSW1xLzNjSi9ra0kxZVRpR29sL3RmOUREck9aazJENUZt?=
- =?utf-8?B?N2Z3WFNTN2l0SGVJQjBZeGY0Y2JJNEd3VE5wekdrWXg4WFNPUHJPcGpVbGVq?=
- =?utf-8?B?SThtVUZMNFVJdi9WT2hCR2dtYUlVb3IyVUczbFJDUlNVcXgzVHZ0dklwU3VG?=
- =?utf-8?B?Wk0xOVh6d1RqZDdySlVpSlpJclkvNVphSnRxNm5xQ1dWS012dDVPbXh6SjBs?=
- =?utf-8?B?TWFHOEhqMFJVWnhZU01OblR0aUlGdjRqN05NT0d2bGV5RjdzQ3lJMnA1eGQz?=
- =?utf-8?B?cHlFd1hId01VT09pT1dGRk9SUm5STHowOVJFWE9majR6TW5CcjRBZEwwSXBt?=
- =?utf-8?B?MC9xQkt5M1NFVDJhV2kxbFdLdUg3em41eDJjZjAxVFhTUTcrS3BiY0NCN0dI?=
- =?utf-8?B?NzRhc2N0T0dxUVFnWFlqbTUrVkpnZ0lVdFd0bDdzTm50MThoc1ltTFU2VkVa?=
- =?utf-8?B?Mm4vTkxSSlZpUER0QW00ZHhSTkhOMFFscHNlTkhYQWdWTytDNm5oLy9xTnJZ?=
- =?utf-8?B?YTR1NlNwT1prRHpVSXhUaVFFN0Yrc1UyQkdUQ0ozL2t1SjFEQlBWTGtVZTRv?=
- =?utf-8?B?MjYvSHE3cmdoeUowcUJzaWk5QUZId2hSVWhZc3NId01zQVVoclZNVk5nbTB6?=
- =?utf-8?B?TXdPb0lGZXBxUkdjWVhVdEtnMEZxUm5QWk5VN3puV244TkFnVFVhV2R5OXVx?=
- =?utf-8?B?KzZNR1RRaC9scEk5OGlsdTNibE5yMzFkRWx0WXowOTM2YWtBQVpSKzlSSmUv?=
- =?utf-8?B?ZWowSlQvQ2QvNmhTbmdRdTB3WlB0MmpXMWFmNmNPY3h3MjFjY3pXcjRLSkUw?=
- =?utf-8?B?UnBiYWp5VmxGam1BcURBV2hkU1BxSXhZTENjNmtSNHBPeE1Kc0RUa2t5YkdZ?=
- =?utf-8?B?S2lYQ0lXczgxcS9MNGRFRWRGdGZkcDIvRVR5Q1VabmxJc3dyaDdxUEFDYnhx?=
- =?utf-8?B?akQ0c3B6SFJuUnM0N1VLZ3ZleTFsOHg1TTdSQXlVUmNEczNOZk56eXZxcW1T?=
- =?utf-8?Q?btT3nh7vY3wnU20bsn?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5ae64953-95c9-4fe7-ce17-08de94077880
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Apr 2026 18:08:14.3968
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Vb+m/Hn/98/53VhHTCa0ZdjDSLAUQKpmvoJUBmTR5h3B6l6xgeJcsUzEWDUihUHVb8ugz9E1SCOrpDPlxRCP0w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7722
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: shuah <shuah@kernel.org>, Shuah Khan <skhan@linuxfoundation.org>,
+ Thomas Renninger <trenn@suse.com>, "John B. Wyatt IV" <jwyatt@redhat.com>,
+ John Kacur <jkacur@redhat.com>, Thomas Renninger <trenn@suse.de>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Shuah Khan <skhan@linuxfoundation.org>
+Subject: [GIT PULL] cpupower next update for Linux 7.1-rc1
 
-Hi Pierre,
+This is a multi-part message in MIME format.
+--------------FJdVjfzVVDNpa7SwD4CvphGL
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thank you for the comments.
-Sorry for late reply as I was on vacation.
+Hi Rafael,
 
+Please pull the cpupower next update for Linux 7.1-rc1.
 
-On 24/03/26 23:48, Pierre Gondois wrote:
-> External email: Use caution opening links or attachments
->
->
-> Hello Sumit,
->
-> On 3/17/26 16:10, Sumit Gupta wrote:
->> Add kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable CPPC
->> autonomous performance selection on all CPUs at system startup without
->> requiring runtime sysfs manipulation. When autonomous mode is enabled,
->> the hardware automatically adjusts CPU performance based on workload
->> demands using Energy Performance Preference (EPP) hints.
->>
->> When auto_sel_mode=1:
->> - Configure all CPUs for autonomous operation on first init
->> - Set EPP to performance preference (0x0)
->> - Use HW min/max when set; otherwise program from policy limits (caps)
->> - Clamp desired_perf to bounds before enabling autonomous mode
->> - Hardware controls frequency instead of the OS governor
->>
->> The boot parameter is applied only during first policy initialization.
->> On hotplug, skip applying it so that the user's runtime sysfs
->> configuration is preserved.
->>
->> Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->> Part 1 [1] of this series was applied for 7.1 and present in next.
->> Sending this patch as reworked version of 'patch 11' from [2] based
->> on next.
->>
->> [1] 
->> https://lore.kernel.org/lkml/20260206142658.72583-1-sumitg@nvidia.com/
->> [2] 
->> https://lore.kernel.org/lkml/20251223121307.711773-1-sumitg@nvidia.com/
->> ---
->>   .../admin-guide/kernel-parameters.txt         | 13 +++
->>   drivers/cpufreq/cppc_cpufreq.c                | 84 +++++++++++++++++--
->>   2 files changed, 92 insertions(+), 5 deletions(-)
->>
->> diff --git a/Documentation/admin-guide/kernel-parameters.txt 
->> b/Documentation/admin-guide/kernel-parameters.txt
->> index fa6171b5fdd5..de4b4c89edfe 100644
->> --- a/Documentation/admin-guide/kernel-parameters.txt
->> +++ b/Documentation/admin-guide/kernel-parameters.txt
->> @@ -1060,6 +1060,19 @@ Kernel parameters
->>                       policy to use. This governor must be registered 
->> in the
->>                       kernel before the cpufreq driver probes.
->>
->> +     cppc_cpufreq.auto_sel_mode=
->> +                     [CPU_FREQ] Enable ACPI CPPC autonomous performance
->> +                     selection. When enabled, hardware automatically 
->> adjusts
->> +                     CPU frequency on all CPUs based on workload 
->> demands.
->> +                     In Autonomous mode, Energy Performance 
->> Preference (EPP)
->> +                     hints guide hardware toward performance (0x0) 
->> or energy
->> +                     efficiency (0xff).
->> +                     Requires ACPI CPPC autonomous selection 
->> register support.
->> +                     Format: <bool>
->> +                     Default: 0 (disabled)
->> +                     0: use cpufreq governors
->> +                     1: enable if supported by hardware
->> +
->>       cpu_init_udelay=N
->>                       [X86,EARLY] Delay for N microsec between assert 
->> and de-assert
->>                       of APIC INIT to start processors.  This delay 
->> occurs
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c 
->> b/drivers/cpufreq/cppc_cpufreq.c
->> index 5dfb109cf1f4..49c148b2a0a4 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -28,6 +28,9 @@
->>
->>   static struct cpufreq_driver cppc_cpufreq_driver;
->>
->> +/* Autonomous Selection boot parameter */
->> +static bool auto_sel_mode;
->> +
->>   #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
->>   static enum {
->>       FIE_UNSET = -1,
->> @@ -708,11 +711,74 @@ static int cppc_cpufreq_cpu_init(struct 
->> cpufreq_policy *policy)
->>       policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->>       cpu_data->perf_ctrls.desired_perf = caps->highest_perf;
->>
->> -     ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->> -     if (ret) {
->> -             pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
->> -                      caps->highest_perf, cpu, ret);
->> -             goto out;
->> +     /*
->> +      * Enable autonomous mode on first init if boot param is set.
->> +      * Check last_governor to detect first init and skip if auto_sel
->> +      * is already enabled.
->> +      */
-> If the goal is to set autosel only once at the driver init,
-> shouldn't this be done in cppc_cpufreq_init() ?
-> I understand that cpu_data doesn't exist yet in
-> cppc_cpufreq_init(), but this seems more appropriate to do
-> it there IMO.
->
-> This means the cpudata should be updated accordingly
-> in this cppc_cpufreq_cpu_init() function.
+- Fixes errors in cpupower-frequency-info short option names
+   to its manpage.
+- Fixes cpupower-idle-info perf option name to its manpage.
+- Adds boost and epp options to cpupower-frequency-info to its
+   manpage.
+- Adds description for perf-bias option to cpupower-info to its
+   manpage.
+- Removes unnecessary extern declarations from getopt.h in arguments
+   parsing functions in cpufreq-set, cpuidle-info, cpuidle-set,
+   cpupower-info, and cpupower-set utilities. These functions are
+   defined getopt.h file.
 
-In an earlier version [1], the setup was in cppc_cpufreq_init() but
-was moved to cppc_cpufreq_cpu_init() to improve per-CPU error handling.
-Keeping the setup in cppc_cpufreq_init() helps to avoid the last_governor
-check. We can warn for a CPU failing to enable and continue so other
-CPUs keep autonomous mode.
-cppc_cpufreq_cpu_init() would then just check the auto_sel state
-from register and sync policy limits from min/max_perf registers when
-autonomous mode is active.
-Please let me know your thoughts.
+diff is attached.
 
-[1] 
-https://lore.kernel.org/lkml/5593d364-ca37-41c5-b33f-f7e245d6d626@nvidia.com/
+thanks,
+-- Shuah
 
+----------------------------------------------------------------
+The following changes since commit c369299895a591d96745d6492d4888259b004a9e:
 
->
->> +     if (auto_sel_mode && policy->last_governor[0] == '\0' &&
->> +         !cpu_data->perf_ctrls.auto_sel) {
->> +             /* Enable CPPC - optional register, some platforms need 
->> it */
-> The documentation of the CPPC Enable Register is subject to
-> interpretation, but IIUC the field should be set to use the CPPC
-> controls, so I assume this should be set in cppc_cpufreq_init()
-> instead ?
+   Linux 7.0-rc5 (2026-03-22 14:42:17 -0700)
 
-Agree that the CPPC Enable is about using the CPPC control path
-in general and not only for autonomous selection.
-Will move cppc_set_enable() into cppc_cpufreq_init() or outside the
-autonomous mode block in cppc_cpufreq_cpu_init() as per conclusion
-of previous comment.
+are available in the Git repository at:
 
->> +             ret = cppc_set_enable(cpu, true);
->> +             if (ret && ret != -EOPNOTSUPP)
->> +                     pr_warn("Failed to enable CPPC for CPU%d 
->> (%d)\n", cpu, ret);
->> +
->> +             /*
->> +              * Prefer HW min/max_perf when set; otherwise program from
->> +              * policy limits derived earlier from caps.
->> +              * Clamp desired_perf to bounds and sync policy->cur.
->> +              */
->> +             if (!cpu_data->perf_ctrls.min_perf || 
->> !cpu_data->perf_ctrls.max_perf)
->
-> The function doesn't seem to exist.
+   git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-7.1-rc1
 
-It is newly added in [2].
-Don't need to call it if we move the setup to cppc_cpufreq_init().
+for you to fetch changes up to 2fd3b83cacfb9160b896fb26117328eeb0598c54:
 
-[2] 
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=ea3db45ae476889a1ba0ab3617e6afdeeefbda3d 
+   cpupower: remove extern declarations in cmd functions (2026-04-06 11:25:32 -0600)
 
+----------------------------------------------------------------
+linux-cpupower-7.1-rc1
 
+- Fixes errors in cpupower-frequency-info short option names
+   to its manpage.
+- Fixes cpupower-idle-info perf option name to its manpage.
+- Adds boost and epp options to cpupower-frequency-info to its
+   manpage.
+- Adds description for perf-bias option to cpupower-info to its
+   manpage.
+- Removes unnecessary extern declarations from getopt.h in arguments
+   parsing functions in cpufreq-set, cpuidle-info, cpuidle-set,
+   cpupower-info, and cpupower-set utilities. These functions are
+   defined getopt.h file.
 
->
->> + cppc_cpufreq_update_perf_limits(cpu_data, policy);
->> +
->> +             cpu_data->perf_ctrls.desired_perf =
->> +                     clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
->> +                             cpu_data->perf_ctrls.min_perf,
->> +                             cpu_data->perf_ctrls.max_perf);
->> +
->> +             policy->cur = cppc_perf_to_khz(caps,
->> + cpu_data->perf_ctrls.desired_perf);
->> +
->
-> Maybe this should also be done in cppc_cpufreq_init()
-> if the auto_sel_mode parameter is set ?
+----------------------------------------------------------------
+Kaushlendra Kumar (1):
+       cpupower: remove extern declarations in cmd functions
 
-Yes.
+Roberto Ricci (4):
+       cpupower-idle-info.1: fix short option names
+       cpupower-frequency-info.1: use the proper name of the --perf option
+       cpupower-frequency-info.1: document --boost and --epp options
+       cpupower-info.1: describe the --perf-bias option
 
->
->> +             /* EPP is optional - some platforms may not support it */
->> +             ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
->> +             if (ret && ret != -EOPNOTSUPP)
->> +                     pr_warn("Failed to set EPP for CPU%d (%d)\n", 
->> cpu, ret);
->> +             else if (!ret)
->> +                     cpu_data->perf_ctrls.energy_perf = 
->> CPPC_EPP_PERFORMANCE_PREF;
->> +
->> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->> +             if (ret) {
->> +                     pr_debug("Err setting perf for autonomous mode 
->> CPU:%d ret:%d\n",
->> +                              cpu, ret);
->> +                     goto out;
->> +             }
->> +
->> +             ret = cppc_set_auto_sel(cpu, true);
->> +             if (ret && ret != -EOPNOTSUPP) {
->> +                     pr_warn("Failed autonomous config for CPU%d 
->> (%d)\n",
->> +                             cpu, ret);
->> +                     goto out;
->> +             }
->> +             if (!ret)
->> +                     cpu_data->perf_ctrls.auto_sel = true;
->> +     }
->> +
->> +     if (cpu_data->perf_ctrls.auto_sel) {
->
-> There is a patchset ongoing which tries to remove
-> setting policy->min/max from driver initialization.
-> Indeed, these values are only temporarily valid,
-> until the governor override them.
-> It is not sure yet the patch will be accepted though.
->
-> https://lore.kernel.org/lkml/20260317101753.2284763-4-pierre.gondois@arm.com/ 
->
+  tools/power/cpupower/man/cpupower-frequency-info.1 | 8 +++++++-
+  tools/power/cpupower/man/cpupower-idle-info.1      | 4 ++--
+  tools/power/cpupower/man/cpupower-info.1           | 9 ++++++++-
+  tools/power/cpupower/utils/cpufreq-info.c          | 2 --
+  tools/power/cpupower/utils/cpufreq-set.c           | 2 --
+  tools/power/cpupower/utils/cpuidle-info.c          | 2 --
+  tools/power/cpupower/utils/cpuidle-set.c           | 2 --
+  tools/power/cpupower/utils/cpupower-info.c         | 2 --
+  tools/power/cpupower/utils/cpupower-set.c          | 2 --
+  9 files changed, 17 insertions(+), 16 deletions(-)
+----------------------------------------------------------------
+--------------FJdVjfzVVDNpa7SwD4CvphGL
+Content-Type: text/x-patch; charset=UTF-8; name="linux-cpupower-7.1-rc1.diff"
+Content-Disposition: attachment; filename="linux-cpupower-7.1-rc1.diff"
+Content-Transfer-Encoding: base64
 
+ZGlmZiAtLWdpdCBhL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVwb3dlci1mcmVxdWVu
+Y3ktaW5mby4xIGIvdG9vbHMvcG93ZXIvY3B1cG93ZXIvbWFuL2NwdXBvd2VyLWZyZXF1ZW5j
+eS1pbmZvLjEKaW5kZXggNDdmZGQ3MjE4NzQ4Li5iMGQ2OWM5YWRjYmQgMTAwNjQ0Ci0tLSBh
+L3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVwb3dlci1mcmVxdWVuY3ktaW5mby4xCisr
+KyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVwb3dlci1mcmVxdWVuY3ktaW5mby4x
+CkBAIC0zMiw2ICszMiwxMiBAQCBHZXRzIHRoZSBjdXJyZW50bHkgdXNlZCBjcHVmcmVxIHBv
+bGljeS4KIFxmQlwtZ1xmUiBcZkJcLVwtZ292ZXJub3JzXGZSCiBEZXRlcm1pbmVzIGF2YWls
+YWJsZSBjcHVmcmVxIGdvdmVybm9ycy4KIC5UUCAgCitcZkJcLWJcZlIgXGZCXC1cLWJvb3N0
+XGZSCitHZXRzIHRoZSBjdXJyZW50IGJvb3N0IHN0YXRlIHN1cHBvcnQuCisuVFAKK1xmQlwt
+elxmUiBcZkJcLVwtZXBwXGZSCitHZXRzIHRoZSBjdXJyZW50IEVQUCAoZW5lcmd5IHBlcmZv
+cm1hbmNlIHByZWZlcmVuY2UpLgorLlRQCiBcZkJcLXJcZlIgXGZCXC1cLXJlbGF0ZWRcLWNw
+dXNcZlIKIERldGVybWluZXMgd2hpY2ggQ1BVcyBydW4gYXQgdGhlIHNhbWUgaGFyZHdhcmUg
+ZnJlcXVlbmN5LgogLlRQICAKQEAgLTUzLDcgKzU5LDcgQEAgaHVtYW5cLXJlYWRhYmxlIG91
+dHB1dCBmb3IgdGhlIFwtZiwgXC13LCBcLXMgYW5kIFwteSBwYXJhbWV0ZXJzLgogXGZCXC1u
+XGZSIFxmQlwtXC1uby1yb3VuZGluZ1xmUgogT3V0cHV0IGZyZXF1ZW5jaWVzIGFuZCBsYXRl
+bmNpZXMgd2l0aG91dCByb3VuZGluZyBvZmYgdmFsdWVzLgogLlRQICAKLVxmQlwtY1xmUiBc
+ZkJcLVwtcGVyZlxmUgorXGZCXC1jXGZSIFxmQlwtXC1wZXJmb3JtYW5jZVxmUgogR2V0IHBl
+cmZvcm1hbmNlcyBhbmQgZnJlcXVlbmNpZXMgY2FwYWJpbGl0aWVzIG9mIENQUEMsIGJ5IHJl
+YWRpbmcgaXQgZnJvbSBoYXJkd2FyZSAob25seSBhdmFpbGFibGUgb24gdGhlIGhhcmR3YXJl
+IHdpdGggQ1BQQykuCiAuVFAKIC5TSCAiUkVNQVJLUyIKZGlmZiAtLWdpdCBhL3Rvb2xzL3Bv
+d2VyL2NwdXBvd2VyL21hbi9jcHVwb3dlci1pZGxlLWluZm8uMSBiL3Rvb2xzL3Bvd2VyL2Nw
+dXBvd2VyL21hbi9jcHVwb3dlci1pZGxlLWluZm8uMQppbmRleCAyMGI2MzQ1YzUzYWQuLmIy
+ZjkyYWJhNWY1YiAxMDA2NDQKLS0tIGEvdG9vbHMvcG93ZXIvY3B1cG93ZXIvbWFuL2NwdXBv
+d2VyLWlkbGUtaW5mby4xCisrKyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVwb3dl
+ci1pZGxlLWluZm8uMQpAQCAtMTEsMTAgKzExLDEwIEBAIEEgdG9vbCB3aGljaCBwcmludHMg
+b3V0IHBlciBjcHUgaWRsZSBpbmZvcm1hdGlvbiBoZWxwZnVsIHRvIGRldmVsb3BlcnMgYW5k
+IGludGVyCiAuU0ggIk9QVElPTlMiCiAuTFAKIC5UUAotXGZCXC1mXGZSIFxmQlwtXC1zaWxl
+bnRcZlIKK1xmQlwtc1xmUiBcZkJcLVwtc2lsZW50XGZSCiBPbmx5IHByaW50IGEgc3VtbWFy
+eSBvZiBhbGwgYXZhaWxhYmxlIEMtc3RhdGVzIGluIHRoZSBzeXN0ZW0uCiAuVFAKLVxmQlwt
+ZVxmUiBcZkJcLVwtcHJvY1xmUgorXGZCXC1vXGZSIFxmQlwtXC1wcm9jXGZSCiBkZXByZWNh
+dGVkLgogUHJpbnRzIG91dCBpZGxlIGluZm9ybWF0aW9uIGluIG9sZCAvcHJvYy9hY3BpL3By
+b2Nlc3Nvci8qL3Bvd2VyIGZvcm1hdC4gVGhpcwogaW50ZXJmYWNlIGhhcyBiZWVuIHJlbW92
+ZWQgZnJvbSB0aGUga2VybmVsIGZvciBxdWl0ZSBzb21lIHRpbWUsIGRvIG5vdCBsZXQKZGlm
+ZiAtLWdpdCBhL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVwb3dlci1pbmZvLjEgYi90
+b29scy9wb3dlci9jcHVwb3dlci9tYW4vY3B1cG93ZXItaW5mby4xCmluZGV4IDM0MGJjZDBi
+ZTdkZS4uMWY0MmQ4YzM4OGEwIDEwMDY0NAotLS0gYS90b29scy9wb3dlci9jcHVwb3dlci9t
+YW4vY3B1cG93ZXItaW5mby4xCisrKyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL21hbi9jcHVw
+b3dlci1pbmZvLjEKQEAgLTMsNyArMyw3IEBACiBjcHVwb3dlclwtaW5mbyBcLSBTaG93cyBw
+cm9jZXNzb3IgcG93ZXIgcmVsYXRlZCBrZXJuZWwgb3IgaGFyZHdhcmUgY29uZmlndXJhdGlv
+bnMKIC5TSCBTWU5PUFNJUwogLmZ0IEIKLS5CIGNwdXBvd2VyIGluZm8gWyBcLWIgXQorLkIg
+Y3B1cG93ZXIgaW5mbyBbXGZJb3B0aW9uc1xmUF0KIAogLlNIIERFU0NSSVBUSU9OCiBcZkJj
+cHVwb3dlciBpbmZvIFxmUCBzaG93cyBrZXJuZWwgY29uZmlndXJhdGlvbnMgb3IgcHJvY2Vz
+c29yIGhhcmR3YXJlCkBAIC0xMyw2ICsxMywxMyBAQCBTb21lIG9wdGlvbnMgYXJlIHBsYXRm
+b3JtIHdpZGUsIHNvbWUgYWZmZWN0IHNpbmdsZSBjb3Jlcy4gQnkgZGVmYXVsdCB2YWx1ZXMK
+IG9mIGNvcmUgemVybyBhcmUgZGlzcGxheWVkIG9ubHkuIGNwdXBvd2VyIC0tY3B1IGFsbCBj
+cHVpbmZvIHdpbGwgc2hvdyB0aGUKIHNldHRpbmdzIG9mIGFsbCBjb3Jlcywgc2VlIGNwdXBv
+d2VyKDEpIGhvdyB0byBjaG9vc2Ugc3BlY2lmaWMgY29yZXMuCiAKKy5TSCAiT1BUSU9OUyIK
+Ky5MUAorLlRQCitcZkJcLWJcZlIgXGZCXC1cLXBlcmYtYmlhc1xmUgorR2V0cyB0aGUgY3Vy
+cmVudCBwZXJmb3JtYW5jZSBiaWFzIHZhbHVlLgorLlRQCisKIC5TSCAiU0VFIEFMU08iCiBP
+cHRpb25zIGFyZSBkZXNjcmliZWQgaW4gZGV0YWlsIGluOgogCmRpZmYgLS1naXQgYS90b29s
+cy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVmcmVxLWluZm8uYyBiL3Rvb2xzL3Bvd2VyL2Nw
+dXBvd2VyL3V0aWxzL2NwdWZyZXEtaW5mby5jCmluZGV4IDVmZTAxZTUxNjgxNy4uNWEyNDJi
+NDkxYTlkIDEwMDY0NAotLS0gYS90b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVmcmVx
+LWluZm8uYworKysgYi90b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVmcmVxLWluZm8u
+YwpAQCAtNTQyLDggKzU0Miw2IEBAIHN0YXRpYyBzdHJ1Y3Qgb3B0aW9uIGluZm9fb3B0c1td
+ID0gewogCiBpbnQgY21kX2ZyZXFfaW5mbyhpbnQgYXJnYywgY2hhciAqKmFyZ3YpCiB7Ci0J
+ZXh0ZXJuIGNoYXIgKm9wdGFyZzsKLQlleHRlcm4gaW50IG9wdGluZCwgb3B0ZXJyLCBvcHRv
+cHQ7CiAJaW50IHJldCA9IDAsIGNvbnQgPSAxOwogCXVuc2lnbmVkIGludCBjcHUgPSAwOwog
+CXVuc2lnbmVkIGludCBodW1hbiA9IDA7CmRpZmYgLS1naXQgYS90b29scy9wb3dlci9jcHVw
+b3dlci91dGlscy9jcHVmcmVxLXNldC5jIGIvdG9vbHMvcG93ZXIvY3B1cG93ZXIvdXRpbHMv
+Y3B1ZnJlcS1zZXQuYwppbmRleCBjNWU2MGEzOWNmYTYuLjA2Y2Q0YjI4MDEzMiAxMDA2NDQK
+LS0tIGEvdG9vbHMvcG93ZXIvY3B1cG93ZXIvdXRpbHMvY3B1ZnJlcS1zZXQuYworKysgYi90
+b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVmcmVxLXNldC5jCkBAIC0xOTUsOCArMTk1
+LDYgQEAgc3RhdGljIGludCBkb19vbmVfY3B1KHVuc2lnbmVkIGludCBjcHUsIHN0cnVjdCBj
+cHVmcmVxX3BvbGljeSAqbmV3X3BvbCwKIAogaW50IGNtZF9mcmVxX3NldChpbnQgYXJnYywg
+Y2hhciAqKmFyZ3YpCiB7Ci0JZXh0ZXJuIGNoYXIgKm9wdGFyZzsKLQlleHRlcm4gaW50IG9w
+dGluZCwgb3B0ZXJyLCBvcHRvcHQ7CiAJaW50IHJldCA9IDAsIGNvbnQgPSAxOwogCWludCBk
+b3VibGVfcGFybSA9IDAsIHJlbGF0ZWQgPSAwLCBwb2xpY3ljaGFuZ2UgPSAwOwogCXVuc2ln
+bmVkIGxvbmcgZnJlcSA9IDA7CmRpZmYgLS1naXQgYS90b29scy9wb3dlci9jcHVwb3dlci91
+dGlscy9jcHVpZGxlLWluZm8uYyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL3V0aWxzL2NwdWlk
+bGUtaW5mby5jCmluZGV4IDgxYjQ3NjNhOTdkNi4uY2NiMzcxMjViZDM3IDEwMDY0NAotLS0g
+YS90b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVpZGxlLWluZm8uYworKysgYi90b29s
+cy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVpZGxlLWluZm8uYwpAQCAtMTM5LDggKzEzOSw2
+IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBjcHVpZGxlX2V4aXQoaW50IGZhaWwpCiAKIGludCBj
+bWRfaWRsZV9pbmZvKGludCBhcmdjLCBjaGFyICoqYXJndikKIHsKLQlleHRlcm4gY2hhciAq
+b3B0YXJnOwotCWV4dGVybiBpbnQgb3B0aW5kLCBvcHRlcnIsIG9wdG9wdDsKIAlpbnQgcmV0
+ID0gMCwgY29udCA9IDEsIG91dHB1dF9wYXJhbSA9IDAsIHZlcmJvc2UgPSAxOwogCXVuc2ln
+bmVkIGludCBjcHUgPSAwOwogCmRpZmYgLS1naXQgYS90b29scy9wb3dlci9jcHVwb3dlci91
+dGlscy9jcHVpZGxlLXNldC5jIGIvdG9vbHMvcG93ZXIvY3B1cG93ZXIvdXRpbHMvY3B1aWRs
+ZS1zZXQuYwppbmRleCBhNTUxZDFkNGFjNTEuLjcwMzA5NGYxMzQzYyAxMDA2NDQKLS0tIGEv
+dG9vbHMvcG93ZXIvY3B1cG93ZXIvdXRpbHMvY3B1aWRsZS1zZXQuYworKysgYi90b29scy9w
+b3dlci9jcHVwb3dlci91dGlscy9jcHVpZGxlLXNldC5jCkBAIC0yNCw4ICsyNCw2IEBAIHN0
+YXRpYyBzdHJ1Y3Qgb3B0aW9uIGluZm9fb3B0c1tdID0gewogCiBpbnQgY21kX2lkbGVfc2V0
+KGludCBhcmdjLCBjaGFyICoqYXJndikKIHsKLQlleHRlcm4gY2hhciAqb3B0YXJnOwotCWV4
+dGVybiBpbnQgb3B0aW5kLCBvcHRlcnIsIG9wdG9wdDsKIAlpbnQgcmV0ID0gMCwgY29udCA9
+IDEsIHBhcmFtID0gMCwgZGlzYWJsZWQ7CiAJdW5zaWduZWQgbG9uZyBsb25nIGxhdGVuY3kg
+PSAwLCBzdGF0ZV9sYXRlbmN5OwogCXVuc2lnbmVkIGludCBjcHUgPSAwLCBpZGxlc3RhdGUg
+PSAwLCBpZGxlc3RhdGVzID0gMDsKZGlmZiAtLWdpdCBhL3Rvb2xzL3Bvd2VyL2NwdXBvd2Vy
+L3V0aWxzL2NwdXBvd2VyLWluZm8uYyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL3V0aWxzL2Nw
+dXBvd2VyLWluZm8uYwppbmRleCAxOGZkNzc1MWY1MDkuLjc5MTU0ZDcxZTQ5OCAxMDA2NDQK
+LS0tIGEvdG9vbHMvcG93ZXIvY3B1cG93ZXIvdXRpbHMvY3B1cG93ZXItaW5mby5jCisrKyBi
+L3Rvb2xzL3Bvd2VyL2NwdXBvd2VyL3V0aWxzL2NwdXBvd2VyLWluZm8uYwpAQCAtMjgsOCAr
+MjgsNiBAQCBzdGF0aWMgdm9pZCBwcmludF93cm9uZ19hcmdfZXhpdCh2b2lkKQogCiBpbnQg
+Y21kX2luZm8oaW50IGFyZ2MsIGNoYXIgKiphcmd2KQogewotCWV4dGVybiBjaGFyICpvcHRh
+cmc7Ci0JZXh0ZXJuIGludCBvcHRpbmQsIG9wdGVyciwgb3B0b3B0OwogCXVuc2lnbmVkIGlu
+dCBjcHU7CiAJc3RydWN0IHV0c25hbWUgdXRzOwogCmRpZmYgLS1naXQgYS90b29scy9wb3dl
+ci9jcHVwb3dlci91dGlscy9jcHVwb3dlci1zZXQuYyBiL3Rvb2xzL3Bvd2VyL2NwdXBvd2Vy
+L3V0aWxzL2NwdXBvd2VyLXNldC5jCmluZGV4IDU1MGE5NDJlNzJjZS4uYzIxNzZiOWZhNTdk
+IDEwMDY0NAotLS0gYS90b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVwb3dlci1zZXQu
+YworKysgYi90b29scy9wb3dlci9jcHVwb3dlci91dGlscy9jcHVwb3dlci1zZXQuYwpAQCAt
+MzMsOCArMzMsNiBAQCBzdGF0aWMgdm9pZCBwcmludF93cm9uZ19hcmdfZXhpdCh2b2lkKQog
+CiBpbnQgY21kX3NldChpbnQgYXJnYywgY2hhciAqKmFyZ3YpCiB7Ci0JZXh0ZXJuIGNoYXIg
+Km9wdGFyZzsKLQlleHRlcm4gaW50IG9wdGluZCwgb3B0ZXJyLCBvcHRvcHQ7CiAJdW5zaWdu
+ZWQgaW50IGNwdTsKIAlzdHJ1Y3QgdXRzbmFtZSB1dHM7CiAK
 
-You are right that policy->min/max from .init() are temporary today
-as cpufreq_set_policy() overwrites them before the governor starts.
-
-On my test platform (highest == nominal, lowest_nonlinear == lowest),
-this had no visible effect because the BIOS bounds and cpuinfo range
-end up identical. But on platforms where they differ, the governor
-would widen the range to full cpuinfo limits.
-
-I think your patch [3] fixes this by giving these the right semantic as
-initial QoS requests. With it, cpufreq_set_policy() preserves the policy
-limits set from min/max_perf registers in .init(), which can either be
-BIOS values on first boot or last user configured values before hotplug.
-
-I will update the comment in v2 to reflect QoS seeding intent.
-
-I see that the first two patches of your series [3] is applied for 7.1.
-Do you plan to send the pending patch (3/4) from [3]?
-
-[3] 
-https://lore.kernel.org/lkml/20260317101753.2284763-4-pierre.gondois@arm.com/
-
-
->
->
->> +             /* Sync policy limits from HW when autonomous mode is 
->> active */
->> +             policy->min = cppc_perf_to_khz(caps,
->> + cpu_data->perf_ctrls.min_perf ?:
->> + caps->lowest_nonlinear_perf);
->> +             policy->max = cppc_perf_to_khz(caps,
->> + cpu_data->perf_ctrls.max_perf ?:
->> + caps->nominal_perf);
->> +     } else {
->> +             /* Normal mode: governors control frequency */
->> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->> +             if (ret) {
->> +                     pr_debug("Err setting perf value:%d on CPU:%d. 
->> ret:%d\n",
->> +                              caps->highest_perf, cpu, ret);
->> +                     goto out;
->> +             }
->>       }
->>
->>       cppc_cpufreq_cpu_fie_init(policy);
->> @@ -1038,10 +1104,18 @@ static int __init cppc_cpufreq_init(void)
->>
->>   static void __exit cppc_cpufreq_exit(void)
->>   {
->> +     unsigned int cpu;
->> +
->> +     for_each_present_cpu(cpu)
->> +             cppc_set_auto_sel(cpu, false);
->
-> If the firmware has a default EPP value, it means that loading
-> and the unloading the driver will reset this default EPP value.
-> Maybe the initial EPP value and/or the auto_sel value should be
-> cached somewhere and restored on exit ?
-> I don't know if this is actually an issue, this is just to signal it.
-
-The auto_sel_mode boot path programs EPP to performance preference(0),
-not the firmware’s previous value. On unload we only call
-cppc_set_auto_sel(false); we do not restore EPP, min/max perf,
-or other CPPC fields to firmware defaults.
-
-Thank you,
-Sumit Gupta
-
-....
-
-
+--------------FJdVjfzVVDNpa7SwD4CvphGL--
