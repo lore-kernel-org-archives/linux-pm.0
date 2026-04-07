@@ -1,75 +1,67 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8077E3A1A26;
-	Tue,  7 Apr 2026 07:42:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDBD13A3830;
+	Tue,  7 Apr 2026 08:09:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775547732; cv=none; b=PP25z8DH4csBZlOEG1n7nWhmoWMZVA1JTbUz/mBjTI0ZOgkRnED1h6vYbAxz+QI1OczlKUQDvfIb2TZYnod+JJQnm24zzDaEi8NymNm28EYmUhKmCtUT8NsLubVaXwXhTqC8gAnURWFTxcTAyE6ApfnN83eaEo+WjcVIvMlMvsM=
+	t=1775549390; cv=none; b=RVm7RzC/UoOBS2h02+lnLkKgZYENAS3sxQzL+Yos9xfLMxGgpzY5lHNsyezEyN8rVxAULMfEJ9CSVmGd++A3cCun51nNWVWClWg8b3BSl4U9ZM9m1oVC49Y+Uzmti9naO+tWIYwZpxYWuWcQOybkwtHLPpexH6t84g9MbyCMzwo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775547732; c=relaxed/simple;
-	bh=sPzm/Nez1fn/x3kwZsl/isvL5S/cIA1EMnGc47K4a3U=;
+	s=arc-20240116; t=1775549390; c=relaxed/simple;
+	bh=69pbhVJSpuHmeuB6LE47GF9WV7VZpEjFuiuFUbGxbNo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AIRETR0XLh7dQ5N2Hg4c5pMB/qegLqS8DE8oJLDh6gMCZrV7noT4CHL5LFOxXJBhJEk01RA7Cxxz4rAN3Jh7bkwwhkndPAx7mAvleF5TEaSmeIpB0pzLNxMwq+GCDFbqxB2VH4gj6nX//tZJf3cUGKbJpcC+SCRYleYlU12B8qg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cSbQtWXi; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=WpyKUU69PDrQZoOfT6LIKLUTp+L5NkDW/jOUnkiUKJhRH7uN15VDOYQdxKpaoMBktGx6CVMVnkQWwMUuy+xHUo/ddIhRS1NXlrog43mBm+UTjJ4F3eFnBTTY0sShPFGfJS106tyCXvh+NAKiHh/9UremGMic49qanTi7ioTYNms=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=CIO/2Tdp; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cSbQtWXi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97D5CC116C6;
-	Tue,  7 Apr 2026 07:42:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775547732;
-	bh=sPzm/Nez1fn/x3kwZsl/isvL5S/cIA1EMnGc47K4a3U=;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="CIO/2Tdp"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3FDEC116C6;
+	Tue,  7 Apr 2026 08:09:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1775549390;
+	bh=69pbhVJSpuHmeuB6LE47GF9WV7VZpEjFuiuFUbGxbNo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cSbQtWXiQ4bD1RCyJNbixFjkvK1y+S9MqXRC+zU+BeIt5t/ym/mclYVp6+aoAS1G7
-	 RGdsSn1MM+IyRSUCYetSG5ZOVaIChjmYexpJoVMePqznku74UnYQFERP9e/FzDqvKz
-	 qbjmnO+BpBaq1NabZAA5PMBSleM4+2De/QUg/sHFmOeEJk1/6evt0cASOj5k5micpz
-	 yle+q1wrEZnCMPm7d703TeYNYH0NgRRXBsQ7pG3bN8NWJrcasJuDM5w6GsFi2MdYZa
-	 LRZfW78SiszUn1K6smsp2QZDJsNEyDo7UASJ+jHEu2cX9HrAdnpxkiNocDA07LIIHo
-	 eRrpc+OfW+7lg==
-Date: Tue, 7 Apr 2026 09:42:09 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Mike Tipton <mike.tipton@oss.qualcomm.com>
-Subject: Re: [PATCH v2 1/2] dt-bindings: interconnect: document the RPMh
- Network-On-Chip interconnect in Hawi SoC
-Message-ID: <20260407-prehistoric-inescapable-loon-cf0dd0@quoll>
-References: <20260406-icc-hawi-v2-0-6cfee87a1d25@oss.qualcomm.com>
- <20260406-icc-hawi-v2-1-6cfee87a1d25@oss.qualcomm.com>
+	b=CIO/2TdppUFlFhDNEt6QybsKo1nIOuGuKGUxtNbfNLF16T/YJCCrvlDyOn1pAKAhQ
+	 HUNLeKhCGvBsWQfyUhtpwDet2G96AfC44nXmpPS2lQYP7+fmYwl4kTKUIfbY+Tb7fQ
+	 +aKfG2Vo75zi0Q8udQ3ygCQkwou4VhIu5xuFGhuM=
+Date: Tue, 7 Apr 2026 10:08:46 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Georgi Djakov <djakov@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] interconnect changes for 7.1
+Message-ID: <2026040737-prancing-papaya-344b@gregkh>
+References: <20260406120652.1219527-1-djakov@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260406-icc-hawi-v2-1-6cfee87a1d25@oss.qualcomm.com>
+In-Reply-To: <20260406120652.1219527-1-djakov@kernel.org>
 
-On Mon, Apr 06, 2026 at 04:04:41PM -0700, Vivek Aknurwar wrote:
-> Document the RPMh Network-On-Chip Interconnect of the Hawi platform.
+On Mon, Apr 06, 2026 at 03:06:52PM +0300, Georgi Djakov wrote:
+> Hello Greg,
 > 
-> Signed-off-by: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
+> This is the pull request with interconnect changes for the v7.1-rc1 merge
+> window. As always, the summary is in the signed tag.
+> 
+> All patches have been tested in the last few linux-next releases. There
+> are currently no reported issues. Please pull into char-misc-next when
+> possible.
+> 
+> Thanks,
+> Georgi
+> 
+> 
+> The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
+> 
+>   Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-7.1-rc1
 
-Same fixes needed I wrote to Hawi upstreaming lead in private. That's
-why I gave that feedback (privately) very fast, to avoid repeating the
-mistake. So since private feedback was ignored, you have now review on
-the lists.
+Pulled and pushed out, thanks.
 
-All Qualcomm previous patches are poor:
-
-document the RPMh Network-On-Chip interconnect in Mahua SoC
-document the RPMh Network-On-Chip interconnect in Eliza SoC
-document the RPMh Network-On-Chip interconnect in Kaanapali SoC
-document the RPMh Network-On-Chip interconnect in Glymur SoC
-
-Made by the same people.
-
-Why can't you look how Neil did it for SM8650? Or Luca recently for
-Milos? Or if you cannot look at non-qcom commits then Rajendra for X1E?
-
-Best regards,
-Krzysztof
-
+greg k-h
