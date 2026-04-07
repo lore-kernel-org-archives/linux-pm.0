@@ -1,107 +1,238 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DC383B8934;
-	Tue,  7 Apr 2026 14:00:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2E663B38AF;
+	Tue,  7 Apr 2026 14:10:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775570408; cv=none; b=no7Y+78q7IyfmSBDSAR76v2eZdHr0UPxIOpzEJzC2W19spCgDpuZ0OB9HU5S8+bRYhWVc4LKvXFGIb/1fLKgUgnzHd8wr3nEEqmDYB3pAU81vR+Vz2qp3wid9LQqmoIQxcplbC9iaZCqF1MAm0kzrio2EsjsGRQnJQel8yX60CU=
+	t=1775571042; cv=none; b=jH0XrDPMCcW2YC9NF/xt0JHXd3w0LNHgcnVn77mIfFkmaGjR72xLRrcR66okJTlcC8WKrPdidtZf0OR5IjpxuWQib+RyCiBTYN4VqZ4ijDA21PMKwJjoW9UJnJHjaLgNjmuA3RdlximPKQJqtVx1XGarAU3gMZZGJr3BftdYVRs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775570408; c=relaxed/simple;
-	bh=R3FPgUBIyXd8toX27lC987LhlBPlcjngidTNB968ukE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lNy97JZSWijwL7eTz1UEE7TxUKJXTPFrVAd43Qzj7uO9BbNXHGdJgLxKemBBKK1Xu0Imc4blLsrb+SBZJPbS9NJmArKabS24cy7zSyK3E6IjxWdJoOBwoSeYNlBGi6aX0XJFwGg5y4W3QWrtBiDKyImAMvGAWCbHO1p1yh3eWj8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pq6cE2vr; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775571042; c=relaxed/simple;
+	bh=dQmJSBhhE846Zl7fb0Ou9WeICRvwD7Od8vw4OWLhUjE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=YMeFHeQiAavfMXwOqlu+jj7NKVjOkdYJD6mHgNmxzC9lrYp3hJwd+/0GDJLbjNm9DK/VgM96vUFOYf1epsoq1g/iWHbObtmNpdpdJtQtZGFjL/oFJd6otPIz5YpD6yDZjauOIu0gIDf9EST9R7XG2UQZNibN3OmKsXZZKPeDkBw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PXWPmM9Q; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pq6cE2vr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAE54C4AF0B;
-	Tue,  7 Apr 2026 14:00:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PXWPmM9Q"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6B21C116C6;
+	Tue,  7 Apr 2026 14:10:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775570408;
-	bh=R3FPgUBIyXd8toX27lC987LhlBPlcjngidTNB968ukE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pq6cE2vrKQZVnXXOiLpQL4qQvqmd0t+4rQFuqwO2IdzMK9GyGbNUnZFL0pOGWkVT9
-	 Ui/8NTG1IZsJ+hVF08dqQAwGZP+ymY9CZySkCDFKVgQRgNodoWVUBaPPTHS885UJ5W
-	 V7QtdOk133p2fCFZZnslBSF9NxkNio22U5EjuyAicxG0IjFw21VYhUs0S8lm5roDak
-	 NXkiKRSfmTPETsDQ7Yj1g8T/z6YO+fjFF7FmLP1TN2uZbnwSZXeeAEQ0ce62XoxW6g
-	 5eA5jKZLoORFdDoaN21mLjrrzefSvy4cLOEeZtPDYdh+UWktRGJyulgE9KN4333u1A
-	 dSJZXJpXrUH7A==
-Date: Tue, 7 Apr 2026 16:00:05 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Ingo Molnar <mingo@kernel.org>, John Stultz <jstultz@google.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
-	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
-	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [patch 01/12] clockevents: Prevent timer interrupt starvation
-Message-ID: <adUN5Y9-1kx5FVHd@localhost.localdomain>
-References: <20260407083219.478203185@kernel.org>
- <20260407083247.562657657@kernel.org>
+	s=k20201202; t=1775571042;
+	bh=dQmJSBhhE846Zl7fb0Ou9WeICRvwD7Od8vw4OWLhUjE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=PXWPmM9Q0nd+SgJrB7k3YOJfZu7ntdIvoROkswAnEsTJp8OafD+xWR/8DOjzQecGX
+	 V4UldNcXMpSgPK54NoQcx44CZAzGVAB1aW8hkjSAUlp4K3GlvAUnYqHe+niCKy+u3y
+	 WMMi3mAy8XFV/j3WN/ODAaxhm4m99xizwuK4zV2ohmUvAtHnQtmTAGQzLdXuiKMmb9
+	 PLCGJEk6eKGDHy0Cdf3eJb1gGxk4QtKVNDF89E7UwsOJl42aSnPm3rtydiKUgfw7I8
+	 BX198Xmq8hT6jPcLMhJ7O0KKtJd7uUGMIdkbiitP4XtE9kSYB25L2Hz5SYUdCKkNF+
+	 8kWycxg266+kw==
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
+ Armin Wolf <w_armin@gmx.de>
+Subject:
+ [PATCH v4 6/6] thermal: core: Suspend thermal zones later and resume them
+ earlier
+Date: Tue, 07 Apr 2026 16:09:21 +0200
+Message-ID: <2036875.PYKUYFuaPT@rafael.j.wysocki>
+Organization: Linux Kernel Development
+In-Reply-To: <12871778.O9o76ZdvQC@rafael.j.wysocki>
+References: <12871778.O9o76ZdvQC@rafael.j.wysocki>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260407083247.562657657@kernel.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Le Tue, Apr 07, 2026 at 10:54:17AM +0200, Thomas Gleixner a écrit :
-> From: Thomas Gleixner <tglx@kernel.org>
-> 
-> Calvin reported an odd NMI watchdog lockup which claims that the CPU locked
-> up in user space. He provided a reproducer, which sets up a timerfd based
-> timer and then rearms it in a loop with an absolute expiry time of 1ns.
-> 
-> As the expiry time is in the past, the timer ends up as the first expiring
-> timer in the per CPU hrtimer base and the clockevent device is programmed
-> with the minimum delta value. If the machine is fast enough, this ends up
-> in a endless loop of programming the delta value to the minimum value
-> defined by the clock event device, before the timer interrupt can fire,
-> which starves the interrupt and consequently triggers the lockup detector
-> because the hrtimer callback of the lockup mechanism is never invoked.
-> 
-> As a first step to prevent this, avoid reprogramming the clock event device
-> when:
->      - a forced minimum delta event is pending
->      - the new expiry delta is less then or equal to the minimum delta
-> 
-> Thanks to Calvin for providing the reproducer and to Borislav for testing
-> and providing data from his Zen5 machine.
-> 
-> The problem is not limited to Zen5, but depending on the underlying
-> clock event device (e.g. TSC deadline timer on Intel) and the CPU speed
-> not necessarily observable.
-> 
-> This change serves only as the last resort and further changes will be made
-> to prevent this scenario earlier in the call chain as far as possible.
-> 
-> Fixes: d316c57ff6bf ("[PATCH] clockevents: add core functionality")
-> Reported-by: Calvin Owens <calvin@wbinvd.org>
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Anna-Maria Behnsen <anna-maria@linutronix.de>
-> Cc: Frederic Weisbecker <frederic@kernel.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Link: https://lore.kernel.org/lkml/acMe-QZUel-bBYUh@mozart.vkv.me/
-> ---
-> V2: Simplified the clockevents code - Peter
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Isn't it possible to rely on dev->next_event instead? In the above scenario,
-subsequent 0 delta would not reprogram if dev->next_event is already below
-the new call to ktime_get() ?
+To avoid some undesirable interactions between thermal zone suspend
+and resume with user space that is running when those operations are
+carried out, move them closer to the suspend and resume of devices,
+respectively, by updating dpm_prepare() to carry out thermal zone
+suspend and dpm_complete() to start thermal zone resume (that will
+continue asynchronously).
 
-Thanks.
+This also makes the code easier to follow by removing one, arguably
+redundant, level of indirection represented by the thermal PM notifier.
 
--- 
-Frederic Weisbecker
-SUSE Labs
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Armin Wolf <W_Armin@gmx.de>
+---
+
+v3 -> v4:
+   * Add R-by from Armin
+
+v2 -> v3:
+   * Rebase on top of the v3 of the previous patch
+
+v1 -> v2:
+   * Reorder with respect to the previous patch
+   * Use thermal_class_unavailable() to avoid running code that should
+     not run without the thermal class
+   * Suspend thermal zones after disabling device probing and resume
+     them before enabling device probing for better synchronization
+
+---
+ drivers/base/power/main.c      |    5 +++
+ drivers/thermal/thermal_core.c |   60 ++++++++++++-----------------------------
+ include/linux/thermal.h        |    6 ++++
+ 3 files changed, 29 insertions(+), 42 deletions(-)
+
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -33,6 +33,7 @@
+ #include <trace/events/power.h>
+ #include <linux/cpufreq.h>
+ #include <linux/devfreq.h>
++#include <linux/thermal.h>
+ #include <linux/timer.h>
+ #include <linux/nmi.h>
+ 
+@@ -1282,6 +1283,8 @@ void dpm_complete(pm_message_t state)
+ 	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+ 
++	/* Start resuming thermal control */
++	thermal_pm_complete();
+ 	/* Allow device probing and trigger re-probing of deferred devices */
+ 	device_unblock_probing();
+ 	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
+@@ -2225,6 +2228,8 @@ int dpm_prepare(pm_message_t state)
+ 	 * instead. The normal behavior will be restored in dpm_complete().
+ 	 */
+ 	device_block_probing();
++	/* Suspend thermal control. */
++	thermal_pm_prepare();
+ 
+ 	mutex_lock(&dpm_list_mtx);
+ 	while (!list_empty(&dpm_list) && !error) {
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1837,7 +1837,7 @@ static void thermal_zone_pm_prepare(stru
+ 	cancel_delayed_work(&tz->poll_queue);
+ }
+ 
+-static void thermal_pm_notify_prepare(void)
++static void __thermal_pm_prepare(void)
+ {
+ 	struct thermal_zone_device *tz;
+ 
+@@ -1849,6 +1849,19 @@ static void thermal_pm_notify_prepare(vo
+ 		thermal_zone_pm_prepare(tz);
+ }
+ 
++void thermal_pm_prepare(void)
++{
++	if (thermal_class_unavailable)
++		return;
++
++	__thermal_pm_prepare();
++	/*
++	 * Allow any leftover thermal work items already on the worqueue to
++	 * complete so they don't get in the way later.
++	 */
++	flush_workqueue(thermal_wq);
++}
++
+ static void thermal_zone_pm_complete(struct thermal_zone_device *tz)
+ {
+ 	guard(thermal_zone)(tz);
+@@ -1865,10 +1878,13 @@ static void thermal_zone_pm_complete(str
+ 	mod_delayed_work(thermal_wq, &tz->poll_queue, 0);
+ }
+ 
+-static void thermal_pm_notify_complete(void)
++void thermal_pm_complete(void)
+ {
+ 	struct thermal_zone_device *tz;
+ 
++	if (thermal_class_unavailable)
++		return;
++
+ 	guard(mutex)(&thermal_list_lock);
+ 
+ 	thermal_pm_suspended = false;
+@@ -1877,41 +1893,6 @@ static void thermal_pm_notify_complete(v
+ 		thermal_zone_pm_complete(tz);
+ }
+ 
+-static int thermal_pm_notify(struct notifier_block *nb,
+-			     unsigned long mode, void *_unused)
+-{
+-	switch (mode) {
+-	case PM_HIBERNATION_PREPARE:
+-	case PM_RESTORE_PREPARE:
+-	case PM_SUSPEND_PREPARE:
+-		thermal_pm_notify_prepare();
+-		/*
+-		 * Allow any leftover thermal work items already on the
+-		 * worqueue to complete so they don't get in the way later.
+-		 */
+-		flush_workqueue(thermal_wq);
+-		break;
+-	case PM_POST_HIBERNATION:
+-	case PM_POST_RESTORE:
+-	case PM_POST_SUSPEND:
+-		thermal_pm_notify_complete();
+-		break;
+-	default:
+-		break;
+-	}
+-	return 0;
+-}
+-
+-static struct notifier_block thermal_pm_nb = {
+-	.notifier_call = thermal_pm_notify,
+-	/*
+-	 * Run at the lowest priority to avoid interference between the thermal
+-	 * zone resume work items spawned by thermal_pm_notify() and the other
+-	 * PM notifiers.
+-	 */
+-	.priority = INT_MIN,
+-};
+-
+ static int __init thermal_init(void)
+ {
+ 	int result;
+@@ -1938,11 +1919,6 @@ static int __init thermal_init(void)
+ 
+ 	thermal_class_unavailable = false;
+ 
+-	result = register_pm_notifier(&thermal_pm_nb);
+-	if (result)
+-		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
+-			result);
+-
+ 	return 0;
+ 
+ unregister_governors:
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -273,6 +273,9 @@ bool thermal_trip_is_bound_to_cdev(struc
+ int thermal_zone_device_enable(struct thermal_zone_device *tz);
+ int thermal_zone_device_disable(struct thermal_zone_device *tz);
+ void thermal_zone_device_critical(struct thermal_zone_device *tz);
++
++void thermal_pm_prepare(void);
++void thermal_pm_complete(void);
+ #else
+ static inline struct thermal_zone_device *thermal_zone_device_register_with_trips(
+ 					const char *type,
+@@ -350,6 +353,9 @@ static inline int thermal_zone_device_en
+ 
+ static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
+ { return -ENODEV; }
++
++static inline void thermal_pm_prepare(void) {}
++static inline void thermal_pm_complete(void) {}
+ #endif /* CONFIG_THERMAL */
+ 
+ #endif /* __THERMAL_H__ */
+
+
+
