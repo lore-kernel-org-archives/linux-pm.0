@@ -1,72 +1,125 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ADAB33939C9;
-	Tue,  7 Apr 2026 18:03:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F95138F92A;
+	Tue,  7 Apr 2026 18:05:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775585024; cv=none; b=Ad/OviOsiuor+Asw8u2b7ChFdD1SxUmLovjnv8aPJB5+l/wq3QxBXWqSh0ed7/reeCCrRYwtbQMLw3ZzQ00H/Cl05vr51a4Q41q+AKFQx4SIlpNI4vQt4oG+x0wxJ7mgCTqT89wFWrJ2kPaDlbO2PdkwRH9c6TXO4u5H8Hpry54=
+	t=1775585149; cv=none; b=sCgX/xzJwcQqE5egDENszEOHH0ABgzU31axRuqJZ8z9JY96ceUbz/xtZ5eqOlaP48/m2s8CEd/5Mj7+2jl0cCxojod2UP//Lx9ePozyXns0dDGOMDywFvNnGxQa1eZnLMkEb8MdPvQt9sLYptbaFr7ef8SDInE9FTDW4bCP6qLA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775585024; c=relaxed/simple;
-	bh=PCVX5+MJaDtv/5QhBK4sEVcRXCI5vHo43oyqAw9jfPE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Falfi8LjMtAq/4ZyVVggPrPtOzk6jVLakMf1JPKWnLcffE/5xPgU4WbLKWCrLZb820OG1kde5aoardJQaSJh+LK+Z2hKTbwbJL5YKymjlClGT+HZbIiasm+1vRnvwWlgt7ttwrBSzQVsBwSIfWUc9hOhuNyuYVXJ4rLBbAZ3xnk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JCAvlZFC; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775585149; c=relaxed/simple;
+	bh=xt6bQFaZkziKEja3cx5H6ul4Y+8lOIrHlDmaJw5Arbc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ScByvjJ7LjB/Oxg3c5DXs4jfVFdqUotyjOnqKPzpM0g3Ft4HTIY+DOJbvVyzqEm5W9dFVUjg2fk+fPnWFeXRPZklf2OIYAjMOW1mQWzaBtRF0/oYbDrJw3kHkmuKIpmDKExdDXDlxsWPoAQESOpuArcFZSuCwfXsEQt8ORuumnc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FT6o4QO5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JCAvlZFC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B267C19424;
-	Tue,  7 Apr 2026 18:03:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FT6o4QO5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7486C116C6;
+	Tue,  7 Apr 2026 18:05:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775585024;
-	bh=PCVX5+MJaDtv/5QhBK4sEVcRXCI5vHo43oyqAw9jfPE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=JCAvlZFCbL40yalBtx+vibMzq1gI0LuOkr9zf7wT+0s9dpq0I4d5U9ZHv4rMIwoN/
-	 lOaHUp7VLggxIpmS3tjRVqJxdTCHT7rw1f0JrPRceWOXpDY8EM9v44cuLv65/1ZW6s
-	 wsBIDGdekvhUlGZneUCm68A+jviQj0jkKZJRzTh2WpKWFeO1dSoqZwi3oei5FT3Q14
-	 fcBg7ZQvEIfp0pfxLyM5NSyW2jQpLeq+NJwYCvB1rRtY1Jo0fDYfYtWd4ppviFmmkx
-	 KeBRgqZ3zbApsODuNYkbgy7xUAYpumLGGcWLLfZjLoeNTTDtxOzy/yX6OAHzAlkRAI
-	 LNHJidhDWpG+w==
-From: Thomas Gleixner <tglx@kernel.org>
-To: Calvin Owens <calvin@wbinvd.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Anna-Maria Behnsen <anna-maria@linutronix.de>,
- Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner
- <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
- linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>, Florian
- Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [patch 00/12] hrtimers: Prevent hrtimer interrupt starvation
-In-Reply-To: <adVA_uv1srA_bsKj@mozart.vkv.me>
-References: <20260407083219.478203185@kernel.org>
- <adVA_uv1srA_bsKj@mozart.vkv.me>
-Date: Tue, 07 Apr 2026 20:03:40 +0200
-Message-ID: <87ika24phf.ffs@tglx>
+	s=k20201202; t=1775585149;
+	bh=xt6bQFaZkziKEja3cx5H6ul4Y+8lOIrHlDmaJw5Arbc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=FT6o4QO5wNrYII9rEoqg7nF9XMVQR2yTrSrAFuB0uCiAZ/yhCtlaLN7FDAhNeAwYl
+	 9hfQ7kulLTJViuovijYyoHhv/xdOSUp/8+doDamMQqp+RBPczyV9D+HoUHk5WrdGZ0
+	 DnOVdY2VO6NEHdAlUuQxZ3Agp9mI+YgL+BfINjSmLyiS3uM8uP4bBlryqR/WbeeQyo
+	 rBY37K3qZJLwSvx+YE1/vOImxaunU5UxveyvbkH0XU1RwAyUnXbhmTz470RHu5rfcY
+	 YPOUK5jubZDpFOEVh1lQ+4C/crI9pBJKzxMASTo/UfjCScCl/hdcUmZ3kcJug5cbRk
+	 eLjVNU6E8VITw==
+Date: Tue, 7 Apr 2026 13:05:47 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Jonathan Cameron <jonathan.cameron@huawei.com>,
+	Danilo Krummrich <dakr@kernel.org>, linux-gpio@vger.kernel.org,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	linux-cxl@vger.kernel.org, Kalle Niemi <kaleposti@gmail.com>,
+	linux-spi@vger.kernel.org, linux-i2c@vger.kernel.org,
+	Len Brown <lenb@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Dave Jiang <dave.jiang@intel.com>, imx@lists.linux.dev,
+	linux-sound@vger.kernel.org, Saravana Kannan <saravanak@google.com>,
+	Vishal Verma <vishal.l.verma@intel.com>,
+	Ira Weiny <ira.weiny@intel.com>, Stephen Boyd <sboyd@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Linus Walleij <linusw@kernel.org>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Peter Rosin <peda@axentia.se>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Davidlohr Bueso <dave@stgolabs.net>, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
+	Allan Nielsen <allan.nielsen@microchip.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Alison Schofield <alison.schofield@intel.com>,
+	Wolfram Sang <wsa@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Steen Hegelund <steen.hegelund@microchip.com>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	driver-core@lists.linux.dev, Fabio Estevam <festevam@gmail.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+	linux-arm-kernel@lists.infradead.org,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	linux-acpi@vger.kernel.org,
+	Horatiu Vultur <horatiu.vultur@microchip.com>,
+	patches@opensource.cirrus.com,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>, devicetree@vger.kernel.org,
+	Dan Williams <dan.j.williams@intel.com>,
+	Mark Brown <broonie@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Daniel Scally <djrscally@gmail.com>,
+	Matti Vaittinen <mazziesaccount@gmail.com>
+Subject: Re: [PATCH v6 01/27] Revert "treewide: Fix probing of devices in DT
+ overlays"
+Message-ID: <177558507711.3193287.10314595512020403538.robh@kernel.org>
+References: <20260325143555.451852-1-herve.codina@bootlin.com>
+ <20260325143555.451852-2-herve.codina@bootlin.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260325143555.451852-2-herve.codina@bootlin.com>
 
-On Tue, Apr 07 2026 at 10:38, Calvin Owens wrote:
-> On Tuesday 04/07 at 10:54 +0200, Thomas Gleixner wrote:
->> He provided a reproducer, which sets up a timerfd based timer and then
->> rearms it in a loop with an absolute expiry time of 1ns.
->
-> The original AMD machines survive the reproducer with this series.
->
-> Tested-by: Calvin Owens <calvin@wbinvd.org>
->
-> I'm happy to test subsets of it and stable backports too, if that's
-> helpful, just let me know.
 
-We'll only backport the first patch, so confirming that it still
-prevents the issue would be nice. The rest is slated for upstream only.
+On Wed, 25 Mar 2026 15:35:28 +0100, Herve Codina wrote:
+> From: Saravana Kannan <saravanak@google.com>
+> 
+> This reverts commit 1a50d9403fb90cbe4dea0ec9fd0351d2ecbd8924.
+> 
+> While the commit fixed fw_devlink overlay handling for one case, it
+> broke it for another case. So revert it and redo the fix in a separate
+> patch.
+> 
+> Fixes: 1a50d9403fb9 ("treewide: Fix probing of devices in DT overlays")
+> Reported-by: Herve Codina <herve.codina@bootlin.com>
+> Closes: https://lore.kernel.org/lkml/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJgyo8x6=9F9rZ+-KzjOg@mail.gmail.com/
+> Closes: https://lore.kernel.org/all/20240221095137.616d2aaa@bootlin.com/
+> Closes: https://lore.kernel.org/lkml/20240312151835.29ef62a0@bootlin.com/
+> Signed-off-by: Saravana Kannan <saravanak@google.com>
+> Link: https://lore.kernel.org/lkml/20240411235623.1260061-2-saravanak@google.com/
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Acked-by: Mark Brown <broonie@kernel.org>
+> ---
+>  drivers/bus/imx-weim.c    | 6 ------
+>  drivers/i2c/i2c-core-of.c | 5 -----
+>  drivers/of/dynamic.c      | 1 -
+>  drivers/of/platform.c     | 5 -----
+>  drivers/spi/spi.c         | 5 -----
+>  5 files changed, 22 deletions(-)
+> 
 
-Thanks,
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 
-        tglx
