@@ -1,83 +1,75 @@
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A03E33947BF;
-	Tue,  7 Apr 2026 07:30:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8077E3A1A26;
+	Tue,  7 Apr 2026 07:42:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775547044; cv=none; b=EtV4PLhD1Ns3KWACa/J/aaGKyN57dwmCk/Z51qAyHHkUBGvTXsn20x32UYDDkkHKKDQbWWXlMxmaEgzalVtyI5uLwU17K/YMEafvXp4Hpw3p7CwWdWYyV8txGEBpDrMcyEjy2iXaOfdl4EkFIYFFDrvorpRb8Dw14LUMOUDO5Wo=
+	t=1775547732; cv=none; b=PP25z8DH4csBZlOEG1n7nWhmoWMZVA1JTbUz/mBjTI0ZOgkRnED1h6vYbAxz+QI1OczlKUQDvfIb2TZYnod+JJQnm24zzDaEi8NymNm28EYmUhKmCtUT8NsLubVaXwXhTqC8gAnURWFTxcTAyE6ApfnN83eaEo+WjcVIvMlMvsM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775547044; c=relaxed/simple;
-	bh=9G2kRKEVG2jwjSqBHIeX9hHVMZ0g9+88Ofm1ap240EI=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=lynU5qnTfNAnWblgnRDiiTIcR9DYuTn/SQBns4zVnK3eNsvU/T0RHHrKsniT3nWEKlLWHPPYLTv0i5uezPYcSVPve3sadiad2y4ACgXg+DOn85SdU6Co17SY4mk86/i8ZmdVxgRgmAE+lJih08rX8wbAx12DNIlUY2mvLvJCB5s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
-	by APP-03 (Coremail) with SMTP id rQCowACXtt2WstRpzeY3DQ--.3821S2;
-	Tue, 07 Apr 2026 15:30:30 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] power: reset: linkstation-poweroff: fix use-after-free in the linkstation_poweroff_init()
-Date: Tue,  7 Apr 2026 07:30:25 +0000
-Message-Id: <20260407073025.271865-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1775547732; c=relaxed/simple;
+	bh=sPzm/Nez1fn/x3kwZsl/isvL5S/cIA1EMnGc47K4a3U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AIRETR0XLh7dQ5N2Hg4c5pMB/qegLqS8DE8oJLDh6gMCZrV7noT4CHL5LFOxXJBhJEk01RA7Cxxz4rAN3Jh7bkwwhkndPAx7mAvleF5TEaSmeIpB0pzLNxMwq+GCDFbqxB2VH4gj6nX//tZJf3cUGKbJpcC+SCRYleYlU12B8qg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cSbQtWXi; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cSbQtWXi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97D5CC116C6;
+	Tue,  7 Apr 2026 07:42:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775547732;
+	bh=sPzm/Nez1fn/x3kwZsl/isvL5S/cIA1EMnGc47K4a3U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cSbQtWXiQ4bD1RCyJNbixFjkvK1y+S9MqXRC+zU+BeIt5t/ym/mclYVp6+aoAS1G7
+	 RGdsSn1MM+IyRSUCYetSG5ZOVaIChjmYexpJoVMePqznku74UnYQFERP9e/FzDqvKz
+	 qbjmnO+BpBaq1NabZAA5PMBSleM4+2De/QUg/sHFmOeEJk1/6evt0cASOj5k5micpz
+	 yle+q1wrEZnCMPm7d703TeYNYH0NgRRXBsQ7pG3bN8NWJrcasJuDM5w6GsFi2MdYZa
+	 LRZfW78SiszUn1K6smsp2QZDJsNEyDo7UASJ+jHEu2cX9HrAdnpxkiNocDA07LIIHo
+	 eRrpc+OfW+7lg==
+Date: Tue, 7 Apr 2026 09:42:09 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Mike Tipton <mike.tipton@oss.qualcomm.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: interconnect: document the RPMh
+ Network-On-Chip interconnect in Hawi SoC
+Message-ID: <20260407-prehistoric-inescapable-loon-cf0dd0@quoll>
+References: <20260406-icc-hawi-v2-0-6cfee87a1d25@oss.qualcomm.com>
+ <20260406-icc-hawi-v2-1-6cfee87a1d25@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowACXtt2WstRpzeY3DQ--.3821S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7GrW8KF17Ar47Gr1xtryftFb_yoWDuwbEg3
-	s7GF92vFyUKF1DAws3Z3Z7Zr9Ikan3Wr4xZF10yrW7Cw13X34DJFs8XrnrJFnxX3yUXr98
-	JFZrJr45AF4xZjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbIAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
-	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
-	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
-	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
-	Jw1lc2xSY4AK67AK6r4xMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
-	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
-	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
-	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
-	aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyT
-	uYvjfUnzuWDUUUU
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCQ4KA2nUV4e4pQABs-
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260406-icc-hawi-v2-1-6cfee87a1d25@oss.qualcomm.com>
 
-Move of_node_put(dn) after the of_match_node() call, which still needs
-the node pointer. The node reference is correctly released after use.
+On Mon, Apr 06, 2026 at 04:04:41PM -0700, Vivek Aknurwar wrote:
+> Document the RPMh Network-On-Chip Interconnect of the Hawi platform.
+> 
+> Signed-off-by: Vivek Aknurwar <vivek.aknurwar@oss.qualcomm.com>
 
-Fixes: e2f471efe1d6 ("power: reset: linkstation-poweroff: prepare for new devices")
-Cc: stable@vger.kernel.org
-Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
----
- drivers/power/reset/linkstation-poweroff.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Same fixes needed I wrote to Hawi upstreaming lead in private. That's
+why I gave that feedback (privately) very fast, to avoid repeating the
+mistake. So since private feedback was ignored, you have now review on
+the lists.
 
-diff --git a/drivers/power/reset/linkstation-poweroff.c b/drivers/power/reset/linkstation-poweroff.c
-index 02f5fdb8ffc4..e56d75bfcc43 100644
---- a/drivers/power/reset/linkstation-poweroff.c
-+++ b/drivers/power/reset/linkstation-poweroff.c
-@@ -163,10 +163,10 @@ static int __init linkstation_poweroff_init(void)
- 	dn = of_find_matching_node(NULL, ls_poweroff_of_match);
- 	if (!dn)
- 		return -ENODEV;
--	of_node_put(dn);
- 
- 	match = of_match_node(ls_poweroff_of_match, dn);
- 	cfg = match->data;
-+	of_node_put(dn);
- 
- 	dn = of_find_node_by_name(NULL, cfg->mdio_node_name);
- 	if (!dn)
--- 
-2.34.1
+All Qualcomm previous patches are poor:
+
+document the RPMh Network-On-Chip interconnect in Mahua SoC
+document the RPMh Network-On-Chip interconnect in Eliza SoC
+document the RPMh Network-On-Chip interconnect in Kaanapali SoC
+document the RPMh Network-On-Chip interconnect in Glymur SoC
+
+Made by the same people.
+
+Why can't you look how Neil did it for SM8650? Or Luca recently for
+Milos? Or if you cannot look at non-qcom commits then Rajendra for X1E?
+
+Best regards,
+Krzysztof
 
