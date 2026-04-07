@@ -1,122 +1,83 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 38978355F2D
-	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 06:33:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A03E33947BF;
+	Tue,  7 Apr 2026 07:30:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775543610; cv=none; b=WUOa7YAqQ3q/WLJk4QGqGQpjEoiCrNkFeUQXujwxHACbVuaRRSDiQopGCzN/A+9D4TvEBt6p827D4LnjQf5O6M+tGhnpUSP6Xf0bMQpUGdy/tmw5qG0Lif2LbOmXMTo9JIfJlGzGXtFfZQfqXV6PSvf0HwQlpg/5gFAQAzi+uDI=
+	t=1775547044; cv=none; b=EtV4PLhD1Ns3KWACa/J/aaGKyN57dwmCk/Z51qAyHHkUBGvTXsn20x32UYDDkkHKKDQbWWXlMxmaEgzalVtyI5uLwU17K/YMEafvXp4Hpw3p7CwWdWYyV8txGEBpDrMcyEjy2iXaOfdl4EkFIYFFDrvorpRb8Dw14LUMOUDO5Wo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775543610; c=relaxed/simple;
-	bh=Nc3bOboW8G8YyE8KUlVfkkXGtFcb/doRT+XqIXAl+cw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ULw/WNGlt4Ht/qH7UzBBy0lLI7ib5d3X+Rqf2UA+qiHGBcTyvMFATCiXs7t9SxBl4mQ7+pPp0gcB05cE1fHihBQgkE07ghFwX1m2JjwzB7gtcgKcs7orot3fD+3suh+M0eeqXJBPwlGwH8c2lvyovxgVg1QihhDdfLStEA3Rhhc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Y0OAcLTX; arc=none smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Y0OAcLTX"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-59e5aa4ca41so5229136e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 23:33:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775543607; x=1776148407; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=u5hh7N0O0yJ7/rQ4HnXnBh/0FAbt8/xLYUBmuoc28N4=;
-        b=Y0OAcLTXjRUAgB4az8YoTWRgIkIZ9LiO9kVXdbGNKrfETFjP3uK1QA5M9cHZ93fJ9h
-         lUqCkz27MXy90T2WVvTrUUpBuih1L527iejnzZI2Ugscnb21jSQU0I2+9WYqBXjZvkEt
-         LvilwOLuXeFStGr9scXUryTyIkDnYOAeixt/t448iwgMWSJo7j/t6zVO+3rwyBgF1rO3
-         rYzugylhXApVkfsmUiw6gMr07qkmVJrhWH+g+bW0z/Pdk7DVuh/F1G6PfBxq8z4o+q7U
-         bSspnOAvxsnd3Eq6PLg8UGzcvtlEIwCM3Gb0QMkU+OLU6sgwZDRB441NpRhPTfoPFRX8
-         e1vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775543607; x=1776148407;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=u5hh7N0O0yJ7/rQ4HnXnBh/0FAbt8/xLYUBmuoc28N4=;
-        b=VH1Aynqs7tgUm1aLKGKDQt9vdwelUQYNqUVQTap7bU5cpqxLbEaM59fQ+RMcWd72VJ
-         aM2YQtFdaqIjh/2ZPNPhwk3DiNnEQ26X4j+u/UwBdFHM2YhjjIXJ96XylF18JU+B3OJm
-         S5ia/N6I0I25Yw/znWktWDmkyMrjR8iwa1snFDWBfYltc8404wCXqQo9k7yYEWgKazV7
-         uLWwjZKLHRuVCF88mnnLracQlZNDl5bl9zDQnpf7oAnAK2G3jlFhQ9loXQxHMND0SzMk
-         vbcpiUN5USazjmsV/Rbu5tIsZIuuTLOqcMqGPIlFD8dAodFRMECjrltROPn82jFmwLge
-         prUA==
-X-Gm-Message-State: AOJu0Yyp0DcvO7NK8TeMTOkpbv6qHWJfMM2B6q8RaOEZAxKRqg3G1zgn
-	OAcz18rE6bx5MbteZiMvXxMhaM4iCj6Zqs6qcB1LDklmPoyk9EGt/ZTP
-X-Gm-Gg: AeBDietQ74ljKAi+vWv1DJkSXWio1Z5JXamVw/K59nI6DppbVJDh39zhUkZBPAy/i/V
-	MQtaI1xEL+5SEf+LSSHMz21FtUHeAfiecONs9jbSYnoot7WlrRuSN6EG8zk0Bmj8FUqTF361YO2
-	szACSuPFuxs8b/RkxQW8Uw5ro0b8XKj72lydGqtH95ygEEbWse1KoiakBCP523GJ7IHrPGtRf1i
-	HEQ+CMrlHxkkihNAyR8zKq7oiVJvBefhdUu2dlOvMqdNlzGDkp5I8nZaAZz1lOC82t2yiFuhTha
-	u9PjKc5jdrgmFL2JlBEGUd7iqgdtr+CdRZcBiLglOOoKHl/70a5HQD90Ka8uOGg2qrwpWk8hTdE
-	lx7pS1qIKRA1WP5TnND5O4AQIUptzAeNCR8PS0TsLZDpJUumN79TJa2CdMHWCAy1NDR9qHLAfWV
-	vEkisMwaPfpIA8tTImLm3l05hgyZMuDkRIZxOw/E9VVJSRwSXV4YBNWEoAMFtroMZLYJ6n6whOG
-	JkZRcMPqChT6a/qmxQ=
-X-Received: by 2002:a05:6512:15a7:b0:5a3:d302:bce4 with SMTP id 2adb3069b0e04-5a3d302bf4amr3877138e87.39.1775543607211;
-        Mon, 06 Apr 2026 23:33:27 -0700 (PDT)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2c6cd6799sm3831813e87.81.2026.04.06.23.33.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Apr 2026 23:33:26 -0700 (PDT)
-Message-ID: <a4c43b29-a1bf-4709-8521-c21ce4ee3e46@gmail.com>
-Date: Tue, 7 Apr 2026 09:33:25 +0300
+	s=arc-20240116; t=1775547044; c=relaxed/simple;
+	bh=9G2kRKEVG2jwjSqBHIeX9hHVMZ0g9+88Ofm1ap240EI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=lynU5qnTfNAnWblgnRDiiTIcR9DYuTn/SQBns4zVnK3eNsvU/T0RHHrKsniT3nWEKlLWHPPYLTv0i5uezPYcSVPve3sadiad2y4ACgXg+DOn85SdU6Co17SY4mk86/i8ZmdVxgRgmAE+lJih08rX8wbAx12DNIlUY2mvLvJCB5s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
+	by APP-03 (Coremail) with SMTP id rQCowACXtt2WstRpzeY3DQ--.3821S2;
+	Tue, 07 Apr 2026 15:30:30 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] power: reset: linkstation-poweroff: fix use-after-free in the linkstation_poweroff_init()
+Date: Tue,  7 Apr 2026 07:30:25 +0000
+Message-Id: <20260407073025.271865-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: bd71828: add input current limit property
-To: Andreas Kemnade <andreas@kemnade.info>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260401-bd-inp-limit-v1-1-689eb22531e2@kemnade.info>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20260401-bd-inp-limit-v1-1-689eb22531e2@kemnade.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowACXtt2WstRpzeY3DQ--.3821S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7GrW8KF17Ar47Gr1xtryftFb_yoWDuwbEg3
+	s7GF92vFyUKF1DAws3Z3Z7Zr9Ikan3Wr4xZF10yrW7Cw13X34DJFs8XrnrJFnxX3yUXr98
+	JFZrJr45AF4xZjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbIAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s
+	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
+	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
+	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
+	Jw1lc2xSY4AK67AK6r4xMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI
+	8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AK
+	xVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI
+	8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280
+	aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyT
+	uYvjfUnzuWDUUUU
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCQ4KA2nUV4e4pQABs-
 
-On 02/04/2026 00:17, Andreas Kemnade wrote:
-> Add input current property to be able to work around issues created by
-> automatic input limiting and have some control.
-> Disabling the automatic management is another step.
-> 
+Move of_node_put(dn) after the of_match_node() call, which still needs
+the node pointer. The node reference is correctly released after use.
 
-Hi Andreas!
-Long time no chat :)
-
-First of all, thanks for the work you do with the BD71828/79! I do 
-admire the effort you're willing to put on it :)
-
-I decided to just take a quick look at the BD71815 and BD72720, which 
-can be operated using the same driver. I didn't see similar control on 
-BD71815 data-sheet, so I just decided not to dig it further for now.
-
-What comes to the BD72720, there is something:
-
-The BD72720 has a VBUS_INLIM, which is a configurable current limit for 
-the bus. This, I believe does NOT directly correspond to the DCIN limit. 
-It _probably_ has similar impact when the DCIN is supplied, and when it 
-is powerful enough to run the system. However, I believe the VBUS 
-current limit is also having an impact when setup is powered from the 
-battery, or when it is in "battery assist" -mode, (where the battery is 
-used to "complement" the DCIN, if the DCIN isn't strong enough to power 
-the system).
-
-I am afraid I don't know your use-case for the control of the DCIN input 
-limit well enough to decide, if the BD72720 would need something similar 
-- or if the VBUS_INLIM should be tied to the same knob. If you have the 
-enthusiasm to write some more words ... I am keen on learning! :)
-
-Yours,
-	-- Matti
-
--- 
+Fixes: e2f471efe1d6 ("power: reset: linkstation-poweroff: prepare for new devices")
+Cc: stable@vger.kernel.org
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
 ---
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
+ drivers/power/reset/linkstation-poweroff.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-~~ When things go utterly wrong vim users can always type :help! ~~
+diff --git a/drivers/power/reset/linkstation-poweroff.c b/drivers/power/reset/linkstation-poweroff.c
+index 02f5fdb8ffc4..e56d75bfcc43 100644
+--- a/drivers/power/reset/linkstation-poweroff.c
++++ b/drivers/power/reset/linkstation-poweroff.c
+@@ -163,10 +163,10 @@ static int __init linkstation_poweroff_init(void)
+ 	dn = of_find_matching_node(NULL, ls_poweroff_of_match);
+ 	if (!dn)
+ 		return -ENODEV;
+-	of_node_put(dn);
+ 
+ 	match = of_match_node(ls_poweroff_of_match, dn);
+ 	cfg = match->data;
++	of_node_put(dn);
+ 
+ 	dn = of_find_node_by_name(NULL, cfg->mdio_node_name);
+ 	if (!dn)
+-- 
+2.34.1
+
