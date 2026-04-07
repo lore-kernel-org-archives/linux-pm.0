@@ -1,119 +1,92 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61BB93AA516;
-	Tue,  7 Apr 2026 12:25:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF2613ACA43;
+	Tue,  7 Apr 2026 12:33:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775564736; cv=none; b=UKA1SC+FeUyOOYN5tr3dxRH/LfKeUKboLgN8x/q0CwdYnKlGPkEJzoNwkR1qLwouHrWWVEarffRkn1F6hryrCgHw6xZuGdaEDDE6sTalPx4cukpmlis+mnDZAbZNr/Oi/xVKXPFLcRP8nROc61iw0/m54MMTSKxePWRwB2T+eeI=
+	t=1775565232; cv=none; b=uAZrGd6rri2vLpznqe0fHLzfiDxaPjW5UFd5rnCBdLbgC51N5l5fVO76HiXaKgGiVArKkaTIRbl0d6ouvM3WjsLgAnv8KtNgmknKv+ojeEzSfMBUHBSgScugxB4SVEo9kGU2bm8rO4KRI5GcLgdaeICJpO91CtUDHKO0t8QdCgQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775564736; c=relaxed/simple;
-	bh=WnUj41HY436U/PRRPWD3UEcJnw1euxhOP0IoV/BAZZI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sMe4LysZ9/lpR0YdLxfwB1Ww+CPYlElnSggduKXf7cX0Ch/Jl0uIsK4SHyhH1g+fCqg1kN6NSlfZsMD8bR0m/vZVqLYsqKzrOTPCENL0AB0H+ogsMkqmHQV8vcSO26neswXpXaAiIGm2mtVCfi+f5oCyPZedRUqVKtJ1tymT23E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lTeuxXTH; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1775565232; c=relaxed/simple;
+	bh=FwBXecI0p0IB6IN7GC8Y7FHX3sFO5EIumD+xwZduELA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TGi4NJ/gwCvz7LxxNERQMY3tmLnuUsvzJQX5xOwgGuicVmaYAGudpxGFPTQNqFkgJATyxgdi7spskcG/7qmoSPsKBUudY+WP8c4NKlsyY21CCO5m2nQhu89pGcgQC1u5jSVAF6Lo5KyMRFl9od6VZYOYN4POlREeHutcSUK8tKE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IZwXHnkl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lTeuxXTH"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775564735; x=1807100735;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=WnUj41HY436U/PRRPWD3UEcJnw1euxhOP0IoV/BAZZI=;
-  b=lTeuxXTHjWuQ8dzBpV3x6oi8ds9hm/Nx6OX/mVCBfVR40ln6YKsUF5tg
-   Yy8Ya838o7qd4NFDwHN9N4OY9bnh4wbc/IxnfAdja1z/1HF3Ed9O/3aMj
-   R3tl8TGzrBCiv59cuM2DNfNSp717/15169QVGnneb6Lp0xhTsue59MU6Z
-   AQ5ZdPf7l0LvNIKC3NsdRkZfad3cAsRpgYyXEEGxI1LuTBVJKMcnUUIab
-   Uldt9zPJGo0S1ILJQWK1XB9oGtTnLDnK4eTY4GN8xDAObUoOgAic3sny5
-   K/1NTLRJn4u5qevPseTIqzHH3lfMjF5Nqrv1k5Gq5+chUT27FiwDtVukK
-   Q==;
-X-CSE-ConnectionGUID: 4D+9sY+eTquFoRzuUqdw5g==
-X-CSE-MsgGUID: fqyEj6xOQASGLGyZbXkCug==
-X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="99153069"
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="99153069"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Apr 2026 05:25:35 -0700
-X-CSE-ConnectionGUID: Kru5kzBKQKa8am7+6ZIQUw==
-X-CSE-MsgGUID: ikCDASAQRvSVrMMGtgyLbA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="227158213"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by orviesa006.jf.intel.com with ESMTP; 07 Apr 2026 05:25:30 -0700
-Received: by black.igk.intel.com (Postfix, from userid 1008)
-	id 12E7295; Tue, 07 Apr 2026 14:25:29 +0200 (CEST)
-Date: Tue, 7 Apr 2026 15:24:39 +0300
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-To: Amit Sunil Dhamne <amitsd@google.com>
-Cc: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jagan Sridharan <badhri@google.com>,
-	Mark Brown <broonie@kernel.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Peter Griffin <peter.griffin@linaro.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	RD Babiera <rdbabiera@google.com>, Kyle Tso <kyletso@google.com>
-Subject: Re: [PATCH v10 6/6] usb: typec: tcpm/tcpci_maxim: deprecate WAR for
- setting charger mode
-Message-ID: <adT3h8ZEQh_mFi5j@kuha>
-References: <20260331-max77759-charger-v10-0-76f59233c369@google.com>
- <20260331-max77759-charger-v10-6-76f59233c369@google.com>
- <ac5-OzwQkczTWtMg@kuha>
- <017b8552-87e2-4409-ae34-9a3ab7365a68@google.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IZwXHnkl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D990C116C6;
+	Tue,  7 Apr 2026 12:33:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775565231;
+	bh=FwBXecI0p0IB6IN7GC8Y7FHX3sFO5EIumD+xwZduELA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=IZwXHnklLNiv72pNVROTtcy/QZDXZwGibnicT5xsE7QxHoGgI5c1aBdBqbdjD85SL
+	 qUBHEL5zA6LbM/hNe9nfo3y61DI6TFhRpkmIxgrujrr2E9fTFAGwUnUXT8NrE79Ahf
+	 CLUliHMKZ6Zhz8pLiSBmLWCBlyKW5YkVtgYMflJT08UzCTwwOj+POCZmNQ5P7PCExR
+	 3PaSgEZvP55UUHquqjLM1zB2xRp/RPs6peIxzQdrdvAQANcH6jVzFXzaePi1UCuna4
+	 sZ5oW9AQQtdGfgLi90zrkma+Pt0zh5mTIJtFK2T8UubVWq0kDOzyZinxQxWBpNY1s8
+	 BGPQHA+jR4bbQ==
+Received: from johan by xi.lan with local (Exim 4.98.2)
+	(envelope-from <johan@kernel.org>)
+	id 1wA5cq-0000000BEVn-3jno;
+	Tue, 07 Apr 2026 14:33:48 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hansg@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+	Purism Kernel Team <kernel@puri.sm>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Johan Hovold <johan@kernel.org>,
+	stable@vger.kernel.org,
+	Dzmitry Sankouski <dsankouski@gmail.com>
+Subject: [PATCH v2] power: supply: max17042: fix OF node reference imbalance
+Date: Tue,  7 Apr 2026 14:33:38 +0200
+Message-ID: <20260407123338.2677375-1-johan@kernel.org>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <017b8552-87e2-4409-ae34-9a3ab7365a68@google.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Amit,
+The driver reuses the OF node of the parent multi-function device but
+fails to take another reference to balance the one dropped by the
+platform bus code when unbinding the MFD and deregistering the child
+devices.
 
-On Thu, Apr 02, 2026 at 11:47:30AM -0700, Amit Sunil Dhamne wrote:
-> Hi Heikki,
-> 
-> On 4/2/26 7:33 AM, Heikki Krogerus wrote:
-> > Hi Amit,
-> > 
-> > > +static int get_vbus_regulator_handle(struct max_tcpci_chip *chip)
-> > > +{
-> > > +	if (IS_ERR_OR_NULL(chip->vbus_reg)) {
-> > > +		chip->vbus_reg = devm_regulator_get_exclusive(chip->dev,
-> > > +							      "vbus");
-> > Sorry to go back to this, but why can't you just get the regulator in
-> > max_tcpci_probe()?
-> 
-> Thanks for calling this out. This was an intentional design decision to
-> break a circular dependency.
-> 
-> The charger driver is guaranteed to probe after the TCPC driver due to a
-> power supply dependency (the TCPC is a supplier of power for the Battery
-> Charger). However, the charger driver is also the regulator provider for
-> VBUS out (when Type-C goes into source mode).
-> 
-> Because of this, the regulator handle will not be available during the TCPC
-> driver's probe. If we tried to fetch it in max_tcpci_probe() and returned
-> -EPROBE_DEFER, it would create a probe deadlock, as the charger would then
-> never probe. Therefore, I made the decision to get the regulator handle
-> lazily and on-demand.
+Fix this by using the intended helper for reusing OF nodes.
 
-Got it. Thanks for the explanation!
+Fixes: 0cd4f1f77ad4 ("power: supply: max17042: add platform driver variant")
+Cc: stable@vger.kernel.org	# 6.14
+Cc: Dzmitry Sankouski <dsankouski@gmail.com>
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
 
+Changes in v2:
+ - add missing driver name to patch summary prefix
+
+
+ drivers/power/supply/max17042_battery.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index acea176101fa..914f18ce79b3 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -1165,7 +1165,8 @@ static int max17042_platform_probe(struct platform_device *pdev)
+ 	if (!i2c)
+ 		return -EINVAL;
+ 
+-	dev->of_node = dev->parent->of_node;
++	device_set_of_node_from_dev(dev, dev->parent);
++
+ 	id = platform_get_device_id(pdev);
+ 	irq = platform_get_irq(pdev, 0);
+ 
 -- 
-heikki
+2.52.0
 
