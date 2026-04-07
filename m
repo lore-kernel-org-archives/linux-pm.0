@@ -1,142 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 257AA1F4CA9;
-	Tue,  7 Apr 2026 18:09:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B05F640DFD3
+	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 18:35:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775585374; cv=none; b=m6xdbRhc0Pz9A3IhRqDEq7Qu9p7i4fyTQtdjvSj5tt3FisJ3pN8XSaoo710eifcFE2buNNnY0DEfZQvd29Orz5iR1hQ0RkN7TFIIfUuoPg9W3ukRkIrXZyvq7M/wV1qfmHSP9bDWFSZ0VbU76MkRMU/uPh3rGZ0DSJPFJumw0lI=
+	t=1775586938; cv=none; b=Wykzn+dKQ5VkXnovLtZbYMIMRC78u5N7AzEv47JI7Pq6uJ01Z3D1CDmoGGKElWjBzEqe5OYyzFnNAe1i1bW/8TA4L+WnrQAgRD3Wb7fYy9gegtf9ogCNsY85ed9hfO1/euPbDdFp9zZ3wdgVF3tTPBIHbOZ6JIfiAFLQBTLen5A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775585374; c=relaxed/simple;
-	bh=6+TXhFe1ZLkWZlJdqPKfzqrTGxVXq539FFUaAib5kcw=;
+	s=arc-20240116; t=1775586938; c=relaxed/simple;
+	bh=RcSfW7BVL553lKbTf3prH24yb+XiZUw0mmz0Q+5e4Os=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HIOYBhSfpeF9eqfOMlt9LffRKzjs+zLsEYXz08hGOsRuZcKZ7ibyBiAKqG0yHnK7zCfdAkwNuKo+hqGvKzHdwAsirLe9Jpj6YmHoHwvEQJbty2n0D0mzMMkbj2E8KkkEgux1dm4nf8ynhN9R7PcpfHuDHOAw06eJvFtDpxPUJsw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ggWzSJFT; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=PRvsWgLF5grILOmrkzrdZhRa14zVdhW6vVu5iQN7ZuzaZ9B8+DRSbqOlG4ZHERcJk8bb2qD9qrEo7p+bp08wI8U3giPTJb5jTceZkr6cf3STKmBktP3CcYIL1AL/BzZD+E10enJcMzsj8c2Q8+8p30EhFWthz/OfHa04r8rOQkY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wbinvd.org; spf=pass smtp.mailfrom=wbinvd.org; dkim=pass (2048-bit key) header.d=wbinvd.org header.i=@wbinvd.org header.b=SumApEDL; arc=none smtp.client-ip=74.125.82.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=wbinvd.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wbinvd.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ggWzSJFT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8E86C116C6;
-	Tue,  7 Apr 2026 18:09:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775585374;
-	bh=6+TXhFe1ZLkWZlJdqPKfzqrTGxVXq539FFUaAib5kcw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ggWzSJFTesIwd2YhKNu1ymWX+Ta4kTPTPY/3h9dlBpdCpYSbEFsbI0H7e9rSlT5gs
-	 Dao5q1Oa7o6HCCAUXtV9dfxMsY+RSsuhceg6FMyGrDJkgcPprSBxYixpt2oL06fUXR
-	 fjuRo2v5yqgnbv1bCJBrEFqu7JP6qlhp1w4VGWAoJt/7Hrhhki1cVd9WNdne4rtWTB
-	 tyuXA6AzboaLz0+HNY0y87qaeiqnHvvfAcNZ1m6C4p2aarv/pooDxIA23mF/3H/an3
-	 YzUeOAvZpqtqjMW5M1jIqPurebCAO7fqtckQaFMzzFVE4qnEZeH025Kb6A4AATN2Kk
-	 V0UFuhMW9MWcQ==
-Date: Tue, 7 Apr 2026 13:09:32 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-acpi@vger.kernel.org,
-	Daniel Scally <djrscally@gmail.com>,
-	Charles Keepax <ckeepax@opensource.cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Ulf Hansson <ulf.hansson@linaro.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Ira Weiny <ira.weiny@intel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Steen Hegelund <steen.hegelund@microchip.com>,
-	Linus Walleij <linusw@kernel.org>, imx@lists.linux.dev,
-	linux-gpio@vger.kernel.org, patches@opensource.cirrus.com,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	linux-arm-kernel@lists.infradead.org,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
+	dkim=pass (2048-bit key) header.d=wbinvd.org header.i=@wbinvd.org header.b="SumApEDL"
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-2c156c4a9efso7019402eec.1
+        for <linux-pm@vger.kernel.org>; Tue, 07 Apr 2026 11:35:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=wbinvd.org; s=wbinvd; t=1775586937; x=1776191737; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=eessS45c4d7a04OGsZRQetM2uu75g94y42hxsune8NQ=;
+        b=SumApEDLqjM5oO+lZBfylVEo/xrFEJRxBukM94PfdKAw3xlu4lsPjIkko7r5vHQ2gq
+         dovPz98PvB+1bC6E9oHpc9l6H1GcHxqmk8/QrZv6jf6QUPEV1qHRjd7yRNqCY+9vTifY
+         m79Zleht9Sk2r5nAZLXxzyGtlqs7ENmw6PCVHYO5uQQSBH4iA+SsEfGaPlGN/urIXwv9
+         U5A8bPU3oC13bX8ILhr8Rkk2+/FXYIVEtQU96FSr2tBLB5T3TO12pOxLdR0OLqvVyMeR
+         DBkF+JNvrapyfUyPToSBdI2VyPlHq3YdQ+rhH3DGy+S2BSvPVwxyIPEyMzDCUu0Q0jDd
+         6tOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775586937; x=1776191737;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=eessS45c4d7a04OGsZRQetM2uu75g94y42hxsune8NQ=;
+        b=JnHWDnyE9UGyzq/mBmdn6TX/Sr17tkNlBtIcXTk7/pz0tnIwGuqMZGIG5APTFkaUG7
+         azF9h9AAJofjDK6HhwedXEjRSYQVeC+VihA/7s3no3ofT2guZfdYbumQ5mgDP7JGteCy
+         sEophbAApSkI6dbUE3mMrG9l/DpqhCM5tICoFbgkMnR/W2RZ1Baa8pIpQIZUFEiaK4+l
+         3SJjfHQYezfxXgeInIsK4Vx2FcKR96gg++rslCQ9f1EUdjM2gFne7vV0sn2ynRqOCP30
+         NLBfpJ0XlzptQlGD7A0OaztEq4Ho5ipaATvzxxyleIErJvdWiH+rDdYxDZG7TfPzaMr0
+         QVhQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXfwwTwKkoVd34S7UrsaNV2J4Ivoj3OT6BwKzg20OKjmN5/ALY+d8qiNs5OGcoTYFNTkK8GGllCEA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyacXDgU3GRM+ki4cbO/guYTI6QW9jXi7e+edDKVwS0nscgcvp4
+	3K3wwABp06x5omy+uB+B8jOogYBp7p9nixNLhaENjjZ9AoebLZEKK+60a88Hrex4Ao0=
+X-Gm-Gg: AeBDietTqiKMVeAOlkx0yqA1ozkKKP+QMyV/of4FFW0CAOnoNtFgCzcBYktURh8W9j4
+	jEJEF+LGRNsyV5oMMUqywjgs477sokIo1+L1wSGsT7EIMFYnx1Mwa3l0NqYdS6q0Nh+wUpIq7Fo
+	nf2WYngbpGrEBXRiBo+UK+h9Ber/XDUv4jDqqYozq1Sp4CaFrDoT8e9wOSbENZ2jMVGXVwFB1sp
+	/jSUMqhGxaHs+FANIO5sfFF4QDmGrw67wAUz9tvCWXN2TYgJzApnfCzKdc/KG4ysU/URmL815cB
+	ocA4g3nWiMokk4axiih1t0aZDDC+kCPBCrno6wf4vQkoyR0cekpc4+L0GRxj5WLqN0xQTadRkX/
+	Q4DXxUGrrorlFgrz3fVyxMyKz/DE2jTkIpjT2RMzejBRhtcj+4Q1OGwueCuLhXPQ36Xs+Qfw5a8
+	n4f3PFJGQpxvpsTgvl9wMOics2tA==
+X-Received: by 2002:a05:7300:bc97:b0:2c3:b172:83c2 with SMTP id 5a478bee46e88-2cbfb995295mr8671700eec.20.1775586936793;
+        Tue, 07 Apr 2026 11:35:36 -0700 (PDT)
+Received: from mozart.vkv.me ([2001:5a8:468b:d015:412a:9f09:7acb:b69f])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2cba5df5c24sm15982022eec.27.2026.04.07.11.35.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Apr 2026 11:35:36 -0700 (PDT)
+Date: Tue, 7 Apr 2026 11:35:33 -0700
+From: Calvin Owens <calvin@wbinvd.org>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Ingo Molnar <mingo@kernel.org>, John Stultz <jstultz@google.com>,
 	Stephen Boyd <sboyd@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Conor Dooley <conor+dt@kernel.org>, linux-kernel@vger.kernel.org,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Mark Brown <broonie@kernel.org>,
-	Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org,
-	Allan Nielsen <allan.nielsen@microchip.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Wolfram Sang <wsa@kernel.org>, Len Brown <lenb@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	driver-core@lists.linux.dev, linux-i2c@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	Horatiu Vultur <horatiu.vultur@microchip.com>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-	Kalle Niemi <kaleposti@gmail.com>, linux-cxl@vger.kernel.org,
-	Alison Schofield <alison.schofield@intel.com>,
-	linux-clk@vger.kernel.org, linux-pci@vger.kernel.org,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	linux-spi@vger.kernel.org, Peter Rosin <peda@axentia.se>
-Subject: Re: [PATCH v6 17/27] of: property: Allow fw_devlink device-tree on
- x86
-Message-ID: <177558537013.3212080.6337028648731238779.robh@kernel.org>
-References: <20260325143555.451852-1-herve.codina@bootlin.com>
- <20260325143555.451852-18-herve.codina@bootlin.com>
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
+	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
+	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Subject: Re: [patch 00/12] hrtimers: Prevent hrtimer interrupt starvation
+Message-ID: <adVOdTnyIbKz2F91@mozart.vkv.me>
+References: <20260407083219.478203185@kernel.org>
+ <adVA_uv1srA_bsKj@mozart.vkv.me>
+ <87ika24phf.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260325143555.451852-18-herve.codina@bootlin.com>
+In-Reply-To: <87ika24phf.ffs@tglx>
 
+On Tuesday 04/07 at 20:03 +0200, Thomas Gleixner wrote:
+> On Tue, Apr 07 2026 at 10:38, Calvin Owens wrote:
+> > On Tuesday 04/07 at 10:54 +0200, Thomas Gleixner wrote:
+> >> He provided a reproducer, which sets up a timerfd based timer and then
+> >> rearms it in a loop with an absolute expiry time of 1ns.
+> >
+> > The original AMD machines survive the reproducer with this series.
+> >
+> > Tested-by: Calvin Owens <calvin@wbinvd.org>
+> >
+> > I'm happy to test subsets of it and stable backports too, if that's
+> > helpful, just let me know.
+> 
+> We'll only backport the first patch, so confirming that it still
+> prevents the issue would be nice. The rest is slated for upstream only.
 
-On Wed, 25 Mar 2026 15:35:44 +0100, Herve Codina wrote:
-> PCI drivers can use a device-tree overlay to describe the hardware
-> available on the PCI board. This is the case, for instance, of the
-> LAN966x PCI device driver.
-> 
-> Adding some more nodes in the device-tree overlay adds some more
-> consumer/supplier relationship between devices instantiated from this
-> overlay.
-> 
-> Those fw_node consumer/supplier relationships are handled by fw_devlink
-> and are created based on the device-tree parsing done by the
-> of_fwnode_add_links() function.
-> 
-> Those consumer/supplier links are needed in order to ensure a correct PM
-> runtime management and a correct removal order between devices.
-> 
-> For instance, without those links a supplier can be removed before its
-> consumers is removed leading to all kind of issue if this consumer still
-> want the use the already removed supplier.
-> 
-> The support for the usage of an overlay from a PCI driver has been added
-> on x86 systems in commit 1f340724419ed ("PCI: of: Create device tree PCI
-> host bridge node").
-> 
-> In the past, support for fw_devlink on x86 had been tried but this
-> support has been removed in commit 4a48b66b3f52 ("of: property: Disable
-> fw_devlink DT support for X86"). Indeed, this support was breaking some
-> x86 systems such as OLPC system and the regression was reported in [0].
-> 
-> Instead of disabling this support for all x86 system, use a finer grain
-> and disable this support only for the possible problematic subset of x86
-> systems (at least OLPC and CE4100).
-> 
-> Those systems use a device-tree to describe their hardware. Identify
-> those systems using key properties in the device-tree.
-> 
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> Link: https://lore.kernel.org/lkml/3c1f2473-92ad-bfc4-258e-a5a08ad73dd0@web.de/ [0]
-> ---
->  drivers/of/property.c | 26 +++++++++++++++++++++++++-
->  1 file changed, 25 insertions(+), 1 deletion(-)
-> 
+Confirmed, [1/12] alone passes.
 
-Applied, thanks!
-
+Thanks,
+Calvin
