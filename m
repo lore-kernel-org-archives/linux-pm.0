@@ -1,145 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 559C713959D;
-	Tue,  7 Apr 2026 08:55:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [118.143.206.90])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id CFAAF3A1D0C;
+	Tue,  7 Apr 2026 09:35:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=118.143.206.90
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775552116; cv=none; b=RHGqdxxtSeyrH6Wt7jYtbl1I7TBqUQR2YT9c+f6qkG8Vr73w/G9LRTDWQx1wtjOORMtiXqott0RpqKkBbsBWBYfZGyssb9iOElpdoXN/mUVz/Dk8a54w39fJ1HGrtIu713ndFQMl8YvTYOtfLjqmoNrdXIVAodx5D/3ZAtokgpE=
+	t=1775554544; cv=none; b=dRGgCGMBT5H8Riizh5YFLpm9paVa+oo0+XIu64Plo3t3w2SyQeFUH1+WGhFdCAOvtobwVimk95OwPc7vwIxPyr7TTzRVWY1VORf90w5xJqWk2q87gFATk33Bq5NF08W/7SmfNL2TiOLAf7HaM9ee+SAXDOd1E1nOgWQox1eb7cw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775552116; c=relaxed/simple;
-	bh=9FM/2kY5c9jnURSRNKlLV3ziUYO+2vbuP2OQgTOa3p4=;
-	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=mHxc+WOjDo3ySJMF8HwBK4+zcosqKTjl6jTA5PdfsKYyZ1E2D20yNC3QNYMVEOeuh5OTxNnV5cARuclQR7fkp9ed7ao/d8JBZUBRsK7LHbW+0BLNxzfy+vxfHFo9Qp5zzRMuxyQ8dmJHZKpURHKu0nlRz1iHkLdgXnRvhafZ2Pw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bM76w13/; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bM76w13/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 716C0C2BCAF;
-	Tue,  7 Apr 2026 08:55:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775552116;
-	bh=9FM/2kY5c9jnURSRNKlLV3ziUYO+2vbuP2OQgTOa3p4=;
-	h=Date:From:To:Cc:Subject:References:From;
-	b=bM76w13/WCTo4sBXQSs0QFxAyU9HZUW0hjydi5Lvptkm1KE+Sei6sq1QJ6jOhIsQo
-	 Z7m0RpHmMZQIl2ERxgtgfoOlyHHbY1zjeIkk1fn3hsmfnOXk0b1p/DW0TenYIL00ge
-	 uCVH3/1CvL7SemR+jKutq6EMZ1COpw31d6niE/EvkrfkAjLnOYc2rkBGzxSzLtoVG8
-	 O4D9vg7xMTrubrBNAbcqbEzfugmUf2Taf5iUYfZeX+5qsmBfQpVK1ppByqDuGATUGO
-	 G3c9XKSXA5jWcLCPqWRlO+5Fjm/yXmB6MD3P92c07CiG3w4m+HT/T30EDEeaDhsD83
-	 SvmtIPVDrLH1Q==
-Date: Tue, 07 Apr 2026 10:55:13 +0200
-Message-ID: <20260407083248.303293327@kernel.org>
-User-Agent: quilt/0.68
-From: Thomas Gleixner <tglx@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: John Stultz <jstultz@google.com>,
- Stephen Boyd <sboyd@kernel.org>,
- Calvin Owens <calvin@wbinvd.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Anna-Maria Behnsen <anna-maria@linutronix.de>,
- Frederic Weisbecker <frederic@kernel.org>,
- Ingo Molnar <mingo@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>,
- Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org,
- Sebastian Reichel <sre@kernel.org>,
- linux-pm@vger.kernel.org,
- Pablo Neira Ayuso <pablo@netfilter.org>,
- Florian Westphal <fw@strlen.de>,
- Phil Sutter <phil@nwl.cc>,
- netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org
-Subject: [patch 12/12] alarmtimer: Remove unused interfaces
-References: <20260407083219.478203185@kernel.org>
+	s=arc-20240116; t=1775554544; c=relaxed/simple;
+	bh=55Rg4HxoAv/fQpLPjrTICE4dtTMumrz67bsujKUvo10=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=PQIZ9ToTZB9R0jar7aMfOiP4DM8FGa6KTeZq5GNpD4idgQkqrnpdsNIkw4QpaYDkX7uuJ2r/OCH/b82GVU0J6ezLDjOKr3uGDKSSRe2En/399z2xwI2A+KzBOvG7Dr9f/uGxOVXdxAihzGcosgml6PABymr7nGoWabol6TkzFCY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com; spf=pass smtp.mailfrom=xiaomi.com; arc=none smtp.client-ip=118.143.206.90
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
+X-CSE-ConnectionGUID: A9p7J5sEQeGeLTKIyplOSQ==
+X-CSE-MsgGUID: dHAxzjt1SrOc9dc9ziYuag==
+X-IronPort-AV: E=Sophos;i="6.23,165,1770566400"; 
+   d="scan'208";a="145860607"
+From: Tianxiang Chen <nanmu@xiaomi.com>
+To: <rafael@kernel.org>
+CC: <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <lingyue@xiaomi.com>, Tianxiang Chen
+	<nanmu@xiaomi.com>
+Subject: [PATCH] cpufreq: Fix race between suspend/resume and CPU hotplug
+Date: Tue, 7 Apr 2026 17:35:29 +0800
+Message-ID: <20260407093529.4527-1-nanmu@xiaomi.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-ClientProxiedBy: BJ-MBX19.mioffice.cn (10.237.8.139) To YZ-MBX05.mioffice.cn
+ (10.237.88.125)
 
-All alarmtimer users are converted to alarmtimer_start(). Remove the now
-unused interfaces.
+CPU hotplug operations can race with cpufreq_suspend()
+and cpufreq_resume(), leading to null pointer dereferences
+when accessing governor data. This occurs because there is
+no synchronization between suspend/resume operations and
+CPU hotplug, allowing concurrent access to
+policy->governor_data while it is being freed or initialized.
 
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: John Stultz <jstultz@google.com>
-Cc: Stephen Boyd <sboyd@kernel.org>
+Detailed race condition scenario:
+
+1. Thread A (cpufreq_suspend) starts execution:
+   - Iterates through active policies
+   - Calls cpufreq_stop_governor(policy) for each policy
+   - Sets cpufreq_suspended =3D true
+
+2. Thread B (CPU hotplug) executes concurrently:
+   - Calls cpu_down(cpu)
+   - Calls cpuhp_cpufreq_offline(cpu)
+   - Calls cpufreq_offline(cpu)
+   - Inside cpufreq_offline():
+     * Stops governor: policy->governor->stop(policy)
+     * Exits governor: policy->governor->exit(policy)
+     * Frees governor_data: kfree(policy->governor_data)
+     * Sets policy->governor_data =3D NULL
+
+3. Race window between step 1 and step 2:
+   - Thread A is iterating policies and stopping governors
+   - Thread B is concurrently executing CPU offline
+   - Both threads may access the same policy->governor_data
+   - Thread B frees governor_data while Thread A is still using it
+   - Thread A accesses freed governor_data =E2=86=92 null pointer dereferen=
+ce
+
+Similarly, cpufreq_resume() can race with CPU hotplug where governor_data
+is being initialized while hotplug is trying to access it, leading to
+accessing uninitialized data.
+
+Signed-off-by: Tianxiang Chen <nanmu@xiaomi.com>
 ---
- include/linux/alarmtimer.h |    3 ---
- kernel/time/alarmtimer.c   |   44 --------------------------------------------
- 2 files changed, 47 deletions(-)
+ drivers/cpufreq/cpufreq.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- a/include/linux/alarmtimer.h
-+++ b/include/linux/alarmtimer.h
-@@ -50,9 +50,6 @@ static __always_inline ktime_t alarm_get
- void alarm_init(struct alarm *alarm, enum alarmtimer_type type,
- 		void (*function)(struct alarm *, ktime_t));
- bool alarmtimer_start(struct alarm *alarm, ktime_t expires, bool relative);
--void alarm_start(struct alarm *alarm, ktime_t start);
--void alarm_start_relative(struct alarm *alarm, ktime_t start);
--void alarm_restart(struct alarm *alarm);
- int alarm_try_to_cancel(struct alarm *alarm);
- int alarm_cancel(struct alarm *alarm);
- 
---- a/kernel/time/alarmtimer.c
-+++ b/kernel/time/alarmtimer.c
-@@ -333,39 +333,6 @@ void alarm_init(struct alarm *alarm, enu
- EXPORT_SYMBOL_GPL(alarm_init);
- 
- /**
-- * alarm_start - Sets an absolute alarm to fire
-- * @alarm: ptr to alarm to set
-- * @start: time to run the alarm
-- */
--void alarm_start(struct alarm *alarm, ktime_t start)
--{
--	struct alarm_base *base = &alarm_bases[alarm->type];
--
--	scoped_guard(spinlock_irqsave, &base->lock) {
--		alarm->node.expires = start;
--		alarmtimer_enqueue(base, alarm);
--		hrtimer_start(&alarm->timer, alarm->node.expires, HRTIMER_MODE_ABS);
--	}
--
--	trace_alarmtimer_start(alarm, base->get_ktime());
--}
--EXPORT_SYMBOL_GPL(alarm_start);
--
--/**
-- * alarm_start_relative - Sets a relative alarm to fire
-- * @alarm: ptr to alarm to set
-- * @start: time relative to now to run the alarm
-- */
--void alarm_start_relative(struct alarm *alarm, ktime_t start)
--{
--	struct alarm_base *base = &alarm_bases[alarm->type];
--
--	start = ktime_add_safe(start, base->get_ktime());
--	alarm_start(alarm, start);
--}
--EXPORT_SYMBOL_GPL(alarm_start_relative);
--
--/**
-  * alarmtimer_start - Sets an alarm to fire
-  * @alarm:	Pointer to alarm to set
-  * @expires:	Expiry time
-@@ -393,17 +360,6 @@ bool alarmtimer_start(struct alarm *alar
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1f794524a1d9..8b03785764fa 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1979,6 +1979,7 @@ void cpufreq_suspend(void)
+        if (!cpufreq_driver)
+                return;
+
++       cpus_read_lock();
+        if (!has_target() && !cpufreq_driver->suspend)
+                goto suspend;
+
+@@ -1998,6 +1999,7 @@ void cpufreq_suspend(void)
+
+ suspend:
+        cpufreq_suspended =3D true;
++       cpus_read_unlock();
  }
- EXPORT_SYMBOL_GPL(alarmtimer_start);
- 
--void alarm_restart(struct alarm *alarm)
--{
--	struct alarm_base *base = &alarm_bases[alarm->type];
--
--	guard(spinlock_irqsave)(&base->lock);
--	hrtimer_set_expires(&alarm->timer, alarm->node.expires);
--	hrtimer_restart(&alarm->timer);
--	alarmtimer_enqueue(base, alarm);
--}
--EXPORT_SYMBOL_GPL(alarm_restart);
--
- /**
-  * alarm_try_to_cancel - Tries to cancel an alarm timer
-  * @alarm: ptr to alarm to be canceled
 
+ /**
+@@ -2017,10 +2019,11 @@ void cpufreq_resume(void)
+        if (unlikely(!cpufreq_suspended))
+                return;
+
++       cpus_read_lock();
+        cpufreq_suspended =3D false;
+
+        if (!has_target() && !cpufreq_driver->resume)
+-               return;
++               goto out;
+
+        pr_debug("%s: Resuming Governors\n", __func__);
+
+@@ -2038,6 +2041,9 @@ void cpufreq_resume(void)
+                                       __func__, policy->cpu);
+                }
+        }
++
++out:
++       cpus_read_unlock();
+ }
+
+ /**
+--
+2.34.1
+
+#/******=E6=9C=AC=E9=82=AE=E4=BB=B6=E5=8F=8A=E5=85=B6=E9=99=84=E4=BB=B6=E5=
+=90=AB=E6=9C=89=E5=B0=8F=E7=B1=B3=E5=85=AC=E5=8F=B8=E7=9A=84=E4=BF=9D=E5=AF=
+=86=E4=BF=A1=E6=81=AF=EF=BC=8C=E4=BB=85=E9=99=90=E4=BA=8E=E5=8F=91=E9=80=81=
+=E7=BB=99=E4=B8=8A=E9=9D=A2=E5=9C=B0=E5=9D=80=E4=B8=AD=E5=88=97=E5=87=BA=E7=
+=9A=84=E4=B8=AA=E4=BA=BA=E6=88=96=E7=BE=A4=E7=BB=84=E3=80=82=E7=A6=81=E6=AD=
+=A2=E4=BB=BB=E4=BD=95=E5=85=B6=E4=BB=96=E4=BA=BA=E4=BB=A5=E4=BB=BB=E4=BD=95=
+=E5=BD=A2=E5=BC=8F=E4=BD=BF=E7=94=A8=EF=BC=88=E5=8C=85=E6=8B=AC=E4=BD=86=E4=
+=B8=8D=E9=99=90=E4=BA=8E=E5=85=A8=E9=83=A8=E6=88=96=E9=83=A8=E5=88=86=E5=9C=
+=B0=E6=B3=84=E9=9C=B2=E3=80=81=E5=A4=8D=E5=88=B6=E3=80=81=E6=88=96=E6=95=A3=
+=E5=8F=91=EF=BC=89=E6=9C=AC=E9=82=AE=E4=BB=B6=E4=B8=AD=E7=9A=84=E4=BF=A1=E6=
+=81=AF=E3=80=82=E5=A6=82=E6=9E=9C=E6=82=A8=E9=94=99=E6=94=B6=E4=BA=86=E6=9C=
+=AC=E9=82=AE=E4=BB=B6=EF=BC=8C=E8=AF=B7=E6=82=A8=E7=AB=8B=E5=8D=B3=E7=94=B5=
+=E8=AF=9D=E6=88=96=E9=82=AE=E4=BB=B6=E9=80=9A=E7=9F=A5=E5=8F=91=E4=BB=B6=E4=
+=BA=BA=E5=B9=B6=E5=88=A0=E9=99=A4=E6=9C=AC=E9=82=AE=E4=BB=B6=EF=BC=81 This =
+e-mail and its attachments contain confidential information from XIAOMI, wh=
+ich is intended only for the person or entity whose address is listed above=
+. Any use of the information contained herein in any way (including, but no=
+t limited to, total or partial disclosure, reproduction, or dissemination) =
+by persons other than the intended recipient(s) is prohibited. If you recei=
+ve this e-mail in error, please notify the sender by phone or email immedia=
+tely and delete it!******/#
