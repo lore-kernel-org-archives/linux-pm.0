@@ -1,92 +1,139 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF2613ACA43;
-	Tue,  7 Apr 2026 12:33:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 211FE2222AC
+	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 13:43:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775565232; cv=none; b=uAZrGd6rri2vLpznqe0fHLzfiDxaPjW5UFd5rnCBdLbgC51N5l5fVO76HiXaKgGiVArKkaTIRbl0d6ouvM3WjsLgAnv8KtNgmknKv+ojeEzSfMBUHBSgScugxB4SVEo9kGU2bm8rO4KRI5GcLgdaeICJpO91CtUDHKO0t8QdCgQ=
+	t=1775569390; cv=none; b=XzaPxD/i/QRwJ2Lfiw28P4tdaNvi5ni8HFJJ3IxkGPwr2vTkxkR1rVLIH2Mk+0OKhxa8O5iQDMHBK+hSRTmYJJU8rRBgJvx+OnIpWyCV51ijx/4DjcTZzYNagSYvTHbClxTO/aJXN8mdpDHcTx9M+bz4yeI+FTvMU7z7eqkQpjI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775565232; c=relaxed/simple;
-	bh=FwBXecI0p0IB6IN7GC8Y7FHX3sFO5EIumD+xwZduELA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TGi4NJ/gwCvz7LxxNERQMY3tmLnuUsvzJQX5xOwgGuicVmaYAGudpxGFPTQNqFkgJATyxgdi7spskcG/7qmoSPsKBUudY+WP8c4NKlsyY21CCO5m2nQhu89pGcgQC1u5jSVAF6Lo5KyMRFl9od6VZYOYN4POlREeHutcSUK8tKE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IZwXHnkl; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775569390; c=relaxed/simple;
+	bh=uErRD7XgRZQNBFUCJ2Vi5whpxyCfGOAmyddmbGlc3Ig=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hOGSp0AWGxhEVFDsF04QjQWgJnwWt8O9OECGcwLpXOevX4rW2SjUFOoLe291v/C2IPJRFnn8mGFFcUsUJmfKdqkXo1KoFB5OuAlFOK3onFfI+8B6d3pHywBt/h08DqsTqm2bVpPkrWbyO4udZsflN1/mlfYZx0PxpsCtTnGex7c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X8WpXKUC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IZwXHnkl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D990C116C6;
-	Tue,  7 Apr 2026 12:33:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X8WpXKUC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEBD3C2BCAF
+	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 13:43:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775565231;
-	bh=FwBXecI0p0IB6IN7GC8Y7FHX3sFO5EIumD+xwZduELA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=IZwXHnklLNiv72pNVROTtcy/QZDXZwGibnicT5xsE7QxHoGgI5c1aBdBqbdjD85SL
-	 qUBHEL5zA6LbM/hNe9nfo3y61DI6TFhRpkmIxgrujrr2E9fTFAGwUnUXT8NrE79Ahf
-	 CLUliHMKZ6Zhz8pLiSBmLWCBlyKW5YkVtgYMflJT08UzCTwwOj+POCZmNQ5P7PCExR
-	 3PaSgEZvP55UUHquqjLM1zB2xRp/RPs6peIxzQdrdvAQANcH6jVzFXzaePi1UCuna4
-	 sZ5oW9AQQtdGfgLi90zrkma+Pt0zh5mTIJtFK2T8UubVWq0kDOzyZinxQxWBpNY1s8
-	 BGPQHA+jR4bbQ==
-Received: from johan by xi.lan with local (Exim 4.98.2)
-	(envelope-from <johan@kernel.org>)
-	id 1wA5cq-0000000BEVn-3jno;
-	Tue, 07 Apr 2026 14:33:48 +0200
-From: Johan Hovold <johan@kernel.org>
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hansg@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-	Purism Kernel Team <kernel@puri.sm>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Johan Hovold <johan@kernel.org>,
-	stable@vger.kernel.org,
-	Dzmitry Sankouski <dsankouski@gmail.com>
-Subject: [PATCH v2] power: supply: max17042: fix OF node reference imbalance
-Date: Tue,  7 Apr 2026 14:33:38 +0200
-Message-ID: <20260407123338.2677375-1-johan@kernel.org>
-X-Mailer: git-send-email 2.52.0
+	s=k20201202; t=1775569390;
+	bh=uErRD7XgRZQNBFUCJ2Vi5whpxyCfGOAmyddmbGlc3Ig=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=X8WpXKUC59VXvQX7kGiLDW5AQahkL1j9hU1fHusSF22tzLK8O4md0gZHuX42ga26p
+	 ivzhfDQAfPoeieLcLE07GEewqw0PXAS2Ur2L5LiERM4DKw68pBSF+NfgC1I7oVnJl4
+	 /VoqlKv9/bCcks0oI2TkyESuMObFRpxItwvaCEbmDLH/j+0+0DWcSsehtNZJiQEyej
+	 LchmNTZVVJvMIzxqXEAewmGQ8G5ORHgdb5IO7yPz26U3MhZUY/wS8ZtsprFne5tB5A
+	 hEmdExZbfZsCnG36Q9Z9wXaoVD0P4jAaCMZ/aR2CArjcx7JXblTo7dzyY3zby/6r4f
+	 /1sZ7XV0Hi8SA==
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-4043b909ed4so2783229fac.3
+        for <linux-pm@vger.kernel.org>; Tue, 07 Apr 2026 06:43:09 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUivQ2ct7nrQpLRgpochheYdup95lsao8PEAUTzUZKFvI58scQwhurcHIdqZ9NsAC+CmZQlHXrQmg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzhqtm9DW0/wrrEMLQQGCbdKDMyfQXrvRRrLl7RZaxCtHgkb3sf
+	AA87uZ/M6ZEOgcJltqEePjKdFSAlTY+eU/qcOQ9hG9axLpGZpipGRy3uh72oTUU1Wkxi47IUz9l
+	xMN28deC9Wl352y3fBOL3i86BkABrckg=
+X-Received: by 2002:a05:6871:4d0:b0:417:7b1d:1b2 with SMTP id
+ 586e51a60fabf-4231022b7abmr9032695fac.42.1775569389130; Tue, 07 Apr 2026
+ 06:43:09 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <651e317c-dc31-4895-ac09-2f12398ed3be@linuxfoundation.org>
+In-Reply-To: <651e317c-dc31-4895-ac09-2f12398ed3be@linuxfoundation.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 7 Apr 2026 15:42:58 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0jemSd-h+0HKkN=8rnygX+zA4u2cbb+VufrcjU74M=hOw@mail.gmail.com>
+X-Gm-Features: AQROBzAgudxDY0AK3nZxjkO6is309zE--tWMJsTS9zN6fwDsTWuUHX461ho7XzA
+Message-ID: <CAJZ5v0jemSd-h+0HKkN=8rnygX+zA4u2cbb+VufrcjU74M=hOw@mail.gmail.com>
+Subject: Re: [GIT PULL] cpupower next update for Linux 7.1-rc1
+To: Shuah Khan <skhan@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, shuah <shuah@kernel.org>, 
+	Thomas Renninger <trenn@suse.com>, "John B. Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>, 
+	Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The driver reuses the OF node of the parent multi-function device but
-fails to take another reference to balance the one dropped by the
-platform bus code when unbinding the MFD and deregistering the child
-devices.
+Hi Shuah,
 
-Fix this by using the intended helper for reusing OF nodes.
+On Mon, Apr 6, 2026 at 8:40=E2=80=AFPM Shuah Khan <skhan@linuxfoundation.or=
+g> wrote:
+>
+> Hi Rafael,
+>
+> Please pull the cpupower next update for Linux 7.1-rc1.
+>
+> - Fixes errors in cpupower-frequency-info short option names
+>    to its manpage.
+> - Fixes cpupower-idle-info perf option name to its manpage.
+> - Adds boost and epp options to cpupower-frequency-info to its
+>    manpage.
+> - Adds description for perf-bias option to cpupower-info to its
+>    manpage.
+> - Removes unnecessary extern declarations from getopt.h in arguments
+>    parsing functions in cpufreq-set, cpuidle-info, cpuidle-set,
+>    cpupower-info, and cpupower-set utilities. These functions are
+>    defined getopt.h file.
+>
+> diff is attached.
+>
+> thanks,
+> -- Shuah
+>
+> ----------------------------------------------------------------
+> The following changes since commit c369299895a591d96745d6492d4888259b004a=
+9e:
+>
+>    Linux 7.0-rc5 (2026-03-22 14:42:17 -0700)
+>
+> are available in the Git repository at:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-c=
+pupower-7.1-rc1
+>
+> for you to fetch changes up to 2fd3b83cacfb9160b896fb26117328eeb0598c54:
+>
+>    cpupower: remove extern declarations in cmd functions (2026-04-06 11:2=
+5:32 -0600)
+>
+> ----------------------------------------------------------------
+> linux-cpupower-7.1-rc1
+>
+> - Fixes errors in cpupower-frequency-info short option names
+>    to its manpage.
+> - Fixes cpupower-idle-info perf option name to its manpage.
+> - Adds boost and epp options to cpupower-frequency-info to its
+>    manpage.
+> - Adds description for perf-bias option to cpupower-info to its
+>    manpage.
+> - Removes unnecessary extern declarations from getopt.h in arguments
+>    parsing functions in cpufreq-set, cpuidle-info, cpuidle-set,
+>    cpupower-info, and cpupower-set utilities. These functions are
+>    defined getopt.h file.
+>
+> ----------------------------------------------------------------
+> Kaushlendra Kumar (1):
+>        cpupower: remove extern declarations in cmd functions
+>
+> Roberto Ricci (4):
+>        cpupower-idle-info.1: fix short option names
+>        cpupower-frequency-info.1: use the proper name of the --perf optio=
+n
+>        cpupower-frequency-info.1: document --boost and --epp options
+>        cpupower-info.1: describe the --perf-bias option
+>
+>   tools/power/cpupower/man/cpupower-frequency-info.1 | 8 +++++++-
+>   tools/power/cpupower/man/cpupower-idle-info.1      | 4 ++--
+>   tools/power/cpupower/man/cpupower-info.1           | 9 ++++++++-
+>   tools/power/cpupower/utils/cpufreq-info.c          | 2 --
+>   tools/power/cpupower/utils/cpufreq-set.c           | 2 --
+>   tools/power/cpupower/utils/cpuidle-info.c          | 2 --
+>   tools/power/cpupower/utils/cpuidle-set.c           | 2 --
+>   tools/power/cpupower/utils/cpupower-info.c         | 2 --
+>   tools/power/cpupower/utils/cpupower-set.c          | 2 --
+>   9 files changed, 17 insertions(+), 16 deletions(-)
+> ----------------------------------------------------------------
 
-Fixes: 0cd4f1f77ad4 ("power: supply: max17042: add platform driver variant")
-Cc: stable@vger.kernel.org	# 6.14
-Cc: Dzmitry Sankouski <dsankouski@gmail.com>
-Signed-off-by: Johan Hovold <johan@kernel.org>
----
-
-Changes in v2:
- - add missing driver name to patch summary prefix
-
-
- drivers/power/supply/max17042_battery.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index acea176101fa..914f18ce79b3 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -1165,7 +1165,8 @@ static int max17042_platform_probe(struct platform_device *pdev)
- 	if (!i2c)
- 		return -EINVAL;
- 
--	dev->of_node = dev->parent->of_node;
-+	device_set_of_node_from_dev(dev, dev->parent);
-+
- 	id = platform_get_device_id(pdev);
- 	irq = platform_get_irq(pdev, 0);
- 
--- 
-2.52.0
-
+Pulled and added to linux-pm.git/linux-next, thanks!
