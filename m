@@ -1,41 +1,41 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F32583B6BF5;
-	Tue,  7 Apr 2026 14:10:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ABBB3BA258;
+	Tue,  7 Apr 2026 14:10:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775571050; cv=none; b=NgOzT5cQ57R6uyjOiVTYHu9swJLEg6hpKVxKtJnfVitbuATcqQfUo8RlinkU/SNGxBdLEi5uIHh1JTRajpBbFZyXUD7xBQvB1/arFZ2ZaC8BtYAN+ej00GlEF09mu7xh21OJotmJsbW5I1HLee1l/ZwrXSnnrmYK3MLQe84RuJ0=
+	t=1775571053; cv=none; b=rm1iL/K4cPkWC4ECxWdTROJalXBnoimeRA0YLVp8u2RU7xsDTdd2jXIcM5FvhxMTNfrl85Trj0eWD9rryKNhZVa+oCGYNZOOcQ1LqD/vNrFGBw9jnnyH4peCIshogwCR1q7PYBAP5ETpjmt3nuzak5r7+o6vGL127Qp8Rd32Hok=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775571050; c=relaxed/simple;
-	bh=3sXtcJuoD1r6t91CrCthx39JgZlogsjW4X0t5XHmEfo=;
+	s=arc-20240116; t=1775571053; c=relaxed/simple;
+	bh=NH4DCemmEh/KzB+lUTpqLoYo4Q1pELKN2OjcpBMiYNM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Vn98UAq70wsNHacghaS1bvSOlQWylu85H4wZLCfD4ILjHebz81Yt3dG4glzGSHYNf7B/gyGUHrZlsTwCzs9cHXP2V33YaRvIBkQFG7s/H5Xw7/qBaAjPxfGE+rQjErJJoQ+/ld/Hm0udGqj0cytfyPY5w2EHlt0uw/fsITuuTMc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fTIiw/0v; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=LKTqqGLdb4xIauI6ezZQLavvQ6MMT0Sf5BsYMwAsfn7an2gxoJdvwEqId+zxO9oHpBItY2v5augnrionhOtLy2P/ZU7WJxkIuEV+xQFq+wrzETDKgsu9Tt/64wEQ0QsuKaW19Hynwb7nJvFI3b4zdFSr3p+5wcLYUYf51vnyhK4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kWVPsGr4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fTIiw/0v"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76B22C116C6;
-	Tue,  7 Apr 2026 14:10:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kWVPsGr4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7903C116C6;
+	Tue,  7 Apr 2026 14:10:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775571049;
-	bh=3sXtcJuoD1r6t91CrCthx39JgZlogsjW4X0t5XHmEfo=;
+	s=k20201202; t=1775571053;
+	bh=NH4DCemmEh/KzB+lUTpqLoYo4Q1pELKN2OjcpBMiYNM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=fTIiw/0v169ICsf/AUbuvxdxD5T/2xqiQ29krWP/B9R+p69iLGifi0BVkqda2UV1Y
-	 tTLUurg6EpkD04hTzPWRZq52fvYpjZg2+aCijdbNiO0UIhoppqIqwhXXiVweOIiRz9
-	 EJZQ48qmAjiychE4icIPfnkTn6v6RqQLWJD2p5yAm+noA0tDCijFEJJGDZV0b8IpcA
-	 rvg0z9h1hQxNHpMeA2Cb8JR5XTYT3Y86O7ZdrDSOV4YlUYsVPkv5DuzuLG2qd30qOR
-	 txzKCXjfor86zXHHICF8GeLSIoNheb7ZLoD08urZkBSA9f+o6YVbSodZlPPduk1RbS
-	 +3xa1jXUjOSng==
+	b=kWVPsGr4W1Q6S0Ie9PDjIdi0+8kE88hBF21OgsrohuAvM8wKvR8AseVWfyUeC9tbd
+	 cDDzJ5yllvtE9WY0qqJLaWGDIBGIUVwwwpfDT6ykT1iyfJ1GMuefRRvU0PfUoBUYcx
+	 F6zuOa0xn6PWXHM9FUNihIsEVDajjczA/GbTAFULMew7Q+wNuz679hMOKxA1QE8rLV
+	 KVz3mkJ6ig+wSVaWVFWW8ytHv3DJwRfRU10bkr0CBNqiRKvOOy1qgIfsP8DgN6Lkwm
+	 XXxyGJZyMchmQ9uW9dBM1Tj22iqTd6I8OnfcEdhJzBkvUqwZlDoWRjxQbnXI1xeXlF
+	 bQ0Tt4u/LIJPw==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Armin Wolf <w_armin@gmx.de>
 Subject:
- [PATCH v4 4/6] thermal: core: Change thermal_wq to be unbound and not
- freezable
-Date: Tue, 07 Apr 2026 16:06:35 +0200
-Message-ID: <3413335.44csPzL39Z@rafael.j.wysocki>
+ [PATCH v4 3/6] thermal: core: Drop redundant check from
+ thermal_zone_device_update()
+Date: Tue, 07 Apr 2026 16:06:23 +0200
+Message-ID: <3406806.aeNJFYEL58@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <12871778.O9o76ZdvQC@rafael.j.wysocki>
 References: <12871778.O9o76ZdvQC@rafael.j.wysocki>
@@ -50,8 +50,19 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The thermal workqueue doesn't need to be freezable or per-CPU, so drop
-WQ_FREEZABLE and WQ_PERCPU from the flags when allocating it.
+Since __thermal_zone_device_update() checks if tz->state is
+TZ_STATE_READY and bails out immediately otherwise, it is not
+necessary to check the thermal_zone_is_present() return value in
+thermal_zone_device_update().  Namely, tz->state is equal to
+TZ_STATE_FLAG_INIT initially and that flag is only cleared in
+thermal_zone_init_complete() after adding tz to the list of thermal
+zones, and thermal_zone_exit() sets TZ_STATE_FLAG_EXIT in tz->state
+while removing tz from that list.  Thus tz->state is not TZ_STATE_READY
+when tz is not in the list and the check mentioned above is redundant.
+
+Accordingly, drop the redundant thermal_zone_is_present() check from
+thermal_zone_device_update() and drop the former altogether because it
+has no more users.
 
 No intentional functional impact.
 
@@ -61,21 +72,31 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 v1 -> v4: No changes
 
 ---
- drivers/thermal/thermal_core.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1918,8 +1918,7 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto error;
+@@ -702,18 +702,12 @@ int thermal_zone_device_disable(struct t
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
  
--	thermal_wq = alloc_workqueue("thermal_events",
--				      WQ_FREEZABLE | WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
-+	thermal_wq = alloc_workqueue("thermal_events", WQ_POWER_EFFICIENT, 0);
- 	if (!thermal_wq) {
- 		result = -ENOMEM;
- 		goto unregister_netlink;
+-static bool thermal_zone_is_present(struct thermal_zone_device *tz)
+-{
+-	return !list_empty(&tz->node);
+-}
+-
+ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 				enum thermal_notify_event event)
+ {
+ 	guard(thermal_zone)(tz);
+ 
+-	if (thermal_zone_is_present(tz))
+-		__thermal_zone_device_update(tz, event);
++	__thermal_zone_device_update(tz, event);
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
 
 
 
