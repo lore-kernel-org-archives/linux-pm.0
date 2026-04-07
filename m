@@ -1,262 +1,214 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EDEF198A17
-	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 05:34:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C50EC175A7D
+	for <linux-pm@vger.kernel.org>; Tue,  7 Apr 2026 05:40:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775540058; cv=none; b=mvAz0ye12Ik5OHmYLQ1bZyIMnLEcMbwJcrCiC+VOKZw2+4Mga+Yy5Yb5QTL5oacdgZ0BkmYrRyFyXbJSbQRZE9vls1VjKpJ3aVpZglT/eRmiNZnuw+tQqWIlgk6RjEhptMq/vFhXUD9N6qbQoMqZsNbbu8DRaPzusJX1ETfQG/w=
+	t=1775540411; cv=none; b=kArtM4TJWNefNop9Kin9gfo40dQA2Tsg8kyhS4chRISCZJxaz9c+mQ9Cyy9YBCmAq802+QpYBlKUTAjz/at7oSbwTrnV++scbEQdAXkFPrzgQMYlBaEOTUpie2mMXFuiaZth2HtQf/N7Va2wEBHl4hx3UyJ87Cqnt/UbucT1UB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775540058; c=relaxed/simple;
-	bh=Zo8UU7gNMthFb+s6GvgE7Ac+dlBAdwtYjHMnUdkdkOY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SCuaqJQwgaNCquGO0gwU6kQw2gDORvbOgpIbDSJ0x7nTxRK9xJBgFDE2Gdgf+1iVL3fjm6+9plgTVt9XmTi1psbkA9Is/woqZSDbgexEuIVxgvfaV91K1OiAItUCk06ZYSZ24/d1qtYJg97vp7v7f5e8neLPqlDPGN4UK/ENLFI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b2fTeJwO; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1775540411; c=relaxed/simple;
+	bh=vxzu1BItgDG+upVzuIGSwS+AnHAB1gz4KUgcXze+JR8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=d03s2q4yIjRPFU2JH8NBVSHDUb31nTa13CPFETQyPHMtWzGeoO80KphinufwBcNihMFJkS54XHb4451yuQjwMMqu8VMYVWMTLs7dwqqrrbRx01PC8Pzi6jTZFx4zMxjxn/rWILWwlCFteUvQAHMG/81Sq7AQIYJ4+5cj7c2K2aU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=AobkrJNr; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=jYwI16/U; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b2fTeJwO"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5a3d2824e4bso3281414e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 22:34:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="AobkrJNr";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="jYwI16/U"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LQKkY2549972
+	for <linux-pm@vger.kernel.org>; Tue, 7 Apr 2026 05:40:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=RbjEEvlADdmXHSdeRe1aD+KWqgQivbL4+PD
+	39XXNeow=; b=AobkrJNrNnC2K3VbPa3H4hDT4F/vv3SCMjV2KXYAttoXfaoLuyB
+	b716soX0rn8p0pXkzU0gkmb9gPrX1zHy4guRb4Sg5Xu+Idx6c6HV+2lrozuXUWSp
+	1dfSx+J19305apmtzCs2CgepndCa2DX3aotkGvY1OYFw9KkezZFl6FLJDZj1XX2e
+	xuF4gZgCqHMOUgbgic2QeMttIuPDd9CgUrGedR3NwXY0gVmk8+uizrbGgw7yNA6B
+	kUFmvTUWGmGx1ZLap4eWXyEu64pkVWRwFbHhm1yZ7W7OadaFt3E6/Gf9yqfk7itH
+	WlOSmq2tpOQW5YM2Iu4/aoJEiH3/HQORUAg==
+Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dcmre977g-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 07 Apr 2026 05:40:09 +0000 (GMT)
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-50d826ed6f9so55155111cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2026 22:40:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775540055; x=1776144855; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=0ImMoQmdeN0sXH0eMNoFhdmKeC5AJW/5BcE3F1ViYts=;
-        b=b2fTeJwOZe+pjXNTU1XODKu/DCHbTUC4JupDhSN1relnv5LxExvfFWT78MZlxnO1A5
-         JDmX+ZXlZgzN03tUrshFkckpOZYBDvs7SvkOGX9FfmczmXJnkS9In8R5vdMjz3FxTheN
-         oCxh25e+tK3Md+ZtVCLUJ9wO+IpvE72mKRX5eehcPbC1xQjxJ8EY+EXlBXem0O2cgyCH
-         ca4AL9eMyniMJht/ehH7q8ksYu99FMQK9dzOV2+w043GAqy5fRn7+UuyFiubJtEiI6Or
-         gXFSH9j20hHJlCuYNP8ewhMqJCmXL3hNmngr3rh1CPz9tQEMdH7jeNL38lpfpSBsPHK9
-         mXrg==
+        d=oss.qualcomm.com; s=google; t=1775540407; x=1776145207; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=RbjEEvlADdmXHSdeRe1aD+KWqgQivbL4+PD39XXNeow=;
+        b=jYwI16/UkI/xaua+OdAbUo+/eZDvvRpHHDKK3vh1QTXG3coT17/3UCsMqOIXcNhxc+
+         X1YAl5Ct2S4bKH5fBKDzrLBl1nA2GLPVoKMXLdk34d2QGR4fxT+eIugT2WanNYDHw9Fa
+         kvXWBPnQypB8uJPLuoIbs5M0M+cGJRhMpy1j6tE5g0I70eL3jAoMDCYo1rRfDU370tnD
+         lq9CFfog1shTDRSaOjI9xpKCCevCquYnfjy4FV+leIwTanbGpuUTzBYu3GfN+dS8lj3j
+         sY9D8qb3evhUfhn0mixYqnfutw2KnGXxyrXZGcqF92/EvQ+keaQHpwkN1QF1KqXZ04uA
+         E4dg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775540055; x=1776144855;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=0ImMoQmdeN0sXH0eMNoFhdmKeC5AJW/5BcE3F1ViYts=;
-        b=gV8hSFhu91efdUPKHFRm8B8qcLAYItu5GbetXc9B+17Qw8KPznujLn7tlYDkQxOHSl
-         zu9GNzoyhI2ZfrQJYYedI3mjF9thu5/PwbhmT02+XrdD6Kk6iWHdFotPZBP5o0kHPUMJ
-         m3dGq8xThUwGDSAw1PR+61t48O2i2OV+/VIxfnARGT664yXenW278LrWzXKf/Sr6ocbq
-         wXg/sN9K7/md8JPSBk116GYOD5yDwPD2azR7+ZZiOu4mkoptfqZG4BjN0mbNVn41roKU
-         RKLzShcoRGplh6ERvEyufh5XKVj6sdH9dsGG1/aBifnTm6PI5HoL3IngEmvT3V5JfXUK
-         KM+g==
-X-Gm-Message-State: AOJu0YwDj1Z3BbNgGP7Ui+EJgO41OglV/CoJ5FEA5+dpvZR5xBbHr4FA
-	uWYUvb8CUewHsA/K4OyNK9YxA0cjvRR4/66URV27co1aFsB2w5NN2RkB
-X-Gm-Gg: AeBDiessJ9I2MNrtduGwEo9kRp4PAfQLokMZxvgJ51RiGGBX/IZ2DkSC2LSJNhuVQg3
-	nQCwZh0lOqjntXUKxLB9WpVJO+KEX4guHGXPCS+/DQu0HTsChvgR4fZY+E3uJe5BA43oGkQg9sz
-	SgOfZJg0EBvkAYzym+OoiNQghFI7coZ+k69aHD/6XaIWCsY8xlOm7yb4Kp08YDaM/QgLGlYDz6g
-	z34GtW68eL7owJVbvAI0DjbbwSxZeZBTc5lx1NfNp2ZoEAQCru/9g+Vclbbxc/trshHMuQFPdzU
-	0cwB17tmDK+rKocbIzoUDHFmlhzKFh0FwxiXUz/jYc7hOjsWGDWg3QzxoctZWy8fp7euJuLc26P
-	eqspV2xAiIrGx1Ht+8nxwWtU2LN3nnfkPlU1OhfsQEpLlx36ElR0Dxa37SU/xwiBK/en3s5Z7w3
-	cnXBbVJT0mGp3OLDiOeZpU43kGAFGbUQoT0n8f54b2p7xw9p6ViWbDYbdKcOYwL4q6lTLmOJY+o
-	3BP5kWWDWR5XgEusko=
-X-Received: by 2002:a05:6512:68e:b0:5a3:d375:f583 with SMTP id 2adb3069b0e04-5a3d375f6d1mr2806594e87.35.1775540055129;
-        Mon, 06 Apr 2026 22:34:15 -0700 (PDT)
-Received: from ?IPV6:2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703? ([2a10:a5c0:800d:dd00:8fdf:935a:2c85:d703])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2c6ca3100sm3874421e87.35.2026.04.06.22.34.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Apr 2026 22:34:13 -0700 (PDT)
-Message-ID: <16340915-f63f-41f7-b68f-6208120d9c09@gmail.com>
-Date: Tue, 7 Apr 2026 08:34:12 +0300
+        d=1e100.net; s=20251104; t=1775540407; x=1776145207;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RbjEEvlADdmXHSdeRe1aD+KWqgQivbL4+PD39XXNeow=;
+        b=PdW36JrSH0BeU1x1S4rDsGXyO12KVPCysrnn8ucRKue+Iv0bSyiXwhpuX1KRymmHhN
+         xYLc9DAYu+LC+492U1cn/w+UifXUwC5MnHAJgDxozayjZsdYJWF1U+hf/1eRklM0+4Ze
+         4gnlrUECBG07uCMxKdIx45bz4ACJfXRM0jzYAe3Zji6eV9JhsOa3f3NVsTkBpbwYnKTQ
+         nUltQSXKjou841l9hgqVHV21ML3EUst6g3/MDuapzBzHJLwwejnUDteTAEdf8xEKSEWj
+         4LUcop4jKu6d6x1qjsvFQiVsJH00GIi+bM4eT7EqykASoy2iuERoONkq1149hgsj9lvC
+         CXYw==
+X-Forwarded-Encrypted: i=1; AJvYcCVZjIQcKzR+kGk6mpC6JSFBHmS0TeVtpV/afiQkQuwzmNtyQyny9vI1jAzkjcq60J/a8UMU9U4d/Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwI7zuhqX+YDRytTKzJwXjXN1fNN02F+RQz/QGxdLkMFRtX4CZ+
+	iMmzBgaIUejIxbeOaiw1vhb1ZgfFsnZGjvZZ35M2BFV73wnI5PQOojZmQt/+2QUl2cxC0I1xSP4
+	XdNP/YyiYSV0uv7yWFBn0LOvJ30l0ceIhXoSvbQgegkS0U9XHEmf9ih5DUFn/dX8OFvaf4w==
+X-Gm-Gg: AeBDietZhvgjPGI/Dv2FN8WI4COmoNncLyxo/GJIK2Z4qf+4RYcf0Q3I53juaEXrNIk
+	ZLFr3fF2mcWv+NMdCJPprpOtqiwsi0w5R1Dsph8I11t6gg0yqpB/onhlCm8ZfVICGWPE4CHEnJq
+	DfcwcdoIPS310wOhVyXaRe9pH2cWRaftiSNsW0SH+GTHlF+nqu+0ffHJrGeV00JR3VjnadTu2A7
+	NpBRcdkc4yrAgW50E9pA7GhFz2aFzD/Z4eGLn+mnP1Jdxu7Qs5GseEuuKAQ+QB3vQIKkGiJ0bZR
+	tt3EA4QMCcTnstt9NmGHVis4voHJGlNNICrE1w1GNt/IDvDtnY4K3Sdfa8scCFjGd8qnCAleU5T
+	5g91Xsl96lWdPBaANa6YwrfmuLLWfAVuKxNoM
+X-Received: by 2002:a05:622a:1a85:b0:509:144a:43bd with SMTP id d75a77b69052e-50d4fa36996mr225853211cf.3.1775540407453;
+        Mon, 06 Apr 2026 22:40:07 -0700 (PDT)
+X-Received: by 2002:a05:622a:1a85:b0:509:144a:43bd with SMTP id d75a77b69052e-50d4fa36996mr225852961cf.3.1775540407015;
+        Mon, 06 Apr 2026 22:40:07 -0700 (PDT)
+Received: from quoll ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4887eb5aff3sm729034045e9.15.2026.04.06.22.40.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Apr 2026 22:40:06 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v2] dt-bindings: thermal: idle: Complete the example code
+Date: Tue,  7 Apr 2026 07:39:58 +0200
+Message-ID: <20260407053957.10508-2-krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] power: supply: bd71828: add input current limit property
-To: Andreas Kemnade <andreas@kemnade.info>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260401-bd-inp-limit-v1-1-689eb22531e2@kemnade.info>
-Content-Language: en-US, en-AU, en-GB, en-BW
-From: Matti Vaittinen <mazziesaccount@gmail.com>
-In-Reply-To: <20260401-bd-inp-limit-v1-1-689eb22531e2@kemnade.info>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2821; i=krzysztof.kozlowski@oss.qualcomm.com;
+ h=from:subject; bh=vxzu1BItgDG+upVzuIGSwS+AnHAB1gz4KUgcXze+JR8=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBp1JitM9m6FmCdpAl4tcyldC4e9XDYxF8e9uh4T
+ CDQd5CJPZeJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCadSYrQAKCRDBN2bmhouD
+ 10o3D/wNEADz1F2K/i7fliKkKHuyOoNf96ZScskYc4LQv6YZcqrrby7nqR4GG6lFyf/4kBXMHEB
+ tuTws2RILwOsBnZQh4UlEBIvsU8udXgWLo5R/lyC8UFkuSlMBFPshqVkXSdc3dfKMCBhSYZAAXE
+ TOK+1e5Qq1NZQh1n1cYPnmi/Len8TrVTakEORgoWf1lSEQH3AXRAT9eWKC3XS/CsR8Qmnl75plA
+ DaPupbhXXXI3YLhW+tTTblyBbzzjZlSAk3/TGZVnNl68Nj6D+LwnHDffHVp5QdGEyw8DodIwpRD
+ 31fjTy7MLRDL/5d3YvrUP/WqPD1vOLSfaf7hb7UL4nfb6hAdkeegln+/GetYvaMf9fkNY7NW59H
+ 2plsLF4Qc3Zfg+HCS6WadWKci8t2UIy6Z46IzVp2FiFa05BVDKrjhLkIdCsLZVGLNxA8ay4iDLh
+ yKxfrq9fUltouxME3dritqhzMV/NY2aEmoh4rdHoMrnCW1d4xDRwCk4eB7oUjZY2RbcpiWhHTBo
+ +MMoK+aRCQ/QxnOYod21ztCLXtmTpod6U+a2VzQJdVPRINRK1flwvFM5cHBt2Fc8VCHSvkh/fhU
+ B5Z0KWEaIRwRFEl3weHXdj9Bz7qpEWGESCO3ddAR8teegE++2u3n4nL+Mfczp6SKEdZM9sbzV9q iSwDzrb32XOE2Yw==
+X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=OKEXGyaB c=1 sm=1 tr=0 ts=69d498b9 cx=c_pps
+ a=WeENfcodrlLV9YRTxbY/uA==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8
+ a=njFOWPmiop8x3v1vudgA:9 a=kacYvNCVWA4VmyqE58fU:22
+X-Proofpoint-GUID: PYW77AxCSdZaCNsNdCVmbM6StN064pCs
+X-Proofpoint-ORIG-GUID: PYW77AxCSdZaCNsNdCVmbM6StN064pCs
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDA1MSBTYWx0ZWRfX87Whqzyi0z/m
+ xbxB0hB0WQuUANQS/fPJ8FmOr8eiV+NHwlVXn6GyWRmVDHfWrWpcFsEVY3zLhe1yFfGq2sxGtAK
+ R+8Aa6h1/DH3xMSS7p7jnLk8JI27+1X3oSyMK1HRoTU73siMh6OMCTIqXXRSEyDQW7U1WS0VDwg
+ 6+J6g3Gb2Gv3I3xozgPfV4J1Y/J/K1xlm22lNQY+yjwp0O7dhuKZ8+NvwsOqxL/eyPAf6g1zA++
+ f4RZIS7yPBynsu4guWo2NpjN7+acUeADbu7xZ3MkQift7RZLCchRii4cAfSB5FZ/fAh+O7lN+Gf
+ TSkTUhjjdJHerP+K3wBG/VJTB1/y01ApV8n5I64yxz3bjGBVtLp2Ejv86rDTtPjWeQ8edTLO6N+
+ tgDuX5GLFiaF9PM3Swjz3Pe64kl+/d989UDTYPzS42yjNCcnyeaXVISTVGDbXHv3enJsdLIYLC2
+ 9IK9nThDwBWLJbQicMQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-07_02,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 spamscore=0 impostorscore=0 lowpriorityscore=0
+ clxscore=1015 adultscore=0 malwarescore=0 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070051
 
-On 02/04/2026 00:17, Andreas Kemnade wrote:
-> Add input current property to be able to work around issues created by
-> automatic input limiting and have some control.
-> Disabling the automatic management is another step.
-> 
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> ---
->   drivers/power/supply/bd71828-power.c | 62 ++++++++++++++++++++++++++++++++++++
->   1 file changed, 62 insertions(+)
-> 
-> diff --git a/drivers/power/supply/bd71828-power.c b/drivers/power/supply/bd71828-power.c
-> index 0e00acb589937..5e78faa0a4aaf 100644
-> --- a/drivers/power/supply/bd71828-power.c
-> +++ b/drivers/power/supply/bd71828-power.c
-> @@ -24,6 +24,7 @@
->   #define BD7182x_MASK_CONF_PON			BIT(0)
->   #define BD71815_MASK_CONF_XSTB			BIT(1)
->   #define BD7182x_MASK_BAT_STAT			0x3f
-> +#define BD7182x_MASK_ILIM			0x3f
->   #define BD7182x_MASK_DCIN_STAT			0x07
->   
->   #define BD7182x_MASK_WDT_AUTO			0x40
-> @@ -48,9 +49,11 @@ struct pwr_regs {
->   	unsigned int vbat_avg;
->   	unsigned int ibat;
->   	unsigned int ibat_avg;
-> +	unsigned int ilim_stat;
->   	unsigned int btemp_vth;
->   	unsigned int chg_state;
->   	unsigned int bat_temp;
-> +	unsigned int dcin_set;
->   	unsigned int dcin_stat;
->   	unsigned int dcin_online_mask;
->   	unsigned int dcin_collapse_limit;
-> @@ -66,9 +69,11 @@ static const struct pwr_regs pwr_regs_bd71828 = {
->   	.vbat_avg = BD71828_REG_VBAT_U,
->   	.ibat = BD71828_REG_IBAT_U,
->   	.ibat_avg = BD71828_REG_IBAT_AVG_U,
-> +	.ilim_stat = BD71828_REG_ILIM_STAT,
->   	.btemp_vth = BD71828_REG_VM_BTMP_U,
->   	.chg_state = BD71828_REG_CHG_STATE,
->   	.bat_temp = BD71828_REG_BAT_TEMP,
-> +	.dcin_set = BD71828_REG_DCIN_SET,
+Thermal bindings expect the node name with all the zones to be named
+'thermal-zones' (hyphen instead of underscore) and thermal zones to end
+with '-thermal'.  Also DTS coding style is not to use underscores for
+node names.  After using correct names, bindings point warnings for
+missing properties, so add also thermal-sensors.  Drop fake top
+compatible as it is not useful in this context.
 
-Hi Andreas / Sebastian,
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Sorry for belated review (although, I don't think this did float on the 
-list quite THAT long...)
-
-I believe this is the ILIM_STAT register in the data sheet, at address 
-0x6d, right? (The bit field is named as: LIM_DCIN_STAT[5:0]). If so, 
-then I have a follow-up question in the setter...
-
->   	.dcin_stat = BD71828_REG_DCIN_STAT,
->   	.dcin_online_mask = BD7182x_MASK_DCIN_DET,
->   	.dcin_collapse_limit = BD71828_REG_DCIN_CLPS,
-> @@ -441,6 +446,7 @@ static int bd71828_charger_get_property(struct power_supply *psy,
->   	struct bd71828_power *pwr = dev_get_drvdata(psy->dev.parent);
->   	u32 vot;
->   	u16 tmp;
-> +	int t;
->   	int online;
->   	int ret;
->   
-> @@ -459,6 +465,20 @@ static int bd71828_charger_get_property(struct power_supply *psy,
->   		vot = tmp;
->   		/* 5 milli volt steps */
->   		val->intval = 5000 * vot;
-> +		break;
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		if (!pwr->regs->ilim_stat)
-> +			return -ENODATA;
-> +
-> +		ret = regmap_read(pwr->regmap, pwr->regs->ilim_stat, &t);
-> +		if (ret)
-> +			return ret;
-> +
-> +		t++;
-> +		val->intval = (t & BD7182x_MASK_ILIM) * 50000;
-> +		if (val->intval > 2000000)
-> +			val->intval = 2000000;
-
-I would have preferred using the linear-ranges here.
-
-> +
->   		break;
->   	default:
->   		return -EINVAL;
-> @@ -467,6 +487,45 @@ static int bd71828_charger_get_property(struct power_supply *psy,
->   	return 0;
->   }
->   
-> +static int bd71828_charger_set_property(struct power_supply *psy,
-> +					enum power_supply_property psp,
-> +					const union power_supply_propval *val)
-> +{
-> +	struct bd71828_power *pwr = dev_get_drvdata(psy->dev.parent);
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		if (val->intval > 2000000)
-> +			return -EINVAL;
-> +
-> +		if (val->intval < 50000)
-> +			return -EINVAL;
-> +
-
-I would have preferred using the linear ranges here as well. That'd help 
-if we support this in the other variants.
-
-> +		if (!pwr->regs->dcin_set)
-> +			return -EINVAL;
-> +
-> +		return regmap_update_bits(pwr->regmap, pwr->regs->dcin_set,
-> +					  BD7182x_MASK_ILIM,
-> +					  val->intval / 50000 - 1);
-
-The "burning question" I have is - how well this has been verified? I 
-ask because the data-sheet version which I read (rev 0p17, DS2 draft) 
-marks this register as a read-only. I know my data-sheet, targeting the 
-design-sample 2 of bd71828 (not bd71879) is ancient. It may be this is 
-an error in the data-sheet but I had to ask anyways...
-
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int bd71828_charger_property_is_writeable(struct power_supply *psy,
-> +						 enum power_supply_property psp)
-> +{
-> +	struct bd71828_power *pwr = dev_get_drvdata(psy->dev.parent);
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		return !!(pwr->regs->dcin_set);
-> +	default:
-> +		return false;
-> +	}
-> +}
-> +
->   static int bd71828_battery_get_property(struct power_supply *psy,
->   					enum power_supply_property psp,
->   					union power_supply_propval *val)
-> @@ -571,6 +630,7 @@ static int bd71828_battery_property_is_writeable(struct power_supply *psy,
->   
->   /** @brief ac properties */
->   static const enum power_supply_property bd71828_charger_props[] = {
-> +	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
->   	POWER_SUPPLY_PROP_ONLINE,
->   	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->   };
-> @@ -600,6 +660,8 @@ static const struct power_supply_desc bd71828_ac_desc = {
->   	.properties	= bd71828_charger_props,
->   	.num_properties	= ARRAY_SIZE(bd71828_charger_props),
->   	.get_property	= bd71828_charger_get_property,
-> +	.set_property	= bd71828_charger_set_property,
-> +	.property_is_writeable   = bd71828_charger_property_is_writeable,
->   };
->   
->   static const struct power_supply_desc bd71828_bat_desc = {
-> 
-> ---
-> base-commit: 7aaa8047eafd0bd628065b15757d9b48c5f9c07d
-> change-id: 20260401-bd-inp-limit-3acb51e15e9c
-> 
-> Best regards,
-> --
-> Andreas Kemnade <andreas@kemnade.info>
-
-Yours,
-	-- Matti
-
-
--- 
 ---
-Matti Vaittinen
-Linux kernel developer at ROHM Semiconductors
-Oulu Finland
 
-~~ When things go utterly wrong vim users can always type :help! ~~
+Changes in v2:
+1. Drop top level compatible and other properties
+2. Add thermal-sensors
+3. Rename also trips and cpu-thermal
+---
+ .../bindings/thermal/thermal-idle.yaml         | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-idle.yaml b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
+index 1b77d542a7b8..bd420545803f 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
++++ b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
+@@ -51,11 +51,6 @@ examples:
+     /{
+         #include <dt-bindings/thermal/thermal.h>
+ 
+-        compatible = "foo";
+-        model = "foo";
+-        #address-cells = <1>;
+-        #size-cells = <1>;
+-
+         // Example: Combining idle cooling device on big CPUs with cpufreq cooling device
+         cpus {
+             #address-cells = <2>;
+@@ -101,33 +96,34 @@ examples:
+ 
+         /* ... */
+ 
+-        thermal_zones {
+-            cpu_thermal: cpu {
++        thermal-zones {
++            cpu_thermal: cpu-thermal {
+                 polling-delay-passive = <100>;
+                 polling-delay = <1000>;
++                thermal-sensors = <&tsens0 1>;
+ 
+                 /* ... */
+ 
+                 trips {
+-                    cpu_alert0: cpu_alert0 {
++                    cpu_alert0: cpu-alert0 {
+                         temperature = <65000>;
+                         hysteresis = <2000>;
+                         type = "passive";
+                     };
+ 
+-                    cpu_alert1: cpu_alert1 {
++                    cpu_alert1: cpu-alert1 {
+                         temperature = <70000>;
+                         hysteresis = <2000>;
+                         type = "passive";
+                     };
+ 
+-                    cpu_alert2: cpu_alert2 {
++                    cpu_alert2: cpu-alert2 {
+                         temperature = <75000>;
+                         hysteresis = <2000>;
+                         type = "passive";
+                     };
+ 
+-                    cpu_crit: cpu_crit {
++                    cpu_crit: cpu-crit {
+                         temperature = <95000>;
+                         hysteresis = <2000>;
+                         type = "critical";
+-- 
+2.51.0
+
