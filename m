@@ -1,95 +1,117 @@
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2E002882B4;
-	Wed,  8 Apr 2026 03:10:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F86D351C04;
+	Wed,  8 Apr 2026 04:29:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775617860; cv=none; b=t2OEGO+Q7UbRssNpw7y46hOODi36fqTg+ULFfDpmnjulM55GXgmK+OgfD6gGX6Cr4+gYf3wGDuMnnVCn2GenyYSuKXoF3EdgV5m4AmFT9M9XRzIF2Urtf54jFbbyZCf1TFEFS/FplfaxFjjnoZtK/LgGe+i43RVIcfu3Yu2OElo=
+	t=1775622568; cv=none; b=VQt6OBmzQt8SdxF4mRrjf/Rz3J3x+d+BDxO/PwMQMjXFaKThSXS66UWZKAcqTBrlqz9uO5n26mKVoXCEQHw7hWMmjAt6R9MWiBvzM6UTT/d5WjVgeFOVzcAk3isOtID3U+/bwFjha+YuJzwBIuKj+J6jWKoZn6JGfLyCPeXJLoc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775617860; c=relaxed/simple;
-	bh=VaBGZ1QXqRg76zaGf8gaHSUdkNpNvxf0g9jxhu1rBco=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PNjNZ8HYwvgqhkDDBR31+Yu0Z0JHtRbDlIBeKFm73icv88zGyiW2q8pWqPlfz40zyWNadJ4ByuO08hB+PwvO6MNTF945WuMvWXXG8bqvrO/8AHXwsx+SpgobKzsGPCxaAsivP9GYxVWVD1jEd5DnQBvZOKSVdrNQu4flD74GIQo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
-	by APP-01 (Coremail) with SMTP id qwCowACXQm4yx9Vp3iqWDA--.31904S2;
-	Wed, 08 Apr 2026 11:10:42 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
-To: Georgi Djakov <djakov@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] interconnect: imx: fix use-after-free in imx_icc_node_init_qos()
-Date: Wed,  8 Apr 2026 03:10:04 +0000
-Message-Id: <20260408031004.309483-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1775622568; c=relaxed/simple;
+	bh=pXlEVnkBTmA5K7kvOLL+nmpCtnAEDv/XQ5ooCBWoxGc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Dk8oqm7OgqFb0UdxrVSW6VSyzrE0y2paDSlQ81G2+ONp0WkPYAyrKsHKlccD/9waBi3OR5KldQ164dXTvbttaImXnjluQt7wQGfOb+8sd46VdNJ45XFy1R4YqbdkLbKiHEjJ8tBqUVa4RJbzh061OfJ9Wzxzt6L2ICnIWE2q73U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=DiCqsmQl; arc=none smtp.client-ip=148.163.156.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="DiCqsmQl"
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 637EHr9w2301624;
+	Wed, 8 Apr 2026 04:29:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=nFJHyo
+	z9CXtW3KpITY9KgxOr/aRJZiT52yeFnJ2Ts8c=; b=DiCqsmQlx9KBQVDVPKQdxf
+	TptWFU3KGbbjmurYf/yN+2iu+N8kwjf7w4C2+9X8aRJArWnlIURy6zfH76IG800k
+	1HG6l1qATBE7Bxxk1KTaTpD3Z08K+DXbkbdpNTdcD4UA+Ql2Em7KM+CzRKerVZZC
+	F0QeKbWHYenNLtdlP4kwe8mR9zNIQ8In2lpB41Gix0T10v+JRCRrrPwq2M9TVgdZ
+	WlaKbwVlOn8WmeXJ5t3yTdgV7auuXzXwG7XQDXk3egHF8fH5uzLX8moeahceMgxq
+	4IAtjAZcNSn7rnqzsnQb/kEcmHn0bqjVZDKCO+/X5LnpL58WlR92J+NMhsYi5uYg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2fe793-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Apr 2026 04:29:20 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63800NQk018877;
+	Wed, 8 Apr 2026 04:29:19 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcme9e0ce-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Apr 2026 04:29:19 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6384TFr146072204
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 8 Apr 2026 04:29:15 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9E35A20043;
+	Wed,  8 Apr 2026 04:29:15 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F07DE20040;
+	Wed,  8 Apr 2026 04:29:12 +0000 (GMT)
+Received: from Linuxdev.bl1-in.ibm.com (unknown [9.123.3.0])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  8 Apr 2026 04:29:12 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: chleroy@kernel.org, nysal@linux.ibm.com, mkchauras@linux.ibm.com,
+        rafael@kernel.org, daniel.lezcano@kernel.org, christian.loehle@arm.com,
+        mkchauras@gmail.com, npiggin@gmail.com, linux-pm@vger.kernel.org,
+        stable@vger.kernel.org
+Subject: Re: [PATCH v2] cpuidle: powerpc: avoid double clear when breaking snooze
+Date: Wed,  8 Apr 2026 09:59:12 +0530
+Message-ID: <177562236430.1381144.27958537257316890.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260311061709.1230440-1-sshegde@linux.ibm.com>
+References: <20260311061709.1230440-1-sshegde@linux.ibm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qwCowACXQm4yx9Vp3iqWDA--.31904S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrtw1UZr4rGr18Cw4kWrW8tFb_yoWkJwc_uF
-	18uFZrXF48CF40gwsIyr1fZFyqyw1I9ws3ZF1jqF93t34qvrsxXrsIqw4DZ3y8Xr4Ut34U
-	Grn0vFn8Zry7CjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbTkFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
-	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW8GwCF04k20xvY0x0EwIxGrw
-	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
-	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
-	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
-	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
-	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JU-a9-UUUUU=
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBgwLA2nVmXqrYwAAsV
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA4MDAzNiBTYWx0ZWRfXwPg28izPWoLf
+ bQYnD/oHMPaCXq9W5q/syIjFJKnrAwdh1jdzE0KzsFXLp+3llLN4HAARpeMrw/Fi756loQC0Oaf
+ sB2mHHubp/UT9e9JYHpW8yqCJj3kAE7QGK03CQ57+/v/2e9xBnDYLdRQs3YFWrSprWUQYvvKU7V
+ vM1RQ0qU/jdMrutyps8zFtdgipaPgDYNyZaqCTtCcn+i1E7LgWrPONS8fDzpud1pLihTYGdcUGf
+ 0twhdpsY9ii32vS1cf2Rs6nKnIZNOEOivuciEun/a7IdyaK3Y9mV3oTglb29q5fV55q0HhU9uE7
+ R+ygwkN1FIJ2vQDWOdA/HbEjObI8vUXvnNmB0St7RxZ2lWQf/Qq96buP4M2bVlWsQ+Ej08va2cx
+ sSlGg7dUlkd3i4o80LatV6kBA3ZMw7kuHOMW9lcC0f0PSfm0UHd8rFvZlojP3eTxgaCFKhU3mXy
+ rUjLfdrBk/KnmDqOoTg==
+X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d5d9a0 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=38kH_jgIqBUk_XIBi1EA:9 a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
+X-Proofpoint-ORIG-GUID: _8GFPxaJzMLUHB1nkZMtDe-oV4YzIzny
+X-Proofpoint-GUID: pAJage6zwfLutYcgN_oN4WMQbrdJhRpS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-08_02,2026-04-07_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1011 adultscore=0 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604080036
 
-Move of_node_put(dn) after the last use of dn, and add a missing put
-in the error path to avoid both use-after-free and reference leak.
+On Wed, 11 Mar 2026 11:47:09 +0530, Shrikanth Hegde wrote:
+> snooze_loop is done often in any system which has fair bit of
+> idle time. So it qualifies for even micro-optimizations.
+> 
+> When breaking the snooze due to timeout, TIF_POLLING_NRFLAG is cleared
+> twice. Clearing the bit invokes atomics. Avoid double clear and thereby
+> avoid one atomic write.
+> 
+> [...]
 
-Fixes: f0d8048525d7 ("interconnect: Add imx core driver")
-Cc: stable@vger.kernel.org
-Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
----
- drivers/interconnect/imx/imx.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Applied to powerpc/next.
 
-diff --git a/drivers/interconnect/imx/imx.c b/drivers/interconnect/imx/imx.c
-index 9511f80cf041..75431b5ccef8 100644
---- a/drivers/interconnect/imx/imx.c
-+++ b/drivers/interconnect/imx/imx.c
-@@ -143,15 +143,16 @@ static int imx_icc_node_init_qos(struct icc_provider *provider,
- 		}
- 
- 		pdev = of_find_device_by_node(dn);
--		of_node_put(dn);
- 		if (!pdev) {
- 			dev_warn(dev, "node %s[%d] missing device for %pOF\n",
- 				 node->name, node->id, dn);
-+			of_node_put(dn);
- 			return -EPROBE_DEFER;
- 		}
- 		node_data->qos_dev = &pdev->dev;
- 		dev_dbg(dev, "node %s[%d] has device node %pOF\n",
- 			node->name, node->id, dn);
-+		of_node_put(dn);
- 	}
- 
- 	return dev_pm_qos_add_request(node_data->qos_dev,
--- 
-2.34.1
+[1/1] cpuidle: powerpc: avoid double clear when breaking snooze
+      https://git.kernel.org/powerpc/c/64ed1e3e728afb57ba9acb59e69de930ead847d9
 
+cheers
