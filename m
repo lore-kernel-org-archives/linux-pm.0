@@ -1,149 +1,151 @@
-Received: from mout.web.de (mout.web.de [217.72.192.78])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C1163803D4;
-	Wed,  8 Apr 2026 07:29:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.78
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D305E3845B7
+	for <linux-pm@vger.kernel.org>; Wed,  8 Apr 2026 08:08:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775633361; cv=none; b=VCbegZnnLElLvrNZVP2orem53/k/Bvfj8wdi1hQtycw3Si7RfNuRpQWzmKVtu0UgC0Noyj/AI3i+hJo8CRAbWyOftlv04/GelJLa0YjVYYnWdov2bVEKGk85ZRtODdE29o0EwblrIlsBivs1i+t6r9f+gU1TjO7t2gxRUF9Hd8o=
+	t=1775635726; cv=none; b=pz0xnoAYR4lN5XrpHZmdrS/7vMAIh1e7YtPLH/109W4Uz3tHPbMVcih+VFZLnvdgc7VQ8QyiclK09e66wI47Zva5TpJE4r9nF2GPafHi2SmR9WiRWXfWdWx3smczym71PpHWg3MryBTdym2Cw8P2GSKlstuV4Us7lgQPh1bHzYU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775633361; c=relaxed/simple;
-	bh=JBMyJgrxswXMHHOOoQfxlHGWkE8Y8DUq0RYrllJqtFk=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=gegTMTM+97IFKebcd8FgUwr76L3qNxML3cfIq5rkiAY39uhCU/T/04nyYsf1pTTin6qJpw7IDCyBBGK82Oo+JdEu2g3vKLyEEwaJPUHDylzAAaYupg/Xp3T/dLqJcVA5OhgpOB7O+e+YIwl0tPwQEgGR4Txa7B+fzmT+Jz7GPZw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=Li2S5y0k; arc=none smtp.client-ip=217.72.192.78
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="Li2S5y0k"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1775633326; x=1776238126; i=markus.elfring@web.de;
-	bh=JBMyJgrxswXMHHOOoQfxlHGWkE8Y8DUq0RYrllJqtFk=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=Li2S5y0k8r8TPKYqugEeYBkm0wKy4jMuzv2JHCi1XiCi6PD26XVxHLhERPVI0heB
-	 aVKr2d6f3wo/UTidfeoThGd53fhthe2nC/7KFkYtIDktjJQL70BLeTh1MiMUczdc0
-	 diBh4rp2TBbU3fjs6MgHTMQ/RTcjDloQYzTi0IzCX4eWu6gzzr8JuIAcd1Qtcsjkl
-	 GJ6GX0ts4hDS4OTbgFqH800R23GmlLfOuPilc+J28VMQ5eqSCcxO9sH68jeubpjUD
-	 dMfhvO+rXyckmBU4wB+gSUF8+06vVcE6MJi4cCf0UiGBe4S75uqqgvFRkKmjkzFnu
-	 +kQRNiTtsIg9k6Za+w==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MIL0Q-1wDjNy2N3k-003mIF; Wed, 08
- Apr 2026 09:28:46 +0200
-Message-ID: <ac7176be-8ab8-449b-b4f7-4e5af0379e80@web.de>
-Date: Wed, 8 Apr 2026 09:28:34 +0200
+	s=arc-20240116; t=1775635726; c=relaxed/simple;
+	bh=qgkECxzGSpnuq07rnxhj52qCBc/KBJvowuMtgBzyENM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=cUMDUqAzUkVD+rxuqKi1sUIR9agHwkT+ElAo8awAktOm0zfol3Nuv72YnNFNjcP8a8stUvgdCEqgEVcky+3as/CycNPqUfwfc+qcVuM7980uKSWDHKOLdJQpClV75PzoqENhy6+7zuvUJn0Ta2FJ9341yacgueGd/tmRTXoJLZU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2ad9a9be502so37792945ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2026 01:08:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775635724; x=1776240524;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dgSjrs+bZCBNPvbS97WPj5GTT7jaQlR+JpRwd/gT2+Y=;
+        b=aWeYgzW7JKBKiWV3LTxH8Yxs3KvT/sdo9wn8UZAEfO9NzWFfMmmhyR4vvoLu13lJ/S
+         0MVSKm+sVsdQBsvYmMre3pDLtm08pXIFpif/b4IJdN7h1kaLuXm9DD65sF+yKWAFUsJo
+         p7qF8zYT/iUeHRyCvjyOa81BnbMT6li1R85UWoqeFJWQMWfjYTHMnu88Ghb6JMsKv3f4
+         OLMb1SCiHYCPtTwcXiULGex/gm88FjcVBvTtK/7smIYbn4cSFH5v5lCV2kPuaXeXNmcK
+         dEQ2sd2L3ocTyaR0/RSvHaY6WpSG+VygCE+jcOIEuFyaYIJLZeyMrOz2dQODPUSh+gfM
+         yKaQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXkJLuEtXhbCiI/rQ3ovI5pWiRdNwzpGZ5UOnZzoYdSDtc7OhRlQK8qtREfw3MOqEd9UqXTsxh7Aw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxOaZdEcKn4VdXWlvApsglrj/OtH3SxESvBqYtosOy76Nmo8dXV
+	uQhftwjeI7keKSHTx7sEfaT6nScnJcDojd/YOVMjDWdVhaAzR87RbVVplqZaaE0x
+X-Gm-Gg: AeBDies/eWC9DlcklNdwWyZnBWgAtRm2i6xt3xyEB0FISD0AUPWyvfQgJ7gCXyTWv5x
+	e3qctdA48zlYXw4vCi1FDXc/Mc5KCxvBJK6JYimfKoyayTcjzUZdxKV0CZJYmG7LxuJ+IleSXDx
+	OCrYtvpULl0U2uzQ4jVIIAq/R/qNXCWhjkSm/uVtyPrBIN0rxZyeOX96RzhPowi2pQslICMtsvZ
+	oQ0ckMAf9JKFdt0k+CjyYrSvE1nj1R6za47EAGldRp0eZspRRgUTlBGZdcebE9qt0VisjachF5v
+	EX8OI6NzywQVxl/T8m96/hSmbGfrt4BACXLVWNo63lMaDjHmBDGDZOHBLuG5vSFnnk6iJ00C6t1
+	y/mINK2DpTZX7Ioy4wU/Gonai2kW4It1ZqFX9NylQ9OkOV4cGsQXwqYzvyoS/ao1Ufc/01/je3g
+	nTAVvE95W++iUUj93cSeB9JxNd0v+sFhkbHCrfh9kY0QXbihBH5KVaVGAbfA/a4s+e
+X-Received: by 2002:a17:903:4b07:b0:2b2:4cd2:e162 with SMTP id d9443c01a7336-2b281838b2fmr226443945ad.34.1775635723994;
+        Wed, 08 Apr 2026 01:08:43 -0700 (PDT)
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com. [209.85.210.181])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2ae05991bsm48305075ad.70.2026.04.08.01.08.43
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 08 Apr 2026 01:08:43 -0700 (PDT)
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-82cd9d0eceaso4434823b3a.3
+        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2026 01:08:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXAghR2IN4dyvwawxQwpPkvbqUFKnXGCIDoVEQnIK/VzzcEhAqw72+3tJryQbM1kQ/0ozbwZsfxKw==@vger.kernel.org
+X-Received: by 2002:a05:6102:688e:b0:607:9b47:81f2 with SMTP id
+ ada2fe7eead31-6079b478f09mr649179137.20.1775635395263; Wed, 08 Apr 2026
+ 01:03:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: vulab@iscas.ac.cn, imx@lists.linux.dev, linux-pm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Georgi Djakov <djakov@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
-Cc: kernel@pengutronix.de, stable@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>
-References: <20260408031004.309483-1-vulab@iscas.ac.cn>
-Subject: Re: [PATCH] interconnect: imx: fix use-after-free in
- imx_icc_node_init_qos()
-Content-Language: en-GB, de-DE
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20260408031004.309483-1-vulab@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:a+/9ZVtkN5tdsblsJWxaTm5i+Qpmy4+r1RjEmTjqJox2o6D+mRB
- X0gLzf47+mI89l69lRdhe+2g6xC7kxgtHOonJ78p6EOP5xe4c2E5aHeS/HuvfvC5yRJ6WTf
- pnbNhlEZn2BeLd9NZlqYux+4kNy883XGG/ejuRp1JmLiC3y+z98j7F53eUp9iuHH6rJkoTS
- RMqJqCQGCgItr3hj7qTFQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:a7lNGxMd7xI=;s95fBgV3Au1wbIkJzs84aH5BnnD
- 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
- th
+References: <20260325143555.451852-1-herve.codina@bootlin.com> <20260325143555.451852-2-herve.codina@bootlin.com>
+In-Reply-To: <20260325143555.451852-2-herve.codina@bootlin.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 8 Apr 2026 10:03:04 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVh2gFQf16AarJCY+2y+24bOgaQyTUv6opPqVKCoUwMag@mail.gmail.com>
+X-Gm-Features: AQROBzDnP0FsdrSe7kiaKBzgO-Rt21-zwjAE4PjirQbwD7WYIqJw4iFM_IJ47Kw
+Message-ID: <CAMuHMdVh2gFQf16AarJCY+2y+24bOgaQyTUv6opPqVKCoUwMag@mail.gmail.com>
+Subject: Re: [PATCH v6 01/27] Revert "treewide: Fix probing of devices in DT overlays"
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Kalle Niemi <kaleposti@gmail.com>, Matti Vaittinen <mazziesaccount@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
+	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Linus Walleij <linusw@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
+	Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, 
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, 
+	Alison Schofield <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, 
+	Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
+	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
+	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
+	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Saravana Kannan <saravanak@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-> Move of_node_put(dn) after the last use of dn, and add a missing put
-> in the error path to avoid both use-after-free and reference leak.
+On Wed, 25 Mar 2026 at 15:36, Herve Codina <herve.codina@bootlin.com> wrote:
+> From: Saravana Kannan <saravanak@google.com>
+>
+> This reverts commit 1a50d9403fb90cbe4dea0ec9fd0351d2ecbd8924.
+>
+> While the commit fixed fw_devlink overlay handling for one case, it
+> broke it for another case. So revert it and redo the fix in a separate
+> patch.
+>
+> Fixes: 1a50d9403fb9 ("treewide: Fix probing of devices in DT overlays")
+> Reported-by: Herve Codina <herve.codina@bootlin.com>
+> Closes: https://lore.kernel.org/lkml/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJgyo8x6=9F9rZ+-KzjOg@mail.gmail.com/
+> Closes: https://lore.kernel.org/all/20240221095137.616d2aaa@bootlin.com/
+> Closes: https://lore.kernel.org/lkml/20240312151835.29ef62a0@bootlin.com/
+> Signed-off-by: Saravana Kannan <saravanak@google.com>
+> Link: https://lore.kernel.org/lkml/20240411235623.1260061-2-saravanak@google.com/
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Acked-by: Mark Brown <broonie@kernel.org>
 
-How do you think about to increase the application of scope-based resource management?
-https://elixir.bootlin.com/linux/v7.0-rc7/source/include/linux/of.h#L138
-https://elixir.bootlin.com/linux/v7.0-rc7/source/drivers/interconnect/imx/imx.c#L117-L160
+> --- a/drivers/bus/imx-weim.c
+> +++ b/drivers/bus/imx-weim.c
+> @@ -327,12 +327,6 @@ static int of_weim_notify(struct notifier_block *nb, unsigned long action,
+>                                  "Failed to setup timing for '%pOF'\n", rd->dn);
+>
+>                 if (!of_node_check_flag(rd->dn, OF_POPULATED)) {
+> -                       /*
+> -                        * Clear the flag before adding the device so that
+> -                        * fw_devlink doesn't skip adding consumers to this
+> -                        * device.
+> -                        */
+> -                       rd->dn->fwnode.flags &= ~FWNODE_FLAG_NOT_DEVICE;
+>                         if (!of_platform_device_create(rd->dn, NULL, &pdev->dev)) {
+>                                 dev_err(&pdev->dev,
+>                                         "Failed to create child device '%pOF'\n",
 
-Regards,
-Markus
+Note that all these removals no longer apply cleanly due to commit
+f72e77c33e4b5657 ("device property: Make modifications of fwnode
+"flags" thread safe") in driver-core-next, which is gonna complicate
+backporting to stable.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
