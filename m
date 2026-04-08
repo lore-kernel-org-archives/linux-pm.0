@@ -1,124 +1,113 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 335F6175A5;
-	Wed,  8 Apr 2026 13:55:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C73839DBCA;
+	Wed,  8 Apr 2026 14:11:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775656507; cv=none; b=S2AeLpEvGa0nNlpnc/FwtlTCxfGnHAdLEp7omuS6gFuMnB1SsX3pp7YdG8rNSY0/Wcd/BEroZKGk2uGEmxW6sLhztxi4jY1TjSrcCrxkOn+NEciJ6RQm90/5vDo8CkQvpA4TIW9Z1deVJgAJ84B8R2mGPPLoSe76nXghJ+Ezdbg=
+	t=1775657499; cv=none; b=H1casgdc2+x1MQMpoYGfmuiiEDqjO9ZwRjuJHbzwDUe+Yx/ZVIxxA7yBhbaBibvPVH70U+xvvtNgaemOC45RLnS9wFiPYdvEPMnP+XMtWHl88qsDsVRvaX+/TotzzyQfIwkZClpT1nm4phZJ6CJX6GraNncWUWdSmtk6/L7TBRE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775656507; c=relaxed/simple;
-	bh=9V0aEgsGhkLU/YHXT2F9l9I/XcSpUtYjb0B6llutNFo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y46Fjrxw5AZ9Hdnr03LyFJwEuDAdhhgw/ETjs+BA5q27soWXNqO/Nh7PWj0vC3n1d1c7VTlY3dPaNKBvzkAXETpqq6zOzzt2SHaeUkl1UFLzqLuFA1QncV1YG1kCFjH8LvRKf2v371jG9Bq10Ho3oF6w/hqNpeQ5buvBcuu2wxs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=g/7igT7Y; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=bXbgFQGF; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="g/7igT7Y";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bXbgFQGF"
-Date: Wed, 8 Apr 2026 15:55:02 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1775656503;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=I/7IhEnruGQc+1CW/jI+NpDLfCCCOrjwQ3Z++94aDzE=;
-	b=g/7igT7YVTjK17e006TVC9a2gKMuvkRBxfOLbKucZK/ors+kGDdqRhg/OqIAPoq5L2zYiR
-	NHS9iN2kPybQQCMzb0hTPTlJ3hMU1aWfJnzlmiv0KNZqY4Wwi26yUcu/VEQmZb3LrFtLeJ
-	v9Hj8r5rg9mxwgzJi9+isM2ogGz4hxoBiRV1S6JCNrSj/EZ9vO2oq9kkJwhikSW2SV/nRF
-	yNWHpa5z8hiS3Hk82KmrT84xlKxjjdnZZkn0SPpkbAL0sSSDZqoPQ1o2o0e5Bm/LDTrW9/
-	URrBKH+giHCjz0pRM4cLUth3lWFPudMBl7mwDYZfzksl5HySlYmwbAWqBhZ6QQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1775656503;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=I/7IhEnruGQc+1CW/jI+NpDLfCCCOrjwQ3Z++94aDzE=;
-	b=bXbgFQGFM845UyMTzIaKnx+U/0W1qwvKf9VT1aZH2aehpEPkr35D05t97plT1GQ4P43LR/
-	E8qif45B75rf6LAQ==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Anna-Maria Behnsen <anna-maria@linutronix.de>, 
-	Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>, John Stultz <jstultz@google.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, 
-	Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, 
-	Pablo Neira Ayuso <pablo@netfilter.org>, Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>, 
-	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [patch 01/12] clockevents: Prevent timer interrupt starvation
-Message-ID: <20260408155353-42aeefa4-db66-48aa-ab07-0538a8cfdbf0@linutronix.de>
-References: <20260407083219.478203185@kernel.org>
- <20260407083247.562657657@kernel.org>
- <20260408143313-ac6c3b82-70e6-4ce3-b33a-20f5e6ba160b@linutronix.de>
+	s=arc-20240116; t=1775657499; c=relaxed/simple;
+	bh=Gs+GIaJOGxn1XWuBcF9H7vL26n2Y6DySrLMSVvko+KI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=cSbcQhBrRd7/w71YQrjZ+qDOTywQucIciLMAogalQJBRG2HPWfjt+MIlScNhLY/Cl0S2IAODsCdRcvwQmMgAzbNXhWwb4UTWZyt37+4H3lf2cDYM0WoFiuInTwqi+KoSY6q0me6PAVCyUpIC4rHfFtZvSsjvuS+2FZVVMQVzG7Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
+	by APP-05 (Coremail) with SMTP id zQCowACXKAwLYtZprHbzDA--.2435S2;
+	Wed, 08 Apr 2026 22:11:23 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: Ulf Hansson <ulf.hansson@linaro.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: nfraprado@collabora.com,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Adam Ford <aford173@gmail.com>,
+	Chen-Yu Tsai <wenst@chromium.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] pmdomain: mediatek: fix use-after-free in scpsys_get_bus_protection_legacy()
+Date: Wed,  8 Apr 2026 14:11:21 +0000
+Message-Id: <20260408141121.386522-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260408143313-ac6c3b82-70e6-4ce3-b33a-20f5e6ba160b@linutronix.de>
+X-CM-TRANSID:zQCowACXKAwLYtZprHbzDA--.2435S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Kw1kuF4rZFyxGFyfZFWfAFb_yoW8Zw1fpF
+	W5Ka4YvrWUJr18GFW0krW8uayayrykK395Cws7GwsFv3Z8Xr1kGrySva4Yqr9YkrZYkanr
+	A3W7tryUA3W8AFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9C14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
+	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
+	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW5XwCF04k20xvY0x0EwIxGrw
+	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
+	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
+	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
+	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
+	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUPR6wUUUUU=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwwLA2nWHcDczgAAsz
 
-On Wed, Apr 08, 2026 at 02:41:20PM +0200, Thomas Weißschuh wrote:
-> Hi Thomas,
-> 
-> On Tue, Apr 07, 2026 at 10:54:17AM +0200, Thomas Gleixner wrote:
-> > From: Thomas Gleixner <tglx@kernel.org>
-> > 
-> > Calvin reported an odd NMI watchdog lockup which claims that the CPU locked
-> > up in user space. He provided a reproducer, which sets up a timerfd based
-> > timer and then rearms it in a loop with an absolute expiry time of 1ns.
-> > 
-> > As the expiry time is in the past, the timer ends up as the first expiring
-> > timer in the per CPU hrtimer base and the clockevent device is programmed
-> > with the minimum delta value. If the machine is fast enough, this ends up
-> > in a endless loop of programming the delta value to the minimum value
-> > defined by the clock event device, before the timer interrupt can fire,
-> > which starves the interrupt and consequently triggers the lockup detector
-> > because the hrtimer callback of the lockup mechanism is never invoked.
-> > 
-> > As a first step to prevent this, avoid reprogramming the clock event device
-> > when:
-> >      - a forced minimum delta event is pending
-> >      - the new expiry delta is less then or equal to the minimum delta
-> 
-> with this patch now in the tip tree my QEMU/virtme-ng based machine
-> fails to boot. The startup seems to freeze in:
-> start_kernel() -> rest_init() -> schedule_preempt_disabled() -> schedule()
-> 
-> CONFIG_GENERIC_CLOCKEVENTS=y
-> CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-> CONFIG_GENERIC_CLOCKEVENTS_BROADCAST_IDLE=y
-> CONFIG_GENERIC_CLOCKEVENTS_MIN_ADJUST=y
-> CONFIG_HZ=1000
-> 
-> CPU: i5-1135G7
-> clock event device: lapic-deadline
-> 
-> The clockevent device is still reprogrammed each millisecond,
-> presumably for the tick.
-> 
-> (...)
+In scpsys_get_bus_protection_legacy(), of_find_node_with_property()
+returns a device node with its reference count incremented. The function
+then calls of_node_put(node) before checking whether
+syscon_regmap_lookup_by_phandle() returns an error. If an error occurs,
+dev_err_probe() dereferences the node pointer to print diagnostic
+information, but the node memory may have already been freed due to the
+earlier of_node_put(), leading to a use-after-free vulnerability.
 
-This fixes the issue for me:
+Fix this by moving the of_node_put() call after the error check, ensuring
+the node is still valid when accessed in the error path.
 
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -369,7 +369,7 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires, b
-        if (dev->next_event_forced)
-                return 0;
+Fixes: c29345fa5f66 ("pmdomain: mediatek: Refactor bus protection regmaps retrieval")
+Cc: stable@vger.kernel.org
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+index e2800aa1bc59..d3b36f32417c 100644
+--- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
++++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
+@@ -993,6 +993,7 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
+ 	struct device_node *node, *smi_np;
+ 	int num_regmaps = 0, i, j;
+ 	struct regmap *regmap[3];
++	int ret = 0;
  
--       if (dev->set_next_event(dev->min_delta_ticks, dev)) {
-+       if (dev->set_next_event(dev->min_delta_ns, dev)) {
-                if (!force || clockevents_program_min_delta(dev))
-                        return -ETIME;
-        }
+ 	/*
+ 	 * Legacy code retrieves a maximum of three bus protection handles:
+@@ -1043,11 +1044,14 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
+ 	if (node) {
+ 		regmap[2] = syscon_regmap_lookup_by_phandle(node, "mediatek,infracfg-nao");
+ 		num_regmaps++;
+-		of_node_put(node);
+-		if (IS_ERR(regmap[2]))
+-			return dev_err_probe(dev, PTR_ERR(regmap[2]),
++		if (IS_ERR(regmap[2])) {
++			ret = dev_err_probe(dev, PTR_ERR(regmap[2]),
+ 					     "%pOF: failed to get infracfg regmap\n",
+ 					     node);
++			of_node_put(node);
++			return ret;
++		}
++		of_node_put(node);
+ 	} else {
+ 		regmap[2] = NULL;
+ 	}
+-- 
+2.34.1
 
-
-Thomas
