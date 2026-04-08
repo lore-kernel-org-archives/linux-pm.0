@@ -1,113 +1,101 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C73839DBCA;
-	Wed,  8 Apr 2026 14:11:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB72C3D333C;
+	Wed,  8 Apr 2026 14:15:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775657499; cv=none; b=H1casgdc2+x1MQMpoYGfmuiiEDqjO9ZwRjuJHbzwDUe+Yx/ZVIxxA7yBhbaBibvPVH70U+xvvtNgaemOC45RLnS9wFiPYdvEPMnP+XMtWHl88qsDsVRvaX+/TotzzyQfIwkZClpT1nm4phZJ6CJX6GraNncWUWdSmtk6/L7TBRE=
+	t=1775657714; cv=none; b=OJpTODdXaBZDcbBLITSgn9c3zsJDh52+kuaw+XB9SHyxvQT61d7FsxBMSv1xoxqCaU7+c19qwhpgBseISoRXTDMyRFjxi2oi0YsvaoSrtyooOO14Cdr/CE+Y8mmmFCNAzD3279c3K9xwOD4Wi8EXuSJ6pmiDPkGoH04ZDgKp06M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775657499; c=relaxed/simple;
-	bh=Gs+GIaJOGxn1XWuBcF9H7vL26n2Y6DySrLMSVvko+KI=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=cSbcQhBrRd7/w71YQrjZ+qDOTywQucIciLMAogalQJBRG2HPWfjt+MIlScNhLY/Cl0S2IAODsCdRcvwQmMgAzbNXhWwb4UTWZyt37+4H3lf2cDYM0WoFiuInTwqi+KoSY6q0me6PAVCyUpIC4rHfFtZvSsjvuS+2FZVVMQVzG7Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
-	by APP-05 (Coremail) with SMTP id zQCowACXKAwLYtZprHbzDA--.2435S2;
-	Wed, 08 Apr 2026 22:11:23 +0800 (CST)
-From: Wentao Liang <vulab@iscas.ac.cn>
-To: Ulf Hansson <ulf.hansson@linaro.org>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: nfraprado@collabora.com,
-	Macpaul Lin <macpaul.lin@mediatek.com>,
-	Adam Ford <aford173@gmail.com>,
-	Chen-Yu Tsai <wenst@chromium.org>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	Wentao Liang <vulab@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] pmdomain: mediatek: fix use-after-free in scpsys_get_bus_protection_legacy()
-Date: Wed,  8 Apr 2026 14:11:21 +0000
-Message-Id: <20260408141121.386522-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1775657714; c=relaxed/simple;
+	bh=2GKBWezh0wJ1rxI7mwwrI3CADIBrRX0kcY4kXY4Vgws=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lHh2BLL5KKEoTgPFzanJTY4RWUYDev0yyGDR3Ie1fkReHT0YBW/PhyWIhkrwiY9WIcSpSLic11UtN3A/QRSoIzQ++UT1OhKEeS5wgN/7u9x49CS0GQbxp157oC+pM/ca0yArrYYvC7RQofUmnYgv1U+jmy9sqke7dWRb9ylKTOo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S7RMpuEh; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S7RMpuEh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5A9AC19421;
+	Wed,  8 Apr 2026 14:15:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775657713;
+	bh=2GKBWezh0wJ1rxI7mwwrI3CADIBrRX0kcY4kXY4Vgws=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=S7RMpuEhAPW7AoOpjukUkXJY+0IaS3EO36qhsh4pHP7RO2qD8o4j/LAfL2PLYnA9E
+	 ipxgcOMKMjHnufFqMlmIaFmx6ikF9fMJpZSIjwzaA5QqgBONm/RUc6COFkqhGC/aXw
+	 QzVD/keNQftVMS5w6AV3K6rQT2wVra5sdjm5ElRAeT99Jyk5UibxzfyoQ5mDAJTfpL
+	 8bCNhdEucCP4sh76TdoEf+0DZHkNbt2zoXyZpFbNJ2nVZlprWaE7Ssn7oGmMfkPm6h
+	 QFQXp64lSaUeTm976GITCQtllOBMqK5ELfwfUpBigReRcSwN8/oPD/yPVp7KL5peTw
+	 D0jjt1EBvBonQ==
+Date: Wed, 8 Apr 2026 16:15:10 +0200
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Ingo Molnar <mingo@kernel.org>, John Stultz <jstultz@google.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
+	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
+	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Subject: Re: [patch 01/12] clockevents: Prevent timer interrupt starvation
+Message-ID: <adZi7iFB8hqoaPcu@localhost.localdomain>
+References: <20260407083219.478203185@kernel.org>
+ <20260407083247.562657657@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowACXKAwLYtZprHbzDA--.2435S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kw1kuF4rZFyxGFyfZFWfAFb_yoW8Zw1fpF
-	W5Ka4YvrWUJr18GFW0krW8uayayrykK395Cws7GwsFv3Z8Xr1kGrySva4Yqr9YkrZYkanr
-	A3W7tryUA3W8AFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9C14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
-	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW5XwCF04k20xvY0x0EwIxGrw
-	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
-	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
-	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
-	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
-	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUPR6wUUUUU=
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwwLA2nWHcDczgAAsz
+In-Reply-To: <20260407083247.562657657@kernel.org>
 
-In scpsys_get_bus_protection_legacy(), of_find_node_with_property()
-returns a device node with its reference count incremented. The function
-then calls of_node_put(node) before checking whether
-syscon_regmap_lookup_by_phandle() returns an error. If an error occurs,
-dev_err_probe() dereferences the node pointer to print diagnostic
-information, but the node memory may have already been freed due to the
-earlier of_node_put(), leading to a use-after-free vulnerability.
+Le Tue, Apr 07, 2026 at 10:54:17AM +0200, Thomas Gleixner a écrit :
+> From: Thomas Gleixner <tglx@kernel.org>
+> 
+> Calvin reported an odd NMI watchdog lockup which claims that the CPU locked
+> up in user space. He provided a reproducer, which sets up a timerfd based
+> timer and then rearms it in a loop with an absolute expiry time of 1ns.
+> 
+> As the expiry time is in the past, the timer ends up as the first expiring
+> timer in the per CPU hrtimer base and the clockevent device is programmed
+> with the minimum delta value. If the machine is fast enough, this ends up
+> in a endless loop of programming the delta value to the minimum value
+> defined by the clock event device, before the timer interrupt can fire,
+> which starves the interrupt and consequently triggers the lockup detector
+> because the hrtimer callback of the lockup mechanism is never invoked.
+> 
+> As a first step to prevent this, avoid reprogramming the clock event device
+> when:
+>      - a forced minimum delta event is pending
+>      - the new expiry delta is less then or equal to the minimum delta
+> 
+> Thanks to Calvin for providing the reproducer and to Borislav for testing
+> and providing data from his Zen5 machine.
+> 
+> The problem is not limited to Zen5, but depending on the underlying
+> clock event device (e.g. TSC deadline timer on Intel) and the CPU speed
+> not necessarily observable.
+> 
+> This change serves only as the last resort and further changes will be made
+> to prevent this scenario earlier in the call chain as far as possible.
+> 
+> Fixes: d316c57ff6bf ("[PATCH] clockevents: add core functionality")
+> Reported-by: Calvin Owens <calvin@wbinvd.org>
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Anna-Maria Behnsen <anna-maria@linutronix.de>
+> Cc: Frederic Weisbecker <frederic@kernel.org>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Link: https://lore.kernel.org/lkml/acMe-QZUel-bBYUh@mozart.vkv.me/
 
-Fix this by moving the of_node_put() call after the error check, ensuring
-the node is still valid when accessed in the error path.
+Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
 
-Fixes: c29345fa5f66 ("pmdomain: mediatek: Refactor bus protection regmaps retrieval")
-Cc: stable@vger.kernel.org
-Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
----
- drivers/pmdomain/mediatek/mtk-pm-domains.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-index e2800aa1bc59..d3b36f32417c 100644
---- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-+++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-@@ -993,6 +993,7 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
- 	struct device_node *node, *smi_np;
- 	int num_regmaps = 0, i, j;
- 	struct regmap *regmap[3];
-+	int ret = 0;
- 
- 	/*
- 	 * Legacy code retrieves a maximum of three bus protection handles:
-@@ -1043,11 +1044,14 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
- 	if (node) {
- 		regmap[2] = syscon_regmap_lookup_by_phandle(node, "mediatek,infracfg-nao");
- 		num_regmaps++;
--		of_node_put(node);
--		if (IS_ERR(regmap[2]))
--			return dev_err_probe(dev, PTR_ERR(regmap[2]),
-+		if (IS_ERR(regmap[2])) {
-+			ret = dev_err_probe(dev, PTR_ERR(regmap[2]),
- 					     "%pOF: failed to get infracfg regmap\n",
- 					     node);
-+			of_node_put(node);
-+			return ret;
-+		}
-+		of_node_put(node);
- 	} else {
- 		regmap[2] = NULL;
- 	}
 -- 
-2.34.1
-
+Frederic Weisbecker
+SUSE Labs
