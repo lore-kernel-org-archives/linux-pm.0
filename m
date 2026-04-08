@@ -1,101 +1,96 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB72C3D333C;
-	Wed,  8 Apr 2026 14:15:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [207.226.244.123])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id B274A3D1CC5;
+	Wed,  8 Apr 2026 14:20:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=207.226.244.123
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775657714; cv=none; b=OJpTODdXaBZDcbBLITSgn9c3zsJDh52+kuaw+XB9SHyxvQT61d7FsxBMSv1xoxqCaU7+c19qwhpgBseISoRXTDMyRFjxi2oi0YsvaoSrtyooOO14Cdr/CE+Y8mmmFCNAzD3279c3K9xwOD4Wi8EXuSJ6pmiDPkGoH04ZDgKp06M=
+	t=1775658059; cv=none; b=KvaiY3+s1nu6wMZwXDcVnx7U1mqAr8O8zvfI83EkahosXvR3yOsZXWeZ8nGOXh1Nd7k9U2Xd6rC18Gznq57QAAzt9TnixEwXdjIkzviFN31NvAKWpeHRiOIPZLtVZNmYJTcasWMVtnk7OfcEbZ+JLkdbewKRW0/qPs3yTKBLVFc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775657714; c=relaxed/simple;
-	bh=2GKBWezh0wJ1rxI7mwwrI3CADIBrRX0kcY4kXY4Vgws=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lHh2BLL5KKEoTgPFzanJTY4RWUYDev0yyGDR3Ie1fkReHT0YBW/PhyWIhkrwiY9WIcSpSLic11UtN3A/QRSoIzQ++UT1OhKEeS5wgN/7u9x49CS0GQbxp157oC+pM/ca0yArrYYvC7RQofUmnYgv1U+jmy9sqke7dWRb9ylKTOo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S7RMpuEh; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S7RMpuEh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5A9AC19421;
-	Wed,  8 Apr 2026 14:15:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775657713;
-	bh=2GKBWezh0wJ1rxI7mwwrI3CADIBrRX0kcY4kXY4Vgws=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=S7RMpuEhAPW7AoOpjukUkXJY+0IaS3EO36qhsh4pHP7RO2qD8o4j/LAfL2PLYnA9E
-	 ipxgcOMKMjHnufFqMlmIaFmx6ikF9fMJpZSIjwzaA5QqgBONm/RUc6COFkqhGC/aXw
-	 QzVD/keNQftVMS5w6AV3K6rQT2wVra5sdjm5ElRAeT99Jyk5UibxzfyoQ5mDAJTfpL
-	 8bCNhdEucCP4sh76TdoEf+0DZHkNbt2zoXyZpFbNJ2nVZlprWaE7Ssn7oGmMfkPm6h
-	 QFQXp64lSaUeTm976GITCQtllOBMqK5ELfwfUpBigReRcSwN8/oPD/yPVp7KL5peTw
-	 D0jjt1EBvBonQ==
-Date: Wed, 8 Apr 2026 16:15:10 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Ingo Molnar <mingo@kernel.org>, John Stultz <jstultz@google.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
-	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
-	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [patch 01/12] clockevents: Prevent timer interrupt starvation
-Message-ID: <adZi7iFB8hqoaPcu@localhost.localdomain>
-References: <20260407083219.478203185@kernel.org>
- <20260407083247.562657657@kernel.org>
+	s=arc-20240116; t=1775658059; c=relaxed/simple;
+	bh=8WmkSpy4Ix8CxX9BBBqn764oSP5OdEq/fxn3SewG84k=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=OAqcRdklr91UJ19f1NZGf2Cxydp9mUl6fzr+/K/zBKk7/NJc4btEWAaIWqGPB9VW3UHTHu0rkvMB3O5AiuQIHMSIk+psPqy+wv5e1Sd7eOwBMDkvRNrud6/5SVsKUGOygPMgCQoiis3dKNyiV52mcUwUoX5bdTdxJPNJFqZTIUE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com; spf=pass smtp.mailfrom=xiaomi.com; arc=none smtp.client-ip=207.226.244.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
+X-CSE-ConnectionGUID: cA0vwFnzRBOs9WlYEoR5Tg==
+X-CSE-MsgGUID: lnhWvXw1RiWYLDDrhxKl9A==
+X-IronPort-AV: E=Sophos;i="6.23,167,1770566400"; 
+   d="scan'208";a="172195258"
+From: Tianxiang Chen <nanmu@xiaomi.com>
+To: <rafael@kernel.org>
+CC: <viresh.kumar@linaro.org>, <lingyue@xiaomi.com>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Tianxiang Chen
+	<nanmu@xiaomi.com>
+Subject: [PATCH v2] cpufreq: Fix hotplug-suspend race during reboot
+Date: Wed, 8 Apr 2026 22:19:14 +0800
+Message-ID: <20260408141914.35281-1-nanmu@xiaomi.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <CAJZ5v0ie54h2aK05qNZTWNw5bu7GZDgsxM55KSsuF=ReLMkm-w@mail.gmail.com>
+References: <CAJZ5v0ie54h2aK05qNZTWNw5bu7GZDgsxM55KSsuF=ReLMkm-w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260407083247.562657657@kernel.org>
+Content-Type: text/plain
+X-ClientProxiedBy: BJ-MBX19.mioffice.cn (10.237.8.139) To YZ-MBX05.mioffice.cn
+ (10.237.88.125)
 
-Le Tue, Apr 07, 2026 at 10:54:17AM +0200, Thomas Gleixner a écrit :
-> From: Thomas Gleixner <tglx@kernel.org>
-> 
-> Calvin reported an odd NMI watchdog lockup which claims that the CPU locked
-> up in user space. He provided a reproducer, which sets up a timerfd based
-> timer and then rearms it in a loop with an absolute expiry time of 1ns.
-> 
-> As the expiry time is in the past, the timer ends up as the first expiring
-> timer in the per CPU hrtimer base and the clockevent device is programmed
-> with the minimum delta value. If the machine is fast enough, this ends up
-> in a endless loop of programming the delta value to the minimum value
-> defined by the clock event device, before the timer interrupt can fire,
-> which starves the interrupt and consequently triggers the lockup detector
-> because the hrtimer callback of the lockup mechanism is never invoked.
-> 
-> As a first step to prevent this, avoid reprogramming the clock event device
-> when:
->      - a forced minimum delta event is pending
->      - the new expiry delta is less then or equal to the minimum delta
-> 
-> Thanks to Calvin for providing the reproducer and to Borislav for testing
-> and providing data from his Zen5 machine.
-> 
-> The problem is not limited to Zen5, but depending on the underlying
-> clock event device (e.g. TSC deadline timer on Intel) and the CPU speed
-> not necessarily observable.
-> 
-> This change serves only as the last resort and further changes will be made
-> to prevent this scenario earlier in the call chain as far as possible.
-> 
-> Fixes: d316c57ff6bf ("[PATCH] clockevents: add core functionality")
-> Reported-by: Calvin Owens <calvin@wbinvd.org>
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Anna-Maria Behnsen <anna-maria@linutronix.de>
-> Cc: Frederic Weisbecker <frederic@kernel.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Link: https://lore.kernel.org/lkml/acMe-QZUel-bBYUh@mozart.vkv.me/
+During system reboot, cpufreq_suspend() is called via the
+kernel_restart() -> device_shutdown() -> pm_notifier_call_chain()
+path. Unlike the normal system suspend path, the reboot path does not
+call freeze_processes(), so userspace processes and kernel threads
+remain active.
 
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+This allows CPU hotplug operations to run concurrently with
+cpufreq_suspend(). The original code has no synchronization with CPU
+hotplug, leading to a race condition where governor_data can be freed
+by the hotplug path while cpufreq_suspend() is still accessing it,
+resulting in a null pointer dereference:
 
+  Unable to handle kernel NULL pointer dereference
+  Call Trace:
+   do_kernel_fault+0x28/0x3c
+   cpufreq_suspend+0xdc/0x160
+   device_shutdown+0x18/0x200
+   kernel_restart+0x40/0x80
+   arm64_sys_reboot+0x1b0/0x200
+
+Fix this by adding cpus_read_lock()/cpus_read_unlock() to
+cpufreq_suspend() to block CPU hotplug operations while suspend is in
+progress.
+
+Signed-off-by: Tianxiang Chen <nanmu@xiaomi.com>
+---
+v2:
+- Update changelog to explicitly mention reboot scenario
+- Add observed crash trace
+---
+ drivers/cpufreq/cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1f794524a1d9..6f1d264c378b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1979,6 +1979,7 @@ void cpufreq_suspend(void)
+ 	if (!cpufreq_driver)
+ 		return;
+ 
++	cpus_read_lock();
+ 	if (!has_target() && !cpufreq_driver->suspend)
+ 		goto suspend;
+ 
+@@ -1998,6 +1999,7 @@ void cpufreq_suspend(void)
+ 
+ suspend:
+ 	cpufreq_suspended = true;
++	cpus_read_unlock();
+ }
+ 
+ /**
 -- 
-Frederic Weisbecker
-SUSE Labs
+2.34.1
+
