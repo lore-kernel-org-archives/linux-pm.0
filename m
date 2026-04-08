@@ -1,87 +1,152 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 112092BE04C;
-	Wed,  8 Apr 2026 10:58:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E69C38C434;
+	Wed,  8 Apr 2026 11:53:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775645935; cv=none; b=DHs/k6FabhQKfSE5rxQXB7BD/ce24eHhN3DqtLKvvWXUIjDI9eLagW+N8lToS2U9Q7LnqSEbVlPZAOMSKhHpIhh7hUBgzsf6uukXk8dSKGbwcPH2wFxTCt3GpLGxm4JyWv7n2e97YTJXoGfUnrPDv/olm2QU/w4AOaPF6ttJ8NU=
+	t=1775649225; cv=none; b=S9intXw45/HmCToV4U6vQKJpPw/9QWjbi4wgZavltOcf2Fx5iXn0xTn1tmIETL056CsCGQl8B8+AX/+4KpsbISlZjv3wWOnO4HBQ5ZI2e7LY+vbDNQsMCQ2bxR4SmwZMy64PWQPx/Ea0oQmdDmTvw2HwQr0xT0MLDXeyXM8vP1Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775645935; c=relaxed/simple;
-	bh=yhGUaeJuXPEXey6cTCrR/VOqeDvC3awUjWTPNd0YTAg=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=myu7CEbifSaP7Ri0gBm1n68K3Brc5HUycKK2MTlgwVRNPgSkyYO6D2z13ihDKJ/6yskpcPGH0DOAZBPrCjAoa1rhO1tPB0fN+fjYAZPz2X2aN2E2Pu9sgHYVhz8MtLs5CM/gxLO0oL28RIAN9eni/BbkG2C3hBc0ew7seSNCAxk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QuV0doOp; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1775649225; c=relaxed/simple;
+	bh=7Psi4PCmg4NxRRGlQRXmH+F3BN6jVuP2qTBx5cq2iQE=;
+	h=Date:Message-ID:From:To:Subject:cc; b=RkYI5fBn4bfjJ7iyapi+N0Dab1hru6CRFM076YPTtrvTyjyUFqyvz+BdqmYp1ecWJRsJ+2yyLIQcWP8t6lmB2ZudsTLqjRehKQooXCWQqRiio84ISeDzWYhhmFEsTD2rDwE27lsc+l2o8Zdiiac++aTlpsgGBbudH/92yBfeikQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lsGJ/oyO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QuV0doOp"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775645934; x=1807181934;
-  h=date:from:to:cc:subject:message-id;
-  bh=yhGUaeJuXPEXey6cTCrR/VOqeDvC3awUjWTPNd0YTAg=;
-  b=QuV0doOpjXAKjtnyGamppjep+muizYsEpxi2HjqZPnd6IyWQBNrDzAAI
-   6Bhb+QqxiLdi1gQnTdxIAXiWul8pK3S9Pckl/TdkFcwNMMTFvcrUGoWSI
-   hUf7XW8MrgqYNZP6q5Gt6bnRVvlzUgi3RsKi/CR9cknhWstbIRNZpsMPu
-   JqqERw8ykWqgRLniBUeHIcB7/J1Wb1CCoHCFFNwMKuqW7Ha05oeGutn+7
-   injDQmm9rHp/1FOs44EvHdxL5iTQ9/DxUsbqQ4sb2DBx2WO+EZGhUAslZ
-   byzm5MrFWDgCfPH4LwTFToHj7RU7g5JreN4JRiZwtFejY1ayCwag2AUYF
-   w==;
-X-CSE-ConnectionGUID: guYa9wUkSxW6EjX+J6w0zg==
-X-CSE-MsgGUID: NxmxNmx8RqCo1RL9ebrMUA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="102078398"
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; 
-   d="scan'208";a="102078398"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2026 03:58:53 -0700
-X-CSE-ConnectionGUID: 8WWFW87eQlW8fo2XZ4qPzA==
-X-CSE-MsgGUID: XuvOI0X8RPuj7g9aSpqsSw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; 
-   d="scan'208";a="228691427"
-Received: from lkp-server01.sh.intel.com (HELO d00eb8a6782a) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 08 Apr 2026 03:58:52 -0700
-Received: from kbuild by d00eb8a6782a with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wAQcS-000000001lN-41IL;
-	Wed, 08 Apr 2026 10:58:48 +0000
-Date: Wed, 08 Apr 2026 18:58:11 +0800
-From: kernel test robot <lkp@intel.com>
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
- linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [rafael-pm:bleeding-edge 170/268] ERROR: modpost:
- "thermal_of_cooling_device_register" [drivers/gpu/drm/etnaviv/etnaviv.ko]
- undefined!
-Message-ID: <202604081848.Yh1jEbFo-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lsGJ/oyO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11E08C19421;
+	Wed,  8 Apr 2026 11:53:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775649224;
+	bh=7Psi4PCmg4NxRRGlQRXmH+F3BN6jVuP2qTBx5cq2iQE=;
+	h=Date:From:To:Subject:cc:From;
+	b=lsGJ/oyOvX6cfoHwkNDEvgoFQSDMESpcA7Am+qQqDX+ZczSfpk7BYkv1wxn/o+Y6x
+	 uV70JUMAWZQzZVTa4JXQVPgruXx8VEkY8kRAOSxt/0U9/KY79XCbOCWoa36mOHp++n
+	 cLbbn5Yp/9dKUFYtiPGRKT+LzTESjO0um/rXgHWuKcDcgp0caxdQcg1ivEDbv+MuTG
+	 R5m9V1pZUDtUZsq/xIGGTNooKNCKPEGayFkS2CC7P20z5WN3bdaMCQhUtBzOUDptor
+	 sfAxoAJoNL62cfrL/HoXNfnC8F0A/KeFxL4x5SUIQNk8vw11q+9jO2TOfsdK0yIPQm
+	 TyhVHe5A8x0Bw==
+Date: Wed, 08 Apr 2026 13:53:41 +0200
+Message-ID: <20260408102356.783133335@kernel.org>
+User-Agent: quilt/0.68
+From: Thomas Gleixner <tglx@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch V2 00/11] hrtimers: Prevent hrtimer interrupt starvation
+cc: Calvin Owens <calvin@wbinvd.org>,
+ Anna-Maria Behnsen <anna-maria@linutronix.de>,
+ Frederic Weisbecker <frederic@kernel.org>,
+ "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+ John Stultz <jstultz@google.com>,
+ Stephen Boyd <sboyd@kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>,
+ Jan Kara <jack@suse.cz>,
+ linux-fsdevel@vger.kernel.org,
+ Sebastian Reichel <sre@kernel.org>,
+ linux-pm@vger.kernel.org,
+ Pablo Neira Ayuso <pablo@netfilter.org>,
+ Florian Westphal <fw@strlen.de>,
+ Phil Sutter <phil@nwl.cc>,
+ netfilter-devel@vger.kernel.org,
+ coreteam@netfilter.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 
-Hi Daniel,
+This is a follow up to V1 which can be found here:
 
-FYI, the error/warning was bisected to this commit, please ignore it if it's irrelevant.
+ https://lore.kernel.org/lkml/20260407083219.478203185@kernel.org
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   d18364264af84e2a89da14c6b5f0eae2ba7f98de
-commit: e1b96fba58c6fe18a31a06f752ebc8ad6921b1cb [170/268] thermal/of: Move OF code where it belongs to
-config: x86_64-randconfig-005-20260408 (https://download.01.org/0day-ci/archive/20260408/202604081848.Yh1jEbFo-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260408/202604081848.Yh1jEbFo-lkp@intel.com/reproduce)
+Calvin reported an odd NMI watchdog lockup which claims that the CPU locked
+up in user space:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604081848.Yh1jEbFo-lkp@intel.com/
+  https://lore.kernel.org/lkml/acMe-QZUel-bBYUh@mozart.vkv.me/
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+He provided a reproducer, which sets up a timerfd based timer and then
+rearms it in a loop with an absolute expiry time of 1ns.
 
->> ERROR: modpost: "thermal_of_cooling_device_register" [drivers/gpu/drm/etnaviv/etnaviv.ko] undefined!
-ERROR: modpost: "devm_thermal_of_cooling_device_register" [drivers/hwmon/dell-smm-hwmon.ko] undefined!
+As the expiry time is in the past, the timer ends up as the first expiring
+timer in the per CPU hrtimer base and the clockevent device is programmed
+with the minimum delta value. If the machine is fast enough, this ends up
+in a endless loop of programming the delta value to the minimum value
+defined by the clock event device, before the timer interrupt can fire,
+which starves the interrupt and consequently triggers the lockup detector
+because the hrtimer callback of the lockup mechanism is never invoked.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+The first patch in the V1 series changes the clockevent set next event
+mechanism to prevent reprogramming of the clockevent device when the
+minimum delta value was programmed unless the new delta is larger than
+that. It's a less convoluted variant of the patch which was posted in the
+above linked thread and was confirmed to prevent the starvation problem.
+
+But that's only to be considered the last resort because it results in an
+insane amount of avoidable hrtimer interrupts. That patch has been merged
+into the tip tree already.
+
+The problem of user controlled timers is that the input value is only
+sanity checked vs. validity of the provided timespec and clamped to be in
+the maximum allowable range. But for performance reasons for in kernel
+usage there is no check whether a to be armed timer might have been expired
+already at enqueue time.
+
+This series addresses this by providing a separate interface to arm user
+controlled timers. This works the same way as the existing
+hrtimer_start_range_ns(), but in case that the timer ends up as the first
+timer in the clock base after enqueue it provides additional checks:
+
+      - Whether the timer becomes the first expiring timer in the CPU base.
+
+      	If not the timer is considered to expire in the future as there is
+	already an earlier event programmed.
+
+      - Whether the timer has expired already by comparing the expiry value
+        against current time.
+
+	If it is expired, the timer is removed from the clock base and the
+	function returns false, so that the caller can handle it. That's
+	required because the function cannot invoke the callback as that
+	might need to acquire a lock which is held by the caller.
+
+This function is then used for the user controlled timer arming interfaces
+mainly by converting hrtimer sleeper over to it. That affects a few in
+kernel users too, but the overhead is minimal in that case and it spares a
+tedious whack the mole game all over the tree.
+
+The other usage sites in posixtimers, alarmtimers and timerfd are converted
+as well, which should cover the vast majority of user space controllable
+timers as far as my investigation goes.
+
+Changes vs. V1:
+
+   - Dropped the clockevents patch as it is already merged
+
+   - Rebased on tip timers/core
+
+   - Moved the user check into hrtimer_start_range_ns_user() - Peter
+
+   - Renamed alarmtimer_start() to alarm_start_timer() - Peter
+
+   - Picked up tags as appropriate
+   
+The series applies against tip timers/core and is also available from git:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git hrtimer-exp-v2
+
+Thanks,
+
+	tglx
+---
+ drivers/power/supply/charger-manager.c |   12 +-
+ fs/timerfd.c                           |  117 ++++++++++++++++-----------
+ include/linux/alarmtimer.h             |    9 +-
+ include/linux/hrtimer.h                |   20 ++++
+ include/trace/events/timer.h           |   13 +++
+ kernel/time/alarmtimer.c               |   70 +++++++---------
+ kernel/time/hrtimer.c                  |  140 ++++++++++++++++++++++++++++-----
+ kernel/time/posix-cpu-timers.c         |   18 ++--
+ kernel/time/posix-timers.c             |   35 +++++---
+ kernel/time/posix-timers.h             |    4 
+ net/netfilter/xt_IDLETIMER.c           |   24 ++++-
+ 11 files changed, 320 insertions(+), 142 deletions(-)
+
