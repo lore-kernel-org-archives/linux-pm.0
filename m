@@ -1,31 +1,37 @@
-Received: from outboundhk.mxmail.xiaomi.com (outboundhk.mxmail.xiaomi.com [118.143.206.90])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 2A9451E1C11;
-	Wed,  8 Apr 2026 01:46:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=118.143.206.90
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2E002882B4;
+	Wed,  8 Apr 2026 03:10:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775612812; cv=none; b=UZYc4Nviu/kwRfddgaL3nakiwKmJPVikdMWsa9UXILOpoH0/DhavyVLmUXtC1GPzj0VjXCoBWvbf3bIsbPvPQ1+iZvmBhDYvgFfECtZYsfbBYKjvoxjWKggrmaYKxCZYXpX4QkxcBAbJhNYMLDVmWDjYsQ9S7271cYdov8LNU6c=
+	t=1775617860; cv=none; b=t2OEGO+Q7UbRssNpw7y46hOODi36fqTg+ULFfDpmnjulM55GXgmK+OgfD6gGX6Cr4+gYf3wGDuMnnVCn2GenyYSuKXoF3EdgV5m4AmFT9M9XRzIF2Urtf54jFbbyZCf1TFEFS/FplfaxFjjnoZtK/LgGe+i43RVIcfu3Yu2OElo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775612812; c=relaxed/simple;
-	bh=J+PlN+tt4/cKorKd+sm2GN8BlFlQxRUgpgpsHdob4CQ=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=orJfSkXzUnhbk38NcFCBySjYjQgraTXMNXRMy6YzKznLDCixRdaqXwOWy9hBQVtCtNwKjM5oiU0feBaITVcSEQaUSP+1MVu/W84R3evW9iCcqt/1TUgVezvPkHjHarSWJN4Vl4EzbDl9ArnK5xkKJYu+E61Du7fR5JBLxPYXZ+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com; spf=pass smtp.mailfrom=xiaomi.com; arc=none smtp.client-ip=118.143.206.90
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=xiaomi.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=xiaomi.com
-X-CSE-ConnectionGUID: pLJOIsc7RHqldbyd4aZCsA==
-X-CSE-MsgGUID: vg6ddCpQSTShiVcw0aUgFg==
-X-IronPort-AV: E=Sophos;i="6.23,166,1770566400"; 
-   d="scan'208";a="145929684"
-From: Tianxiang Chen <nanmu@xiaomi.com>
-To: <rafael@kernel.org>
-CC: <viresh.kumar@linaro.org>, <lingyue@xiaomi.com>,
-	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpufreq: fix race between hotplug and suspend
-Date: Wed, 8 Apr 2026 09:46:40 +0800
-Message-ID: <20260408014640.174420-1-nanmu@xiaomi.com>
+	s=arc-20240116; t=1775617860; c=relaxed/simple;
+	bh=VaBGZ1QXqRg76zaGf8gaHSUdkNpNvxf0g9jxhu1rBco=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PNjNZ8HYwvgqhkDDBR31+Yu0Z0JHtRbDlIBeKFm73icv88zGyiW2q8pWqPlfz40zyWNadJ4ByuO08hB+PwvO6MNTF945WuMvWXXG8bqvrO/8AHXwsx+SpgobKzsGPCxaAsivP9GYxVWVD1jEd5DnQBvZOKSVdrNQu4flD74GIQo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from dfae2b116770.home.arpa (unknown [124.16.138.129])
+	by APP-01 (Coremail) with SMTP id qwCowACXQm4yx9Vp3iqWDA--.31904S2;
+	Wed, 08 Apr 2026 11:10:42 +0800 (CST)
+From: Wentao Liang <vulab@iscas.ac.cn>
+To: Georgi Djakov <djakov@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Wentao Liang <vulab@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] interconnect: imx: fix use-after-free in imx_icc_node_init_qos()
+Date: Wed,  8 Apr 2026 03:10:04 +0000
+Message-Id: <20260408031004.309483-1-vulab@iscas.ac.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <CAJZ5v0hzhgf3mvdtHgT4Hwiqv22=P=xsWO8QZpeSGayOP-HO3w@mail.gmail.com>
-References: <CAJZ5v0hzhgf3mvdtHgT4Hwiqv22=P=xsWO8QZpeSGayOP-HO3w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,42 +39,57 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BJ-MBX06.mioffice.cn (10.237.8.126) To YZ-MBX05.mioffice.cn
- (10.237.88.125)
+X-CM-TRANSID:qwCowACXQm4yx9Vp3iqWDA--.31904S2
+X-Coremail-Antispam: 1UD129KBjvdXoWrtw1UZr4rGr18Cw4kWrW8tFb_yoWkJwc_uF
+	18uFZrXF48CF40gwsIyr1fZFyqyw1I9ws3ZF1jqF93t34qvrsxXrsIqw4DZ3y8Xr4Ut34U
+	Grn0vFn8Zry7CjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbTkFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
+	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
+	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW8GwCF04k20xvY0x0EwIxGrw
+	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
+	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
+	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
+	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
+	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JU-a9-UUUUU=
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBgwLA2nVmXqrYwAAsV
 
-On Tue, 7 Apr 2026, Rafael J. Wysocki wrote:
-> So how exactly would CPU hotplug be started during a system suspend or resume?
+Move of_node_put(dn) after the last use of dn, and add a missing put
+in the error path to avoid both use-after-free and reference leak.
 
-Hi Rafael,
+Fixes: f0d8048525d7 ("interconnect: Add imx core driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+---
+ drivers/interconnect/imx/imx.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thank you for your question. Let me explain the two scenarios:
-
-1. cpufreq_suspend() During Reboot (Confirmed Issue)
-
-The real and reproducible race I encountered occurs during system reboot.
-
-Call chain:
-  kernel_restart() -> kernel_restart_prepare() 
-            -> device_shutdown() -> cpufreq_suspend()
-
-Different from the regular suspend path, the reboot path does NOT call
-freeze_processes() at all.
-
-All userspace processes, drivers and kernel threads are
-still running when cpufreq_suspend() executes. This allows CPU hotplug
-(offline/online) operations to run concurrently with cpufreq_suspend().
-
-2. System suspend/resume (Less Likely but Possible)
-
-CPU hotplug is less likely during system suspend/resume. However,
-non-freezable kernel threads may keep running throughout the entire
-process, which may still trigger CPU hotplug in theory.
-
-So I added cpus_read_lock()/cpus_read_unlock() to block CPU hotplug
-while resume is in progress.
-
-
+diff --git a/drivers/interconnect/imx/imx.c b/drivers/interconnect/imx/imx.c
+index 9511f80cf041..75431b5ccef8 100644
+--- a/drivers/interconnect/imx/imx.c
++++ b/drivers/interconnect/imx/imx.c
+@@ -143,15 +143,16 @@ static int imx_icc_node_init_qos(struct icc_provider *provider,
+ 		}
+ 
+ 		pdev = of_find_device_by_node(dn);
+-		of_node_put(dn);
+ 		if (!pdev) {
+ 			dev_warn(dev, "node %s[%d] missing device for %pOF\n",
+ 				 node->name, node->id, dn);
++			of_node_put(dn);
+ 			return -EPROBE_DEFER;
+ 		}
+ 		node_data->qos_dev = &pdev->dev;
+ 		dev_dbg(dev, "node %s[%d] has device node %pOF\n",
+ 			node->name, node->id, dn);
++		of_node_put(dn);
+ 	}
+ 
+ 	return dev_pm_qos_add_request(node_data->qos_dev,
 -- 
-Thx and BRs,
-Tianxiang Chen
+2.34.1
+
