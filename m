@@ -1,244 +1,127 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B336F2EC0A1
-	for <linux-pm@vger.kernel.org>; Thu,  9 Apr 2026 14:52:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.53
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775746355; cv=pass; b=Wu7q5CiNlddpOiM5vnU5rGMzOW6BhhY8F/RqOrCFd14nofNuthVimA4TDLYokidIK6MgsrqZldxF62a2OB3xXArl6yXhNaA9ev5k+YbbXnPT8hRrVYZSTqQir5MacvvOGmu1JE1clmoRFF+iobOSa9jKW6sXnrSP7XFNIPUnUvU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775746355; c=relaxed/simple;
-	bh=6ydCv6sETnUSKoy8isE6EI83BO0xCFcTHCbF2qilBVY=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=nEGm/5nE5lX+hendZ5R3gYVQg4kFnDGDBAbGO65Wv/PUpaIaOtCDnhlcRx/bBw1mTTew/5gT28dpXkjsWJKD5Z1kFztdPDQgOaQIArFco8dB/CxWgTtgeb6wBRJzchpY4GYLAGPQWtKxNCMzTdEOsZxFx/6bbcnIbuzPoImDoVo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pw/Po5ux; arc=pass smtp.client-ip=209.85.221.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A960E3CF699
+	for <linux-pm@vger.kernel.org>; Thu,  9 Apr 2026 15:09:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775747394; cv=none; b=tJ3m46/94jrsJ2ppv38GR/pVzy0yhZQdkmpS0i1gDrIPLlhcWr/ut30KhMLyE8qaV92gnxKrxgLTrQ/v51oIVjPF0D/uSDwityh8Z2Nyi6eT5sl7JnhYxLGfGQM1Pq1rRQoNi+APnrM/69AH15McajHMAh+rAt2QCfhxFGmMorA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775747394; c=relaxed/simple;
+	bh=WDevnGZ+9DOywOwRj2Ruq15Fv6McW6pPyLzt64lg8/8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uTd0qb1fJ3o/wi2plOFYNT6LdSAhvVKedohFFA6BSz/O+EmipyAr4aWV0bCTnMPQ69ukLQVRYgpGf6p4T1iLaBEOpP2FWHGfRYowM1mcfZcU6cv6fChg8OCkh+Nfq11FOV8RRfNKCSgdgsjcOaPO7i1DxnUcQ5jCGjW8bXwN0Is=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uhHAKgtT; arc=none smtp.client-ip=209.85.167.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pw/Po5ux"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-43cfde3c3f3so941082f8f.3
-        for <linux-pm@vger.kernel.org>; Thu, 09 Apr 2026 07:52:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775746352; cv=none;
-        d=google.com; s=arc-20240605;
-        b=kj+20ydpoAyNuSN1hpbwM57JN9uSPYTpe3z2pw4diJ39Jwz27O0qLnvcp0p5brl80N
-         Wib8djGJ22delzEP1jAYS+Z6Vcswkwl5SgpQxkBnjblPWdMx5JKsu71U5Y0EsPXZh4fW
-         Ru74lUUh8fV99NLj7gtukf801kyHbOQhLoLjAybRJ0FyYssytUlznx1h5QBf4J0LlldZ
-         xJCh28gan8Js2jSLszpT5IlffFOJ3H6GuSaU5jUzegDqz5up27mKmMYx0n96G+DXGnvb
-         Im0ewAYjbzRQFL3Vi4CQQvMTPk+hzozFZmX9tLpQvaGJqZW6wkL+3eX9t3mr2dYwntAO
-         fi2Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=qNZu/WXUPhNb82Jv7JYsBguVQyhls8pb4s+wSnq+HH0=;
-        fh=3lquMikvN/xRHtBxM7zZNzHHIwK1ZwyCi2Bt4N8Eyt4=;
-        b=Qn+xy1wmuoONmZXgHGiQg0YiYQSDntRewYqTBKTM2vSbH4B11Z17mVDhqAvC31yK4g
-         5cKoeTxq7rkzA5512HjVgCuReGh4igCKp3uaa7M1DbqdWw+PeeLn04LhMU7BJ8ZH2nfH
-         q575bT005onNF8VAgo7ouSRhN7V5FbdT45MWT6cDtb6zJWfSTmcqfnflT7wkyRxmteHW
-         N2255i4li8Gq9Og5Jk+nK0lvti0c1RiVf10bbZr3C+9SnNr/34IG0bhr2L+dHiCuXmmR
-         i+Eh9kc6fKOKp2QGi4VtnAmu8MTyD40xQNqj3bHnbFn2YMjchaK2gfD1hyPhEVB2xNsh
-         vu8A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uhHAKgtT"
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-59e5aa4ca41so911884e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 09 Apr 2026 08:09:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775746352; x=1776351152; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=qNZu/WXUPhNb82Jv7JYsBguVQyhls8pb4s+wSnq+HH0=;
-        b=pw/Po5uxlu3Q4YOFvgnODbqCGOH9UZFHxtB5UScSpvHNzSj7Ynxyg8HTsgnBcK6d8p
-         BBMzP6al3JTTj9+VgYXr7cxDzpPHqihY74gdiYRiBWUdicPQyPYMXylTUVPUbkDajl4Y
-         56nRm63hkxKKEY+BRoh8dnp5IVDYpTgF+FqV2O/bhbVR0QaDs9fSbhOY2Z7D1O8waRlf
-         X3/pmqMCE/2vw4i2dDGakLp/0+dROTMH90cmTweE/ZpgWANHOIjRz/BPsNFOGntoyfml
-         ltajC4Z1dt1txYdERFPYP0xI4CKaqCCW0ZcNqK+EWIECQN/je8TzSNy4p6TpFx0otWXf
-         QHcQ==
+        d=linaro.org; s=google; t=1775747392; x=1776352192; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=p+HP2NPOCwSfxfjXKB1IjPCNrMct9KR3awrP+o31EZQ=;
+        b=uhHAKgtTjYwMCIMxVBbOcWgtApLIDSIrpJtvsePfMxSzKxTU99j7W6mUF+8ajvoveS
+         mBKGlQv45iv0KuA72f1pLWhtAlVyRMYeim6VcBH6KfTTlRvef4UdnzflsZzE3UI3P/TG
+         ELBFo7RiKuC4NLUIdJqQtLFq1NxfDjv3e6XMJK+rWcrdwGUDarcp1nVtIq5Uhz+IOBgN
+         /RwO/HEl8yGBOm36vv2lmxRUpRyY9vG02lI9ja+LcdvKTB5xFQ9jRBDiWqQ4ekF9wZxi
+         qpYJvwtN1xTLWXcMmsMbZ4r0/6V3xWOrSgFqNfWXBuSDmuQznUEixE7vPXbLVwDnkzZz
+         x7Ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775746352; x=1776351152;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=qNZu/WXUPhNb82Jv7JYsBguVQyhls8pb4s+wSnq+HH0=;
-        b=Ak1EpclmuTQAlohoF3iFlhZxiyS5jMJOrbcicDrSNr65We3ZncH/UeoUfGqJJwCKwZ
-         Zx68e/IUPoGoodMSGcoXV07O9UwaWHFvK2opbc904ykcau7t4kWpfItVmNp98AscTBGM
-         ntEiNsuQCgAtc3hxqA0FQ1SzW7bFW/1clKfhrbV0yQPUdjHg1Z2pkcOdz3hNXoqvrdGp
-         hsD3stdfp85HUzT3PLGqCwslMp0bJ3YauiIrcgDJQO4XIadp4M6KmHXy4zaAusZloimo
-         /a9YsV76g4VqXjfGYDLgmlqjYoO0HdZ2wxD6tGjMXdG4EU6EixEtSmmYssQWwgQPz8Ds
-         BRtg==
-X-Forwarded-Encrypted: i=1; AJvYcCURvLJhem38nDnqxDQLqRZfB38qaGAYE8U0n2eDhAjW5UVsXShDyNU9f9qGY7oBg50Q3ZmJu0G+Ew==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwgHW8G1fUDP0NYvF5gggmpyb/PDS/NYtlGa8YQDoRJMwaAnkTd
-	jCEk4q7Cwa9khvxfCENHFngv079AcEZxO2mHIwC8Q95nd+UqU98gKO/JmchS7jKFRItatfEkKfB
-	z+Nv7oloPS9aEACZ8IDXvIS00rvOOJm4=
-X-Gm-Gg: AeBDieuWIbXDZhqdT5/6yhn5CfV5HRt/h+yWLWjxYtIW3aUsxG0Bo3uOfqNqULsgcMJ
-	3uW4OIZxKlPRU6/qKUnVoXyszjnVJBD8RkMBEENpfivxtqgutBAnlByZcD3UsU+3+GnPViTU7rc
-	l9LKIAaNGSM8vN5wtivS+J4nwmGnt8WRDN1Mxa9h8MyOm2ZyKN95jPyj3DPCfBe4h3JBHYYM/OH
-	OlEpJN61OwQTwCrJKc0Lu26YPXR/lM4lbNd9vrECiL5AhAOtWsWN/VahEfghq0fz8Lfa2CwDfzv
-	eBZEb+7jnOdkC1vkNB3Vd7EttpRFNaRZFxsCy7MExvay1p8j9yEdtmxl2Azuf/BOHCvs2Zs1fyi
-	WTB7FgTk=
-X-Received: by 2002:a05:6000:2886:b0:439:be67:a038 with SMTP id
- ffacd0b85a97d-43d5a17d094mr5680009f8f.41.1775746351772; Thu, 09 Apr 2026
- 07:52:31 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1775747392; x=1776352192;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=p+HP2NPOCwSfxfjXKB1IjPCNrMct9KR3awrP+o31EZQ=;
+        b=p2/N6GUO+5Mvsd5EzdPP2wUfCcgA5k96euzKE2EeWRrDN/uRWipFjju7fW8l9KKgOE
+         uGyWNIr4Vz3h41+a01IGzhKqJWDBsindqeFLoKAqNFeCqNp3MP64CfiauGnG8IlxMaoa
+         g4SbthglRt/cjNkwbmf/O70ToW4p1/Vc3R+lgjcm2XjED5c3/rbQHX2Zc0mra/W8/fX5
+         Ec0XFGca1y5XkbW37udvurQ1AhSYWw2HXxolhw4UepasJYSvRELCa2a82RKruZqwh1vF
+         1mhhDVkxw0PlFY8ZccCoIcPs5IpMyiagoC+JrlgNa3EHG41WBsgTr3IlTOcp5Bkoz/9o
+         wFJQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUjQA0LdZIOYB6asvkpYgAg1m6k1TjVsZRBLiUKv2LCsej862HhMN/nbJbk92Dix2d7t1AuY7FDpg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyEV5Pag5I3nYJhSM9ynk3maO4XkhOQtm/IW90TcslBPPuQRUf4
+	6MmjfvcCTCRO99ZA/gcxHvUoSUL+pfe9ye7iDsJhyut0YnKzDq7X+9/Kh0MNpD2e1N7ZYkFL8Wp
+	89BE4
+X-Gm-Gg: AeBDietM5ttwh8fk6sA2rKaE2I85NjEtDeqTJRqM8vhFBjN33BiylfXM/jcqaUrNeNR
+	gCNhk6kTVn6y7jWxgqvCsAAuc+c4lWWnHoz5Bu1Y2gHvUXEQJ8oWH9HqBKo1R+Ri+wQwo0nCDuW
+	vzy5h7iglg1cNWAGTnm5VmXwq6CP9t4Lipo80J9y9gQwfeE6YD0sNxRcutr+9I0cKiqTrgsgeXG
+	RUZkFTloMiSTAujLj8R0vsc12zq1QTzogY/GK2MnFJ79fwIa1CI7LU+o71h19p757qWT7hVwyZW
+	QEmP1Url7tjyySr++B0ks5assgfRTPe3u7Y/CKQeXIKlqwWh2HHI5aC0oJsSIwI79nLVEgeCA9N
+	n5lCkEGDAPJFKlOuQqXzH36ocVgUojp+RoNDS7+t6z+mgMrsEvkCs044jHLn5JGGNSFEWBoFoTK
+	sS1ss2UBzkt0D0XN2RnyUJ4XOpRu8/OqIVOjHtqLXosUFTGQfWT4IFe/IOFXxXGkex4pF3YaxU
+X-Received: by 2002:a05:6512:1283:b0:5a2:7c1c:74a with SMTP id 2adb3069b0e04-5a3375847e9mr9439536e87.29.1775747391581;
+        Thu, 09 Apr 2026 08:09:51 -0700 (PDT)
+Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a2c6c95288sm5643977e87.14.2026.04.09.08.09.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Apr 2026 08:09:51 -0700 (PDT)
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Linus <torvalds@linux-foundation.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>,
+	linux-arm-kernel@lists.infradead.org
+Subject: [GIT PULL] pmdomain fixes for v7.0-rc8
+Date: Thu,  9 Apr 2026 17:09:50 +0200
+Message-ID: <20260409150950.28527-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Jacopo Labardi <jacopolabardi@gmail.com>
-Date: Thu, 9 Apr 2026 16:52:20 +0200
-X-Gm-Features: AQROBzDpPEvaNlnVmlmhfvPxhs83kPXCAWpTOryoryMklVGb7FgCNhTSL7jhSmA
-Message-ID: <CANrGBMBDftu58R71jvEcZ94D8vJB2Y_dHG=BbNSsNMOS=3k0+g@mail.gmail.com>
-Subject: [BUG] Lenovo 83JL / WD SN7100S: intermittent loss of secondary NVMe
- after s2idle resume, root port 00:02.1 retraining fails
-To: linux-nvme@lists.infradead.org
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hello,
+Hi Linus,
 
-I am reporting an intermittent suspend/resume failure on a Lenovo IdeaPad Pro 5
-14AKP10 (machine type 83JL) where the secondary NVMe drive can become unusable
-after s2idle resume on Linux.
+Here's a pull-request with a couple of pmdomain/firmware fixes intended for
+v7.0-rc8. I have also included a patch to update my email in MAINTAINERS and
+mailmap. Details about the highlights are as usual found in the signed tag.
 
-I am CCing linux-nvme, linux-pci and linux-pm because the visible failure path
-starts with PCIe root-port link retraining on 0000:00:02.1 during resume and
-ends with nvme reset failure on the downstream device at 0000:bf:00.0.
+Please pull this in!
 
-Summary
-- The problem is intermittent. It does not always happen on a fixed cycle.
-- On this machine it may happen on the first resume or only after several
-  suspend/resume cycles.
-- The clean reproducer below failed on the third suspend/resume cycle, but that
-  cycle count is not stable and should not be interpreted as deterministic.
-- When it fails, the secondary/data NVMe is effectively lost until a full
-  reboot.
-- The system NVMe on 0000:c2:00.0 survives.
+Kind regards
+Ulf Hansson
 
-Hardware
-- Laptop: Lenovo IdeaPad Pro 5 14AKP10 (83JL)
-- BIOS: LENOVO QKCN29WW, release date 2025-12-23
-- Platform: AMD Krackan / Ryzen AI 350
-- Root port for failing device: 0000:00:02.1, AMD [1022:1126]
-- System NVMe: Lexar NM790 2TB at 0000:c2:00.0
-- Secondary/data NVMe: Sandisk/WD PC SN7100S M.2 2242 NVMe SSD (DRAM-less)
-  [15b7:5044] at 0000:bf:00.0
-- PCIe topology:
-  0000:00:02.1 -> 0000:bf:00.0
 
-Software
-- Kernel for the clean reproducer: 6.19.11-arch1-1
-- Kernel taint during reproducer: 0
-- Sleep mode exposed by the platform on Linux: [s2idle]
-- acpi_call-dkms is installed on disk, but the acpi_call module was not loaded
-  during the reproducer and the kernel was not tainted
-- Boot command line used for the clean reproducer:
-  quiet nowatchdog rw rootflags=subvol=/@ rootfstype=btrfs
-  root=UUID=<redacted> amd_pstate=active iommu=pt i8042.nopnp loglevel=3
-  8250.nr_uarts=0 tpm_tis.interrupts=0 random.trust_cpu=on
-  snd_hda_intel.power_save=10 snd_hda_intel.power_save_controller=Y
+The following changes since commit 7aaa8047eafd0bd628065b15757d9b48c5f9c07d:
 
-At boot on this kernel, both NVMe controllers log:
-- nvme 0000:c2:00.0: platform quirk: setting simple suspend
-- nvme 0000:bf:00.0: platform quirk: setting simple suspend
+  Linux 7.0-rc6 (2026-03-29 15:40:00 -0700)
 
-Clean reproduction used for this report
-- No NVMe-specific udev overrides were active
-- No custom NVMe-related systemd sleep hooks or suspend services were active
-- No NVMe-specific kernel parameters were active
+are available in the Git repository at:
 
-Reproducer
-1. Boot the machine into 6.19.11-arch1-1.
-2. Confirm tainted=0 and that both NVMe devices are present.
-3. Suspend to s2idle and resume.
-4. Repeat suspend/resume until the failure occurs.
+  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.0-rc6
 
-Observed behavior
-- In one clean run used for this report:
-  - first cycle resumed successfully
-  - second cycle resumed successfully
-  - third cycle resumed with the WD drive lost
-- In prior testing on the same machine, the failure sometimes happened on the
-  first cycle and sometimes only after several cycles.
+for you to fetch changes up to c2812c0cb909211a1d2e7cec862406e32833b9de:
 
-Relevant kernel log excerpt from the failing run
-  Apr 09 16:24:34 kernel: PM: suspend entry (s2idle)
-  Apr 09 16:24:54 kernel: pcieport 0000:00:02.1: broken device,
-retraining non-functional downstream link at 2.5GT/s
-  Apr 09 16:24:54 kernel: pcieport 0000:00:02.1: retraining failed
-  Apr 09 16:24:54 kernel: pcieport 0000:00:02.1: Data Link Layer Link
-Active not set in 100 msec
-  Apr 09 16:24:54 kernel: nvme nvme1: Disabling device after reset failure: -19
-  Apr 09 16:24:54 kernel: PM: suspend exit
-  Apr 09 16:25:04 kernel: ntfs3(nvme1n1p5): failed to read volume at
-offset 0x10c000
-  Apr 09 16:25:26 kernel: ntfs3: 107 callbacks suppressed
-  Apr 09 16:25:40 kernel: nvme nvme1: Identify namespace failed (-5)
+  MAINTAINERS, mailmap: Change Ulf Hansson's email (2026-04-07 14:17:48 +0200)
 
-State after the failure
-- nvme list shows only the system Lexar drive; the WD is no longer listed
-- lspci -nnvv -s bf:00.0 still shows the device, but with:
-  - !!! Unknown header type 7f
-  - Kernel driver in use: nvme
-- sysfs state at collection time:
-  - /sys/bus/pci/devices/0000:bf:00.0/power_state = D3cold
-  - /sys/bus/pci/devices/0000:bf:00.0/power/runtime_status = active
-  - /sys/bus/pci/devices/0000:bf:00.0/d3cold_allowed = 1
-  - /sys/bus/pci/devices/0000:bf:00.0/power/control = on
-  - /sys/bus/pci/devices/0000:00:02.1/power_state = D0
-  - /sys/bus/pci/devices/0000:00:02.1/power/runtime_status = active
-  - /sys/bus/pci/devices/0000:00:02.1/d3cold_allowed = 1
-  - /sys/bus/pci/devices/0000:00:02.1/power/control = auto
-- smartctl -x /dev/nvme1 failed with "Resource temporarily unavailable"
+----------------------------------------------------------------
+pmdomain providers:
+ - imx: Prevent hang at power down for imx8mp-blk-ctrl
 
-Expected behavior
-- The secondary WD NVMe should resume normally and remain usable after s2idle.
+firmware:
+ - thead: Fix buffer overflow for TH1520 AON driver
 
-Previous mitigation/debug attempts on the same machine
-These are not part of the clean reproducer above; they are prior experiments
-done to narrow the failure mode.
+MAINTAINERS, mailmap:
+ - Change Ulf Hansson's email
 
-- The issue also reproduced while the machine was configured with
-  pcie_aspm.policy=performance; removing that option did not eliminate it
-- nvme_core.default_ps_max_latency_us=2000
-  - no fix; failure still reproduced
-- Force power/control=on and d3cold_allowed=0 on both 0000:00:02.1 and
-  0000:bf:00.0
-  - no fix; in failing runs the WD could still end up inaccessible / in D3cold
-- pm_async=off
-  - same failure mode
-- SuspendState=freeze via systemd sleep configuration
-  - ineffective on this platform; kernel still reported s2idle behavior and the
-    issue remained
-- nvme.noacpi=1
-  - removed the "platform quirk: setting simple suspend" message, but resume
-    often degraded into a black screen / forced reboot instead of fixing the WD
-- pcie_port_pm=off
-  - no usable fix; often resulted in black-screen resume / forced reboot
-- pcie_ports=compat
-  - no usable fix; often resulted in black-screen resume / forced reboot
-- User-space suspend/resume hooks that tried unbind/bind/remove/rescan around
-  the WD path
-  - no reliable recovery; they only lengthened resume and still ended in reset
-    failure / missing device
+----------------------------------------------------------------
+Jacky Bai (1):
+      pmdomain: imx8mp-blk-ctrl: Keep the NOC_HDCP clock enabled
 
-Additional context
-- Linux on this machine exposes only s2idle.
-- The issue was reproduced on multiple Linux distributions, not only one
-  userspace/kernel packaging combination.
-- Windows on the same hardware resumes correctly.
-- I do not currently have a known-good Linux kernel version on this machine, so
-  I am not claiming this is a regression in a specific upstream release.
+Michal Wilczynski (1):
+      firmware: thead: Fix buffer overflow and use standard endian macros
 
-I am not sure whether the underlying bug belongs primarily in nvme/pci, PCIe
-power-management, or a platform/firmware interaction. The first failing
-messages in the clean repro are from the root-port retraining path, which is
-why I am CCing PCI/PM in addition to NVMe.
+Ulf Hansson (1):
+      MAINTAINERS, mailmap: Change Ulf Hansson's email
 
-I collected a local bundle containing:
-- full kernel log from the reproducer boot
-- systemd suspend log
-- lspci -nnvv for 0000:00:02.1 and 0000:bf:00.0
-- sysfs power-state snapshots
-- dmidecode output
-
-The raw bundle contains machine serial/UUID, so I am not attaching it publicly
-as-is. I can provide redacted logs or specific files immediately if requested.
-
-If useful, I can also test additional debug options or a current mainline/-rc
-kernel.
-
-Thanks.
+ .mailmap                                        |  2 +
+ MAINTAINERS                                     | 14 ++---
+ drivers/firmware/thead,th1520-aon.c             |  7 +--
+ drivers/pmdomain/imx/imx8mp-blk-ctrl.c          |  8 +--
+ include/linux/firmware/thead/thead,th1520-aon.h | 74 -------------------------
+ 5 files changed, 13 insertions(+), 92 deletions(-)
