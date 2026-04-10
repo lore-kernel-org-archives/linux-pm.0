@@ -1,61 +1,63 @@
-Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B03738A299
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7634F38AC7A
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775817669; cv=none; b=pKcFRT01VtALzKvCQpFYVnssb4Mtz+cIWCKve2+Yf4TpNzuZ/5RSFwyf0/Ad+rGtgFffx+BlPrzCvmcD7gChG6WKRvN2JuyjgXBW4gerPcTiP2d0SdxL6SM5bzQL/xmj8PZ7I/V97NBVKjU4/tiXQqoTt6GdCDkcU0CP48/agBo=
+	t=1775817670; cv=none; b=ZC7Hox4NHeP6sYqC5sPj7bbgsEh1PJUP7pdhGAfBO3NiKNDbJUkmrEUotTq7E2V2PD7/oRsWmhgovLQkIuabfzZ0rHmCrTNzsqCRRaYOv5ZyvFCzKJWvvN9yS8HN/jGUdoavoGOdebpqTrMQPDwTNjGPIbFaHKResGO7kuzknp8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775817669; c=relaxed/simple;
-	bh=LiIgfKRUPkxLgWxsD2Rxri8doxXg15GJD56xje37HYU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rUMPXGV5ZhyoWKeJyvYrzDplFF+SluIUTRdmh9C5CgmexzHmSXQgF+ZIJIS9Kz1JZXoA96TKhk16Dw+M0/5c2cKhUHtvkpw2hfF8A1rxC2r54AVvWFb+soIeZV9UvbyTXR0bEGyw/gVgazRoUhpme/U6oSuzCWP34gvy5+7XiUk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=AtVfsK5j; arc=none smtp.client-ip=209.85.208.182
+	s=arc-20240116; t=1775817670; c=relaxed/simple;
+	bh=8Kq2004yGYvDmGpLcFLftKKbGVL7vNOIYvDbWawQjjk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=U6x7l+SXrBRz0W0e17mIjm/aGiUl0f0edlTyAgFIlmGMhGarbBZ+sEE3SEsVp9hCri+Ie/jZws7aKTaXwiXtyBHu6MU68VMW0wXR9f+MuYFPafzofU0CzOZJ8MD13kuQfUaDbCHrx4853aHRCcwwuZ9so40ro+k6Wi5kK1uKU/M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=O70kUc4I; arc=none smtp.client-ip=209.85.208.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AtVfsK5j"
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-38ded5277e5so15349461fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:08 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="O70kUc4I"
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-38cc0b91b01so15331061fa.1
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775817666; x=1776422466; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=t1NWY+BWGARd3KdW9zy3+VOHdHry2FwciZ1/FvhAvLg=;
-        b=AtVfsK5jPCVR5J1USbJ4C94Ejbyh8UlOchYoFyYN6MO0oJvOjICWgAdV5Lz2mfLcId
-         Qi1t9uWF1c87ThxEJ2kRwWWUHr/yuh5yXNPR6A3DOSZ/2BD7pTlu8bXNlWbJOgu+X2C4
-         e2XOQOR05+dTrdkAdZThDr9ef9YJvzUcuFIdetWOiLZslTqsSAMxOGC+I0kUH8ls3yMH
-         /Pg3i6UOFfPe75YxdexHtyPTlOsnXHBCRVat6byhiyvXfQml7oaIWCYJ0FzkUzUFXC0W
-         /kPO2kXnAxhjjsAoHTwah9599OcgtqGm5bqDPATtlZIe/I7/6+URoKTVC/fGjRMpx030
-         MQqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775817666; x=1776422466;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1775817668; x=1776422468; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=t1NWY+BWGARd3KdW9zy3+VOHdHry2FwciZ1/FvhAvLg=;
-        b=I0illPbz1obNPx9+WXCkaU8LHH6W89s9z9wDdW85s8ZQLI7io7HRp9/rrM/r6dGKiz
-         LhW/8MsGoqoen+8Uj7qCF7oBiACFo9LspHkYQzSKs2LTNmloBax7j6XJQhjp4EdLQVbg
-         lbbXuRUePA4Sc1INQdHegMKkaG+y+jPl58fWQb+FJMmpgjpr1zUgbO0PNNI8fgb5gB1w
-         2QC0klCsD3G8B/sdP2KbMYSFeXUUSvck3J9w1UpwYCsOL7aq2hR87Gb2PAfD6iW8HAZC
-         WCmDkO2fdPc5yKcbee8EXn1zybpW51HxXdhOarLXoqArBD0a5OalIaRAaN6Dc4f9DKXI
-         LjCA==
-X-Forwarded-Encrypted: i=1; AJvYcCX5PnuxA2XOsQOp7shzNfContwxWEjujq+JFcp/G4h8/gmjlODWu1LXaZB4i6tV31KdwgbJZWdc3w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxRhgmooAwwdfwWW9RzXdsvCb4HHip+l68bB501C2XzzgZa/SAC
-	RD3nRNYY5fF9WeppyzfB32qkIKqneNfuGucFIXeF/wD/oiwDHuqaJHsWgsJZ2BFMYO4=
-X-Gm-Gg: AeBDiesNkBl8KsV0cf/Bo1fdm/JeE26YfDjKBLHu6QGfHP2348Qwq6mg/AflWbvNQAT
-	OzWpDBcQbiO00gt5nBFgf6s7W5hrj+Hmop+f5QQnfG9aF3EadwcSLfdfIy/s0+93fUFVFhFPsHh
-	XOlU21DO8t7edecqbZQUm87cTvOjaTDJvSvL15UZTtfETSQ5zesF35b2ooMqOtz+AIhSE/zm5/j
-	DWL1ymdFV4qiFURD0i34IBZuFW+sqW6eFmM0AnnUqNNmkgWYQDmsnA+ZtsA6jEl6OCISKCiyagi
-	5huCE9I5QUAArUhIcc2cOCS89/sWfdFhLLqd6UhLLSWnI8vIFCVuA/eaxgX1oAVCvTSDwRjx038
-	FuKSBWSQGJ9yz8fkFKcVDMKrkb4x8++I9+DL6Pg6iCHXP7fJoJQM6IrghPwf214Fy+ucCKKa4i0
-	ba+nxEp+P2zvIkDpWYmDYWz6i69u7eNSM0GWUvcXiL3XqKKmrNeWnTu+2XACJqOqCfQQWyWKPB
-X-Received: by 2002:a05:651c:f1c:b0:38b:50c7:8239 with SMTP id 38308e7fff4ca-38e4befac2dmr9365121fa.21.1775817666197;
-        Fri, 10 Apr 2026 03:41:06 -0700 (PDT)
+        bh=/73f3/gKMGjhlSVUm1EFqbVBE3w9N0gOSLL9TifoTSo=;
+        b=O70kUc4IyIZsPDCMX0M/QfNFbUw6LRk3bdFwMHclPMQyUBzbPKa3uMFmukliuneBkY
+         ZhEBlAFRN/M+4B/cDlNZ/y8myfw0FTEi6G0cS4DBj7AILSEJhihYp3GJPbfC07ox8Ysw
+         NyGHVB95AErTIBAb5le9DpqQ9h5l/KmCRMlrIDl5ujjd/XFNj2XHPBARol2omFryzSYa
+         7iU1DssRBy9MRLr1dTBhuVWuisDWFUtxgFbV/HPvvT8wATP9a3YGRdsAfuikegS8++uk
+         mETbVeap8d12dHmA1bBu32YYax19cxh5amp35mk+QWig5RKiJ+9aSJ9ZpWfQCJZ5/1LI
+         i+vA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775817668; x=1776422468;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=/73f3/gKMGjhlSVUm1EFqbVBE3w9N0gOSLL9TifoTSo=;
+        b=nEbxhNvehIWYAnUOqKB1CNHy+FR4xXMhE14K9jh1MNrhu5cqYdvEEGJd4m2uHNj9RA
+         WUYvYCQYIvK3A/FaxIyC9tgf5IIUq1/SK0ym5UGhT3yLg9LDNovq5ZXavHaHVQ1N/4jI
+         rnrbbFsUQtUUm53+DrIc+qc5cc8EmI3SqqeoHJ/MR8UxFJewQXZZctRH1O8S4eDSUAer
+         BrLKt2Fo3jYa/QsGbozvNqzLcIOy7fK9XBsmV92EHu9IOy+FSSv1JbzeLuGzQFW607At
+         zuwWmtkhMIElA6EtZMY42qGeXk4MkocrbaaNpcvTY8Lie6Xk414JNjbEVjKNIK/hBO+a
+         P2TA==
+X-Forwarded-Encrypted: i=1; AJvYcCVi71HhICxgcBUk1Q/VIpeWYUWmxOlhSs2jh3K1sYRQEcmFh6hw8VnopzWmivW/ezOWInDygRaI8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwwHqlikst7BWnDAp/E8lcFliNxoPWaY/7ToB5OiR/37Ne3xy1Q
+	twCark5NNGvBpWtz/hqS5sc+uBg5Nw23uuQgBAEBxHjT8aedqusZGhilHxw9Dm55H7w=
+X-Gm-Gg: AeBDieuNEHDlhK4bBMh5Hbvv+Vg72v49dFfqpXQAw1wyvfkis5wQr0+TXWnQvmJCXsb
+	atOVroM50pYWVJIfh4wqlfigk9Ircku6eGTgNeovIJ3g8sJODV+GdntpYR2Xy1Z4E1ybrZ7CbO5
+	AxhKofYyHYlCk3Vyl6yNqcdCvPcgi13TIkAZ28UXirfgdSNXReBEyrATlT8gJMeHOkAQ6+dXV77
+	u5mU93lsggdEmn6nha4mZrhY56cZhLYbE1TVQQSnFekNP4lVMerXXlfuZVw83wg81rg5U1j0Kfe
+	8tHkPZiU6APgHWCOeFcVRIkfSBt1h5I86itwJoOGPwd7ifcs3H5RhsGWPTpAj7QkCbYovm+/B+/
+	2iZg2EMJ9DKPmrkg4ry5J727y32wYc+SMqzoeuF3Ha5fNy/LsxoHTUQTbG5TpyljWadZUItfREd
+	3oZya0qqGJSd0RIamLaH52FYoCDO3hCng5cJZ7Zr02ZwQN2eqAEbBHqab9w4K/XICWOVUuP7fC
+X-Received: by 2002:a2e:be9b:0:b0:38c:6b7:ad39 with SMTP id 38308e7fff4ca-38e4bee2130mr9021011fa.13.1775817667538;
+        Fri, 10 Apr 2026 03:41:07 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.05
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 03:41:05 -0700 (PDT)
+        Fri, 10 Apr 2026 03:41:06 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@linaro.org>
 To: Saravana Kannan <saravanak@kernel.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -78,11 +80,14 @@ Cc: Sudeep Holla <sudeep.holla@kernel.org>,
 	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
 	Ulf Hansson <ulf.hansson@linaro.org>,
 	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/9] driver core / pmdomain: Add support for fined grained sync_state
-Date: Fri, 10 Apr 2026 12:40:43 +0200
-Message-ID: <20260410104058.83748-1-ulf.hansson@linaro.org>
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 1/9] driver core: Enable suppliers to implement fine grained sync_state support
+Date: Fri, 10 Apr 2026 12:40:44 +0200
+Message-ID: <20260410104058.83748-2-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260410104058.83748-1-ulf.hansson@linaro.org>
+References: <20260410104058.83748-1-ulf.hansson@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -91,58 +96,74 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Since the introduction [1] of the common sync_state support for pmdomains
-(genpd), we have encountered a lot of various interesting problems. In most
-cases the new behaviour of genpd triggered some weird platform specific bugs.
+The common sync_state support isn't fine grained enough for some types of
+suppliers, like power domains for example. Especially when a supplier
+provides multiple independent power domains, each with their own set of
+consumers. In these cases we need to wait for all consumers for all the
+provided power domains before invoking the supplier's ->sync_state().
 
-That said, in LPC in Tokyo me and Saravana hosted a session to walk through the
-remaining limitations that we have found for genpd's sync state support. In
-particular, we discussed the problems we have for the so-called onecell power
-domain providers, where a single provider typically provides multiple
-independent power domains, all with their own set of consumers.
+To allow a more fine grained sync_state support to be implemented on per
+supplier's driver basis, let's add a new optional callback. As soon as
+there is an update worth to consider in regards to managing sync_state for
+a supplier device, __device_links_queue_sync_state() invokes the callback.
 
-Note that, onecell power domain providers are very common. It's being used by
-many SoCs/platforms/technologies. To name a few:
-SCMI, Qualcomm, NXP, Mediatek, Renesas, TI, etc.
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/core.c           | 7 ++++++-
+ include/linux/device/driver.h | 7 +++++++
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-Anyway, in these cases, the generic sync_state mechanism with fw_devlink isn't
-fine grained enough, as we end up waiting for all consumers for all power
-domains before the ->sync_callback gets called for the supplier/provider. In
-other words, we may end up keeping unused power domains powered-on, for no good
-reasons.
-
-The series intends to fix this problem. Please have a look at the commit
-messages for more details and help review/test!
-
-Kind regards
-Ulf Hansson
-
-[1]
-https://lore.kernel.org/all/20250701114733.636510-1-ulf.hansson@linaro.org/
-
-Ulf Hansson (9):
-  driver core: Enable suppliers to implement fine grained sync_state
-    support
-  driver core: Add dev_set_drv_queue_sync_state()
-  pmdomain: core: Move genpd_get_from_provider()
-  pmdomain: core: Add initial fine grained sync_state support
-  pmdomain: core: Extend fine grained sync_state to more onecell
-    providers
-  pmdomain: core: Export a common function for ->queue_sync_state()
-  pmdomain: renesas: rcar-gen4-sysc: Drop GENPD_FLAG_NO_STAY_ON
-  pmdomain: renesas: rcar-sysc: Drop GENPD_FLAG_NO_STAY_ON
-  pmdomain: renesas: rmobile-sysc: Drop GENPD_FLAG_NO_STAY_ON
-
- drivers/base/core.c                       |   7 +-
- drivers/pmdomain/core.c                   | 205 ++++++++++++++++++----
- drivers/pmdomain/renesas/rcar-gen4-sysc.c |   1 -
- drivers/pmdomain/renesas/rcar-sysc.c      |   1 -
- drivers/pmdomain/renesas/rmobile-sysc.c   |   3 +-
- include/linux/device.h                    |  12 ++
- include/linux/device/driver.h             |   7 +
- include/linux/pm_domain.h                 |   3 +
- 8 files changed, 197 insertions(+), 42 deletions(-)
-
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 09b98f02f559..4085a011d8ca 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1106,7 +1106,9 @@ int device_links_check_suppliers(struct device *dev)
+  * Queues a device for a sync_state() callback when the device links write lock
+  * isn't held. This allows the sync_state() execution flow to use device links
+  * APIs.  The caller must ensure this function is called with
+- * device_links_write_lock() held.
++ * device_links_write_lock() held.  Note, if the optional queue_sync_state()
++ * callback has been assigned too, it gets called for every update to allowing a
++ * more fine grained support to be implemented on per supplier basis.
+  *
+  * This function does a get_device() to make sure the device is not freed while
+  * on this list.
+@@ -1126,6 +1128,9 @@ static void __device_links_queue_sync_state(struct device *dev,
+ 	if (dev->state_synced)
+ 		return;
+ 
++	if (dev->driver && dev->driver->queue_sync_state)
++		dev->driver->queue_sync_state(dev);
++
+ 	list_for_each_entry(link, &dev->links.consumers, s_node) {
+ 		if (!device_link_test(link, DL_FLAG_MANAGED))
+ 			continue;
+diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+index bbc67ec513ed..bc9ae1cbe03c 100644
+--- a/include/linux/device/driver.h
++++ b/include/linux/device/driver.h
+@@ -68,6 +68,12 @@ enum probe_type {
+  *		be called at late_initcall_sync level. If the device has
+  *		consumers that are never bound to a driver, this function
+  *		will never get called until they do.
++ * @queue_sync_state: Similar to the ->sync_state() callback, but called to
++ *		allow syncing device state to software state in a more fine
++ *		grained way. It is called when there is an updated state that
++ *		may be worth to consider for any of the consumers linked to
++ *		this device. If implemented, the ->sync_state() callback is
++ *		required too.
+  * @remove:	Called when the device is removed from the system to
+  *		unbind a device from this driver.
+  * @shutdown:	Called at shut-down time to quiesce the device.
+@@ -110,6 +116,7 @@ struct device_driver {
+ 
+ 	int (*probe) (struct device *dev);
+ 	void (*sync_state)(struct device *dev);
++	void (*queue_sync_state)(struct device *dev);
+ 	int (*remove) (struct device *dev);
+ 	void (*shutdown) (struct device *dev);
+ 	int (*suspend) (struct device *dev, pm_message_t state);
 -- 
 2.43.0
 
