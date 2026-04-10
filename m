@@ -1,202 +1,1740 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BC133A75B7
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:29:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 143B1283FDD;
+	Fri, 10 Apr 2026 14:38:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775831362; cv=none; b=B0mXQZImSztJhAjwQVlQFQZy+IEvWzXGLPJfgL7XGCVRgh0BkmscCTGStWW9RWMS/K+gUUs62CQFiD+IKLAptqF+UIgIiVEcbRPKmZmtHYY5bzAn0ntVNGx0OKkr+to+HmvwaKS4FMcf2ISFw3d5+j+BsiUIFogYsJguMkLnPtM=
+	t=1775831923; cv=none; b=oMM+FDFh6XyBEurwmWmOVwQ5tgjLudRI45DHAqGlRWcWiEaEANPuAH0CBZBzU1IDX2siPrDqlpaCDkHDlxSPX6r7FrUrYGEMZh4w2cDzP1b+7OvS8bI5Bw3s8fsXvytDJXHFczvyhN7hlOArtP8wLWG15NtVkYpiojEvU7zIdoE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775831362; c=relaxed/simple;
-	bh=zzGuF0UaOz4zc2Tx2JoAd7rOLNvysarfty+eCllRtWo=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=huzoofR2EsmT3SnFuBzJPtbtARcU1F2qWPDjaj3C6LCGGu7R40sJpvfeHf+y41IH1gkdsoiqfoMG8xTxDtARbYeFD1wjofBWzPIqREHeIVsr00+Qt21gyJ3Haj1IAIUV+mRazf2FNzb0/LdiZDPBQNUJxjtXWguHna7n1Oa3g0E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jhVlABOP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775831923; c=relaxed/simple;
+	bh=74TIoDvLwW9Kmx35rGksT4bMlnAGzdF07DV8NSY3Wvw=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=XgR+fT1wC1Edm+oRbPLjwi3wL543HOvMdf9bhAqV7Z9CM8H2eiFaQv/YAUh0T7xAovXImIsA6F5b7J/YuPPbWAbczqf7ZxsVc7HuQg3tmQ7CblfxnSlnH8Ie50B3z3Nodf6/YXLPHK2vMKw+zXlDSMH4Se50/IKHnerZGhPzAbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VwcK/MJh; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jhVlABOP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E22BBC2BCAF
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:29:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775831361;
-	bh=zzGuF0UaOz4zc2Tx2JoAd7rOLNvysarfty+eCllRtWo=;
-	h=From:Date:Subject:To:Cc:From;
-	b=jhVlABOPCezyF8n0iQ55R2qHNEq1h09JvntisRhL5lqWbHWL4zMObSKK+vJbYFxqA
-	 ighesgsaJ4WkTMQlrJMsYQcodszVPvNGT7ZUc5mnyAo529iNd5XULq+NRKP3nRl0Np
-	 9VyJajfLj+kVM5CfxUrZQg90gr30Snw/XLaK9FN+VCQfL5OnyUy29Hg3Bz+a3H8NLV
-	 3zenTs7qSKOTHDs49GaSPiZtHaVLfxnMNj/LBeb3z4C9WB0sh9b8wCc9x/BVZctfo4
-	 ZI9QCjAMmFY1MUdza4WoJSrPpGtiON+lmLW4VqoSqEx7MurYdzjsFnXu9gGw4ASkIf
-	 6dob/vhGieLuw==
-Received: by mail-oi1-f170.google.com with SMTP id 5614622812f47-470145d7e6fso883790b6e.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 07:29:21 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yzw4w7mfyB1fthUA0S/1a9NtgsdwSjnF7MW3t1I8n0mLMDOpdc9
-	KxLz1f+YxLdTUaKbdrwzslf0kqpK/nqqR1vvFvDv27IpHgwSzJkZUBvfdFo/yFoi1yDIaQOEmUQ
-	Fszxt2cF0IPMYXgFaLr+mabYRcNbQLVw=
-X-Received: by 2002:a05:6808:4f4f:b0:464:5f3:ed1 with SMTP id
- 5614622812f47-4789fc079d3mr1655023b6e.26.1775831361074; Fri, 10 Apr 2026
- 07:29:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VwcK/MJh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1775831920; x=1807367920;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=74TIoDvLwW9Kmx35rGksT4bMlnAGzdF07DV8NSY3Wvw=;
+  b=VwcK/MJhb3Irhg5U3B+EzvpMz3sVI142x7wqzA08axZOw8swX4cSSUiw
+   tvcH8YOMtpT4w+oWa51Jwb6+LwDlUYka3aUMju4+COe7Tab+NNpXRYAlQ
+   uv0NFOgP6dM4kDHdEqLDcgkbwu41xONrk5sPGNsWv285aM2Qn2O7i30uG
+   lWpUCqHPXqN+Wsd5C5sIo8Oa9MGIsRLOXHkkL4XhQ3gbzG1H7mPf1UBxl
+   amFXW9GAAPlvAhXo5K5Ygi3y11cGN1iM0VhlD5QmhFTeN0JJZKGtzIcZA
+   DFZMEJQnXblk2WWBzzg+AkHv27IUK1FoLl/WBb2ACkHTDwD7fdsvbvFNT
+   g==;
+X-CSE-ConnectionGUID: j9wiNVVITrS4l7Fu5QiyVg==
+X-CSE-MsgGUID: wIpQhuK5SrCHadwf1AoPyA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11755"; a="80443575"
+X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
+   d="scan'208";a="80443575"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 07:38:40 -0700
+X-CSE-ConnectionGUID: Y6NZNQSTRmKYsdGjijpoQA==
+X-CSE-MsgGUID: RcPYdj7lQayEI/y9qjVd+Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
+   d="scan'208";a="233492816"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.118])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 07:38:28 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 10 Apr 2026 17:38:24 +0300 (EEST)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 7/7] platform/x86/intel/pmc: Add Nova Lake support to
+ intel_pmc_core driver
+In-Reply-To: <20260408222144.3288928-8-xi.pardee@linux.intel.com>
+Message-ID: <38007966-cc5a-3091-dda1-a6a25745481e@linux.intel.com>
+References: <20260408222144.3288928-1-xi.pardee@linux.intel.com> <20260408222144.3288928-8-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 10 Apr 2026 16:29:09 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gi8LtGAC=E16TRqx=gQxTSz2chzt=OmrQf8etnoE_QKA@mail.gmail.com>
-X-Gm-Features: AQROBzA5nutQzLxeovgQb-ErVbEpTCH2wt-FcEYpNTQ_OD8jq__bWMOIeljqiFA
-Message-ID: <CAJZ5v0gi8LtGAC=E16TRqx=gQxTSz2chzt=OmrQf8etnoE_QKA@mail.gmail.com>
-Subject: [GIT PULL] Thermal control updates for v7.1-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 
-Hi Linus,
+On Wed, 8 Apr 2026, Xi Pardee wrote:
 
-This goes early because I will be traveling next week.
+> Add Nova Lake support in intel_pmc_core driver
+> 
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
+> ---
+>  drivers/platform/x86/intel/pmc/Makefile |    3 +-
+>  drivers/platform/x86/intel/pmc/core.c   |    2 +
+>  drivers/platform/x86/intel/pmc/core.h   |   31 +
+>  drivers/platform/x86/intel/pmc/nvl.c    | 1539 +++++++++++++++++++++++
+>  drivers/platform/x86/intel/pmc/ptl.c    |    2 +-
+>  5 files changed, 1575 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/platform/x86/intel/pmc/nvl.c
+> 
+> diff --git a/drivers/platform/x86/intel/pmc/Makefile b/drivers/platform/x86/intel/pmc/Makefile
+> index bb960c8721d77..23853e867c912 100644
+> --- a/drivers/platform/x86/intel/pmc/Makefile
+> +++ b/drivers/platform/x86/intel/pmc/Makefile
+> @@ -4,7 +4,8 @@
+>  #
+>  
+>  intel_pmc_core-y			:= core.o spt.o cnp.o icl.o \
+> -					   tgl.o adl.o mtl.o arl.o lnl.o ptl.o wcl.o
+> +					   tgl.o adl.o mtl.o arl.o \
+> +					   lnl.o ptl.o wcl.o nvl.o
+>  obj-$(CONFIG_INTEL_PMC_CORE)		+= intel_pmc_core.o
+>  intel_pmc_core_pltdrv-y			:= pltdrv.o
+>  obj-$(CONFIG_INTEL_PMC_CORE)		+= intel_pmc_core_pltdrv.o
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
+> index c84e75b19aac3..207708f4ceb94 100644
+> --- a/drivers/platform/x86/intel/pmc/core.c
+> +++ b/drivers/platform/x86/intel/pmc/core.c
+> @@ -1849,6 +1849,8 @@ static const struct x86_cpu_id intel_pmc_core_ids[] = {
+>  	X86_MATCH_VFM(INTEL_LUNARLAKE_M,	&lnl_pmc_dev),
+>  	X86_MATCH_VFM(INTEL_PANTHERLAKE_L,	&ptl_pmc_dev),
+>  	X86_MATCH_VFM(INTEL_WILDCATLAKE_L,	&wcl_pmc_dev),
+> +	X86_MATCH_VFM(INTEL_NOVALAKE,		&nvl_s_pmc_dev),
+> +	X86_MATCH_VFM(INTEL_NOVALAKE_L,		&nvl_h_pmc_dev),
+>  	{}
+>  };
+>  
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86/intel/pmc/core.h
+> index a741e4698f195..f2b4a20d2ff44 100644
+> --- a/drivers/platform/x86/intel/pmc/core.h
+> +++ b/drivers/platform/x86/intel/pmc/core.h
+> @@ -307,6 +307,29 @@ enum ppfear_regs {
+>  #define WCL_NUM_S0IX_BLOCKER			94
+>  #define WCL_BLK_REQ_OFFSET			50
+>  
+> +/* Nova Lake */
+> +#define NVL_PCDH_PPFEAR_NUM_ENTRIES		13
+> +#define NVL_PCDH_PMC_MMIO_REG_LEN		0x363c
+> +#define NVL_PCDS_PMC_MMIO_REG_LEN		0x3118
+> +#define NVL_PCHS_PMC_MMIO_REG_LEN		0x30d8
+> +#define NVL_LPM_PRI_OFFSET			0x17a4
+> +#define NVL_LPM_EN_OFFSET			0x17a0
+> +#define NVL_LPM_RESIDENCY_OFFSET		0x17a8
+> +#define NVL_LPM_LIVE_STATUS_OFFSET		0x1760
+> +#define NVL_LPM_NUM_MAPS			15
+> +#define NVL_PCDH_NUM_S0IX_BLOCKER		107
+> +#define NVL_PCDS_NUM_S0IX_BLOCKER		71
+> +#define NVL_PCHS_NUM_S0IX_BLOCKER		54
+> +#define NVL_PCDS_PMC_LTR_RESERVED		0x1bac
+> +#define NVL_PCDH_BLK_REQ_OFFSET			53
+> +#define NVL_PCDS_BLK_REQ_OFFSET			18
+> +#define NVL_PCHS_BLK_REQ_OFFSET			46
+> +#define NVL_PMT_PC_GUID				0x13000101
+> +#define NVL_PMT_DMU_GUID			0x1a000101
+> +#define NVL_LTR_BLK_OFFSET			64
+> +#define NVL_PKGC_BLK_OFFSET			4
+> +#define NVL_PMT_DMU_DIE_C6_OFFSET		25
+> +
+>  /* SSRAM PMC Device ID */
+>  /* LNL */
+>  #define PMC_DEVID_LNL_SOCM	0xa87f
+> @@ -329,6 +352,11 @@ enum ppfear_regs {
+>  #define PMC_DEVID_MTL_IOEP	0x7ecf
+>  #define PMC_DEVID_MTL_IOEM	0x7ebf
+>  
+> +/* NVL */
+> +#define PMC_DEVID_NVL_PCDH	0xd37e
+> +#define PMC_DEVID_NVL_PCDS	0xd47e
+> +#define PMC_DEVID_NVL_PCHS	0x6e27
+> +
+>  extern const char *pmc_lpm_modes[];
+>  
+>  struct pmc_bit_map {
+> @@ -558,6 +586,7 @@ extern const struct pmc_reg_map mtl_ioep_reg_map;
+>  extern const struct pmc_bit_map ptl_pcdp_clocksource_status_map[];
+>  extern const struct pmc_bit_map ptl_pcdp_vnn_req_status_3_map[];
+>  extern const struct pmc_bit_map ptl_pcdp_signal_status_map[];
+> +extern const struct pmc_bit_map ptl_pcdp_ltr_show_map[];
+>  
+>  void pmc_core_get_tgl_lpm_reqs(struct platform_device *pdev);
+>  int pmc_core_send_ltr_ignore(struct pmc_dev *pmcdev, u32 value, int ignore);
+> @@ -581,6 +610,8 @@ extern struct pmc_dev_info arl_h_pmc_dev;
+>  extern struct pmc_dev_info lnl_pmc_dev;
+>  extern struct pmc_dev_info ptl_pmc_dev;
+>  extern struct pmc_dev_info wcl_pmc_dev;
+> +extern struct pmc_dev_info nvl_s_pmc_dev;
+> +extern struct pmc_dev_info nvl_h_pmc_dev;
+>  
+>  void cnl_suspend(struct pmc_dev *pmcdev);
+>  int cnl_resume(struct pmc_dev *pmcdev);
+> diff --git a/drivers/platform/x86/intel/pmc/nvl.c b/drivers/platform/x86/intel/pmc/nvl.c
+> new file mode 100644
+> index 0000000000000..96f4244d602be
+> --- /dev/null
+> +++ b/drivers/platform/x86/intel/pmc/nvl.c
+> @@ -0,0 +1,1539 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * This file contains platform specific structure definitions
+> + * and init function used by Nova Lake PCH.
+> + *
+> + * Copyright (c) 2026, Intel Corporation.
+> + */
+> +
+> +#include <linux/pci.h>
+> +
+> +#include "core.h"
+> +
+> +/* PMC SSRAM PMT Telemetry GUIDS */
+> +#define PCDH_LPM_REQ_GUID 0x01093101
+> +#define PCHS_LPM_REQ_GUID 0x01092101
+> +#define PCDS_LPM_REQ_GUID 0x01091102
+> +
+> +/*
+> + * Die Mapping to Product.
+> + * Product PCDDie PCHDie
+> + * NVL-H   PCD-H  None
+> + * NVL-S   PCD-S  PCH-S
+> + */
+> +
+> +static const struct pmc_bit_map nvl_pcdh_pfear_map[] = {
+> +	{"PMC_PGD0",                 BIT(0)},
 
-Please pull from the tag
+Add #include for BIT().
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- thermal-7.1-rc1
+> +	{"FUSE_OSSE_PGD0",           BIT(1)},
+> +	{"SPI_PGD0",                 BIT(2)},
+> +	{"XHCI_PGD0",                BIT(3)},
+> +	{"SPA_PGD0",                 BIT(4)},
+> +	{"SPB_PGD0",                 BIT(5)},
+> +	{"MPFPW2_PGD0",              BIT(6)},
+> +	{"GBE_PGD0",                 BIT(7)},
+> +
+> +	{"SBR16B20_PGD0",            BIT(0)},
+> +	{"DBG_SBR_PGD0",             BIT(1)},
+> +	{"SBR16B7_PGD0",             BIT(2)},
+> +	{"STRC_PGD0",                BIT(3)},
+> +	{"SBR16B8_PGD0",             BIT(4)},
+> +	{"D2D_DISP_PGD1",            BIT(5)},
+> +	{"LPSS_PGD0",                BIT(6)},
+> +	{"LPC_PGD0",                 BIT(7)},
+> +
+> +	{"SMB_PGD0",                 BIT(0)},
+> +	{"ISH_PGD0",                 BIT(1)},
+> +	{"SBR16B2_PGD0",             BIT(2)},
+> +	{"NPK_PGD0",                 BIT(3)},
+> +	{"D2D_NOC_PGD1",             BIT(4)},
+> +	{"DBG_SBR16B_PGD0",          BIT(5)},
+> +	{"FUSE_PGD0",                BIT(6)},
+> +	{"SBR16B0_PGD0",             BIT(7)},
+> +
+> +	{"P2SB0_PGD0",               BIT(0)},
+> +	{"OTG_PGD0",                 BIT(1)},
+> +	{"EXI_PGD0",                 BIT(2)},
+> +	{"CSE_PGD0",                 BIT(3)},
+> +	{"CSME_KVM_PGD0",            BIT(4)},
+> +	{"CSME_PMT_PGD0",            BIT(5)},
+> +	{"CSME_CLINK_PGD0",          BIT(6)},
+> +	{"SBR16B21_PGD0",            BIT(7)},
+> +
+> +	{"CSME_USBR_PGD0",           BIT(0)},
+> +	{"SBR16B22_PGD0",            BIT(1)},
+> +	{"CSME_SMT1_PGD0",           BIT(2)},
+> +	{"MPFPW1_PGD0",              BIT(3)},
+> +	{"CSME_SMS2_PGD0",           BIT(4)},
+> +	{"CSME_SMS_PGD0",            BIT(5)},
+> +	{"CSME_RTC_PGD0",            BIT(6)},
+> +	{"CSMEPSF_PGD0",             BIT(7)},
+> +
+> +	{"D2D_NOC_PGD0",             BIT(0)},
+> +	{"ESE_PGD0",                 BIT(1)},
+> +	{"SBR16B6_PGD0",             BIT(2)},
+> +	{"P2SB1_PGD0",               BIT(3)},
+> +	{"SBR16B3_PGD0",             BIT(4)},
+> +	{"OSSE_SMT1_PGD0",           BIT(5)},
+> +	{"D2D_DISP_PGD0",            BIT(6)},
+> +	{"SNPS_USB2_A_PGD0",         BIT(7)},
+> +
+> +	{"U3FPW1_PGD0",              BIT(0)},
+> +	{"FIA_X_PGD0",               BIT(1)},
+> +	{"PSF4_PGD0",                BIT(2)},
+> +	{"CNVI_PGD0",                BIT(3)},
+> +	{"UFSX2_PGD0",               BIT(4)},
+> +	{"ENDBG_PGD0",               BIT(5)},
+> +	{"DBC_PGD0",                 BIT(6)},
+> +	{"FIA_PG_PGD0",              BIT(7)},
+> +
+> +	{"D2D_IPU_PGD0",             BIT(0)},
+> +	{"NPK_PGD1",                 BIT(1)},
+> +	{"FIACPCB_X_PGD0",           BIT(2)},
+> +	{"SBR8B4_PGD0",              BIT(3)},
+> +	{"DBG_PSF_PGD0",             BIT(4)},
+> +	{"PSF6_PGD0",                BIT(5)},
+> +	{"UFSPW1_PGD0",              BIT(6)},
+> +	{"FIA_U_PGD0",               BIT(7)},
+> +
+> +	{"PSF8_PGD0",                BIT(0)},
+> +	{"SBR16B9_PGD0",             BIT(1)},
+> +	{"PSF0_PGD0",                BIT(2)},
+> +	{"FIACPCB_U_PGD0",           BIT(3)},
+> +	{"TAM_PGD0",                 BIT(4)},
+> +	{"D2D_NOC_PGD2",             BIT(5)},
+> +	{"SBR8B2_PGD0",              BIT(6)},
+> +	{"THC0_PGD0",                BIT(7)},
+> +
+> +	{"THC1_PGD0",                BIT(0)},
+> +	{"PMC_PGD1",                 BIT(1)},
+> +	{"DISP_PGA1_PGD0",           BIT(2)},
+> +	{"TCSS_PGD0",                BIT(3)},
+> +	{"DISP_PGA_PGD0",            BIT(4)},
+> +	{"SBR16B1_PGD0",             BIT(5)},
+> +	{"SBRG_PGD0",                BIT(6)},
+> +	{"PSF5_PGD0",                BIT(7)},
+> +
+> +	{"SBR8B3_PGD0",              BIT(0)},
+> +	{"ACE_PGD0",                 BIT(1)},
+> +	{"ACE_PGD1",                 BIT(2)},
+> +	{"ACE_PGD2",                 BIT(3)},
+> +	{"ACE_PGD3",                 BIT(4)},
+> +	{"ACE_PGD4",                 BIT(5)},
+> +	{"ACE_PGD5",                 BIT(6)},
+> +	{"ACE_PGD6",                 BIT(7)},
+> +
+> +	{"ACE_PGD7",                 BIT(0)},
+> +	{"ACE_PGD8",                 BIT(1)},
+> +	{"ACE_PGD9",                 BIT(2)},
+> +	{"ACE_PGD10",                BIT(3)},
+> +	{"FIACPCB_PG_PGD0",          BIT(4)},
+> +	{"SNPS_USB2_B_PGD0",         BIT(5)},
+> +	{"OSSE_PGD0",                BIT(6)},
+> +	{"SBR8B0_PGD0",              BIT(7)},
+> +
+> +	{"SBR16B4_PGD0",             BIT(0)},
+> +	{"CSME_PTIO_PGD0",           BIT(1)},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *ext_nvl_pcdh_pfear_map[] = {
+> +	nvl_pcdh_pfear_map,
+> +	NULL
+> +};
+> +
+> +const struct pmc_bit_map nvl_pcdh_clocksource_status_map[] = {
+> +	{"AON2_OFF_STS",                 BIT(0),	1},
+> +	{"AON3_OFF_STS",                 BIT(1),	0},
+> +	{"AON4_OFF_STS",                 BIT(2),	1},
+> +	{"AON5_OFF_STS",                 BIT(3),	1},
+> +	{"AON1_OFF_STS",                 BIT(4),	0},
+> +	{"XTAL_LVM_OFF_STS",             BIT(5),	0},
+> +	{"MPFPW1_0_PLL_OFF_STS",         BIT(6),	1},
+> +	{"D2D_PLL_OFF_STS",              BIT(7),	1},
+> +	{"USB3_PLL_OFF_STS",             BIT(8),	1},
+> +	{"AON3_SPL_OFF_STS",             BIT(9),	1},
+> +	{"MPFPW2_0_PLL_OFF_STS",         BIT(12),	1},
+> +	{"XTAL_AGGR_OFF_STS",            BIT(17),	1},
+> +	{"USB2_PLL_OFF_STS",             BIT(18),	0},
+> +	{"DDI2_PLL_OFF_STS",             BIT(19),	1},
+> +	{"SE_TCSS_PLL_OFF_STS",          BIT(20),	1},
+> +	{"DDI_PLL_OFF_STS",              BIT(21),	1},
+> +	{"FILTER_PLL_OFF_STS",           BIT(22),	1},
+> +	{"ACE_PLL_OFF_STS",              BIT(24),	0},
+> +	{"FABRIC_PLL_OFF_STS",           BIT(25),	1},
+> +	{"SOC_PLL_OFF_STS",              BIT(26),	1},
+> +	{"REF_PLL_OFF_STS",              BIT(28),	1},
+> +	{"IMG_PLL_OFF_STS",              BIT(29),	1},
+> +	{"GENLOCK_FILTER_PLL_OFF_STS",   BIT(30),	1},
+> +	{"RTC_PLL_OFF_STS",              BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_power_gating_status_0_map[] = {
+> +	{"PMC_PGD0_PG_STS",              BIT(0),	0},
+> +	{"FUSE_OSSE_PGD0_PG_STS",	 BIT(1),	0},
+> +	{"ESPISPI_PGD0_PG_STS",          BIT(2),	0},
+> +	{"XHCI_PGD0_PG_STS",             BIT(3),	1},
+> +	{"SPA_PGD0_PG_STS",              BIT(4),	1},
+> +	{"SPB_PGD0_PG_STS",              BIT(5),	1},
+> +	{"MPFPW2_PGD0_PG_STS",           BIT(6),	0},
+> +	{"GBE_PGD0_PG_STS",              BIT(7),	1},
+> +	{"SBR16B20_PGD0_PG_STS",         BIT(8),	0},
+> +	{"DBG_PGD0_PG_STS",              BIT(9),	0},
+> +	{"SBR16B7_PGD0_PG_STS",          BIT(10),	0},
+> +	{"STRC_PGD0_PG_STS",             BIT(11),	0},
+> +	{"SBR16B8_PGD0_PG_STS",          BIT(12),	0},
+> +	{"D2D_DISP_PGD1_PG_STS",         BIT(13),	1},
+> +	{"LPSS_PGD0_PG_STS",             BIT(14),	1},
+> +	{"LPC_PGD0_PG_STS",              BIT(15),	0},
+> +	{"SMB_PGD0_PG_STS",              BIT(16),	0},
+> +	{"ISH_PGD0_PG_STS",              BIT(17),	0},
+> +	{"SBR16B2_PGD0_PG_STS",          BIT(18),	0},
+> +	{"NPK_PGD0_PG_STS",              BIT(19),	0},
+> +	{"D2D_NOC_PGD1_PG_STS",          BIT(20),	1},
+> +	{"DBG_SBR16B_PGD0_PG_STS",       BIT(21),	0},
+> +	{"FUSE_PGD0_PG_STS",             BIT(22),	0},
+> +	{"SBR16B0_PGD0_PG_STS",          BIT(23),	0},
+> +	{"P2SB0_PGD0_PG_STS",            BIT(24),	1},
+> +	{"XDCI_PGD0_PG_STS",             BIT(25),	1},
+> +	{"EXI_PGD0_PG_STS",              BIT(26),	0},
+> +	{"CSE_PGD0_PG_STS",              BIT(27),	1},
+> +	{"KVMCC_PGD0_PG_STS",            BIT(28),	1},
+> +	{"PMT_PGD0_PG_STS",              BIT(29),	1},
+> +	{"CLINK_PGD0_PG_STS",            BIT(30),	1},
+> +	{"SBR16B21_PGD0_PG_STS",         BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_power_gating_status_1_map[] = {
+> +	{"USBR0_PGD0_PG_STS",            BIT(0),	1},
+> +	{"SBR16B22_PGD0_PG_STS",         BIT(1),	0},
+> +	{"SMT1_PGD0_PG_STS",             BIT(2),	1},
+> +	{"MPFPW1_PGD0_PG_STS",           BIT(3),	0},
+> +	{"SMS2_PGD0_PG_STS",             BIT(4),	1},
+> +	{"SMS1_PGD0_PG_STS",             BIT(5),	1},
+> +	{"CSMERTC_PGD0_PG_STS",          BIT(6),	0},
+> +	{"CSMEPSF_PGD0_PG_STS",          BIT(7),	0},
+> +	{"D2D_NOC_PGD0_PG_STS",          BIT(8),	0},
+> +	{"ESE_PGD0_PG_STS",              BIT(9),	1},
+> +	{"SBR16B6_PGD0_PG_STS",          BIT(10),	0},
+> +	{"P2SB1_PGD0_PG_STS",            BIT(11),	1},
+> +	{"SBR16B3_PGD0_PG_STS",          BIT(12),	0},
+> +	{"OSSE_SMT1_PGD0_PG_STS",        BIT(13),	1},
+> +	{"D2D_DISP_PGD0_PG_STS",         BIT(14),	1},
+> +	{"SNPA_USB2_A_PGD0_PG_STS",      BIT(15),	0},
+> +	{"U3FPW1_PGD0_PG_STS",           BIT(16),	0},
+> +	{"FIA_X_PGD0_PG_STS",            BIT(17),	0},
+> +	{"PSF4_PGD0_PG_STS",             BIT(18),	0},
+> +	{"CNVI_PGD0_PG_STS",             BIT(19),	0},
+> +	{"UFSX2_PGD0_PG_STS",            BIT(20),	1},
+> +	{"ENDBG_PGD0_PG_STS",            BIT(21),	0},
+> +	{"DBC_PGD0_PG_STS",              BIT(22),	0},
+> +	{"FIA_PG_PGD0_PG_STS",           BIT(23),	0},
+> +	{"D2D_IPU_PGD0_PG_STS",          BIT(24),	1},
+> +	{"NPK_PGD1_PG_STS",              BIT(25),	0},
+> +	{"FIACPCB_X_PGD0_PG_STS",        BIT(26),	0},
+> +	{"SBR8B4_PGD0_PG_STS",           BIT(27),	0},
+> +	{"DBG_PSF_PGD0_PG_STS",          BIT(28),	0},
+> +	{"PSF6_PGD0_PG_STS",             BIT(29),	0},
+> +	{"UFSPW1_PGD0_PG_STS",           BIT(30),	0},
+> +	{"FIA_U_PGD0_PG_STS",            BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_power_gating_status_2_map[] = {
+> +	{"PSF8_PGD0_PG_STS",             BIT(0),	0},
+> +	{"SBR16B9_PGD0_PG_STS",          BIT(1),	0},
+> +	{"PSF0_PGD0_PG_STS",             BIT(2),	0},
+> +	{"FIACPCB_U_PGD0_PG_STS",        BIT(3),	0},
+> +	{"TAM_PGD0_PG_STS",              BIT(4),	1},
+> +	{"D2D_NOC_PGD2_PG_STS",          BIT(5),	1},
+> +	{"SBR8B2_PGD0_PG_STS",           BIT(6),	0},
+> +	{"THC0_PGD0_PG_STS",             BIT(7),	1},
+> +	{"THC1_PGD0_PG_STS",             BIT(8),	1},
+> +	{"PMC_PGD1_PG_STS",              BIT(9),	0},
+> +	{"DISP_PGA1_PGD0_PG_STS",        BIT(10),	0},
+> +	{"TCSS_PGD0_PG_STS",             BIT(11),	0},
+> +	{"DISP_PGA_PGD0_PG_STS",         BIT(12),	0},
+> +	{"SBR16B1_PGD0_PG_STS",          BIT(13),	0},
+> +	{"SBRG_PGD0_PG_STS",             BIT(14),	0},
+> +	{"PSF5_PGD0_PG_STS",             BIT(15),	0},
+> +	{"SBR8B3_PGD0_PG_STS",           BIT(16),	0},
+> +	{"ACE_PGD0_PG_STS",              BIT(17),	0},
+> +	{"ACE_PGD1_PG_STS",              BIT(18),	0},
+> +	{"ACE_PGD2_PG_STS",              BIT(19),	0},
+> +	{"ACE_PGD3_PG_STS",              BIT(20),	0},
+> +	{"ACE_PGD4_PG_STS",              BIT(21),	0},
+> +	{"ACE_PGD5_PG_STS",              BIT(22),	0},
+> +	{"ACE_PGD6_PG_STS",              BIT(23),	0},
+> +	{"ACE_PGD7_PG_STS",              BIT(24),	0},
+> +	{"ACE_PGD8_PG_STS",              BIT(25),	0},
+> +	{"ACE_PGD9_PG_STS",              BIT(26),	0},
+> +	{"ACE_PGD10_PG_STS",             BIT(27),	0},
+> +	{"FIACPCB_PG_PGD0_PG_STS",       BIT(28),	0},
+> +	{"SNPS_USB2_B_PGD0_PG_STS",      BIT(29),	0},
+> +	{"OSSE_PGD0_PG_STS",             BIT(30),	1},
+> +	{"SBR8B0_PGD0_PG_STS",           BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_power_gating_status_3_map[] = {
+> +	{"SBR16B4_PGD0_PG_STS",          BIT(0),	0},
+> +	{"PTIO_PGD0_PG_STS",             BIT(1),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_d3_status_0_map[] = {
+> +	{"LPSS_D3_STS",                  BIT(3),	1},
+> +	{"XDCI_D3_STS",                  BIT(4),	1},
+> +	{"XHCI_D3_STS",                  BIT(5),	1},
+> +	{"OSSE_D3_STS",                  BIT(6),	0},
+> +	{"SPA_D3_STS",                   BIT(12),	0},
+> +	{"SPB_D3_STS",                   BIT(13),	0},
+> +	{"ESPISPI_D3_STS",               BIT(18),	0},
+> +	{"PSTH_D3_STS",                  BIT(21),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_d3_status_1_map[] = {
+> +	{"OSSE_SMT1_D3_STS",             BIT(0),	0},
+> +	{"GBE_D3_STS",                   BIT(19),	0},
+> +	{"ITSS_D3_STS",                  BIT(23),	0},
+> +	{"CNVI_D3_STS",                  BIT(27),	0},
+> +	{"UFSX2_D3_STS",                 BIT(28),	0},
+> +	{"ESE_D3_STS",                   BIT(29),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_d3_status_2_map[] = {
+> +	{"CSMERTC_D3_STS",               BIT(1),	0},
+> +	{"CSE_D3_STS",                   BIT(4),	0},
+> +	{"KVMCC_D3_STS",                 BIT(5),	0},
+> +	{"USBR0_D3_STS",                 BIT(6),	0},
+> +	{"ISH_D3_STS",                   BIT(7),	0},
+> +	{"SMT1_D3_STS",                  BIT(8),	0},
+> +	{"SMT2_D3_STS",                  BIT(9),	0},
+> +	{"SMT3_D3_STS",                  BIT(10),	0},
+> +	{"OSSE_SMT2_D3_STS",             BIT(11),	0},
+> +	{"CLINK_D3_STS",                 BIT(14),	0},
+> +	{"PTIO_D3_STS",                  BIT(16),	0},
+> +	{"PMT_D3_STS",                   BIT(17),	0},
+> +	{"SMS1_D3_STS",                  BIT(18),	0},
+> +	{"SMS2_D3_STS",                  BIT(19),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_d3_status_3_map[] = {
+> +	{"THC0_D3_STS",                  BIT(14),	1},
+> +	{"THC1_D3_STS",                  BIT(15),	1},
+> +	{"OSSE_SMT3_D3_STS",             BIT(16),	0},
+> +	{"ACE_D3_STS",                   BIT(23),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_vnn_req_status_0_map[] = {
+> +	{"LPSS_VNN_REQ_STS",             BIT(3),	1},
+> +	{"OSSE_VNN_REQ_STS",             BIT(6),	1},
+> +	{"ESPISPI_VNN_REQ_STS",          BIT(18),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_vnn_req_status_1_map[] = {
+> +	{"OSSE_SMT1_VNN_REQ_STS",        BIT(0),	1},
+> +	{"NPK_VNN_REQ_STS",              BIT(4),	1},
+> +	{"DFXAGG_VNN_REQ_STS",           BIT(8),	0},
+> +	{"EXI_VNN_REQ_STS",              BIT(9),	1},
+> +	{"P2D_VNN_REQ_STS",              BIT(18),	1},
+> +	{"GBE_VNN_REQ_STS",              BIT(19),	1},
+> +	{"SMB_VNN_REQ_STS",              BIT(25),	1},
+> +	{"LPC_VNN_REQ_STS",              BIT(26),	0},
+> +	{"ESE_VNN_REQ_STS",              BIT(29),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_vnn_req_status_2_map[] = {
+> +	{"CSMERTC_VNN_REQ_STS",          BIT(1),	1},
+> +	{"CSE_VNN_REQ_STS",              BIT(4),	1},
+> +	{"ISH_VNN_REQ_STS",              BIT(7),	1},
+> +	{"SMT1_VNN_REQ_STS",             BIT(8),	1},
+> +	{"CLINK_VNN_REQ_STS",            BIT(14),	1},
+> +	{"SMS1_VNN_REQ_STS",             BIT(18),	1},
+> +	{"SMS2_VNN_REQ_STS",             BIT(19),	1},
+> +	{"GPIOCOM4_VNN_REQ_STS",         BIT(20),	1},
+> +	{"GPIOCOM3_VNN_REQ_STS",         BIT(21),	1},
+> +	{"DISP_SHIM_VNN_REQ_STS",        BIT(22),	1},
+> +	{"GPIOCOM1_VNN_REQ_STS",         BIT(23),	1},
+> +	{"GPIOCOM0_VNN_REQ_STS",         BIT(24),	1},
+> +	{}
+> +};
+> +
+> +const struct pmc_bit_map nvl_pcdh_vnn_req_status_3_map[] = {
+> +	{"DTS0_VNN_REQ_STS",             BIT(7),	0},
+> +	{"GPIOCOM5_VNN_REQ_STS",         BIT(11),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_vnn_misc_status_map[] = {
+> +	{"CPU_C10_REQ_STS",              BIT(0),	0},
+> +	{"TS_OFF_REQ_STS",               BIT(1),	0},
+> +	{"PNDE_MET_REQ_STS",             BIT(2),	1},
+> +	{"PG5_PMA0_REQ_STS",             BIT(3),	1},
+> +	{"FW_THROTTLE_ALLOWED_REQ_STS",  BIT(4),	0},
+> +	{"VNN_SOC_REQ_STS",              BIT(6),	1},
+> +	{"ISH_VNNAON_REQ_STS",           BIT(7),	0},
+> +	{"D2D_NOC_CFI_QACTIVE_REQ_STS",	 BIT(8),	1},
+> +	{"D2D_NOC_GPSB_QACTIVE_REQ_STS", BIT(9),	1},
+> +	{"D2D_IPU_QACTIVE_REQ_STS",      BIT(10),	1},
+> +	{"PLT_GREATER_REQ_STS",          BIT(11),	1},
+> +	{"ALL_SBR_IDLE_REQ_STS",         BIT(12),	0},
+> +	{"PMC_IDLE_FB_OCP_REQ_STS",      BIT(13),	0},
+> +	{"PM_SYNC_STATES_REQ_STS",       BIT(14),	0},
+> +	{"EA_REQ_STS",                   BIT(15),	0},
+> +	{"MPHY_CORE_OFF_REQ_STS",        BIT(16),	0},
+> +	{"BRK_EV_EN_REQ_STS",            BIT(17),	0},
+> +	{"AUTO_DEMO_EN_REQ_STS",         BIT(18),	0},
+> +	{"ITSS_CLK_SRC_REQ_STS",         BIT(19),	1},
+> +	{"ARC_IDLE_REQ_STS",             BIT(21),	0},
+> +	{"PG5_PMA1_REQ_STS",             BIT(22),	1},
+> +	{"FIA_DEEP_PM_REQ_STS",          BIT(23),	0},
+> +	{"XDCI_ATTACHED_REQ_STS",        BIT(24),	1},
+> +	{"ARC_INTERRUPT_WAKE_REQ_STS",   BIT(25),	0},
+> +	{"D2D_DISP_DDI_QACTIVE_REQ_STS", BIT(26),	1},
+> +	{"PRE_WAKE0_REQ_STS",            BIT(27),	1},
+> +	{"PRE_WAKE1_REQ_STS",            BIT(28),	1},
+> +	{"PRE_WAKE2_REQ_STS",            BIT(29),	1},
+> +	{"PG5_PMA2_GVNN",                BIT(30),	1},
+> +	{"D2D_DISP_EDP_QACTIVE_REQ_STS", BIT(31),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcdh_rsc_status_map[] = {
+> +	{"CORE",		0,		1},
+> +	{"Memory",		0,		1},
+> +	{"PRIM_D2D",		0,		1},
+> +	{"PSF0",		0,		1},
+> +	{"PSF4",		0,		1},
+> +	{"PSF6",		0,		1},
+> +	{"PSF8",		0,		1},
+> +	{"SB",			0,		1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pcdh_lpm_maps[] = {
+> +	nvl_pcdh_clocksource_status_map,
+> +	nvl_pcdh_power_gating_status_0_map,
+> +	nvl_pcdh_power_gating_status_1_map,
+> +	nvl_pcdh_power_gating_status_2_map,
+> +	nvl_pcdh_power_gating_status_3_map,
+> +	nvl_pcdh_d3_status_0_map,
+> +	nvl_pcdh_d3_status_1_map,
+> +	nvl_pcdh_d3_status_2_map,
+> +	nvl_pcdh_d3_status_3_map,
+> +	nvl_pcdh_vnn_req_status_0_map,
+> +	nvl_pcdh_vnn_req_status_1_map,
+> +	nvl_pcdh_vnn_req_status_2_map,
+> +	nvl_pcdh_vnn_req_status_3_map,
+> +	nvl_pcdh_vnn_misc_status_map,
+> +	ptl_pcdp_signal_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pcdh_blk_maps[] = {
+> +	nvl_pcdh_power_gating_status_0_map,
+> +	nvl_pcdh_power_gating_status_1_map,
+> +	nvl_pcdh_power_gating_status_2_map,
+> +	nvl_pcdh_power_gating_status_3_map,
+> +	nvl_pcdh_rsc_status_map,
+> +	nvl_pcdh_vnn_req_status_0_map,
+> +	nvl_pcdh_vnn_req_status_1_map,
+> +	nvl_pcdh_vnn_req_status_2_map,
+> +	nvl_pcdh_vnn_req_status_3_map,
+> +	nvl_pcdh_d3_status_0_map,
+> +	nvl_pcdh_d3_status_1_map,
+> +	nvl_pcdh_d3_status_2_map,
+> +	nvl_pcdh_d3_status_3_map,
+> +	nvl_pcdh_clocksource_status_map,
+> +	nvl_pcdh_vnn_misc_status_map,
+> +	ptl_pcdp_signal_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_pfear_map[] = {
+> +	{"PMC_PGD0",                 BIT(0)},
+> +	{"FUSE_OSSE_PGD0",           BIT(1)},
+> +	{"SPI_PGD0",                 BIT(2)},
+> +	{"XHCI_PGD0",                BIT(3)},
+> +	{"SPA_PGD0",                 BIT(4)},
+> +	{"SPB_PGD0",                 BIT(5)},
+> +	{"RSVD6",                    BIT(6)},
+> +	{"GBE_PGD0",                 BIT(7)},
+> +
+> +	{"RSVD8",                    BIT(0)},
+> +	{"RSVD9",                    BIT(1)},
+> +	{"SBR16B7_PGD0",             BIT(2)},
+> +	{"SBR16B21_PGD0",            BIT(3)},
+> +	{"RSVD12",                   BIT(4)},
+> +	{"D2D_DISP_PGD1",            BIT(5)},
+> +	{"LPSS_PGD0",                BIT(6)},
+> +	{"LPC_PGD0",                 BIT(7)},
+> +
+> +	{"SMB_PGD0",                 BIT(0)},
+> +	{"ISH_PGD0",                 BIT(1)},
+> +	{"SBR16B1_PGD0",             BIT(2)},
+> +	{"NPK_PGD0",                 BIT(3)},
+> +	{"D2D_NOC_PGD1",             BIT(4)},
+> +	{"DBG_SBR16B_PGD0",          BIT(5)},
+> +	{"FUSE_PGD0",                BIT(6)},
+> +	{"RSVD23",                   BIT(7)},
+> +
+> +	{"P2SB0_PGD0",               BIT(0)},
+> +	{"OTG_PGD0",                 BIT(1)},
+> +	{"EXI_PGD0",                 BIT(2)},
+> +	{"CSE_PGD0",                 BIT(3)},
+> +	{"CSME_KVM_PGD0",            BIT(4)},
+> +	{"CSME_PMT_PGD0",            BIT(5)},
+> +	{"CSME_CLINK_PGD0",          BIT(6)},
+> +	{"CSME_PTIO_PGD0",           BIT(7)},
+> +
+> +	{"CSME_USBR_PGD0",           BIT(0)},
+> +	{"SBR16B22_PGD0",            BIT(1)},
+> +	{"CSME_SMT1_PGD0",           BIT(2)},
+> +	{"P2SB1_PGD0",               BIT(3)},
+> +	{"CSME_SMS2_PGD0",           BIT(4)},
+> +	{"CSME_SMS_PGD0",            BIT(5)},
+> +	{"CSME_RTC_PGD0",            BIT(6)},
+> +	{"CSMEPSF_PGD0",             BIT(7)},
+> +
+> +	{"D2D_NOC_PGD0",             BIT(0)},
+> +	{"RSVD41",                   BIT(1)},
+> +	{"RSVD42",                   BIT(2)},
+> +	{"RSVD43",                   BIT(3)},
+> +	{"SBR16B2_PGD0",             BIT(4)},
+> +	{"OSSE_SMT1_PGD0",           BIT(5)},
+> +	{"D2D_DISP_PGD0",            BIT(6)},
+> +	{"RSVD47_PGD0",              BIT(7)},
+> +
+> +	{"RSVD48",                   BIT(0)},
+> +	{"DBG_PSF_PGD0",             BIT(1)},
+> +	{"RSVD50",                   BIT(2)},
+> +	{"CNVI_PGD0",                BIT(3)},
+> +	{"UFSX2_PGD0",               BIT(4)},
+> +	{"ENDBG_PGD0",               BIT(5)},
+> +	{"DBC_PGD0",                 BIT(6)},
+> +	{"SBR16B4_PGD0",             BIT(7)},
+> +
+> +	{"RSVD56",                   BIT(0)},
+> +	{"NPK_PGD1",                 BIT(1)},
+> +	{"RSVD58",                   BIT(2)},
+> +	{"SBR16B20_PGD0",            BIT(3)},
+> +	{"RSVD60",                   BIT(4)},
+> +	{"SBR8B20_PGD0",             BIT(5)},
+> +	{"RSVD62",                   BIT(6)},
+> +	{"FIA_U_PGD0",               BIT(7)},
+> +
+> +	{"PSF8_PGD0",                BIT(0)},
+> +	{"RSVD65",                   BIT(1)},
+> +	{"RSVD66",                   BIT(2)},
+> +	{"FIACPCB_U_PGD0",           BIT(3)},
+> +	{"TAM_PGD0",                 BIT(4)},
+> +	{"D2D_NOC_PGD2",             BIT(5)},
+> +	{"SBR8B2_PGD0",              BIT(6)},
+> +	{"THC0_PGD0",                BIT(7)},
+> +
+> +	{"THC1_PGD0",                BIT(0)},
+> +	{"PMC_PGD1",                 BIT(1)},
+> +	{"SBR16B3_PGD0",             BIT(2)},
+> +	{"TCSS_PGD0",                BIT(3)},
+> +	{"DISP_PGA_PGD0",            BIT(4)},
+> +	{"RSVD77",                   BIT(5)},
+> +	{"RSVD78",                   BIT(6)},
+> +	{"RSVD79",                   BIT(7)},
+> +
+> +	{"SBRG_PGD0",                BIT(0)},
+> +	{"RSVD81",                   BIT(1)},
+> +	{"SBR16B0_PGD0",             BIT(2)},
+> +	{"SBR8B0_PGD0",              BIT(3)},
+> +	{"PSF7_PGD0",                BIT(4)},
+> +	{"RSVD85",                   BIT(5)},
+> +	{"RSVD86",                   BIT(6)},
+> +	{"RSVD87",                   BIT(7)},
+> +
+> +	{"SBR16B6_PGD0",             BIT(0)},
+> +	{"PSD0_PGD0",                BIT(1)},
+> +	{"STRC_PGD0",                BIT(2)},
+> +	{"RSVD91",                   BIT(3)},
+> +	{"DBG_SBR_PGD0",             BIT(4)},
+> +	{"RSVD93",                   BIT(5)},
+> +	{"OSSE_PGD0",                BIT(6)},
+> +	{"DISP_PGA1_PGD0",           BIT(7)},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *ext_nvl_pcds_pfear_map[] = {
+> +	nvl_pcds_pfear_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_ltr_show_map[] = {
+> +	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
+> +	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
+> +	{"SATA",		CNP_PMC_LTR_SATA},
+> +	{"GIGABIT_ETHERNET",	CNP_PMC_LTR_GBE},
+> +	{"XHCI",		CNP_PMC_LTR_XHCI},
+> +	{"SOUTHPORT_F",		ADL_PMC_LTR_SPF},
+> +	{"ME",			CNP_PMC_LTR_ME},
+> +	{"SATA1",		CNP_PMC_LTR_EVA},
+> +	{"SOUTHPORT_C",		CNP_PMC_LTR_SPC},
+> +	{"HD_AUDIO",		CNP_PMC_LTR_AZ},
+> +	{"CNV",			CNP_PMC_LTR_CNV},
+> +	{"LPSS",		CNP_PMC_LTR_LPSS},
+> +	{"SOUTHPORT_D",		CNP_PMC_LTR_SPD},
+> +	{"SOUTHPORT_E",		CNP_PMC_LTR_SPE},
+> +	{"SATA2",		PTL_PMC_LTR_SATA2},
+> +	{"ESPI",		CNP_PMC_LTR_ESPI},
+> +	{"SCC",			CNP_PMC_LTR_SCC},
+> +	{"ISH",			CNP_PMC_LTR_ISH},
+> +	{"UFSX2",		CNP_PMC_LTR_UFSX2},
+> +	{"EMMC",		CNP_PMC_LTR_EMMC},
+> +	{"WIGIG",		ICL_PMC_LTR_WIGIG},
+> +	{"THC0",		TGL_PMC_LTR_THC0},
+> +	{"THC1",		TGL_PMC_LTR_THC1},
+> +	{"SOUTHPORT_G",		MTL_PMC_LTR_SPG},
+> +	{"RSVD",		NVL_PCDS_PMC_LTR_RESERVED},
+> +	{"IOE_PMC",		MTL_PMC_LTR_IOE_PMC},
+> +	{"DMI3",		ARL_PMC_LTR_DMI3},
+> +	{"OSSE",		LNL_PMC_LTR_OSSE},
+> +
+> +	/* Below two cannot be used for LTR_IGNORE */
+> +	{"CURRENT_PLATFORM",	PTL_PMC_LTR_CUR_PLT},
+> +	{"AGGREGATED_SYSTEM",	PTL_PMC_LTR_CUR_ASLT},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_clocksource_status_map[] = {
+> +	{"AON2_OFF_STS",                 BIT(0),	1},
+> +	{"AON3_OFF_STS",                 BIT(1),	0},
+> +	{"AON4_OFF_STS",                 BIT(2),	1},
+> +	{"AON5_OFF_STS",                 BIT(3),	1},
+> +	{"AON1_OFF_STS",                 BIT(4),	0},
+> +	{"XTAL_LVM_OFF_STS",             BIT(5),	0},
+> +	{"D2D_OFF_STS",                  BIT(8),	1},
+> +	{"AON3_SPL_OFF_STS",             BIT(9),	1},
+> +	{"XTAL_AGGR_OFF_STS",            BIT(17),	1},
+> +	{"BCLK_EXT_INJ_OFF_STS",         BIT(18),	1},
+> +	{"DDI2_PLL_OFF_STS",             BIT(19),	1},
+> +	{"SE_TCSS_PLL_OFF_STS",          BIT(20),	1},
+> +	{"DDI_PLL_OFF_STS",              BIT(21),	1},
+> +	{"FILTER_PLL_OFF_STS",           BIT(22),	1},
+> +	{"PHY_OC_EXT_INJ_OFF_STS",       BIT(23),	1},
+> +	{"ACE_PLL_OFF_STS",              BIT(24),	0},
+> +	{"FABRIC_PLL_OFF_STS",           BIT(25),	1},
+> +	{"SOC_PLL_OFF_STS",              BIT(26),	1},
+> +	{"REF_PLL_OFF_STS",              BIT(28),	1},
+> +	{"GENLOCK_FILTER_PLL_OFF_STS",   BIT(30),	1},
+> +	{"RTC_PLL_OFF_STS",              BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_power_gating_status_0_map[] = {
+> +	{"PMC_PGD0_PG_STS",              BIT(0),	0},
+> +	{"FUSE_OSSE_PGD0_PG_STS",	 BIT(1),	0},
+> +	{"ESPISPI_PGD0_PG_STS",          BIT(2),	0},
+> +	{"XHCI_PGD0_PG_STS",             BIT(3),	0},
+> +	{"SPA_PGD0_PG_STS",              BIT(4),	0},
+> +	{"SPB_PGD0_PG_STS",              BIT(5),	0},
+> +	{"RSVD_6",                       BIT(6),	0},
+> +	{"GBE_PGD0_PG_STS",              BIT(7),	0},
+> +	{"RSVD_8",                       BIT(8),	0},
+> +	{"RSVD_9",                       BIT(9),	0},
+> +	{"SBR16B7_PGD0_PG_STS",          BIT(10),	0},
+> +	{"SBR16B21_PGD0_PG_STS",         BIT(11),	0},
+> +	{"RSVD_12",                      BIT(12),	0},
+> +	{"D2D_DISP_PGD1_PG_STS",         BIT(13),	1},
+> +	{"LPSS_PGD0_PG_STS",             BIT(14),	0},
+> +	{"LPC_PGD0_PG_STS",              BIT(15),	0},
+> +	{"SMB_PGD0_PG_STS",              BIT(16),	0},
+> +	{"ISH_PGD0_PG_STS",              BIT(17),	0},
+> +	{"SBR16B1_PGD0_PG_STS",          BIT(18),	0},
+> +	{"NPK_PGD0_PG_STS",              BIT(19),	0},
+> +	{"D2D_NOC_PGD1_PG_STS",          BIT(20),	1},
+> +	{"DBG_SBR16B_PGD0_PG_STS",       BIT(21),	0},
+> +	{"FUSE_PGD0_PG_STS",             BIT(22),	0},
+> +	{"RSVD_23",                      BIT(23),	0},
+> +	{"P2SB0_PGD0_PG_STS",            BIT(24),	1},
+> +	{"XDCI_PGD0_PG_STS",             BIT(25),	0},
+> +	{"EXI_PGD0_PG_STS",              BIT(26),	0},
+> +	{"CSE_PGD0_PG_STS",              BIT(27),	1},
+> +	{"KVMCC_PGD0_PG_STS",            BIT(28),	0},
+> +	{"PMT_PGD0_PG_STS",              BIT(29),	0},
+> +	{"CLINK_PGD0_PG_STS",            BIT(30),	0},
+> +	{"PTIO_PGD0_PG_STS",             BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_power_gating_status_1_map[] = {
+> +	{"USBR0_PGD0_PG_STS",            BIT(0),	0},
+> +	{"SBR16B22_PGD0_PG_STS",         BIT(1),	0},
+> +	{"SMT1_PGD0_PG_STS",             BIT(2),	0},
+> +	{"P2SB1_PGD0_PG_STS",            BIT(3),	1},
+> +	{"SMS2_PGD0_PG_STS",             BIT(4),	0},
+> +	{"SMS1_PGD0_PG_STS",             BIT(5),	0},
+> +	{"CSMERTC_PGD0_PG_STS",          BIT(6),	0},
+> +	{"CSMEPSF_PGD0_PG_STS",          BIT(7),	0},
+> +	{"D2D_NOC_PGD0_PG_STS",          BIT(8),	0},
+> +	{"RSVD_9",                       BIT(9),	0},
+> +	{"RSVD_10",                      BIT(10),	0},
+> +	{"RSVD_11",                      BIT(11),	0},
+> +	{"SBR16B2_PGD0_PG_STS",          BIT(12),	0},
+> +	{"OSSE_SMT1_PGD0_PG_STS",        BIT(13),	1},
+> +	{"D2D_DISP_PGD0_PG_STS",         BIT(14),	1},
+> +	{"RSVD_15",                      BIT(15),	0},
+> +	{"RSVD_16",                      BIT(16),	0},
+> +	{"DBG_PSF_PGD0_PG_STS",          BIT(17),	0},
+> +	{"RSVD_18",                      BIT(18),	0},
+> +	{"CNVI_PGD0_PG_STS",             BIT(19),	0},
+> +	{"UFSX2_PGD0_PG_STS",            BIT(20),	0},
+> +	{"ENDBG_PGD0_PG_STS",            BIT(21),	0},
+> +	{"DBC_PGD0_PG_STS",              BIT(22),	0},
+> +	{"SBR16B4_PGD0_PG_STS",          BIT(23),	0},
+> +	{"RSVD_24",                      BIT(24),	0},
+> +	{"NPK_PGD1_PG_STS",              BIT(25),	0},
+> +	{"RSVD_26",                      BIT(26),	0},
+> +	{"SBR16B20_PGD0_PG_STS",         BIT(27),	0},
+> +	{"RSVD_28",                      BIT(28),	0},
+> +	{"SBR8B20_PGD0_PG_STS",          BIT(29),	0},
+> +	{"RSVD_30",                      BIT(30),	0},
+> +	{"FIA_U_PGD0_PG_STS",            BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_power_gating_status_2_map[] = {
+> +	{"PSF8_PGD0_PG_STS",             BIT(0),	0},
+> +	{"RSVD_1",                       BIT(1),	0},
+> +	{"RSVD_2",                       BIT(2),	0},
+> +	{"FIACPCB_U_PGD0_PG_STS",        BIT(3),	0},
+> +	{"TAM_PGD0_PG_STS",              BIT(4),	1},
+> +	{"D2D_NOC_PGD2_PG_STS",          BIT(5),	1},
+> +	{"SBR8B2_PGD0_PG_STS",           BIT(6),	0},
+> +	{"THC0_PGD0_PG_STS",             BIT(7),	0},
+> +	{"THC1_PGD0_PG_STS",             BIT(8),	0},
+> +	{"PMC_PGD1_PG_STS",              BIT(9),	0},
+> +	{"SBR16B3_PGD0_PG_STS",          BIT(10),	0},
+> +	{"TCSS_PGD0_PG_STS",             BIT(11),	0},
+> +	{"DISP_PGA_PGD0_PG_STS",         BIT(12),	0},
+> +	{"RSVD_13",                      BIT(13),	0},
+> +	{"RSVD_14",                      BIT(14),	0},
+> +	{"RSVD_15",                      BIT(15),	0},
+> +	{"SBRG_PGD0_PG_STS",             BIT(16),	0},
+> +	{"RSVD_17",                      BIT(17),	0},
+> +	{"SBR16B0_PGD0_PG_STS",          BIT(18),	0},
+> +	{"SBR8B0_PGD0_PG_STS",           BIT(19),	0},
+> +	{"PSF7_PGD0_PG_STS",             BIT(20),	0},
+> +	{"RSVD_21",                      BIT(21),	0},
+> +	{"RSVD_22",                      BIT(22),	0},
+> +	{"RSVD_23",                      BIT(23),	0},
+> +	{"SBR16B6_PGD0_PG_STS",          BIT(24),	0},
+> +	{"PSF0_PGD0_PG_STS",             BIT(25),	0},
+> +	{"STRC_PGD0_PG_STS",             BIT(26),	0},
+> +	{"RSVD_27",                      BIT(27),	0},
+> +	{"DBG_SBR_PGD0_PG_STS",          BIT(28),	0},
+> +	{"RSVD_29",                      BIT(29),	0},
+> +	{"OSSE_PGD0_PG_STS",             BIT(30),	1},
+> +	{"DISP_PGA1_PGD0_PG_STS",        BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_d3_status_0_map[] = {
+> +	{"LPSS_D3_STS",                  BIT(3),	1},
+> +	{"XDCI_D3_STS",                  BIT(4),	1},
+> +	{"XHCI_D3_STS",                  BIT(5),	1},
+> +	{"SPA_D3_STS",                   BIT(12),	0},
+> +	{"SPB_D3_STS",                   BIT(13),	0},
+> +	{"ESPISPI_D3_STS",               BIT(18),	0},
+> +	{"PSTH_D3_STS",                  BIT(21),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_d3_status_1_map[] = {
+> +	{"OSSE_D3_STS",                  BIT(14),	0},
+> +	{"GBE_D3_STS",                   BIT(19),	0},
+> +	{"ITSS_D3_STS",                  BIT(23),	0},
+> +	{"CNVI_D3_STS",                  BIT(27),	0},
+> +	{"UFSX2_D3_STS",                 BIT(28),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_d3_status_2_map[] = {
+> +	{"CSMERTC_D3_STS",               BIT(1),	0},
+> +	{"CSE_D3_STS",                   BIT(4),	0},
+> +	{"KVMCC_D3_STS",                 BIT(5),	0},
+> +	{"USBR0_D3_STS",                 BIT(6),	0},
+> +	{"ISH_D3_STS",                   BIT(7),	0},
+> +	{"SMT1_D3_STS",                  BIT(8),	0},
+> +	{"SMT2_D3_STS",                  BIT(9),	0},
+> +	{"SMT3_D3_STS",                  BIT(10),	0},
+> +	{"OSSE_SMT1_D3_STS",             BIT(12),	0},
+> +	{"CLINK_D3_STS",                 BIT(14),	0},
+> +	{"PTIO_D3_STS",                  BIT(16),	0},
+> +	{"PMT_D3_STS",                   BIT(17),	0},
+> +	{"SMS1_D3_STS",                  BIT(18),	0},
+> +	{"SMS2_D3_STS",                  BIT(19),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_d3_status_3_map[] = {
+> +	{"OSSE_SMT2_D3_STS",             BIT(0),	0},
+> +	{"THC0_D3_STS",                  BIT(14),	1},
+> +	{"THC1_D3_STS",                  BIT(15),	1},
+> +	{"OSSE_SMT3_D3_STS",             BIT(19),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_vnn_req_status_0_map[] = {
+> +	{"LPSS_VNN_REQ_STS",             BIT(3),	0},
+> +	{"ESPISPI_VNN_REQ_STS",          BIT(18),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_vnn_req_status_1_map[] = {
+> +	{"NPK_VNN_REQ_STS",              BIT(4),	1},
+> +	{"DFXAGG_VNN_REQ_STS",           BIT(8),	0},
+> +	{"EXI_VNN_REQ_STS",              BIT(9),	1},
+> +	{"OSSE_VNN_REQ_STS",             BIT(14),	1},
+> +	{"P2D_VNN_REQ_STS",              BIT(18),	1},
+> +	{"GBE_VNN_REQ_STS",              BIT(19),	0},
+> +	{"SMB_VNN_REQ_STS",              BIT(25),	1},
+> +	{"LPC_VNN_REQ_STS",              BIT(26),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_vnn_req_status_2_map[] = {
+> +	{"CSMERTC_VNN_REQ_STS",          BIT(1),	0},
+> +	{"CSE_VNN_REQ_STS",              BIT(4),	1},
+> +	{"ISH_VNN_REQ_STS",              BIT(7),	0},
+> +	{"SMT1_VNN_REQ_STS",             BIT(8),	0},
+> +	{"OSSE_SMT1_VNN_REQ_STS",        BIT(12),	1},
+> +	{"CLINK_VNN_REQ_STS",            BIT(14),	0},
+> +	{"SMS1_VNN_REQ_STS",             BIT(18),	0},
+> +	{"SMS2_VNN_REQ_STS",             BIT(19),	0},
+> +	{"GPIOCOM4_VNN_REQ_STS",         BIT(20),	0},
+> +	{"GPIOCOM3_VNN_REQ_STS",         BIT(21),	1},
+> +	{"GPIOCOM1_VNN_REQ_STS",         BIT(23),	1},
+> +	{"GPIOCOM0_VNN_REQ_STS",         BIT(24),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_vnn_req_status_3_map[] = {
+> +	{"DISP_SHIM_VNN_REQ_STS",        BIT(4),	1},
+> +	{"DTS0_VNN_REQ_STS",             BIT(7),	0},
+> +	{"GPIOCOM5_VNN_REQ_STS",         BIT(11),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_vnn_misc_status_map[] = {
+> +	{"CPU_C10_REQ_STS",              BIT(0),	0},
+> +	{"TS_OFF_REQ_STS",               BIT(1),	0},
+> +	{"PNDE_MET_REQ_STS",             BIT(2),	1},
+> +	{"PG5_PMA0_REQ_STS",             BIT(3),	1},
+> +	{"FW_THROTTLE_ALLOWED_REQ_STS",  BIT(4),	0},
+> +	{"VNN_SOC_REQ_STS",              BIT(6),	1},
+> +	{"ISH_VNNAON_REQ_STS",           BIT(7),	0},
+> +	{"D2D_NOC_CFI_QACTIVE_REQ_STS",	 BIT(8),	1},
+> +	{"D2D_NOC_GPSB_QACTIVE_REQ_STS", BIT(9),	1},
+> +	{"PLT_GREATER_REQ_STS",          BIT(11),	1},
+> +	{"ALL_SBR_IDLE_REQ_STS",         BIT(12),	0},
+> +	{"PMC_IDLE_FB_OCP_REQ_STS",      BIT(13),	0},
+> +	{"PM_SYNC_STATES_REQ_STS",       BIT(14),	0},
+> +	{"EA_REQ_STS",                   BIT(15),	0},
+> +	{"MPHY_CORE_OFF_REQ_STS",        BIT(16),	0},
+> +	{"BRK_EV_EN_REQ_STS",            BIT(17),	0},
+> +	{"AUTO_DEMO_EN_REQ_STS",         BIT(18),	0},
+> +	{"ITSS_CLK_SRC_REQ_STS",         BIT(19),	1},
+> +	{"ARC_IDLE_REQ_STS",             BIT(21),	0},
+> +	{"PG5_PMA1_REQ_STS",             BIT(22),	1},
+> +	{"DG5_PMA0_REQ_STS",             BIT(23),	1},
+> +	{"ARC_INTERRUPT_WAKE_REQ_STS",   BIT(25),	0},
+> +	{"D2D_DISP_DDI_QACTIVE_REQ_STS", BIT(26),	1},
+> +	{"PRE_WAKE0_REQ_STS",            BIT(27),	1},
+> +	{"PRE_WAKE1_REQ_STS",            BIT(28),	1},
+> +	{"PRE_WAKE2_REQ_STS",            BIT(29),	1},
+> +	{"D2D_DISP_EDP_QACTIVE_REQ_STS", BIT(31),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_rsc_status_map[] = {
+> +	{"CORE",		0,		1},
+> +	{"Memory",		0,		1},
+> +	{"PRIM_D2D",		0,		1},
+> +	{"PSF0",		0,		1},
+> +	{"SB",			0,		1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pcds_signal_status_map[] = {
+> +	{"LSX_Wake0_STS",		 BIT(0),	0},
+> +	{"LSX_Wake1_STS",		 BIT(1),	0},
+> +	{"LSX_Wake2_STS",		 BIT(2),	0},
+> +	{"LSX_Wake3_STS",		 BIT(3),	0},
+> +	{"LSX_Wake4_STS",		 BIT(4),	0},
+> +	{"LSX_Wake5_STS",		 BIT(5),	0},
+> +	{"LSX_Wake6_STS",		 BIT(6),	0},
+> +	{"LSX_Wake7_STS",		 BIT(7),	0},
+> +	{"LPSS_Wake0_STS",		 BIT(8),	1},
+> +	{"LPSS_Wake1_STS",		 BIT(9),	1},
+> +	{"Int_Timer_SS_Wake0_STS",	 BIT(10),	1},
+> +	{"Int_Timer_SS_Wake1_STS",	 BIT(11),	1},
+> +	{"Int_Timer_SS_Wake2_STS",	 BIT(12),	1},
+> +	{"Int_Timer_SS_Wake3_STS",	 BIT(13),	1},
+> +	{"Int_Timer_SS_Wake4_STS",	 BIT(14),	1},
+> +	{"Int_Timer_SS_Wake5_STS",	 BIT(15),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pcds_lpm_maps[] = {
+> +	nvl_pcds_clocksource_status_map,
+> +	nvl_pcds_power_gating_status_0_map,
+> +	nvl_pcds_power_gating_status_1_map,
+> +	nvl_pcds_power_gating_status_2_map,
+> +	nvl_pcds_d3_status_0_map,
+> +	nvl_pcds_d3_status_1_map,
+> +	nvl_pcds_d3_status_2_map,
+> +	nvl_pcds_d3_status_3_map,
+> +	nvl_pcds_vnn_req_status_0_map,
+> +	nvl_pcds_vnn_req_status_1_map,
+> +	nvl_pcds_vnn_req_status_2_map,
+> +	nvl_pcds_vnn_req_status_3_map,
+> +	nvl_pcds_vnn_misc_status_map,
+> +	nvl_pcds_signal_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pcds_blk_maps[] = {
+> +	nvl_pcds_power_gating_status_0_map,
+> +	nvl_pcds_power_gating_status_1_map,
+> +	nvl_pcds_power_gating_status_2_map,
+> +	nvl_pcds_rsc_status_map,
+> +	nvl_pcds_vnn_req_status_0_map,
+> +	nvl_pcds_vnn_req_status_1_map,
+> +	nvl_pcds_vnn_req_status_2_map,
+> +	nvl_pcds_vnn_req_status_3_map,
+> +	nvl_pcds_d3_status_0_map,
+> +	nvl_pcds_d3_status_1_map,
+> +	nvl_pcds_d3_status_2_map,
+> +	nvl_pcds_d3_status_3_map,
+> +	nvl_pcds_clocksource_status_map,
+> +	nvl_pcds_vnn_misc_status_map,
+> +	nvl_pcds_signal_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_pfear_map[] = {
+> +	{"PMC_PGD0",                 BIT(0)},
+> +	{"FIA_D_PGD0",               BIT(1)},
+> +	{"SPI_PGD0",                 BIT(2)},
+> +	{"XHCI_PGD0",                BIT(3)},
+> +	{"SPA_PGD0",                 BIT(4)},
+> +	{"SPB_PGD0",                 BIT(5)},
+> +	{"MPFPW2_PGD0",              BIT(6)},
+> +	{"GBE_PGD0",                 BIT(7)},
+> +
+> +	{"RSVD8",                    BIT(0)},
+> +	{"PSF3_PGD0",                BIT(1)},
+> +	{"SBR5_PGD0",                BIT(2)},
+> +	{"SBR0_PGD0",                BIT(3)},
+> +	{"RSVD12",                   BIT(4)},
+> +	{"D2D_DISP_PGD1",            BIT(5)},
+> +	{"LPSS_PGD0",                BIT(6)},
+> +	{"LPC_PGD0",                 BIT(7)},
+> +
+> +	{"SMB_PGD0",                 BIT(0)},
+> +	{"ISH_PGD0",                 BIT(1)},
+> +	{"P2SB_PGD0",                BIT(2)},
+> +	{"NPK_PGD0",                 BIT(3)},
+> +	{"D2D_NOC_PGD1",             BIT(4)},
+> +	{"EAH_PGD0",                 BIT(5)},
+> +	{"FUSE_PGD0",                BIT(6)},
+> +	{"SBR8_PGD0",                BIT(7)},
+> +
+> +	{"PSF7_PGD0",                BIT(0)},
+> +	{"OTG_PGD0",                 BIT(1)},
+> +	{"EXI_PGD0",                 BIT(2)},
+> +	{"CSE_PGD0",                 BIT(3)},
+> +	{"CSME_KVM_PGD0",            BIT(4)},
+> +	{"CSME_PMT_PGD0",            BIT(5)},
+> +	{"CSME_CLINK_PGD0",          BIT(6)},
+> +	{"CSME_PTIO_PGD0",           BIT(7)},
+> +
+> +	{"CSME_USBR_PGD0",           BIT(0)},
+> +	{"SBR1_PGD0",                BIT(1)},
+> +	{"CSME_SMT1_PGD0",           BIT(2)},
+> +	{"MPFPW1_PGD0",              BIT(3)},
+> +	{"CSME_SMS2_PGD0",           BIT(4)},
+> +	{"CSME_SMS_PGD0",            BIT(5)},
+> +	{"CSME_RTC_PGD0",            BIT(6)},
+> +	{"CSMEPSF_PGD0",             BIT(7)},
+> +
+> +	{"D2D_NOC_PGD0",             BIT(0)},
+> +	{"ESE_PGD0",                 BIT(1)},
+> +	{"SBR2_PGD0",                BIT(2)},
+> +	{"SBR3_PGD0",                BIT(3)},
+> +	{"SBR4_PGD0",                BIT(4)},
+> +	{"RSVD45",                   BIT(5)},
+> +	{"D2D_DISP_PGD0",            BIT(6)},
+> +	{"PSF1_PGD0",                BIT(7)},
+> +
+> +	{"U3FPW1_PGD0",              BIT(0)},
+> +	{"DMI3FPW_PGD0",             BIT(1)},
+> +	{"PSF4_PGD0",                BIT(2)},
+> +	{"CNVI_PGD0",                BIT(3)},
+> +	{"RSVD52",                   BIT(4)},
+> +	{"ENDBG_PGD0",               BIT(5)},
+> +	{"DBC_PGD0",                 BIT(6)},
+> +	{"SMT4_PGD0",                BIT(7)},
+> +
+> +	{"RSVD56",                   BIT(0)},
+> +	{"NPK_PGD1",                 BIT(1)},
+> +	{"RSVD58",                   BIT(2)},
+> +	{"DMI3_PGD0",                BIT(3)},
+> +	{"RSVD60",                   BIT(4)},
+> +	{"FIACPCB_D_PGD0",           BIT(5)},
+> +	{"RSVD62",                   BIT(6)},
+> +	{"FIA_U_PGD0",               BIT(7)},
+> +
+> +	{"FIACPCB_PGS_PGD0",         BIT(0)},
+> +	{"FIA_PGS_PGD0",             BIT(1)},
+> +	{"RSVD66",                   BIT(2)},
+> +	{"FIACPCB_U_PGD0",           BIT(3)},
+> +	{"TAM_PGD0",                 BIT(4)},
+> +	{"D2D_NOC_PGD2",             BIT(5)},
+> +	{"PSF2_PGD0",                BIT(6)},
+> +	{"THC0_PGD0",                BIT(7)},
+> +
+> +	{"THC1_PGD0",                BIT(0)},
+> +	{"PMC_PGD1",                 BIT(1)},
+> +	{"SBR9_PGD0",                BIT(2)},
+> +	{"U3FPW2_PGD0",              BIT(3)},
+> +	{"RSVD76",                   BIT(4)},
+> +	{"DBG_PSF_PGD0",             BIT(5)},
+> +	{"DBG_SBR_PGD0",             BIT(6)},
+> +	{"SBR6_PGD0",                BIT(7)},
+> +
+> +	{"SPC_PGD0",                 BIT(0)},
+> +	{"ACE_PGD0",                 BIT(1)},
+> +	{"ACE_PGD1",                 BIT(2)},
+> +	{"ACE_PGD2",                 BIT(3)},
+> +	{"ACE_PGD3",                 BIT(4)},
+> +	{"ACE_PGD4",                 BIT(5)},
+> +	{"ACE_PGD5",                 BIT(6)},
+> +	{"ACE_PGD6",                 BIT(7)},
+> +
+> +	{"ACE_PGD7",                 BIT(0)},
+> +	{"ACE_PGD8",                 BIT(1)},
+> +	{"ACE_PGD9",                 BIT(2)},
+> +	{"ACE_PGD10",                BIT(3)},
+> +	{"U3FPW3_PGD0",              BIT(4)},
+> +	{"SBR7_PGD0",                BIT(5)},
+> +	{"OSSE_PGD0",                BIT(6)},
+> +	{"ST_PGD0",                  BIT(7)},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *ext_nvl_pchs_pfear_map[] = {
+> +	nvl_pchs_pfear_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_clocksource_status_map[] = {
+> +	{"AON2_OFF_STS",                 BIT(0),	1},
+> +	{"AON3_OFF_STS",                 BIT(1),	0},
+> +	{"AON4_OFF_STS",                 BIT(2),	0},
+> +	{"AON2_SPL_OFF_STS",             BIT(3),	0},
+> +	{"AONL_OFF_STS",                 BIT(4),	0},
+> +	{"XTAL_LVM_OFF_STS",             BIT(5),	0},
+> +	{"AON5_OFF_STS",                 BIT(6),	0},
+> +	{"USB3_PLL_OFF_STS",             BIT(8),	1},
+> +	{"MAIN_CRO_OFF_STS",             BIT(11),	0},
+> +	{"MAIN_DIVIDER_OFF_STS",         BIT(12),	1},
+> +	{"REF_PLL_NON_OC_OFF_STS",       BIT(13),	1},
+> +	{"DMI_PLL_OFF_STS",              BIT(14),	1},
+> +	{"PHY_EXT_INJ_OFF_STS",          BIT(15),	1},
+> +	{"AON6_MCRO_OFF_STS",            BIT(16),	0},
+> +	{"XTAL_AGGR_OFF_STS",            BIT(17),	0},
+> +	{"USB2_PLL_OFF_STS",             BIT(18),	1},
+> +	{"GBE_PLL_OFF_STS",              BIT(21),	1},
+> +	{"SATA_PLL_OFF_STS",             BIT(22),	1},
+> +	{"PCIE0_PLL_OFF_STS",            BIT(23),	1},
+> +	{"PCIE1_PLL_OFF_STS",            BIT(24),	1},
+> +	{"FABRIC_PLL_OFF_STS",           BIT(25),	1},
+> +	{"PCIE2_PLL_OFF_STS",            BIT(26),	1},
+> +	{"REF_PLL_OFF_STS",              BIT(28),	1},
+> +	{"REF38P4_PLL_OFF_STS",          BIT(31),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_power_gating_status_0_map[] = {
+> +	{"PMC_PGD0_PG_STS",              BIT(0),	0},
+> +	{"FIA_D_PGD0_PG_STS",            BIT(1),	0},
+> +	{"ESPISPI_PGD0_PG_STS",          BIT(2),	0},
+> +	{"XHCI_PGD0_PG_STS",             BIT(3),	0},
+> +	{"SPA_PGD0_PG_STS",              BIT(4),	1},
+> +	{"SPB_PGD0_PG_STS",              BIT(5),	1},
+> +	{"MPFPW2_PGD0_PG_STS",           BIT(6),	0},
+> +	{"GBE_PGD0_PG_STS",              BIT(7),	1},
+> +	{"RSVD_8",                       BIT(8),	0},
+> +	{"PSF3_PGD0_PG_STS",             BIT(9),	0},
+> +	{"SBR5_PGD0_PG_STS",             BIT(10),	0},
+> +	{"SBR0_PGD0_PG_STS",             BIT(11),	0},
+> +	{"RSVD_12",                      BIT(12),	0},
+> +	{"D2D_DISP_PGD1_PG_STS",         BIT(13),	0},
+> +	{"LPSS_PGD0_PG_STS",             BIT(14),	1},
+> +	{"LPC_PGD0_PG_STS",              BIT(15),	0},
+> +	{"SMB_PGD0_PG_STS",              BIT(16),	0},
+> +	{"ISH_PGD0_PG_STS",              BIT(17),	0},
+> +	{"P2S_PGD0_PG_STS",              BIT(18),	0},
+> +	{"NPK_PGD0_PG_STS",              BIT(19),	0},
+> +	{"D2D_NOC_PGD1_PG_STS",          BIT(20),	0},
+> +	{"EAH_PGD0_PG_STS",              BIT(21),	0},
+> +	{"FUSE_PGD0_PG_STS",             BIT(22),	0},
+> +	{"SBR8_PGD0_PG_STS",             BIT(23),	0},
+> +	{"PSF7_PGD0_PG_STS",             BIT(24),	0},
+> +	{"XDCI_PGD0_PG_STS",             BIT(25),	1},
+> +	{"EXI_PGD0_PG_STS",              BIT(26),	0},
+> +	{"CSE_PGD0_PG_STS",              BIT(27),	1},
+> +	{"KVMCC_PGD0_PG_STS",            BIT(28),	1},
+> +	{"PMT_PGD0_PG_STS",              BIT(29),	1},
+> +	{"CLINK_PGD0_PG_STS",            BIT(30),	1},
+> +	{"PTIO_PGD0_PG_STS",             BIT(31),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_power_gating_status_1_map[] = {
+> +	{"USBR0_PGD0_PG_STS",            BIT(0),	1},
+> +	{"SBR1_PGD0_PG_STS",             BIT(1),	0},
+> +	{"SMT1_PGD0_PG_STS",             BIT(2),	1},
+> +	{"MPFPW1_PGD0_PG_STS",           BIT(3),	0},
+> +	{"SMS2_PGD0_PG_STS",             BIT(4),	1},
+> +	{"SMS1_PGD0_PG_STS",             BIT(5),	1},
+> +	{"CSMERTC_PGD0_PG_STS",          BIT(6),	0},
+> +	{"CSMEPSF_PGD0_PG_STS",          BIT(7),	0},
+> +	{"D2D_NOC_PGD0_PG_STS",          BIT(8),	0},
+> +	{"ESE_PGD0_PG_STS",              BIT(9),	1},
+> +	{"SBR2_PGD0_PG_STS",             BIT(10),	0},
+> +	{"SBR3_PGD0_PG_STS",             BIT(11),	0},
+> +	{"SBR4_PGD0_PG_STS",             BIT(12),	0},
+> +	{"RSVD_13",                      BIT(13),	0},
+> +	{"D2D_DISP_PGD0_PG_STS",         BIT(14),	0},
+> +	{"PSF1_PGD0_PG_STS",             BIT(15),	0},
+> +	{"U3FPW1_PGD0_PG_STS",           BIT(16),	0},
+> +	{"DMI3FPW_PGD0_PG_STS",          BIT(17),	0},
+> +	{"PSF4_PGD0_PG_STS",             BIT(18),	0},
+> +	{"CNVI_PGD0_PG_STS",             BIT(19),	0},
+> +	{"RSVD_20",                      BIT(20),	0},
+> +	{"ENDBG_PGD0_PG_STS",            BIT(21),	0},
+> +	{"DBC_PGD0_PG_STS",              BIT(22),	0},
+> +	{"SMT4_PGD0_PG_STS",             BIT(23),	1},
+> +	{"RSVD_24",                      BIT(24),	0},
+> +	{"NPK_PGD1_PG_STS",              BIT(25),	0},
+> +	{"RSVD_26",                      BIT(26),	0},
+> +	{"DMI3_PGD0_PG_STS",             BIT(27),	1},
+> +	{"RSVD_28",                      BIT(28),	0},
+> +	{"FIACPCB_D_PGD0_PG_STS",        BIT(29),	0},
+> +	{"RSVD_30",                      BIT(30),	0},
+> +	{"FIA_U_PGD0_PG_STS",            BIT(31),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_power_gating_status_2_map[] = {
+> +	{"FIACPCB_PGS_PGD0_PG_STS",      BIT(0),	0},
+> +	{"FIA_PGS_PGD0_PG_STS",          BIT(1),	0},
+> +	{"RSVD_2",                       BIT(2),	0},
+> +	{"FIACPCB_U_PGD0_PG_STS",        BIT(3),	0},
+> +	{"TAM_PGD0_PG_STS",              BIT(4),	0},
+> +	{"D2D_NOC_PGD2_PG_STS",          BIT(5),	0},
+> +	{"PSF2_PGD0_PG_STS",             BIT(6),	0},
+> +	{"THC0_PGD0_PG_STS",             BIT(7),	1},
+> +	{"THC1_PGD0_PG_STS",             BIT(8),	1},
+> +	{"PMC_PGD1_PG_STS",              BIT(9),	0},
+> +	{"SBR9_PGA0_PGD0_PG_STS",        BIT(10),	0},
+> +	{"U3FPW2_PGD0_PG_STS",           BIT(11),	0},
+> +	{"RSVD_12",                      BIT(12),	0},
+> +	{"DBG_PSF_PGD0_PG_STS",          BIT(13),	0},
+> +	{"DBG_SBR_PGD0_PG_STS",          BIT(14),	0},
+> +	{"SBR6_PGD0_PG_STS",             BIT(15),	0},
+> +	{"SPC_PGD0_PG_STS",              BIT(16),	1},
+> +	{"ACE_PGD0_PG_STS",              BIT(17),	0},
+> +	{"ACE_PGD1_PG_STS",              BIT(18),	0},
+> +	{"ACE_PGD2_PG_STS",              BIT(19),	0},
+> +	{"ACE_PGD3_PG_STS",              BIT(20),	0},
+> +	{"ACE_PGD4_PG_STS",              BIT(21),	0},
+> +	{"ACE_PGD5_PG_STS",              BIT(22),	0},
+> +	{"ACE_PGD6_PG_STS",              BIT(23),	0},
+> +	{"ACE_PGD7_PG_STS",              BIT(24),	0},
+> +	{"ACE_PGD8_PG_STS",              BIT(25),	0},
+> +	{"ACE_PGD9_PG_STS",              BIT(26),	0},
+> +	{"ACE_PGD10_PG_STS",             BIT(27),	0},
+> +	{"U3FPW3_PGD0_PG_STS",           BIT(28),	0},
+> +	{"SBR7_PGD0_PG_STS",             BIT(29),	0},
+> +	{"OSSE_PGD0_PG_STS",             BIT(30),	0},
+> +	{"SATA_PGD0_PG_STS",             BIT(31),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_d3_status_0_map[] = {
+> +	{"LPSS_D3_STS",                  BIT(3),	1},
+> +	{"XDCI_D3_STS",                  BIT(4),	1},
+> +	{"XHCI_D3_STS",                  BIT(5),	0},
+> +	{"SPA_D3_STS",                   BIT(12),	0},
+> +	{"SPB_D3_STS",                   BIT(13),	0},
+> +	{"SPC_D3_STS",                   BIT(14),	0},
+> +	{"ESPISPI_D3_STS",               BIT(18),	0},
+> +	{"SATA_D3_STS",                  BIT(20),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_d3_status_1_map[] = {
+> +	{"OSSE_D3_STS",                  BIT(6),	0},
+> +	{"GBE_D3_STS",                   BIT(19),	0},
+> +	{"ITSS_D3_STS",                  BIT(23),	0},
+> +	{"P2S_D3_STS",                   BIT(24),	0},
+> +	{"CNVI_D3_STS",                  BIT(27),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_d3_status_2_map[] = {
+> +	{"CSMERTC_D3_STS",               BIT(1),	0},
+> +	{"CSE_D3_STS",                   BIT(4),	0},
+> +	{"KVMCC_D3_STS",                 BIT(5),	0},
+> +	{"USBR0_D3_STS",                 BIT(6),	0},
+> +	{"ISH_D3_STS",                   BIT(7),	0},
+> +	{"SMT1_D3_STS",                  BIT(8),	0},
+> +	{"SMT2_D3_STS",                  BIT(9),	0},
+> +	{"SMT3_D3_STS",                  BIT(10),	0},
+> +	{"SMT4_D3_STS",                  BIT(11),	0},
+> +	{"SMT5_D3_STS",                  BIT(12),	0},
+> +	{"SMT6_D3_STS",                  BIT(13),	0},
+> +	{"CLINK_D3_STS",                 BIT(14),	0},
+> +	{"PTIO_D3_STS",                  BIT(16),	0},
+> +	{"PMT_D3_STS",                   BIT(17),	0},
+> +	{"SMS1_D3_STS",                  BIT(18),	0},
+> +	{"SMS2_D3_STS",                  BIT(19),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_d3_status_3_map[] = {
+> +	{"THC0_D3_STS",                  BIT(14),	0},
+> +	{"THC1_D3_STS",                  BIT(15),	0},
+> +	{"ACE_D3_STS",                   BIT(23),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_vnn_req_status_1_map[] = {
+> +	{"NPK_VNN_REQ_STS",              BIT(4),	0},
+> +	{"OSSE_VNN_REQ_STS",             BIT(6),	0},
+> +	{"DFXAGG_VNN_REQ_STS",           BIT(8),	0},
+> +	{"EXI_VNN_REQ_STS",              BIT(9),	0},
+> +	{"GBE_VNN_REQ_STS",              BIT(19),	0},
+> +	{"SMB_VNN_REQ_STS",              BIT(25),	0},
+> +	{"LPC_VNN_REQ_STS",              BIT(26),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_vnn_req_status_2_map[] = {
+> +	{"CSMERTC_VNN_REQ_STS",          BIT(1),	0},
+> +	{"CSE_VNN_REQ_STS",              BIT(4),	0},
+> +	{"ISH_VNN_REQ_STS",              BIT(7),	0},
+> +	{"SMT1_VNN_REQ_STS",             BIT(8),	0},
+> +	{"SMT4_VNN_REQ_STS",             BIT(11),	0},
+> +	{"CLINK_VNN_REQ_STS",            BIT(14),	0},
+> +	{"SMS1_VNN_REQ_STS",             BIT(18),	0},
+> +	{"SMS2_VNN_REQ_STS",             BIT(19),	0},
+> +	{"GPIOCOM4_VNN_REQ_STS",         BIT(20),	0},
+> +	{"GPIOCOM3_VNN_REQ_STS",         BIT(21),	0},
+> +	{"GPIOCOM2_VNN_REQ_STS",         BIT(22),	0},
+> +	{"GPIOCOM1_VNN_REQ_STS",         BIT(23),	0},
+> +	{"GPIOCOM0_VNN_REQ_STS",         BIT(24),	0},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_vnn_misc_status_map[] = {
+> +	{"CPU_C10_REQ_STS",              BIT(0),	0},
+> +	{"TS_OFF_REQ_STS",               BIT(1),	0},
+> +	{"PNDE_MET_REQ_STS",             BIT(2),	1},
+> +	{"PG5_PMA0_GVNN_REQ_STS",        BIT(3),	1},
+> +	{"FW_THROTTLE_ALLOWED_REQ_STS",  BIT(4),	0},
+> +	{"DMI_IN_L1_REQ_STS",            BIT(6),	0},
+> +	{"ISH_VNNAON_REQ_STS",           BIT(7),	0},
+> +	{"PLT_GREATER_REQ_STS",          BIT(11),	1},
+> +	{"ALL_SBR_IDLE_REQ_STS",         BIT(12),	0},
+> +	{"PMC_IDLE_FB_OCP_REQ_STS",      BIT(13),	0},
+> +	{"PM_SYNC_STATES_REQ_STS",       BIT(14),	0},
+> +	{"EA_REQ_STS",                   BIT(15),	0},
+> +	{"DMI_CLKREQ_B_REQ_STS",         BIT(16),	0},
+> +	{"BRK_EV_EN_REQ_STS",            BIT(17),	0},
+> +	{"AUTO_DEMO_EN_REQ_STS",         BIT(18),	0},
+> +	{"ITSS_CLK_SRC_REQ_STS",         BIT(19),	1},
+> +	{"ARC_IDLE_REQ_STS",             BIT(21),	0},
+> +	{"PG5_PMA1_GVNN_REQ_STS",        BIT(22),	1},
+> +	{"FIA_DEEP_PM_REQ_STS",          BIT(23),	0},
+> +	{"XDCI_ATTACHED_REQ_STS",        BIT(24),	0},
+> +	{"ARC_INTERRUPT_WAKE_REQ_STS",   BIT(25),	0},
+> +	{"PRE_WAKE0_REQ_STS",            BIT(27),	1},
+> +	{"PRE_WAKE1_REQ_STS",            BIT(28),	1},
+> +	{"PRE_WAKE2_EN_REQ_STS",         BIT(29),	0},
+> +	{"PG5_PMA2_GVNN_REQ_STS",        BIT(30),	1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map nvl_pchs_rsc_status_map[] = {
+> +	{"Memory",		0,		1},
+> +	{"Memory_NS",		0,		1},
+> +	{"PSF1",		0,		1},
+> +	{"PSF2",		0,		1},
+> +	{"PSF3",		0,		1},
+> +	{"REF_PLL",		0,		1},
+> +	{"SB",			0,		1},
+> +	{}
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pchs_lpm_maps[] = {
+> +	nvl_pchs_clocksource_status_map,
+> +	nvl_pchs_power_gating_status_0_map,
+> +	nvl_pchs_power_gating_status_1_map,
+> +	nvl_pchs_power_gating_status_2_map,
+> +	nvl_pchs_d3_status_0_map,
+> +	nvl_pchs_d3_status_1_map,
+> +	nvl_pchs_d3_status_2_map,
+> +	nvl_pchs_d3_status_3_map,
+> +	nvl_pcds_vnn_req_status_0_map,
+> +	nvl_pchs_vnn_req_status_1_map,
+> +	nvl_pchs_vnn_req_status_2_map,
+> +	nvl_pcdh_vnn_req_status_3_map,
+> +	nvl_pchs_vnn_misc_status_map,
+> +	ptl_pcdp_signal_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_bit_map *nvl_pchs_blk_maps[] = {
+> +	nvl_pchs_power_gating_status_0_map,
+> +	nvl_pchs_power_gating_status_1_map,
+> +	nvl_pchs_power_gating_status_2_map,
+> +	nvl_pchs_rsc_status_map,
+> +	nvl_pchs_d3_status_0_map,
+> +	nvl_pchs_clocksource_status_map,
+> +	nvl_pchs_vnn_misc_status_map,
+> +	NULL
+> +};
+> +
+> +static const struct pmc_reg_map nvl_pcdh_reg_map = {
+> +	.pfear_sts = ext_nvl_pcdh_pfear_map,
+> +	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
+> +	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
+> +	.ltr_show_sts = ptl_pcdp_ltr_show_map,
+> +	.msr_sts = msr_map,
+> +	.ltr_ignore_offset = CNP_PMC_LTR_IGNORE_OFFSET,
+> +	.regmap_length = NVL_PCDH_PMC_MMIO_REG_LEN,
+> +	.ppfear0_offset = CNP_PMC_HOST_PPFEAR0A,
+> +	.ppfear_buckets = NVL_PCDH_PPFEAR_NUM_ENTRIES,
+> +	.pm_cfg_offset = CNP_PMC_PM_CFG_OFFSET,
+> +	.pm_read_disable_bit = CNP_PMC_READ_DISABLE_BIT,
+> +	.lpm_num_maps = NVL_LPM_NUM_MAPS,
+> +	.ltr_ignore_max = LNL_NUM_IP_IGN_ALLOWED,
+> +	.lpm_res_counter_step_x2 = TGL_PMC_LPM_RES_COUNTER_STEP_X2,
+> +	.etr3_offset = ETR3_OFFSET,
+> +	.lpm_sts_latch_en_offset = MTL_LPM_STATUS_LATCH_EN_OFFSET,
+> +	.lpm_priority_offset = NVL_LPM_PRI_OFFSET,
+> +	.lpm_en_offset = NVL_LPM_EN_OFFSET,
+> +	.lpm_residency_offset = NVL_LPM_RESIDENCY_OFFSET,
+> +	.lpm_sts = nvl_pcdh_lpm_maps,
+> +	.lpm_status_offset = MTL_LPM_STATUS_OFFSET,
+> +	.lpm_live_status_offset = NVL_LPM_LIVE_STATUS_OFFSET,
+> +	.s0ix_blocker_maps = nvl_pcdh_blk_maps,
+> +	.s0ix_blocker_offset = LNL_S0IX_BLOCKER_OFFSET,
+> +	.num_s0ix_blocker = NVL_PCDH_NUM_S0IX_BLOCKER,
+> +	.blocker_req_offset = NVL_PCDH_BLK_REQ_OFFSET,
+> +	.lpm_req_guid = PCDH_LPM_REQ_GUID,
+> +};
+> +
+> +static const struct pmc_reg_map nvl_pcds_reg_map = {
+> +	.pfear_sts = ext_nvl_pcds_pfear_map,
+> +	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
+> +	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
+> +	.ltr_show_sts = nvl_pcds_ltr_show_map,
+> +	.msr_sts = msr_map,
+> +	.ltr_ignore_offset = CNP_PMC_LTR_IGNORE_OFFSET,
+> +	.regmap_length = NVL_PCDS_PMC_MMIO_REG_LEN,
+> +	.ppfear0_offset = CNP_PMC_HOST_PPFEAR0A,
+> +	.ppfear_buckets = LNL_PPFEAR_NUM_ENTRIES,
+> +	.pm_cfg_offset = CNP_PMC_PM_CFG_OFFSET,
+> +	.pm_read_disable_bit = CNP_PMC_READ_DISABLE_BIT,
+> +	.lpm_num_maps = PTL_LPM_NUM_MAPS,
+> +	.ltr_ignore_max = LNL_NUM_IP_IGN_ALLOWED,
+> +	.lpm_res_counter_step_x2 = TGL_PMC_LPM_RES_COUNTER_STEP_X2,
+> +	.etr3_offset = ETR3_OFFSET,
+> +	.lpm_sts_latch_en_offset = MTL_LPM_STATUS_LATCH_EN_OFFSET,
+> +	.lpm_priority_offset = MTL_LPM_PRI_OFFSET,
+> +	.lpm_en_offset = MTL_LPM_EN_OFFSET,
+> +	.lpm_residency_offset = MTL_LPM_RESIDENCY_OFFSET,
+> +	.lpm_sts = nvl_pcds_lpm_maps,
+> +	.lpm_status_offset = MTL_LPM_STATUS_OFFSET,
+> +	.lpm_live_status_offset = MTL_LPM_LIVE_STATUS_OFFSET,
+> +	.s0ix_blocker_maps = nvl_pcds_blk_maps,
+> +	.s0ix_blocker_offset = LNL_S0IX_BLOCKER_OFFSET,
+> +	.num_s0ix_blocker = NVL_PCDS_NUM_S0IX_BLOCKER,
+> +	.lpm_req_guid = PCDS_LPM_REQ_GUID,
+> +	.blocker_req_offset = NVL_PCDS_BLK_REQ_OFFSET,
+> +};
+> +
+> +static const struct pmc_reg_map nvl_pchs_reg_map = {
+> +	.pfear_sts = ext_nvl_pchs_pfear_map,
+> +	.slp_s0_offset = CNP_PMC_SLP_S0_RES_COUNTER_OFFSET,
+> +	.slp_s0_res_counter_step = TGL_PMC_SLP_S0_RES_COUNTER_STEP,
+> +	.ltr_show_sts = ptl_pcdp_ltr_show_map,
+> +	.msr_sts = msr_map,
+> +	.ltr_ignore_offset = CNP_PMC_LTR_IGNORE_OFFSET,
+> +	.regmap_length = NVL_PCHS_PMC_MMIO_REG_LEN,
+> +	.ppfear0_offset = CNP_PMC_HOST_PPFEAR0A,
+> +	.ppfear_buckets = LNL_PPFEAR_NUM_ENTRIES,
+> +	.pm_cfg_offset = CNP_PMC_PM_CFG_OFFSET,
+> +	.pm_read_disable_bit = CNP_PMC_READ_DISABLE_BIT,
+> +	.lpm_num_maps = PTL_LPM_NUM_MAPS,
+> +	.ltr_ignore_max = LNL_NUM_IP_IGN_ALLOWED,
+> +	.lpm_res_counter_step_x2 = TGL_PMC_LPM_RES_COUNTER_STEP_X2,
+> +	.etr3_offset = ETR3_OFFSET,
+> +	.lpm_sts_latch_en_offset = MTL_LPM_STATUS_LATCH_EN_OFFSET,
+> +	.lpm_priority_offset = MTL_LPM_PRI_OFFSET,
+> +	.lpm_en_offset = MTL_LPM_EN_OFFSET,
+> +	.lpm_residency_offset = MTL_LPM_RESIDENCY_OFFSET,
+> +	.lpm_sts = nvl_pchs_lpm_maps,
+> +	.lpm_status_offset = MTL_LPM_STATUS_OFFSET,
+> +	.lpm_live_status_offset = MTL_LPM_LIVE_STATUS_OFFSET,
+> +	.s0ix_blocker_maps = nvl_pchs_blk_maps,
+> +	.s0ix_blocker_offset = LNL_S0IX_BLOCKER_OFFSET,
+> +	.num_s0ix_blocker = NVL_PCHS_NUM_S0IX_BLOCKER,
+> +	.blocker_req_offset = NVL_PCHS_BLK_REQ_OFFSET,
+> +	.lpm_req_guid = PCHS_LPM_REQ_GUID,
+> +};
+> +
+> +static struct pmc_info nvl_pmc_info_list[] = {
+> +	{
+> +		.devid	= PMC_DEVID_NVL_PCDH,
+> +		.map	= &nvl_pcdh_reg_map,
+> +	},
+> +	{
+> +		.devid  = PMC_DEVID_NVL_PCDS,
+> +		.map    = &nvl_pcds_reg_map,
+> +	},
+> +	{
+> +		.devid  = PMC_DEVID_NVL_PCHS,
+> +		.map    = &nvl_pchs_reg_map,
+> +	},
+> +	{}
+> +};
+> +
+> +const char *nvl_ltr_block_counter_arr[] = {
+> +	"PKGC_PREVENT_LTR_IADOMAIN",
+> +	"PKGC_PREVENT_LTR_GDIE",
+> +	"PKGC_PREVENT_LTR_PCH",
+> +	"PKGC_PREVENT_LTR_DISPLAY",
+> +	"PKGC_PREVENT_LTR_IPU",
+> +	NULL
+> +};
+> +
+> +const char *nvl_pkgc_blocker_residency[] = {
+> +	"PKGC_BLOCK_RESIDENCY_INVALID",
+> +	"PKGC_BLOCK_RESIDENCY_MISC",
+> +	"PKGC_BLOCK_RESIDENCY_CDIE_MISC",
+> +	"PKGC_BLOCK_RESIDENCY_MEDIA_MISC",
+> +	"PKGC_BLOCK_RESIDENCY_GT_MISC",
+> +	"PKGC_BLOCK_RESIDENCY_HUBATOM_MISC",
+> +	"PKGC_BLOCK_RESIDENCY_IPU_BUSY",
+> +	"PKGC_BLOCK_RESIDENCY_IPU_LTR",
+> +	"PKGC_BLOCK_RESIDENCY_IPU_TIMER",
+> +	"PKGC_BLOCK_RESIDENCY_DISP_BUSY",
+> +	"PKGC_BLOCK_RESIDENCY_DISP_LTR",
+> +	"PKGC_BLOCK_RESIDENCY_DISP_TIMER",
+> +	"PKGC_BLOCK_RESIDENCY_VPU_BUSY",
+> +	"PKGC_BLOCK_RESIDENCY_VPU_TIMER",
+> +	"PKGC_BLOCK_RESIDENCY_PMC_BUSY",
+> +	"PKGC_BLOCK_RESIDENCY_PMC_LTR",
+> +	"PKGC_BLOCK_RESIDENCY_PMC_TIMER",
+> +	"PKGC_BLOCK_RESIDENCY_HUBATOM_ARAT",
+> +	"PKGC_BLOCK_RESIDENCY_CDIE0_ARAT",
+> +	"PKGC_BLOCK_RESIDENCY_CDIE1_ARAT",
+> +	"PKGC_BLOCK_RESIDENCY_GT_ARAT",
+> +	"PKGC_BLOCK_RESIDENCY_MEDIA_ARAT",
+> +	"PKGC_BLOCK_RESIDENCY_DEMOTION",
+> +	"PKGC_BLOCK_RESIDENCY_THERMALS",
+> +	"PKGC_BLOCK_RESIDENCY_SNCU",
+> +	"PKGC_BLOCK_RESIDENCY_SVTU",
+> +	"PKGC_BLOCK_RESIDENCY_IAA",
+> +	"PKGC_BLOCK_RESIDENCY_IOC",
+> +	NULL,
+> +};
+> +
+> +static u8 nvl_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_PCH};
+> +static u8 nvl_h_pmc_list[] = {PMC_IDX_MAIN, PMC_IDX_PCH};
 
-with top-most commit cd1a3b2ff0553e987de71ff0aa675e418de22898
+These are identical so why both are needed?
 
- Merge tag 'thermal-v7.1-rc1' of
-ssh://gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux
+These arrays could generally be const, no? (Applies to the other patch as 
+well.)
 
-on top of commit 9e07e3b81807edd356e1f794cffa00a428eff443
+> +
+> +#define NVL_NPU_PCI_DEV                0xd71d
+> +
+> +/*
+> + * Set power state of select devices that do not have drivers to D3
+> + * so that they do not block Package C entry.
+> + */
+> +static void nvl_d3_fixup(void)
+> +{
+> +	pmc_core_set_device_d3(NVL_NPU_PCI_DEV);
+> +}
+> +
+> +static int nvl_resume(struct pmc_dev *pmcdev)
+> +{
+> +	nvl_d3_fixup();
+> +	return cnl_resume(pmcdev);
+> +}
+> +
+> +static int nvl_core_init(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info)
+> +{
+> +	nvl_d3_fixup();
+> +	return generic_core_init(pmcdev, pmc_dev_info);
+> +}
+> +
+> +static u32 nvl_pmt_dmu_guids[] = {NVL_PMT_DMU_GUID, 0x0};
+> +struct pmc_dev_info nvl_s_pmc_dev = {
+> +	.num_pmcs = ARRAY_SIZE(nvl_pmc_list),
+> +	.pmc_list = nvl_pmc_list,
+> +	.regmap_list = nvl_pmc_info_list,
+> +	.map = &nvl_pcds_reg_map,
+> +	.sub_req_show = &pmc_core_substate_blk_req_fops,
+> +	.suspend = cnl_suspend,
+> +	.resume = nvl_resume,
+> +	.init = nvl_core_init,
+> +	.sub_req = pmc_core_pmt_get_blk_sub_req,
+> +	.dmu_guids = nvl_pmt_dmu_guids,
+> +	.pc_guid = NVL_PMT_PC_GUID,
+> +	.pkgc_ltr_blocker_offset = NVL_LTR_BLK_OFFSET,
+> +	.pkgc_ltr_blocker_counters = nvl_ltr_block_counter_arr,
+> +	.pkgc_blocker_offset = NVL_PKGC_BLK_OFFSET,
+> +	.pkgc_blocker_counters = nvl_pkgc_blocker_residency,
+> +	.ssram_hidden = false,
+> +	.die_c6_offset = NVL_PMT_DMU_DIE_C6_OFFSET,
+> +};
+> +
+> +struct pmc_dev_info nvl_h_pmc_dev = {
+> +	.num_pmcs = ARRAY_SIZE(nvl_h_pmc_list),
+> +	.pmc_list = nvl_h_pmc_list,
+> +	.regmap_list = nvl_pmc_info_list,
+> +	.map = &nvl_pcdh_reg_map,
+> +	.sub_req_show = &pmc_core_substate_blk_req_fops,
+> +	.suspend = cnl_suspend,
+> +	.resume = nvl_resume,
+> +	.init = nvl_core_init,
+> +	.sub_req = pmc_core_pmt_get_blk_sub_req,
+> +	.dmu_guids = nvl_pmt_dmu_guids,
+> +	.pc_guid = NVL_PMT_PC_GUID,
+> +	.pkgc_ltr_blocker_offset = NVL_LTR_BLK_OFFSET,
+> +	.pkgc_ltr_blocker_counters = nvl_ltr_block_counter_arr,
+> +	.pkgc_blocker_offset = NVL_PKGC_BLK_OFFSET,
+> +	.pkgc_blocker_counters = nvl_pkgc_blocker_residency,
+> +	.ssram_hidden = false,
+> +	.die_c6_offset = NVL_PMT_DMU_DIE_C6_OFFSET,
+> +};
+> diff --git a/drivers/platform/x86/intel/pmc/ptl.c b/drivers/platform/x86/intel/pmc/ptl.c
+> index 7aa39db256770..3e1cf6905e111 100644
+> --- a/drivers/platform/x86/intel/pmc/ptl.c
+> +++ b/drivers/platform/x86/intel/pmc/ptl.c
+> @@ -137,7 +137,7 @@ static const struct pmc_bit_map *ext_ptl_pcdp_pfear_map[] = {
+>  	NULL
+>  };
+>  
+> -static const struct pmc_bit_map ptl_pcdp_ltr_show_map[] = {
+> +const struct pmc_bit_map ptl_pcdp_ltr_show_map[] = {
+>  	{"SOUTHPORT_A",		CNP_PMC_LTR_SPA},
+>  	{"SOUTHPORT_B",		CNP_PMC_LTR_SPB},
+>  	{"SATA",		CNP_PMC_LTR_SATA},
+> 
 
- thermal: core: Fix thermal zone device registration error path
+-- 
+ i.
 
-to receive thermal control updates for 7.1-rc1.
-
-These include thermal core fixes and simplifications, driver fixes and
-new hardware support (SDM670, Eliza SoC), new driver features (hwmon
-support in imx91, DDR data rate on Nova Lake in int340x), and a handful
-of cleanups:
-
- - Fix thermal core issues related to thermal zone removal and
-   registration errors that may lead to a use-after-free or a memory
-   leak in some cases (Rafael Wysocki)
-
- - Drop a redundant check from thermal_zone_device_update(), adjust
-   thermal workqueue allocation flags, and switch over thermal_class
-   allocation to static (Rafael Wysocki)
-
- - Relocate the suspend and resume of thermal zones closer to the
-   suspend and resume of devices, respectively (Rafael Wysocki)
-
- - Remove a pointless variable used in the thermal core when
-   registering a cooling device (Daniel Lezcano)
-
- - Replace sprintf() in thermal_bind_cdev_to_trip() and use
-   str_enabled_disabled() helper in mode_show() (Thorsten Blum)
-
- - Replace cpumask_weight() in intel_hfi_offline() with cpumask_empty()
-   which is generally more efficient (Yury Norov)
-
- - Add support for reading DDR data rate from PCI config space on Nova
-   Lake platforms to the int340x thermal driver (Srinivas Pandruvada)
-
- - Add an OF node address to output message to make sensor names more
-   distinguishable (Alexander Stein)
-
- - Add hwmon support for the i.MX97 thermal sensor (Alexander Stein)
-
- - Clamp correctly the results when doing value/temperature conversion
-   in the Spreadtrum driver (Thorsten Blum)
-
- - Add SDM670 compatible DT bindings for the Tsens and the lMH thermal
-   drivers (Richard Acayan)
-
- - Add SM8750 compatible DT bindings for the Tsens thermal driver (Manaf
-   Meethalavalappu Pallikunhi)
-
- - Add Eliza SoC compatible DT bindings for the Tsens driver (Krzysztof
-   Kozlowski)
-
- - Fix inverted condition check on error in the Spear thermal control
-   driver (Gopi Krishna Menon)
-
- - Convert DT bindings documentation into DT schema (Gopi Krishna Menon)
-
- - Use max() macro to increase readability in the Broadcom STB thermal
-   sensor (Thorsten Blum)
-
- - Remove a stale @trim_offset kernel-doc entry (John Madieu)
-
-Thanks!
-
-
----------------
-
-Alexander Stein (2):
-      thermal/of: Add OF node address to output message
-      thermal/drivers/imx91: Add hwmon support
-
-Anas Iqbal (1):
-      thermal: devfreq_cooling: avoid unnecessary kfree of freq_table
-
-Daniel Lezcano (1):
-      thermal/core: Remove pointless variable when registering a cooling device
-
-Gopi Krishna Menon (2):
-      thermal/drivers/spear: Fix error condition for reading st,thermal-flags
-      dt-bindings: thermal: st,thermal-spear1340: convert to dtschema
-
-John Madieu (1):
-      thermal: renesas: rzg3e: Remove stale @trim_offset kernel-doc entry
-
-Krzysztof Kozlowski (1):
-      dt-bindings: thermal: qcom-tsens: Add Eliza SoC TSENS
-
-Manaf Meethalavalappu Pallikunhi (1):
-      dt-bindings: thermal: qcom-tsens: Document the SM8750 Temperature Sensor
-
-Rafael J. Wysocki (6):
-      thermal: core: Fix thermal zone governor cleanup issues
-      thermal: core: Free thermal zone ID later during removal
-      thermal: core: Drop redundant check from thermal_zone_device_update()
-      thermal: core: Adjust thermal_wq allocation flags
-      thermal: core: Allocate thermal_class statically
-      thermal: core: Suspend thermal zones later and resume them earlier
-
-Richard Acayan (2):
-      dt-bindings: thermal: tsens: add SDM670 compatible
-      dt-bindings: thermal: lmh: Add SDM670 compatible
-
-Srinivas Pandruvada (1):
-      thermal: intel: int340x: Read DDR data rate for Nova Lake
-
-Thorsten Blum (6):
-      thermal: core: Replace sprintf() in thermal_bind_cdev_to_trip()
-      thermal/drivers/sprd: Fix temperature clamping in sprd_thm_temp_to_rawdata
-      thermal/drivers/sprd: Fix raw temperature clamping in
-sprd_thm_rawdata_to_temp
-      thermal/drivers/sprd: Use min instead of clamp in sprd_thm_temp_to_rawdata
-      thermal: sysfs: Use str_enabled_disabled() helper in mode_show()
-      thermal/drivers/brcmstb_thermal: Use max to simplify brcmstb_get_temp
-
-Yury Norov (1):
-      thermal: intel: hfi: use cpumask_empty() in intel_hfi_offline()
-
----------------
-
- .../devicetree/bindings/thermal/qcom-lmh.yaml      |   3 +
- .../devicetree/bindings/thermal/qcom-tsens.yaml    |   3 +
- .../devicetree/bindings/thermal/spear-thermal.txt  |  14 ---
- .../bindings/thermal/st,thermal-spear1340.yaml     |  36 ++++++
- drivers/base/power/main.c                          |   5 +
- drivers/thermal/broadcom/brcmstb_thermal.c         |   8 +-
- drivers/thermal/devfreq_cooling.c                  |   3 +-
- drivers/thermal/imx91_thermal.c                    |   4 +
- .../intel/int340x_thermal/processor_thermal_rfim.c |  25 ++++-
- drivers/thermal/intel/intel_hfi.c                  |   2 +-
- drivers/thermal/renesas/rzg3e_thermal.c            |   1 -
- drivers/thermal/spear_thermal.c                    |   2 +-
- drivers/thermal/sprd_thermal.c                     |   6 +-
- drivers/thermal/thermal_core.c                     | 121 ++++++++-------------
- drivers/thermal/thermal_of.c                       |  20 ++--
- drivers/thermal/thermal_sysfs.c                    |   7 +-
- include/linux/thermal.h                            |   6 +
- 17 files changed, 143 insertions(+), 123 deletions(-)
