@@ -1,193 +1,192 @@
-Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3D983DF005
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 22:25:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B1BE30594F;
+	Fri, 10 Apr 2026 22:37:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775859936; cv=none; b=SgKjtn/AH54QqTm6o3g7SNDV0/P9UyO/QHmIigs3iY8iAwGvTk4KHKVd3MA7yFTQ5psdu3f43xt+Vq339BiIkToB/lXRaC8u2x7QbqspO5L+JQnoj+sX6MKPdTgBnGMQz2CXGtgoS/b3mKAUya641heDOO4tnk04tzLlKL9rkzg=
+	t=1775860637; cv=none; b=uIHsoNYd8t5xNpBEL2iWZ6DaqtNnYpc1t3kkoCH4FGBECki5hiG947+BmvgLeI+2JofhFZs8vAgio4BR9/MKTMjqcXmxkSCcEnF2UQ7r0W9HJcLdDvXg3j6JOestETtt8ePb3T/nvq23KhrReRnnBOwJQ9zxxDHH2LUFjyWcn5E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775859936; c=relaxed/simple;
-	bh=VyA6DGW+xjcM8w3yvxfoOhS0/P19nFSdUahGjkQPHuM=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=L90vcgKmjM6SdyClz3MJKM/6lkpJ0SrdnfSqgbwL6XunqRyUGbxt0yVZDEArAZgE+CvDpuz98IcykZhFO51Vi0io6E5AGvvBuHAg7sfKgYboONaa0zjEeR7LnMQPF0lfCIm7vxMB4Vy99TB4SdSGulU1TOOcUlcsxMfkaeJ42IM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=tZZhSJ/4; arc=none smtp.client-ip=209.85.216.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1775860637; c=relaxed/simple;
+	bh=lJj67wYZ6fVbv7zuL2jgwZkUkCKxjwZ7kqlC4rIFACE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FLtOTb2rI099BI2J79V0117LEssF7lFlMACNHtepd5pqcCJJ6byDSNl8cNCnRpKGm9L+v0/kqiKsUGdJ7o8HG/ERYeEtF5MUsXSIS3eG/TvLcxwgpuGuXmDttGIg45CeKE9tO7v2vb4Tyw5PmDIE8k1bTTLL6ME9/2mvY2MT++o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PSi+c8aa; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="tZZhSJ/4"
-Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-35d965648a2so2206844a91.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 15:25:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1775859933; x=1776464733; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=oO2Iz58ZlsFu3Y4x3hOSK/rbD3OpjMOM0bJqqqYROA0=;
-        b=tZZhSJ/4R+5CHY/dqaR4l61LKPlkhiburEkOpWmYMbSbcG5G5DR7bmKuNGByjHhMH/
-         HzzhjqhHEi4UDQCncvZT4McmyY8emB7Qn6NLjsAydOXljf8NNXy81l0QTVrys9ZkdIg4
-         cALelPen9QiqeDPBciHIwry2XjM2yu7+u+HptSyxz+FG0NFvFYbvQdZPPbzuGwqzuL8k
-         GLJ8C33l49DMucA7PINJSdNso+w8JFitA4aHwkmGoqqCWmBWQuziakltLfdPD45yXDVL
-         rOn4H3xSmORXu2j0vKpRYs1BKFL2hulDWy312xmoApa+QlYS9eRJ85ZCGF1IZ1gxjosh
-         Earw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775859933; x=1776464733;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=oO2Iz58ZlsFu3Y4x3hOSK/rbD3OpjMOM0bJqqqYROA0=;
-        b=LSktY8orpgmNdHWKTDK4AOhjhOe3vve9hrU5clHCR/xSKIbl4kbmOTsjRkqO5uAVG4
-         tJz4SBV0T3H1V4s/138yobXKiy4jqQCpZWjlSbjwWsVmuuZBahBWX5Z2iEOMQZYZ19wP
-         ks/mPATjc3EY8XGu8qGhE43gGh7J+GDORI4sZHU5bwO3Rdn93vLhLERamDnZb1HsZbna
-         /2mNlAcUyx2XxZr68NE24KZ52i5o/DQAirHGh63e1u1ebLD0JmHruA2Mzp56effhquaJ
-         mpE8pnHeCg5wTkxCTQkrPreVjsP7qECCGHyNiZ8YQvIeZaIBq90BwOxWLBKTKbpUiajp
-         hdMQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUk2TIx7A8qt07dC9PdjrTCA72MXz1KpUJOgG3bL0WypU3m+fWlrtgBUVLaR+3gwmHQd9svwZelFA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwIETznMscDnBKF7Qw8cbd2iT0jTEHlggjmq6VG06Vstqqm+yBQ
-	xLc7kxvcOTfBWpOcYbn/EwAqAuzSgq4bFpRTvuSNEXnj/5IGy8Ef5LXXBjBpNELqokM=
-X-Gm-Gg: AeBDietGJ9l7hYsA+kvwaTVYexPTwHb85aggQW1k6fQwHf05qD48TYBvL6rmDS2GGCd
-	kX6Sx/j3Li+NLVO3j9RgoIMabTMIctvcmj85OMHNVmMA0Uj+T2YCAU1eBIUHwe8py4C2MBZo7Ll
-	d1xE3VhByuf2EcG6C3ygImHC+e5ZVYNW3a6c6dbPc2IbHwipaf/CGzs4jaXBdTAbX86FXnxOSG4
-	+KD3mP5SD2lx0rZf4pTWuxHbc+rFdRtkEqg6D66zbHsMLm4RcdycP5cJnB2vUtJmuiJqZ+FvbZG
-	RA1R+AL/wDOP/hPLG6aT6/YbN1A0aFjKISmXMpxfc6iIFsSJCnshKWEgeWxKKJ7cmtEa3dPA9MJ
-	4XRWkuUjeMfeQHRhY679ngKOU4nqU3+X65z01QCnuD5uQ1LP/ZlSEbdH7RI8IcL/XVNgsLj+KG2
-	qw6tBwM0hMKE+eMlibYt4=
-X-Received: by 2002:a17:90b:35cd:b0:359:1130:1047 with SMTP id 98e67ed59e1d1-35e428524cbmr5346124a91.17.1775859933169;
-        Fri, 10 Apr 2026 15:25:33 -0700 (PDT)
-Received: from localhost ([97.126.187.42])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35e41336a20sm6073059a91.14.2026.04.10.15.25.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 15:25:32 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven
- <geert@linux-m68k.org>, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 2/3] pmdomain: core: add support for
- power-domains-child-ids
-In-Reply-To: <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
-References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
- <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
- <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com>
- <7h4iljskvz.fsf@baylibre.com>
- <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
-Date: Fri, 10 Apr 2026 15:25:32 -0700
-Message-ID: <7hqzomqwpv.fsf@baylibre.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PSi+c8aa"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A865BC19421;
+	Fri, 10 Apr 2026 22:37:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775860636;
+	bh=lJj67wYZ6fVbv7zuL2jgwZkUkCKxjwZ7kqlC4rIFACE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=PSi+c8aa0D2nSfHBsZWYoIKfMpefTai+mQxa8gbW5ue0w6OtIhBUwsGHAn1yEK16X
+	 3s1Moy+SYZixivFpKESNJaXi2JEFNUDP8HpPqfRShwnClsgUF0ytV6hmmfd77dE8Eq
+	 GHVnqIAaLyQgjozGf8A1GItLpAiPlOS/LZ700sR5Pty5rxkq6MZtnTndCP6ff02n/J
+	 EmZYnKmNPUEkQ9Hc/KAcU1/RAbNpGkVoX92Mev63/tgczZSSLlNwpHj9WqvTOQxn8Q
+	 cU2oBRDACAQEVgwpfA6Z7gvTR2+9aOGD7qarAg+yAAI2CWP10iHqk3KPn6meaQndG0
+	 q0VnIPGJaz1fw==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: thermal: Fix false warning with 'phandle' in trips nodes
+Date: Fri, 10 Apr 2026 17:36:00 -0500
+Message-ID: <20260410223601.1487473-2-robh@kernel.org>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+A pattern property matching essentially anything doesn't work if there
+are implicit properties such as 'phandle' which can occur on any node.
+One such example popped up recently:
 
-> On Fri, 10 Apr 2026 at 02:45, Kevin Hilman <khilman@baylibre.com> wrote:
->>
->> Ulf Hansson <ulf.hansson@linaro.org> writes:
->>
->> > On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
->> >>
->> >> Currently, PM domains can only support hierarchy for simple
->> >> providers (e.g. ones with #power-domain-cells = 0).
->> >>
->> >> Add support for oncell providers as well by adding a new property
->> >> `power-domains-child-ids` to describe the parent/child relationship.
->> >>
->> >> For example, an SCMI PM domain provider has multiple domains, each of
->> >> which might be a child of diffeent parent domains. In this example,
->> >> the parent domains are MAIN_PD and WKUP_PD:
->> >>
->> >>     scmi_pds: protocol@11 {
->> >>         reg = <0x11>;
->> >>         #power-domain-cells = <1>;
->> >>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
->> >>         power-domains-child-ids = <15>, <19>;
->> >>     };
->> >>
->> >> With this example using the new property, SCMI PM domain 15 becomes a
->> >> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
->> >> WKUP_PD.
->> >>
->> >> To support this feature, add two new core functions
->> >>
->> >> - of_genpd_add_child_ids()
->> >> - of_genpd_remove_child_ids()
->> >>
->> >> which can be called by pmdomain providers to add/remove child domains
->> >> if they support the new property power-domains-child-ids.
->> >>
->> >> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
->> >
->> > Thanks for working on this! It certainly is a missing feature!
->>
->> You're welcome, thanks for the detailed review.
->>
->> >> ---
->> >>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->> >>  include/linux/pm_domain.h |  16 ++++++++++++++++
->> >>  2 files changed, 185 insertions(+)
->> >>
->> >> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
->> >> index 61c2277c9ce3..acb45dd540b7 100644
->> >> --- a/drivers/pmdomain/core.c
->> >> +++ b/drivers/pmdomain/core.c
->> >> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
->> >>         return genpd;
->> >>  }
->> >>
->> >> +/**
->> >> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
->> >> + * @np: Device node pointer associated with the PM domain provider.
->> >> + * @data: Pointer to the onecell data associated with the PM domain provider.
->> >> + *
->> >> + * Parse the power-domains and power-domains-child-ids properties to establish
->> >> + * parent-child relationships for PM domains. The power-domains property lists
->> >> + * parent domains, and power-domains-child-ids lists which child domain IDs
->> >> + * should be associated with each parent.
->> >> + *
->> >> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
->> >
->> > I think we should avoid returning specific error codes for specific
->> > errors, simply because it usually becomes messy.
->> >
->> > If I understand correctly the intent here is to allow the caller to
->> > check for -ENOENT and potentially avoid bailing out as it may not
->> > really be an error, right?
->>
->> Right, -ENOENT is not an error of parsing, it's to indicate that there
->> are no child-ids to be parsed.
->>
->> > Perhaps a better option is to return the number of children for whom
->> > we successfully assigned parents. Hence 0 or a positive value allows
->> > the caller to understand what happened. More importantly, a negative
->> > error code then really becomes an error for the caller to consider.
->>
->> I explored this a bit, but it gets messy quick.  It means we have to
->> track cases where only some of the children were added as well as when
->> all children were added.   Personally, I think this should be an "all or
->> nothing" thing.  If all the children cannot be parsed/added, then none
->> of them should be added.
->>
->> This also allows the remove to not have to care about how many were
->> added, and just remove them all, with the additional benefit of not
->> having to track the state of how many children were successfully added.
->>
->
-> I fully agree, it should be all or nothing. Failing with one
-> child/parent should end up with an error code being returned.
->
-> That said, it still seems to make perfect sense to return the number
-> of children for whom we assigned parents for, no?
+arch/arm64/boot/dts/qcom/sm8650-hdk.dtb: thermal-zones: gpuss0-thermal:trips:phandle: 531 is not of type 'object'
+        from schema $id: http://devicetree.org/schemas/thermal/thermal-zones.yaml
 
-No, because what will the caller use that number for?  If we are
-assuming "all or nothing", what would we use it for (other than a debug print?)
+Instead of a pattern property, use an "additionalProperties" schema
+instead which is the fallback in case of no matching property.
 
-It also makes it a bit confusing what a zero return value means.  Does
-that mean success?  Or that zero children were added (which would be
-fail.)
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+Daniel, Please pick this up for v7.1 as the above warning is in next. Or 
+if you prefer, I can take it.
 
-I prefer to keep it as is.
+ .../bindings/thermal/thermal-zones.yaml       | 111 +++++++++---------
+ 1 file changed, 54 insertions(+), 57 deletions(-)
 
-Kevin
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+index 0de0a9757ccc..07d9f576ffe7 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
++++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+@@ -129,63 +129,60 @@ patternProperties:
+           which the thermal framework needs to take action. The actions to
+           be taken are defined in another node called cooling-maps.
+ 
+-        patternProperties:
+-          "^[a-zA-Z][a-zA-Z0-9\\-_]{0,63}$":
+-            type: object
+-
+-            properties:
+-              temperature:
+-                $ref: /schemas/types.yaml#/definitions/int32
+-                minimum: -273000
+-                maximum: 200000
+-                description:
+-                  An integer expressing the trip temperature in millicelsius.
+-
+-              hysteresis:
+-                $ref: /schemas/types.yaml#/definitions/uint32
+-                description:
+-                  An unsigned integer expressing the hysteresis delta with
+-                  respect to the trip temperature property above, also in
+-                  millicelsius. Any cooling action initiated by the framework is
+-                  maintained until the temperature falls below
+-                  (trip temperature - hysteresis). This potentially prevents a
+-                  situation where the trip gets constantly triggered soon after
+-                  cooling action is removed.
+-
+-              type:
+-                $ref: /schemas/types.yaml#/definitions/string
+-                enum:
+-                  - active   # enable active cooling e.g. fans
+-                  - passive  # enable passive cooling e.g. throttling cpu
+-                  - hot      # send notification to driver
+-                  - critical # send notification to driver, trigger shutdown
+-                description: |
+-                  There are four valid trip types: active, passive, hot,
+-                  critical.
+-
+-                  The critical trip type is used to set the maximum
+-                  temperature threshold above which the HW becomes
+-                  unstable and underlying firmware might even trigger a
+-                  reboot. Hitting the critical threshold triggers a system
+-                  shutdown.
+-
+-                  The hot trip type can be used to send a notification to
+-                  the thermal driver (if a .notify callback is registered).
+-                  The action to be taken is left to the driver.
+-
+-                  The passive trip type can be used to slow down HW e.g. run
+-                  the CPU, GPU, bus at a lower frequency.
+-
+-                  The active trip type can be used to control other HW to
+-                  help in cooling e.g. fans can be sped up or slowed down
+-
+-            required:
+-              - temperature
+-              - hysteresis
+-              - type
+-            additionalProperties: false
+-
+-        additionalProperties: false
++        additionalProperties:
++          type: object
++          additionalProperties: false
++
++          properties:
++            temperature:
++              $ref: /schemas/types.yaml#/definitions/int32
++              minimum: -273000
++              maximum: 200000
++              description:
++                An integer expressing the trip temperature in millicelsius.
++
++            hysteresis:
++              $ref: /schemas/types.yaml#/definitions/uint32
++              description:
++                An unsigned integer expressing the hysteresis delta with
++                respect to the trip temperature property above, also in
++                millicelsius. Any cooling action initiated by the framework is
++                maintained until the temperature falls below
++                (trip temperature - hysteresis). This potentially prevents a
++                situation where the trip gets constantly triggered soon after
++                cooling action is removed.
++
++            type:
++              $ref: /schemas/types.yaml#/definitions/string
++              enum:
++                - active   # enable active cooling e.g. fans
++                - passive  # enable passive cooling e.g. throttling cpu
++                - hot      # send notification to driver
++                - critical # send notification to driver, trigger shutdown
++              description: |
++                There are four valid trip types: active, passive, hot,
++                critical.
++
++                The critical trip type is used to set the maximum
++                temperature threshold above which the HW becomes
++                unstable and underlying firmware might even trigger a
++                reboot. Hitting the critical threshold triggers a system
++                shutdown.
++
++                The hot trip type can be used to send a notification to
++                the thermal driver (if a .notify callback is registered).
++                The action to be taken is left to the driver.
++
++                The passive trip type can be used to slow down HW e.g. run
++                the CPU, GPU, bus at a lower frequency.
++
++                The active trip type can be used to control other HW to
++                help in cooling e.g. fans can be sped up or slowed down
++
++          required:
++            - temperature
++            - hysteresis
++            - type
+ 
+       cooling-maps:
+         type: object
+-- 
+2.53.0
+
