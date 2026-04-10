@@ -1,238 +1,168 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11013001.outbound.protection.outlook.com [52.101.83.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24AB62E22BD
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 08:58:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 195343431E3;
+	Fri, 10 Apr 2026 09:28:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.1
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775811486; cv=pass; b=MnNGv5K7kby3f3UZMzvOIVHxcLj93rY4L0FtqXqPFFbypemuUCnHi4XXGuaV8LeJzQjmzJ9xYADclCLCDTSY00XHWhlnJ//jk8YzPeCoqH4wOY9MgaQAPHCd5ViPJoh6PwCFiOyiT5NheCgigUtrlbm7lg0Uum55mYtpIadl0hI=
+	t=1775813286; cv=fail; b=eFJN7BKDNd7JXC/ORXXTeTzR2tU6hACrHlD/FnwNHGbfAgwCK68Rb1Z4eTfsD6QGONh6p8vufjrAvj6cxnWSvUI+rnwvyurnpQ/fu0RtEXL3S8YWDdktewzBJI7TzBOf2aiw+YDxRatymCHJieLQSt7SnIFH3vi6ptfqkqHumig=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775811486; c=relaxed/simple;
-	bh=iaYKT1sl2Tr/cLZwPA0Zvqg9ubw9wCPbruk9AwA0cek=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FZ5Mowxn1lgHK1v0t9YbkcjINkGUZE5IIw3Miagum13+Dig/W469fFsI+Xbmpf57LVQby60y+dY5XqTTj6kt/eV3bxrVuBixKWARbOUMoGmIYYb/v/3G1UTmos0jn08x0t24N5GAYTkDsfjls8tvroMmQUzUihsSOmucKsMlmQ4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qW/kT/NF; arc=pass smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1775813286; c=relaxed/simple;
+	bh=BJgMP0+qS1lrjlxVQO+CWBRIXo4Qi8dPuO7M5SGPXEU=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=pJZ5jJj+La4oqlDpSmKEomsmwvPSSPsJSxYqrv4HV3WUgMOl11QATn79DffD3OlC+m2+Ehxdg1lZSQElYJQ9DsRhJDl8G7AdFfPUm4iCC1fK9KUCFa/Dglz7XSwJp57ufQdwc4yllNSDMpfSL4GdtfOvFcOdBT3M5GNqmRVejk0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=QV0sG3g4; arc=fail smtp.client-ip=52.101.83.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qW/kT/NF"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a3e5b4acc1so1576639e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 01:58:03 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775811482; cv=none;
-        d=google.com; s=arc-20240605;
-        b=cMzjaAtX2pK543JtLgerYy+Zq9d5YZxRuzElw+BZDscie/mxsSBK2poZjBdqD2do3O
-         d3sJQmFgbHj6BoiPG7cFPSqwJ9Z6mkZAdWnq1jp9mFxg3ApOmdEUGryaYly2eYUqy9A0
-         NJGm8+2Vj0OJApoRBnakkA3mqya3Ek8uMY/7qOG4j0dWOV+K53xXydH5fWhBFrBySvT5
-         leAA6dlsnIZBRwydSx9hlZU5Gk05DeBq+/gMkO1OOQAserRoTUJ2420lGfTtFiFlWzuj
-         l6fRfjgg1q4WBWt0gcuTUVx+Iz/l9ZpUe0jwG4WBB4cCUaCeytqFOyB5lrz1DePLzOWV
-         I6Jw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
-        fh=17B/r/6yD2jQqsXM29XKAj+cpr5LdqBZ8Qvrq22t9JQ=;
-        b=PPxLfLfOu24V37KXVM2DxHzhDYPpddKled11aet8dGaUP58Pm3Mip6Q5sh2BoX86gG
-         XYJW+7sGsZ6PlomGI49sXJA1+4fCTDkVmC4kMPJPIFUYmrN6EowHwCPLjRxD2baug0vo
-         Jq6l37/ma2vPSgHsmXUPP39bS4OW0lq3TQn7WSYxDal5s/cgnO9HcSKZ5QMUFWjc6Lln
-         2PETABxd7TBLq8fV7vd0Nzl8Cy56F0kBULCvmUQblqBsBJ7Wa+p2QwqLJli0sKMhOfCh
-         dFhljv3C/ClPmD2TmP6as4WkTglnZD6Tyx0IQWOqQRiZbqZDm+Af2Pdbm0GzVm4dMGih
-         FApw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775811482; x=1776416282; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
-        b=qW/kT/NFo+XhkEqKBwLgGwFMLH+rH4rsWbCuYQHqlqBoIVsGX3AFU8FsJ5LyrqMCgG
-         u92Rw8ZKiwWCdVr5TrFD6S2Q3lVNWvAwtBiazEHryzoWM68NyEO3tEZnsuMlG94qPAaS
-         REZjxiVsOILaxQzEsmhRI72TSVZia7M8617I8HHJmiQwAUwYsfJjHTHu+GiehjhH9V+x
-         CcjNZzJGVadFLKT4V9EPy5EPxtzSba0ZySbSZ2s2xXc3ELq7zTclCF7ufUKFEeoUvt26
-         gCsJlqO6pG2y6xGY5DqKd4T8xd847j+lbuibBPZ9HLAFJl2NsXEWieUjMOSmtuJVGnaa
-         rAWw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775811482; x=1776416282;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
-        b=DyNb5Zj+CjqSkW/yZrpQPKDzLHThtuDVUyFyQ3NMMCdx1BxTZTCwN62WNwTlmaDoqg
-         THtZy6BOdeiNVPh+aFcgiaSsKczVr5GbA3gdvpdinVL+VS4FNSBl7hy5furehlC1vGUb
-         MmvEQ6VRlw9h6qbIJUiRU/lX1GNznb+nkUfajkCLLXLeFAZH4lIlIji5CwHTSLugPUGG
-         bFFt52QK++AtMUUsEPo4TZT8rA1QacmNiFTVc1xfTeADqmqLIz2J3uQZmNw2ljIQAumK
-         9wWOW8wqwiPvJNpX80NCfKmEVpTXyRLbgbIGktJ2WISDTLh/CeQQCXv7eTppemow3Wbz
-         mwyA==
-X-Forwarded-Encrypted: i=1; AJvYcCWWWPGrui4wzZZLvrAZkoOy8gPy6VzBITPT4Fj/7rQdbzJCVQBZZnMpFqKR1SeMvZScKHdjZvMqXg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzr/BCcF2ZGITkzN4AVLFySqhig/AY626gqoeHXgOIbdsysTrDs
-	3uHfMDUs4QqVfTxRAcDMY/Cwjo4vbnaOhQELid1v62CsKiHvwbfV2KojjNbz2YwKt/TJH6oLJ7b
-	y6hddVLMdZH7Sndpa/ufuKnUj7fMVi26c6yQQn+79Qw==
-X-Gm-Gg: AeBDieu8nmrDxqxRfTC5nGRobXKkedDrtgDZm51HOocxvoOZALEBSUzI+1a0cngXl1S
-	J1kVak8GQcqtMgsKF6HE3gQqdUWcuFCmM0XYWmOCqgJUqoBQp44GGwF7thxN5/6fztn+pOyV/6E
-	m52xf3sxG0zHatU82dI1LUaekwmV6D13hsAmCl/dawV1tctfL7FSxxGkmL8dWX/bwTy2bJKSFUb
-	GDbVbC9RAY4C9TsHqZni2+TSP6/FuKls2NRg//5yq5YYsMYVyHOD23D37d3Ggff8jGU4pl/n33a
-	YoAIDn9q
-X-Received: by 2002:a05:6512:1396:b0:5a2:c8d9:ec4a with SMTP id
- 2adb3069b0e04-5a3ef9127demr836109e87.19.1775811482189; Fri, 10 Apr 2026
- 01:58:02 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="QV0sG3g4"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=tP8FKjlVBP04Yyh/WzLrLoYRLeR+ntnPl+qVwJAto2bWAT5buioPaHM19wJwlayoUhB7eiQk8pyKDbVTdyLIW2mQS7PS9bbALsF0vZyCvs1JZqzBKzeQhcyNsQ95HiLDIml4g5cazl9oERDARVO6sB9GPcaaAw1LGyn+sqM+uKKCdo3Oiz5LY64YBPLtrwqh4Bz5s6XqihtL3r+lvB6CDm0IWtT/l/Bk7okHSZd8AO0AkU2syFUzQJUT3jYPys4W/sLhTY+HokTO1x5b5V38JKY2i+nZtSS1is53hHl6i4TlAn+1G7ua6hHl2oC6Conjdb4R/v8chMSfb9H/DU2zNg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Xhi7es4B2xMqkBuOYksa7iiVydcM7PWs6DNo7qyJQq8=;
+ b=E51lcZ5TyB0/B9bKfZ6WGxkYH2GQUdw+kMf5Y+IyF4IGfjhDdGf5QE2IBnfLSZggY84+dqroaSz8pluAXl1CgYGjh1ujnCNjAA3EbSWzH4+eb7xZcgiqsgXdU9UmDmUV38mIxmQzVu4+qN3jUHpE8p/Zms2iWCazMJzXT2gHFZDPMYTnbT3UYaEaPnJw/HntQ3yggLZgBUDVacR1nolgWs1s9oR1K0ADhOkj4fVEU2oM2XSjkBOYMLMkyswZDy2peIsssW7O+KlRT3k8h1cr9hrGC6y5IaBRHomIp8x/tdX++jSbvac+oH4sJ7gQgZ7x3wOUBtvv+cojIJp7Lvz9jA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Xhi7es4B2xMqkBuOYksa7iiVydcM7PWs6DNo7qyJQq8=;
+ b=QV0sG3g4lzhK08JBkLkZ0ZzqVKjLMO7mFx1IKjRJzHKpdtZyZTMOzmX/841es69IgJutJlnkHZHe/kypKdBselNlndcW5Ecf7B4eJCrgX/S3rekf1bHOOMS5hVw1i7tYHM1Y0g7K+WSkDQtSuQ6IaugzgjLOR3dqKgCJcve81BAQrUPua2ZzXVF9ZTwNXcHXFmtj4mt/+gPAy/fSvkN3dlGJVsbz1SWdc3NkFMMKCRSPXFfz62kNCNibLuT1dLnJRwVooJTtSRTaTEHR5l8SfgQzJ5Tr9LcpMBqOY9JwGdwnHo0vp73pI14JGfaMlPglwzWtMPach+vYqWOs45+7Zg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AS8PR04MB8420.eurprd04.prod.outlook.com (2603:10a6:20b:3fd::16)
+ by GV4PR04MB11894.eurprd04.prod.outlook.com (2603:10a6:150:2ed::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.18; Fri, 10 Apr
+ 2026 09:27:58 +0000
+Received: from AS8PR04MB8420.eurprd04.prod.outlook.com
+ ([fe80::3f0f:857:96a5:17f]) by AS8PR04MB8420.eurprd04.prod.outlook.com
+ ([fe80::3f0f:857:96a5:17f%6]) with mapi id 15.20.9769.041; Fri, 10 Apr 2026
+ 09:27:58 +0000
+From: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+To: ulfh@kernel.org,
+	Frank.Li@nxp.com,
+	s.hauer@pengutronix.de
+Cc: kernel@pengutronix.de,
+	festevam@gmail.com,
+	linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	xuegang.liu@nxp.com,
+	jindong.yue@nxp.com
+Subject: [PATCH] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL tristate
+Date: Fri, 10 Apr 2026 18:27:35 +0900
+Message-Id: <20260410092735.1065294-1-zhipeng.wang_1@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA5PR01CA0103.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:1d1::7) To AS8PR04MB8420.eurprd04.prod.outlook.com
+ (2603:10a6:20b:3fd::16)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
- <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
- <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com> <7h4iljskvz.fsf@baylibre.com>
-In-Reply-To: <7h4iljskvz.fsf@baylibre.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Fri, 10 Apr 2026 10:57:24 +0200
-X-Gm-Features: AQROBzDhT0oW3z8LEIG1Euo0M3-dmugaTMajHzsT9TLnPM4O-8m4J3dOe0QMXE4
-Message-ID: <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
-Subject: Re: [PATCH 2/3] pmdomain: core: add support for power-domains-child-ids
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AS8PR04MB8420:EE_|GV4PR04MB11894:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3f5b6433-62a9-45e8-3446-08de96e373cb
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|52116014|19092799006|376014|366016|1800799024|38350700014|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	L7galnlKv+43TQLK/LTAzixqPm97MEsQYAj2tVDGocS0xHSOoVFPfJb+UP04jaBiptaKL5a0R/VK8xNCeorjHUl7IxqokVRszcHb1nGRgyIf4jyb05/7BBpspvnfeJoaKoGbG+uaqcFu14RpbPomiPtfmx7wT2a0r3HYyY3TFlsHGGs0sfw4Ltu1MIGsyovGeDK6+64yH4d3m5ZdVHSQEZuGByVKTfEbB+kGQgunnQpHsPUUqCgB5QQoUTSVIuCOAiVquHuKNnVmhRtZeDUTrxt6ocAj9/WDbs3YOWRmajTz1Cgce37KA8Psc9cr5uKunmfh8jiByYhVDca01r35DDbQse/aoV2GW6VzJh8AJu77hQSvKIPE8nNmAvOk49tU3fNsuIbrxYZZvvcIHy4lD5DxWcVhVOdAWIME8CvEa9Qm0Y5C9mdLXUpSJ91dJqF7DCY5Elw6b5THT4m72m2C7Sw3kmbzjZIL8yzTSt/4hLPjPg+Iyiys/qWXZW185MZSKjhRfIPS2nXx02cSwXDv0vawuXw+18VMindpVXqD0uJTay9KiB4UYfuHEd8G8a6Yvdr3INBmutjHi9djYGpoLLnzxBIHisuUII9ucUoKFi2AofJkXQGvZwdguvnDaZ0XlqsrT4Byd8ADQ0KYmqQW6sfR2W5BtAs5GvR1EWZ6wBJYNvtaSUe2bjxWUXJB+naC3rw9AZkpBNFCnX7yDOS+2bQ+UFzDGjP6HIC+lZr9z1RCALwZkrpujYsms46FNwn6u1LNFgRh5rOybwMzALlRdyRXtaDCcC6gNJCOeMdNsuE=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR04MB8420.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(19092799006)(376014)(366016)(1800799024)(38350700014)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?LRVu0QHLpwS0dJ++58WxcZ/LGCHblaur69Y4VWR9/AOuG7GV/WU1MpJwIBKr?=
+ =?us-ascii?Q?9znylX9DulDKGbBavhqWoucOrfNJNQyZ6Z+JpvlNslm01aBSOKAVa6VDpHlg?=
+ =?us-ascii?Q?5nn7DfFzL+zqKRFJydJBHbpJ1rJSoT3hrTyYNyr+oyOWxF4gBtxHKxLVkUWK?=
+ =?us-ascii?Q?W+PRLZqyGuqPtVm5RBUPmnDCrg39R+rSG1wjUVaCbruO9Kbq7rwL30YQKIMC?=
+ =?us-ascii?Q?VHkkQsNgGEy1NIH7qHdyIieew4K+Pj2ahKzw/hbWH5zh+pFJ6GBiyp1+dGFD?=
+ =?us-ascii?Q?9KCKbyLngScjlFx+HouN2vKmqdfbkIMasUq7wVWasiT3lwS5bZRSoIMPNw6Q?=
+ =?us-ascii?Q?uuYVdLHfd24s9bnzjJttCQT7rKrLgJSWld48UoOtIJe8erYNjsFz5YqKXbp5?=
+ =?us-ascii?Q?gX9RZjZmQIljlbE9MPEGMKuECQwmgmKWZv/MfOCQzC6tDNVv09cHc6NY5yXB?=
+ =?us-ascii?Q?w0S+rLtXcFtQpGCXCP+GcF8G0l6uYcRLwCXMMf2MezbEK7eWX0e8y2g2R7Cr?=
+ =?us-ascii?Q?8+nPvL6gsX2XlRDU08SSoXwMTlRvwZa5e7LHgS80QdLnS05erd5jnjZmVce+?=
+ =?us-ascii?Q?VqOMpdAhY13mnrGj3nD3bPT4l901z8ZL+kKTNecQJVdq+tRBwRf6GdVhqL3m?=
+ =?us-ascii?Q?tezWAVhiYXG12mR5bOWYUh2bklRaA6/SsuMtTEJjjvdOpKmAQ/eUzLfoUKJ6?=
+ =?us-ascii?Q?mbI7m2q5+57h98if/1xSsj084i8627uF5GbegQaDOnU1+zV4mmryQ2cu0tvg?=
+ =?us-ascii?Q?th4mB/Ed/x0055ylsc80ztqKIQDIYxgdsaKAkvawj3WUVGJ6o8Srjwv54pf8?=
+ =?us-ascii?Q?KpR0+2wBeE9hbJib5BVTZ8gG23pkQrT1OSwLisz5aFM0rJdMspwmgJ93kT5Z?=
+ =?us-ascii?Q?CJBAHiq/pHwSNDW1Vh5/MrbuIdTllHcz+k2wGtq4sf3lYpYpr5P7DHfMrHTa?=
+ =?us-ascii?Q?EbpGEGLnwzNybaJSHrqhFmfZNNIcGsN0OsPubShZ9c1fk34nM/wemfXjZvmk?=
+ =?us-ascii?Q?4leeEaq9SqT5WlATw8kVcn4pcQbNtJHdoCMaFQiwyZuPLpRa7HTyuEZ/UPct?=
+ =?us-ascii?Q?TaUYqWYOVYrA6nS3muNo9gRtyQFs6DCCHzGbPdJw2zmN29r3WIY8ixx7m/l5?=
+ =?us-ascii?Q?lYdZeDBVjZL1Hp45AOOXzoy67+miqqQ2XZvv+y2wLiAmOfy/+pxA1D5mGk+A?=
+ =?us-ascii?Q?bqmEq6E5uPTZj2qeSWxz4V1HKBMiZiJnjq68uXP80FcOudz9wXzL0BpNlN4E?=
+ =?us-ascii?Q?9b+1gGQzKuqEimWFjN9J1GOPLXrsLu40H8whiFxCJN9ru5ScnAtMD+fDWWRt?=
+ =?us-ascii?Q?7EYGvbbE1XEsNu5+3YXOqlPIAVaDKziBSTDIo9qCarCUO1cyCJsUXXBT4IjK?=
+ =?us-ascii?Q?rx1026pe06p+EuRDs1dJ8esGLnBjlE0Y/bcF8q60PsZJ2KyUE7eBYdIWRoeV?=
+ =?us-ascii?Q?kW9bMHAdTd0AuwduKSsuasFgeMghf6G/rsMOXdPgwgJmbWHX4duDx4G6FzEE?=
+ =?us-ascii?Q?ZEonx7Qm//xD8i1aOuX94DJWa7ewq/BcKtQj4xItW3z/dTO+R+/kGB5pNL+9?=
+ =?us-ascii?Q?ZAyAZJGuaBbHHnI4HqYGsV+uB7QwOiMG1M3CRG4001hqPUcFYKpCWXqPgNgt?=
+ =?us-ascii?Q?Omm2qCd2akQbN738xs2mNApYvwRKohpzfI6vtOrQlwlj5ARs/UfhEw5BbxHU?=
+ =?us-ascii?Q?vEMK1roHHhEie6xwjq6pfLwMZ9clFzGP7xYkysGhTKatlu+mztekuGBX5Rpo?=
+ =?us-ascii?Q?MjMsHzMm5Q=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3f5b6433-62a9-45e8-3446-08de96e373cb
+X-MS-Exchange-CrossTenant-AuthSource: AS8PR04MB8420.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Apr 2026 09:27:58.1525
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7aUDksfDPc83/vHvlpC37YCjHupJxrP0i3bFbCoxV5uKVujhD7IM8jIREOFoUeF5RyQzBtjZnRh82Gqnorm/RQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV4PR04MB11894
 
-On Fri, 10 Apr 2026 at 02:45, Kevin Hilman <khilman@baylibre.com> wrote:
->
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
-> > On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
-> >>
-> >> Currently, PM domains can only support hierarchy for simple
-> >> providers (e.g. ones with #power-domain-cells = 0).
-> >>
-> >> Add support for oncell providers as well by adding a new property
-> >> `power-domains-child-ids` to describe the parent/child relationship.
-> >>
-> >> For example, an SCMI PM domain provider has multiple domains, each of
-> >> which might be a child of diffeent parent domains. In this example,
-> >> the parent domains are MAIN_PD and WKUP_PD:
-> >>
-> >>     scmi_pds: protocol@11 {
-> >>         reg = <0x11>;
-> >>         #power-domain-cells = <1>;
-> >>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
-> >>         power-domains-child-ids = <15>, <19>;
-> >>     };
-> >>
-> >> With this example using the new property, SCMI PM domain 15 becomes a
-> >> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
-> >> WKUP_PD.
-> >>
-> >> To support this feature, add two new core functions
-> >>
-> >> - of_genpd_add_child_ids()
-> >> - of_genpd_remove_child_ids()
-> >>
-> >> which can be called by pmdomain providers to add/remove child domains
-> >> if they support the new property power-domains-child-ids.
-> >>
-> >> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-> >
-> > Thanks for working on this! It certainly is a missing feature!
->
-> You're welcome, thanks for the detailed review.
->
-> >> ---
-> >>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> >>  include/linux/pm_domain.h |  16 ++++++++++++++++
-> >>  2 files changed, 185 insertions(+)
-> >>
-> >> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-> >> index 61c2277c9ce3..acb45dd540b7 100644
-> >> --- a/drivers/pmdomain/core.c
-> >> +++ b/drivers/pmdomain/core.c
-> >> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
-> >>         return genpd;
-> >>  }
-> >>
-> >> +/**
-> >> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
-> >> + * @np: Device node pointer associated with the PM domain provider.
-> >> + * @data: Pointer to the onecell data associated with the PM domain provider.
-> >> + *
-> >> + * Parse the power-domains and power-domains-child-ids properties to establish
-> >> + * parent-child relationships for PM domains. The power-domains property lists
-> >> + * parent domains, and power-domains-child-ids lists which child domain IDs
-> >> + * should be associated with each parent.
-> >> + *
-> >> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
-> >
-> > I think we should avoid returning specific error codes for specific
-> > errors, simply because it usually becomes messy.
-> >
-> > If I understand correctly the intent here is to allow the caller to
-> > check for -ENOENT and potentially avoid bailing out as it may not
-> > really be an error, right?
->
-> Right, -ENOENT is not an error of parsing, it's to indicate that there
-> are no child-ids to be parsed.
->
-> > Perhaps a better option is to return the number of children for whom
-> > we successfully assigned parents. Hence 0 or a positive value allows
-> > the caller to understand what happened. More importantly, a negative
-> > error code then really becomes an error for the caller to consider.
->
-> I explored this a bit, but it gets messy quick.  It means we have to
-> track cases where only some of the children were added as well as when
-> all children were added.   Personally, I think this should be an "all or
-> nothing" thing.  If all the children cannot be parsed/added, then none
-> of them should be added.
->
-> This also allows the remove to not have to care about how many were
-> added, and just remove them all, with the additional benefit of not
-> having to track the state of how many children were successfully added.
->
+Convert IMX8M_BLK_CTRL and IMX9_BLK_CTRL from bool to tristate
+to allow building as loadable modules.
 
-I fully agree, it should be all or nothing. Failing with one
-child/parent should end up with an error code being returned.
+Add prompt strings to make these options visible and configurable
+in menuconfig, keeping them enabled by default on appropriate platforms.
 
-That said, it still seems to make perfect sense to return the number
-of children for whom we assigned parents for, no?
+Also remove the IMX_GPCV2_PM_DOMAINS dependency from IMX9_BLK_CTRL
+since i.MX93 doesn't use GPCv2 power domains.
 
-[...]
+Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+---
+ drivers/pmdomain/imx/Kconfig | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-> >> +int of_genpd_remove_child_ids(struct device_node *np,
-> >> +                          struct genpd_onecell_data *data)
-> >> +{
-> >> +       struct of_phandle_args parent_args;
-> >> +       struct generic_pm_domain *parent_genpd, *child_genpd;
-> >> +       struct of_phandle_iterator it;
-> >> +       const struct property *prop;
-> >> +       const __be32 *item;
-> >> +       u32 child_id;
-> >> +       int ret;
-> >> +
-> >> +       /* Check if both properties exist */
-> >> +       if (of_count_phandle_with_args(np, "power-domains", "#power-domain-cells") <= 0)
-> >> +               return -ENOENT;
-> >> +
-> >> +       prop = of_find_property(np, "power-domains-child-ids", NULL);
-> >> +       if (!prop)
-> >> +               return -ENOENT;
-> >> +
-> >> +       item = of_prop_next_u32(prop, NULL, &child_id);
-> >
-> > Similar comments as for of_genpd_add_child_ids().
-> >
-> > Moreover, I think we should remove the children in the reverse order
-> > of how we added them.
->
-> I'm curious why does the order matter?  The children are all siblings
-> (no hierarchy), so why would the order be important?
+diff --git a/drivers/pmdomain/imx/Kconfig b/drivers/pmdomain/imx/Kconfig
+index 00203615c65e..9168d183b0c5 100644
+--- a/drivers/pmdomain/imx/Kconfig
++++ b/drivers/pmdomain/imx/Kconfig
+@@ -10,15 +10,18 @@ config IMX_GPCV2_PM_DOMAINS
+ 	default y if SOC_IMX7D
+ 
+ config IMX8M_BLK_CTRL
+-	bool
+-	default SOC_IMX8M && IMX_GPCV2_PM_DOMAINS
++	tristate "i.MX8M BLK CTRL driver"
++	depends on SOC_IMX8M
++	depends on IMX_GPCV2_PM_DOMAINS
+ 	depends on PM_GENERIC_DOMAINS
+ 	depends on COMMON_CLK
++	default y
+ 
+ config IMX9_BLK_CTRL
+-	bool
+-	default SOC_IMX9 && IMX_GPCV2_PM_DOMAINS
++	tristate "i.MX93 BLK CTRL driver"
++	depends on SOC_IMX9
+ 	depends on PM_GENERIC_DOMAINS
++	default y
+ 
+ config IMX_SCU_PD
+ 	bool "IMX SCU Power Domain driver"
+-- 
+2.34.1
 
-It might not be that important, but generally, it seems like a good
-idea to me to reverse the order when undoing things.
-
->
-> I'm not ware of a phandle iterator/helper to parse in the reverse, so
-> that would mean iterating once to create a list, and then walking it in
-> reverse.  Seems unnecessary.
-
-Sure, I leave the call to you, to see what fits best.
-
-Kind regards
-Uffe
