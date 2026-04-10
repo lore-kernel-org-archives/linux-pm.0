@@ -1,175 +1,238 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 271DC3AA4E9
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 08:46:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775810812; cv=none; b=d8Xd24ipwfPKUzHk72lixxTdH1Ai6C+XB/LtcjwSQo9gezdM1tc+1R8UPyiT0wRe43ShkNAh0zwmMEd4rHFPCnltB8BaHgK82IsqjMagpjb4SawwhUlVgRoX6G37x3BKvTt5wH5QzUmwi8SbOh7swRUJ3jB5Of0dEyFIrUC5QjI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775810812; c=relaxed/simple;
-	bh=sy3IM94J0YA4FPUYACOkqZOUDS1xDuihTps704Bqv60=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=k//n8Ly7essZONhMdlmutH2+GgZSrYa2UfGlG8uyRKULeX8RDGGURz0yg2kNWr3hHjry+7NrRlH119D0H5jBfUMkzXNZUPINsmIX0ksm5rDjyAUiCQP62Q5w30/nbL+XNgxv1TnRrSItz324tIZ/ESgzXRETaRpep2og4QRQ20o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aDeYLcYg; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=YTo7dNtD; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24AB62E22BD
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 08:58:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775811486; cv=pass; b=MnNGv5K7kby3f3UZMzvOIVHxcLj93rY4L0FtqXqPFFbypemuUCnHi4XXGuaV8LeJzQjmzJ9xYADclCLCDTSY00XHWhlnJ//jk8YzPeCoqH4wOY9MgaQAPHCd5ViPJoh6PwCFiOyiT5NheCgigUtrlbm7lg0Uum55mYtpIadl0hI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775811486; c=relaxed/simple;
+	bh=iaYKT1sl2Tr/cLZwPA0Zvqg9ubw9wCPbruk9AwA0cek=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FZ5Mowxn1lgHK1v0t9YbkcjINkGUZE5IIw3Miagum13+Dig/W469fFsI+Xbmpf57LVQby60y+dY5XqTTj6kt/eV3bxrVuBixKWARbOUMoGmIYYb/v/3G1UTmos0jn08x0t24N5GAYTkDsfjls8tvroMmQUzUihsSOmucKsMlmQ4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qW/kT/NF; arc=pass smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aDeYLcYg";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="YTo7dNtD"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63A5oKZt708994
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 08:46:50 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=ISnxQr9CyErWBDiGnnkQoFdi7q9lsidim/S
-	Kb2VHosI=; b=aDeYLcYgGxPEFy19/LIes9HV0OSfciFOYZtGWItZ7YXHVp9MhbP
-	RJiJ/aOk967PoEEZr5x6QI7ECZ/68wMkvxfs6rOIBUWabYQNpcxmDE+R7IoQ5JQD
-	Zc5bEApGVfWjgaDcStuUnQp8G8Yb6Ph4lkCxgMfaFDmxdG8v6NDabkO5fC8H6U5+
-	7MuWzm4wjlhOMKeyxzs80QUmS6RaSMMgCtv4R6c3A626d7EOrsYLY9pNOnJoYXIE
-	joyLRI2t/6J/l4MHk6IPIoS0S1fczIeT2R6N2eBAQFNCLQbPxIx8biBDWrZLRTgW
-	RtQU6g5o2JZi+uaAMSKpG1RU7v9ltP+5Y2Q==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4deudj0mc0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 08:46:50 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-50b323c43fdso33362621cf.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 01:46:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qW/kT/NF"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a3e5b4acc1so1576639e87.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 01:58:03 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775811482; cv=none;
+        d=google.com; s=arc-20240605;
+        b=cMzjaAtX2pK543JtLgerYy+Zq9d5YZxRuzElw+BZDscie/mxsSBK2poZjBdqD2do3O
+         d3sJQmFgbHj6BoiPG7cFPSqwJ9Z6mkZAdWnq1jp9mFxg3ApOmdEUGryaYly2eYUqy9A0
+         NJGm8+2Vj0OJApoRBnakkA3mqya3Ek8uMY/7qOG4j0dWOV+K53xXydH5fWhBFrBySvT5
+         leAA6dlsnIZBRwydSx9hlZU5Gk05DeBq+/gMkO1OOQAserRoTUJ2420lGfTtFiFlWzuj
+         l6fRfjgg1q4WBWt0gcuTUVx+Iz/l9ZpUe0jwG4WBB4cCUaCeytqFOyB5lrz1DePLzOWV
+         I6Jw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
+        fh=17B/r/6yD2jQqsXM29XKAj+cpr5LdqBZ8Qvrq22t9JQ=;
+        b=PPxLfLfOu24V37KXVM2DxHzhDYPpddKled11aet8dGaUP58Pm3Mip6Q5sh2BoX86gG
+         XYJW+7sGsZ6PlomGI49sXJA1+4fCTDkVmC4kMPJPIFUYmrN6EowHwCPLjRxD2baug0vo
+         Jq6l37/ma2vPSgHsmXUPP39bS4OW0lq3TQn7WSYxDal5s/cgnO9HcSKZ5QMUFWjc6Lln
+         2PETABxd7TBLq8fV7vd0Nzl8Cy56F0kBULCvmUQblqBsBJ7Wa+p2QwqLJli0sKMhOfCh
+         dFhljv3C/ClPmD2TmP6as4WkTglnZD6Tyx0IQWOqQRiZbqZDm+Af2Pdbm0GzVm4dMGih
+         FApw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1775810809; x=1776415609; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ISnxQr9CyErWBDiGnnkQoFdi7q9lsidim/SKb2VHosI=;
-        b=YTo7dNtD6CH//VmZ+3+t/RPDU8miwlbJPkjq0RpFAVkcWj/YxvDj8E00yCvUPa5wT4
-         932Zr8FE8c3pubfiIcc2a8Rv41nA2tCsHA1BNiVHJL/pb/OPlXuZik8mwRt6Wbtoa9IT
-         lwDbliIVt6jJXjsGFu01yrExRq6tzxN9mNvqqSSNsi+88yW3XzEWErjr9+fOudXoHQGj
-         MS/V7ZFpbKbV2qnP0m6ZYqKfb5Zdh0tS+KDj/QMHtQKRUU0yw3i8Ky7R9VFn5gC2NDCz
-         krLimt0lNEAwqrmNi57kcf7Z5a0hpzyIIrNz/8we8gyyG0u/5WuVMnziH89weh0K3xXm
-         F/UQ==
+        d=linaro.org; s=google; t=1775811482; x=1776416282; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
+        b=qW/kT/NFo+XhkEqKBwLgGwFMLH+rH4rsWbCuYQHqlqBoIVsGX3AFU8FsJ5LyrqMCgG
+         u92Rw8ZKiwWCdVr5TrFD6S2Q3lVNWvAwtBiazEHryzoWM68NyEO3tEZnsuMlG94qPAaS
+         REZjxiVsOILaxQzEsmhRI72TSVZia7M8617I8HHJmiQwAUwYsfJjHTHu+GiehjhH9V+x
+         CcjNZzJGVadFLKT4V9EPy5EPxtzSba0ZySbSZ2s2xXc3ELq7zTclCF7ufUKFEeoUvt26
+         gCsJlqO6pG2y6xGY5DqKd4T8xd847j+lbuibBPZ9HLAFJl2NsXEWieUjMOSmtuJVGnaa
+         rAWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775810809; x=1776415609;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1775811482; x=1776416282;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ISnxQr9CyErWBDiGnnkQoFdi7q9lsidim/SKb2VHosI=;
-        b=hxa5RFIw6+VXUsW6oSS8Zm2tixf+IlYf1vNOUovw1miB9Ok7WCHIVHMpPPd1RQKdmY
-         DGjgfsuelJSWkEsGHmoUCh6vniARZPnN26gK9oe7HNVyoUXQN7ND9ZpNr8JdeP2JyqoW
-         pH57PWYd1uCa+fhaAVIsdVkzR89IXmv0Cw65IrFwg2Kd0reYUITRD6TelTrGQbtaUccb
-         MRdhu4jGlJl659amPIUJHBcAfyK7rrVs0sPRUT6jV28fNNv1hqpCICzIuSHh+S2v7Ulv
-         hmvwS+yLwFot7vhS5LotyDBFof9uoLpinmHZXOkd4ElB1hcVOFtVSdxNz+9GehReJ0yy
-         y8XA==
-X-Gm-Message-State: AOJu0Yw40nJliNw36/1UVR+q/Pm/IKnEhhhL8MK75tZNzsEc9oSoy0/z
-	WXSB5BOCGpS3kkN7AHLTVX2dxIMzarLBfJrycOf5+NKBPzoOt3qyib1LNhS+W+hVVGBvpGmhmAR
-	ZZj/F9D7FG+SfaHoF/WEq8wJRtONDPjbnq2mQjjVylKvnHXzG3BH4CxK5Y5Eebw==
-X-Gm-Gg: AeBDietDQHUNL+u3FvaeeAFQg1SJXCpck+J4lHiokkBxGOpep007pLYz+I/M1wIki6y
-	kShZkR0fcbPIl3oZBeEe6XvN7NCV/1fPPd3VCEef+Av3coLpTxwFL22yUJdufu5Z6oaex1TvJYI
-	o8PU+46zhrCS5SGJn/m1fqdYAZiNlP5qi+jHpmuPvAqBxvs3tRMaITOUU++s0q+6y8UCvwWd2sG
-	JcxQ2Nhr5WT5LafAV6ndDUdvRMMIfWAEFCWVPDwqlBbJU2aN3tJisRXBRfLPALnPkqoQXFTgeeY
-	1TDkSzRNleOheFkeKzTeS8lqxErgW/TOT0r32oPPGlaT3BdqfsXVdHYxcBKJUQfqC0EPem8HHSC
-	mvNFcRKGI4HAo1YqitKRBWrUJtOiB7OAK4ZIqgiptDTpJjjih4A==
-X-Received: by 2002:a05:622a:a948:10b0:50d:9cda:70ed with SMTP id d75a77b69052e-50dd5b7d2aemr27490641cf.35.1775810809119;
-        Fri, 10 Apr 2026 01:46:49 -0700 (PDT)
-X-Received: by 2002:a05:622a:a948:10b0:50d:9cda:70ed with SMTP id d75a77b69052e-50dd5b7d2aemr27490301cf.35.1775810808696;
-        Fri, 10 Apr 2026 01:46:48 -0700 (PDT)
-Received: from brgl-qcom.home ([2a01:cb1d:dc:7e00:7d6c:c663:fa06:9ee8])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488d681ea59sm15351255e9.14.2026.04.10.01.46.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 01:46:47 -0700 (PDT)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, brgl@kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: [GIT PULL] power sequencing updates for v7.1-rc1
-Date: Fri, 10 Apr 2026 10:46:43 +0200
-Message-ID: <20260410084643.14631-1-bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: git-send-email 2.47.3
+        bh=Z1vmmkZcYrQbBuSPIBwVZCij2+2X5p9lbMUk5Tsb6wM=;
+        b=DyNb5Zj+CjqSkW/yZrpQPKDzLHThtuDVUyFyQ3NMMCdx1BxTZTCwN62WNwTlmaDoqg
+         THtZy6BOdeiNVPh+aFcgiaSsKczVr5GbA3gdvpdinVL+VS4FNSBl7hy5furehlC1vGUb
+         MmvEQ6VRlw9h6qbIJUiRU/lX1GNznb+nkUfajkCLLXLeFAZH4lIlIji5CwHTSLugPUGG
+         bFFt52QK++AtMUUsEPo4TZT8rA1QacmNiFTVc1xfTeADqmqLIz2J3uQZmNw2ljIQAumK
+         9wWOW8wqwiPvJNpX80NCfKmEVpTXyRLbgbIGktJ2WISDTLh/CeQQCXv7eTppemow3Wbz
+         mwyA==
+X-Forwarded-Encrypted: i=1; AJvYcCWWWPGrui4wzZZLvrAZkoOy8gPy6VzBITPT4Fj/7rQdbzJCVQBZZnMpFqKR1SeMvZScKHdjZvMqXg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzr/BCcF2ZGITkzN4AVLFySqhig/AY626gqoeHXgOIbdsysTrDs
+	3uHfMDUs4QqVfTxRAcDMY/Cwjo4vbnaOhQELid1v62CsKiHvwbfV2KojjNbz2YwKt/TJH6oLJ7b
+	y6hddVLMdZH7Sndpa/ufuKnUj7fMVi26c6yQQn+79Qw==
+X-Gm-Gg: AeBDieu8nmrDxqxRfTC5nGRobXKkedDrtgDZm51HOocxvoOZALEBSUzI+1a0cngXl1S
+	J1kVak8GQcqtMgsKF6HE3gQqdUWcuFCmM0XYWmOCqgJUqoBQp44GGwF7thxN5/6fztn+pOyV/6E
+	m52xf3sxG0zHatU82dI1LUaekwmV6D13hsAmCl/dawV1tctfL7FSxxGkmL8dWX/bwTy2bJKSFUb
+	GDbVbC9RAY4C9TsHqZni2+TSP6/FuKls2NRg//5yq5YYsMYVyHOD23D37d3Ggff8jGU4pl/n33a
+	YoAIDn9q
+X-Received: by 2002:a05:6512:1396:b0:5a2:c8d9:ec4a with SMTP id
+ 2adb3069b0e04-5a3ef9127demr836109e87.19.1775811482189; Fri, 10 Apr 2026
+ 01:58:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: OI8i2BR1wFqqt9db1GLbxnhpdyJ2FaN9
-X-Proofpoint-GUID: OI8i2BR1wFqqt9db1GLbxnhpdyJ2FaN9
-X-Authority-Analysis: v=2.4 cv=cKfQdFeN c=1 sm=1 tr=0 ts=69d8b8fa cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=A5OVakUREuEA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=Um2Pa8k9VHT-vaBCBUpS:22 a=VwQbUJbxAAAA:8 a=D8G_PBefrYurufu0zZoA:9
- a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEwMDA4MSBTYWx0ZWRfXwNewIlJy7clJ
- 5+rUy2DEUF9HE7xfdpP3R0mCEfSIt90vVfp+RPdEB1f5MBFcZWYV+abTmluYdus04BbmOVidLzk
- 0x0kBFMf4aBcaCTTECwcSjtR83G3fWBFGSkT/QJvLv2HeQBLUWsj43m1R7ylM5s62qowzG8wyt0
- /npgMONlY9fkOJtF2x7iHF3i+zOBnlXub/MOB070KNaAoB3CYIUPHmqfE0YUYypPqPcekr4NxI5
- CKkgq25w4cP2IpO8wKjdx2RwBpTY9R3fY5SgxvF+0gH8wO+z9mHmE5ZOrja+RRByvpcu9TD1eq5
- jqNBPkN4D2NGZVSAsM9A5KeF+TzUFGVXcuGPkjx0NNpVkZdp8gBGZdznprWxBVCHSeD0Lv+lbYf
- u+MtNLhZ202X7ajbZQeVZD2jsjASCHX5qROjFSFxZvz8tCbraeoNKahbnQyEyFA/Jq3wQVT6Z8r
- oJsNOCQVzhor1xtBt/g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-10_02,2026-04-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 suspectscore=0 phishscore=0 lowpriorityscore=0
- adultscore=0 malwarescore=0 bulkscore=0 priorityscore=1501 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604100081
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+ <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
+ <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com> <7h4iljskvz.fsf@baylibre.com>
+In-Reply-To: <7h4iljskvz.fsf@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Fri, 10 Apr 2026 10:57:24 +0200
+X-Gm-Features: AQROBzDhT0oW3z8LEIG1Euo0M3-dmugaTMajHzsT9TLnPM4O-8m4J3dOe0QMXE4
+Message-ID: <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] pmdomain: core: add support for power-domains-child-ids
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-Linus,
+On Fri, 10 Apr 2026 at 02:45, Kevin Hilman <khilman@baylibre.com> wrote:
+>
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+> > On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
+> >>
+> >> Currently, PM domains can only support hierarchy for simple
+> >> providers (e.g. ones with #power-domain-cells = 0).
+> >>
+> >> Add support for oncell providers as well by adding a new property
+> >> `power-domains-child-ids` to describe the parent/child relationship.
+> >>
+> >> For example, an SCMI PM domain provider has multiple domains, each of
+> >> which might be a child of diffeent parent domains. In this example,
+> >> the parent domains are MAIN_PD and WKUP_PD:
+> >>
+> >>     scmi_pds: protocol@11 {
+> >>         reg = <0x11>;
+> >>         #power-domain-cells = <1>;
+> >>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
+> >>         power-domains-child-ids = <15>, <19>;
+> >>     };
+> >>
+> >> With this example using the new property, SCMI PM domain 15 becomes a
+> >> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
+> >> WKUP_PD.
+> >>
+> >> To support this feature, add two new core functions
+> >>
+> >> - of_genpd_add_child_ids()
+> >> - of_genpd_remove_child_ids()
+> >>
+> >> which can be called by pmdomain providers to add/remove child domains
+> >> if they support the new property power-domains-child-ids.
+> >>
+> >> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+> >
+> > Thanks for working on this! It certainly is a missing feature!
+>
+> You're welcome, thanks for the detailed review.
+>
+> >> ---
+> >>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >>  include/linux/pm_domain.h |  16 ++++++++++++++++
+> >>  2 files changed, 185 insertions(+)
+> >>
+> >> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> >> index 61c2277c9ce3..acb45dd540b7 100644
+> >> --- a/drivers/pmdomain/core.c
+> >> +++ b/drivers/pmdomain/core.c
+> >> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
+> >>         return genpd;
+> >>  }
+> >>
+> >> +/**
+> >> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
+> >> + * @np: Device node pointer associated with the PM domain provider.
+> >> + * @data: Pointer to the onecell data associated with the PM domain provider.
+> >> + *
+> >> + * Parse the power-domains and power-domains-child-ids properties to establish
+> >> + * parent-child relationships for PM domains. The power-domains property lists
+> >> + * parent domains, and power-domains-child-ids lists which child domain IDs
+> >> + * should be associated with each parent.
+> >> + *
+> >> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
+> >
+> > I think we should avoid returning specific error codes for specific
+> > errors, simply because it usually becomes messy.
+> >
+> > If I understand correctly the intent here is to allow the caller to
+> > check for -ENOENT and potentially avoid bailing out as it may not
+> > really be an error, right?
+>
+> Right, -ENOENT is not an error of parsing, it's to indicate that there
+> are no child-ids to be parsed.
+>
+> > Perhaps a better option is to return the number of children for whom
+> > we successfully assigned parents. Hence 0 or a positive value allows
+> > the caller to understand what happened. More importantly, a negative
+> > error code then really becomes an error for the caller to consider.
+>
+> I explored this a bit, but it gets messy quick.  It means we have to
+> track cases where only some of the children were added as well as when
+> all children were added.   Personally, I think this should be an "all or
+> nothing" thing.  If all the children cannot be parsed/added, then none
+> of them should be added.
+>
+> This also allows the remove to not have to care about how many were
+> added, and just remove them all, with the additional benefit of not
+> having to track the state of how many children were successfully added.
+>
 
-I'll be OoO next week and disconnected so I'm sending an early PR for the
-next cycle.
+I fully agree, it should be all or nothing. Failing with one
+child/parent should end up with an error code being returned.
 
-For this release we have an extension of the pwrseq-pcie-m2 driver with
-support for PCIe M.2 Key E connectors. The rest of the commits in the PR
-fulfill a supporting role: document the hardware in DT bindings, provide
-required serdev helpers (this has been provided in an immutable branch to
-Rob Herring so you may see it in his PR as well) and is followed up by
-some Kconfig fixes from Arnd.
+That said, it still seems to make perfect sense to return the number
+of children for whom we assigned parents for, no?
 
-Please consider pulling for v7.1-rc1.
+[...]
 
-Thanks,
-Bartosz
+> >> +int of_genpd_remove_child_ids(struct device_node *np,
+> >> +                          struct genpd_onecell_data *data)
+> >> +{
+> >> +       struct of_phandle_args parent_args;
+> >> +       struct generic_pm_domain *parent_genpd, *child_genpd;
+> >> +       struct of_phandle_iterator it;
+> >> +       const struct property *prop;
+> >> +       const __be32 *item;
+> >> +       u32 child_id;
+> >> +       int ret;
+> >> +
+> >> +       /* Check if both properties exist */
+> >> +       if (of_count_phandle_with_args(np, "power-domains", "#power-domain-cells") <= 0)
+> >> +               return -ENOENT;
+> >> +
+> >> +       prop = of_find_property(np, "power-domains-child-ids", NULL);
+> >> +       if (!prop)
+> >> +               return -ENOENT;
+> >> +
+> >> +       item = of_prop_next_u32(prop, NULL, &child_id);
+> >
+> > Similar comments as for of_genpd_add_child_ids().
+> >
+> > Moreover, I think we should remove the children in the reverse order
+> > of how we added them.
+>
+> I'm curious why does the order matter?  The children are all siblings
+> (no hierarchy), so why would the order be important?
 
-The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
+It might not be that important, but generally, it seems like a good
+idea to me to reverse the order when undoing things.
 
-  Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
+>
+> I'm not ware of a phandle iterator/helper to parse in the reverse, so
+> that would mean iterating once to create a list, and then walking it in
+> reverse.  Seems unnecessary.
 
-are available in the Git repository at:
+Sure, I leave the call to you, to see what fits best.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git tags/pwrseq-updates-for-v7.1-rc1
-
-for you to fetch changes up to b4464d8f313f903ba72db06042f3958a9a1e464a:
-
-  power: sequencing: pcie-m2: add SERIAL_DEV_BUS dependency (2026-04-03 14:20:36 +0200)
-
-----------------------------------------------------------------
-power sequencing updates for v7.1-rc1
-
-- add support for the PCIe M.2 Key E connectors in pwrseq-pcie-m2
-- describe PCIe M.2 Mechanical Key E connectors in DT bindings
-- add serdev helpers for looking up devices by OF nodes
-- minor serdev core rework to enable support for PCIe M.2 Key E connectors
-
-----------------------------------------------------------------
-Arnd Bergmann (2):
-      power: sequencing: pcie-m2: enforce PCI and OF dependencies
-      power: sequencing: pcie-m2: add SERIAL_DEV_BUS dependency
-
-Manivannan Sadhasivam (7):
-      serdev: Convert to_serdev_*() helpers to macros and use container_of_const()
-      serdev: Add an API to find the serdev controller associated with the devicetree node
-      serdev: Do not return -ENODEV from of_serdev_register_devices() if external connector is used
-      dt-bindings: serial: Document the graph port
-      dt-bindings: connector: Add PCIe M.2 Mechanical Key E connector
-      power: sequencing: pcie-m2: Add support for PCIe M.2 Key E connectors
-      power: sequencing: pcie-m2: Create serdev device for WCN7850 bluetooth
-
- .../bindings/connector/pcie-m2-e-connector.yaml    | 184 +++++++++++
- .../devicetree/bindings/serial/serial.yaml         |   3 +
- MAINTAINERS                                        |   1 +
- drivers/power/sequencing/Kconfig                   |   5 +-
- drivers/power/sequencing/pwrseq-pcie-m2.c          | 346 ++++++++++++++++++++-
- drivers/tty/serdev/core.c                          |  28 +-
- include/linux/serdev.h                             |  24 +-
- 7 files changed, 563 insertions(+), 28 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/connector/pcie-m2-e-connector.yaml
+Kind regards
+Uffe
