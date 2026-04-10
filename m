@@ -1,31 +1,31 @@
 Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23BFF3DFC9A;
-	Fri, 10 Apr 2026 16:49:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC9143E024C;
+	Fri, 10 Apr 2026 16:49:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775839747; cv=none; b=jmkXpTlo/QM2BZiF888bJ72IAqJ8puwNuE/ENaEivR079o1SNnKAXwcPUV+DBRMah9kjrQVTtcVDElt7U5rDge5h54WbaMY3n5uzqOrhQotfec42cST8+QhQ0q+2wRr2pnlpbR4emExoLo9ztZOAo5x1VB5C6sw2tuPh3v9QgyQ=
+	t=1775839747; cv=none; b=Ud8f1qiVhl1c7AlrjPlbYhqqcqaKtbdAhUYxTRaNOmYITgJQVQK+P4DKnd42uXohuYPKhMHA9aakPqWrSqIJz80iMl9WuyNt66Q1/goX8SDXTMgS/NUbbtED1Xc2z3Vo9xd1QxeplMCgQDLJ27q54JylyFfspmQdMV0FgOKJ8ZQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1775839747; c=relaxed/simple;
-	bh=gEByb17aWEuS+y3knfgxZufJ5uAM0e8FrkZagNP6esI=;
+	bh=JnH9zOxJRNagemiQv9oYzRiv1ojhPKXvc6QjWfgg8M8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NE6vzmAcPRvDbeauGoE6bPjhXsQhBwYolKxr46TfjjoeMpUsEbxmQuzStuiSxmUgk9MP2MTLCgiFNXs0cCF4Pvr4g2Q99OH3KCd0aMKa5Gi1uC87KnO5901izJiCdi4EEEhhVPKyreY4+Ehj9pC9cNdOBWKtr8qIQ6u7BokFhC4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=PGX2gsl1; arc=none smtp.client-ip=65.21.61.41
+	 In-Reply-To:To:Cc; b=qHnTKGE3WJJdf0GLd6mzA5O4+OkNEeyXTxemPEWH+A/d2NweFMTFC6ZA7I+QAgH9VyDVICaPAPxYtWIz4SZCRbO/8uwnMhNQw9cHogtgTzXyLLgfRkIjS5vPrTf62tSvCNRpaA9aYfEwnf0tgg4tS/mdYwT0HfVJI8DN737HX4k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=SCs982he; arc=none smtp.client-ip=65.21.61.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="PGX2gsl1"
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="SCs982he"
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1775839735;
-	bh=gEByb17aWEuS+y3knfgxZufJ5uAM0e8FrkZagNP6esI=;
+	s=courrier-s1; t=1775839733;
+	bh=JnH9zOxJRNagemiQv9oYzRiv1ojhPKXvc6QjWfgg8M8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=PGX2gsl1yyc+ElHo9FsLIsNLdz0wCQ4AqJ1oVIagtF+w/VRPb2fJUfeFwtApN/lLT
-	 KRzWyKBNiZNnqsfcaEB5V+x9VA08l0z3E8bxPZ/UT5jXnpu3KzWmW85Xqo0bzwuWBK
-	 9JUQsqnU8Y/8WR1RHhlWiSp/efZ8eULlcwPmZebc=
-Date: Fri, 10 Apr 2026 18:48:04 +0200
-Subject: [PATCH 3/8] firmware: meson: sm: Add thermal calibration SMC call
+	b=SCs982hejK1UFmNVnWr8K/Cbi6sBubCOwkRe+97Q0ApaylbdBtBf8rC7Gkn9X3Jjo
+	 /lxvY38e3TlgjNq3HyjS7cBYBV171K9g36SJ8xzxIKlBrevwQgkiNfX0qwE868SZBI
+	 OC3TD5CHkDkrlf1yQTgOn/mdwxpULIW/ObwTHcEE=
+Date: Fri, 10 Apr 2026 18:48:02 +0200
+Subject: [PATCH 1/8] dt-bindings: thermal: amlogic: Add support for T7
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +34,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260410-add-thermal-t7-vim4-v1-3-19f2b8da74d7@aliel.fr>
+Message-Id: <20260410-add-thermal-t7-vim4-v1-1-19f2b8da74d7@aliel.fr>
 References: <20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr>
 In-Reply-To: <20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
@@ -51,65 +51,99 @@ Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
  linux-arm-kernel@lists.infradead.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openssh-sha256; t=1775839730; l=1805;
+X-Developer-Signature: v=1; a=openssh-sha256; t=1775839730; l=2587;
  i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
- bh=gEByb17aWEuS+y3knfgxZufJ5uAM0e8FrkZagNP6esI=;
+ bh=JnH9zOxJRNagemiQv9oYzRiv1ojhPKXvc6QjWfgg8M8=;
  b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
  BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QCZXPWgNcIzEeEI7sgiKyGvolQvqu+W2iXUpuLgewQ+KT9tqCB33rJpAiFgCiRuOXeroJaJ+ZpJ
- TlX2RqgZqmw4=
+ QIown5ndRspw9U+KORP1wl++iWagf/WHOEUwIGEnUXSIOxnigvlQa9Dxfaq2ppb6l2j+JeBWAwO
+ W7lGJSZi92Qk=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
  fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-Add SM_THERMAL_CALIB_READ at SMC ID 0x82000047 in the command
-table and implement meson_sm_get_thermal_calib(), which forwards the
-tsensor_id argument to the secure monitor and returns the calibration data.
+Add the amlogic,t7-thermal compatible for the Amlogic T7 thermal sensor.
 
-Also realign the CMD() column to improve readability.
+Unlike existing variants which use a phandle to the ao-secure syscon,
+the T7 relies on a secure monitor interface described by a phandle and
+a sensor index argument.
+
+Introduce the amlogic,secure-monitor property as a phandle-array and
+make amlogic,ao-secure or amlogic,secure-monitor conditionally required
+depending on the compatible.
 
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- drivers/firmware/meson/meson_sm.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+ .../bindings/thermal/amlogic,thermal.yaml          | 40 +++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/meson/meson_sm.c b/drivers/firmware/meson/meson_sm.c
-index 3ab67aaa9e5da..da0dbcd8a2ff2 100644
---- a/drivers/firmware/meson/meson_sm.c
-+++ b/drivers/firmware/meson/meson_sm.c
-@@ -41,12 +41,13 @@ static const struct meson_sm_chip gxbb_chip = {
- 	.cmd_shmem_in_base	= 0x82000020,
- 	.cmd_shmem_out_base	= 0x82000021,
- 	.cmd = {
--		CMD(SM_EFUSE_READ,	0x82000030),
--		CMD(SM_EFUSE_WRITE,	0x82000031),
-+		CMD(SM_EFUSE_READ,		0x82000030),
-+		CMD(SM_EFUSE_WRITE,		0x82000031),
- 		CMD(SM_EFUSE_USER_MAX,	0x82000033),
--		CMD(SM_GET_CHIP_ID,	0x82000044),
--		CMD(SM_A1_PWRC_SET,	0x82000093),
--		CMD(SM_A1_PWRC_GET,	0x82000095),
-+		CMD(SM_GET_CHIP_ID,		0x82000044),
-+		CMD(SM_THERMAL_CALIB_READ,	0x82000047),
-+		CMD(SM_A1_PWRC_SET,		0x82000093),
-+		CMD(SM_A1_PWRC_GET,		0x82000095),
- 		{ /* sentinel */ },
- 	},
- };
-@@ -245,6 +246,14 @@ struct meson_sm_firmware *meson_sm_get(struct device_node *sm_node)
- }
- EXPORT_SYMBOL_GPL(meson_sm_get);
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+index 70b273271754b..85ee73c6e1161 100644
+--- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -22,6 +22,7 @@ properties:
+               - amlogic,g12a-ddr-thermal
+           - const: amlogic,g12a-thermal
+       - const: amlogic,a1-cpu-thermal
++      - const: amlogic,t7-thermal
  
-+int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
-+			       u32 tsensor_id)
-+{
-+	return meson_sm_call(fw, SM_THERMAL_CALIB_READ, trim_info, tsensor_id,
-+			     0, 0, 0, 0);
-+}
-+EXPORT_SYMBOL_GPL(meson_sm_get_thermal_calib);
+   reg:
+     maxItems: 1
+@@ -42,12 +43,40 @@ properties:
+   '#thermal-sensor-cells':
+     const: 0
+ 
++  amlogic,secure-monitor:
++    description: phandle to the secure monitor
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    items:
++      - items:
++          - description: phandle to the secure monitor
++          - description: sensor index
 +
- #define SM_CHIP_ID_LENGTH	119
- #define SM_CHIP_ID_OFFSET	4
- #define SM_CHIP_ID_SIZE		12
+ required:
+   - compatible
+   - reg
+   - interrupts
+   - clocks
+-  - amlogic,ao-secure
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - amlogic,g12a-cpu-thermal
++              - amlogic,g12a-ddr-thermal
++              - amlogic,a1-cpu-thermal
++    then:
++      required:
++        - amlogic,ao-secure
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: amlogic,t7-thermal
++    then:
++      required:
++        - amlogic,secure-monitor
+ 
+ unevaluatedProperties: false
+ 
+@@ -62,4 +91,13 @@ examples:
+         #thermal-sensor-cells = <0>;
+         amlogic,ao-secure = <&sec_AO>;
+     };
++  - |
++    a73_tsensor: temperature-sensor@20000 {
++        compatible = "amlogic,t7-thermal";
++        reg = <0x0 0x20000 0x0 0x50>;
++        interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&clkc_periphs CLKID_TS>;
++        #thermal-sensor-cells = <0>;
++        amlogic,secure-monitor = <&sm 1>;
++    };
+ ...
 
 -- 
 2.49.0
