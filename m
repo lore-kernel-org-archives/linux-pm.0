@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70BC23BED43
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 13:28:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BD1F3BED43
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 13:28:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775827722; cv=none; b=kvkPdGvBARFgpiiDzQVXBkbpvGesZOiSptK5eLsNGCdaIKMzU/eGL7EB548vrrnjnEimKCv6wPfCRd8DV3IRztoLW1cU4ySHUqpewLlE0GAqPqJW9iG3hlmwBTCaF0UMENGN53C3S2jL+t4Rr0cupXdUpJW02nNz0RlJbNAeuBk=
+	t=1775827723; cv=none; b=OElnI1rru2dJCZEGcTdHDmrbqioFgv++QF3N82/sSnUyuOooSPUgPqeCnBQspUtLEKpNqu2uftt2t7uSHcKLGyRVkg4YsRU9HOR0H3seScr3r6IIDbUXsjnGKOpfpDMg6uNF4H0V5UOzfLo6p5+hmzR6SX/wEQe6hpq55xCGR9o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775827722; c=relaxed/simple;
-	bh=+FSvMlXCsHDQipnZyJaEgAi1gP3AgzcNgncDkccgCOI=;
+	s=arc-20240116; t=1775827723; c=relaxed/simple;
+	bh=nbxMIYyVXCC+AfdfH8dvDkuNunmF4yvD6AwHX0TtdAY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=u/ca/TbzRD4ckfeYY/R8qePqLjeNun9XFhnRz3hVTBNbaEneuaSilOnjQHajZt4w6k4AjVPWnzxdJd07lIbMVAmCpt8EvN5F9/aJ83W286G1sTNUdEo1I5o34GnRr9puMnlfCblVNUFY+AiMYa7epQSat3lXnI/2ux1QdtCCHPw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qO49Vwv6; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=apV1NX+zy+legYf7JK0kWldlMuUMvZ+FLDHlS2l/DLgU11hGxE0YMVZB/nYLGTb8G4uH9+ep8SVkcHuQQAiqZQiAB9wIbAX8zEc9y7us7msfwoPTLZcMof9OIfj7ysrYBYcs/ZhH5oaHfk/I3qKmOBD4oFwofY3BSPiXQRfvL3E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r3LbYJ8X; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qO49Vwv6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B939CC19421;
-	Fri, 10 Apr 2026 13:28:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r3LbYJ8X"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78CFEC2BC87;
+	Fri, 10 Apr 2026 13:28:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1775827722;
-	bh=+FSvMlXCsHDQipnZyJaEgAi1gP3AgzcNgncDkccgCOI=;
+	bh=nbxMIYyVXCC+AfdfH8dvDkuNunmF4yvD6AwHX0TtdAY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:From;
-	b=qO49Vwv6IyLi4hWy3PLkvgNMCnzutkBfrlkxRB/OenZZrfyQjVKQ2UBEPG32WohWp
-	 B7L3z9U2tyE3weUxGnxEa+rpykn4TGOOkhxvUGs9DSF+TgPwd8i1L7SJfbwM63EIhn
-	 Da9G+aCvJaXcVZRi8QSU1c77BPfYDH1UGWbk2o4YLNuVVBMntUxf6oPR6xIbqGLUbg
-	 j7L/LbTNMLn1WMD60igEY8F+wk6qVA5QVSS/rkGq4O2bl2hv3Sv+CrFaz21KxT43IR
-	 IAq3hKDyhmeY4Z4DQXzfi6nXLzBsjKgyOLJpQNuFNruthhnJ5BwgaP9a1wA9zVsZNX
-	 uHYJ4thLgY+2A==
+	b=r3LbYJ8Xu1wlnOfgybhN/oZk5tmL+sx12UoZZO2sBRgwt/YX/Q4muNL4RfXfirS7/
+	 G1MKxGHItlMFJ3oUA2EM/K4P0qVXWSBiYUGRwX46JkG0AKqkNm1N/tMlpDpWLQVka2
+	 YXRy0Aqxqg2jpQWGlGmIIkGdUQc1ne5f4F4F8G+O5lxtofwuwoILi041JiI33orzp+
+	 gB95IxY/t80x0aQuU4MB2aBLI7oc16AuxWQ0i0Qw3T2sdjpbMq4VReV6LPi7/4ER+u
+	 BNFe+tU2v8q9mlvwYlM5egXfXpK1FRgEwPNMELqEgdNEWq8d0e35GdndO1tuN54hd0
+	 tbtQn6ZeGZGFg==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
-Cc: Serhii Pievniev <spevnev16@gmail.com>,
+Cc: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH 4/9] tools/power/turbostat: Fix microcode patch level output for AMD/Hygon
-Date: Fri, 10 Apr 2026 09:25:09 -0400
-Message-ID: <a444083286434ec1fd127c5da11a3091e6013008.1775827309.git.len.brown@intel.com>
+Subject: [PATCH 5/9] tools/power turbostat: Consistently use print_float_value()
+Date: Fri, 10 Apr 2026 09:25:10 -0400
+Message-ID: <ed532d738a82269dfe490436b9b8def2274cfb6e.1775827309.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <57d2371d52be1d574b33382bfbf8052485b99d8b.1775827309.git.len.brown@intel.com>
 References: <57d2371d52be1d574b33382bfbf8052485b99d8b.1775827309.git.len.brown@intel.com>
@@ -46,53 +46,37 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Serhii Pievniev <spevnev16@gmail.com>
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-turbostat always used the same logic to read the microcode patch level,
-which is correct for Intel but not for AMD/Hygon.
-While Intel stores the patch level in the upper 32 bits of MSR, AMD
-stores it in the lower 32 bits, which causes turbostat to report the
-microcode version as 0x0 on AMD/Hygon.
+Fix the PMT thread code to use print_float_value(),
+to be consistent with the PMT core and package code.
 
-Fix by shifting right by 32 for non-AMD/Hygon, preserving the existing
-behavior for Intel and unknown vendors.
-
-Fixes: 3e4048466c39 ("tools/power turbostat: Add --no-msr option")
-Signed-off-by: Serhii Pievniev <spevnev16@gmail.com>
+[lenb: commit message]
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 14021a6ed717..b985bce69142 100644
+index b985bce69142..9744f9caac9a 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -9121,10 +9121,13 @@ void process_cpuid()
- 	cpuid_has_hv = ecx_flags & (1 << 31);
+@@ -3489,12 +3489,12 @@ int format_counters(PER_THREAD_PARAMS)
  
- 	if (!no_msr) {
--		if (get_msr(sched_getcpu(), MSR_IA32_UCODE_REV, &ucode_patch))
-+		if (get_msr(sched_getcpu(), MSR_IA32_UCODE_REV, &ucode_patch)) {
- 			warnx("get_msr(UCODE)");
--		else
-+		} else {
- 			ucode_patch_valid = true;
-+			if (!authentic_amd && !hygon_genuine)
-+				ucode_patch >>= 32;
-+		}
+ 		case PMT_TYPE_XTAL_TIME:
+ 			value_converted = pct(value_raw / crystal_hz, interval_float);
+-			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), value_converted);
++			outp += print_float_value(&printed, delim, value_converted);
+ 			break;
+ 
+ 		case PMT_TYPE_TCORE_CLOCK:
+ 			value_converted = pct(value_raw / tcore_clock_freq_hz, interval_float);
+-			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), value_converted);
++			outp += print_float_value(&printed, delim, value_converted);
+ 		}
  	}
  
- 	/*
-@@ -9138,7 +9141,7 @@ void process_cpuid()
- 	if (!quiet) {
- 		fprintf(outf, "CPUID(1): family:model:stepping 0x%x:%x:%x (%d:%d:%d)", family, model, stepping, family, model, stepping);
- 		if (ucode_patch_valid)
--			fprintf(outf, " microcode 0x%x", (unsigned int)((ucode_patch >> 32) & 0xFFFFFFFF));
-+			fprintf(outf, " microcode 0x%x", (unsigned int)ucode_patch);
- 		fputc('\n', outf);
- 
- 		fprintf(outf, "CPUID(0x80000000): max_extended_levels: 0x%x\n", max_extended_level);
 -- 
 2.45.2
 
