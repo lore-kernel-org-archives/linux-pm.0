@@ -1,127 +1,73 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51EBD332608
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:14:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0656E329C67;
+	Fri, 10 Apr 2026 10:20:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775816071; cv=none; b=W4w/MWLsCxiUYOpRWJKszDMVtDyaw/hAeb2lWldVvG10l1ruNcOR0HRuFqk8K93NoMnLzLwnate22rOnbJV453WJEIL5If8TGk5cAgHneL+NEeXy2LRkE0kmlimLeCOCudpuEGcteNo0U7TSe+HByWuTIdbAXK7i8UUCB1VXKNc=
+	t=1775816413; cv=none; b=Pla3kNh/zJqBsHc5dnlFPCfCwFU4515tVF37INawm88T2u16nBtFRCbg/kOClfJCyuAYBkrc9JKtBawoCT8ZpDzw82gycHHukfeX6ja8BbmGVu/Kytrq0d8b+teAmAy4IiDSePIZJnh8/LG+hIJTz+jG+eWOlAsBLb3ewuFczZc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775816071; c=relaxed/simple;
-	bh=NNOGRi2Pk73elP/uDZRT2G7dsMhVJMDHI6gq7/8u8lE=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=UJVYcJuTMrQ5fzGAUa4nE31p6XyfxRylUAAWUfY9HMNJ1vq7xlTCsoLGKqNu/EwC4uZSbqKv+QL2HJQg6nRAJTyE7uvr+PFhhx9+c12NKJ7/uJAlgpvkdY8qjXKkRBYmJNyKxsU8dm49bQvsMLSymP16ppTBfxiTVciIE/RvbB8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DiczjVDv; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1775816413; c=relaxed/simple;
+	bh=KWb5/jmAk10UfhNvrbw8u9CU09mcsX2bncAWPbXDiMI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=qlqZujywQ0LnbepZCNvc3QmMDYMq15N4a2kYOjViOsbbDrMQDimKTCcsw4Xsk8jteAbAxKbRKOyPlhmtWXVi1RQuYCagb10rV1iaB0J5eAc7vim4vg0Kix2ckQIWKujAVcOWcY+ydgVDVPDtqHxftvhVYkofxWIE7rtRXX5a3B0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=gNb/tKl5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DiczjVDv"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-488971db0fdso18592355e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:14:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775816069; x=1776420869; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=+sH4Pq0+JhCvPKdGn3HzVN61BGlxBFICyOKzedDdf5g=;
-        b=DiczjVDvTKeUbF1nWymk3QrVFP4ep8iZpwGa8wZWkmezut4qg6U3iiock7L5UmNiHa
-         On1L3eV36SKpRUWEIGBxwe3nWL1bc45qjbx01TvkxO5hkfIwQTKtFfwZLDqAlGZByKCl
-         DplXRxu3po/3n4JdC31qgPsQBWbdNpM8Qlfbt4ZwexkIB50T3erkCxo5c43Ns1d2H2ma
-         hNP9nRHclQSEQurxS2A8+OkwXIYUH83rVjRVNjHzM0PtA30k++e/v5WwdKwPYUeHIblR
-         JiOZdJ0UfOY6YEV2MLyApusiKEwkYN1GOTj/nrgCTTRlyYgmWakLkaIIDYe253cbtGhw
-         j9hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775816069; x=1776420869;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=+sH4Pq0+JhCvPKdGn3HzVN61BGlxBFICyOKzedDdf5g=;
-        b=T8j0Ia4rKgyG1pkFV79idGATODwm4FAc0cGiWigm3cftS7mvPXgBxBUlfU1IjOpZWp
-         Gc75huhJfAtARcIOFL628bH0vomA0nq6LO3JKbIAyDSUvGZ1B/aNLXNrF2koWBDFePRg
-         +valrX+FZPw2Jx/ZcM7lorR3KimMNCaq1dwXEcMRE5Yxps2U6Tu9UTn5LqEU6frM+GZQ
-         yJ793fx2a5U0TEz4QaULcVccswIJG7eH0kPSBd5pT/dAXxE3mVVvEyHBaJY80kigfe0w
-         F5FMcux8dSftiu5qJv1YISV2V1yTsEe0AYzfr4F+uIw6KRmHUyi7O/No5qUE05YUHpOx
-         yJdw==
-X-Gm-Message-State: AOJu0YyjUf0QU+wpSjajPBxcxU5LYRhhxPmWzyxxByYiX7kYeY9QyNdp
-	UfV4ic7h4+AXx7BjkX0qaqQa0nU/3IGQ/Kn8yhjzyrVXL0KGj4Z8V0rNHq/nP/Ui
-X-Gm-Gg: AeBDies2g/APR0ezzG3lkem4yfoGy9ImGVUJixw/uVX5EuGyv6SV2qM/LSe1Hiq34sc
-	tjiV6ytykJ5oysO+bwwloCVrl3e+gLCfhx5Ed7nacgbXaZZynEpsgcMx94eUMPjK38s87MNJMot
-	E96PWDxdfkRtcs+D7kFjQad4opJk3oOHs9FJCPNroS59jT7+AlfTSxS2koAjIlg0fMaAB1a+ard
-	Gt7+dL2jMjDY1IiGCYNpaXcdP5IET+N/vCwJt960rd8I4T3795ycjzNTcysTfBrW6P3+7MgVsTj
-	HBkvbJfmKxzhMFn830OxcZUm/pC8KORoJjnxMsO0MxqMjIE+a1/oudKBB7+otoJKJLu22BVgfXp
-	9Dn232nRIm7XsCDY0UIwOGd3RB00LmbZCsZgkr0ps92n2qaAQ0VzOETtONat4xe2nz8azNqe9rW
-	9TPT4cv/aMHiZmUe5/A1c=
-X-Received: by 2002:a05:600c:8209:b0:485:3fa9:358c with SMTP id 5b1f17b1804b1-488d684bafcmr29472215e9.17.1775816068634;
-        Fri, 10 Apr 2026 03:14:28 -0700 (PDT)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488d5b56d1asm62986385e9.15.2026.04.10.03.14.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 03:14:28 -0700 (PDT)
-Date: Fri, 10 Apr 2026 13:14:25 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Amit Sunil Dhamne <amitsd@google.com>
-Cc: linux-pm@vger.kernel.org
-Subject: [bug report] power: supply: max77759: add charger driver
-Message-ID: <adjNgZAaULzTBtJO@stanley.mountain>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="gNb/tKl5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F735C19421;
+	Fri, 10 Apr 2026 10:20:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775816412;
+	bh=KWb5/jmAk10UfhNvrbw8u9CU09mcsX2bncAWPbXDiMI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gNb/tKl5gQcgrsD4HoB/WsKlT4pYq/gLGFcEOiCMg937UaCHIJV77uyGpuMo0DoU0
+	 1UZo9rzoTRHkvsqthqIvN5d4sZoRluXnOXGHXKs5o7vsQt9fA2qmUQJp1wp6sO/bKW
+	 h0E1l6wkvdlRt6kj1n5yg9G15RJ14hSVEvaGACXV1QIPJSb8p3s1NTNC28DNhn0Wuj
+	 RDd5sATs7MSPxEVOkNQUhj2CO72wu7WtMIVu7T4qiXxaDzmgUmiiXrNmB6plkeBxv8
+	 feE8v/wl+0tO99pfNEevK6rcBTTxbEKnSczs4CQOkhf+U6dv9WnA73ftPe0kxROi05
+	 NDU5UWqcCppIQ==
+Date: Fri, 10 Apr 2026 12:20:07 +0200
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Calvin Owens <calvin@wbinvd.org>, John Stultz <jstultz@google.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
+	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
+	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Subject: Re: [patch V2 05/11] posix-timers: Switch to
+ hrtimer_start_expires_user()
+Message-ID: <adjO1yvB2akP7iKw@localhost.localdomain>
+References: <20260408102356.783133335@kernel.org>
+ <20260408114952.266001916@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260408114952.266001916@kernel.org>
 
-Hello Amit Sunil Dhamne,
+Le Wed, Apr 08, 2026 at 01:54:06PM +0200, Thomas Gleixner a écrit :
+> Switch the arm and rearm callbacks for hrtimer based posix timers over to
+> hrtimer_start_expires_user() so that already expired timers are not
+> queued. Hand the result back to the caller, which then queues the signal.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Cc: Anna-Maria Behnsen <anna-maria@linutronix.de>
+> Cc: Frederic Weisbecker <frederic@kernel.org>
 
-Commit 70d7dd27f6dc ("power: supply: max77759: add charger driver")
-from Mar 25, 2026 (linux-next), leads to the following Smatch static
-checker warning:
+Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
 
-	drivers/power/supply/max77759_charger.c:117 get_online()
-	info: return a literal instead of 'ret'
-
-drivers/power/supply/max77759_charger.c
-    97  static int charger_input_valid(struct max77759_charger *chg)
-    98  {
-    99          u32 val;
-   100          int ret;
-   101  
-   102          ret = regmap_read(chg->regmap, MAX77759_CHGR_REG_CHG_INT_OK, &val);
-   103          if (ret)
-   104                  return ret;
-   105  
-   106          return (val & MAX77759_CHGR_REG_CHG_INT_CHG) &&
-   107                  (val & MAX77759_CHGR_REG_CHG_INT_CHGIN);
-   108  }
-   109  
-   110  static int get_online(struct max77759_charger *chg)
-   111  {
-   112          u32 val;
-   113          int ret;
-   114  
-   115          ret = charger_input_valid(chg);
-   116          if (ret <= 0)
-   117                  return ret;
-
-This needs some comments.  From the naming, we would assume
-charger_input_valid() returns true for valid and false for invalid.
-
-Based on reading the code get_online() return true/false as well
-but what does it mean?  false means offline and true means online?
-In which sense is this a get_ function?  I'm so confused.
-
-   118  
-   119          ret = regmap_read(chg->regmap, MAX77759_CHGR_REG_CHG_DETAILS_02, &val);
-   120          if (ret)
-   121                  return ret;
-   122  
-   123          guard(mutex)(&chg->lock);
-   124  
-   125          return (val & MAX77759_CHGR_REG_CHG_DETAILS_02_CHGIN_STS) &&
-   126                  (chg->mode == MAX77759_CHGR_MODE_CHG_BUCK_ON);
-   127  }
-
-This email is a free service from the Smatch-CI project [smatch.sf.net].
-
-regards,
-dan carpenter
+-- 
+Frederic Weisbecker
+SUSE Labs
