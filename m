@@ -1,64 +1,64 @@
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 648CB38E10F
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0D9B38C43F
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775817674; cv=none; b=jqqNqtg0OBTM1KStUXL9cZElwzZdGViIY8uD4Xhy8eO7RyjPHQqy9jdrBixSyDB7NEIsBEfCHTHqDE35j4+aO6S/CGXprgYBC8NC6NkK8q8pB+zUjEsAhmlxzXsLOwvFa8sJvtqT8iVKp27LjX8MDGcsA987rklw5ju5bhWduZs=
+	t=1775817675; cv=none; b=ApRpzopQk67/PCwi9E0lIHcU5EdxSRYjzlNI7FkjBqJBza5QnuoHm7PCgangKrL+Fsg/TdVI1FN+DbbwC0qezWrj+HPiAA8iHgWxi+IZKaEvHUyOr2j4FBEXTQ/Qk79BcOnopr6XaD3K04wsOqYcuVgHZ5w4i7KS8brRNRCgs0o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775817674; c=relaxed/simple;
-	bh=KuIvrgkQZXsNbe1PGIJcqjwmYA54iDgNFmQrWWfasDw=;
+	s=arc-20240116; t=1775817675; c=relaxed/simple;
+	bh=m4coB5e9g1UL1iOPVtCfrfwvQCguu+x2fNqi13dtzmA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=L1UP79HLQdPZGeJnHFNkZYush8iFUs26JDFIbLf8Egfq/CnMsqfCJrbSqhVBIBSLlBHxwWaYANKYgEE9I6bysqJsCYtW2T5720kz7hQi0zhNsDQQjK/TQP9pCWIZWfpWkkca1pGh1ZasHsMftl4eYqZaP1oAvfRwzGS41NsOv2A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=iheW4gve; arc=none smtp.client-ip=209.85.208.170
+	 MIME-Version; b=fjUHwP1Lv719nCvthZSIRowpT/rN4A6m6dnhcQIUsNC5c2YSwbzi/+6fDhLptFuFtcQUtwLcVIVVaMCi/p4ZJeNfdsl/aZ66RDPZ4nj28hoK02ZLPOeTQvnLx0zNhKcUrhWCHqA6A0cab+MBzWsGveN1Q5IbHD5PSYXWCssR/B0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=wONb4HX2; arc=none smtp.client-ip=209.85.208.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iheW4gve"
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-38cc0b91b01so15331381fa.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wONb4HX2"
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-38e387f3838so14647301fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775817671; x=1776422471; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1775817672; x=1776422472; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Nm+wP/DxtqDeb0bHdnh1xnktH2NnKja4jlZQ2gGkpXg=;
-        b=iheW4gveNO1P5MdzhcI5pW08CIkJX50XnXm+kh2VdrDMpztw3TRSKCUkRvL5Z9QGfD
-         E0ApDXNwF/RCbgn6VT6ehaYf5yCVi12y37unmp+vfBwSseqW/JXBPCTNrTLeHeJUMwje
-         vyVRrtoqDuIXn5d+s3E41RyxZczKrp6EFTNcm8OpcesAqkGg2Z/Ohmr2+wCn70eVgwvE
-         AwFXcQLz1uO8hJ7GD8WZg64UPk5BAg8GVDQlbuDeNvugIFjh2/iL0yCt/bXGHpOpUoDb
-         SLODi85JF6bpqbORVRznpC3rn5PBESdEHimJR/7zrysJzVcc4ufteroXaqnRkDFPWWNJ
-         Gmhg==
+        bh=xaKCEd2gzVah/bMq++NzZ+nKKJRbKGoWqEto9LQKP04=;
+        b=wONb4HX2xTbtpu6ijfVg8erlcb6TFhpCcZjfKsFbC3d+xWGYB16KCwvqi/puHrRhOP
+         4o9SiyCa1fCknN3sSkp7dTUo2OgsZBsKMJcqBUTQ1/AeB/0sj/gxXu5ns7q0zTcG0ciZ
+         RmLYStgwFGV/FRCXiXXRvE7ia91rOQyFCgZzenBg4tMqKcQxPH8KkUKTnMf/EEJ+/Vsu
+         CUqPTmoNFAdZQqWRdYgSEdJCW6OdpmSgHRrRhXaODueA8+5At6OcNkli/sRmeoMgnCaa
+         QVF2OLbJpo+6ZVRxqnsoT1+uW4jKDdnJxXN/WVnLT7Ga92dp2dwUy+fLxWeaTBkkDATd
+         8zhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775817671; x=1776422471;
+        d=1e100.net; s=20251104; t=1775817672; x=1776422472;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=Nm+wP/DxtqDeb0bHdnh1xnktH2NnKja4jlZQ2gGkpXg=;
-        b=rG11lZbcTibPFnYlPA6uNkQAgJR0/Ui7UgK0hkcqFOJ+yAC7t3LWhBmHYUSNe5Ba+W
-         1rOsuL2p2wdW9JNmRow2hYmskfBqYo45S8A2T8V8JTKMpRnHOs1XIvYBnxQR++pRj5WI
-         dGDEHAqihFcG5j9bmRjA79iv17fvHe2qEmcjnNLU3LNJO1/d5an+oWXpjjmS80EEzQEN
-         dl7nncW+hsxj7fhyPn+Z/V0acXDhQynnF+221CngdwyDK559ObrOQXWvh2KzJTV3g928
-         IfviTNqj4GKMF6yGj6Aj6zjuj0nE+R6/6raFxk0PodWO3XQT1P2ASHiUtO6k9DCEvTLL
-         yJtw==
-X-Forwarded-Encrypted: i=1; AJvYcCVILOM88kBXELb0TKwJn4KVFC53EW9Rpqz1dw+yh3Dmmo/B9tsquluAQ3iCTbcfSuiTfX8vDpNvPQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwMKVGjv1fJH6kemE9R2zFX+XnJmRLoggLGZpv/lL5ljgk8x9JH
-	SIBSHBG69XlXBPYsFzcCJA2KGLxxclNC1Epd+Dr6kAgtlLJZXr4yGQdp6MvLJmh7LJLBgkw2F2O
-	Bm4+l
-X-Gm-Gg: AeBDieu+JN9eIQ6FYx+hhTqLKcSioxq59wO0Oww+Ip/WxwIkaIUuwyUbrsVIeeC0Ndd
-	6AOiD8awjqRzAyxwf0bm0fxLWj+dnN17UnJoV10RlSLiIRx3kMzOymSqH5g+w/WytYwOPmHahUe
-	DmVRUIBjxtlKt0JsNMeXGIt6X+f7vJ1Xzezo2cMDGed6BhONiOj2Fu/4DSzyLrR1c/4c5EtwCTg
-	uCAWu+hwlJLq+TMfBFUK7nryqr6jU1cyOutIoaEraBUmH0HKcYlaTDJoaBALq3mobVNopIB0SWA
-	QJNcQ1MkIggb6l4reSEJagce7KBYZjL/uh7axklHLb06iiFKwH89ovUCuNWNghCv4ns6R6OzexV
-	9IJyb8XZfLHSYgqBs46KpY4zMrMqWAcTFWDdGwa4yJILfRVN61xgJZ1vgdSWKwY/6kwxqyf0anM
-	W02IwU+LN6xB7nXoS12A9qRvHpCH6Adbn2Tk8wjwsdC5GL8GZHlp6zQRdYSMWE19ImeIrRAuR9
-X-Received: by 2002:a05:651c:b21:b0:38e:2445:fca2 with SMTP id 38308e7fff4ca-38e4c052e2bmr7575221fa.31.1775817670439;
-        Fri, 10 Apr 2026 03:41:10 -0700 (PDT)
+        bh=xaKCEd2gzVah/bMq++NzZ+nKKJRbKGoWqEto9LQKP04=;
+        b=tOTB9aO7oQfFJagBmxfEGN+7F0gq5O0BL7mXSYThoNpRiiRYi26Y+MDZmdTPEGtGVX
+         jRNChIwuz+n/crnijE/iZGlldiuYFvrk3/5+mlrwG4neHoUihlepis1ch3IpW/vy90jU
+         ST926MXvpA4JBLugjecxX/IuqxH36LZe8lamOai8fOR+ahS8fFNuHgG3ZXQnZT2mU7Db
+         WXwqmnvsYRzLapufBdjwKIOm2yB0fY6o8bA4U9/QFrBDScqnzzRBUgQdGH0kpBdSGl0h
+         Uire/CwlWZsfzeLPHPxgeidYB8RIEFJHxwYrvBAAazgoY6Ow3WEIILkFg6CdiBEMWgLN
+         H5Ig==
+X-Forwarded-Encrypted: i=1; AJvYcCWdA1sD7mLRAhV01BsQxRe9RFhXO6+0mGdv9dwK/q82waNh7K/kd7pcKLX14bFxZltUwtEu5YImVg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwUzUXk6KKIrujLL7q3LrxC+7b2HJB6RrCc3m/vvtpMWDv1dT1e
+	S8owag7q4IQ2jpOTiFqpVyDEboVBsXrW6aQPLSgl1Yx2WU2bkrwHga6PdSj6/9f9XSg=
+X-Gm-Gg: AeBDieuX/J/lCyWQu44wBCo12bbesNllmZJlFUDOYwUWAgjf9YqoR9M0AUySeNHnJPH
+	nDTJmz1SDUhRLqWgLOduPUrM0q/Kd86zZ+qdiaGRnRZekasb0o3DkolAH9EvXTWF2xEtaqI7Euc
+	z8FPniolwKaqj8d4uUDOE7PAPpXoslQAFyoC9d1XUz4Iz9pVP/sgymJP7GhRSHxqxGkRx4fhy0T
+	+y/4cPdWp37SEPKBQr86eYWSwdayFOj8IgT2hPB5CGNZYWkmgMMYunKJPxJVMfG95rsi1GK8wRk
+	4zBLDM4ptr9WvNOaW2jgsuNDUS4539qJ3Q4PqsvZ3bU4ymze998B0kIcbydBPVXpPsBB3ZIGnlj
+	ydPP5ifTu6GmD9PqBSggIQ59yIWDBK7ZsGPUeAXUV3o7yiGG0x9m5qSbzXK1rLrj4YNFGwwWnKL
+	7MvdjjPQVV8qXJr6F+mRTzbyO5wYdJQ2j+g/zyKDEH9Vo29hcWbCDqpaHa047N0MHS4bf52FZ3L
+	DxqbaMO228=
+X-Received: by 2002:a05:651c:553:b0:38d:d686:e4c7 with SMTP id 38308e7fff4ca-38e4bece01fmr8081161fa.14.1775817671707;
+        Fri, 10 Apr 2026 03:41:11 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.09
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 03:41:10 -0700 (PDT)
+        Fri, 10 Apr 2026 03:41:11 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@linaro.org>
 To: Saravana Kannan <saravanak@kernel.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -83,9 +83,9 @@ Cc: Sudeep Holla <sudeep.holla@kernel.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 3/9] pmdomain: core: Move genpd_get_from_provider()
-Date: Fri, 10 Apr 2026 12:40:46 +0200
-Message-ID: <20260410104058.83748-4-ulf.hansson@linaro.org>
+Subject: [PATCH v2 4/9] pmdomain: core: Add initial fine grained sync_state support
+Date: Fri, 10 Apr 2026 12:40:47 +0200
+Message-ID: <20260410104058.83748-5-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260410104058.83748-1-ulf.hansson@linaro.org>
 References: <20260410104058.83748-1-ulf.hansson@linaro.org>
@@ -97,105 +97,187 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-To prepare for subsequent changes and to avoid an unnecessary function
-declaration, let's move genpd_get_from_provider() a bit earlier in the
-code.
+A onecell (#power-domain-cells = <1 or 2>; in DT) power domain provider
+typically provides multiple independent power domains, each with their own
+corresponding consumers. In these cases we have to wait for all consumers
+for all the provided power domains before the ->sync_state() callback gets
+called for the supplier.
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+In a first step to improve this, let's implement support for fine grained
+sync_state support a per genpd basis by using the ->queue_sync_state()
+callback. To take step by step, let's initially limit the improvement to
+the internal genpd provider driver and to its corresponding genpd devices
+for onecell providers.
+
 Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/pmdomain/core.c | 70 ++++++++++++++++++++---------------------
- 1 file changed, 35 insertions(+), 35 deletions(-)
+ drivers/pmdomain/core.c   | 125 ++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h |   1 +
+ 2 files changed, 126 insertions(+)
 
 diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-index 4d32fc676aaf..ad57846f02a3 100644
+index ad57846f02a3..783d6f981708 100644
 --- a/drivers/pmdomain/core.c
 +++ b/drivers/pmdomain/core.c
-@@ -2664,6 +2664,41 @@ static bool genpd_present(const struct generic_pm_domain *genpd)
- 	return ret;
+@@ -2699,6 +2699,120 @@ static struct generic_pm_domain *genpd_get_from_provider(
+ 	return genpd;
  }
  
-+/**
-+ * genpd_get_from_provider() - Look-up PM domain
-+ * @genpdspec: OF phandle args to use for look-up
-+ *
-+ * Looks for a PM domain provider under the node specified by @genpdspec and if
-+ * found, uses xlate function of the provider to map phandle args to a PM
-+ * domain.
-+ *
-+ * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
-+ * on failure.
-+ */
-+static struct generic_pm_domain *genpd_get_from_provider(
-+					const struct of_phandle_args *genpdspec)
++static bool genpd_should_wait_for_consumer(struct device_node *np)
 +{
-+	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
-+	struct of_genpd_provider *provider;
++	struct generic_pm_domain *genpd;
++	bool should_wait = false;
 +
-+	if (!genpdspec)
-+		return ERR_PTR(-EINVAL);
++	mutex_lock(&gpd_list_lock);
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
++		if (genpd->provider == of_fwnode_handle(np)) {
++			genpd_lock(genpd);
 +
-+	mutex_lock(&of_genpd_mutex);
++			/* Clear the previous state before reevaluating. */
++			genpd->wait_for_consumer = false;
 +
-+	/* Check if we have such a provider in our array */
-+	list_for_each_entry(provider, &of_genpd_providers, link) {
-+		if (provider->node == genpdspec->np)
-+			genpd = provider->xlate(genpdspec, provider->data);
-+		if (!IS_ERR(genpd))
++			/*
++			 * Unless there is at least one genpd for the provider
++			 * that is being kept powered-on, we don't have to care
++			 * about waiting for consumers.
++			 */
++			if (genpd->stay_on)
++				should_wait = true;
++
++			genpd_unlock(genpd);
++		}
++	}
++	mutex_unlock(&gpd_list_lock);
++
++	return should_wait;
++}
++
++static void genpd_parse_for_consumer(struct device_node *sup,
++				     struct device_node *con)
++{
++	struct generic_pm_domain *genpd;
++	int i;
++
++	for (i = 0; ; i++) {
++		struct of_phandle_args pd_args;
++
++		if (of_parse_phandle_with_args(con, "power-domains",
++					       "#power-domain-cells",
++					        i, &pd_args))
 +			break;
++
++		/*
++		 * The phandle must correspond to the supplier's genpd provider
++		 * to be relevant else let's move to the next index.
++		 */
++		if (sup != pd_args.np) {
++			of_node_put(pd_args.np);
++			continue;
++		}
++
++		mutex_lock(&gpd_list_lock);
++		genpd = genpd_get_from_provider(&pd_args);
++		if (!IS_ERR(genpd)) {
++			genpd_lock(genpd);
++			genpd->wait_for_consumer = true;
++			genpd_unlock(genpd);
++		}
++		mutex_unlock(&gpd_list_lock);
++
++		of_node_put(pd_args.np);
++	}
++}
++
++static void _genpd_queue_sync_state(struct device_node *np)
++{
++	struct generic_pm_domain *genpd;
++
++	mutex_lock(&gpd_list_lock);
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
++		if (genpd->provider == of_fwnode_handle(np)) {
++			genpd_lock(genpd);
++			if (genpd->stay_on && !genpd->wait_for_consumer) {
++				genpd->stay_on = false;
++				genpd_queue_power_off_work(genpd);
++			}
++			genpd_unlock(genpd);
++		}
++	}
++	mutex_unlock(&gpd_list_lock);
++}
++
++static void genpd_queue_sync_state(struct device *dev)
++{
++	struct device_node *np = dev->of_node;
++	struct device_link *link;
++
++	if (!genpd_should_wait_for_consumer(np))
++		return;
++
++	list_for_each_entry(link, &dev->links.consumers, s_node) {
++		struct device *consumer = link->consumer;
++
++		if (!device_link_test(link, DL_FLAG_MANAGED))
++			continue;
++
++		if (link->status == DL_STATE_ACTIVE)
++			continue;
++
++		if (!consumer->of_node)
++			continue;
++
++		/*
++		 * A consumer device has not been probed yet. Let's parse its
++		 * device node for the power-domains property, to find out the
++		 * genpds it may belong to and then prevent sync state for them.
++		 */
++		genpd_parse_for_consumer(np, consumer->of_node);
 +	}
 +
-+	mutex_unlock(&of_genpd_mutex);
-+
-+	return genpd;
++	_genpd_queue_sync_state(np);
 +}
 +
  static void genpd_sync_state(struct device *dev)
  {
  	return of_genpd_sync_state(dev->of_node);
-@@ -2889,41 +2924,6 @@ void of_genpd_del_provider(struct device_node *np)
+@@ -3531,6 +3645,16 @@ static int genpd_provider_probe(struct device *dev)
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(of_genpd_del_provider);
  
--/**
-- * genpd_get_from_provider() - Look-up PM domain
-- * @genpdspec: OF phandle args to use for look-up
-- *
-- * Looks for a PM domain provider under the node specified by @genpdspec and if
-- * found, uses xlate function of the provider to map phandle args to a PM
-- * domain.
-- *
-- * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
-- * on failure.
-- */
--static struct generic_pm_domain *genpd_get_from_provider(
--					const struct of_phandle_args *genpdspec)
--{
--	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
--	struct of_genpd_provider *provider;
--
--	if (!genpdspec)
--		return ERR_PTR(-EINVAL);
--
--	mutex_lock(&of_genpd_mutex);
--
--	/* Check if we have such a provider in our array */
--	list_for_each_entry(provider, &of_genpd_providers, link) {
--		if (provider->node == genpdspec->np)
--			genpd = provider->xlate(genpdspec, provider->data);
--		if (!IS_ERR(genpd))
--			break;
--	}
--
--	mutex_unlock(&of_genpd_mutex);
--
--	return genpd;
--}
--
- /**
-  * of_genpd_add_device() - Add a device to an I/O PM domain
-  * @genpdspec: OF phandle args to use for look-up PM domain
++static void genpd_provider_queue_sync_state(struct device *dev)
++{
++	struct generic_pm_domain *genpd = container_of(dev, struct generic_pm_domain, dev);
++
++	if (genpd->sync_state != GENPD_SYNC_STATE_ONECELL)
++		return;
++
++	genpd_queue_sync_state(dev);
++}
++
+ static void genpd_provider_sync_state(struct device *dev)
+ {
+ 	struct generic_pm_domain *genpd = container_of(dev, struct generic_pm_domain, dev);
+@@ -3559,6 +3683,7 @@ static struct device_driver genpd_provider_drv = {
+ 	.name = "genpd_provider",
+ 	.bus = &genpd_provider_bus_type,
+ 	.probe = genpd_provider_probe,
++	.queue_sync_state = genpd_provider_queue_sync_state,
+ 	.sync_state = genpd_provider_sync_state,
+ 	.suppress_bind_attrs = true,
+ };
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b299dc0128d6..7aa49721cde5 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -215,6 +215,7 @@ struct generic_pm_domain {
+ 	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
+ 	bool synced_poweroff;		/* A consumer needs a synced poweroff */
+ 	bool stay_on;			/* Stay powered-on during boot. */
++	bool wait_for_consumer;		/* Consumers awaits to be probed. */
+ 	enum genpd_sync_state sync_state; /* How sync_state is managed. */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
 -- 
 2.43.0
 
