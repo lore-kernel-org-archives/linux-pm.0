@@ -1,483 +1,388 @@
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011047.outbound.protection.outlook.com [40.107.130.47])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C67BE72631;
-	Fri, 10 Apr 2026 13:48:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.130.47
-ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775828904; cv=fail; b=MiZAuSwzfwXiObX9B/rygMdwxtw5+semJ55pHf+eZvDjF0XGtMW9mjpKLlIx0i6DvkE+fAn95wOMrO/0K41x6ZVJOcvc0851jvPAdJIgBtHpsBmuNSOtdpo30/1f99yBiOzPxH+0xC+vxSRofaF22lkmFncnhxez3YPcqJUZEKI=
-ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775828904; c=relaxed/simple;
-	bh=EVULKG8+FlpzdZa4Q80YxtdWJc3cD7Yb1YMX0l18W44=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=F90HGstKXSW7LRs8eO5qeD/1Tb1Rekz08JLiEBoxgt/C8Gpwh4YlLskQEvbr545Mfi3XcazSr0JG/fop68cGkpr1m1Y15a1KtqFC+5pk7HRNdGeBoneyitTtCaJvhKdzH5ptHQbfonb/3llBpcjpJquhgJtvI2FhKo8BT7Nn4GA=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Rdrf5T83; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Rdrf5T83; arc=fail smtp.client-ip=40.107.130.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 182EF3CFF62
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:25:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775831108; cv=none; b=sf+Ms3mJBZByWNoJbdP5CFswQ9jCra2wuZ9Oe7h3uy0e7Ii6BQ5sMw0JjX7+nuwJglSabSbcHI+5RR8myyJs0q1LKNZ5CAK6hpqvshzC5SxBKVkNZIQhIeUfUPJjZB93PF/MQvpII+E9xbrzPmLaeTmtqoZWgNudarxXQ7eWNCY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775831108; c=relaxed/simple;
+	bh=y8VQHiooRk5naz9DwNFSj8KAIHoQijEO39T9x9CrqC8=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=PxS4P7GmIVEoSh/CvQovekBhnLjq2SofvKdC7Zzb0ITxwQ3AIYUWEiWXmjY/vuYAEZbpWnHae0/r6PoXoxBIC3oxvZpD8XDemm4kQ3u8a3aDsGm7qHTG6XAaAMaxEYWkG7PMmch2VOhtxtreCns1IE90W1IZB94tNw+/dKmyOlI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lDE1ZdnD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Rdrf5T83";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Rdrf5T83"
-ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=qY6VAGKGxebc+u6jl/PEfJmcIHNI9D3oTFedPD3vaZrcppepeNM8OUumLlhZULvBB3xJeS1j1WBBNYv7J7GiEu8PnywrDJkktfR8JAT5atytvaSkwSVq8Bl93HMj2MVJi3sPbdrIxLxfhbU4cuwkAU4rUmG8vuTs+1vEOSyHFrT5latjC8xlkcpze+IrDvjadrwEMzLSZveaxdxzYOCJHRBZS9ywhoPSzARtF1tqvDtveQ3z1qDmKjQdx09pQEMolPFxzypb8Wx4Ds/49dvmpyZr16U3EqO1Cqu3KAygMGfzYrzx+OACf/bSmArDs+XQF2ikCv1zw2EEpmaQ+0hO5A==
-ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=X+6ZUj6dov+vlYwscuqF6X6mA3uPPA38Lq7evScRndw=;
- b=MqWCroUN2ckQwlDkgWuzSqu6BB0aUu4LkOYAYmGseFuuaoFgkEmUtdE/ZBad2fmhnUXCIUiHG93EFoYO6+qEP3nqvyScEF5qAYslyT+qAwnpDUaG3v/6yVdLD5JvC4qOyTO7pywSEvF1RUn86sEl3EK/4B7pdpMDC7N+VV+ndriG82AqbbUFlGMfwa226b0dSMt3ZjUkGv4R/0oxccr6mzv+8qD7CBn2OMX1xLJCiYYa7mY6n0AFtCHGpd7U/u7BzuA8iqzXiu96lCeq/P9ryCi2wAgB3f2kHj5XAqzinq9nW/VFSlaTOxOgP7y+99eRYfUvjY7V6gN1T51a2gTdZw==
-ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=nvidia.com smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
- spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
- dmarc=[1,1,header.from=arm.com])
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X+6ZUj6dov+vlYwscuqF6X6mA3uPPA38Lq7evScRndw=;
- b=Rdrf5T83jBZIuzshhNFz2AdCTtAGkVomDQRpEZifLxrc89ASPl+s6FwoJ3FazUhXLv8+HDGESz+lT4KOI97Z53qYW/lpKYL5sSyes1xmZs/zL5b633TXmcBUvUBrSX+Qrtw/U21eprsCdJOxD+4Nx2kDiRLzI2HwMRBhbVLk1yE=
-Received: from CWLP123CA0216.GBRP123.PROD.OUTLOOK.COM (2603:10a6:400:19d::16)
- by AS8PR08MB6024.eurprd08.prod.outlook.com (2603:10a6:20b:23d::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.42; Fri, 10 Apr
- 2026 13:48:13 +0000
-Received: from AMS0EPF000001A8.eurprd05.prod.outlook.com
- (2603:10a6:400:19d:cafe::24) by CWLP123CA0216.outlook.office365.com
- (2603:10a6:400:19d::16) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9769.43 via Frontend Transport; Fri,
- 10 Apr 2026 13:48:13 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
- smtp.mailfrom=arm.com; dkim=pass (signature was verified)
- header.d=arm.com;dmarc=pass action=none header.from=arm.com;
-Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
- 4.158.2.129 as permitted sender) receiver=protection.outlook.com;
- client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
-Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- AMS0EPF000001A8.mail.protection.outlook.com (10.167.16.148) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9769.17
- via Frontend Transport; Fri, 10 Apr 2026 13:48:13 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=dPDxNrcSEJXHJyzPdeE03BEGKa95K26EtwhGhcBKlQDtAF5aYtZp3dj635KsoDHN7cndUx7a7MvoGXWB+g/hILZafkyuwYc2uXrWMHpIryb2OcOx9CELPwnB9kUnVI7Stm2cbbaRj3VtfIxu1HcyGBHv1sYFBaq7KaHfnGLvGh8Ooe4tgDuLJIN00E6A703ehIiZPfW7MAoFDeFszHGRxh9QHkpCcJr3RcdEvRVTn5lfBQ5w0KFn8otaGnI+bNzYGE9DRNgLomXebcVIdSMRXRDzfTpOSqyYoGqj9CY4FJIdE6kpM9Wa+B5QhhjWIotzqOSJotXuo9viyFrYNnW5KQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=X+6ZUj6dov+vlYwscuqF6X6mA3uPPA38Lq7evScRndw=;
- b=qu8IxZoLgLQr5MxIrDDTynIEmFb66Ofoa+Y1ztpqJdJSItI9ZywWb6JPoEahyX8Hte7qS2v7lT8DyLYSLQOHffbvzXXZHeAxBK/k0nUgmv3iKeiHEjUNaJJEke5wqd2Fsr9aMluAD70AJ6Rt/iyqvda1+7dhGLHy18ZR19xcpK7TUtre4qaAL513JmX4gIfSRAJGGUFMiVOc/61YprQf8x2Z0Aa7XXBSNW2LxhjBCcFbjtgssa2tjHVrkzrKONBiZRCR/++jXDKXCMgOa/ZY6NEyJQzklzlTib6dxB9uVyF8SaN2gC4970TzdYia6ckWYaYOje+wXfpp3QmtvDFuPQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
- header.d=arm.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X+6ZUj6dov+vlYwscuqF6X6mA3uPPA38Lq7evScRndw=;
- b=Rdrf5T83jBZIuzshhNFz2AdCTtAGkVomDQRpEZifLxrc89ASPl+s6FwoJ3FazUhXLv8+HDGESz+lT4KOI97Z53qYW/lpKYL5sSyes1xmZs/zL5b633TXmcBUvUBrSX+Qrtw/U21eprsCdJOxD+4Nx2kDiRLzI2HwMRBhbVLk1yE=
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=arm.com;
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by AM9PR08MB5907.eurprd08.prod.outlook.com (2603:10a6:20b:2da::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.44; Fri, 10 Apr
- 2026 13:47:10 +0000
-Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
- ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.20.9769.041; Fri, 10 Apr 2026
- 13:47:10 +0000
-Message-ID: <208360b1-36a5-419d-80f4-431914407f61@arm.com>
-Date: Fri, 10 Apr 2026 15:47:08 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: CPPC: add autonomous mode boot parameter support
-To: Sumit Gupta <sumitg@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, zhenglifeng1@huawei.com, treding@nvidia.com,
- viresh.kumar@linaro.org, jonathanh@nvidia.com, vsethi@nvidia.com,
- ionela.voinescu@arm.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- zhanjie9@hisilicon.com, corbet@lwn.net, mochs@nvidia.com,
- skhan@linuxfoundation.org, bbasu@nvidia.com, rdunlap@infradead.org,
- linux-pm@vger.kernel.org, mario.limonciello@amd.com, rafael@kernel.org
-References: <20260317151053.2361475-1-sumitg@nvidia.com>
- <4b1f100b-e699-43c1-a06b-5545056d174c@arm.com>
- <b8debb30-67a5-4d2b-8c08-8fd287f7258e@nvidia.com>
-Content-Language: en-US
-From: Pierre Gondois <pierre.gondois@arm.com>
-In-Reply-To: <b8debb30-67a5-4d2b-8c08-8fd287f7258e@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PA7P264CA0078.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:102:349::18) To VI0PR08MB10391.eurprd08.prod.outlook.com
- (2603:10a6:800:20c::6)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lDE1ZdnD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC4C0C2BC87
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:25:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775831107;
+	bh=y8VQHiooRk5naz9DwNFSj8KAIHoQijEO39T9x9CrqC8=;
+	h=From:Date:Subject:To:Cc:From;
+	b=lDE1ZdnDxP4FQpj+MvVetcjs3eMj9RBK2zM7xTDe4xPapso4mTvqgUdA85kKL282c
+	 syZcP9ahHQkl+1lEGtlapZc7oFaJ1dq+5TY5Vtb/wH72voHrsF5kaA7UkiLF3jvqK4
+	 V/Lg9fYFpXRgJm4uX/KOoHtY/dSXMrbWcZt1rY/CiwSC7DpX7cJbH4etur5DAwSL6J
+	 RDzJutfYSuMWdkkEz2t8c2MBDxWcKgV7Lh/1dQ4AaudFdg9WNsz1tpzYjcQuaiVRf3
+	 cKIp1yteHzUB4hYPCDRl39mN2sict9Wd37ERnuvTyz3XIcPqm8f3uONvREPzeNT357
+	 4xmM+JfMIaQhg==
+Received: by mail-ot1-f43.google.com with SMTP id 46e09a7af769-7d86eb7c854so1069096a34.3
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 07:25:07 -0700 (PDT)
+X-Gm-Message-State: AOJu0Yzcvn4BociaT5I/Se0WkBHiP8QffiD1DTNHPXsKZKx6SdQkCv4c
+	FAe2MtIw20+Y07f4Ndi3sw5yDQslNE8G0yotuVW2LlY+Rl5XI4IXcWWIL1WwMreXxwA6pRyVfRZ
+	hFYqtVmIFOUoUzhg4ubW0bEu9JWxR+x8=
+X-Received: by 2002:a05:6820:4b15:b0:679:97ac:2cc3 with SMTP id
+ 006d021491bc7-68be643039dmr1767680eaf.22.1775831106940; Fri, 10 Apr 2026
+ 07:25:06 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|AM9PR08MB5907:EE_|AMS0EPF000001A8:EE_|AS8PR08MB6024:EE_
-X-MS-Office365-Filtering-Correlation-Id: c80b0062-e79d-4334-1629-08de9707cf87
-x-checkrecipientrouted: true
-NoDisclaimer: true
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|366016|1800799024|376014|7416014|13003099007|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info-Original:
- 7GYBxqhNdqB4ya67TVzpLIB/A3RFOtTD8yOW0z3ZZxoDNbhJwY55SdYzuK87XuN8Q7eFCSzQiyW1h0aUion2esoP+v1bZZcr07X7RTDMRD0nB4eRpaH+h6dVP6bqET6kVzQGkxi68UmRV8jqU5Zlpv024T/C0ErUpZi95+M6zlkKnTVnlvmZqFUrPsIYiA+XAV0OT1cvAN24S+/82Wj4Ed2LPmRrqFWEoaqKYnCy1mYI96mWSPPk8QEXi1jxdgWQUTMySzhHWJG65A3b8dYbNO0BXoQjworukcBQu7ZI5szkvUgsu2gig/PYtjEBn14GbeHT2nxPIZTC7FEWa4WsKpBHGb5oGY/HHct40cZaf7K6rKY6b8HxCIRBi9aeLXzRuiYfrVHNHl+d/RaoX1shGkcLs1Al/onUL78luvhBeKQ8vRrINiilETzOM1gaR5xgJIfFCotdeWTf3Df3HkhlkK8v+DAVoldMx/KfRASL7zDCPPS6miuMOQvy99kfBcRVnfOzfIHhHjyktZS4vUQJFBCxwr9eOfvA5OzRmo2tfua/0XP2Uq+6pOiJitRd5niQGVXrVDMlZnx9o08VUD484pz45EPfQZ3tJXKauOVwPjai01dIxQLtlffyQTyfV+L1Os8G20cHjsnOd6+3hybK0oKXxPLKhpo6K1KEd7ChVLXFb1D6C+RBo7tOYBiIPkn+
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(13003099007)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-Exchange-RoutingPolicyChecked:
- SpYHFdnrbltzM1VHm4Lhh0sptbgvJeS5SfEp27HHSydhbmrFsRd4ajqKd0rxvRRtHLRI0O/KMOT4bRGluTsQPLrbatDjl9UiDrAHG1/yAagMnnC5/0n/LqPzvcXdfMffAr97d4rQKCVQjasfksWsJgtnp5ouwnYCcbobdJLzpafyKAwQxOlsSBqyUe0tH179LfT0shTbDtPwbTgX/ZFvUd9OG8aZI+jmLPalevMCAJfjSwJgaXmu6rqd7HqhxSZw/K1XZgHcLNO9AOl/rkEAMMEFk2ifzY2F2d1oaLtLIz0tDE3QpXT6q5rkxaPfqXy/657ckz6KOcQ/EHxUh18gdA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR08MB5907
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- AMS0EPF000001A8.eurprd05.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	bc17e881-41c5-4bf4-8ecc-08de9707a9b7
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|14060799003|1800799024|7416014|376014|35042699022|36860700016|13003099007|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	qxE5GD+W6QMcqPe3W2XdZpGG0+WMNBL0TEuhRxUSrhpmoLlT+Awn8L88EM9Um0QwImhi1N00sPxiatdYZWho/YLT9vO5YH3AhSRFVe8gABpcTlaqbV0H2LaxpCx2SGwAwzRmO8dU3ps81xQxR+wuCUl+DTPUNWh4Pmboe1j45NqOaOtDCSRYap8PMiPdrhaE8qB/BQzn14Xos2X4W0AF9HDsBB8x/ZjiJbzet3CftubQBAmWZPShtf2rAblHuXL3RH9DfBGQsDQWNgbNtx3isq2etBMdwXK1q0YofyOlRaJ0mfH6/3a9+TJOAsX0gn9+Rxnu4m4Rl+5Hr/gD6WWquV3+w/+ky2+V6rOQVXaS8lXBuJqlBjQgDninzaPqHpCGbEGP6befv1SOxSZD4XvlOkuxnBpmGx5nYdYF7KOF3DiuGtnMAu6tfx3PNROwAMYSjpFSr53qaE0mm4JWoKqhvq9UvBRUhdkYG+bl/BUOETTxPEZRwQXzUlChDe6O9VnIn777O4NrPUrMkeMC90geivt4n0G3e373nqtdVrqt1L3dqKtXwihh5Ko4I+gFyfGsVQzDCgnizvZhgsdO3j5wz1FE1W95Xp5xk7icHZhxtHjVKIW5Tg0xi5/YbsPGxshfD0OQCCqIozQlvIZRFrWXtE8CUxBGo8JopM4cJBl59E081yWsKnrHk9rUyV0PLTAgm1iSAjA497IMlvts1FuSAfjZW78fnVAyCSrB8vnYcJI=
-X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(14060799003)(1800799024)(7416014)(376014)(35042699022)(36860700016)(13003099007)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	MgnzVdpoz2k0KWYg1PXuBu+sXs9RuF70p9cuW4xewgGvtcxGpCB0hwAZYIcDnbZTdk6LDTM1588oWI//AfM8swT+Pl77g2yA1dNIQdlLZZdmVFrFtRuxjYmBUgjuE3kVITZco8boeDFKU/EyWBf6FPI7GyaW1C5bnmEp7sym2iBbVGKbPqq4bB4/3709w7cN+cOoEJW4REvxWxtzIAl55NnWQU0d2bexn52oQcjpYizUfGVKHb3G/Xlr2LS6fP+h+C9fdG74+98RIfeqPMuWfr2oxIdUDMyo0dHQtaHNDVSPEk6hXvh2PjAj14+TT10YwZeLWr5r8iPlGy5VnlAmBfDWnTwt5Y7ATJoHOd1JYwcOV5TUFpvflYF4XbTU1Xf4eWR6DVHUZ8paKyhh/xajqrX7RLH2K9gUQoMu/9nPv4XT2ms9Wfffa7CIrApbXf56
-X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Apr 2026 13:48:13.4508
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: c80b0062-e79d-4334-1629-08de9707cf87
-X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	AMS0EPF000001A8.eurprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR08MB6024
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 10 Apr 2026 16:24:55 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gdx4Gy3j2NBUtC+z3X7ZJ+GDg-R27pJ5AkZk7j8-36TQ@mail.gmail.com>
+X-Gm-Features: AQROBzAqELjyI8CtxVGS7-VJAc2synRCvGTQULLHc4ENnuPAdwKlfCnGN3Ri36s
+Message-ID: <CAJZ5v0gdx4Gy3j2NBUtC+z3X7ZJ+GDg-R27pJ5AkZk7j8-36TQ@mail.gmail.com>
+Subject: [GIT PULL] Power management updates for v7.1-rc1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, 
+	ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Shuah Khan <shuah@kernel.org>, "Chanwoo Choi (samsung.com)" <chanwoo@kernel.org>, 
+	Mario Limonciello <mario.limonciello@amd.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Hello Sumit,
+Hi Linus,
 
-On 4/6/26 20:08, Sumit Gupta wrote:
-> Hi Pierre,
->
-> Thank you for the comments.
-> Sorry for late reply as I was on vacation.
->
-No worries
->
-> On 24/03/26 23:48, Pierre Gondois wrote:
->> External email: Use caution opening links or attachments
->>
->>
->> Hello Sumit,
->>
->> On 3/17/26 16:10, Sumit Gupta wrote:
->>> Add kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable CPPC
->>> autonomous performance selection on all CPUs at system startup without
->>> requiring runtime sysfs manipulation. When autonomous mode is enabled,
->>> the hardware automatically adjusts CPU performance based on workload
->>> demands using Energy Performance Preference (EPP) hints.
->>>
->>> When auto_sel_mode=1:
->>> - Configure all CPUs for autonomous operation on first init
->>> - Set EPP to performance preference (0x0)
->>> - Use HW min/max when set; otherwise program from policy limits (caps)
->>> - Clamp desired_perf to bounds before enabling autonomous mode
->>> - Hardware controls frequency instead of the OS governor
->>>
->>> The boot parameter is applied only during first policy initialization.
->>> On hotplug, skip applying it so that the user's runtime sysfs
->>> configuration is preserved.
->>>
->>> Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
->>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>> ---
->>> Part 1 [1] of this series was applied for 7.1 and present in next.
->>> Sending this patch as reworked version of 'patch 11' from [2] based
->>> on next.
->>>
->>> [1] 
->>> https://lore.kernel.org/lkml/20260206142658.72583-1-sumitg@nvidia.com/
->>> [2] 
->>> https://lore.kernel.org/lkml/20251223121307.711773-1-sumitg@nvidia.com/
->>> ---
->>>   .../admin-guide/kernel-parameters.txt         | 13 +++
->>>   drivers/cpufreq/cppc_cpufreq.c                | 84 
->>> +++++++++++++++++--
->>>   2 files changed, 92 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/Documentation/admin-guide/kernel-parameters.txt 
->>> b/Documentation/admin-guide/kernel-parameters.txt
->>> index fa6171b5fdd5..de4b4c89edfe 100644
->>> --- a/Documentation/admin-guide/kernel-parameters.txt
->>> +++ b/Documentation/admin-guide/kernel-parameters.txt
->>> @@ -1060,6 +1060,19 @@ Kernel parameters
->>>                       policy to use. This governor must be 
->>> registered in the
->>>                       kernel before the cpufreq driver probes.
->>>
->>> +     cppc_cpufreq.auto_sel_mode=
->>> +                     [CPU_FREQ] Enable ACPI CPPC autonomous 
->>> performance
->>> +                     selection. When enabled, hardware 
->>> automatically adjusts
->>> +                     CPU frequency on all CPUs based on workload 
->>> demands.
->>> +                     In Autonomous mode, Energy Performance 
->>> Preference (EPP)
->>> +                     hints guide hardware toward performance (0x0) 
->>> or energy
->>> +                     efficiency (0xff).
->>> +                     Requires ACPI CPPC autonomous selection 
->>> register support.
->>> +                     Format: <bool>
->>> +                     Default: 0 (disabled)
->>> +                     0: use cpufreq governors
->>> +                     1: enable if supported by hardware
->>> +
->>>       cpu_init_udelay=N
->>>                       [X86,EARLY] Delay for N microsec between 
->>> assert and de-assert
->>>                       of APIC INIT to start processors.  This delay 
->>> occurs
->>> diff --git a/drivers/cpufreq/cppc_cpufreq.c 
->>> b/drivers/cpufreq/cppc_cpufreq.c
->>> index 5dfb109cf1f4..49c148b2a0a4 100644
->>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>> @@ -28,6 +28,9 @@
->>>
->>>   static struct cpufreq_driver cppc_cpufreq_driver;
->>>
->>> +/* Autonomous Selection boot parameter */
->>> +static bool auto_sel_mode;
->>> +
->>>   #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
->>>   static enum {
->>>       FIE_UNSET = -1,
->>> @@ -708,11 +711,74 @@ static int cppc_cpufreq_cpu_init(struct 
->>> cpufreq_policy *policy)
->>>       policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->>>       cpu_data->perf_ctrls.desired_perf = caps->highest_perf;
->>>
->>> -     ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>> -     if (ret) {
->>> -             pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
->>> -                      caps->highest_perf, cpu, ret);
->>> -             goto out;
->>> +     /*
->>> +      * Enable autonomous mode on first init if boot param is set.
->>> +      * Check last_governor to detect first init and skip if auto_sel
->>> +      * is already enabled.
->>> +      */
->> If the goal is to set autosel only once at the driver init,
->> shouldn't this be done in cppc_cpufreq_init() ?
->> I understand that cpu_data doesn't exist yet in
->> cppc_cpufreq_init(), but this seems more appropriate to do
->> it there IMO.
->>
->> This means the cpudata should be updated accordingly
->> in this cppc_cpufreq_cpu_init() function.
->
-> In an earlier version [1], the setup was in cppc_cpufreq_init() but
-> was moved to cppc_cpufreq_cpu_init() to improve per-CPU error handling.
-> Keeping the setup in cppc_cpufreq_init() helps to avoid the last_governor
-> check. We can warn for a CPU failing to enable and continue so other
-> CPUs keep autonomous mode.
-> cppc_cpufreq_cpu_init() would then just check the auto_sel state
-> from register and sync policy limits from min/max_perf registers when
-> autonomous mode is active.
-> Please let me know your thoughts.
+This goes early because I will be traveling next week.
 
-FWIU the auto_sel_mode module parameter allows to
-configure the default auto_sel_mode when the driver is
-first loaded, so there should not need to check that again
-whenever cppc_cpufreq_cpu_init() is called.
-Maybe Ionela saw something we didn't see ?
+Please pull from the tag
 
-Also just to be sure, should it still be possible to change
-the auto_sel_mode through the sysfs if the driver was
-loaded with auto_sel_mode=1 ?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-7.1-rc1
+
+with top-most commit d923f70e37310fe613883a3a4c2ea2f31246253b
+
+ Merge branch 'pm-devfreq'
+
+on top of commit 591cd656a1bf5ea94a222af5ef2ee76df029c1d2
+
+ Linux 7.0-rc7
+
+to receive power management updates for 7.1-rc1.
+
+Once again, cpufreq is the most active development area, mostly because
+of the new feature additions and documentation updates in the amd-pstate
+driver, but there are also changes in the cpufreq core related to boost
+support and other assorted updates elsewhere.
+
+Next up are power capping changes due to the major cleanup of the Intel
+RAPL driver.
+
+On the cpuidle front, a new C-states table for Intel Panther Lake is
+added to the intel_idle driver, the stopped tick handling in the menu
+and teo governors is updated, and there are a couple of cleanups.
+
+Apart from the above, support for Tegra114 is added to devfreq and
+there are assorted cleanups of that code, there are also two updates
+of the operating performance points (OPP) library, two minor updates
+related to hibernation, and cpupower utility man pages updates and
+cleanups.
+
+Specifics:
+
+ - Update qcom-hw DT bindings to include Eliza hardware (Abel Vesa)
+
+ - Update cpufreq-dt-platdev blocklist (Faruque Ansari)
+
+ - Minor updates to driver and dt-bindings for Tegra (Thierry Reding,
+   Rosen Penev)
+
+ - Add MAINTAINERS entry for CPPC driver (Viresh Kumar)
+
+ - Add support for new features: CPPC performance priority, Dynamic EPP,
+   Raw EPP, and new unit tests for them to amd-pstate (Gautham Shenoy,
+   Mario Limonciello)
+
+ - Fix sysfs files being present when HW missing and broken/outdated
+   documentation in the amd-pstate driver (Ninad Naik, Gautham Shenoy)
+
+ - Pass the policy to cpufreq_driver->adjust_perf() to avoid using
+   cpufreq_cpu_get() in the .adjust_perf() callback in amd-pstate which
+   leads to a scheduling-while-atomic bug (K Prateek Nayak)
+
+ - Clean up dead code in Kconfig for cpufreq (Julian Braha)
+
+ - Remove max_freq_req update for pre-existing cpufreq policy and add a
+   boost_freq_req QoS request to save the boost constraint instead of
+   overwriting the last scaling_max_freq constraint (Pierre Gondois)
+
+ - Embed cpufreq QoS freq_req objects in cpufreq policy so they all
+   are allocated in one go along with the policy to simplify lifetime
+   rules and avoid error handling issues (Viresh Kumar)
+
+ - Use DMI max speed when CPPC is unavailable in the acpi-cpufreq
+   scaling driver (Henry Tseng)
+
+ - Switch policy_is_shared() in cpufreq to using cpumask_nth() instead
+   of cpumask_weight() because the former is more efficient (Yury Norov)
+
+ - Use sysfs_emit() in sysfs show functions for cpufreq governor
+   attributes (Thorsten Blum)
+
+ - Update intel_pstate to stop returning an error when "off" is written
+   to its status sysfs attribute while the driver is already off (Fabio
+   De Francesco)
+
+ - Include current frequency in the debug message printed by
+   __cpufreq_driver_target() (Pengjie Zhang)
+
+ - Refine stopped tick handling in the menu cpuidle governor and
+   rearrange stopped tick handling in the teo cpuidle governor (Rafael
+   Wysocki)
+
+ - Add Panther Lake C-states table to the intel_idle driver (Artem
+   Bityutskiy)
+
+ - Clean up dead dependencies on CPU_IDLE in Kconfig (Julian Braha)
+
+ - Simplify cpuidle_register_device() with guard() (Huisong Li)
+
+ - Use performance level if available to distinguish between rates in
+   OPP debugfs (Manivannan Sadhasivam)
+
+ - Fix scoped_guard in dev_pm_opp_xlate_required_opp() (Viresh Kumar)
+
+ - Return -ENODATA if the snapshot image is not loaded (Alberto Garcia)
+
+ - Remove inclusion of crypto/hash.h from hibernate_64.c on x86 (Eric
+   Biggers)
+
+ - Clean up and rearrange the intel_rapl power capping driver to make
+   the respective interface drivers (TPMI, MSR, and MMOI) hold their
+   own settings and primitives and consolidate PL4 and PMU support
+   flags into rapl_defaults (Kuppuswamy Sathyanarayanan)
+
+ - Correct kernel-doc function parameter names in the power capping core
+   code (Randy Dunlap)
+
+ - Remove unneeded casting for HZ_PER_KHZ in devfreq (Andy Shevchenko)
+
+ - Use _visible attribute to replace create/remove_sysfs_files() in
+   devfreq (Pengjie Zhang)
+
+ - Add Tegra114 support to activity monitor device in tegra30-devfreq as
+   a preparation to upcoming EMC controller support (Svyatoslav Ryhel)
+
+ - Fix mistakes in cpupower man pages, add the boost and epp options to
+   the cpupower-frequency-info man page, and add the perf-bias option to
+   the cpupower-info man page (Roberto Ricci)
+
+ - Remove unnecessary extern declarations from getopt.h in arguments
+   parsing functions in cpufreq-set, cpuidle-info, cpuidle-set,
+   cpupower-info, and cpupower-set utilities (Kaushlendra Kumar)
+
+Thanks!
 
 
->
-> [1] 
-> https://lore.kernel.org/lkml/5593d364-ca37-41c5-b33f-f7e245d6d626@nvidia.com/
->
->
->>
->>> +     if (auto_sel_mode && policy->last_governor[0] == '\0' &&
->>> +         !cpu_data->perf_ctrls.auto_sel) {
->>> +             /* Enable CPPC - optional register, some platforms 
->>> need it */
->> The documentation of the CPPC Enable Register is subject to
->> interpretation, but IIUC the field should be set to use the CPPC
->> controls, so I assume this should be set in cppc_cpufreq_init()
->> instead ?
->
-> Agree that the CPPC Enable is about using the CPPC control path
-> in general and not only for autonomous selection.
-> Will move cppc_set_enable() into cppc_cpufreq_init() or outside the
-> autonomous mode block in cppc_cpufreq_cpu_init() as per conclusion
-> of previous comment.
->
->>> +             ret = cppc_set_enable(cpu, true);
->>> +             if (ret && ret != -EOPNOTSUPP)
->>> +                     pr_warn("Failed to enable CPPC for CPU%d 
->>> (%d)\n", cpu, ret);
->>> +
->>> +             /*
->>> +              * Prefer HW min/max_perf when set; otherwise program 
->>> from
->>> +              * policy limits derived earlier from caps.
->>> +              * Clamp desired_perf to bounds and sync policy->cur.
->>> +              */
->>> +             if (!cpu_data->perf_ctrls.min_perf || 
->>> !cpu_data->perf_ctrls.max_perf)
->>
->> The function doesn't seem to exist.
->
-> It is newly added in [2].
-> Don't need to call it if we move the setup to cppc_cpufreq_init().
+---------------
 
-Ah ok right thanks.
+Abel Vesa (1):
+      dt-bindings: cpufreq: qcom-hw: document Eliza cpufreq hardware
 
+Alberto Garcia (1):
+      PM: hibernate: return -ENODATA if the snapshot image is not loaded
 
->
-> [2] 
-> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=ea3db45ae476889a1ba0ab3617e6afdeeefbda3d 
->
->
->
->>
->>> + cppc_cpufreq_update_perf_limits(cpu_data, policy);
->>> +
->>> +             cpu_data->perf_ctrls.desired_perf =
->>> +                     clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
->>> + cpu_data->perf_ctrls.min_perf,
->>> + cpu_data->perf_ctrls.max_perf);
->>> +
->>> +             policy->cur = cppc_perf_to_khz(caps,
->>> + cpu_data->perf_ctrls.desired_perf);
->>> +
->>
->> Maybe this should also be done in cppc_cpufreq_init()
->> if the auto_sel_mode parameter is set ?
->
-> Yes.
->
->>
->>> +             /* EPP is optional - some platforms may not support it */
->>> +             ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
->>> +             if (ret && ret != -EOPNOTSUPP)
->>> +                     pr_warn("Failed to set EPP for CPU%d (%d)\n", 
->>> cpu, ret);
->>> +             else if (!ret)
->>> +                     cpu_data->perf_ctrls.energy_perf = 
->>> CPPC_EPP_PERFORMANCE_PREF;
->>> +
->>> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>> +             if (ret) {
->>> +                     pr_debug("Err setting perf for autonomous mode 
->>> CPU:%d ret:%d\n",
->>> +                              cpu, ret);
->>> +                     goto out;
->>> +             }
->>> +
->>> +             ret = cppc_set_auto_sel(cpu, true);
->>> +             if (ret && ret != -EOPNOTSUPP) {
->>> +                     pr_warn("Failed autonomous config for CPU%d 
->>> (%d)\n",
->>> +                             cpu, ret);
->>> +                     goto out;
->>> +             }
->>> +             if (!ret)
->>> +                     cpu_data->perf_ctrls.auto_sel = true;
->>> +     }
->>> +
->>> +     if (cpu_data->perf_ctrls.auto_sel) {
->>
->> There is a patchset ongoing which tries to remove
->> setting policy->min/max from driver initialization.
->> Indeed, these values are only temporarily valid,
->> until the governor override them.
->> It is not sure yet the patch will be accepted though.
->>
->> https://lore.kernel.org/lkml/20260317101753.2284763-4-pierre.gondois@arm.com/ 
->>
->
->
-> You are right that policy->min/max from .init() are temporary today
-> as cpufreq_set_policy() overwrites them before the governor starts.
->
-> On my test platform (highest == nominal, lowest_nonlinear == lowest),
-> this had no visible effect because the BIOS bounds and cpuinfo range
-> end up identical. But on platforms where they differ, the governor
-> would widen the range to full cpuinfo limits.
->
-> I think your patch [3] fixes this by giving these the right semantic as
-> initial QoS requests. With it, cpufreq_set_policy() preserves the policy
-> limits set from min/max_perf registers in .init(), which can either be
-> BIOS values on first boot or last user configured values before hotplug.
->
-> I will update the comment in v2 to reflect QoS seeding intent.
->
-> I see that the first two patches of your series [3] is applied for 7.1.
-> Do you plan to send the pending patch (3/4) from [3]?
->
-I need to ping Viresh to check if this is still relevant.
+Andy Shevchenko (1):
+      PM / devfreq: Remove unneeded casting for HZ_PER_KHZ
 
+Artem Bityutskiy (1):
+      intel_idle: Add Panther Lake C-states table
 
-> [3] 
-> https://lore.kernel.org/lkml/20260317101753.2284763-4-pierre.gondois@arm.com/
->
->
->>
->>
->>> +             /* Sync policy limits from HW when autonomous mode is 
->>> active */
->>> +             policy->min = cppc_perf_to_khz(caps,
->>> + cpu_data->perf_ctrls.min_perf ?:
->>> + caps->lowest_nonlinear_perf);
->>> +             policy->max = cppc_perf_to_khz(caps,
->>> + cpu_data->perf_ctrls.max_perf ?:
->>> + caps->nominal_perf);
->>> +     } else {
->>> +             /* Normal mode: governors control frequency */
->>> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>> +             if (ret) {
->>> +                     pr_debug("Err setting perf value:%d on CPU:%d. 
->>> ret:%d\n",
->>> +                              caps->highest_perf, cpu, ret);
->>> +                     goto out;
->>> +             }
->>>       }
->>>
->>>       cppc_cpufreq_cpu_fie_init(policy);
->>> @@ -1038,10 +1104,18 @@ static int __init cppc_cpufreq_init(void)
->>>
->>>   static void __exit cppc_cpufreq_exit(void)
->>>   {
->>> +     unsigned int cpu;
->>> +
->>> +     for_each_present_cpu(cpu)
->>> +             cppc_set_auto_sel(cpu, false);
->>
->> If the firmware has a default EPP value, it means that loading
->> and the unloading the driver will reset this default EPP value.
->> Maybe the initial EPP value and/or the auto_sel value should be
->> cached somewhere and restored on exit ?
->> I don't know if this is actually an issue, this is just to signal it.
->
-> The auto_sel_mode boot path programs EPP to performance preference(0),
-> not the firmware’s previous value. On unload we only call
-> cppc_set_auto_sel(false); we do not restore EPP, min/max perf,
-> or other CPPC fields to firmware defaults.
+Eric Biggers (1):
+      PM: hibernate: x86: Remove inclusion of crypto/hash.h
 
-Yes right, so loading/unloading the driver might change the
-default EPP value.
+Fabio M. De Francesco (1):
+      cpufreq: intel_pstate: Allow repeated intel_pstate disable
 
+Faruque Ansari (1):
+      cpufreq: Add QCS8300 to cpufreq-dt-platdev blocklist
 
->
-> Thank you,
-> Sumit Gupta
->
-> ....
->
->
+Gautham R. Shenoy (13):
+      amd-pstate: Fix memory leak in amd_pstate_epp_cpu_init()
+      amd-pstate: Update cppc_req_cached in fast_switch case
+      amd-pstate: Make certain freq_attrs conditionally visible
+      x86/cpufeatures: Add AMD CPPC Performance Priority feature.
+      amd-pstate: Add support for CPPC_REQ2 and FLOOR_PERF
+      amd-pstate: Add sysfs support for floor_freq and floor_count
+      amd-pstate: Introduce a tracepoint trace_amd_pstate_cppc_req2()
+      amd-pstate-ut: Add module parameter to select testcases
+      amd-pstate-ut: Add a testcase to validate the visibility of
+driver attributes
+      Documentation/amd-pstate: List amd_pstate_hw_prefcore sysfs file
+      Documentation/amd-pstate: List amd_pstate_prefcore_ranking sysfs file
+      Documentation/amd-pstate: Add documentation for
+amd_pstate_floor_{freq,count}
+      MAINTAINERS: amd-pstate: Step down as maintainer, add Prateek as reviewer
+
+Henry Tseng (1):
+      cpufreq: acpi-cpufreq: use DMI max speed when CPPC is unavailable
+
+Huisong Li (1):
+      cpuidle: Simplify cpuidle_register_device() with guard()
+
+Julian Braha (2):
+      cpufreq: clean up dead code in Kconfig
+      cpuidle: clean up dead dependencies on CPU_IDLE in Kconfig
+
+K Prateek Nayak (2):
+      cpufreq/amd-pstate: Pass the policy to amd_pstate_update()
+      cpufreq: Pass the policy to cpufreq_driver->adjust_perf()
+
+Kaushlendra Kumar (1):
+      cpupower: remove extern declarations in cmd functions
+
+Kuppuswamy Sathyanarayanan (18):
+      powercap: intel_rapl: Add a symbol namespace for intel_rapl exports
+      powercap: intel_rapl: Cleanup coding style
+      powercap: intel_rapl: Remove unused TIME_WINDOW macros
+      powercap: intel_rapl: Simplify rapl_compute_time_window_atom()
+      powercap: intel_rapl: Use shifts for power-of-2 operations
+      powercap: intel_rapl: Use GENMASK() and BIT() macros
+      powercap: intel_rapl: Use unit conversion macros from units.h
+      powercap: intel_rapl: Allow interface drivers to configure rapl_defaults
+      powercap: intel_rapl: Move TPMI default settings into TPMI
+interface driver
+      thermal: intel: int340x: processor: Move RAPL defaults to MMIO driver
+      powercap: intel_rapl: Remove unused AVERAGE_POWER primitive
+      powercap: intel_rapl: Move MSR default settings into MSR interface driver
+      powercap: intel_rapl: Remove unused macro definitions
+      powercap: intel_rapl: Move primitive info to header for interface drivers
+      powercap: intel_rapl: Move TPMI primitives to TPMI driver
+      thermal: intel: int340x: processor: Move MMIO primitives to MMIO driver
+      powercap: intel_rapl: Move MSR primitives to MSR driver
+      powercap: intel_rapl: Consolidate PL4 and PMU support flags into
+rapl_defaults
+
+Manivannan Sadhasivam (1):
+      OPP: debugfs: Use performance level if available to distinguish
+between rates
+
+Mario Limonciello (AMD) (7):
+      cpufreq/amd-pstate: Add POWER_SUPPLY select for dynamic EPP
+      cpufreq/amd-pstate: Cache the max frequency in cpudata
+      cpufreq/amd-pstate: Add dynamic energy performance preference
+      cpufreq/amd-pstate: add kernel command line to override dynamic epp
+      cpufreq/amd-pstate: Add support for platform profile class
+      cpufreq/amd-pstate: Add support for raw EPP writes
+      cpufreq/amd-pstate-ut: Add a unit test for raw EPP
+
+Ninad Naik (1):
+      Documentation: amd-pstate: fix dead links in the reference section
+
+Pengjie Zhang (2):
+      cpufreq: Add debug print for current frequency in
+__cpufreq_driver_target()
+      PM / devfreq: use _visible attribute to replace
+create/remove_sysfs_files()
+
+Pierre Gondois (2):
+      cpufreq: Remove max_freq_req update for pre-existing policy
+      cpufreq: Add boost_freq_req QoS request
+
+Rafael J. Wysocki (2):
+      cpuidle: governors: menu: Refine stopped tick handling
+      cpuidle: governors: teo: Rearrange stopped tick handling
+
+Randy Dunlap (1):
+      powercap: correct kernel-doc function parameter names
+
+Roberto Ricci (4):
+      cpupower-idle-info.1: fix short option names
+      cpupower-frequency-info.1: use the proper name of the --perf option
+      cpupower-frequency-info.1: document --boost and --epp options
+      cpupower-info.1: describe the --perf-bias option
+
+Rosen Penev (1):
+      cpufreq: tegra194: remove COMPILE_TEST
+
+Svyatoslav Ryhel (1):
+      PM / devfreq: tegra30-devfreq: add support for Tegra114
+
+Thierry Reding (2):
+      dt-bindings: arm: nvidia: Document the Tegra238 CCPLEX cluster
+      cpufreq: tegra194: Rename Tegra239 to Tegra238
+
+Thorsten Blum (1):
+      cpufreq: governor: Use sysfs_emit() in sysfs show functions
+
+Viresh Kumar (3):
+      OPP: Move break out of scoped_guard in dev_pm_opp_xlate_required_opp()
+      cpufreq: Add MAINTAINERS entry for CPPC driver
+      cpufreq: Allocate QoS freq_req objects with policy
+
+Yury Norov (1):
+      cpufreq: optimize policy_is_shared()
+
+---------------
+
+ Documentation/admin-guide/kernel-parameters.txt    |   7 +
+ Documentation/admin-guide/pm/amd-pstate.rst        |  87 ++-
+ .../arm/tegra/nvidia,tegra-ccplex-cluster.yaml     |   1 +
+ .../bindings/cpufreq/cpufreq-qcom-hw.yaml          |   1 +
+ MAINTAINERS                                        |  25 +-
+ arch/x86/include/asm/cpufeatures.h                 |   2 +-
+ arch/x86/include/asm/msr-index.h                   |   5 +
+ arch/x86/kernel/cpu/scattered.c                    |   1 +
+ arch/x86/power/hibernate_64.c                      |   2 -
+ drivers/acpi/cppc_acpi.c                           |   3 +-
+ drivers/cpufreq/Kconfig                            |   5 +-
+ drivers/cpufreq/Kconfig.arm                        |   2 +-
+ drivers/cpufreq/Kconfig.x86                        |  14 +
+ drivers/cpufreq/acpi-cpufreq.c                     |  31 +-
+ drivers/cpufreq/amd-pstate-trace.h                 |  35 ++
+ drivers/cpufreq/amd-pstate-ut.c                    | 279 ++++++++-
+ drivers/cpufreq/amd-pstate.c                       | 627 ++++++++++++++++++---
+ drivers/cpufreq/amd-pstate.h                       |  37 +-
+ drivers/cpufreq/cppc_cpufreq.c                     |  10 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
+ drivers/cpufreq/cpufreq.c                          |  85 ++-
+ drivers/cpufreq/cpufreq_governor.h                 |   5 +-
+ drivers/cpufreq/intel_pstate.c                     |   6 +-
+ drivers/cpufreq/tegra194-cpufreq.c                 |   4 +-
+ drivers/cpuidle/Kconfig                            |   2 +-
+ drivers/cpuidle/Kconfig.mips                       |   2 +-
+ drivers/cpuidle/Kconfig.powerpc                    |   2 -
+ drivers/cpuidle/cpuidle.c                          |  12 +-
+ drivers/cpuidle/governors/gov.h                    |   5 +
+ drivers/cpuidle/governors/menu.c                   |  15 +-
+ drivers/cpuidle/governors/teo.c                    |  81 ++-
+ drivers/devfreq/devfreq.c                          | 108 ++--
+ drivers/devfreq/tegra30-devfreq.c                  |  17 +-
+ drivers/idle/intel_idle.c                          |  42 ++
+ drivers/opp/core.c                                 |   2 +-
+ drivers/opp/debugfs.c                              |  20 +-
+ drivers/powercap/intel_rapl_common.c               | 565 ++-----------------
+ drivers/powercap/intel_rapl_msr.c                  | 393 ++++++++++++-
+ drivers/powercap/intel_rapl_tpmi.c                 | 101 ++++
+ .../intel/int340x_thermal/processor_thermal_rapl.c |  81 +++
+ include/acpi/cppc_acpi.h                           |   1 +
+ include/linux/cpufreq.h                            |  11 +-
+ include/linux/intel_rapl.h                         |  52 +-
+ include/linux/powercap.h                           |   4 +-
+ include/linux/units.h                              |   3 +
+ kernel/power/user.c                                |   7 +-
+ kernel/sched/cpufreq_schedutil.c                   |   5 +-
+ rust/kernel/cpufreq.rs                             |  13 +-
+ tools/arch/x86/include/asm/cpufeatures.h           |   2 +-
+ tools/power/cpupower/man/cpupower-frequency-info.1 |   8 +-
+ tools/power/cpupower/man/cpupower-idle-info.1      |   4 +-
+ tools/power/cpupower/man/cpupower-info.1           |   9 +-
+ tools/power/cpupower/utils/cpufreq-info.c          |   2 -
+ tools/power/cpupower/utils/cpufreq-set.c           |   2 -
+ tools/power/cpupower/utils/cpuidle-info.c          |   2 -
+ tools/power/cpupower/utils/cpuidle-set.c           |   2 -
+ tools/power/cpupower/utils/cpupower-info.c         |   2 -
+ tools/power/cpupower/utils/cpupower-set.c          |   2 -
+ 58 files changed, 1951 insertions(+), 903 deletions(-)
