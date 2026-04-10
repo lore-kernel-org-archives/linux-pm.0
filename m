@@ -1,63 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 405263DEADA;
-	Fri, 10 Apr 2026 16:45:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BD863DA5B1;
+	Fri, 10 Apr 2026 16:49:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775839556; cv=none; b=beVm5czO5/uUHjKgD+xuEFZQAWQFDmFEptEupLeRX2mfaelRtZQIUhcGioNcfxojHA/g8edobFRui4wyFB4+3YBDd5r59ezDxthjd+QeHcnK5E++DQiJqrN/hEIvP6jZxRQuZ9PBzd2bcRE/AJP1+fIqojVWOTJwnLqP3TRDUsk=
+	t=1775839746; cv=none; b=CphlDT4G+nHV3AVRyh1U1vdQdLZ4D4oSvMkS7+elRdebqv/sn3L2DiJwTULkyJEi4m+J2gx0cHsrcMKhonEregGJ8BoPGLUq8OrA8A6OU0fKFJ9oENcsg19mm9CgVwdS7p05ho5shJnm3uqKFRNXyvuB/t0N0xyuInhD0q/Yqyk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775839556; c=relaxed/simple;
-	bh=pFxRGhy+NVx8/LfZlgxE/k13Ro1ZBBKw+g0gdqIRrz8=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=mulZERLioSVguIsL+3FSc4Hoezp7PECCJ1hWtXYhTZz/4t2Dv+z1ZpLnAmxjW1WkjCU7iv66E8xJ95AvEeWoeb5S36VPDH8kkbwUcrX5N4gg79QjRsH3OEwCMbOgFduhwf45g7jsKXP5/A+U6ncEgcNtA/upPUGY28/BUsTjhXc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mk1UZvlY; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775839746; c=relaxed/simple;
+	bh=z46M+rsMVvol/Iu/vuO1m+rAUYrJ82iMmifq0EnDoU0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=oVeapHYTfrG0Ebb3fmYs7kASzms1X1QX5ilt3w0q2meG2fwNo2tA4l/GqRv2Qga+tmEDjPvaEN6oqbnUu12rBz6Ks+j0305uUhCRHRejN/4IRyZ1JMF2f5RE3moqSkWmakzXfsKrx5E4jeAzpYogiEmmeBRfU1s2IXPMJzAHTJM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=ULPv0629; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mk1UZvlY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E42E2C19421;
-	Fri, 10 Apr 2026 16:45:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775839555;
-	bh=pFxRGhy+NVx8/LfZlgxE/k13Ro1ZBBKw+g0gdqIRrz8=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=mk1UZvlYTdYuxxPhnfPHoQ2aFQZlWiYzUbbRKpqqIpEjzSvMEHE26uhYtfWvqkpXO
-	 HHJO6TgQSqfFFXIsun8uEpp8X5RRb6pi5DOHUMLiTkMuKDSC0LUMrI0/69MEr0l/xO
-	 F0o6z1CwPoXORIcHYu6oiD2/mw5ZgUdV2+zRDwliJBCj2CFh/zs9v4C4s6gkmZk/yY
-	 5vogYBDtnYlOOUxZ++/4FtE/5N51V7XUssB9alsxoO1/p5feVW8D/YcM4XPdMGXld5
-	 ykiDjlDiWM9jOxCpJstqZAkmYGDrOpCqXbXf+YHfCuHPuk13fXKNTzwFq88TIEf0la
-	 IYLb+BD8KrNEw==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA1D63809A87;
-	Fri, 10 Apr 2026 16:45:31 +0000 (UTC)
-Subject: Re: [GIT PULL] turbostat fixes for 7.0
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <CAJvTdKnLmCFKQevH7-Am-TQZcvtgRhhMbyfrb5zG6EbEsQheqg@mail.gmail.com>
-References: <CAJvTdKnLmCFKQevH7-Am-TQZcvtgRhhMbyfrb5zG6EbEsQheqg@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJvTdKnLmCFKQevH7-Am-TQZcvtgRhhMbyfrb5zG6EbEsQheqg@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git tags/turbostat-fixes-for-7.0
-X-PR-Tracked-Commit-Id: ba893caead54745595e29953f0531cf3651610aa
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 96463e4e0268dddbdb60fd1b96800736aa2bade9
-Message-Id: <177583953048.2559624.4012143403689958152.pr-tracker-bot@kernel.org>
-Date: Fri, 10 Apr 2026 16:45:30 +0000
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="ULPv0629"
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1775839734;
+	bh=z46M+rsMVvol/Iu/vuO1m+rAUYrJ82iMmifq0EnDoU0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=ULPv06292dF3Z01JzJjHzkQEHS0RTwP3l8ol08UdRpR2SxSWUGIk92OPYRnj/Xe67
+	 0BHutzoKS9m69sJVeT973tHHPPBo4KgQDeRk5yUfsr1lTI4wHKJCuemWrDqUEZHqe1
+	 GgxZXYEmB2DLcsLIF3A5+NE5Efbo/6YB4LQJMh4k=
+Date: Fri, 10 Apr 2026 18:48:03 +0200
+Subject: [PATCH 2/8] firmware: meson: sm: Thermal calibration read via
+ secure monitor
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260410-add-thermal-t7-vim4-v1-2-19f2b8da74d7@aliel.fr>
+References: <20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr>
+In-Reply-To: <20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr>
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openssh-sha256; t=1775839730; l=1177;
+ i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
+ bh=z46M+rsMVvol/Iu/vuO1m+rAUYrJ82iMmifq0EnDoU0=;
+ b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
+ BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
+ QIdG5PGwnUp/EKo0dNAba95QRzc9WMbqB6dkwPz552jhu4dUiv865FKKJN2fYRYIq3JDT0Uh0og
+ hhFa1LX/r0Q8=
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
+ fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-The pull request you sent on Fri, 10 Apr 2026 09:40:59 -0400:
+Add SM_THERMAL_CALIB_READ to the secure monitor command enum and
+introduce meson_sm_get_thermal_calib() to allow drivers to retrieve
+thermal sensor calibration data through the firmware interface.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git tags/turbostat-fixes-for-7.0
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+ include/linux/firmware/meson/meson_sm.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/96463e4e0268dddbdb60fd1b96800736aa2bade9
-
-Thank you!
+diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
+index 8eaf8922ab020..3ebc2bd9a9760 100644
+--- a/include/linux/firmware/meson/meson_sm.h
++++ b/include/linux/firmware/meson/meson_sm.h
+@@ -12,6 +12,7 @@ enum {
+ 	SM_EFUSE_WRITE,
+ 	SM_EFUSE_USER_MAX,
+ 	SM_GET_CHIP_ID,
++	SM_THERMAL_CALIB_READ,
+ 	SM_A1_PWRC_SET,
+ 	SM_A1_PWRC_GET,
+ };
+@@ -27,5 +28,7 @@ int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
+ 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
+ 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
+ struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
++int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
++			       u32 tsensor_id);
+ 
+ #endif /* _MESON_SM_FW_H_ */
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.49.0
+
