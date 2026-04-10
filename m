@@ -1,63 +1,63 @@
-Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com [209.85.208.171])
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8994F38F633
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 259BE38D6A2
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 10:41:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775817680; cv=none; b=UMq8hS0c1i5WvfUJvtPQ8WVXEkBoApLGCFnamzHCqtw8DN6E3Qr1ZIlGlFFvx5vRDeB89IAHAqeVD5bemvvcOLK/OFQzFYuoSruYSI6ugUkEAu6CULmFryvlzWVYwNOdolBJAnOxyHIj7jGvqLAu9HeP0pg0v3ANBigdHYDBKvA=
+	t=1775817683; cv=none; b=OIMk6yna+76A516SYAlbqUBABwfDhGMGrmlbONvbmULyPk7+W84qoTKdYQG8lgPCy+ZbRNi5eKgZ247Y61QVw69D6uIsGrhXTZW7ZBYAT6QmnCTD+aarDq6uZ8cj7Vq6e9OJ9tKGJbPZkc2scAxVK3ftFtykDJXBIEc2oofXu28=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775817680; c=relaxed/simple;
-	bh=Ebq9XiwYmmSji4umCyK9W1YK8ARY9lnsvR/XIFGASVY=;
+	s=arc-20240116; t=1775817683; c=relaxed/simple;
+	bh=9li9y33S4Rq1qZK2KHZaV3W2zJ7DJBiBLki1qODC/AI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dtCnai2Io3ZmEK8YU4FXYvj1XWG3zLXTWvl8D1d8wFYF07P9sJlN6oOkb3J5WIkiWDKQ8Vfzb3NUw/PDTlxzU+pN84YRg+UZMBEdmg6OeTQ2iwqlnDUhi/8oOpd+T53uTF62KXKRdCiyKovAjgF4RxVAxx8TTwiQt17Kle/lTxU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=iBvJhIqG; arc=none smtp.client-ip=209.85.208.171
+	 MIME-Version; b=j/CZ2S+uDYqLMs3ORJLzkwReUyB97NRoNkF2WM/YeiZ+TJWyKlb6eAglmslNk11wzDYBoJzvNg62msZmu8egNDd4E5qm27Qa98nJrBB9DLG4HWiZ1T7wh33BDwimS8rRN8btyU3QNW6RxzkvnBMs9TlGT7TXDtC+i/Cz0x9zU2o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ptbSKJxN; arc=none smtp.client-ip=209.85.167.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iBvJhIqG"
-Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-38cd00b3b12so14960161fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ptbSKJxN"
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5a283c44478so2956414e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 03:41:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1775817676; x=1776422476; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1775817677; x=1776422477; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xFGKXYCuNL9Hzt5KxsbO6n3yPcfxQC/HvpIhLFtUJ04=;
-        b=iBvJhIqGAXrPz7oHnTshuYf7tabWcqsw2iMJn91neCrDeo+zfKMPjpCZrg5Dzue2mP
-         zK21+nmtnAqKIa9aG21ENuW4HXntSewXav7Q9PgOgtSznBAvwU9XgkZZ99dh/xN9LFKg
-         GcK0eLDbF1w+mOtcx3a9uW/Bx5WGwrlrXYcDgnFoGv9gRv2jR+FEHeTloTb03EnUXCUV
-         ge6fGl+UKvuyWsO9RRuBf0RWbTTdaYKH6FVwfngECOEs/wl+eLJS1YTBuK+bYIWb2f+K
-         uZbHiBb8FCBZhL6CqLd/haWygAxoFNeB05cve9fKcKpQxNzY06UH5deNYk0IA5/pMU0b
-         8SqA==
+        bh=Q8wAkh4o7tl/zj3dU8ucWDwim4K0cFPOmp+J3PD9wxo=;
+        b=ptbSKJxNBezQyf+JqgF9KlQ3jConYahhgxqSHW9exvxp52PK8gplX7sPF1LmtMJbxV
+         LT3rAiziKdYB5qLVd8QCA8o/TBa9gDzbV5YhdLv+oCNVoi044ibXzsn4FgKV55gpdpUx
+         hvR7d0a8UFqlnTi2g4wvKMcPSAKhmZHX8TNbvvuOy0N/HK63ABj2sGCDaOI8B+/hFIuX
+         jWszQ9Efl3fjLFyN8kM7EBGQ/G3TGsRV1ksKSBGfD86B3gFR1A5wPx96MEqkIKUcIqih
+         U53INzsoDWxpTiGUy8rfYs41QKnAjadwz4dDk/kYlSQRXypFuMzvkZCOqzyWj7iqH4J8
+         vTjQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775817676; x=1776422476;
+        d=1e100.net; s=20251104; t=1775817677; x=1776422477;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=xFGKXYCuNL9Hzt5KxsbO6n3yPcfxQC/HvpIhLFtUJ04=;
-        b=oLooHh8frtRWz/ttA3FKWbxH8tjn8Jh0Qjx9cRWwr03c5oWoGwsTZhaOmHNbHvSGNX
-         kgqoZOxXhsee0NM5LtH5jnBzbmDbjC/TEMvrh8O4xYTo438IW/8WrAqo/TgzvSO30Amx
-         MptyjKP7E4POwV/6BqN6VILvOXZOtnrkHBKM1YzXcsa5up4AEUKkrc8sPRPMHzIPXgoB
-         L+euoy7ASR0TYzqY5F3E6DWSSONpdJKcPzzESzFutWIWcVdxS/fIbih3y/ebJv7rZjaC
-         +a9UDPkwoQc01xujqV98Cwf8mHW1+hW5i9X8vt/K36c3wCDoxiqGTZvMuTIHIG/aURcU
-         zXEg==
-X-Forwarded-Encrypted: i=1; AJvYcCUaDq+9AXKMl49ybD7AXqlPEB5AyRRwal7P03K+BXbg3lA2jiJRRHC2UTXjwi5zQ7rumMRtujH65g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxJYxpttyMIoEzFhTs5FTTGbgXYbmHYUX4p8N0NBoigGJKVPpYb
-	rTeSKTubPkKDRJDbpcy1zymfocu2BGtTiZ6hKWLS9uVFkbmpPiqXR9sdGf81iC/yYdA=
-X-Gm-Gg: AeBDieuqFOOL5qynDDf0aGT0tkHTrsasNGDEAp/TT9HGIaF37isvvm58G2UwkjyU/vV
-	/SE3h/H37QgFsiTC4V9eYBEGeQ2rBdfTSYCHeupKzZBNFnRpEUKsShFAM0V8oizwUS8+p6LlpyE
-	Ikam/caNgwGviTk6yRJiOH6OyKwi6VYg8AFq9avSFzv/6hIoH5wmUy2oIxyR43nyZeuGlqFgdgJ
-	EgcZNcEabnhvsz2BfDaxE11XTnkaYWQpMM/UsMvzq7kAnjRME85kfKatqkanCK1leuiRIUGYcEl
-	0dryS+irri6D9aIW/LE7aiIm7AFRVILjY9GeJhxYIXLopKdvIC4zl8yWPzu/vKqmSp4hfyQeVfR
-	Gs0OqV5CjpLCNZQC8ZIsuNnp8APetldQF4aRfmtYIAE4wbWAlSYOq0txl0GuHyOV4OoI5l2CjfP
-	kPPsIxkL6HfxqEAHQ1yCTK776QaPhv0Mnu/yES9jI6Snt8QKJgH6JWI/pZhhBu0TRbHJsGjl+V
-X-Received: by 2002:a2e:a54a:0:b0:38e:2093:1993 with SMTP id 38308e7fff4ca-38e4bdcb2a8mr8185631fa.7.1775817675691;
-        Fri, 10 Apr 2026 03:41:15 -0700 (PDT)
+        bh=Q8wAkh4o7tl/zj3dU8ucWDwim4K0cFPOmp+J3PD9wxo=;
+        b=WWA8Db5+bUydvK42hVG6qnQMHG5LvRkfgGRbwVvpZgMlwnB7Aib7UQKeWqL3UQ2MMf
+         G5NzPzDj70eIXX53uKDGZzh8EkyHhRa6U05+2EBg8NJszDpGnDTSBXCRNGhM10JrEmgU
+         dYOZWbemkPCfsqSlZHWjpjvQrZBxfYvXHinv8YfAcsiPp9aJwHsbxG7Y6oI2mg9q81fY
+         3ZoP0lfJWSwoNFak3w4MDbGUcLWFwKOU3Iys1/lfK11BeMq4SlAF3pjVSb8QYN7EnRxJ
+         i28vmc6VANlIvWX3t+bPwMgQhJ8QfpIFznKrtxP0PCxf5/ts1HZs7nMJrNRljGvkGHXJ
+         rhVw==
+X-Forwarded-Encrypted: i=1; AJvYcCVvuL0aHzssPqC0h3IOw5AiMLmiyztWy7c7FcPgqnQx/MlIJ6yWLEGQkrkZvo2ZJLDiz1Khl2Hjrg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxEHhWO+slcLgP5mYXPk+vIp1eGzW8zqIViVgDYwS9xzeVQdsPl
+	6VXIvRxZB1wrtFKmR4Rp3OWaKmAhkG+CG7fMO3qNEeqZt3ZGoiLB23HOgBiRWUjCa+s=
+X-Gm-Gg: AeBDievDXHcZGx72aKfZEhhtYTYgz5EAWTq8Wu+Ohhx6r2UpIJKofIuCk4I5UFTmOwB
+	Ip1cnbP5WZBJQfrqi/nBjsIFaxhDIBPGYkMxDU+KxXATGerdpaal+hQ1+uZBo0ycS5NZdnw1LCT
+	5N8sFj9FmP8LC2dgjfmWusrY/T1GdArB1EukAkaF2QIAKm/2mo0xgaFxWiKOSIdetab1quIJ5zj
+	cYdh4SQbR30rNS75pvDQct7fvkcsE8Vg37z9aAANasUJRT47e3TqgG+NeukDtRQ71vvXC+WlPvI
+	bdrSXrr/Nvsjn6SFMsUZZuVtrvBwzbd4J8ZOcI5iCWphtEo2bvIiFdxoim6mKQ/T/UHwygBWjOr
+	iown5jwMZxoQeoZIPToxNPSRhbgLccU9YSzy0Pt2qUMixNr91hzTU20anzWo6+XvDon3QSTBJuP
+	08t04WWpqbcNj2rYsyCSiszLS/WfRb9nSLGCW8T9S2Odv6sClUy08kbzSO7dgLnHKbruscN1aS
+X-Received: by 2002:a05:6512:12cf:b0:5a3:ef60:f2a2 with SMTP id 2adb3069b0e04-5a3efb5a8a3mr827213e87.43.1775817676897;
+        Fri, 10 Apr 2026 03:41:16 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.14
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38e495455acsm5588331fa.23.2026.04.10.03.41.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2026 03:41:15 -0700 (PDT)
+        Fri, 10 Apr 2026 03:41:16 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@linaro.org>
 To: Saravana Kannan <saravanak@kernel.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -82,9 +82,9 @@ Cc: Sudeep Holla <sudeep.holla@kernel.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 7/9] pmdomain: renesas: rcar-gen4-sysc: Drop GENPD_FLAG_NO_STAY_ON
-Date: Fri, 10 Apr 2026 12:40:50 +0200
-Message-ID: <20260410104058.83748-8-ulf.hansson@linaro.org>
+Subject: [PATCH v2 8/9] pmdomain: renesas: rcar-sysc: Drop GENPD_FLAG_NO_STAY_ON
+Date: Fri, 10 Apr 2026 12:40:51 +0200
+Message-ID: <20260410104058.83748-9-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260410104058.83748-1-ulf.hansson@linaro.org>
 References: <20260410104058.83748-1-ulf.hansson@linaro.org>
@@ -104,20 +104,20 @@ Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/pmdomain/renesas/rcar-gen4-sysc.c | 1 -
+ drivers/pmdomain/renesas/rcar-sysc.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/pmdomain/renesas/rcar-gen4-sysc.c b/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-index 0c6c639a91d0..81b154da725f 100644
---- a/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-+++ b/drivers/pmdomain/renesas/rcar-gen4-sysc.c
-@@ -251,7 +251,6 @@ static int __init rcar_gen4_sysc_pd_setup(struct rcar_gen4_sysc_pd *pd)
- 		genpd->detach_dev = cpg_mssr_detach_dev;
+diff --git a/drivers/pmdomain/renesas/rcar-sysc.c b/drivers/pmdomain/renesas/rcar-sysc.c
+index bd7bb9cbd9da..e4608c657629 100644
+--- a/drivers/pmdomain/renesas/rcar-sysc.c
++++ b/drivers/pmdomain/renesas/rcar-sysc.c
+@@ -241,7 +241,6 @@ static int __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ 		}
  	}
  
 -	genpd->flags |= GENPD_FLAG_NO_STAY_ON;
- 	genpd->power_off = rcar_gen4_sysc_pd_power_off;
- 	genpd->power_on = rcar_gen4_sysc_pd_power_on;
+ 	genpd->power_off = rcar_sysc_pd_power_off;
+ 	genpd->power_on = rcar_sysc_pd_power_on;
  
 -- 
 2.43.0
