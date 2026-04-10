@@ -1,77 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D25E235045;
-	Fri, 10 Apr 2026 12:45:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B3853A1CF9
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 13:00:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775825145; cv=none; b=Ep/K08XUp5me5CaojqYQPQPCypOlmBzA/FubcelxcM/GODwrOzY1Qh0aA7pktTF0tdhaAzr2ctzSnQnsfI2SScPcB5nXGxPaqEw/LrvXebfgiQyHyNH0c+aj/PTmubtkCUZ0Yo69EoNtSNVbGCS/iiK3D1Ll6mpY5KvsQEXjEQI=
+	t=1775826004; cv=none; b=f1RwJJdxKjUWlw3RsNFfvIVFXRUCicJr3WyBEVWgK0HCWAwMBk1ygEzJTuZfoaS0ySNzWUvqcpca/3n4U/7JAxbXm9jwDOC6SuIJP6okddQ7uiB0L68DvGQqB+OCzQPhnM9MEP5K7d16fFdxO1aJ8oE4Ti+UhH2bWyT6aOcPQeM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775825145; c=relaxed/simple;
-	bh=XczVCJGkATH2J5Vmf+vdFlnbUhkQSJONVdDbdNdb4hY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Cwhqrqp1qJWLKFeLJ8tNF4YuevyZoadrpdnl7WdMU1OPdJhit9mciVdfZawtqA30PyTOyjaZrUk83YcZeTwq32VessdZQDKUsepSTmUkyqWpJbsy6noxT7XGLU5YUTx7tBMkQL1nXua9L71zE8iUglk0WtzqrjVsb17WgagXwco=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fcKgXXfp; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775826004; c=relaxed/simple;
+	bh=6zuW4otYsQmxV1GSq43Ub3OPRifF5zI3RsR5eV4DpSE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=slJjviOz1xuYBeqK9PNFy/59qsgRrG6nBV6lMYI7pIGODBNEomFF6pl7V8prwYbHGzMQ7pOKwY7zHXhc4wYrdqz2HlLaSWtL+oqeWGWPN168x9IWmEQDGcqRQw7YUY0suaw9CagSIutPuCIFa8XWTYDg0gF1n7a77SVWyqpEjSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MwwGSH0Y; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fcKgXXfp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7611FC19421;
-	Fri, 10 Apr 2026 12:45:44 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MwwGSH0Y"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56B6FC19425
+	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 13:00:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775825144;
-	bh=XczVCJGkATH2J5Vmf+vdFlnbUhkQSJONVdDbdNdb4hY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=fcKgXXfpZq4HapPkze64lgRKmdxxEKpEz//KEdxyl3W+MR7C4nu9UgE/mWlgCtavB
-	 expCIP+VZpn8UDiDE3APMSR9HT8ajyhq6D1+KLw5VCFfksqBQBMnGWmLDUxJnLepqR
-	 vEOSZ+i3v5svYcnuADxtK3z4Ik+l6ROjjDDCS7D3/pK18BqG1P1994tMKKWvCcC2jp
-	 MzekFRAcUOCa5MqkIpdoAJweJ/q5k3Igc08mE57dqIypETBWSZwYUN4H3T64ZUFXGD
-	 bd37FgiqbKU8R66UjqHzcZqcR5Uy46bB3SNfaopbiyapDX0L3aTx4BFDNbJ602kvA4
-	 4CBjWY3ij/xPw==
-Date: Fri, 10 Apr 2026 14:45:42 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <jstultz@google.com>,
-	Stephen Boyd <sboyd@kernel.org>, Calvin Owens <calvin@wbinvd.org>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
-	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
-	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [patch V2 06/11] alarmtimer: Provide alarm_start_timer()
-Message-ID: <adjw9vtfc4DTR7VE@localhost.localdomain>
-References: <20260408102356.783133335@kernel.org>
- <20260408114952.332822525@kernel.org>
+	s=k20201202; t=1775826004;
+	bh=6zuW4otYsQmxV1GSq43Ub3OPRifF5zI3RsR5eV4DpSE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=MwwGSH0YEYY03UZlDubBrQdvHDUWyInYieG0BBukjnf1HLe1n6UFSUHHvWIaHc2kJ
+	 ZdsfFA2wH0s96859L5P92abKPru1jEe2/pkxqhT25n7e27kdTkH6U4eMhTqU+46eAt
+	 fhTD4Wbsk3SufTfVYc8LKGZB4WKvXHg6acyFZwmEkdYCJkE08Ra+uOr/JYCcr2k663
+	 +Vp2S42vAPPpO90nux3O0ProJknSS4fRwTmNyckRXQ3nFYrzv1L3h/FZuzflAXoEzy
+	 tMSxTrLPPDKdxoliNqidDaG/PD/nDzl3/4Cd+bwqOJJYeXREXsVS35DewOfHoJbSKi
+	 CcCW8J/a7NMZw==
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-b9382e59c0eso361253966b.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 06:00:04 -0700 (PDT)
+X-Gm-Message-State: AOJu0YxnQ3rHz6IDXxi97VTBoFWOWU9aw9Q07WbuHym5NYvjlX2bopnV
+	Huixj9dppYXzC4nFMLBd5P61H6tem6d5cnDpaBKqX5lXDMVcthjFR8kCu4EYyRp8QxxZ1KZtjmr
+	/eMq16gMKILaWMuCJjglrgtiTB2EQYsk=
+X-Received: by 2002:a17:906:fd87:b0:b9c:24a7:510c with SMTP id
+ a640c23a62f3a-b9d7243f583mr206295566b.1.1775826001812; Fri, 10 Apr 2026
+ 06:00:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260408114952.332822525@kernel.org>
+References: <20260319140307.441950-1-darcari@redhat.com> <CAJvTdKmLA=n07hkkXLbwMex-_Byji9EOy7wkkFHrcPCj8tzMqw@mail.gmail.com>
+In-Reply-To: <CAJvTdKmLA=n07hkkXLbwMex-_Byji9EOy7wkkFHrcPCj8tzMqw@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Date: Fri, 10 Apr 2026 08:59:50 -0400
+X-Gmail-Original-Message-ID: <CAJvTdKmepvPzWDM+6s9YERe27H6pSKbDb62yfpTSs57hWsEmRg@mail.gmail.com>
+X-Gm-Features: AQROBzBsCAaH9COe9q_WLlUc12dKfgcO8vAGMHlGl2RjqAH23VCGZa3RT6sZqOA
+Message-ID: <CAJvTdKmepvPzWDM+6s9YERe27H6pSKbDb62yfpTSs57hWsEmRg@mail.gmail.com>
+Subject: Re: [PATCH] tools/power turbostat: Allow execution to continue after
+ perf_l2_init() failure
+To: David Arcari <darcari@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Le Wed, Apr 08, 2026 at 01:54:11PM +0200, Thomas Gleixner a écrit :
-> Alarm timers utilize hrtimers for normal operation and only switch to the
-> RTC on suspend. In order to catch already expired timers early and without
-> going through a timer interrupt cycle, provide a new start function which
-> internally uses hrtimer_start_range_ns_user().
-> 
-> If hrtimer_start_range_ns_user() detects an already expired timer, it does
-> not queue it. In that case remove the timer from the alarm base as well.
-> 
-> Return the status queued or not back to the caller to handle the early
-> expiry.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Acked-by: John Stultz <jstultz@google.com>
-> Cc: Stephen Boyd <sboyd@kernel.org>
+Thank you for the patch, David, it is helpful.
 
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+I agree that turbostat should do its best to run properly when the
+underlying kernel
+doesn't have full support, and you found a configuration that I missed.
 
--- 
-Frederic Weisbecker
-SUSE Labs
+I'd like to understand how/why your kernel perf support is failing on alder lake
+to be sure turbostat is coping the best it can.
+
+If you can identify an upstream kernel version that fails this way,
+that would be great.
+
+You can poke with "perf stat" as well, but this will depend on what
+.json counter list is compiled into
+your version of perf.
+
+probably a first sanity check would be if these commands for the LLC
+and the L2 work:
+
+sudo perf stat -e cache-misses sleep 1
+sudo perf stat -e L2_REQUEST.ALL sleep 1
+
+Also, with your L2 patch applied, does turbostat still successfully
+show the LLC stats?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
