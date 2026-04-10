@@ -1,146 +1,146 @@
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpbgjp3.qq.com (smtpbgjp3.qq.com [54.92.39.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DC901BD9CE
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 01:01:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DEF62727F3;
+	Fri, 10 Apr 2026 01:49:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.92.39.34
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775782903; cv=none; b=oUOJqftHqA/rZZNjB/rWk9G+sp8H9a85nbtpJ0sgGxYDXYcbK4mnHTvKStZIw3vGU+KeJ/a0jwDuEICD/ZpdOuu7qjeigAOWFXFiYbqLZBeQhhfEPlvne9Su37H3oVSW/jh5DHjQVjzUxOpv8B94hXMI8FYx4yVaBov73jAYgzc=
+	t=1775785777; cv=none; b=WItwG452M+RBks4EMJvECdEZRf+lcWxD2aGI2awMoR5jFygjKZoHRC/mSJP5mXG/oNZrrXtL3pr41QuHvpgnT9d3VaM49wPdvlO/V4tXYfKfgCnXkuTVZnKNoMHQrdsuWzZfAeTZBv+3d8Yqb9Sgaerqb06b4dyTjKSZ8VOOiJ4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775782903; c=relaxed/simple;
-	bh=O1oqU5q5okVp6Eq7KhaJYRT8N5oZTYs7sw6L2W1OpmE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=prFQioooVuTuQhgUTxDVi5MbaYXU5Q6SRaAk7rE7tu40Fky5uV+Vcn2v+qGsgexXhMCHY5pk3WUwzeaZyjoiXlxFZaQ+23b/gZBd14+j6mDSkfGrMFP4LKkTt93rMkPH9zi8p997DKltYF0YHLtR4p6ITq3WboUE7DB7AMM9nmw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=0zifnLjt; arc=none smtp.client-ip=209.85.210.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1775785777; c=relaxed/simple;
+	bh=cjNQH1qJbLdjrSUM8AhX5PvNVhb/eXwwHoPvpF7jJvs=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=GWc36yaVEqrsr2bnz77trU3EfmXgkzHLXC9ffEpBQcgrHLCHpCtPI3Kflae3pmh00IPUxg+gG9spnn4Nr8KZu6cbhV8TyeCAvWLhW9Ge2j0NVDTPvndKFJhXGqq+YIdWU/ak2XkeBD7MIghmFe9+Dyq92uXOEEYtxNm6Y5pTT18=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com; spf=none smtp.mailfrom=linux.spacemit.com; dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b=LWiDhGX4; arc=none smtp.client-ip=54.92.39.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="0zifnLjt"
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-82418b0178cso774020b3a.1
-        for <linux-pm@vger.kernel.org>; Thu, 09 Apr 2026 18:01:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1775782901; x=1776387701; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=CDukKgIxUDFhviJEhQQl8OKCJeL8VtYjziTmoESltr0=;
-        b=0zifnLjt59ENXbULyxV2hfv8CI1gn3xLGicwajRFjCR0S4mubP1/RgLFNpsSVVMHOP
-         6K1X0S4laaWRf0e/4nlJ0SbA5ivP8Wmox39Uc5ShzkRH13RO7GdLd3cgatQRZX/OzSbE
-         lKQArwm9HLiAzVZ1m9emyVU6V+hrs98vWWJS0zVCyrSTc1QvrWfMPLm1YiHEcMH1UM+Y
-         CtmhkV5oOLnxSMGv/WkaIK4MXUAHKzvV0phgjhTKe5TSq/qNR+iryIAj8e87xVQ/5Rsr
-         /1RVQhtNHSAFEGDTSRth+TMY3B5KFT6EuskVNG7bAENnmYSqEN8XF4Ecy3Pc7dBiZQAf
-         t4vw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775782901; x=1776387701;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=CDukKgIxUDFhviJEhQQl8OKCJeL8VtYjziTmoESltr0=;
-        b=P8C29IqEn9w9s/6AQAbT5lgxzn8vtSkTajZwXQgZBiCknq4+rssvX6uvUeF9die90h
-         TqAUOijhzBirKrSyXbfR8PuDXVi0gmmS+As3jJG3lwdZeXojCrsRp48jZoeyI1FJIWCE
-         4XrSbyU2/ZH2AsgFAr3pwaMin+FhsuzXElIFMeagnn9WQWq/jVWGPXd3Y7wr6lyntjqX
-         vGe/Hut4O47po2c/rn7sADfeTWEXazbcuFUDRY6q5nRFwY3sVjLCwb6716NFfelM02vm
-         TN+CDkGcn8ntEdX+k7gDeza52ErKazlzyJt803SWrnJn3/abJOI83Og4FCSFZ/GSBmiL
-         ZByQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWWqFbVh00lehh4+T+8L63nnj455wKC/yxsqHTdEv/1/NUca6w2BivpspNlPX+tTCkJrtY7cUZscQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzbIwYomPMoDjNlkydRtD8mFB+5aIcKKxBcCKjrQNHmt3l4XRKm
-	hZEtTLB714bO4/jE5dhgo0Oo7MwcqhbI3hDtS0SnQsPiltSeC9xK7SOtyTQlYkQIgDc=
-X-Gm-Gg: AeBDieuo51BBLzxQjf4gPcnxMBw/fq42FwXK8pdeHtOFoPWJ+fiJKbURM5wxFgeLN59
-	PPg5JsrkhdqRiDklkeJqKefj0f24bh33Jg/GbCsgkGTNRy3XnIjMTdKRCELOB0WEoaldqzIjCJr
-	qVZALgXDSzDSgtp59f5sXRQHaSHZwo5dvrrOje7CJSkMvzSvk1Jq27B1CLOmRGVK9NpGqhwrpgw
-	pHgvgaOxzYtvMcCVmZKWzMmw+AC+lXni8eWUkN8gk26mpNHqlpGLC2Cel+P/Rm/2G9AUqo+OE21
-	2rPiCWFaZAwIP8GOO55Z/WNp7jtZGv5gjSjDZzrCotGC95pGSFhJwXR+lXvwDLt9qI/GG7d1qF+
-	mxv+Btgc1guc2knqWahRQKIw4l7Ji6zdBchV/44sWKAzkzniZqWF0l/tBT3SWj99dIa/0wUsrWP
-	q7htgdBxJt58Np7xw105c=
-X-Received: by 2002:a05:6a00:1bcd:b0:82c:24d5:63e6 with SMTP id d2e1a72fcca58-82f0c169049mr1259317b3a.15.1775782900710;
-        Thu, 09 Apr 2026 18:01:40 -0700 (PDT)
-Received: from localhost ([97.126.187.42])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f0c30f5c3sm731115b3a.3.2026.04.09.18.01.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Apr 2026 18:01:40 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Dhruva Gole <d-gole@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 3/3] pmdomain: arm_scmi: add support for domain hierarchies
-In-Reply-To: <20260313120707.jhkyd772wzuwmlhd@lcpd911>
-References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
- <20260310-topic-lpm-pmdomain-child-ids-v1-3-5361687a18ff@baylibre.com>
- <20260313120707.jhkyd772wzuwmlhd@lcpd911>
-Date: Thu, 09 Apr 2026 18:01:39 -0700
-Message-ID: <7hwlyfr5l8.fsf@baylibre.com>
+	dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b="LWiDhGX4"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
+	s=mxsw2412; t=1775785757;
+	bh=SZbYS0Qb7WvP36b6C+O8auN3UbA6aoly84MdaQv+5nc=;
+	h=Mime-Version:Date:Message-Id:Subject:From:To;
+	b=LWiDhGX4DM3WIISkc2qqFcK3Gv/PbRYwKGS1iCQzuqgDfq4Rs554GFdGcDvSdi0Ad
+	 R2qu/CBfRvwHiUkn12f8+XXh7PUKUE3Csb0vYwdhLi/iH8onvhIIJ/hORppS9/XGjj
+	 5PAACNSAEnw8F6W+I6CIGK354+KDi2/kBGthsPzA=
+X-QQ-mid: zesmtpgz9t1775785752t0ec45321
+X-QQ-Originating-IP: jf/yfmslXbOw835KrUa4sX1NzoM1+TMW786OM3q7AQI=
+Received: from = ( [183.48.247.238])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Fri, 10 Apr 2026 09:49:10 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 12731809444292626106
+EX-QQ-RecipientCnt: 14
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 10 Apr 2026 09:49:10 +0800
+Message-Id: <DHP3IFPL45T4.FI2WYSYGN8KX@linux.spacemit.com>
+Cc: "Sebastian Reichel" <sebastian.reichel@collabora.com>,
+ <linux-kernel@vger.kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
+ "Yixun Lan" <dlan@gentoo.org>, "Paul Walmsley" <pjw@kernel.org>, "Palmer
+ Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Alexandre Ghiti" <alex@ghiti.fr>, <linux-riscv@lists.infradead.org>,
+ <spacemit@lists.linux.dev>, "Aurelien Jarno" <aurelien@aurel32.net>,
+ <linux-pm@vger.kernel.org>
+Subject: Re: (subset) [PATCH v5 0/2] driver: reset: spacemit-p1: add driver
+ for poweroff/reboot
+From: "Troy Mitchell" <troy.mitchell@linux.spacemit.com>
+To: "Troy Mitchell" <troy.mitchell@linux.spacemit.com>, "Lee Jones"
+ <lee@kernel.org>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20251102230352.914421-1-aurelien@aurel32.net>
+ <176213091347.301408.11587695003687450479.b4-ty@collabora.com>
+ <FA447DF1D2398A79+aQlVuEbrLMCiGMpc@kernel.org>
+ <20251105093347.GD8064@google.com>
+ <E205F88FB1EE06C5+aQscI0Uy7pgiMzEt@kernel.org>
+ <20251105100856.GG8064@google.com> <20251105101149.GH8064@google.com>
+ <FA1DBD9E7CCB8027+aQtMvb5Br7MgMW4K@troy-wujie14pro-arch>
+In-Reply-To: <FA1DBD9E7CCB8027+aQtMvb5Br7MgMW4K@troy-wujie14pro-arch>
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpgz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz3a-0
+X-QQ-XMAILINFO: NGXMM7FVunQ9DKaBzPNi7590jvJDR2dOmiiH2iyIBcoAK6tZsVHzEVuR
+	cgXHoBxvv6ZizjOCtq3h1RmCR0AqZtB+zbV3g1qBlM3yDtSUrfitNUOYFTO8diCOoaPoPAZ
+	AIIzDH9kNFO/mvA2VoPgpBH50aLKlA7s04GfqvIQC3MXji7nYRkml6sHG5rqC8KzdUnDImf
+	xl2xth0KZWIwD8ZIm/4+Isxk2HGCMZDUAXR71Snq/4at6AVx7WHS2njxfZ5IUQyq9qUexyV
+	U4WQKHZG57CuI14tWnnFx5D+v+rxu7Zwjx9K0E3eOduMCYmnEBKjeQkOgf5sDQVL6O5dg5o
+	h92JZjbBeUHxIsEVhsG0PYnnRUz8LHRs41m7UhG+VLvs9YWOkcGnHKGbiIdvBSYw+f7ODzm
+	nr7YlEaIHXCE9WrtsPixwlh9s2lsBawVsNvmGVJteSMbPdf9IeH/ET+6X9DeyKDMjbJe1yh
+	G1v12QxFXQyK/l79L1C18O1Y/H55srWde9b4eJFUZ9a1jwmVJiePUOBvnE1kU1Y22y+C2Cp
+	0Aol0SpAPeQL7/y1WnVJMOEcg65G67h55U8sEWm15A9FR6Jv+p+dg0rZud7Q6Q2QmCVj105
+	JzpA4XglZJ4HUF/viGiEfz6p2SYsIkv0E0akuQYkO/vQ6tNdiR9pQi2EmbA+OOH2j+29H7F
+	NJ+hYIHT16LW+WstgBQ7+mjm5BRDyi0mgQPTGgHNE4VRtsIzUYYct2wdoMuTwy/iFDFautt
+	osuBNa7bt004VqQl+1Hm2MUxJdc0K9xrZgCCKJFDZmsNGDswmQQAblA5Lui5k4FBQpuxu51
+	7YAe+bjiM+F3Xvh1E4oPLkn304dbqqrUNZXqVu6/tskIjZ9XyzPwlvJPJHDPoc3Gl+7OWT2
+	Vh8BlEYYniEA9VI3FHR8VTNfujvtGlUImbOH7s9HoF/FK3Yte6XZaHJW6peedcWw7PQeM8z
+	7H5fbp5/kzZzOMH6hwuxYP4f0/Eqz3te9piaG35aI1yo5O0Sk1L7GvyAa3BZbZEBPLu0y+F
+	eA/UH9guiMDWzlMDSrhI2hCgu8OZvFkfXr4qwL1qfvwxmrGJvtqgQDKMlbM3rILnor7KNI5
+	mZsPN+QRJDQ
+X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+X-QQ-RECHKSPAM: 0
 
-Dhruva Gole <d-gole@ti.com> writes:
+Hi Lee and Aurelien,
 
-> On Mar 10, 2026 at 17:19:25 -0700, Kevin Hilman (TI) wrote:
->> After primary SCMI pmdomain is created, use new of_genpd helper which
->> checks for child domain mappings defined in power-domains-child-ids.
->> 
->> Also remove any child domain mappings when SCMI domain is removed.
->> 
->> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
->> ---
->
-> Again, since it worked fine on my AM62L,
-> Tested-by: Dhruva Gole <d-gole@ti.com>
+On Wed Nov 5, 2025 at 9:10 PM CST, Troy Mitchell wrote:
+> On Wed, Nov 05, 2025 at 10:11:49AM +0000, Lee Jones wrote:
+>> On Wed, 05 Nov 2025, Lee Jones wrote:
+>>=20
+>> > On Wed, 05 Nov 2025, Troy Mitchell wrote:
+>> >=20
+>> > > On Wed, Nov 05, 2025 at 09:34:21AM +0000, Lee Jones wrote:
+>> > > > On Tue, 04 Nov 2025, Troy Mitchell wrote:
+>> > > >=20
+>> > > > > On Mon, Nov 03, 2025 at 01:48:33AM +0100, Sebastian Reichel wrot=
+e:
+>> > > > > >=20
+>> > > > > > On Mon, 03 Nov 2025 00:01:58 +0100, Aurelien Jarno wrote:
+>> > > > > > > This adds poweroff/reboot support for the SpacemiT P1 PMIC c=
+hip, which is
+>> > > > > > > commonly paired with the SpacemiT K1 SoC.
+>> > > > > > >=20
+>> > > > > > > Note: For reliable operation, this driver depends on a this =
+patch that adds
+>> > > > > > > atomic transfer support to the SpacemiT I2C controller drive=
+r:
+>> > > > > > >   https://lore.kernel.org/spacemit/20251009-k1-i2c-atomic-v4=
+-1-a89367870286@linux.spacemit.com/
+>> > > ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> > > dependency is here.
+>> > > > > > >=20
+>> > > > > > > [...]
+>> > > > > >=20
+>> > > > > > Applied, thanks!
+>> > > > > >=20
+>> > > > > > [1/2] driver: reset: spacemit-p1: add driver for poweroff/rebo=
+ot
+>> > > > > >       commit: 28124cc0fb8c7dc01a6834d227351e25d9a92c58
+>> > > > > Should we apply it now? The dependency patch hasn=E2=80=99t been=
+ merged yet...
+>> > > >=20
+>> > > > What is the dependency?
+>> > > I point it out above.
+>> > > Without this patch, reboot and shutdown would end up calling the non=
+-atomic i2c_transfer.
+>> >=20
+>> > Okay, thanks.  I was mostly checking that you weren't referring to the
+>> > MFD patch, which doesn't represent a true dependency.
+>>=20
+>> To save Sebastian some trouble, let's keep the reboot patch applied.
+>>=20
+>> I'll hold off on the MFD one, which will ensure that reboot isn't probed=
+.
+>>=20
+>> Let me know when the dep is merged and I'll hoover up the rest of the se=
+t.
+> Okay. I'll reply this thread when the dependency is merged.
+Ths I2C PIO patchset has been merged here [1].
 
-Thanks for testing & reviewing!
+Link: https://lore.kernel.org/all/adfVk82OC1c3Zn8a@zenone.zhora.eu/
 
-> But I had some thoughts further down...
->
->>  drivers/pmdomain/arm/scmi_pm_domain.c | 14 +++++++++++++-
->>  1 file changed, 13 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/pmdomain/arm/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
->> index b5e2ffd5ea64..9d8faef44aa9 100644
->> --- a/drivers/pmdomain/arm/scmi_pm_domain.c
->> +++ b/drivers/pmdomain/arm/scmi_pm_domain.c
->> @@ -114,6 +114,14 @@ static int scmi_pm_domain_probe(struct scmi_device *sdev)
->>  
->>  	dev_set_drvdata(dev, scmi_pd_data);
->>  
->> +	/*
->> +	 * Parse (optional) power-domains-child-ids property to
->> +	 * establish parent-child relationships
->> +	 */
->> +	ret = of_genpd_add_child_ids(np, scmi_pd_data);
->> +	if (ret < 0 && ret != -ENOENT)
->> +		pr_err("Failed to parse power-domains-child-ids for %pOF: %d\n", np, ret);
->
-> Nit: I think the style of this driver is to use dev_err than pr_err
-
-Agreed.
-
-> Also, maybe a dev_warn makes more sense since we're not even returning
-> the error or doing anything different if we get certain error path.
-
-OK.
-
-> I am wondering if it makes sense to just abort the whole idea of
-> creating power-domain child ids if anything goes wrong?
->
-> Basically just of_genpd_remove_child_ids if we face a condition where we
-> have different number of parents/ children or id > num etc...
->
-> All are error cases where the system behaviour can go on to become very
-> unpredictable if we end up making a false/ incomplete parent-child ID
-> map.
->
-> Thoughts?
-
-I agree.  After thinking through some of Ulf's suggestions on the
-different error handling ideas, I think this should really be "all or
-nothing".  If we we cannot parse & add all the children in the list, we
-should add none of them.  I think partial additions will be come
-unwieldy to manage rather quickly, and require the pmdomain core to keep
-state.
-
-Kevin
+                              - Troy
