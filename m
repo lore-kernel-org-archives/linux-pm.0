@@ -1,362 +1,243 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D08CF3D16F4
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:27:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC6A63D348F;
+	Fri, 10 Apr 2026 14:27:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775831268; cv=none; b=eBlkk6ARDlAl8aLd5ud1K6IFBCej2Lz+OhqAE6wPwlSwV2BwcxK/b6TK58+U4AA5grFph3vjuvfu8uck5V3tSZxF/8syDf3xl3xBwOZXayi80+/QuJreQOHNufAW/YO20MSlHaN53Ww3aZRUZyy6+4p61HYQWNJ1ecOErUej0cc=
+	t=1775831273; cv=none; b=FApThxiAMa58pm3AX+ZAhNbc+p5TYHggZNlmk62EHi25KDs9VUE9oBE+yJGArkulXE38KRB1b6IH0elh4PjWYZWSXdzbMjTM4YTm4pNMXzfGwOrg8Ogy7CuZopwOvjcBr3oamGoM7DN7csxoeCQsrXrTGX6z1cU+9qUzXSvyeOk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775831268; c=relaxed/simple;
-	bh=5OF6/4w4OAfRYl2jkechvWsUDuDKyomm4FcDklBAcZs=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=ec8PLtegZrfhpaI9mZfVOzTq8VRBF5g0hAfqsWy0EdpiJFk0o7R7hppFfLfA8PvuVBXtNP7qA/j3caZdrpb1iZwX8BVS5kW7uBc6ysREesiAqSz4BH73oqUcRFbrVuwprjlVa6KaJ9vgrOSUDENyqVn39mGHz8I067sI1P4sgZA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XCk6106c; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775831273; c=relaxed/simple;
+	bh=+3yYlKzmj8tkdGMtBH//q1VOy0Jsh0dUvQWLGe+yGmk=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=Kv3f/CiDDMd5UOKV9YRsYymVLcheBM7IoYP5VSnOs9X8jn43EdygE1dkabOkcx9xp8DV1jEUnZ0RuhYWKrMTB87GJWoYYELUwy5KXi40o6Hso9aeIqGDeL4YFLYFsnK8zxULLgfMr14pIspC4ftHTt4QBp1WtF+RYdqqsNFO/eY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mhsfvUf7; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XCk6106c"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 876BEC19421
-	for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 14:27:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775831268;
-	bh=5OF6/4w4OAfRYl2jkechvWsUDuDKyomm4FcDklBAcZs=;
-	h=From:Date:Subject:To:Cc:From;
-	b=XCk6106cmcqvda/Wlw8Z94zd0+uy2lOL7ZxJ7OVtePWYsFx1mxIKY7Q2hv80kRzah
-	 FAG1g+x4riFVivzvsYZY+V/mGlmOPyf+R5pAXPh4nOG3hN1R7/hBmYFPho47g0XW0z
-	 NA9CXZyGCjTuIbHACNqWSm2n+xsQ1YlsRk6Pi6rlLyA2vjAu3DI2+fyzvm8wq3a7VN
-	 hjLzyqqQEaj3UIbFn4Ei70KgtkkmTc/gLqubwAd7tl1ANMHNCYrA+nyW1vD5xCZGr1
-	 xtCFGEBQIYgF+6TjF2Nnjj5v+LHe+tq+V+87RX+nA9MM2hTpECm8b35Wwbzkozch77
-	 E90DR4qZhTz5g==
-Received: by mail-oo1-f53.google.com with SMTP id 006d021491bc7-682d981b025so1247463eaf.3
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2026 07:27:48 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUAgxj6cBiS76CAOaqsrcVZ9D7mGZI17visJ4pHP0eTVStnaLZgBI1+j2/rNg3VaqyExz69sjQOZA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx3naNgwiH9gGUuOdEwzi8FYW2td/NOtplxMtdoXXH/rBjwB7ZJ
-	iS3uYPemxasHvjgEMtEDxmb5CAgWfSuOsV77qo0X7tQab/QK9cLLElY9okBn9GQKVibCRnwPX71
-	WFpbwpJs2KmewPwul5wsF2MCPShK6cZY=
-X-Received: by 2002:a05:6820:199b:b0:681:6a53:6662 with SMTP id
- 006d021491bc7-68be5e56a57mr1513712eaf.13.1775831267653; Fri, 10 Apr 2026
- 07:27:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mhsfvUf7"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1775831272; x=1807367272;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=+3yYlKzmj8tkdGMtBH//q1VOy0Jsh0dUvQWLGe+yGmk=;
+  b=mhsfvUf7zoogZZ0P87iJyQkO2pehW5IgTG15ZG12AtGmRbNcqwWpOpQy
+   hTo3LDk5+0vcTElFXcX+Iz9WwXrs3WZ6fbq9HYCwC0NNxEy/xfk55lW/a
+   H+vkH+H5M/BcnSEv3dWxaVI5wl376rZZxDdPRRyyW1XmFLn5i6SuBa75l
+   +aTdHLWQtdi17CgHipe73AXHEOQGEpaQyq+dCcO2GbeQf1Ix0U0MIzQIm
+   yWeR4dAnMFYdw6Y0AxgqWiD04QQgj088s2swHv1dAmCiDCQ25V/hK7FFR
+   QiB3L4J7SAFJXooot8XjhylWHZcrhrQ4PWZwzefBFzxQz/U0XmJXrGJUV
+   g==;
+X-CSE-ConnectionGUID: ElpXyAqvRTmo3FVIdFAYew==
+X-CSE-MsgGUID: Wyu2Nj+cTmGVn6FBFjuFuA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11755"; a="76020182"
+X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
+   d="scan'208";a="76020182"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 07:27:51 -0700
+X-CSE-ConnectionGUID: TGsXO/1OSHCPCDXXRZG/hQ==
+X-CSE-MsgGUID: Dymp7urqTn2dO+qFnOiERg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
+   d="scan'208";a="233175084"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.118])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 07:27:48 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 10 Apr 2026 17:27:44 +0300 (EEST)
+To: Xi Pardee <xi.pardee@linux.intel.com>
+cc: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+    platform-driver-x86@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+    linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 3/7] platform/x86/intel/pmc: Enable Pkgc blocking
+ residency counter
+In-Reply-To: <20260408222144.3288928-4-xi.pardee@linux.intel.com>
+Message-ID: <c2c0a4bf-92e3-022d-1e39-2f039faa3a66@linux.intel.com>
+References: <20260408222144.3288928-1-xi.pardee@linux.intel.com> <20260408222144.3288928-4-xi.pardee@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 10 Apr 2026 16:27:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i9EjajGD55kAXtQz=NjvqT8ffcmEYS_dHoFvu901TjwA@mail.gmail.com>
-X-Gm-Features: AQROBzAQ4cr0bU2BOWe-65L7XX_jjNVAHsKgnDvzktqeNPVPY2KBQNc1UZszAb4
-Message-ID: <CAJZ5v0i9EjajGD55kAXtQz=NjvqT8ffcmEYS_dHoFvu901TjwA@mail.gmail.com>
-Subject: [GIT PULL] ACPI support updates for v7.1-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/mixed; boundary="8323328-474505665-1775831264=:1195"
 
-Hi Linus,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This goes early because I will be traveling next week.
+--8323328-474505665-1775831264=:1195
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Please pull from the tag
+On Wed, 8 Apr 2026, Xi Pardee wrote:
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-7.1-rc1
+> Enable the Package C-state blocking counter in the PMT telemetry
+> region. This counter reports the number of 10=E2=80=AF=C2=B5s intervals d=
+uring
+> which a Package C-state 10.2/3 entry was blocked for the specified
+> reasons.
+>=20
+> Create a common helper for pmc_core_pkgc_ltr_blocker_show() and
+> pmc_core_pkgc_blocker_residency_show() as these two functions
+> share similar logic.
 
-with top-most commit 8e937866b425248fa375b2138c19c117a87c6be0
+Please don't do back and forth changes like this within a series. You=20
+should add it in the right form from the beginning.
 
- Merge branch 'acpi-apei'
+--=20
+ i.
 
-on top of commit 591cd656a1bf5ea94a222af5ef2ee76df029c1d2
+> Signed-off-by: Xi Pardee <xi.pardee@linux.intel.com>
+> ---
+>  drivers/platform/x86/intel/pmc/core.c | 40 ++++++++++++++++++++-------
+>  drivers/platform/x86/intel/pmc/core.h |  8 ++++++
+>  2 files changed, 38 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86=
+/intel/pmc/core.c
+> index 5c519942ec58c..94ae098a155a6 100644
+> --- a/drivers/platform/x86/intel/pmc/core.c
+> +++ b/drivers/platform/x86/intel/pmc/core.c
+> @@ -1071,29 +1071,44 @@ static int pmc_core_die_c6_us_show(struct seq_fil=
+e *s, void *unused)
+>  }
+>  DEFINE_SHOW_ATTRIBUTE(pmc_core_die_c6_us);
+> =20
+> -static int pmc_core_pkgc_ltr_blocker_show(struct seq_file *s, void *unus=
+ed)
+> +static int pmc_core_pkgc_counters_show(struct seq_file *s,
+> +=09=09=09=09       struct telem_endpoint *ep,
+> +=09=09=09=09       u32 offset, const char **counters)
+>  {
+> -=09struct pmc_dev *pmcdev =3D s->private;
+> -=09const char **pkgc_ltr_blocker_counters;
+>  =09unsigned int i;
+>  =09u32 counter;
+>  =09int ret;
+> =20
+> -=09pkgc_ltr_blocker_counters =3D pmcdev->pkgc_ltr_blocker_counters;
+> -=09for (i =3D 0; pkgc_ltr_blocker_counters[i]; i++) {
+> -=09=09ret =3D pmt_telem_read32(pmcdev->pc_ep,
+> -=09=09=09=09       pmcdev->pkgc_ltr_blocker_offset + i,
+> -=09=09=09=09       &counter, 1);
+> -
+> +=09for (i =3D 0; counters[i]; i++) {
+> +=09=09ret =3D pmt_telem_read32(ep, offset + i, &counter, 1);
+>  =09=09if (ret)
+>  =09=09=09return ret;
+> -=09=09seq_printf(s, "%-30s %-30u\n", pkgc_ltr_blocker_counters[i], count=
+er);
+> +=09=09seq_printf(s, "%-30s %-30u\n", counters[i], counter);
+>  =09}
+> =20
+>  =09return 0;
+>  }
+> +
+> +static int pmc_core_pkgc_ltr_blocker_show(struct seq_file *s, void *unus=
+ed)
+> +{
+> +=09struct pmc_dev *pmcdev =3D s->private;
+> +
+> +=09return pmc_core_pkgc_counters_show(s, pmcdev->pc_ep,
+> +=09=09=09=09=09   pmcdev->pkgc_ltr_blocker_offset,
+> +=09=09=09=09=09   pmcdev->pkgc_ltr_blocker_counters);
+> +}
+>  DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_ltr_blocker);
+> =20
+> +static int pmc_core_pkgc_blocker_residency_show(struct seq_file *s, void=
+ *unused)
+> +{
+> +=09struct pmc_dev *pmcdev =3D s->private;
+> +
+> +=09return pmc_core_pkgc_counters_show(s, pmcdev->pc_ep,
+> +=09=09=09=09=09   pmcdev->pkgc_blocker_offset,
+> +=09=09=09=09=09   pmcdev->pkgc_blocker_counters);
+> +}
+> +DEFINE_SHOW_ATTRIBUTE(pmc_core_pkgc_blocker_residency);
+> +
+>  static int pmc_core_lpm_latch_mode_show(struct seq_file *s, void *unused=
+)
+>  {
+>  =09struct pmc_dev *pmcdev =3D s->private;
+> @@ -1381,6 +1396,8 @@ void pmc_core_punit_pmt_init(struct pmc_dev *pmcdev=
+, struct pmc_dev_info *pmc_de
+>  =09=09pmcdev->pc_ep =3D ep;
+>  =09=09pmcdev->pkgc_ltr_blocker_counters =3D pmc_dev_info->pkgc_ltr_block=
+er_counters;
+>  =09=09pmcdev->pkgc_ltr_blocker_offset =3D pmc_dev_info->pkgc_ltr_blocker=
+_offset;
+> +=09=09pmcdev->pkgc_blocker_counters =3D pmc_dev_info->pkgc_blocker_count=
+ers;
+> +=09=09pmcdev->pkgc_blocker_offset =3D pmc_dev_info->pkgc_blocker_offset;
+>  =09}
+>  }
+> =20
+> @@ -1510,6 +1527,9 @@ static void pmc_core_dbgfs_register(struct pmc_dev =
+*pmcdev, struct pmc_dev_info
+>  =09=09debugfs_create_file("pkgc_ltr_blocker_show", 0444,
+>  =09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
+>  =09=09=09=09    &pmc_core_pkgc_ltr_blocker_fops);
+> +=09=09debugfs_create_file("pkgc_blocker_residency_show", 0444,
+> +=09=09=09=09    pmcdev->dbgfs_dir, pmcdev,
+> +=09=09=09=09    &pmc_core_pkgc_blocker_residency_fops);
+>  =09}
+> =20
+>  }
+> diff --git a/drivers/platform/x86/intel/pmc/core.h b/drivers/platform/x86=
+/intel/pmc/core.h
+> index a20aab73c1409..829b1dee3f636 100644
+> --- a/drivers/platform/x86/intel/pmc/core.h
+> +++ b/drivers/platform/x86/intel/pmc/core.h
+> @@ -455,6 +455,8 @@ struct pmc {
+>   *
+>   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
+gion
+> + * @pkgc_blocker_counters: Array of PKGC blocker counters
+> + * @pkgc_blocker_offset: Offset to PKGC blocker in telemetry region
+>   *
+>   * pmc_dev contains info about power management controller device.
+>   */
+> @@ -480,6 +482,8 @@ struct pmc_dev {
+> =20
+>  =09const char **pkgc_ltr_blocker_counters;
+>  =09u32 pkgc_ltr_blocker_offset;
+> +=09const char **pkgc_blocker_counters;
+> +=09u32 pkgc_blocker_offset;
+>  };
+> =20
+>  enum pmc_index {
+> @@ -495,6 +499,7 @@ enum pmc_index {
+>   * @dmu_guids:=09=09List of Die Management Unit GUID
+>   * @pc_guid:=09=09GUID for telemetry region to read PKGC blocker info
+>   * @pkgc_ltr_blocker_offset: Offset to PKGC LTR blockers in telemetry re=
+gion
+> + * @pkgc_blocker_offset:Offset to PKGC blocker in telemetry region
+>   * @regmap_list:=09Pointer to a list of pmc_info structure that could be
+>   *=09=09=09available for the platform. When set, this field implies
+>   *=09=09=09SSRAM support.
+> @@ -502,6 +507,7 @@ enum pmc_index {
+>   *=09=09=09specific attributes of the primary PMC
+>   * @sub_req_show:=09File operations to show substate requirements
+>   * @pkgc_ltr_blocker_counters: Array of PKGC LTR blocker counters
+> + * @pkgc_blocker_counters: Array of PKGC blocker counters
+>   * @suspend:=09=09Function to perform platform specific suspend
+>   * @resume:=09=09Function to perform platform specific resume
+>   * @init:=09=09Function to perform platform specific init action
+> @@ -512,10 +518,12 @@ struct pmc_dev_info {
+>  =09u32 *dmu_guids;
+>  =09u32 pc_guid;
+>  =09u32 pkgc_ltr_blocker_offset;
+> +=09u32 pkgc_blocker_offset;
+>  =09struct pmc_info *regmap_list;
+>  =09const struct pmc_reg_map *map;
+>  =09const struct file_operations *sub_req_show;
+>  =09const char **pkgc_ltr_blocker_counters;
+> +=09const char **pkgc_blocker_counters;
+>  =09void (*suspend)(struct pmc_dev *pmcdev);
+>  =09int (*resume)(struct pmc_dev *pmcdev);
+>  =09int (*init)(struct pmc_dev *pmcdev, struct pmc_dev_info *pmc_dev_info=
+);
+>=20
 
- Linux 7.0-rc7
-
-to receive ACPI support updates for 7.1-rc1.
-
-These include an update of the CMOS RTC driver and the related ACPI
-and x86 code that, among other things, switches it over to using the
-platform device interface for device binding on x86 instead of the PNP
-device driver interface (which allows the code in question to be
-simplified quite a bit), a major update of the ACPI Time and Alarm
-Device (TAD) driver adding an RTC class device interface to it, and
-updates of core ACPI drivers that remove some unnecessary and not
-really useful code from them.
-
-Apart from that, two drivers are converted to using the platform driver
-interface for device binding instead of the ACPI driver one, which is
-slated for removal, support for the Performance Limited register is
-added to the ACPI CPPC library and there are some janitorial updates
-of it and the related cpufreq CPPC driver, the ACPI processor driver is
-fixed and cleaned up, and NVIDIA vendor CPER record handler is added
-to the APEI GHES code.
-
-Also, the interface for obtaining a CPU UID from ACPI is consolidated
-across architectures and used for fixing a problem with the PCI TPH
-Steering Tag on ARM64, there are two updates related to ACPICA, a
-minor ACPI OS Services Layer (OSL) update, and a few assorted updates
-related to ACPI tables parsing.
-
-Specifics:
-
- - Update maintainers information regarding ACPICA (Rafael Wysocki)
-
- - Replace strncpy() with strscpy_pad() in acpi_ut_safe_strncpy() (Kees
-   Cook)
-
- - Trigger an ordered system power off after encountering a fatal error
-   operator in AML (Armin Wolf)
-
- - Enable ACPI FPDT parsing on LoongArch (Xi Ruoyao)
-
- - Remove the temporary stop-gap acpi_pptt_cache_v1_full structure from
-   the ACPI PPTT parser (Ben Horgan)
-
- - Add support for exposing ACPI FPDT subtables FBPT and S3PT (Nate
-   DeSimone)
-
- - Address multiple assorted issues and clean up the code in the ACPI
-   processor idle driver (Huisong Li)
-
- - Replace strlcat() in the ACPI processor idle drive with a better
-   alternative (Andy Shevchenko)
-
- - Rearrange and clean up acpi_processor_errata_piix4() (Rafael Wysocki)
-
- - Move reference performance to capabilities and fix an uninitialized
-   variable in the ACPI CPPC library (Pengjie Zhang)
-
- - Add support for the Performance Limited Register to the ACPI CPPC
-   library (Sumit Gupta)
-
- - Add cppc_get_perf() API to read performance controls, extend
-   cppc_set_epp_perf() for FFH/SystemMemory, and make the ACPI CPPC
-   library warn on missing mandatory DESIRED_PERF register (Sumit Gupta)
-
- - Modify the cpufreq CPPC driver to update MIN_PERF/MAX_PERF in target
-   callbacks to allow it to control performance bounds via standard
-   scaling_min_freq and scaling_max_freq sysfs attributes and add sysfs
-   documentation for the Performance Limited Register to it (Sumit Gupta)
-
- - Add ACPI support to the platform device interface in the CMOS RTC
-   driver, make the ACPI core device enumeration code create a platform
-   device for the CMOS RTC, and drop CMOS RTC PNP device support (Rafael
-   Wysocki)
-
- - Consolidate the x86-specific CMOS RTC handling with the ACPI TAD
-   driver and clean up the CMOS RTC ACPI address space handler (Rafael
-   Wysocki)
-
- - Enable ACPI alarm in the CMOS RTC driver if advertised in ACPI FADT
-   and allow that driver to work without a dedicated IRQ if the ACPI
-   alarm is used (Rafael Wysocki)
-
- - Clean up the ACPI TAD driver in various ways and add an RTC class
-   device interface, including both the RTC setting/reading and alarm
-   timer support, to it (Rafael Wysocki)
-
- - Clean up the ACPI AC and ACPI PAD (processor aggregator device)
-   drivers (Rafael Wysocki)
-
- - Rework checking for duplicate video bus devices and consolidate
-   pnp.bus_id workarounds handling in the ACPI video bus driver (Rafael
-   Wysocki)
-
- - Update the ACPI core device drivers to stop setting acpi_device_name()
-   unnecessarily (Rafael Wysocki)
-
- - Rearrange code using acpi_device_class() in the ACPI core device
-   drivers and update them to stop setting acpi_device_class()
-   unnecessarily (Rafael Wysocki)
-
- - Define ACPI_AC_CLASS in one place (Rafael Wysocki)
-
- - Convert the ni903x_wdt watchdog driver and the xen ACPI PAD driver to
-   bind to platform devices instead of ACPI devices (Rafael Wysocki)
-
- - Add devm_ghes_register_vendor_record_notifier(), use it in the PCI
-   hisi driver, and Add NVIDIA vendor CPER record handler (Kai-Heng
-   Feng)
-
- - Consolidate the interface for obtaining a CPU UID from ACPI across
-   architectures and use it to address incorrect PCI TPH Steering Tag
-   on ARM64 resulting from the invalid assumption that the ACPI
-   Processor UID would always be the same as the corresponding logical
-   CPU ID in Linux (Chengwen Feng)
-
-Thanks!
-
-
----------------
-
-Andy Shevchenko (1):
-      ACPI: processor: idle: Replace strlcat() with better alternative
-
-Armin Wolf (1):
-      ACPI: OSL: Poweroff when encountering a fatal ACPI error
-
-Ben Horgan (1):
-      ACPI: PPTT: Remove duplicate structure, acpi_pptt_cache_v1_full
-
-Chengwen Feng (8):
-      arm64: acpi: Add acpi_get_cpu_uid() for unified ACPI CPU UID retrieval
-      LoongArch: Add acpi_get_cpu_uid() for unified ACPI CPU UID retrieval
-      RISC-V: ACPI: Add acpi_get_cpu_uid() for unified ACPI CPU UID retrieval
-      x86/acpi: Add acpi_get_cpu_uid() for unified ACPI CPU UID retrieval
-      ACPI: Centralize acpi_get_cpu_uid() declaration in include/linux/acpi.h
-      perf: arm_cspmu: Switch to acpi_get_cpu_uid() from get_acpi_id_for_cpu()
-      ACPI: PPTT: Use acpi_get_cpu_uid() and remove get_acpi_id_for_cpu()
-      PCI/TPH: Pass ACPI Processor UID to Cache Locality _DSM
-
-Huisong Li (7):
-      ACPI: processor: idle: Remove redundant cstate check in
-acpi_processor_power_init
-      ACPI: processor: idle: Move max_cstate update out of the loop
-      ACPI: processor: idle: Remove redundant static variable and
-rename cstate check function
-      ACPI: processor: idle: Reset power_setup_done flag on
-initialization failure
-      ACPI: processor: idle: Fix NULL pointer dereference in hotplug path
-      cpuidle: Extract and export no-lock variants of
-cpuidle_unregister_device()
-      ACPI: processor: idle: Reset cpuidle on C-state list changes
-
-Jingkai Tan (1):
-      ACPI: processor: idle: Add missing bounds check in flatten_lpi_states()
-
-Kai-Heng Feng (3):
-      ACPI: APEI: GHES: Add devm_ghes_register_vendor_record_notifier()
-      PCI: hisi: Use devm_ghes_register_vendor_record_notifier()
-      ACPI: APEI: GHES: Add NVIDIA vendor CPER record handler
-
-Kees Cook (1):
-      ACPICA: Replace strncpy() with strscpy_pad() in acpi_ut_safe_strncpy()
-
-Nate DeSimone (2):
-      ACPI: FPDT: expose FBPT and S3PT subtables via sysfs
-      Documentation: ABI: add FBPT and S3PT entries to sysfs-firmware-acpi
-
-Pengjie Zhang (2):
-      ACPI: CPPC: Move reference performance to capabilities
-      ACPI: CPPC: Fix uninitialized ref variable in cppc_get_perf_caps()
-
-Rafael J. Wysocki (37):
-      ACPI: x86: cmos_rtc: Clean up address space handler driver
-      ACPI: x86: cmos_rtc: Improve coordination with ACPI TAD driver
-      ACPI: x86: cmos_rtc: Create a CMOS RTC platform device
-      ACPI: x86/rtc-cmos: Use platform device for driver binding
-      ACPI: PNP: Drop CMOS RTC PNP device support
-      x86: rtc: Drop PNP device check
-      rtc: cmos: Drop PNP device support
-      ACPI: TAD/x86: cmos_rtc: Consolidate address space handler setup
-      ACPI: AC: Get rid of unnecessary declarations
-      ACPI: PAD: Rearrange notify handler installation and removal
-      driver core: auxiliary bus: Introduce dev_is_auxiliary()
-      ACPI: video: Rework checking for duplicate video bus devices
-      ACPI: video: Consolidate pnp.bus_id workarounds handling
-      ACPI: driver: Do not set acpi_device_name() unnecessarily
-      ACPI: event: Redefine acpi_notifier_call_chain()
-      ACPI: driver: Avoid using pnp.device_class for netlink handling
-      ACPI: driver: Do not set acpi_device_class() unnecessarily
-      ACPI: AC: Define ACPI_AC_CLASS in one place
-      rtc: cmos: Enable ACPI alarm if advertised in ACPI FADT
-      rtc: cmos: Do not require IRQ if ACPI alarm is used
-      ACPI: TAD: Create one attribute group
-      ACPI: TAD: Support RTC without wakeup
-      ACPI: TAD: Use __free() for cleanup in time_store()
-      ACPI: TAD: Rearrange RT data validation checking
-      ACPI: TAD: Clear unused RT data in acpi_tad_set_real_time()
-      ACPI: TAD: Add RTC class device interface
-      ACPI: TAD: Update the driver description comment
-      ACPI: TAD: Use dev_groups in struct device_driver
-      ACPI: TAD: Use DC wakeup only if AC wakeup is supported
-      ACPI: processor: Rearrange and clean up acpi_processor_errata_piix4()
-      ACPI: TAD: Split three functions to untangle runtime PM handling
-      ACPI: TAD: Relocate two functions
-      ACPI: TAD: Split acpi_tad_rtc_read_time()
-      ACPI: TAD: Add alarm support to the RTC class device interface
-      ACPI: PAD: xen: Convert to a platform driver
-      watchdog: ni903x_wdt: Convert to a platform driver
-      ACPICA: Update maintainers information
-
-Sumit Gupta (8):
-      ACPI: CPPC: Add cppc_get_perf() API to read performance controls
-      ACPI: CPPC: Warn on missing mandatory DESIRED_PERF register
-      ACPI: CPPC: Extend cppc_set_epp_perf() for FFH/SystemMemory
-      cpufreq: CPPC: Update cached perf_ctrls on sysfs write
-      cpufreq: cppc: Update MIN_PERF/MAX_PERF in target callbacks
-      ACPI: CPPC: add APIs and sysfs interface for perf_limited
-      cpufreq: CPPC: Add sysfs documentation for perf_limited
-      ACPI: CPPC: Check cpc_read() return values consistently
-
-Xi Ruoyao (1):
-      ACPI: tables: Enable FPDT on LoongArch
-
----------------
-
- Documentation/ABI/testing/sysfs-devices-system-cpu |  18 +
- Documentation/ABI/testing/sysfs-firmware-acpi      |   6 +
- Documentation/PCI/tph.rst                          |   4 +-
- Documentation/admin-guide/kernel-parameters.txt    |   8 +
- MAINTAINERS                                        |   8 +-
- arch/arm64/include/asm/acpi.h                      |  17 +-
- arch/arm64/kernel/acpi.c                           |  30 ++
- arch/loongarch/include/asm/acpi.h                  |   5 -
- arch/loongarch/kernel/acpi.c                       |   9 +
- arch/riscv/include/asm/acpi.h                      |   4 -
- arch/riscv/kernel/acpi.c                           |  16 +
- arch/riscv/kernel/acpi_numa.c                      |   9 +-
- arch/x86/include/asm/cpu.h                         |   1 -
- arch/x86/include/asm/smp.h                         |   1 -
- arch/x86/kernel/acpi/boot.c                        |  20 +
- arch/x86/kernel/rtc.c                              |  21 +-
- arch/x86/xen/enlighten_hvm.c                       |   5 +-
- drivers/acpi/Kconfig                               |   2 +-
- drivers/acpi/ac.c                                  |  31 +-
- drivers/acpi/acpi_fpdt.c                           |  28 ++
- drivers/acpi/acpi_memhotplug.c                     |   4 -
- drivers/acpi/acpi_pad.c                            |  28 +-
- drivers/acpi/acpi_pnp.c                            |  22 +-
- drivers/acpi/acpi_processor.c                      |  31 +-
- drivers/acpi/acpi_tad.c                            | 492 ++++++++++++++-------
- drivers/acpi/acpi_video.c                          | 100 ++---
- drivers/acpi/acpica/utnonansi.c                    |   3 +-
- drivers/acpi/apei/Kconfig                          |  14 +
- drivers/acpi/apei/Makefile                         |   1 +
- drivers/acpi/apei/ghes-nvidia.c                    | 149 +++++++
- drivers/acpi/apei/ghes.c                           |  18 +
- drivers/acpi/battery.c                             |   9 +-
- drivers/acpi/button.c                              |  11 +-
- drivers/acpi/cppc_acpi.c                           | 293 ++++++++++--
- drivers/acpi/ec.c                                  |   6 -
- drivers/acpi/event.c                               |   7 +-
- drivers/acpi/osl.c                                 |  19 +-
- drivers/acpi/pci_link.c                            |   4 -
- drivers/acpi/pci_root.c                            |   9 +-
- drivers/acpi/power.c                               |   4 -
- drivers/acpi/pptt.c                                |  81 ++--
- drivers/acpi/processor_driver.c                    |  22 +-
- drivers/acpi/processor_idle.c                      |  82 ++--
- drivers/acpi/riscv/rhct.c                          |   7 +-
- drivers/acpi/sbs.c                                 |   4 -
- drivers/acpi/sbshc.c                               |   6 -
- drivers/acpi/thermal.c                             |  13 +-
- drivers/acpi/x86/cmos_rtc.c                        |  86 ++--
- drivers/base/auxiliary.c                           |  10 +
- drivers/cpufreq/cppc_cpufreq.c                     | 104 ++++-
- drivers/cpuidle/cpuidle.c                          |  22 +-
- drivers/gpu/drm/amd/include/amd_acpi.h             |   2 -
- drivers/gpu/drm/radeon/radeon_acpi.c               |   2 -
- drivers/pci/controller/pcie-hisi-error.c           |  12 +-
- drivers/pci/tph.c                                  |  16 +-
- drivers/perf/arm_cspmu/arm_cspmu.c                 |   6 +-
- drivers/platform/x86/hp/hp-wmi.c                   |   2 -
- drivers/platform/x86/lenovo/wmi-capdata.c          |   1 -
- drivers/rtc/rtc-cmos.c                             | 143 ++----
- drivers/watchdog/ni903x_wdt.c                      |  27 +-
- drivers/xen/xen-acpi-pad.c                         |  23 +-
- include/acpi/acpi_bus.h                            |  14 +-
- include/acpi/cppc_acpi.h                           |  22 +-
- include/acpi/ghes.h                                |  11 +
- include/acpi/processor.h                           |   2 -
- include/linux/acpi.h                               |  21 +
- include/linux/auxiliary_bus.h                      |   2 +
- include/linux/cpuidle.h                            |   2 +
- include/linux/pci-tph.h                            |   4 +-
- 69 files changed, 1450 insertions(+), 766 deletions(-)
+--8323328-474505665-1775831264=:1195--
