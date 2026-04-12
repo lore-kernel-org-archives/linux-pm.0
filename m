@@ -1,84 +1,140 @@
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com [209.85.215.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6259137CD28
-	for <linux-pm@vger.kernel.org>; Sun, 12 Apr 2026 14:34:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D712935A3B8
+	for <linux-pm@vger.kernel.org>; Sun, 12 Apr 2026 21:20:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776004465; cv=none; b=eX+PFXV+HczKQJTAdDM92hPE9JXWYTcTgxWvujVjQlScHIHdzFh4VdbAXv/XZHGR22hW3aqhq6PggP7tTBHWG6lHuuTTZtR1kwXYk2kdTJVt3Mgh8J4E6Kyv0orVlVv2RaVqbavUXXN/cJnPisSag62tVaTnPbWF+VXl62uHG5g=
+	t=1776028810; cv=none; b=TYt4sx5tHTpiF4+PONGx3nGy/pJ9SCdhao5dYnI/7iMr2o3Mzt/qaGC01BsUWUXh5XKBqTiHj+4TG1GPd2bt1hfng3tHtgrKORsyNCzKasKCGXKkrB2v+h1tAE/XrZ1NAbu5Uzru6aBpw8c5tpLXVcAhm0iRX6QuQILekTaJW98=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776004465; c=relaxed/simple;
-	bh=DDCfulsVqQTKXylT1KmXG15VDOMTe4rRR0qVZJDr7sA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CTqxNqDDDTHxkeyutYXBF/z3svw4lS4EZ+pBU2i+V2+AKnFsbh9fTQjIXd0RGTLaHWpe7T+SoB+1rjPhwqXcvPKH7NxkdbAbT7ItxTMITvkdw7hbxY5AUnC/lfMDDiu8O2p0zN4TuWbaRN60jWDlkYvfN2+H5WD1UmFX9j5AdOo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=Mskiwlbx; arc=none smtp.client-ip=185.246.84.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1776028810; c=relaxed/simple;
+	bh=tMkRUfTN8Bncs3EGHrvIFw8FiA2N2/PBiKt5eJsmrek=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PzBYgXPkGICQfu2LJL8o/fPrdlRRxrhBwcnjX4reMLgDy8W9pfp/ksQJVm/BhFIYhaFRpCQ56yJDXTP44eCtst5Hfgdov2f71C6sSAYAdE1bq0eWzdJIo/hyoPh6Xo/NRdQU8fIRmCCpepmRpJ3DrM+4ZCHoHGfsg5byhEuUkxw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AJsdlDI+; arc=none smtp.client-ip=209.85.215.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="Mskiwlbx"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 0488C1A31B2;
-	Sun, 12 Apr 2026 14:34:16 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id C3D185FFB9;
-	Sun, 12 Apr 2026 14:34:15 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id CC6A610451B8E;
-	Sun, 12 Apr 2026 16:34:12 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1776004455; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=91msdPNkWMnw/BAAIhlDZGhpLVxnZ2cz6aRipzbPmTE=;
-	b=Mskiwlbxx4MqBlvN5B+uBf6kKoVpkkiwwdomK5No7A5b1gtWrV9NKl8diP9T2F+SVqgRPL
-	7wFh99I5sz7CT8FObkQP36LnpB7i5jK2Zp68/kQz2+ooDvjDEjbmHhJw5o4xXzTtrVIlBY
-	aAYUiLGzNaGiI/BMbb/+147XzUulpzRRRUcFDf9Bz21re6qMJR9mBDXWAOU6fhCaZZXzm9
-	6nM6GFqmxJtFUkAFzJcGkZuag5KvbS6NOAc3ChYxpBXyz2o9xliYJe/9jkCImnzCxHqaua
-	NHAE4S4sm1kjZvEVpfmllPexhgaW+QqiB/G+LZbOuE+eZLPNgNDPGT9PpHafsw==
-Date: Sun, 12 Apr 2026 16:34:11 +0200
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Frank.Li@nxp.com, rafael@kernel.org, linux-i3c@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH V5 0/5] i3c: mipi-i3c-hci-pci: Enable IBI while runtime
- suspended for Intel controllers
-Message-ID: <177600443486.2783407.4838575164126519141.b4-ty@b4>
-References: <20260306085338.62955-1-adrian.hunter@intel.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AJsdlDI+"
+Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-c76b6abdb73so2704236a12.1
+        for <linux-pm@vger.kernel.org>; Sun, 12 Apr 2026 14:20:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776028808; x=1776633608; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=gdpHnJzsZ54JHVpvw0E3kldQ22xP3xvLv/vXHJI/JDg=;
+        b=AJsdlDI+FsbaqhO5QVTmXSRQocn7dUabl45gfvFPSYiG/AQNgt6tfh2S7lhkf/cSOq
+         HGPPy6Et0iSkl/Fgxubjq2zMAGQ0eh3kr4kpnZduxMQRWNQ+7Mf3P6dF5bD9ENDy10YD
+         tT+ltPV/36zjErM0ctuxhrvLPKjwHIFoUmieJBwNrE4/cxnz1vFCRBRuW+MmqdyVlPXG
+         5LK+x16JX3KRyXEmxQZRkShHxe/OBMDdpQkRgEzH4Vgj9a1xcmsIFzaPPmHUp9DcbI1d
+         NTaEpX9f3TUbJngHKhg5UGdeqMXo5PSpbv4MSZo+X75jOSlBFmMIaOKLMUEhYCO5zq0E
+         KWzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776028808; x=1776633608;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gdpHnJzsZ54JHVpvw0E3kldQ22xP3xvLv/vXHJI/JDg=;
+        b=KVbR6wjWWUXxBAJkbqcQEU5HqH+S8C4XCYen7VFx0O87GKvTJ5BhbnyAjofka0Yubw
+         JD4GbEYwAhy3pmDBuFdrai08vy+/aGdaCK+9qcPoLcfQKk63vPXiBua9o0NmBKtatNoq
+         t4jFraAkPnKl6nz6Z0vx7JJjG1doLM1+HelwMKYvxBRBFIuC2+XfXakMWVs5vfZ+XBlG
+         2a9PLCeTn01+iLsvKyzyz2r+Oxscy5VQydZMXkCY/7UsJaZjsxeGRk7htU0Y/RqwFRwg
+         NYrYFkzIWPl5cn6w8/uMPTna8obkhAhKKQev0uF1vpYbigWRKk+odLVSGTLg6m4VAboP
+         LBJQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXqjZCnebMVSwxh7fA53eAV/w5Qx1aqludYnvfUfnWOuHlnUAylcFrFeKISBBZdzyyAl+x/htsVIA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy+Kq/2yMTzlgbvsXqDFAlRJAN70lYxnAPU7we3YsFm3mmGeT2m
+	OXXDfzaJX5yEz8z/HtMKF2SpDSVAc0xo2PziAgnLcQojXih7Pd9RgQgzoaeOaA==
+X-Gm-Gg: AeBDietgJE/H0RsQlBcGklT5fSnZoxgUGtwGH1LFtn9mdHZpJFFOjinefuBrRipHSco
+	P2e2xAGZswd749tzV3tqsZa4ZoI4wzmxou22iBwsCrNC1nKNE8LtpliA50oG5p1tVHihDbxWnKm
+	1uJVgjoZ7vgmVHFyujxylcK6aF6ZorvZRd35kAK2Oa7X6guTrcgRQki2opAtfvb7UJxk3QrVMQo
+	fvcxCwsgA74t2zMLlyF1F8S211Kz/l80x0q5KcK72rWAkOCAhXr+sORDjundhd5+bHo+Rbe9ppd
+	Ehy7dnEPusK5sjGBaW5otScnltPeXBf+XssXbeJz2ESdk2kWqS79v5rgPowq0fxCEJ6CRuLw24r
+	QNNSenb3q4AYZsG9oc3vieiifeTEYg4AZnPTqHw10JII94ngw+87FwFajCuYFKE2XRorj3FDZMI
+	T1IfNd72HV5/+Gqnt2sqLbDJ4qim4eUWJUCclZrS3aj607OAdVPhS0tEcCU/FxuGe3SDeVMmmcs
+	N2NkushAF70k/vk4SHiL2Jo/fLOjPBt52bytFY=
+X-Received: by 2002:a05:6300:210d:b0:39f:c48d:fcd2 with SMTP id adf61e73a8af0-39fe3ddd0bdmr11728694637.27.1776028808178;
+        Sun, 12 Apr 2026 14:20:08 -0700 (PDT)
+Received: from visitorckw-work01.c.googlers.com.com (100.130.194.35.bc.googleusercontent.com. [35.194.130.100])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c7921a3e6d2sm7615779a12.32.2026.04.12.14.20.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 12 Apr 2026 14:20:07 -0700 (PDT)
+From: Kuan-Wei Chiu <visitorckw@gmail.com>
+To: geert@linux-m68k.org,
+	sre@kernel.org
+Cc: jserv@ccns.ncku.edu.tw,
+	eleanor15x@gmail.com,
+	daniel@0x0f.com,
+	laurent@vivier.eu,
+	linux-kernel@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-pm@vger.kernel.org,
+	Kuan-Wei Chiu <visitorckw@gmail.com>
+Subject: [PATCH v4 0/2] Add QEMU virt-ctrl driver and update m68k virt
+Date: Sun, 12 Apr 2026 21:19:50 +0000
+Message-ID: <20260412211952.3564033-1-visitorckw@gmail.com>
+X-Mailer: git-send-email 2.53.0.1213.gd9a14994de-goog
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260306085338.62955-1-adrian.hunter@intel.com>
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Transfer-Encoding: 8bit
 
-On Fri, 06 Mar 2026 10:53:33 +0200, Adrian Hunter wrote:
-> 	Please note all patches have Frank's Rev'd-by.
-> 
-> 
-> Changes in V5:
-> 
-> 	Re-base on top of v7.0 fixes series:
-> 		https://lore.kernel.org/linux-i3c/20260306072451.11131-1-adrian.hunter@intel.com/T
-> 
-> [...]
+Introduce a generic platform driver for the QEMU 'virt-ctrl' device [1]
+and transitions the m68k 'virt' machine to use it, replacing
+architecture-specific hooks.
 
-Applied, thanks!
+The new driver ('qemu-virt-ctrl') registers a restart handler and
+populates the global 'pm_power_off' callback.
 
-[1/5] i3c: mipi-i3c-hci-pci: Set d3hot_delay to 0 for Intel controllers
-      https://git.kernel.org/i3c/c/815b4448198f
-[2/5] i3c: mipi-i3c-hci: Add quirk to allow IBI while runtime suspended
-      https://git.kernel.org/i3c/c/5fe77a6d8d5d
-[3/5] i3c: mipi-i3c-hci: Allow parent to manage runtime PM
-      https://git.kernel.org/i3c/c/82851828a8b1
-[4/5] i3c: mipi-i3c-hci-pci: Add optional ability to manage child runtime PM
-      https://git.kernel.org/i3c/c/e813e7e30086
-[5/5] i3c: mipi-i3c-hci-pci: Enable IBI while runtime suspended for Intel controllers
-      https://git.kernel.org/i3c/c/e7a718627c6f
+On the m68k side, the platform initialization is updated to register
+the 'qemu-virt-ctrl' platform device. Additionally, the 'mach_reset'
+hook is bridged to 'do_kernel_restart()' to ensure the kernel's restart
+handler chain is correctly invoked.
 
-Best regards,
+Verified on QEMU m68k virt. Both system reset and power-off were
+confirmed functional by invoking 'reboot(LINUX_REBOOT_CMD_RESTART)',
+'reboot(LINUX_REBOOT_CMD_POWER_OFF)', and
+'reboot(LINUX_REBOOT_CMD_HALT)' from userspace.
+
+Link: https://gitlab.com/qemu-project/qemu/-/blob/v10.2.0/hw/misc/virt_ctrl.c [1]
+---
+Changes in v4:
+- Fix sparse warning caught by kernel test robot.
+- Pass the struct qemu_virt_ctrl context to sys-off handlers instead of
+  the __iomem pointer.
+
+Changes in v3:
+- Add a reboot notifier in the driver to handle LINUX_REBOOT_CMD_HALT.
+- Handle native endianness in the driver instead of hardcoding
+  big-endian I/O writes.
+- Select POWER_RESET and POWER_RESET_QEMU_VIRT_CTRL in m68k
+  Kconfig.machine.
+
+Changes in v2:
+- Use devm_register_sys_off_handler() instead of register_restart_handler()
+  and global pm_power_off.
+- Switch Kconfig to tristate to support modular build.
+- Add .id_table to platform_driver and use MODULE_DEVICE_TABLE() to correct
+  module auto-loading.
+
+v2: https://lore.kernel.org/lkml/20260203170824.2968045-1-visitorckw@gmail.com/
+v1: https://lore.kernel.org/lkml/20260112182258.1851769-1-visitorckw@gmail.com/
+
+Kuan-Wei Chiu (2):
+  power: reset: Add QEMU virt-ctrl driver
+  m68k: virt: Switch to qemu-virt-ctrl driver
+
+ MAINTAINERS                          |   6 ++
+ arch/m68k/Kconfig.machine            |   2 +
+ arch/m68k/virt/config.c              |  42 +--------
+ arch/m68k/virt/platform.c            |  20 ++++-
+ drivers/power/reset/Kconfig          |  10 +++
+ drivers/power/reset/Makefile         |   1 +
+ drivers/power/reset/qemu-virt-ctrl.c | 122 +++++++++++++++++++++++++++
+ 7 files changed, 159 insertions(+), 44 deletions(-)
+ create mode 100644 drivers/power/reset/qemu-virt-ctrl.c
 
 -- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.53.0.1213.gd9a14994de-goog
+
