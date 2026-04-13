@@ -1,145 +1,124 @@
-Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 598863559CA;
-	Mon, 13 Apr 2026 08:01:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776067313; cv=none; b=gweWUX3GUuddP3bEIGVf2KHoyZ8UDyOGZtEKgO7cLKq1zPEWRX+/8OkdhdhikyBfmDQXZ3QXVkHnBd+WUbrmMfYVHdMjeykujGr/WB+39yzk3/5QhzcBPHV746P4vIhX9TZ8qmZ80ONCdxlxmDJXg1RRjoH6jEHSQASgLhb2Bhg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776067313; c=relaxed/simple;
-	bh=VUnQLH2pPEqvFRZdcj9hGaqbHbCCyp43cVorRQ4b3rQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bg3JOOaCYiGLLOoZHGXjS6CvvQB/Y6wvtJQW6z0k+nPoImlE3K9Oty2bGJKYJ9tqNjUmMWyrdVFmPt68jSmJnraQwbGBs2ml65IIEiP0j9QiqfdPZxovveFNic5t78fnNKhCPlTiiqCBbpC/yDqTeuVDQXRiSDg/FxZJXXfmqbE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
-HMM_SOURCE_IP:10.158.242.145:0.2069108682
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-221.238.56.48 (unknown [10.158.242.145])
-	by mail.189.cn (HERMES) with SMTP id 24E5F4002A1;
-	Mon, 13 Apr 2026 16:01:43 +0800 (CST)
-Received: from  ([221.238.56.48])
-	by gateway-153622-dep-76cc7bc9cd-r45x9 with ESMTP id 33ade6dc9ca54545a389407f17f1d0f0 for rafael@kernel.org;
-	Mon, 13 Apr 2026 16:01:46 CST
-X-Transaction-ID: 33ade6dc9ca54545a389407f17f1d0f0
-X-Real-From: chensong_2000@189.cn
-X-Receive-IP: 221.238.56.48
-X-MEDUSA-Status: 0
-Sender: chensong_2000@189.cn
-From: chensong_2000@189.cn
-To: rafael@kernel.org,
-	lenb@kernel.org,
-	mturquette@baylibre.com,
-	sboyd@kernel.org,
-	viresh.kumar@linaro.org,
-	agk@redhat.com,
-	snitzer@kernel.org,
-	mpatocka@redhat.com,
-	bmarzins@redhat.com,
-	song@kernel.org,
-	yukuai@fnnas.com,
-	linan122@huawei.com,
-	jason.wessel@windriver.com,
-	danielt@kernel.org,
-	dianders@chromium.org,
-	horms@kernel.org,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	paulmck@kernel.org,
-	frederic@kernel.org,
-	mcgrof@kernel.org,
-	petr.pavlu@suse.com,
-	da.gomez@kernel.org,
-	samitolvanen@google.com,
-	atomlin@atomlin.com,
-	jpoimboe@kernel.org,
-	jikos@kernel.org,
-	mbenes@suse.cz,
-	pmladek@suse.com,
-	joe.lawrence@redhat.com,
-	rostedt@goodmis.org,
-	mhiramat@kernel.org,
-	mark.rutland@arm.com,
-	mathieu.desnoyers@efficios.com
-Cc: linux-modules@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	live-patching@vger.kernel.org,
-	dm-devel@lists.linux.dev,
-	linux-raid@vger.kernel.org,
-	kgdb-bugreport@lists.sourceforge.net,
-	netdev@vger.kernel.org,
-	Song Chen <chensong_2000@189.cn>
-Subject: [RFC PATCH 0/2] Decouple ftrace/livepatch from module loader via notifier priority and reverse traversal
-Date: Mon, 13 Apr 2026 16:01:40 +0800
-Message-ID: <20260413080140.180616-1-chensong_2000@189.cn>
-X-Mailer: git-send-email 2.43.0
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFA353A6F02;
+	Mon, 13 Apr 2026 09:12:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776071563; cv=pass; b=IHodL4DMug1p5JMZ6JZ9+KZTwXvG3q1UDU4TaHviEGz/3TBZYq7/491NzaAU3GU9fq7f7sQSwb6AmT/DMVWgfoh4gvSl97YuJbgjarVqjMJVC2lHOrx9inXfG5D/FXZjTGjrQN8XHewp/CZNNL/HGqDgA13Jvv19fT3Bnf/ohxk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776071563; c=relaxed/simple;
+	bh=HszuPrz+WeXfvDR4xqSnOIqRLeJppP5PStVadh9O4A4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Wtu5Nv+NAZ509I+mDahZZ5zgExj+U8e1OE9Bze7eJ5dVRBeNYlB3Uz+iILcqwXKAAkOD5VnX8sPxcfrRYEmiKyFswhSS67lKLruwANkqrgWBWLZSot7TIu+/yjXb5DwlAskFouSTDbaOf635xjMwaHZEW2p+czjE7FpbvQ6keVc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b=XNDF3aMC; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b="XNDF3aMC"
+ARC-Seal: i=1; a=rsa-sha256; t=1776071528; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Nbp2nfsohFyTSXJKxWCJ0e7EvL00xn8DgaB+MaDVpOD1LaY8Q6ty6iL1svm+HBz8lyq08h+i8BVEk6L5z2CTD8YZIyCUb9T+qgm6dmUB56UjK1VpR2ixFfSHh0At+dD6PNwyC4Mmr4wtQ4VLf8+yqdjpwZo0yM/UoaD/Y5yXMAg=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1776071528; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=TB5t6rpdmY0Qok4AOdsXH/kuymrQUdAE7c76l8dq+kE=; 
+	b=Qf3iJi3gfhrgIMw+pyLwf3jyN9Kx7/wP9NnE1xJyugYdluTgiWSoS0ul8CJOLrGRd1dJnqCXH8HjT9/HdhVTDilNP/E0k5J0oPZ8RrV9DG4nfXf4PfzFx0EinzLoZyZD7D9DWBrGPA1cdtbnOgrdZhIvtKn9Tt/qkBFdanja5i4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=matthew.leach@collabora.com;
+	dmarc=pass header.from=<matthew.leach@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1776071528;
+	s=zohomail; d=collabora.com; i=matthew.leach@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:In-Reply-To:References:Date:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
+	bh=TB5t6rpdmY0Qok4AOdsXH/kuymrQUdAE7c76l8dq+kE=;
+	b=XNDF3aMCDt5rP0iNMuPwC0TXDTV58eI07dwmiaJeca8tPpDX6dTEe4n8FCPOWl5v
+	tW2vIYwAZ6u1kXTqGPve6sFJtmU3iMPUWTsSJuLvENOH7VmnbbxhXjCIaO/r7LylfRQ
+	X5kidQHG1TluauzfvArgOz6V1PH9M44LG5zvYvLU=
+Received: by mx.zohomail.com with SMTPS id 1776071526706476.8249017679823;
+	Mon, 13 Apr 2026 02:12:06 -0700 (PDT)
+From: Matthew Leach <matthew.leach@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>,  Len Brown <lenb@kernel.org>,  Mario
+ Limonciello <mario.limonciello@amd.com>,  linux-pm@vger.kernel.org,
+  linux-kernel@vger.kernel.org,  YoungJun Park <youngjun.park@lge.com>,
+  kernel@collabora.com
+Subject: Re: [PATCH v3] PM: hibernate: call preallocate_image after freeze
+ prepare
+In-Reply-To: <CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
+	(Rafael J. Wysocki's message of "Mon, 6 Apr 2026 17:11:41 +0200")
+References: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
+	<CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
+User-Agent: mu4e 1.14.0; emacs 30.2
+Date: Mon, 13 Apr 2026 10:12:03 +0100
+Message-ID: <87mrz78brw.fsf@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-ZohoMailClient: External
 
-From: Song Chen <chensong_2000@189.cn>
+Hi Rafael,
 
-This patchset addresses a long-standing tight coupling between the
-module loader and two of its key consumers: ftrace and livepatch.
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-Background:
+> On Fri, Apr 3, 2026 at 9:36=E2=80=AFAM Matthew Leach
+> <matthew.leach@collabora.com> wrote:
+>>
 
-The module loader currently hard-codes direct calls to
-ftrace_module_enable(), klp_module_coming(), klp_module_going() and
-ftrace_release_mod() inside prepare_coming_module() and the module
-unload path. This hard-coding was necessary because the module notifier
-chain could not guarantee the strict call ordering that ftrace and
-livepatch require:
+[...]
 
-  During MODULE_STATE_COMING, ftrace must run before livepatch, so
-  that per-module function records are ready before livepatch registers
-  its ftrace hooks.
+> Can you please have a look at
+>
+> https://sashiko.dev/#/patchset/20260403-hibernation-fixes-v3-1-31bc9fa3ba=
+2d%40collabora.com
 
-  During MODULE_STATE_GOING, livepatch must run before ftrace, so that
-  livepatch removes its hooks before ftrace releases those records.
+[pasting comment in-line here for comment]
 
-This symmetric setup/teardown ordering could not be expressed through
-the notifier chain because the chain only supported forward (descending
-priority) traversal. Without reverse traversal, it was impossible to
-guarantee that the GOING order would be the strict inverse of the
-COMING order using a single priority value per notifier.
+> Does this relocation introduce a deadlock during memory reclaim?
+>=20
+> hibernate_preallocate_memory() allocates a large amount of memory and
+> triggers direct reclaim. Direct reclaim needs to write back dirty file
+> pages and swap out anonymous pages.
+>=20
+> Since freeze_kernel_threads() just ran, threads required for I/O
+> completion (like kswapd, jbd2 for Ext4, or WQ_FREEZABLE workqueues) are
+> currently frozen. Will the I/O for page reclaim block indefinitely
+> waiting on these frozen threads?
 
-Patch 1 - notifier: replace single-linked list with double-linked list.
-Patch 2 - ftrace/klp: decouple from module loader using notifier
-priority.
+The existing code already performs a memory reclaim after
+freeze_kernel_threads(). The old shrink_shmem_memory() called
+shrink_all_memory() in the same position, after both
+freeze_kernel_threads() and dpm_prepare(). This isn't a new pattern
+being introduced by this patch.
 
-headsup: somehow the smtp of my mailbox doesn't work very well lately, 
-if i receive return letter, i have to resend, sorry in advance.
+Nevertheless, the call chain looks like:
 
-Song Chen (2):
-  kernel/notifier: replace single-linked list with double-linked list
-    for reverse traversal
-  kernel/module: Decouple klp and ftrace from load_module
+shrink_all_memory()
+  -> do_try_to_free_pages()
+    -> shrink_zones()
+      -> shrink_node()
+        -> shrink_folio_list()
+          -> pageout()
 
- drivers/acpi/sleep.c      |   1 -
- drivers/clk/clk.c         |   2 +-
- drivers/cpufreq/cpufreq.c |   2 +-
- drivers/md/dm-integrity.c |   1 -
- drivers/md/md.c           |   1 -
- include/linux/module.h    |   8 ++
- include/linux/notifier.h  |  26 ++---
- kernel/debug/debug_core.c |   1 -
- kernel/livepatch/core.c   |  29 ++++-
- kernel/module/main.c      |  34 +++---
- kernel/notifier.c         | 219 ++++++++++++++++++++++++++++++++------
- kernel/trace/ftrace.c     |  38 +++++++
- net/ipv4/nexthop.c        |   2 +-
- 13 files changed, 290 insertions(+), 74 deletions(-)
+pageout() only writes back shmem and anonymous folios to swap; so jdb2
+and other FS threads being frozen isn't a concern. For the swap write
+out, the I/O submission path is via submit_bio() which is also
+synchronous.
 
--- 
-2.43.0
+> Additionally, because the OOM killer is already disabled by
+> freeze_processes() earlier in the hibernation path, can the reclaim path
+> get stuck permanently without being able to fall back to killing
+> processes?
 
+There's nothing new here regarding the OOM killer. freeze_processes()
+disables it in hibernate() prior to calling hibernation_snapshot().
+Since this patch is entirely contained within hibernation_snapshot()
+that pattern hasn't changed.
+
+Regards,
+--=20
+Matt
