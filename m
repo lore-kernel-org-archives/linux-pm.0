@@ -1,234 +1,124 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E79E3BFE33
-	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 11:53:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B85923CB2C7
+	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 13:12:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776081230; cv=none; b=DzXTPHu2oY0sE+9+ts/d7kgWE89FcrhbFCsPKq9Kh7SFlsfFtyJhksU9QgId315tyNT/nqCBTTTWxgENa68DQ4DmlN9zq2Bt0+bSSQbhmdYxcwbeCotGPmDga8CoAglSmjDwUokDjRtYso4aY8zHVxDgy2Vb1n0pQvttgk80MKk=
+	t=1776085927; cv=none; b=jwUTRHtibr5I+NTHgIBHrs7MAvDNJcYbAIq+lEHfHi4Mit3hfC1qcQsWj35QDchdgesQf9jnPAErpDlOWB6BZk7JZIIBKNtjHLBSfAB++fNOyK0c2Y57aai4tkn7lBQGAtJy0Uu3k9oBWDXlk7c8LVhT9ZF7C4MPvhYBoA4U2ac=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776081230; c=relaxed/simple;
-	bh=Z4ezkkAj8vOPAJEl9cshJEOhHWdLz3AQn9RWlMjI4mg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DzTYmaptY+w5Hkr3LLNYLUpWchRb3BJckmFxN+9ZV4SeexNkT7RsUEMTFSvx+7s0217KUnojvbuEx4NfI8KPvgv3ffPl5qp/Yo4kk7ry1IhrRvh8Cu4COQloYYYAI8VNNKONHR6CsGbmMUeVPOtuq1vfw0MwA8GeSEZX0KJOg9Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=TBptiMOs; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=IjPGdFuV; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="TBptiMOs";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="IjPGdFuV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1776081227;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=75N24M6KXVzzBEiJ/Ez5ZD/cTIY0DJ7q5+kbHpzvI84=;
-	b=TBptiMOsbQMN/LVDTogS1A+poCBn4gMSmFUb7hHB0Glil0SGnryd+ziWi4uZRZDFplW68N
-	qj5QSZYKqcdxCiENr5Jatm4ftvA+C0XevL8rubCoIz6e//kC5P4TQsG0NQh20xVOhi/Erv
-	djMC3or8MFkzoYusvaXhOmxlHFjxPII=
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
- [209.85.222.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-319-UMicAEp0O2euRlQqMs5XKQ-1; Mon, 13 Apr 2026 07:53:43 -0400
-X-MC-Unique: UMicAEp0O2euRlQqMs5XKQ-1
-X-Mimecast-MFC-AGG-ID: UMicAEp0O2euRlQqMs5XKQ_1776081223
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-8d3bea3aa34so500130785a.0
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 04:53:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1776081223; x=1776686023; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=75N24M6KXVzzBEiJ/Ez5ZD/cTIY0DJ7q5+kbHpzvI84=;
-        b=IjPGdFuVYwDsQn5S5WdMrzwc+jEf9nw/jbMiA2k0BQgbE3a4IPH8mhUFuDu1/DKQBI
-         i4+25+LXEnQsJDriXVGy64nHZRt8y6ZxnNPIObGYGIY7XF3k/WpZeKNd9xW6oXXphPxj
-         XkhThqV96WAKqmcukBIHc21Vqv3WW35x5QQIGDtVkX0yPp5cCIlcoJ1xUv6w6TJVHGmP
-         aFCQAV4Vjnew+crW0Diy2M/bRu7qGQTiztr/1QgPsk4ckWd7gklLnDMbZF5BmrxkZp4L
-         ppU6jhW2mBu8ygxLs+KTgiIz3cIcP78hQD0odZv75tC9wZHjNqBkxKk+T+Zzl1CtY4Q/
-         m3Gg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776081223; x=1776686023;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=75N24M6KXVzzBEiJ/Ez5ZD/cTIY0DJ7q5+kbHpzvI84=;
-        b=Jidm+WRX9qRJ0o4Ezkw6FdMD6TRHNFHZam21/+zILZFxz5LNAjlr1KZSuoIvEyOvHt
-         a8w64FMZm1LZ2PThwL/e3lSNtHbGOYKKpgVOf9mHauy9tK4jnc1yYN0AUOXl2jkclrR9
-         wibsvzzjt6xNTRVv2+Hq+QeqFgbUJik6VrzNCvl00ZcuYlsDfmUCO6dHRc+8LyrqcV+Z
-         l4yrow2CJgQrE6jp/wjRcCTgwi8HAyJ0s3iYin0vp4yor6LNebuPdH+Y2ittXVADhi3a
-         tAzls7Lk4FZ/QH+FkujmtAb+ceczEXDXG7tYnJxPqdYB7zBfhszBE71alHSQjqvX2XIi
-         N9YQ==
-X-Gm-Message-State: AOJu0YwdRHRVf+P6SpLTA97l3GuxWkXUHs38Kbx/q60g3lnp7C0TUFUz
-	z6h1Lad8fBkDHRJvxDwUg5eXVYYJYqfwFXrYRvxFd9EfzZNtpL8Xk4ryyi15z3jDV9iDHmE+dlx
-	HPYFDsYd5qLluJQ/xa6DGDi+XI7Y2WSp8FtALoINR4cwoPgZtuCkpBzfh+jpW
-X-Gm-Gg: AeBDiesTnK5DO/rXeao5vln6xacpj/3MmJi4Wq0BIYJ61rgWoilIk68kysB+Bqpterm
-	kfIRmcps99JEztqoQTaIHkmWCukSYdcCknVrHS37ec6wy5aM8xJwNloMtrHaaFGru3hel5Ux/Bb
-	S5i8VfBEad/PH+dBmWlnWgxYI1e3WGC1AABx8sQSjUzObs9DxfDc3VYsT3aTFSDoI/c+WZ/gKqZ
-	rdKCACb58CCUFL9+JtLIytdFLjc0cogxwTh6vQWnAhIs0xZqfh/uj00O96Ol+cGQsGmNCHnyIST
-	6jBVAzzREx2yLfZ62eN36zvQ6MZb5xQf0SsaXZETEVKoJqNKYY6Vu+N8zeF8inIcPF90Acv/xaD
-	CRcHmztC6PfIvBzOkNUCDK0O0j09CSIlYd71TsXF6Ju/NZNLWYIh4zQ==
-X-Received: by 2002:a05:620a:4551:b0:8cf:e1c9:b29a with SMTP id af79cd13be357-8ddcd8f6c6dmr1901636385a.20.1776081223117;
-        Mon, 13 Apr 2026 04:53:43 -0700 (PDT)
-X-Received: by 2002:a05:620a:4551:b0:8cf:e1c9:b29a with SMTP id af79cd13be357-8ddcd8f6c6dmr1901631585a.20.1776081222475;
-        Mon, 13 Apr 2026 04:53:42 -0700 (PDT)
-Received: from [10.26.1.94] ([66.187.232.136])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8ddb963d7edsm835149685a.39.2026.04.13.04.53.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Apr 2026 04:53:41 -0700 (PDT)
-Message-ID: <bdc53af9-ca09-4f32-80fb-4288775853b1@redhat.com>
-Date: Mon, 13 Apr 2026 07:53:41 -0400
+	s=arc-20240116; t=1776085927; c=relaxed/simple;
+	bh=GbD4N/pJfNnK4WMQzA2znyqZqO9eK5cODbqqsEPyntA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IqLmeBvCRz/l5iSbbS9TndKvQ69YCHU3vKLgoSM2Z2cHcywnLiWr3qDnx1zssVyycdj0IudUrjNsUUFYi7u/eXtceJRt413bB+YPQUnrDuCpc9/qX0j+hVtU80QvnWqR5vVZR8BLM93+7rled605KCNslqRf9EiGWexyBLXaZRU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <mfe@pengutronix.de>)
+	id 1wCH53-0005o5-Ok; Mon, 13 Apr 2026 15:11:57 +0200
+Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <mfe@pengutronix.de>)
+	id 1wCH52-005AxI-1C;
+	Mon, 13 Apr 2026 15:11:56 +0200
+Received: from mfe by pty.whiteo.stw.pengutronix.de with local (Exim 4.98.2)
+	(envelope-from <mfe@pengutronix.de>)
+	id 1wCH52-00000007Uuh-17EV;
+	Mon, 13 Apr 2026 15:11:56 +0200
+Date: Mon, 13 Apr 2026 15:11:56 +0200
+From: Marco Felsch <m.felsch@pengutronix.de>
+To: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+Cc: ulfh@kernel.org, Frank.Li@nxp.com, s.hauer@pengutronix.de, 
+	imx@lists.linux.dev, linux-pm@vger.kernel.org, xuegang.liu@nxp.com, 
+	jindong.yue@nxp.com, linux-kernel@vger.kernel.org, kernel@pengutronix.de, 
+	festevam@gmail.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL tristate
+Message-ID: <ql2c6m54fjjwifycaan3hcr3p3bp4phva2vdux2qcramt7wrvy@4dsvpyct5tqx>
+References: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tools/power turbostat: Allow execution to continue after
- perf_l2_init() failure
-To: "Mi, Dapeng1" <dapeng1.mi@intel.com>, Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20260319140307.441950-1-darcari@redhat.com>
- <CAJvTdKmLA=n07hkkXLbwMex-_Byji9EOy7wkkFHrcPCj8tzMqw@mail.gmail.com>
- <CAJvTdKmepvPzWDM+6s9YERe27H6pSKbDb62yfpTSs57hWsEmRg@mail.gmail.com>
- <5ec684ae-b778-40ba-8a10-dfbf274da7dd@redhat.com>
- <CAJvTdK=CoV7L1FmeVUTAO=U7eJQevjUnqr-CPk2CDxAO4zu3Ug@mail.gmail.com>
- <MN0PR11MB6160DDF6952E2B595B2EA1C1CD242@MN0PR11MB6160.namprd11.prod.outlook.com>
-Content-Language: en-US
-From: David Arcari <darcari@redhat.com>
-In-Reply-To: <MN0PR11MB6160DDF6952E2B595B2EA1C1CD242@MN0PR11MB6160.namprd11.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: mfe@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-pm@vger.kernel.org
 
+On 26-04-13, Zhipeng Wang wrote:
+> Convert IMX8M_BLK_CTRL and IMX9_BLK_CTRL from bool to tristate
+> to allow building as loadable modules.
 
-Here is the -vvv output:
+Out of curiosity, why do you want to have a PM driver to be buildable as
+module?
 
-# sudo perf stat -e cache-misses -vvv sleep 1
-Control descriptor is not initialized
-Opening: cache-misses
-------------------------------------------------------------
-perf_event_attr:
-   type                             10 (cpu_atom)
-   size                             144
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'ldlat' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms: 
-event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
-   config                           0x412e (cache-misses)
-   sample_type                      IDENTIFIER
-   read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
-   disabled                         1
-   inherit                          1
-   enable_on_exec                   1
-------------------------------------------------------------
-sys_perf_event_open: pid 9255  cpu -1  group_fd -1  flags 0x8
-sys_perf_event_open failed, error -12
-Warning:
-skipping event cache-misses that kernel failed to open.
-The sys_perf_event_open() syscall failed for event (cache-misses): 
-Cannot allocate memory
-"dmesg | grep -i perf" may provide additional information.
+Regards,
+  Marco
 
-Opening: cache-misses
-------------------------------------------------------------
-perf_event_attr:
-   type                             4 (cpu_core)
-   size                             144
-   config                           0x412e (cache-misses)
-   sample_type                      IDENTIFIER
-   read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
-   disabled                         1
-   inherit                          1
-   enable_on_exec                   1
-------------------------------------------------------------
-sys_perf_event_open: pid 9255  cpu -1  group_fd -1  flags 0x8 = 3
-cache-misses: -1: 11224 321150 321150
-failed to read counter cache-misses
-cache-misses: 11224 321150 321150
-
-  Performance counter stats for 'sleep 1':
-
-    <not supported>      cpu_atom/cache-misses/ 
-
-             11,224      cpu_core/cache-misses/ 
-
-
-        1.003110088 seconds time elapsed
-
-        0.000000000 seconds user
-        0.000846000 seconds sys
-
-
-On 4/12/26 8:34 PM, Mi, Dapeng1 wrote:
-> The most possible reason for the "<not supported>" is that the "sleep 1" 
-> process runs on a P-core where "cpu_atom/cache-misses/" can't be 
-> supported. It's expected.
+> Add prompt strings to make these options visible and configurable
+> in menuconfig, keeping them enabled by default on appropriate platforms.
 > 
-> BTW, you can add "-vvv" option which gives more details like "sudo perf 
-> stat -e cache-misses -vvv sleep 1".
+> Also remove the IMX_GPCV2_PM_DOMAINS dependency from IMX9_BLK_CTRL.
+> This dependency was incorrect from the beginning - i.MX93 uses a
+> different power domain architecture compared to i.MX8M series:
 > 
-> Thanks.
+> - i.MX8M uses GPCv2 (General Power Controller v2) for power domain
+>   management, hence IMX8M_BLK_CTRL correctly depends on it.
 > 
-> ------------------------------------------------------------------------
-> *From:* Len Brown <lenb@kernel.org>
-> *Sent:* Saturday, April 11, 2026 2:09 AM
-> *To:* Arcari, David <darcari@redhat.com>; Mi, Dapeng1 <dapeng1.mi@intel.com>
-> *Cc:* Linux PM list <linux-pm@vger.kernel.org>; Linux Kernel Mailing 
-> List <linux-kernel@vger.kernel.org>
-> *Subject:* Re: [PATCH] tools/power turbostat: Allow execution to 
-> continue after perf_l2_init() failure
+> - i.MX93 uses BLK_CTRL directly without GPCv2. The hardware doesn't
+>   have GPCv2 at all.
 > 
-> On Fri, Apr 10, 2026 at 12:06 PM David Arcari <darcari@redhat.com> wrote:
+> Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+> ---
+>  drivers/pmdomain/imx/Kconfig | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
 > 
->  > I'm using a Fedora kernel:
->  >
->  > vmlinuz-7.0.0-0.rc4.260320g0e4f8f1a3d08.40.eln155.x86_64
->  >
->  > And turbostat is:
->  >
->  > # turbostat -v
->  > turbostat version 2026.02.14 - Len Brown <lenb@kernel.org>
->  >
->  > >
->  > > You can poke with "perf stat" as well, but this will depend on what
->  > > .json counter list is compiled into
->  > > your version of perf.
->  > >
->  > > probably a first sanity check would be if these commands for the LLC
->  > > and the L2 work:
->  > >
->  > > sudo perf stat -e cache-misses sleep 1
->  > > sudo perf stat -e L2_REQUEST.ALL sleep 1
->  >
->  > # sudo perf stat -e cache-misses sleep 1
->  >
->  >   Performance counter stats for 'sleep 1':
->  >
->  >     <not supported>      cpu_atom/cache-misses/
+> diff --git a/drivers/pmdomain/imx/Kconfig b/drivers/pmdomain/imx/Kconfig
+> index 00203615c65e..9168d183b0c5 100644
+> --- a/drivers/pmdomain/imx/Kconfig
+> +++ b/drivers/pmdomain/imx/Kconfig
+> @@ -10,15 +10,18 @@ config IMX_GPCV2_PM_DOMAINS
+>  	default y if SOC_IMX7D
+>  
+>  config IMX8M_BLK_CTRL
+> -	bool
+> -	default SOC_IMX8M && IMX_GPCV2_PM_DOMAINS
+> +	tristate "i.MX8M BLK CTRL driver"
+> +	depends on SOC_IMX8M
+> +	depends on IMX_GPCV2_PM_DOMAINS
+>  	depends on PM_GENERIC_DOMAINS
+>  	depends on COMMON_CLK
+> +	default y
+>  
+>  config IMX9_BLK_CTRL
+> -	bool
+> -	default SOC_IMX9 && IMX_GPCV2_PM_DOMAINS
+> +	tristate "i.MX93 BLK CTRL driver"
+> +	depends on SOC_IMX9
+>  	depends on PM_GENERIC_DOMAINS
+> +	default y
+>  
+>  config IMX_SCU_PD
+>  	bool "IMX SCU Power Domain driver"
+> -- 
+> 2.34.1
 > 
-> I think this should work.  There may be an issue either with
-> the perf utility or the perf kernel support on that system.
 > 
-> I'll cc Dapeng.  Already the weekend where he is, but maybe he
-> can give us some perf insight next week.
 > 
-> thx,
-> -Len
 
+-- 
+#gernperDu 
+#CallMeByMyFirstName
+
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | https://www.pengutronix.de/ |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-9    |
