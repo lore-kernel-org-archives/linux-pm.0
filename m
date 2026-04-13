@@ -1,104 +1,189 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D51F43CB2C1;
-	Mon, 13 Apr 2026 14:03:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EF1E3E1CF0;
+	Mon, 13 Apr 2026 15:42:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776088992; cv=none; b=YZceBHgH4bUMaps8QTPAPDTRV0J6kkPj+/M5WeNmMP2isXzJV/9Em9nF9+Tmu06pC+YLxm6kOBmo6Qqm9Mj+OpDgGvwcouJ58/8/1dp6wxJmwukDSDaZjRuE3+GQmf/IBqYyAd+pAwwqLgC5ixMzVK6anX8QrEqIslYIgsbvVRM=
+	t=1776094942; cv=none; b=hvb/WrzHzVCAcQToRaCvx/3ou7opcxLPeW/F8V8KtAa2W0ApHSNZczVtJfc0/pl7wr5OmbwgeQSj9lGxIXYvUukJVMBp1H9mMCu8Ff8r6rpLrRew7c+IHDKGpR0D/q16lT5Xnbzue1wNhdGrCC2s18SYy4pFWKMTXVh0zaLJ9KI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776088992; c=relaxed/simple;
-	bh=ZujmsWUiIlgFWuYStOUbuRgZOWkohs/X7TyfIkjFDX0=;
+	s=arc-20240116; t=1776094942; c=relaxed/simple;
+	bh=NZiRtuusNFRQ9ALDsb7+X0+Un3wKAtS+hdSBSZf6dFY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=efDZ2JdPE90FGg9ogvnnpHIbKTrfSznnGKNM10b1x33TwmWyA9///HlchC6Nc/o7urdMZKzL/xfm1NKAPB6iCc5nJK4qZEtxelDFnoqRYnk+nzbJEamrUn+Dpl6LI/EMRClzTd9AX5FXHtJhCGRfGMV6l8v8mXU8L87XeXa7bBI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DE95C2BCAF;
-	Mon, 13 Apr 2026 14:03:03 +0000 (UTC)
-Date: Mon, 13 Apr 2026 19:32:53 +0530
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-To: Chen-Yu Tsai <wenst@chromium.org>
-Cc: Rob Herring <robh@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
-	Hans de Goede <hansg@kernel.org>, Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Stephan Gerhold <stephan.gerhold@linaro.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	linux-acpi@vger.kernel.org, Hans de Goede <johannes.goede@oss.qualcomm.com>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E
- connectors in devicetree
-Message-ID: <fpcs4p62f35a5qyqwgm5ysa73stbysxcr62tkmmkrrcvsuf4t4@4ivukyqjey57>
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
- <20260413075459.GA2626902@google.com>
+	 Content-Type:Content-Disposition:In-Reply-To; b=u9Rb+95VwjLhQGLX974SMxxabwJ0YmwqgXgMS2+2wpqup6eV6yx0wFSMQGTN+K5LMkS1Xw4S5I2C6SaNb0ExOZjlx7NlrdNWPuERa+uCueiqpgaNbg0vsf9nzqsznmJq/Zspf3EotnfHON0SiITRjVDilL4Vfo8FsdwumEVdRXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jr43Nkbv; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jr43Nkbv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69F5FC2BCAF;
+	Mon, 13 Apr 2026 15:42:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776094941;
+	bh=NZiRtuusNFRQ9ALDsb7+X0+Un3wKAtS+hdSBSZf6dFY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jr43NkbvAeO28DfZVQX8WcSGLw3Sv46TmveO6Ji8/02wIzyHVvM4aAj8OAfxdfSIo
+	 5g6GJidKvGlxbtC21BQUWzWeJjQSINytASVO76dZaFiFAEmN+gH73KVIWatrarViGK
+	 PWNWZyNphAHyoSW0zpjfwcU0+ZmC7a26QvhCs2knO7pKuoeUhOkSvzY/xiDyScCxmD
+	 V1ikFkFwhj/TALOgXN3hr8I75LeMcmHEm4R8+PUot5ndePdhi91Kd6a9aZ6wuhOTdw
+	 EUK9tk3ZgcFdv4q/tIPqHCYMcdxXmRV8rqg5FqlpBCINYzjAibABu4N6Q6ZUmksHpY
+	 +O9jAG0bZ31Lw==
+Date: Mon, 13 Apr 2026 16:42:16 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Cc: Guillaume La Roque <glaroque@baylibre.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 1/8] dt-bindings: thermal: amlogic: Add support for T7
+Message-ID: <20260413-impose-cartel-bd7d18f91a24@spud>
+References: <20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr>
+ <20260413-add-thermal-t7-vim4-v2-1-1002d90a0602@aliel.fr>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="dTC3gs8s/Z9bvL6x"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260413075459.GA2626902@google.com>
+In-Reply-To: <20260413-add-thermal-t7-vim4-v2-1-1002d90a0602@aliel.fr>
 
-On Mon, Apr 13, 2026 at 03:54:59PM +0800, Chen-Yu Tsai wrote:
-> Hi,
-> 
-> On Thu, Mar 26, 2026 at 01:36:28PM +0530, Manivannan Sadhasivam wrote:
-> > Hi,
-> > 
-> > This series is the continuation of the series [1] that added the initial support
-> > for the PCIe M.2 connectors. This series extends it by adding support for Key E
-> > connectors. These connectors are used to connect the Wireless Connectivity
-> > devices such as WiFi, BT, NFC and GNSS devices to the host machine over
-> > interfaces such as PCIe/SDIO, USB/UART and NFC. This series adds support for
-> > connectors that expose PCIe interface for WiFi and UART interface for BT. Other
-> > interfaces are left for future improvements.
-> 
-> Thanks for working on this. I started playing with it now that it is in
-> -next. The PCIe part works fine. I'm looking into how to fit the pwrseq
-> 
-> A couple questions:
-> 
-> - Given that this connector actually represents two devices, how do I
->   say I want the BT part to be a wakeup source, but not the WiFi part?
->   Does wakeup-source even work at this point?
-> 
 
-You can't use the DT property since the devices are not described in DT
-statically. But you can still use the per-device 'wakeup' sysfs knob to enable
-wakeup.
+--dTC3gs8s/Z9bvL6x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> - Are there plans to do the SDIO part?
-> 
+On Mon, Apr 13, 2026 at 12:52:42PM +0200, Ronald Claveau wrote:
+> Add the amlogic,t7-thermal compatible for the Amlogic T7 thermal sensor.
+>=20
+> Unlike existing variants which use a phandle to the ao-secure syscon,
+> the T7 relies on a secure monitor interface described by a phandle and
+> a sensor index argument.
+>=20
+> The T7 integrates multiple thermal sensors, all accessed through the
+> same SMC call. The sensor index argument is required to identify which
+> sensor's calibration data the secure monitor should return, as a single
+> SM_THERMAL_CALIB_READ command serves all of them.
+>=20
+> Introduce the amlogic,secure-monitor property as a phandle-array and
+> make amlogic,ao-secure or amlogic,secure-monitor conditionally required
+> depending on the compatible.
+>=20
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> ---
+>  .../bindings/thermal/amlogic,thermal.yaml          | 42 ++++++++++++++++=
+++++--
+>  1 file changed, 40 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.ya=
+ml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+> index 70b273271754b..1c096116b2dda 100644
+> --- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+> @@ -21,7 +21,9 @@ properties:
+>                - amlogic,g12a-cpu-thermal
+>                - amlogic,g12a-ddr-thermal
+>            - const: amlogic,g12a-thermal
+> -      - const: amlogic,a1-cpu-thermal
+> +      - enum:
+> +          - amlogic,a1-cpu-thermal
+> +          - amlogic,t7-thermal
+> =20
+>    reg:
+>      maxItems: 1
+> @@ -42,12 +44,39 @@ properties:
+>    '#thermal-sensor-cells':
+>      const: 0
+> =20
+> +  amlogic,secure-monitor:
+> +    description: phandle to the secure monitor
+> +    $ref: /schemas/types.yaml#/definitions/phandle-array
+> +    items:
+> +      - items:
+> +          - description: phandle to the secure monitor
+> +          - description: sensor index to get specific calibration data
+> +
+>  required:
+>    - compatible
+>    - reg
+>    - interrupts
+>    - clocks
+> -  - amlogic,ao-secure
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            enum:
+> +              - amlogic,a1-cpu-thermal
+> +              - amlogic,g12a-thermal
+> +    then:
+> +      required:
+> +        - amlogic,ao-secure
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: amlogic,t7-thermal
 
-No, not at the moment. Feel free to take it up if you have the hardware and
-motivation :)
+This can just be replaced by a else I think.
 
-> - The matching done in the M.2 connector driver for pwrseq_get() seems a
->   bit naive. It simply checks if the remote device in the OF graph is
->   the same as the requesting device.
-> 
->   I think this would run into issues with USB hubs. If I have a USB hub
->   and two M.2 connectors, with both connectors connected to the same
->   hub, pwrseq_get() is going to always return only one of the instances.
->   This is because the USB hub has one device node with multiple OF graph
->   ports.
-> 
+> +    then:
+> +      required:
+> +        - amlogic,secure-monitor
+> =20
+>  unevaluatedProperties: false
+> =20
+> @@ -62,4 +91,13 @@ examples:
+>          #thermal-sensor-cells =3D <0>;
+>          amlogic,ao-secure =3D <&sec_AO>;
+>      };
+> +  - |
+> +    a73_tsensor: temperature-sensor@20000 {
 
-Yeah, this is a known limitation. I'm trying to improve this part now and have
-the WIP commits here: https://github.com/Mani-Sadhasivam/linux/tree/pwrseq-bt-en-fixes
+Can drop the label here, it has no users.
 
-Once the merge window closes, I'll submit these.
+Otherwise, seems fine.
 
-- Mani
+Cheers,
+Conor.
 
--- 
-மணிவண்ணன் சதாசிவம்
+pw-bot: changes-requested
+
+> +        compatible =3D "amlogic,t7-thermal";
+> +        reg =3D <0x0 0x20000 0x0 0x50>;
+> +        interrupts =3D <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+> +        clocks =3D <&clkc_periphs CLKID_TS>;
+> +        #thermal-sensor-cells =3D <0>;
+> +        amlogic,secure-monitor =3D <&sm 1>;
+> +    };
+>  ...
+>=20
+> --=20
+> 2.49.0
+>=20
+
+--dTC3gs8s/Z9bvL6x
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCad0O2AAKCRB4tDGHoIJi
+0sbSAP4nORffFzPK6NFPJTU1MrhZS0mvUDhBdgSXCaZqTS1+vQEAxha0GIdwWfXQ
+95JymSDVjHiQlz/NE/rfhqyIzCy/AQg=
+=maw2
+-----END PGP SIGNATURE-----
+
+--dTC3gs8s/Z9bvL6x--
