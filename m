@@ -1,122 +1,149 @@
-Received: from mail-pg1-f178.google.com (mail-pg1-f178.google.com [209.85.215.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA6B37C913
-	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 03:58:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E70FB2D3EC7;
+	Mon, 13 Apr 2026 04:47:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776052720; cv=none; b=G7ER7aCDczLMBGYpthqNlr1/9WS5IZpZ+48ihSubfyKRNuvm1ohGfzCmmOr5QrUhdguX9Q8vjjvCMtUPwNWHgpcz2xhzVmWciDZLYc/88mkHj1zGuh/6vvUJ+8E9NWoHk25+QwAzx6abKLp3A/XvwbkwhWd9oyquCgpM7Ub+41c=
+	t=1776055680; cv=none; b=Hkz+mkVtWscjfZUXfXeEaZIeg6yIa/hT24bY0jI1gZAUyFH86brcYtEYK+GidOWR+GKEjYsYfhudR8+Gg58HaSwR+7kAYNLILiSc0/XXyyciJ1aB29AvU4g9qP5ijbXXFzNnn8Ik30OhkwZj+2faofNpk/72bCR0RaL0D1v69+0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776052720; c=relaxed/simple;
-	bh=q6Fg8aFIwSBBkrdIbWDYN2Qg/+XFIv/XYOlevHI46mg=;
+	s=arc-20240116; t=1776055680; c=relaxed/simple;
+	bh=v/MxTEgt0hfDRYM2J4O78Ddvv5cWzOkaEyqDEpxmr2w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q70nKGsVZ3a8JhRxYtdr45Du61WxDSDjOOOYu3LyaaKmwiqABbL/K4OONTVw1eIEC66oCAPfnTZ+HM7Ch8HenNy3EWyVdonrM/f4n5/1bvCs6iapjSImavnvTwWVx0dvPOeSsFahw3hZbW/BMsVIg5B6vQThqOMx5n5RPvzSrOg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qpD7HXCZ; arc=none smtp.client-ip=209.85.215.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=pX9okdWSvUza96cI+ui4X/zsxQH99Mib3kYAIsAITKNn861l+xltjVP5McpbyDeZdRvU4tVWP1NoG3osB1JVyxFjdbfVDSD2Ug7MXqXsEva4+BhdRweTcukaPzMmDqgBt62PcgY154tVtIp6b4pOkafbaos+9EvEBH9JL0vAlQM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=e2VgYpjK; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qpD7HXCZ"
-Received: by mail-pg1-f178.google.com with SMTP id 41be03b00d2f7-c76b87931b8so2456241a12.2
-        for <linux-pm@vger.kernel.org>; Sun, 12 Apr 2026 20:58:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776052719; x=1776657519; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fr/lzenYvIspGVOBd9qA8LexXmTvhf6tDNuKiRhUvmY=;
-        b=qpD7HXCZabEdEVQtDv9KZ2oJkD4LVewRKP3m7QvDjjfl1TSwMhZCohUpxbvqR8A4oi
-         cvaV7ha9deZOhF6Bnqdf4RSqNyDpSjdvJSpGO7S65+7kdsdWj//FwObPhtq5cf1UvlKX
-         hF/QrLH9kpegVv3MRLrMg2nN++L7hdLrtPOVr3RzIbw1YoZ+EE4zO9ruWgmOLPYKyKrE
-         DQgQMR2/HRYcgm+WTXlyKr2yZvsX/6rPZugPCGXjroxQt8fSYQE5YCA9nun1sGJmKeNA
-         tSQ4umKF69LKttH+2/USadnxDRne2JWN52R/9xiD+seOXVBYfMCtebf0RGZWeZYhHvv8
-         BFig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776052719; x=1776657519;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fr/lzenYvIspGVOBd9qA8LexXmTvhf6tDNuKiRhUvmY=;
-        b=N+8+xma/1jW2BNol4es4gm7BUlxH8itr0XJ8pJi0IlCNXTvYYIPwlfZQYzZZJsL/p9
-         YBwzz4uqNpn9PwgkEmg4d7Uc72Nd952IiIVFfMJ/zC9tiE5FbZYnnjjCzMApkcx79Nxx
-         PtPgS79dDoaKfC9c7mA5/tddgvqKor/9Z1+zI50yijcTLtXFMliXG6eKeVcG1XwTQfZI
-         8bTGbRp8Ext7uOu575TTcPTelcvzW/+zMqrpj/UsxYGvqyc0/BhENPHdfsDHUBMqMatQ
-         PHg2g/6f85kF6rv1GrxKcIdQJfbdp7almEg4Nb+gv7cgsWyUJwTzfHtoFSkvobnzMF+p
-         bIrg==
-X-Forwarded-Encrypted: i=1; AFNElJ/M1EXFnKCQhvqieRQTCzsB8iA5RSyEsqr3cbn/eCHUKQ288AkGxFClik+rDQuDw/EZJyOluAOatQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyYm51By4CmFnsoN/dIfFFIe4iPHx3474StP98sfV6S3LcvFDRq
-	fUZBMPQdcic5DAMp4zuSu6fQS/F5xEy0lm2dIX3RCnFJBMAEBoBlJEdcOHYlHaZ6kM4=
-X-Gm-Gg: AeBDiesJPk0rEECVk2tNhG4l61jHNtUde/VraKednws1V1PlcXft4/n0pCnkBvSC7EB
-	dVRXSujgmrO0TeaIJUtju9OLDLhQHBjNCD0WiLp3D7f1F6IGRZMNo9brko5xPgA9dbjaRfqRjuw
-	Lq2V5TZ49BrkVfnKLRoSJ8cSZ544I8gkfvFmMG2h/DhFOAWdoq/xag9E2jK9Z35wo2HLIF/Nnla
-	nakDR2Knscrk6R2VyQm+SB1jDaawxhXnNSDfTR9qo9FDUWUUUo0lVTqRUxVD3jQmVC96WPNdSEB
-	0TpD3WNgdD5veTqDkUB1Y1B53J6OqcirUohC1NOFFpfMwXzsVkJUUTqBkPZ15EXqXEIZ+8Moxuc
-	fQReWJh8+YO15MSdHJty6Z8lfDvM7uXHj+/GNAMMNHoR1BAf0bGIqjwycx+Z9X8nqY5MRhPIrHx
-	4M8zTTCBxUdc7RcvC7DVxYPCwh
-X-Received: by 2002:a05:6a20:3ca2:b0:39b:e138:e230 with SMTP id adf61e73a8af0-39fe3cf7579mr12869459637.13.1776052718668;
-        Sun, 12 Apr 2026 20:58:38 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f0f8a7501sm9627799b3a.50.2026.04.12.20.58.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Apr 2026 20:58:37 -0700 (PDT)
-Date: Mon, 13 Apr 2026 09:28:35 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: markus.probst@posteo.de
-Cc: Rob Herring <robh@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Miguel Ojeda <ojeda@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	=?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
-	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
-	Kari Argillander <kari.argillander@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, driver-core@lists.linux.dev, 
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v4 1/4] rust: devres: return reference in
- `devres::register`
-Message-ID: <gm76z4ngcpgbi4f7xym25n423wmvdac3meou4lefd26hgqqp2p@aziculojtqan>
-References: <20260411-rust_serdev-v4-0-845e960c6627@posteo.de>
- <20260411-rust_serdev-v4-1-845e960c6627@posteo.de>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="e2VgYpjK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA9FBC116C6;
+	Mon, 13 Apr 2026 04:47:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1776055679;
+	bh=v/MxTEgt0hfDRYM2J4O78Ddvv5cWzOkaEyqDEpxmr2w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=e2VgYpjKczj7Pun2KG9GFlVkVKtOK9XPyLldoNp8qiHxoU3wsAIZGRnxtetuNi8FQ
+	 98+G+b9+L4tNGlAAvX4YyPbNmD39LuqJSwhQ1oCkBMvl3xW0kpLg9g7ZHLbBRzA+hn
+	 JAlqkYc2BGvmGeMPFkbM70KOsJIe0GLLTVXI64PQ=
+Date: Mon, 13 Apr 2026 06:47:29 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Cc: Samuel Wu <wusamuel@google.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
+	Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
+	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
+	Android Kernel Team <kernel-team@android.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux Power Management <linux-pm@vger.kernel.org>,
+	driver-core@lists.linux.dev, bpf <bpf@vger.kernel.org>,
+	"open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>
+Subject: Re: [PATCH v3 0/2] Support BPF traversal of wakeup sources
+Message-ID: <2026041315-oval-rut-cb8d@gregkh>
+References: <20260331153413.2469218-1-wusamuel@google.com>
+ <2026040136-ocelot-simply-8981@gregkh>
+ <CAG2KctokEVVuhrs6tYuMjFF4ALR=tX80iZHrt4bhVvEKyoHzRQ@mail.gmail.com>
+ <2026040236-kiln-carat-bb6d@gregkh>
+ <CAG2Kctpr7vBm_=Xz4H5FHYAfFxg=bDt35j6B4EprfUGio=Ftew@mail.gmail.com>
+ <2026040357-undefined-gave-c98e@gregkh>
+ <CAG2KctqOLeYm_NFUjGdXQcBo1KhSZpXFQxQdM-DQBV4Mn0ahTw@mail.gmail.com>
+ <CAADnVQLELWyv0kuv8wK3FJVFdJPbp-tD8d3p2pgCiVrcw_cVNA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260411-rust_serdev-v4-1-845e960c6627@posteo.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAADnVQLELWyv0kuv8wK3FJVFdJPbp-tD8d3p2pgCiVrcw_cVNA@mail.gmail.com>
 
-On 11-04-26, 17:10, Markus Probst via B4 Relay wrote:
-> From: Markus Probst <markus.probst@posteo.de>
+On Sun, Apr 12, 2026 at 03:48:58PM -0700, Alexei Starovoitov wrote:
+> On Fri, Apr 3, 2026 at 9:28 AM Samuel Wu <wusamuel@google.com> wrote:
+> >
+> > On Fri, Apr 3, 2026 at 3:04 AM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> > >
+> > > On Thu, Apr 02, 2026 at 12:37:12PM -0700, Samuel Wu wrote:
+> > > > On Wed, Apr 1, 2026 at 9:06 PM Greg Kroah-Hartman
+> > > > <gregkh@linuxfoundation.org> wrote:
+> > > > >
+> > > > > On Wed, Apr 01, 2026 at 12:07:12PM -0700, Samuel Wu wrote:
+> > > > > > On Wed, Apr 1, 2026 at 2:15 AM Greg Kroah-Hartman
+> > > > > > <gregkh@linuxfoundation.org> wrote:
+> > > > > > >
+> > > > > > > On Tue, Mar 31, 2026 at 08:34:09AM -0700, Samuel Wu wrote:
+> >
+> > [ ... ]
+> >
+> > > > The data is fundamental for debugging and improving power at scale.
+> > > > The original discussion and patch [1] provide more context of the
+> > > > intent. To summarize the history, debugfs was unstable and insecure,
+> > > > leading to the current sysfs implementation. However, sysfs has the
+> > > > constraint of one attribute per node, requiring 10 sysfs accesses per
+> > > > wakeup source.
+> > >
+> > > Ok, as the sysfs api doesn't work your use case anymore, why do we need
+> > > to keep it around at all?
+> > >
+> > > > That said, I completely agree that reading 1500+ sysfs files at once
+> > > > is unreasonable. Perhaps the sysfs approach was manageable at the time
+> > > > of [1], but moving forward we need a more scalable solution. This is
+> > > > the main motivator and makes BPF the sane approach, as it improves
+> > > > traversal in nearly every aspect (e.g. cycles, memory, simplicity,
+> > > > scalability).
+> > >
+> > > I'm all for making this more scalable and work for your systems now, but
+> > > consider if you could drop the sysfs api entirely, would you want this
+> > > to be a different type of api entirely instead of having to plug through
+> > > these using ebpf?
+> >
+> > Almost all use cases want all this data at once, so AFAICT BPF offers
+> > the best performance for that. But of course, open to discussion if
+> > there is an alternative API that matches BPF's performance for this
+> > use case.
+> >
+> > I'm not opposed to dropping the sysfs approach, and I attempted to do
+> > so in the v1 patch [1]. I'm not sure who else currently uses those
+> > sysfs nodes, but a config flag should remove friction and could be a
+> > stepping stone toward deprecation/removal.
+> >
+> > [1]: https://lore.kernel.org/all/20260320160055.4114055-3-wusamuel@google.com/
 > 
-> Return the reference to the initialized data in the `devres::register`
-> function.
+> The patches make sense to me.
 > 
-> This is needed in a following commit (rust: add basic serial device bus
-> abstractions).
+> Patch 2 adds a bpf selftest and corresponding:
+> +CONFIG_DIBS_LO=y
+> +CONFIG_PM_WAKELOCKS=y
 > 
-> Signed-off-by: Markus Probst <markus.probst@posteo.de>
-> ---
->  rust/kernel/cpufreq.rs    |  3 ++-
->  rust/kernel/devres.rs     | 15 +++++++++++++--
->  rust/kernel/drm/driver.rs |  3 ++-
->  3 files changed, 17 insertions(+), 4 deletions(-)
+> and almost green in BPF CI.
 > 
-> diff --git a/rust/kernel/cpufreq.rs b/rust/kernel/cpufreq.rs
-> index f5adee48d40c..31bf7e685097 100644
-> --- a/rust/kernel/cpufreq.rs
-> +++ b/rust/kernel/cpufreq.rs
-> @@ -1052,7 +1052,8 @@ pub fn new_foreign_owned(dev: &Device<Bound>) -> Result
->      where
->          T: 'static,
->      {
-> -        devres::register(dev, Self::new()?, GFP_KERNEL)
-> +        devres::register(dev, Self::new()?, GFP_KERNEL)?;
-> +        Ok(())
->      }
->  }
+> Except s390 that fails with:
+> 
+> Error: #682/1 wakeup_source/iterate_and_verify_times
+> Error: #682/1 wakeup_source/iterate_and_verify_times
+> libbpf: extern (func ksym) 'bpf_wakeup_sources_get_head': not found in
+> kernel or module BTFs
+> libbpf: failed to load BPF skeleton 'test_wakeup_source': -EINVAL
+> test_wakeup_source:FAIL:skel_open_and_load unexpected error: -22
+> 
+> We can still land it into bpf-next for this merge window.
+> 
+> Greg,
+> any objection ?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yes, it is too late for 7.1-rc1, sorry, there will have not been any
+time in linux-next to add it.  Let's revisit it after -rc1 is out, and
+again, I feel that "walk all sysfs devices in bpf" is not the correct
+solution for a system-wide snapshot interface you want to have,
+especially as the one you previously added you feel is now obsolete.
 
--- 
-viresh
+thanks,
+
+greg k-h
