@@ -1,200 +1,141 @@
-Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93C6E3BE164;
-	Mon, 13 Apr 2026 10:56:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C319318EDA;
+	Mon, 13 Apr 2026 11:00:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776077801; cv=none; b=X7AMJW+k75i3pyIPLI9Gzts2AGxtUdtlmKYWSLCGI75LknFz0UGm964p8mCvin6IEUpW3sx8n5sFJ5kTa/79ieKaJFJIdQ5DBUbzpCMNOn0x40uKMeIMYf/BSdnYzXGqZL9vd8Fn3qD8zcKODg5/G+yDD7bZVYBmQ/AIk+QDTfM=
+	t=1776078016; cv=none; b=V9ydF26z0omJP27uNxrwMWeSGH6DmpfcZme1i/bechlmBhOY/gUUzUlgJ59gbekrB2q0sfoS+oXvgfT9RynHVj68VPXmEI1FawQmjXHX8yTTXu3cVhCf6pXiI8KRGyPNtT8c61wffwkckDJa+K1N1FfaiBsq/Qc1BufFnqgd8rE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776077801; c=relaxed/simple;
-	bh=zbgRfmKb31HDgkan9Fy8S+p1BOUmWfaoe9tmTB9hGac=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ssMBa1aswLPxgyKDoaXseqvpQBgk3gL7aJwFMtz4EzymKthF4IhbV94YeSWJcrLe+fcGpQaRbqsXpZ6wydcad9l/2PAGFBRcGgtvM1SCzyyrGfCHrolyxREqGyfk4aP1g0O1CdaUFw3KRgBvf8/3GBwiGvpZ7LWGsLB6VNwEZH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=sQmvMCUS; arc=none smtp.client-ip=65.21.61.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
+	s=arc-20240116; t=1776078016; c=relaxed/simple;
+	bh=sWeDGz5nVxh7zul1oYxNegopCUQGMob68LVgLTxZPrU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UttjHkgTKNBwVuT+pYqw4fDdwwSpCYauW+LXOQ2tq+QHWhzw7zMupweDfCFEIuvwrGAM9MEVCX7C8/z2jtuDB14r8YIMGxbbFeKjACf/yNWFJNGz7kQ/f6hIuOV0iRlNKXMPJChwUjfNUFeSarWiWYc1ugdTpM+Xf6XGXAsbMrs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=po80zusm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="sQmvMCUS"
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1776077799;
-	bh=zbgRfmKb31HDgkan9Fy8S+p1BOUmWfaoe9tmTB9hGac=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=sQmvMCUSq276NDWZIaAZXluW9oVjSHsLDO8AcIGdOWOgLc8iTPaQ8HZIfNXbpBV6c
-	 Cjc504NFB9+iW39jIpf1NduMoVAoACBKO9fzI9DgmxnCpZN5N+IFxqQaQDY6mYskjs
-	 m5fmEHEMHpH0bmSpFBYdAGtKdAunZO8ayW2F+z8k=
-Date: Mon, 13 Apr 2026 12:52:49 +0200
-Subject: [PATCH v2 8/8] arm64: dts: amlogic: t7: khadas-vim4: Add fan
- cooling to thermal zones
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="po80zusm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B03A4C116C6;
+	Mon, 13 Apr 2026 11:00:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776078015;
+	bh=sWeDGz5nVxh7zul1oYxNegopCUQGMob68LVgLTxZPrU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=po80zusm+gtU+EGSkMuJ2hqujkYkUJ1p8Kz4680dGC5/FlNAC/buMbtHK5Fg1QD7G
+	 6GNXB5/XjtQ0/nECSh3SgHU4WsBsoyOzwk3XH1g1oxCSZtiWXdfdTOhY0HWWG0npeS
+	 XGx+e0qTFsLrNXW0Mc1fnAQM3clczqq8PETdNtXHXNyCBugC2cmqIKJn4OWLmws47V
+	 Ucnb/6DzHn350VtTVjWlgnoq5/FchzT7yYgrSh9WBjXZcPq5PT5mYz6SovfRrFXX9U
+	 RH05hFoVPfKt13rRlGJ4HlRdah/1oRHBaNuUZpBILRkUlyhnjgIaOuK/y4B1s8MDNl
+	 I/ahVTcgcNKiA==
+Message-ID: <2dab11d1-18ca-4da4-a33e-3f2c3c4b6320@kernel.org>
+Date: Mon, 13 Apr 2026 13:00:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 04/14] powerpc/time: Prepare to stop elapsing in
+ dynticks-idle
+To: Frederic Weisbecker <frederic@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Anna-Maria Behnsen <anna-maria@linutronix.de>,
+ Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Jan Kiszka <jan.kiszka@siemens.com>, Joel Fernandes <joelagnelf@nvidia.com>,
+ Juri Lelli <juri.lelli@redhat.com>, Kieran Bingham <kbingham@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Mel Gorman <mgorman@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, "Paul E . McKenney"
+ <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Steven Rostedt
+ <rostedt@goodmis.org>, Sven Schnelle <svens@linux.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Uladzislau Rezki <urezki@gmail.com>,
+ Valentin Schneider <vschneid@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Xin Zhao <jackzxcui1989@163.com>,
+ linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260331131622.30505-1-frederic@kernel.org>
+ <20260331131622.30505-5-frederic@kernel.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260331131622.30505-5-frederic@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260413-add-thermal-t7-vim4-v2-8-1002d90a0602@aliel.fr>
-References: <20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr>
-In-Reply-To: <20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr>
-To: Guillaume La Roque <glaroque@baylibre.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openssh-sha256; t=1776077791; l=2874;
- i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
- bh=zbgRfmKb31HDgkan9Fy8S+p1BOUmWfaoe9tmTB9hGac=;
- b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
- BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QJCVn+qTCfYhdijSA2szasfERHpQ98ZpwWp3CyatIpCwdNiomXtPcIbl3SsLxyXGvdcZFRrYc32
- Op0JGbw3B9wM=
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
- fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-Add an active trip at 50°C to all six thermal zones and map it to the
-khadas_mcu fan controller, using cooling states 30 to 100.
 
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
----
- .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  | 102 +++++++++++++++++++++
- 1 file changed, 102 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-index 5d7f5390f3a66..ba9219073dd0a 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-@@ -157,6 +157,74 @@ wifi32k: wifi32k {
- 	};
- };
- 
-+&a53_thermal {
-+	trips {
-+		a53_active: a53-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&a53_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
-+
-+&a73_thermal {
-+	trips {
-+		a73_active: a73-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&a73_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
-+
-+&gpu_thermal {
-+	trips {
-+		gpu_active: gpu-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&gpu_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
-+
-+&hevc_thermal {
-+	trips {
-+		hevc_active: hevc-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&hevc_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
-+
- &i2c_m_ao_a {
- 	status = "okay";
- 	pinctrl-0 = <&i2c0_ao_d_pins>;
-@@ -170,6 +238,23 @@ khadas_mcu: system-controller@18 {
- 	};
- };
- 
-+&nna_thermal {
-+	trips {
-+		nna_active: nna-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&nna_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
-+
- &pwm_ab {
- 	status = "okay";
- 	pinctrl-0 = <&pwm_a_pins>;
-@@ -266,3 +351,20 @@ &uart_a {
- 	clocks = <&xtal>, <&xtal>, <&xtal>;
- 	clock-names = "xtal", "pclk", "baud";
- };
-+
-+&vpu_thermal {
-+	trips {
-+		vpu_active: vpu-active {
-+			temperature = <50000>; /* millicelsius */
-+			hysteresis = <2000>; /* millicelsius */
-+			type = "active";
-+		};
-+	};
-+
-+	cooling-maps {
-+		map {
-+			trip = <&vpu_active>;
-+			cooling-device = <&khadas_mcu 30 100>;
-+		};
-+	};
-+};
+Le 31/03/2026 à 15:16, Frederic Weisbecker a écrit :
+> Currently the tick subsystem stores the idle cputime accounting in
+> private fields, allowing cohabitation with architecture idle vtime
+> accounting. The former is fetched on online CPUs, the latter on offline
+> CPUs.
+> 
+> For consolidation purpose, architecture vtime accounting will continue
+> to account the cputime but will make a break when the idle tick is
+> stopped. The dyntick cputime accounting will then be relayed by the tick
+> subsystem so that the idle cputime is still seen advancing coherently
+> even when the tick isn't there to flush the idle vtime.
+> 
+> Prepare for that and introduce three new APIs which will be used in
+> subsequent patches:
+> 
+> _ vtime_dynticks_start() is deemed to be called when idle enters in
+>    dyntick mode. The idle cputime that elapsed so far is accumulated.
+> 
+> - vtime_dynticks_stop() is deemed to be called when idle exits from
+>    dyntick mode. The vtime entry clocks are fast-forward to current time
+>    so that idle accounting restarts elapsing from now.
+> 
+> - vtime_reset() is deemed to be called from dynticks idle IRQ entry to
+>    fast-forward the clock to current time so that the IRQ time is still
+>    accounted by vtime while nohz cputime is paused.
+> 
+> Also accumulated vtime won't be flushed from dyntick-idle ticks to avoid
+> accounting twice the idle cputime, along with nohz accounting.
+> 
+> Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> ---
+>   arch/powerpc/kernel/time.c | 41 ++++++++++++++++++++++++++++++++++++++
+>   include/linux/vtime.h      |  6 ++++++
+>   2 files changed, 47 insertions(+)
+> 
 
--- 
-2.49.0
+...
+
+> diff --git a/include/linux/vtime.h b/include/linux/vtime.h
+> index 336875bea767..61b94c12d7dd 100644
+> --- a/include/linux/vtime.h
+> +++ b/include/linux/vtime.h
+> @@ -37,11 +37,17 @@ extern void vtime_account_irq(struct task_struct *tsk, unsigned int offset);
+>   extern void vtime_account_softirq(struct task_struct *tsk);
+>   extern void vtime_account_hardirq(struct task_struct *tsk);
+>   extern void vtime_flush(struct task_struct *tsk);
+> +extern void vtime_reset(void);
+> +extern void vtime_dyntick_start(void);
+> +extern void vtime_dyntick_stop(void);
+>   #else /* !CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+>   static inline void vtime_account_irq(struct task_struct *tsk, unsigned int offset) { }
+>   static inline void vtime_account_softirq(struct task_struct *tsk) { }
+>   static inline void vtime_account_hardirq(struct task_struct *tsk) { }
+>   static inline void vtime_flush(struct task_struct *tsk) { }
+> +static inline void vtime_reset(void) { }
+> +static inline void vtime_dyntick_start(void) { }
+> +extern inline void vtime_dyntick_stop(void) { }
+
+You mean 'static' inline, not 'extern' ?
+
+Christophe
+
+>   #endif
+>   
+>   /*
 
