@@ -1,257 +1,145 @@
-Received: from mail-pj1-f43.google.com (mail-pj1-f43.google.com [209.85.216.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD21237E30D
-	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 07:55:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.43
+Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 598863559CA;
+	Mon, 13 Apr 2026 08:01:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776066908; cv=none; b=Nj6tHDhBsNpgaFVmoQDnOB8uc+a+baH0zttAsSw+rRZ5C35p4Rw/KzLgi0tAR6sUfagwMNAMpBp4QD1TfgjlK4jbw5379WYgndq3A+pNhIHlqaUJiSyiZyV2EHBeKvHIGC9Nxb6f4sSaQzbOciinod2Wl4sgjtKlShP36lZuUWg=
+	t=1776067313; cv=none; b=gweWUX3GUuddP3bEIGVf2KHoyZ8UDyOGZtEKgO7cLKq1zPEWRX+/8OkdhdhikyBfmDQXZ3QXVkHnBd+WUbrmMfYVHdMjeykujGr/WB+39yzk3/5QhzcBPHV746P4vIhX9TZ8qmZ80ONCdxlxmDJXg1RRjoH6jEHSQASgLhb2Bhg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776066908; c=relaxed/simple;
-	bh=6XIKxYQuO3AS12c9nvyzAZXTAEomu+IKjck0wFYzM/A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sgzz+L6UID6R4nJMcpdvDd+6k19s8DdFPvxU3T/R3bqd+PF+tSpyeszqfdXzALsRQDuiYsulLZh+rCinFpc4hc3MUHFQ60FpDJmrFO9wy3qiukRT0IbV5IPqDz5w4eczn8zKPvtk8GvQ2Yp54cTPCZ1uKpACRupcXwupwvCDajo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=n2eA5xLj; arc=none smtp.client-ip=209.85.216.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="n2eA5xLj"
-Received: by mail-pj1-f43.google.com with SMTP id 98e67ed59e1d1-3585ec417f6so1508711a91.1
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 00:55:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1776066906; x=1776671706; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=WW3N60RcuwkdOk7B+SAX7DubiMOl+LSl+vKA0bH61pA=;
-        b=n2eA5xLjfunVYz0xjYz9m2uo/Q5HulRTIs/WrvRx/1ZymvNoGJayo2b8Lp2phPC9tz
-         nfoNNwzUl2PbY9Svi2khZiKB82kLid02qDSL+HUqPidslt1lZZHjoTiApN1Zch3LCN0g
-         krYaJR2pZ75mSZxJwEQcy2kUeC55brSBdrEns=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776066906; x=1776671706;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=WW3N60RcuwkdOk7B+SAX7DubiMOl+LSl+vKA0bH61pA=;
-        b=rbQtINyOyQlK2oYL3/NO0eg6M68UuJpUfRfFHPpbdA//VSwkU7Vyib3W+itB9WybXo
-         50aOVizQyTEQDB8m+O8W+y4jgKbkQ/8SdVOQVvELl02HVPEeoGEhNlDwEoAF0+Oq4VKs
-         f9sSyXbM55UWM0mYdNgkEmnodESLsa+9m01ctzz7cPPJuQk3mvdaODSvIWhCeWA9W3RB
-         3H0nAxxSb0mSLQSzk1sJ/Ab56Hur2ELqtlOHWbC5sZdoLJ5WeLb4zRiNihVwRpov8I7D
-         Hm0cYW3GMdQg3D0KCXSNxLBqnRhl0E9a+n2khF5WaRQncTz1YUMr6S7rHFhU60eUTcmW
-         dtjA==
-X-Forwarded-Encrypted: i=1; AFNElJ9Xg7u0PMbMG88iNm9V+Ei76Jz+16Z/wPeKhWVqmKeL7X1LpYL4UasiLgWa3WAS94uNwrkj5Cs+Aw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YycPtX0x+QuLT/S/far+lIVxCDAESdDHE5QExoQ2pF/3Yg/X0eA
-	EAxxoADuwyE8joq9VSLnFLL5st65LnGBmMzcWAgobcjXkKOXJ4sBEtDV8oEeQKTXaw==
-X-Gm-Gg: AeBDievjt0Oo+ZddMsAXdILLmaiVYmLh6btk56d+DjB+J42WKLofdX1+ygzHCX21gz4
-	THHLkS8D6N6QuKE0azkK8cjq0IKfP/wLRf0ngRiCwXGC0gFDqpwncmkCXbjuCd81sX2wZUlrFe3
-	vyg8P9bi+Baznq3mxmpiSUQZJaNUxApIbGCOT1fHN6mIhmMLH0aVyjeNwmKVZdqj2Pc9b8cWHDA
-	DFnkSvYq0P2vpVFiG90DjTU/tHq+y6qZuxYI66p1riZDVG0+vd23Bc/M0fYkxNSEOMb/U+Qr193
-	oqwEB9A1wtXzlStJqHqKh7laJskuJKYiCBL10SbJ/bsTauwkY7unp6Bj9EF75aWucZVg342sXMH
-	iBowm9tgY/0EkWGr/xoK+7Ppq23p7OpDfmqZO+QNNwpgNsrqKwUBhCiVC7DpdzCXhbwnQdXLHQ8
-	llTN6U8r9akXR8MSMuiW28cv6jawn9/dHkT5pEnkAIzfrnTXnDL+pesw==
-X-Received: by 2002:a17:90a:fb57:b0:35f:b3b9:3bf3 with SMTP id 98e67ed59e1d1-35fb3b94609mr2085139a91.10.1776066906196;
-        Mon, 13 Apr 2026 00:55:06 -0700 (PDT)
-Received: from google.com ([2a00:79e0:201d:8:2a1c:32da:452:ff77])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b45fdaa77dsm20114165ad.49.2026.04.13.00.55.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Apr 2026 00:55:05 -0700 (PDT)
-Date: Mon, 13 Apr 2026 15:54:59 +0800
-From: Chen-Yu Tsai <wenst@chromium.org>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Cc: Rob Herring <robh@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nicolas Schier <nicolas.schier@linux.dev>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Mark Pearson <mpearson-lenovo@squebb.ca>,
-	"Derek J. Clark" <derekjohn.clark@gmail.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
-	Stephan Gerhold <stephan.gerhold@linaro.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	s=arc-20240116; t=1776067313; c=relaxed/simple;
+	bh=VUnQLH2pPEqvFRZdcj9hGaqbHbCCyp43cVorRQ4b3rQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bg3JOOaCYiGLLOoZHGXjS6CvvQB/Y6wvtJQW6z0k+nPoImlE3K9Oty2bGJKYJ9tqNjUmMWyrdVFmPt68jSmJnraQwbGBs2ml65IIEiP0j9QiqfdPZxovveFNic5t78fnNKhCPlTiiqCBbpC/yDqTeuVDQXRiSDg/FxZJXXfmqbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
+HMM_SOURCE_IP:10.158.242.145:0.2069108682
+HMM_ATTACHE_NUM:0000
+HMM_SOURCE_TYPE:SMTP
+Received: from clientip-221.238.56.48 (unknown [10.158.242.145])
+	by mail.189.cn (HERMES) with SMTP id 24E5F4002A1;
+	Mon, 13 Apr 2026 16:01:43 +0800 (CST)
+Received: from  ([221.238.56.48])
+	by gateway-153622-dep-76cc7bc9cd-r45x9 with ESMTP id 33ade6dc9ca54545a389407f17f1d0f0 for rafael@kernel.org;
+	Mon, 13 Apr 2026 16:01:46 CST
+X-Transaction-ID: 33ade6dc9ca54545a389407f17f1d0f0
+X-Real-From: chensong_2000@189.cn
+X-Receive-IP: 221.238.56.48
+X-MEDUSA-Status: 0
+Sender: chensong_2000@189.cn
+From: chensong_2000@189.cn
+To: rafael@kernel.org,
+	lenb@kernel.org,
+	mturquette@baylibre.com,
+	sboyd@kernel.org,
+	viresh.kumar@linaro.org,
+	agk@redhat.com,
+	snitzer@kernel.org,
+	mpatocka@redhat.com,
+	bmarzins@redhat.com,
+	song@kernel.org,
+	yukuai@fnnas.com,
+	linan122@huawei.com,
+	jason.wessel@windriver.com,
+	danielt@kernel.org,
+	dianders@chromium.org,
+	horms@kernel.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	paulmck@kernel.org,
+	frederic@kernel.org,
+	mcgrof@kernel.org,
+	petr.pavlu@suse.com,
+	da.gomez@kernel.org,
+	samitolvanen@google.com,
+	atomlin@atomlin.com,
+	jpoimboe@kernel.org,
+	jikos@kernel.org,
+	mbenes@suse.cz,
+	pmladek@suse.com,
+	joe.lawrence@redhat.com,
+	rostedt@goodmis.org,
+	mhiramat@kernel.org,
+	mark.rutland@arm.com,
+	mathieu.desnoyers@efficios.com
+Cc: linux-modules@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
 	linux-acpi@vger.kernel.org,
-	Hans de Goede <johannes.goede@oss.qualcomm.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E
- connectors in devicetree
-Message-ID: <20260413075459.GA2626902@google.com>
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	live-patching@vger.kernel.org,
+	dm-devel@lists.linux.dev,
+	linux-raid@vger.kernel.org,
+	kgdb-bugreport@lists.sourceforge.net,
+	netdev@vger.kernel.org,
+	Song Chen <chensong_2000@189.cn>
+Subject: [RFC PATCH 0/2] Decouple ftrace/livepatch from module loader via notifier priority and reverse traversal
+Date: Mon, 13 Apr 2026 16:01:40 +0800
+Message-ID: <20260413080140.180616-1-chensong_2000@189.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
 
-Hi,
+From: Song Chen <chensong_2000@189.cn>
 
-On Thu, Mar 26, 2026 at 01:36:28PM +0530, Manivannan Sadhasivam wrote:
-> Hi,
-> 
-> This series is the continuation of the series [1] that added the initial support
-> for the PCIe M.2 connectors. This series extends it by adding support for Key E
-> connectors. These connectors are used to connect the Wireless Connectivity
-> devices such as WiFi, BT, NFC and GNSS devices to the host machine over
-> interfaces such as PCIe/SDIO, USB/UART and NFC. This series adds support for
-> connectors that expose PCIe interface for WiFi and UART interface for BT. Other
-> interfaces are left for future improvements.
+This patchset addresses a long-standing tight coupling between the
+module loader and two of its key consumers: ftrace and livepatch.
 
-Thanks for working on this. I started playing with it now that it is in
--next. The PCIe part works fine. I'm looking into how to fit the pwrseq
+Background:
 
-A couple questions:
+The module loader currently hard-codes direct calls to
+ftrace_module_enable(), klp_module_coming(), klp_module_going() and
+ftrace_release_mod() inside prepare_coming_module() and the module
+unload path. This hard-coding was necessary because the module notifier
+chain could not guarantee the strict call ordering that ftrace and
+livepatch require:
 
-- Given that this connector actually represents two devices, how do I
-  say I want the BT part to be a wakeup source, but not the WiFi part?
-  Does wakeup-source even work at this point?
+  During MODULE_STATE_COMING, ftrace must run before livepatch, so
+  that per-module function records are ready before livepatch registers
+  its ftrace hooks.
 
-- Are there plans to do the SDIO part?
+  During MODULE_STATE_GOING, livepatch must run before ftrace, so that
+  livepatch removes its hooks before ftrace releases those records.
 
-- The matching done in the M.2 connector driver for pwrseq_get() seems a
-  bit naive. It simply checks if the remote device in the OF graph is
-  the same as the requesting device.
+This symmetric setup/teardown ordering could not be expressed through
+the notifier chain because the chain only supported forward (descending
+priority) traversal. Without reverse traversal, it was impossible to
+guarantee that the GOING order would be the strict inverse of the
+COMING order using a single priority value per notifier.
 
-  I think this would run into issues with USB hubs. If I have a USB hub
-  and two M.2 connectors, with both connectors connected to the same
-  hub, pwrseq_get() is going to always return only one of the instances.
-  This is because the USB hub has one device node with multiple OF graph
-  ports.
+Patch 1 - notifier: replace single-linked list with double-linked list.
+Patch 2 - ftrace/klp: decouple from module loader using notifier
+priority.
 
+headsup: somehow the smtp of my mailbox doesn't work very well lately, 
+if i receive return letter, i have to resend, sorry in advance.
 
-Thanks
-ChenYu
+Song Chen (2):
+  kernel/notifier: replace single-linked list with double-linked list
+    for reverse traversal
+  kernel/module: Decouple klp and ftrace from load_module
 
+ drivers/acpi/sleep.c      |   1 -
+ drivers/clk/clk.c         |   2 +-
+ drivers/cpufreq/cpufreq.c |   2 +-
+ drivers/md/dm-integrity.c |   1 -
+ drivers/md/md.c           |   1 -
+ include/linux/module.h    |   8 ++
+ include/linux/notifier.h  |  26 ++---
+ kernel/debug/debug_core.c |   1 -
+ kernel/livepatch/core.c   |  29 ++++-
+ kernel/module/main.c      |  34 +++---
+ kernel/notifier.c         | 219 ++++++++++++++++++++++++++++++++------
+ kernel/trace/ftrace.c     |  38 +++++++
+ net/ipv4/nexthop.c        |   2 +-
+ 13 files changed, 290 insertions(+), 74 deletions(-)
 
-> Serdev device support for BT
-> ============================
-> 
-> Adding support for the PCIe interface was mostly straightforward and a lot
-> similar to the previous Key M connector. But adding UART interface has proved to
-> be tricky. This is mostly because of the fact UART is a non-discoverable bus,
-> unlike PCIe which is discoverable. So this series relied on the PCI notifier to
-> create the serdev device for UART/BT. This means the PCIe interface will be
-> brought up first and after the PCIe device enumeration, the serdev device will
-> be created by the pwrseq driver. This logic is necessary since the connector
-> driver and DT node don't describe the device, but just the connector. So to make
-> the connector interface Plug and Play, the connector driver uses the PCIe device
-> ID to identify the card and creates the serdev device. This logic could be
-> extended in the future to support more M.2 cards. Even if the M.2 card uses SDIO
-> interface for connecting WLAN, a SDIO notifier could be added to create the
-> serdev device.
-> 
-> Testing
-> =======
-> 
-> This series, together with the devicetree changes [2] was tested on the
-> Qualcomm X1e based Lenovo Thinkpad T14s Laptop which has the WCN7850 WLAN/BT
-> 1620 LGA card connected over PCIe and UART.
-> 
-> Merge Strategy
-> ==============
-> 
-> Due to the API dependency, both the serdev and pwrseq patches need to go through
-> a single tree, maybe through pwrseq tree. So the serdev patches need Ack from
-> Greg. But Bluetooth patch can be merged separately.
-> 
-> NOTE
-> ====
-> 
-> This series is based on bluetooth-next/master to resolve the conflict with the
-> Bluetooth patch. Other pathces should apply cleanly on top of v7.0-rc1.
-> 
-> [1] https://lore.kernel.org/linux-pci/20260107-pci-m2-v5-0-8173d8a72641@oss.qualcomm.com
-> [2] https://github.com/Mani-Sadhasivam/linux/commit/b50f8386900990eed3dce8d91c3b643fb0e8739d
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
-> Changes in v7:
-> - Dropped the LGA binding change due to vendor prefix concern. This will be
->   submitted later once I get clarity.
-> - Fixed several issues in the cleanup path of the pwrseq-pci-m2 driver which
->   includes adding the .remove() callback.
-> - Rebased on top of bluetooth-next/master to resolve conflict with bluetooth
->   patch.
-> - Link to v6: https://lore.kernel.org/r/20260317-pci-m2-e-v6-0-9c898f108d3d@oss.qualcomm.com
-> 
-> Changes in v6:
-> - Added a check to bail out if the serdev device was already added during notifier.
-> - Collected tags
-> - Link to v5: https://lore.kernel.org/r/20260224-pci-m2-e-v5-0-dd9b9501d33c@oss.qualcomm.com
-> 
-> Changes in v5:
-> - Incorporated comments in the binding patch by using single endpoint per port,
->   reordering port nodes, adding missing properties and using a complete example.
-> - Incorporated comments in the pwrseq patch (nothing major)
-> - Fixed the build issue in patch 2
-> - Collected tags
-> - Rebased on top of 7.0-rc1
-> - Link to v4: https://lore.kernel.org/r/20260112-pci-m2-e-v4-0-eff84d2c6d26@oss.qualcomm.com
-> 
-> Changes in v4:
-> - Switched to dynamic OF node for serdev instead of swnode and dropped all
->   swnode related patches
-> - Link to v3: https://lore.kernel.org/r/20260110-pci-m2-e-v3-0-4faee7d0d5ae@oss.qualcomm.com
-> 
-> Changes in v3:
-> - Switched to swnode for the serdev device and dropped the custom
->   serdev_device_id related patches
-> - Added new swnode APIs to match the swnode with existing of_device_id
-> - Incorporated comments in the bindings patch
-> - Dropped the UIM interface from binding since it is not clear how it should get
->   wired
-> - Incorporated comments in the pwrseq driver patch
-> - Splitted the pwrseq patch into two
-> - Added the 1620 LGA compatible with Key E fallback based on Stephan's finding
-> - Link to v2: https://lore.kernel.org/r/20251125-pci-m2-e-v2-0-32826de07cc5@oss.qualcomm.com
-> 
-> Changes in v2:
-> - Used '-' for GPIO names in the binding and removed led*-gpios properties
-> - Described the endpoint nodes for port@0 and port@1 nodes
-> - Added the OF graph port to the serial binding
-> - Fixed the hci_qca driver to return err if devm_pwrseq_get() fails
-> - Incorporated various review comments in pwrseq driver
-> - Collected Ack
-> - Link to v1: https://lore.kernel.org/r/20251112-pci-m2-e-v1-0-97413d6bf824@oss.qualcomm.com
-> 
-> ---
-> Manivannan Sadhasivam (8):
->       serdev: Convert to_serdev_*() helpers to macros and use container_of_const()
->       serdev: Add an API to find the serdev controller associated with the devicetree node
->       serdev: Do not return -ENODEV from of_serdev_register_devices() if external connector is used
->       dt-bindings: serial: Document the graph port
->       dt-bindings: connector: Add PCIe M.2 Mechanical Key E connector
->       Bluetooth: hci_qca: Add M.2 Bluetooth device support using pwrseq
->       power: sequencing: pcie-m2: Add support for PCIe M.2 Key E connectors
->       power: sequencing: pcie-m2: Create serdev device for WCN7850 bluetooth
-> 
->  .../bindings/connector/pcie-m2-e-connector.yaml    | 184 +++++++++++
->  .../devicetree/bindings/serial/serial.yaml         |   3 +
->  MAINTAINERS                                        |   1 +
->  drivers/bluetooth/hci_qca.c                        |   9 +
->  drivers/power/sequencing/Kconfig                   |   3 +-
->  drivers/power/sequencing/pwrseq-pcie-m2.c          | 346 ++++++++++++++++++++-
->  drivers/tty/serdev/core.c                          |  28 +-
->  include/linux/serdev.h                             |  24 +-
->  8 files changed, 570 insertions(+), 28 deletions(-)
-> ---
-> base-commit: 559f264e403e4d58d56a17595c60a1de011c5e20
-> change-id: 20251112-pci-m2-e-94695ac9d657
-> 
-> Best regards,
-> --  
-> Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> 
+-- 
+2.43.0
+
