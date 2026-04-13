@@ -1,144 +1,171 @@
-Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9DFE3B8BD7
-	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 10:49:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D21E2318EE2;
+	Mon, 13 Apr 2026 10:56:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776077385; cv=none; b=NntiOvYqO+Wm8RZ7wqqCoT2HGClSa72gT97UVeRpqdFV5IIOLkkzsJ0pTphI6nYGO1GKiklbRVuakQ2BgkLNS9gK8eAMcjDUOeA6A+wTeGF+FDMK4wXbDBk0rZOISW8ysmnL8fTKybVA+f+LPcFzmqbG9dqoKnnjRvf/F3P2cNE=
+	t=1776077796; cv=none; b=Y5iGMPl7X8AET2tKnaIxkI/oPHTVMcjKBveKU3bEFn+pDq3VKyayIXp5pyViCQHCKmkBq+DcmtfHFDlU8gdeq754Ssg87DUFn4qR6wkIv3+gb5EpD+VVywtIAC01wC/AApw/BLqY8G/bhEWhlY+b5Kn30glZI4RMyUR2cNqW8SM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776077385; c=relaxed/simple;
-	bh=ANNS0ARrq+yqt38ilBc0b/VrBSbg8FDzwRhQod1Hlxs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nbKPFVQ/OKBKa2LVZ7hXLugtrO++UzbdiPeGNGKhNTLxeIh/wGylvRsY3z5+bGXaKb12cSmKy4m6HV41qKTKBFt1oKoJ7RAQgt/bestHs0yr1tGNFjOR8CLfppWAKAMgguL4Q+b3J2/7v73KjtqTacuwwOt49asbI7+1iIPY77A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=a4j8A0+Y; arc=none smtp.client-ip=209.85.210.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1776077796; c=relaxed/simple;
+	bh=VH/voXByB5HtcB/2r/SxeBGsrj4jRhHLjfwo5awLI+E=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ueiCVKaebZ+pXI/dwww7o79vQbaXF6BSNmRVSSMM9q8sMsG6QKX35Gl78iqYzAYKQpRXjQvOIqZQGjKwxoajE9p/kUS5JSZDakxS7X20ptsmNZ3ahjDWCBAnvAXUWLxwA8grrvXAaJuxPwKf62AxEXxrvuzAvuA26yInPOr8560=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=LuQrh8R0; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a4j8A0+Y"
-Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-824c9da9928so2959330b3a.3
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 03:49:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776077383; x=1776682183; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=NprvUAprn5meoPNFX+W3YdkJtUZncCH1TUsT0ByUXfo=;
-        b=a4j8A0+YGMqH79iuUXJq0wUbDghGLkygnNr6O/vaEjeR+hRw8uPBfKFo6nqwefLLya
-         SOJSq4JfWnds3geicRh+RqVVNDpeXeEt+V+F8kY5becVvkYrAi8b61qvIvg8Qr0besK3
-         pbIjhi25CNVY6Cj/RuU6v+TeXMnAvARUYtCaju8bg9akOwgrm2HYFDKn8+7JmeIi/BYI
-         8LQ3QTozkPFlM19pyCVciDFKZ5QT1JgLx+5HEq2jsCjNQ8HzX8BrOcVkjRVyxJD7N43z
-         bwxgi9GQr2obgf/Vc35F0AXvewrJGM+p2Ufnrl0oPp6ttEYvMInMXuNzKU/UKQXLmiFn
-         ZpPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776077383; x=1776682183;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NprvUAprn5meoPNFX+W3YdkJtUZncCH1TUsT0ByUXfo=;
-        b=IIlZGHFnurUSeCXb/Srg1nipwe9MPCrUyKQehmT9F56UfKal9vKm5RfU68noxRiu5y
-         /ZMJF1s7O8UatOlj9jgTllKJBEPc9EFRLzcHBKQmaNIcs47GKlP2xfCD96UUp+giTdRi
-         anJcp4QSTYkiAHhsq3HKU8BDqa5HXx/UGevqX8Czggr0MlfXrRuCGWvayz3TwUImrfH1
-         4jeoKpsyFnyGD0mrqWpZWWSWUp+aFEfsl6Wt/YiL6YK9nZx7vH7lVMORgmeEbYDLyZS1
-         uEn22LVsFfo3/SiPTiC2FcfK0FWxBG00zAxrK6g8d/cveljVbIou38YZcRzrs40moUXS
-         SYcA==
-X-Forwarded-Encrypted: i=1; AFNElJ8RoegkyVvAd2grvjHA/d9R+5jz3i95QyMC97F7boa6b3Qs5f8WItL5VmIjGyac0+Q9UMvVCEIiiA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyHzrIJtx7iFxj/pQ+IUPfvaEw5gzRX6hMEJjdlNmZ+qlNzyN6d
-	VdE1u9WcNnVb3fziTQO0i4OeTrsHZ93zatjmpUqan/0rZS+ru2R6ePnKu5GwR1IMCIE=
-X-Gm-Gg: AeBDies+x+MXeBJSqphuM48YfE1gdsbIjfw57O7haA9HE+0zCduzR52WBBgAUxRL3JZ
-	6ttYAf2udv2OJt14EmIGZRxRjoImgGvu8RNJmpaqixtVJuHBTXcqp9C/R5riFzg8a+h/XVc4qN0
-	WNqXypFtxgYeK864y3uprWNjVh1f8H/7DBWfxrf9kMw3xT/4U69lQHOevvhz4GU+XPyNkg2cevF
-	B8rypOd5lRfR+UctAX333bv0yfLJftI8fVut9nuIH/rXhay7CS0/nE0oOd0Oj9q0E7NZrC+p1oo
-	PO5hVFtiQIGDbKaNYReld2zBnuVEaTMss7i5o7tTYHReC2xmFZ8S0qNnHlgasiWC6Lav26LBGMr
-	m5AoGtBlPQFbMIlGzmwbHWVh9lHawjC16Rv0Kfk/k0kL9ML8v2b8WuvOMB3Z44UM2/RSiHJeAYi
-	pqWvI0rfnsgmqzrlnaiU/JdtFN
-X-Received: by 2002:a05:6a00:398d:b0:82c:eb46:acb9 with SMTP id d2e1a72fcca58-82f0c187fa6mr13079040b3a.24.1776077383128;
-        Mon, 13 Apr 2026 03:49:43 -0700 (PDT)
-Received: from localhost ([122.172.81.200])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f0c32e744sm12070430b3a.13.2026.04.13.03.49.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Apr 2026 03:49:42 -0700 (PDT)
-Date: Mon, 13 Apr 2026 16:19:39 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] cpufreq: spacemit: Add cpufreq support for K1 SoC
-Message-ID: <siqn3bu63fxp7ignbaleamvfqskhjjtuzqp64taynlvz2vtiwq@uhpitslu3xnb>
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="LuQrh8R0"
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1776077792;
+	bh=VH/voXByB5HtcB/2r/SxeBGsrj4jRhHLjfwo5awLI+E=;
+	h=From:Subject:Date:To:Cc;
+	b=LuQrh8R0ELHCVZfe5/zqqS1C9CUwyY2Jrs0tsOXwuK0C1VXq+A8QovHHIQs5jbyt/
+	 fJ54lrzLcAnluI4bijG4C5j3PJPMJEsfzQZZMSC9ol8hQ/X7rhksUUrm2PAZCEiKFC
+	 QvtU/oJGzYmhovPzZ/Piz7bbtwOCgTg9VrJXjdSo=
+Subject: [PATCH v2 0/8] arm64: amlogic: T7 thermal support
+Date: Mon, 13 Apr 2026 12:52:41 +0200
+Message-Id: <20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/31Sy27bMBD8FUPn0uCbolEU+Y8gh13uMmIjyY4kC
+ wkC/3tp2YcaDXrgYQnMDObx1cw8FZ6bw+6rmXgtczmO9dA/dk3qYHxlUajejZbaS6ukACKxdDw
+ N0IsliLUMVkjJLigESkk1FXmaOJePjfX55XZP/H6u5Mvtsxl4nmEjP+x+btymvqi9dXslXT2UU
+ OJ3gXHfnZ9g6I+vJe3Tcfi18cOSug3rHTgKPmfCFNEAoDGtQ/QuodRBSpuM5MCPKG2C9rGVqtW
+ eyACFjMozWgrkyTKgk1aH9hHlAkeULUTfAlN21pAhSc6nrBJYQi1Rg/LN39lVsbu7LTlMgzXBa
+ VGtVOaCPQuursHmEIOBw6ofRTEYmR1bjayojaSiYW+gcjobXSLMOgUK+K2okaL2IMq4Ql9InKb
+ jiaflUyCysxSNyUHdFf/Fqg1bo7/WPJ77Xkw88yI0etky5khgD6v6Dmyl3twO6SwyjOKtA4L5t
+ hVIKlV5Z2pfd22Ema+BDGU57Eb+qBq3zEJzXU9X5uU4fW4TrXrX+fx3jasSUqiYNbYEoXb6VN1
+ zv89T83K5XP4APzABivMCAAA=
+X-Change-ID: 20260410-add-thermal-t7-vim4-00e571badcc1
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openssh-sha256; t=1776077788; l=5536;
+ i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
+ bh=VH/voXByB5HtcB/2r/SxeBGsrj4jRhHLjfwo5awLI+E=;
+ b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
+ BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
+ QI9Kcp7fysQlVZVvMcg6K6TWQFUp6iYfci2zxdto5lYVPWlnkIdx+Z32YaDSz5jiGLl8XIVpg7P
+ eWihqS7SvlQA=
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
+ fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-On 10-04-26, 15:58, Shuwei Wu wrote:
-> This series enables dynamic voltage and frequency scaling (DVFS) for
-> the SpacemiT K1 SoC using the generic cpufreq-dt driver.
-> 
-> Tested on Banana Pi BPI-F3, the execution time scales as expected
-> across different CPU frequencies:
-> 
-> ~ # echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> 
-> ~ # echo 1600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> ~ # time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m 1.07s
-> user    0m 1.07s
-> sys     0m 0.00s
-> 
-> ~ # echo 1228800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> ~ # time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m 1.40s
-> user    0m 1.40s
-> sys     0m 0.00s
-> 
-> ~ # echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> ~ # time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m 1.72s
-> user    0m 1.72s
-> sys     0m 0.00s
-> 
-> ~ # echo 819000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> ~ # time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m 2.10s
-> user    0m 2.10s
-> sys     0m 0.00s
-> 
-> ~ # echo 614400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> ~ # time awk 'BEGIN{for(i=0;i<1000000;i++){}}'
-> real    0m 2.80s
-> user    0m 2.80s
-> sys     0m 0.00s
-> 
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
-> ---
-> Changes in v2:
-> - Move OPP tables to dedicated k1-opp.dtsi
-> - Enable OPP only on BPI-F3 with cpu-supply present
-> - Link to v1: https://lore.kernel.org/r/20260308-shadow-deps-v1-0-0ceb5c7c07eb@mailbox.org
-> 
-> ---
-> Shuwei Wu (2):
->       cpufreq: dt-platdev: Add SpacemiT K1 SoC to the allowlist
->       riscv: dts: spacemit: Add cpu scaling for K1 SoC
-> 
->  arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++++++-
->  arch/riscv/boot/dts/spacemit/k1-opp.dtsi        | 105 ++++++++++++++++++++++++
->  arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 ++
->  drivers/cpufreq/cpufreq-dt-platdev.c            |   1 +
->  4 files changed, 148 insertions(+), 1 deletion(-)
+This series adds thermal monitoring support for the Amlogic T7 SoC,
+used on the Khadas VIM4 board.
 
-Feel free to take it via the arch code.
+The T7 exposes six thermal sensors (a53, a73, gpu, nna, vpu, hevc),
+each accessible through the secure monitor firmware interface rather
+than a directly mapped eFuse register as on older SoCs.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The series is organized as follows:
 
+- Patch 1 extends the amlogic,t7-thermal DT binding to describe the
+  new amlogic,secure-monitor property.
+- Patches 2-3 extend the Meson secure monitor driver to expose a
+  thermal calibration read command (SMC ID 0x82000047).
+- Patch 4 adds the secure monitor readout path to the amlogic thermal
+  driver and introduces the amlogic,t7-thermal compatible.
+- Patches 5-7 wire up the T7 DTSI with CPU cooling cells, sensor
+  nodes, and thermal zones.
+- Patch 8 extends the Khadas VIM4 DTS to map all thermal zones to the
+  on-board MCU fan controller (states 30–100, corresponding to the
+  FAN_CTRL register range 0x1E–0x64).
+
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+Changes in v2:
+- PATCH 1: change two const entries to enum, explain why sensor index is needed
+  reorder conditional compatible for required, and fallback only according to
+  Krzysztof's feedback.
+- PATCH 3: Add kerneldoc for meson_sm_get_thermal_calib exported function
+  according to Krzysztof's feedback.
+- Link to v1: https://lore.kernel.org/r/20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr
+
+---
+Ronald Claveau (8):
+      dt-bindings: thermal: amlogic: Add support for T7
+      firmware: meson: sm: Thermal calibration read via secure monitor
+      firmware: meson: sm: Add thermal calibration SMC call
+      thermal: amlogic: Add support for secure monitor calibration readout
+      arm64: dts: amlogic: t7: Add cooling cells to all CPUs
+      arm64: dts: amlogic: t7: Add thermal sensor nodes
+      arm64: dts: amlogic: t7: Add thermal zones
+      arm64: dts: amlogic: t7: khadas-vim4: Add fan cooling to thermal zones
+
+ .../bindings/thermal/amlogic,thermal.yaml          |  42 +++-
+ .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  | 102 +++++++++
+ arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi        | 245 +++++++++++++++++++++
+ drivers/firmware/meson/meson_sm.c                  |  29 ++-
+ drivers/thermal/amlogic_thermal.c                  |  58 ++++-
+ include/linux/firmware/meson/meson_sm.h            |   3 +
+ 6 files changed, 467 insertions(+), 12 deletions(-)
+---
+base-commit: f7b64ed948718290209074a50bb0df17e5944873
+change-id: 20260410-add-thermal-t7-vim4-00e571badcc1
+prerequisite-message-id: <20260326092645.1053261-1-jian.hu@amlogic.com>
+prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
+prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
+prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-change-id: 20260326-add-bcm43752-compatible-e264a4f7973a:v2
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-change-id: 20260330-fix-invalid-property-bbe54d933f71:v2
+prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
+prerequisite-change-id: 20260331-fix-aml-t7-null-reset-2b608ebf9da4:v1
+prerequisite-patch-id: 5b5de77af11747ce964404fb827d2ee2bff47ea5
+prerequisite-patch-id: 1e37fc75fed1e533adee0f3e7e6ead1f8ff3c55c
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 2daf583fb5e7449a02bd217d8aca330171b598aa
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: d1ddf9b7710e91f8062de83bd7ba55afb2c4c112
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
+prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
+prerequisite-change-id: 20260402-add-mcu-fan-khadas-vim4-ac1cbe553c9b:v2
+prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
+prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
+prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
+prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
+prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
+prerequisite-patch-id: 34a2bbfe3ce30c530e69af5083aa26534b2c2560
+prerequisite-patch-id: 406f88d7dabd3a870b358fb53c21686f29eb32b7
+prerequisite-patch-id: d7a75ae3be0f54e0a7e81ccb0043a2f05423c9d0
+prerequisite-patch-id: 5e19dc5ace12b532284246f5c2ff3f214d8a9c4f
+prerequisite-patch-id: d6a87ebcf5246eb67b94ca0908afa3df9f9383fe
+prerequisite-patch-id: 4809bbedf79f59e1abc52c17cffc0b1bbb43d365
+prerequisite-patch-id: c050e8bac4b5491f6c7008a5ccb26f20fad38b46
+prerequisite-patch-id: 30677db8fc57270787245103c0d5acf8791307b0
+
+Best regards,
 -- 
-viresh
+Ronald Claveau <linux-kernel-dev@aliel.fr>
+
