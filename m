@@ -1,124 +1,114 @@
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFA353A6F02;
-	Mon, 13 Apr 2026 09:12:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776071563; cv=pass; b=IHodL4DMug1p5JMZ6JZ9+KZTwXvG3q1UDU4TaHviEGz/3TBZYq7/491NzaAU3GU9fq7f7sQSwb6AmT/DMVWgfoh4gvSl97YuJbgjarVqjMJVC2lHOrx9inXfG5D/FXZjTGjrQN8XHewp/CZNNL/HGqDgA13Jvv19fT3Bnf/ohxk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776071563; c=relaxed/simple;
-	bh=HszuPrz+WeXfvDR4xqSnOIqRLeJppP5PStVadh9O4A4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Wtu5Nv+NAZ509I+mDahZZ5zgExj+U8e1OE9Bze7eJ5dVRBeNYlB3Uz+iILcqwXKAAkOD5VnX8sPxcfrRYEmiKyFswhSS67lKLruwANkqrgWBWLZSot7TIu+/yjXb5DwlAskFouSTDbaOf635xjMwaHZEW2p+czjE7FpbvQ6keVc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b=XNDF3aMC; arc=pass smtp.client-ip=136.143.188.112
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b="XNDF3aMC"
-ARC-Seal: i=1; a=rsa-sha256; t=1776071528; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=Nbp2nfsohFyTSXJKxWCJ0e7EvL00xn8DgaB+MaDVpOD1LaY8Q6ty6iL1svm+HBz8lyq08h+i8BVEk6L5z2CTD8YZIyCUb9T+qgm6dmUB56UjK1VpR2ixFfSHh0At+dD6PNwyC4Mmr4wtQ4VLf8+yqdjpwZo0yM/UoaD/Y5yXMAg=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1776071528; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=TB5t6rpdmY0Qok4AOdsXH/kuymrQUdAE7c76l8dq+kE=; 
-	b=Qf3iJi3gfhrgIMw+pyLwf3jyN9Kx7/wP9NnE1xJyugYdluTgiWSoS0ul8CJOLrGRd1dJnqCXH8HjT9/HdhVTDilNP/E0k5J0oPZ8RrV9DG4nfXf4PfzFx0EinzLoZyZD7D9DWBrGPA1cdtbnOgrdZhIvtKn9Tt/qkBFdanja5i4=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=matthew.leach@collabora.com;
-	dmarc=pass header.from=<matthew.leach@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1776071528;
-	s=zohomail; d=collabora.com; i=matthew.leach@collabora.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:In-Reply-To:References:Date:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=TB5t6rpdmY0Qok4AOdsXH/kuymrQUdAE7c76l8dq+kE=;
-	b=XNDF3aMCDt5rP0iNMuPwC0TXDTV58eI07dwmiaJeca8tPpDX6dTEe4n8FCPOWl5v
-	tW2vIYwAZ6u1kXTqGPve6sFJtmU3iMPUWTsSJuLvENOH7VmnbbxhXjCIaO/r7LylfRQ
-	X5kidQHG1TluauzfvArgOz6V1PH9M44LG5zvYvLU=
-Received: by mx.zohomail.com with SMTPS id 1776071526706476.8249017679823;
-	Mon, 13 Apr 2026 02:12:06 -0700 (PDT)
-From: Matthew Leach <matthew.leach@collabora.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@kernel.org>,  Len Brown <lenb@kernel.org>,  Mario
- Limonciello <mario.limonciello@amd.com>,  linux-pm@vger.kernel.org,
-  linux-kernel@vger.kernel.org,  YoungJun Park <youngjun.park@lge.com>,
-  kernel@collabora.com
-Subject: Re: [PATCH v3] PM: hibernate: call preallocate_image after freeze
- prepare
-In-Reply-To: <CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
-	(Rafael J. Wysocki's message of "Mon, 6 Apr 2026 17:11:41 +0200")
-References: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
-	<CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
-User-Agent: mu4e 1.14.0; emacs 30.2
-Date: Mon, 13 Apr 2026 10:12:03 +0100
-Message-ID: <87mrz78brw.fsf@collabora.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B8D3391517
+	for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 10:20:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.182
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776075601; cv=none; b=i1NJVjGnfic7Lw5ddU5Ih4PsvMxwOxgD4ATdzeq8X1xel7rU2VmPTXXpyhzUwWKkJTSc8oyAwn5MmbEuNJnNgVg8TrHZCz/W7KVZeDEXNaojOuOlZGCvzGSWjgkFCPubGC7ibfqFpjUaADCxitSG45du9TMAkKkXZ0ZgOfao7IA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776075601; c=relaxed/simple;
+	bh=28QyJjbyjZeUJ+wyftjAtIoISEcj3EZvHKoSQjTW3+o=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=b/T4DI7EgVlQeqCeV+xF29X8rxr2SDGM5LzHXg3P7YeTG95DxrmTy3H6EpF86Ck9SiB49VxHOEsuQOMsPW0DYFQsckQ1uQyj+0Ki/1FWDWoyTd2fuYhbyRs9deQHRzgeOvdgYSN2ftKpJ6UlXQfWsuIP+fVuBLUt/HihKO1aJXc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-56d8a5f0e44so3917833e0c.1
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 03:20:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776075599; x=1776680399;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nPZdxz1u7ZIBqJLL1PcAHjT28ZRbPEEYLoW5ZWK78q8=;
+        b=PigLgAGcMo2tg8RnMpAtiSInnDqf7NUxNKEciXxbH4ZTJH1oEzxObccACc3stmucd1
+         k+KR1YHiDYNU6T7VY/HnFpIkeTtXy6avLfNkbVMdTB96G17CAvIIqBuQo1u994ahazxl
+         84q0IEKIHtruPbdpFOaQYv9TwBgfM/d9CnE/lp7AMeT9elxL0yzVcBf3rWWxF4xgOHTp
+         pfWYW52K6Pb1Spjqujz/MfdXoAOOzubM+Uk318E6SmybTrDpDAduyneMkAneMEnt9zqk
+         oQcuEuxp9xq8uSJOW4txOZBs8WF124T5KvdIUSFn3iwijKiFkknfkAwvZ5zZPasQOlhl
+         f4bA==
+X-Forwarded-Encrypted: i=1; AFNElJ/QMK/dqmhyy4KeR0dlPyGIP/Tm8V6Vit6pAglh4h9H+1YFAMUDsQS197x53Zhj3wjy6muJZtWAVw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzXDEOiPuSIu4rlhqonIUO/8yU5AmgqUH6pkC127PGXQ39YaJqL
+	GcP4FWXG57GOGMTqh5sRKAXyT5nykYJT1zPPDAatLR/gMRBvWP3+gtyzzaVfco9a
+X-Gm-Gg: AeBDietgyg/GNLGYdErSjaE6hnfpTLhMhjQH2k6HlRnUYQd50RwJj6gJjXQIap/X549
+	CNxtyiTXqwR+L39R2Ae1xY/S3XT4ZmSiqngssbkWVJhpJs/IJweiTRf2+BEg+MkWciXJvq4LgP1
+	pADTE6BLs3Zrmrz8nJEzX7nY8em/5y8ctssC3HwnDSD2LdZDDAwkDiraCJb7p8wK/M5EPHramZd
+	kyuf0wqZ4fN3v/vAlH8UwnigmLb0RdpFAUTi2K6Lp/FIuJkOlLA/3HovkyG+/iHKtwKijdkMYuT
+	DmOXilVn6QuYckNJYZb73t87xe8tGUA2CdsfeB89Ouxag4IWkgzeKiW5sEtr7mMUcSHceC3yR6q
+	roxch27G5dc95CCsIyrG6Lnr8QWn9gdVL/Szg8c2ExRLhD1R8vS6KCbjUYKqdMk7AFoOYG1GOdM
+	63Ozm+p+U4FEWmIO2jeDazMVTljolaLAPi1/n7GBWm7RibVQzlvDwZdWkvx/Dj
+X-Received: by 2002:a05:6122:17a4:b0:56d:86dd:d1b0 with SMTP id 71dfb90a1353d-56f3c75d103mr4318004e0c.0.1776075599262;
+        Mon, 13 Apr 2026 03:19:59 -0700 (PDT)
+Received: from mail-vs1-f49.google.com (mail-vs1-f49.google.com. [209.85.217.49])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56f3b999c29sm6740680e0c.13.2026.04.13.03.19.58
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Apr 2026 03:19:58 -0700 (PDT)
+Received: by mail-vs1-f49.google.com with SMTP id ada2fe7eead31-605b3b6c4dcso2478188137.1
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 03:19:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9hEPnz7iQz5hR/HkYsm4AJRo/WpMck0fS1X4Y2SFgldvZ6pHg4hsPqAmwET6PF0tPsRosPQdlXKw==@vger.kernel.org
+X-Received: by 2002:a67:c50a:0:b0:608:cdd9:2bcd with SMTP id
+ ada2fe7eead31-608cdd932d0mr4295352137.15.1776075597965; Mon, 13 Apr 2026
+ 03:19:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-ZohoMailClient: External
+References: <20260412211952.3564033-1-visitorckw@gmail.com>
+In-Reply-To: <20260412211952.3564033-1-visitorckw@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 13 Apr 2026 12:19:46 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdW6ZqQbofuXb7s6TpDWkyj4yDR-gvOVHVn0FfAahV8V4g@mail.gmail.com>
+X-Gm-Features: AQROBzCazP8swmPqp25ZtXfW2wKEeJuq4VjtnjIDuNuOVbsgdU63ePr45b0CQfo
+Message-ID: <CAMuHMdW6ZqQbofuXb7s6TpDWkyj4yDR-gvOVHVn0FfAahV8V4g@mail.gmail.com>
+Subject: Re: [PATCH v4 0/2] Add QEMU virt-ctrl driver and update m68k virt
+To: Kuan-Wei Chiu <visitorckw@gmail.com>
+Cc: sre@kernel.org, jserv@ccns.ncku.edu.tw, eleanor15x@gmail.com, 
+	daniel@0x0f.com, laurent@vivier.eu, linux-kernel@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Rafael,
+Hi Kuan-Wei,
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
-
-> On Fri, Apr 3, 2026 at 9:36=E2=80=AFAM Matthew Leach
-> <matthew.leach@collabora.com> wrote:
->>
-
-[...]
-
-> Can you please have a look at
+On Sun, 12 Apr 2026 at 23:20, Kuan-Wei Chiu <visitorckw@gmail.com> wrote:
+> Introduce a generic platform driver for the QEMU 'virt-ctrl' device [1]
+> and transitions the m68k 'virt' machine to use it, replacing
+> architecture-specific hooks.
 >
-> https://sashiko.dev/#/patchset/20260403-hibernation-fixes-v3-1-31bc9fa3ba=
-2d%40collabora.com
+> The new driver ('qemu-virt-ctrl') registers a restart handler and
+> populates the global 'pm_power_off' callback.
+>
+> On the m68k side, the platform initialization is updated to register
+> the 'qemu-virt-ctrl' platform device. Additionally, the 'mach_reset'
+> hook is bridged to 'do_kernel_restart()' to ensure the kernel's restart
+> handler chain is correctly invoked.
+>
+> Verified on QEMU m68k virt. Both system reset and power-off were
+> confirmed functional by invoking 'reboot(LINUX_REBOOT_CMD_RESTART)',
+> 'reboot(LINUX_REBOOT_CMD_POWER_OFF)', and
+> 'reboot(LINUX_REBOOT_CMD_HALT)' from userspace.
+>
+> Link: https://gitlab.com/qemu-project/qemu/-/blob/v10.2.0/hw/misc/virt_ctrl.c [1]
+> ---
+> Changes in v4:
+> - Fix sparse warning caught by kernel test robot.
+> - Pass the struct qemu_virt_ctrl context to sys-off handlers instead of
+>   the __iomem pointer.
 
-[pasting comment in-line here for comment]
+Thanks I replaced v3 with v4 in my queue in the m68k tree for v7.1,
+and will postpone my PR by a few days to give it some coverage in
+linux-next.
 
-> Does this relocation introduce a deadlock during memory reclaim?
->=20
-> hibernate_preallocate_memory() allocates a large amount of memory and
-> triggers direct reclaim. Direct reclaim needs to write back dirty file
-> pages and swap out anonymous pages.
->=20
-> Since freeze_kernel_threads() just ran, threads required for I/O
-> completion (like kswapd, jbd2 for Ext4, or WQ_FREEZABLE workqueues) are
-> currently frozen. Will the I/O for page reclaim block indefinitely
-> waiting on these frozen threads?
+Gr{oetje,eeting}s,
 
-The existing code already performs a memory reclaim after
-freeze_kernel_threads(). The old shrink_shmem_memory() called
-shrink_all_memory() in the same position, after both
-freeze_kernel_threads() and dpm_prepare(). This isn't a new pattern
-being introduced by this patch.
+                        Geert
 
-Nevertheless, the call chain looks like:
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-shrink_all_memory()
-  -> do_try_to_free_pages()
-    -> shrink_zones()
-      -> shrink_node()
-        -> shrink_folio_list()
-          -> pageout()
-
-pageout() only writes back shmem and anonymous folios to swap; so jdb2
-and other FS threads being frozen isn't a concern. For the swap write
-out, the I/O submission path is via submit_bio() which is also
-synchronous.
-
-> Additionally, because the OOM killer is already disabled by
-> freeze_processes() earlier in the hibernation path, can the reclaim path
-> get stuck permanently without being able to fall back to killing
-> processes?
-
-There's nothing new here regarding the OOM killer. freeze_processes()
-disables it in hibernate() prior to calling hibernation_snapshot().
-Since this patch is entirely contained within hibernation_snapshot()
-that pattern hasn't changed.
-
-Regards,
---=20
-Matt
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
