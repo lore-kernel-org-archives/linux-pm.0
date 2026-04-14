@@ -1,128 +1,113 @@
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D84D8370D62;
-	Tue, 14 Apr 2026 07:25:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1ADEC3346B4;
+	Tue, 14 Apr 2026 07:52:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776151538; cv=none; b=Eotk2z/gLHNEjMnkjaRs+fb78zH9nfZwPar4KOLfNXBhwnB23R/nUyH+VzXjUhXQ7BQeKZJqE3tgFIopndllJT+jbwZm7k/bZK3RxopmDinn2etD4cUh2iRpYAC5nhnMFG3H8kVFmVj+rFETXDn90FcamhZgmOW+HQBpPFCG9Ws=
+	t=1776153148; cv=none; b=J6BN+/BhO1Wb+OPZCJl9/cA0MYlj0whvZCwsQFOfQSDOZawK5rcJNAHwjCtCjp0ZOIbADq+dbeigWuunXTHOk1zZ77lgXz4NnKCpHfvQsu2hbYLQXf85gk6ntY+0ViA41QrRb/DRDhNDYwy4+333yM1Spx+wZ47yclCo6Utl5xs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776151538; c=relaxed/simple;
-	bh=K6l5bmd1+0GzCu/0w8RgYpx8yym1hNAtokH6NiQwEM8=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=NMwI1iLmRa2Oe2geD5vZbgd5FXnIGAcpExn1BigqNJBKehV45MvJ+Hl32euFXJ2+dgNcq6acsjlyOoIRij/Mak0rgrePlEHlTlTeLzWDUhlzWaGe3LjyXmXMCSriufqa6TjVUZRjsrRh0Xq97GzPZCLToZ2UsLzgirh6Wr3xxAk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=WlSb8mJB; arc=none smtp.client-ip=178.21.23.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	s=arc-20240116; t=1776153148; c=relaxed/simple;
+	bh=Kr1LMwhdJOWLQWlocTKROvlTOl/ZC6wCJghvd+MVtFs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h58w5g4HMyVYwGNqXP9DA+YPdTLeLfk2SjH8xozUEIkoySC8uKvaAeKoyCeiwusPOj0kDLdy5gw6dJut7FA9eKmguNmkfnX2RbJ9GfusRp3FYUn6SdyUjVuqeGc439LWDAurXAM3ROgUYGNKyrOBhtX9X+F61E/+vpV7MavwMCU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=XsS8wses; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="WlSb8mJB"
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 784CF26F4F;
-	Tue, 14 Apr 2026 09:25:35 +0200 (CEST)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pQzWUVyRxP8u; Tue, 14 Apr 2026 09:25:34 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1776151534; bh=K6l5bmd1+0GzCu/0w8RgYpx8yym1hNAtokH6NiQwEM8=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=WlSb8mJBT9fy/c/Cggy/1Ikrh/ZmnJ+BWZaZ7/QNIBwrHplRuZSQBCVZFsr0xESOo
-	 fpfmTlz/eoIGFaeK3bJP2XLqGhFDhdXaYoVYocBgycUWeKdraiWvDKo/vIBoHwQPkl
-	 EuaH0Lisp6eeQ+MLiFnK0let06wePJOLSrlA7SjsFVxUqsDb/RKiRT+LiXApAg0BHI
-	 FO6Pjn/PytoOvaAnjODO0wq+5ZFyfEsrdCSO1Jow9ngw0ulwm9HTEJngn4iQzTZgf9
-	 7oOXgiYZxkjuK3cK2L4ZQ13NIAyxniItOqAist7M0LFMq3eKr5beiAwcjCeXtFXt90
-	 fLl903j8TrShw==
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XsS8wses"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=NTxaoTWsYIT6XinpmC611FM9scC20rVnNKMI/IZpFxY=; b=XsS8wsesxfQHJeuybXI9UlK1MH
+	5Sksd8i1n8hsFjUjYeaSfkUHe0jE0+SqlsoUnoCGG8SErY8odbMf4TBWHD/CRawf0WlGVvTsbUt05
+	l1xMx1w3D64214rmihWMGYe96OMd6PH7aZ5YcU9my2HHe/6AOtWlOF80RhZAEbPKm8m2ycaYZ+ukS
+	d/OeQL8oHUpIdN9nIG54unA+EgsAkO8gihqjQKT6cQiC90JSgEhCRanOlc80xOFH5vLcnq70PrRWl
+	PSgoPGw9CrKwYYK2Cmo6bbyRVDEx3mihLAWDPGHf2bpAMXou+5xrT9GLNEPXeq4m8g/VfWzeWnq/0
+	zCmqhsLQ==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1wCYZ4-0000000GvSy-0kII;
+	Tue, 14 Apr 2026 07:52:06 +0000
+Date: Tue, 14 Apr 2026 00:52:06 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Nhat Pham <nphamcs@gmail.com>
+Cc: YoungJun Park <youngjun.park@lge.com>, kasong@tencent.com,
+	Liam.Howlett@oracle.com, akpm@linux-foundation.org,
+	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org,
+	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com,
+	cgroups@vger.kernel.org, chengming.zhou@linux.dev,
+	chrisl@kernel.org, corbet@lwn.net, david@kernel.org,
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org,
+	hughd@google.com, jannh@google.com, joshua.hahnjy@gmail.com,
+	lance.yang@linux.dev, lenb@kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com,
+	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev,
+	npache@redhat.com, pavel@kernel.org, peterx@redhat.com,
+	peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org,
+	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org,
+	ryan.roberts@arm.com, shakeel.butt@linux.dev,
+	shikemeng@huaweicloud.com, surenb@google.com, tglx@kernel.org,
+	vbabka@suse.cz, weixugc@google.com, ying.huang@linux.alibaba.com,
+	yosry.ahmed@linux.dev, yuanchu@google.com,
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com,
+	riel@surriel.com
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+Message-ID: <ad3yJiHuxT_-quHG@infradead.org>
+References: <20260320192735.748051-1-nphamcs@gmail.com>
+ <acQrQYHJgqof0yx4@yjaykim-PowerEdge-T330>
+ <CAKEwX=NnHxpQKp9qBg2=r_euyjgxw2nHXjbgof3MymHTgJmRAQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 14 Apr 2026 12:55:20 +0530
-Message-Id: <DHSP6002AS56.3T6V08Y1VRG7X@disroot.org>
-Subject: Re: [PATCH v4 08/13] mfd: sec: resolve PMIC revision in S2MU005
-From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
-To: "Kaustabh Chakraborty" <kauschluss@disroot.org>, "Lee Jones"
- <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob Herring"
- <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
- Dooley" <conor+dt@kernel.org>, "MyungJoo Ham" <myungjoo.ham@samsung.com>,
- "Chanwoo Choi" <cw00.choi@samsung.com>, "Sebastian Reichel"
- <sre@kernel.org>, "Krzysztof Kozlowski" <krzk@kernel.org>,
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, "Alexandre
- Belloni" <alexandre.belloni@bootlin.com>, "Jonathan Corbet"
- <corbet@lwn.net>, "Shuah Khan" <skhan@linuxfoundation.org>, "Nam Tran"
- <trannamatk@gmail.com>, =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?=
- <kernel@lvkasz.us>
-Cc: <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
- <linux-doc@vger.kernel.org>
-References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
- <20260414-s2mu005-pmic-v4-8-7fe7480577e6@disroot.org>
-In-Reply-To: <20260414-s2mu005-pmic-v4-8-7fe7480577e6@disroot.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKEwX=NnHxpQKp9qBg2=r_euyjgxw2nHXjbgof3MymHTgJmRAQ@mail.gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On 2026-04-14 12:03 +05:30, Kaustabh Chakraborty wrote:
-> In devices other than S2MPG1X, the revision can be retrieved from the
-> first register of the PMIC regmap. In S2MU005 however, the location is
-> in offset 0x73. Introduce a switch-case block to allow selecting the
-> REG_ID register.
->
-> S2MU005 also has a field mask for the revision. Apply it using
-> FIELD_GET() and get the extracted value.
->
-> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
-> ---
->  drivers/mfd/sec-common.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/mfd/sec-common.c b/drivers/mfd/sec-common.c
-> index 883e6d0aa3f06..43215605191e4 100644
-> --- a/drivers/mfd/sec-common.c
-> +++ b/drivers/mfd/sec-common.c
-> @@ -16,6 +16,7 @@
->  #include <linux/mfd/samsung/irq.h>
->  #include <linux/mfd/samsung/s2mps11.h>
->  #include <linux/mfd/samsung/s2mps13.h>
-> +#include <linux/mfd/samsung/s2mu005.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/pm.h>
-> @@ -119,20 +120,27 @@ static const struct mfd_cell s2mu005_devs[] =3D {
-> =20
->  static void sec_pmic_dump_rev(struct sec_pmic_dev *sec_pmic)
->  {
-> -	unsigned int val;
-> +	unsigned int reg, mask, val;
-> =20
-> -	/* For s2mpg1x, the revision is in a different regmap */
->  	switch (sec_pmic->device_type) {
->  	case S2MPG10:
->  	case S2MPG11:
-> +		/* For s2mpg1x, the revision is in a different regmap */
->  		return;
-> -	default:
-> +	case S2MU005:
-> +		reg =3D S2MU005_REG_ID;
-> +		mask =3D S2MU005_ID_MASK;
->  		break;
-> +	default:
-> +		/* For other device types, REG_ID is always the first register. */
-> +		reg =3D S2MPS11_REG_ID;
-> +		mask =3D ~0;
->  	}
-> =20
-> -	/* For each device type, the REG_ID is always the first register */
-> -	if (!regmap_read(sec_pmic->regmap_pmic, S2MPS11_REG_ID, &val))
-> +	if (!regmap_read(sec_pmic->regmap_pmic, reg, &val)) {
-> +		val =3D FIELD_GET(S2MU005_ID_MASK, val);
+On Sat, Apr 11, 2026 at 06:40:44PM -0700, Nhat Pham wrote:
+> > However, if the modularization from point 1 is achieved and
+> > vswap acts as a swap device itself, then we can cleanly
+> > establish a:
+> >
+> >   virtual -> physical
+> 
+> I read that thread sometimes ago. Some remarks:
+> 
+> 1. I think Christoph has a point. Seems like some of your ideas ( are
+> broadly applicable to swap in general. Maybe fixing swap infra
+> generally would make a lot of sense?
 
-Bug here! FIELD_GET(mask, val) should've been used.
+I think a first step would be a dump of that code, even if it is against
+an old kernel so that everyone knows what we are talking about.
 
->  		dev_dbg(sec_pmic->dev, "Revision: 0x%x\n", val);
-> +	}
->  }
-> =20
->  static void sec_pmic_configure(struct sec_pmic_dev *sec_pmic)
+> 2. Why do we need to do two virtual layers here? For example, If you
+> want to buffer multiple swap outs and turn them into a sequential
+> request, you can:
+> 
+> a. Allocate virtual swap space for them as you wish. They don't even
+> need to be sequential.
+> 
+> b. At swap_writeout() time, don't allocate physical swap space for
+> them right away. Instead, accumulate them into a buffer. You can add a
+> new virtual swap entry type to flag it if necessary.
+> 
+> c. Once that buffer reaches a certain size, you can now allocate
+> contiguous physical swap space for them. Then flush etc. You can flush
+> at swap_writeout() time, or use a dedicated threads etc.
+
+That matches what file systems do with delalloc, where space 2 just
+adjust an in-memory counter for space reservations.
+
+> Deduplication sounds like something that should live at a lower layer
+> - I was thinking about it for zswap/zsmalloc back then. I mean, I
+> assume you don't want content sharing across different swap media? :)
+> Something along the line of:
+
+Does dedup in swap really make much sense?  If you want to dedup you
+also want to do that in-memory, i.e. using ksm.
 
