@@ -1,128 +1,175 @@
-Received: from mail.ptr1337.dev (mail.ptr1337.dev [202.61.224.105])
+Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A51673D8135;
-	Tue, 14 Apr 2026 15:40:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.61.224.105
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F055C3E6396
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 16:18:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776181210; cv=none; b=gEpzTYWjdjZqAnyfXTgfe6L4unacXjhjAi5Sn0WQ+HUXk9WTtYQ4P/fXfl3eBMozQ2KfONcLOLo697l1kbJxsNTxu4c88xPblthU640zWVOpzEs2U1j3pzD1W2dPBGSjQpm45R9pIRMKsfSK/NdBm2gn5VXGHMJJbjY6NVsPw98=
+	t=1776183517; cv=none; b=pgKGA7ArkFj/Z67W2CTVUHkZKaE2p7bLCjS5ITYbqOCmnRCmSDRDXvfs/HhFDqwyYZ5FObj6mikeyhgXQnTzLWSHJavik3qaeMTxzdShsK/QpMfhNu8B09DW1gFQbM7oH//26iAdOFOxZjEFgAOdHZY+F1aomXjfOmv15Vx2uXc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776181210; c=relaxed/simple;
-	bh=/hbq9f62sy3zTymZ/tCBjj9yBX6FjRzT54Jp86YE5Eg=;
-	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To; b=H6uCUy6l5hv67WyOVwctig9mfckXwxqiVjJtCdzENA0MmchRLg4yQMiXawFn9pfGf7MqvKXcZ6wDqCiGb1cSqdmEgEy8+rqBRG1huCL288hq+aXSZ2DVmxJgJM7PS3lBFWj8JuAy2iFqCpqg3zlbBy+VEt6I6LmafrfxapPUeyg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cachyos.org; spf=pass smtp.mailfrom=cachyos.org; dkim=pass (2048-bit key) header.d=cachyos.org header.i=@cachyos.org header.b=N8DG4Rra; arc=none smtp.client-ip=202.61.224.105
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cachyos.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cachyos.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cachyos.org header.i=@cachyos.org header.b="N8DG4Rra"
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 64A0528601B;
-	Tue, 14 Apr 2026 17:39:48 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cachyos.org; s=dkim;
-	t=1776181206; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=TRkUVuOQeq5Z5SjZhRD6qZFJgCtwbDEy/Asrr2F24NA=;
-	b=N8DG4Rra4KLwOyKjeHa+N8iEQYdRlSKj88SKiopR37J/JDfRZtyzFNNDIeADwcch505Xy8
-	YSkqXZ+wIuGDmsHnsYuXzbuPYi6dYmv6kzI+0ByILJd5aD2wKKN/RqxgSVjeuHuLbSsups
-	CFwXntF75VWv1dsYJMwdr7RdfS4ZATCJgIiMthF5LMGV+ISVVfzxGcZu4rKQpXXeoxYrZT
-	/wGKLdLpqAaxOWbZnle3hAk7QtnMDUsL9EzNi9oWlIajDQ8jqy0QrooOD4J40oLsmmtYx7
-	AV4zSYlpt/dun2f9rDKasT0jynylvaiSd6hKEV53/75HZsaqcJ0NxkrrPZAFiQ==
-Content-Type: multipart/mixed; boundary="------------vQ8liQkI7bMgytpMGm0FanKR"
-Message-ID: <aeb848aa-404a-40fb-bd41-329644623b1d@cachyos.org>
-Date: Tue, 14 Apr 2026 15:39:00 +0000
+	s=arc-20240116; t=1776183517; c=relaxed/simple;
+	bh=108jA9l62jkTmLRyhDlFFkBzQIQcu60S1NHHpB0HwJM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bOLbStXtx/rE37b2Ge0QxE/5u2Gih7u+RESiU8cpnVC6FJzCpxz2AyM1zkU+4EsabXFQaCM9NpzxuGg3N4k4EII3dsuABd+09115UkwO2qcgfyUSLigV9GmgP5vA+3kJxRhSEFbLS1CGLM/2K6GWZKDa2TvYfBdq7ifX/+O1d5w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
+Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
+	by 156.147.51.102 with ESMTP; 15 Apr 2026 01:18:31 +0900
+X-Original-SENDERIP: 10.177.112.156
+X-Original-MAILFROM: youngjun.park@lge.com
+Date: Wed, 15 Apr 2026 01:18:31 +0900
+From: YoungJun Park <youngjun.park@lge.com>
+To: DaeMyung Kang <charsyam@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Kairui Song <kasong@tencent.com>, Chris Li <chrisl@kernel.org>,
+	Kemeng Shi <shikemeng@huaweicloud.com>,
+	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>,
+	Barry Song <baohua@kernel.org>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, linux-mm@kvack.org,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] PM: hibernate: preserve uswsusp swap pin across
+ SNAPSHOT_SET_SWAP_AREA re-set failures
+Message-ID: <ad5o1z1hSzLtUxMo@yjaykim-PowerEdge-T330>
+References: <20260414143200.1267932-1-charsyam@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: The "clockevents: Prevent timer interrupt starvation" patch
- causes lockups
-To: Hanabishi <i.r.e.c.c.a.k.u.n+kernel.org@gmail.com>,
- Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Calvin Owens <calvin@wbinvd.org>, Peter Zijlstra <peterz@infradead.org>,
- Anna-Maria Behnsen <anna-maria@linutronix.de>,
- Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>,
- John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
- linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
- Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-References: <20260407083219.478203185@kernel.org>
- <20260407083247.562657657@kernel.org>
- <68d1e9ac-2780-4be3-8ee3-0788062dd3a4@gmail.com>
-From: Eric Naim <dnaim@cachyos.org>
-In-Reply-To: <68d1e9ac-2780-4be3-8ee3-0788062dd3a4@gmail.com>
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260414143200.1267932-1-charsyam@gmail.com>
 
-This is a multi-part message in MIME format.
---------------vQ8liQkI7bMgytpMGm0FanKR
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Tue, Apr 14, 2026 at 11:32:00PM +0900, DaeMyung Kang wrote:
 
-On 4/14/26 5:20 AM, Hanabishi wrote:
-> 
-> Hello.
-> 
-> Sorry, but this patch as of 7.0 introduced *severe* periodic lockups on my
-> Ryzen 7700X machine.
-> I see such messages in the log:
-> 
-> clocksource: Long readout interval, skipping watchdog check: cs_nsec:
-> 2897344852 wd_nsec: 2897356996
-> 
-> Reverting d6e152d905bdb1f32f9d99775e2f453350399a6a for mainline fixes the
-> issue for me.
-> 
+Hi Daemyung :)
 
-Hi maintainers,
+> Commit 5b2b0c6e4577 ("mm/swap, PM: hibernate: fix swapoff
+> race in uswsusp by pinning swap device") introduced
+> SWP_HIBERNATION so that the swap device chosen via
+> /dev/snapshot is held against swapoff for the entire uswsusp
+> session. The intended invariant is: from the first successful
+> SNAPSHOT_SET_SWAP_AREA until the /dev/snapshot fd is closed,
+> exactly one swap device is pinned.
+>
+> snapshot_set_swap_area() breaks that invariant on the re-set
+> path:
+>
+>       unpin_hibernation_swap_type(data->swap);
+>       data->swap = pin_hibernation_swap_type(swdev, offset);
+>       if (data->swap < 0)
+>               return swdev ? -ENODEV : -EINVAL;
+>
+> The unpin happens unconditionally before the new pin is
+> attempted. If the new pin fails (e.g. user space supplies an
+> offset/device that is not an active swap area), the session
+> continues with no swap device pinned, reopening exactly the
+> swapoff race the original commit was meant to close. A
+> subsequent swapoff on the previously selected device now
+> succeeds where it would have been blocked with EBUSY.
 
-several users from CachyOS has reported this regression as well. We landed on
-the same bisection. One of the users that could reproduce this reliably
-reproduced this just by watching a YouTube video in a browser, and observed
-freezes and stutters when interacting with the system.
+Hmm.. This was actually intentional.  The API semantic
+is that a second SNAPSHOT_SET_SWAP_AREA abandons the
+previous pin.  If the new pin fails, the ioctl returns
+an error and userspace is responsible for aborting the
+session -- proceeding without a pinned device makes no
+sense.
 
-I had an LLM generate a fix (patch attached), and it fixed the regression for
-that user. Full disclosure: it is written completely by AI, and I am also not
-familiar with this subsystem. I just hope that this patch can be helpful in
-fixing the regression.
+The only benefit of preserving the old pin on failure
+would be protecting against userspace that ignores the
+error.  But even in that case, the session has no valid
+swap target, so the hibernation image write itself
+would fail before swapoff becomes a concern.  I think
+this is an edge case rather than a bug.
 
-Please don't hesitate to tell me off if utilizing AI in this way is not
-helpful, so I can keep this in mind for future contributions.
+IOW, Looking at your test case, I think this part is
+userspace's responsibility:
 
+>       ret = snapshot_set_swap_area(fd, bogus_dev, 0);
+>       if (!ret) {
+>               fprintf(stderr,
+>                       "step6: bogus SNAPSHOT_SET_SWAP_AREA unexpectedly succeeded\n");
+>               close(fd);
+>               return 2;
+>       }
 
--- 
-Regards,
-  Eric
---------------vQ8liQkI7bMgytpMGm0FanKR
-Content-Type: text/x-patch; charset=UTF-8; name="ai.patch"
-Content-Disposition: attachment; filename="ai.patch"
-Content-Transfer-Encoding: base64
+The ioctl has already returned an error here.  Userspace
+should close /dev/snapshot and stop, not continue and
+expect the old pin to still be in place.
 
-ZGlmZiAtLWdpdCBhL2tlcm5lbC90aW1lL2Nsb2NrZXZlbnRzLmMgYi9rZXJuZWwvdGltZS9j
-bG9ja2V2ZW50cy5jCmluZGV4IDM4NTcwOTk4YTE5Yi4uMzdiMTAwNDU1NzJlIDEwMDY0NAot
-LS0gYS9rZXJuZWwvdGltZS9jbG9ja2V2ZW50cy5jCisrKyBiL2tlcm5lbC90aW1lL2Nsb2Nr
-ZXZlbnRzLmMKQEAgLTMzMiw4ICszMzIsMTAgQEAgaW50IGNsb2NrZXZlbnRzX3Byb2dyYW1f
-ZXZlbnQoc3RydWN0IGNsb2NrX2V2ZW50X2RldmljZSAqZGV2LCBrdGltZV90IGV4cGlyZXMs
-CiAJaWYgKGRlbHRhID4gKGludDY0X3QpZGV2LT5taW5fZGVsdGFfbnMpIHsKIAkJZGVsdGEg
-PSBtaW4oZGVsdGEsIChpbnQ2NF90KSBkZXYtPm1heF9kZWx0YV9ucyk7CiAJCWNsYyA9ICgo
-dW5zaWduZWQgbG9uZyBsb25nKSBkZWx0YSAqIGRldi0+bXVsdCkgPj4gZGV2LT5zaGlmdDsK
-LQkJaWYgKCFkZXYtPnNldF9uZXh0X2V2ZW50KCh1bnNpZ25lZCBsb25nKSBjbGMsIGRldikp
-CisJCWlmICghZGV2LT5zZXRfbmV4dF9ldmVudCgodW5zaWduZWQgbG9uZykgY2xjLCBkZXYp
-KSB7CisJCQlkZXYtPm5leHRfZXZlbnRfZm9yY2VkID0gMDsKIAkJCXJldHVybiAwOworCQl9
-CiAJfQogCiAJaWYgKGRldi0+bmV4dF9ldmVudF9mb3JjZWQpCmRpZmYgLS1naXQgYS9rZXJu
-ZWwvdGltZS90aWNrLW9uZXNob3QuYyBiL2tlcm5lbC90aW1lL3RpY2stb25lc2hvdC5jCmlu
-ZGV4IDc0NzI1OTdmMzIyNS4uYmY0MTE0NzJkNGY3IDEwMDY0NAotLS0gYS9rZXJuZWwvdGlt
-ZS90aWNrLW9uZXNob3QuYworKysgYi9rZXJuZWwvdGltZS90aWNrLW9uZXNob3QuYwpAQCAt
-MzQsNiArMzQsNyBAQCBpbnQgdGlja19wcm9ncmFtX2V2ZW50KGt0aW1lX3QgZXhwaXJlcywg
-aW50IGZvcmNlKQogCQkgKi8KIAkJY2xvY2tldmVudHNfc3dpdGNoX3N0YXRlKGRldiwgQ0xP
-Q0tfRVZUX1NUQVRFX09ORVNIT1RfU1RPUFBFRCk7CiAJCWRldi0+bmV4dF9ldmVudCA9IEtU
-SU1FX01BWDsKKwkJZGV2LT5uZXh0X2V2ZW50X2ZvcmNlZCA9IDA7CiAJCXJldHVybiAwOwog
-CX0KIApAQCAtNDMsNiArNDQsNyBAQCBpbnQgdGlja19wcm9ncmFtX2V2ZW50KGt0aW1lX3Qg
-ZXhwaXJlcywgaW50IGZvcmNlKQogCQkgKiBiZWZvcmUgdXNpbmcgaXQuCiAJCSAqLwogCQlj
-bG9ja2V2ZW50c19zd2l0Y2hfc3RhdGUoZGV2LCBDTE9DS19FVlRfU1RBVEVfT05FU0hPVCk7
-CisJCWRldi0+bmV4dF9ldmVudF9mb3JjZWQgPSAwOwogCX0KIAogCXJldHVybiBjbG9ja2V2
-ZW50c19wcm9ncmFtX2V2ZW50KGRldiwgZXhwaXJlcywgZm9yY2UpOwo=
+(BTW, the tests are well written and easy to follow.
+Thanks!)
 
---------------vQ8liQkI7bMgytpMGm0FanKR--
+For this patch to have real value, there should be
+something that concretely breaks after the swapoff
+succeeds.  But since the session has no valid swap
+target at that point, is there any actual broken
+behavior that follows?
+
+>       if (!buggy) {
+>               if (swapoff(swap_path_2) < 0) {
+>                       fprintf(stderr,
+>                               "step8: swapoff(%s) after close failed: %s\n",
+>                               swap_path_2, strerror(errno));
+>                       return 2;
+>               }
+>               printf("step8: swapoff succeeded after closing /dev/snapshot\n");
+>       }
+
+If you still see concrete value, I would be happy to
+take this as an improvement (without Fixes: and
+Cc: stable) -- see my suggestion below for a lighter
+approach.
+
+> Reordering pin/unpin in the caller cannot fix this
+> cleanly. Each of pin_hibernation_swap_type() /
+> unpin_hibernation_swap_type() acquires swap_lock
+> independently, so any two-call sequence leaves a window
+> in which swapoff can observe an inconsistent pin state.
+> The same-area re-set case (type == old_type) also cannot
+> be expressed with pin+unpin without either toggling the
+> bit (racy) or returning EBUSY (a false error).
+>
+> Introduce repin_hibernation_swap_type(), which performs
+> the transition atomically under a single swap_lock
+> acquisition:
+
+I understand the intent.  If you still see enough value
+in preserving the pin on failure, I would suggest a
+lighter approach -- see below.
+
+> -     unpin_hibernation_swap_type(data->swap);
+> -
+> -     data->swap = pin_hibernation_swap_type(swdev, offset);
+> -     if (data->swap < 0)
+> +     swap = repin_hibernation_swap_type(data->swap, swdev,
+> +                                        offset);
+> +     if (swap < 0)
+>               return swdev ? -ENODEV : -EINVAL;
+> +     data->swap = swap;
+
+Would it be simpler to use find_hibernation_swap_type()
+to look up the new type first, and if it differs from
+data->swap, call pin_hibernation_swap_type() on the new
+one?  If pin succeeds, unpin the old one.  If it returns
+-EBUSY, just keep the existing pin.
+
+If swapoff sneaks in between find and pin, pin will
+simply fail -- I don't think the kernel needs to
+guarantee atomicity for that window.  This does acquire
+swap_lock multiple times, but SNAPSHOT_SET_SWAP_AREA is
+an extremely rare operation, so the extra lock
+round-trips should be negligible.
+
+Reusing the existing helpers seems preferable to adding
+a new function with this much code for a single call
+site.
+
+How do you think?
+
+Thanks again!
+Youngjun Park
