@@ -1,41 +1,41 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2D7236C9EB;
-	Tue, 14 Apr 2026 06:33:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61C3232863D;
+	Tue, 14 Apr 2026 06:33:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776148414; cv=none; b=IO8IUn8iRPzi8Z1MwzHN9vbObPnNeFR0YIJK5C/oVTwLqf8Ac9CbTGnW+xy8t7e4dL0zAmF13JuLSn2pDmgKoB2qmtBXDl53ykemv/AlJ12+D72ZCM0e0vVvc6mJO9ATa/m9jEZVjjZM1HDwCJIhAdlqt+ZtAXbPqo8fZvrufZs=
+	t=1776148422; cv=none; b=sOgKn52Vn0BckbeX/u/c7DUX6zH6HnSy7vn4SHuIiaYhw0Kbvm+2kPBcfoiVHB9S4PRMNMAFJoEV3D72U+mGESQLwWxGVs/w22/Bo54OLO5k7UNBqKwbCuBuxVMDYLgdQ05iL2xtZQzlQJjgL7YaHo09DluvJZZkxckc9JuYmzI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776148414; c=relaxed/simple;
-	bh=NcX7hGluxIqp7c6NT3Xls0q3uxsOGfFQd+lRKAyn+qo=;
+	s=arc-20240116; t=1776148422; c=relaxed/simple;
+	bh=amDGtZlZAyPAm2kay2Fu125lQem3gZDy2MoXtx8M9b8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=K8GgHqjE56zR5gL77gDN8vb8n3+MhnMorA63KrPc333fmCkrs12ajTIqrAd7+k8+IsAJIUDoRimj7y86MBEJ2Eo/FLQQLe+CH2aAu6dRclLSxPu6vYsakkJrCHoHvguLvqmzq39t/ojOoiIokZ+q3VZCvW1Cy6OASbz4Rx1oC3E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=FbMPxgOn; arc=none smtp.client-ip=178.21.23.139
+	 In-Reply-To:To:Cc; b=ct975+2lXzuGu6X1mSUr6kBVKfhU8rQQLo1Kv3jxocmvBKJLYr3Y3Y+29oiHbFJeurZI7e6+pfv9YlbTk7UGz03nGqEGxIZY3GrvxzloXXpde+/yE1n6SVFWoldg88iWU/MpoaciAEYE7KqBTJXJVEn+OxvoClNDR8QKVwk95p8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=g+ZQF0zv; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="FbMPxgOn"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="g+ZQF0zv"
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 4631925F15;
-	Tue, 14 Apr 2026 08:33:29 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id EE23925F15;
+	Tue, 14 Apr 2026 08:33:36 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oH8w9u4VYGo6; Tue, 14 Apr 2026 08:33:28 +0200 (CEST)
+ id ZHKx2CvPxHyj; Tue, 14 Apr 2026 08:33:36 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1776148408; bh=NcX7hGluxIqp7c6NT3Xls0q3uxsOGfFQd+lRKAyn+qo=;
+	t=1776148416; bh=amDGtZlZAyPAm2kay2Fu125lQem3gZDy2MoXtx8M9b8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=FbMPxgOngWkhPkqKvgTs/8vlGhf907/OGSkZk4nZSovg9Ju7iihngW79oaJg0Yyd3
-	 xFMUb51pKp7GT/yxCXxf3FOBnBTB+2WQHxO0M1lQlxvJi+j6WSKQArmDI2elHADScd
-	 E1It3yAe1/UAOevHodDLrBHGlVEhZOwBzWBO6INfpe9dam/WqDTJXM1fnbdIcq0KQx
-	 JZrGLNBI+ESEyB7P/P/suol/UQYcCXRXq43rnWVCx3/ceyoZaODyxS7BlRymIldlU9
-	 BTWoeUBasQLNOCHzAng2ORlp9PRjMvyNCPQxfnoGOeKTcp4D6VMIl4w2Kq/T3Uzb/3
-	 x2ZRVhSKCpUsA==
+	b=g+ZQF0zvfBStEFyWwo7pg1QwPsKHjXEMbjsOex6eOBi8LcQPDJn/v+bjI/vBEnUWN
+	 u63jwMUdYZOQ8svwAqw2GFwR4oZr0UHdfW1xRuR7A+ZzfHKr23A/zLFOrQYZ2DQ2hg
+	 t9FjP0WQkkWLnCN/ngXq7KD9HiniEGprl3KJ7ftF97v3oNOI2myt/o73AOS8U4UN0K
+	 9YJf12mxSSM6OHXR0n4Mxkf4rUVT9UI1z+B9Mth5tOLU6TaAtUeT5WcOMrPf6Gx9cc
+	 L2TpUdR2kgYfYQ41jN8SLW1c8RuyZwQeS1JvFnYrBNSGcC7Rbs1ERGUexb4aJIYMzx
+	 rGR6f4UTozlnA==
 From: Kaustabh Chakraborty <kauschluss@disroot.org>
-Date: Tue, 14 Apr 2026 12:02:55 +0530
-Subject: [PATCH v4 03/13] dt-bindings: extcon: document Samsung S2M series
- PMIC extcon device
+Date: Tue, 14 Apr 2026 12:02:56 +0530
+Subject: [PATCH v4 04/13] dt-bindings: power: supply: document Samsung S2M
+ series PMIC charger device
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,7 +44,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260414-s2mu005-pmic-v4-3-7fe7480577e6@disroot.org>
+Message-Id: <20260414-s2mu005-pmic-v4-4-7fe7480577e6@disroot.org>
 References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
 In-Reply-To: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
 To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
@@ -62,36 +62,39 @@ Cc: linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
  linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
  linux-doc@vger.kernel.org, Kaustabh Chakraborty <kauschluss@disroot.org>
 
-Certain Samsung S2M series PMICs have a MUIC device which reports
-various cable states by measuring the ID-GND resistance with an internal
-ADC. Document the devicetree schema for this device.
+Certain Samsung S2M series PMICs have a battery charger device which,
+among other things, manages power interfacing of the USB port. It may
+supply power, as done in USB OTG operation mode, or it may accept power
+and redirect it to the battery fuelgauge for charging. Document this
+device.
 
 Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
 ---
- .../bindings/extcon/samsung,s2mu005-muic.yaml      | 39 ++++++++++++++++++++++
+ .../power/supply/samsung,s2mu005-charger.yaml      | 39 ++++++++++++++++++++++
  1 file changed, 39 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/extcon/samsung,s2mu005-muic.yaml b/Documentation/devicetree/bindings/extcon/samsung,s2mu005-muic.yaml
+diff --git a/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-charger.yaml b/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-charger.yaml
 new file mode 100644
-index 0000000000000..e047e8cbc264e
+index 0000000000000..4ae45165b85fb
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/extcon/samsung,s2mu005-muic.yaml
++++ b/Documentation/devicetree/bindings/power/supply/samsung,s2mu005-charger.yaml
 @@ -0,0 +1,39 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/extcon/samsung,s2mu005-muic.yaml#
++$id: http://devicetree.org/schemas/power/supply/samsung,s2mu005-charger.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: MUIC Device for Samsung S2M series PMICs
++title: Battery Charger for Samsung S2M series PMICs
 +
 +maintainers:
 +  - Kaustabh Chakraborty <kauschluss@disroot.org>
 +
 +description: |
-+  The Samsung S2M series PMIC MUIC device is a USB port accessory
-+  detector. It reports multiple states depending on the ID-GND
-+  resistance measured by an internal ADC.
++  The Samsung S2M series PMIC battery charger manages power interfacing
++  of the USB port. It may supply power, as done in USB OTG operation
++  mode, or it may accept power and redirect it to the battery fuelgauge
++  for charging.
 +
 +  This is a part of device tree bindings for S2M and S5M family of Power
 +  Management IC (PMIC).
@@ -99,23 +102,22 @@ index 0000000000000..e047e8cbc264e
 +  See also Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml for
 +  additional information and example.
 +
++allOf:
++  - $ref: power-supply.yaml#
++
 +properties:
 +  compatible:
 +    enum:
-+      - samsung,s2mu005-muic
-+
-+  connector:
-+    $ref: /schemas/connector/usb-connector.yaml#
++      - samsung,s2mu005-charger
 +
 +  port:
 +    $ref: /schemas/graph.yaml#/properties/port
 +
 +required:
 +  - compatible
-+  - connector
 +  - port
 +
-+additionalProperties: false
++unevaluatedProperties: false
 
 -- 
 2.53.0
