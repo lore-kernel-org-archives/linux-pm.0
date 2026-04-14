@@ -1,174 +1,220 @@
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 525413D5236
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 10:29:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.44
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776162562; cv=pass; b=Nq1+TmkObOb0kthExKNqxW1QrGUEKeffveo+8ktAyr/ylLE/rSfQ5zxbA28S7m9krywvyui4mu0855nn2MSFQbZ58Q8zYF6aEWN+tn5DKyXTamW8krdu/t60WQHr36XrIDzSwnIg0HnL1iYjLRs/JfEaAwcD1nE/vAQPRn2fe6Q=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776162562; c=relaxed/simple;
-	bh=Ido82lTsBObPiLyE+cnbnYTa5RnXovthshiMl4cqqxw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=CulE61ZgCHzfDmllAtixnlRUnuN067wznvyZrGG4PIChXX87366Z9lwQPZDUThFYZ219b92qt9LbWcKtn8R0o+Au+fGAgde2+zLGj32yFU57R83GOpRSRMCr0oT9zu2EcbFmWULU6gBGhoiV1jErbAIQqmrC5hAZtimMokezPMk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=CAg1W+YC; arc=pass smtp.client-ip=209.85.167.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B84C23D524D
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 10:38:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776163117; cv=none; b=LDae8CpYLCEIWD4+toMNIzSZDknYIhJUkuquSZtdCdcDa6eknGJI+1pR6ZLLhUEA5DnU+a3jc+MVIBheXrJlUj6NzyulsnAf8z/4YhuNEAQfE2nIjtbGPQnwntb/0zfeLuIsq3IBLhbDQEjrSmA0KVSKBqo84vA1LJ+av8r3Ock=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776163117; c=relaxed/simple;
+	bh=D4cBeCD28Q6Ex3RBIxaT/dvzhmC8hNosEeZWlVBc/ow=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HSqDqFTUnU+la39nDRT479YmqLQ+o5ftLSr8h79gSPIq5jj3GQA1xeq/Pq0o4Bh9s3bjiiDAiTGAQrinEArZoG6me7mg/TzEhcrEOkdPZ/pOUKughSCSiI5LWrkelQzYwM0bSEnaoTpMO8suxJr1p2EufwyBd2Y9VNVfa9xDqgs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=WcMdPq0R; arc=none smtp.client-ip=209.85.208.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="CAg1W+YC"
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5a2beae348eso5882535e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 03:29:16 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776162554; cv=none;
-        d=google.com; s=arc-20240605;
-        b=ShVHA1gE+9jxoiePRFTP9skubA0gI6pW4aQC89aPegDCE07DgDm4egWhlGXQ7fMxQe
-         tU9pI43Az5oDzZt0QsuuG2uj1H1iNwI6vUztVvTQMlvcCKkjxBdTqpZhVj5Hj1DboqEK
-         o9ImuA9wKqGIrYv08ajYPD4cRefMIiGUEzDWsom+oNZBktL630p+MQliaJ2rhDgEo13w
-         JRZMjNRaMJ2U+10cf0Wu75UpoWNdxSAkOtJFJJlN8PkQ56c4KoX5DLYXfhSo2l9dXQkz
-         Fi5tPZK2TWMdeIHJXLK5x3TiTEk7QXnU83Um7Q7aoAsu1kp50Qmp8ioFuiwL7GuwBkHO
-         b86A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=obCwu9OJRNTUN7BsZbzZ8PH73jQ+TTI+BXXfuHZowXE=;
-        fh=4tUSCAFUqNzJfTlkAnOP+ntMsrChKrwZ9kesFoZD97U=;
-        b=I3yQVWfO2TUEuNGPs23WMEHs+GSgRhjiGwqZCgG/yRbySR3FaN6LGdD6kk4OJXtfDM
-         1XBQt643m6eybV1HKlH8r2QnEKKE6I/eHJn/dyLBVhqhXaZasF70BTZMYYgHQHLSEwxF
-         VbNmL/b/3t7I50hWYziIQLIlX3JPS3uwDbRDIgaksxKs5qhRmUEeM+eLwZPGH31rRY19
-         I56zF34z/pV0xv2DW4vwAY+favN383gIbfbeYmfBhutBBf0uCo0CZTAazUVnZoiMNg7N
-         DZC+N/HPQ0LjHdcp96LTFM5ixImC6f4xYKldN7XOVSsMk5Yjm352mA1XpIRXvwWY5mMn
-         cGzA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WcMdPq0R"
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-386b553c70eso48472951fa.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 03:38:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1776162554; x=1776767354; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=obCwu9OJRNTUN7BsZbzZ8PH73jQ+TTI+BXXfuHZowXE=;
-        b=CAg1W+YCDWa+7hMyoFTX9wrJnea3anbAiHdxWmpDFPNhe7kCyRPxDRCs4+n9KcUSjl
-         w6nzvTJigwS7oM6UFv5A3HKxmii0VyJz1d3VSyhkRHh9KbLCHy+zvkfyRpySbb5xZhZu
-         JuL3QYV3wyDOI2wfxl8ehTcAnuZZDMlWKsh4c=
+        d=linaro.org; s=google; t=1776163108; x=1776767908; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=gTjIg/pA86gqo4YPTXrfDC9YsWUvQ3qeH5b6Z95Zmbo=;
+        b=WcMdPq0RUhmfMr3qsftURnEXxzY0crfE1+wT+sp9BX/2YcnZCEG76R2bfelEQKwcd2
+         NwUPp0DvFEmLMmyig9DTpZuhZeyDjUQLOrmD8PiaNuzXlsRUxlGftUPvlH6QRHMmPtp3
+         H+djaBpNqRYpSSueu4iRzlhnrFlZgM2ZX3eoYQmD2YbI7LMntnMtGsROs6cCiYpaKDgt
+         lf2HFw8nfsp/DYMLcRa8CxAspA+ZIPZx4aL6tbZdCxNUgbuV2tMsDiIj9+ztfKrD0XtZ
+         4ZhultiuZ41HJkXzpgyXNLq1XdWuHuzOGrdCc5fGfJqEKBdPV3YnUznMZAkewhczpYsf
+         h0vg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776162554; x=1776767354;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=obCwu9OJRNTUN7BsZbzZ8PH73jQ+TTI+BXXfuHZowXE=;
-        b=i7MQ0U2BocBaR6/Lb+LeFpqJtvFMo1L/lPWxm88FhCsfGxAs1PxXdSCVark/zQT2nW
-         fFlC4X5vLAlOQY1IJ/tEZUNRUUO/N3Axof2yVhg6OA1NYyvPTo8wFyV9F7eTNmROcG/Q
-         ITjDwp07malYGHGkaQtjuOhM7RSyuEZgS50KUlqMg3uOsjyuaiXhQ2jHpm0c41rHGXph
-         HM1ExFULemKYj6wxSySD28FDHpz7W/LvQ4ANDCxfyG1R84g6IpTd6lxuUlpNuOosLV1+
-         yErHNEabz9x1UYXeVY3v/EoOspjlG0DqryfDsSzrOwBlQSEIlTzPhuL+T49zAKGOFWII
-         topg==
-X-Forwarded-Encrypted: i=1; AFNElJ8Qs8Uv+suHHfxFkVXylXsWqVk5am+dEtu6mYtG9wY+1Tq/mZp5wAFM2y8JH8GbHMj++ftRG6mFbA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwocHWd/XqQbka3WQU2LZpKiGd2mcniS7S7KUiUQQUGcfcakf2E
-	0QufzRyRfjp66Imz2VklsvGJK+LqxNmgK+k44Th7VUeDqDEYgnELappkzD5wLT0v6di0yrveFZX
-	VOz9xwQonOU79LsLZV9i9+11+aUH+qHjoqXS1xVBa
-X-Gm-Gg: AeBDieuOCwe5HtUjczSrRl7DquUoHeoxzYwhR1yB5SUpqR+HipTkpgNhzsIO1ZWgz0O
-	OhV+13nm/XX+tE9xCKaVBeTx6vpTRrXwidFgLihoSX06/vQg8VrwWf/VMU2ngzBiwefJStappQo
-	L7eZriqltwTPAb1J4KAdP3l93kGdKrGCxlmeJBXk/wnHBOZYPkUnReanRCx3HBpMaOxbpHdDpAn
-	uKXfW3S3rlX7a+NsS2GVnGJgzcjtwXnXLcnwPx4zD/UefNYTsBTEFZhzA+9SFjU1DBhSuuFlgut
-	RXZvP2qHgVTdVju+F0/NHhBRLBvJG15/GjHq3ussszjf5+nw
-X-Received: by 2002:a05:6512:68e:b0:5a2:ae27:c879 with SMTP id
- 2adb3069b0e04-5a3efd7f0d8mr4850095e87.29.1776162554447; Tue, 14 Apr 2026
- 03:29:14 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776163108; x=1776767908;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gTjIg/pA86gqo4YPTXrfDC9YsWUvQ3qeH5b6Z95Zmbo=;
+        b=FDz8+KKhDfJnCwKsm97mmyNmgCTFQcSjfrPfd5t7CSD4pogm7iyBJnxGFZggGSK7Qh
+         GnNHlEeFNJsX0BxicYksQ3bkDJbXmNUR1fUU63HsjveD+XHTSlbReGDKxXkV3CesMt5t
+         vbrd6cnSoO9RRs6WpZOgnV+bF84VYw/T+ILA0BShhHgGly5zsJpeNmZ2QbSUMYQ4swC3
+         O5HyoHU7GbA/ur8WXcjVC/NFjeIPSPIafgrmnHNHtBJ/b6Jc0sPP0toHzaj90qkj293V
+         jNwxm1TXajy6npBFlpDptHmJ6+wACGo3d81o15QaJjC19uf7ZdWw5Tr55/wV9Hz/oBJL
+         +n5Q==
+X-Forwarded-Encrypted: i=1; AFNElJ+1Ax77SF4m1Sso5k6un9utQ8Yg5gd4lGdlAGDj8uAd1zboInK9hVCnK71a0IZSGTRve1sGMvAZFA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz9cOaa+ZfyBb86NEje7Q92YKjjdMoKisXy1hAQ5fqCZdQXQfo3
+	wGgQzdloZ2AKpDBKbYhodwOsz1xG6/bU6/2vRwNrDxio+OKM3SuSMgaj9GFFbdDlwebp+tkvwqv
+	6Ys46
+X-Gm-Gg: AeBDieuprViqZQKQ4sd2lcqRL07nUl7QCIeHQaxy1n9ElwrKaLytngQkm7nrGfmH2Id
+	kGTJkAdWKukThVA/8Ng1tab/XgDK/ehK6jTVF1qLN5yW9kbX2ETim5yG7kZqUd3HA+QHTYvEPmE
+	XfNULyvuzBEvIcRpEg9e6HVg+RBh3cJRtSxYP1haB0pOaeAXKomSnG9T3Uf0LBH1YW4QsYHotVe
+	UnixSD56Q+6aOuX8+7OIe0NkVnY/bfecnjcVXNz3f3fSm2FRF6BjhRKP21mHcJ+lymS6bUi9FGi
+	rW8/5vDB5sWm295bknVzrktmv1ugNB3vDV16vDkYNv+uzT4cpCgR5DZxNFJ0DCUvk2opC0oMJvq
+	QPQA3T8l/QMAnRKvtrx5y6wKK2UCZKMsZPfVUk2LaIO9HQNPHgst57QqCdsNS91CuKVzzOtUMRf
+	ErFqGcDXpkTiPnA/ItjwUSrVXcuOTFOTRQqav64nfSAy1xH9zwMGJeXjawDNNuanWy0YRnqlsL
+X-Received: by 2002:ac2:4c4e:0:b0:5a3:cd94:df73 with SMTP id 2adb3069b0e04-5a3efe9b66cmr5228076e87.38.1776163107457;
+        Tue, 14 Apr 2026 03:38:27 -0700 (PDT)
+Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a3eeefb9d4sm3153723e87.68.2026.04.14.03.38.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Apr 2026 03:38:27 -0700 (PDT)
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Linus <torvalds@linux-foundation.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>,
+	linux-arm-kernel@lists.infradead.org
+Subject: [GIT PULL] pmdomain updates for v7.1
+Date: Tue, 14 Apr 2026 12:38:21 +0200
+Message-ID: <20260414103826.161076-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
- <20260413075459.GA2626902@google.com> <fpcs4p62f35a5qyqwgm5ysa73stbysxcr62tkmmkrrcvsuf4t4@4ivukyqjey57>
- <eeytuhqpgdz4do4tgtbmfntub2femtyq7bij7svhodpyjwaylx@j3gmvq2a2zqc>
- <CAGXv+5E=tujhtZjwi6Qm7hk3Ks74UzTQHWq82NiTEw1+vYod5g@mail.gmail.com> <ad36pIu-0dutL7Nk@ashevche-desk.local>
-In-Reply-To: <ad36pIu-0dutL7Nk@ashevche-desk.local>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Tue, 14 Apr 2026 18:29:02 +0800
-X-Gm-Features: AQROBzDHB_HCwto4iaprIWgL7mrQWt62yIrtGAtxckKlX4EUkJwTT3ZqPu-YslU
-Message-ID: <CAGXv+5EGe59nJctLweEdZjb3MNmMvjuCHngGSfptzN985OiLdg@mail.gmail.com>
-Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E connectors
- in devicetree
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Manivannan Sadhasivam <mani@kernel.org>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
-	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Stephan Gerhold <stephan.gerhold@linaro.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	Hans de Goede <johannes.goede@oss.qualcomm.com>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 14, 2026 at 4:28=E2=80=AFPM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
->
-> On Tue, Apr 14, 2026 at 01:03:19PM +0800, Chen-Yu Tsai wrote:
-> > On Tue, Apr 14, 2026 at 12:08=E2=80=AFAM Manivannan Sadhasivam <mani@ke=
-rnel.org> wrote:
-> > > On Mon, Apr 13, 2026 at 07:33:12PM +0530, Manivannan Sadhasivam wrote=
-:
-> > > > On Mon, Apr 13, 2026 at 03:54:59PM +0800, Chen-Yu Tsai wrote:
-> > > > > On Thu, Mar 26, 2026 at 01:36:28PM +0530, Manivannan Sadhasivam w=
-rote:
->
-> ...
->
-> > > > > - Given that this connector actually represents two devices, how =
-do I
-> > > > >   say I want the BT part to be a wakeup source, but not the WiFi =
-part?
-> > > > >   Does wakeup-source even work at this point?
-> > > >
-> > > > You can't use the DT property since the devices are not described i=
-n DT
-> > > > statically. But you can still use the per-device 'wakeup' sysfs kno=
-b to enable
-> > > > wakeup.
-> >
-> > I see. I think not being able to specify generic properties for the dev=
-ices
-> > on the connector is going to be a bit problematic.
->
-> This is nature of the open-connectors, especially on the busses that are
-> hotpluggable, like PCIe. We never know what is connected there _ahead_.
+Hi Linus,
 
-I believe what you mean by "hotpluggable" is "user replaceable".
+Here's the pull-request with pmdomain updates for v7.1. Details about the
+highlights are as usual found in the signed tag.
 
-> In other words you can't describe in DT something that may not exist.
+Please pull this in!
 
-But this is actually doable with the PCIe slot representation. The
-properties are put in the device node for the slot. If no card is
-actually inserted in the slot, then no device is created, and the
-device node is left as not associated with anything.
-
-It's just that for this new M.2 E-key connector, there aren't separate
-nodes for each interface. And the system doesn't associate the device
-node with the device, because it's no longer a child node of the
-controller or hierarchy, but connected over the OF graph.
-
-Moving over to the E-key connector representation seems like one step
-forward and one step backward in descriptive ability. We gain proper
-power sequencing, but lose generic properties.
-
-The latter part is solvable, but we likely need child nodes under the
-connector for the different interfaces. Properties that make sense for
-one type might not make sense for another.
+Kind regards
+Ulf Hansson
 
 
-Thanks
-ChenYu
+The following changes since commit e91d5f94acf68618ea3ad9c92ac28614e791ae7d:
 
-P.S. We could also just add child device nodes under the controller to
-put the generic properties, but that's splitting the description into
-multiple parts. Let's not go there if at all possible.
+  pmdomain: imx8mp-blk-ctrl: Keep the NOC_HDCP clock enabled (2026-04-01 13:03:07 +0200)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1
+
+for you to fetch changes up to 596ca99cf04f339db2ed18a5bb230ee11a47b699:
+
+  pmdomain: qcom: rpmhpd: Add power domains for Hawi SoC (2026-04-08 12:01:37 +0200)
+
+----------------------------------------------------------------
+pmdomain core:
+ - Extend statistics for domain idle states with s2idle data
+ - Show latency/residency for domain idle states in debugfs
+
+pmdomain providers:
+ - imx: Add support for optional subnodes for imx93-blk-ctrl
+ - marvell: Add audio power island for Marvell PXA1908
+ - mediatek: Add legacy support for the MT7622 audio power domain
+ - mediatek: Add nvmem provider functionality to the mtk-mfg-pmdomain
+ - mediatek: Add support for the MT8189 power domains
+ - qcom: Add support for the Eliza and Hawi power domains
+ - sunxi: Add support for the Allwinner A733 power domains
+ - ti: Handle wakeup constraints for out-of-band wakeups for ti_sci
+
+----------------------------------------------------------------
+Abel Vesa (2):
+      dt-bindings: power: qcom,rpmpd: document the Eliza RPMh Power Domains
+      pmdomain: qcom: rpmhpd: Add Eliza RPMh Power Domains
+
+AngeloGioacchino Del Regno (2):
+      dt-bindings: power: mt7622-power: Add MT7622_POWER_DOMAIN_AUDIO
+      pmdomain: mediatek: scpsys: Add MT7622 Audio power domain to legacy driver
+
+Chris Morgan (1):
+      pmdomain: rockchip: quiet regulator error on -EPROBE_DEFER
+
+Dmitry Baryshkov (1):
+      PM: domains: De-constify fields in struct dev_pm_domain_attach_data
+
+Felix Gu (2):
+      pmdomain: ti: omap_prm: Fix a reference leak on device node
+      pmdomain: imx: scu-pd: Fix device_node reference leak during ->probe()
+
+Fenglin Wu (2):
+      dt-bindings: power: qcom,rpmhpd: Add RPMh power domain for Hawi SoC
+      pmdomain: qcom: rpmhpd: Add power domains for Hawi SoC
+
+Gabor Juhos (1):
+      pmdomain: qcom: rpmpd: drop stray semicolon
+
+Irving-CH Lin (3):
+      dt-bindings: power: Add MediaTek MT8189 power domain
+      pmdomain: mediatek: Add bus protect control flow for MT8189
+      pmdomain: mediatek: Add power domain driver for MT8189 SoC
+
+Karel Balej (2):
+      dt-bindings: power: define ID for Marvell PXA1908 audio domain
+      pmdomain: add audio power island for Marvell PXA1908 SoC
+
+Kendall Willis (1):
+      pmdomain: ti_sci: handle wakeup constraint for out-of-band wakeup
+
+Krzysztof Kozlowski (1):
+      pmdomain: mediatek: Simplify with scoped for each OF child loop
+
+Marco Felsch (3):
+      pmdomain: imx93-blk-ctrl: cleanup error path
+      pmdomain: imx93-blk-ctrl: convert to devm_* only
+      pmdomain: imx93-blk-ctrl: add support for optional subnodes
+
+Maíra Canal (1):
+      pmdomain: bcm: bcm2835-power: Replace open-coded polling with readl_poll_timeout_atomic()
+
+Nicolas Frattaroli (2):
+      dt-bindings: power: mt8196-gpufreq: Describe nvmem provider ability
+      pmdomain: mediatek: mtk-mfg: Expose shader_present as nvmem cell
+
+Rosen Penev (2):
+      pmdomain: qcom: cpr: simplify main allocation
+      pmdomain: qcom: cpr: add COMPILE_TEST support
+
+Ulf Hansson (8):
+      pmdomain: Merge branch dt into next
+      pmdomain: core: Restructure domain idle states data for genpd in debugfs
+      pmdomain: core: Show latency/residency for domain idle states in debugfs
+      pmdomain: core: Extend statistics for domain idle states with s2idle data
+      pmdomain: arm: Add print after a successful probe for SCMI power domains
+      pmdomain: Merge branch pmdomain into next
+      pmdomain: Merge branch fixes into next
+      pmdomain: Merge branch dt into next
+
+Yuanshen Cao (2):
+      dt-bindings: power: Add Support for Allwinner A733 PCK600 Power Domain Controller
+      pmdomain: sunxi: Add support for A733 to Allwinner PCK600 driver
+
+ .../bindings/power/allwinner,sun20i-d1-ppu.yaml    |  17 +-
+ .../bindings/power/mediatek,mt8196-gpufreq.yaml    |  13 +
+ .../bindings/power/mediatek,power-controller.yaml  |   1 +
+ .../devicetree/bindings/power/qcom,rpmpd.yaml      |   2 +
+ drivers/pmdomain/arm/scmi_pm_domain.c              |   1 +
+ drivers/pmdomain/bcm/bcm2835-power.c               |  25 +-
+ drivers/pmdomain/core.c                            |  59 ++-
+ drivers/pmdomain/imx/imx93-blk-ctrl.c              |  77 ++--
+ drivers/pmdomain/imx/scu-pd.c                      |   1 +
+ .../pmdomain/marvell/pxa1908-power-controller.c    |  39 +-
+ drivers/pmdomain/mediatek/mt8189-pm-domains.h      | 485 +++++++++++++++++++++
+ drivers/pmdomain/mediatek/mtk-mfg-pmdomain.c       |  59 +++
+ drivers/pmdomain/mediatek/mtk-pm-domains.c         |  44 +-
+ drivers/pmdomain/mediatek/mtk-pm-domains.h         |   5 +
+ drivers/pmdomain/mediatek/mtk-scpsys.c             |  10 +
+ drivers/pmdomain/qcom/Kconfig                      |   2 +-
+ drivers/pmdomain/qcom/cpr.c                        |  13 +-
+ drivers/pmdomain/qcom/rpmhpd.c                     |  58 +++
+ drivers/pmdomain/qcom/rpmpd.c                      |   2 +-
+ drivers/pmdomain/rockchip/pm-domains.c             |   7 +-
+ drivers/pmdomain/sunxi/sun55i-pck600.c             |  35 +-
+ drivers/pmdomain/ti/omap_prm.c                     |   1 +
+ drivers/pmdomain/ti/ti_sci_pm_domains.c            |   5 +-
+ .../power/allwinner,sun60i-a733-pck-600.h          |  18 +
+ include/dt-bindings/power/marvell,pxa1908-power.h  |   1 +
+ include/dt-bindings/power/mediatek,mt8189-power.h  |  38 ++
+ include/dt-bindings/power/mt7622-power.h           |   1 +
+ include/dt-bindings/power/qcom,rpmhpd.h            |  12 +
+ include/linux/pm_domain.h                          |   5 +-
+ 29 files changed, 932 insertions(+), 104 deletions(-)
+ create mode 100644 drivers/pmdomain/mediatek/mt8189-pm-domains.h
+ create mode 100644 include/dt-bindings/power/allwinner,sun60i-a733-pck-600.h
+ create mode 100644 include/dt-bindings/power/mediatek,mt8189-power.h
