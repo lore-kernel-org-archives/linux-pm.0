@@ -1,203 +1,175 @@
-Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com [209.85.167.47])
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32324291864
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 05:03:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.47
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776143016; cv=pass; b=Je9F6mhPzGDz3Rl3kddqZS8XvE9aqqSUKSVF/vEZG22f+0IgejR2LGwnP2BfhiD99kGdTDAEpewDE4awNd/tfT4ZX8XfQUR77v+RAaB94BinRgP3bEaIHw09GoJzl8vmkR5ck3VFxikPR47RSVP4oDbkEerDTh6M+LqV4G5v3+g=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776143016; c=relaxed/simple;
-	bh=/ONKg0B1L6p4zm87A4DLLkuv8Uix/xcFzs6/+rsavpU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=sLYNVN0RrVPJ/8wxtjH2Wg8DSP5fViYiR5/VCaqVRZTkpJrgHmarIK38VlsAeHG9xFnsbA+C41EUjFmHDWZ2Ej0QOIQmvljeH7MogE6qgCC6kFv24XbI5OXGd5GQvFOUR4Ti7Uaum8sYUSH5TE0zx8ugAYKqRC0LD1p9wqDHmEc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=k9UhoHTv; arc=pass smtp.client-ip=209.85.167.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD77C4A0C;
+	Tue, 14 Apr 2026 06:33:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776148396; cv=none; b=LSpSVF88vuxhEuxEfn4ukvd/tDTb4GQSkS36bTw9GZw/To2Li3axdsEkorhraGjMDYnnowpNVwtUXnl8Kku37hSDudsNL+xpHe/uibSH1eNIrxxkVNhbHczu0d/czVhbpQAlUOMTLSm2Go5vTi6vouHDOc3kcPCqauTNWXoW/g4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776148396; c=relaxed/simple;
+	bh=x5EL59GGZCTWzXXjg1+hGKudmcFlG7lTbxYSMeTKHi0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=KvBgnjH6d1ZBidPi5yI7qTOgg1z0nRehgBt1hEeJBpLCE6OKMFIHArVxbAh7lnJdd5Xkys4pRR6D/7xL/7qIjTPVDgvbQK/0dgif+7JpZBqlkuKVqYpb1Wi52efHbUwE0kI1AX59ljhphaWzF2QRnmaJSvqtfUdIsjtHk53N4fQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=Gq4WNNsb; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="k9UhoHTv"
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a3d1561e38so3747558e87.0
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2026 22:03:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776143011; cv=none;
-        d=google.com; s=arc-20240605;
-        b=COqhA4xBpcQXtPKgbJRw2289L9Z+rwz0tbQetj+5b4bXZJDEZf+Ko0X1gHymGwovdd
-         kg3lNx6FrbSAk4+vMcBDl2TN9cMqN2Bg4tOilTKx2VKMCnJ7j/Ede5GzrDg9t+2dq+OC
-         ZbCIsSBPlbUTxZMdWb9X0XHyJ726fZdKawy8Aec/QpEmd9gpPmLJIcKxBr1KSks8At8i
-         N5H/AUeF/MeisfYWNY8mxVTbjcrnptDz7MEAaMbziSpcurtyG5QFsLatLq5CV1+4kSiP
-         e2hubmA5xn/OBLfIReX5DnVa7w+3NArV1+z0GCyAQ4ZGlaJaEQcgLYIdu7GpbLdhJfDv
-         TraQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=r5Pf27EYmY3rBtqc75kC82+zV4ukf34OCg9xmpmqAus=;
-        fh=LM9u3W8+j2oiklDVyDX/ArsdO6GKO7Nl24cfnXffH9E=;
-        b=k59f4Lh9g9N73HiTnlJe8bNCFVJOD28Zj9zUxr/GrxjTQxUsRKudFmT2mP3s/va+0a
-         YJZDe8QpLGySS5/dK2owGGUj+CkzEqWufTOHPmnc9X0/I828INg7V0c+nvxNUczgzvBh
-         htwGHd//Eql5ZmHAJUlUs5GwwqQrW1aYPZbup5wV7JPv+wiqx6tqtUBkj5VXIK+BUQlr
-         1/2a29G/wtuT3mGBEcf7KBxIrOICVYXuBnbpOl9NfjIxU0ZyCO8pSwOMSsDhJds1fWJy
-         dS7Zu4Jv9xi1bqddAyEScrHcS6EUCmE7VJtHvmprHQnEN5GhHsldzHqqc6uU44foo9A6
-         VorQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1776143011; x=1776747811; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=r5Pf27EYmY3rBtqc75kC82+zV4ukf34OCg9xmpmqAus=;
-        b=k9UhoHTvwzyqW/zmjESMuicoMoBBYBtJZXWbq6QFAeMa4+SEzlP6xCid/jUtzhFNq3
-         xJyIyFiHJqJBGmq6f4Ky9U44OV4gO45TCYbUBhdVkQgRk0UOyIW4aLZGwJkQoWb01xih
-         L3eOsn1bPR/InfQYoUdHiO8laGxXIXZU4L1Tg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776143011; x=1776747811;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=r5Pf27EYmY3rBtqc75kC82+zV4ukf34OCg9xmpmqAus=;
-        b=FrxiQ6fespKhTH+oWeltrilzmhiBBTGodb2jaMyunEfvEFHbe6BqpIlQwEyv+m6TPC
-         Yplq37qE4N80NbzfzfEpiPJ8IkGRbC8FjgkN1/1gYrSfMPOxhKwxj311a6NUs4eQW8wK
-         aVcjqLTTyu2Am5/9BiBuJWzZVbBZAGkUbfZ8THKO/kMFtRwYDPAshTEK9BqCoJvgBoQh
-         nmI2IqTQkb0v9vMzVd9wYAPAAdjlbP4KQ+L/LBQsO9t+ZvLKxAIzF/96lLmKHQ9RbdsI
-         evPI6ljBPuUHoaete4Us2yNqx1Ijh9IFyCEfIrI1qC5hxJfUo/95tQYaMF9DlElyEGAk
-         j0+A==
-X-Forwarded-Encrypted: i=1; AFNElJ/5MpgQCmyTsncDKwRj9y74xeU5GvOca1cGVsv1Cih0c/P6cGMYIE067rA3rOXLElXaf+3VHT1OQg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwSco+EhnSpC4BL/GwZRZjoZo9233pr8GjrmT0poxlamFVDnCh5
-	oxo2A3YkIERRav5984/7Nr6Ha59GC38mrMt4u9LrAmkk1YPC8EoWx3xeNdgjdftjEIheEysTxDx
-	kcGHBDIwjy3UnyiRxDatz1ycz2vOd/iSdIxOv+rMM
-X-Gm-Gg: AeBDievKeSZt3db7eZ8SK3FhD4PqDh2Gqt2DHDn1TkpGNewZwyC7stvE1U2/WhSiGUt
-	9tl4dYCpC24ES+7TtYSkk2IvA72EBRazHrTWAnCLl41SrCe+VOQLr2kzadnH5uqjH1JttebHlek
-	PTFR9/o1utXB/OXyPEAIOyoZmuFycJirXLDRfGYrgrBz4N2EnI+JDM/cEj9LNQ9tnjJjUdhxlx3
-	sx/nXN6xyYzul9nJHKDwIrKLqnZQUF3AiydGw+qkg6h/sScvbrwctNJzr/RDI6jNRVpF6A2gC3a
-	hmeKbknERg+qJUwQv6EEWc4jBzrYUmq8tntVMf8eu36kmZCF
-X-Received: by 2002:a05:6512:3d07:b0:5a2:bebd:45b5 with SMTP id
- 2adb3069b0e04-5a3ef702ba7mr4942397e87.4.1776143011315; Mon, 13 Apr 2026
- 22:03:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="Gq4WNNsb"
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id EBFEC25F7C;
+	Tue, 14 Apr 2026 08:33:05 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id a2RvONth9XC8; Tue, 14 Apr 2026 08:33:05 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1776148385; bh=x5EL59GGZCTWzXXjg1+hGKudmcFlG7lTbxYSMeTKHi0=;
+	h=From:Subject:Date:To:Cc;
+	b=Gq4WNNsb1h0cKRJkuPzo8yxjGOexyNAVAlcFI3bLEQS2MSTsPuA5yiFxaHymUyrR3
+	 jPmdzzG1/yKmG9ahqVYqmnTNBLORmHBckoOB86dWTwmCSj/DhnWAPb30yjlZRhpH2x
+	 MRiECMqtN2oFvPQ9wgjaN0FnSGrg+aXrKhR5mxS4mM1+AMUR6NAaI55iHjweEDAf/o
+	 JohiJJrpSWRKyLsVdjzz6sil3r8ULl9jbXx6mWjaZgA89JxUOq46qUU9Hw+PQNztvP
+	 JfuHb+UYbvyLebOI14XdTF2uig+nJPJQPrA8o1VD3X7wuUjAsUfO9UJ38AExV+mW7k
+	 UvpINXxsQ3WaA==
+From: Kaustabh Chakraborty <kauschluss@disroot.org>
+Subject: [PATCH v4 00/13] Support for Samsung S2MU005 PMIC and its
+ sub-devices
+Date: Tue, 14 Apr 2026 12:02:52 +0530
+Message-Id: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
- <20260413075459.GA2626902@google.com> <fpcs4p62f35a5qyqwgm5ysa73stbysxcr62tkmmkrrcvsuf4t4@4ivukyqjey57>
- <eeytuhqpgdz4do4tgtbmfntub2femtyq7bij7svhodpyjwaylx@j3gmvq2a2zqc>
-In-Reply-To: <eeytuhqpgdz4do4tgtbmfntub2femtyq7bij7svhodpyjwaylx@j3gmvq2a2zqc>
-From: Chen-Yu Tsai <wenst@chromium.org>
-Date: Tue, 14 Apr 2026 13:03:19 +0800
-X-Gm-Features: AQROBzBGpczfuo3hb4EM0V1LAlLdphdlu-SZQrzKHBW63mwHzThEUJagiFr7yFk
-Message-ID: <CAGXv+5E=tujhtZjwi6Qm7hk3Ks74UzTQHWq82NiTEw1+vYod5g@mail.gmail.com>
-Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E connectors
- in devicetree
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, Rob Herring <robh@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas.schier@linux.dev>, 
-	Hans de Goede <hansg@kernel.org>, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	Mark Pearson <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Stephan Gerhold <stephan.gerhold@linaro.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, 
-	Hans de Goede <johannes.goede@oss.qualcomm.com>, 
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAJTf3WkC/2XMTQ6DIBhF0a0YxqWBjz/tqPtoOkCEloFiwJo2x
+ r0XTUyjHb6XnDuhZKO3CV2KCUU7+uRDlwc/Fcg8dfew2Dd5IyAgKKWAE7QvQgTuW28wMVI5LWt
+ tmEGZ9NE6/15zt3veT5+GED9rfaTLu4X4PjRSTHBlGS15wzQx1bXxKYYwnEN8oCU1wsYloSAPH
+ DJXpaNaCSe40v+c/TiAOHCWec21s7biShK25/M8fwHS6SMjKAEAAA==
+X-Change-ID: 20251112-s2mu005-pmic-0c67fa6bac3c
+To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Nam Tran <trannamatk@gmail.com>, 
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>
+Cc: linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ linux-doc@vger.kernel.org, Kaustabh Chakraborty <kauschluss@disroot.org>, 
+ Conor Dooley <conor.dooley@microchip.com>
 
-On Tue, Apr 14, 2026 at 12:08=E2=80=AFAM Manivannan Sadhasivam <mani@kernel=
-.org> wrote:
->
-> [Resending as my previous reply got bounced]
->
-> On Mon, Apr 13, 2026 at 07:33:12PM +0530, Manivannan Sadhasivam wrote:
-> > On Mon, Apr 13, 2026 at 03:54:59PM +0800, Chen-Yu Tsai wrote:
-> > > Hi,
-> > >
-> > > On Thu, Mar 26, 2026 at 01:36:28PM +0530, Manivannan Sadhasivam wrote=
-:
-> > > > Hi,
-> > > >
-> > > > This series is the continuation of the series [1] that added the in=
-itial support
-> > > > for the PCIe M.2 connectors. This series extends it by adding suppo=
-rt for Key E
-> > > > connectors. These connectors are used to connect the Wireless Conne=
-ctivity
-> > > > devices such as WiFi, BT, NFC and GNSS devices to the host machine =
-over
-> > > > interfaces such as PCIe/SDIO, USB/UART and NFC. This series adds su=
-pport for
-> > > > connectors that expose PCIe interface for WiFi and UART interface f=
-or BT. Other
-> > > > interfaces are left for future improvements.
-> > >
-> > > Thanks for working on this. I started playing with it now that it is =
-in
-> > > -next. The PCIe part works fine. I'm looking into how to fit the pwrs=
-eq
-> > >
-> > > A couple questions:
-> > >
-> > > - Given that this connector actually represents two devices, how do I
-> > >   say I want the BT part to be a wakeup source, but not the WiFi part=
-?
-> > >   Does wakeup-source even work at this point?
-> > >
-> >
-> > You can't use the DT property since the devices are not described in DT
-> > statically. But you can still use the per-device 'wakeup' sysfs knob to=
- enable
-> > wakeup.
+S2MU005 is an MFD chip manufactured by Samsung Electronics. This is
+found in various devices manufactured by Samsung and others, including
+all Exynos 7870 devices. It is known to have the following features:
 
-I see. I think not being able to specify generic properties for the devices
-on the connector is going to be a bit problematic. Another use case I have
-requires specifying a bounce buffer / SWIOTLB for the PCIe WiFi card. The
-PCIe controller does not have an IOMMU behind it.
+1. Two LED channels with adjustable brightness for use as a torch, or a
+   flash strobe.
+2. An RGB LED with 8-bit channels. Usually programmed as a notification
+   indicator.
+3. An MUIC, which works with USB micro-B (and USB-C?). For the micro-B
+   variant though, it measures the ID-GND resistance using an internal
+   ADC.
+4. A charger device, which reports if charger is online, voltage,
+   resistance, etc.
 
-> > > - Are there plans to do the SDIO part?
-> > >
-> >
-> > No, not at the moment. Feel free to take it up if you have the hardware=
- and
-> > motivation :)
+This patch series implements a lot of these features. Naturally, this
+series touches upon a lot of subsystems. The 'parent' is the MFD driver,
+so the subsystems have some form of dependency to the MFD driver, so
+they are not separable.
 
-Ack. I think I still need to figure out what the plan is after mmc-pwrseq
-is deprecated.
+Here are the subsystems corresponding to the patch numbers:
+dt-bindings - 01, 02, 03, 04, 05
+mfd         - 05, 06, 07, 08
+led         - 01, 02, 09, 10, 11
+extcon      - 03, 12
+power       - 04, 13
 
-> > > - The matching done in the M.2 connector driver for pwrseq_get() seem=
-s a
-> > >   bit naive. It simply checks if the remote device in the OF graph is
-> > >   the same as the requesting device.
-> > >
-> > >   I think this would run into issues with USB hubs. If I have a USB h=
-ub
-> > >   and two M.2 connectors, with both connectors connected to the same
-> > >   hub, pwrseq_get() is going to always return only one of the instanc=
-es.
-> > >   This is because the USB hub has one device node with multiple OF gr=
-aph
-> > >   ports.
-> > >
-> >
-> > Yeah, this is a known limitation. I'm trying to improve this part now a=
-nd have
-> > the WIP commits here: https://github.com/Mani-Sadhasivam/linux/tree/pwr=
-seq-bt-en-fixes
-> >
-> > Once the merge window closes, I'll submit these.
+Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+---
+Changes in v4:
+- Use OF graph to connect charger with MUIC in device tree
+- Move DMA coherent mask to all MFD PMICs (André Draszik)
+- Modify pointer names for flash/RGB drivers (Lee Jones)
+- Use 100-char line wrap for flash/RGB drivers (Lee Jones)
+- Revamp LED device initialization in flash driver (Lee Jones)
+- Add proper USB 2.0 support in charger driver (Łukasz Lebiedziński)
+- Link to v3: https://lore.kernel.org/r/20260225-s2mu005-pmic-v3-0-b4afee947603@disroot.org
 
-I couldn't tell which commit would help with this.
+Changes in v3:
+- Remove "extcon" text from dt-bindings documentation (Rob Herring)
+- Add connector for MUIC node
+- Fix dt binding errors reported by robh's bot
+- Fix kernel test robot const errors 
+- Remove FIELD_PREP() values in register header file (André Draszik)
+- Add max_register, volatile_reg, cache_type (André Draszik)
+- Redo [v2 07/12] to NOT store the PMIC revision (André Draszik)
+- Add a commit to fix DMA coherent mask in I2C PMICs
+- Implement various flow changes in flash LED driver (André Draszik)
+- Use device_for_each_child_node_scoped() (André Draszik)
+- Fix CFI panic in devm_add_action_or_reset()
+- Link to v2: https://lore.kernel.org/r/20260126-s2mu005-pmic-v2-0-78f1a75f547a@disroot.org
 
-In my head I think we would need to extend pwrseq_get() to add something
-like an index parameter that the provider is free to interpret. The M.2
-connector driver could interpret it as the USB port number on the remote
-end.
+Changes in v2:
+- Drop [v1 06/13], instead use regmap_irq_chip::get_irq_regs() 
+- Remove references to driver in devicetree commits (Conor Dooley)
+- Propagate errors of sec_pmic_store_rev() (André Draszik)
+- Fix documentation language errors (Randy Dunlap)
+- Link to v1: https://lore.kernel.org/r/20251114-s2mu005-pmic-v1-0-9e3184d3a0c9@disroot.org
 
+---
+Kaustabh Chakraborty (13):
+      dt-bindings: leds: document Samsung S2M series PMIC flash LED device
+      dt-bindings: leds: document Samsung S2M series PMIC RGB LED device
+      dt-bindings: extcon: document Samsung S2M series PMIC extcon device
+      dt-bindings: power: supply: document Samsung S2M series PMIC charger device
+      dt-bindings: mfd: s2mps11: add documentation for S2MU005 PMIC
+      mfd: sec: add support for S2MU005 PMIC
+      mfd: sec: set DMA coherent mask
+      mfd: sec: resolve PMIC revision in S2MU005
+      leds: flash: add support for Samsung S2M series PMIC flash LED device
+      leds: rgb: add support for Samsung S2M series PMIC RGB LED device
+      Documentation: leds: document pattern behavior of Samsung S2M series PMIC RGB LEDs
+      extcon: add support for Samsung S2M series PMIC extcon devices
+      power: supply: add support for Samsung S2M series PMIC charger device
 
-Thanks
-ChenYu
+ .../bindings/extcon/samsung,s2mu005-muic.yaml      |  39 ++
+ .../bindings/leds/samsung,s2mu005-flash.yaml       |  52 +++
+ .../bindings/leds/samsung,s2mu005-rgb.yaml         |  34 ++
+ .../devicetree/bindings/mfd/samsung,s2mps11.yaml   | 124 +++++-
+ .../power/supply/samsung,s2mu005-charger.yaml      |  39 ++
+ Documentation/leds/index.rst                       |   1 +
+ Documentation/leds/leds-s2m-rgb.rst                |  60 +++
+ drivers/extcon/Kconfig                             |  10 +
+ drivers/extcon/Makefile                            |   1 +
+ drivers/extcon/extcon-s2m.c                        | 354 ++++++++++++++++
+ drivers/leds/flash/Kconfig                         |  12 +
+ drivers/leds/flash/Makefile                        |   1 +
+ drivers/leds/flash/leds-s2m-flash.c                | 357 +++++++++++++++++
+ drivers/leds/rgb/Kconfig                           |  11 +
+ drivers/leds/rgb/Makefile                          |   1 +
+ drivers/leds/rgb/leds-s2m-rgb.c                    | 446 +++++++++++++++++++++
+ drivers/mfd/sec-common.c                           |  37 +-
+ drivers/mfd/sec-i2c.c                              |  29 ++
+ drivers/mfd/sec-irq.c                              |  74 ++++
+ drivers/power/supply/Kconfig                       |  11 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/s2m-charger.c                 | 300 ++++++++++++++
+ include/linux/mfd/samsung/core.h                   |   1 +
+ include/linux/mfd/samsung/irq.h                    |  66 +++
+ include/linux/mfd/samsung/s2mu005.h                | 332 +++++++++++++++
+ 25 files changed, 2387 insertions(+), 6 deletions(-)
+---
+base-commit: 1c7cc4904160c6fc6377564140062d68a3dc93a0
+change-id: 20251112-s2mu005-pmic-0c67fa6bac3c
+
+Best regards,
+-- 
+Kaustabh Chakraborty <kauschluss@disroot.org>
+
