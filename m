@@ -1,177 +1,127 @@
-Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 038B840DFAF;
-	Tue, 14 Apr 2026 12:33:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E7D61F2380;
+	Tue, 14 Apr 2026 13:07:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776170018; cv=none; b=O4XzVkBw6+KHKDQwSlEXnoc/azA+goUU2eG913W5g8y2XRVmjVNxC+IENi4nqcs0uqGOjv7bPHNlNVKL96dhLHPSu3VeS2vgG/zRFly07mr5d+yXEhmjJpUEFBi+dbVuXvOeGDtJp2OZevvhr9mPjUDT9yUlpIs3ESfgndaDlMo=
+	t=1776172025; cv=none; b=TSSZzTIL2cJDJ+5QZzEk5RDsLGlXksXZbU+QmvTI8dj99i0YY9X2cFqhemcNHDOKnj+LFt6m7UpjpbOOO6QSq4NGRTuWoapZTSHdee5qbe/xH8mFoEFKYUq8dN11/vioJt2sOEM9GPY58ei+tfwwZGPqXafY9N70jsqMJhPkcuw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776170018; c=relaxed/simple;
-	bh=d3bktvVna1J5QQvrEvpiMs7fPfSFe03MCbAM/nAAbGc=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=GaWxm5mEocu5fUrsuOKnqNo/lA6tymjpDOPe2ckutvUbqTeP8EqfC3pi7jU97oiH99tp4Z/wkUmvaM7I0nWCAhpqMRjjj5z4G6LQQLjhRiamsTgMfsVxiWNjaWw7tBwFR8D50Dv9RiePk9tAZuHv18kGQ8pt9l8ToKRATAVpmt4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=kz77AKNl; arc=none smtp.client-ip=65.21.61.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
+	s=arc-20240116; t=1776172025; c=relaxed/simple;
+	bh=MWOEJ1V09Eh8A/2FnfZxd4WWSdKAeOnicDNi9gywaqc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=VgWXMazFjQCNgThd/QF7ajlWCS7CtYJ0Z79T7iiQA7VEuYJS4X/vr9rXf8VOWeyqR5W0FKNtJ3SsGMdYBht2ovCrSFwwOZlXHbgo30iBx3eoF/Q4skjOrF5+O7mSkEUwAf8MeAZLMwumjgJiTZ33IpXvmx3uTLUNTHLkGiVWJ6k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YKziFAxi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="kz77AKNl"
-Message-ID: <69196110-0eff-4442-ab31-21e8e84781d8@aliel.fr>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1776170008;
-	bh=d3bktvVna1J5QQvrEvpiMs7fPfSFe03MCbAM/nAAbGc=;
-	h=Date:From:Subject:To:Cc:References:In-Reply-To;
-	b=kz77AKNlRM42Ei5wKqG+wr9GAcyb8/2iizonAQxHaYw7kfdWEgckgaS9Bs9bXooMs
-	 nqT55MrItap3FQ65IYwKYIG9CdqS+D8KhXdVeSmEIhPPf/EGZw+ZHKeIUEolXuP1kx
-	 9LQ8bDTniToDhR0NZNkX+ISN5llnL4/x0VDR82GQ=
-Date: Tue, 14 Apr 2026 14:33:26 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YKziFAxi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7420FC19425;
+	Tue, 14 Apr 2026 13:07:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776172025;
+	bh=MWOEJ1V09Eh8A/2FnfZxd4WWSdKAeOnicDNi9gywaqc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=YKziFAxihgicVZ00C9Lr72603fUBVAfqxk2Q68FbSAENoBDIYUTxi9QNB00inJJPq
+	 wQCjGZc0ch9//er/ys3dATIlllwbVME9woqwnajRQh3UR/mDqBae5bA7T/Fd2ofPE3
+	 EFCLBbjuldpQeICnzGMbdobMCqfTe9BXtHf2ELmYIH8w6BSotzsD3T3unE4rmEwt6Y
+	 tGOU4r2EDYwU5Bt/hpx9oI+2yog4TqzXCsaju2yvSi4I8jC/MkuBlNd6jL12deo8v+
+	 jSLISqV7XEc//JucmNPSGqf+eI8f3qn2PnrCac36yCdBAtaIlJ/6UHJCXBSP1PjY+E
+	 lnZQmt4OIog5w==
+From: Mark Brown <broonie@kernel.org>
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, 
+ Alexey Charkov <alchark@flipper.net>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ stable@vger.kernel.org
+In-Reply-To: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
+References: <20260311-bq25792-v4-0-7213415d9eec@flipper.net>
+Subject: Re: [PATCH v4 00/11] Add support for the TI BQ25792 battery
+ charger
+Message-Id: <177617202217.87058.8852713386069702541.b4-ty@b4>
+Date: Tue, 14 Apr 2026 14:07:02 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird Beta
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Subject: Re: [PATCH v2 1/8] dt-bindings: thermal: amlogic: Add support for T7
-To: Conor Dooley <conor@kernel.org>
-Cc: Guillaume La Roque <glaroque@baylibre.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-References: <20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr>
- <20260413-add-thermal-t7-vim4-v2-1-1002d90a0602@aliel.fr>
- <20260413-impose-cartel-bd7d18f91a24@spud>
-Content-Language: en-US
-In-Reply-To: <20260413-impose-cartel-bd7d18f91a24@spud>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.16-dev
 
-On 4/13/26 5:42 PM, Conor Dooley wrote:
-> On Mon, Apr 13, 2026 at 12:52:42PM +0200, Ronald Claveau wrote:
->> Add the amlogic,t7-thermal compatible for the Amlogic T7 thermal sensor.
->>
->> Unlike existing variants which use a phandle to the ao-secure syscon,
->> the T7 relies on a secure monitor interface described by a phandle and
->> a sensor index argument.
->>
->> The T7 integrates multiple thermal sensors, all accessed through the
->> same SMC call. The sensor index argument is required to identify which
->> sensor's calibration data the secure monitor should return, as a single
->> SM_THERMAL_CALIB_READ command serves all of them.
->>
->> Introduce the amlogic,secure-monitor property as a phandle-array and
->> make amlogic,ao-secure or amlogic,secure-monitor conditionally required
->> depending on the compatible.
->>
->> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
->> ---
->>  .../bindings/thermal/amlogic,thermal.yaml          | 42 ++++++++++++++++++++--
->>  1 file changed, 40 insertions(+), 2 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->> index 70b273271754b..1c096116b2dda 100644
->> --- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->> +++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->> @@ -21,7 +21,9 @@ properties:
->>                - amlogic,g12a-cpu-thermal
->>                - amlogic,g12a-ddr-thermal
->>            - const: amlogic,g12a-thermal
->> -      - const: amlogic,a1-cpu-thermal
->> +      - enum:
->> +          - amlogic,a1-cpu-thermal
->> +          - amlogic,t7-thermal
->>  
->>    reg:
->>      maxItems: 1
->> @@ -42,12 +44,39 @@ properties:
->>    '#thermal-sensor-cells':
->>      const: 0
->>  
->> +  amlogic,secure-monitor:
->> +    description: phandle to the secure monitor
->> +    $ref: /schemas/types.yaml#/definitions/phandle-array
->> +    items:
->> +      - items:
->> +          - description: phandle to the secure monitor
->> +          - description: sensor index to get specific calibration data
->> +
->>  required:
->>    - compatible
->>    - reg
->>    - interrupts
->>    - clocks
->> -  - amlogic,ao-secure
->> +
->> +allOf:
->> +  - if:
->> +      properties:
->> +        compatible:
->> +          contains:
->> +            enum:
->> +              - amlogic,a1-cpu-thermal
->> +              - amlogic,g12a-thermal
->> +    then:
->> +      required:
->> +        - amlogic,ao-secure
->> +  - if:
->> +      properties:
->> +        compatible:
->> +          contains:
->> +            const: amlogic,t7-thermal
+On Wed, 11 Mar 2026 15:56:13 +0400, Alexey Charkov wrote:
+> This adds support for the TI BQ25792 battery charger, which is similar in
+> overall logic to the BQ25703A, but has a different register layout and
+> slightly different lower-level programming logic.
 > 
-> This can just be replaced by a else I think.
+> The series is organized as follows:
+> - Patch 1 adds the new variant to the existing DT binding, including the
+>   changes in electrical characteristics
+> - Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
+>   driver, slimming down the code and making it more reusable for the new
+>   BQ25792 variant
+> - Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
+>   (this is a standalone fix which can be applied independently and may be
+>   backported to stable)
+> - Patches 6-8 are slight refactoring of the existing BQ25703A charger
+>   driver to make it more reusable for the new BQ25792 variant
+> - Patch 9 adds platform data to distinguish between the two variants in
+>   the parent MFD driver, and binds it to the new compatible string
+> - Patches 10-11 add variant-specific code to support the new BQ25792
+>   variant in the regulator part and the charger part respectively,
+>   selected by the platform data added in patch 9
 > 
+> [...]
 
-Thank you for your feedback, I will replace this `if` condition by an
-`else`.
+Applied to
 
->> +    then:
->> +      required:
->> +        - amlogic,secure-monitor
->>  
->>  unevaluatedProperties: false
->>  
->> @@ -62,4 +91,13 @@ examples:
->>          #thermal-sensor-cells = <0>;
->>          amlogic,ao-secure = <&sec_AO>;
->>      };
->> +  - |
->> +    a73_tsensor: temperature-sensor@20000 {
-> 
-> Can drop the label here, it has no users.
-> 
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
-Ok, I will remove this label.
+Thanks!
 
-> Otherwise, seems fine.
-> 
-> Cheers,
-> Conor.
-> 
-> pw-bot: changes-requested
-> 
->> +        compatible = "amlogic,t7-thermal";
->> +        reg = <0x0 0x20000 0x0 0x50>;
->> +        interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
->> +        clocks = <&clkc_periphs CLKID_TS>;
->> +        #thermal-sensor-cells = <0>;
->> +        amlogic,secure-monitor = <&sm 1>;
->> +    };
->>  ...
->>
->> -- 
->> 2.49.0
->>
+[01/11] dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
+        (no commit info)
+[02/11] regulator: bq257xx: Remove reference to the parent MFD's dev
+        https://git.kernel.org/broonie/misc/c/aef4d87f2c1f
+[03/11] regulator: bq257xx: Drop the regulator_dev from the driver data
+        (no commit info)
+[04/11] regulator: bq257xx: Make OTG enable GPIO really optional
+        https://git.kernel.org/broonie/misc/c/de76a763805d
+[05/11] power: supply: bq257xx: Fix VSYSMIN clamping logic
+        (no commit info)
+[06/11] power: supply: bq257xx: Make the default current limit a per-chip attribute
+        (no commit info)
+[07/11] power: supply: bq257xx: Consistently use indirect get/set helpers
+        (no commit info)
+[08/11] power: supply: bq257xx: Add fields for 'charging' and 'overvoltage' states
+        (no commit info)
+[09/11] mfd: bq257xx: Add BQ25792 support
+        (no commit info)
+[10/11] regulator: bq257xx: Add support for BQ25792
+        (no commit info)
+[11/11] power: supply: bq257xx: Add support for BQ25792
+        (no commit info)
 
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
--- 
-Best regards,
-Ronald
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
