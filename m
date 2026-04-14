@@ -1,338 +1,224 @@
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com [209.85.167.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CF4A3E6382
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 13:25:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 647CF2C21C7
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 13:43:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.41
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776173135; cv=pass; b=BxoRTnvgtFszHGu5OqfrLoNmkqSvYeLdyNYHDKTlOjwE8IhotWWhjiPKBNxOWXwrBWQNMU+xKjaFhck40ixlF0tF8JGkTkTcJL8vmVtQvZnzrWGO0CJhcWypSgtPl9vYsbuSI4pq+4u6gqxOtFxngAJspEVtHArRnZRIHaYB2zU=
+	t=1776174209; cv=pass; b=DdlfNh9/WiTWEDhsF7OHund6MSjotWtfi+KobU8+8Pf5F+7OSz9f2xu1BJr4r5XzoTPkl+b9buX1gyNq4gNMv2+esKZVarmsJwFrEfi4O2KfnNjxsn2xgOuYbfEqj4pP+2Mtc2uZ6AXX1QcMq0gwRnF2CIZJD95vpUobQthtnqo=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776173135; c=relaxed/simple;
-	bh=dmToRAa8rVmFxITbHNAQ7orPAttrnubK2XAvnPFoPcg=;
+	s=arc-20240116; t=1776174209; c=relaxed/simple;
+	bh=+FMcleE/RJk8JXq4ZJIsUVYV4jwK9150VQYwhJJuz3Y=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Fb6tfZLsNkqCDnZqDwba0pamOe+lNs1ZS4zKoPk7yprW0IMUKSLtWgdBF4Wi4efx2fV8CwFJoT+ShSyY+izF0/Y+EXqZspRqnsetexP+H3VXBINnAyNcetZrtZ8JZsz6RLYL+5FXY7zJJTwIcMjUkIWDJkMoAVpXD1W96xRLaCI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oT4GN7Vv; arc=pass smtp.client-ip=209.85.218.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=PYnSbsC6AyNStFEqY5TEqJAubsG5GVJUycc5vArEQJU7FegBNGvzGUaK7TxW6GX07UQ8476dhfhhWjENIGwftlCO3gknALBDWyx2Y8xGl4/4pFw0TFw/DVNhLeCNbmfW8hP65c9pavCWqphBSKslCErelthGW6UditWtcja0BlI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MzGXfcs1; arc=pass smtp.client-ip=209.85.167.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oT4GN7Vv"
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b9c62fc8debso866629566b.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 06:25:34 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776173133; cv=none;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MzGXfcs1"
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5a4053964e3so1065425e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 06:43:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776174206; cv=none;
         d=google.com; s=arc-20240605;
-        b=EBWGesO472xQTAEp2KSEwTIRerztGN+XegFy9ljbMeg5oB/VjSvkbr68pIW4pzWIDP
-         axjcZ3xWJhMecAWhepcehvng8J3Trim4FiQXcC+rm485smgixcO9CgVa6ynNd4m1Jw9w
-         0OBA0X0fqa6eG6mfdTkrRcOstLdYWe/feou13LhHkROwillGRrDWJMdFLjQjCg1wTuMT
-         9NOSqVtRygi4kMgmaQt/OZUr3hIAaqqU08r0e+NQSxHJP0HY/0Cj8MNOGjUF8doIBnk1
-         JoVK2KeRoDd6yZnvJiUnnwQCnjBEjPZiruoLNMduaLehuqh12OUaz4y59+X1YyUDrBXP
-         vGRw==
+        b=EbelI7NzzWFdawKewdjgA0M76a34LLRCzQZHcK04UOUQ8cfCLvy5wYCVj/7A+ehXwn
+         lGp5ybqL4vJsag95gWpG1IwBvWO5k+aEZLoNHJ78jCILPdK0H3akdM013Wog/oKpXbfx
+         iuWwploDHNqvM750YwkU/Fdirg/YAN4SzA2SbRR7O3QUI6EEVbJV+Zo8AXE0sK0KQP8M
+         VMqOb/OLLbINTn7djHR/0HeO1Gje9yfOa3J5440dvCaRQDoD9vLrIyemlwP7zXJ3mo4I
+         MdYPeCeuvaOY9FA0hgF12cbjRipqNL8xoCeKeVddMM3BvW3TOQ7pWO2/ebBfo4WJIdeL
+         BsfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=1rwaCRc2r8z5iPqTUdHmuFvHmmiQ+YCHzv+doVAKPkg=;
-        fh=X2RNWqSWnKHUR2HzQAsW+7gT0fai7Po6oUuRlO1ZlzA=;
-        b=Pc6F51tzOAViJ6phuO0it1JnDFMS4GvPB7uqwlFYTZFkfNE1CwgRfMTt4mamKdDYen
-         HbotgF0yjsywXljFx9TqX/PT0t8x5M56/lPQqtfyGoNgWoKH+Qlx2z4xTp2mmiFk2vpF
-         HHazq2S+EATuMjPkUBKOhMJYD09eVnKJ70n9zzpCZ+61sOcihJTQqLSk7+58s2Kx3XAI
-         +KmHhpOi8LCFrsf5DA/Uv7aYPoxdheaolpg/v7Tj+K+JPUqobUl4tJvF9WFPJEhXSeq6
-         XNvuTQBjpIKKJQxLYOSPtK8akrnvnizAuKqOIapQYV6aLY7yGLwGCXIXBugEE+4MAJfK
-         LwXg==;
+        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
+        fh=PJ4WMK4ReJcpct/COnuHWfKUG2/NL4pScN5rC1HrXQI=;
+        b=kss4s7HChhVE8z2MQ6YAJgJBi1Te805JqJ1hvHDCq8B5BMFl4Xhoh40bKKSf9SmT11
+         LYebiOmDp7d8zpnm95/VB/GH16irx36z9SOWJt3WsQPoAr5L45wlb/MIqusjHrI/0GnS
+         qdCSTRkmjU9pQigfNzhgKVS54Xga5mVEMM/O0VFTLDwHqFha0VpoemHX7GPWUGE9W05p
+         1ZgNbJFBlHVJCCQGB7VwVDKfgYNTgNopNb1VJ0gjqmdb6ZG6hnWkXeFoUBYh3sY/oTHB
+         c+E3LaE/psiiVd/D5EaOcTf0DnPE7F7dv4U8lYs9QdLvvMPdIw8RukiwDTpfUOk8iqMe
+         1+Mg==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776173133; x=1776777933; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1776174206; x=1776779006; darn=vger.kernel.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=1rwaCRc2r8z5iPqTUdHmuFvHmmiQ+YCHzv+doVAKPkg=;
-        b=oT4GN7VvgRQ/5JQR1IgmPKVxb1MzrBjTsTwAIzwTpN3XUi2RU92j+KMgkJL+GIUsHr
-         H+3U+bFZ7VlsZmjzGn1zlxRy8qwokV4mE2KwkmIEAsD/P76gf6nXxJwrp8AH2L89wYIu
-         reB7+Yw+sTQyQXmSOb9j/FgUMpEzazHHoHcIV4q92P1nVl1jD0z9cG1Y0IfA2YoxpM9Z
-         K7vLeseHZWV9CGf78/jpL7/vvRlr4gdxMxwhiG/PgY7s7D8x6cZozmp/kxoJVYSVYBom
-         sJgfmhoecdtMUh6pPY2UOfeJv+efVLRCc0kiOZxhXJj6mv+bjuzEHh08OB0j/RAOSV+q
-         7ttg==
+        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
+        b=MzGXfcs1iOQSunlCSB7WO0Z7I5Zt2w0pLfXkAxiFTN86ZKsQkD0Kcq5WR+Ldg0ps5p
+         vhYpW4hEFLI1dY9mZ9wLG7mNUuW1iihIdFpd4VMkO9FH6TZkdZsoBV9Ir6HVacdXJeUb
+         0dSs5OFUKdbRs1NsrcxJetfOUIGwUKtn9dx2yaW9++G7vcwQXdaa5SaS4j/5BdHRHOsb
+         LDipjcwb1SBg8JAvf5kkoFZjNU5Ezc8QLcElWRqfxYawL9o1HW7sUtEOwFiw32JFgyJg
+         ZL2qznySay7+ha1NOnCez+73WpuDSzC1+VgFK4esY4Ems05DGSJr0CD3SMVMk1pMqjaS
+         jL4Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776173133; x=1776777933;
+        d=1e100.net; s=20251104; t=1776174206; x=1776779006;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=1rwaCRc2r8z5iPqTUdHmuFvHmmiQ+YCHzv+doVAKPkg=;
-        b=mPws5d9dzmkVlcchHNnCuW0kjNe1mbWG5IgXRUo6nzgArSOx9/YZ9GMmxoGNsSH4hh
-         l+t7Pgckc5//5RQGMXfKlc9MjGjCPbSV5RBo1ZHTiAZQ5bpulaW04JEcEIgac9ySf8G8
-         EiaXKKbq9pVG04SMcXd4ZhHQ55AmTBsXbnkkVYpZ+2eRdpIokD75VV1V+q8AhsdLh74q
-         f2wyczTuRneranXGtje+Mzja0lJlLyHlo2ALXiILescBYXhkIcn7soYuf/POfkBmW/0y
-         PY7DTF9NQPnW8gpHGnuiKJfiFAwQmFjhRcU97q/yEga832jE7YjgLtk1cpoXXT350jbt
-         zI2A==
-X-Forwarded-Encrypted: i=1; AFNElJ+V5ScagYY4qeWUTxIiSnkonmCc1ilOG9hBSgXHTOm4BDfewTIBGqyM9C+P8PQ6S778hPdVrx51nw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz+fyU7UVluwvCgiD7elTMy7gL51Aw9R/Z/mED5Z/UBzP634Ic2
-	I8g7OyioxJCAQqG5BVaSQx66KO0NghzMy4TmRX1ob118gPr+847jq8ZqcAO1GBj0EtvuZMtaFAQ
-	EQjBLl3kys+tHKPya7XSazqqYUbIAkHU=
-X-Gm-Gg: AeBDietZ/MwDJPNlXp5SMB48ueX60YVB6zsqzqv4yIWY/Kr5H3FQLD9a18ZToPMRvG8
-	AbbtvKr+U9xUlOn0JrFn7npg1P9HvLSOWcj6RKGntenqVpOjkX9rKFHaaKypLSbcjIAG3F+n2Tn
-	7t+iBOvzqxQFtHh4oISFNSc13458+5bz3mMc+e1Hs0CO4GaZZA3RLJ+nKFL5RosUXQCOZ9uzBcz
-	MdYb2EAXS95TFujE2cc8vCLNwqdkrsoJhg40I2DodlQoq0FHaRllzAU4NKtnRlk3c6HL98r6b6a
-	1sWbug==
-X-Received: by 2002:a17:906:ba8b:b0:b98:b08:7442 with SMTP id
- a640c23a62f3a-b9d7277caf6mr927238066b.7.1776173132486; Tue, 14 Apr 2026
- 06:25:32 -0700 (PDT)
+        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
+        b=r9CyXgL1P8hjN79jseRi4MLKH2BfMpTTy89zrRvgkSLQPwW8aN6b6EQGWO5FxRrg3d
+         isxew9gbomqbetcSh0ZnUxHy/kN1KFMEWZt+c69MAZCQLxZD0BL8R4Pte5yncMy23peE
+         2mzQhJ2yadzWgSeZGyIIj6hkTFebbbiU4BdjAX+D0IR1D9432cxklHlT2KbvNOOwYhkM
+         9UycpwZjgzXvMTDYNwbxyyREd71x4Oi4ofnSjk+JWo0J0Qb9sEbQjjGjI5yHw2ew0+Zp
+         CuKZgEXisLer9VJy8GnO4AIkN3HxPhc/CcFtV5xOXjoaWZmbrbDrNz+BCjh9lV/oDIqq
+         3dww==
+X-Forwarded-Encrypted: i=1; AFNElJ/DrOinwjwD90MeyLtfxJcffN3bA5+IbsA7eOSKvQNUGl9h1aLAzCKprCC3aPbmBiJGvnT+uLMxrg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwzGKYZFBHJ2fh7HNy981eE409Xjk7NkGBfa8+Yfy4QZ8ZrZOq0
+	8nWL4yWVIJ0m3rKPkexf8TMZvmwe9gF5pyDeIuTPsfcL5oEbf72DgjnInGee66qsgFI+0C9GONb
+	yTA7m4z0wfZjjee1x2toOj0pgIApNca0nNkkbdQhTlg==
+X-Gm-Gg: AeBDiev7Y/lIk7hg2z/MAyX7wHCdLS4rZfIh3e+I+kA7L7l4MJj+NQ1XNLvsu9NKzNC
+	clpcakbYhmQP7TcmPAJL1ZNBmdc0MBPSQm6HU579xq7KO4J10lVKXDCna+3ve/7pKE0h8w2HBDg
+	I9R4ZGckvgdLngvcLsdOAt3pXXBEbg6OUv7ZvQpDccxRd2o8HgKUOAgt4pMp28hMTNP1P2/IPvc
+	Emym9Zd6EzhgBUeAsUeb9V3I4rX/2VNT/ODEGjL6G/hiluqmKmENMSoTvr1veQAoZIcOotXqwye
+	xq/4SdqbmnPiNblYAw8=
+X-Received: by 2002:a05:6512:692:b0:5a3:d3ac:505e with SMTP id
+ 2adb3069b0e04-5a3efb62ae8mr5639501e87.44.1776174205307; Tue, 14 Apr 2026
+ 06:43:25 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org> <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
-In-Reply-To: <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
-From: Anand Moon <linux.amoon@gmail.com>
-Date: Tue, 14 Apr 2026 18:55:16 +0530
-X-Gm-Features: AQROBzA45N5tX_gxF8wNR9dEOurmKJqRG5G4HXCsGJ5ETbsePSdurO7YbSqgcRs
-Message-ID: <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
+References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
+ <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
+ <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com>
+ <7h4iljskvz.fsf@baylibre.com> <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
+ <7hqzomqwpv.fsf@baylibre.com>
+In-Reply-To: <7hqzomqwpv.fsf@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 14 Apr 2026 15:42:47 +0200
+X-Gm-Features: AQROBzD-JbDP-fgOPRrseyRbXAcHRr7LSIAAw6wp14sGFXLCR1gaiFIhrIczbGk
+Message-ID: <CAPDyKFpWwwuxdU63Kuq_zoKkrFhkSjN6RrxdOCoL2u7JuH9B2w@mail.gmail.com>
+Subject: Re: [PATCH 2/3] pmdomain: core: add support for power-domains-child-ids
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset="UTF-8"
 
-Hi Shuwei,
+On Sat, 11 Apr 2026 at 00:25, Kevin Hilman <khilman@baylibre.com> wrote:
+>
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+> > On Fri, 10 Apr 2026 at 02:45, Kevin Hilman <khilman@baylibre.com> wrote:
+> >>
+> >> Ulf Hansson <ulf.hansson@linaro.org> writes:
+> >>
+> >> > On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
+> >> >>
+> >> >> Currently, PM domains can only support hierarchy for simple
+> >> >> providers (e.g. ones with #power-domain-cells = 0).
+> >> >>
+> >> >> Add support for oncell providers as well by adding a new property
+> >> >> `power-domains-child-ids` to describe the parent/child relationship.
+> >> >>
+> >> >> For example, an SCMI PM domain provider has multiple domains, each of
+> >> >> which might be a child of diffeent parent domains. In this example,
+> >> >> the parent domains are MAIN_PD and WKUP_PD:
+> >> >>
+> >> >>     scmi_pds: protocol@11 {
+> >> >>         reg = <0x11>;
+> >> >>         #power-domain-cells = <1>;
+> >> >>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
+> >> >>         power-domains-child-ids = <15>, <19>;
+> >> >>     };
+> >> >>
+> >> >> With this example using the new property, SCMI PM domain 15 becomes a
+> >> >> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
+> >> >> WKUP_PD.
+> >> >>
+> >> >> To support this feature, add two new core functions
+> >> >>
+> >> >> - of_genpd_add_child_ids()
+> >> >> - of_genpd_remove_child_ids()
+> >> >>
+> >> >> which can be called by pmdomain providers to add/remove child domains
+> >> >> if they support the new property power-domains-child-ids.
+> >> >>
+> >> >> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+> >> >
+> >> > Thanks for working on this! It certainly is a missing feature!
+> >>
+> >> You're welcome, thanks for the detailed review.
+> >>
+> >> >> ---
+> >> >>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >> >>  include/linux/pm_domain.h |  16 ++++++++++++++++
+> >> >>  2 files changed, 185 insertions(+)
+> >> >>
+> >> >> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> >> >> index 61c2277c9ce3..acb45dd540b7 100644
+> >> >> --- a/drivers/pmdomain/core.c
+> >> >> +++ b/drivers/pmdomain/core.c
+> >> >> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
+> >> >>         return genpd;
+> >> >>  }
+> >> >>
+> >> >> +/**
+> >> >> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
+> >> >> + * @np: Device node pointer associated with the PM domain provider.
+> >> >> + * @data: Pointer to the onecell data associated with the PM domain provider.
+> >> >> + *
+> >> >> + * Parse the power-domains and power-domains-child-ids properties to establish
+> >> >> + * parent-child relationships for PM domains. The power-domains property lists
+> >> >> + * parent domains, and power-domains-child-ids lists which child domain IDs
+> >> >> + * should be associated with each parent.
+> >> >> + *
+> >> >> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
+> >> >
+> >> > I think we should avoid returning specific error codes for specific
+> >> > errors, simply because it usually becomes messy.
+> >> >
+> >> > If I understand correctly the intent here is to allow the caller to
+> >> > check for -ENOENT and potentially avoid bailing out as it may not
+> >> > really be an error, right?
+> >>
+> >> Right, -ENOENT is not an error of parsing, it's to indicate that there
+> >> are no child-ids to be parsed.
+> >>
+> >> > Perhaps a better option is to return the number of children for whom
+> >> > we successfully assigned parents. Hence 0 or a positive value allows
+> >> > the caller to understand what happened. More importantly, a negative
+> >> > error code then really becomes an error for the caller to consider.
+> >>
+> >> I explored this a bit, but it gets messy quick.  It means we have to
+> >> track cases where only some of the children were added as well as when
+> >> all children were added.   Personally, I think this should be an "all or
+> >> nothing" thing.  If all the children cannot be parsed/added, then none
+> >> of them should be added.
+> >>
+> >> This also allows the remove to not have to care about how many were
+> >> added, and just remove them all, with the additional benefit of not
+> >> having to track the state of how many children were successfully added.
+> >>
+> >
+> > I fully agree, it should be all or nothing. Failing with one
+> > child/parent should end up with an error code being returned.
+> >
+> > That said, it still seems to make perfect sense to return the number
+> > of children for whom we assigned parents for, no?
+>
+> No, because what will the caller use that number for?  If we are
+> assuming "all or nothing", what would we use it for (other than a debug print?)
+>
+> It also makes it a bit confusing what a zero return value means.  Does
+> that mean success?  Or that zero children were added (which would be
+> fail.)
+>
+> I prefer to keep it as is.
 
-On Fri, 10 Apr 2026 at 13:30, Shuwei Wu <shuwei.wu@mailbox.org> wrote:
->
-> Add Operating Performance Points (OPP) tables and CPU clock properties
-> for the two clusters in the SpacemiT K1 SoC.
->
-> Also assign the CPU power supply (cpu-supply) for the Banana Pi BPI-F3
-> board to fully enable CPU DVFS.
->
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
->
-> ---
-> Changes in v2:
-> - Add k1-opp.dtsi with OPP tables for both CPU clusters
-> - Assign CPU supplies and include OPP table for Banana Pi BPI-F3
-> ---
->  arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++++++-
->  arch/riscv/boot/dts/spacemit/k1-opp.dtsi        | 105 ++++++++++++++++++++++++
->  arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 ++
->  3 files changed, 147 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> index 444c3b1e6f44..3780593f610d 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> +++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-> @@ -5,6 +5,7 @@
->
->  #include "k1.dtsi"
->  #include "k1-pinctrl.dtsi"
-> +#include "k1-opp.dtsi"
->
->  / {
->         model = "Banana Pi BPI-F3";
-> @@ -86,6 +87,38 @@ &combo_phy {
->         status = "okay";
->  };
->
-> +&cpu_0 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_1 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_2 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_3 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_4 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_5 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_6 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
-> +&cpu_7 {
-> +       cpu-supply = <&buck1_3v45>;
-> +};
-> +
->  &emmc {
->         bus-width = <8>;
->         mmc-hs400-1_8v;
-> @@ -201,7 +234,7 @@ pmic@41 {
->                 dldoin2-supply = <&buck5>;
->
->                 regulators {
-> -                       buck1 {
-> +                       buck1_3v45: buck1 {
->                                 regulator-min-microvolt = <500000>;
->                                 regulator-max-microvolt = <3450000>;
->                                 regulator-ramp-delay = <5000>;
-> diff --git a/arch/riscv/boot/dts/spacemit/k1-opp.dtsi b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
-> new file mode 100644
-> index 000000000000..768ae390686d
-> --- /dev/null
-> +++ b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
-> @@ -0,0 +1,105 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-> +
-> +/ {
-> +       cluster0_opp_table: opp-table-cluster0 {
-> +               compatible = "operating-points-v2";
-> +               opp-shared;
-> +
-> +               opp-614400000 {
-> +                       opp-hz = /bits/ 64 <614400000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-819000000 {
-> +                       opp-hz = /bits/ 64 <819000000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1000000000 {
-> +                       opp-hz = /bits/ 64 <1000000000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1228800000 {
-> +                       opp-hz = /bits/ 64 <1228800000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1600000000 {
-> +                       opp-hz = /bits/ 64 <1600000000>;
-> +                       opp-microvolt = <1050000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +       };
-> +
-> +       cluster1_opp_table: opp-table-cluster1 {
-> +               compatible = "operating-points-v2";
-> +               opp-shared;
-> +
-> +               opp-614400000 {
-> +                       opp-hz = /bits/ 64 <614400000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-819000000 {
-> +                       opp-hz = /bits/ 64 <819000000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1000000000 {
-> +                       opp-hz = /bits/ 64 <1000000000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1228800000 {
-> +                       opp-hz = /bits/ 64 <1228800000>;
-> +                       opp-microvolt = <950000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +
-> +               opp-1600000000 {
-> +                       opp-hz = /bits/ 64 <1600000000>;
-> +                       opp-microvolt = <1050000>;
-> +                       clock-latency-ns = <200000>;
-> +               };
-> +       };
-> +};
-> +
-> +&cpu_0 {
-> +       operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_1 {
-> +       operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_2 {
-> +       operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_3 {
-> +       operating-points-v2 = <&cluster0_opp_table>;
-> +};
-> +
-> +&cpu_4 {
-> +       operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_5 {
-> +       operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_6 {
-> +       operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> +
-> +&cpu_7 {
-> +       operating-points-v2 = <&cluster1_opp_table>;
-> +};
-> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> index 529ec68e9c23..bdd109b81730 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
-> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> @@ -54,6 +54,7 @@ cpu_0: cpu@0 {
->                         compatible = "spacemit,x60", "riscv";
->                         device_type = "cpu";
->                         reg = <0>;
-> +                       clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
->                         riscv,isa = "rv64imafdcbv_zicbom_zicbop_zicboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zkt_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
->                         riscv,isa-base = "rv64i";
->                         riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "b", "v", "zicbom",
-> @@ -84,6 +85,7 @@ cpu_1: cpu@1 {
->                         compatible = "spacemit,x60", "riscv";
->                         device_type = "cpu";
->                         reg = <1>;
-> +                       clocks = <&syscon_apmu CLK_CPU_C0_CORE>;
+In that case, how should we treat the scenario where the device node
+lacks a "power-domains-child-ids" property? In some cases it is
+probably fine, while in others it may not be.
 
-Based on the Spacemit kernel source, the k1-x_opp_table.dtsi file
-defines several additional clocks for the Operating Performance Points
-(OPP) table:
+I guess the caller of of_genpd_add_child_ids(), would then need to
+pre-parse for the "power-domains-child-ids" property before deciding
+to call of_genpd_add_child_ids().
 
- clocks = <&ccu CLK_CPU_C0_ACE>, <&ccu CLK_CPU_C1_ACE>, <&ccu CLK_CPU_C0_TCM>,
-                        <&ccu CLK_CCI550>, <&ccu CLK_PLL3>, <&ccu
-CLK_CPU_C0_HI>, <&ccu CLK_CPU_C1_HI>;
-                clock-names = "ace0","ace1","tcm","cci","pll3", "c0hi", "c1hi";
+At least, we don't of_genpd_add_child_ids() to return an error code if
+there is no "power-domains-child-ids" in the device node, as that
+would just confuse the caller.
 
-These hardware clocks are also explicitly registered in the APMU clock driver
-via the k1_ccu_apmu_hws array, confirming their availability for frequency
-and voltage scaling on the K1-X SoC.
-
-static struct clk_hw *k1_ccu_apmu_hws[] = {
-        [CLK_CCI550]            = &cci550_clk.common.hw,
-        [CLK_CPU_C0_HI]         = &cpu_c0_hi_clk.common.hw,
-        [CLK_CPU_C0_CORE]       = &cpu_c0_core_clk.common.hw,
-        [CLK_CPU_C0_ACE]        = &cpu_c0_ace_clk.common.hw,
-        [CLK_CPU_C0_TCM]        = &cpu_c0_tcm_clk.common.hw,
-        [CLK_CPU_C1_HI]         = &cpu_c1_hi_clk.common.hw,
-        [CLK_CPU_C1_CORE]       = &cpu_c1_core_clk.common.hw,
-        [CLK_CPU_C1_ACE]        = &cpu_c1_ace_clk.common.hw,
-
-Yes, it is possible to add these clocks for DVFS to work correctly,
-provided they are managed by the appropriate driver and declared in
-the Device Tree (DT).
-
-Thanks
--Anand
+Kind regards
+Uffe
