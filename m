@@ -1,117 +1,127 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6758B382F00;
-	Tue, 14 Apr 2026 07:58:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4574F394797;
+	Tue, 14 Apr 2026 08:28:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776153511; cv=none; b=bm0DMX2ZK2U4OwcoiXJQnzndSiFCKnyQZLTKvJrdVB+N4k7O/6DVMHJMcaP2Ww3GsKJjMDdjPqB6zObOuMfqDYQgAvg/RYriPIInJQ8s5KdkvixxhFLuiTIP73rLQj0ebowbW8Dldl4ow36oa4Ss6oqymUvVMuis5a/Aw/pUh44=
+	t=1776155313; cv=none; b=G/Z5loJUJESfuxUTbwJLQYpytYgyiej3OEkFYEGKiXzElMaWTkwKJn30okYaTvjuRgBN/Q7rdpeWF/E47yPtw1YprlfNo+AYtnaG+S19Te+B1kquEbwjyAhd0TNqUwSUYgzW+EiYaMOnMMghFt/Hde2qPw46hfz09VkqK4QgBcM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776153511; c=relaxed/simple;
-	bh=GnyG5msXBP+YBGkuMAE1tNpBGQFgvLOi3k5F4gox66Q=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=U+97VmpOS19LMGZMXqTcpMric9yonWDsS3cdTPEdn/3rEhTYWp5r8no6DpJK//CGe/mk8zPOefF4UBnkSAU1E+DTIpYfCjzVz1Du4IhG5Fpg2nel8lxFQE/SG5jwZqN7AjjJnmpMhzlbjJpgrScqWpy4/CguY4yLwhllK87vF5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s8RdcM1Q; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776155313; c=relaxed/simple;
+	bh=E8vQKyt9MpxoC9XzgyedL1hL744D9xnu3AxzYNuYnlk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gK7wQzdefrd/JnpAIqaPnjpkWj5rIpjMciOcTWIN5rAoixkwaAVC0q2MhXmRpmmg2Zy1s/9oGM47msC0aGkMSE+RHtwf6pkJaQd1g1mwBQTlzeLxW8ZSvNAu7LxiwnTwICqbQqQ3gVYv+FnwKUnicWKC2Ggkqjuly0h88urhEbs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nrqrQBvv; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s8RdcM1Q"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D90D0C19425;
-	Tue, 14 Apr 2026 07:58:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776153511;
-	bh=GnyG5msXBP+YBGkuMAE1tNpBGQFgvLOi3k5F4gox66Q=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=s8RdcM1Qay/Tt56OSH//nhypfv5U4TNTCJVbLdqBGAKCJ6urGmxk02GAezvxUr8Rb
-	 ZLCREz/03HdV9iidslkLRQZ1RF4LFlxcFdANPFaWVN2Cuq3nPthE5bemgHzFIhC2VX
-	 ULnKmnvR7ILxa/G1rGfBxowLyfpJxN9lLj4taNPmDktFIXNUSTM/lLMN3cPFD23ZcC
-	 N1eFLtrqINUhWcG0kZfqQ50hPulKskFiunX5ydZMTIaibFuJJsJOyFnAafxmItdJAN
-	 7XIGeN25xVG+zpUziqje1TRQCpIVho1yDSGhoIu7zrpBrWEyCjr403WFpUKIQJi1KY
-	 XlNQi1UKH0OiQ==
-Date: Tue, 14 Apr 2026 02:58:29 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nrqrQBvv"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1776155311; x=1807691311;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=E8vQKyt9MpxoC9XzgyedL1hL744D9xnu3AxzYNuYnlk=;
+  b=nrqrQBvvTiXBx7uJRCIKr+aEfVCDIVpV7pbqWVDzXrJMc8ky3+iVLAkS
+   qEhhSVpI/KpE+TAPuD/Bea4SzphrKpJBgpHDY5LMkHEW4mT4SZ0wkdpmb
+   bJBzZEUb4KaRYYx6S9nmyCptWYjuOImXE9MEiXnfC/WX/5DbXqsV3Yzp8
+   jxvL2Y0mHVYzRDmS7eFl3tgBZ9Zs7e5jn4lcmIwl5jE5wPJ/YZ/hP3B0X
+   4HofToBWdlbuiDkKG/mdoUiFgKmfjcwfn/ujWTZcLezIaKKnS7cBhu3cG
+   8mFw46FyHoVgXHwHStOza2HcoDTGmLSAv1u1ODFSSwZ0ti5V3N3Oj8vFB
+   A==;
+X-CSE-ConnectionGUID: htvNGI4VRhWHr7IRHmz0vQ==
+X-CSE-MsgGUID: 2Iqbb7S3QpqjjhmNBDmj2Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11758"; a="87728045"
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
+   d="scan'208";a="87728045"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2026 01:28:30 -0700
+X-CSE-ConnectionGUID: +bVRXWnVTl+UbC1B5PjMKw==
+X-CSE-MsgGUID: 6AC0PQEOQUaj+1BKtE2xJg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
+   d="scan'208";a="230255689"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.106])
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2026 01:28:23 -0700
+Date: Tue, 14 Apr 2026 11:28:20 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Manivannan Sadhasivam <mani@kernel.org>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+	Rob Herring <robh@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Mark Pearson <mpearson-lenovo@squebb.ca>,
+	"Derek J. Clark" <derekjohn.clark@gmail.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org,
+	Stephan Gerhold <stephan.gerhold@linaro.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	linux-acpi@vger.kernel.org,
+	Hans de Goede <johannes.goede@oss.qualcomm.com>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E
+ connectors in devicetree
+Message-ID: <ad36pIu-0dutL7Nk@ashevche-desk.local>
+References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
+ <20260413075459.GA2626902@google.com>
+ <fpcs4p62f35a5qyqwgm5ysa73stbysxcr62tkmmkrrcvsuf4t4@4ivukyqjey57>
+ <eeytuhqpgdz4do4tgtbmfntub2femtyq7bij7svhodpyjwaylx@j3gmvq2a2zqc>
+ <CAGXv+5E=tujhtZjwi6Qm7hk3Ks74UzTQHWq82NiTEw1+vYod5g@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Conor Dooley <conor+dt@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-rtc@vger.kernel.org, 
- linux-leds@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- Pavel Machek <pavel@kernel.org>, Nam Tran <trannamatk@gmail.com>, 
- linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>, 
- linux-doc@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, 
- Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>, 
- Chanwoo Choi <cw00.choi@samsung.com>, Lee Jones <lee@kernel.org>, 
- Krzysztof Kozlowski <krzk@kernel.org>, Sebastian Reichel <sre@kernel.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- linux-samsung-soc@vger.kernel.org
-To: Kaustabh Chakraborty <kauschluss@disroot.org>
-In-Reply-To: <20260414-s2mu005-pmic-v4-5-7fe7480577e6@disroot.org>
-References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
- <20260414-s2mu005-pmic-v4-5-7fe7480577e6@disroot.org>
-Message-Id: <177615350902.422580.9843903543628073938.robh@kernel.org>
-Subject: Re: [PATCH v4 05/13] dt-bindings: mfd: s2mps11: add documentation
- for S2MU005 PMIC
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGXv+5E=tujhtZjwi6Qm7hk3Ks74UzTQHWq82NiTEw1+vYod5g@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
+On Tue, Apr 14, 2026 at 01:03:19PM +0800, Chen-Yu Tsai wrote:
+> On Tue, Apr 14, 2026 at 12:08 AM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> > On Mon, Apr 13, 2026 at 07:33:12PM +0530, Manivannan Sadhasivam wrote:
+> > > On Mon, Apr 13, 2026 at 03:54:59PM +0800, Chen-Yu Tsai wrote:
+> > > > On Thu, Mar 26, 2026 at 01:36:28PM +0530, Manivannan Sadhasivam wrote:
 
-On Tue, 14 Apr 2026 12:02:57 +0530, Kaustabh Chakraborty wrote:
-> Samsung's S2MU005 PMIC includes subdevices for a charger, an MUIC (Micro
-> USB Interface Controller), and flash and RGB LED controllers.
+...
+
+> > > > - Given that this connector actually represents two devices, how do I
+> > > >   say I want the BT part to be a wakeup source, but not the WiFi part?
+> > > >   Does wakeup-source even work at this point?
+> > >
+> > > You can't use the DT property since the devices are not described in DT
+> > > statically. But you can still use the per-device 'wakeup' sysfs knob to enable
+> > > wakeup.
 > 
-> Since regulators are not supported by this device, unmark this property
-> as required and instead set this in a per-device basis for ones which
-> need it.
-> 
-> Add the compatible and documentation for the S2MU005 PMIC. Also, add an
-> example for nodes for supported sub-devices, i.e. charger, extcon,
-> flash, and rgb.
-> 
-> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
-> ---
->  .../devicetree/bindings/mfd/samsung,s2mps11.yaml   | 121 ++++++++++++++++++++-
->  1 file changed, 120 insertions(+), 1 deletion(-)
-> 
+> I see. I think not being able to specify generic properties for the devices
+> on the connector is going to be a bit problematic.
 
-My bot found errors running 'make dt_binding_check' on your patch:
+This is nature of the open-connectors, especially on the busses that are
+hotpluggable, like PCIe. We never know what is connected there _ahead_.
 
-yamllint warnings/errors:
+In other words you can't describe in DT something that may not exist.
 
-dtschema/dtc warnings/errors:
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:241.29-39: Warning (reg_format): /example-2/i2c/pmic@3d/extcon/port/endpoint@0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:246.29-39: Warning (reg_format): /example-2/i2c/pmic@3d/extcon/port/endpoint@1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (pci_device_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (pci_device_bus_num): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (simple_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (i2c_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (spi_bus_reg): Failed prerequisite 'reg_format'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:240.53-243.27: Warning (avoid_default_addr_size): /example-2/i2c/pmic@3d/extcon/port/endpoint@0: Relying on default #address-cells value
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:240.53-243.27: Warning (avoid_default_addr_size): /example-2/i2c/pmic@3d/extcon/port/endpoint@0: Relying on default #size-cells value
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:245.49-248.27: Warning (avoid_default_addr_size): /example-2/i2c/pmic@3d/extcon/port/endpoint@1: Relying on default #address-cells value
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:245.49-248.27: Warning (avoid_default_addr_size): /example-2/i2c/pmic@3d/extcon/port/endpoint@1: Relying on default #size-cells value
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dtb: Warning (unique_unit_address_if_enabled): Failed prerequisite 'avoid_default_addr_size'
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:240.53-243.27: Warning (graph_endpoint): /example-2/i2c/pmic@3d/extcon/port/endpoint@0: graph node '#address-cells' is -1, must be 1
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:240.53-243.27: Warning (graph_endpoint): /example-2/i2c/pmic@3d/extcon/port/endpoint@0: graph node '#size-cells' is -1, must be 0
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:245.49-248.27: Warning (graph_endpoint): /example-2/i2c/pmic@3d/extcon/port/endpoint@1: graph node '#address-cells' is -1, must be 1
-Documentation/devicetree/bindings/mfd/samsung,s2mps11.example.dts:245.49-248.27: Warning (graph_endpoint): /example-2/i2c/pmic@3d/extcon/port/endpoint@1: graph node '#size-cells' is -1, must be 0
+> requires specifying a bounce buffer / SWIOTLB for the PCIe WiFi card. The
+> PCIe controller does not have an IOMMU behind it.
 
-doc reference errors (make refcheckdocs):
+-- 
+With Best Regards,
+Andy Shevchenko
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260414-s2mu005-pmic-v4-5-7fe7480577e6@disroot.org
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
 
