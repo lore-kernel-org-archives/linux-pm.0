@@ -1,175 +1,223 @@
-Received: from lgeamrelo03.lge.com (lgeamrelo03.lge.com [156.147.51.102])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F055C3E6396
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 16:18:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=156.147.51.102
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776183517; cv=none; b=pgKGA7ArkFj/Z67W2CTVUHkZKaE2p7bLCjS5ITYbqOCmnRCmSDRDXvfs/HhFDqwyYZ5FObj6mikeyhgXQnTzLWSHJavik3qaeMTxzdShsK/QpMfhNu8B09DW1gFQbM7oH//26iAdOFOxZjEFgAOdHZY+F1aomXjfOmv15Vx2uXc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776183517; c=relaxed/simple;
-	bh=108jA9l62jkTmLRyhDlFFkBzQIQcu60S1NHHpB0HwJM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bOLbStXtx/rE37b2Ge0QxE/5u2Gih7u+RESiU8cpnVC6FJzCpxz2AyM1zkU+4EsabXFQaCM9NpzxuGg3N4k4EII3dsuABd+09115UkwO2qcgfyUSLigV9GmgP5vA+3kJxRhSEFbLS1CGLM/2K6GWZKDa2TvYfBdq7ifX/+O1d5w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com; spf=pass smtp.mailfrom=lge.com; arc=none smtp.client-ip=156.147.51.102
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lge.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lge.com
-Received: from unknown (HELO yjaykim-PowerEdge-T330) (10.177.112.156)
-	by 156.147.51.102 with ESMTP; 15 Apr 2026 01:18:31 +0900
-X-Original-SENDERIP: 10.177.112.156
-X-Original-MAILFROM: youngjun.park@lge.com
-Date: Wed, 15 Apr 2026 01:18:31 +0900
-From: YoungJun Park <youngjun.park@lge.com>
-To: DaeMyung Kang <charsyam@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Kairui Song <kasong@tencent.com>, Chris Li <chrisl@kernel.org>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>, Baoquan He <bhe@redhat.com>,
-	Barry Song <baohua@kernel.org>, Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, linux-mm@kvack.org,
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] PM: hibernate: preserve uswsusp swap pin across
- SNAPSHOT_SET_SWAP_AREA re-set failures
-Message-ID: <ad5o1z1hSzLtUxMo@yjaykim-PowerEdge-T330>
-References: <20260414143200.1267932-1-charsyam@gmail.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3F3526ED37
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 16:35:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.49
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776184537; cv=pass; b=sSzzNmw+qAWEMH8bwHshF+7BkIr/g7ZiseM4Zr657vnmyueuxDVZMigLOBTjrd5jbdzUqGq6l83FsmSSWpEoQmCmNOy4FMcLk+bkzpWywA1LiIw9veXoXEo0ByrK5i3gtXKlcNQL2XoyiEH2Dwr7bkUUA5XBwpz8XTlKmoVqiZA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776184537; c=relaxed/simple;
+	bh=xYiD8mPQzgv2ojv2b6lBy802NgdOj9ELcJpY/+bSZFI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dNmCAk2hkAAgQo4mOnRnurZt0n7A+vEkljyl3VwbrjpysiEot8kgtvsG0g+lPdg3LgZzmWy9oyIMSyGkMSCI9CT6dYIZuUYhBlcVF7hBgduzA87AydUleuwRTeJl6tiQYRVJI8aX8M237v5pDo1t5Ig5h2WpWqUE9Scac0KAMls=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iRQqD7U/; arc=pass smtp.client-ip=209.85.221.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iRQqD7U/"
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-43d7a5e77b1so1424005f8f.1
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 09:35:35 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776184534; cv=none;
+        d=google.com; s=arc-20240605;
+        b=WgoLDPhBeJ9FL5snK6Z6ggQBDtE8RseJRdiHLRY1IuG+s3sXA8VZb1NR52gmDjLQOr
+         rDoofxO9COdcewKKbI0EFyuK+ESIbuqzL4d5RkHHG5bHj25sG99GiSdNSgzaleGFB9Gw
+         ChMl/P4dlDFr/25Ln1U817OtGYyhVUGPdr1KO8VOIEoRVTTG+PLUboBY6wIMTRfBnWoF
+         2yQiAeMSSPGVb8oZWzAlXk5dYmO74GpN/NZmt9iDm5sgSBmp+pakLqFogYwoIW90XexO
+         xY2bikFhQI7szVhgr5a5uHbZdLuK27ejmQ2i7NJbKPN78xUuhcY8i9kdfn0tSE46AcCp
+         uTpg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=fQleDbjaYYUSGdpynlKDYhzpuJpOjymZUKR/yJ1TCio=;
+        fh=lZt/+bOh1YLYTBGhLGdYU8SWoYhoVjvwAHIwIgTlTz4=;
+        b=VasYjuehp0mGBPwCV9eS9SB/hVDxk887Yz1p7W4iQ9OLi53nNwuhmFnAMvZR9PuCQQ
+         64vdtxoCa8/1fKIfyZ5txowlLg4UQPK8n3sx0WbaCY6snEN49PxUPoap4y7Nl1HAOMsC
+         crEQFlIDD8qOUgLNcsPZ+09A3zn0arWqyMWqXQVsvp5KqLK36dKNWFTwbS51v/uDNjX1
+         9a7z6ACqC+2AjqcCebu1gaCLEr36nMxZIvXovRr15IgaFa6/s5YgD92MVe6t6ZyIijNt
+         ilrEKgTUc/auO+hYC0Z785d1IkOrxfj50JblC6OIM3KsM/pxw+2VDO3DIpav7Px1HISr
+         lbAA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776184534; x=1776789334; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fQleDbjaYYUSGdpynlKDYhzpuJpOjymZUKR/yJ1TCio=;
+        b=iRQqD7U/7sTULcNbGNjYaQDl0Xrs7FNVw60c+DtlpI7ZmQN/fe+64cSQrjShAvZMLl
+         YuRde/SR3rZiRKCgscsVSY/3sLiAdY83B/YPTmopOlr3fnw3jfkz/PKZX/xqImPeuBaT
+         XaBS5QOarKISOJqVhPsxIfn6QvB7WOWX7jqU4qErzTlJ+4yLnKFd9ieFsJnuIqIHtZax
+         p0x26LfT+JWaRSDKsVsyJExbm6zk8UwjZNMoKrlvRIG9fUW25p8jEPoFokZ0Q+CGFns7
+         gqCc+v6I1ow7f0DphGWmExphDW/FABGqqdygM52tdN4yMR736CLcr8BULPlreiCShLdx
+         NQlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776184534; x=1776789334;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=fQleDbjaYYUSGdpynlKDYhzpuJpOjymZUKR/yJ1TCio=;
+        b=S1DsSuYE4fLvhLkAOmOcAFTMqfMxp3IWLKxfV5qgTtbAk+xMCHaVN+74S1iDDhJFxD
+         GgkGuR7Yj9JL1o6bPec5vhDCEFcLwk3iENHU2b7+IV/DbpSD6/z5086uzIYOLdnEGJEP
+         rNF6LZ/u+SW2XPchVxN4Bv4v6L3hxnRuXoXr4fHbLZyFBA/trO9MwMuBTKTJ2XkL5NZl
+         fZaSCaYhhfZ4vgbv56kojh7VCuZNkNjmIF6DkqfC01IQQh2nevTbVCo1QOsGfC/FHkIX
+         LuN3uaWvHDc/FeH3MVD2OND+JtYd2Phhpv2Xw/hK2Zxsh9uGh1NF8hYZb4ryUaTd1qJV
+         CH0g==
+X-Forwarded-Encrypted: i=1; AFNElJ/mVKh7mgZLcrLWCMM0yei/Wib0/pButA5QKNkew7bw8yDNjvxCay5965Z9nanJOGr+/gTYHynbPw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwwkgUrrnnIxMduTOJN1qTmFYmevH2cwlLkibQPS6x7QR00ZwBB
+	IudxKx5C5yZHj578WlXALByvpsAaz5X+TMiWzB/qHwg16fKu5pnpLFyCmKLyo+FA6ARpUp1pS8h
+	rhzvJz2KHHuPR1hFkl9coDH9GxMJvTjc=
+X-Gm-Gg: AeBDieu3/RyPUnmWOfJTQzIhd/xpI69TQ+qHbT5wm0/MpsquClc+mV+AAfOwmG11TGC
+	5akxR1b0mYIKlx0SapqOzTtw8wUBUFvoriGoR7BwaAnIFQ47UeYMk4V39q44z4/VXe5jfcEzysr
+	zNY/OgNu2Lf03WfF7Z7W0iVxmU/FIbfefGKHn7jXb5p1+sM/bI2bmHGrRUe/FfTJVW01L5S1Sgq
+	oBhtwL6f5aIwH9kkzX1ryQtl7knaeiqfy+fpj1H0TaoYY+2EYoR7d0ju/x6vOU5qXjSDs+uKbpc
+	I/o0R4/FJZUXxLrmApuCJ/4YrYfRk/1KWS9PnBI=
+X-Received: by 2002:a05:6000:25ed:b0:43c:fac5:d382 with SMTP id
+ ffacd0b85a97d-43d5958e3b8mr30561697f8f.12.1776184533792; Tue, 14 Apr 2026
+ 09:35:33 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260414143200.1267932-1-charsyam@gmail.com>
+References: <20260320192735.748051-1-nphamcs@gmail.com> <acQrQYHJgqof0yx4@yjaykim-PowerEdge-T330>
+ <CAKEwX=NnHxpQKp9qBg2=r_euyjgxw2nHXjbgof3MymHTgJmRAQ@mail.gmail.com>
+ <ad2rYH9tUPthHFoj@yjaykim-PowerEdge-T330> <CAMgjq7BO6SLZPfNXDh1F-7RAOqDAfqMQ4PM=qjAq1mCsWyD0LQ@mail.gmail.com>
+In-Reply-To: <CAMgjq7BO6SLZPfNXDh1F-7RAOqDAfqMQ4PM=qjAq1mCsWyD0LQ@mail.gmail.com>
+From: Nhat Pham <nphamcs@gmail.com>
+Date: Tue, 14 Apr 2026 09:35:22 -0700
+X-Gm-Features: AQROBzD5xGWfOWAJA-1nI1ObWe4VBmguR2Q9Syvbquy-jm8YJp-HL-l7rnLn-Mc
+Message-ID: <CAKEwX=NtcGBnDpSuePqfK9G4jACC5gU95-69A4z5JzKkYRq1YA@mail.gmail.com>
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+To: Kairui Song <ryncsn@gmail.com>
+Cc: YoungJun Park <youngjun.park@lge.com>, Liam.Howlett@oracle.com, 
+	akpm@linux-foundation.org, apopple@nvidia.com, axelrasmussen@google.com, 
+	baohua@kernel.org, baolin.wang@linux.alibaba.com, bhe@redhat.com, 
+	byungchul@sk.com, cgroups@vger.kernel.org, chengming.zhou@linux.dev, 
+	chrisl@kernel.org, corbet@lwn.net, david@kernel.org, dev.jain@arm.com, 
+	gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
+	joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
+	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
+	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
+	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, 
+	ryan.roberts@arm.com, shakeel.butt@linux.dev, shikemeng@huaweicloud.com, 
+	surenb@google.com, tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
+	riel@surriel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 14, 2026 at 11:32:00PM +0900, DaeMyung Kang wrote:
-
-Hi Daemyung :)
-
-> Commit 5b2b0c6e4577 ("mm/swap, PM: hibernate: fix swapoff
-> race in uswsusp by pinning swap device") introduced
-> SWP_HIBERNATION so that the swap device chosen via
-> /dev/snapshot is held against swapoff for the entire uswsusp
-> session. The intended invariant is: from the first successful
-> SNAPSHOT_SET_SWAP_AREA until the /dev/snapshot fd is closed,
-> exactly one swap device is pinned.
+On Mon, Apr 13, 2026 at 8:29=E2=80=AFPM Kairui Song <ryncsn@gmail.com> wrot=
+e:
 >
-> snapshot_set_swap_area() breaks that invariant on the re-set
-> path:
+> On Tue, Apr 14, 2026 at 11:05=E2=80=AFAM YoungJun Park <youngjun.park@lge=
+.com> wrote:
+> >
 >
->       unpin_hibernation_swap_type(data->swap);
->       data->swap = pin_hibernation_swap_type(swdev, offset);
->       if (data->swap < 0)
->               return swdev ? -ENODEV : -EINVAL;
+> Hi All,
 >
-> The unpin happens unconditionally before the new pin is
-> attempted. If the new pin fails (e.g. user space supplies an
-> offset/device that is not an active swap area), the session
-> continues with no swap device pinned, reopening exactly the
-> swapoff race the original commit was meant to close. A
-> subsequent swapoff on the previously selected device now
-> succeeds where it would have been blocked with EBUSY.
-
-Hmm.. This was actually intentional.  The API semantic
-is that a second SNAPSHOT_SET_SWAP_AREA abandons the
-previous pin.  If the new pin fails, the ioctl returns
-an error and userspace is responsible for aborting the
-session -- proceeding without a pinned device makes no
-sense.
-
-The only benefit of preserving the old pin on failure
-would be protecting against userspace that ignores the
-error.  But even in that case, the session has no valid
-swap target, so the hibernation image write itself
-would fail before swapoff becomes a concern.  I think
-this is an edge case rather than a bug.
-
-IOW, Looking at your test case, I think this part is
-userspace's responsibility:
-
->       ret = snapshot_set_swap_area(fd, bogus_dev, 0);
->       if (!ret) {
->               fprintf(stderr,
->                       "step6: bogus SNAPSHOT_SET_SWAP_AREA unexpectedly succeeded\n");
->               close(fd);
->               return 2;
->       }
-
-The ioctl has already returned an error here.  Userspace
-should close /dev/snapshot and stop, not continue and
-expect the old pin to still be in place.
-
-(BTW, the tests are well written and easy to follow.
-Thanks!)
-
-For this patch to have real value, there should be
-something that concretely breaks after the swapoff
-succeeds.  But since the session has no valid swap
-target at that point, is there any actual broken
-behavior that follows?
-
->       if (!buggy) {
->               if (swapoff(swap_path_2) < 0) {
->                       fprintf(stderr,
->                               "step8: swapoff(%s) after close failed: %s\n",
->                               swap_path_2, strerror(errno));
->                       return 2;
->               }
->               printf("step8: swapoff succeeded after closing /dev/snapshot\n");
->       }
-
-If you still see concrete value, I would be happy to
-take this as an improvement (without Fixes: and
-Cc: stable) -- see my suggestion below for a lighter
-approach.
-
-> Reordering pin/unpin in the caller cannot fix this
-> cleanly. Each of pin_hibernation_swap_type() /
-> unpin_hibernation_swap_type() acquires swap_lock
-> independently, so any two-call sequence leaves a window
-> in which swapoff can observe an inconsistent pin state.
-> The same-area re-set case (type == old_type) also cannot
-> be expressed with pin+unpin without either toggling the
-> bit (racy) or returning EBUSY (a false error).
+> > On Sat, Apr 11, 2026 at 06:40:44PM -0700, Nhat Pham wrote:
+> > > > 1. Modularization
+> > > >
+> > > > You removed CONFIG_* and went with a unified approach. I recall
+> > > > you were also considering a module-based structure at some point.
+> > > > What are your thoughts on that direction?
+> > > >
+> > >
+> > > The CONFIG-based approach was a huge mess. It makes me not want to
+> > > look at the code, and I'm the author :)
+> > >
+> > > > If we take that approach, we could extend the recent swap ops
+> > > > patchset (https://lore.kernel.org/linux-mm/20260302104016.163542-1-=
+bhe@redhat.com/)
+> > > > as follows:
+> > > > - Make vswap a swap module
+> > > > - Have cluster allocation functions reside in swapops
+> > > > - Enable vswap through swapon
+> > >
+> > > Hmmmmm.
+> >
+> > I think this would be a happy world, but I wonder what others think.
+> > Anyway, I'm looking forward to the future direction.
+> >
 >
-> Introduce repin_hibernation_swap_type(), which performs
-> the transition atomically under a single swap_lock
-> acquisition:
+> Yeah, I agree with this.
+>
+> And I do think swapoff of the virtual space itself is also necessary,
+> we really need a failsafe, e.g. a clean way to drop the swap
+> cache and data, kind of like drop_caches or shrinker fs are
+> commonly used.
+>
+> > > > 2. Flash-friendly swap integration (for my use case)
+> > > >
+> > > > I've been thinking about the flash-friendly swap concept that
+> > > > I mentioned before and recently proposed:
+> > > > (https://lore.kernel.org/linux-mm/aZW0voL4MmnMQlaR@yjaykim-PowerEdg=
+e-T330/)
+> > > >
+> > > > One of its core functions requires buffering RAM-swapped pages
+> > > > and writing them sequentially at an appropriate time -- not
+> > > > immediately, but in proper block-sized units, sequentially.
+> > > >
+> > > > This means allocated offsets must essentially be virtual, and
+> > > > physical offsets need to be managed separately at the actual
+> > > > write time.
+> > > >
+> > > > If we integrate this into the current vswap, we would either
+> > > > need vswap itself to handle the sequential writes (bypassing
+> > > > the physical device and receiving pages directly), or swapon
+> > > > a swap device and have vswap obtain physical offsets from it.
+> > > > But since those offsets cannot be used directly (due to
+> > > > buffering and sequential write requirements), they become
+> > > > virtual too, resulting in:
+> > > >
+> > > >   virtual -> virtual -> physical
+> > > >
+> > > > This triple indirection is not ideal.
+> > > >
+> > > > However, if the modularization from point 1 is achieved and
+> > > > vswap acts as a swap device itself, then we can cleanly
+> > > > establish a:
+> > > >
+> > > >   virtual -> physical
+> > >
+> > > I read that thread sometimes ago. Some remarks:
+> > >
+> > > 1. I think Christoph has a point. Seems like some of your ideas ( are
+> > > broadly applicable to swap in general. Maybe fixing swap infra
+> > > generally would make a lot of sense?
+> >
+> > Broadly speaking, there are two main ideas:
+> > 1. Swap I/O buffering (which is also tied to cluster management issues)
+> > 2. Deduplication
+> >
+> > Are you leaning towards the view that these two should be placed in a
+> > higher layer?
+>
+> IMHO the swap infra should be doing less, not more, so we can have
+> more flexible design, and different backends can implement their own
+> way to manage the data and layer. e.g. Having one backend being
+> flash friendly and it can do this without caring or affecting other devic=
+es
+> or backends.
 
-I understand the intent.  If you still see enough value
-in preserving the pin on failure, I would suggest a
-lighter approach -- see below.
+I think that's what Youngjun already has, unless I misunderstand his
+descriptions.
 
-> -     unpin_hibernation_swap_type(data->swap);
-> -
-> -     data->swap = pin_hibernation_swap_type(swdev, offset);
-> -     if (data->swap < 0)
-> +     swap = repin_hibernation_swap_type(data->swap, swdev,
-> +                                        offset);
-> +     if (swap < 0)
->               return swdev ? -ENODEV : -EINVAL;
-> +     data->swap = swap;
+>
+> > If it goes into ZSWAP, there would definitely be a clear advantage of
+> > seeing dedup benefits across all swap devices. It's a technically
+> > interesting area, and I'd like to discuss it in a separate thread if
+> > I have more ideas or thoughts.
+>
+> Just branstorm... Why don't we just merge these identical pages like
+> KSM? Maybe at least zero folios might benefit a lot if we keep them
+> mapped as RO instead of recording them in swap, seems better in the
+> long term?
 
-Would it be simpler to use find_hibernation_swap_type()
-to look up the new type first, and if it differs from
-data->swap, call pin_hibernation_swap_type() on the new
-one?  If pin succeeds, unpin the old one.  If it returns
--EBUSY, just keep the existing pin.
-
-If swapoff sneaks in between find and pin, pin will
-simply fail -- I don't think the kernel needs to
-guarantee atomicity for that window.  This does acquire
-swap_lock multiple times, but SNAPSHOT_SET_SWAP_AREA is
-an extremely rare operation, so the extra lock
-round-trips should be negligible.
-
-Reusing the existing helpers seems preferable to adding
-a new function with this much code for a single call
-site.
-
-How do you think?
-
-Thanks again!
-Youngjun Park
+That's our preferred approach too. We just didn't manage to get that
+to work (yet). :)
