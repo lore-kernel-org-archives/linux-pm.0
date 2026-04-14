@@ -1,422 +1,337 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F04C93B7751
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 16:49:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776185385; cv=none; b=erox82XGsx45t0qLHRHsS5mqvV5QR6pYpCG3Hbdo6NalxlLcxM8OMyrJIN5dI1hQ3w+bZe8DCxYqb+fy8PzgaHvtWQ03/YGasGJPux1R9N/HhQ0VLG3CDJeC17ij76cwrMbbYfkOKKRCYQ2xCx/qY5PQ5DW5wQFjf+u0wmHHMS0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776185385; c=relaxed/simple;
-	bh=XBjaBOxaANUQPaoOgpKdNyGLhamYxMVPpz2BcJFyE5M=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d7pkZ7GaF3YRi2wcbBHBlJOPoZbwT7e3hJMfSGuzO1xAaO25FajG5c/Td3c4iIiqWlMOxs5fq/eAUhG05WIo2OJS1ugH86MF/q9MKD/6V+2UnihZl87OhocYP/9GEPR5zu4BMBZSMI4/mCxwPg4YQDrDcDJO+aaDtkJRuv3sWsc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ntR/75Dm; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51C863EC2FF
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 17:23:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.44
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776187440; cv=pass; b=hG22boooGK+14OtTkUClW5sE2NkzJ50gUx8V+ldQBIOGc3Z3G2wLGZlT47YJmhEjAKjwrMXEC5tmmN8YT/zUp8hZjCuLiis0l9gDLf5vA1AiLxhjr22HJc+BBce/RuUey7LrnAHjEzMO3hFBuy0DROYdpHBnazlCJEXKQOPJg+A=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776187440; c=relaxed/simple;
+	bh=fBNd16aMcIO51hrQ2DUJK8LJDyzxvoNpH9dvTIPgUB4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=p+1nbdUhNLTVTbOkGV3rT17gAl3Lu6WuihORUIde/dY9YGYhHkXLl/LSqseKYPuXGW9N8k5CuZlqGlag33vZy42qsAKCHsu+a+9IogdzPoE2/QEV+rmDxn6fCaHTv3YSo+iJQRtfqxI1LZGndqg8ueWmp2yBgCubxorPfq5bRDQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P4ABFflq; arc=pass smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ntR/75Dm"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2b467d03d57so1651975ad.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 09:49:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P4ABFflq"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-43cf5ad500fso4951223f8f.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 10:23:56 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776187434; cv=none;
+        d=google.com; s=arc-20240605;
+        b=kNpAnVYpstErA+dJDaH7XqJtfC7r802wSZglVpx+/JLv+hnOBk1+4x3wcQ6Os6WuBo
+         v2iA5Fdc3yThA+kxsajuHlPv1Y1Xv/0EptfWt+mpyA/UBcHlC5bDTojieStT089cxN2R
+         t6bI51/saZ8luJ7VHNbUzWsjJcr2D3tkgAaBeTPLb85nHyizCY3cgICpfWRrIstfCH1B
+         PfTdJDsDnoc+cvqPKG19pNKPOTmQlNLVQ1RXRSRLk1aAQzfXXvEuIPbbFZUc+YGtZOOd
+         tsQgQi+03elz2z6wIn6oISdUA30xoIdBfGXzH1IszCzr3ld5csOUbQnFdGgo4usV9Hba
+         ziTw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=dp82XmEr+jeti4TR19n6W0flGrbWCgKnTbsqPQVkS+w=;
+        fh=GxkUufvwvKBC8HXjZDCxcNuD3yo57LhbgiZAjidYrBQ=;
+        b=jW0EgYmZanUM2A+zoWI7BTKZm1geYuunjahFiEIJijduL5/UxuoUAe1uYDPmwyqWD2
+         kBhtLsJwRqsHaCfMvxDhMPyUHrtiib00XIOezopzp0yKkHCneXCQaUErW+XrrCLJX3HG
+         mgWduS5kBtER42yE0zwXQ48rhPJEieSxjSXVA3og1fW1IdUi47iwREQsp5NX2dxpsMtz
+         ZxBWz+kgzAucLg1OqHe0dE5/lrDpBoQIe2PHCTfiBsj1pnxsydehx72Y2j1HxulEuoM/
+         o0jiL6+rRXT1Y7MogRcFkaUghnpDT3sgbWoAKbZtJ+Zz/UmoGpFLM6LZcirjPoH9m4ub
+         uOSw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776185383; x=1776790183; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1776187434; x=1776792234; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FUoYKq79bxvjyxgdJrulHpNt50LqCWweYqk4dEJlv4E=;
-        b=ntR/75DmI+HELpvMDzcDvAICfeCIDZ19RYWe+72xfbVhR+uDN40uA6y8t+r+x5NsGS
-         L8P4RSm5UTzpUGsJ/kYtg6JdpGn+BDItZMHfcJ6XLEULvzuJ12Zi3GRhgQ9Tyq26yK5P
-         88YS5g/ZP0A3apWqPqY6RU75gB2EvbesOsvK21jShfQzsF/xExhU4TKcHcomFucW6gSf
-         pvSTFBHqI6X6srhTJRcpK5QcGGv11Jeeac75NO+KRzVY3hzJy74JJe6GeQZFzVOAaKrH
-         KyDecIM1X3sLeGP6emcvYyUeunzYqi1ECQB8wFtvj4TCbOtYv/NbxU2lEA1XGQ2lvW3S
-         CpUA==
+        bh=dp82XmEr+jeti4TR19n6W0flGrbWCgKnTbsqPQVkS+w=;
+        b=P4ABFflqrZcN31vaeETuf/Nk22Bfi2P+w0TFf3QkOwXB0rl3o62OtqrDxs/I/DGDfp
+         tEv17UiW/g7vsuHbYAfoVh+18R6OGXh/yez083xWeqIfjuyuXFk8hZjOMt6uGTmnaGm5
+         mKlL/4UBVe+KMcl0E1xBo14A0UF+onpjrUKwPazVSezpZE9qEFr8Ecbr+cMyUKspGFqZ
+         3p9jrDqDzKxT/hKLh8O6i5h3NxykweI0sT6BcuDG3lpVakRzGJVsMddbx1suGm4AVKH/
+         oPlJU5Ih8pXOb0VAs0TMw9xtjdkpbMPUF5hIM031vnu/aDLKUTz+hlcrutzzPghMu1ID
+         DM6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776185383; x=1776790183;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1776187434; x=1776792234;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=FUoYKq79bxvjyxgdJrulHpNt50LqCWweYqk4dEJlv4E=;
-        b=oFewQbxkrKGiYUoj3yu3MNnvygrjdpnBKl8Ux9kr/quBs5CKvNrxMRLd7qsNsurAaD
-         fCHsfO5VVAS97owgFf46NUVJt4QNBMvXN1YCVJK+4BxzORS5cspLtkaRFA8RKy3r+yxH
-         gSuXtGi1FuEerPvUaFWcNsXtDKMurduIAmjWQqe0Kyod6hfKVfH5QnHneY++IR5bzQXb
-         w2mrcAQtV5khcBstgHD/o0HOz9+hTePolF6mH3Uk/J83K17reJM4a8O/5DFQGhTJrGgG
-         MXMsDqopsf/ca+bPJcu5mClAJf+PliLbrSdBnGZsqySo7BD5LTPTXahTV6MFxx2Sum/q
-         HL0g==
-X-Forwarded-Encrypted: i=1; AFNElJ/FAogUOnNdGKkkTt4f4a3YtZDvgjKyHxASouKCurcczXTo8kXRfVYD76sHpzXEToxOZQpLPiSTWQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzoGAykBOycN4yJ3q/lj/kTKuynLt+1YK9nZ0wa/3sWvu9+wkBr
-	DYNkHkIcC1SJNI0I3OMcVqG+via7/sq+2Hp8oAbrFc7JKuX0F2TzT0b/
-X-Gm-Gg: AeBDiestxw7vCc5lj2HKer0D17dk9yWfypPkh9aJt5Dw+ZiATI8KVvbstnRHsm8TYZt
-	zdREADZTIYmDcLGIhS6CXwYPEa7vqmGDgf0yr58EJSX+3xqsFPoKHh/b5OCWAE+RjJBxwEi6j0u
-	jrjkXl/nSXHDXu+aK6v6YM9cgj7mkUbMA0zOe7LU6gqJiPoz7xaf+35tgo98/XqjiCQV+QyvZ15
-	DJcZSvH65dX2zP/7E6v3SJ9V5rHV0T00kROuU5Xp7ZKydMQa5+shN7Oj5AnEF1PK2ezU7hZyYtu
-	pbW/iI0gpYElAPd0Y1fWWSbm2Wy6Y8SEPrbG/H9rXtoRvfFJRiwkXmMpuwrSOz636lJ+TfnEORd
-	kVTztetTUm4wfgO2kKohtVvzSz3bqPnR4b/NobgJrK/+xr7lNaShhW7JRIz6sRRasc4ukZ7+6aD
-	IyGhMuYl1V3tnyEw7F
-X-Received: by 2002:a17:903:faf:b0:2ae:3f3f:67c4 with SMTP id d9443c01a7336-2b2d580f23cmr111214755ad.0.1776185383117;
-        Tue, 14 Apr 2026 09:49:43 -0700 (PDT)
-Received: from ser8.. ([221.156.231.192])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2d4dabca4sm153358325ad.15.2026.04.14.09.49.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Apr 2026 09:49:42 -0700 (PDT)
-From: DaeMyung Kang <charsyam@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Youngjun Park <youngjun.park@lge.com>,
-	Kairui Song <kasong@tencent.com>,
-	Chris Li <chrisl@kernel.org>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>,
-	Baoquan He <bhe@redhat.com>,
-	Barry Song <baohua@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	linux-mm@kvack.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	DaeMyung Kang <charsyam@gmail.com>
-Subject: [PATCH v2] PM: hibernate: keep existing uswsusp swap pin if re-selection fails
-Date: Wed, 15 Apr 2026 01:49:36 +0900
-Message-ID: <20260414164937.1363887-1-charsyam@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260414143200.1267932-1-charsyam@gmail.com>
-References: <20260414143200.1267932-1-charsyam@gmail.com>
+        bh=dp82XmEr+jeti4TR19n6W0flGrbWCgKnTbsqPQVkS+w=;
+        b=WAXJoVVMc6MZgRHGaPAHXm9Thwmu2KovnuDZaL1x1c2wMp/LbDE+xowpXZqhl6k00n
+         zrNj2Kbq1mQHi7+BWm8aoL1jJHoQz9HwXXN6Q0IU2uzsK0p7vXRX7mudcQ3o8IbroHKV
+         bGbSkXut8U1cPxnxZXXPHAW7lR3cI1NaUGsOa0R9uT+KjkYD/GmJ/KlHfDAmXx92AUBO
+         iYgL0y6zCudpRnY+qksYMfVA7H15XZAxaSIxGcpqqP6sXY8JxjHVvymy3dtlyRhMCNoS
+         FhL+toonYVtTJoQ5gOPR0AdPWHgCvntQ0R7CK693LI+Xsxlz18Hzz2WWTMe0+P4G93x6
+         4oMA==
+X-Forwarded-Encrypted: i=1; AFNElJ/hClYZkdMOP4E5ODXomDuyiGsWu+Ce+dOOKMLXG6cf6RBF7C4HITKCTVBLiLnP7Q0YINrcemRMzQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxFR0ogLuKwU38JXQGzpRlMsIPjp7O8ePRsX04iKlHaGUahY2Sm
+	SqETEd5hKoVP0FvW0vLhXoyzyrzkfrEfrUHXA7+0WMOS8i0/ZfoPYPVIBNj1tHwZ+hzI8enVzJd
+	zQTMAuP6jZ/8rcRL52jBKojQ83/7pXKM=
+X-Gm-Gg: AeBDiess4FkSDwUt7113t2BuZCCDHbLN+GPM75nWbEI/PvaC8i64rYe798SPTuuQArx
+	3sMYHAOHNZ6Dt59iitFAe2O2cbivIefGlwhfS2jG7w/1NNsP298PYvKpSEz5hYTYhFtfkhvsMTw
+	j+PK/9dObk9R2cjbu2Boi+I0ZLDRzDezFECvmYU9UzhaJOhGItB3AsysIQzy28qD/+ozQTwtLZL
+	L7m4DbhR2nyWGEdGj2VjL7QAG4O2D5OdZS3Vm5X4QM7eeGkI6lDMWxS/fIcjh6DHSnW4MyeADdS
+	5UE/0iHLJ1Z88wl2s1mr/3kx8WnC8TUBJNHb+dI=
+X-Received: by 2002:a05:6000:2211:b0:43d:2f92:633f with SMTP id
+ ffacd0b85a97d-43d641f97aemr27791434f8f.0.1776187434027; Tue, 14 Apr 2026
+ 10:23:54 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260320192735.748051-1-nphamcs@gmail.com> <CAMgjq7AiUr_Ntj51qoqvV+=XbEATjr7S4MH+rgD32T5pHfF7mg@mail.gmail.com>
+ <CAKEwX=PBjMVfMvKkNfqbgiw7o10NFyZBSB62ODzsqogv-WDYKQ@mail.gmail.com>
+ <CAMgjq7AzySv801qDxfc8mEkEsFDv4P=_qw0rNOTe0n+qy7Fz6A@mail.gmail.com> <CAKEwX=P4syV38jAVCWq198r2OHXXc=xA-fx1dk6+qYef6yzxWQ@mail.gmail.com>
+In-Reply-To: <CAKEwX=P4syV38jAVCWq198r2OHXXc=xA-fx1dk6+qYef6yzxWQ@mail.gmail.com>
+From: Nhat Pham <nphamcs@gmail.com>
+Date: Tue, 14 Apr 2026 10:23:42 -0700
+X-Gm-Features: AQROBzCvQ2Y205EwGC1lGKq27IJDyjI-VHhfD6X3kasimC4o5zGPGqT7idYCq1M
+Message-ID: <CAKEwX=NrUhUrAFx+8BYJEfaVKpCm-H9JhBzYSrqOQb-NW7QRug@mail.gmail.com>
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+To: Kairui Song <ryncsn@gmail.com>
+Cc: Liam.Howlett@oracle.com, akpm@linux-foundation.org, apopple@nvidia.com, 
+	axelrasmussen@google.com, baohua@kernel.org, baolin.wang@linux.alibaba.com, 
+	bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
+	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
+	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
+	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, 
+	lenb@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, 
+	matthew.brost@intel.com, mhocko@suse.com, muchun.song@linux.dev, 
+	npache@redhat.com, pavel@kernel.org, peterx@redhat.com, peterz@infradead.org, 
+	pfalcato@suse.de, rafael@kernel.org, rakie.kim@sk.com, 
+	roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
+	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, 
+	tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
+	riel@surriel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Commit 5b2b0c6e4577 ("mm/swap, PM: hibernate: fix swapoff race in
-uswsusp by pinning swap device") introduced SWP_HIBERNATION so that
-the swap area selected through /dev/snapshot remains protected against
-swapoff() for the lifetime of the uswsusp session.
+On Mon, Mar 23, 2026 at 1:05=E2=80=AFPM Nhat Pham <nphamcs@gmail.com> wrote=
+:
+>
+> On Mon, Mar 23, 2026 at 12:41=E2=80=AFPM Kairui Song <ryncsn@gmail.com> w=
+rote:
+> >
+> > On Mon, Mar 23, 2026 at 11:33=E2=80=AFPM Nhat Pham <nphamcs@gmail.com> =
+wrote:
+> > >
+> > > On Mon, Mar 23, 2026 at 6:09=E2=80=AFAM Kairui Song <ryncsn@gmail.com=
+> wrote:
+> > > >
+> > > > On Sat, Mar 21, 2026 at 3:29=E2=80=AFAM Nhat Pham <nphamcs@gmail.co=
+m> wrote:
+> > > > > This patch series is based on 6.19. There are a couple more
+> > > > > swap-related changes in mainline that I would need to coordinate
+> > > > > with, but I still want to send this out as an update for the
+> > > > > regressions reported by Kairui Song in [15]. It's probably easier
+> > > > > to just build this thing rather than dig through that series of
+> > > > > emails to get the fix patch :)
+> > > > >
+> > > > > Changelog:
+> > > > > * v4 -> v5:
+> > > > >     * Fix a deadlock in memcg1_swapout (reported by syzbot [16]).
+> > > > >     * Replace VM_WARN_ON(!spin_is_locked()) with lockdep_assert_h=
+eld(),
+> > > > >       and use guard(rcu) in vswap_cpu_dead
+> > > > >       (reported by Peter Zijlstra [17]).
+> > > > > * v3 -> v4:
+> > > > >     * Fix poor swap free batching behavior to alleviate a regress=
+ion
+> > > > >       (reported by Kairui Song).
+> > > >
+> > >
+> > > Hi Kairui! Thanks a lot for the testing big boss :) I will focus on
+> > > the regression in this patch series - we can talk more about
+> > > directions in another thread :)
 
-When user space issues SNAPSHOT_SET_SWAP_AREA again,
-snapshot_set_swap_area() currently drops the old pin before attempting
-to pin the new swap area.  If the new selection fails, the ioctl
-returns an error and user space is expected to abort the session.
-However, preserving the existing pin in that case makes the kernel
-side more robust against a failed re-selection, while keeping the
-existing userspace-visible behavior unchanged.
+Hi Kairui,
 
-Implement this with the existing swap helpers:
+My apologies if I missed your response, but could you share with me
+your full benchmark suite? It would be hugely useful, not just for
+this series, but for all swap contributions in the future :) We should
+do as much homework ourselves as possible :P
 
-  - look up the requested swap area first
-  - treat re-selecting the already pinned area as a no-op
-  - pin the new area before unpinning the old one
-  - leave the existing pin in place if the new pin attempt fails
+And apologies for the delayed response. I kept having to back and
+forth between regression investigating, and figuring out what was
+going on with the build setups (I missed some of the CONFIGs you had
+originally), reducing variance on hosts, etc.
 
-This keeps the hibernation session protected against swapoff() until
-/dev/snapshot is closed, even after a failed attempt to switch to a
-different swap area.
+I don't have PMEM, so I have only worked with zram backend so far. I
+did manage to reproduce the regressions you showed me (albeit at a
+much smaller gap on certain metrics than your cited numbers, which I
+suspect is due to zram/pmem difference).
 
-Suggested-by: Youngjun Park <youngjun.park@lge.com>
-Signed-off-by: DaeMyung Kang <charsyam@gmail.com>
----
-Notes (not part of the commit, stripped by git am):
+There are two benchmarks that I focused on:
 
-Changes in v2:
-  - Drop Fixes: and Cc: stable; reframe as a hardening improvement
-    rather than a regression fix, per Youngjun's feedback that the
-    current behavior is intentional and there is no concrete
-    user-observable harm.
-  - Drop the new repin_hibernation_swap_type() helper. Rework
-    snapshot_set_swap_area() in place using the existing find / pin /
-    unpin helpers as Youngjun suggested; the change now touches only
-    kernel/power/user.c and adds no new API.
-  - Update the subject and commit log accordingly.
-  - Add Suggested-by: trailer.
+1. Usemem - the exact command I ran is: time ./usemem --init-time -O
+-y -x -n 1 56G
 
-v1: https://lore.kernel.org/lkml/20260414143200.1267932-1-charsyam@gmail.com/
+My host is 32GB, 52 processor(s) / x86_64.
 
-Baseline
---------
-This patch is generated against linux-next at commit 5b2b0c6e4577
-("mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap
-device"). Mainline does not yet carry that commit, and neither the
-helpers used here (find/pin/unpin_hibernation_swap_type) nor the code
-site this patch modifies exist there. The base-commit trailer at the
-bottom of the mbox records the exact commit.
+Build        real (s)          vs base   sys (s)           tput (KB/s)
+       free_ms
+baseline     175.6 +/- 3.6      =E2=80=94        121.9 +/- 3.3    391,941 +=
+/-
+8,333  6,992 +/- 204
+vss_v5       184.0 +/- 3.9    +4.8%      130.5 +/- 3.8    376,192 +/-
+8,581  8,297 +/- 247
 
-Testing
--------
-The behavior change can be exercised entirely through the
-/dev/snapshot ioctl path; no actual hibernation cycle is required.
-A targeted assertion test is below; run it as root in a throwaway VM
-with two active swap block devices and one non-swap block device
-(three arguments).
+(I hope the formatting works, but let me know if it looks weird).
 
-Run inside a VM on linux-next at 5b2b0c6e4577 with this patch applied:
+2. Memhog: time memhog 48G
 
-  step1: pinned active swap /dev/vda
-  step2: swapoff blocked with EBUSY while pin is held
-  step3: repinned active swap to /dev/vdb
-  step4: swapoff(/dev/vda) succeeded after repinning away
-  step5: repinned swap is blocked with EBUSY
-  step6: bogus SNAPSHOT_SET_SWAP_AREA failed as expected: No such device
-  step7: swapoff(/dev/vdb) is still blocked with EBUSY
-  result: pin preserved across failed re-set (hardened behavior)
-  step8: swapoff succeeded after closing /dev/snapshot
+My host for this one is 16 GB, 52 processors, x86_64 too.
 
-Without the patch, step7 instead reports
-  swapoff(/dev/vdb) succeeded after failed re-set
-because the old pin had been released before the failed pin attempt.
+Build        real (s)          vs base   sys (s)
+baseline      80.5 +/- 1.9      =E2=80=94         62.7 +/- 2.0
+vss_v5        83.0 +/- 1.8    +3.1%       65.7 +/- 1.8
 
-What the assertion test covers:
-  - SWP_HIBERNATION is enforced against swapoff (step2, step5);
-  - the success path moves the pin from one active swap to another
-    (step3, step4, step5);
-  - a failed re-selection preserves the existing pin (step6, step7);
-  - the pin lifetime ends on /dev/snapshot close (step8).
+On both benchmark, I enable MGLRU, to more closely match the setup you had.
 
-What it does not cover:
-  - the snapshot_open(O_RDONLY) initial resume-device pin path;
-  - the full suspend-to-disk image create/restore flow;
-  - concurrent swapoff racing against SNAPSHOT_SET_SWAP_AREA;
-  - the type == data->swap idempotent branch (not externally
-    observable since it intentionally skips the bit toggle).
+Staring at the run logs (and double check with the logs you sent me to
+make sure it's not just on my system), there are some common patterns
+I noticed across these runs:
 
-A normal sysfs-based suspend-to-disk cycle continues to work; the
-find_hibernation_swap_type() / pin / unpin paths themselves are
-unchanged. Build tested with allmodconfig and run-tested with
-CONFIG_PROVE_LOCKING=y and CONFIG_KASAN=y. The VM was booted with
-oops=panic panic=-1 so any WARN/Oops/BUG would have halted the run;
-the full test completed cleanly with no kernel log diagnostics.
+1. Kswapd is slower on the vswap side, which shifts work towards
+direct reclaim, and makes compaction have to run harder (which has a
+weird contention through zsmalloc - I can expand further, but this is
+not vswap-specific, just exacerbated by slower kswapd).
 
-Reproducer (C source, for reference only -- not added to the tree):
+2. Higher swap readahead (albeit with higher hit rate) - this is more
+of an artifact of the fact that zero swap pages are no longer backed
+by zram swapfile, which skipped readahead in certain paths. We can
+ignore this for now, but worth assessing this for fast swap backends
+in general (zero swap pages, zswap, so on and so forth).
 
- // SPDX-License-Identifier: GPL-2.0
- /*
-  * Reproduce / verify the SNAPSHOT_SET_SWAP_AREA pin-lifetime behavior.
-  *
-  * Run only inside a throwaway VM. The test manipulates swap state and
-  * leaves the target swap area disabled on success.
-  *
-  * Usage:
-  *   ./uswsusp_swapoff_repro <active-swap-1> <active-swap-2> <bogus-blk>
-  *
-  * Exit codes:
-  *   0 = expected (hardened) behavior: pin preserved across failed re-set
-  *   1 = old behavior: pin dropped on failed re-set
-  *   2 = setup error / inconclusive
-  */
+I spent sometimes perf-ing kswapd, and hack the usemem binary a bit so
+that I can perf the free stage of usemem separately. Most of the
+vswap-specific overhead lies in the xarray lookups. Some big offenders
+on top of my mind:
 
- #define _GNU_SOURCE
- #include <errno.h>
- #include <fcntl.h>
- #include <linux/types.h>
- #include <linux/suspend_ioctls.h>
- #include <stdbool.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <sys/ioctl.h>
- #include <sys/stat.h>
- #include <sys/swap.h>
- #include <sys/sysmacros.h>
- #include <unistd.h>
+1. Right now, in the physical swap allocator, whenever we have an
+allocated slot in the range we're checking, we check if that slot is
+swap-cache-only (i.e no swap count), and if so we try to free it (if
+swapfile is almost full etc.). This check is cheap if all swap entry
+metadata live in physical swap layer only, but more expensive when you
+have to go through another layer of indirection :)
 
- static int encode_dev(dev_t dev)
- {
- 	unsigned int major_num = major(dev);
- 	unsigned int minor_num = minor(dev);
+I fixed that by just taking one bit in the reverse map to track
+swap-cache-only state, which eliminates this without extra space
+overhead (on top of the existing design).
 
- 	/* Match new_encode_dev() / new_decode_dev() in the kernel. */
- 	return (major_num & 0xfff) << 8 |
- 	       (minor_num & 0xff) |
- 	       ((minor_num & ~0xff) << 12);
- }
+2. On the free path, in swap_pte_batch(), we check cgroup to make sure
+that the range we pass to free_swap_and_cache_nr() belongs to the same
+cgroup, which has a per-PTE overhead for going to the vswap layer. We
+can make this check once-per range instead, to reduce overhead. Even
+better - we can skip this check in swap_pte_batch() for the free case,
+and deferred this check to later on where we already enter vswap
+cluster lock context :)
 
- static int get_block_dev(const char *path, dev_t *dev)
- {
- 	struct stat st;
+With a bunch of changes like that, I closed the gap majorly:
 
- 	if (stat(path, &st) < 0) {
- 		fprintf(stderr, "stat(%s): %s\n", path, strerror(errno));
- 		return -errno;
- 	}
- 	if (!S_ISBLK(st.st_mode)) {
- 		fprintf(stderr, "%s is not a block device\n", path);
- 		return -EINVAL;
- 	}
- 	*dev = st.st_rdev;
- 	return 0;
- }
+usemem:
+Build        real (s)          vs base   sys (s)           tput (KB/s)
+       free_ms
+baseline     175.6 +/- 3.6      =E2=80=94        121.9 +/- 3.3    391,941 +=
+/-
+8,333  6,992 +/- 204
+new_opt_v2   179.8 +/- 3.0    +2.4%      126.1 +/- 2.9    382,536 +/-
+6,662  7,105 +/- 183
 
- static int snapshot_set_swap_area(int fd, dev_t dev, long long offset)
- {
- 	struct resume_swap_area area = {
- 		.offset = offset,
- 		.dev = encode_dev(dev),
- 	};
+memhog:
+Build        real (s)          vs base   sys (s)
+baseline      80.5 +/- 1.9      =E2=80=94         62.7 +/- 2.0
+new_opt_v2    79.9 +/- 1.7    -0.8%       62.4 +/- 1.7
 
- 	if (ioctl(fd, SNAPSHOT_SET_SWAP_AREA, &area) < 0)
- 		return -errno;
- 	return 0;
- }
+I would like to also point out that, some of this overhead is specific
+to the swapfile backend case, which is why we don't see this in zswap
+in the stats I included in V5. Zswap does not require this
+swap-cache-only dance, because in virtual swap, zswap only needs the
+virtual swap slot as the index (on top of much more negligible space
+overhead thanks to zswap tree merging into vswap cluster, no swap
+charging, no double allocation, etc.).
 
- int main(int argc, char **argv)
- {
- 	const char *p1, *p2, *pb;
- 	dev_t d1, d2, db;
- 	int fd, ret;
- 	bool buggy = false;
+Anyway, still a small gap. The next idea that I have is inspired by
+TLB, which cache virtual->physical memory address translation. I added
+a per-CPU MRU virtual cluster. The idea is that a lot of consecutive
+swap operations operate on the same range of swap entries - merging
+these operations of course makes the most sense, but sometimes it's
+not convenient to do it. The non-vswap, old design sometimes lock the
+physical swap cluster and expose the swap cluster struct to callers to
+pass around, but I would like to avoid that if possible :)
 
- 	if (argc != 4) {
- 		fprintf(stderr,
- 			"usage: %s <swap1> <swap2> <bogus>\n", argv[0]);
- 		return 2;
- 	}
- 	if (geteuid() != 0) {
- 		fprintf(stderr, "must run as root\n");
- 		return 2;
- 	}
- 	p1 = argv[1]; p2 = argv[2]; pb = argv[3];
+With this change, we close the gap even further - exceeding the
+baseline in average in certain cases, but as you can see it's within
+noises so I wouldn't conclude too much out of it:
 
- 	if (get_block_dev(p1, &d1) < 0 ||
- 	    get_block_dev(p2, &d2) < 0 ||
- 	    get_block_dev(pb, &db) < 0)
- 		return 2;
+usemem:
+Build        real (s)          vs base   sys (s)           tput (KB/s)
+       free_ms
+baseline     175.6 +/- 3.6      =E2=80=94        121.9 +/- 3.3    391,941 +=
+/-
+8,333  6,992 +/- 204
+cc_v2        176.4 +/- 5.3    +0.4%      123.6 +/- 5.4    390,405 +/-
+12,792 6,987 +/- 296
 
- 	fd = open("/dev/snapshot", O_WRONLY);
- 	if (fd < 0) {
- 		fprintf(stderr, "open(/dev/snapshot): %s\n", strerror(errno));
- 		return 2;
- 	}
 
- 	ret = snapshot_set_swap_area(fd, d1, 0);
- 	if (ret < 0) { fprintf(stderr, "step1: %s\n", strerror(-ret)); goto setup_err; }
- 	printf("step1: pinned active swap %s\n", p1);
+memhog:
+Build        real (s)          vs base   sys (s)
+baseline      80.5 +/- 1.9      =E2=80=94         62.7 +/- 2.0
+cc_v2         79.9 +/- 0.9    -0.8%       62.1 +/- 1.5
 
- 	if (swapoff(p1) == 0) {
- 		fprintf(stderr, "step2: swapoff unexpectedly succeeded\n");
- 		close(fd); return 1;
- 	}
- 	if (errno != EBUSY) {
- 		fprintf(stderr, "step2: expected EBUSY, got %s\n", strerror(errno));
- 		goto setup_err;
- 	}
- 	printf("step2: swapoff blocked with EBUSY while pin is held\n");
+The reclaim and compaction stats tell a similar story:
 
- 	ret = snapshot_set_swap_area(fd, d2, 0);
- 	if (ret < 0) { fprintf(stderr, "step3: %s\n", strerror(-ret)); goto setup_err; }
- 	printf("step3: repinned active swap to %s\n", p2);
+Reclaim / Compaction (usemem)
+Metric                               baseline
+vss_v5                   new_opt_v2                        cc_v2
+allocstall                 167,787 +/- 10,292           170,532 +/-
+15,185           169,782 +/- 9,903            168,635 +/- 13,526
+pgsteal_kswapd          6,932,143 +/- 186,411        6,965,962 +/-
+288,323        6,968,188 +/- 286,383        7,038,513 +/- 202,696
+pgsteal_direct          9,759,350 +/- 480,674        9,978,721 +/-
+765,543        9,899,698 +/- 480,781        9,845,668 +/- 544,319
+swap_ra                        82.9 +/- 22.6             5994.8 +/-
+2817.5            4976.8 +/- 1484.2            4718.2 +/- 1510.5
+pgmigrate               1,029,901 +/- 428,416        1,687,072 +/-
+399,505        1,260,451 +/- 202,603        1,144,560 +/- 490,177
 
- 	if (swapoff(p1) < 0) {
- 		fprintf(stderr, "step4: swapoff(%s): %s\n", p1, strerror(errno));
- 		goto setup_err;
- 	}
- 	printf("step4: swapoff(%s) succeeded after repinning away\n", p1);
+Reclaim / Compaction (memhog)
+Metric                               baseline
+vss_v5                   new_opt_v2                        cc_v2
+allocstall                 101,245 +/- 6,271            109,320 +/-
+12,180           100,207 +/- 11,053            99,223 +/- 9,905
+pgsteal_kswapd          8,817,264 +/- 432,519        8,436,548 +/-
+265,763        8,728,944 +/- 305,101        8,962,443 +/- 589,012
+pgsteal_direct          5,408,046 +/- 394,775        5,932,611 +/-
+584,873        5,419,891 +/- 551,226        5,349,352 +/- 601,655
+swap_ra                        66.5 +/- 22.8             8589.5 +/-
+3325.1            8954.5 +/- 2661.9            8703.1 +/- 1746.6
+pgmigrate                  239,410 +/- 46,014           277,193 +/-
+71,487           320,672 +/- 59,488          243,989 +/- 136,129
 
- 	if (swapoff(p2) == 0) {
- 		fprintf(stderr, "step5: swapoff unexpectedly succeeded\n");
- 		close(fd); return 1;
- 	}
- 	if (errno != EBUSY) {
- 		fprintf(stderr, "step5: expected EBUSY, got %s\n", strerror(errno));
- 		goto setup_err;
- 	}
- 	printf("step5: repinned swap is blocked with EBUSY\n");
+You can see that the latter versions gradually restore the behaviors
+of baseline in terms of reclaim dynamics :)
 
- 	ret = snapshot_set_swap_area(fd, db, 0);
- 	if (!ret) {
- 		fprintf(stderr, "step6: bogus unexpectedly succeeded\n");
- 		goto setup_err;
- 	}
- 	printf("step6: bogus SNAPSHOT_SET_SWAP_AREA failed as expected: %s\n",
- 	       strerror(-ret));
+Some final remarks:
+* I still think there's a good chance we can *significantly* close the
+gap overall between a design with virtual swap and a design without.
+It's a bit premature to commit to a vswap-optional route (which to be
+completely honest I'm still not confident is possible to satisfy all
+of our requirements).
 
- 	if (swapoff(p2) == 0) {
- 		printf("step7: swapoff(%s) succeeded after failed re-set\n", p2);
- 		printf("result: pin was dropped on failure (old behavior)\n");
- 		buggy = true;
- 	} else if (errno == EBUSY) {
- 		printf("step7: swapoff(%s) is still blocked with EBUSY\n", p2);
- 		printf("result: pin preserved across failed re-set (hardened behavior)\n");
- 	} else {
- 		fprintf(stderr, "step7: unexpected: %s\n", strerror(errno));
- 		goto setup_err;
- 	}
+* Regardless of the direction we take, these are all pitfalls that
+will be problematic for virtual swap design, and more generally some
+of them will affect any dynamic swap design (which has to go through
+some sort of indirection or a dynamic data structure like xarray that
+will induce some amount of lookup overhead). I hope my work here can
+be useful in this sense too, outside of this specific vswap direction
+:)
 
- 	close(fd);
- 	if (!buggy) {
- 		if (swapoff(p2) < 0) {
- 			fprintf(stderr, "step8: swapoff(%s): %s\n", p2, strerror(errno));
- 			return 2;
- 		}
- 		printf("step8: swapoff succeeded after closing /dev/snapshot\n");
- 	}
- 	printf("note: re-enable with `swapon %s` and `swapon %s`\n", p1, p2);
- 	return buggy ? 1 : 0;
-
- setup_err:
- 	close(fd);
- 	return 2;
- }
-
- kernel/power/user.c | 35 ++++++++++++++++++++++++++---------
- 1 file changed, 26 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 4406f5644a56..e1ab85db2e95 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -218,6 +218,7 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- {
- 	sector_t offset;
- 	dev_t swdev;
-+	int type, swap;
- 
- 	if (swsusp_swap_in_use())
- 		return -EPERM;
-@@ -239,18 +240,34 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- 	}
- 
- 	/*
--	 * Unpin the swap device if a swap area was already
--	 * set by SNAPSHOT_SET_SWAP_AREA.
-+	 * User space encodes device types as two-byte values, so we need to
-+	 * recode them.
- 	 */
--	unpin_hibernation_swap_type(data->swap);
-+	type = find_hibernation_swap_type(swdev, offset);
-+	if (type < 0)
-+		return swdev ? -ENODEV : -EINVAL;
- 
--	/*
--	 * User space encodes device types as two-byte values,
--	 * so we need to recode them
--	 */
--	data->swap = pin_hibernation_swap_type(swdev, offset);
--	if (data->swap < 0)
-+	if (type == data->swap) {
-+		/*
-+		 * Re-selecting the already pinned swap area is a no-op.
-+		 * Keep the existing pin and just refresh the cached device id.
-+		 */
-+		data->dev = swdev;
-+		return 0;
-+	}
-+
-+	swap = pin_hibernation_swap_type(swdev, offset);
-+	if (swap < 0) {
-+		/*
-+		 * Preserve the existing pin on failure.  This can happen if the
-+		 * target swap area disappears before pinning, or via the
-+		 * defensive -EBUSY path in pin_hibernation_swap_type().
-+		 */
- 		return swdev ? -ENODEV : -EINVAL;
-+	}
-+
-+	unpin_hibernation_swap_type(data->swap);
-+	data->swap = swap;
- 	data->dev = swdev;
- 	return 0;
- }
-
-base-commit: 5b2b0c6e457765adbe96fb2d464ff1bcd3d72158
--- 
-2.43.0
-
+I will clean things up a bit and send you a v6 for further inspection.
+Once again, I'd like to express my gratitude for your engagement and
+feedback.
