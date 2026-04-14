@@ -1,224 +1,301 @@
-Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com [209.85.167.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 647CF2C21C7
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 13:43:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776174209; cv=pass; b=DdlfNh9/WiTWEDhsF7OHund6MSjotWtfi+KobU8+8Pf5F+7OSz9f2xu1BJr4r5XzoTPkl+b9buX1gyNq4gNMv2+esKZVarmsJwFrEfi4O2KfnNjxsn2xgOuYbfEqj4pP+2Mtc2uZ6AXX1QcMq0gwRnF2CIZJD95vpUobQthtnqo=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776174209; c=relaxed/simple;
-	bh=+FMcleE/RJk8JXq4ZJIsUVYV4jwK9150VQYwhJJuz3Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PYnSbsC6AyNStFEqY5TEqJAubsG5GVJUycc5vArEQJU7FegBNGvzGUaK7TxW6GX07UQ8476dhfhhWjENIGwftlCO3gknALBDWyx2Y8xGl4/4pFw0TFw/DVNhLeCNbmfW8hP65c9pavCWqphBSKslCErelthGW6UditWtcja0BlI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MzGXfcs1; arc=pass smtp.client-ip=209.85.167.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DCAC3E1CE2
+	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 13:48:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776174506; cv=none; b=AIHj69gfv36RcCxd4wgkzS5g2MgMjujO61iuU1EvZbMmmgB7FiifjNMNck2p0V3FQvF0QRzDQcsUTtauE25s1LOy/T+0llgSrQcQuGyUx8P8MVIYt3ZG3LITdnPj8bokYJd13FaqwI8Mf0uwmuqLme85ryhUeN0fb/DfqikwHSo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776174506; c=relaxed/simple;
+	bh=5v+8yVzsJNS2OqUbx+zYbExHDFzJ7wxfSJt6e2Kr3iY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZwmwjpqK9Xk18517pk/hW8LJ+Eneg/FdpL9t7Kn4BsUT3sBXK7BN6nsA0b6P3i3+Dpjlw8+VAc6Yf4R05eaTo4q8QXWxzJCrSOkD1hqAO9FcJWLnCDvLcZNCF9hudP1P/sluxqgU5665s+d2VslL5ZCa7ao0G9oaAaompSYyweE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=MvDtkYCH; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=Z5048b7n; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MzGXfcs1"
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5a4053964e3so1065425e87.2
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 06:43:27 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776174206; cv=none;
-        d=google.com; s=arc-20240605;
-        b=EbelI7NzzWFdawKewdjgA0M76a34LLRCzQZHcK04UOUQ8cfCLvy5wYCVj/7A+ehXwn
-         lGp5ybqL4vJsag95gWpG1IwBvWO5k+aEZLoNHJ78jCILPdK0H3akdM013Wog/oKpXbfx
-         iuWwploDHNqvM750YwkU/Fdirg/YAN4SzA2SbRR7O3QUI6EEVbJV+Zo8AXE0sK0KQP8M
-         VMqOb/OLLbINTn7djHR/0HeO1Gje9yfOa3J5440dvCaRQDoD9vLrIyemlwP7zXJ3mo4I
-         MdYPeCeuvaOY9FA0hgF12cbjRipqNL8xoCeKeVddMM3BvW3TOQ7pWO2/ebBfo4WJIdeL
-         BsfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
-        fh=PJ4WMK4ReJcpct/COnuHWfKUG2/NL4pScN5rC1HrXQI=;
-        b=kss4s7HChhVE8z2MQ6YAJgJBi1Te805JqJ1hvHDCq8B5BMFl4Xhoh40bKKSf9SmT11
-         LYebiOmDp7d8zpnm95/VB/GH16irx36z9SOWJt3WsQPoAr5L45wlb/MIqusjHrI/0GnS
-         qdCSTRkmjU9pQigfNzhgKVS54Xga5mVEMM/O0VFTLDwHqFha0VpoemHX7GPWUGE9W05p
-         1ZgNbJFBlHVJCCQGB7VwVDKfgYNTgNopNb1VJ0gjqmdb6ZG6hnWkXeFoUBYh3sY/oTHB
-         c+E3LaE/psiiVd/D5EaOcTf0DnPE7F7dv4U8lYs9QdLvvMPdIw8RukiwDTpfUOk8iqMe
-         1+Mg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="MvDtkYCH";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="Z5048b7n"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1776174504;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dCt6RRkW0qh14/EJdQA8UqKuNaPoleddLVh6YrdRU20=;
+	b=MvDtkYCH8INm0h1alw7WjkieCz1/d1cpgU43/J9a0DVnCvHcJTHaoeCQzDS24Q8Q4UTpL+
+	gVTUD4Ud+YgIUX1rtSpiE/ierbCh9nYYejCjFl84Hg9lIXWOUXiXsOJRssGjLR3ydA1qMU
+	yrixkOs4VmBYIChVEccpeQ8TXOWfKCE=
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
+ [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-94-g6W6zLzSNYWXZx780ewO3Q-1; Tue, 14 Apr 2026 09:48:23 -0400
+X-MC-Unique: g6W6zLzSNYWXZx780ewO3Q-1
+X-Mimecast-MFC-AGG-ID: g6W6zLzSNYWXZx780ewO3Q_1776174502
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-8aca172588cso74933836d6.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 06:48:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776174206; x=1776779006; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
-        b=MzGXfcs1iOQSunlCSB7WO0Z7I5Zt2w0pLfXkAxiFTN86ZKsQkD0Kcq5WR+Ldg0ps5p
-         vhYpW4hEFLI1dY9mZ9wLG7mNUuW1iihIdFpd4VMkO9FH6TZkdZsoBV9Ir6HVacdXJeUb
-         0dSs5OFUKdbRs1NsrcxJetfOUIGwUKtn9dx2yaW9++G7vcwQXdaa5SaS4j/5BdHRHOsb
-         LDipjcwb1SBg8JAvf5kkoFZjNU5Ezc8QLcElWRqfxYawL9o1HW7sUtEOwFiw32JFgyJg
-         ZL2qznySay7+ha1NOnCez+73WpuDSzC1+VgFK4esY4Ems05DGSJr0CD3SMVMk1pMqjaS
-         jL4Q==
+        d=redhat.com; s=google; t=1776174502; x=1776779302; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=dCt6RRkW0qh14/EJdQA8UqKuNaPoleddLVh6YrdRU20=;
+        b=Z5048b7nQ6BvZmSOOePoRzKzNZMM/3I8S+gEVuD/bT50rSgL+ONq6PDVy2V7UYtRpt
+         RIlyWPqvbLwZtSBDNgGiaxfBeg9BnHq6xfzrp7i2/cth0D8Nv8491GB+bpYFobbqC50L
+         WhejBO6PugfUdymw2mtItm7LEQbdp4O/RevWZzJ1p36E3MRnJQ77XPV/hHD9qtWdDbJS
+         D8ZKtCm9cEiWnpzz8gwt0CHFEYoPR8s5XY2rVYUZAm5fUdVJza9xkgWYyvD1PVukwfYG
+         P7oh7Zfiu/9HZje3w/LqzlEOtSf+2ThxB7AbaLQ9rCTa2e8azOpeWXGhuAg9bjGJDJBD
+         KA5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776174206; x=1776779006;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Zy/0PzEut0PvWHR237jELAY9rSr5MyVNvmg6pBAc6Og=;
-        b=r9CyXgL1P8hjN79jseRi4MLKH2BfMpTTy89zrRvgkSLQPwW8aN6b6EQGWO5FxRrg3d
-         isxew9gbomqbetcSh0ZnUxHy/kN1KFMEWZt+c69MAZCQLxZD0BL8R4Pte5yncMy23peE
-         2mzQhJ2yadzWgSeZGyIIj6hkTFebbbiU4BdjAX+D0IR1D9432cxklHlT2KbvNOOwYhkM
-         9UycpwZjgzXvMTDYNwbxyyREd71x4Oi4ofnSjk+JWo0J0Qb9sEbQjjGjI5yHw2ew0+Zp
-         CuKZgEXisLer9VJy8GnO4AIkN3HxPhc/CcFtV5xOXjoaWZmbrbDrNz+BCjh9lV/oDIqq
-         3dww==
-X-Forwarded-Encrypted: i=1; AFNElJ/DrOinwjwD90MeyLtfxJcffN3bA5+IbsA7eOSKvQNUGl9h1aLAzCKprCC3aPbmBiJGvnT+uLMxrg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwzGKYZFBHJ2fh7HNy981eE409Xjk7NkGBfa8+Yfy4QZ8ZrZOq0
-	8nWL4yWVIJ0m3rKPkexf8TMZvmwe9gF5pyDeIuTPsfcL5oEbf72DgjnInGee66qsgFI+0C9GONb
-	yTA7m4z0wfZjjee1x2toOj0pgIApNca0nNkkbdQhTlg==
-X-Gm-Gg: AeBDiev7Y/lIk7hg2z/MAyX7wHCdLS4rZfIh3e+I+kA7L7l4MJj+NQ1XNLvsu9NKzNC
-	clpcakbYhmQP7TcmPAJL1ZNBmdc0MBPSQm6HU579xq7KO4J10lVKXDCna+3ve/7pKE0h8w2HBDg
-	I9R4ZGckvgdLngvcLsdOAt3pXXBEbg6OUv7ZvQpDccxRd2o8HgKUOAgt4pMp28hMTNP1P2/IPvc
-	Emym9Zd6EzhgBUeAsUeb9V3I4rX/2VNT/ODEGjL6G/hiluqmKmENMSoTvr1veQAoZIcOotXqwye
-	xq/4SdqbmnPiNblYAw8=
-X-Received: by 2002:a05:6512:692:b0:5a3:d3ac:505e with SMTP id
- 2adb3069b0e04-5a3efb62ae8mr5639501e87.44.1776174205307; Tue, 14 Apr 2026
- 06:43:25 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776174502; x=1776779302;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=dCt6RRkW0qh14/EJdQA8UqKuNaPoleddLVh6YrdRU20=;
+        b=DCL8VsPvgusAMgGbxIOGaw1pqEnQ3jZxXOSa4K1If2sbYu6RsWGsmT1c4BFtoTfvQ8
+         +6zaig9wZUAeuKSLB+Rdg4WrNw9RNWJ3frF33ZMEFlkij82wXi3YFByjeLU8AqWR3w1i
+         dD3Q5IIjUNzAv2sKAUMf5ti5aS5hFjOXWnMfLM0QPDw8rdXkA52nfjyfrDKNkLkd9e/O
+         JhjQCykF80m97hCUH+MTmI5TaYglYH1F7hn0BGZXSRXjz2GKBdlIf2dA/6FIQUqJrWZr
+         lVOiUEheg6LmSpXTv/4+NpMDcOrsNY9fabFqkKDl5tV77SnY7U6cgjfWPeKrn9jkRo6q
+         AI7w==
+X-Gm-Message-State: AOJu0YyE+p76Uer8Lnapw2V/RBhKZnHykViDoERA/2hRl/mYOCxoSB8v
+	OJCIIlMP50RxfCgKfanxqLJY8ui93T0SGN6Xi1srlBlZwCdfk7ry6v0Wf0cPWLlKqY7UnzWFNjr
+	N+Bmfpy4atgcuPpUN+it4ux+ICF+oLpaQRb8K97MCLovB/kXsIXpI7NPSBnNq
+X-Gm-Gg: AeBDieujnskDDBx3EEzNZaTwLBQrS0rWuT31VjiAsgM4FRpXKiKkRWvBUzBHb1rjxko
+	wQ9Ek6d4UNuaTHn6CzcSvK14MlADG508CFxiL6R4fgEjWJplrkNaKQPEWD46bDYBQQxAiwLsRSg
+	N/HM4OLFdb47m+F7St8obuGxPn/XH7XyDP+b7ETyG9SfN+wvbhkWvaqzn2G+4cTmTN0JnxxDNnn
+	rhOy0JeVsF/QK4yeMYkfgkbk04bNu0eFHQ8oqR6sIBRVww6h41rCUNm8DL57CLcKeI/ReU4gXqz
+	7GrgFx9jPi/qQteXwrsbbhqP3qXoRLmF5B5XRRbBiVagX6jHPiN40zfIPSa04Xttl1Ggh2cFVLD
+	Ve00+Wd4s337nn4/Am4CflHOJ1f4OCHCILUAMG6sTPIaXeRJyiOXJiw==
+X-Received: by 2002:a05:6214:500b:b0:8ae:5f29:effc with SMTP id 6a1803df08f44-8ae5f29f37emr33197506d6.54.1776174502325;
+        Tue, 14 Apr 2026 06:48:22 -0700 (PDT)
+X-Received: by 2002:a05:6214:500b:b0:8ae:5f29:effc with SMTP id 6a1803df08f44-8ae5f29f37emr33196786d6.54.1776174501709;
+        Tue, 14 Apr 2026 06:48:21 -0700 (PDT)
+Received: from [10.26.1.94] ([66.187.232.136])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8ac84cc9b8esm118916546d6.41.2026.04.14.06.48.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Apr 2026 06:48:20 -0700 (PDT)
+Message-ID: <e6994ee6-328d-482e-bfac-907cea307ebb@redhat.com>
+Date: Tue, 14 Apr 2026 09:48:20 -0400
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260310-topic-lpm-pmdomain-child-ids-v1-0-5361687a18ff@baylibre.com>
- <20260310-topic-lpm-pmdomain-child-ids-v1-2-5361687a18ff@baylibre.com>
- <CAPDyKFquJ7K4NcWuKMr1sjrnFVVPGAeLCiSF_FhvJf9Frbn1uA@mail.gmail.com>
- <7h4iljskvz.fsf@baylibre.com> <CAPDyKFrR2zyMFXTAkKs1XRgB-u5jSP256g730s=7SLuOZKsKVg@mail.gmail.com>
- <7hqzomqwpv.fsf@baylibre.com>
-In-Reply-To: <7hqzomqwpv.fsf@baylibre.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 14 Apr 2026 15:42:47 +0200
-X-Gm-Features: AQROBzD-JbDP-fgOPRrseyRbXAcHRr7LSIAAw6wp14sGFXLCR1gaiFIhrIczbGk
-Message-ID: <CAPDyKFpWwwuxdU63Kuq_zoKkrFhkSjN6RrxdOCoL2u7JuH9B2w@mail.gmail.com>
-Subject: Re: [PATCH 2/3] pmdomain: core: add support for power-domains-child-ids
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Rob Herring <robh@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tools/power turbostat: Allow execution to continue after
+ perf_l2_init() failure
+To: "Mi, Dapeng1" <dapeng1.mi@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20260319140307.441950-1-darcari@redhat.com>
+ <CAJvTdKmLA=n07hkkXLbwMex-_Byji9EOy7wkkFHrcPCj8tzMqw@mail.gmail.com>
+ <CAJvTdKmepvPzWDM+6s9YERe27H6pSKbDb62yfpTSs57hWsEmRg@mail.gmail.com>
+ <5ec684ae-b778-40ba-8a10-dfbf274da7dd@redhat.com>
+ <CAJvTdK=CoV7L1FmeVUTAO=U7eJQevjUnqr-CPk2CDxAO4zu3Ug@mail.gmail.com>
+ <MN0PR11MB6160DDF6952E2B595B2EA1C1CD242@MN0PR11MB6160.namprd11.prod.outlook.com>
+ <bdc53af9-ca09-4f32-80fb-4288775853b1@redhat.com>
+ <MN0PR11MB61604669C6DF6D1F372108EACD252@MN0PR11MB6160.namprd11.prod.outlook.com>
+Content-Language: en-US
+From: David Arcari <darcari@redhat.com>
+In-Reply-To: <MN0PR11MB61604669C6DF6D1F372108EACD252@MN0PR11MB6160.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sat, 11 Apr 2026 at 00:25, Kevin Hilman <khilman@baylibre.com> wrote:
->
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
-> > On Fri, 10 Apr 2026 at 02:45, Kevin Hilman <khilman@baylibre.com> wrote:
-> >>
-> >> Ulf Hansson <ulf.hansson@linaro.org> writes:
-> >>
-> >> > On Wed, 11 Mar 2026 at 01:19, Kevin Hilman (TI) <khilman@baylibre.com> wrote:
-> >> >>
-> >> >> Currently, PM domains can only support hierarchy for simple
-> >> >> providers (e.g. ones with #power-domain-cells = 0).
-> >> >>
-> >> >> Add support for oncell providers as well by adding a new property
-> >> >> `power-domains-child-ids` to describe the parent/child relationship.
-> >> >>
-> >> >> For example, an SCMI PM domain provider has multiple domains, each of
-> >> >> which might be a child of diffeent parent domains. In this example,
-> >> >> the parent domains are MAIN_PD and WKUP_PD:
-> >> >>
-> >> >>     scmi_pds: protocol@11 {
-> >> >>         reg = <0x11>;
-> >> >>         #power-domain-cells = <1>;
-> >> >>         power-domains = <&MAIN_PD>, <&WKUP_PD>;
-> >> >>         power-domains-child-ids = <15>, <19>;
-> >> >>     };
-> >> >>
-> >> >> With this example using the new property, SCMI PM domain 15 becomes a
-> >> >> child domain of MAIN_PD, and SCMI domain 19 becomes a child domain of
-> >> >> WKUP_PD.
-> >> >>
-> >> >> To support this feature, add two new core functions
-> >> >>
-> >> >> - of_genpd_add_child_ids()
-> >> >> - of_genpd_remove_child_ids()
-> >> >>
-> >> >> which can be called by pmdomain providers to add/remove child domains
-> >> >> if they support the new property power-domains-child-ids.
-> >> >>
-> >> >> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-> >> >
-> >> > Thanks for working on this! It certainly is a missing feature!
-> >>
-> >> You're welcome, thanks for the detailed review.
-> >>
-> >> >> ---
-> >> >>  drivers/pmdomain/core.c   | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> >> >>  include/linux/pm_domain.h |  16 ++++++++++++++++
-> >> >>  2 files changed, 185 insertions(+)
-> >> >>
-> >> >> diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
-> >> >> index 61c2277c9ce3..acb45dd540b7 100644
-> >> >> --- a/drivers/pmdomain/core.c
-> >> >> +++ b/drivers/pmdomain/core.c
-> >> >> @@ -2909,6 +2909,175 @@ static struct generic_pm_domain *genpd_get_from_provider(
-> >> >>         return genpd;
-> >> >>  }
-> >> >>
-> >> >> +/**
-> >> >> + * of_genpd_add_child_ids() - Parse power-domains-child-ids property
-> >> >> + * @np: Device node pointer associated with the PM domain provider.
-> >> >> + * @data: Pointer to the onecell data associated with the PM domain provider.
-> >> >> + *
-> >> >> + * Parse the power-domains and power-domains-child-ids properties to establish
-> >> >> + * parent-child relationships for PM domains. The power-domains property lists
-> >> >> + * parent domains, and power-domains-child-ids lists which child domain IDs
-> >> >> + * should be associated with each parent.
-> >> >> + *
-> >> >> + * Returns 0 on success, -ENOENT if properties don't exist, or negative error code.
-> >> >
-> >> > I think we should avoid returning specific error codes for specific
-> >> > errors, simply because it usually becomes messy.
-> >> >
-> >> > If I understand correctly the intent here is to allow the caller to
-> >> > check for -ENOENT and potentially avoid bailing out as it may not
-> >> > really be an error, right?
-> >>
-> >> Right, -ENOENT is not an error of parsing, it's to indicate that there
-> >> are no child-ids to be parsed.
-> >>
-> >> > Perhaps a better option is to return the number of children for whom
-> >> > we successfully assigned parents. Hence 0 or a positive value allows
-> >> > the caller to understand what happened. More importantly, a negative
-> >> > error code then really becomes an error for the caller to consider.
-> >>
-> >> I explored this a bit, but it gets messy quick.  It means we have to
-> >> track cases where only some of the children were added as well as when
-> >> all children were added.   Personally, I think this should be an "all or
-> >> nothing" thing.  If all the children cannot be parsed/added, then none
-> >> of them should be added.
-> >>
-> >> This also allows the remove to not have to care about how many were
-> >> added, and just remove them all, with the additional benefit of not
-> >> having to track the state of how many children were successfully added.
-> >>
-> >
-> > I fully agree, it should be all or nothing. Failing with one
-> > child/parent should end up with an error code being returned.
-> >
-> > That said, it still seems to make perfect sense to return the number
-> > of children for whom we assigned parents for, no?
->
-> No, because what will the caller use that number for?  If we are
-> assuming "all or nothing", what would we use it for (other than a debug print?)
->
-> It also makes it a bit confusing what a zero return value means.  Does
-> that mean success?  Or that zero children were added (which would be
-> fail.)
->
-> I prefer to keep it as is.
+kernel is a Fedora version of 7.0.0-0.rc4
 
-In that case, how should we treat the scenario where the device node
-lacks a "power-domains-child-ids" property? In some cases it is
-probably fine, while in others it may not be.
+I have two ADL systems that exhibit the same behavior.
 
-I guess the caller of of_genpd_add_child_ids(), would then need to
-pre-parse for the "power-domains-child-ids" property before deciding
-to call of_genpd_add_child_ids().
+#  grep . /sys/devices/cpu_core/events/*
+/sys/devices/cpu_core/events/branch-instructions:event=0xc4
+/sys/devices/cpu_core/events/branch-misses:event=0xc5
+/sys/devices/cpu_core/events/bus-cycles:event=0x3c,umask=0x01
+/sys/devices/cpu_core/events/cache-misses:event=0x2e,umask=0x41
+/sys/devices/cpu_core/events/cache-references:event=0x2e,umask=0x4f
+/sys/devices/cpu_core/events/cpu-cycles:event=0x3c
+/sys/devices/cpu_core/events/instructions:event=0xc0
+/sys/devices/cpu_core/events/mem-loads:event=0xcd,umask=0x1,ldlat=3
+/sys/devices/cpu_core/events/mem-loads-aux:event=0x03,umask=0x82
+/sys/devices/cpu_core/events/mem-stores:event=0xcd,umask=0x2
+/sys/devices/cpu_core/events/ref-cycles:event=0x3c,umask=0x01
+/sys/devices/cpu_core/events/slots:event=0x00,umask=0x4
+/sys/devices/cpu_core/events/topdown-bad-spec:event=0x00,umask=0x81
+/sys/devices/cpu_core/events/topdown-be-bound:event=0x00,umask=0x83
+/sys/devices/cpu_core/events/topdown-br-mispredict:event=0x00,umask=0x85
+/sys/devices/cpu_core/events/topdown-fe-bound:event=0x00,umask=0x82
+/sys/devices/cpu_core/events/topdown-fetch-lat:event=0x00,umask=0x86
+/sys/devices/cpu_core/events/topdown-heavy-ops:event=0x00,umask=0x84
+/sys/devices/cpu_core/events/topdown-mem-bound:event=0x00,umask=0x87
+/sys/devices/cpu_core/events/topdown-retiring:event=0x00,umask=0x80
 
-At least, we don't of_genpd_add_child_ids() to return an error code if
-there is no "power-domains-child-ids" in the device node, as that
-would just confuse the caller.
+# grep . /sys/devices/cpu_atom/events/*
+/sys/devices/cpu_atom/events/branch-instructions:event=0xc4
+/sys/devices/cpu_atom/events/branch-misses:event=0xc5
+/sys/devices/cpu_atom/events/bus-cycles:event=0x3c,umask=0x01
+/sys/devices/cpu_atom/events/cache-misses:event=0x2e,umask=0x41
+/sys/devices/cpu_atom/events/cache-references:event=0x2e,umask=0x4f
+/sys/devices/cpu_atom/events/cpu-cycles:event=0x3c
+/sys/devices/cpu_atom/events/instructions:event=0xc0
+grep: /sys/devices/cpu_atom/events/mem-loads: binary file matches
+grep: /sys/devices/cpu_atom/events/mem-stores: binary file matches
+/sys/devices/cpu_atom/events/ref-cycles:event=0x3c,umask=0x01
+grep: /sys/devices/cpu_atom/events/topdown-bad-spec: binary file matches
+grep: /sys/devices/cpu_atom/events/topdown-be-bound: binary file matches
+grep: /sys/devices/cpu_atom/events/topdown-fe-bound: binary file matches
+grep: /sys/devices/cpu_atom/events/topdown-retiring: binary file matches
 
-Kind regards
-Uffe
+
+
+On 4/13/26 9:22 PM, Mi, Dapeng1 wrote:
+> It looks strange. Suppose cache-misses event doesn't need to assign the 
+> offcore_rsp field. Could you please run below commands ?
+> 
+> grep . /sys/devices/cpu_core/events/*
+> grep . /sys/devices/cpu_atom/events/*
+> 
+> BTW, which kernel did you use? I would find a ADL and check if it can be 
+> reproduced. Thanks.
+> 
+> ------------------------------------------------------------------------
+> *From:* David Arcari <darcari@redhat.com>
+> *Sent:* Monday, April 13, 2026 7:53 PM
+> *To:* Mi, Dapeng1 <dapeng1.mi@intel.com>; Len Brown <lenb@kernel.org>
+> *Cc:* Linux PM list <linux-pm@vger.kernel.org>; Linux Kernel Mailing 
+> List <linux-kernel@vger.kernel.org>
+> *Subject:* Re: [PATCH] tools/power turbostat: Allow execution to 
+> continue after perf_l2_init() failure
+> 
+> 
+> Here is the -vvv output:
+> 
+> # sudo perf stat -e cache-misses -vvv sleep 1
+> Control descriptor is not initialized
+> Opening: cache-misses
+> ------------------------------------------------------------
+> perf_event_attr:
+>     type                             10 (cpu_atom)
+>     size                             144
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'ldlat' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+> unknown term 'offcore_rsp' for pmu 'cpu_atom' (valid terms:
+> event,pc,edge,inv,umask,cmask,config,config1,config2,config3,config4,name,period,percore,metric-id,cpu)
+>     config                           0x412e (cache-misses)
+>     sample_type                      IDENTIFIER
+>     read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
+>     disabled                         1
+>     inherit                          1
+>     enable_on_exec                   1
+> ------------------------------------------------------------
+> sys_perf_event_open: pid 9255  cpu -1  group_fd -1  flags 0x8
+> sys_perf_event_open failed, error -12
+> Warning:
+> skipping event cache-misses that kernel failed to open.
+> The sys_perf_event_open() syscall failed for event (cache-misses):
+> Cannot allocate memory
+> "dmesg | grep -i perf" may provide additional information.
+> 
+> Opening: cache-misses
+> ------------------------------------------------------------
+> perf_event_attr:
+>     type                             4 (cpu_core)
+>     size                             144
+>     config                           0x412e (cache-misses)
+>     sample_type                      IDENTIFIER
+>     read_format                      TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
+>     disabled                         1
+>     inherit                          1
+>     enable_on_exec                   1
+> ------------------------------------------------------------
+> sys_perf_event_open: pid 9255  cpu -1  group_fd -1  flags 0x8 = 3
+> cache-misses: -1: 11224 321150 321150
+> failed to read counter cache-misses
+> cache-misses: 11224 321150 321150
+> 
+>    Performance counter stats for 'sleep 1':
+> 
+>      <not supported>      cpu_atom/cache-misses/
+> 
+>               11,224      cpu_core/cache-misses/
+> 
+> 
+>          1.003110088 seconds time elapsed
+> 
+>          0.000000000 seconds user
+>          0.000846000 seconds sys
+> 
+> 
+> On 4/12/26 8:34 PM, Mi, Dapeng1 wrote:
+>  > The most possible reason for the "<not supported>" is that the "sleep 1"
+>  > process runs on a P-core where "cpu_atom/cache-misses/" can't be
+>  > supported. It's expected.
+>  >
+>  > BTW, you can add "-vvv" option which gives more details like "sudo perf
+>  > stat -e cache-misses -vvv sleep 1".
+>  >
+>  > Thanks.
+>  >
+>  > ------------------------------------------------------------------------
+>  > *From:* Len Brown <lenb@kernel.org>
+>  > *Sent:* Saturday, April 11, 2026 2:09 AM
+>  > *To:* Arcari, David <darcari@redhat.com>; Mi, Dapeng1 
+> <dapeng1.mi@intel.com>
+>  > *Cc:* Linux PM list <linux-pm@vger.kernel.org>; Linux Kernel Mailing
+>  > List <linux-kernel@vger.kernel.org>
+>  > *Subject:* Re: [PATCH] tools/power turbostat: Allow execution to
+>  > continue after perf_l2_init() failure
+>  >
+>  > On Fri, Apr 10, 2026 at 12:06 PM David Arcari <darcari@redhat.com> wrote:
+>  >
+>  >  > I'm using a Fedora kernel:
+>  >  >
+>  >  > vmlinuz-7.0.0-0.rc4.260320g0e4f8f1a3d08.40.eln155.x86_64
+>  >  >
+>  >  > And turbostat is:
+>  >  >
+>  >  > # turbostat -v
+>  >  > turbostat version 2026.02.14 - Len Brown <lenb@kernel.org>
+>  >  >
+>  >  > >
+>  >  > > You can poke with "perf stat" as well, but this will depend on what
+>  >  > > .json counter list is compiled into
+>  >  > > your version of perf.
+>  >  > >
+>  >  > > probably a first sanity check would be if these commands for the LLC
+>  >  > > and the L2 work:
+>  >  > >
+>  >  > > sudo perf stat -e cache-misses sleep 1
+>  >  > > sudo perf stat -e L2_REQUEST.ALL sleep 1
+>  >  >
+>  >  > # sudo perf stat -e cache-misses sleep 1
+>  >  >
+>  >  >   Performance counter stats for 'sleep 1':
+>  >  >
+>  >  >     <not supported>      cpu_atom/cache-misses/
+>  >
+>  > I think this should work.  There may be an issue either with
+>  > the perf utility or the perf kernel support on that system.
+>  >
+>  > I'll cc Dapeng.  Already the weekend where he is, but maybe he
+>  > can give us some perf insight next week.
+>  >
+>  > thx,
+>  > -Len
+> 
+
