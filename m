@@ -1,145 +1,446 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D391386544
-	for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 21:36:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
+Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3E6C3315D35;
+	Wed, 15 Apr 2026 06:44:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776202566; cv=none; b=XZ6BrGX0TsRYbM3Mlkv2xw8YWqxPwJI8o0SNihcdZ6IxsAeL/ssLlh1W9xaDkdoa19vwaIloA67qsFLzifJL+5P2ogb6oEPK/wFCBleG96QJg4yzsSkA34Xt4IQWrYZWbqpV7+mFAtC6BExHYcBJpCV0SHc5kmipIyhIjEkpMwM=
+	t=1776235451; cv=none; b=iaUvSpS14EluN4cSV0uTvhdDBl78yBya3VrM+JBM2XoiJoi5agl6rl4X90lC+FXhuekIbbROKRRYl7aeXGWI4p+8JYy/qv/mUebKEIy76IiNayIwDNs9eW+PSFfhTAu7+r0VfbCSExjZnDxDug/c7tnVDTELObjrojFTbgIl5Eg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776202566; c=relaxed/simple;
-	bh=0TMK6TPj2I/wDCZC3TKkkZR0vWPLJmtivYg0Oosnwbw=;
+	s=arc-20240116; t=1776235451; c=relaxed/simple;
+	bh=lwCmgqjqcbQlfJMh1X8hwGEYnxoUR0QLxjz3mrbn7NU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fhDuFPrgJWIcnNk935cJKJ1D3jL5Tl3QgsrGJZMGSnKEaq5+g2AsqthqNWKN37+hNX7blOtDecX5RC20k25bh6It3tF5tyoSxf56NsV1w+GJL7jTCMlBtKrL2XKWEFYT/ZfOIPzG6g4c60uzYE/BvQam3FEyBtkH0weOhBOz81c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CKD8hswe; arc=none smtp.client-ip=209.85.218.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CKD8hswe"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b8f97c626aaso929834666b.2
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2026 14:36:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776202563; x=1776807363; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:mime-version:date:message-id:sender:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=FVfeBwiYFSjucW7g9phomZssZLdfk3en30hBBiRPj+E=;
-        b=CKD8hswejFyJ6d0NueXf5SrY2Yru5vKmq1YraCdrqWMGZ5QF9ZBSbEc279u+bQiLnc
-         kGxpfO9QKdOMSHYcToyrJPtArAGDMKUl4Jo7tsW0PnZMofNm+l6YFrsdugfd6zYx8ssK
-         wb7/b2h6z1kV4DZ/x/TIlQvF1xTsZ0lwXm2blP9MZN4vKJPt2f2aNFylSI0bmuocRudm
-         i1+LXDCBFrMENaozlHJ8G4mSNIwyLscbHRPsUkPzG1xqeY7k9UoKq/KkpdrWF4ZelLMd
-         x+pDvgFcyMF2ACMHFQsVRH8/BU2Ke4C475Fm+7hv97Z6Nxj26rseVMTqCedYMWKGLXjN
-         S4Mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776202563; x=1776807363;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:mime-version:date:message-id:sender
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=FVfeBwiYFSjucW7g9phomZssZLdfk3en30hBBiRPj+E=;
-        b=AF0cr0h12dfpADB01dAxGaWu4y14wFC+MeZrjpw/3LruFr4gR+0a2jaeB+X1FGrzPo
-         c7RykQ16CEL5IlFNQ+Mb9rzIRoxcX4LuMdl1FKLNeph0OHMMd2NWfEHP1BohzHpfs8+K
-         APmGrWYFiIS+WqoDn4OLggCB1NB+1Fqf2T/s0hmacMz5Dxx62JMynBdv8/GvQKWyDSu7
-         I7kpLs3RqhGSPx1FaallZe6g+6gcUGVjQIRWzri3+bmg/dJU+G4/ReNylm2YbtQBnm7W
-         SXyfi7noWiyZBprWxPLwVJ3F+EXEUqr7kyVuJFIw1a59n+PvnoSwmba2qkNKgyQfwd5h
-         6wMg==
-X-Forwarded-Encrypted: i=1; AFNElJ/CkiE0Fvo8kDpJRipTJjF/wAsLtDi5YLCoD47VdZVeqDkBcpmghv5MMR7I96fkVjmBNOjY2rjvAw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzZP7EMcOh1EFacBPVyumrgblCXGCSjSaSIxf0xdVmqyAS4CTmf
-	GGUiKz26dk7RGhhEltGW+e4nLmY3e2WMYd7Kro9G6lnoNNrndxPgWNAz
-X-Gm-Gg: AeBDievaa3S9+m5YzHjY/Ii5IYAncnObgBwoz5WY06NFvEA3VbsXlESmsTlClKE93QN
-	4M2vVoE5Sz7hQD4UGraCuhhE/qNZE91YL7K6uAQuof3nWuL95rrv/tWFTqmH5BHRiCK4UGpqH2l
-	SZe3qzKWRs9FWF3b/Vj0on+kmYTfya4eRmJOzx7EhSHFisFbOboLdlKURCok3FWmvDv1hqweaVp
-	XueEYwwTlvKSpBlt+5QFMXnoV0YRVtvy2qiYIzG3EMcUw4mlypdzo8cu0MSSH9QhMe0dNSxbudA
-	sAGQ9EY/VL1nut4FRaET9teCGCL9IqLG8CT53mARHsEcoWbZHiC4fVvYn7vgLmKdZ3lCvAT7nea
-	rs00cGew9iFfMFbVkKQ/+0VEh/sel6FRc04MrAg1pNIPRVAYEjGKoovL2JcTmAdEY44Vec0ra52
-	iaLu98Xq+mm7JJte9kaf4rDM/0P0t5+K9h+8/NXsSEIwM=
-X-Received: by 2002:a17:906:6a03:b0:b98:48b1:b129 with SMTP id a640c23a62f3a-b9d727969e8mr1203629666b.47.1776202563125;
-        Tue, 14 Apr 2026 14:36:03 -0700 (PDT)
-Received: from 127.0.0.1 ([94.41.86.134])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b9d6de8d709sm449315266b.8.2026.04.14.14.36.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Apr 2026 14:36:01 -0700 (PDT)
-Sender: <irecca.kun@gmail.com>
-Message-ID: <e6d3dc64-1714-4105-8a38-3942c62d159a@gmail.com>
-Date: Tue, 14 Apr 2026 21:35:59 +0000
+	 In-Reply-To:Content-Type; b=HBx22jvqQhbTcebiQ21DESwSM9y+mrp+Wih04Enlgxo00e6XtZbBFoV50aRf763ccOfJ+AN4dk17w0tKZQ2/71/pSYjN9VXzr23RTmgTV87lOKJz4RkkWPjRdA+mzG9ucjxcXtO8fOcR1N62NzG7Sr2/vlac2mQb0tDtwCaV6kM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
+HMM_SOURCE_IP:10.158.243.220:0.2014231400
+HMM_ATTACHE_NUM:0000
+HMM_SOURCE_TYPE:SMTP
+Received: from clientip-60.27.227.144 (unknown [10.158.243.220])
+	by mail.189.cn (HERMES) with SMTP id 7104C4002A0;
+	Wed, 15 Apr 2026 14:43:54 +0800 (CST)
+Received: from  ([60.27.227.144])
+	by gateway-153622-dep-76cc7bc9cd-j7zjr with ESMTP id b5a71e7471bb4154ab14a2cc20557b33 for petr.pavlu@suse.com;
+	Wed, 15 Apr 2026 14:43:57 CST
+X-Transaction-ID: b5a71e7471bb4154ab14a2cc20557b33
+X-Real-From: chensong_2000@189.cn
+X-Receive-IP: 60.27.227.144
+X-MEDUSA-Status: 0
+Sender: chensong_2000@189.cn
+Message-ID: <a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
+Date: Wed, 15 Apr 2026 14:43:53 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: The "clockevents: Prevent timer interrupt starvation" patch
- causes lockups
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Frederic Weisbecker <frederic@kernel.org>, Eric Naim <dnaim@cachyos.org>,
- LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Anna-Maria Behnsen <anna-maria@linutronix.de>, Ingo Molnar
- <mingo@kernel.org>, John Stultz <jstultz@google.com>,
- Stephen Boyd <sboyd@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
- linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
- Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-References: <20260407083219.478203185@kernel.org>
- <20260407083247.562657657@kernel.org>
- <68d1e9ac-2780-4be3-8ee3-0788062dd3a4@gmail.com>
- <aeb848aa-404a-40fb-bd41-329644623b1d@cachyos.org>
- <ad6BtKRj1GyreNCS@localhost.localdomain>
- <a3ac856c-914c-4b39-949f-634bed501e7c@gmail.com> <87340xfeje.ffs@tglx>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 2/2] kernel/module: Decouple klp and ftrace from
+ load_module
+To: Petr Pavlu <petr.pavlu@suse.com>
+Cc: rafael@kernel.org, lenb@kernel.org, mturquette@baylibre.com,
+ sboyd@kernel.org, viresh.kumar@linaro.org, agk@redhat.com,
+ snitzer@kernel.org, mpatocka@redhat.com, bmarzins@redhat.com,
+ song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
+ jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
+ horms@kernel.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, paulmck@kernel.org, frederic@kernel.org,
+ mcgrof@kernel.org, da.gomez@kernel.org, samitolvanen@google.com,
+ atomlin@atomlin.com, jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
+ pmladek@suse.com, joe.lawrence@redhat.com, rostedt@goodmis.org,
+ mhiramat@kernel.org, mark.rutland@arm.com, mathieu.desnoyers@efficios.com,
+ linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ live-patching@vger.kernel.org, dm-devel@lists.linux.dev,
+ linux-raid@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+ netdev@vger.kernel.org
+References: <20260413080701.180976-1-chensong_2000@189.cn>
+ <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
 Content-Language: en-US
-From: Hanabishi <i.r.e.c.c.a.k.u.n+kernel.org@gmail.com>
-In-Reply-To: <87340xfeje.ffs@tglx>
+From: Song Chen <chensong_2000@189.cn>
+In-Reply-To: <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 14/04/2026 20:55, Thomas Gleixner wrote:
-> The one below should cover all possible holes.
-> 
-> Thanks,
-> 
->          tglx
-> ---
-> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-> index b4d730604972..5e22697b098d 100644
-> --- a/kernel/time/clockevents.c
-> +++ b/kernel/time/clockevents.c
-> @@ -94,6 +94,9 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
->   	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
->   		return 0;
->   
-> +	/* On state transitions clear the forced flag unconditionally */
-> +	dev->next_event_forced = 0;
-> +
->   	/* Transition with new state-specific callbacks */
->   	switch (state) {
->   	case CLOCK_EVT_STATE_DETACHED:
-> @@ -366,8 +369,10 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires, b
->   	if (delta > (int64_t)dev->min_delta_ns) {
->   		delta = min(delta, (int64_t) dev->max_delta_ns);
->   		cycles = ((u64)delta * dev->mult) >> dev->shift;
-> -		if (!dev->set_next_event((unsigned long) cycles, dev))
-> +		if (!dev->set_next_event((unsigned long) cycles, dev)) {
-> +			dev->next_event_forced = 0;
->   			return 0;
-> +		}
->   	}
->   
->   	if (dev->next_event_forced)
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-> index 7e57fa31ee26..115e0bf01276 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -108,6 +108,7 @@ static struct clock_event_device *tick_get_oneshot_wakeup_device(int cpu)
->   
->   static void tick_oneshot_wakeup_handler(struct clock_event_device *wd)
->   {
-> +	wd->next_event_forced = 0;
->   	/*
->   	 * If we woke up early and the tick was reprogrammed in the
->   	 * meantime then this may be spurious but harmless.
+Hi,
 
-Ok, it does fix the problem! Thank you.
-The patch itself does not apply cleanly for 7.0 though and I had to adapt it a bit.
+On 4/14/26 22:33, Petr Pavlu wrote:
+> On 4/13/26 10:07 AM, chensong_2000@189.cn wrote:
+>> From: Song Chen <chensong_2000@189.cn>
+>>
+>> ftrace and livepatch currently have their module load/unload callbacks
+>> hard-coded in the module loader as direct function calls to
+>> ftrace_module_enable(), klp_module_coming(), klp_module_going()
+>> and ftrace_release_mod(). This tight coupling was originally introduced
+>> to enforce strict call ordering that could not be guaranteed by the
+>> module notifier chain, which only supported forward traversal. Their
+>> notifiers were moved in and out back and forth. see [1] and [2].
+> 
+> I'm unclear about what is meant by the notifiers being moved back and
+> forth. The links point to patches that converted ftrace+klp from using
+> module notifiers to explicit callbacks due to ordering issues, but this
+> switch occurred only once. Have there been other attempts to use
+> notifiers again?
+> 
+
+Yes,only once,i will rephrase.
+
+>>
+>> Now that the notifier chain supports reverse traversal via
+>> blocking_notifier_call_chain_reverse(), the ordering can be enforced
+>> purely through notifier priority. As a result, the module loader is now
+>> decoupled from the implementation details of ftrace and livepatch.
+>> What's more, adding a new subsystem with symmetric setup/teardown ordering
+>> requirements during module load/unload no longer requires modifying
+>> kernel/module/main.c; it only needs to register a notifier_block with an
+>> appropriate priority.
+>>
+>> [1]:https://lore.kernel.org/all/
+>> 	alpine.LNX.2.00.1602172216491.22700@cbobk.fhfr.pm/
+>> [2]:https://lore.kernel.org/all/
+>> 	20160301030034.GC12120@packer-debian-8-amd64.digitalocean.com/
+> 
+> Nit: Avoid wrapping URLs, as it breaks autolinking and makes the links
+> harder to copy.
+> 
+> Better links would be:
+> [1] https://lore.kernel.org/all/1455661953-15838-1-git-send-email-jeyu@redhat.com/
+> [2] https://lore.kernel.org/all/1458176139-17455-1-git-send-email-jeyu@redhat.com/
+> 
+> The first link is the final version of what landed as commit
+> 7dcd182bec27 ("ftrace/module: remove ftrace module notifier"). The
+> second is commit 7e545d6eca20 ("livepatch/module: remove livepatch
+> module notifier").
+> 
+
+Thank you, i will update.
+
+>>
+>> Signed-off-by: Song Chen <chensong_2000@189.cn>
+>> ---
+>>   include/linux/module.h  |  8 ++++++++
+>>   kernel/livepatch/core.c | 29 ++++++++++++++++++++++++++++-
+>>   kernel/module/main.c    | 34 +++++++++++++++-------------------
+>>   kernel/trace/ftrace.c   | 38 ++++++++++++++++++++++++++++++++++++++
+>>   4 files changed, 89 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/include/linux/module.h b/include/linux/module.h
+>> index 14f391b186c6..0bdd56f9defd 100644
+>> --- a/include/linux/module.h
+>> +++ b/include/linux/module.h
+>> @@ -308,6 +308,14 @@ enum module_state {
+>>   	MODULE_STATE_COMING,	/* Full formed, running module_init. */
+>>   	MODULE_STATE_GOING,	/* Going away. */
+>>   	MODULE_STATE_UNFORMED,	/* Still setting it up. */
+>> +	MODULE_STATE_FORMED,
+> 
+> I don't see a reason to add a new module state. Why is it necessary and
+> how does it fit with the existing states?
+> 
+because once notifier fails in state MODULE_STATE_UNFORMED (now only 
+ftrace has someting to do in this state), notifier chain will roll back 
+by calling blocking_notifier_call_chain_robust, i'm afraid 
+MODULE_STATE_GOING is going to jeopardise the notifers which don't 
+handle it appropriately, like:
+
+case MODULE_STATE_COMING:
+      kmalloc();
+case MODULE_STATE_GOING:
+      kfree();
+
+
+>> +};
+>> +
+>> +enum module_notifier_prio {
+>> +	MODULE_NOTIFIER_PRIO_LOW = INT_MIN,	/* Low prioroty, coming last, going first */
+>> +	MODULE_NOTIFIER_PRIO_MID = 0,	/* Normal priority. */
+>> +	MODULE_NOTIFIER_PRIO_SECOND_HIGH = INT_MAX - 1,	/* Second high priorigy, coming second*/
+>> +	MODULE_NOTIFIER_PRIO_HIGH = INT_MAX,	/* High priorigy, coming first, going late. */
+> 
+> I suggest being explicit about how the notifiers are ordered. For
+> example:
+> 
+> enum module_notifier_prio {
+> 	MODULE_NOTIFIER_PRIO_NORMAL,	/* Normal priority, coming last, going first. */
+> 	MODULE_NOTIFIER_PRIO_LIVEPATCH,
+> 	MODULE_NOTIFIER_PRIO_FTRACE,	/* High priority, coming first, going late. */
+> };
+> 
+
+accepted.
+
+>>   };
+>>   
+>>   struct mod_tree_node {
+>> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+>> index 28d15ba58a26..ce78bb23e24b 100644
+>> --- a/kernel/livepatch/core.c
+>> +++ b/kernel/livepatch/core.c
+>> @@ -1375,13 +1375,40 @@ void *klp_find_section_by_name(const struct module *mod, const char *name,
+>>   }
+>>   EXPORT_SYMBOL_GPL(klp_find_section_by_name);
+>>   
+>> +static int klp_module_callback(struct notifier_block *nb, unsigned long op,
+>> +			void *module)
+>> +{
+>> +	struct module *mod = module;
+>> +	int err = 0;
+>> +
+>> +	switch (op) {
+>> +	case MODULE_STATE_COMING:
+>> +		err = klp_module_coming(mod);
+>> +		break;
+>> +	case MODULE_STATE_LIVE:
+>> +		break;
+>> +	case MODULE_STATE_GOING:
+>> +		klp_module_going(mod);
+>> +		break;
+>> +	default:
+>> +		break;
+>> +	}
+> 
+> klp_module_coming() and klp_module_going() are now used only in
+> kernel/livepatch/core.c where they are also defined. This means the
+> functions can be static and their declarations removed from
+> include/linux/livepatch.h.
+> 
+> Nit: The MODULE_STATE_LIVE and default cases in the switch can be
+> removed.
+> 
+
+accepted.
+
+>> +
+>> +	return notifier_from_errno(err);
+>> +}
+>> +
+>> +static struct notifier_block klp_module_nb = {
+>> +	.notifier_call = klp_module_callback,
+>> +	.priority = MODULE_NOTIFIER_PRIO_SECOND_HIGH
+>> +};
+>> +
+>>   static int __init klp_init(void)
+>>   {
+>>   	klp_root_kobj = kobject_create_and_add("livepatch", kernel_kobj);
+>>   	if (!klp_root_kobj)
+>>   		return -ENOMEM;
+>>   
+>> -	return 0;
+>> +	return register_module_notifier(&klp_module_nb);
+>>   }
+>>   
+>>   module_init(klp_init);
+>> diff --git a/kernel/module/main.c b/kernel/module/main.c
+>> index c3ce106c70af..226dd5b80997 100644
+>> --- a/kernel/module/main.c
+>> +++ b/kernel/module/main.c
+>> @@ -833,10 +833,8 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
+>>   	/* Final destruction now no one is using it. */
+>>   	if (mod->exit != NULL)
+>>   		mod->exit();
+>> -	blocking_notifier_call_chain(&module_notify_list,
+>> +	blocking_notifier_call_chain_reverse(&module_notify_list,
+>>   				     MODULE_STATE_GOING, mod);
+>> -	klp_module_going(mod);
+>> -	ftrace_release_mod(mod);
+>>   
+>>   	async_synchronize_full();
+>>   
+>> @@ -3135,10 +3133,8 @@ static noinline int do_init_module(struct module *mod)
+>>   	mod->state = MODULE_STATE_GOING;
+>>   	synchronize_rcu();
+>>   	module_put(mod);
+>> -	blocking_notifier_call_chain(&module_notify_list,
+>> +	blocking_notifier_call_chain_reverse(&module_notify_list,
+>>   				     MODULE_STATE_GOING, mod);
+>> -	klp_module_going(mod);
+>> -	ftrace_release_mod(mod);
+>>   	free_module(mod);
+>>   	wake_up_all(&module_wq);
+>>   
+> 
+> The patch unexpectedly leaves a call to ftrace_free_mem() in
+> do_init_module().
+
+Thanks for pointing it out, it was removed when i implemented and 
+tested, but when i organized the patch, it was left. I will remove it.
+
+> 
+>> @@ -3281,20 +3277,14 @@ static int complete_formation(struct module *mod, struct load_info *info)
+>>   	return err;
+>>   }
+>>   
+>> -static int prepare_coming_module(struct module *mod)
+>> +static int prepare_module_state_transaction(struct module *mod,
+>> +			unsigned long val_up, unsigned long val_down)
+>>   {
+>>   	int err;
+>>   
+>> -	ftrace_module_enable(mod);
+>> -	err = klp_module_coming(mod);
+>> -	if (err)
+>> -		return err;
+>> -
+>>   	err = blocking_notifier_call_chain_robust(&module_notify_list,
+>> -			MODULE_STATE_COMING, MODULE_STATE_GOING, mod);
+>> +			val_up, val_down, mod);
+>>   	err = notifier_to_errno(err);
+>> -	if (err)
+>> -		klp_module_going(mod);
+>>   
+>>   	return err;
+>>   }
+>> @@ -3468,14 +3458,21 @@ static int load_module(struct load_info *info, const char __user *uargs,
+>>   	init_build_id(mod, info);
+>>   
+>>   	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
+>> -	ftrace_module_init(mod);
+>> +	err = prepare_module_state_transaction(mod,
+>> +				MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
+> 
+> I believe val_down should be MODULE_STATE_GOING to reverse the
+> operation. Why is the new state MODULE_STATE_FORMED needed here?
+to avoid this:
+
+case MODULE_STATE_COMING:
+      kmalloc();
+case MODULE_STATE_GOING:
+      kfree();
+
+
+
+> 
+>> +	if (err)
+>> +		goto ddebug_cleanup;
+>>   
+>>   	/* Finally it's fully formed, ready to start executing. */
+>>   	err = complete_formation(mod, info);
+>> -	if (err)
+>> +	if (err) {
+>> +		blocking_notifier_call_chain_reverse(&module_notify_list,
+>> +				MODULE_STATE_FORMED, mod);
+>>   		goto ddebug_cleanup;
+>> +	}
+>>   
+>> -	err = prepare_coming_module(mod);
+>> +	err = prepare_module_state_transaction(mod,
+>> +				MODULE_STATE_COMING, MODULE_STATE_GOING);
+>>   	if (err)
+>>   		goto bug_cleanup;
+>>   
+>> @@ -3522,7 +3519,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
+>>   	destroy_params(mod->kp, mod->num_kp);
+>>   	blocking_notifier_call_chain(&module_notify_list,
+>>   				     MODULE_STATE_GOING, mod);
+> 
+> My understanding is that all notifier chains for MODULE_STATE_GOING
+> should be reversed.
+yes, all, from lowest priority notifier to highest.
+I will resend patch 1 which was failed due to my proxy setting.
+
+> 
+>> -	klp_module_going(mod);
+>>    bug_cleanup:
+>>   	mod->state = MODULE_STATE_GOING;
+>>   	/* module_bug_cleanup needs module_mutex protection */
+> 
+> The patch removes the klp_module_going() cleanup call in load_module().
+> Similarly, the ftrace_release_mod() call under the ddebug_cleanup label
+> should be removed and appropriately replaced with a cleanup via
+> a notifier.
+> 
+     err = prepare_module_state_transaction(mod,
+                 MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
+     if (err)
+         goto ddebug_cleanup;
+
+ftrace will be cleanup in blocking_notifier_call_chain_robust rolling back.
+
+     err = prepare_module_state_transaction(mod,
+                 MODULE_STATE_COMING, MODULE_STATE_GOING);
+
+each notifier including ftrace and klp will be cleanup in 
+blocking_notifier_call_chain_robust rolling back.
+
+if all notifiers are successful in MODULE_STATE_COMING, they all will be 
+clean up in
+  coming_cleanup:
+     mod->state = MODULE_STATE_GOING;
+     destroy_params(mod->kp, mod->num_kp);
+     blocking_notifier_call_chain(&module_notify_list,
+                      MODULE_STATE_GOING, mod);
+
+if  something wrong underneath.
+
+>> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+>> index 8df69e702706..efedb98d3db4 100644
+>> --- a/kernel/trace/ftrace.c
+>> +++ b/kernel/trace/ftrace.c
+>> @@ -5241,6 +5241,44 @@ static int __init ftrace_mod_cmd_init(void)
+>>   }
+>>   core_initcall(ftrace_mod_cmd_init);
+>>   
+>> +static int ftrace_module_callback(struct notifier_block *nb, unsigned long op,
+>> +			void *module)
+>> +{
+>> +	struct module *mod = module;
+>> +
+>> +	switch (op) {
+>> +	case MODULE_STATE_UNFORMED:
+>> +		ftrace_module_init(mod);
+>> +		break;
+>> +	case MODULE_STATE_COMING:
+>> +		ftrace_module_enable(mod);
+>> +		break;
+>> +	case MODULE_STATE_LIVE:
+>> +		ftrace_free_mem(mod, mod->mem[MOD_INIT_TEXT].base,
+>> +				mod->mem[MOD_INIT_TEXT].base + mod->mem[MOD_INIT_TEXT].size);
+>> +		break;
+>> +	case MODULE_STATE_GOING:
+>> +	case MODULE_STATE_FORMED:
+>> +		ftrace_release_mod(mod);
+>> +		break;
+>> +	default:
+>> +		break;
+>> +	}
+> 
+> ftrace_module_init(), ftrace_module_enable(), ftrace_free_mem() and
+> ftrace_release_mod() should be newly used only in kernel/trace/ftrace.c
+> where they are also defined. The functions can then be made static and
+> removed from include/linux/ftrace.h.
+> 
+> Nit: The default case in the switch can be removed.
+> 
+
+accepted.
+
+>> +
+>> +	return notifier_from_errno(0);
+> 
+> Nit: This can be simply "return NOTIFY_OK;".
+
+accepted
+> 
+>> +}
+>> +
+>> +static struct notifier_block ftrace_module_nb = {
+>> +	.notifier_call = ftrace_module_callback,
+>> +	.priority = MODULE_NOTIFIER_PRIO_HIGH
+>> +};
+>> +
+>> +static int __init ftrace_register_module_notifier(void)
+>> +{
+>> +	return register_module_notifier(&ftrace_module_nb);
+>> +}
+>> +core_initcall(ftrace_register_module_notifier);
+>> +
+>>   static void function_trace_probe_call(unsigned long ip, unsigned long parent_ip,
+>>   				      struct ftrace_ops *op, struct ftrace_regs *fregs)
+>>   {
+> 
+
+Best regards
+
+Song
 
