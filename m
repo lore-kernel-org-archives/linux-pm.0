@@ -1,303 +1,235 @@
-Received: from smtpbgjp3.qq.com (smtpbgjp3.qq.com [54.92.39.34])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 464D1296BD2;
-	Wed, 15 Apr 2026 07:07:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.92.39.34
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42C1F31328E;
+	Wed, 15 Apr 2026 07:17:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776236878; cv=none; b=MeSOhVlY3qJGZNFJbTYgSk4IWk3MnBRwUhNFloVWggdPVcqn4ajff64ukKjZ1DUlQqsZ+9BszrAFrOrf89aM/iEKN53oEMupJ2UbWJHaWrCO8kBSdNQW2LBRNEFImW3ikDqe3Ldfxee4+TAArBB18C+p+5MUBO65Dpy2+myWlbQ=
+	t=1776237431; cv=none; b=DFhVJpMRjtllWcTfykdF1toE0z9qJ4xVfNshd+2C/nK0xL9EYoXjoN68Pb4iYkq2NSIrLkgUFuXjzOAJLwkp77KzHz8F302JnxL14TL2FvTtS6wRvsPnBucPrjVYSmT4avKmyYBaaacvzBxLQWfLI0ZGAw2OvOkEaMPnnAfyUeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776236878; c=relaxed/simple;
-	bh=JK2E4kgMHrhq2uA3ajZeV2r/+wkis57ZcnBayorVtIs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GIBOwBEvYDg5uMnwxarFMG/H8USYfdiNutID/nxxroljGNDNlGGPCsaiU1/IOHGQoTY7djaE2c8WTcW2AW/QJ20twVWRKhCUpmv/UgMOYBSxB2qkDAkcwJ0Bs6Q2ZKueobeYa6MS1FEp7jHhyeKNJPGL/Nvvr+9nUHjANA5Qwx4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com; spf=none smtp.mailfrom=linux.spacemit.com; dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b=Piu/S8D4; arc=none smtp.client-ip=54.92.39.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux.spacemit.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=linux.spacemit.com
+	s=arc-20240116; t=1776237431; c=relaxed/simple;
+	bh=bykFpr8kKL0KUiE5ut+6uzeRN863t6CApjvZn+J1jhQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hYYRrOcRBVRqSGWbryi8apYff4ZK14mK9b8rf+p6jL7l211tfTVaINiBuqcRnh+CZMubIreRZN5Hu4cgOX7xTqSDAxticVucJMeXCoXl8qEhrnGLo53hM7l3reApEa/VSLf85wYz56FVbyzv0jUsBKJeKFzDzNaKnf5mmSVLsJI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I4J6Veg5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.spacemit.com header.i=@linux.spacemit.com header.b="Piu/S8D4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.spacemit.com;
-	s=mxsw2412; t=1776236758;
-	bh=6I3bBZmLh72H2avsIFwM++E65eh7BrZ80xu8h1RyaDQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:From;
-	b=Piu/S8D4sZkK6hfaniAuJuhRpc7VOJ3jYg1N87I1mO+u+z3swAkZ3oOna4JAO1aWn
-	 pn90hKxF0l8b5IYWlDvN5/vbUo5rb+vgKZHEeTzQJVcOG3aXv5WfN842dPqTQ5DBJs
-	 GzF8QKXh1QLOgKtXgePiB9A0/KSBvY5VTXF3jttg=
-X-QQ-mid: esmtpgz12t1776236755t9a02ae7c
-X-QQ-Originating-IP: 48JPQq2xqbbxOrNHcGYJAji1baJVzYwWPu0JffE55WE=
-Received: from [127.0.0.1] ( [120.237.158.181])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 15 Apr 2026 15:05:53 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 14424645630730695149
-Message-ID: <96AFE36BFF9E072C+72a6bd92-35de-48ee-bf52-c0ae86cbe846@linux.spacemit.com>
-Date: Wed, 15 Apr 2026 15:05:53 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I4J6Veg5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5772FC19424;
+	Wed, 15 Apr 2026 07:17:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776237430;
+	bh=bykFpr8kKL0KUiE5ut+6uzeRN863t6CApjvZn+J1jhQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=I4J6Veg5TT877gFljTbmDugKyzpSmgLY0RI1SWRbRpuBrqGoLpe9/Uohbo1XNMfbn
+	 Qdkiaye7Qn2CpOLyaZOSv0swCrgfySbYdfOovGaq1yLioet3xR26Z99Nj4DQA8Dewy
+	 2B7wPRPc7gKmgqGNNCK+avKo5iR8eKtJfHEVrAhPpNkqsHy6Ye1wyBm1a50I9Shotp
+	 AdLn1jgH7Q4GzE17Wjpwtx4q7bBi8oWZeOS/IbiQ3I7I9WnvgXKBpbFN8x9TOnE0DB
+	 F7RKcA23D4a5pueAggJFBxjZNLfI27yynum/E/IPG12nxf3lTFIHnawe7VZFI3n05r
+	 Kq0IOuO/ec+BA==
+Date: Wed, 15 Apr 2026 09:17:08 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, 
+	=?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Nam Tran <trannamatk@gmail.com>, =?utf-8?B?xYF1a2FzeiBMZWJpZWR6acWEc2tp?= <kernel@lvkasz.us>, 
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
+	linux-doc@vger.kernel.org
+Subject: Re: [PATCH v4 05/13] dt-bindings: mfd: s2mps11: add documentation
+ for S2MU005 PMIC
+Message-ID: <20260415-notorious-dainty-starfish-58a13c@quoll>
+References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
+ <20260414-s2mu005-pmic-v4-5-7fe7480577e6@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 05/11] riscv: cpufeature: Add Sdtrig optional CSRs
- checks
-To: Max Hsu <max.hsu@sifive.com>, Conor Dooley <conor@kernel.org>,
- Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>,
- Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Shuah Khan <shuah@kernel.org>
-Cc: Palmer Dabbelt <palmer@sifive.com>, linux-riscv@lists.infradead.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-kselftest@vger.kernel.org
-References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
- <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
-From: Zane Leung <liangzhen@linux.spacemit.com>
-In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:linux.spacemit.com:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: NV+fGFr24pKXcxjEYk3jJ0G/748Pgpd+q28+m88e1oSKuonkjdH0zBjK
-	lIKplGbE2jSYk5bCy3eWGsWDiuMY4U/u07HSqfgJXph1X9hCAGkcloyWfHBBr4PugKzr+m4
-	QPkLxSV7K7HSA0WzyR2Zl1N7+ihljEH4sADJr/W8ZIZilGFWQOOFHMntswSYg40tjj5sRPG
-	vVixTNcWOFmmU8m2gqug6/dNuVIg9+iU8Id8pnkTCIzGykohypkI7dZr3mbJ7rV5mVMbtck
-	GenUGtfhry+5YtmRpJcBiNxwl8GZsrlLdiy975oSWzUqjrVbc0MQ7oWBseAS9nULI9nWA9x
-	1mo+mo8D2vfBC4hHYZX595DegAKD+97srrT98yBoAFfPyLu+f4d/LpXEKDvPcsR6SbOlilL
-	cofrWn4D0MRH77+OfFof9ROBpuzM32iURQfKEm3rBT7cwi4in/opKP7G3DiT3FVGJKT2tky
-	3UnN54iP+zDFhi2z8LAGHt/Ku6iOOA7KmAo5N7bOXj//wqrwZypS3CrCUu5J/pevEifHG9p
-	T7Rzmb+daYKZvQVuKAIxJfmDxrMvRKbD2cMFlNIbIM2aYKfMDRdkzAyYsGL7wSAwLBIxe9S
-	zOV0MzoQT1KB3n8dqKWq9EK5Erb43Sm0wqlJkeuNrSEoE+hzgJ3Eu9DjcpFLjmFzhinB1Eu
-	N+pCBX6VCDGSGyBoinQAhRHJnjD/bcshGei0NKYVnkizxFU3xS+DJFxLwnSlSDY2QLBhB3e
-	80W5Pi9aH9IWvjAdYqIMy1XnCCU+x0KMSdoanFo9m5fUv1ekiwBo0cYWF4EYJpHbuKBNS1X
-	/tc5N1kRaVUe294s2ED0/R1QGoUMxu9M2mllUfFI1U8wu5iYNzSjukgtQ/5jyVoA1ApNdeR
-	ZW8Cu8JsDIRWExu8PAtpd3vwdfvi7ZiGGumE8mHjrjmxJwWZP4P8ql51RzMa6QCXvP/T79j
-	IwMstM0lL3rpR9xASBLEUlUg14q+4VpfvMUdkhwLb8PvceO8hDErQ3whHVaqwiIDvGz+w4P
-	WmuJWw2n382tQCt0fKxI2MmoGyqi8BqBG4XXayGrjedZa8pGwYE27kmzpemasQf/bWGGzcO
-	A==
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
-X-QQ-RECHKSPAM: 0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260414-s2mu005-pmic-v4-5-7fe7480577e6@disroot.org>
 
+On Tue, Apr 14, 2026 at 12:02:57PM +0530, Kaustabh Chakraborty wrote:
+> Samsung's S2MU005 PMIC includes subdevices for a charger, an MUIC (Micro
+> USB Interface Controller), and flash and RGB LED controllers.
+> 
+> Since regulators are not supported by this device, unmark this property
+> as required and instead set this in a per-device basis for ones which
+> need it.
+> 
+> Add the compatible and documentation for the S2MU005 PMIC. Also, add an
+> example for nodes for supported sub-devices, i.e. charger, extcon,
+> flash, and rgb.
+> 
 
-On 3/29/2024 5:26 PM, Max Hsu wrote:
-> Sdtrig extension introduce two optional CSRs [hcontext/scontext],
-> that will be storing PID/Guest OS ID for the debug feature.
->
-> The availability of these two CSRs will be determined by
-> DTS and Smstateen extension [h/s]stateen0 CSR bit 57.
->
-> If all CPUs hcontext/scontext checks are satisfied, it will enable the
-> use_hcontext/use_scontext static branch.
->
-> Signed-off-by: Max Hsu <max.hsu@sifive.com>
+Limited review because this does not pass build checks.
+
+> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
 > ---
->  arch/riscv/include/asm/switch_to.h |   6 ++
->  arch/riscv/kernel/cpufeature.c     | 161 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 167 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
-> index 7efdb0584d47..07432550ed54 100644
-> --- a/arch/riscv/include/asm/switch_to.h
-> +++ b/arch/riscv/include/asm/switch_to.h
-> @@ -69,6 +69,12 @@ static __always_inline bool has_fpu(void) { return false; }
->  #define __switch_to_fpu(__prev, __next) do { } while (0)
->  #endif
+>  .../devicetree/bindings/mfd/samsung,s2mps11.yaml   | 121 ++++++++++++++++++++-
+>  1 file changed, 120 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml b/Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml
+> index ac5d0c149796b..d3d305b9aa765 100644
+> --- a/Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml
+> @@ -26,12 +26,28 @@ properties:
+>        - samsung,s2mps15-pmic
+>        - samsung,s2mpu02-pmic
+>        - samsung,s2mpu05-pmic
+> +      - samsung,s2mu005-pmic
 >  
-> +DECLARE_STATIC_KEY_FALSE(use_scontext);
-> +static __always_inline bool has_scontext(void)
-> +{
-> +	return static_branch_likely(&use_scontext);
-> +}
-> +
->  extern struct task_struct *__switch_to(struct task_struct *,
->  				       struct task_struct *);
+>    clocks:
+>      $ref: /schemas/clock/samsung,s2mps11.yaml
+>      description:
+>        Child node describing clock provider.
 >  
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 080c06b76f53..44ff84b920af 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -35,6 +35,19 @@ static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
->  /* Per-cpu ISA extensions. */
->  struct riscv_isainfo hart_isa[NR_CPUS];
->  
-> +atomic_t hcontext_disable;
-> +atomic_t scontext_disable;
+> +  charger:
+> +    $ref: /schemas/power/supply/samsung,s2mu005-charger.yaml
+> +    description:
+> +      Child node describing battery charger device.
 > +
-> +DEFINE_STATIC_KEY_FALSE_RO(use_hcontext);
-> +EXPORT_SYMBOL(use_hcontext);
-> +
-> +DEFINE_STATIC_KEY_FALSE_RO(use_scontext);
-> +EXPORT_SYMBOL(use_scontext);
-> +
-> +/* Record the maximum number that the hcontext CSR allowed to hold */
-> +atomic_long_t hcontext_id_share;
-> +EXPORT_SYMBOL(hcontext_id_share);
-> +
->  /**
->   * riscv_isa_extension_base() - Get base extension word
->   *
-> @@ -719,6 +732,154 @@ unsigned long riscv_get_elf_hwcap(void)
->  	return hwcap;
->  }
->  
-> +static void __init sdtrig_percpu_csrs_check(void *data)
-> +{
-> +	struct device_node *node;
-> +	struct device_node *debug_node;
-> +	struct device_node *trigger_module;
-> +
-> +	unsigned int cpu = smp_processor_id();
-> +
-> +	/*
-> +	 * Expect every cpu node has the [h/s]context-present property
-> +	 * otherwise, jump to sdtrig_csrs_disable_all to disable all access to
-> +	 * [h/s]context CSRs
-> +	 */
-> +	node = of_cpu_device_node_get(cpu);
-> +	if (!node)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	debug_node = of_get_compatible_child(node, "riscv,debug-v1.0.0");
-> +	of_node_put(node);
-> +
-> +	if (!debug_node)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	trigger_module = of_get_child_by_name(debug_node, "trigger-module");
-> +	of_node_put(debug_node);
-> +
-> +	if (!trigger_module)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	if (!(IS_ENABLED(CONFIG_KVM) &&
-> +	      of_property_read_bool(trigger_module, "hcontext-present")))
-> +		atomic_inc(&hcontext_disable);
-> +
-> +	if (!of_property_read_bool(trigger_module, "scontext-present"))
-> +		atomic_inc(&scontext_disable);
-> +
-> +	of_node_put(trigger_module);
-> +
-> +	/*
-> +	 * Before access to hcontext/scontext CSRs, if the smstateen
-> +	 * extension is present, the accessibility will be controlled
-> +	 * by the hstateen0[H]/sstateen0 CSRs.
-> +	 */
-> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SMSTATEEN)) {
-> +		u64 hstateen_bit, sstateen_bit;
-> +
-> +		if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_h)) {
-> +#if __riscv_xlen > 32
-> +			csr_set(CSR_HSTATEEN0, SMSTATEEN0_HSCONTEXT);
-> +			hstateen_bit = csr_read(CSR_HSTATEEN0);
-> +#else
-> +			csr_set(CSR_HSTATEEN0H, SMSTATEEN0_HSCONTEXT >> 32);
-> +			hstateen_bit = csr_read(CSR_HSTATEEN0H) << 32;
-> +#endif
-> +			if (!(hstateen_bit & SMSTATEEN0_HSCONTEXT))
-> +				goto sdtrig_csrs_disable_all;
-> +
-> +		} else {
-> +			if (IS_ENABLED(CONFIG_KVM))
-> +				atomic_inc(&hcontext_disable);
-> +
-> +			/*
-> +			 * In RV32, the smstateen extension doesn't provide
-> +			 * high 32 bits of sstateen0 CSR which represent
-> +			 * accessibility for scontext CSR;
-> +			 * The decision is left on whether the dts has the
-> +			 * property to access the scontext CSR.
-> +			 */
-> +#if __riscv_xlen > 32
-> +			csr_set(CSR_SSTATEEN0, SMSTATEEN0_HSCONTEXT);
-> +			sstateen_bit = csr_read(CSR_SSTATEEN0);
-> +
-> +			if (!(sstateen_bit & SMSTATEEN0_HSCONTEXT))
-> +				atomic_inc(&scontext_disable);
-> +#endif
-For the supervisor-level sstateen registers, high-half CSRs are not added at this time because
-it is expected the upper 32 bits of these registers will always be zeros. see:
-https://github.com/riscv/riscv-isa-manual/blob/dca12d638b140d86441ad0b067997c70d2017017/src/priv/smstateen.adoc#L71-L7
+> +  extcon:
 
+You got comment to drop extcon naming. If this stays, it's muic for
+example.
 
-> +		}
-> +	}
+> +    $ref: /schemas/extcon/samsung,s2mu005-muic.yaml
+> +    description:
+> +      Child node describing extcon device.
 > +
-> +	/*
-> +	 * The code can only access hcontext/scontext CSRs if:
-> +	 * The cpu dts node have [h/s]context-present;
-> +	 * If Smstateen extension is presented, then the accessibility bit
-> +	 * toward hcontext/scontext CSRs is enabled; Or the Smstateen extension
-> +	 * isn't available, thus the access won't be blocked by it.
-> +	 *
-> +	 * With writing 1 to the every bit of these CSRs, we retrieve the
-> +	 * maximum bits that is available on the CSRs. and decide
-> +	 * whether it's suit for its context recording operation.
-> +	 */
-> +	if (IS_ENABLED(CONFIG_KVM) &&
-> +	    !atomic_read(&hcontext_disable)) {
-> +		unsigned long hcontext_available_bits = 0;
+> +  flash:
+> +    $ref: /schemas/leds/samsung,s2mu005-flash.yaml
+> +    description:
+> +      Child node describing flash LEDs.
 > +
-> +		csr_write(CSR_HCONTEXT, -1UL);
-> +		hcontext_available_bits = csr_swap(CSR_HCONTEXT, hcontext_available_bits);
+
+Please make it a separate binding file.
+
+>    interrupts:
+>      maxItems: 1
+>  
+> @@ -43,6 +59,11 @@ properties:
+>      description:
+>        List of child nodes that specify the regulators.
+>  
+> +  rgb:
+
+led
+
+> +    $ref: /schemas/leds/samsung,s2mu005-rgb.yaml
+> +    description:
+> +      Child node describing RGB LEDs.
 > +
-> +		/* hcontext CSR is required by at least 1 bit */
-> +		if (hcontext_available_bits)
-> +			atomic_long_and(hcontext_available_bits, &hcontext_id_share);
-> +		else
-> +			atomic_inc(&hcontext_disable);
-> +	}
+>    samsung,s2mps11-acokb-ground:
+>      description: |
+>        Indicates that ACOKB pin of S2MPS11 PMIC is connected to the ground so
+> @@ -63,7 +84,6 @@ properties:
+>  required:
+>    - compatible
+>    - reg
+> -  - regulators
+>  
+>  additionalProperties: false
+>  
+> @@ -78,6 +98,8 @@ allOf:
+>          regulators:
+>            $ref: /schemas/regulator/samsung,s2mps11.yaml
+>          samsung,s2mps11-wrstbi-ground: false
+> +      required:
+> +        - regulators
+>  
+>    - if:
+>        properties:
+> @@ -89,6 +111,8 @@ allOf:
+>          regulators:
+>            $ref: /schemas/regulator/samsung,s2mps13.yaml
+>          samsung,s2mps11-acokb-ground: false
+> +      required:
+> +        - regulators
+>  
+>    - if:
+>        properties:
+> @@ -101,6 +125,8 @@ allOf:
+>            $ref: /schemas/regulator/samsung,s2mps14.yaml
+>          samsung,s2mps11-acokb-ground: false
+>          samsung,s2mps11-wrstbi-ground: false
+> +      required:
+> +        - regulators
+>  
+>    - if:
+>        properties:
+> @@ -113,6 +139,8 @@ allOf:
+>            $ref: /schemas/regulator/samsung,s2mps15.yaml
+>          samsung,s2mps11-acokb-ground: false
+>          samsung,s2mps11-wrstbi-ground: false
+> +      required:
+> +        - regulators
+>  
+>    - if:
+>        properties:
+> @@ -125,6 +153,8 @@ allOf:
+>            $ref: /schemas/regulator/samsung,s2mpu02.yaml
+>          samsung,s2mps11-acokb-ground: false
+>          samsung,s2mps11-wrstbi-ground: false
+> +      required:
+> +        - regulators
+>  
+>    - if:
+>        properties:
+> @@ -137,6 +167,18 @@ allOf:
+>            $ref: /schemas/regulator/samsung,s2mpu05.yaml
+>          samsung,s2mps11-acokb-ground: false
+>          samsung,s2mps11-wrstbi-ground: false
+> +      required:
+> +        - regulators
 > +
-> +	if (!atomic_read(&scontext_disable)) {
-> +		unsigned long scontext_available_bits = 0;
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: samsung,s2mu005-pmic
+> +    then:
+> +      properties:
+> +        samsung,s2mps11-acokb-ground: false
+> +        samsung,s2mps11-wrstbi-ground: false
+>  
+>  examples:
+>    - |
+> @@ -278,3 +320,80 @@ examples:
+>              };
+>          };
+>      };
 > +
-> +		csr_write(CSR_SCONTEXT, -1UL);
-> +		scontext_available_bits = csr_swap(CSR_SCONTEXT, scontext_available_bits);
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    #include <dt-bindings/leds/common.h>
 > +
-> +		/* scontext CSR is required by at least the sizeof pid_t */
-> +		if (scontext_available_bits < ((1UL << (sizeof(pid_t) << 3)) - 1))
-> +			atomic_inc(&scontext_disable);
-> +	}
+> +    i2c {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
 > +
-> +	return;
+> +        pmic@3d {
+> +            compatible = "samsung,s2mu005-pmic";
+> +            reg = <0x3d>;
+> +            interrupt-parent = <&gpa2>;
+> +            interrupts = <7 IRQ_TYPE_LEVEL_LOW>;
 > +
-> +sdtrig_csrs_disable_all:
-> +	if (IS_ENABLED(CONFIG_KVM))
-> +		atomic_inc(&hcontext_disable);
+> +            charger {
+> +                compatible = "samsung,s2mu005-charger";
+> +                monitored-battery = <&battery>;
 > +
-> +	atomic_inc(&scontext_disable);
-> +}
-> +
-> +static int __init sdtrig_enable_csrs_fill(void)
-> +{
-> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SDTRIG)) {
-> +		atomic_long_set(&hcontext_id_share, -1UL);
-> +
-> +		/* check every CPUs sdtrig extension optional CSRs */
-> +		sdtrig_percpu_csrs_check(NULL);
-> +		smp_call_function(sdtrig_percpu_csrs_check, NULL, 1);
-> +
-> +		if (IS_ENABLED(CONFIG_KVM) &&
-> +		    !atomic_read(&hcontext_disable)) {
-> +			pr_info("riscv-sdtrig: Writing 'GuestOS ID' to hcontext CSR is enabled\n");
-> +			static_branch_enable(&use_hcontext);
-> +		}
-> +
-> +		if (!atomic_read(&scontext_disable)) {
-> +			pr_info("riscv-sdtrig: Writing 'PID' to scontext CSR is enabled\n");
-> +			static_branch_enable(&use_scontext);
-> +		}
-> +	}
-> +	return 0;
-> +}
-> +
-> +arch_initcall(sdtrig_enable_csrs_fill);
-> +
->  void riscv_user_isa_enable(void)
->  {
->  	if (riscv_cpu_has_extension_unlikely(smp_processor_id(), RISCV_ISA_EXT_ZICBOZ))
->
+> +                port {
+> +                    charger_to_muic: endpoint {
+> +                        remote-endpoint = <&muic_to_charger>;
+
+graph between own nodes is pointless.
+
+Best regards,
+Krzysztof
+
