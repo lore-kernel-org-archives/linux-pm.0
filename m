@@ -1,446 +1,176 @@
-Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3E6C3315D35;
-	Wed, 15 Apr 2026 06:44:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776235451; cv=none; b=iaUvSpS14EluN4cSV0uTvhdDBl78yBya3VrM+JBM2XoiJoi5agl6rl4X90lC+FXhuekIbbROKRRYl7aeXGWI4p+8JYy/qv/mUebKEIy76IiNayIwDNs9eW+PSFfhTAu7+r0VfbCSExjZnDxDug/c7tnVDTELObjrojFTbgIl5Eg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776235451; c=relaxed/simple;
-	bh=lwCmgqjqcbQlfJMh1X8hwGEYnxoUR0QLxjz3mrbn7NU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HBx22jvqQhbTcebiQ21DESwSM9y+mrp+Wih04Enlgxo00e6XtZbBFoV50aRf763ccOfJ+AN4dk17w0tKZQ2/71/pSYjN9VXzr23RTmgTV87lOKJz4RkkWPjRdA+mzG9ucjxcXtO8fOcR1N62NzG7Sr2/vlac2mQb0tDtwCaV6kM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
-HMM_SOURCE_IP:10.158.243.220:0.2014231400
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-60.27.227.144 (unknown [10.158.243.220])
-	by mail.189.cn (HERMES) with SMTP id 7104C4002A0;
-	Wed, 15 Apr 2026 14:43:54 +0800 (CST)
-Received: from  ([60.27.227.144])
-	by gateway-153622-dep-76cc7bc9cd-j7zjr with ESMTP id b5a71e7471bb4154ab14a2cc20557b33 for petr.pavlu@suse.com;
-	Wed, 15 Apr 2026 14:43:57 CST
-X-Transaction-ID: b5a71e7471bb4154ab14a2cc20557b33
-X-Real-From: chensong_2000@189.cn
-X-Receive-IP: 60.27.227.144
-X-MEDUSA-Status: 0
-Sender: chensong_2000@189.cn
-Message-ID: <a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
-Date: Wed, 15 Apr 2026 14:43:53 +0800
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010059.outbound.protection.outlook.com [52.101.84.59])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69A80331A53;
+	Wed, 15 Apr 2026 06:59:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.59
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776236354; cv=fail; b=i4gci5L53swPTqbyvs2Sb1tY8mNBb+rNqcChBDXGRA83+xgUYLtiSifQjTOIFppt4MauGX89AL7wmvLJddxk19VB52BTAv0omvRSs3rbufNVsDr4iRZcD1eUgGRZXjcR3GvzYOWYd/YpE2TjKnKWZNQqjg01q0PH2V7N59fh/J4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776236354; c=relaxed/simple;
+	bh=KLeOPNgevm+/H0+pb3Ddeju3bJYZPVE+K/qgjrmrJCg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=bSSHiQIU3Sh3OKIYc4GInZnIXylN30ElcQSCP9QviCNAt4NvRc8IyEYp1yfojWtR84Lw7iE0akARWLUNG8UeqXJJZEMwB5+jbLULNMdL5kklt7HMbsHx+FPJbW2oaveeeUF1NEVYOt1rqIJbyS7UQ9rEfhNCKbCO+d+z4Tx1Cqk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=ctTb8i1z; arc=fail smtp.client-ip=52.101.84.59
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="ctTb8i1z"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=DsVyLolHTBYWPk9SJ8dXJJ4um3GCA/KQvj/qG4eVS4Z2frCMX+crYs0WXL7LDHZDqznFz5htz4GMBGao7EGxAtw0p6TIAHK+Y+Ay+8MLdgdNST9PUwqhnS9vSHfaawZ7e2plWA/1WqqB1VCrjO4otAdXVB9oE3/C1eWI322S8y03uCGaNkCUAqUWewY0Xu1tGu1y+jNa8GJDWaTJQdrBHESj6RtuvFBjCk2I04YBTHmc+4H3WHlDg+RvucuOPGfNkKpXlEspX4tp+nVIFyMOnTRBHHNIweCXc/yohL9847daHJiQGlJNhfxoKeHcgnXaZ/X6SdNEXvPP30QQ+Sji+g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=lkrvo4msqImWXx0raR7KuUOEjEB2XVAjuCZBfPTkpRk=;
+ b=XD9XTJk4zSk9zN0csBtn+czDQSybRkq8ysvbY19Y7wPEFwiMKeBwusfP42FQ14O8W8xF/80Uzq/ZfdK5/scbmj/5Z4SGN+fn27vB73PphtIJMA6A3Rj1u/MmjzIUjT+F/Ho8zX2F3XatnHdzVDuNgOd+f5jAb+rjbyAXOYWtPG/I1X8i5efdhFAwaVzVF2D3vbVkwIWADpTqQgYKZ+kW65xsRgf28DuydtstGAhKgryZ8qJa9Ilp4lu8GchpCTTJg1wYazpYfcxbz1F6IosZBcgptR7OiL2n4bSkIhiGANjcCRErszzaLed3tO9+xLdUnr5GODvWBsDQLUX4IAmwCA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lkrvo4msqImWXx0raR7KuUOEjEB2XVAjuCZBfPTkpRk=;
+ b=ctTb8i1zUEjP3hJ6s6PzwX/yN6L5jYTW4gqNHuz67lfz8XElJrTjFlfnzHY+EIqefGLj277csjCXzQKG0uMOuTI3UxwXROcsSBO7hqOwuPBZQe9Bjb9fhE3ChCcAi8wR33BAUuKc6jwwUro4fQL3Vhd8hG7Vxgjb43tJL+OAd49Z9bgKdX5gdXmKFwT/bPNvZ65puw3XZj3FKGzu+iLzzbusPOFxQ9ek729tuh/qy423Rft4V6p8vWKT83tV75v1N12EAYxgvHKeLoBgiUim8yL01C8HDM8/y7ADYet9WbuurW35s9B2ChkOdvemH6CUPWRX+z72x3FaZyDgAC5dug==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DU0PR04MB9372.eurprd04.prod.outlook.com (2603:10a6:10:35b::7)
+ by GVXPR04MB12344.eurprd04.prod.outlook.com (2603:10a6:150:318::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Wed, 15 Apr
+ 2026 06:59:08 +0000
+Received: from DU0PR04MB9372.eurprd04.prod.outlook.com
+ ([fe80::4f6:1e57:c3b9:62b4]) by DU0PR04MB9372.eurprd04.prod.outlook.com
+ ([fe80::4f6:1e57:c3b9:62b4%4]) with mapi id 15.20.9769.046; Wed, 15 Apr 2026
+ 06:59:07 +0000
+Date: Wed, 15 Apr 2026 02:58:58 -0400
+From: Frank Li <Frank.li@nxp.com>
+To: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+Cc: ulfh@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
+	festevam@gmail.com, linux-pm@vger.kernel.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	xuegang.liu@nxp.com, jindong.yue@nxp.com
+Subject: Re: [PATCH v2] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL tristate
+Message-ID: <ad83MtdMP4rci3Ya@lizhi-Precision-Tower-5810>
+References: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
+X-ClientProxiedBy: PH8P222CA0023.NAMP222.PROD.OUTLOOK.COM
+ (2603:10b6:510:2d7::17) To DU0PR04MB9372.eurprd04.prod.outlook.com
+ (2603:10a6:10:35b::7)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 2/2] kernel/module: Decouple klp and ftrace from
- load_module
-To: Petr Pavlu <petr.pavlu@suse.com>
-Cc: rafael@kernel.org, lenb@kernel.org, mturquette@baylibre.com,
- sboyd@kernel.org, viresh.kumar@linaro.org, agk@redhat.com,
- snitzer@kernel.org, mpatocka@redhat.com, bmarzins@redhat.com,
- song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
- jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
- horms@kernel.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, paulmck@kernel.org, frederic@kernel.org,
- mcgrof@kernel.org, da.gomez@kernel.org, samitolvanen@google.com,
- atomlin@atomlin.com, jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
- pmladek@suse.com, joe.lawrence@redhat.com, rostedt@goodmis.org,
- mhiramat@kernel.org, mark.rutland@arm.com, mathieu.desnoyers@efficios.com,
- linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- live-patching@vger.kernel.org, dm-devel@lists.linux.dev,
- linux-raid@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- netdev@vger.kernel.org
-References: <20260413080701.180976-1-chensong_2000@189.cn>
- <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
-Content-Language: en-US
-From: Song Chen <chensong_2000@189.cn>
-In-Reply-To: <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU0PR04MB9372:EE_|GVXPR04MB12344:EE_
+X-MS-Office365-Filtering-Correlation-Id: d39913c9-d2b0-4025-cb92-08de9abc7d20
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|1800799024|366016|376014|52116014|18002099003|38350700014|22082099003|56012099003;
+X-Microsoft-Antispam-Message-Info:
+	/+FHCIkFZPyyUzEWgFm42OORIzdGuPwAkbZp537jtY5DPmVy6A8fpYlM/xoWpnLsmyQGuXtPfvzhe7tHDYaNxqgLvWj+a1VU6lSDNj6X677RUdnOdU3/D8CBS5nHrwasFAZKuf/PoKYYI1hTLt2GeglL6/r7qRALBa5lkqb2kpLrBROEh5fNa1Z0Z7Pqo26IojF8XupXmkEz77IVa2eP6/eFXcc0tL1pLVmE2SOTZHR0GxbVR6emjqQu/GYCvE0Z3HVdWhEdh3TIiZhg73Q3Xx0qVV25omfsn6L7zlHqM24k44RLCFfhGQOdDUV5Xx0Kf9LHkFjxj6MPe5vH0lT/Fj+cOY1UB6yHmbRyq910LaQHqBpNZMYZPff8q5KU0bUoV+tbYaKaaQEKtZL6gjM+DaRFTMU3uX6VUhKHGjBZsUwx5hwrqMF64eOd+f2Vy33WwJGo5101QhcksJ36pInGj5yLa9iHpFeRODUInl1APSs8aHBTqtWLYUxJ9/pLREF65fb255ACce9HNfNVgqmLPuiRz/dQZByaSWPwDPYWkMfnlo0veon74HeKzQH0k+oxHVAU0+Ww+uG/6gZ4mLZfPGdrwQmsAUpLM/ka2OiALaBjvjJYP8dLH4TEbHR2ky14+NVvpnLzVSYDeuUhCotmAMiqW8Djw2FdWaKIQyOJPd5Pl+N4DB6ZlS9wY3vitfXpBfxs0tU25OovAyaL4csC6StJiGYMcu+J6sPNbHZzaBInn5+S8hpZDgiVuVuYm9JY8mOsLj0BodAUeRo7TiUYfvhVSgtJ4rufkf1ef4zMCN8=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9372.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(366016)(376014)(52116014)(18002099003)(38350700014)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?z8nJb6VC0AOf1bcBWJkrSXJRTXEZpr4bscqv6+8AXttdBd0k97GY8rTYgv8n?=
+ =?us-ascii?Q?6vMl11tSInHCWwUm5hvOsfkl09w1fmOFstDsllFfVKgYtMnihYXQR3C03aKF?=
+ =?us-ascii?Q?PPddFZyZ5CBnhqYJgv5yV3CrIt/ZeNu4a54aN4jpeBvPMGf01I5JpvNlOMfi?=
+ =?us-ascii?Q?xJ3LVQQkRAbRYH8yxS0+xZ9iN+3T4bX2viohm1ANUji8CPIQFhc0Osai/2Gu?=
+ =?us-ascii?Q?Pkw6rRrZLE0mGFBTMdyPOnDA9enaPpiFaMrLi94FHOzdGokf/G9YgAtr4CFt?=
+ =?us-ascii?Q?+4SEDP9h/0MKab53G4FUG/iyYO8+w4wx+8Gi39fPrQNjM01yimArOHtMFgz9?=
+ =?us-ascii?Q?i7jZS7eUgjdocwWbJsSbzthU4waTzM/trdq/6p1rpHpjR3GBcfG5i7z1DAD0?=
+ =?us-ascii?Q?3F/bAEr/4YJ1Gp80jr1tokLYba/YUREtmW2ghqb9Pvc7aDDPTVnxRubfDDSr?=
+ =?us-ascii?Q?M/hizZ55X2GoID6CNDhuIQl7Gsbg4xH7ohcqiSZgb3Hv1k8qHCVFq10RtSLl?=
+ =?us-ascii?Q?Q2wV3Q6kLSVYzJmZNSacmmnd9Rlt4xNF4Kpg/jubx6GedNrmPUJKHibmYlQ7?=
+ =?us-ascii?Q?7nr3N8POQQMbSsRN429bZIDSBRBg9Bddf0qcv8dkEJ1KJmiKC/6Qj4tBFhoD?=
+ =?us-ascii?Q?Q4BByBfBgvS8CEip1drH2zHD3QKQQqqhYcLa7Ica8gDEHrdlvuDCwW6mC0nO?=
+ =?us-ascii?Q?uIHZg1PWqWvO3qEQrNJ3v+qo1ESSAsjk57QBoRKoAeiY0PKdLg6V4UkUszsj?=
+ =?us-ascii?Q?CA8y+/VDVWzrI8/mlDbWxOehPOqQz2NlQpe02rMLziUlAiTABau6rF5DaZLy?=
+ =?us-ascii?Q?czWwE1STc9zGyHy7/kOHg2hMg1GhzrxJ5eqHZYlkM/96qpXkWqktrdboHZhq?=
+ =?us-ascii?Q?jRjZzY8SD17YD3X1vMnVt5hwGLN1QXoe8I9hzUclt/A7e0khpNNKY1ZKSJUY?=
+ =?us-ascii?Q?7s3j2XuxIHZvYaPS3TW0hkojMjdd4sdItvXwXSUkoRefaY8pJTIDM4gUrm/j?=
+ =?us-ascii?Q?TopBas2q+B9iJxvie+t4Unx5ZUreau0Tss+NzjBp8T5JHPBOlLJA6KcB3Sht?=
+ =?us-ascii?Q?Kzmf2PPJRheRSoU8mU+Bmtp6/mZ+Y75RLYfQA1haajy+0Cs6JrjVw/0sWjJo?=
+ =?us-ascii?Q?sJg/IeyPkkmqOoTWmXLPDR7s8cd48/vezlWrN9ooRmMj4xEIYb12MhS2f/9Y?=
+ =?us-ascii?Q?UrSAyazdT/bgftfh/lj80I1+hyo4rEN1cDZkn2BRmgObNBN1o7kuWnyKdUKQ?=
+ =?us-ascii?Q?cc9rm1GtXoVu+HFwWjclyG9qLcXLkdO6XXaKFm8zXk89jxH5C2Pk5FHvaCGt?=
+ =?us-ascii?Q?zkbFldwCXkHHTpLITlVUp9wshafb3tPXGLL3lJjOT5CUJZKhbx9VG1iFWa18?=
+ =?us-ascii?Q?OcZN8zv/pk61CZoxcCHeLBjwwm7JTsOLDN+dHMtCMASUPXur5IZodLhWMhBr?=
+ =?us-ascii?Q?X09PrAlJAdfdj6/mAqpZ1Y2M3mX67s9xmrgPy2kuVf0jE15FkpP37eFR9FhP?=
+ =?us-ascii?Q?2yfFyId+FGeGrfDXQqtISzyd0k/Cm/QyYoo61r7PGqbYc8BmVrN/+GAyWTGP?=
+ =?us-ascii?Q?DC4IR9jdORLR4FWCilDMPH9N4PjN+hECgARKT+bxbSGaqQdTQo9oMN/iishr?=
+ =?us-ascii?Q?Xaiv0+nERreQgRRlrthlqogORukoEyzuiqp3D6ahBMam/lHgg8LF5X2P27bs?=
+ =?us-ascii?Q?NKGDqRuPe5W6fwFx4r1/s3SqVqJ+9miKTw4sj5Mj8aofGdIf?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d39913c9-d2b0-4025-cb92-08de9abc7d20
+X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9372.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2026 06:59:07.8413
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: zq1Sy44jF/eKS39Fa56XlMP5YFDmzZkRq8W2uwDK53sfvidNsdRbgsfx1kt1OPV6Em+NAJP4z7vvC/RMEN19sQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB12344
 
-Hi,
+On Mon, Apr 13, 2026 at 02:30:49PM +0900, Zhipeng Wang wrote:
+> Convert IMX8M_BLK_CTRL and IMX9_BLK_CTRL from bool to tristate
+> to allow building as loadable modules.
+>
+> Add prompt strings to make these options visible and configurable
+> in menuconfig, keeping them enabled by default on appropriate platforms.
+>
+> Also remove the IMX_GPCV2_PM_DOMAINS dependency from IMX9_BLK_CTRL.
+> This dependency was incorrect from the beginning - i.MX93 uses a
 
-On 4/14/26 22:33, Petr Pavlu wrote:
-> On 4/13/26 10:07 AM, chensong_2000@189.cn wrote:
->> From: Song Chen <chensong_2000@189.cn>
->>
->> ftrace and livepatch currently have their module load/unload callbacks
->> hard-coded in the module loader as direct function calls to
->> ftrace_module_enable(), klp_module_coming(), klp_module_going()
->> and ftrace_release_mod(). This tight coupling was originally introduced
->> to enforce strict call ordering that could not be guaranteed by the
->> module notifier chain, which only supported forward traversal. Their
->> notifiers were moved in and out back and forth. see [1] and [2].
-> 
-> I'm unclear about what is meant by the notifiers being moved back and
-> forth. The links point to patches that converted ftrace+klp from using
-> module notifiers to explicit callbacks due to ordering issues, but this
-> switch occurred only once. Have there been other attempts to use
-> notifiers again?
-> 
+s/-/because
 
-Yes,only once,i will rephrase.
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
 
->>
->> Now that the notifier chain supports reverse traversal via
->> blocking_notifier_call_chain_reverse(), the ordering can be enforced
->> purely through notifier priority. As a result, the module loader is now
->> decoupled from the implementation details of ftrace and livepatch.
->> What's more, adding a new subsystem with symmetric setup/teardown ordering
->> requirements during module load/unload no longer requires modifying
->> kernel/module/main.c; it only needs to register a notifier_block with an
->> appropriate priority.
->>
->> [1]:https://lore.kernel.org/all/
->> 	alpine.LNX.2.00.1602172216491.22700@cbobk.fhfr.pm/
->> [2]:https://lore.kernel.org/all/
->> 	20160301030034.GC12120@packer-debian-8-amd64.digitalocean.com/
-> 
-> Nit: Avoid wrapping URLs, as it breaks autolinking and makes the links
-> harder to copy.
-> 
-> Better links would be:
-> [1] https://lore.kernel.org/all/1455661953-15838-1-git-send-email-jeyu@redhat.com/
-> [2] https://lore.kernel.org/all/1458176139-17455-1-git-send-email-jeyu@redhat.com/
-> 
-> The first link is the final version of what landed as commit
-> 7dcd182bec27 ("ftrace/module: remove ftrace module notifier"). The
-> second is commit 7e545d6eca20 ("livepatch/module: remove livepatch
-> module notifier").
-> 
-
-Thank you, i will update.
-
->>
->> Signed-off-by: Song Chen <chensong_2000@189.cn>
->> ---
->>   include/linux/module.h  |  8 ++++++++
->>   kernel/livepatch/core.c | 29 ++++++++++++++++++++++++++++-
->>   kernel/module/main.c    | 34 +++++++++++++++-------------------
->>   kernel/trace/ftrace.c   | 38 ++++++++++++++++++++++++++++++++++++++
->>   4 files changed, 89 insertions(+), 20 deletions(-)
->>
->> diff --git a/include/linux/module.h b/include/linux/module.h
->> index 14f391b186c6..0bdd56f9defd 100644
->> --- a/include/linux/module.h
->> +++ b/include/linux/module.h
->> @@ -308,6 +308,14 @@ enum module_state {
->>   	MODULE_STATE_COMING,	/* Full formed, running module_init. */
->>   	MODULE_STATE_GOING,	/* Going away. */
->>   	MODULE_STATE_UNFORMED,	/* Still setting it up. */
->> +	MODULE_STATE_FORMED,
-> 
-> I don't see a reason to add a new module state. Why is it necessary and
-> how does it fit with the existing states?
-> 
-because once notifier fails in state MODULE_STATE_UNFORMED (now only 
-ftrace has someting to do in this state), notifier chain will roll back 
-by calling blocking_notifier_call_chain_robust, i'm afraid 
-MODULE_STATE_GOING is going to jeopardise the notifers which don't 
-handle it appropriately, like:
-
-case MODULE_STATE_COMING:
-      kmalloc();
-case MODULE_STATE_GOING:
-      kfree();
-
-
->> +};
->> +
->> +enum module_notifier_prio {
->> +	MODULE_NOTIFIER_PRIO_LOW = INT_MIN,	/* Low prioroty, coming last, going first */
->> +	MODULE_NOTIFIER_PRIO_MID = 0,	/* Normal priority. */
->> +	MODULE_NOTIFIER_PRIO_SECOND_HIGH = INT_MAX - 1,	/* Second high priorigy, coming second*/
->> +	MODULE_NOTIFIER_PRIO_HIGH = INT_MAX,	/* High priorigy, coming first, going late. */
-> 
-> I suggest being explicit about how the notifiers are ordered. For
-> example:
-> 
-> enum module_notifier_prio {
-> 	MODULE_NOTIFIER_PRIO_NORMAL,	/* Normal priority, coming last, going first. */
-> 	MODULE_NOTIFIER_PRIO_LIVEPATCH,
-> 	MODULE_NOTIFIER_PRIO_FTRACE,	/* High priority, coming first, going late. */
-> };
-> 
-
-accepted.
-
->>   };
->>   
->>   struct mod_tree_node {
->> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
->> index 28d15ba58a26..ce78bb23e24b 100644
->> --- a/kernel/livepatch/core.c
->> +++ b/kernel/livepatch/core.c
->> @@ -1375,13 +1375,40 @@ void *klp_find_section_by_name(const struct module *mod, const char *name,
->>   }
->>   EXPORT_SYMBOL_GPL(klp_find_section_by_name);
->>   
->> +static int klp_module_callback(struct notifier_block *nb, unsigned long op,
->> +			void *module)
->> +{
->> +	struct module *mod = module;
->> +	int err = 0;
->> +
->> +	switch (op) {
->> +	case MODULE_STATE_COMING:
->> +		err = klp_module_coming(mod);
->> +		break;
->> +	case MODULE_STATE_LIVE:
->> +		break;
->> +	case MODULE_STATE_GOING:
->> +		klp_module_going(mod);
->> +		break;
->> +	default:
->> +		break;
->> +	}
-> 
-> klp_module_coming() and klp_module_going() are now used only in
-> kernel/livepatch/core.c where they are also defined. This means the
-> functions can be static and their declarations removed from
-> include/linux/livepatch.h.
-> 
-> Nit: The MODULE_STATE_LIVE and default cases in the switch can be
-> removed.
-> 
-
-accepted.
-
->> +
->> +	return notifier_from_errno(err);
->> +}
->> +
->> +static struct notifier_block klp_module_nb = {
->> +	.notifier_call = klp_module_callback,
->> +	.priority = MODULE_NOTIFIER_PRIO_SECOND_HIGH
->> +};
->> +
->>   static int __init klp_init(void)
->>   {
->>   	klp_root_kobj = kobject_create_and_add("livepatch", kernel_kobj);
->>   	if (!klp_root_kobj)
->>   		return -ENOMEM;
->>   
->> -	return 0;
->> +	return register_module_notifier(&klp_module_nb);
->>   }
->>   
->>   module_init(klp_init);
->> diff --git a/kernel/module/main.c b/kernel/module/main.c
->> index c3ce106c70af..226dd5b80997 100644
->> --- a/kernel/module/main.c
->> +++ b/kernel/module/main.c
->> @@ -833,10 +833,8 @@ SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
->>   	/* Final destruction now no one is using it. */
->>   	if (mod->exit != NULL)
->>   		mod->exit();
->> -	blocking_notifier_call_chain(&module_notify_list,
->> +	blocking_notifier_call_chain_reverse(&module_notify_list,
->>   				     MODULE_STATE_GOING, mod);
->> -	klp_module_going(mod);
->> -	ftrace_release_mod(mod);
->>   
->>   	async_synchronize_full();
->>   
->> @@ -3135,10 +3133,8 @@ static noinline int do_init_module(struct module *mod)
->>   	mod->state = MODULE_STATE_GOING;
->>   	synchronize_rcu();
->>   	module_put(mod);
->> -	blocking_notifier_call_chain(&module_notify_list,
->> +	blocking_notifier_call_chain_reverse(&module_notify_list,
->>   				     MODULE_STATE_GOING, mod);
->> -	klp_module_going(mod);
->> -	ftrace_release_mod(mod);
->>   	free_module(mod);
->>   	wake_up_all(&module_wq);
->>   
-> 
-> The patch unexpectedly leaves a call to ftrace_free_mem() in
-> do_init_module().
-
-Thanks for pointing it out, it was removed when i implemented and 
-tested, but when i organized the patch, it was left. I will remove it.
-
-> 
->> @@ -3281,20 +3277,14 @@ static int complete_formation(struct module *mod, struct load_info *info)
->>   	return err;
->>   }
->>   
->> -static int prepare_coming_module(struct module *mod)
->> +static int prepare_module_state_transaction(struct module *mod,
->> +			unsigned long val_up, unsigned long val_down)
->>   {
->>   	int err;
->>   
->> -	ftrace_module_enable(mod);
->> -	err = klp_module_coming(mod);
->> -	if (err)
->> -		return err;
->> -
->>   	err = blocking_notifier_call_chain_robust(&module_notify_list,
->> -			MODULE_STATE_COMING, MODULE_STATE_GOING, mod);
->> +			val_up, val_down, mod);
->>   	err = notifier_to_errno(err);
->> -	if (err)
->> -		klp_module_going(mod);
->>   
->>   	return err;
->>   }
->> @@ -3468,14 +3458,21 @@ static int load_module(struct load_info *info, const char __user *uargs,
->>   	init_build_id(mod, info);
->>   
->>   	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
->> -	ftrace_module_init(mod);
->> +	err = prepare_module_state_transaction(mod,
->> +				MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
-> 
-> I believe val_down should be MODULE_STATE_GOING to reverse the
-> operation. Why is the new state MODULE_STATE_FORMED needed here?
-to avoid this:
-
-case MODULE_STATE_COMING:
-      kmalloc();
-case MODULE_STATE_GOING:
-      kfree();
-
-
-
-> 
->> +	if (err)
->> +		goto ddebug_cleanup;
->>   
->>   	/* Finally it's fully formed, ready to start executing. */
->>   	err = complete_formation(mod, info);
->> -	if (err)
->> +	if (err) {
->> +		blocking_notifier_call_chain_reverse(&module_notify_list,
->> +				MODULE_STATE_FORMED, mod);
->>   		goto ddebug_cleanup;
->> +	}
->>   
->> -	err = prepare_coming_module(mod);
->> +	err = prepare_module_state_transaction(mod,
->> +				MODULE_STATE_COMING, MODULE_STATE_GOING);
->>   	if (err)
->>   		goto bug_cleanup;
->>   
->> @@ -3522,7 +3519,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
->>   	destroy_params(mod->kp, mod->num_kp);
->>   	blocking_notifier_call_chain(&module_notify_list,
->>   				     MODULE_STATE_GOING, mod);
-> 
-> My understanding is that all notifier chains for MODULE_STATE_GOING
-> should be reversed.
-yes, all, from lowest priority notifier to highest.
-I will resend patch 1 which was failed due to my proxy setting.
-
-> 
->> -	klp_module_going(mod);
->>    bug_cleanup:
->>   	mod->state = MODULE_STATE_GOING;
->>   	/* module_bug_cleanup needs module_mutex protection */
-> 
-> The patch removes the klp_module_going() cleanup call in load_module().
-> Similarly, the ftrace_release_mod() call under the ddebug_cleanup label
-> should be removed and appropriately replaced with a cleanup via
-> a notifier.
-> 
-     err = prepare_module_state_transaction(mod,
-                 MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
-     if (err)
-         goto ddebug_cleanup;
-
-ftrace will be cleanup in blocking_notifier_call_chain_robust rolling back.
-
-     err = prepare_module_state_transaction(mod,
-                 MODULE_STATE_COMING, MODULE_STATE_GOING);
-
-each notifier including ftrace and klp will be cleanup in 
-blocking_notifier_call_chain_robust rolling back.
-
-if all notifiers are successful in MODULE_STATE_COMING, they all will be 
-clean up in
-  coming_cleanup:
-     mod->state = MODULE_STATE_GOING;
-     destroy_params(mod->kp, mod->num_kp);
-     blocking_notifier_call_chain(&module_notify_list,
-                      MODULE_STATE_GOING, mod);
-
-if  something wrong underneath.
-
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 8df69e702706..efedb98d3db4 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -5241,6 +5241,44 @@ static int __init ftrace_mod_cmd_init(void)
->>   }
->>   core_initcall(ftrace_mod_cmd_init);
->>   
->> +static int ftrace_module_callback(struct notifier_block *nb, unsigned long op,
->> +			void *module)
->> +{
->> +	struct module *mod = module;
->> +
->> +	switch (op) {
->> +	case MODULE_STATE_UNFORMED:
->> +		ftrace_module_init(mod);
->> +		break;
->> +	case MODULE_STATE_COMING:
->> +		ftrace_module_enable(mod);
->> +		break;
->> +	case MODULE_STATE_LIVE:
->> +		ftrace_free_mem(mod, mod->mem[MOD_INIT_TEXT].base,
->> +				mod->mem[MOD_INIT_TEXT].base + mod->mem[MOD_INIT_TEXT].size);
->> +		break;
->> +	case MODULE_STATE_GOING:
->> +	case MODULE_STATE_FORMED:
->> +		ftrace_release_mod(mod);
->> +		break;
->> +	default:
->> +		break;
->> +	}
-> 
-> ftrace_module_init(), ftrace_module_enable(), ftrace_free_mem() and
-> ftrace_release_mod() should be newly used only in kernel/trace/ftrace.c
-> where they are also defined. The functions can then be made static and
-> removed from include/linux/ftrace.h.
-> 
-> Nit: The default case in the switch can be removed.
-> 
-
-accepted.
-
->> +
->> +	return notifier_from_errno(0);
-> 
-> Nit: This can be simply "return NOTIFY_OK;".
-
-accepted
-> 
->> +}
->> +
->> +static struct notifier_block ftrace_module_nb = {
->> +	.notifier_call = ftrace_module_callback,
->> +	.priority = MODULE_NOTIFIER_PRIO_HIGH
->> +};
->> +
->> +static int __init ftrace_register_module_notifier(void)
->> +{
->> +	return register_module_notifier(&ftrace_module_nb);
->> +}
->> +core_initcall(ftrace_register_module_notifier);
->> +
->>   static void function_trace_probe_call(unsigned long ip, unsigned long parent_ip,
->>   				      struct ftrace_ops *op, struct ftrace_regs *fregs)
->>   {
-> 
-
-Best regards
-
-Song
-
+> different power domain architecture compared to i.MX8M series:
+>
+> - i.MX8M uses GPCv2 (General Power Controller v2) for power domain
+>   management, hence IMX8M_BLK_CTRL correctly depends on it.
+>
+> - i.MX93 uses BLK_CTRL directly without GPCv2. The hardware doesn't
+>   have GPCv2 at all.
+>
+> Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
+> ---
+>  drivers/pmdomain/imx/Kconfig | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/pmdomain/imx/Kconfig b/drivers/pmdomain/imx/Kconfig
+> index 00203615c65e..9168d183b0c5 100644
+> --- a/drivers/pmdomain/imx/Kconfig
+> +++ b/drivers/pmdomain/imx/Kconfig
+> @@ -10,15 +10,18 @@ config IMX_GPCV2_PM_DOMAINS
+>  	default y if SOC_IMX7D
+>
+>  config IMX8M_BLK_CTRL
+> -	bool
+> -	default SOC_IMX8M && IMX_GPCV2_PM_DOMAINS
+> +	tristate "i.MX8M BLK CTRL driver"
+> +	depends on SOC_IMX8M
+> +	depends on IMX_GPCV2_PM_DOMAINS
+>  	depends on PM_GENERIC_DOMAINS
+>  	depends on COMMON_CLK
+> +	default y
+>
+>  config IMX9_BLK_CTRL
+> -	bool
+> -	default SOC_IMX9 && IMX_GPCV2_PM_DOMAINS
+> +	tristate "i.MX93 BLK CTRL driver"
+> +	depends on SOC_IMX9
+>  	depends on PM_GENERIC_DOMAINS
+> +	default y
+>
+>  config IMX_SCU_PD
+>  	bool "IMX SCU Power Domain driver"
+> --
+> 2.34.1
+>
