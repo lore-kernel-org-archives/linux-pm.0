@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C84B439A7E1;
-	Wed, 15 Apr 2026 07:18:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4A913A3808;
+	Wed, 15 Apr 2026 07:19:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776237501; cv=none; b=br7Vbj3GWMnnZMf94kgblsMzYPNzl7FGaX2cXyaSJ+4u1vWQBbZUJFB/ev9L1KIGfzKipZQeTOhou4zNDHfC0mSecrUF/PCA9au9ox7zVvnyjO++/d+CVoUpnD38iQd9cz2LmZn68tGLWqS+FzWIa2CvbZtGLfC7Om19ac9fKQw=
+	t=1776237563; cv=none; b=rLGiSnzeSzxEw/G1i8wtyqloL2U3O3Q15ZSYt1MlmbviuXg/VmZ7Cgb52DSkIwRMTN41FUa6h136gKU0IQot/QyoZo+G5SBNQKmo2chBkwcZ6Ilf7sgrobbReL4K+iVAGqoqKAW2POuxyAMbo3p0eAozJHGruUUcjas8HX6GnbE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776237501; c=relaxed/simple;
-	bh=QCKrkPf03ChOxKQ5AtqRnMNpAAHo6qRr84XRMqp9+jI=;
+	s=arc-20240116; t=1776237563; c=relaxed/simple;
+	bh=cqeH4VnU9rttfdqTTL3eEQCaEIxdRadBfzQXr8ODzcE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hP6iSFCipn5yFDQEHGLh3z7rLor5Ro8NAo50wAFGDXjsaW+/gBVdbQOBEy5SKnIYZOtAg9/mHY8OZvaofxFSzkXCbu8cQ703OQzwYXo8fSk3cCRoBPdXc7znWInRPGS+Q/2tvIgv59koPqTEP7RdYVgrq2rL35sge5BLEqkVw+0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GPrK9zRx; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=gnypRiOW7YxX/11Ks3WMj3qNz6pRjWMUabiAWbyDZbERCoQk58RZflFflGrB3oyOgHNvFCyT7Bas9sukoB0XM4YVz7BQSOP9XPy6Jb6mi3R7wHdUIfuQegWZbMMwJRqi1AWzPfxTezbwQMPZ3WGOcJTwFWUDGGE8mZ+DildTeK4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mTnwxubQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GPrK9zRx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13CE5C2BCB0;
-	Wed, 15 Apr 2026 07:18:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mTnwxubQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBC4FC19424;
+	Wed, 15 Apr 2026 07:19:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776237501;
-	bh=QCKrkPf03ChOxKQ5AtqRnMNpAAHo6qRr84XRMqp9+jI=;
+	s=k20201202; t=1776237562;
+	bh=cqeH4VnU9rttfdqTTL3eEQCaEIxdRadBfzQXr8ODzcE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=GPrK9zRxYJtu4WlDxyoyuUA0dAuxfn3Yzvq2bLgz3lIz2uK5ktDv35XvH2FQsgsBf
-	 7oJzkVxrCpnIsbydA4E5Z9I3jZZKndIavoNsoArMD5oDipiiDqUrikDboBCimG0sD5
-	 m2b4Sx2bxiQATVgBOZ5NOqJYMwHm5wh0PEj6eemOs/2nlqbwMLHUvHnZVzX3UrdzXi
-	 H+m+YDtBGiN7LFdsobBFtNjRvQb/xryS5Np1smsmpwrcJUnO40R2wtFwhQLKA+2XVu
-	 XeI/zPCM2Lj1jLU3TeY0pWn6Vvv5JglKGoLAJhhBTUjKDvqnKo5Vw6QlB4ML4hYRdy
-	 cjrp2nEraP0Sw==
-Date: Wed, 15 Apr 2026 09:18:19 +0200
+	b=mTnwxubQs1lPZ2/AnA5HhUIOM/Bmi3By19r1rz3P8hPNFpyNx9mCRkdN0RySraUCI
+	 Dn8XyCsiFC2H4gqVHccAlZTIeIy8fVul2sp8RmgpBQ3bgX0Hx+oCg5DxDmLRhCffO1
+	 Nxnne2mPihd2fO52eh0MkkE7DPCi84PpRdTElltV9DpHB0Jkap5T7vabaB8uBd25o5
+	 Jy5mg0jQcDB4UfNT+oGD0YSYqNIkuNr6vlMiS8re2KmDW5VZJV/FaCBaTQAi86wh+X
+	 nkue6kRbl2lhx9cg6qS+WRrd79jrE3tqz9fdiwETWQsUG7GXgERcClAV7J5k7IVJn2
+	 3YVmMqAjvzITw==
+Date: Wed, 15 Apr 2026 09:19:20 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Kaustabh Chakraborty <kauschluss@disroot.org>
 Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
@@ -39,11 +39,10 @@ Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
 	linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
 	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v4 04/13] dt-bindings: power: supply: document Samsung
- S2M series PMIC charger device
-Message-ID: <20260415-swinging-radical-junglefowl-85dcf7@quoll>
+Subject: Re: [PATCH v4 07/13] mfd: sec: set DMA coherent mask
+Message-ID: <20260415-petite-tireless-binturong-341ea3@quoll>
 References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
- <20260414-s2mu005-pmic-v4-4-7fe7480577e6@disroot.org>
+ <20260414-s2mu005-pmic-v4-7-7fe7480577e6@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,35 +51,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260414-s2mu005-pmic-v4-4-7fe7480577e6@disroot.org>
+In-Reply-To: <20260414-s2mu005-pmic-v4-7-7fe7480577e6@disroot.org>
 
-On Tue, Apr 14, 2026 at 12:02:56PM +0530, Kaustabh Chakraborty wrote:
-> +description: |
-> +  The Samsung S2M series PMIC battery charger manages power interfacing
-> +  of the USB port. It may supply power, as done in USB OTG operation
-> +  mode, or it may accept power and redirect it to the battery fuelgauge
-> +  for charging.
-> +
-> +  This is a part of device tree bindings for S2M and S5M family of Power
-> +  Management IC (PMIC).
-> +
-> +  See also Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml for
-> +  additional information and example.
-> +
-> +allOf:
-> +  - $ref: power-supply.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - samsung,s2mu005-charger
-> +
-> +  port:
-> +    $ref: /schemas/graph.yaml#/properties/port
+On Tue, Apr 14, 2026 at 12:02:59PM +0530, Kaustabh Chakraborty wrote:
+> Kernel logs are filled with "DMA mask not set" messages for every
+> sub-device. The device does not use DMA for communication, so these
+> messages are useless. Disable the coherent DMA mask for the PMIC device,
+> which is also propagated to sub-devices.
+> 
+> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+> ---
+>  Documentation/devicetree/bindings/mfd/samsung,s2mps11.yaml | 3 +++
+>  drivers/mfd/sec-common.c                                   | 3 +++
+>  2 files changed, 6 insertions(+)
+>
 
-That port is internal part of the device, thus should be dropped which
-leaves you with only one property - monitored battery - and therefore
-fold the node into the parent node.
+Please run scripts/checkpatch.pl on the patches and fix reported
+warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+patches and (probably) fix more warnings. Some warnings can be ignored,
+especially from --strict run, but the code here looks like it needs a
+fix. Feel free to get in touch if the warning is not clear.
 
 Best regards,
 Krzysztof
