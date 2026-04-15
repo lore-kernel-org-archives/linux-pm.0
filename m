@@ -1,176 +1,661 @@
-Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazon11010059.outbound.protection.outlook.com [52.101.84.59])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69A80331A53;
-	Wed, 15 Apr 2026 06:59:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.84.59
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776236354; cv=fail; b=i4gci5L53swPTqbyvs2Sb1tY8mNBb+rNqcChBDXGRA83+xgUYLtiSifQjTOIFppt4MauGX89AL7wmvLJddxk19VB52BTAv0omvRSs3rbufNVsDr4iRZcD1eUgGRZXjcR3GvzYOWYd/YpE2TjKnKWZNQqjg01q0PH2V7N59fh/J4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776236354; c=relaxed/simple;
-	bh=KLeOPNgevm+/H0+pb3Ddeju3bJYZPVE+K/qgjrmrJCg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=bSSHiQIU3Sh3OKIYc4GInZnIXylN30ElcQSCP9QviCNAt4NvRc8IyEYp1yfojWtR84Lw7iE0akARWLUNG8UeqXJJZEMwB5+jbLULNMdL5kklt7HMbsHx+FPJbW2oaveeeUF1NEVYOt1rqIJbyS7UQ9rEfhNCKbCO+d+z4Tx1Cqk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=ctTb8i1z; arc=fail smtp.client-ip=52.101.84.59
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="ctTb8i1z"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DsVyLolHTBYWPk9SJ8dXJJ4um3GCA/KQvj/qG4eVS4Z2frCMX+crYs0WXL7LDHZDqznFz5htz4GMBGao7EGxAtw0p6TIAHK+Y+Ay+8MLdgdNST9PUwqhnS9vSHfaawZ7e2plWA/1WqqB1VCrjO4otAdXVB9oE3/C1eWI322S8y03uCGaNkCUAqUWewY0Xu1tGu1y+jNa8GJDWaTJQdrBHESj6RtuvFBjCk2I04YBTHmc+4H3WHlDg+RvucuOPGfNkKpXlEspX4tp+nVIFyMOnTRBHHNIweCXc/yohL9847daHJiQGlJNhfxoKeHcgnXaZ/X6SdNEXvPP30QQ+Sji+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lkrvo4msqImWXx0raR7KuUOEjEB2XVAjuCZBfPTkpRk=;
- b=XD9XTJk4zSk9zN0csBtn+czDQSybRkq8ysvbY19Y7wPEFwiMKeBwusfP42FQ14O8W8xF/80Uzq/ZfdK5/scbmj/5Z4SGN+fn27vB73PphtIJMA6A3Rj1u/MmjzIUjT+F/Ho8zX2F3XatnHdzVDuNgOd+f5jAb+rjbyAXOYWtPG/I1X8i5efdhFAwaVzVF2D3vbVkwIWADpTqQgYKZ+kW65xsRgf28DuydtstGAhKgryZ8qJa9Ilp4lu8GchpCTTJg1wYazpYfcxbz1F6IosZBcgptR7OiL2n4bSkIhiGANjcCRErszzaLed3tO9+xLdUnr5GODvWBsDQLUX4IAmwCA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lkrvo4msqImWXx0raR7KuUOEjEB2XVAjuCZBfPTkpRk=;
- b=ctTb8i1zUEjP3hJ6s6PzwX/yN6L5jYTW4gqNHuz67lfz8XElJrTjFlfnzHY+EIqefGLj277csjCXzQKG0uMOuTI3UxwXROcsSBO7hqOwuPBZQe9Bjb9fhE3ChCcAi8wR33BAUuKc6jwwUro4fQL3Vhd8hG7Vxgjb43tJL+OAd49Z9bgKdX5gdXmKFwT/bPNvZ65puw3XZj3FKGzu+iLzzbusPOFxQ9ek729tuh/qy423Rft4V6p8vWKT83tV75v1N12EAYxgvHKeLoBgiUim8yL01C8HDM8/y7ADYet9WbuurW35s9B2ChkOdvemH6CUPWRX+z72x3FaZyDgAC5dug==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from DU0PR04MB9372.eurprd04.prod.outlook.com (2603:10a6:10:35b::7)
- by GVXPR04MB12344.eurprd04.prod.outlook.com (2603:10a6:150:318::23) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Wed, 15 Apr
- 2026 06:59:08 +0000
-Received: from DU0PR04MB9372.eurprd04.prod.outlook.com
- ([fe80::4f6:1e57:c3b9:62b4]) by DU0PR04MB9372.eurprd04.prod.outlook.com
- ([fe80::4f6:1e57:c3b9:62b4%4]) with mapi id 15.20.9769.046; Wed, 15 Apr 2026
- 06:59:07 +0000
-Date: Wed, 15 Apr 2026 02:58:58 -0400
-From: Frank Li <Frank.li@nxp.com>
-To: Zhipeng Wang <zhipeng.wang_1@nxp.com>
-Cc: ulfh@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-	festevam@gmail.com, linux-pm@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	xuegang.liu@nxp.com, jindong.yue@nxp.com
-Subject: Re: [PATCH v2] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL tristate
-Message-ID: <ad83MtdMP4rci3Ya@lizhi-Precision-Tower-5810>
-References: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
-X-ClientProxiedBy: PH8P222CA0023.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:510:2d7::17) To DU0PR04MB9372.eurprd04.prod.outlook.com
- (2603:10a6:10:35b::7)
+Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4C07C39A06D;
+	Wed, 15 Apr 2026 07:01:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776236510; cv=none; b=bmy/PY1sXYxe2D+CCV6zxmmvYnh7PULD6Sh6fKwarZfQPDer8xz5JfncB1cPtgkZFIGhCZv2JgqZLr9q3+9IoyThpHsL/RRhhbexwSSRAiJ9t0khljD7+HQThCRvCldD4YDcO69vBtTFQIR3M7yL+1AIG+2pjuKH7+/4VzD6E6s=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776236510; c=relaxed/simple;
+	bh=BdXFa86tEq+gELj7r9l68qLIBxrEun2ypMTFapr2S8c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OqawEpVKANJjF6MKeLGw1QzzZLgA1CX9XfMHR/op1Iibn/qv6DiZXs8fRybFlguCBuPVicNr3dLJyoztgcJDh/GDb3DdAR9dxXDJRToXp1ny76PY4nSMy3ZNaxFPgOknOxhsOP2QfYiQAvmZPfD4qL1xUOoMEFKArA0wFUr8nRs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
+HMM_SOURCE_IP:10.158.242.145:0.1634015706
+HMM_ATTACHE_NUM:0000
+HMM_SOURCE_TYPE:SMTP
+Received: from clientip-60.27.227.144 (unknown [10.158.242.145])
+	by mail.189.cn (HERMES) with SMTP id 169D940029D;
+	Wed, 15 Apr 2026 15:01:40 +0800 (CST)
+Received: from  ([60.27.227.144])
+	by gateway-153622-dep-76cc7bc9cd-r45x9 with ESMTP id 8223a8ac66f64c7cbbfe1057b1437054 for rafael@kernel.org;
+	Wed, 15 Apr 2026 15:01:43 CST
+X-Transaction-ID: 8223a8ac66f64c7cbbfe1057b1437054
+X-Real-From: chensong_2000@189.cn
+X-Receive-IP: 60.27.227.144
+X-MEDUSA-Status: 0
+Sender: chensong_2000@189.cn
+From: chensong_2000@189.cn
+To: rafael@kernel.org,
+	lenb@kernel.org,
+	mturquette@baylibre.com,
+	sboyd@kernel.org,
+	viresh.kumar@linaro.org,
+	agk@redhat.com,
+	snitzer@kernel.org,
+	mpatocka@redhat.com,
+	bmarzins@redhat.com,
+	song@kernel.org,
+	yukuai@fnnas.com,
+	linan122@huawei.com,
+	jason.wessel@windriver.com,
+	danielt@kernel.org,
+	dianders@chromium.org,
+	horms@kernel.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	paulmck@kernel.org,
+	frederic@kernel.org,
+	mcgrof@kernel.org,
+	petr.pavlu@suse.com,
+	da.gomez@kernel.org,
+	samitolvanen@google.com,
+	atomlin@atomlin.com,
+	jpoimboe@kernel.org,
+	jikos@kernel.org,
+	mbenes@suse.cz,
+	pmladek@suse.com,
+	joe.lawrence@redhat.com,
+	rostedt@goodmis.org,
+	mhiramat@kernel.org,
+	mark.rutland@arm.com,
+	mathieu.desnoyers@efficios.com
+Cc: linux-modules@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	live-patching@vger.kernel.org,
+	dm-devel@lists.linux.dev,
+	linux-raid@vger.kernel.org,
+	kgdb-bugreport@lists.sourceforge.net,
+	netdev@vger.kernel.org,
+	Song Chen <chensong_2000@189.cn>
+Subject: [RFC PATCH 1/2] kernel/notifier: replace single-linked list with double-linked list for reverse traversal
+Date: Wed, 15 Apr 2026 15:01:37 +0800
+Message-ID: <20260415070137.17860-1-chensong_2000@189.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU0PR04MB9372:EE_|GVXPR04MB12344:EE_
-X-MS-Office365-Filtering-Correlation-Id: d39913c9-d2b0-4025-cb92-08de9abc7d20
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|1800799024|366016|376014|52116014|18002099003|38350700014|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	/+FHCIkFZPyyUzEWgFm42OORIzdGuPwAkbZp537jtY5DPmVy6A8fpYlM/xoWpnLsmyQGuXtPfvzhe7tHDYaNxqgLvWj+a1VU6lSDNj6X677RUdnOdU3/D8CBS5nHrwasFAZKuf/PoKYYI1hTLt2GeglL6/r7qRALBa5lkqb2kpLrBROEh5fNa1Z0Z7Pqo26IojF8XupXmkEz77IVa2eP6/eFXcc0tL1pLVmE2SOTZHR0GxbVR6emjqQu/GYCvE0Z3HVdWhEdh3TIiZhg73Q3Xx0qVV25omfsn6L7zlHqM24k44RLCFfhGQOdDUV5Xx0Kf9LHkFjxj6MPe5vH0lT/Fj+cOY1UB6yHmbRyq910LaQHqBpNZMYZPff8q5KU0bUoV+tbYaKaaQEKtZL6gjM+DaRFTMU3uX6VUhKHGjBZsUwx5hwrqMF64eOd+f2Vy33WwJGo5101QhcksJ36pInGj5yLa9iHpFeRODUInl1APSs8aHBTqtWLYUxJ9/pLREF65fb255ACce9HNfNVgqmLPuiRz/dQZByaSWPwDPYWkMfnlo0veon74HeKzQH0k+oxHVAU0+Ww+uG/6gZ4mLZfPGdrwQmsAUpLM/ka2OiALaBjvjJYP8dLH4TEbHR2ky14+NVvpnLzVSYDeuUhCotmAMiqW8Djw2FdWaKIQyOJPd5Pl+N4DB6ZlS9wY3vitfXpBfxs0tU25OovAyaL4csC6StJiGYMcu+J6sPNbHZzaBInn5+S8hpZDgiVuVuYm9JY8mOsLj0BodAUeRo7TiUYfvhVSgtJ4rufkf1ef4zMCN8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR04MB9372.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(1800799024)(366016)(376014)(52116014)(18002099003)(38350700014)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?z8nJb6VC0AOf1bcBWJkrSXJRTXEZpr4bscqv6+8AXttdBd0k97GY8rTYgv8n?=
- =?us-ascii?Q?6vMl11tSInHCWwUm5hvOsfkl09w1fmOFstDsllFfVKgYtMnihYXQR3C03aKF?=
- =?us-ascii?Q?PPddFZyZ5CBnhqYJgv5yV3CrIt/ZeNu4a54aN4jpeBvPMGf01I5JpvNlOMfi?=
- =?us-ascii?Q?xJ3LVQQkRAbRYH8yxS0+xZ9iN+3T4bX2viohm1ANUji8CPIQFhc0Osai/2Gu?=
- =?us-ascii?Q?Pkw6rRrZLE0mGFBTMdyPOnDA9enaPpiFaMrLi94FHOzdGokf/G9YgAtr4CFt?=
- =?us-ascii?Q?+4SEDP9h/0MKab53G4FUG/iyYO8+w4wx+8Gi39fPrQNjM01yimArOHtMFgz9?=
- =?us-ascii?Q?i7jZS7eUgjdocwWbJsSbzthU4waTzM/trdq/6p1rpHpjR3GBcfG5i7z1DAD0?=
- =?us-ascii?Q?3F/bAEr/4YJ1Gp80jr1tokLYba/YUREtmW2ghqb9Pvc7aDDPTVnxRubfDDSr?=
- =?us-ascii?Q?M/hizZ55X2GoID6CNDhuIQl7Gsbg4xH7ohcqiSZgb3Hv1k8qHCVFq10RtSLl?=
- =?us-ascii?Q?Q2wV3Q6kLSVYzJmZNSacmmnd9Rlt4xNF4Kpg/jubx6GedNrmPUJKHibmYlQ7?=
- =?us-ascii?Q?7nr3N8POQQMbSsRN429bZIDSBRBg9Bddf0qcv8dkEJ1KJmiKC/6Qj4tBFhoD?=
- =?us-ascii?Q?Q4BByBfBgvS8CEip1drH2zHD3QKQQqqhYcLa7Ica8gDEHrdlvuDCwW6mC0nO?=
- =?us-ascii?Q?uIHZg1PWqWvO3qEQrNJ3v+qo1ESSAsjk57QBoRKoAeiY0PKdLg6V4UkUszsj?=
- =?us-ascii?Q?CA8y+/VDVWzrI8/mlDbWxOehPOqQz2NlQpe02rMLziUlAiTABau6rF5DaZLy?=
- =?us-ascii?Q?czWwE1STc9zGyHy7/kOHg2hMg1GhzrxJ5eqHZYlkM/96qpXkWqktrdboHZhq?=
- =?us-ascii?Q?jRjZzY8SD17YD3X1vMnVt5hwGLN1QXoe8I9hzUclt/A7e0khpNNKY1ZKSJUY?=
- =?us-ascii?Q?7s3j2XuxIHZvYaPS3TW0hkojMjdd4sdItvXwXSUkoRefaY8pJTIDM4gUrm/j?=
- =?us-ascii?Q?TopBas2q+B9iJxvie+t4Unx5ZUreau0Tss+NzjBp8T5JHPBOlLJA6KcB3Sht?=
- =?us-ascii?Q?Kzmf2PPJRheRSoU8mU+Bmtp6/mZ+Y75RLYfQA1haajy+0Cs6JrjVw/0sWjJo?=
- =?us-ascii?Q?sJg/IeyPkkmqOoTWmXLPDR7s8cd48/vezlWrN9ooRmMj4xEIYb12MhS2f/9Y?=
- =?us-ascii?Q?UrSAyazdT/bgftfh/lj80I1+hyo4rEN1cDZkn2BRmgObNBN1o7kuWnyKdUKQ?=
- =?us-ascii?Q?cc9rm1GtXoVu+HFwWjclyG9qLcXLkdO6XXaKFm8zXk89jxH5C2Pk5FHvaCGt?=
- =?us-ascii?Q?zkbFldwCXkHHTpLITlVUp9wshafb3tPXGLL3lJjOT5CUJZKhbx9VG1iFWa18?=
- =?us-ascii?Q?OcZN8zv/pk61CZoxcCHeLBjwwm7JTsOLDN+dHMtCMASUPXur5IZodLhWMhBr?=
- =?us-ascii?Q?X09PrAlJAdfdj6/mAqpZ1Y2M3mX67s9xmrgPy2kuVf0jE15FkpP37eFR9FhP?=
- =?us-ascii?Q?2yfFyId+FGeGrfDXQqtISzyd0k/Cm/QyYoo61r7PGqbYc8BmVrN/+GAyWTGP?=
- =?us-ascii?Q?DC4IR9jdORLR4FWCilDMPH9N4PjN+hECgARKT+bxbSGaqQdTQo9oMN/iishr?=
- =?us-ascii?Q?Xaiv0+nERreQgRRlrthlqogORukoEyzuiqp3D6ahBMam/lHgg8LF5X2P27bs?=
- =?us-ascii?Q?NKGDqRuPe5W6fwFx4r1/s3SqVqJ+9miKTw4sj5Mj8aofGdIf?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d39913c9-d2b0-4025-cb92-08de9abc7d20
-X-MS-Exchange-CrossTenant-AuthSource: DU0PR04MB9372.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2026 06:59:07.8413
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zq1Sy44jF/eKS39Fa56XlMP5YFDmzZkRq8W2uwDK53sfvidNsdRbgsfx1kt1OPV6Em+NAJP4z7vvC/RMEN19sQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR04MB12344
+Content-Transfer-Encoding: 8bit
 
-On Mon, Apr 13, 2026 at 02:30:49PM +0900, Zhipeng Wang wrote:
-> Convert IMX8M_BLK_CTRL and IMX9_BLK_CTRL from bool to tristate
-> to allow building as loadable modules.
->
-> Add prompt strings to make these options visible and configurable
-> in menuconfig, keeping them enabled by default on appropriate platforms.
->
-> Also remove the IMX_GPCV2_PM_DOMAINS dependency from IMX9_BLK_CTRL.
-> This dependency was incorrect from the beginning - i.MX93 uses a
+From: Song Chen <chensong_2000@189.cn>
 
-s/-/because
+The current notifier chain implementation uses a single-linked list
+(struct notifier_block *next), which only supports forward traversal
+in priority order. This makes it difficult to handle cleanup/teardown
+scenarios that require notifiers to be called in reverse priority order.
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+A concrete example is the ordering dependency between ftrace and
+livepatch during module load/unload. see the detail here [1].
 
-> different power domain architecture compared to i.MX8M series:
->
-> - i.MX8M uses GPCv2 (General Power Controller v2) for power domain
->   management, hence IMX8M_BLK_CTRL correctly depends on it.
->
-> - i.MX93 uses BLK_CTRL directly without GPCv2. The hardware doesn't
->   have GPCv2 at all.
->
-> Signed-off-by: Zhipeng Wang <zhipeng.wang_1@nxp.com>
-> ---
->  drivers/pmdomain/imx/Kconfig | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/pmdomain/imx/Kconfig b/drivers/pmdomain/imx/Kconfig
-> index 00203615c65e..9168d183b0c5 100644
-> --- a/drivers/pmdomain/imx/Kconfig
-> +++ b/drivers/pmdomain/imx/Kconfig
-> @@ -10,15 +10,18 @@ config IMX_GPCV2_PM_DOMAINS
->  	default y if SOC_IMX7D
->
->  config IMX8M_BLK_CTRL
-> -	bool
-> -	default SOC_IMX8M && IMX_GPCV2_PM_DOMAINS
-> +	tristate "i.MX8M BLK CTRL driver"
-> +	depends on SOC_IMX8M
-> +	depends on IMX_GPCV2_PM_DOMAINS
->  	depends on PM_GENERIC_DOMAINS
->  	depends on COMMON_CLK
-> +	default y
->
->  config IMX9_BLK_CTRL
-> -	bool
-> -	default SOC_IMX9 && IMX_GPCV2_PM_DOMAINS
-> +	tristate "i.MX93 BLK CTRL driver"
-> +	depends on SOC_IMX9
->  	depends on PM_GENERIC_DOMAINS
-> +	default y
->
->  config IMX_SCU_PD
->  	bool "IMX SCU Power Domain driver"
-> --
-> 2.34.1
->
+This patch replaces the single-linked list in struct notifier_block
+with a struct list_head, converting the notifier chain into a
+doubly-linked list sorted in descending priority order. Based on
+this, a new function notifier_call_chain_reverse() is introduced,
+which traverses the chain in reverse (ascending priority order).
+The corresponding blocking_notifier_call_chain_reverse() is also
+added as the locking wrapper for blocking notifier chains.
+
+The internal notifier_call_chain_robust() is updated to use
+notifier_call_chain_reverse() for rollback: on error, it records
+the failing notifier (last_nb) and the count of successfully called
+notifiers (nr), then rolls back exactly those nr-1 notifiers in
+reverse order starting from last_nb's predecessor, without needing
+to know the total length of the chain.
+
+With this change, subsystems with symmetric setup/teardown ordering
+requirements can register a single notifier_block with one priority
+value, and rely on blocking_notifier_call_chain() for forward
+traversal and blocking_notifier_call_chain_reverse() for reverse
+traversal, without needing hard-coded call sequences or separate
+notifier registrations for each direction.
+
+[1]:https://lore.kernel.org/all
+	/alpine.LNX.2.00.1602172216491.22700@cbobk.fhfr.pm/
+
+Signed-off-by: Song Chen <chensong_2000@189.cn>
+---
+ drivers/acpi/sleep.c      |   1 -
+ drivers/clk/clk.c         |   2 +-
+ drivers/cpufreq/cpufreq.c |   2 +-
+ drivers/md/dm-integrity.c |   1 -
+ drivers/md/md.c           |   1 -
+ include/linux/notifier.h  |  26 ++---
+ kernel/debug/debug_core.c |   1 -
+ kernel/notifier.c         | 219 ++++++++++++++++++++++++++++++++------
+ net/ipv4/nexthop.c        |   2 +-
+ 9 files changed, 201 insertions(+), 54 deletions(-)
+
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 132a9df98471..b776dbd5a382 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -56,7 +56,6 @@ static int tts_notify_reboot(struct notifier_block *this,
+ 
+ static struct notifier_block tts_notifier = {
+ 	.notifier_call	= tts_notify_reboot,
+-	.next		= NULL,
+ 	.priority	= 0,
+ };
+ 
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 47093cda9df3..b6fe380d0468 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -4862,7 +4862,7 @@ int clk_notifier_unregister(struct clk *clk, struct notifier_block *nb)
+ 			clk->core->notifier_count--;
+ 
+ 			/* XXX the notifier code should handle this better */
+-			if (!cn->notifier_head.head) {
++			if (list_empty(&cn->notifier_head.head)) {
+ 				srcu_cleanup_notifier_head(&cn->notifier_head);
+ 				list_del(&cn->node);
+ 				kfree(cn);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 277884d91913..12637e742ffa 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -445,7 +445,7 @@ static void cpufreq_list_transition_notifiers(void)
+ 
+ 	mutex_lock(&cpufreq_transition_notifier_list.mutex);
+ 
+-	for (nb = cpufreq_transition_notifier_list.head; nb; nb = nb->next)
++	list_for_each_entry(nb, &cpufreq_transition_notifier_list.head, entry)
+ 		pr_info("%pS\n", nb->notifier_call);
+ 
+ 	mutex_unlock(&cpufreq_transition_notifier_list.mutex);
+diff --git a/drivers/md/dm-integrity.c b/drivers/md/dm-integrity.c
+index 06e805902151..ccdf75c40b62 100644
+--- a/drivers/md/dm-integrity.c
++++ b/drivers/md/dm-integrity.c
+@@ -3909,7 +3909,6 @@ static void dm_integrity_resume(struct dm_target *ti)
+ 	}
+ 
+ 	ic->reboot_notifier.notifier_call = dm_integrity_reboot;
+-	ic->reboot_notifier.next = NULL;
+ 	ic->reboot_notifier.priority = INT_MAX - 1;	/* be notified after md and before hardware drivers */
+ 	WARN_ON(register_reboot_notifier(&ic->reboot_notifier));
+ 
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 3ce6f9e9d38e..8249e78636ab 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -10480,7 +10480,6 @@ static int md_notify_reboot(struct notifier_block *this,
+ 
+ static struct notifier_block md_notifier = {
+ 	.notifier_call	= md_notify_reboot,
+-	.next		= NULL,
+ 	.priority	= INT_MAX, /* before any real devices */
+ };
+ 
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 01b6c9d9956f..b2abbdfcaadd 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -53,41 +53,41 @@ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
+ 
+ struct notifier_block {
+ 	notifier_fn_t notifier_call;
+-	struct notifier_block __rcu *next;
++	struct list_head __rcu entry;
+ 	int priority;
+ };
+ 
+ struct atomic_notifier_head {
+ 	spinlock_t lock;
+-	struct notifier_block __rcu *head;
++	struct list_head __rcu head;
+ };
+ 
+ struct blocking_notifier_head {
+ 	struct rw_semaphore rwsem;
+-	struct notifier_block __rcu *head;
++	struct list_head __rcu head;
+ };
+ 
+ struct raw_notifier_head {
+-	struct notifier_block __rcu *head;
++	struct list_head __rcu head;
+ };
+ 
+ struct srcu_notifier_head {
+ 	struct mutex mutex;
+ 	struct srcu_usage srcuu;
+ 	struct srcu_struct srcu;
+-	struct notifier_block __rcu *head;
++	struct list_head __rcu head;
+ };
+ 
+ #define ATOMIC_INIT_NOTIFIER_HEAD(name) do {	\
+ 		spin_lock_init(&(name)->lock);	\
+-		(name)->head = NULL;		\
++		INIT_LIST_HEAD(&(name)->head);		\
+ 	} while (0)
+ #define BLOCKING_INIT_NOTIFIER_HEAD(name) do {	\
+ 		init_rwsem(&(name)->rwsem);	\
+-		(name)->head = NULL;		\
++		INIT_LIST_HEAD(&(name)->head);		\
+ 	} while (0)
+ #define RAW_INIT_NOTIFIER_HEAD(name) do {	\
+-		(name)->head = NULL;		\
++		INIT_LIST_HEAD(&(name)->head);		\
+ 	} while (0)
+ 
+ /* srcu_notifier_heads must be cleaned up dynamically */
+@@ -97,17 +97,17 @@ extern void srcu_init_notifier_head(struct srcu_notifier_head *nh);
+ 
+ #define ATOMIC_NOTIFIER_INIT(name) {				\
+ 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
+-		.head = NULL }
++		.head = LIST_HEAD_INIT((name).head) }
+ #define BLOCKING_NOTIFIER_INIT(name) {				\
+ 		.rwsem = __RWSEM_INITIALIZER((name).rwsem),	\
+-		.head = NULL }
++		.head = LIST_HEAD_INIT((name).head) }
+ #define RAW_NOTIFIER_INIT(name)	{				\
+-		.head = NULL }
++		.head = LIST_HEAD_INIT((name).head) }
+ 
+ #define SRCU_NOTIFIER_INIT(name, pcpu)				\
+ 	{							\
+ 		.mutex = __MUTEX_INITIALIZER(name.mutex),	\
+-		.head = NULL,					\
++		.head = LIST_HEAD_INIT((name).head),					\
+ 		.srcuu = __SRCU_USAGE_INIT(name.srcuu),		\
+ 		.srcu = __SRCU_STRUCT_INIT(name.srcu, name.srcuu, pcpu, 0), \
+ 	}
+@@ -170,6 +170,8 @@ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ 		unsigned long val, void *v);
+ extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 		unsigned long val, void *v);
++extern int blocking_notifier_call_chain_reverse(struct blocking_notifier_head *nh,
++		unsigned long val, void *v);
+ extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
+ 		unsigned long val, void *v);
+ extern int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 0b9495187fba..a26a7683d142 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -1054,7 +1054,6 @@ dbg_notify_reboot(struct notifier_block *this, unsigned long code, void *x)
+ 
+ static struct notifier_block dbg_reboot_notifier = {
+ 	.notifier_call		= dbg_notify_reboot,
+-	.next			= NULL,
+ 	.priority		= INT_MAX,
+ };
+ 
+diff --git a/kernel/notifier.c b/kernel/notifier.c
+index 2f9fe7c30287..6f4d887771c4 100644
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -14,39 +14,47 @@
+  *	are layered on top of these, with appropriate locking added.
+  */
+ 
+-static int notifier_chain_register(struct notifier_block **nl,
++static int notifier_chain_register(struct list_head *nl,
+ 				   struct notifier_block *n,
+ 				   bool unique_priority)
+ {
+-	while ((*nl) != NULL) {
+-		if (unlikely((*nl) == n)) {
++	struct notifier_block *cur;
++
++	list_for_each_entry(cur, nl, entry) {
++		if (unlikely(cur == n)) {
+ 			WARN(1, "notifier callback %ps already registered",
+ 			     n->notifier_call);
+ 			return -EEXIST;
+ 		}
+-		if (n->priority > (*nl)->priority)
+-			break;
+-		if (n->priority == (*nl)->priority && unique_priority)
++
++		if (n->priority == cur->priority && unique_priority)
+ 			return -EBUSY;
+-		nl = &((*nl)->next);
++
++		if (n->priority > cur->priority) {
++			list_add_tail(&n->entry, &cur->entry);
++			goto out;
++		}
+ 	}
+-	n->next = *nl;
+-	rcu_assign_pointer(*nl, n);
++
++	list_add_tail(&n->entry, nl);
++out:
+ 	trace_notifier_register((void *)n->notifier_call);
+ 	return 0;
+ }
+ 
+-static int notifier_chain_unregister(struct notifier_block **nl,
++static int notifier_chain_unregister(struct list_head *nl,
+ 		struct notifier_block *n)
+ {
+-	while ((*nl) != NULL) {
+-		if ((*nl) == n) {
+-			rcu_assign_pointer(*nl, n->next);
++	struct notifier_block *cur;
++
++	list_for_each_entry(cur, nl, entry) {
++		if (cur == n) {
++			list_del(&n->entry);
+ 			trace_notifier_unregister((void *)n->notifier_call);
+ 			return 0;
+ 		}
+-		nl = &((*nl)->next);
+ 	}
++
+ 	return -ENOENT;
+ }
+ 
+@@ -59,25 +67,25 @@ static int notifier_chain_unregister(struct notifier_block **nl,
+  *			value of this parameter is -1.
+  *	@nr_calls:	Records the number of notifications sent. Don't care
+  *			value of this field is NULL.
++ *	@last_nb:  Records the last called notifier block for rolling back
+  *	Return:		notifier_call_chain returns the value returned by the
+  *			last notifier function called.
+  */
+-static int notifier_call_chain(struct notifier_block **nl,
++static int notifier_call_chain(struct list_head *nl,
+ 			       unsigned long val, void *v,
+-			       int nr_to_call, int *nr_calls)
++			       int nr_to_call, int *nr_calls,
++				   struct notifier_block **last_nb)
+ {
+ 	int ret = NOTIFY_DONE;
+-	struct notifier_block *nb, *next_nb;
+-
+-	nb = rcu_dereference_raw(*nl);
++	struct notifier_block *nb;
+ 
+-	while (nb && nr_to_call) {
+-		next_nb = rcu_dereference_raw(nb->next);
++	if (!nr_to_call)
++		return ret;
+ 
++	list_for_each_entry(nb, nl, entry) {
+ #ifdef CONFIG_DEBUG_NOTIFIERS
+ 		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
+ 			WARN(1, "Invalid notifier called!");
+-			nb = next_nb;
+ 			continue;
+ 		}
+ #endif
+@@ -87,15 +95,118 @@ static int notifier_call_chain(struct notifier_block **nl,
+ 		if (nr_calls)
+ 			(*nr_calls)++;
+ 
++		if (last_nb)
++			*last_nb = nb;
++
+ 		if (ret & NOTIFY_STOP_MASK)
+ 			break;
+-		nb = next_nb;
+-		nr_to_call--;
++
++		if (nr_to_call-- == 0)
++			break;
+ 	}
+ 	return ret;
+ }
+ NOKPROBE_SYMBOL(notifier_call_chain);
+ 
++/**
++ * notifier_call_chain_reverse - Informs the registered notifiers
++ *			about an event reversely.
++ *	@nl:		Pointer to head of the blocking notifier chain
++ *	@val:		Value passed unmodified to notifier function
++ *	@v:		Pointer passed unmodified to notifier function
++ *	@nr_to_call:	Number of notifier functions to be called. Don't care
++ *			value of this parameter is -1.
++ *	@nr_calls:	Records the number of notifications sent. Don't care
++ *			value of this field is NULL.
++ *	Return:		notifier_call_chain returns the value returned by the
++ *			last notifier function called.
++ */
++static int notifier_call_chain_reverse(struct list_head *nl,
++					struct notifier_block *start,
++					unsigned long val, void *v,
++					int nr_to_call, int *nr_calls)
++{
++	int ret = NOTIFY_DONE;
++	struct notifier_block *nb;
++	bool do_call = (start == NULL);
++
++	if (!nr_to_call)
++		return ret;
++
++	list_for_each_entry_reverse(nb, nl, entry) {
++		if (!do_call) {
++			if (nb == start)
++				do_call = true;
++			continue;
++		}
++#ifdef CONFIG_DEBUG_NOTIFIERS
++		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
++			WARN(1, "Invalid notifier called!");
++			continue;
++		}
++#endif
++		trace_notifier_run((void *)nb->notifier_call);
++		ret = nb->notifier_call(nb, val, v);
++
++		if (nr_calls)
++			(*nr_calls)++;
++
++		if (ret & NOTIFY_STOP_MASK)
++			break;
++
++		if (nr_to_call-- == 0)
++			break;
++	}
++	return ret;
++}
++NOKPROBE_SYMBOL(notifier_call_chain_reverse);
++
++/**
++ * notifier_call_chain_rcu - Informs the registered notifiers
++ *			about an event for srcu notifier chain.
++ *	@nl:		Pointer to head of the blocking notifier chain
++ *	@val:		Value passed unmodified to notifier function
++ *	@v:		Pointer passed unmodified to notifier function
++ *	@nr_to_call:	Number of notifier functions to be called. Don't care
++ *			value of this parameter is -1.
++ *	@nr_calls:	Records the number of notifications sent. Don't care
++ *			value of this field is NULL.
++ *	Return:		notifier_call_chain returns the value returned by the
++ *			last notifier function called.
++ */
++static int notifier_call_chain_rcu(struct list_head *nl,
++			       unsigned long val, void *v,
++			       int nr_to_call, int *nr_calls)
++{
++	int ret = NOTIFY_DONE;
++	struct notifier_block *nb;
++
++	if (!nr_to_call)
++		return ret;
++
++	list_for_each_entry_rcu(nb, nl, entry) {
++#ifdef CONFIG_DEBUG_NOTIFIERS
++		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
++			WARN(1, "Invalid notifier called!");
++			continue;
++		}
++#endif
++		trace_notifier_run((void *)nb->notifier_call);
++		ret = nb->notifier_call(nb, val, v);
++
++		if (nr_calls)
++			(*nr_calls)++;
++
++		if (ret & NOTIFY_STOP_MASK)
++			break;
++
++		if (nr_to_call-- == 0)
++			break;
++	}
++	return ret;
++}
++NOKPROBE_SYMBOL(notifier_call_chain_rcu);
++
+ /**
+  * notifier_call_chain_robust - Inform the registered notifiers about an event
+  *                              and rollback on error.
+@@ -111,15 +222,16 @@ NOKPROBE_SYMBOL(notifier_call_chain);
+  *
+  * Return:	the return value of the @val_up call.
+  */
+-static int notifier_call_chain_robust(struct notifier_block **nl,
++static int notifier_call_chain_robust(struct list_head *nl,
+ 				     unsigned long val_up, unsigned long val_down,
+ 				     void *v)
+ {
+ 	int ret, nr = 0;
++	struct notifier_block *last_nb = NULL;
+ 
+-	ret = notifier_call_chain(nl, val_up, v, -1, &nr);
++	ret = notifier_call_chain(nl, val_up, v, -1, &nr, &last_nb);
+ 	if (ret & NOTIFY_STOP_MASK)
+-		notifier_call_chain(nl, val_down, v, nr-1, NULL);
++		notifier_call_chain_reverse(nl, last_nb, val_down, v, nr-1, NULL);
+ 
+ 	return ret;
+ }
+@@ -220,7 +332,7 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+ 	int ret;
+ 
+ 	rcu_read_lock();
+-	ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
++	ret = notifier_call_chain(&nh->head, val, v, -1, NULL, NULL);
+ 	rcu_read_unlock();
+ 
+ 	return ret;
+@@ -238,7 +350,7 @@ NOKPROBE_SYMBOL(atomic_notifier_call_chain);
+  */
+ bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
+ {
+-	return !rcu_access_pointer(nh->head);
++	return list_empty(&nh->head);
+ }
+ 
+ /*
+@@ -340,7 +452,7 @@ int blocking_notifier_call_chain_robust(struct blocking_notifier_head *nh,
+ 	 * racy then it does not matter what the result of the test
+ 	 * is, we re-check the list after having taken the lock anyway:
+ 	 */
+-	if (rcu_access_pointer(nh->head)) {
++	if (!list_empty(&nh->head)) {
+ 		down_read(&nh->rwsem);
+ 		ret = notifier_call_chain_robust(&nh->head, val_up, val_down, v);
+ 		up_read(&nh->rwsem);
+@@ -375,15 +487,52 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 	 * racy then it does not matter what the result of the test
+ 	 * is, we re-check the list after having taken the lock anyway:
+ 	 */
+-	if (rcu_access_pointer(nh->head)) {
++	if (!list_empty(&nh->head)) {
+ 		down_read(&nh->rwsem);
+-		ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
++		ret = notifier_call_chain(&nh->head, val, v, -1, NULL, NULL);
+ 		up_read(&nh->rwsem);
+ 	}
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
+ 
++/**
++ *	blocking_notifier_call_chain_reverse - Call functions reversely in
++ *				a blocking notifier chain
++ *	@nh: Pointer to head of the blocking notifier chain
++ *	@val: Value passed unmodified to notifier function
++ *	@v: Pointer passed unmodified to notifier function
++ *
++ *	Calls each function in a notifier chain in turn.  The functions
++ *	run in a process context, so they are allowed to block.
++ *
++ *	If the return value of the notifier can be and'ed
++ *	with %NOTIFY_STOP_MASK then blocking_notifier_call_chain()
++ *	will return immediately, with the return value of
++ *	the notifier function which halted execution.
++ *	Otherwise the return value is the return value
++ *	of the last notifier function called.
++ */
++
++int blocking_notifier_call_chain_reverse(struct blocking_notifier_head *nh,
++		unsigned long val, void *v)
++{
++	int ret = NOTIFY_DONE;
++
++	/*
++	 * We check the head outside the lock, but if this access is
++	 * racy then it does not matter what the result of the test
++	 * is, we re-check the list after having taken the lock anyway:
++	 */
++	if (!list_empty(&nh->head)) {
++		down_read(&nh->rwsem);
++		ret = notifier_call_chain_reverse(&nh->head, NULL, val, v, -1, NULL);
++		up_read(&nh->rwsem);
++	}
++	return ret;
++}
++EXPORT_SYMBOL_GPL(blocking_notifier_call_chain_reverse);
++
+ /*
+  *	Raw notifier chain routines.  There is no protection;
+  *	the caller must provide it.  Use at your own risk!
+@@ -450,7 +599,7 @@ EXPORT_SYMBOL_GPL(raw_notifier_call_chain_robust);
+ int raw_notifier_call_chain(struct raw_notifier_head *nh,
+ 		unsigned long val, void *v)
+ {
+-	return notifier_call_chain(&nh->head, val, v, -1, NULL);
++	return notifier_call_chain(&nh->head, val, v, -1, NULL, NULL);
+ }
+ EXPORT_SYMBOL_GPL(raw_notifier_call_chain);
+ 
+@@ -543,7 +692,7 @@ int srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ 	int idx;
+ 
+ 	idx = srcu_read_lock(&nh->srcu);
+-	ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
++	ret = notifier_call_chain_rcu(&nh->head, val, v, -1, NULL);
+ 	srcu_read_unlock(&nh->srcu, idx);
+ 	return ret;
+ }
+@@ -566,7 +715,7 @@ void srcu_init_notifier_head(struct srcu_notifier_head *nh)
+ 	mutex_init(&nh->mutex);
+ 	if (init_srcu_struct(&nh->srcu) < 0)
+ 		BUG();
+-	nh->head = NULL;
++	INIT_LIST_HEAD(&nh->head);
+ }
+ EXPORT_SYMBOL_GPL(srcu_init_notifier_head);
+ 
+diff --git a/net/ipv4/nexthop.c b/net/ipv4/nexthop.c
+index c942f1282236..0afcba2967c7 100644
+--- a/net/ipv4/nexthop.c
++++ b/net/ipv4/nexthop.c
+@@ -90,7 +90,7 @@ static const struct nla_policy rtm_nh_res_bucket_policy_get[] = {
+ 
+ static bool nexthop_notifiers_is_empty(struct net *net)
+ {
+-	return !net->nexthop.notifier_chain.head;
++	return list_empty(&net->nexthop.notifier_chain.head);
+ }
+ 
+ static void
+-- 
+2.43.0
+
