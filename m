@@ -1,71 +1,69 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E4A319C542
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 16:37:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776357479; cv=none; b=tXoELPpp+e0B3zd84tS5+NhSqyCeOIVi+HIOiZcf69VhjBEM18zVBrBWH/NgwJoXdlFfS03jMCePh8q+AiDJh5/wfzlb1Rz0XRH0gAcLz+2pX1rAa7OjrOVStg2YvXUiBPH8YaxCdGNNUnanF/Js5NjA4r6OFTN11pSr4/kSq8o=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776357479; c=relaxed/simple;
-	bh=Y1N7wF44jXkKcQ9zsr1lgSXem7oNUSaQboj9pTd4Lgs=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A8412F9D85;
+	Thu, 16 Apr 2026 18:14:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776363251; cv=pass; b=LIB9wzsK2C1wB4aWTf4hD8uZNLszEEPbPeZu+A9mz0Ds4VVdNqX8xagavcfQ+r1Bk/Wl2OAPlNYV8OS3JdP6oVLLkIVJawCkxq95q+vadu5e32yoOJFQwp2O6mEtm9FDJ8jv4GpqgRdtFFgY4wohU0lnpYuF81xkS7VoPk0Kj+o=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776363251; c=relaxed/simple;
+	bh=vk40c9ez1h57fVsIzjSyatPkMNUBI72M+RLSobdlgLw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=J+FXG1xrSxZEnA9kPRMCWV1726Bt9jaACt/jxhXTLHdtxuHhN3RScLuAqVqK6fMDO5C9kNw2Vdo9XaDGjNRJBqZZpS0rqoOrLeP3wGZqz/opsYePrr7tyckjeY/TWoZ88qj8Gm7YnAtQgxgEAzHEkVfJYyCsAuTLM+7lcznEk24=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sgL8DHcf; arc=none smtp.client-ip=209.85.216.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=PCE5EUMYWRmaLUJQfgCRVtT+wubs1ZNMcTNQgAhdfhGrMQAgbBlEsrSZ8tEMiu1zk2KG2GqVjPEQ5/6BR/oSXYT5LgQPCIc2lRetnBuzUjtdZtqdjvJ3Mz2yPSTbxEqNzuEN0r19/QAQ9pA3fTL8sTwl66X1lyD4OBRcqpc4p/8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=IL8kKkhP; arc=pass smtp.client-ip=185.185.170.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sgL8DHcf"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-35d99031e4eso4974248a91.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 09:37:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776357477; x=1776962277; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8yA9YSNeAfuMMoPnACG23ugvDbAINZvrlXtBMrRI+L8=;
-        b=sgL8DHcfOgAwNkpDkSu5I2HduBKJpCKkkjxWBHIyBWPhin1OuC/VTqyIIiKUtCBbJu
-         Xo15+HzvdzV8/CsRcjXo/kyAjizUHPSH6Wsyj+lbvPHQ5mTsPw5wy+jsj5/a4sOJ5F79
-         ftX7nIrIsum8vUC+vd/w1Y6oKGWt66HHI+tmgu4QVQebzxJeVuaNoitKrSmWt5SYp/Lb
-         rdw5SBxuGJca8bAXiQtiIBEv9u5x5zG4X46WSyjIm3ZfEhpqtiBgwTMczqdlOtnVq08k
-         r0N1q4z1EazAyMEF/DIZOW5ZuANWEFF//EAvyLHZiAHOaoHz9N8UWLMbMk6slwAeL4FV
-         5XBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776357477; x=1776962277;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8yA9YSNeAfuMMoPnACG23ugvDbAINZvrlXtBMrRI+L8=;
-        b=j2UHtv9jQlikphmqFSErHWMDZOuJIpZpvScs8PLsBEeCs3qUG9vTIAgV6+5GwUqEFY
-         a9bN+KmnFMX+5j36HaM9VrshBTWAE8ipFu4UZvlKZ1MKhQjvzyQrcbmorqr+kCCP5OjF
-         lgg1ZmEjdWZV1VBDdcmfJfrI3BQB+uSUoggImwVk+IKUzQN++vac8A81pfEx0av5ORtG
-         ZJuAZhkmQwTnzZav2CPetpa1rDcWuEbtZITMeaffxxcaT3l/I28Pr6b/fhWXvnNJotns
-         r5gW2EWgOq2S6kNi/rJG+r/w90Z2G6cBoLugZSwC2CB+PB1wuRJkFsji2JRnsUUHYzjT
-         KxTg==
-X-Forwarded-Encrypted: i=1; AFNElJ/PpFuGCYCYjhpsgXe4yDgpzGrRQ+TJQ19WLbJeEjM/A+Zu7W9pJq0fou1HUdaWCdrCrgqJJn+WHA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzMf8exFwnDihzpz4CC9KD6+02TQvWMEUYWMW5o3DTVWwkZTCNv
-	Ln5F6ZpAsrVhzW/FBanZPzyO51UjSmx+3vTpvtzmGLiVDWm3CuB8dNHA
-X-Gm-Gg: AeBDies8PdguydeBBktAXfacm1TJc7sq+aHqEWrBmTOOo6w6l1ZRcPFxIEhbjDITUwm
-	t+w3CzCg4Prm2iVvxZc8I8o/JvSUttV4wXN95Nk1P3ioCQvKwoodqgHxwhR3+kq3RoyERTkAeCn
-	sEN2TSiuot1cHXqrpm6USQosCRWRD+ykGuuypk8Xo7T6EYxMUkp8HTcwL2NoC73lrw/GZXvZUsH
-	iG0g3SYL1TP8J+31+h+Fajd3bR52OOIKecJL5zseLbbwQUFd9MFyjz4lJyexoL1Eirdcvtn4M9w
-	ijk0x2C9z3QTBQCJdv1VCu3c7jJBaW4UmZ8KnYQPylKZs6DVMvZlN06i7Z0WPzSzsQFgoskyfaF
-	tzNg/hdC1Mt2BdBOrYWHqiWYLhwljVFRTIcqdlNes+11m6VywwKGnKhZALwzaEcP75LiohXcZSx
-	Ik1RwkMT9x3fUSolZbw7IPqQ1IpMcufN4PgET4SGEBi2Zp
-X-Received: by 2002:a17:90b:4a45:b0:35d:a62c:19de with SMTP id 98e67ed59e1d1-3613df17f94mr105102a91.1.1776357477448;
-        Thu, 16 Apr 2026 09:37:57 -0700 (PDT)
-Received: from google.com ([118.150.148.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36132cb3804sm3061025a91.6.2026.04.16.09.37.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2026 09:37:57 -0700 (PDT)
-Date: Fri, 17 Apr 2026 00:37:54 +0800
-From: Kuan-Wei Chiu <visitorckw@gmail.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] interconnect: Do not create empty devres on missing
- interconnects
-Message-ID: <aeEQYg3fTj-n0JDR@google.com>
-References: <20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="IL8kKkhP"
+Received: from darkstar.musicnaut.iki.fi (unknown [83.245.248.121])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: aaro.koskinen)
+	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4fxR3W6HrSz49PyT;
+	Thu, 16 Apr 2026 21:13:59 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+	t=1776363242;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GpSAM8UFpTnSpjttHs3Wu1kj1RSAFR37k9Z3Icr23N8=;
+	b=IL8kKkhPY5rw9Klw91YLNjFh7LbY4UXkayV44c/Eof0pr5E7VWYK85SmNtAs/2+91WyMZ9
+	yhgSwHCWhOd1GKBBMPm8PUHiT0qgA8lm+qjNr/AGu2wKMM1YC6a1odohN3Oy/89goSpJ6b
+	xOlzMN/NbU5k0RT3PMyty8Pqtnm7CN4Hps6Cs8lveAA7494xSt5ooFFzHe8hwp1IcBqKBx
+	dbqM0qUxa+HMvsVS4KyC6JjG2NZnlWTYBhn8sNk5j/6AdExtamfJRaN3PPdfuJn7+M5GYK
+	aTbh/2KGmvmiYPhVCeHrYwLNNYkU6utNgeaN9KvcS29jkGB75kkj4hFB8bHFnw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+	s=lahtoruutu; t=1776363242;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GpSAM8UFpTnSpjttHs3Wu1kj1RSAFR37k9Z3Icr23N8=;
+	b=SbMRrJqpH+362U0Co7R8NPxZQ1W7zqgeYbepi6cQWqDK0SDY5VNlZAfSexXNx/VkXnsVTX
+	ijOhsRSsVjVpLXeLCT0OQYVXL/x9gjKQ1vn0apWrnuCowrou+qjPdXVHRBBHxftLNFQwag
+	Ba8suDmWs740/EAhKdc2Hbi1jPiFn+lzL406Y4jO0VHhf5sGdbZPwK57plJBmF75x8JglG
+	k3j2HPx6Vmp89IYRGTA4UEcnqPFPdNstA4WQyFnKeX+DGJ3Efh7Ie9u1hWgr2/JAWO+vcW
+	GQaigoivDK3roGItAwhXythG8slc2tUWJHYXGcFB6V73ZIsA4uSt/N79PhaFqg==
+ARC-Authentication-Results: i=1;
+	ORIGINATING;
+	auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
+ARC-Seal: i=1; a=rsa-sha256; d=iki.fi; s=lahtoruutu; cv=none; t=1776363242;
+	b=rxPaotNNO6Lo1IYlwpf4/d8K30TUYQKrneGwIORu+VDhrF8e+vrpdlU11qjgtxwadyIG8G
+	iZcrlfW0SKvEyMpihkdFF67whoUpbPk7pLz/tfpzmPSHLpPbJg46hDmbNzqOEE1PH6PKrz
+	SLrVdYONAhWSFbCnLWGJ+FCDTahHhbfMs0Y4CfCkD2QhdII65RlzlGIM7I27TbZFaBOizd
+	FYP7ZvvoUILzKiwPZ3D7wMOCk5Edwr+5kVMi05Lg5DGXGFst4h7gb17vQpld9i+C7QcjQf
+	lH2zX9LFug/wlfum2/5ORbefxDCbsib23bbgz4tHl7F94T4AJc5xvazbjtg/pw==
+Date: Thu, 16 Apr 2026 21:13:56 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Thierry Reding <thierry.reding@kernel.org>
+Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Paul Walmsley <pjw@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] MAINTAINERS: Move Peter De Schrijver to CREDITS
+Message-ID: <aeEm5DavehkPmSgl@darkstar.musicnaut.iki.fi>
+References: <20260416131810.3116408-1-thierry.reding@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -74,38 +72,62 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260416131810.3116408-1-thierry.reding@kernel.org>
 
-On Thu, Apr 16, 2026 at 03:09:13PM +0200, Krzysztof Kozlowski wrote:
-> of_icc_get() returns NULL on valid case - no interconnects - but no
-> need to create devres for that, because it just wastes memory without
-> any use/benefits.
+Hello,
+
+On Thu, Apr 16, 2026 at 03:18:10PM +0200, Thierry Reding wrote:
+> From: Thierry Reding <treding@nvidia.com>
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> Peter sadly passed away a while back. Paul did a much better job at
+> finding the right words to mourn this loss than I ever could, so I will
+> leave this link here:
+> 
+>   https://lore.kernel.org/lkml/alpine.DEB.2.21.999.2407240345480.11116@utopia.booyaka.com/T/#u
+> 
+> Co-developed-by: Paul Walmsley <pjw@kernel.org>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
 
-Reviewed-by: Kuan-Wei Chiu <visitorckw@gmail.com>
+Thanks for doing this. I think also the m68k work should be mentioned?
 
-Regards,
-Kuan-Wei
+A.
 
 > ---
->  drivers/interconnect/core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  CREDITS     | 6 ++++++
+>  MAINTAINERS | 1 -
+>  2 files changed, 6 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-> index 8569b78a1851..ce572c62f58f 100644
-> --- a/drivers/interconnect/core.c
-> +++ b/drivers/interconnect/core.c
-> @@ -432,7 +432,7 @@ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
->  		return ERR_PTR(-ENOMEM);
+> diff --git a/CREDITS b/CREDITS
+> index 885fb05d8816..29fcfa679430 100644
+> --- a/CREDITS
+> +++ b/CREDITS
+> @@ -3645,7 +3645,13 @@ D: Macintosh IDE Driver
 >  
->  	path = of_icc_get(dev, name);
-> -	if (!IS_ERR(path)) {
-> +	if (!IS_ERR_OR_NULL(path)) {
->  		*ptr = path;
->  		devres_add(dev, ptr);
->  	} else {
+>  N: Peter De Schrijver
+>  E: stud11@cc4.kuleuven.ac.be
+> +E: p2@mind.be
+> +E: peter.de-schrijver@nokia.com
+> +E: pdeschrijver@nvidia.com
+> +E: p2@psychaos.be
+>  D: Mitsumi CD-ROM driver patches March version
+> +D: OMAP power management
+> +D: NVIDIA Tegra clock and BPMP drivers, among many other things
+>  S: Molenbaan 29
+>  S: B2240 Zandhoven
+>  S: Belgium
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index ef978bfca514..ffe20d770249 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -26145,7 +26145,6 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git
+>  N:	[^a-z]tegra
+>  
+>  TEGRA CLOCK DRIVER
+> -M:	Peter De Schrijver <pdeschrijver@nvidia.com>
+>  M:	Prashant Gaikwad <pgaikwad@nvidia.com>
+>  S:	Supported
+>  F:	drivers/clk/tegra/
 > -- 
-> 2.51.0
+> 2.52.0
 > 
 > 
