@@ -1,162 +1,134 @@
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79C16331A63
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 19:08:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 722DB35BDAA
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 19:15:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776366536; cv=none; b=SnEJX00l0SS2zvX1qw+6IbMo4cOGfOG6+X+B9yQaEdXZ00Krklb+W6ljd0PuEyiuILmbPy1Yq6JW9AU7FN5dp+o++M7D1e2p9o/UOIKE3wJ0b7JhK8UwUPDS6Mxub7T4RA3IwnCLLR5ATi+PU/7kLeythb4rjoODissrsoFaI8w=
+	t=1776366948; cv=none; b=gLNofO8Je6iGUnivq2Thg8ha1lr16xPodB57bTXD/UyERq8ZUQXUiRP8Fvv4LzwPWopCjrflxJ37/wC8q7Pq3HlNX7N80FAyZUkpqNIaosj3O6hrzcjZh67gQ6l5ZVJ+673CkWBfaczr77v0F/AK3Z5kGFxBmu/gnmy/iIFSS7k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776366536; c=relaxed/simple;
-	bh=YWU4FbfDf7vMVTLH3P6trXk4SPp9pGvljjdWS7yKFlM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hTpOUqJI3i48fbH8lBzlnQrROM4gd+wNOmNn6zOy7/XKw5RmrnFke8YckGZFiOni2YtubbZ2UsDFOiMhNIOp8kZ+hKOCiBB+WQxCfCZY9DVmPFNhwcr3m4ZISXvcAecZV8hITGg6ui2zHQAJC7DPqBwOHY8+aSfqYD2b1j7nuxo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JjU7JcBh; arc=none smtp.client-ip=209.85.216.52
+	s=arc-20240116; t=1776366948; c=relaxed/simple;
+	bh=OJeI+3mV9W6ncnLD1OqQ+pA6ULnbFdUSlKq0JT7njbc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hnizFMH3ge9vhFDgW4VuyuFBfDIOnUlxBbXFPcOHdTzY/cokbpAN5XYDrWhIVUAe/49BA1FOZuBJ5l3yL7DGaPqX3P5oeSUXySFNZUJkOQtsFg5EpRREnKKEm5LV/Vcw4R9RSMjA04uHtgvNs1IrslsQv6XPXIGBB+rSQ/DJXr8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QY8Id/xC; arc=none smtp.client-ip=209.85.128.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JjU7JcBh"
-Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-35da1af3e10so8395307a91.3
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 12:08:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QY8Id/xC"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-488b0046078so81765765e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 12:15:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776366535; x=1776971335; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=tTMuhwzBxIhaiyIAasTcZNIFxBe8TdNJyeKGh3etW/M=;
-        b=JjU7JcBhihQv4pgc2ENDt1rqNnbmj1aMClJb+xG6gui7HstVPkG1rPdbptYztfXbFt
-         M4gGpygi3RF7siit//a9qxNp4nwZ4lJoU8+9EcXauhtp+wDopA3cxu719sm/Otc0HLYy
-         UdHv2dR0s9UpDqnncKFEqB9ILR3Dv0c+B+y3fbGUcUaCLy9jouh9sjDI9q4pF15byINp
-         0vwSqjAbUzweYTa7A7Y2mX9bLLEIeay8xjuXjKw2i6jKx8HRID6qy6AtQfsM67en+Tou
-         FuV0lvNnBKSocQsRvOH8gStWJmyO4cyXR60KJya+PEKFaySDGVo6kRWELBa7Xs7V8lB8
-         BKJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776366535; x=1776971335;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1776366942; x=1776971742; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=tTMuhwzBxIhaiyIAasTcZNIFxBe8TdNJyeKGh3etW/M=;
-        b=lqDzaClmEAnG6nwHREwZsDX6y1yoirM/lyw7H0aM/R23l+A/zdbZp6xw2whtojYk+S
-         hOl8LKeCf3kHs0nlIR6OP3G2vFoDciIby2YzOre6HrlP+aRSGYwMb/94YOuSlzlhEFsS
-         J0Lcmu5ccHJ3yw+EaIroThDhIsYbJomcw5+UBuMhhr29okqqPtySy6CcJ5Fp8UXPMCSp
-         VqppYetSjiBeH6zi3nIKAQVpcYyygNJBa5Kt1OQFmU5+EfdEQkgUW31QVXWsDUpweId7
-         UePaQA3z8wWIr419mNvAJcoBAgDuv4Vg8O0WvwURc0Tmv3+hKK2lJJowOScEpes9E3TX
-         p9rQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9YpmWtGCirNylToFvqkJND38vCUbxuz/1QOIO6391SsjAhczeao3gqUzyxlVBk9OR+2VDQ2m0SgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywg27xauCYZEvsXxj94ofd/7MEvFNkfxgiCueI+wb2tfcZwSczP
-	W5d1DrDkcJ5/J/iQlzf2COND59ZW0Q3SyHpq4POtp5fgoAZY4UuhIPId
-X-Gm-Gg: AeBDieuIzYcAiAgFydUqBQkq3Hj1O/mDBE5d5P2h+tWb3q12C2Mhx4IpASR7yewOiMH
-	sj6wssF5XkXRsEMM5tFlQ1seKJeu9NuIO1dcBGsOUklwvIaNVspFWHm+BLoFApUqKGH/ZNJtuJH
-	mpyS21nKj/zoxdecDXFvKygSRZCg7UXmFzfVtR5XUKv/hkRwNAmqtWLptMN6lbaC6gZrPK8YwpS
-	kIruCdjIYvQv70bXbOhdCvZB4YLtNrfHkBkHmbwgKefES3zXxb/Ow899f2UNacYhugd6QGmr7Oe
-	bhIF2kMLyCJuyAcLUzR5jLL5UvKNknz5LTkBDxVANjrW+JKr+LZFUZrgX9Vwv6IdUjwb1zH+qmz
-	VmUOAhs2Wm0uVfmkRnAYuyveS3kBbps08f9hGBF8FicfHWkRE7DYD5pF2lne9PS2oT8T6dXBzoF
-	tHOGQy1dcjQrXJMhB89/HePxkjh+O1LT18BevgAB9bZTg8AmZ/lMU+jWdrMdR1SV4/wT5nDcXDJ
-	U6NQo8xXXCn1rjtdRuf5788vqCpWhptWOLFXgKNJa+q
-X-Received: by 2002:a05:6a20:a12c:b0:398:8e5c:4a94 with SMTP id adf61e73a8af0-3a089303797mr213259637.54.1776366534579;
-        Thu, 16 Apr 2026 12:08:54 -0700 (PDT)
-Received: from visitorckw-work01.c.googlers.com.com (32.237.80.34.bc.googleusercontent.com. [34.80.237.32])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c7957ece99asm4815137a12.4.2026.04.16.12.08.52
+        bh=GI2dSkxrwqhQpR5uFXP6GxtJ/asEeAYI1RS8A1ZzV9c=;
+        b=QY8Id/xCkNSDyRp/6Ia+IhGODB81KC4sCUqlBNfTsAhr60CKClN3QAh6bbWUbx9w0F
+         bowURat77zHN+ZHlfvOuP63DWSZJLS9CB67JIgVAKCi6+vwdDnB0WCbS+mhqXyCZvNgH
+         3LgovKTZOOZSrowianOqjoxUQU00rBtvbO969KTtzDkyjg4GJlw/bqQS1tjsfKG/nQPm
+         ogEfTFcSlOlyCQukZYVXoZ8VBq3hePPIvwrDjEotzfkKEEGQrm4PF/3sJRfFVVsqc4hv
+         U3krfzau87CZFEd4MdPgtiuytDHml1jLJtOQsqDYRuR1b6pukPY/ROgrGM7JVAH/3WFp
+         ckmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776366942; x=1776971742;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=GI2dSkxrwqhQpR5uFXP6GxtJ/asEeAYI1RS8A1ZzV9c=;
+        b=tICd/64Rd8aW3pStufyErZAFEYFHLirAtDRtNr5+wFULF7sLLWEoZZzTMHmZfEfPzD
+         mDH93gnO6UQK/cTdM41jKusf9+q0EfW0U8fCIcA6Te7qMBei3LjAHjiExpfR2CzI1d3w
+         Eh5HvJa9FUR9Uwu6P+VD32QNLdhNPJxMCQ3wdrrc05BDs6hehmJQVYzQRchRUYDh6SvG
+         QP+i8vx+7YC93WB5PScG+yrA0J2kebFMRkpVT6XeLiBVL8S+L80Ul0cpXXKn2v1lNxPj
+         GxK3FrAggnW3M6x19F2RrxUHtf1/4Kyg8FG3xR6/XsvMmTOBhKmPYKU4PBuyvsRa/oiM
+         JoSA==
+X-Forwarded-Encrypted: i=1; AFNElJ9r0Qvrm3QoO89da6YEI7cKO8Mna/ipKWdET7UAGbNvaBQseXENAepkbWDQt4TKjWcZ9ZZnVoD35A==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz+5aOI9kvwYJafpqJ4GSuSoQIEe9HmPHy0I4gC5hP4szu6w36U
+	VjVaOE57zxc030Ii4eUPkcLVbvmrnpbt8p+hvGkZi5apVK4pTvyVUs+G
+X-Gm-Gg: AeBDieuc5QQPexS75Wnu7gb/jshkQWo6WMFXnxZUNYsE5Y424cTM6qSUniyfw0dJlUB
+	BJe8c491Ecgx346e4mEHL8GcmgEXisDLiAabPEbFj4akudxOPFozeAM5osHnt+S4VZ+8Fr7W7m+
+	YT6oaOvPjoTYFKGfA2kacZFf1MU/5stjmfsvPHaOWUf+ky95Xkw6PQo0kg+5dVeJZQH+4ixXUMQ
+	dSuR5iCPv+NbDf5Qc/jDo+M9LJQoMTnwfXzYdnXyA2quJpWvfew8kv1xUKf7Qb8Uo0msaNAp+IC
+	B2putYTgWX1Pg93T/JseVFHOMxGILbld62iqm9Qc8QLiSgxlxno1wvr/4sEvm2lyvkaO7SdrQqk
+	qUqJ1IDps2HSWi45qT/xQi8ehVXcqoIL9LWAAAzmPJUPeQMMLlfiyt1HvwxXEK9rD4Wu5Nq/jTV
+	vhR0zVqIt2UOc+Vd3dy+xeuMA/hD+HN1sBVJBJjw4xI8ceC4xLOgwrTqXbaZgZ0gwKoF0vOK6cl
+	6w=
+X-Received: by 2002:a05:600c:a415:b0:485:419c:4eba with SMTP id 5b1f17b1804b1-488fb26d43fmr1783635e9.1.1776366941546;
+        Thu, 16 Apr 2026 12:15:41 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43ead3d5f06sm16561608f8f.17.2026.04.16.12.15.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2026 12:08:54 -0700 (PDT)
-From: Kuan-Wei Chiu <visitorckw@gmail.com>
-To: djakov@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	marscheng@google.com,
-	wllee@google.com,
-	aarontian@google.com,
-	jserv@ccns.ncku.edu.tw,
-	eleanor15x@gmail.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Kuan-Wei Chiu <visitorckw@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] interconnect: Fix use after free in icc_get() and of_icc_get_by_index()
-Date: Thu, 16 Apr 2026 19:08:40 +0000
-Message-ID: <20260416190840.1753468-1-visitorckw@gmail.com>
-X-Mailer: git-send-email 2.54.0.rc1.555.g9c883467ad-goog
+        Thu, 16 Apr 2026 12:15:41 -0700 (PDT)
+Date: Thu, 16 Apr 2026 20:15:39 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: chensong_2000@189.cn, rafael@kernel.org, lenb@kernel.org,
+ mturquette@baylibre.com, sboyd@kernel.org, viresh.kumar@linaro.org,
+ agk@redhat.com, snitzer@kernel.org, mpatocka@redhat.com,
+ bmarzins@redhat.com, song@kernel.org, yukuai@fnnas.com,
+ linan122@huawei.com, jason.wessel@windriver.com, danielt@kernel.org,
+ dianders@chromium.org, horms@kernel.org, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ paulmck@kernel.org, frederic@kernel.org, mcgrof@kernel.org,
+ petr.pavlu@suse.com, da.gomez@kernel.org, samitolvanen@google.com,
+ atomlin@atomlin.com, jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
+ joe.lawrence@redhat.com, rostedt@goodmis.org, mhiramat@kernel.org,
+ mark.rutland@arm.com, mathieu.desnoyers@efficios.com,
+ linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ live-patching@vger.kernel.org, dm-devel@lists.linux.dev,
+ linux-raid@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+ netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 1/2] kernel/notifier: replace single-linked list
+ with double-linked list for reverse traversal
+Message-ID: <20260416201539.2cee3b99@pumpkin>
+In-Reply-To: <aeD4H8P1DiPQoM8V@pathway.suse.cz>
+References: <20260415070137.17860-1-chensong_2000@189.cn>
+	<20260416133004.07bd2886@pumpkin>
+	<aeD4H8P1DiPQoM8V@pathway.suse.cz>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-In of_icc_get_by_index() and icc_get(), if the dynamic allocation for
-path->name fails via kasprintf(), the error handling path directly
-calls kfree(path) to free the path object and returns an error.
+On Thu, 16 Apr 2026 16:54:23 +0200
+Petr Mladek <pmladek@suse.com> wrote:
 
-However, prior to this point, path_find() calls path_init(), which
-already links the path's requests into the req_list of the respective
-interconnect nodes via hlist_add_head(). Directly invoking kfree(path)
-leaves dangling pointers in the hlist. A subsequent call to icc_get()
-or icc_set_bw() will traverse or modify these corrupted lists, triggering
-a slab use afterfree.
+> On Thu 2026-04-16 13:30:04, David Laight wrote:
+> > On Wed, 15 Apr 2026 15:01:37 +0800
+> > chensong_2000@189.cn wrote:
+> >   
+> > > From: Song Chen <chensong_2000@189.cn>
+> > > 
+> > > The current notifier chain implementation uses a single-linked list
+> > > (struct notifier_block *next), which only supports forward traversal
+> > > in priority order. This makes it difficult to handle cleanup/teardown
+> > > scenarios that require notifiers to be called in reverse priority order.  
+> > 
+> > If it is only cleanup/teardown then the list can be order-reversed
+> > as part of that process at the same time as the list is deleted.  
+> 
+> Interesting idea. But it won't work in all situations.
 
-KASAN report showing the vulnerability when reproducing via debugfs:
+It is useful for things like locklessy queuing a request to be processed later.
+Items can be added with a cmpxchg and the list grabbed by xchg of NULL.
+The only downside is that reversing a list isn't cache friendly.
+Thinks... although that may not be any worse than accessing the current 'tail'
+to add to the end of a doubly linked (or singly linked with a tail ptr) list.
 
-  BUG: KASAN: slab-use-after-free in path_find+0x6f8/0xcfc
-  Write of size 8 at addr fff000000d43f748 by task sh/1
-  ...
-  Call trace:
-   kasan_report+0xac/0xfc
-   path_find+0x6f8/0xcfc
-   icc_get+0x148/0x380
-   icc_get_set+0xf8/0x2d0
-  ...
-  Freed by task 1:
-   kfree+0x1a0/0x4a4
-   icc_get+0x2cc/0x380
-   icc_get_set+0xf8/0x2d0
+	David
 
-Fix this by replacing kfree(path) with the proper teardown function,
-icc_put(path), which safely removes the requests from the req_list using
-hlist_del() and drops the provider usage references before freeing the
-memory.
-
-Additionally, in icc_get(), ensure that the icc_lock mutex is released
-prior to calling icc_put(path) to avoid a deadlock, as icc_put()
-internally acquires the same lock.
-
-Fixes: 3791163602f7 ("interconnect: Handle memory allocation errors")
-Cc: stable@vger.kernel.org
-Signed-off-by: Kuan-Wei Chiu <visitorckw@gmail.com>
----
-I discovered this bug while reviewing Krzysztof's patch [1]. 
-To verify my hypothesis, I injected an artificial kasprintf() failure
-into  the source code and wrote a minimal dummy icc provider module.
-This allowed  me to successfully trigger the use after free via the
-debugfs client and catch it with KASAN, confirming the issue.
-
-[1]: https://lore.kernel.org/lkml/20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com/
-
- drivers/interconnect/core.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 8569b78a1851..e14280ced381 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -528,7 +528,7 @@ struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
- 	path->name = kasprintf(GFP_KERNEL, "%s-%s",
- 			       src_data->node->name, dst_data->node->name);
- 	if (!path->name) {
--		kfree(path);
-+		icc_put(path);
- 		path = ERR_PTR(-ENOMEM);
- 	}
- 
-@@ -626,8 +626,9 @@ struct icc_path *icc_get(struct device *dev, const char *src, const char *dst)
- 
- 	path->name = kasprintf(GFP_KERNEL, "%s-%s", src_node->name, dst_node->name);
- 	if (!path->name) {
--		kfree(path);
--		path = ERR_PTR(-ENOMEM);
-+		mutex_unlock(&icc_lock);
-+		icc_put(path);
-+		return ERR_PTR(-ENOMEM);
- 	}
- out:
- 	mutex_unlock(&icc_lock);
--- 
-2.54.0.rc1.555.g9c883467ad-goog
+> 
+> Note that the motivation for this update are the module loader
+> notifiers which are called several times for each loaded/removed module.
+> 
+> Best Regards,
+> Petr
+> 
 
