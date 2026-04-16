@@ -1,226 +1,156 @@
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3F533491D0
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:04:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.173
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776344691; cv=pass; b=MFUufsfjoQqg0lIByNI50x9DvFquc1fxp2fUiDHApCDjR/ZtvV+TfrdhMvjAyeUOUHsptZA1FBcmtq+T33FUrh3sGNcOCX2M9ItyZS9uwiD5wZSv7gNVJu16u0d7hoPGPvnebCDkRxsfDygg5p9/Dzr8uOJ7VE3lmYZzoB7ZW7o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776344691; c=relaxed/simple;
-	bh=6HDV9w6rUHdoh6/AommnBFvsyzCig67fdj4T+Ra/Nn4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JCFIVZ+8FFv2VUEIP1gWJXTozreYxrlCklckBKwYgE0/rsA1H0BMOO+aEXp+d4PAVB7adOP97Q8B2VjUKWRt0AXDKwO9LAgtEPFKYf1VDxDqs6pVLwfOc9IQM9WnE5R62qA0Sa7O36NOJnh6NDmZh4RFMIG5OuYn/laEsxLDoY4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bd1wEAYd; arc=pass smtp.client-ip=209.85.214.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A5FC277C9E
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776344968; cv=none; b=lCLxp9raUaytKJr3+I57Lww0yujCeCQ1kBsSV5rCs9jpiDhGJ5vtHW+REhiXK5tKV1mLquWAE0W5h/0u4ksbFsVZ2O6sivMKal2yii6rGnuzjKRaHbYDvqoFV+SdY0uVq6wKJNE+xU13U3F1DrCB1HMl1CMlTtGnu8PhlSU7trA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776344968; c=relaxed/simple;
+	bh=lqEP00pbTEdpQoMYmkPwXjxu5YiNpaO/f4tQ1JU2KXA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XhWyJ5zNMb76C7JuKvYtoEntnSF2CSADm9A/8mIqVUlcLJs5l2BtaxveEu/KsaWJGKxqtl3PIzoc2yyUMd/wLkP0fD7GzjkQ3Pm1wqhRHU1IVKTdCF842DJIGvCwDzYyZ4FXAw1XtTGPBxK56asjj1wgVE+cVdmg3aWRIauo02c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kVgB5+15; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Mnxk7VqN; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bd1wEAYd"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2aae4816912so53292085ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:04:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776344689; cv=none;
-        d=google.com; s=arc-20240605;
-        b=MLJobXqR1a6Fa5w+v5QIV9Ua8e0c+SZlucpdlXaWB94ah4hJ8V01DnBwFD6rbjM+W0
-         u4d5uZuG+4u7XVb0MgPzfDHxowaVRe546PCMpPPIwk0bB+o9FJJM1+NmbeisC3VAtnuB
-         gaE6noodEpPx8s0wPHRy4YdeG6ZD2QmM6Me7U7DcXAU5RNLm7GkW0U31KJQ+6Z/ij7Iy
-         GsK6kxdw2si0BLGPhFL61CRDDvox/7lCQWrNy9A6SYt3wyrQ4O5wcxbOWK3dCwYa35WJ
-         iu7zCo40ksSUq0d8OVIHdTp1vb+m1fDP4vSB8CqqDGDvxqrB6gorexGHQOtF9CrX95vQ
-         1gAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
-        fh=bRK8AD9pYICKRlfyOSNTEkWKVTrDIy++f4Rn+GRDfGw=;
-        b=ZsdvDdDvPKSErDwXBey2VXz6O/ttE42Z6sxlfycUWyFKBtZZZKmnFcZZNlGe8j3sUg
-         Oz23K1q5aAB5g9ohCmFMixsAfsUPnuVK7xSwuZ2KyqAgPDDcHWpzWwd4QscRbau/hRXN
-         gBDKnCAlBjsu0MXg5K/ptM1mDe/jmn+I6KbEdQqhl611OuOoId8Rk2+hCQfO+3SLxUN8
-         klwAa/UBrqvvuIA9+nW0OI3bkDT0ZKqKSKiEyjC8hpem6qu4Wt2aJoes1tHRbQn43OiU
-         Sv9WRyqvB2mjUomEgfdQgkeZFLoLJMmW+3Wf31cFZ3bByr+x+utorabFSRRkblPfj9/e
-         2GVg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kVgB5+15";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Mnxk7VqN"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63GAY1rP1245194
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u
+	5gJ7wYfA=; b=kVgB5+15FMpuFTjX9UKLEiuEhIpC9+Q8NrICj6OELnk2mKr3kHw
+	FjuA8y3oC46DD8c3KGOdE2pw+3BmsQ8k3p4ejACYAq3RZgh2/D4lXu4FIwuIzafR
+	eZFjhO0HpAyzu4ViaJ411bGACWcK9LSgSnAnQSZjTxNHsxruWuQdaV4ptpLRxsgf
+	1e+N8Wxq1xU8wNrmHbh1p+SMPtdQf/2r6sFDOru+XxL5J15hiSgk6GGl5B2poFZi
+	825NDiOg6ZUbrYMrd4Emuz0KVr6huWG+qHDpdDYoTdkxCLtmyjhI6w4tKdm3DmXE
+	lkGsl8PZRXACqjpS/2OvOPK/vPsUVYoIiHw==
+Received: from mail-oo1-f69.google.com (mail-oo1-f69.google.com [209.85.161.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djx4k8ev7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:26 +0000 (GMT)
+Received: by mail-oo1-f69.google.com with SMTP id 006d021491bc7-68d7d187379so12014262eaf.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:09:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776344689; x=1776949489; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
-        b=bd1wEAYdd9QW4IgkzGYbN5RK4s76QaDo/HSxQesz76995FuTZGGT8SN1FaAwb2RtAF
-         8ly/nVhI5MNgKD4EkCWR1y9eBhhzb7SszO3qHQQZIGJzE2SI23NRayrZ/TrASyisw+WP
-         kjBDDv5+EEc9M+H/aua78mSNxqfY8s17jAxxrH5uiDXjLBxeTg4FtPs99PZhTA3rHs+i
-         E9D8No2RatbfUl0YOty5KQY8wlQYP52d0nIq93Ol2iyYcKHkQy/vpnJ9MagOy8POJnEv
-         Rupv3lmvKzqVh25ouoBYBhWDtKfuSZ89oadSgGVjdcLaY3idAbgUjNy6P2tERXnfs5L8
-         pNjg==
+        d=oss.qualcomm.com; s=google; t=1776344965; x=1776949765; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u5gJ7wYfA=;
+        b=Mnxk7VqNaGezZDDIOBKoZpBNZjTh1kz7MsGeCXGYy5l0tXkkLXqcexWel9AMLEs3PO
+         6+iwv5z3U/jaVf7eTTk04NCoiZt5UYgkINvzE7lHX9G50DKYNt+GE5e+zRlMXT4qNbwK
+         vfKURrlDtdX7F1/a2/yHLjVJ2OrfjQvncMgVXvUDZDs5ORBGOdLtctEnKTfFfm45QFsV
+         FFKDCIe/09yXu9HNg5FvtCKOGozPbbRgnLUdRyFjol0DbW1XRPO8rVdshuK9u0NdAH96
+         VUzPgn9F8vvtd8WBvArTupqGa59F1n9eANU5Ui//NcFBaE2D9OyBSSuTV0rD8+cGAD2H
+         K10A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776344689; x=1776949489;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
-        b=Q9n/iLk+Q/awwZg2AfNABdZoXk5kZC4Yci5KF9SVHceJGcNJiboKJSiWHH3sa1+Gj+
-         /suaajnIyQ6ivbRLCBfcp+qpYudHhmBwFa6l+n1qP9FomFkIVbLghHt1NjbKc4gkMY0h
-         uGjM3QcVb2f8SEbiymJxUtxhh/6seM8iLgs0gQQX/jubJePmfQJqbx7K4ghRksM5SaYE
-         +JGIJ4cFhZa302tGKAOIMu+Nc8IUIv3/E+0hs0LBnIIDDRBppVWKMNPWGkNxaw2l3Daz
-         dlNPu1cQ6bcpD45H1vF87BGK4dTDVFLR/KzgWsuzDPFBig2xHOeTimIjDAsJECrtyRx2
-         IaEQ==
-X-Gm-Message-State: AOJu0YyInzXHSIfQrIrCmjhBCg6HXgORYA+vB8fLNqrLkGtpLRXf+dX4
-	d7E0f8W03h4GoOfc/qEvlUK1Tqtq2kmE2kvNSmsjKnaLJXQlazfSTZkPGhE9pZki9LwCPfnnIpH
-	Elww/kynFSYm4gJfG6jur5P9wSh5yzGA=
-X-Gm-Gg: AeBDietUtR+7rZ2b/7xCZS8YtobxWmtIzHIIb79XiQXCtmlO+NrqAJuNz3RLjC78w4b
-	ISgC9mKH7zJW1o8JqAZwOO1rhGXgsQAPn8wG1JIeTUYPPJN0DHjOnYbLmwgdBM6Dwu+ihqoW102
-	bEeYMa/FmDaLEXp5WTWhrpoIOm2qmqcHdnKxNkfnbzJhob6KTJAz0r//SYkr8xZUDDtWoX1ay2i
-	uyKKeCXu8neSatPfZYnlVD/a1+wFFp4jKdg4b98JJEeDUynQU3y8oTqjDU7t3NXuFrpHv0ONXFK
-	rl+pM99cM6IxLMizsvf04QYnS1eXxkykQa2aSxsxqQGe57q5CGwFphtB34P43jMBOtf4oCw7xTg
-	=
-X-Received: by 2002:a17:902:d507:b0:2b4:5cd0:b6c3 with SMTP id
- d9443c01a7336-2b45cd0bb63mr212259795ad.29.1776344688850; Thu, 16 Apr 2026
- 06:04:48 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776344965; x=1776949765;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u5gJ7wYfA=;
+        b=j/6ZPGNz0tTXMz6McUrJMw2JqzgzEAvZepzm6jkBIdz0QiY3vj23Vrs7hgnSl4VQwC
+         xJyjwfKECOFLQdjWwD8isFvvRbVDG6AiEl1CTnwsfOl7+QE7qvXnpy7ZLQ1bFvmfGoAL
+         Rv7UuoohxCrRMXEX1FsNRrnvuzPLvUp4r1dLSLowCXie6zJBjygfKS4657vqudvWPa2v
+         FSKG0K/nadB4tLY8eRbw+PhUoycYPjx5ISWOdsiR72PoUoC1Cpg6KWiLm/eXlTBHt1u0
+         DnCSh2ssD6gOJ2FPSzCW7FqTGgCQ30AJBIGRlcRlQ7m0+oIG9o3Mm/sTogFJ+vv0LTR5
+         qIdA==
+X-Forwarded-Encrypted: i=1; AFNElJ9gjy/qLYfm9mMOHz84NOOJm9zplGER9TFLOTqjwtM0FjCYcwy42Gh6MhXrBmbvMAJQv1n012k66g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxC/jTD10ZE2JzZLyF/ef82AJ6b56+HAczRvFSEhS34ojASTQwI
+	Fl+7iHe736lxqWw3AOvki3yA1J3j3hCBprfYcY6QVhAASh09gxziO1CunYhJxyh7OfwAvDKUSul
+	2f0Amiu0jmZ9QwS2QxVOxr1/ymOJQzrYHvX2yi+RstbkcmWmeVGWJ3B6D+SyQbOYTGK4wyw==
+X-Gm-Gg: AeBDiet927gaEGH5jLCJRg59VQO1sIs6Y9XimUhzNKMNe9d5gt4w/KkCR3wYiQnd4hi
+	ALExEB3pYzdDaCwpXFyM9rhxUN1Zyh0X/r6ufZ0Um4l3z09fwfztVhX3wir1No8sFaSa847GqRi
+	dE/WdtD8Y5lhnB28XWaNrXfWfZxPAN5Tj/8HUBcvyK1D0G2R+J9dBTanVwYezD4rDc1lEq9uEvu
+	/gNUFw7FaSuPviT2VM7GBc7OD07gE5MS3/45KtD8RdAJtU3WYGtSp+BVjvswKmyRf58VEvFWCDM
+	lHTaT9+c+6XoWlbt32P7Q9txs2Hh69OAAwH9Nv/w0rMhHxVqTbHk9pCPZzy6MnG2/G4Pa+sXBvE
+	jzwJieCy88jNtE+kcZPee6GkS966hOAskExpT
+X-Received: by 2002:a05:6820:1348:b0:691:f0b8:fd99 with SMTP id 006d021491bc7-691f0b909e4mr5555972eaf.45.1776344965039;
+        Thu, 16 Apr 2026 06:09:25 -0700 (PDT)
+X-Received: by 2002:a05:6820:1348:b0:691:f0b8:fd99 with SMTP id 006d021491bc7-691f0b909e4mr5555953eaf.45.1776344964585;
+        Thu, 16 Apr 2026 06:09:24 -0700 (PDT)
+Received: from quoll ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488f08bdadbsm50370825e9.0.2026.04.16.06.09.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 16 Apr 2026 06:09:23 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH] interconnect: Do not create empty devres on missing interconnects
+Date: Thu, 16 Apr 2026 15:09:13 +0200
+Message-ID: <20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260415-imx-v2-0-aeacff9e72b2@gmail.com> <20260415-imx-v2-1-aeacff9e72b2@gmail.com>
-In-Reply-To: <20260415-imx-v2-1-aeacff9e72b2@gmail.com>
-From: Felix Gu <ustc.gu@gmail.com>
-Date: Thu, 16 Apr 2026 21:04:38 +0800
-X-Gm-Features: AQROBzAHfswAILDPJrZ03lSCXQzT-HPAwyhO5aKUzw0OdIQTV7XQ9Ww0qLogIkk
-Message-ID: <CAN4SLj3rH1q-jd6ccdo2qVNuNUoqfpsiS0KXJ3b=b7m_bh2QBw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] thermal/drivers/imx: Fix thermal zone leak on
- probe error path
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Oleksij Rempel <o.rempel@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=openpgp-sha256; l=792; i=krzysztof.kozlowski@oss.qualcomm.com;
+ h=from:subject; bh=lqEP00pbTEdpQoMYmkPwXjxu5YiNpaO/f4tQ1JU2KXA=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBp4N941awvgDdQ/TB26yzGfmJjjQHa+KzRL6aQD
+ 4HbCZDHyGWJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaeDfeAAKCRDBN2bmhouD
+ 19kfEACG556rBUaV0iKYbrKjvem5ofqt1MkSwxv30IOIQn6id2frIKfC42YrnrMOMynL43Z5VsX
+ iEpN8+fN3EIY9R5XzXuCSL8a8b8dulUf+eDiIh5yIHxuWoNQZpfYUQOSlsf+T2Sp+GMuJn+/AZG
+ pcR5NSMMAQZwK9/dbd+IRIams68//w4dydhluU2fHUzaLiHaxQk+gUDr0+qYd+N5ogO3wdKUXOC
+ dOCX4RFPHymLq++jJTS0bD4a1ulNMhluAMdwiUwf9ynha3rfzpPc9+tKwz9nO0JJsZn3ESfT2Ac
+ JVi6gMJ3uTH65XSJVj6IoT70H4xCTiJ9g4MV29VvMnKtMCF+Z7KyVNkOQ43z4XRG7WxMRzAu8BX
+ nBLndWKbrzjMtfP4lU2lhAKy2PST/u0uxiAZO93LwtiM1kOedknFbKRlZou7CxFz2g4GrKpVDio
+ 8sKDLEq5gq5dfi60GUcz30POoLFV+MNwLIKrvnNHPBbnYUw4eGGizAx0TSmYXNvGM5Z/ce3Wu/n
+ Ox9bvkDRCERDik7siZJgfkssC74/P3tWvTlYx0lBVPYUAlqHLYF5tg7Xcvz0UDNdkRPiSuugoE6
+ r+0YEnr4beRk5v7YnEbvo1zLLkD6GtAKiSg12+IJNJ430WbGZ9IRIHjHKt+8GbWdbQASQ2hnSwM m4DYGnLjJxovwLg==
+X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: GyjM058kik5WM00fryworUofEO93OLOM
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDEyNSBTYWx0ZWRfXybLTVyvPsM4S
+ TJidUacf/SQqn/fASNwkkecS5awUmGkNZRhjxpKP24PbYNlZD3tyDfD7KruDIdh+J3S9s6uWLjk
+ 0NQ/9dYRDXPNx2AQYxI76u5M7xVlmXYagXEyOLgbmqDeN0xskYHU3J0M6t+rIJxIz7ZWTc4KOEV
+ KVj8vP4rMQoZMsgOuNKRqC7g/4Xj3M9cFjW9ihvX8z8glJfFB58q2FyV/1J1ud8OAz/NSpwGGJX
+ 6JQgO8QtgPtmP3Ik+mIISXZLp0kTF1/iB9qRfpp5+lLY7ucOEcZWGCPkvKoGIINmnY+Kll2rEEn
+ Ohcn8odo8SzXKcF6OTkV/20ZflOIILUS3kGqlk/ixt9odskTB7Vr++odbeMa3oBVGflpx80vVgh
+ uC7LZ5un58WoIAPiW2thNg/WdU9zU9eCOTzh++kkB6tIUAVEtEwcfAqRRG+d8MdUciHO9H9ETTI
+ 0KDxV+rmI31h2exUmEw==
+X-Authority-Analysis: v=2.4 cv=H47rBeYi c=1 sm=1 tr=0 ts=69e0df86 cx=c_pps
+ a=lVi5GcDxkcJcfCmEjVJoaw==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=EUspDBNiAAAA:8
+ a=E_IaXGz9Cgm36txEtSUA:9 a=rBiNkAWo9uy_4UTK5NWh:22
+X-Proofpoint-ORIG-GUID: GyjM058kik5WM00fryworUofEO93OLOM
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-16_03,2026-04-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 lowpriorityscore=0 clxscore=1015
+ priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604160125
 
-On Wed, Apr 15, 2026 at 9:10=E2=80=AFPM Felix Gu <ustc.gu@gmail.com> wrote:
->
-> If pm_runtime_resume_and_get() fails after the thermal zone has been
-> registered, the probe error path cleans up runtime PM but skips
-> thermal_zone_device_unregister(), leaking the thermal zone device.
->
-> Switch to use devm_thermal_of_zone_register() to fix the problem.
->
-> Fixes: 4cf2ddf16e17 ("thermal/drivers/imx: Implement runtime PM support")
-> Signed-off-by: Felix Gu <ustc.gu@gmail.com>
-> ---
->  drivers/thermal/imx_thermal.c | 35 +++++++++++++++++++----------------
->  1 file changed, 19 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.=
-c
-> index 38c993d1bcb3..3729c3eac748 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -216,6 +216,20 @@ struct imx_thermal_data {
->         const char *temp_grade;
->  };
->
-> +static int imx_thermal_sync_zone_trip(struct thermal_trip *trip, void *a=
-rg)
-> +{
-> +       struct imx_thermal_data *data =3D arg;
-> +       int temp;
-> +
-> +       if (trip->type !=3D THERMAL_TRIP_PASSIVE && trip->type !=3D THERM=
-AL_TRIP_CRITICAL)
-> +               return 0;
-> +
-> +       temp =3D trips[trip->type].temperature;
-> +       thermal_zone_set_trip_temp(data->tz, trip, temp);
-> +
-> +       return 0;
-> +}
-> +
->  static void imx_set_panic_temp(struct imx_thermal_data *data,
->                                int panic_temp)
->  {
-> @@ -679,13 +693,8 @@ static int imx_thermal_probe(struct platform_device =
-*pdev)
->                 goto legacy_cleanup;
->         }
->
-> -       data->tz =3D thermal_zone_device_register_with_trips("imx_thermal=
-_zone",
-> -                                                          trips,
-> -                                                          ARRAY_SIZE(tri=
-ps),
-> -                                                          data,
-> -                                                          &imx_tz_ops, N=
-ULL,
-> -                                                          IMX_PASSIVE_DE=
-LAY,
-> -                                                          IMX_POLLING_DE=
-LAY);
-> +       data->irq_enabled =3D true;
-> +       data->tz =3D devm_thermal_of_zone_register(dev, 0, data, &imx_tz_=
-ops);
->         if (IS_ERR(data->tz)) {
->                 ret =3D PTR_ERR(data->tz);
->                 dev_err(dev, "failed to register thermal zone device %d\n=
-",
-> @@ -693,6 +702,8 @@ static int imx_thermal_probe(struct platform_device *=
-pdev)
->                 goto clk_disable;
->         }
->
-> +       thermal_zone_for_each_trip(data->tz, imx_thermal_sync_zone_trip, =
-data);
-> +
->         dev_info(dev, "%s CPU temperature grade - max:%dC"
->                  " critical:%dC passive:%dC\n", data->temp_grade,
->                  data->temp_max / 1000, trips[IMX_TRIP_CRITICAL].temperat=
-ure / 1000,
-> @@ -724,25 +735,18 @@ static int imx_thermal_probe(struct platform_device=
- *pdev)
->         if (ret < 0)
->                 goto disable_runtime_pm;
->
-> -       data->irq_enabled =3D true;
-> -       ret =3D thermal_zone_device_enable(data->tz);
-> -       if (ret)
-> -               goto thermal_zone_unregister;
-> -
->         ret =3D devm_request_threaded_irq(dev, data->irq,
->                         imx_thermal_alarm_irq, imx_thermal_alarm_irq_thre=
-ad,
->                         0, "imx_thermal", data);
->         if (ret < 0) {
->                 dev_err(dev, "failed to request alarm irq: %d\n", ret);
-> -               goto thermal_zone_unregister;
-> +               goto disable_runtime_pm;
->         }
->
->         pm_runtime_put(data->dev);
->
->         return 0;
->
-> -thermal_zone_unregister:
-> -       thermal_zone_device_unregister(data->tz);
->  disable_runtime_pm:
->         pm_runtime_put_noidle(data->dev);
->         pm_runtime_disable(data->dev);
-> @@ -761,7 +765,6 @@ static void imx_thermal_remove(struct platform_device=
- *pdev)
->         pm_runtime_put_noidle(data->dev);
->         pm_runtime_disable(data->dev);
->
-> -       thermal_zone_device_unregister(data->tz);
->         imx_thermal_unregister_legacy_cooling(data);
->  }
->
->
-> --
-> 2.43.0
->
+of_icc_get() returns NULL on valid case - no interconnects - but no
+need to create devres for that, because it just wastes memory without
+any use/benefits.
 
-Hi all,
-This patch has a problem, I will fix it and send v3.
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+ drivers/interconnect/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
-Felix
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 8569b78a1851..ce572c62f58f 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -432,7 +432,7 @@ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	path = of_icc_get(dev, name);
+-	if (!IS_ERR(path)) {
++	if (!IS_ERR_OR_NULL(path)) {
+ 		*ptr = path;
+ 		devres_add(dev, ptr);
+ 	} else {
+-- 
+2.51.0
+
