@@ -1,134 +1,358 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 722DB35BDAA
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 19:15:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2B27374E59
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 21:12:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776366948; cv=none; b=gLNofO8Je6iGUnivq2Thg8ha1lr16xPodB57bTXD/UyERq8ZUQXUiRP8Fvv4LzwPWopCjrflxJ37/wC8q7Pq3HlNX7N80FAyZUkpqNIaosj3O6hrzcjZh67gQ6l5ZVJ+673CkWBfaczr77v0F/AK3Z5kGFxBmu/gnmy/iIFSS7k=
+	t=1776373930; cv=none; b=TNv+K0x387wwRYdYQHysvoHGmxs/1VGkDrWXqRGGMk/0kW1kAsSjsuERLPeuzOwH1B7D+9TQkohmDslIh8RAYIy72g4XXzVgB/OxH7zqHDuwM4cDNZoAShKI6FWA/Kr5TvAOsRI+9L692F/m9E6PyqOUq1kOOJ6n5h2I0Ntx4gk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776366948; c=relaxed/simple;
-	bh=OJeI+3mV9W6ncnLD1OqQ+pA6ULnbFdUSlKq0JT7njbc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hnizFMH3ge9vhFDgW4VuyuFBfDIOnUlxBbXFPcOHdTzY/cokbpAN5XYDrWhIVUAe/49BA1FOZuBJ5l3yL7DGaPqX3P5oeSUXySFNZUJkOQtsFg5EpRREnKKEm5LV/Vcw4R9RSMjA04uHtgvNs1IrslsQv6XPXIGBB+rSQ/DJXr8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QY8Id/xC; arc=none smtp.client-ip=209.85.128.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1776373930; c=relaxed/simple;
+	bh=FJkUwqRHEeG+aLXauJFYxp+UWM/0dmyCImU8tbjawAI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kw1nHbAdh12KzE+V7y0IMd+wVJ6OXZnf0aizBCbRpF/MR2IvmMu8jXtXgs7y7GT1EOHl6ntKZzqeJQLzBTeMf0eSt9X2e0Z2RNu1IjvBdIRWCkSqfkQrXiYe7R/XAG83ZQsM+i6NSmSKofbOI9NVRzi8KBGqsyaP/hSvwaQIwIo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ecrk59d5; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=KWwPnziY; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QY8Id/xC"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-488b0046078so81765765e9.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 12:15:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ecrk59d5";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="KWwPnziY"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63GL2QEe218770
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 21:12:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	ZQrUO1RbQ+KeXUWWqT0bDLIHCPNave+6l+mFpjuOTDg=; b=ecrk59d5vOyJkoss
+	g7Ven1mL+JLFnaZFaMbbbWZz1588e6ZXGW91168mUd7KtT9fdwP+/1/r+EQVjSRv
+	dL568nd7eCokykiU5WQj2qf+3rJrFLqDVc0AN2cKk6JqVUGAuDmPH2KbcdfhNIT0
+	kmRJE8sYnSqcWSvbjtXdcuP8ZLOscwTm5PSwIMYY7jLIxIb+Di/x0AeeIrlZ9G7U
+	X//k9bzoQWwkI6ctALrFFx4y4kCcNYY/6DVOVSvrUoFWnu8d0f/nw8R3YUUWTUwQ
+	4fETo91qNF9NB/2bFeCziVcUC5T23znIOsKE2NIZAss0FjKp6mb/iRI9acEtB+Fn
+	mRzoqQ==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djtuyk1kc-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 21:12:07 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50b4076dc16so575311cf.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 14:12:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776366942; x=1776971742; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=GI2dSkxrwqhQpR5uFXP6GxtJ/asEeAYI1RS8A1ZzV9c=;
-        b=QY8Id/xCkNSDyRp/6Ia+IhGODB81KC4sCUqlBNfTsAhr60CKClN3QAh6bbWUbx9w0F
-         bowURat77zHN+ZHlfvOuP63DWSZJLS9CB67JIgVAKCi6+vwdDnB0WCbS+mhqXyCZvNgH
-         3LgovKTZOOZSrowianOqjoxUQU00rBtvbO969KTtzDkyjg4GJlw/bqQS1tjsfKG/nQPm
-         ogEfTFcSlOlyCQukZYVXoZ8VBq3hePPIvwrDjEotzfkKEEGQrm4PF/3sJRfFVVsqc4hv
-         U3krfzau87CZFEd4MdPgtiuytDHml1jLJtOQsqDYRuR1b6pukPY/ROgrGM7JVAH/3WFp
-         ckmQ==
+        d=oss.qualcomm.com; s=google; t=1776373927; x=1776978727; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ZQrUO1RbQ+KeXUWWqT0bDLIHCPNave+6l+mFpjuOTDg=;
+        b=KWwPnziYcVMk01SLUA89y87bgsFOuodojZ2yiv0xTUIIy41UNO6cRxS1bIz7W+rt1p
+         MflM6v2vj31wr02jNcusjWLOzgmcVOWA+cp+iWf/iI/I9Wd3RFeRGU9qft+Bg+qjVutx
+         6aoGGcjgxsTyb4+aID744CZheRh2ZAtAnTbhXaFQGPCUFBTvWduDW0QHuXdsDeIegmCP
+         S19e/HSrMLm/y85EEjWKJszsmg9PRtHpfMHET12EWYJv1zGcqh87LE3aGXL74hUXeuUj
+         r2XLtaQ5bV0iVAmm3KrAh1SwDfe5K+O9FGaisphZp1/NoelcSDWHFvClxOytK8pUC35w
+         ea8Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776366942; x=1776971742;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=GI2dSkxrwqhQpR5uFXP6GxtJ/asEeAYI1RS8A1ZzV9c=;
-        b=tICd/64Rd8aW3pStufyErZAFEYFHLirAtDRtNr5+wFULF7sLLWEoZZzTMHmZfEfPzD
-         mDH93gnO6UQK/cTdM41jKusf9+q0EfW0U8fCIcA6Te7qMBei3LjAHjiExpfR2CzI1d3w
-         Eh5HvJa9FUR9Uwu6P+VD32QNLdhNPJxMCQ3wdrrc05BDs6hehmJQVYzQRchRUYDh6SvG
-         QP+i8vx+7YC93WB5PScG+yrA0J2kebFMRkpVT6XeLiBVL8S+L80Ul0cpXXKn2v1lNxPj
-         GxK3FrAggnW3M6x19F2RrxUHtf1/4Kyg8FG3xR6/XsvMmTOBhKmPYKU4PBuyvsRa/oiM
-         JoSA==
-X-Forwarded-Encrypted: i=1; AFNElJ9r0Qvrm3QoO89da6YEI7cKO8Mna/ipKWdET7UAGbNvaBQseXENAepkbWDQt4TKjWcZ9ZZnVoD35A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz+5aOI9kvwYJafpqJ4GSuSoQIEe9HmPHy0I4gC5hP4szu6w36U
-	VjVaOE57zxc030Ii4eUPkcLVbvmrnpbt8p+hvGkZi5apVK4pTvyVUs+G
-X-Gm-Gg: AeBDieuc5QQPexS75Wnu7gb/jshkQWo6WMFXnxZUNYsE5Y424cTM6qSUniyfw0dJlUB
-	BJe8c491Ecgx346e4mEHL8GcmgEXisDLiAabPEbFj4akudxOPFozeAM5osHnt+S4VZ+8Fr7W7m+
-	YT6oaOvPjoTYFKGfA2kacZFf1MU/5stjmfsvPHaOWUf+ky95Xkw6PQo0kg+5dVeJZQH+4ixXUMQ
-	dSuR5iCPv+NbDf5Qc/jDo+M9LJQoMTnwfXzYdnXyA2quJpWvfew8kv1xUKf7Qb8Uo0msaNAp+IC
-	B2putYTgWX1Pg93T/JseVFHOMxGILbld62iqm9Qc8QLiSgxlxno1wvr/4sEvm2lyvkaO7SdrQqk
-	qUqJ1IDps2HSWi45qT/xQi8ehVXcqoIL9LWAAAzmPJUPeQMMLlfiyt1HvwxXEK9rD4Wu5Nq/jTV
-	vhR0zVqIt2UOc+Vd3dy+xeuMA/hD+HN1sBVJBJjw4xI8ceC4xLOgwrTqXbaZgZ0gwKoF0vOK6cl
-	6w=
-X-Received: by 2002:a05:600c:a415:b0:485:419c:4eba with SMTP id 5b1f17b1804b1-488fb26d43fmr1783635e9.1.1776366941546;
-        Thu, 16 Apr 2026 12:15:41 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43ead3d5f06sm16561608f8f.17.2026.04.16.12.15.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2026 12:15:41 -0700 (PDT)
-Date: Thu, 16 Apr 2026 20:15:39 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: chensong_2000@189.cn, rafael@kernel.org, lenb@kernel.org,
- mturquette@baylibre.com, sboyd@kernel.org, viresh.kumar@linaro.org,
- agk@redhat.com, snitzer@kernel.org, mpatocka@redhat.com,
- bmarzins@redhat.com, song@kernel.org, yukuai@fnnas.com,
- linan122@huawei.com, jason.wessel@windriver.com, danielt@kernel.org,
- dianders@chromium.org, horms@kernel.org, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- paulmck@kernel.org, frederic@kernel.org, mcgrof@kernel.org,
- petr.pavlu@suse.com, da.gomez@kernel.org, samitolvanen@google.com,
- atomlin@atomlin.com, jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
- joe.lawrence@redhat.com, rostedt@goodmis.org, mhiramat@kernel.org,
- mark.rutland@arm.com, mathieu.desnoyers@efficios.com,
- linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- live-patching@vger.kernel.org, dm-devel@lists.linux.dev,
- linux-raid@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 1/2] kernel/notifier: replace single-linked list
- with double-linked list for reverse traversal
-Message-ID: <20260416201539.2cee3b99@pumpkin>
-In-Reply-To: <aeD4H8P1DiPQoM8V@pathway.suse.cz>
-References: <20260415070137.17860-1-chensong_2000@189.cn>
-	<20260416133004.07bd2886@pumpkin>
-	<aeD4H8P1DiPQoM8V@pathway.suse.cz>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        d=1e100.net; s=20251104; t=1776373927; x=1776978727;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ZQrUO1RbQ+KeXUWWqT0bDLIHCPNave+6l+mFpjuOTDg=;
+        b=n4252tGV74bCdhB12Hckbgpmeivyw5+Y6fAlJISS44AsgmdqVcUi0gCHim5g1b5K9J
+         RgC3du2WfllcyAg2MyvIKdWnrcbebG0zXxQIw0mmOSqp5z9UytHLJEDhNrDKksbavHok
+         2XtTaPwhd5xTnzkYZmKUJLKv9B5SjZCYkwgCTn+bcU9j/qVSa96lTzrxAkdCJ4uJyOXV
+         0mUdzzsruuqfLSUyhmAH3ZY0KbIE44zd3pbl9H3VRete8v4Idx8zsD1eQgiaxqU4DBi0
+         N/lBbsZt3lX1YHsB4tnmkAvaicCBHe79+XQzEcSHs4FKi+edo8i/SAO/9k0BCaYm3DTQ
+         O21A==
+X-Forwarded-Encrypted: i=1; AFNElJ/fKBqtJPKijqpxnm1+3gcrRg/8FrynjvpQ1NYvTeWwQZ1J3OnZ+9P7m8zI2ya/B9Kslvlobddu5Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwREGGAt7KqpCFn4VPibVkGLFgqCvC5Cp/tAo/U6YQL0HJFhW1d
+	pNBIa4PrpHmPkcyB+mTVylu7ERgQrJD8QgGQzZYdo+n+zzCidR4OKPWiHwvuHdjzNUxmnzlae+E
+	ff5cg30VtjKt6axfuedGbh0DNip9c5vDstkpWUSXRl158D8ffgHWEUZTE57JlwA==
+X-Gm-Gg: AeBDiesTcp9fC3y0sWUHXM1DhfYYR79rIPCeqC6083cp+Zy5Z809//XtvtRzprJbNof
+	3U2E+UugwoCHD52uVxA3DsNH7+Zsd0dtxNZHZQMfWBR0uIsigI3+GbJKGwXYVbafVuQkDtg5RKd
+	AhwcjU8craxMUFKpTRKP7eXsax/Qorhw5pgHqBhfs/PgZLCWqHmlwr6hI1x8QkXLudAW9TbhTl9
+	3Xm9qaBv5i2uK0RFvgQm6ol67VhiBRYdD6PvjzYWZIVMBSIRr5s0mJcQl+rWHuAq8B7jrAJ0u3m
+	G7RHBXtFxlreoAPkTdo1bK3j372zgNMbd7fXkyOeh9EHP2HA30Zok2p4DfKzjME1Oa3Djl3z2Qu
+	/Uvr8koFvnn6P9DKNDruZOTA0Alr/Cs1oRlB51lB4AV9hORSUK2h65pfASOfOQQAcFZDEs95yjR
+	QVv6JKCsw5An0PTH/vUqA=
+X-Received: by 2002:a05:622a:5a13:b0:50d:ea46:7eb3 with SMTP id d75a77b69052e-50e36b640d9mr644521cf.26.1776373927103;
+        Thu, 16 Apr 2026 14:12:07 -0700 (PDT)
+X-Received: by 2002:a05:622a:5a13:b0:50d:ea46:7eb3 with SMTP id d75a77b69052e-50e36b640d9mr643881cf.26.1776373926621;
+        Thu, 16 Apr 2026 14:12:06 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:cf08:980b:ccbc:54fd? ([2a05:6e02:1041:c10:cf08:980b:ccbc:54fd])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43ead35c026sm16472441f8f.15.2026.04.16.14.12.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Apr 2026 14:12:05 -0700 (PDT)
+Message-ID: <f46ef4af-1c05-4473-9226-901d3393ea89@oss.qualcomm.com>
+Date: Thu, 16 Apr 2026 23:12:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V10 4/4] thermal: qcom: add support for PMIC5 Gen3 ADC
+ thermal monitoring
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: jic23@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        agross@kernel.org, andersson@kernel.org, lumag@kernel.org,
+        dmitry.baryshkov@oss.qualcomm.com, konradybcio@kernel.org,
+        daniel.lezcano@linaro.org, sboyd@kernel.org, amitk@kernel.org,
+        thara.gopinath@gmail.com, lee@kernel.org, rafael@kernel.org,
+        subbaraman.narayanamurthy@oss.qualcomm.com,
+        david.collins@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
+        kamal.wadhwa@oss.qualcomm.com, rui.zhang@intel.com,
+        lukasz.luba@arm.com, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        cros-qcom-dts-watchers@chromium.org, quic_kotarake@quicinc.com,
+        neil.armstrong@linaro.org, stephan.gerhold@linaro.org
+References: <20260130115421.2197892-1-jishnu.prakash@oss.qualcomm.com>
+ <20260130115421.2197892-5-jishnu.prakash@oss.qualcomm.com>
+ <addDTiI8MB2b_AzJ@mai.linaro.org>
+ <12d683aa-44c2-4e2d-8459-78ba9f2ab61e@oss.qualcomm.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <12d683aa-44c2-4e2d-8459-78ba9f2ab61e@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDIwMCBTYWx0ZWRfX8d4wZ2CaiSv1
+ dSLwk3u9eBfe3KPePIjvjTZrT45TJTy61MIpHfQaGxFThxUBo7PlRxIUaCphLR6Fjf3vO2Lsqdl
+ VFl7tzOhLEXEfgHBQepjO1Ug8/QLwPbd5BclWhx+yX6cH4WXs2bpqHXyT/XRXZZEusj+Hw77yMH
+ MI9VAc/qsA7BKXHddN55r7Yg0lPde38+x5GSFHPdixvg21ASJTSnQPCLm0bTLLTdKsZDJe84INx
+ IhJaBykBC0++U7xhMR1xSNPZ8InBDVzbeL+kyG0tg9kav28kGa7xoMK1kpNUkUAmiER98Mded/y
+ qVNYAm31UPmgMPYnTT+m6GhiOBaIo5paYdrWkTGbShGLusBffoefHFk2v8LeZVfhXt2KsFhn2gU
+ 6y+rIqB1rUNSkaxcOYh1cY1KUstqmUyQXePKXUHyopzex6fHMpSfaG5TrDXoBSwbPveT/MeYXhm
+ ZKDUWx9BVHKYsB879og==
+X-Proofpoint-ORIG-GUID: qkdVAizUW39yr2aHf3i5bD2reDxmyFlU
+X-Authority-Analysis: v=2.4 cv=Ipgutr/g c=1 sm=1 tr=0 ts=69e150a7 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=EUspDBNiAAAA:8
+ a=JbLAaTClA-xbCA27GrMA:9 a=QEXdDO2ut3YA:10 a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-GUID: qkdVAizUW39yr2aHf3i5bD2reDxmyFlU
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-16_03,2026-04-16_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 clxscore=1015 impostorscore=0
+ lowpriorityscore=0 adultscore=0 malwarescore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604160200
 
-On Thu, 16 Apr 2026 16:54:23 +0200
-Petr Mladek <pmladek@suse.com> wrote:
-
-> On Thu 2026-04-16 13:30:04, David Laight wrote:
-> > On Wed, 15 Apr 2026 15:01:37 +0800
-> > chensong_2000@189.cn wrote:
-> >   
-> > > From: Song Chen <chensong_2000@189.cn>
-> > > 
-> > > The current notifier chain implementation uses a single-linked list
-> > > (struct notifier_block *next), which only supports forward traversal
-> > > in priority order. This makes it difficult to handle cleanup/teardown
-> > > scenarios that require notifiers to be called in reverse priority order.  
-> > 
-> > If it is only cleanup/teardown then the list can be order-reversed
-> > as part of that process at the same time as the list is deleted.  
+On 4/16/26 10:05, Jishnu Prakash wrote:
+> Hi Daniel,
 > 
-> Interesting idea. But it won't work in all situations.
-
-It is useful for things like locklessy queuing a request to be processed later.
-Items can be added with a cmpxchg and the list grabbed by xchg of NULL.
-The only downside is that reversing a list isn't cache friendly.
-Thinks... although that may not be any worse than accessing the current 'tail'
-to add to the end of a doubly linked (or singly linked with a tail ptr) list.
-
-	David
-
+> On 4/9/2026 11:42 AM, Daniel Lezcano wrote:
+>> On Fri, Jan 30, 2026 at 05:24:21PM +0530, Jishnu Prakash wrote:
+>>> Add support for ADC_TM part of PMIC5 Gen3.
+>>>
+>>> This is an auxiliary driver under the Gen3 ADC driver, which implements the
+>>> threshold setting and interrupt generating functionalities of QCOM ADC_TM
+>>> drivers, used to support thermal trip points.
+>>>
+>>> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
 > 
-> Note that the motivation for this update are the module loader
-> notifiers which are called several times for each loaded/removed module.
+> ...
 > 
-> Best Regards,
-> Petr
+>>> +
+>>> +static irqreturn_t adctm5_gen3_isr(int irq, void *dev_id)
+>>> +{
+>>> +	struct adc_tm5_gen3_chip *adc_tm5 = dev_id;
+>>> +	int ret, sdam_num;
+>>> +	u8 tm_status[2];
+>>> +	u8 status, val;
+>>> +
+>>> +	sdam_num = get_sdam_from_irq(adc_tm5, irq);
+>>> +	if (sdam_num < 0) {
+>>> +		dev_err(adc_tm5->dev, "adc irq %d not associated with an sdam\n",
+>>> +			irq);
+>>> +		return IRQ_HANDLED;
+>>> +	}
+>>> +
+>>> +	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_STATUS1,
+>>> +			     &status, sizeof(status));
+>>> +	if (ret) {
+>>> +		dev_err(adc_tm5->dev, "adc read status1 failed with %d\n", ret);
+>>> +		return IRQ_HANDLED;
+>>> +	}
+>>> +
+>>> +	if (status & ADC5_GEN3_STATUS1_CONV_FAULT) {
+>>> +		dev_err_ratelimited(adc_tm5->dev,
+>>> +				    "Unexpected conversion fault, status:%#x\n",
+>>> +				    status);
+>>> +		val = ADC5_GEN3_CONV_ERR_CLR_REQ;
+>>> +		adc5_gen3_status_clear(adc_tm5->dev_data, sdam_num,
+>>> +				       ADC5_GEN3_CONV_ERR_CLR, &val, 1);
+>>> +		return IRQ_HANDLED;
+>>> +	}
+>>> +
+>>> +	ret = adc5_gen3_read(adc_tm5->dev_data, sdam_num, ADC5_GEN3_TM_HIGH_STS,
+>>> +			     tm_status, sizeof(tm_status));
+>>> +	if (ret) {
+>>> +		dev_err(adc_tm5->dev, "adc read TM status failed with %d\n", ret);
+>>> +		return IRQ_HANDLED;
+>>> +	}
+>>> +
+>>> +	if (tm_status[0] || tm_status[1])
+>>> +		schedule_work(&adc_tm5->tm_handler_work);
+>>> +
+>>> +	dev_dbg(adc_tm5->dev, "Interrupt status:%#x, high:%#x, low:%#x\n",
+>>> +		status, tm_status[0], tm_status[1]);
+>>> +
+>>> +	return IRQ_HANDLED;
+>>
+>> This ISR routine should be revisited:
+>>
+>>   - no error message inside
 > 
+> I'll drop all the error messages, but does that also include the debug print at the end?
+> In addition, the print for conversion fault is ratelimited and may be useful as it
+> indicates a possible HW issue, can I keep that?
+
+It is not a good practice to put an error message in the ISR. If the 
+conversion fails, then the thread blocked on the read will timeout and 
+then show a message.
+
+>>   - use a shared interrupt to split what is handled by the ADC and the
+>>      TM drivers
+> 
+> I'll make the required updates in the main ADC driver and this driver to share the first
+> SDAM's interrupt.
+> 
+>>
+>>   - do not return IRQ_HANDLED in case of error (cf. irqreturn.h doc)
+>>
+> 
+> I'll replace IRQ_HANDLED with IRQ_NONE at places where errors are returned.
+> But in the case of conversion fault, I think returning IRQ_HANDLED may be
+> more appropriate because we do handle it by clearing the status, to
+> allow subsequent conversion requests to be sent.
+> 
+> What do you think, is this fine?
+
+It is a good point.
+
+Actually, if get_sdam_from_irq() or adc5_gen3_read() fail, they will 
+return without clearing the interrupt flag, so we should potentially end 
+up in an infinite loop.
+
+So the status should be cleared at the end with IRQ_HANDLED. IRQ_NONE 
+returned if it is for another subsystem.
+
+If you think there can be a significant number of errors in the handler 
+may be you should add statistics but later in an additional series if it 
+makes sense.
+
+[ ... ]
+
+>>> +	adc_tm5 = prop->chip;
+>>> +
+>>> +	if (prop->last_temp_set) {
+>>> +		pr_debug("last_temp: %d\n", prop->last_temp);
+>>> +		prop->last_temp_set = false;
+>>> +		*temp = prop->last_temp;
+>>> +		return 0;
+>>> +	}
+>>
+>> Why do you need to do that?
+>>
+>> The temperature should reflect the current situation even if the
+>> reading was triggered by a thermal trip violation.
+>>
+> 
+> This logic is needed to handle a corner case issue we have seen earlier.
+> In this case, the ADC_TM threshold violation interrupt gets triggered ,
+> but when get_temp() is subsequently called by the thermal framework, the
+> temperature has fluctuated and the value read now lies within the thresholds,
+> so the thresholds do not get updated by the thermal framework and the violation
+> interrupts get repeated several times, until there is a get_temp() call
+> which returns a temperature outside the threshold range.
+
+Oh, that's clearly an issue with the thermal framework, not the driver.
+
+> In order to avoid this issue, when the interrupt handler runs, we find the actual
+> temperature read in ADC_TM that led to threshold violation by reading the ADC_TM
+> data registers and we cache it and return it when get_temp() is called in the flow
+> of thermal_zone_device_update(). Any subsequent calls to get_temp() would
+> return the actual channel temperature at the time.
+> 
+> This is only done to avoid delaying thermal mitigation due to temperature
+> fluctuations. Do you think this needs to be changed?
+
+I think it is an interesting problem certainly impacting all thermal 
+sensors. It should be fixed in the thermal framework itself if possible. 
+Just drop this portion of code and let's handle that correctly in the 
+thermal framework.
+
+[ ... ]
+
+>>> +	dev_dbg(adc_tm5->dev, "channel:%s, low_temp(mdegC):%d, high_temp(mdegC):%d\n",
+>>> +		prop->common_props.label, low_temp, high_temp);
+>>> +
+>>> +	guard(adc5_gen3)(adc_tm5);
+>>> +	if (high_temp == INT_MAX && low_temp == -INT_MAX)
+>>> +		return adc_tm5_gen3_disable_channel(prop);
+>>
+>> Why disable the channel instead of returning an errno ?
+>>
+> 
+> This is the convention we follow in our existing ADC_TM driver at
+> drivers/thermal/qcom/qcom-spmi-adc-tm5.c. If both upper and lower
+> thresholds are meant to be disabled, we disable the channel fully
+> in HW to save some power and it can be enabled later if this API
+> is called for it with valid thresholds.
+> 
+> Is it considered invalid in the thermal framework to try to disable
+> both thresholds? Should I both disable the channel and return some
+> error from here?
+
+Well, if the channel is disabled, then the temperature sensor of the 
+thermal zone is disabled, consequently the thermal zone is disabled from 
+a HW POV but enabled from the kernel POV.
+
+Why not add the 'change_mode' ops and then disable the thermal zone (+ 
+pm_runtime) ?
+
+[ ... ]
+
+>>> +	/*
+>>> +	 * Skipping first SDAM IRQ as it is requested in parent driver.
+>>> +	 * If there is a TM violation on that IRQ, the parent driver calls
+>>> +	 * the notifier (adctm_event_handler) exposed from this driver to handle it.
+>>> +	 */
+>>> +	for (i = 1; i < adc_tm5->dev_data->num_sdams; i++) {
+>>> +		ret = devm_request_threaded_irq(dev,
+>>> +						adc_tm5->dev_data->base[i].irq,
+>>> +						NULL, adctm5_gen3_isr, IRQF_ONESHOT,
+>>> +						adc_tm5->dev_data->base[i].irq_name,
+>>> +						adc_tm5);
+>>
+>> The threaded interrupts set the isr in a thread and from the thread
+>> handling the event, there is a work queue scheduled. Why not use the
+>> top and bottom halves of the threaded interrupt ? Hopefully you should
+>> be able to remove the lock.
+> 
+> Yes, I can use the top and bottom halves of the threaded interrupt as you
+> suggested. But what exactly do you mean by removing the lock?
+> 
+> If you meant the mutex lock used in this driver, we cannot remove that.
+> This is because the ADC_TM driver needs to write into several registers
+> shared with the main ADC driver for setting new thresholds, so we
+> have to share a mutex between the drivers to prevent concurrency issues.
+
+When using a workqueue tampering with registers while an interrupt 
+handler is doing the same, the lock is needed.
+
+But if the workqueue is replaced by threaded interrupt, the lock *may* 
+not be needed because the design may prevent race conditions.
+
+That may be not true in this case, I did not investigate deeper in the 
+code to figure it out. Let's see the next version
+
+> I'll address all your other comments too in the next version of this patch.
+
+Thanks
+
+   -- Daniel
+
 
