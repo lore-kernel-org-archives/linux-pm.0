@@ -1,156 +1,291 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A5FC277C9E
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87F583BA221
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776344968; cv=none; b=lCLxp9raUaytKJr3+I57Lww0yujCeCQ1kBsSV5rCs9jpiDhGJ5vtHW+REhiXK5tKV1mLquWAE0W5h/0u4ksbFsVZ2O6sivMKal2yii6rGnuzjKRaHbYDvqoFV+SdY0uVq6wKJNE+xU13U3F1DrCB1HMl1CMlTtGnu8PhlSU7trA=
+	t=1776344978; cv=none; b=RJlv9pr1oK34w5xl9yba3EWpT/zXJUY3rAfWfgYPnwwohcVpzmlfiCAn+eh8cCmlK1pSr9yYKeE7EiPQ2cOGQJ1kc8EH4hPd/C1gh1aohAD9bP9KgDPi66VDyUAmWrxJLT3exom3UE41DhkACmpQb0+RcxKaSrcE/C3XvrwFTaI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776344968; c=relaxed/simple;
-	bh=lqEP00pbTEdpQoMYmkPwXjxu5YiNpaO/f4tQ1JU2KXA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XhWyJ5zNMb76C7JuKvYtoEntnSF2CSADm9A/8mIqVUlcLJs5l2BtaxveEu/KsaWJGKxqtl3PIzoc2yyUMd/wLkP0fD7GzjkQ3Pm1wqhRHU1IVKTdCF842DJIGvCwDzYyZ4FXAw1XtTGPBxK56asjj1wgVE+cVdmg3aWRIauo02c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kVgB5+15; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Mnxk7VqN; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1776344978; c=relaxed/simple;
+	bh=eVmjde+k93xycVxx5TzpLj5SCL1rx1KrvC1l3ql6brE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BTaIiZkusQHeGXHnaXIE33SKEVP3eYPSc0CKK1mTENnLecbixPXn2kCeF2nfG6la8GuAiaZyBhybkNTo9GZeEPa0N7hQHjqZv5dCFGVy8JwXVPUHNamOUIDS6HvFyqmescwaQNVngvFEoi+wQIlt+TazmpvgSpxACqoe2XQd50o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=gWVkabXn; arc=none smtp.client-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kVgB5+15";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Mnxk7VqN"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63GAY1rP1245194
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u
-	5gJ7wYfA=; b=kVgB5+15FMpuFTjX9UKLEiuEhIpC9+Q8NrICj6OELnk2mKr3kHw
-	FjuA8y3oC46DD8c3KGOdE2pw+3BmsQ8k3p4ejACYAq3RZgh2/D4lXu4FIwuIzafR
-	eZFjhO0HpAyzu4ViaJ411bGACWcK9LSgSnAnQSZjTxNHsxruWuQdaV4ptpLRxsgf
-	1e+N8Wxq1xU8wNrmHbh1p+SMPtdQf/2r6sFDOru+XxL5J15hiSgk6GGl5B2poFZi
-	825NDiOg6ZUbrYMrd4Emuz0KVr6huWG+qHDpdDYoTdkxCLtmyjhI6w4tKdm3DmXE
-	lkGsl8PZRXACqjpS/2OvOPK/vPsUVYoIiHw==
-Received: from mail-oo1-f69.google.com (mail-oo1-f69.google.com [209.85.161.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djx4k8ev7-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:09:26 +0000 (GMT)
-Received: by mail-oo1-f69.google.com with SMTP id 006d021491bc7-68d7d187379so12014262eaf.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:09:25 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="gWVkabXn"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4852a9c6309so73756565e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:09:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776344965; x=1776949765; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u5gJ7wYfA=;
-        b=Mnxk7VqNaGezZDDIOBKoZpBNZjTh1kz7MsGeCXGYy5l0tXkkLXqcexWel9AMLEs3PO
-         6+iwv5z3U/jaVf7eTTk04NCoiZt5UYgkINvzE7lHX9G50DKYNt+GE5e+zRlMXT4qNbwK
-         vfKURrlDtdX7F1/a2/yHLjVJ2OrfjQvncMgVXvUDZDs5ORBGOdLtctEnKTfFfm45QFsV
-         FFKDCIe/09yXu9HNg5FvtCKOGozPbbRgnLUdRyFjol0DbW1XRPO8rVdshuK9u0NdAH96
-         VUzPgn9F8vvtd8WBvArTupqGa59F1n9eANU5Ui//NcFBaE2D9OyBSSuTV0rD8+cGAD2H
-         K10A==
+        d=suse.com; s=google; t=1776344975; x=1776949775; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=m3piWCtfpN3U6w8bKY3YeNvzMYnQTdnw3h4KjP2i/sk=;
+        b=gWVkabXnsOnvoM3GUthhg8haRYPkHddoedkvckM6BiaWRjb06CqxgY1ZFpHCK6p2WQ
+         FeqGPchIhpZXb0+i22atTHjtQiVxh/L3GaX0sweeDZNZh0F0BqZNyig0cvTJIlkZOWrU
+         iafVJOHGilIbYuSWy9/9iW9WyzDmm/DAkiMmIoAp3Kr55fvy4h49B0CstsHsF0gAOsMP
+         k2vDVLT3F5J56OpiQi1aRT8PZh7o1ZnusmrX9FtcSuPjXgt4jpR7uV6jXUFW+6bTdZK+
+         bfmF+CPLNC4k007+B1ngA7VPideyNIXpDY5g7gjNDJuM/JGoIeOAqBG39/Z81HGf0hxO
+         cXOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776344965; x=1776949765;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iGpPEZxRsSnSMxjXVi6oC3GF2of1hK1gE7u5gJ7wYfA=;
-        b=j/6ZPGNz0tTXMz6McUrJMw2JqzgzEAvZepzm6jkBIdz0QiY3vj23Vrs7hgnSl4VQwC
-         xJyjwfKECOFLQdjWwD8isFvvRbVDG6AiEl1CTnwsfOl7+QE7qvXnpy7ZLQ1bFvmfGoAL
-         Rv7UuoohxCrRMXEX1FsNRrnvuzPLvUp4r1dLSLowCXie6zJBjygfKS4657vqudvWPa2v
-         FSKG0K/nadB4tLY8eRbw+PhUoycYPjx5ISWOdsiR72PoUoC1Cpg6KWiLm/eXlTBHt1u0
-         DnCSh2ssD6gOJ2FPSzCW7FqTGgCQ30AJBIGRlcRlQ7m0+oIG9o3Mm/sTogFJ+vv0LTR5
-         qIdA==
-X-Forwarded-Encrypted: i=1; AFNElJ9gjy/qLYfm9mMOHz84NOOJm9zplGER9TFLOTqjwtM0FjCYcwy42Gh6MhXrBmbvMAJQv1n012k66g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxC/jTD10ZE2JzZLyF/ef82AJ6b56+HAczRvFSEhS34ojASTQwI
-	Fl+7iHe736lxqWw3AOvki3yA1J3j3hCBprfYcY6QVhAASh09gxziO1CunYhJxyh7OfwAvDKUSul
-	2f0Amiu0jmZ9QwS2QxVOxr1/ymOJQzrYHvX2yi+RstbkcmWmeVGWJ3B6D+SyQbOYTGK4wyw==
-X-Gm-Gg: AeBDiet927gaEGH5jLCJRg59VQO1sIs6Y9XimUhzNKMNe9d5gt4w/KkCR3wYiQnd4hi
-	ALExEB3pYzdDaCwpXFyM9rhxUN1Zyh0X/r6ufZ0Um4l3z09fwfztVhX3wir1No8sFaSa847GqRi
-	dE/WdtD8Y5lhnB28XWaNrXfWfZxPAN5Tj/8HUBcvyK1D0G2R+J9dBTanVwYezD4rDc1lEq9uEvu
-	/gNUFw7FaSuPviT2VM7GBc7OD07gE5MS3/45KtD8RdAJtU3WYGtSp+BVjvswKmyRf58VEvFWCDM
-	lHTaT9+c+6XoWlbt32P7Q9txs2Hh69OAAwH9Nv/w0rMhHxVqTbHk9pCPZzy6MnG2/G4Pa+sXBvE
-	jzwJieCy88jNtE+kcZPee6GkS966hOAskExpT
-X-Received: by 2002:a05:6820:1348:b0:691:f0b8:fd99 with SMTP id 006d021491bc7-691f0b909e4mr5555972eaf.45.1776344965039;
-        Thu, 16 Apr 2026 06:09:25 -0700 (PDT)
-X-Received: by 2002:a05:6820:1348:b0:691:f0b8:fd99 with SMTP id 006d021491bc7-691f0b909e4mr5555953eaf.45.1776344964585;
-        Thu, 16 Apr 2026 06:09:24 -0700 (PDT)
-Received: from quoll ([178.197.219.94])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488f08bdadbsm50370825e9.0.2026.04.16.06.09.23
+        d=1e100.net; s=20251104; t=1776344975; x=1776949775;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=m3piWCtfpN3U6w8bKY3YeNvzMYnQTdnw3h4KjP2i/sk=;
+        b=EPLbkG3/DPUIQw2IHSP/XU7UCzQkXXYLgehDplvbNz9+l82GmZULWxo2qC5mCKSCiw
+         wI3LMWuMdvlP3sYDvY2GO+9e2kHbGi1HGDKb6VGln4VaVafWmGw79dADAYwYP7f16kMx
+         6xo/PT0AobVfFrVkMzm5dhHX05S70PvkyskUNAHavPfJoiQmRphSDQL/9Js3tZ64XSEJ
+         fK41TR++ZYAY7zg0gKYpft7gThPC3OlefBL/ihknNJLXjHgHJC06V1HkC4O5L+00uNRl
+         yisH269E4Iq049SPSBc3SHCOa1iYAk9+4xn6n0wpY+yzz1Qn9Rzv6dhlZEMIigYIYPGQ
+         u32g==
+X-Forwarded-Encrypted: i=1; AFNElJ/hYUcPa+hN/lWg3isRQvvJhwrumTFKKgOiaPTXupJC1AbeB9avOXxoJMFvXTPSdYC5hWiO9bWtvQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxQVJ9xtp9ZA7rcpcYkFbLDmc0FkQUen9+YyzZPt0R4bSIt4t6X
+	IItpkypV4B6fs0KDeJg6Z24rErXqcChuCPmN4pIQK4por3QoGlLSV4S6d8+Ln3CGkQo=
+X-Gm-Gg: AeBDiesWfzPqhrWNeOdLG6noZxP9SSKwvyO9qRm8YQVxA2K0LEhlwQka5lYArmZuHdk
+	3Ff36JvKRr3tX5zVcZ12SfX+ugVyjFGf+zTgQ2HSufeQTZhNTCfje/eIPT9iPYinLu1W80yM+Ea
+	3ZdwoHrp7OzhTlpjT6UhrV4o5+NqVmN2rfIh9vpB6wmnNrBD2WJOsXhVhAg6MacjDM118B3XEjx
+	LtomUYkB80yiCRkH7tz4n+0OscLDndngjJEZHeV9P4O8IFH9FW4NX5nGzAIpVZDgHX1F59u8aIJ
+	BLhHPYYtK0c0VttZMXENUog5stST1awzy/iR4UOEe04/Agun1eV/NSN2fE3ThZ00jKnsyhUQY84
+	P2zRKjRfc23FlkqHgQFaubAqsIRYNeETNHJKf+uimbIAujY3DcXHkFBybcs6oT7qtYs0+ZltGJ/
+	gdRPlVRWnO+QvsCH/UPkIgHIufhg==
+X-Received: by 2002:a05:600d:8449:b0:487:55c:e0c1 with SMTP id 5b1f17b1804b1-488d68364fdmr279402625e9.14.1776344974877;
+        Thu, 16 Apr 2026 06:09:34 -0700 (PDT)
+Received: from pathway.suse.cz ([176.114.240.130])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488f585cefdsm53796665e9.14.2026.04.16.06.09.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2026 06:09:23 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-To: Georgi Djakov <djakov@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Subject: [PATCH] interconnect: Do not create empty devres on missing interconnects
-Date: Thu, 16 Apr 2026 15:09:13 +0200
-Message-ID: <20260416130912.375013-2-krzysztof.kozlowski@oss.qualcomm.com>
-X-Mailer: git-send-email 2.51.0
+        Thu, 16 Apr 2026 06:09:34 -0700 (PDT)
+Date: Thu, 16 Apr 2026 15:09:31 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Song Chen <chensong_2000@189.cn>
+Cc: Petr Pavlu <petr.pavlu@suse.com>, rafael@kernel.org, lenb@kernel.org,
+	mturquette@baylibre.com, sboyd@kernel.org, viresh.kumar@linaro.org,
+	agk@redhat.com, snitzer@kernel.org, mpatocka@redhat.com,
+	bmarzins@redhat.com, song@kernel.org, yukuai@fnnas.com,
+	linan122@huawei.com, jason.wessel@windriver.com, danielt@kernel.org,
+	dianders@chromium.org, horms@kernel.org, davem@davemloft.net,
+	edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+	paulmck@kernel.org, frederic@kernel.org, mcgrof@kernel.org,
+	da.gomez@kernel.org, samitolvanen@google.com, atomlin@atomlin.com,
+	jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
+	joe.lawrence@redhat.com, rostedt@goodmis.org, mhiramat@kernel.org,
+	mark.rutland@arm.com, mathieu.desnoyers@efficios.com,
+	linux-modules@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+	live-patching@vger.kernel.org, dm-devel@lists.linux.dev,
+	linux-raid@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+	netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] kernel/module: Decouple klp and ftrace from
+ load_module
+Message-ID: <aeDfi98xpnKcAJx5@pathway.suse.cz>
+References: <20260413080701.180976-1-chensong_2000@189.cn>
+ <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
+ <a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=792; i=krzysztof.kozlowski@oss.qualcomm.com;
- h=from:subject; bh=lqEP00pbTEdpQoMYmkPwXjxu5YiNpaO/f4tQ1JU2KXA=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBp4N941awvgDdQ/TB26yzGfmJjjQHa+KzRL6aQD
- 4HbCZDHyGWJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaeDfeAAKCRDBN2bmhouD
- 19kfEACG556rBUaV0iKYbrKjvem5ofqt1MkSwxv30IOIQn6id2frIKfC42YrnrMOMynL43Z5VsX
- iEpN8+fN3EIY9R5XzXuCSL8a8b8dulUf+eDiIh5yIHxuWoNQZpfYUQOSlsf+T2Sp+GMuJn+/AZG
- pcR5NSMMAQZwK9/dbd+IRIams68//w4dydhluU2fHUzaLiHaxQk+gUDr0+qYd+N5ogO3wdKUXOC
- dOCX4RFPHymLq++jJTS0bD4a1ulNMhluAMdwiUwf9ynha3rfzpPc9+tKwz9nO0JJsZn3ESfT2Ac
- JVi6gMJ3uTH65XSJVj6IoT70H4xCTiJ9g4MV29VvMnKtMCF+Z7KyVNkOQ43z4XRG7WxMRzAu8BX
- nBLndWKbrzjMtfP4lU2lhAKy2PST/u0uxiAZO93LwtiM1kOedknFbKRlZou7CxFz2g4GrKpVDio
- 8sKDLEq5gq5dfi60GUcz30POoLFV+MNwLIKrvnNHPBbnYUw4eGGizAx0TSmYXNvGM5Z/ce3Wu/n
- Ox9bvkDRCERDik7siZJgfkssC74/P3tWvTlYx0lBVPYUAlqHLYF5tg7Xcvz0UDNdkRPiSuugoE6
- r+0YEnr4beRk5v7YnEbvo1zLLkD6GtAKiSg12+IJNJ430WbGZ9IRIHjHKt+8GbWdbQASQ2hnSwM m4DYGnLjJxovwLg==
-X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: GyjM058kik5WM00fryworUofEO93OLOM
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDEyNSBTYWx0ZWRfXybLTVyvPsM4S
- TJidUacf/SQqn/fASNwkkecS5awUmGkNZRhjxpKP24PbYNlZD3tyDfD7KruDIdh+J3S9s6uWLjk
- 0NQ/9dYRDXPNx2AQYxI76u5M7xVlmXYagXEyOLgbmqDeN0xskYHU3J0M6t+rIJxIz7ZWTc4KOEV
- KVj8vP4rMQoZMsgOuNKRqC7g/4Xj3M9cFjW9ihvX8z8glJfFB58q2FyV/1J1ud8OAz/NSpwGGJX
- 6JQgO8QtgPtmP3Ik+mIISXZLp0kTF1/iB9qRfpp5+lLY7ucOEcZWGCPkvKoGIINmnY+Kll2rEEn
- Ohcn8odo8SzXKcF6OTkV/20ZflOIILUS3kGqlk/ixt9odskTB7Vr++odbeMa3oBVGflpx80vVgh
- uC7LZ5un58WoIAPiW2thNg/WdU9zU9eCOTzh++kkB6tIUAVEtEwcfAqRRG+d8MdUciHO9H9ETTI
- 0KDxV+rmI31h2exUmEw==
-X-Authority-Analysis: v=2.4 cv=H47rBeYi c=1 sm=1 tr=0 ts=69e0df86 cx=c_pps
- a=lVi5GcDxkcJcfCmEjVJoaw==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
- a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=EUspDBNiAAAA:8
- a=E_IaXGz9Cgm36txEtSUA:9 a=rBiNkAWo9uy_4UTK5NWh:22
-X-Proofpoint-ORIG-GUID: GyjM058kik5WM00fryworUofEO93OLOM
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-16_03,2026-04-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
- definitions=main-2604160125
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
 
-of_icc_get() returns NULL on valid case - no interconnects - but no
-need to create devres for that, because it just wastes memory without
-any use/benefits.
+On Wed 2026-04-15 14:43:53, Song Chen wrote:
+> Hi,
+> 
+> On 4/14/26 22:33, Petr Pavlu wrote:
+> > On 4/13/26 10:07 AM, chensong_2000@189.cn wrote:
+> > > From: Song Chen <chensong_2000@189.cn>
+> > > 
+> > > ftrace and livepatch currently have their module load/unload callbacks
+> > > hard-coded in the module loader as direct function calls to
+> > > ftrace_module_enable(), klp_module_coming(), klp_module_going()
+> > > and ftrace_release_mod(). This tight coupling was originally introduced
+> > > to enforce strict call ordering that could not be guaranteed by the
+> > > module notifier chain, which only supported forward traversal. Their
+> > > notifiers were moved in and out back and forth. see [1] and [2].
+> > 
+> > I'm unclear about what is meant by the notifiers being moved back and
+> > forth. The links point to patches that converted ftrace+klp from using
+> > module notifiers to explicit callbacks due to ordering issues, but this
+> > switch occurred only once. Have there been other attempts to use
+> > notifiers again?
+> > 
+> > > diff --git a/include/linux/module.h b/include/linux/module.h
+> > > index 14f391b186c6..0bdd56f9defd 100644
+> > > --- a/include/linux/module.h
+> > > +++ b/include/linux/module.h
+> > > @@ -308,6 +308,14 @@ enum module_state {
+> > >   	MODULE_STATE_COMING,	/* Full formed, running module_init. */
+> > >   	MODULE_STATE_GOING,	/* Going away. */
+> > >   	MODULE_STATE_UNFORMED,	/* Still setting it up. */
+> > > +	MODULE_STATE_FORMED,
+> > 
+> > I don't see a reason to add a new module state. Why is it necessary and
+> > how does it fit with the existing states?
+> > 
+> because once notifier fails in state MODULE_STATE_UNFORMED (now only ftrace
+> has someting to do in this state), notifier chain will roll back by calling
+> blocking_notifier_call_chain_robust, i'm afraid MODULE_STATE_GOING is going
+> to jeopardise the notifers which don't handle it appropriately, like:
+> 
+> case MODULE_STATE_COMING:
+>      kmalloc();
+> case MODULE_STATE_GOING:
+>      kfree();
+> 
+> 
+> > > +};
+> > > +
+> > > +enum module_notifier_prio {
+> > > +	MODULE_NOTIFIER_PRIO_LOW = INT_MIN,	/* Low prioroty, coming last, going first */
+> > > +	MODULE_NOTIFIER_PRIO_MID = 0,	/* Normal priority. */
+> > > +	MODULE_NOTIFIER_PRIO_SECOND_HIGH = INT_MAX - 1,	/* Second high priorigy, coming second*/
+> > > +	MODULE_NOTIFIER_PRIO_HIGH = INT_MAX,	/* High priorigy, coming first, going late. */
+> > 
+> > I suggest being explicit about how the notifiers are ordered. For
+> > example:
+> > 
+> > enum module_notifier_prio {
+> > 	MODULE_NOTIFIER_PRIO_NORMAL,	/* Normal priority, coming last, going first. */
+> > 	MODULE_NOTIFIER_PRIO_LIVEPATCH,
+> > 	MODULE_NOTIFIER_PRIO_FTRACE,	/* High priority, coming first, going late. */
+> > };
+> > 
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
----
- drivers/interconnect/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I like the explicit PRIO_LIVEPATCH/FTRACE names.
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 8569b78a1851..ce572c62f58f 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -432,7 +432,7 @@ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
- 		return ERR_PTR(-ENOMEM);
- 
- 	path = of_icc_get(dev, name);
--	if (!IS_ERR(path)) {
-+	if (!IS_ERR_OR_NULL(path)) {
- 		*ptr = path;
- 		devres_add(dev, ptr);
- 	} else {
--- 
-2.51.0
+But I would keep the INT_MAX - 1 and INT_MAX priorities. I believe
+that ftrace/livepatching will always be the first/last to call.
+And INT_MAX would help to preserve kABI when PRIO_NORMAL is not
+enough for the rest of notifiers.
 
+That said, I am not sure whether this is worth the effort.
+This patch tries to move the explicit callbacks in a generic
+notifiers API. But it will still need to use some explictly
+defined (reserved) priorities. And it will
+not guarantee a misuse. Also it requires the double linked
+list which complicates the notifiers code.
+
+
+> > >   };
+> > >   struct mod_tree_node {
+> > > --- a/kernel/module/main.c
+> > > +++ b/kernel/module/main.c
+> > > @@ -3281,20 +3277,14 @@ static int complete_formation(struct module *mod, struct load_info *info)
+> > >   	return err;
+> > >   }
+> > > -static int prepare_coming_module(struct module *mod)
+> > > +static int prepare_module_state_transaction(struct module *mod,
+> > > +			unsigned long val_up, unsigned long val_down)
+> > >   {
+> > >   	int err;
+> > > -	ftrace_module_enable(mod);
+> > > -	err = klp_module_coming(mod);
+> > > -	if (err)
+> > > -		return err;
+> > > -
+> > >   	err = blocking_notifier_call_chain_robust(&module_notify_list,
+> > > -			MODULE_STATE_COMING, MODULE_STATE_GOING, mod);
+> > > +			val_up, val_down, mod);
+> > >   	err = notifier_to_errno(err);
+> > > -	if (err)
+> > > -		klp_module_going(mod);
+> > >   	return err;
+> > >   }
+
+I personally find the name "prepare_module_state_transaction"
+misleading. What is the "transaction" here? If this was a "preparation"
+step then where is the transaction done/finished?
+
+It might be better to just opencode the
+blocking_notifier_call_chain_robust() instead.
+
+> > > @@ -3468,14 +3458,21 @@ static int load_module(struct load_info *info, const char __user *uargs,
+> > >   	init_build_id(mod, info);
+> > >   	/* Ftrace init must be called in the MODULE_STATE_UNFORMED state */
+> > > -	ftrace_module_init(mod);
+> > > +	err = prepare_module_state_transaction(mod,
+> > > +				MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
+> > 
+> > I believe val_down should be MODULE_STATE_GOING to reverse the
+> > operation. Why is the new state MODULE_STATE_FORMED needed here?
+> to avoid this:
+> 
+> case MODULE_STATE_COMING:
+>      kmalloc();
+> case MODULE_STATE_GOING:
+>      kfree();
+
+Hmm, the module is in "FORMED" state here.
+
+> > > +	if (err)
+> > > +		goto ddebug_cleanup;
+> > >   	/* Finally it's fully formed, ready to start executing. */
+> > >   	err = complete_formation(mod, info);
+
+And we call "complete_formation()" function. This sounds like
+it was not really "FORMED" before. => It is confusing and nono.
+
+Please, try to avoid the new state if possible. My experience
+with reading the module loader code is that any new state
+brings a lot of complexity. You need to take it into account
+when checking correctness of other changes, features, ...
+
+Something tells me that if the state was not needed before
+then we could avoid it.
+
+> > > -	if (err)
+> > > +	if (err) {
+> > > +		blocking_notifier_call_chain_reverse(&module_notify_list,
+> > > +				MODULE_STATE_FORMED, mod);
+> > >   		goto ddebug_cleanup;
+> > > +	}
+> > > -	err = prepare_coming_module(mod);
+> > > +	err = prepare_module_state_transaction(mod,
+> > > +				MODULE_STATE_COMING, MODULE_STATE_GOING);
+> > >   	if (err)
+> > >   		goto bug_cleanup;
+> > > --- a/kernel/trace/ftrace.c
+> > > +++ b/kernel/trace/ftrace.c
+> > > @@ -5241,6 +5241,44 @@ static int __init ftrace_mod_cmd_init(void)
+> > >   }
+> > >   core_initcall(ftrace_mod_cmd_init);
+> > > +static int ftrace_module_callback(struct notifier_block *nb, unsigned long op,
+> > > +			void *module)
+> > > +{
+> > > +	struct module *mod = module;
+> > > +
+> > > +	switch (op) {
+> > > +	case MODULE_STATE_UNFORMED:
+> > > +		ftrace_module_init(mod);
+> > > +		break;
+> > > +	case MODULE_STATE_COMING:
+> > > +		ftrace_module_enable(mod);
+> > > +		break;
+> > > +	case MODULE_STATE_LIVE:
+> > > +		ftrace_free_mem(mod, mod->mem[MOD_INIT_TEXT].base,
+> > > +				mod->mem[MOD_INIT_TEXT].base + mod->mem[MOD_INIT_TEXT].size);
+> > > +		break;
+> > > +	case MODULE_STATE_GOING:
+> > > +	case MODULE_STATE_FORMED:
+> > > +		ftrace_release_mod(mod);
+
+This calls "release" in a "FORMED" state. It does not make any
+sense. Something looks fishy, either the code or the naming.
+
+> > > +		break;
+> > > +	default:
+> > > +		break;
+> > > +	}
+> > 
+
+I am sorry for being so picky about names. I believe that good names
+help to prevent bugs and reduce headaches.
+
+Best Regards,
+Petr
