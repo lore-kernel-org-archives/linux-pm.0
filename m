@@ -1,171 +1,215 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 875CD3C5DDD
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776346481; cv=none; b=gr0+hJtU0K4ZuUVyzcB3sjMu1ZdGGpyzUxDE6wQLDgwFHpmhruPf2AStPPP2HYrvSZPAPRqsMYv1/VB7a5VM4v/Q+nsR8N9U+P2fc59lNGXPFeWVWf6medOk+YfJP9b2CZw7q1sz1lVoCF8D6tZBg+fza5/19NFnvTMwxzj3L3c=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776346481; c=relaxed/simple;
-	bh=0JE/aX79bsd/ZzLDRMFo/ItbT3LO+4StCT/90CBIeAc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=No2PzLJHBuyi5EaZ/8CL/QPEgWKcyjOCpizAbF29qpIe6aPMTr55kdXfF3/km+OzIBz37F78+MF8XytQMI5DVu3u5HyTRVe4x7Q0Px93N8PrMHxjxH8IrHB9bGukvi2twLojEk1WcMvaMYlLiMwp9xGkydOhFLcG2nHr/Lt9PVo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kmaMs8oU; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f68Qn+mH; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EC7231D372
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 14:31:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776349867; cv=pass; b=bIhjlTDg/dA1bzCapPafHRAtKyK9ICbcBqmKYIzy0VwVp2zc1VkoGuucBt2sZr/qPDjjcBaa07H8YeBrh6Cfo8BjcW13mpk7obcGVLaszb0lyIBsNaCgGvd79wmBd6/VJbwr0fRz+3O3OeGAvjlO3QWHV/bOuVFLrZ7psjTv5Co=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776349867; c=relaxed/simple;
+	bh=lAMWqqhKSyY/Nf2CObC7T0sTaNj2kkWAhArcE7c93gg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gocNq3K3qAAlxJabNUPyqdmjr3X8xXbyVwjZE3+UcXvJ+xLtaMyAveToA7IuHXpldFc7YNJsL5uPVibG+TyL8U0KG8yEnUM6Ul2fG+N6i5FJLsXjpZsVVsKCD6H6AZcisKoQUXzPR4YBpI79DXYEmaabNjFspMDRH2Rz2Tp2FQc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dHm9tpak; arc=pass smtp.client-ip=209.85.208.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kmaMs8oU";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f68Qn+mH"
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63G81XEg3734339
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=; b=kmaMs8oUDEkVtrfI
-	lt6E8z6MQCoN7R6adin1rfVwnLVVeNZXhC+GgXrkLdzyN6xjulJ/HLlluQIBEKQX
-	iW7KyJdDq/xEZwWmrdM2TKJmfTG+aWTE7I4q1PnykeGbSl+k/Nhpm0lTtXHREMhz
-	1mfH1cq5qcJjRHY94VUhi+g2iYRgBPSrCBFO6dSpwr1mZG0iESPCBVC+QKPHvBXZ
-	uHasj6TZNrnqvjJ5T2s7cc/eVFH8X4i/5567p9+MG1+yRnXUiqtfIo6zsOg2fFP9
-	oZR8f+QiM/IwkkbrkculD1fGViFne09SEanCc4LO/i/Xn1txlGSYKiUCjJcoRxOU
-	uMXBVQ==
-Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djcqwm6em-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:39 +0000 (GMT)
-Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-605a1faa7f3so545291137.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:34:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dHm9tpak"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-670ab084a39so10204830a12.3
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 07:31:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776349864; cv=none;
+        d=google.com; s=arc-20240605;
+        b=hq+xi0FMifGsKU1bm7aUfLX2DT3JzXMa+pXSuyyNH67ojo9H8LIZHa67Vyb/WqSrTS
+         gdhU2BV3NYawzLBuNgqQEGjbGI5WlL69lyWh1OBnGklfN1/vOsveqwdVgfq7q4HJ+5AS
+         PcZrGwYAgew+B0lFY0JE9tXoi30TeoYnE62Uq8njzYp/CEVa+ahrGTU7ux9oXKKEOq9p
+         YnDPawdjUPt9231o7+6yY5Qcb4P2V/ZCDXSk/WTJSMrRTHgZcohrJpRTkZDixgZkP/a7
+         1PRp0AUKFamtaKU4m8wsKfD224vb8t3d906alKe3opaDrBLMDbOQ4P0O0Xks10VkPbU7
+         0iLA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ZB3AGd1NxBc9bv+uq0JeWBVkPfVV1mCHpCACim+jGiU=;
+        fh=P75f2PKDcIUXNlMQsK4h3171MPj9ClsYNPrnXOx95Ao=;
+        b=XYuopJNK4TXQ/2BJxpBLpSydnvxg8fxe2jQP5xLAo29RulhC42GrC+kNhfocHzbkXG
+         6DTfYh6DD+J+XPvAaElH/Vanz4J2Zyv6JA4x8uPHsbHIW1qKiEGTvzDehky+mlNN47EM
+         4AXWH8T/qciA3QxHpU8fhdM1u92Mwqv+3ZQxwqLc4sWzcbaRqQesiDc/vzklVan9CsAV
+         KTcEKss/poiLbu4tTPaU6Z5JaQ7D99ZLjxwW5lXaLMwcUQw+mQMbF6otX1Z8xdQhWCuk
+         mNziZw5XTZXse58KLfbnIQwqOyAPP5uN13DfgyBX1WKRwrj7NfvGWCVh9DWVoDD5A16E
+         r6EQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776346479; x=1776951279; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=;
-        b=f68Qn+mHj+NTL+5APgKcNfsZO+J7JCmHvtXwSeOMjBGEt1lxGAGk3bPuaM89IZvSG+
-         /ScyfiFZet/Gg2helpFqV2jHRWFKCx7U6T/syLpCUGjmMYV5WSYvi9TMTh8hj7vRhoTM
-         hkkWrKPO9e1CfaS9pVHr7S/Js+HtKVB+3yEeFkMKZdvbuqu42iyvE2WLfG7G5PKgCS23
-         9fuiGRO4n4hK5m+Z3g0R44QtkKSB33I3NII2p44bNpX3SvN5bWGBXOt9s8jTK6Znw5ul
-         DCdRrVAgKouDLkL+svi6hsGyCvJZ/phiDkaExNsCYCRrwArR3+hI1tBUC7ziSlKI1M7c
-         WKRQ==
+        d=gmail.com; s=20251104; t=1776349864; x=1776954664; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZB3AGd1NxBc9bv+uq0JeWBVkPfVV1mCHpCACim+jGiU=;
+        b=dHm9tpakmRWMsE618K7GNdsuVtw6suY2Z4Zn/Er1YQuEMw99VGCYeMeThKIBExXqA9
+         R5htBfu/Nz2nHp4ti+WhQnKLP0w1/wLmCSqQTlNhS98QwrdnhSsx4pPEzUUMC0iMR6Lt
+         C/sKQx2NGwpLX2j9bzo5JQp3ukzZvV+6gvG8OwvutGgdjLDnPBz1FWbwCysPVxl4dBcB
+         5FxLElVCrpZnEcTojdiP8Mw6lY3GoBfcADxEG198mOsk9A0ib3Xlss+aGwxlKU0PYLwn
+         qrzoteJzsk/kehW3LjyE6fCQ6H9XaPa9rtX63QeR9hjHBra6ksETxYhnZmFcms/Hmbjc
+         6X1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776346479; x=1776951279;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=;
-        b=FpkmLTt5/QddaG+rsjH4fglLUJUi33LFksVNqrCJciyaQOLa0rM6BHIrTsZfxV+X5c
-         yQb+tL6N0XYtrdUraOqzxhEKXUvRTt2Bh4yumxB80LXoMqnNhDnOyhf0MkPYYh9TpEJd
-         r8+LH9k8O4af71KwLS6dGhNNtbQpeUpLsxhfF0/BDeH0009ZxlXX/KqFpljpaRljVX0m
-         7hUgrns5ZylIh5LoGRisXw8skrw2zzjjQBdIHVtF1WFhvle66iBhmXEO0zG/dJcHdHBj
-         IRXadE1XUa159SJZII/JN2v/qc59xWTh9nqmDqlfu9lA2BNXtOoRGdU80RooKpnBkbcL
-         ZBJw==
-X-Forwarded-Encrypted: i=1; AFNElJ/Uc3HObHNa0SGAC2xoNHahBnNoqzIrZ0ZJBL2RDq3/tASnSQ/aVWcRHg5rwFy+3eurmhwWrF5YJw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx2LOTLJg1KX9kPRD0/WY0GDENMKx1pfw8AqcJ7S1BF6pm08i/b
-	Um/SJrJpe4FHuH0f+JO3PAvQGIFmRwPq1xfNfrCQDaclhm4Kf3jBtzOgrgYfTpzEBDf6k4gjTGk
-	WQgDLIZE62sDnLmaWbthD+mGKwbSxpCvWM2dy1b/u8CYDnzBkZ0b69fHSXHdWAA==
-X-Gm-Gg: AeBDieseI4ZiZpU6Xt4aOzXLJ+2vySIL7LPhvf9FTpKhwXq+In4AsegktFnCzhma2cq
-	ZpOWLxoXxiWX8ZuHbNtXxk+XIOj1I7Of20KOV8nI56RyfbpgbQja9ToKT9jnxfD0yizw4heE8xw
-	VGqqKkjuL8ZT2u/O5YEJrs7gkroGZFERtvRCsrrn6yxsamqWCMLM1yK6+pm4S13BWWrM9ZqbT12
-	lLqwVf6iz/PNYe7b0X73cBGJiCRlwzDkYDXjS4z8dZR0Oq6VUu9OSt0m/29DOmVUA61OrtikIZF
-	camELxkVuAaBaVspyozJBrn4JchquyzRreQi5tYtWNG3aAG0fAmDvXzOwh0SzEIJ/f2KkoS8Oec
-	Pa2frzgwbEqYMVLS4eBBa3ctqoJpE8cMyVgIBjcILGVN2RIfnpO9eZWs6M3h0KkDz0HjokCoF//
-	LrRn8zhryT6Ln6fQ==
-X-Received: by 2002:a05:6102:374d:b0:5f8:d54c:18c9 with SMTP id ada2fe7eead31-612b753d417mr1597231137.3.1776346478892;
-        Thu, 16 Apr 2026 06:34:38 -0700 (PDT)
-X-Received: by 2002:a05:6102:374d:b0:5f8:d54c:18c9 with SMTP id ada2fe7eead31-612b753d417mr1597187137.3.1776346478446;
-        Thu, 16 Apr 2026 06:34:38 -0700 (PDT)
-Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ba1773c3826sm167011966b.33.2026.04.16.06.34.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 Apr 2026 06:34:37 -0700 (PDT)
-Message-ID: <ba6b62ee-3e75-4437-95d0-3604583f2cbf@oss.qualcomm.com>
-Date: Thu, 16 Apr 2026 15:34:34 +0200
+        d=1e100.net; s=20251104; t=1776349864; x=1776954664;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ZB3AGd1NxBc9bv+uq0JeWBVkPfVV1mCHpCACim+jGiU=;
+        b=YLDKctoA50dYPRGpVs1NzWck7idpixWfpYHhXwM+jqmdu/33WnnW8YeMMvj4AixXuR
+         tTvZkPscjuu/FmqOwwM2HOrqKytQ63/gHxSR5SRNw+UQMCf9K3Hp9BOj+KmOJTjKqvsk
+         /jf5/bXRs2FIy3TEgJf7Wg+iuWZtcBZmd7knrO+m0pYeaOX64CsAcbZfw1p9UHEDjq2b
+         gyJ/G7MqW9VVeROKVuhgLDgTUU1nyKKLNXFuHlBYOocvnCjWTvXIDDJYwaDQa4gS8F7M
+         opsNKaxzYZfTvwgNBnPaJi6yCEWGLfhtJVOGSOhub3MRiwUsejp3FTmowMO6M2qQ2rtC
+         ECxw==
+X-Forwarded-Encrypted: i=1; AFNElJ+eYhq5RnODf/gwEX+M2mpjgbFv7p7oEIjh1ANjHsYFrzGsQfiOR4T9O8+g59Nc8Z1tZAWUVBJOuw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz0Mggc5lk/8+LQF1Rr3rREr/GfD8K46HwI4fhoWg8qqIYtnGah
+	/sfKGJfYPKkN6Xt6BBli6uNLIjEeejHKkG3EWDHv2DDM4Q4/eHNsLoRMDZmPil1KFOqICZAA8XV
+	bJQiNpskfF81Toghz/TJK5aBEtiGnymA=
+X-Gm-Gg: AeBDiesKQzV0rqwGDUvb3fJPRIB3hWAL8FohOhKMC2/67xpLcih+iYXUXoHWnE4uvlU
+	IQy9/eXoFA2VFbg8uOvdf1uqXO+Mhwde/Cg63v5OHP00jXYtKke/LfT3buYK9JX4LxFvlWdHLHs
+	s/aZhei6lB3XAOWCyVuSo/fhGtqERrBzSbcCRWO4Wz0ffjkrJYcJaAjHAqpX6OMD/CdYZ0Jt+J1
+	xyrc+Pp5lQnVL5WMBTnQRan06Mz+Poz8uWURXp3hARJPXwFhnC9fQBTaRf8+3PgAe5KDHbDZ/3X
+	UUKcXxXddp7OBXm6rEs=
+X-Received: by 2002:a05:6402:847:b0:66f:2fff:683a with SMTP id
+ 4fb4d7f45d1cf-670786a2df4mr11774668a12.4.1776349863492; Thu, 16 Apr 2026
+ 07:31:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 7/7] arm64: dts: qcom: sdm632: Correct power domains
-To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Stephan Gerhold <stephan@gerhold.net>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-remoteproc@vger.kernel.org
-References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
- <20260327-sdm632-rpmpd-v1-7-6098dc997d66@mainlining.org>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260327-sdm632-rpmpd-v1-7-6098dc997d66@mainlining.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: hHD8yfaKuYBV21YjurtUabZGUsuts1eP
-X-Proofpoint-GUID: hHD8yfaKuYBV21YjurtUabZGUsuts1eP
-X-Authority-Analysis: v=2.4 cv=XOIAjwhE c=1 sm=1 tr=0 ts=69e0e570 cx=c_pps
- a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=OuZLqq7tAAAA:8 a=EUspDBNiAAAA:8 a=h7EPssPr47kph8xlZiMA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=-aSRE8QhW-JAV6biHavz:22 a=AKGiAy9iJ-JzxKVHQNES:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDEyOSBTYWx0ZWRfX3yZT3Ppa3ZpV
- 8tbArKGelB8soeQdHfxhpewYOFOxHjgZqiIYeamNzEFs+6AERlAmQl1dUNRl2eHN177HqHvHnBH
- 52yDZS7NtD6gmEXM06Iwf581X25XfEXibo2LmKn8mLj3V9yo4Q9vXCbrlX/QnwplbekEyoH5BTY
- ObB4GC2nEneetzd3ZqTQyr9cN4DxM8vTf1zeRucgAFiGAqJdA1HgnAOOKe4A6hYNxRTjmoMWeMF
- eFgwFf1nJydj84RejQu7lucxlUADrGv88LaqE9ICUCCc21kYblSXCQZPyG5hLa1dM0jGHIqsCz3
- JBQfvlU9cv0fi253ARddrfV1ECDxlhkuaSkGVpyZDsHLt2y7nt7V31tsFyBMV+ZnyqV19CU2hFy
- CFwAXJK42IlzmOXDIgJhzTlmRbZYmQz4+/x2s5yGrgaqBHHkH+sn1vqjX+RZvOff0+T6S3VCn/a
- mc+YufLcEFtShm5FxFg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-16_03,2026-04-16_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 adultscore=0 suspectscore=0 spamscore=0 malwarescore=0
- bulkscore=0 impostorscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604160129
+References: <20260415165139.14113-1-dbgh9129@gmail.com> <952b0192-4ba8-45ae-a71a-79854d558702@oss.qualcomm.com>
+In-Reply-To: <952b0192-4ba8-45ae-a71a-79854d558702@oss.qualcomm.com>
+From: =?UTF-8?B?7LWc7Jyg7Zi4?= <dbgh9129@gmail.com>
+Date: Thu, 16 Apr 2026 10:30:52 -0400
+X-Gm-Features: AQROBzB-S0qJ95mP9dbf54WbJ4ysiQcb8J8ffLTIReIV_w3-oy_NuhILBeFwnFM
+Message-ID: <CACrCO_X8Dv=Y54Kp7cHRq26_1KiXD7gMk=1EvxnSNbxMnR0SDg@mail.gmail.com>
+Subject: Re: [PATCH v1] cpufreq: pcc: fix use-after-free and double free in
+ _OSC evaluation
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 3/27/26 9:11 PM, Barnabás Czémán wrote:
-> SDM632 is using different pm domains from MSM8953 override them
-> where it is needed.
-> 
-> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
-> ---
->  arch/arm64/boot/dts/qcom/sdm632.dtsi | 31 +++++++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/qcom/sdm632.dtsi b/arch/arm64/boot/dts/qcom/sdm632.dtsi
-> index 40d86d91b67f..b1dbcffd51b6 100644
-> --- a/arch/arm64/boot/dts/qcom/sdm632.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/sdm632.dtsi
-> @@ -87,3 +87,34 @@ opp-725000000 {
->  		required-opps = <&rpmpd_opp_turbo>;
->  	};
->  };
-> +
-> +&lpass {
-> +	power-domains = <&rpmpd SDM632_VDDCX>;
-> +	power-domain-names = "cx";
-> +};
-> +
-> +&mpss {
-> +	compatible = "qcom,sdm632-mss-pil";
-> +	power-domains = <&rpmpd SDM632_VDDCX>,
-> +			<&rpmpd SDM632_VDDMX>,
-> +			<&rpmpd SDM632_VDDMD>;
-> +	power-domain-names = "cx", "mx", "mss";
+Dear Zhongqiu Han,
 
-nit: one a line would be perfect
+> 1. I don't see why this header is needed for this change. Even if it is,
+> it's already included by <linux/acpi.h>, right?
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+You are right, it is unnecessary. I will drop it in v2.
 
-Konrad
+> 2. Would it be cleaner to reset the pointer and output.length, and let
+> acpi_evaluate_object() reallocate the buffer?
+
+Agreed, that is cleaner and makes the intent explicit. I will adopt
+your suggestion in v2.
+
+> 3. The sashiko.dev pointed out a few pre-existing boundary checking
+> issues that are outside the scope of this patch.
+
+Noted. I will address those in a separate patch.
+
+Thanks for the review.
+
+Best regards,
+Yuho Choi
+
+On Thu, 16 Apr 2026 at 02:04, Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> On 4/16/2026 12:51 AM, Yuho Choi wrote:
+> > pcc_cpufreq_do_osc() evaluates _OSC twice with the same output buffer.
+> > The first acpi_evaluate_object() allocates the buffer because output is
+> > initialized with ACPI_ALLOCATE_BUFFER. Freeing output.pointer before th=
+e
+> > second evaluation leaves output.length stale, so the next call treats
+> > output as a caller-supplied buffer and performs a use-after-free write
+> > into the freed memory. The final cleanup path then frees the same
+> > pointer again, causing a double free.
+> >
+> > Keep the first _OSC result alive until the shared cleanup path and rout=
+e
+> > the early error exits through out_free. This avoids both the use-after-
+> > free on the second evaluation and the final double free.
+> >
+> > Fixes: 0f1d683fb35d ("[CPUFREQ] Processor Clocking Control interface dr=
+iver")
+> > Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
+> > ---
+> >   drivers/cpufreq/pcc-cpufreq.c | 14 +++++++++-----
+> >   1 file changed, 9 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufre=
+q.c
+> > index ac2e90a65f0c4..165826b5d6844 100644
+> > --- a/drivers/cpufreq/pcc-cpufreq.c
+> > +++ b/drivers/cpufreq/pcc-cpufreq.c
+> > @@ -23,6 +23,7 @@
+> >    * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~~~~
+> >    */
+>
+> Hi Yuho Choi,
+> Thanks for the patch.
+>
+> >
+> > +#include "acpi/actypes.h"
+>
+> 1.I don't see why this header is needed for this change. Even if it is,
+> it=E2=80=99s already included by <linux/acpi.h>, right?
+>
+> >   #include <linux/kernel.h>
+> >   #include <linux/module.h>
+> >   #include <linux/init.h>
+> > @@ -351,16 +352,19 @@ static int __init pcc_cpufreq_do_osc(acpi_handle =
+*handle)
+> >               goto out_free;
+> >       }
+> >
+> > -     kfree(output.pointer);
+>
+> 2.Would it be cleaner to reset the pointer and output.length, and let
+> acpi_evaluate_object() reallocate the buffer? For example:
+>
+>          kfree(output.pointer);
+> +       output.pointer =3D NULL;
+> +       output.length =3D ACPI_ALLOCATE_BUFFER;
+>
+>
+>
+> 3.The sashiko.dev pointed out a few pre-existing boundary checking
+> issues that are outside the scope of this patch.
+>
+> https://sashiko.dev/#/patchset/20260415165139.14113-1-dbgh9129%40gmail.co=
+m
+>
+> >       capabilities[0] =3D 0x0;
+> >       capabilities[1] =3D 0x1;
+> >
+> >       status =3D acpi_evaluate_object(*handle, "_OSC", &input, &output)=
+;
+> > -     if (ACPI_FAILURE(status))
+> > -             return -ENODEV;
+> > +     if (ACPI_FAILURE(status)) {
+> > +             ret =3D -ENODEV;
+> > +             goto out_free;
+> > +     }
+> >
+> > -     if (!output.length)
+> > -             return -ENODEV;
+> > +     if (!output.length) {
+> > +             ret =3D -ENODEV;
+> > +             goto out_free;
+> > +     }
+> >
+> >       out_obj =3D output.pointer;
+> >       if (out_obj->type !=3D ACPI_TYPE_BUFFER) {
+>
+>
+> --
+> Thx and BRs,
+> Zhongqiu Han
