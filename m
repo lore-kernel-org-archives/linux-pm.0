@@ -1,70 +1,115 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 562D834D3BE;
-	Thu, 16 Apr 2026 12:03:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA26839FCD7;
+	Thu, 16 Apr 2026 12:15:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776341037; cv=none; b=TUokRRB2Jii7GArO5tbruFzLNFZjfHDBA9G8lKm5XOo5H1N/GbWLg5u4b5HrLVPh/WyzaxwMN1PA2iYf1XtPoLTdtgvV2tSg4opHU4ASZ3antbC7pnhTVbsVR1wAj7Dk2dfk4pDoG0lXSut9KlZobrZJD5IbO+KpiDl5D4L80/o=
+	t=1776341761; cv=none; b=lTPLg9oQ3gwrrazUKgODYEfCkd7jjJxAwblRxuaKKJDT95O3JNJequKS3+RhyVdrjMfHPom3RoYrh/4d9E4Ct9CRFbsoUbTkqbQQLKKAcB/jDLSHc2CqeSsvQq54wEYePWp0ZdPuAzxuNuBG8b6DOLtccQXOz5tMnGZx5XRHqBc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776341037; c=relaxed/simple;
-	bh=RV/pVm8MsCdGAJco1670hjDP15pZoTBL/ZV1sRrirzI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YBncq/KPCabNqB4ual4TyiC5nd3sKzhHk+O0NJxPGboGdXX+wRaSPUnH2mQbms4ddc5tmJs4k7chwxDgSH63o2+OJw78cd+1qgbZDz56Ytl7xQ2gjwNoHIVZhaDFnWnCfqdlvR5zGKa2lj/lBywSc8+Vg7D0vg5STljU5ff1hes=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R9QIbwsP; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776341761; c=relaxed/simple;
+	bh=gZLO9lN2kJhvahZVktWGr0uWFAt2YTX/UxFa5gJq4A8=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=oSwzCM+QvK7GCVlyRsnBticF0MXmXzk+u1Vk/OPpp6jkJGtYFqLEvDyWPIi0HCIcYRqiymwyjiXdJM1GKnXrfkyu++VcELlMwP0w+dokA74lVkrdGsUdQjCTM9naHapg+bISksjAGn7ZMmrMurQRRN96Pdc5gqTjmAilQ+AWHR8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=S7USaVxd; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R9QIbwsP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5B20C2BCB3;
-	Thu, 16 Apr 2026 12:03:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776341037;
-	bh=RV/pVm8MsCdGAJco1670hjDP15pZoTBL/ZV1sRrirzI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=R9QIbwsPOe2YCFQmPMnCippjkeP6Qa8MUXuAuHnnykuDdh5djsmYku/XiSm3Y1tyM
-	 dqk+v36Fo2mWS8tUD+QFV2NQ3scIPDihA67UqQEnpiYzW4PK1PdHbf0nlHMzcXPQtO
-	 rayiv8icPm/+SCIC/pF8p5IM8MzYMSkR1pK1dxS+niYSdHx47yCzxWGH4lDOQe71aA
-	 3oANnkpcSaIOdS+DHmOtyc8YS2x3FoDNod0Uurs0Nay6qQRaaL43zshyIplICVSXVC
-	 NrKsslIZPaMKN5LJLbyGHp9tryjiqe/E+PPQW1b8FBmH3VNSLn8fHxnXtpb39wDTDU
-	 Q9E1BDptW8yWA==
-Date: Thu, 16 Apr 2026 07:03:55 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Cc: devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 1/3] dt-bindings: power: Add power-domains-child-ids
- property
-Message-ID: <177634103449.2736751.6317268015188601498.robh@kernel.org>
-References: <20260410-topic-lpm-pmdomain-child-ids-v2-0-83396e4b5f8b@baylibre.com>
- <20260410-topic-lpm-pmdomain-child-ids-v2-1-83396e4b5f8b@baylibre.com>
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="S7USaVxd"
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id D25DF2652E;
+	Thu, 16 Apr 2026 14:15:56 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id X6_CcIs2Vbau; Thu, 16 Apr 2026 14:15:56 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1776341756; bh=gZLO9lN2kJhvahZVktWGr0uWFAt2YTX/UxFa5gJq4A8=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To;
+	b=S7USaVxd65Og3uIBkajZCPvp5uwQZmZ7aCXvg10iCZY+jeBRc/BMfVzEvDleesVkg
+	 zLq8XGpCS0tbNavffePMl5DA6RCAH0jOM3KNEmy5DCj6a0BoGV38qsN26VB1WglB7t
+	 fT2puLTOvqjZiVoA4BPCbpyKRCY7189XIxmioDYpRAAY/NN3q5RkjOBI0gRM7u6zGc
+	 +egLI8//Sm2SGNidrv5TEjS9Gga2NeNfGKOSFk/CdPDViYFLc2W7m+N52QVgB0Wml0
+	 w4rlnKVUAdQ3K9UVfY7NGHeml8SVHt8HFxkwEyJRqhYpuUgRRuJ8tdEmGnjN2t1UzP
+	 GQiJcPVvGWHEQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260410-topic-lpm-pmdomain-child-ids-v2-1-83396e4b5f8b@baylibre.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 16 Apr 2026 17:45:32 +0530
+Message-Id: <DHUKLAE757OT.XQW1LJYKC2FM@disroot.org>
+Subject: Re: [PATCH v4 02/13] dt-bindings: leds: document Samsung S2M series
+ PMIC RGB LED device
+From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
+To: "Krzysztof Kozlowski" <krzk@kernel.org>, "Kaustabh Chakraborty"
+ <kauschluss@disroot.org>
+Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
+ <myungjoo.ham@samsung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>,
+ "Sebastian Reichel" <sre@kernel.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, "Alexandre Belloni"
+ <alexandre.belloni@bootlin.com>, "Jonathan Corbet" <corbet@lwn.net>, "Shuah
+ Khan" <skhan@linuxfoundation.org>, "Nam Tran" <trannamatk@gmail.com>,
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>,
+ <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>
+References: <20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org>
+ <20260414-s2mu005-pmic-v4-2-7fe7480577e6@disroot.org>
+ <20260415-sensible-kiwi-of-argument-44d6ed@quoll>
+ <DHTWNPSQ06IJ.24A9E1FL1RWER@disroot.org>
+ <20260416-upbeat-archetypal-mantis-1ede48@quoll>
+In-Reply-To: <20260416-upbeat-archetypal-mantis-1ede48@quoll>
 
+On 2026-04-16 10:23 +02:00, Krzysztof Kozlowski wrote:
+> On Wed, Apr 15, 2026 at 11:00:16PM +0530, Kaustabh Chakraborty wrote:
+>> On 2026-04-15 09:03 +02:00, Krzysztof Kozlowski wrote:
+>> > On Tue, Apr 14, 2026 at 12:02:54PM +0530, Kaustabh Chakraborty wrote:
+>> >> +description: |
+>> >> +  The Samsung S2M series PMIC RGB LED is a three-channel LED device =
+with
+>> >> +  8-bit brightness control for each channel, typically used as statu=
+s
+>> >> +  indicators in mobile phones.
+>> >> +
+>> >> +  This is a part of device tree bindings for S2M and S5M family of P=
+ower
+>> >> +  Management IC (PMIC).
+>> >> +
+>> >> +  See also Documentation/devicetree/bindings/mfd/samsung,s2mps11.yam=
+l for
+>> >> +  additional information and example.
+>> >> +
+>> >> +allOf:
+>> >> +  - $ref: common.yaml#
+>> >
+>> > Rob's comment is still valid:
+>> > 1. How do you address one of three LEDs in non-RGB case?
+>> > 2. Where is multi-color?
+>>=20
+>> Yes, multi-color should have been added here.
+>>=20
+>> >
+>> > And based on this alone without other properties, I say this should be
+>> > part of top-level schema.  Separate node is fine, but no need for
+>> > separate binding.
+>>=20
+>> BTW, for loading the sub-device driver via platform (as it won't be a
+>> separate binding) the driver *must* be built-in. Although not related to
+>> bindings, this seems counter-intuitive. I see the same problem with the
+>
+> I don't understand that comment. If it has nothing to do with the
+> binding, what is the problem?
 
-On Fri, 10 Apr 2026 16:44:36 -0700, Kevin Hilman (TI) wrote:
-> Add binding documentation for the new power-domains-child-ids property,
-> which works in conjunction with the existing power-domains property to
-> establish parent-child relationships between a multi-domain power domain
-> provider and external parent domains.
-> 
-> Each element in the uint32 array identifies the child domain
-> ID (index) within the provider that should be made a child domain of
-> the corresponding phandle entry in power-domains. The two arrays must
-> have the same number of elements.
-> 
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
-> ---
->  Documentation/devicetree/bindings/power/power-domain.yaml | 34 ++++++++++++++++++++++++++++++++++
->  1 file changed, 34 insertions(+)
-> 
+It was an unrelated user-space issue, so ignore.
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+>
+> Best regards,
+> Krzysztof
 
