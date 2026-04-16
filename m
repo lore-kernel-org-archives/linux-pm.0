@@ -1,69 +1,63 @@
-Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
+Received: from sender4-op-o15.zoho.com (sender4-op-o15.zoho.com [136.143.188.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A8412F9D85;
-	Thu, 16 Apr 2026 18:14:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B615E22B584;
+	Thu, 16 Apr 2026 18:29:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.15
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776363251; cv=pass; b=LIB9wzsK2C1wB4aWTf4hD8uZNLszEEPbPeZu+A9mz0Ds4VVdNqX8xagavcfQ+r1Bk/Wl2OAPlNYV8OS3JdP6oVLLkIVJawCkxq95q+vadu5e32yoOJFQwp2O6mEtm9FDJ8jv4GpqgRdtFFgY4wohU0lnpYuF81xkS7VoPk0Kj+o=
+	t=1776364181; cv=pass; b=k5R7J/TcyCHM9Kebpsq+gZPSXfN4JKSTH1lPLF8oC2mgBUgoTjdp3co+RmAiiWejplRDPfN7tduLmsv0MR7rrYOv6XYdsTBvve349wCQYNT68ydXAL8J8/G0GF0kvIi7WELAeDDlRURntCHuB7D8ei7VwooeZLWsE9W3cS1qxqI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776363251; c=relaxed/simple;
-	bh=vk40c9ez1h57fVsIzjSyatPkMNUBI72M+RLSobdlgLw=;
+	s=arc-20240116; t=1776364181; c=relaxed/simple;
+	bh=W2xztWKQdo8jfaigNceGBZ7cq2BWKBMX3dFTzvKL3w8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PCE5EUMYWRmaLUJQfgCRVtT+wubs1ZNMcTNQgAhdfhGrMQAgbBlEsrSZ8tEMiu1zk2KG2GqVjPEQ5/6BR/oSXYT5LgQPCIc2lRetnBuzUjtdZtqdjvJ3Mz2yPSTbxEqNzuEN0r19/QAQ9pA3fTL8sTwl66X1lyD4OBRcqpc4p/8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=IL8kKkhP; arc=pass smtp.client-ip=185.185.170.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
+	 Content-Type:Content-Disposition:In-Reply-To; b=Xr1tqtQ64HXKVgSEgyXRdzjcFyQvDHXZQlnCIcWaYVglPuZy442dALJt7qV1UliLzcHK2jD8AHOxpfwyqnmIiSgpcSZTSboktPPXIt+pKElw7Ukp/QL7Ewv3tdwMa741LRe4s3otZMCkfpkARZ9TrUMUw11SAkHZ36ONu1wrWNA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ziyao.cc; spf=pass smtp.mailfrom=ziyao.cc; dkim=pass (1024-bit key) header.d=ziyao.cc header.i=me@ziyao.cc header.b=byQaRwrd; arc=pass smtp.client-ip=136.143.188.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ziyao.cc
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ziyao.cc
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="IL8kKkhP"
-Received: from darkstar.musicnaut.iki.fi (unknown [83.245.248.121])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: aaro.koskinen)
-	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4fxR3W6HrSz49PyT;
-	Thu, 16 Apr 2026 21:13:59 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
-	t=1776363242;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GpSAM8UFpTnSpjttHs3Wu1kj1RSAFR37k9Z3Icr23N8=;
-	b=IL8kKkhPY5rw9Klw91YLNjFh7LbY4UXkayV44c/Eof0pr5E7VWYK85SmNtAs/2+91WyMZ9
-	yhgSwHCWhOd1GKBBMPm8PUHiT0qgA8lm+qjNr/AGu2wKMM1YC6a1odohN3Oy/89goSpJ6b
-	xOlzMN/NbU5k0RT3PMyty8Pqtnm7CN4Hps6Cs8lveAA7494xSt5ooFFzHe8hwp1IcBqKBx
-	dbqM0qUxa+HMvsVS4KyC6JjG2NZnlWTYBhn8sNk5j/6AdExtamfJRaN3PPdfuJn7+M5GYK
-	aTbh/2KGmvmiYPhVCeHrYwLNNYkU6utNgeaN9KvcS29jkGB75kkj4hFB8bHFnw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-	s=lahtoruutu; t=1776363242;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=GpSAM8UFpTnSpjttHs3Wu1kj1RSAFR37k9Z3Icr23N8=;
-	b=SbMRrJqpH+362U0Co7R8NPxZQ1W7zqgeYbepi6cQWqDK0SDY5VNlZAfSexXNx/VkXnsVTX
-	ijOhsRSsVjVpLXeLCT0OQYVXL/x9gjKQ1vn0apWrnuCowrou+qjPdXVHRBBHxftLNFQwag
-	Ba8suDmWs740/EAhKdc2Hbi1jPiFn+lzL406Y4jO0VHhf5sGdbZPwK57plJBmF75x8JglG
-	k3j2HPx6Vmp89IYRGTA4UEcnqPFPdNstA4WQyFnKeX+DGJ3Efh7Ie9u1hWgr2/JAWO+vcW
-	GQaigoivDK3roGItAwhXythG8slc2tUWJHYXGcFB6V73ZIsA4uSt/N79PhaFqg==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
-ARC-Seal: i=1; a=rsa-sha256; d=iki.fi; s=lahtoruutu; cv=none; t=1776363242;
-	b=rxPaotNNO6Lo1IYlwpf4/d8K30TUYQKrneGwIORu+VDhrF8e+vrpdlU11qjgtxwadyIG8G
-	iZcrlfW0SKvEyMpihkdFF67whoUpbPk7pLz/tfpzmPSHLpPbJg46hDmbNzqOEE1PH6PKrz
-	SLrVdYONAhWSFbCnLWGJ+FCDTahHhbfMs0Y4CfCkD2QhdII65RlzlGIM7I27TbZFaBOizd
-	FYP7ZvvoUILzKiwPZ3D7wMOCk5Edwr+5kVMi05Lg5DGXGFst4h7gb17vQpld9i+C7QcjQf
-	lH2zX9LFug/wlfum2/5ORbefxDCbsib23bbgz4tHl7F94T4AJc5xvazbjtg/pw==
-Date: Thu, 16 Apr 2026 21:13:56 +0300
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: Thierry Reding <thierry.reding@kernel.org>
-Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Paul Walmsley <pjw@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] MAINTAINERS: Move Peter De Schrijver to CREDITS
-Message-ID: <aeEm5DavehkPmSgl@darkstar.musicnaut.iki.fi>
-References: <20260416131810.3116408-1-thierry.reding@kernel.org>
+	dkim=pass (1024-bit key) header.d=ziyao.cc header.i=me@ziyao.cc header.b="byQaRwrd"
+ARC-Seal: i=1; a=rsa-sha256; t=1776364138; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=NE1kTZruiDkKdurSqrfKPQfNUW9o4u5ghQYH75IbdUyx3o7sj6y5wOOFBzJiz3krFD3HlyDu0ttTUS6rEGoLv3cyPaiTI1+qW5Wfu1eWzOpxDx2js9hFGI9Jl1QsaRnym5I9XZOJHnnwleYDFRg32/6L+nHXKRPor6MgFA5h9wk=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1776364138; h=Content-Type:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=/YaAGSJbDEtzRAI5/6sj2uFumzW2z1vouVaPcA0oz+w=; 
+	b=hVzdjD2VQCZ6dSwa8hh6g7oUAQ7bL+c+D3cAhRHdCFjI2ef7dZoh4fiLsg9/lLPAMt5ffRjvs+4EYXOOADIG0+ZUEasRsl3kbgVytCRRhslOukT3Y5z2nvgXp9g93JQeXmjQZ3CVuHkyM50IPMkT4Xeleb2j+dH/6qxJUKbDcUU=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=ziyao.cc;
+	spf=pass  smtp.mailfrom=me@ziyao.cc;
+	dmarc=pass header.from=<me@ziyao.cc>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1776364138;
+	s=zmail; d=ziyao.cc; i=me@ziyao.cc;
+	h=Date:Date:From:From:To:To:Cc:Cc:Subject:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To:Message-Id:Reply-To;
+	bh=/YaAGSJbDEtzRAI5/6sj2uFumzW2z1vouVaPcA0oz+w=;
+	b=byQaRwrdr5W/VTDACSb+HBtBWXizaAMCpNmGK/GGECr4/KM+COGj11uFyIJfeVvf
+	3MQUH9onOpF9YfQxnvrcXHYm8GvOUVY8oN3BMWuvf77fKXay8FpBZYlUeHSwH3IcS7k
+	P+sCiU6wRU2TZRxWEJgliU2/dLj7en3Z8DrJB3Rw=
+Received: by mx.zohomail.com with SMTPS id 1776364135165890.8638924599645;
+	Thu, 16 Apr 2026 11:28:55 -0700 (PDT)
+Date: Thu, 16 Apr 2026 18:28:23 +0000
+From: Yao Zi <me@ziyao.cc>
+To: "Shuwei Wu" <shuwei.wu@mailbox.org>,
+	"Anand Moon" <linux.amoon@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	"Viresh Kumar" <viresh.kumar@linaro.org>,
+	"Rob Herring" <robh@kernel.org>,
+	"Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+	"Conor Dooley" <conor+dt@kernel.org>,
+	"Paul Walmsley" <pjw@kernel.org>,
+	"Palmer Dabbelt" <palmer@dabbelt.com>,
+	"Albert Ou" <aou@eecs.berkeley.edu>,
+	"Alexandre Ghiti" <alex@ghiti.fr>, "Yixun Lan" <dlan@kernel.org>,
+	<linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+	<devicetree@vger.kernel.org>
+Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
+Message-ID: <aeEqR-ctSI-NfEkR@pie>
+References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+ <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
+ <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
+ <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,62 +66,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260416131810.3116408-1-thierry.reding@kernel.org>
+In-Reply-To: <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
+X-ZohoMailClient: External
 
-Hello,
+On Thu, Apr 16, 2026 at 01:59:05PM +0800, Shuwei Wu wrote:
+> On Tue Apr 14, 2026 at 9:25 PM CST, Anand Moon wrote:
+> > Hi Shuwei,
+> >
+> > On Fri, 10 Apr 2026 at 13:30, Shuwei Wu <shuwei.wu@mailbox.org> wrote:
+> >>
+> >> Add Operating Performance Points (OPP) tables and CPU clock properties
+> >> for the two clusters in the SpacemiT K1 SoC.
+> >>
+> >> Also assign the CPU power supply (cpu-supply) for the Banana Pi BPI-F3
+> >> board to fully enable CPU DVFS.
+> >>
+> >> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+> >>
+> >> ---
+> >> Changes in v2:
+> >> - Add k1-opp.dtsi with OPP tables for both CPU clusters
+> >> - Assign CPU supplies and include OPP table for Banana Pi BPI-F3
+> >> ---
+> >>  arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++++++-
+> >>  arch/riscv/boot/dts/spacemit/k1-opp.dtsi        | 105 ++++++++++++++++++++++++
+> >>  arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 ++
+> >>  3 files changed, 147 insertions(+), 1 deletion(-)
+> >>
 
-On Thu, Apr 16, 2026 at 03:18:10PM +0200, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
-> 
-> Peter sadly passed away a while back. Paul did a much better job at
-> finding the right words to mourn this loss than I ever could, so I will
-> leave this link here:
-> 
->   https://lore.kernel.org/lkml/alpine.DEB.2.21.999.2407240345480.11116@utopia.booyaka.com/T/#u
-> 
-> Co-developed-by: Paul Walmsley <pjw@kernel.org>
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
+...
 
-Thanks for doing this. I think also the m68k work should be mentioned?
+> Regarding the necessity of listing these clocks in the DT, my analysis is as follows:
+> 1. For CCI550, I did not find a clear definition of this clock's specific role
+> in the SoC datasheet. Although the vendor kernel increases its frequency,
+> my benchmarks show that maintaining the mainline default (245.76MHz) has a
+> negligible impact on CPU performance.
 
-A.
+FYI, CCI550 is used for naming an ARM interconnect IP[1], which matches
+your observation.
 
-> ---
->  CREDITS     | 6 ++++++
->  MAINTAINERS | 1 -
->  2 files changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/CREDITS b/CREDITS
-> index 885fb05d8816..29fcfa679430 100644
-> --- a/CREDITS
-> +++ b/CREDITS
-> @@ -3645,7 +3645,13 @@ D: Macintosh IDE Driver
->  
->  N: Peter De Schrijver
->  E: stud11@cc4.kuleuven.ac.be
-> +E: p2@mind.be
-> +E: peter.de-schrijver@nokia.com
-> +E: pdeschrijver@nvidia.com
-> +E: p2@psychaos.be
->  D: Mitsumi CD-ROM driver patches March version
-> +D: OMAP power management
-> +D: NVIDIA Tegra clock and BPMP drivers, among many other things
->  S: Molenbaan 29
->  S: B2240 Zandhoven
->  S: Belgium
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ef978bfca514..ffe20d770249 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -26145,7 +26145,6 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git
->  N:	[^a-z]tegra
->  
->  TEGRA CLOCK DRIVER
-> -M:	Peter De Schrijver <pdeschrijver@nvidia.com>
->  M:	Prashant Gaikwad <pgaikwad@nvidia.com>
->  S:	Supported
->  F:	drivers/clk/tegra/
-> -- 
-> 2.52.0
-> 
-> 
+...
+
+> Best regards,
+> Shuwei Wu
+
+Regards,
+Yao Zi.
+
+[1]: https://developer.arm.com/Processors/CoreLink%20CCI-550
