@@ -1,228 +1,171 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCD623947AC;
-	Thu, 16 Apr 2026 13:34:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 875CD3C5DDD
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776346477; cv=none; b=doszSaV/p5KCtGMihmDlkZnp1BuLfWP41ylh1eUv1VSW0ib0+x4h9ZKPeajQV4kByINW8gALFwALHXicsf5/GtWHsXMndQdXBRVcm3S1wH+tU4XMNUUMTlMt6F/KLs6ctZkugXwV4n7iFOdn+8SJUN50vzwo5PB8sLQm5eEFRAI=
+	t=1776346481; cv=none; b=gr0+hJtU0K4ZuUVyzcB3sjMu1ZdGGpyzUxDE6wQLDgwFHpmhruPf2AStPPP2HYrvSZPAPRqsMYv1/VB7a5VM4v/Q+nsR8N9U+P2fc59lNGXPFeWVWf6medOk+YfJP9b2CZw7q1sz1lVoCF8D6tZBg+fza5/19NFnvTMwxzj3L3c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776346477; c=relaxed/simple;
-	bh=OdPGRiJ2OTAd0wN0VpIuzIvWe5D9n+gShs26W0B8xqs=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KN4c0OSYumQWlsmEKCbOgyqyBvvegLoAiFahJmzTq9woCjwVBWA4CUjMhC3VEPLOCm9H44+COB5KEhTUiihz2Glc7ROO9WbbKoRiFQ4LCkRfBFaJzb0sXtpB84b6/C6Pna4aEAGD6v+TFq7bXHp3f+ypIQo7f3Bfjn8+xA64zVw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=EloIX9sM; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1776346481; c=relaxed/simple;
+	bh=0JE/aX79bsd/ZzLDRMFo/ItbT3LO+4StCT/90CBIeAc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=No2PzLJHBuyi5EaZ/8CL/QPEgWKcyjOCpizAbF29qpIe6aPMTr55kdXfF3/km+OzIBz37F78+MF8XytQMI5DVu3u5HyTRVe4x7Q0Px93N8PrMHxjxH8IrHB9bGukvi2twLojEk1WcMvaMYlLiMwp9xGkydOhFLcG2nHr/Lt9PVo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kmaMs8oU; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=f68Qn+mH; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="EloIX9sM"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 47F3F4E42A1E;
-	Thu, 16 Apr 2026 13:34:34 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 0867F60495;
-	Thu, 16 Apr 2026 13:34:34 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 360BB10460880;
-	Thu, 16 Apr 2026 15:34:23 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1776346472; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=3XpbdgVt+Cx8FP8MN9lmm4BPNvobbTQ5J2Ix6m+jMcE=;
-	b=EloIX9sM1QOhKmblue3jMDM5k8KpAKMHSGLQ8TanAuK7ENEV4CJPIMh2MskGhnhqAWn8Yw
-	kUAvaK1IF/Se+k3PBQG/MKIkBmVQpmTrY37v/4rJgCuO1y+r/1Gi1LkS705qt3VLfG8J/t
-	Xh6hvLhGANS4fiHpUfY431EjCRXdb9gafJMTVqrXQqnuY5IB80FZ7/DSZE6NczIytZJkU/
-	4zplh8emxfZOdpV5qrGtzBrEKS6pZZFh2AdjAIRSTDrK00XSpARNgEHfGzFQBwyefj3PSo
-	lEtKIt5lgvdG95GPo0kXJtjJ2O6cW+fsn6WroFDb1nkTBbUb0qISYKdg0D0cCg==
-Date: Thu, 16 Apr 2026 15:34:21 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Chen-Yu Tsai <wenst@chromium.org>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Manivannan Sadhasivam
- <manivannan.sadhasivam@oss.qualcomm.com>, Rob Herring <robh@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jirislaby@kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nicolas
- Schier <nicolas.schier@linux.dev>, Hans de Goede <hansg@kernel.org>, Ilpo
- =?UTF-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, Mark Pearson
- <mpearson-lenovo@squebb.ca>, "Derek J. Clark" <derekjohn.clark@gmail.com>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto
- von Dentz <luiz.dentz@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>,
- Bartosz Golaszewski <brgl@kernel.org>, linux-serial@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
- platform-driver-x86@vger.kernel.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, linux-pm@vger.kernel.org, Stephan Gerhold
- <stephan.gerhold@linaro.org>, Dmitry Baryshkov
- <dmitry.baryshkov@oss.qualcomm.com>, linux-acpi@vger.kernel.org, Hans de
- Goede <johannes.goede@oss.qualcomm.com>, Bartosz Golaszewski
- <bartosz.golaszewski@oss.qualcomm.com>, Luca Ceresoli
- <luca.ceresoli@bootlin.com>
-Subject: Re: [PATCH v7 0/8] Add support for handling PCIe M.2 Key E
- connectors in devicetree
-Message-ID: <20260416153421.1692848f@bootlin.com>
-In-Reply-To: <4yockfx5rjcvfh2n2excrgsknnhi72rv2w7wf7onks2ryt33sm@w7zkcxuc6vem>
-References: <20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com>
-	<20260413075459.GA2626902@google.com>
-	<fpcs4p62f35a5qyqwgm5ysa73stbysxcr62tkmmkrrcvsuf4t4@4ivukyqjey57>
-	<eeytuhqpgdz4do4tgtbmfntub2femtyq7bij7svhodpyjwaylx@j3gmvq2a2zqc>
-	<CAGXv+5E=tujhtZjwi6Qm7hk3Ks74UzTQHWq82NiTEw1+vYod5g@mail.gmail.com>
-	<ad36pIu-0dutL7Nk@ashevche-desk.local>
-	<CAGXv+5EGe59nJctLweEdZjb3MNmMvjuCHngGSfptzN985OiLdg@mail.gmail.com>
-	<ad4tJN27opdEooA7@ashevche-desk.local>
-	<CAGXv+5EPA29G-fsH=wWOD8AK6TZFezFhsE0NHPYj_Pt3nT+d_w@mail.gmail.com>
-	<20260415165651.153b573d@bootlin.com>
-	<4yockfx5rjcvfh2n2excrgsknnhi72rv2w7wf7onks2ryt33sm@w7zkcxuc6vem>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kmaMs8oU";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="f68Qn+mH"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63G81XEg3734339
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=; b=kmaMs8oUDEkVtrfI
+	lt6E8z6MQCoN7R6adin1rfVwnLVVeNZXhC+GgXrkLdzyN6xjulJ/HLlluQIBEKQX
+	iW7KyJdDq/xEZwWmrdM2TKJmfTG+aWTE7I4q1PnykeGbSl+k/Nhpm0lTtXHREMhz
+	1mfH1cq5qcJjRHY94VUhi+g2iYRgBPSrCBFO6dSpwr1mZG0iESPCBVC+QKPHvBXZ
+	uHasj6TZNrnqvjJ5T2s7cc/eVFH8X4i/5567p9+MG1+yRnXUiqtfIo6zsOg2fFP9
+	oZR8f+QiM/IwkkbrkculD1fGViFne09SEanCc4LO/i/Xn1txlGSYKiUCjJcoRxOU
+	uMXBVQ==
+Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4djcqwm6em-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:34:39 +0000 (GMT)
+Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-605a1faa7f3so545291137.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:34:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1776346479; x=1776951279; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=;
+        b=f68Qn+mHj+NTL+5APgKcNfsZO+J7JCmHvtXwSeOMjBGEt1lxGAGk3bPuaM89IZvSG+
+         /ScyfiFZet/Gg2helpFqV2jHRWFKCx7U6T/syLpCUGjmMYV5WSYvi9TMTh8hj7vRhoTM
+         hkkWrKPO9e1CfaS9pVHr7S/Js+HtKVB+3yEeFkMKZdvbuqu42iyvE2WLfG7G5PKgCS23
+         9fuiGRO4n4hK5m+Z3g0R44QtkKSB33I3NII2p44bNpX3SvN5bWGBXOt9s8jTK6Znw5ul
+         DCdRrVAgKouDLkL+svi6hsGyCvJZ/phiDkaExNsCYCRrwArR3+hI1tBUC7ziSlKI1M7c
+         WKRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776346479; x=1776951279;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=KCrqC415T8c8q59xLap8KU/BogOcT4Z9lLC8RL07uzA=;
+        b=FpkmLTt5/QddaG+rsjH4fglLUJUi33LFksVNqrCJciyaQOLa0rM6BHIrTsZfxV+X5c
+         yQb+tL6N0XYtrdUraOqzxhEKXUvRTt2Bh4yumxB80LXoMqnNhDnOyhf0MkPYYh9TpEJd
+         r8+LH9k8O4af71KwLS6dGhNNtbQpeUpLsxhfF0/BDeH0009ZxlXX/KqFpljpaRljVX0m
+         7hUgrns5ZylIh5LoGRisXw8skrw2zzjjQBdIHVtF1WFhvle66iBhmXEO0zG/dJcHdHBj
+         IRXadE1XUa159SJZII/JN2v/qc59xWTh9nqmDqlfu9lA2BNXtOoRGdU80RooKpnBkbcL
+         ZBJw==
+X-Forwarded-Encrypted: i=1; AFNElJ/Uc3HObHNa0SGAC2xoNHahBnNoqzIrZ0ZJBL2RDq3/tASnSQ/aVWcRHg5rwFy+3eurmhwWrF5YJw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx2LOTLJg1KX9kPRD0/WY0GDENMKx1pfw8AqcJ7S1BF6pm08i/b
+	Um/SJrJpe4FHuH0f+JO3PAvQGIFmRwPq1xfNfrCQDaclhm4Kf3jBtzOgrgYfTpzEBDf6k4gjTGk
+	WQgDLIZE62sDnLmaWbthD+mGKwbSxpCvWM2dy1b/u8CYDnzBkZ0b69fHSXHdWAA==
+X-Gm-Gg: AeBDieseI4ZiZpU6Xt4aOzXLJ+2vySIL7LPhvf9FTpKhwXq+In4AsegktFnCzhma2cq
+	ZpOWLxoXxiWX8ZuHbNtXxk+XIOj1I7Of20KOV8nI56RyfbpgbQja9ToKT9jnxfD0yizw4heE8xw
+	VGqqKkjuL8ZT2u/O5YEJrs7gkroGZFERtvRCsrrn6yxsamqWCMLM1yK6+pm4S13BWWrM9ZqbT12
+	lLqwVf6iz/PNYe7b0X73cBGJiCRlwzDkYDXjS4z8dZR0Oq6VUu9OSt0m/29DOmVUA61OrtikIZF
+	camELxkVuAaBaVspyozJBrn4JchquyzRreQi5tYtWNG3aAG0fAmDvXzOwh0SzEIJ/f2KkoS8Oec
+	Pa2frzgwbEqYMVLS4eBBa3ctqoJpE8cMyVgIBjcILGVN2RIfnpO9eZWs6M3h0KkDz0HjokCoF//
+	LrRn8zhryT6Ln6fQ==
+X-Received: by 2002:a05:6102:374d:b0:5f8:d54c:18c9 with SMTP id ada2fe7eead31-612b753d417mr1597231137.3.1776346478892;
+        Thu, 16 Apr 2026 06:34:38 -0700 (PDT)
+X-Received: by 2002:a05:6102:374d:b0:5f8:d54c:18c9 with SMTP id ada2fe7eead31-612b753d417mr1597187137.3.1776346478446;
+        Thu, 16 Apr 2026 06:34:38 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ba1773c3826sm167011966b.33.2026.04.16.06.34.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Apr 2026 06:34:37 -0700 (PDT)
+Message-ID: <ba6b62ee-3e75-4437-95d0-3604583f2cbf@oss.qualcomm.com>
+Date: Thu, 16 Apr 2026 15:34:34 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 7/7] arm64: dts: qcom: sdm632: Correct power domains
+To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Stephan Gerhold <stephan@gerhold.net>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org
+References: <20260327-sdm632-rpmpd-v1-0-6098dc997d66@mainlining.org>
+ <20260327-sdm632-rpmpd-v1-7-6098dc997d66@mainlining.org>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260327-sdm632-rpmpd-v1-7-6098dc997d66@mainlining.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+X-Proofpoint-ORIG-GUID: hHD8yfaKuYBV21YjurtUabZGUsuts1eP
+X-Proofpoint-GUID: hHD8yfaKuYBV21YjurtUabZGUsuts1eP
+X-Authority-Analysis: v=2.4 cv=XOIAjwhE c=1 sm=1 tr=0 ts=69e0e570 cx=c_pps
+ a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=OuZLqq7tAAAA:8 a=EUspDBNiAAAA:8 a=h7EPssPr47kph8xlZiMA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=-aSRE8QhW-JAV6biHavz:22 a=AKGiAy9iJ-JzxKVHQNES:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDEyOSBTYWx0ZWRfX3yZT3Ppa3ZpV
+ 8tbArKGelB8soeQdHfxhpewYOFOxHjgZqiIYeamNzEFs+6AERlAmQl1dUNRl2eHN177HqHvHnBH
+ 52yDZS7NtD6gmEXM06Iwf581X25XfEXibo2LmKn8mLj3V9yo4Q9vXCbrlX/QnwplbekEyoH5BTY
+ ObB4GC2nEneetzd3ZqTQyr9cN4DxM8vTf1zeRucgAFiGAqJdA1HgnAOOKe4A6hYNxRTjmoMWeMF
+ eFgwFf1nJydj84RejQu7lucxlUADrGv88LaqE9ICUCCc21kYblSXCQZPyG5hLa1dM0jGHIqsCz3
+ JBQfvlU9cv0fi253ARddrfV1ECDxlhkuaSkGVpyZDsHLt2y7nt7V31tsFyBMV+ZnyqV19CU2hFy
+ CFwAXJK42IlzmOXDIgJhzTlmRbZYmQz4+/x2s5yGrgaqBHHkH+sn1vqjX+RZvOff0+T6S3VCn/a
+ mc+YufLcEFtShm5FxFg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-16_03,2026-04-16_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 adultscore=0 suspectscore=0 spamscore=0 malwarescore=0
+ bulkscore=0 impostorscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604160129
 
-Hi Manivannan,
-
-On Thu, 16 Apr 2026 14:25:39 +0530
-Manivannan Sadhasivam <mani@kernel.org> wrote:
-
-> On Wed, Apr 15, 2026 at 04:56:51PM +0200, Herve Codina wrote:
-> > Hi Chen, all,
-> > 
-> > ...
-> >    
-> > > 
-> > > I'm not arguing for a even more generic "M.2" connector. The "key" is
-> > > already described in the compatible. I'm saying we should have some way
-> > > of describing the individual interfaces (PCIe, SDIO, USB, UART, I2S, I2C)
-> > > on the connector so further nodes or properties can be attached to them,
-> > > either with overlays or dynamically within the kernel. Right now the
-> > > are only described as individual ports, but we can't actually tie a
-> > > device to a OF graph port.
-> > > 
-> > > But maybe I'm overthinking the representation part. AFAICT for Qualcomm's
-> > > UART-based BT bit part, Mani just had the driver create a device node
-> > > under the UART (by traversing the OF graph to find the UART). If that's
-> > > the desired way then the connector binding should mention it. And that
-> > > works for me. But I think it's messier and also we're missing an
-> > > opportunity to make the M.2 connector a standardized attachment point
-> > > for overlays.
-> > > 
-> > > Mani, could you also chime in a bit on what you envisioned?
-> > > 
-> > > (Added Luca from Bootlin to CC, as I think there are parallels to the
-> > >  "Hotplug of Non-discoverable Hardware" work)
-> > >  
-> > 
-> > Related to "Hotplug of Non-discoverable Hardware",
-> > 
-> > I would add entries for busses in the connector without using an OF graph.
-> >   
+On 3/27/26 9:11 PM, Barnabás Czémán wrote:
+> SDM632 is using different pm domains from MSM8953 override them
+> where it is needed.
 > 
-> I don't think this is a correct representation. It is non-standard to describe
-> the device nodes in some other connectors. While it may work with your series in
-> the future, not something I would bet-on at this point.
+> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+> ---
+>  arch/arm64/boot/dts/qcom/sdm632.dtsi | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
 > 
-> Using OF graph to link the connector nodes look like the cleaner solution to me.
+> diff --git a/arch/arm64/boot/dts/qcom/sdm632.dtsi b/arch/arm64/boot/dts/qcom/sdm632.dtsi
+> index 40d86d91b67f..b1dbcffd51b6 100644
+> --- a/arch/arm64/boot/dts/qcom/sdm632.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sdm632.dtsi
+> @@ -87,3 +87,34 @@ opp-725000000 {
+>  		required-opps = <&rpmpd_opp_turbo>;
+>  	};
+>  };
+> +
+> +&lpass {
+> +	power-domains = <&rpmpd SDM632_VDDCX>;
+> +	power-domain-names = "cx";
+> +};
+> +
+> +&mpss {
+> +	compatible = "qcom,sdm632-mss-pil";
+> +	power-domains = <&rpmpd SDM632_VDDCX>,
+> +			<&rpmpd SDM632_VDDMX>,
+> +			<&rpmpd SDM632_VDDMD>;
+> +	power-domain-names = "cx", "mx", "mss";
 
-In your DT binding, there is the i2c-parent property at connector level.
+nit: one a line would be perfect
 
-How it is used or planned to be used in order to handle devices available on the
-board connected to the M2 connector ?
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-> 
-> > For I2C and later SPI, this was is done.
-> > 
-> > You already have an i2c-parent property but no node where an i2c device
-> > can be added.
-> > 
-> > The last discussion related to hotplug, connectors and DT led to the RFC
-> > series [1].
-> > 
-> > It is a huge series. The last patch give a real example of representation:
-> >   https://lore.kernel.org/all/20260112142009.1006236-78-herve.codina@bootlin.com/
-> > 
-> > In your case I would see some thing like:
-> > 
-> >     connector {
-> >         compatible = "pcie-m2-e-connector";
-> >         vpcie3v3-supply = <&vreg_wcn_3p3>;
-> >         vpcie1v8-supply = <&vreg_l15b_1p8>;
-> > 
-> > 	/*
-> > 	 * If those GPIOs have to be used by components available in
-> > 	 * the connected board, a Nexus node should be used.
-> >          */
-> >         w-disable1-gpios = <&tlmm 115 GPIO_ACTIVE_LOW>;
-> >         w-disable2-gpios = <&tlmm 116 GPIO_ACTIVE_LOW>;
-> >         viocfg-gpios = <&tlmm 117 GPIO_ACTIVE_HIGH>;
-> >         uart-wake-gpios = <&tlmm 118 GPIO_ACTIVE_LOW>;
-> >         sdio-wake-gpios = <&tlmm 119 GPIO_ACTIVE_LOW>;
-> >         sdio-reset-gpios = <&tlmm 120 GPIO_ACTIVE_LOW>;
-> > 
-> > 	conn-i2c {
-> > 		i2c-parent = <&i2c0>;
-> > 
-> > 		/*
-> >  		 * Here i2c devices available on the board
-> > 		 * connected to the connector can be described.
-> > 		 */
-> > 	};
-> > 
-> > 	/* Same kind to description for other busses */
-> > 	conn-pcie {
-> > 		pci-parent = <&xxxxx>;
-> > 
-> > 		/*
-> > 		 * The PCIe bus has abilities to discover devices.
-> > 		 * Not sure this node is needed.
-> > 		 *
-> > 		 * If a PCI device need a DT description to describe
-> > 		 * stuffs behind the device, what has been done for LAN966x
-> > 		 * could be re-used [2] and [3]
-> > 		 */  
-> 
-> I don't think anyone would connect something like LAN966x to the M.2 connector.
-> M.2 cards have a defined purpose, like NVMe, WLAN etc... If anyone wants to
-> connect another SoC like LAN966x, they would use non-M.2 connectors.
-
-Hum, maybe yes, maybe not. I don't know what kind of hardware could be available
-on a M2 connector.
-
-One think sure is that a PCIe bus is available on the connector and so, potentially
-all PCI devices could be wired on a M2 form factor.
-
-LAN966x in PCI version is just a PCI device.
-
-Anyway, Is it allowed to have sub-nodes in a port node ?
-
-I mean, can we describe devices connected to a bus described by the port node ?
-
-For USB and PCI it is probably not needed for common use cases but having a DT
-description for devices on PCI and/or USB exists and is supported in the current
-kernel
-
-On SDIO, wireless devices can be described:
-  Documentation/devicetree/bindings/net/wireless/
-
-and so, sub-nodes will be needed.
-
-As those devices need an address (reg property), #address-cells and
-#size-cells will be needed.
-
-This will end in a mix of sub-nodes describing devices and a sub-node
-describing the endpoint connection.
-
-#address-cells and #size-cells will conflict at some points.
-
-Is a reg value for endpoints has the same characteristics as a reg value
-for a SDIO device ?
-
-How a BT devices is described under the UART available in the M2
-connector ?
-
-Best regards,
-Hervé
+Konrad
