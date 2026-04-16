@@ -1,166 +1,226 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A13221256C;
-	Thu, 16 Apr 2026 12:30:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776342653; cv=none; b=BpLC0ibD52CUIy8KbC86N76NvLCW4umShQAcsp44UP6OODHNvLoy0MFi06L6nmNEy6QenxEV0PmCTY0VyLeG9krY1YUEXPYr2ab9KgqSmCtA6FVdLulH6sklAE09duHc311isI68hsXqE4wWz6E+d497/buXWYQhyf5u2mYc8mQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776342653; c=relaxed/simple;
-	bh=0+upWZt1SQSfIz6OgmfLK1joGZgudnQ2lP+Bv+7s1DM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uY5j+eRGJwaUdgIOC2wLp7JJWLC8KQMerzLOZh5DMvxrB6t2JpmbgQo4UGJl3ZxmdQG9NKK0xe399S40n2RHiyoBpEp85ydqeSaOEqsvaCTpw1iILu6o9zQb2ZHR7YZXH1zQFt28BRMIAOSMt8WojY9cLwve3nXYQDHjoMWxcpY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aREs4pY9; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3F533491D0
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 13:04:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.173
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776344691; cv=pass; b=MFUufsfjoQqg0lIByNI50x9DvFquc1fxp2fUiDHApCDjR/ZtvV+TfrdhMvjAyeUOUHsptZA1FBcmtq+T33FUrh3sGNcOCX2M9ItyZS9uwiD5wZSv7gNVJu16u0d7hoPGPvnebCDkRxsfDygg5p9/Dzr8uOJ7VE3lmYZzoB7ZW7o=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776344691; c=relaxed/simple;
+	bh=6HDV9w6rUHdoh6/AommnBFvsyzCig67fdj4T+Ra/Nn4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JCFIVZ+8FFv2VUEIP1gWJXTozreYxrlCklckBKwYgE0/rsA1H0BMOO+aEXp+d4PAVB7adOP97Q8B2VjUKWRt0AXDKwO9LAgtEPFKYf1VDxDqs6pVLwfOc9IQM9WnE5R62qA0Sa7O36NOJnh6NDmZh4RFMIG5OuYn/laEsxLDoY4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bd1wEAYd; arc=pass smtp.client-ip=209.85.214.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aREs4pY9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB8D2C2BCAF;
-	Thu, 16 Apr 2026 12:30:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776342653;
-	bh=0+upWZt1SQSfIz6OgmfLK1joGZgudnQ2lP+Bv+7s1DM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aREs4pY9AFWiyPis1yCUHi655kH6F2cmateO3OS3vwiWh4XGstegazkXh9fTeJRQW
-	 F7PNlGo+5uv4JS1ghUA7GmLt/nGdKTIiz0N3eNo0k9qdgxnlZ6UVo1xvuY/jm0Jsgz
-	 6OXZlHvLM95FlzgQqthFFGhbIejPY5s4jQOos8SHiaMv+4GNWDNJ4NBjKmastJKLl9
-	 B+kLcT7cwceOa9aKNihg3CZG+65E3BtgCcBvAVf5SIS4E47zAqVB8uUKfjkayyutdK
-	 0Jj6v6r/4toyxe6BrveBQ3dEYq/LaiTL2nhXiDsBmOQK54Y4zcD7qDew9ISAzQHpha
-	 d9g1fsIICa3fA==
-Message-ID: <1fba96bd-124d-431d-8de8-78688c248600@kernel.org>
-Date: Thu, 16 Apr 2026 14:30:37 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bd1wEAYd"
+Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2aae4816912so53292085ad.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 06:04:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776344689; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MLJobXqR1a6Fa5w+v5QIV9Ua8e0c+SZlucpdlXaWB94ah4hJ8V01DnBwFD6rbjM+W0
+         u4d5uZuG+4u7XVb0MgPzfDHxowaVRe546PCMpPPIwk0bB+o9FJJM1+NmbeisC3VAtnuB
+         gaE6noodEpPx8s0wPHRy4YdeG6ZD2QmM6Me7U7DcXAU5RNLm7GkW0U31KJQ+6Z/ij7Iy
+         GsK6kxdw2si0BLGPhFL61CRDDvox/7lCQWrNy9A6SYt3wyrQ4O5wcxbOWK3dCwYa35WJ
+         iu7zCo40ksSUq0d8OVIHdTp1vb+m1fDP4vSB8CqqDGDvxqrB6gorexGHQOtF9CrX95vQ
+         1gAw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
+        fh=bRK8AD9pYICKRlfyOSNTEkWKVTrDIy++f4Rn+GRDfGw=;
+        b=ZsdvDdDvPKSErDwXBey2VXz6O/ttE42Z6sxlfycUWyFKBtZZZKmnFcZZNlGe8j3sUg
+         Oz23K1q5aAB5g9ohCmFMixsAfsUPnuVK7xSwuZ2KyqAgPDDcHWpzWwd4QscRbau/hRXN
+         gBDKnCAlBjsu0MXg5K/ptM1mDe/jmn+I6KbEdQqhl611OuOoId8Rk2+hCQfO+3SLxUN8
+         klwAa/UBrqvvuIA9+nW0OI3bkDT0ZKqKSKiEyjC8hpem6qu4Wt2aJoes1tHRbQn43OiU
+         Sv9WRyqvB2mjUomEgfdQgkeZFLoLJMmW+3Wf31cFZ3bByr+x+utorabFSRRkblPfj9/e
+         2GVg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776344689; x=1776949489; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
+        b=bd1wEAYdd9QW4IgkzGYbN5RK4s76QaDo/HSxQesz76995FuTZGGT8SN1FaAwb2RtAF
+         8ly/nVhI5MNgKD4EkCWR1y9eBhhzb7SszO3qHQQZIGJzE2SI23NRayrZ/TrASyisw+WP
+         kjBDDv5+EEc9M+H/aua78mSNxqfY8s17jAxxrH5uiDXjLBxeTg4FtPs99PZhTA3rHs+i
+         E9D8No2RatbfUl0YOty5KQY8wlQYP52d0nIq93Ol2iyYcKHkQy/vpnJ9MagOy8POJnEv
+         Rupv3lmvKzqVh25ouoBYBhWDtKfuSZ89oadSgGVjdcLaY3idAbgUjNy6P2tERXnfs5L8
+         pNjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776344689; x=1776949489;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=9keKW5p4++WsVuxHmBqHxADE1ZcTw3Q0sJGd/F983YY=;
+        b=Q9n/iLk+Q/awwZg2AfNABdZoXk5kZC4Yci5KF9SVHceJGcNJiboKJSiWHH3sa1+Gj+
+         /suaajnIyQ6ivbRLCBfcp+qpYudHhmBwFa6l+n1qP9FomFkIVbLghHt1NjbKc4gkMY0h
+         uGjM3QcVb2f8SEbiymJxUtxhh/6seM8iLgs0gQQX/jubJePmfQJqbx7K4ghRksM5SaYE
+         +JGIJ4cFhZa302tGKAOIMu+Nc8IUIv3/E+0hs0LBnIIDDRBppVWKMNPWGkNxaw2l3Daz
+         dlNPu1cQ6bcpD45H1vF87BGK4dTDVFLR/KzgWsuzDPFBig2xHOeTimIjDAsJECrtyRx2
+         IaEQ==
+X-Gm-Message-State: AOJu0YyInzXHSIfQrIrCmjhBCg6HXgORYA+vB8fLNqrLkGtpLRXf+dX4
+	d7E0f8W03h4GoOfc/qEvlUK1Tqtq2kmE2kvNSmsjKnaLJXQlazfSTZkPGhE9pZki9LwCPfnnIpH
+	Elww/kynFSYm4gJfG6jur5P9wSh5yzGA=
+X-Gm-Gg: AeBDietUtR+7rZ2b/7xCZS8YtobxWmtIzHIIb79XiQXCtmlO+NrqAJuNz3RLjC78w4b
+	ISgC9mKH7zJW1o8JqAZwOO1rhGXgsQAPn8wG1JIeTUYPPJN0DHjOnYbLmwgdBM6Dwu+ihqoW102
+	bEeYMa/FmDaLEXp5WTWhrpoIOm2qmqcHdnKxNkfnbzJhob6KTJAz0r//SYkr8xZUDDtWoX1ay2i
+	uyKKeCXu8neSatPfZYnlVD/a1+wFFp4jKdg4b98JJEeDUynQU3y8oTqjDU7t3NXuFrpHv0ONXFK
+	rl+pM99cM6IxLMizsvf04QYnS1eXxkykQa2aSxsxqQGe57q5CGwFphtB34P43jMBOtf4oCw7xTg
+	=
+X-Received: by 2002:a17:902:d507:b0:2b4:5cd0:b6c3 with SMTP id
+ d9443c01a7336-2b45cd0bb63mr212259795ad.29.1776344688850; Thu, 16 Apr 2026
+ 06:04:48 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/61] Coccinelle: Prefer IS_ERR_OR_NULL over manual NULL
- check
-To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org,
- apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
- cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
- gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
- intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
- kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
- linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
- linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
- linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-mm@kvack.org,
- linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
- linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
- ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
- sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev
-Cc: Julia Lawall <Julia.Lawall@inria.fr>,
- Nicolas Palix <nicolas.palix@imag.fr>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-1-bd63b656022d@avm.de>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260310-b4-is_err_or_null-v1-1-bd63b656022d@avm.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20260415-imx-v2-0-aeacff9e72b2@gmail.com> <20260415-imx-v2-1-aeacff9e72b2@gmail.com>
+In-Reply-To: <20260415-imx-v2-1-aeacff9e72b2@gmail.com>
+From: Felix Gu <ustc.gu@gmail.com>
+Date: Thu, 16 Apr 2026 21:04:38 +0800
+X-Gm-Features: AQROBzAHfswAILDPJrZ03lSCXQzT-HPAwyhO5aKUzw0OdIQTV7XQ9Ww0qLogIkk
+Message-ID: <CAN4SLj3rH1q-jd6ccdo2qVNuNUoqfpsiS0KXJ3b=b7m_bh2QBw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] thermal/drivers/imx: Fix thermal zone leak on
+ probe error path
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Oleksij Rempel <o.rempel@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 10/03/2026 12:48, Philipp Hahn wrote:
-> Find and convert uses of IS_ERR() plus NULL check to IS_ERR_OR_NULL().
-> 
-> There are several cases where `!ptr && WARN_ON[_ONCE](IS_ERR(ptr))` is
-> used:
-> - arch/x86/kernel/callthunks.c:215 WARN_ON_ONCE
-> - drivers/clk/clk.c:4561 WARN_ON_ONCE
-> - drivers/interconnect/core.c:793 WARN_ON
-> - drivers/reset/core.c:718 WARN_ON
-> The change is not 100% semantical equivalent as the warning will now
-> also happen when the pointer is NULL.
-> 
-> To: Julia Lawall <Julia.Lawall@inria.fr>
-> To: Nicolas Palix <nicolas.palix@imag.fr>
-> Cc: cocci@inria.fr
-> Cc: linux-kernel@vger.kernel.org
-> 
+On Wed, Apr 15, 2026 at 9:10=E2=80=AFPM Felix Gu <ustc.gu@gmail.com> wrote:
+>
+> If pm_runtime_resume_and_get() fails after the thermal zone has been
+> registered, the probe error path cleans up runtime PM but skips
+> thermal_zone_device_unregister(), leaking the thermal zone device.
+>
+> Switch to use devm_thermal_of_zone_register() to fix the problem.
+>
+> Fixes: 4cf2ddf16e17 ("thermal/drivers/imx: Implement runtime PM support")
+> Signed-off-by: Felix Gu <ustc.gu@gmail.com>
 > ---
-> drivers/clocksource/mips-gic-timer.c:283 looks suspicious: ret != clk,
-> but Daniel Lezcano verified it as cottect.
-> 
-> There are some cases where the checks are part of a larger expression:
-> - mm/kmemleak.c:1095
-> - mm/kmemleak.c:1155
-> - mm/kmemleak.c:1173
-> - mm/kmemleak.c:1290
-> - mm/kmemleak.c:1328
-> - mm/kmemleak.c:1241
-> - mm/kmemleak.c:1310
-> - mm/kmemleak.c:1258
-> - net/netlink/af_netlink.c:2670
-> Thanks to Julia Lawall for the help to also handle them.
-> 
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
-> ---
->  scripts/coccinelle/api/is_err_or_null.cocci | 125 ++++++++++++++++++++++++++++
->  1 file changed, 125 insertions(+)
-> 
+>  drivers/thermal/imx_thermal.c | 35 +++++++++++++++++++----------------
+>  1 file changed, 19 insertions(+), 16 deletions(-)
+>
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.=
+c
+> index 38c993d1bcb3..3729c3eac748 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -216,6 +216,20 @@ struct imx_thermal_data {
+>         const char *temp_grade;
+>  };
+>
+> +static int imx_thermal_sync_zone_trip(struct thermal_trip *trip, void *a=
+rg)
+> +{
+> +       struct imx_thermal_data *data =3D arg;
+> +       int temp;
+> +
+> +       if (trip->type !=3D THERMAL_TRIP_PASSIVE && trip->type !=3D THERM=
+AL_TRIP_CRITICAL)
+> +               return 0;
+> +
+> +       temp =3D trips[trip->type].temperature;
+> +       thermal_zone_set_trip_temp(data->tz, trip, temp);
+> +
+> +       return 0;
+> +}
+> +
+>  static void imx_set_panic_temp(struct imx_thermal_data *data,
+>                                int panic_temp)
+>  {
+> @@ -679,13 +693,8 @@ static int imx_thermal_probe(struct platform_device =
+*pdev)
+>                 goto legacy_cleanup;
+>         }
+>
+> -       data->tz =3D thermal_zone_device_register_with_trips("imx_thermal=
+_zone",
+> -                                                          trips,
+> -                                                          ARRAY_SIZE(tri=
+ps),
+> -                                                          data,
+> -                                                          &imx_tz_ops, N=
+ULL,
+> -                                                          IMX_PASSIVE_DE=
+LAY,
+> -                                                          IMX_POLLING_DE=
+LAY);
+> +       data->irq_enabled =3D true;
+> +       data->tz =3D devm_thermal_of_zone_register(dev, 0, data, &imx_tz_=
+ops);
+>         if (IS_ERR(data->tz)) {
+>                 ret =3D PTR_ERR(data->tz);
+>                 dev_err(dev, "failed to register thermal zone device %d\n=
+",
+> @@ -693,6 +702,8 @@ static int imx_thermal_probe(struct platform_device *=
+pdev)
+>                 goto clk_disable;
+>         }
+>
+> +       thermal_zone_for_each_trip(data->tz, imx_thermal_sync_zone_trip, =
+data);
+> +
+>         dev_info(dev, "%s CPU temperature grade - max:%dC"
+>                  " critical:%dC passive:%dC\n", data->temp_grade,
+>                  data->temp_max / 1000, trips[IMX_TRIP_CRITICAL].temperat=
+ure / 1000,
+> @@ -724,25 +735,18 @@ static int imx_thermal_probe(struct platform_device=
+ *pdev)
+>         if (ret < 0)
+>                 goto disable_runtime_pm;
+>
+> -       data->irq_enabled =3D true;
+> -       ret =3D thermal_zone_device_enable(data->tz);
+> -       if (ret)
+> -               goto thermal_zone_unregister;
+> -
+>         ret =3D devm_request_threaded_irq(dev, data->irq,
+>                         imx_thermal_alarm_irq, imx_thermal_alarm_irq_thre=
+ad,
+>                         0, "imx_thermal", data);
+>         if (ret < 0) {
+>                 dev_err(dev, "failed to request alarm irq: %d\n", ret);
+> -               goto thermal_zone_unregister;
+> +               goto disable_runtime_pm;
+>         }
+>
+>         pm_runtime_put(data->dev);
+>
+>         return 0;
+>
+> -thermal_zone_unregister:
+> -       thermal_zone_device_unregister(data->tz);
+>  disable_runtime_pm:
+>         pm_runtime_put_noidle(data->dev);
+>         pm_runtime_disable(data->dev);
+> @@ -761,7 +765,6 @@ static void imx_thermal_remove(struct platform_device=
+ *pdev)
+>         pm_runtime_put_noidle(data->dev);
+>         pm_runtime_disable(data->dev);
+>
+> -       thermal_zone_device_unregister(data->tz);
+>         imx_thermal_unregister_legacy_cooling(data);
+>  }
+>
+>
+> --
+> 2.43.0
+>
 
-Neither this, nor try from 2011, nor any future try should be accepted,
-because it creates impression IS_ERR_OR_NULL is somehow okay. No, it is
-not okay, it is a discouraged pattern leading to less readable and
-maintainable code. We should not have therefore any tools suggesting
-usage of IS_ERR_OR_NULL, because people will be converting poor code
-into that, instead of fixing that poor code.
+Hi all,
+This patch has a problem, I will fix it and send v3.
 
 Best regards,
-Krzysztof
+Felix
