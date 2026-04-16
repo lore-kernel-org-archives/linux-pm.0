@@ -1,151 +1,215 @@
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B78B329827E
-	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 09:43:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.172
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776332607; cv=pass; b=GhPMQDGaphMVcmg3AqqX3eZVwC+RdMTbUc154AKTvUMSrCGS78ZFVZr0Bazdpbp+0sXEXR3FEc/4oitYP7h1WATcaRLD8tyOQimLjJaFHFkYwm0xBravd2g7ODhak8ARtSCb/60nQnbE/1yPH5YyTeaQZqVQniZ21w1ie3TMxzs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776332607; c=relaxed/simple;
-	bh=tc1aahXe/kJI3XC8Rg2ouu43ca/7LjUrOAsrC0p5JRU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=KRE4/qJi2K+OjupkIHi7Jlqn7nnp1rrmLRUMsCDgoU34jZ1vf16RZWX2BOw6J/N/b16CLdVmbPPEVunuVUYSfke0mFolzWz73SZAY/5e4YcbdTfmjXE9C7ebaEdP0QjgiAC7y2eHCmMFUesr1XsyxQb3PPFfB1eyyosaHFS0T4s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=O75Utn3z; arc=pass smtp.client-ip=209.85.208.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DBBD39D6C9
+	for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 10:06:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776333979; cv=none; b=uL2Ini3LtT+s2JfvELE/qigvZYA8yiBeA/6G3MlwF2p+aHnO75KBJMQbMAVTO+ln6K/TvHmSBlw6ljrJlVafkqk7d7Vk3fbmLo+Fc1FIa25ANsn7z/Nx3V+r7d82VTPTkUtzx6O4GIgHiH3vWBQzLJPmMImKt4aPUvAdX3UEl1E=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776333979; c=relaxed/simple;
+	bh=TRTbSHQMURjU0ZW+9bSmpSmU4dNIK7D4YlFMBvnDA7w=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=TrGN2np/WCZ5gAhE+tbsqsXpx66BGQ7m7Wq1r7/b2MOj/39Y+g3THalx+Tqyl7WAlfKqw9kBsPTa68A3o8CxFpS7O5dQ4ApNnyW+yMrY5qBnbcYclVA/66vIbeRorr39T4scRbjeErll0hVT6A8EJ//CG7TGHkp8WLu5qAUdPPo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=kzPX/LYQ; arc=none smtp.client-ip=209.85.208.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="O75Utn3z"
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-38e7bd07656so34673791fa.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 02:43:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776332604; cv=none;
-        d=google.com; s=arc-20240605;
-        b=LTgXaFsr7BCupnA8RYFNq4XP3VBssagMjEKBeXWt9Y5cOHsl9U2XM1LLdUD9UKuepj
-         fL0NiM0ntj7jrWyCXDuQLcFgj+tQ2imsG6IYAM8EWrmMkq3MDtz8hUqJuNFUDeGlFTf/
-         Q1h57wDLWn73LhPIDLyYB5iPX8Hi1bqoR0tyfQS70WOkW5VL1lhjHENiu9AzYOnIcBlf
-         0M3ozTCuaUl3n1y0nFzBtjEAqbmivkUWCZfF3ZYxLU5RWGN8bNwcXDvVAxY8JJJqNv3S
-         Pur8/prrjIKwOZyBkXf2ftmcICZFX9U6ylEXEjai7M4QkqK7YkIXaLeNVWZsUEuBr6sw
-         hC9Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=jwzf4S6QgG2jfgxSyqcETN1wIIzICofgP6SGF67d4ws=;
-        fh=RWjRWxKh6iODj7+gLORxw+0IZNUVMfRe0bSf0/zlNmA=;
-        b=fl7xBosIpOIPkwug+Ba0UVmY7XHgHQnrzcMevx5FV02yeuUnzOJJLCJsJ3vcVHxdjk
-         IN1yTPPxtB1HH3xgmIoO4TsM+mV2Idx61czDhKwSlIpSb4FMHHr2wzSpxzgYHILcm1WB
-         lXlGWcNY+sjuGbmh4xkTMG/O44Ekgex/a/MojZcS98/5CBjVe3JLBM2r1T3r2ut6dfMe
-         CrUBOQreuufloGdbdVGM+Lv5zWvOCzSsZ06zb575kgkC/UH9T16Koc81qjwCO3Hj6vih
-         o/+g06+66sybHcImAuwkfVwD5SzEnI+16RN+S0XwpQTI8HJFmUOypvrquhOa0zyYCTwx
-         zx4w==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="kzPX/LYQ"
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-671d60ef9c6so4005693a12.2
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2026 03:06:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776332604; x=1776937404; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=jwzf4S6QgG2jfgxSyqcETN1wIIzICofgP6SGF67d4ws=;
-        b=O75Utn3zt+U0dSmP5ESVAKiNPMaK9twlXm4qAja/aB7Ts58suVQqYGfCBfwyjezBo0
-         sz14UMtO6l+Z44LyXjgUcBQ5cuqmUyVlFghfy0Adld9Gh6L19WFPUEdCkHEsqEZ9vz8z
-         Arq31BHTLH/k0WwCUavf9/W8XyyNKl3JcEkfPWSxFzrKezxmx7ocB32zI/rrsUVs3ayN
-         6imTw8b4VkFieBjkHbkX6AcajJqYbhHp5ZBN04ohoMwNXHprLgp0kaRFO0LzNlQLT1/j
-         C5Wi0FNAdltGHgxyKtbHo4DY7CM3MShELxniWfoSv33u97NutAVZlbArToDFubvO7CaW
-         3J6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776332604; x=1776937404;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=fairphone.com; s=fair; t=1776333976; x=1776938776; darn=vger.kernel.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=jwzf4S6QgG2jfgxSyqcETN1wIIzICofgP6SGF67d4ws=;
-        b=iQV+I+aEdapany6sL5vRlUOp5/rLGrxodLGBgh1UV9LBtiReRUJQBkJ3NF7xteWv2y
-         /gUDSUUV2e7Wa7DrZEubN4BIDNHfkBSHpDrD1r8gVXlgM2vnnshqq9Va34hBxn8a7pyz
-         kkSoSUdzNHTe/91OMKVd3lLEa2f2d8kZWDqA/ZviKfBWQD4+O+PlDjwwHKGhpO2KPfix
-         jJ8HhnOXswqg0JzrsXFYR5qnyP0R9urftSm+W64pQrNLVeQO2LGWqtqIJy7t/vZKVSEI
-         YPIiMecaWURFweeGoGaRtMBC4jjHhhWurOZSO9UKQXkTwJeWz9/sH5gmNkOBXyPJfVBG
-         WJ5g==
-X-Forwarded-Encrypted: i=1; AFNElJ8B+g0tEQOY13xvGfecz4bj7dd9I6CIlKhgvD36KvDHUBfUM2bFlxbTKt/W8fBGtlff5CUve3tMig==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz0VaFynyROu8vAzL/tsOcZodmCew4A9wY88oQl4Kq2or08hg45
-	SxGI9TnRHB33FZ+AiUBXT0hPygI1YWbtllH2WVhF5wHEOO0XcBEiG9nuNlVqcYu+RvwrFOhioRO
-	mThjKS8DE4A1o4q5AmPbxvyRUZalJ+RBKwkVDhl4Daw==
-X-Gm-Gg: AeBDieuUWInx1rcu8DKY4Z20I544a9hmfdUvLxCisHRC4C+B/Uib1tguV9nNyMYZUMD
-	90C7hwf9STy52YvaNih2fCz+s0KIpB1I3o07rII0HpuW5EhU/uliVIw1n+zyjUS9lOag4tUR6kp
-	I8LKxwC1t6oD9TKfnsGCzzWH1ypiEMhUSb7oE5WMMcUvaYJQIsBjFmi/HCmWXztxpgPA2Ad+51Y
-	p3xsY0GFsLzcjPNzKcIlIrYq4Fg63bt19SzPAVRkO6/R0XAcr5VIm1PUHkwVkZ4a7vsJ8WfBLTE
-	ZB9wjTIurYK4Pfg4Vlo=
-X-Received: by 2002:ac2:4855:0:b0:5a3:f309:42bc with SMTP id
- 2adb3069b0e04-5a3f30942c8mr5012628e87.35.1776332603751; Thu, 16 Apr 2026
- 02:43:23 -0700 (PDT)
+        bh=StUmw+VWigYj7b9CbzCzolN8uC+xmf43R5kKEaP2dK4=;
+        b=kzPX/LYQ7y4Em+5vweuPtbDVXDcoj3YiojA1EIvviwOb9DAfGlxBFgYuW0pUQr84F7
+         o3C2dIlrz9fvBp/prcIwvOOsh5tJ+WHEVOCqXz3ITsX9ZGDDf3F0/hgcVVOjJS6rTvW5
+         TR/v39UwUsDGxg8Gm/VS9YgP283HLqywpv2g7Qmh8ul1teNUy9fMVk379o2Maq4hgeKZ
+         Mt9Q5acvzcEKbEBTvfEHV6jZiBMpMonajIaSSdLLz8e4c9pmUFCivqqrXN3EnyytrJYt
+         iHTj82htSnT0m1K8P7M6h5r9aOcIQ7qc8fGh7LqZrwMWA6jumfV+Bg+7/lDo46khGJsl
+         Y+fQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776333976; x=1776938776;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=StUmw+VWigYj7b9CbzCzolN8uC+xmf43R5kKEaP2dK4=;
+        b=CVfikuKL2K3tJE2xFUjreiQLGRWdk4p31x3hLFVs4JyUhZhXZI14MGPOiV64bREtVW
+         9DfSfW7uyVpg72kdR3inSVEnJ+sgJAv0ZI0/li/MwksMEb2kfsj87RU6q0rXhPlJ/5tL
+         5GW3R33/5OseIfPu/zUtm9Y6mQyZV8oQr/kOgpr4min1kF9NywwFx0aidsR4GaTaXzec
+         6/FfWdSiDVvSWZ04rBD+ejZx62aFrmnvOH4F96is+vPKo4JbznR0LdJPwkzA1mf4/PKn
+         PByMXdQO5Sqi0nZ/V4BWmT/VCWUWS8zBySL2I1N04lg3h7kz/Vb1R/rAcKF9mI1t60Q7
+         rAbQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/GfpTOK9WTuFyKxTPEkMf9LFuIRDQ0I1Owi0/CXL4Me81xeuBiBI7+CMxdRpIGdPygbsUfki8CtA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzJf3y7+Y+c79v5nXRVNL+rAhCXihJ7aX5ski1aFjDKlmRltA0N
+	uu+jg/Uc9cJxysc9OlOPN+7ISXglDgC0Sih7cSEtO/ePhBMJL67jCKNGjsRdz0MsMGc=
+X-Gm-Gg: AeBDiesrIUmyazUbmkVcjaMDIYtabrc5SSPFM58MamMZ6+m1EuXpGjhAWoROau2WVns
+	eYN/WLdOgxxYDQYWuxqFXac3U7VEhAh3gb9hM/q6LO2t8Ny/FadA+KWSfUyleVZtJle8Qqx07jg
+	AzYGWHINOanhn9ZwjDX6UpfavabbP/FSVAmIJaGrquiolFCYEA6BtsPNaPk20Qa07r2iqBrcVQh
+	JH2hIBHargt028zLSIWrpBg/2DIRCe9e7mi8L/PsFPIPwVTaT724EU/SbCsMKX1hSKb8Dcuvwbo
+	q3dQJa0IUzzXzt2iKKhu8+FoxosvnoKEELIWlSQUlUwCwjxFBsCAzTGUDFWz7W8cOmEnQMtdhdj
+	Mssp4MBhqMW+KJy8U/0QWmebGVXcTqZQm9WX53rluVlEeTFLvzuF/PShlbEnsQnyra9QRsNnwpL
+	dEMfyVo2muaDnNznZd92jEunXwrhAdiEZAeiyV78HwqiPAUb4iig42cbAUmSGMYa7bqR+7HRVoZ
+	jiBe2I=
+X-Received: by 2002:a05:6402:548c:b0:66e:f4c0:c348 with SMTP id 4fb4d7f45d1cf-6707898ffc1mr11228460a12.7.1776333975499;
+        Thu, 16 Apr 2026 03:06:15 -0700 (PDT)
+Received: from localhost (144-178-202-138.static.ef-service.nl. [144.178.202.138])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-67237d79258sm1152533a12.4.2026.04.16.03.06.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Apr 2026 03:06:14 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260410104058.83748-1-ulf.hansson@linaro.org> <CAMuHMdWHnANr4R+AW5-xHrm=D4SJLuKVF5mq3PFkbevcTz5qWw@mail.gmail.com>
-In-Reply-To: <CAMuHMdWHnANr4R+AW5-xHrm=D4SJLuKVF5mq3PFkbevcTz5qWw@mail.gmail.com>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Thu, 16 Apr 2026 11:42:47 +0200
-X-Gm-Features: AQROBzByupCgfYQNSB5KjMp-9WACrVqsXB76aGpaQekAwhIX9pEpFrllJozXBsw
-Message-ID: <CAPDyKFpxooSD=k2jtMgMqTDP+ovmqZWoo_VBsKfpce3vRaZfSg@mail.gmail.com>
-Subject: Re: [PATCH v2 0/9] driver core / pmdomain: Add support for fined
- grained sync_state
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Saravana Kannan <saravanak@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, 
-	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
-	Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
-	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 16 Apr 2026 12:06:09 +0200
+Message-Id: <DHUHU7UIT487.139L3KIVRVREU@fairphone.com>
+Cc: <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-bluetooth@vger.kernel.org>,
+ <linux-wireless@vger.kernel.org>, <ath10k@lists.infradead.org>,
+ <linux-pm@vger.kernel.org>, "Krzysztof Kozlowski" <krzk@kernel.org>,
+ "Bartosz Golaszewski" <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v3 3/8] wifi: ath10k: snoc: support powering on the
+ device via pwrseq
+From: "Luca Weiss" <luca.weiss@fairphone.com>
+To: "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>, "Liam Girdwood"
+ <lgirdwood@gmail.com>, "Mark Brown" <broonie@kernel.org>, "Rob Herring"
+ <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Marcel Holtmann" <marcel@holtmann.org>, "Luiz Augusto von Dentz"
+ <luiz.dentz@gmail.com>, "Jeff Johnson" <jjohnson@kernel.org>, "Bjorn
+ Andersson" <andersson@kernel.org>, "Konrad Dybcio"
+ <konradybcio@kernel.org>, "Manivannan Sadhasivam" <mani@kernel.org>, "Vinod
+ Koul" <vkoul@kernel.org>, "Balakrishna Godavarthi"
+ <quic_bgodavar@quicinc.com>, "Matthias Kaehlcke" <mka@chromium.org>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20260119-wcn3990-pwrctl-v3-0-948df19f5ec2@oss.qualcomm.com>
+ <20260119-wcn3990-pwrctl-v3-3-948df19f5ec2@oss.qualcomm.com>
+In-Reply-To: <20260119-wcn3990-pwrctl-v3-3-948df19f5ec2@oss.qualcomm.com>
 
-On Thu, 16 Apr 2026 at 11:15, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Ulf,
->
-> On Fri, 10 Apr 2026 at 12:41, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > Since the introduction [1] of the common sync_state support for pmdomains
-> > (genpd), we have encountered a lot of various interesting problems. In most
-> > cases the new behaviour of genpd triggered some weird platform specific bugs.
-> >
-> > That said, in LPC in Tokyo me and Saravana hosted a session to walk through the
-> > remaining limitations that we have found for genpd's sync state support. In
-> > particular, we discussed the problems we have for the so-called onecell power
-> > domain providers, where a single provider typically provides multiple
-> > independent power domains, all with their own set of consumers.
-> >
-> > Note that, onecell power domain providers are very common. It's being used by
-> > many SoCs/platforms/technologies. To name a few:
-> > SCMI, Qualcomm, NXP, Mediatek, Renesas, TI, etc.
-> >
-> > Anyway, in these cases, the generic sync_state mechanism with fw_devlink isn't
-> > fine grained enough, as we end up waiting for all consumers for all power
-> > domains before the ->sync_callback gets called for the supplier/provider. In
-> > other words, we may end up keeping unused power domains powered-on, for no good
-> > reasons.
-> >
-> > The series intends to fix this problem. Please have a look at the commit
-> > messages for more details and help review/test!
->
-> Thanks for the update!
->
-> At first glance, the only real change compared to v1 seems to be
-> the removal of printing
->
->     pr_info("%s:%s con=%s\n", __func__, dev_name(dev),
->             dev_name(consumer));
->
-> Right?
+Hi Dmitry,
 
-Correct! I forgot to include a version history, sorry.
+On Mon Jan 19, 2026 at 6:07 PM CET, Dmitry Baryshkov wrote:
+> The WCN39xx family of WiFi/BT chips incorporates a simple PMU, spreading
+> voltages over internal rails. Implement support for using powersequencer
+> for this family of ATH10k devices in addition to using regulators.
+>
+> Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> ---
+>  drivers/net/wireless/ath/ath10k/snoc.c | 53 ++++++++++++++++++++++++++++=
+++++--
+>  drivers/net/wireless/ath/ath10k/snoc.h |  3 ++
+>  2 files changed, 53 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/wireless/ath/ath10k/snoc.c b/drivers/net/wireles=
+s/ath/ath10k/snoc.c
+> index b3f6424c17d3..f72f236fb9eb 100644
+> --- a/drivers/net/wireless/ath/ath10k/snoc.c
+> +++ b/drivers/net/wireless/ath/ath10k/snoc.c
+> @@ -1,6 +1,7 @@
+>  // SPDX-License-Identifier: ISC
+>  /*
+>   * Copyright (c) 2018 The Linux Foundation. All rights reserved.
+> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+>   */
+> =20
+>  #include <linux/bits.h>
+> @@ -11,6 +12,7 @@
+>  #include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/property.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/regulator/consumer.h>
+>  #include <linux/remoteproc/qcom_rproc.h>
+>  #include <linux/of_reserved_mem.h>
+> @@ -1023,10 +1025,14 @@ static int ath10k_hw_power_on(struct ath10k *ar)
+> =20
+>  	ath10k_dbg(ar, ATH10K_DBG_SNOC, "soc power on\n");
+> =20
+> -	ret =3D regulator_bulk_enable(ar_snoc->num_vregs, ar_snoc->vregs);
+> +	ret =3D pwrseq_power_on(ar_snoc->pwrseq);
+>  	if (ret)
+>  		return ret;
+> =20
+> +	ret =3D regulator_bulk_enable(ar_snoc->num_vregs, ar_snoc->vregs);
+> +	if (ret)
+> +		goto pwrseq_off;
+> +
+>  	ret =3D clk_bulk_prepare_enable(ar_snoc->num_clks, ar_snoc->clks);
+>  	if (ret)
+>  		goto vreg_off;
+> @@ -1035,18 +1041,28 @@ static int ath10k_hw_power_on(struct ath10k *ar)
+> =20
+>  vreg_off:
+>  	regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
+> +pwrseq_off:
+> +	pwrseq_power_off(ar_snoc->pwrseq);
+> +
+>  	return ret;
+>  }
+> =20
+>  static int ath10k_hw_power_off(struct ath10k *ar)
+>  {
+>  	struct ath10k_snoc *ar_snoc =3D ath10k_snoc_priv(ar);
+> +	int ret_seq =3D 0;
+> +	int ret_vreg;
+> =20
+>  	ath10k_dbg(ar, ATH10K_DBG_SNOC, "soc power off\n");
+> =20
+>  	clk_bulk_disable_unprepare(ar_snoc->num_clks, ar_snoc->clks);
+> =20
+> -	return regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs);
+> +	ret_vreg =3D regulator_bulk_disable(ar_snoc->num_vregs, ar_snoc->vregs)=
+;
+> +
+> +	if (ar_snoc->pwrseq)
+> +		ret_seq =3D pwrseq_power_off(ar_snoc->pwrseq);
+> +
+> +	return ret_vreg ? : ret_seq;
+>  }
+> =20
+>  static void ath10k_snoc_wlan_disable(struct ath10k *ar)
+> @@ -1762,7 +1778,38 @@ static int ath10k_snoc_probe(struct platform_devic=
+e *pdev)
+>  		goto err_release_resource;
+>  	}
+> =20
+> -	ar_snoc->num_vregs =3D ARRAY_SIZE(ath10k_regulators);
+> +	/*
+> +	 * devm_pwrseq_get() can return -EPROBE_DEFER in two cases:
+> +	 * - it is not supposed to be used
+> +	 * - it is supposed to be used, but the driver hasn't probed yet.
+> +	 *
+> +	 * There is no simple way to distinguish between these two cases, but:
+> +	 * - if it is not supposed to be used, then regulator_bulk_get() will
+> +	 *   return all regulators as expected, continuing the probe
+> +	 * - if it is supposed to be used, but wasn't probed yet, we will get
+> +	 *   -EPROBE_DEFER from regulator_bulk_get() too.
+> +	 *
+> +	 * For backwards compatibility with DTs specifying regulators directly
+> +	 * rather than using the PMU device, ignore the defer error from
+> +	 * pwrseq.
+> +	 */
+> +	ar_snoc->pwrseq =3D devm_pwrseq_get(&pdev->dev, "wlan");
+> +	if (IS_ERR(ar_snoc->pwrseq)) {
+> +		ret =3D PTR_ERR(ar_snoc->pwrseq);
+> +		ar_snoc->pwrseq =3D NULL;
+> +		if (ret !=3D -EPROBE_DEFER)
+> +			goto err_free_irq;
 
-Besides the removed print, I have just added your tags and updated the
-commit message in patch9.
+I'm fairly sure this is now broken with CONFIG_POWER_SEQUENCING=3Dn since
+then pwrseq_get() is returning ERR_PTR(-ENOSYS) which is not handled
+here.
 
-FYI, my plan is to queue this as soon as v7.1-rc1 is available.
+I'm observing my ath10k_snoc is now failing to probe "with error -38"
+which definitely seems to be related, but I haven't debugged it further
+yet.
 
-Kind regards
-Uffe
+Regards
+Luca
