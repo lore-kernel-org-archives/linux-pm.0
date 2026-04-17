@@ -1,246 +1,180 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from galaxy.gendns.com (galaxy.gendns.com [66.235.175.158])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FEA52C21D0;
-	Fri, 17 Apr 2026 15:41:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 889B729898B;
+	Fri, 17 Apr 2026 15:45:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.235.175.158
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776440488; cv=none; b=WZYDMt/Ae7VGmZn3OIIqrY1fkcrbXjWlwBtWB76hBMy3kv/NRGgXujLHkFJG1lHA7lVyxzjUBSUYd9z8MJjWR+SUIRege17DI+DSlakfEoqdhO1Igf/FyfNR1Po+YxzwYNZBtRlcqLGWNOo4vTjUu5ztqzMX2tSNAQJAVku2CkE=
+	t=1776440712; cv=none; b=jwsbYX4kQozzg2P8pLQ7gnL1aIVuh5W+6U6s48KpmrIWQ1d/herNcNvw8lKV6S+rg4Ahq7gOj4qinVcwoQvVZpqVRbA6INnordXiEbuUr2JrWDtTecX/OXeSkcLISBKXHNWxYHaAkj/1R+mbzfM/m99do9niKvkIu4mao3sJFJM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776440488; c=relaxed/simple;
-	bh=0n8/YUL4yu8NdIhMcnmJqQjiuaM8Rj321HxdShp38oo=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=pWIYM/AZEc+ryZOLmoCRrfv6QfrKWuGfcAJdfVOmTtCd5p40gcTEGlq+KEQyFzg2qxO45txx1/31bxkG4deN8c1czRiYLpBG+cB61nRXsiw2PPuagSQ4LHqtxXUXT7o5paFu2nEcKAtHb1GzA4y1gieUw2w134gXUS6J/2giHyE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dA01KBlD; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776440712; c=relaxed/simple;
+	bh=XvsDbWlfAG0OYfoZWD/4lYgy6k9FS9zetpPqWnhmd8E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IgMhZESxDxP/zUZ8qN6YqRtBLfpRcDedxC3KHO9jyB6mv1CwSo68pRJVeSotOXKO/20jLg2r3Klg1dT3xyHm8MgMurfQAp2f5GjrFtTQWahAeqpFCQU75mQzBuHGWqm/DELcrRqgsLPT4GqfWCl4yhHwUxeXahttThWCdjORa/Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com; spf=pass smtp.mailfrom=lechnology.com; dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b=iY3AaN9a; arc=none smtp.client-ip=66.235.175.158
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lechnology.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dA01KBlD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92E14C19425;
-	Fri, 17 Apr 2026 15:41:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776440487;
-	bh=0n8/YUL4yu8NdIhMcnmJqQjiuaM8Rj321HxdShp38oo=;
-	h=Date:From:To:Cc:Subject:From;
-	b=dA01KBlDN8eiOSILxs7ZoSwE57VeDkKGz5zEIWc4i2smBYDomvgBsdAzGENaJCE/Q
-	 dAJDYbakSCy96pivmHw3eHZ7SMNvV9H0FhOnUX7ax9ojcQW/qLX+bq3EK+5t6VxQqE
-	 smCLfpzBf9NBwTdjhZM3OR/RTde9hh6GFIXad23T9tEhK7qd7oXWppd2dL0xS/BgKj
-	 8i3TkNInOsYql7sC5s5fdvHKxZsGspf/VTVw12FZ+V7vzxS5JyttFWAjO2u7Ul7SsF
-	 boA0cxGAJJdNZPgZrYyqYLBEENJEzWQhcim5dvoUFH1SOBcM0YsG9OAGtfmebdyQi0
-	 wAmgTURz0OlmQ==
-Received: by venus (Postfix, from userid 1000)
-	id 7A42C180269; Fri, 17 Apr 2026 17:41:25 +0200 (CEST)
-Date: Fri, 17 Apr 2026 17:41:25 +0200
-From: Sebastian Reichel <sre@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [GIT PULL] power-supply changes for 7.1
-Message-ID: <aeJTAaRJ6lh1wBZr@venus>
+	dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="iY3AaN9a"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=qoxQSd3ELdNFxmKbqKKBcSVbmT0ubtuVChxqkqdEm1A=; b=iY3AaN9a+Pk+vNSzksIsVHyWwE
+	F+OpxTFH6VOGy5jYGsmsyBv1Lyf9TDDbEbU2FeQnEuyidPgGiPvF33xrhQmZ2aO0w0tA/1Z9UYXgq
+	xxqn43i6RkhiqkX0VMO1Goy8hiG6wX00atTBZbgVSHHucKJ4VjWTDiHeAJKJjSa8qxOlW/Q7TUwkY
+	3KYnaoEuhL6xdV28NXLZ6ORd07zBfAm2Zy0moaeU3reXoUiHFyKeD3K24cLO2iRD1p53QxsSceBJ7
+	gqbAWP8NbfS0uwryzPRaoNQpT7vCIXiRrg3YKzU/ViKJ2iORWXV2aUMRDePOnt6hpdDDOpWHfSJ3D
+	VJDYu7Jg==;
+Received: from ip98-183-112-25.ok.ok.cox.net ([98.183.112.25]:56546 helo=[192.168.1.142])
+	by galaxy.gendns.com with essmtpa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
+	(Exim 4.99.1)
+	(envelope-from <david@lechnology.com>)
+	id 1wDkzP-00000008Xbb-1Fic;
+	Fri, 17 Apr 2026 11:20:11 -0400
+Message-ID: <54fe62e2-2134-4ea4-96ae-4534c559dbe4@lechnology.com>
+Date: Fri, 17 Apr 2026 10:20:11 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ciwqdomctq3b7icj"
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] counter: ti-eqep: fix runtime PM leak in probe error path
+To: Felix Gu <ustc.gu@gmail.com>, William Breathitt Gray <wbg@kernel.org>,
+ Judith Mendez <jm@ti.com>
+Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Linux PM <linux-pm@vger.kernel.org>
+References: <20260417-ti-eqep-v1-1-a7db4642d9d0@gmail.com>
+Content-Language: en-US
+From: David Lechner <david@lechnology.com>
+Autocrypt: addr=david@lechnology.com; keydata=
+ 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
+In-Reply-To: <20260417-ti-eqep-v1-1-a7db4642d9d0@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - galaxy.gendns.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - lechnology.com
+X-Get-Message-Sender-Via: galaxy.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
+X-Authenticated-Sender: galaxy.gendns.com: davidmain@lechnology.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+
+My knowledge of pm_runtime is a bit lacking, so I would suggest
+to include that mailing list on the CC to get more expert review.
 
 
---ciwqdomctq3b7icj
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: [GIT PULL] power-supply changes for 7.1
-MIME-Version: 1.0
+On 4/17/26 10:06 AM, Felix Gu wrote:
+> In ti_eqep_probe(), if devm_clk_get_enabled() fails, the function
+> returns without cleaning up the runtime PM state.
+> 
+> Fixes: 0cf81c73e4c6 ("counter: ti-eqep: enable clock at probe")
+> Signed-off-by: Felix Gu <ustc.gu@gmail.com>
+> ---
+>  drivers/counter/ti-eqep.c | 19 ++++++++++++-------
+>  1 file changed, 12 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/counter/ti-eqep.c b/drivers/counter/ti-eqep.c
+> index d21c157e531a..dfa945b3eec6 100644
+> --- a/drivers/counter/ti-eqep.c
+> +++ b/drivers/counter/ti-eqep.c
+> @@ -548,17 +548,22 @@ static int ti_eqep_probe(struct platform_device *pdev)
 
-Hi Linus,
+Can we use devm_pm_runtime_enable() to partially solve this?
 
-just as a heads up, Mark Brown reported a merge conflict in
-drivers/power/supply/Makefile with the usb tree, which picked
-up a new driver (max77759_charger) due to dependencies. The
-conflict is trivial to solve:
+>  	pm_runtime_get_sync(dev);
 
-https://lore.kernel.org/all/ac0aJ6jpCcSaemt7@sirena.org.uk/
+I don't think we should have non-devm stuff before devm stuff
+so this needs to be moved later of have some kind of devm cleanup.
 
-Greetings,
+>  
+>  	clk = devm_clk_get_enabled(dev, NULL);
+> -	if (IS_ERR(clk))
+> -		return dev_err_probe(dev, PTR_ERR(clk), "failed to enable clock\n");
+> +	if (IS_ERR(clk)) {
+> +		err = dev_err_probe(dev, PTR_ERR(clk), "failed to enable clock\n");
+> +		goto disable_pm;
+> +	}
+>  
+>  	err = counter_add(counter);
 
--- Sebastian
+This can be changed to devm_counter_add().
 
-The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
+> -	if (err < 0) {
+> -		pm_runtime_put_sync(dev);
+> -		pm_runtime_disable(dev);
+> -		return err;
+> -	}
+> +	if (err < 0)
+> +		goto disable_pm;
+>  
+>  	return 0;
+> +
+> +disable_pm:
+> +	pm_runtime_put_sync(dev);
+> +	pm_runtime_disable(dev);
+> +
+> +	return err;
+>  }
+>  
+>  static void ti_eqep_remove(struct platform_device *pdev)
 
-  Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
+And once everything is converted to devm, we can drop the
+remove callback.
 
-are available in the Git repository at:
+> 
+> ---
+> base-commit: 452c3b1ea875276105ac90ba474f72b4cd9b77a2
+> change-id: 20260417-ti-eqep-8efb9cc713ea
+> 
+> Best regards,
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.gi=
-t tags/for-v7.1
-
-for you to fetch changes up to 98d68b74ebb9d5f145960ff7d96ce8e7a39fb965:
-
-  power: supply: qcom_smbx: allow disabling charging (2026-04-03 00:40:54 +=
-0200)
-
-----------------------------------------------------------------
-power supply and reset changes for the 7.1 series
-
- * power-supply drivers
-  - S2MU005: new battery fuel gauge driver
-  - macsmc-power: new driver for Apple Silicon
-  - qcom_battmgr: Add support for Glymur and Kaanapali
-  - max17042: add support for max77759
-  - qcom_smbx: allow disabling charging
-  - bd71828: add input current limit support
-  - multiple drivers: use new device managed workqueue allocation
-    function
-  - misc. small cleanups and fixes
- * reset core
-  - Expose sysfs for registered reboot_modes
- * reset drivers
-  - misc. small cleanups and fixes
-
-----------------------------------------------------------------
-Andreas Kemnade (1):
-      power: supply: bd71828: add input current limit property
-
-Andrew Davis (1):
-      power: reset: keystone: Use register_sys_off_handler(SYS_OFF_MODE_RES=
-TART)
-
-Andr=E9 Draszik (11):
-      dt-bindings: power: supply: max17042: add support for max77759
-      dt-bindings: power: supply: max17042: support shunt-resistor-micro-oh=
-ms
-      dt-bindings: power: supply: max17042: drop formatting specifier |
-      power: supply: max17042: fix a comment typo (then -> than)
-      power: supply: max17042: use dev_err_probe() where appropriate
-      power: supply: max17042: avoid overflow when determining health
-      power: supply: max17042: time to empty is meaningless when charging
-      power: supply: max17042: support standard shunt-resistor-micro-ohms D=
-T property
-      power: supply: max17042: initial support for Maxim MAX77759
-      power: supply: max17042: consider task period (max77759)
-      power: supply: max17042: report time to full (max17055 & max77759)
-
-Anjelique Melendez (1):
-      power: supply: qcom_battmgr: Add support for Glymur and Kaanapali
-
-Arnd Bergmann (1):
-      power: reset: reboot-mode: fix -Wformat-security warning
-
-Bartosz Golaszewski (1):
-      power: reset: drop unneeded dependencies on OF_GPIO
-
-Casey Connolly (1):
-      power: supply: qcom_smbx: allow disabling charging
-
-Dmitry Torokhov (1):
-      power: supply: sbs-manager: normalize return value of gpio_get
-
-Hector Martin (1):
-      power: supply: Add macsmc-power driver for Apple Silicon
-
-Jaime Saguillo Revilla (1):
-      power: supply: cpcap-battery: fix typo in config name
-
-Kaustabh Chakraborty (1):
-      dt-bindings: power: supply: document Samsung S2MU005 battery fuel gau=
-ge
-
-Khushal Chitturi (1):
-      dt-bindings: power: reset: cortina,gemini-power-controller: convert t=
-o DT schema
-
-Krzysztof Kozlowski (10):
-      power: supply: axp288_charger: Do not cancel work before initializing=
- it
-      power: supply: axp288_charger: Simplify returns of dev_err_probe()
-      power: supply: bq24190: Avoid rescheduling after cancelling work
-      power: supply: twl4030_madc: Drop unused header includes
-      workqueue: devres: Add device-managed allocate workqueue
-      power: supply: cw2015: Free allocated workqueue
-      power: supply: max77705: Drop duplicated IRQ error message
-      power: supply: max77705: Free allocated workqueue and fix removal ord=
-er
-      power: supply: mt6370: Simplify with devm_alloc_ordered_workqueue()
-      power: supply: ipaq_micro: Simplify with devm
-
-Sebastian Reichel (1):
-      Merge branch 'for-7.1-devm-alloc-wq'
-
-Shivendra Pratap (2):
-      Documentation: ABI: Add sysfs-class-reboot-mode-reboot_modes
-      power: reset: reboot-mode: Expose sysfs for registered reboot_modes
-
-Svyatoslav Ryhel (2):
-      dt-bindings: power: supply: cpcap-battery: document monitored-battery=
- property
-      power: supply: cpcap-battery: pass static battery cell data from devi=
-ce tree
-
-Yassine Oudjana (1):
-      power: supply: add support for S2MU005 battery fuel gauge device
-
- .../testing/sysfs-class-reboot-mode-reboot_modes   |  36 +
- .../reset/cortina,gemini-power-controller.yaml     |  42 +
- .../bindings/power/reset/gemini-poweroff.txt       |  17 -
- .../bindings/power/supply/cpcap-battery.yaml       |   1 +
- .../bindings/power/supply/maxim,max17042.yaml      |  21 +-
- .../power/supply/samsung,s2mu005-fuel-gauge.yaml   |  49 ++
- Documentation/driver-api/driver-model/devres.rst   |   4 +
- MAINTAINERS                                        |   1 +
- drivers/power/reset/Kconfig                        |   8 +-
- drivers/power/reset/keystone-reset.c               |  11 +-
- drivers/power/reset/reboot-mode.c                  | 151 +++-
- drivers/power/supply/Kconfig                       |  22 +
- drivers/power/supply/Makefile                      |   2 +
- drivers/power/supply/axp288_charger.c              |  71 +-
- drivers/power/supply/bd71828-power.c               |  62 ++
- drivers/power/supply/bq24190_charger.c             |   9 +-
- drivers/power/supply/cpcap-battery.c               |  31 +-
- drivers/power/supply/cw2015_battery.c              |   3 +-
- drivers/power/supply/ipaq_micro_battery.c          |  50 +-
- drivers/power/supply/macsmc-power.c                | 855 +++++++++++++++++=
-++++
- drivers/power/supply/max17042_battery.c            | 130 +++-
- drivers/power/supply/max77705_charger.c            |  36 +-
- drivers/power/supply/mt6370-charger.c              |  13 +-
- drivers/power/supply/qcom_battmgr.c                |   2 +
- drivers/power/supply/qcom_smbx.c                   |   7 +
- drivers/power/supply/s2mu005-battery.c             | 307 ++++++++
- drivers/power/supply/sbs-manager.c                 |   2 +-
- drivers/power/supply/twl4030_madc_battery.c        |   2 -
- include/linux/power/max17042_battery.h             |  25 +-
- include/linux/workqueue.h                          |  22 +
- kernel/workqueue.c                                 |  28 +
- 31 files changed, 1839 insertions(+), 181 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-reboot-mode-reboo=
-t_modes
- create mode 100644 Documentation/devicetree/bindings/power/reset/cortina,g=
-emini-power-controller.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/reset/gemini-po=
-weroff.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/samsung,=
-s2mu005-fuel-gauge.yaml
- create mode 100644 drivers/power/supply/macsmc-power.c
- create mode 100644 drivers/power/supply/s2mu005-battery.c
-
---ciwqdomctq3b7icj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAmniVKUACgkQ2O7X88g7
-+ppBTw/+P//uFdD9VzFW7xGUZ5Ib7YH8TmvjibVChjy/faEq+4lNgx80N2Ob1CSr
-0lAIC2kJcuUMHEbDJhkbkEWNDfkC59RXV23O0OT7MXzjXOxdI//ypxcyM6ZciS/f
-gryXcE7UgqBiz+KxqRXaKWvBWAKQ3uo+BZQWMxgpr/ig8Jy3UY9lFmcjQmhbCzbg
-2HJnpr2domRwm6J6o6GOH7Bqa1TJwHnj9iCNLKePZjxX1qMXRUqJUktJT2cHpgjH
-XHg0XETRxHLu1F6htqe+CIfa5SiMkPT9/V1cKvNsBCULh0kiDYqSkqd/ES9nAirh
-5kNRRK1ur4XfCXIfoeY1sWUX1VHi9/rpX5/PuaG6AGjNzHu2zn6Mj1oOjpbXhb0E
-h/11cDar1gmkPNA9casoWtlW/2S3U8IRsehlW1dy3NGXIlaDCyzlLoX5NtLkLNbg
-X49+Ad+yl0yO9i10KKdPURJSU8PHoR54oEdH/cRIC8k+s/R4Yr/XQhHPmYc9Eu66
-ilLF57JsUixIXMB7eOqP/v4BLJsuSpWyJhtcXkJLG6AEEpG6gBw1DQrv9dPEVUqD
-KyTHH+ikrR+nhwTPZ7AbD61MhcIOkJd8EgkfSYyaFOEzGW8z96GwTj7UttpLVYFk
-nbfex34FpNKveEj88tM8HaxqLfffvh1LbRDh+45aZxCeEpGV300=
-=IsQ5
------END PGP SIGNATURE-----
-
---ciwqdomctq3b7icj--
