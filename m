@@ -1,32 +1,32 @@
 Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36301329C66;
-	Fri, 17 Apr 2026 16:37:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 462BA1A682C;
+	Fri, 17 Apr 2026 16:37:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776443824; cv=none; b=KTyi0AxCdWAHSu92RUxAsQYpSt8Z+WBHbX0grKfGq98O0GZFWlrqrhkWa/u+5I315H+q80u1IxZiJGRm9FEwquxHOVC6O/NKI+h61byTHY7dStist8/fX8GanQOmpu/YwZ66qdpd84AlBjujUVXxOwr0yZoXg0tGAVovVoN0NuE=
+	t=1776443825; cv=none; b=av8oOHNtPj0hcJfSSZX5sFeYqWr0LVrABgvuQSTxr0+sLTuZnHoSMUR055DWyCajB7U7Z2rF5k9EvAwNHBgK0p5JM0M1wF6sHSEpnB4/cpKh6Y8vUAr+NtZ+OOit2PZAWafLy+0hblsBM3WwOedb6V16vL//X++nKMISkJ5DxUQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776443824; c=relaxed/simple;
-	bh=dSGVBP6Kwid380fHwj/yvIcbmVkBngDKwALA0QzKSyw=;
+	s=arc-20240116; t=1776443825; c=relaxed/simple;
+	bh=OW1b2Q/DJTEMxPikE6mdf/p+H5KyL7TPJwoR6k9njCc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Vjg1+11voVRpI3gjvJmhOpYFjSaDL643SneXMsu+nI9R403nkMsJwbj4O+E2b0KxBQAUyB7peDxyHDzxhSY54LkSC/kBGYYQZl9LchZTKOQgEo57cfbYCWaz0DLDR5JJCZfP4l31e+Ia53TvGCriHk69fEbE/m6jKo2AMsDrE2U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=sOC+/nc9; arc=none smtp.client-ip=65.21.61.41
+	 In-Reply-To:To:Cc; b=omsFgIHBAAHkoN3Nlh3r+6d7D3VAsOrfvbGZH5969prfZ9HuNDh2+UI638K5g8d25zhu9NNn8lD593yfhrYS1WK72wqS5pvD/kr0U2f76uhu8C1MMUTcVLcjd3Z9kC7Y6DCd8fQjAtfyyYKw3wKdZi6jjNZT6/SbjyoocmzfAAo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=H+NDf5jh; arc=none smtp.client-ip=65.21.61.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="sOC+/nc9"
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="H+NDf5jh"
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1776443821;
-	bh=dSGVBP6Kwid380fHwj/yvIcbmVkBngDKwALA0QzKSyw=;
+	s=courrier-s1; t=1776443822;
+	bh=OW1b2Q/DJTEMxPikE6mdf/p+H5KyL7TPJwoR6k9njCc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=sOC+/nc95HwQ3If8FUGI/tkBtJLHsXdQnLbO7PiFt9lj0UA2hMwm3RZQ6KJKdCUqp
-	 ysXkOG4oYCUPTjrF4sDoS2oWo3kaA7rdITvI5XHCLsjSs+zSt2huR5idMSgkqrwGpr
-	 SaxJYKLQCoL5JYVRChH4SBObGEjI0TD/2aMKiN8U=
-Date: Fri, 17 Apr 2026 18:27:18 +0200
-Subject: [PATCH v3 2/8] dt-bindings: i2c: amlogic: Add compatible for T7
- SOC
+	b=H+NDf5jh8sVTkrPc44iNmFBBQsqlAQ6ZUrfo98N1XAUFJrs9QoCOKUEksbIdvTdaB
+	 hrcT1oRRwqjJzHBCrMCjySQxios1NTCkqh8SQdTG2ouJ9irZh0x4dJJgpSa8xUB40q
+	 4TX8VHJ7qiZuj88+Ysu+T37Jw3BHwLCj996AGvAQ=
+Date: Fri, 17 Apr 2026 18:27:19 +0200
+Subject: [PATCH v3 3/8] mfd: khadas-mcu: Add per-variant configuration
+ infrastructure and VIM4 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260417-add-mcu-fan-khadas-vim4-v3-2-a6a7f570b11b@aliel.fr>
+Message-Id: <20260417-add-mcu-fan-khadas-vim4-v3-3-a6a7f570b11b@aliel.fr>
 References: <20260417-add-mcu-fan-khadas-vim4-v3-0-a6a7f570b11b@aliel.fr>
 In-Reply-To: <20260417-add-mcu-fan-khadas-vim4-v3-0-a6a7f570b11b@aliel.fr>
 To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
@@ -53,48 +53,88 @@ Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openssh-sha256; t=1776443816; l=1268;
+X-Developer-Signature: v=1; a=openssh-sha256; t=1776443816; l=2417;
  i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
- bh=dSGVBP6Kwid380fHwj/yvIcbmVkBngDKwALA0QzKSyw=;
+ bh=OW1b2Q/DJTEMxPikE6mdf/p+H5KyL7TPJwoR6k9njCc=;
  b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
  BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QIJzFTKW3rJkbI8G4HNHwG/SaKlPKhhf1BMkq9mNhnjhgPsdVTXoHB5c3luaopWfZXt2ICwrk5L
- wQkituZfWtAU=
+ QMCdn8xfIyM+fQy2ZDCjGnTo045FT82SqUp9xOk/xUk/qbhgtrh/EmI7WIP7cvfXg8tOMD64SAe
+ Fkr9qda31sQU=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
  fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-Add the T7 SOC compatible which fallback to AXG compatible.
+Introduce a per-variant configuration structure (khadas_mcu_data)
+holding the regmap config and MFD cells,
+selected at probe time via the of_device_id match data.
+This makes adding other variants straightforward.
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+Also introduce khadas_mcu_fan_pdata to pass fan register address and
+maximum level to the fan sub-driver, removing the hardcoded constants.
+
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- .../devicetree/bindings/i2c/amlogic,meson6-i2c.yaml         | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ include/linux/mfd/khadas-mcu.h | 39 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-index c4cc8af182807..7b59b60b62e5b 100644
---- a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-+++ b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
-@@ -16,10 +16,15 @@ allOf:
+diff --git a/include/linux/mfd/khadas-mcu.h b/include/linux/mfd/khadas-mcu.h
+index a99ba2ed0e4e0..75e275d3fa8d9 100644
+--- a/include/linux/mfd/khadas-mcu.h
++++ b/include/linux/mfd/khadas-mcu.h
+@@ -70,6 +70,13 @@
+ #define KHADAS_MCU_WOL_INIT_START_REG		0x87 /* WO */
+ #define KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG	0x88 /* WO */
  
- properties:
-   compatible:
--    enum:
--      - amlogic,meson6-i2c # Meson6, Meson8 and compatible SoCs
--      - amlogic,meson-gxbb-i2c # GXBB and compatible SoCs
--      - amlogic,meson-axg-i2c # AXG and compatible SoCs
-+    oneOf:
-+      - items:
-+          - enum:
-+              - amlogic,t7-i2c
-+          - const: amlogic,meson-axg-i2c
-+      - enum:
-+          - amlogic,meson6-i2c # Meson6, Meson8 and compatible SoCs
-+          - amlogic,meson-gxbb-i2c # GXBB and compatible SoCs
-+          - amlogic,meson-axg-i2c # AXG and compatible SoCs
++/* VIM4 specific registers */
++#define KHADAS_MCU_VIM4_REST_CONF_REG		0x2c /* WO - reset EEPROM */
++#define KHADAS_MCU_VIM4_LED_ON_RAM_REG		0x89 /* WO - LED volatile */
++#define KHADAS_MCU_VIM4_FAN_CTRL_REG		0x8a /* WO */
++#define KHADAS_MCU_VIM4_WDT_EN_REG		0x8b /* WO */
++#define KHADAS_MCU_VIM4_SYS_RST_REG		0x91 /* WO */
++
+ enum {
+ 	KHADAS_BOARD_VIM1 = 0x1,
+ 	KHADAS_BOARD_VIM2,
+@@ -82,10 +89,38 @@ enum {
+  * struct khadas_mcu - Khadas MCU structure
+  * @device:		device reference used for logs
+  * @regmap:		register map
++ * @data:		pointer to variant-specific config
+  */
+ struct khadas_mcu {
+-	struct device *dev;
+-	struct regmap *regmap;
++	struct device			*dev;
++	struct regmap			*regmap;
++	const struct khadas_mcu_data	*data;
++};
++
++/**
++ * struct khadas_mcu_data - per-variant configuration
++ * @regmap_config:	regmap configuration
++ * @cells:		MFD sub-devices
++ * @ncells:		number of sub-devices
++ * @fan_cells:		MFD fan sub-devices
++ * @nfan_cells:		number of fan sub-devices
++ */
++struct khadas_mcu_data {
++	const struct regmap_config	*regmap_config;
++	const struct mfd_cell		*cells;
++	int				ncells;
++	const struct mfd_cell		*fan_cells;
++	int				nfan_cells;
++};
++
++/**
++ * struct khadas_mcu_fan_pdata - fan sub-driver configuration
++ * @fan_reg: register address to write the fan level
++ * @max_level: maximum fan level
++ */
++struct khadas_mcu_fan_pdata {
++	unsigned int fan_reg;
++	unsigned int max_level;
+ };
  
-   reg:
-     maxItems: 1
+ #endif /* MFD_KHADAS_MCU_H */
 
 -- 
 2.49.0
