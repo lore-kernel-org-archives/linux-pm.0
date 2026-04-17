@@ -1,142 +1,95 @@
-Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com [209.85.221.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7CBD34B1A6
-	for <linux-pm@vger.kernel.org>; Fri, 17 Apr 2026 07:55:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8656B3126C0;
+	Fri, 17 Apr 2026 08:07:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=210.61.82.184
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776412554; cv=none; b=rlmq1+ptfmo5MEhppXDvKkoKMDr0bfqhgBlgpCk58znOAAj4bHKrVvz60yMhpXFwX7R8SYpUQcj19o66Ah4Q1Xa+o1vhvcubspt5grFN347Wnon99ERdT62N187ajjfCPWrmUDbuoqEZjCAZEoFLUCiN2Ldq8TzNK3REBCD4U3Q=
+	t=1776413232; cv=none; b=gwS3zTlAuenMQjy4CEy7lca/yoYqXIx4b8wikPW/m2GU8n5HR4dwlGFACQASraXQPVKX5DKbynlps9MAtop9U1J8WDDGcLxmGSS2TLJLWv/uhfSh6ZQbY7LSmKXaEGA9yNbV0NdC346nbV0aCqvl+1+nLucNGXIiV57lUGAqyKA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776412554; c=relaxed/simple;
-	bh=JNeksg9S+lB98sqZfvaiYvzh63QDCtUQjEt4efnJmzI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YKPr22+iqfQfba3IbWEJaO2fMiwDkEEVvW5u2+2VWLt4oLKh6NFTX4Q0WE7YBu8QatezdIDdfQH6NWrNkZ9kwZ0E7mCG9Gjcc36vW/QRujSfyrUy4hsMsgdxoeDxwmOarmZKwsK/sRYZoC26xVdvr1f5vvSdBEtQZ2V6X9cXD3Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f175.google.com with SMTP id 71dfb90a1353d-56d93355337so292062e0c.0
-        for <linux-pm@vger.kernel.org>; Fri, 17 Apr 2026 00:55:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776412552; x=1777017352;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sYGvKR169qobRnTdQfak1Kyzy8QQtDe/iStEp2kI73Y=;
-        b=cuT0YlCw91aVqMp9eyGRevujbcBjukwwMoa/8ZHy5hdMcY/PBkgJ3eeyXc/1djabg0
-         Kq4iKt3bvHWztGZO5Bs6vT3XqmSWa24d25Yn+iRKaeU1/p31Z95yAXWixk2OgCD35cRE
-         7LalNI8F4OTNMo1h4idV8wOwEyDbN6K01TEM8kM1VbLrjwtwLFrNbENms9M9i9dRt7qX
-         3VtAJFHD+Qin6u7cJMA9znlXqihMQfmi/fLrT8BR+koACSeZTHCH8d0JPG352InDbqtu
-         DMl+XMIe6Svy2O2XCZt1JF8XXs1jF9IODujWHhx3BPP/NtOLUBTZSPSXC5h5Tm1YiFuK
-         nysQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/QLriIb5orWFXZu07lRWoqPpoPBbFnXRO6a75Qzeb5k+tSrSug7evLcVh7Iixli5ga3dIjOoAXQw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx0iYqwLPZkXPqFmOqoGZ+u4J0v4bVNQpqDTTr4MoRqLko8oj8D
-	mMPrenvLF/oAkCCbSnzHmNiWpbHB6laQGSLQUzJjya2Kq9WnPxv4AyuUt7dGTJSo
-X-Gm-Gg: AeBDiet92KGFF9rpMxebhuzquFiSkIPGkCuvgB5tLR4viFiHruWCjZRK2wjaxHz/Mj0
-	8In9Sr+GCSUKStiQxTohmAL4kK2Ns/wrJz8uCq2s6msygYCNe+VFnTHvTB+aZvyPs6u1e6rVyjj
-	+lgSlPOmDrLasKLmGWnoFk8lWnAZjQrtWtRayyRKi2YSxOYZjzwlyKMqsTeuwL7Ys2Bi7aByk+M
-	WOuQa3bfDo3Hd6/ECTTUz/Zkf3vz/cxAu7rZsXU2rDlymleEn5xkblxmupt9fXPJfwMi1uWmbb5
-	ZscCTKX0Z5WYCEUaI1xmzrRKse9CGk3HSjoqwSmNxT47F1E25vflrGKg/CNrxznnkDiTXV59t+T
-	duVLPLhZhj/rngsCL45GnaCRaXP8YqrM0XPHupT86Pu1VLoLphEFLvRLmq2pkG7IeBLsHojYGno
-	/f37CyLkLalxeuaEY6o5xiTIe2UJZfmtFvl7S072sXpMPhPWE1q/Y64x748fv2wdBsrei+bB4zS
-	69s6anAmg==
-X-Received: by 2002:a05:6122:90e:b0:56f:6b46:28be with SMTP id 71dfb90a1353d-56fa5931dc6mr767314e0c.8.1776412551598;
-        Fri, 17 Apr 2026 00:55:51 -0700 (PDT)
-Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com. [209.85.222.45])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56fa90335e6sm488989e0c.0.2026.04.17.00.55.51
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 17 Apr 2026 00:55:51 -0700 (PDT)
-Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-9568159ee07so252189241.1
-        for <linux-pm@vger.kernel.org>; Fri, 17 Apr 2026 00:55:51 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/u+2+/ZWLBR/GSUVMVTDGShH+kIKgphxXeBxKs+0iMx+KyjYYyTmolG5fyQVe9wUs1OOxHeNKM7A==@vger.kernel.org
-X-Received: by 2002:a05:6102:4a84:b0:604:f29d:84be with SMTP id
- ada2fe7eead31-616f4b50373mr742219137.3.1776412551117; Fri, 17 Apr 2026
- 00:55:51 -0700 (PDT)
+	s=arc-20240116; t=1776413232; c=relaxed/simple;
+	bh=/e+xUzGbZfufxRaNCCuSAEv4BwaXVbbWvQEOrjdWmxQ=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=smLFCMN7QfqEtJ7xkXfpWpjtk56TJN1AMVz6MIPtvCjin5ji6qqLZvFMv0WomeDuyGRDM40hPgGNvuwa3pTaywNK5VEkzb8wglFouuMbB+l8KK6ClgnGWCsFgbIh1Dy6BEs7QO+7fsbs7ZlS46pwo2d9Lilung5WXZcpf7n/J/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com; spf=pass smtp.mailfrom=mediatek.com; dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b=hCy5uFlQ; arc=none smtp.client-ip=210.61.82.184
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mediatek.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="hCy5uFlQ"
+X-UUID: 6bafbef63a3411f19a16598d5ca7f8ec-20260417
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+	h=Content-Type:Content-Transfer-Encoding:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=Os1dnyvYL2jpJMtSiA0rHB9vces/3fIbY0D06HvlXQE=;
+	b=hCy5uFlQ+OU3J0JLu0vBYpeMJPAryroIdAPQ+nBji356LkrGcpNtDloYKdEAF3+OFLWzH/vEJo6SIbcSVcBJ6j/nbFOVJnAqpPlDp3IaDYyq9CEQBS64qV5N53mtabousned13/btNAT3jySODUOUEoS8NhMv6kNJS/Gg08M+Fw=;
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:bd3b836a-ac7e-42ca-a7fa-e199c070b4f2,IP:0,U
+	RL:0,TC:0,Content:29,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:29
+X-CID-META: VersionHash:e7bac3a,CLOUDID:27cdf924-cb5c-4236-a89a-9a7fb20c9bc4,B
+	ulkID:nil,BulkQuantity:0,Recheck:0,SF:102|836|865|888|898,TC:-5,Content:4|
+	15|50,EDM:-3,IP:nil,URL:0,File:130,RT:0,Bulk:nil,QS:nil,BEC:-1,COL:0,OSI:0
+	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 6bafbef63a3411f19a16598d5ca7f8ec-20260417
+Received: from mtkmbs10n1.mediatek.inc [(172.21.101.34)] by mailgw02.mediatek.com
+	(envelope-from <binbin.shi@mediatek.com>)
+	(Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+	with ESMTP id 169650723; Fri, 17 Apr 2026 16:07:04 +0800
+Received: from mtkmbs11n1.mediatek.inc (172.21.101.185) by
+ mtkmbs11n2.mediatek.inc (172.21.101.187) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.29; Fri, 17 Apr 2026 16:07:02 +0800
+Received: from gcnsap21.gcn.mediatek.inc (10.17.81.22) by
+ mtkmbs11n1.mediatek.inc (172.21.101.73) with Microsoft SMTP Server id
+ 15.2.2562.29 via Frontend Transport; Fri, 17 Apr 2026 16:07:02 +0800
+From: Binbin Shi <binbin.shi@mediatek.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar
+	<viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+	<matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+	<angelogioacchino.delregno@collabora.com>, Hector Yuan
+	<hector.yuan@mediatek.com>
+CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-mediatek@lists.infradead.org>,
+	<Project_Global_Chrome_Upstream_Group@mediatek.com>,
+	<vince-wl.liu@mediatek.com>, Binbin Shi <binbin.shi@mediatek.com>
+Subject: [PATCH] dt-bindings: cpufreq: add mt8189 cpufreq hw dt-bindings
+Date: Fri, 17 Apr 2026 16:06:17 +0800
+Message-ID: <20260417080648.3692438-1-binbin.shi@mediatek.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260416131810.3116408-1-thierry.reding@kernel.org> <aeEm5DavehkPmSgl@darkstar.musicnaut.iki.fi>
-In-Reply-To: <aeEm5DavehkPmSgl@darkstar.musicnaut.iki.fi>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 17 Apr 2026 09:55:40 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVxkOeAZqPsVRecOmQV+n=+ey=nFcdduiXvs9LBj-nNQQ@mail.gmail.com>
-X-Gm-Features: AQROBzAxAj1dJZMvY5l2s199UA8tSOX5OgUQyonlFdS__wBHgEBXO25Dv2sGHpo
-Message-ID: <CAMuHMdVxkOeAZqPsVRecOmQV+n=+ey=nFcdduiXvs9LBj-nNQQ@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Move Peter De Schrijver to CREDITS
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thierry Reding <thierry.reding@kernel.org>, linux-tegra@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
-	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Paul Walmsley <pjw@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Thu, 16 Apr 2026 at 20:14, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
-> On Thu, Apr 16, 2026 at 03:18:10PM +0200, Thierry Reding wrote:
-> > From: Thierry Reding <treding@nvidia.com>
-> >
-> > Peter sadly passed away a while back. Paul did a much better job at
-> > finding the right words to mourn this loss than I ever could, so I will
-> > leave this link here:
-> >
-> >   https://lore.kernel.org/lkml/alpine.DEB.2.21.999.2407240345480.11116@utopia.booyaka.com/T/#u
-> >
-> > Co-developed-by: Paul Walmsley <pjw@kernel.org>
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
->
-> Thanks for doing this. I think also the m68k work should be mentioned?
+Add mt8189 cpufreq hw compatible in dt-bindings.
 
-Indeed: Apollo Domain workstations, and Ariadne and Hydra Amiga
-Ethernet.
+Signed-off-by: Binbin Shi <binbin.shi@mediatek.com>
+---
+ .../devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml      | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Also: IBM PS/2, Microchannel, and Token Ring support.
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
+index d0aecde2b89b..cff52fffc6b8 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
+@@ -16,7 +16,9 @@ description:
+ 
+ properties:
+   compatible:
+-    const: mediatek,cpufreq-hw
++    enum:
++      - mediatek,cpufreq-hw
++      - mediatek,mt8189-cpufreq-hw
+ 
+   reg:
+     minItems: 1
+-- 
+2.45.2
 
-Peter is also still listed as the contact info in
-Documentation/ABI/testing/sysfs-driver-tegra-fuse
-and as DT bindings maintainer in
-Documentation/devicetree/bindings/reserved-memory/nvidia,tegra264-bpmp-shmem.yaml
-
-Thanks!
-
-> > --- a/CREDITS
-> > +++ b/CREDITS
-> > @@ -3645,7 +3645,13 @@ D: Macintosh IDE Driver
-> >
-> >  N: Peter De Schrijver
-> >  E: stud11@cc4.kuleuven.ac.be
-> > +E: p2@mind.be
-> > +E: peter.de-schrijver@nokia.com
-> > +E: pdeschrijver@nvidia.com
-> > +E: p2@psychaos.be
-> >  D: Mitsumi CD-ROM driver patches March version
-> > +D: OMAP power management
-> > +D: NVIDIA Tegra clock and BPMP drivers, among many other things
-> >  S: Molenbaan 29
-> >  S: B2240 Zandhoven
-> >  S: Belgium
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index ef978bfca514..ffe20d770249 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -26145,7 +26145,6 @@ T:    git git://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git
-> >  N:   [^a-z]tegra
-> >
-> >  TEGRA CLOCK DRIVER
-> > -M:   Peter De Schrijver <pdeschrijver@nvidia.com>
-> >  M:   Prashant Gaikwad <pgaikwad@nvidia.com>
-> >  S:   Supported
-> >  F:   drivers/clk/tegra/
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
