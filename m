@@ -1,143 +1,110 @@
-Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [185.185.170.37])
+Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 085642E4247;
-	Sat, 18 Apr 2026 20:07:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.185.170.37
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776542845; cv=pass; b=WSwQIId3iOK+u6muvBSUBF/vqfE8iYG9p/vbRruXMKgYdhNYhRRX+aiZZNz6fXgbfjcv7n69XZm14oY6CYvUVHXrBOt+c8WcrLUjWcMfUOYE4yn5XAgn+MKOzKbtrHj1IlscbiL7+O0FDa+WK4XHLA3j6OlI+l6J2Q7ic7LzVH8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776542845; c=relaxed/simple;
-	bh=22w2I5NLd6Oc4e7UYBpDdZFyx3gOidmynxa+EEOsljE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hZaF9PXIu2/o50zPF66UjYLr8VcOU+tIuAcg0WgCa8KzXeCDux1CX5FeqgRfguZGAW8X0PN9t2XuUTU6vCEitRxPgjRM2XKBpWNnXiFF7tnLFnxmKOb6WN+Wkx4tA5ZHJ3GPHlxChtPdRpak6SjoVXlvOScqXA21S7inXSSaJj8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi; spf=pass smtp.mailfrom=iki.fi; dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b=Kb/eSYaT; arc=pass smtp.client-ip=185.185.170.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iki.fi
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iki.fi
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=iki.fi header.i=@iki.fi header.b="Kb/eSYaT"
-Received: from darkstar.musicnaut.iki.fi (unknown [83.245.248.121])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: aaro.koskinen)
-	by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 4fyjTG4pT0z49PyQ;
-	Sat, 18 Apr 2026 23:07:14 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
-	t=1776542836;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bbLXe4Og5GCtNFoJgU/iohm65MD7uV97LErFdEaEF7E=;
-	b=Kb/eSYaTGUs55bvEsMxccKvCe1lUD/sC5KPz52uNr/U8hOF93wi3MJ/ppCQzVraZzFgRSf
-	NpbRguOwXxqkeAal1VE5DkM0YUkMeOOSm0b2kbTRx5Wn+bX6swZUBHk4lh29SsSTZk77jQ
-	Mzv3ulGDMEVOV5fx744CmMbp0OwNLWupT+/2EXWypmaU20OQXi/cqeD8BhJGXrc7daAZ0O
-	3a497Evvq0bC3XQVGjzncJo95Nxp64oByLOahYDQPAjtfkJ4RAxPEUdXH1K6047WHeGFCt
-	cTnzSg7cYlVtnN8bqzTZWwbHbuIHQ5JYsjgVx2Ldhh56Sb2FWpuG5/Ew6OVcLw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-	s=lahtoruutu; t=1776542836;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bbLXe4Og5GCtNFoJgU/iohm65MD7uV97LErFdEaEF7E=;
-	b=OzG0N6MLYgpi1aRsblyHfoGw+pLJtJWCg2i8myzuMiQHgjQpE1b3ERF/7QzQ+DVFBBV98S
-	eZFBGjKghztB7FKssj0DxIHoOAq02h1PDRTB4ILQtVrdOa4GfO8HpVjzOveNlPqCvZKjHf
-	uUR1QP9Mm7sWsbpbhmzi7ylUWdy79YGZw0NMaA1Pe9OhaoFiBqj6IJxykjbGrw5TTLyACi
-	Vef8no+A8Oe1cbnG2sNk40s2M6pefcWSxkk7ohZsWG3wgMkBhdIpY1ovKPCJSwAMu+bgaf
-	T/qWkC9ydIY9j3wIvP8ffGOiAGX5n9OAKRiK1pZkS9TlRMdyDH2uvZyI/INq9Q==
-ARC-Authentication-Results: i=1;
-	ORIGINATING;
-	auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
-ARC-Seal: i=1; a=rsa-sha256; d=iki.fi; s=lahtoruutu; cv=none; t=1776542836;
-	b=eshlC+o2K2l5qT1L/SCjR+WV73Bxk3OnqYzN/ng9ZtWmLTCyGx4qWO0cj+sY3un7wD+DWF
-	MIP3JwY4ccDiOSgOBlDBrCiDbsuKg5rQfQRsHgPRr2U6MQ3X8fQhxnqSfdAtPVXB6faeIN
-	16RlXbFjoaeE0McGG6MI1iZ2Q3RmknYSgKIffA8i/SDklYeP4I2UHkA5sigaZmBd5Fr02U
-	pXCen5Yb7Y2rCQya5YQLIRq3jKAY7ZrLVPIjThjfrC+Zjqn4GNR8QJdgko2rkq9FRWbRBi
-	5/rhq39AbpRw5jUl2aGeuR57k23EZq+je5P9F9ullBxU4UZlhJ9erQa5rmyl7Q==
-Date: Sat, 18 Apr 2026 23:07:11 +0300
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: Thierry Reding <thierry.reding@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-tegra@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-	linux-omap@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Paul Walmsley <pjw@kernel.org>
-Subject: Re: [PATCH v2 1/3] MAINTAINERS: Move Peter De Schrijver to CREDITS
-Message-ID: <aePkb1qTEvnMhkDg@darkstar.musicnaut.iki.fi>
-References: <20260417131549.3154534-1-thierry.reding@kernel.org>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCFDD28B7DB;
+	Sat, 18 Apr 2026 23:05:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.11
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776553544; cv=none; b=rJ2nZZTF0Xm/mnnQrtMSkPhrJt6isVsW6SmiaInSCfut+mx5fM7bq/4s5R1ZIGsFMvaSC+9Jegs6HVcDHoA6TgEltelucw+iFn8Au+mMwRHPqibld/tM/QduRkIFknB+xmT+dY1+8aK665/ad9+20dHPqxQJIMio/sO6Ik0p2OY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776553544; c=relaxed/simple;
+	bh=3gjC89xnGxxB+QjjXVBM8oQx83vQETJQ/FYuJTiiO18=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=omedgi07McyVfk0Q+HIWV+a9F1cd3qJu6h1d+99LDTkvzyGAdp2ZKYAzvyloj0L64td14PgbyMpkj4DU6VD9t1hdCBW64ag9nhpwGjMA8es9OTkMrbz+pZFgxEwpGyopHjBQZSU+YPADKsreNjSfgpLC1k3ctAVN9G2Olws6H7g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
+Received: from omf17.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay01.hostedemail.com (Postfix) with ESMTP id 3A610E4C26;
+	Sat, 18 Apr 2026 23:05:34 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf17.hostedemail.com (Postfix) with ESMTPA id D63C017;
+	Sat, 18 Apr 2026 23:05:02 +0000 (UTC)
+Date: Sat, 18 Apr 2026 19:04:56 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dmitry Ilvokhin <d@ilvokhin.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Ingo Molnar <mingo@redhat.com>, Jens
+ Axboe <axboe@kernel.dk>, io-uring@vger.kernel.org, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+ <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Marcelo Ricardo
+ Leitner <marcelo.leitner@gmail.com>, Xin Long <lucien.xin@gmail.com>, Jon
+ Maloy <jmaloy@redhat.com>, Aaron Conole <aconole@redhat.com>, Eelco
+ Chaudron <echaudro@redhat.com>, Ilya Maximets <i.maximets@ovn.org>,
+ netdev@vger.kernel.org, bpf@vger.kernel.org, linux-sctp@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, dev@openvswitch.org, Jiri Pirko
+ <jiri@resnulli.us>, Oded Gabbay <ogabbay@kernel.org>, Koby Elbaz
+ <koby.elbaz@intel.com>, dri-devel@lists.freedesktop.org, "Rafael J.
+ Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ "Gautham R. Shenoy" <gautham.shenoy@amd.com>, Huang Rui
+ <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, Len
+ Brown <lenb@kernel.org>, Srinivas Pandruvada
+ <srinivas.pandruvada@linux.intel.com>, linux-pm@vger.kernel.org, MyungJoo
+ Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>, Christian =?UTF-8?B?S8O2bmln?=
+ <christian.koenig@amd.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ linaro-mm-sig@lists.linaro.org, Eddie James <eajames@linux.ibm.com>, Andrew
+ Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>,
+ linux-fsi@lists.ozlabs.org, David Airlie <airlied@gmail.com>, Simona Vetter
+ <simona@ffwll.ch>, Alex Deucher <alexander.deucher@amd.com>, Danilo
+ Krummrich <dakr@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
+ Philipp Stanner <phasta@kernel.org>, Harry Wentland
+ <harry.wentland@amd.com>, Leo Li <sunpeng.li@amd.com>,
+ amd-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, Benjamin
+ Tissoires <bentiss@kernel.org>, linux-input@vger.kernel.org, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, Mark Brown
+ <broonie@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>,
+ Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, linux-spi@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K.
+ Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Chris
+ Mason <clm@fb.com>, David Sterba <dsterba@suse.com>,
+ linux-btrfs@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Andrew
+ Morton <akpm@linux-foundation.org>, SeongJae Park <sj@kernel.org>,
+ linux-mm@kvack.org, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org,
+ linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 00/19] tracepoint: Avoid double static_branch
+ evaluation at guarded call sites
+Message-ID: <20260418190456.631df6f3@fedora>
+In-Reply-To: <20260323160052.17528-1-vineeth@bitbyteword.org>
+References: <20260323160052.17528-1-vineeth@bitbyteword.org>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.52; x86_64-redhat-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260417131549.3154534-1-thierry.reding@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Stat-Signature: 14j39sducs3tg3aey13ys76m4wq4pf1a
+X-Rspamd-Server: rspamout02
+X-Rspamd-Queue-Id: D63C017
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX18uI1/Yo7/rI1+CwnTJAuzOiDhDTcHCmFM=
+X-HE-Tag: 1776553502-227936
+X-HE-Meta: U2FsdGVkX19V5aRBuQVgNrwFYqJny3DiV29cPCLORtmFjnJgNsHv2iodpq+DK7eFwvzFvhgzZ+I=
 
-Hi,
+On Mon, 23 Mar 2026 12:00:19 -0400
+"Vineeth Pillai (Google)" <vineeth@bitbyteword.org> wrote:
 
-On Fri, Apr 17, 2026 at 03:15:46PM +0200, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
-> 
-> Peter sadly passed away a while back. Paul did a much better job at
-> finding the right words to mourn this loss than I ever could, so I will
-> leave this link here:
-> 
->   https://lore.kernel.org/lkml/alpine.DEB.2.21.999.2407240345480.11116@utopia.booyaka.com/T/#u
-> 
-> Co-developed-by: Paul Walmsley <pjw@kernel.org>
-> Co-developed-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Co-developed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
+>   if (trace_foo_enabled() && cond)
+>       trace_call__foo(args);   /* calls __do_trace_foo() directly */
 
-Reviewed-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Hi Vineeth,
 
-A.
+Could you rebase this series on top of 7.1-rc1 when it comes out?
+Several of these patches were accepted already. Obviously drop those.
+They were the patches that added the feature, and any where the
+maintainer acked the patch.
 
-> ---
-> Changes in v2:
-> - add more missing entries
-> 
->  CREDITS     | 10 ++++++++++
->  MAINTAINERS |  1 -
->  2 files changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/CREDITS b/CREDITS
-> index 885fb05d8816..afd1f70b41cf 100644
-> --- a/CREDITS
-> +++ b/CREDITS
-> @@ -3645,7 +3645,17 @@ D: Macintosh IDE Driver
->  
->  N: Peter De Schrijver
->  E: stud11@cc4.kuleuven.ac.be
-> +E: p2@mind.be
-> +E: peter.de-schrijver@nokia.com
-> +E: pdeschrijver@nvidia.com
-> +E: p2@psychaos.be
-> +D: Apollo Domain workstations
-> +D: Ariadne and Hydra Amiga Ethernet drivers
-> +D: IBM PS/2, Microchannel, and Token Ring support
->  D: Mitsumi CD-ROM driver patches March version
-> +D: TWL4030 power management and audio codec driver
-> +D: OMAP power management
-> +D: NVIDIA Tegra clock and BPMP drivers, among many other things
->  S: Molenbaan 29
->  S: B2240 Zandhoven
->  S: Belgium
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ef978bfca514..ffe20d770249 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -26145,7 +26145,6 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git
->  N:	[^a-z]tegra
->  
->  TEGRA CLOCK DRIVER
-> -M:	Peter De Schrijver <pdeschrijver@nvidia.com>
->  M:	Prashant Gaikwad <pgaikwad@nvidia.com>
->  S:	Supported
->  F:	drivers/clk/tegra/
-> -- 
-> 2.52.0
-> 
-> 
+Now that the feature has been accepted, if you post the patch series
+again after 7.1-rc1 with all the patches that haven't been accepted
+yet, then the maintainers can simply take them directly. As the feature
+is now accepted, there's no dependency on it, and they don't need to go
+through the tracing tree.
+
+Thanks,
+
+-- Steve
