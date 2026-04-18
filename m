@@ -1,38 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE3FA8287E;
-	Sat, 18 Apr 2026 11:23:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB6DB2E2DDD;
+	Sat, 18 Apr 2026 11:24:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776511430; cv=none; b=eGks2qdWWywYrXbzlZwNzjrrSX3lSjWPzzZ4bjLSWzPriKJgDv9q2p3c+5oajWvlr64d5uM5+hv6Equ01k0ReZ/wSGuOo4OigZUQ03QRSBR0tsWqdtdOsAWmwa1j9dsEe6w+rBJTSYSGzueWlnOjGnjt9lQPuvd+TCHzXygBXK0=
+	t=1776511443; cv=none; b=PL3kxYSNMYW7ddur3sEP8YIxgA46eaD0mGs8urE6djhITw3ukzhc0w/0FT+7Hk+G4KC9KczbF0dRYYEH8077J1rMYHvBcOHIs6Hon9e9T+Lr7bc19iOfWPIw0uQA2wuZucGydxLjxG3bQ3lstxIVkWtgdQwoA+3mWHtPsfyyHpU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776511430; c=relaxed/simple;
-	bh=qmkxHMeyJSV68nZDal6E0M3LUkI/ZBWkIqKBNMIJZlA=;
-	h=Content-Type:Date:Message-Id:To:From:Subject:Cc:Mime-Version:
-	 References:In-Reply-To; b=i6qW9Gri6tXNjJuFuSrBEI6yjg66LP0Pjf88/2Vwg1oQ4NkNS2/JP4LOkFGQTmX18zti5fIKDDjaOi39dUp1HqL9W+cZBvyjsSptXAYp3lergxS8EVxLwssPuwdugFYsq9z/opUlNw97BKaa7rDRZLgM/3PQdusrFmqb8aHEklM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lxH4t3QQ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776511443; c=relaxed/simple;
+	bh=eEo8recsYatthAVX8i3XpCfdJmBlTwOldwA5txXfTHA=;
+	h=Content-Type:Date:Message-Id:Subject:Cc:To:From:Mime-Version:
+	 References:In-Reply-To; b=KEQk9y1vEfU/yhSSt+P0DFO1QB7/wu1iJ15YxIB7ACx5IM+LN7a5LIXwnOSYwdbTMaHDfWkzzhkpuMLUo0F48iuczCosDhyH+tE2hViZW2UonajZjDQgy/Y2purMOuGlAg/jRIXKtMfBsPb/QV4mfqG5SqT5ikTFE8zG59irM7c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PRUaJJ1i; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lxH4t3QQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 207C9C2BCB4;
-	Sat, 18 Apr 2026 11:23:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PRUaJJ1i"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06CECC2BCB4;
+	Sat, 18 Apr 2026 11:23:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776511430;
-	bh=qmkxHMeyJSV68nZDal6E0M3LUkI/ZBWkIqKBNMIJZlA=;
-	h=Date:To:From:Subject:Cc:References:In-Reply-To:From;
-	b=lxH4t3QQpK+6qWcBgGgkxbDwi1u1XBquksvhEonYSB99cgcu9K/u1KpEzl6elEh1C
-	 wwoct9m8iiWix6MIRx7TgoUcEG/gyQwUSf8DMC944YmvgsloPM0x+8bDyxM9AKRzV9
-	 Qswk8N0DWApztIltYY64xlL1Rm6HvNEwUJXFQfH75kZ/D+asFazR0sOqoDKLlvpGvc
-	 mL7FX6yrTQYWpl92Wt8hPQqCydjW4h6ymBGp005PpYt2ubboI5M5FZ9eLNltIk4TpM
-	 j9cpbCytcvwAA00RjKifKzAN5gSlKr6c0z/rrmtcRTTuZ9HSIjEkrIKxCw3OdIeRRM
-	 x86wlj9ADterg==
+	s=k20201202; t=1776511442;
+	bh=eEo8recsYatthAVX8i3XpCfdJmBlTwOldwA5txXfTHA=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=PRUaJJ1iM6epHYiOIjQlTfnjmSXbddoHrBtt1ltAbN8rOdRMRccEq7H6dQsuNspFe
+	 dKTAU22L1zT79Ep2tGhkisCBV+bI2NhFXAvaok+Qgd8T4kgn+KhGextsxgg7WLKHKE
+	 5McNFB8vAl2Br290cEOG4n1VlEll25WdcSUiT6IYDt7tZmEKjW9GWkJpUngHqpLtP/
+	 kMtiA1BcYlAF5Re21Y7z6B94KtjLtN8uC0FLh0BKtqirknbUn3ueKY57qOpoiTBzQp
+	 NqsvOm0jka03qFk0llNq6mfZMIFpq+oTv857iVmDNkFInzSrCstNod5Y/wde4A59Ym
+	 wQXG2pr17Sb/A==
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 18 Apr 2026 13:23:44 +0200
-Message-Id: <DHW8QPU1VU1F.3P6PH69HLFBYC@kernel.org>
-To: "Ulf Hansson" <ulf.hansson@linaro.org>
-From: "Danilo Krummrich" <dakr@kernel.org>
-Subject: Re: [PATCH v2 1/9] driver core: Enable suppliers to implement fine
- grained sync_state support
+Date: Sat, 18 Apr 2026 13:23:56 +0200
+Message-Id: <DHW8QV8K3CM1.307C6PW2BM5RN@kernel.org>
+Subject: Re: [PATCH v2 2/9] driver core: Add dev_set_drv_queue_sync_state()
 Cc: "Saravana Kannan" <saravanak@kernel.org>, "Rafael J . Wysocki"
  <rafael@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
  <linux-pm@vger.kernel.org>, "Sudeep Holla" <sudeep.holla@kernel.org>,
@@ -49,6 +46,8 @@ Cc: "Saravana Kannan" <saravanak@kernel.org>, "Rafael J . Wysocki"
  <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
  "Geert Uytterhoeven" <geert+renesas@glider.be>,
  <driver-core@lists.linux.dev>
+To: "Ulf Hansson" <ulf.hansson@linaro.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,115 +56,44 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 References: <20260410104058.83748-1-ulf.hansson@linaro.org>
- <20260410104058.83748-2-ulf.hansson@linaro.org>
-In-Reply-To: <20260410104058.83748-2-ulf.hansson@linaro.org>
+ <20260410104058.83748-3-ulf.hansson@linaro.org>
+In-Reply-To: <20260410104058.83748-3-ulf.hansson@linaro.org>
 
 On Fri Apr 10, 2026 at 12:40 PM CEST, Ulf Hansson wrote:
-> The common sync_state support isn't fine grained enough for some types of
-> suppliers, like power domains for example. Especially when a supplier
-> provides multiple independent power domains, each with their own set of
-> consumers. In these cases we need to wait for all consumers for all the
-> provided power domains before invoking the supplier's ->sync_state().
->
-> To allow a more fine grained sync_state support to be implemented on per
-> supplier's driver basis, let's add a new optional callback. As soon as
-> there is an update worth to consider in regards to managing sync_state fo=
-r
-> a supplier device, __device_links_queue_sync_state() invokes the callback=
-.
->
-> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/core.c           | 7 ++++++-
->  include/linux/device/driver.h | 7 +++++++
->  2 files changed, 13 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 09b98f02f559..4085a011d8ca 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -1106,7 +1106,9 @@ int device_links_check_suppliers(struct device *dev=
-)
->   * Queues a device for a sync_state() callback when the device links wri=
-te lock
->   * isn't held. This allows the sync_state() execution flow to use device=
- links
->   * APIs.  The caller must ensure this function is called with
-> - * device_links_write_lock() held.
-> + * device_links_write_lock() held.  Note, if the optional queue_sync_sta=
-te()
-> + * callback has been assigned too, it gets called for every update to al=
-lowing a
-
-s/allowing/allow/
-
-> + * more fine grained support to be implemented on per supplier basis.
->   *
->   * This function does a get_device() to make sure the device is not free=
-d while
->   * on this list.
-> @@ -1126,6 +1128,9 @@ static void __device_links_queue_sync_state(struct =
-device *dev,
->  	if (dev->state_synced)
->  		return;
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index e65d564f01cd..f812e70bdf22 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -994,6 +994,18 @@ static inline int dev_set_drv_sync_state(struct devi=
+ce *dev,
+>  	return 0;
+>  }
 > =20
-> +	if (dev->driver && dev->driver->queue_sync_state)
-> +		dev->driver->queue_sync_state(dev);
+> +static inline int dev_set_drv_queue_sync_state(struct device *dev,
+> +					       void (*fn)(struct device *dev))
 
-This seems to be called without the device lock being held, which seems to =
-allow
-the queue_sync_state() callback to execute concurrently with remove(). This
-opens the door for all kinds of UAF conditions in drivers.
+As this is a public function, please add some documentation.
 
-This also made me aware that the above dev_has_sync_state() is probably bro=
-ken,
-as it also performs the following check without the device lock being held.
+> +{
+> +	if (!dev || !dev->driver)
+> +		return 0;
+> +	if (dev->driver->queue_sync_state && dev->driver->queue_sync_state !=3D=
+ fn)
+> +		return -EBUSY;
+> +	if (!dev->driver->queue_sync_state)
+> +		dev->driver->queue_sync_state =3D fn;
 
-	dev->driver && dev->driver->sync_state
+I think this follows dev_set_drv_sync_state(), but I think it is worth poin=
+ting
+out that it is yet another blocker for moving towards
+const struct device_driver.
 
-I think nothing prevents dev->driver to become NULL concurrently; in this c=
-ase
-READ_ONCE() should be sufficient though as it doesn't execute the callback.
-
-I will send a patch for this.
-
+> +	return 0;
+> +}
 > +
->  	list_for_each_entry(link, &dev->links.consumers, s_node) {
->  		if (!device_link_test(link, DL_FLAG_MANAGED))
->  			continue;
-> diff --git a/include/linux/device/driver.h b/include/linux/device/driver.=
-h
-> index bbc67ec513ed..bc9ae1cbe03c 100644
-> --- a/include/linux/device/driver.h
-> +++ b/include/linux/device/driver.h
-> @@ -68,6 +68,12 @@ enum probe_type {
->   *		be called at late_initcall_sync level. If the device has
->   *		consumers that are never bound to a driver, this function
->   *		will never get called until they do.
-> + * @queue_sync_state: Similar to the ->sync_state() callback, but called=
- to
-> + *		allow syncing device state to software state in a more fine
-> + *		grained way. It is called when there is an updated state that
-> + *		may be worth to consider for any of the consumers linked to
-> + *		this device. If implemented, the ->sync_state() callback is
-> + *		required too.
-
-What happens if this is not the case? Maybe worth to check and warn about t=
-his
-in driver_register().
-
->   * @remove:	Called when the device is removed from the system to
->   *		unbind a device from this driver.
->   * @shutdown:	Called at shut-down time to quiesce the device.
-> @@ -110,6 +116,7 @@ struct device_driver {
-> =20
->  	int (*probe) (struct device *dev);
->  	void (*sync_state)(struct device *dev);
-> +	void (*queue_sync_state)(struct device *dev);
->  	int (*remove) (struct device *dev);
->  	void (*shutdown) (struct device *dev);
->  	int (*suspend) (struct device *dev, pm_message_t state);
+>  static inline void dev_set_removable(struct device *dev,
+>  				     enum device_removable removable)
+>  {
 > --=20
 > 2.43.0
 
