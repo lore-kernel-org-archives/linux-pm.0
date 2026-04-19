@@ -1,82 +1,82 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 683572EC57C
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 275BF2F0C7E
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776622969; cv=none; b=SSwB+aB8DSjeop2x6S7rwUlLdsyBcPDGpX4aAypsVhdrMpd7tjKD7XNyWloUXX4meK77JLpTLwmglRrtfo6v8pZmVHXOg+PPXOwwoBdeYHevvRfCC53JHkTLBklNzAf2Kf8WwbER8AH9ur7sXLG6uJMUe+n1Fkv9n7hUeanI8/g=
+	t=1776622971; cv=none; b=gDLY+z+7ynYq5BRpLkh4XIwbVyLaLTShKcsSao2a5cONP/VhhlFlfEjjzR3YVP5nNj2BeR/50UCcLL9k6gxF7dU63RG3lgmn+GfqiEELgE9SqHqYPlycuJ0RbUErBNjVU1o6pFqsbsvP+o1YpQ+e+oaYLDSZdvf9BRus0GV8eDU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776622969; c=relaxed/simple;
-	bh=x2HKTjy6kA5084gb2G+glaC9oZCPA24Zn7jOFG52TSQ=;
+	s=arc-20240116; t=1776622971; c=relaxed/simple;
+	bh=1EZJ/sEXs43bbTva6IXmLEChVaaD4wyyFswaWaokE1o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=b6PmhGQ2Tog/R+U9Xk31v3fuqieGRgiz6U+LRLH7IvoHvTh86Jqx16k9iOnH0MKBudHpVLJvohbUK93WlbhXzi3n0lc/aShRSk8c8kEP3YnVaUPxPb/7A2x4KITNTqeBAT2V+WLo8DZ+tPFmL4+RuykFx+EUtjdrdtFuef2063M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Hz6ymiwa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=cWWVu11T; arc=none smtp.client-ip=205.220.180.131
+	 MIME-Version; b=rIKc1/4PhSrJKQ69ci6I/EPi6ciEooYzl1LZgIQ1jv/+BK36BrVXKQAiYOYGfYyGbmj1/qVhRM+Rx4LitXHjYv7pKfsxPHLcNCR7iwJFAkrmHVdsw8O7qm22iSYxC/qUE6xHAM40wFcnm1PueO/PdPln4so9FuOgOKvhg5O9PH8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ZlX9K/RV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=AwsOi66O; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Hz6ymiwa";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="cWWVu11T"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63IMobXZ2714401
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:45 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ZlX9K/RV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="AwsOi66O"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63J5oh2e127979
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=ks9AROpzFl6
-	d4jF1iHD/p5RckBAUeQlMs5t0zXMHyzk=; b=Hz6ymiwaIWjaYjEIZWjFoeJbzrQ
-	LKjE2R7S1XW1/u6l4dPrXPMhbwFl33qYnHPWK4DgqD8ClwFlKweOtPMdbSmSAHAz
-	8P4BAvHHwe3BLq6f5MFCNhYYMVTxriEpeaGvwze8FxW5NdCokbb0ns89Bz6mxrCn
-	H/RJsK762nGVyud3/F5P4O0sHBv6D05347TLNanP60Fv6s2rEmTSJjB8NZW0X3pe
-	kCVZUVFWe4UrOha4++JGGklQQCQM3zbgA53D5JYwnVn2o6Msc2dr/kS0StXeHAoj
-	6fX/jinuTmVEmI/IvimiDybLo45dKJ3ai38bbqfxm5RdqpJpYpwgbS4A17g==
+	:mime-version:references:subject:to; s=qcppdkim1; bh=5+FaPlCHs97
+	hjeDgtr8xUv7bicqdWzWnDvhYFxD5bkY=; b=ZlX9K/RV4K7ZZOXAZiRJu0f4RC6
+	8M1fINuzlF7+36gLDxgd40+YCs50AnOhem8rY+nPcwr3ZyTJsp7nspp5hUlibtF8
+	JlAlvUA7Tie3jX0gYd2SfHHytIgU1ZCy7OdJSEr5DzsbNoVQIH0yDEIn6CaYsk6+
+	ZnDCDBSpk7tVwp+dYqA5eXX1v8bZ7cuZzXGBiPWjCY0eYSKFJNIn7ksk/hXA+rV1
+	N6joJD/ZM6Q2dX05OkwE2NFH8d1ytcynP/BspS3iHSstOcKDcCT9OGKKuaJxqQ1M
+	IN3E02DKfvLFTdTPgeYsYMxfMWgXEjCsYsZ89UCL/ojMV7M3pdqfmZj1Vfg==
 Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dm2b72y2y-1
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dm19fu318-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:45 +0000 (GMT)
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-50d890580e1so48081131cf.3
-        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 11:22:45 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 18:22:47 +0000 (GMT)
+Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-50b4031b86dso49127511cf.0
+        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 11:22:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776622965; x=1777227765; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1776622967; x=1777227767; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ks9AROpzFl6d4jF1iHD/p5RckBAUeQlMs5t0zXMHyzk=;
-        b=cWWVu11TPSGQDoR7NYw8rVnVpP/QFde1toOo1GqUPqy0fzNalv2ZHdyBBReY5/NwzW
-         fR/IE6vEcvEXYdb3SoxFPIKM34bZzkrRCgxjn3f9RGC52lR/AZ5uxZTlIPIHjZWSXBiR
-         PqtjDK+BUyzaA+Waymw3LL5VnnnCuNrawABZni6SSDr/Hd5sXuwgprTcqNkhdGLnTb9c
-         bgd4nXOJfOzD+pHgv31LXWGW1vDAk1P96gCyTTbiZGzr1HsgMixkULiIoxe3NPlQSxO0
-         g8mADAZ0tH9Nz6EOnPVN2XmjuCae0NPZV/qTLR7VapQ+Q1BFp1oQ3vi9vpZ3Coq932y+
-         ZgZQ==
+        bh=5+FaPlCHs97hjeDgtr8xUv7bicqdWzWnDvhYFxD5bkY=;
+        b=AwsOi66O981F/StI/ueQEd6oewfOBelQDBSTtStxF+mGquLFa8pCieSorYBCnYg7w7
+         x8DFCLUT8E5fi/VX/kskD+VclHR898xdXA0zaTlaw0/nObI//vmj8eGvXV2HdRe88E2u
+         D/H86WZo7Th1oyjSWpC8u1ns1pDHe4jn0LFhYOjtTuWtq8jBaMeK8edAd9/oBobq1CUS
+         OIjWQJo0k/FT6fIchjnCWRr88Obe00pK0wnZRrUUmtoUXr/yIxUc+C4zkBRRgbFLRCfG
+         W0VBAZg9xkmgL3Pfo2gTbkTovSXIOrYp3WB4J1x0Z2pz/iD2Z98ICTSR+qC8AsAbiQ4v
+         WSSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776622965; x=1777227765;
+        d=1e100.net; s=20251104; t=1776622967; x=1777227767;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ks9AROpzFl6d4jF1iHD/p5RckBAUeQlMs5t0zXMHyzk=;
-        b=LF80hAgUBpkcWm66aoXwCJxXObKUa6KYe7F9zzDIJCBfPtx6L5mlACL0yFAl0+PevO
-         RqFHlWAJzAdjdHEdT26P/0DG92hJRarUTkOgr1T8+U3n0UnoYum81eA4SZsz8YmqJKUu
-         hAYmg8OwT/IamvU+K8M3VTec2RLDQX7hbPihg0+z7wEz1ZVE3ihEx9X6or6S5sUvxVtS
-         NmNXqaWnd7B2zf47DvJTm78prVsZfSi830hLR7zD3b/88iiatEJvKDd7BKHM4nMy3moq
-         jSIH31P5fknmr+G6jgTEyT9ySYpmJmXG1RKA4hcXk0omTxKwBRdimcYygkofHcm/LOHA
-         c6BQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+/73R4x8i31wqevOeGjFLgP3eqs22oNGbWWhBkIbd0e8aDQuVGifVlc7SdM6tM7qIAObI42Nhkuw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzxQL+4kl+JEQjXrmx+rYPHUqDM+HuHeapkQiyoCYaFf2N6Wq3e
-	ZU0xMAkNr9ukAkOENjp4afgAJO+7S6vRNKiHiTETU5Wgau3AKaaUo2BO/6uHAJDjQLJrnsgOzVX
-	LFGZTfAWJ+6F/KvHajclcvFc0cn8xz1ALy6AnkvgoHO7Cu2vbWzj5OAihVF9mFA==
-X-Gm-Gg: AeBDietnlisHwpvuiEqk4rfuPX6RUpzvqkOrenwl7BuHbIrmiidtuaAM5skEKmmFpd7
-	m3rBEe2E0Guc6RkyHT5mo5BassrxTfAy1JToddV3AzLMeqnrieKMdrd2Mn1ojueFX0pSGxOBET1
-	afy8wrlk7b8N4nfPaKDwztgyv+667RghKgrOwcrS6XkA+ZimlTMGeh6slOHg/VN+XKLkyfZf8H1
-	9lwMHscz8AyApa3GpadrZA9KR4CI68kWzSBu0WaYXoxSwWVKTT89YTWXdsGToTdn6vhXy5LXlm9
-	Ntn0jGaCAxPyt9UftVrhRhGKG4txygMeuFV4N+tR5J/bH+bteOJu4D46V2lIMFQoggeo4N7KlWB
-	2f8s2C8eCVlP8Hi5PyfQ6yYeSDj2AHAPLuaDfjRBMi3hno6Wi0GfGG3bDMzlG
-X-Received: by 2002:a05:622a:1820:b0:50b:4a84:aa94 with SMTP id d75a77b69052e-50e36b86249mr168984601cf.7.1776622964782;
-        Sun, 19 Apr 2026 11:22:44 -0700 (PDT)
-X-Received: by 2002:a05:622a:1820:b0:50b:4a84:aa94 with SMTP id d75a77b69052e-50e36b86249mr168984181cf.7.1776622964258;
-        Sun, 19 Apr 2026 11:22:44 -0700 (PDT)
+        bh=5+FaPlCHs97hjeDgtr8xUv7bicqdWzWnDvhYFxD5bkY=;
+        b=KTX9ALuv0CaBkGu73zof71XkgTVrwSTYOSGUQHRt3HBHNZH5C88wPceNVqzN8JGdJ9
+         o89lgpa5lnlYGNReMg5IEqfnnWd0zD3GSc0DdkWddGzhs07JBqU/Um94nAxoCP+5Mbij
+         ATkKhihB+ClJf9iEyasWA+mMtGslqcK389gsGa5RDKRcnHKYpHd5ocNDMFbEVuoyNhmF
+         6kqC34j+von8OPuRLugvfGivbr/3HZLwDl7gn6HIhKtzYhHa6AL/sLIz2KxYfvWfxorU
+         UxIxpUEAcwXiCNB8yjsYhNZbDmcahpF40VykfUy5YLqo/p6PC4Y65tJZwwEaGayr1zDt
+         OnLQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8OmS295MeXG90IwJ7lqByRm9SOCPMP6tA4PCT98XsjOkOG9cVPkKL7LFWVgKLEwmU4TI0yQqJWAQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxglE099Xo8E5hi8f7iP/4x9jLvuvqytjP2P3F1SwatV28jcaf5
+	4J9bouLNyYB+qVXOa1IH8SUl+QEoMM+51XVywE10NKN7/OWIkhWAXxAil5t7uU9W6JT8qwZ37Kj
+	H93piiXdBoz7KrgzBYaK75eo38GjGXJP5YThjPbMUAmLKTt7dNB2yvTzGO9E20g==
+X-Gm-Gg: AeBDievrH1nGDwBVsRpVXvOsibEcy5IoomLwqmiVUxb5yqP0rlqASaBN+86XH/91y+B
+	3+9eu7IbpLOTW+SyXG7l5VIfapwM2+wbl04YvUjpLJywFDMl/SncIGQ+eKPPrMVQetacMJowpCv
+	yIXv1VVift7P+M+RmCQIYKdFHsnBDzL21+kSkANDKaT9GkqZ/cnPpuBRN5LxE1mBbgSkhjyZIgu
+	rFhH2QyoD3T91MPJ46Z1Bb1LYOOhFUzf2dZWt8yLEI/VRYEHhNzx4dbDq+GouAh8KY/TvtaoZzO
+	+1ZAFuYNCvf1pRSjHIQdX7Z2MOEvzrCc5kRsxCOwMfNrGtl50VNqihWZVIlroLblIoWmsBwVZQ+
+	giRvErATIoaZjM3+h28MoxVHW1GRU9ylR3gvzzgcxBXt66wMuLQ1O2XpuiLtk
+X-Received: by 2002:ac8:5953:0:b0:50b:3831:417f with SMTP id d75a77b69052e-50e36c773b3mr168851511cf.45.1776622966667;
+        Sun, 19 Apr 2026 11:22:46 -0700 (PDT)
+X-Received: by 2002:ac8:5953:0:b0:50b:3831:417f with SMTP id d75a77b69052e-50e36c773b3mr168851021cf.45.1776622966149;
+        Sun, 19 Apr 2026 11:22:46 -0700 (PDT)
 Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:ae20:597c:99b8:d161])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43fe4e59f97sm25723070f8f.37.2026.04.19.11.22.42
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43fe4e59f97sm25723070f8f.37.2026.04.19.11.22.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Apr 2026 11:22:43 -0700 (PDT)
+        Sun, 19 Apr 2026 11:22:45 -0700 (PDT)
 From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 To: rafael@kernel.org
 Cc: gaurav.kohli@oss.qualcomm.com, Zhang Rui <rui.zhang@intel.com>,
@@ -106,10 +106,10 @@ Cc: gaurav.kohli@oss.qualcomm.com, Zhang Rui <rui.zhang@intel.com>,
         Neil Armstrong <neil.armstrong@linaro.org>,
         Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        chrome-platform@lists.linux.dev (open list:CHROMEOS EC HARDWARE MONITORING)
-Subject: [PATCH v1 07/14] hwmon:: Use non-OF thermal cooling device register function
-Date: Sun, 19 Apr 2026 20:21:51 +0200
-Message-ID: <20260419182203.4083985-8-daniel.lezcano@oss.qualcomm.com>
+        Daniel Lezcano <daniel.lezcano@kernel.org>
+Subject: [PATCH v1 08/14] thermal/core: Move OF functions def in the CONFIG_OF section in thermal.h
+Date: Sun, 19 Apr 2026 20:21:52 +0200
+Message-ID: <20260419182203.4083985-9-daniel.lezcano@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260419182203.4083985-1-daniel.lezcano@oss.qualcomm.com>
 References: <20260419182203.4083985-1-daniel.lezcano@oss.qualcomm.com>
@@ -120,85 +120,120 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=KZridwYD c=1 sm=1 tr=0 ts=69e51d75 cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE5MDE5NyBTYWx0ZWRfX9tqPNuCgKaay
+ 1oIc9cWDiOSaE+RRQR4BAJMQfN7RpuAktWSJWpJqGRlFa9NWTqTdrLmpiaIcma1eQ0jM+rGv5fR
+ zJbE1GuJo8yD0DZcfosOOZtDG3m8CjBd9KDf02/mv4xzWWS1v8JDEGsBIFlD2n6FFTUfcSEomG/
+ NLg24hhynGYVM0voP/Fn8tQQKqiR72CbZvktKL3UF40dmv6pzPEXgQh5e3fAgsX/YfzTapRKlDu
+ RJp/KJxy/ghzzh9IyqA4iD0kek+xeujQh8h5mK80FCnqHTvsD/s2xxqyEqyav3ySR6fsS0pL7rR
+ oD+0V7WABTKuw0K7hY74tS0ATa2jEvUV3rQDPDhvniYflZBzjzblvklgDzdA6ge8QjHWOd2CjI5
+ pkolbg5sbEhx151/LA8MGlGCupuJtVejVoJGE81WqK5k+72lL9o7biNDFXxi2Xf0FcA8vVBxSvq
+ dOeV2M9tm2vlzU1056w==
+X-Proofpoint-ORIG-GUID: qmpN3tSK_4wceYuJFRnnrEntF2XB_af_
+X-Proofpoint-GUID: qmpN3tSK_4wceYuJFRnnrEntF2XB_af_
+X-Authority-Analysis: v=2.4 cv=FMorAeos c=1 sm=1 tr=0 ts=69e51d77 cx=c_pps
  a=WeENfcodrlLV9YRTxbY/uA==:117 a=xqWC_Br6kY4A:10 a=A5OVakUREuEA:10
  a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8 a=ggIEzLyBpZPC2L1Vao8A:9
+ a=ZpdpYltYx_vBUK5n70dp:22 a=EUspDBNiAAAA:8 a=1wpLYamVcWg7q6lobrwA:9
  a=kacYvNCVWA4VmyqE58fU:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE5MDE5NyBTYWx0ZWRfX0d87/kNBfTar
- brLaGD8qDWFf2Tk2JaB730IDZYSOIxT1rkjkReJP0KsKBBm3bZPNT7gxldqBMzzl7/TaM6bMIs/
- r0hgwBm+jAdctOWDoRmzVYbl3HqvYTuIsDe/mueiG3Ja4THxzto0nqshaAKiFAIx3dbl0iy9FRr
- S8b8cToLgXoS4jnm81Fx7tyd9R285SYB3F+2PC9ZS8aq4h5qz44/qeqA/U5QeQNV5X/ElcOX6u7
- ld6nog7Zpq2n3lBFbcoT3RxJ72LQw1r0PngD8AgytADa3xvp4MFZ9Ocw14j7/ntkVZFJizOWSBg
- S5dElvshICEgzdiqwEufxTdw7JRcQi+m7uU0INiRJGL70Zmt+pEIcol/Max1I+gkE9onMbt7z1R
- OLeh3ckF6F7dZn61pTsN7YjpxhT4Em7ty+uWNunfVoLK5zTEPJwMPgtmdRYhPXvcyrs/YNH8roc
- ENB2F6rmwYlGxGgQaLg==
-X-Proofpoint-GUID: zGiQH8BHjg4CFKP99lxoIYOOyOWjmE7u
-X-Proofpoint-ORIG-GUID: zGiQH8BHjg4CFKP99lxoIYOOyOWjmE7u
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-19_05,2026-04-17_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 impostorscore=0 spamscore=0 bulkscore=0 malwarescore=0
- priorityscore=1501 clxscore=1015 phishscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604190197
+ bulkscore=0 spamscore=0 priorityscore=1501 phishscore=0 adultscore=0
+ clxscore=1015 suspectscore=0 lowpriorityscore=0 impostorscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604190197
 
-Make HWMON drivers which are not based on device tree to use the
-corresponding non-OF functions.
+Now that OF functions are used only by OF drivers, let's move and
+group the functions definitions under the CONFIG_OF block. There is no
+need to keep them out because of non-OF drivers using them.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 ---
- drivers/hwmon/cros_ec_hwmon.c  | 4 ++--
- drivers/hwmon/dell-smm-hwmon.c | 4 ++--
- drivers/hwmon/mlxreg-fan.c     | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ include/linux/thermal.h | 48 +++++++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/hwmon/cros_ec_hwmon.c b/drivers/hwmon/cros_ec_hwmon.c
-index 6cf5ab0f4b73..77dd9f28962d 100644
---- a/drivers/hwmon/cros_ec_hwmon.c
-+++ b/drivers/hwmon/cros_ec_hwmon.c
-@@ -532,8 +532,8 @@ static void cros_ec_hwmon_register_fan_cooling_devices(struct device *dev,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index d9332b037188..f7b8651c1ed0 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -198,6 +198,16 @@ struct thermal_zone_device *devm_thermal_of_zone_register(struct device *dev, in
  
- 		cpriv->hwmon_priv = priv;
- 		cpriv->index = i;
--		cdev = devm_thermal_of_cooling_device_register(dev, NULL, type, cpriv,
--							       &cros_ec_thermal_cooling_ops);
-+		cdev = devm_thermal_cooling_device_register(dev, type, cpriv,
-+							    &cros_ec_thermal_cooling_ops);
- 		if (IS_ERR(cdev)) {
- 			dev_warn(dev, "failed to register fan %zu as a cooling device: %pe\n", i,
- 				 cdev);
-diff --git a/drivers/hwmon/dell-smm-hwmon.c b/drivers/hwmon/dell-smm-hwmon.c
-index 038edffc1ac7..47b373ea6db4 100644
---- a/drivers/hwmon/dell-smm-hwmon.c
-+++ b/drivers/hwmon/dell-smm-hwmon.c
-@@ -1161,8 +1161,8 @@ static int dell_smm_init_cdev(struct device *dev, u8 fan_num)
- 	if (cdata) {
- 		cdata->fan_num = fan_num;
- 		cdata->data = data;
--		cdev = devm_thermal_of_cooling_device_register(dev, NULL, name, cdata,
--							       &dell_smm_cooling_ops);
-+		cdev = devm_thermal_cooling_device_register(dev, name, cdata,
-+							    &dell_smm_cooling_ops);
- 		if (IS_ERR(cdev)) {
- 			devm_kfree(dev, cdata);
- 			ret = PTR_ERR(cdev);
-diff --git a/drivers/hwmon/mlxreg-fan.c b/drivers/hwmon/mlxreg-fan.c
-index 137a90dd2075..860de6cfd8a4 100644
---- a/drivers/hwmon/mlxreg-fan.c
-+++ b/drivers/hwmon/mlxreg-fan.c
-@@ -583,8 +583,8 @@ static int mlxreg_fan_cooling_config(struct device *dev, struct mlxreg_fan *fan)
- 		pwm->fan = fan;
- 		/* Set minimal PWM speed. */
- 		pwm->last_hwmon_state = MLXREG_FAN_PWM_DUTY2STATE(MLXREG_FAN_MIN_DUTY);
--		pwm->cdev = devm_thermal_of_cooling_device_register(dev, NULL, mlxreg_fan_name[i],
--								    pwm, &mlxreg_fan_cooling_ops);
-+		pwm->cdev = devm_thermal_cooling_device_register(dev, mlxreg_fan_name[i],
-+								 pwm, &mlxreg_fan_cooling_ops);
- 		if (IS_ERR(pwm->cdev)) {
- 			dev_err(dev, "Failed to register cooling device\n");
- 			return PTR_ERR(pwm->cdev);
+ void devm_thermal_of_zone_unregister(struct device *dev, struct thermal_zone_device *tz);
+ 
++struct thermal_cooling_device *
++thermal_of_cooling_device_register(struct device_node *np,
++				   const char *type, void *data,
++				   const struct thermal_cooling_device_ops *ops);
++
++struct thermal_cooling_device *
++devm_thermal_of_cooling_device_register(struct device *dev,
++					struct device_node *np,
++					const char *type, void *devdata,
++					const struct thermal_cooling_device_ops *ops);
+ #else
+ 
+ static inline
+@@ -211,6 +221,23 @@ static inline void devm_thermal_of_zone_unregister(struct device *dev,
+ 						   struct thermal_zone_device *tz)
+ {
+ }
++
++static inline struct thermal_cooling_device *
++thermal_of_cooling_device_register(struct device_node *np,
++				   const char *type, void *devdata,
++				   const struct thermal_cooling_device_ops *ops)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline struct thermal_cooling_device *
++devm_thermal_of_cooling_device_register(struct device *dev,
++					struct device_node *np,
++					const char *type, void *devdata,
++					const struct thermal_cooling_device_ops *ops)
++{
++	return ERR_PTR(-ENODEV);
++}
+ #endif
+ 
+ int for_each_thermal_trip(struct thermal_zone_device *tz,
+@@ -252,14 +279,6 @@ void thermal_zone_device_update(struct thermal_zone_device *,
+ 
+ struct thermal_cooling_device *thermal_cooling_device_register(const char *,
+ 		void *, const struct thermal_cooling_device_ops *);
+-struct thermal_cooling_device *
+-thermal_of_cooling_device_register(struct device_node *np, const char *, void *,
+-				   const struct thermal_cooling_device_ops *);
+-struct thermal_cooling_device *
+-devm_thermal_of_cooling_device_register(struct device *dev,
+-				struct device_node *np,
+-				const char *type, void *devdata,
+-				const struct thermal_cooling_device_ops *ops);
+ 
+ struct thermal_cooling_device *
+ devm_thermal_cooling_device_register(struct device *dev, const char *type,
+@@ -309,19 +328,6 @@ static inline struct thermal_cooling_device *
+ thermal_cooling_device_register(const char *type, void *devdata,
+ 	const struct thermal_cooling_device_ops *ops)
+ { return ERR_PTR(-ENODEV); }
+-static inline struct thermal_cooling_device *
+-thermal_of_cooling_device_register(struct device_node *np,
+-	const char *type, void *devdata,
+-	const struct thermal_cooling_device_ops *ops)
+-{ return ERR_PTR(-ENODEV); }
+-static inline struct thermal_cooling_device *
+-devm_thermal_of_cooling_device_register(struct device *dev,
+-				struct device_node *np,
+-				const char *type, void *devdata,
+-				const struct thermal_cooling_device_ops *ops)
+-{
+-	return ERR_PTR(-ENODEV);
+-}
+ 
+ struct thermal_cooling_device *
+ devm_thermal_cooling_device_register(struct device *dev, const char *type,
 -- 
 2.43.0
 
