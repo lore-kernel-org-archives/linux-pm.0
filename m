@@ -1,33 +1,33 @@
-Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id DAFEC2AD10;
-	Sun, 19 Apr 2026 00:21:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=125.88.204.37
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4374346FC3;
+	Sun, 19 Apr 2026 04:09:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776558075; cv=none; b=EgulFwpClsmhipTdZgJ/sVEkbzK8zAT7uBtdmRWUCmkTEvotnVsOGo4KIcLBFIclobUfBNXfIkTqhauDto4NUFh2wE+F49odX8NI8k9t/WQJd3Z20bgloxZ4PYKvlTkSsvc3gp6SGikuvH7S0yX7dOKT9kTAwBDTX4COecqWmkg=
+	t=1776571760; cv=none; b=CS++aAbT0vLuR4QRoTjrmS13GwauihkFim+sB5oG9fgUZhNRyZ+JJ1zAXidyZD0YeNKMrLIauOiKD0TuahbNMarbcUT//8rkQr3SriWa4k13dTS4PubBDdMi+QOM2/WB/A6liFBGDaX2egQmWVAvN+Oci0Gc+mdkbp5Ek9BBXBU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776558075; c=relaxed/simple;
-	bh=n7RvdwwyxgFcYjvNyAgeH/BTooOtpphxA4vkMUajWJk=;
+	s=arc-20240116; t=1776571760; c=relaxed/simple;
+	bh=B2V0GySMBor9Pj4xTZgLLcI3x57DyEYfoSsJ0Rf87C0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=myOH+z4IeAJ4edgLFcyR0RKAMg3cr38R+zLUBd3smmVsAj2xiUbDvOENbGcxdShv2P0CDzBQFpvcQiKqo7D7EEdtAmVs3rw4Pvz/VP3uNXFYFQFsqpZGU1lP6Xtqi607JXpWZkaOWrXSULG33owbJ0nDP0n1CI6zCVepmG97fVg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn; spf=pass smtp.mailfrom=189.cn; arc=none smtp.client-ip=125.88.204.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=189.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=189.cn
-HMM_SOURCE_IP:10.158.242.145:0.272028814
-HMM_ATTACHE_NUM:0000
-HMM_SOURCE_TYPE:SMTP
-Received: from clientip-60.27.224.181 (unknown [10.158.242.145])
-	by mail.189.cn (HERMES) with SMTP id A4E65400083;
-	Sun, 19 Apr 2026 08:21:08 +0800 (CST)
-Received: from  ([60.27.224.181])
-	by gateway-153622-dep-76cc7bc9cd-r45x9 with ESMTP id 7f3f162eb12d49658ed84c9b5a5c81dd for david.laight.linux@gmail.com;
-	Sun, 19 Apr 2026 08:21:11 CST
-X-Transaction-ID: 7f3f162eb12d49658ed84c9b5a5c81dd
-X-Real-From: chensong_2000@189.cn
-X-Receive-IP: 60.27.224.181
-X-MEDUSA-Status: 0
-Sender: chensong_2000@189.cn
-Message-ID: <5838a534-8ec3-4bb5-bbce-4271fd456cc3@189.cn>
-Date: Sun, 19 Apr 2026 08:21:06 +0800
+	 In-Reply-To:Content-Type; b=iI34e5jBerVJ9DPn6uFuskH13u1n9XfDg2o3Lo96kiesV09daYzNxR+rO10i5QWZe74awzIbVhv8T/wrtW4CrTUxdSvYz1UKcgN8gRDcllA3Zv4t46GX/FKFG+t6+o29cbwCznIOVAaaJHZk2/ZwdYmh+hiSfjeI1/ZnW2IcXSs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Bgiikl2H; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Bgiikl2H"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1EDFC2BCAF;
+	Sun, 19 Apr 2026 04:09:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776571760;
+	bh=B2V0GySMBor9Pj4xTZgLLcI3x57DyEYfoSsJ0Rf87C0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Bgiikl2H4XT80I/AbrYQvvf+xxK+x3iTJrBE3KLtGPOWbuaq06vaNQHUm5wFurhxm
+	 TGABMHHZkZHX+Qt/odNpdgKOfZ/tQ77Gf3Z9U2sRTMvNndQuRn3tkhU1Ekyx2GezDD
+	 kpnSnnZpftgXOakKXwWx3VU9kjybjaAk6TXRYgwuArE+PjASJ1OZvsQhFA5VsjKt/d
+	 yax+ppYegYGcyXXxAVbIRrVkUMyfiw4HpksGHuHv5tF53tA0LtGrWzs7ng4CKXAN00
+	 HMr9y0blDs4GRn/84G45HdWdrz7Y3EJK9Q6v8nLdvVODtZntZliXdtdg8WDCwwA0HC
+	 f6GvC7LYOZkjg==
+Message-ID: <c135b5b8-90d8-43ca-9017-96fcffd747c2@kernel.org>
+Date: Sat, 18 Apr 2026 23:09:18 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,58 +35,63 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 1/2] kernel/notifier: replace single-linked list with
- double-linked list for reverse traversal
-To: David Laight <david.laight.linux@gmail.com>
-Cc: rafael@kernel.org, lenb@kernel.org, mturquette@baylibre.com,
- sboyd@kernel.org, viresh.kumar@linaro.org, agk@redhat.com,
- snitzer@kernel.org, mpatocka@redhat.com, bmarzins@redhat.com,
- song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
- jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
- horms@kernel.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, paulmck@kernel.org, frederic@kernel.org,
- mcgrof@kernel.org, petr.pavlu@suse.com, da.gomez@kernel.org,
- samitolvanen@google.com, atomlin@atomlin.com, jpoimboe@kernel.org,
- jikos@kernel.org, mbenes@suse.cz, pmladek@suse.com, joe.lawrence@redhat.com,
- rostedt@goodmis.org, mhiramat@kernel.org, mark.rutland@arm.com,
- mathieu.desnoyers@efficios.com, linux-modules@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, live-patching@vger.kernel.org,
- dm-devel@lists.linux.dev, linux-raid@vger.kernel.org,
- kgdb-bugreport@lists.sourceforge.net, netdev@vger.kernel.org
-References: <20260415070137.17860-1-chensong_2000@189.cn>
- <20260416133004.07bd2886@pumpkin>
+Subject: Re: [PATCH] cpufreq: clean up dead dependencies on X86 in Kconfig
 Content-Language: en-US
-From: Song Chen <chensong_2000@189.cn>
-In-Reply-To: <20260416133004.07bd2886@pumpkin>
+To: Julian Braha <julianbraha@gmail.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org
+Cc: gautham.shenoy@amd.com, Perry.Yuan@amd.com, skhan@linuxfoundation.org,
+ ray.huang@amd.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260417230652.305414-1-julianbraha@gmail.com>
+From: Mario Limonciello <superm1@kernel.org>
+In-Reply-To: <20260417230652.305414-1-julianbraha@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi,
-
-On 4/16/26 20:30, David Laight wrote:
-> On Wed, 15 Apr 2026 15:01:37 +0800
-> chensong_2000@189.cn wrote:
+On 4/17/26 18:06, Julian Braha wrote:
+> The Kconfig in the parent directory already has an 'if X86'
+> condition wrapping the inclusion of this file, meaning that each of the
+> individual 'depends on' statements in this file is a duplicate dependency
+> (dead code).
 > 
->> From: Song Chen <chensong_2000@189.cn>
->>
->> The current notifier chain implementation uses a single-linked list
->> (struct notifier_block *next), which only supports forward traversal
->> in priority order. This makes it difficult to handle cleanup/teardown
->> scenarios that require notifiers to be called in reverse priority order.
+> I propose leaving the outer 'if X86...endif' and removing
+> the individual 'depends on X86' statement from each option.
 > 
-> If it is only cleanup/teardown then the list can be order-reversed
-> as part of that process at the same time as the list is deleted.
+> This dead code was found by kconfirm, a static analysis tool for Kconfig.
 > 
-> 	David
+> Signed-off-by: Julian Braha <julianbraha@gmail.com>
+Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
+> ---
+>   drivers/cpufreq/Kconfig.x86 | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
 > 
-> 
-> 
-
-Sorry, i don't follow, the notifiers in the list are deleted when 
-calling notifier_chain_unregister, other than that, they are traversed 
-forward and backward.
-
-Song
+> diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+> index 027e6ea2e038..9afceb1143df 100644
+> --- a/drivers/cpufreq/Kconfig.x86
+> +++ b/drivers/cpufreq/Kconfig.x86
+> @@ -5,7 +5,6 @@
+>   
+>   config X86_INTEL_PSTATE
+>   	bool "Intel P state control"
+> -	depends on X86
+>   	select ACPI_PROCESSOR if ACPI
+>   	select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_MC_PRIO
+>   	select CPU_FREQ_GOV_PERFORMANCE
+> @@ -36,7 +35,7 @@ config X86_PCC_CPUFREQ
+>   
+>   config X86_AMD_PSTATE
+>   	bool "AMD Processor P-State driver"
+> -	depends on X86 && ACPI
+> +	depends on ACPI
+>   	select ACPI_PROCESSOR
+>   	select ACPI_CPPC_LIB if X86_64
+>   	select CPU_FREQ_GOV_SCHEDUTIL if SMP
+> @@ -84,7 +83,7 @@ config X86_AMD_PSTATE_DYNAMIC_EPP
+>   
+>   config X86_AMD_PSTATE_UT
+>   	tristate "selftest for AMD Processor P-State driver"
+> -	depends on X86 && ACPI_PROCESSOR
+> +	depends on ACPI_PROCESSOR
+>   	depends on X86_AMD_PSTATE
+>   	default n
+>   	help
 
