@@ -1,91 +1,91 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5265A37CD4B
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90DAE37C92C
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776605225; cv=none; b=YZe8knMHIsv6CXlZgtQKa/jztJoJcdpkzGZTDqXqVrAaj3GZcmdbi4fSqyqiyzxqPR1LjOUWGrrigELFB9VlATnCmVH2SY56PMR9V4ttBYULmd8AIZyB2BCbp5TkTnmDgYITT/jYAqBfBCQ9pazNo85shgNtI3gcADlvQBLHx7s=
+	t=1776605229; cv=none; b=Lb1hUTIbk1vnvM7ncp7FUMflZvVquQuFnEWAiWxi/qnpePKSahGhk/lzQj6cKMTtC0nvh7qG8Y82qOGn0IDDOsZKAyS8pohdBjdnaUX2qj0UYmjnxJt8h1Z6S8vwzMQVoKAK1h7xSf7x46XdlUsv9Dq5cqD242A6WI22Mr+5fl0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776605225; c=relaxed/simple;
-	bh=waVur1s1NbhGAVdXbYgap1Gr/DCzt5p7sIh5A4kXf1s=;
+	s=arc-20240116; t=1776605229; c=relaxed/simple;
+	bh=SqYYwagzKgUXaXdUUT/mLpbwszzQTSsSb/97J17FTjA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Wrh/xyFv6xxS16a4zaS7TokTDboVc5cUYr7I6JhtKJt2Lf6yeCvAyAd9f9XzFjxEvcM8EZFmfj5Eqe89QJsodX2/okemJ8Tb2H55cPdZVBogIA0YnCKnYBIbnyo65R5BUY9Na0O6XSglMw1ay3YSLREt9LDDYmtTf9szJP11C2w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Gcqy66JI; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ritl+uYK; arc=none smtp.client-ip=205.220.168.131
+	 MIME-Version; b=hbiftjfVSSiNLD+HXWhH64/IVc3q5GDTJokIAE+rjidFRAfKQSn8YWUcOxmRTHr5fQIYwIImMbFby5KhBcb1Bpi32K21xPjFzUM87dxztwVrUw45Cxz4VYtMliJPjsbUqgZQKtKg0+vdm9aP+Bq5COI1ia4iA40oqaML2OqbkkY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=l9QbBgRr; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hmK3kouW; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Gcqy66JI";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ritl+uYK"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63J5piYR1373867
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:03 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="l9QbBgRr";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hmK3kouW"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63IKfu5L1291838
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:06 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=U/luz5L2c9u
-	5OjLtskUToxTHzZy4xt3r13Mne57avzs=; b=Gcqy66JIO+iH8qeVT/NoT6hls2P
-	CW369jyFfHBkH+/HfWik701/L6jHHYGdgsTAjSk8JlLdxI/iAh5unlkYqRf9c5s4
-	+vg9pKT6j2a0KGdbSNENg7XESxOe7S/bGEUMWyRbS2F1/vORYqiBwvlRsR0G9ir0
-	1hoMYhzsZGQ+7FPc2GrL0DKy+fDGt3Fs9SUlyB4lXt8M6nX803SrJNtwAy0X85iI
-	7v2jf+/ek9XS9PHZW2gNJfYdqVjiH2dqViW41Bn/U3HLAYXk/P7T8m+cAaREmkTD
-	b5KDC9/JYQCScbwjOACTcpue4SDOjQjMYoGFeOHcPTtw1cD/oK4cYMY+lKw==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dm388jg03-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=jlG38YObrOd
+	rmclhtB1ZdTwbzfWyw6aRM/BZaBhSwgg=; b=l9QbBgRrPvt4/zhBfsYtpP3g4pI
+	yyVbcu9mBvoLGPUFyff9c0hgtKMSktrTfkAQRs2Ru+noMlTyIRfTuUQUtNKcWdn2
+	4MWJXTMBoJHNaYxcedKZwwg5dAu50fxXWqSflDb4kNqnnLkCdy9/JQjm4CwY9eaI
+	YZsFay5pHiw/b0LN+ueqfI4jPMNErm5zD9F4Jp5l99DIk6gvNQoRi1yFzq1A+xtJ
+	x0c3xGig7IAgjB0GFx1VvQfiPmMqmBRL88+qK4GCItempovFt/DYUCYbuvmBLRq7
+	Ix2k9z4UUaiVV932kcxSzCy32hbOBfe5taGkfD2+M6HlzyWmqrxHnILnDGQ==
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dkyanjv1c-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:03 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-35641c14663so2480048a91.2
-        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 06:27:03 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 13:27:06 +0000 (GMT)
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2b24e9b4d82so27476195ad.1
+        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 06:27:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776605223; x=1777210023; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1776605225; x=1777210025; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=U/luz5L2c9u5OjLtskUToxTHzZy4xt3r13Mne57avzs=;
-        b=Ritl+uYKnJlntR7Uhhk7wWea5jQNzVHeOHwr7o+oLs5Wfi9iC2Wf6lv94eiTXNHxao
-         D+0GvgHPFZxxVBPpdU1b9M13KnKWFx2cFVDoCLIr8AzAB35mzptME1IqV7yGjHAq+oT6
-         ycK1D+uJH2Pt5iuCz3t1U3hdJLVc+T0Kcomf4GqyK7bqdRzRua1dCohawiiqzbqszkDK
-         n2tQwBarY+H2UfkC7ZIH9Z6ZRMkVImVzb8cSK7uRr8fFObSyBAXguA0x1MNWZ7VMofS9
-         p5P14yJfzueTyFu6dKk06cXCkNyyorvC0wTadyaR3I25h+uYWHF3Mo/fFyE+lMaJy3Ha
-         H0HA==
+        bh=jlG38YObrOdrmclhtB1ZdTwbzfWyw6aRM/BZaBhSwgg=;
+        b=hmK3kouWui0nu7teHj50NcJRwX50NISb05/Kljs03r7wdSTVUxqz0EEM7acUlpXJ0/
+         wCjCh2ew/IdTDn9S9KTgLOTxtON6+6xtrqp+ImuNxhH6tZqS/7M5XRi4uxwOK4rk5k/s
+         pZv9Wb5mSAT0Z7IcTM4wgYA6V6x4xEtmcSHHyGX51ms2ZbvtRhFFDbk4arUUDjPoVSF+
+         gnjEsYHNQExGjcGpSRcaxBomqIfi2dbBboCEqBi3G4dCajEz2Ol8CdzPh9lPEqelTGez
+         WOdtcHtbjUeDu9keTIYDnTu2V8ZTirwliOvIiZjB4Xl7fRsbwpN3BIYO+VFyKQo8hJqx
+         Y4cA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776605223; x=1777210023;
+        d=1e100.net; s=20251104; t=1776605225; x=1777210025;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=U/luz5L2c9u5OjLtskUToxTHzZy4xt3r13Mne57avzs=;
-        b=J9BGrGzid80MrS8nKe5GrnXoi6ojOkouTCsyWT12jBrYMX32KUaPh6rcula6cDv1Ax
-         57CwkzxL5wEWNwvLvt+IyXVY7XmN5mRQmwtU8+2MAe9cMpatrfuo5CWgwiikvKnGV004
-         WPGzA+zLCzClU+oAL9FyZcLPXnN4Ma6i3AyjdbFvKTGpQOTiloTOVI9XpFMaCkWIz/PD
-         zQrbPJ3f0NvbQ3wn2ThaPIj69Wb7VeemzjVQads3GQ3YqC0SknTZ3EslGWAqSrB8p8j7
-         rzWv/EiuTQU2oFdkJmmiQnrYel+zywIUfevSyKvGLO2zACQ7qULboqKr9rNSD4fzGd44
-         5wjw==
-X-Forwarded-Encrypted: i=1; AFNElJ9bodVW7P1BuFX9d/ljg0b52FDgQndruaqTWzviK9WBO9kdfOGdY4ZQ1N/W9ddqs0joC4wFJPwIeQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxBlPjaY1HA30q1fbXF9xzkGxepuUEYsdUnEDtuPXBZq/JICEsj
-	3HZ97fCtl1OOh+MBv1XSjwIS90e41svsG2M9FrK0KZ54qC8X8Y6Rghqg1Bst5bg7thjSygcitTe
-	ykCjisZ02CTxP7HtQhEdCv9m6/p3KWUxWNL00mfldJJ/wNO35iAUD5/SxuYSd6w==
-X-Gm-Gg: AeBDiesQMbkjlKwcskqeBJAjIY5CM583BbE+61O+CDhcAYCYRM6jpzBxbL4RdTORnfJ
-	O53I/MQoHBUTc/Q9wMGF06BU1lyMlDpWseWZzV1molDctdApJjYcNih5CJUW7zID/GQrqZC5M3s
-	Sq4JE6F5NXs0zodRSwXEnJtfJc1cwTD7BiK3g1uv5ao4sBwiP8NZX066hYtxsD6KRMHcX3E+CyU
-	WcJ5spZcae98L3MRJXKnBbHilABh76gNDZHGX9a2BzpsYvz4ch1YzGGYFB78u1AaWxXOjBY7RcF
-	yzL27dabQ3U2WpAMweo0IhL9vVi0LJx7TluS6TmSHjMBSahkonmZnoy0ICwxrr5EAoM6ulkyxW2
-	W21Kdlk6xgqgzUBnyZ/S8n2BlZctbgENQfLl5MR9npKRAaPHF9DRrdCnpXVUZB3btbRZVds7oZ/
-	OXYwf81BUt1Ah9zzn8+aKnjgA=
-X-Received: by 2002:a17:90b:5185:b0:35c:29ba:bf92 with SMTP id 98e67ed59e1d1-361403d5988mr10806656a91.5.1776605222428;
-        Sun, 19 Apr 2026 06:27:02 -0700 (PDT)
-X-Received: by 2002:a17:90b:5185:b0:35c:29ba:bf92 with SMTP id 98e67ed59e1d1-361403d5988mr10806626a91.5.1776605221921;
-        Sun, 19 Apr 2026 06:27:01 -0700 (PDT)
+        bh=jlG38YObrOdrmclhtB1ZdTwbzfWyw6aRM/BZaBhSwgg=;
+        b=LG1CvPxPrjW11oqIdK4oEMdUZl5E50yggAjEPfvxgwu0lACZlH7bC0SBMeIZAC/rBa
+         hM4pKnUl2BTxM0As9+1DHjlLE4gjvQMTEAHUXDTlRq4khDuUMZ/5TeTQNJCa9cu7aQ7z
+         tYxq9ysIFR9XgWMGBSgvfqJm9OPgdvMZxd0rB8o1FkdkReMlfX7otvPh7znZAbo3Oaq+
+         QGmQhGYUew6oamfRT4DZ6G17XT1UlThA2KHV45EagvDFl5j2Gjie7mJBWvUbgRRKVsBJ
+         uvYCaXofCDBCKNgHBqElDUSuygNakDJiuQ6PDqRmcZQUpBEBs8HOl1mYL7jedHYOSvH7
+         GI6w==
+X-Forwarded-Encrypted: i=1; AFNElJ9L81Uu0WS5CtANXBbcn9IRsLdQy43Ho7lHq6UwmpXN9DxoqKHdXuQLOys/C8AC/SLgViQ5tdyDEQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzHoj05R/mC6GUXvLZrpoxZCHUvHMloyiua4WChyubD20DI+a/h
+	KEZCbpZQq2g2hCNeJBxn8CgAd4SUpGy1A3rCdXIR6W1znrpOOJS5zJCEYro2ZIEERfs5YE0a+Cc
+	9rfqoyc58AMfxlANeJPTUCf+QmfsdGYq4BFfnmnYhr5Yr8mmmQK4bjl6iuRFU5g==
+X-Gm-Gg: AeBDietojbXmquBsCOWINqNSLg37BDphArphG3Ni+PfW97S08n+3sYEnfVRzIOKTu3Y
+	EHmbvYk98SmCjvFw86RAvn9DBeKZd7ySLzrsNtRJb9sNIXCuW10ikoqoOe3cuV7aO3DSZ22OW3w
+	BV6WHt4v5BTurXMCT3oKeoOo78Qvy7UsJoT6CHSqc0wmbQj1oPw8KZ2QVks1Ah1lLco3rDpwoiv
+	0Pa0+kBY0wjLTwKrgqVkO4X5q+cWn4r67UZLIVLH/3Oag7cz5iGa9cU/IGOQj9t9glHyBOnxHwr
+	oR8G8QSLwr02AcGoi1zI7nc1NxIaUFKOFUkV0WW9L59r+aOQCwILwZSUwEQf5ye/bjx/QEhAh2b
+	mFN7L5hAiuiWnyfJUOdq/gI0Xvq/9/TZqGYX5f9Vny8dGNxx+3SC3o0g+KQg/QbvosxnMSM5OEc
+	NiiS/u7bM8w9YuJNEGqWa+HIs=
+X-Received: by 2002:a17:90b:4b83:b0:356:21e9:73ff with SMTP id 98e67ed59e1d1-361402ebfebmr8081201a91.11.1776605225185;
+        Sun, 19 Apr 2026 06:27:05 -0700 (PDT)
+X-Received: by 2002:a17:90b:4b83:b0:356:21e9:73ff with SMTP id 98e67ed59e1d1-361402ebfebmr8081174a91.11.1776605224617;
+        Sun, 19 Apr 2026 06:27:04 -0700 (PDT)
 Received: from zhonhan-gv.qualcomm.com (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3613fbbb4f9sm4010342a91.6.2026.04.19.06.26.59
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3613fbbb4f9sm4010342a91.6.2026.04.19.06.27.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Apr 2026 06:27:01 -0700 (PDT)
+        Sun, 19 Apr 2026 06:27:04 -0700 (PDT)
 From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 To: rafael@kernel.org, viresh.kumar@linaro.org
 Cc: venkatesh.pallipadi@intel.com, davej@redhat.com, trenn@suse.de,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         zhongqiu.han@oss.qualcomm.com
-Subject: [PATCH v3 1/2] cpufreq: governor: Fix data races on per-CPU idle/nice baselines
-Date: Sun, 19 Apr 2026 21:26:53 +0800
-Message-ID: <20260419132655.3800673-2-zhongqiu.han@oss.qualcomm.com>
+Subject: [PATCH v3 2/2] cpufreq: governor: Fix stale prev_cpu_nice spike when enabling ignore_nice_load
+Date: Sun, 19 Apr 2026 21:26:54 +0800
+Message-ID: <20260419132655.3800673-3-zhongqiu.han@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260419132655.3800673-1-zhongqiu.han@oss.qualcomm.com>
 References: <20260419132655.3800673-1-zhongqiu.han@oss.qualcomm.com>
@@ -96,162 +96,175 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=GthyPE1C c=1 sm=1 tr=0 ts=69e4d827 cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+X-Proofpoint-GUID: B2VXeMrE3SG7XxSTl9Sax4HkCXAM4vg2
+X-Proofpoint-ORIG-GUID: B2VXeMrE3SG7XxSTl9Sax4HkCXAM4vg2
+X-Authority-Analysis: v=2.4 cv=SNFykuvH c=1 sm=1 tr=0 ts=69e4d82a cx=c_pps
+ a=cmESyDAEBpBGqyK7t0alAg==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
  a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=EUspDBNiAAAA:8
- a=EhOh3lww-dzmNHTOE2sA:9 a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-GUID: 5te4H2wxYve2Tbtw224QoaF-CIEdMQLe
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE5MDE0MyBTYWx0ZWRfX0rp8n8HJY4e8
- YokDE/KaPSuy608MN6jzZ9UutofNpC/1cgqz7toNu6NIn7RXdGl5ABCHIGl3sE7r17Eb6aY2F3o
- xSye59P/Nxp80gWdAgJXPjcv6oBqYm3HYymnYeimVbx4x3BrWCeX2/Ra9FU8f7IjME3x+o5AXX8
- Dn6yeT99Lzd9gbRDJYFNLybVD9pXcQohUjAxQhHPwq1V+++0Hxe6fsY0X/wXohxGCuT5XHW6g8M
- YzDpgLUL2H3le7E57paAZEPI4CAHz0f6IOnNxKUdwHhf9mObShjvS3hvfIP6PvtDtn48wu8Kkpd
- /qN1ReoMbzpuyW7XWN6IGId8PydODC872Rm6w4wdNbtbXwKug98r2JMrVoB6BisKrXtKxd5MKDr
- lwUr9MxAepBckslueEdKNhZ/nbs4fOQ9Knufdu49GbRC7mXCebyoZ2jps18URusGgHne3Ye9kXo
- MGPGzvIe+Ae7y2z3MbQ==
-X-Proofpoint-ORIG-GUID: 5te4H2wxYve2Tbtw224QoaF-CIEdMQLe
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=RougvbfpsDdIUb9cXJ0A:9 a=1OuFwYUASf3TG4hYMiVC:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE5MDE0MyBTYWx0ZWRfX+34hDkGFfGoH
+ 1YWAkuilrmwnyuIZJ3+truiIY3fCJV7XgzMOqom5ABT4vFVDzKlLZcdZWsCvQkARhoDqM3FdU8c
+ VbvzRThcSlP4+OsFHMVHRSEpr56YN/52I7s9oGUKE5NYEBpFbYZtj7l4XKCb2SvC/GGnCSEi6G5
+ Ss1mkGUiHdgz20ciE7Xp+gQkYg4ztmrJgD0IMbGXMPMVe5s8B94HrRtiCIyd11Q/QyGrMPvqqwX
+ pbl2Usi4406Wt3JwIA2vrI5VT5LplhtIo5w9e8HcZGvyExSkLk9M2D0H5hYANz0oYosQ9phcnaT
+ dB1BFKz+gFaP4Ok69czukEQh3AeuyLHroaGqzrAmmoHTrE6Ew5WN0sqFU8U1Cqg4p1xOxw+bZFp
+ 0QOXr26W/c7+ppPO8anjfJnJ+h4khY7hoghJTUWpOYFOszJD1VNJfGFG4Tomkhgdim7nDjJIBPQ
+ Tx+LTnBcGolrr3dmsqQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-19_04,2026-04-17_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 malwarescore=0 spamscore=0 bulkscore=0 suspectscore=0
+ clxscore=1015 impostorscore=0 phishscore=0 adultscore=0 malwarescore=0
+ bulkscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604190143
 
-gov_update_cpu_data() resets per-CPU prev_cpu_idle for every CPU in the
-governed domain, and conditionally resets prev_cpu_nice when
-ignore_nice_load is set. It is called from sysfs store callbacks
-(e.g. ignore_nice_load_store) which run under attr_set->update_lock,
-held by the surrounding governor_store().
+When ignore_nice_load is toggled from 0 to 1 via sysfs, dbs_update() may
+run concurrently and observe the new tunable value while prev_cpu_nice
+still holds a stale baseline, producing a spurious massive idle_time that
+results in an incorrect CPU load value.
 
-Concurrently, dbs_work_handler() calls gov->gov_dbs_update() (which calls
-dbs_update()) under policy_dbs->update_mutex. dbs_update() both reads and
-writes the same prev_cpu_idle / prev_cpu_nice fields. The potential race
-path is:
+The race can be illustrated with two concurrent paths:
 
-Path A (sysfs write, holds attr_set->update_lock only):
+Path A (sysfs write, holds attr_set->update_lock):
 
-  governor_store()
-    mutex_lock(&attr_set->update_lock)
-    ignore_nice_load_store()
-      dbs_data->ignore_nice_load = input
-      gov_update_cpu_data(dbs_data)
-        list_for_each_entry(policy_dbs, ...)
-          for_each_cpu(j, ...)
-            j_cdbs->prev_cpu_idle = get_cpu_idle_time(...)  /* write */
-            j_cdbs->prev_cpu_nice = kcpustat_field(...)     /* write */
-    mutex_unlock(&attr_set->update_lock)
+governor_store()
+  mutex_lock(&attr_set->update_lock)
+  ignore_nice_load_store()
+    dbs_data->ignore_nice_load = 1              /* (A1) */
+    gov_update_cpu_data(dbs_data)
+      mutex_lock(&policy_dbs->update_mutex)     /* (A2) */
+        j_cdbs->prev_cpu_nice = kcpustat_field(...)
+      mutex_unlock(&policy_dbs->update_mutex)
+  mutex_unlock(&attr_set->update_lock)
 
-Path B (work queue, holds policy_dbs->update_mutex only):
+Path B (work queue, wins the race between A1 and A2):
 
-  dbs_work_handler()
-    mutex_lock(&policy_dbs->update_mutex)
-    gov->gov_dbs_update(policy)
-      dbs_update()
-        for_each_cpu(j, policy->cpus)
-          idle_time = cur - j_cdbs->prev_cpu_idle           /* read  */
-          j_cdbs->prev_cpu_idle = cur_idle_time             /* write */
-          idle_time += cur_nice - j_cdbs->prev_cpu_nice     /* read  */
-          j_cdbs->prev_cpu_nice = cur_nice                  /* write */
-    mutex_unlock(&policy_dbs->update_mutex)
+dbs_work_handler()
+  mutex_lock(&policy_dbs->update_mutex)         /* acquired before A2 */
+  dbs_update()
+    ignore_nice = dbs_data->ignore_nice_load    /* sees new value: 1 */
+    cur_nice = kcpustat_field(...)
+    idle_time += div_u64(cur_nice - j_cdbs->prev_cpu_nice, ..) /* stale */
+    j_cdbs->prev_cpu_nice = cur_nice
+  mutex_unlock(&policy_dbs->update_mutex)
 
-Because attr_set->update_lock and policy_dbs->update_mutex are two
-completely independent locks, the two paths are not mutually exclusive.
-This results in a data race on cpu_dbs_info.prev_cpu_idle and
-cpu_dbs_info.prev_cpu_nice.
+Fix this by unconditionally sampling cur_nice and advancing prev_cpu_nice
+in dbs_update() on every call, regardless of ignore_nice. With
+prev_cpu_nice always reflecting the most recent sample, enabling
+ignore_nice_load can never produce a stale-baseline spike: the delta will
+always be the nice time accumulated in the last sampling interval, not
+since boot. The additional kcpustat_field() call per CPU per sample is
+negligible given that the sampling path already reads idle and load
+accounting.
 
-Fix this by also acquiring policy_dbs->update_mutex in
-gov_update_cpu_data() for each policy, so that path A participates in
-the mutual exclusion already established by dbs_work_handler(). Also
-update the function comment to accurately reflect the two-level locking
-contract.
+To keep prev_cpu_nice handling consistent with the always-tracking
+semantics introduced above:
 
-Additionally, cpufreq_dbs_governor_start() initializes prev_cpu_idle
-using io_busy read from dbs_data->io_is_busy without holding
-policy_dbs->update_mutex.  A concurrent io_is_busy_store() can update
-io_is_busy and call gov_update_cpu_data(), which writes prev_cpu_idle
-with the new value under the mutex.  cpufreq_dbs_governor_start() then
-overwrites prev_cpu_idle with the stale io_busy value, leaving the
-baseline inconsistent with the tunable.  Fix this by reading io_busy
-inside the mutex.
-
-The root of this race dates back to the original ondemand/conservative
-governors. Before commit ee88415caf73 ("[CPUFREQ] Cleanup locking in
-conservative governor") and commit 5a75c82828e7 ("[CPUFREQ] Cleanup
-locking in ondemand governor"), all accesses to prev_cpu_idle and
-prev_cpu_nice in cpufreq_governor_dbs() (path X), store_ignore_nice_load()
-/io_is_busy_store() (path Y), and do_dbs_timer() (path Z) were serialised
-by the same dbs_mutex, so no race existed. Those two commits switched
-do_dbs_timer() from dbs_mutex to a per-policy/per-cpu timer_mutex to
-reduce lock contention, but left path Y (store) still holding dbs_mutex.
-As a result, path Y (store) and path Z (do_dbs_timer) no longer shared a
-common lock, introducing a potential race on prev_cpu_idle/prev_cpu_nice
-between path Y (store) and dbs_check_cpu().
-
-Commit 326c86deaed54a ("[CPUFREQ] Remove unneeded locks") then removed
-dbs_mutex from store_ignore_nice_load()/io_is_busy_store() entirely,
-introducing an additional potential race between path Y (now lockless)
-and cpufreq_governor_dbs() (path X, still holding dbs_mutex), while the
-race between path Y and path Z remained.
+  - gov_update_cpu_data() unconditionally resets prev_cpu_nice alongside
+    prev_cpu_idle, so both baselines share the same timestamp when
+    io_is_busy changes.  This prevents an interval mismatch between
+    idle_time and nice_delta on the next dbs_update() when
+    ignore_nice_load is enabled.
+  - cpufreq_dbs_governor_start() unconditionally initializes prev_cpu_nice
+    so the baseline is always valid from the first dbs_update() call;
+    remove the ignore_nice guard and the now-unused ignore_nice variable.
 
 Fixes: ee88415caf736b ("[CPUFREQ] Cleanup locking in conservative governor")
 Fixes: 5a75c82828e7c0 ("[CPUFREQ] Cleanup locking in ondemand governor")
 Fixes: 326c86deaed54a ("[CPUFREQ] Remove unneeded locks")
 Signed-off-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 ---
- drivers/cpufreq/cpufreq_governor.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 33 +++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 86f35e451914..fc6f705c5a9c 100644
+index fc6f705c5a9c..8a85bd32defe 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -90,7 +90,8 @@ EXPORT_SYMBOL_GPL(sampling_rate_store);
-  * (that may be a single policy or a bunch of them if governor tunables are
-  * system-wide).
+@@ -92,6 +92,12 @@ EXPORT_SYMBOL_GPL(sampling_rate_store);
   *
-- * Call under the @dbs_data mutex.
-+ * Call under the @dbs_data->attr_set.update_lock. The per-policy
-+ * update_mutex is acquired and released internally for each policy.
+  * Call under the @dbs_data->attr_set.update_lock. The per-policy
+  * update_mutex is acquired and released internally for each policy.
++ *
++ * Note: prev_cpu_nice is reset here unconditionally alongside prev_cpu_idle.
++ * When io_is_busy changes, both baselines must be advanced to the same
++ * timestamp so that the next dbs_update() computes idle_time and nice_delta
++ * over the same interval, preventing an artificially inflated idle_time when
++ * ignore_nice_load is enabled.
   */
  void gov_update_cpu_data(struct dbs_data *dbs_data)
  {
-@@ -99,6 +100,7 @@ void gov_update_cpu_data(struct dbs_data *dbs_data)
- 	list_for_each_entry(policy_dbs, &dbs_data->attr_set.policy_list, list) {
- 		unsigned int j;
+@@ -106,8 +112,7 @@ void gov_update_cpu_data(struct dbs_data *dbs_data)
  
-+		mutex_lock(&policy_dbs->update_mutex);
- 		for_each_cpu(j, policy_dbs->policy->cpus) {
- 			struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
-@@ -107,6 +109,7 @@ void gov_update_cpu_data(struct dbs_data *dbs_data)
- 			if (dbs_data->ignore_nice_load)
- 				j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
+ 			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_update_time,
+ 								  dbs_data->io_is_busy);
+-			if (dbs_data->ignore_nice_load)
+-				j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
++			j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
  		}
-+		mutex_unlock(&policy_dbs->update_mutex);
+ 		mutex_unlock(&policy_dbs->update_mutex);
  	}
- }
- EXPORT_SYMBOL_GPL(gov_update_cpu_data);
-@@ -527,8 +530,9 @@ int cpufreq_dbs_governor_start(struct cpufreq_policy *policy)
+@@ -121,6 +126,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 	unsigned int ignore_nice = dbs_data->ignore_nice_load;
+ 	unsigned int max_load = 0, idle_periods = UINT_MAX;
+ 	unsigned int sampling_rate, io_busy, j;
++	u64 cur_nice;
+ 
+ 	/*
+ 	 * Sometimes governors may use an additional multiplier to increase
+@@ -167,12 +173,18 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 
+ 		j_cdbs->prev_cpu_idle = cur_idle_time;
+ 
+-		if (ignore_nice) {
+-			u64 cur_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
+-
++		/*
++		 * Always sample cur_nice and advance prev_cpu_nice, regardless
++		 * of ignore_nice.  This keeps prev_cpu_nice current so that
++		 * enabling ignore_nice_load via sysfs never produces a
++		 * stale-baseline spike (the delta will be at most one sampling
++		 * interval of accumulated nice time, not since boot).
++		 */
++		cur_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
++		if (ignore_nice)
+ 			idle_time += div_u64(cur_nice - j_cdbs->prev_cpu_nice, NSEC_PER_USEC);
+-			j_cdbs->prev_cpu_nice = cur_nice;
+-		}
++
++		j_cdbs->prev_cpu_nice = cur_nice;
+ 
+ 		if (unlikely(!time_elapsed)) {
+ 			/*
+@@ -519,7 +531,7 @@ int cpufreq_dbs_governor_start(struct cpufreq_policy *policy)
+ 	struct dbs_governor *gov = dbs_governor_of(policy);
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+-	unsigned int sampling_rate, ignore_nice, j;
++	unsigned int sampling_rate, j;
+ 	unsigned int io_busy;
+ 
+ 	if (!policy->cur)
+@@ -529,7 +541,6 @@ int cpufreq_dbs_governor_start(struct cpufreq_policy *policy)
+ 	policy_dbs->rate_mult = 1;
  
  	sampling_rate = dbs_data->sampling_rate;
- 	ignore_nice = dbs_data->ignore_nice_load;
--	io_busy = dbs_data->io_is_busy;
+-	ignore_nice = dbs_data->ignore_nice_load;
  
-+	mutex_lock(&policy_dbs->update_mutex);
-+	io_busy = dbs_data->io_is_busy;
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
-@@ -541,6 +545,7 @@ int cpufreq_dbs_governor_start(struct cpufreq_policy *policy)
- 		if (ignore_nice)
- 			j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
+ 	mutex_lock(&policy_dbs->update_mutex);
+ 	io_busy = dbs_data->io_is_busy;
+@@ -541,9 +552,7 @@ int cpufreq_dbs_governor_start(struct cpufreq_policy *policy)
+ 		 * Make the first invocation of dbs_update() compute the load.
+ 		 */
+ 		j_cdbs->prev_load = 0;
+-
+-		if (ignore_nice)
+-			j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
++		j_cdbs->prev_cpu_nice = kcpustat_field(&kcpustat_cpu(j), CPUTIME_NICE, j);
  	}
-+	mutex_unlock(&policy_dbs->update_mutex);
- 
- 	gov->start(policy);
+ 	mutex_unlock(&policy_dbs->update_mutex);
  
 -- 
 2.43.0
