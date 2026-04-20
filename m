@@ -1,106 +1,79 @@
-Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
+Received: from gentwo.org (gentwo.org [62.72.0.81])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AC9239934A;
-	Mon, 20 Apr 2026 21:47:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EF6534A79E;
+	Mon, 20 Apr 2026 22:12:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.72.0.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776721634; cv=none; b=VMCdvyB5SsBuwkbObupZjFPf0hgoSkFeBeMdSHhvUVK2pfoAJmGuzfhtE1uQklxmt9UT7xkq6UIb3tF77INnlF7NPF3HSpjRtQB7n+M0pMABloJdVXn2zqwF/rls35FQjCMsfKk2g040oSSAy/2L1XxHsvCVsZa63R8gU5nFtsk=
+	t=1776723180; cv=none; b=MdOjMhZNOAKvfS+w22kv81Dkg4FVsLYy5OF0ZQ+ImysVfWMdoTB2ZIyfqM49nUJtg3A7qcw9/9Aqcx9HC+TJm9V3Tk779KgjH0sqIhR875tnlkuLMsxvBqAkddo+/Y8SSx6EHR0u2l5i5bG7x4wyHklho35q34UDMVAMdlV3GTs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776721634; c=relaxed/simple;
-	bh=CLLSksC9+qDIWHIyI4I9YQ5LoX/FB7wYqB2vmAruL5I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aqplI6I5IJZ7uUbloz5ax59A0r2AhzVBHQBBCjX9MvNvDNaf740Fus2Au+yPeIUyhQXKeSe6E6hIbK+132nhtHnr2djXxXMNHxz3Q1+owZDpOL6gZuxJsvSPTd1NvGsZzN2Om5Vrz/7ktHWG8rV2+uPUncEvrUvTdLSGDxhuX3Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=HtBKX5/I; arc=none smtp.client-ip=195.154.119.183
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
+	s=arc-20240116; t=1776723180; c=relaxed/simple;
+	bh=ePnXR9oVgHfNaZl1q2pbWUGaIpQt6S7zzmVozt9afiE=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=U5qP5AaBKviqArhzn5cahezqCrz8MqpUXH4kTadBtdMN1nq3lvk/OL3Dvj31xSgRGltRbP1gzkauyK7y1Tm0ZFpYLqFUaWsdNLJyFlpY4Vu0q2AVv7cTA9hDYz8bAkmv5YqA/BKu+4EF4SSIa+TKq6G9o6/Z03gDbEXIZV4LFWY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gentwo.org; spf=pass smtp.mailfrom=gentwo.org; dkim=pass (1024-bit key) header.d=gentwo.org header.i=@gentwo.org header.b=HiX3ActY; arc=none smtp.client-ip=62.72.0.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=gentwo.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gentwo.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="HtBKX5/I"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
-	; s=202004.hall; h=In-Reply-To:Content-Transfer-Encoding:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:Reply-To:
-	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
-	bh=7vNfyFBOnLNbtekuQiXkiG2gtWPCS+o1h1We+Flr9lo=; b=HtBKX5/Il95oqVlLVCfX19riBr
-	g776peq+rh+OfYNsix46NL1UtKwuYZnaex5rnrF3cuzaIE7k8S6rNIK55Iolw5b08FauIzm73h9c0
-	/Ob57V+UtL6X3lmx1DkjhQR2MQawjHwjB1K9zY8wsAU4NeowmqR+xYBkE2z4EMb1gKhtbpWJbCuFt
-	zYbeSYp+4G0jdoLOLgNweuBIs0lOZDVDYAH3auT23Qx8R04lWxFwzWMD0onNH10sL9YC1GVYt+HYu
-	+gNxIKE6cZVQSKRXCTTXutKBm59tMW/ltoJawkhhqZNpj3iR3hIM1VhVVktrXIOGOBK/Cq1JrhqEX
-	wUh1pfvA==;
-Received: from authenticated user
-	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <aurelien@aurel32.net>)
-	id 1wEvyu-0000000DyKx-2dhQ;
-	Mon, 20 Apr 2026 23:16:36 +0200
-Date: Mon, 20 Apr 2026 23:16:35 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Shuwei Wu <shuwei.wu@mailbox.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-Message-ID: <aeaXszeaE62rM6BJ@aurel32.net>
-Mail-Followup-To: Anand Moon <linux.amoon@gmail.com>,
-	Shuwei Wu <shuwei.wu@mailbox.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
- <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
- <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
- <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
- <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
+	dkim=pass (1024-bit key) header.d=gentwo.org header.i=@gentwo.org header.b="HiX3ActY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gentwo.org;
+	s=default; t=1776723173;
+	bh=ePnXR9oVgHfNaZl1q2pbWUGaIpQt6S7zzmVozt9afiE=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+	b=HiX3ActYmkJwOFo8O7Eswn5o9sPaOUzzLwpQHP3mEAOdooKWeldoE/th7uradOUzW
+	 YsjhgyZFTiCxnyIHKkglDMlhQi6pwwYkCUHcaAFWVr+kpR8uA7BFvFzwr81RJ9K0d9
+	 kWMBbhyfOaPvWJjXKNvuUF8Wrcrl6GczygLH0Q8w=
+Received: by gentwo.org (Postfix, from userid 1003)
+	id AC558402B1; Mon, 20 Apr 2026 15:12:53 -0700 (PDT)
+Received: from localhost (localhost [127.0.0.1])
+	by gentwo.org (Postfix) with ESMTP id AB0D74010E;
+	Mon, 20 Apr 2026 15:12:53 -0700 (PDT)
+Date: Mon, 20 Apr 2026 15:12:53 -0700 (PDT)
+From: "Christoph Lameter (Ampere)" <cl@gentwo.org>
+To: "Okanovic, Haris" <harisokn@amazon.com>
+cc: "ankur.a.arora@oracle.com" <ankur.a.arora@oracle.com>, 
+    "joao.m.martins@oracle.com" <joao.m.martins@oracle.com>, 
+    "xueshuai@linux.alibaba.com" <xueshuai@linux.alibaba.com>, 
+    "david.laight.linux@gmail.com" <david.laight.linux@gmail.com>, 
+    "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, 
+    "memxor@gmail.com" <memxor@gmail.com>, 
+    "ashok.bhat@arm.com" <ashok.bhat@arm.com>, 
+    "zhenglifeng1@huawei.com" <zhenglifeng1@huawei.com>, 
+    "konrad.wilk@oracle.com" <konrad.wilk@oracle.com>, 
+    "akpm@linux-foundation.org" <akpm@linux-foundation.org>, 
+    "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+    "catalin.marinas@arm.com" <catalin.marinas@arm.com>, 
+    "ast@kernel.org" <ast@kernel.org>, 
+    "rdunlap@infradead.org" <rdunlap@infradead.org>, 
+    "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, 
+    "arnd@arndb.de" <arnd@arndb.de>, 
+    "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, 
+    "will@kernel.org" <will@kernel.org>, 
+    "mark.rutland@arm.com" <mark.rutland@arm.com>, 
+    "peterz@infradead.org" <peterz@infradead.org>, 
+    "bpf@vger.kernel.org" <bpf@vger.kernel.org>, 
+    "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+    "rafael@kernel.org" <rafael@kernel.org>, 
+    "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v11 12/14] cpuidle/poll_state: Wait for need-resched via
+ tif_need_resched_relaxed_wait()
+In-Reply-To: <a374b23f8b03f850a874d46bc78411fb99483ca2.camel@amazon.com>
+Message-ID: <02b88c74-4e7c-4f70-c49a-3e429b0e4abb@gentwo.org>
+References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>  <20260408122538.3610871-13-ankur.a.arora@oracle.com> <a374b23f8b03f850a874d46bc78411fb99483ca2.camel@amazon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
-User-Agent: Mutt/2.2.13 (2024-03-09)
+Content-Type: text/plain; charset=US-ASCII
 
-Hi Anand,
+On Mon, 20 Apr 2026, Okanovic, Haris wrote:
 
-On 2026-04-16 17:07, Anand Moon wrote:
-> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 and B=
-uck2
-> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the restricti=
-on errors,
-> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =C2=B5=
-V.
->=20
-> Additionally, I updated the DTS to map the second CPU cluster (cores 4=E2=
-=80=937)
-> to Buck2 to better align with the hardware's power distribution.
+> I hope this series can merge soon. It's been stuck in review for more
+> than 2 years.
 
-Actually the output of Buck1 and Buck2 are connected together, so they=20
-should always be configured with the same output voltage. And both=20
-clusters should be mapped to both outputs.
+3 years I believe
 
-I also wonder why in the original patch the buck1 regulator is named=20
-buck1_3v45, from the schematics, it should rather be called buck1_0v9.
+Lets move this forward.
 
-Regards
-Aurelien
-
---=20
-Aurelien Jarno                          GPG: 4096R/1DDD8C9B
-aurelien@aurel32.net                     http://aurel32.net
