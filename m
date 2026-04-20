@@ -1,708 +1,313 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C28EC3A7F41
-	for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 17:40:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776706820; cv=none; b=ZJ5eCu7j7UlL99ceIN3vljWmFEoL4MObmQuWHgKR/TSR5/DHtT1otr/fwlkACy4tAskj2ik7ahLUR/AgpzFCyCZtspQVD9TiFhF+ATGYQlmLf++06aqu307I0XIL5zoAd7uAjsWZqPbnfShqvcho3uLew4RkT4q4jYENmf5o6Ew=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776706820; c=relaxed/simple;
-	bh=FWmZ0QyqKWY3bmSKa397E69GArpbrh7kFJR/AkPo1D4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OnFuuxIf8EkCLBOdWK+1VBWaGvLG++5/HfodF8CJ0jxjAlUy8m53twO8Z6LNaL5Nz7j9uXeUN887slwuCaLPQ9C2K5+94qVxfIuXetA9Wz+NekRkDWLwOEFpPyB50M1qUjjltvuvvt+A7kFMs43wd4a0RIs5D/mLBfy2rp6vzuw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Vp2htx10; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2E9537AA83;
+	Mon, 20 Apr 2026 17:50:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776707448; cv=fail; b=QVFnwtOLKELwBd2FJlj5JQyUlbNgnl2+mwCZI+FpIf/mJaYtxMLlnpXgPCnVsqGlgATD285lAWPSuElFFrBRKTGdFH+QWCfDJ/fplCIqaKWz8IeyEgUKPbeU2Rtrk7RbjJiZRmfo8H+x9zdpki2s0SIQB22vheDdZyP4gFnNgk0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776707448; c=relaxed/simple;
+	bh=4xxek5r2ZeHM2RKSlieU7dGPoQieRvyFsMgAbdMOrV4=;
+	h=References:From:To:Cc:Subject:In-reply-to:Date:Message-ID:
+	 Content-Type:MIME-Version; b=rQk2zJeFVPDEO4WR3pXeOyxjsHMz9k9hySWIDoJs6FhWfwmZVH7rVAf3xzY2mRIFxcR4ZFyihagf0Yhb4pMkxPp+fG2mjsmEQ4tIo3cBitEItt1HuvJ/c8N9pjic+0brAih1fKXfL6Wv7t00UAt/KAT4Hy4fPiUCeNqQcNEsj9U=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=qihapAjy; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=yBpFWXFT; arc=fail smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Vp2htx10"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-488a9033b2cso37876935e9.2
-        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 10:40:13 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="qihapAjy";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="yBpFWXFT"
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63K8QOXo4115877;
+	Mon, 20 Apr 2026 17:50:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2025-04-25; bh=6DokXHkmeMhe+itenk
+	5MVEhtcIYl4FtHXWlz4sF3Uxo=; b=qihapAjyKvg/G07jziwN58LtJ/0b6tOnIA
+	WiXPJtsqnMU9Idn8IztFDABQoe3SM8NqPTYdC6HdLBlZfJx90b6/vowcAfk/yyT/
+	wkD+Z89QmIYrckJKctatXL10xDM91E8KfT565ydo/FRvh9hNnPJsb2cg2VTFjGkq
+	qeyVWpetbKWugHloXEBK9fNc9ms22e5awIi+uq/qa5Hbp3p4jT1E/mxM5po586X+
+	liI4Zf2L1whTh02UklPZwlotveX8DP/XENw8VDKaQ/G6cXSyl87YzbEakIp+uDhJ
+	NJY3IsMdX1///enYyi+gfdLR9yWW8we3DipUd+MSJv7oIaSrds7Q==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4dm27vurb9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 20 Apr 2026 17:50:15 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 63KHkGeR014348;
+	Mon, 20 Apr 2026 17:50:14 GMT
+Received: from byapr05cu005.outbound.protection.outlook.com (mail-westusazon11010057.outbound.protection.outlook.com [52.101.85.57])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4dn1aeyvju-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 20 Apr 2026 17:50:14 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nNr1eX5xdmM+7X9TxoMVFuQMYvJLjZGLzx1yd/Hv5nWELaJXl+N7e7+OYIoCCK0nFGH+Fl4cNndJwC9+2vcX+z3b5DqXHvn0FuPX7TJ43FaHXYb9RVgDbH/sKlBZJvjsLSEn/eNPlrnig+1m735643N7X7YuLRgp3vPXzkqGo1ECl60Cpr769PTzKWHEegbFeXvP/CacOHdf8mjovvU7L/eG59Smi5EsYz0aY4NSFvUulQwIVRqlY6RPR3MeB967KIZEcj6iSiyxFflylDm4VGyg3vHnJ8oVlXQv8RuKCLVT7AO3wEtO/F7mty6shEnejsvRtzZyQ3rm6YroYOdGBA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6DokXHkmeMhe+itenk5MVEhtcIYl4FtHXWlz4sF3Uxo=;
+ b=faP/QX+WlIHTIrzxMHspOdjrLKVJ5x6nAI8MVlCGKZgWqRugFtgXWDOisYxRZghoPeuS1fnRCM0mXHOFGdwWzakfi+cEi1ltZXkeCn6ZkOdsHnfHOXuV/lcVi5wQc24+JgWG6ynvCPnIUm7MuO3O81WIqBgu61jTmeGODMROgRD18s7P36JDYkuCsjL+qIDIgcot2ARKuq/gO3SYNB5YCPijlcltxaFjdU2CeBHyRK0+EUsISCt8ccUbl/cC0M4cZwdpTiC8g0DLIv6EWW3IBEWVDI9bn2YywY4YYwKPGQX5EQYL54ligO4TZJBDH0t9bnQ9BhhMg1qIXv49leyBPA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776706810; x=1777311610; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=KA0/N7602tgkmSh9aNlmsTpINesUezp+zdJUoHd7Y4w=;
-        b=Vp2htx10d6er3RRNGyd4UMz071cXmRcyvI4s9YDsxbZAgLWucJW2IQAeN2FkSnoPEv
-         R3NMPG6lu7uEpmyzb4N8Wd4fCtas+2mDLnOnQp10eUZVQ1BdmNMcsNnj6lTCSjhWl8Fl
-         yzsj3L69cF9ArUk/lE/W3JJg5Z9khOkcWlLE5a1yVX88n5gzBCoJ3bgrdiv+FFAz3ULr
-         /rBn5yxwb8wKpdGz0Zc0VEL1klQfItMyxi4cP/65YKKGyv/qvqSrXxI7lJbKdrLMOla/
-         mkjo80GDHNy7Pv3J+5zzrsdp2qu1ZKdpwBE2NcnN4bHZq6XUFC2fZ8/b08VqtwQ28QSe
-         LRqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776706810; x=1777311610;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=KA0/N7602tgkmSh9aNlmsTpINesUezp+zdJUoHd7Y4w=;
-        b=fPZZ4bdnm9X+wHjE25Magu5MOPHnQBCpnVfY+zDO/iOD7dsJLFB90rmUzjhu5EnT04
-         BXosHIzC/wCc8ygkc6/ChDmCxEGcDU+QrhYEms6I0uvPgAyg9OBmIm1k/B5b5DBt1FeV
-         mNxAzq4HL/SEU/Y1gepVefzhf5eAnC2s1NKOtbAMAQAasl4wD1km+6SOllmSGG46B23e
-         GzT0An6mUJyxSt78lYmv7zyXdutzouQNmPNmsTYw4rikP0aduNChNY5BiiSha7RXJUB6
-         iAF0ltqJnqwBqWIKPBpH1yZYiQqGF3GcXLLjfOIXC0NMkl+kgWrlUkdCir9FtUISPjhW
-         jyDA==
-X-Forwarded-Encrypted: i=1; AFNElJ+FL4cMKzY8q8lG6xSrUXoM4THfLbAY7t5+uO6MN+8xHt47y6m66CLkB2RZYJ3GjuJcdlPosW7TwA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyXumwISjhamWTPo1KrtYpAhRd71EkMgg18STotAamF6DYOuzyZ
-	f2H4X8ZP0/AlUbzasOxGI5xd0/03kQV7YrlcAuUh99191Hm+vgFfusoIBMKhzryuZ14=
-X-Gm-Gg: AeBDietI6jURhpkYV9Pzxk+covG0lcGmzKy+ddp2HXbJ9ZZvDRZ5cIze6ubUk8eJoy7
-	6kWFX/A3C29ifor8giBu17g+5n+uzND6XrkDbbWHTLC7UfjmETTW3IPC83DYVKPaFSNy2S32Xzd
-	el1gNfpw5rJKSx7LhBOdK4vWxE+i/k3kd/tQUzNhAaQlnm1xCkHrHNdTZr37uTrIRK1QncEItu/
-	pUK5QT5ep6kcz7QnYzpUQ9u7JOsUrTBdLZRSIjFThG69dXTZrgVjof+ARUEznL1LvXju0aWHsM4
-	Aaq+OT93FdUKkRPBxIXjotDDympejLT8eDEtaHa2Q8et5sC/OuRikTFI5/xvtIrszxc3wMOA03B
-	6Z1X8kZ/I98EbAojJUguC/PH6eXnod9BjExHl+iMZnDTqHLr8qwgY8IZDKYzRDey7k3atdFVC8z
-	HUzLJ5ibJS/z5EMCnLcFkKFcwtztgMuAcTkiGXPKL2ekJ2Bottu4g72yBCathRRIv4aOnd1emoG
-	KDcHSjfSvEU8Vi4hw==
-X-Received: by 2002:a05:600c:5299:b0:48a:5342:36b5 with SMTP id 5b1f17b1804b1-48a54514646mr14507205e9.21.1776706810146;
-        Mon, 20 Apr 2026 10:40:10 -0700 (PDT)
-Received: from ta2.c.googlers.com (17.83.155.104.bc.googleusercontent.com. [104.155.83.17])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fb72d365sm144280285e9.1.2026.04.20.10.40.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Apr 2026 10:40:09 -0700 (PDT)
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Mon, 20 Apr 2026 17:39:53 +0000
-Subject: [PATCH v3 07/10] thermal: samsung: Add Exynos ACPM TMU driver
- GS101
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=6DokXHkmeMhe+itenk5MVEhtcIYl4FtHXWlz4sF3Uxo=;
+ b=yBpFWXFTykOkljWOc8ofR/4LSkmh5ezO4yBFfswV2v3ZUNwbIZdVKpfuyaC6lC9Ylk4KZ9dT2tw8FHr+WO4zdRFUQpWZqOV6fYhdOk1BDUdbGOMCC6P4aGoVVPfVSkgU6URI8YgM89YIBNKUSAc4AmT+kPS8g3FDZsLJo/Bb7Q4=
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com (2603:10b6:5:357::14)
+ by IA0PR10MB6746.namprd10.prod.outlook.com (2603:10b6:208:43e::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.32; Mon, 20 Apr
+ 2026 17:50:11 +0000
+Received: from CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574]) by CO6PR10MB5409.namprd10.prod.outlook.com
+ ([fe80::3c92:21f3:96a:b574%6]) with mapi id 15.20.9818.033; Mon, 20 Apr 2026
+ 17:50:11 +0000
+References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
+ <20260408122538.3610871-13-ankur.a.arora@oracle.com>
+ <a374b23f8b03f850a874d46bc78411fb99483ca2.camel@amazon.com>
+User-agent: mu4e 1.4.10; emacs 27.2
+From: Ankur Arora <ankur.a.arora@oracle.com>
+To: "Okanovic, Haris" <harisokn@amazon.com>
+Cc: "ankur.a.arora@oracle.com" <ankur.a.arora@oracle.com>,
+        "joao.m.martins@oracle.com" <joao.m.martins@oracle.com>,
+        "xueshuai@linux.alibaba.com" <xueshuai@linux.alibaba.com>,
+        "david.laight.linux@gmail.com" <david.laight.linux@gmail.com>,
+        "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>,
+        "memxor@gmail.com" <memxor@gmail.com>,
+        "ashok.bhat@arm.com"
+ <ashok.bhat@arm.com>,
+        "zhenglifeng1@huawei.com" <zhenglifeng1@huawei.com>,
+        "konrad.wilk@oracle.com" <konrad.wilk@oracle.com>,
+        "cl@gentwo.org"
+ <cl@gentwo.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "ast@kernel.org"
+ <ast@kernel.org>,
+        "rdunlap@infradead.org" <rdunlap@infradead.org>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "arnd@arndb.de"
+ <arnd@arndb.de>,
+        "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>,
+        "will@kernel.org" <will@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "peterz@infradead.org"
+ <peterz@infradead.org>,
+        "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+        "rafael@kernel.org"
+ <rafael@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v11 12/14] cpuidle/poll_state: Wait for need-resched via
+ tif_need_resched_relaxed_wait()
+In-reply-to: <a374b23f8b03f850a874d46bc78411fb99483ca2.camel@amazon.com>
+Date: Mon, 20 Apr 2026 10:50:08 -0700
+Message-ID: <87mryxh67j.fsf@oracle.com>
+Content-Type: text/plain
+X-ClientProxiedBy: YT4PR01CA0399.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:108::6) To CO6PR10MB5409.namprd10.prod.outlook.com
+ (2603:10b6:5:357::14)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260420-acpm-tmu-v3-7-3dc8e93f0b26@linaro.org>
-References: <20260420-acpm-tmu-v3-0-3dc8e93f0b26@linaro.org>
-In-Reply-To: <20260420-acpm-tmu-v3-0-3dc8e93f0b26@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, 
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>, 
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Sylwester Nawrocki <s.nawrocki@samsung.com>, 
- Chanwoo Choi <cw00.choi@samsung.com>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Lee Jones <lee@kernel.org>
-Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com, 
- linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-hardening@vger.kernel.org, 
- linux-clk@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1776706804; l=17487;
- i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=FWmZ0QyqKWY3bmSKa397E69GArpbrh7kFJR/AkPo1D4=;
- b=mDa1RzOA5fq8vQR30Ko0fVyBRnY2UIu8+BbdyNCTvy1XLVM8P0f1YMUaPL4jzQnWYVpYMeJYw
- FHjmdkdqQHrBiADo36Jw/SoEUitMWRpd8HtR2LuHnO4sXkDwagdWcRh
-X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
- pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO6PR10MB5409:EE_|IA0PR10MB6746:EE_
+X-MS-Office365-Filtering-Correlation-Id: de5fa316-7510-4311-c81b-08de9f0544b6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	DrH4pgB9VgIUDxfTwJGH7sGG8zEKyogpEiPgW6/VT9zPPypBDaVv3WrkoDDFN7HDQPz0YoNPFCiNIuGLM4nv6hALZwmwV3did/rIbKEbLvvy5VB17G70xBci3t4uM1P6OItAD488k49g5n4jx+m1CiRTRWuAXMxmEPO3YoxBlzV+HMgWqdfmvbKp6d/pjyIdC3alTZnhlI4vxCHN/JheOeCPgoFXAp9a6gu4MmVTPnWF3hmTHlPO3x61NkVKIAmamRqV50NLeAOTZg/HoQa/3Lvp9albcUAOOU7rxZh/Ok9hX59C1MAo9wKb2YmdXpjMSn4i1IN/jaHHDFKXY6gDoSfFFeMAtCpvSBtRMIk0xyWS3ommA19RjE98YW1lcLydINLM+av0suGp28xSKoVLf1Tt5zJX02F/BgPsX6QHh6p/X0kAp2KxKpyu9eBQINLXng5m/VSJnXM8Hns+MNFO9BkEGZC2YVmSTOX46I6z0ZHbMa8ylwp+L3QmLuY87+LtyBMgGNgE+OyxYQHrJF+OHaJfrRHpvoRtt2lhr6gpuL21umM9p5YPddU6CFNJlvMk3GvfRBB5R8sRdSm0t//LEWwarj+LlZHdTT24teqOzsAIf3+1KyAzFnPMuHsu/Ffn0H+wepBLs+Hk46OKSmrbMx+J9Y+yOUuESN/1cRH6kfPMDp5dgC5yCwpbI5HE91gmZyXMx/sxhRSDl29QRwABPX4p+B3IOBKEaU15W2XhLlY=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO6PR10MB5409.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?pwYd84bbJwye+h5iq8TMvzQ51istcuqYyx+pUjhcSyPHYTMRshgbH72Lu7GL?=
+ =?us-ascii?Q?HGUkGeegxsf9fnNqLh3Myvi9Id9nU7cCkO04ze+/HekGxiXeTURE2UTXlkyv?=
+ =?us-ascii?Q?pfxvAAabynZ9TX8qjfp7tqy+eTGu7o69PtttiphWaI70LpEFCioMOVFSqR61?=
+ =?us-ascii?Q?iC7/n0IMdVgxw7ILIe848g8oioa59wwZFIYFAjk/LRHeynQ18F7QyTJaa2mU?=
+ =?us-ascii?Q?fn+pxeQDIgeY7XMjL/J8xZHmqIe5/2T2ZTH+PcPjy7AAdm5+OUaWQKKob4vj?=
+ =?us-ascii?Q?xpbEBf+OSxzUpjz9J4TTbu5XL3lmG5+T/V2Ro0Q1TQxmLU4wPkx0MW5fGSJA?=
+ =?us-ascii?Q?/o+j3xoXyqvxu92rAhpyc4o/S0g0liOzDpOiV5HBZxVGB5NL6LCL9mSwPKI7?=
+ =?us-ascii?Q?6KXVWmbH09S5YQnWXCRymK2S01MBgjHYmkYJk49cdgd+SxT8bQH+TKM1jAC2?=
+ =?us-ascii?Q?ZWbArtVNlWsO/PLM7ZwH5ys/M9QQxOevDtXHSpQUIZxLSt9/mbGRo1SIoodZ?=
+ =?us-ascii?Q?seHP+pEjB8UFFIfwbkxlqkMYAEF/3jhJ84SvVo16FshLtUODMk3adQVZI7t0?=
+ =?us-ascii?Q?H3prrF9D6Ha+9ydqlMCGbYs2FJmkl4wI8eikbDJyzN9w4Zyq5HyjxEy55aOH?=
+ =?us-ascii?Q?zQm9TVqgYox5kCzv96oAF3spIx9AJNhbWXjXnm30Z4Qok47d9Vmv7Ib27Gxn?=
+ =?us-ascii?Q?PLk1oxP7e8ndIEPvCeHutEjDX4wSqhWQ/1iNNUe+g4iiBb0pG1aj+1qDdhqu?=
+ =?us-ascii?Q?P1l+6Dc33e3weOUzMEStfjuv4ZVncIRfJbclIfBwRVSQL5DaZpKR+QO3AiZb?=
+ =?us-ascii?Q?q8NtTkxQXwUwX2B72c8BCHKGyi7mJ+1Z55N8/vbxwtofthbeNuWv96+7y8ob?=
+ =?us-ascii?Q?GnoqExDDNVv5RU4PCrMu5e3dIgM6OPwJCe1XbViuzkoyml74Jq7PVqMBDHYe?=
+ =?us-ascii?Q?2MjXSBNj4ZuzgZ7pMTvucAqn+sSOPyqoDlfV+9Q6Y25k76GOBY4Epv5rGptK?=
+ =?us-ascii?Q?kBBSJqGD3zpBznVwGcVIqIiaucPAKDq0qsPhwDhQbPvNoTP5NG3rbeAiyYxn?=
+ =?us-ascii?Q?7lBXMoNUhPfVFuLxihPAqBoSgRgW0Je7CmBA4ZNrFrGG9cnvYPmpXHxmbpkN?=
+ =?us-ascii?Q?oSuOLAt3YMrX+lMYZLsXFk0urLuoFQvyCug+oyPO/TVLCubKp7clAecdF49T?=
+ =?us-ascii?Q?/sIxfllC/t1gQD9rcb06hsHe0OpxgKnIWDB2FiQo6zdf0xqoI3jyTwRPrD+r?=
+ =?us-ascii?Q?7gZS/yWeyy4VCVJfg7TMNvysUNX7cFuZxUfPSGu+/EVhI+5squYMgGTCbfue?=
+ =?us-ascii?Q?7PLmGQ8vHCtMeq0JXqIsFgGUV7WqF1+fe3k++QquFWe36rrHcPxq9yCl6vZC?=
+ =?us-ascii?Q?9XD1w12cedF8VRKGIEOUZf4McWEe/XZ3UR7+5aj2UfS30D5jyK1OQhSDUngU?=
+ =?us-ascii?Q?QclzFQLdLy7GTLf50G522UxfjjxAg8fkzTacJIuh0aoUkx/7dxbkBfHdVJIf?=
+ =?us-ascii?Q?PrwRnN6mn1vzquxWuaxT5mtL29mxv6MPjVanut8d6MzYNpRA7nCwpxUZhXFV?=
+ =?us-ascii?Q?VxcxARJidDlK9mSZqKkY4RpiYXslbXXbZXlP7Md9ZgoJE0rFQNRiOnP5Zqbt?=
+ =?us-ascii?Q?SBse4TWx2sYNOZ3H+/5bQ5hcum24JgM5/JvPDuxpdGV6AbL/xgnACX9UYv0y?=
+ =?us-ascii?Q?7cAppOwnugaDZeb9Lkw/vbUfAD9f3OZ8XOHkQAl0P3FHee5Vl1fWJFFwPOpQ?=
+ =?us-ascii?Q?7tEQOel+9NlhQWpuw0nyunC6FLX5YSk=3D?=
+X-Exchange-RoutingPolicyChecked:
+	ReTjnFmsU3tn2qIVc3n+zHXHkMNSdC4QfkmviGy0k1MlqDZD7PZCFVNuGBRJkd5Wk9+Z9j+Z8Ey5rcBrBKktwqIDwxw0NVVuBY5VjPBjLcoHVDW0388PkQYWCdl5iAG4LKTcAJxR0gMy8KbUl11ow5u4mNgeaa86XKoziMaUwpXphlS7GIRkJ4nQGT1PiD85rmFRmLAK7975W9iober39O9s8G66O0GUjQ6KTiufWTm9B56Ahu0W0jA816UO/AvFO7ECY8+y0zQdHSRT9WqlBXRWJ33m44GDuLBXevZZfaCJZHfmBgq22QrDJfLqLBCy8L85VPT7rKo/7KV7HJWdcg==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	Sj3rdCNiE7ZT7JVy6DTzxXUquZMk7gwNxn+peQezfjb0VvCbQ+9/CNOJzRctjOoU4Xjirp+60gs118cTM0/R5TyM7Hl87T9QwV9Znm0O9duNQa3j0KYwPUF0zETBL6KmN4GA86447gMAtbmufZFF0Fz1jM4Psfh2dmuooDAXyi+0Yc6qG4ifA+xBzuhpSXk91kPoY5ljEPl1E3mK6mooYQP5CbaDDMNIb0d4bPzULlLzSGAX6cZUqGBuTvSYaBawM2tqeuoDkdekf9ytHRw1dwaRXsZ0BnJ1fFQJhdSiLxBP1HXntchldRfrj/K9jROZyqdAxqKfpka5/OiSKb1QDGcETvHxscPjTe3XcqXFYEsjKe+GmJ0MMxbUkAHzRYa354mPoeKSiSmmC4Jh4D7wQQMgjbfa6G0KWj2AXdyeOTrhWRJTXYVFVRDrBtH//y4DDaZ2ke+5gGAw73JCMR4LNLeuIkCy/K222CCZrs9tnZ1Gd1xaPeFE+kc0uvc4+/LU/zdCfq2nAz+DXRKB5FCIYSvr0MPId4zpSBkW85tnfrQRgeA4bhpZhoEtlOxybTi2jS2Thi56vpMiR+SEJMvhaeRMgR/DgGenYQuNLgezTC8=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: de5fa316-7510-4311-c81b-08de9f0544b6
+X-MS-Exchange-CrossTenant-AuthSource: CO6PR10MB5409.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Apr 2026 17:50:11.1428
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: OHn0dPRH4SrDa4LjNGJWim9b17sJxtDLWsVvO13zD4HVfzSHHo4Me46o8atoOPodGTmrNSZnMd0WgbzKAGB06KWtwsOZfngthd5IUH1oNHI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6746
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-20_03,2026-04-20_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 malwarescore=0 suspectscore=0
+ phishscore=0 mlxscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2604070000 definitions=main-2604200172
+X-Authority-Analysis: v=2.4 cv=JYCMa0KV c=1 sm=1 tr=0 ts=69e66757 b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=A5OVakUREuEA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
+ a=EIcjfB9IiI4px24ztqRk:22 a=vggBfdFIAAAA:8 a=VwQbUJbxAAAA:8 a=KKAkSRfTAAAA:8
+ a=yPCof4ZbAAAA:8 a=JYbUaWRF6CIYmkw5t-8A:9 a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-ORIG-GUID: ifoEyjSHvigigX-Qp3x3BJ0lZp5qAxv5
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIwMDE3MSBTYWx0ZWRfX4z/Ls8GbDv9S
+ uYj6UuEx/XLJHscKWw5d6JkZVOzvoG/JiEIwfMURqhv1lJat+eMOjLwD+Lh2AI51S+6Ct184ExW
+ rU7d7V1Qz9vx80Uu7QdkpAYcslIGf25Dzl7s9PxEhVBiORFX19Bz1yVfd7C3XEMCGl9no8MGVSb
+ PsVL1/hvHgOdQF/4ee8TubJ+SIKKU52rn2A2jOjy0R8oLEntcWqkO0MNhgjM3N8g/sA6985s2Rb
+ XNrAShYqHaoDYAnZbFRiVVWCQjGzZPIutwGKYKHmLm84qwjGKrrw/3q7vPOe+cHjltdMsH3Xk//
+ r1Qp54wL7zRZ+D4mERHByj/+R22Bkt+4dkL7k20SoPQj/0d10BwiOui+qwTF830csBBEwhM6uCE
+ F/g5n7TU/WcmbMj4sRPVBd17p8sqEBUmGnL8hwfllKr+PjpV3TVkW+zKoob5GpA/AZJvUa0PWlz
+ MPlNAbCs7REVLt7KkLA==
+X-Proofpoint-GUID: ifoEyjSHvigigX-Qp3x3BJ0lZp5qAxv5
 
-Add driver for the Thermal Management Unit (TMU) managed via the Alive
-Clock and Power Manager (ACPM), found on Samsung Exynos SoCs such as
-Google GS101 (and Exynos850, autov920, etc.).
 
-The TMU on utilizes a hybrid management model shared between the
-Application Processor (AP) and the ACPM firmware. The driver maintains
-direct memory-mapped access to the TMU interrupt pending registers to
-identify thermal events, while delegating functional tasks - such as
-sensor initialization, threshold configuration, and temperature
-acquisition - to the ACPM firmware via the ACPM IPC protocol.
+Okanovic, Haris <harisokn@amazon.com> writes:
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
----
- drivers/thermal/samsung/Kconfig    |  17 ++
- drivers/thermal/samsung/Makefile   |   2 +
- drivers/thermal/samsung/acpm-tmu.c | 539 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 558 insertions(+)
+> On Wed, 2026-04-08 at 17:55 +0530, Ankur Arora wrote:
+>> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+>>
+>>
+>>
+>> The inner loop in poll_idle() polls over the thread_info flags,
+>> waiting to see if the thread has TIF_NEED_RESCHED set. The loop
+>> exits once the condition is met, or if the poll time limit has
+>> been exceeded.
+>>
+>> To minimize the number of instructions executed in each iteration,
+>> the time check is rate-limited. In addition, each loop iteration
+>> executes cpu_relax() which on certain platforms provides a hint to
+>> the pipeline that the loop busy-waits, allowing the processor to
+>> reduce power consumption.
+>>
+>> Switch over to tif_need_resched_relaxed_wait() instead, since that
+>> provides exactly that.
+>>
+>> However, since we want to minimize power consumption in idle, building
+>> of cpuidle/poll_state.c continues to depend on CONFIG_ARCH_HAS_CPU_RELAX
+>> as that serves as an indicator that the platform supports an optimized
+>> version of tif_need_resched_relaxed_wait() (via
+>> smp_cond_load_acquire_timeout()).
+>>
+>> Cc: Rafael J. Wysocki <rafael@kernel.org>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+>> Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+>> Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+>> ---
+>>  drivers/cpuidle/poll_state.c | 21 +--------------------
+>>  1 file changed, 1 insertion(+), 20 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
+>> index c7524e4c522a..7443b3e971ba 100644
+>> --- a/drivers/cpuidle/poll_state.c
+>> +++ b/drivers/cpuidle/poll_state.c
+>> @@ -6,41 +6,22 @@
+>>  #include <linux/cpuidle.h>
+>>  #include <linux/export.h>
+>>  #include <linux/irqflags.h>
+>> -#include <linux/sched.h>
+>> -#include <linux/sched/clock.h>
+>>  #include <linux/sched/idle.h>
+>>  #include <linux/sprintf.h>
+>>  #include <linux/types.h>
+>>
+>> -#define POLL_IDLE_RELAX_COUNT  200
+>> -
+>>  static int __cpuidle poll_idle(struct cpuidle_device *dev,
+>>                                struct cpuidle_driver *drv, int index)
+>>  {
+>> -       u64 time_start;
+>> -
+>> -       time_start = local_clock_noinstr();
+>> -
+>>         dev->poll_time_limit = false;
+>>
+>>         raw_local_irq_enable();
+>>         if (!current_set_polling_and_test()) {
+>> -               unsigned int loop_count = 0;
+>>                 u64 limit;
+>>
+>>                 limit = cpuidle_poll_time(drv, dev);
+>>
+>> -               while (!need_resched()) {
+>> -                       cpu_relax();
+>> -                       if (loop_count++ < POLL_IDLE_RELAX_COUNT)
+>> -                               continue;
+>> -
+>> -                       loop_count = 0;
+>> -                       if (local_clock_noinstr() - time_start > limit) {
+>> -                               dev->poll_time_limit = true;
+>> -                               break;
+>> -                       }
+>> -               }
+>> +               dev->poll_time_limit = !tif_need_resched_relaxed_wait(limit);
+>>         }
+>>         raw_local_irq_disable();
+>>
+>> --
+>> 2.31.1
+>>
+>
+> Hi Ankur,
+>
+> Tested atop latest mainline d60bc1401 with the rest of your haltpoll
+> changes from separate thread:
+> ~10% improvement in `perf sched bench pipe` micro and ~4-6% throughput
+> improvements in mysql,
+> postgresql, cassandra, and memcached in under-loaded configurations.
+> Tested on AWS Graviton3 and
+> Graviton4, ARM Neoverse V1 and V2 cores respectively.
+>
+> I hope this series can merge soon. It's been stuck in review for more
+> than 2 years.
+>
+> Tested-by: Haris Okanovic <harisokn@amazon.com>
 
-diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-index f4eff5a41a84..0d3ffbdc66f0 100644
---- a/drivers/thermal/samsung/Kconfig
-+++ b/drivers/thermal/samsung/Kconfig
-@@ -9,3 +9,20 @@ config EXYNOS_THERMAL
- 	  the TMU, reports temperature and handles cooling action if defined.
- 	  This driver uses the Exynos core thermal APIs and TMU configuration
- 	  data from the supported SoCs.
-+
-+config EXYNOS_ACPM_THERMAL
-+	tristate "Exynos ACPM thermal management unit driver"
-+	depends on THERMAL_OF
-+	depends on EXYNOS_ACPM_PROTOCOL || (COMPILE_TEST && !EXYNOS_ACPM_PROTOCOL)
-+	help
-+	  Support for the Thermal Management Unit (TMU) on Samsung Exynos SoCs
-+	  (such as Google GS101 and Exynos850).
-+
-+	  The TMU on these platforms is managed through a hybrid architecture.
-+	  This driver handles direct register access for thermal interrupt status
-+	  monitoring and communicates with the Alive Clock and Power Manager
-+	  (ACPM) firmware via the ACPM IPC protocol for functional sensor control
-+	  and configuration.
-+
-+	  Select this if you want to monitor device temperature and enable
-+	  thermal mitigation on Samsung Exynos ACPM based devices.
-diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-index f139407150d2..daed80647c34 100644
---- a/drivers/thermal/samsung/Makefile
-+++ b/drivers/thermal/samsung/Makefile
-@@ -4,3 +4,5 @@
- #
- obj-$(CONFIG_EXYNOS_THERMAL)			+= exynos_thermal.o
- exynos_thermal-y				:= exynos_tmu.o
-+obj-$(CONFIG_EXYNOS_ACPM_THERMAL)		+= exynos_acpm_thermal.o
-+exynos_acpm_thermal-y				:= acpm-tmu.o
-diff --git a/drivers/thermal/samsung/acpm-tmu.c b/drivers/thermal/samsung/acpm-tmu.c
-new file mode 100644
-index 000000000000..942d8caa78f5
---- /dev/null
-+++ b/drivers/thermal/samsung/acpm-tmu.c
-@@ -0,0 +1,539 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright 2019 Samsung Electronics Co., Ltd.
-+ * Copyright 2025 Google LLC.
-+ * Copyright 2026 Linaro Ltd.
-+ */
-+
-+#include <linux/cleanup.h>
-+#include <linux/clk.h>
-+#include <linux/device/devres.h>
-+#include <linux/err.h>
-+#include <linux/firmware/samsung/exynos-acpm-protocol.h>
-+#include <linux/interrupt.h>
-+#include <linux/minmax.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/regmap.h>
-+#include <linux/thermal.h>
-+#include <linux/units.h>
-+
-+#include "../thermal_hwmon.h"
-+
-+#define EXYNOS_TMU_SENSOR(i)		BIT(i)
-+#define EXYNOS_TMU_SENSORS_MAX_COUNT	16
-+
-+#define GS101_CPUCL2_SENSOR_MASK (EXYNOS_TMU_SENSOR(0) |	\
-+				  EXYNOS_TMU_SENSOR(6) |	\
-+				  EXYNOS_TMU_SENSOR(7) |	\
-+				  EXYNOS_TMU_SENSOR(8) |	\
-+				  EXYNOS_TMU_SENSOR(9))
-+#define GS101_CPUCL1_SENSOR_MASK (EXYNOS_TMU_SENSOR(4) |	\
-+				  EXYNOS_TMU_SENSOR(5))
-+#define GS101_CPUCL0_SENSOR_MASK (EXYNOS_TMU_SENSOR(1) |	\
-+				  EXYNOS_TMU_SENSOR(2))
-+
-+#define GS101_REG_INTPEND(i)		((i) * 0x50 + 0xf8)
-+
-+enum {
-+	P0_INTPEND,
-+	P1_INTPEND,
-+	P2_INTPEND,
-+	P3_INTPEND,
-+	P4_INTPEND,
-+	P5_INTPEND,
-+	P6_INTPEND,
-+	P7_INTPEND,
-+	P8_INTPEND,
-+	P9_INTPEND,
-+	P10_INTPEND,
-+	P11_INTPEND,
-+	P12_INTPEND,
-+	P13_INTPEND,
-+	P14_INTPEND,
-+	P15_INTPEND,
-+	REG_INTPEND_COUNT,
-+};
-+
-+struct acpm_tmu_sensor_group {
-+	u16 mask;
-+	u8 id;
-+};
-+
-+struct acpm_tmu_sensor {
-+	const struct acpm_tmu_sensor_group *group;
-+	struct thermal_zone_device *tzd;
-+	struct acpm_tmu_priv *priv;
-+	struct mutex lock; /* protects sensor state */
-+	bool enabled;
-+};
-+
-+struct acpm_tmu_priv {
-+	struct regmap_field *regmap_fields[REG_INTPEND_COUNT];
-+	struct acpm_handle *handle;
-+	struct device *dev;
-+	struct clk *clk;
-+	unsigned int mbox_chan_id;
-+	unsigned int num_sensors;
-+	int irq;
-+	struct acpm_tmu_sensor sensors[] __counted_by(num_sensors);
-+};
-+
-+struct acpm_tmu_driver_data {
-+	const struct reg_field *reg_fields;
-+	const struct acpm_tmu_sensor_group *sensor_groups;
-+	unsigned int num_sensor_groups;
-+	unsigned int mbox_chan_id;
-+};
-+
-+#define ACPM_TMU_SENSOR_GROUP(_mask, _id)		\
-+	{					\
-+		.mask	= _mask,		\
-+		.id	= _id,			\
-+	}
-+
-+static const struct acpm_tmu_sensor_group gs101_sensor_groups[] = {
-+	ACPM_TMU_SENSOR_GROUP(GS101_CPUCL2_SENSOR_MASK, 0),
-+	ACPM_TMU_SENSOR_GROUP(GS101_CPUCL1_SENSOR_MASK, 1),
-+	ACPM_TMU_SENSOR_GROUP(GS101_CPUCL0_SENSOR_MASK, 2),
-+};
-+
-+static const struct reg_field gs101_reg_fields[REG_INTPEND_COUNT] = {
-+	[P0_INTPEND] = REG_FIELD(GS101_REG_INTPEND(0), 0, 31),
-+	[P1_INTPEND] = REG_FIELD(GS101_REG_INTPEND(1), 0, 31),
-+	[P2_INTPEND] = REG_FIELD(GS101_REG_INTPEND(2), 0, 31),
-+	[P3_INTPEND] = REG_FIELD(GS101_REG_INTPEND(3), 0, 31),
-+	[P4_INTPEND] = REG_FIELD(GS101_REG_INTPEND(4), 0, 31),
-+	[P5_INTPEND] = REG_FIELD(GS101_REG_INTPEND(5), 0, 31),
-+	[P6_INTPEND] = REG_FIELD(GS101_REG_INTPEND(6), 0, 31),
-+	[P7_INTPEND] = REG_FIELD(GS101_REG_INTPEND(7), 0, 31),
-+	[P8_INTPEND] = REG_FIELD(GS101_REG_INTPEND(8), 0, 31),
-+	[P9_INTPEND] = REG_FIELD(GS101_REG_INTPEND(9), 0, 31),
-+	[P10_INTPEND] = REG_FIELD(GS101_REG_INTPEND(10), 0, 31),
-+	[P11_INTPEND] = REG_FIELD(GS101_REG_INTPEND(11), 0, 31),
-+	[P12_INTPEND] = REG_FIELD(GS101_REG_INTPEND(12), 0, 31),
-+	[P13_INTPEND] = REG_FIELD(GS101_REG_INTPEND(13), 0, 31),
-+	[P14_INTPEND] = REG_FIELD(GS101_REG_INTPEND(14), 0, 31),
-+	[P15_INTPEND] = REG_FIELD(GS101_REG_INTPEND(15), 0, 31),
-+};
-+
-+static const struct regmap_config gs101_regmap_config = {
-+	.reg_bits = 32,
-+	.reg_stride = 4,
-+	.val_bits = 32,
-+	.use_relaxed_mmio = true,
-+	.max_register = GS101_REG_INTPEND(15),
-+};
-+
-+static const struct acpm_tmu_driver_data acpm_tmu_gs101 = {
-+	.reg_fields = gs101_reg_fields,
-+	.sensor_groups = gs101_sensor_groups,
-+	.num_sensor_groups = ARRAY_SIZE(gs101_sensor_groups),
-+	.mbox_chan_id = 9,
-+};
-+
-+static int acpm_tmu_op_tz_control(struct acpm_tmu_sensor *sensor, bool on)
-+{
-+	struct acpm_tmu_priv *priv = sensor->priv;
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	int ret;
-+
-+	ret = ops->tz_control(handle, priv->mbox_chan_id, sensor->group->id,
-+			      on);
-+	if (ret)
-+		return ret;
-+
-+	sensor->enabled = on;
-+
-+	return 0;
-+}
-+
-+static int acpm_tmu_control(struct acpm_tmu_priv *priv, bool on)
-+{
-+	struct device *dev = priv->dev;
-+	int i, ret;
-+
-+	ret = pm_runtime_resume_and_get(dev);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (i = 0; i < priv->num_sensors; i++) {
-+		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
-+
-+		/* Skip sensors that weren't found in DT */
-+		if (!sensor->tzd)
-+			continue;
-+
-+		scoped_guard(mutex, &sensor->lock) {
-+			ret = acpm_tmu_op_tz_control(sensor, on);
-+		}
-+
-+		if (ret)
-+			goto out;
-+	}
-+
-+out:
-+	pm_runtime_put_autosuspend(dev);
-+	return ret;
-+}
-+
-+static int acpm_tmu_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
-+	struct acpm_tmu_priv *priv = sensor->priv;
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	struct device *dev = priv->dev;
-+	int acpm_temp, ret;
-+
-+	if (!sensor->enabled)
-+		return -EAGAIN;
-+
-+	ret = pm_runtime_resume_and_get(dev);
-+	if (ret < 0)
-+		return ret;
-+
-+	scoped_guard(mutex, &sensor->lock) {
-+		ret = ops->read_temp(handle, priv->mbox_chan_id,
-+				     sensor->group->id, &acpm_temp);
-+	}
-+
-+	pm_runtime_put_autosuspend(dev);
-+
-+	if (ret)
-+		return ret;
-+
-+	*temp = acpm_temp * MILLIDEGREE_PER_DEGREE;
-+
-+	return 0;
-+}
-+
-+static int acpm_tmu_set_trips(struct thermal_zone_device *tz, int low, int high)
-+{
-+	struct acpm_tmu_sensor *sensor = thermal_zone_device_priv(tz);
-+	struct acpm_tmu_priv *priv = sensor->priv;
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	struct device *dev = priv->dev;
-+	unsigned int mbox_chan_id = priv->mbox_chan_id;
-+	u8 acpm_sensor_id = sensor->group->id;
-+	u8 thresholds[2] = {};
-+	u8 inten = 0;
-+	int ret;
-+
-+	/* If a valid lower bound exists, set the threshold and enable its interrupt */
-+	if (low > -INT_MAX) {
-+		thresholds[0] = clamp_val(low / MILLIDEGREE_PER_DEGREE, 0, 255);
-+		inten |= BIT(0);
-+	}
-+
-+	/* If a valid upper bound exists, set the threshold and enable its interrupt */
-+	if (high < INT_MAX) {
-+		thresholds[1] = clamp_val(high / MILLIDEGREE_PER_DEGREE, 0, 255);
-+		inten |= BIT(1);
-+	}
-+
-+	ret = pm_runtime_resume_and_get(dev);
-+	if (ret)
-+		return ret;
-+
-+	scoped_guard(mutex, &sensor->lock) {
-+		bool was_enabled = sensor->enabled;
-+
-+		if (was_enabled) {
-+			ret = acpm_tmu_op_tz_control(sensor, false);
-+			if (ret)
-+				goto out;
-+		}
-+
-+		ret = ops->set_threshold(handle, mbox_chan_id, acpm_sensor_id,
-+					 thresholds, 2);
-+		if (ret)
-+			goto out;
-+
-+		ret = ops->set_interrupt_enable(handle, mbox_chan_id,
-+						acpm_sensor_id, inten);
-+		if (ret)
-+			goto out;
-+
-+		/* Restore based on cached state. */
-+		if (was_enabled)
-+			ret = acpm_tmu_op_tz_control(sensor, true);
-+	}
-+
-+out:
-+	pm_runtime_put_autosuspend(dev);
-+	return ret;
-+}
-+
-+static const struct thermal_zone_device_ops acpm_tmu_sensor_ops = {
-+	.get_temp = acpm_tmu_get_temp,
-+	.set_trips = acpm_tmu_set_trips,
-+};
-+
-+static int acpm_tmu_has_pending_irq(struct acpm_tmu_sensor *sensor,
-+				    bool *pending_irq)
-+{
-+	struct acpm_tmu_priv *priv = sensor->priv;
-+	unsigned long mask = sensor->group->mask;
-+	int i, ret;
-+	u32 val;
-+
-+	guard(mutex)(&sensor->lock);
-+
-+	for_each_set_bit(i, &mask, EXYNOS_TMU_SENSORS_MAX_COUNT) {
-+		ret = regmap_field_read(priv->regmap_fields[i], &val);
-+		if (ret)
-+			return ret;
-+
-+		if (val) {
-+			*pending_irq = true;
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static irqreturn_t acpm_tmu_thread_fn(int irq, void *id)
-+{
-+	struct acpm_tmu_priv *priv = id;
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	struct device *dev = priv->dev;
-+	int i, ret;
-+
-+	ret = pm_runtime_resume_and_get(dev);
-+	if (ret) {
-+		dev_err(dev, "Failed to resume: %d\n", ret);
-+		return IRQ_NONE;
-+	}
-+
-+	for (i = 0; i < priv->num_sensors; i++) {
-+		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
-+		bool pending_irq = false;
-+
-+		if (!sensor->tzd)
-+			continue;
-+
-+		ret = acpm_tmu_has_pending_irq(sensor, &pending_irq);
-+		if (ret || !pending_irq)
-+			continue;
-+
-+		thermal_zone_device_update(sensor->tzd,
-+					   THERMAL_EVENT_UNSPECIFIED);
-+
-+		scoped_guard(mutex, &sensor->lock) {
-+			ret = ops->clear_tz_irq(handle, priv->mbox_chan_id,
-+						sensor->group->id);
-+			if (ret)
-+				dev_err(priv->dev, "Sensor %d: failed to clear IRQ (%d)\n",
-+					i, ret);
-+		}
-+	}
-+
-+	pm_runtime_put_autosuspend(dev);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static const struct of_device_id acpm_tmu_match[] = {
-+	{ .compatible = "google,gs101-tmu-top" },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(of, acpm_tmu_match);
-+
-+static int acpm_tmu_probe(struct platform_device *pdev)
-+{
-+	const struct acpm_tmu_driver_data *data = &acpm_tmu_gs101;
-+	struct acpm_handle *acpm_handle;
-+	struct device *dev = &pdev->dev;
-+	struct acpm_tmu_priv *priv;
-+	struct regmap *regmap;
-+	void __iomem *base;
-+	int i, ret;
-+
-+	acpm_handle = devm_acpm_get_by_phandle(dev);
-+	if (IS_ERR(acpm_handle))
-+		return dev_err_probe(dev, PTR_ERR(acpm_handle),
-+				     "Failed to get ACPM handle\n");
-+
-+	priv = devm_kzalloc(dev,
-+			    struct_size(priv, sensors, data->num_sensor_groups),
-+			    GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->dev = dev;
-+	priv->handle = acpm_handle;
-+	priv->mbox_chan_id = data->mbox_chan_id;
-+	priv->num_sensors = data->num_sensor_groups;
-+
-+	platform_set_drvdata(pdev, priv);
-+
-+	base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(base))
-+		return dev_err_probe(dev, PTR_ERR(base), "Failed to ioremap resource\n");
-+
-+	regmap = devm_regmap_init_mmio(dev, base, &gs101_regmap_config);
-+	if (IS_ERR(regmap))
-+		return dev_err_probe(dev, PTR_ERR(regmap), "Failed to init regmap\n");
-+
-+	ret = devm_regmap_field_bulk_alloc(dev, regmap, priv->regmap_fields,
-+					   data->reg_fields, REG_INTPEND_COUNT);
-+	if (ret)
-+		return dev_err_probe(dev, ret,
-+				     "Unable to map syscon registers\n");
-+
-+	priv->clk = devm_clk_get(dev, NULL);
-+	if (IS_ERR(priv->clk))
-+		return dev_err_probe(dev, PTR_ERR(priv->clk),
-+				     "Failed to get the clock\n");
-+
-+	priv->irq = platform_get_irq(pdev, 0);
-+	if (priv->irq < 0)
-+		return dev_err_probe(dev, priv->irq, "Failed to get irq\n");
-+
-+	ret = devm_request_threaded_irq(dev, priv->irq, NULL,
-+					acpm_tmu_thread_fn, IRQF_ONESHOT,
-+					dev_name(dev), priv);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to request irq\n");
-+
-+	pm_runtime_set_autosuspend_delay(dev, 100);
-+	pm_runtime_use_autosuspend(dev);
-+
-+	ret = devm_pm_runtime_enable(dev);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "Failed to enable runtime PM\n");
-+
-+	ret = pm_runtime_resume_and_get(dev);
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "Failed to resume device\n");
-+
-+	ret = acpm_handle->ops->tmu.init(acpm_handle, priv->mbox_chan_id);
-+	if (ret) {
-+		ret = dev_err_probe(dev, ret, "Failed to init TMU\n");
-+		goto err_pm_put;
-+	}
-+
-+	for (i = 0; i < priv->num_sensors; i++) {
-+		struct acpm_tmu_sensor *sensor = &priv->sensors[i];
-+
-+		mutex_init(&sensor->lock);
-+		sensor->group = &data->sensor_groups[i];
-+		sensor->priv = priv;
-+
-+		sensor->tzd = devm_thermal_of_zone_register(dev, i, sensor,
-+							    &acpm_tmu_sensor_ops);
-+		if (IS_ERR(sensor->tzd)) {
-+			ret = PTR_ERR(sensor->tzd);
-+			if (ret == -ENODEV) {
-+				sensor->tzd = NULL;
-+				dev_dbg(dev, "Sensor %d not used in DT, skipping\n", i);
-+				continue;
-+			}
-+
-+			ret = dev_err_probe(dev, ret, "Failed to register sensor %d\n", i);
-+			goto err_pm_put;
-+		}
-+
-+		ret = devm_thermal_add_hwmon_sysfs(dev, sensor->tzd);
-+		if (ret)
-+			dev_warn(dev, "Failed to add hwmon sysfs!\n");
-+	}
-+
-+	ret = acpm_tmu_control(priv, true);
-+	if (ret) {
-+		ret = dev_err_probe(dev, ret, "Failed to enable TMU\n");
-+		goto err_pm_put;
-+	}
-+
-+	pm_runtime_put_autosuspend(dev);
-+
-+	return 0;
-+
-+err_pm_put:
-+	pm_runtime_put_sync(dev);
-+	return ret;
-+}
-+
-+static void acpm_tmu_remove(struct platform_device *pdev)
-+{
-+	struct acpm_tmu_priv *priv = platform_get_drvdata(pdev);
-+
-+	/* Stop IRQ first to prevent race with thread_fn */
-+	disable_irq(priv->irq);
-+
-+	acpm_tmu_control(priv, false);
-+}
-+
-+static int acpm_tmu_suspend(struct device *dev)
-+{
-+	struct acpm_tmu_priv *priv = dev_get_drvdata(dev);
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	int ret;
-+
-+	ret = acpm_tmu_control(priv, false);
-+	if (ret)
-+		return ret;
-+
-+	/* APB clock not required for this specific msg */
-+	return ops->suspend(handle, priv->mbox_chan_id);
-+}
-+
-+static int acpm_tmu_resume(struct device *dev)
-+{
-+	struct acpm_tmu_priv *priv = dev_get_drvdata(dev);
-+	struct acpm_handle *handle = priv->handle;
-+	const struct acpm_tmu_ops *ops = &handle->ops->tmu;
-+	int ret;
-+
-+	/* APB clock not required for this specific msg */
-+	ret = ops->resume(handle, priv->mbox_chan_id);
-+	if (ret)
-+		return ret;
-+
-+	return acpm_tmu_control(priv, true);
-+}
-+
-+static int acpm_tmu_runtime_suspend(struct device *dev)
-+{
-+	struct acpm_tmu_priv *priv = dev_get_drvdata(dev);
-+
-+	clk_disable_unprepare(priv->clk);
-+
-+	return 0;
-+}
-+
-+static int acpm_tmu_runtime_resume(struct device *dev)
-+{
-+	struct acpm_tmu_priv *priv = dev_get_drvdata(dev);
-+
-+	return clk_prepare_enable(priv->clk);
-+}
-+
-+static const struct dev_pm_ops acpm_tmu_pm_ops = {
-+	SYSTEM_SLEEP_PM_OPS(acpm_tmu_suspend, acpm_tmu_resume)
-+	RUNTIME_PM_OPS(acpm_tmu_runtime_suspend, acpm_tmu_runtime_resume, NULL)
-+};
-+
-+static struct platform_driver acpm_tmu_driver = {
-+	.driver = {
-+		.name   = "gs-tmu",
-+		.pm     = pm_ptr(&acpm_tmu_pm_ops),
-+		.of_match_table = acpm_tmu_match,
-+	},
-+	.probe = acpm_tmu_probe,
-+	.remove = acpm_tmu_remove,
-+};
-+module_platform_driver(acpm_tmu_driver);
-+
-+MODULE_AUTHOR("Tudor Ambarus <tudor.ambarus@linaro.org>");
-+MODULE_DESCRIPTION("Samsung Exynos ACPM TMU Driver");
-+MODULE_LICENSE("GPL");
+Thanks Haris. Yeah, I don't think there are any open issues left on
+this.
 
--- 
-2.54.0.rc1.555.g9c883467ad-goog
-
+--
+ankur
