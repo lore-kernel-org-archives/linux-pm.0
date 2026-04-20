@@ -1,182 +1,256 @@
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazon11010025.outbound.protection.outlook.com [52.101.69.25])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C31B377EDB;
-	Mon, 20 Apr 2026 02:26:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.69.25
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776652013; cv=fail; b=b88EJ/yAsOUYFc1xFvemZVGGYC5aJ6aGxfMh+iDlPx5b/JMqZN0mmIJ8qfrWh30NipOjPFLylGbjruYlLQYDG7X0mHQt330KqE1495cTpPe0LTJQdeIrlHRwnHBU1Et6i8LbRFQw9V7V1hsdZArofT8HyczdIQjmKIpbQj2HrW0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776652013; c=relaxed/simple;
-	bh=RK98rOUvCp9SPt/v9CVlUB0IsR86MdWl2Ecgg5wsTDg=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=UTtQmTRIyxS0qEyaZvDfOk9HZISBjs2cHtSexjvX9MZvE1doqGGoNf3wQw8ndlNCFlP6cpAw1bn1B7G/LCdTAOOsVlEeQ+NJ6cUyPfTchdXEC6f15BLvc4AE4ZdI0GFA9hTK5E2yZ6IxhJo6zns17Gzq7fA+cXLo580hQoVxLZ8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=dDpAYpFk; arc=fail smtp.client-ip=52.101.69.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6235F375F67;
+	Mon, 20 Apr 2026 02:27:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776652038; cv=none; b=fEQM5S4BMg80tD6ejfOMMfLx5X/zVxz0N88ICrEhc72rFGjkVhUwmcSZiNP3g4Z+R51pZLuSwRMVoR/dfiKSBJupUb8De0c78zkZdxxO5z622dd3WerzgoyIBObKLyXE/yT1Fl7WVKWy2lTL0K2nn6rX9Jv7nAxJPlbGLhtJpEc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776652038; c=relaxed/simple;
+	bh=ITFfxWVYZShfg8ObCYl+/A7sDctvchvGVKnsu2Q0ZLU=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=Gv2ejwE8Op1pVdr6ONsXyI0Z9V+AmHg6DPXJnZM8gJuP5vYmk3AADkiOgnmpfybVZ/adtzwLlI7gd1VBkxou9u39j6C2drD5/+4iH3P6uGY1k5XNpXR494DVhySCpfh55PwLzdYOxyVEfYPQxp0FQoJ6LQhF9SbpklQpJu1jDGo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=q/f2q8Yr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="dDpAYpFk"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cgxC4AGpAjphp4wcx5a0RYeL4MfoGDe6C5x0p6c+k99aX3iLKY9Bdk/uKn+DxCA7e7JNl73nvPAzc23ck/LjggF01GshnIraRAyIX+ChG3g7sAbfwiDf2ua/+BI1E5ypmV1Ra6poa3lOfJn4EOgO/TmbVzP/0ZAJ5eOJElgYZWcOuDG+V7yxM/E90584nMZr60UFcnHDSrY/4LAbrBWJ3k205Vmpr6PD02hGzY5GTaU0g4ISJPtle3hEA0laERgQVg6mqlhwcF08WFlYRP9xAy3HrBeK2XetPcSrxVUO31ZV+QXngYw2n6X21yXv7IvVBxLYTGnwgtigWVM0zxrHAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RK98rOUvCp9SPt/v9CVlUB0IsR86MdWl2Ecgg5wsTDg=;
- b=iGYI9yLBekebE+dtPfNlrN7Tfa1uBvF5Wd7DruLIi7v63JpHzTNBBgL8VJmQfbSuUcN+5Y/AIdoNAhA8IHx1LuvDS5lkDfeKMxrsz1r4E41pfwE5mKG2q18FALY56QTNSwlq2PKVXBaWtqaxj+R6edHrITiTq3/mRIP2yGGV/R6MwODFM+uv3rP8tbRwdcU7zSH8BEevvz4SKr2hKaB0Go1VEIwwcw/Cibd+OfKScO9+SQ1KXCwcSmWAUPT+KCNYBkbEkE4Sqh2ertVtz7KNkPTmwityEUY1eHLlwS/SK5/cIAs6/jbRIUpC+6dFZBkeN2ygHfL+3YAfidVWi/M3RA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RK98rOUvCp9SPt/v9CVlUB0IsR86MdWl2Ecgg5wsTDg=;
- b=dDpAYpFkYgYW29xAYfrG5i7TTz4eVqUPTA0293Qzk3v+tn37IWk8AKNbgUvmzkMG29l07wfQw64QcQv8iHQrQg05yU001zVTME2/f9wzrRVqKg7PWoV26yBBRWZC/QESV1XP7CSotUETHe+lResqwht5tjrZC1Xd6qToBnRWqWR2FkmJeo75sA2WbmEt+gOC+zxsWpGgcWgy6IW4VtiSmAUztfZYl/H6ttdAnTWc6NnuAtnI+dFeH//00DZ2gCga8PcONNNGLtPWLFNe3Emqpf8+undOBCno+GUBhMYRiKl8mYae6bdPXHWHK+WRTLQbIlv65AGQx7KtkYkZYkj2ow==
-Received: from AMBPR04MB12334.eurprd04.prod.outlook.com (2603:10a6:20b:732::5)
- by AMDPR04MB11605.eurprd04.prod.outlook.com (2603:10a6:20b:71a::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.32; Mon, 20 Apr
- 2026 02:26:49 +0000
-Received: from AMBPR04MB12334.eurprd04.prod.outlook.com
- ([fe80::9b4f:ab4e:94c3:c457]) by AMBPR04MB12334.eurprd04.prod.outlook.com
- ([fe80::9b4f:ab4e:94c3:c457%6]) with mapi id 15.20.9818.028; Mon, 20 Apr 2026
- 02:26:49 +0000
-From: Zhipeng Wang <zhipeng.wang_1@nxp.com>
-To: "Daniel Baluta (OSS)" <daniel.baluta@oss.nxp.com>, Marco Felsch
-	<m.felsch@pengutronix.de>
-CC: "ulfh@kernel.org" <ulfh@kernel.org>, Frank Li <frank.li@nxp.com>,
-	"s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "imx@lists.linux.dev"
-	<imx@lists.linux.dev>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-	Xuegang Liu <xuegang.liu@nxp.com>, Jindong Yue <jindong.yue@nxp.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com"
-	<festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>
-Subject: RE: [EXT] Re: [PATCH v2] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL
- tristate
-Thread-Topic: [EXT] Re: [PATCH v2] pmdomain: imx: Make IMX8M/IMX9 BLK_CTRL
- tristate
-Thread-Index: AQHcywa8jFjWeOFOMEiinevo9PMwILXc+CcAgADVNaCAA2o6gIAGDEfg
-Date: Mon, 20 Apr 2026 02:26:49 +0000
-Message-ID:
- <AMBPR04MB1233451EEE5551561CF478E26EB2F2@AMBPR04MB12334.eurprd04.prod.outlook.com>
-References: <20260413053049.3041177-1-zhipeng.wang_1@nxp.com>
- <ql2c6m54fjjwifycaan3hcr3p3bp4phva2vdux2qcramt7wrvy@4dsvpyct5tqx>
- <AMBPR04MB123344C1F802528A10CEA7FADEB252@AMBPR04MB12334.eurprd04.prod.outlook.com>
- <d44a60ff-c8a3-4347-9199-def61e855066@oss.nxp.com>
-In-Reply-To: <d44a60ff-c8a3-4347-9199-def61e855066@oss.nxp.com>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AMBPR04MB12334:EE_|AMDPR04MB11605:EE_
-x-ms-office365-filtering-correlation-id: 08c4501f-742d-4ab3-6ad9-08de9e8446de
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|19092799006|376014|38070700021|56012099003|22082099003|18002099003;
-x-microsoft-antispam-message-info:
- wRw2h8QEj/Q7XQytLdZtjoMFT1Dj9s29r/RduTYlE/QJco7HrXkX4N3PkO2DnlIzsxiy/Bmj05JVCjdLsBHE1IAQz3X74vceyFMB4e8Wu+r4yRv8Z+SY/sBVLAIJEFNgaLyYvIICFeqVQLPLlDr+NrulhTFsOMDN4cqL6xvOcGGZQdk9Owv8iz3fUCHQcbLBPXf73KGUDhnn3Cd9IiB6Ey8XmvjqqTaUYx+C3hFghNJ4Zlg1GzDtvUKXhBqXYCJLY7R+qUSgy204dYx34+A4GEHwDbQneQM6X4CA9Fm4nzjSAL0KVX/5ESHvkYPErYBf2BfufDiL9PSb1738l/Mx3aWYtcOP4LlgV95stsEx52aWqqYM0JnPv7cs2yoeVNTpJstzh+d3nXxwLnWRadH6PjJCdjK8vfeFpFw30jd2I08FgEYsTBHFdXyTtoGwqN9CAXsBJ8i+STHc+fmrU3QinFiv/nt6/3US7+i0MVtCIJxlvcci/7ovYNWpFxWavgOklFSOaJs/ELv4TvN0SNagbK0bEC80YqDM3HdyN8gXVRBc16+k0928qZv+4x0RgjD9Mhew/dlYAGSgfJu42Tz3AGU2w8QF6pFKBO8TQn4bZhFkGOeVLQmHoxktQKWQI8RaSXdSRI+q4FO6FzS0MAH5W8OCVkp6O5ETn/g/3b2ws9kNKtwcR9HlgM4AvIYeNchtF9ewhdNfkS1SGW5EMe9mTGZcT4+OBpeeKwwCiwlG2miqklADpYareU2N4O+PPt2b6wQKlYoL38x/iCJwChLdsqDrn19sqzuS8Nka3Aohcfk=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-cn;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AMBPR04MB12334.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(19092799006)(376014)(38070700021)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?gb2312?B?cUt1c045dXU4cGp4TDRkTFFRRFpGVlRmeGtkTkxjNE9sL000aTU1ckRmNDcy?=
- =?gb2312?B?OUNCZ0FORE9wTHRnUWhjQUpKWHROenlVbHFOUGZ5bzBZT0ZXbU1MdjVvZ01G?=
- =?gb2312?B?WHlPTUM3L0diRVIvWEIvV2I4K01LaVRFUi9MSDJIOExwbUd2UTVROVB2WXhQ?=
- =?gb2312?B?dXFmVlF1Qm1GbE83RU5WRDVXclhxbXdTKzYvczBNWkV5VlRhRzdZdk03bXNi?=
- =?gb2312?B?WVl0cndyVVBwZG16dmYyK1FjWDlUemtib05EUUdUY3lsR2ZoUmZaRlBCRkgy?=
- =?gb2312?B?U2QrMXlZZmQ1RjdTQUpzV25YNGN3SzVnb0FOeTdPKysrN2J4OEhFYStSUjRV?=
- =?gb2312?B?YnV6QWUzZnFSNi9SUER0a3JUcmpzS0crd0NuR2hXWlM3YVEvWGxPUUlLNXRJ?=
- =?gb2312?B?RzVmZkk1aTU1cnBmSVBzd3BzTWtRM213WUdlVkpSZjEvWmlNcDNNejhYRHpE?=
- =?gb2312?B?SldHVXBDTWVIWEw0alM1TmJUaXJOVVJFWE5KNVpEV2lyQklKNnR0NCtsUzQw?=
- =?gb2312?B?aGoyczJDd2ozWGdpYkNUekxxU3JzTHFkang1VGtXK2wybWtuVWpMK3QzdDhy?=
- =?gb2312?B?dVhTOVNoaDdacUtKNHk1WURsQ3JYb084elBZV0dTOVZKYVdJOThtdlVoRjhm?=
- =?gb2312?B?SFBsU0ZwbjFCWDZWL2RWOVJqU2huTVc3Ui9NMS9SaWhxSW9GT21PRWlHZmI2?=
- =?gb2312?B?eFQ3aFlzUFRYRVJMSmdpT2Iyc0dMTU1QT0U2YkxaTVE2YjRGVGUvRzdLUEdn?=
- =?gb2312?B?RTdCbm10NlR0c2RkL1krMHlpL2NHRVZNNUJiU1RpSWxJL0pZMDFhWGg3RXIz?=
- =?gb2312?B?SU5oSkFNVnVFUVFoZWtUOFdqMFVXVFNhNkEzemxJS25UczZESFV5UmxzWE9p?=
- =?gb2312?B?RXNldjhVQlJCcEowZXpsUWpiR0VGb0x3MzdjVGlYbElVWWdSaTd1M0xSRStx?=
- =?gb2312?B?bnRQbHdydlA5ck96TTlPdkRsbU4xem9PU2pPcWlNSlFPNmNZY2dGN0NnUmw2?=
- =?gb2312?B?WGxjSk5KZzJiWU40OVFBZkFQaGtjWnRrWVlicENCRHlmUEZVOWpuRC9EQU1j?=
- =?gb2312?B?T0Vxb3JTUWhyRC9JYmFic3BsRm5PMlQrd1VLanI0MHFiWUMzd2QxVE1oZExF?=
- =?gb2312?B?Z3BCR3QydlFTR3BKUUc3MW9QK3IxSVcvcXJFSnVLelBENndPL1VFSzBHRk10?=
- =?gb2312?B?SnZYeXNOaGFWcEVNVVpQVjVNVzNOTDI1N2Y1QmliS3dPZy9oZExWK2MyUzRB?=
- =?gb2312?B?OENGd0xBRHpSTzBUdVJNTWZiODBuaWhxZVJzc3JiTFhlcmxsRkgwQ1V6TFlZ?=
- =?gb2312?B?MFFUZ2IyaGg0amFjZnRTWHhuOURtYWJudHEyWWFYY29nNmhCejBGQnh0YUVo?=
- =?gb2312?B?eGd4cnQvUWxJbnQ1Q3JTcWpMTUhLTlVGNTUrQk0yNUNFQnBhOXkxWFF6clRu?=
- =?gb2312?B?Y0xZSjgyaVZGZ3V4aTduSStFT2xUTllTMWhTOTdyb09peFF5VmhyWXpONVJh?=
- =?gb2312?B?WkRHeUJFUUFjL0NCRkxRYWRaZCtZcVRYVE1WUWIvd1pZNjRkT09CUElxdzRm?=
- =?gb2312?B?VFVBVFd3QmF5cHd5UGZYNUF1bkFWRWRoUzVwUW1hYjNONFh1RG8veE1SY09Q?=
- =?gb2312?B?M0JPVlM5eFM4M1JrZFVZVXBZS2IyZHVrTWdUZndac1RyTVpacDlKdDV1eHBT?=
- =?gb2312?B?VXpJY0krc29DdzlkSFgrd1UwcG9CL1JyZkwreld2cC9yTDNESFJlMTdKeTlC?=
- =?gb2312?B?MDIvejhObWEvS0RLcWgrV1BlZ1hsZVVESkxJWkUyMEI2UHY4MlhqVHdDQ0RY?=
- =?gb2312?B?bDRJZ1BHcDBpT1hnVXlRSFAzYzIwSUtSR2VqWk8xUXY1eEFiTHA1VFNoc0lu?=
- =?gb2312?B?VllJNTE2dVA5SXoxSmZGUkV1WXBLWWlOUU5uTWhrV3NwTFVrSVdzSDdxaUdL?=
- =?gb2312?B?WjAxRHY1L1Jwc2l2L1BjRk8xNDJDd3dENnloWUJRR2wzQ1IyOUkrRWVjNUg1?=
- =?gb2312?B?anh5c2FLUndHMDFkRXRZY3diVFFsZDdTczNCWmpRaXRWZTdlRHo2VUlmSFBl?=
- =?gb2312?B?bnRjWjdxYk9XVjVvZ2NIN0VDTGRRakRWNUJQK2hhbXpqelJnUWYvbzJsMDFJ?=
- =?gb2312?B?L1FzZVlhQk56enh0NjNNY0VlU0RuNFczRTY1R0ZHeHlQR3RxWTJBRjBkQUI0?=
- =?gb2312?B?b1psT0FMdERYSENQK1BmajgzWmtrMmY2QUNFdC9WaDE0Tm43aEprajUzQzQ5?=
- =?gb2312?B?a0kveWQxY1dQNkQ2eUl2cm5QN2o0SEJqSGd2TGU2aTloVVlYWHJGVXpxYk51?=
- =?gb2312?B?U3RWYjNycjBDbTRxMjZoa2JTZXhxSWZwOGlpeWNobWVNMEJ3VmtGQT09?=
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="q/f2q8Yr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39F54C2BCAF;
+	Mon, 20 Apr 2026 02:27:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776652038;
+	bh=ITFfxWVYZShfg8ObCYl+/A7sDctvchvGVKnsu2Q0ZLU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=q/f2q8YrNja2t4MOJ3XZm+daEZl1FcXY4nfOVvtrtjvqt5MbZxWUYOT3wirQo6FaB
+	 lOqgywkLPOjS1VIVUdoCXgyBgeqdQRzNwaylQtig4w+yS3qEz3gmO+SVZmZJKlQIS1
+	 5YnVfgyEXKpTOb6PrQd5kn+uZtfBKDFQ/8OCcifN8EDAPaZwjDRm8Zr0mh3XQALHBh
+	 Up6SdMQEWfpLr4yC73WCFbktXDXdQ7dXOqJfGS3V/MWdgRmzjD+Y1d8LwFkLfl9Ev0
+	 jN9uHYhQzEihNOM9Uulk+1xe1nQar6NN7XIMU3fvu8QzHpDFat9SPtxyteXUC9ijgd
+	 FqU1Wkd4FKflw==
+Date: Mon, 20 Apr 2026 11:27:07 +0900
+From: Masami Hiramatsu (Google) <mhiramat@kernel.org>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Petr Pavlu <petr.pavlu@suse.com>, Song Chen <chensong_2000@189.cn>,
+ rafael@kernel.org, lenb@kernel.org, mturquette@baylibre.com,
+ sboyd@kernel.org, viresh.kumar@linaro.org, agk@redhat.com,
+ snitzer@kernel.org, mpatocka@redhat.com, bmarzins@redhat.com,
+ song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
+ jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
+ horms@kernel.org, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, paulmck@kernel.org,
+ frederic@kernel.org, mcgrof@kernel.org, da.gomez@kernel.org,
+ samitolvanen@google.com, atomlin@atomlin.com, jpoimboe@kernel.org,
+ jikos@kernel.org, mbenes@suse.cz, joe.lawrence@redhat.com,
+ rostedt@goodmis.org, mhiramat@kernel.org, mark.rutland@arm.com,
+ mathieu.desnoyers@efficios.com, linux-modules@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-pm@vger.kernel.org, live-patching@vger.kernel.org,
+ dm-devel@lists.linux.dev, linux-raid@vger.kernel.org,
+ kgdb-bugreport@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] kernel/module: Decouple klp and ftrace from
+ load_module
+Message-Id: <20260420112707.aa3627ca9f975eeaf7d8ea0e@kernel.org>
+In-Reply-To: <aeD2_FrFL6E3dbAC@pathway.suse.cz>
+References: <20260413080701.180976-1-chensong_2000@189.cn>
+	<1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
+	<a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
+	<1db425bf-58a9-4768-8c38-3ae25d7662a5@suse.com>
+	<aeD2_FrFL6E3dbAC@pathway.suse.cz>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AMBPR04MB12334.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 08c4501f-742d-4ab3-6ad9-08de9e8446de
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Apr 2026 02:26:49.4464
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: GXGs2ZIcFmAIaihKUhcBq7AuVQnAzna2FnKLXa0BgAmu0mo8NELpPIgvOqJKyW251bZVgX6nM8n+xFy6g55BHg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMDPR04MB11605
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIEJhbHV0YSAo
-T1NTKSA8ZGFuaWVsLmJhbHV0YUBvc3MubnhwLmNvbT4NCj4gU2VudDogMjAyNsTqNNTCMTbI1SAx
-NDowNA0KPiBUbzogWmhpcGVuZyBXYW5nIDx6aGlwZW5nLndhbmdfMUBueHAuY29tPjsgTWFyY28g
-RmVsc2NoDQo+IDxtLmZlbHNjaEBwZW5ndXRyb25peC5kZT4NCj4gQ2M6IHVsZmhAa2VybmVsLm9y
-ZzsgRnJhbmsgTGkgPGZyYW5rLmxpQG54cC5jb20+OyBzLmhhdWVyQHBlbmd1dHJvbml4LmRlOw0K
-PiBpbXhAbGlzdHMubGludXguZGV2OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IFh1ZWdhbmcg
-TGl1DQo+IDx4dWVnYW5nLmxpdUBueHAuY29tPjsgSmluZG9uZyBZdWUgPGppbmRvbmcueXVlQG54
-cC5jb20+Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBrZXJuZWxAcGVuZ3V0cm9u
-aXguZGU7IGZlc3RldmFtQGdtYWlsLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnDQo+IFN1YmplY3Q6IFJlOiBbRVhUXSBSZTogW1BBVENIIHYyXSBwbWRvbWFpbjog
-aW14OiBNYWtlIElNWDhNL0lNWDkNCj4gQkxLX0NUUkwgdHJpc3RhdGUNCj4gDQo+IE9uIDQvMTQv
-MjYgMDQ6NTksIFpoaXBlbmcgV2FuZyB3cm90ZToNCj4gPiAgPiBPbiAyNi0wNC0xMywgWmhpcGVu
-ZyBXYW5nIHdyb3RlOg0KPiA+Pj4gQ29udmVydCBJTVg4TV9CTEtfQ1RSTCBhbmQgSU1YOV9CTEtf
-Q1RSTCBmcm9tIGJvb2wgdG8gdHJpc3RhdGUgdG8NCj4gPj4+IGFsbG93IGJ1aWxkaW5nIGFzIGxv
-YWRhYmxlIG1vZHVsZXMuDQo+ID4+IE91dCBvZiBjdXJpb3NpdHksIHdoeSBkbyB5b3Ugd2FudCB0
-byBoYXZlIGEgUE0gZHJpdmVyIHRvIGJlIGJ1aWxkYWJsZQ0KPiA+PiBhcyBtb2R1bGU/DQo+ID4+
-DQo+ID4+IFJlZ2FyZHMsDQo+ID4+ICAgTWFyY28NCj4gPj4NCj4gPiBIaSBNYXJjbywNCj4gPg0K
-PiA+IFRoYW5rIHlvdSBmb3IgeW91ciBxdWVzdGlvbi4NCj4gPg0KPiA+IFRoZSBwcmltYXJ5IG1v
-dGl2YXRpb24gaXMgdG8gc3VwcG9ydCBHb29nbGUncyBHS0kgKEdlbmVyaWMgS2VybmVsDQo+ID4g
-SW1hZ2UpIHJlcXVpcmVtZW50IGZvciBBbmRyb2lkIGRldmljZXMuDQo+ID4NCj4gPiBHS0kgc2Vw
-YXJhdGVzIHRoZSBrZXJuZWwgaW50byB0d28gcGFydHM6DQo+ID4gMS4gQSB1bmlmaWVkIGtlcm5l
-bCBpbWFnZSAoR0tJKSB0aGF0IGlzIGNvbW1vbiBhY3Jvc3MgYWxsIEFuZHJvaWQNCj4gPiBkZXZp
-Y2VzIDIuIFZlbmRvci1zcGVjaWZpYyBkcml2ZXJzIHRoYXQgbXVzdCBiZSBidWlsdCBhcyBsb2Fk
-YWJsZQ0KPiA+IG1vZHVsZXMNCj4gPg0KPiA+IFVuZGVyIHRoZSBHS0kgYXJjaGl0ZWN0dXJlLCBT
-b0Mtc3BlY2lmaWMgZHJpdmVycyBsaWtlIElNWDhNL0lNWDkNCj4gPiBCTEtfQ1RSTCBjYW5ub3Qg
-YmUgYnVpbHQgaW50byB0aGUgY29yZSBrZXJuZWwgaW1hZ2UuIEluc3RlYWQsIHRoZXkNCj4gPiBt
-dXN0IGJlIGxvYWRhYmxlIG1vZHVsZXMgdGhhdCB2ZW5kb3JzIGNhbiBzaGlwIHNlcGFyYXRlbHku
-IFRoaXMgYWxsb3dzOg0KPiA+DQo+ID4gLSBBIHNpbmdsZSBrZXJuZWwgYmluYXJ5IHRvIHN1cHBv
-cnQgbXVsdGlwbGUgaGFyZHdhcmUgcGxhdGZvcm1zDQo+ID4gLSBWZW5kb3JzIHRvIHVwZGF0ZSB0
-aGVpciBkcml2ZXJzIGluZGVwZW5kZW50bHkgd2l0aG91dCByZWJ1aWxkaW5nIHRoZQ0KPiA+IGVu
-dGlyZSBrZXJuZWwNCj4gPiAtIEJldHRlciBjb21wbGlhbmNlIHdpdGggQW5kcm9pZCdzIGtlcm5l
-bCB1cGRhdGUgYW5kIHNlY3VyaXR5IHBvbGljaWVzDQo+ID4NCj4gQ2FuIHlvdSBwbGVhc2UgYWRk
-IHRoZSBiZWxvdyBsaW5lIGluIHRoZSBjb21taXQgbWVzc2FnZT8NCg0KSGkgRGFuaWVsLA0KDQpU
-aGFuayB5b3UhIFY0IHNlbnQuDQoNCkJScywNClpoaXBlbmcNCj4gPiBGb3IgaS5NWDhNL2kuTVg5
-IGRldmljZXMgcnVubmluZyBBbmRyb2lkIHdpdGggR0tJIGtlcm5lbHMsIHRoZQ0KPiA+IEJMS19D
-VFJMIGRyaXZlcnMgbmVlZCB0byBiZSBsb2FkZWQgYXMgbW9kdWxlcyBkdXJpbmcgYm9vdC4gV2l0
-aG91dA0KPiA+IHRyaXN0YXRlIHN1cHBvcnQsIHRoZXNlIGRldmljZXMgY2Fubm90IHByb3Blcmx5
-IGluaXRpYWxpemUgdGhlaXIgcG93ZXINCj4gPiBkb21haW5zLCBtYWtpbmcgdGhlbSBub24tZnVu
-Y3Rpb25hbCB1bmRlciBHS0kuDQo+IA0KDQo=
+On Thu, 16 Apr 2026 16:49:32 +0200
+Petr Mladek <pmladek@suse.com> wrote:
+
+> On Thu 2026-04-16 13:18:30, Petr Pavlu wrote:
+> > On 4/15/26 8:43 AM, Song Chen wrote:
+> > > On 4/14/26 22:33, Petr Pavlu wrote:
+> > >> On 4/13/26 10:07 AM, chensong_2000@189.cn wrote:
+> > >>> diff --git a/include/linux/module.h b/include/linux/module.h
+> > >>> index 14f391b186c6..0bdd56f9defd 100644
+> > >>> --- a/include/linux/module.h
+> > >>> +++ b/include/linux/module.h
+> > >>> @@ -308,6 +308,14 @@ enum module_state {
+> > >>>       MODULE_STATE_COMING,    /* Full formed, running module_init. */
+> > >>>       MODULE_STATE_GOING,    /* Going away. */
+> > >>>       MODULE_STATE_UNFORMED,    /* Still setting it up. */
+> > >>> +    MODULE_STATE_FORMED,
+> > >>
+> > >> I don't see a reason to add a new module state. Why is it necessary and
+> > >> how does it fit with the existing states?
+> > >>
+> > > because once notifier fails in state MODULE_STATE_UNFORMED (now only ftrace has someting to do in this state), notifier chain will roll back by calling blocking_notifier_call_chain_robust, i'm afraid MODULE_STATE_GOING is going to jeopardise the notifers which don't handle it appropriately, like:
+> > > 
+> > > case MODULE_STATE_COMING:
+> > >      kmalloc();
+> > > case MODULE_STATE_GOING:
+> > >      kfree();
+> > 
+> > My understanding is that the current module "state machine" operates as
+> > follows. Transitions marked with an asterisk (*) are announced via the
+> > module notifier.
+> > 
+> > ---> UNFORMED --*> COMING --*> LIVE --*> GOING -.
+> >         ^            |                     ^    |
+> >         |            '---------------------*    |
+> >         '---------------------------------------'
+> > 
+> > The new code aims to replace the current ftrace_module_init() call in
+> > load_module(). To achieve this, it adds a notification for the UNFORMED
+> > state (only when loading a module) and introduces a new FORMED state for
+> > rollback. FORMED is purely a fake state because it never appears in
+> > module::state. The new structure is as follows:
+> > 
+> >         ,--*> (FORMED)
+> >         |
+> > --*> UNFORMED --*> COMING --*> LIVE --*> GOING -.
+> >         ^            |                     ^    |
+> >         |            '---------------------*    |
+> >         '---------------------------------------'
+> > 
+> > I'm afraid this is quite complex and inconsistent. Unless it can be kept
+> > simple, we would be just replacing one special handling with a different
+> > complexity, which is not worth it.
+> 
+> > >>
+> > >>> +    if (err)
+> > >>> +        goto ddebug_cleanup;
+> > >>>         /* Finally it's fully formed, ready to start executing. */
+> > >>>       err = complete_formation(mod, info);
+> > >>> -    if (err)
+> > >>> +    if (err) {
+> > >>> +        blocking_notifier_call_chain_reverse(&module_notify_list,
+> > >>> +                MODULE_STATE_FORMED, mod);
+> > >>>           goto ddebug_cleanup;
+> > >>> +    }
+> > >>>   -    err = prepare_coming_module(mod);
+> > >>> +    err = prepare_module_state_transaction(mod,
+> > >>> +                MODULE_STATE_COMING, MODULE_STATE_GOING);
+> > >>>       if (err)
+> > >>>           goto bug_cleanup;
+> > >>>   @@ -3522,7 +3519,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
+> > >>>       destroy_params(mod->kp, mod->num_kp);
+> > >>>       blocking_notifier_call_chain(&module_notify_list,
+> > >>>                        MODULE_STATE_GOING, mod);
+> > >>
+> > >> My understanding is that all notifier chains for MODULE_STATE_GOING
+> > >> should be reversed.
+> > > yes, all, from lowest priority notifier to highest.
+> > > I will resend patch 1 which was failed due to my proxy setting.
+> > 
+> > What I meant here is that the call:
+> > 
+> > blocking_notifier_call_chain(&module_notify_list, MODULE_STATE_GOING, mod);
+> > 
+> > should be replaced with:
+> > 
+> > blocking_notifier_call_chain_reverse(&module_notify_list, MODULE_STATE_GOING, mod);
+> > 
+> > > 
+> > >>
+> > >>> -    klp_module_going(mod);
+> > >>>    bug_cleanup:
+> > >>>       mod->state = MODULE_STATE_GOING;
+> > >>>       /* module_bug_cleanup needs module_mutex protection */
+> > >>
+> > >> The patch removes the klp_module_going() cleanup call in load_module().
+> > >> Similarly, the ftrace_release_mod() call under the ddebug_cleanup label
+> > >> should be removed and appropriately replaced with a cleanup via
+> > >> a notifier.
+> > >>
+> > >     err = prepare_module_state_transaction(mod,
+> > >                 MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
+> > >     if (err)
+> > >         goto ddebug_cleanup;
+> > > 
+> > > ftrace will be cleanup in blocking_notifier_call_chain_robust rolling back.
+> > > 
+> > >     err = prepare_module_state_transaction(mod,
+> > >                 MODULE_STATE_COMING, MODULE_STATE_GOING);
+> > > 
+> > > each notifier including ftrace and klp will be cleanup in blocking_notifier_call_chain_robust rolling back.
+> > > 
+> > > if all notifiers are successful in MODULE_STATE_COMING, they all will be clean up in
+> > >  coming_cleanup:
+> > >     mod->state = MODULE_STATE_GOING;
+> > >     destroy_params(mod->kp, mod->num_kp);
+> > >     blocking_notifier_call_chain(&module_notify_list,
+> > >                      MODULE_STATE_GOING, mod);
+> > > 
+> > > if  something wrong underneath.
+> > 
+> > My point is that the patch leaves a call to ftrace_release_mod() in
+> > load_module(), which I expected to be handled via a notifier.
+> 
+> I think that I have got it. The ftrace code needs two notifiers when
+> the module is being loaded and two when it is going.
+> 
+> This is why Sond added the new state. But I think that we would
+> need two new states to call:
+> 
+>     + ftrace_module_init() in MODULE_STATE_UNFORMED
+>     + ftrace_module_enable() in MODULE_STATE_FORMED
+> 
+> and
+> 
+>     + ftrace_free_mem() in MODULE_STATE_PRE_GOING
+>     + ftrace_free_mem() in MODULE_STATE_GOING
+> 
+> 
+> By using the ascii art:
+> 
+>  -*> UNFORMED -*> FORMED -> COMING -*> LIVE -*> PRE_GOING -*> GOING -.
+>               |          |         |                ^           ^    ^
+>               |          |         '----------------'           |    |
+>               |          '--------------------------------------'    |
+>               '------------------------------------------------------'
+> 
+> 
+> But I think that this is not worth it.
+
+Agree.
+
+If this needs to be ordered so strictly, why we will use a "single"
+module notifier chain for this complex situation?
+
+I think the notifier call chain is just for notice a single signal,
+instead of sending several different signals, especially if there is
+any dependency among the callbacks.
+
+If notification callbacks need to be ordered, they are currently
+sorted by representing priority numerically, but this is quite
+fragile for updating. It has to look up other registered priorities
+and adjust the order among dependencies each time. For this reason,
+this mechanism is not suitable for global ordering. (It's like line
+numbers in BASIC.)
+It is probably only useful for representing dependencies between
+two components maintained by the same maintainer.
+
+I'm against a general-purpose system that makes everything modular.
+It unnecessarily complicates things. If there are processes that
+require strict ordering, especially processes that must be performed
+before each stage as part of the framework, they should be called
+directly from the framework, not via notification callbacks.
+
+This makes it simpler and more robust to maintain.
+
+Only the framework's end users should utilize notification callbacks.
+
+Thank you,
+
+
+> 
+> Best Regards,
+> Petr
+> 
+
+
+-- 
+Masami Hiramatsu (Google) <mhiramat@kernel.org>
