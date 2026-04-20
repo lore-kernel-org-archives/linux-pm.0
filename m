@@ -1,112 +1,114 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com [209.85.217.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F6E313B7AE;
-	Mon, 20 Apr 2026 05:44:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3E1A382F16
+	for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 06:50:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776663882; cv=none; b=itBzLN4UA/uBT5ZEVXFWZ1BWKXjcW+LeOp/uw8XkqVqaw9zSi1wfXhuxRbr8mQJ/NK0s0v+OK9s3OptlVUBRYLRpJBfWmM/Y2RfnjRt09JcCP14I7zRKrHjHkgYzE7VWub0uF5R8Ck1vTGyhL10KOIMZh8qckgqSKA4t+USVX1Y=
+	t=1776667823; cv=none; b=kjpAbyRqFSUUXygaXVHwxIamys72g8U/8mRd00//ivouTOkLRX9iN4NyjpYNwm6ldLjD/TcCIsaa8pcRQfqpTNAJQGpPKmF5gld21FQ/ZAeUbc2IbegVN6nzIUUQPuSR6+dCAOxx4Vosz5IhVKVEUeRaATdS2Oi35s9cAdHmFas=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776663882; c=relaxed/simple;
-	bh=xkmJx488oioqlVuBsBzqvzkV5ymXtO1NzGZYZJ9TN6o=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=ZOf2AHNvTYhH75yx6IzlP41EowrBuL0iesKY9r0GX810FMQijZmkXZ54maJYbuULFSkbcdMqVszox6WLFzLFOs3lYT+mva6xnjU+g+4D3VfhTqTZSq+qoLQJJbhNQZOFhp61tCmaRLFVR1rgOfoNhK6mYESh/q/jd1ECQFWwPnc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Q5kXwHUL; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Q5kXwHUL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D37CCC19425;
-	Mon, 20 Apr 2026 05:44:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776663881;
-	bh=xkmJx488oioqlVuBsBzqvzkV5ymXtO1NzGZYZJ9TN6o=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Q5kXwHULe0trWEeW3PwHiwxYGtKmrwmWyVHVaGSkUoY3z3Mo0/bAik7KYgBHhgIq7
-	 quTUXQCdK5BfLEChkYI14e5JXsFGCpWvmTE+wW1Bz6AinJmPQYkeV1Gojt53OvGMap
-	 qTj3Ncjit17pKYlm0HroYdtdqlFVmo0KZ/K8H2PIGK1QEykw6Ib4z5u8zWI6gjicEN
-	 rrkIeFBWlAj3n5GwnrGD7tJr/aS9NJ/j1Gjd4rRDlXUsAZ4XUaf46iG7dq7K0UOWpD
-	 qs5bnkYdCRwClUqH1xONKowKxlWBpz19Lx3F7K4JDdkwljBS2HiPwqM0j8LXwF7Ws+
-	 U8TrOa5Lke3nw==
-Date: Mon, 20 Apr 2026 14:44:29 +0900
-From: Masami Hiramatsu (Google) <mhiramat@kernel.org>
-To: chensong_2000@189.cn
-Cc: rafael@kernel.org, lenb@kernel.org, mturquette@baylibre.com,
- sboyd@kernel.org, viresh.kumar@linaro.org, agk@redhat.com,
- snitzer@kernel.org, mpatocka@redhat.com, bmarzins@redhat.com,
- song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
- jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
- horms@kernel.org, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, paulmck@kernel.org,
- frederic@kernel.org, mcgrof@kernel.org, petr.pavlu@suse.com,
- da.gomez@kernel.org, samitolvanen@google.com, atomlin@atomlin.com,
- jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz, pmladek@suse.com,
- joe.lawrence@redhat.com, rostedt@goodmis.org, mark.rutland@arm.com,
- mathieu.desnoyers@efficios.com, linux-modules@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, live-patching@vger.kernel.org,
- dm-devel@lists.linux.dev, linux-raid@vger.kernel.org,
- kgdb-bugreport@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [RFC PATCH 1/2] kernel/notifier: replace single-linked list
- with double-linked list for reverse traversal
-Message-Id: <20260420144429.57b45f2beece690bceea96ec@kernel.org>
-In-Reply-To: <20260415070137.17860-1-chensong_2000@189.cn>
-References: <20260415070137.17860-1-chensong_2000@189.cn>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1776667823; c=relaxed/simple;
+	bh=66683rtKBPWrf7C4XTuvMiaBte65Hl+xhzNuAjnDIic=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XRyom08IdSNH99maXW4/TgqYRuDO4GTmvxpB9piOXvoy72yV5RHvPen6TXrcTG8ANY4TBKecDmCcGq+c6fl4wvCwZQLO1/D0QpkR/yTfWWTh8Kv+OsFP6BfRUrq+eBVQEhMCJEN08pE/9jXl+7FvlW5w59GCAOou5W4ssr4tE1g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f53.google.com with SMTP id ada2fe7eead31-613207140bfso868692137.3
+        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 23:50:21 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776667821; x=1777272621;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ev7Q2PR+MzeC42yfPBg+fufDGNaPf4avnQMcEXwV9q4=;
+        b=QqwwtXkGx/ae9XEQ3H974Hqq0f6/FrtP+ehgTImnBJSzrPhuVuiGQu3sTiPCQHwho/
+         8s26IEx7KqHYq1Vohz4qQZtDdWp/oZ8gk47JmtTspI4sCKI5uvzOVu0SMPPK33k8VOHz
+         uo38DrUyI+tG2T+35ZrJVR9Zu8spXjc67M4z6u75h6ZJ3OM8tgoLCUlJaEo+TZlc4oV6
+         xrO3hGWrhr0MjOIe3S+qwMdczXBswsitDj1jL0kNdpe2YOKaiSlZswCUSbojXKNN2Pw1
+         h8BfoJWFb7RaPCT91rB+2K/m5bzgtcGfptopwvncV52z7U9oGS2vlF6jTeaCeVZK/U0u
+         fo1w==
+X-Forwarded-Encrypted: i=1; AFNElJ+4m5r+R/nNvIvImekYGGaMRyuqIW30GSDo4S+ZZtahd8qyjt17KKHQevQDXcuV9H8c28wBpd+NLw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxo0CmPQPNAE02EWG8lakNzuKDZBCVQ4vy6HFCuCiY4Tggxx6Px
+	UrHtV7kmEP32c8GvB0bpr3iZmS5T68WKXiPRrd1cWthdk2qfsaua552DRfmvLHvZ
+X-Gm-Gg: AeBDieuSQzKsixt/MrSEZ0BOfjOg7ZPtyO9vjCv2fXBjaM1D076004YGdhUciqOdHHn
+	NQ8vM7pRl4YtYwatfBPw6zlFJ3nmBzchl7gggHBfYsLWyAlgDgpf2wNw/h/RoLE2vpz6FCQSMob
+	jZe6EcRhlD1MdYxGzie/spYmrGW7BdalryPE2gzZqP7zeGVhjVnxnrOtemldGxlPQkKWygPLDXK
+	yLKDCFuZvS+rK87XGhqeahGGy6rCuh9Um7U+TdYNpB5w+XCT8jttFWkF/J5nngWBaKrUs0rCzYa
+	8JfoABvzG8qEpyxQ2brbHoSdTA3qKPNXQejse1i6lSbxKx9jocuZrNhGTUltNm3XELdrEhBzZJw
+	DZqT7OmaBaC33ZVDdBpCWciEjxWZdtxTaRxsc0WIGJNooDMYpLwiyOV5sOXBacKw2B2YtoGlP9V
+	ECnkEo+LkLKC15PMGuoOOkJN6Eer6NzIouV4v8qoV/cZ4Ut6KWrilJL/oo6E/iow358NQbBtg=
+X-Received: by 2002:a05:6102:a4c:b0:5ff:e769:44bb with SMTP id ada2fe7eead31-616f84983c0mr4300365137.30.1776667820776;
+        Sun, 19 Apr 2026 23:50:20 -0700 (PDT)
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com. [209.85.217.46])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-9589097ec5csm4357925241.4.2026.04.19.23.50.18
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 19 Apr 2026 23:50:19 -0700 (PDT)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-613207140bfso868683137.3
+        for <linux-pm@vger.kernel.org>; Sun, 19 Apr 2026 23:50:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/wJihqXbw25voJnyiaFwT4o0+t4wvahVMP87GCzK1+HEETFNeAtlq8ycANbwtaBEFjl/KdCl+JMg==@vger.kernel.org
+X-Received: by 2002:a05:6102:6051:b0:60f:7499:9b6b with SMTP id
+ ada2fe7eead31-616f859752fmr3673069137.29.1776667818181; Sun, 19 Apr 2026
+ 23:50:18 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+References: <20260417131549.3154534-1-thierry.reding@kernel.org>
+In-Reply-To: <20260417131549.3154534-1-thierry.reding@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 20 Apr 2026 08:50:06 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWeXS3ytgozp-mSrW4jcMRCW7_tbDTbMoEdXdbVj0dqJA@mail.gmail.com>
+X-Gm-Features: AQROBzDvJRShLyy63Y8y4xm5mUkGqHiHZxGK82_lU0-LEkdWIcvZD7MEx0w1d6U
+Message-ID: <CAMuHMdWeXS3ytgozp-mSrW4jcMRCW7_tbDTbMoEdXdbVj0dqJA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] MAINTAINERS: Move Peter De Schrijver to CREDITS
+To: Thierry Reding <thierry.reding@kernel.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, linux-tegra@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+	linux-omap@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Paul Walmsley <pjw@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Song,
+Hi Thierry,
 
-On Wed, 15 Apr 2026 15:01:37 +0800
-chensong_2000@189.cn wrote:
+On Fri, 17 Apr 2026 at 15:15, Thierry Reding <thierry.reding@kernel.org> wrote:
+> From: Thierry Reding <treding@nvidia.com>
+>
+> Peter sadly passed away a while back. Paul did a much better job at
+> finding the right words to mourn this loss than I ever could, so I will
+> leave this link here:
+>
+>   https://lore.kernel.org/lkml/alpine.DEB.2.21.999.2407240345480.11116@utopia.booyaka.com/T/#u
+>
+> Co-developed-by: Paul Walmsley <pjw@kernel.org>
+> Co-developed-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+> Co-developed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> From: Song Chen <chensong_2000@189.cn>
-> 
-> The current notifier chain implementation uses a single-linked list
-> (struct notifier_block *next), which only supports forward traversal
-> in priority order. This makes it difficult to handle cleanup/teardown
-> scenarios that require notifiers to be called in reverse priority order.
+   "every Co-developed-by: must be immediately
+    followed by a Signed-off-by: of the associated co-author."
 
-What about introducing a new notification callback API that allows you
-to describe dependencies between callback functions?
+https://elixir.bootlin.com/linux/v7.0/source/Documentation/process/submitting-patches.rst#L506
 
-For example, when registering a callback, you could register a string
-as an ID and specify whether to call it before or after that ID,
-or you could register a comparison function that is called when adding
-to a list. (I prefer @name and @depends fields so that it can be easily
-maintained.)
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-This would allow for better dependency building when adding to the list.
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+> Changes in v2:
+> - add more missing entries
 
-> 
-> A concrete example is the ordering dependency between ftrace and
-> livepatch during module load/unload. see the detail here [1].
+Thanks!
 
-If this only concerns notification callback issues with the ftrace
-and livepatch modules, it's far more robust to simply call the
-necessary processing directly when the modules load and unload,
-rather than registering notification callbacks externally.
+Gr{oetje,eeting}s,
 
-There are fprobe, kprobe and its trace-events, all of them are using
-ftrace as its fundation layer. In this case, I always needs to
-consider callback order when a module is unloaded.
-
-If ftrace is working as a part of module callbacks, it will conflict
-with fprobe/kprobe module callback. Of course we can reorder it with
-modifying its priority. But this is ugly, because when we introduce
-a new other feature which depends on another layer, we need to
-reorder the callback's priority number on the list.
-
-Based on the above, I don't think this can be resolved simply by
-changing the list of notification callbacks to a bidirectional list.
-
-Thank you,
+                        Geert
 
 -- 
-Masami Hiramatsu (Google) <mhiramat@kernel.org>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
