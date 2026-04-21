@@ -1,76 +1,243 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F2FF2FB0A3;
-	Tue, 21 Apr 2026 17:22:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0DD235972;
+	Tue, 21 Apr 2026 18:11:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776792176; cv=none; b=MnyFirV9wuS3kG63mDMLA89lk/DyE9sVMI2kLRL7UClXVShSbj4ltHIy/jpeQ7nG7e6DQ3G/oFb8/QCGTXVC3ApqPb9fQN+yup6RyjqFs4LE6vgCwSPi3penXZAIUYwnJstKol/+KRV9c1XTfIa+dW3sB8m6c0v59jkBScMJB98=
+	t=1776795117; cv=none; b=TtWj3PezT8QRBXdfub8agB0LYgKZfvr7gVv/YR/rlZWc4/oEi1xsN/hymk10C0GNHXj3qYk0VEek+aklwWo8LA3Nq8NoQnRlye/i/9ZjuGE16/mXb/XQhyre28I9/wLTeMGa1dzVhuA7f4cJZ5J/RfHLD6fFhezW+MuRBquaRbk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776792176; c=relaxed/simple;
-	bh=gQIFGSllr3HF979eM4o9wi7yge80fgwAZ1EYfsGaHrE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tMTaCbB8WPih7nT+pVVa0OBgI1RzltV9/zLKakDJBhaE7800dOxsdFEkW6MXleO96JRPN9EZSPLaLnPC7JAn8oU25vb2UkLn7SAJblZl48qX4jCVwep5BzzlWuInF0hfw8d/RVY74NOGCWjKHR9AbQ6DpU81rLsLvPkEfiNW1MM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aO36nZU1; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aO36nZU1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D202FC2BCB0;
-	Tue, 21 Apr 2026 17:22:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776792176;
-	bh=gQIFGSllr3HF979eM4o9wi7yge80fgwAZ1EYfsGaHrE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aO36nZU1c3Scvjq+XSiUDZLQc8ER9bpuFDwCS4dhdVhdNa1XeKoUiWj3UCr9okM4U
-	 +LlYv4nW9gRDmqt6t/ovpR2s5z9Ewk2sGOucPR9tMAANBxEpNMMXS6TTQfeVDvsZAG
-	 ueDSGYbIoMRbr4NOwtgeeyYd6wggfgLx8InAq3M/A1Lw1ogDdpsyYLzZPXx3sDwvDT
-	 IYpR34sAqKYttT3CfRG+F8RLVWPyTk4j72org02ssqGUfU3Fc1soWXbIKBw60+46Vn
-	 obFruHGkgkwF5t2z95ksL4D3VCNo/hEV317hzKkJdikT3cPmajiJWvv/lXvLyttizS
-	 BPjSU/jXCwj0w==
-Date: Tue, 21 Apr 2026 12:22:53 -0500
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-Cc: Taniya Das <taniya.das@oss.qualcomm.com>,
+	s=arc-20240116; t=1776795117; c=relaxed/simple;
+	bh=B9nFgKTWR6k7yI984BsM+U9VG2P9hLAU/HsWEzxO+xw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wkmo0Lxiniyt9NvHPaGky2GOZjiGg3NJ3vbQ/lYzXx1jwL3DL6qKPTHxYU2y5gH4CPZx6mI2VHeYIaWJaZkNX5m34CGt7lci0g+KhfrBlypSeSOB0wAjdNNha2tWAANIYEkVGmkFqSJtGqj1Uc2VphYnWxngN2cyswLVFzligdg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4D48C2BCB0;
+	Tue, 21 Apr 2026 18:11:52 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
 	Ulf Hansson <ulfh@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	linux-pm@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
-	Deepti Jaggi <deepti.jaggi@oss.qualcomm.com>,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org
-Subject: Re: [PATCH 2/3] dt-bindings: power: qcom,rpmhpd: Add RPMh power
- domain for Nord SoC
-Message-ID: <177679217336.1338438.15268622840948659658.robh@kernel.org>
-References: <20260414035909.652992-1-shengchao.guo@oss.qualcomm.com>
- <20260414035909.652992-3-shengchao.guo@oss.qualcomm.com>
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: arm-scmi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping
+Date: Tue, 21 Apr 2026 20:11:33 +0200
+Message-ID: <cover.1776793163.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260414035909.652992-3-shengchao.guo@oss.qualcomm.com>
+Content-Transfer-Encoding: 8bit
 
+	Hi all,
 
-On Tue, 14 Apr 2026 11:59:08 +0800, Shawn Guo wrote:
-> From: Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
-> 
-> Document the RPMh power domain for Nord SoC, and add definitions for
-> the new power domains present on Nord SoC.
-> 
->  - RPMHPD_NSP3: power domain for the 4th NSP subsystem
->  - RPMHPD_GFX1: power domain for the 2nd GFX subsystem
-> 
-> Signed-off-by: Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>
-> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-> ---
->  Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 1 +
->  include/dt-bindings/power/qcom,rpmhpd.h                 | 2 ++
->  2 files changed, 3 insertions(+)
-> 
+TL;DR:
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+    Describe hardware in DT, and perform the mapping to SCMI in Linux.
 
+The Renesas R-Car X5H-based Ironhide board is the first Renesas
+SoC/board combination that implements the ARM System Control and
+Management Interface (SCMI).
+
+This means Linux can no longer perform various system operations (e.g.
+clock, power domain, and reset control) by accessing the hardware
+directly.  Instead, these operations are abstracted according to various
+SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
+firmware running on a System Control Processor (SCP).
+More specifically, the R-Car X5H SCP FW SCMI controls access to:
+  1. Core clocks and module clocks,
+  2. Module resets,
+  3. Power domains,
+  4. System power.
+The latter is not relevant for this discussion.
+
+Using SCMI also has an impact on the board DTS: besides the addition of
+a firmware/scmi node with protocol-specific subnodes, devices using
+SCMI-abstracted system resources now have to refer to these resources
+using resource specifiers containing phandles to the SCMI protocol
+subnodes, and firmware-specific object IDs[1].
+
+Unfortunately we encountered several issues with this:
+  - The clock, reset, and power domain IDs are not stable, and may
+    change from one SCP firmware release to another, causing DTB
+    incompatibilities,
+  - There may be different SCP firmware lineages, e.g. proprietary and
+    certified variants, and FLOSS variants,
+  - SCMI features and quirks may differ across firmware versions,
+  - Not all quirks can be handled as SCMI quirks,
+  - Some core clocks do not support the CLOCK_ATTRIBUTES command, and
+    thus are not accessible to Linux, while Linux may need them,
+    requiring dummy clocks,
+  - Some module clocks are not accessible to Linux, or report a zero
+    clock rate and have no parent, while several existing drivers need
+    to know their clock rates,
+  - SCMI does not support the concept of a clock domain, so existing
+    drivers can no longer rely on Runtime PM, but need to be changed to
+    explicit management of functional clocks,
+  - Some clocks and power domains are critical and must not be disabled,
+    or even touched,
+  - Some module resets are reserved, and operating them returns an
+    error,
+  - U-Boot IPL (Initial Program Loader) needs a proper hardware
+    description in DT, not using SCMI.
+
+During last OSSJ/LPC, Marek Vasut pondered if we could keep our own ID
+lists stable, and perform a mapping to the IDs used by the actual SCMI
+implementation running on the system.  This was also briefly discussed
+at LPC[2].  After some refining of the initial idea, this series takes a
+slightly different approach, by:
+  1. Describing the actual hardware components in DT, plus a minimum
+     SCMI glue,
+  2. Mapping DT hardware descriptions to SCMI-backed objects (or
+     replacements in case they are unusable), in Linux drivers, based on
+     the detected firmware version.
+
+This has the following advantages:
+  1. The DT ABI is stable,
+  2. Current and future firmware quirks can be handled in driver code,
+  3. If ever needed, the Clock Pulse Generator (CPG) and Module
+     Controller (MDLC) drivers can be extended to program the hardware
+     directly if SCMI is not present,
+  4. U-Boot IPL can use almost the same DTS; it just needs stripping of
+     SCMI-related nodes and properties.
+
+This series is based on renesas-drivers-2026-04-14-v7.0, which includes
+a.o. the scmi/for-linux-next branch.  It consists of multiple parts:
+  1. Patches 1-3 add various quirks to the SCMI driver code,
+  2. Patch 4 enables more SCMI protocols on R-Car X5H Ironhide,
+  3. Patches 5-8 add new interfaces needed by the remapping drivers,
+  4. Patches 9-10 add DT bindings for the R-Car X5H Clock Pulse Generator
+     (CPG) and Module Controller (MDLC) blocks,
+  5. Patches 11-12 add remapping drivers for the R-Car X5H Clock Pulse
+     Generator (CPG) and Module Controller (MDLC) blocks,
+  6. Patches 13-14 add DTS description for R-Car X5H Ironhide.
+
+Dependencies:
+  - Lifting "#define SCMI_MAX_NUM_RATES 16" (e.g. scmi/for-linux-next),
+  - "[PATCH v4 0/3] soc: renesas: add MFIS driver"[3],
+  - R-Car X5H MFIS and Ironhide SCMI DTS enablement (not yet posted).
+
+For testing, I have pushed this series and its dependencies to the
+topic/rcar-x5h-ironhide-scmi-cpg-mdlc-remapping-v1 branch of
+https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+With this, Ironhide can boot into a serial console shell from a ramdisk,
+without needing any of "clk_ignore_unused" and "pd_ignore_unused".
+
+FTR, alternative locations to do remapping that we considered:
+  - Inside the SCMI clock, reset, and power-domain drivers,
+  - Inside the subsystem driver core (e.g. of_parse_clkspec()),
+  - Inside the OF driver core,
+  - Inside the DTB.
+
+Remapping inside DT is usually done through a nexus node (see Devicetree
+Specification, Section 2.5 Nexus Nodes and Specifier Mapping), using
+"<specifier>-map", "<specifier>-map-mask", and
+"<specifier>-map-pass-thru" properties.  Linux has support for e.g.
+remapping interrupts (open-coded in drivers/of/irq.c), and gpios or pwms
+(using the of_parse_phandle_with_args_map()) helper.  So far there is no
+support for remapping clocks or power domains, but at least for clocks
+patches have been posted[4].  Then the remapping can be done by adding
+e.g. "clocks-map{,-mask,-pass-thru}" properties with translation data
+to the CPG/MDLC DT node, using a DT overlay.  The DT overlay could be
+applied by the firmware or bootloader (e.g. in in fitImage script), or
+even by the CPG/MDLC Linux driver at runtime (based on detected SCP
+firmware version).  Consumer nodes do not need to be modified.
+Note that such translations can only support simple cases.  If e.g. a
+workaround is needed to map a single DT clock to multiple SCMI clocks,
+this cannot be done using a simple translation table.
+While a DT overlay is quite flexible and can also do other fixup, it is
+less user-friendly than doing the remapping in a Linux driver.
+
+Thanks for your comments!
+
+[1] Documentation/devicetree/bindings/firmware/arm,scmi.yaml
+[2] "Firmware ABI stability" at Linux Plumbers Conference 2025
+    https://lpc.events/event/19/contributions/2153/
+[3] "[PATCH v4 0/3] soc: renesas: add MFIS driver"
+    https://lore.kernel.org/20260402112709.13002-1-wsa+renesas@sang-engineering.com/
+[4] "[PATCH] clk: Add support for clock nexus dt bindings"
+     https://lore.kernel.org/20260129201003.288605-1-miquel.raynal@bootlin.com/
+
+Geert Uytterhoeven (14):
+  firmware: arm_scmi: quirk: Handle bad power domains on R-Car X5H
+  firmware: arm_scmi: quirk: Handle bad clocks on R-Car X5H
+  firmware: arm_scmi: quirk: Handle critical clocks on R-Car X5H
+  arm64: dts: renesas: ironhide: Enable SCMI devpd, sys, and reset
+  firmware: arm_scmi: Add scmi_get_base_info()
+  of: property: fw_devlink: Add support for firmware
+  pmdomain: Make genpd_get_from_provider() public
+  reset: Add reset_controller_get_provider()
+  dt-bindings: clock: Document Renesas R-Car X5H Clock Pulse Generator
+  dt-bindings: power: Document Renesas R-Car X5H Module Controller
+  clk: renesas: Add R-Car X5H CPG SCMI remapping driver
+  pmdomain: renesas: Add R-Car X5H MDLC SCMI remapping driver
+  arm64: dts: renesas: r8a78000: Add CPG/MDLC nodes
+  arm64: dts: renesas: ironhide: Add CPG/MDLC firmware properties
+
+ .../bindings/clock/renesas,r8a78000-cpg.yaml  |   62 +
+ .../bindings/power/renesas,r8a78000-mdlc.yaml |   63 +
+ .../boot/dts/renesas/r8a78000-ironhide.dts    |  130 +++
+ arch/arm64/boot/dts/renesas/r8a78000.dtsi     |  300 ++++-
+ drivers/clk/renesas/Kconfig                   |    4 +
+ drivers/clk/renesas/Makefile                  |    1 +
+ drivers/clk/renesas/r8a78000-cpg.c            |  335 ++++++
+ drivers/firmware/arm_scmi/clock.c             |   37 +
+ drivers/firmware/arm_scmi/driver.c            |   31 +
+ drivers/firmware/arm_scmi/power.c             |   20 +
+ drivers/firmware/arm_scmi/quirks.c            |   12 +
+ drivers/firmware/arm_scmi/quirks.h            |    4 +
+ drivers/of/property.c                         |    2 +
+ drivers/pmdomain/core.c                       |    4 +-
+ drivers/pmdomain/renesas/Kconfig              |    4 +
+ drivers/pmdomain/renesas/Makefile             |    1 +
+ drivers/pmdomain/renesas/r8a78000-mdlc.c      | 1021 +++++++++++++++++
+ drivers/reset/core.c                          |   11 +
+ drivers/soc/renesas/Kconfig                   |    1 +
+ .../dt-bindings/clock/renesas,r8a78000-cpg.h  |   15 +
+ .../dt-bindings/power/renesas,r8a78000-mdlc.h |   16 +
+ include/linux/pm_domain.h                     |    7 +
+ include/linux/reset-controller.h              |    6 +
+ include/linux/scmi_protocol.h                 |    8 +
+ 24 files changed, 2068 insertions(+), 27 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/clock/renesas,r8a78000-cpg.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/renesas,r8a78000-mdlc.yaml
+ create mode 100644 drivers/clk/renesas/r8a78000-cpg.c
+ create mode 100644 drivers/pmdomain/renesas/r8a78000-mdlc.c
+ create mode 100644 include/dt-bindings/clock/renesas,r8a78000-cpg.h
+ create mode 100644 include/dt-bindings/power/renesas,r8a78000-mdlc.h
+
+-- 
+2.43.0
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
