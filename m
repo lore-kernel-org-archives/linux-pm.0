@@ -1,181 +1,874 @@
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011032.outbound.protection.outlook.com [52.101.70.32])
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B31A38736E;
-	Tue, 21 Apr 2026 07:40:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776757228; cv=fail; b=K2GZyGrWpWe4n12f0OL1NUjPhKxhPZzuoQRJge40NBQLPpGsRyMk4CBl4NaLYWxggRIdheeXURcZZai+sIGLPkgCnWITe1kYyt1UK5Wn8xUsjooA0/vkYGMevpBVl6tWItAECTvzOZIEp2K8999BTSqmEo1OW1YtaqRiQusZzWg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776757228; c=relaxed/simple;
-	bh=C2z9d/qxNtaax2vGBA5YXXwyfbDGkbmPDxbbfo35dGY=;
-	h=From:Date:Subject:Content-Type:Message-Id:References:In-Reply-To:
-	 To:Cc:MIME-Version; b=pNIdJCCzdHz1Zwi501/2+62IsoiGfn3VgonWeijsC+kROyTtogtzVnYva0VN12p0qcBuNa+/nekwI48jI9Kq9+nznuhfehIXepQwAuD2BPzMCYQ5CG+mnc0xyX+KT8mEJIM5RBYobVH3fG6X9Xl2fffXmGxP476s0TZ1kIGweqQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=QbQXMLWL; arc=fail smtp.client-ip=52.101.70.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4207F282F04;
+	Tue, 21 Apr 2026 08:08:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776758894; cv=none; b=YSinYKmJ4H//z57ywqVogBGjZ1TOX6YsiwA74GUTFF8GLtlTzbwgHp9YzW9WnLEVebp4OcRKyhyqXp3BFKymVgpE5TKwwhYLxcRObrvCAtGRwzgEjQnv8zsFdajfAU3FTzoFPdIR5Fv57lJpT8evAfPqCTMDS4UudQHdr/bGhbI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776758894; c=relaxed/simple;
+	bh=fME7MJroki27QlAtRR8tEybu3J9QmiSps17X70XYvqI=;
+	h=Content-Type:Date:Message-Id:Subject:From:To:Cc:Mime-Version:
+	 References:In-Reply-To; b=bpASiRhyzfZBA53+0PIraVwlTRZZVf2wiqkmXjEx6xbwnraCyKXm1O5y5TmNAZrYcIlxur79iSsxnkQM3jHgsl6B+TtJzp/Lu/O5ynwK5Z25zeZTnSw7PKaCWuh8wBJQnB4B8yfwXQZroSRN6uV+sVBWtzUUtlV+SKyDhfmnpEc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=xLuNmjZh; arc=none smtp.client-ip=80.241.56.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="QbQXMLWL"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=EDI+qGpihC2wJAjxgcQVR2XSv6UIk31pPXBnGz1Dfqrf3XHs1KDPAFPBuQYS4HAu3M4uOQ6DJzZjVCiKKezZf22jmNd79ybzXD84UPi6beji6/VV99dXLJ0/F4bB0eIjj4WXZsBttOiaQ0AIyqP1maDQlSmgmNT6nD4td3klmiitsDgJm9st0n/VMxjWA5U445VOZutb2bjWvycn3SSDrdyMkxi8/hFJbaEyZUG8YreTs3JtonJgCOQWEstN7SB/YQ0UXfFj2kW/b7jceLpu0J3Zi160hGuRQpjgAkkj1vkhZMEfyba+3VCH93SFk+hdVD2UjT+mUm+r2GogRs7kww==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4MY1ubkQCOQpj75z8j2uhE4RtZd9hN4RqCIp9ia0fkA=;
- b=pe90T6Xxg57R7jArHGJjvmMzz+PsZf9lQtvr45jLgj2/S1oaDdEYu52bo5zuIoVUW3DRpjcHdjFHl3GeU6KYvabZuB39EymoyI8RdyNrBH5O97/X6ngMB7QFOguTX3kYCZ9pe4nWxMKQOCzWS+PTn1cAgh0MorAgs7jnnkKw6liIF6nzr7FdrpxMcBeK9rw7fAOdimdjac6E9D869g43aA/VMEfngzO2imx47hrCxenfBSG1UUBHhkPyQmEDz5z6Cb/ppxuy3EQOnEGr5njEyOajJqlRe6bqRCaIvkVxmckGJyevYYrB32oeJZFqtMBeuGaBl7Qk3MUAk6qjAzDk8w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4MY1ubkQCOQpj75z8j2uhE4RtZd9hN4RqCIp9ia0fkA=;
- b=QbQXMLWLHVG35cz4f1mXtekpv+bGgXndHC4wKwjdn7Vklm7XAzihAs9JaKmj+61VMkfS4JFaThDAJfrAYkndZE/8mOGa6tJ/tXj1uZTVuM9FqZ35h6NXnTvzFtcGAqpDKyk/JC+nCG10U0xQ+u5GqmWNd6SlxRP2pl9kYykxI0Mtx19Ram8d/BGvYsl7qCtCbaKLYsEiRv23TiJsZ0Op5D/HMwxXUqeyLLgGRMySivqQ8g8rkT8o996cCOhVLhdWhRink/8GQv4joIts6RGpmzxMZ+eQQS3U+k+n4m/szE4ENYnKkUwprR2aDP/D9U2v+WetBbZZbk9C7YpqRfTn7Q==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from VI1PR04MB6861.eurprd04.prod.outlook.com (2603:10a6:803:13c::9)
- by DB9PR04MB9476.eurprd04.prod.outlook.com (2603:10a6:10:366::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.33; Tue, 21 Apr
- 2026 07:40:23 +0000
-Received: from VI1PR04MB6861.eurprd04.prod.outlook.com
- ([fe80::7f96:4bde:2e55:cd5]) by VI1PR04MB6861.eurprd04.prod.outlook.com
- ([fe80::7f96:4bde:2e55:cd5%4]) with mapi id 15.20.9818.033; Tue, 21 Apr 2026
- 07:40:23 +0000
-From: Jacky Bai <ping.bai@nxp.com>
-Date: Tue, 21 Apr 2026 15:42:25 +0800
-Subject: [PATCH v5 4/4] arm64: dts: imx93: update the tmu compatible string
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260421-imx93_tmu-v5-4-05ea1969bb9f@nxp.com>
-References: <20260421-imx93_tmu-v5-0-05ea1969bb9f@nxp.com>
-In-Reply-To: <20260421-imx93_tmu-v5-0-05ea1969bb9f@nxp.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Frank Li <Frank.Li@nxp.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- Jacky Bai <ping.bai@nxp.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1776757357; l=1014;
- i=ping.bai@nxp.com; s=20250804; h=from:subject:message-id;
- bh=C2z9d/qxNtaax2vGBA5YXXwyfbDGkbmPDxbbfo35dGY=;
- b=yYZsJj/6jNV+97bAx7Zb/my3K9hwkBEVedWNN2fG7MSemmQWIYBTTr5p149euKezge7zxZDcR
- qrH+f5W90ZTDk+/GPUI19HOvcrc5oBUY+jzqpRAS9+Xo1Ydq1Y6IH5g
-X-Developer-Key: i=ping.bai@nxp.com; a=ed25519;
- pk=ckFjCfRynXBjQGmSmzOVI5hggMD9XnnNlwj/jcO/j1U=
-X-ClientProxiedBy: SI2PR06CA0017.apcprd06.prod.outlook.com
- (2603:1096:4:186::15) To VI1PR04MB6861.eurprd04.prod.outlook.com
- (2603:10a6:803:13c::9)
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="xLuNmjZh"
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [10.196.197.202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4g0FDB6gfBz9vSc;
+	Tue, 21 Apr 2026 10:01:14 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1776758480;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=foVx05OUC+/44dVfEggjy1qnXemyDb5IV8yPtCAcYlw=;
+	b=xLuNmjZhDVmiOfi4Cdei4VntXqNVpbecnKmgGEtDOhl+R3R7zGvv120v4ETyAZko+K+pk2
+	kVPyXpEP5KGHE3XZFWK7e4g4D3t8V7Y2RzyiD42VTbxRmZsXxJWXrmfE3eHOH7T99MOmSe
+	gzMeL8+lYsoDjtMPrrHpJOYMveOPlpXUxnOYQ884/5/dy7637/T8puV0qTJN3TiISlkism
+	N9/KFQRTB+5NF/U71BFvJVsCMKRWHIUAv7fC+W3TWP4YBlEi4PF9prKHbbx6KmgkIdMnQE
+	m6LYL7+qfsDKgIdTqc74/RWdCInNMh4drlZcVkmCQ12e+lun5FmpwFhTKIafZg==
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 21 Apr 2026 16:00:43 +0800
+Message-Id: <DHYOAWKUKWYO.2WETOA6VIJGN6@mailbox.org>
+Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
+From: "Shuwei Wu" <shuwei.wu@mailbox.org>
+To: "Anand Moon" <linux.amoon@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Viresh Kumar"
+ <viresh.kumar@linaro.org>, "Rob Herring" <robh@kernel.org>, "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
+ "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>,
+ "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>,
+ "Yixun Lan" <dlan@kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-riscv@lists.infradead.org>,
+ <spacemit@lists.linux.dev>, <devicetree@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VI1PR04MB6861:EE_|DB9PR04MB9476:EE_
-X-MS-Office365-Filtering-Correlation-Id: d16dd714-8905-4701-cc8e-08de9f793e26
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|52116014|7416014|366016|19092799006|38350700014|921020|18002099003|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	7DJYhOROpAcfsDP2Wzo/tUJonloI3l0YYW+bbv17oyIIhG5MVPNPf7r5wD3mR9d1BdrED5P/Thr3Hv83OTa1wJdejPZgir+joEpXXIjL6nOvzYxCMNUkPcShqbHCtoF/f7c9YGWRR7h5xXQQ3meag4QW8thARJA/UfVDUJExAi0lUoIYKNNiaVg7fbUm5o4s4BVWplmd5HGVaNospY59qMpxBF2eP6ze06h9QkIxA8H1PlFXEtORlPcA+E0HqezIPBhWU5T3Xv+bHiIL9xKRJoeniNVeyyRi+I4R3g1OwhMuHGZ/CoAFsY0nWbpN9QjOP2qX11WrRGVher+eK1N6zznEg/h6EXCDgGU/61+zNEy63fo9s/nb4ftGCeI0r70qLktC5V75YyKxQH91pWARn+Q3gVq6wSu3oA+7ydEsb+KVcj3tKQ6B7U/ahlugoQqHLRb5Bth8Fox/lpPRI30rYYLWX20st6KDK09f9vQsV5IdfeMJaLFe52UNsXieaD69cSVJFsgi8EFe1GDQHVT5SOMQOwtK9EVG/+t6HqD5fGdhHQDL7bd6Wy2xoKjzlaRD6fDYXE3E+rKddiTvyPZkx13QwaB9psRT/oSN0xNwOqd7Tdqn73b2amkPdjZl+JWvHEKnsRkaHb6ICcEGKUJ6ClGU7sQL9vKnsN2Ykd9ZJ31Eg5FUESX8IVnDWqwHH3uTLZi6j1I849AmFLU+4yeRsSlTPiKfIRcOu9mgVAV+QfXhW5DOereapZYFO5g6lsGAyIGNZ5UmE1ni23NkcqcP9wzRcO+Jylm48c8jzRI4BVOrYgSMqIr08IqlJwbR/dJd
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB6861.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(52116014)(7416014)(366016)(19092799006)(38350700014)(921020)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?M3VybmQ0d0R6TEkza0cvYm1MRWtWUDgyWldNVndZY2JpOXR4d1RXOVZxamIw?=
- =?utf-8?B?L3N4cEluZVR2VnRHNlNWbWErckxkbitUZGx6YUhNaUtIM2NMaGdLMnZyWDVm?=
- =?utf-8?B?T2VTSXpRYlVUS2FNSFpPcmsrT0Q1VUR0blBCY1hnbVFYZjM1cy9kSjk5T1dJ?=
- =?utf-8?B?QkptQVNBMnNuZC9rcVNKc1NyeGhld3ZZR010cEZjWStvakRpKzArOElEdzZT?=
- =?utf-8?B?UzNIb1E0QWtyOTdBbWtNTXUwVkxaWWRjdnN4VzFOZGp0eE9FNlhES0taUjBU?=
- =?utf-8?B?YlBKcmFKMS9CWmdMTlFIeWFTaEhLTmI4NlBIbUlxd29wUXJ3Ukg1N1ZSRXhH?=
- =?utf-8?B?b29UOU81dmNORGxhZkZkZ0pEdWNKYmtEbnJnVzQ3SzRZVTlEbjRtaUZNMFpO?=
- =?utf-8?B?MnJNQ2FrNmZyMitrL3IwTTBWVGdLNGlsK01HVWRlZzVBVXNybS9jWW1SNjFW?=
- =?utf-8?B?NmVOSStSQnZFYnV3dGxsZGI3REZiMHIwNXNsdXVDK2JldERFcEdVei9ua05q?=
- =?utf-8?B?WWNJaUR4MElvbUt5VWVscGh4OWxjaTJsN3M3eVRjNVpnYmFBZHpsREc0NXZ2?=
- =?utf-8?B?TlJkV05GbnJZZEFBeXh5TXhlR25zY05MSXZhU3JaTm5NNEcyek0wZGo3T2lw?=
- =?utf-8?B?cmtCcENVM0plZHhIK0tjMlpGc1I5RXNhV0k4MmQvTU84YjdCOXpEeXRxZ0FN?=
- =?utf-8?B?S0tEOGwyRnA1cmxKbW9Id29XTUJERk53aWhIQlhaaHZXaDZRYkI3QkZvQ05p?=
- =?utf-8?B?MndUdUY3YkxyQXFoVGhXU3NXWkl3d3lvRDluZEQ2UklTYzB2RElsTFdQd294?=
- =?utf-8?B?dVE3bWZ0S0pDYmtoNXUybDFBS3pyK2lYSEtkelY5VjhLZ3BhQUhmV1RRS2Mv?=
- =?utf-8?B?cCt6d0xjaVFjOERzNFAxekJGMnFQMkNYVTZKNnFJMkw1Y1liMmNwTi95Tit5?=
- =?utf-8?B?OVdZRkFQbklEb2xiUXRneFhSenYwTFJmd1dqZUNXWFdMWXNPOHhkQ0g5bytr?=
- =?utf-8?B?Q25ET1RRMVcrYVREeG1xTE1zVVV5Zmt2eEFnSVZjeVJSTjF3WWp4aG4zbkM3?=
- =?utf-8?B?UWRHRU1OdnpwL1pFcGJ3OFMzUXZrV1YwRjBjcHMwU2hEZ3h6SXhhRXVqWXYy?=
- =?utf-8?B?RzJ0dUpwVEZ6TC9Wbkw5cm9EcGl5dm9hVXlIaW9Ca3UxVTlmMGVCNGNQNWUz?=
- =?utf-8?B?dkx5dXUzcFp5SVF5S2hBVE04ZHpFOStUWlBYK3VoWExiUW9vK2pLVWE0MVA0?=
- =?utf-8?B?UmpKM3RIZFBVVXlJN2lUNzBvZmtZaUFUU05TYUhLeXlJTWtjMDhjcWsvTHlM?=
- =?utf-8?B?cXpoaFp4TFVzWlFKREdxKytCQmVkbFh4dlRnV3kzWEdCQWVqTDhZZHpQT2Vw?=
- =?utf-8?B?WEhaTnc4YUVRZmdQdEFQT0puaDRuYVdpSG5NODZHR0duUEw3cStaZ1hxTnJY?=
- =?utf-8?B?c1l1TkRWZlR0a05LbW1TaFJBM3A4RWgxdTZXS05oZFExU0svd2xEVGNLYS85?=
- =?utf-8?B?R3hzOFcvUnpodDhkN0syRmdXclRlZHg2TGVjVzRNamE4aWxnNHFLbDY3bkRI?=
- =?utf-8?B?VXBzOEl6VWVJbU1scElNdzIrc3BQR08xOElZQkxLNGg3QUgvdWdoMTlqQ0R6?=
- =?utf-8?B?VldHOU52VlM4RVZhdjlyNlFHNituZmdLaWlFc3FwUjJ5bFNHWlJjVGhUaUMv?=
- =?utf-8?B?LzFhdnRhclVLN1luSEVBWXZaOWwweXN0MzJXM2Y1Slg1eitCTGhEL0RNdENH?=
- =?utf-8?B?b3lyVUFtMjlGalRvUGtudUpaa1dtMkQ2ODdVRXRpNmh2MC9PNlRNMTJGYzAw?=
- =?utf-8?B?VXZhQzk2ejMxY3A4KzYrQVZDa0M3YmtpckVKSW9TUEJ3emE2YzBubzNzMFcw?=
- =?utf-8?B?WHZrV2tmSHI4ajNsc1l4aWt4RUNmR1J5WjlBOHFZTEgra1N5Ylh0L2pCclNq?=
- =?utf-8?B?eTVPc05YalhBVm1LUzJFVkwyUGEzZUIrMmViWGFhWXRGajhneWtrcXNQaWlZ?=
- =?utf-8?B?T3d5Snp0RncwRm1aaCtRUENmb280b28vL3hjVjVtbUd0emdDWituZGd6ZzAz?=
- =?utf-8?B?UGIreVYrb09KZVdxT203bmZFYVhSTkpYQUtLRUZNVjk5K1NnQysycDcyNStJ?=
- =?utf-8?B?L3BHTFl5QjNBQ1VuRitqR2xocS85aFVzdmQ4cDFlWjFTeVJkOFpKZVF4c3F4?=
- =?utf-8?B?cjVpRUo0VHdWZVpac3lhZE9Qa0R0UDBlT2kyWW5EMEZMWWd2eEZ5dHhGcXFS?=
- =?utf-8?B?NW9RVFQraFg2VXV5d0Z1Lzl6Rk1LT054V1oyb21FNFFxNjJ0djlkbmJSeWQ4?=
- =?utf-8?Q?Kh2IcoAy401GIl3n0s?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d16dd714-8905-4701-cc8e-08de9f793e26
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB6861.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2026 07:40:23.0885
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QM3phqidrHGef+sM/oZtOGPvx21nrwYXQ1j5+sh0n6/F7VORKu2SsIf7+O/y9BioR4hWP1f8aOYF+R9fvfW7Zg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB9476
+Mime-Version: 1.0
+References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+ <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
+ <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
+ <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
+ <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
+ <CANAwSgRYqb6oYT3JmkfiN4VRtUwFdX1myoHn+vBeFZUhonCdsw@mail.gmail.com>
+In-Reply-To: <CANAwSgRYqb6oYT3JmkfiN4VRtUwFdX1myoHn+vBeFZUhonCdsw@mail.gmail.com>
+X-MBO-RS-ID: 22f2e64ac0928898cb2
+X-MBO-RS-META: 8hqc1riojpo55fxwt3ru9d78p4xp4nrw
 
-The i.MX93 TMU node compatible need to be updated to apply the SoC
-specific configuration and TMU errata workaround.
+Hi Anand,
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-Signed-off-by: Jacky Bai <ping.bai@nxp.com>
----
- - v5 changes:
-  - no
+Thank you for your positive feedback.
 
- - v4 changes:
-  - no
+On Fri Apr 17, 2026 at 2:08 PM CST, Anand Moon wrote:
+> Hi Shuwei,
+>
+> On Thu, 16 Apr 2026 at 17:07, Anand Moon <linux.amoon@gmail.com> wrote:
+>>
+>> Hi Shuwei,
+>>
+>> Thanks for sharing the details.
+>>
+>> On Thu, 16 Apr 2026 at 11:29, Shuwei Wu <shuwei.wu@mailbox.org> wrote:
+>> >
+>> > On Tue Apr 14, 2026 at 9:25 PM CST, Anand Moon wrote:
+>> > > Hi Shuwei,
+>> > >
+>> > > On Fri, 10 Apr 2026 at 13:30, Shuwei Wu <shuwei.wu@mailbox.org> wrot=
+e:
+>> > >>
+>> > >> Add Operating Performance Points (OPP) tables and CPU clock propert=
+ies
+>> > >> for the two clusters in the SpacemiT K1 SoC.
+>> > >>
+>> > >> Also assign the CPU power supply (cpu-supply) for the Banana Pi BPI=
+-F3
+>> > >> board to fully enable CPU DVFS.
+>> > >>
+>> > >> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
+>> > >>
+>> > >> ---
+>> > >> Changes in v2:
+>> > >> - Add k1-opp.dtsi with OPP tables for both CPU clusters
+>> > >> - Assign CPU supplies and include OPP table for Banana Pi BPI-F3
+>> > >> ---
+>> > >>  arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts |  35 +++++++-
+>> > >>  arch/riscv/boot/dts/spacemit/k1-opp.dtsi        | 105 ++++++++++++=
+++++++++++++
+>> > >>  arch/riscv/boot/dts/spacemit/k1.dtsi            |   8 ++
+>> > >>  3 files changed, 147 insertions(+), 1 deletion(-)
+>> > >>
+>> > >> diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts b/arch=
+/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> > >> index 444c3b1e6f44..3780593f610d 100644
+>> > >> --- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> > >> +++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> > >> @@ -5,6 +5,7 @@
+>> > >>
+>> > >>  #include "k1.dtsi"
+>> > >>  #include "k1-pinctrl.dtsi"
+>> > >> +#include "k1-opp.dtsi"
+>> > >>
+>> > >>  / {
+>> > >>         model =3D "Banana Pi BPI-F3";
+>> > >> @@ -86,6 +87,38 @@ &combo_phy {
+>> > >>         status =3D "okay";
+>> > >>  };
+>> > >>
+>> > >> +&cpu_0 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_1 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_2 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_3 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_4 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_5 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_6 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_7 {
+>> > >> +       cpu-supply =3D <&buck1_3v45>;
+>> > >> +};
+>> > >> +
+>> > >>  &emmc {
+>> > >>         bus-width =3D <8>;
+>> > >>         mmc-hs400-1_8v;
+>> > >> @@ -201,7 +234,7 @@ pmic@41 {
+>> > >>                 dldoin2-supply =3D <&buck5>;
+>> > >>
+>> > >>                 regulators {
+>> > >> -                       buck1 {
+>> > >> +                       buck1_3v45: buck1 {
+>> > >>                                 regulator-min-microvolt =3D <500000=
+>;
+>> > >>                                 regulator-max-microvolt =3D <345000=
+0>;
+>> > >>                                 regulator-ramp-delay =3D <5000>;
+>> > >> diff --git a/arch/riscv/boot/dts/spacemit/k1-opp.dtsi b/arch/riscv/=
+boot/dts/spacemit/k1-opp.dtsi
+>> > >> new file mode 100644
+>> > >> index 000000000000..768ae390686d
+>> > >> --- /dev/null
+>> > >> +++ b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
+>> > >> @@ -0,0 +1,105 @@
+>> > >> +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+>> > >> +
+>> > >> +/ {
+>> > >> +       cluster0_opp_table: opp-table-cluster0 {
+>> > >> +               compatible =3D "operating-points-v2";
+>> > >> +               opp-shared;
+>> > >> +
+>> > >> +               opp-614400000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <614400000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-819000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <819000000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1000000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1000000000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1228800000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1228800000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1600000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1600000000>;
+>> > >> +                       opp-microvolt =3D <1050000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +       };
+>> > >> +
+>> > >> +       cluster1_opp_table: opp-table-cluster1 {
+>> > >> +               compatible =3D "operating-points-v2";
+>> > >> +               opp-shared;
+>> > >> +
+>> > >> +               opp-614400000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <614400000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-819000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <819000000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1000000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1000000000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1228800000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1228800000>;
+>> > >> +                       opp-microvolt =3D <950000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +
+>> > >> +               opp-1600000000 {
+>> > >> +                       opp-hz =3D /bits/ 64 <1600000000>;
+>> > >> +                       opp-microvolt =3D <1050000>;
+>> > >> +                       clock-latency-ns =3D <200000>;
+>> > >> +               };
+>> > >> +       };
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_0 {
+>> > >> +       operating-points-v2 =3D <&cluster0_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_1 {
+>> > >> +       operating-points-v2 =3D <&cluster0_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_2 {
+>> > >> +       operating-points-v2 =3D <&cluster0_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_3 {
+>> > >> +       operating-points-v2 =3D <&cluster0_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_4 {
+>> > >> +       operating-points-v2 =3D <&cluster1_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_5 {
+>> > >> +       operating-points-v2 =3D <&cluster1_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_6 {
+>> > >> +       operating-points-v2 =3D <&cluster1_opp_table>;
+>> > >> +};
+>> > >> +
+>> > >> +&cpu_7 {
+>> > >> +       operating-points-v2 =3D <&cluster1_opp_table>;
+>> > >> +};
+>> > >> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot=
+/dts/spacemit/k1.dtsi
+>> > >> index 529ec68e9c23..bdd109b81730 100644
+>> > >> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
+>> > >> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
+>> > >> @@ -54,6 +54,7 @@ cpu_0: cpu@0 {
+>> > >>                         compatible =3D "spacemit,x60", "riscv";
+>> > >>                         device_type =3D "cpu";
+>> > >>                         reg =3D <0>;
+>> > >> +                       clocks =3D <&syscon_apmu CLK_CPU_C0_CORE>;
+>> > >>                         riscv,isa =3D "rv64imafdcbv_zicbom_zicbop_z=
+icboz_zicntr_zicond_zicsr_zifencei_zihintpause_zihpm_zfh_zba_zbb_zbc_zbs_zk=
+t_zvfh_zvkt_sscofpmf_sstc_svinval_svnapot_svpbmt";
+>> > >>                         riscv,isa-base =3D "rv64i";
+>> > >>                         riscv,isa-extensions =3D "i", "m", "a", "f"=
+, "d", "c", "b", "v", "zicbom",
+>> > >> @@ -84,6 +85,7 @@ cpu_1: cpu@1 {
+>> > >>                         compatible =3D "spacemit,x60", "riscv";
+>> > >>                         device_type =3D "cpu";
+>> > >>                         reg =3D <1>;
+>> > >> +                       clocks =3D <&syscon_apmu CLK_CPU_C0_CORE>;
+>> > >
+>> > > Based on the Spacemit kernel source, the k1-x_opp_table.dtsi file
+>> > > defines several additional clocks for the Operating Performance Poin=
+ts
+>> > > (OPP) table:
+>> > >
+>> > >  clocks =3D <&ccu CLK_CPU_C0_ACE>, <&ccu CLK_CPU_C1_ACE>, <&ccu CLK_=
+CPU_C0_TCM>,
+>> > >                         <&ccu CLK_CCI550>, <&ccu CLK_PLL3>, <&ccu
+>> > > CLK_CPU_C0_HI>, <&ccu CLK_CPU_C1_HI>;
+>> > >                 clock-names =3D "ace0","ace1","tcm","cci","pll3", "c=
+0hi", "c1hi";
+>> > >
+>> > > These hardware clocks are also explicitly registered in the APMU clo=
+ck driver
+>> > > via the k1_ccu_apmu_hws array, confirming their availability for fre=
+quency
+>> > > and voltage scaling on the K1-X SoC.
+>> > >
+>> > > static struct clk_hw *k1_ccu_apmu_hws[] =3D {
+>> > >         [CLK_CCI550]            =3D &cci550_clk.common.hw,
+>> > >         [CLK_CPU_C0_HI]         =3D &cpu_c0_hi_clk.common.hw,
+>> > >         [CLK_CPU_C0_CORE]       =3D &cpu_c0_core_clk.common.hw,
+>> > >         [CLK_CPU_C0_ACE]        =3D &cpu_c0_ace_clk.common.hw,
+>> > >         [CLK_CPU_C0_TCM]        =3D &cpu_c0_tcm_clk.common.hw,
+>> > >         [CLK_CPU_C1_HI]         =3D &cpu_c1_hi_clk.common.hw,
+>> > >         [CLK_CPU_C1_CORE]       =3D &cpu_c1_core_clk.common.hw,
+>> > >         [CLK_CPU_C1_ACE]        =3D &cpu_c1_ace_clk.common.hw,
+>> > >
+>> > > Yes, it is possible to add these clocks for DVFS to work correctly,
+>> > > provided they are managed by the appropriate driver and declared in
+>> > > the Device Tree (DT).
+>> > >
+>> > > Thanks
+>> > > -Anand
+>> >
+>> > Thanks for your review and for pointing this out.
+>> >
+>> > Regarding the clocks you mentioned, I'd like to clarify their roles ba=
+sed on
+>> > the K1 datasheet. Taking Cluster 0 as an example, c0_core_clk is the p=
+rimary
+>> > clock for the cluster. c0_ace_clk and c0_tcm_clk are children derived =
+from it,
+>> > defaulting to half the frequency of their parent core clock, while c0_=
+hi_clk
+>> > represents the high-speed path selection.
+>> > Cluster 1 follows the same structure.
+>> >
+>> > Based on the official SpacemiT Bianbu OS source, the spacemit-cpufreq.=
+c driver
+>> > mainly performs the following tasks:
+>> > 1. Sets the CCI550 clock frequency to 614MHz.
+>> > 2. Sets the clock frequencies of c0_ace_clk, c1_ace1_clk, and c0_tcm_c=
+lk to half
+>> > the frequency of their parent clock.
+>> > 3. For the 1.6GHz OPP, it sets the PLL3 frequency to 3.2GHz and the
+>> > c0_hi_clk/c1_hi_clk frequencies to 1.6GHz.
+>> >
+>> > I booted with the manufacturer's OpenWRT image and used debugfs to con=
+firm that
+>> > the clock states are exactly as described above.
+>> >
+>> > At 1.6GHz:
+>> > Clock Source & Tree           Rate (Hz)      HW Enable  Consumer
+>> > ----------------------------------------------------------------------=
+-----
+>> > pll3                          3,200,000,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll3_d2                   1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=9C=E2=94=80 cpu_c1_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=82   =E2=94=94=E2=94=80 cpu_c1_pclk       1,600,000,000   =
+   Y      cpu0
+>> >      =E2=94=82       =E2=94=94=E2=94=80 cpu_c1_ace_clk  800,000,000   =
+   Y      deviceless
+>> >      =E2=94=94=E2=94=80 cpu_c0_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cpu_c0_core_clk   1,600,000,000      Y    =
+  cpu0
+>> >              =E2=94=9C=E2=94=80 cpu_c0_tcm_clk  800,000,000      Y    =
+  deviceless
+>> >              =E2=94=94=E2=94=80 cpu_c0_ace_clk  800,000,000      Y    =
+  deviceless
+>> >
+>> > pll1_2457p6_vco               2,457,600,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll1_d4                     614,400,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 pll1_d4_614p4           614,400,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cci550_clk          614,400,000      Y    =
+  deviceless
+>> >
+>> > At 1.228GHz:
+>> > Clock Source & Tree           Rate (Hz)      HW Enable  Consumer
+>> > ----------------------------------------------------------------------=
+-----
+>> > pll1_2457p6_vco               2,457,600,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll1_d2                   1,228,800,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 pll1_d2_1228p8        1,228,800,000      Y    =
+  deviceless
+>> >          =E2=94=9C=E2=94=80 cpu_c0_core_clk   1,228,800,000      Y    =
+  cpu0
+>> >          =E2=94=82   =E2=94=9C=E2=94=80 cpu_c0_tcm_clk  614,400,000   =
+   Y      deviceless
+>> >          =E2=94=82   =E2=94=94=E2=94=80 cpu_c0_ace_clk  614,400,000   =
+   Y      deviceless
+>> >          =E2=94=94=E2=94=80 cpu_c1_pclk       1,228,800,000      Y    =
+  cpu0
+>> >              =E2=94=94=E2=94=80 cpu_c1_ace_clk  614,400,000      Y    =
+  deviceless
+>> >   =E2=94=94=E2=94=80 pll1_d4                     614,400,000      Y   =
+   deviceless
+>> >      =E2=94=94=E2=94=80 pll1_d4_614p4           614,400,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cci550_clk          614,400,000      Y    =
+  deviceless
+>> >
+>> > pll3                          3,200,000,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll3_d2                   1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=9C=E2=94=80 cpu_c1_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 cpu_c0_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >  =E2=94=94=E2=94=80 pll3_d3                   1,066,666,666      Y    =
+  deviceless
+>> >
+>> > Regarding the necessity of listing these clocks in the DT, my analysis=
+ is as follows:
+>> > 1. For CCI550, I did not find a clear definition of this clock's speci=
+fic role
+>> > in the SoC datasheet. Although the vendor kernel increases its frequen=
+cy,
+>> > my benchmarks show that maintaining the mainline default (245.76MHz) h=
+as a
+>> > negligible impact on CPU performance.
+>> > 2. For ACE and TCM clocks, they function as synchronous children of th=
+e core
+>> > clock with a default divide-by-2 ratio. Since they scale automatically=
+ relative
+>> > to c0_core_clk/c1_core_clk and no other peripherals depend on them, th=
+ey do not
+>> > require manual management in the OPP table.
+>> > 3. For the high-speed path, the underlying clock controller logic alre=
+ady handles
+>> > the parent MUX switching and PLL3 scaling automatically when clk_set_r=
+ate()
+>> > is called on the core clock.
+>> >
+>> > I have verified this by checking the hardware state in the mainline ke=
+rnel.
+>> > The clock tree matches the vendor kernel's configuration:
+>> >
+>> > At 1.6GHz:
+>> > Clock Source & Tree           Rate (Hz)      HW Enable  Consumer
+>> > ----------------------------------------------------------------------=
+-----
+>> > pll3                          3,200,000,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll3_d2                   1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=9C=E2=94=80 cpu_c1_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=82   =E2=94=94=E2=94=80 cpu_c1_core_clk   1,600,000,000   =
+   Y      cpu4
+>> >      =E2=94=82       =E2=94=94=E2=94=80 cpu_c1_ace_clk  800,000,000   =
+   Y      deviceless
+>> >      =E2=94=94=E2=94=80 cpu_c0_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cpu_c0_core_clk   1,600,000,000      Y    =
+  cpu0
+>> >              =E2=94=9C=E2=94=80 cpu_c0_tcm_clk  800,000,000      Y    =
+  deviceless
+>> >              =E2=94=94=E2=94=80 cpu_c0_ace_clk  800,000,000      Y    =
+  deviceless
+>> >
+>> > pll1                          2,457,600,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll1_d5                     491,520,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 pll1_d5_491p52          491,520,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cci550_clk          245,760,000      Y    =
+  deviceless
+>> >
+>> > At 1.228GHz:
+>> > Clock Source & Tree           Rate (Hz)      HW Enable  Consumer
+>> > ----------------------------------------------------------------------=
+-----
+>> > pll1                          2,457,600,000      Y      deviceless
+>> >  =E2=94=9C=E2=94=80 pll1_d5                     491,520,000      Y    =
+  deviceless
+>> >  =E2=94=82   =E2=94=94=E2=94=80 pll1_d5_491p52          491,520,000   =
+   Y      deviceless
+>> >  =E2=94=82       =E2=94=94=E2=94=80 cci550_clk          245,760,000   =
+   Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll1_d2                   1,228,800,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 pll1_d2_1228p8        1,228,800,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cpu_c0_core_clk   1,228,800,000      Y    =
+  cpu0
+>> >              =E2=94=9C=E2=94=80 cpu_c0_tcm_clk  614,400,000      Y    =
+  deviceless
+>> >              =E2=94=94=E2=94=80 cpu_c0_ace_clk  614,400,000      Y    =
+  deviceless
+>> >
+>> > pll3                          3,200,000,000      Y      deviceless
+>> >  =E2=94=94=E2=94=80 pll3_d2                   1,600,000,000      Y    =
+  deviceless
+>> >      =E2=94=94=E2=94=80 cpu_c1_hi_clk         1,600,000,000      Y    =
+  deviceless
+>> >          =E2=94=94=E2=94=80 cpu_c1_core_clk   1,600,000,000      Y    =
+  cpu4
+>> >              =E2=94=94=E2=94=80 cpu_c1_ace_clk  800,000,000      Y    =
+  deviceless
+>> >
+>>
+>> Thanks, I have verified the clocks are set to Y in
+>> /sys/kernel/debug/clk/clk_summary
+>>
+>> > Performance benchmarks also confirm that the current configuration is =
+sufficient:
+>> > Benchmark (AWK computation): time awk 'BEGIN{for(i=3D0;i<10000000;i++)=
+ sum+=3Di}'
+>> > ----------------------------------------------------------------------=
+------
+>> > Frequency    |      Mainline Linux (s)       |        OpenWrt (s)
+>> > (kHz)        |  Real (Total) |  User (CPU)   |  Real (Total) |  User (=
+CPU) )
+>> > -------------+---------------+---------------+---------------+--------=
+------
+>> > 1,600,000    |     1.82s     |     1.81s     |     1.73s     |    1.73=
+s
+>> > 1,228,800    |     2.34s     |     2.33s     |     2.26s     |    2.26=
+s
+>> > 1,000,000    |     2.94s     |     2.86s     |     2.78s     |    2.78=
+s
+>> >   819,000    |     3.54s     |     3.53s     |     3.39s     |    3.39=
+s
+>> >   614,400    |     4.73s     |     4.71s     |     4.51s     |    4.51=
+s
+>> > ----------------------------------------------------------------------=
+------
+>> >
+>> > In summary, because the clock controller correctly handles the interna=
+l dividers
+>> > and parent switching, declaring only the primary core clock for each C=
+PU node is
+>> > sufficient for functional DVFS.
+>> >
+>> I have just tested this patch against  next-20260415
+>> But, I have observed this log on the Banana Pi F3 dev board with the
+>> Banana PI - R4 heat sink and fan.
+>>
+>> [    5.803445][    T1] In-situ OAM (IOAM) with IPv6
+>> [    5.809605][    T1] NET: Registered PF_PACKET protocol family
+>> [    5.819098][    T1] Key type dns_resolver registered
+>> [    5.853430][    C2] cpu2: scalar unaligned word access speed is
+>> 1.60x byte access speed (fast)
+>> [    5.853431][    C3] cpu3: scalar unaligned word access speed is
+>> 1.67x byte access speed (fast)
+>> [    5.853440][    C7] cpu7: scalar unaligned word access speed is
+>> 8.10x byte access speed (fast)
+>> [    5.853432][    C1] cpu1: scalar unaligned word access speed is
+>> 3.98x byte access speed (fast)
+>> [    5.853431][    T1] cpu0: scalar unaligned word access speed is
+>> 2.33x byte access speed (fast)
+>> [    5.853436][    C5] cpu5: scalar unaligned word access speed is
+>> 2.29x byte access speed (fast)
+>> [    5.853436][    C6] cpu6: scalar unaligned word access speed is
+>> 2.58x byte access speed (fast)
+>> [    5.853431][    C4] cpu4: scalar unaligned word access speed is
+>> 2.07x byte access speed (fast)
+>> [    5.936544][   T92] mmcblk0boot0: mmc0:0001 AJTD4R 4.00 MiB
+>> [    6.003120][   T92] mmcblk0boot1: mmc0:0001 AJTD4R 4.00 MiB
+>> [    6.070909][   T92] mmcblk0rpmb: mmc0:0001 AJTD4R 4.00 MiB, chardev (=
+244:0)
+>> [    6.380324][    T1] registered taskstats version 1
+>> [    6.407337][    T1] Loading compiled-in X.509 certificates
+>> [    6.594206][    T1] Loaded X.509 cert 'Build time autogenerated
+>> kernel key: 19b81ec48e45e6ee983623417bad5096df8bbcf1'
+>> [    7.600343][    T1] Demotion targets for Node 0: null
+>> [    7.608583][    T1] kmemleak: Kernel memory leak detector
+>> initialized (mem pool available: 1309)
+>> [    7.608646][  T120] kmemleak: Automatic memory scanning thread starte=
+d
+>> [    7.624663][    T1] debug_vm_pgtable: [debug_vm_pgtable         ]:
+>> Validating architecture page table helpers
+>> [    7.636721][    T1] page_owner is disabled
+>> [    8.213648][   T74] debugfs: ':soc:gpio@d4019000-1' already exists
+>> in 'domains'
+>> [    8.233502][   T74] debugfs: ':soc:gpio@d4019000-1' already exists
+>> in 'domains'
+>> [    8.254012][   T74] debugfs: ':soc:gpio@d4019000-1' already exists
+>> in 'domains'
+>> [    8.319431][   T74] printk: legacy console [ttyS0] disabled
+>> [    8.345811][   T74] d4017000.serial: ttyS0 at MMIO 0xd4017000 (irq
+>> =3D 16, base_baud =3D 921600) is a XScale
+>> [    8.357331][   T74] printk: legacy console [ttyS0] enabled
+>> [    8.357331][   T74] printk: legacy console [ttyS0] enabled
+>> [    8.369971][   T74] printk: legacy bootconsole [uart0] disabled
+>> [    8.369971][   T74] printk: legacy bootconsole [uart0] disabled
+>> [    8.427040][   T74] /soc/i2c@d401d800/pmic@41: Fixed dependency
+>> cycle(s) with /soc/i2c@d401d800/pmic@41/regulators/buck5
+>> [    8.634595][   T74] spacemit-p1-rtc spacemit-p1-rtc.1.auto:
+>> registered as rtc0
+>> [    8.642732][   T74] spacemit-p1-rtc spacemit-p1-rtc.1.auto: setting
+>> system clock to 2026-04-10T00:03:42 UTC (1775779422)
+>> [    8.766081][   T74] sdhci-spacemit d4280000.mmc: Got CD GPIO
+>> [    8.801855][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.806411][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.813413][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.818261][  T130] cpu cpu4: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    8.818307][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.827239][  T129] cpu cpu0: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    8.833161][  T130] cpu cpu4: Failed to set regulator voltages: -22
+>> [    8.842546][  T129] cpu cpu0: Failed to set regulator voltages: -22
+>> [    8.848941][  T130] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    8.855273][  T129] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    8.893720][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.904437][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.908515][  T129] cpu cpu0: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    8.918057][  T129] cpu cpu0: Failed to set regulator voltages: -22
+>> [    8.924402][  T129] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    8.945668][   T74] mmc1: SDHCI controller on d4280000.mmc
+>> [d4280000.mmc] using ADMA
+>> [    8.976207][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.980156][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    8.986169][  T130] cpu cpu4: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    8.995473][  T130] cpu cpu4: Failed to set regulator voltages: -22
+>> [    9.001603][  T130] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.020028][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.024051][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.030122][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.036004][  T130] cpu cpu4: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.036059][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.045003][  T130] cpu cpu4: Failed to set regulator voltages: -22
+>> [    9.045077][  T130] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.058079][   T57] spacemit-k1-pcie ca800000.pcie: host bridge
+>> /soc/pcie-bus/pcie@ca800000 ranges:
+>> [    9.064716][  T129] cpu cpu0: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.064745][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.064825][  T129] cpu cpu0: Failed to set regulator voltages: -22
+>> [    9.064889][  T129] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.065762][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.069924][   T60] spacemit-k1-pcie ca400000.pcie: host bridge
+>> /soc/pcie-bus/pcie@ca400000 ranges:
+>> [    9.071122][   T60] spacemit-k1-pcie ca400000.pcie:       IO
+>> 0x009f002000..0x009f101fff -> 0x0000000000
+>> [    9.073304][   T60] spacemit-k1-pcie ca400000.pcie:      MEM
+>> 0x0090000000..0x009effffff -> 0x0090000000
+>> [    9.081407][   T74] at24 2-0050: 256 byte 24c02 EEPROM, read-only
+>> [    9.083047][  T130] cpu cpu4: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.083509][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.083614][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.083686][  T129] cpu cpu0: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.083845][  T129] cpu cpu0: Failed to set regulator voltages: -22
+>> [    9.083885][  T129] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.089945][   T57] spacemit-k1-pcie ca800000.pcie:       IO
+>> 0x00b7002000..0x00b7101fff -> 0x0000000000
+>> [    9.092728][    T1] clk: Disabling unused clocks
+>> [    9.095269][  T130] cpu cpu4: Failed to set regulator voltages: -22
+>> [    9.096981][    T1] PM: genpd: Disabling unused power domains
+>> [    9.104949][   T57] spacemit-k1-pcie ca800000.pcie:      MEM
+>> 0x00a0000000..0x00afffffff -> 0x00a0000000
+>> [    9.107986][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.108166][  T129] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.108246][  T129] cpu cpu0: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.108311][  T129] cpu cpu0: Failed to set regulator voltages: -22
+>> [    9.108356][  T129] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.108582][  T130] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>> [    9.113366][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.118144][   T57] spacemit-k1-pcie ca800000.pcie:      MEM
+>> 0x00b0000000..0x00b6ffffff -> 0x00b0000000
+>> [    9.130386][  T130] buck1: Restricting voltage, 1050000-950000uV
+>> [    9.196246][  T130] cpu cpu4: _set_opp_voltage: failed to set
+>> voltage (1050000 1050000 1050000 mV): -22
+>> [    9.202562][   T60] spacemit-k1-pcie ca400000.pcie: iATU: unroll T,
+>> 8 ob, 8 ib, align 4K, limit 4G
+>> [    9.206998][  T130] cpu cpu4: Failed to set regulator voltages: -22
+>> [    9.257180][  T130] cpufreq: __target_index: Failed to change cpu
+>> frequency: -22
+>>
+>> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 and =
+Buck2
+>> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the restrict=
+ion errors,
+>> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =C2=
+=B5V.
+>>
+>> Additionally, I updated the DTS to map the second CPU cluster (cores 4=
+=E2=80=937)
+>> to Buck2 to better align with the hardware's power distribution.
+>>
+>> [1] https://drive.google.com/file/d/19iLJ5xnCB_oK8VeQjkPGjzAn39WYyylv/vi=
+ew
+>> (page 4)
+>>
+>> Can you share your thoughts on the changes below?
+>> $ git diff
+>> diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> index 7e300cca50d8..be53645ba0c6 100644
+>> --- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> +++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+>> @@ -102,19 +102,19 @@ &cpu_3 {
+>>  };
+>>
+>>  &cpu_4 {
+>> -       cpu-supply =3D <&buck1_3v45>;
+>> +       cpu-supply =3D <&buck2_3v45>;
+>>  };
+>>
+>>  &cpu_5 {
+>> -       cpu-supply =3D <&buck1_3v45>;
+>> +       cpu-supply =3D <&buck2_3v45>;
+>>  };
+>>
+>>  &cpu_6 {
+>> -       cpu-supply =3D <&buck1_3v45>;
+>> +       cpu-supply =3D <&buck2_3v45>;
+>>  };
+>>
+>>  &cpu_7 {
+>> -       cpu-supply =3D <&buck1_3v45>;
+>> +       cpu-supply =3D <&buck2_3v45>;
+>>  };
+>>
+>>  &emmc {
+>> @@ -234,14 +234,14 @@ pmic@41 {
+>>                 regulators {
+>>                         buck1_3v45: buck1 {
+>>                                 regulator-min-microvolt =3D <500000>;
+>> -                               regulator-max-microvolt =3D <3450000>;
+>> +                               regulator-max-microvolt =3D <950000>;
+>>                                 regulator-ramp-delay =3D <5000>;
+>>                                 regulator-always-on;
+>>                         };
+>>
+>> -                       buck2 {
+>> +                       buck2_3v45: buck2 {
+>>                                 regulator-min-microvolt =3D <500000>;
+>> -                               regulator-max-microvolt =3D <3450000>;
+>> +                               regulator-max-microvolt =3D <950000>;
+>>                                 regulator-ramp-delay =3D <5000>;
+>>                                 regulator-always-on;
+>>                         };
+>> > --
+>> > Best regards,
+>> > Shuwei Wu
+>>
 
- - v3 changes:
-  - drop the qoriq compatible
+I received the same response from the official developers as Aurelien said.
+Both clusters use the same power supply.
 
- - v2 changes:
-  - no
----
- arch/arm64/boot/dts/freescale/imx93.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> I also made some modifications to the k1-opp.dtsi to fix the warning,
+> add over clock to 18000
+>
+> [    8.712035][   T80] core: _opp_supported_by_regulators: OPP minuV:
+> 1050000 maxuV: 1050000, not supported by regulator
+> [    8.720556][   T80] cpu cpu0: _opp_add: OPP not supported by
+> regulators (1600000000)
+> [    8.752494][   T80] core: _opp_supported_by_regulators: OPP minuV:
+> 1050000 maxuV: 1050000, not supported by regulator
+> [    8.760906][   T80] cpu cpu4: _opp_add: OPP not supported by
+> regulators (1600000000)
+> [    8.780195][   T80] cpufreq: cpufreq_policy_online: CPU0: Running
+> at unlisted initial frequency: 1600000 kHz, changing to: 1228800 kHz
+> [    8.809572][   T80] cpufreq: cpufreq_policy_online: CPU4: Running
+> at unlisted initial frequency: 1600000 kHz, changing to: 1228800 kHz
 
-diff --git a/arch/arm64/boot/dts/freescale/imx93.dtsi b/arch/arm64/boot/dts/freescale/imx93.dtsi
-index b9abe143cb567e722277960ff677d460154dfc8a..06443d52a4290f9525c320f8bcf5fba1a8435d11 100644
---- a/arch/arm64/boot/dts/freescale/imx93.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx93.dtsi
-@@ -80,7 +80,7 @@ mu1: mailbox@44230000 {
- 	};
- 
- 	tmu: tmu@44482000 {
--		compatible = "fsl,qoriq-tmu";
-+		compatible = "fsl,imx93-tmu";
- 		reg = <0x44482000 0x1000>;
- 		interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&clk IMX93_CLK_TMC_GATE>;
+Sorry for my oversight in the test.
 
--- 
-2.34.1
+This error occurs due to conflicting fixed-voltage requests from multiple
+regulator consumers when OPP tables use single-value voltage definitions.
 
+For example, assuming both clusters are running at 1.0GHz:
+- When cluster 1 requests to switch to 1.6GHz, the OPP framework submits
+a fixed voltage request [1.05V, 1.05V] to the shared regulator.
+- Cluster 0 remains at 1.0GHz, holding an active fixed voltage
+request [0.95V, 0.95V].
+- The regulator core aggregates all consumer requests by taking the
+highest requested minimum voltage (1.05=E2=80=AFV) and the lowest requested
+maximum voltage (0.95=E2=80=AFV) across all consumers.
+- The resulting invalid range [1.05=E2=80=AFV, 0.95=E2=80=AFV] (min=E2=80=
+=AF>=E2=80=AFmax) triggers an
+-EINVAL error and the "Restricting voltage" dmesg log, causing voltage
+switching to fail.
+
+>
+> $ git diff .
+> diff --git a/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
+> b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
+> index 768ae390686d..bec565947ba3 100644
+> --- a/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
+> +++ b/arch/riscv/boot/dts/spacemit/k1-opp.dtsi
+> @@ -31,7 +31,13 @@ opp-1228800000 {
+>
+>                 opp-1600000000 {
+>                         opp-hz =3D /bits/ 64 <1600000000>;
+> -                       opp-microvolt =3D <1050000>;
+> +                       opp-microvolt =3D <950000>;
+> +                       clock-latency-ns =3D <200000>;
+> +               };
+> +
+> +               opp-1800000000 {
+> +                       opp-hz =3D /bits/ 64 <1800000000>;
+> +                       opp-microvolt =3D <950000>;
+>                         clock-latency-ns =3D <200000>;
+>                 };
+>         };
+> @@ -66,7 +72,13 @@ opp-1228800000 {
+>
+>                 opp-1600000000 {
+>                         opp-hz =3D /bits/ 64 <1600000000>;
+> -                       opp-microvolt =3D <1050000>;
+> +                       opp-microvolt =3D <950000>;
+> +                       clock-latency-ns =3D <200000>;
+> +               };
+> +
+> +               opp-1800000000 {
+> +                       opp-hz =3D /bits/ 64 <1800000000>;
+> +                       opp-microvolt =3D <950000>;
+>                         clock-latency-ns =3D <200000>;
+>                 };
+>         };
+>
+>> Thanks
+>> -Anand
+>
+> Thanks
+> -Anand
+
+The key issue is not the voltage range setting.
+
+If the maximum voltage is set to 0.95V, then at a frequency of 1.6GHz,
+it will not be able to reach the 1.05V specified in the vendor code.
+And the same voltage range was used in the vendor's device tree definition.
+
+I think that the 0.9V shown in the schematic is merely the default
+output voltage of this buck.
+
+As Aurelien mentioned regarding the hardware limitations of the K1 SoC,
+in the next version I will use the same OPP table for both clusters
+instead of separating them.
+
+--=20
+Best regards,
+Shuwei Wu
