@@ -1,287 +1,124 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D02643845DD
-	for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 17:09:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.45
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776791344; cv=pass; b=VlL9OlS6aqRG7T4w5DSlqiSo2Fbqgc7salAAR6c6ifSjtQ4HGBeQzSdcE0+xfXj5nFBT3Wvn7EpPSqzTlWdjm92teN4viHJlqCHsq83EB+28PTaeowkE5iBVhM5J9SFdjuYTztev/9ZzoZ1DIciCmoLJ8Kxy8honiRBItSz9i+A=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776791344; c=relaxed/simple;
-	bh=fX/Sz0zC6ezU75jh9T36eNVptRuVVrhH7wuRuIMNVVo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YvLdi6opXZYsm53TmIDkZSXNa3qj6hD3Qg2hyuWYOxGLF7V1ocHbTtfo8ZpORF2srubGe7NV/Z4/272d7ctCyuChE+dgH4WJBLWnWT0MENeMgd2IAZc0emaprW7d7au8SIKqpjWBnf2kfSDQdgYANc2GRQ77l1p75nHFOb2bXEo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=lH/qQcoq; arc=pass smtp.client-ip=209.85.128.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8425B33F8B4;
+	Tue, 21 Apr 2026 17:11:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776791480; cv=none; b=ak8OlrjTkT6+jbxWJZDSLNbtW1Ti29H2GwYOkITF/CrDdn2y3DMFO0QW5N7F9C0ZIqMgy3BtWUZMEMhH31Da72UAQA2cWZZj9wBhZV0MtXlJgiDEq9exJAfl8exgzIE2+XmEHEeh5Lt2XrHlLC0dEZ7qg7sZxplRKFoUInWCTB0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776791480; c=relaxed/simple;
+	bh=zMNU29+wUjgpn9Ja3lorEBJU6chv56zxhp13d5Ny4L4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LF5RWTwUQr9RmXrLz8ocjDEH0uYs6R5utIOmeRf5Svyea03OLRiqxB54msIH4zyFtt+hiI/ZuhGz4AQiGrdxumO6qjvYBHvMPJ9km9F0GvYpmM3/BwoAPtAb52kN5nwV+56d0vLfBP6t8YPCRugcTKS8VBA7ZfBJO8R9P1A+ebY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=T4HGdHmr; arc=none smtp.client-ip=195.154.119.183
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="lH/qQcoq"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4891b4934ffso251465e9.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 10:09:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776791340; cv=none;
-        d=google.com; s=arc-20240605;
-        b=iNBB4MeZaVpvnse0g0SYcc/NYq5SXEAiUxAEaRuI45eAjjK/L0FI0t3JjRFMKtW3hI
-         E7obEgROS/He5Y4yDrmO2YDOWyhDbJfx4UhwewwFu/aKw5JwvyH/ExQ2LNrsZxGLoGmm
-         RC9g9cbqRoNOB/iZOpQLi6JgOSdStpcRZOW/PA36g0NySPYznyPR7uy15jNXNrPAYxLQ
-         HLTWMm0I5hrmExarXbp0IdkpXffmWNcjXaHYUg7/hvGS8SHlU81i3E+7kiGOhms0MmRh
-         /QYGjJIBQ1GBnnP4xGiBYUYHc55ysA7e3zCxjgW+f5x2E0rH3LOSh7ikOSwtTs70GDF0
-         22PQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=HFQ8wxNql59DNKoY4m4ShNnIhY0FuV9hRkmF8YGbPEM=;
-        fh=37CojAZgaUujWdCrg/qa+Gst8y0tXp5zVbN7UjaFnVo=;
-        b=Mu5GCGYgA0RGmrffh5XZ7TrXVy+E5n4r4yL9+NugYQNS4zlMKl0VY6psDSXFxFQQBq
-         NpXaudlbsb4JDMYfsmxEgSWi1oxBeLHGyOnQPiK1xHb3SKXKkEs6Ly5bWegux4G+kI5F
-         sdr2g9rUQkq4dKdaWn/IfeuhIr5s8Jy+T0Rhxiqh+0FV1vvoLWjOms+DjFiNgK8K4cYy
-         v/HqifjHIcDNjR4uOBMb2xC4iE8laQl671d0c83P9PfCdUzp2Zo1/cjlAqPPZv+5+ZjA
-         6R7zYzKUyWPk1Y6iaOCqd0ZrN2A30nTRzzESygTl9P7rEpi4H4oE905VHvDmsAhZhET0
-         bm3w==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776791340; x=1777396140; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HFQ8wxNql59DNKoY4m4ShNnIhY0FuV9hRkmF8YGbPEM=;
-        b=lH/qQcoqWgCzVH1l7CoLmWJ8vKSspfaNzKOO6kCZIx/X/0IPr3pCk9TXEs+8siDGJX
-         YqXwSymcBgzWg5aaozsGdFT35Srgt8ZbwcziVxBW+O710tCB5Qae9CoFHOw/CtivF0O0
-         OiGE8kNxRV1w8fzWCVb3vd6rtd4k4Y73LYWWy3MG+aZe4hLYzaRvLILht3CvNmbUuClU
-         Jz97iuNoyficNcXLqsMlcHAH3D91uvE3x/PLVHH4GvtFjee3AEABy5kv84siVkViZrqf
-         TUnb8sSYXwHwlVOjp5elpJufLH/mycCsXOnDKsfl9vwj0UuN4iyg2sbl1E85kxwqEEt3
-         C5EQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776791340; x=1777396140;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HFQ8wxNql59DNKoY4m4ShNnIhY0FuV9hRkmF8YGbPEM=;
-        b=JPPGNexbs8NSluQhEofRehfz93datYYhl9QBhIhtloDbK3SVIMuLoYuLfClhchFwvg
-         YFQDtM3wqoyxE8f4z9jmH1xPkQi6HhoDZgoXK2l3uZYqADh8zmxFIDAsVGg4lmc23H7M
-         tCNomFOrmbOR4xuYxivWFTm+sro981HdAVZbcDeHdB9wth7SWYnH3j1zFeQJOCR5MW7A
-         Bmbav3IiyfQVOU44u/KY4ULMaODdd0T4Wsyfh2ALsdUtlM7WBx1JY9LYunKZXE2Oy+c9
-         YZ59ZSq+SY4cpYZsSIwtljZDEeVq0WD3mscAdsWdENpDQUaOVUaoOq/ZOcKR6eiCNNQ/
-         hN/w==
-X-Forwarded-Encrypted: i=1; AFNElJ+nmJJSjHmTHkaNYkO+pIJq5GogZn1w3l+6ugElTIHJvH5ZDVsB4p8narN7UuspGVjPy62C5erS2Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy1UUYm9tMKlaDRGJmT3+iqpiCZTDNfCZRwGreNOs/C9V83TZaz
-	z855GL0vCGk3nLAxTe7Vv1CK98XluiWtLIefduyUYxrF0qeGmLcxArYtVxMPljU0Fj8ajzdXfVb
-	5AL6jAUKoQMoRmyZKRGhCbDxg9ZITOtIub1UmSsq7
-X-Gm-Gg: AeBDievfim5z24F+TppEydqVxKp8h7cjLGA/BbRLcGCfeKQWc2C93qeraAIpxOIkoIn
-	0orICBdxBOC6Oy18M1PGsFuU7aX4uc0OAvuNOlYbnsB/RYm8luwSmz7+yV+BK0yfNNnfIDKhYuS
-	yN2ZDk3oDShAK5/qeN4s7hFg2ZjT5Ix2j0xaWqEUQMrTOW8SnxhtmC1tCaNXCsAj/5kl7XtCUM/
-	DC8gVutQQ/8+hSO1fgUwpgMk/kRWBz1yFolGnn3SLguWdF2ZBs7IGMHmaHyj1yAo2qo0QgVLZDi
-	zRVk1hZa20bvvhiP4zBRo+47uqIy/hmNWhzdFBs=
-X-Received: by 2002:a05:600d:6443:10b0:488:c4b2:e832 with SMTP id
- 5b1f17b1804b1-489013bd895mr2808755e9.3.1776791339707; Tue, 21 Apr 2026
- 10:08:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="T4HGdHmr"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
+	; s=202004.hall; h=In-Reply-To:Content-Transfer-Encoding:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:Reply-To:
+	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
+	bh=VjnkFdeZK7rty5DMcJ7z5EdKxdECkqDgYWJysUP63zQ=; b=T4HGdHmrOrluO2Ljr/dWivyZ/q
+	XEz+F6FFQV9KvN5chUsSMn/90jdUnWIRsl/TcM44S7Dy3dHV6YnkEsuXRIbsP6jk20vj9RHQOoH2O
+	nDN+cdpnUSHl/lZ6RNkDb0eMfHZTOYkqfQbqM2xQfpO06tvvZoUkHJStS8a0CeFISAafOB8YL2qbY
+	osxvAtbGVH7N5b8i/b9nP8mtQgaIYf+4vLO5KvWnEvRmgEvab04CU48qkdvM+WCvnvapYtMWsc2Sc
+	Sq0YXHS/X8f0Iq7bioDgo+IV/lWNUJno4kCUM0K7wsA4JqFa04aGtX2Wvt5YbNzHckZIp6OEroajD
+	Alw1SLTA==;
+Received: from authenticated user
+	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <aurelien@aurel32.net>)
+	id 1wFEcx-0000000F5X7-3F74;
+	Tue, 21 Apr 2026 19:11:11 +0200
+Date: Tue, 21 Apr 2026 19:11:11 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Shuwei Wu <shuwei.wu@mailbox.org>
+Cc: Anand Moon <linux.amoon@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev, devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
+Message-ID: <aeevr6Zj3Pwm9wux@aurel32.net>
+Mail-Followup-To: Shuwei Wu <shuwei.wu@mailbox.org>,
+	Anand Moon <linux.amoon@gmail.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	spacemit@lists.linux.dev, devicetree@vger.kernel.org
+References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+ <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
+ <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
+ <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
+ <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
+ <aeaXszeaE62rM6BJ@aurel32.net>
+ <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260410151746.61150-1-kalyazin@amazon.com> <20260410151746.61150-11-kalyazin@amazon.com>
- <aeemS2wm38Cm4qAf@google.com>
-In-Reply-To: <aeemS2wm38Cm4qAf@google.com>
-From: Frank van der Linden <fvdl@google.com>
-Date: Tue, 21 Apr 2026 10:08:48 -0700
-X-Gm-Features: AQROBzBifkAsQzS0X3Z1RL6hHFJu96bsJJpCRfOrgFmfYjKrDR-uZJ-l8nIAe34
-Message-ID: <CAPTztWb67XZvfcMVnbegDNNW0LJa9UsaTGx3M898xJUJrekk0w@mail.gmail.com>
-Subject: Re: [PATCH v12 10/16] KVM: guest_memfd: Add flag to remove from
- direct map
-To: Sean Christopherson <seanjc@google.com>
-Cc: Nikita Kalyazin <kalyazin@amazon.co.uk>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
-	"kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, 
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, 
-	"bpf@vger.kernel.org" <bpf@vger.kernel.org>, 
-	"linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>, "kernel@xen0n.name" <kernel@xen0n.name>, 
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, 
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, 
-	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, 
-	"corbet@lwn.net" <corbet@lwn.net>, "maz@kernel.org" <maz@kernel.org>, "oupton@kernel.org" <oupton@kernel.org>, 
-	"joey.gouly@arm.com" <joey.gouly@arm.com>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, 
-	"yuzenghui@huawei.com" <yuzenghui@huawei.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, 
-	"will@kernel.org" <will@kernel.org>, "tglx@kernel.org" <tglx@kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, 
-	"bp@alien8.de" <bp@alien8.de>, "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, 
-	"x86@kernel.org" <x86@kernel.org>, "hpa@zytor.com" <hpa@zytor.com>, "luto@kernel.org" <luto@kernel.org>, 
-	"peterz@infradead.org" <peterz@infradead.org>, "willy@infradead.org" <willy@infradead.org>, 
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>, "david@kernel.org" <david@kernel.org>, 
-	"lorenzo.stoakes@oracle.com" <lorenzo.stoakes@oracle.com>, "vbabka@kernel.org" <vbabka@kernel.org>, 
-	"rppt@kernel.org" <rppt@kernel.org>, "surenb@google.com" <surenb@google.com>, "mhocko@suse.com" <mhocko@suse.com>, 
-	"ast@kernel.org" <ast@kernel.org>, "daniel@iogearbox.net" <daniel@iogearbox.net>, 
-	"andrii@kernel.org" <andrii@kernel.org>, "martin.lau@linux.dev" <martin.lau@linux.dev>, 
-	"eddyz87@gmail.com" <eddyz87@gmail.com>, "song@kernel.org" <song@kernel.org>, 
-	"yonghong.song@linux.dev" <yonghong.song@linux.dev>, 
-	"john.fastabend@gmail.com" <john.fastabend@gmail.com>, "kpsingh@kernel.org" <kpsingh@kernel.org>, 
-	"sdf@fomichev.me" <sdf@fomichev.me>, "haoluo@google.com" <haoluo@google.com>, 
-	"jolsa@kernel.org" <jolsa@kernel.org>, "jgg@ziepe.ca" <jgg@ziepe.ca>, 
-	"jhubbard@nvidia.com" <jhubbard@nvidia.com>, "peterx@redhat.com" <peterx@redhat.com>, 
-	"jannh@google.com" <jannh@google.com>, "pfalcato@suse.de" <pfalcato@suse.de>, 
-	"skhan@linuxfoundation.org" <skhan@linuxfoundation.org>, "riel@surriel.com" <riel@surriel.com>, 
-	"ryan.roberts@arm.com" <ryan.roberts@arm.com>, "jgross@suse.com" <jgross@suse.com>, 
-	"yu-cheng.yu@intel.com" <yu-cheng.yu@intel.com>, "kas@kernel.org" <kas@kernel.org>, 
-	"coxu@redhat.com" <coxu@redhat.com>, "ackerleytng@google.com" <ackerleytng@google.com>, 
-	"yosry@kernel.org" <yosry@kernel.org>, "ajones@ventanamicro.com" <ajones@ventanamicro.com>, 
-	"maobibo@loongson.cn" <maobibo@loongson.cn>, "tabba@google.com" <tabba@google.com>, 
-	"prsampat@amd.com" <prsampat@amd.com>, "wu.fei9@sanechips.com.cn" <wu.fei9@sanechips.com.cn>, 
-	"mlevitsk@redhat.com" <mlevitsk@redhat.com>, "jmattson@google.com" <jmattson@google.com>, 
-	"jthoughton@google.com" <jthoughton@google.com>, "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, 
-	"alex@ghiti.fr" <alex@ghiti.fr>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, 
-	"borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, 
-	"baolu.lu@linux.intel.com" <baolu.lu@linux.intel.com>, "dev.jain@arm.com" <dev.jain@arm.com>, 
-	"gor@linux.ibm.com" <gor@linux.ibm.com>, "hca@linux.ibm.com" <hca@linux.ibm.com>, 
-	"palmer@dabbelt.com" <palmer@dabbelt.com>, "pjw@kernel.org" <pjw@kernel.org>, 
-	"shijie@os.amperecomputing.com" <shijie@os.amperecomputing.com>, "svens@linux.ibm.com" <svens@linux.ibm.com>, 
-	"thuth@redhat.com" <thuth@redhat.com>, 
-	"yang@os.amperecomputing.com" <yang@os.amperecomputing.com>, 
-	"Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, "urezki@gmail.com" <urezki@gmail.com>, 
-	"zhengqi.arch@bytedance.com" <zhengqi.arch@bytedance.com>, 
-	"gerald.schaefer@linux.ibm.com" <gerald.schaefer@linux.ibm.com>, 
-	"jiayuan.chen@shopee.com" <jiayuan.chen@shopee.com>, "lenb@kernel.org" <lenb@kernel.org>, 
-	"pavel@kernel.org" <pavel@kernel.org>, "rafael@kernel.org" <rafael@kernel.org>, 
-	"yangyicong@hisilicon.com" <yangyicong@hisilicon.com>, "vannapurve@google.com" <vannapurve@google.com>, 
-	"jackmanb@google.com" <jackmanb@google.com>, "patrick.roy@linux.dev" <patrick.roy@linux.dev>, 
-	Jack Thomson <jackabt@amazon.co.uk>, Takahiro Itazuri <itazur@amazon.co.uk>, 
-	Derek Manwaring <derekmn@amazon.com>, Nikita Kalyazin <nikita.kalyazin@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
+User-Agent: Mutt/2.2.13 (2024-03-09)
 
-On Tue, Apr 21, 2026 at 9:31=E2=80=AFAM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> On Fri, Apr 10, 2026, Nikita Kalyazin wrote:
-> > From: Patrick Roy <patrick.roy@linux.dev>
-> >
-> > Add GUEST_MEMFD_FLAG_NO_DIRECT_MAP flag for KVM_CREATE_GUEST_MEMFD()
-> > ioctl. When set, guest_memfd folios will be removed from the direct map
-> > after preparation, with direct map entries only restored when the folio=
-s
-> > are freed.
-> >
-> > To ensure these folios do not end up in places where the kernel cannot
-> > deal with them, set AS_NO_DIRECT_MAP on the guest_memfd's struct
-> > address_space if GUEST_MEMFD_FLAG_NO_DIRECT_MAP is requested.
-> >
-> > Note that this flag causes removal of direct map entries for all
-> > guest_memfd folios independent of whether they are "shared" or "private=
-"
-> > (although current guest_memfd only supports either all folios in the
-> > "shared" state, or all folios in the "private" state if
-> > GUEST_MEMFD_FLAG_MMAP is not set). The usecase for removing direct map
-> > entries of also the shared parts of guest_memfd are a special type of
-> > non-CoCo VM where, host userspace is trusted to have access to all of
-> > guest memory, but where Spectre-style transient execution attacks
-> > through the host kernel's direct map should still be mitigated.  In thi=
-s
-> > setup, KVM retains access to guest memory via userspace mappings of
-> > guest_memfd, which are reflected back into KVM's memslots via
-> > userspace_addr. This is needed for things like MMIO emulation on x86_64
-> > to work.
-> >
-> > Direct map entries are zapped right before guest or userspace mappings
-> > of gmem folios are set up, e.g. in kvm_gmem_fault_user_mapping() or
-> > kvm_gmem_get_pfn() [called from the KVM MMU code].
->
-> ...
->
-> > +#define KVM_GMEM_FOLIO_NO_DIRECT_MAP BIT(0)
-> > +
-> > +static bool kvm_gmem_folio_no_direct_map(struct folio *folio)
-> > +{
-> > +     return ((u64)folio->private) & KVM_GMEM_FOLIO_NO_DIRECT_MAP;
-> > +}
-> > +
-> > +static int kvm_gmem_folio_zap_direct_map(struct folio *folio)
-> > +{
-> > +     int r =3D 0;
-> > +
-> > +     VM_WARN_ON_FOLIO(!folio_test_locked(folio), folio);
-> > +
-> > +     if (WARN_ON_ONCE(!(GMEM_I(folio_inode(folio))->flags & GUEST_MEMF=
-D_FLAG_NO_DIRECT_MAP)))
-> > +             return -EINVAL;
-> > +
-> > +     if (kvm_gmem_folio_no_direct_map(folio))
-> > +             goto out;
-> > +
-> > +     r =3D folio_zap_direct_map(folio);
-> > +     if (!r)
-> > +             folio->private =3D (void *)((u64)folio->private | KVM_GME=
-M_FOLIO_NO_DIRECT_MAP);
-> > +
-> > +out:
-> > +     return r;
-> > +}
-> > +
-> > +static void kvm_gmem_folio_restore_direct_map(struct folio *folio)
-> > +{
-> > +     folio_restore_direct_map(folio);
-> > +     folio->private =3D (void *)((u64)folio->private & ~KVM_GMEM_FOLIO=
-_NO_DIRECT_MAP);
-> > +}
->
-> Making guest_memfd responsible for zapping and restoring the direct map o=
-n a per-
-> folio basis feels wrong given the addition of AS_NO_DIRECT_MAP.  I especi=
-ally don't
-> like that the "rules" for when an AS_NO_DIRECT_MAP folio has a direct map=
- will vary
-> based on the owner, and even within an owner (e.g. guest_memfd) will be a=
-d hoc.
->
-> E.g. as per the series to add guest_memfd write() support[*]:
->
->   When direct map removal is implemented [2]
->    - write() will not be allowed to access pages that have already
->      been removed from direct map
->    - on completion, write() will remove the populated pages from
->      direct map
->
-> That's pretty gross ABI, because with KVM_GMEM_FOLIO_NO_DIRECT_MAP, users=
-pace can
-> write() exactly once.  To re-write memory, I assume userspace would need =
-to do a
-> PUNCH_HOLE or truncate.
->
-> What's preventing us from handling this automagically in e.g. filemap_add=
-_folio()
-> and filemap_remove_folio()?  Then the usage rules are pretty straightforw=
-ard: the
-> kernel must *always* assume the direct map is invalid for folios from
-> AS_NO_DIRECT_MAP mappings.
->
-> Then if KVM needs to utilize a kernel mapping, e.g. in kvm_gmem_populate(=
-), KVM
-> could use dedicated variants of kmap_local_xxx() to deal with a local map=
-ping for
-> a folio/page without a direct map.  Or, KVM could simply disallow the spe=
-cific
-> sequence that would require KVM to do the memcpy (I'm pretty sure we can =
-do that
-> with in-place shared=3D>private conversion support).
->
-> I realize that could throw a big wrench into write() performance, but IMO=
-, before
-> merging either series, we need a complete story for exactly how this will=
- all fit
-> together, in a maintainable fashion and with sane ABI.
->
-> [*] https://lore.kernel.org/all/20251114151828.98165-1-kalyazin@amazon.co=
-m
->
+Hi,
 
-I agree with this - this approach would also allow for memory that was
-never in the direct map to begin with, or has been taken out already
-(for which I happen to have a use case :-)). guest_memfd and other
-code can then assume that AS_NO_DIRECT_MAP means they have to take
-explicit action to map it if needed. It's a clean, simple ABI.
+On 2026-04-21 16:10, Shuwei Wu wrote:
+> Hi Aurelien,
+>=20
+> Thanks for your addition.
+>=20
+> On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
+> > Hi Anand,
+> >
+> > On 2026-04-16 17:07, Anand Moon wrote:
+> >> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 an=
+d Buck2
+> >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the restri=
+ction errors,
+> >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =C2=
+=B5V.
+> >>=20
+> >> Additionally, I updated the DTS to map the second CPU cluster (cores 4=
+=E2=80=937)
+> >> to Buck2 to better align with the hardware's power distribution.
+> >
+> > Actually the output of Buck1 and Buck2 are connected together, so they=
+=20
+> > should always be configured with the same output voltage. And both=20
+> > clusters should be mapped to both outputs.
+>=20
+> You are right, I received the same response from the official developers.
+>=20
+> Therefore, I'm wondering if an additional regulator-coupled-with: property
+> definition is also needed here?
 
-With the current set of patches, it seems like this couldn't be done
-in a clean manner.
+Yes, I think this is the way to go. I even wonder if this shouldn't be a=20
+fix with Cc: stable. This also has to be done for the Milk-V Jupiter=20
+board, I haven't checked the other boards yet, but I guess they all use=20
+the same schematics at that the PMIC level.
 
-- Frank
+Regards
+Aurelien
+
+--=20
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien@aurel32.net                     http://aurel32.net
