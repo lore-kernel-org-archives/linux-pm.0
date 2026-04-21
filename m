@@ -1,146 +1,119 @@
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1FB0397E91
-	for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 23:51:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776729089; cv=none; b=rg2/adC0TcKGDrXml0gEQ8CPeqNBOj8XbfsuhiSoozPVdUnrQV4NmGTIGOVtPO8FeugtoYU6B/D4QXJsd8bibGEV1+PI1kAb5E0qy0nAKxDhV2T8NPbYfT3Fx0GLcNWWmfDMHcX6IDsXoCdbBzbERia1TKYLZJotnjedbos6/Tc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776729089; c=relaxed/simple;
-	bh=fQmK2/l/owONuV/KAsTohuLBlI/zxOSPwI6yoI7yexU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rEAtAyy071aY7VH6XCg42y+qhuaVrRVxV0fk0bon1it90BKgxoNVK8asnVvz80y/oke5rt0mIyBZcVmbPD1JC+P6xLocyj9WG/VYpxth47QhsLJcZcvWkx36VbFEpQCfr6gueAQ8Kk7tDbyAZ6+PNCc7gXM8c6G+mAGLHDu9Ndo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=oIw5RRyu; arc=none smtp.client-ip=209.85.216.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B78AECA5A
+	for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 00:09:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.210.175
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776730181; cv=pass; b=B+13vLto0qU5plgC4tpgajPlyKd2bULDyrxmVqb1RGDbyys6DvaC29z6mwosZbkPgz79FoPJG7XwkmQPcHuPJNXqBpi2EcYl+9ctLcrjXZQ/NUARzfVMS+bbZWJq8DGTC0A2nEJj6eJu/MIgQPaBYJaXx2j7qYB+Q/ZEEThUFgI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776730181; c=relaxed/simple;
+	bh=a0HFul5D60bfTxE+vE6dpuZFjDlwWlqd1BaPQu6lkMk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eM86AXv72UgYeSGZ+TrhOkZdH/JEZFBNX0WmFVUbXzPXqG8dKIemJcTdwfiPT1vErfhenqOEWMnL+lc/WFOvWuHjgvm701Q4e1oJI3p+6jY2dabegd8GTpcjR48qBJ6Y74nVttOBr0lhdxA2pfVhXHAntUfd1Nnxm9x8TWdIZlE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GsU3Rm1p; arc=pass smtp.client-ip=209.85.210.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="oIw5RRyu"
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-3591cc98871so1625578a91.3
-        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 16:51:26 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GsU3Rm1p"
+Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-82fbdd60b64so892774b3a.3
+        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2026 17:09:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776730180; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MzRSxw5ESZS2zrcPfF/29wRfs5bc9WmiNoh4UbkI7ryYWRoHyHYkTfenV/pmgrztA5
+         v3y/ppRwsVgHux4fIKd5KaIsUdOeS9yvGln5S4TDf+VJ9gBwvQEd/j3qrv4JeUOQ8PfV
+         hcQdAmIf8NTjPvuvdMAeXWoQXxk1v4msRvCG16TOngaINtA4vto7ykaGdOMmz3YS4RMr
+         YUVnM3UAuaXUa6BrxWU/CRsd42tMgl5p3ck9tH4+FABECJ1jmPpZ5AR+94l483qu7mMJ
+         LrrEgMzUk9jTCimzB8v0xIVbYvrnNzxE7vCeYgTFN98Z38hE/Y/GMVL27PGzWhGYa60a
+         VERQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=a0HFul5D60bfTxE+vE6dpuZFjDlwWlqd1BaPQu6lkMk=;
+        fh=brVR3gm3wCi67VW+ukNXtCyAEg/5Qgx+CwVUAApFv8w=;
+        b=gdiuvWsmEUW5+a0lCkgaYWIOA4otY534sNiiCpjJEHZquRW50/g1qG6Q6uai/dUTKf
+         Eus/UP/HfSLlKgt4BWHcsS0ypky7QoY0Q8dU897dxBr3Zl5AJATiGuDE42AhSZdUTTiR
+         wIctyMp+ar0ZaWVRzCMkiVUgd2z1vBoYRV+ukLifNBj5UtOkK2cWUIm+HyFtuAfH/Gch
+         wbsCMW6ieW+olLKqP8rcLL+WM1GJt0ULpXNhSyF9VAkHb1PlMfVvUbtcbzN7L3lJehdF
+         dRcsadyFQBrwa1wR+tJrz5QtvCH+8XdSAcG2MCrFDnYocQy6Odo/A8ha7pbUn4dXD4Tl
+         W/lg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1776729086; x=1777333886; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=qLT3tpSwkvQ2Tt/V/NMhLxE2z8Vhzn3uRFvBt+UOKAM=;
-        b=oIw5RRyuQCGzQNvGXnbBTnSR4HL5DoHvlTEVVDqWJBOJPRr6hAEbzeqkF96o5rEkmj
-         g2x99e7pVYTnNDMuU7xd6hoM4+qujmxg45AXPHGX3TpwG7QoOoqrs7/bbZZ7BPDIOgvE
-         7b1up6Ab2izgt5ZEVxQXLoVEaTcCdK170kT/drfopfqUlmwBwSw8Fv89n7p+ZGy4ZggP
-         ViT1RS9XgKgPTnhKkr6eQTJFO7lwkMGQzNaKevNwraaVxIOs06H5mPbz6+HVEtNBnXw2
-         hoKs2qHm0BRrKEhasNlBDmTkNYX32EPOanRIpByz9IRWE6yPlmyFKmwOjoLVTB8aggWs
-         60mA==
+        d=gmail.com; s=20251104; t=1776730180; x=1777334980; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=a0HFul5D60bfTxE+vE6dpuZFjDlwWlqd1BaPQu6lkMk=;
+        b=GsU3Rm1pCcIwUFihaAuKo23+A+mwPb4qn7qfBO+UVniXYnh1IX7t18TdV9bnhf1Lc3
+         PSO2I+ZejcUpkCcgyFm2otdHK1puBHQ1qhi7F9mttSSWu1WwfbazZZK4IieSUHMi1z7V
+         fDDpWGaG8+ObTaoQF2eUQqKKB/DMlqEE2wtOulxD1oY6i9M44X/vqzTfL8quuLdN5xgT
+         kXnvNXyGpZHs18t3ddCjLJfzW0sT0j7WJbYJwQqn2jkdRlUr+sEM9l/KI/qor4M0GFJG
+         Vo+n5CEw3acwOVXB/sqZTqpPjPJTmjA3irhYpGsG7MypeUH+ebNIjxXCOoCp6n4Ouqxv
+         HpzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776729086; x=1777333886;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=qLT3tpSwkvQ2Tt/V/NMhLxE2z8Vhzn3uRFvBt+UOKAM=;
-        b=kbFLj+0YavbOgIeBXAgGSjc5ZyHHMSEJphcygDMQuImaLJzxFbPu+JKMgBcRYB3AIw
-         Jzwwe/4Da41KcPhwdQAi/OcdemyIR1fjdTDJf2ooEBuWKR6z2s6+PRQAeXVP5O4uOEXq
-         3RB/CPD9M/oVK5U3fhcwvOfOhhO/wXb4lTNgDSDNkD+ONpiFqCzZCgFPDMer8iHuvst8
-         EI2E+K48cNd+kpvVwbiJebaCq8+3aJEr5GsL8B4qy3r3urKKivqqH8jWOPXAv0FPiuJz
-         DzoVWBiDIylXTFARhDzDEMawD8m4BOG07suOhFrA+paEcjC/OPHTwSF9U81zHYTnoSId
-         L7aQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/f5WU4meonAVOEw7AG+Mhhrx872leUhW1OqkFMLhmSnS4cMZc9+IOHmS9aEgrSVSPb4F/UpZko4A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyDzuqMhW9HXYSjpALPI5Wead0bat+DZkfMo2k2TBSIHsjV9bQf
-	/hmDyIKgf8SuD0UPYj+FcUYk1Bw1YtCZh+0GaL3Ine7MQhwpclRoccsRvhUwZwhPGJWlhgvZYcZ
-	Xjj6UBo9tXg==
-X-Gm-Gg: AeBDiesgMLXAXesAfKl7+jnjbqbdLQnHpDLR0R+EMjsPgscSZGa5e4wekY7DgO9tOPf
-	HRL9DhcZ9P5NNkhHnLG0NxZ7nE/ATGGvSy4eeRJQL8AI9zBX6VZyS0onrFINMPV3J5hrvqRCAlI
-	aLqUO9Ebo5wvwHbsYu92JPA0JEbwWrXokCrSK8xYX7Ez2r2Ns4SCnskJnqBxWNkcBlA9QfB0Nok
-	XHzwtCQ2zckJdARI6LCqZDj2F4QATlGqln22vumERrm0UfOsczi2vazSQgCa6lrqpRNbStLGIMK
-	jfv/rewXricx8uxg9aQugGvfB5fGEMM1AKLyZLiMcUwWa5AYa9FY1jTNY0ANueQ1lgc27wEG1mV
-	QuuvKIBq+9X2xrNzd+T0uZtvhmqt09JeXfPg7ScZB/tucsjCkg+QorArClIAyAedvLkHJAwK5c+
-	Z71W4eiWAVVWgPxkyYSMQmv5NNrGTmXw==
-X-Received: by 2002:a17:90b:1804:b0:359:83d3:27d3 with SMTP id 98e67ed59e1d1-361403c326fmr16049310a91.2.1776729086216;
-        Mon, 20 Apr 2026 16:51:26 -0700 (PDT)
-Received: from localhost ([97.126.187.42])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36141898ebasm11819562a91.7.2026.04.20.16.51.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Apr 2026 16:51:25 -0700 (PDT)
-From: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Date: Mon, 20 Apr 2026 16:51:19 -0700
-Subject: [PATCH v3 3/3] pmdomain: arm_scmi: add support for domain
- hierarchies
+        d=1e100.net; s=20251104; t=1776730180; x=1777334980;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=a0HFul5D60bfTxE+vE6dpuZFjDlwWlqd1BaPQu6lkMk=;
+        b=h+noP3E25geWz/InCIk4mwJU1EhGvmxAGP9bqJA/7Dz/510Qo/HEerEQF8lUDscEw7
+         Uti3LfK1qbNXDmcS2nMPOGYusM+eXaCDYfBpDdXpzuxMXvn9/tkkuaqxypDxVODSxHVe
+         qEb53X01z0n32XIznenNsn0eRY5Nlt80t6Lrqkm+f7Nix9KEAIJX8bQCxJNJqMTbGHj+
+         7HmO5ctOI86xPRamAbONhd/DkW6jrS8Zj8N7F2aDs5l4v2Qn9gZLey/NrCE7PpIutQ5p
+         URf9B7CX8eoJnHrMyVMsASgBMU/uWAXg7DjS4Z4N3X9r2o2VipFKg503JhbhxMZ9KGx0
+         FmAg==
+X-Forwarded-Encrypted: i=1; AFNElJ+PFbIz8jkSP2YmqpxbLHM7zqOpXewH6CNOUlfPKiWFoC2UybjahdBJePxUv0okpXpdNFuIExy53w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw/EJu5pE6uo/vKlrk1wdyXwljwVMFMancKNj7WdPQIS/4wb3uY
+	fKbQfKBvbSvWYqTgUIlm85y/yhUxnRqiGayzlP5sEH6KquTOhwrWUviB6eW8tV1qCnoqRAFWZsv
+	gJLZbQkd4WoKY3mkxVSFajA2achfAfig=
+X-Gm-Gg: AeBDieuYOjvrkLvluF7pz0wPBXIGR3k77sXLkrafgfdEl4tTjFa6Zw4UKNhjKZzL985
+	In2lBC6BcYGVd4vuSnumNqk+T0LzK7E/QL5j8KtTw3tou1BiOb9SwgYuwHblMe9Wts/B+tX7co1
+	nwmMtPeKJsMgqj/eQiQV8xVWVRqFa2PsWKr37tegoqvgCSrZ9159dmvMDx9rZCvW6sIGP8IjPIU
+	9om6wyuJbMNMOtN+ltSzqe+PEzSGwM5nArA1V28IJNFTVGGJsWrNDebfGvn4fsqDmSeBURpw2rs
+	2C3xxs5doe0xb/3+r2SbzKN6x+G8NNpJEBCtHQ3PaqF6ZtbQ
+X-Received: by 2002:a05:6a00:3397:b0:82f:2243:e448 with SMTP id
+ d2e1a72fcca58-82f8c83048fmr16769074b3a.3.1776730180072; Mon, 20 Apr 2026
+ 17:09:40 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260420-topic-lpm-pmdomain-child-ids-v3-3-c2c40bef238c@baylibre.com>
-References: <20260420-topic-lpm-pmdomain-child-ids-v3-0-c2c40bef238c@baylibre.com>
-In-Reply-To: <20260420-topic-lpm-pmdomain-child-ids-v3-0-c2c40bef238c@baylibre.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1582; i=khilman@baylibre.com;
- h=from:subject:message-id; bh=fQmK2/l/owONuV/KAsTohuLBlI/zxOSPwI6yoI7yexU=;
- b=owEBbQKS/ZANAwAIAVk3GJrT+8ZlAcsmYgBp5rv6y2OemQ05EvI6I9Eb7ji7vCtT8ygEexN59
- biCxvg2gTSJAjMEAAEIAB0WIQR7h0YOFpJ/qfW/8QxZNxia0/vGZQUCaea7+gAKCRBZNxia0/vG
- ZWyAD/0d0/YBQizqrbUviBkwWp3DBYDrtv2ykMygkKlK5l5L3sb28ibT5WnM8ZKqh+t0KUia/iZ
- z1ZHFEHYVTHi9u+NXT0H10ur1LRQnWGt5fziPeyxaezbBY4YrI/MerMp3WyJ9xuVPRWOA1hbbii
- HvTXoszaQQsEngTIMXMz4v/+a9W8NcOWYD3awqyH1Dbr8aSno7skX2VyScGvFIBeCHo4PMfqx3f
- rYbFgy28uknIGuOkg/CWTwjojLRtghphUiE9bfW2083x15l6bhlcvg4eTAFL/IkzQmd/pUPLzKD
- Ww8WkE+0rrAvtEh0o/UMFr89T19zGcyPaCKJXBSa+7AhimyFta28Iz7x1mInWwrkSSv7rwQDxi5
- K70tevOBPa/T5RgkyteJfwHSKMTpUsi3qz5YYV41r0+VFVzBuklBnQmgVAgDpA3sAhBiVM8zPgo
- dDLB094XaZa/Zr8ZtRa5EauOf+LM04uLX648SRJMw1HgO0E4qYU5qiW1axHnL+aQb9j63RHEoZP
- zgzU71AQBfc+RsWUukD2frkeinl9TgSa7UgMVrb4fjd9t6AH1K0NDThwQUdogfzqM5wHV+uUbya
- ImAuPuowMRCnwI57qIk42BJJJk7hBurgdH9Q9kP0yP0yj+37ivwb/NruZSiW/vU0XrsFBVln7C6
- HLUBmgLhKNszwiw==
-X-Developer-Key: i=khilman@baylibre.com; a=openpgp;
- fpr=7B87460E16927FA9F5BFF10C5937189AD3FBC665
+References: <CAKSQd8V+aPrvteJF926uBROpmnOHeeDGmu2racZNFNy-NmJmDg@mail.gmail.com>
+In-Reply-To: <CAKSQd8V+aPrvteJF926uBROpmnOHeeDGmu2racZNFNy-NmJmDg@mail.gmail.com>
+From: Serhii Pievniev <spevnev16@gmail.com>
+Date: Mon, 20 Apr 2026 20:09:28 -0400
+X-Gm-Features: AQROBzB-Tq6vi7gsP3B1_OMD1vrfiZolQe-X_4PGg6XVkLMEfvG2aftNsclb6vs
+Message-ID: <CAM_YkW42rH7JR0uv11eY1zxrJKm7TGH7862JPc35s6Zcb0oUAA@mail.gmail.com>
+Subject: Re: [PATCH AUTOSEL 6.18] tools/power/turbostat: Fix microcode patch
+ level output for AMD/Hygon
+To: ludloff@gmail.com
+Cc: Sasha Levin <sashal@kernel.org>, Len Brown <len.brown@intel.com>, lenb@kernel.org, 
+	patryk.wlazlyn@linux.intel.com, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-After primary SCMI pmdomain is created, use new of_genpd helper which
-checks for child domain mappings defined in power-domains-child-ids.
+> Intel prescribes a sequence of WRMSR(0x8B,0) + CPUID(1) + RDMSR.
+>
+> This goes back to the original P6, where the upper half of the
+> BBL_CR_D3 L2 cache test register was abused to report the microcode
+> revision, and CPUID was abused to actually load the revision into said
+> MSR. Afaik the WRMSR(0x8B,0) is still required today.
 
-Also remove any child domain mappings when SCMI domain is removed.
+The latest Intel SDM [1] confirms that CPUID(1) is still required and
+WRMSR(0x8B, 0) is recommended.
 
-Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
----
- drivers/pmdomain/arm/scmi_pm_domain.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+> turbostat has the prescribed CPUID(1) =E2=80=93 by chance, a few lines ea=
+rlier
+> =E2=80=93 but it lacks the prescribed WRMSR(0x8B,0).
+>
+> Also, note that the prescribed Intel sequence is neither required for
+> AMD, nor actually works for AMD =E2=80=93 there the MSR is read-only.
 
-diff --git a/drivers/pmdomain/arm/scmi_pm_domain.c b/drivers/pmdomain/arm/scmi_pm_domain.c
-index b5e2ffd5ea64..66dcf2e687a8 100644
---- a/drivers/pmdomain/arm/scmi_pm_domain.c
-+++ b/drivers/pmdomain/arm/scmi_pm_domain.c
-@@ -114,6 +114,14 @@ static int scmi_pm_domain_probe(struct scmi_device *sdev)
- 
- 	dev_set_drvdata(dev, scmi_pd_data);
- 
-+	/*
-+	 * Parse (optional) power-domains-child-ids property to
-+	 * establish parent-child relationships
-+	 */
-+	ret = of_genpd_add_child_ids(np, scmi_pd_data);
-+	if (ret < 0)
-+		dev_err(dev, "Failed to add child domain hierarchy: %d\n", ret);
-+
- 	return 0;
- err_rm_genpds:
- 	for (i = num_domains - 1; i >= 0; i--)
-@@ -129,9 +137,13 @@ static void scmi_pm_domain_remove(struct scmi_device *sdev)
- 	struct device *dev = &sdev->dev;
- 	struct device_node *np = dev->of_node;
- 
-+	scmi_pd_data = dev_get_drvdata(dev);
-+
-+	/* Remove any parent-child relationships established at probe time */
-+	of_genpd_remove_child_ids(np, scmi_pd_data);
-+
- 	of_genpd_del_provider(np);
- 
--	scmi_pd_data = dev_get_drvdata(dev);
- 	for (i = 0; i < scmi_pd_data->num_domains; i++) {
- 		if (!scmi_pd_data->domains[i])
- 			continue;
+I agree that WRMSR should be added, however it is a separate issue and
+should be addressed in a separate patch.
 
--- 
-2.51.0
-
+[1] https://cdrdv2-public.intel.com/916746/335592-091-sdm-vol-4.pdf
