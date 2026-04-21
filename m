@@ -1,122 +1,176 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C30EF3845A7;
-	Tue, 21 Apr 2026 07:15:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CA5937F744;
+	Tue, 21 Apr 2026 07:20:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776755717; cv=none; b=bS03R5X375pYg5eEKww0z824rSfYHK+Fzu8zpt8DxRvYEOaAnX/6tjis1aJ+dUvvp/HkR4f85tDl+fOqShgnSBKsn3u+1TQgZSH0zVjf/6D+YjET87BthtdsqVMReSa/YfAqdlPjMM3pTOJlzujWyvnlUu/NCBp4H8WEa87jL8Q=
+	t=1776756030; cv=none; b=GQRhzz4c0BdRey7x11MgVn5tjeMXzDZASriZ8jXX0eIvmryR3dokOMEAfDH8t3qW7FNnMjvnpCFzms5ECbYUqrTjAzyy93bWko+bUN2QkkjSCcyxhDdrgH7gk1HN09e4aFt494lWD8HRhgjwNkEu9axA4pBSVZJbf1N3p9Dd15Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776755717; c=relaxed/simple;
-	bh=1NNOk+eJmvh1fUcjXPKrED58fI60eQJmGrCvZy20t20=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NiF2w46LCh2EjcmdIykShgNVly0ScuztrnFzd+0n/5Gq2KNYMN2+A8gc6q43iaQGnAx17CQwZkTWKWQS3LsOUQFUh7XWEQpwAsMakfWNjMMsHSmPk/BVBP58DGEOl/Rg1GGSNCuWABFdxCbWcDGpbqwehwkbWv0vICQvtCoQL8Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=NWOrOna/; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1776756030; c=relaxed/simple;
+	bh=eabITeajuymRqUexIOIo+BVIQZEdJ0v8fPBEbG7RFe8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=lToKyUQd05biMl9lVCZifLWtI7bo0QAJEeAa7xAvC6nXvUAAMfD65DTpbc4t3zRfaLIhB7zWBh9U7AxpeNUNkbajEEnayX3XWtSPxXfaxPeaSIR+ijAyhGGOKG+GV2N7Mx0Zb5U63RNYjyPqkdf8rRpCKBbAV/UltjwOsUfDHvs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=FUEFmPym; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="NWOrOna/"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D75825E0;
-	Tue, 21 Apr 2026 00:15:09 -0700 (PDT)
-Received: from arm.com (unknown [10.57.89.2])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2AC763F641;
-	Tue, 21 Apr 2026 00:15:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1776755714; bh=1NNOk+eJmvh1fUcjXPKrED58fI60eQJmGrCvZy20t20=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NWOrOna/dqHHHBSoqj2cEZEw0sLpi1/1pm0lCfVz8K6R2FiWuRNyoI7Z20V4DhUuF
-	 ympOETtLPJZy5MwKNn7U8N/X6X/httaAaprbWCkpbjb5xPt9BX7gdKminZXWiXFKeY
-	 CkVLJXELaKau+8XS2XwBwOafpy1r0idm19UWq/Gs=
-Date: Tue, 21 Apr 2026 08:15:07 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: "Okanovic, Haris" <harisokn@amazon.com>,
-	"joao.m.martins@oracle.com" <joao.m.martins@oracle.com>,
-	"xueshuai@linux.alibaba.com" <xueshuai@linux.alibaba.com>,
-	"david.laight.linux@gmail.com" <david.laight.linux@gmail.com>,
-	"boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>,
-	"memxor@gmail.com" <memxor@gmail.com>,
-	"ashok.bhat@arm.com" <ashok.bhat@arm.com>,
-	"zhenglifeng1@huawei.com" <zhenglifeng1@huawei.com>,
-	"konrad.wilk@oracle.com" <konrad.wilk@oracle.com>,
-	"cl@gentwo.org" <cl@gentwo.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"ast@kernel.org" <ast@kernel.org>,
-	"rdunlap@infradead.org" <rdunlap@infradead.org>,
-	"daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
-	"arnd@arndb.de" <arnd@arndb.de>,
-	"linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-	"will@kernel.org" <will@kernel.org>,
-	"mark.rutland@arm.com" <mark.rutland@arm.com>,
-	"peterz@infradead.org" <peterz@infradead.org>,
-	"bpf@vger.kernel.org" <bpf@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"rafael@kernel.org" <rafael@kernel.org>,
-	"linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v11 12/14] cpuidle/poll_state: Wait for need-resched via
- tif_need_resched_relaxed_wait()
-Message-ID: <aecj-8In0A-G9OGN@arm.com>
-References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
- <20260408122538.3610871-13-ankur.a.arora@oracle.com>
- <a374b23f8b03f850a874d46bc78411fb99483ca2.camel@amazon.com>
- <87mryxh67j.fsf@oracle.com>
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="FUEFmPym"
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1776756025;
+	bh=eabITeajuymRqUexIOIo+BVIQZEdJ0v8fPBEbG7RFe8=;
+	h=From:Subject:Date:To:Cc;
+	b=FUEFmPymNo7rImiZEZNN4kJRq+OtwYdxp93qSCVbUXcsKTIr+Fh5CWM4KDyoCtwdw
+	 //JxK9jQwDVum668Jm9CgT1euDre0P6G4jGPbeuOmtYkJmQeBpJqBdipjaXcdHOKez
+	 faRzK71/L9A+3ch9QHaFJ4XS33Ij1xCzb/i7XsMA=
+Subject: [PATCH v3 0/8] arm64: amlogic: T7 thermal support
+Date: Tue, 21 Apr 2026 09:19:42 +0200
+Message-Id: <20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87mryxh67j.fsf@oracle.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32SzW7bMBCEX8XQuTSW/6JRFHmPoodd7jJmI8muJ
+ BsJgrx7aTmHBA164GEJzDfY2XntFpmrLN1h99rNcq1LPU1tsN92XT7i9Ciqcps7AyaA06CQWa1
+ HmUcc1BrVtY5OAYiPmpBz1l1Tnmcp9Xmj/vx1n2f5c2nw9f7ZjbIsuMEPu+8b27aXTHB+r8G3Q
+ Sutflec9sfLA47D6bHmfT6NPzY+rvm4aYNHzzGUwpQTWUSytvdEwWcCEwFctiBRPquMjSakHnR
+ vArNFjoV0EHIcObATJA/OxP6zykdJBD2m0KNw8c6yZWAfctEZHZMBMqhD9zG7Zva+3ZYc5dHZ6
+ I1qqzRypUGUtK3RlZiixcPVfDalaKF4cYZEc59YJyvBYmN6l3xmKiZHjvSlqQXV7qDqdMWhsjr
+ Pp7PM64siEu84WVuifnf8V6s3bYv+dubpMgxqlkVWZShAL1QSoztc9VdiB2bbdswXVXBST0dkX
+ O5dwaxzs/e23evdm3CRWyBjXQ+7SZ6bxz2z2N3ac6zLeppftoo2v1t9/tvGq1agdCqGesbYbvr
+ QtpdhX+YN1zw/IOzXCHNDABhOgBDAfEC8vb39BVaDuHQ2AwAA
+X-Change-ID: 20260410-add-thermal-t7-vim4-00e571badcc1
+To: Guillaume La Roque <glaroque@baylibre.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openssh-sha256; t=1776756022; l=5778;
+ i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
+ bh=eabITeajuymRqUexIOIo+BVIQZEdJ0v8fPBEbG7RFe8=;
+ b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
+ BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
+ QFNJKc8ds2NciIpw/7eA69vgNRVYzI6nC/NashbgfENw+A37aqeGm4e/2+rkxXPAbza88x7aumV
+ fs3HmbvzHAAs=
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
+ fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-On Mon, Apr 20, 2026 at 10:50:08AM -0700, Ankur Arora wrote:
-> Okanovic, Haris <harisokn@amazon.com> writes:
-> > On Wed, 2026-04-08 at 17:55 +0530, Ankur Arora wrote:
-> >> The inner loop in poll_idle() polls over the thread_info flags,
-> >> waiting to see if the thread has TIF_NEED_RESCHED set. The loop
-> >> exits once the condition is met, or if the poll time limit has
-> >> been exceeded.
-> >>
-> >> To minimize the number of instructions executed in each iteration,
-> >> the time check is rate-limited. In addition, each loop iteration
-> >> executes cpu_relax() which on certain platforms provides a hint to
-> >> the pipeline that the loop busy-waits, allowing the processor to
-> >> reduce power consumption.
-> >>
-> >> Switch over to tif_need_resched_relaxed_wait() instead, since that
-> >> provides exactly that.
-> >>
-> >> However, since we want to minimize power consumption in idle, building
-> >> of cpuidle/poll_state.c continues to depend on CONFIG_ARCH_HAS_CPU_RELAX
-> >> as that serves as an indicator that the platform supports an optimized
-> >> version of tif_need_resched_relaxed_wait() (via
-> >> smp_cond_load_acquire_timeout()).
-> >>
-> >> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> >> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >> Cc: linux-pm@vger.kernel.org
-> >> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-> >> Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-> >> Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
-[...]
-> > Tested atop latest mainline d60bc1401 with the rest of your haltpoll
-> > changes from separate thread: ~10% improvement in `perf sched bench
-> > pipe` micro and ~4-6% throughput improvements in mysql, postgresql,
-> > cassandra, and memcached in under-loaded configurations. Tested on
-> > AWS Graviton3 and Graviton4, ARM Neoverse V1 and V2 cores
-> > respectively.
-> >
-> > I hope this series can merge soon. It's been stuck in review for more
-> > than 2 years.
-> >
-> > Tested-by: Haris Okanovic <harisokn@amazon.com>
-> 
-> Thanks Haris. Yeah, I don't think there are any open issues left on
-> this.
+This series adds thermal monitoring support for the Amlogic T7 SoC,
+used on the Khadas VIM4 board.
 
-I agree, though an ack from the atomic infrastructure people on the
-generic bits would be nice.
+The T7 exposes six thermal sensors (a53, a73, gpu, nna, vpu, hevc),
+each accessible through the secure monitor firmware interface rather
+than a directly mapped eFuse register as on older SoCs.
 
+The series is organized as follows:
+
+- Patch 1 extends the amlogic,t7-thermal DT binding to describe the
+  new amlogic,secure-monitor property.
+- Patches 2-3 extend the Meson secure monitor driver to expose a
+  thermal calibration read command (SMC ID 0x82000047).
+- Patch 4 adds the secure monitor readout path to the amlogic thermal
+  driver and introduces the amlogic,t7-thermal compatible.
+- Patches 5-7 wire up the T7 DTSI with CPU cooling cells, sensor
+  nodes, and thermal zones.
+- Patch 8 extends the Khadas VIM4 DTS to map all thermal zones to the
+  on-board MCU fan controller (states 30–100, corresponding to the
+  FAN_CTRL register range 0x1E–0x64).
+
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+Changes in v3:
+- PATCH 1: Replace second if check by an else statement.
+  Remove unnecessary label in example according to Conor's feedback
+- Link to v2: https://lore.kernel.org/r/20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr
+
+Changes in v2:
+- PATCH 1: change two const entries to enum, explain why sensor index is needed
+  reorder conditional compatible for required, and fallback only according to
+  Krzysztof's feedback.
+- PATCH 3: Add kerneldoc for meson_sm_get_thermal_calib exported function
+  according to Krzysztof's feedback.
+- Link to v1: https://lore.kernel.org/r/20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr
+
+---
+Ronald Claveau (8):
+      dt-bindings: thermal: amlogic: Add support for T7
+      firmware: meson: sm: Thermal calibration read via secure monitor
+      firmware: meson: sm: Add thermal calibration SMC call
+      thermal: amlogic: Add support for secure monitor calibration readout
+      arm64: dts: amlogic: t7: Add cooling cells to all CPUs
+      arm64: dts: amlogic: t7: Add thermal sensor nodes
+      arm64: dts: amlogic: t7: Add thermal zones
+      arm64: dts: amlogic: t7: khadas-vim4: Add fan cooling to thermal zones
+
+ .../bindings/thermal/amlogic,thermal.yaml          |  37 +++-
+ .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  | 102 +++++++++
+ arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi        | 245 +++++++++++++++++++++
+ drivers/firmware/meson/meson_sm.c                  |  29 ++-
+ drivers/thermal/amlogic_thermal.c                  |  58 ++++-
+ include/linux/firmware/meson/meson_sm.h            |   3 +
+ 6 files changed, 462 insertions(+), 12 deletions(-)
+---
+base-commit: f7b64ed948718290209074a50bb0df17e5944873
+change-id: 20260410-add-thermal-t7-vim4-00e571badcc1
+prerequisite-message-id: <20260326092645.1053261-1-jian.hu@amlogic.com>
+prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
+prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
+prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-change-id: 20260326-add-bcm43752-compatible-e264a4f7973a:v2
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-change-id: 20260330-fix-invalid-property-bbe54d933f71:v2
+prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
+prerequisite-change-id: 20260331-fix-aml-t7-null-reset-2b608ebf9da4:v1
+prerequisite-patch-id: 5b5de77af11747ce964404fb827d2ee2bff47ea5
+prerequisite-patch-id: 1e37fc75fed1e533adee0f3e7e6ead1f8ff3c55c
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 2daf583fb5e7449a02bd217d8aca330171b598aa
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: d1ddf9b7710e91f8062de83bd7ba55afb2c4c112
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
+prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
+prerequisite-change-id: 20260402-add-mcu-fan-khadas-vim4-ac1cbe553c9b:v2
+prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
+prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
+prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
+prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
+prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
+prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
+prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
+prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
+prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
+prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
+prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
+prerequisite-patch-id: 34a2bbfe3ce30c530e69af5083aa26534b2c2560
+prerequisite-patch-id: 406f88d7dabd3a870b358fb53c21686f29eb32b7
+prerequisite-patch-id: d7a75ae3be0f54e0a7e81ccb0043a2f05423c9d0
+prerequisite-patch-id: 5e19dc5ace12b532284246f5c2ff3f214d8a9c4f
+prerequisite-patch-id: d6a87ebcf5246eb67b94ca0908afa3df9f9383fe
+prerequisite-patch-id: 4809bbedf79f59e1abc52c17cffc0b1bbb43d365
+prerequisite-patch-id: c050e8bac4b5491f6c7008a5ccb26f20fad38b46
+prerequisite-patch-id: 30677db8fc57270787245103c0d5acf8791307b0
+
+Best regards,
 -- 
-Catalin
+Ronald Claveau <linux-kernel-dev@aliel.fr>
+
