@@ -1,31 +1,32 @@
 Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CAE839EF39;
-	Tue, 21 Apr 2026 07:20:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CA0438F949;
+	Tue, 21 Apr 2026 07:20:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776756031; cv=none; b=jh2rQNePoYU6Vgho8qJ1bZW5xenkLcFBT3HfokZilNLZpWpnpar29PTcdArIB5A4ObaQltYE3bRs3dlHdvLBBLyd0ISZT3Ns7z0RV5UxnwM1LqMFiFYmnpPaGVhW2Xol5Lve+aJA2yMeAQW1e/SWv26w/cZnUaqOVbktcUVtxNM=
+	t=1776756032; cv=none; b=jFSmtIn6WegqjWaCdIkUvzh5G/zODjR5Qbv6VULhG5wurN1mY5ppFGKkENMek8mQlS1Yb8X0iFlqUQ8LxweUBMwkNlNWHUOlQiI0ChDDv06Gu8gzYOb5qNb9uI0ZqdQPUDnyvDE4c7Y6Nu5qfFlWOBLfpAusLgvH6IJ/o/ETbUE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776756031; c=relaxed/simple;
-	bh=AmejprhLldM6oZ8f+d8kGaiPXU+JF3BuBfnTDRSpD20=;
+	s=arc-20240116; t=1776756032; c=relaxed/simple;
+	bh=+OPiaJJPEI4198UFVptwbMsLl2t7li0yawHDEA3XDzo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rmd25+AxK6Ax1G9zAtdPcgEHFgQfHpq5BbtvRZfy3Uj6VQUlbjZLyag5jnxaq3HR1VIKwkgfrSQOQgJE/Y4XloJeLWV3XXO/ZC9i52n0hDXwV2rI7Aoc0ZW6pG6pKPWzhIYl18VD0rTYS4JFCs3a6DcfzSdonRJgrSbTw5M1fcA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=BSO9alBg; arc=none smtp.client-ip=65.21.61.41
+	 In-Reply-To:To:Cc; b=QkRrXkxyV5DSLdPwGCJ+FaBl0ymX3rRzsAWessKjgDTUhSmzPSwcmftxfOO5Z73L0JSgchz+JDqdiWF78uUV/0FWuAWTSp60s2cniBCV1M8suKjF04nZjyt7hJLMF64lzEYEoWdSEjXmOEMfvBCxxGNmypL1gtNB2CtB032rRl8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=BUiA4cyL; arc=none smtp.client-ip=65.21.61.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="BSO9alBg"
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="BUiA4cyL"
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
-	s=courrier-s1; t=1776756026;
-	bh=AmejprhLldM6oZ8f+d8kGaiPXU+JF3BuBfnTDRSpD20=;
+	s=courrier-s1; t=1776756028;
+	bh=+OPiaJJPEI4198UFVptwbMsLl2t7li0yawHDEA3XDzo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=BSO9alBg/vwbQ5A+6MAoVfqzNbuY1d4mhx2MS5qDwRHmQPi/fC5EPi819xUzXTPew
-	 RPXmMpPmiRJbRh8jLVajlURxdiYxM2pTMykHbuCY/NuMAC+J2KCi6OUS5kj+DfHrps
-	 5kVVL0evBz5SIC/UHSN/eevyd0IjNaGoKaGJSfYk=
-Date: Tue, 21 Apr 2026 09:19:43 +0200
-Subject: [PATCH v3 1/8] dt-bindings: thermal: amlogic: Add support for T7
+	b=BUiA4cyLV5JH+ZcTO4oMpVxRc//ZqQlaBE6oxfrBC6QrhqIgXGvZnB6kHYg4qFli9
+	 yiNC6/ZNvwAwIhC7bH0Ks3ZoNqgmdkrqVk6fXxU2WuH1+Ee0S4OmCTKLqK3A+drHsA
+	 +ILwwV/mKvS8iVeW+/hNtIhNRtFVw5tPQsb3k96I=
+Date: Tue, 21 Apr 2026 09:19:46 +0200
+Subject: [PATCH v3 4/8] thermal: amlogic: Add support for secure monitor
+ calibration readout
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,7 +35,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260421-add-thermal-t7-vim4-v3-1-a2e7215ed003@aliel.fr>
+Message-Id: <20260421-add-thermal-t7-vim4-v3-4-a2e7215ed003@aliel.fr>
 References: <20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr>
 In-Reply-To: <20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
@@ -51,101 +52,146 @@ Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
  linux-arm-kernel@lists.infradead.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openssh-sha256; t=1776756022; l=2808;
+X-Developer-Signature: v=1; a=openssh-sha256; t=1776756023; l=4382;
  i=linux-kernel-dev@aliel.fr; s=id_ed25519; h=from:subject:message-id;
- bh=AmejprhLldM6oZ8f+d8kGaiPXU+JF3BuBfnTDRSpD20=;
+ bh=+OPiaJJPEI4198UFVptwbMsLl2t7li0yawHDEA3XDzo=;
  b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgMGec55oxeeisqykQiUedekMYyOnR9
  BG9E/7rDWyqdNoAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QE75Txt22IRPssZjtowuGnQkhVlNuKDNMpbLCRT9IY5Yith9r0cR6GUXJW26+VRQS2RxRRJ48Sx
- oWMtjCGNuxQw=
+ QNoBMoSWvVWsCyLCd1eEWvZ1jgQJpmPRJy+mxKgaG9hWR67FeO2pV71cL+j8+JVS+T5l+dDXtU2
+ 2R84MvXh0cAA=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openssh;
  fpr=SHA256:kch4osYZ6A1BrPps5AUs6KnfdE2wm4ocMtyTc8TmZMs
 
-Add the amlogic,t7-thermal compatible for the Amlogic T7 thermal sensor.
+Some SoCs (e.g. T7) expose thermal calibration data through the secure
+monitor rather than a directly accessible eFuse register. Add a use_sm
+flag to amlogic_thermal_data to select this path, and retrieve the
+firmware handle and tsensor_id from the "amlogic,secure-monitor" DT
+phandle with one fixed argument.
 
-Unlike existing variants which use a phandle to the ao-secure syscon,
-the T7 relies on a secure monitor interface described by a phandle and
-a sensor index argument.
-
-The T7 integrates multiple thermal sensors, all accessed through the
-same SMC call. The sensor index argument is required to identify which
-sensor's calibration data the secure monitor should return, as a single
-SM_THERMAL_CALIB_READ command serves all of them.
-
-Introduce the amlogic,secure-monitor property as a phandle-array and
-make amlogic,ao-secure or amlogic,secure-monitor conditionally required
-depending on the compatible.
+Also introduce the amlogic,t7-thermal compatible using this new path.
 
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- .../bindings/thermal/amlogic,thermal.yaml          | 37 ++++++++++++++++++++--
- 1 file changed, 35 insertions(+), 2 deletions(-)
+ drivers/thermal/amlogic_thermal.c | 58 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 53 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-index 70b273271754b..e28612510d679 100644
---- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-@@ -21,7 +21,9 @@ properties:
-               - amlogic,g12a-cpu-thermal
-               - amlogic,g12a-ddr-thermal
-           - const: amlogic,g12a-thermal
--      - const: amlogic,a1-cpu-thermal
-+      - enum:
-+          - amlogic,a1-cpu-thermal
-+          - amlogic,t7-thermal
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index 5448d772db12a..11e3948cc0669 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -25,6 +25,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/thermal.h>
++#include <linux/firmware/meson/meson_sm.h>
  
-   reg:
-     maxItems: 1
-@@ -42,12 +44,34 @@ properties:
-   '#thermal-sensor-cells':
-     const: 0
+ #include "thermal_hwmon.h"
  
-+  amlogic,secure-monitor:
-+    description: phandle to the secure monitor
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    items:
-+      - items:
-+          - description: phandle to the secure monitor
-+          - description: sensor index to get specific calibration data
+@@ -84,12 +85,14 @@ struct amlogic_thermal_soc_calib_data {
+  * @u_efuse_off: register offset to read fused calibration value
+  * @calibration_parameters: calibration parameters structure pointer
+  * @regmap_config: regmap config for the device
++ * @use_sm: read data from secure monitor instead of efuse
+  * This structure is required for configuration of amlogic thermal driver.
+  */
+ struct amlogic_thermal_data {
+ 	int u_efuse_off;
+ 	const struct amlogic_thermal_soc_calib_data *calibration_parameters;
+ 	const struct regmap_config *regmap_config;
++	bool use_sm;
+ };
+ 
+ struct amlogic_thermal {
+@@ -100,6 +103,8 @@ struct amlogic_thermal {
+ 	struct clk *clk;
+ 	struct thermal_zone_device *tzd;
+ 	u32 trim_info;
++	struct meson_sm_firmware *sm_fw;
++	u32 tsensor_id;
+ };
+ 
+ /*
+@@ -138,6 +143,12 @@ static int amlogic_thermal_initialize(struct amlogic_thermal *pdata)
+ 	int ret = 0;
+ 	int ver;
+ 
++	if (pdata->data->use_sm) {
++		return meson_sm_get_thermal_calib(pdata->sm_fw,
++						  &pdata->trim_info,
++						  pdata->tsensor_id);
++	}
 +
- required:
-   - compatible
-   - reg
-   - interrupts
-   - clocks
--  - amlogic,ao-secure
+ 	regmap_read(pdata->sec_ao_map, pdata->data->u_efuse_off,
+ 		    &pdata->trim_info);
+ 
+@@ -226,6 +237,12 @@ static const struct amlogic_thermal_data amlogic_thermal_a1_cpu_param = {
+ 	.regmap_config = &amlogic_thermal_regmap_config_g12a,
+ };
+ 
++static const struct amlogic_thermal_data amlogic_thermal_t7_param = {
++	.use_sm			= true,
++	.calibration_parameters	= &amlogic_thermal_g12a,
++	.regmap_config		= &amlogic_thermal_regmap_config_g12a,
++};
 +
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - amlogic,a1-cpu-thermal
-+              - amlogic,g12a-thermal
-+    then:
-+      required:
-+        - amlogic,ao-secure
-+    else:
-+      required:
-+        - amlogic,secure-monitor
+ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 	{
+ 		.compatible = "amlogic,g12a-ddr-thermal",
+@@ -239,6 +256,10 @@ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 		.compatible = "amlogic,a1-cpu-thermal",
+ 		.data = &amlogic_thermal_a1_cpu_param,
+ 	},
++	{
++		.compatible = "amlogic,t7-thermal",
++		.data = &amlogic_thermal_t7_param,
++	},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, of_amlogic_thermal_match);
+@@ -271,11 +292,38 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+ 	if (IS_ERR(pdata->clk))
+ 		return dev_err_probe(dev, PTR_ERR(pdata->clk), "failed to get clock\n");
  
- unevaluatedProperties: false
+-	pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+-		(pdev->dev.of_node, "amlogic,ao-secure");
+-	if (IS_ERR(pdata->sec_ao_map)) {
+-		dev_err(dev, "syscon regmap lookup failed.\n");
+-		return PTR_ERR(pdata->sec_ao_map);
++	if (pdata->data->use_sm) {
++		struct device_node *sm_np;
++		struct of_phandle_args ph_args;
++
++		ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
++						       "amlogic,secure-monitor",
++						       1, 0, &ph_args);
++		if (ret)
++			return ret;
++
++		sm_np = ph_args.np;
++		if (!sm_np) {
++			dev_err(dev,
++				"Failed to parse secure monitor phandle\n");
++			return -ENODEV;
++		}
++
++		pdata->sm_fw = meson_sm_get(sm_np);
++		of_node_put(sm_np);
++		if (!pdata->sm_fw) {
++			dev_err(dev, "Failed to get secure monitor firmware\n");
++			return -EPROBE_DEFER;
++		}
++
++		pdata->tsensor_id = ph_args.args[0];
++	} else {
++		pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
++			(pdev->dev.of_node, "amlogic,ao-secure");
++		if (IS_ERR(pdata->sec_ao_map)) {
++			dev_err(dev, "syscon regmap lookup failed.\n");
++			return PTR_ERR(pdata->sec_ao_map);
++		}
+ 	}
  
-@@ -62,4 +86,13 @@ examples:
-         #thermal-sensor-cells = <0>;
-         amlogic,ao-secure = <&sec_AO>;
-     };
-+  - |
-+    temperature-sensor@20000 {
-+        compatible = "amlogic,t7-thermal";
-+        reg = <0x0 0x20000 0x0 0x50>;
-+        interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&clkc_periphs CLKID_TS>;
-+        #thermal-sensor-cells = <0>;
-+        amlogic,secure-monitor = <&sm 1>;
-+    };
- ...
+ 	pdata->tzd = devm_thermal_of_zone_register(&pdev->dev,
 
 -- 
 2.49.0
