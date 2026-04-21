@@ -1,19 +1,19 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60AAA35972;
-	Tue, 21 Apr 2026 18:12:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B60235972;
+	Tue, 21 Apr 2026 18:12:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776795143; cv=none; b=YCzT/PborJy5BBSRGb+Q4XkqnDrAd/UvqkeCC1E+EAMEPrGLD0wiRlcqbM/YBj1koYVseqGDwmGG+E+qb2YLWxGQy0X1ahw23oZ7pldgrjujrZOWKT19N4dPF8NqEHcCOhtwp6ZBVHSIge2n3HYgX5Va51cmqAyc8cjb2QyechU=
+	t=1776795148; cv=none; b=Xcr9d2HBbDH+hArLQ5uTfK1mUfK3NudnkXu3IjnVvNIto1PMUcqXNkeHdxvQ4/2qcGpJ/U8RUvyf2cnxham3OQOqxMKMDBizc7JkBTL6tOAOnnFS0FF/ycWfFBqzmx/9JzN7ZSaNrOr2dozhqD8pQ4DDNgGBldnsu20rlikjwBI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776795143; c=relaxed/simple;
-	bh=X663d4IHOAyYFQoCnPaOg4te2XgqLTCjAjyVj26Dxeg=;
+	s=arc-20240116; t=1776795148; c=relaxed/simple;
+	bh=J7n4y54VacqyWcZf9mvl8m2nBKYygVLXUdYoceQi8fI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=K26S61DcHqufLH9PIsijzvbPIeKzzGOjvveiRz9El6oXZoaGMzkb8e9cRZc3IJfJNX6DnEEvVCoFcN2j175MDyu3r6zFHjMhCzCWv1A/MRX1A4S5D6J+gSQaTjlcnmckvcgFK0NdJFQPY4dknqmxO+vNwl8KaILfDdobw/ZfIWM=
+	 MIME-Version; b=aE7Zc1DYaN6jN+KruNY0shE8cnuT/hAdg65nJ6O84YL0xUfBiMiM6m9aYzPinbhznZRxYvkY6K/r/2VaV4aHJoptCdtsSi5ViO2bN2yFd3pv93t2MPYPngr2YEF21oQ7aM7/unBdk8w1XMZQPTG+AIE1YWoLTqv2WkjzRfU29Sw=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A668C2BCB0;
-	Tue, 21 Apr 2026 18:12:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 764A8C2BCB4;
+	Tue, 21 Apr 2026 18:12:23 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Sudeep Holla <sudeep.holla@kernel.org>,
 	Cristian Marussi <cristian.marussi@arm.com>,
@@ -40,9 +40,9 @@ Cc: arm-scmi@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
-Date: Tue, 21 Apr 2026 20:11:38 +0200
-Message-ID: <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+Subject: [PATCH/RFC 06/14] of: property: fw_devlink: Add support for firmware
+Date: Tue, 21 Apr 2026 20:11:39 +0200
+Message-ID: <25ce04eb49a5caba4117dbf776edf70a00f07384.1776793163.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1776793163.git.geert+renesas@glider.be>
 References: <cover.1776793163.git.geert+renesas@glider.be>
@@ -54,91 +54,41 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently non-SCMI drivers cannot find out what the specific versions of
-each SCMI provider implementation on the running system are.
+Let fw_devlink create device links between consumers and suppliers of
+firmware, and enforce these dependencies.
 
-However, different versions may use different ABIs (e.g. different clock
-IDs), or behave different, requiring remapping or workarounds in other
-drivers.
-
-Add a public function to obtain base protocol information for the
-selected SCMI provider.  This will be used by the R-Car X5H Clock Pulse
-Generator and Module Controller drivers.
+This prevents probing of drivers before the firmware they depend on
+becomes available, thus avoiding unneeded probe deferrals.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/firmware/arm_scmi/driver.c | 31 ++++++++++++++++++++++++++++++
- include/linux/scmi_protocol.h      |  8 ++++++++
- 2 files changed, 39 insertions(+)
+Written for the upcoming R-Car X5H Clock Pulse Generator and Module
+Controller drivers and their dependency on SCMI, but the existing
+Raspberry Pi power domain driver should benefit from this, too.
+---
+ drivers/of/property.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi/driver.c
-index 3e0d975ec94c4485..dfa8961775aa952d 100644
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -3504,6 +3504,37 @@ int scmi_inflight_count(const struct scmi_handle *handle)
- 	}
- }
- 
-+/**
-+ * scmi_get_base_info() - Get SCMI base protocol information
-+ *
-+ * @of_node: pointer to a device node for an SCMI provider
-+ * @version: pointer to write base protocol information
-+ *
-+ * Check if an SCMI device has been instantiated for the passed device node
-+ * pointer, and, if found, return its base info.
-+
-+ * Return: 0 on Success or -ENOENT.
-+ */
-+int scmi_get_base_info(struct device_node *of_node,
-+		       struct scmi_base_info *version)
-+{
-+	struct scmi_info *info;
-+	int ret = -ENOENT;
-+
-+	mutex_lock(&scmi_list_mutex);
-+	list_for_each_entry(info, &scmi_list, node) {
-+		if (info->dev->of_node == of_node) {
-+			*version = info->version;
-+			ret = 0;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&scmi_list_mutex);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(scmi_get_base_info);
-+
- static int __init scmi_driver_init(void)
- {
- 	scmi_quirks_initialize();
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index 49cc39e0cbca5a0b..52eba920de264bd7 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -972,6 +972,8 @@ struct scmi_driver {
- int scmi_driver_register(struct scmi_driver *driver,
- 			 struct module *owner, const char *mod_name);
- void scmi_driver_unregister(struct scmi_driver *driver);
-+int scmi_get_base_info(struct device_node *of_node,
-+		       struct scmi_base_info *version);
- #else
- static inline int
- scmi_driver_register(struct scmi_driver *driver, struct module *owner,
-@@ -981,6 +983,12 @@ scmi_driver_register(struct scmi_driver *driver, struct module *owner,
- }
- 
- static inline void scmi_driver_unregister(struct scmi_driver *driver) {}
-+
-+static inline int scmi_get_base_info(struct device_node *of_node,
-+				     struct scmi_base_info *version)
-+{
-+	return -ENOENT;
-+}
- #endif /* CONFIG_ARM_SCMI_PROTOCOL */
- 
- #define scmi_register(driver) \
+diff --git a/drivers/of/property.c b/drivers/of/property.c
+index 136946f8b746f745..34aeba20040348d6 100644
+--- a/drivers/of/property.c
++++ b/drivers/of/property.c
+@@ -1378,6 +1378,7 @@ DEFINE_SIMPLE_PROP(dmas, "dmas", "#dma-cells")
+ DEFINE_SIMPLE_PROP(power_domains, "power-domains", "#power-domain-cells")
+ DEFINE_SIMPLE_PROP(hwlocks, "hwlocks", "#hwlock-cells")
+ DEFINE_SIMPLE_PROP(extcon, "extcon", NULL)
++DEFINE_SIMPLE_PROP(firmware, "firmware", NULL)
+ DEFINE_SIMPLE_PROP(nvmem_cells, "nvmem-cells", "#nvmem-cell-cells")
+ DEFINE_SIMPLE_PROP(phys, "phys", "#phy-cells")
+ DEFINE_SIMPLE_PROP(wakeup_parent, "wakeup-parent", NULL)
+@@ -1527,6 +1528,7 @@ static const struct supplier_bindings of_supplier_bindings[] = {
+ 	{ .parse_prop = parse_power_domains, },
+ 	{ .parse_prop = parse_hwlocks, },
+ 	{ .parse_prop = parse_extcon, },
++	{ .parse_prop = parse_firmware, },
+ 	{ .parse_prop = parse_nvmem_cells, },
+ 	{ .parse_prop = parse_phys, },
+ 	{ .parse_prop = parse_wakeup_parent, },
 -- 
 2.43.0
 
