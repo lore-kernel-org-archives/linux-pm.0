@@ -1,71 +1,131 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF6AA2F6596;
-	Tue, 21 Apr 2026 10:24:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59B7F3815F5;
+	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776767068; cv=none; b=O2Mhk72unBsTwpLFdSLTz0URnZPjDPKe95KR1eLVkmnJILEsp2KD8kcf3BFCsXmGfF8f0rVhNWQsw+H7WkivQXpGnZcol2NJUHvL+/dvKDK/id0OaWsGzNPr0kFMKsd1614EJ/Puq4nDhofatEtztiurEIRfuM0qGyEyRJLukag=
+	t=1776772222; cv=none; b=iAodQQSWC5tgs2r2Krdzc+i9LrdqXPwgTUZoIte63DDXfwugNi6Mxl+79AfHeBbGLbprAuqQ95OzIPmkPm7/tyuUgbGyhm22UqQACwBaCpKg0sNNVTxyhySF6g/joD6L6PAET/xO8J8P5s6UbtbEzz0Y0mpBZCFhO2L2FdU3vaY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776767068; c=relaxed/simple;
-	bh=yokX1uwJdP3CzSczCZdKeC14Zi1TdQzjEz8oBavCc2g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZYiMvQRYPt/+qeCt3F0N4eHZZ+kFA4N+55MZ9Kv+b/4+KMowP8LyYc28nKJAaJO8AS9SpriEzL0OgSG/LTnbsLN+3HtVsvd9fVzj15dHOD/bYq5gJhyHC9tdhqS5AEEBQfLrJY12VDC443U35IHATRIk1gUwAyrDg7DtnqOC+U4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HUT0/7aI; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776772222; c=relaxed/simple;
+	bh=8mEtZw+TxoouXpA9/fAD2qX1pxDekWyJvS7D2tvreNE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=KgWTlhoU/gJ35DAMLFJCIxcSp5Q4McdeDkPJy1XL6nDt5IvyTrK1KQq4SuM9ocU07SRi0Mv1oqoZ2VtXTbHwIl98fFKOLO9VI8SpEAB5TY4XxTzvjQ6I0K4riAOszGkU9DEYjQL59rIafKJ1K9rHtep15TYzwSleNzaOdfVxhKQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=V4Qpeh8A; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HUT0/7aI"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F03CFC2BCB0;
-	Tue, 21 Apr 2026 10:24:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="V4Qpeh8A"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0D9A2C2BCB3;
+	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776767068;
-	bh=yokX1uwJdP3CzSczCZdKeC14Zi1TdQzjEz8oBavCc2g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HUT0/7aIPggkhv5QFMuw3MZhz3q5Q5+61xj8zbBYgORCmK5pr+f25SsdmqNdKYO6v
-	 2jbxwuvo+/+VOQ8nwH2cKGETAKheyFMNyTRKnbmggnZHUKhN1qPI9axPK9hw/g2sbA
-	 e13jZ35oAJ/2S8FBIrlxHjk4T31V3Ac6HlrAFdxSUwliCGH8WNnG3HxAgI7tapEHIO
-	 /X7UMY2YqAvVeR38gEPNzaxnCPtB/81pX70ATfO4gskZyEu112BbXaK+BDlKm5Srrc
-	 D43WH9yC7RHqB/r9bec0R7832XWVnMAEOKNo7vpzkM/raqQV+ifHebfKjOIwFSvcUK
-	 TyjMNeSvbQdPQ==
-Date: Tue, 21 Apr 2026 12:24:25 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Deepti Jaggi <deepti.jaggi@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Document RPMh
- Network-On-Chip for Qualcomm Nord SoC
-Message-ID: <20260421-cherry-sponge-of-patience-9fb1ad@quoll>
-References: <20260420021351.1239355-1-shengchao.guo@oss.qualcomm.com>
- <20260420021351.1239355-2-shengchao.guo@oss.qualcomm.com>
+	s=k20201202; t=1776772222;
+	bh=8mEtZw+TxoouXpA9/fAD2qX1pxDekWyJvS7D2tvreNE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=V4Qpeh8AntPhluG9pt2YJTE+gwXG8IoGi+Dt2ZiLLSbk7PVdQ7llCf7uuSslLOCMV
+	 jrm7qtZd+AVIH4Q0JnNDi9tzr7LZLkibD7+oAKWSIQ5vGlZVFrqzNCm+FIiz7OdevD
+	 kb95S0SYeHknJ/WZoYwnAUl104mBWRXIwZkc/s6nx3FEK+0BY+V2kZR3wzYnhM5cEI
+	 QPFWZsDukcaIZvf2WDrKYZl97c4p1w6FyOcDARkSpTAWaEg6FQinjoOhmIs9VzRT7+
+	 +NWK/3sfbuKwJcHiuzCzMmDipi6TopVsBRpeHQXeFVCYxg04evX1WsvJulAmK2HPgd
+	 Q4DH5QS3qLctA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F22F7F8FA61;
+	Tue, 21 Apr 2026 11:50:21 +0000 (UTC)
+From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
+Date: Tue, 21 Apr 2026 13:49:18 +0200
+Subject: [PATCH v4 1/8] dt-bindings: mfd: khadas: Add new compatible for
+ Khadas VIM4 MCU
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260420021351.1239355-2-shengchao.guo@oss.qualcomm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260421-add-mcu-fan-khadas-vim4-v4-1-447114a28f2d@aliel.fr>
+References: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
+In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
+To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ Beniamino Galvani <b.galvani@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Mark Brown <broonie@kernel.org>
+Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1426;
+ i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
+ bh=NEIvA2L6y4otwyymsGTvUWGx1Runlk0F5PI2/57WLQQ=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+bzlOzIzyqlEm98eWdN8lFe+ORaT8UBN485Ju9O55Zt8
+ mf9fOZLRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCR7WaMDFtD3Fj10iafZA2O
+ Xe1g+nVl4dovlalLkv3Pc88sW368/hgjw9S1z/35Vj3JeTSXWWupXHi6wPeuU+JxL35ndfb7T5x
+ cyQcA
+X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
+ fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
+X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
+ auth_id=744
+X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Reply-To: linux-kernel-dev@aliel.fr
 
-On Mon, Apr 20, 2026 at 10:13:50AM +0800, Shawn Guo wrote:
-> From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-> 
-> Add RPMh Network-On-Chip interconnect bindings for Qualcomm Nord SoC.
-> 
-> Signed-off-by: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
-> ---
->  .../bindings/interconnect/qcom,nord-rpmh.yaml | 131 +++++++++++
->  .../dt-bindings/interconnect/qcom,nord-rpmh.h | 217 ++++++++++++++++++
->  2 files changed, 348 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml
->  create mode 100644 include/dt-bindings/interconnect/qcom,nord-rpmh.h
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+The Khadas VIM4 MCU register is slightly different
+from previous boards' MCU.
+This board also features a switchable power source for its fan.
 
-Best regards,
-Krzysztof
+Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+---
+ Documentation/devicetree/bindings/mfd/khadas,mcu.yaml | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml b/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
+index 084960fd5a1fd..1f135618e3b6f 100644
+--- a/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
++++ b/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
+@@ -18,6 +18,7 @@ properties:
+   compatible:
+     enum:
+       - khadas,mcu # MCU revision is discoverable
++      - khadas,vim4-mcu # Different MCU variant, not discoverable
+ 
+   "#cooling-cells": # Only needed for boards having FAN control feature
+     const: 2
+@@ -25,10 +26,27 @@ properties:
+   reg:
+     maxItems: 1
+ 
++  fan-supply:
++    description: Phandle to the regulator that powers the fan.
++    $ref: /schemas/types.yaml#/definitions/phandle
++
+ required:
+   - compatible
+   - reg
+ 
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: khadas,vim4-mcu
++    then:
++      required:
++        - fan-supply
++    else:
++      properties:
++        fan-supply: false
++
+ additionalProperties: false
+ 
+ examples:
+
+-- 
+2.49.0
+
 
