@@ -1,124 +1,71 @@
-Received: from hall.aurel32.net (hall.aurel32.net [195.154.119.183])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8425B33F8B4;
-	Tue, 21 Apr 2026 17:11:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.154.119.183
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB2582FB0A3;
+	Tue, 21 Apr 2026 17:22:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776791480; cv=none; b=ak8OlrjTkT6+jbxWJZDSLNbtW1Ti29H2GwYOkITF/CrDdn2y3DMFO0QW5N7F9C0ZIqMgy3BtWUZMEMhH31Da72UAQA2cWZZj9wBhZV0MtXlJgiDEq9exJAfl8exgzIE2+XmEHEeh5Lt2XrHlLC0dEZ7qg7sZxplRKFoUInWCTB0=
+	t=1776792157; cv=none; b=mvv3fHve7YQpN+vX5VL7TVyfhM9MAht7W3+4j6F7XjFabQ67842GaW4QaS34oaQsYdhvAIiM1UMiCZOCvkate5VPiDN9uzbY6H5QYjSLvhIwdmDd5IOiGgBT+4sMQPFp+OYIjzgeupz9uAfjsJY9gUjAOR2MZUkfqPMzPsVBT3Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776791480; c=relaxed/simple;
-	bh=zMNU29+wUjgpn9Ja3lorEBJU6chv56zxhp13d5Ny4L4=;
+	s=arc-20240116; t=1776792157; c=relaxed/simple;
+	bh=3Vs6A64Z/cDlXVKcYXu50l5AsAhPt9hHRpJl6Q5QeDU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LF5RWTwUQr9RmXrLz8ocjDEH0uYs6R5utIOmeRf5Svyea03OLRiqxB54msIH4zyFtt+hiI/ZuhGz4AQiGrdxumO6qjvYBHvMPJ9km9F0GvYpmM3/BwoAPtAb52kN5nwV+56d0vLfBP6t8YPCRugcTKS8VBA7ZfBJO8R9P1A+ebY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net; spf=pass smtp.mailfrom=aurel32.net; dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b=T4HGdHmr; arc=none smtp.client-ip=195.154.119.183
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=aurel32.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aurel32.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=lwFmiBkwE58GyJAuWHjvnkHGuLrlh+WhbNYq3+l+nSETl/fWbjP1LI/6C4DyTIa6256oxx1M16oReudFspL8j6p2ouSzjo75nHh1BSO7woyukfmduRGG28eO5In3VyHHUOen9EbLxP4F+mqS4OFV0PU+tfocxmhO3WUmWkR6TsI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oUbVsx0J; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aurel32.net header.i=@aurel32.net header.b="T4HGdHmr"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=aurel32.net
-	; s=202004.hall; h=In-Reply-To:Content-Transfer-Encoding:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:Reply-To:
-	Subject:Content-ID:Content-Description:X-Debbugs-Cc;
-	bh=VjnkFdeZK7rty5DMcJ7z5EdKxdECkqDgYWJysUP63zQ=; b=T4HGdHmrOrluO2Ljr/dWivyZ/q
-	XEz+F6FFQV9KvN5chUsSMn/90jdUnWIRsl/TcM44S7Dy3dHV6YnkEsuXRIbsP6jk20vj9RHQOoH2O
-	nDN+cdpnUSHl/lZ6RNkDb0eMfHZTOYkqfQbqM2xQfpO06tvvZoUkHJStS8a0CeFISAafOB8YL2qbY
-	osxvAtbGVH7N5b8i/b9nP8mtQgaIYf+4vLO5KvWnEvRmgEvab04CU48qkdvM+WCvnvapYtMWsc2Sc
-	Sq0YXHS/X8f0Iq7bioDgo+IV/lWNUJno4kCUM0K7wsA4JqFa04aGtX2Wvt5YbNzHckZIp6OEroajD
-	Alw1SLTA==;
-Received: from authenticated user
-	by hall.aurel32.net with esmtpsa  (TLS1.3)  tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <aurelien@aurel32.net>)
-	id 1wFEcx-0000000F5X7-3F74;
-	Tue, 21 Apr 2026 19:11:11 +0200
-Date: Tue, 21 Apr 2026 19:11:11 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: Anand Moon <linux.amoon@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-Message-ID: <aeevr6Zj3Pwm9wux@aurel32.net>
-Mail-Followup-To: Shuwei Wu <shuwei.wu@mailbox.org>,
-	Anand Moon <linux.amoon@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
- <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
- <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
- <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
- <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
- <aeaXszeaE62rM6BJ@aurel32.net>
- <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oUbVsx0J"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D1E5C2BCB0;
+	Tue, 21 Apr 2026 17:22:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776792157;
+	bh=3Vs6A64Z/cDlXVKcYXu50l5AsAhPt9hHRpJl6Q5QeDU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=oUbVsx0JZYXdZIPnb4GcWVt5grZUZ90U/44RRRqtVC6RKcwfR5ET+ZRLDrSeStWCe
+	 YaT9WmEjq0sbNhZGXyBPaFmApEtpdloJOmfbiwi3PuJ0zktT1oGQgE0HalyIV285Hm
+	 46mjd0YYuNXuKLFHtuu333vEk2uqsrOqUaW7UNSX8ou9wgV0iv+dC3i+01ivQF4EI7
+	 UjUJRQrnPTIO61LDHFnHzAcDRRE1j+ZErt6Xh+PYoqxbRTGqrnXsO+GFz+6/ZdDZ3z
+	 wbhPy/ZkMqeeLQaOfRgD/UgYxZBzBoyh3N7Gt1q0Mqotxi7ZeFyId21lkIcorqpUxE
+	 XXVDYhGI3gSFg==
+Date: Tue, 21 Apr 2026 12:22:34 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+Cc: devicetree@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>,
+	Deepti Jaggi <deepti.jaggi@oss.qualcomm.com>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	linux-arm-msm@vger.kernel.org,
+	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
+	Conor Dooley <conor+dt@kernel.org>, linux-pm@vger.kernel.org,
+	Ulf Hansson <ulfh@kernel.org>,
+	Taniya Das <taniya.das@oss.qualcomm.com>,
+	linux-kernel@vger.kernel.org,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>
+Subject: Re: [PATCH 1/3] dt-bindings: power: qcom,rpmhpd: Fix whitespace in
+ RPMHPD defines
+Message-ID: <177679215038.1337457.8627312083472225787.robh@kernel.org>
+References: <20260414035909.652992-1-shengchao.guo@oss.qualcomm.com>
+ <20260414035909.652992-2-shengchao.guo@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
-User-Agent: Mutt/2.2.13 (2024-03-09)
+In-Reply-To: <20260414035909.652992-2-shengchao.guo@oss.qualcomm.com>
 
-Hi,
 
-On 2026-04-21 16:10, Shuwei Wu wrote:
-> Hi Aurelien,
->=20
-> Thanks for your addition.
->=20
-> On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
-> > Hi Anand,
-> >
-> > On 2026-04-16 17:07, Anand Moon wrote:
-> >> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 an=
-d Buck2
-> >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the restri=
-ction errors,
-> >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =C2=
-=B5V.
-> >>=20
-> >> Additionally, I updated the DTS to map the second CPU cluster (cores 4=
-=E2=80=937)
-> >> to Buck2 to better align with the hardware's power distribution.
-> >
-> > Actually the output of Buck1 and Buck2 are connected together, so they=
-=20
-> > should always be configured with the same output voltage. And both=20
-> > clusters should be mapped to both outputs.
->=20
-> You are right, I received the same response from the official developers.
->=20
-> Therefore, I'm wondering if an additional regulator-coupled-with: property
-> definition is also needed here?
+On Tue, 14 Apr 2026 11:59:07 +0800, Shawn Guo wrote:
+> Some RPMHPD_* defines in the Generic RPMH Power Domain Indexes section
+> were using spaces instead of tabs for alignment. Fix them to be
+> consistent with the rest of the file.
+> 
+> Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+> ---
+>  include/dt-bindings/power/qcom,rpmhpd.h | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
 
-Yes, I think this is the way to go. I even wonder if this shouldn't be a=20
-fix with Cc: stable. This also has to be done for the Milk-V Jupiter=20
-board, I haven't checked the other boards yet, but I guess they all use=20
-the same schematics at that the PMIC level.
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 
-Regards
-Aurelien
-
---=20
-Aurelien Jarno                          GPG: 4096R/1DDD8C9B
-aurelien@aurel32.net                     http://aurel32.net
