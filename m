@@ -1,113 +1,101 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C04CB3A8732;
-	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F80034B19A;
+	Tue, 21 Apr 2026 12:37:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776772222; cv=none; b=uv2H7cLu5dUy1VDtN5mTMU6+XlpH02Bupi54n6H6E3+fwqcwglInQd8Zoe3GgNOjapTnfnPJwxm7ec8uPQITuYufJ01Vq9VLp4x+F2BpyY6gOYh2YXD2nD7hhdFMI50mnEuiYj1GN0cww8U03YCItXHSnod+oC9Nl0vxtTHD+QY=
+	t=1776775026; cv=none; b=qth63kaohN7q16Jk1nsCFVhbHMjxnO3LD9WGccHR4vnB66HHVME/pkNKZ9uvs5Wfh9XaOdKAdphEGi0BN75Rlss1Y0R7tnIlKRFl/LpCmuz/6GPS89rNeSJi1cYOpmtri9TibI47c7H+oupXugZfm6IsKSzzLhzjCRSRKWAgaQ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776772222; c=relaxed/simple;
-	bh=XddkVT31/XC/ioaRn+/smsT9FYSpgPK0znWOqQA+3iY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pNJmJAwyM49u0zkn0UJW9I8nKJ7R+6G8oPEW/hAnZGma67VtxBFpgixHVkZsetddPNBT1INA5NvCfHTQN2OEPMtWQGGszIDxW38vEfoB/N6hf8dmaJesEstAqOiErs4qUhmfQkGhrIC31EzAX9yhQ0QxBNBGIPSTVQCN43JF+P0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YouC8vXn; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776775026; c=relaxed/simple;
+	bh=nOlruvSNVaVVrsQCtI5cjfSJuDEcWFJeY+Dp619l6Yk=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=dhOHKY2z+sTmc7EOsAyz5YRzN0qJEWItDmUvkzBE5qfJIL3K3xJJhLlPPD8yu3vRSUkLCus3aqHVVWEmU8sZYGoNTixYKkukHtw8GG+lFsi4rJqtX//5/dXMbNY51THRYDsmzAFPeciQfQAWIiwoCcXljmTwoe7Jwr5GjRB6z+w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=hPGsWbPu; arc=none smtp.client-ip=113.46.200.226
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YouC8vXn"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 871F4C2BCC4;
-	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776772222;
-	bh=XddkVT31/XC/ioaRn+/smsT9FYSpgPK0znWOqQA+3iY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YouC8vXnbDTY+xLHUTOMD8zwUrLiitR7oeYhpXmrbm1HF2qQoy4s9TjbjF3e1RraS
-	 sItfNGX4O3QGO4/BG6kVUXF5T/nlNIZvNqlswKkcu/7FH52rA2ehgXuRdDHYbCNDBf
-	 VyGGZDVYeAynZvIQvadaAb9Yy0DAP8GgTHijZx1lN3+E2sOPxLTTL/7dIZkpnsD7bP
-	 QZC1qyn/DVdAMXed4KUyZXChauY0J6Ywpb3HwxQwztcFxmXZiQimwtc2jQiilpQFZr
-	 dgpr4hfWlQ0/2AySIxfCsePMral4ZXGsX74YF+WsbybUf0fetq2kmXXrs93eUEJ5Pd
-	 /Yn+9O7Fc+W9w==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E5B2F8FA66;
-	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
-From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Tue, 21 Apr 2026 13:49:25 +0200
-Subject: [PATCH v4 8/8] arm64: dts: amlogic: t7: khadas-vim4: Add i2c MCU
- fan node
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="hPGsWbPu"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=LH/vc/DrVSp39qqIAdMHuuklJKSMYzEeuulyWSJplqM=;
+	b=hPGsWbPuAwuXfFYCHW1gDSMhKXyYg99wsOltZhUSuxG2eM60r+XWHA5OY0uLvtsa71qXQcc/z
+	yacl+dYXqBo7jcTR6iigRvgmqGsSTSmo0U7KLjyDOqPPiBe+L0adYCf6EyAQQOfZzG976++svGT
+	hzQ8r1Vvd/kyvV1W/yoQnCc=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4g0MBy55y1zKm4w;
+	Tue, 21 Apr 2026 20:30:34 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id AA5F240562;
+	Tue, 21 Apr 2026 20:36:58 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ kwepemf100001.china.huawei.com (7.202.181.215) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.36; Tue, 21 Apr 2026 20:36:58 +0800
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <stratosk@semaphore.gr>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linuxarm@huawei.com>, <zhanjie9@hisilicon.com>, <lihuisong@huawei.com>,
+	<yubowen8@huawei.com>, <zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
+	<linhongye@h-partners.com>, <zhenglifeng1@huawei.com>
+Subject: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease due to stale target
+Date: Tue, 21 Apr 2026 20:35:45 +0800
+Message-ID: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
+X-Mailer: git-send-email 2.33.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260421-add-mcu-fan-khadas-vim4-v4-8-447114a28f2d@aliel.fr>
-References: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
-In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
-To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
- Beniamino Galvani <b.galvani@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>
-Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=969;
- i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=tWFcpje6b/UPuUaynpp5o+HzSsytJcZL6uVNyAgG8qQ=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+bzlGrOqQsFRScd93G08Hmn2V+TM9X8gF2q1/WNHh/U/
- zhYWO/sKGVhEONikBVTZOmfa3ni3eWjZ77uUU+BmcPKBDKEgYtTACbiO43hr0jjMc8dC2ud/ldu
- OMr4Oa160uf0hDs74paIntq3WMKq6yEjwyQNsfC1PP23Fr0RNhNfqLwz57blNbsfzfl9MY/Xycq
- tZgcA
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
- fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
-X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
- auth_id=744
-X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Reply-To: linux-kernel-dev@aliel.fr
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+In cs_dbs_update(), the requested frequency is decremented by one freq_step
+for each idle period. However, this can cause divergence between
+'requested_freq' (target for current update) and 'dbs_info->requested_freq'
+(target from previous update).
 
-Enable and configure i2c MCU node to get fan working on Khadas VIM4.
+When the load crosses up_threshold or down_threshold, the decision on
+whether to increase or decrease frequency should be based on the *previous*
+target (dbs_info->requested_freq), not the current one. Otherwise, the
+update step may be skipped entirely if the current target has already hit a
+boundary due to prior adjustments.
 
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Ensure that frequency scaling decisions are made using the correct
+historical target, fixing cases where frequency fails to decrease despite
+sustained idle periods.
+
+Fixes: 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster for deferred updates")
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- .../boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts      | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-index 69d6118ba57e7..5d7f5390f3a66 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-@@ -157,6 +157,19 @@ wifi32k: wifi32k {
- 	};
- };
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index df01d33993d8..f3c3b54e4bf8 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -104,7 +104,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 		dbs_info->down_skip = 0;
  
-+&i2c_m_ao_a {
-+	status = "okay";
-+	pinctrl-0 = <&i2c0_ao_d_pins>;
-+	pinctrl-names = "default";
-+
-+	khadas_mcu: system-controller@18 {
-+		compatible = "khadas,vim4-mcu";
-+		reg = <0x18>;
-+		fan-supply = <&vcc5v>;
-+		#cooling-cells = <2>;
-+	};
-+};
-+
- &pwm_ab {
- 	status = "okay";
- 	pinctrl-0 = <&pwm_a_pins>;
-
+ 		/* if we are already at full speed then break out early */
+-		if (requested_freq == policy->max)
++		if (dbs_info->requested_freq == policy->max)
+ 			goto out;
+ 
+ 		requested_freq += freq_step;
+@@ -127,7 +127,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 		/*
+ 		 * if we cannot reduce the frequency anymore, break out early
+ 		 */
+-		if (requested_freq == policy->min)
++		if (dbs_info->requested_freq == policy->min)
+ 			goto out;
+ 
+ 		if (requested_freq > freq_step)
 -- 
-2.49.0
-
+2.33.0
 
