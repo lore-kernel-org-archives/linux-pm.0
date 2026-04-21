@@ -1,52 +1,53 @@
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazon11011062.outbound.protection.outlook.com [52.101.70.62])
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazon11013037.outbound.protection.outlook.com [40.107.159.37])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54FFA3822AE;
-	Tue, 21 Apr 2026 07:40:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.70.62
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 377AF1925BC;
+	Tue, 21 Apr 2026 07:40:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.159.37
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776757217; cv=fail; b=JeDB11I4c9YudqiIKQM1sVjen9TapKYj/NioiePoVWiVnQk0A3tJBaBlsAv+IX1ypKwqxiBU7Ax1LsROFblctlOUEr6tWgtI9AN1XuUgzD4XrxGe/PmU5o0/tDeyPM7fZbHh508J6MxVlu5z0NWR5ZUGNfu6wY5g+b283oUnZJE=
+	t=1776757222; cv=fail; b=ZBkRH/Q2yF1GrDa1gA+3skZUcX7hmMgcGYTmAk5UJfnGTrhpNKahwm5A3DyYZkoWHC4/K+8Tl/0OX7FKddH/cLV7ljMkEKQekNAzIVponqszlZloi6wZn7ecA0CQIi0YyVNBZNr5k0QRhKysss0P786Tuz5g62cFxVMjDnhRqCI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776757217; c=relaxed/simple;
-	bh=laKQK4JE1PKTpzz8SU4TMbUVwOnF9jLwp6HDIIySOx4=;
+	s=arc-20240116; t=1776757222; c=relaxed/simple;
+	bh=EKJCyKZFqoN9OpGmkvj+hYMdFgA8LmJu3fpShLfbBkQ=;
 	h=From:Date:Subject:Content-Type:Message-Id:References:In-Reply-To:
-	 To:Cc:MIME-Version; b=WWwrPkrMH4M9TNdaFOWa8KyY8GXDXUP6d4NKW/J4j4YFTFhGT+3ZLbzhiJsQbPzLg6tyrxypTkwDRnTy9rZuOMGRPEfyg/EBeO16q/J3ysdaNdvQrCI0AKTDdsq6s9H8hOmTPFTXwFtWu1L4gs94Lfx875NneGVFqeKvkOb+KK4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=NFf8ssk6; arc=fail smtp.client-ip=52.101.70.62
+	 To:Cc:MIME-Version; b=FX2Y/dRrQHMKQVsQyWyxl5Db6iTF8/v7r+w3S6JOve/a45ReB9Qc05L4J7yqRD1FY2m2ddnpiRVCt16T8jYQ4ExvH90Q1L8FCOznPEQgV4yNIIFbcz5xAqO7xZ3sPZHguBpm0iKID9QlC9DHUh4yk4fBVU5xjc3NyhZ0/p2LapQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=a7BflkSu; arc=fail smtp.client-ip=40.107.159.37
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="NFf8ssk6"
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="a7BflkSu"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=QINFFDjPO04NS4EuN1R+Hl7naUQKotbsCJpKRgMC70r75x3GpAF9wJvDPHRNUPfin88iRRwZSldhjWub7dLygOhNEwKseFnr+i2b+9YezSvHczXGyjB23D4xO1F/ikC9ZuvZDJhYDu3OywsbPHs7xRLnN3zP4GZj4IHUuXqGTbTCLPCm1Um2GUFNDVbMiArpt/YtjcjxRchq51qgRkhC5k6nAPUuNaZize97SmhhjDKyzbC8Ea3C7gM5Los6L3hoKasmU9FRFBjVmDUPRbmuxBNerk6Z6yOve5hkWRpvJomF8eTROjeelFvX5W3myXNET0OZMMrtVXahUKQHKJB/iA==
+ b=pSh1P3Tb10ezXbJ++2zvm6Zr6USbuL/D/E9QFexKlZO1+T6kNSToiIVRZbeI2tEMLOQLxBj2alT8r5r+Kj2sk/3D1z4A4/LB88IRomjdO7O8Dfhjaxqq5kjSjxexsppqZj+KsvUs5x+mtw+Cxs/GFELgma/4FJrJz0cY9A/CcQpuDUwigXof34xeE0OxRJtgqIRYQncUj+yooGn0R8N0RA8l1/reexxqvyrV9YmSohMfivlLTS95T0ysQ5VfELviK9IwxLxEpbxo59VYR3HutY+S3Cb0UNyuHWEKJJcVDo0BWmZOw+dEcRx+/Uib72Y1rdKHO4Qda9tWpIok2zhYYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SoyKZNctd3U+/2ft1nhSJRA2oOq+OH0kfUG/4/Vtt70=;
- b=k/nJK9Cm+QK7KqU84WUSe/V7xdtj6u7f1S4XZRa0CTnlbFplk2gWKu7VasTUPyZpbCT+WFzGdF1SjGYeG/+z3pu9hp8jKaFQff6SVN/OxtFRU5qTEmD6zvpI8rkfxM9aVaI7UUz5200So9fihLl3wZK4BYViWMy+TYyxktNn2g5LE6Umg1MoRw7ukSmJ5BKLiYUAsCCbRmBPTbIvnqqW5ibUgoTfxkVEzBIfqD1yH1WeaEiwQB9pMNHvbWS02ZSJu317QGPXGhHkSc36n4UcKO1ZQWRVLuaRoXDIjYbqzA7bLSjkUTd0TiotC21LzYhBC6VpkPWI2TqzP5OC1inYMg==
+ bh=9/8DGJr89eq8LORsYUQxNAfQ3X8iGHoKKxyQV0pnqws=;
+ b=y8EqFBfhSj42P3lPHYFXU7n70SNVLsYzozUDV5OMjmAsUGKvnk2LLewaNV3y+SmDINMbkG8LqcNH2b7Q1bcL6QJZ+7LZVAcmdpjDEidUCzqAXEFG0vGVXBb6dcKmFKhWwSCn0M1oxej7KQbBZZh7Dprjv1QMvYxL+wNZkif/xwrSnMlkVNoWVv+NO+c6nXF1WMIp3qCE1yjUswpDyP6tv6wfSL97pB19F5BF/0LO5hBC5lX8m0oKLjByYLbFygPygDTH22B9ylpezRp/qlEuwB9ZfPU4y0I5lB42A6dn7OWw0pX9faQC0kfTu9xvIPpYiPaeUd1HKJG/RcdnfaWgGQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SoyKZNctd3U+/2ft1nhSJRA2oOq+OH0kfUG/4/Vtt70=;
- b=NFf8ssk6Gqq+1lJvl6vswdFxD6L8VtFhmwRvSIgzZ1Lt4/+spDYd3H5s4YtqIsRoeQGKw73+ZzLqbcogbZy/DJG0/u4vKv2LW3IsHHMXyv1asj4EekIEyFbcNixgUkt0/XOx8DHHP/h5/XZlf5Ho5fEvdBrGwJC6n34hXSQNLhdTvH9cz75e8DSmK384qHS0VFW5y62ZFXd45R4fGh991XmFaIhwJhyqK2Q4n2J/MXrXOHFtfu+pbzOPV6Q35nCxiCkEz16GERQJ59dLT9YXK6TVt6MpT0EnQP3QSKBYF1/NzIspH0t1MruPR7rvmh9ARsc4HfuoFkdXG6obFnr/Qg==
+ bh=9/8DGJr89eq8LORsYUQxNAfQ3X8iGHoKKxyQV0pnqws=;
+ b=a7BflkSuVROxos+TjMXPK19yfMBOvQSuSkc14Fw+O1ezprbBPopbKDaSvefUGtpm5Fl1AAn81jr08MdqxPZBxPy21PRy1ed+VZSxkH/Mzq/Yekp4OxRxaAznHFX+Yz/BOWIIMNa4UNATbfJ/GMm16rnup1B5IahvR0gRUi1NKPYP6ygg/4LS6rPhjLFuLimM/LPf9DWAxS7bScjAFKo8ua8KB7uz0hzvWmdLjivN5AGYlgEmcWxG4RkL+Wo6B9QCMXIlKleKZzPZxDC3ayNqZRUwrxD99Y5Q4Ix/l7N5n1SZo1yw9gO3noTRi/qHKqihN5s5YJDywIzNLCxM0hIgyA==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from VI1PR04MB6861.eurprd04.prod.outlook.com (2603:10a6:803:13c::9)
  by DB9PR04MB9476.eurprd04.prod.outlook.com (2603:10a6:10:366::11) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.33; Tue, 21 Apr
- 2026 07:40:11 +0000
+ 2026 07:40:16 +0000
 Received: from VI1PR04MB6861.eurprd04.prod.outlook.com
  ([fe80::7f96:4bde:2e55:cd5]) by VI1PR04MB6861.eurprd04.prod.outlook.com
  ([fe80::7f96:4bde:2e55:cd5%4]) with mapi id 15.20.9818.033; Tue, 21 Apr 2026
- 07:40:11 +0000
+ 07:40:16 +0000
 From: Jacky Bai <ping.bai@nxp.com>
-Date: Tue, 21 Apr 2026 15:42:23 +0800
-Subject: [PATCH v5 2/4] thermal: qoriq: add i.MX93 tmu support
+Date: Tue, 21 Apr 2026 15:42:24 +0800
+Subject: [PATCH v5 3/4] thermal: qoriq: workaround unexpected temperature
+ readings from tmu
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260421-imx93_tmu-v5-2-05ea1969bb9f@nxp.com>
+Message-Id: <20260421-imx93_tmu-v5-3-05ea1969bb9f@nxp.com>
 References: <20260421-imx93_tmu-v5-0-05ea1969bb9f@nxp.com>
 In-Reply-To: <20260421-imx93_tmu-v5-0-05ea1969bb9f@nxp.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
@@ -59,13 +60,13 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
  Frank Li <Frank.Li@nxp.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- Jacky Bai <ping.bai@nxp.com>, Alice Guo <alice.guo@nxp.com>
+ Jacky Bai <ping.bai@nxp.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1776757357; l=3819;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1776757357; l=5236;
  i=ping.bai@nxp.com; s=20250804; h=from:subject:message-id;
- bh=laKQK4JE1PKTpzz8SU4TMbUVwOnF9jLwp6HDIIySOx4=;
- b=hL5IZo+vtOIQg4z90gTdUvnSfVOEhcEjI36smI7wml2zUidl+5o8oMMFwZPmOTokYGnTwxgRq
- W09HZEUC/v5DUCR7CZo0cKKxizL7+7gxwgfFIlmW8JurloJG+G0K6rb
+ bh=EKJCyKZFqoN9OpGmkvj+hYMdFgA8LmJu3fpShLfbBkQ=;
+ b=DW0OKswqg4mh23wT3EhSPc/tV8Da93pwm+t4qRarfWltKxW7q1vshZcopg1MjQMUwTbp8CMkR
+ FdMxS9UbAWaCEdrWsZYiCddxgMZEJMSO8Gy7O7Pxltvnj5fa2Msd99s
 X-Developer-Key: i=ping.bai@nxp.com; a=ed25519;
  pk=ckFjCfRynXBjQGmSmzOVI5hggMD9XnnNlwj/jcO/j1U=
 X-ClientProxiedBy: SI2PR06CA0017.apcprd06.prod.outlook.com
@@ -79,187 +80,224 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VI1PR04MB6861:EE_|DB9PR04MB9476:EE_
-X-MS-Office365-Filtering-Correlation-Id: 75ec4fc1-8c79-423b-bfca-08de9f793842
+X-MS-Office365-Filtering-Correlation-Id: 2142a960-84a2-4752-5959-08de9f793b36
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|376014|1800799024|52116014|7416014|366016|19092799006|38350700014|921020|18002099003|22082099003|56012099003;
 X-Microsoft-Antispam-Message-Info:
-	rs5tyVACgBxOhr3x6n/gPwJo+BuwdcXQfHlEHVkZlcxRCn6/gtpA+niBLe/G5pA3wLJLDu/x2fRvr7eSg+lA0dML54qvWdsvKtcrrt1uoWWLNBCgq1bdhQGTQtfjcfvtCBpIFHPMYRJ62TSPtsNiLHbxS6HAF9xysd+6+EvkkTSEWCzfGE+ErKb4saw/K6ypgMp9t+SXBCq+i54z/I/F5LIzWiaZI8alyyzH8nB5nvHlfqZY7ggOAZtjpYWZxk6KUOSLgDUPHADx3b+dSxH86wpT5nnlwwvloNq8kyIjhu6HYOhPHtPD8B5hEVYCKv35B6S/N4SyoaYx4MLARCLgb7PvxaXChl0LNXQ2bdQ3P9leKXG01RljcGmiXF6gB7fB9NicV7/NjdHU9LexOQ3nQb89ut+lvEqkyxwLK5BoOjJ7BEcdNiQIqiBUbDDnlInIbYwRIXHoiVeA6+viA5qwXUij9zPu8Gh8GTgjEFfIXyG7QV3xQNhRWYmiC/REoUqiuXizaDZJKDOp/MKPEaa4K78NqDild4O8qnpfeed3B8iQ9YycjHfFtd5cXMuBVj1GC78dhAgPL4UFpPueAFAqymDqONTJ5q5h0h/xQ9C71ESNiQCwp5xEaqCyXTV6TtOgksX145PKsW1mgjRjP0pX6dwrQDDM23FYfstVN3nm2FnVO1AZTzSjneo5X5MnHMmkE2kIrSn7j7QoQjm2PvJzLh2HInsJnQN759+J5njAGrRPMNemkoMBjiMichFLO8L9+zML+0gbDtrdCPsMjobggTR6w3Wtc6s04mxnfrX1H9MCWXV0nHx5Z1P3GTAS6Q+l
+	zxvQjAcX61rG7IST136KpJDh+57BWGsOai0KDc5jb2vk0KS8026VpU2wpStHnooo48VJn186I6VdDHUKNJPZkB3RrarQTqhYk9Ea6qeqX9AogbYuzIXFWna7xuO/prb4SmnwLeN3s0T2lm4KfE8YfLq61JcX7En/vtV9SEsG/vvs/A3jcF4Zywhn9lsevU3nYa35/o3kLQaSlcPIbXvWFzN9Iij9TQGUbgFlXQptV8gUVlaQZe+EEGXMql2dtJba14TRGLvCLVfaRbGwRhTG8mywZoLvH20Ax2+0jxIgk3ZTFAedF2E3DEcEcwKh4hpyt1e7mN6FScCbI1XPX00kdmBoYr8nESQeymHXM+n0QaqTQ/lNoZ5cYbS3MnGtdH0yqy382TvdgCs3n/Q0DEySPFzkw4gerC9rjRi6GzRTEssvV9Q4BAT8ocjTJEF4iGI/+kc70X8h2xKfr2QO0w87dDbJFdx6bx3g0YZCKJabsN9tDW5nRFLrB7bpHhwFMAIfxJQlfMdz36kzgCFpA5ChMtiL5kvxU2EGxhP+8x2CssMPYSQlCjuklTde1TfGP90Yo51gK+Yj4wNtL3StaEWlojpz6AkEGPnLd10/e/0H4RUBINi6seJLBvn84So1pnZ7R8Pke8NUcgGIpZ5mqQFJnjllRVH/zFUTXLQsQIXDSccawigKAnQCzhJ+ZIIuxm8k2WRLqMLhWLa8LWuRJJ22cDQUTGErx9Wu0oiD985bypisM/6evcEQJVE0GWehkUxPRy0XqAUd5u7RWjE1oUSdCksu6eFbPysWHbskGuWftlh7rUP8VaS+18bYVESX/r1P
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB6861.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(52116014)(7416014)(366016)(19092799006)(38350700014)(921020)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?emJKRWYxblJVc091dDRFbXlKZG9zY0tCUFFxd1puV0FUMkZVUEJPQ3cvTFVz?=
- =?utf-8?B?TWJuUHRvNTl3UnptZko3a0VETy9sb0REMHJ0cVlNcFdxNSt2QnNaaFZ0N0ho?=
- =?utf-8?B?MjdWb2IzTzhERXhneHh6WjJ3TUtaNHEvTWpIeE9pc0plZFFVNkpSRWtWWEVR?=
- =?utf-8?B?NjhkWDZEcDFJQTk4cWRCenZTcmRKQVU0S09QQ2pHSmFpR3BlQUdTN3hycjBH?=
- =?utf-8?B?Qk41VnVISUdMZjhYMVNTRXo0czdkaVB2R2JUTWZPckp6L28zVUdmOEs1V1p6?=
- =?utf-8?B?RUZBSGxDNWpRWXpRSXlIQjFSbzdyYUNPVkQvNkszNXpSOU1VQmZQMTZPWXN5?=
- =?utf-8?B?NUNjdUJFUWRZNVRaVVJSNWJVME9zcEwyelozeE9OSXBKbzJLdktpbmZuQldo?=
- =?utf-8?B?K2Z1S3RhaUI0V2g4djNvTEN6S294TEpJamUydVlTUzJKbmlBOXlwVHVva0RV?=
- =?utf-8?B?c1l5bWxjQzlZeE9ZZ1NyZSs5NFlVckJBVDRmaG5oRWNEWDhZektRRjQvcTl4?=
- =?utf-8?B?Z1VmMmFtaTN1OVJxVGRGM1VBM013MkFCNUhrcDkrRWFRcGlQTlllcE5lSlVV?=
- =?utf-8?B?N090Z25WSTNTWGFVQjJBWGJVK29pVFpZTUZvWTB0U3NlSGNpOUwrR2EvMWpl?=
- =?utf-8?B?L09oQ3RSaklucEtnV3ZwZzB4Ukt6bkNQQlB4OStUcmxWRC8rd015cmIxeFdK?=
- =?utf-8?B?TWNXWk1aeDJJUEN3MVdwZzJlbUNZODVsVEhUYllWS0J1a1R0QUR3d25hcDRi?=
- =?utf-8?B?d2RkS0Eya29aM01BVGwzNUJkMm92T25Zc1FENmFrQktLUHluaEpkZm9sRSs2?=
- =?utf-8?B?SUFxdWhiM1NZWm5IckNMMFpZbWh5dnJUTHFQR0c1Umd0U0Z6UEdMd20rQjRs?=
- =?utf-8?B?TWdJQ3V6OFg5dEo2NmpVditueDUyTEoxVHRrQkc4TXlnTVd4TFI2MFZGNXJM?=
- =?utf-8?B?alVTNzhhWFNyaFJOc0lXbnlrenl4blphdUxuRWlGa09nSGNzMWZzL3dYeXdw?=
- =?utf-8?B?eE5XNWlraEplRWt4T1ZWU2hoRkNBNHBncVBtZ05qbFVRREtuaUttS1FGaUtU?=
- =?utf-8?B?YU1NKzhhNFZRVVkyNzlQS2U1WTBjTUJVRE9TV2o2a21tazlCSXFVV01wdVNt?=
- =?utf-8?B?MlpoLzljRkNUWGU4QVFRbmVuVHBWMGFSMWJsY1hlMnNWQWtZWWFvOFY2OEJu?=
- =?utf-8?B?eUVieUdUcWJpbjArTExPZlZBSE5tWGpOdVNzcGE4VG9UWW5CR0ZUcHQwVkMv?=
- =?utf-8?B?VHkzSVZqNmJVaStabUxycnk3VXVtRXNRQlRIaUpCdjJ3akpBTkxmWStOTndN?=
- =?utf-8?B?RHJWMEZqOUZXcVVaTmdaVkZRQWx6M3BRTm8vOGhzNDlucS94RGgyWjJqUTlW?=
- =?utf-8?B?V3gzY3V5VzlUVThPNk5DcjVRd1FIcDEwUUJqN1NJNURqZVVRclpVUXQxajJj?=
- =?utf-8?B?MlFielVndlRJU0h4S2NmMUFYZ1RpK1JQd0p1R0lFL29DcEVQaEhpWk5GODlx?=
- =?utf-8?B?ODQ1RUtiZzBrZGlhdXdDS0I3ajFqVnc5SmFkV1BKcFFXSmo3K0NjZ3ZLL1FL?=
- =?utf-8?B?bjR5bFZxZDZTL0ZVTW1obXdPZEMxNW9rWHY2UXNpMCs0Yk9YdGlPT1Y1SzFF?=
- =?utf-8?B?SFV5aklTQnd4WmJmMWlIMk9MYzhCRzZlaGtrUFNoUmo0bTZtYXhES1JNbmJk?=
- =?utf-8?B?RWxNUHhaU0ZZM2s1YXZ0UUdoZy9QaThBeVY5SDVDamRiUHRUNGZ2MnBQbUgv?=
- =?utf-8?B?d01DRXptSU5IMS94QVdPL1BFbTFFOUJFSDhVbXVvbzhyS0ljZVlFZUloaGs4?=
- =?utf-8?B?STZ0UWFxWkd3RDJGZnZpdmphSFBxWWI0ZmZvbE1rZENSa2JBQko5WWZ6OVZX?=
- =?utf-8?B?SXd2WUkzeHU0QWFMeFJTekM3aTVIa3pxa2NZYmtmTENpamtxQVdCNXN3RWhj?=
- =?utf-8?B?QU1VK3ltNHBzK1F2V2MwU2I1M3pXMmxYZmovQjc0bzNITGNzUnUreWpwNWFC?=
- =?utf-8?B?QmNyR21sakdZVzcwVE9UR2loOVNQRmI0bUNVZXBGdkJsM3JQMFJqWVdkSDMx?=
- =?utf-8?B?Rk5WYjhadlNScWZPeEdyM2VZZ3k0MHdSMnNuamJnQkJvSTRyaXFqcXJ3WlJm?=
- =?utf-8?B?Qk9OSmhmd01nTzlzOGhKdVVlNmZ3NGNhejBxdk5tTC9xU2Q1ZG9nbGpWZjdF?=
- =?utf-8?B?cDJjNUFDeTFySkdjM0JFZ05nV3BPOHdiNGNBeDlWY1VmOU5WbUFibGNXUjQx?=
- =?utf-8?B?dXczWDljcUFkQnVMc0J3N0FyZVBTYk9sdmVCZHkwQ044RGpRNjJ0OU5mUk5a?=
- =?utf-8?Q?zzWX9UiE0LGj+SfmoS?=
+	=?utf-8?B?ZlBvbVVpZ2FqUHMvMFpvd0VvWEJjRFJtS3BSM1o2REM0YnB1emFCZ3VRa0dS?=
+ =?utf-8?B?Qm1ja0JaTitlQ3ZVdHFnQXdxc3Rha0NsZ01sZ0FHWEM3RjBoU3JWYTFlZWRu?=
+ =?utf-8?B?Tm5hU1laLzZEOFRGT3RtVXJwNVJpSXl2am1PY0lHWVV3TWN4YkNFcVlsYTBJ?=
+ =?utf-8?B?SlR0OGZNVVhsNHJIYkJiKzdSUkdkSVlPTDczbEVSZTdlcWlxRkJSYU55bTho?=
+ =?utf-8?B?K2thalY2eWdqZkFFN2dkMXRLNFZCUTdFNDk4U0EyZDNRaG9iN0dmMnhkWFp2?=
+ =?utf-8?B?bCtEVDRXRk1Xa1NrTGtVNzhkUHlHaHlMalc3MXdSdnIreUsrRVhsanA4NTYr?=
+ =?utf-8?B?clB1KzkzRWZFbllnUk04Rkd6SThnc2t1d09zQ3FXcEgrWnJ0a3RPTG45ZUZw?=
+ =?utf-8?B?ODdRYkNOMmlvQ0x1b3htZll0RzV4TGdJQUFxYVB3akpZcUJPTXBNaTQ5YU5i?=
+ =?utf-8?B?UXBFUlFaQW9Vbk8zVGd1aEhYRlpSTDBEbnVMUzJRZGZGSzRlVFNQYTZNK3VY?=
+ =?utf-8?B?UFBaeVRsTWsySUx2cmgxMnNYd0djbWdVcGw5RmtNMHNYTEFadlY1eEgxNCsz?=
+ =?utf-8?B?UkRoMm4xbldnMW5VZ2RFdWdZWUlXWFBiSEJqSmtFQWlSN0JKOHdyNEpOclkx?=
+ =?utf-8?B?YlNGRWhYdDFweVF2b204d0RDQ1RoZGdyWGUrdUZ4UjJWWlNjNmREMGdtZjhs?=
+ =?utf-8?B?ektGVkg0c1N6Z0t4c3dyclpLeGFDZktCd05Bdyswc2R4Wis2STZiL1BidHNR?=
+ =?utf-8?B?L2VEdHVWQW5lV09obmNXRWVic3Y5K1YyQ0ZIUVVyMCthRHY1WmZnanRpRGFN?=
+ =?utf-8?B?cHUzRkRmZ2cxUXcyQkNSSGZkYmdXTldYRzNrNDlpcWJOTlZTYnc0c3V5QjRa?=
+ =?utf-8?B?MHcrODRqUkx4VXFxVTZhUDJ0MXkzZlVFOGF1WTlYT3ZkSTB2dlQrdzNMd09p?=
+ =?utf-8?B?Lzd5elBmaW5YRml1OHRvTFQ4eXdJS3NUQ1g3bUNuY2VtODE0bXpnQmZlc1BT?=
+ =?utf-8?B?WWtHU2dLT2lmVmhTcUhybUZ2QkJDcHhhcXg2Vjd6SHhFTzlOcFlOcXhSZkFM?=
+ =?utf-8?B?dFN5aWZrZ3dCMzNCWWpERExjNVloNWtEbkJMcHJVY1lNeExHUFZhZDM5L3cw?=
+ =?utf-8?B?S0lDaVdZSkMyTThjM1A4VUMvQ1RRTGQzdVdPVjF3SmxYdS9DWWZvSnR6ejNG?=
+ =?utf-8?B?Y0ZDRlltRFNuRkJsQ3ZTR0dTUzMwT3FOM3ZMVDl3dVhaaGkwRFdOUXg1UFZ1?=
+ =?utf-8?B?SzJWdDUzaFJqcDNEaEJLMkJpeXlpU0kyam9UaHVTbjl3MWJzODkrNzBwSExh?=
+ =?utf-8?B?QmJxdEVzQkhMcVozaVlvQTBQTmV6N3ZONVFYR3RUWXZXdWs2c0lNYWZwQXJn?=
+ =?utf-8?B?VEV5WmRQeFhZVCsrY2U5SThMZUtNdnVUODNucCtubHVpWmwvcm5YU0hLdHQr?=
+ =?utf-8?B?YjdpdnJDQWMwVHdWTmpkUTdOUDdlTmpWWmRCcjkxWDNkdElSZTZHbTA5dnh3?=
+ =?utf-8?B?MFNMUzZvQ21xcU5EaDc3SFVyb1RLMHZpYVlqZmJEeVl3SVhGTTRlSmpaZnhq?=
+ =?utf-8?B?RkNramZ4b2g5L1RhU1dORHVHZFZkQWUrRTlYQUR3M2h6ZEQxVEtJOG5JSVRz?=
+ =?utf-8?B?dWg2K1dqWldqcnA0bmIwL0x6bFUxYVdTbTFJWXR2dDRJZUdac081RDVnTGNp?=
+ =?utf-8?B?NFp4RjJuR21YdlhtOEEwcmpwQUc1UkZXU3Y5cXEwSUJvYkM3Nk4xYTI2cE5S?=
+ =?utf-8?B?RjZjYWFkZVdObmU5U1JNdlAyY0trVU9WQ0lGdXhEYyt2K1kydGh0cmovNFRR?=
+ =?utf-8?B?cy90bWlNV0szTDZpZzg0VjF1RHg5b3VjV2NFeXBXejQ0bk5ZeEVya1pzamlW?=
+ =?utf-8?B?SDJzczYvQnc1a1VVSlFxWjJVdEVvZ1N6Um1LUFFEbmRBTkJuT1FaUHZYNUdM?=
+ =?utf-8?B?TFBYNVBXZUljUFc5QmRhOW9FRmtJZ0RraUkrZG5DVkoyamZxQnFTNTdqbFVO?=
+ =?utf-8?B?YVVFTDVNUFZoQkNjcVBsMk8rYlN1UWlaRUhkV2NyelR0VU55ZUd5MjVKLzNm?=
+ =?utf-8?B?WUJMNVBqamhQSE9MeUgyUnlkblUzYVF0Y1ZidFJ2d3ZSbDJ1WVNIYzh3RGtL?=
+ =?utf-8?B?Q3pyNVIzWVBWRWFDdVB6Mk5pbldOUk5ZdkpZeXllb3pWUTJuZFl3bndmbFk5?=
+ =?utf-8?B?eGJYUXBheHc4QVRvejN5ZnVTN1kzRS9xNUV4N2RQa3pGQmYvL0RTcHJhanRj?=
+ =?utf-8?B?WFJLTjkxNU9Ca1A5akd1MCtIaDU0MENnY21Sbnd1Sk84T0o2ZUdlVnNuTXJT?=
+ =?utf-8?Q?K+DTCk2AgsF0Umaept?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 75ec4fc1-8c79-423b-bfca-08de9f793842
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2142a960-84a2-4752-5959-08de9f793b36
 X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB6861.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2026 07:40:11.8144
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Apr 2026 07:40:16.7540
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: YKxTo/MekiOdf3+OGZDrPSHWOoVnsX2fFgr1Iwmf42K6KNYDqJpTcJbUusehgQ8kGYsDXKXbsREK9EZlhF93Lg==
+X-MS-Exchange-CrossTenant-UserPrincipalName: zGONedpDbk76wFzspUvVHLR1ym3snaJGhchr9LaXA/Ahki8flVxsJtbXmMq2pxV7x4K82UkkJjvIjgp/VoVZ3w==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB9476
 
-For Thermal monitor unit(TMU) used on i.MX93, the HW revision info read
-from the ID register is the same the one used on some of the QorIQ
-platform, but the config has some slight differance. Add i.MX93 compatible
-string and corresponding code for it.
+Invalid temperature measurements may be observed across the temperature
+range specified in the device data sheet. The invalid temperature can
+be read from any remote site and from any capture or report registers.
+The invalid change in temperature can be positive or negative and the
+resulting temperature can be outside the calibrated range, in which
+case the TSR[ORL] or TSR[ORH] bit will be set.
 
-Signed-off-by: Alice Guo <alice.guo@nxp.com>
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Workaround:
+Use the raising/falling edge threshold to filter out the invalid temp.
+Check the TIDR register to make sure no jump happens When reading the temp.
+
+i.MX93 ERR052243:
+(https://www.nxp.com/webapp/Download?colCode=IMX93_2P87F&appType=license)
+
 Signed-off-by: Jacky Bai <ping.bai@nxp.com>
 ---
  - v5 changes:
-  - drop the unnecessary GET_TEUMR0 helper macro
-  - add drvdata for each of the platforms
+  - replace the check errata macro with inline function
 
  - v4 changes:
-  - no
+  - include bitfield.h to fix compilation errors for RISC-V
+  - use macro define for temp rate related setting
 
  - v3 changes:
-  - use the drv data struct for match data and refine the code
-  - update the copyright
+  - refine the code with FIELD_PREP macro
+  - add errata doc url link and refine the commit log
 
  - v2 changes:
-  - use the compatible match data to identify the i.MX93 TMU variant
+  - no
 ---
- drivers/thermal/qoriq_thermal.c | 33 ++++++++++++++++++++++++++++++---
- 1 file changed, 30 insertions(+), 3 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 49 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 01b58be0dcc64d14ca5e4bba654eed8f15e827fc..297a855311f3d6a8d527794abe17ac86c47bf152 100644
+index 297a855311f3d6a8d527794abe17ac86c47bf152..57c712b9b359d713f2ff4926eb890a0641aa96bd 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- //
+@@ -3,6 +3,7 @@
  // Copyright 2016 Freescale Semiconductor, Inc.
-+// Copyright 2025 NXP
+ // Copyright 2025 NXP
  
++#include <linux/bitfield.h>
  #include <linux/clk.h>
  #include <linux/err.h>
-@@ -24,6 +25,7 @@
- #define TMTMIR_DEFAULT	0x0000000f
- #define TIER_DISABLE	0x0
- #define TEUMR0_V2		0x51009c00
-+#define TEUMR0_V21		0x55000c00
- #define TMSARA_V2		0xe
+ #include <linux/io.h>
+@@ -30,6 +31,9 @@
  #define TMU_VER1		0x1
  #define TMU_VER2		0x2
-@@ -73,12 +75,17 @@ struct qoriq_sensor {
- 	int				id;
+ 
++/* errata ID info define */
++#define TMU_ERR052243	BIT(0)
++
+ #define REGS_TMR	0x000	/* Mode Register */
+ #define TMR_DISABLE	0x0
+ #define TMR_ME		0x80000000
+@@ -45,6 +49,15 @@
+ #define REGS_TIER	0x020	/* Interrupt Enable Register */
+ #define TIER_DISABLE	0x0
+ 
++#define REGS_TIDR	0x24
++#define TEMP_RATE_IRQ_MASK	GENMASK(25, 24)
++#define TMRTRCTR	0x70
++#define TMRTRCTR_EN	BIT(31)
++#define TMRTRCTR_TEMP_MASK	GENMASK(7, 0)
++#define TMFTRCTR	0x74
++#define TMFTRCTR_EN	BIT(31)
++#define TMFTRCTR_TEMP_MASK	GENMASK(7, 0)
++#define TEMP_RATE_THR_LVL	0x7
+ 
+ #define REGS_TTCFGR	0x080	/* Temperature Configuration Register */
+ #define REGS_TSCFGR	0x084	/* Sensor Configuration Register */
+@@ -77,6 +90,7 @@ struct qoriq_sensor {
+ 
+ struct tmu_drvdata {
+ 	u32 teumr0;
++	u32 tmu_errata;
  };
  
-+struct tmu_drvdata {
-+	u32 teumr0;
-+};
-+
  struct qoriq_tmu_data {
- 	int ver;
- 	u32 ttrcr[NUM_TTRCR_MAX];
- 	struct regmap *regmap;
- 	struct clk *clk;
- 	struct qoriq_sensor	sensor[SITES_MAX];
-+	const struct tmu_drvdata *drvdata;
+@@ -88,6 +102,12 @@ struct qoriq_tmu_data {
+ 	const struct tmu_drvdata *drvdata;
  };
  
- static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
-@@ -225,6 +232,8 @@ static int qoriq_tmu_calibration(struct device *dev,
- 
- static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
- {
-+	u32 teumr0_val;
++static inline bool qoriq_tmu_has_errata(const struct tmu_drvdata *drvdata,
++					u32 flag)
++{
++	return drvdata->tmu_errata & flag;
++}
 +
- 	/* Disable interrupt, using polling instead */
- 	regmap_write(data->regmap, REGS_TIER, TIER_DISABLE);
+ static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
+ {
+ 	return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
+@@ -97,7 +117,7 @@ static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	struct qoriq_sensor *qsensor = thermal_zone_device_priv(tz);
+ 	struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
+-	u32 val;
++	u32 val, tidr;
+ 	/*
+ 	 * REGS_TRITSR(id) has the following layout:
+ 	 *
+@@ -122,6 +142,15 @@ static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	if (!(val & TMR_ME))
+ 		return -EAGAIN;
  
-@@ -234,7 +243,8 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
- 		regmap_write(data->regmap, REGS_TMTMIR, TMTMIR_DEFAULT);
++	/* ERR052243: If a raising or falling edge happens, try later */
++	if (qoriq_tmu_has_errata(qdata->drvdata, TMU_ERR052243)) {
++		regmap_read(qdata->regmap, REGS_TIDR, &tidr);
++		if (tidr & TEMP_RATE_IRQ_MASK) {
++			regmap_write(qdata->regmap, REGS_TIDR, TEMP_RATE_IRQ_MASK);
++			return -EAGAIN;
++		}
++	}
++
+ 	if (regmap_read_poll_timeout(qdata->regmap,
+ 				     REGS_TRITSR(qsensor->id),
+ 				     val,
+@@ -130,6 +159,15 @@ static int tmu_get_temp(struct thermal_zone_device *tz, int *temp)
+ 				     10 * USEC_PER_MSEC))
+ 		return -ENODATA;
+ 
++	/*ERR052243: If a raising or falling edge happens, try later */
++	if (qoriq_tmu_has_errata(qdata->drvdata, TMU_ERR052243)) {
++		regmap_read(qdata->regmap, REGS_TIDR, &tidr);
++		if (tidr & TEMP_RATE_IRQ_MASK) {
++			regmap_write(qdata->regmap, REGS_TIDR, TEMP_RATE_IRQ_MASK);
++			return -EAGAIN;
++		}
++	}
++
+ 	if (qdata->ver == TMU_VER1) {
+ 		*temp = (val & GENMASK(7, 0)) * MILLIDEGREE_PER_DEGREE;
  	} else {
- 		regmap_write(data->regmap, REGS_V2_TMTMIR, TMTMIR_DEFAULT);
--		regmap_write(data->regmap, REGS_V2_TEUMR(0), TEUMR0_V2);
-+		teumr0_val = data->drvdata->teumr0;
-+		regmap_write(data->regmap, REGS_V2_TEUMR(0), teumr0_val);
+@@ -247,6 +285,14 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+ 		regmap_write(data->regmap, REGS_V2_TEUMR(0), teumr0_val);
  	}
  
++	/* ERR052243: Set the raising & falling edge monitor */
++	if (qoriq_tmu_has_errata(data->drvdata, TMU_ERR052243)) {
++		regmap_write(data->regmap, TMRTRCTR, TMRTRCTR_EN |
++			     FIELD_PREP(TMRTRCTR_TEMP_MASK, TEMP_RATE_THR_LVL));
++		regmap_write(data->regmap, TMFTRCTR, TMFTRCTR_EN |
++			     FIELD_PREP(TMFTRCTR_TEMP_MASK, TEMP_RATE_THR_LVL));
++
++	}
  	/* Disable monitoring */
-@@ -319,6 +329,10 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	regmap_write(data->regmap, REGS_TMR, TMR_DISABLE);
+ }
+@@ -400,6 +446,7 @@ static const struct tmu_drvdata imx8mq_tmu_data = {
  
- 	data->ver = (ver >> 8) & 0xff;
- 
-+	data->drvdata = of_device_get_match_data(&pdev->dev);
-+	if (!data->drvdata)
-+		return dev_err_probe(dev, -EINVAL, "Failed to get match data\n");
-+
- 	qoriq_tmu_init_device(data);	/* TMU initialization */
- 
- 	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
-@@ -376,9 +390,22 @@ static int qoriq_tmu_resume(struct device *dev)
- static DEFINE_SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
- 				qoriq_tmu_suspend, qoriq_tmu_resume);
- 
-+static const struct tmu_drvdata qoriq_tmu_data = {
-+	.teumr0 = TEUMR0_V2,
-+};
-+
-+static const struct tmu_drvdata imx8mq_tmu_data = {
-+	.teumr0 = TEUMR0_V2,
-+};
-+
-+static const struct tmu_drvdata imx93_data = {
-+	.teumr0 = TEUMR0_V21,
-+};
-+
- static const struct of_device_id qoriq_tmu_match[] = {
--	{ .compatible = "fsl,qoriq-tmu", },
--	{ .compatible = "fsl,imx8mq-tmu", },
-+	{ .compatible = "fsl,qoriq-tmu", .data = &qoriq_tmu_data },
-+	{ .compatible = "fsl,imx8mq-tmu", .data = &imx8mq_tmu_data },
-+	{ .compatible = "fsl,imx93-tmu", .data = &imx93_data },
- 	{},
+ static const struct tmu_drvdata imx93_data = {
+ 	.teumr0 = TEUMR0_V21,
++	.tmu_errata = TMU_ERR052243,
  };
- MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
+ 
+ static const struct of_device_id qoriq_tmu_match[] = {
 
 -- 
 2.34.1
