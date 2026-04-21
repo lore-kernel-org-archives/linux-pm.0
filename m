@@ -1,64 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01CDF3D810D;
-	Tue, 21 Apr 2026 13:49:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id DBB291C862D
+	for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 14:27:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776779393; cv=none; b=gR8g8LvQU35GExwyTQDkv8t35xk00XOeUXP9v5vHaZlt28Oi0vbQjoK3UokscxpM12G3kAtocJqnzeRay6MegS18MiT7QWbQFeSyUPocuVA7nQc9vUxyTJ2B2Nj6+aInRVbLVb3cIBDzGqRPJya2LPpiMwjaJBLKfsY78eGJVg8=
+	t=1776781635; cv=none; b=O1vumoA3cAB9Af60XncOiVL9LWK/+1+EWUK+ZZI1dAhCN7Fv7WvQV/o5ZHHol6QXV/7eEqAOo26fCCku78uoSzz67Ikd4zAbPOhBWjrZDjLKc9B3DsoLMgtD9gTK1mJ3bKJtMjvmq4V2ATDDAOYiG50RLw0MW5blE7KctNGecWA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776779393; c=relaxed/simple;
-	bh=yFGp4q9dd69vORspj/F4Kgjs/Fxf0CHEPtkH/U80wYo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZxEZ+rVA5f9Eqzz7/jQV4NPGCCxPAXDaqCit5uaHJf6yv65J8+AtYEio8lnjDTvDSdUaUC/Vy0TATiqke51k5vQs/aaSNotOUF3gvALKzY3iXWc4Rv+74qZV2pWEHcW+AfhrzlxE5yoQ/wSUDytzlF+XEsdg57VOeUj1T5rwoGY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=sL5hElqu; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776781635; c=relaxed/simple;
+	bh=dzvYAR90ONuHYy77DmO8JKW+CDBHX1iMYCGCcl3AFxY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jOhBPOi+NC63P9RW7+ZdlD3tOZeoTZBtsfpvp980rZhV7csnHeJ/wAbG00OCAqE1sQJj0VW4kBwW/Jb3Au8WuSnvjo9ao0lA/OthGvDIylKr6pd5wxsJz0BpwRrAAAXekAtPd8SJdYtWiqUfMb+YCkKf5yXsk/L8z4rS76KAnto=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=eV0RZhVp; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="sL5hElqu"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72D90C2BCB0;
-	Tue, 21 Apr 2026 13:49:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776779392;
-	bh=yFGp4q9dd69vORspj/F4Kgjs/Fxf0CHEPtkH/U80wYo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sL5hElquKB/bBDpkBst9KuxNe/vUGmfdKnY1xzsF+gF3YR/LajhF61fFEo+0eM1sA
-	 /ynJ0kntn/yKhTPxKyli4lZ+dfY82uM8r0ADwsXoPbP4ZljFqR6sHUgxo6CC+MoGIQ
-	 ucIK5DU2TqokF5jAF4AD+wbEsM4TD1+gUuFyV/1ICl3Yp7C1xLidR+5iGnbkIPQ1+h
-	 Aj82dL8R1tiDtfwNkgd+3CcZLpWvmP9A8YYR5Vmay+S1PR0fYNKHLssFa5EGAlvuZx
-	 noVkGWnOEdEnD2mS+RdxPnLEJru8a8OtSncEcddiojDjFYakXhOpyIjkyCqxUwdCfZ
-	 erqqxXkxYkBJA==
-Date: Tue, 21 Apr 2026 08:49:49 -0500
-From: Rob Herring <robh@kernel.org>
-To: "Kevin Hilman (TI)" <khilman@baylibre.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 1/3] dt-bindings: power: Add power-domains-child-ids
- property
-Message-ID: <20260421134949.GA1045294-robh@kernel.org>
-References: <20260420-topic-lpm-pmdomain-child-ids-v3-0-c2c40bef238c@baylibre.com>
- <20260420-topic-lpm-pmdomain-child-ids-v3-1-c2c40bef238c@baylibre.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="eV0RZhVp"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D04C625DE;
+	Tue, 21 Apr 2026 07:27:07 -0700 (PDT)
+Received: from [10.57.19.135] (unknown [10.57.19.135])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3B61B3F915;
+	Tue, 21 Apr 2026 07:27:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1776781633; bh=dzvYAR90ONuHYy77DmO8JKW+CDBHX1iMYCGCcl3AFxY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=eV0RZhVp2TS5sgjtsVJ72pfBJzfQ01amehUueX3aAKuw6R1gaewrcLj0VpuBQoCIa
+	 qRs1vJZNnZTPhzwPBMBIMRjx/PjNWz2p7PwMbbWXmvUdl0JgNaIZpUYh9B/IaVkAp2
+	 RDzotVg5OSBWMHZ6kI4aMm8GS2FkqLVjwdYECtu0=
+Message-ID: <fff66226-a460-4c11-ba4c-88764cc1f1c4@arm.com>
+Date: Tue, 21 Apr 2026 15:27:09 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260420-topic-lpm-pmdomain-child-ids-v3-1-c2c40bef238c@baylibre.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [Pre-CfP] LPC2026: Power management and thermal control
+ micro-conference
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Morten Rasmussen <morten.rasmussen@arm.com>,
+ Sudeep Holla <sudeep.holla@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Christian Loehle <christian.loehle@arm.com>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Pierre Gondois <Pierre.Gondois@arm.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, Armin Wolf <W_Armin@gmx.de>
+References: <CAJZ5v0jp-xWc_7Njjsva3EBhJXM31XVBpSspSkTd7FJ0wz1ezQ@mail.gmail.com>
+ <CAJZ5v0juVDm3R3rffQsV3gQeC6zr=0q8y+KSpOPqvToyWh7vKQ@mail.gmail.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <CAJZ5v0juVDm3R3rffQsV3gQeC6zr=0q8y+KSpOPqvToyWh7vKQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, Apr 20, 2026 at 04:51:17PM -0700, Kevin Hilman (TI) wrote:
-> Add binding documentation for the new power-domains-child-ids property,
-> which works in conjunction with the existing power-domains property to
-> establish parent-child relationships between a multi-domain power domain
-> provider and external parent domains.
-> 
-> Each element in the uint32 array identifies the child domain
-> ID (index) within the provider that should be made a child domain of
-> the corresponding phandle entry in power-domains. The two arrays must
-> have the same number of elements.
-> 
-> Signed-off-by: Kevin Hilman (TI) <khilman@baylibre.com>
+Hi Rafael,
 
-Missing my Reviewed-by.
+On 4/21/26 14:47, Rafael J. Wysocki wrote:
+> Hi Everyone,
+> 
+> On Thu, Mar 26, 2026 at 3:35 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>> Hi All,
+>>
+>> I'm looking for topic suggestions to be included in the power
+>> management and thermal control micro-conference submission for
+>> LPC2026.  The deadline for submitting LPC u-conf proposals is April
+>> 23, so if there are any topics you'd like to be covered, please let me
+>> know within the next 2 weeks.
+> 
+> Just a reminder.  The submission deadline is on Thursday, so I'm going
+> to send a proposal tomorrow.
+> 
+> This is the last call for input.
+
+As discussed at OSPM26 during the presentation, I will show some
+implementation and experimental results. So the topic would be:
+
+"Latency-focused QoS for kernel devices - implementation and
+experiments"
+
+Regards,
+Lukasz
