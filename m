@@ -1,201 +1,57 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B44D23DA5A5;
-	Tue, 21 Apr 2026 18:13:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6CA137AA9E
+	for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:05:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776795189; cv=none; b=ALB8b2cJMY7FTh9tCoTi+Rqvfw3Qa1p8nSc+rpujQtK0FeOWp3nWbTkcoPLBs+MwiFIrI7i4Zz1BraCYlH+sjLxj6APnvXvoiQOL2gI+4ouxTN0KCZN7HT4Jgo5Y8M7eOSEjouXrs9FqdYWNhEoSLDeopX5j2rPbfJ2lgVPeMug=
+	t=1776812755; cv=none; b=fPpm95Smm5dtBuz3mekaXic65JP/Iemx7EdE9cFqORWvuzBAvCvgk6DG8aOvHb76d/QFJgjGYhLdfcJI9PQ3I66TdZC3aHjQgQUt0k9DVovTmCjpLREV0i/NG6mnf1ZKwKjY2gLvQ+64Ez6l4nkUhVI1YwKbt7klTuJege8z4dE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776795189; c=relaxed/simple;
-	bh=5aEgK8XJ1yvOkRaOquOvl9TQhJ+t78QHDJ+2/j38IY4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eMzd77lxhr3Xxt+pGs03H++zUXqh9UW7aR75Dg3l24krJ51JLeBXYr1Rwluxzuj9yXCQFDJDX7dCpb+zB2wr19IFmfp3bYN0jBfWvwhT3uHZzhqIWf18EZs4Wbks75H/GtuY+2oleck56M1QVoj2vZAv1bFdhXvzCrr30jloReQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50330C2BCB4;
-	Tue, 21 Apr 2026 18:13:04 +0000 (UTC)
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: arm-scmi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 14/14] arm64: dts: renesas: ironhide: Add CPG/MDLC firmware properties
-Date: Tue, 21 Apr 2026 20:11:47 +0200
-Message-ID: <258e1985bfa75ca0b3c98bd083628f9b6c7887fc.1776793163.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1776793163.git.geert+renesas@glider.be>
-References: <cover.1776793163.git.geert+renesas@glider.be>
+	s=arc-20240116; t=1776812755; c=relaxed/simple;
+	bh=o+mssblS9jTow+Pnxeo8d3Ca3SHh1bJByEwm09RiY5g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gJ7UET53tPip8Gru+yU5K6+nwekJgM0OThQOAdOV0JXAHOcqBtD0s3udQvv5UE9w+gaKWspdz9vEyyXQ7BiCsPNtlfYhrQ81opZtwGco9CBLdNWNGLQ/PAZSkxpwa+svio41LTfh2kSnexI4P5fk0+2F0+o3xfCSXRJRCik9ICY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M4GnHgBN; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M4GnHgBN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68EDCC2BCB7
+	for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:05:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776812755;
+	bh=o+mssblS9jTow+Pnxeo8d3Ca3SHh1bJByEwm09RiY5g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=M4GnHgBNg6ofb49dYeVLauGwyRToPKfo/8d+Bfi7U+/JSKvkG3vO5/ueHpil/af87
+	 yKOibzaNOkDMKwgchUwdSNLJP9UBQXsDWhS436Y1bMKCnhEdrtPapJdFMctgJcRVkQ
+	 QxCeDX05zfZyG5A3X4LQxKOB1wJL0j/DrsFBo9yUsPYDplh48j8f03RWabXD9eNtdA
+	 G8c4r3w+Glyvil3eMuFkI1Vp8Bzpd7dkajGgxPatvhMKu7JKkX8eCdRtLJ+/yaD92P
+	 ii3qYFP01iKDPAwz2cs9iDBBK6y3pH67Pd8jky9GE7uJKUAm4QW0UBGn54Pa/r5YkZ
+	 qbyg8p5pDPpFg==
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-676f6c823c3so46125a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 16:05:55 -0700 (PDT)
+X-Gm-Message-State: AOJu0YxzbllOxAn561JasHp129mwRzIn47BwLuEEyeDROssygz2sXtp1
+	kBZQ58OCush255FnaP2gwqx3PZaV45rwpQAw7NE7LM9K7JrVKGNucCzKchCOhAXisHJ3fZmUcy/
+	MPffp38g6iVbFz9NWKGMl/NB8SSpQV3Y=
+X-Received: by 2002:a05:6402:ea0:b0:673:b696:8823 with SMTP id
+ 4fb4d7f45d1cf-673b6968961mr7346496a12.15.1776812754271; Tue, 21 Apr 2026
+ 16:05:54 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260421143217.3717297-1-darcari@redhat.com>
+In-Reply-To: <20260421143217.3717297-1-darcari@redhat.com>
+From: Len Brown <lenb@kernel.org>
+Date: Tue, 21 Apr 2026 19:05:41 -0400
+X-Gmail-Original-Message-ID: <CAJvTdKkVA9DVEZmuBrh7pS=UN445tjixnrdnT34AuvcURRfc_A@mail.gmail.com>
+X-Gm-Features: AQROBzAkwZ0Vfym8satm-9toJ8yQJrjwjK-machxKBozeFtKIiPUc5j83uwbolY
+Message-ID: <CAJvTdKkVA9DVEZmuBrh7pS=UN445tjixnrdnT34AuvcURRfc_A@mail.gmail.com>
+Subject: Re: [PATCH] tools/power/turbostat: fix unrecognized option '-P'
+To: David Arcari <darcari@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Link the various Clock Pulse Generator (CPG) and Module Controller
-(MDLC) device nodes to their SCMI provider.
+Applied - thanks!
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- .../boot/dts/renesas/r8a78000-ironhide.dts    | 116 ++++++++++++++++++
- 1 file changed, 116 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
-index 2fb9557a7eb9dbb7..c6d1a9b5ba433c54 100644
---- a/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
-+++ b/arch/arm64/boot/dts/renesas/r8a78000-ironhide.dts
-@@ -99,6 +99,10 @@ memory@1e00000000 {
- 	};
- };
- 
-+&cpg {
-+	firmware = <&scmi>;
-+};
-+
- &extal_clk {
- 	clock-frequency = <16666600>;
- };
-@@ -112,6 +116,118 @@ &hscif0 {
- 	status = "okay";
- };
- 
-+&mdlc_aon {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_cmnn {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_cmns {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr0 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr1 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr2 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr3 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr4 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr5 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr6 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ddr7 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_dsp {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_gpc {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_hscn {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_hscs {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_imn {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_ims {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_mm {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_npu0 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_npu1 {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_pere {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_perw {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_rt {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_scp {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_top {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_vio {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_vipn {
-+	firmware = <&scmi>;
-+};
-+
-+&mdlc_vips {
-+	firmware = <&scmi>;
-+};
-+
- &mfis_scp {
- 	status = "okay";
- };
--- 
-2.43.0
-
+-Len Brown, Intel Open Source Technology Center
