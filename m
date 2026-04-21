@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A767739F162;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95FD239DBD5;
 	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776772222; cv=none; b=aiFvAqUr+zXclEgmBXphVHduaBr9CqVuwGZ+LoZp2IOs/1EMfQOjJ5KvXpfp3STYvDq7hhUemQxvzUPBK1lVfCKo/w7WUGMtytFNpgfu9bnHNUE6GWBZFsdYNYLUpPF3alggct5/kGIxVIuR+4cNGszz5jsuP+gCoZDUFYMonNI=
+	t=1776772222; cv=none; b=rQFr1P0VLgX7mqZOgF+GNCxzawO23NK9t0U2DZqQhNt55QxDGFJTFn/6lcEuNdZfvAF3tcTwnDP6lz0om8q0ajb34v+p3yqiv425aaRFPWRZmXghFi6OX6/TMaz9r2EdVhXUTaVOXFFDxiByOsRuSZrH6jkpBOJz86k1GBMzVao=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1776772222; c=relaxed/simple;
-	bh=NFdn41ZvrKDWcDcQoALKM1WDPndu6bk+UeLGgAzHlGc=;
+	bh=Zbff+Q1NNBAuNma3SXEmyypcrouelh1AUI3L2B9B6fM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qe3mRRwj3zYAy/y577Yxxf+iuzyinAsE1Jd0IagxVV4rYydMnWct12I5RkTZgKTFpIEF0vwCQ7Jdo4H23veeF+729/OdPyXP75HxhPw6EemLJmpmTSnGTj6zqqgnf7g2hLcRpKEo1MbqLux/g1NN5/gtsv5oX15P+BBCadned6M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ll/9ji7m; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=nAhK+I4aLv5tiv0qLzklEZHf2Y/LrDw1d5hmqMv0xRDVM/go01QTLEEOZ38BZ98uvHV0PXD4IQjb+y45zsOhN8lWqmHMrNf119DpGxdLVlpB226LB55k6jbqcwgS+0nQHNAMI9Aovr1mK5KVl5gv/XEwIN7idZabx0+0cEsY2eY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AKYPhc7C; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ll/9ji7m"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 6828CC2BCC7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AKYPhc7C"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5862AC2BD01;
 	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1776772222;
-	bh=NFdn41ZvrKDWcDcQoALKM1WDPndu6bk+UeLGgAzHlGc=;
+	bh=Zbff+Q1NNBAuNma3SXEmyypcrouelh1AUI3L2B9B6fM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Ll/9ji7mle9oW9gKW+WtLW+MYZT9xkvc1lqhj/ravus8AYfSqcH2lkb1bvQiAulcq
-	 Y8x6KLDbiJqllmuPyEDvvIXnSdd0l96TQPTWFfIqI/Zzxyg9OYLm3NaTcg/kpDp0Bi
-	 vvsRMQY3o64HnWsmOvUkZjJMQa2d64UVgPJ4skOvR9eo4etJZ2+YtM7GtI/Npuie5t
-	 8yCGUAOEA1xBbCwcJpAQT0R85ENokMGFiqqVWi7LGoPC8aBGLlJZXl2rCdFA/4Kxgv
-	 uXcYnuu5cV66hWvUvStQw9M8AU+5xXYp1wIKX63MGSPRUV7CQdIUOGhGP80krp0/pT
-	 ULV6Z/mkiwmMA==
+	b=AKYPhc7CT6LfUtWcL0NNRE1pRke0WKyVgBHJkEI2O6VCCObOo/m4DS0Jq/P3J8i5F
+	 D6b4RhKM09PD/Jn/s5vQF6CsHIoHJE3m5yaJapCjhz8k9bNxeHqWD2H67XJU3OVKqk
+	 jWYszjL/SiqAJDSDakYqOu7/R/LhhpT5UdW9mq1k1WTK3elCW3Lkg7tEzfkD9ZkLnX
+	 T20XgE5vMsAU7oggqit6tPNRRttqPW67v5WLSVIYedKiDPBT8KtU3oxtIgSj4Cr0su
+	 AV1Du5nn3owRJtRNz9F03yvA6Qy3f4j5LJMJraTuPn6tP6J1KQlRWGBSGRY8tGUdCS
+	 Kl4kRJZBHBtQQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D96FF8FA61;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C24DF8FA66;
 	Tue, 21 Apr 2026 11:50:22 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Tue, 21 Apr 2026 13:49:23 +0200
-Subject: [PATCH v4 6/8] arm64: dts: amlogic: t7: Add i2c pinctrl node
+Date: Tue, 21 Apr 2026 13:49:22 +0200
+Subject: [PATCH v4 5/8] thermal: khadas-mcu-fan: Add fan config from
+ platform data Add regulator support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260421-add-mcu-fan-khadas-vim4-v4-6-447114a28f2d@aliel.fr>
+Message-Id: <20260421-add-mcu-fan-khadas-vim4-v4-5-447114a28f2d@aliel.fr>
 References: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
 In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
 To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
@@ -58,13 +59,13 @@ Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=835;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3477;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=Y66wwsu4uCJ5vCnrkH5iYoYFi2DeQ8efaTE8Rt+0Rik=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+bzlArxv1e5Xx0o0Ptf4xeRq9XBfmHhWkPBZYfuxR7wl
- 38x69C9jlIWBjEuBlkxRZb+uZYn3l0+eubrHvUUmDmsTCBDGLg4BWAi8VGMDM3bdx9dn3GqLuxl
- VF/4M4sHaZm/V0Z4/Zx/wrvNXd1Lw5zhf+28NS3VroaqLpbvTB/K3jWeF6esXRuQzszjyrgy/ux
- +dgA=
+ bh=J2SoalosCyxImvGFu5R4J5FtFH7pMqPC3RBWKZVsADo=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+bzlPLlTeIN0jP27FGsjaxbu/beu7K+5pfFMtzeS5esb
+ b219ndnRykLgxgXg6yYIkv/XMsT7y4fPfN1j3oKzBxWJpAhDFycAjCRl6WMDBt+xtuUOOuxLRB0
+ uJWp8ih64t/ADY+VX/c1Ndxv0rTba8fIcONI84OeJEONROnnYklVW/Qv2Oasb/9v5xy/djbXmzZ
+ PVgA=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -74,34 +75,130 @@ Reply-To: linux-kernel-dev@aliel.fr
 
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-Add the T7 pinctrl used by the Khadas VIM4 for MCU communication.
+Replace the hardcoded MAX_LEVEL constant and fan register
+with values read from platform_data (fan_reg, max_level),
+as new MCUs need different values.
+
+Optionally acquire and enable a "fan" regulator supply
+at probe time and on resume,
+so boards that gate fan power through a regulator are handled.
 
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/thermal/khadas_mcu_fan.c | 49 +++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 43 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-index 7fe72c94ed623..e96fe10b251a0 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-@@ -376,6 +376,16 @@ mux {
- 					};
- 				};
+diff --git a/drivers/thermal/khadas_mcu_fan.c b/drivers/thermal/khadas_mcu_fan.c
+index d35e5313bea41..24559bf65de46 100644
+--- a/drivers/thermal/khadas_mcu_fan.c
++++ b/drivers/thermal/khadas_mcu_fan.c
+@@ -13,13 +13,15 @@
+ #include <linux/regmap.h>
+ #include <linux/sysfs.h>
+ #include <linux/thermal.h>
+-
+-#define MAX_LEVEL 3
++#include <linux/regulator/consumer.h>
  
-+				i2c0_ao_d_pins: i2c0-ao-d {
-+					mux {
-+						groups = "i2c0_ao_sck_d",
-+							 "i2c0_ao_sda_d";
-+						function = "i2c0_ao";
-+						bias-disable;
-+						drive-strength-microamp = <3000>;
-+					};
-+				};
+ struct khadas_mcu_fan_ctx {
+ 	struct khadas_mcu *mcu;
++	unsigned int fan_reg;
+ 	unsigned int level;
++	unsigned int max_level;
+ 	struct thermal_cooling_device *cdev;
++	struct regulator *power;
+ };
+ 
+ static int khadas_mcu_fan_set_level(struct khadas_mcu_fan_ctx *ctx,
+@@ -27,8 +29,7 @@ static int khadas_mcu_fan_set_level(struct khadas_mcu_fan_ctx *ctx,
+ {
+ 	int ret;
+ 
+-	ret = regmap_write(ctx->mcu->regmap, KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+-			   level);
++	ret = regmap_write(ctx->mcu->regmap, ctx->fan_reg, level);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -40,7 +41,9 @@ static int khadas_mcu_fan_set_level(struct khadas_mcu_fan_ctx *ctx,
+ static int khadas_mcu_fan_get_max_state(struct thermal_cooling_device *cdev,
+ 					unsigned long *state)
+ {
+-	*state = MAX_LEVEL;
++	struct khadas_mcu_fan_ctx *ctx = cdev->devdata;
 +
- 				pwm_a_pins: pwm-a {
- 					mux {
- 						groups = "pwm_a";
++	*state = ctx->max_level;
+ 
+ 	return 0;
+ }
+@@ -61,7 +64,7 @@ khadas_mcu_fan_set_cur_state(struct thermal_cooling_device *cdev,
+ {
+ 	struct khadas_mcu_fan_ctx *ctx = cdev->devdata;
+ 
+-	if (state > MAX_LEVEL)
++	if (state > ctx->max_level)
+ 		return -EINVAL;
+ 
+ 	if (state == ctx->level)
+@@ -83,11 +86,32 @@ static int khadas_mcu_fan_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct khadas_mcu_fan_ctx *ctx;
+ 	int ret;
++	const struct khadas_mcu_fan_pdata *pdata = dev_get_platdata(&pdev->dev);
+ 
+ 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+ 		return -ENOMEM;
++
+ 	ctx->mcu = mcu;
++	ctx->fan_reg   = pdata->fan_reg;
++	ctx->max_level = pdata->max_level;
++
++	ctx->power = devm_regulator_get_optional(dev->parent, "fan");
++	if (IS_ERR(ctx->power)) {
++		if (PTR_ERR(ctx->power) == -ENODEV)
++			ctx->power = NULL;
++		else
++			return PTR_ERR(ctx->power);
++	}
++
++	if (ctx->power) {
++		ret = regulator_enable(ctx->power);
++		if (ret) {
++			dev_err(dev, "Failed to enable fan power supply: %d\n", ret);
++			return ret;
++		}
++	}
++
+ 	platform_set_drvdata(pdev, ctx);
+ 
+ 	cdev = devm_thermal_of_cooling_device_register(dev->parent,
+@@ -124,12 +148,25 @@ static int khadas_mcu_fan_suspend(struct device *dev)
+ 
+ 	ctx->level = level_save;
+ 
++	if (ctx->power) {
++		ret = regulator_disable(ctx->power);
++		if (ret)
++			return ret;
++	}
++
+ 	return 0;
+ }
+ 
+ static int khadas_mcu_fan_resume(struct device *dev)
+ {
+ 	struct khadas_mcu_fan_ctx *ctx = dev_get_drvdata(dev);
++	int ret;
++
++	if (ctx->power) {
++		ret = regulator_enable(ctx->power);
++		if (ret)
++			return ret;
++	}
+ 
+ 	return khadas_mcu_fan_set_level(ctx, ctx->level);
+ }
 
 -- 
 2.49.0
