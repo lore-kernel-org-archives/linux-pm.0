@@ -1,157 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5825936C5A1;
-	Wed, 22 Apr 2026 20:27:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 245DF35E93E
+	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 22:48:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776889630; cv=none; b=ddIpr2IfXECHTTBEfcw66E+VII7Rc9kVUjv7ghLCL/ldw+8KanehWKQ2xfrY8HkUzbDAuyKIvTKYhaI7BhjVjR0CDryEUcYyHOhwuz/y+4DVqdpH1UJbU7svvXEJ/KC9WsBfmmf4jylD9mHZybsududYd/R+EEOQVUTv7bkeT9k=
+	t=1776898121; cv=none; b=bKhLRlCOtubqQjjH6iYEuvmW3KpZHh3cYpvqs79jQpVR/WQOvufDMZhuJ2Hrhhwm0OBDkyUK1XxRzenSfhA8AXXJWE6wxuGcZ28fXVS/yshcLWjZrJSCFY6BFr4eFnFa4NyRgOM1tRC4jSQPVKcL0229HoBIQY4E8jF9gKeGy+M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776889630; c=relaxed/simple;
-	bh=iAUPsm1LDedItMRxQEDcJahVt/xXTKZHOJ4OvRDP31A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gt380cGVWdoCXj+0wCHEmP5PgymhNXO/OOfz9gF/MePJI8HUNkMXtOJHFPYyIFLIUFeMTwJKsyKdOGeRhnaApxMExxDnZ0mypN3ISN+Hnk3v2LWZ+kvxJT8hghtt54T1KFWw/Ce/L6ZSOkQ8Wmg+Wutf3gRkySdWY5oK9qkDqUM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uumehj9Y; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776898121; c=relaxed/simple;
+	bh=NRWSIj1awYbKDb7XDOAYoJaNnOVQ29rl0pbbuAh0CXA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Vhxn77BmXpTDnu6HbdM4GTMMnFPdC3mA0XMif2R/tLQ+9afQz5e26BwdOMxXc5yachAKp62bfGaqGS3TWsKVKafXgobgIeJz+4dNCSAXoPQQPtaSiPxaJvAykyf6G/Xeqe3pRk+tpSypQiyWqiyWwN955/CrAlJpqPPgKMQI0Tg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=xP0Kzkm4; arc=none smtp.client-ip=209.85.210.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uumehj9Y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1693BC19425;
-	Wed, 22 Apr 2026 20:27:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776889629;
-	bh=iAUPsm1LDedItMRxQEDcJahVt/xXTKZHOJ4OvRDP31A=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Uumehj9Yhkcy08Kf8dZ5rOV9nlZTiDXyKcpJXqDHKVVoiLk0k4R/Iy6e4t19WkMGG
-	 K79QlrrLYLsB3ybo4i+jp5gpal9jxBdG0SseGXmwpqJeEQBj/meOaPH+R8eO4m9C6B
-	 04Qpi6ue/mTejuseYYk2F2F0wMb/Pq3coHzcHWBAredtZrQR1mOBynQKXVaK7ySeAh
-	 rGK823XHnPX8G1WtvZ6+m/ROAsxVAqC7fH1XwK6oiJM316apDUAUs7oP0hkRXMRG0a
-	 6jzoEnGRKMnv0OjAZBjz53YtNgPl9drRCxuEGaxZnOzzeSGNKO8hJqRkjU3FhVfBG7
-	 VDOt1f/R7p/BA==
-Date: Wed, 22 Apr 2026 20:27:06 +0000
-From: Yosry Ahmed <yosry@kernel.org>
-To: Kairui Song <ryncsn@gmail.com>
-Cc: Nhat Pham <nphamcs@gmail.com>, Liam.Howlett@oracle.com, 
-	akpm@linux-foundation.org, apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
-	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
-	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
-	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
-	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
-	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
-	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
-	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, tglx@kernel.org, 
-	vbabka@suse.cz, weixugc@google.com, ying.huang@linux.alibaba.com, 
-	yosry.ahmed@linux.dev, yuanchu@google.com, zhengqi.arch@bytedance.com, ziy@nvidia.com, 
-	kernel-team@meta.com, riel@surriel.com
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-Message-ID: <aektdlD4npMVThu3@google.com>
-References: <20260320192735.748051-1-nphamcs@gmail.com>
- <aegUoOiUbjUAH5aT@google.com>
- <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="xP0Kzkm4"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-82fa8d6425bso2015824b3a.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 15:48:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1776898118; x=1777502918; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4qI6kGELEoPNIDxXAqpiIcX3kz3Y96gemHsRdJV8MIo=;
+        b=xP0Kzkm4cdE8FArVwyURRIHBqxgKXjsZXcCImcT9GabegLK8BxG5yXw7MeEN+gWO7c
+         2iJgGQFINJgAKN4BIjv2ysJkJXWZlOQxbXwci6oucu29d124FfVSkzHu8hXbi/VexCWw
+         hjwhyIsDf6MUPD82KchjGOPlF86Z5AZ0DIdldkzm/ImvFY5UnGqprIWIN/8ggT8MHI7x
+         C7bkUNY/zv9Slh+EsjBw7mM+szwXkfl5dyNd+ipkpHdIFjyG3Dc2g+IoVn7132uP1t7O
+         wXQk5Z9aE5FO4TfJFxv4BHrYkyNiuRepGZURqK7AOiZEUE8x6Gx8H0zBwRCrirocoUvd
+         v4/A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776898118; x=1777502918;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=4qI6kGELEoPNIDxXAqpiIcX3kz3Y96gemHsRdJV8MIo=;
+        b=oXabVMN/xN5kfa/EOoFHJfm/OFupz9cK92l5/9nqGVtPx7y4K+h8XWLnQWRdFlebep
+         SXDbjnHyqKAQDPLfjmMQ4NLrxl3UTEUqUhPpB0btJesQcAxp4BP6qZQihlQZOiyvDhFX
+         6wURRFhmv3i8l/svxP0mYrrKK32K95egvlVQgAicnnU4MgUIDUZlaYV/nOAuLK1UNeEV
+         oLd9QIeNvNBPeZ+ncTjugUmHFYCTp3Sbqp5k2uHQ4rsUrF0W2XbmJ0RbfkABiMbjU75q
+         P+LNVSgBfv/XhWCNDyg498J7xMDgO3iyxfMod9wmuMleWGoEu2ST0jY4BhcVdMgPhjKt
+         g7Kg==
+X-Forwarded-Encrypted: i=1; AFNElJ+XDfx8RGtf5vSho+x5PtP0m/QctpYth0Zwt7F6s+saRpemqyHe6yDdBZ1PdWRigeqqQGybzK8r5Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw2sHSoVy4mjFcRWm/lAhVSkxyrmV/3nYz2aUpNG8PaLPE9X8rB
+	UqfTGQX65LSjFOBjblmCN8p2BbELU98ngzOYW1eia4cRwrsLoxsZL5Vdt9FJ0msbYZI=
+X-Gm-Gg: AeBDievATk3X4EyzU24O9Pydcfpgv4WY4H/WXzq8P/B4t6CpY00Jq1bLQExCbIAsk5M
+	VImZXEK9Ghw0S6Sa08sTdLV7+C1hdiKX6sX9DjzAs/c18JlDVhn/MZSGwXHShvF2wdoqGG54z3W
+	VklqChbCKSMnUZjUgsA+Xl2MmniDMnhOC14oCBuyxz4zEOcrPHKtzUWW1Za5t+hPZ5pNH8LnJmg
+	1ifbukraERjpm3WpA44RobGi6N5pVm+Vayp2Xn0zyiSl3vqWtZb9hwU7ceJUKaFcBfJ+jqvCIBt
+	y+6VulEi7UWlnSyj78Xbc5yfB81PqVy+IKFc9/7tVUxmL67CZWhzMtZBJkjlvHIz37bTf9/lx2x
+	Ff0RFwOmr/feOxMFIzsDc8EAHLIcskFDcQCedB6KA9x7EGxv6aFuPGk/FTQU0wGS60T9GqXhkZe
+	vR+FxD0Le0LRP1K+UXNNWwovsYozcJOA==
+X-Received: by 2002:a05:6a00:c8a:b0:82f:98c:1465 with SMTP id d2e1a72fcca58-82f8c8fb258mr26682792b3a.27.1776898118539;
+        Wed, 22 Apr 2026 15:48:38 -0700 (PDT)
+Received: from localhost ([97.126.187.42])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8ec04448sm21836313b3a.55.2026.04.22.15.48.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Apr 2026 15:48:37 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Sudeep Holla
+ <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
+ Saravana Kannan <saravanak@kernel.org>, Michael Turquette
+ <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Philipp Zabel
+ <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, "Rafael J .
+ Wysocki" <rafael@kernel.org>, Florian Fainelli
+ <florian.fainelli@broadcom.com>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, Marek Vasut
+ <marek.vasut+renesas@mailbox.org>, Kuninori Morimoto
+ <kuninori.morimoto.gx@renesas.com>
+Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: Re: [PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping
+In-Reply-To: <cover.1776793163.git.geert+renesas@glider.be>
+References: <cover.1776793163.git.geert+renesas@glider.be>
+Date: Wed, 22 Apr 2026 15:48:37 -0700
+Message-ID: <7hcxzqr4qi.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
+Content-Type: text/plain
 
-On Wed, Apr 22, 2026 at 10:18:35AM +0800, Kairui Song wrote:
-> On Wed, Apr 22, 2026 at 8:26 AM Yosry Ahmed <yosry@kernel.org> wrote:
-> >
-> > On Fri, Mar 20, 2026 at 12:27:14PM -0700, Nhat Pham wrote:
-> > >
-> > > This patch series implements the virtual swap space idea, based on Yosry's
-> > > proposals at LSFMMBPF 2023 (see [1], [2], [3]), as well as valuable
-> > > inputs from Johannes Weiner. The same idea (with different
-> > > implementation details) has been floated by Rik van Riel since at least
-> > > 2011 (see [8]).
-> >
-> > Unfortuantely, I haven't been able to keep up with virtual swap and swap
-> > table development, as my time is mostly being spent elsewhere these
-> > days. I do have a question tho, which might have already been answered
-> > or is too naive/stupid -- so apologies in advance.
-> 
-> Hi Yosry,
-> 
-> Not a stupid question at all—it's actually spot on. :)
-> 
-> >
-> > Given the recent advancements in the swap table and that most metadata
-> > and the swap cache are already being pulled into it, is it possible to
-> > use the swap table in the virtual swap layer instead of the xarray?
-> >
-> > Basically pull the swap table one layer higher, and have it point to
-> > either a zswap entry or a physical swap slot (or others in the future)?
-> > If my understanding is correct, we kinda get the best of both worlds and
-> > reuse the integration already done by the swap table with the swap
-> > cache, as well as the lock paritioning.
-> >
-> > In this world, the clusters would be in the virtual swap space, and we'd
-> > create the clusters on-demand as needed.
-> >
-> > Does this even work or make the least amount of sense (I guess the
-> > question is for both Nhat and Kairui)?
-> >
-> 
-> Yes, this absolutely works. In fact, I previously posted a working RFC
-> based on this idea. In that series, clusters are dynamically
-> allocated, allowing the swap space to be dynamically sized
-> (essentially infinite) while reusing all the existing infrastructure:
-> https://lore.kernel.org/all/20260220-swap-table-p4-v1-0-104795d19815@tencent.com/
+Geert Uytterhoeven <geert+renesas@glider.be> writes:
 
-There are a few aspects that I don't agree with in this RFC, and I think
-Nhat and Johannes raised most of them. Mostly that I don't want to
-expose ghost swapfiles or similar to userspace.
+> 	Hi all,
+>
+> TL;DR:
+>
+>     Describe hardware in DT, and perform the mapping to SCMI in Linux.
+>
+> The Renesas R-Car X5H-based Ironhide board is the first Renesas
+> SoC/board combination that implements the ARM System Control and
+> Management Interface (SCMI).
+>
+> This means Linux can no longer perform various system operations (e.g.
+> clock, power domain, and reset control) by accessing the hardware
+> directly.  Instead, these operations are abstracted according to various
+> SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
+> firmware running on a System Control Processor (SCP).
+> More specifically, the R-Car X5H SCP FW SCMI controls access to:
+>   1. Core clocks and module clocks,
+>   2. Module resets,
+>   3. Power domains,
 
-I think userspace's view of swapfiles should remain the same and reflect
-the physical swap slots. The virtual swap layer should be completely
-transparent in this case. Userspace shouldn't need to configure it in
-any way.
+I'm very curious how power domain hierarchy is described on this SoC,
+because one more issue to add to your list is that hierarchy cannot be
+described for power domains in SCMI.
 
-In an ideal world, the only noticeable change from userspace is that
-with zswap, compressed pages would stop using slots in the swapfile and
-charging the memcg for them -- and that zswap would work even without a
-swapfile, by just enabling it. This is admittedly a user-visible
-behavioral change, but I am hoping that's a good one that we can live
-with.
+I know you're aware of it already, but just FYI for anyone else
+exploring this space, I have a series[1] in-flight right now to address
+this limitation of SCMI so that we can at least describe this hierarchy
+in DT and the pmdomain framework.
 
-If there are real concerns about this, we can discuss things like a knob
-or config option to keep charging zswap pages as swap slots (ew..) or
-only allow zswap with a real swapfile (double ew..). But I am really
-hoping we can get away with changing the semantics without doing this.
+Kevin
 
-We can add extra interfaces for virtual swap as needed, e.g. virtual
-swapoff that you mentioned to clear the swap cache, or stats about the
-virtual swap space (which translates to memory overhead).
+[1] https://lore.kernel.org/linux-pm/20260420-topic-lpm-pmdomain-child-ids-v3-0-c2c40bef238c@baylibre.com/
 
-There are also a few missing pieces like different memcg charging, but
-these were already pointed out, and we can figure them out as we go.
-
-Nhat/Johannes, WDYT? Am I missing somthing?
-
-> 
-> The only missing pieces are a few helpers like folio_realloc_swap()
-> and folio_migrate_swap() for lower layer allocation and migration. I
-> prototyped this locally and it wasn't difficult to implement.
-> Furthermore, this approach works perfectly with YoungJun's tiering
-> work with zero conflicts, the dynamic layer can be runtime or
-> per-memcg optional.
-> 
-> To move this forward, I've stripped out the RFC features and memcg
-> behavior changes, and recently sent a V3 that focuses purely on the
-> infrastructure. It introduces no behavior changes or new features,
-> just optimizations.
-> 
-> It cleans up a lot of allocation and ordering, as well as memcg
-> swap lookups. Since some of these problems were also observed in the
-> vss discussion, I think this will make things easier for all of us:
-> https://lore.kernel.org/all/20260421-swap-table-p4-v3-0-2f23759a76bc@tencent.com/
-
-Yeah I saw that (but didn't really have time to do anything else about
-it). Splitting this out is definitely the right thing to do, and the
-series looks great from a very high level. Awesome work, as usual :)
