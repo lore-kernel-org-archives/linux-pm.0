@@ -1,131 +1,209 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E44D84414;
-	Wed, 22 Apr 2026 18:45:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B52E23EF0AF
+	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 18:57:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776883552; cv=none; b=qnB4HM3TIf4gYaIQtnH/XsXu0rfuYVHwwGUVKySK4SEUGcLvepX90/gjkrfPSZwQXFcvf/IuZLM9oovDHXYYqW2ykz8d+gD+1rI75/11i53Gpw1uBWJnX610tAusPEOIiqq0Rh+BHPtnY9yllMVYyDN37OylNlrae5/HjGOTQrM=
+	t=1776884234; cv=none; b=tXXEUf/fztRRSfwsmNH8J3eL9tiKIv2iHRKP8N+AeFN8qRWwBz6nZ1nrnbBjpFpFkInbIvKH+GWH9rsv3Wpo2ll8+C4eisKiq1JOERQMHGZhsFi+tf+VfbAbzUoMxOPaWUNFP22ZEkXSoPUVd1Xz1FWxm4TCS/OKUgikWR6Wcgo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776883552; c=relaxed/simple;
-	bh=hkA5KjlIl5jwh4GkTXHA4vVNwgDxaznRvBx/RdhhKnA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U2UkPGcPkGYL780deNI/v00YzpuJdMWC+O00M2Dm31yfSB5J/FQ5DWb0LWqN1LHYuo81KyjozfP268thAmQ7PHvDhFA00iQk0wL7l21h31TIL3eFD8QJ0q9IZOUgo4+rMR78vYDUhtO40S+dZuUlOS3nErZq1YLXPuoWHaXl+HE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YR5vqQX1; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1776884234; c=relaxed/simple;
+	bh=W3gJGhETv1i99hgZ4Qzxlq7+a/rqAi15n3RaJvZubfA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hi2wStOBYRdNLSBBcjilurmHJLDPpolU4cQOUNx7owPvcf8WAyRhjLMWvkx9wbFH9ZNM94GkcR7QfKXTwDe/kXgCVo7S1NETr/7F1Y2Wx6eMgvzUk3aH00xDdlEcKyJMubmwsFwihCSRVY+b144TmktfZ60BLK0qoX8L/e0Tw+c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=X+Qlyk2a; arc=none smtp.client-ip=209.85.218.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YR5vqQX1"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 797ED1E8D;
-	Wed, 22 Apr 2026 11:45:43 -0700 (PDT)
-Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8F7BC3F641;
-	Wed, 22 Apr 2026 11:45:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1776883549; bh=hkA5KjlIl5jwh4GkTXHA4vVNwgDxaznRvBx/RdhhKnA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YR5vqQX1RwlqvU3irJVsmTCjnxjrT6BB9Mobx9TN8DuowUioHwsuy9oU1pnpwNL11
-	 1dlH18U+1iqag2bVyl/WX8QGsNBDr23tbm4Y62yq+fUD39OYy8G20AUnr3jzLYs74m
-	 6vfxb5Ccpxy/4VArdBH/MSuXTFo62aj6EQPD8FS0=
-Date: Wed, 22 Apr 2026 19:45:38 +0100
-From: Cristian Marussi <cristian.marussi@arm.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>,
-	Cristian Marussi <cristian.marussi@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
-Message-ID: <aekXUvIPb8nkhdKu@pluto>
-References: <cover.1776793163.git.geert+renesas@glider.be>
- <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="X+Qlyk2a"
+Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-b8d7f22d405so997647066b.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 11:57:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1776884224; x=1777489024; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=R4vBmmJ5gC2QCrFlTLiSjZ3SPsY2SAKP5dBxbzswxUI=;
+        b=X+Qlyk2aQ49zo8FbWkYdQNABTJgYagGZhv2LOvYqeyOIyutMA5y+dyYiQNbJp3XaBa
+         HOYDS0DwPWHZ5tbFma8kYSlxQntcz9Wqzr/y+gxXijj8YSC91YxUpzsz34vIumRBrMtQ
+         J8vkdbv80HN+JdaHLNY1HKC4xqg6Roa72NoGg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776884224; x=1777489024;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=R4vBmmJ5gC2QCrFlTLiSjZ3SPsY2SAKP5dBxbzswxUI=;
+        b=kFJGrXEjkjHPzfLp31uiJSPEi3JECoNGCLuQ7NzFqq5ijIhM4tPl/XIPODoBBbQSod
+         mz3Aq1rmzXSCFObviBzg8UcI/pe2gYDxcVr87xhBvvGy8KlVvZKddYOj/Eq2d3jPq98l
+         MbvoALNnNhJABWHrgiQTVZwLG8LNASDpjohd5xsPJ5Jie3pyZl0n/0mGX7oQ+oBnE8kA
+         /ezmqHZ3WNwSP3ix7s8HgL8B9orQF/p2t42ltrLR60ogZpjvR705ZMgBzzzd6yBu/Gwg
+         7Rf/7R6JPgKRnAVe5pm6N0x797cTXKQSg0L8c9A8bsW6uJpEXDX3z9bltIauRfdIK4Dl
+         dJHg==
+X-Forwarded-Encrypted: i=1; AFNElJ+whs3MuR00H4gQTaYNNjHL6GJAmSrz7uQ5mu9V1JbSmUCGd5i940CMgLTdpHWh3Vle2sGMpTP4cQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yze1qLSZ2nENIE9LLDYlcpe95iak8J+hEiW7DYWN80xkak7kLck
+	eJj5eeLnOsBwxuSIG14Ixu0JE5vmMig4dF5du7rPD3hjrj2tGwGA/MVUZ1FOaENBVsjfInw1/jL
+	gz2ZaHg==
+X-Gm-Gg: AeBDietHqyvBxUV3/DJRcZHpivKuLrNYMyr36ldyH6wDsqh7VBY89r/TQyN5gCLrvv0
+	z5OboYn9I3PdGPT/x7FxKxkeK7WLArgcM6lm7UFcPUWLYJIpXC97DhV6hT0V4nYM7jx5S/MTdiR
+	8O7IEn+vEmBLDp7LUTP1aIF0cbem/XbeE9pfKANz9ViZY7FyMWaRoVZ3Y8YuFd32F6QJ4Jyhcis
+	qvqwP1TnovOsxTo2OIdaNJixMrzUo64HhAS9nOtWLT6hwrli31qekP3Irl6nU6kt4S9xcEvF63b
+	1z3xtVFkCNQ5f8kt2TH5L0Bse1XA4DT6AzgNpt2bVoCVkKMTs05My7sZcj5tpsdwlG6jOCTi8M4
+	A1KJB4o1FRMIE0yCtaLEBspBVWkJa/0f/CCvs430BvUFzwzcRzwH2CwmCesYexidlA0Qe2NJ07+
+	R8JcJJ4XXfoLDaUMl4kjBGMKIZrybP55DuzXB4X8g21+f9Q1NzXxFHE/iqTGwoQxipkZqID08N
+X-Received: by 2002:a17:907:6ea8:b0:ba6:1aaa:8774 with SMTP id a640c23a62f3a-ba61ab9cba9mr761264566b.48.1776884223559;
+        Wed, 22 Apr 2026 11:57:03 -0700 (PDT)
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com. [209.85.208.45])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ba45503c435sm577546166b.43.2026.04.22.11.57.03
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 22 Apr 2026 11:57:03 -0700 (PDT)
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-671d60ef9c6so7584557a12.2
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 11:57:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9IuYKNRgD11LLNTrhu+PpO5zs9m+yXU3m2lMgizYZeTlbtmWM0Ny2Mj6OYOfckBnD828BwE5z5qQ==@vger.kernel.org
+X-Received: by 2002:a05:6000:2f8a:b0:43d:7a08:a5e6 with SMTP id
+ ffacd0b85a97d-43fe3e073c9mr39087653f8f.29.1776883909243; Wed, 22 Apr 2026
+ 11:51:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+References: <20260325143555.451852-1-herve.codina@bootlin.com>
+ <20260325143555.451852-3-herve.codina@bootlin.com> <CAMuHMdU7x7LWFkD9xiq+wyOqnn0bdzr+JLfvbBexoiWyv8kftA@mail.gmail.com>
+In-Reply-To: <CAMuHMdU7x7LWFkD9xiq+wyOqnn0bdzr+JLfvbBexoiWyv8kftA@mail.gmail.com>
+From: Doug Anderson <dianders@chromium.org>
+Date: Wed, 22 Apr 2026 11:51:36 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=UK3NQKQN7FXyG4nGdDKO=LQYhnL4ZweomQ_4R9-EAYag@mail.gmail.com>
+X-Gm-Features: AQROBzAV3w_CPq4qi5veiP_uOv4VWrOsaTYpBbypDAKqTbu6jiZzeNsnLIn0Vds
+Message-ID: <CAD=FV=UK3NQKQN7FXyG4nGdDKO=LQYhnL4ZweomQ_4R9-EAYag@mail.gmail.com>
+Subject: Re: [PATCH v6 02/27] of: dynamic: Fix overlayed devices not probing
+ because of fw_devlink
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Herve Codina <herve.codina@bootlin.com>, Andrew Lunn <andrew@lunn.ch>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Kalle Niemi <kaleposti@gmail.com>, Matti Vaittinen <mazziesaccount@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, 
+	Arnd Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Richard Fitzgerald <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, 
+	Linus Walleij <linusw@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, 
+	Mark Brown <broonie@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>, 
+	Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>, 
+	Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, 
+	Alison Schofield <alison.schofield@intel.com>, Vishal Verma <vishal.l.verma@intel.com>, 
+	Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Shawn Guo <shawnguo@kernel.org>, Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
+	patches@opensource.cirrus.com, linux-gpio@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-spi@vger.kernel.org, 
+	linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, 
+	Allan Nielsen <allan.nielsen@microchip.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, 
+	Steen Hegelund <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Saravana Kannan <saravanak@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 21, 2026 at 08:11:38PM +0200, Geert Uytterhoeven wrote:
-> Currently non-SCMI drivers cannot find out what the specific versions of
-> each SCMI provider implementation on the running system are.
+Hi,
 
-Hi Geert,
+On Wed, Apr 22, 2026 at 10:44=E2=80=AFAM Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+>
+> Hi Herv=C3=A9,
+>
+> CC Douglas
+>
+> On Wed, 25 Mar 2026 at 15:36, Herve Codina <herve.codina@bootlin.com> wro=
+te:
+> > From: Saravana Kannan <saravanak@google.com>
+> >
+> > When an overlay is applied, if the target device has already probed
+> > successfully and bound to a device, then some of the fw_devlink logic
+> > that ran when the device was probed needs to be rerun. This allows newl=
+y
+> > created dangling consumers of the overlayed device tree nodes to be
+> > moved to become consumers of the target device.
+> >
+> > Fixes: 1a50d9403fb9 ("treewide: Fix probing of devices in DT overlays")
+> > Reported-by: Herve Codina <herve.codina@bootlin.com>
+> > Closes: https://lore.kernel.org/lkml/CAMuHMdXEnSD4rRJ-o90x4OprUacN_rJgy=
+o8x6=3D9F9rZ+-KzjOg@mail.gmail.com/
+> > Closes: https://lore.kernel.org/all/20240221095137.616d2aaa@bootlin.com=
+/
+> > Closes: https://lore.kernel.org/lkml/20240312151835.29ef62a0@bootlin.co=
+m/
+> > Signed-off-by: Saravana Kannan <saravanak@google.com>
+> > Link: https://lore.kernel.org/lkml/20240411235623.1260061-3-saravanak@g=
+oogle.com/
+> > [Herve: Rebase on top of recent kernel]
+> > [Herve: Add the call to driver_deferred_probe_trigger()]
+> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> > Tested-by: Kalle Niemi <kaleposti@gmail.com>
+> > Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> > --- a/drivers/base/core.c
+> > +++ b/drivers/base/core.c
+> > @@ -235,6 +235,79 @@ static void __fw_devlink_pickup_dangling_consumers=
+(struct fwnode_handle *fwnode,
+> >                 __fw_devlink_pickup_dangling_consumers(child, new_sup);
+> >  }
+> >
+> > +static void fw_devlink_pickup_dangling_consumers(struct device *dev)
+> > +{
+> > +       struct fwnode_handle *child;
+> > +
+> > +       guard(mutex)(&fwnode_link_lock);
+> > +
+> > +       fwnode_for_each_available_child_node(dev->fwnode, child)
+> > +               __fw_devlink_pickup_dangling_consumers(child, dev->fwno=
+de);
+> > +       __fw_devlink_link_to_consumers(dev);
+> > +}
+> > +
+> > +/**
+> > + * fw_devlink_refresh_fwnode - Recheck the tree under this firmware no=
+de
+> > + * @fwnode: The fwnode under which the fwnode tree has changed
+> > + *
+> > + * This function is mainly meant to adjust the supplier/consumer depen=
+dencies
+> > + * after a fwnode tree overlay has occurred.
+> > + */
+> > +void fw_devlink_refresh_fwnode(struct fwnode_handle *fwnode)
+> > +{
+> > +       struct device *dev;
+> > +
+> > +       /*
+> > +        * Find the closest ancestor fwnode that has been converted to =
+a device
+> > +        * that can bind to a driver (bus device).
+> > +        */
+> > +       fwnode_handle_get(fwnode);
+> > +       do {
+> > +               if (fwnode->flags & FWNODE_FLAG_NOT_DEVICE)
+>
+> After commit f72e77c33e4b5657 ("device property: Make modifications
+> of fwnode "flags" thread safe"), this must be changed to:
+>
+>     if (fwnode_test_flag(fwnode, FWNODE_FLAG_NOT_DEVICE))
+>
+> With this change my DT overlays are working again.
+>
+> I guess keeping the FWNODE_FLAG_* names, but changing their values
+> from bit masks to bit numbers was probably not such a good idea,
+> as it fails to catch missing conversions...
 
-Thanks for your patches....this is not a proper full review of the series,
-BUT this patch catched my eye..
+Crud, I should have thought about that. :( Do you think it's worth it
+to do a rename at this point to catch future problems?
 
-Indeed, yes, it is deliberate that the SCMI version information is NOT
-exposed out of the SCMI world, since being the SCMI an attempt to
-standardize a common FW interface (as in [1] of course), you should not
-know what runs inside the black-box, it should be irrelevant...
-
-...indeed the versioning is used inside the SCMI stack to deal properly
-with different protocol versions implemented by the server OR to apply
-proper quirks when needed, but all the rest should be standard....
-
-...you should NOT really behave differently based on the underneath
-protocol or firmare implementation version...it is the SCMI stack that
-should behave properly, transparently...
-
-Having said that...I understand that at least it could be useful to be able
-to query the SCMI stack to know, even from non-SCMI drivers, WHICH quirks
-have been applied/activated at run time...but anything more than that it
-seems to me dangerous and prone to a number of abuses of the SCMI stack
-itself...
-
-(Also...exposing the versions itself means also tracking that bit of info
-in more than one place: the quirk framework and your drivers.)
-
-> 
-> However, different versions may use different ABIs (e.g. different clock
-> IDs), or behave different, requiring remapping or workarounds in other
-> drivers.
-
-...abuse like this indeed :P ... the SCMI server is supposed to be that
-one entity remapping the IDs in the background if the same IDs happen to
-be representing different physical resources across a number of distinct
-platforms all supported by the same firmware blob...so as to present
-a consistent set of contiguos IDs...
-
-Also because this should be one of the selling point of the SCMI stack
-in a virtualized environment: you can ship the same kernel drivers with
-the same DT and you know that ID=<N> will always identify the specific
-resource that is needed by your driver without worrying about the fact
-that in reality in the backstage the effectively managed physical resource
-could be different across different platforms, because that does not matter
-if the SCMI platform server had properly remapped (at build time/run-time ?)
-the resources to your expected ID...alternatively of course you can ship
-with different DTs to describe different hardware...BUT remmapping stuff
-in the drivers themselves guessing on the vendor/subvendor/impl_vers
-seems a dangerous abuse...
-
-I watched a bit of the LPC discussions around this (from Marek I think)
-but sincerely most of those problems had one (not necessarily simple)
-solution: fix your firmwares AND/OR apply quirks in the meantime...
-
-Sorry, I am sure this not a welcomed answer :P ...thoughts ? 
-
-Thanks,
-Cristian
-
-[1]: https://xkcd.com/927/
-
+-Doug
