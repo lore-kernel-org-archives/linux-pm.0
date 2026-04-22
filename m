@@ -1,39 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D13734B682;
-	Wed, 22 Apr 2026 15:39:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD30533F591;
+	Wed, 22 Apr 2026 15:40:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776872399; cv=none; b=Nx07kiQzpfMDV+WgGBfjekHx6g5o9oAfP7ayceJRLSLFvbQjTGU4biluYBEMfBLxRDq+f9Ki8MWk/RUNsZR7vYNrG176CjdarrK6HebMiNq8HT/0cuPYwR6ISFB97WRN8+E2fYa/kNUBlzh/Pzelv9pamOOB6TKKFSgXNf4RIFc=
+	t=1776872402; cv=none; b=VZLevzJleiHr4bq4j+MJDCiSGWVWglx3zxKclrkHCsrsQcavfUOLlRXH1hv12BlSX5XV+tMFcWGxkxFmhKjWszpnywHx2YCuo1WaXq/k3/qPEgTAkOuolYZ2JkLbl2o1gWTc4Pw0lhSMMGKvZ754G/skp3g4BsnXG1J2fbYlICY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776872399; c=relaxed/simple;
-	bh=43rJuWaPQiBjOgqqdR8b7+JU2I4r4O6RN0WxtFJed9E=;
+	s=arc-20240116; t=1776872402; c=relaxed/simple;
+	bh=B/HVfZVMeyhleXR4W1gDTZ7DRrRBMrbGdCzfO2XmG5c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=atlYv9FyyNVH1ImdbAAKZuWoILvZFMUIkA5a83Z2AZhIjupYd8a7wZjTVUhx/bD5zIImua3T6QiBVSRuJTlg11QCjzIVzAhCHFPAA5OQ8pcqgvxcEvck0nzaT6NnG5dNdqKJg7FxkH34aV+U+JSmuU/yIx2vHQZjqszWT4f7X4M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PucXFrJQ; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=ryttb0NUFql3LJquz8o+yH+y5XMHhRKNypKA/pw8sNgs44vbQt4XiVWNn7ZiELwerPB16KEpnFzzMtSmSYrYQ1NJaa5Tia/3A/FkenljGcwCDR96ozgpv8gbeKACRcNEOAptv7UY8h11TiHBgFKHeCgWGLWqokw4b5vN8QgnDcc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eDAPT39d; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PucXFrJQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4860C19425;
-	Wed, 22 Apr 2026 15:39:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eDAPT39d"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE1E3C2BCB2;
+	Wed, 22 Apr 2026 15:40:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776872398;
-	bh=43rJuWaPQiBjOgqqdR8b7+JU2I4r4O6RN0WxtFJed9E=;
+	s=k20201202; t=1776872401;
+	bh=B/HVfZVMeyhleXR4W1gDTZ7DRrRBMrbGdCzfO2XmG5c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PucXFrJQJKifjJRe/ENhX8+D1n5Md3Pfn/jWLMwdsG1zIcATEN+w75yhUw+LhS9NQ
-	 cbSP4fJVSm60anKHoxHb4q9bhskKNUhHG+MziVHxxPXDoEJyEpA5yFUEeLWyxB6EOa
-	 XIGYtqhMlqOM1+ptXBEfM9cZwCw9Xjhx6P2P93OunXMQFGXNKXZ1fUpkBrjNpY3q8e
-	 5orYGLm+cCbxH3UJUz5uRFOpHj0zgWhl9L3CWAId/48G/SpZT5sWEJqBthXMONxNGT
-	 2zIMuvX8AnAFsX8WFVWA4SC232pNbX93Xh6EYKYi6e3wg0r7FZPwErGTk349tPioQ2
-	 xXg1Pt1gUM0bw==
+	b=eDAPT39d6iw11bFjdZn0QeiQcMCPCWQgIU98TdV86wtgqPbco6UioM8ytiyBICedD
+	 wz05Mv0XoCf9Cg/uh7EunPR8NoQ3hTHifhXism2x1x4Pu/uwPdNpJ6SP5EpvkTY+NN
+	 gqhvek0rE6FcrR21EXEzLDOwTgDBN3izmriV4eis/1RK0Of0Z1yCHFQ73KCa/yCz/I
+	 jUaOC1laEBBz8V59uXn6LIcseD2pAOaUgVajaP//LjypW57lkUctPBN4hOyiBvwKRW
+	 gprH9MNsoEIjnPrd6dFipJMgWNlNrkIbLPyKOA6j8NFQPbPVISlD6feAU5t6LmPJQs
+	 tYzzlZKffQRrg==
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>,
  LKML <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>,
  Armin Wolf <w_armin@gmx.de>
-Subject: [PATCH v1 2/2] thermal: core: Simplify unregistration of governors
-Date: Wed, 22 Apr 2026 17:39:19 +0200
-Message-ID: <9615355.CDJkKcVGEf@rafael.j.wysocki>
+Subject: [PATCH v1 1/2] thermal: core: Remove dead code from two functions
+Date: Wed, 22 Apr 2026 17:37:14 +0200
+Message-ID: <3950489.kQq0lBPeGt@rafael.j.wysocki>
 Organization: Linux Kernel Development
 In-Reply-To: <2354798.iZASKD2KPV@rafael.j.wysocki>
 References: <2354798.iZASKD2KPV@rafael.j.wysocki>
@@ -48,145 +48,114 @@ Content-Type: text/plain; charset="UTF-8"
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thermal governors are only unregistered in the thermal_init() error
-path and they actually are only deleted from thermal_governor_list.
+Since thermal_register_governor() is only called by
+thermal_register_governors() which runs before clearing
+thermal_class_unavailable, thermal_tz_list is guaranteed to be
+empty when it runs, so the code walking that list in it is
+effectively dead.
 
-Put the entire code needed to do that to thermal_unregister_governors()
-and rearrange thermal_init() to call that function also when
-thermal_register_governors() returns an error.
+The same observation applies to the code walking thermal_tz_list
+in thermal_unregister_governor() which is also called only if
+thermal_class_unavailable hasn't been cleared.
 
-This allows thermal_unregister_governor() to be dropped
-and thermal_register_governor() that is only called by
-thermal_register_governors() can be made static __init, so the
-headers of these two functions can be dropped from thermal_core.h.
+Remove the dead code from both functions mentioned above and rearrange
+thermal_register_governor() to reduce indentation level.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/thermal_core.c |   50 +++++++++++------------------------------
- drivers/thermal/thermal_core.h |    2 -
- 2 files changed, 14 insertions(+), 38 deletions(-)
+ drivers/thermal/thermal_core.c |   61 +++++++----------------------------------
+ 1 file changed, 11 insertions(+), 50 deletions(-)
 
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -117,14 +117,12 @@ static int thermal_set_governor(struct t
- 	return ret;
- }
+@@ -119,59 +119,28 @@ static int thermal_set_governor(struct t
  
--int thermal_register_governor(struct thermal_governor *governor)
-+static int __init thermal_register_governor(struct thermal_governor *governor)
+ int thermal_register_governor(struct thermal_governor *governor)
  {
+-	int err;
+-	const char *name;
+-	struct thermal_zone_device *pos;
  
  	if (!governor)
  		return -EINVAL;
  
--	guard(mutex)(&thermal_governor_lock);
+ 	guard(mutex)(&thermal_governor_lock);
+ 
+-	err = -EBUSY;
+-	if (!__find_governor(governor->name)) {
+-		bool match_default;
 -
- 	if (__find_governor(governor->name))
- 		return -EBUSY;
- 
-@@ -139,19 +137,6 @@ int thermal_register_governor(struct the
- 	return 0;
- }
- 
--void thermal_unregister_governor(struct thermal_governor *governor)
--{
--	if (!governor)
--		return;
+-		err = 0;
+-		list_add(&governor->governor_list, &thermal_governor_list);
+-		match_default = !strncmp(governor->name,
+-					 DEFAULT_THERMAL_GOVERNOR,
+-					 THERMAL_NAME_LENGTH);
 -
--	guard(mutex)(&thermal_governor_lock);
--
--	if (!__find_governor(governor->name))
--		return;
--
--	list_del(&governor->governor_list);
--}
--
- int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
- 				   char *policy)
- {
-@@ -187,40 +172,34 @@ int thermal_build_list_of_policies(char
- 
- static void __init thermal_unregister_governors(void)
- {
--	struct thermal_governor **governor;
-+	struct thermal_governor *gov, *pos;
-+
-+	guard(mutex)(&thermal_governor_lock);
- 
--	for_each_governor_table(governor)
--		thermal_unregister_governor(*governor);
-+	list_for_each_entry_safe(gov, pos, &thermal_governor_list, governor_list)
-+		list_del(&gov->governor_list);
- }
- 
- static int __init thermal_register_governors(void)
- {
--	int ret = 0;
- 	struct thermal_governor **governor;
- 
-+	guard(mutex)(&thermal_governor_lock);
-+
- 	for_each_governor_table(governor) {
-+		int ret;
-+
- 		ret = thermal_register_governor(*governor);
- 		if (ret) {
- 			pr_err("Failed to register governor: '%s'",
- 			       (*governor)->name);
--			break;
-+			return ret;
- 		}
- 
--		pr_info("Registered thermal governor '%s'",
--			(*governor)->name);
+-		if (!def_governor && match_default)
+-			def_governor = governor;
 -	}
 -
--	if (ret) {
--		struct thermal_governor **gov;
+-	guard(mutex)(&thermal_list_lock);
 -
--		for_each_governor_table(gov) {
--			if (gov == governor)
--				break;
--			thermal_unregister_governor(*gov);
+-	list_for_each_entry(pos, &thermal_tz_list, node) {
+-		/*
+-		 * only thermal zones with specified tz->tzp->governor_name
+-		 * may run with tz->govenor unset
+-		 */
+-		if (pos->governor)
+-			continue;
+-
+-		name = pos->tzp->governor_name;
+-
+-		if (!strncasecmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+-			int ret;
+-
+-			ret = thermal_set_governor(pos, governor);
+-			if (ret)
+-				dev_err(&pos->device,
+-					"Failed to set governor %s for thermal zone %s: %d\n",
+-					governor->name, pos->type, ret);
 -		}
-+		pr_info("Registered thermal governor '%s'", (*governor)->name);
- 	}
+-	}
++	if (__find_governor(governor->name))
++		return -EBUSY;
  
--	return ret;
+-	return err;
++	list_add(&governor->governor_list, &thermal_governor_list);
++
++	if (strncmp(governor->name, DEFAULT_THERMAL_GOVERNOR, THERMAL_NAME_LENGTH))
++		return 0;
++
++	if (!def_governor)
++		def_governor = governor;
++
 +	return 0;
  }
  
- static int __thermal_zone_device_set_mode(struct thermal_zone_device *tz,
-@@ -1872,7 +1851,7 @@ static int __init thermal_init(void)
+ void thermal_unregister_governor(struct thermal_governor *governor)
+ {
+-	struct thermal_zone_device *pos;
+-
+ 	if (!governor)
+ 		return;
  
- 	result = thermal_register_governors();
- 	if (result)
--		goto destroy_workqueue;
-+		goto unregister_governors;
+@@ -181,14 +150,6 @@ void thermal_unregister_governor(struct
+ 		return;
  
- 	result = class_register(&thermal_class);
- 	if (result)
-@@ -1884,7 +1863,6 @@ static int __init thermal_init(void)
+ 	list_del(&governor->governor_list);
+-
+-	guard(mutex)(&thermal_list_lock);
+-
+-	list_for_each_entry(pos, &thermal_tz_list, node) {
+-		if (!strncasecmp(pos->governor->name, governor->name,
+-				 THERMAL_NAME_LENGTH))
+-			thermal_set_governor(pos, NULL);
+-	}
+ }
  
- unregister_governors:
- 	thermal_unregister_governors();
--destroy_workqueue:
- 	destroy_workqueue(thermal_wq);
- unregister_netlink:
- 	thermal_netlink_exit();
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -258,8 +258,6 @@ struct thermal_instance {
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
- 
--int thermal_register_governor(struct thermal_governor *);
--void thermal_unregister_governor(struct thermal_governor *);
- int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
- int thermal_build_list_of_policies(char *buf);
- void __thermal_zone_device_update(struct thermal_zone_device *tz,
+ int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
 
 
 
