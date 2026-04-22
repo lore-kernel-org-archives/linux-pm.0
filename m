@@ -1,109 +1,73 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28F883D093E;
-	Wed, 22 Apr 2026 11:25:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E11B34F483;
+	Wed, 22 Apr 2026 11:30:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776857113; cv=none; b=h1Pj7VvVHB55fsWM0SKnL8rfwsxZ3p2ODbEm2UCee91amQd1wmImVx22eQk2gCad9K8vEbaNJfrCX1xFiC/uUUGISYHaVOkfmFjcKgN9Tx2DynBdS3YV4ZK2479igy2TR/D8kVlwbI3hLiKoM3qrbznmqgQ86v8MAl4BUirVjyE=
+	t=1776857453; cv=none; b=Vsbuh7VHIBGD1gIpMhPoqlG41VJOPzuUFAQwlviGFPCIvQP7iCSVQHwxvTr9rOX388lvZm8ewjju3oVRyt+Hog3rnoBQGwuF5E3P5IgkTBP4OooYOyCgidyNsLCcsNTc+hF8DJX3OXdSH/igAtSkIGlS4UIxgoWsum15euME1fI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776857113; c=relaxed/simple;
-	bh=Z2XhQFgSczXs6etj6Kn9gFI9cgZPNFDDhuehnrLVz74=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pf1Nb8I5ZYuzX1GRy4qTpTxsmG48mC7NjzRGlJGn4M49Waz1U4NNtGmqKflZV5KrnIiTY6PIj7sWQ7eGJa/YNwmEuqDZ/iH/1k4pJomZUJIZUZFuRoxAlurvXYAS9bemjnBnXVKDOE4/cB2WWsGbcbsPbnG1hbl4RYfsd/DT6f0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=b1Cz3LBh; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776857453; c=relaxed/simple;
+	bh=HNP7/Ly2fmpYkbHHqHZ+20Ii3h9E4ykECwdUZjI26UQ=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=dBDlIurvA6O2orWyCp+rw0Y946PNQf98PV28rmlAgQnbmZHEG4h9oS/dbWyi3D8Y0iiSiLUGYDtMvSgCQ/rbxZAHzvXDsgfKnPuihyS6XyMORlB9cf4+/NMyysNc147XCng6H8VS3IWd4cEV9m0lbbl+x01a2r5PA4Dq3XeeEOQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FaYqL1Yl; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="b1Cz3LBh"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0E3D1C2BCB8;
-	Wed, 22 Apr 2026 11:25:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FaYqL1Yl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B173BC19425;
+	Wed, 22 Apr 2026 11:30:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776857113;
-	bh=Z2XhQFgSczXs6etj6Kn9gFI9cgZPNFDDhuehnrLVz74=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=b1Cz3LBhxbeq2LUjcli9VxWIWXdR3eYAI7Zbv5ir8grKEv5nkKP7YSSyszJ9fA6hq
-	 yqmQx1XSYR2hwjKYir0Gumb6uacJpAEW2yDyYPoyC/z7zahK10jsxaGsFsuldw46SM
-	 o+5hb9eTb12sbFj1ZxNaUjsSRIVPtC72a/Z9mJDfvMDI4qbIvR/Y7cDt0h4Az0pjQ/
-	 ZllZNu94n+q+CSR1G/AkAlgwWWq5cwvOTNGioC/nweV4a72qGBTyJ6v9ID2BoZqg9F
-	 BSNpVuIlvV2VDK/5+iPnRAvP6KEqP0tCVdY19CdHk6W7VFJvgL6NnDx1REVdQ+geXi
-	 YiIVrst69W8Rw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06985F8FA9E;
-	Wed, 22 Apr 2026 11:25:13 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Wed, 22 Apr 2026 16:54:52 +0530
-Subject: [PATCH 11/12] Bluetooth: hci_qca: Check whether the M.2 UART
- interface is fixed or not
+	s=k20201202; t=1776857453;
+	bh=HNP7/Ly2fmpYkbHHqHZ+20Ii3h9E4ykECwdUZjI26UQ=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=FaYqL1YlDhE1HYa/LcbcDJ8V7tVVrSHb7V1o4IoHNll4KRUQ8H+M25mss1toKLIdW
+	 OR3y0d9Qf8lk2QMWsX++1jl3Sxa5mfL82rHLfpC5eanFr9xHTgy7WwSgOLyGt2Nhp2
+	 1EGpDUazMCn7F/u9n+FvUerpJJGa7LP1/HjgnMGX83syMgqD9D24gOyvQRe/Vfm7uK
+	 H4KiJgUU8v4XRp6RCwlvyEolSzUDk0ax/C7biCu3EbT3p5fqEy2D8fgRg90Bd9uELF
+	 slZhs258Q8kiLCP4wtbhut5X68vrk4CBixxNKpMQ43ldaVtEMQlmm5vXJlQADzEtD4
+	 aw9ymdu6p91vA==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260422-pwrseq-m2-bt-v1-11-720d02545a64@oss.qualcomm.com>
-References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
-In-Reply-To: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
-To: Bartosz Golaszewski <brgl@kernel.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Marcel Holtmann <marcel@holtmann.org>, 
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
- Shuai Zhang <quic_shuaz@quicinc.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
- Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1019;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=QIQ7zI+FcCO4Ozijr68y6L0R3ZFIXMS+JR88yCNclek=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp6LAVR3W3V/KaHFdujOJwfJZ0I+8jLydfeBZ8c
- C328qYFsrOJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaeiwFQAKCRBVnxHm/pHO
- 9YQwB/0SQX+/Rbzc9tYYkKZ8hAXIlBudrTL7cV4f3GeBe+ZtK6NTWCunNb7eXa9yuHvHCd9rl3k
- q3rztVESPA7EUkULnNf3vf69nKap5M8nXd5LoUFcL6F/3b4WhDkUoAPCC4dpT1fYfLR4kqp4k/F
- adD+fVrocmi0ny4WJxDSF31GfJjsi+Hkp23SqSfIOvgcU/d3sTZVro8VRjvt64KXqfbgWf5rZtg
- qhYP9GXbF/4T6a83od1As5/ZPGYlb1DJPYysyepKTx91EWhl78i48qE4wM2oLiMv3ohsqVyqKUy
- B73fONwa5nr+RdRHt8DVLfnQtWt6ukk5yzMGy8jpFxfpcwvG
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 22 Apr 2026 13:30:47 +0200
+Message-Id: <DHZNEABUEFY3.19CX7BFMMTBKT@kernel.org>
+Subject: Re: [PATCH v2 2/9] driver core: Add dev_set_drv_queue_sync_state()
+Cc: "Saravana Kannan" <saravanak@kernel.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ <linux-pm@vger.kernel.org>, "Sudeep Holla" <sudeep.holla@kernel.org>,
+ "Cristian Marussi" <cristian.marussi@arm.com>, "Kevin Hilman"
+ <khilman@baylibre.com>, "Stephen Boyd" <sboyd@kernel.org>, "Marek
+ Szyprowski" <m.szyprowski@samsung.com>, "Bjorn Andersson"
+ <andersson@kernel.org>, "Abel Vesa" <abel.vesa@oss.qualcomm.com>, "Peng
+ Fan" <peng.fan@oss.nxp.com>, "Tomi Valkeinen"
+ <tomi.valkeinen@ideasonboard.com>, "Maulik Shah"
+ <maulik.shah@oss.qualcomm.com>, "Konrad Dybcio" <konradybcio@kernel.org>,
+ "Thierry Reding" <thierry.reding@gmail.com>, "Jonathan Hunter"
+ <jonathanh@nvidia.com>, "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ "Geert Uytterhoeven" <geert+renesas@glider.be>,
+ <driver-core@lists.linux.dev>
+To: "Ulf Hansson" <ulf.hansson@linaro.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260410104058.83748-1-ulf.hansson@linaro.org>
+ <20260410104058.83748-3-ulf.hansson@linaro.org>
+ <DHW8QV8K3CM1.307C6PW2BM5RN@kernel.org>
+ <CAPDyKFpeSv+fg=YKJE_qc=Q5BfiJFn0tR7Ar8SncqrD0UW1P1g@mail.gmail.com>
+In-Reply-To: <CAPDyKFpeSv+fg=YKJE_qc=Q5BfiJFn0tR7Ar8SncqrD0UW1P1g@mail.gmail.com>
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+On Wed Apr 22, 2026 at 12:25 PM CEST, Ulf Hansson wrote:
+> Most of the static inline functions in device.h lacks documentation.
+> Are you suggesting that we should move towards documenting all of
+> them?
 
-In the M.2 connector, the UART interface is controlled through the
-W_DISABLE2# signal. But the BT driver cannot know directly whether this
-signal is available or not.
+I'd prefer that, yes. After all, if they are defined in device.h, they are
+public APIs, so they should ideally have documentation.
 
-Hence, use the new pwrseq API 'pwrseq_is_fixed()' to check whether the UART
-interface on the M.2 connector is fixed or controllable and set the
-'bt_en_available' flag accordingly.
-
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/bluetooth/hci_qca.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index 3e71a72ea7c7..27e52b08ec47 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -2453,6 +2453,10 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 								   "uart");
- 			if (IS_ERR(qcadev->bt_power->pwrseq))
- 				return PTR_ERR(qcadev->bt_power->pwrseq);
-+
-+			if (pwrseq_is_fixed(qcadev->bt_power->pwrseq))
-+				bt_en_available = false;
-+
- 			break;
- 		}
- 
-
--- 
-2.51.0
-
-
+(If a function is only used throughout the driver core, it should be in
+drivers/base/base.h instead.)
