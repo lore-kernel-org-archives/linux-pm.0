@@ -1,99 +1,59 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E5B53C9EE5
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 18:17:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E44D84414;
+	Wed, 22 Apr 2026 18:45:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776881829; cv=none; b=N17ZiG0d4BJ57Hue0NUN0QxL/rewCcMkJqCuuXo2RyCPOvKCEEOv/jwA7kAVs9MbxwkFw9X/YhqsSq1c5cta7y8/+UrXbbchTrMTzVz0CM+kOo7b+OQjvYOsq7Mi3LrXPV1Lwgtef46TULNqyRdxgqQuTvEvdINyD+7Ds9i/jrw=
+	t=1776883552; cv=none; b=qnB4HM3TIf4gYaIQtnH/XsXu0rfuYVHwwGUVKySK4SEUGcLvepX90/gjkrfPSZwQXFcvf/IuZLM9oovDHXYYqW2ykz8d+gD+1rI75/11i53Gpw1uBWJnX610tAusPEOIiqq0Rh+BHPtnY9yllMVYyDN37OylNlrae5/HjGOTQrM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776881829; c=relaxed/simple;
-	bh=QyxMpCXkdpo86Mw+3CM5Tn7kWJdhDyrON+s2e71h77s=;
+	s=arc-20240116; t=1776883552; c=relaxed/simple;
+	bh=hkA5KjlIl5jwh4GkTXHA4vVNwgDxaznRvBx/RdhhKnA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pv//l9713Kf5Hhbefmw+IOZCR49G3vWM4ZP+kTG/pqNKzUek/mJpP10Yx2L8FX7P6zu+69E5VzdZep9kshvcCfZKb7MhrB+qBUDAKkWdABT9AMryyfvoJjs/qpTsKz4c1SHT7qGoSmemUREEAtMEYtZv1ktQJjKO8woSTRs48Pk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VRPn90qy; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Ms//ljRj; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=U2UkPGcPkGYL780deNI/v00YzpuJdMWC+O00M2Dm31yfSB5J/FQ5DWb0LWqN1LHYuo81KyjozfP268thAmQ7PHvDhFA00iQk0wL7l21h31TIL3eFD8QJ0q9IZOUgo4+rMR78vYDUhtO40S+dZuUlOS3nErZq1YLXPuoWHaXl+HE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=YR5vqQX1; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VRPn90qy";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Ms//ljRj"
-Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63MG6UQb872657
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 18:17:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=3YNyozOmqbEWs49NxHPxfWO/
-	ujoEQ7C37uXS00Jnihw=; b=VRPn90qytWGlVt/ltNShAODhvWuMMc6rebbTc+/T
-	213b1Jj66nBkjNuGs1RRre26wsGSO5BKyTjoGKv0+SHJlR+ZEl971rD35F8xl5j6
-	ppbg7QFNWmmEPLY8KQHRqzfIpMSmwXDnRSl2yslXlks4sOSaStpRSTKMW94htIDT
-	W96igmX3GHpKRYxpnyiPy46dnJ6hWXJVPSnPRo9Y/NT3RjNv7yv/aFB3Ytm+r0od
-	MLNJH/Q/wjdHLx2aOjqRJolgsin34NDFCXVAXg8vl5pOvt26nUcREux2bKJKBY2i
-	nfl28ABWPjVnLdzsj5hprWg0BVmmo0mmrJRGYfuJu2J7fw==
-Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com [209.85.217.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dq1jh0fac-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 18:17:07 +0000 (GMT)
-Received: by mail-vs1-f72.google.com with SMTP id ada2fe7eead31-6101726c594so2701012137.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 11:17:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776881827; x=1777486627; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3YNyozOmqbEWs49NxHPxfWO/ujoEQ7C37uXS00Jnihw=;
-        b=Ms//ljRj0x2kWiqNFWeZfJMRuHokAizED/0QQUs/jUFfdALossGjMBpTdRXyhEc1ur
-         BuqV4jsETs2ibie2KOUNE5NHlAZT5p45m6YMb+4dHHsAR0Rcbbcl8RF7zlMxKTl/87II
-         OmWV34iS89+1S23cXKiQ65y0q5ZNJ3Wl6uA7RSu4qGshp4Fi9VxwTi/srRSz5woF8fyp
-         IBa2iPkeauaRYNivtHJwcFuuyieUA38BMruHrhGUAg2zE09Y3pjkFLWEA7JPo8zJiv16
-         KSzX0poCRteAEs/9Vgpm+3G7aodgRLl/A5O+ZaB3G5PI4XTOZOTBdABQmGMbG9j6iaUO
-         QDmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776881827; x=1777486627;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=3YNyozOmqbEWs49NxHPxfWO/ujoEQ7C37uXS00Jnihw=;
-        b=J9o+N8OGF/FwS8Z/tuYv0ifPzVlrw/s/cTtIAlV0VboF/19YRV8kbkRkrRUP1lA5Wy
-         xTGwUdBv7jQ0icN1pyCsh9G9JXJxuyCbOBcMhBtN+51i21Apyq6Xab/MiZy58Dr48h0V
-         1aIkIbqH1jRoliGQwrRhknlIAQ15dBqyapr7H5sylYKU4W6PpXJyvwxssdXcoII/NVEY
-         SW44uEU4m0xc73Qsirzqi9lIaglbe1OCOx6wWLr/xx7N7ILfyTCZbNLiGwGlLFN2iRR3
-         aYZM2SHToEONKXg8dbBSPE3cyh092A7wDkVfVQ0sNgry/rPe9st36Ne/qg8EdgutiOey
-         CPdA==
-X-Forwarded-Encrypted: i=1; AFNElJ/0eY0FmOkheUpMN0wmO2n9mqKJRI3DeN9LTVwL3KBWjrkuE8HPF8VPPRRC7ndddZFBwK0zpJZJnw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwkL6521DXXub7HSexJkbePBGOJyF1CmW9ne6U6xCL+uTUjFhze
-	1yk0v2X6N83tJvV6s+EHm3F6pKwnP/cb/P9sz7Zo0DZHHT4np/5iPoz6rATxlfyJ5KyK6tN6ksU
-	L1Le8xiEM9TRKnMdpMrDE+r3LgEmvDl5aOVO8zH3tOCN29JfBEhm/JqsUJzwdeQ==
-X-Gm-Gg: AeBDieuQcAQ5f/68Pw4w36zYSeM8CEXWfijcUKnX13CobcBp5bOJ+npzo3xPvUOj9n5
-	7tpQbl+kwlmdj+rDn1D+YxdV4cXZWQC7PXZxeuCJ5UbJ5jaHBhw2uThruY4GM/hFNISacHGaFT3
-	PnCF2IYpBCP86Xek/4EORB5izXmhoapMKvfTYEVoppQeWhBtOonPXNzbWRyUKqYs7NpNf3fUFf0
-	q/O0HkwAQrYc67GwxkBTVeaLgVf+yUOieTf58AvWFX2P0NtE4Muzvqm/B7lRPNfJZXSelBb5TIv
-	wU1hiQSLunmgceulmUPjsJsrejOhvrKvniqxKpZivtQdyhn4G0jp6r43YAXi7wIi9HHVI10Ppqt
-	RUIO7xHpFS2HXJPAQ//Yim/CC9TgFjbiPhDC4wfCNib9fEJnEI+av60wkStfmyUpVg/Ad9Ebkuu
-	UXa7BFj1mljiYHYSTVqbMB3vx1FdlBB1zf2mPEVKMj7qXfsg==
-X-Received: by 2002:a05:6102:3a11:b0:608:94e3:bd89 with SMTP id ada2fe7eead31-616f5eb9cd4mr10922051137.1.1776881826210;
-        Wed, 22 Apr 2026 11:17:06 -0700 (PDT)
-X-Received: by 2002:a05:6102:3a11:b0:608:94e3:bd89 with SMTP id ada2fe7eead31-616f5eb9cd4mr10921842137.1.1776881824146;
-        Wed, 22 Apr 2026 11:17:04 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-38ecb4f51a7sm37631051fa.7.2026.04.22.11.17.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Apr 2026 11:17:03 -0700 (PDT)
-Date: Wed, 22 Apr 2026 21:17:01 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Shuai Zhang <quic_shuaz@quicinc.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-        Wei Deng <wei.deng@oss.qualcomm.com>,
-        Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
-Subject: Re: [PATCH 11/12] Bluetooth: hci_qca: Check whether the M.2 UART
- interface is fixed or not
-Message-ID: <e4h36co4ein4mqvqempmrvjhfbgx6cxwjvdcsfhkz73qnkw75j@dceeamd65gl5>
-References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
- <20260422-pwrseq-m2-bt-v1-11-720d02545a64@oss.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="YR5vqQX1"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 797ED1E8D;
+	Wed, 22 Apr 2026 11:45:43 -0700 (PDT)
+Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8F7BC3F641;
+	Wed, 22 Apr 2026 11:45:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1776883549; bh=hkA5KjlIl5jwh4GkTXHA4vVNwgDxaznRvBx/RdhhKnA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YR5vqQX1RwlqvU3irJVsmTCjnxjrT6BB9Mobx9TN8DuowUioHwsuy9oU1pnpwNL11
+	 1dlH18U+1iqag2bVyl/WX8QGsNBDr23tbm4Y62yq+fUD39OYy8G20AUnr3jzLYs74m
+	 6vfxb5Ccpxy/4VArdBH/MSuXTFo62aj6EQPD8FS0=
+Date: Wed, 22 Apr 2026 19:45:38 +0100
+From: Cristian Marussi <cristian.marussi@arm.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Ulf Hansson <ulfh@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
+Message-ID: <aekXUvIPb8nkhdKu@pluto>
+References: <cover.1776793163.git.geert+renesas@glider.be>
+ <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -102,52 +62,70 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260422-pwrseq-m2-bt-v1-11-720d02545a64@oss.qualcomm.com>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIyMDE3NyBTYWx0ZWRfX/wszQ6ytd1aj
- grQbSEl0+Ny3mIWpki6IIDsREpmwqCQPq/vV1nvDwTfzWFy66oRAWx9r99UZ6hlPH9fm0j1xsdq
- 2yzWBR7baJF1kC4XeqnKQ056KUN/uXzo+5jS7m/c+/I+fRo87yPf3j7QmZ+DkR1HCpio2KTKDD2
- DmSd2YvAA87QTCC83kOH+Kfke1mjsHqoqxhq/sqmsFI1bYamXD5uP1ffxZecFPZMeuOCkWlS9je
- 5x3xCSPboiO83SqPxGJrqzz44wAgFe8rl6PGhnxbeeL46Rqfuu2uglredwsfjkpPUf2neoLapjx
- L05zdPmDz2aEbX8SaIMTF7RlcyEOt65Mp1B4aBlRoT7zUh5B16GHZFaTZXBZR45mjvL2YfFDDRc
- 6DH0z4hHDQPx2yMwnNNjAh1rXykFape8Dr3ihiKi6FWd2x8hBs9yMIPL3NeiBEmqOKAsA8wq6Jt
- uuwGAy/YGZwTUntFicQ==
-X-Authority-Analysis: v=2.4 cv=OeyoyBTY c=1 sm=1 tr=0 ts=69e910a3 cx=c_pps
- a=DUEm7b3gzWu7BqY5nP7+9g==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
- a=rMrwSXHligAysd2ZAJkA:9 a=CjuIK1q_8ugA:10 a=-aSRE8QhW-JAV6biHavz:22
-X-Proofpoint-GUID: 209rqeC1SuV-bbbiDE2GTBLV02vPuN_S
-X-Proofpoint-ORIG-GUID: 209rqeC1SuV-bbbiDE2GTBLV02vPuN_S
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-22_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 adultscore=0 suspectscore=0 phishscore=0
- clxscore=1015 spamscore=0 lowpriorityscore=0 malwarescore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604220177
+In-Reply-To: <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
 
-On Wed, Apr 22, 2026 at 04:54:52PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> 
-> In the M.2 connector, the UART interface is controlled through the
-> W_DISABLE2# signal. But the BT driver cannot know directly whether this
-> signal is available or not.
-> 
-> Hence, use the new pwrseq API 'pwrseq_is_fixed()' to check whether the UART
-> interface on the M.2 connector is fixed or controllable and set the
-> 'bt_en_available' flag accordingly.
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
->  drivers/bluetooth/hci_qca.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
+On Tue, Apr 21, 2026 at 08:11:38PM +0200, Geert Uytterhoeven wrote:
+> Currently non-SCMI drivers cannot find out what the specific versions of
+> each SCMI provider implementation on the running system are.
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Hi Geert,
 
+Thanks for your patches....this is not a proper full review of the series,
+BUT this patch catched my eye..
 
--- 
-With best wishes
-Dmitry
+Indeed, yes, it is deliberate that the SCMI version information is NOT
+exposed out of the SCMI world, since being the SCMI an attempt to
+standardize a common FW interface (as in [1] of course), you should not
+know what runs inside the black-box, it should be irrelevant...
+
+...indeed the versioning is used inside the SCMI stack to deal properly
+with different protocol versions implemented by the server OR to apply
+proper quirks when needed, but all the rest should be standard....
+
+...you should NOT really behave differently based on the underneath
+protocol or firmare implementation version...it is the SCMI stack that
+should behave properly, transparently...
+
+Having said that...I understand that at least it could be useful to be able
+to query the SCMI stack to know, even from non-SCMI drivers, WHICH quirks
+have been applied/activated at run time...but anything more than that it
+seems to me dangerous and prone to a number of abuses of the SCMI stack
+itself...
+
+(Also...exposing the versions itself means also tracking that bit of info
+in more than one place: the quirk framework and your drivers.)
+
+> 
+> However, different versions may use different ABIs (e.g. different clock
+> IDs), or behave different, requiring remapping or workarounds in other
+> drivers.
+
+...abuse like this indeed :P ... the SCMI server is supposed to be that
+one entity remapping the IDs in the background if the same IDs happen to
+be representing different physical resources across a number of distinct
+platforms all supported by the same firmware blob...so as to present
+a consistent set of contiguos IDs...
+
+Also because this should be one of the selling point of the SCMI stack
+in a virtualized environment: you can ship the same kernel drivers with
+the same DT and you know that ID=<N> will always identify the specific
+resource that is needed by your driver without worrying about the fact
+that in reality in the backstage the effectively managed physical resource
+could be different across different platforms, because that does not matter
+if the SCMI platform server had properly remapped (at build time/run-time ?)
+the resources to your expected ID...alternatively of course you can ship
+with different DTs to describe different hardware...BUT remmapping stuff
+in the drivers themselves guessing on the vendor/subvendor/impl_vers
+seems a dangerous abuse...
+
+I watched a bit of the LPC discussions around this (from Marek I think)
+but sincerely most of those problems had one (not necessarily simple)
+solution: fix your firmwares AND/OR apply quirks in the meantime...
+
+Sorry, I am sure this not a welcomed answer :P ...thoughts ? 
+
+Thanks,
+Cristian
+
+[1]: https://xkcd.com/927/
+
