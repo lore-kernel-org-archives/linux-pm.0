@@ -1,258 +1,166 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C4512C15A0
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 05:57:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B502AE78
+	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 06:14:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.54
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776837436; cv=pass; b=fHF0iX3cEkzknhKod1Hm9NW8BPjs15GRwDsAKWKeuJB2HT/6Y5pU1TGpdtLmuZfUMl+01P+O0DgtiGly5GpD06uv4iBcMt4MvLNj5vCNLUkI7I8QDIIEqBYq/I5cEaSdkr/p1IPq4vjE+1tKQGa3U07mNA0VasTmRpGdqRQALEs=
+	t=1776838473; cv=pass; b=Z8VhTlYOwknrXh78czm7VQDBRQeqYjO6ex0hEVKrI2txLvlueQBtOBavQVK3ZBoD0HtnMVfdSXuicjlvzES/XbmulV5x9HM58HJTF18rOCrQonvJWeklHMpVt4HglsSNbFcAaUvRj0pzRRD0xIYD1PVaEk6QF9txXPz+U/Zo6Vk=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776837436; c=relaxed/simple;
-	bh=son5GUfBCXkJka3b7rHSwRZcR0H7LmRjWetn/EiAmVg=;
+	s=arc-20240116; t=1776838473; c=relaxed/simple;
+	bh=jeF7sRuCE/tgNWpWkEp8CGIbKh6Ye/S47INTgDZFQCI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jBlh1APedSXPzc9eoNF/adV03eS8DjAeb8wG07Tbl3uoy8/jzbBvUylwOsqTZRX/SHelCGuQcPJYs2LIeTHyxILtmYqD4C3GCA19AYo+xSB3n474/nW1EZKu2gwAiGpZlp627uZow7+H5yhGs2Jc+M3tgFkvgayYBnpNWhfB8pg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FwWZfu9d; arc=pass smtp.client-ip=209.85.218.49
+	 To:Content-Type; b=EDMRqiBgfzHoRWbaX6KLHAmrAxaf3sTrwltV39N5QVNcEpq603+SEkYkM/VcZB3kD9SjAJd3ClSVOM0BpyUR+SdoIBC21Lqkg+bH+qPs6JSS7E9qyn4EXy+AOt1eWXFZr/2ljWFld65S2jnS3bYp9ZknrdvD0s/+UlMcfZJ5xE4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XqxSnExd; arc=pass smtp.client-ip=209.85.208.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FwWZfu9d"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-ba7a1cc0380so603588766b.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 22:57:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776837432; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XqxSnExd"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-676d8a1835cso1580658a12.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:14:31 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776838470; cv=none;
         d=google.com; s=arc-20240605;
-        b=BEC7yQI/0VkN5GiO6VlN3LcBx7nrMDZ6IpilXEdU90qY9ykDek1if1qoAKRXsMrgtQ
-         x96A4gQPsK8xq4QwoL6V5VjrbWWUXYKZF9I/mvzNXeo1hbBfZXgdN9oWXMhTD1kcdWAe
-         bN6FXH9ts8j+k7wKSTGDNwuyHYnlc6pAdi0MJcLQ/Meh6jpr5AtbdRdg78gcVcwzBzLC
-         89AET+N8MYihHFlR9AUtwSObWuv+D1gFJNWzvcexO4Vs9jWpoHbgimIbfQq1c5BKuhM2
-         bVtZrQyTM4ihK/CrU09lmkLBiRmZuFPkIPYFhJoCujO6A8zAY/eTPiZ4KSExZ70gmctr
-         D8Lg==
+        b=D6x5d+SwXxP3NP+BoWC+HKfzjUA+R6z+tYhCnfhaWvklohQER2nqlnN719kEfj7V4F
+         rQGFaK5vTldy+GiomSS1swzEvDC5Qdk+w1oQgLDfkkMum8ORcZoKqMCV9tXkdJbGlub7
+         lf3Zzlljy+/wkYY56BBoJTHdng0o0gvh8dLxXfEMJr9YtNqLZ3PTZtUw50xE6vv86F+F
+         NXwwd1ixNba5gFE1m5f9pP4YEMw3tSg8vRMrYep+9lF4m/gteDHneRpAFG5avjf2aIe3
+         6XWfFbQIw12BFWobY5Nezr4CgRJWMFn7FYPfhVasoJ9sYv1rnHekP2l/F+oA5e1vA0Nd
+         D4rQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=6mfQrHmJg8pkYiq0O9V0bit0vPU2fxUi56Y7yDGTSLA=;
-        fh=t3oGFVpwNj5cfAwxK0k4fI0/wb4s/PolyoFeQVxCHC8=;
-        b=SYaXAHgbSI/u0Rvs1HqAORFdUW/nWMIYcIGcI6g0UWy5riMyxb8dcmaznQ9PG+oLIw
-         H9T3OF01fWc5BTSN6v738kyDGOYEiLbTowIhrkmfV3kxKilYoUZlyQEuaGp3UDMvWZ+G
-         ancs/Hhh1IiErP2fpcoOcgiZTKybBSJcZvl40OgpkCywPtEg6wLUHnWalLGlfmAc9guv
-         kbrtrRiJ7SPOjeF7TBL9VHMSlHRnUd146Yid09gs3/tCRWdhMDs7TeqkM++fSNXXwbyQ
-         fi9DLQKcwRKOaXT1OSRKE/43+nxavxHOc8Fpt+ZbWTOT+V2Cp0yZbyV4kzyQt4KWi4Yn
-         f4OA==;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
+        fh=5YbbbWJo0eyx0CQHep9ozvzKbwC5iOic4xdP2j0ItRM=;
+        b=h/PtdGvPRJVmur6Ief8lFTgMCH6EYncajjlPgc3K+X/d4ufJ4quOl/jPQbNWYxN0Ty
+         HGgHzTrXzQ4hY8AcZJ5qZzITTloy7N0bQ7iUdp+TtDF4mtwCO+4QgMdTr6qtu+KVeneh
+         63Xx9ql70Rgf+t1l/BXXSoAjouQx7mFoOlFtRnCt+AlRRd2AnZDlVBRTT8TTlPvpKb1P
+         3X2WlEDa+h2CSi7tQp2RmLcIJNlKWPF/Qf9PUqnaxzLb01cl7OeuFOZ1Gy2ZK+56ithP
+         HAeTUYk55DTBYpn2HT0XHMxh0WdZBQxrjN0tkFQLjxIiPSCPJOOeuOM9pOpFrzwzAT0G
+         gNTQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776837432; x=1777442232; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=6mfQrHmJg8pkYiq0O9V0bit0vPU2fxUi56Y7yDGTSLA=;
-        b=FwWZfu9dRVT99gz2CjUN93mRoFXQLjyqUuYqhqrRvqzrbkRuQIeasHYpcAL7/h82Pe
-         uAmK+xC8F37G8Sb2fHEq8kKdX6EeHjNb1etpnO9pCSNbbpGLLNbjWwVyJ7B1WdRaIoOv
-         KunOF5r5Fc8zPPIOyFkYlM+lAVI9KCB6X75GgQFepfKLV7VoRlA+jIoBFRNKh6l71sWx
-         u563VV94qGXjpf8K8IFld/s3FI2ydL2KDLN50ntjIeIiiDnbWfDVaycVMunxyTwtk/Ry
-         5mKg7kY67d/mTlfZQVTYr+v8iqcxS4tEuHReyG0Ixa8N/mJeZmdHUJsVZxj9e2NysDl8
-         09+w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776837432; x=1777442232;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1776838470; x=1777443270; darn=vger.kernel.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=6mfQrHmJg8pkYiq0O9V0bit0vPU2fxUi56Y7yDGTSLA=;
-        b=SUs6Ny9yvKUjxPOTjqySHfi0DhjBlxp+OP7Mjxzg1AhXuYdV6Jz2wOZY/VEXg/p66E
-         wH3CJY0UCKtHubiPc1t9J+C2LMTKJY8wtgLo5mX9fEgFtUkfpMT1uZC5wypqVVmdAUuG
-         ap533QtwRlvEfONczBdpNHYV+DV1n/KKT6jqmfkYFetz7bd0Ji/pBqkl6zF/ecpYsEDQ
-         z1Wd25eJ4CeRcjt3H6eEvwbNZtr0JyOqz5L0Ka6QRs8Jp65+5WURXDPY5gNzFNeisxgR
-         UDrhZRRkt0fElWwbBfjklKX7jktcGoQEsWcDNgao18BW5jbAAMfVwnZALW5atPvHseFS
-         +d6Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/74pREKLydIPt/h+/OAQyttgZraOZWsu1swz5txqaKtzzEKZIgU3Awg4yg8BK4B5xyEmqeQQYhqQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzn9OIjaRi7ffTQ3VxEHuG/L1smTq3ue1imtNGj+8t2xvJ89tnm
-	LSeDVXyqXQiY53zIg1XnrO7pbidiZZkChINiOFzokYWsMIFositrl/X+jhhCfUmL7fm1cgvItrT
-	Z1g6Zm+ELEj3A1m+U7iWqqmBX7lyrPJo=
-X-Gm-Gg: AeBDievD2nR1EY9rOC80sG+GcP9fkUfJ5kz8RS7bp9ywhYNg+cZMu+9ETuhq0nPskAV
-	k9jT2vKKj6Bzmks5V0YhmjR/opGWZ1po5Yeyhj3XnTULKz+kC+A9HpLK/j/ajmFTM/JYvOKQtoG
-	hv1gIkOFTaYsPCauo//lCVQCIDJW780Wm2+aG/pTd1uFwbFdE+RdfTWX4YvyJuJi9ZTJIlIkIXN
-	qNkmyJD6t6W0wpL4fQLB3m5G9r08VuyQaP3R7NiowxotQm9Lgkc93ZMD6B+RP8X2pxKvFlb8O2z
-	DWXhc17gqUGLOJo=
-X-Received: by 2002:a17:907:d09:b0:ba7:7a1f:1096 with SMTP id
- a640c23a62f3a-ba77a1f52a9mr604591266b.19.1776837432114; Tue, 21 Apr 2026
- 22:57:12 -0700 (PDT)
+        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
+        b=XqxSnExdnAhG+HOwVAn8PBPkH047wVCgRlSH6CslrPx/XHjn/6/m3P1QTvC4+A7WeN
+         JGujtyGHQkgbRgbIq2BYhu29VJfOQQKXPCQW+p5rFU/dEY/SuHvlKdom6y6isZpJYQcB
+         FDZqGHpnFP0e3FnOPBUk6PGtpkA/ifBWiWV8AG5r+vpT3HvPrE87TH9BQRCC2V4MI4Vz
+         w8N2TeW28bRDkliOFmWwBo9shMrfkRvE+vVY1dKgMRtbtaJqrF6mqErJ2qatfPwLBehG
+         sZJr5aPR+FrlZ+3EY4FSE1u2Azvpq0P7M40bXhB+LciqsNJDi9q3kHcOcQq8SnvByVOb
+         2y8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776838470; x=1777443270;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
+        b=k38OAkHPYyIneJ5miTW/BEECID98ML0tWKeq5utnnwbGpekzzbQvnshcoYEvvJc3Eb
+         2DwBBQgudkYB5dGWE+g5YX5KGa5IqWZ8zQCkoBrpxYxpBtmagMv+xTFhX4OAaUcGzZL/
+         j7JtB8LgzthVWEoGRr0E+TItSIOh0xoYP5FAEQCZIgJwd+ADuVWiHORBPZXWcrKPCE7u
+         jX+TaNDWqhrVt+6oYJnWXZ6oOmlCIQ6snJv+jrw0wNCBGdd7LslDxdHa5sHl0/YS+N5V
+         5V0ax7TA/3Fuic95jSnEO4h+tUShkEk2oa34s/lDwBvHWEnexcZvMNXjVyNgxXxycK8J
+         TztQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8Acws8wXq31fOdltl71fenBwwLgVTWrZE1Q9VVKOiCd5Zsicf47cNVcBgG9xJIrZZ1pkyJtq/sKg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzcJPyMdCcSMaLfp1znkaN4NK1+/7kCwqrDD5MIThQxZaYyvjgK
+	7caokxuQoEhuXYNhew2XqAd1HPzuYD6Jr076U4sxocytpFBnlXwqlDbCONYwEfU5JcPC7j6xH65
+	Bq7YuPXeTRAtZTKyLRj/evw+O894Mmr4=
+X-Gm-Gg: AeBDieuXVy60UQapho9WwCTBv6Z3J4/dWDWXGHRWz/ui2BAjwLK1nf7GiKnQIRhTgu7
+	tZsPCibQpkH0VVEcBbhrcqb1dMGDcHvtCWnsFssWTIAGdGzAQGhnTi8yyfjwqGgVs/agiqedgBZ
+	98HU8GWi41ao02kjrcAlb0h8ccM8RrvHJSH7RWUwI1xV+v5brqGnbVNU0h4s0qSKZdrUhb24eJp
+	xhBlYA6KthFqFY3Usnz18L7eHxVh8+UPfpmN5LRzUeqqmj0ORBSFQo3OFBFrSZPlPvWcx9zNXtv
+	ZOR5SYEw0mHepHc=
+X-Received: by 2002:a17:907:1588:b0:ba9:3162:182 with SMTP id
+ a640c23a62f3a-ba9316201a6mr261303166b.19.1776838469610; Tue, 21 Apr 2026
+ 23:14:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260119-patchv2-k1-thermal-v3-0-3d82c9ebe8a4@163.com> <20260119-patchv2-k1-thermal-v3-3-3d82c9ebe8a4@163.com>
-In-Reply-To: <20260119-patchv2-k1-thermal-v3-3-3d82c9ebe8a4@163.com>
+References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+ <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org> <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
+ <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org> <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
+ <aeaXszeaE62rM6BJ@aurel32.net> <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org> <aeevr6Zj3Pwm9wux@aurel32.net>
+In-Reply-To: <aeevr6Zj3Pwm9wux@aurel32.net>
 From: Anand Moon <linux.amoon@gmail.com>
-Date: Wed, 22 Apr 2026 11:26:56 +0530
-X-Gm-Features: AQROBzAs7FAeBD4enf-d2fMmvL5o4M1AgFGifNPyDM3Z4riMQcMNULcXuvp1c4I
-Message-ID: <CANAwSgTOmbb+Vzhck1riVaFM89zYLdMe3dn6DRHrc7p+rkR2DQ@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] riscv: dts: spacemit: Add thermal sensor for K1 SoC
-To: Shuwei Wu <shuweiwoo@163.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
+Date: Wed, 22 Apr 2026 11:44:14 +0530
+X-Gm-Features: AQROBzCenitl4Odlgd_JfKGymltQZPnNxQ-FB_fBcOyLvkgF7DPs6UdEgDyDJDo
+Message-ID: <CANAwSgSCo-mESo6=KSc08oUzTWAgzpYu0JaW5KqmnCNiPYHjxQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
+To: Shuwei Wu <shuwei.wu@mailbox.org>, Anand Moon <linux.amoon@gmail.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	spacemit@lists.linux.dev, devicetree@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
 Hi Shuwei,
 
-On Mon, 19 Jan 2026 at 08:13, Shuwei Wu <shuweiwoo@163.com> wrote:
+On Tue, 21 Apr 2026 at 22:41, Aurelien Jarno <aurelien@aurel32.net> wrote:
 >
-> Include the Thermal Sensor node in the SpacemiT K1 dtsi
-> with definitions for registers, clocks, and interrupts.
-> Additionally, configure thermal zones for the soc, package, gpu, and
-> clusters to enable temperature monitoring via the thermal framework.
+> Hi,
 >
-> Signed-off-by: Shuwei Wu <shuweiwoo@163.com>
-> ---
-> Changes in v2:
-> - Update compatible to "spacemit,k1-tsensor"
-> ---
->  arch/riscv/boot/dts/spacemit/k1.dtsi | 101 +++++++++++++++++++++++++++++++++++
->  1 file changed, 101 insertions(+)
->
-> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> index 7818ca4979b6..0fe7396ea6e4 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
-> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> @@ -338,6 +338,96 @@ osc_32k: clock-32k {
->                 };
->         };
->
-I feel the thermal zones appear to be configured at significantly
-higher temperatures
-compared to the thresholds typically used in commercial-grade and
-industrial-grade device
-test environments 1.2 Test Environment
+> On 2026-04-21 16:10, Shuwei Wu wrote:
+> > Hi Aurelien,
+> >
+> > Thanks for your addition.
+> >
+> > On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
+> > > Hi Anand,
+> > >
+> > > On 2026-04-16 17:07, Anand Moon wrote:
+> > >> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 =
+and Buck2
+> > >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the rest=
+riction errors,
+> > >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =
+=C2=B5V.
+> > >>
+sorry I was wrong from the doc below 1.2.1 CORE Power Design
 
-[1] https://www.spacemit.com/community/document/info?lang=en&nodepath=hardware/key_stone/k1/k1_hw/avl_veri_sop.md
+The typical core voltage is 0.9 V to 1.05 V. Actual voltage is
+dynamically regulated by
+the **remote-sense dynamic voltage** adjustment circuit inside P1.
+P1 BUCK1 and BUCK2 must be combined to supply the core rail.
 
-Thermal zones should be defined as part of the SBC board design,
-with the option to integrate PWM-controlled fan support in the future.
+[1] https://www.spacemit.com/community/document/info?nodepath=3Dhardware/ke=
+y_stone/k1/k1_hw/k1_hw_design_guide.md&lang=3Den
+
+> > >> Additionally, I updated the DTS to map the second CPU cluster (cores=
+ 4=E2=80=937)
+> > >> to Buck2 to better align with the hardware's power distribution.
+> > >
+> > > Actually the output of Buck1 and Buck2 are connected together, so the=
+y
+> > > should always be configured with the same output voltage. And both
+> > > clusters should be mapped to both outputs.
+> >
+> > You are right, I received the same response from the official developer=
+s.
+> >
+> > Therefore, I'm wondering if an additional regulator-coupled-with: prope=
+rty
+> > definition is also needed here?
+>
+correct.
+> Yes, I think this is the way to go. I even wonder if this shouldn't be a
+> fix with Cc: stable. This also has to be done for the Milk-V Jupiter
+> board, I haven't checked the other boards yet, but I guess they all use
+> the same schematics at that the PMIC level.
+>
+> Regards
+> Aurelien
+>
+> --
+> Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+> aurelien@aurel32.net                     http://aurel32.net
 
 Thanks
 -Anand
-> +       thermal-zones {
-> +               soc-thermal {
-> +                       polling-delay-passive = <0>;
-> +                       polling-delay = <0>;
-> +                       thermal-sensors = <&thermal 0>;
-> +
-> +                       trips {
-> +                               soc-crit {
-> +                                       temperature = <115000>;
-> +                                       hysteresis = <0>;
-> +                                       type = "critical";
-> +                               };
-> +                       };
-> +               };
-> +
-> +               package-thermal {
-> +                       polling-delay-passive = <0>;
-> +                       polling-delay = <0>;
-> +                       thermal-sensors = <&thermal 1>;
-> +
-> +                       trips {
-> +                               package-crit {
-> +                                       temperature = <115000>;
-> +                                       hysteresis = <0>;
-> +                                       type = "critical";
-> +                               };
-> +                       };
-> +               };
-> +
-> +               gpu-thermal {
-> +                       polling-delay-passive = <100>;
-> +                       polling-delay = <0>;
-> +                       thermal-sensors = <&thermal 2>;
-> +
-> +                       trips {
-> +                               gpu-alert {
-> +                                       temperature = <85000>;
-> +                                       hysteresis = <2000>;
-> +                                       type = "passive";
-> +                               };
-> +
-> +                               gpu-crit {
-> +                                       temperature = <115000>;
-> +                                       hysteresis = <0>;
-> +                                       type = "critical";
-> +                               };
-> +                       };
-> +               };
-> +
-> +               cluster0-thermal {
-> +                       polling-delay-passive = <100>;
-> +                       polling-delay = <0>;
-> +                       thermal-sensors = <&thermal 3>;
-> +
-> +                       trips {
-> +                               cluster0-alert {
-> +                                       temperature = <85000>;
-> +                                       hysteresis = <2000>;
-> +                                       type = "passive";
-> +                               };
-> +
-> +                               cluster0-crit {
-> +                                       temperature = <115000>;
-> +                                       hysteresis = <0>;
-> +                                       type = "critical";
-> +                               };
-> +                       };
-> +               };
-> +
-> +               cluster1-thermal {
-> +                       polling-delay-passive = <100>;
-> +                       polling-delay = <0>;
-> +                       thermal-sensors = <&thermal 4>;
-> +
-> +                       trips {
-> +                               cluster1-alert {
-> +                                       temperature = <85000>;
-> +                                       hysteresis = <2000>;
-> +                                       type = "passive";
-> +                               };
-> +
-> +                               cluster1-crit {
-> +                                       temperature = <115000>;
-> +                                       hysteresis = <0>;
-> +                                       type = "critical";
-> +                               };
-> +                       };
-> +               };
-> +       };
-> +
->         soc {
->                 compatible = "simple-bus";
->                 interrupt-parent = <&plic>;
-> @@ -434,6 +524,17 @@ syscon_apbc: system-controller@d4015000 {
->                         #reset-cells = <1>;
->                 };
->
-> +               thermal: thermal@d4018000 {
-> +                       compatible = "spacemit,k1-tsensor";
-> +                       reg = <0x0 0xd4018000 0x0 0x100>;
-> +                       clocks = <&syscon_apbc CLK_TSEN>,
-> +                                <&syscon_apbc CLK_TSEN_BUS>;
-> +                       clock-names = "core", "bus";
-> +                       interrupts = <61>;
-> +                       resets = <&syscon_apbc RESET_TSEN>;
-> +                       #thermal-sensor-cells = <1>;
-> +               };
-> +
->                 i2c6: i2c@d4018800 {
->                         compatible = "spacemit,k1-i2c";
->                         reg = <0x0 0xd4018800 0x0 0x38>;
->
-> --
-> 2.52.0
->
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
