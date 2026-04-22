@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFF963C3C00;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB7373C060B;
 	Wed, 22 Apr 2026 11:25:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776857112; cv=none; b=FuIHl0OD4wP6aBu1c4c+DZ8lRLDmbRZ+2Q3q9jLrq/KS3/MYzyp+Ly/RZB1mKWwBpY+/actKnbpDpIQbivMAA5+bgdA+0253H/4tb5t0lZdaNtG/NGkYexlpuuRb3WQwXDoa7l/7Td9jJVbIl+f8kMOfsd6qHjlMrgwhiHjW1EE=
+	t=1776857112; cv=none; b=jRq9S/5SoSVJCNg09Sm5NVF321/1cx9FQxT382k3f8sI9+/T9kwzRta+RvYP1vOynMWTEc2tBahhx4/zu+BZeIPcMzzr6oUTuc8upPZbVHaUcVB9WdoYNQgaNAwdXr6yb3Nes1JZGXfpQ87Cm6DY5Ov81pszz8RWoDoJH5aW9ok=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1776857112; c=relaxed/simple;
-	bh=sbvus7COxlYStZyNLdPGuM195ZbWanAbQzRhkGoHqvY=;
+	bh=jonb0+BbdQ6Gol/gdLqxrtYurK7jeakTSV7+fWf3c6M=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=s6yU+zBxxzz29vRhJctn+Sv7w8/Mg5STg1GQdzFeNlBgHZpbLC96rnT/wxaKeWQrPuIGX30eZetfkCp2lbnunGYOt+53/MzhqlMO6WKIEJKU0WcXHl0gEprwvsZYUyKa3NHymQd0AH77ifuMOj+M14rkRlM8O25R6uTNxejmsc4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Gcxc1h2W; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=vCRWGXpYyJUMiU5BG4fQYPWjPIG2M4N6b31z4rHYY3bP9tHXiryfpoBwpOZjlfnTWqyk3TXd1mR5O6kcAZGPBUimEIbrrPShT0ZdKxHseg83jVkd10R5pLHBWmdkJx3xp4D4v7lyXHAVqobK1esmSh8meg0dDN8M201u6LCd+L4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GiGKdSPi; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Gcxc1h2W"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 9F936C2BCB9;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GiGKdSPi"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 781D3C2BCB6;
 	Wed, 22 Apr 2026 11:25:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1776857112;
-	bh=sbvus7COxlYStZyNLdPGuM195ZbWanAbQzRhkGoHqvY=;
+	bh=jonb0+BbdQ6Gol/gdLqxrtYurK7jeakTSV7+fWf3c6M=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Gcxc1h2WWVO0IAttW8KOWVPt/46hHwOYJlc/jSjio/RzOgpubHmhsd3rjaBfiw4Ax
-	 cShAR8BAwsEDHtjY9+h8fLwbHr9beUAAwzgYNqT78XQgeh0Yn9lXKr359f2ZTzNIz8
-	 AAyiC62rqnOqeBhdJlK+Y+RLRGdEdvCcNEm4fKkp1zv4Q2i3IWzzODzxOgWO5wBrQJ
-	 zFUoytUs9vrZR1TJuKfD7snIZSfGhyzdROoNvN7stoNBBtlMR9pRXOAjS5oqX/eMRv
-	 GJP5Nt02P4Wu1tr3SXqgwXovQy0zkCc4oHKGBUaUI8apV/b/tauyx3GcRw3rCku7az
-	 kMaS2KOLh8YeQ==
+	b=GiGKdSPigLO1yfzW/xEabv0WclGB2h92UJ9qop9tk/cubFn7e1vXplJiAcP5obESB
+	 qbIYJ/dK5czrglGIC+pqfluS3aEbli3m/75oP/+jQE+xsfCX4Dl9RY1PPtqy/rj2OQ
+	 xOGFt+9xaB4qX2FkWqm6M4nB1qOUNlAVcVM3vNF+gBAAOMau35RS04wQlPBveSDvto
+	 6hKwPQXZojouyHWZWcwedSfz8sUN0BKa32GzCA6kJ8kCMzx/Ve9gueeyz4c/JATdqx
+	 EOAZAlrELyRBVP3NrEUeq/pV7gBT1wp0Ke23F8WhUZwvn9Ai2TSPcz8JX3BiNyUgFR
+	 FgfINDiUH9QTQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 948DBF5A8DE;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66593F55811;
 	Wed, 22 Apr 2026 11:25:12 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Wed, 22 Apr 2026 16:54:45 +0530
-Subject: [PATCH 04/12] power: sequencing: pcie-m2: Fix inconsistent
- function prefixes
+Date: Wed, 22 Apr 2026 16:54:42 +0530
+Subject: [PATCH 01/12] power: sequencing: Introduce an API to check whether
+ the pwrseq is fixed or controllable
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260422-pwrseq-m2-bt-v1-4-720d02545a64@oss.qualcomm.com>
+Message-Id: <20260422-pwrseq-m2-bt-v1-1-720d02545a64@oss.qualcomm.com>
 References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
 In-Reply-To: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
 To: Bartosz Golaszewski <brgl@kernel.org>, 
@@ -55,16 +55,16 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2033;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4155;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=LWnLixKrQibhExb1i5PgPATDR3O5JAuvbsbZ6mK36Y0=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp6LAV/F3/E3MFsCt+z73n6IYm6bHQcgOZG2VRM
- CxU6IxmeSCJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaeiwFQAKCRBVnxHm/pHO
- 9c+EB/9BLUydP/0XPcughRS5adJ+af8FQiEMYmytsxappZ2jIRxbkBmaT82LwuU/Q320mvHGQrJ
- jiHgYOtNU/xdlRIsKQwgJRrb8DTDC167WE7lA6/x0JHQh+bBLTYTzqNMeoAD4SG9uptegH1DhUM
- /4DAZpj2bWt6kBgbe8XB2QAIx7c9ZjTbP1HS8oNRDM1nt9M2pFpGsAt49eLzdhbRjFtBvkI2TEu
- vNyOUx3jlrJ0ypPCqHNwGG6BBdsiLNpJrHwX6fUURFEDX340NTUF5oX73AfVsfNGiRpa1VUD6a9
- WwRHQtkyUe/kFnf7UtzGwgXzvy83NwpMZWmILCO+s4FK8gZU
+ bh=mBT4+PCQBlLr0gKZw68+7oeiwkEcbJwlfBn1pAauZ/w=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp6LAUAs/ZvcRX0EUgj9C0brPvG0qUgrCiwiCL+
+ Vr8UZyf8b2JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaeiwFAAKCRBVnxHm/pHO
+ 9QzxB/9wBZR66v/P3IP9cDkWqPsdxvV+9r6eMk4nkoOxLgBBFjaOJk9fUo+KSq9rhp0vPPaqVYx
+ fxdlj96TMLLr5/iFuJrUIH2IuAMLKdc3OnLMV+k4VeiM+/2/XHWTif+x6GDbfGWNDJQAkamBf6W
+ b0e6hGk1dIhQi4lFzYRwAbOW+mg6nv/+7EF/5AMeC+kKLC17CnIR+hEbWxmqYpcTw5pif9Subx9
+ mb1PpSFhoG63VAcWsc9D2UPjilHT7mBTp5uOTdRH3ENq9h8ZZneiXxBWmuNOyuU6jErn/7sQ+VR
+ Pfo+rLejqNWFROaSf0lknjfgXSW3D2MbuY49j4BXxLKRPWbD
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -74,54 +74,124 @@ Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-All functions in this driver follow 'pwrseq_pcie_m2' prefix except a few.
-Fix them to avoid inconsistency.
+Introduce an API pwrseq_is_fixed() so that the consumers can check whether
+the given power sequencer is fixed or controllable. This will come handy
+in situations where the consumers need to know whether the specific power
+sequencer like 'Bluetooth' can be controllable using properties like BT_EN.
 
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/power/sequencing/pwrseq-pcie-m2.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/sequencing/core.c | 33 +++++++++++++++++++++++++++++++++
+ include/linux/pwrseq/consumer.h |  6 ++++++
+ include/linux/pwrseq/provider.h |  2 ++
+ 3 files changed, 41 insertions(+)
 
-diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index 2b79f2e34079..49c326a6e445 100644
---- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-+++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -185,7 +185,7 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
- 	return PWRSEQ_NO_MATCH;
- }
+diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+index 4dff71be11b6..20af9643f1ac 100644
+--- a/drivers/power/sequencing/core.c
++++ b/drivers/power/sequencing/core.c
+@@ -182,12 +182,14 @@ static void pwrseq_unit_release(struct kref *ref)
+  *               the state lock has been released. It's useful for implementing
+  *               boot-up delays without blocking other users from powering up
+  *               using the same power sequencer.
++ * @is_fixed: Check whether this target is fixed or not.
+  */
+ struct pwrseq_target {
+ 	struct list_head list;
+ 	const char *name;
+ 	struct pwrseq_unit *unit;
+ 	pwrseq_power_state_func post_enable;
++	bool (*is_fixed)(struct pwrseq_device *pwrseq);
+ };
  
--static int pwrseq_m2_pcie_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
-+static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
- 					struct device_node *parent)
- {
- 	struct device *dev = ctx->dev;
-@@ -262,7 +262,7 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
- 		goto err_put_ctrl;
+ static struct pwrseq_target *
+@@ -206,6 +208,7 @@ pwrseq_target_new(const struct pwrseq_target_data *data)
  	}
  
--	ret = pwrseq_m2_pcie_create_bt_node(ctx, serdev_parent);
-+	ret = pwrseq_pcie_m2_create_bt_node(ctx, serdev_parent);
- 	if (ret)
- 		goto err_free_serdev;
+ 	target->post_enable = data->post_enable;
++	target->is_fixed = data->is_fixed;
  
-@@ -307,7 +307,7 @@ static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx)
- 	}
+ 	return target;
+ }
+@@ -965,6 +968,36 @@ int pwrseq_power_off(struct pwrseq_desc *desc)
+ }
+ EXPORT_SYMBOL_GPL(pwrseq_power_off);
+ 
++/**
++ * pwrseq_is_fixed() - Check whether the power sequencer is fixed or
++ * controllable.
++ * @desc: Descriptor referencing the power sequencer.
++ *
++ * This API can be used to check whether a specific power sequencer like
++ * 'Bluetooth' is fixed or controllable through properties like 'BT_EN' GPIO.
++ *
++ * Returns: true if fixed, false if controllable.
++ */
++bool pwrseq_is_fixed(struct pwrseq_desc *desc)
++{
++	/*
++	 * If there is no power sequencer, then the consumer cannot control
++	 * the power, so it is effectively fixed.
++	 */
++	if (!desc)
++		return true;
++
++	/*
++	 * If the provider hasn't implemented the callback, assume it acts
++	 * like a controllable power sequencer (for backward compatibility).
++	 */
++	if (!desc->target->is_fixed)
++		return false;
++
++	return desc->target->is_fixed(desc->pwrseq);
++}
++EXPORT_SYMBOL_GPL(pwrseq_is_fixed);
++
+ #if IS_ENABLED(CONFIG_DEBUG_FS)
+ 
+ struct pwrseq_debugfs_count_ctx {
+diff --git a/include/linux/pwrseq/consumer.h b/include/linux/pwrseq/consumer.h
+index 7d583b4f266e..7c24958880d7 100644
+--- a/include/linux/pwrseq/consumer.h
++++ b/include/linux/pwrseq/consumer.h
+@@ -22,6 +22,7 @@ devm_pwrseq_get(struct device *dev, const char *target);
+ 
+ int pwrseq_power_on(struct pwrseq_desc *desc);
+ int pwrseq_power_off(struct pwrseq_desc *desc);
++bool pwrseq_is_fixed(struct pwrseq_desc *desc);
+ 
+ #else /* CONFIG_POWER_SEQUENCING */
+ 
+@@ -51,6 +52,11 @@ static inline int pwrseq_power_off(struct pwrseq_desc *desc)
+ 	return -ENOSYS;
  }
  
--static int pwrseq_m2_pcie_notify(struct notifier_block *nb, unsigned long action,
-+static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
- 			      void *data)
- {
- 	struct pwrseq_pcie_m2_ctx *ctx = container_of(nb, struct pwrseq_pcie_m2_ctx, nb);
-@@ -372,7 +372,7 @@ static int pwrseq_pcie_m2_register_notifier(struct pwrseq_pcie_m2_ctx *ctx, stru
- 	if (pwrseq_pcie_m2_check_remote_node(dev, 3, 0, "serial")) {
- 		if (pwrseq_pcie_m2_check_remote_node(dev, 0, 0, "pcie")) {
- 			ctx->dev = dev;
--			ctx->nb.notifier_call = pwrseq_m2_pcie_notify;
-+			ctx->nb.notifier_call = pwrseq_pcie_m2_notify;
- 			ret = bus_register_notifier(&pci_bus_type, &ctx->nb);
- 			if (ret)
- 				return dev_err_probe(dev, ret,
++static inline bool pwrseq_is_fixed(struct pwrseq_desc *desc)
++{
++	return true;
++}
++
+ #endif /* CONFIG_POWER_SEQUENCING */
+ 
+ #endif /* __POWER_SEQUENCING_CONSUMER_H__ */
+diff --git a/include/linux/pwrseq/provider.h b/include/linux/pwrseq/provider.h
+index 33b3d2c2e39d..11165e98cde0 100644
+--- a/include/linux/pwrseq/provider.h
++++ b/include/linux/pwrseq/provider.h
+@@ -43,11 +43,13 @@ struct pwrseq_unit_data {
+  *               the state lock has been released. It's useful for implementing
+  *               boot-up delays without blocking other users from powering up
+  *               using the same power sequencer.
++ * @is_fixed: Callback to check whether this power sequencer is fixed or not.
+  */
+ struct pwrseq_target_data {
+ 	const char *name;
+ 	const struct pwrseq_unit_data *unit;
+ 	pwrseq_power_state_func post_enable;
++	bool (*is_fixed)(struct pwrseq_device *pwrseq);
+ };
+ 
+ /**
 
 -- 
 2.51.0
