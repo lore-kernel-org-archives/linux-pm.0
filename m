@@ -1,178 +1,174 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D1F72E62A9
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 02:05:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776823545; cv=none; b=bCRBy+ESyD3Ta9G0hY0nsCgEME05/BE9MeeI0mhtF78NO1e25uCRnCXuiWcm7QI5Oqd0kipqAgp5FHPbLRxfuO6L6zcaQwMb+jar3iz7eCV11PKEYMaeeS84REJq5m8ks2jhL6Ykn2hBUVnBBREMxgldO7WwDQfqOjTNeqZoXf4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776823545; c=relaxed/simple;
-	bh=/t53h29Pkj7viUxmExb0P2VDmCp1KWMxYHFdwnxPeeM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=j6QIZgYF8OvOQCa95kOgSG0UHnykWAMReLZ4Ll7f9UZs7tQfKnBOJOQrVXQapAx4XjzJ5FkTn99aEfc5eL6s/TOlp56p0HhWKl1asSYVAKMBG6qzwaOaeRYKbARqfi+NAAID2nHS9xVev6ZhACBNKgZuS2UGTNg/VrmfWLRU/Jw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HW+wvQkT; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=VPIBnuoT; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6673B313E24
+	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 02:19:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776824356; cv=pass; b=P/PQgtPUHfnx0//VDVL5Pu2fURR87a3TNNL5PEJu/mKAO41nrTMazf1jUlZuCCeZio8R7IzYg3EZPtoOdA4Yo059CXm4MQVM6UiXt3bwllSwRcafSbCqmziAIcpR90P3cLw+oBIzTrSEyaYimQ80aWheXeCl0VP8KOTgRd5BGwU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776824356; c=relaxed/simple;
+	bh=/P3Rk4TtuDYfsPdnBrw4iKE8r+bV3HKR+Fx10JBb+ns=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DF7irLnHF66YhFUQxSwwT2wFWopERmwczThkQaUdEhk2vwvFOzUdnXzU46VUQG9EQTBHNHLCbvR/qAn7fix7AV0Y4OIcF1tVwNN3cKdSxaPY3CWKVjry5HGmKwTg4l8/2u/qIlS6BVcqaDgZAi2L0nFI8EcKuWFxzuK2GZaAxR0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sjZn0BUQ; arc=pass smtp.client-ip=209.85.208.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HW+wvQkT";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="VPIBnuoT"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63LIaMEN729714
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 02:05:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Amnf+ainR1CvooQB5tQswFdW/8sU8z+ZPwOSNkYwagk=; b=HW+wvQkTIDiUcqKX
-	vMuKzspgl5pW0ZbJSaQaTnOlf5KeuloezZT5CzbREdzAhb0adhn6Ym+3wbTCnQv+
-	CcQAoFnoCIHKxz/PGSVcf6WcKp/HPV7rgibxkMlLLPhoeFryGRHMs7HbsX4iqKqv
-	q3BiMGsMdJ24YZK0k1SUtnMb3AX5sppYbdQOA15QqHR/UPwKQbG7tBnpmOlUgdC1
-	MpEmsv0TrN6XDvxoJcCDeh1SosbTNu7Yvoxawlr20aU6wETXtvIyj7QsTphUh9Sh
-	A5PliXOQSr4m24RtkiEZibO4kEzlAoIO7uwc9K2WVqeF7VYevQd/BO7QJc4Cxd+O
-	Cw3Caw==
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com [209.85.210.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dpenh96pt-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 02:05:43 +0000 (GMT)
-Received: by mail-pf1-f198.google.com with SMTP id d2e1a72fcca58-82cf8dcd079so3202227b3a.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 19:05:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sjZn0BUQ"
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-676fec7e946so61041a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 19:19:15 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776824354; cv=none;
+        d=google.com; s=arc-20240605;
+        b=GUr9KzRt4Ed6q60XZmBuD4W8h6GVYJdBFJI7pi/IHQqBVAJ7szZCA/A/zCzqPDfXiI
+         9xZP5UOxbySCnouLXWUKY/sjOJhqDEJ8OoacYgWLLnfxDg9KOvQZXFEB8tLCjBOdHrPG
+         xRDRgtqIRSYWR9PI3SahYfZuEtPU0zd4Gpe41rkguutTf9Jhi5lnhDfyEHsUJbsLYjev
+         nBQE5ps0wrf8/RlTRbmDr/cpBYj5YJHR4FjeQrGl3CBnuG0IPjoItfZYZM4cpc/a11UW
+         DdVRH9TsIcGjHmcRtiIWGnLrPrCE3N6on44aKXtGoINGBH9ccBqMZy1ZQKufbtFHU/HS
+         6reg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=/P3Rk4TtuDYfsPdnBrw4iKE8r+bV3HKR+Fx10JBb+ns=;
+        fh=OsP6iuWIF5GDZR2ogKL7rgt84nvk8khNgHxEg1OeCC0=;
+        b=SWfyhhfniep3oBFDlig/Pf+KbfQZL1hiaNGlbSSb7UQWkVxXC0CER/mTGpfOwPlx4w
+         59kZcNIWiujgdoCjXzBt/sRwt1987SA2PNvmh6kzuZr8DDMAyXbA3ReY3igy4aNDLe2p
+         5NGlT+3Bk85LvB5W5KubgQuw+B5+HmUcyTbIEXEgGsdcluqsgRJpmc//hiBNWBM1gTvi
+         YYzGZe2vH6rgxKC/+le1+yRD0oRYIXJ01gQARdGH/O6pTEQzEq5ZNl3SHSaFVxy6i6Sv
+         TBGMQCtI2Vx7/DI5ZjjX8disKq4NNo4X1ldiZ/CExMISc+QEC+GsrGER2El1ZKndbfTN
+         fJLw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776823542; x=1777428342; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Amnf+ainR1CvooQB5tQswFdW/8sU8z+ZPwOSNkYwagk=;
-        b=VPIBnuoTjdpy5V6egPYIaDW6sPGIo/EaoiDEtMTiAC85L9XHKSZan5RqBzXRVBg+VY
-         TuEwd9JbMqojsqMikSTnqZ0GgOIRKEf8DR6dxLUlFbFJeC5bQW2A1yQtK1EkUqVNy8g+
-         OBGThGtI+ZkJIOEEUPGVkYqatdOReDh/OfamMbHnfcZOB3Tm2qRFjnxgIr00y8eSOjAj
-         wuzcApPw/wmAi+i19jVRPBC022qlQXJ1GPBL4aOWbU+FNGGU1TXbM1mU5Ez1Xy3ow7B2
-         iM3tJH5xs2qZYC9lGE9USXhk6jTnevmoYOGAPDkzcMsIfcuVYEE8uhj6fLifrLG4DZb+
-         TYdg==
+        d=gmail.com; s=20251104; t=1776824354; x=1777429154; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/P3Rk4TtuDYfsPdnBrw4iKE8r+bV3HKR+Fx10JBb+ns=;
+        b=sjZn0BUQljheTtpVl7ncqNF7+J9T11OG/6zfZHc9VdBEewdvtBX9uo0LZxv3sZ6QU7
+         sJD5pmmU+ZjQt6AAl6Op4qvAK9geAUB7bkt8Z1UMbBXIciceeoZtIzKs7Nh1+g7xTUyC
+         vIhjiOn5QpOYFmQpmVvgGOG/U2q03Z6JFLPe4k+42EvA/J7A3beQOoLAs7zEGneOuJlw
+         iLo7wca2mXlH5m7Cn3vkzYQBisUnIlRtkz1DN+WcSs9Ixlg5U5Sd1uMaqncjtJH3YDQy
+         zREFK03OAIaP2/4jpybYQOBi+FlXbWEDy7UzEpY3GYtPKi7VJxM0BJhW5dH2Qg6Q2hSm
+         /Lag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776823542; x=1777428342;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Amnf+ainR1CvooQB5tQswFdW/8sU8z+ZPwOSNkYwagk=;
-        b=Kp9HehCtLEz9SL/mUc8ou3+6GEMEkn+0Mm1TrpP2pDQjYxPlIcd/viiwX8hjgljr7k
-         E2iszAjOGAA68/TwYrugDcNlEr03ytxaBI2TvdysuSlF4xvXHX+PDu5sBe6KVJe3RR0t
-         oi3rHsHoLfFPfP85rwnh036rzGkCKc6hrOnU2ETq5nDyk1paJ2AoM+a5zO12pAHxh3+u
-         rrNRRgssLKLpu2yU11m7vUMKO6o3w87kIQ4ipRBKcK+mr9j3m8cn3VpIhFo+jLXejBTz
-         8OXlB7GlgSU+aG/zBZrCp7UQ0aIj4nxi9OJSdGRRfb5bOJ4a5Twa61RiKm6dw6nBZQTu
-         o2MQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+nXbq5IW6ISEkyNNoftGMrETFiXaovaPis02NNfNYd/JWiaWaBFoVOodsopKAMGrHgVWqJZ77hzQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwyxfVpbB5eHOH4ZMbqusCq9IBTUBsFGsgNMtz/1X8Iyh6drPFW
-	mq4Gf3NeVTOEUZTcOoyjn3AqpO1EbeTbwgtyFjPatqEP+/oHXJFPjg+IapjBv3nLsqj1HuC1G5q
-	5RPqnSWD8orkuFgd5eXQhAnpO2eSNjqHm1znrZpXSHIc8xu65d/6uTPJSTZciUg==
-X-Gm-Gg: AeBDievDTQTTZDUUqk+iSDL6Cn/Ku/ztajjwwigBKRpSQhBRJk89HOvkRnLvHOytcY2
-	GIc9bCe2LyY2UOX337R8elKWxE1WBrn9Au5IINZlV1mJyCcUSIu3RD7oxjx97eWstEAK6KLA33M
-	OLLCqyXk1dfbizzc2vBAkJrg71WHrXflM5xwXFQ4hpkTTn8K6K26s9OzvOyyIiTTT7psfspYIdi
-	uH4ibpUOnTGPZd9yKQ816SbEKgiyfWQOGIlvJwInuYeLeZWb4SNdTQ8EDgnJ+I4bxjwWzIDK3DS
-	H14F4Z/pb+YoUcppYPqsna3ybNxT2YicnHVqBxRYpjY9+buqMSrvjh0jaafn0sNp6tozQmMI72/
-	Loa4CnDEk6G38YUP5cl1SPDy2UQt/i7ZNwUy9KzxMe/lspbJTUNOYWhA=
-X-Received: by 2002:a05:6a00:2d03:b0:82c:ebae:3cb with SMTP id d2e1a72fcca58-82f8c91924dmr20936853b3a.43.1776823541978;
-        Tue, 21 Apr 2026 19:05:41 -0700 (PDT)
-X-Received: by 2002:a05:6a00:2d03:b0:82c:ebae:3cb with SMTP id d2e1a72fcca58-82f8c91924dmr20936809b3a.43.1776823541477;
-        Tue, 21 Apr 2026 19:05:41 -0700 (PDT)
-Received: from [169.254.0.2] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e981be6sm18040368b3a.9.2026.04.21.19.05.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Apr 2026 19:05:41 -0700 (PDT)
-From: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-Date: Wed, 22 Apr 2026 02:05:13 +0000
-Subject: [PATCH 3/3] arm64: dts: qcom: x1e80100: Add clocks for QoS
- configuration
+        d=1e100.net; s=20251104; t=1776824354; x=1777429154;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=/P3Rk4TtuDYfsPdnBrw4iKE8r+bV3HKR+Fx10JBb+ns=;
+        b=mppt5GRa+n8ISZdBcFOiMl09sqRFCa5psiP8cN1WDjFptgKkwXrZYOofqqexbcPTio
+         1UQUSccjaboEfM91aqwZBs2ZuLicrMPok5ONy/G8KGSWRHWDb0ibeMkV/dw1H/jAJrSP
+         pC+fyOcO9e5eK93GSao8WxJHPHzPC2lldQNzouAY2aOGI7HU/1Vd2QxNkyDCRiGgKiC9
+         fGMiZcMsuo+rfGPKuGjNPDnXhG14R8JpRklCrX4g/falVTzwBOO1yHMoICkK679HJB+o
+         VgsaRnS6WcqBEfU9mnpWPlpvvA6UMUbEwf8hiY1Gr+HMadBJ5hGMXT6d3EiRy4Ezq0w7
+         PFCw==
+X-Forwarded-Encrypted: i=1; AFNElJ8VXQWWI1DEGDcD6QVimQABu/Vm2gqSSdMIe19qUDgk4UPrMgSBC/VlFail5lFxNpkzBE8kJB5UVA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw+T4zK6mc+N7uhmbYpuX28WuuwgRTPLII5I9yqR4c5q/dwwVMt
+	bddBRFaJLaRdfjXNieltdflhJTAdozO2GZDdjfU4hRoOdmZm6I15vw4EuwHwxd3l99m+/hV+fWu
+	25F4EHpTBtZmZx7vlltuRLN4o2jFz/9Q=
+X-Gm-Gg: AeBDiesq8Has3GKJlbSnFeSrNZ2kcGJduMSJV/djlyDuDMgIoe4jQnz775lwYJRjOhx
+	fOHqa0KgSqMnYN8CLhJzGg0h2lUV6chmVYAiXOcuLH0d2wRVb/tnMCjlddIV6N/SUIuRaaRgbbw
+	nPpqlzblfbZ0fDZdrW2MoX2S0eYbMogl/JqJFKaZpMFp0ciCrlkKrDDwC016BuMDT0OlWI5YozO
+	O0Wh2jW6Nku0Hdxj2ovZWFK9oNSFm5NFF5NY3Ao9Fb+0fU816xz7vA2UohzDpYnJZ0VtNd/v8v9
+	kLgMZ+88xZaHmwzIl0MqxlO35f1s61bCt26Xcb2llPmIOZPzmiY=
+X-Received: by 2002:a05:6402:26d6:b0:676:d863:ce29 with SMTP id
+ 4fb4d7f45d1cf-676d863cf85mr1407081a12.28.1776824353486; Tue, 21 Apr 2026
+ 19:19:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260422-x1e80100_qos-v1-3-bcc2afe4cc78@oss.qualcomm.com>
-References: <20260422-x1e80100_qos-v1-0-bcc2afe4cc78@oss.qualcomm.com>
-In-Reply-To: <20260422-x1e80100_qos-v1-0-bcc2afe4cc78@oss.qualcomm.com>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Rajendra Nayak <quic_rjendra@quicinc.com>,
-        Abel Vesa <abelvesa@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
-X-Mailer: b4 0.15.0
-X-Authority-Analysis: v=2.4 cv=HdUkiCE8 c=1 sm=1 tr=0 ts=69e82cf7 cx=c_pps
- a=m5Vt/hrsBiPMCU0y4gIsQw==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
- a=EUspDBNiAAAA:8 a=iJbeT2h-Aok9JeJ55RIA:9 a=QEXdDO2ut3YA:10
- a=IoOABgeZipijB_acs4fv:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIyMDAxOSBTYWx0ZWRfX+BPaIKpPULnj
- iT60fo/SNkeSWxQc/ay5l/Ta2Cs0tfT9b0cyN5ZYxJ/SeHHYVERrP5fuhQWm8YAzIvlmVo43z72
- 315irlbCul827BsnmJPeK8ARDaprax224xC7eYuu9QjCcSsIScGVYC8ly93d7ixyG30R4erDF9t
- HoN52mCVnMLQoBTPleCZhCZbDHwfZbOUagPM3JKwcGHizvpjZ066mWCiYVDtEswiI3nxCuDC5bs
- V6lJX0xCbSFz5lfQXHCeSuu0YOWbaF/wJRxBzj+D3bUzOFXz7QI6S9mjWjhonO3IdeOTfJfoGJw
- SRLnfRCjGw7huCkYRzrqxrbp96OAubDu8B1vzE7wOtEJXwuBT6jU58xDOwjCNGxTyAMEpgMNsuk
- wMKLfEudfY0anmW8zEoAbbBVLSrJNEQuROtY0vk0fHcQ3RD/nWIePjz48RQZ4oSwQB6xoRc1kcu
- 4K1xO+ade7t2ca/Zp6w==
-X-Proofpoint-ORIG-GUID: qoegMxg-G9XXDkieCyo024RVQULz3qyA
-X-Proofpoint-GUID: qoegMxg-G9XXDkieCyo024RVQULz3qyA
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-21_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 malwarescore=0 bulkscore=0 spamscore=0
- clxscore=1015 suspectscore=0 lowpriorityscore=0 adultscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604220019
+References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
+In-Reply-To: <aegUoOiUbjUAH5aT@google.com>
+From: Kairui Song <ryncsn@gmail.com>
+Date: Wed, 22 Apr 2026 10:18:35 +0800
+X-Gm-Features: AQROBzDy3s1eJBSM4ivRYyuVreJ6HWEvbaw8uJ7B00A6nArMH1jrA77MWD0vRmM
+Message-ID: <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+To: Yosry Ahmed <yosry@kernel.org>
+Cc: Nhat Pham <nphamcs@gmail.com>, Liam.Howlett@oracle.com, akpm@linux-foundation.org, 
+	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
+	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, 
+	cgroups@vger.kernel.org, chengming.zhou@linux.dev, chrisl@kernel.org, 
+	corbet@lwn.net, david@kernel.org, dev.jain@arm.com, gourry@gourry.net, 
+	hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
+	joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
+	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
+	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
+	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, 
+	ryan.roberts@arm.com, shakeel.butt@linux.dev, shikemeng@huaweicloud.com, 
+	surenb@google.com, tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
+	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
+	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
+	riel@surriel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add clocks which need to be enabled for configuring QoS on
-x1e80100 SoC.
+On Wed, Apr 22, 2026 at 8:26=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wrot=
+e:
+>
+> On Fri, Mar 20, 2026 at 12:27:14PM -0700, Nhat Pham wrote:
+> >
+> > This patch series implements the virtual swap space idea, based on Yosr=
+y's
+> > proposals at LSFMMBPF 2023 (see [1], [2], [3]), as well as valuable
+> > inputs from Johannes Weiner. The same idea (with different
+> > implementation details) has been floated by Rik van Riel since at least
+> > 2011 (see [8]).
+>
+> Unfortuantely, I haven't been able to keep up with virtual swap and swap
+> table development, as my time is mostly being spent elsewhere these
+> days. I do have a question tho, which might have already been answered
+> or is too naive/stupid -- so apologies in advance.
 
-Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/hamoa.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Hi Yosry,
 
-diff --git a/arch/arm64/boot/dts/qcom/hamoa.dtsi b/arch/arm64/boot/dts/qcom/hamoa.dtsi
-index 051dee076416..aa206452950c 100644
---- a/arch/arm64/boot/dts/qcom/hamoa.dtsi
-+++ b/arch/arm64/boot/dts/qcom/hamoa.dtsi
-@@ -3132,6 +3132,7 @@ aggre1_noc: interconnect@16e0000 {
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 
- 			#interconnect-cells = <2>;
-+			clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>;
- 		};
- 
- 		aggre2_noc: interconnect@1700000 {
-@@ -3168,6 +3169,8 @@ usb_north_anoc: interconnect@1760000 {
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 
- 			#interconnect-cells = <2>;
-+			clocks = <&gcc GCC_AGGRE_USB2_PRIM_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_MP_AXI_CLK>;
- 		};
- 
- 		usb_south_anoc: interconnect@1770000 {
-@@ -3177,6 +3180,12 @@ usb_south_anoc: interconnect@1770000 {
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 
- 			#interconnect-cells = <2>;
-+			clocks = <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_SEC_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_TERT_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB4_0_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB4_1_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB4_2_AXI_CLK>;
- 		};
- 
- 		mmss_noc: interconnect@1780000 {
+Not a stupid question at all=E2=80=94it's actually spot on. :)
 
--- 
-2.43.0
+>
+> Given the recent advancements in the swap table and that most metadata
+> and the swap cache are already being pulled into it, is it possible to
+> use the swap table in the virtual swap layer instead of the xarray?
+>
+> Basically pull the swap table one layer higher, and have it point to
+> either a zswap entry or a physical swap slot (or others in the future)?
+> If my understanding is correct, we kinda get the best of both worlds and
+> reuse the integration already done by the swap table with the swap
+> cache, as well as the lock paritioning.
+>
+> In this world, the clusters would be in the virtual swap space, and we'd
+> create the clusters on-demand as needed.
+>
+> Does this even work or make the least amount of sense (I guess the
+> question is for both Nhat and Kairui)?
+>
 
+Yes, this absolutely works. In fact, I previously posted a working RFC
+based on this idea. In that series, clusters are dynamically
+allocated, allowing the swap space to be dynamically sized
+(essentially infinite) while reusing all the existing infrastructure:
+https://lore.kernel.org/all/20260220-swap-table-p4-v1-0-104795d19815@tencen=
+t.com/
+
+The only missing pieces are a few helpers like folio_realloc_swap()
+and folio_migrate_swap() for lower layer allocation and migration. I
+prototyped this locally and it wasn't difficult to implement.
+Furthermore, this approach works perfectly with YoungJun's tiering
+work with zero conflicts, the dynamic layer can be runtime or
+per-memcg optional.
+
+To move this forward, I've stripped out the RFC features and memcg
+behavior changes, and recently sent a V3 that focuses purely on the
+infrastructure. It introduces no behavior changes or new features,
+just optimizations.
+
+It cleans up a lot of allocation and ordering, as well as memcg
+swap lookups. Since some of these problems were also observed in the
+vss discussion, I think this will make things easier for all of us:
+https://lore.kernel.org/all/20260421-swap-table-p4-v3-0-2f23759a76bc@tencen=
+t.com/
