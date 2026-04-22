@@ -1,166 +1,130 @@
-Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+Received: from mail-vk1-f179.google.com (mail-vk1-f179.google.com [209.85.221.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B502AE78
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 06:14:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776838473; cv=pass; b=Z8VhTlYOwknrXh78czm7VQDBRQeqYjO6ex0hEVKrI2txLvlueQBtOBavQVK3ZBoD0HtnMVfdSXuicjlvzES/XbmulV5x9HM58HJTF18rOCrQonvJWeklHMpVt4HglsSNbFcAaUvRj0pzRRD0xIYD1PVaEk6QF9txXPz+U/Zo6Vk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776838473; c=relaxed/simple;
-	bh=jeF7sRuCE/tgNWpWkEp8CGIbKh6Ye/S47INTgDZFQCI=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DE43137750
+	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 06:51:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.179
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776840669; cv=none; b=JPP33kaZkq+WF5Q5EUVz1RnChwg8Jiu0Ao3tf8UZadCsiEKJ/PbkZuMGe7t/BIJlpMj1axbQ208I6TyCaNGMVJ0QyK0WZ2FOZmw08HUqijg8Ye/d0xIWuon3z61rz5JI2Mi+2nda8g8RBnFFIHgm+FT58XRb7YFrUwZJpSq3lHA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776840669; c=relaxed/simple;
+	bh=wpkRjIorbMJMpqwzpLdjkd4Y24lBbCPn4ze08bDnJqE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Content-Type; b=EDMRqiBgfzHoRWbaX6KLHAmrAxaf3sTrwltV39N5QVNcEpq603+SEkYkM/VcZB3kD9SjAJd3ClSVOM0BpyUR+SdoIBC21Lqkg+bH+qPs6JSS7E9qyn4EXy+AOt1eWXFZr/2ljWFld65S2jnS3bYp9ZknrdvD0s/+UlMcfZJ5xE4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XqxSnExd; arc=pass smtp.client-ip=209.85.208.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=bQAmQtEuaj3Xi9lOFoPwDo92e8N8Zasqn1SWa5jZNs8rej1CTGFlVMk9abKQttdFU+4DnZWJNesXGIqTZ2oiMzEabfoPWOB2kVhgWHNy1QG93ijCS4AsZgN8J+4Pq/8rJdbZfmnjMXfwYkSykDjtK9t3kJYAUBK85LHTaeh0zYc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XqxSnExd"
-Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-676d8a1835cso1580658a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:14:31 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776838470; cv=none;
-        d=google.com; s=arc-20240605;
-        b=D6x5d+SwXxP3NP+BoWC+HKfzjUA+R6z+tYhCnfhaWvklohQER2nqlnN719kEfj7V4F
-         rQGFaK5vTldy+GiomSS1swzEvDC5Qdk+w1oQgLDfkkMum8ORcZoKqMCV9tXkdJbGlub7
-         lf3Zzlljy+/wkYY56BBoJTHdng0o0gvh8dLxXfEMJr9YtNqLZ3PTZtUw50xE6vv86F+F
-         NXwwd1ixNba5gFE1m5f9pP4YEMw3tSg8vRMrYep+9lF4m/gteDHneRpAFG5avjf2aIe3
-         6XWfFbQIw12BFWobY5Nezr4CgRJWMFn7FYPfhVasoJ9sYv1rnHekP2l/F+oA5e1vA0Nd
-         D4rQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
-        fh=5YbbbWJo0eyx0CQHep9ozvzKbwC5iOic4xdP2j0ItRM=;
-        b=h/PtdGvPRJVmur6Ief8lFTgMCH6EYncajjlPgc3K+X/d4ufJ4quOl/jPQbNWYxN0Ty
-         HGgHzTrXzQ4hY8AcZJ5qZzITTloy7N0bQ7iUdp+TtDF4mtwCO+4QgMdTr6qtu+KVeneh
-         63Xx9ql70Rgf+t1l/BXXSoAjouQx7mFoOlFtRnCt+AlRRd2AnZDlVBRTT8TTlPvpKb1P
-         3X2WlEDa+h2CSi7tQp2RmLcIJNlKWPF/Qf9PUqnaxzLb01cl7OeuFOZ1Gy2ZK+56ithP
-         HAeTUYk55DTBYpn2HT0XHMxh0WdZBQxrjN0tkFQLjxIiPSCPJOOeuOM9pOpFrzwzAT0G
-         gNTQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776838470; x=1777443270; darn=vger.kernel.org;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
-        b=XqxSnExdnAhG+HOwVAn8PBPkH047wVCgRlSH6CslrPx/XHjn/6/m3P1QTvC4+A7WeN
-         JGujtyGHQkgbRgbIq2BYhu29VJfOQQKXPCQW+p5rFU/dEY/SuHvlKdom6y6isZpJYQcB
-         FDZqGHpnFP0e3FnOPBUk6PGtpkA/ifBWiWV8AG5r+vpT3HvPrE87TH9BQRCC2V4MI4Vz
-         w8N2TeW28bRDkliOFmWwBo9shMrfkRvE+vVY1dKgMRtbtaJqrF6mqErJ2qatfPwLBehG
-         sZJr5aPR+FrlZ+3EY4FSE1u2Azvpq0P7M40bXhB+LciqsNJDi9q3kHcOcQq8SnvByVOb
-         2y8g==
+Received: by mail-vk1-f179.google.com with SMTP id 71dfb90a1353d-56d9f191ae6so3289702e0c.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:51:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776838470; x=1777443270;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=P7E2q6exx7PW87rgGpHFPg1laXVtt9+bH8xKH5r59iw=;
-        b=k38OAkHPYyIneJ5miTW/BEECID98ML0tWKeq5utnnwbGpekzzbQvnshcoYEvvJc3Eb
-         2DwBBQgudkYB5dGWE+g5YX5KGa5IqWZ8zQCkoBrpxYxpBtmagMv+xTFhX4OAaUcGzZL/
-         j7JtB8LgzthVWEoGRr0E+TItSIOh0xoYP5FAEQCZIgJwd+ADuVWiHORBPZXWcrKPCE7u
-         jX+TaNDWqhrVt+6oYJnWXZ6oOmlCIQ6snJv+jrw0wNCBGdd7LslDxdHa5sHl0/YS+N5V
-         5V0ax7TA/3Fuic95jSnEO4h+tUShkEk2oa34s/lDwBvHWEnexcZvMNXjVyNgxXxycK8J
-         TztQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8Acws8wXq31fOdltl71fenBwwLgVTWrZE1Q9VVKOiCd5Zsicf47cNVcBgG9xJIrZZ1pkyJtq/sKg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzcJPyMdCcSMaLfp1znkaN4NK1+/7kCwqrDD5MIThQxZaYyvjgK
-	7caokxuQoEhuXYNhew2XqAd1HPzuYD6Jr076U4sxocytpFBnlXwqlDbCONYwEfU5JcPC7j6xH65
-	Bq7YuPXeTRAtZTKyLRj/evw+O894Mmr4=
-X-Gm-Gg: AeBDieuXVy60UQapho9WwCTBv6Z3J4/dWDWXGHRWz/ui2BAjwLK1nf7GiKnQIRhTgu7
-	tZsPCibQpkH0VVEcBbhrcqb1dMGDcHvtCWnsFssWTIAGdGzAQGhnTi8yyfjwqGgVs/agiqedgBZ
-	98HU8GWi41ao02kjrcAlb0h8ccM8RrvHJSH7RWUwI1xV+v5brqGnbVNU0h4s0qSKZdrUhb24eJp
-	xhBlYA6KthFqFY3Usnz18L7eHxVh8+UPfpmN5LRzUeqqmj0ORBSFQo3OFBFrSZPlPvWcx9zNXtv
-	ZOR5SYEw0mHepHc=
-X-Received: by 2002:a17:907:1588:b0:ba9:3162:182 with SMTP id
- a640c23a62f3a-ba9316201a6mr261303166b.19.1776838469610; Tue, 21 Apr 2026
- 23:14:29 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776840664; x=1777445464;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EQBlVUrhFqLpmXIMAS6FxW1MbLcWzT++sufCtB36Fh4=;
+        b=Lbb8bzG7jPFDLnq3nWTjdlsF6iiF0sMd27HPYWntW+dMBd1M+5jmaUi8HvIYjB3+O8
+         H0E6eLeapDDl9MJ9+fZwntIBp4QkrZU979WlJMzRs0IBV02t0CC5iA/1UqBdnoydNl8r
+         7x79TqBd4Qsj2JYc7Hsd2KbwPmNTW9s4MHgAZ4vDtWKAj2TN+SO0wni8FSr8YHZ9W413
+         KviwfIWCv36vR+JkQZLpPah0t5MnCTIe3CMxlXhpZEyAo2s61SHprN93i7sySAhroBmK
+         r1EiCqXitNNhltBu/XvAPuCEWc+S4g5MMJeziXiz4ZDaaEZmJzrx8ySD2DfIi+4qWodB
+         YDxg==
+X-Forwarded-Encrypted: i=1; AFNElJ8VUjTzchZ3sEQ5/a6TDjHSdkZ8ljKrBaZrRMEb4Em3VmvTzS0QPmSUWTnzC6jaY6BdkuIGdUO25g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwAL3ny+PaD6dvr9nY05CYnHfovYnWrAEIOR7osKihtM40acY7c
+	IsTQqNhUfp5H67Hj/pt1U0K+/l4cW9Dyx0e48Tt5rzVqMxz737uvRRi3BWBMp4UBkFo=
+X-Gm-Gg: AeBDievbDDIcIn5DjoEjPTv+LIbuPinDrnf0aMmIVpM8W9tcla3oIlDSU5QRdlc1e70
+	pBERnDDogqLE66+NWnDB4WTLGJul483Pdd9UHRTIXkNM3mjrEou45xBYgyclQd8Adgfy5r45TvY
+	m69tIRwzsnKec6ejLp3F9sLBdmUSmoe3TX+7vnU1QfrYPDul8R5b0+7jnTm9DICP8Ac37sLhFOc
+	FnOsLq/vewnjSalkppE0UfnCxwT6ercc3CefgSPxPEW2WaMxfq73RScp0JlJfABSJHp1pjcXxA6
+	FA/9Fp+vPnNny+RD2L2Fby0G/Gl0AdJlX7qV2N1/1k2QKpvB/J407k34Wj8uWwWi+GJXxi0+Vp8
+	hkQ4gsfpCvoSQPKLvpyVYSIuMinSKAw6rEgNkjZRemGRyERXXdBXZpTe4B+SePrjFhKbYqOJjko
+	pXNswrKdTyoJEq3A6l8xu9bEBJm/UU2lyhEZMa76uCvx93zhYP5HcntLL+q/LocdPkc+5mwSMVG
+	NrKj4z3BQ==
+X-Received: by 2002:a05:6122:90e:b0:56f:6b46:28be with SMTP id 71dfb90a1353d-56fa5931dc6mr10235573e0c.8.1776840664521;
+        Tue, 21 Apr 2026 23:51:04 -0700 (PDT)
+Received: from mail-vs1-f43.google.com (mail-vs1-f43.google.com. [209.85.217.43])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-56fa92078adsm8892139e0c.7.2026.04.21.23.51.02
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Apr 2026 23:51:02 -0700 (PDT)
+Received: by mail-vs1-f43.google.com with SMTP id ada2fe7eead31-60fa13bde2dso3315363137.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2026 23:51:02 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/Bbv7I4hb2WTbZKN8VXPDz/6Vyd662MU8X1PzfrOYdcbvdLmbf83uHA9bC+5Vr9vKyHX57s+GiAQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:3a0d:b0:60f:f543:232a with SMTP id
+ ada2fe7eead31-616f4b50368mr11299488137.2.1776840661908; Tue, 21 Apr 2026
+ 23:51:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
- <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org> <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
- <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org> <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
- <aeaXszeaE62rM6BJ@aurel32.net> <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org> <aeevr6Zj3Pwm9wux@aurel32.net>
-In-Reply-To: <aeevr6Zj3Pwm9wux@aurel32.net>
-From: Anand Moon <linux.amoon@gmail.com>
-Date: Wed, 22 Apr 2026 11:44:14 +0530
-X-Gm-Features: AQROBzCenitl4Odlgd_JfKGymltQZPnNxQ-FB_fBcOyLvkgF7DPs6UdEgDyDJDo
-Message-ID: <CANAwSgSCo-mESo6=KSc08oUzTWAgzpYu0JaW5KqmnCNiPYHjxQ@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-To: Shuwei Wu <shuwei.wu@mailbox.org>, Anand Moon <linux.amoon@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+References: <cover.1776793163.git.geert+renesas@glider.be> <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+In-Reply-To: <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 22 Apr 2026 08:50:50 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXxEsYuOay0+Tf=4ByTAMp0=iXwcS4YSy7UY9_CE0hb5A@mail.gmail.com>
+X-Gm-Features: AQROBzBFb_WdSQXK0LqlocZWzf5masVqawoXkZ-ffV8evv9b39yVA9knMtYt5TM
+Message-ID: <CAMuHMdXxEsYuOay0+Tf=4ByTAMp0=iXwcS4YSy7UY9_CE0hb5A@mail.gmail.com>
+Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
 	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
+	Magnus Damm <magnus.damm@gmail.com>, Saravana Kannan <saravanak@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@baylibre.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Shuwei,
-
-On Tue, 21 Apr 2026 at 22:41, Aurelien Jarno <aurelien@aurel32.net> wrote:
+On Tue, 21 Apr 2026 at 20:12, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Currently non-SCMI drivers cannot find out what the specific versions of
+> each SCMI provider implementation on the running system are.
 >
-> Hi,
+> However, different versions may use different ABIs (e.g. different clock
+> IDs), or behave different, requiring remapping or workarounds in other
+> drivers.
 >
-> On 2026-04-21 16:10, Shuwei Wu wrote:
-> > Hi Aurelien,
-> >
-> > Thanks for your addition.
-> >
-> > On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
-> > > Hi Anand,
-> > >
-> > > On 2026-04-16 17:07, Anand Moon wrote:
-> > >> After reviewing the Banana Pi F3 schematics, I confirmed that Buck1 =
-and Buck2
-> > >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the rest=
-riction errors,
-> > >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000 =
-=C2=B5V.
-> > >>
-sorry I was wrong from the doc below 1.2.1 CORE Power Design
-
-The typical core voltage is 0.9 V to 1.05 V. Actual voltage is
-dynamically regulated by
-the **remote-sense dynamic voltage** adjustment circuit inside P1.
-P1 BUCK1 and BUCK2 must be combined to supply the core rail.
-
-[1] https://www.spacemit.com/community/document/info?nodepath=3Dhardware/ke=
-y_stone/k1/k1_hw/k1_hw_design_guide.md&lang=3Den
-
-> > >> Additionally, I updated the DTS to map the second CPU cluster (cores=
- 4=E2=80=937)
-> > >> to Buck2 to better align with the hardware's power distribution.
-> > >
-> > > Actually the output of Buck1 and Buck2 are connected together, so the=
-y
-> > > should always be configured with the same output voltage. And both
-> > > clusters should be mapped to both outputs.
-> >
-> > You are right, I received the same response from the official developer=
-s.
-> >
-> > Therefore, I'm wondering if an additional regulator-coupled-with: prope=
-rty
-> > definition is also needed here?
+> Add a public function to obtain base protocol information for the
+> selected SCMI provider.  This will be used by the R-Car X5H Clock Pulse
+> Generator and Module Controller drivers.
 >
-correct.
-> Yes, I think this is the way to go. I even wonder if this shouldn't be a
-> fix with Cc: stable. This also has to be done for the Milk-V Jupiter
-> board, I haven't checked the other boards yet, but I guess they all use
-> the same schematics at that the PMIC level.
->
-> Regards
-> Aurelien
->
-> --
-> Aurelien Jarno                          GPG: 4096R/1DDD8C9B
-> aurelien@aurel32.net                     http://aurel32.net
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Thanks
--Anand
+> --- a/drivers/firmware/arm_scmi/driver.c
+> +++ b/drivers/firmware/arm_scmi/driver.c
+> @@ -3504,6 +3504,37 @@ int scmi_inflight_count(const struct scmi_handle *handle)
+>         }
+>  }
+>
+> +/**
+> + * scmi_get_base_info() - Get SCMI base protocol information
+> + *
+> + * @of_node: pointer to a device node for an SCMI provider
+> + * @version: pointer to write base protocol information
+> + *
+> + * Check if an SCMI device has been instantiated for the passed device node
+> + * pointer, and, if found, return its base info.
+> +
+
+Missing asterisk, reported by the kernel test robot.
+
+> + * Return: 0 on Success or -ENOENT.
+> + */
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
