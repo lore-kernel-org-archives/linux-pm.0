@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 055293CFF73;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 054933CFF72;
 	Wed, 22 Apr 2026 11:25:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776857113; cv=none; b=Ud6+9yjKjp23h7qU3vMKEMp/PR+2b8K/0u/IjqnDjbn4vG78SbrcdeYVhPrl+0MK4WkWoMG7rZSjPflkT4pE8mxGAbKRTob+Ju6h22Q2dkvyrr2Um0JzZBtrQV4+t0VL39kV+gmvWBEQLvbs4nNvehjvXpADbJ1dPQ/8ONincU8=
+	t=1776857113; cv=none; b=II7gL7NHVr4aMLY9Lnx99BCNj1xUAAzz2Gp8yE2NRbcYjQRd1lRrmB1WvVJnI5wVI+grbrZgrKi8f9sXcWSZE+Uyq8h4/PVe1JiRzG5V2TDCjxG8hVCckvnmlaBqBBrc1KEFABS/VbkVOj/OfviMMJUf4qfYbVVlNLhgQZe6u4M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1776857113; c=relaxed/simple;
-	bh=rahIK407Uf2DgR2AcY120luq+IbRKhapEgJAn9AFJa4=;
+	bh=9F43q4LX2CRP2OAr3Vb2VkjV9k0yS3vMdJovyQFhUmw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PCDgNc940WgnZdJFBNICDD36IitGo+/XJl4WuM8Aw4AbkJxD2Fqnfaa/UB3bZWJc1Gg6Ty7HfT0BkmJtxra3DebA7PNA8YLvRDIyJsKrDN7pvo5GvG3Us6eQWnxPtRSsIFXmgw/i+kZsb1q++ziLlxBSMZpf7HJJxsNML1ZIgi4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N+5UYEQH; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=opd5zwARxmsy5ZqazqJ78dBMRP1bbdjsgyHh7n3r3T1OO55FUDxiwnDIciNMYcvAJZzcfPkOq6EyF5rIKeKh3I47R1N3IGsw5glAOjp3+UVFQKgHyzwADNeqceta0gQUp9FdAep7ZTKp51QBZ+UahTTi8mmIa+e/mKh94Wa0ESo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YTmIhP1/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N+5UYEQH"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D7387C2BCC9;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YTmIhP1/"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id ACEDFC2BCF4;
 	Wed, 22 Apr 2026 11:25:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1776857112;
-	bh=rahIK407Uf2DgR2AcY120luq+IbRKhapEgJAn9AFJa4=;
+	bh=9F43q4LX2CRP2OAr3Vb2VkjV9k0yS3vMdJovyQFhUmw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=N+5UYEQHoaK8Q60BrBtaMgSadbgDe6ZzQJa3IcQS1G0ZRPh5aqlpu3qrlSjwnRyJt
-	 O9fHeuuOU+0Vy8j7Kn7rcd0HogXMbeiIWDnLJ1YG9j+FQkJNiPQfzfw4nR9W1ursUa
-	 0TLMI5Mn78uB9stpSc9l/l3knuBFlU89TYotARX+zokGj4y48OT9RwNNJjVqCQ7vQ8
-	 RrkFQXPmdWfI6mtHqGxqrJAatzw3eixCOA07NWlMNyyli27DtiC/GpHYi/nvUJB79T
-	 1Sicwb1N+pSDOMSPRK340alro3Q10A22er/cgWoJleTl2O2V/5P6j34Mclb2RMcL7i
-	 NnF4GO5dmru+A==
+	b=YTmIhP1/4/0huxfWE6k1OCmuR3JduP17gLJN+wom8GMutTo1Vm0kYhGQWxQv+xslY
+	 jxxuR6edzSKLTV/1nCXUmghwTQ4yR5UdJcDVHEemZ33Z8URaXwQl52NC2RvsQgWdy9
+	 s82PAwWJzyX9rt6prm6w0zK5WuqhjjWUFP2uNngezhgolmxm+2qCZvOqiateOQtHGS
+	 F/T359WnQeJPNqS3lnvDFDnzbGLwMYX3QGp4bcVlUFSJpwKDDc/kN38gvTDwh1vkjK
+	 WBb3zOTJG6dhETjySjM/gsT2Rl7lyD1DeDlUx2tS71qZ6tlZudHgFSFZPUyt+EdCL5
+	 t7j2+OGQ7uiUg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF0D4F5A8DE;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A48EBF9B606;
 	Wed, 22 Apr 2026 11:25:12 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Wed, 22 Apr 2026 16:54:49 +0530
-Subject: [PATCH 08/12] power: sequencing: pcie-m2: Create BT node based on
- the pci_device_id[] table
+Date: Wed, 22 Apr 2026 16:54:46 +0530
+Subject: [PATCH 05/12] power: sequencing: pcie-m2: Allow creating serdev
+ for multiple PCI devices
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260422-pwrseq-m2-bt-v1-8-720d02545a64@oss.qualcomm.com>
+Message-Id: <20260422-pwrseq-m2-bt-v1-5-720d02545a64@oss.qualcomm.com>
 References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
 In-Reply-To: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
 To: Bartosz Golaszewski <brgl@kernel.org>, 
@@ -55,16 +55,16 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3150;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8785;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=gwqWztQ2vBGh5JXCHhwF7Sem2dA5HgVW+YJLGPrMk3w=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp6LAVV9Sl4KSgjtyUczECqKLK18IZ+VW0DgOZs
- CMcQtapewqJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaeiwFQAKCRBVnxHm/pHO
- 9TCsB/9hzdnKbSX7cxGGZtqiNVW08cTyu3KNGCbmesZe7YNrw4yKGzcElM0lXYbtu/dJsmlXf9A
- x0EFRzFyajbrKsaURicDPjIpgJTJZHXx22YLxNWzq6PdW691FZrcfE4+rrzHJGVYdbVfpYmC+/u
- qSfzNvtYSds4KrzsJzhyaqTGNIlRjTRZnCpeRtSv4ZJzh3UHaknbS6UVOnwZs2t9ayrNdWZsZBn
- HLsYjjYItl2WX3mTShfTncKzSYONlWaQW8D0E4Av9j9hBWnb9KvpadcIAoCX7sHkqMUhJF3Apdy
- IzRryhYX9fMapEJrQVm0fkc1bSCN/dHq3DoD1cCK48p+RNz3
+ bh=Nr5rSy3SSUTggm3+ROd35J+oxjoGsrNW4JatIPPtA+U=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp6LAVsOFwr2jZ0pC3vJWJ7Xd9TOjf4JQ0GVTxe
+ M78Mf0R8IyJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaeiwFQAKCRBVnxHm/pHO
+ 9VLNCACMEYYenEdy1q3hAR7XmXlWPLdjwwYKLDO+V2e4BFHFjfg03/h50NyMEGxpnDSdHQEpgDU
+ EOkTeEK5rmtLadZw9uJWrK2GgM88UoP2iC3oWLPvgV01AiTEDk4Oi4DdVVOtR598ltuBzYfvirh
+ xN/AzEm/nIfhC9gxddIPM021hr0apwKqzbQQJIgUZx4BOtXMpSYv4Sn8nB3M7mKXwMZh57OE4cv
+ chJVCWQsTxudpR4grpSTSX/ky3TkZZxgmlX6clHXxp3rGrIJtUtDVxo1/12gSnSUtoLM7xtGKuB
+ V2aDllOAUSjFoMpH47tiaaEUxy+B/V3jx/lDaTnS3TsdsiiC
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -74,91 +74,291 @@ Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-Currently, pwrseq_pcie_m2_create_bt_node() hardcodes the BT compatible for
-creating the devicetree node. But to allow adding support for more devices
-in the future, create the BT node based on the pci_device_id[] table. The
-BT compatible is passed using 'driver_data'.
+Current code makes it possible to create serdev for only one PCI device.
+But for scaling this driver, it is necessary to allow creating serdev for
+multiple PCI devices.
 
-Co-developed-by: Wei Deng <wei.deng@oss.qualcomm.com>
-Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+Hence, add provision for it by creating 'struct pwrseq_pci_dev' for each
+PCI device that requires serdev and add them to
+'pwrseq_pcie_m2_ctx::pci_devices' list.
+
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/power/sequencing/pwrseq-pcie-m2.c | 29 ++++++++++++++++++++---------
- 1 file changed, 20 insertions(+), 9 deletions(-)
+ drivers/power/sequencing/pwrseq-pcie-m2.c | 127 +++++++++++++++++++++---------
+ 1 file changed, 88 insertions(+), 39 deletions(-)
 
 diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index b21fcc089580..23dc91e2b128 100644
+index 49c326a6e445..d4d246a30a97 100644
 --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
 +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -193,14 +193,29 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
- 	return PWRSEQ_NO_MATCH;
- }
+@@ -7,6 +7,7 @@
+ #include <linux/device.h>
+ #include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
++#include <linux/list.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -19,6 +20,13 @@
+ #include <linux/serdev.h>
+ #include <linux/slab.h>
  
-+static const struct pci_device_id pwrseq_m2_pci_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
-+	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
-+	{ } /* Sentinel */
++struct pwrseq_pci_dev {
++	struct serdev_device *serdev;
++	struct of_changeset *ocs;
++	struct pci_dev *pdev;
++	struct list_head list;
 +};
 +
+ struct pwrseq_pcie_m2_pdata {
+ 	const struct pwrseq_target_data **targets;
+ };
+@@ -32,9 +40,9 @@ struct pwrseq_pcie_m2_ctx {
+ 	struct notifier_block nb;
+ 	struct gpio_desc *w_disable1_gpio;
+ 	struct gpio_desc *w_disable2_gpio;
+-	struct serdev_device *serdev;
+-	struct of_changeset *ocs;
+ 	struct device *dev;
++	struct list_head pci_devices;
++	struct mutex list_lock;
+ };
+ 
+ static int pwrseq_pcie_m2_vregs_enable(struct pwrseq_device *pwrseq)
+@@ -186,38 +194,39 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
+ }
+ 
  static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
- 					struct pwrseq_pci_dev *pci_dev,
--					struct device_node *parent)
-+					struct device_node *parent,
-+					struct pci_dev *pdev)
++					struct pwrseq_pci_dev *pci_dev,
+ 					struct device_node *parent)
  {
-+	const struct pci_device_id *id;
  	struct device *dev = ctx->dev;
-+	const char *compatible;
  	struct device_node *np;
  	int ret;
  
-+	id = pci_match_id(pwrseq_m2_pci_ids, pdev);
-+	if (WARN_ON_ONCE(!id)) /* Shouldn't happen */
-+		return -ENODEV;
-+
-+	compatible = (const char *)id->driver_data;
-+
- 	pci_dev->ocs = kzalloc_obj(*pci_dev->ocs);
- 	if (!pci_dev->ocs)
+-	ctx->ocs = kzalloc_obj(*ctx->ocs);
+-	if (!ctx->ocs)
++	pci_dev->ocs = kzalloc_obj(*pci_dev->ocs);
++	if (!pci_dev->ocs)
  		return -ENOMEM;
-@@ -214,7 +229,7 @@ static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
+ 
+-	of_changeset_init(ctx->ocs);
++	of_changeset_init(pci_dev->ocs);
+ 
+-	np = of_changeset_create_node(ctx->ocs, parent, "bluetooth");
++	np = of_changeset_create_node(pci_dev->ocs, parent, "bluetooth");
+ 	if (!np) {
+ 		dev_err(dev, "Failed to create bluetooth node\n");
+ 		ret = -ENODEV;
  		goto err_destroy_changeset;
  	}
  
--	ret = of_changeset_add_prop_string(pci_dev->ocs, np, "compatible", "qcom,wcn7850-bt");
-+	ret = of_changeset_add_prop_string(pci_dev->ocs, np, "compatible", compatible);
+-	ret = of_changeset_add_prop_string(ctx->ocs, np, "compatible", "qcom,wcn7850-bt");
++	ret = of_changeset_add_prop_string(pci_dev->ocs, np, "compatible", "qcom,wcn7850-bt");
  	if (ret) {
  		dev_err(dev, "Failed to add bluetooth compatible: %d\n", ret);
  		goto err_destroy_changeset;
-@@ -289,13 +304,14 @@ static int __pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx,
- 		goto err_free_pci_dev;
  	}
  
--	ret = pwrseq_pcie_m2_create_bt_node(ctx, pci_dev, serdev_parent);
-+	ret = pwrseq_pcie_m2_create_bt_node(ctx, pci_dev, serdev_parent, pdev);
+-	ret = of_changeset_apply(ctx->ocs);
++	ret = of_changeset_apply(pci_dev->ocs);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to apply changeset: %d\n", ret);
+ 		goto err_destroy_changeset;
+ 	}
+ 
+-	ret = device_add_of_node(&ctx->serdev->dev, np);
++	ret = device_add_of_node(&pci_dev->serdev->dev, np);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to add OF node: %d\n", ret);
+ 		goto err_revert_changeset;
+@@ -226,19 +235,21 @@ static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
+ 	return 0;
+ 
+ err_revert_changeset:
+-	of_changeset_revert(ctx->ocs);
++	of_changeset_revert(pci_dev->ocs);
+ err_destroy_changeset:
+-	of_changeset_destroy(ctx->ocs);
+-	kfree(ctx->ocs);
+-	ctx->ocs = NULL;
++	of_changeset_destroy(pci_dev->ocs);
++	kfree(pci_dev->ocs);
++	pci_dev->ocs = NULL;
+ 
+ 	return ret;
+ }
+ 
+-static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
++static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx,
++					struct pci_dev *pdev)
+ {
+ 	struct serdev_controller *serdev_ctrl;
+ 	struct device *dev = ctx->dev;
++	struct pwrseq_pci_dev *pci_dev;
+ 	int ret;
+ 
+ 	struct device_node *serdev_parent __free(device_node) =
+@@ -256,17 +267,23 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
+ 		return 0;
+ 	}
+ 
+-	ctx->serdev = serdev_device_alloc(serdev_ctrl);
+-	if (!ctx->serdev) {
++	pci_dev = kzalloc(sizeof(*pci_dev), GFP_KERNEL);
++	if (!pci_dev) {
+ 		ret = -ENOMEM;
+ 		goto err_put_ctrl;
+ 	}
+ 
+-	ret = pwrseq_pcie_m2_create_bt_node(ctx, serdev_parent);
++	pci_dev->serdev = serdev_device_alloc(serdev_ctrl);
++	if (!pci_dev->serdev) {
++		ret = -ENOMEM;
++		goto err_free_pci_dev;
++	}
++
++	ret = pwrseq_pcie_m2_create_bt_node(ctx, pci_dev, serdev_parent);
  	if (ret)
  		goto err_free_serdev;
  
- 	ret = serdev_device_add(pci_dev->serdev);
+-	ret = serdev_device_add(ctx->serdev);
++	ret = serdev_device_add(pci_dev->serdev);
  	if (ret) {
--		dev_err(dev, "Failed to add serdev for WCN7850: %d\n", ret);
-+		dev_err(dev, "Failed to add serdev for PCI device (%s): %d\n",
-+			pci_name(pdev), ret);
+ 		dev_err(dev, "Failed to add serdev for WCN7850: %d\n", ret);
  		goto err_free_dt_node;
- 	}
+@@ -274,37 +291,64 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
  
-@@ -361,11 +377,6 @@ static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
- 	mutex_unlock(&ctx->list_lock);
+ 	serdev_controller_put(serdev_ctrl);
+ 
++	pci_dev->pdev = pci_dev_get(pdev);
++
++	mutex_lock(&ctx->list_lock);
++	list_add_tail(&pci_dev->list, &ctx->pci_devices);
++	mutex_unlock(&ctx->list_lock);
++
+ 	return 0;
+ 
+ err_free_dt_node:
+-	device_remove_of_node(&ctx->serdev->dev);
+-	of_changeset_revert(ctx->ocs);
+-	of_changeset_destroy(ctx->ocs);
+-	kfree(ctx->ocs);
+-	ctx->ocs = NULL;
++	device_remove_of_node(&pci_dev->serdev->dev);
++	of_changeset_revert(pci_dev->ocs);
++	of_changeset_destroy(pci_dev->ocs);
++	kfree(pci_dev->ocs);
++	pci_dev->ocs = NULL;
+ err_free_serdev:
+-	serdev_device_put(ctx->serdev);
+-	ctx->serdev = NULL;
++	serdev_device_put(pci_dev->serdev);
++	pci_dev->serdev = NULL;
++err_free_pci_dev:
++	kfree(pci_dev);
+ err_put_ctrl:
+ 	serdev_controller_put(serdev_ctrl);
+ 
+ 	return ret;
  }
  
--static const struct pci_device_id pwrseq_m2_pci_ids[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107) },
--	{ } /* Sentinel */
--};
--
- static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
- 			      void *data)
+-static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx)
++static void __pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
++					   struct pwrseq_pci_dev *pci_dev)
  {
+-	if (ctx->serdev) {
+-		device_remove_of_node(&ctx->serdev->dev);
+-		serdev_device_remove(ctx->serdev);
+-		ctx->serdev = NULL;
++	if (pci_dev->serdev) {
++		device_remove_of_node(&pci_dev->serdev->dev);
++		serdev_device_remove(pci_dev->serdev);
+ 	}
+ 
+-	if (ctx->ocs) {
+-		of_changeset_revert(ctx->ocs);
+-		of_changeset_destroy(ctx->ocs);
+-		kfree(ctx->ocs);
+-		ctx->ocs = NULL;
++	if (pci_dev->ocs) {
++		of_changeset_revert(pci_dev->ocs);
++		of_changeset_destroy(pci_dev->ocs);
++		kfree(pci_dev->ocs);
+ 	}
++
++	pci_dev_put(pci_dev->pdev);
++	list_del(&pci_dev->list);
++	kfree(pci_dev);
++}
++
++static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
++					 struct pci_dev *pdev)
++{
++	struct pwrseq_pci_dev *pci_dev, *tmp;
++
++	mutex_lock(&ctx->list_lock);
++	list_for_each_entry_safe(pci_dev, tmp, &ctx->pci_devices, list) {
++		if (!pdev || pci_dev->pdev == pdev) {
++			__pwrseq_pcie_m2_remove_serdev(ctx, pci_dev);
++			if (pdev)
++				break;
++		}
++	}
++	mutex_unlock(&ctx->list_lock);
+ }
+ 
+ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
+@@ -328,7 +372,7 @@ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action
+ 	case BUS_NOTIFY_ADD_DEVICE:
+ 		/* Create serdev device for WCN7850 */
+ 		if (pdev->vendor == PCI_VENDOR_ID_QCOM && pdev->device == 0x1107) {
+-			ret = pwrseq_pcie_m2_create_serdev(ctx);
++			ret = pwrseq_pcie_m2_create_serdev(ctx, pdev);
+ 			if (ret)
+ 				return notifier_from_errno(ret);
+ 		}
+@@ -336,7 +380,7 @@ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action
+ 	case BUS_NOTIFY_REMOVED_DEVICE:
+ 		/* Destroy serdev device for WCN7850 */
+ 		if (pdev->vendor == PCI_VENDOR_ID_QCOM && pdev->device == 0x1107)
+-			pwrseq_pcie_m2_remove_serdev(ctx);
++			pwrseq_pcie_m2_remove_serdev(ctx, pdev);
+ 
+ 		break;
+ 	}
+@@ -440,16 +484,20 @@ static int pwrseq_pcie_m2_probe(struct platform_device *pdev)
+ 		goto err_free_regulators;
+ 	}
+ 
++	mutex_init(&ctx->list_lock);
++	INIT_LIST_HEAD(&ctx->pci_devices);
+ 	/*
+ 	 * Register a notifier for creating protocol devices for
+ 	 * non-discoverable busses like UART.
+ 	 */
+ 	ret = pwrseq_pcie_m2_register_notifier(ctx, dev);
+ 	if (ret)
+-		goto err_free_regulators;
++		goto err_destroy_mutex;
+ 
+ 	return 0;
+ 
++err_destroy_mutex:
++	mutex_destroy(&ctx->list_lock);
+ err_free_regulators:
+ 	regulator_bulk_free(ctx->num_vregs, ctx->regs);
+ 
+@@ -461,7 +509,8 @@ static void pwrseq_pcie_m2_remove(struct platform_device *pdev)
+ 	struct pwrseq_pcie_m2_ctx *ctx = platform_get_drvdata(pdev);
+ 
+ 	bus_unregister_notifier(&pci_bus_type, &ctx->nb);
+-	pwrseq_pcie_m2_remove_serdev(ctx);
++	pwrseq_pcie_m2_remove_serdev(ctx, NULL);
++	mutex_destroy(&ctx->list_lock);
+ 
+ 	regulator_bulk_free(ctx->num_vregs, ctx->regs);
+ }
 
 -- 
 2.51.0
