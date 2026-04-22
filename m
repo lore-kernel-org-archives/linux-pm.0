@@ -1,92 +1,132 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.semaphore.gr (mail.semaphore.gr [91.99.171.162])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2600413B7A3;
-	Wed, 22 Apr 2026 07:31:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8B003A7826;
+	Wed, 22 Apr 2026 08:14:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.99.171.162
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776843063; cv=none; b=Zz8rD+fRKfBHp4R01ZLw4CzTneoJVopvj5FRkkNp7AW2wZx6g8gURxYl+x0LH9mxtp/azaHYAeJAc8fRl0jFH1FKKdnizmtlRwXGCtRqPyAwX6fYx3zXxvSDRMNLd/xyJMJXycILCuavu9iD15x0Gv+auoGJv+Hg1w8fbYnmnDU=
+	t=1776845694; cv=none; b=lxpL4htvwllzvzrDWk94KB/MMhmg2g/rETTEGbDJ2Fo21TfU9YiH0zH5qXjmoq+iseeQhITVzmEoIKUqpBPdBSlO+TdolA4BnlbSubuPu/CkDSeBv0IpGcl1P1bYUldufBTOHk6B9VfHMA60Ng3yb4QcVqyxxjPO9p7+2gQXDjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776843063; c=relaxed/simple;
-	bh=XDaFV0u6gJo9HpJsXHSQOVbCycMjk91FXKfLUWErfqk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UAPWnj0eMNDFn6KE4Brk4D4J6tW77D8VhVfb15LtgCh6C2IjXdzKz/XvvDK444H8BgGiB2U0XoatfnXkmipxVcl6Ep3/zmg5OA5sXBzgtc+YcwsCbAdlqX7ZpiMRMdfIcLuV4s7TSoLmb13ARLBEuRI5FoTiL3iQ2VOymr4xaMY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QMgZ/YiZ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776845694; c=relaxed/simple;
+	bh=Q4QGZg4z2h8XMijTOZpE+njeh4ue7cYGAagW5I3Rwbs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=o8tGoVgePub0NtvHBmjQsjzNftLlYpGORIuuWZ7WhLmVHq8SYJoYgNilJfS1MCs2PuYpa+xscyQzfK09kT9jYRbt7+zyerMGA+wacNbVT5jeDrfQ1c1+pdM26TIGsJHTIenwX/idWCHBWrRYOnDZogiohxXYiD6YW+IOo9cyRok=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=semaphore.gr; spf=pass smtp.mailfrom=semaphore.gr; dkim=pass (2048-bit key) header.d=semaphore.gr header.i=@semaphore.gr header.b=gbGI7n6U; dkim=pass (2048-bit key) header.d=semaphore.gr header.i=@semaphore.gr header.b=gbGI7n6U; arc=none smtp.client-ip=91.99.171.162
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=semaphore.gr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=semaphore.gr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QMgZ/YiZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3808FC2BCB3;
-	Wed, 22 Apr 2026 07:31:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776843062;
-	bh=XDaFV0u6gJo9HpJsXHSQOVbCycMjk91FXKfLUWErfqk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QMgZ/YiZ+7acoIfzHVLUPVxP1tq9X+A3MD4HItYJqISpi1ngosxJDa7U+qAxzkj02
-	 0bB+27eQnxsdZJTYj2AKhkHJU3RSW0mQUIDQXCd7nEcaY2202jMXStgCC6hS1nwepM
-	 BYwzmlruzArOMqzXy0ggqL6hdI6OPBhJONSR34+N9GjcM+ryA2nI3kYrm1j3sY7v5P
-	 l9zn58Rw/oZ7CzQq241qDOtG/DL9yaOGJxRuNJnOkVMSXuI3d0BQYhAIwcXbjG23NN
-	 tRZiWWXASuOYNvt2HdaJKQQ0Gku3tLly8Sj0gmVlBgAdMq+94+DRhhnN7gqJOXJi7u
-	 WMZlpaUC12yTw==
-Date: Wed, 22 Apr 2026 09:31:00 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rafael@kernel.org, gaurav.kohli@oss.qualcomm.com, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Lucas Stach <l.stach@pengutronix.de>, Russell King <linux+etnaviv@armlinux.org.uk>, 
-	Christian Gmeiner <christian.gmeiner@gmail.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Guenter Roeck <linux@roeck-us.net>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>, Benson Leung <bleung@chromium.org>, 
-	Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, Avi Fishman <avifishman70@gmail.com>, 
-	Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, 
-	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, 
-	Benjamin Fair <benjaminfair@google.com>, Heiko Stuebner <heiko@sntech.de>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	"open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v1 14/14] dt-bindings: thermal: cooling-devices: Update
- support for 3 cells cooling device
-Message-ID: <20260422-calm-badger-of-courtesy-809761@quoll>
-References: <20260419182203.4083985-1-daniel.lezcano@oss.qualcomm.com>
- <20260419182203.4083985-15-daniel.lezcano@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=semaphore.gr header.i=@semaphore.gr header.b="gbGI7n6U";
+	dkim=pass (2048-bit key) header.d=semaphore.gr header.i=@semaphore.gr header.b="gbGI7n6U"
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=semaphore.gr;
+	s=default; t=1776845191;
+	bh=Q4QGZg4z2h8XMijTOZpE+njeh4ue7cYGAagW5I3Rwbs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gbGI7n6UyAry2dlCMrkJ2XvvkmqoyQupsjRFZ7MGDJDfypTZ0607G7DTu0EtFIrg9
+	 G8e9IWOMsPawmRS2qNdPjVb5LaPUYqRbPD9CPFpQ9Bg69J+tS6GuF3qw59FF9QxwLy
+	 lumCpFfiywlJLn3yE978niMZrSBcnKvpxMPhdwjdY18QNdwX4Qq5ZJllT8DJPGKmkB
+	 HtW1x9q8HkchEFY6E7kBzY59VXHxf4+37QuvDKbd7WjmmS1JKhOscRRb3s/mRpV30D
+	 7D5F4D+OQX78HET5yNCyf4pNdNtLd5F6sj1Q4Hlw6xK++sT8bQjvNyd7gZE5sXJIL1
+	 TG0MHDgnuYK8w==
+Received: from localhost (localhost [127.0.0.1])
+	by mail.semaphore.gr (Postfix) with ESMTP id 741463E6FD;
+	Wed, 22 Apr 2026 08:06:31 +0000 (UTC)
+X-Virus-Scanned: Debian amavis at semaphore.gr
+Received: from mail.semaphore.gr ([127.0.0.1])
+ by localhost (sema.semaphore.gr [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RkT7wlywZYV1; Wed, 22 Apr 2026 08:06:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=semaphore.gr;
+	s=default; t=1776845191;
+	bh=Q4QGZg4z2h8XMijTOZpE+njeh4ue7cYGAagW5I3Rwbs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gbGI7n6UyAry2dlCMrkJ2XvvkmqoyQupsjRFZ7MGDJDfypTZ0607G7DTu0EtFIrg9
+	 G8e9IWOMsPawmRS2qNdPjVb5LaPUYqRbPD9CPFpQ9Bg69J+tS6GuF3qw59FF9QxwLy
+	 lumCpFfiywlJLn3yE978niMZrSBcnKvpxMPhdwjdY18QNdwX4Qq5ZJllT8DJPGKmkB
+	 HtW1x9q8HkchEFY6E7kBzY59VXHxf4+37QuvDKbd7WjmmS1JKhOscRRb3s/mRpV30D
+	 7D5F4D+OQX78HET5yNCyf4pNdNtLd5F6sj1Q4Hlw6xK++sT8bQjvNyd7gZE5sXJIL1
+	 TG0MHDgnuYK8w==
+Received: from [192.168.31.205] (unknown [188.117.229.165])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.semaphore.gr (Postfix) with ESMTPSA id 9A81E3E618;
+	Wed, 22 Apr 2026 08:06:30 +0000 (UTC)
+Message-ID: <2ca5b929-979e-4955-86a1-1987a9fee9c5@semaphore.gr>
+Date: Wed, 22 Apr 2026 11:06:29 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260419182203.4083985-15-daniel.lezcano@oss.qualcomm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease
+ due to stale target
+To: Lifeng Zheng <zhenglifeng1@huawei.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxarm@huawei.com, zhanjie9@hisilicon.com, lihuisong@huawei.com,
+ yubowen8@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com,
+ linhongye@h-partners.com
+References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
+Content-Language: en-US
+From: Stratos Karafotis <stratosk@semaphore.gr>
+In-Reply-To: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sun, Apr 19, 2026 at 08:21:58PM +0200, Daniel Lezcano wrote:
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml b/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
-> index b9022f1613d8..28f5818f1e60 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
-> @@ -44,10 +44,14 @@ select: true
->  properties:
->    "#cooling-cells":
->      description:
-> -      Must be 2, in order to specify minimum and maximum cooling state used in
-> +      Must be 2 or 3. If 2, specifies minimum and maximum cooling state used in
->        the cooling-maps reference. The first cell is the minimum cooling state
->        and the second cell is the maximum cooling state requested.
-> -    const: 2
-> +      If 3, the first cell specifies the thermal mitigation device specifier
-> +      index for devices that support multiple thermal mitigation mechanisms.
-> +      The two other cells are respectively the minimum cooling state and the
-> +      maximum cooling state.
-> +    enum: [2, 3]
+Hi all!
 
-In the same commit you need to narrow
-Documentation/devicetree/bindings/hwmon/pwm-fan.yaml
-so it will keep value of '2' (const: 2, like all other bindings).
+I was struggling to see your point, but I think you are right.
 
-Best regards,
-Krzysztof
+The requested_freq could be equal to policy->min (due to idle periods)
+while the dbs_info->requested_freq could be greater than policy->min.
+So, in this case it breaks out early without the chance to further 
+reduce the frequency, correct?
+
+Stratos Karafotis
+
+On 4/21/26 15:35, Lifeng Zheng wrote:
+> In cs_dbs_update(), the requested frequency is decremented by one freq_step
+> for each idle period. However, this can cause divergence between
+> 'requested_freq' (target for current update) and 'dbs_info->requested_freq'
+> (target from previous update).
+> 
+> When the load crosses up_threshold or down_threshold, the decision on
+> whether to increase or decrease frequency should be based on the *previous*
+> target (dbs_info->requested_freq), not the current one. Otherwise, the
+> update step may be skipped entirely if the current target has already hit a
+> boundary due to prior adjustments.
+> 
+> Ensure that frequency scaling decisions are made using the correct
+> historical target, fixing cases where frequency fails to decrease despite
+> sustained idle periods.
+> 
+> Fixes: 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster for deferred updates")
+> Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+> ---
+>   drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index df01d33993d8..f3c3b54e4bf8 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -104,7 +104,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>   		dbs_info->down_skip = 0;
+>   
+>   		/* if we are already at full speed then break out early */
+> -		if (requested_freq == policy->max)
+> +		if (dbs_info->requested_freq == policy->max)
+>   			goto out;
+>   
+>   		requested_freq += freq_step;
+> @@ -127,7 +127,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>   		/*
+>   		 * if we cannot reduce the frequency anymore, break out early
+>   		 */
+> -		if (requested_freq == policy->min)
+> +		if (dbs_info->requested_freq == policy->min)
+>   			goto out;
+>   
+>   		if (requested_freq > freq_step)
 
