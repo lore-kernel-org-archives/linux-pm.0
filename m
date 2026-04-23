@@ -1,377 +1,300 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 91DE234D394;
-	Thu, 23 Apr 2026 08:48:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7972737BE7E
+	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 10:25:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776934105; cv=none; b=TO71crtwYz1Vtd6XWbCj6R5RUdtM+Zkg9TWOJCeRmot2CClW5bYjXgJ2V4RN5kY/aFwJFlBaqSARqCiYEQgRUTGrqQ8o5NBNT/Ixn9YrtOGu9luUBtJvyrTLXb6FatVnG9IwvmVen/+1k6CDkpobDx8eIRiIjPgfk9vPlYeJpZE=
+	t=1776939929; cv=none; b=ktEkdG4CbwQD7BpcUL+ClSTWcScRK7v75oNqb5Xeq8ra8YZz+pQq+TkBW3J5ETwRHyh+ubBi9DcT968cV775yS0awTxp3y89SL+fjyF2uvouXL44S+tt4rwnnGAwRKF/aZBahF2AQEbAGcld10FTaCde/2OaTAbOubM76hYN0dE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776934105; c=relaxed/simple;
-	bh=Ss74ARx+xonzm0LBKXO7QeoYIoHg2vRVipaZB4y1R6g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VYS3jL/IAKXrW+3lQbMmNjcNr39sv4Bf9Yhvg0pAjT+6xMze7dmIGlbBfhTtj4xE8feGiSH/V6ApFyB0OqQC7xZMMIlZQyNlDe7UJI/Y00Zk4fmDGHIFrGZOvezYFkmSNvv+CIKRhlIJVFdlPRyOwe3N/gwXnz1LRXCGDjeCWqE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=pCvSncFf; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1776939929; c=relaxed/simple;
+	bh=NB1fX2ByhiVxBtJxs7VNw9fCaNDcICIXuoTIGbSJ+U8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fJW33SkjOky5NDI2IwhzPOPywMckMxVANDjvS+ocQBJSA1TGdbSecPKfveRvhSoYpygrSTOJwj9XpPBXKE2Lz8c2u9fAz+EEwE1k/qd5zSeJ9wN7/x4pJGbGNz6rKQKZkdSrN3o4Qz2/YQcdz8WaiLr3Gwv0AloNZW1r6oswkEE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Za4tqvfp; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RwNrb9/c; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="pCvSncFf"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 23B1A1C2B;
-	Thu, 23 Apr 2026 01:48:17 -0700 (PDT)
-Received: from e135073.arm.com (unknown [10.57.63.175])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 536FC3F7B4;
-	Thu, 23 Apr 2026 01:48:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1776934102; bh=Ss74ARx+xonzm0LBKXO7QeoYIoHg2vRVipaZB4y1R6g=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=pCvSncFfgIWXXSjhcHOteTjtGN0SbvPwz8dQfQuGAQm1C6afRWZtVuaYzvEPmy8Zo
-	 4aE3z8XH5/UeFl60lIkjM/qR5XhSYNfrHf6tAaUw4mJBMOq30aFz1r+IG2tnnpz4Qc
-	 MN0AtfB/e7w865owKcUb36P75cfm9BjrynWI2FKQ=
-From: Pierre Gondois <pierre.gondois@arm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jie Zhan <zhanjie9@hisilicon.com>,
-	Lifeng Zheng <zhenglifeng1@huawei.com>,
-	Ionela Voinescu <ionela.voinescu@arm.com>,
-	Sumit Gupta <sumitg@nvidia.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	Huang Rui <ray.huang@amd.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Perry Yuan <perry.yuan@amd.com>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Len Brown <lenb@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	linux-pm@vger.kernel.org
-Subject: [PATCH 1/1] cpufreq: Set policy->min and max as real QoS constraints
-Date: Thu, 23 Apr 2026 10:47:28 +0200
-Message-ID: <20260423084731.1090384-2-pierre.gondois@arm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260423084731.1090384-1-pierre.gondois@arm.com>
-References: <20260423084731.1090384-1-pierre.gondois@arm.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Za4tqvfp";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RwNrb9/c"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63N8uC5M3295002
+	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 10:25:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	WvCi/CVpH88WMffYYZwdgbtLju43Phq8Lyjrsa4uQn4=; b=Za4tqvfp6iYSc9Ls
+	dTFiNSNp8QXlS9irMhg5nJ1t28Hbhk/E+NWH3KDKMjYJ6+iPwHccjZchewLuHs4z
+	dGNMqEBdJpeGbuQy7TS5Z2ruavAoQxj7EqnNBUsgtHcseN8gAO0zBNlyYhiqp84c
+	QI2v1bRKq2OF2FMkmk27G8dD9ft/Nd8s1hMiRaQl+2sbckGJFn5w7bGDV2RywIqr
+	X2VooS4JCHmcGLs6XXAfhhaj2+TN7FamSjya73gqtSZCBKyac2e9Km0+xap6robE
+	YWIQvCsz/egCD41xC13lGDJPzHxOLGQ1RNLDst6kncbw29Cf4BL4sY6glKr/qDDi
+	wHqaNw==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dq282u9wv-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 10:25:27 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-50fbc70cfbdso61137131cf.2
+        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 03:25:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1776939927; x=1777544727; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=WvCi/CVpH88WMffYYZwdgbtLju43Phq8Lyjrsa4uQn4=;
+        b=RwNrb9/c3jegjSHkxetnQ6dV7Rohhb6H4ecnsbj9XBF7SjqOFl1k2fnZUHkD+xzVIu
+         EsyOhRndPJz7EAMUr2R6oXx8geHx/kPDy3efB/TGvHuU5v0pPmUHe16Gu+G4GWAyJHTW
+         e2wkOk+GqRlSAPTDTY+7CfL0Obu148TVyrtggG1Zx/Qi6SXCTo4g49ffT7mXiJUDJi1O
+         K8YcgQ6gSo0OibOLcM5ckuw89qH0XfciD5B2mpjf/UXh58lerJuyMN5SB9aM0MEcY1rz
+         0WqGu5lfx9b2D54LUT9cTJWMir+mhm/vhHsbhdb4Utg0HXRoJafX7jwDcFfR/QI33kME
+         oOGA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776939927; x=1777544727;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=WvCi/CVpH88WMffYYZwdgbtLju43Phq8Lyjrsa4uQn4=;
+        b=UVPfP3ntZXxrOZ0hXU6/RFN0IZmHLaZLRiJufDPkwFPfl9ocxztRjikSLm1+8vLVKY
+         otoCtrm0/IIEPdifIF9n+9/CG6eOCbvEHljN0Yjeew344/WhZahCRzK9w9085oLQx+ph
+         ATiXpl/WTXBBmQtTccGJ8O81R4zSfnrx4WEmsCE6b1IKS7DYloSeZWRm5Fmqbaa9P6P8
+         0C8+7ARAny3lmIYI/wwWzb4uht+N1vkXPRDU0ob6QhwYeo0RNECXpUr4qMDzXMXLKMzU
+         F+109aDkSB3A8LKJSGQAvSVsByMqkBoMTr9i8Yf2WTOCvSIoskc7S8drFnnqzxrJQ/wn
+         xOAQ==
+X-Gm-Message-State: AOJu0Yy3ijgDM6X3xElHVafofFribGSESI8h9vf7iCRbAY6nxarTYJ08
+	3ulRMZVJYindiIA4j6SHk4yV2irc7PEtmrqugZkzCXvu5S3TMejuBJwqeWOjw8Tjms8HJ5+mk0c
+	y47M8HxsEoLZYN/5+gnfAGYJjDaBtFoR4DBl2THUTaLjf0T1lp8dEpzheuvs66A==
+X-Gm-Gg: AeBDieu0DihKlmIMFApSANXKGiL6hljKV/nkGm2HQ7ugbCs9E0xkeCb1bKEwf/s3pvo
+	0piEdq9UhfW9jtWzY7YT20nCys+DowyMRG6AKwGrNUvqVDceDbIG6Eq9v5teEQJAtCPULF78mN9
+	4OBDdYfHMPgL/DK5hLYTKNadJGO8naiCFz97xFmhu/9lJEArMNq5cWFjBlPkNUDq1MS1fbZ0mID
+	wfA/4aJ3J1LMdxjScSgJQE4bA3hpLDb96o1uiCkrmH4gedPY15M742APvqoLcE1SwjZkFpJ8Iw7
+	ChB4xhCcnnghJ4w0HRJn8L31MxRdvf1cruBLJA322pBV6WGKt0GeP7pEWuudKITwGjbrKlVpbK/
+	gtHMUERIaNR2P5Pr+XL1TwRUtsHhAOtg2pLogOl4Li9mO7JAocean6wq+kxdQxvWBC+eJtu6opy
+	Mj7nYaBTpACCpKrbdpRoQ=
+X-Received: by 2002:a05:622a:4d4c:b0:50b:4a84:aa8b with SMTP id d75a77b69052e-50e36b87666mr402905921cf.12.1776939926696;
+        Thu, 23 Apr 2026 03:25:26 -0700 (PDT)
+X-Received: by 2002:a05:622a:4d4c:b0:50b:4a84:aa8b with SMTP id d75a77b69052e-50e36b87666mr402905491cf.12.1776939926181;
+        Thu, 23 Apr 2026 03:25:26 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:ae20:597c:99b8:d161? ([2a05:6e02:1041:c10:ae20:597c:99b8:d161])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4412e36ff8bsm3890201f8f.26.2026.04.23.03.25.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 23 Apr 2026 03:25:25 -0700 (PDT)
+Message-ID: <7aaa7873-9274-48d8-a6fe-cff4239b03b4@oss.qualcomm.com>
+Date: Thu, 23 Apr 2026 12:25:23 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/8] thermal: amlogic: Add support for secure monitor
+ calibration readout
+To: Ronald Claveau <linux-kernel-dev@aliel.fr>,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+References: <20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr>
+ <20260421-add-thermal-t7-vim4-v3-4-a2e7215ed003@aliel.fr>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260421-add-thermal-t7-vim4-v3-4-a2e7215ed003@aliel.fr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIzMDEwMiBTYWx0ZWRfX32sMjbXKSndY
+ yJnLY+EfVwaD9LrYCGwvnj42rYnC2SW8zhLKR9tFnrdvgYkWjKkCdgiNWBkKOLNqsuEZT06biI3
+ zAdemnjbsW640WASkXzsO6qPJ8sSn2aQDWGpdf6YzcWBJef1d5K9EMzDpDIB+nLdVvt1gORJpgL
+ rrwqU9YnsbjpuQ/HUyZoBbpai80x4Sjl9+o5NYu6fsyTHD81npoafZKU3ld88iIdm4UcAYYAX4S
+ rGZtzziNiXtH9QGNQnucxw2a23h6sGSvU26SwXQ/ypUHfeTKDcb7be7wAE9fQJzW1LQfaWKVKOp
+ q8tuZakMkbtrENHfA1M9D+t0tko2CMWMOL2LlIhXhJ4qw3mZG8UzkIjaykfb/PPwDEoPnfQ+njX
+ +ElhtrD+k77y/KWjb0GvLwVNHsBWaGG+WniudYzguwjMCvSPAXmiib7HTupa7XiwyFRo2zFpnVi
+ 5byCuLsxq9QeATfd/TA==
+X-Authority-Analysis: v=2.4 cv=Zond7d7G c=1 sm=1 tr=0 ts=69e9f397 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=SxES-kZrre8EIFdHpqEA:9
+ a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-GUID: i45a1qn62RQByeXZuFZpJRFcFAm5RfHv
+X-Proofpoint-ORIG-GUID: i45a1qn62RQByeXZuFZpJRFcFAm5RfHv
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-23_02,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 malwarescore=0 suspectscore=0 clxscore=1015 impostorscore=0
+ spamscore=0 adultscore=0 lowpriorityscore=0 phishscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604230102
 
-cpufreq_set_policy() will ultimately override the policy min/max
-values written in the .init() callback through:
-cpufreq_policy_online()
-\-cpufreq_init_policy()
-  \-cpufreq_set_policy()
-    \-/* Set policy->min/max */
-Thus the policy min/max values provided are only temporary.
 
-There is an exception if CPUFREQ_NEED_INITIAL_FREQ_CHECK is set and:
-cpufreq_policy_online()
-\-cpufreq_init_policy()
-  \-__cpufreq_driver_target()
-    \-cpufreq_driver->target()
-is called. To avoid any regression, set policy->min/max in cpufreq.c
-if the values were not initialized.
+Hi Ronald,
 
-In this patch:
-- Setting policy->min or max value in driver .init() cb is
-  interpreted as setting a QoS constraint.
-- Remove policy->min/max initialization in drivers if the values
-  are similar to policy->cpuinfo.min_freq/max_freq.
-  The only drivers where these values are different are:
-  - gx-suspmod.c
-  - cppc-cpufreq.c
-  - longrun.c
-- For the cppc-cpufreq driver, the lowest non-linear freq. is
-  used as a min QoS constraint as suggested at:
-  https://lore.kernel.org/lkml/20260213100633.15413-1-zhangpengjie2@huawei.com/
+On 4/21/26 09:19, Ronald Claveau wrote:
+> Some SoCs (e.g. T7) expose thermal calibration data through the secure
+> monitor rather than a directly accessible eFuse register. Add a use_sm
+> flag to amlogic_thermal_data to select this path, and retrieve the
+> firmware handle and tsensor_id from the "amlogic,secure-monitor" DT
+> phandle with one fixed argument.
+> 
+> Also introduce the amlogic,t7-thermal compatible using this new path.
+> 
+> Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
+> ---
+>   drivers/thermal/amlogic_thermal.c | 58 +++++++++++++++++++++++++++++++++++----
+>   1 file changed, 53 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+> index 5448d772db12a..11e3948cc0669 100644
+> --- a/drivers/thermal/amlogic_thermal.c
+> +++ b/drivers/thermal/amlogic_thermal.c
+> @@ -25,6 +25,7 @@
+>   #include <linux/platform_device.h>
+>   #include <linux/regmap.h>
+>   #include <linux/thermal.h>
+> +#include <linux/firmware/meson/meson_sm.h>
+>   
+>   #include "thermal_hwmon.h"
+>   
+> @@ -84,12 +85,14 @@ struct amlogic_thermal_soc_calib_data {
+>    * @u_efuse_off: register offset to read fused calibration value
+>    * @calibration_parameters: calibration parameters structure pointer
+>    * @regmap_config: regmap config for the device
+> + * @use_sm: read data from secure monitor instead of efuse
+>    * This structure is required for configuration of amlogic thermal driver.
+>    */
+>   struct amlogic_thermal_data {
+>   	int u_efuse_off;
+>   	const struct amlogic_thermal_soc_calib_data *calibration_parameters;
+>   	const struct regmap_config *regmap_config;
+> +	bool use_sm;
+>   };
+>   
+>   struct amlogic_thermal {
+> @@ -100,6 +103,8 @@ struct amlogic_thermal {
+>   	struct clk *clk;
+>   	struct thermal_zone_device *tzd;
+>   	u32 trim_info;
+> +	struct meson_sm_firmware *sm_fw;
+> +	u32 tsensor_id;
+>   };
+>   
+>   /*
+> @@ -138,6 +143,12 @@ static int amlogic_thermal_initialize(struct amlogic_thermal *pdata)
+>   	int ret = 0;
+>   	int ver;
+>   
+> +	if (pdata->data->use_sm) {
+> +		return meson_sm_get_thermal_calib(pdata->sm_fw,
+> +						  &pdata->trim_info,
+> +						  pdata->tsensor_id);
+> +	}
+> +
+>   	regmap_read(pdata->sec_ao_map, pdata->data->u_efuse_off,
+>   		    &pdata->trim_info);
+>   
+> @@ -226,6 +237,12 @@ static const struct amlogic_thermal_data amlogic_thermal_a1_cpu_param = {
+>   	.regmap_config = &amlogic_thermal_regmap_config_g12a,
+>   };
+>   
+> +static const struct amlogic_thermal_data amlogic_thermal_t7_param = {
+> +	.use_sm			= true,
+> +	.calibration_parameters	= &amlogic_thermal_g12a,
+> +	.regmap_config		= &amlogic_thermal_regmap_config_g12a,
+> +};
+> +
+>   static const struct of_device_id of_amlogic_thermal_match[] = {
+>   	{
+>   		.compatible = "amlogic,g12a-ddr-thermal",
+> @@ -239,6 +256,10 @@ static const struct of_device_id of_amlogic_thermal_match[] = {
+>   		.compatible = "amlogic,a1-cpu-thermal",
+>   		.data = &amlogic_thermal_a1_cpu_param,
+>   	},
+> +	{
+> +		.compatible = "amlogic,t7-thermal",
+> +		.data = &amlogic_thermal_t7_param,
+> +	},
+>   	{ /* sentinel */ }
+>   };
+>   MODULE_DEVICE_TABLE(of, of_amlogic_thermal_match);
+> @@ -271,11 +292,38 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+>   	if (IS_ERR(pdata->clk))
+>   		return dev_err_probe(dev, PTR_ERR(pdata->clk), "failed to get clock\n");
+>   
+> -	pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+> -		(pdev->dev.of_node, "amlogic,ao-secure");
+> -	if (IS_ERR(pdata->sec_ao_map)) {
+> -		dev_err(dev, "syscon regmap lookup failed.\n");
+> -		return PTR_ERR(pdata->sec_ao_map);
+> +	if (pdata->data->use_sm) {
+> +		struct device_node *sm_np;
+> +		struct of_phandle_args ph_args;
+> +
+> +		ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
+> +						       "amlogic,secure-monitor",
+> +						       1, 0, &ph_args);
+> +		if (ret)
+> +			return ret;
+> +
+> +		sm_np = ph_args.np;
+> +		if (!sm_np) {
+> +			dev_err(dev,
+> +				"Failed to parse secure monitor phandle\n");
+> +			return -ENODEV;
+> +		}
+> +
+> +		pdata->sm_fw = meson_sm_get(sm_np);
+> +		of_node_put(sm_np);
+> +		if (!pdata->sm_fw) {
+> +			dev_err(dev, "Failed to get secure monitor firmware\n");
+> +			return -EPROBE_DEFER;
+> +		}
+> +
+> +		pdata->tsensor_id = ph_args.args[0];
+> +	} else {
+> +		pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+> +			(pdev->dev.of_node, "amlogic,ao-secure");
+> +		if (IS_ERR(pdata->sec_ao_map)) {
+> +			dev_err(dev, "syscon regmap lookup failed.\n");
+> +			return PTR_ERR(pdata->sec_ao_map);
+> +		}
+>   	}
 
-Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
----
- drivers/cpufreq/amd-pstate.c      | 16 ++++++++--------
- drivers/cpufreq/cppc_cpufreq.c    | 11 +++++++----
- drivers/cpufreq/cpufreq-nforce2.c |  4 ++--
- drivers/cpufreq/cpufreq.c         | 19 +++++++++++++++++--
- drivers/cpufreq/freq_table.c      |  7 +++----
- drivers/cpufreq/gx-suspmod.c      |  9 +++++----
- drivers/cpufreq/intel_pstate.c    |  3 ---
- drivers/cpufreq/pcc-cpufreq.c     |  8 ++++----
- drivers/cpufreq/pxa3xx-cpufreq.c  |  4 ++--
- drivers/cpufreq/sh-cpufreq.c      |  4 ++--
- drivers/cpufreq/virtual-cpufreq.c |  5 +----
- 11 files changed, 51 insertions(+), 39 deletions(-)
+I suggest to separate these two routines into functions. That will help 
+the readability.
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 453084c67327f..1ed4bcdcc957f 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1090,10 +1090,10 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
- 
- 	perf = READ_ONCE(cpudata->perf);
- 
--	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
--							      cpudata->nominal_freq,
--							      perf.lowest_perf);
--	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
-+	policy->cpuinfo.min_freq = perf_to_freq(perf,
-+						cpudata->nominal_freq,
-+						perf.lowest_perf);
-+	policy->cpuinfo.max_freq = cpudata->max_freq;
- 
- 	policy->driver_data = cpudata;
- 	ret = amd_pstate_cppc_enable(policy);
-@@ -1907,10 +1907,10 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 
- 	perf = READ_ONCE(cpudata->perf);
- 
--	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
--							      cpudata->nominal_freq,
--							      perf.lowest_perf);
--	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
-+	policy->cpuinfo.min_freq = perf_to_freq(perf,
-+						cpudata->nominal_freq,
-+						perf.lowest_perf);
-+	policy->cpuinfo.max_freq = cpudata->max_freq;
- 	policy->driver_data = cpudata;
- 
- 	ret = amd_pstate_cppc_enable(policy);
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24c..c6fcecdbbab0c 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -645,6 +645,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	unsigned int cpu = policy->cpu;
- 	struct cppc_cpudata *cpu_data;
- 	struct cppc_perf_caps *caps;
-+	unsigned int min, max;
- 	int ret;
- 
- 	cpu_data = cppc_cpufreq_get_cpu_data(cpu);
-@@ -655,13 +656,15 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	caps = &cpu_data->perf_caps;
- 	policy->driver_data = cpu_data;
- 
-+	min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
-+	max = cppc_perf_to_khz(caps, policy->boost_enabled ?
-+			       caps->highest_perf : caps->nominal_perf);
-+
- 	/*
- 	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
- 	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
- 	 */
--	policy->min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
--	policy->max = cppc_perf_to_khz(caps, policy->boost_enabled ?
--						caps->highest_perf : caps->nominal_perf);
-+	policy->min = min;
- 
- 	/*
- 	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
-@@ -669,7 +672,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	 * nonlinear perf
- 	 */
- 	policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
--	policy->cpuinfo.max_freq = policy->max;
-+	policy->cpuinfo.max_freq = max;
- 
- 	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
- 	policy->shared_type = cpu_data->shared_type;
-diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
-index fbbbe501cf2dc..831102522ad64 100644
---- a/drivers/cpufreq/cpufreq-nforce2.c
-+++ b/drivers/cpufreq/cpufreq-nforce2.c
-@@ -355,8 +355,8 @@ static int nforce2_cpu_init(struct cpufreq_policy *policy)
- 		min_fsb = NFORCE2_MIN_FSB;
- 
- 	/* cpuinfo and default policy values */
--	policy->min = policy->cpuinfo.min_freq = min_fsb * fid * 100;
--	policy->max = policy->cpuinfo.max_freq = max_fsb * fid * 100;
-+	policy->cpuinfo.min_freq = min_fsb * fid * 100;
-+	policy->cpuinfo.max_freq = max_fsb * fid * 100;
- 
- 	return 0;
- }
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 44eb1b7e7fc1b..b30bfa3e27daa 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1453,6 +1453,14 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
- 
- 	if (new_policy) {
-+		unsigned int min, max;
-+
-+		/* Use policy->min/max set by the driver as QoS requests. */
-+		min = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
-+		if (policy->max)
-+			max = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
-+		else
-+			max = FREQ_QOS_MAX_DEFAULT_VALUE;
- 		for_each_cpu(j, policy->related_cpus) {
- 			per_cpu(cpufreq_cpu_data, j) = policy;
- 			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
-@@ -1469,18 +1477,25 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
- 
- 		ret = freq_qos_add_request(&policy->constraints,
- 					   &policy->min_freq_req, FREQ_QOS_MIN,
--					   FREQ_QOS_MIN_DEFAULT_VALUE);
-+					   min);
- 		if (ret < 0)
- 			goto out_destroy_policy;
- 
- 		ret = freq_qos_add_request(&policy->constraints,
- 					   &policy->max_freq_req, FREQ_QOS_MAX,
--					   FREQ_QOS_MAX_DEFAULT_VALUE);
-+					   max);
- 		if (ret < 0)
- 			goto out_destroy_policy;
- 
- 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				CPUFREQ_CREATE_POLICY, policy);
-+
-+		/*
-+		 * If the driver didn't set QoS constraints, policy->min/max still
-+		 * need to be set as they are used to clamp frequency requests.
-+		 */
-+		policy->min = policy->min ? policy->min : policy->cpuinfo.min_freq;
-+		policy->max = policy->max ? policy->max : policy->cpuinfo.max_freq;
- 	}
- 
- 	if (cpufreq_driver->get && has_target()) {
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 5b364d8da4f92..ea994647abc88 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -49,16 +49,15 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy)
- 			max_freq = freq;
- 	}
- 
--	policy->min = policy->cpuinfo.min_freq = min_freq;
--	policy->max = max_freq;
-+	policy->cpuinfo.min_freq = min_freq;
- 	/*
- 	 * If the driver has set its own cpuinfo.max_freq above max_freq, leave
- 	 * it as is.
- 	 */
- 	if (policy->cpuinfo.max_freq < max_freq)
--		policy->max = policy->cpuinfo.max_freq = max_freq;
-+		policy->cpuinfo.max_freq = max_freq;
- 
--	if (policy->min == ~0)
-+	if (min_freq == ~0)
- 		return -EINVAL;
- 	else
- 		return 0;
-diff --git a/drivers/cpufreq/gx-suspmod.c b/drivers/cpufreq/gx-suspmod.c
-index d269a4f26f98e..ebda2bbebf44b 100644
---- a/drivers/cpufreq/gx-suspmod.c
-+++ b/drivers/cpufreq/gx-suspmod.c
-@@ -397,7 +397,7 @@ static int cpufreq_gx_target(struct cpufreq_policy *policy,
- 
- static int cpufreq_gx_cpu_init(struct cpufreq_policy *policy)
- {
--	unsigned int maxfreq;
-+	unsigned int minfreq, maxfreq;
- 
- 	if (!policy || policy->cpu != 0)
- 		return -ENODEV;
-@@ -418,10 +418,11 @@ static int cpufreq_gx_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpu = 0;
- 
- 	if (max_duration < POLICY_MIN_DIV)
--		policy->min = maxfreq / max_duration;
-+		minfreq = maxfreq / max_duration;
- 	else
--		policy->min = maxfreq / POLICY_MIN_DIV;
--	policy->max = maxfreq;
-+		minfreq = maxfreq / POLICY_MIN_DIV;
-+
-+	policy->min = minfreq;
- 	policy->cpuinfo.min_freq = maxfreq / max_duration;
- 	policy->cpuinfo.max_freq = maxfreq;
- 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1292da53e5fcb..68ccc6eb1ef30 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -3049,9 +3049,6 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.max_freq = READ_ONCE(global.no_turbo) ?
- 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
- 
--	policy->min = policy->cpuinfo.min_freq;
--	policy->max = policy->cpuinfo.max_freq;
--
- 	intel_pstate_init_acpi_perf_limits(policy);
- 
- 	policy->fast_switch_possible = true;
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index ac2e90a65f0c4..231edfe8cabaa 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -551,13 +551,13 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto out;
- 	}
- 
--	policy->max = policy->cpuinfo.max_freq =
-+	policy->cpuinfo.max_freq =
- 		ioread32(&pcch_hdr->nominal) * 1000;
--	policy->min = policy->cpuinfo.min_freq =
-+	policy->cpuinfo.min_freq =
- 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
- 
--	pr_debug("init: policy->max is %d, policy->min is %d\n",
--		policy->max, policy->min);
-+	pr_debug("init: max_freq is %d, min_freq is %d\n",
-+		 policy->cpuinfo.max_freq, policy->cpuinfo.min_freq);
- out:
- 	return result;
- }
-diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
-index 50ff3b6a69000..181962b0924e6 100644
---- a/drivers/cpufreq/pxa3xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa3xx-cpufreq.c
-@@ -185,8 +185,8 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
- 	int ret = -EINVAL;
- 
- 	/* set default policy and cpuinfo */
--	policy->min = policy->cpuinfo.min_freq = 104000;
--	policy->max = policy->cpuinfo.max_freq =
-+	policy->cpuinfo.min_freq = 104000;
-+	policy->cpuinfo.max_freq =
- 		(cpu_is_pxa320()) ? 806000 : 624000;
- 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
- 
-diff --git a/drivers/cpufreq/sh-cpufreq.c b/drivers/cpufreq/sh-cpufreq.c
-index 642ddb9ea217e..244153a1cead2 100644
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -124,9 +124,9 @@ static int sh_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		dev_notice(dev, "no frequency table found, falling back "
- 			   "to rate rounding.\n");
- 
--		policy->min = policy->cpuinfo.min_freq =
-+		policy->cpuinfo.min_freq =
- 			(clk_round_rate(cpuclk, 1) + 500) / 1000;
--		policy->max = policy->cpuinfo.max_freq =
-+		policy->cpuinfo.max_freq =
- 			(clk_round_rate(cpuclk, ~0UL) + 500) / 1000;
- 	}
- 
-diff --git a/drivers/cpufreq/virtual-cpufreq.c b/drivers/cpufreq/virtual-cpufreq.c
-index 4159f31349b16..dc78b74409af4 100644
---- a/drivers/cpufreq/virtual-cpufreq.c
-+++ b/drivers/cpufreq/virtual-cpufreq.c
-@@ -164,10 +164,7 @@ static int virt_cpufreq_get_freq_info(struct cpufreq_policy *policy)
- 		policy->cpuinfo.min_freq = 1;
- 		policy->cpuinfo.max_freq = virt_cpufreq_get_perftbl_entry(policy->cpu, 0);
- 
--		policy->min = policy->cpuinfo.min_freq;
--		policy->max = policy->cpuinfo.max_freq;
--
--		policy->cur = policy->max;
-+		policy->cur = policy->cpuinfo.max_freq;
- 		return 0;
- 	}
- 
--- 
-2.43.0
+>   	pdata->tzd = devm_thermal_of_zone_register(&pdev->dev
+
+The thermal zone is registered before calling 
+amlogic_thermal_initialize(), thus pdata->trim_info is not initialized. 
+When a thermal zone is registered the thermal framework reads the 
+temperature, so it reads an invalid value because:
+
+devm_thermal_of_zone_register()
+  -> thermal_of_zone_register()
+    -> thermal_zone_device_register_with_trips()
+    -> thermal_zone_device_enable()
+       -> __thermal_zone_device_update()
+         -> __thermal_zone_get_temp()
+           -> amlogic_thermal_get_temp()
+              -> amlogic_thermal_code_to_millicelsius()
+                  [ Use of uninitialized pdata->trim_info ]
+
+Right ?
+
+IIUC, amlogic_thermal_initialize() can be also split and moved the 
+corresponding blocks to the functions to be created in the comment above.
+
+
+> 
 
