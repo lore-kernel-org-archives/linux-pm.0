@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20F3A361660;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BB8B36E49B;
 	Thu, 23 Apr 2026 16:08:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776960491; cv=none; b=Izqeudf2RYfrhxtu0nbvqpP9SXAAsiO+KK7Faq+V/8VWAvF6UUXtpEKMt/UXy4rl10gCIFOmWO8046BVnCkIyZ/pUlaYRwJ8SLOGtR8s2TdSiOj+0f+ZB4XMOnUfC0uOWTQhHGhOq7mac/7/Woa20wiq/XRXqCuehJgaj8NLrqU=
+	t=1776960491; cv=none; b=GpD0GhVq7JD0UkLQXQW7kLDjj2qXjWYqIWPpcmKFlVcqZEvUMvbxD6QAv458Apmq6MS2+QWtEigT83K4EWjQvysBz8WTCvaDSK6nBFU0S2B422qD1QoNOMzAbt7EW3e53BxoCgw7Wz9ijzkeFRgMynykNs4pieUBeh1DpsmRWqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1776960491; c=relaxed/simple;
-	bh=wXjL0/ZjPWYklzHHsG/fnHIawjJ0r03LA6jLikwVGTc=;
+	bh=kmxFj256ZqyHHjW0JUrAO7Zmt5qTIX49xsO6Ct108OU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=q6sc5ZW6/7SVkeF3UCnGXmPXxIY6yKdVtnrEjNWJc9iF9OCYuS+05M/fmsI7JC2ZVVTW65owfTyduyLCnjPJk6Lk0Ixe/4E3KTuYRjtDdh0pRrEME1EqSOYoibs4yeoFD1o7/Kfn3fBI+THZT75parQxNxYOPHWKYN0B+ev93Zc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lBbau/8J; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=k0MsYb4JtggnJLkxlouBkpI4lJbhYY7NApg1jHJiwUDhuTPRU0zI29HZpKDUX2aKBzMtdIqanGkNZJ+YYjre86joW0AzaZc8stNMISjCYkhMnNlHGTOa6cb/w1RHEVMqGUFuI/ps5srbRgf26CRY/PQSpBVXV90GqD3hVvjjXSU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=L3xMb9Y/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lBbau/8J"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DD790C2BCB4;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="L3xMb9Y/"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E765DC2BCB7;
 	Thu, 23 Apr 2026 16:08:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776960490;
-	bh=wXjL0/ZjPWYklzHHsG/fnHIawjJ0r03LA6jLikwVGTc=;
+	s=k20201202; t=1776960491;
+	bh=kmxFj256ZqyHHjW0JUrAO7Zmt5qTIX49xsO6Ct108OU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=lBbau/8JGaGZrZ70Dg6tqGCO2fPy08Hyc/EKUc7+dqaadWU/UjzV21H//95ovUI5p
-	 w9tbFg9Ll9KLRwsRkD6wNEQ4OG0G7RKOSyzyUd5/W+KmgmSSZR29tXdBSmJJUpCZKM
-	 0BDzu6pbsmMcgKedernpAgH6we1YkEBeTngcDRv6X05vBP0ywwhwkeufmXvhKC4h6r
-	 pfUl1HVsWwMpOohiBauqGQDbtbWQ7pkVizkoW2cRbK0umNKdBEUsa28wUfOUT5+VVl
-	 gsHKQFiXggeKVbewT073vP4A7dSUoXsYYDtyz5muKFWKLJoTc2rMQFI9u5T8hc8vVd
-	 ND3ftKfj3IxCg==
+	b=L3xMb9Y/ushFC9+3dS23UJfFvPmkTG9sQi//20kGlL2F0CCfXWC5+k1mT7WLjzsvy
+	 RvlaKhLDls0BH37Cb7uJzkJf3ck68SPx9hlGp7EN3uMKqkNvMF7c1UyK614FxJf3Y2
+	 cT4dMx+uiQOipcQjS+uT0jnjFP/OuuKvfKJWEZ52CM4je3AYoVOvddDLyuUDZmYWsj
+	 G1R5MFRt1O95Q7jEHFB4KamBIjaNT/UCfW3nsLEzPf2nHAH/0Kh9X20bQLr8tbVcij
+	 6vUlEE+g/U6DlZFUyAdgv93Te3qDuoCOakQip5uPbZD9t7DTNLd91AvkhA5afbG6kD
+	 LLQMGx4EJkonw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB144FC0360;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA764F589D9;
 	Thu, 23 Apr 2026 16:08:10 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Thu, 23 Apr 2026 18:07:16 +0200
-Subject: [PATCH v4 1/8] dt-bindings: thermal: amlogic: Add support for T7
+Date: Thu, 23 Apr 2026 18:07:17 +0200
+Subject: [PATCH v4 2/8] firmware: meson: sm: Thermal calibration read via
+ secure monitor
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260423-add-thermal-t7-vim4-v4-1-d4c1528d5044@aliel.fr>
+Message-Id: <20260423-add-thermal-t7-vim4-v4-2-d4c1528d5044@aliel.fr>
 References: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
 In-Reply-To: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
@@ -55,16 +56,15 @@ To: Guillaume La Roque <glaroque@baylibre.com>,
 Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2861;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1177;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=42FjYfnK8gHAQIf5ZxFekEMwi0ysWDknaNuX/++vGok=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+Yr5/vzP+b9+GgtcciWXWbJXJbJL69L3k19eftz+rG2/
- /4H6xIXdZSyMIhxMciKKbL0z7U88e7y0TNf96inwMxhZQIZwsDFKQATEV3AyHAka+k6gdXRidnJ
- /l63ij6ITDL9OFWN15v598fA/b+nLLVm+O/1Wmirw717DW8Nbiru+8x9YX+gasTH5kndy/k5WSs
- Nb/MDAA==
+ bh=z46M+rsMVvol/Iu/vuO1m+rAUYrJ82iMmifq0EnDoU0=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+Yr5wd19ruFs27aWU42aw5k55HewVi6/0sc32XtCv4O5
+ WO1ZRs6SlkYxLgYZMUUWfrnWp54d/noma971FNg5rAygQxh4OIUgIlktTMyHPfQWLq7ha3QvZPl
+ ZtAshjNGEyW09nUqnta2/+7sW6zmx/CHm00zOkon53rbO3H+9GSjI+ahpcZbnlbccH+13fOhwyI
+ mAA==
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -74,92 +74,35 @@ Reply-To: linux-kernel-dev@aliel.fr
 
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-Add the amlogic,t7-thermal compatible for the Amlogic T7 thermal sensor.
+Add SM_THERMAL_CALIB_READ to the secure monitor command enum and
+introduce meson_sm_get_thermal_calib() to allow drivers to retrieve
+thermal sensor calibration data through the firmware interface.
 
-Unlike existing variants which use a phandle to the ao-secure syscon,
-the T7 relies on a secure monitor interface described by a phandle and
-a sensor index argument.
-
-The T7 integrates multiple thermal sensors, all accessed through the
-same SMC call. The sensor index argument is required to identify which
-sensor's calibration data the secure monitor should return, as a single
-SM_THERMAL_CALIB_READ command serves all of them.
-
-Introduce the amlogic,secure-monitor property as a phandle-array and
-make amlogic,ao-secure or amlogic,secure-monitor conditionally required
-depending on the compatible.
-
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- .../bindings/thermal/amlogic,thermal.yaml          | 37 ++++++++++++++++++++--
- 1 file changed, 35 insertions(+), 2 deletions(-)
+ include/linux/firmware/meson/meson_sm.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-index 70b273271754b..e28612510d679 100644
---- a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-@@ -21,7 +21,9 @@ properties:
-               - amlogic,g12a-cpu-thermal
-               - amlogic,g12a-ddr-thermal
-           - const: amlogic,g12a-thermal
--      - const: amlogic,a1-cpu-thermal
-+      - enum:
-+          - amlogic,a1-cpu-thermal
-+          - amlogic,t7-thermal
+diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
+index 8eaf8922ab020..3ebc2bd9a9760 100644
+--- a/include/linux/firmware/meson/meson_sm.h
++++ b/include/linux/firmware/meson/meson_sm.h
+@@ -12,6 +12,7 @@ enum {
+ 	SM_EFUSE_WRITE,
+ 	SM_EFUSE_USER_MAX,
+ 	SM_GET_CHIP_ID,
++	SM_THERMAL_CALIB_READ,
+ 	SM_A1_PWRC_SET,
+ 	SM_A1_PWRC_GET,
+ };
+@@ -27,5 +28,7 @@ int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
+ 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
+ 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
+ struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
++int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
++			       u32 tsensor_id);
  
-   reg:
-     maxItems: 1
-@@ -42,12 +44,34 @@ properties:
-   '#thermal-sensor-cells':
-     const: 0
- 
-+  amlogic,secure-monitor:
-+    description: phandle to the secure monitor
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    items:
-+      - items:
-+          - description: phandle to the secure monitor
-+          - description: sensor index to get specific calibration data
-+
- required:
-   - compatible
-   - reg
-   - interrupts
-   - clocks
--  - amlogic,ao-secure
-+
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - amlogic,a1-cpu-thermal
-+              - amlogic,g12a-thermal
-+    then:
-+      required:
-+        - amlogic,ao-secure
-+    else:
-+      required:
-+        - amlogic,secure-monitor
- 
- unevaluatedProperties: false
- 
-@@ -62,4 +86,13 @@ examples:
-         #thermal-sensor-cells = <0>;
-         amlogic,ao-secure = <&sec_AO>;
-     };
-+  - |
-+    temperature-sensor@20000 {
-+        compatible = "amlogic,t7-thermal";
-+        reg = <0x0 0x20000 0x0 0x50>;
-+        interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-+        clocks = <&clkc_periphs CLKID_TS>;
-+        #thermal-sensor-cells = <0>;
-+        amlogic,secure-monitor = <&sm 1>;
-+    };
- ...
+ #endif /* _MESON_SM_FW_H_ */
 
 -- 
 2.49.0
