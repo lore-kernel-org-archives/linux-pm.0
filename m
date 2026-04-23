@@ -1,58 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6740E3BFE2D;
-	Thu, 23 Apr 2026 08:33:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C84D3DEAEA;
+	Thu, 23 Apr 2026 08:38:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776933199; cv=none; b=Lwvc5ss1h4lBvKblY2On/tLUhfC5TOlDHL/P2U07/HGjimsq9mPQaYdXRfuWCS6vGvd4lDANUpKpApkbwncxc3SN5s/aDaogc6d1hJLDZn0X2hAQVFqv/GbdZF8PV+iwaEUin2b5yhP9Gf8i6OFdTyWJ4Of9Uf0wEAapTjIcEnY=
+	t=1776933491; cv=none; b=qJWrjJfRd7f+vWGF1bn2FQ4PNypvilGp5IBk+ZZLw13VePE+NiF95BfGSa+obkCCTDePupoE/sqFf0i3W2xSONt9QIlb4bW522Kdu12FOYMayev+o9cmsHfsFnUZzgaykBj0hG5YhrqNvVyfjVd7FriFlQDoJY/Hn6r2lqpNHy4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776933199; c=relaxed/simple;
-	bh=5+zMriaHMsBBqN//VTtl1hWoE1/+kUuxp7yWOapsSwk=;
+	s=arc-20240116; t=1776933491; c=relaxed/simple;
+	bh=7TncH7v5oMurcqGtlqVH6Qwxgl3u+rSFozfoTQxHXOA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AFZ+GQhXoy1RZ1p4RAIgyEyT44kk7BcBQcEn+avdtLcENLUGTF7eF8qUw/yTqvmyARJltJuElsRfUtMFCNRJkZuGtcU1EVl6heEFuzecHO1s0kY9ENdpbAtFQX/7iF2seeYviwyWvsMQtVCxxqYSJV8fOKLgo3Q8m/+kBrnvRS4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lVax2POe; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=Oztaitet7+Ih4C6BJdizs2d0j0nMNJcNNGeW2xVkAUfeL2fGlNqlzlxR8RySHvCEBL6kWOdaf1WYWL/KaZBrd2zp/q/s0oZRIE0mWqXGR1C3r1yN/RU7PrLny1QXDk3uLvIGbB1Aa3k7eFhnq2CDHZgpZYr7rc+EWXBFHiEhAIY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tfV2Xf6e; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lVax2POe"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B031C2BCAF;
-	Thu, 23 Apr 2026 08:33:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tfV2Xf6e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBBADC2BCAF;
+	Thu, 23 Apr 2026 08:38:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776933199;
-	bh=5+zMriaHMsBBqN//VTtl1hWoE1/+kUuxp7yWOapsSwk=;
+	s=k20201202; t=1776933490;
+	bh=7TncH7v5oMurcqGtlqVH6Qwxgl3u+rSFozfoTQxHXOA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lVax2POeqCh2r625MA5To+c1tsjF6726wOyrKgtXkMXFqDpmpFMG1fGvbaacoVXXg
-	 tCLhhUHnWYGsU9Mrjs4oMsyJn+1siKxGu7Ql/Xgsiwm21b7c+RjouSyROJXwQVFDb5
-	 TjF1Aqmx5E5jhHRtgo7Q63bDlxZaauJsw/k/zJYvdBHRcitKBUGE3G1h73nL4lmSNp
-	 9tJGIWufu4pB6hLelUDQVqTVgf8N6R9BpkvlKCNN+KJXxT4SnPFbMTEizItsmg4Yr6
-	 5JjmXoYeIfd4Ovqv999WXBQwVq1fg+/6YmLvm7l1vY0cBaiUckDmmA+LLk9C1tcO4Q
-	 1Kxw2KSYflzRQ==
-Date: Thu, 23 Apr 2026 10:33:16 +0200
+	b=tfV2Xf6ezyVMa/E5Ys5S423AcV776mCHIICo7rdol+0+nLH1piAkMHg0beZJ7wKjv
+	 HtltoLvnQoyQe6HZ7h0KuLOjcmwLTfowM2Qr8t5OS36WRqVIHYxJyr9DWVjxM+x15a
+	 Fzgyf5d3rsVCiuMjTwEdvCwk8AMloNJQFwkDjRBKLc8drufkL0wDVDBFibxubhtp4n
+	 x88X6HF5kh1NvpMZ3DtnwleIERi+3kbBjrB7BNm73B5oWCDh1EP0iOECQP0W+hukEr
+	 tqPKHH6KckgcQVNHfyVTjz90LH2pfbDoLYriVJ1AwodscTNiXM3RUS6q9AoCwx/UGe
+	 9doAWH4D6VXHA==
+Date: Thu, 23 Apr 2026 10:38:07 +0200
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, 
-	gaurav.kohli@oss.qualcomm.com, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+To: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Lucas Stach <l.stach@pengutronix.de>, Russell King <linux+etnaviv@armlinux.org.uk>, 
-	Christian Gmeiner <christian.gmeiner@gmail.com>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Guenter Roeck <linux@roeck-us.net>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>, Benson Leung <bleung@chromium.org>, 
-	Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, Avi Fishman <avifishman70@gmail.com>, 
-	Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, 
-	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, 
-	Benjamin Fair <benjaminfair@google.com>, Heiko Stuebner <heiko@sntech.de>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Rajendra Nayak <quic_rjendra@quicinc.com>, Abel Vesa <abelvesa@kernel.org>, 
 	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	"open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v2 12/12] dt-bindings: thermal: cooling-devices: Update
- support for 3 cells cooling device
-Message-ID: <20260423-acoustic-arcane-gecko-8c66cf@quoll>
-References: <20260422174305.2899095-1-daniel.lezcano@oss.qualcomm.com>
- <20260422174305.2899095-13-daniel.lezcano@oss.qualcomm.com>
+	Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] dt-bindings: interconnect: qcom,x1e80100-rpmh: add
+ clocks property to enable QoS
+Message-ID: <20260423-thick-beneficial-capuchin-e4aaad@quoll>
+References: <20260422-x1e80100_qos-v1-0-bcc2afe4cc78@oss.qualcomm.com>
+ <20260422-x1e80100_qos-v1-1-bcc2afe4cc78@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -61,20 +48,22 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260422174305.2899095-13-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260422-x1e80100_qos-v1-1-bcc2afe4cc78@oss.qualcomm.com>
 
-On Wed, Apr 22, 2026 at 07:43:01PM +0200, Daniel Lezcano wrote:
-> From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
+On Wed, Apr 22, 2026 at 02:05:11AM +0000, Raviteja Laggyshetty wrote:
+> Some interconnect nodes on X1E80100 have QoS registers located inside
+> a block whose interface is clock-gated. For those nodes, driver
+> must enable the corresponding clock(s) before accessing the
+> registers. Add the 'clocks' property so the driver can obtain
+> and enable the required clock(s).
 > 
-> Extend the thermal cooling device binding to support a 3 cells specifier
-> along with the 2 cells format.
+> Only interconnects that have clock-gated QoS register interface
+> use this property; it is not applicable to all interconnect nodes.
 > 
-> Update #cooling-cells property to enum to support both 2 and 3 arguments.
-> 
-> Fix pwm-fan.yaml to restrict the number of cells to 'const: 2'
-> 
-> Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
+> ---
+>  .../bindings/interconnect/qcom,x1e80100-rpmh.yaml  | 62 ++++++++++++++++++++++
+>  1 file changed, 62 insertions(+)
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
