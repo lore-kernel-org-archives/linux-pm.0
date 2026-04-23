@@ -1,124 +1,191 @@
-Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 245DF35E93E
-	for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 22:48:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776898121; cv=none; b=bKhLRlCOtubqQjjH6iYEuvmW3KpZHh3cYpvqs79jQpVR/WQOvufDMZhuJ2Hrhhwm0OBDkyUK1XxRzenSfhA8AXXJWE6wxuGcZ28fXVS/yshcLWjZrJSCFY6BFr4eFnFa4NyRgOM1tRC4jSQPVKcL0229HoBIQY4E8jF9gKeGy+M=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776898121; c=relaxed/simple;
-	bh=NRWSIj1awYbKDb7XDOAYoJaNnOVQ29rl0pbbuAh0CXA=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Vhxn77BmXpTDnu6HbdM4GTMMnFPdC3mA0XMif2R/tLQ+9afQz5e26BwdOMxXc5yachAKp62bfGaqGS3TWsKVKafXgobgIeJz+4dNCSAXoPQQPtaSiPxaJvAykyf6G/Xeqe3pRk+tpSypQiyWqiyWwN955/CrAlJpqPPgKMQI0Tg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=xP0Kzkm4; arc=none smtp.client-ip=209.85.210.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBC29203710
+	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 03:46:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.49
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776916019; cv=pass; b=EXCz7cgzzTlnVQm6twPwLH3I/mBhpWoekiLLuJPQNttsPWD0AyKq18QiDHJ5i6WHH8kpCq8boNzBdHi3NCK9xzuC9OiMsi9GMj+uT/wY7oAs2P4fbDyz8XPENRo+NbMDfkr1WkV6v5v3IEzxDHiCEx7CE3FRSWUdPprx6FQyGiU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776916019; c=relaxed/simple;
+	bh=WeNkOMzbwUsxL+mQAEdQI1bS1CFi3gSHibm8joPuWt0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=kPPx6V3VneKTBApbxKvGHG9v1f2flc9NsKJ9SVu8p9a6L58o+8DQ/c0Bcj7ruNFxeP2EF6cznBpVJ3Pb+mrURbf+GTRF7E+Tw3HdPGDummRjSjHlFupP/nd8oBMniY7uxUOjirD0zEFYpLtRtC4RtLt0qu7sLTt1rBZto0QdnD0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lHhGTmla; arc=pass smtp.client-ip=209.85.218.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="xP0Kzkm4"
-Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-82fa8d6425bso2015824b3a.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 15:48:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lHhGTmla"
+Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b886fc047d5so1104670066b.3
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 20:46:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776916016; cv=none;
+        d=google.com; s=arc-20240605;
+        b=NXD/fwwnYWiQTn6Ho1zrf9inNDkvIKU9v0dFoz1NfoCa9/VcjczUYvGrrWSn4r39yd
+         cNm0+HrelUnyu4yWKsISBmrFbnj223FKncBJfIHgdn3Tib5AwgC4S+eHnoZrgNrvhmhR
+         pjQV5Fj7hmGgeOIAnfDlKxTWamquYpWpXWKYpn2kO+7F58UQ6lX38PuJd6+Zzb7cuDXp
+         Ch8pCdyi2J/J1u9ImhnWaOm/sCHvaIEpE02/dprMiQTjn0YatAuvNUbxudp/KCpn4CRB
+         5eMrRNVbBpIWREJoHjcvR3cJrzgSW9ddypr/sJ/xZ6hDGK2HrqQ2iZAYmCWWcd6H7F4G
+         Bt9A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
+        fh=yLknprOYUcG3K1FX0Vob+5OsEFmn+BvQnRsEFQ0oaNg=;
+        b=HJQf/Mz2m5yyY/BzmQvx5nBJf8xkzeyrQRcwYTA4zudKYgJN2qsvzEf4r2Gu8GA601
+         SiG5Hlqs5I+uwKgczOnri5h2/OfIBdXYEc4aIncjHVRR2S+2JkwMlLLrhoa6OaZ02XD9
+         dkQvWNHL+HfJ2Wr9hE/H8TNC/wgSGaaLwwUaIN8JnMXBRVC0MQXUvlKBdZB/+5hyWUev
+         XkChsE6Mw3SEi01oIl3NM+stmZEFaYVlZKeaFK0N1wlkLH6tc6kqeXx/QnuOOItJRZ6R
+         ws1mQQHWTd92QJBGODqS/Ad1p/E44whfXTxJOK3hKQs9StEViX/2gvBXDehmiFaZ1jBj
+         rntw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1776898118; x=1777502918; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=4qI6kGELEoPNIDxXAqpiIcX3kz3Y96gemHsRdJV8MIo=;
-        b=xP0Kzkm4cdE8FArVwyURRIHBqxgKXjsZXcCImcT9GabegLK8BxG5yXw7MeEN+gWO7c
-         2iJgGQFINJgAKN4BIjv2ysJkJXWZlOQxbXwci6oucu29d124FfVSkzHu8hXbi/VexCWw
-         hjwhyIsDf6MUPD82KchjGOPlF86Z5AZ0DIdldkzm/ImvFY5UnGqprIWIN/8ggT8MHI7x
-         C7bkUNY/zv9Slh+EsjBw7mM+szwXkfl5dyNd+ipkpHdIFjyG3Dc2g+IoVn7132uP1t7O
-         wXQk5Z9aE5FO4TfJFxv4BHrYkyNiuRepGZURqK7AOiZEUE8x6Gx8H0zBwRCrirocoUvd
-         v4/A==
+        d=gmail.com; s=20251104; t=1776916016; x=1777520816; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
+        b=lHhGTmlaieYH55/zPwV+zLy4DF34PgsYfn1vRiGRrV7Lh9gOqRo1rZOZyhVTaOunQW
+         oFb1aLQV5zCirfs+bcUX+iVgOWdXc+Q73e2iMowE0n75JSKV+3Zu6IPVyThxJWtzNBz8
+         NZ8CQ996VJ41yicjPK6VV8bnqwoi8MzCDRYjdeb0MsHx4HyLFXd/gz7BJ2VAY6PChUrc
+         CgbFRuN0xDc3N3r1LhbjCPb0K/YHlwBGVEV/E4rxbozEGZrCW/h47zSFFx2A3bJGXbru
+         SWIHhUjq0ggFCFzHA5nPzp6KIKGNEuoKq4WKoudqjn9Sjah7ipA6QTeSYhANMnwixBKM
+         82cA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776898118; x=1777502918;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4qI6kGELEoPNIDxXAqpiIcX3kz3Y96gemHsRdJV8MIo=;
-        b=oXabVMN/xN5kfa/EOoFHJfm/OFupz9cK92l5/9nqGVtPx7y4K+h8XWLnQWRdFlebep
-         SXDbjnHyqKAQDPLfjmMQ4NLrxl3UTEUqUhPpB0btJesQcAxp4BP6qZQihlQZOiyvDhFX
-         6wURRFhmv3i8l/svxP0mYrrKK32K95egvlVQgAicnnU4MgUIDUZlaYV/nOAuLK1UNeEV
-         oLd9QIeNvNBPeZ+ncTjugUmHFYCTp3Sbqp5k2uHQ4rsUrF0W2XbmJ0RbfkABiMbjU75q
-         P+LNVSgBfv/XhWCNDyg498J7xMDgO3iyxfMod9wmuMleWGoEu2ST0jY4BhcVdMgPhjKt
-         g7Kg==
-X-Forwarded-Encrypted: i=1; AFNElJ+XDfx8RGtf5vSho+x5PtP0m/QctpYth0Zwt7F6s+saRpemqyHe6yDdBZ1PdWRigeqqQGybzK8r5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw2sHSoVy4mjFcRWm/lAhVSkxyrmV/3nYz2aUpNG8PaLPE9X8rB
-	UqfTGQX65LSjFOBjblmCN8p2BbELU98ngzOYW1eia4cRwrsLoxsZL5Vdt9FJ0msbYZI=
-X-Gm-Gg: AeBDievATk3X4EyzU24O9Pydcfpgv4WY4H/WXzq8P/B4t6CpY00Jq1bLQExCbIAsk5M
-	VImZXEK9Ghw0S6Sa08sTdLV7+C1hdiKX6sX9DjzAs/c18JlDVhn/MZSGwXHShvF2wdoqGG54z3W
-	VklqChbCKSMnUZjUgsA+Xl2MmniDMnhOC14oCBuyxz4zEOcrPHKtzUWW1Za5t+hPZ5pNH8LnJmg
-	1ifbukraERjpm3WpA44RobGi6N5pVm+Vayp2Xn0zyiSl3vqWtZb9hwU7ceJUKaFcBfJ+jqvCIBt
-	y+6VulEi7UWlnSyj78Xbc5yfB81PqVy+IKFc9/7tVUxmL67CZWhzMtZBJkjlvHIz37bTf9/lx2x
-	Ff0RFwOmr/feOxMFIzsDc8EAHLIcskFDcQCedB6KA9x7EGxv6aFuPGk/FTQU0wGS60T9GqXhkZe
-	vR+FxD0Le0LRP1K+UXNNWwovsYozcJOA==
-X-Received: by 2002:a05:6a00:c8a:b0:82f:98c:1465 with SMTP id d2e1a72fcca58-82f8c8fb258mr26682792b3a.27.1776898118539;
-        Wed, 22 Apr 2026 15:48:38 -0700 (PDT)
-Received: from localhost ([97.126.187.42])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8ec04448sm21836313b3a.55.2026.04.22.15.48.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 22 Apr 2026 15:48:37 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Sudeep Holla
- <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
- Saravana Kannan <saravanak@kernel.org>, Michael Turquette
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Philipp Zabel
- <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, "Rafael J .
- Wysocki" <rafael@kernel.org>, Florian Fainelli
- <florian.fainelli@broadcom.com>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, Marek Vasut
- <marek.vasut+renesas@mailbox.org>, Kuninori Morimoto
- <kuninori.morimoto.gx@renesas.com>
-Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: Re: [PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping
-In-Reply-To: <cover.1776793163.git.geert+renesas@glider.be>
-References: <cover.1776793163.git.geert+renesas@glider.be>
-Date: Wed, 22 Apr 2026 15:48:37 -0700
-Message-ID: <7hcxzqr4qi.fsf@baylibre.com>
+        d=1e100.net; s=20251104; t=1776916016; x=1777520816;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
+        b=Eg/BHA2rz/NT1KC79bHnLKtoDI96CJafmfezUcceymTzRC5nv/xr+H5RzQtXVKB9Hh
+         pFBpRpzm8I29bo7g1DAcJpOJukZsZ9nAGf0SMxzaDykqlHqb9OAYnoMvQRP0+Y8oJFMW
+         e6dK12JX9Yf5SUwR24K4HQcY/rgMzUso/A9XBRvdn0iHzRu3/zS62MZOaCrSst4wzpZi
+         KtCbzlxJtwuiuCdKGco+R/j/CFZhfu/XajgrroGc9Syzoc5BjqG2YPPX5diTtKuJ2Yie
+         MUtYp6mhcMCCKIV6F7VsNsXCRxqpQCyTCaCh6FBf4N6i7XK2QhhqSXJIHV5nH5Qncb8c
+         K7+Q==
+X-Forwarded-Encrypted: i=1; AFNElJ+OFnY7TQZwhhCT8cE9rPklWyK4/SKz4erfJ8EhGmVKSA6E2O5pv1ldkS04jFJ2li6yOiIxAlIqxA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLnsu2a6ZkAYeKCK/HKrZ2tYfA0MoL6D1LnBfYfBJ4x+2C3MDt
+	YJZgJffWjDceLE41QbCmYORUWiyPYVWDCY7mxRgWS+rytoAScTo8KvYrq+hjjOkgRTpm8eNC8ZJ
+	EveuhVKDy8LFLEsXivuFFtaNdfXEJrUQ=
+X-Gm-Gg: AeBDievHlQF+q2FX/nW/dE87iZzq2W3u0OARCZe/RM+0xflU/WxbF5kSjvl0k3xQw/E
+	8c3P3kV+ZeifnWZAAOkMOMQ7HrUbGbKs+4PuzB5MOT8pi5ozKFIB9qxUf8oarS8Qs0GMPrk6Zse
+	nr2FgWuZ30W4dpcin263DxHQLYKhQHMDROAPX/COBktZf+mKz2frA3UpctqI6de37PWtWRQ24ST
+	k5NYUuCIn1xyUf2/mxRFLd7j6RQEaZebu3NUkPKCzbPRfezjP0AI5MTLtI/EqWgLqqFlRHKcgtH
+	di69ePc6Y4H0/2M=
+X-Received: by 2002:a17:907:1c10:b0:ba8:7b3:176b with SMTP id
+ a640c23a62f3a-ba807b322c2mr525199966b.49.1776916015972; Wed, 22 Apr 2026
+ 20:46:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20260119-patchv2-k1-thermal-v3-0-3d82c9ebe8a4@163.com>
+ <20260119-patchv2-k1-thermal-v3-3-3d82c9ebe8a4@163.com> <CANAwSgTOmbb+Vzhck1riVaFM89zYLdMe3dn6DRHrc7p+rkR2DQ@mail.gmail.com>
+ <DHZM9D696P6G.NVPMN20XXM3H@mailbox.org>
+In-Reply-To: <DHZM9D696P6G.NVPMN20XXM3H@mailbox.org>
+From: Anand Moon <linux.amoon@gmail.com>
+Date: Thu, 23 Apr 2026 09:16:40 +0530
+X-Gm-Features: AQROBzAWkvO9UaeaqqzBdwiPl2IRb1rnMdxCjeOVlETl66PPfZzCcgEwKW1aUrg
+Message-ID: <CANAwSgQCOoC7aZWhekqmVS3OTTyzTyDaSxsTsdfMUphxx8vX+Q@mail.gmail.com>
+Subject: Re: [PATCH v3 3/3] riscv: dts: spacemit: Add thermal sensor for K1 SoC
+To: Shuwei Wu <shuwei.wu@mailbox.org>
+Cc: Shuwei Wu <shuweiwoo@163.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Geert Uytterhoeven <geert+renesas@glider.be> writes:
+Hi Shuwei,
 
-> 	Hi all,
+On Wed, 22 Apr 2026 at 16:07, Shuwei Wu <shuwei.wu@mailbox.org> wrote:
 >
-> TL;DR:
+> Hi Anand,
 >
->     Describe hardware in DT, and perform the mapping to SCMI in Linux.
+> Thank you for the careful review.
 >
-> The Renesas R-Car X5H-based Ironhide board is the first Renesas
-> SoC/board combination that implements the ARM System Control and
-> Management Interface (SCMI).
+> On Wed Apr 22, 2026 at 1:56 PM CST, Anand Moon wrote:
+> > Hi Shuwei,
+> >
+> > On Mon, 19 Jan 2026 at 08:13, Shuwei Wu <shuweiwoo@163.com> wrote:
+> >>
+> >> Include the Thermal Sensor node in the SpacemiT K1 dtsi
+> >> with definitions for registers, clocks, and interrupts.
+> >> Additionally, configure thermal zones for the soc, package, gpu, and
+> >> clusters to enable temperature monitoring via the thermal framework.
+> >>
+> >> Signed-off-by: Shuwei Wu <shuweiwoo@163.com>
+> >> ---
+> >> Changes in v2:
+> >> - Update compatible to "spacemit,k1-tsensor"
+> >> ---
+> >>  arch/riscv/boot/dts/spacemit/k1.dtsi | 101 ++++++++++++++++++++++++++=
++++++++++
+> >>  1 file changed, 101 insertions(+)
+> >>
+> >> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dt=
+s/spacemit/k1.dtsi
+> >> index 7818ca4979b6..0fe7396ea6e4 100644
+> >> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
+> >> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
+> >> @@ -338,6 +338,96 @@ osc_32k: clock-32k {
+> >>                 };
+> >>         };
+> >>
+> > I feel the thermal zones appear to be configured at significantly
+> > higher temperatures
+> > compared to the thresholds typically used in commercial-grade and
+> > industrial-grade device
+> > test environments 1.2 Test Environment
+> >
+> > [1] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
+=3Dhardware/key_stone/k1/k1_hw/avl_veri_sop.md
 >
-> This means Linux can no longer perform various system operations (e.g.
-> clock, power domain, and reset control) by accessing the hardware
-> directly.  Instead, these operations are abstracted according to various
-> SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
-> firmware running on a System Control Processor (SCP).
-> More specifically, the R-Car X5H SCP FW SCMI controls access to:
->   1. Core clocks and module clocks,
->   2. Module resets,
->   3. Power domains,
-
-I'm very curious how power domain hierarchy is described on this SoC,
-because one more issue to add to your list is that hierarchy cannot be
-described for power domains in SCMI.
-
-I know you're aware of it already, but just FYI for anyone else
-exploring this space, I have a series[1] in-flight right now to address
-this limitation of SCMI so that we can at least describe this hierarchy
-in DT and the pmdomain framework.
-
-Kevin
-
-[1] https://lore.kernel.org/linux-pm/20260420-topic-lpm-pmdomain-child-ids-v3-0-c2c40bef238c@baylibre.com/
-
+> The official definition of this temperature range is as follows:
+> "The CPU delivers stable and reliable computing power from -40=C2=B0C to =
+85=C2=B0C,
+> complying with the demanding requirements of industrial applications."
+>
+> [1] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
+=3Dhardware/key_stone
+> /k1/k1_docs/root_overview.md
+>
+> Therefore, this does not mean that the chip cannot continue to work above
+> this temperature.
+>
+> The datasheet also defines another temperature, the Junction Temperature,
+> which represents the chip's temperature limit. Exceeding this temperature
+> may permanently damage the chip.
+>
+> [2] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
+=3Dhardware/key_stone
+> /k1/k1_docs/k1_usermanual/4.Electrical_Characteristics.md
+>
+Ok,
+> >
+> > Thermal zones should be defined as part of the SBC board design,
+> > with the option to integrate PWM-controlled fan support in the future.
+>
+> These thermal zones describe fixed hardware properties of the K1 SoC itse=
+lf,
+> and are common for all K1-based boards.
+>
+Ok,
+> And this is also done in Allwinner D1, StarFive JH7110 and some other chi=
+ps.
+>
+Ok thanks.
+> >
+> > Thanks
+> > -Anand
+> Best regards,
+> Shuwei Wu
+Thanks
+-Anand
