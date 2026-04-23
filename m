@@ -1,130 +1,169 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BD4A37DE8D
-	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 15:23:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 128EC31DDBF;
+	Thu, 23 Apr 2026 15:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=65.21.61.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776957792; cv=none; b=tFc3+KnjzmiePcpAUl7887wMvO0yo3rxnZJrxR1TsIe7W9oYDfip2BtoSFXQa/o3EO5rMMu8IHuR7cP9vSYqqHrC+ALO9KJrA0FrNJv2PEpyt8gWVVpDSSrksUMzxAFz0xX8/7TFesTGEivI2ByWveqglXQnJiv5WGRs1EeXUMA=
+	t=1776958189; cv=none; b=Oz544Y8g+HZJ2bLigFMG9pwCOse5qwRJQR1WnvQNTfPAPi5ugOq25Ut6Hq+HxAe+IYrFSwY7X4CqxY6CnNiqHv7Uf2B25xkH1Pvhz+n7GsKUE1RpDGUjrF128HsTvRT7q3smZgex1brJYgt0wp2xTbC3NbTM+LLbJhfeweTm+ZA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776957792; c=relaxed/simple;
-	bh=7AhKBHwg3sF5ZQfICMhVBtTO5MM//2w9hYFIb8IP1yU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pBGBwgHdWbUuFB6N3jKY8akD5YoCnV3MPS+PcUtpZqMNFJxHZCyQPMXXwmyVXD5WakHxBLFTXa0VgXMTNsCRDJuypzBg8sbwcFO00Ct5rZkGzSj+F4Q9QsS/56qsd5zbKv9jn8uj57Xl1eq8CbPM/C9sfkrXHAqSWYSfx1GadlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=NlF05pQf; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1776958189; c=relaxed/simple;
+	bh=BuFMoJ0ysYsrcKqnLlo60KQAjjDHrnpC5kQCUcwHtB0=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=ZNLbgdf5Dx89c8HOD6a+UxjDd65BwX++wmj4YsaZ4Xy++VaVrO6FvWIsSyNArOf7AsF/hLxkp7Xv96xxI7ODffY+2tze4E/3XNvg3uekwdAjhVCxojc/dndrEb9WzRbeFN26d8/Xz2E4TxF+ktg3SJZsArnoQpWdFZayRY9QGW4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr; spf=pass smtp.mailfrom=aliel.fr; dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b=nDVJQ1Aj; arc=none smtp.client-ip=65.21.61.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NlF05pQf"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-488ad135063so60407265e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 08:23:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1776957787; x=1777562587; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=45rJAXYOq5QzWK7uWpAJrY/aJNT+spUoA8Oj8mxs4Uw=;
-        b=NlF05pQfvz30iToZPuVXHWFBWmVK7cb2B/KJwOeVySZZIS2ikJt/BRj8IKg6pIxHv8
-         cobX1fG5uyLrMm+Vdqy968vKWoEUqRGfqtY5KtwKujTgl1/4Kn05ZwVaXVqelo9b2zCO
-         97Dkd9+Vgbm0cjBed31iAYcU+snjv+sEABYNWuOp5DY1t9uITqW8zwMrXyyKoRNu3Y7t
-         3SLzLsp2ocgYTz+XykRUIKZIWoslHdaTb7hfDjVTguhqM0RVjMLD2Hj1q2Y3BHcfZxZC
-         /LSbphCxg2KsVqMkY5j9Y2SFMjLzGfv3KpB0or7azjs+kiZMhNUkgCi6CsE+zW1y66Gj
-         9yAA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776957787; x=1777562587;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=45rJAXYOq5QzWK7uWpAJrY/aJNT+spUoA8Oj8mxs4Uw=;
-        b=CX2t7JrqtFrU0S68KrdBqfb6Wdzi4SEsXSq75gYwaniuAUsrO10UVJ4YYB704cC6al
-         HUCuoUO6BstZ1UgLxFpCtKS0nM1PWbmTmOJtKmpmO3zu6O0jyj6fHPuwJPMlVSCbl2xx
-         nrvyVaGLlgejLsw5XQyNSRkj3jhzr7EJb4/VqDwLxH0u1Tpdntw20dJPmYAaOaEHca16
-         zxpVEHm6GqUVB3OWDeTZo6yJj1tyDzDjRsGbjRnsuTA5jR+PPw/Lgivw5vX7XIrezfmD
-         IChEN2HRUzY14h4RYOORLrqyakh61Thdwu11Ov0utOhPfQDfnxnUVPRdukdsG2N/G6nc
-         3VZg==
-X-Forwarded-Encrypted: i=1; AFNElJ9Af78SPCq6z9wTP9CiwNQSi0KhzoKYDsWx/tPruo+xtQNnrYgLz0os7xK2A8Y/UndOK9DcP+/MVQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzaMtwNwhWf/Uc3NA0vqaEDoQFFxoDUisJrHGQktMVUSRK+2Zq7
-	lAIWTYtkBFUiEdpNCZrPXVORIcHVRf2P86hyN9dGty+n0SIW6Yu0xmLfyzUf63JngqA=
-X-Gm-Gg: AeBDies/ZahhkvrosC0PkFAoJgeBhdZZgGEfmV5V0+L3QD1f24NOILzXr0qDh7W3W8t
-	g1y2J7+ObQGLc60Ui2UtnMWUqVZ1+l90kTGo6OLzatQ06g+rVHOZZ3t1t4hqmy0ZweEgnaGJnb3
-	rFEyCcnX/UC7oYnTjFrN2E8GdKcsUGYoXd40X1Pj5/iPudEt7+2oNGVoIHUUo9/PdB9wvO+IDKI
-	rTBsGaagkjB3syuqRwpSuflXQd6kg7UVHejVMxJXPe0ib5PQ4mZtbNlGv4T+0GA7hGlD1HZzQ+r
-	SGzS6HT8kyjXlwJzvPw6YdpOgWxPUxlMKxbDuHGzH1JjcW32NmeOMcY6KPnfhrdPN7ibw9qvnbZ
-	0Pe3X8A5dy2aoFv9paCxowO9gJAMB3nkq71J5v/OQbBhB8bWyzyMDujl7aipZEA1/Aj7IFs7tHU
-	N0E0qYaUiI9nRCdPnPVp/mxen3TC4FM0VXHorXgG7tjapn3vUBUJwEE+/ssgCYacJLL1r93JQc1
-	S7qMpS77n3NnADFBw==
-X-Received: by 2002:a05:600c:8a08:b0:488:a82f:bb9b with SMTP id 5b1f17b1804b1-488ff369a1cmr299536255e9.30.1776957786885;
-        Thu, 23 Apr 2026 08:23:06 -0700 (PDT)
-Received: from ta2.c.googlers.com (17.83.155.104.bc.googleusercontent.com. [104.155.83.17])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4891f98728dsm90550755e9.23.2026.04.23.08.23.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Apr 2026 08:23:06 -0700 (PDT)
-From: Tudor Ambarus <tudor.ambarus@linaro.org>
-Date: Thu, 23 Apr 2026 15:22:59 +0000
-Subject: [PATCH v4 11/11] arm64: defconfig: enable Exynos ACPM thermal
- support
+	dkim=pass (1024-bit key) header.d=aliel.fr header.i=@aliel.fr header.b="nDVJQ1Aj"
+Message-ID: <9ac4db6a-b668-4e56-b940-dfb542086b39@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1776958185;
+	bh=BuFMoJ0ysYsrcKqnLlo60KQAjjDHrnpC5kQCUcwHtB0=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=nDVJQ1AjCE5OlTV9ohw+s+40v3OWIxomoHihxxmKa33UWuI4CKmMPxIRrcc+qoTtr
+	 MRafIrq7kiIn0mv+CjEkY4sx+kF/ymbOedcAFtood2+89njXRcH4XIqMUVbaWPC5PJ
+	 +TqSnU2f6xdrIxnp2Ut4ZRt7cw3p8hKAmrHyW1y8=
+Date: Thu, 23 Apr 2026 17:29:43 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260423-acpm-tmu-v4-11-8b59f8548634@linaro.org>
-References: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
-In-Reply-To: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, 
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
- Alim Akhtar <alim.akhtar@samsung.com>, 
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>, 
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
- Peter Griffin <peter.griffin@linaro.org>, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Sylwester Nawrocki <s.nawrocki@samsung.com>, 
- Chanwoo Choi <cw00.choi@samsung.com>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Lee Jones <lee@kernel.org>
-Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com, 
- linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-hardening@vger.kernel.org, 
- linux-clk@vger.kernel.org, Tudor Ambarus <tudor.ambarus@linaro.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1776957778; l=812;
- i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
- bh=7AhKBHwg3sF5ZQfICMhVBtTO5MM//2w9hYFIb8IP1yU=;
- b=5VX9qU+w1MAGCTcm/KONCzXTpE/zawPv8s4NGdTf7+yTo8O2OSQ5R1ITDc/bhnFX4LjS7V1lm
- qjj5hM1FeU8CPP2c5DU5SvgZzv7wBhNlnAt3R1NZBOCz6liqK8uA6Jp
-X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
- pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
+User-Agent: Mozilla Thunderbird Beta
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+Subject: Re: [PATCH v3 4/8] thermal: amlogic: Add support for secure monitor
+ calibration readout
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Guillaume La Roque <glaroque@baylibre.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+References: <20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr>
+ <20260421-add-thermal-t7-vim4-v3-4-a2e7215ed003@aliel.fr>
+ <7aaa7873-9274-48d8-a6fe-cff4239b03b4@oss.qualcomm.com>
+ <19d70883-21db-4963-841d-7c00505e0d9e@aliel.fr>
+ <8a4dcb94-ab88-4559-9027-49308ad02b73@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <8a4dcb94-ab88-4559-9027-49308ad02b73@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Enable the Exynos ACPM thermal driver (CONFIG_EXYNOS_ACPM_THERMAL)
-to allow temperature monitoring and thermal management on Samsung
-Exynos SoCs that use the Alive Clock and Power Manager (ACPM)
-protocol.
+On 4/23/26 5:17 PM, Daniel Lezcano wrote:
+> On 4/23/26 17:09, Ronald Claveau wrote:
+>> Hi Daniel,
+>>
+>> Thanks for your feedback.
+>>
+>> On 4/23/26 12:25 PM, Daniel Lezcano wrote:
+>>>
+>>> Hi Ronald,
+>>>
+> 
+> function1() {
+> 
+> 
+>>>> +    if (pdata->data->use_sm) {
+>>>> +        struct device_node *sm_np;
+>>>> +        struct of_phandle_args ph_args;
+>>>> +
+>>>> +        ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
+>>>> +                               "amlogic,secure-monitor",
+>>>> +                               1, 0, &ph_args);
+>>>> +        if (ret)
+>>>> +            return ret;
+>>>> +
+>>>> +        sm_np = ph_args.np;
+>>>> +        if (!sm_np) {
+>>>> +            dev_err(dev,
+>>>> +                "Failed to parse secure monitor phandle\n");
+>>>> +            return -ENODEV;
+>>>> +        }
+>>>> +
+>>>> +        pdata->sm_fw = meson_sm_get(sm_np);
+>>>> +        of_node_put(sm_np);
+>>>> +        if (!pdata->sm_fw) {
+>>>> +            dev_err(dev, "Failed to get secure monitor firmware\n");
+>>>> +            return -EPROBE_DEFER;
+>>>> +        }
+>>>> +
+>>>> +        pdata->tsensor_id = ph_args.args[0];
+>>>> +    } 
+> 
+> }
+> 
+> function2() {
+> 
+> else {
+>>>> +        pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+>>>> +            (pdev->dev.of_node, "amlogic,ao-secure");
+>>>> +        if (IS_ERR(pdata->sec_ao_map)) {
+>>>> +            dev_err(dev, "syscon regmap lookup failed.\n");
+>>>> +            return PTR_ERR(pdata->sec_ao_map);
+>>>> +        }
+>>>>        }
+> 
+> }
+> 
+>> Sure, I will do that.
+>>
+>>>>        pdata->tzd = devm_thermal_of_zone_register(&pdev->dev
+>>>
+>>> The thermal zone is registered before calling
+>>> amlogic_thermal_initialize(), thus pdata->trim_info is not initialized.
+>>> When a thermal zone is registered the thermal framework reads the
+>>> temperature, so it reads an invalid value because:
+>>>
+>>> devm_thermal_of_zone_register()
+>>>   -> thermal_of_zone_register()
+>>>     -> thermal_zone_device_register_with_trips()
+>>>     -> thermal_zone_device_enable()
+>>>        -> __thermal_zone_device_update()
+>>>          -> __thermal_zone_get_temp()
+>>>            -> amlogic_thermal_get_temp()
+>>>               -> amlogic_thermal_code_to_millicelsius()
+>>>                   [ Use of uninitialized pdata->trim_info ]
+>>>
+>>> Right ?
+>>>
+>>
+>> Yes, I will move the initialize before the register.
+>>
+>>> IIUC, amlogic_thermal_initialize() can be also split and moved the
+>>> corresponding blocks to the functions to be created in the comment
+>>> above.
+>>>
+>>
+>> The SM and syscon setup will be extracted into two functions.
+>> amlogic_thermal_initialize() itself is kept as-is but moved before
+>> devm_thermal_of_zone_register().
+>> Let me know if you'd prefer a different approach.
+> 
+> In the initialize function the following chunk is added:
+> 
+> +    if (pdata->data->use_sm) {
+> +        return meson_sm_get_thermal_calib(pdata->sm_fw,
+> +                          &pdata->trim_info,
+> +                          pdata->tsensor_id);
+> +    }
+> 
+> I was suggesting to move it to function1() and the rest of code from
+> initialize in function2()
+> 
+> That results in amlogic_thermal_initialize() to be dissolved in
+> function1() and function2()
+> 
 
-Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
----
- arch/arm64/configs/defconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index d905a0777f93..3fe76a4c2633 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -793,6 +793,7 @@ CONFIG_BCM2711_THERMAL=m
- CONFIG_BCM2835_THERMAL=m
- CONFIG_BRCMSTB_THERMAL=m
- CONFIG_EXYNOS_THERMAL=y
-+CONFIG_EXYNOS_ACPM_THERMAL=m
- CONFIG_TEGRA_SOCTHERM=m
- CONFIG_TEGRA_BPMP_THERMAL=m
- CONFIG_GENERIC_ADC_THERMAL=m
+Thanks for your answer, that was my second option, I will do that.
 
 -- 
-2.54.0.545.g6539524ca2-goog
-
+Best regards,
+Ronald
