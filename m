@@ -1,191 +1,126 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBC29203710
-	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 03:46:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.49
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776916019; cv=pass; b=EXCz7cgzzTlnVQm6twPwLH3I/mBhpWoekiLLuJPQNttsPWD0AyKq18QiDHJ5i6WHH8kpCq8boNzBdHi3NCK9xzuC9OiMsi9GMj+uT/wY7oAs2P4fbDyz8XPENRo+NbMDfkr1WkV6v5v3IEzxDHiCEx7CE3FRSWUdPprx6FQyGiU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776916019; c=relaxed/simple;
-	bh=WeNkOMzbwUsxL+mQAEdQI1bS1CFi3gSHibm8joPuWt0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kPPx6V3VneKTBApbxKvGHG9v1f2flc9NsKJ9SVu8p9a6L58o+8DQ/c0Bcj7ruNFxeP2EF6cznBpVJ3Pb+mrURbf+GTRF7E+Tw3HdPGDummRjSjHlFupP/nd8oBMniY7uxUOjirD0zEFYpLtRtC4RtLt0qu7sLTt1rBZto0QdnD0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lHhGTmla; arc=pass smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2BD426F47C
+	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 05:16:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776921378; cv=none; b=XpNfKo2BefKGxKhW7MklYQodu+gXgqUYBLXQMjy4J+3YZ1qZ1Jzb5Ww8xQiS72cBXZpol7HBtpiDnhlWkCoMySpgYxf37Ac15QXSv4GRe97Zdrhx/8qBc17/3MOB82grCJqgmjwO/b1bZCYG1E2+gX3Hima9eUnNnrq0wWnAbEo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776921378; c=relaxed/simple;
+	bh=vVmUc6BHhzs+fV8O2rHNsLH+X7k/U7RbLkyQO4qhSZw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=cSfneWa2X7Sg/K2e85pW4nrzmQUq/LFaCJ7OGZWcO8N4f+5e99A+pN0Dzxm8Whm5CHuwLxMPBPx3pE1wctpjOC1dBk26paEBKnmw4E/hRMm4Mz/rlbQSE7siAwlinyvVBVZ9rX53C03LXJgUy7JIEpR6d/djTYDl9zYhKEmqSXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VSt8DCzG; arc=none smtp.client-ip=209.85.210.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lHhGTmla"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b886fc047d5so1104670066b.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 20:46:57 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776916016; cv=none;
-        d=google.com; s=arc-20240605;
-        b=NXD/fwwnYWiQTn6Ho1zrf9inNDkvIKU9v0dFoz1NfoCa9/VcjczUYvGrrWSn4r39yd
-         cNm0+HrelUnyu4yWKsISBmrFbnj223FKncBJfIHgdn3Tib5AwgC4S+eHnoZrgNrvhmhR
-         pjQV5Fj7hmGgeOIAnfDlKxTWamquYpWpXWKYpn2kO+7F58UQ6lX38PuJd6+Zzb7cuDXp
-         Ch8pCdyi2J/J1u9ImhnWaOm/sCHvaIEpE02/dprMiQTjn0YatAuvNUbxudp/KCpn4CRB
-         5eMrRNVbBpIWREJoHjcvR3cJrzgSW9ddypr/sJ/xZ6hDGK2HrqQ2iZAYmCWWcd6H7F4G
-         Bt9A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
-        fh=yLknprOYUcG3K1FX0Vob+5OsEFmn+BvQnRsEFQ0oaNg=;
-        b=HJQf/Mz2m5yyY/BzmQvx5nBJf8xkzeyrQRcwYTA4zudKYgJN2qsvzEf4r2Gu8GA601
-         SiG5Hlqs5I+uwKgczOnri5h2/OfIBdXYEc4aIncjHVRR2S+2JkwMlLLrhoa6OaZ02XD9
-         dkQvWNHL+HfJ2Wr9hE/H8TNC/wgSGaaLwwUaIN8JnMXBRVC0MQXUvlKBdZB/+5hyWUev
-         XkChsE6Mw3SEi01oIl3NM+stmZEFaYVlZKeaFK0N1wlkLH6tc6kqeXx/QnuOOItJRZ6R
-         ws1mQQHWTd92QJBGODqS/Ad1p/E44whfXTxJOK3hKQs9StEViX/2gvBXDehmiFaZ1jBj
-         rntw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VSt8DCzG"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-82f0884bcfaso4391991b3a.1
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2026 22:16:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776916016; x=1777520816; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
-        b=lHhGTmlaieYH55/zPwV+zLy4DF34PgsYfn1vRiGRrV7Lh9gOqRo1rZOZyhVTaOunQW
-         oFb1aLQV5zCirfs+bcUX+iVgOWdXc+Q73e2iMowE0n75JSKV+3Zu6IPVyThxJWtzNBz8
-         NZ8CQ996VJ41yicjPK6VV8bnqwoi8MzCDRYjdeb0MsHx4HyLFXd/gz7BJ2VAY6PChUrc
-         CgbFRuN0xDc3N3r1LhbjCPb0K/YHlwBGVEV/E4rxbozEGZrCW/h47zSFFx2A3bJGXbru
-         SWIHhUjq0ggFCFzHA5nPzp6KIKGNEuoKq4WKoudqjn9Sjah7ipA6QTeSYhANMnwixBKM
-         82cA==
+        d=gmail.com; s=20251104; t=1776921377; x=1777526177; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=lmd0+i3zyfUooe2qBex0I9Uy4jA43VCAP6YM0wisfD4=;
+        b=VSt8DCzGmGUep8OI6ug+V0T+RHqjQ+6reg95e5SO9FHFe2TJ3fsJ7iVm7TmEz+CEEG
+         kZicP6FXfylZisJurLicBs3NcbzIrV8kaxcELmA/Jlrmrc98n4p4S0LFnFnlgBwv/5JI
+         CmanjdANw4cP5sJ0KeNKUWEfplg+atKXN1yXy30+cq2y7l1QNUgkVe1/07SAOonVbat1
+         lcl4fOXzzBCLd8s8iuVpzmdWHDqROPjjWyGC37FwV3sQ1GvXYRTbd5JAKRF00dy5L7Tz
+         kYbEHk2s+FlBmdNipflOO/SuEzqqL3stVA0SIr48yeOZ8iapYHXPU8UwtxFtKr2Cb0kw
+         wzJA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776916016; x=1777520816;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=c9GSW2Phd9oXEma1/9uB2odB8s4SQeX9sU39sUkX9FY=;
-        b=Eg/BHA2rz/NT1KC79bHnLKtoDI96CJafmfezUcceymTzRC5nv/xr+H5RzQtXVKB9Hh
-         pFBpRpzm8I29bo7g1DAcJpOJukZsZ9nAGf0SMxzaDykqlHqb9OAYnoMvQRP0+Y8oJFMW
-         e6dK12JX9Yf5SUwR24K4HQcY/rgMzUso/A9XBRvdn0iHzRu3/zS62MZOaCrSst4wzpZi
-         KtCbzlxJtwuiuCdKGco+R/j/CFZhfu/XajgrroGc9Syzoc5BjqG2YPPX5diTtKuJ2Yie
-         MUtYp6mhcMCCKIV6F7VsNsXCRxqpQCyTCaCh6FBf4N6i7XK2QhhqSXJIHV5nH5Qncb8c
-         K7+Q==
-X-Forwarded-Encrypted: i=1; AFNElJ+OFnY7TQZwhhCT8cE9rPklWyK4/SKz4erfJ8EhGmVKSA6E2O5pv1ldkS04jFJ2li6yOiIxAlIqxA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLnsu2a6ZkAYeKCK/HKrZ2tYfA0MoL6D1LnBfYfBJ4x+2C3MDt
-	YJZgJffWjDceLE41QbCmYORUWiyPYVWDCY7mxRgWS+rytoAScTo8KvYrq+hjjOkgRTpm8eNC8ZJ
-	EveuhVKDy8LFLEsXivuFFtaNdfXEJrUQ=
-X-Gm-Gg: AeBDievHlQF+q2FX/nW/dE87iZzq2W3u0OARCZe/RM+0xflU/WxbF5kSjvl0k3xQw/E
-	8c3P3kV+ZeifnWZAAOkMOMQ7HrUbGbKs+4PuzB5MOT8pi5ozKFIB9qxUf8oarS8Qs0GMPrk6Zse
-	nr2FgWuZ30W4dpcin263DxHQLYKhQHMDROAPX/COBktZf+mKz2frA3UpctqI6de37PWtWRQ24ST
-	k5NYUuCIn1xyUf2/mxRFLd7j6RQEaZebu3NUkPKCzbPRfezjP0AI5MTLtI/EqWgLqqFlRHKcgtH
-	di69ePc6Y4H0/2M=
-X-Received: by 2002:a17:907:1c10:b0:ba8:7b3:176b with SMTP id
- a640c23a62f3a-ba807b322c2mr525199966b.49.1776916015972; Wed, 22 Apr 2026
- 20:46:55 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776921377; x=1777526177;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lmd0+i3zyfUooe2qBex0I9Uy4jA43VCAP6YM0wisfD4=;
+        b=iVmGpm2HWCnj3BjgBq9u4W/Xoahgr69Ph8DB+ISQBuNx1LNvpbmi9wlm/62zijmJmP
+         9NKrBqVdRK8t+beGzs4DkmJ/41bbHtWB2PMNmoKydzHwPX+BkfqrFTwB+m42Vt7F92ri
+         vIMl7SMW7zJFqu/m0PRdlPWiZoRmYWb/j4HPi+/nAqIdyCkS00TwqPFMkyQ497IUyZQB
+         7JoyOPNNcJ/wegZLBDwmH77aJt7OpqttQguI7lH13EI7SGjSPzoPSAA7vdwwwkJexBjJ
+         N3NC+QQNmtVrDuwWgBK7owVNvS7pPJU4uVeb7IgQe3KFqFo/Z9+QyzNAJUzgX+DJ3cMh
+         0htA==
+X-Gm-Message-State: AOJu0Yx4TgI87Rhn3RAmu3WV+Cg0x5XLuRYvXHnVR+FQk/yVshqYw2at
+	2QNxoTvFWz+fAeT5doF8h3IosWrsM+Cg7jLXFGsvr6/5+Tk4egkW1+h1/nKy+MyO
+X-Gm-Gg: AeBDieur5m87H1VCh61CiU0SySXA9jiHxc8DZ7G2GHwRSvrRUyoFqek1TjZx2mcZHov
+	aNEk6dsufDvDpH99XYKaJrpez0v2ZOZfdavUOYve3L3e7hdkKbJdj14Iob0HkHri5htalLSQ3KW
+	WuZBNruN6qWllF/oTjkU2VT2QEzFB5MWHA4MvFpBSlEAmJRcH4a1yo0faA/NFr9HI15u28vu0tl
+	qxynujm36ZVp6XB94ir83faXY/jNc+FRPCHyPTS6LXrKIkaP/DVzCTbPsQZP7cMsLS2wd4/qhSn
+	hPLvogcj3mxGF/jVL0k+kPHCri2aVQAJ9AZrDVvqb6+lLWt0Ukb4DdFdPlVm4z5dsi2sFfiGPZw
+	8/NbYE4pKGMdCyaLpxSwvkCeBmTXJADOb0mM/4lAieAKjpoZV7EGg6s0UvecmoDwH0tCmdeiLen
+	yDvdhdm+JkW5TOGfmZxBLSXFRJy2PpHA/93wB+AN2A8Gc87aymJ5hBD7uG1rxcYr9mfQs6UPTpK
+	PDfSArolD1j2nhMkJzY1kcTtdYder9UuHec
+X-Received: by 2002:a05:6a00:4094:b0:82f:6e9:d1ba with SMTP id d2e1a72fcca58-82f8c90b253mr29372382b3a.37.1776921377084;
+        Wed, 22 Apr 2026 22:16:17 -0700 (PDT)
+Received: from DESKTOP-87O68R1.hsd1.or.comcast.net (c-67-189-53-77.hsd1.or.comcast.net. [67.189.53.77])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8ec037e1sm22517658b3a.54.2026.04.22.22.16.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Apr 2026 22:16:16 -0700 (PDT)
+From: Nikhil Nagarkar <nikhilnagarkar97@gmail.com>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] power: reset: ltc2952: remove global ltc2952_data structure
+Date: Wed, 22 Apr 2026 22:16:01 -0700
+Message-Id: <20260423051601.250932-1-nikhilnagarkar97@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260119-patchv2-k1-thermal-v3-0-3d82c9ebe8a4@163.com>
- <20260119-patchv2-k1-thermal-v3-3-3d82c9ebe8a4@163.com> <CANAwSgTOmbb+Vzhck1riVaFM89zYLdMe3dn6DRHrc7p+rkR2DQ@mail.gmail.com>
- <DHZM9D696P6G.NVPMN20XXM3H@mailbox.org>
-In-Reply-To: <DHZM9D696P6G.NVPMN20XXM3H@mailbox.org>
-From: Anand Moon <linux.amoon@gmail.com>
-Date: Thu, 23 Apr 2026 09:16:40 +0530
-X-Gm-Features: AQROBzAWkvO9UaeaqqzBdwiPl2IRb1rnMdxCjeOVlETl66PPfZzCcgEwKW1aUrg
-Message-ID: <CANAwSgQCOoC7aZWhekqmVS3OTTyzTyDaSxsTsdfMUphxx8vX+Q@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] riscv: dts: spacemit: Add thermal sensor for K1 SoC
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: Shuwei Wu <shuweiwoo@163.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Yixun Lan <dlan@gentoo.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Shuwei,
+The driver currently uses a global pointer (ltc2952_data) to store its
+entire state structure just to access the gpio_kill descriptor during
+the power-off sequence.
 
-On Wed, 22 Apr 2026 at 16:07, Shuwei Wu <shuwei.wu@mailbox.org> wrote:
->
-> Hi Anand,
->
-> Thank you for the careful review.
->
-> On Wed Apr 22, 2026 at 1:56 PM CST, Anand Moon wrote:
-> > Hi Shuwei,
-> >
-> > On Mon, 19 Jan 2026 at 08:13, Shuwei Wu <shuweiwoo@163.com> wrote:
-> >>
-> >> Include the Thermal Sensor node in the SpacemiT K1 dtsi
-> >> with definitions for registers, clocks, and interrupts.
-> >> Additionally, configure thermal zones for the soc, package, gpu, and
-> >> clusters to enable temperature monitoring via the thermal framework.
-> >>
-> >> Signed-off-by: Shuwei Wu <shuweiwoo@163.com>
-> >> ---
-> >> Changes in v2:
-> >> - Update compatible to "spacemit,k1-tsensor"
-> >> ---
-> >>  arch/riscv/boot/dts/spacemit/k1.dtsi | 101 ++++++++++++++++++++++++++=
-+++++++++
-> >>  1 file changed, 101 insertions(+)
-> >>
-> >> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dt=
-s/spacemit/k1.dtsi
-> >> index 7818ca4979b6..0fe7396ea6e4 100644
-> >> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
-> >> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> >> @@ -338,6 +338,96 @@ osc_32k: clock-32k {
-> >>                 };
-> >>         };
-> >>
-> > I feel the thermal zones appear to be configured at significantly
-> > higher temperatures
-> > compared to the thresholds typically used in commercial-grade and
-> > industrial-grade device
-> > test environments 1.2 Test Environment
-> >
-> > [1] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
-=3Dhardware/key_stone/k1/k1_hw/avl_veri_sop.md
->
-> The official definition of this temperature range is as follows:
-> "The CPU delivers stable and reliable computing power from -40=C2=B0C to =
-85=C2=B0C,
-> complying with the demanding requirements of industrial applications."
->
-> [1] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
-=3Dhardware/key_stone
-> /k1/k1_docs/root_overview.md
->
-> Therefore, this does not mean that the chip cannot continue to work above
-> this temperature.
->
-> The datasheet also defines another temperature, the Junction Temperature,
-> which represents the chip's temperature limit. Exceeding this temperature
-> may permanently damage the chip.
->
-> [2] https://www.spacemit.com/community/document/info?lang=3Den&nodepath=
-=3Dhardware/key_stone
-> /k1/k1_docs/k1_usermanual/4.Electrical_Characteristics.md
->
-Ok,
-> >
-> > Thermal zones should be defined as part of the SBC board design,
-> > with the option to integrate PWM-controlled fan support in the future.
->
-> These thermal zones describe fixed hardware properties of the K1 SoC itse=
-lf,
-> and are common for all K1-based boards.
->
-Ok,
-> And this is also done in Allwinner D1, StarFive JH7110 and some other chi=
-ps.
->
-Ok thanks.
-> >
-> > Thanks
-> > -Anand
-> Best regards,
-> Shuwei Wu
-Thanks
--Anand
+Refactor the driver to use a specific static gpio_desc pointer for
+the kill signal. This addresses the existing TODO in the function.
+
+Signed-off-by: Nikhil Nagarkar <nikhilnagarkar97@gmail.com>
+---
+ drivers/power/reset/ltc2952-poweroff.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
+index 90c664d344d0..f07283d38cbd 100644
+--- a/drivers/power/reset/ltc2952-poweroff.c
++++ b/drivers/power/reset/ltc2952-poweroff.c
+@@ -77,12 +77,7 @@ struct ltc2952_poweroff {
+ 
+ #define to_ltc2952(p, m) container_of(p, struct ltc2952_poweroff, m)
+ 
+-/*
+- * This global variable is only needed for pm_power_off. We should
+- * remove it entirely once we don't need the global state anymore.
+- */
+-static struct ltc2952_poweroff *ltc2952_data;
+-
++static struct gpio_desc *ltc2952_poweroff_gpio_kill;
+ /**
+  * ltc2952_poweroff_timer_wde - Timer callback
+  * Toggles the watchdog reset signal each wde_interval
+@@ -154,7 +149,7 @@ static irqreturn_t ltc2952_poweroff_handler(int irq, void *dev_id)
+ 
+ static void ltc2952_poweroff_kill(void)
+ {
+-	gpiod_set_value(ltc2952_data->gpio_kill, 1);
++	gpiod_set_value(ltc2952_poweroff_gpio_kill, 1);
+ }
+ 
+ static void ltc2952_poweroff_default(struct ltc2952_poweroff *data)
+@@ -274,8 +269,7 @@ static int ltc2952_poweroff_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	/* TODO: remove ltc2952_data */
+-	ltc2952_data = data;
++	ltc2952_poweroff_gpio_kill = data->gpio_kill;
+ 	pm_power_off = ltc2952_poweroff_kill;
+ 
+ 	data->panic_notifier.notifier_call = ltc2952_poweroff_notify_panic;
+-- 
+2.34.1
+
