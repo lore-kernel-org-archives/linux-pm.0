@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BB8B36E49B;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40783372EC0;
 	Thu, 23 Apr 2026 16:08:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776960491; cv=none; b=GpD0GhVq7JD0UkLQXQW7kLDjj2qXjWYqIWPpcmKFlVcqZEvUMvbxD6QAv458Apmq6MS2+QWtEigT83K4EWjQvysBz8WTCvaDSK6nBFU0S2B422qD1QoNOMzAbt7EW3e53BxoCgw7Wz9ijzkeFRgMynykNs4pieUBeh1DpsmRWqc=
+	t=1776960491; cv=none; b=RtmWIy8K/z1zwwnS1gWHjnge9ke/DPvsKVeG7bLToBT8rh6SQ19EMeO3sdtOBZH5l+CkS3bnXXVHK/V95vYRdtjYafqmqy/290sx+Hw6tHa0eVOCWsZP+sKvEHcESDpUD5VWDS6ztyUp2tfBaneEYYduFHrj5sFJ7wQiCQ7v4MU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1776960491; c=relaxed/simple;
-	bh=kmxFj256ZqyHHjW0JUrAO7Zmt5qTIX49xsO6Ct108OU=;
+	bh=BEGT7QGuXKZN1/TyxTNzOGeUptM2L1qa4oyYW8iXDC0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=k0MsYb4JtggnJLkxlouBkpI4lJbhYY7NApg1jHJiwUDhuTPRU0zI29HZpKDUX2aKBzMtdIqanGkNZJ+YYjre86joW0AzaZc8stNMISjCYkhMnNlHGTOa6cb/w1RHEVMqGUFuI/ps5srbRgf26CRY/PQSpBVXV90GqD3hVvjjXSU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=L3xMb9Y/; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=CnF/0VZNtNT3d5galykRS2I41ZmAuA5b4dcIvWwFkNqy61eUCOOKXyrfBZxAoH48w95+phuVvCPchNsrr235W8yy4L9UEHHQTa/ZXIqfRC+xFJxvXnp13A6RYAeY9xtBqRnD1RRZJOKA7o5vp3vH1doLE/y3WvHsf+gKGGwJH0o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rjbhVxhm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="L3xMb9Y/"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E765DC2BCB7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rjbhVxhm"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 023FAC2BCB9;
 	Thu, 23 Apr 2026 16:08:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1776960491;
-	bh=kmxFj256ZqyHHjW0JUrAO7Zmt5qTIX49xsO6Ct108OU=;
+	bh=BEGT7QGuXKZN1/TyxTNzOGeUptM2L1qa4oyYW8iXDC0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=L3xMb9Y/ushFC9+3dS23UJfFvPmkTG9sQi//20kGlL2F0CCfXWC5+k1mT7WLjzsvy
-	 RvlaKhLDls0BH37Cb7uJzkJf3ck68SPx9hlGp7EN3uMKqkNvMF7c1UyK614FxJf3Y2
-	 cT4dMx+uiQOipcQjS+uT0jnjFP/OuuKvfKJWEZ52CM4je3AYoVOvddDLyuUDZmYWsj
-	 G1R5MFRt1O95Q7jEHFB4KamBIjaNT/UCfW3nsLEzPf2nHAH/0Kh9X20bQLr8tbVcij
-	 6vUlEE+g/U6DlZFUyAdgv93Te3qDuoCOakQip5uPbZD9t7DTNLd91AvkhA5afbG6kD
-	 LLQMGx4EJkonw==
+	b=rjbhVxhmHgVZZjoPWaU7066lR5LruzPiO+4IPp/2qwmj+prtPplgKKJj8YiCmSX2a
+	 3OL1fYxmDrvDKxIyZn44A7GqsViQnnLWRFzeHBazFEFnqwWNkOQTdElPSdJWo1zH10
+	 mRcJC4n1fQfo7+LuqV1gE5RiJQtqNWqQSL/KuAaBo8WPbBr2W8327lvWcBPGWNyUul
+	 p1YXulFSoJ2WtzJBuOdcJHaw1INr3nNlA1KvbBz+mWViCPNhMj1Nt4O/IXOmZpu2wO
+	 3lffSGrIIUeLRl2MNfJxA2y/Wy5PkF1a3dAGQSlppD///f+ysgtXGRaLwUfEW8IV3A
+	 2BKz4i6tu/BFQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA764F589D9;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA1E7FC0379;
 	Thu, 23 Apr 2026 16:08:10 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Thu, 23 Apr 2026 18:07:17 +0200
-Subject: [PATCH v4 2/8] firmware: meson: sm: Thermal calibration read via
- secure monitor
+Date: Thu, 23 Apr 2026 18:07:18 +0200
+Subject: [PATCH v4 3/8] firmware: meson: sm: Add thermal calibration SMC
+ call
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260423-add-thermal-t7-vim4-v4-2-d4c1528d5044@aliel.fr>
+Message-Id: <20260423-add-thermal-t7-vim4-v4-3-d4c1528d5044@aliel.fr>
 References: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
 In-Reply-To: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
@@ -58,13 +58,13 @@ Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
  linux-arm-kernel@lists.infradead.org, 
  Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1177;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2173;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=z46M+rsMVvol/Iu/vuO1m+rAUYrJ82iMmifq0EnDoU0=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+Yr5wd19ruFs27aWU42aw5k55HewVi6/0sc32XtCv4O5
- WO1ZRs6SlkYxLgYZMUUWfrnWp54d/noma971FNg5rAygQxh4OIUgIlktTMyHPfQWLq7ha3QvZPl
- ZtAshjNGEyW09nUqnta2/+7sW6zmx/CHm00zOkon53rbO3H+9GSjI+ahpcZbnlbccH+13fOhwyI
- mAA==
+ bh=QVwXg2rjCHDLPb10isf9/q6yv3hIqKAxTDlkEXCyDmk=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+Yr50ez3ocqrml4N/nmpWX9Kounm235ZJE1W8R/g/yVz
+ 9+qbrM96yhlYRDjYpAVU2Tpn2t54t3lo2e+7lFPgZnDygQyhIGLUwAmwveT4Q/fab/4TS2sBd8s
+ NJ/oL+ifJtSyX/VCksC0MoFnaSFn5r1iZDht8M7A+sa09S/LE3WnX2Ndpp8o1merKZ+XeMSy5YJ
+ aITcA
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -74,35 +74,65 @@ Reply-To: linux-kernel-dev@aliel.fr
 
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-Add SM_THERMAL_CALIB_READ to the secure monitor command enum and
-introduce meson_sm_get_thermal_calib() to allow drivers to retrieve
-thermal sensor calibration data through the firmware interface.
+Add SM_THERMAL_CALIB_READ at SMC ID 0x82000047 in the command
+table and implement meson_sm_get_thermal_calib(), which forwards the
+tsensor_id argument to the secure monitor and returns the calibration data.
+
+Also realign the CMD() column to improve readability.
 
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- include/linux/firmware/meson/meson_sm.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/firmware/meson/meson_sm.c | 29 ++++++++++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
-index 8eaf8922ab020..3ebc2bd9a9760 100644
---- a/include/linux/firmware/meson/meson_sm.h
-+++ b/include/linux/firmware/meson/meson_sm.h
-@@ -12,6 +12,7 @@ enum {
- 	SM_EFUSE_WRITE,
- 	SM_EFUSE_USER_MAX,
- 	SM_GET_CHIP_ID,
-+	SM_THERMAL_CALIB_READ,
- 	SM_A1_PWRC_SET,
- 	SM_A1_PWRC_GET,
+diff --git a/drivers/firmware/meson/meson_sm.c b/drivers/firmware/meson/meson_sm.c
+index 3ab67aaa9e5da..4e57986724212 100644
+--- a/drivers/firmware/meson/meson_sm.c
++++ b/drivers/firmware/meson/meson_sm.c
+@@ -41,12 +41,13 @@ static const struct meson_sm_chip gxbb_chip = {
+ 	.cmd_shmem_in_base	= 0x82000020,
+ 	.cmd_shmem_out_base	= 0x82000021,
+ 	.cmd = {
+-		CMD(SM_EFUSE_READ,	0x82000030),
+-		CMD(SM_EFUSE_WRITE,	0x82000031),
++		CMD(SM_EFUSE_READ,		0x82000030),
++		CMD(SM_EFUSE_WRITE,		0x82000031),
+ 		CMD(SM_EFUSE_USER_MAX,	0x82000033),
+-		CMD(SM_GET_CHIP_ID,	0x82000044),
+-		CMD(SM_A1_PWRC_SET,	0x82000093),
+-		CMD(SM_A1_PWRC_GET,	0x82000095),
++		CMD(SM_GET_CHIP_ID,		0x82000044),
++		CMD(SM_THERMAL_CALIB_READ,	0x82000047),
++		CMD(SM_A1_PWRC_SET,		0x82000093),
++		CMD(SM_A1_PWRC_GET,		0x82000095),
+ 		{ /* sentinel */ },
+ 	},
  };
-@@ -27,5 +28,7 @@ int meson_sm_call_read(struct meson_sm_firmware *fw, void *buffer,
- 		       unsigned int bsize, unsigned int cmd_index, u32 arg0,
- 		       u32 arg1, u32 arg2, u32 arg3, u32 arg4);
- struct meson_sm_firmware *meson_sm_get(struct device_node *firmware_node);
-+int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
-+			       u32 tsensor_id);
+@@ -245,6 +246,24 @@ struct meson_sm_firmware *meson_sm_get(struct device_node *sm_node)
+ }
+ EXPORT_SYMBOL_GPL(meson_sm_get);
  
- #endif /* _MESON_SM_FW_H_ */
++/**
++ *
++ * meson_sm_get_thermal_calib - Read thermal sensor calibration data.
++ * @fw:		Pointer to secure-monitor firmware.
++ * @trim_info:	Pointer to store the returned calibration data.
++ * @tsensor_id:	Sensor index to identify which sensor's calibration data
++ *		to retrieve
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
++			       u32 tsensor_id)
++{
++	return meson_sm_call(fw, SM_THERMAL_CALIB_READ, trim_info, tsensor_id,
++			     0, 0, 0, 0);
++}
++EXPORT_SYMBOL_GPL(meson_sm_get_thermal_calib);
++
+ #define SM_CHIP_ID_LENGTH	119
+ #define SM_CHIP_ID_OFFSET	4
+ #define SM_CHIP_ID_SIZE		12
 
 -- 
 2.49.0
