@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F5E3377EAC;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F7103DBD5B;
 	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777040410; cv=none; b=BgjH2xvYsDGTRLs9RGiSw0EQjX3NC3WsSF6r78KdIZ06MMNS1uwl7x5ow5shDBdKK/FTAsLlx4AVLGqY+HaKEYjnJrKT4fFkp9BKHiBB0RRulWyrSYnsH9OblhzCAOw06jWXJU9DoWT0PoZUPs8oWqiP0/PXxnp4tvNVSQ+j1ws=
+	t=1777040410; cv=none; b=AIQAZUEJla0LsQEwn7CgYFP+ZtrY2LbdR0JI44PfPhpTZM5VLnwKSMHDVccF+oLLSfGC5ivFi6I5DcJLHQ+HcHMmxdMhj8IsBCZh3OvEJRkNa7a1ALqekPpQp8LUMpvpnNKzqf45RipfKR2paAdPoZmLbX0d+SdxeMv8Rg2hok4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1777040410; c=relaxed/simple;
-	bh=tjPcTbHATZZVk2EWmuWBPpmcu6B3OW4hKOS1rdd7OQ4=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=ohk6dWPWfPEA/wx55ghoBgYnnqIEPVXTzDEB8YtrIyBLms535ncXif8xO4GkvjH/YAfu6N5NgYsZxyNN956nSrpco9wWCinyo0KpSyMtSRa9SmMxR51mxQ8XpJUCfxyAtNdfLWFZq0tyxbC7j228DKE7ZIcfKeHomUtnA3uE3/A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=S2+CWeWn; arc=none smtp.client-ip=10.30.226.201
+	bh=Jnv894IU9wblCqhm+wVe2Z5FBt6aG6TawzV3npnKdrc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=UPlnzb7cMt550t+0eFHAaeo8F+YVVgW4xz6bksxcbiuBQa8vrQLmJJTVYRZO4E4TuR6BpmQzBPU7SNjRi8LEwC2n7i4cVbVmRBpaXh5vosh+5rb8INfzxYGyWsaOmBiHA3TjzHvastw6x+QvxODfz1/X6CmkBbwdPHXQuVsHPjo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SbSWWEcM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="S2+CWeWn"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CF745C19425;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SbSWWEcM"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id F06B4C2BCB2;
 	Fri, 24 Apr 2026 14:20:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777040409;
-	bh=tjPcTbHATZZVk2EWmuWBPpmcu6B3OW4hKOS1rdd7OQ4=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=S2+CWeWnTJJ0nEZUr3ni0iiCC+HZ+O24SAHDPwR6NnvOSm/dHBEp79PBtwKT9D2xf
-	 O4aF9L5gwEy2k9dBj08qYFVctLwotgBYU3VeV2iDSErpTVJuxzuGc6ERPLbDdpZBvo
-	 IjZdI/cPz8HaIUJqnNZbzvusA7lbH9cTWWV8D+THHLkoI6dd1z2/FDaYnV63XnYqz8
-	 lr2uOIfiaEIAiepE5LgVdm7HFPCl4SVA6voRUSIlPFnDtAfYWGQspynWXP+guM8JPs
-	 xMfFns9KKCAmP+our4idATQf8LNfbLXyveLjfJoJdcGKCDYLTVNJJqNPLR8cW6lbXu
-	 XlmpZrcRo1rXQ==
+	s=k20201202; t=1777040410;
+	bh=Jnv894IU9wblCqhm+wVe2Z5FBt6aG6TawzV3npnKdrc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=SbSWWEcMXjEbwaS2Ly1/PK1BsoBFbskPEY9to8Wbr7o+GYDWtcfbyESad7qrEayQW
+	 Flo/tDixKZ5fNdJsBKO+gS66ccBqPrMd2w3rgi3PprW+WYbUGSEamxumErjc5wBhvq
+	 7yifpNydO8o5b16v+FFTpohEWbrjsK9SVmuTGVRMqiZ+J+M1CCPrYXpDQuBToKFVA6
+	 nk7ejj1sbwSJN0bYucwFNefTgnSg9dZvrGoCUGiHQvoO+yKjlDDWl0qCckVf6g1o8c
+	 BUonxBVDtpSuIgl4hZSxTGC3ix1NB0XeMrYdoaP8ZTXy+6OD/d4/gMkDI3Sd9Q+B3a
+	 odYCtpau3oRWg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE335FED3D1;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1DB6FED3D2;
 	Fri, 24 Apr 2026 14:20:09 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Subject: [PATCH v5 0/8] Add VIM4 MCU/FAN support
-Date: Fri, 24 Apr 2026 16:17:31 +0200
-Message-Id: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
+Date: Fri, 24 Apr 2026 16:17:33 +0200
+Subject: [PATCH v5 2/8] dt-bindings: i2c: amlogic: Add compatible for T7
+ SOC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,17 +40,10 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WS3W7bMAyFXyXw9RToX3YwDH2PYRekSDXabCezn
- aBFkXcf4+Yi6VbskhLOd8hDvjUzT5XnZrd5ayY+17keRinCl02T9zA+s6okdWO1jdprq4BIDfm
- kCozq1x4IZnWug1eQTUYOweUOG1EfJy71ZSV///FeT/z7JAbL+2ODMLPKh2Goy24z8suiVhNn0
- 1U/8DzDar/bfL19RN3Z6MPW6CCFUUb9rDBu96cnGPrDc81bwX1b3WHJ+1UbAwRKsRRC6cwBoHN
- tQIwho7ZJa5+d5sSPKuuSjV2rTWsjkQNKBU1k9JQokmfAoL1N7aMqJO5Qt9DFFphK8I4caQoxF
- 5PBE1qNFkxs7tMVs9t0a7aYB+9SsNdkhFyxZ8UyNfiSuuRgd7aPppicLoG9RTbUdmQ6x9GBMIP
- vQiYsNidK+E9Tp5VsSdXxDH0ldZwOR56WV4WySk+dcyWZm+PfWrNqJXq1JDWe+l5NPLOsEaNuG
- UtH4Hdn01zXv6/zcphe1zuTp+v+/3tSZ6O0wIyV3CEn1E/SJPfbMq1IaesO4z7HWMEkOZmI1nr
- XwQeMu8OY9DnGCQYipBKSRmPwA8bfYaz5HOMF430yxoNti6U7zOVy+QPGXp2IkQMAAA==
-X-Change-ID: 20260402-add-mcu-fan-khadas-vim4-ac1cbe553c9b
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260424-add-mcu-fan-khadas-vim4-v5-2-afcfa7157b23@aliel.fr>
+References: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
+In-Reply-To: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
 To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
@@ -63,16 +57,15 @@ To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>,
 Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4844;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1268;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=tjPcTbHATZZVk2EWmuWBPpmcu6B3OW4hKOS1rdd7OQ4=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+br6vdvC7yMozQOCZkcCvBfyNhQULs4oGzCUdvSGYbCr
- zbte5jWUcrCIMbFICumyNI/1/LEu8tHz3zdo54CM4eVCWQIAxenAExkiQPD/7qkGapKioK/J368
- r37r2Z6GzlnJTz3Oxss8U6g42HC05jnD/4hze/Py951zTNjMcXPRX2ZuxaMHPS6e3/Ng0mbF/50
- T+XkB
+ bh=dSGVBP6Kwid380fHwj/yvIcbmVkBngDKwALA0QzKSyw=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brGoGdSlG7WFi69z5L9pkep8JdEiHp4Ho1okKi5fDl3
+ m2WcyZ0lLIwiHExyIopsvTPtTzx7vLRM1/3qKfAzGFlAhnCwMUpABNxE2Rk2GG9cHn0OlmBB00X
+ f82SdH7TJMGpqvn1+P0fyZrzDm37L8/w3zNy55HJZtU799/d8XiFpIllbn9Zw5VzZRdVTudKcXt
+ 7MQEA
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -80,98 +73,42 @@ X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
 X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 Reply-To: linux-kernel-dev@aliel.fr
 
-The Khadas VIM4 board features a different MCU variant compared to
-previous VIM boards.
-While it shares the same I2C-based communication model,
-it differs in some ways:
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-  - A distinct register map with its own volatile/writeable register set
-  - A fan control with 0–100 levels instead of the 0–3 levels previously
-  - A fan power supply gated through a regulator
+Add the T7 SOC compatible which fallback to AXG compatible.
 
-This series adds support for this new variant by:
-
-  1. Refactoring the khadas-mcu MFD driver to use per-variant data
-     structures (regmap config, cells, fan platform data),
-     and adding the khadas,vim4-mcu compatible string.
-
-  2. Extending the fan thermal driver to retrieve the fan register
-     and maximum level from platform_data,
-     and to optionally manage a power regulator for the fan supply.
-
-  3. Adding the corresponding DTS node for the VIM4, wiring the MCU to
-     the I2C AO_A bus and exposing it as a thermal cooling device.
-
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
-Changes in v5:
-- PATCH 5: Replace devm_regulator_get_optional() with devm_regulator_get()
-           to simplify error handling and remove NULL checks, also
-           ordering as reverse christmas according to Neil's feedback.
-- Link to v4: https://lore.kernel.org/r/20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr
+ .../devicetree/bindings/i2c/amlogic,meson6-i2c.yaml         | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-Changes in v4:
-- PATCH 1: limit fan-supply property by compatible according to Conor's feedback.
-- Link to v3: https://lore.kernel.org/r/20260417-add-mcu-fan-khadas-vim4-v3-0-a6a7f570b11b@aliel.fr
+diff --git a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
+index c4cc8af182807..7b59b60b62e5b 100644
+--- a/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
++++ b/Documentation/devicetree/bindings/i2c/amlogic,meson6-i2c.yaml
+@@ -16,10 +16,15 @@ allOf:
+ 
+ properties:
+   compatible:
+-    enum:
+-      - amlogic,meson6-i2c # Meson6, Meson8 and compatible SoCs
+-      - amlogic,meson-gxbb-i2c # GXBB and compatible SoCs
+-      - amlogic,meson-axg-i2c # AXG and compatible SoCs
++    oneOf:
++      - items:
++          - enum:
++              - amlogic,t7-i2c
++          - const: amlogic,meson-axg-i2c
++      - enum:
++          - amlogic,meson6-i2c # Meson6, Meson8 and compatible SoCs
++          - amlogic,meson-gxbb-i2c # GXBB and compatible SoCs
++          - amlogic,meson-axg-i2c # AXG and compatible SoCs
+ 
+   reg:
+     maxItems: 1
 
-Changes in v3:
-- PATCH 1: adding comment on vim4 compatible saying it is not discoverable,
-           thanks to Rob's and Neil's feedback.
-- Link to v2: https://lore.kernel.org/r/20260403-add-mcu-fan-khadas-vim4-v2-0-70536b22439a@aliel.fr
-
-Changes in v2:
-- PATCH 5: Add regulator_disable on suspend thanks to Neil's feedback.
-- Link to v1: https://lore.kernel.org/r/20260402-add-mcu-fan-khadas-vim4-v1-0-2b12eb4ac7b0@aliel.fr
-
----
-Ronald Claveau (8):
-      dt-bindings: mfd: khadas: Add new compatible for Khadas VIM4 MCU
-      dt-bindings: i2c: amlogic: Add compatible for T7 SOC
-      mfd: khadas-mcu: Add per-variant configuration infrastructure and VIM4 support
-      mfd: khadas-mcu: Add support for VIM4 MCU variant
-      thermal: khadas-mcu-fan: Add fan config from platform data Add regulator support
-      arm64: dts: amlogic: t7: Add i2c pinctrl node
-      arm64: dts: amlogic: t7: Add i2c controller node
-      arm64: dts: amlogic: t7: khadas-vim4: Add i2c MCU fan node
-
- .../bindings/i2c/amlogic,meson6-i2c.yaml           |  13 ++-
- .../devicetree/bindings/mfd/khadas,mcu.yaml        |  18 ++++
- .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  |  13 +++
- arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi        |  20 ++++
- drivers/mfd/khadas-mcu.c                           | 106 ++++++++++++++++++---
- drivers/thermal/khadas_mcu_fan.c                   |  37 +++++--
- include/linux/mfd/khadas-mcu.h                     |  39 +++++++-
- 7 files changed, 222 insertions(+), 24 deletions(-)
----
-base-commit: f7b64ed948718290209074a50bb0df17e5944873
-change-id: 20260402-add-mcu-fan-khadas-vim4-ac1cbe553c9b
-prerequisite-message-id: <20260326092645.1053261-1-jian.hu@amlogic.com>
-prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
-prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
-prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
-prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
-prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
-prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
-prerequisite-change-id: 20260326-add-bcm43752-compatible-e264a4f7973a:v2
-prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
-prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
-prerequisite-change-id: 20260330-fix-invalid-property-bbe54d933f71:v2
-prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
-prerequisite-change-id: 20260331-fix-aml-t7-null-reset-2b608ebf9da4:v1
-prerequisite-patch-id: 5b5de77af11747ce964404fb827d2ee2bff47ea5
-prerequisite-patch-id: 1e37fc75fed1e533adee0f3e7e6ead1f8ff3c55c
-prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
-prerequisite-patch-id: 2daf583fb5e7449a02bd217d8aca330171b598aa
-prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
-prerequisite-patch-id: d1ddf9b7710e91f8062de83bd7ba55afb2c4c112
-prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
-prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
-prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
-prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
-prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
-
-Best regards,
 -- 
-Ronald Claveau <linux-kernel-dev@aliel.fr>
+2.49.0
 
 
