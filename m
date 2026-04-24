@@ -1,212 +1,249 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D63318DB35;
-	Fri, 24 Apr 2026 18:17:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6EBB3F7A9C
+	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 18:58:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.50
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777054627; cv=fail; b=u/eVRMc2Ao7dlU9jmFWjKEBUIMvgGAshHYZ3f97dNZer3ebScd3C/zdrm6ClLh7JQnmAbUkyQtM7o0tt7CrjarY17qaTGQT10htMs0ftFfPkj0FHM+B9/9aafAEwK1bnE70M+bSR1KatW/AKM0KjcJQIUC0qSJw6hck3a3BMMVk=
+	t=1777057128; cv=pass; b=k4n6NWPZhWjqSCL/nFOe5/J0N/oZcqXWZ3BPL0Z20h0sRNX8IaKdNUHeZpa1B7oSoCA2WsrkdivVTP+Ouu6rGoaimY+x/yyJZgPzZNV5SxL8CYKjxZDtUokuKDx30vL7/a+dDHMBL543Zis3d78qgiJIVs3qat5SBF9coeQBgTY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777054627; c=relaxed/simple;
-	bh=Paw196VP3ZYW594UxqymhgEtre47kn/v2H88OhqadA8=;
-	h=References:From:To:Cc:Subject:In-reply-to:Date:Message-ID:
-	 Content-Type:MIME-Version; b=PTlQ6U77f+cMarGLT+fBey+oWADaUlUnaDaKZ3ItSb0HireplWWcQVzdzJ6Rc1qZou1jYGB5L+KLYZ2cHi6riTVSs14u/0q7ANaahTdOsUcYq+WMFsBEMQfDyA6QAgL/0/mQckeibxu4utOCCGcexSa68TZr+oAo2wg58JG77ko=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=ozxHckou; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=FwAeb5lt; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1777057128; c=relaxed/simple;
+	bh=k6t4eZkeokPoyA8oRZ55oWxWJC7v0XmU5akNG3U8o98=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KVRit6ly4kqBGa0lbqsImY1LF4/C38LPIDdwfaWyIyyEvnhDsjkPqbahq71V0MNXpTll2z1jZSwVbApkl/fn4cZJY58/3K35n49F28ZjQjQn1pQq49/VGveCyu/jIG6951VG7jjVusB/ckUHiYULQH3D8E1U3VxfQwPXgkUyON4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iCo859/T; arc=pass smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ozxHckou";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="FwAeb5lt"
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63O6x0Ng3560474;
-	Fri, 24 Apr 2026 18:11:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2025-04-25; bh=oJ5tqAIU6eAz/UD4HG
-	OOyobd/7UFXtNfn5YwQmJTYJI=; b=ozxHckouqOE3vPDso5hYm0zhmoAJX3YYuv
-	CtsA4ypks25uY5OOR+SiWWqe8ioXNlbQKLDjk9fAznRmdZgtyeQ/E6j6E8Mh5ZCs
-	pa18hS2zkqg5rbosHFKcmP74T+ii3lTgunhQkqXPqDFvEteKyRBRT7IqeqmjY3xN
-	FmZeZ4F5X61SSYxllLnevL/VzNze49pigo+tIoG/gKH5m94PArWLUk+/sjNmgA1u
-	Sb5ivVSWAXZw7uslbwuGiNBf3+meSEAbF0QNzmhomUMmsWlx3inUjgvHnxnA8pQu
-	FgZ8uWwSLAJt5ZG7h90GHeriruX15AnCy6wC3WEz/RVRhyilj9uQ==
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4dpenmx4nb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Apr 2026 18:11:27 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 63OIBKg7002038;
-	Fri, 24 Apr 2026 18:11:27 GMT
-Received: from ch4pr04cu002.outbound.protection.outlook.com (mail-northcentralusazon11013052.outbound.protection.outlook.com [40.107.201.52])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4dpjjhkqff-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Apr 2026 18:11:27 +0000 (GMT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=D9Ni4iA+ibvmucaHZW7sLIXt9dchbaOwekou0fRvwr9+DQUXrtLBlYOaGCTh4wKA6RDIU5LXRW0kOdOJiCxHYGpUjmOGi45/caWDBm7YmHJ/sTjlyprrKn54qgzW1A83v/PTDr/bz6h7mO6DZuPxl/ZkNP2Gbx7Z1+IE5JFxGEToKwBv8WCUTO24qFBVP2tqvogeGbGwG3vkAeqxjubQ4TpfHSM0DDgXM8NVQMjgS0xL9WULtvLmQFDTDfatJysk4B35TlAtgOIOGYEqiyQ0JYN7KPHvGH2EWh2gR2Vc9aV5rvekoMx98KCe87kFtD4tL6Bd9R04T0jnKsaKErIFAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oJ5tqAIU6eAz/UD4HGOOyobd/7UFXtNfn5YwQmJTYJI=;
- b=oATjT0CiTxS/NnqE2n3THKDirOfqzOYYMUa+JXs1shernB0mvskBd5BmBII6QbVtdb5l80OuOPXwlOPAkGI9r3Y1KyHrinem4tlOdeKLxHHmG/eAkLhHJ5RgRVSxOjF/DF7muXd4u1D6K6eIwPfES4bOlSLIq3pP4mlgx0QdyiOOukcf2ikRjAuanlP60tAs4kzDYk3NMOa14eIr620xqx//FxCsfZt+vJyNLG+h3iZyKfSLg+rjEBGhnyTKOLM/wpnmWPoIxKsKxqVjPYOO2yywZL/wqzq5HX6GQuihKX5aJciRSc02Cd02dhsPeCIyU7oZ6VvXWViTplXT0btU/w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iCo859/T"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-ba6b39871a3so967726866b.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 11:58:45 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777057124; cv=none;
+        d=google.com; s=arc-20240605;
+        b=A/SBSXzIHQoaE0WiFiTcwXuBfyCNB5hdngZgH/r+iCeweb9aNFreKAUymK12DaoAgq
+         wlgwIBmF4lsbsu6d3v1l73NQrJk89nqakRubWbxCGF3zT2Nyfzi/q5igH2gN9aJu6u6D
+         ctG1YeMUOz16njoNE90NIXazBEthuNEBQUpKP8l4rxGpqK7fA5ZOupa1iORFMunPKiJM
+         Bhk7qbtMuIq5A6lYM+CbxvkG5oMcALqb+ii4Foxgm6JGCOhAq+D/ba/u6gPishO6uaPH
+         xtiXDGCyEI66nbI1pvLYHSeo/Rf775WHgauk46bhdL1fyFQ3dNwPJ0cA5L1+4D1ppcHP
+         J9aA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=k6t4eZkeokPoyA8oRZ55oWxWJC7v0XmU5akNG3U8o98=;
+        fh=DZXvdhEueZ+uQ5kTaUcICOR7sPS4dJAWGy+wet3QVm4=;
+        b=LObxOQFKdpDFRqH8mBE0cVm0rzLMwlEqXoieBK7HYO1wDQSafGSPPXPjHbis2r6JYy
+         zEzPhreXp4gFBao51LAVArcYZCXjS1xG2KVXrLddaBCyy+kVj4SflFTbgdxtMd3Azz1Y
+         x8YvArJoyhXKy7H/36qwyWg1LRwtkd9hqGaU5VqEJvzmhjqn8jsD6/GgfDGpAwwkoVPg
+         nHK4A70iM6tsMOCIkZ7fw0YD/6FNU4FxgAuRJku0f6Ap0/MK/gR3df+lEwbuRwxoGes1
+         JKiaU9tj+9+0LHAQebsYRV/UVS1jb1N6lsdcrMqXuVeLX+mIJeJ6n2mwEZWJDlW54O12
+         WGMw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oJ5tqAIU6eAz/UD4HGOOyobd/7UFXtNfn5YwQmJTYJI=;
- b=FwAeb5ltQGFTtIIRXLvdPSNVY8oBEWZx4VIv4HTtx4VSyaYT8vRRFQU1iHrm4Q9nNAvViH0WvlIvY8WF5H1HKO+9EmOdnQp2w0UGrkQi4pRbs5reusglP6vUcdM75o5mJ3mo615m8W/NEDaZOtxq+u9fgwbv9GyUv7hvzaQXg2A=
-Received: from CO6PR10MB5409.namprd10.prod.outlook.com (2603:10b6:5:357::14)
- by IA0PR10MB6913.namprd10.prod.outlook.com (2603:10b6:208:433::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.21; Fri, 24 Apr
- 2026 18:10:49 +0000
-Received: from CO6PR10MB5409.namprd10.prod.outlook.com
- ([fe80::3c92:21f3:96a:b574]) by CO6PR10MB5409.namprd10.prod.outlook.com
- ([fe80::3c92:21f3:96a:b574%6]) with mapi id 15.20.9846.021; Fri, 24 Apr 2026
- 18:10:47 +0000
-References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
- <20260424072845.5eba94c2d732204f143b8629@linux-foundation.org>
-User-agent: mu4e 1.4.10; emacs 27.2
-From: Ankur Arora <ankur.a.arora@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ankur Arora <ankur.a.arora@oracle.com>, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, bpf@vger.kernel.org, arnd@arndb.de,
-        catalin.marinas@arm.com, will@kernel.org, peterz@infradead.org,
-        mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org,
-        ast@kernel.org, rafael@kernel.org, daniel.lezcano@linaro.org,
-        memxor@gmail.com, zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
-        rdunlap@infradead.org, david.laight.linux@gmail.com,
-        joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
-        konrad.wilk@oracle.com, ashok.bhat@arm.com
-Subject: Re: [PATCH v11 00/14] barrier: Add
- smp_cond_load_{relaxed,acquire}_timeout()
-In-reply-to: <20260424072845.5eba94c2d732204f143b8629@linux-foundation.org>
-Date: Fri, 24 Apr 2026 11:10:45 -0700
-Message-ID: <877bpwns9m.fsf@oracle.com>
-Content-Type: text/plain
-X-ClientProxiedBy: YT4PR01CA0064.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:111::6) To CO6PR10MB5409.namprd10.prod.outlook.com
- (2603:10b6:5:357::14)
+        d=gmail.com; s=20251104; t=1777057124; x=1777661924; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=k6t4eZkeokPoyA8oRZ55oWxWJC7v0XmU5akNG3U8o98=;
+        b=iCo859/T5ds85sLELgY5369MrC+xE6q6KwtoDJvqmpHWp5krA9ok9kra+L/VVWkTd+
+         tbmonnQpA6mB9dZUUMnfTM7AzawvaMA25e7jhxrcpojIonHim5HjaTxBIW05fcHh68KL
+         GWj1tr/5RvjCdpvKOr5R1ABkgCUjaKvszC0pmTvVd2UVTeVpCVdOUq5d1Je+x3S8z5sj
+         Gf81N9+UzKQjdjhi9gRLm3pVm5N6SxeX3zhDVdH06uFfryy59F68weDZ9zsLrQJQr97S
+         JtiWjiik1nuvJ3efIHegf4ifZUB2lpgzywohR2ymN8gVt6Vmtj46sCPSJk2/GxIinbfZ
+         tP5w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777057124; x=1777661924;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=k6t4eZkeokPoyA8oRZ55oWxWJC7v0XmU5akNG3U8o98=;
+        b=s35qytth2IUVNvbNZK8G62h48AMD7Y/iN2/chD+OyGxTn0ih4gc0mhvUgRmAnvf1ZD
+         c/zoVvkADPBatkdBvSXy873oGMkPEwzsQVOyHv0bJeLGdyE9/EgMf9okG5UXZQloDR0A
+         ckyUfw5ZPrbMRgsvr9XZxhuHtak2LjBwv5wVEeTBTL7RV015laED6Hc4HB/UIfTlMUkE
+         gss910YFAlh3kNacSTIK0gUWrXWLqorSR/5RzHj81s5uxPjNKZYUu26jptxrTI+vVKQJ
+         ug09fr6afV6U8FkOV+JuQF4P2krDAL0NUNeSAZ9ShIhIpEBNBahUQQ/Eq9xyEzy7fRyO
+         /nOw==
+X-Forwarded-Encrypted: i=1; AFNElJ9F2eaXR/QjBAUO5t2MocqkSwwqDJVgO17ll+/hu9HdGxLyxArZNQpV82l1aN3sxMqhXykTKRCE8Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YydQloGgkuTKAt/cZBAnV0gQ9aeYSd5Jn7yRC/fThYqytiyvN6L
+	mZh1sV2fFBd12s3jLZfX3GvzS5MotD87O2jzPP29ArryR1vCuQE032YHnftUV/ZufwSQ3iSk/Pn
+	XJuQyA78tGR/QsDSCUhxMMYMp0kEBpy8=
+X-Gm-Gg: AeBDieuujg0TTUUUAffQhsrEVCYo7yWepTw2dnhx4U60jrm3Xy6PBz7B6YBsxt/gslE
+	IpsoUZXJV3aVDFuTvxjeVPbnqzuGb1ZaRueb4Xtl5QJ2hNWFCK7VBTi+khYY56JxKdZ5qceTbrh
+	dPCJulzHAqvUZ6iFrI7R1tHx3/viLmRuDabYXz2TD/eT7Z8Nxs9Sr/I7b15oniAv4RRw1Hn5J+9
+	4o6JsczEeZSFNCTL3m/TYllPxQNss9T9XIXLmMWT1PmimsuXMzN3Spfgoq9lV+tZ7rnOoLK7Qxm
+	hcFexD2aYwk5ngxysuF87SuVuZ/ZBTyZAahUcMworb1r+5laRBs=
+X-Received: by 2002:a17:907:7209:b0:baa:67b9:57a0 with SMTP id
+ a640c23a62f3a-baa67b95a5fmr713004866b.3.1777057123475; Fri, 24 Apr 2026
+ 11:58:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO6PR10MB5409:EE_|IA0PR10MB6913:EE_
-X-MS-Office365-Filtering-Correlation-Id: bbcc9cf0-00fb-46e5-6ad7-08dea22ccf6d
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|18002099003|56012099003|22082099003|11006099003;
-X-Microsoft-Antispam-Message-Info:
-	KkJ+uMxgsZxa8koqOphTQOOcCh/r4AN6ayXx7Y+/wjGuxmbtLwDCXEkLAdtNEnqBkaoc8yjWRZP+HixqU/BhWKdXQpQ/tZcFg05frT/o3ubYzPC7jstSeaiRfuD98i4Ro2j9nDRB1MlR6GtBghZhlmoQgYzaPwl+EPgxzTl908d7ijntb/lsJctVGGOflNqSC8Q4f6QnN6ayJ/+To3KwOaIaPKEz9ynenAxK+CRiLSAsL/7VQ271AgBZvi+7nKj3eNolk8UhJ8TkQBcmP+Wu6tB8PLRuEJeBKhJDFS8SZDI3i6fIX7qsIJOBRriIgqHKR4UmgIWSwWVXWoApC/o1Nx7zZB/QvEnlA/VQvJ8+2FxRgsqhGxqMAt2vAIJjarwG83RnGBxZh7ZH5vLL469unrNWIQJ7L0+SAAVe7iF6AUL6ZUk2XnIR8Qahl+0VaAGzO22K1V9VHn7MCmCGlinuSicUqYRp16CEVQy0VzlHyzNTYuh0KbaJLkpGIEDsb5WUqxWlzGemXn3K7UgfAvXjixczgBJKAESOtZwLEE5mvENJogssP9uemCkIJoN32FVBvAkiJjLIzrauwK2fH0DHJBXelggYtpgWCCIwYjGSmWkNUyNdPLPJD9+ToWFvs3Y0CdrdMMFM+RzkRV4ZLyhrdDUjlNAM7v8kDekYeNnbRstjKALDReThyGORSK1Kc3Iy
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO6PR10MB5409.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(18002099003)(56012099003)(22082099003)(11006099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?MBBOpG70ppIaIyBC4YED8WfX2avb0+DGmKFSWzJXWXvqBS2OU54xBCJqo7n2?=
- =?us-ascii?Q?MgAUlDz/mY+9jb4f/dPwlZvZ1d8EmbWeSYwEtf661i1Wbcx0woJX9qniJn/q?=
- =?us-ascii?Q?3cVI9mJaXZiqbqoc/Mb+5VCjZ01Vgp//0mwfnfZhvZTcToZaNCw/xfYL88lw?=
- =?us-ascii?Q?0VMvtEQ4x1wjUH3CDQViCCqHJP5s+7zUzl9exMP32UuZ4BfmpQL+EpJf9yIb?=
- =?us-ascii?Q?8jWSPiwuz25xJZy6QRjwb3CpgFZDQb+knpTpNoW91X7/ZEQqjtUsvpzbKfFk?=
- =?us-ascii?Q?+xp70ikCBgmbsbp2rf1wGj2/0hYaK+xWDAKDjWz5UPbkJsGBhFK59/6//Tnc?=
- =?us-ascii?Q?WEbp46CXtsuB/pKZUJu8IT6QgD3MmDwh+FWP/7TlJe50JGho7LAoZHXGBFfP?=
- =?us-ascii?Q?fgFatlk0xuxq+xSa7B+C8Fhp4tVhhfQvvT7U3zHkKbQvpOXHWyR5nO/OktJN?=
- =?us-ascii?Q?sR12nEgQ1Z2LtvdfWoLyedCPZMvXwZRvCYrtfGiWHSQVfX8MF2NmW9G8ElH3?=
- =?us-ascii?Q?81JfkDDHJsN1XjAQCbsoR9+AWOvEqj8/S1ZvS5kctHmzAarCGRJFQGbbG3KH?=
- =?us-ascii?Q?eYSOyhPZA9If5vqgEXFLcZ2Oprpiumi2p78KRwdxi0EJ+QVaxB1E9W+a1R/x?=
- =?us-ascii?Q?tMzp7e/NOmCQRoovVunAVL5QpU3u8l26Z5vhRwVs9LHWdfTx69FOP2KIu0Mt?=
- =?us-ascii?Q?vfU6Wfwsbtv4/Lejmkui2uxYagBxR5umtB4LEJOpjpL9CmdYgxBgJfbQA+eX?=
- =?us-ascii?Q?XTydeR/uL4GeKfyE6Se7qEB+nBwhHqmLYGI/jRv7t4EVC6Q545CF5ZRkEkqj?=
- =?us-ascii?Q?wwSqlgtm00mtRtM0SO8pZJaA7v28RMyOSnaEo7bO6aXzIe+Nr+R1zVY8jsOr?=
- =?us-ascii?Q?pIpohK30s7vu0LIQdoFEno7Ong7Smetq8AvNuvM0zfLk1PKgOBQx6glp/hJX?=
- =?us-ascii?Q?oG/f4IAP3paOmLOncpHruRVLY981LyaNjdEYKJFzNQZlKrEZhgY/NHWHEVZT?=
- =?us-ascii?Q?D4T73YeeHD3qkkCxmjKCQ1h2FSwLqfm+CGIw5H3j3gcM0Xy6r8BYi9tkbYjE?=
- =?us-ascii?Q?DvCxZsZxGeg4iWB1mU7xWuPsUgJTRiyXOgP38Y+yg2YxE79Q90DiQkXapSPN?=
- =?us-ascii?Q?e9vEFJWnzPn06Xw2EX2uNQs6xZra50lOfgFIqN4pViNnqMGMdur9zPRWEeyf?=
- =?us-ascii?Q?pOQCOz/srXRIlrqWND1MyxHliQa80SPo24dGlj9Jz2cwebD31g7N03BgPM6i?=
- =?us-ascii?Q?2lJC52LM9hsVFqJMdRh0GCPByfK+c7V22haZb7R1FmzBv80MTJU1gIERr4mk?=
- =?us-ascii?Q?8L5KVMzmThMmSVYTI1H3wgLQuONDPsRihc1XLY7fPA8lhtfdajBESI2ijKUK?=
- =?us-ascii?Q?EvMJD4Yiu2Z46Y71D4IJnKe+1cJtf7/Izc9MEyc3GW0fD+SnA7dxRmIUyjUQ?=
- =?us-ascii?Q?S2PcSDlncr1PRcTmIWpSr6ileQosGeAKkvav0PkO/Alo5Shh5lQIybZmwRCC?=
- =?us-ascii?Q?YPyKWQdzBloM1qGE6JQWal+JYOX1z6+oaugXa8DubvxdH6XAKV/XsUPED5yp?=
- =?us-ascii?Q?xrGR1SdOupo21oJn1ZK12qeS7ON2eeW8yH+BhfutB8xsmC8q1oMMVShah9YL?=
- =?us-ascii?Q?hAAGcNk2lvKFeVa9Z7YM0QAYHify6Om+jQdgmUpkZh11ltKLt2NdG/krqOuT?=
- =?us-ascii?Q?FmWKdLVGueAsxKd2ktwvSs5yprfoQGqLeMNJf2PZ9Q+pro1urd5e8WSsmcjZ?=
- =?us-ascii?Q?Q6wbKuwgupirW/hNXG0w6leS6VlkREI=3D?=
-X-Exchange-RoutingPolicyChecked:
-	EI4QTcopfvNgwuyftv2ArEUPXIt6qTJQBSZY920GmjDXRapyioshrAD9r6cpwolEau3DxKgxxJVxDuYAPVKmXOb5Ov/MVhH7YlKgSDrcqDMVzgR4By1TQW7Wg0fgfPsVhHLDiQHWd3SgHKk8iaRsIWP5Sf/FVm2DQ/+9h+weQLCsrN6y3Hyw/i24FgENEgNfQvwnw+iaLrsgkZOMEHkpTtZvHhe5uS++KotHAL+fzjsBxL0BlKUghR8cTGK2951XF7jQH6ZdIc4bruSSNVBDZ5C37S5pJPdcvYwIs25h1aV+UA+tZ/L1Jtms3xKayBkm4Tq1v80Ny/FScBGw4oy7Cw==
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	xCQ6E81LNmmR4Lsp5iWj99EAJMAaWW6Z5/QF2IZe+xWa+NiENYNI3MD/dwtmItQ4Whma3Er4DFGh+udLTrcc9qGwydXnZwAagIaOPalnm76vKmsiNjiDxCs9jQOTMn1vLhOl3vf7bM4ld6X2jgn1VhMmIymhiP+Y5GrhhoYs99eRuplGjjUUcnivLvgDPLDMyeNIYJpRkNlondXb1Ot/eFMIeyvG5lQ9Zpza7q6wiV8JU82Oy2kE7z5juy1UxrxZGr85YW0oLnoaWxT6ycZMc2QR2upGNaMEdu1zL3ed/56q0+VaBniJ7FaZU4y9eqFAZ7U584Pr8UP+IGanR0j5K0ad3ftEIuV8BZf4XjEiHNqlHgDJhTUVC7HNFnUq2zXk1i+jcMES6NXUUd5L1TgrOZbWVcTJZhFoubqKL1r6olgiRzeAKNfZqTE0yqFTM29KXO/IXF2MyJDwyL7pPN3JqdLK8r/tRM92m+CIQhKQQS+INEWBCMbsjcpRzO4iNJpbg3csFUFJytp8z5WzWQo2sFHQ9rCpAbX6SqJTJA7duifHMmWCjBWJfnO2xKjfaKIPXWtvc84AnmR/BaPderTYTQniqsQZM8BCZpXYpDAQmio=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bbcc9cf0-00fb-46e5-6ad7-08dea22ccf6d
-X-MS-Exchange-CrossTenant-AuthSource: CO6PR10MB5409.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Apr 2026 18:10:47.8445
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: RYY1tvrr4y9J3cTN7oUYIMLXKz42Pix/Z6oHVluBE08is7C5prXsvSv9/its3nAE1OrqQRiic+4ncBjdBYtYwxgDqld3CMMAhsKyGQYEINk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6913
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-24_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
- mlxscore=0 suspectscore=0 mlxlogscore=999 bulkscore=0 phishscore=0
- malwarescore=0 lowpriorityscore=0 spamscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.19.0-2604200000 definitions=main-2604240177
-X-Proofpoint-GUID: uypvF6rMPQjQwGS5MvTIMZBFZ8zQprjB
-X-Authority-Analysis: v=2.4 cv=Z6/c2nRA c=1 sm=1 tr=0 ts=69ebb24f cx=c_pps
- a=OOZaFjgC48PWsiFpTAqLcw==:117 a=OOZaFjgC48PWsiFpTAqLcw==:17
- a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
- a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=A5OVakUREuEA:10
- a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=jiCTI4zE5U7BLdzWsZGv:22
- a=7Gl3-_t3PgB9XO-mQDs3:22 a=c92rfblmAAAA:8 a=yPCof4ZbAAAA:8 a=Z4Rwk6OoAAAA:8
- a=cMS0faxKSLiuJPRkHcQA:9 a=GvGzcOZaWPEFPQC_NcjD:22 a=HkZW87K1Qel5hWWM3VKY:22
-X-Proofpoint-ORIG-GUID: uypvF6rMPQjQwGS5MvTIMZBFZ8zQprjB
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI0MDE3NyBTYWx0ZWRfX7IJJm8cRuaiU
- NIwb6XdSVRBHPY/zWjDPW9fWrcS7p+9GTBrhYLJjX4C1Fg4LqIOubcJauk3YRZo4b3UjM7aEoNL
- oX8oVc206yaAehVqA0p44J3yISSyXVOwkz36f2l/sNLLYQlWtcOUFJFbshkLCTzQUGDgRSYNnmp
- DSzTTp1/5+anJXQRhW1w61jy1VlTlNRmPeWJf+3egmYWnYd9YJkrdRIwm371gxSChJvG37VOdcI
- Yrfaz6RRqOmNPmo9TzkVsAaut/yX2geXZ71BSlOqRi/fva8uadYDovAWE9UlTVMUkPB2I/c+Oal
- I7a6SHOtIQy8FdBaZFdE5ZicYU/rACpUVrftWpd/ngZhLh5V2hodZl1J7OTyqGL1j+yelo7a08p
- kdpjQ9Glq5uZVz1xp6p+tFMeXFessaGgEHgIu1eaGHzltYkDyoJcrPDP8Ky+uYbmm0ZrO3dWo8n
- GLeO612m62cDVLU8z8Q==
+References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
+ <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
+ <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
+ <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
+ <CAMgjq7AGzBubCkmv7LubBjPLN1DzL472d4zUm+sGxo8ZptMgRw@mail.gmail.com> <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
+In-Reply-To: <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
+From: Kairui Song <ryncsn@gmail.com>
+Date: Sat, 25 Apr 2026 02:58:06 +0800
+X-Gm-Features: AQROBzAaIu04DPxOg3P-cwpIEdvMhxhii3pwiMT8HK0UdOYxD8nmrK7NsGSDAaE
+Message-ID: <CAMgjq7D1WXUHqAV1yuXvrUmEsE_m_+yx0mBq6teJhipx6mySbA@mail.gmail.com>
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+To: Yosry Ahmed <yosry@kernel.org>
+Cc: Nhat Pham <nphamcs@gmail.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
+	akpm@linux-foundation.org, Alistair Popple <apopple@nvidia.com>, 
+	Axel Rasmussen <axelrasmussen@google.com>, Barry Song <baohua@kernel.org>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Baoquan He <bhe@redhat.com>, 
+	Byungchul Park <byungchul@sk.com>, 
+	"open list:CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)" <cgroups@vger.kernel.org>, Chengming Zhou <chengming.zhou@linux.dev>, 
+	Chris Li <chrisl@kernel.org>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@kernel.org>, 
+	Dev Jain <dev.jain@arm.com>, Gregory Price <gourry@gourry.net>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>, Jann Horn <jannh@google.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Lance Yang <lance.yang@linux.dev>, lenb@kernel.org, 
+	linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+	linux-mm <linux-mm@kvack.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Brost <matthew.brost@intel.com>, 
+	Michal Hocko <mhocko@suse.com>, Muchun Song <muchun.song@linux.dev>, 
+	Mariano Pache <npache@redhat.com>, Pavel Machek <pavel@kernel.org>, Peter Xu <peterx@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Pedro Falcato <pfalcato@suse.de>, 
+	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
+	Roman Gushchin <roman.gushchin@linux.dev>, Mike Rapoport <rppt@kernel.org>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Suren Baghdasaryan <surenb@google.com>, tglx@kernel.org, 
+	Vlastimil Babka <vbabka@suse.cz>, Wei Xu <weixugc@google.com>, 
+	"Huang, Ying" <ying.huang@linux.alibaba.com>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
+	Yuanchu Xie <yuanchu@google.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Zi Yan <ziy@nvidia.com>, 
+	Meta kernel team <kernel-team@meta.com>, Rik van Riel <riel@surriel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-
-Andrew Morton <akpm@linux-foundation.org> writes:
-
-> On Wed,  8 Apr 2026 17:55:24 +0530 Ankur Arora <ankur.a.arora@oracle.com> wrote:
+On Sat, Apr 25, 2026 at 2:08=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wrot=
+e:
 >
->> The core kernel often uses smp_cond_load_{relaxed,acquire}() to spin
->> on condition variables with architectural primitives used to avoid
->> hammering the relevant cachelines.
->>
->> ...
->>
->> Accordingly add two interfaces (with their generic and arm64 specific
->> implementations):
->>
->>    smp_cond_load_relaxed_timeout(ptr, cond_expr, time_expr, timeout)
->>    smp_cond_load_acquire_timeout(ptr, cond_expr, time_expr, timeout)
->>
->> Also add tif_need_resched_relaxed_wait() which wraps the polling
->> pattern and its scheduler specific details in poll_idle().
->> In addition add atomic_cond_read_*_timeout(),
->> atomic64_cond_read_*_timeout(), and atomic_long wrappers.
+> On Thu, Apr 23, 2026 at 9:16=E2=80=AFPM Kairui Song <ryncsn@gmail.com> wr=
+ote:
+> >
+> > Yosry Ahmed <yosry@kernel.org> =E4=BA=8E 2026=E5=B9=B44=E6=9C=8824=E6=
+=97=A5=E5=91=A8=E4=BA=94 04:48=E5=86=99=E9=81=93=EF=BC=9A
+> > > > Using a swapfile does have its benefits, though. For example, the
+> > > > virtual layer could act as an ordinary tier following YoungJun's
+> > > > design:
+> > > > https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.p=
+ark@lge.com/
+> > >
+> > > Hmm I didn't look too closely at this but I don't understand how
+> > > making it a swapfile helps with tiering? If anything, I think it make=
+s
+> > > tiering more difficult. For tiering to work, we need an
+> > > abstraction/redirection layer, such that we don't need to update the
+> > > page tables (or shmem pagecache) if we demote/promote pages. That is
+> > > exactly the use case for a virtual swap layer. The page tables point
+> > > at a virtual swap ID and the backend could change transparently (e.g.
+> > > for zswap writeback, or tiering).
+> > >
+> > > If we make the virtual layer a swapfile, how do we demote/promote
+> > > without updating page tables?
+> > >
+> > > IOW, I think the whole reason we want a virtual layer is to separate
+> > > the backends, which would facilitate tiering. If the virtual layer is
+> > > itself a swapfile, wouldn't it become one of the tiers?
+> >
+> > That's exactly what I hoped, virtual layer being part of the tier.
+> > Tier could be set up per task / cgroup. So is the virtual tier.
 >
-> AI review has been busy:
-> 	https://sashiko.dev/#/patchset/20260408122538.3610871-1-ankur.a.arora@oracle.com
+> Just to clarify. I don't think virtual swap should be one of the
+> tiers. I think it should be the mechanism through which we implement
+> tiering (see above). I am not sure if that's what you meant.
 
-Quite busy. Thanks for flagging them.
+YoungJun's swap tier have been working pretty well without the virtual part=
+:
+https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.park@lge.=
+com/
 
-From a quick look most seemed largely benign but let me go through them
-in more detail.
+> >
+> > A standalone implementation of the virtual layer is more heavy than
+> > being a swapfile. Actually I think at this point, it is the word
+> > "swapfile" is misleading now. We may rename it to "swap mapping" or
+> > something. A swap mapping could be physical or virtual. Virtual
+> > mapping can realloc from physical ones (redirect), and swapoff of
+> > physical ones just read its data into virtual mapping's swap cache.
+>
+> I don't understand this part, please clarify. In my mind, all
+> references to swap entries from outside backend code should refer to a
+> virtual swap ID, which could be pointing to physical swap or zswap or
+> something else.
 
---
-ankur
+For example just reserve a type (e.g. type 0) as the virtual type?
+(type is really a bad naming though).
+
+The that swap file (or swap mapping) will be
+
+I was trying that based on this:
+https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d19815@=
+tencent.com/
+
+It seems to work and the only thing we need is actually just something
+like this one in VSS:
+https://lore.kernel.org/linux-mm/20260320192735.748051-15-nphamcs@gmail.com=
+/
+
+This part:
++ /* fall back to physical swap device */
++ if (!vswap_alloc_swap_slot(folio)) {
+
+We do a folio_realloc_swap if folio->swap have type 0.
+
+Which means, if there is no virtual device / mapping / file / space
+(I'm not sure how to name it at this point :) ), the ordinary swap
+routine is just still there untouched.
+
+If there is one, and it's being used, then, it is still the ordinary
+swap routine, just do an extra allocation (and the extra allocation
+strictly follows YoungJun's tier rule), which is same with VSS, but
+everything is reused. From a user or high level interface perspective,
+this can be designed with no difference as VSS. Just with a few
+bonuses: being per memcg / task / runtime optional, zero overhead if
+not enabled, and reusing all the infra.
+
+BTW this deferred allocation (in VSS or dynamic swap mapping, similar
+thing) is actually a bit concerning to me as well. It changes the
+common swapout routine and maybe worth reconsideration (e.g.
+activate_locked_split and mTHP stats is now ignored?), being optional
+for now also seems safer.
+
+> I *think* what you're saying is that we should make that optional, but
+> I don't see how this would work. If a page table is pointing at a swap
+> slot in a swapfile, we cannot do tiering or zswap writeback or
+> anything dynamic without updating page tables. So even if the system
+> starts off with one swapfile, we cannot assume we won't add more and
+> set up tiering (or enable zswap) after that, right?
+>
+> I guess we'll keep the swap table in the swapfile and then we'll have
+> it point to a different backend, but I really don't like this design.
+> It's unnecessarily complicated in my opinion. Page tables will either
+> refer to a virtual swap ID or a physical swap slot.
+
+Or in another word, they are all just swap entries, and the swap layer
+handles things internally.
+
+> I think we can simply have swap tables representing the virtual swap
+> space and pointing at the backend directly, whether or not we have
+> zswap or tiering set up or not. Is the overhead really that bad?
+
+Right... I mean with two layers you will likely have >16 bytes
+overhead, and double lookup. And I have been thinking about cutting
+down the memory usage to 3 bytes. And you can't make the lower /
+physical layer just a bitmap if you want a reverse mapping, and so far
+many things do require that. If we make the reverse mapping optional
+it might be more complicated than the thing we discussed.
+
+I don't think the thing I described above is that complicated reading
+all the code and solutions so far. Maybe some better abstraction can
+help?
+
+I've seen some vendors doing swap using UFFD just to cut down the
+overhead or having a highly customized backend solution for swap, so I
+was hoping the kernel part could be as minimal as possible.
