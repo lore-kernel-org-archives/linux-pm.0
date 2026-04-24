@@ -1,110 +1,73 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8214F3DC4D0;
-	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BCA23D88E1;
+	Fri, 24 Apr 2026 14:28:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777040410; cv=none; b=AbdefNGBpQdSiaCeuBKSSA8qi0/SirfwrrEuQnhC+9u6y6+qZJnEKksJti7vLMmWrWNFd4hu1XIZ+m393mov0heY98z8xknJHVTatagQ5NGX+XF2TrGMgmfOIFopnuiyZ7MuwkTNtUfsNaVGVzJCNI3X6go2dAPsSnk5qNBn4U4=
+	t=1777040927; cv=none; b=Jk+uHlDKMUR15xMO14CogOqAoxLWuyKR2hNIFzECzGwINtRPNeAlleeH3w2cBVhQkW07q5mFcoB8etxq/WSnTSrIST0tyjAJhGuiTVtQQrKItq9cEwyzPVQ0Fsl7hPNBzAgeS89CqQCNG8B4Hey98HRTkBk8Nd4utiQjs5ZuE4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777040410; c=relaxed/simple;
-	bh=LgAbB0ZXLnx/BP4AfsepnntHvttapSIZpd8aWCrBwiI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WYklBBkHyqjTGJoSLenh+hMAqIMoVkrKEWtalw9NBxayPTnuHeg9TIoj7A7xT+kh+GxKRT5Ex6b45VrT01G9O8xoN6LsIVCJGcf2ZM/Cp7RszwepNKJ68trL3p1cUAWx/h6DCWPZ3y7BKFq7wvrOyTLWpcx0znU5C7FgIOrwudY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cuMg6ojl; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777040927; c=relaxed/simple;
+	bh=JOLAjUJZxkORvwjV4KMyJPPQMlPzeGI+Xzat5mLfNAY=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=G86wwzcCjRBq/fr7GEb6AQWs1NBDiXjB8p9Pn+EXBzk1s43VNQqIjlP8bBr71KW2GlDJpKlV+zdUDVUY4u5TC2t4CAohcWth7XDsogWJyY/8Zk3Qd2Bm+26WNn2n2Pp2IU0ogHIccoBcyCL4LnFQiYZV/XgA3Su6s07zx+Jbv1A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=O/Y3cojL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cuMg6ojl"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4146FC2BCB6;
-	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777040410;
-	bh=LgAbB0ZXLnx/BP4AfsepnntHvttapSIZpd8aWCrBwiI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=cuMg6ojleRTgRYwhsS7RYsru8mjvOQoA2tKh2jDNaGxKnkCznchzq5RRgVsdNkH1w
-	 WbinnftlIG4tdGLnpzBUL7LR+XChCFVQHjjaRb7AIZ5VwFn10JZmUi1Vax6Un0//EY
-	 FYlW6iFfcusIYPWDphIIXFnhNSX6QKUzG7whI8AeUzxpdzunizeewcdI8ve+T4S9AQ
-	 4vNd5x/pFTaFUYTKFUmit8lMxTIQkH8wrpUlAh5IaVVxj4YEcy5GQOZsIakZtbTpQp
-	 qncYSl+sFaeCcZ/3V/nbj2G3+aEy2LbrIU+qe3HbAm1sEzs1KmgTVfMLt1tVALGWZJ
-	 KDkokFyuZ6hKQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3130BFED3C9;
-	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
-From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Fri, 24 Apr 2026 16:17:37 +0200
-Subject: [PATCH v5 6/8] arm64: dts: amlogic: t7: Add i2c pinctrl node
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="O/Y3cojL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C434C19425;
+	Fri, 24 Apr 2026 14:28:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1777040927;
+	bh=JOLAjUJZxkORvwjV4KMyJPPQMlPzeGI+Xzat5mLfNAY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=O/Y3cojLauCIDvWwjW8Rm82ldPv3YcF1tPNTv5blC/JP9MAXmk+S1E/ixk8QGUnSZ
+	 uNi6C8iJUYmCjyfO1nsdEVAGvuO8qVfAIFXa6DJd354zWaVct5od0w3QdENXrPAFNb
+	 ad9f0JF2uEcsiwTOBisrjCjaT8bU4mViiybAgp7U=
+Date: Fri, 24 Apr 2026 07:28:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
+ will@kernel.org, peterz@infradead.org, mark.rutland@arm.com,
+ harisokn@amazon.com, cl@gentwo.org, ast@kernel.org, rafael@kernel.org,
+ daniel.lezcano@linaro.org, memxor@gmail.com, zhenglifeng1@huawei.com,
+ xueshuai@linux.alibaba.com, rdunlap@infradead.org,
+ david.laight.linux@gmail.com, joao.m.martins@oracle.com,
+ boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, ashok.bhat@arm.com
+Subject: Re: [PATCH v11 00/14] barrier: Add
+ smp_cond_load_{relaxed,acquire}_timeout()
+Message-Id: <20260424072845.5eba94c2d732204f143b8629@linux-foundation.org>
+In-Reply-To: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
+References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260424-add-mcu-fan-khadas-vim4-v5-6-afcfa7157b23@aliel.fr>
-References: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
-In-Reply-To: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
-To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
- Beniamino Galvani <b.galvani@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>
-Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=892;
- i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=F350Js/5aqFj9YLCGASaC045elV+sRf2mbU4+Ox2uSQ=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brGlGNnz/vmnocm/Wy29yIo6KZIbpi71UZL2X+c5Mnb
- P6bs0Kvo5SFQYyLQVZMkaV/ruWJd5ePnvm6Rz0FZg4rE8gQBi5OAZiIw0mG/0GJXTYsC6c8NV54
- 9MaH2rkv1pbEq0cKBr3o8MqaLGw2vY3hf27EkdmLivTZJMLW6hXOXvfuAG+uSAD7F8MVlV/t5/b
- psgAA
-X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
- fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
-X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
- auth_id=744
-X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
-Reply-To: linux-kernel-dev@aliel.fr
 
-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+On Wed,  8 Apr 2026 17:55:24 +0530 Ankur Arora <ankur.a.arora@oracle.com> wrote:
 
-Add the T7 pinctrl used by the Khadas VIM4 for MCU communication.
+> The core kernel often uses smp_cond_load_{relaxed,acquire}() to spin
+> on condition variables with architectural primitives used to avoid
+> hammering the relevant cachelines.
+> 
+> ...
+> 
+> Accordingly add two interfaces (with their generic and arm64 specific
+> implementations):
+> 
+>    smp_cond_load_relaxed_timeout(ptr, cond_expr, time_expr, timeout)
+>    smp_cond_load_acquire_timeout(ptr, cond_expr, time_expr, timeout)
+> 
+> Also add tif_need_resched_relaxed_wait() which wraps the polling
+> pattern and its scheduler specific details in poll_idle().
+> In addition add atomic_cond_read_*_timeout(),
+> atomic64_cond_read_*_timeout(), and atomic_long wrappers.
 
-Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
-Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
----
- arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-index 7fe72c94ed623..e96fe10b251a0 100644
---- a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
-@@ -376,6 +376,16 @@ mux {
- 					};
- 				};
- 
-+				i2c0_ao_d_pins: i2c0-ao-d {
-+					mux {
-+						groups = "i2c0_ao_sck_d",
-+							 "i2c0_ao_sda_d";
-+						function = "i2c0_ao";
-+						bias-disable;
-+						drive-strength-microamp = <3000>;
-+					};
-+				};
-+
- 				pwm_a_pins: pwm-a {
- 					mux {
- 						groups = "pwm_a";
-
--- 
-2.49.0
-
-
+AI review has been busy:
+	https://sashiko.dev/#/patchset/20260408122538.3610871-1-ankur.a.arora@oracle.com
