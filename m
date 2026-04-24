@@ -1,68 +1,68 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84BD3342CA2
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:55:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 739E2359A91
+	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:55:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777024519; cv=none; b=cR4ueTqVK9QpaClXMxajdZmQ4DfMEGhwokOS0/vjDEuqdIbItFZWbudlFFp2ZXBC2Icp4IzUHOxPsSsEbfQBrFbYoEKcH+/X5We//mDWcgfCGNaXuzWZvsK9P/Kw3DiR7/mPYAGo9oRHBYes1TECTMZ7A0RG6hruhD7oee4ZI68=
+	t=1777024530; cv=none; b=Wf1KwZVPDAhTnmwqq1RM83KCpkJ0jZL1yYz4RKAzGV7JYwHqnQMBKL//dJLjn4tB3CTfxqxlKi0MLf+R/I9C7dIkAaarX1f+akkID0cQ0Dtbk/lbx2ROcRllYjF5KIiKxCXCciJyLXVx0CYJTWXRnwe5FlBYBCNRE/7zV5k8Y14=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777024519; c=relaxed/simple;
-	bh=jRMM/hN8U1NhGO9xpDfgyFzsl6yuuvYEuypvB1mVf20=;
+	s=arc-20240116; t=1777024530; c=relaxed/simple;
+	bh=gIAdKe0F+IakN1RAdeIBJqZrOyHN/ChnLknpLbjY0rg=;
 	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=ELjLeRN4M08+cVnNhxiTgDB8lOZH55qeNE1i2yRSi3tpC2vZ0QoPmlogix4VHizIFFNKU7k9mTy94rBRJmJTejk1DwMHfroPyPbtE+qszlEy49cd7CXUJXVGoWGb8Cy8GRfg0QNoO3ZgIGv5Qmu2R9XZNeULgQ9IXr/4oJD1jaE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lBI1Xh8s; arc=none smtp.client-ip=209.85.128.42
+	 In-Reply-To:Content-Type; b=fJ/2Q1eeIiMBjrpzs23bSfCUglm1bq/KuiH9rMl+SruMZBJXWtxM28Jv+sXuBHXso0noOAH94iihwLlLueJmMlissxs2YDy5IscLuiETwu7AiUAKluamWrDQyLBzw5WcoLirMxUEaxLFTppLyRkf/Mi6C4/r9ppudnEySAC3dHI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IOuLbdtm; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lBI1Xh8s"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-48a563e4ef7so41497085e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:55:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IOuLbdtm"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-488af96f6b2so97881335e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:55:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777024516; x=1777629316; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1777024527; x=1777629327; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=e+of0FE0tSbmaf7cezfG/Dp70p8BpOoi594bsa5N30Y=;
-        b=lBI1Xh8sAV7sTCdwuXchyqeOFX3nHuRDVMqyYHDLNidoLcaF0RshABFEGznBGzQ/Ib
-         X/jQoJeY4pa/oH+vabzeTBIU8RBk0cgqiMqA9uslitiRfQat/bDAvd9t2Ajr2TGCEVwc
-         3Wuz8CULk3dtKI/MuU/3+lX8KEFR1L1cC4GK01jiAiLY8VWcP4I3aVaHb/VZdNia/gcc
-         UPlELyI+45RxECpOPImegZzy2RbVj8iKkwMA7Z/Zx4/Z/Q3uIAMJ+x4VvBthw0jXBXyT
-         topd7WlIMFXOCfc5Axz66vi5B2nFOPg5Xk8yUNYryGduRxfLWz871uIMOt2C8Xk04RZ2
-         GwZw==
+        bh=OrfueS0M3ksdEe4kTwzYyRrLHN8xQEsX3ULqrEC+KDU=;
+        b=IOuLbdtm/w8/TTltTJc2bQ8hVf6MQTIIygroyII+Ume7Idpj17vCcDGiYSbMTeW0Kt
+         86LbkYKl24WQNkFpWejvLYSDVfDzNpCHqFbzk1QcNtag8nsZ5bGJYZCnRQTnscWg27r0
+         wDohvU7Ld7+FEUVTkQGwPnh+42+HUazAehDtf9zqNyoWKJwJq5LnArS51c64RqcIiB3K
+         AgJnrgqhfmxiWp1rWbLD+9wXLCOTB4E1UYd7q+sLeYe2BWIJVTctGrF5wJM/pV6KMWd9
+         ruYemngy9UodorZU3qsyp4U/JABrGSdADswEYbQNvUvzcB9eyRHGFh1uHYiYya8pGAW+
+         QaYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777024516; x=1777629316;
+        d=1e100.net; s=20251104; t=1777024527; x=1777629327;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=e+of0FE0tSbmaf7cezfG/Dp70p8BpOoi594bsa5N30Y=;
-        b=hNwHksSZVWGpvQ4197vq9sGrUqNjIMzcj9kn5mu4zjPKRuJ4FVY9nk/onsZjSH80OU
-         g54gH4qlO7g4vq0BOcHOUgsjIOagO4bwwG0ogDW6Ai9p3XELEzjEUwzuXiDnxGvo1eFT
-         vri/XDV+lLyMoXsuMa3ajIO9Bovr7XGcLOmcf0lkKZO/C39P5XG61hj4/7eihV8qb17j
-         qDHZHuvszDS3/bfmuEzoOIWjbDT4vTfIaU2Zfke7eq+ZubwuTxrl8DjHpOZajv1wKwaZ
-         xai0V8LgP5UxLnbdFHJtqwXvE4GjKBEIsFDzhdr0q6dVK8FgfVhZGYIhHFsR0BNQk2e5
-         sRjQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9yZxYnS5TgJzs8q7ib7Sp8NMYwmGhFb2BM9zXlW9292Op5KTJ934q6ACZnWghbpDEw6nxw0u8j5w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywpxl/yEKDg/fsxZF7agj2hCFralkMstLPAICTqATecei5WKi0Z
-	/p65vIDGLkIJdpw9+mQm7yLsb4ZYNbOBTG8q2hk9SI/VfYSTf45uB1bzQEA7kvblu6E=
-X-Gm-Gg: AeBDiet8dVai6veR7/0Dd0RJHAfOFkyHGYqBXWk6sO4FDjg5XSQNz+Ue9W/aNeS+N0t
-	PWPBouTTMav/x32O/fFmhb9BZ3ckY+PJFsiKXiBOtE0j03+JtxpNOmSkE97OptYEir+SebsJUAV
-	N4OsgAj03zZeBCOcldLj9dil2H5K0WxIm9GrfFChZqrArVFvF66oJ0P+2v3S5MoMnpNw+v6oLf7
-	jrRkteFBPKmP1UxpfW+CSm4U8MqaZHCYgz/9nZJM8a9Nbg53JgNrTeQxxqkvJrdvXaaJZoXSeof
-	+F7gpa98GLG6QX+Vo+F6FqkhHmwuUbi+oP8Kf7sWeIEeOdlGE/LJd68dt40bYLY/1pP6ydhl/RT
-	/PPzHpKvYExeWJDkvLh3QURkBv4fX5POl+Wmrf2C0+yaHcjNvcf2q0mpKCoVAy5FAQ53Uw0cn4K
-	qJFIXJwuDkJLHMXshr7a6gYnwD3sutp0Z/dsnqj6CCsqqwMM/LNVM951ihIunJUZaiA4ngw0J/c
-	UTwkvr+AIj0WlIHjQ==
-X-Received: by 2002:a05:600c:888b:b0:488:c40b:c8bf with SMTP id 5b1f17b1804b1-488fb73d234mr372911565e9.2.1777024515945;
-        Fri, 24 Apr 2026 02:55:15 -0700 (PDT)
+        bh=OrfueS0M3ksdEe4kTwzYyRrLHN8xQEsX3ULqrEC+KDU=;
+        b=BzJ5qZMU+QfqhNv4ggAuQhAE7RH+T8oM1YisYD8Y6nxp9oU3F6UXSWmEG2/RvLyqvu
+         Iln/hLOgj2zikTL34hdJzA7ctk1VmnAjRSyHzaABjvZO43pOHjKE/laKSIlof9GYIkhc
+         BqJ+RTiUL0AOFTTUir3r6IyjizhkVvyIyPBH1Mcche1Gc9TKgDrbwHJ/yCCINr0JAAp6
+         pifrjXvsyVwIp8nDZgM71ffeRk/4f09YH2xCAIxlzWV+HyFsQRjOReFTAcWxQA6DrFNw
+         +AO3uTEYX6782pBqhTcCKs2CKYY+zNpZbxjvthKRoqeQBaE1tcUxcR8NcXE3KJ14E/m8
+         okAw==
+X-Forwarded-Encrypted: i=1; AFNElJ8QXlj6LrAFCPbbRx+wCwiax3g4R1ydMJ+gUyhfWZruNRahGtuiJjd4tvTe+IavGajfI2cI36AHPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YywZkh1Ml7E4f+KWRdNkoTq8kaBHae1ueDQAwYTPJ680WkPvIuz
+	6cHL6KQMSTp1ri61/pJ4lkICTW7a0oOeShpbWP6JkBHCgUBzfyOsBaE2XoB+9FdIK50=
+X-Gm-Gg: AeBDieuCTjSwpJyRKw4BtfLchymyzBFh3ZR8rhI0vxSm0iyxPKIdCtLCWs7h+iyXArQ
+	Y93j27/QBeYOJOEZP8i2kFVfJlm59ZAJA5kyl2w2o3828JzvuYANdDJGsX+Cm2AufJGddc6Sauy
+	IC3C+Nixd5mMeMgpHl7pTjZ44SP/eC1S1NfE0NQmek7TNOMkGu/alpKatWAhMKkWQ106+Cb8NCm
+	TEjPvPUIE8DwL4dUu1TA4iSZQ88qbsr7Ga4A73wHK84T8cTn6tPrhZ7dSJMNk8A9u8Ex2AfQ2ud
+	7/FxDJSQwB9An51Pus2VOJ8VVmX+2r3kMap4M8fMPz+CH0kWxmjcFQ/A6BDBVaq/FuIyGyWRuoD
+	XBrlEKiig9lhujEpCkX1Wz+ANseXu5kEy3YdUMfDGQam0Qj4Auvb6lAsAjeXf+fLGGtbQ8el7Kz
+	PuufxSQK2bloplw9RcVWvJzMEpLz3VV5tcvMQDgmtR/L5vQEKILPAFmpydeD7oM3UuSsFpT70MJ
+	06YgISEflosz+xcgA==
+X-Received: by 2002:a05:600c:34c7:b0:489:1c32:210d with SMTP id 5b1f17b1804b1-4891c32266amr308527675e9.15.1777024526813;
+        Fri, 24 Apr 2026 02:55:26 -0700 (PDT)
 Received: from ?IPV6:2a01:e0a:106d:1080:79e1:f56b:445c:ca9c? ([2a01:e0a:106d:1080:79e1:f56b:445c:ca9c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fc18bccfsm526904435e9.8.2026.04.24.02.55.14
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4891bb3d121sm583739045e9.14.2026.04.24.02.55.25
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 24 Apr 2026 02:55:15 -0700 (PDT)
-Message-ID: <afd6b8b9-06b5-41e1-9b3e-e4a896d77f8c@linaro.org>
-Date: Fri, 24 Apr 2026 11:55:14 +0200
+        Fri, 24 Apr 2026 02:55:26 -0700 (PDT)
+Message-ID: <4ba28eee-db47-436a-9008-605cae805f81@linaro.org>
+Date: Fri, 24 Apr 2026 11:55:25 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -72,8 +72,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 From: Neil Armstrong <neil.armstrong@linaro.org>
 Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: Re: [PATCH v4 3/8] mfd: khadas-mcu: Add per-variant configuration
- infrastructure and VIM4 support
+Subject: Re: [PATCH v4 4/8] mfd: khadas-mcu: Add support for VIM4 MCU variant
 To: linux-kernel-dev@aliel.fr, Lee Jones <lee@kernel.org>,
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
@@ -88,7 +87,7 @@ Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 References: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
- <20260421-add-mcu-fan-khadas-vim4-v4-3-447114a28f2d@aliel.fr>
+ <20260421-add-mcu-fan-khadas-vim4-v4-4-447114a28f2d@aliel.fr>
 Content-Language: en-US, fr
 Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
@@ -115,85 +114,181 @@ Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
  QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
 Organization: Linaro
-In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-3-447114a28f2d@aliel.fr>
+In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-4-447114a28f2d@aliel.fr>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
 On 4/21/26 13:49, Ronald Claveau via B4 Relay wrote:
 > From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > 
-> Introduce a per-variant configuration structure (khadas_mcu_data)
-> holding the regmap config and MFD cells,
-> selected at probe time via the of_device_id match data.
-> This makes adding other variants straightforward.
+> Refactor probe() to use per-variant khadas_mcu_data
+> instead of hardcoded globals.
 > 
-> Also introduce khadas_mcu_fan_pdata to pass fan register address and
-> maximum level to the fan sub-driver, removing the hardcoded constants.
+> Add dedicated regmap configuration and device data for the VIM4 MCU,
+> with its own volatile/writeable registers.
+> 
+> Add the fan control register
+> (0–100 levels vs 0–3 for previous supported boards).
+> 
+> Add a new compatible string "khadas,vim4-mcu".
 > 
 > Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > ---
->   include/linux/mfd/khadas-mcu.h | 39 +++++++++++++++++++++++++++++++++++++--
->   1 file changed, 37 insertions(+), 2 deletions(-)
+>   drivers/mfd/khadas-mcu.c | 106 ++++++++++++++++++++++++++++++++++++++++++-----
+>   1 file changed, 95 insertions(+), 11 deletions(-)
 > 
-> diff --git a/include/linux/mfd/khadas-mcu.h b/include/linux/mfd/khadas-mcu.h
-> index a99ba2ed0e4e0..75e275d3fa8d9 100644
-> --- a/include/linux/mfd/khadas-mcu.h
-> +++ b/include/linux/mfd/khadas-mcu.h
-> @@ -70,6 +70,13 @@
->   #define KHADAS_MCU_WOL_INIT_START_REG		0x87 /* WO */
->   #define KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG	0x88 /* WO */
->   
-> +/* VIM4 specific registers */
-> +#define KHADAS_MCU_VIM4_REST_CONF_REG		0x2c /* WO - reset EEPROM */
-> +#define KHADAS_MCU_VIM4_LED_ON_RAM_REG		0x89 /* WO - LED volatile */
-> +#define KHADAS_MCU_VIM4_FAN_CTRL_REG		0x8a /* WO */
-> +#define KHADAS_MCU_VIM4_WDT_EN_REG		0x8b /* WO */
-> +#define KHADAS_MCU_VIM4_SYS_RST_REG		0x91 /* WO */
-> +
->   enum {
->   	KHADAS_BOARD_VIM1 = 0x1,
->   	KHADAS_BOARD_VIM2,
-> @@ -82,10 +89,38 @@ enum {
->    * struct khadas_mcu - Khadas MCU structure
->    * @device:		device reference used for logs
->    * @regmap:		register map
-> + * @data:		pointer to variant-specific config
->    */
->   struct khadas_mcu {
-> -	struct device *dev;
-> -	struct regmap *regmap;
-> +	struct device			*dev;
-> +	struct regmap			*regmap;
-> +	const struct khadas_mcu_data	*data;
-> +};
-> +
-> +/**
-> + * struct khadas_mcu_data - per-variant configuration
-> + * @regmap_config:	regmap configuration
-> + * @cells:		MFD sub-devices
-> + * @ncells:		number of sub-devices
-> + * @fan_cells:		MFD fan sub-devices
-> + * @nfan_cells:		number of fan sub-devices
-> + */
-> +struct khadas_mcu_data {
-> +	const struct regmap_config	*regmap_config;
-> +	const struct mfd_cell		*cells;
-> +	int				ncells;
-> +	const struct mfd_cell		*fan_cells;
-> +	int				nfan_cells;
-> +};
-> +
-> +/**
-> + * struct khadas_mcu_fan_pdata - fan sub-driver configuration
-> + * @fan_reg: register address to write the fan level
-> + * @max_level: maximum fan level
-> + */
-> +struct khadas_mcu_fan_pdata {
-> +	unsigned int fan_reg;
-> +	unsigned int max_level;
+> diff --git a/drivers/mfd/khadas-mcu.c b/drivers/mfd/khadas-mcu.c
+> index ba981a7886921..b36b3b3ab73c0 100644
+> --- a/drivers/mfd/khadas-mcu.c
+> +++ b/drivers/mfd/khadas-mcu.c
+> @@ -75,15 +75,91 @@ static const struct regmap_config khadas_mcu_regmap_config = {
+>   	.cache_type	= REGCACHE_MAPLE,
 >   };
 >   
->   #endif /* MFD_KHADAS_MCU_H */
+> +static const struct khadas_mcu_fan_pdata khadas_mcu_fan_pdata = {
+> +	.fan_reg	= KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+> +	.max_level	= 3,
+> +};
+> +
+>   static struct mfd_cell khadas_mcu_fan_cells[] = {
+>   	/* VIM1/2 Rev13+ and VIM3 only */
+> -	{ .name = "khadas-mcu-fan-ctrl", },
+> +	{
+> +		.name = "khadas-mcu-fan-ctrl",
+> +		.platform_data = &khadas_mcu_fan_pdata,
+> +		.pdata_size    = sizeof(khadas_mcu_fan_pdata),
+> +	},
+>   };
+>   
+>   static struct mfd_cell khadas_mcu_cells[] = {
+>   	{ .name = "khadas-mcu-user-mem", },
+>   };
+>   
+> +static const struct khadas_mcu_data khadas_mcu_data = {
+> +	.regmap_config	= &khadas_mcu_regmap_config,
+> +	.cells		= khadas_mcu_cells,
+> +	.ncells		= ARRAY_SIZE(khadas_mcu_cells),
+> +	.fan_cells	= khadas_mcu_fan_cells,
+> +	.nfan_cells	= ARRAY_SIZE(khadas_mcu_fan_cells),
+> +};
+> +
+> +static bool khadas_mcu_vim4_reg_volatile(struct device *dev, unsigned int reg)
+> +{
+> +	switch (reg) {
+> +	case KHADAS_MCU_PWR_OFF_CMD_REG:
+> +	case KHADAS_MCU_VIM4_REST_CONF_REG:
+> +	case KHADAS_MCU_WOL_INIT_START_REG:
+> +	case KHADAS_MCU_VIM4_LED_ON_RAM_REG:
+> +	case KHADAS_MCU_VIM4_FAN_CTRL_REG:
+> +	case KHADAS_MCU_VIM4_WDT_EN_REG:
+> +	case KHADAS_MCU_VIM4_SYS_RST_REG:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+> +static bool khadas_mcu_vim4_reg_writeable(struct device *dev, unsigned int reg)
+> +{
+> +	switch (reg) {
+> +	case KHADAS_MCU_VERSION_0_REG:
+> +	case KHADAS_MCU_VERSION_1_REG:
+> +	case KHADAS_MCU_SHUTDOWN_NORMAL_STATUS_REG:
+> +		return false;
+> +	default:
+> +		return true;
+> +	}
+> +}
+> +
+> +static const struct regmap_config khadas_mcu_vim4_regmap_config = {
+> +	.reg_bits	= 8,
+> +	.reg_stride	= 1,
+> +	.val_bits	= 8,
+> +	.max_register	= KHADAS_MCU_VIM4_SYS_RST_REG,
+> +	.volatile_reg	= khadas_mcu_vim4_reg_volatile,
+> +	.writeable_reg	= khadas_mcu_vim4_reg_writeable,
+> +	.cache_type	= REGCACHE_MAPLE,
+> +};
+> +
+> +static const struct khadas_mcu_fan_pdata khadas_vim4_fan_pdata = {
+> +	.fan_reg	= KHADAS_MCU_VIM4_FAN_CTRL_REG,
+> +	.max_level	= 0x64,
+> +};
+> +
+> +static const struct mfd_cell khadas_mcu_vim4_cells[] = {
+> +	{
+> +		.name		= "khadas-mcu-fan-ctrl",
+> +		.platform_data	= &khadas_vim4_fan_pdata,
+> +		.pdata_size	= sizeof(khadas_vim4_fan_pdata),
+> +	},
+> +};
+> +
+> +static const struct khadas_mcu_data khadas_vim4_mcu_data = {
+> +	.regmap_config	= &khadas_mcu_vim4_regmap_config,
+> +	.cells		= NULL,
+> +	.ncells		= 0,
+> +	.fan_cells	= khadas_mcu_vim4_cells,
+> +	.nfan_cells	= ARRAY_SIZE(khadas_mcu_vim4_cells),
+> +};
+> +
+>   static int khadas_mcu_probe(struct i2c_client *client)
+>   {
+>   	struct device *dev = &client->dev;
+> @@ -94,28 +170,35 @@ static int khadas_mcu_probe(struct i2c_client *client)
+>   	if (!ddata)
+>   		return -ENOMEM;
+>   
+> +	ddata->data = i2c_get_match_data(client);
+> +	if (!ddata->data)
+> +		return -EINVAL;
+> +
+>   	i2c_set_clientdata(client, ddata);
+>   
+>   	ddata->dev = dev;
+>   
+> -	ddata->regmap = devm_regmap_init_i2c(client, &khadas_mcu_regmap_config);
+> +	ddata->regmap = devm_regmap_init_i2c(client,
+> +					     ddata->data->regmap_config);
+>   	if (IS_ERR(ddata->regmap)) {
+>   		ret = PTR_ERR(ddata->regmap);
+>   		dev_err(dev, "Failed to allocate register map: %d\n", ret);
+>   		return ret;
+>   	}
+>   
+> -	ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> -				   khadas_mcu_cells,
+> -				   ARRAY_SIZE(khadas_mcu_cells),
+> -				   NULL, 0, NULL);
+> -	if (ret)
+> -		return ret;
+> +	if (ddata->data->cells && ddata->data->ncells) {
+> +		ret = devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> +					   ddata->data->cells,
+> +					   ddata->data->ncells,
+> +					   NULL, 0, NULL);
+> +		if (ret)
+> +			return ret;
+> +	}
+>   
+>   	if (of_property_present(dev->of_node, "#cooling-cells"))
+>   		return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
+> -					    khadas_mcu_fan_cells,
+> -					    ARRAY_SIZE(khadas_mcu_fan_cells),
+> +					    ddata->data->fan_cells,
+> +					    ddata->data->nfan_cells,
+>   					    NULL, 0, NULL);
+>   
+>   	return 0;
+> @@ -123,7 +206,8 @@ static int khadas_mcu_probe(struct i2c_client *client)
+>   
+>   #ifdef CONFIG_OF
+>   static const struct of_device_id khadas_mcu_of_match[] = {
+> -	{ .compatible = "khadas,mcu", },
+> +	{ .compatible = "khadas,mcu", .data = &khadas_mcu_data },
+> +	{ .compatible = "khadas,vim4-mcu", .data = &khadas_vim4_mcu_data },
+>   	{},
+>   };
+>   MODULE_DEVICE_TABLE(of, khadas_mcu_of_match);
 > 
 
 Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
