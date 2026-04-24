@@ -1,67 +1,67 @@
 Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69BEC292B44
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:47:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 454CE359A91
+	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:52:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777024073; cv=none; b=IU6KCBTtyB9xVkOWkZ9t/lbPKfQFIDtNLDi4pcUi1hbPZ4enF942u1nVCxk9k6CxkQGp6L/D/Z9w7FaGkYj8Xl8XJKsYzA+nYAzd/pKUEP0xPntMVIdHaRxRbUZaYrReAUXdLe63yeZfFC3oHzmFlwMPcoaoIYna9dAYGHrNOVU=
+	t=1777024345; cv=none; b=JOn/T0Mw0SJEsB40luuo21lT2wzsemtK8EtxEUXuehMl0g6sLhEFgHtic+J/wventW7VH6w1M8yIMfKfNf1ImCwM48etSW0ZVwKkRVbhsTpn/SsZXop5Yx1WJvgYam4sQo6fgdupYfWQQyTuiQ9xPwlqaSaTLE4HiRvgcmBKCd8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777024073; c=relaxed/simple;
-	bh=vaGTJ5tzUPJhD2ZETg3sJdRRIS4DbouAp3GQJsTd2MU=;
+	s=arc-20240116; t=1777024345; c=relaxed/simple;
+	bh=OKOMS6uEmoakFSSKNFIEtAdzcaFcM11NJCjQzupQ/HE=;
 	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=IoEX3ZeLWvnfSkZ4hgwSqj3VFXvDzkJFqTAbRlt0v5cwmotopYnM+oNztDHHtBWrCmXVPYW3miqcyxbuBrbiiJaLroFRcLRF8ZPLP82Zr2AF77FIUJ6SZaRz4jWkg3RAnCVtmOd7/U+n5Bveu/LVdV3k/CzuT8yOn3jxMOWkbfg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=w1vKwBy9; arc=none smtp.client-ip=209.85.128.46
+	 In-Reply-To:Content-Type; b=Ag3WJN3SHxTfG6Je4E4P+1c/MkW+rSyf5lP1mjiZIrL+vxqXOjL9kCJsl0vliN64QqdyQvyMfc6l4r1Z5XKU2YfiJ4mjd+kqOvMEYncm6GF1t3M6E8HPj+z0zj6LEnvIyz6Sf2yZ3K5F29MZXNHx/dbk+Z2w7YgQ1YM5pJuxqXo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=ZwcQX8lT; arc=none smtp.client-ip=209.85.128.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="w1vKwBy9"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-488b0046078so69042875e9.1
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:47:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZwcQX8lT"
+Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-48374014a77so99457915e9.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:52:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777024071; x=1777628871; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1777024342; x=1777629142; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=zyyE/r/iA1MwYNHXAS7P+Cj4G1v9/C9w7YzUp4f7iBc=;
-        b=w1vKwBy9PI6dxwYGmiTHQ5UEGFt/XcVA9NGEgQBsw6HcdBxRntX/2e44BaXr87aFee
-         ybK5Ourrfnw8PkQ4GfVHJY+VQ0opEELBdRfGLhW4s395C0zbc3FePNnaH/Qj0MMEGJ4/
-         T9phmbtanqGUHOfd71zowDJSo9sNSbbBek7HjPHQ285Gk13N6oHs6dzT6CVAGDNnwOuN
-         DV83OG6HVIPLNyvabfU173pjV+rRITw65IGvyBYrSJSVUDW9taTNpbF0hKaF+N96RIGW
-         ER/1OFg8+frjq1vbJ9DCvc966cxm/ENailAqnJj99HWWa+8Kc3MK+E7iYS3B3NyA1UhF
-         n2rQ==
+        bh=7dSVP6vW9j9Y0EuiVzA7IMsg/jf0E4hSdGwD0NTLWuI=;
+        b=ZwcQX8lT/f+g0y1Xo/BJ08Wsw/LBQ+As82AmKIcaU5a4jFnF403KkEaOtWxlnhe11H
+         XlzPeCyt/O0ssJRZPndvP84B20Y+m2e8OlyIUMx7NPlM1Shilnv4ifGut+egcmE0LZqj
+         wSX4jyTMBsl3/u7tRKRmv47cPNPm0EVDP9YpKgKbDCsU4Je+/tbCuEm4EdV9LTWZoCEK
+         9S8/ELdEer09IoPvv8cnQoavPFz6EPFofn9Yy3HMd+RqIvUICIo9+MTr51aQ7LyqTnmD
+         XIlZx0SuxNQhIB4H4lbBT7NERAL+zlB3kJ6XQxEupWQpyM3hQ0aeC1rJJ0cdjVFgmILv
+         KAQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777024071; x=1777628871;
+        d=1e100.net; s=20251104; t=1777024342; x=1777629142;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=zyyE/r/iA1MwYNHXAS7P+Cj4G1v9/C9w7YzUp4f7iBc=;
-        b=Y8lwnuOQq4raLsHuecJtKC8gdJ3SoMorRKRKz2ZnG2udfscf+AV+1dMCXeTAIdc9Um
-         9unn5FqiJ9xS6Oksrkaloi6XIyd2hFftMdOUyJb02UN4AARic8SbEGuKofz5aGWNFnPY
-         day8Ds4Efj9Kd8AXy7LBW2HYdwlDOfycz53Lye6M5V76leaYio/7/UQgvt2sCPpnEEH2
-         SEnTW+xcf1XUX9qJOsUQBwQqmj9BtUWo2j7vbFKsFkIxKk+6dmT/QjA3Tsf3STWzh1kS
-         aCgikr+ehlZ42eCZkGVYnj4CzqcdjT7BUkwEdDuDsEDop1Xh1xpNMbQUchD64IN5p8iR
-         QlHA==
-X-Gm-Message-State: AOJu0YxBeCT3j17Kn3twyREWCNgCbxOyRpvtO9C4aW6CwD4RF7T9JFuI
-	0AFcXbAxtIDPeS4l1Wuau6Vw6DFyvs61M67PRe7mX2EWj2LWyR3HOgBOKk9BHrR7EUI=
-X-Gm-Gg: AeBDievrx0twaGKJFr00Aq7ic2n5dd35toiwv6sxmNFApvUTqD8enMRJb+WXvniSUer
-	Zv78Igrad1coXihWvPJtZuU76Y+0jNAuBBUwT1g8vGE70B5tnsae+U+TqmGsSISJ/YYxrYUccq/
-	QUkjtXKEKSuF216lZ50e6VUsJ7Dx1zSq32CmGwHThfgGU86PxnCyJsyYUzeLOBKxY5hXm2Dbpjy
-	PKp458o6E8ZT660ePhQr4QZ9guDQwbCbV+lb2pbLoeHw+LJ60mXIsD9GymH4ebgC0KGz73cUyfd
-	6Jryp3SoyAUcgzWf2LzQahPPCGnyT+bHEXasjV5LoEFOTilQQoEw+1zOjTEMndoPwJJOgmrsukB
-	8KMRLuZemFdrejQMTISfQN2akDQwpPC9d7C8JuNlZ5XhSp6O1MGbpQXiL7i7u6Nx36pCnDPaPmr
-	WIl0zJGEDEqWV0Q/bcri+3ubDGTyvvtc2Pgr9qKDENmdn7GCU+x9bxT7qv/3SRnxh+IxJbRA0i3
-	4J1hDaViqeMVwt4uA==
-X-Received: by 2002:a05:600c:c4a2:b0:488:c078:bfda with SMTP id 5b1f17b1804b1-488fb78eebdmr426779015e9.26.1777024070744;
-        Fri, 24 Apr 2026 02:47:50 -0700 (PDT)
+        bh=7dSVP6vW9j9Y0EuiVzA7IMsg/jf0E4hSdGwD0NTLWuI=;
+        b=Lq9wJMNSNjPsf5LLbYJMvrdU2cw5eHxNVLafgmtXhn51h3ZxoIrSYD11qvhNMPLhYp
+         p2tGr1ayc6adTkLftBKLq/8hRwFyjq8Z0PY4fLbDi92UJHra1eidqaR0vh9MMwbb00at
+         ybwnCakewlLHWdNcZMM3qH3MmfeYJbWO8HzkPNsa+4d7JM5s40O8dVsa2J4c7mLcLWlF
+         3oIXKpjhQh8h6525i2CRTT7ztVKtD3KVZG8OTGIVJ1gc0jBxuGXplCt7ydB62IPoWPhp
+         ZZ3fUNLtMEUSv2IoePTFA91mqRdAkZShqNLEU9KmhnJniNU31wzZhX5EsdyY5MUqsdYA
+         MBVQ==
+X-Gm-Message-State: AOJu0YzUpGoFODUmqLdkg5AnKhkLH+VB5UwuZsgNfk+5m/WuZvg3fORo
+	dL1mY5O8I+NYCd0wN7389U2AnWPlO6VGjGHSYlibm0N+zqbd8F36Q9dahmb2hLcw9Pc=
+X-Gm-Gg: AeBDiesUnkWPpo+WMQm3UuVtj+s9l2asck9/exELcHnfnWmoNMNZnzop+YSA4tapzJ6
+	hGrwcz4V2Sf6BBin/yHDjV3rYxR6wjN5W+7dOlV9sBAWYjFC0/CzHzZ4Pfq4efTrvhQ5x4v5d7G
+	bNUCv0SF7brpR5PPd44UIkmv0xUMdnbOL5GaRdYQIh+Z0oQx3iMc8snVTEl72TG7Ysj59hNiuFJ
+	brZKxvDL6FcBPn2R+RLma8etIShi83B6IGL9WvGvivPzGokTUftTszNPFr9rs4NACdoUTnzCOn2
+	5fPlbm1MGC0DkZHNNpH5aLfd08myDzi1yh05pCudZK5Y7KduQ5M06Tr8lL6CcXAUp/M8Dp9urCX
+	vnUk3bSLKGhRpHVFRSNeNEbvfB/FUvy96jla4AmgK86+c4aL2cCPEb8xu1FwiRBROoGHvWokb1D
+	mME7jgVS4SjzwT0QSjB1vig0QhceWy+zov+3WD8uNu2XVG5vJxRqKExz2z32bYIN2NtKrq4sy+W
+	AQS42aIYxhzXn02fw==
+X-Received: by 2002:a05:600c:a305:b0:48a:53cb:85f4 with SMTP id 5b1f17b1804b1-48a53cb8734mr195298735e9.24.1777024341572;
+        Fri, 24 Apr 2026 02:52:21 -0700 (PDT)
 Received: from ?IPV6:2a01:e0a:106d:1080:79e1:f56b:445c:ca9c? ([2a01:e0a:106d:1080:79e1:f56b:445c:ca9c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fb75ab25sm179552435e9.11.2026.04.24.02.47.49
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a55b8baaesm389489665e9.10.2026.04.24.02.52.20
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 24 Apr 2026 02:47:50 -0700 (PDT)
-Message-ID: <fe284566-5a71-4b9e-940b-a36c58cb94a5@linaro.org>
-Date: Fri, 24 Apr 2026 11:47:49 +0200
+        Fri, 24 Apr 2026 02:52:21 -0700 (PDT)
+Message-ID: <6d734851-6f0b-4351-832c-4ee08dfcc10d@linaro.org>
+Date: Fri, 24 Apr 2026 11:52:20 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,8 +71,8 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 From: Neil Armstrong <neil.armstrong@linaro.org>
 Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: Re: [PATCH v4 3/8] firmware: meson: sm: Add thermal calibration SMC
- call
+Subject: Re: [PATCH v4 5/8] arm64: dts: amlogic: t7: Add cooling cells to all
+ CPUs
 To: linux-kernel-dev@aliel.fr, Guillaume La Roque <glaroque@baylibre.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
@@ -85,7 +85,7 @@ Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org
 References: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
- <20260423-add-thermal-t7-vim4-v4-3-d4c1528d5044@aliel.fr>
+ <20260423-add-thermal-t7-vim4-v4-5-d4c1528d5044@aliel.fr>
 Content-Language: en-US, fr
 Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
@@ -112,72 +112,89 @@ Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
  QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
 Organization: Linaro
-In-Reply-To: <20260423-add-thermal-t7-vim4-v4-3-d4c1528d5044@aliel.fr>
+In-Reply-To: <20260423-add-thermal-t7-vim4-v4-5-d4c1528d5044@aliel.fr>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 On 4/23/26 18:07, Ronald Claveau via B4 Relay wrote:
 > From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > 
-> Add SM_THERMAL_CALIB_READ at SMC ID 0x82000047 in the command
-> table and implement meson_sm_get_thermal_calib(), which forwards the
-> tsensor_id argument to the secure monitor and returns the calibration data.
-> 
-> Also realign the CMD() column to improve readability.
+> Add #cooling-cells = <2> to all CPU nodes (both little and big cluster)
+> to allow them to be used as cooling devices in thermal zone mappings.
 > 
 > Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > ---
->   drivers/firmware/meson/meson_sm.c | 29 ++++++++++++++++++++++++-----
->   1 file changed, 24 insertions(+), 5 deletions(-)
+>   arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi | 8 ++++++++
+>   1 file changed, 8 insertions(+)
 > 
-> diff --git a/drivers/firmware/meson/meson_sm.c b/drivers/firmware/meson/meson_sm.c
-> index 3ab67aaa9e5da..4e57986724212 100644
-> --- a/drivers/firmware/meson/meson_sm.c
-> +++ b/drivers/firmware/meson/meson_sm.c
-> @@ -41,12 +41,13 @@ static const struct meson_sm_chip gxbb_chip = {
->   	.cmd_shmem_in_base	= 0x82000020,
->   	.cmd_shmem_out_base	= 0x82000021,
->   	.cmd = {
-> -		CMD(SM_EFUSE_READ,	0x82000030),
-> -		CMD(SM_EFUSE_WRITE,	0x82000031),
-> +		CMD(SM_EFUSE_READ,		0x82000030),
-> +		CMD(SM_EFUSE_WRITE,		0x82000031),
->   		CMD(SM_EFUSE_USER_MAX,	0x82000033),
-> -		CMD(SM_GET_CHIP_ID,	0x82000044),
-> -		CMD(SM_A1_PWRC_SET,	0x82000093),
-> -		CMD(SM_A1_PWRC_GET,	0x82000095),
-> +		CMD(SM_GET_CHIP_ID,		0x82000044),
-> +		CMD(SM_THERMAL_CALIB_READ,	0x82000047),
-> +		CMD(SM_A1_PWRC_SET,		0x82000093),
-> +		CMD(SM_A1_PWRC_GET,		0x82000095),
->   		{ /* sentinel */ },
->   	},
->   };
-> @@ -245,6 +246,24 @@ struct meson_sm_firmware *meson_sm_get(struct device_node *sm_node)
->   }
->   EXPORT_SYMBOL_GPL(meson_sm_get);
+> diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
+> index 560c9dce35266..7aec65f036a9c 100644
+> --- a/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
+> +++ b/arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi
+> @@ -63,6 +63,7 @@ cpu100: cpu@100 {
+>   			i-cache-size = <0x8000>;
+>   			i-cache-sets = <32>;
+>   			next-level-cache = <&l2_cache_l>;
+> +			#cooling-cells = <2>;
+>   		};
 >   
-> +/**
-> + *
-> + * meson_sm_get_thermal_calib - Read thermal sensor calibration data.
-> + * @fw:		Pointer to secure-monitor firmware.
-> + * @trim_info:	Pointer to store the returned calibration data.
-> + * @tsensor_id:	Sensor index to identify which sensor's calibration data
-> + *		to retrieve
-> + *
-> + * Return: 0 on success, negative error code on failure.
-> + */
-> +int meson_sm_get_thermal_calib(struct meson_sm_firmware *fw, u32 *trim_info,
-> +			       u32 tsensor_id)
-> +{
-> +	return meson_sm_call(fw, SM_THERMAL_CALIB_READ, trim_info, tsensor_id,
-> +			     0, 0, 0, 0);
-> +}
-> +EXPORT_SYMBOL_GPL(meson_sm_get_thermal_calib);
-> +
->   #define SM_CHIP_ID_LENGTH	119
->   #define SM_CHIP_ID_OFFSET	4
->   #define SM_CHIP_ID_SIZE		12
+>   		cpu101: cpu@101 {
+> @@ -77,6 +78,7 @@ cpu101: cpu@101 {
+>   			i-cache-size = <0x8000>;
+>   			i-cache-sets = <32>;
+>   			next-level-cache = <&l2_cache_l>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu102: cpu@102 {
+> @@ -91,6 +93,7 @@ cpu102: cpu@102 {
+>   			i-cache-size = <0x8000>;
+>   			i-cache-sets = <32>;
+>   			next-level-cache = <&l2_cache_l>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu103: cpu@103 {
+> @@ -105,6 +108,7 @@ cpu103: cpu@103 {
+>   			i-cache-size = <0x8000>;
+>   			i-cache-sets = <32>;
+>   			next-level-cache = <&l2_cache_l>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu0: cpu@0 {
+> @@ -119,6 +123,7 @@ cpu0: cpu@0 {
+>   			i-cache-size = <0x10000>;
+>   			i-cache-sets = <64>;
+>   			next-level-cache = <&l2_cache_b>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu1: cpu@1 {
+> @@ -133,6 +138,7 @@ cpu1: cpu@1 {
+>   			i-cache-size = <0x10000>;
+>   			i-cache-sets = <64>;
+>   			next-level-cache = <&l2_cache_b>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu2: cpu@2 {
+> @@ -147,6 +153,7 @@ cpu2: cpu@2 {
+>   			i-cache-size = <0x10000>;
+>   			i-cache-sets = <64>;
+>   			next-level-cache = <&l2_cache_b>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		cpu3: cpu@3 {
+> @@ -161,6 +168,7 @@ cpu3: cpu@3 {
+>   			i-cache-size = <0x10000>;
+>   			i-cache-sets = <64>;
+>   			next-level-cache = <&l2_cache_b>;
+> +			#cooling-cells = <2>;
+>   		};
+>   
+>   		l2_cache_l: l2-cache-cluster0 {
 > 
 
 Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
