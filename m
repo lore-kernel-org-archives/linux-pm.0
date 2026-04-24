@@ -1,237 +1,305 @@
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010032.outbound.protection.outlook.com [40.93.198.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C08663FADE7
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 19:52:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6461237C107;
+	Fri, 24 Apr 2026 20:19:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.32
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777060334; cv=pass; b=hAoBfCDTr5GxIExKSK5nFQJV1W6zyvT3Nc81lPTRRcwRKVrXd9OBlWldrLdN7OcquA0ooIqxr8Y3bbbDAGNKPLm5V9ADdwoZqX7DrNfIkG1uG198l6D3yYneRNB4VBWlEVuktOtXV1Q36rxS5uqTR/obNYLaL/Uz0D+kcUBbXSk=
+	t=1777061971; cv=fail; b=EXNH2i50WCSFAdWH8OeWqzFU4L1qm9iA2GK7viwzNyYhcAtqB7U5Ozxuwp/rZ6tWhbTFsArhchcyhrs4+8wcIbbPWR9iR++movGoXj7hFSQ0sz7Azv2fsSBdSrIanJ5qJKPJLN/FxWi3J4qwXeM752hFyrMXmldLlJ+WlTcM3KA=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777060334; c=relaxed/simple;
-	bh=wE/7ErAGo72joNqsxPMrNEQEyJ7t+edUI6j7ULKzBaM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kS5/21uCHaH2JJGbBEsUQ30e1id7E5Oy8eidXJtLZ5rxCfpCsSpiPWaItm1HVH6iqqvyiu6CsAA9T5G9VzsmbMI92+L/KvCBdDzVJLOqOHuK76Nuy1ISgKzdzi+h9MLoqjCOgPrGUlW6GtDvoItlZBM1Oql5DdCboHKmzrDWPZU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P8DP27ri; arc=pass smtp.client-ip=209.85.208.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1777061971; c=relaxed/simple;
+	bh=UeTNcDOO/NJTVJYkr5n8XEJh8Jdwc0zMBefNOhVd/1o=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=G2prrbi713rD2H4VHu1gtRFZM0g3U5neFi9Wmj1U/QFUgfNF1MK/IpzDFWVAdQ4RTczgubp2I1k38xw3nur4WDVaPcBdXWpMiY5LGWdPW+yBHhvKMUBM2SsQxaCJlklzAbhJ0DJwkMx7cnHQ0brkqVjelsp8P7E+lG9nynQJMdE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=dIV8kYTb; arc=fail smtp.client-ip=40.93.198.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P8DP27ri"
-Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-678e678970fso220200a12.2
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 12:52:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777060327; cv=none;
-        d=google.com; s=arc-20240605;
-        b=f/LAQS+hu3dbJ39asitZQSaBhyh1Yn+sIIhrgH2hkkXFsFNmXCd/iUINtl0Qgt0Nu1
-         77XpZWjn7EW8g2haNdSdIb/90KTrFzXosxxq4hDR4dHjcinFUV9eyN1DgtWhO/1gpfEd
-         RWvwH7GXbXfgHPzEEYdw/8xUBLC5Cd1En/+3JyLeUqJ4obRZGoCRhrf8mg9xf9ccE2Zn
-         BuDjtQYXssG9Rs+Lhma7R5nIMqTqVvAtmDeIRlDd715Zbhpu1/Z8r0SoLRzW2v+1V/Bx
-         gme7Oue0cgNbjVBx5bu2YqXNY2kivv8DBULI+TnP/Gp5dCuMNs3CRqJcjlPopFdvyayY
-         xWYg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=wE/7ErAGo72joNqsxPMrNEQEyJ7t+edUI6j7ULKzBaM=;
-        fh=WzAT3rOH0OYEqe+6Nl9+bdqkb/2XUc5wfq5Li0Ch+kE=;
-        b=dr+36NJ29bZEDBjCScX05SJOFpym9vbucSsxn7Il/uRGEZUHZIVsDVFJJJgTb5lVuR
-         YYX9FOGOM8wz4efLhJvvBEXTcKnmHmFtpRR3MCvSMACC1egZ3D0vhbF7l/2r4Sasu6v0
-         WRxi8sXaX62Ohhgd6qhY5WrGHbYselCr9aFqPU/8sjvO//zTEHzT+Z8FSXME2uc3md/A
-         Dk8YDp9f1KiVCy1l47rZxwg+Coc4aVN3bvRayPEYu7JASJ0lzBwryPLpliOgQ7cMcbuM
-         EHztgu84KyIS3vUkgnEh3EgE0kBHHwpsrRk6nI4eLvHPX+7Wn5lPVRNoyfJ8F0c1dvM5
-         bBJA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777060327; x=1777665127; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wE/7ErAGo72joNqsxPMrNEQEyJ7t+edUI6j7ULKzBaM=;
-        b=P8DP27riXPbV32Oz8Ko4j9Ee73SVG6wBWOCcDL7dVsYxi/Mk2R+1ikwDZUE9wRnYXj
-         MaEX31iCZztxlp3HjqViGs2/AFYQPpy3rfDnvCePd9Ty/UZ/KBd+3SxTGDpNhn6qPW0E
-         ojgS7m4EhAoBjEyZ4SimQ9dLkLA13F/96EWtIkn7EKiaO5PnI4BHFt2idi4UrAvCuTlF
-         f4mudn26z/DUyeXlW5WSX/ZUT30lNdU9COrB9yrgd59BWpnf63FKaLCLDHDytbr24OpW
-         d89crHgsj7iMsQQ3umdTDsnKqtZWljzQU7IyrO8sXEXeQFpy3ab+LBBsRmb1eVr/4PSS
-         xS+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777060327; x=1777665127;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=wE/7ErAGo72joNqsxPMrNEQEyJ7t+edUI6j7ULKzBaM=;
-        b=d8ZazqGzwcVdIJmFt8OuVCfcyBgdOsRMAo3ewuYGakjsTLS9Rog78HUbYDySv62szQ
-         gCtELXzQsrywZTRFMir6N4TaF03h9DRzjFV+XExtsf/LFn/ONyqTM90wMFHiiBn3DTlo
-         xZhLL90pNtajCYm9lBXWFmf6/g2mjY/xmbwbbtfbVB8jm9QDCID44o74vmjwwQjRV+vD
-         hmgQdHXaw9yJG2Gl97w2lG7Ulqs7jHZH7SqEBj0eX+5D0OeLABxXVk11ti+TBUSE0lKi
-         WkAJFta+j/8YSgN9SitrpLIVccPkvJ8t9NZjVa5mbWrJ/Wqwtr7NbtlIQFd8+oXhFaJS
-         DA9w==
-X-Forwarded-Encrypted: i=1; AFNElJ/BG5hZvk9e9P85qQH1nfO/wgQNlZYYbj6CmGoSkvALNMd5Oz3YRF9y20ZeMdOqe3eR51NVmHtYFg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwdKSYJbRl3+6ZNdjwJ4kefyxHEfh3c8CrIUUaTRJLNsWEuGTw1
-	6Deylcjo8zzq802KWM0fNV/G9y0/bhfWz2hFwkElg/kXZ1CzFNNbEMeA2LbCI1P2N0sTEp5BokX
-	YBKppwKOGzGsD3cm4hi8+r/69sBGKnpM=
-X-Gm-Gg: AeBDiesjKqnzXtCAyIu9TMSUrMTyXM6R5FqPadO5RyulqfSokgw14PC1ERXx5G1YVv9
-	Shk7V/xywLDRuf2slLlAe9Ad3vvMjwoRV5avX8wgLwb2XQn4HCh9Nem6fzWOgdcN5YpIqGZ/dTT
-	p81EzZ2uZyolowFX05dnCkbs0jRNSaFxU4eqrpRCemQcmllN2Mbok3ErIqrjPyLSAnT1Z7GuBcr
-	9w5WsCR3N4MIAZXNdDG/dIm7DQOAoxDeCC/QXnpEMuM04G5wcF8bF/hUd9vLwL5QiE7HnqUPYgg
-	Yz1hZ5mlG+EgV/tHUqHgklCMmpURe6RijoWSkfGHI9SHYjZpHgs=
-X-Received: by 2002:a05:6402:24a2:b0:670:8d90:e861 with SMTP id
- 4fb4d7f45d1cf-672bfd82177mr15503860a12.6.1777060326795; Fri, 24 Apr 2026
- 12:52:06 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="dIV8kYTb"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KSPSoNYyUapFsTJ+hgSv5+4jSQo0hSEZXm4xD+JGgW7AxcB+5bFkmEpimD0qFMfmodiKlUH3n+9DcsTL4jwzx8mNrgv+I3S5e3jqCIhq9ewrjXY+7pLCnYNxRMaz+KfeRStxdLXWZoFLf6I47NbR7sGzLrP2+cbf4gpRs1V4vXNk46+Y4IEx3/D3BNoKMLWPrnNFoGQAGn5OwJeCpedE1ZmTfpPg4g/mFOghSELMYrJqbSBpuB3vAX6Q+5VUoxjEV300CT+4rC+tAJ4aavZkNdtEIjJXcGXu8lgb7/csRMWky9DptRN4L9nzOy775TTZM1kexyrAlFfmxM2g2Gjgng==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9v2w4pq1FLndtWxZUYPatJR+oW1t24IipFKyEGJ6ZoU=;
+ b=JApSRMJItkEkGQPM+24MZ9oKrLF9tciU5yheKBeFzK3fw62kc8Sqo+sMiFt/OBwPQDTLikkO8ILCVWafHyjwk4QVE3RMThVF2Hlv5GYwI34F6cCzEzFGc6vY4XhZMZoYeybPyhEJoUxK3Bt41s/tlmnhaHHEjRQr6/ol2ZYHGYLLRRGq4TEocjE1hj9NWCUupojKDLbD4CO/dkdwG2nVgzTGBNpXoWi42rYGsJ/GCJAEP82phIp26MhfJpFcH6avNs7+mmWRuN7w1Y1CeyibZ/0GIMvI+5olWHzirCW+gmfQF7i0BJ4Xph6UsWYyu8eHr6pXUm01saL3O5wJp5zomg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9v2w4pq1FLndtWxZUYPatJR+oW1t24IipFKyEGJ6ZoU=;
+ b=dIV8kYTbqKkgKoRBwdmbrrkEkOFY3+bavTKB9IaA2v96xPDvS1jSVI/TPczP7f3PDWTWkoHQhDK/S2wEufevlb8zsHwRLlFTI+7SRPdNdWETd3kodXfkICT1zUQtyBCpFSItvlkkLL72wU5/azaKfhPPMTX+vniDOsUdnEnwRq7jzHudlxU29SCKISkUg16/ihtDskbX5dljAUMQMbVp6z8QuZLzkK3fk5O22u/2PvyDTdzTztmujvkRO5ZqHEKZGb7uw5fD0Tvwrz6cLVlYXoWFkKFR1M478B4/3dciN8JNucgRrCUERYVISyEyk1yIHMWOHCwFm4BkxwQMRzWhVw==
+Received: from CH5P222CA0010.NAMP222.PROD.OUTLOOK.COM (2603:10b6:610:1ee::28)
+ by PH7PR12MB6857.namprd12.prod.outlook.com (2603:10b6:510:1af::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.22; Fri, 24 Apr
+ 2026 20:19:23 +0000
+Received: from CH2PEPF00000145.namprd02.prod.outlook.com
+ (2603:10b6:610:1ee:cafe::53) by CH5P222CA0010.outlook.office365.com
+ (2603:10b6:610:1ee::28) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.22 via Frontend Transport; Fri,
+ 24 Apr 2026 20:19:23 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ CH2PEPF00000145.mail.protection.outlook.com (10.167.244.102) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9846.18 via Frontend Transport; Fri, 24 Apr 2026 20:19:22 +0000
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 24 Apr
+ 2026 13:19:03 -0700
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by rnnvmail201.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 24 Apr
+ 2026 13:19:02 -0700
+Received: from sumitg-l4t.nvidia.com (10.127.8.14) by mail.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
+ Transport; Fri, 24 Apr 2026 13:18:56 -0700
+From: Sumit Gupta <sumitg@nvidia.com>
+To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
+	<ionela.voinescu@arm.com>, <zhenglifeng1@huawei.com>,
+	<zhanjie9@hisilicon.com>, <corbet@lwn.net>, <skhan@linuxfoundation.org>,
+	<rdunlap@infradead.org>, <mario.limonciello@amd.com>,
+	<linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
+	<jonathanh@nvidia.com>, <vsethi@nvidia.com>, <ksitaraman@nvidia.com>,
+	<sanjayc@nvidia.com>, <mochs@nvidia.com>, <bbasu@nvidia.com>,
+	<sumitg@nvidia.com>
+Subject: [PATCH v2] cpufreq: CPPC: add autonomous mode boot parameter support
+Date: Sat, 25 Apr 2026 01:48:14 +0530
+Message-ID: <20260424201814.230071-1-sumitg@nvidia.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
- <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
- <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
- <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
- <CAMgjq7AGzBubCkmv7LubBjPLN1DzL472d4zUm+sGxo8ZptMgRw@mail.gmail.com>
- <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
- <CAMgjq7D1WXUHqAV1yuXvrUmEsE_m_+yx0mBq6teJhipx6mySbA@mail.gmail.com> <CAO9r8zMk7xTi-Txmj1+Z9=250fD8HuMQFyT1iwjTW9coLXgqoA@mail.gmail.com>
-In-Reply-To: <CAO9r8zMk7xTi-Txmj1+Z9=250fD8HuMQFyT1iwjTW9coLXgqoA@mail.gmail.com>
-From: Kairui Song <ryncsn@gmail.com>
-Date: Sat, 25 Apr 2026 03:51:29 +0800
-X-Gm-Features: AQROBzCsso3pTVLRZNMTqiOUBfD8dT5yym5C4wDmzSyyd7Bc0ZTx2dDcUA3zHto
-Message-ID: <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com>
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-To: Yosry Ahmed <yosry@kernel.org>
-Cc: Nhat Pham <nphamcs@gmail.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	akpm@linux-foundation.org, Alistair Popple <apopple@nvidia.com>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Barry Song <baohua@kernel.org>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Baoquan He <bhe@redhat.com>, 
-	Byungchul Park <byungchul@sk.com>, 
-	"open list:CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)" <cgroups@vger.kernel.org>, Chengming Zhou <chengming.zhou@linux.dev>, 
-	Chris Li <chrisl@kernel.org>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@kernel.org>, 
-	Dev Jain <dev.jain@arm.com>, Gregory Price <gourry@gourry.net>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>, Jann Horn <jannh@google.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Lance Yang <lance.yang@linux.dev>, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-	linux-mm <linux-mm@kvack.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Michal Hocko <mhocko@suse.com>, Muchun Song <muchun.song@linux.dev>, 
-	Mariano Pache <npache@redhat.com>, Pavel Machek <pavel@kernel.org>, Peter Xu <peterx@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Pedro Falcato <pfalcato@suse.de>, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
-	Roman Gushchin <roman.gushchin@linux.dev>, Mike Rapoport <rppt@kernel.org>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Suren Baghdasaryan <surenb@google.com>, tglx@kernel.org, 
-	Vlastimil Babka <vbabka@suse.cz>, Wei Xu <weixugc@google.com>, 
-	"Huang, Ying" <ying.huang@linux.alibaba.com>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
-	Yuanchu Xie <yuanchu@google.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Zi Yan <ziy@nvidia.com>, 
-	Meta kernel team <kernel-team@meta.com>, Rik van Riel <riel@surriel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-NVConfidentiality: public
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH2PEPF00000145:EE_|PH7PR12MB6857:EE_
+X-MS-Office365-Filtering-Correlation-Id: 257a86f5-ef2a-43a8-df11-08dea23ec633
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|376014|1800799024|82310400026|36860700016|921020|13003099007|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	M6nixraRb6+hfkrj5gzb9NogRPFrDQUsiIeyDJ5q0x3wCGz0au2DNVAtzQ+PIDquGyEg+B2XTX59dBiMTYL7XLcQXGntEX0amrNK4gSNVfNJkGoZErkGvyXeni1AL0iu/CNQgj4BqvRZkNsEnfjqzXPjtN4mnp8ujkQysCIMwOqWLMC5SM02vU04T2IN/3pvy3ahfhmxe3K6BwrVVe0L2EtiFHlLt4ww1coWLrZ4DpyrLM/recYHmQv+8TuH8XR2tql1qX/8raWACOgTVh8c375ACny9ZEx9Ri1JncFWsoe0Vcy1W5hLNR+kQpUt1V//klfTwXqxA6KNrVOoKMMiyV5j+LMSRhXHR3yECdWB8FTPZiY06rpOpZ04C65iar4ppvN/Hyq2tXlzMbBpIRKG5+/b6RIUNWh2Fw7YrG9ypUVfDu33R3HOibk6I7flKLZ+iQY2ZiJL6uw3lTPWhF86WWIJxNvxCW5K1zE5SCKvxD6j+gXHtZ9xs74yChl8DYY8CFv+2aA+qmgJx1RSUxFlqQZAczOhzHhY4nKyg44Q7u7dqtTLD7JtCI/ng+yt9WagPqpnia80SrA9PEXf6b70277fyRKfpd4p0kb4pdXQk6qsE6KxTdP/WZMfk0hSUftcNi3TWx/+fp6i7IQcWhaP0qKzDyGK3IXh9pc+Fj9fvR68Kh5ZJta3H8JxJslJfrm3oWOxLSTOxZSIiBWlVH/jGEa2U069LmmCl11J8xbwqjGyaXC0ICCzdidRY30yxHHFwBPiC2nTG7LhmFbf9FjP2avTeuy5sqNdPpzQ0Q+G3jR4+zReEJzZEp4FKhhB/sLu
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(82310400026)(36860700016)(921020)(13003099007)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	lc8cLpEWDnaxK3t71iqLSTQ2N+HFGHWhRqq7U5oXRxXeJErlh+Kq6TIXyeLi6WwWYqtGePGtEmG0qpFquBSxpK1XGQfY/WurMba9NEcYeSqkPGH/Mv7fzx/aegMOzr49VzewVZ9tCTsg6eQJA8z2SXmCbNjY9LMOtpetPceGVQroVyTk54hQoxtKDe4J7q6DsLrQMxlqDHOIClvtGDQsJO9muXsZszx5w7rrrIT5OfxqQ7V98B3zya0vJZks9WXF1mfnts+IEUJRU0W6241B2M5Nz9Its9g2njczI6Qqhb/FnOZP4nif2Kq2LaYnqYNfr9Yv15FtUyQyVFLwnn8QSjg+ro4rU3JNJ2WEXJ9uT0lfBKNjXJZ5HlSAkvHsibzB7X9N8ay8ziIY2jfhZmkwr4w3GcEAfu7LuSeBmJlQPoL8+xyky1APGCEl885hE/GU
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Apr 2026 20:19:22.8578
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 257a86f5-ef2a-43a8-df11-08dea23ec633
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH2PEPF00000145.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6857
 
-On Sat, Apr 25, 2026 at 3:12=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wrot=
-e
-> > https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.park@=
-lge.com/
->
-> Does this do promotion/demotion of swap entries?
+Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
+CPPC autonomous performance selection on all CPUs at system startup.
+When autonomous mode is enabled, the hardware automatically adjusts
+CPU performance based on workload demands using Energy Performance
+Preference (EPP) hints.
 
-Not yet, let's do things step by step.
+When auto_sel_mode=1:
+- Configure all CPUs for autonomous operation on first init
+- Set EPP to performance preference (0x0)
+- Use HW min/max_perf when available; otherwise initialize from caps
+- Clamp desired_perf to bounds before enabling autonomous mode
+- Hardware controls frequency instead of the OS governor
 
-> > For example just reserve a type (e.g. type 0) as the virtual type?
-> > (type is really a bad naming though).
-> >
-> > The that swap file (or swap mapping) will be
-> >
-> > I was trying that based on this:
-> > https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d19=
-815@tencent.com/
-> >
-> > It seems to work and the only thing we need is actually just something
-> > like this one in VSS:
-> > https://lore.kernel.org/linux-mm/20260320192735.748051-15-nphamcs@gmail=
-.com/
-> >
-> > This part:
-> > + /* fall back to physical swap device */
-> > + if (!vswap_alloc_swap_slot(folio)) {
-> >
-> > We do a folio_realloc_swap if folio->swap have type 0.
-> >
-> > Which means, if there is no virtual device / mapping / file / space
-> > (I'm not sure how to name it at this point :) ), the ordinary swap
-> > routine is just still there untouched.
-> >
-> > If there is one, and it's being used, then, it is still the ordinary
-> > swap routine, just do an extra allocation (and the extra allocation
-> > strictly follows YoungJun's tier rule), which is same with VSS, but
-> > everything is reused. From a user or high level interface perspective,
-> > this can be designed with no difference as VSS. Just with a few
-> > bonuses: being per memcg / task / runtime optional, zero overhead if
-> > not enabled, and reusing all the infra.
-> >
-> > BTW this deferred allocation (in VSS or dynamic swap mapping, similar
-> > thing) is actually a bit concerning to me as well. It changes the
-> > common swapout routine and maybe worth reconsideration (e.g.
-> > activate_locked_split and mTHP stats is now ignored?), being optional
-> > for now also seems safer.
->
-> I am not sure if I understand you correctly. I think what you're proposin=
-g is:
->
-> - Page tables either point directly to a swap slot, or to a virtual swap =
-entry.
-> - By default, page tables just point to swap slots maintaining current be=
-havior.
+The boot parameter is applied only during first policy initialization.
+Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
 
-I mean, they are all swap entries, nothing special from the page table
-side. Swap subsystems handle things internally.
+This patch depends on patch [2] ("cpufreq: Set policy->min and max
+as real QoS constraints") so that the policy->min/max set in
+cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
+during init.
 
-> - If we have multiple backends (e.g. zswap or tiering), we use virtual
-> swap entry instead.
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
+Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+---
+v[1] -> v2:
+- Call cppc_set_enable() unconditionally so CPPC is enabled for both
+  OS-driven and autonomous modes.
+- Init min/max from caps instead of cppc_cpufreq_update_perf_limits()
+  as policy->min/max aren't yet populated.
 
-Actually that can just follow the swap priority, or tier rule. Even if
-virtual mapping exists, it can be bypassed. e.g. you have a large NBD
-and don't care about either fragmentation or compression for offline
-workload cgroups, then why use a virtual layer for them which could
-double the kmem usage or spend more CPU? Setup is a different issue
-which can be discussed.
+[1] https://lore.kernel.org/lkml/20260317151053.2361475-1-sumitg@nvidia.com/
+[2] https://lore.kernel.org/lkml/20260423084731.1090384-2-pierre.gondois@arm.com/
+---
+ .../admin-guide/kernel-parameters.txt         | 13 +++
+ drivers/cpufreq/cppc_cpufreq.c                | 89 +++++++++++++++++--
+ 2 files changed, 97 insertions(+), 5 deletions(-)
 
-> - The physical swapfile has clusters and swap tables (status quo).
-> - Virtual swap is implemented with clusters and swap tables in a
-> virtual space, and each table entry points to an underlying swap slot
-> or zswap entry.
-> - If a page table has a physical swap slot, and we need to do tiering,
-> we basically "make it virtual" by making the swap table of the
-> physical swapfile point at a virtual swap entry? or another physical
-> swapfile? Not sure.
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 0a1abed1b93c..751817b0573a 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1067,6 +1067,19 @@ Kernel parameters
+ 			policy to use. This governor must be registered in the
+ 			kernel before the cpufreq driver probes.
+ 
++	cppc_cpufreq.auto_sel_mode=
++			[CPU_FREQ] Enable ACPI CPPC autonomous performance
++			selection. When enabled, hardware automatically adjusts
++			CPU frequency on all CPUs based on workload demands.
++			In Autonomous mode, Energy Performance Preference (EPP)
++			hints guide hardware toward performance (0x0) or energy
++			efficiency (0xff).
++			Requires ACPI CPPC autonomous selection register support.
++			Format: <bool>
++			Default: 0 (disabled)
++			0: use cpufreq governors
++			1: enable if supported by hardware
++
+ 	cpu_init_udelay=N
+ 			[X86,EARLY] Delay for N microsec between assert and de-assert
+ 			of APIC INIT to start processors.  This delay occurs
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 02db03d03755..672fc3058190 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -28,6 +28,9 @@
+ 
+ static struct cpufreq_driver cppc_cpufreq_driver;
+ 
++/* Autonomous Selection boot parameter */
++static bool auto_sel_mode;
++
+ #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
+ static enum {
+ 	FIE_UNSET = -1,
+@@ -656,6 +659,14 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	caps = &cpu_data->perf_caps;
+ 	policy->driver_data = cpu_data;
+ 
++	/*
++	 * Enable CPPC for both OS-driven and autonomous modes.
++	 * The Enable register is optional - some platforms may not support it
++	 */
++	ret = cppc_set_enable(cpu, true);
++	if (ret && ret != -EOPNOTSUPP)
++		pr_warn("Failed to enable CPPC for CPU%d (%d)\n", cpu, ret);
++
+ 	min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
+ 	max = cppc_perf_to_khz(caps, policy->boost_enabled ?
+ 			caps->highest_perf : caps->nominal_perf);
+@@ -711,11 +722,71 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
+ 	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
+ 
+-	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
+-	if (ret) {
+-		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
+-			 caps->highest_perf, cpu, ret);
+-		goto out;
++	/*
++	 * Enable autonomous mode on first init if boot param is set.
++	 * Check last_governor to detect first init and skip if auto_sel
++	 * is already enabled.
++	 */
++	if (auto_sel_mode && policy->last_governor[0] == '\0' &&
++	    !cpu_data->perf_ctrls.auto_sel) {
++		/* Init min/max_perf from caps if not already set by HW. */
++		if (!cpu_data->perf_ctrls.min_perf)
++			cpu_data->perf_ctrls.min_perf = caps->lowest_nonlinear_perf;
++		if (!cpu_data->perf_ctrls.max_perf)
++			cpu_data->perf_ctrls.max_perf = policy->boost_enabled ?
++				caps->highest_perf : caps->nominal_perf;
++
++		cpu_data->perf_ctrls.desired_perf =
++			clamp_t(u32, cpu_data->perf_ctrls.desired_perf,
++				cpu_data->perf_ctrls.min_perf,
++				cpu_data->perf_ctrls.max_perf);
++
++		policy->cur = cppc_perf_to_khz(caps,
++					       cpu_data->perf_ctrls.desired_perf);
++
++		/* EPP is optional - some platforms may not support it */
++		ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
++		if (ret && ret != -EOPNOTSUPP)
++			pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
++		else if (!ret)
++			cpu_data->perf_ctrls.energy_perf = CPPC_EPP_PERFORMANCE_PREF;
++
++		/* Program min/max/desired into CPPC regs before enabling auto_sel. */
++		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
++		if (ret) {
++			pr_debug("Err setting perf for autonomous mode CPU:%d ret:%d\n",
++				 cpu, ret);
++			goto out;
++		}
++
++		ret = cppc_set_auto_sel(cpu, true);
++		if (ret && ret != -EOPNOTSUPP) {
++			pr_warn("Failed autonomous config for CPU%d (%d)\n",
++				cpu, ret);
++			goto out;
++		}
++		if (!ret)
++			cpu_data->perf_ctrls.auto_sel = true;
++	}
++
++	if (cpu_data->perf_ctrls.auto_sel) {
++		/* Sync policy limits from HW when autonomous mode is active */
++		policy->min = cppc_perf_to_khz(caps,
++					       cpu_data->perf_ctrls.min_perf ?:
++					       caps->lowest_nonlinear_perf);
++		policy->max = cppc_perf_to_khz(caps,
++					       cpu_data->perf_ctrls.max_perf ?:
++					       (policy->boost_enabled ?
++						caps->highest_perf :
++						caps->nominal_perf));
++	} else {
++		/* Normal mode: governors control frequency */
++		ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
++		if (ret) {
++			pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
++				 caps->highest_perf, cpu, ret);
++			goto out;
++		}
+ 	}
+ 
+ 	cppc_cpufreq_cpu_fie_init(policy);
+@@ -1035,10 +1106,18 @@ static int __init cppc_cpufreq_init(void)
+ 
+ static void __exit cppc_cpufreq_exit(void)
+ {
++	unsigned int cpu;
++
++	for_each_present_cpu(cpu)
++		cppc_set_auto_sel(cpu, false);
++
+ 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
+ 	cppc_freq_invariance_exit();
+ }
+ 
++module_param(auto_sel_mode, bool, 0444);
++MODULE_PARM_DESC(auto_sel_mode, "Enable CPPC autonomous performance selection at boot");
++
+ module_exit(cppc_cpufreq_exit);
+ MODULE_AUTHOR("Ashwin Chaugule");
+ MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
+-- 
+2.34.1
 
-They are still ordinary swap entries, nothing special. The virtual
-space is also just a ordinary swap file (or swap mapping), which is
-easy to do:
-https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d19815@=
-tencent.com/
-
-Then its virtual_table will have a different set of swap entries. (I
-left that part undone though).
-
-> > Right... I mean with two layers you will likely have >16 bytes
-> > overhead, and double lookup.
->
-> Why >16 bytes? Do we need anything extra other than the reverse
-> mapping? Also why do we need a double lookup?
-
-You will have to store at least the following info: memcg (2 bytes),
-shadow (8 bytes), count (at least 1 bytes), and revert mapping (8
-bytes, since you have to address a full virtual swap space). And some
-type info is also needed. Part of them can be shrinked but still,
-scientifically, merging two layers into one is considered a kind of
-optimization.
-
-You need lookup the virtual layer, then the lower layer for many
-decision making, is was discussed before to introduce more cache bit
-or things like that and I think that is getting over complex, reminds
-me of the slot cache or HAS_CACHE thing...:
-https://lore.kernel.org/linux-mm/CAMgjq7DJrtE-jARik849kCufd0qNnZQs7C8fcyzVO=
-KE14-O+Dw@mail.gmail.com/
-
-> I don't think I quite understand it yet, maybe I am the problem :)
-
-Haha, not at all! Blame me for the poor explanation. To be honest, the
-design is still evolving and there are definitely details that need to
-be improved. It's hard to discuss these abstractions purely in theory,
-so it's probably best just keep the works moving forward in a clean
-way, and make things simpler and better be opt-in first.
