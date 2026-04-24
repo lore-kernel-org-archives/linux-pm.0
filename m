@@ -1,171 +1,98 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D22BE30C60D
-	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 20:48:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2A58495E5;
+	Fri, 24 Apr 2026 01:16:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776977283; cv=none; b=JE19LwXVA7GEClmMVPvM5DWpSVTA2o9i/JkExNAPwFClwFGK6c+JDbuw4uKq5+x+YaGKe8xOb2WYzkHeDC0jeQAkBNfMw7aKQy1hTPD2h1RCN+4GBZFbQaQemqg5V/bZ3J31MNlLbozUwKR5UH+BmCAA33WnFj0gkgLzO+jAPTM=
+	t=1776993420; cv=none; b=kSbAM4UDKkTuq59kz7TrwlguaKuH0xcMBKHAFyFq+eZr4uNvWVttGv8fyBGyZ/2xg1n03BWQVu68uMNvgQ1r/kpwx6frPkIYN72SUq3gLLAr0hy3jOhMp9D317n5oxvZU0+fV1h7CaWjVR5ohveuOo7QtdzS8zC8VI8Y/dJr1x0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776977283; c=relaxed/simple;
-	bh=jZDdlWnnmZL0XkbmLmxoEnk709HEQgmgR/yJgX91nRY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BFQH4oKrxMl3vV5+aEN43Q9+r6wX9mUEbQTZMHEvKsQyhnSzLzm+9LWbNCXDJMMdeyGkOEJK2kHx2/NZuHPtLzufg+0A8Y7i6iZTBDJlFQCCzoOKDnzGU3A+TCHaqR1HNQWC9LteuFEGRSjZDtRn3AUHDNDA9knZ5YKG/GYMl6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Rx89kRCS; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Rx89kRCS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BE64C32781
-	for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 20:48:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776977283;
-	bh=jZDdlWnnmZL0XkbmLmxoEnk709HEQgmgR/yJgX91nRY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Rx89kRCSlMrd7yHaiWXgQNZ6WFzc+/CKBSqW6tv6BpFT+A/XF9LFoVuRmekZJCcrW
-	 PucoZ+X0h55vGSz9jfRis3+KCvMSGCNSz9d+5It5kj3mDn/0Lxh+DK6iVMDORGNcke
-	 aXsxJBoQ49XvPZLLdxUiYoJ5kF2I5hTANUyf6QqSx22z9Ym8DmMOYvNwgQdbRS8v/Q
-	 m8izcosAHWgz/ZY6Mc5154h2tsCRHenWgtEmselaULHpCVGDLHOTix8xjAPEy4oIZZ
-	 oS79eyKyxiTPY2mWKPU3eVuO8lKJ+WF9QfF0VJEdaYEFuj/xwKjsdE6N9NL1k3Vzsk
-	 16A0t+tpNvBQg==
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-671d60ef9c6so9409178a12.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 13:48:03 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/SDifNKf4Sp1P7oIlkfuyVT5sSOAgQodLWQ83Qi+fkAUcrKtdRFnBBfzjX7Ftf19wK68roJzsThA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxhS5kj/5/HEiHF+HUD1sOkhe93cOdFm5e8NZZCLC3Dxk/AzmiP
-	sYP1XJ2PGsslfYSzrDtB9QFTjqHkjgNqr0kmvPF1e/3nHjt89lQJ+6W0LEUuIMI+S5n6UoeKt72
-	ivpIoxq3xUfnHx+Du3js9jlwQWswwba8=
-X-Received: by 2002:a17:907:3c90:b0:bac:7f7d:2bf8 with SMTP id
- a640c23a62f3a-bac7f7d3864mr226153866b.0.1776977282033; Thu, 23 Apr 2026
- 13:48:02 -0700 (PDT)
+	s=arc-20240116; t=1776993420; c=relaxed/simple;
+	bh=niKI0Fdnr73pUt8ud0IpeCJ1/qsta5AV18WFsQj/1mY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=GEtWTsLQ0FDCjs6xtzgagFwTLNhmhCxxUvXiiBbpauD5yLZylvXTILbW2TrQsHFhofNBA4JTUTDf0XV6r8O2Ln4p+PlpgCcI6pt2PhYu375l4NVroSzGyCiJ0ljpKF2PzNUiog1KpgJCXaosDdtzc7Vw33eGpT3R2hRyTRUnZRk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from ubuntu.. (unknown [202.112.113.208])
+	by APP-03 (Coremail) with SMTP id rQCowAC3usH2wuppP2AADw--.19102S2;
+	Fri, 24 Apr 2026 09:10:22 +0800 (CST)
+From: Ma Ke <make24@iscas.ac.cn>
+To: sre@kernel.org,
+	philipp@uvos.xyz
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org,
+	Ma Ke <make24@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] power: supply: cpcap-battery: Fix missing nvmem_device_put() causing reference leak
+Date: Fri, 24 Apr 2026 09:10:13 +0800
+Message-ID: <20260424011013.879639-1-make24@iscas.ac.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
- <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
- <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
-In-Reply-To: <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
-From: Yosry Ahmed <yosry@kernel.org>
-Date: Thu, 23 Apr 2026 13:47:50 -0700
-X-Gmail-Original-Message-ID: <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
-X-Gm-Features: AQROBzCGOvAuB5Pa5DHTHxdTW2aSpPlTxrehClW5Vv-d-Qe-2m8TRnW986l3LBY
-Message-ID: <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-To: Kairui Song <ryncsn@gmail.com>
-Cc: Nhat Pham <nphamcs@gmail.com>, Liam.Howlett@oracle.com, akpm@linux-foundation.org, 
-	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
-	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, 
-	cgroups@vger.kernel.org, chengming.zhou@linux.dev, chrisl@kernel.org, 
-	corbet@lwn.net, david@kernel.org, dev.jain@arm.com, gourry@gourry.net, 
-	hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
-	joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
-	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
-	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
-	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, 
-	ryan.roberts@arm.com, shakeel.butt@linux.dev, shikemeng@huaweicloud.com, 
-	surenb@google.com, tglx@kernel.org, vbabka@suse.cz, weixugc@google.com, 
-	ying.huang@linux.alibaba.com, yosry.ahmed@linux.dev, yuanchu@google.com, 
-	zhengqi.arch@bytedance.com, ziy@nvidia.com, kernel-team@meta.com, 
-	riel@surriel.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowAC3usH2wuppP2AADw--.19102S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7KFy3Gw4xGw4DXF1DXrWxCrg_yoW8Ar4kpF
+	W7GayYyry7WFnrJ347Jr4UuF98K3ySk343KFyxK34j9ry8J3yYyryYyasrJrWUtrWkJF1F
+	qFWfX3W8Gw13JaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvC14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
+	0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr
+	1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
+	rcIFxwCY1x0262kKe7AKxVWUAVWUtwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbV
+	WUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF
+	67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42
+	IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF
+	0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Jr0_GrUvcSsGvfC2Kf
+	nxnUUI43ZEXa7VUbsYFJUUUUU==
+X-CM-SenderInfo: ppdnvj2u6l2u1dvotugofq/
 
-> > > Yes, this absolutely works. In fact, I previously posted a working RFC
-> > > based on this idea. In that series, clusters are dynamically
-> > > allocated, allowing the swap space to be dynamically sized
-> > > (essentially infinite) while reusing all the existing infrastructure:
-> > > https://lore.kernel.org/all/20260220-swap-table-p4-v1-0-104795d19815@tencent.com/
-> >
-> > There are a few aspects that I don't agree with in this RFC, and I think
-> > Nhat and Johannes raised most of them. Mostly that I don't want to
-> > expose ghost swapfiles or similar to userspace.
-> >
-> > I think userspace's view of swapfiles should remain the same and reflect
-> > the physical swap slots. The virtual swap layer should be completely
-> > transparent in this case. Userspace shouldn't need to configure it in
-> > any way.
->
-> That approach is definitely doable. For example, with that RFC we
-> could simply drop the interface I introduced and enable it via a
-> different knob, and that would be very close to it. :)
->
-> Using a swapfile to represent the virtual layer externally just made
-> it more flexible.
+In cpcap_battery_detect_battery_type(), the reference to an nvmem
+device obtained via nvmem_device_find() is not released with
+nvmem_device_put() on the success or read-failure paths, causing a
+permanent reference leak. The driver’s retry logic on subsequent
+battery property reads can compound this leak, preventing the nvmem
+device from ever being freed.
 
-I think it makes it less flexible to be honest. Once it's exposed to
-userspace there's little we can change about it, and userspace needs
-to set it up.
+Found by code review.
 
-> I agree that the RFC design was a bit confusing and
-> could be improved. There is no technical difficulty in hiding it from
-> userspace; it's mostly a design choice. And even if we don't use a
-> swapfile to represent it internally, all the other infrastructure can
-> still be reused without much modification.
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+Cc: stable@vger.kernel.org
+Fixes: fd46821e85de ("power: supply: cpcap-battery: Add battery type auto detection for mapphone devices")
+---
+ drivers/power/supply/cpcap-battery.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Yeah that's what I was getting at. It doesn't even need to be a
-swapfile in the kernel, at the very least it should be named
-differently to avoid confusion with actual swapfiles.
+diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+index 7b7bdce3162f..59c741993ef8 100644
+--- a/drivers/power/supply/cpcap-battery.c
++++ b/drivers/power/supply/cpcap-battery.c
+@@ -439,10 +439,13 @@ static void cpcap_battery_detect_battery_type(struct cpcap_battery_ddata *ddata)
+ 	if (IS_ERR_OR_NULL(nvmem)) {
+ 		ddata->check_nvmem = true;
+ 		dev_info_once(ddata->dev, "Can not find battery nvmem device. Assuming generic lipo battery\n");
+-	} else if (nvmem_device_read(nvmem, 2, 1, &battery_id) < 0) {
+-		battery_id = 0;
+-		ddata->check_nvmem = true;
+-		dev_warn(ddata->dev, "Can not read battery nvmem device. Assuming generic lipo battery\n");
++	} else {
++		if (nvmem_device_read(nvmem, 2, 1, &battery_id) < 0) {
++			battery_id = 0;
++			ddata->check_nvmem = true;
++			dev_warn(ddata->dev, "Can not read battery nvmem device. Assuming generic lipo battery\n");
++		}
++		nvmem_device_put(nvmem);
+ 	}
+ 
+ 	switch (battery_id) {
+-- 
+2.43.0
 
-> Using a swapfile does have its benefits, though. For example, the
-> virtual layer could act as an ordinary tier following YoungJun's
-> design:
-> https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.park@lge.com/
-
-Hmm I didn't look too closely at this but I don't understand how
-making it a swapfile helps with tiering? If anything, I think it makes
-tiering more difficult. For tiering to work, we need an
-abstraction/redirection layer, such that we don't need to update the
-page tables (or shmem pagecache) if we demote/promote pages. That is
-exactly the use case for a virtual swap layer. The page tables point
-at a virtual swap ID and the backend could change transparently (e.g.
-for zswap writeback, or tiering).
-
-If we make the virtual layer a swapfile, how do we demote/promote
-without updating page tables?
-
-IOW, I think the whole reason we want a virtual layer is to separate
-the backends, which would facilitate tiering. If the virtual layer is
-itself a swapfile, wouldn't it become one of the tiers?
-
-> It also means we wouldn't need to introduce things like a new,
-> virtual-specific swapoff mechanism.
-
-We don't *need* to introduce this, at least not initially. Only if we
-have a good use case for it.
-
-> > In an ideal world, the only noticeable change from userspace is that
-> > with zswap, compressed pages would stop using slots in the swapfile and
-> > charging the memcg for them -- and that zswap would work even without a
-> > swapfile, by just enabling it. This is admittedly a user-visible
-> > behavioral change, but I am hoping that's a good one that we can live
-> > with.
->
-> Totally agree with the ideal end goal for zswap. just not sure if
-> that's the right place to start for this usage, zswap doesn't always
-> apply. For instance, we have SSDs with built-in compression,
-> software-based storage stacks with built-in compression and
-> deduplication, swap over RDMA, and, most notably, ZRAM users. They
-> don't necessarily need zswap or a virtual layer, and the upper layer
-> better be as much simplified as possible.
-
-Right, it's not necessarily zswap at all. As I mentioned above, the
-same logic applies for swap tiering. You can actually consider zswap
-one of the tiers (more-or-less). If you have one swapfile (or one
-tier) like the ones you mention above, the virtual layer just always
-points to a single backend (e.g. the slot in the swapfile). There
-might be some additional overhead, but I think it would be minimal if
-we use the cluster-based approach you have been pushing to eliminate
-static overhead and make it all dynamic based on actual usage.
-
-At a high-level, if we have a single tier/swapfile, I think the only
-additional overhead would be the reverse mapping from the swap slot to
-the virtual swap layer, which would be 8 bytes or so for every swapped
-out entry, right?
-
-I think this was discussed before but I still wonder if we really need
-a reverse mapping, if it's only to optimize swapoff then I don't think
-it's a requirement. We can still scan the virtual swap layer to look
-for slots to swapin. It would still be better than scanning the page
-tables as we do today. But I think there were other use cases for the
-reverse mapping, I just forgot what they were.
