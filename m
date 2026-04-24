@@ -1,37 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33F643346B2;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F3B3335562;
 	Fri, 24 Apr 2026 15:47:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777045656; cv=none; b=MVQhPdc4pHk4QqcjBP9BmfGHhXislQU0+KXFQSspktD2m1zwBgBKtWgL2t0RdD64jixi3U6+SyP3VER8iM37gb0rH/pWJ9th9ac8qAyNKMk3gviPTtXis2FcVpr32He3gw/NI6P9oSTDEjwT+vxBvLyi982/6j7DRJEAebJ8ls0=
+	t=1777045656; cv=none; b=fkXSplgQAyqspsdlE3V8EzYZtxJkMeLTYtQvKSB82+9BUFJyywAinwy8DJ3JaptFiwB+BdRQXOFctpexWFHCXL0Ew/jkXLL+edzhYU370Eb5GxXYcH8IQDywyLSWAkrAXsJrMkerj6wPoFK8BvBiiWR0cS2MNOkYtuEWm/iGq3c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1777045656; c=relaxed/simple;
-	bh=FSssUM/qlp7ESfovypvjaASUoJXNo+ODFXcjPxtQWdE=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=B+4CPABmPlf6t35PN2HASGTVIOCa/GlSIyfxhhqE9VuC5Zw5rqwpZo4WDBy/qpDumvWutcAMTAaM+ZPBtw3Www4UFHD6JcxpfqHQp6+/+KQJbjbDxOnaECH/aLFHXb7VzeRY4CaQOivVUdTrM05YH91Ij4nhUiWdV8Xc6JW/R70=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qOX5eBlh; arc=none smtp.client-ip=10.30.226.201
+	bh=II6YdxRKDLVvfEJMB7LL7pb5QlDG5XuxaMUHkvuWk6k=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=pH8kHcMHznT6leMrwccGS10v+BMsMZL+0v75MncIhvofbMPR03JsfmKbTZbPgJuiLSKa5TLmDOIb3X1T3ZsPnLC/qAGEyhd10MGBEW1EidFwbyjTfvFpP9a7Sl4CX1GflxbYoLleiW8xK5FTuiRy146UKB2qWpjjhxzJKhjuY3k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MJWyU6Ox; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qOX5eBlh"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C69BCC19425;
-	Fri, 24 Apr 2026 15:47:35 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MJWyU6Ox"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 151EEC2BCB6;
+	Fri, 24 Apr 2026 15:47:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777045655;
-	bh=FSssUM/qlp7ESfovypvjaASUoJXNo+ODFXcjPxtQWdE=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=qOX5eBlhdNBZYd/8lIpY6nkazOyfy6CxJjbj5PDdcmn33fFmTRkVvAavRqf/sUgof
-	 dg2XHoH3vjPhpH4OUdrmdQiLfh6xpIXroDUi2UXWuNLDEwFALHjaEwTSjIdLfXiB+2
-	 Nk8u7AT2XK+Az6oflaUIJOJ5+FXOuGljYb9G5k7uTNE2pmhJQjBmJ/H9SxjgJOT74o
-	 RCXeSFJc5IARw9BA/Puq28uLkUfIzGfp6CQM/QOMK5joB9u1p1c3aGeBiPSyzGVMhL
-	 HRQgDHEQ2p2dy032uGUJEvPgK/6kWwm4fR+md24unZskpG3Pdm6bAt26EAJs9OUMYA
-	 sRJT3nfrIWMsQ==
+	s=k20201202; t=1777045656;
+	bh=II6YdxRKDLVvfEJMB7LL7pb5QlDG5XuxaMUHkvuWk6k=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=MJWyU6OxKZ0xlRnbk9tFp+XBvkMtCl/RgM+d8SudX1mILLS4Uax6HAE+Q7Tz4ShHy
+	 gH5L5ksJKpGte9kLjUf3iFlo2YPPJ3upczxTr+LJpOHYjulYTYXxBChXtyM/jsCzFJ
+	 n+/WkbVAs2Ct/FcOxTM5v6HGtpbDQbYtphnRYumsHnPT5njqNRyiFm+a490ccibhlk
+	 pEcIOjAj1k9ZhCQ4ZVryKXGb8y4Uq8UKSsU1fGVwfBJ0uk2v0sbAkXwOGKDGYckcs1
+	 p3XXrOz2Z+donwIyqcNFFSxBvJpwlXFoeBce5mVzp3CuZYeBZeASTo0rS9Xtqwn8cj
+	 7FAHvE0aL+7Bg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BACF8FED3D7;
-	Fri, 24 Apr 2026 15:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ABFAFED3ED;
+	Fri, 24 Apr 2026 15:47:36 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Subject: [PATCH v5 0/8] arm64: amlogic: T7 thermal support
-Date: Fri, 24 Apr 2026 17:45:08 +0200
-Message-Id: <20260424-add-thermal-t7-vim4-v5-0-9040ca36afe2@aliel.fr>
+Date: Fri, 24 Apr 2026 17:45:12 +0200
+Subject: [PATCH v5 4/8] thermal: amlogic: Add support for secure monitor
+ calibration readout
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -39,18 +40,10 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/32TzW7bMBCEX8XQuTSW/6JQFHmPoocldxmzlWRXk
- oUEgd+9tJyDk7o96LAC5hvN7uitmXkqPDfd7q2ZeC1zOY51sF92TTrg+MyiUJ0bBcqBkSCQSCw
- HngbsxeLFWgYjANh6GZFSkk1VnibO5WWjfv9xmyf+fa7w5fayGXiecYN3u68bW9cnKGfsXoKtg
- xRS/Cw47g/nJxz643NJ+3Qcvm18XNJh0zqLlrzLmWIKUSNGrVsbo7MpgvIAJmlgzx9VSnvlQgu
- yVY5II/kcpeNoyJMjwxgtGOXbjyrrOURoMbgWmbI1mjQBWZeyTGgoKogKpWvud1fN3tNtm4tpM
- NpbJWqUSi6xZ8E1NZrsg9fYreqjafQasmWjIktqA8mg2WmsTGuCTRSzSp58fGiqQdQ7iDKu2Bc
- Sp+l44ml5FTGyNRS0zl6+O/6tlZu2rv565vHc92LimRehooOWYw6EplvlI7EBtaUd0llkHMWvA
- xLOt65gkqnaW13v1a32Ko8483UhQ1m63cgv1eO2M99c23Mo83KcXreKVr9rff7bxlUKEDJkFVt
- CX2/6VNNzv8/Thqt57xD6MUJdEQCKAiA4UJ8Q+g6h5GOErghU7JW0TAD6E8LcI/7xFfXPEmSSt
- Kql2khzh7hcLn8ARWh9CrwDAAA=
-X-Change-ID: 20260410-add-thermal-t7-vim4-00e571badcc1
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260424-add-thermal-t7-vim4-v5-4-9040ca36afe2@aliel.fr>
+References: <20260424-add-thermal-t7-vim4-v5-0-9040ca36afe2@aliel.fr>
+In-Reply-To: <20260424-add-thermal-t7-vim4-v5-0-9040ca36afe2@aliel.fr>
 To: Guillaume La Roque <glaroque@baylibre.com>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
@@ -63,16 +56,15 @@ To: Guillaume La Roque <glaroque@baylibre.com>,
 Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, 
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6516;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6342;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=FSssUM/qlp7ESfovypvjaASUoJXNo+ODFXcjPxtQWdE=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brCfVn9+Y/M5/nsthm/8zQaZ+35Pz5Nj+z5M08/8uGb
- jnnFr6a3lHKwiDGxSArpsjSP9fyxLvLR8983aOeAjOHlQlkCAMXpwBM5OZ2hv9FOe+8f0X/LYts
- Pyrjt03ZuFA1tFlUOqmFWbPD6tW0+z0MfyVCWr3PLvv28LIJS0WNctPLx25ZLrPtTxfJ/XR7p8X
- 0hgsA
+ bh=hpmbQYKzAOANOL4Nopof62ezzv9RGoucfmyDUhg4E+s=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brCX2zAov63O4XFDX/K982+6x8kaH/VF62rZ6ZnlbuJ
+ s8eH/nYUcrCIMbFICumyNI/1/LEu8tHz3zdo54CM4eVCWQIAxenAEykKJ+RYeqTC7Ucf1+1Xp43
+ tW5Hqllj0KyMdqM5PE8b1ny7rcYXw8PI0LjXNv/D/+JUUf3E9b/qVzOGFFlJnyx5LJnyrKHymPR
+ /RgA=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -80,124 +72,214 @@ X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
 X-Original-From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 Reply-To: linux-kernel-dev@aliel.fr
 
-This series adds thermal monitoring support for the Amlogic T7 SoC,
-used on the Khadas VIM4 board.
+From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-The T7 exposes six thermal sensors (a53, a73, gpu, nna, vpu, hevc),
-each accessible through the secure monitor firmware interface rather
-than a directly mapped eFuse register as on older SoCs.
+Some SoCs (e.g. T7) expose thermal calibration data through the secure
+monitor rather than a directly accessible eFuse register. Add a use_sm
+flag to amlogic_thermal_data to select this path, and retrieve the
+firmware handle and tsensor_id from the "amlogic,secure-monitor" DT
+phandle with one fixed argument.
 
-The series is organized as follows:
+Also introduce the amlogic,t7-thermal compatible using this new path.
 
-- Patch 1 extends the amlogic,t7-thermal DT binding to describe the
-  new amlogic,secure-monitor property.
-- Patches 2-3 extend the Meson secure monitor driver to expose a
-  thermal calibration read command (SMC ID 0x82000047).
-- Patch 4 adds the secure monitor readout path to the amlogic thermal
-  driver and introduces the amlogic,t7-thermal compatible.
-- Patches 5-7 wire up the T7 DTSI with CPU cooling cells, sensor
-  nodes, and thermal zones.
-- Patch 8 extends the Khadas VIM4 DTS to map all thermal zones to the
-  on-board MCU fan controller (states 30–100, corresponding to the
-  FAN_CTRL register range 0x1E–0x64).
+While refactoring, fix a pre-existing bug where
+amlogic_thermal_initialize() was called after
+devm_thermal_of_zone_register(), causing the thermal framework to
+read an uninitialized trim_info on zone registration.
 
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
-Changes in v5:
-- PATCH 4: Remove unnecessary variable and coding style alignment
-           according to Neil's feedback.
-- Link to v4: https://lore.kernel.org/r/20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr
+ drivers/thermal/amlogic_thermal.c | 112 ++++++++++++++++++++++++++++----------
+ 1 file changed, 82 insertions(+), 30 deletions(-)
 
-Changes in v4:
-- PATCH 4: Extract SM and syscon setup into amlogic_thermal_probe_sm() and
-           amlogic_thermal_probe_syscon() removing amlogic_thermal_initialize()
-           from Daniel's feedback.
-           Also fix pre-existing bug: move calibration readout before
-           devm_thermal_of_zone_register() to avoid reading uninitialized
-           trim_info, according to Daniel's feedback.
-- Link to v3: https://lore.kernel.org/r/20260421-add-thermal-t7-vim4-v3-0-a2e7215ed003@aliel.fr
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index 5448d772db12a..a0b530624b60c 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -25,6 +25,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/thermal.h>
++#include <linux/firmware/meson/meson_sm.h>
+ 
+ #include "thermal_hwmon.h"
+ 
+@@ -84,12 +85,14 @@ struct amlogic_thermal_soc_calib_data {
+  * @u_efuse_off: register offset to read fused calibration value
+  * @calibration_parameters: calibration parameters structure pointer
+  * @regmap_config: regmap config for the device
++ * @use_sm: read data from secure monitor instead of efuse
+  * This structure is required for configuration of amlogic thermal driver.
+  */
+ struct amlogic_thermal_data {
+ 	int u_efuse_off;
+ 	const struct amlogic_thermal_soc_calib_data *calibration_parameters;
+ 	const struct regmap_config *regmap_config;
++	bool use_sm;
+ };
+ 
+ struct amlogic_thermal {
+@@ -100,6 +103,8 @@ struct amlogic_thermal {
+ 	struct clk *clk;
+ 	struct thermal_zone_device *tzd;
+ 	u32 trim_info;
++	struct meson_sm_firmware *sm_fw;
++	u32 tsensor_id;
+ };
+ 
+ /*
+@@ -133,26 +138,6 @@ static int amlogic_thermal_code_to_millicelsius(struct amlogic_thermal *pdata,
+ 	return temp;
+ }
+ 
+-static int amlogic_thermal_initialize(struct amlogic_thermal *pdata)
+-{
+-	int ret = 0;
+-	int ver;
+-
+-	regmap_read(pdata->sec_ao_map, pdata->data->u_efuse_off,
+-		    &pdata->trim_info);
+-
+-	ver = TSENSOR_TRIM_VERSION(pdata->trim_info);
+-
+-	if ((ver & TSENSOR_TRIM_CALIB_VALID_MASK) == 0) {
+-		ret = -EINVAL;
+-		dev_err(&pdata->pdev->dev,
+-			"tsensor thermal calibration not supported: 0x%x!\n",
+-			ver);
+-	}
+-
+-	return ret;
+-}
+-
+ static int amlogic_thermal_enable(struct amlogic_thermal *data)
+ {
+ 	int ret;
+@@ -190,6 +175,67 @@ static int amlogic_thermal_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	return 0;
+ }
+ 
++static int amlogic_thermal_probe_sm(struct platform_device *pdev,
++				    struct amlogic_thermal *pdata)
++{
++	struct device *dev = &pdev->dev;
++	struct of_phandle_args ph_args;
++	int ret;
++
++	ret = of_parse_phandle_with_fixed_args(pdev->dev.of_node,
++					       "amlogic,secure-monitor",
++					       1, 0, &ph_args);
++	if (ret)
++		return ret;
++
++	if (!ph_args.np) {
++		dev_err(dev, "Failed to parse secure monitor phandle\n");
++		return -ENODEV;
++	}
++
++	pdata->sm_fw = meson_sm_get(ph_args.np);
++	of_node_put(ph_args.np);
++	if (!pdata->sm_fw) {
++		dev_err(dev, "Failed to get secure monitor firmware\n");
++		return -EPROBE_DEFER;
++	}
++
++	pdata->tsensor_id = ph_args.args[0];
++
++	return meson_sm_get_thermal_calib(pdata->sm_fw,
++					  &pdata->trim_info,
++					  pdata->tsensor_id);
++}
++
++static int amlogic_thermal_probe_syscon(struct platform_device *pdev,
++					struct amlogic_thermal *pdata)
++{
++	struct device *dev = &pdev->dev;
++	int ver;
++
++	pdata->sec_ao_map =
++		syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
++						"amlogic,ao-secure");
++	if (IS_ERR(pdata->sec_ao_map)) {
++		dev_err(dev, "syscon regmap lookup failed.\n");
++		return PTR_ERR(pdata->sec_ao_map);
++	}
++
++	regmap_read(pdata->sec_ao_map, pdata->data->u_efuse_off,
++		    &pdata->trim_info);
++
++	ver = TSENSOR_TRIM_VERSION(pdata->trim_info);
++
++	if ((ver & TSENSOR_TRIM_CALIB_VALID_MASK) == 0) {
++		dev_err(&pdata->pdev->dev,
++			"tsensor thermal calibration not supported: 0x%x!\n",
++			ver);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static const struct thermal_zone_device_ops amlogic_thermal_ops = {
+ 	.get_temp	= amlogic_thermal_get_temp,
+ };
+@@ -226,6 +272,12 @@ static const struct amlogic_thermal_data amlogic_thermal_a1_cpu_param = {
+ 	.regmap_config = &amlogic_thermal_regmap_config_g12a,
+ };
+ 
++static const struct amlogic_thermal_data amlogic_thermal_t7_param = {
++	.use_sm			= true,
++	.calibration_parameters	= &amlogic_thermal_g12a,
++	.regmap_config		= &amlogic_thermal_regmap_config_g12a,
++};
++
+ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 	{
+ 		.compatible = "amlogic,g12a-ddr-thermal",
+@@ -239,6 +291,10 @@ static const struct of_device_id of_amlogic_thermal_match[] = {
+ 		.compatible = "amlogic,a1-cpu-thermal",
+ 		.data = &amlogic_thermal_a1_cpu_param,
+ 	},
++	{
++		.compatible = "amlogic,t7-thermal",
++		.data = &amlogic_thermal_t7_param,
++	},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, of_amlogic_thermal_match);
+@@ -271,12 +327,12 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+ 	if (IS_ERR(pdata->clk))
+ 		return dev_err_probe(dev, PTR_ERR(pdata->clk), "failed to get clock\n");
+ 
+-	pdata->sec_ao_map = syscon_regmap_lookup_by_phandle
+-		(pdev->dev.of_node, "amlogic,ao-secure");
+-	if (IS_ERR(pdata->sec_ao_map)) {
+-		dev_err(dev, "syscon regmap lookup failed.\n");
+-		return PTR_ERR(pdata->sec_ao_map);
+-	}
++	if (pdata->data->use_sm)
++		ret = amlogic_thermal_probe_sm(pdev, pdata);
++	else
++		ret = amlogic_thermal_probe_syscon(pdev, pdata);
++	if (ret)
++		return ret;
+ 
+ 	pdata->tzd = devm_thermal_of_zone_register(&pdev->dev,
+ 						   0,
+@@ -290,10 +346,6 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+ 
+ 	devm_thermal_add_hwmon_sysfs(&pdev->dev, pdata->tzd);
+ 
+-	ret = amlogic_thermal_initialize(pdata);
+-	if (ret)
+-		return ret;
+-
+ 	ret = amlogic_thermal_enable(pdata);
+ 
+ 	return ret;
 
-Changes in v3:
-- PATCH 1: Replace second if check by an else statement.
-  Remove unnecessary label in example according to Conor's feedback
-- Link to v2: https://lore.kernel.org/r/20260413-add-thermal-t7-vim4-v2-0-1002d90a0602@aliel.fr
-
-Changes in v2:
-- PATCH 1: change two const entries to enum, explain why sensor index is needed
-  reorder conditional compatible for required, and fallback only according to
-  Krzysztof's feedback.
-- PATCH 3: Add kerneldoc for meson_sm_get_thermal_calib exported function
-  according to Krzysztof's feedback.
-- Link to v1: https://lore.kernel.org/r/20260410-add-thermal-t7-vim4-v1-0-19f2b8da74d7@aliel.fr
-
----
-Ronald Claveau (8):
-      dt-bindings: thermal: amlogic: Add support for T7
-      firmware: meson: sm: Thermal calibration read via secure monitor
-      firmware: meson: sm: Add thermal calibration SMC call
-      thermal: amlogic: Add support for secure monitor calibration readout
-      arm64: dts: amlogic: t7: Add cooling cells to all CPUs
-      arm64: dts: amlogic: t7: Add thermal sensor nodes
-      arm64: dts: amlogic: t7: Add thermal zones
-      arm64: dts: amlogic: t7: khadas-vim4: Add fan cooling to thermal zones
-
- .../bindings/thermal/amlogic,thermal.yaml          |  37 +++-
- .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  | 102 +++++++++
- arch/arm64/boot/dts/amlogic/amlogic-t7.dtsi        | 245 +++++++++++++++++++++
- drivers/firmware/meson/meson_sm.c                  |  29 ++-
- drivers/thermal/amlogic_thermal.c                  | 112 +++++++---
- include/linux/firmware/meson/meson_sm.h            |   3 +
- 6 files changed, 491 insertions(+), 37 deletions(-)
----
-base-commit: f7b64ed948718290209074a50bb0df17e5944873
-change-id: 20260410-add-thermal-t7-vim4-00e571badcc1
-prerequisite-message-id: <20260326092645.1053261-1-jian.hu@amlogic.com>
-prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
-prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
-prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
-prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
-prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
-prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
-prerequisite-change-id: 20260326-add-bcm43752-compatible-e264a4f7973a:v2
-prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
-prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
-prerequisite-change-id: 20260330-fix-invalid-property-bbe54d933f71:v2
-prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
-prerequisite-change-id: 20260331-fix-aml-t7-null-reset-2b608ebf9da4:v1
-prerequisite-patch-id: 5b5de77af11747ce964404fb827d2ee2bff47ea5
-prerequisite-patch-id: 1e37fc75fed1e533adee0f3e7e6ead1f8ff3c55c
-prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
-prerequisite-patch-id: 2daf583fb5e7449a02bd217d8aca330171b598aa
-prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
-prerequisite-patch-id: d1ddf9b7710e91f8062de83bd7ba55afb2c4c112
-prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
-prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
-prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
-prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
-prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
-prerequisite-change-id: 20260402-add-mcu-fan-khadas-vim4-ac1cbe553c9b:v5
-prerequisite-patch-id: f03a086b4137158412b2d47b3de793b858de8dde
-prerequisite-patch-id: 123970c9b29c2090440f2fd71c85d3c6fd8e36de
-prerequisite-patch-id: 3e2e56b0926ba327b520f935df4ced5089bbe503
-prerequisite-patch-id: 65a5d76ffdbc9b3aab3385bb65cb027004c30e7e
-prerequisite-patch-id: 237269801826dd3ad7fb16eb4d7d6d4eab504278
-prerequisite-patch-id: 57e9b08a968aedf543d3d0d56cf1ca4db20b2a16
-prerequisite-patch-id: cd98b74fa56af72af2553f391c400981d83cd4f4
-prerequisite-patch-id: b730f5e42be1d89d193e63a0265495cdbf2c7d7b
-prerequisite-patch-id: 8d675e7a239985c762843515b241f0a2f45f9c92
-prerequisite-patch-id: 9debd88fa60febed9cd7208f86603b4c2d270520
-prerequisite-patch-id: 314ef9ff0c4d1d15dab1dea9d92aa065f1eac3e9
-prerequisite-patch-id: e6a1b58b91a877504a12ae68bee71eb4e496c33b
-prerequisite-patch-id: 406f88d7dabd3a870b358fb53c21686f29eb32b7
-prerequisite-patch-id: d7a75ae3be0f54e0a7e81ccb0043a2f05423c9d0
-prerequisite-patch-id: 5e19dc5ace12b532284246f5c2ff3f214d8a9c4f
-prerequisite-patch-id: 06e85862f502b682dac8a0932986d43f0bb82770
-prerequisite-patch-id: 4809bbedf79f59e1abc52c17cffc0b1bbb43d365
-prerequisite-patch-id: c050e8bac4b5491f6c7008a5ccb26f20fad38b46
-prerequisite-patch-id: 30677db8fc57270787245103c0d5acf8791307b0
-
-Best regards,
 -- 
-Ronald Claveau <linux-kernel-dev@aliel.fr>
+2.49.0
 
 
