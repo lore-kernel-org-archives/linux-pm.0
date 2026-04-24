@@ -1,201 +1,100 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EEE2351C2A
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 06:25:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F1A33290AA;
+	Fri, 24 Apr 2026 07:12:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777011937; cv=none; b=WoluEwEH5hPYpeAVzh4qQY7MMrReIMGc2m2J1VmrO9e1F1O4tr0I1VMp+kTV3lVe3ftR6IGaGGL5J4CnZW/hrDODslT+DtxNp54DIkAqJId+9ebh3BUNAuYFG21RU6XSjmEVf1/RPsoTeWR7+H/8DA6AN/AYH/ZGoIXaUcryo44=
+	t=1777014758; cv=none; b=i7aTNvZ6wB4tDLFTfJ5u8pA/mm+d7v5GHWt8SymBJFaJulbRWZE3Bz9oHrRS1Qs70jAH6vp46r7dDNY/JzTSmftMm5qWDsb8MQ11pNT8aA5QzAzBF57SHwkafD8Z0FMVMQPcVrdG9dMSZpOBHHOIROjzgTv0tXVXcnvPG7OfAdE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777011937; c=relaxed/simple;
-	bh=OZAmZrRVMLMsOP3ym3ocwwjAr1z1NW//90f4SY0G6oE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=i+2t8CuurgCOUFJwPt8Dr3mw2VYdhSdVycaBJv4xdstMmIR8SlFmlF2MDchEd7maLxHAc0SJAe6CzSqp157M65TZLnku1WtNVQeOuEDVOwpHQpzpDfpBe/gQnIKZNXbPItqvKtwlviWbCbyB/u6fMzB0ZqxKH+fMcyCYYaa9Tcw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aChjovkQ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LJsQJyla; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1777014758; c=relaxed/simple;
+	bh=ZTEIVhTuDqgIOT6cb5vgfcfT1omDHu17haDclS6sAvU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=lEoxutbdhfuf0ceErqQsmiiYB1zCa5BW9ZtRvUryQS4jzKGiR5ZfIq0r7rSO+HX4Bij4VyYGf7JcilhdVMtyYKzhM0L37dIZSgO2F/0FUA3LTLPH/H5fH4q76q16sjMdvZcq4ZYOr8ZGy1Oh/AYJ0hGO46cdxbBMfblg95uWp5A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=kVOvPJpc; arc=none smtp.client-ip=117.135.210.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aChjovkQ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LJsQJyla"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63O2GFbp756716
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 06:25:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	QE/7SGmm8dVdWu6dNQHkGBrlw+CGR7AbZZlvWxhh7T8=; b=aChjovkQQogDHf47
-	1fwCIwT0LsF1a+xtQ/Cl6rUwXZc/AewDlLHLl+eLfsm3bmCTBccGyVg3Y59+M6yL
-	jrq+txxaGo8TmbUicjZyZJNX5okUOiYs0aQv9lwQ8aGRwEkN13QN0iKqLCXwoKKF
-	67bit+9IlTQmzo5Ui1348siuquoZileWn/CJMDZELquqkE/mIvY9HkNaO9A4wGZD
-	7XiFIhTf9v04/TilYl5gwdKGrar6pQ8MtIArDtfWPlndtAbsd8vC6q700j7eZm/E
-	Cw+ZKxDFn5zfsTmHdaJhntAIY7nYsNIN63pfP263oA1lc5xeXfcRt+1HlZwPNNiL
-	R6Fe9g==
-Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dqr4bjfc5-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 06:25:35 +0000 (GMT)
-Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-2e6bf9cb5b0so1181080eec.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 23:25:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1777011934; x=1777616734; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=QE/7SGmm8dVdWu6dNQHkGBrlw+CGR7AbZZlvWxhh7T8=;
-        b=LJsQJyla/AGl86VOYl79M5MJXjs+A9lmZNPCyQ1O+ZiB7sRoab52YJUPqQiCTC5Mhk
-         m7FilErjGHVKf7pp+MbKuS7tFt2kHfeYRqIrniBfZLuMeSULs3D5BWImFVsxk6+6NjZt
-         UCR6qHMD/Ki5j1quLgHVcos6+PYT/S1KZqylN+91jo4NE8ZGJx26geOKgn4BuleulXs8
-         SjW8Vj0EPDnyz2jVhRpiWoHa86f3l6KrBU1iLAmPCP4TOJ5BP6tM3Q74XlvgWyMYxTJt
-         ySjJTZ69nZesyNMVOJaj+UI63RECQcdqELTwVLv9A0HP4Df9dmvRTjA9HFJip2r7C0EZ
-         MRKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777011934; x=1777616734;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=QE/7SGmm8dVdWu6dNQHkGBrlw+CGR7AbZZlvWxhh7T8=;
-        b=IDanUEuf4QMe7I+0HEk415HuQW2ErtAv3W2lAccjypfj2UP2Uszn4xUIBQH3XJ22be
-         ayTSfpXkjuxtNgc8ZQteS6/340+KEsWnC4/NKDEJza0JNneB+ja71qeiEA/jMyyBtJCE
-         sKsE4pynkjPLFZbbWu+r7DPiSqYskYHqzUVnlbzh+oO5+Buoi41Nsy/9xzdonow3tVsC
-         0Gn03E3VyRMDnlc8Jra+x2NhpGAd/B5YuFrU7g4LMTEg7PcRKHpjrYNahkuUh8gxUEig
-         yMlHathpcPK+Tl6PKCMqsAKbd3plT+oujRvRsV6HP/thpmiGZak7cCmODwA+AHayCDFs
-         XEIQ==
-X-Gm-Message-State: AOJu0YxbMBaSCaJtRHYQQZ5Ic5kzHusuZmkYRZAfGWbmoJIgMuxS9+ch
-	bXuiAuEOWE7vWCv/+lzvU2h4f0Av40Be4TU/EFlDUD0psgQ7oBOQdinEvj+pNWF8DCHu39C/Bso
-	1njjAg7UFPB0PfbvSdSMzi65uP7ner8I8qXmFrkzX4ZLAEsMpw6KXwUiQZb7dBA==
-X-Gm-Gg: AeBDiesNUoayd9IQRea+jNP0JkackBH2XhmpK3reXxSs+yUhRtzlHSWzQ4EGqXn6mqX
-	Jz6FkAJ4VbKAy6Q4QjH1nOCsdpXr7CghfQVuaSJfSWADzeKOz0w/LkivYitcdFjbxSMVes4IxoH
-	xPb1V1iT4zOke7fKEklsO2FM1zrFclRLWRWfwQT1foHsYHtYaHvjYtQISXaWuCntEZEykx+Rar1
-	bqXhWYULn623lhk3SX4BAi2DvvZ4YkP7CPLU/5cg7rYEv2RejlGbUkELhZ8joeKzJofYxUnqcAI
-	Nlx7JqXqbUHNZpOJYpfWUetpbXuId15/YFiHFAi4z9yhohgiJGC/shGVw9zH74Ow+RnbSidWZXx
-	9/io9ZE7vxFsf1L4b5nNWLEItmD9apNtYiZv7mn5LTzmb0WX2wJWFUw==
-X-Received: by 2002:a05:7301:4185:b0:2c4:ec89:bdb with SMTP id 5a478bee46e88-2e464eaab00mr6832435eec.2.1777011934046;
-        Thu, 23 Apr 2026 23:25:34 -0700 (PDT)
-X-Received: by 2002:a05:7301:4185:b0:2c4:ec89:bdb with SMTP id 5a478bee46e88-2e464eaab00mr6832422eec.2.1777011933405;
-        Thu, 23 Apr 2026 23:25:33 -0700 (PDT)
-Received: from [10.239.97.27] ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2e53d8b944bsm30814307eec.28.2026.04.23.23.25.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 23 Apr 2026 23:25:33 -0700 (PDT)
-Message-ID: <f782bd4e-817d-44b8-9c04-6f05c00fc36e@oss.qualcomm.com>
-Date: Fri, 24 Apr 2026 14:25:27 +0800
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="kVOvPJpc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=WJ
+	mt2m1fxEpPdUIlZD31RR3XnRoJ5NOtO7F/JMDNteY=; b=kVOvPJpcFiGOOuoUp2
+	o0DyFJtZCU5U4waUqKlr61Aa9IgpI7yruNdZUOrySe4AryQfV3HjAuOF4/1bp7jK
+	HODwC2mZgyGkWy1e11fn67Wdg2+GwdRfqMj9iCbDikMUh65PvfIF+4GgN5WVGYiG
+	4OTKPPFrR8DDbO5gfeEj51v6s=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp4 (Coremail) with SMTP id PygvCgAH66jKF+tp4CrsBA--.214S2;
+	Fri, 24 Apr 2026 15:12:13 +0800 (CST)
+From: Gongwei Li <13875017792@163.com>
+To: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Gongwei Li <ligongwei@kylinos.cn>
+Subject: [PATCH] PM: tools: fix ValueError when parsing incomplete device properties
+Date: Fri, 24 Apr 2026 15:12:08 +0800
+Message-Id: <20260424071208.3610628-1-13875017792@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/12] Fixes/improvements for the PCI M.2 power sequencing
- driver
-To: manivannan.sadhasivam@oss.qualcomm.com,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Marcel Holtmann <marcel@holtmann.org>,
-        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-        Shuai Zhang <quic_shuaz@quicinc.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-bluetooth@vger.kernel.org,
-        Luiz Augusto von Dentz <luiz.von.dentz@intel.com>,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-        stable+noautosel@kernel.org
-References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
-Content-Language: en-US
-From: Wei Deng <wei.deng@oss.qualcomm.com>
-In-Reply-To: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI0MDA1NyBTYWx0ZWRfX3sZ0bQ6rxc1+
- ZwqO59MutM4/CQ+FWboTY2+ZounMDEveRVK7grxVZPrXJqs9QX2S+pBnK1o+Tv+OY2N5e0fqek9
- TJgN3NJehXagfwOpuNVbfL5ScK8Us7SDIspGpPW1xhd5pSUxs/iNlMsT33PtMM9NrIIV2d3gxiv
- GiPTLnHfMbPluabVeL2uFRhh5n2FmAVy195wSCUOtyZ76tByNXdk/JfJK3goKwfb+BXX5FP/9TB
- c7ecjDoBREBb0Nqi9YyTpjN+nlX+G+KU+b/YnEM8kcOgm4y/tbobgL4tVHfWPB4RuvHb4gKw0Zp
- o3mCfv52aybYIpCkz90c1lkllC/pkeudRFZJB+Inn4VxFPabQ7PbA+k4vlfn7SI9SWjyFlvJBKj
- FrjKeTUCwb4lulLCg7zg94eIc05zHmcbSLW+kOD8vuNYsL2nvG6wZ5MC/8IdSIftu1Uk9KqSxjC
- znyuqQ627olYJNT3i4g==
-X-Authority-Analysis: v=2.4 cv=TtnWQjXh c=1 sm=1 tr=0 ts=69eb0cdf cx=c_pps
- a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
- a=NEAV23lmAAAA:8 a=EUspDBNiAAAA:8 a=qRrKk6tSi6DhAyMAVQEA:9 a=QEXdDO2ut3YA:10
- a=bBxd6f-gb0O0v-kibOvt:22
-X-Proofpoint-ORIG-GUID: GdfhWH5rjq4QbzBXil_FuW1PN_O5HzOT
-X-Proofpoint-GUID: GdfhWH5rjq4QbzBXil_FuW1PN_O5HzOT
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-23_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 malwarescore=0 clxscore=1015 adultscore=0
- spamscore=0 bulkscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604240057
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:PygvCgAH66jKF+tp4CrsBA--.214S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7tw45GrW7Cw1kCw1fKr43trb_yoW8CrWxp3
+	y5CFWvyw1UGFn3Ga1vvF4rCanruw4xAws8JF1IqryUtFZ8XrnF9ryxKw1UKrnFvrW2y3s2
+	v3sxA3y3GFW29r7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UE9aPUUUUU=
+X-CM-SenderInfo: rprtmlyvqrllizs6il2tof0z/xtbC-g1OCWnrF83+SwAA3Z
 
-Hi Mani,
+From: Gongwei Li <ligongwei@kylinos.cn>
 
-Tested with WCN685x on both M.2 card (pwrseq-pcie-m2) and direct attach
-(pwrseq-qcom-wcn). BT works correctly in both cases.
+When parsing device properties from ftrace data, the devprops() function
+assumes that each line has at least three fields and that the third field
+(f[2]) always contains a valid integer. However, due to incomplete or
+corrupted ftrace logs, f[2] may be missing, empty, or non-existent.
 
-Tested-by: Wei Deng <wei.deng@oss.qualcomm.com>
+This can lead to the following error:
 
-On 4/22/2026 7:24 PM, Manivannan Sadhasivam via B4 Relay wrote:
-> Hi,
-> 
-> This series has several key improvements and fixes to the M.2 power sequencing
-> driver and also the BT HCI_QCA driver. Notably, this series allows the M.2 power
-> sequencing driver to work with more M.2 cards, not just WCN7850. It also allows
-> the BT HCI_QCA driver to detect whether it can control BT_EN (or W_DISABLE2#)
-> signal on the connector and set the HCI_QUIRK_NON_PERSISTENT_SETUP quirk.
-> 
-> Testing
-> =======
-> 
-> This series was tested on Lenovo Thinkpad T14s together with the below DTS
-> patches:
-> https://github.com/Mani-Sadhasivam/linux/commit/29534d15307551b2355eb254601dec511169f0aa
-> https://github.com/Mani-Sadhasivam/linux/commit/f4eaacfe647674be200847092b43cdef2194fc55
-> 
-> Merge Strategy
-> ==============
-> 
-> Since the BT HCI_QCA changes depend on the pwrseq changes, it would be good to
-> merge the whole series through pwrseq tree or through an immutable branch.
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
-> Manivannan Sadhasivam (12):
->       power: sequencing: Introduce an API to check whether the pwrseq is fixed or controllable
->       power: sequencing: pcie-m2: Add support for 'is_fixed()' callback to 'uart' target
->       power: sequencing: qcom-wcn: Add support for 'is_fixed()' callback to 'bluetooth' target
->       power: sequencing: pcie-m2: Fix inconsistent function prefixes
->       power: sequencing: pcie-m2: Allow creating serdev for multiple PCI devices
->       power: sequencing: pcie-m2: Improve PCI device ID check
->       power: sequencing: pcie-m2: Create serdev for PCI devices present before probe
->       power: sequencing: pcie-m2: Create BT node based on the pci_device_id[] table
->       Bluetooth: hci_qca: Add M.2 Bluetooth device support using pwrseq
->       Bluetooth: hci_qca: Rename 'power_ctrl_enabled' to 'bt_en_available'
->       Bluetooth: hci_qca: Check whether the M.2 UART interface is fixed or not
->       Bluetooth: hci_qca: Fix the broken BT_EN GPIO detection for Qcom WCN devices
-> 
->  drivers/bluetooth/hci_qca.c                |  40 +++--
->  drivers/power/sequencing/core.c            |  33 ++++
->  drivers/power/sequencing/pwrseq-pcie-m2.c  | 242 ++++++++++++++++++++++-------
->  drivers/power/sequencing/pwrseq-qcom-wcn.c |   9 ++
->  include/linux/pwrseq/consumer.h            |   6 +
->  include/linux/pwrseq/provider.h            |   2 +
->  6 files changed, 262 insertions(+), 70 deletions(-)
-> ---
-> base-commit: 6596a02b207886e9e00bb0161c7fd59fea53c081
-> change-id: 20260422-pwrseq-m2-bt-abdaa71094eb
-> 
-> Best regards,
-> --  
-> Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> 
-> 
+    Traceback (most recent call last):
+      File "../sleepgraph.py", line 7142, in <module>
+        stamp = rerunTest(sysvals.outdir)
+      File "../sleepgraph.py", line 6255, in rerunTest
+        testruns, stamp = processData()
+      File "../sleepgraph.py", line 6181, in processData
+        testruns, error = parseTraceLog(live)
+      File "../sleepgraph.py", line 3470, in parseTraceLog
+        tp, tf = loadTraceLog()
+      File "../sleepgraph.py", line 3398, in loadTraceLog
+        if tp.stampInfo(line, sysvals):
+      File "../sleepgraph.py", line 3073, in stampInfo
+        self.parsePlatformInfo(line, sv)
+      File "../sleepgraph.py", line 3177, in parsePlatformInfo
+        sv.devprops = self.devprops(sv.b64unzip(info))
+      File "../sleepgraph.py", line 3158, in devprops
+        if int(f[2]):
+    ValueError: invalid literal for int() with base 10: ''
 
+To prevent this crash, add proper validation before accessing.
+
+Signed-off-by: Gongwei Li <ligongwei@kylinos.cn>
+---
+ tools/power/pm-graph/sleepgraph.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-graph/sleepgraph.py
+index 1555b51a7d55..f6d172254829 100755
+--- a/tools/power/pm-graph/sleepgraph.py
++++ b/tools/power/pm-graph/sleepgraph.py
+@@ -3155,7 +3155,7 @@ class TestProps:
+ 			dev = f[0]
+ 			props[dev] = DevProps()
+ 			props[dev].altname = f[1]
+-			if int(f[2]):
++			if len(f) > 2 and f[2] and int(f[2]):
+ 				props[dev].isasync = True
+ 			else:
+ 				props[dev].isasync = False
 -- 
-Best Regards,
-Wei Deng
+2.25.1
 
