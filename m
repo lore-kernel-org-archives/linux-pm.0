@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F6753C3439;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59F1532D0CF;
 	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777040410; cv=none; b=Klq5inPgZcsgNASkGhIozuW/hOFveTk+7j2UkDIWHV4mMeCM8/YQi1qmYhTO6e9x4FOY92m0n+UAwr5QHvQP31qoedhWdVvzO9dQN9lwBuz/F0FMoL5itxXqAUZPegvxwzx2cbR0RSSDOknFPHe0M2f4DLG9Znu1H6pAbmKiDJE=
+	t=1777040410; cv=none; b=eu8aU2fM2zyTQqj9+Aed6f4dc+H05mkF+gcCs0kydR5Y5ylUCMT11wWCB4W+7zVg2Vgqn9PvOBzSTfMdM+Y1Rln95lDqcs3pbmSdxAX5Ti3kG44qlLHe3HibMcxKjdot/mRld5ZcSItl3wcNEbtCR6stdIZPhOYW5aptF8fHtAU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1777040410; c=relaxed/simple;
-	bh=KQ2jlEW1eOaS76algkR9vPolQCqOkVsbm0MXBmfkdXw=;
+	bh=JIvHBkUoalBvVLwrlyOmEWngyDFdpxRN9ZxD0CWqxss=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=GQKQDScxrdO6Di9VniKT5zK8tzY/TqyUT/hIptDeTD14u+gv5VrBNuV+UUmBAyWXcGMQUpZX6QpuSlpRGaZLbHGJYfNBrfKdMYqBej26h/FRUGNJLfkYBUkKouM7FDJWmfb6Kt150tEr/MkRr35o6k4yhBM1jN9JakLHhhyxzaE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HTFy1o7F; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=O8LB73tqvrCZmqLvmAOa//NFyQhY691SsTX+M/X/E0C7vMZ/oG1b2ftRF7vp/im5RC1Z6VDiQRcX91+9Ax3b+6XlDllWc0alxtoRnDN9zCbIy1UkEHf7XucPcA7FmQoG79IOaWq/YJihZCTN/8h4y3Hcsk6cKdgo+ECJ/l+d4Rc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=tlUKD1pL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HTFy1o7F"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E3B1FC2BCB5;
-	Fri, 24 Apr 2026 14:20:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="tlUKD1pL"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0A05CC2BCB9;
+	Fri, 24 Apr 2026 14:20:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1777040410;
-	bh=KQ2jlEW1eOaS76algkR9vPolQCqOkVsbm0MXBmfkdXw=;
+	bh=JIvHBkUoalBvVLwrlyOmEWngyDFdpxRN9ZxD0CWqxss=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=HTFy1o7FdQbHOLrpzCrgUNMtug7Nt2QQKCgK+I9GRMzxa/P1lb+TmQH4rgQhwECwU
-	 rp/Oii1Tro3FD7iMD6TeJb8koh4wcmmIZlOrhcB5pakVm4QH2fPoIpWG7PJ0Eh6oHh
-	 CHJYmSYAo5puJ4KhtsryCWun3vOfV09eMF11blR5AOS95xJBC0oi/uX5sRv3v75KND
-	 9QDMWa15oOhfvQLPcKw6M713gwQBpcY8G+G2Vzi8pvjaciXCYX54FJ4YPOYfMsq0V/
-	 Ef/DdmmF0Ku8urqI6f5nioJSZj0mEKCi6RrlTjNu9fVDaA4Xd3R3v7IoheJjohfBRi
-	 ExsiJfZQwZCsg==
+	b=tlUKD1pLW3uwSDtalNBMSWWfN4Bq5fGjw7iXyVYfogdeupXcNpbOLgcYTMOMtMA6q
+	 BVx7wrPbB++ub6feIBIo2LjwggXRupgrC0f6cuWUR6HYsMGpW7soWe1debOJfSRCsg
+	 6mz/0Qr7a/GGukpCafnnezkhJof4J8S0Idu2yNRB1yiY78kqcjUryXUfUWFdXw3UTr
+	 nZZx5cJPZ3NnJZ6zbqJU8vNmUXWI9dzzh7ZRiB83KBgCI1Ms0RKqft2U8n8Gg2/U0O
+	 yXHUacAzv6o5t5cb4/VLtrWd0aYisDKE0Qt7XeY8nB4vEN7rcSmPlCYU7Vqxrd1fYS
+	 kub748IY+Vx7w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D196CFED3CC;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F30DDFED3C9;
 	Fri, 24 Apr 2026 14:20:09 +0000 (UTC)
 From: Ronald Claveau via B4 Relay <devnull+linux-kernel-dev.aliel.fr@kernel.org>
-Date: Fri, 24 Apr 2026 16:17:32 +0200
-Subject: [PATCH v5 1/8] dt-bindings: mfd: khadas: Add new compatible for
- Khadas VIM4 MCU
+Date: Fri, 24 Apr 2026 16:17:34 +0200
+Subject: [PATCH v5 3/8] mfd: khadas-mcu: Add per-variant configuration
+ infrastructure and VIM4 support
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260424-add-mcu-fan-khadas-vim4-v5-1-afcfa7157b23@aliel.fr>
+Message-Id: <20260424-add-mcu-fan-khadas-vim4-v5-3-afcfa7157b23@aliel.fr>
 References: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
 In-Reply-To: <20260424-add-mcu-fan-khadas-vim4-v5-0-afcfa7157b23@aliel.fr>
 To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>, 
@@ -57,16 +57,15 @@ To: Neil Armstrong <neil.armstrong@linaro.org>, Lee Jones <lee@kernel.org>,
 Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org, 
  linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, 
  linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ronald Claveau <linux-kernel-dev@aliel.fr>, 
- Conor Dooley <conor.dooley@microchip.com>
+ Ronald Claveau <linux-kernel-dev@aliel.fr>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1479;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2474;
  i=linux-kernel-dev@aliel.fr; h=from:subject:message-id;
- bh=eCKy2chdqFWw8sHr2BRKBa6cnfiYWQdTnn103pMuJ+4=;
- b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brGr6UkrenLluc+XxnU/vsnVp/+y9H+VvdfinYVDHHt
- l7g2I3mjlIWBjEuBlkxRZb+uZYn3l0+eubrHvUUmDmsTCBDGLg4BWAiIgcZ/rulnb75uzR6+sey
- fKNVfzKkPxT9lmx1+lh6YMbmyXq3JawZGZZdNI6auPBAigiTt13+PaGLizYsNTqxYvJSr57EnP8
- qBnwA
+ bh=lbbZ527T237ZjHkvSfooMhj4xDf42xiFowYZHXz2AMk=;
+ b=owGbwMvMwCWm1SvKXP3cUInxtFoSQ+brGkH5uqwwTSmFhBuzncuEQ3YGl8dPzp1mJdDt5q6Xe
+ 0tuzfuOUhYGMS4GWTFFlv65lifeXT565use9RSYOaxMIEMYuDgFYCJPuRn+qUT4GXs8uH+EO/Ha
+ 792Xpa0+ppms8FjVc/B1aOMiOZcEC4b/YWyM385UWWRpOznqre5237dJ5ocd//v1T5lLHu9WZD3
+ NAQA=
 X-Developer-Key: i=linux-kernel-dev@aliel.fr; a=openpgp;
  fpr=DFD863F61375BF917F0012173953305EF1D0EC3E
 X-Endpoint-Received: by B4 Relay for linux-kernel-dev@aliel.fr/default with
@@ -76,56 +75,79 @@ Reply-To: linux-kernel-dev@aliel.fr
 
 From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 
-The Khadas VIM4 MCU register is slightly different
-from previous boards' MCU.
-This board also features a switchable power source for its fan.
+Introduce a per-variant configuration structure (khadas_mcu_data)
+holding the regmap config and MFD cells,
+selected at probe time via the of_device_id match data.
+This makes adding other variants straightforward.
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Also introduce khadas_mcu_fan_pdata to pass fan register address and
+maximum level to the fan sub-driver, removing the hardcoded constants.
+
+Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
 Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 ---
- Documentation/devicetree/bindings/mfd/khadas,mcu.yaml | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ include/linux/mfd/khadas-mcu.h | 39 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml b/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
-index 084960fd5a1fd..1f135618e3b6f 100644
---- a/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
-+++ b/Documentation/devicetree/bindings/mfd/khadas,mcu.yaml
-@@ -18,6 +18,7 @@ properties:
-   compatible:
-     enum:
-       - khadas,mcu # MCU revision is discoverable
-+      - khadas,vim4-mcu # Different MCU variant, not discoverable
+diff --git a/include/linux/mfd/khadas-mcu.h b/include/linux/mfd/khadas-mcu.h
+index a99ba2ed0e4e0..75e275d3fa8d9 100644
+--- a/include/linux/mfd/khadas-mcu.h
++++ b/include/linux/mfd/khadas-mcu.h
+@@ -70,6 +70,13 @@
+ #define KHADAS_MCU_WOL_INIT_START_REG		0x87 /* WO */
+ #define KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG	0x88 /* WO */
  
-   "#cooling-cells": # Only needed for boards having FAN control feature
-     const: 2
-@@ -25,10 +26,27 @@ properties:
-   reg:
-     maxItems: 1
- 
-+  fan-supply:
-+    description: Phandle to the regulator that powers the fan.
-+    $ref: /schemas/types.yaml#/definitions/phandle
++/* VIM4 specific registers */
++#define KHADAS_MCU_VIM4_REST_CONF_REG		0x2c /* WO - reset EEPROM */
++#define KHADAS_MCU_VIM4_LED_ON_RAM_REG		0x89 /* WO - LED volatile */
++#define KHADAS_MCU_VIM4_FAN_CTRL_REG		0x8a /* WO */
++#define KHADAS_MCU_VIM4_WDT_EN_REG		0x8b /* WO */
++#define KHADAS_MCU_VIM4_SYS_RST_REG		0x91 /* WO */
 +
- required:
-   - compatible
-   - reg
- 
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: khadas,vim4-mcu
-+    then:
-+      required:
-+        - fan-supply
-+    else:
-+      properties:
-+        fan-supply: false
+ enum {
+ 	KHADAS_BOARD_VIM1 = 0x1,
+ 	KHADAS_BOARD_VIM2,
+@@ -82,10 +89,38 @@ enum {
+  * struct khadas_mcu - Khadas MCU structure
+  * @device:		device reference used for logs
+  * @regmap:		register map
++ * @data:		pointer to variant-specific config
+  */
+ struct khadas_mcu {
+-	struct device *dev;
+-	struct regmap *regmap;
++	struct device			*dev;
++	struct regmap			*regmap;
++	const struct khadas_mcu_data	*data;
++};
 +
- additionalProperties: false
++/**
++ * struct khadas_mcu_data - per-variant configuration
++ * @regmap_config:	regmap configuration
++ * @cells:		MFD sub-devices
++ * @ncells:		number of sub-devices
++ * @fan_cells:		MFD fan sub-devices
++ * @nfan_cells:		number of fan sub-devices
++ */
++struct khadas_mcu_data {
++	const struct regmap_config	*regmap_config;
++	const struct mfd_cell		*cells;
++	int				ncells;
++	const struct mfd_cell		*fan_cells;
++	int				nfan_cells;
++};
++
++/**
++ * struct khadas_mcu_fan_pdata - fan sub-driver configuration
++ * @fan_reg: register address to write the fan level
++ * @max_level: maximum fan level
++ */
++struct khadas_mcu_fan_pdata {
++	unsigned int fan_reg;
++	unsigned int max_level;
+ };
  
- examples:
+ #endif /* MFD_KHADAS_MCU_H */
 
 -- 
 2.49.0
