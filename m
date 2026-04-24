@@ -1,67 +1,68 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF581342CA2
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:53:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84BD3342CA2
+	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 09:55:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777024422; cv=none; b=VSv65XQdw9IsH9I8vxGRfgZbXWxK9mFzZQPKI8bL+8Psnooy4NTf380T075C7yRNYhkZNoje/gMD0jYab1qfEv1dDj1GZXLaWk4q6jWDs4dWRkeWSx6RH3PqgOHx8hSAkrmc8mbt9RvRh3+BVIJPHUHPAP7u4H1C7Dy2Q1wehsQ=
+	t=1777024519; cv=none; b=cR4ueTqVK9QpaClXMxajdZmQ4DfMEGhwokOS0/vjDEuqdIbItFZWbudlFFp2ZXBC2Icp4IzUHOxPsSsEbfQBrFbYoEKcH+/X5We//mDWcgfCGNaXuzWZvsK9P/Kw3DiR7/mPYAGo9oRHBYes1TECTMZ7A0RG6hruhD7oee4ZI68=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777024422; c=relaxed/simple;
-	bh=z06h0nqocNM7sZknm/YONX4yR5TxkAybPymaBetnRdA=;
+	s=arc-20240116; t=1777024519; c=relaxed/simple;
+	bh=jRMM/hN8U1NhGO9xpDfgyFzsl6yuuvYEuypvB1mVf20=;
 	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=OhZiMu6+l4qiDeTQ6s6MkDbm+gwkbK98T7lQRSdlLkRLx1woJnpQnOLxQ3Q5gIax6NCBXqxJsAADmEiRqYFaJQXyaSymZqpMY4K2sRx44skEbhBvspoarmqDKuiDuQtZWc9H7k8a3PS4D6pAxQUVFuwQXpnYBrBLPDAk+PLETxs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=MaNMwHt9; arc=none smtp.client-ip=209.85.128.44
+	 In-Reply-To:Content-Type; b=ELjLeRN4M08+cVnNhxiTgDB8lOZH55qeNE1i2yRSi3tpC2vZ0QoPmlogix4VHizIFFNKU7k9mTy94rBRJmJTejk1DwMHfroPyPbtE+qszlEy49cd7CXUJXVGoWGb8Cy8GRfg0QNoO3ZgIGv5Qmu2R9XZNeULgQ9IXr/4oJD1jaE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lBI1Xh8s; arc=none smtp.client-ip=209.85.128.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MaNMwHt9"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4891f625344so62782905e9.0
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:53:40 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lBI1Xh8s"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-48a563e4ef7so41497085e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 02:55:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777024419; x=1777629219; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1777024516; x=1777629316; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=IEAIB1gXAkAlj/KMWcgqb/qT0IRmtE0X48MG1aGhroA=;
-        b=MaNMwHt9bUXLv64/p5MkJe0jULR8j+97XKkov+siIJlvmL+e6+xYgs0DoxzktZkCfz
-         h/fADekA0H2+zTZpRCEqldoS96pmvSRvlma+InMJ6pvcLdmI6lLROBcJl3TQ0rXNakwW
-         EyTFfoNCHa4jssa+BZwGmj5hmS6elma5LLhm6SN8uS080D0Z0E7pe9zIw8bLMa+DBO4+
-         UBo0vSLwvteTGDNPG4hFJ2aW4ZebCm8WTvHhhcE4TSs0Vn6DV7Zje/WMsFCHjlY+L1+o
-         VuretOTeza6LS9sEZwqk5xWBWqJWtjuDpEpMrpXTYR4TQSJr7AcWXzfEriRxaBijo6WC
-         mrxQ==
+        bh=e+of0FE0tSbmaf7cezfG/Dp70p8BpOoi594bsa5N30Y=;
+        b=lBI1Xh8sAV7sTCdwuXchyqeOFX3nHuRDVMqyYHDLNidoLcaF0RshABFEGznBGzQ/Ib
+         X/jQoJeY4pa/oH+vabzeTBIU8RBk0cgqiMqA9uslitiRfQat/bDAvd9t2Ajr2TGCEVwc
+         3Wuz8CULk3dtKI/MuU/3+lX8KEFR1L1cC4GK01jiAiLY8VWcP4I3aVaHb/VZdNia/gcc
+         UPlELyI+45RxECpOPImegZzy2RbVj8iKkwMA7Z/Zx4/Z/Q3uIAMJ+x4VvBthw0jXBXyT
+         topd7WlIMFXOCfc5Axz66vi5B2nFOPg5Xk8yUNYryGduRxfLWz871uIMOt2C8Xk04RZ2
+         GwZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777024419; x=1777629219;
+        d=1e100.net; s=20251104; t=1777024516; x=1777629316;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:references:cc:to:subject:reply-to:from:user-agent
          :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=IEAIB1gXAkAlj/KMWcgqb/qT0IRmtE0X48MG1aGhroA=;
-        b=VlR1YGR6dVeJljcC16dJecF/eL9BcJSZKPg1fi4MBqvZtnAi39mt/YKmAzFBZcJlri
-         TTd00bMRDa38jOrz2AqK/FJKrF5Dg8DHud26z7oP/ppjqmEk33fCREfG+gjhR7AIivAT
-         DdnxOcMAwnBgfwE26s+mM49jM8LQy7ItRMNv+Bb/p5TpGrj3gkQSdjpQvFWLTKZzziz+
-         jXIDboCeYAGPccCT8+UQdDaoEE604JVuPnhxo+FYabHefeaMPBY2gBpkf3BFXlP5nYno
-         esRiavdFliVmvOgqN8/bClF9+R2DfzaVg4fiAZVzsHYLaZmfvo6GLi6hOfOvbhPI8tSf
-         8n0Q==
-X-Gm-Message-State: AOJu0YyfHclC0l8xNk7YG/xGuiRxDpRCwGMsuzlEgNV8fCYCzlHs0ek0
-	K7v8hqcbGa5cQjesTH/vMIOZdYehwCglZnxittHeXQsU9B18a4GFL0Q2+NMZeWJXD1Y=
-X-Gm-Gg: AeBDiettg6qGKdx4W2oxkfggyq7Cdx+B5curDC9j6psRg8hpVWGEAuQ+EzYSH0SDICD
-	Um1ogX6BNXbh+YqkguvrDJebN0nKaUOMHn/6nJFSQkffM1Mq97kbkhBVXHAk3mezpqOi8eiPezH
-	Jv1c7EVBbdsz75gtUy/2aurzq2lgQ5Q25B9GCvZB4+R6vLD3PvwkfDvTHwTliRN1h+31BH/b/OC
-	94Q4BetG918IfqXMrhLpxdwqi84kk0ReoHcjUXJ2Jtc06nVsCcufkumk4HmhXAblvK9ufHgdjH2
-	Fi84VgcRoU8Hzn5vCW2ddZKSVAYcXOLGEZEqYARtYLuaBSa6Y/LYQ3k5gCPrKCaq6CFF7a178H2
-	gRYU1XSg1oKbirDeXq/S/O6DB1SwkqMYAtfDT+yXXES78OVoph/p41vLWLAakt4sig+yBuMzs13
-	rusesyXu7J2v8NxiFnVOoypKQNiDHvoHB3INGZ5vsZ6IoX5RYPYxtlnZ5wrF/o3Cwpd8eyzl+Jt
-	+dgOK9I8UAf8HKShg==
-X-Received: by 2002:a05:600c:3055:b0:489:32b:ac0b with SMTP id 5b1f17b1804b1-489032bae49mr216070105e9.6.1777024419012;
-        Fri, 24 Apr 2026 02:53:39 -0700 (PDT)
+        bh=e+of0FE0tSbmaf7cezfG/Dp70p8BpOoi594bsa5N30Y=;
+        b=hNwHksSZVWGpvQ4197vq9sGrUqNjIMzcj9kn5mu4zjPKRuJ4FVY9nk/onsZjSH80OU
+         g54gH4qlO7g4vq0BOcHOUgsjIOagO4bwwG0ogDW6Ai9p3XELEzjEUwzuXiDnxGvo1eFT
+         vri/XDV+lLyMoXsuMa3ajIO9Bovr7XGcLOmcf0lkKZO/C39P5XG61hj4/7eihV8qb17j
+         qDHZHuvszDS3/bfmuEzoOIWjbDT4vTfIaU2Zfke7eq+ZubwuTxrl8DjHpOZajv1wKwaZ
+         xai0V8LgP5UxLnbdFHJtqwXvE4GjKBEIsFDzhdr0q6dVK8FgfVhZGYIhHFsR0BNQk2e5
+         sRjQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9yZxYnS5TgJzs8q7ib7Sp8NMYwmGhFb2BM9zXlW9292Op5KTJ934q6ACZnWghbpDEw6nxw0u8j5w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywpxl/yEKDg/fsxZF7agj2hCFralkMstLPAICTqATecei5WKi0Z
+	/p65vIDGLkIJdpw9+mQm7yLsb4ZYNbOBTG8q2hk9SI/VfYSTf45uB1bzQEA7kvblu6E=
+X-Gm-Gg: AeBDiet8dVai6veR7/0Dd0RJHAfOFkyHGYqBXWk6sO4FDjg5XSQNz+Ue9W/aNeS+N0t
+	PWPBouTTMav/x32O/fFmhb9BZ3ckY+PJFsiKXiBOtE0j03+JtxpNOmSkE97OptYEir+SebsJUAV
+	N4OsgAj03zZeBCOcldLj9dil2H5K0WxIm9GrfFChZqrArVFvF66oJ0P+2v3S5MoMnpNw+v6oLf7
+	jrRkteFBPKmP1UxpfW+CSm4U8MqaZHCYgz/9nZJM8a9Nbg53JgNrTeQxxqkvJrdvXaaJZoXSeof
+	+F7gpa98GLG6QX+Vo+F6FqkhHmwuUbi+oP8Kf7sWeIEeOdlGE/LJd68dt40bYLY/1pP6ydhl/RT
+	/PPzHpKvYExeWJDkvLh3QURkBv4fX5POl+Wmrf2C0+yaHcjNvcf2q0mpKCoVAy5FAQ53Uw0cn4K
+	qJFIXJwuDkJLHMXshr7a6gYnwD3sutp0Z/dsnqj6CCsqqwMM/LNVM951ihIunJUZaiA4ngw0J/c
+	UTwkvr+AIj0WlIHjQ==
+X-Received: by 2002:a05:600c:888b:b0:488:c40b:c8bf with SMTP id 5b1f17b1804b1-488fb73d234mr372911565e9.2.1777024515945;
+        Fri, 24 Apr 2026 02:55:15 -0700 (PDT)
 Received: from ?IPV6:2a01:e0a:106d:1080:79e1:f56b:445c:ca9c? ([2a01:e0a:106d:1080:79e1:f56b:445c:ca9c])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4891cca5743sm364827355e9.9.2026.04.24.02.53.38
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fc18bccfsm526904435e9.8.2026.04.24.02.55.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 24 Apr 2026 02:53:38 -0700 (PDT)
-Message-ID: <c26122b2-b5c7-4a5f-8d42-c691ff992937@linaro.org>
-Date: Fri, 24 Apr 2026 11:53:37 +0200
+        Fri, 24 Apr 2026 02:55:15 -0700 (PDT)
+Message-ID: <afd6b8b9-06b5-41e1-9b3e-e4a896d77f8c@linaro.org>
+Date: Fri, 24 Apr 2026 11:55:14 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,21 +72,23 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 From: Neil Armstrong <neil.armstrong@linaro.org>
 Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: Re: [PATCH v4 8/8] arm64: dts: amlogic: t7: khadas-vim4: Add fan
- cooling to thermal zones
-To: linux-kernel-dev@aliel.fr, Guillaume La Roque <glaroque@baylibre.com>,
+Subject: Re: [PATCH v4 3/8] mfd: khadas-mcu: Add per-variant configuration
+ infrastructure and VIM4 support
+To: linux-kernel-dev@aliel.fr, Lee Jones <lee@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Beniamino Galvani <b.galvani@gmail.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
- Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Cc: linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-References: <20260423-add-thermal-t7-vim4-v4-0-d4c1528d5044@aliel.fr>
- <20260423-add-thermal-t7-vim4-v4-8-d4c1528d5044@aliel.fr>
+ Lukasz Luba <lukasz.luba@arm.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>
+Cc: linux-amlogic@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+References: <20260421-add-mcu-fan-khadas-vim4-v4-0-447114a28f2d@aliel.fr>
+ <20260421-add-mcu-fan-khadas-vim4-v4-3-447114a28f2d@aliel.fr>
 Content-Language: en-US, fr
 Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
@@ -112,145 +115,85 @@ Autocrypt: addr=neil.armstrong@linaro.org; keydata=
  4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
  QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
 Organization: Linaro
-In-Reply-To: <20260423-add-thermal-t7-vim4-v4-8-d4c1528d5044@aliel.fr>
+In-Reply-To: <20260421-add-mcu-fan-khadas-vim4-v4-3-447114a28f2d@aliel.fr>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 4/23/26 18:07, Ronald Claveau via B4 Relay wrote:
+On 4/21/26 13:49, Ronald Claveau via B4 Relay wrote:
 > From: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > 
-> Add an active trip at 50°C to all six thermal zones and map it to the
-> khadas_mcu fan controller, using cooling states 30 to 100.
+> Introduce a per-variant configuration structure (khadas_mcu_data)
+> holding the regmap config and MFD cells,
+> selected at probe time via the of_device_id match data.
+> This makes adding other variants straightforward.
+> 
+> Also introduce khadas_mcu_fan_pdata to pass fan register address and
+> maximum level to the fan sub-driver, removing the hardcoded constants.
 > 
 > Signed-off-by: Ronald Claveau <linux-kernel-dev@aliel.fr>
 > ---
->   .../dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts  | 102 +++++++++++++++++++++
->   1 file changed, 102 insertions(+)
+>   include/linux/mfd/khadas-mcu.h | 39 +++++++++++++++++++++++++++++++++++++--
+>   1 file changed, 37 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-> index 5d7f5390f3a66..ba9219073dd0a 100644
-> --- a/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-> +++ b/arch/arm64/boot/dts/amlogic/amlogic-t7-a311d2-khadas-vim4.dts
-> @@ -157,6 +157,74 @@ wifi32k: wifi32k {
->   	};
+> diff --git a/include/linux/mfd/khadas-mcu.h b/include/linux/mfd/khadas-mcu.h
+> index a99ba2ed0e4e0..75e275d3fa8d9 100644
+> --- a/include/linux/mfd/khadas-mcu.h
+> +++ b/include/linux/mfd/khadas-mcu.h
+> @@ -70,6 +70,13 @@
+>   #define KHADAS_MCU_WOL_INIT_START_REG		0x87 /* WO */
+>   #define KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG	0x88 /* WO */
+>   
+> +/* VIM4 specific registers */
+> +#define KHADAS_MCU_VIM4_REST_CONF_REG		0x2c /* WO - reset EEPROM */
+> +#define KHADAS_MCU_VIM4_LED_ON_RAM_REG		0x89 /* WO - LED volatile */
+> +#define KHADAS_MCU_VIM4_FAN_CTRL_REG		0x8a /* WO */
+> +#define KHADAS_MCU_VIM4_WDT_EN_REG		0x8b /* WO */
+> +#define KHADAS_MCU_VIM4_SYS_RST_REG		0x91 /* WO */
+> +
+>   enum {
+>   	KHADAS_BOARD_VIM1 = 0x1,
+>   	KHADAS_BOARD_VIM2,
+> @@ -82,10 +89,38 @@ enum {
+>    * struct khadas_mcu - Khadas MCU structure
+>    * @device:		device reference used for logs
+>    * @regmap:		register map
+> + * @data:		pointer to variant-specific config
+>    */
+>   struct khadas_mcu {
+> -	struct device *dev;
+> -	struct regmap *regmap;
+> +	struct device			*dev;
+> +	struct regmap			*regmap;
+> +	const struct khadas_mcu_data	*data;
+> +};
+> +
+> +/**
+> + * struct khadas_mcu_data - per-variant configuration
+> + * @regmap_config:	regmap configuration
+> + * @cells:		MFD sub-devices
+> + * @ncells:		number of sub-devices
+> + * @fan_cells:		MFD fan sub-devices
+> + * @nfan_cells:		number of fan sub-devices
+> + */
+> +struct khadas_mcu_data {
+> +	const struct regmap_config	*regmap_config;
+> +	const struct mfd_cell		*cells;
+> +	int				ncells;
+> +	const struct mfd_cell		*fan_cells;
+> +	int				nfan_cells;
+> +};
+> +
+> +/**
+> + * struct khadas_mcu_fan_pdata - fan sub-driver configuration
+> + * @fan_reg: register address to write the fan level
+> + * @max_level: maximum fan level
+> + */
+> +struct khadas_mcu_fan_pdata {
+> +	unsigned int fan_reg;
+> +	unsigned int max_level;
 >   };
 >   
-> +&a53_thermal {
-> +	trips {
-> +		a53_active: a53-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&a53_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
-> +
-> +&a73_thermal {
-> +	trips {
-> +		a73_active: a73-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&a73_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
-> +
-> +&gpu_thermal {
-> +	trips {
-> +		gpu_active: gpu-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&gpu_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
-> +
-> +&hevc_thermal {
-> +	trips {
-> +		hevc_active: hevc-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&hevc_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
-> +
->   &i2c_m_ao_a {
->   	status = "okay";
->   	pinctrl-0 = <&i2c0_ao_d_pins>;
-> @@ -170,6 +238,23 @@ khadas_mcu: system-controller@18 {
->   	};
->   };
->   
-> +&nna_thermal {
-> +	trips {
-> +		nna_active: nna-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&nna_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
-> +
->   &pwm_ab {
->   	status = "okay";
->   	pinctrl-0 = <&pwm_a_pins>;
-> @@ -266,3 +351,20 @@ &uart_a {
->   	clocks = <&xtal>, <&xtal>, <&xtal>;
->   	clock-names = "xtal", "pclk", "baud";
->   };
-> +
-> +&vpu_thermal {
-> +	trips {
-> +		vpu_active: vpu-active {
-> +			temperature = <50000>; /* millicelsius */
-> +			hysteresis = <2000>; /* millicelsius */
-> +			type = "active";
-> +		};
-> +	};
-> +
-> +	cooling-maps {
-> +		map {
-> +			trip = <&vpu_active>;
-> +			cooling-device = <&khadas_mcu 30 100>;
-> +		};
-> +	};
-> +};
+>   #endif /* MFD_KHADAS_MCU_H */
 > 
 
 Reviewed-by: Neil Armstrong <neil.armstrong@linaro.org>
