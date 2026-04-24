@@ -1,118 +1,111 @@
-Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com [209.85.128.179])
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8990E2745E
-	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 05:32:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.179
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777008771; cv=pass; b=GzVAziF81eKKBujhtPVE0NuaJ7PP+j05DFmddGMmG7jsxI035B73Jz+mY0G3gmG+VxNWvXJCwgdrEAfPd3dtvgHf+e8L5TUBcxgxqCoXkOTY86+x5+jXi0g+4j4fFiXIIUWeI8bKa78AzgoCP4esYkx0977mcaC0sDDLeRqH+4s=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777008771; c=relaxed/simple;
-	bh=WeR454MIF6XD7WivrKik5WjQw4uaLEFSXdm3lgCCH+M=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=JUGsnopYwG/pVDM5wb9USy3MUE9K6cf24Dc5B9cUMMlm539wq3uJ3DXiTaCtWo3LKlpFivZjSG9gDxiajSa+j/2zbMxAGun6hf3h8BPkcqqk0CXpW5NLOdnOS7pu6K0rGUydlmQNnLJGysYYEepT4ymlpdZZSAyvF/hkMb69H18=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rwmnBEVf; arc=pass smtp.client-ip=209.85.128.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56BFC33E35F
+	for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2026 05:33:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777008787; cv=none; b=TVw3+1UPXnpikHZqoypa4itqVVOq8SKHq4QW3VcviOpCjysV0/oNHxlkhzYiSv/tl9iGnxupinGG043CEbV97ZjgjgCrDHyiXd2qi2D7Gz7AkuLltph+TSs6mUgBLoHSmvIs9lxuMiVd2U+OdCJNpxTJVmZI9GjS7YAkeuyZMJ8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777008787; c=relaxed/simple;
+	bh=jfa8ytdmrfomsd7Bc3kOVRi5zbSCzmo6zCu240qE/X0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZS8eKsqW5aV+1wbJyLGia1KhSuyQC45of/+v/dvTGyg4DJAJCoz8wEoQpyOQQwg24d0n0aM7rJUOLWi0dCA1Yqi4jtMhDZqRhY8fMIsfuFt1abqU7mP7iu8aBBQXkAmry6Mc1Sr6+YItyszaLdDIKe89/B/pVeOwU8Bd/JHKAm0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=au/s3p2w; arc=none smtp.client-ip=209.85.210.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rwmnBEVf"
-Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-7982c3b7da9so74355857b3.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 22:32:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777008769; cv=none;
-        d=google.com; s=arc-20240605;
-        b=hgszsYUUUFw567QP7hmSvFmAw0tDY/K4R9Gzu4mB6Py+yahr2GdyCAjN08OVim/weu
-         kItfu0xGCU55J9bLga0hVDHA1A0MnVsoiHcku3/Ah40PNv9W+iXQr72I2OYzbcV4w42R
-         UMzNFkGmXswpfvWueOpQmO2QW0KfcQHPS//xDlP/D1drdWJqktIYwK4gtoOuzIgENpTa
-         RVIJP6nD8YWnzQl+U3pcZ4lXLM1EujtrAXhK+YFgLMqIvLJf+RT2EQezmGDnOiE2p6nI
-         fLC0qcPXkIyN+hDiXwH6SDmBTYrCKfTwjEtTpGZZ3KdSIHA5P12O0IFzumYKXcFwGWYC
-         cwiw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=aTWDo7tfrhFJ+mriWX1EXSAY360G5GQcYwGOoiyouIo=;
-        fh=/1fjWQDN5+rfxzHdS2uG78g/T3G5BbeOVkZJi97ETJ0=;
-        b=FF+dfQzoT6GiTPotQnGuewcKtnzm5SfwC4PAZG0gghqdY8cUHg7fTY7QvEEYXn4OTx
-         9MEVp6vXnGnkRyQngK9sQ+k0h5ua5w8NJfi59eahzLWC04MejIwmC+6FKgPugXs1pbR7
-         Y2JGpwETNs4tgVW9q/TOexdzkbusiRYpDvZ0z7E4y/LaBxxHfPZW0q6WWVwhrk18kxcp
-         A0M0LgrRiZRRSw1/hE3jvyHBj2xv4Py9Z345+TGQzDiPQtGucuMClxOmV/U0zzrNB6Gq
-         Tr4HKQxEW8GsTiIn99AJTRu0m2hp/zd3wPRIgky3ssowOXbpXdo/lTSRIKcxrwU/IxmV
-         y8sg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="au/s3p2w"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-827270d50d4so6890736b3a.3
+        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2026 22:33:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777008769; x=1777613569; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=aTWDo7tfrhFJ+mriWX1EXSAY360G5GQcYwGOoiyouIo=;
-        b=rwmnBEVf7uRtUvdS8ToX0USskf3gXagrH/WJ6KN0/1nm8F3D1WwqiHm9wwCtVyupNv
-         9hh60z//uPHKWhRuwgiBSeYae/E1df3OtWkK2WVPhStSo+FD76frtVPJX1B6qh9JgfUM
-         oX7EqxYrIr65+kNlW1wXFAOZq9WN5s0SAT5Bdaz0vJ7Qar2z/CApbxQScO31HoEWXJFL
-         qO0InWUY/O4S+F2983E+DtjCoT+kJDcMoxyumSAQPJwVqzPgF41fRiSbv2VXWVYxz9sx
-         JqhV22Rf4v5BFeLMpoyhfRQ9bnzDM/yptuv8lw1adFoPYtMK8NrvIf/eOWStzlxaQ1m7
-         ScOA==
+        d=linaro.org; s=google; t=1777008786; x=1777613586; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=HnwOvgDndaP9V3Bbl38tHqOQaGjwNEX0O9pKgu8MbD4=;
+        b=au/s3p2w9q0dZZ2w8SN8ZUhGGwQuXGP5fgVcT1i4o2Cc3stw6eJgAS6vDvqUpnnB01
+         R2+a7xDLILqsKvo9P+8QfTO87ZcGubnEPCcY1WtLX1iTajPLEP1aJrHCcE7mj/szbp7d
+         foKwr2xcs40jFijPHrupzJJyaR563vz7Biv9KpHb/oJcmtKNGnbPI33s4xA3JtfxbPgz
+         eGfejNgxUqkBASMdwU3/9MEWnPk+j8FB5Nrfg+IgF7f4PUfI/WjDruLV9UMmaQaGK4FW
+         hjiIl6fsrRsQ5eIPHJ0NqzjkwKiEOxPyie0WmTK9zOjSriP9fkvMtpyRtvMW5cEaHStp
+         RJZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777008769; x=1777613569;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=aTWDo7tfrhFJ+mriWX1EXSAY360G5GQcYwGOoiyouIo=;
-        b=PC2rSc3m3rWjsfcQA3DmarIdtqMzpEquGzRKfOBgdZKJZiKqioCNApd7Jh1bECqAiF
-         damr0bWHV3puP2mH7+p20yEVbXmHxEw4XOWUqc9KcoLj7pOpg02Nbt9ThuezUo8uc9N8
-         WfvjMjIPrcoGV5pRyFNLIVPxjGK0Bx7+/ImmK4dEdkm3FhfrF5WTTis9hVeWJ2yRIot+
-         QqrfXtu1CexaCxD68cvQLdN9zVMm0qF+EXrXKmPLqqMGKblgWjEUQXxDHG4VxYdb0MYv
-         ID39DvgRrdNFWQUHRbFjLTzt7g4StfqW4plxxvyGFKLm6qAzrwfKkE4GP3q02oejoH3G
-         S0Ww==
-X-Gm-Message-State: AOJu0YxLIr1ir81KEGK4zs2OTJhv8WYybXuAePehxvL+lRXe2JTPqr5Y
-	7NPWG/wwKKE+3ljIFfSIAJw95/PZxwQGHNiL1aGLAQ4AjL/up6EfVLx66BZbhFuI+XusX3lqfT4
-	PW3upmIVHKuG+a30PFjm4bjG3N4qzc1g=
-X-Gm-Gg: AeBDiev5mv3pEw8CTVZXzdIKUaWF0ca7x427zbm1mtNkpBB6WFo1yG2iZ2TiAaBGJOc
-	WF/aMEPNiXvhlWjhQvrCZED2wulk39M+a0+9tY9t08/1BUyZAuUZAhG2aPQOUDif7HMRy0f5um6
-	VH0pH1Ly5DDiIeeQSo1aUHfr2FY3py4IjbrZOdoeHrVzmHtZGI8DQzNtJt3pl440F1BmCNsIjop
-	Djq+Yf9TbNMaqzNe7Nk5+J4Ep7ectDXhZqNzJvEXNE7MDfj+Ndx9hI+ArNl46aXI3iz61ZbKZWu
-	hFSPmcGWMsDycAT11CC0
-X-Received: by 2002:a05:690c:f06:b0:7ba:e1dc:1b3f with SMTP id
- 00721157ae682-7bae1dc26a7mr239188277b3.25.1777008769560; Thu, 23 Apr 2026
- 22:32:49 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1777008786; x=1777613586;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=HnwOvgDndaP9V3Bbl38tHqOQaGjwNEX0O9pKgu8MbD4=;
+        b=LVYqmdARJ4bpXpUSDtRijBoyXWc9yk1FzXQQhacTK0WV2l7wMLOxuy9Ry2VALpB/6Z
+         MwypZ5teGpkphqOI7BcFLZyiRDfvtsPweFjThp8Q6IE+aJiJL75W5p6OdLry+ASjlVkH
+         Ed2fX3LQCX10vXRFybth6SjK3QnPhZ2iczHLVhIDd3DHNzl3iPJEg8Z6M5AswT6iUdGL
+         aXx/WTs0HAbNnAwxfQODUk3hQG3z5Sg7PMR++iAKoPvmcwAg/Z2QtInLKWU+S5YinPpB
+         C6GOGFw5AbUIUzeya+YuVX0jBF5/uxWzrfBU43hWMzupyGstWHb0dM/rl6tTbCfmw1hX
+         d0UQ==
+X-Forwarded-Encrypted: i=1; AFNElJ84iL+sVmH0IpFc2r9UMqmL0vOqsay2QHoHc4Z+dI1FfaFO2aPr2badSPsWieSYV37JWXqZRJHcSg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz0EWQVXG8nxHyekxQslhgRR4Fj/rJF3KQHoFZ1dr9lK5/T2Eab
+	gobmpJ638Ixrf1p39pCb69p9up1ZsMhJL+GkFqJA/hzrHxd0mJgY3PseOsDgiMK+qxA=
+X-Gm-Gg: AeBDievXq85797k/ULgBLE3xPsAvF4sMrHhS5YzEMOSk8sRhZd+ITlbWUQsXDsI2xXM
+	4mE3dKB3trVxIv4QCwfM/wJ4FEfkNNGpgBX7t8hpfwL4VfHt9PN5jWUr5fi+nCaxX4Hbto+kV8T
+	mCmSQkLa6kVt79oq6LJbej1oRPVEksgsq+DuwJ0ussYBxh921njfUNI4sZ770wuyimTrCqubPDr
+	JaKSE1tyQxP7dwXuCpirGxErORRETVl99amq4lQuDPP1CMAYf4ON1v0xjXUKZURS8yH/pBgk1Rv
+	AqJ2dbd0UX7+Sxdaj5PGSt1wbfuEo2WYbK2r6OPwVEmA0VdWDNq8Dl0a6Dvyxy5qMZsYRBtqkDV
+	Zc8HxR280MR2ws2LmL0KVYZ8GtXAIC6NLM0im80mP1WkYliN2FgejjhQ5xLo5PnF1PHfWTyKlbO
+	X7caohB+zyg8JGeYs11g2VcJ/AbD+cEeyzgw==
+X-Received: by 2002:a05:6a00:2d01:b0:82f:91f:bf35 with SMTP id d2e1a72fcca58-82f8c7db32fmr31698639b3a.3.1777008785496;
+        Thu, 23 Apr 2026 22:33:05 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9819e5sm23074570b3a.2.2026.04.23.22.33.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Apr 2026 22:33:04 -0700 (PDT)
+Date: Fri, 24 Apr 2026 11:03:01 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, =Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: qcom: Unify user-visible "Qualcomm" name
+Message-ID: <nerfirktc63hj3uffhykrxccxud7s56rbahzo7t3ug3ar4pwpd@4gjmjnu26vpn>
+References: <20260423173607.92564-2-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Ginger <ginger.jzllee@gmail.com>
-Date: Fri, 24 Apr 2026 13:32:39 +0800
-X-Gm-Features: AQROBzAftKukUZO5qXsKq3OfljKiCLNFqNzHrr6GoKnbrnXrbHqj9W5ZAtNDkkY
-Message-ID: <CAGp+u1ZRvs6UJDRu1041mO93DsQvM1dkZ0CZRfEEsVBAVPvKig@mail.gmail.com>
-Subject: [bug report] Potential deadlock bug in 'drivers/thermal/ti-soc-thermal/ti-bandgap.c',
- between 'ti_bandgap_write_counter()' and 'ti_bandgap_talert_irq_handler()'
-To: edubezval@gmail.com, j-keerthy@ti.com
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260423173607.92564-2-krzysztof.kozlowski@oss.qualcomm.com>
 
-Dear Linux kernel maintainers,
+On 23-04-26, 19:36, Krzysztof Kozlowski wrote:
+> Various names for Qualcomm as a company are used in user-visible config
+> options.  Switch to unified "Qualcomm" so it will be easier for users to
+> identify the options when for example running menuconfig.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> 
+> ---
+> 
+> I am doing this tree wide:
+> https://lore.kernel.org/all/?q=f%3Akrzysztof+s%3A%22Unify+user-visible%22+s%3AQualcomm
+> ---
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 47c9b031f1b3..a441668f9e0c 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -153,7 +153,7 @@ config ARM_QCOM_CPUFREQ_NVMEM
+>  	  If in doubt, say N.
+>  
+>  config ARM_QCOM_CPUFREQ_HW
+> -	tristate "QCOM CPUFreq HW driver"
+> +	tristate "Qualcomm CPUFreq HW driver"
+>  	depends on ARCH_QCOM || COMPILE_TEST
+>  	depends on COMMON_CLK
+>  	help
 
-My research-based static analyzer found a potential deadlock bug
-within the 'drivers/thermal/ti-soc-thermal' subsystem, more
-specifically, in 'drivers/thermal/ti-soc-thermal/ti-bandgap.c'.
-This deadlock potentially occurs with the involvement of hard irq.
+Applied. Thanks.
 
-Kernel version: long-term kernel v6.18.9
-
-Potential concurrent triggering executions:
-T0:
-ti_bandgap_talert_irq_handler [t1]
-        --> spin_lock(&bgp->lock); [t2]
-
-T1:
-ti_bandgap_write_counter
-    --> spin_lock(&bgp->lock); [t0]
-
-T1 does not disable hardware irqs in acquiring the spin lock. If T0
-(i.e., the hard irq context) occurs after T1 acquires the lock and
-both happen within the same CPU, then T0 will not proceed because it
-cannot hold the spin lock that has already been possessed by T1, yet
-T1
-cannot proceed because the hard irq runs disables preempts.
-
-Thank you for your time and consideration.
-
-Best regards,
-Ginger
+-- 
+viresh
