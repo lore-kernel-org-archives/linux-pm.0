@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B63A8381AEB;
-	Sat, 25 Apr 2026 18:47:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8912138551D;
+	Sat, 25 Apr 2026 18:47:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777142872; cv=none; b=idd2iLUs1SnZ89fdM1LTiXs0G2rP0oHKiY7Y3XV8cFCUW7QjI6SYsj8MnAU9LF1DMFvxe+XpYAVBS88p4CR2HFPyVPVW7MBcOdBZtlDnbaPatbRICXD01nAok/Txiq3YNqRPQtqnwRDD6/yNzAJ7sMsbewLFs13XH3Ql2lD2xhQ=
+	t=1777142873; cv=none; b=dGvax1ui/ZXJw887zh7de7OoCk7WHEoNRyA6ak3uqYEz/gKDSxYNGrCM1Y+PwXP/h+y451hnvnOw9VF5FqV62C5Q0rToPVmaHjWpbkfGdz80AHxo/xPS9X6iXXys3jxCI1ABY9YnThGaDxynM231P20UcxC9zf56m2e3nvNx+BE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777142872; c=relaxed/simple;
-	bh=Bmoe41L+XmEK7pymrV2t3RidvsxMvzgK1dUmPuLL43k=;
+	s=arc-20240116; t=1777142873; c=relaxed/simple;
+	bh=OLsw9FoU1Um9gFNlCXhOXsHDEwe1Oi4JtAEYZ6eS6Ww=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XxmLM09h033UkAi7aoQlHfDEItUl7aXcfs74j0o+uh0dC9j1OVj94UFDeI3z12Aiydy6QZuc7EINP/xjpXK1ZYt036j5EYnbMEpPNeLKkyllvDw1kcRy7UOvZ2KsPUEWXuZQsOGOz/yKRw7+LfXkGjnWcRCehLdxE5MPsTf78vs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r9fWlde/; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=OzjfPzXQG67esQh+OcZCdGbdNRgdFW6xnzzGqCRvmCyeECe/FcQhbYqnJQs3LWpJ6S/WWVqNO8h4cMGaMKxf6JsshUuePb0t4113nDatSB/e4CBkPeLSB7B3XJOTJ1KT/tzOkt8bIwQ9po3hjGlbdr6E+CK3DsH/278GBAcX4wc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=t2aHeU5O; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r9fWlde/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B3B9C2BCB3;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="t2aHeU5O"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E201FC2BCB3;
 	Sat, 25 Apr 2026 18:47:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777142872;
-	bh=Bmoe41L+XmEK7pymrV2t3RidvsxMvzgK1dUmPuLL43k=;
+	s=k20201202; t=1777142873;
+	bh=OLsw9FoU1Um9gFNlCXhOXsHDEwe1Oi4JtAEYZ6eS6Ww=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:From;
-	b=r9fWlde/p4+fnYky7YivaWPDOzRJi2Lb2KrUiNr5lJXeY96ouD7H7WHs11HMWdWz2
-	 hwuUT7pDycBbyRJVEMyfn/jYy4u3lzsV54Ac3sVYpfDsCLn6zjwQ2fdrsGfypAh/gh
-	 7Q6Nnus93C03/3M4JzfVkTxKoHjUzEia2IXfGcDKKACtu1S0q2BMg7HG4nsDmdgWIz
-	 HcaKy+A5g9LGMCSNX5fRzbm5gnKxGW2c1OFUSElQbtk7Tu5WyJuKH6XoGuTPjWU/9s
-	 hS74FoOgG8rS05BrSI8HqBkgvsOFl6JfqOhigVBLLZVWbvPuDqvonoQ0uqzwTWegT0
-	 40s6HFgjqUfxg==
+	b=t2aHeU5O1EvexASOOo8F+DcsHNySy7ui82GlR72q9o/F7zEur3PrpXBPnlkEUzWBs
+	 ZgXfxAi+DL5qnV9tWpJda5dUafpT6C9o/b8+JSOJILDZT3RHD0V9NChvzlbIgeVpAi
+	 7mrHFMqoHExl903XPrgnEH8RvQvdRdyS3o5TzXi9JxJF/KtKpLnnyUfVdIPoTleUsD
+	 gBssgfk8Pmjjb+UU8vA7yJAH/XUPBsaOQXe/8Jw0cjNUwmgQ7tcEkvS83Ir/igv71F
+	 amhh2wyJRyd7LyVUFXMg7n9EE5qmq7RWP/r5I9rJECfoKhXat1zDVct+TYvr7w2CfT
+	 gqIyDoK+waCnQ==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/13] tools/power turbostat: Fix unrecognized option '-P'
-Date: Sat, 25 Apr 2026 14:42:06 -0400
-Message-ID: <ce012c966b518c53475ba9a4e979242d7322d819.1777141988.git.len.brown@intel.com>
+Subject: [PATCH 04/13] tools/power turbostat: Fix --cpu-set 0 regression on HT systems
+Date: Sat, 25 Apr 2026 14:42:07 -0400
+Message-ID: <2c52f942fcf21c8e09c7dac669fca591cec2692b.1777141988.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <feffac1874820d501e51cd8dcee697063b792c82.1777141988.git.len.brown@intel.com>
 References: <feffac1874820d501e51cd8dcee697063b792c82.1777141988.git.len.brown@intel.com>
@@ -45,36 +45,78 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: David Arcari <darcari@redhat.com>
+From: Len Brown <len.brown@intel.com>
 
-The '-P' short option (shorthand for --no-perf) is not present in the
-optstring of the second call to getopt_long_only(). This results in
-the "unrecognized option" error when the tool reaches the main parsing
-loop.
+"turbostat --cpu-set 0" appears to hang if cpu0 has an HT sibling.
 
-Add 'P' to the second getopt_long_only() call to ensure it is
-consistently recognized.
+This is because the initialization code recognizes that it does not
+have to open perf files for the HT sibling, but the HT support
+in the collection code sees the HT sibling and tries to read
+from an uninitialized file descriptor, 0 (standard input).
 
-Fixes: a0e86c90b83c ("tools/power turbostat: Add --no-perf option")
-Signed-off-by: David Arcari <darcari@redhat.com>
+Access HT siblings only when they are in the allowed set.
+
+Fixes: a2b4d0f8bf07 ("tools/power turbostat: Favor cpu# over core#")
 Signed-off-by: Len Brown <len.brown@intel.com>
+Reported-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/power/x86/turbostat/turbostat.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bea574d7aa68..d6b4fd17c5f3 100644
+index d6b4fd17c5f3..7f61f07ceb31 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -11449,7 +11449,7 @@ void cmdline(int argc, char **argv)
- 	}
- 	optind = 0;
+@@ -2427,11 +2427,17 @@ char *sys_lpi_file_debugfs = "/sys/kernel/debug/pmc_core/slp_s0_residency_usec";
  
--	while ((opt = getopt_long_only(argc, argv, "+C:c:Dde:hi:Jn:N:o:qMST:v", long_options, &option_index)) != -1) {
-+	while ((opt = getopt_long_only(argc, argv, "+C:c:Dde:hi:Jn:N:o:qMPST:v", long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
- 			parse_add_command(optarg);
+ int cpu_is_not_present(int cpu)
+ {
++	if (cpu < 0)
++		return 1;
++
+ 	return !CPU_ISSET_S(cpu, cpu_present_setsize, cpu_present_set);
+ }
+ 
+ int cpu_is_not_allowed(int cpu)
+ {
++	if (cpu < 0)
++		return 1;
++
+ 	return !CPU_ISSET_S(cpu, cpu_allowed_setsize, cpu_allowed_set);
+ }
+ 
+@@ -2473,9 +2479,12 @@ int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pk
+ 		int i;
+ 
+ 		for (i = MAX_HT_ID; i > 0; --i) {	/* ht_id 0 is self */
+-			if (cpus[cpu].ht_sibling_cpu_id[i] <= 0)
++			int sibling_cpu_id = cpus[cpu].ht_sibling_cpu_id[i];
++
++			if (cpu_is_not_allowed(sibling_cpu_id))
+ 				continue;
+-			t = &thread_base[cpus[cpu].ht_sibling_cpu_id[i]];
++
++			t = &thread_base[sibling_cpu_id];
+ 
+ 			retval |= func(t, c, p);
+ 		}
+@@ -6252,10 +6261,13 @@ int for_all_cpus_2(int (func) (struct thread_data *, struct core_data *,
+ 		int i;
+ 
+ 		for (i = MAX_HT_ID; i > 0; --i) {	/* ht_id 0 is self */
+-			if (cpus[cpu].ht_sibling_cpu_id[i] <= 0)
++			int sibling_cpu_id = cpus[cpu].ht_sibling_cpu_id[i];
++
++			if (cpu_is_not_allowed(sibling_cpu_id))
+ 				continue;
+-			t = &thread_base[cpus[cpu].ht_sibling_cpu_id[i]];
+-			t2 = &thread_base2[cpus[cpu].ht_sibling_cpu_id[i]];
++
++			t = &thread_base[sibling_cpu_id];
++			t2 = &thread_base2[sibling_cpu_id];
+ 
+ 			retval |= func(t, c, p, t2, c2, p2);
+ 		}
 -- 
 2.45.2
 
