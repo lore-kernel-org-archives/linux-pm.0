@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48FC23932DE;
-	Sat, 25 Apr 2026 18:47:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FC7C3806D8;
+	Sat, 25 Apr 2026 18:47:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777142874; cv=none; b=BpnWBcVIngy3PKJh2IAYe3a+76qdfxnEypDBnNbD3S4Gb9cMsxM6RVFr5ofpGxKn8QzD3QLRMwAPnU1kT/fZZZk23eQqIinAHBpNweXZ0h499fSFfDvnU8/awOpKpVrT+0gcOsTB5uzREl4oMn3nlcuNAGmLaomXem3CBTfEMsw=
+	t=1777142875; cv=none; b=SinA7U17GAzUnA8soTlxobiVZZqalsgBQj9o/p/VFZwArKfpD7X90gsV4DMZLMaGdo+8qIFIw7aomPtKnM7LIMZ6cSlcLoye1Bcq/PHB6/epbYxhal/zRqWWzzTnZQOaUlYRgDLvXyFNUr88gxjpLBN+Kk9+6mtgF5o/dvPIZEA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777142874; c=relaxed/simple;
-	bh=1yVSEM1uFptogZ3YUoOPGgtnC8jY3zicOtx+zisjFbo=;
+	s=arc-20240116; t=1777142875; c=relaxed/simple;
+	bh=iQk+XBWfVV3ZJA6dJlakZm3x6fbwL9lWz7zidyigq90=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=k2g9wswxDNAChr9VNdzQaPQHUfYylbZ/oOa6UclvMKe02FWeho1dqlQLmk3og1OxzyMAwM9l6Px0cheo8L2/YYc3Fr6+Am5FHzSwgmFarpX6xjh7r2spRl2AnVKF3LMGCALjKattjndT9WJNq3nmnw7p1MK3hcyHTgtbssspLO0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=G+ba2tot; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=L2Y8JJMxKwG6hijjFMh2r0emROX5B3T3LjBz/yimXMo5xAfNYWsmfcclNZuyoftg203n2XP9Gjx4wT9UVpyAC8v8qiVUUD+lFswosS3FJKLvegq8rNLW/gEU6uDj7RgOvQuyZ1s3nGaeKb5JnrYgYfSHLFYuugF7pJrmvwXjg5Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=N+g/t6Ip; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="G+ba2tot"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9873FC4AF09;
-	Sat, 25 Apr 2026 18:47:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="N+g/t6Ip"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57CD2C2BCB7;
+	Sat, 25 Apr 2026 18:47:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777142874;
-	bh=1yVSEM1uFptogZ3YUoOPGgtnC8jY3zicOtx+zisjFbo=;
+	s=k20201202; t=1777142875;
+	bh=iQk+XBWfVV3ZJA6dJlakZm3x6fbwL9lWz7zidyigq90=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:From;
-	b=G+ba2totnWwQV91NM/jFn+PzuxY7t8z7GMQKJaiA5VDVgNjE49YsOKRhS1goGAM5K
-	 zABepacZvZ2qBqwsNxqi1E7+ZoTgFIKfRrMdYZ4mViWJZkC/44TmFgqyrBgZ9TXBfg
-	 AiVBVYe4NN3qbbtLZ8FiQcVR1KJCE+dQO/Rw4rXrHrChFMNU3qjW6fjtcxbwsc6jJ/
-	 jbxbgGSQiFLqzwU4gcSCc4GngPgyLOmGrwlmz9sCtzbvphhWURDx35pf9rB8HV2f7t
-	 jITnWFLACOZlT1mgnbECM6OpmsBoXTfMe3bbf2SAI4hVbIbp+RNylbxXkzRTub1ZEo
-	 K8CpArP6Ffd9w==
+	b=N+g/t6IpTOs3NWzB65U/pTZoI/jjDXDm+Nk5U7gCvZEeTGrk2Plse0iaLVCM0uJLm
+	 SABFkxaMEMN634vUqQ+S46GRbIoH4oTL7I/dzu6AevxCo7EZzCHnogv+xLk5LVU/9y
+	 k1nAtkhXRNOLm4yhRIHCPDOHKXFZRmLHl75Vtf7WylbIjAn+Zi695vj5Twk4TUoHkn
+	 V8UZAtDlC95GzJZ4z4TpzCP45KiJB1NcJUsVh2jMONieakYRck1t2R5XGVHFK/SxIV
+	 HzzXfZqNYO1loF5RZVyLrOtQVEu3WgFKLpo/Z4efyN9chx4MJNLA3bzba6NUHJa0Sr
+	 Xv1oU3luQKbVg==
 From: Len Brown <lenb@kernel.org>
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/13] tools/power turbostat: Fix --cpu-set 1 regression on HT systems
-Date: Sat, 25 Apr 2026 14:42:08 -0400
-Message-ID: <08e11edd0e63b72651ed5eb9142430d1ca764923.1777141988.git.len.brown@intel.com>
+Subject: [PATCH 06/13] tools/power turbostat: Cleanup print helper functions
+Date: Sat, 25 Apr 2026 14:42:09 -0400
+Message-ID: <092b76a3253fdd476e6d0626a094bf7b632f8eef.1777141988.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <feffac1874820d501e51cd8dcee697063b792c82.1777141988.git.len.brown@intel.com>
 References: <feffac1874820d501e51cd8dcee697063b792c82.1777141988.git.len.brown@intel.com>
@@ -45,206 +45,74 @@ Reply-To: Len Brown <lenb@kernel.org>
 Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 
-From: Len Brown <len.brown@intel.com>
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-When the "--cpu-set" option limits turbostat to run on
-a higher numbered HT sibling, it exits upon dividing by zero.
+Make printer helper functions more readable by factoring
+out a local 'sep' variable.
 
-This is because the HT support handles higher numbered siblings
-at the same time as lower numbered siblings.  But when that lower
-number sibling is dis-allowed, the higher numbered sibling is
-never processed.  The result is a time delta of 0, which results
-in a divide by 0 for any of the "per-second" metrics.
+Remove the redundant parentheses around sprintf() calls.
 
-Enhance the HT enumeration code to record all siblings (up to SMT4).
-Consult this complete HT sibling list to determine when
-to process an HT sibling, and when to skip it.
+Remove an unnecessary cast to "unsigned int" by using the '%08llx' instead
+   of '%08x'.
 
-Fixes: a2b4d0f8bf07 ("tools/power turbostat: Favor cpu# over core#")
+No functional changes.
+
+[lenb: fix typos, simplify]
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 70 +++++++++++++++++++++------
- 1 file changed, 55 insertions(+), 15 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 7f61f07ceb31..e609272ed80b 100644
+index e609272ed80b..624f54ee1ad8 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2449,6 +2449,22 @@ int cpu_is_not_allowed(int cpu)
- 
- #define PER_THREAD_PARAMS  struct thread_data *t, struct core_data *c, struct pkg_data *p
- 
-+int has_allowed_lower_ht_sibling(int cpu)
-+{
-+	int i;
-+
-+	for (i = 0; i <= cpus[cpu].ht_id; ++i) {
-+		int sibling_cpu_id = cpus[cpu].ht_sibling_cpu_id[i];
-+
-+		if (sibling_cpu_id == cpu)
-+			return 0;
-+
-+		if (!cpu_is_not_allowed(sibling_cpu_id))
-+			return 1;
-+	}
-+	return 0;
-+}
-+
- int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pkg_data *),
- 		 struct thread_data *thread_base, struct core_data *core_base, struct pkg_data *pkg_base)
+@@ -2866,31 +2866,38 @@ void bic_lookup(cpu_set_t *ret_set, char *name_list, enum show_hide_mode mode)
+ static inline int print_name(int width, int *printed, char *delim, char *name, enum counter_type type, enum counter_format format)
  {
-@@ -2466,7 +2482,7 @@ int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pk
- 		if (cpu_is_not_allowed(cpu))
- 			continue;
+ 	UNUSED(type);
++	char *sep = (*printed)++ ? delim : "";
  
--		if (cpus[cpu].ht_id > 0)	/* skip HT sibling */
-+		if (has_allowed_lower_ht_sibling(cpu))	/* skip HT sibling */
- 			continue;
- 
- 		t = &thread_base[cpu];
-@@ -2475,12 +2491,18 @@ int for_all_cpus(int (func) (struct thread_data *, struct core_data *, struct pk
- 
- 		retval |= func(t, c, p);
- 
--		/* Handle HT sibling now */
-+		/* Handle other HT siblings now */
- 		int i;
- 
--		for (i = MAX_HT_ID; i > 0; --i) {	/* ht_id 0 is self */
-+		for (i = 0; i <= MAX_HT_ID; ++i) {
- 			int sibling_cpu_id = cpus[cpu].ht_sibling_cpu_id[i];
- 
-+			if (sibling_cpu_id < 0)
-+				break;
-+
-+			if (sibling_cpu_id == cpu)
-+				continue;
-+
- 			if (cpu_is_not_allowed(sibling_cpu_id))
- 				continue;
- 
-@@ -6178,11 +6200,11 @@ int set_thread_siblings(struct cpu_topology *thiscpu)
- 	int cpu = thiscpu->cpu_id;
- 	int offset = topo.max_cpu_num + 1;
- 	size_t size;
--	int thread_id = 0;
-+	int ht_id = 0;
- 
- 	thiscpu->put_ids = CPU_ALLOC((topo.max_cpu_num + 1));
- 	if (thiscpu->ht_id < 0)
--		thiscpu->ht_id = thread_id++;
-+		thiscpu->ht_id = 0;	/* first CPU in core */
- 	if (!thiscpu->put_ids)
- 		return -1;
- 
-@@ -6206,13 +6228,9 @@ int set_thread_siblings(struct cpu_topology *thiscpu)
- 				sib_core = get_core_id(so);
- 				if (sib_core == thiscpu->core_id) {
- 					CPU_SET_S(so, size, thiscpu->put_ids);
--					if ((so != cpu) && (cpus[so].ht_id < 0)) {
--						cpus[so].ht_id = thread_id;
--						cpus[cpu].ht_sibling_cpu_id[thread_id] = so;
--						if (debug)
--							fprintf(stderr, "%s: cpu%d.ht_sibling_cpu_id[%d] = %d\n", __func__, cpu, thread_id, so);
--						thread_id += 1;
--					}
-+					cpus[so].ht_id = ht_id;
-+					cpus[cpu].ht_sibling_cpu_id[ht_id] = so;
-+					ht_id += 1;
- 				}
- 			}
- 		}
-@@ -6245,7 +6263,7 @@ int for_all_cpus_2(int (func) (struct thread_data *, struct core_data *,
- 		if (cpu_is_not_allowed(cpu))
- 			continue;
- 
--		if (cpus[cpu].ht_id > 0)	/* skip HT sibling */
-+		if (has_allowed_lower_ht_sibling(cpu))	/* skip HT sibling */
- 			continue;
- 
- 		t = &thread_base[cpu];
-@@ -6260,9 +6278,15 @@ int for_all_cpus_2(int (func) (struct thread_data *, struct core_data *,
- 		/* Handle HT sibling now */
- 		int i;
- 
--		for (i = MAX_HT_ID; i > 0; --i) {	/* ht_id 0 is self */
-+		for (i = 0; i <= MAX_HT_ID; ++i) {
- 			int sibling_cpu_id = cpus[cpu].ht_sibling_cpu_id[i];
- 
-+			if (sibling_cpu_id < 0)
-+				break;
-+
-+			if (sibling_cpu_id == cpu)
-+				continue;
-+
- 			if (cpu_is_not_allowed(sibling_cpu_id))
- 				continue;
- 
-@@ -9517,6 +9541,8 @@ void topology_probe(bool startup)
- 	cpu_present_setsize = CPU_ALLOC_SIZE((topo.max_cpu_num + 1));
- 	CPU_ZERO_S(cpu_present_setsize, cpu_present_set);
- 	for_all_proc_cpus(mark_cpu_present);
-+	if (debug)
-+		print_cpu_set("present set", cpu_present_set);
- 
- 	/*
- 	 * Allocate and initialize cpu_possible_set
-@@ -9527,6 +9553,8 @@ void topology_probe(bool startup)
- 	cpu_possible_setsize = CPU_ALLOC_SIZE((topo.max_cpu_num + 1));
- 	CPU_ZERO_S(cpu_possible_setsize, cpu_possible_set);
- 	initialize_cpu_set_from_sysfs(cpu_possible_set, "/sys/devices/system/cpu", "possible");
-+	if (debug)
-+		print_cpu_set("possible set", cpu_possible_set);
- 
- 	/*
- 	 * Allocate and initialize cpu_effective_set
-@@ -9537,6 +9565,8 @@ void topology_probe(bool startup)
- 	cpu_effective_setsize = CPU_ALLOC_SIZE((topo.max_cpu_num + 1));
- 	CPU_ZERO_S(cpu_effective_setsize, cpu_effective_set);
- 	update_effective_set(startup);
-+	if (debug)
-+		print_cpu_set("effective set", cpu_effective_set);
- 
- 	/*
- 	 * Allocate and initialize cpu_allowed_set
-@@ -9580,6 +9610,8 @@ void topology_probe(bool startup)
- 
- 		CPU_SET_S(i, cpu_allowed_setsize, cpu_allowed_set);
- 	}
-+	if (debug)
-+		print_cpu_set("allowed set", cpu_allowed_set);
- 
- 	if (!CPU_COUNT_S(cpu_allowed_setsize, cpu_allowed_set))
- 		err(-ENODEV, "No valid cpus found");
-@@ -9683,12 +9715,18 @@ void topology_probe(bool startup)
- 		return;
- 
- 	for (i = 0; i <= topo.max_cpu_num; ++i) {
-+		int ht_id;
-+
- 		if (cpu_is_not_present(i))
- 			continue;
- 		fprintf(outf,
--			"cpu %d pkg %d die %d l3 %d node %d lnode %d core %d thread %d\n",
-+			"cpu %d pkg %d die %d l3 %d node %d lnode %d core %d ht_id %d",
- 			i, cpus[i].package_id, cpus[i].die_id, cpus[i].l3_id,
- 			cpus[i].physical_node_id, cpus[i].logical_node_id, cpus[i].core_id, cpus[i].ht_id);
-+		fprintf(outf, " siblings");
-+		for (ht_id = 0; ht_id <= MAX_HT_ID; ++ht_id)
-+			fprintf(outf, " %d", cpus[i].ht_sibling_cpu_id[ht_id]);
-+		fprintf(outf, "\n");
- 	}
- 
- }
-@@ -9829,6 +9867,8 @@ void topology_update(void)
- 	topo.allowed_cores = 0;
- 	topo.allowed_packages = 0;
- 	for_all_cpus(update_topo, ODD_COUNTERS);
-+	if (debug)
-+		fprintf(stderr, "allowed_cpus %d allowed_cores %d allowed_packages %d\n", topo.allowed_cpus, topo.allowed_cores, topo.allowed_packages);
+ 	if (format == FORMAT_RAW && width >= 64)
+-		return (sprintf(outp, "%s%-8s", ((*printed)++ ? delim : ""), name));
++		return sprintf(outp, "%s%-8s", sep, name);
+ 	else
+-		return (sprintf(outp, "%s%s", ((*printed)++ ? delim : ""), name));
++		return sprintf(outp, "%s%s", sep, name);
  }
  
- void setup_all_buffers(bool startup)
+ static inline int print_hex_value(int width, int *printed, char *delim, unsigned long long value)
+ {
++	char *sep = (*printed)++ ? delim : "";
++
+ 	if (width <= 32)
+-		return (sprintf(outp, "%s%08x", ((*printed)++ ? delim : ""), (unsigned int)value));
++		return sprintf(outp, "%s%08llx", sep, value);
+ 	else
+-		return (sprintf(outp, "%s%016llx", ((*printed)++ ? delim : ""), value));
++		return sprintf(outp, "%s%016llx", sep, value);
+ }
+ 
+ static inline int print_decimal_value(int width, int *printed, char *delim, unsigned long long value)
+ {
++	char *sep = (*printed)++ ? delim : "";
++
+ 	UNUSED(width);
+ 
+-	return (sprintf(outp, "%s%lld", ((*printed)++ ? delim : ""), value));
++	return sprintf(outp, "%s%lld", sep, value);
+ }
+ 
+ static inline int print_float_value(int *printed, char *delim, double value)
+ {
+-	return (sprintf(outp, "%s%0.2f", ((*printed)++ ? delim : ""), value));
++	char *sep = (*printed)++ ? delim : "";
++
++	return sprintf(outp, "%s%0.2f", sep, value);
+ }
+ 
+ void print_header(char *delim)
 -- 
 2.45.2
 
