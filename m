@@ -1,170 +1,276 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 346B63603F0;
-	Sun, 26 Apr 2026 14:19:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E35A33EAF9;
+	Sun, 26 Apr 2026 14:31:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777213183; cv=none; b=jPpxslRBVRB7KwrkKQt/Qjbs+yQsS5J/h7U8GrLyzxAzq8Y0+m+IlHW9S5LTaa6T2zmyZ+/NXOpfqP6XKyYeSdSCgVTHsA6VW3b3/Qwm2H2wKNAPLT1clqrWJLAFw0KEVE9+8Bj5Itfpvnn3bbNHbcGrnj6mhLvpLbOJUtvBeG0=
+	t=1777213882; cv=none; b=B4oCBBO6iYDhQ8giyyXVRSDYh7nFHxxmC5tHnCaseh2r23yaOGze81USIKuocMa53Q7oXXR+rkl2ejKCqlgdvSAXI5oemgKUwTmSKoqFCSgucPgl2Op4F+HM6R9c+w1r9dV+AysgYZR/jqr8rMPJtTV1pnQHWiF8AjYogHW77aY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777213183; c=relaxed/simple;
-	bh=URvyEJiznvxr1mg7MT1vmtVH/KoUn/kPWKJIrV3eitw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=l6zUdH8O+0J0Vt93JtBUloPIDb4v+uCvvGdq196Yq63cUG44WcUeuYpECZGbjq9nJbGAxrMB2XAKJ4XndG0e4Uk6h7/61WpyLA6l8EpPWspMuASgd17lS2hd12JQiMFs/vQ4pog9byiQoDtWEQ72WM1psCxt7NjVIZgvQ9OeDM8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Scw3s7WY; arc=none smtp.client-ip=198.175.65.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1777213882; c=relaxed/simple;
+	bh=+bORunN9DihtZKlWmsbyAGvFX7FDw4aL3SCDlhq8TbQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Iq9JWsNU47zulAjTpwkWEIwLER16AYo9OwggxexnsmZK24z0Yql8/OeoVS6CER/gIXBb6dC6A3qQ/+NKhsAKiNVFK1heGf81ZC4Zv+OLUOuvyDJzbyjCyCYTunE0oZN64Bmuk3cpLSDORbjXDbR0JqMZ/wHKebfn45k23jGSpNA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=126.com; spf=pass smtp.mailfrom=126.com; dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.b=GJr6WW1F; arc=none smtp.client-ip=117.135.210.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=126.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=126.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Scw3s7WY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777213181; x=1808749181;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=URvyEJiznvxr1mg7MT1vmtVH/KoUn/kPWKJIrV3eitw=;
-  b=Scw3s7WYHF60s/r6KDtc8HLX+Ql0wMg14hdVxZLkAhdPIcOSIsi+NCTf
-   ybet85+ouFKpPrOwBt8ebvBKnSBl0omhC57zRRkJET/4SBzyEbjIY4xFE
-   ua0zSOORYzuf6ChmpyYxvU0AxqzxUACHRewXncXsOePdIXsMFXV90Q5L5
-   7dcvxZ9v8UowZ5AXpGNXtnYTR6RjmEjqG7FlUvgTkJohEITFFqOWpwN9K
-   BcHoVKjrdd9N5d/5vUvbbctOJwKyIlACD2XhX7gHJBiY3MLxAd0gAYqyw
-   b3mwHEcXLOf6vZ3yQyjm7qxMW7om8m61akOzpQN2ByLG5NekycIJQw4SI
-   A==;
-X-CSE-ConnectionGUID: fzxv3Hi6TeyeX8VaN7soxQ==
-X-CSE-MsgGUID: QPN6KKrtTDCD1L8Rir+KQg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11768"; a="78308283"
-X-IronPort-AV: E=Sophos;i="6.23,200,1770624000"; 
-   d="scan'208";a="78308283"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Apr 2026 07:19:41 -0700
-X-CSE-ConnectionGUID: ziOmEDTvSCe9EljfjscO9A==
-X-CSE-MsgGUID: UdPkb92JS5m4WCwW7FbKag==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,200,1770624000"; 
-   d="scan'208";a="233683673"
-Received: from lkp-server01.sh.intel.com (HELO aa799cca880d) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 26 Apr 2026 07:19:37 -0700
-Received: from kbuild by aa799cca880d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wH0Kd-000000007wL-0HYX;
-	Sun, 26 Apr 2026 14:19:35 +0000
-Date: Sun, 26 Apr 2026 22:19:15 +0800
-From: kernel test robot <lkp@intel.com>
-To: Wentao Liang <vulab@iscas.ac.cn>, Georgi Djakov <djakov@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Wentao Liang <vulab@iscas.ac.cn>, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2] interconnect: imx: fix use-after-free in
- imx_icc_node_init_qos()
-Message-ID: <202604262216.MLuzg6nl-lkp@intel.com>
-References: <20260408153022.401123-1-vulab@iscas.ac.cn>
+	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.b="GJr6WW1F"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
+	Content-Type; bh=E9QmRybu2HwGPax/8gg8zi6sH9jkn1UXfiltYEM9caY=;
+	b=GJr6WW1FFj6/yFQO/D5b9Z35SC7l1yTBhxhkj4vkJEDWXnmtfwNBf1YT1GYzae
+	P0Gt/eizsqh6vY6sMw6Mw1boLItuuLSQUjjE1+H0HF3nkXamKKPRxDHvIBIeT+aq
+	TIDE6L1lz40dD6JtPB2Ok5ChCODfw8DCkX8wZ/USbRfTA=
+Received: from [IPV6:2408:8210:480a:2590:ec66:74e8:68a7:a44b] (unknown [])
+	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wD3lxKMIO5pdslVAQ--.7227S2;
+	Sun, 26 Apr 2026 22:26:22 +0800 (CST)
+Message-ID: <c646232a-f2bf-439a-88c9-737dde9b1725@126.com>
+Date: Sun, 26 Apr 2026 22:26:20 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260408153022.401123-1-vulab@iscas.ac.cn>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 2/2] kernel/module: Decouple klp and ftrace from
+ load_module
+To: "Masami Hiramatsu (Google)" <mhiramat@kernel.org>,
+ Petr Mladek <pmladek@suse.com>
+Cc: Petr Pavlu <petr.pavlu@suse.com>, rafael@kernel.org, lenb@kernel.org,
+ mturquette@baylibre.com, sboyd@kernel.org, viresh.kumar@linaro.org,
+ agk@redhat.com, snitzer@kernel.org, mpatocka@redhat.com,
+ bmarzins@redhat.com, song@kernel.org, yukuai@fnnas.com, linan122@huawei.com,
+ jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org,
+ horms@kernel.org, davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, paulmck@kernel.org, frederic@kernel.org,
+ mcgrof@kernel.org, da.gomez@kernel.org, samitolvanen@google.com,
+ atomlin@atomlin.com, jpoimboe@kernel.org, jikos@kernel.org, mbenes@suse.cz,
+ joe.lawrence@redhat.com, rostedt@goodmis.org, mark.rutland@arm.com,
+ mathieu.desnoyers@efficios.com, linux-modules@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-pm@vger.kernel.org, live-patching@vger.kernel.org,
+ dm-devel@lists.linux.dev, linux-raid@vger.kernel.org,
+ kgdb-bugreport@lists.sourceforge.net, netdev@vger.kernel.org
+References: <20260413080701.180976-1-chensong_2000@189.cn>
+ <1191caf5-6a61-4622-a15e-854d3701f4fc@suse.com>
+ <a35f5f94-7d5a-4347-974b-b270c89ef241@189.cn>
+ <1db425bf-58a9-4768-8c38-3ae25d7662a5@suse.com>
+ <aeD2_FrFL6E3dbAC@pathway.suse.cz>
+ <20260420112707.aa3627ca9f975eeaf7d8ea0e@kernel.org>
+Content-Language: en-US
+From: Song Chen <chensong_2000@126.com>
+In-Reply-To: <20260420112707.aa3627ca9f975eeaf7d8ea0e@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID:_____wD3lxKMIO5pdslVAQ--.7227S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW3JrW8Wry8Gr4xKw15uFy3Jwb_yoW3GFWDpF
+	9xWF17Gr4DXr9rCa1Ivw1UZr17K34UGr4jqr15GFyxGryqyFn7JFy8Gr109FykJrWkZry2
+	qr4UAry7A345JrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UG-eOUUUUU=
+X-CM-SenderInfo: xfkh02prqjsjqqqqqiyswou0bp/xtbBsw5BwGnuII7qoQAA3e
 
-Hi Wentao,
-
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on amd-pstate/linux-next]
-[also build test ERROR on amd-pstate/bleeding-edge linus/master shawnguo/for-next v7.0 next-20260424]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Wentao-Liang/interconnect-imx-fix-use-after-free-in-imx_icc_node_init_qos/20260424-225513
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git linux-next
-patch link:    https://lore.kernel.org/r/20260408153022.401123-1-vulab%40iscas.ac.cn
-patch subject: [PATCH v2] interconnect: imx: fix use-after-free in imx_icc_node_init_qos()
-config: sparc64-allmodconfig (https://download.01.org/0day-ci/archive/20260426/202604262216.MLuzg6nl-lkp@intel.com/config)
-compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 5bac06718f502014fade905512f1d26d578a18f3)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260426/202604262216.MLuzg6nl-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604262216.MLuzg6nl-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/interconnect/imx/imx.c:123:22: error: use of undeclared identifier '__free_device_nod'; did you mean '__free_device_node'?
-     123 |         struct device_node *__free(device_nod) dn = of_parse_phandle(dev->of_node,
-         |                             ^~~~~~~~~~~~~~~~~~
-   include/linux/cleanup.h:213:33: note: expanded from macro '__free'
-     213 | #define __free(_name)   __cleanup(__free_##_name)
-         |                                   ^~~~~~~~~~~~~~
-   <scratch space>:42:1: note: expanded from here
-      42 | __free_device_nod
-         | ^~~~~~~~~~~~~~~~~
-   include/linux/of.h:138:1: note: '__free_device_node' declared here
-     138 | DEFINE_FREE(device_node, struct device_node *, if (_T) of_node_put(_T))
-         | ^
-   include/linux/cleanup.h:211:30: note: expanded from macro 'DEFINE_FREE'
-     211 |         static __always_inline void __free_##_name(void *p) { _type _T = *(_type *)p; _free; }
-         |                                     ^
-   <scratch space>:227:1: note: expanded from here
-     227 | __free_device_node
-         | ^
-   1 error generated.
+Hi,
 
 
-vim +123 drivers/interconnect/imx/imx.c
+On 4/20/26 10:27, Masami Hiramatsu (Google) wrote:
+> On Thu, 16 Apr 2026 16:49:32 +0200
+> Petr Mladek <pmladek@suse.com> wrote:
+> 
+>> On Thu 2026-04-16 13:18:30, Petr Pavlu wrote:
+>>> On 4/15/26 8:43 AM, Song Chen wrote:
+>>>> On 4/14/26 22:33, Petr Pavlu wrote:
+>>>>> On 4/13/26 10:07 AM, chensong_2000@189.cn wrote:
+>>>>>> diff --git a/include/linux/module.h b/include/linux/module.h
+>>>>>> index 14f391b186c6..0bdd56f9defd 100644
+>>>>>> --- a/include/linux/module.h
+>>>>>> +++ b/include/linux/module.h
+>>>>>> @@ -308,6 +308,14 @@ enum module_state {
+>>>>>>        MODULE_STATE_COMING,    /* Full formed, running module_init. */
+>>>>>>        MODULE_STATE_GOING,    /* Going away. */
+>>>>>>        MODULE_STATE_UNFORMED,    /* Still setting it up. */
+>>>>>> +    MODULE_STATE_FORMED,
+>>>>>
+>>>>> I don't see a reason to add a new module state. Why is it necessary and
+>>>>> how does it fit with the existing states?
+>>>>>
+>>>> because once notifier fails in state MODULE_STATE_UNFORMED (now only ftrace has someting to do in this state), notifier chain will roll back by calling blocking_notifier_call_chain_robust, i'm afraid MODULE_STATE_GOING is going to jeopardise the notifers which don't handle it appropriately, like:
+>>>>
+>>>> case MODULE_STATE_COMING:
+>>>>       kmalloc();
+>>>> case MODULE_STATE_GOING:
+>>>>       kfree();
+>>>
+>>> My understanding is that the current module "state machine" operates as
+>>> follows. Transitions marked with an asterisk (*) are announced via the
+>>> module notifier.
+>>>
+>>> ---> UNFORMED --*> COMING --*> LIVE --*> GOING -.
+>>>          ^            |                     ^    |
+>>>          |            '---------------------*    |
+>>>          '---------------------------------------'
+>>>
+>>> The new code aims to replace the current ftrace_module_init() call in
+>>> load_module(). To achieve this, it adds a notification for the UNFORMED
+>>> state (only when loading a module) and introduces a new FORMED state for
+>>> rollback. FORMED is purely a fake state because it never appears in
+>>> module::state. The new structure is as follows:
+>>>
+>>>          ,--*> (FORMED)
+>>>          |
+>>> --*> UNFORMED --*> COMING --*> LIVE --*> GOING -.
+>>>          ^            |                     ^    |
+>>>          |            '---------------------*    |
+>>>          '---------------------------------------'
+>>>
+>>> I'm afraid this is quite complex and inconsistent. Unless it can be kept
+>>> simple, we would be just replacing one special handling with a different
+>>> complexity, which is not worth it.
+>>
+>>>>>
+>>>>>> +    if (err)
+>>>>>> +        goto ddebug_cleanup;
+>>>>>>          /* Finally it's fully formed, ready to start executing. */
+>>>>>>        err = complete_formation(mod, info);
+>>>>>> -    if (err)
+>>>>>> +    if (err) {
+>>>>>> +        blocking_notifier_call_chain_reverse(&module_notify_list,
+>>>>>> +                MODULE_STATE_FORMED, mod);
+>>>>>>            goto ddebug_cleanup;
+>>>>>> +    }
+>>>>>>    -    err = prepare_coming_module(mod);
+>>>>>> +    err = prepare_module_state_transaction(mod,
+>>>>>> +                MODULE_STATE_COMING, MODULE_STATE_GOING);
+>>>>>>        if (err)
+>>>>>>            goto bug_cleanup;
+>>>>>>    @@ -3522,7 +3519,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
+>>>>>>        destroy_params(mod->kp, mod->num_kp);
+>>>>>>        blocking_notifier_call_chain(&module_notify_list,
+>>>>>>                         MODULE_STATE_GOING, mod);
+>>>>>
+>>>>> My understanding is that all notifier chains for MODULE_STATE_GOING
+>>>>> should be reversed.
+>>>> yes, all, from lowest priority notifier to highest.
+>>>> I will resend patch 1 which was failed due to my proxy setting.
+>>>
+>>> What I meant here is that the call:
+>>>
+>>> blocking_notifier_call_chain(&module_notify_list, MODULE_STATE_GOING, mod);
+>>>
+>>> should be replaced with:
+>>>
+>>> blocking_notifier_call_chain_reverse(&module_notify_list, MODULE_STATE_GOING, mod);
+>>>
+>>>>
+>>>>>
+>>>>>> -    klp_module_going(mod);
+>>>>>>     bug_cleanup:
+>>>>>>        mod->state = MODULE_STATE_GOING;
+>>>>>>        /* module_bug_cleanup needs module_mutex protection */
+>>>>>
+>>>>> The patch removes the klp_module_going() cleanup call in load_module().
+>>>>> Similarly, the ftrace_release_mod() call under the ddebug_cleanup label
+>>>>> should be removed and appropriately replaced with a cleanup via
+>>>>> a notifier.
+>>>>>
+>>>>      err = prepare_module_state_transaction(mod,
+>>>>                  MODULE_STATE_UNFORMED, MODULE_STATE_FORMED);
+>>>>      if (err)
+>>>>          goto ddebug_cleanup;
+>>>>
+>>>> ftrace will be cleanup in blocking_notifier_call_chain_robust rolling back.
+>>>>
+>>>>      err = prepare_module_state_transaction(mod,
+>>>>                  MODULE_STATE_COMING, MODULE_STATE_GOING);
+>>>>
+>>>> each notifier including ftrace and klp will be cleanup in blocking_notifier_call_chain_robust rolling back.
+>>>>
+>>>> if all notifiers are successful in MODULE_STATE_COMING, they all will be clean up in
+>>>>   coming_cleanup:
+>>>>      mod->state = MODULE_STATE_GOING;
+>>>>      destroy_params(mod->kp, mod->num_kp);
+>>>>      blocking_notifier_call_chain(&module_notify_list,
+>>>>                       MODULE_STATE_GOING, mod);
+>>>>
+>>>> if  something wrong underneath.
+>>>
+>>> My point is that the patch leaves a call to ftrace_release_mod() in
+>>> load_module(), which I expected to be handled via a notifier.
+>>
+>> I think that I have got it. The ftrace code needs two notifiers when
+>> the module is being loaded and two when it is going.
+>>
+>> This is why Sond added the new state. But I think that we would
+>> need two new states to call:
+>>
+>>      + ftrace_module_init() in MODULE_STATE_UNFORMED
+>>      + ftrace_module_enable() in MODULE_STATE_FORMED
+>>
+>> and
+>>
+>>      + ftrace_free_mem() in MODULE_STATE_PRE_GOING
+>>      + ftrace_free_mem() in MODULE_STATE_GOING
+>>
+>>
+>> By using the ascii art:
+>>
+>>   -*> UNFORMED -*> FORMED -> COMING -*> LIVE -*> PRE_GOING -*> GOING -.
+>>                |          |         |                ^           ^    ^
+>>                |          |         '----------------'           |    |
+>>                |          '--------------------------------------'    |
+>>                '------------------------------------------------------'
+>>
+>>
+>> But I think that this is not worth it.
+> 
+> Agree.
+> 
+> If this needs to be ordered so strictly, why we will use a "single"
+> module notifier chain for this complex situation?
+> 
+> I think the notifier call chain is just for notice a single signal,
+> instead of sending several different signals, especially if there is
+> any dependency among the callbacks.
+> 
+> If notification callbacks need to be ordered, they are currently
+> sorted by representing priority numerically, but this is quite
+> fragile for updating. It has to look up other registered priorities
+> and adjust the order among dependencies each time. For this reason,
+> this mechanism is not suitable for global ordering. (It's like line
+> numbers in BASIC.)
+> It is probably only useful for representing dependencies between
+> two components maintained by the same maintainer.
+> 
+> I'm against a general-purpose system that makes everything modular.
+> It unnecessarily complicates things. If there are processes that
+> require strict ordering, especially processes that must be performed
+> before each stage as part of the framework, they should be called
+> directly from the framework, not via notification callbacks.
+> 
+> This makes it simpler and more robust to maintain.
+> 
+> Only the framework's end users should utilize notification callbacks.
+> 
+> Thank you,
+> 
+> 
 
-   116	
-   117	static int imx_icc_node_init_qos(struct icc_provider *provider,
-   118					 struct icc_node *node)
-   119	{
-   120		struct imx_icc_node *node_data = node->data;
-   121		const struct imx_icc_node_adj_desc *adj = node_data->desc->adj;
-   122		struct device *dev = provider->dev;
- > 123		struct device_node *__free(device_nod) dn = of_parse_phandle(dev->of_node,
-   124				adj->phandle_name, 0);
-   125		struct platform_device *pdev;
-   126	
-   127		if (adj->main_noc) {
-   128			node_data->qos_dev = dev;
-   129			dev_dbg(dev, "icc node %s[%d] is main noc itself\n",
-   130				node->name, node->id);
-   131		} else {
-   132			if (!dn) {
-   133				dev_warn(dev, "Failed to parse %s\n",
-   134					 adj->phandle_name);
-   135				return -ENODEV;
-   136			}
-   137			/* Allow scaling to be disabled on a per-node basis */
-   138			if (!of_device_is_available(dn)) {
-   139				dev_warn(dev, "Missing property %s, skip scaling %s\n",
-   140					 adj->phandle_name, node->name);
-   141				return 0;
-   142			}
-   143	
-   144			pdev = of_find_device_by_node(dn);
-   145			if (!pdev) {
-   146				dev_warn(dev, "node %s[%d] missing device for %pOF\n",
-   147					 node->name, node->id, dn);
-   148				return -EPROBE_DEFER;
-   149			}
-   150			node_data->qos_dev = &pdev->dev;
-   151			dev_dbg(dev, "node %s[%d] has device node %pOF\n",
-   152				node->name, node->id, dn);
-   153		}
-   154	
-   155		return dev_pm_qos_add_request(node_data->qos_dev,
-   156					      &node_data->qos_req,
-   157					      DEV_PM_QOS_MIN_FREQUENCY, 0);
-   158	}
-   159	
+my motivation is to decouple ftrace and klp from module loader and make 
+blocking_notifier_chain more generic, but it doesn't become generic 
+completely. I understand your and Petr's comments and agree.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Thanks
+
+Best regards
+
+Song
+
+>>
+>> Best Regards,
+>> Petr
+>>
+> 
+> 
+
