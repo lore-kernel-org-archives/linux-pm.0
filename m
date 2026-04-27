@@ -1,214 +1,142 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBE6E3A75BB
-	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD3A63D9048
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777314200; cv=none; b=evrBPdy/y2X32r8TIqM+odqGIdH+bM9cHqCsjy14oGcAaCKcfKCIoudgsC8GSc4Du/Uad1azrMnFOkbOesqbGqNve9fJkXdok5eB2Th1cFUSdEygE5TUKZsayB72dMrXfTAFlYEkXvYf+0Zv1tNPN3sP+k1U6YRWlPjML/iVCc8=
+	t=1777314208; cv=none; b=fwAPnRS0BjUteWotJyJmsz9//QJoEH8x6O4u0B3scraw5+EFKLyKEuDt961/Oiv6bNcwPzQTzbAmu+xx9q/dBN1KHYssEuiaSohxDhd8bH+dsQJUNB0Ch7aeoAhR+G+INl8o+2qa3zZWYKsFvNnhelvT0GmmXVZPa5WDFZe6txQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777314200; c=relaxed/simple;
-	bh=7e7Tf2MGPPvF7IQtCfLfncjsVrLZZIHywY4b/DUulQo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Uz6kB0IpfPfBsZD/VNsktkr6eiroa8+Hg8zxxhKAN85RiYWYMUZeog4tbV1JrA7AKe39TM3ILOQCn5v9jw92k9I3AWYKdTv6e1wbJERm9KbGJzuQ370U7ODkdIEeodLWr+V+Q5rianrA3DzxXLLBPhfykhKyE6n4px7IsuermZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YYgi6TeM; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777314208; c=relaxed/simple;
+	bh=YkWiwMK2UL7nJitylE4MB/TTR4aYYELndcelMX3Lh34=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oDCKbSo+eY845lk9NRZUYjTFHFDrgTRZ1rMsW2C0iQGh0O9dvTGXQ5JmbG4qb+LujlEYbB+jDBaIkVdgV+idZibwqiEXKPG1JXq525i72ykjJXULeOAD7+TQsamBLMU5ZtbTpGmV1/Vms5h1huCxQMmrNNCbMtjrmqJGIeXufII=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HDbuKv0u; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=A3CedNts; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YYgi6TeM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AAD9C2BCB7
-	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777314200;
-	bh=7e7Tf2MGPPvF7IQtCfLfncjsVrLZZIHywY4b/DUulQo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=YYgi6TeMZ6DxAaJqZU5wysGkAhMgCBKE3hkmggeYSPVFs67LPowXZ3EZAuHali3M7
-	 3+Q88wkJOkbKFy6MF1bUsH8eXH3y2AKme0GVPIv1fW/3oejomoZw7Wa00fdZ/nOgxF
-	 4yUfkuauNcUrBj7rj23M9xc4q2fDn+o5VxbK1zFb+MAJJO7tPuAzWEIJga6p8om+3q
-	 JhiW22AbHkUoS+mEpuPbadz/ChDiVQjJdOrlf7Q4xC14FrX3EZXXFBpN0L1+deZJxi
-	 5chTGZ7eAGKO+Op/yvJzzowTsJTgTb79LTeUxIyxTrbOpsUA0oEey/bVItQcweRJpF
-	 arl0DzYB8ZEwg==
-Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-b9c9d03524cso1467780066b.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 11:23:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+SZnuDji8aE8RLOZV3cqlFJ4YXDVQyPcZzGNTFEc46Bh9Oh9ow8G3//BuI6h1tFs/zRJd3BBmtQA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyV3Hd25Ez72n7DZdLpWdcQPjaiiLK+j21Opw9bo02LYORp12Wu
-	Sk1geGBRGTewZvTvYc4lzyC8/3Zo3ubbMi4bjrP60HGTNE5LtnY08d4glyt2qPYDCWsxql6lLPW
-	D+56VSPWZKxE5wl4T97sZsfwQmOkRmCc=
-X-Received: by 2002:a17:907:8b95:b0:ba8:8c8c:1c5d with SMTP id
- a640c23a62f3a-bb7fd089780mr894166b.47.1777314199304; Mon, 27 Apr 2026
- 11:23:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HDbuKv0u";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="A3CedNts"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63RHw9Us1237549
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=7gtoBvIM0vtUEFDzhqKijfXiWCi/e0CvPeg
+	0D8zQXCU=; b=HDbuKv0uptQWGIjR4a+rPf2SX82MviCTbDH8Dlgr89V+w04+iXq
+	0OFlBBumMYwN0M7sUXTkdvpAdagHJy+kpsN/0a4dGy1A5KFwLvXgYpjQRu8vAobC
+	F3htVrjqEysJovZezoWAPN49u/VNKlr08EhM61h8GWTaLFD8d1P1EhXtJXTZLBTr
+	P6iad2IY43xaVg9Iv+BmjDSQdPfQvAL9HXQg9hTwO/A1dOYN2siGVLn4Wd2r2bTf
+	E1L+AiXaHm9/KC0mn9QYJwMdYkBgbhJkvqadtyli2fduHAiIFqVfLWpOUwyn8kYi
+	boXVuFc5zB9DG+BECM5dtLS2NTNKU/g2myg==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dt6n4hmk3-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:26 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2b258636d16so104765395ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 11:23:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1777314206; x=1777919006; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=7gtoBvIM0vtUEFDzhqKijfXiWCi/e0CvPeg0D8zQXCU=;
+        b=A3CedNtsyaZwpepRufyNtsW3HmEKPLbPuh4NIPmPxfYhTd4VlMZ6eEIA8prEcUGD1P
+         AeEUicuITo9EK4FMl7XOxP4baGzTq1GiGJIBR2w8iMI5S3coI6Fv8AOLLcsqdYG0y8/w
+         JbfqQIQ5q9vhE8+cYbD2k6iJS7/luEQXtLqGoKSR9L7mvKL8nTR2zElCDwqpk7Gxn6q0
+         IIL6wAngsfUliRrS79z/hheASy78xkKbfNkh1SGGB357pm2U1r3Jp04QN69QlC6+zTxk
+         h1bsMUqMYCKOT/H06EF9d/0ZeNvC8f9no98sOhp6M43RXiTgNgNXb4ggC/UWGv/t1tSY
+         IeVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777314206; x=1777919006;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7gtoBvIM0vtUEFDzhqKijfXiWCi/e0CvPeg0D8zQXCU=;
+        b=rEAc5IT+/AjDYwouf6XMZ3UHblbnWXk6cniAmf3RlRF5ibnErwQQJyTqORlj9f9VaH
+         6ufCXAzIWhe6hveHZovCmqtgnDetYyMm+jIABTlNzIBu3jGWy+/7p6046dQGz5bwiqWh
+         a3qO3uQpWJE13zjbdl6R7a6GbSvyvFoG3cdBBnLdhRW5JldDcECd5olHQJOSrQ5UgXch
+         DO+qCzEdSYvd+poQpoZkJhdsz77u6BetT8v4V0xA5JFdtqWn0XNwUp9M7/iGUDUy7jSu
+         Hzt7Vb70vCQ/Rz83kdb4VCpiZt8ZGSDl4WghiKZP6KGg7f9Twed2B8+BS53DbQxLrztj
+         ZPnQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+hij1wR9T/VgrIb0wyMQPQ0FbfUVJuqg3ccfNCYqlLyBUs+67aCxnodpVgnBaLb0XDQ02bGwF3OQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwRxoIyBaMb4IKpl2xLF8jsq6JvqNlpdOofTjXGVPqGkEkTwAuF
+	0g0eqF6MjjJVrm9YBBzzDVOrO41e90p/uqkCPHxsO1rIdN+3gk/UQj/5iKMXVxLCF9Nqwp/rQgz
+	LqGZTOh0bB97H3ev5zbl7VF3qj013Le/jistvwr3nmdye7PWQ/y46P78XpMIybw==
+X-Gm-Gg: AeBDieuVKWebfL7iltHLlCAHFK+zbu89eCvoXNzcDcK6wP6qamvZgEslTIaYihheCLh
+	hryq1aSRDbkEuxvQ+f5zchsn/jRJE4NgxgFII2R4QNHu7/DJqYT+MjrBKB0vQw/f1Ct2T1UTwac
+	PdGi4KJvWQFzIXV+1bDRIwsBQc1lZPc8kwdUsrbUqa+EODFjf8dkfX6JQFYeQWW/cqD27SVpeoM
+	6jSky/vUwc9WRQJ+SuqS6M1/arEcaG/D/N6tHxQkNzAbktJ7fksfkPCQrx6gg7PpNTXT2vVlgiq
+	qH1vKE4kMq03kvqh7nPLuuQzdKL4uzRSZoX+Rj/1WwbNgjhCKHQ1Nd06LN6/39PVMvFlR6Kj2nl
+	STGljYVi76yrGkew64FMZH21NhMEcBHUTpv+UuihedTxOfqYCYZ+Ba2q6Ujo=
+X-Received: by 2002:a17:903:1a2d:b0:2b2:9f45:2266 with SMTP id d9443c01a7336-2b97a9336f0mr3015445ad.21.1777314205604;
+        Mon, 27 Apr 2026 11:23:25 -0700 (PDT)
+X-Received: by 2002:a17:903:1a2d:b0:2b2:9f45:2266 with SMTP id d9443c01a7336-2b97a9336f0mr3015125ad.21.1777314205010;
+        Mon, 27 Apr 2026 11:23:25 -0700 (PDT)
+Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b97ac8d066sm1224745ad.67.2026.04.27.11.23.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Apr 2026 11:23:24 -0700 (PDT)
+From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Subject: [PATCH] dt-bindings: interconnect: qcom-bwmon: Add Hawi cpu-bwmon compatible
+Date: Mon, 27 Apr 2026 23:52:55 +0530
+Message-ID: <20260427182255.3649922-1-mukesh.ojha@oss.qualcomm.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
- <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
- <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
- <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
- <CAMgjq7AGzBubCkmv7LubBjPLN1DzL472d4zUm+sGxo8ZptMgRw@mail.gmail.com>
- <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
- <CAMgjq7D1WXUHqAV1yuXvrUmEsE_m_+yx0mBq6teJhipx6mySbA@mail.gmail.com>
- <CAO9r8zMk7xTi-Txmj1+Z9=250fD8HuMQFyT1iwjTW9coLXgqoA@mail.gmail.com> <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com>
-In-Reply-To: <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com>
-From: Yosry Ahmed <yosry@kernel.org>
-Date: Mon, 27 Apr 2026 11:23:07 -0700
-X-Gmail-Original-Message-ID: <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
-X-Gm-Features: AVHnY4JSrF4JaGtUa9RGykJDx4LJmM53x95FeUNsFKceHbvA9vScOToLoywkb9c
-Message-ID: <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-To: Kairui Song <ryncsn@gmail.com>
-Cc: Nhat Pham <nphamcs@gmail.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	akpm@linux-foundation.org, Alistair Popple <apopple@nvidia.com>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Barry Song <baohua@kernel.org>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Baoquan He <bhe@redhat.com>, 
-	Byungchul Park <byungchul@sk.com>, 
-	"open list:CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)" <cgroups@vger.kernel.org>, Chengming Zhou <chengming.zhou@linux.dev>, 
-	Chris Li <chrisl@kernel.org>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@kernel.org>, 
-	Dev Jain <dev.jain@arm.com>, Gregory Price <gourry@gourry.net>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>, Jann Horn <jannh@google.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Lance Yang <lance.yang@linux.dev>, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-	linux-mm <linux-mm@kvack.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Michal Hocko <mhocko@suse.com>, Muchun Song <muchun.song@linux.dev>, 
-	Mariano Pache <npache@redhat.com>, Pavel Machek <pavel@kernel.org>, Peter Xu <peterx@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Pedro Falcato <pfalcato@suse.de>, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
-	Roman Gushchin <roman.gushchin@linux.dev>, Mike Rapoport <rppt@kernel.org>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Suren Baghdasaryan <surenb@google.com>, tglx@kernel.org, 
-	Vlastimil Babka <vbabka@suse.cz>, Wei Xu <weixugc@google.com>, 
-	"Huang, Ying" <ying.huang@linux.alibaba.com>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
-	Yuanchu Xie <yuanchu@google.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Zi Yan <ziy@nvidia.com>, 
-	Meta kernel team <kernel-team@meta.com>, Rik van Riel <riel@surriel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: 1R9ZAXUjfrZdKNe9z6rZHSKKrU8FIsXO
+X-Authority-Analysis: v=2.4 cv=Xba5Co55 c=1 sm=1 tr=0 ts=69efa99e cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
+ a=fFZ-BlF9OTnTLI8sbqgA:9 a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-GUID: 1R9ZAXUjfrZdKNe9z6rZHSKKrU8FIsXO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDE5NiBTYWx0ZWRfX16zTbFhjP+b5
+ tmqGXVXb/UHlnfgnAgZ7GF6cId7ZqJG6cj0fQO6P+OW7W58XgqHrHrOSD0CWrSaBCMtJfnkPMXH
+ 5lottMGnshf1Ct0dt0KcpvM1B4K3fRURGnmHPnlQe2zQnWcY0A7qh6zEtUC4hA+UHq+R2601Fwt
+ r4XYi5u7Iku2lauU1mcPxoDFr1LcHrnDNd9FKDEstfvvNw8Njm2xcEHrARAdy2EtN8yK0fbAVpz
+ 0i9z0uZskFiD48iVkJrWHk52k2xrrSrwZ3fpCuS/OdBQ/a9+AA1XaTerB+tbob/4SsljHE8WMdQ
+ TAGXQ5v3j8oJob0sTBK3pgCupuOfyzBCVn6ecCRYLTfyfR/vlapT3qfG6nsq/jpZODriis85laC
+ DGkThr44YE2HY2cewYETjIVNLO6Cm2gsQqAdgNm8PrBQMLJWBSYFprVCxWn42usjCekcy84Ns40
+ wm7/3MtQ67iRVJTiO9Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-27_04,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 phishscore=0 adultscore=0
+ impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1011 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270196
 
-On Fri, Apr 24, 2026 at 12:52=E2=80=AFPM Kairui Song <ryncsn@gmail.com> wro=
-te:
->
-> On Sat, Apr 25, 2026 at 3:12=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wr=
-ote
-> > > https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.par=
-k@lge.com/
-> >
-> > Does this do promotion/demotion of swap entries?
->
-> Not yet, let's do things step by step.
->
-> > > For example just reserve a type (e.g. type 0) as the virtual type?
-> > > (type is really a bad naming though).
-> > >
-> > > The that swap file (or swap mapping) will be
-> > >
-> > > I was trying that based on this:
-> > > https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d=
-19815@tencent.com/
-> > >
-> > > It seems to work and the only thing we need is actually just somethin=
-g
-> > > like this one in VSS:
-> > > https://lore.kernel.org/linux-mm/20260320192735.748051-15-nphamcs@gma=
-il.com/
-> > >
-> > > This part:
-> > > + /* fall back to physical swap device */
-> > > + if (!vswap_alloc_swap_slot(folio)) {
-> > >
-> > > We do a folio_realloc_swap if folio->swap have type 0.
-> > >
-> > > Which means, if there is no virtual device / mapping / file / space
-> > > (I'm not sure how to name it at this point :) ), the ordinary swap
-> > > routine is just still there untouched.
-> > >
-> > > If there is one, and it's being used, then, it is still the ordinary
-> > > swap routine, just do an extra allocation (and the extra allocation
-> > > strictly follows YoungJun's tier rule), which is same with VSS, but
-> > > everything is reused. From a user or high level interface perspective=
-,
-> > > this can be designed with no difference as VSS. Just with a few
-> > > bonuses: being per memcg / task / runtime optional, zero overhead if
-> > > not enabled, and reusing all the infra.
-> > >
-> > > BTW this deferred allocation (in VSS or dynamic swap mapping, similar
-> > > thing) is actually a bit concerning to me as well. It changes the
-> > > common swapout routine and maybe worth reconsideration (e.g.
-> > > activate_locked_split and mTHP stats is now ignored?), being optional
-> > > for now also seems safer.
-> >
-> > I am not sure if I understand you correctly. I think what you're propos=
-ing is:
-> >
-> > - Page tables either point directly to a swap slot, or to a virtual swa=
-p entry.
-> > - By default, page tables just point to swap slots maintaining current =
-behavior.
->
-> I mean, they are all swap entries, nothing special from the page table
-> side. Swap subsystems handle things internally.
->
-> > - If we have multiple backends (e.g. zswap or tiering), we use virtual
-> > swap entry instead.
->
-> Actually that can just follow the swap priority, or tier rule. Even if
-> virtual mapping exists, it can be bypassed. e.g. you have a large NBD
-> and don't care about either fragmentation or compression for offline
-> workload cgroups, then why use a virtual layer for them which could
-> double the kmem usage or spend more CPU? Setup is a different issue
-> which can be discussed.
->
-> > - The physical swapfile has clusters and swap tables (status quo).
-> > - Virtual swap is implemented with clusters and swap tables in a
-> > virtual space, and each table entry points to an underlying swap slot
-> > or zswap entry.
-> > - If a page table has a physical swap slot, and we need to do tiering,
-> > we basically "make it virtual" by making the swap table of the
-> > physical swapfile point at a virtual swap entry? or another physical
-> > swapfile? Not sure.
->
-> They are still ordinary swap entries, nothing special. The virtual
-> space is also just a ordinary swap file (or swap mapping), which is
-> easy to do:
-> https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d1981=
-5@tencent.com/
->
-> Then its virtual_table will have a different set of swap entries. (I
-> left that part undone though).
->
-> > > Right... I mean with two layers you will likely have >16 bytes
-> > > overhead, and double lookup.
-> >
-> > Why >16 bytes? Do we need anything extra other than the reverse
-> > mapping? Also why do we need a double lookup?
->
-> You will have to store at least the following info: memcg (2 bytes),
-> shadow (8 bytes), count (at least 1 bytes), and revert mapping (8
-> bytes, since you have to address a full virtual swap space). And some
-> type info is also needed. Part of them can be shrinked but still,
-> scientifically, merging two layers into one is considered a kind of
-> optimization.
->
-> You need lookup the virtual layer, then the lower layer for many
-> decision making, is was discussed before to introduce more cache bit
-> or things like that and I think that is getting over complex, reminds
-> me of the slot cache or HAS_CACHE thing...:
-> https://lore.kernel.org/linux-mm/CAMgjq7DJrtE-jARik849kCufd0qNnZQs7C8fcyz=
-VOKE14-O+Dw@mail.gmail.com/
+Add the Qualcomm Hawi SoC compatible string for the CPU bandwidth
+monitor and there is single instance present globally to monitor
+the traffic from CPU to LLCC.
 
-I think that's where the disconnect is. You are considering these two
-separate layers, each with its own metadata. The metadata should only
-live in one place.
+Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+---
+ .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml     | 1 +
+ 1 file changed, 1 insertion(+)
 
-If we only have swap tables in the virtual swap layer (with the
-metadata), backends do not have to carry the metadata. In this case,
-backends should only have a reverse mapping (if needed), and some
-internal data structure (e.g. bitmaps) to track usage.
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+index ce79521bb1ef..82b1d94d3010 100644
+--- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
++++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+@@ -26,6 +26,7 @@ properties:
+       - items:
+           - enum:
+               - qcom,glymur-cpu-bwmon
++              - qcom,hawi-cpu-bwmon
+               - qcom,kaanapali-cpu-bwmon
+               - qcom,qcm2290-cpu-bwmon
+               - qcom,qcs615-cpu-bwmon
+-- 
+2.53.0
 
-This is difficult to achieve if the virtual swap layer is optional,
-because then the metadata can live in different places. This is why I
-think we should have a virtual swap layer that all swap entries go
-through and all metadata live in (where today's swap tables would
-live). Backends then only carry backend-specific data (e.g.
-compression handles for zswap, slots bitmap of swapfiles, etc). In
-this world I *think* the reverse mapping could end up being optional,
-depending on what we need it for.
