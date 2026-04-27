@@ -1,158 +1,141 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F73A3C3449
-	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 13:13:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.51
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777295632; cv=pass; b=F6CTOqRpcaN1iNLzG4FGXgowON6iRUysfOHuTFu8PwMavReF2/0jRBeDvMesoK8o3VnNl6Z+xHdd3gTG8jYkS7bNMJtZx0RPpU+2ePIC3+wd0veSHXKgWYkafHbNpwZeep3GbS2FYx0zeMKpBuHmHr2sxpCrh4j1Z04FuBdwVH4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777295632; c=relaxed/simple;
-	bh=Bj5yC+8b46RDVgUptaLnu/xG3/FmzZC5vpJJyId/REg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FD/kJFSEfpeUcvPyPnkbzMq98uXsACVl8b3ytLrrf5zetI1CRQ9jLoh7ErvtqhOj+TF530U7G/9pLq5QtNLfImCvukB/oMu7f2pqun2RegtmY9PIOj6hAusxup/mrEeRoYfSlwWA9MXJDJyjQjxyh5UvAuo7ta6cLDYmcycfapk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=T/UkDcqa; arc=pass smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3640C3D0939
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 14:09:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777298945; cv=none; b=BpR15SkKEwPQBnDKoyGbT8ZOmQb4dhnXuccp5jqplocdZP97MpppyArLQg4L8TMXwJt+ViD3oP9ericBo4J0kz307/u1tU4E5n1KER9K4yrlTKvt4+p2+dKKLI7K+TfzMy56Ens2R8qIPwkduNSPv9MF+JR73yYmBPkPqPQhQIg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777298945; c=relaxed/simple;
+	bh=6iBp5T/boDDw3f8vu9674vxoHItIhbflv+gOtQ8i928=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wsp3SzbH+XDsLa1MUWnBMXXdpZHhyZVgae3yPJqVDuCmo2Kzmr5iA4fY1XA0a0oSnzCLB+GU2sEkxU4QuBBA4f51yP8itoZ9wPGukq7DRBBiIiBMGvDs8J8n8TQ/t6QBbHeLTWjz6jLDSfM5/F6ZTsRCa+Da+Twv60cdn6rtJ0w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZhD6B8wF; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="T/UkDcqa"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a62a049c1fso7384142e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 06:13:50 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777295629; cv=none;
-        d=google.com; s=arc-20240605;
-        b=lFe15n9G3V6jwN1Qqmnt1QP1bNOsCsYloNQZPM6biGFCv3OknFghHwlNJQi+N3Ma9L
-         Vi5lUlBHpiIhx3gnHdZ55bzC5pRAWddvJdjfae9XhKzRwgWeMNb2xGpj8F7vWiWKTK2U
-         KdiLEpeJZj08a1WNwyAsaw1LTA4BUH3airI04N2MzQnUeSEwsvgHrVYsIjvEZes1mv5m
-         9Csj2+Tx9pzog2VVI43vCBtXsNSJZVPTPHwG6nQSaxo8iGYnDPY5cg0LwD7eg/Ar1A9R
-         OVF2+3kO4H1T2erTyMNJqs1iPLY2H4H4gtYYqxc6+Uhut0N22G1ACiSvteLF3s8PyK8A
-         un+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=L7//5ece1DlWDMT1aLpKgGFyRfsm8Y+IqHoNcwNLtWg=;
-        fh=q9zSDGh6oq4t9LXVVJ5xDnSRflmrrvJFjxcZgNLZDHY=;
-        b=RwOSnD/EsWFqxQWzVmeoKK2PdcqCHsCcJIQ1yiGEDtxI1ymTaanbj13oP1DVLfguvR
-         PZlBAWZyZUotrnBKuMH603cP2S+o7Y1Ze9uX35eQUps0oVbVE8cJ7bJ6L/Q5GZCwdDiJ
-         YHhzjqQQSYfn74TzIcg1UcPJSSRg5ZublT4WV4Kv7G+mBKEsGJW+RR06vRiKf7sxnaWY
-         ThgKWKo4kaV/TJywF/mf/3wHnYITpdto+42EfBproXHVz/NHeESFeiTNBPsn4yRpbIZt
-         iOE3IEsN73MJE28w8BZIQ3v/+NpmJOyKgFWihcSYKxrNpKcYNSX0ghjhgmn50dEcsyH5
-         cZ+w==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZhD6B8wF"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2b240d753ceso20178315ad.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 07:09:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777295629; x=1777900429; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=L7//5ece1DlWDMT1aLpKgGFyRfsm8Y+IqHoNcwNLtWg=;
-        b=T/UkDcqaD+Vy7Lhtce4drzBtghuLePgTrncmXUFzJBpgX16jvusyijLVWq+AI4Qwm6
-         A5oRJXe2HcYOWtJ6o4evB9QTNAeiA6wvU1Ip2ZlvBVm/vEZqSO+Ln79AQ0QZQx6HYeUC
-         xNTxrj1MjBw+KK9aCxKPzCweXSmgnH2PcTtu7aGCJdPd+jGIRDcpTJLqTtuy8NVy2B2t
-         EJc/EEyspzCiMo1MrFONYwojk2kr6UH5E079NtJ54t0XZUgrF7mdczu8pDddfwQISFYm
-         T+/nwkzFI8BBkSuYse+ZhnK7kGtlkkBV72fIj6cF6V9aE/D0s7cknise5A5+UxFe6e7w
-         0bkw==
+        d=gmail.com; s=20251104; t=1777298943; x=1777903743; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=0xqpRZaDGVxEqa2CyY0E4vPQn/D7tfhzxeK6F4mGsO0=;
+        b=ZhD6B8wFNKys5HD7qL9JidzIVzeFrjpKTu/2Xpx190l37XkrceE4rxp1mXHDv9uw8K
+         30YxUnvrqCzhrNYtwb+H7D8xwkM96BbpaTMmwEYTkx0jv/7Y4Ksvq+/Bdzzr1ffZNqDE
+         jRxO5ZHP1nBA9zQWfaFljjITN4J23Pzde01yQEDfi5HFw3OOx4hP83w/OWgLryMDwFkF
+         5ut63ux3uZFgItjur0ReAKicMSpi5KHGxeUDB4hF8PWOfY4FC4C4mqlNopPHVqlD31x1
+         eXsWT0fbxIoeCTkP1uVMVDn8fbK8lvbO/Th9kn7sqppO2b7koGqQy2SH5r7/XQs7bGO6
+         FmYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777295629; x=1777900429;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1777298943; x=1777903743;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=L7//5ece1DlWDMT1aLpKgGFyRfsm8Y+IqHoNcwNLtWg=;
-        b=sARakPVw9s4ibv8hXiET6CmLv7tX+DmIx1H9f6AvcOPBewRJd8mVu+WEo4WcGtBQWY
-         nAsfhFL3qAlAtAHmnTp5J59lNpmjBUxVj0SmwXizVeQcMIA8A3zSbqU2UO/BKgWdKT6v
-         +x72ude8SuAe01TvVhFIczaqWFnW6SHwdia6G++rYyIYKxd3Ib9d0q5W8I1Y+oJbjecr
-         8HUQByao74LM63Vqxvknri7crE5zfhYtsXiN4z/Fx42Eb89XfK+Gj/6GDR8xVDjMi5zw
-         CLLDhMqwV18iW7PmqHsS0UD+ekipLMyoHRvEN/lK5qUowKOOYpKkaWpbdzm6S8GkzZbd
-         3Z8A==
-X-Forwarded-Encrypted: i=1; AFNElJ/pZcgJEnUyYJQ9f98rBHoH2FgEx6NyGS+LtXT092N9O2j7pjcZkPB5QAWaBmrN84ZxVn4AlvnjeQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyBRbHAZWs0+/HFJO/JmXnp+pqhlMOnKeH2sKSDcCjex30ylBhT
-	b/zpWfrs2xUNJ45+nNDu92VClVWFNresNu/KPqRI0frBIJIfgStzelPwZ5bad5poCEOarxjHTzP
-	G/tO60I51NwWwTyFpZ92HkcScXMZ5OqKpThnti9KZRg==
-X-Gm-Gg: AeBDieuNY61kIeTyVCR13s7RPmbCWpX+PXXySg4AeXJyrXXom189J8UfKOcBg/IJNBz
-	hlufplZrZo++UfkjInNUZEP1RztnFAIFXjv+6+uhZIoewWBDA4cfkdV7TFS3JA86MayWS6e07SA
-	CfVpdHPB+mgkdiCrqhM8JFbSsNWyWHYdAZT2mp6W9KA6jn8nGW0ZMbJZAn5X/s/VaGyf+xtxKX+
-	jJUgAxdWjGMAVCnsubibuVgFAW510NVUwk3LqnZiZPxm5ayyFdk0Lsz7Mma/3Cp7PGSBCoNDylb
-	XlcUiUk6paVWUJeTWDY=
-X-Received: by 2002:a05:6512:3193:b0:5a4:1672:59e0 with SMTP id
- 2adb3069b0e04-5a4172cd574mr14121153e87.19.1777295629037; Mon, 27 Apr 2026
- 06:13:49 -0700 (PDT)
+        bh=0xqpRZaDGVxEqa2CyY0E4vPQn/D7tfhzxeK6F4mGsO0=;
+        b=VAo+/4xATLb7L1qsRmYojZ8VauW21yDoNBi49HNGYyGzVAE1FFE+ej+CRDOs7GNW0M
+         GuMHGaKTok7C9YXSyrhFD4L+AMOcyUt7/5bjQOgbN3HCkIuxAfqBV++5WfamjjWtQ4u8
+         BcDmL9blHal4o1oy/53XF+ffWpnqukUZ/K+BvQUanycPE3NO+tERGECrA8vwU2XAFinB
+         8aTOuX6xL3ut4fiv5B+7Yh08Bi1SK/E+0he5Z8LblB26eRPn2Y8GEP1Ik7hgFuxU3sLY
+         m2iUjCy44At7cPjhTFYmrYY+zhRPhvfTDRqVsrjl4B+uPBfT/Ew6uq9hStPSVbkVbYsf
+         AlMg==
+X-Forwarded-Encrypted: i=1; AFNElJ9fmNDq4sxUh8ytb6sVHjOzBZ2Hy4HS4kwWop7lld83bnsmutFaMMrfxpvM+YP171QswXD/JKvBHw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxh2+r44jFPVXHskmzf1qOGVIdUotinkvFZF+NpjqLrC8v5D6qo
+	9lwNqlYcq2p60sF+vVuP/ayJPdpv1rNFrxj36bBV2YxpNdOCVtqAFBQV
+X-Gm-Gg: AeBDievl4+oSSmOBXbxUnlE7mdGKZ33sjxqqFVCCYSt9vL++VCATUhG5W/RS6HeXlOh
+	Ikt6ffbST4Cl82W44zVGr9Br6TAIhhd1r2sbF11T7j4LLgaT02Qo3549G8DOpyE58Fq90CKC1kb
+	V9OBRDQS+IarMLLm8eeVvp/+sXBC/HtNJNHzU+XK1lASuZqegJ1+Q6NaSOysGzWsKDDNn0aCnae
+	2rtK1Ccn6WorUXhoCjrtUbydOIGLPBz6QEWnE5SlTt/118f/eegyzSOoEFvFsd3INui8i8z7FBb
+	yrFNiLgCC9LMz5Zk5ZXjCDiEAIu3lcNUyq+RLDS7mhPhDCQrPe1LtyfN3flidHdAtVraS+0W93H
+	Mqo8O40nAV530OfeE+HXZqOTFpIFHT9hEZWVprJAcD2KszEcvX39B/I9qyQEyDVytN66IDpuH1k
+	vnTQW3WBcf1DT4r4nSb4D6SuNpoD3fDTjey8ZAriH6
+X-Received: by 2002:a17:902:8696:b0:2b2:5c84:32ba with SMTP id d9443c01a7336-2b5f9ece9f3mr169617925ad.2.1777298943363;
+        Mon, 27 Apr 2026 07:09:03 -0700 (PDT)
+Received: from magniquick ([45.112.148.110])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5fa9ff98csm307322975ad.3.2026.04.27.07.08.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Apr 2026 07:09:02 -0700 (PDT)
+From: Navon John Lukose <navonjohnlukose@gmail.com>
+To: Hans de Goede <hansg@kernel.org>,
+	Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>,
+	Sebastian Reichel <sre@kernel.org>
+Cc: platform-driver-x86@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Jorge Lopez <jorge.lopez2@hp.com>
+Subject: [RFC] HP laptop charge mode control via POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
+Date: Mon, 27 Apr 2026 19:38:57 +0530
+Message-ID: <20260427140857.397971-1-navonjohnlukose@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260408141121.386522-1-vulab@iscas.ac.cn>
-In-Reply-To: <20260408141121.386522-1-vulab@iscas.ac.cn>
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 27 Apr 2026 15:13:12 +0200
-X-Gm-Features: AVHnY4KIw0y71PHOTou49MhZ1vsAm_GUfrl6yfolmci7Zff-_TktbzdbSpL-x1c
-Message-ID: <CAPDyKFrTG6tp9XbuiUYjgMYkHYQwVsyXBuggCc3Lp=J_NcKTyA@mail.gmail.com>
-Subject: Re: [PATCH] pmdomain: mediatek: fix use-after-free in scpsys_get_bus_protection_legacy()
-To: Wentao Liang <vulab@iscas.ac.cn>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, nfraprado@collabora.com, 
-	Macpaul Lin <macpaul.lin@mediatek.com>, Adam Ford <aford173@gmail.com>, 
-	Chen-Yu Tsai <wenst@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, 
-	stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Wed, 8 Apr 2026 at 16:11, Wentao Liang <vulab@iscas.ac.cn> wrote:
->
-> In scpsys_get_bus_protection_legacy(), of_find_node_with_property()
-> returns a device node with its reference count incremented. The function
-> then calls of_node_put(node) before checking whether
-> syscon_regmap_lookup_by_phandle() returns an error. If an error occurs,
-> dev_err_probe() dereferences the node pointer to print diagnostic
-> information, but the node memory may have already been freed due to the
-> earlier of_node_put(), leading to a use-after-free vulnerability.
->
-> Fix this by moving the of_node_put() call after the error check, ensuring
-> the node is still valid when accessed in the error path.
->
-> Fixes: c29345fa5f66 ("pmdomain: mediatek: Refactor bus protection regmaps retrieval")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
+Hi,
 
-Applied for fixes, thanks!
+I have been looking at battery charge control on an HP laptop, and I would like
+to check the right upstream direction before preparing a patch.
 
-Kind regards
-Uffe
+This is not a new userspace ABI. The kernel already has
+POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR, and some existing drivers expose charge
+modes without exposing charge thresholds. I am trying to confirm whether that is
+the right interface for this HP firmware interface, and where the implementation
+should live.
 
+On this machine, Linux currently exposes no native battery charge thresholds:
 
-> ---
->  drivers/pmdomain/mediatek/mtk-pm-domains.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/pmdomain/mediatek/mtk-pm-domains.c b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-> index e2800aa1bc59..d3b36f32417c 100644
-> --- a/drivers/pmdomain/mediatek/mtk-pm-domains.c
-> +++ b/drivers/pmdomain/mediatek/mtk-pm-domains.c
-> @@ -993,6 +993,7 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
->         struct device_node *node, *smi_np;
->         int num_regmaps = 0, i, j;
->         struct regmap *regmap[3];
-> +       int ret = 0;
->
->         /*
->          * Legacy code retrieves a maximum of three bus protection handles:
-> @@ -1043,11 +1044,14 @@ static int scpsys_get_bus_protection_legacy(struct device *dev, struct scpsys *s
->         if (node) {
->                 regmap[2] = syscon_regmap_lookup_by_phandle(node, "mediatek,infracfg-nao");
->                 num_regmaps++;
-> -               of_node_put(node);
-> -               if (IS_ERR(regmap[2]))
-> -                       return dev_err_probe(dev, PTR_ERR(regmap[2]),
-> +               if (IS_ERR(regmap[2])) {
-> +                       ret = dev_err_probe(dev, PTR_ERR(regmap[2]),
->                                              "%pOF: failed to get infracfg regmap\n",
->                                              node);
-> +                       of_node_put(node);
-> +                       return ret;
-> +               }
-> +               of_node_put(node);
->         } else {
->                 regmap[2] = NULL;
->         }
-> --
-> 2.34.1
->
+  - no charge_control_start_threshold
+  - no charge_control_end_threshold
+
+The existing HP kernel drivers also do not expose this feature here:
+
+  - hp-wmi does not expose battery charge mode control
+  - hp-bioscfg is present, but does not expose Battery Health Manager or related
+    battery threshold attributes on this machine
+
+However, the firmware exposes working ACPI methods for charge mode control:
+
+  - \SBCC 0x0000 -> normal charging / auto
+  - \SBCO 0x0500 -> inhibit charge
+  - \SBCO 0x0200 -> force discharge while on AC
+
+These mappings have been tested from Linux by observing battery and adapter
+state transitions:
+
+  - auto allows normal charging
+  - inhibit-charge leaves AC online and reports Not charging / zero current
+  - force-discharge makes the battery path discharge while AC is connected
+
+My current thinking is:
+
+  - expose only POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
+  - support AUTO, INHIBIT_CHARGE, and FORCE_DISCHARGE
+  - do not synthesize charge_control_*_threshold properties in the kernel
+  - leave policies such as "resume below 75%, stop above 80%" to userspace
+
+For driver placement, this seems HP-specific rather than generic power-supply
+logic, so I think it should probably live under drivers/platform/x86/hp/ and
+register a power_supply extension on the battery, similar to other platform
+drivers that use power_supply_register_extension() from a battery hook.
+
+Does that sound like the right direction?
+
+In particular:
+
+  1. Is POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR the right ABI for an HP platform that
+     appears to expose only mode-based charging control?
+
+  2. Should this be implemented as part of an existing HP driver such as hp-wmi,
+     or as a small new HP-specific driver under drivers/platform/x86/hp/?
+
+  3. What should the driver gate support on? For example, should this be gated
+     by DMI quirks, HP WMI/BIOS GUID presence, ACPI method presence, or some
+     combination of those?
+
+Thanks,
+Navon John Lukose
