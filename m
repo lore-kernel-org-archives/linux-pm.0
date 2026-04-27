@@ -1,134 +1,214 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6348359A65;
-	Mon, 27 Apr 2026 18:05:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBE6E3A75BB
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777313151; cv=none; b=Wc+2/mljGz8VpewVCR2a4A+MWHwK9G6DU15l467M1pd3IxDYnuDjk868Vmh+iOfZDp+Qc1DFdjTXTuefbvc3tdBUT1hPhlqgp2IpTrtL6fScSUtesWXrMQEnGWpdC3qU7CVhJxNDZ+dSkPYYZDg5GD1lG4gpgbtdQj1pGBprpLo=
+	t=1777314200; cv=none; b=evrBPdy/y2X32r8TIqM+odqGIdH+bM9cHqCsjy14oGcAaCKcfKCIoudgsC8GSc4Du/Uad1azrMnFOkbOesqbGqNve9fJkXdok5eB2Th1cFUSdEygE5TUKZsayB72dMrXfTAFlYEkXvYf+0Zv1tNPN3sP+k1U6YRWlPjML/iVCc8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777313151; c=relaxed/simple;
-	bh=0ud1QnU6DSZTrgik1DuQ8GzbwSpCgKyutvxo4R3s3/Y=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jh9AkAPxbc2fO8wBpyFGoJDVFcnGf5BQovxEQiajNvo/DXMLwBTbQojKefj31AGZPG7xrwKuN9d3dEhvxRSfWO4JWH95nMyMo7PAsd5rJD+3CV9m4v9YabiG1b1y3FoAnSPdhlI21bNKodPnGWmIpjx3G/CBAEpT28u3nN50e74=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Vuo2Oh+V; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777314200; c=relaxed/simple;
+	bh=7e7Tf2MGPPvF7IQtCfLfncjsVrLZZIHywY4b/DUulQo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Uz6kB0IpfPfBsZD/VNsktkr6eiroa8+Hg8zxxhKAN85RiYWYMUZeog4tbV1JrA7AKe39TM3ILOQCn5v9jw92k9I3AWYKdTv6e1wbJERm9KbGJzuQ370U7ODkdIEeodLWr+V+Q5rianrA3DzxXLLBPhfykhKyE6n4px7IsuermZc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YYgi6TeM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Vuo2Oh+V"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 86FB9C2BCB7;
-	Mon, 27 Apr 2026 18:05:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YYgi6TeM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AAD9C2BCB7
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:23:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777313151;
-	bh=0ud1QnU6DSZTrgik1DuQ8GzbwSpCgKyutvxo4R3s3/Y=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Vuo2Oh+VsSSIBVNwrxYEiLEskYMdNrx7YnDItq6WOLf4NCHmfXxBX6hyH2t3vTe5p
-	 B7Xmk5dqMH5u9n3kVLKVKogVLckHrMLig4LONyDct0mY+3TNk8bqYWwfRPafBh1N+R
-	 rxxR0ffEM8J39NFSMDBpKefl1DO04fQ3vTxXa4fU448D/mVeT33AK1zOAocKA6qEE6
-	 3KIQhcDZZNLbjbTCFRjcrynrQqD3n+e6h95XywS0LVUfIO9o/mcIvp245L5wTbbKIe
-	 pGa4Slm+2/R1x6ZTC1uN7/5X2La3EQJYcsSOAMWi00yhrNsrt4vXxKwManVsBJI8zG
-	 2LcmLn3Ge66lw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73892FF8869;
-	Mon, 27 Apr 2026 18:05:51 +0000 (UTC)
-From: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>
-Date: Mon, 27 Apr 2026 20:05:42 +0200
-Subject: [PATCH v6 2/4] serdev: add rust private data to serdev_device
+	s=k20201202; t=1777314200;
+	bh=7e7Tf2MGPPvF7IQtCfLfncjsVrLZZIHywY4b/DUulQo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=YYgi6TeMZ6DxAaJqZU5wysGkAhMgCBKE3hkmggeYSPVFs67LPowXZ3EZAuHali3M7
+	 3+Q88wkJOkbKFy6MF1bUsH8eXH3y2AKme0GVPIv1fW/3oejomoZw7Wa00fdZ/nOgxF
+	 4yUfkuauNcUrBj7rj23M9xc4q2fDn+o5VxbK1zFb+MAJJO7tPuAzWEIJga6p8om+3q
+	 JhiW22AbHkUoS+mEpuPbadz/ChDiVQjJdOrlf7Q4xC14FrX3EZXXFBpN0L1+deZJxi
+	 5chTGZ7eAGKO+Op/yvJzzowTsJTgTb79LTeUxIyxTrbOpsUA0oEey/bVItQcweRJpF
+	 arl0DzYB8ZEwg==
+Received: by mail-ej1-f42.google.com with SMTP id a640c23a62f3a-b9c9d03524cso1467780066b.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 11:23:20 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+SZnuDji8aE8RLOZV3cqlFJ4YXDVQyPcZzGNTFEc46Bh9Oh9ow8G3//BuI6h1tFs/zRJd3BBmtQA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyV3Hd25Ez72n7DZdLpWdcQPjaiiLK+j21Opw9bo02LYORp12Wu
+	Sk1geGBRGTewZvTvYc4lzyC8/3Zo3ubbMi4bjrP60HGTNE5LtnY08d4glyt2qPYDCWsxql6lLPW
+	D+56VSPWZKxE5wl4T97sZsfwQmOkRmCc=
+X-Received: by 2002:a17:907:8b95:b0:ba8:8c8c:1c5d with SMTP id
+ a640c23a62f3a-bb7fd089780mr894166b.47.1777314199304; Mon, 27 Apr 2026
+ 11:23:19 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260427-rust_serdev-v6-2-173798d5e1a3@posteo.de>
-References: <20260427-rust_serdev-v6-0-173798d5e1a3@posteo.de>
-In-Reply-To: <20260427-rust_serdev-v6-0-173798d5e1a3@posteo.de>
-To: Rob Herring <robh@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Kari Argillander <kari.argillander@gmail.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Boqun Feng <boqun@kernel.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
- rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
- driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
- Markus Probst <markus.probst@posteo.de>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1683;
- i=markus.probst@posteo.de; h=from:subject:message-id;
- bh=Lci9sJZ/Hd89WrWg8pDQ/wKU3djKPRT47wh61HUUHxo=;
- b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBp76V9RbMszIgYWJvSWd0DQQvpRFArS72LDlcV3
- 7DTy3b7pj+JAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCae+lfRsUgAAAAAAEAA5t
- YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9JuqA/+KWXf7SvsT8sOhGfeNvEPjyBdh3Zb7Su
- QYx71x8wz5G4X2BfWc1y3I4E6K+R9FeOjMzKGGZxSsgbKk95TumVive0o4+rG4hyNk7WD1RbeAp
- cQ+uOCUbhWlwSR+Iwnd+5AEADEBWxzOWn+QzvHa6RxMKhhMUwNd5QNumBtMy6JSyjrrpeG4v3v/
- 7BWxPOHhooqtdbhhxSgSl+dub5IQCubhPEySPAhwQ3BdeD1iEXW2leQHDErHk/L6GoNn2fyf4aj
- 4tUqsX0qKBTnj8NbBHJ+txkl0BxRdEAWnoHqc8Bfx2F8JW7tjw/hahr10t+efWWTwg84ePqumlz
- RiBXatCl8m4Ju2QZGKhKl4VKOoi6KDrGxI6IoadKSDoWyWYBveZmqcN/TCe2MfgX/lx3K1nAv+2
- 0VbxqgLssAVYp+B1cbXp8XdwMvYyBSrPkdiVHRrqwT1/j5dKjY2RFrpYCGZ6gnpPD04n/OejVTv
- QRPyF4vx5fznUKHxFofDtbjrB6AevRJ7CwgS1rKq6O+ZaNiTk7l+CGg22EYwaqwXgIs2JJdov11
- Jb+t1kQs1cmmcLu6qI8l6WUmcx2ai+z1+6I+UqhNiIespcshLjw1fBW3FzVAESd0zFt7ek5a/+S
- DKUZ1Qp6Fm5MT1NeJ8dQn7y2P2mHr2eh8IZJl2zZ0KmusC9UngJk=
-X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
- fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
-X-Endpoint-Received: by B4 Relay for markus.probst@posteo.de/default with
- auth_id=680
-X-Original-From: Markus Probst <markus.probst@posteo.de>
-Reply-To: markus.probst@posteo.de
+References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
+ <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
+ <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
+ <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
+ <CAMgjq7AGzBubCkmv7LubBjPLN1DzL472d4zUm+sGxo8ZptMgRw@mail.gmail.com>
+ <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
+ <CAMgjq7D1WXUHqAV1yuXvrUmEsE_m_+yx0mBq6teJhipx6mySbA@mail.gmail.com>
+ <CAO9r8zMk7xTi-Txmj1+Z9=250fD8HuMQFyT1iwjTW9coLXgqoA@mail.gmail.com> <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com>
+In-Reply-To: <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com>
+From: Yosry Ahmed <yosry@kernel.org>
+Date: Mon, 27 Apr 2026 11:23:07 -0700
+X-Gmail-Original-Message-ID: <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
+X-Gm-Features: AVHnY4JSrF4JaGtUa9RGykJDx4LJmM53x95FeUNsFKceHbvA9vScOToLoywkb9c
+Message-ID: <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
+Subject: Re: [PATCH v5 00/21] Virtual Swap Space
+To: Kairui Song <ryncsn@gmail.com>
+Cc: Nhat Pham <nphamcs@gmail.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
+	akpm@linux-foundation.org, Alistair Popple <apopple@nvidia.com>, 
+	Axel Rasmussen <axelrasmussen@google.com>, Barry Song <baohua@kernel.org>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Baoquan He <bhe@redhat.com>, 
+	Byungchul Park <byungchul@sk.com>, 
+	"open list:CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)" <cgroups@vger.kernel.org>, Chengming Zhou <chengming.zhou@linux.dev>, 
+	Chris Li <chrisl@kernel.org>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@kernel.org>, 
+	Dev Jain <dev.jain@arm.com>, Gregory Price <gourry@gourry.net>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>, Jann Horn <jannh@google.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Lance Yang <lance.yang@linux.dev>, lenb@kernel.org, 
+	linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+	linux-mm <linux-mm@kvack.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Brost <matthew.brost@intel.com>, 
+	Michal Hocko <mhocko@suse.com>, Muchun Song <muchun.song@linux.dev>, 
+	Mariano Pache <npache@redhat.com>, Pavel Machek <pavel@kernel.org>, Peter Xu <peterx@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Pedro Falcato <pfalcato@suse.de>, 
+	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
+	Roman Gushchin <roman.gushchin@linux.dev>, Mike Rapoport <rppt@kernel.org>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Suren Baghdasaryan <surenb@google.com>, tglx@kernel.org, 
+	Vlastimil Babka <vbabka@suse.cz>, Wei Xu <weixugc@google.com>, 
+	"Huang, Ying" <ying.huang@linux.alibaba.com>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
+	Yuanchu Xie <yuanchu@google.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Zi Yan <ziy@nvidia.com>, 
+	Meta kernel team <kernel-team@meta.com>, Rik van Riel <riel@surriel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Markus Probst <markus.probst@posteo.de>
+On Fri, Apr 24, 2026 at 12:52=E2=80=AFPM Kairui Song <ryncsn@gmail.com> wro=
+te:
+>
+> On Sat, Apr 25, 2026 at 3:12=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wr=
+ote
+> > > https://lore.kernel.org/linux-mm/20260421055323.940344-1-youngjun.par=
+k@lge.com/
+> >
+> > Does this do promotion/demotion of swap entries?
+>
+> Not yet, let's do things step by step.
+>
+> > > For example just reserve a type (e.g. type 0) as the virtual type?
+> > > (type is really a bad naming though).
+> > >
+> > > The that swap file (or swap mapping) will be
+> > >
+> > > I was trying that based on this:
+> > > https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d=
+19815@tencent.com/
+> > >
+> > > It seems to work and the only thing we need is actually just somethin=
+g
+> > > like this one in VSS:
+> > > https://lore.kernel.org/linux-mm/20260320192735.748051-15-nphamcs@gma=
+il.com/
+> > >
+> > > This part:
+> > > + /* fall back to physical swap device */
+> > > + if (!vswap_alloc_swap_slot(folio)) {
+> > >
+> > > We do a folio_realloc_swap if folio->swap have type 0.
+> > >
+> > > Which means, if there is no virtual device / mapping / file / space
+> > > (I'm not sure how to name it at this point :) ), the ordinary swap
+> > > routine is just still there untouched.
+> > >
+> > > If there is one, and it's being used, then, it is still the ordinary
+> > > swap routine, just do an extra allocation (and the extra allocation
+> > > strictly follows YoungJun's tier rule), which is same with VSS, but
+> > > everything is reused. From a user or high level interface perspective=
+,
+> > > this can be designed with no difference as VSS. Just with a few
+> > > bonuses: being per memcg / task / runtime optional, zero overhead if
+> > > not enabled, and reusing all the infra.
+> > >
+> > > BTW this deferred allocation (in VSS or dynamic swap mapping, similar
+> > > thing) is actually a bit concerning to me as well. It changes the
+> > > common swapout routine and maybe worth reconsideration (e.g.
+> > > activate_locked_split and mTHP stats is now ignored?), being optional
+> > > for now also seems safer.
+> >
+> > I am not sure if I understand you correctly. I think what you're propos=
+ing is:
+> >
+> > - Page tables either point directly to a swap slot, or to a virtual swa=
+p entry.
+> > - By default, page tables just point to swap slots maintaining current =
+behavior.
+>
+> I mean, they are all swap entries, nothing special from the page table
+> side. Swap subsystems handle things internally.
+>
+> > - If we have multiple backends (e.g. zswap or tiering), we use virtual
+> > swap entry instead.
+>
+> Actually that can just follow the swap priority, or tier rule. Even if
+> virtual mapping exists, it can be bypassed. e.g. you have a large NBD
+> and don't care about either fragmentation or compression for offline
+> workload cgroups, then why use a virtual layer for them which could
+> double the kmem usage or spend more CPU? Setup is a different issue
+> which can be discussed.
+>
+> > - The physical swapfile has clusters and swap tables (status quo).
+> > - Virtual swap is implemented with clusters and swap tables in a
+> > virtual space, and each table entry points to an underlying swap slot
+> > or zswap entry.
+> > - If a page table has a physical swap slot, and we need to do tiering,
+> > we basically "make it virtual" by making the swap table of the
+> > physical swapfile point at a virtual swap entry? or another physical
+> > swapfile? Not sure.
+>
+> They are still ordinary swap entries, nothing special. The virtual
+> space is also just a ordinary swap file (or swap mapping), which is
+> easy to do:
+> https://lore.kernel.org/linux-mm/20260220-swap-table-p4-v1-15-104795d1981=
+5@tencent.com/
+>
+> Then its virtual_table will have a different set of swap entries. (I
+> left that part undone though).
+>
+> > > Right... I mean with two layers you will likely have >16 bytes
+> > > overhead, and double lookup.
+> >
+> > Why >16 bytes? Do we need anything extra other than the reverse
+> > mapping? Also why do we need a double lookup?
+>
+> You will have to store at least the following info: memcg (2 bytes),
+> shadow (8 bytes), count (at least 1 bytes), and revert mapping (8
+> bytes, since you have to address a full virtual swap space). And some
+> type info is also needed. Part of them can be shrinked but still,
+> scientifically, merging two layers into one is considered a kind of
+> optimization.
+>
+> You need lookup the virtual layer, then the lower layer for many
+> decision making, is was discussed before to introduce more cache bit
+> or things like that and I think that is getting over complex, reminds
+> me of the slot cache or HAS_CACHE thing...:
+> https://lore.kernel.org/linux-mm/CAMgjq7DJrtE-jARik849kCufd0qNnZQs7C8fcyz=
+VOKE14-O+Dw@mail.gmail.com/
 
-Add rust private data to `struct serdev_device`, as it is required by the
-rust abstraction added in the following commit
-(rust: add basic serial device bus abstractions).
+I think that's where the disconnect is. You are considering these two
+separate layers, each with its own metadata. The metadata should only
+live in one place.
 
-Signed-off-by: Markus Probst <markus.probst@posteo.de>
----
- include/linux/serdev.h | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+If we only have swap tables in the virtual swap layer (with the
+metadata), backends do not have to carry the metadata. In this case,
+backends should only have a reverse mapping (if needed), and some
+internal data structure (e.g. bitmaps) to track usage.
 
-diff --git a/include/linux/serdev.h b/include/linux/serdev.h
-index b6c3d957ec15..048ef5857786 100644
---- a/include/linux/serdev.h
-+++ b/include/linux/serdev.h
-@@ -33,12 +33,14 @@ struct serdev_device_ops {
- 
- /**
-  * struct serdev_device - Basic representation of an serdev device
-- * @dev:	Driver model representation of the device.
-- * @nr:		Device number on serdev bus.
-- * @ctrl:	serdev controller managing this device.
-- * @ops:	Device operations.
-- * @write_comp:	Completion used by serdev_device_write() internally
-- * @write_lock:	Lock to serialize access when writing data
-+ * @dev:		Driver model representation of the device.
-+ * @nr:			Device number on serdev bus.
-+ * @ctrl:		serdev controller managing this device.
-+ * @ops:		Device operations.
-+ * @write_comp:		Completion used by serdev_device_write() internally
-+ * @write_lock:		Lock to serialize access when writing data
-+ * @rust_private_data:	Private data for the rust abstraction. This should
-+ *			not be used by the C drivers.
-  */
- struct serdev_device {
- 	struct device dev;
-@@ -47,6 +49,7 @@ struct serdev_device {
- 	const struct serdev_device_ops *ops;
- 	struct completion write_comp;
- 	struct mutex write_lock;
-+	void *rust_private_data;
- };
- 
- #define to_serdev_device(d) container_of_const(d, struct serdev_device, dev)
-
--- 
-2.53.0
-
-
+This is difficult to achieve if the virtual swap layer is optional,
+because then the metadata can live in different places. This is why I
+think we should have a virtual swap layer that all swap entries go
+through and all metadata live in (where today's swap tables would
+live). Backends then only carry backend-specific data (e.g.
+compression handles for zswap, slots bitmap of swapfiles, etc). In
+this world I *think* the reverse mapping could end up being optional,
+depending on what we need it for.
