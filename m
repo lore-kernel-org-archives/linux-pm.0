@@ -1,131 +1,114 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
+Received: from SHSQR01.spreadtrum.com (unknown [222.66.158.135])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08D502F2918
-	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 09:14:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B1473B19AC;
+	Mon, 27 Apr 2026 12:02:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=222.66.158.135
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777281296; cv=none; b=keyJ8u956Tv1OATgyE9AJpPQP1cgDjzM6PfjdgEJCSMgAWfIOjHu2A7PFSM836XJa4HFd1/ETBhLScqzZfCjnKHAYEdjif3duYrHkHhcy6KZX5xTgimxH525fsKM6/otiHke33tfZGWePbEuqKIMkHn6UKw6UAEJOfVKunlxJ4c=
+	t=1777291326; cv=none; b=iDqLQASeQDK4RIfUn4rMaKpYBFCVHA+g3K51aZ5FXO7Lh/Hxcv2B3S1SarAJHHsoOl1/3dEfZWqHze/pcY9eR696qUboKufznyzVo39Zn7vsVsfi5pnLk6AjSaAdk17+/dIsPqj3tFhvEm6MgpVhaLL1x8RgBL4D2oPT2zNgZC0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777281296; c=relaxed/simple;
-	bh=EzPC7nqk9AgFER6/WVv2twNqV5B+PmIayWg4UAsoMyk=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=R0FtU+nh7aBt7DRmZ+hqimYK28/zoRHIFYNhs/778aRPblbqdtSFbNlygOBSyRv8T5UtcguaL3ys21B1DRldo88zblRSz7uW3IaJso3HCTdK7GPbcE/vpBtjaPb7U9kMT5VK3/cfV9RcnjjO08D6mEYXpQ/ZDqS0fJ8uwQsa1f0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1wHI31-000151-3b; Mon, 27 Apr 2026 11:14:35 +0200
-Received: from lupine.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::4e] helo=lupine)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1wHI2y-007Sug-0S;
-	Mon, 27 Apr 2026 11:14:32 +0200
-Received: from pza by lupine with local (Exim 4.98.2)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1wHI2y-000000004DH-0Dxa;
-	Mon, 27 Apr 2026 11:14:32 +0200
-Message-ID: <871996c5a57223294c584c0ff344efd30b3b982b.camel@pengutronix.de>
-Subject: Re: [PATCH 2/2] thermal: mediatek: lvts: Add MT8189 support
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: mtk36707 <kuanfu.lu@mediatek.com>, "Rafael J . Wysocki"
- <rafael@kernel.org>,  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui
- <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,  Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>,  Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Balsam CHIHI <bchihi@baylibre.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mediatek@lists.infradead.org, jarried.lin@mediatek.com, 
-	vince-wl.liu@mediatek.com, justin.yeh@mediatek.com
-Date: Mon, 27 Apr 2026 11:14:31 +0200
-In-Reply-To: <20260427065236.1685057-2-kuanfu.lu@mediatek.com>
-References: <20260427065236.1685057-1-kuanfu.lu@mediatek.com>
-	 <20260427065236.1685057-2-kuanfu.lu@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	s=arc-20240116; t=1777291326; c=relaxed/simple;
+	bh=Q1BKskmxGfdISycfwvvhahkfUDQvrcLE7FHFOg6MuJw=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=aJGhw+2vbB5rjI+SQACDhOx6ygBoi1JIhpT+hvZMz5ke9m1Z0XJhqI645K902yalfK7eG+WGurRkUzQpCs3F3io+BjhAxHU29DLmU7IU9/sL+J6iuvFu6pISvtE0cvjIxYTtBJmN1PgoINdD63xusacOsYlbrUEzG6B95NoCHC0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=unisoc.com; spf=pass smtp.mailfrom=unisoc.com; dkim=pass (2048-bit key) header.d=unisoc.com header.i=@unisoc.com header.b=BZ/qWjmQ; arc=none smtp.client-ip=222.66.158.135
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=unisoc.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=unisoc.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=unisoc.com header.i=@unisoc.com header.b="BZ/qWjmQ"
+Received: from SHSQR01.spreadtrum.com (localhost [127.0.0.2] (may be forged))
+	by SHSQR01.spreadtrum.com with ESMTP id 63RC1xxF064594;
+	Mon, 27 Apr 2026 20:01:59 +0800 (+08)
+	(envelope-from Xuewen.Yan@unisoc.com)
+Received: from dlp.unisoc.com ([10.29.3.86])
+	by SHSQR01.spreadtrum.com with ESMTP id 63RC12BI057321;
+	Mon, 27 Apr 2026 20:01:02 +0800 (+08)
+	(envelope-from Xuewen.Yan@unisoc.com)
+Received: from SHDLP.spreadtrum.com (BJMBX01.spreadtrum.com [10.0.64.7])
+	by dlp.unisoc.com (SkyGuard) with ESMTPS id 4g42Bp4Lbmz2L1dwH;
+	Mon, 27 Apr 2026 19:58:10 +0800 (CST)
+Received: from BJ10918NBW01.spreadtrum.com (10.0.73.73) by
+ BJMBX01.spreadtrum.com (10.0.64.7) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.48; Mon, 27 Apr 2026 20:00:59 +0800
+From: Xuewen Yan <xuewen.yan@unisoc.com>
+To: <vireshk@kernel.org>, <nm@ti.com>, <sboyd@kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC: <di.shen@unisoc.com>, <ling_ling.xu@unisoc.com>, <ke.wang@unisoc.com>,
+        <xuewen.yan94@gmail.com>
+Subject: [PATCH] pm/opp: fix race between opp_add and opp_get
+Date: Mon, 27 Apr 2026 20:00:47 +0800
+Message-ID: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SHCAS03.spreadtrum.com (10.0.1.207) To
+ BJMBX01.spreadtrum.com (10.0.64.7)
+X-MAIL:SHSQR01.spreadtrum.com 63RC12BI057321
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=unisoc.com;
+	s=default; t=1777291280;
+	bh=Q0/Vj7FT5BKHaRvDeL7zH5EzhoNZ/VfyWfFPbigmXTA=;
+	h=From:To:CC:Subject:Date;
+	b=BZ/qWjmQizbTshLDE9qkX6AA/ehcH+QuAygLWDm4Pcq8YZfpiPAfc4Qc+HNH1J3At
+	 x2Hv4KX8NzT+FfxXZAfOKofXMDwSA56428GtBfTzNray6Mf/g3vVvOf5PT782lqWsi
+	 q+jLZVHm31SJN3r9yCo6EgUaahjk5zOfBSmdRl8OYFHMG5xsfz21EIbid9C37IQrf3
+	 WhEtKUIe0+MDXJL3QOWRB+qsuATBf4bhwfBBzDNudHrok6oK6TPrk2zupNmyB0T8jf
+	 k+vu1ZeMMXN65dv79a/Zmm2rRIixcSi2ca26hOUzguOzy9iLfBEfyyz0V0vLfCQ/65
+	 P6dKDZ+IL1UUg==
 
-On Mo, 2026-04-27 at 14:48 +0800, mtk36707 wrote:
-> From: Kuanfu Lu <kuanfu.lu@mediatek.com>
->=20
-> Add LVTS thermal support for MediaTek MT8189 by adding MT8189-specific
-> controller/sensor topology and platform data for the MCU and AP domains.
->=20
-> MT8189 differs from previous SoCs in a few aspects, so extend the driver
-> to handle these variations:
-> - Program the hardware thermal shutdown threshold (tshut) using raw units=
-.
-> - Add per-SoC feature flags to skip clock gating and reset control when
->   they are not required, and to enable Stage-3 monitor interrupt setup.
-> - Pass SoC data into lvts_irq_init() and lvts_ctrl_configure() so the
->   initialization can be configured per platform.
->=20
-> This enables monitoring of MT8189 CPU clusters and AP domain sensors
-> (SOC/APU/GPU) with the existing LVTS driver.
->=20
-> Signed-off-by: Kuanfu Lu <kuanfu.lu@mediatek.com>
-> ---
->  drivers/thermal/mediatek/lvts_thermal.c | 142 +++++++++++++++++++++---
->  1 file changed, 129 insertions(+), 13 deletions(-)
->=20
-> diff --git a/drivers/thermal/mediatek/lvts_thermal.c b/drivers/thermal/me=
-diatek/lvts_thermal.c
-> index a9617d5e0077..9dbd9191e3ba 100644
-> --- a/drivers/thermal/mediatek/lvts_thermal.c
-> +++ b/drivers/thermal/mediatek/lvts_thermal.c
-[...]
-> @@ -1470,10 +1482,12 @@ static int lvts_probe(struct platform_device *pde=
-v)
->  	if (IS_ERR(lvts_td->base))
->  		return dev_err_probe(dev, PTR_ERR(lvts_td->base), "Failed to map io re=
-source\n");
-> =20
-> -	lvts_td->reset =3D devm_reset_control_get_by_index(dev, 0);
+From: Di Shen <di.shen@unisoc.com>
 
-First of all, this should have been:
+There is a race between opp_table_find_key and dev_pm_opp_add_dynamic:
 
-	lvts_td->reset =3D devm_reset_control_get_exclusive(dev, NULL);
+dev_pm_opp_add_dynamic                dev_pm_opp_find_freq_exact
+_opp_add_v1                           _find_key
+_opp_add                              _opp_table_find_key
+mutex_lock(opp_table->lock)
+list_add(&new_opp->node, head)
+mutex_unlock(opp_table->lock)
+                                     mutex_lock(opp_table->lock)
+                                     dev_pm_opp_get(opp)
+                                     kref_get(&opp->kref)
+                                       refcount_inc(&kref->refcount);
+                                     mutex_unlock(opp_table->lock)
+kref_init(&new_opp->kref)
+  refcount_set(&kref->refcount, 1);
+                                     dev_pm_opp_put()
+                                     kref_put_mutex()
 
-since there is only a single reset control defined in the binding.
+This would cause the opp be freed.
 
-> -	if (IS_ERR(lvts_td->reset))
-> -		return dev_err_probe(dev, PTR_ERR(lvts_td->reset), "Failed to get rese=
-t control\n");
-> -
-> +	if (!lvts_data->reset_no_need) {
-> +		lvts_td->reset =3D devm_reset_control_get_by_index(dev, 0);
+So use the mutex to protect opp's ref count.
 
-So this can be changed to
+Co-developed-by: Ling Xu <ling_ling.xu@unisoc.com>
+Signed-off-by: Ling Xu <ling_ling.xu@unisoc.com>
+Signed-off-by: Di Shen <di.shen@unisoc.com>
+---
+ drivers/opp/core.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-	lvts_td->reset =3D devm_reset_control_get_optional_exclusive(dev, NULL);
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 866641666e41..34cdcf8f598d 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -2088,11 +2088,10 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 			return ret;
+ 
+ 		list_add(&new_opp->node, head);
++		new_opp->opp_table = opp_table;
++		kref_init(&new_opp->kref);
+ 	}
+ 
+-	new_opp->opp_table = opp_table;
+-	kref_init(&new_opp->kref);
+-
+ 	opp_debug_create_one(new_opp, opp_table);
+ 
+ 	if (!_opp_supported_by_regulators(new_opp, opp_table)) {
+-- 
+2.25.1
 
-instead. There is no need for the reset_no_need parameter at all.
-Whether the reset control is required or not is already specified in
-the device tree bindings.
-
-> +		if (IS_ERR(lvts_td->reset))
-> +			return dev_err_probe(dev, PTR_ERR(lvts_td->reset),
-> +					     "Failed to get reset control\n");
-> +	}
->  	irq =3D platform_get_irq(pdev, 0);
->  	if (irq < 0)
->  		return irq;
-
-regards
-Philipp
