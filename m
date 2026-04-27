@@ -1,1524 +1,429 @@
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazolkn19012085.outbound.protection.outlook.com [52.103.20.85])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 057EA3E1215;
-	Mon, 27 Apr 2026 17:14:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.20.85
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777310050; cv=fail; b=hEAEEjb+0xhhqdTT6UGl8YkRuG07B9/hFxAdcb/5kwkZpinwlf+8AX8Fb9GjemSoUv7GY6PlA8nBt652BOF9N+/Ox7jNvMlbEAOqgk+TZiBlVWvNTeiu+IYzkQVRHagYZlegYh+DfPnqcAGdBiaLVzOMoIXFn7NRVGPj3xY+WtA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777310050; c=relaxed/simple;
-	bh=rPlsXsLJmemjkM+lztuSoNYmdSZRU0YRAl0MHlFHlnI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=r+oloiRSFxi9LwubVMfvcmhXA3bX3DKpTtEAVs5XyCIX9zOVq162BS46/LCahrG48tapyKBSB43FKGJY592UI3HM/BgwqCWE6SUEVdUN4A7CBZmg2x9qslwkJikQjzwWANCUiKvh7YyLraoFSd/tp/qjPIFkhAJX5keBYmDTLFY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=b+zy4chC; arc=fail smtp.client-ip=52.103.20.85
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0815A3E51E3
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:35:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777311319; cv=none; b=dxZ6Wuq/RFs8Ain5vAJOf9wM9KGiRftng0zxxEUt3HB50yeI0fNkdQ9qqyhiViuOzIYMmpoVZXkYocVXtKRUUCroDuRFjedJ46PK+OMDFq9PD8pCfRY2qqrpzcry4Ze11AE1rlLuSTu+gY7A9nWX7varxQ/V16RpmidEFCp4vCo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777311319; c=relaxed/simple;
+	bh=0CN+/HOFZ5javfY649KnnI2/yHycTVHC4en8txRSQPU=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XU/rt5AtrpPFNUZB6mE9FPE0pWxWlysgx+pAVB8/ZBgibR2gFqDv9xKeO4Nnkvbc+ZimN1iXCv13ljEakFpiuFMWBQJS6j1Sw18hjqk+OynPJj4Z1hq4+Vrtu9tp5vNWdrKW8yi4Fdm0Xn+T73D/C070qXYDURWw7uj9UKvpgYg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=P2+6lVvu; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hhppY7lG; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="b+zy4chC"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ldfguIrQbVDXFsw5l8ozALc3en5YNIHnPcVsM+LuYjM7D+EzYsQrSFZWvPpu7QW0MDoVZzWtsB2G2sHrwb6f4kXGE59Lfe1ts3XtZFhCeKIPKs4nNYi2RYDTkr70CtxxGEN58e77f+5bpt9Acgr8j1tvysU1UfsXQEbF9RK6fthXqa7lvdWfaSUNVVYS7H9kXx3cfOQ+Bl3XKZyyXj/oe/PCBGobKvd2Smzhu7za4rL/7iF/6NisxereX1mXP9BR5PDMEAmBCT7cL3jeKUx+8w7j+4P8tw7i2DNOwwkY/cCe3TuKBEThFqh28GNtlusl5KBNXDsrZbpFrAeI2DKWpw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=a8fxxsHABf9FjMAykeHravNkjM6uUDzlq032qCCvkSE=;
- b=O7ciK74xw5CZTtqJKvGpWCbxYn65EoKxROLeKbS9JAfhBpypJDLPknzS0c2yXHd4cON6E2sCZm7SPtIoVDRUiXx/8A6XVdBIHoFtWr0SKAIHNCne4te0HiHW6y7bG+rpYfu1AK+qfqAqaHqjt5tkZV8pV8cB+jko6Q23H5PhjRXvMrr3ql9U6GuFdqXU7ommr57zyM/4DuoexeNVlWzPBXVtptsJ1wyarGs6ij5J9SSUmmKmalsGzZAicVzZeiRHMHEEmXNxXnkgjbQ7BBbvs1dRZKKdQSiHHCxLDCaKUOmdCWWqZn9xvK8fXaws1feomhtNRz5G+dXbN4CKH0oT0w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=a8fxxsHABf9FjMAykeHravNkjM6uUDzlq032qCCvkSE=;
- b=b+zy4chCdkfsHTXsClRDM78cAmEGgUxHcSlBHUq1XfzamHD5ozZsnb8K5GX+Lm0bhpaYD2nqeeAtXZSsJjWT/mWX0HNvgWqZZdYHgEJxhsZszE5UKKfbdUkU7yugZZEA0PLzcHse5x2wZ9SO8ejoH4RWWWgbGWisEd/fvky7NSe9+2/iQ9JmJHaC9lK+oQXPiZtm7u9FV6e/Uyf70YJkfDInfxAgSkT9cuw5+jI0ONxzyb3iNezVpun1bFZ7BQd+lUh06L4Gb+9GkJ9p5SH0Z6utf1Vpmurp7e9wv6zY7x8srEPHrD1OygYDBtiJxvB0LfBS9q6ix2dYBvU6Xcs3BQ==
-Received: from PH0PR19MB997338.namprd19.prod.outlook.com
- (2603:10b6:510:3b1::18) by BN5PR19MB8816.namprd19.prod.outlook.com
- (2603:10b6:408:2ac::6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Mon, 27 Apr
- 2026 17:14:01 +0000
-Received: from PH0PR19MB997338.namprd19.prod.outlook.com
- ([fe80::fd22:ee23:3e25:3172]) by PH0PR19MB997338.namprd19.prod.outlook.com
- ([fe80::fd22:ee23:3e25:3172%6]) with mapi id 15.20.9846.025; Mon, 27 Apr 2026
- 17:14:01 +0000
-Date: Mon, 27 Apr 2026 12:13:57 -0500
-From: Chris Morgan <macromorgan@hotmail.com>
-To: Chris Morgan <macroalpha82@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	xsf@rock-chips.com, sre@kernel.org, simona@ffwll.ch,
-	airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org,
-	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com,
-	neil.armstrong@linaro.org, heiko@sntech.de, conor+dt@kernel.org,
-	krzk+dt@kernel.org, robh@kernel.org
-Subject: Re: [PATCH 6/6] arm64: dts: rockchip: Add Anbernic RG Vita-Pro
-Message-ID:
- <PH0PR19MB997338E09EB1F271D6FC8F35C7A5362@PH0PR19MB997338.namprd19.prod.outlook.com>
-References: <20260427170914.5062-1-macroalpha82@gmail.com>
- <20260427170914.5062-7-macroalpha82@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260427170914.5062-7-macroalpha82@gmail.com>
-X-ClientProxiedBy: SA9PR13CA0113.namprd13.prod.outlook.com
- (2603:10b6:806:24::28) To PH0PR19MB997338.namprd19.prod.outlook.com
- (2603:10b6:510:3b1::18)
-X-Microsoft-Original-Message-ID: <ae-ZVTaTzR3EoTMO@wintermute.localhost.fail>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="P2+6lVvu";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hhppY7lG"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63RB72MD1237203
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:35:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=UKZU4qZs79aPUgGVlVRkTP
+	GpAqTJ9jE/5rlTRbmhfV8=; b=P2+6lVvuyQDRwKNniW9PrYP2ct8cgKc2L0J8sa
+	yBAfY/jW3OtvymsrpTxHZQ+RvK4wm7X0Tvho9o23Jvkg8W/hdqN0EBEW/PGA1odI
+	ityKXx0EN1J4ccebSUmZvVLXin1NENa98oUUnjT/amzel+2AY5kN5s7ABFCXsDP7
+	lAPvYyZkXSv6tx/sAzfnLmZH287EyYYddHG7lAQFOoe1ugVcFLlGEQVzVLskQGS5
+	uCLqyQdhQ2WdIDmD5BMp9CUPH+W7skQZgf9lmaFSb+cM9rk2dCrkOKCtRUiMbg3z
+	bw1ens9WHRngobtLyhqhTF8Q8xAxr2stZgIG7zfVfplDSGNg==
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dt6n4hed7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:35:16 +0000 (GMT)
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2b242062308so195417575ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 10:35:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1777311313; x=1777916113; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UKZU4qZs79aPUgGVlVRkTPGpAqTJ9jE/5rlTRbmhfV8=;
+        b=hhppY7lGa9Xl/ZJKzhX+riD9UkJ1nh4en2PeUiTvEPP8+AM1x/cqiixRRwVJDQTvxO
+         eil7O9UR50QPdx/OSNt9zgeQVx/SpM68iPRySmmmw7MTyZe5lKpScVzlhgBpEHmD8kNS
+         sHy5Iy6QA4anlhR5d7E7xAbdmDAjROqfdFSoVXqGNSFElBB7ZJVq8MfmlYMormTkiLpC
+         bEUD9SxPdE0eb8Pf3Ufsz3g/aswlZnjHmGvgL/rxb+6EUFXKNjgNxIq6NQNIge6qQVLb
+         q20useHbo7BvAp7Gh47GdH4olDz+qKyun6SBYC1fGMTKim8ZMk6mzyLFnIyi3gL92mdy
+         R3cg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777311313; x=1777916113;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UKZU4qZs79aPUgGVlVRkTPGpAqTJ9jE/5rlTRbmhfV8=;
+        b=sXxQnZ67RY9aYrSmQh1dUOYeZXbbwddNWICmddz86o5z0TaofPzeaHA+hsnMhhSzsm
+         HLn9SodozloX4lem+DLyM27IDqIxf5sh+MxP+sjCaC0wvUc9zJaIUOEnf6W+2YR6CkN2
+         6ufChzIzthjrsvxr6jRVHpKRyVGizgohnXJYrQY4epnP5tC7wi6s497H97ClGB9WJz/L
+         MGiD34Ukwa1uICTG384I89RRb6gqSC7o4QFGPnXLg9mSjIFdPfZ+ClUUax4PAVMPQL0l
+         zwv8/eFiDtUjCP5GOd32ELtMnoUXYA/hcsZw0Y1EYTxw0DZ+VnaRTNu0wKl8ivY0waLF
+         +4Ag==
+X-Gm-Message-State: AOJu0YyZPSZLW0CYhlwoY1+OrdaaZlPOJk0fBprzXQI8C/CQTqEEPlXL
+	pGNBodHnYRBPnxV2FquRNMccLe/fcbLBuK3nvFYng98NGaxygWQm/5xvlMWZmr1kPZ6DGTTSd93
+	FmfPBFfh+xVaH3xYlfNGBMC4moZkHfx+6egCf511F3AgJ4CZrRA3kwljccf/zyA==
+X-Gm-Gg: AeBDietk/hWzAujccSABGtzH8JQUA+Yh3yJzESpbrNqCjnnEHKwSkxvff6c0XXS1zwE
+	KWH9SL8rPF6Q6ZW7wooismJaDtInIqUdm+wUk4UTcOJ0x5E6F89snMWZMUpHrW8MHPmwyTBIkS7
+	DOcP8j5O79dHY67cmfYNkodsc30n1VDGSnf1lccvLkBaFjj9761alkC08EvhZZPds1ojSohoOgS
+	d3E6/3plxbYLA3/+zXJjgoynQOh4iouB/JxxL2rYckc2/Oe16Rza32xJXeA6a6r8LFVgf5VmIAx
+	Hsnw1RkG2mktv6XHd22Lso2c6pDIv71lkTV0F5rrdps17eM4+90gYrSCmBS/AnaLR/1Oa2uH8bX
+	smuCNYp/Uz5fQrumFOaxIeEqRSHp3yGak6mWUXfpHW9PXLrqQEVwUUWf7P3JYaznSerGx
+X-Received: by 2002:a17:902:edc8:b0:2b0:52b7:e82 with SMTP id d9443c01a7336-2b97a8c8afdmr1560985ad.16.1777311313103;
+        Mon, 27 Apr 2026 10:35:13 -0700 (PDT)
+X-Received: by 2002:a17:902:edc8:b0:2b0:52b7:e82 with SMTP id d9443c01a7336-2b97a8c8afdmr1560515ad.16.1777311312270;
+        Mon, 27 Apr 2026 10:35:12 -0700 (PDT)
+Received: from hu-spratap-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b97aca8369sm329115ad.75.2026.04.27.10.35.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Apr 2026 10:35:11 -0700 (PDT)
+From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Subject: [PATCH v21 00/13] Implement PSCI reboot mode driver for PSCI
+ resets
+Date: Mon, 27 Apr 2026 23:04:40 +0530
+Message-Id: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR19MB997338:EE_|BN5PR19MB8816:EE_
-X-MS-Office365-Filtering-Correlation-Id: db90d974-2d09-490d-48ba-08dea4806065
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|24021099003|461199028|5072599009|37011999003|10092599007|25031999004|23021999003|8060799015|41001999006|6090799003|15080799012|19110799012|53005399003|41105399003|40105399003|440099028|3412199025;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?cfeLS+sDhTGzqajUzh1EVmrvgh5glpjTNts9I+xjDLVQngP7RzNs0wWfUXo7?=
- =?us-ascii?Q?SX0xE8gCp4vQLcctRPjJ8TUc5+jr2YRMDkC2u8Gjo12zKpDJl4R9nGxf1fFJ?=
- =?us-ascii?Q?91Q/Bir/YH6kX6ejwcGrn69ahsNlHxnHs5O+TnA2n0NFBxxH7PWQ7kOJljFj?=
- =?us-ascii?Q?XWjc5zL9EMOfaGHi8UAlInTUBOsHhFECaM7CLtDbFrPHZ2KbqYDPQRJ5we5z?=
- =?us-ascii?Q?iMgJFxUZzqqIpzgXlOb+lTCx1/sK+8M+jgX5K7ggXkdvmZ0NCd9EgjDbh0zn?=
- =?us-ascii?Q?9Bo2rLcjqhmqsdYsSvwnhBdfdbLrK1oOgH1htViwNheFX5AYNvd99KTjSv1p?=
- =?us-ascii?Q?1uupLpcp/E3yATBdDEYWocBcbHT1t9UN2Mw31jr59Z6DmgUEQ3NXak9oGEHs?=
- =?us-ascii?Q?duAVBmRe/ip0DBO/3847mJEiF5wwRMeL+KOKmgMe+yf3lDOHFvGKxKFmzaax?=
- =?us-ascii?Q?adtm3HpBk14mTvmCcj9PGJiZ75OLlw8TZ1itt6IXniCebVKVhsnLYx9oCEDP?=
- =?us-ascii?Q?nJePCDz+NblcsEX12cR+lPhoSPT8FQTFkqhps27Ufm58KVxMHcZcoU2J/6lt?=
- =?us-ascii?Q?dwzuce5kcB9n378z8/YLVZjavK2jhJnwE0k+rnOXWZjcocSAywI1V9Z2xz55?=
- =?us-ascii?Q?lD4SMsVTNQqyTasuRgNnJOJQB3UESJWtIPFFhAOjltaFJnkTH3iEKmLRZTdM?=
- =?us-ascii?Q?mQymDv8qvPTkqkCOBEgyoXA/ro4aDSWbBJckbcC1CWuwzc7+VQznznDivnuA?=
- =?us-ascii?Q?sSfBlfRODdJcnOZVY0iNANhWm85lT9PipWuLY2xC6wouGq6pQr/7dIfUFyKK?=
- =?us-ascii?Q?Wa9bJlFN0YVLrEXa4DkXc3M8u5Xrcazz4LqehBsYMv5B44hai2tpYFAQJ+ho?=
- =?us-ascii?Q?6EDpXPz4sB4ualehOSpHjEPf3Y2AK87OojxGEfYkWy0BoJwf2SW95gClxtCu?=
- =?us-ascii?Q?lgfBOr37rcPffjPyo9hp+93eI+tAkfQ0tHCxYbmTedupwO9Z0AZqn0I8GWeR?=
- =?us-ascii?Q?0S3FcbXaJjMpPecdKtsDJcA57lpD1qW2kOrrKq1K+mOlZhF6SrnICIRlxlfz?=
- =?us-ascii?Q?X5jpftGdlikNqjamMTzkSWC+1sDgG+v6yY0qyqUu6HRDTcqa2Qfifob6mg9s?=
- =?us-ascii?Q?6lbWJqbBPSIr?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ZMs+whPSRHphXCHwIwMeQ+PPzs9T1Gv0QSC75ARMGFh3YWbttEyT8m2qYEsn?=
- =?us-ascii?Q?FQztD7SKM3axHZvt6iMv09+Ui/+bGm/Q4r0CnxOqQQdPvHg3Q2AWXMLM6AQM?=
- =?us-ascii?Q?qeUGl2LBQiUN+UxpuQiYFEvWYoBVdLcoz8X6Drdvi8IzZgMr9tSHCwfuFtIe?=
- =?us-ascii?Q?IhEtdAcboBJd/Gdec7b+dFHGJW8A+VcNM6jVAfi/3KRhRBKfAGSyO3DfWrsQ?=
- =?us-ascii?Q?fSoaycj8Ed7tb0vtbW6Pru73YYoLt0Lh3nRJut5asnFZ5ze9fce6kzMe9SY1?=
- =?us-ascii?Q?eWujqv11NKV3CsR5Hfq9RZk+SZ7h981/IQrEbfJkunjAhvk+3nymotC/DaWH?=
- =?us-ascii?Q?WtEHuI6P+A2Xcl8buhfmpmf0tHhauVyR+gyKGPTeC4yhViEyvjH4GpKV4X6O?=
- =?us-ascii?Q?OBzyjlYfUOECrvi+UHl97tYdX1+PjqMzmfkcKlZOV50rKp5xESIK8N3bbqHy?=
- =?us-ascii?Q?uDhWK2PKN6DrCjiTcLVaTR+cuYZmnvHvAfntIzjorLVaizOiIHKcjNP2D+CO?=
- =?us-ascii?Q?HzYanzpfeCBccpmg6ifPRsdZ/CoLGjRhnSp1e81s3j/GRk/Lplu7DWyQgcWI?=
- =?us-ascii?Q?plQ4FLr+vMNBym48x6WIvJcMqELCkmxJUzVzgfjeot0FXWq9B8tqnSkCqyVJ?=
- =?us-ascii?Q?t6WCLQVm54rmHE80KmmxMtTXs4f7e4IHXJWcFociPh1b3xWAEUdI02VurW1U?=
- =?us-ascii?Q?siy3Y40Wh1FV3LGcwLX2NX/UtTLH1GfG0BW+upyFJN+VuM7+Kuy9ey8+K0QK?=
- =?us-ascii?Q?vq6J7UGftcp1bnuabKBLh1P5cFX9x+Ualhdg8YKTOiaz84eVUdwehGfXdY8O?=
- =?us-ascii?Q?nMQIADH5n21Ql3Ku6raP9cSZSXdH4F5O/EpOsH/HAApfxUVmmD2E8gdDp47F?=
- =?us-ascii?Q?WaFywW65LXmp+gjhEzPHhH2O0vByBKIS0ThzaJJztyd+nFGinGF1kh9zpUkh?=
- =?us-ascii?Q?N/yNi1AoIrlrV8DAyhtDCalHB4PVIUMXeO6DvCxfQAshf5mGohcg5kqgDNTR?=
- =?us-ascii?Q?1WKQDaRKEQMEk9828EF28oTmqTa3uGqLzPvzatOY1bhDMhaq6ncaSxM7pW4N?=
- =?us-ascii?Q?7tI+HSw7L9/xGLiWo6RgvCqL59etMgU99WtnANnnXr+NGbdraRorPvCCrrdn?=
- =?us-ascii?Q?bj0swCJ5/YBZeUnIm2uFHYEYASLG5pfw/i01xpUrqR1soVL+NN/AHZdYR0Yb?=
- =?us-ascii?Q?MMnKolB/DqWY+O9SSxryEavYUK60KxmSzmUqkGjvv+Qto+sJnUDAB4R42F+M?=
- =?us-ascii?Q?uBWnUhGvaVR4cgthIoHyIXQHAMIZAS5T7QSqO/GnezFDRkSUaDTn69zAWJZ+?=
- =?us-ascii?Q?jjwOJRfl6rxOoEcMsgO160EkEpc3XbOqRMyDkqnRXa5KPdYgm7n1TsmbtlTs?=
- =?us-ascii?Q?WHPb7aZdtas3+5Z+rouzXygF4kREzrDuUWdOWq/3o33rcg0eng=3D=3D?=
-X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-990eb.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: db90d974-2d09-490d-48ba-08dea4806065
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR19MB997338.namprd19.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 17:14:01.6010
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN5PR19MB8816
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIADCe72kC/53UbUsEIRAH8K8S+zpDZ3Qde9X3iAgfxlrobq/1O
+ oq4754b0R2UYL1ZUPD3H2Vm34fCy8RluL54HxY+TGWat3UB6vJiiI9++8BiSnVjAAlGWumEXzZ
+ iV+IkylvZ8+Z+4cJ7EAfepnkRC4d53hehx0hSau1zzEO1dgvn6fUz6Paurh+nsp+Xt8/cg5Lr9
+ leEkp0R9ZiQgq3VaAkx6Xgzl3L1/OKf4rzZXNXPmvwvNUDCQASByfxU1wsclDov2nbzqvIpI0M
+ ARRixxcMZD6qbh8qTDT4iRw3ALR7P+f7qsfJjoASIypCjFq9PPCnTzevKo03gsnE+Ot/izYl3A
+ N28qbyNjF4SWcqqxY/fvJJ/qH5cO8eR5+Q9IDff3p541T1R9Vjl9ciSTIhex9ji6cQDYDdP69t
+ D9o7tyLndmO6cp27ercMagjOjNCibnQPf/4JRotS9PKxTG7NNqGt7ooVf+OPx+AFzqTTn8AQAA
+ A==
+X-Change-ID: 20250709-arm-psci-system_reset2-vendor-reboots-46c80044afcf
+To: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+        Andy Yan <andy.yan@rock-chips.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        John Stultz <john.stultz@linaro.org>,
+        Moritz Fischer <moritz.fischer@ettus.com>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Sudeep Holla <sudeep.holla@kernel.org>, Ulf Hansson <ulfh@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        devicetree@vger.kernel.org,
+        Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
+        Florian Fainelli <florian.fainelli@broadcom.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+        Andre Draszik <andre.draszik@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+        Song Xue <quic_songxue@quicinc.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777311301; l=13844;
+ i=shivendra.pratap@oss.qualcomm.com; s=20250710; h=from:subject:message-id;
+ bh=0CN+/HOFZ5javfY649KnnI2/yHycTVHC4en8txRSQPU=;
+ b=effjAPQIIBzVtH1qR8xHNfeuE1Ia3V32ed/Y0MkOmzC44uR+XLAgZg844LzRoeE+0FuPN+wsl
+ 8+9SZ/UZ+B8CXqFPgCta3yCQ5y7sUHLWUdM1NYSt6TVnYxnOgrwFvRE
+X-Developer-Key: i=shivendra.pratap@oss.qualcomm.com; a=ed25519;
+ pk=CpsuL7yZ8NReDPhGgq6Xn/SRoa59mAvzWOW0QZoo4gw=
+X-Proofpoint-ORIG-GUID: O4moJ3_gfn2a17z1xDy85KdxkTxOnaaV
+X-Authority-Analysis: v=2.4 cv=Xba5Co55 c=1 sm=1 tr=0 ts=69ef9e54 cx=c_pps
+ a=cmESyDAEBpBGqyK7t0alAg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=COk6AnOGAAAA:8 a=KKAkSRfTAAAA:8
+ a=7CQSdrXTAAAA:8 a=s8YR1HE3AAAA:8 a=pGLkceISAAAA:8 a=etiEgX_XAAAA:8
+ a=Q-fNiiVtAAAA:8 a=ag1SF4gXAAAA:8 a=JfrnYn6hAAAA:8 a=P3yHVlynvnTgBIhE7pkA:9
+ a=t0deeqHLQjU4vXjM:21 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=1OuFwYUASf3TG4hYMiVC:22 a=TjNXssC_j7lpFel5tvFf:22 a=cvBusfyB2V15izCimMoJ:22
+ a=a-qgeE7W1pNrGK8U0ZQC:22 a=jGH_LyMDp9YhSvY-UuyI:22 a=MLbIUA-Bjd6y1alW9qBG:22
+ a=Yupwre4RP9_Eg_Bd0iYG:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-GUID: O4moJ3_gfn2a17z1xDy85KdxkTxOnaaV
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDE4NiBTYWx0ZWRfX3ajxpNU8/OF1
+ rJ5FXYPVwo1F3CmlBo/4UKKeUyftq4CMV0FTGVLnb7epoVMWk4V68SVv3EIv6SdpIdGzYu1hRZP
+ vVq5tJ5X08niMvapCVsxXcef3IziSsaDpTCy9CuWu0AicAFuEmEL9ak1Y+g87H9ct5kGq5mD+op
+ F43zgAaxFsQjHpcMTw9yHOLUjYY4F5g0TzRFxtbacjljmtnDchlX8u/Kyg3g2pvMzRu2Q/iS51K
+ pfaydxRxW/kCGy1J7U29aMqGeqv5dUtaPzokUo5Bz6MLrRVRJfFxj8w+8v9UBuB2JD7QP0srFTQ
+ rMtGlICYOTVF2ziKkgpiHbd8uoiEOxqFx7FEWlRDEu33GZQHFfsNgVEduQHYbM0c0b/F7C2kOk0
+ 1gyJ0VDlX6KL6aGIsuqadtUsOInOSEE+eCFZ3nBu6V68R1Neqe4asBpBlsLCe9mo+QeqjVCukN2
+ ZrJhaziv6NeMxE0gREA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-27_04,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 phishscore=0 adultscore=0
+ impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270186
 
-On Mon, Apr 27, 2026 at 12:09:14PM -0500, Chris Morgan wrote:
-> From: Chris Morgan <macromorgan@hotmail.com>
-> 
-> Add device tree for the Anbernic RG Vita-Pro, based on the Rockchip
-> RK3576. All hardware is currently working except for the accelerometer,
-> the touchscreen, the battery monitor, and DisplayPort over USB-C. PWM
-> is also missing currently, and as a result the LEDs and panel backlight
-> are currently controlled via GPIO but will be changed to PWM once
-> supported.
-> 
-> The Anbernic RG Vita-Pro includes the following hardware:
->  - A 1080x1920 DSI display with touch.
->  - 21 buttons.
->  - 2 Analog joysticks controlled via userspace.
->  - 3 LEDs.
->  - 64GB eMMC, 2 SDMMC slots.
->  - RTL8852BE WiFi/Bluetooth combo
->  - 1 USB 3.0 USB-C port in OTG mode.
->  - 3.5mm headphone jack with play button support.
->  - 5000mAH battery
-> 
-> The following hardware has incomplete driver support and is not yet
-> working:
->  - An Invensense icm42607p accelerometer.
->  - A Cellwise cw221x battery monitor.
->  - A Synaptics i2c touchscreen.
->  - DisplayPort over USB-C alt-mode.
->  - PWM controller.
-> 
-> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> ---
->  arch/arm64/boot/dts/rockchip/Makefile         |    3 +
->  .../rockchip/rk3576-anbernic-rg-vita-pro.dts  | 1317 +++++++++++++++++
->  2 files changed, 1320 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/rockchip/rk3576-anbernic-rg-vita-pro.dts
-> 
-> diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-> index cb55c6b70d0e..78c3778eaf4e 100644
-> --- a/arch/arm64/boot/dts/rockchip/Makefile
-> +++ b/arch/arm64/boot/dts/rockchip/Makefile
-> @@ -165,6 +165,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-wolfvision-pf5.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-wolfvision-pf5-display-vz.dtbo
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-wolfvision-pf5-io-expander.dtbo
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3576-100ask-dshanpi-a1.dtb
-> +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3576-anbernic-rg-vita-pro.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3576-armsom-sige5.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3576-armsom-sige5-v1.2-wifibt.dtbo
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3576-evb1-v10.dtb
-> @@ -215,6 +216,8 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-coolpi-4b.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb1-v10.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-gameforce-ace.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-indiedroid-nova.dtb
-> +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-indiedroid-nova-tower.dtb
-> +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-indiedroid-nova-test.dtb
+Userspace should be able to initiate device reboots using the various
+PSCI SYSTEM_RESET and SYSTEM_RESET2 types defined by PSCI spec. This
+patch series introduces psci-reboot-mode driver that will induce
+command-based resets to psci driver for executing the device reset.
 
-Please disregard this. I just noticed some of my local branch leaked into
-my commit. I'll do a V2 with these removed once I get feedback on the
-rest of the series.
+The PSCI system reset calls takes two arguments: reset_type and cookie.
+It defines predefined reset types, such as warm and cold reset, and
+vendor-specific reset types which are SoC vendor specific. To support
+these requirements, the reboot-mode framework is enhanced in two key
+ways:
+1. 64-bit magic support: Extend reboot-mode to handle two 32-bit
+arguments (reset_type and cookie) by encoding them into a single 64-bit
+magic value.
+2. Predefined modes: Add support for predefined reboot modes in the
+framework.
 
-Thank you.
+With these enhancements, the patch series enables:
+ - Arch Warm reset and system reset cold as predefined reboot modes.
+ - Vendor-specific resets, configurable via the SoC-specific device tree.
 
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-khadas-edge2.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-nanopi-r6s.dtb
->  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-nanopi-r6c.dtb
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3576-anbernic-rg-vita-pro.dts b/arch/arm64/boot/dts/rockchip/rk3576-anbernic-rg-vita-pro.dts
-> new file mode 100644
-> index 000000000000..9dcf3f5a12d1
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/rockchip/rk3576-anbernic-rg-vita-pro.dts
-> @@ -0,0 +1,1317 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-> +/*
-> + * Copyright (c) 2026 Chris Morgan <macromorgan@hotmail.com>
-> + */
-> +
-> +/dts-v1/;
-> +
-> +#include <dt-bindings/gpio/gpio.h>
-> +#include <dt-bindings/input/linux-event-codes.h>
-> +#include <dt-bindings/leds/common.h>
-> +#include <dt-bindings/pinctrl/rockchip.h>
-> +#include <dt-bindings/pwm/pwm.h>
-> +#include <dt-bindings/soc/rockchip,vop2.h>
-> +#include <dt-bindings/usb/pd.h>
-> +
-> +#include "rk3576.dtsi"
-> +
-> +/ {
-> +	model = "Anbernic RG Vita Pro";
-> +	chassis-type = "handset";
-> +	compatible = "anbernic,rg-vita-pro", "rockchip,rk3576";
-> +
-> +	aliases {
-> +		mmc0 = &sdhci;
-> +		mmc1 = &sdmmc;
-> +		mmc2 = &sdio;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = "serial0:1500000n8";
-> +	};
-> +
-> +	adc_keys_home: adc-keys-home {
-> +		compatible = "adc-keys";
-> +		io-channel-names = "buttons";
-> +		io-channels = <&saradc 1>;
-> +		keyup-threshold-microvolt = <1800000>;
-> +		poll-interval = <60>;
-> +
-> +		button-home {
-> +			label = "HOME";
-> +			linux,code = <BTN_MODE>;
-> +			press-threshold-microvolt = <1750>;
-> +		};
-> +	};
-> +
-> +	adc_keys_play: adc-keys-play {
-> +		compatible = "adc-keys";
-> +		io-channel-names = "buttons";
-> +		io-channels = <&saradc 3>;
-> +		keyup-threshold-microvolt = <1300000>;
-> +		poll-interval = <60>;
-> +
-> +		button-play {
-> +			label = "PLAY";
-> +			linux,code = <KEY_PLAYPAUSE>;
-> +			press-threshold-microvolt = <1750>;
-> +		};
-> +	};
-> +
-> +	/*
-> +	 * Values from BSP, except for internal resistance which was set
-> +	 * to 80 micro ohms which is more likely 80000 micro ohms.
-> +	 */
-> +	battery: battery {
-> +		compatible = "simple-battery";
-> +		charge-full-design-microamp-hours = <8000000>;
-> +		charge-term-current-microamp = <300000>;
-> +		constant-charge-current-max-microamp = <10000000>;
-> +		constant-charge-voltage-max-microvolt = <4350000>;
-> +		factory-internal-resistance-micro-ohms = <80000>;
-> +		precharge-current-microamp = <180000>;
-> +		precharge-upper-limit-microvolt = <3600000>;
-> +		voltage-max-design-microvolt = <4350000>;
-> +		voltage-min-design-microvolt = <3000000>;
-> +	};
-> +
-> +	hp_amp: audio-amplifier {
-> +		compatible = "simple-audio-amplifier";
-> +		enable-gpios = <&gpio0 RK_PC3 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&hp_amp_enable_h>;
-> +		pinctrl-names = "default";
-> +		sound-name-prefix = "Headphone Amp";
-> +	};
-> +
-> +	/*
-> +	 * LEDs and Backlights can be controlled as a PWM, but PWM
-> +	 * driver is not yet available.
-> +	 */
-> +	gpio_backlight: backlight {
-> +		compatible = "gpio-backlight";
-> +		gpios = <&gpio2 RK_PC4 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&led_backlight_h>;
-> +		pinctrl-names = "default";
-> +	};
-> +
-> +	gpio_leds: leds {
-> +		compatible = "gpio-leds";
-> +		pinctrl-0 = <&led_amber_h>, <&led_green_h>, <&led_red_h>;
-> +		pinctrl-names = "default";
-> +
-> +		charging-led {
-> +			color = <LED_COLOR_ID_AMBER>;
-> +			function = LED_FUNCTION_CHARGING;
-> +			gpios = <&gpio3 RK_PA4 GPIO_ACTIVE_HIGH>;
-> +		};
-> +
-> +		full-led {
-> +			color = <LED_COLOR_ID_GREEN>;
-> +			function = LED_FUNCTION_POWER;
-> +			gpios = <&gpio3 RK_PA5 GPIO_ACTIVE_HIGH>;
-> +		};
-> +
-> +		bat-low-led {
-> +			color = <LED_COLOR_ID_RED>;
-> +			function = LED_FUNCTION_ALARM;
-> +			gpios = <&gpio3 RK_PA6 GPIO_ACTIVE_HIGH>;
-> +		};
-> +	};
-> +
-> +	gpio_keys_control: gpio-keys-control {
-> +		compatible = "gpio-keys";
-> +		pinctrl-0 = <&gamepad_keys_l>;
-> +		pinctrl-names = "default";
-> +
-> +		button-a {
-> +			gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_LOW>;
-> +			label = "EAST";
-> +			linux,code = <BTN_EAST>;
-> +		};
-> +
-> +		button-b {
-> +			gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
-> +			label = "SOUTH";
-> +			linux,code = <BTN_SOUTH>;
-> +		};
-> +
-> +		button-down {
-> +			gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_LOW>;
-> +			label = "DPAD-DOWN";
-> +			linux,code = <BTN_DPAD_DOWN>;
-> +		};
-> +
-> +		button-l1 {
-> +			gpios = <&gpio3 RK_PD7 GPIO_ACTIVE_LOW>;
-> +			label = "TL";
-> +			linux,code = <BTN_TL>;
-> +		};
-> +
-> +		button-l2 {
-> +			gpios = <&gpio3 RK_PC1 GPIO_ACTIVE_LOW>;
-> +			label = "TL2";
-> +			linux,code = <BTN_TL2>;
-> +		};
-> +
-> +		button-left {
-> +			gpios = <&gpio3 RK_PB2 GPIO_ACTIVE_LOW>;
-> +			label = "DPAD-LEFT";
-> +			linux,code = <BTN_DPAD_LEFT>;
-> +		};
-> +
-> +		button-menu {
-> +			gpios = <&gpio3 RK_PA7 GPIO_ACTIVE_LOW>;
-> +			label = "HOME";
-> +			linux,code = <KEY_HOME>;
-> +		};
-> +
-> +		button-right {
-> +			gpios = <&gpio3 RK_PB3 GPIO_ACTIVE_LOW>;
-> +			label = "DPAD-RIGHT";
-> +			linux,code = <BTN_DPAD_RIGHT>;
-> +		};
-> +
-> +		button-r1 {
-> +			gpios = <&gpio3 RK_PC2 GPIO_ACTIVE_LOW>;
-> +			label = "T2";
-> +			linux,code = <BTN_TR>;
-> +		};
-> +
-> +		button-r2 {
-> +			gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
-> +			label = "TR2";
-> +			linux,code = <BTN_TR2>;
-> +		};
-> +
-> +		button-select {
-> +			gpios = <&gpio3 RK_PD6 GPIO_ACTIVE_LOW>;
-> +			label = "SELECT";
-> +			linux,code = <BTN_SELECT>;
-> +		};
-> +
-> +		button-start {
-> +			gpios = <&gpio3 RK_PD3 GPIO_ACTIVE_LOW>;
-> +			label = "START";
-> +			linux,code = <BTN_START>;
-> +		};
-> +
-> +		button-thumbl {
-> +			gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
-> +			label = "THUMBL";
-> +			linux,code = <BTN_THUMBL>;
-> +		};
-> +
-> +		button-thumbr {
-> +			gpios = <&gpio3 RK_PC4 GPIO_ACTIVE_LOW>;
-> +			label = "THUMBR";
-> +			linux,code = <BTN_THUMBR>;
-> +		};
-> +
-> +		button-up {
-> +			gpios = <&gpio3 RK_PB0 GPIO_ACTIVE_LOW>;
-> +			label = "DPAD-UP";
-> +			linux,code = <BTN_DPAD_UP>;
-> +		};
-> +
-> +		button-x {
-> +			gpios = <&gpio3 RK_PB4 GPIO_ACTIVE_LOW>;
-> +			label = "NORTH";
-> +			linux,code = <BTN_NORTH>;
-> +		};
-> +
-> +		button-y {
-> +			gpios = <&gpio3 RK_PB5 GPIO_ACTIVE_LOW>;
-> +			label = "WEST";
-> +			linux,code = <BTN_WEST>;
-> +		};
-> +	};
-> +
-> +	gpio_keys_volume: gpio-keys-volume {
-> +		compatible = "gpio-keys";
-> +		autorepeat;
-> +		pinctrl-0 = <&vol_keys_l>;
-> +		pinctrl-names = "default";
-> +
-> +		vol-down-key {
-> +			gpios = <&gpio3 RK_PD1 GPIO_ACTIVE_LOW>;
-> +			label = "VOLUMEDOWN";
-> +			linux,code = <KEY_VOLUMEDOWN>;
-> +		};
-> +
-> +		vol-up-key {
-> +			gpios = <&gpio3 RK_PD2 GPIO_ACTIVE_LOW>;
-> +			label = "VOLUMEUP";
-> +			linux,code = <KEY_VOLUMEUP>;
-> +		};
-> +	};
-> +
-> +	hdmi-con {
-> +		compatible = "hdmi-connector";
-> +		type = "c";
-> +
-> +		port {
-> +			hdmi_con_in: endpoint {
-> +				remote-endpoint = <&hdmi_out_con>;
-> +			};
-> +		};
-> +	};
-> +
-> +	rfkill {
-> +		compatible = "rfkill-gpio";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&wifi_en_h>;
-> +		radio-type = "wlan";
-> +		shutdown-gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_HIGH>;
-> +	};
-> +
-> +	sound: sound {
-> +		compatible = "simple-audio-card";
-> +		pinctrl-0 = <&hp_det>;
-> +		pinctrl-names = "default";
-> +		simple-audio-card,aux-devs = <&aw87391_pa_l>, <&aw87391_pa_r>,
-> +					     <&hp_amp>;
-> +		simple-audio-card,format = "i2s";
-> +		simple-audio-card,hp-det-gpios = <&gpio4 RK_PA4 GPIO_ACTIVE_HIGH>;
-> +		simple-audio-card,mclk-fs = <256>;
-> +		simple-audio-card,name = "rockchip,es8388-codec";
-> +		simple-audio-card,pin-switches = "Headphones", "Internal Speakers";
-> +		simple-audio-card,routing =
-> +			"LINPUT1", "Mic Jack",
-> +			"LINPUT2", "Mic Jack",
-> +			"RINPUT1", "Onboard Microphone",
-> +			"RINPUT2", "Onboard Microphone",
-> +			"Headphones", "Headphone Amp OUTL",
-> +			"Headphones", "Headphone Amp OUTR",
-> +			"Headphone Amp INL", "LOUT1",
-> +			"Headphone Amp INR", "ROUT1",
-> +			"Internal Speakers", "Left Amp OUT",
-> +			"Internal Speakers", "Right Amp OUT",
-> +			"Left Amp IN", "LOUT2",
-> +			"Right Amp IN", "ROUT2";
-> +		simple-audio-card,widgets =
-> +			"Microphone", "Mic Jack",
-> +			"Microphone", "Onboard Microphone",
-> +			"Headphone", "Headphones",
-> +			"Speaker", "Internal Speakers";
-> +		status = "okay";
-> +
-> +		simple-audio-card,codec {
-> +			sound-dai = <&es8388>;
-> +			system-clock-frequency = <12288000>;
-> +		};
-> +
-> +		simple-audio-card,cpu {
-> +			sound-dai = <&sai1>;
-> +		};
-> +	};
-> +
-> +	vcc_1v1_nldo_s3: regulator-vcc-1v1-nldo-s3 {
-> +		compatible = "regulator-fixed";
-> +		regulator-always-on;
-> +		regulator-boot-on;
-> +		regulator-max-microvolt = <1100000>;
-> +		regulator-min-microvolt = <1100000>;
-> +		regulator-name = "vcc_1v1_nldo_s3";
-> +		vin-supply = <&vcc_3v8_sys>;
-> +	};
-> +
-> +	vcc_2v0_pldo_s3: regulator-vcc-2v0-pldo-s3 {
-> +		compatible = "regulator-fixed";
-> +		regulator-always-on;
-> +		regulator-boot-on;
-> +		regulator-max-microvolt = <2000000>;
-> +		regulator-min-microvolt = <2000000>;
-> +		regulator-name = "vcc_2v0_pldo_s3";
-> +		vin-supply = <&vcc_3v8_sys>;
-> +	};
-> +
-> +	vcc_3v8_sys: regulator-vcc-3v8-sys {
-> +		compatible = "regulator-fixed";
-> +		regulator-always-on;
-> +		regulator-boot-on;
-> +		regulator-max-microvolt = <3800000>;
-> +		regulator-min-microvolt = <3800000>;
-> +		regulator-name = "vcc_3v8_sys";
-> +	};
-> +
-> +	vcc3v3_sd_s0: regulator-vcc3v3-sd-s0 {
-> +		compatible = "regulator-fixed";
-> +		enable-active-high;
-> +		gpio = <&gpio0 RK_PB6 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&vcc_3v3_sd_s0_h>;
-> +		pinctrl-names = "default";
-> +		regulator-max-microvolt = <3300000>;
-> +		regulator-min-microvolt = <3300000>;
-> +		regulator-name = "vcc3v3_sd_s0";
-> +		regulator-state-mem {
-> +			regulator-off-in-suspend;
-> +		};
-> +	};
-> +
-> +	vcc_sdio: regulator-vcc-sdio {
-> +		compatible = "regulator-gpio";
-> +		regulator-name = "vcc_sdio";
-> +		gpios = <&gpio0 RK_PB4 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&vcc_sdio_h>;
-> +		pinctrl-names = "default";
-> +		regulator-max-microvolt = <3300000>;
-> +		regulator-min-microvolt = <1800000>;
-> +		states = <1800000 0>, <3300000 1>;
-> +	};
-> +
-> +	vcc_wifi: regulator-vcc-wifi {
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "vcc_wifi";
-> +		enable-active-high;
-> +		gpios = <&gpio1 RK_PD2 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&vcc_wifi_h>;
-> +		pinctrl-names = "default";
-> +		regulator-max-microvolt = <3300000>;
-> +		regulator-min-microvolt = <3300000>;
-> +		regulator-state-mem {
-> +			regulator-on-in-suspend;
-> +		};
-> +	};
-> +
-> +	vdd_lcd: regulator-vdd-lcd {
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "vdd_lcd";
-> +		regulator-always-on;
-> +		enable-active-high;
-> +		gpios = <&gpio0 RK_PB0 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&vdd_lcd_h>;
-> +		pinctrl-names = "default";
-> +		regulator-state-mem {
-> +			regulator-off-in-suspend;
-> +		};
-> +	};
-> +};
-> +
-> +&combphy0_ps {
-> +	status = "okay";
-> +};
-> +
-> +&cpu_b0 {
-> +	cpu-supply = <&vdd_cpu_big_s0>;
-> +};
-> +
-> +&cpu_b1 {
-> +	cpu-supply = <&vdd_cpu_big_s0>;
-> +};
-> +
-> +&cpu_b2 {
-> +	cpu-supply = <&vdd_cpu_big_s0>;
-> +};
-> +
-> +&cpu_b3 {
-> +	cpu-supply = <&vdd_cpu_big_s0>;
-> +};
-> +
-> +&cpu_l0 {
-> +	cpu-supply = <&vdd_cpu_lit_s0>;
-> +};
-> +
-> +&cpu_l1 {
-> +	cpu-supply = <&vdd_cpu_lit_s0>;
-> +};
-> +
-> +&cpu_l2 {
-> +	cpu-supply = <&vdd_cpu_lit_s0>;
-> +};
-> +
-> +&cpu_l3 {
-> +	cpu-supply = <&vdd_cpu_lit_s0>;
-> +};
-> +
-> +&dsi {
-> +	status = "okay";
-> +	#address-cells = <1>;
-> +	#size-cells = <0>;
-> +
-> +	panel: panel@0 {
-> +		compatible = "anbernic,panel-vita-pro";
-> +		reg = <0>;
-> +		backlight = <&gpio_backlight>;
-> +		enable-gpios = <&gpio0 RK_PB1 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&lcd_enable>, <&lcd_rst>;
-> +		reset-gpios = <&gpio0 RK_PB5 GPIO_ACTIVE_LOW>;
-> +		rotation = <270>;
-> +		vdd-supply = <&vdd_lcd>;
-> +
-> +		port {
-> +			mipi_in_panel: endpoint {
-> +				remote-endpoint = <&mipi_out_panel>;
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&dsi_in {
-> +	dsi_in_vp1: endpoint {
-> +		remote-endpoint = <&vp1_out_dsi>;
-> +	};
-> +};
-> +
-> +&dsi_out {
-> +	mipi_out_panel: endpoint {
-> +		remote-endpoint = <&mipi_in_panel>;
-> +	};
-> +};
-> +
-> +&gpu {
-> +	mali-supply = <&vdd_gpu_s0>;
-> +	status = "okay";
-> +};
-> +
-> +&hdmi {
-> +	status = "okay";
-> +};
-> +
-> +&hdmi_in {
-> +	hdmi_in_vp0: endpoint {
-> +		remote-endpoint = <&vp0_out_hdmi>;
-> +	};
-> +};
-> +
-> +&hdmi_out {
-> +	hdmi_out_con: endpoint {
-> +		remote-endpoint = <&hdmi_con_in>;
-> +	};
-> +};
-> +
-> +&hdmi_sound {
-> +	status = "okay";
-> +};
-> +
-> +&hdptxphy {
-> +	status = "okay";
-> +};
-> +
-> +&i2c0 {
-> +	pinctrl-0 = <&i2c0m1_xfer>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	/* synaptics,dsx-i2c touchscreen at 0x70 */
-> +};
-> +
-> +&i2c1 {
-> +	status = "okay";
-> +
-> +	pmic@23 {
-> +		compatible = "rockchip,rk806";
-> +		reg = <0x23>;
-> +		#gpio-cells = <2>;
-> +		gpio-controller;
-> +		interrupt-parent = <&gpio0>;
-> +		interrupts = <RK_PA6 IRQ_TYPE_LEVEL_LOW>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&pmic_pins
-> +			     &rk806_dvs1_null
-> +			     &rk806_dvs2_null
-> +			     &rk806_dvs3_null>;
-> +		system-power-controller;
-> +		vcc1-supply = <&vcc_3v8_sys>;
-> +		vcc2-supply = <&vcc_3v8_sys>;
-> +		vcc3-supply = <&vcc_3v8_sys>;
-> +		vcc4-supply = <&vcc_3v8_sys>;
-> +		vcc5-supply = <&vcc_3v8_sys>;
-> +		vcc6-supply = <&vcc_3v8_sys>;
-> +		vcc7-supply = <&vcc_3v8_sys>;
-> +		vcc8-supply = <&vcc_3v8_sys>;
-> +		vcc9-supply = <&vcc_3v8_sys>;
-> +		vcc10-supply = <&vcc_3v8_sys>;
-> +		vcc11-supply = <&vcc_2v0_pldo_s3>;
-> +		vcc12-supply = <&vcc_3v8_sys>;
-> +		vcc13-supply = <&vcc_1v1_nldo_s3>;
-> +		vcc14-supply = <&vcc_1v1_nldo_s3>;
-> +		vcca-supply = <&vcc_3v8_sys>;
-> +
-> +		rk806_dvs1_null: dvs1-null-pins {
-> +			pins = "gpio_pwrctrl1";
-> +			function = "pin_fun0";
-> +		};
-> +
-> +		rk806_dvs1_pwrdn: dvs1-pwrdn-pins {
-> +			pins = "gpio_pwrctrl1";
-> +			function = "pin_fun2";
-> +		};
-> +
-> +		rk806_dvs1_rst: dvs1-rst-pins {
-> +			pins = "gpio_pwrctrl1";
-> +			function = "pin_fun3";
-> +		};
-> +
-> +		rk806_dvs1_slp: dvs1-slp-pins {
-> +			pins = "gpio_pwrctrl1";
-> +			function = "pin_fun1";
-> +		};
-> +
-> +		rk806_dvs2_dvs: dvs2-dvs-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun4";
-> +		};
-> +
-> +		rk806_dvs2_gpio: dvs2-gpio-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun5";
-> +		};
-> +
-> +		rk806_dvs2_null: dvs2-null-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun0";
-> +		};
-> +
-> +		rk806_dvs2_pwrdn: dvs2-pwrdn-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun2";
-> +		};
-> +
-> +		rk806_dvs2_rst: dvs2-rst-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun3";
-> +		};
-> +
-> +		rk806_dvs2_slp: dvs2-slp-pins {
-> +			pins = "gpio_pwrctrl2";
-> +			function = "pin_fun1";
-> +		};
-> +
-> +		rk806_dvs3_dvs: dvs3-dvs-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun4";
-> +		};
-> +
-> +		rk806_dvs3_gpio: dvs3-gpio-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun5";
-> +		};
-> +
-> +		rk806_dvs3_null: dvs3-null-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun0";
-> +		};
-> +
-> +		rk806_dvs3_pwrdn: dvs3-pwrdn-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun2";
-> +		};
-> +
-> +		rk806_dvs3_rst: dvs3-rst-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun3";
-> +		};
-> +
-> +		rk806_dvs3_slp: dvs3-slp-pins {
-> +			pins = "gpio_pwrctrl3";
-> +			function = "pin_fun1";
-> +		};
-> +
-> +		regulators {
-> +			vdd_cpu_big_s0: dcdc-reg1 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-enable-ramp-delay = <400>;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <950000>;
-> +				regulator-name = "vdd_cpu_big_s0";
-> +				regulator-ramp-delay = <12500>;
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdd_npu_s0: dcdc-reg2 {
-> +				regulator-boot-on;
-> +				regulator-enable-ramp-delay = <400>;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <950000>;
-> +				regulator-name = "vdd_npu_s0";
-> +				regulator-ramp-delay = <12500>;
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdd_cpu_lit_s0: dcdc-reg3 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <950000>;
-> +				regulator-name = "vdd_cpu_lit_s0";
-> +				regulator-ramp-delay = <12500>;
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +					regulator-suspend-microvolt = <750000>;
-> +				};
-> +			};
-> +
-> +			vcc_3v3_s3: dcdc-reg4 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <3300000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				regulator-name = "vcc_3v3_s3";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +					regulator-suspend-microvolt = <3300000>;
-> +				};
-> +			};
-> +
-> +			vdd_gpu_s0: dcdc-reg5 {
-> +				regulator-boot-on;
-> +				regulator-enable-ramp-delay = <400>;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <900000>;
-> +				regulator-name = "vdd_gpu_s0";
-> +				regulator-ramp-delay = <12500>;
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +					regulator-suspend-microvolt = <850000>;
-> +				};
-> +			};
-> +
-> +			vddq_ddr_s0: dcdc-reg6 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-name = "vddq_ddr_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdd_logic_s0: dcdc-reg7 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <800000>;
-> +				regulator-name = "vdd_logic_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vcc_1v8_s3: dcdc-reg8 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				regulator-name = "vcc_1v8_s3";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +					regulator-suspend-microvolt = <1800000>;
-> +				};
-> +			};
-> +
-> +			vdd2_ddr_s3: dcdc-reg9 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-name = "vdd2_ddr_s3";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdd_ddr_s0: dcdc-reg10 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <550000>;
-> +				regulator-max-microvolt = <1200000>;
-> +				regulator-name = "vdd_ddr_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vcca_1v8_s0: pldo-reg1 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				regulator-name = "vcca_1v8_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vcca1v8_pldo2_s0: pldo-reg2 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				regulator-name = "vcca1v8_pldo2_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdda_1v2_s0: pldo-reg3 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1200000>;
-> +				regulator-max-microvolt = <1200000>;
-> +				regulator-name = "vdda_1v2_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vcca_3v3_s0: pldo-reg4 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <3300000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				regulator-name = "vcca_3v3_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vccio_sd_s0: pldo-reg5 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <3300000>;
-> +				regulator-name = "vccio_sd_s0";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +				};
-> +			};
-> +
-> +			vcca1v8_pldo6_s3: pldo-reg6 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <1800000>;
-> +				regulator-max-microvolt = <1800000>;
-> +				regulator-name = "vcca1v8_pldo6_s3";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +					regulator-suspend-microvolt = <1800000>;
-> +				};
-> +			};
-> +
-> +			vdd_0v75_s3: nldo-reg1 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <750000>;
-> +				regulator-max-microvolt = <750000>;
-> +				regulator-name = "vdd_0v75_s3";
-> +				regulator-state-mem {
-> +					regulator-on-in-suspend;
-> +					regulator-suspend-microvolt = <750000>;
-> +				};
-> +			};
-> +
-> +			vdda_ddr_pll_s0: nldo-reg2 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <850000>;
-> +				regulator-name = "vdda_ddr_pll_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdda0v75_hdmi_s0: nldo-reg3 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <750000>;
-> +				regulator-max-microvolt = <750000>;
-> +				regulator-name = "vdda0v75_hdmi_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdda_0v85_s0: nldo-reg4 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <850000>;
-> +				regulator-max-microvolt = <850000>;
-> +				regulator-name = "vdda_0v85_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +
-> +			vdda_0v75_s0: nldo-reg5 {
-> +				regulator-always-on;
-> +				regulator-boot-on;
-> +				regulator-min-microvolt = <750000>;
-> +				regulator-max-microvolt = <750000>;
-> +				regulator-name = "vdda_0v75_s0";
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&i2c2 {
-> +	status = "okay";
-> +
-> +	/* inv,icm42607 IMU at 0x68 */
-> +};
-> +
-> +&i2c3 {
-> +	status = "okay";
-> +
-> +	es8388: audio-codec@10 {
-> +		compatible = "everest,es8388", "everest,es8328";
-> +		reg = <0x10>;
-> +		assigned-clock-rates = <12288000>;
-> +		assigned-clocks = <&cru CLK_SAI1_MCLKOUT_TO_IO>;
-> +		AVDD-supply = <&vcca_3v3_s0>;
-> +		clocks = <&cru CLK_SAI1_MCLKOUT_TO_IO>;
-> +		DVDD-supply = <&vcc_3v3_s3>;
-> +		HPVDD-supply = <&vcca_3v3_s0>;
-> +		pinctrl-0 = <&sai1m0_mclk>;
-> +		pinctrl-names = "default";
-> +		PVDD-supply = <&vcc_3v3_s3>;
-> +		#sound-dai-cells = <0>;
-> +	};
-> +
-> +	aw87391_pa_l: audio-codec@58 {
-> +		compatible = "anbernic,rgds-amp", "awinic,aw87391";
-> +		reg = <0x58>;
-> +		#sound-dai-cells = <0>;
-> +		sound-name-prefix = "Left Amp";
-> +	};
-> +
-> +	aw87391_pa_r: audio-codec@5b {
-> +		compatible = "anbernic,rgds-amp", "awinic,aw87391";
-> +		reg = <0x5b>;
-> +		#sound-dai-cells = <0>;
-> +		sound-name-prefix = "Right Amp";
-> +	};
-> +};
-> +
-> +&i2c6 {
-> +	pinctrl-0 = <&i2c6m3_xfer>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +
-> +	sgm41542: charger@3b {
-> +		compatible = "sgmicro,sgm41542";
-> +		reg = <0x3b>;
-> +		input-current-limit-microamp = <3000000>;
-> +		input-voltage-limit-microvolt = <4500000>;
-> +		interrupt-parent = <&gpio0>;
-> +		interrupts = <RK_PD2 IRQ_TYPE_EDGE_FALLING>;
-> +		pinctrl-0 = <&charger_irq>;
-> +		pinctrl-names = "default";
-> +		monitored-battery = <&battery>;
-> +		status = "okay";
-> +
-> +		regulators {
-> +			vbus5v0_typec: otg-vbus {
-> +				regulator-name = "vbus5v0_typec";
-> +				regulator-max-microvolt = <5000000>;
-> +				regulator-min-microvolt = <5000000>;
-> +
-> +				regulator-state-mem {
-> +					regulator-off-in-suspend;
-> +				};
-> +			};
-> +		};
-> +	};
-> +
-> +	/* Unused iSmartWare SW2001 encryption device at 0x3c */
-> +
-> +	husb311: typec-portc@4e {
-> +		compatible = "hynetek,husb311", "richtek,rt1711h";
-> +		reg = <0x4e>;
-> +		interrupt-parent = <&gpio0>;
-> +		interrupts = <RK_PD1 IRQ_TYPE_LEVEL_LOW>;
-> +		pinctrl-0 = <&usbc_int>;
-> +		pinctrl-names = "default";
-> +		status = "okay";
-> +		vbus-supply = <&vbus5v0_typec>;
-> +
-> +		connector {
-> +			compatible = "usb-c-connector";
-> +			label = "USB-C";
-> +			data-role = "dual";
-> +			op-sink-microwatt = <10000000>;
-> +			power-role = "dual";
-> +			try-power-role  = "sink";
-> +
-> +			sink-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)
-> +				     PDO_FIXED(9000, 2000, PDO_FIXED_USB_COMM)>;
-> +			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
-> +
-> +			altmodes {
-> +				displayport {
-> +					svid = /bits/ 16 <0xff01>;
-> +					vdo = <0xffffffff>;
-> +				};
-> +			};
-> +
-> +			ports {
-> +				#address-cells = <1>;
-> +				#size-cells = <0>;
-> +
-> +				port@0 {
-> +					reg = <0>;
-> +					usbc0_hs_ep: endpoint {
-> +						remote-endpoint = <&usb_drd0_hs_ep>;
-> +					};
-> +				};
-> +				port@1 {
-> +					reg = <1>;
-> +					usbc0_ss_ep: endpoint {
-> +						remote-endpoint = <&usb_drd0_ss_ep>;
-> +					};
-> +				};
-> +				port@2 {
-> +					reg = <2>;
-> +					usbc0_dp_ep: endpoint {
-> +						remote-endpoint = <&usbdp_phy_ep>;
-> +					};
-> +				};
-> +			};
-> +		};
-> +	};
-> +
-> +	hym8563: rtc@51 {
-> +		compatible = "haoyu,hym8563";
-> +		reg = <0x51>;
-> +		#clock-cells = <0>;
-> +		clock-output-names = "hym8563";
-> +		interrupt-parent = <&gpio0>;
-> +		interrupts = <RK_PA0 IRQ_TYPE_LEVEL_LOW>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&hym8563_int>;
-> +		wakeup-source;
-> +	};
-> +
-> +	/* cellwise,cw221X battery manager at 0x64 */
-> +};
-> +
-> +&mipidcphy {
-> +	status = "okay";
-> +};
-> +
-> +&pcie0 {
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pcie0_perstn>;
-> +	reset-gpios = <&gpio2 RK_PB4 GPIO_ACTIVE_HIGH>;
-> +	vpcie3v3-supply = <&vcc_wifi>;
-> +	status = "okay";
-> +};
-> +
-> +&pinctrl {
-> +	audio {
-> +		hp_amp_enable_h: hp-amp-enable {
-> +			rockchip,pins = <0 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		hp_det: hp-det {
-> +			rockchip,pins = <4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	bluetooth {
-> +		bt_reset_gpio: bt-reset-pin {
-> +			rockchip,pins = <2 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		bt_wake_gpio: bt-wake-pin {
-> +			rockchip,pins = <2 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		bt_wake_host_irq: bt-wake-host-irq {
-> +			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	charger {
-> +		charger_irq: charger-irq {
-> +			rockchip,pins = <0 RK_PD2 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	display {
-> +		lcd_enable: lcd-enable {
-> +			rockchip,pins = <0 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		lcd_rst: lcd-rst {
-> +			rockchip,pins = <0 RK_PB5 RK_FUNC_GPIO &pcfg_pull_down>;
-> +		};
-> +	};
-> +
-> +	gpio-keys {
-> +		vol_keys_l: vol-keys_l {
-> +			rockchip,pins =
-> +				<3 RK_PD1 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PD2 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +
-> +		gamepad_keys_l: gamepad-keys-l {
-> +			rockchip,pins =
-> +				<3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB0 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB1 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB2 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB3 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB5 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB6 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PB7 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PC1 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PC2 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PD6 RK_FUNC_GPIO &pcfg_pull_up>,
-> +				<3 RK_PD7 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	gpio-leds {
-> +		led_amber_h: led-amber-h {
-> +			rockchip,pins = <3 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		led_backlight_h: led-backlight-h {
-> +			rockchip,pins = <2 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		led_green_h: led-green-h {
-> +			rockchip,pins = <3 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		led_red_h: led-red-h {
-> +			rockchip,pins = <3 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +	};
-> +
-> +	pcie {
-> +		pcie0_perstn: pcie0-perstn {
-> +			rockchip,pins = <2 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	regulator {
-> +		vcc_3v3_sd_s0_h: vcc-3v3-sd-s0-h {
-> +			rockchip,pins = <0 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		vcc_sdio_h: vcc-sdio-h {
-> +			rockchip,pins = <0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		vcc_wifi_h: vcc-wifi-h {
-> +			rockchip,pins = <1 RK_PD2 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +
-> +		vdd_lcd_h: vdd-lcd-h {
-> +			rockchip,pins = <0 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +	};
-> +
-> +	rtc {
-> +		hym8563_int: hym8563-int {
-> +			rockchip,pins = <0 RK_PA0 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	touch {
-> +		touch_int: touch-int {
-> +			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +	};
-> +
-> +	usb {
-> +		usbc_int: usbc-int {
-> +			rockchip,pins = <0 RK_PD1 RK_FUNC_GPIO &pcfg_pull_up>;
-> +		};
-> +
-> +		usbc0_sbu1: usbc0-sbu1 {
-> +			rockchip,pins = <4 RK_PB6 RK_FUNC_GPIO &pcfg_pull_down>;
-> +		};
-> +
-> +		usbc0_sbu2: usbc0-sbu2 {
-> +			rockchip,pins = <4 RK_PB7 RK_FUNC_GPIO &pcfg_pull_down>;
-> +		};
-> +	};
-> +
-> +	wifi {
-> +		wifi_en_h: wifi-en-h {
-> +			rockchip,pins = <0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +	};
-> +};
-> +
-> +&sai1 {
-> +	pinctrl-0 = <&sai1m0_lrck
-> +		     &sai1m0_sclk
-> +		     &sai1m0_sdi0
-> +		     &sai1m0_sdo0>;
-> +	pinctrl-names = "default";
-> +	status = "okay";
-> +};
-> +
-> +&sai6 {
-> +	status = "okay";
-> +};
-> +
-> +&saradc {
-> +	vref-supply = <&vcca1v8_pldo2_s0>;
-> +	status = "okay";
-> +};
-> +
-> +&sdio {
-> +	bus-width = <4>;
-> +	cap-mmc-highspeed;
-> +	cap-sd-highspeed;
-> +	disable-wp;
-> +	max-frequency = <150000000>;
-> +	no-mmc;
-> +	no-sdio;
-> +	pinctrl-0 = <&sdmmc1m0_bus4>, <&sdmmc1m0_clk>,
-> +		    <&sdmmc1m0_cmd>, <&sdmmc1m0_det>;
-> +	pinctrl-names = "default";
-> +	sd-uhs-sdr12;
-> +	sd-uhs-sdr25;
-> +	sd-uhs-sdr50;
-> +	sd-uhs-sdr104;
-> +	vmmc-supply = <&vcc3v3_sd_s0>;
-> +	vqmmc-supply = <&vcc_sdio>;
-> +	status = "okay";
-> +};
-> +
-> +&sdhci {
-> +	bus-width = <8>;
-> +	full-pwr-cycle-in-suspend;
-> +	no-sd;
-> +	no-sdio;
-> +	non-removable;
-> +	mmc-hs400-1_8v;
-> +	mmc-hs400-enhanced-strobe;
-> +	status = "okay";
-> +};
-> +
-> +&sdmmc {
-> +	bus-width = <4>;
-> +	cap-mmc-highspeed;
-> +	cap-sd-highspeed;
-> +	disable-wp;
-> +	max-frequency = <150000000>;
-> +	no-sdio;
-> +	no-mmc;
-> +	pinctrl-0 = <&sdmmc0_bus4>, <&sdmmc0_clk>,
-> +		    <&sdmmc0_cmd>, <&sdmmc0_det>;
-> +	pinctrl-names = "default";
-> +	sd-uhs-sdr12;
-> +	sd-uhs-sdr25;
-> +	sd-uhs-sdr50;
-> +	sd-uhs-sdr104;
-> +	vmmc-supply = <&vcc3v3_sd_s0>;
-> +	vqmmc-supply = <&vccio_sd_s0>;
-> +	status = "okay";
-> +};
-> +
-> +&spi1 {
-> +	num-cs = <1>;
-> +	pinctrl-0 = <&spi1m2_pins>, <&spi1m2_csn0>;
-> +	status = "okay";
-> +
-> +	/* SPI controlled MCU for joystick and joystick LEDs. */
-> +};
-> +
-> +&vop {
-> +	status = "okay";
-> +};
-> +
-> +&vop_mmu {
-> +	status = "okay";
-> +};
-> +
-> +&vp0 {
-> +	vp0_out_hdmi: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
-> +		reg = <ROCKCHIP_VOP2_EP_HDMI0>;
-> +		remote-endpoint = <&hdmi_in_vp0>;
-> +	};
-> +};
-> +
-> +&vp1 {
-> +	vp1_out_dsi: endpoint@ROCKCHIP_VOP2_EP_MIPI0 {
-> +		reg = <ROCKCHIP_VOP2_EP_MIPI0>;
-> +		remote-endpoint = <&dsi_in_vp1>;
-> +	};
-> +};
-> +
-> +&u2phy0 {
-> +	status = "okay";
-> +};
-> +
-> +&u2phy0_otg {
-> +	status = "okay";
-> +};
-> +
-> +&uart0 {
-> +	status = "okay";
-> +};
-> +
-> +&uart6 {
-> +	pinctrl-0 = <&uart6m1_xfer>, <&uart6m1_ctsn>, <&uart6m1_rtsn>;
-> +	pinctrl-names = "default";
-> +	uart-has-rtscts;
-> +	status = "okay";
-> +
-> +	bluetooth {
-> +		compatible = "realtek,rtl8822cs-bt";
-> +		device-wake-gpios = <&gpio2 RK_PB6 GPIO_ACTIVE_HIGH>;
-> +		enable-gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_HIGH>;
-> +		host-wake-gpios = <&gpio2 RK_PC1 GPIO_ACTIVE_HIGH>;
-> +		pinctrl-0 = <&bt_reset_gpio>, <&bt_wake_gpio>, <&bt_wake_host_irq>;
-> +		pinctrl-names = "default";
-> +	};
-> +};
-> +
-> +&usbdp_phy {
-> +	mode-switch;
-> +	orientation-switch;
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&usbc0_sbu1 &usbc0_sbu2>;
-> +	sbu1-dc-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
-> +	sbu2-dc-gpios = <&gpio4 RK_PB7 GPIO_ACTIVE_HIGH>;
-> +	status = "okay";
-> +
-> +	port {
-> +		usbdp_phy_ep: endpoint {
-> +			remote-endpoint = <&usbc0_dp_ep>;
-> +		};
-> +	};
-> +};
-> +
-> +&usb_drd0_dwc3 {
-> +	usb-role-switch;
-> +	dr_mode = "otg";
-> +	status = "okay";
-> +
-> +	ports {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		port@0 {
-> +			reg = <0>;
-> +			usb_drd0_hs_ep: endpoint {
-> +				remote-endpoint = <&usbc0_hs_ep>;
-> +			};
-> +		};
-> +
-> +		port@1 {
-> +			reg = <1>;
-> +			usb_drd0_ss_ep: endpoint {
-> +				remote-endpoint = <&usbc0_ss_ep>;
-> +			};
-> +		};
-> +	};
-> +};
-> -- 
-> 2.43.0
-> 
+Together, these changes allow userspace to trigger all above PSCI resets
+from userspace.
+
+Note on introducing PSCI-MFD:
+In v19/20, psci-reboot-mode was implemented as a faux-device. Review
+discussion suggested this may not be the best model for firmware-backed
+consumers, and that representing PSCI users as regular platform devices
+would be better. One suggestion was to add a PSCI-MFD driver, allowing
+multiple consumers tied to a single PSCI node "arm,psci-1.0" be probed
+as MFD cells.
+
+Following this, the series adds a PSCI-MFD driver and introduces
+cpuidle-psci-domain and psci-reboot-mode as child cells. To meet the
+psci-reboot-mode requirement, the MFD core is extended to support
+fwnode.
+Reference discussions on this:
+https://lore.kernel.org/all/20260306-faux-dev-with-fwnode-v1-1-792a86a62530@oss.qualcomm.com/
+
+---
+- Carrying Reviewed-by form Sebastian and Bart on Patch1.
+- Carrying Reviewed-by form Sebastian on Patch2.
+- Dropping Reviewed-by form Sebastian on Patch3 due to additional changes.
+
+The patch is tested on rb3Gen2, lemans-ride, lemans-evk, monaco-ride,
+qcs615-ride.
+
+Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+
+Changes in v21:
+By Krzysztof
+ power: reset: reboot-mode: Remove devres based allocations
+  - remove fixes tag.
+By Lorenzo
+  firmware: psci: Introduce command-based resets
+  - psci_set_reset_cmd() only takes reset_type/cookie as input params.
+    - updated this as a encoded u64 reset_command - from Pavan Kondeti.
+  - Update commit text for reason for explicit panic_handling.
+  - Clean split of reset flow in psci_sys_reset via handle_reboot_mode and handle_cmd_reset.
+  - Add psci_has_system_reset2_support() helper and PSCI reset-type defines.
+By Lorenzo/Bart
+ power: reset: Add psci-reboot-mode driver
+  By Bart
+   - Drop faux-device based probe.
+   - Convert driver to platform-driver model (probed via PSCI MFD).
+  By Lorenzo:
+   - Use PSCI-specific predefined reset mode naming/magic.
+   - Register arch-warm predefined mode only when SYSTEM_RESET2 is supported.
+   - psci_reboot_mode_write to directly pass reset_type and cokie.
+   - Add MAINTAINERS entry for drivers/power/reset/psci-reboot-mode.c.
+By Bart
+ mfd: psci-mfd: Introduce psci mfd driver for cpuidle-psci-domain cell
+  - Introduce psci-mfd driver.
+ mfd: Add psci-reboot-mode cell via fwnode
+ - Register psci-reboot-mode from psci-mfd with reboot-mode child node
+   fwnode.
+ - Update reset Kconfig dependency to tie PSCI reboot-mode to MFD PSCI path.
+For alignment:
+ - mfd: core: Add firmware-node support to MFD cells
+   - Add firmware-node support to MFD cells.
+By Pavan
+ power: reset: reboot-mode: Add support for predefined reboot modes
+  - Move redundant logic of adding modes to list to a common function.
+By Arnd
+ - Remove refrences for Linux reboot-modes from code and commit text.
+By Konrad
+ - Updated all dt changes to add reboot-mode for supported board files.
+- Link to v20: https://lore.kernel.org/r/20260304-arm-psci-system_reset2-vendor-reboots-v20-0-cf7d346b8372@oss.qualcomm.com
+
+Changes in v20:
+By Bart:
+ power: reset: Add psci-reboot-mode driver
+ - Check for psci compatible in init arm,psci-1.0
+ - Node pointer should not be assigned in device probe.
+   To Align on above:
+   - Remove probe call for faux device.
+   - Set node using device_set_node after faux_device_create.
+   - Register the reboot mode using explicit call to psci_reboot_mode_register_device.
+ - Updated in-code documentation.
+For Alignment to use of device_property_xx:
+ power: reset: reboot-mode: Add support for 64 bit magic
+  - Use device_property_count_u32 instead of device_property_read_u32.
+  - Check count of properties before reading.
+  - u64 magic changed to u32 magic[2].
+  - nvmem-reboot rebased on recent changes.
+  - Update documentation and commit text.
+power: reset: reboot-mode: Remove devres based allocations
+ By Dmitry/Bart:
+  - pr_err to pr_debug in case of invalid reboot-mode prop.
+ By Bart:
+  - Use device_property_read_u32 instead of of_property_read_u32.
+  - Avoid repeated code for free list. Now calling unregister from
+    error path of regiister_reboot_mode.
+ - Fix magic assignment.
+- Link to v19: https://lore.kernel.org/r/20251228-arm-psci-system_reset2-vendor-reboots-v19-0-ebb956053098@oss.qualcomm.com
+
+Changes in v19:
+- Add missing To/Cc entries (include devicetree list) – Thanks to
+  Krzysztof for pointing this out.
+- Fix compilation error in reboot-mode.c for ARCH=powerpc by explicitly
+  including <linux/slab.h>.
+- Link to v18: https://lore.kernel.org/r/20251223-arm-psci-system_reset2-vendor-reboots-v18-0-32fa9e76efc3@oss.qualcomm.com
+
+Changes in v18:
+ power: reset: reboot-mode: Remove devres based allocations
+ - Update commit text for alignment. – Bart
+ - Read magic before assigning kzalloc(info) in reboot_mode_register. - Mukesh
+ - Update error handling path. - Mukesh
+By Bjorn
+ - Expose sysfs for reboot-mode bisected to different series-
+   Link: https://lore.kernel.org/all/20251222-next-15nov_expose_sysfs-v21-0-244614135fd8@oss.qualcomm.com/
+By Bjorn/Lorenzo/Mukesh
+  power: reset: reboot-mode: Add support for 64 bit magic
+  - Use FIELD_GET/FIELD_PREP for u64 magic wherever required.
+  - Update commit text and add documentation for structure of 64 bit magic.
+By Lorenzo
+ - Remove direct reboot-mode registration by psci driver.
+ - Add support for predefined reboot modes in reboot-mode framework.
+ - Add psci-reboot-mode driver and implement a psci-resets to accommodate
+   all psci-resets including warm, cold and customizable vendor-resets.
+By Bjorn
+ - Update DT patches for qcm6490, lemans, monaco and tolos.
+  - Update commit text to include more details – By Bjorn
+For Alignment
+ - dt-bindings: arm: Document reboot mode magic
+   - Update reboot mode documentation to clarify that argument1 should provide
+     full value of reset_type along with the 31st bit wherever required.
+ - DT patches for qcm6490, lemans, monaco and tolos.
+   - Provide full value of reset_type including 31st bit.(eg:0x80000001).
+- Link to v17: https://lore.kernel.org/r/20251109-arm-psci-system_reset2-vendor-reboots-v17-0-46e085bca4cc@oss.qualcomm.com
+
+Previous versions:
+- Link to v16: https://lore.kernel.org/r/20251015-arm-psci-system_reset2-vendor-reboots-v16-0-b98aedaa23ee@oss.qualcomm.com
+- Link to v15: https://lore.kernel.org/r/20250922-arm-psci-system_reset2-vendor-reboots-v15-0-7ce3a08878f1@oss.qualcomm.com
+- Link to v14: https://lore.kernel.org/r/20250815-arm-psci-system_reset2-vendor-reboots-v14-0-37d29f59ac9a@oss.qualcomm.com
+- Link to v13: https://lore.kernel.org/r/20250727-arm-psci-system_reset2-vendor-reboots-v13-0-6b8d23315898@oss.qualcomm.com
+- Link to v12: https://lore.kernel.org/r/20250721-arm-psci-system_reset2-vendor-reboots-v12-0-87bac3ec422e@oss.qualcomm.com
+- Link to v11: https://lore.kernel.org/r/20250717-arm-psci-system_reset2-vendor-reboots-v11-0-df3e2b2183c3@oss.qualcomm.com
+- Link to v10: https://lore.kernel.org/all/569f154d-c714-1714-b898-83a42a38771c@oss.qualcomm.com/
+- Link to v9: https://lore.kernel.org/all/20250303-arm-psci-system_reset2-vendor-reboots-v9-0-b2cf4a20feda@oss.qualcomm.com/
+- Link to v8: https://lore.kernel.org/r/20241107-arm-psci-system_reset2-vendor-reboots-v8-0-e8715fa65cb5@quicinc.com
+- Link to v7: https://lore.kernel.org/r/20241028-arm-psci-system_reset2-vendor-reboots-v7-0-a4c40b0ebc54@quicinc.com
+- Link to v6: https://lore.kernel.org/r/20241018-arm-psci-system_reset2-vendor-reboots-v6-0-50cbe88b0a24@quicinc.com
+- Link to v5: https://lore.kernel.org/r/20240617-arm-psci-system_reset2-vendor-reboots-v5-0-086950f650c8@quicinc.com
+- Link to v4: https://lore.kernel.org/r/20240611-arm-psci-system_reset2-vendor-reboots-v4-0-98f55aa74ae8@quicinc.com
+- Link to v3: https://lore.kernel.org/r/20240515-arm-psci-system_reset2-vendor-reboots-v3-0-16dd4f9c0ab4@quicinc.com
+- Link to v2: https://lore.kernel.org/r/20240414-arm-psci-system_reset2-vendor-reboots-v2-0-da9a055a648f@quicinc.com
+- Link to v1: https://lore.kernel.org/r/20231117-arm-psci-system_reset2-vendor-reboots-v1-0-03c4612153e2@quicinc.com
+- Link to RFC: https://lore.kernel.org/r/20231030-arm-psci-system_reset2-vendor-reboots-v1-0-dcdd63352ad1@quicinc.com
+
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+To: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+To: Bjorn Andersson <andersson@kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+To: Rob Herring <robh@kernel.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+To: Souvik Chakravarty <Souvik.Chakravarty@arm.com>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Andy Yan <andy.yan@rock-chips.com>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+To: Mark Rutland <mark.rutland@arm.com>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Konrad Dybcio <konradybcio@kernel.org>
+To: John Stultz <john.stultz@linaro.org>
+To: Moritz Fischer <moritz.fischer@ettus.com>
+To: Rafael J. Wysocki <rafael@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@kernel.org>
+To: Christian Loehle <christian.loehle@arm.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+To: Lee Jones <lee@kernel.org>
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Cc: Andre Draszik <andre.draszik@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-arm-msm@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+
+---
+Shivendra Pratap (13):
+      power: reset: reboot-mode: Remove devres based allocations
+      power: reset: reboot-mode: Add support for 64 bit magic
+      power: reset: reboot-mode: Add support for predefined reboot modes
+      firmware: psci: Introduce command-based with magic
+      mfd: psci-mfd: Add PSCI MFD driver for cpuidle-psci-domain cell
+      dt-bindings: arm: Document reboot mode magic
+      power: reset: Add psci-reboot-mode driver
+      mfd: core: Add firmware-node support to MFD cells
+      mfd: psci-mfd: Add psci-reboot-mode child cell
+      arm64: dts: qcom: Add psci reboot-modes for kodiak boards
+      arm64: dts: qcom: Add psci reboot-modes for lemans boards
+      arm64: dts: qcom: Add psci reboot-modes for monaco boards
+      arm64: dts: qcom: Add psci reboot-modes for talos boards
+
+ Documentation/devicetree/bindings/arm/psci.yaml  |  42 +++++++++
+ MAINTAINERS                                      |   2 +
+ arch/arm64/boot/dts/qcom/kodiak.dtsi             |   2 +-
+ arch/arm64/boot/dts/qcom/lemans-evk.dts          |   7 ++
+ arch/arm64/boot/dts/qcom/lemans-ride-common.dtsi |   7 ++
+ arch/arm64/boot/dts/qcom/lemans.dtsi             |   2 +-
+ arch/arm64/boot/dts/qcom/monaco-evk.dts          |   7 ++
+ arch/arm64/boot/dts/qcom/monaco.dtsi             |   2 +-
+ arch/arm64/boot/dts/qcom/qcm6490-idp.dts         |   7 ++
+ arch/arm64/boot/dts/qcom/qcs615-ride.dts         |   7 ++
+ arch/arm64/boot/dts/qcom/qcs6490-rb3gen2.dts     |   7 ++
+ arch/arm64/boot/dts/qcom/qcs8300-ride.dts        |   7 ++
+ arch/arm64/boot/dts/qcom/talos.dtsi              |   2 +-
+ drivers/cpuidle/Kconfig.arm                      |   1 +
+ drivers/cpuidle/cpuidle-psci-domain.c            |   9 +-
+ drivers/firmware/psci/psci.c                     |  75 +++++++++++++++-
+ drivers/mfd/Kconfig                              |  10 +++
+ drivers/mfd/Makefile                             |   2 +
+ drivers/mfd/mfd-core.c                           |  10 +++
+ drivers/mfd/psci-mfd.c                           |  62 +++++++++++++
+ drivers/power/reset/Kconfig                      |  10 +++
+ drivers/power/reset/Makefile                     |   1 +
+ drivers/power/reset/nvmem-reboot-mode.c          |   9 +-
+ drivers/power/reset/psci-reboot-mode.c           | 109 +++++++++++++++++++++++
+ drivers/power/reset/qcom-pon.c                   |   7 +-
+ drivers/power/reset/reboot-mode.c                |  91 ++++++++++++-------
+ drivers/power/reset/syscon-reboot-mode.c         |   7 +-
+ include/linux/mfd/core.h                         |   6 ++
+ include/linux/psci.h                             |  19 ++++
+ include/linux/reboot-mode.h                      |  23 ++++-
+ 30 files changed, 496 insertions(+), 56 deletions(-)
+---
+base-commit: 39704f00f747aba3144289870b5fd8ac230a9aaf
+change-id: 20250709-arm-psci-system_reset2-vendor-reboots-46c80044afcf
+
+Best regards,
+-- 
+Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+
