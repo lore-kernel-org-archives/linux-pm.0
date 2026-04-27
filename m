@@ -1,282 +1,306 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010015.outbound.protection.outlook.com [40.93.198.15])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C90E92264A7;
-	Mon, 27 Apr 2026 08:04:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.15
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777277087; cv=fail; b=QeYUQ3Z2XO8VFaOmBHbHZaH7gA+fWwUFJCUAL/Q4rAJeMZsfNwJOuLNU14dbhCLQfsF1egdipiCY7cE2BBIwRCDs+2NkZ9PitW+UWbA1dZfyP43uYhGDDRCBNF+FgLhuWrOFzXLeZlSVqs2NH1oS7on7xkdwemMuILJSWoDMzg8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777277087; c=relaxed/simple;
-	bh=CAgTOquqQqB0D7zs5OidfD582RJptSicdS8CKDvEnX8=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=KdKORc79SsUm0rj/zPuaZZDtX/ib85opp3CQ0C8NZ52MS+8YDiyqcT7amyhWXqgXqz3Pqw29XIxP/2VggjHm7DVBTfUCrGDfkHJ4N4q9Ws9FzFNWOGYwd26Bf1OmtHasj3LNFVU7kMrOK0MTZ5/tWYjetROPFWuHZTjstJl3i3E=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=di0GXFJF; arc=fail smtp.client-ip=40.93.198.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2E7D39A7E7
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 08:19:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777277945; cv=none; b=HiOXiABmtotsPkSEVGB06j4rjuzFFlsm5UI5rISrwHQOSBQDyb6Pe7K9wzjc0C9BeskJK0PB/+BWrbovXdm2zH/3wTWuPTvAOc83He7rIWJDnJV/am+4/3brWLLEWDNwuAkMeBmkVseLHykvzLKDddqCOEimiVkuOln2tlGV8zQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777277945; c=relaxed/simple;
+	bh=J2TZUzyKbhBP8QKXUd6dU18LJ5IcJowSmbEIPSADdyI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kF92AKiX406BgUtSL/RT7eBwcevSV393ci5DBGt1CpaObBLUWwTTl2U/Yj2P6/u9YnPj5yejUIUcqJPhLjT0m1U4iaMfX3KHrMnuEnK6OGa60NMUqyO9vx2W1x2sU0WdVaXmD85t4NlD0snRj2kdoUBbET3HQ+EakEcGiR6QynM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=jtqvudJ/; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Lusci4Fc; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="di0GXFJF"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Wl8cqiCLEtALAJP2H6gfFhyHktZC2w41pTtdYxIIBMSse/rLIMKnMp4mC4fbjd0fdLKbkVjtMq0bAqHc2qZZneMzIBKUcDwo4nPqvtznvvV79qJPbJRLU5rqr4brm4kGEYh27CEyqovsOapT2RISflWR6kBy+SsYvg4X7JGX+DJVEqeNX4jUMZ9TfyvX2vswkm8dnr3SdzZODQ9lk3ESub69X3LjT0kLP1RPdnwSjC79bOeb7y5gHakiOlmJcX/a4z15b+912xCMKMRRrVv7wXbOzZpHMphFvPL1NnrlI8uu6/0LpKWKDDiBvhw2IPesFf0ABqP+CnukgEoc8ls+cw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=S4siq7YdbMty74/pvV2+GqYFs2EXVkJvvXtN78tIMgM=;
- b=cT78rb1CIXbFHTGy+LGYF+9Dt38as+eTEV6nFxm9189AwNu/LPwP7L+J5/TpqaBJNHegXJglq8HxrHxzrY/9ZKPNhJRtZQHNHqXIKomr8ta9aOJrNhGMAKpSWNfJ+4dYvx8BUp8DSaDkWwFydLkPGyVXCxCvcvYkAxowObLTvWvtjJEKCjtpFOXEgPG4LK9RN6rdEUiqb4+Oy8jhwl65mC8WVQDwMWghD0DN15Ig3oWFLovNjgcrMehYdc5NVrXb0nDarj7DKnm0z1dg4I8FVuD0rTB3VYO2lGilXUhb9/KvZR5o1NtFLWDAsN1pl0FL6yEJc1YrjdgPcjdGzz3mIg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=S4siq7YdbMty74/pvV2+GqYFs2EXVkJvvXtN78tIMgM=;
- b=di0GXFJFZhs2UG2H97MvADw0EyEMpRpNYiG0BSPru8MDgjynZR8K+wsXobs4xn1eEDUPUVftVG4JHx4M36ZIRd3Oy+PckX05DxuaYvx0af6Sj9jGHUOnrhDvHwlXN2LuOFgazrCVkzPpPeXaY8YXzUuPBTxJ7FfhNlfqRDO1414tRjNpiVCMwyfjFhly0Dtw8eY01IDchNvguPq4w1rAeBUEz+c7HebyWiwJk2gbDDK9xp6z2Oyt90b04fooQRwKgUzUTEoVCQgkEpqqb93y2DTNSpO4IgMAO0qBQktqgKXlb2gDR2CgoRWgO5MdHK0V4X7t6XCoemyoijL0QVTu4A==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by DM6PR12MB4137.namprd12.prod.outlook.com (2603:10b6:5:218::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.16; Mon, 27 Apr
- 2026 08:04:39 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.20.9870.013; Mon, 27 Apr 2026
- 08:04:39 +0000
-Message-ID: <8badf464-a44b-4636-9202-6fcf00fc50eb@nvidia.com>
-Date: Mon, 27 Apr 2026 13:34:28 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] ACPI: CPPC: Add support for CPPC v4
-To: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, lenb@kernel.org, pierre.gondois@arm.com,
- zhanjie9@hisilicon.com, mario.limonciello@amd.com, saket.dumbre@intel.com,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, bbasu@nvidia.com,
- sumitg@nvidia.com
-References: <20260427051823.280419-1-sumitg@nvidia.com>
- <20260427051823.280419-2-sumitg@nvidia.com>
- <bdcc0785-9930-49e4-9918-c1255bd296a4@huawei.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <bdcc0785-9930-49e4-9918-c1255bd296a4@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5PR01CA0084.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:a01:1ad::15) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="jtqvudJ/";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Lusci4Fc"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R8H2ha2685479
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 08:19:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Rc4id9/G0ofQjHwOaT3b3hRz38cbyjQ45C7/+/HoEKo=; b=jtqvudJ/Pq9709S+
+	cUByznB4LR2yKhv+KhNnbT46W8mQ4ool2nxxZd+3hVdk9fBVZ/nGVtwzX8Z9bK2B
+	P5a79SSnGeyxVU8ABXLcQxutFIf8ygILVXHsTi3nnLnZZBuPSXaqxxcj4BN6yjxi
+	7/seMI3smejc/9PNlMozG93tSKpJditgTPFBcqKLtdOoo51E8FItNA22hB0xgQ6R
+	fzaP42KmL8MXCWM9/KAusI8mxo270Rj2jJnGSCQSL6Np7aIMoe7QeAtMhjHUH1eC
+	oZmDFD54Yi3Ly+xSLYN6a3Do3SqEnuBd6EGXbCjKESrQszn5NPqNPvk2I9oKhWSe
+	AzIVUw==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4drnqtd5x9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 08:19:02 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-50edf0245b0so31023051cf.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 01:19:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1777277942; x=1777882742; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Rc4id9/G0ofQjHwOaT3b3hRz38cbyjQ45C7/+/HoEKo=;
+        b=Lusci4FcW/CNXhiXs4PPt3Pmr86C0+7ARUHOqc8FQGIBY9gkJG3rs6hc32clnmaBug
+         t4DsBQoVp3MpDejxIo9ANV62TK30S5QBKOHDpW1CXgGAecn6IlmpAPetVmtI6KQuev/H
+         AVgwNUtfjeKW9KNnJrIG/tzyLyyFGI19dUOKr7maEnc2HD7kzeos3vKPplC8v0OpeBRp
+         qYVthoTCz8A94DSe+4kJ1MgYVkMUC2WJp+hg/dQmr5ZPduujuJhlYfvYEZMrYraDc+UW
+         d8Un6TpKebuqiLoMTpfwmhSYBA4Lzso/NjF/8DL7CaAsULNbFlHQxjFRzpxyXEHACyFg
+         J8NA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777277942; x=1777882742;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Rc4id9/G0ofQjHwOaT3b3hRz38cbyjQ45C7/+/HoEKo=;
+        b=l1esZT5E1WlsPqXhZeCnP01konaSn+Pf5YLfP0i69Gvl+r7XHFEigtqWnaJDhppyz7
+         OsCE8VaxvSfJxTONieFBpi7jCpygCsVycDaKpIC/hgZENhUKGK57sLyTducLmHOoxefB
+         A4Hb9gtkpj+bIZaAWJssuQw2RClLPCzZ9LljuSz8yTw0t+XqgBIW72kJ7HgFIC7VmbvM
+         YaT4IUL9XVWwndXmFHw0kn+1/5kiF0/PKlnm2ht5hCEWQbAO5rQo5vkUBWwlIICySWPU
+         UlBVKmUJG27thkepS1gzeM5hXprFNsqigFJWOkf9zuXaFCTAkiFzq6YiiS4Et0hn7ik4
+         E/3A==
+X-Forwarded-Encrypted: i=1; AFNElJ9NjKGVDRuV12DA59fpHgRd4aYRhE4LfioMUjEOQXbCS3txWnmkrO76ha3pEU01TSvtAhp5AnKc8A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTfYDtuCbLZYhu9C7Nr3+4ANT7rg+MGBv8529m9gjiPbRlItF8
+	LJzF2v+6k0k2miZJLLI/Zya5VhVhD9DhfdPKBsKyCykDI14V0fPr+4ln1XzRht+wHxX/daDouES
+	eu5EgnhVz0NGoNRnJ/oaNcqZYIHAqNlviLftN9mCK14brg0fKU2a4iDdwy+dnqg==
+X-Gm-Gg: AeBDietBEiEtbnF54jyp/NM5KFLG5eobW4ZNagNIiMKFGhXfPaZheTMw7b2NwfUD2FE
+	OqjJeH4zK7tJHRdZfvdXUyh+yv4FweDMZmxvvXWlcrKnQ9TOCO2YR2V3T4V0biLJcnf2cTCl/kJ
+	ECki2wOWADFgx2zcA6B/oi7lojRycArpve8ueAps+FTfLM40xyL37Vl39LGWF8tMXa2e6hXiY/+
+	f24IBhcXYCnG5piifcwGoFcf1bupLubkRlvv5ZM3W5UmyvOauxXM459zN8ZocZDAG71iWlgJ1W3
+	Ym07IdqE11IcZWI7G9OgKrH0ixd2XQhyMn06ux0PKZMHHoeh6dZ+MXRP6E66AKbLAj5AfNKtLxV
+	aK1bJ8NahdEZqbz6LVoQMaORlsQ3MGfcqKfdXJh8fd6yjSLmU8WxGya/O/M4ba9qIj4EXeqZFBp
+	2POTFgV3ZqrUuL/EfpeV4=
+X-Received: by 2002:ac8:7f55:0:b0:50e:defb:9dc2 with SMTP id d75a77b69052e-50edefba0b3mr409749601cf.27.1777277941874;
+        Mon, 27 Apr 2026 01:19:01 -0700 (PDT)
+X-Received: by 2002:ac8:7f55:0:b0:50e:defb:9dc2 with SMTP id d75a77b69052e-50edefba0b3mr409749111cf.27.1777277941230;
+        Mon, 27 Apr 2026 01:19:01 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:9464:b7df:8046:49f4? ([2a05:6e02:1041:c10:9464:b7df:8046:49f4])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43fe4cc0d51sm80260977f8f.10.2026.04.27.01.18.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 27 Apr 2026 01:19:00 -0700 (PDT)
+Message-ID: <e1845fc5-254e-4481-b783-5e631d4e506b@oss.qualcomm.com>
+Date: Mon, 27 Apr 2026 10:18:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|DM6PR12MB4137:EE_
-X-MS-Office365-Filtering-Correlation-Id: ed1a3840-86b5-4b8c-adf8-08dea433a11e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|56012099003|18002099003|22082099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	rVVqoLzmVzhFRM9kOvAYnIG275y7tzruUQe3TjTPAzTykYVFMLXFEXmGwXUv907JlGf4ovtAzCI1vjVRRdbt4ZcDhiUy1sU4RFdKTDWinCURcKocSYJxMOsibZPZ0ZNagvvI99rGzw3gTZi5g4qqxjdIUz4XPI0Ol8lCyQKh0MPScRqQ4O+iMbX0ZPRMV1yfCA6tqe0kn8KpanGIUQscHu6Xlh3nYs8SOATmaVWFr0OZPy4pgTzyDIlOlM0wSDuoprP3fe/siUoDdrAisNSHNr8DguasEMYEQUNCb5dp4h2zPkHKowSTPl+MmiXly0spdubvOd5ar2uiETOuvkSDVB6RqmLoC240c9HSV4kNDw56nwaP111AYSmWoQso24t1iZJ+UfH1D/YoS0a+BEMEbTLR97Wv0GLvNmC+Lv0He5jfgq7XutaFMjrnQxKHvCW6OsKylsUGa5LQAr2/2ZACEfYZr+w4jBFzmjCrjci6gXtpsDaa9+mho3Iym5o2gOS+LqBPXZ4+gUkz4YYtIcdxabwLKhCmAltRtewwztC5RoDvG7AP7F5SPT6Sh7lV3mKYhzez0zfCcxy9xO/PMek8BhwW+ppbGCRB2DXrHYSqjsln/mH+OwAJUnKbXRz/iDFiAj/rrXr3mE+dPt9dnJ0TYN9XhSBxfRBpXLtk3+4sH9DSWN9EfCnQSUV3NX61wrEplUqDENAc/HPhdZscS3l7W44GI5FsHtNd6pgmiCxJVjJS9oUuD8U7KDZ48GWylQvpF7JiAaZLRoxg4LFb+EgDT3ugNp5U/kEIWW0Y9KaxRqM=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(56012099003)(18002099003)(22082099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?K0FZNDBiUXhOSEJrV3hiRk9HKy9WZm9md1d1YWdHRW5kalJoRzdrb2hXWlZJ?=
- =?utf-8?B?OWJhUitUdTZVWGxPTW5FT2hkVloyeWJXM0Q4V1djOTRRUjRGTzI4TXZ5MEkr?=
- =?utf-8?B?dVgwN21YZWdxS3hKY3BFUStxYlppRkxqMmFXU1pRMUNzZHBBRC9qSHAyYTIv?=
- =?utf-8?B?NytaMGNkRGZmNEExdVhtdXdQMzBEdnVIQU1lRkN2UUFJYUs4V0JPRlJqNnh1?=
- =?utf-8?B?WmpBeXB4MWVxelhxMUc0aUx5dUQ4aHFkbVF5L2NGcW10VytMVWREU0NwU1Rx?=
- =?utf-8?B?NUpaYndYTVNPNUtlY1JadmRNL2JqSkdRQStkbDRYSTNnM2tOdms1R3Vhb3Zh?=
- =?utf-8?B?Si9CUUJKdTBDRmZkTmgwUnhBam5LU0ZmS0E2d0tucTFMT3lFTGM5ZXZyOXNl?=
- =?utf-8?B?bkFnUFA5aTlTdkVBTk1PUFRWb05odnIwMEZTN0xHTEEyNUtWWXFwUllzcjYw?=
- =?utf-8?B?Um9ya1lWZ0RjZVlwKzc4ZjVWTFlnN3F3djV3MjJmdldoNldKNWszdGZvWlJP?=
- =?utf-8?B?MkdWZndLd2ZsNTVCRHNWdmFiczZ2NUordXlQMlFzTm51b2xpa1JFYkQ4L3hQ?=
- =?utf-8?B?ZDRldnJMSW12VnFsaEQ3Qm0vUWdtTm1LQ2x4VHdlVlhjZUkvYTNXajEwNmdi?=
- =?utf-8?B?cU1zQTFESUJvNnYvZ3dyU2NnOVBrNER5Zkk2R2hxR2puSWtndGZrOElNZEYr?=
- =?utf-8?B?bWFCNXRJNDJ1TS9pK2RvSzh5ZzFlREtUTjdHb2pORHVhNTRhcjN1V3dXZC9L?=
- =?utf-8?B?cSttd2pETHpCSXpEZmFqdGZGV2tnZUV2ajQyNHoxUDZ5ejRLWDRPMFVoWUJk?=
- =?utf-8?B?eTB1KzZhSThueCtxbWI4VzBWRjRnS2FFbzNJc2JoQWRxZFVSNWZ6ZlRzeWVG?=
- =?utf-8?B?andLZEh5aERkTndHK3pQYkZkMTVUakY3ZURVWTNHbi9VVWk1emN2bi9qTzIy?=
- =?utf-8?B?YmUwemF6U0dHVzZQYXF3U29HQVljRTZMK0xrZUM0bkd4NURZWHdGbjVEZm5S?=
- =?utf-8?B?RTBTVWYzTHpzMWRhYnBFdkpoVUhlTEFMdjlyMVIvb0crcUFvMGZVMEw5MDM4?=
- =?utf-8?B?Z1FwS1BYWDFXNnliekJJcmVuQ1lFOGw0Zkg0RHNOb2tWQms4L1ZEY0NxRGlG?=
- =?utf-8?B?RDE3NjFpVkNQNE9IdmRlTGlyODRuZ0RaU0lCTk54QU1yY1l6OVFFQjJ4RHVq?=
- =?utf-8?B?MTEzQWpFNHQvWjJ4QXVPM3FaMEhDZnpNRjZpK1F0NGVQTVdXVmR3eWxzSk1n?=
- =?utf-8?B?Sm9vNlNXeWlqYjc2bHova2I2NHlDK1V6eEU0TmxPblFoRmNVNXc4TVdTY0hq?=
- =?utf-8?B?RTFlZ1doZVlIZWlqOXdVZU1KdkhqTVo5RHlTUTZmVURwSHYvQk9BNm9ZM1pB?=
- =?utf-8?B?VVpoM2YvZGFRQzIxazdHVFR4MlErb1NqYmJSL3VOa0RBVWZjV2M1THRVY2NL?=
- =?utf-8?B?OVhOSzFMaDJLOWYxV2VhRnl1eDN2S3Z6ZzZ3SjY2L2t5cmd5Vm9nWFhzVnBX?=
- =?utf-8?B?MWprZGFNOWErckZWWlFjZXNEYXo5bGNaU1RabzVGWHFQclpxSEJ2Nk1RRldw?=
- =?utf-8?B?Z2x1ZS9SLy9UUTRrcWJLL1ArdTlyMXl1Y0hFbTV6OFg5eTd4VS9Ha1Y4NGFW?=
- =?utf-8?B?MmFXVWxPYS9RWkVUMnQ5UkNLT1lFZzhaUTVHdWxmZXdIRGdMSFZTRC9nOWNq?=
- =?utf-8?B?QkdsejAvb2NDVWlZekRmdysvbmVnN1Q1cjVxSVQxWVFFTzJGRFhkRnVoNEtk?=
- =?utf-8?B?ay9QYWpxZjV6czZ2Qml6VDlSU0t2NW1yQkZMaStzTjlsY3lwUFJLc2hkMjdK?=
- =?utf-8?B?L0tza3ljbC9yTk1SbW40MXhMekZlbUVORFo1MEt2NkdiWW12amk4dDN4VGxL?=
- =?utf-8?B?MSs5V1NSUmxYVkpBNWo3amtNdEg4Sno5S3J0UVFTWWdvS1ZBbDRkcVFzMzE5?=
- =?utf-8?B?d3h2blZoNUxYaWVjQ3RURExXUjZHSjFpUnRFc0t0TlBWdk9IZmx4NnJCT1h4?=
- =?utf-8?B?VUx6MFl3TkpBNzRCenNXTytuUVhqNHlQZVBjT1VxOTJ1dk42Y3hLd3A3Qm1R?=
- =?utf-8?B?b29WOXBtaTRWRFlDTWJRMVk5a0g3YnZWcW1qT3JadGN4WlZnb1RJUWg5enlY?=
- =?utf-8?B?QlFrd0tiU3ZpaXRQQkI1U2F6NzFGN3pzdVJaM05DOU9UMENLb3Nsb2R2alM2?=
- =?utf-8?B?R1NLYkl3MGFYdGN3N1BLR3JqK3VJd2xLS2NVWjVsL0M0RTcra3ZybzhEZ1hI?=
- =?utf-8?B?V3BGZitOaitDNFFMNEZYUXBvaDQ4OU8vLzAzY2tTTG5HYVNhTHhhK0Y2c1Nh?=
- =?utf-8?B?WllzZTErc3hLY2RWUUMyRjluTTJabUxQVDhvT1pvZWlxa0dKTkFGdz09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ed1a3840-86b5-4b8c-adf8-08dea433a11e
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 08:04:39.2581
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: MxjNOPYrRwIfcExG4mJNUgPwraIqUYf1hZh5aMwkurv8tUR6eWrxAWE//RsK1R7db9gIJHpAUen9g6+Zd/nPgQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4137
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V10 4/4] thermal: qcom: add support for PMIC5 Gen3 ADC
+ thermal monitoring
+To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
+Cc: jic23@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        agross@kernel.org, andersson@kernel.org, lumag@kernel.org,
+        dmitry.baryshkov@oss.qualcomm.com, konradybcio@kernel.org,
+        daniel.lezcano@linaro.org, sboyd@kernel.org, amitk@kernel.org,
+        thara.gopinath@gmail.com, lee@kernel.org, rafael@kernel.org,
+        subbaraman.narayanamurthy@oss.qualcomm.com,
+        david.collins@oss.qualcomm.com, anjelique.melendez@oss.qualcomm.com,
+        kamal.wadhwa@oss.qualcomm.com, rui.zhang@intel.com,
+        lukasz.luba@arm.com, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        cros-qcom-dts-watchers@chromium.org, quic_kotarake@quicinc.com,
+        neil.armstrong@linaro.org, stephan.gerhold@linaro.org
+References: <20260130115421.2197892-1-jishnu.prakash@oss.qualcomm.com>
+ <20260130115421.2197892-5-jishnu.prakash@oss.qualcomm.com>
+ <addDTiI8MB2b_AzJ@mai.linaro.org>
+ <12d683aa-44c2-4e2d-8459-78ba9f2ab61e@oss.qualcomm.com>
+ <f46ef4af-1c05-4473-9226-901d3393ea89@oss.qualcomm.com>
+ <7e619cef-ed08-4454-905c-05ab0939d60e@oss.qualcomm.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <7e619cef-ed08-4454-905c-05ab0939d60e@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=J42aKgnS c=1 sm=1 tr=0 ts=69ef1bf7 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=Q6r41MFCYhVuxuzLeoIA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: orYUxlximmOtgaB1HTKCkheXStAaYVLO
+X-Proofpoint-GUID: orYUxlximmOtgaB1HTKCkheXStAaYVLO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDA4NyBTYWx0ZWRfX+TIyQlJVxBjz
+ cLWJuakmMXaovtgiT1/p6BFDsO9PsPHWlk8Qf1KEECK1afdG4huXo60LmLGTiMLPnuwWAao5b8h
+ W9fTYkhw1Ql+GI37WZnYV1YnSz55lE3eDOCI/3CJ0JKFctlrH8sLcH54tFEkcHhnkpDhk4XqM0I
+ gQnEvjjb5URAHt/f5DEDmHZxZyopbI7TU9gEMbdwTAt2emFlIDmj0+6gpEmcmsBHvCSoIjv9ixs
+ fDjnLRlMGW4Y5lY01SUoHwC1wOxjIRH8WCOmYXBDysnSY1tHM6lg8QI8Qgid5Q+cKdsWct4WhT4
+ KxM8oJNbkcRTXEmyqJNfZsSXV8LqAAo1ai1K2RgXPPmp922Xq45FmhI3jrV7ohXomKK2Gdr/MLd
+ 3bfp1+ugUi1Ojkm3AEZ3bdrjQkMsRHsJTLYH1NDfkZoDEdTZysgGaE6WfvBonH5+GkCNnagIByQ
+ 5cOa+D+pZr3fPJsGKNA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-27_02,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0 spamscore=0 priorityscore=1501 clxscore=1015
+ adultscore=0 lowpriorityscore=0 malwarescore=0 phishscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270087
 
 
-On 27/04/26 12:36, zhenglifeng (A) wrote:
-> External email: Use caution opening links or attachments
->
->
-> It seems that mario has sent a similar patch:
->
-> https://lore.kernel.org/all/20260427035520.1427080-3-superm1@kernel.org/
+Hi Jishnu,
+
+On 4/25/26 12:37, Jishnu Prakash wrote:
+> Hi Daniel,
+
+[ ... ]
 
 
-Thank you for sharing.
-Yes, both look similar with below two change.
-1. REG_OPTIONAL needs the 0x1FC7D0 -> 0x7FC7D0 update to mark
-    the two new registers optional. This is present in my [PATCH 1/2].
-2. For Resource Priority, pkg_data added to cpc_entry.
-     This is present in Mario's [PATCH 2/6].
+>> Actually, if get_sdam_from_irq() or adc5_gen3_read() fail, they will return without clearing the interrupt flag, so we should potentially end up in an infinite loop.
+>>
+> 
+> I went over this discussion and the code again and I need to explain a few things.
+> 
+> First, please note that individual PMIC drivers do not handle interrupt clearing by
+> themselves - they are under the SPMI PMIC arbiter (drivers/spmi/spmi-pmic-arb.c),
+> which is an interrupt controller and the arbiter driver handles IRQ clearing internally
+> for all the PMIC drivers under it. So we won't be clearing the interrupt explicitly here.
+> 
+>> So the status should be cleared at the end with IRQ_HANDLED. IRQ_NONE returned if it is for another subsystem.
+>>
+> 
+> Maybe my explanation above wasn't sufficiently detailed - the "status" I mentioned
+> above is not related to the interrupt by itself, it is just the ADC's status register
+> reading. If it indicates an ADC conversion fault, the fault has to be cleared by
+> calling the function adc5_gen3_status_clear() before we can make subsequent conversion
+> requests (like for .set_trips) on the ADC.
+> 
+> 
+> There are 3 main reasons for which the Gen3 ADC interrupt may fire:
+> 
+> 1. End of conversion for immediate conversion request (handled in main ADC driver)
+> 2. Threshold violation for TM conversions (handled in this auxiliary driver)
+> 3. Conversion fault (handled in both drivers)
+> 
+> 
+> I think it would make the most sense if I make changes so that the ISRs
+> (of both main and aux driver) return IRQ_HANDLED only when any of the above
+> 3 cases are detected and they return IRQ_NONE in case of errors or when the
+> interrupt is confirmed to be for the other driver.
+> 
+> Does this sound fine?
 
+Thanks for clarifying. It should be fine.
 
-Hi Mario,
-How would you like to proceed? A few options:
-   (a) Let both CPPCv4 patches from this series go separately.
-   (b) Fold the REG_OPTIONAL update from my patch 1/2 into your
-       patch, and pull my patch 2/2 into your series.
-   (c) Anything else you'd prefer.
-Either way works for me.
+>> If you think there can be a significant number of errors in the handler may be you should add statistics but later in an additional series if it makes sense.
+>>
 
-Thank you,
-Sumit Gupta
+[ ... ]
 
+>> [ ... ]
+>>
+>>>>> +    dev_dbg(adc_tm5->dev, "channel:%s, low_temp(mdegC):%d, high_temp(mdegC):%d\n",
+>>>>> +        prop->common_props.label, low_temp, high_temp);
+>>>>> +
+>>>>> +    guard(adc5_gen3)(adc_tm5);
+>>>>> +    if (high_temp == INT_MAX && low_temp == -INT_MAX)
+>>>>> +        return adc_tm5_gen3_disable_channel(prop);
+>>>>
+>>>> Why disable the channel instead of returning an errno ?
+>>>>
+>>>
+>>> This is the convention we follow in our existing ADC_TM driver at
+>>> drivers/thermal/qcom/qcom-spmi-adc-tm5.c. If both upper and lower
+>>> thresholds are meant to be disabled, we disable the channel fully
+>>> in HW to save some power and it can be enabled later if this API
+>>> is called for it with valid thresholds.
+>>>
+>>> Is it considered invalid in the thermal framework to try to disable
+>>> both thresholds? Should I both disable the channel and return some
+>>> error from here?
+>>
+>> Well, if the channel is disabled, then the temperature sensor of the thermal zone is disabled, consequently the thermal zone is disabled from a HW POV but enabled from the kernel POV.
+>>
+>> Why not add the 'change_mode' ops and then disable the thermal zone (+ pm_runtime) ?
+>>
+> 
+> I have a doubt about this part - if the thermal framework sends threshold values
+> of (-INT_MAX, INT_MAX) in the .set_trips callback, doesn't it mean that the
+> framework is already trying to disable the thermal sensor?
 
->
-> On 4/27/2026 1:18 PM, Sumit Gupta wrote:
->> CPPC v4 (ACPI 6.6, Section 8.4.6) adds two optional entries to the
->> _CPC package:
+No, let me clarify this:
+
+  * the thermal thresholds are set by the userspace to get notification 
+when a temperature is crossing the way up or/and down a specified limit. 
+Thresholds can be deleted, added, flushed, etc ...
+
+  * the thermal trips are specified by the firmware and should not be 
+changed even if I agree there are the writable trip points which IMO we 
+can consider for debug purpose
+
+If you specify a trip/threshold point with min=-INT_MAX and max=INT_MAX, 
+semantically speaking it is correct but in practice these temperatures 
+won't be reached so it is like the trip point is disabled but it is a 
+side effect.
+
+A trip point is a property of a thermal zone.
+
+A thermal sensor is represented by a thermal zone.
+
+A thermal zone can be enabled without trip points or thresholds. The 
+userspace is still able to read a temperature through netlink or sysfs.
+
+> Or does it just mean threshold monitoring functionality can be disabled for now,
+> but other functionality like temperature reading is still expected to work?
+> 
+> Please note that adc_tm5_gen3_disable_channel() only disables the threshold
+> monitoring and interrupt generation functionality - the get_temp() call to read
+> temperature will still work.
+
+Above you stated we receive a notification when the conversion is 
+finished. So how do you read the temperature if there is no interrupt 
+telling to read the converted value ?
+
+> Perhaps I should not have used the wording
+> "disable the channel" above, as calling adc_tm5_gen3_disable_channel() is not
+> exactly the same as fully disabling the thermal zone.
+> 
+> Please let me know if any change is needed there - should I return any error
+> after calling adc_tm5_gen3_disable_channel() ?
+
+I understand, your point. Perhaps just put it apart and address it later 
+as an optimization when the driver is merged and everything is clarified.
+
+>> [ ... ]
 >>
->> 1. OSPM Nominal Performance (8.4.6.1.2.6): A write-only register that
->>     lets OSPM inform the platform what it considers nominal performance.
->>     The platform classifies performance above this level as boost and
->>     below as throttle for its power/thermal decisions.
+>>>>> +    /*
+>>>>> +     * Skipping first SDAM IRQ as it is requested in parent driver.
+>>>>> +     * If there is a TM violation on that IRQ, the parent driver calls
+>>>>> +     * the notifier (adctm_event_handler) exposed from this driver to handle it.
+>>>>> +     */
+>>>>> +    for (i = 1; i < adc_tm5->dev_data->num_sdams; i++) {
+>>>>> +        ret = devm_request_threaded_irq(dev,
+>>>>> +                        adc_tm5->dev_data->base[i].irq,
+>>>>> +                        NULL, adctm5_gen3_isr, IRQF_ONESHOT,
+>>>>> +                        adc_tm5->dev_data->base[i].irq_name,
+>>>>> +                        adc_tm5);
+>>>>
+>>>> The threaded interrupts set the isr in a thread and from the thread
+>>>> handling the event, there is a work queue scheduled. Why not use the
+>>>> top and bottom halves of the threaded interrupt ? Hopefully you should
+>>>> be able to remove the lock.
+>>>
+>>> Yes, I can use the top and bottom halves of the threaded interrupt as you
+>>> suggested. But what exactly do you mean by removing the lock?
+>>>
+>>> If you meant the mutex lock used in this driver, we cannot remove that.
+>>> This is because the ADC_TM driver needs to write into several registers
+>>> shared with the main ADC driver for setting new thresholds, so we
+>>> have to share a mutex between the drivers to prevent concurrency issues.
 >>
->> 2. Resource Priority (8.4.6.1.2.7): A Package of Resource Priority
->>     Register Descriptor sub-packages that allow OSPM to set relative
->>     priority among processors for shared resources (boost, throttle,
->>     L2/L3 cache, memory bandwidth). Parsing the full structure is not
->>     yet supported; such entries are marked as unsupported.
+>> When using a workqueue tampering with registers while an interrupt handler is doing the same, the lock is needed.
 >>
->> Add v4 _CPC table parsing (25 entries) and update REG_OPTIONAL to
->> mark the two new registers as optional.
+>> But if the workqueue is replaced by threaded interrupt, the lock *may* not be needed because the design may prevent race conditions.
 >>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>   drivers/acpi/cppc_acpi.c | 24 ++++++++++++++++++------
->>   include/acpi/cppc_acpi.h |  8 ++++++--
->>   2 files changed, 24 insertions(+), 8 deletions(-)
+>> That may be not true in this case, I did not investigate deeper in the code to figure it out. Let's see the next version
 >>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index 2e91c5a97761..a1c91ce20cc8 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -134,7 +134,7 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
->>    * cpc_regs[] with the corresponding index. 0 means mandatory and 1
->>    * means optional.
->>    */
->> -#define REG_OPTIONAL (0x1FC7D0)
->> +#define REG_OPTIONAL (0x7FC7D0)
->>
->>   /*
->>    * Use the index of the register in per-cpu cpc_regs[] to check if
->> @@ -751,18 +751,19 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->>        /*
->>         * Disregard _CPC if the number of entries in the return package is not
->>         * as expected, but support future revisions being proper supersets of
->> -      * the v3 and only causing more entries to be returned by _CPC.
->> +      * the v4 and only causing more entries to be returned by _CPC.
->>         */
->>        if ((cpc_rev == CPPC_V2_REV && num_ent != CPPC_V2_NUM_ENT) ||
->>            (cpc_rev == CPPC_V3_REV && num_ent != CPPC_V3_NUM_ENT) ||
->> -         (cpc_rev > CPPC_V3_REV && num_ent <= CPPC_V3_NUM_ENT)) {
->> +         (cpc_rev == CPPC_V4_REV && num_ent != CPPC_V4_NUM_ENT) ||
->> +         (cpc_rev > CPPC_V4_REV && num_ent <= CPPC_V4_NUM_ENT)) {
->>                pr_debug("Unexpected number of _CPC return package entries (%d) for CPU:%d\n",
->>                         num_ent, pr->id);
->>                goto out_free;
->>        }
->> -     if (cpc_rev > CPPC_V3_REV) {
->> -             num_ent = CPPC_V3_NUM_ENT;
->> -             cpc_rev = CPPC_V3_REV;
->> +     if (cpc_rev > CPPC_V4_REV) {
->> +             num_ent = CPPC_V4_NUM_ENT;
->> +             cpc_rev = CPPC_V4_REV;
->>        }
->>
->>        cpc_ptr->num_entries = num_ent;
->> @@ -845,6 +846,17 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
->>
->>                        cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_BUFFER;
->>                        memcpy(&cpc_ptr->cpc_regs[i-2].cpc_entry.reg, gas_t, sizeof(*gas_t));
->> +             } else if (cpc_obj->type == ACPI_TYPE_PACKAGE) {
->> +                     /*
->> +                      * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priority
->> +                      * as a Package of Resource Priority Register Descriptor
->> +                      * sub-packages.  Parsing the full structure is not yet
->> +                      * supported; mark the register as unsupported for now.
->> +                      */
->> +                     pr_debug("CPU:%d entry %d: package type not supported\n",
->> +                              pr->id, i);
->> +                     cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_INTEGER;
->> +                     cpc_ptr->cpc_regs[i-2].cpc_entry.int_value = 0;
->>                } else {
->>                        pr_debug("Invalid entry type (%d) in _CPC for CPU:%d\n",
->>                                 i, pr->id);
->> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->> index d1f02ceec4f9..8693890a7275 100644
->> --- a/include/acpi/cppc_acpi.h
->> +++ b/include/acpi/cppc_acpi.h
->> @@ -17,16 +17,18 @@
->>   #include <acpi/pcc.h>
->>   #include <acpi/processor.h>
->>
->> -/* CPPCv2 and CPPCv3 support */
->> +/* CPPCv2, CPPCv3 and CPPCv4 support */
->>   #define CPPC_V2_REV  2
->>   #define CPPC_V3_REV  3
->> +#define CPPC_V4_REV  4
->>   #define CPPC_V2_NUM_ENT      21
->>   #define CPPC_V3_NUM_ENT      23
->> +#define CPPC_V4_NUM_ENT      25
->>
->>   #define PCC_CMD_COMPLETE_MASK        (1 << 0)
->>   #define PCC_ERROR_MASK               (1 << 2)
->>
->> -#define MAX_CPC_REG_ENT 21
->> +#define MAX_CPC_REG_ENT 23
->>
->>   /* CPPC specific PCC commands. */
->>   #define      CMD_READ 0
->> @@ -109,6 +111,8 @@ enum cppc_regs {
->>        REFERENCE_PERF,
->>        LOWEST_FREQ,
->>        NOMINAL_FREQ,
->> +     OSPM_NOMINAL_PERF,
->> +     RESOURCE_PRIORITY,
->>   };
->>
->>   /*
+> 
+> I think a lock will not be needed with the change I planned, but you
+> can judge it in the next version.
+
+Sure, thanks
+
+   -- Daniel
