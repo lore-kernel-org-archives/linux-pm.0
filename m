@@ -1,57 +1,59 @@
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A688429B79B;
-	Mon, 27 Apr 2026 07:15:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAACC29B79B;
+	Mon, 27 Apr 2026 07:16:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777274158; cv=none; b=O9DL6gigwtda5sxPIA8/fjjK/OquD0lHBNfX2//qrP3er8kU91uvQvn2PnWVcnIll3UXKJsVIv2WeIybpA2P32RJTjtU8kd6lTqF/OQcPXmBkVwJAGx2E7C5NmxpmQH2IQql5K7kJJIWrbNwojN0Bm8GJ6eIVix2UFkXc88/DVE=
+	t=1777274170; cv=none; b=r0dhjBv86z/5dhMX3pXFZJ0BxGQm78MPd+GU9a0Jgif8uXKbq2p2K0owaNl6O5EcbKW6HShpG1eSU9xbwEoVQvxUZm1Cp/MKmTCmB1JMYRbe5LOi7AOSblBVmvN9Z543ZBvV9T89uKtZ/F370Lr+cuhG8IQLuIQ9cJ6NF8cxeqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777274158; c=relaxed/simple;
-	bh=P/tTQuPHG8NvZa6CrH2gIUjX+SxZnduY6Mz93+yekh8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=lJUE0/YzSS4JG7NIkgup0e3koPRVS+AWAspX175n79j8VO+1+b55yXKQjdku11+odOobVHcOpDbzn9buRo0y2phx3fTrTYazWlVHG502oqVt+wqObFyICecDBFcRW1XjloCjw1aCZiKgrm8jzXSQQQjWGayBcdShlXb1JtiZ72c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=l6PHItTP; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=U8+R79XG; arc=none smtp.client-ip=80.241.56.152
+	s=arc-20240116; t=1777274170; c=relaxed/simple;
+	bh=UUJ+sQlUX0eKGbwjj7s23No22l4ycBNMxqdDXNrNx9E=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=bHV7C7AJlhNCiiv8Aa8uCwQ/cdK7z4oeujcW2yjRODAcZcWdeqHlrTijxeuBdjJ+s987hcg4NsRkpaoBViAMBCmA9JPpDnoq0DdbhgtAUFwu+itGY6JcKN/oc7DRtBGF6pT/X04uN8uEjWGi2dpsmnRoGDzUDLelnnpDohBYrro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=aQvW6l7m; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=eF3jyJ5V; arc=none smtp.client-ip=80.241.56.161
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="l6PHItTP";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="U8+R79XG"
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="aQvW6l7m";
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="eF3jyJ5V"
 Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4g3vx11431z9vDh;
-	Mon, 27 Apr 2026 09:15:49 +0200 (CEST)
+	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4g3vxK61pwz9tqK;
+	Mon, 27 Apr 2026 09:16:05 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1777274149;
+	t=1777274165;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Le2XwzWiqwhfCfphPB8qaGdrWgXHDh5RoYZDWvPLXgs=;
-	b=l6PHItTPk+9hhxYukbnDaHbFDgiNXfcCNGYQDkX1MwzDbCdzZowTsqz9HcFemhxyHjTvaV
-	DMBksUY90gV9orfYZly4eyILlwUb5TMFOa3iknpLfY0CvaRELDMZ7Xe63+ULln4JZA287J
-	wMRGAwcFGpS6dnc4Ucl3psK/c22H9yypcgL6EkEI/mnLfTOj/Ea56agJgE/pJzDcvE4NUL
-	YChd8W7em23H5j4Mj0GhSFKzuRPtLyNVQ3jLqQxKN3OIehdGqThUVQqHg0SsUjXAhP5pLU
-	peM+XHxynrnaaAOmwJjyY7CtdyKNsEsETFLL8iDbK2hoS6lAtofIiPUQzEKVYw==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=L6ZIoV8NyEqxJxOQGFAZMu0kTEjbJpCkm/yISo2WeSY=;
+	b=aQvW6l7mWTbSdvBxLqKa03ir7+okL6YqcYeVhf3cjYrToXjGTVqnKaC69JRWY4aZMiHGgo
+	lTADtbFYaRu+j22K8rfMn/EWvnan/R5pmamTpxBTXBHo0hcvWLBrgqaoethHvLQUPR8Iaf
+	8Fz1ZlEQqqXkzYlgGFWgjp8IFFU2vf18Ij0V5YP3v2UXBZxTURXqZ2iCvbOsnl5BGPgaqk
+	XSM/rGLrtISRZhObaqsiNz7wJB1136Lhk+NoCKDM9CNOazhFQlxQBaVLPA6+xnFU47Wkz/
+	L+Fk8EtMz2dzCFYz46FYHXuak0hMy03nblyPD62lBCPgQgtO7YpurPqeB9kDSA==
 Authentication-Results: outgoing_mbo_mout;
-	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=U8+R79XG;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=eF3jyJ5V;
 	spf=pass (outgoing_mbo_mout: domain of shuwei.wu@mailbox.org designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=shuwei.wu@mailbox.org
 From: Shuwei Wu <shuwei.wu@mailbox.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1777274146;
+	t=1777274163;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Le2XwzWiqwhfCfphPB8qaGdrWgXHDh5RoYZDWvPLXgs=;
-	b=U8+R79XGmUd2FFR6qIVVYLep+NgyvN8lndXNXXEEeg72ttOamPpBiHEO44ImL0NkVAVa7p
-	W1qYohfgy470oc5xeDUMT1OcPJTDhvQV2QGSqZyT8LFFSw1vzinT1JJjtEGbPCND08Kdqe
-	DTnP9mvpmLMd26xmvAGWRsZ4VkgonFR9Oo4GsC///Rjw0npMTxX7lYo23FDpOsDto/iDt8
-	SsomAfuQfEc5s6TPGI6WWQsT0qg5s/nkdEJChaVejmFcPfND0wRS78dycSsNAC1E7WuRnC
-	FzzoM2m4FCZzwZVNG3zh0yXwGcAARTkO73nW1jgUODkmSj7F7ac2gTUcv7+rpw==
-Subject: [PATCH v5 0/3] thermal: spacemit: Add support for SpacemiT K1 SoC
- thermal sensor
-Date: Mon, 27 Apr 2026 15:15:14 +0800
-Message-Id: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=L6ZIoV8NyEqxJxOQGFAZMu0kTEjbJpCkm/yISo2WeSY=;
+	b=eF3jyJ5V0x3FRCE7gbq4vNeywOSfSt2CEuN86+AsB+Hx0GTY1RDn8bsJte5bjTDavX+07n
+	iVdI8q0MPC4LKcvpwfe2Mhe96kTypBTIpEFjytTRNDxKZTBXTZxv6QRUk1mTgGzFauUJyd
+	e7iSAXpa/gItk51Z6xMcrSl4h6q/FOhEWFmSrzLXALJnG66ENOVtTjoqaJtj4MZ7Uco5+v
+	clMejNE9DH5IDluGQBreZ5G3GEOLEaoy+8D9ap4uKlOYj7RDTgxCu6oWlpjFulU8XhtGvn
+	/yVYrDpbvd4ams9vGMHi4gk0dYEd2jHGt2rlF3AwFl0WoSBUmo182s80RCWruw==
+Date: Mon, 27 Apr 2026 15:15:15 +0800
+Subject: [PATCH v5 1/3] dt-bindings: thermal: Add SpacemiT K1 thermal
+ sensor
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,11 +62,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAIN72kC/03MQQ6CMBCF4auQWVvTFqnIynsYFm0ZYCJQMyUEQ
- 7i7lbhw+b/kfRtEZMIIVbYB40KRwpSiOGXgezt1KKhJDVpqIy/yJp5KzD3yaAfRWmWN86UzBUI
- 6vBhbWg/sUafuKc6B34e9qO/6Y5T8ZxYlpFDal9emkSb3+X20NLiwngN3UO/7/gEQDkZ7pgAAA
- A==
-X-Change-ID: 20260409-k1-thermal-fa1a6bc8b65e
+Message-Id: <20260427-k1-thermal-v5-1-df39187480ed@mailbox.org>
+References: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
+In-Reply-To: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>, 
  Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
  Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
@@ -76,70 +76,115 @@ To: "Rafael J. Wysocki" <rafael@kernel.org>,
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
  linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
  linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- Anand Moon <linux.amoon@gmail.com>, 
- Troy Mitchell <troy.mitchell@linux.spacemit.com>, Yao Zi <me@ziyao.cc>, 
- Vincent Legoll <legoll@online.fr>, Gong Shuai <gsh517025@gmail.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777274126; l=2057;
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777274126; l=2550;
  i=shuwei.wu@mailbox.org; s=20251125; h=from:subject:message-id;
- bh=P/tTQuPHG8NvZa6CrH2gIUjX+SxZnduY6Mz93+yekh8=;
- b=YgNHdzLvJyPejzh7MYVe41x9bBzX5q1DIhB3k5HQw7m+23/YeAnOCYlTVI0bo1z517P3Kh0FR
- dm/b7uN448EA+zP3Khd6xeA9spphgZXO96E+oG37i9d+frYpjnnEP63
+ bh=UUJ+sQlUX0eKGbwjj7s23No22l4ycBNMxqdDXNrNx9E=;
+ b=dmeyx6ZIhgdI5BY6CDdaKniHUOVN8OAuWqefmqf1d3SHOBPY0FNFqjlyHOB2LZij01cRhR82m
+ Fa4gu0aBFxLBzYeEcxlKysbFAKG8ibyO/CXqkYYBD11RQGpbEzTfH/5
 X-Developer-Key: i=shuwei.wu@mailbox.org; a=ed25519;
  pk=qZs6i2UZnXkmjUrwO5HJxcfpCvgSNrR4dcU5cjtfTSk=
-X-MBO-RS-META: wtwznt6tf6zqny1hyqtetawm48ryqccy
-X-MBO-RS-ID: 481a13714f42994e906
-X-Rspamd-Queue-Id: 4g3vx11431z9vDh
+X-MBO-RS-ID: de908bd57847811520f
+X-MBO-RS-META: uzdnzot9irjhq4qy9r8zxa5gqmy4rwp6
+X-Rspamd-Queue-Id: 4g3vxK61pwz9tqK
 
-Introduce support for the on-die thermal sensor found
-on the SpacemiT K1 SoC.
+Document the SpacemiT K1 Thermal Sensor, which supports
+monitoring temperatures for five zones: soc, package, gpu, cluster0,
+and cluster1.
 
-Include the device tree binding documentation in YAML format, the
-thermal sensor driver implementation, and the device tree changes to
-enable the sensor on K1 SoC.
-
----
-Changes in v5:
-- Register threaded IRQ handler before enabling interrupts
-- Clamp trip points with clamp_val in set_trips
-- Link to v4: https://lore.kernel.org/r/20260410-k1-thermal-v1-0-12c87dd063c3@mailbox.org
-
-Changes in v4:
-- Add 'depends on THERMAL_OF' in Kconfig to ensure functional dependency
-- Link to v3: https://lore.kernel.org/spacemit/20260119-patchv2-k1-thermal-v3-0-3d82c9ebe8a4@163.com/
-
-Changes in v3:
-- Fix indentation and variable types
-- Simplify clock management and redundant assignments
-- Link to v2: https://lore.kernel.org/r/20251216-patchv2-k1-thermal-v1-0-d4b31fe9c904@163.com
-
-Changes in v2:
-- Move driver to drivers/thermal/spacemit/ and update Kconfig/Makefile
-- Address reviewer feedback on style and structure
-- Improve variable naming and comments
-- Link to v1: https://lore.kernel.org/r/20251127-b4-k1-thermal-v1-0-f32ce47b1aba@163.com
-
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
 
 ---
-Shuwei Wu (3):
-      dt-bindings: thermal: Add SpacemiT K1 thermal sensor
-      thermal: spacemit: k1: Add thermal sensor support
-      riscv: dts: spacemit: Add thermal sensor for K1 SoC
-
- .../bindings/thermal/spacemit,k1-tsensor.yaml      |  76 ++++++
- arch/riscv/boot/dts/spacemit/k1.dtsi               | 101 ++++++++
- drivers/thermal/Kconfig                            |   2 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/spacemit/Kconfig                   |  19 ++
- drivers/thermal/spacemit/Makefile                  |   3 +
- drivers/thermal/spacemit/k1_tsensor.c              | 280 +++++++++++++++++++++
- 7 files changed, 482 insertions(+)
+Changes in v2:
+- Rename binding file to spacemit,k1-tsensor.yaml and update compatible
 ---
-base-commit: 5a11253b34fde37ab9f899728bb1f7b19af5ee37
-change-id: 20260409-k1-thermal-fa1a6bc8b65e
+ .../bindings/thermal/spacemit,k1-tsensor.yaml      | 76 ++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
 
-Best regards,
+diff --git a/Documentation/devicetree/bindings/thermal/spacemit,k1-tsensor.yaml b/Documentation/devicetree/bindings/thermal/spacemit,k1-tsensor.yaml
+new file mode 100644
+index 000000000000..6dad76a7dd36
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/spacemit,k1-tsensor.yaml
+@@ -0,0 +1,76 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/spacemit,k1-tsensor.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: SpacemiT K1 Thermal Sensor
++
++description:
++  The SpacemiT K1 Thermal Sensor monitors the temperature of the SoC
++  using multiple internal sensors (e.g., soc, package, gpu, clusters).
++
++maintainers:
++  - Shuwei Wu <shuwei.wu@mailbox.org>
++
++$ref: thermal-sensor.yaml#
++
++properties:
++  compatible:
++    const: spacemit,k1-tsensor
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    items:
++      - description: Core clock for thermal sensor
++      - description: Bus clock for thermal sensor
++
++  clock-names:
++    items:
++      - const: core
++      - const: bus
++
++  interrupts:
++    maxItems: 1
++
++  resets:
++    items:
++      - description: Reset for the thermal sensor
++
++  "#thermal-sensor-cells":
++    const: 1
++    description:
++      The first cell indicates the sensor ID.
++      0 = soc
++      1 = package
++      2 = gpu
++      3 = cluster0
++      4 = cluster1
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++  - interrupts
++  - resets
++  - "#thermal-sensor-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/spacemit,k1-syscon.h>
++
++    thermal@d4018000 {
++        compatible = "spacemit,k1-tsensor";
++        reg = <0xd4018000 0x100>;
++        clocks = <&syscon_apbc CLK_TSEN>,
++                 <&syscon_apbc CLK_TSEN_BUS>;
++        clock-names = "core", "bus";
++        interrupts = <61>;
++        resets = <&syscon_apbc RESET_TSEN>;
++        #thermal-sensor-cells = <1>;
++    };
+
 -- 
-Shuwei Wu <shuwei.wu@mailbox.org>
+2.53.0
 
