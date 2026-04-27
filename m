@@ -1,145 +1,121 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f174.google.com (mail-oi1-f174.google.com [209.85.167.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B55063385BE;
-	Mon, 27 Apr 2026 15:45:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B80C2BCF46
+	for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:11:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777304759; cv=none; b=Z5OGT15qcgY8T/7O9TFdmCZuQtS8VDktR3DnEFvUYPgV7yrTGvK9p8Wr9K2rYCdinuGav0jAtLWSzu5bHwf/wPwU3xxcmdeeTLWYohAiusttG53vx9oH1l7X2+bBlhVmhzQicnujCgP7PMgdxFVRJHJLhwoz8UTze5RE1rwwMQg=
+	t=1777309904; cv=none; b=tkkoyXSbakpm6kE+zjZKr2mhlBnO2GsEeUOgwI2861AmhfiUism8TEUysz1lqXtSNMu+p+0mP5Jg89Tanbycddzqboxccba6ZwgmcR06Wv896mk3ggMWvT+ylb0nDeM0GstTwJFGkoyYbZzOwcyc/JBbcihsbE9isokxhqHXshI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777304759; c=relaxed/simple;
-	bh=JD/A6OYaONolnqweLO4io8yQ2GLqYURqGGUObKkTw+8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QpWQAiO7Kwy4PHR+pivpMCS+yr2cpSOtt+bTN0xttZgwuRqIluC97T3tK47oULuJKF0Nz5Z0N6qorsT0pkFrWhSL2RB9UogwVwgzCKDIZib0uG1eCtUmEpYVaeJQI9G9YsKfL+7b85MJffrHFWNlX5KnDlMEKFZ+msL33gjGqss=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=byea2TcV; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777309904; c=relaxed/simple;
+	bh=PSBsdqT+sBcPCV2VzBDoN0aTW8ELufQDnrojHfAS3LY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=i7PfvKaxp/gorrIWP2mi4dSxe+9ZmswUMcD2Usnjwq/e3mrvmfRQGEdnGKQJUfFWk7+RhaB33RPKkHwFyqEFtz6R7Y3cjhT0Z2EOY4Xu30NjME+JvD/4IRONdIzUpstOzbJ04CVlLsK5ih7xV1zA7iIDBPW+A0yyG2HM83bDeq4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D5YZNmIr; arc=none smtp.client-ip=209.85.167.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="byea2TcV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17CA2C19425;
-	Mon, 27 Apr 2026 15:45:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777304759;
-	bh=JD/A6OYaONolnqweLO4io8yQ2GLqYURqGGUObKkTw+8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=byea2TcVPd4FuIMiwxfJhydHbmEeM0ALBoXWVya48501cuSo9WBXUZ6ZGmd+hxB05
-	 S6hDqZk0Tt4EYcyJAVieFcSYJXMmZDVe24gvF8bgA43mhQjCgczgHBGXkvd9aYBbGr
-	 NQeM8UD60fpOy1GNOcDznPo4opSi2rzGpq6nd4o3AfYZmYs9LRA58iXtz9QWmvFZ9W
-	 p3EsUxs1CFG0PFxUf+As6aLJyggqqVG8mgiCAVzFMDQ537xP+G2ldDG/CKijMY4FiX
-	 HgtLrgN8ec4Ia9IPN71aGZkjr7Ql2jESYS67GSRpp5b6RSB6k52bPFvaHKbqLN8Hnl
-	 N42bo9SXSG4cg==
-Message-ID: <abfc9469-5d47-4e83-8c3c-03138f1b2ade@kernel.org>
-Date: Mon, 27 Apr 2026 17:45:56 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D5YZNmIr"
+Received: by mail-oi1-f174.google.com with SMTP id 5614622812f47-45f053b7b90so5934045b6e.0
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 10:11:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777309902; x=1777914702; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=DWxnwwnK1m7QIiM+kHUhFi9CGYBGNw3PT7/C0xFv7DM=;
+        b=D5YZNmIrKfS7YPF7uuwMVfsyddBqyFQxRD2t45plJ+wUlCZRBK85Lj2uO7paDZs4NG
+         6s1is37fihNgV47FMkUWGgKyGZpUHo2H8msrCwGlztHkaMkt93CKuHIX440FNwp7++li
+         YF/5Dgl4hAgRVyNBJqv/75ous+XqjIkKEgjbI1AdF7W6qZcy2gT5wBiyDkGkaISbtdXn
+         MJTLfzWipmcEG+QpvRG2RNBrFvSTYaRHC6liVv09JSKHQl8EBqAnORiwaYJR0GTjEpSN
+         NqqxZzrNdMbxIxGYDQB0UBf5nxIGFOs5bPYI8cnyaWc3vxiEtNFcG5Ou0cws2WwJQfNE
+         unsQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777309902; x=1777914702;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DWxnwwnK1m7QIiM+kHUhFi9CGYBGNw3PT7/C0xFv7DM=;
+        b=MQ79Qr8zHTjtUvlSC1D/NFBHI/aJ2VfySPVbl6zIB7HHO0gjBN/Yrks3gHUjxe0uZJ
+         JpzwMVCUtx88BQHJFPXAnXljDlGVOmxaobQn6Zgb5Dgo+Y1Qri/RiVYw2iqsXLgV0MBe
+         4pDF3VNCkjU0jrvyYSJC0hvgP4wHx47bY15nTL745PYIs1t6bdzuVJ9s13/q2iOVaxck
+         irIIlbu6rM5+mv7CCjVg6/NSpXKT8hJ87PQJOwQ2PLH5GAjGSPBmpf9foP0ElL7U+AVP
+         Z0/8c1DZVnjPim6qrsertIPq6bVVO4kdX+fLM1jW1cCUpTabSGtT0+mV+gKcxj2V+gq7
+         5N0g==
+X-Gm-Message-State: AOJu0Yz6KJduVQkh7cr5/fQ0WNRudB5TmPvP96woohxFOZzwiYWoSwIF
+	MA72DQKylQEymhZOkF2mfstLin1PmwPzISwMJ46lj0HAREbRetK17dOG
+X-Gm-Gg: AeBDiesMC6HCbitzoli1aF7bRO7kvZA+PCb5KN+c67OLQBF+WGUsPXwO4Aigg9RaC+p
+	ou18+c4h+m0oaVEw28SEkNNwv79hZ5DEku3jdkvLGfR/73Jj5h3ds935rq/HdTVNKfGoiFGouB6
+	cP3TwLsKjJnbe4eIBjjds7bwdov31TFBygoTzoyB3GzmidtWUyZUCe0CXY7ZrEbRoYNqTGC87PF
+	/rRcXfG5NLN9jqN0AXzbJpirpEab5wfw/ZQHT4w7jqMnEvuKJ8G9F6E5I/P5Q620fxAhC+Hf/eu
+	7wZU3a7Bj7YFkDIWZYyNeW/JhHx3wbhnOXfD6tnQv/Kp0JK0L/pwQhBymsccH+3Nbp027W4wJJ4
+	EIx8zKCTnvfxQ3x3T8Rb2/DfdxKWtQj5h69IB7WoTqIpBro7BZ0aalYh+chkMya99aGk52o+G/r
+	NY72KXRE6I338tNTzauOVFGYh8YMC4tig=
+X-Received: by 2002:a05:6820:150b:b0:67e:160c:36c3 with SMTP id 006d021491bc7-69462ef3455mr23999976eaf.48.1777309902045;
+        Mon, 27 Apr 2026 10:11:42 -0700 (PDT)
+Received: from localhost.localdomain ([2600:1700:fb0:1bc0::54])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-6955036558esm10261236eaf.14.2026.04.27.10.11.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Apr 2026 10:11:41 -0700 (PDT)
+From: Chris Morgan <macroalpha82@gmail.com>
+To: linux-rockchip@lists.infradead.org
+Cc: linux-pm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	devicetree@vger.kernel.org,
+	xsf@rock-chips.com,
+	sre@kernel.org,
+	simona@ffwll.ch,
+	airlied@gmail.com,
+	tzimmermann@suse.de,
+	mripard@kernel.org,
+	maarten.lankhorst@linux.intel.com,
+	jesszhan0024@gmail.com,
+	neil.armstrong@linaro.org,
+	heiko@sntech.de,
+	conor+dt@kernel.org,
+	krzk+dt@kernel.org,
+	robh@kernel.org,
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: [PATCH 0/6] Add Anbernic RG Vita-Pro
+Date: Mon, 27 Apr 2026 12:09:08 -0500
+Message-ID: <20260427170914.5062-1-macroalpha82@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC] HP laptop charge mode control via
- POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
-To: Navon John Lukose <navonjohnlukose@gmail.com>,
- Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>,
- Sebastian Reichel <sre@kernel.org>
-Cc: platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, Jorge Lopez <jorge.lopez2@hp.com>
-References: <20260427140857.397971-1-navonjohnlukose@gmail.com>
-From: Hans de Goede <hansg@kernel.org>
-Content-Language: en-US, nl
-In-Reply-To: <20260427140857.397971-1-navonjohnlukose@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi,
+From: Chris Morgan <macromorgan@hotmail.com>
 
-On 27-Apr-26 16:08, Navon John Lukose wrote:
-> Hi,
-> 
-> I have been looking at battery charge control on an HP laptop, and I would like
-> to check the right upstream direction before preparing a patch.
-> 
-> This is not a new userspace ABI. The kernel already has
-> POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR, and some existing drivers expose charge
-> modes without exposing charge thresholds. I am trying to confirm whether that is
-> the right interface for this HP firmware interface, and where the implementation
-> should live.
-> 
-> On this machine, Linux currently exposes no native battery charge thresholds:
-> 
->   - no charge_control_start_threshold
->   - no charge_control_end_threshold
-> 
-> The existing HP kernel drivers also do not expose this feature here:
-> 
->   - hp-wmi does not expose battery charge mode control
->   - hp-bioscfg is present, but does not expose Battery Health Manager or related
->     battery threshold attributes on this machine
-> 
-> However, the firmware exposes working ACPI methods for charge mode control:
-> 
->   - \SBCC 0x0000 -> normal charging / auto
->   - \SBCO 0x0500 -> inhibit charge
->   - \SBCO 0x0200 -> force discharge while on AC
-> 
-> These mappings have been tested from Linux by observing battery and adapter
-> state transitions:
-> 
->   - auto allows normal charging
->   - inhibit-charge leaves AC online and reports Not charging / zero current
->   - force-discharge makes the battery path discharge while AC is connected
-> 
-> My current thinking is:
-> 
->   - expose only POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
->   - support AUTO, INHIBIT_CHARGE, and FORCE_DISCHARGE
->   - do not synthesize charge_control_*_threshold properties in the kernel
->   - leave policies such as "resume below 75%, stop above 80%" to userspace
-> 
-> For driver placement, this seems HP-specific rather than generic power-supply
-> logic, so I think it should probably live under drivers/platform/x86/hp/ and
-> register a power_supply extension on the battery, similar to other platform
-> drivers that use power_supply_register_extension() from a battery hook.
-> 
-> Does that sound like the right direction?
-> 
-> In particular:
-> 
->   1. Is POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR the right ABI for an HP platform that
->      appears to expose only mode-based charging control?
+Add support for the Anbernic RG Vita-Pro, based on the Rockchip RK3576 SoC.
 
-Yes, POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR was initially added for basically
-the same settings on Lenovo ThinkPad laptops. Note these options are typically
-used to implement battery "fuel-gauge" calibration functionality.
+Chris Morgan (6):
+  dt-bindings: power: supply: sgm41542: document sgm41542
+  power: supply: sgm41542: Add SG Micro sgm41542 charger
+  dt-bindings: display: panel: document Anbernic TD4310 panel
+  drm/panel: anbernic-td4310: Add RG Vita Pro panel
+  dt-bindings: arm: rockchip: Add Anbernic RG Vita-Pro
+  arm64: dts: rockchip: Add Anbernic RG Vita-Pro
 
-I guess inhibit charge could be used together with a userspace daemon
-monitoring charge to implement a charge to 80% threshold. But that would be
-a new way to use this API. Note I'm not saying it would be a wrong use,
-just a new use.
+ .../devicetree/bindings/arm/rockchip.yaml     |    6 +
+ .../display/panel/anbernic,td4310.yaml        |   63 +
+ .../supply/sgmicro,sgm41542-charger.yaml      |   99 ++
+ arch/arm64/boot/dts/rockchip/Makefile         |    3 +
+ .../rockchip/rk3576-anbernic-rg-vita-pro.dts  | 1317 +++++++++++++++++
+ drivers/gpu/drm/panel/Kconfig                 |   10 +
+ drivers/gpu/drm/panel/Makefile                |    1 +
+ drivers/gpu/drm/panel/panel-anbernic-td4310.c |  291 ++++
+ drivers/power/supply/Kconfig                  |    8 +
+ drivers/power/supply/Makefile                 |    1 +
+ drivers/power/supply/sgm41542_charger.c       | 1045 +++++++++++++
+ 11 files changed, 2844 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/panel/anbernic,td4310.yaml
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3576-anbernic-rg-vita-pro.dts
+ create mode 100644 drivers/gpu/drm/panel/panel-anbernic-td4310.c
+ create mode 100644 drivers/power/supply/sgm41542_charger.c
 
->   2. Should this be implemented as part of an existing HP driver such as hp-wmi,
->      or as a small new HP-specific driver under drivers/platform/x86/hp/?
-
-Is there a WMI object which will call 
-
->   - \SBCC 0x0000 -> normal charging / auto
->   - \SBCO 0x0500 -> inhibit charge
->   - \SBCO 0x0200 -> force discharge while on AC
-
-when its control method is called with certain arguments ?  Typically
-the answer to this will be yes, in which case you really should go
-through that WMI object, so as to support more models where the
-method names / args may be different.
-
->   3. What should the driver gate support on? For example, should this be gated
->      by DMI quirks, HP WMI/BIOS GUID presence, ACPI method presence, or some
->      combination of those?
-
-That is a good question, if you can figure out how to access these methods
-through some WMI object then doing so should be safe on any model with
-that WMI object.  But firmware bugs do happen, so we may need some
-heuristics on top of relying on the WMI object GUID.
-
-Regards,
-
-Hans
-
+-- 
+2.43.0
 
