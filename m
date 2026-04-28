@@ -1,180 +1,148 @@
-Received: from LO0P265CU003.outbound.protection.outlook.com (mail-uksouthazon11022077.outbound.protection.outlook.com [52.101.96.77])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CC052765E2;
-	Mon, 27 Apr 2026 23:52:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.96.77
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777333977; cv=fail; b=Q4QoyxyA8faA7RGXYbwMOaEzWmbjYGKZk7cprjwr2CEEu1dcFSTRWJ4n9hlKWpMM3xfwe2YPNevxXurFT3o3VotgRaLnfwdWJTcQnQ0PlWl1gdS9xMVwvjDwWog7x/HLOmchUOPjfOt4l1kxyg+6LoO5XjZsZS0jpPszFZ71nxE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777333977; c=relaxed/simple;
-	bh=d1A9gXacyJE0fL4Mb1Vtjun/LFbnypXOwMig7CpfdGE=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=RCPtDxQCAt/FizX5n1eKe9g6brCkGz4c6yrcG9ND/EmA7V6susIyOFn6T29gXSE1gEkyiVfVsYgTMQPQN6IYnp4UyiOhqupanL/Uif/vL+0ZtL9K7PDFa5HIDH5Tl0B6Zc4Lkp0H19cq2PmfJX35fGQazZWeFEaqpg/x4FdlOo0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=x1gtluw0; arc=fail smtp.client-ip=52.101.96.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70A6127CCE0
+	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 00:52:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777337575; cv=none; b=bTZgHFzkN8/MzAv1sQK+S0n20OV2khx1fgSiKwEduJnMFL0LNpuHmuRJU6fRDu1b/XF6C/rEHUj2V8PVDY0PhKAdrgH449dpLg5XWx8wLqjhk/uhwxMVg8+5qxOyuQ7IpE0+ERKPpcNLrcWD15k26w6u9FKtjIE7TQXfPuVP4Og=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777337575; c=relaxed/simple;
+	bh=8Uem3oqRD7Kri2DSyAgANGL+qzMirF3VGc9HlXIQYOs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=LALFqhnwe/zcTFGynD2V5yU//e87bOrKqe/Qw5culGWvxGyuHEg1qHA1M2XUvBXifhG8pyN2R7GoFWZLj52m4tJxECPQa0gzuiNgylHe/Ri3a64oneuXpS3W5HFAMO/NiY5mOtZfUit/qdlByAMkUoW1vgWxVjkItrTogpvD3FA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=UmLvCjgn; arc=none smtp.client-ip=209.85.215.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="x1gtluw0"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=md2Fheib67yI1YmFWPywIC3Q+fwnp60eJBJJmO/p7CKR+TZ+JInw3B+yClH723hkqC4nod+XOtANKUMwjRF0+C3+/S0iLRYw8GlV0TzzAOj7nvjgmRVlvjq1J+xxIg6/ZqJoXkyzhVH5ftopGzR2EaWkyPY0si9a0xySq8DQSqm1PsIO1DnKc38Vf4Y0tVya5Pu6aYGydcdDFs28C6zLvNGXFeDocu/PuILEtyZZF7iCNZ/tHcMEzh+O2xh2EA48P7b4MT+1rZBTStBgPMDg5959jWtfx4Gv5igxqgyYaRszwAtu8gTxtapfAvdKJR3A1fo5tjc0zCPAN6vGLWDaAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0IhncgU3AcNMXgmtiPUDpX2MFFdkxxX+foBruly68HM=;
- b=tracFmUE1dwT7Tyc1QKWZ14Cyn2lpTSFuS9wKK7Ul2t1V7osgCbjZt3BqoQ8rM5+9L3u7Owi6aOq1zr5pcpUPUV1hb0MpnL3g2dYqk1U/xhXi6gU/ZL34H+8owMgkBOfPsAzsIZ6tnsObBIglURlUP/HZYm0XBqlS/KifwwcZBxa+wVP5cmVfkTkkt5UL22uiAvwM3BgeoEPFM+A1PdHEyqwtcqjXuaDYitvF2c9NU7qjS3Iw0RZ2VXjUZPI4dfkLh995+vRJ6MRAnmQlmFLzHv0R6rG1KroGAesMElCZQVHFI1gxo2URoYOoWsIb/NhSBM/oe8AFx2DZ5UbV1eeKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0IhncgU3AcNMXgmtiPUDpX2MFFdkxxX+foBruly68HM=;
- b=x1gtluw0s8G1TOltmlIbcDfZeR07Vv4VES2jHWAY4oZvUSh50whw0csTd1jI+sKbnuPNCvydeY+6JjN2Rd5l5wR/IZSNLSq+sf/YymRM///HQq9A/tZAgjp6dNgrnrXQwpYVqIuegd6XCQjfDb0RzqruODYSMnKsGVGBLib44rs=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by LOAP265MB9000.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:498::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Mon, 27 Apr
- 2026 23:52:51 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9846.025; Mon, 27 Apr 2026
- 23:52:51 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 28 Apr 2026 00:52:50 +0100
-Message-Id: <DI4CB68NZI8P.3RA6M7P8XRII4@garyguo.net>
-Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
- <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
- <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
-Subject: Re: [PATCH 06/24] rust: pci: implement Sync for Device<Bound>
-From: "Gary Guo" <gary@garyguo.net>
-To: "Danilo Krummrich" <dakr@kernel.org>, <gregkh@linuxfoundation.org>,
- <rafael@kernel.org>, <acourbot@nvidia.com>, <aliceryhl@google.com>,
- <david.m.ertman@intel.com>, <ira.weiny@intel.com>, <leon@kernel.org>,
- <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
- <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
- <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
- <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
- <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
- <a.hindborg@kernel.org>, <tmgross@umich.edu>
-X-Mailer: aerc 0.21.0
-References: <20260427221155.2144848-1-dakr@kernel.org>
- <20260427221155.2144848-7-dakr@kernel.org>
-In-Reply-To: <20260427221155.2144848-7-dakr@kernel.org>
-X-ClientProxiedBy: LO4P123CA0682.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:351::7) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="UmLvCjgn"
+Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-c79662bbd2eso7419262a12.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:52:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777337573; x=1777942373; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=t3FnaIBp0espZORVL/rfnjBPdcVtbw4VckmuHvIfsjM=;
+        b=UmLvCjgncUFnkOkej4+wGBHe0fTbbx54IoP/u0gXvql2aNFmqqno+yqwl+Ccx54FTN
+         gkS26kFBc2qdrgwLMIhHZo9xqUwAylAU2efyVow9NXrRClAnEBtKOtj/Mp0qDcDB/4pb
+         j2zd9BfXxrR086oPDlyxqLHwu+R15O3ovW4uYngGN7f5NWjRPVzDTRD+39B9JVFrd16p
+         DobTC1E1tD9X+FTQaV5U2PD9+FJcFOxI/fIqxRCnGTh9g/geoS2QDELG7DPvgPquAd8u
+         YrsmS/8TVtKpJgNA9HeCptCErNwn5dpt/rcBqDGk/iUM1o8rRq4SZxubM1IjxyIxGeAj
+         +hGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777337573; x=1777942373;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=t3FnaIBp0espZORVL/rfnjBPdcVtbw4VckmuHvIfsjM=;
+        b=H7JQXST5AYSGP/jr52zW64bTuQ7tNahA3eiBrVem4pt8d+Do6RWQW4f1ee8oAfQs16
+         7sJ/9MekQBKG+1tzU5+eHimIoOw302wVdLnvR0E1UA5FiIaqOVEWGHOy/VzhNSD4sfVv
+         yWeYlM9EBNtostUozJpbVZioYtSS2cbfzxU5FkmPfxSaDpBkX5N4vJFk5XAgF62UcPjq
+         MSZMld4h1X2GSi5i5s5LTYiGdI2bo4iB0BqlY5YHbTsw2vq34/rv4yhwSOG59esqBbfs
+         AjO9u6z+/FbCc+Z1XnbTmltpq7CyQaEIu7FV5MDSFqcR3EQJCn/MNU1Xkbm/iNv+srs/
+         xOHA==
+X-Forwarded-Encrypted: i=1; AFNElJ/kN5e1aQIpfDu4mDA7JKBiDYf5LCX1Na/wD/dYArjfUyZD/7YVOO4L8e1JFXaIIssWEI3PdFoiYQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzMtRYAFcKPGvhZHp4MDRaGQ+smuR6Q09KgVAENPcc4ZznEcv85
+	/+0SEKNBhzQVXxROtKIaXMNk/y64e/MADFZA0tgBMznntlX8hpjOGPRPe/PMBg6vx1k=
+X-Gm-Gg: AeBDiet1QffSRWQ62vcJZLLrLo4r5Q5QdaISoNYZ16HkYHFCqUVLmdi65EGtKRgs1JG
+	oQjGVLVXzdjUrjuphxA+esJo7QslepE3vjaHUcr0ZVWbNVxDI0aqqx5kwhECxQ4T0eoaWXV75PO
+	V3yFECdxUbPr26RWUQMqT/JEzCr+/KtCUKvcZ3FYPxtEQb/0BJU5LYoj5OeW8yOlRkjnv+KZXPS
+	axp2fKhhAThO3U0OTKcgHnkMkoGRsvwzHRW0U/cM0g0VYdvORmiiWr5yvqg7jlhnm0atXpH4WjF
+	0bEyNmDPxivIUn4GQCMOE3hKCSBtTvwd7Z2X7ViI4p+Jgnwba+DBnuOr23xjsbUteW6SWJlmqGd
+	WeQPextfGHC7pvN/1rCptImqhXgUDTULEhD8xNIBO3SlwRyuaBe9oqDGJMAQ9S/Azl0geenH2Ee
+	Jnqw4zH4OvFRzZLHRerIAp3z8s9pCE0g==
+X-Received: by 2002:a05:6a21:339a:b0:3a2:ecb8:56f0 with SMTP id adf61e73a8af0-3a39c214537mr1036677637.33.1777337572752;
+        Mon, 27 Apr 2026 17:52:52 -0700 (PDT)
+Received: from localhost ([97.126.187.42])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-834dae1ff95sm798672b3a.17.2026.04.27.17.52.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Apr 2026 17:52:52 -0700 (PDT)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi
+ <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Magnus
+ Damm <magnus.damm@gmail.com>, Saravana Kannan <saravanak@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson
+ <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Florian
+ Fainelli <florian.fainelli@broadcom.com>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>, Marek Vasut
+ <marek.vasut+renesas@mailbox.org>, Kuninori Morimoto
+ <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping
+In-Reply-To: <CAMuHMdU=3AN8wHbnO2Cx4WsLuYWhv_fRfTA50fmrqyREO3nrbQ@mail.gmail.com>
+References: <cover.1776793163.git.geert+renesas@glider.be>
+ <7hcxzqr4qi.fsf@baylibre.com>
+ <CAMuHMdU=3AN8wHbnO2Cx4WsLuYWhv_fRfTA50fmrqyREO3nrbQ@mail.gmail.com>
+Date: Mon, 27 Apr 2026 17:52:51 -0700
+Message-ID: <7hcxzjewik.fsf@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LOAP265MB9000:EE_
-X-MS-Office365-Filtering-Correlation-Id: 32522f74-195d-44d5-aba5-08dea4b817ba
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|10070799003|7416014|366016|1800799024|921020|22082099003|18002099003|56012099003|11006099003;
-X-Microsoft-Antispam-Message-Info:
-	jO9YDYLCpAR5AItHJhS6j87pvkzn51hAUCMIIg6aaUXiXBh4x6MaBKFCipMXFuEj3PpY41l2/KhB9CG7cffwuWB2HYBXH5NAWbfxYxwBbjARAeDLhKpKC/uh5Y41LUYz40sbSTZRQoa3isG+wigKBY0v0bIDsUUF3tM/HhRy2jvIisRIupoDhSE0LYbBx6NlnLkfxkne0icxqhwLeCtsAM0s51pwjhBqSZvxc9VYLokSg0A6PQ5pde6AxwFSaOtvouXF1tswx0ib/rzSNe/4jI2FkJCIcT2gpe3wrF1WQnOP7YXF4LNRZrv1WhrWYQHY/Z+2x5oYJzq0Sed8uhxPKbK7Z+vTqnGq+dSZpSgNdq1lOxWjM1cP56zmyuMVxtNU1vjU0MRWqvuERA8SYKQ/fzbOI2bmO3LS8z780mjSnsezno4Aq35E3J8eLUqcDC6Kt0NM+4Fvz/d1BkQwd9bHX+HxhJy7cikIDkh0yHE43HEWvlc/qIYZDXgx8AlsLoryq2wylaruvuA/aJ3HSmvOV4hefOMiun7mGhTvHcwoiVQ7f9LJ4W+Drbaa9jKdejZHTlqynqbCS1P3gmXCPulqyoVwYWcnDj1mBOH18ajr9Eei9sb4KzkRbwVh+QmEqeLzuFxhUe5VZC4flvemlAJHhsv9inS2rDHB16fXNvFj/ig4F2IbFaVGY3XD2pD4GUs8fP+E+pnfIQ+MueRPUYrtuKtSeFVHWFA9jkQkWNc+k28ry8Uj49pcqTv6+A2KWBMb+kqjUKOM5rdm/9kSzVy0mw==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(10070799003)(7416014)(366016)(1800799024)(921020)(22082099003)(18002099003)(56012099003)(11006099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?eUlEZDhkYXVxRCtycHFUNFFaSEdoRXVEdHB6ZDZzelFhNTVtdW82dVlHNEVC?=
- =?utf-8?B?OVVXUVpINXdSTjVyMFczSVpEZkhDaEZiRE9QTHBlNUdtWFZLNUowY1ZTbHhD?=
- =?utf-8?B?RnlyWk9jd2RwejRzWURjOEZsVHNHS3Z0Zm1xTERUZUd6VklNUGxjM294QURv?=
- =?utf-8?B?VjAvQld0cFBwUEN4ODJnK2pGVVdxQTRIZXQ2WGdWVkxXeGRvanE5ZnhNWnRJ?=
- =?utf-8?B?alJhV3pCMzJGYi9kSUpUNVVhOGtUa2d4LzJ6azZMSnRyZWt2MHNndGVnQXR3?=
- =?utf-8?B?L3FlZEpjQWVrSVB5T20vOU1PRHd5Wjg1SHhLZWJ1ZWhGby9qUFhkc2t1SXJu?=
- =?utf-8?B?NWxaVURkTG5qY0d1QkFKamVYRTV6cUptWGd3ZXJ0K3hoWGVVOTdJeEtSZ2hG?=
- =?utf-8?B?cXRFK3FOdmpzZFFkV2lNMWxCMDcrc0kxNkllRk9sUWJUa0F6OXprYUJxNzhW?=
- =?utf-8?B?d3VzdjM4RHZSaXFKNmloMFpnSTN3OERpVHlRc3Y0Z1djcDBLOHcvSm5JQVRQ?=
- =?utf-8?B?a0xLMEQrZ09oQXF4UlB5dm1sdzNoVEVqbU5iNEtmckhIWWoyUkJYbWRtTDhQ?=
- =?utf-8?B?aXJNam95YTF0N0RxMjFQTTd1LzZMalcrL0E3VmcxMEtreFdMNUFlRHZVQ2I4?=
- =?utf-8?B?NmhBZTBheWN2Z0VrT2ZDOWlWdmw5ZFArRDZSY3RWejhDWjczMTJOQjhEUlhS?=
- =?utf-8?B?RXp2ZTNLenpKeGRzNk8wVHlBMjZ3RUhHZ2IxM2U5WllLWCsybkZ6UDdFNENh?=
- =?utf-8?B?cHVQN2FSZUJpVjh6bVo0dG4xL01aWDBZdkF1cEg2akZBOGxkeUNtOGE2a0E0?=
- =?utf-8?B?QTBkaUhHNHVaRzFhT3N5N28yUkhBTVZhSVAybWNrYU1uTmRGWHoxa29VSGha?=
- =?utf-8?B?N0I1Y0h3Q215RmxpRWtraWxKRjFyaG00ZVRRWndlb3VzYW5Bc3NZZzFpUENV?=
- =?utf-8?B?YUJHQzY1aU9MaXJaaXY2K09ocDEybFdVeU1nK1hMY3p3Y3BVNlBLY2pOTnlS?=
- =?utf-8?B?ejZnVEh5MG1sNUlIVGU4ZlR2OFljZFVwa1psR2thNkQ0c0k5ejIvWnFjMXRN?=
- =?utf-8?B?VEgyQ3RTTWV0cDB6YXpwNm5JTDg1U3R1RHZlb2ZGYnBiaFZPaGRRTnhzcncv?=
- =?utf-8?B?OFVnV0d5QndjaytWZjVOQjlFVlR2ay84d0xJdGw2N1k4SXlMWnkveUtWV3p5?=
- =?utf-8?B?WmRkZVR3M0JHZmtXRGJ2aklWaDl1OHFpM3NISjgxOGo0MFRPRFo0N1FWZ1FW?=
- =?utf-8?B?cGVFYmlCNlZwdWRjZGNzeGpDZEozYWJ3ZVIwZEZKNlFyVEpPNU1qQTNjVkla?=
- =?utf-8?B?Q2JJcTk2SGtpbjYvenhNNmV3VUZhcFVTS0JyTlhRTDNjazJDbkVSKzZtK0F3?=
- =?utf-8?B?c0t3UlNGbU50UVFBMWZmY0pySU1RZnF5bEt5M0ZJcTBXUVFnSnkzOU41TkN1?=
- =?utf-8?B?Q2VyMXhyeVVmZG9DS3RoODRVam5nODFyNGZNYlJxby8rVnhFQko2cE54QUpk?=
- =?utf-8?B?aWIyWVR3aUljbmd1VlN6V0hGVDhvdjVheDFjNnlPcHFYdUovYW5JYUdzYXN0?=
- =?utf-8?B?QlJLZHBiQWZYdHpObXVnRnV4VnNDdTB1Rm4zdVEyeW5GdUNFQ2h3SW5QTlNO?=
- =?utf-8?B?UzlMbDVRZ1ZnYzFUTmUzdUFDSXBLdnBjaklpVU05RkVuaWprUVI0NGVmOG85?=
- =?utf-8?B?RGVVYVRKR0wyd1FKQWNpVmhrNHBsY2pjU3RLMzVQYlU4RXZoWmZaem01WHJX?=
- =?utf-8?B?Ykh1aEhQbm0xK1l2azBNSTRHSnZHRmNONjhTRG5Pbk05VkRYNW8wRUo3Mksv?=
- =?utf-8?B?SG56U1Uza29RaHVPN1ZXV2NQR0k1Z2JuNmFBVzMzTEQwdFVqcWt5SnJqejk3?=
- =?utf-8?B?eC9LSWlOWHZPNGdQRkJlWG5Tb2N3aUtXYTN4V3dFZCtlVmw0ZERkeUc5dHZX?=
- =?utf-8?B?czJOOXVTZUF4eGg5MVZiVE02SFE5VU9rMG9wY0xVNS9janRXYVFrTjlFSzlB?=
- =?utf-8?B?RGhTT1JXNCt4aXAwTjdzQTY5RE9vVGdUd05GVk8xVE80algvV2tZaXFZaVlI?=
- =?utf-8?B?dUJLYnQ4ZjE5YS9XYTVIQXF4V1ZZTWJnMEMzTnQzblcyS1dZeWQ0TktGdnZx?=
- =?utf-8?B?S0Z0NXBLcjB5aU9Md00rVjZPS25tSDd6Y0VEVEZ0WW1kZWtFWkV0T0ppTHRa?=
- =?utf-8?B?bW9YZjRWd3U3MzFWMVZjek5ydXRpa09HR0NKb3JuSitpUFBIZXlpTnpLTFVJ?=
- =?utf-8?B?bVN4Nlk1YTJNSXJHSlRvSUJhN3NsWTd3UWZEWWZzUHUreVZzUDFhZHBZVml4?=
- =?utf-8?B?aElwa2hXSXVOcnpUb1NscFFiMUg3SGQ1bUZKbUFQQlBHcEFhaVJJZz09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: 32522f74-195d-44d5-aba5-08dea4b817ba
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 23:52:51.2830
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Uwze1aeEGIz7oMwCeSd6mAqMnsJsPaDxKAu1n94MyyEaSjtf2jYYXjY8mpqeG7aBdXKZtGpe6Dg3x7xiGmACKw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LOAP265MB9000
+Content-Type: text/plain
 
-On Mon Apr 27, 2026 at 11:11 PM BST, Danilo Krummrich wrote:
-> Implement Sync for Device<Bound> in addition to Device<Normal>. The
-> underlying struct pci_dev is the same; Bound is a zero-sized type-state
-> marker that does not affect thread safety.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
+
+> Hi Kevin,
 >
-> This is needed for pci::Bar to hold &'a Device<Bound> (required for
-> Bar::into_devres()) while remaining Send.
+> On Thu, 23 Apr 2026 at 00:48, Kevin Hilman <khilman@baylibre.com> wrote:
+>> Geert Uytterhoeven <geert+renesas@glider.be> writes:
+>> > TL;DR:
+>> >
+>> >     Describe hardware in DT, and perform the mapping to SCMI in Linux.
+>> >
+>> > The Renesas R-Car X5H-based Ironhide board is the first Renesas
+>> > SoC/board combination that implements the ARM System Control and
+>> > Management Interface (SCMI).
+>> >
+>> > This means Linux can no longer perform various system operations (e.g.
+>> > clock, power domain, and reset control) by accessing the hardware
+>> > directly.  Instead, these operations are abstracted according to various
+>> > SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
+>> > firmware running on a System Control Processor (SCP).
+>> > More specifically, the R-Car X5H SCP FW SCMI controls access to:
+>> >   1. Core clocks and module clocks,
+>> >   2. Module resets,
+>> >   3. Power domains,
+>>
+>> I'm very curious how power domain hierarchy is described on this SoC,
+>> because one more issue to add to your list is that hierarchy cannot be
+>> described for power domains in SCMI.
 >
-> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
-> ---
->  rust/kernel/pci.rs | 4 ++++
->  1 file changed, 4 insertions(+)
+> So far I had no need for such a description. AFAIK, this is handled
+> inside the SCMI firmware, which does know the hierarchy.  Hence the
+> firmware can power up a domain when any of its children is powered up,
+> and power it down when the last of its children is powered down?
+
+Yes, but this firwmare behavior is subject to the normal list of 
+limitations/quirks/lack-of-bugs/etc. that we usually run into with
+firmware.  So if there's ever a need for linux to understand hierarchy
+for those reasons, you may find yourself stuck. :)
+
+> I think the clue lies in having a PSCI top-level domain, cfr. what
+> you wrote in [1]:
 >
-> diff --git a/rust/kernel/pci.rs b/rust/kernel/pci.rs
-> index fe5148f41d8b..6f82f2e6c74f 100644
-> --- a/rust/kernel/pci.rs
-> +++ b/rust/kernel/pci.rs
-> @@ -526,3 +526,7 @@ unsafe impl Send for Device {}
->  // SAFETY: `Device` can be shared among threads because all methods of `=
-Device`
->  // (i.e. `Device<Normal>) are thread safe.
->  unsafe impl Sync for Device {}
-> +
-> +// SAFETY: Same as `Device<Normal>` -- the underlying `struct pci_dev` i=
-s the same;
-> +// `Bound` is a zero-sized type-state marker that does not affect thread=
- safety.
-> +unsafe impl Sync for Device<device::Bound> {}
+>    "But... how do I describe the relationship of this hierarchy? In
+>     particular, when the SCMI-controlled PDs are actually subdomains of a
+>     top-level, non-SCMI PD."
+>
+> Or am I missing something?
 
-Given that you're now implementing for two ctx marker types, it might worth=
- changing
-the existing one to spell out the `Normal` explicitly (also saves you from
-having to spell it out in the comment).
+Indeed, the tricky part is when the domains may have CPUs/clusters in
+them, and in my case with the TI SoCs, the top-level domain with CPU
+clusters is PSCI controlled.
 
-It might also make sense to write a comment to say that why it's not the ca=
-se
-for `Device<Core>`.
+It wouldn't suprise me that other SoCs have similar features where some
+domains are children or siblings of domains with CPUs in them.  This
+kind of dependency is pretty complex to manage in just SCP firmware,
+because it involves TF-A/PSCI as well, so it's a likely spot for
+firmware "quirks".
 
-Best,
-Gary
+Kevin
