@@ -1,148 +1,101 @@
-Received: from mail-pg1-f182.google.com (mail-pg1-f182.google.com [209.85.215.182])
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70A6127CCE0
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 00:52:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 910D31F4631
+	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 01:32:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777337575; cv=none; b=bTZgHFzkN8/MzAv1sQK+S0n20OV2khx1fgSiKwEduJnMFL0LNpuHmuRJU6fRDu1b/XF6C/rEHUj2V8PVDY0PhKAdrgH449dpLg5XWx8wLqjhk/uhwxMVg8+5qxOyuQ7IpE0+ERKPpcNLrcWD15k26w6u9FKtjIE7TQXfPuVP4Og=
+	t=1777339940; cv=none; b=bouG2dxaDNVVa7gdUO9aZUlgPkIn4nIpM6zRfibRXBwwfmDeXSdNDQ2LA/kzgHwdhScJ6G1t+I71hu3gRKrIR6tnTe7b79NlEW5Vs0rg2L9CSX8+9gLl1uDFJ8Lb+zeHesF28qPEvkllsL3yiOixkL0MmJcy62oP+RV2ZLH2Wds=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777337575; c=relaxed/simple;
-	bh=8Uem3oqRD7Kri2DSyAgANGL+qzMirF3VGc9HlXIQYOs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=LALFqhnwe/zcTFGynD2V5yU//e87bOrKqe/Qw5culGWvxGyuHEg1qHA1M2XUvBXifhG8pyN2R7GoFWZLj52m4tJxECPQa0gzuiNgylHe/Ri3a64oneuXpS3W5HFAMO/NiY5mOtZfUit/qdlByAMkUoW1vgWxVjkItrTogpvD3FA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b=UmLvCjgn; arc=none smtp.client-ip=209.85.215.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1777339940; c=relaxed/simple;
+	bh=2PMSr9SUypRFje2+As/Y2378jivS1IQ2hBaeRfXknxc=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:References; b=EDdc5qlfzopFzb5hQa1l/0XZQrHkZD3QKYwcRxDXaOfGDRsYiGUHCLb5HO4hMPO6gYaLlDH/8IyLuwPfO6aD+6kshOpfYu4AyRi5D5pAP7rfBA/T6I6cTzRvSWOnwEPMe83WwyhuutSMaWMqWwnDJm9tNLDSbbzOBUpzkfRMKKk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=orb.net; spf=pass smtp.mailfrom=orb.net; dkim=pass (2048-bit key) header.d=orb-net.20251104.gappssmtp.com header.i=@orb-net.20251104.gappssmtp.com header.b=FF/jNC7H; arc=none smtp.client-ip=209.85.214.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=orb.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=orb.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20251104.gappssmtp.com header.i=@baylibre-com.20251104.gappssmtp.com header.b="UmLvCjgn"
-Received: by mail-pg1-f182.google.com with SMTP id 41be03b00d2f7-c79662bbd2eso7419262a12.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 17:52:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=orb-net.20251104.gappssmtp.com header.i=@orb-net.20251104.gappssmtp.com header.b="FF/jNC7H"
+Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2ad9f316d68so47989245ad.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2026 18:32:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777337573; x=1777942373; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=t3FnaIBp0espZORVL/rfnjBPdcVtbw4VckmuHvIfsjM=;
-        b=UmLvCjgncUFnkOkej4+wGBHe0fTbbx54IoP/u0gXvql2aNFmqqno+yqwl+Ccx54FTN
-         gkS26kFBc2qdrgwLMIhHZo9xqUwAylAU2efyVow9NXrRClAnEBtKOtj/Mp0qDcDB/4pb
-         j2zd9BfXxrR086oPDlyxqLHwu+R15O3ovW4uYngGN7f5NWjRPVzDTRD+39B9JVFrd16p
-         DobTC1E1tD9X+FTQaV5U2PD9+FJcFOxI/fIqxRCnGTh9g/geoS2QDELG7DPvgPquAd8u
-         YrsmS/8TVtKpJgNA9HeCptCErNwn5dpt/rcBqDGk/iUM1o8rRq4SZxubM1IjxyIxGeAj
-         +hGQ==
+        d=orb-net.20251104.gappssmtp.com; s=20251104; t=1777339939; x=1777944739; darn=vger.kernel.org;
+        h=references:in-reply-to:content-transfer-encoding
+         :content-disposition:mime-version:message-id:subject:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2PMSr9SUypRFje2+As/Y2378jivS1IQ2hBaeRfXknxc=;
+        b=FF/jNC7HKJcFsC+mHOa2+KcqeR0deuyACKbrnq9c5d1jYKQHBj9qFTXrfkmUm/aqEu
+         m8BRebvgbe3ea7R6elGit7N1/EP2cFfPD1I5VjBBA+CQY42UH/sdDz20jItQksA5l/S3
+         MkxHc/g36E39/bKEKwYwlMXx0Shc+sJ2YQbHawxqcf0ksFB3ST0aWXaPPn7WLqsb3nXt
+         4eGEHBIrTQ6UjN+qbEzhTeJc0IoWSTmq0aYAa0N7vR2E3f45hiSvakGND+cBZAWBonU4
+         3I2U6xSs7EdOfmf1iEblufbtq26HLMdreKyonvAfyz0UZZFbfLbxRqXfB1Vb934BHPyo
+         e0bA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777337573; x=1777942373;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20251104; t=1777339939; x=1777944739;
+        h=references:in-reply-to:content-transfer-encoding
+         :content-disposition:mime-version:message-id:subject:to:from:date
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=t3FnaIBp0espZORVL/rfnjBPdcVtbw4VckmuHvIfsjM=;
-        b=H7JQXST5AYSGP/jr52zW64bTuQ7tNahA3eiBrVem4pt8d+Do6RWQW4f1ee8oAfQs16
-         7sJ/9MekQBKG+1tzU5+eHimIoOw302wVdLnvR0E1UA5FiIaqOVEWGHOy/VzhNSD4sfVv
-         yWeYlM9EBNtostUozJpbVZioYtSS2cbfzxU5FkmPfxSaDpBkX5N4vJFk5XAgF62UcPjq
-         MSZMld4h1X2GSi5i5s5LTYiGdI2bo4iB0BqlY5YHbTsw2vq34/rv4yhwSOG59esqBbfs
-         AjO9u6z+/FbCc+Z1XnbTmltpq7CyQaEIu7FV5MDSFqcR3EQJCn/MNU1Xkbm/iNv+srs/
-         xOHA==
-X-Forwarded-Encrypted: i=1; AFNElJ/kN5e1aQIpfDu4mDA7JKBiDYf5LCX1Na/wD/dYArjfUyZD/7YVOO4L8e1JFXaIIssWEI3PdFoiYQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzMtRYAFcKPGvhZHp4MDRaGQ+smuR6Q09KgVAENPcc4ZznEcv85
-	/+0SEKNBhzQVXxROtKIaXMNk/y64e/MADFZA0tgBMznntlX8hpjOGPRPe/PMBg6vx1k=
-X-Gm-Gg: AeBDiet1QffSRWQ62vcJZLLrLo4r5Q5QdaISoNYZ16HkYHFCqUVLmdi65EGtKRgs1JG
-	oQjGVLVXzdjUrjuphxA+esJo7QslepE3vjaHUcr0ZVWbNVxDI0aqqx5kwhECxQ4T0eoaWXV75PO
-	V3yFECdxUbPr26RWUQMqT/JEzCr+/KtCUKvcZ3FYPxtEQb/0BJU5LYoj5OeW8yOlRkjnv+KZXPS
-	axp2fKhhAThO3U0OTKcgHnkMkoGRsvwzHRW0U/cM0g0VYdvORmiiWr5yvqg7jlhnm0atXpH4WjF
-	0bEyNmDPxivIUn4GQCMOE3hKCSBtTvwd7Z2X7ViI4p+Jgnwba+DBnuOr23xjsbUteW6SWJlmqGd
-	WeQPextfGHC7pvN/1rCptImqhXgUDTULEhD8xNIBO3SlwRyuaBe9oqDGJMAQ9S/Azl0geenH2Ee
-	Jnqw4zH4OvFRzZLHRerIAp3z8s9pCE0g==
-X-Received: by 2002:a05:6a21:339a:b0:3a2:ecb8:56f0 with SMTP id adf61e73a8af0-3a39c214537mr1036677637.33.1777337572752;
-        Mon, 27 Apr 2026 17:52:52 -0700 (PDT)
-Received: from localhost ([97.126.187.42])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-834dae1ff95sm798672b3a.17.2026.04.27.17.52.52
+        bh=2PMSr9SUypRFje2+As/Y2378jivS1IQ2hBaeRfXknxc=;
+        b=VK6ppoxJByLp8PWEXS4PpYWMMUoO4+xBxoRZZkK3CpDA1KFj4lVyBVKbPQFNgCIgrd
+         w1lMfPEcagX5dnnZxaKF6CqbWiunBUzGkc7B4sAZxeiyZEIXqRbNfNY2ffEuv/9OMYn4
+         06QbZt8PxONlDZuZla6y8rtT4XNusunm4Qi38zcxzdysbpM0EpzsqSVBnncBAYNKqBu3
+         auND5k336T532JQx/mXGX4XPEInqKqa6JydFeJHweWO6dmX06J0HLEwKs5ZKG54EvdKL
+         C5vrkUyu/Whml9LgJErC/TlQj/dHNpPZHrPVFnPtfL1qY+BJXFnAEth2RqJeCuSHm1kU
+         W2zg==
+X-Forwarded-Encrypted: i=1; AFNElJ9gn5X2knKCHLsAdrQVxaFcRv7CUhRQgCi9NSoTaDjtWV/bOSsiJWKJFBl6wlzyYgDU51Vrv0YcpA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyueNgEHfwhT1wU+b4+0kbIwQx4TlbvW1xDAquUNNd/xzHjNDbD
+	MISPCmbevyBY6iewIweDpHaWu+6CRqNFZhe+g9u8iUqIZ77PkFijca572k7RwMLXA64=
+X-Gm-Gg: AeBDietg4EFLcP+WW2TdexnP2qZIGMpsLA4W+d9wUX2t/xxvvKpoL523wDO9Tyh8kOV
+	HXFs5DUuDfOvFgc6rSlwOTiwo1eM2N6T3Xx3XzTsArDlAPG1MaPsDLgNsOlwGZqla2QVk1rXEDr
+	Vk8cbxK4rTXK6EhpjwiNgXdqyG32IJ1pmtWGG801zNNWCDPoU9nq58YjwzfjZ1i2SRUq33wvZtM
+	cySrJ2cDtyQ+qiXDUCtZVt7VAbwLRU2TweL8EZbSqntve4gvW7XxFHC4NUpCqp9bWU7kBRVMOrW
+	CzYGgTGydCxvEZYWG0nf3BSWXY7BN0v7OV0wbZ0d4rwWvGayzq27a2HFXZLADp1LCowLnaWZZeq
+	P31RjdyqVgPT5DuOkCNtP0+USc4e0v1wScWWt2EnygbTFAuQQgU6HtZpto6fUSESfUrmSGd3Tl3
+	si2vHl9HanolS4VuwefBJYaCERAT1v/Wbs5kQYqInKSpYlMIMP3RzIOhxremSaCFn7s/eJTsIht
+	X4zQ7zHfFU=
+X-Received: by 2002:a17:903:1cd:b0:2b7:a89d:6135 with SMTP id d9443c01a7336-2b97c3fab8amr9326525ad.13.1777339938955;
+        Mon, 27 Apr 2026 18:32:18 -0700 (PDT)
+Received: from claude-dev ([50.125.94.20])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b97ac78880sm7441665ad.40.2026.04.27.18.32.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Apr 2026 17:52:52 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi
- <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Magnus
- Damm <magnus.damm@gmail.com>, Saravana Kannan <saravanak@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson
- <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Florian
- Fainelli <florian.fainelli@broadcom.com>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, Marek Vasut
- <marek.vasut+renesas@mailbox.org>, Kuninori Morimoto
- <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
- linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 00/14] R-Car X5H Ironhide SCMI CPG/MDLC remapping
-In-Reply-To: <CAMuHMdU=3AN8wHbnO2Cx4WsLuYWhv_fRfTA50fmrqyREO3nrbQ@mail.gmail.com>
-References: <cover.1776793163.git.geert+renesas@glider.be>
- <7hcxzqr4qi.fsf@baylibre.com>
- <CAMuHMdU=3AN8wHbnO2Cx4WsLuYWhv_fRfTA50fmrqyREO3nrbQ@mail.gmail.com>
-Date: Mon, 27 Apr 2026 17:52:51 -0700
-Message-ID: <7hcxzjewik.fsf@baylibre.com>
+        Mon, 27 Apr 2026 18:32:18 -0700 (PDT)
+Date: Tue, 28 Apr 2026 01:32:17 +0000
+From: Daniel Bozeman <daniel@orb.net>
+To: shawn.lin@rock-chips.com, finley.xiao@rock-chips.com, jonas@kwiboo.se,
+	ulf.hansson@linaro.org, heiko@sntech.de, linux-pm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] pmdomain/rockchip: skip QoS operations for idle-only
+ domains
+Message-ID: <afAOIfNcy73GC7lU@claude-dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <adRH235mv00OdOsb@claude-dev>
+References: <20260331180223.1682283-1-daniel@orb.net>
+ <5c8732a3-6cc9-5d02-f56b-fc7ba29c7ce0@rock-chips.com>
+ <fbf16b5a-1565-39c9-0d92-33a7a577212f@rock-chips.com>
+ <f1b9a97a-f1f9-0757-5dc7-33960318be61@rock-chips.com>
+ <693c6c27-6ff2-4ab0-994f-3821e5ffcec8@kwiboo.se>
+ <adRH235mv00OdOsb@claude-dev>
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Hi Jonas,
 
-> Hi Kevin,
->
-> On Thu, 23 Apr 2026 at 00:48, Kevin Hilman <khilman@baylibre.com> wrote:
->> Geert Uytterhoeven <geert+renesas@glider.be> writes:
->> > TL;DR:
->> >
->> >     Describe hardware in DT, and perform the mapping to SCMI in Linux.
->> >
->> > The Renesas R-Car X5H-based Ironhide board is the first Renesas
->> > SoC/board combination that implements the ARM System Control and
->> > Management Interface (SCMI).
->> >
->> > This means Linux can no longer perform various system operations (e.g.
->> > clock, power domain, and reset control) by accessing the hardware
->> > directly.  Instead, these operations are abstracted according to various
->> > SCMI sub-protocols, and Linux has to send messages to an SCMI-compliant
->> > firmware running on a System Control Processor (SCP).
->> > More specifically, the R-Car X5H SCP FW SCMI controls access to:
->> >   1. Core clocks and module clocks,
->> >   2. Module resets,
->> >   3. Power domains,
->>
->> I'm very curious how power domain hierarchy is described on this SoC,
->> because one more issue to add to your list is that hierarchy cannot be
->> described for power domains in SCMI.
->
-> So far I had no need for such a description. AFAIK, this is handled
-> inside the SCMI firmware, which does know the hierarchy.  Hence the
-> firmware can power up a domain when any of its children is powered up,
-> and power it down when the last of its children is powered down?
+Just following up — I have the NanoPi Zero2 on my bench and am
+happy to run any tests if that would be helpful.
 
-Yes, but this firwmare behavior is subject to the normal list of 
-limitations/quirks/lack-of-bugs/etc. that we usually run into with
-firmware.  So if there's ever a need for linux to understand hierarchy
-for those reasons, you may find yourself stuck. :)
+I can confirm the EPROBE_DEFER teardown crash is still
+reproducible on your next-20260403-rk3528 branch (7.0-rc6)
+with your conditional NO_STAY_ON fix applied. If you'd like
+me to test a different approach or gather additional debug
+output, just let me know.
 
-> I think the clue lies in having a PSCI top-level domain, cfr. what
-> you wrote in [1]:
->
->    "But... how do I describe the relationship of this hierarchy? In
->     particular, when the SCMI-controlled PDs are actually subdomains of a
->     top-level, non-SCMI PD."
->
-> Or am I missing something?
-
-Indeed, the tricky part is when the domains may have CPUs/clusters in
-them, and in my case with the TI SoCs, the top-level domain with CPU
-clusters is PSCI controlled.
-
-It wouldn't suprise me that other SoCs have similar features where some
-domains are children or siblings of domains with CPUs in them.  This
-kind of dependency is pretty complex to manage in just SCP firmware,
-because it involves TF-A/PSCI as well, so it's a likely spot for
-firmware "quirks".
-
-Kevin
+Thanks,
+Daniel
