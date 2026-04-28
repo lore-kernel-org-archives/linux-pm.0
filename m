@@ -1,176 +1,268 @@
-Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azolkn19011032.outbound.protection.outlook.com [52.103.12.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 059634779B0
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 18:46:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0B992FF657;
+	Tue, 28 Apr 2026 19:55:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.12.32
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777402015; cv=pass; b=QTrQ1sX1ZyJWfKE16/GJ0VrQH6nGMUPTD97hCGlIj28llMfvOqE06szyPCXDoHSgdVT22rPzesvy9BIH6i2ix5zRTC4DBwL7ZefRgZRYUc9yL5X3bc+O0ymWxxtEg5hRWxw4PaVbw2cYPuXvBc8Q8SpF4vqkB50aDnxaFXHWnLQ=
+	t=1777406103; cv=fail; b=A33Ifv0O29yyP5qvbJaSt6uTrpuOT9Hmoul3Rxbivr8MWHG6MtbpgwxYfbKNOzdvsBHoiyrQlUpVngvMHgRWZ3bxe83eS1OJzxxMbggc4lA6RoNb7WINwUh4VjIa37uEUkWLJyaBEY05I91pxFd6EZY9KKagC/ucQlc/SJEqEwI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777402015; c=relaxed/simple;
-	bh=EKFG0RDVEK246wBeg1IKZgBSUBwwFpLrZPo+iyiQ1R0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ptsCEjZLjWR2oaidwhXYu2B3pKPc1OXRd7XjK4TQvzS4vu6M1NPkyhdzx/36Gvvuf2nANV1vw/g1sLvYb7E3bkVXStDPjZMNSNKy1DXCqcaAiYiMiGQd0aJlSNLB4iheIZTLnUwoDxX63xHlqDspg7Q4WiQeyqFAdbA+8lOQGuM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ifd83xBd; arc=pass smtp.client-ip=209.85.208.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1777406103; c=relaxed/simple;
+	bh=HTuzs0h8RVjNvwpKsBRAgV3Wh6GSDXfsFM17541erPo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=rsVOZwI5UO9hg5QfXoz48eeiSB2icIgXW6THgFIFhJZDht1KBeS3bMqIxjYBlmVtMA35UdQ89qU63n5kVYvPq/V0Ird+AfbAIi0ovmZymMHBbocnNZQH5gZa9RIkxa51ZJvjDFKCI7hcPHJjycOHyxiAF5Pa4KpTcAkie9w3I8g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=RFlarvXK; arc=fail smtp.client-ip=52.103.12.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ifd83xBd"
-Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-671d60ef9c6so16320435a12.2
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 11:46:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777402012; cv=none;
-        d=google.com; s=arc-20240605;
-        b=EmcRCLNyWjFuZDdVSsfcXVQmtHtpivtwWqdn/NBljULTtzpQpb31P5LypiUXVoy3c6
-         P4AvP83zi+RyqboUbQcJTW9/tzozG9nNBGvs3sBNGsVuHxf+mHyIInte1VhYnammlVM2
-         dttEesF8o0lq5bZCWL4MlkLaHl+pzaYkk4XvWH2sDuvMZajWA3y7B7rnOqUAEK+AIHmz
-         ZCSmsTB0f39t4wTGpRmSBlbPBSjk0YZgcSS1B7rCQFNoYXdc2icirA1wOboIlV2Q6rgy
-         2L06H7AA7h3i/me5ezPWjvWfZH1mV9GYfKXKwUerxbxNfk86i6DbYdvLwjYRcDhlgIvh
-         sQ0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=EKFG0RDVEK246wBeg1IKZgBSUBwwFpLrZPo+iyiQ1R0=;
-        fh=S6h+2X66xHyiYobs4iPHzS7HER2A73e1BAWfDM6hNGw=;
-        b=KddGKGklv5YeeKVA2UE2sQQQNJJQHlwf091nbevTMOSld4bjPLEa5gS7vOUPzkfMT8
-         slW4qaJAN5lISr/Cm3hbLUJfumjYHvMkBncXzjBSocNHbDEEicopNxUQO+njRNAO2H4F
-         KTb0d8XIxwfTwfeT4NaFFWN2hhvZToEhKqIHfIBv1zDaYKVmR/KNXme57K8FZVXSrNbp
-         IfCBPjZik+ia5EgqZUdy/IQRYJ0spiY65i5n0X4CFhp2OLoLw1hFMd8rhQ81OaZjDoWT
-         Eem2yUH/ntaAbM9SGy3xTb2bFDxzFaUtdNSuuFnEHQ0BRNVDxss804TA7YAfYRpbqxYu
-         mL5Q==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777402012; x=1778006812; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EKFG0RDVEK246wBeg1IKZgBSUBwwFpLrZPo+iyiQ1R0=;
-        b=Ifd83xBd9a48T6zVcOCH/JADVnoDZqlx2S+0AZOWlIAKt1nLA1ZB9lMupz6AS2uAHO
-         SKbiml2TJZO4fnLBzpECnNjOydpHYwHIreTmEc9DjWUOnP/XWlEkXHAxolnIKBVGjgE5
-         QpSQ5XcWoUPEi0w0yCYXUDX0lyqtoVsiiMwD3wGyW1fQbnjLoI9TKIi0WgCib7wh02B8
-         L1OIbS6xWUfSv3oJRM1k0aJSLXuc54pLtKjb1qqUn+D9BoOjyx+mgo2R1hsM2awqFfzh
-         bQr6Ii/AXWLwp/fDAukV5mNiw0l019VhZrdM4MzDwJO4PJ0sMPqAjTprua2wM94N5+bo
-         MD6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777402012; x=1778006812;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=EKFG0RDVEK246wBeg1IKZgBSUBwwFpLrZPo+iyiQ1R0=;
-        b=FeuQbFA0HM/7IfNcBHeXLLYA9hlpTrBaOiHdP+j21HnWxuA7UvhaVmJEB80X+zkysy
-         hM61W6ZDdUgFpghHcsHa6f1BjZeQdhkbkBhBmt947kOew8VboBOjSHZJ1wtnWPv6Epws
-         9Qd0SsrTepRON7Nh3WbKk86RkP8fd2eh0mvpsNyTHwqffG2ODLt2BgQHw3Cz6cJxblPJ
-         ZlnUt5URgfRIIAvggntWXTu1uoOCV3WT2EsVbjnDOdsdLfFxnHYBtOj0Q5KaENGIwttI
-         5Yrw3g1EIM7FWJq8P0ouZEjIVOIwPmgyhSuZShlHJd6ChW5MErhedlupJ5oT8RzQ0cIM
-         kvwg==
-X-Forwarded-Encrypted: i=1; AFNElJ+Qvr4MJbwqFVWa/8LZAlY/YL0TwvWYb/AblejAq9uCA/ZeX6LJZ4wz53DL1NICI5qkOdyzdirCLw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxodxnacnA9xiTzFQx7UcvQiNxbWV+5eJagTtiEk5l34WI6Rkmu
-	SdBefGZE2Qt5ewW0PqgsTvZHrRxdKA2zIoVfJ+ZQPaLkfLDwy67PHgZQmq/YWiAqRyTxuvvWmR9
-	+9Kzf7PS91k+IbfJedu3TeGGNVpU90FY=
-X-Gm-Gg: AeBDieuyGbfHf+jG7RcvcWSr/X8gsr5ZwvUjRoZ/IxJGWmXoD1qTSE3gV7oVkT+UmNI
-	xcYDhoZMJwab6w6LubF5RCBuV6VRqq3loRDuJI9oybhBbSkZl9EGcHxD5I7aslxzPNaWLGgUHV/
-	vbis39+bYE5XMie6DpoKQan6VHwFLy91ttBBdXJEi0PyAClhKaAwqVbqw/iwEyeFgqZlOhlacX0
-	j6gWL7CHj8x5nH4jI5uzXYnNPwq9bfGTh0pT8VPIyLaYJYRz5eBe0Uh4IIJWqtdi86Xg+JKNCC+
-	NEHY7frfjMywxVURfMQh2q0MgZ3Uf1NlFn4by2s6TmW4XaTgxYAB/ccY50GDFw==
-X-Received: by 2002:a05:6402:4544:b0:671:a18b:32b8 with SMTP id
- 4fb4d7f45d1cf-67b1fce62e4mr516715a12.0.1777402012124; Tue, 28 Apr 2026
- 11:46:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="RFlarvXK"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=fu/W+M7idfwWq/z+QZvCOygORn3cGzKuDnNLUQLYFpLV0yhuLuW+FGxsctQPXh+VmmswIRy+tBNTSp9qq+09H0nUcT6jb6+thusA/YkJKqcO+SKI/6gnGb2p/MeodV8ZUZXkJfSY3ayTPSYvBZCqhIsG+3Y4DIaBoamEawoE8IPXW0TiPaYDSOq0XuGIp/C8AQXbQTsr5D0jE0dVonNFC1D3jKxwJfRZy3fWqUh14/u6WQ1RU935lugvEMdTqlImys1IAHnt4bJGtq6BafmyiKfAUwyIvu80Te677jMKenTylLyLxTX8eu0bF47LRg+yAznSFs1t9N9vFEa5dQvpBA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=gdwkifXSfo1jO1LRt/p15VSYC5QkPXq4/uqD6/sFveY=;
+ b=fi2xOXp1iggXvciFKo4TGpDJ92nAe5oN5XIuXQSARlT5xgv2EXWMHaxjODwcFagnRjq+mCL0UJzyMhLexRAH02AhDEc68udSIFNA7o4NumGNCVAnyBx7iy0LwEKy+AACY/DyfQvihIqh1WbJpl4dYZ+dlq4K0kEQYfukvzge7Ve2xwDU15Rsr1EFx7JlKEVWLMQGyUYeD/kIaGNGUXh0evMam848L4odxt2OVw3a/XLTCIk/BNprO7ivm0OPnEoztj3dP0dEBTBlDH2II+kg1noWX/zVfYjbYHOT3aXl5j2sO80nS2eqtDH4kOKrP98U2EzY9+x8MxfQI4Y6t4StXw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=gdwkifXSfo1jO1LRt/p15VSYC5QkPXq4/uqD6/sFveY=;
+ b=RFlarvXK8q+IpSAW1cA9F9tC+rOSnE8kQ0NqphufA893aBbxVYDWhIp85R56MHFEGLDpXBDPZokjszU+7uA19J4dJm7AgLpxPdnIes8OfrmTPtkV09zV39/5EDAIRjeRHyCAU79BMArfVRzoTWemPv/oevHffhiGuElWRkBTsFAQfqCn/O/CF2WpBqyZUu1DZzU3HiDwjQB+yeyu41wdIBnzVuFC1LJ+q+y2VY+s4UYLFbyuH99g3YMr+w5de0ZXn9BWd7W87sbiIk/hCWxFxY0bJVga5XClNmhm6PKbSFwLuUu/yPNzCfZ/7gEV8P+mk6LwUz4i28pP1ENfUCP/Fg==
+Received: from PH0PR19MB997338.namprd19.prod.outlook.com
+ (2603:10b6:510:3b1::18) by PH8PR19MB997230.namprd19.prod.outlook.com
+ (2603:10b6:510:3ab::7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Tue, 28 Apr
+ 2026 19:54:58 +0000
+Received: from PH0PR19MB997338.namprd19.prod.outlook.com
+ ([fe80::fd22:ee23:3e25:3172]) by PH0PR19MB997338.namprd19.prod.outlook.com
+ ([fe80::fd22:ee23:3e25:3172%6]) with mapi id 15.20.9846.025; Tue, 28 Apr 2026
+ 19:54:58 +0000
+Date: Tue, 28 Apr 2026 14:54:53 -0500
+From: Chris Morgan <macromorgan@hotmail.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Chris Morgan <macroalpha82@gmail.com>,
+	linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+	xsf@rock-chips.com, sre@kernel.org, simona@ffwll.ch,
+	airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org,
+	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com,
+	neil.armstrong@linaro.org, heiko@sntech.de, conor+dt@kernel.org,
+	krzk+dt@kernel.org, robh@kernel.org
+Subject: Re: [PATCH 1/6] dt-bindings: power: supply: sgm41542: document
+ sgm41542
+Message-ID:
+ <PH0PR19MB99733813E0295B511539050BA9A5372@PH0PR19MB997338.namprd19.prod.outlook.com>
+References: <20260427170914.5062-1-macroalpha82@gmail.com>
+ <20260427170914.5062-2-macroalpha82@gmail.com>
+ <20260428-bulky-nebulous-reindeer-ed45ed@quoll>
+ <PH0PR19MB997338F0B06B7B99AA0ED3C6C4A5372@PH0PR19MB997338.namprd19.prod.outlook.com>
+ <534f0795-0002-4c04-a83c-fa1b3ce68216@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <534f0795-0002-4c04-a83c-fa1b3ce68216@kernel.org>
+X-ClientProxiedBy: SA1PR02CA0006.namprd02.prod.outlook.com
+ (2603:10b6:806:2cf::15) To PH0PR19MB997338.namprd19.prod.outlook.com
+ (2603:10b6:510:3b1::18)
+X-Microsoft-Original-Message-ID: <afEQjdHClHa8U3Nw@wintermute.localhost.fail>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260320192735.748051-1-nphamcs@gmail.com> <aegUoOiUbjUAH5aT@google.com>
- <CAMgjq7C53WRS5oYxO157mX7JxhfoPoi34k+taiKLrMah-b-iRg@mail.gmail.com>
- <aektdlD4npMVThu3@google.com> <CAMgjq7DRrz4Hdy-s4y-C=3BmPt50LKOfdWjjf2mWmCybdRaJ4w@mail.gmail.com>
- <CAO9r8zPvApgxKiVy5NhiWup_m57huF3MTuPvo=iq5kAxjRZC8Q@mail.gmail.com>
- <CAMgjq7AGzBubCkmv7LubBjPLN1DzL472d4zUm+sGxo8ZptMgRw@mail.gmail.com>
- <CAO9r8zO+tm2J0FRC64VKCYOSuKPXX8cQG7C07SwMWKoLiwoV+w@mail.gmail.com>
- <CAMgjq7D1WXUHqAV1yuXvrUmEsE_m_+yx0mBq6teJhipx6mySbA@mail.gmail.com>
- <CAO9r8zMk7xTi-Txmj1+Z9=250fD8HuMQFyT1iwjTW9coLXgqoA@mail.gmail.com>
- <CAMgjq7A4+Sac9-CYkig1LFfEh5rq-4vLka8AXREei_m3svzJ7w@mail.gmail.com> <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
-In-Reply-To: <CAO9r8zMv6oYvqXti8dFfQd79Nd_Yge5g-EjjjhsEWj44gwJ-qQ@mail.gmail.com>
-From: Kairui Song <ryncsn@gmail.com>
-Date: Wed, 29 Apr 2026 02:46:15 +0800
-X-Gm-Features: AVHnY4KwMPQSKOHLniO-vRRmC7fG6-z8dUk1aqr3V42lrdSb0J0CfA2hErWWeCU
-Message-ID: <CAMgjq7BZpU5K1xHyFiqpsjeFe6CZUouGY_gOGMwbkM2Duq-vGg@mail.gmail.com>
-Subject: Re: [PATCH v5 00/21] Virtual Swap Space
-To: Yosry Ahmed <yosry@kernel.org>
-Cc: Nhat Pham <nphamcs@gmail.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	akpm@linux-foundation.org, Alistair Popple <apopple@nvidia.com>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Barry Song <baohua@kernel.org>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Baoquan He <bhe@redhat.com>, 
-	Byungchul Park <byungchul@sk.com>, 
-	"open list:CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)" <cgroups@vger.kernel.org>, Chengming Zhou <chengming.zhou@linux.dev>, 
-	Chris Li <chrisl@kernel.org>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@kernel.org>, 
-	Dev Jain <dev.jain@arm.com>, Gregory Price <gourry@gourry.net>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>, Jann Horn <jannh@google.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Lance Yang <lance.yang@linux.dev>, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
-	linux-mm <linux-mm@kvack.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Michal Hocko <mhocko@suse.com>, Muchun Song <muchun.song@linux.dev>, 
-	Mariano Pache <npache@redhat.com>, Pavel Machek <pavel@kernel.org>, Peter Xu <peterx@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Pedro Falcato <pfalcato@suse.de>, 
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
-	Roman Gushchin <roman.gushchin@linux.dev>, Mike Rapoport <rppt@kernel.org>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Suren Baghdasaryan <surenb@google.com>, tglx@kernel.org, 
-	Vlastimil Babka <vbabka@suse.cz>, Wei Xu <weixugc@google.com>, 
-	"Huang, Ying" <ying.huang@linux.alibaba.com>, Yosry Ahmed <yosry.ahmed@linux.dev>, 
-	Yuanchu Xie <yuanchu@google.com>, Qi Zheng <zhengqi.arch@bytedance.com>, Zi Yan <ziy@nvidia.com>, 
-	Meta kernel team <kernel-team@meta.com>, Rik van Riel <riel@surriel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR19MB997338:EE_|PH8PR19MB997230:EE_
+X-MS-Office365-Filtering-Correlation-Id: 68e73f53-f0bd-45e6-6ac1-08dea560069c
+X-Microsoft-Antispam:
+	BCL:0;ARA:14566002|37011999003|51005399006|25031999004|10092599007|461199028|23021999003|24021099003|20101099004|8060799015|15001099003|15080799012|5072599009|19110799012|6090799003|40105399003|3412199025|440099028|10035399007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?Qkha1C4ia48eRZaegwcmDC8asxjBShi8YBnTYFvEP8BHREVvq7IqCFieTF6O?=
+ =?us-ascii?Q?VyrUBp5Jku32sng1MZcoeV/TQrkM3y2wQZmQhNnHW/BjurdcfVosE2Y88Z5q?=
+ =?us-ascii?Q?hGCCroMBH88bTEd4q+I9Ifrgc85mQmZ2b00xJxxB7oDasRlW8SYS6o8ZvxUL?=
+ =?us-ascii?Q?L9kMVl4y906NhY5tKlGI8nmmTP+nRS11krZkc0UHvxr7N2PKwEG1L9SfkKdX?=
+ =?us-ascii?Q?lQOmKd/SfEgSWUjbi75Igzywn041mnvULWnACSHbKCu6XkeXZQrxIATgXo16?=
+ =?us-ascii?Q?Vaayck+7KL8I4mFkMSq0j6uoMcn5Xh+cmnu/SSAJ4cREGE2CqRFQghjbNk8V?=
+ =?us-ascii?Q?WC5KmHvjN3cpMZSvIieFGFy0mqLcpoNASLbTXB32tjJQa1GvAHZfEl7HOi2J?=
+ =?us-ascii?Q?Fwt9pBUgkZBaSuu9dMFPfoNYRGcjQjeNK9qmrV3wTZrbl/3o6UMxDOyEhMk8?=
+ =?us-ascii?Q?S9pQfi1Cd6yQSUWudjIERKq0vgSeR84YajBjBCfX7Q5kkTHb7VIcFUkeqY3N?=
+ =?us-ascii?Q?/Npp0Lo0Dei7rAf+JUL/DnEZjRP+wA+JTpI2C0PWEBF2HEkH6ufl8M9kZtZS?=
+ =?us-ascii?Q?QUafkdAliJ5eVfVhf3jlE9w+z8Z3xDtX3v1mXP+5s2mpIyAeaQUzjWGRqjg0?=
+ =?us-ascii?Q?guGOFDWBfBgu/T/CANut9SXyODyzo4bJCaXfkyKdHugLdSUyUjRU1lIVF6gq?=
+ =?us-ascii?Q?B64mZmzAiCQy9ZjfE3LDMzD43a1T4Gi9C4QgJetIqnRFKuv1HXwS6jeRAzGH?=
+ =?us-ascii?Q?83UYtdOUai3wYWCZJCTS6fAUjf94iVAUCrSECgYnkFikBjN9qBs1gDHcFT0d?=
+ =?us-ascii?Q?eTAXqJpzk000W+XCrvhEE4SwF+WRzImFxtWPmC6zKqMPqLpRzBLhTI25vi+6?=
+ =?us-ascii?Q?XYsRIlMJRzpdLuiKzszArANxh87mcHfhK34cuuCrG3d5ekhxYEM/O7IV817a?=
+ =?us-ascii?Q?Oy5AfLmtJ/7pLNDQuS+FX2v03ctUKmh5qeYThIMKOpx7xw2MFVeG9z2E8Lvc?=
+ =?us-ascii?Q?6p/ID+d6WHkBfE0z9mOC0R6F0fHWAfwyBTIRYIqVq4Lg+UKaY4wWYHhaVQmo?=
+ =?us-ascii?Q?Kk1SA2/spnxb+kdZBbFpz55afYWdvMZaC4zlPdxQWUyy3QjVjU0=3D?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?asuQZw+SuCV74UBzyPyQD9V+iWX9UYWT0RUqpOPstT1hOISEcLwJaHg5it6b?=
+ =?us-ascii?Q?lSJQw96uCU97MJr153wJFHh4UK8ILBBx9SnSOaT8zzTc0MUgKlEde9vCXU8+?=
+ =?us-ascii?Q?uNGq0aEwnDl/ZWFbbmezW6BJC9CTQxwpv/B2+YMs+2cqoTacOtNs1B882EYR?=
+ =?us-ascii?Q?mBPkyoRphV7ump+SZHBOQ0kQC0DfgNPlH3Aqq79B83ktUhjHtkrirE+iTJBt?=
+ =?us-ascii?Q?byGeDry68lT9whBDWGF1+jmACYosBA+6+lEp10lILLRfVCE2JhtyYVlaShnb?=
+ =?us-ascii?Q?G+5bmwZUy7+DuwMLkHVqDaRH7uA4xQ988yLgcy7dtG2+XXkkXilmPd30jkYc?=
+ =?us-ascii?Q?4Q5HcvGV+bBcD8BwmjrFWSERRGTKtPP1+8v7V1VK9lq/H3wCUcC6BapypcJ0?=
+ =?us-ascii?Q?1NxnR4EGKlExRgVuCg2U1ETjFpZoRqOcDMnNB4vFieuoApVvo2HwqSsk1CNm?=
+ =?us-ascii?Q?XoWmOcniOR3WOHPio10YbqEcYiHr7hFH0+G/oaaVMoS+AIDow7A6jZKrjmBH?=
+ =?us-ascii?Q?Zmv1WxIj1fGdwwhh1Si5hae2BAEI2ZDKPVgsZs5H+v25KuKZ8FwOMYv49vY+?=
+ =?us-ascii?Q?Q2ylQ+6cP6ioWfOExWvImiA82er7EG/sazxZsLNfNDz3nhZDGmFeJHMipf7F?=
+ =?us-ascii?Q?VTXTrkjVY8FboDNaBdOnnme4/OXUSSuDTWVQoMfRPxkrZawUWu8uxmptclG3?=
+ =?us-ascii?Q?2kPxu5L496Z8+l/yjKZNDTpFTg84dmuaE//puUdGjHPRqZwwKXnPBPsmuEP/?=
+ =?us-ascii?Q?Djn7UfrlNXvi/FpoICHtBe8SHSTyICwDaPe5NmnBQNr30paoSgB/i794x5yG?=
+ =?us-ascii?Q?XP97IrB+R6h89hk7zt2Owlf3sLRpp1HSzJclOKIwPRV/6M6veI3ZXa0Syqtd?=
+ =?us-ascii?Q?GSpna5cKwomCaB5fvhyy9q/QG1YO9c3+zTby9zIVHYGbGG2gs+RCjWCaZNVu?=
+ =?us-ascii?Q?lKe0U6zCH/401L9VTkA27UxCAHXPJuyAkyje8gSl0vbPcQIzKfqoJI1RPqED?=
+ =?us-ascii?Q?VeUJmrxc9FqYew0/LXmrHIcHEVuOLya+ifoi2KzkVfJrNxpsY+odVSFmV8VP?=
+ =?us-ascii?Q?DOthkTBBsfRivrvNiscrAGHFYS39HuDl0djVLQWzMA4VOBdG0ml5ZRG3ERiw?=
+ =?us-ascii?Q?0BZyYh0FdsvkXH/kpWELXlCH2stzLrcs5t/TOoWuTUYsSLouwLH4M13LM1TU?=
+ =?us-ascii?Q?FSyw7CPQDbAgGpiCm4UUPzNWlb9tk+1oY0xWHalOo5/0nsVU6SGLL0BdtvPE?=
+ =?us-ascii?Q?tjrORnHWrXNPeTbd1Cq0K15aDjGpXCOwb/cav1YMfr38aqf7F05l3J7soLZW?=
+ =?us-ascii?Q?ttWkwFrNA3YnHeQn4RlbIaD1+rob27HVn2Pv4GQqUq6Q1U7ARd3r1U1PrAnw?=
+ =?us-ascii?Q?4leFk563VxO9guLRG60XXdZesYRKkLo8jvGM1e+wNfRFQbBXlA=3D=3D?=
+X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-990eb.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 68e73f53-f0bd-45e6-6ac1-08dea560069c
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR19MB997338.namprd19.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Apr 2026 19:54:58.1682
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR19MB997230
 
-On Tue, Apr 28, 2026 at 2:23=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> wrot=
-e:
->
-> On Fri, Apr 24, 2026 at 12:52=E2=80=AFPM Kairui Song <ryncsn@gmail.com> w=
-rote:
-> >
-> > On Sat, Apr 25, 2026 at 3:12=E2=80=AFAM Yosry Ahmed <yosry@kernel.org> =
-wrote
-> > > Why >16 bytes? Do we need anything extra other than the reverse
-> > > mapping? Also why do we need a double lookup?
-> >
-> > You will have to store at least the following info: memcg (2 bytes),
-> > shadow (8 bytes), count (at least 1 bytes), and revert mapping (8
-> > bytes, since you have to address a full virtual swap space). And some
-> > type info is also needed. Part of them can be shrinked but still,
-> > scientifically, merging two layers into one is considered a kind of
-> > optimization.
-> >
-> > You need lookup the virtual layer, then the lower layer for many
-> > decision making, is was discussed before to introduce more cache bit
-> > or things like that and I think that is getting over complex, reminds
-> > me of the slot cache or HAS_CACHE thing...:
-> > https://lore.kernel.org/linux-mm/CAMgjq7DJrtE-jARik849kCufd0qNnZQs7C8fc=
-yzVOKE14-O+Dw@mail.gmail.com/
->
-> I think that's where the disconnect is. You are considering these two
-> separate layers, each with its own metadata. The metadata should only
-> live in one place.
->
-> If we only have swap tables in the virtual swap layer (with the
-> metadata), backends do not have to carry the metadata. In this case,
-> backends should only have a reverse mapping (if needed), and some
-> internal data structure (e.g. bitmaps) to track usage.
+On Tue, Apr 28, 2026 at 05:09:49PM +0200, Krzysztof Kozlowski wrote:
+> On 28/04/2026 16:09, Chris Morgan wrote:
+> > On Tue, Apr 28, 2026 at 09:47:00AM +0200, Krzysztof Kozlowski wrote:
+> >> On Mon, Apr 27, 2026 at 12:09:09PM -0500, Chris Morgan wrote:
+> >>> From: Chris Morgan <macromorgan@hotmail.com>
+> >>>
+> >>> Document the SG Micro sgm41542 battery charger/boost converter.
+> >>>
+> >>> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+> >>> ---
+> >>>  .../supply/sgmicro,sgm41542-charger.yaml      | 99 +++++++++++++++++++
+> >>>  1 file changed, 99 insertions(+)
+> >>>  create mode 100644 Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+> >>> new file mode 100644
+> >>> index 000000000000..3e5041e5b551
+> >>> --- /dev/null
+> >>> +++ b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+> >>
+> >> Filename must match compatible.
+> > 
+> > Acknowledged.
+> > 
+> >>
+> >>> @@ -0,0 +1,99 @@
+> >>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> >>> +%YAML 1.2
+> >>> +---
+> >>> +$id: http://devicetree.org/schemas/power/supply/sgmicro,sgm41542-charger.yaml#
+> >>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> >>> +
+> >>> +title: SGM41542 Battery Charger
+> >>> +
+> >>> +description: |
+> >>
+> >> Do not need '|' unless you need to preserve formatting.
+> >>
+> > 
+> > Will fix.
+> > 
+> >>> +  The SGMicro SGM41542 is a single cell battery charger/boost controller.
+> >>> +
+> >>> +maintainers:
+> >>> +  - Chris Morgan <macromorgan@hotmail.com>
+> >>> +  - Xu Shengfei <xsf@rock-chips.com>
+> >>> +
+> >>> +properties:
+> >>> +  compatible:
+> >>> +    const: sgmicro,sgm41542
+> >>> +
+> >>> +  input-current-limit-microamp:
+> >>
+> >> Missing vendor prefix.
+> >>
+> > 
+> > This *appears* to be a standard value (perhaps not formally, but in use by
+> > enough devices to suggest a defacto standard), which is why I did not use
+> > the vendor prefix here. Do I need to add that for this one?
+> 
+> I know, I found these other properties but I think they were just coming
+> from old schema.
+> 
+> If it is really a common property, then should be defined in a common
+> schema and this did not happen.
 
-Ah, you are right. This is currently an intermediate state, that
-problem might be gone if we unified everything.
+Would now be a good time to add it to the power-supply.yaml document?
+It looks like this value is used by about 10 other devices.
 
-> This is difficult to achieve if the virtual swap layer is optional,
-> because then the metadata can live in different places. This is why I
+Thank you,
+Chris
 
-But that's not difficult to achieve at all with an optional layer, and
-actually will be achieved naturally without any design change with the
-RFC I posted. Swap count / cgroup / shadow all stay in the top layer,
-lower layer is "reverse map" only (the undone part though, it will
-require to move the cluster cache from global to device level, which
-is also required for YoungJun's tier or any functional tiering to
-work, we may run into more and more detail issue like this).
-
-Might even be easier that way, it's pretty close to the unified states I th=
-ink.
+> 
+> > 
+> >>> +    description:
+> >>> +      Optional value to clamp the maximum input current limit to for
+> >>> +      the device. If omitted, the default value for the hardware will
+> >>> +      be used (2400000).
+> >>> +    minimum: 100000
+> >>> +    maximum: 3800000
+> >>> +
+> >>> +  input-voltage-limit-microvolt:
+> >>> +    description:
+> >>> +      Optional value to clamp the maximum input voltage limit to for
+> >>> +      the device. If omitted, the default value for the hardware will
+> >>> +      be used (4500000).
+> >>> +    minimum: 3900000
+> >>> +    maximum: 12000000
+> >>> +
+> >>> +  interrupts:
+> >>> +    maxItems: 1
+> >>> +
+> >>> +  monitored-battery:
+> >>
+> >> You miss definition of this property. I guess this is power supply, so
+> >> reference proper schema for power supplies. Look at other bindings to
+> >> for some example code.
+> > 
+> > I'll look at this some more, I might have a few more questions. But I will
+> > make the changes requested.
+> > 
+> >>
+> >>> +    description: |
+> >>> +        A phandle to a monitored battery node. Values for the following
+> >>> +        are used by the driver and if not present will result in default
+> >>> +        values being applied:
+> >>> +        constant-charge-current-max-microamp
+> >>> +        constant-charge-voltage-max-microvolt
+> >>> +        charge-term-current-microamp
+> >>> +        precharge-current-microamp
+> >>> +
+> >>> +  reg:
+> >>> +    maxItems: 1
+> >>> +
+> >>> +  regulators:
+> >>
+> >> No need for regulators node, just define here otg-vbus directly. But
+> >> honestly, your example is incomplete or you defined something implied by
+> >> the compatible. If you have a fixed 5V regulator, what is the point of
+> >> defining it in the DT?
+> > 
+> > The regulator can be adjusted within a range around 5V, and is referenced
+> > by the USB subsystem. Should I still omit it from the device tree or instead
+> > define the min and max values?
+> 
+> If it can be adjusted then it's fine, can stay.
+> 
+> 
+> Best regards,
+> Krzysztof
