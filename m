@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 148D437B03B;
-	Tue, 28 Apr 2026 09:24:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34D6B381B12;
+	Tue, 28 Apr 2026 09:26:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777368265; cv=none; b=lx6HgDgE1CotxSgrgszD58b+SeebfH0rS2if/7rGAZMsSb3eY4TEoINtZbiJ7Nnl3bVCVC0o9eAqufXt9kpEZ92G4dvXMJS1MQkieQIKyp58Grj4q27eGFCF2xfKThtBDUorIOm5yWTq1GSDZ/UQIxeS6yQABMvj9gWITS3U3ws=
+	t=1777368366; cv=none; b=Fmv62uG/hE64eykxqJ8tm9d+5I1hd6QhMp1skuRjqy9CY0mZFh87/sws5fZPWsrhL4gWGFu9K3BkXra1Q9SOp84zZBvNWsAWSiVLjeV9I/iUlzeAfAznDf3shao3Zhf1ifgZ4QCVbBz7DPjA1TnvFCiGUoSiBvv95Cy/FeLGSD8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777368265; c=relaxed/simple;
-	bh=ZU3pGIeRljMZdqSe4gX8oj+DZuUxGHHbFuDwnDlOQjU=;
+	s=arc-20240116; t=1777368366; c=relaxed/simple;
+	bh=uZMFcw4X6G4NyZ2AkpR/wzfhivGs4KeUY1ksxX5CYJk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=pqKX+8zbGCtI3H7NSvN+MjwRJ52yNA9HrYhKpOA2b8vhAfZnSIGRaJkq/C8Zq3WgaG7DbOzkhoBRg381OQROBtc2jlKY9a+TBeUs3DVq4lKa8B1Th6a+/dCN0OW6YoPjbBDEW1BReqTu+yN03P/5GxMSuBV0ArrDmKHxuWvQFbE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BsdPb/42; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=ZZUlWFyMxtaPsHi2eX3Kk/1VFNwH8cZwgaAJL/4d6d9wDzfwj9RfQ570lXk913UXWtFJZtIhZU+fJkFOBPC0nb3XN+59/v0tpTAWokaamdwXr8MehkcQqg9rbUU0vDs4+OP/52aTcpA8JlVEVKcPb3hv7zq9jiwHYKc40/oz/Rc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KpT8hcZV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BsdPb/42"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A3ECC2BCAF;
-	Tue, 28 Apr 2026 09:24:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KpT8hcZV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A86BBC2BCAF;
+	Tue, 28 Apr 2026 09:25:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777368264;
-	bh=ZU3pGIeRljMZdqSe4gX8oj+DZuUxGHHbFuDwnDlOQjU=;
+	s=k20201202; t=1777368365;
+	bh=uZMFcw4X6G4NyZ2AkpR/wzfhivGs4KeUY1ksxX5CYJk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=BsdPb/42YzMd9F2xIYEva5cAI6HoFwjWj+zQq/tU4sGlIDC6BZbxOGnRfy9+/XLYY
-	 oYAH4yQu42cwZ087bMxBwy/h50EXjosGmrXBZ47MDcvELjrTuXZAKFhiUwZWw8ab0D
-	 fq2k5tBZgRhYVaex280JgqFuM1qSfOyohswFJcG3TdIVdwwZ/zS2RuaOO2i7+YkwBs
-	 iSR8YzD4e/iJASrsbBKw5y7SXwy10+T6wDpHwf7FNWUqWqrfb50YC8SlfWOpHbl3DT
-	 aAqVeyi1FQhOw3KLcPABEadH8jk2GUkkwJ2UyB86yEJo9MUrKdqz2NjEgV0sjORa1C
-	 shTtMonslVCvw==
-Message-ID: <41ebf31c-89ca-497e-b206-ece332d0260e@kernel.org>
-Date: Tue, 28 Apr 2026 11:24:16 +0200
+	b=KpT8hcZV0Gc1QMqlWdt6nVmZt47Mp3ucObkc8302hyQzOBtJEcfxgPqVQaCUl3RFl
+	 NUhIh76/2bSkTvKmX2h9HQjowxC5MtWQK2FnSdhW9P2ock+SupSZixrMX1bYFtqWGr
+	 EF0GnlMrjJ+zSdTzJuAlf/IvDqv+RkV4+kx8/mRk3tShOmjL4o5fUcMm9ks9Q68oMU
+	 S38f+9pdygkNLq0V9eWkD/6ZFG7N/MlyuO1eErtEp8NCSqsYtubsEbYqCIxDBcaTTp
+	 Hd6fA9a1WhactpOEwVikN7Q8fNDXyJ7Vj79Pq3SofYzb2N3MCevkNHdyYxNzLFdRW3
+	 xrwBRz4Rzjnsg==
+Message-ID: <a63d4dc7-b01a-4da2-ac1f-6679c9030db6@kernel.org>
+Date: Tue, 28 Apr 2026 11:25:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 00/11] thermal: samsung: Add support for Google GS101
- TMU
+Subject: Re: [PATCH v4 02/11] firmware: samsung: acpm: Consolidate transfer
+ initialization helper
 To: Tudor Ambarus <tudor.ambarus@linaro.org>,
  "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
  Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
@@ -55,9 +55,9 @@ Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com,
  linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-hardening@vger.kernel.org,
- linux-clk@vger.kernel.org,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+ linux-clk@vger.kernel.org
 References: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
+ <20260423-acpm-tmu-v4-2-8b59f8548634@linaro.org>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -103,39 +103,39 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
+In-Reply-To: <20260423-acpm-tmu-v4-2-8b59f8548634@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 23/04/2026 17:22, Tudor Ambarus wrote:
-> Add support for the Thermal Management Unit (TMU) on the Google GS101
-> SoC.
-> 
-> The GS101 TMU implementation utilizes a hybrid architecture where
-> management is shared between the kernel and the Alive Clock and
-> Power Manager (ACPM) firmware. This hybrid ACPM TMU architecture is 
-> also present on other Samsung Exynos SoCs (e.g., AutoV920, Exynos850).
-> 
-> Dependencies
-> ============
-> - context dependency on the ACPM fixes sent at:
->   Link: https://lore.kernel.org/linux-samsung-soc/20260423-acpm-fixes-sashiko-reports-v1-0-2217b790925e@linaro.org/T/#t
-> - cleanup and prep firmware patches 2, 3, 4, 5, 6, 7: required by the
->   thermal driver (patch 8).
+>  	acpm_dvfs_init_get_rate_cmd(cmd, clk_id);
+> -	acpm_dvfs_set_xfer(&xfer, cmd, ARRAY_SIZE(cmd), acpm_chan_id, true);
+> +	acpm_set_xfer(&xfer, cmd, ARRAY_SIZE(cmd), acpm_chan_id, true);
+>  
+>  	ret = acpm_do_xfer(handle, &xfer);
+>  	if (ret)
+> diff --git a/drivers/firmware/samsung/exynos-acpm-pmic.c b/drivers/firmware/samsung/exynos-acpm-pmic.c
+> index 0c50993cc9a8..f032f2c69685 100644
+> --- a/drivers/firmware/samsung/exynos-acpm-pmic.c
+> +++ b/drivers/firmware/samsung/exynos-acpm-pmic.c
+> @@ -58,16 +58,6 @@ static inline u32 acpm_pmic_get_bulk(u32 data, unsigned int i)
+>  	return (data >> (ACPM_PMIC_BULK_SHIFT * i)) & ACPM_PMIC_BULK_MASK;
+>  }
+>  
+> -static void acpm_pmic_set_xfer(struct acpm_xfer *xfer, u32 *cmd, size_t cmdlen,
+> -			       unsigned int acpm_chan_id)
+> -{
+> -	xfer->txd = cmd;
+> -	xfer->rxd = cmd;
+> -	xfer->txcnt = cmdlen;
+> -	xfer->rxcnt = cmdlen;
+> -	xfer->acpm_chan_id = acpm_chan_id;
 
-Well, cleanup in one driver cannot be a dependency for other driver.
+The code is not equivalent. RX bits were always cleared. This should be
+explained in the commit msg which would also provide a proof that you
+actually analyzed if it has any impact.
 
-> - bindings (patch 1): required for DTS validation.
-> - thermal driver patch 8: required by defconfig (patch 11) - logical
-> dependency. 
 
-Most of the patches should be taken before, which would leave you only
-final new firmware interface as dependency. Creating such unnecessary
-dependencies is not helping.
-
-And the patchset even grew and will conflict with other firmware work,
-so I will deal with firmware bits and I can provide them via stable tag
-to thermal for the last patch.
 
 Best regards,
 Krzysztof
