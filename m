@@ -1,31 +1,31 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id D1D373EC2CA;
-	Tue, 28 Apr 2026 09:10:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 888F53ECBC4;
+	Tue, 28 Apr 2026 09:10:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777367405; cv=none; b=kYUMkFfd+OtRY4bwIhNaPmm+jnI1ovyEqxD+QUzu4H1rh0XjPv06zQvRpPof9LL6/eHkt79pbj1J+75SxVh5OHETu/Rhk19NqoyephvVBVjN5Y7M05ZPb9arCmGpFp1JSgW+FLFJdlw7rI1Stlvze1H3vPlRsKs5aGuXt2pMHR0=
+	t=1777367407; cv=none; b=gyzl8vXPGpwZ7Ip7B98QUITQxSbMg0kZHBCPCyqfEcDZYeDFVY5fwOW6GZnE14CIstobrikJ3DzD7Rw0jwrI7nLyZfe5k04xLjgJLFJXtIe6hN8RAvr/J3ZWIk+Eo8ns2fC+kait5+FZgeINpMUJ9ijTi5nMbufJE2ulCuBd7SE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777367405; c=relaxed/simple;
-	bh=pa5p7Hv08eM1D8fsxP+q41Tlroyicg+gua19J5Hsngg=;
+	s=arc-20240116; t=1777367407; c=relaxed/simple;
+	bh=oOi5+FezjQ1e4aYyhZu1Gg6yAKds2xcysyHCBosKTyo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZmfIXnGfQi82RNDDF85NgGI20as9UXzLnu4n4nrH+fbTtZ18Z8pmRIweFW7o18WiE/UYtYMowlRFqEwe66P6qrlC6znMZQKra0zszZsyYfVNjYnZR60EDlt0XeCYCbpsR5aqWuS3GNo87OJQufVlqAjlYaRM1Sde0Mo28VOLyXc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=lVvrdeyT; arc=none smtp.client-ip=217.140.110.172
+	 MIME-Version; b=enp8VI1J8rW+yCu1EP3OdzR8vmT5aJOHz+hOqTjhUOBiF/UyrhzAMZ1s0VCW1w2utXiiQFhMmoQkvDQaLBsZdVF3T4Gt3as0QKin36InfXtySyDMNCw2JlZH0H2HXo3i3ILFyRPmpH4R6wayxtrniIa0acyRXc3MT88Sk8PGU8s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=PB4Qye36; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="lVvrdeyT"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="PB4Qye36"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CB10115A1;
-	Tue, 28 Apr 2026 02:09:57 -0700 (PDT)
-Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 029D93F62B;
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6C50515A1;
 	Tue, 28 Apr 2026 02:10:00 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 98DD43F62B;
+	Tue, 28 Apr 2026 02:10:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1777367403; bh=pa5p7Hv08eM1D8fsxP+q41Tlroyicg+gua19J5Hsngg=;
+	t=1777367405; bh=oOi5+FezjQ1e4aYyhZu1Gg6yAKds2xcysyHCBosKTyo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lVvrdeyTv7FJT/QRbnv7UD8olakxNuttkpUhTP7Bwuw0oDhyoi8zMPUkZUPphFVXo
-	 E+WVkfnMrZIo9RTuiCWjSiA34Oao+uzJS0udNqbouqO8ng5159dCQ7fja4fhfIFwPP
-	 viwZnco5y33EATNO3TqtE2Lg+7nrZlysr2DZxwBE=
+	b=PB4Qye368hQF247pfeKONgd9KffNTVB+6mns4vpxfnYS3Af2Sm3C8nFbGy7yirghc
+	 +BtF6RgfwYNP49ABKyT43K7eMq7QvtvBPHSXn4Vott8GDxcmWUN6zg02SNvoRkkBV6
+	 WdWTEabO8+9fpkBOpMHcD19jqr86xTlb8vsXEEt0=
 From: Philip Radford <philip.radford@arm.com>
 To: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
@@ -43,9 +43,9 @@ Cc: sudeep.holla@arm.com,
 	d-gole@ti.com,
 	souvik.chakravarty@arm.com,
 	Philip Radford <philip.radford@arm.com>
-Subject: [PATCH v5 10/12] powercap: arm_scmi: Create synthetic parent node for multi-instance
-Date: Tue, 28 Apr 2026 10:09:19 +0100
-Message-ID: <20260428090922.346069-11-philip.radford@arm.com>
+Subject: [PATCH v5 11/12] powercap: arm_scmi: Add get_power_uw to synthetic node
+Date: Tue, 28 Apr 2026 10:09:20 +0100
+Message-ID: <20260428090922.346069-12-philip.radford@arm.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260428090922.346069-1-philip.radford@arm.com>
 References: <20260428090922.346069-1-philip.radford@arm.com>
@@ -57,152 +57,56 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-SCMI powercap domains are exposed as a flat list and may include
-multiple top-level domains without a parent. When registered with
-the powercap framework, these appear as independent root zones
-with no common hierarchy. The driver probes domains per SCMI
-instance, but when registering with the powercap framework, these
-would be combined into a single tree. This is particularly evident
-in multi-instance setups where zone IDs and parent zones can only
-coexist with other zones and parents from the same instance.
-
-Create a synthetic root zone to act as a common parent for all
-top-level domains. Creates a single hierarchy and unified entry
-point per-instance for userspace.
+Exposes the current power usage from the immediate children of
+the synthetic (root) powercap node. Iterates over pr->spzones and
+sums per-zone power.
 
 Signed-off-by: Philip Radford <philip.radford@arm.com>
 ---
----
- drivers/powercap/arm_scmi_powercap.c | 67 ++++++++++++++++++++++++++--
- 1 file changed, 64 insertions(+), 3 deletions(-)
+ drivers/powercap/arm_scmi_powercap.c | 29 ++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-index 7f2bb162f96c..d74869af1633 100644
+index d74869af1633..81b5214acda4 100644
 --- a/drivers/powercap/arm_scmi_powercap.c
 +++ b/drivers/powercap/arm_scmi_powercap.c
-@@ -36,6 +36,7 @@ struct scmi_powercap_root {
- 	struct scmi_powercap_zone *spzones;
- 	struct list_head *registered_zones;
- 	struct list_head scmi_zones;
-+	struct scmi_powercap_zone instance_root;
- };
+@@ -270,9 +270,34 @@ static int instance_root_release(struct powercap_zone *pz)
+ 	return 0;
+ }
  
- static struct powercap_control_type *scmi_top_pcntrl;
-@@ -263,12 +264,47 @@ static const struct powercap_zone_constraint_ops constraint_ops  = {
- 	.get_name = scmi_powercap_get_name,
- };
- 
-+/* Multi-instance constraints to meet driver requrements */
-+static int instance_root_release(struct powercap_zone *pz)
-+{
-+	return 0;
-+}
-+
-+static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *v)
-+{
-+	*v = 0;
-+	return 0;
-+}
-+
-+static int instance_root_set_constraint(struct powercap_zone *pz, int cid, u64 v)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static int instance_root_get_constraint(struct powercap_zone *pz, int cid, u64 *v)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static const struct powercap_zone_ops instance_root_ops = {
-+	.get_max_power_range_uw = scmi_powercap_get_max_power_range_uw,
-+	.get_power_uw = instance_root_get_power_uw,
-+	.release = instance_root_release,
-+};
-+
-+static const struct powercap_zone_constraint_ops instance_root_const_ops = {
-+	.set_power_limit_uw = instance_root_set_constraint,
-+	.get_power_limit_uw = instance_root_get_constraint,
-+	.set_time_window_us = instance_root_set_constraint,
-+	.get_time_window_us = instance_root_get_constraint,
-+};
-+
- static void scmi_powercap_unregister_all_zones(struct scmi_powercap_root *pr)
+-static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *v)
++static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *power_uw)
  {
- 	int i;
- 
- 	/* Un-register children zones first starting from the leaves */
--	for (i = pr->num_zones - 1; i >= 0; i--) {
-+	for (i = pr->num_zones; i >= 0; i--) {
- 		if (!list_empty(&pr->registered_zones[i])) {
- 			struct scmi_powercap_zone *spz;
- 
-@@ -313,7 +349,6 @@ static int scmi_powercap_register_zone(struct scmi_powercap_root *pr,
- 				   parent ? &parent->zone : NULL,
- 				   &zone_ops, spz->info->num_cpli, &constraint_ops);
- 	if (!IS_ERR(z)) {
--		spz->height = scmi_powercap_get_zone_height(spz);
- 		spz->registered = true;
- 		list_move(&spz->node, &pr->registered_zones[spz->height]);
- 		dev_dbg(spz->dev, "Registered node %s - parent %s - height:%d\n",
-@@ -384,6 +419,8 @@ static int scmi_zones_register(struct device *dev,
- 		struct scmi_powercap_zone *parent;
- 
- 		parent = scmi_powercap_get_parent_zone(spz);
-+		if (!parent)
-+			parent = &pr->instance_root;
- 		if (parent && !parent->registered) {
- 			zones_stack[sp++] = spz;
- 			spz = parent;
-@@ -424,8 +461,11 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 	int ret, i;
- 	struct scmi_powercap_root *pr;
- 	struct scmi_powercap_zone *spz;
-+	struct scmi_powercap_zone *ir;
- 	struct scmi_protocol_handle *ph;
- 	struct device *dev = &sdev->dev;
-+	char *instance_name;
-+	struct powercap_zone *z;
- 
- 	if (!sdev->handle)
- 		return -ENODEV;
-@@ -453,7 +493,7 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 		return -ENOMEM;
- 
- 	/* Allocate for worst possible scenario of maximum tree height. */
--	pr->registered_zones = devm_kcalloc(dev, pr->num_zones,
-+	pr->registered_zones = devm_kcalloc(dev, pr->num_zones + 1,
- 					    sizeof(*pr->registered_zones),
- 					    GFP_KERNEL);
- 	if (!pr->registered_zones)
-@@ -491,6 +531,27 @@ static int scmi_powercap_probe(struct scmi_device *sdev)
- 		}
- 	}
- 
-+	ir = &pr->instance_root;
-+	ir->dev = dev;
-+	INIT_LIST_HEAD(&ir->node);
-+	instance_name = devm_kasprintf(dev, GFP_KERNEL, "instance_%s", dev_name(dev));
-+	if (!instance_name)
-+		return -ENOMEM;
+-	*v = 0;
++	struct scmi_powercap_zone *root = to_scmi_powercap_zone(pz);
++	struct scmi_powercap_zone *child;
++	struct scmi_powercap_root *pr;
++	u64 acc = 0;
++	u64 p;
++	int ret;
 +
-+	z = powercap_register_zone(&ir->zone, scmi_top_pcntrl,
-+				   instance_name, NULL, &instance_root_ops, 0,
-+				   &instance_root_const_ops);
++	if (!pz || !power_uw)
++		return -EINVAL;
 +
-+	if (IS_ERR(z)) {
-+		ret = PTR_ERR(z);
-+		dev_err(dev, "Failed to register sysnthetic instance root: %d\n", ret);
-+		return ret;
++	pr = container_of(root, struct scmi_powercap_root, instance_root);
++	if (!pr)
++		return -ENODEV;
++
++	list_for_each_entry(child, &pr->registered_zones[0], node) {
++		if (child == &pr->instance_root)
++			continue;
++
++		ret = scmi_powercap_get_power_uw(&child->zone, &p);
++		if (!ret)
++			acc += p;
++		else
++			dev_dbg(child->dev, "Failed to read child power: %u\n", ret);
 +	}
 +
-+	ir->registered = true;
-+	ir->height = 0;
-+	list_add_tail(&ir->node, &pr->registered_zones[0]);
-+
- 	/*
- 	 * Scan array of retrieved SCMI powercap domains and register them
- 	 * recursively starting from the root domains.
++	*power_uw = acc;
+ 	return 0;
+ }
+ 
 -- 
 2.47.3
 
