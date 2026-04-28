@@ -1,131 +1,194 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41D28261B91
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 07:46:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 818DC29827E;
+	Tue, 28 Apr 2026 07:47:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777362408; cv=none; b=ba/Q2z/XKL/JdAEWYR+hLBft+baYYp1PdVWX50ZWgGKPe2ymaUTkpZ1jpNl9dNDXFiIpjRB5/Z76aRFATGDAAmd6TA8RzUfP75OIZzCdLzqQ6Fd7BgHPf4+UP/LIxH86X+ACtaCuJ6rHY9K7BzixjU1EQb7zaGSQwxEH3JFBak8=
+	t=1777362423; cv=none; b=dG/8/v+Zaqs1Ku4X/5sum0Z1RIOd6GP2JXQ9ru+7B1hFqn70mAH9cYnREYbDqeBFD5pyW2HsNWsD+gpReBJpVaecEmMV6/kkrll+yrgr/GyEOfM9Tx9HwxtjnVcyL21Ks2VGuLjI52UKyggMz6fzcdCZN6COaGZ+xf8/chL/lCE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777362408; c=relaxed/simple;
-	bh=ADg1FaAaQD046f4ZXKUeNs9WMlXZmKjJ9FxWyVIqZMw=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mIQr6liocTThivD3O5AMDBASTVUvlTD29cM2xYoiSyoSK/4OMkiCAJI1DOTYN5xOBP7dQaXYXc8dfybjaIxnvRhieTb+/ARnZ5kwD19uueC7/enMsLb6ecDCEo81vvfxzvzbkVCt0eNSy3JKouASOhzDvuIzFaTAc609QdZ1F2o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZV0JPbxN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777362423; c=relaxed/simple;
+	bh=LjvQWxO8MdqD3grX5Gi28h5ntU4nyt5GvckNuDrXREU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CVaNax8SmtDJl1Cm2WXZdjcN/jee93R2yZ5+7ebCkXZzMfuQhsRVbj9FYP7ljPidjGrDclyV7whV17B6mRH9EaY79MucQ4Q7EQAUvQLfEBAUQCy6dbt13mHaQLCoIKbFh65gmfYu86U1auBxX27H9n5kVoPFVQfIjO2/81WZ4Ag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jGyzS1vZ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZV0JPbxN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B851C2BCF6
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 07:46:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jGyzS1vZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5419C2BCAF;
+	Tue, 28 Apr 2026 07:47:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777362408;
-	bh=ADg1FaAaQD046f4ZXKUeNs9WMlXZmKjJ9FxWyVIqZMw=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
-	b=ZV0JPbxN926AogNzlpDw8VwYRW/BKxLdzSOfm0sxwUkyI7a3Ve0WDoi6342BL4XcL
-	 Li/klvurMdG5TK/JWlp1Svtgmo6hfmwTzh5pL20oK63MPSTcLKwuu2+BBTJixoIZcE
-	 mPPevR9bvQ9KJvrJcIhiRDnEpcZzXW/mUCEhoKWkBituTpiduDdR1jCUdiESdNeWK/
-	 bZqt81VhzdK23m7WKfv3Y94inS2YC++NNi9dtYX6im5iB6wzsu/WR++s3etlZrVZMU
-	 bDlDGqiKE56qLDfnOd242tSROZcH9NsoEpKIXesowSZZdqSZd5dsp511W50lNxJF9G
-	 /51TTn+HZKDNw==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a402b2d102so11712706e87.3
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 00:46:47 -0700 (PDT)
-X-Gm-Message-State: AOJu0YzDBdIOYagiSCj8iWS5tUIv1xK8dVURucSdXQa4kg31yMYcHko8
-	QLUlkQ+f28Z8gKhpgto3yjlZ3Rpyb2O044FO/e/FwO7EZwUMvC8Pxjc6U+nDnvvjaZ6jZRH6nv+
-	lj5XrlNO9KTzpDEF5qYZoOV6N84pGwu0Rdb7KZV1umQ==
-X-Received: by 2002:a05:6512:2381:b0:5a2:a13e:9082 with SMTP id
- 2adb3069b0e04-5a74662a7a2mr863095e87.35.1777362406607; Tue, 28 Apr 2026
- 00:46:46 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Apr 2026 00:46:45 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Apr 2026 00:46:45 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260427-arm-psci-system_reset2-vendor-reboots-v21-3-dcf937775e73@oss.qualcomm.com>
+	s=k20201202; t=1777362423;
+	bh=LjvQWxO8MdqD3grX5Gi28h5ntU4nyt5GvckNuDrXREU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jGyzS1vZsNCTz0eymCL2UyLf5YdAlcj+ArMyHL9o+qmE5VwKCXwnXdPD+oTzzMSfy
+	 o/QYaAc0xx+Bgx9s2NZf6vuu2yQN84Z/02GkbsBiV1NHTm8YaGpD8VesJrziCKQV5W
+	 nf+JrOYfdF3OjTkwRGGsU/6g+QlbYQ+eKXODcGv/3zitNDvDIDgJ0VVTZaerETeeoL
+	 PVpZ9nNoJURMOJxNIlCU7cBoCkQlPr/C4v7pCyGAUrtr8GHY+CI0orURgIR69Br+pM
+	 u8A25UTFSSbToxCtkCqVQcK0CJFi2II2elj4yXNCGQ0rRF22AZI/y5bHolqj3igpMl
+	 ikqYt2ZWlVMgw==
+Date: Tue, 28 Apr 2026 09:47:00 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, xsf@rock-chips.com, sre@kernel.org, 
+	simona@ffwll.ch, airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org, 
+	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com, neil.armstrong@linaro.org, 
+	heiko@sntech.de, conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, 
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH 1/6] dt-bindings: power: supply: sgm41542: document
+ sgm41542
+Message-ID: <20260428-bulky-nebulous-reindeer-ed45ed@quoll>
+References: <20260427170914.5062-1-macroalpha82@gmail.com>
+ <20260427170914.5062-2-macroalpha82@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-3-dcf937775e73@oss.qualcomm.com>
-Date: Tue, 28 Apr 2026 00:46:45 -0700
-X-Gmail-Original-Message-ID: <CAMRc=MfyCqZHYSoUKe3=c_VO61HAxydpwyHP3Ey6u08Pzx+OgQ@mail.gmail.com>
-X-Gm-Features: AVHnY4Lw8-kSbgaAsT6iClj8v0tvKXLizHPhM-T0oDDyli5y1-FS0QYWyggqmk4
-Message-ID: <CAMRc=MfyCqZHYSoUKe3=c_VO61HAxydpwyHP3Ey6u08Pzx+OgQ@mail.gmail.com>
-Subject: Re: [PATCH v21 03/13] power: reset: reboot-mode: Add support for
- predefined reboot modes
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260427170914.5062-2-macroalpha82@gmail.com>
 
-On Mon, 27 Apr 2026 19:34:43 +0200, Shivendra Pratap
-<shivendra.pratap@oss.qualcomm.com> said:
-> reboot-mode based drivers can define a reboot-mode by adding it under
-> the reboot-mode node in device tree. This limits such drivers, to define
-> any predefined reboot-modes statically within the driver and creates a
-> dependency on device-tree.
->
-> Introduce a list for predefined modes in the reboot-mode framework and
-> process the predefined reboot-modes along with the device-tree defined
-> reboot-modes. Modify existing reboot-mode based drivers to initialize
-> the predefined list-head as empty.
->
-> This patch enables a reboot mode driver to define reboot-modes through a
-> predefined static list, in addition to the device-tree based reboot-modes.
->
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+On Mon, Apr 27, 2026 at 12:09:09PM -0500, Chris Morgan wrote:
+> From: Chris Morgan <macromorgan@hotmail.com>
+> 
+> Document the SG Micro sgm41542 battery charger/boost converter.
+> 
+> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
 > ---
->  drivers/power/reset/nvmem-reboot-mode.c  |  1 +
->  drivers/power/reset/qcom-pon.c           |  1 +
->  drivers/power/reset/reboot-mode.c        | 66 ++++++++++++++++++++------------
->  drivers/power/reset/syscon-reboot-mode.c |  1 +
->  include/linux/reboot-mode.h              |  8 ++++
->  5 files changed, 52 insertions(+), 25 deletions(-)
->
-> diff --git a/drivers/power/reset/nvmem-reboot-mode.c b/drivers/power/reset/nvmem-reboot-mode.c
-> index bd05d660490c686b43134f82f1eadd7665403d20..83a8d80fd7d1ccb1b736aee5f2d675246a63b8f8 100644
-> --- a/drivers/power/reset/nvmem-reboot-mode.c
-> +++ b/drivers/power/reset/nvmem-reboot-mode.c
-> @@ -53,6 +53,7 @@ static int nvmem_reboot_mode_probe(struct platform_device *pdev)
->
->  	nvmem_rbm->reboot.dev = &pdev->dev;
->  	nvmem_rbm->reboot.write = nvmem_reboot_mode_write;
-> +	INIT_LIST_HEAD(&nvmem_rbm->reboot.predefined_modes);
->
->  	nvmem_rbm->cell = devm_nvmem_cell_get(&pdev->dev, "reboot-mode");
->  	if (IS_ERR(nvmem_rbm->cell)) {
-> diff --git a/drivers/power/reset/qcom-pon.c b/drivers/power/reset/qcom-pon.c
-> index 57b36e6186f80aff947fd7f5aae5ce280c65dc6b..9d0e3fc621a6173438c6da4cce38394199451881 100644
-> --- a/drivers/power/reset/qcom-pon.c
-> +++ b/drivers/power/reset/qcom-pon.c
-> @@ -73,6 +73,7 @@ static int qcom_pon_probe(struct platform_device *pdev)
->  		pon->reboot_mode.dev = &pdev->dev;
->  		pon->reason_shift = reason_shift;
->  		pon->reboot_mode.write = qcom_pon_reboot_mode_write;
-> +		INIT_LIST_HEAD(&pon->reboot_mode.predefined_modes);
+>  .../supply/sgmicro,sgm41542-charger.yaml      | 99 +++++++++++++++++++
+>  1 file changed, 99 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
+> new file mode 100644
+> index 000000000000..3e5041e5b551
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
 
-Maybe unrelated to this series but we could use some centralized initializer
-for struct reboot_mode_driver as well as rename it to struct reboot_mode_device
-which it actually is.
+Filename must match compatible.
 
-For now:
+> @@ -0,0 +1,99 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/supply/sgmicro,sgm41542-charger.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: SGM41542 Battery Charger
+> +
+> +description: |
 
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Do not need '|' unless you need to preserve formatting.
 
-Bart
+> +  The SGMicro SGM41542 is a single cell battery charger/boost controller.
+> +
+> +maintainers:
+> +  - Chris Morgan <macromorgan@hotmail.com>
+> +  - Xu Shengfei <xsf@rock-chips.com>
+> +
+> +properties:
+> +  compatible:
+> +    const: sgmicro,sgm41542
+> +
+> +  input-current-limit-microamp:
+
+Missing vendor prefix.
+
+> +    description:
+> +      Optional value to clamp the maximum input current limit to for
+> +      the device. If omitted, the default value for the hardware will
+> +      be used (2400000).
+> +    minimum: 100000
+> +    maximum: 3800000
+> +
+> +  input-voltage-limit-microvolt:
+> +    description:
+> +      Optional value to clamp the maximum input voltage limit to for
+> +      the device. If omitted, the default value for the hardware will
+> +      be used (4500000).
+> +    minimum: 3900000
+> +    maximum: 12000000
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  monitored-battery:
+
+You miss definition of this property. I guess this is power supply, so
+reference proper schema for power supplies. Look at other bindings to
+for some example code.
+
+> +    description: |
+> +        A phandle to a monitored battery node. Values for the following
+> +        are used by the driver and if not present will result in default
+> +        values being applied:
+> +        constant-charge-current-max-microamp
+> +        constant-charge-voltage-max-microvolt
+> +        charge-term-current-microamp
+> +        precharge-current-microamp
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  regulators:
+
+No need for regulators node, just define here otg-vbus directly. But
+honestly, your example is incomplete or you defined something implied by
+the compatible. If you have a fixed 5V regulator, what is the point of
+defining it in the DT?
+
+> +    type: object
+> +    properties:
+> +      otg-vbus:
+> +        type: object
+> +        description: OTG boost regulator
+> +        $ref: /schemas/regulator/regulator.yaml
+> +        unevaluatedProperties: false
+> +    additionalProperties: false
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    battery: battery {
+> +      compatible = "simple-battery";
+> +      constant-charge-current-max-microamp = <10000000>;
+> +      constant-charge-voltage-max-microvolt = <4350000>;
+> +      precharge-current-microamp = <180000>;
+> +      charge-term-current-microamp = <300000>;
+> +    };
+> +    #include <dt-bindings/gpio/gpio.h>
+
+Drop this one
+
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    i2c {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +
+> +      charger@3b {
+> +        compatible = "sgmicro,sgm41542";
+> +        reg = <0x3b>;
+> +        input-current-limit-microamp = <3000000>;
+> +        input-voltage-limit-microvolt = <4500000>;
+> +        interrupt-parent = <&gpio0>;
+> +        interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
+> +        monitored-battery = <&battery>;
+> +
+> +        regulators {
+> +          otg-vbus {
+> +            regulator-max-microvolt = <5000000>;
+> +            regulator-min-microvolt = <5000000>;
+> +          };
+> +        };
+> +      };
+> +    };
+> -- 
+> 2.43.0
+> 
