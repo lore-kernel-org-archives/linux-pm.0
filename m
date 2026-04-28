@@ -1,141 +1,97 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34D6B381B12;
-	Tue, 28 Apr 2026 09:26:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F5F73A6B7F;
+	Tue, 28 Apr 2026 09:37:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777368366; cv=none; b=Fmv62uG/hE64eykxqJ8tm9d+5I1hd6QhMp1skuRjqy9CY0mZFh87/sws5fZPWsrhL4gWGFu9K3BkXra1Q9SOp84zZBvNWsAWSiVLjeV9I/iUlzeAfAznDf3shao3Zhf1ifgZ4QCVbBz7DPjA1TnvFCiGUoSiBvv95Cy/FeLGSD8=
+	t=1777369043; cv=none; b=Go0B44gr4NJ5TZxbTy3h37JZZbQ1Pg030hED3BjtRlmEhDCqxO11GeaG5qltjQLUTNsnVLAaQweUJXkZ/b5inY/RhFeVQuu2WEJO4M6CMQZ3q8zOPM1CBUofAVojnj8I0I5+GjWo/FrbYDenuXlrLZhJzHKPrS10pptChC/A4GM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777368366; c=relaxed/simple;
-	bh=uZMFcw4X6G4NyZ2AkpR/wzfhivGs4KeUY1ksxX5CYJk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZZUlWFyMxtaPsHi2eX3Kk/1VFNwH8cZwgaAJL/4d6d9wDzfwj9RfQ570lXk913UXWtFJZtIhZU+fJkFOBPC0nb3XN+59/v0tpTAWokaamdwXr8MehkcQqg9rbUU0vDs4+OP/52aTcpA8JlVEVKcPb3hv7zq9jiwHYKc40/oz/Rc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KpT8hcZV; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777369043; c=relaxed/simple;
+	bh=HM9evInCFYKy8es/TsKXHh8GLiXdJjs/TZ6Xikd1hus=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VzteoljkgiEaO2dLDVHO1nVWSrtqOUMgyL3z8SR2REpBQ3XU/CImifiigGA7njDe5H7rBY7UqLAcy6p0cevrOHVxyhYQ5CZCi7V8lyxM/Hc0YGY5krPMrRHNu5gf33H7tVW1+imlb/28HARIzzyhZ0v3u/8vqugPZS3lnZhV/pI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NLxgCfyy; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KpT8hcZV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A86BBC2BCAF;
-	Tue, 28 Apr 2026 09:25:59 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NLxgCfyy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39FBBC2BCAF;
+	Tue, 28 Apr 2026 09:37:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777368365;
-	bh=uZMFcw4X6G4NyZ2AkpR/wzfhivGs4KeUY1ksxX5CYJk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=KpT8hcZV0Gc1QMqlWdt6nVmZt47Mp3ucObkc8302hyQzOBtJEcfxgPqVQaCUl3RFl
-	 NUhIh76/2bSkTvKmX2h9HQjowxC5MtWQK2FnSdhW9P2ock+SupSZixrMX1bYFtqWGr
-	 EF0GnlMrjJ+zSdTzJuAlf/IvDqv+RkV4+kx8/mRk3tShOmjL4o5fUcMm9ks9Q68oMU
-	 S38f+9pdygkNLq0V9eWkD/6ZFG7N/MlyuO1eErtEp8NCSqsYtubsEbYqCIxDBcaTTp
-	 Hd6fA9a1WhactpOEwVikN7Q8fNDXyJ7Vj79Pq3SofYzb2N3MCevkNHdyYxNzLFdRW3
-	 xrwBRz4Rzjnsg==
-Message-ID: <a63d4dc7-b01a-4da2-ac1f-6679c9030db6@kernel.org>
-Date: Tue, 28 Apr 2026 11:25:57 +0200
+	s=k20201202; t=1777369042;
+	bh=HM9evInCFYKy8es/TsKXHh8GLiXdJjs/TZ6Xikd1hus=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=NLxgCfyywn0V6zY4za6ewhWgPGQ5lWDL/2Pa2I4YpZflmGrJW7S27qnAOo2AlEKqM
+	 a0uc2KNAXUvyDs4nom2XXsustejAYuVoAsdyjftRdcaBHwx87GgB80fnqqcgeYrfU/
+	 qIeZFx0t9z0iqOwkaOYS3RfWY4uZUSPZ592PJsP9INsFTUcfPYzx7QwwD13BIUtKyg
+	 z8uQF16K+0bEWjK9JUNjl34AUQ/nGBuun0c4ojbzGjep+h+EhJudTHXgD+3InX8cCW
+	 KP7qOtqSQ5NzWn2KzqB3cs6s8W44lH+VVXyey+CIUh1Fgs+7Iskd4aSTKCL9cu6cNR
+	 XA1JWIDp9YG5w==
+Date: Tue, 28 Apr 2026 11:37:18 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <ukleinek@kernel.org>
+To: Danilo Krummrich <dakr@kernel.org>, m.wilczynski@samsung.com
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, acourbot@nvidia.com, 
+	aliceryhl@google.com, david.m.ertman@intel.com, ira.weiny@intel.com, leon@kernel.org, 
+	viresh.kumar@linaro.org, bhelgaas@google.com, kwilczynski@kernel.org, 
+	abdiel.janulgue@gmail.com, robin.murphy@arm.com, markus.probst@posteo.de, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, driver-core@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+	linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pci@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org
+Subject: Re: [PATCH 00/24] rust: device: Higher-Ranked Lifetime Types for
+ device drivers
+Message-ID: <afB-p7vhyVYlcTn6@monoceros>
+References: <20260427221155.2144848-1-dakr@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 02/11] firmware: samsung: acpm: Consolidate transfer
- initialization helper
-To: Tudor Ambarus <tudor.ambarus@linaro.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>,
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Kees Cook <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Lee Jones <lee@kernel.org>
-Cc: willmcvicker@google.com, jyescas@google.com, shin.son@samsung.com,
- linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-hardening@vger.kernel.org,
- linux-clk@vger.kernel.org
-References: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
- <20260423-acpm-tmu-v4-2-8b59f8548634@linaro.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260423-acpm-tmu-v4-2-8b59f8548634@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-On 23/04/2026 17:22, Tudor Ambarus wrote:
->  	acpm_dvfs_init_get_rate_cmd(cmd, clk_id);
-> -	acpm_dvfs_set_xfer(&xfer, cmd, ARRAY_SIZE(cmd), acpm_chan_id, true);
-> +	acpm_set_xfer(&xfer, cmd, ARRAY_SIZE(cmd), acpm_chan_id, true);
->  
->  	ret = acpm_do_xfer(handle, &xfer);
->  	if (ret)
-> diff --git a/drivers/firmware/samsung/exynos-acpm-pmic.c b/drivers/firmware/samsung/exynos-acpm-pmic.c
-> index 0c50993cc9a8..f032f2c69685 100644
-> --- a/drivers/firmware/samsung/exynos-acpm-pmic.c
-> +++ b/drivers/firmware/samsung/exynos-acpm-pmic.c
-> @@ -58,16 +58,6 @@ static inline u32 acpm_pmic_get_bulk(u32 data, unsigned int i)
->  	return (data >> (ACPM_PMIC_BULK_SHIFT * i)) & ACPM_PMIC_BULK_MASK;
->  }
->  
-> -static void acpm_pmic_set_xfer(struct acpm_xfer *xfer, u32 *cmd, size_t cmdlen,
-> -			       unsigned int acpm_chan_id)
-> -{
-> -	xfer->txd = cmd;
-> -	xfer->rxd = cmd;
-> -	xfer->txcnt = cmdlen;
-> -	xfer->rxcnt = cmdlen;
-> -	xfer->acpm_chan_id = acpm_chan_id;
-
-The code is not equivalent. RX bits were always cleared. This should be
-explained in the commit msg which would also provide a proof that you
-actually analyzed if it has any impact.
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="rqxumekpprrd4q5v"
+Content-Disposition: inline
+In-Reply-To: <20260427221155.2144848-1-dakr@kernel.org>
 
 
+--rqxumekpprrd4q5v
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 00/24] rust: device: Higher-Ranked Lifetime Types for
+ device drivers
+MIME-Version: 1.0
 
-Best regards,
-Krzysztof
+Hello,
+
+On Tue, Apr 28, 2026 at 12:10:58AM +0200, Danilo Krummrich wrote:
+>  drivers/pwm/pwm_th1520.rs             |  14 +-
+
+I didn't try to understand what you do here, but there is nothing
+scheduled so far for the pwm_th1520 driver in my tree, so
+
+Acked-by: Uwe Kleine-K=F6nig <ukleinek@kernel.org>
+
+for patches #12 and #19 touching this driver for merging through (I
+guess) the rust tree. Maybe Michal wants to say something about the
+actual change.
+
+Best regards
+Uwe
+
+--rqxumekpprrd4q5v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmnwf8MACgkQj4D7WH0S
+/k7NPgf/WyrJVOG8I34GH5+Ktz8BA9Pxs9vvwKn2Dor40alOMKdMZe9E1/NeIjk4
+rRXtLa+EdYtq9IaNCEAbMBviP+iT93opuA2k3RqR/hJoIvYQBokftNexPO9U3Rn6
+p33A51jyrZ7rMaijj0caWsANCuPQDj3uYYvgQ+jPtSRx9kDZtBI+XqMAoSkGhRxA
+wD0/q4kZHaW1p2W3+wPWQfd3F++cs2cjxqZ1VVVs+BsA3LdZWJ29RI5kqIY1+Z/g
+kb2nv/HyhMRzaUfnHuvVi2/OlxnWn+Wt0WfDWaPPqOwNm+vKCuYBhvmhxs6iHfnG
+awPuxSiYzaxPXaCkO5cFlKMH2bnmeg==
+=08q4
+-----END PGP SIGNATURE-----
+
+--rqxumekpprrd4q5v--
