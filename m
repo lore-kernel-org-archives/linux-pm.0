@@ -1,305 +1,127 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azolkn19011072.outbound.protection.outlook.com [52.103.23.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1F483FD12B;
-	Tue, 28 Apr 2026 14:09:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.23.72
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777385378; cv=fail; b=nB027FsZlSDCnv70vPDL4jy4I0tPUQbSPpS1cy+pLw4Vjc/6eH5KKyJVk18uFVQgza9hRAAhIBvJ+9Fb1ebKIVSwKVI7XcptqSC7ANeIe4FzRd0K6ibuXxAhSb6VvjTYOBR9H68MyRXu1hNsHGYoc887GlS81T4yBgpukabenxI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777385378; c=relaxed/simple;
-	bh=4wYYBm5lh/MjMLC3BrabHO/jedY0PrhSz/rUL1lbvto=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=McvoFUPVk2ImvM46/DxFziJqLaPVnwwZuNOTYb3KQlBs5zKSvXhPS0LCY2IIs19NcmcAZV0PGtGnmStRtzHEzMICWQaAsAIUPT2DADXY2y10wk5cuCPlM18M93s5LlpeeEuSR7fgqYGIExWrqZ8t79NWHny5u/fxu/svPapdrkg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com; spf=pass smtp.mailfrom=hotmail.com; dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b=h4GhKy4n; arc=fail smtp.client-ip=52.103.23.72
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=hotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hotmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE4833254B8
+	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 14:19:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777385946; cv=none; b=E5lQGQi/4u8mpVsfbfsEd/KCY1e8+h4ZcMFPZWYLBPh8dfCBXSfz1Mu+fseu+T86ao9S3cP+FPsqe8CCY+Qtw62MAKvTaATqRnvlZmyklZLtG0+TwlbFqaSn6RXOVsx9IfcFUfExYQvxO2Ej4YTJ0oaRHdoyDIjlZGoQ3O3cqgw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777385946; c=relaxed/simple;
+	bh=B1Xhw+g3PdzwhuvhrsM1a9m2CPLx9i7HUaE+i6Yty1o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=joKiLplXuF2KeI63GQlKjwPUHl/8pL89utfJQDXEKLItBx+WqWcjYUGgp0djeyC8IEwVLBJ1U6BQu1DZJF5uj3gY8pzGos19Ic8em8p3dc7PzxYltiG8RQbjwBCWSt2cXk41EplAL29hcIr1bTJQ6byoDQqEgca47IpRuDrfjbo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZPVsTwJV; arc=none smtp.client-ip=209.85.216.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=hotmail.com header.i=@hotmail.com header.b="h4GhKy4n"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Y7SFpk0D3bpz72iROmPYSupSks5csufLprkB7ORBZpsBfeNaUvzinPeYMHON0vQUPRW6bsCJxaJimkGjyOhZjMyGY4b7YtIk8udDQPcyT43LCLx0eOljyekhDBdslPIbXymf1pKeDbfi+nC3wrI8AI3hXv6LzXMv0H9MoU7vs3X9t8afeNYikBPpIYHP765CkEpe7FNhAk1yOn5K9wXxN/al3T+5zt0HyycAefl4uEFVbK6RcgtCziQqhWx8sObAq3ashFltvdvT+h11sc4MCik0ldl1/BHAEuaL+Va9Kglbf9CFSYM1AoaV9MkrfekU9d2bAZSJlLYHUVJWvTHf8Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7Ej9TvUCL3Ze9l4edZ1r/QWQgNZ+IAlip5owdlVA7Bs=;
- b=JbLPOuMoLXc8rhEf32PzBE+FD9dJUelmg5m5nD2qG2p5+SsP8i5ON8OazRjXmkbX+pFAvmSDX84pFEyvyO2+/ctbg8E01sZBCcIoWocF22aPg6060BfgO6kG/L0dQxaLePCpxyBWFDJcPvDW0/oHOKNsEIugMkr48P4HFqveK/o6K7ZsVAlWZFCUBWeReP72heZ9Lf2Rua6pHqBefKXYuC+HSklVkAger7xynOoHndd+vHahawdcQjx5Bsa91wqxCJllbLdjMaki12RtJzzYp0fuxR8CrUeeRDr7DrDE+yBIrZqSJDmzNrdFSnn+SkMd5SIM6QXWY+Ke0WwCSBP9jQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7Ej9TvUCL3Ze9l4edZ1r/QWQgNZ+IAlip5owdlVA7Bs=;
- b=h4GhKy4nBhouXXxvLpgNIGm7vaYcGT4wfrkqZcTL8FQx8MmeG8IWANyxl9SOvwTQxoaT0sNpB9iaYBFQAhojQEz0yhsuDkQzn2r86dRwHh9qGAXspce/2Cx2kkWvNfTdSV8tUaB+DtJUWLCupRcM3JUK6hw8Yt9dR8tWcvkCvLhdt4SaCKoUU69rhTHT5o5d5Wt0NcpLu0XDH/tbC0faVziA1t6/M889AiMaXBqXKFpRaHSHXin/RiIA5Rm0Bb71pSLi5mSzvCmt1qvSH+HOomm8nmw0pt0ePezJY1ejabZ1Xa/HQOkGQyqOLyUW+3VEcHSSh/eMIfRCAAxY9OayXg==
-Received: from PH0PR19MB997338.namprd19.prod.outlook.com
- (2603:10b6:510:3b1::18) by DM3PR19MB8358.namprd19.prod.outlook.com
- (2603:10b6:8:1af::5) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Tue, 28 Apr
- 2026 14:09:34 +0000
-Received: from PH0PR19MB997338.namprd19.prod.outlook.com
- ([fe80::fd22:ee23:3e25:3172]) by PH0PR19MB997338.namprd19.prod.outlook.com
- ([fe80::fd22:ee23:3e25:3172%6]) with mapi id 15.20.9846.025; Tue, 28 Apr 2026
- 14:09:32 +0000
-Date: Tue, 28 Apr 2026 09:09:29 -0500
-From: Chris Morgan <macromorgan@hotmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Chris Morgan <macroalpha82@gmail.com>,
-	linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	xsf@rock-chips.com, sre@kernel.org, simona@ffwll.ch,
-	airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org,
-	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com,
-	neil.armstrong@linaro.org, heiko@sntech.de, conor+dt@kernel.org,
-	krzk+dt@kernel.org, robh@kernel.org
-Subject: Re: [PATCH 1/6] dt-bindings: power: supply: sgm41542: document
- sgm41542
-Message-ID:
- <PH0PR19MB997338F0B06B7B99AA0ED3C6C4A5372@PH0PR19MB997338.namprd19.prod.outlook.com>
-References: <20260427170914.5062-1-macroalpha82@gmail.com>
- <20260427170914.5062-2-macroalpha82@gmail.com>
- <20260428-bulky-nebulous-reindeer-ed45ed@quoll>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260428-bulky-nebulous-reindeer-ed45ed@quoll>
-X-ClientProxiedBy: SA1P222CA0112.NAMP222.PROD.OUTLOOK.COM
- (2603:10b6:806:3c5::25) To PH0PR19MB997338.namprd19.prod.outlook.com
- (2603:10b6:510:3b1::18)
-X-Microsoft-Original-Message-ID: <afC_md94llV0cKmI@wintermute.localhost.fail>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZPVsTwJV"
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-35d9b4f93f0so1966794a91.3
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 07:19:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777385938; x=1777990738; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5/l/tvbICEbtVIUOb2tF/TKbrJ4oMCuMVruWpyDt6VA=;
+        b=ZPVsTwJVs7OLtQ8CXFBjyGKN0PyiBawGjUofhCE1ZAYrPf/8Tw4LP5fbEf6GTBkgKD
+         nS9KwYcKIR+pvv18G3OHMd0kWB7fjKjVAdL2OV0GpicRTQvbOsyGymYL6AI2CoHi1pmz
+         ewnhIFcmxu1PnwRJgN4hYjQ9UA/RNm2zR8qBbQh3qGsC7A6/hU5fzfpTAGfMw0un81ue
+         I/+7gS7LMhAycKRHFRBAL9ePnDfTHsgQV+b4MFLIxrHALaAvYsGsYSv436uU7FvZpleK
+         kx2ggPhB3LUheqQIRTyRKhX/fi/vwQ6xaqoEExgXxALEHhmgwuH5DqZVaBmV0LhU1bRo
+         LN7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777385938; x=1777990738;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=5/l/tvbICEbtVIUOb2tF/TKbrJ4oMCuMVruWpyDt6VA=;
+        b=fIgih7C6yQIQ+iiH2VMU4pEuvNxXNQc9KfAVDZnWg9OWxn8KyIWNVkK8+hB0A6aibH
+         R6DGHdMemB7vMhTbyT5e56NV81AQEIx4LuzdPrIlaJSy47zuR84WxGZ0v7Ad6PA7lA/F
+         xGYoYYLaCsuUnPXeqRUlWf+N6bndckQ0lgErmHqoh0wxU73FEEKkl5xHZOTj/a6MsxLa
+         La+1JyoU41PsutXt4x0tG8XZ8/MVyrDhQZ3DSSRBuere+TipgGaS0cuSPooTaAeIvZne
+         FMXng3lvCykCJJiN4d0fViTG2p0ZxLTB5MGKpB48tTdkFlU1OnqhCpOoS5dXkj0f+Eh5
+         0MOA==
+X-Forwarded-Encrypted: i=1; AFNElJ/crMrnQ4BfZeaX+8FD4SyvbFLAkovxItLkY/D9+44Jwwhi9roKdG6MAz2E4kfTqaVaXqF0QnOnPw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxFP/WhMdh5914+/mdtf2Ay546MBv9y5MP23pXj1yOjMKR+w+yj
+	rm4Cad7IjjPl55D5INSBybmlK0S76ip0329S8MUi1UcmK+zcqC04ivDY
+X-Gm-Gg: AeBDieucsBc3Syc2V/1otuQ1y+RSKm0TEwctGk3htV+Y8ZsIOFczdvcUBvHIukCXaR8
+	QqkwirY++wjVTzsdVVXZhUNZpfhqL9oVxDMQ6lcRiR6B2DaxQurvs8tmx2escSr8RK1+PlCSHBT
+	ScWKCKv06UWRBijUjiJWK2qmZ9KP2r4urNmhFkCj/0Yg4woBo8bDR5cbRKMnbnVSpPbG5mk3bqz
+	cOUcujXdbUB5q7/wviX9XPmyjzFtqDHcv3rBpw+Vm5RnfA91IdkEG2th2X/ZVn69hzl7Qe3nNuV
+	W3RVCTRcsKbH/ACiPDWRa56+/zYy0UEEEgchWEq+3nCL0HdAX4/bye35L4rymVHiEfY7nnHttvT
+	86BnknBo8UQ55Vg/S/r4aqRDoCYkMlf6BSm5me4e89i50L/JP7P0ZbTBoyJe/qGnqJiXzLQ170E
+	Bcy4T8AgW61L2iagyHJJFGXyYWV1muIa5gkczoRd8x
+X-Received: by 2002:a17:90b:3ecc:b0:35e:576c:7c1e with SMTP id 98e67ed59e1d1-36490ca7aa7mr2116371a91.4.1777385938195;
+        Tue, 28 Apr 2026 07:18:58 -0700 (PDT)
+Received: from magniquick ([45.112.148.109])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36490fbfccesm3114485a91.14.2026.04.28.07.18.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Apr 2026 07:18:57 -0700 (PDT)
+From: Navon John Lukose <navonjohnlukose@gmail.com>
+To: hansg@kernel.org
+Cc: ilpo.jarvinen@linux.intel.com,
+	jorge.lopez2@hp.com,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org,
+	sre@kernel.org
+Subject: Re: [RFC] HP laptop charge mode control via POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
+Date: Tue, 28 Apr 2026 19:48:51 +0530
+Message-ID: <20260428141851.549364-1-navonjohnlukose@gmail.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <abfc9469-5d47-4e83-8c3c-03138f1b2ade@kernel.org>
+References: <abfc9469-5d47-4e83-8c3c-03138f1b2ade@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR19MB997338:EE_|DM3PR19MB8358:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8abdc3d1-273f-492b-b4be-08dea52fc529
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|41001999006|8060799015|461199028|6090799003|15080799012|19110799012|5072599009|23021999003|10092599007|37011999003|24021099003|51005399006|25031999004|10035399007|440099028|3412199025|40105399003;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?WcPSMRYf6jRD6KAFVSNMd6cnnry3qM2QC11GlL3Xdn9ua43MJ4c6EZAZMQ1H?=
- =?us-ascii?Q?hEBK0Km3B5Y3fb/mZWgOQPnWeNfHbj4xj37ov23kfIZSWwfzvYhr/6tOvhVG?=
- =?us-ascii?Q?PiRNgBC5rc02HCumCL5AYHn90J/h2/CmaNA3YvcPiIxDrdkxOfdOLFxuNK1y?=
- =?us-ascii?Q?o31DPOtinkRtXQkqO5qk+KoaVY7Ln4YvRvIC+Rbea04HOpkVNVDlh8YxqVH7?=
- =?us-ascii?Q?BsHGTRN/1GojK5cPEoNMXFBLoc2pXwRGd2ci9Ii9e4PK9Uyv+m+pxGsW4jq7?=
- =?us-ascii?Q?RGGc8M+qnBBRyQ0lbwZoDUDegC9kcMmzZ8Rl36QGQb5mYYt16KtKeutuV1fZ?=
- =?us-ascii?Q?bWvni5KAFyxgePaQ0q8+cNZMdI+HNPdDDoVc3r4hDGh8MqhPhQond0j+xjv5?=
- =?us-ascii?Q?4jbrg0Sq5U9w95v6MaC9wtWzhkKSMgZdEhuo7dzPbkv0lCo2rdvIA3Hkp0KU?=
- =?us-ascii?Q?yRuXcO6SpOpxjTUAxnTUwuCWfUOqvp6B+PEhoagf3rFOkfpxQ1NRfKzD4N5S?=
- =?us-ascii?Q?6W/xOrPE4nGaO0vyoDGaPeHh9bUsKUd5j8NQ6GXf+S9KXQCS3XoIMP69lLXu?=
- =?us-ascii?Q?19oV9mrohUXWedlTmFr2pvUh3KaQb5Pcy6OOOQtU/VVYiYsrxV6CMb9Iw9Ww?=
- =?us-ascii?Q?o8Te+cMkyzHs0ddT9A1YoxzGyUWqcSgmjuXNA/GBJ0YgB0v/aEJ0RXZBq6l7?=
- =?us-ascii?Q?fU2RDZRwjsGZzmyuhCmgAzVMHUaG02OQYd69CPGz1nOPbS3pIc/kqL6TRTV1?=
- =?us-ascii?Q?uKXMoOtEu4MOARtrMt4lsgmkdTyu1l7Ej+E5ajJd9xS8kQp6zoYpCQbav7xH?=
- =?us-ascii?Q?yK01vRHl3GvH56y6PKRMeRajQuSnQsjF0CzWpDx8LMRHAjyiNan8tzwrzPbd?=
- =?us-ascii?Q?Cu6VpPSRoQMdBA4SEQYJB69VXdVrMtr+dpbzsPUjl7CIXfNEQKAl8FjsxM7H?=
- =?us-ascii?Q?p4xrCnxRW9vWDaRub+CVbeteArR/zMfOgXMZWsSXzkgr8kanAcPnbg4OBl/z?=
- =?us-ascii?Q?lpj2dSLzWzNPMLnXlopX7efzyTCLqxPyw1tXIo+fjPV35atds81HzWrXJpLk?=
- =?us-ascii?Q?ApVZP6PPLdtySzus4hqKz5L5ipucaQ=3D=3D?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?H+tNuUJTKvh7AQCVT51Rd8sy2Vrxc4TJXRDnvdNx/InPO2CUsqjZqg5oAZyv?=
- =?us-ascii?Q?kFL/KFPDPE/XVO4SvXV3LMmITP30HQ8S+QhN2jfrgEZ+iuNNAmPOp/GB0YVK?=
- =?us-ascii?Q?YIAfM4IOp1L3UgPClppc5hqrWhdJB3KHUhLPOLFmGNoLue7A8/SCkXqE8Qix?=
- =?us-ascii?Q?ktRoAYDnoDJ//uaM1KNtsfaSqvSeZrAipq//Ml4hrzag4HXpi6XJM1i+7MI+?=
- =?us-ascii?Q?J9w/NDjQSXdBuV/WrCFqGXFLU+A4qWLbMqKCSEXk8y1eZDhs9oOJofe5JRb/?=
- =?us-ascii?Q?7Ox4f0gtfLzBx+sQqKmirPHBG4hgmB4NCjRwL4v3vufFOecp2Lfpt6DxH34Z?=
- =?us-ascii?Q?Pf3/YlL753ClIRfMnxdXJ4zAsaPtgkfS/LhVSJ8GF7nMs9MvxMJ/u3OstRsi?=
- =?us-ascii?Q?itxk0kc6UpG/UIGOwohICxP19u6hlJ9s0WrEaFofDzAk9uSj6VWBDcIsAY8p?=
- =?us-ascii?Q?GJJz5PCAzmeoZJf7sPn4rTDkOzWAdDflOcww0zwNrABL9hNJxLeGxe6MWNQF?=
- =?us-ascii?Q?0/ZQGoeFiTUXF8J6mCw5/SR3Bls6YW7ey8cw7CsGiSHWgC1MZpnO+hhdypwZ?=
- =?us-ascii?Q?DJBsI0uTkZWKSZvQzVVr3IUNRwft6VQvDrAth427Pna1uf2UD/qmvlW8iBHB?=
- =?us-ascii?Q?vttZqbbx/5WViI/wIVx08bneny3y1Qx7I6xRDqcX9uR24vehE6D94N+JmV64?=
- =?us-ascii?Q?66vprQxZ1X2DlpWD+bQXZnnPmUnnaJDmKMDIVkb3AoBmcuvHmsAkxnmqV2Da?=
- =?us-ascii?Q?OZ8R7hQYEewnrF5slGTMAuuS9MaDDTzgWcgpnybXNpUInzzNEhX3F1T8OrgL?=
- =?us-ascii?Q?+VsKvBYbk6wVUMIjODGIju0jeX1R2cAr+TAqSCZ2F5qGfpqQtR6WTtUkeDDY?=
- =?us-ascii?Q?iHhyQDEBTtCAV1FUQdY1xHMw/pl3BX2ZYbDQ+y0Qe6YMZgxeoXYV8hqfze17?=
- =?us-ascii?Q?Dsopcmqhv/ZxPUs0bdlyPNNZIxhEnviLqfkM+q4UadxtqLhJ638dzs5W21ma?=
- =?us-ascii?Q?+IHRG+Bd11mhjhTdN0a8k0lxGBc627yfRkhjLqbbWqI+zZzaCbcCHZ1WoAsp?=
- =?us-ascii?Q?WB/y16HuWGuE8I4CpGbur+00iDW9SBCHXm7I40pbSYOogybDlASiPhrU9AIN?=
- =?us-ascii?Q?ofIBYjHt0z57WrIbqGtOg5gt0nwqx7a4ZR9yGxUDAMA+MZrzggwEL23kOw7m?=
- =?us-ascii?Q?z0dBnQH/TI88Yov56UEJhs4BnTelgYN72+n8i13YTQy9on6B3+AvrBWiRRjX?=
- =?us-ascii?Q?mAFcUFSEO8RPvAcMmxMI9akxA7EsMG6CQrHOLIBDBPMVpxgQ2hxTxDffN98b?=
- =?us-ascii?Q?EkaJD24hFruYLAfhgDlUAXoCZtqSxKGqyHVdFb3xIEJQUeGmH4gqgiL1BtmR?=
- =?us-ascii?Q?QYfHw/RL5SH0ZeBrw6EFPJLWFHmODKp9SisKh3M+4DQ9S3c4Eg=3D=3D?=
-X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-990eb.templateTenant
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8abdc3d1-273f-492b-b4be-08dea52fc529
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR19MB997338.namprd19.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Apr 2026 14:09:32.5085
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PR19MB8358
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 28, 2026 at 09:47:00AM +0200, Krzysztof Kozlowski wrote:
-> On Mon, Apr 27, 2026 at 12:09:09PM -0500, Chris Morgan wrote:
-> > From: Chris Morgan <macromorgan@hotmail.com>
-> > 
-> > Document the SG Micro sgm41542 battery charger/boost converter.
-> > 
-> > Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> > ---
-> >  .../supply/sgmicro,sgm41542-charger.yaml      | 99 +++++++++++++++++++
-> >  1 file changed, 99 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> > new file mode 100644
-> > index 000000000000..3e5041e5b551
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> 
-> Filename must match compatible.
+Hi Hans,
 
-Acknowledged.
+Thanks, that was the right hint. The path from the EC to ACPI methods to WMI
+has been fun to trace, and I learned quite a bit.
 
-> 
-> > @@ -0,0 +1,99 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/power/supply/sgmicro,sgm41542-charger.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: SGM41542 Battery Charger
-> > +
-> > +description: |
-> 
-> Do not need '|' unless you need to preserve formatting.
-> 
+I checked the WMI path, and the charge methods are reachable through the
+existing HP BIOS WMI GUID:
 
-Will fix.
+  5FB7F034-2C63-45E9-BE91-3D44E2C707E4
 
-> > +  The SGMicro SGM41542 is a single cell battery charger/boost controller.
-> > +
-> > +maintainers:
-> > +  - Chris Morgan <macromorgan@hotmail.com>
-> > +  - Xu Shengfei <xsf@rock-chips.com>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: sgmicro,sgm41542
-> > +
-> > +  input-current-limit-microamp:
-> 
-> Missing vendor prefix.
-> 
+The _WDG entry exposes object "AA" as a method. In this firmware that maps to:
 
-This *appears* to be a standard value (perhaps not formally, but in use by
-enough devices to suggest a defacto standard), which is why I did not use
-the vendor prefix here. Do I need to add that for this one?
+  \_SB.WMID.WMAA
 
-> > +    description:
-> > +      Optional value to clamp the maximum input current limit to for
-> > +      the device. If omitted, the default value for the hardware will
-> > +      be used (2400000).
-> > +    minimum: 100000
-> > +    maximum: 3800000
-> > +
-> > +  input-voltage-limit-microvolt:
-> > +    description:
-> > +      Optional value to clamp the maximum input voltage limit to for
-> > +      the device. If omitted, the default value for the hardware will
-> > +      be used (4500000).
-> > +    minimum: 3900000
-> > +    maximum: 12000000
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
-> > +
-> > +  monitored-battery:
-> 
-> You miss definition of this property. I guess this is power supply, so
-> reference proper schema for power supplies. Look at other bindings to
-> for some example code.
+and WMAA calls:
 
-I'll look at this some more, I might have a few more questions. But I will
-make the changes requested.
+  \_SB.WMID.WHCM(Arg1, Arg2)
 
-> 
-> > +    description: |
-> > +        A phandle to a monitored battery node. Values for the following
-> > +        are used by the driver and if not present will result in default
-> > +        values being applied:
-> > +        constant-charge-current-max-microamp
-> > +        constant-charge-voltage-max-microvolt
-> > +        charge-term-current-microamp
-> > +        precharge-current-microamp
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  regulators:
-> 
-> No need for regulators node, just define here otg-vbus directly. But
-> honestly, your example is incomplete or you defined something implied by
-> the compatible. If you have a fixed 5V regulator, what is the point of
-> defining it in the DT?
+Inside WHCM, the command dispatch maps the charge-control methods like this:
 
-The regulator can be adjusted within a range around 5V, and is referenced
-by the USB subsystem. Should I still omit it from the device tree or instead
-define the min and max values?
+  read  commandtype 0x1f -> \GBCC()
+  read  commandtype 0x2b -> \GBCO()
+  write commandtype 0x1f -> \SBCC(DDWD)
+  write commandtype 0x2b -> \SBCO(DDWD)
 
-> 
-> > +    type: object
-> > +    properties:
-> > +      otg-vbus:
-> > +        type: object
-> > +        description: OTG boost regulator
-> > +        $ref: /schemas/regulator/regulator.yaml
-> > +        unevaluatedProperties: false
-> > +    additionalProperties: false
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    battery: battery {
-> > +      compatible = "simple-battery";
-> > +      constant-charge-current-max-microamp = <10000000>;
-> > +      constant-charge-voltage-max-microvolt = <4350000>;
-> > +      precharge-current-microamp = <180000>;
-> > +      charge-term-current-microamp = <300000>;
-> > +    };
-> > +    #include <dt-bindings/gpio/gpio.h>
-> 
-> Drop this one
+Calling the WMI wrapper for the three modes works as expected:
 
-Will do.
+  \SBCC 0x0000 -> normal charging / auto
+  \SBCO 0x0500 -> inhibit charge
+  \SBCO 0x0200 -> force discharge while on AC
 
-> 
-> > +    #include <dt-bindings/interrupt-controller/irq.h>
-> > +    i2c {
-> > +      #address-cells = <1>;
-> > +      #size-cells = <0>;
-> > +
-> > +      charger@3b {
-> > +        compatible = "sgmicro,sgm41542";
-> > +        reg = <0x3b>;
-> > +        input-current-limit-microamp = <3000000>;
-> > +        input-voltage-limit-microvolt = <4500000>;
-> > +        interrupt-parent = <&gpio0>;
-> > +        interrupts = <26 IRQ_TYPE_EDGE_FALLING>;
-> > +        monitored-battery = <&battery>;
-> > +
-> > +        regulators {
-> > +          otg-vbus {
-> > +            regulator-max-microvolt = <5000000>;
-> > +            regulator-min-microvolt = <5000000>;
-> > +          };
-> > +        };
-> > +      };
-> > +    };
-> > -- 
-> > 2.43.0
-> > 
+So the raw ACPI methods do not need to be called directly; the existing HP BIOS
+WMI transport reaches them.
 
-Thank you for your valuable feedback,
-Chris
+Given that, I think the implementation can use hp_wmi_perform_query() with the
+existing HPWMI_BIOS_GUID.
+
+I am still unsure about where to put it. The smallest patch would be to add the
+power_supply extension code directly to hp-wmi.c, but that file currently does
+not have any battery-specific code paths. Should I add it to hp-wmi.c, add a
+small HP-specific file under drivers/platform/x86/hp/, or is there another file
+I missed?
+
+Thanks,
+Navon
