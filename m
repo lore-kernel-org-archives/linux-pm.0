@@ -1,277 +1,111 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BEB430649C
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 07:56:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D28BB1C84BC;
+	Tue, 28 Apr 2026 07:56:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777362970; cv=none; b=VSSd/2e+/5iFq61H3gOIKlduspz09GCsMkeTlliJ0NjXlAnbx/tXWQdWKtLoQkZFUg1ewH9mYRDkJBNu3i9x9i4eWniXVF6OOqW2Zkr6yobjb1WL2SLAsS6sV5wgFeiMzh6/8hSzlTOXdzE+rqDxq3hthrF249f1Jsh0J99W4KE=
+	t=1777362994; cv=none; b=iRLFdC2+eYr3SCrQxvJLrdJ7nATltuf45pvQ0SXNX8H4vyCQH/7jXnTpPB/RlC7Mj6/owJ1T6F4YrRMOS3PWmRNRlHiiBHS88ZH70du9sdTmpvPs7k1QIv3SlAnVr5+/OqpRemXSSIxwRfYmGF1H6iQ9eK4VzxxKz5w4miKRMSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777362970; c=relaxed/simple;
-	bh=LFgv66F+0nt9E67NvK3C9RMmoN2dCCkDNLlwr0UUAys=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=j1Ux4Uhb20064nc5ywATbi8EjLHwi3/hxo9/kFGL8pzpRX//fgE/+vVZXqAPA0XcV6M6OIcfm7DtQ/SjDAMlLKygv0rUevPI4Nykp7ywT2EYhICLigZ8VYJRMfaqc8Jokm+fNbibGNi9uUAJIXslY7/eNSIDQIaBDwj9YaT0S5c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FDjAfyK9; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777362994; c=relaxed/simple;
+	bh=Mzlq90K/VTzR+F+26arnfLMjVpYCl7Zu2AB1/5S1PyI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IpYK2cqNPkCKZYoszLTCS24HfJxExoU/yHbfMQFCKbGhgABbzE1OmY0a6wESvAqG6u+nF8TMaLD+Haago8oZdXt9SylXAbnnSmcct6r/M6CeNAlxAmxrqO0I7r49pouZvogrqC5GlYLLO6c7S1hCXiItgq2lp+TOfaJXso+o2TY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cY/mOurf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FDjAfyK9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE113C2BCC6
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 07:56:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cY/mOurf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7D66C2BCAF;
+	Tue, 28 Apr 2026 07:56:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777362970;
-	bh=LFgv66F+0nt9E67NvK3C9RMmoN2dCCkDNLlwr0UUAys=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
-	b=FDjAfyK9X4SOWb9qosGFCnsMLAnw1GeTTWQOi535HnflthB4xSmC4jkyFjSMpanr0
-	 AuYymZU9u+uyi6yxuYkRM+bYyn5eo+C09b4BmNLD40M5K1qyFgoH48EXvCucU2IqA1
-	 ssIucaVEPqMKCkXaWR5wDM83IFxcP+dHmn26qL0zZG41aQYO0bhI0GVoXjxJoeSuQn
-	 naMVGO+9kRPzDnJieG5YxapdDJ10Vb4b6Rj+e8be/pshBfU2MZyftF1aH8NKvXXQ71
-	 S5K9ReJrsKRMXYR6P8I85MecWhE0pxQ7pBLn9IUnpM2kweAd8w0PkoL1u2XGh+vSoe
-	 o2NiQUz2juVLg==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5a40b2d26a1so8427856e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 00:56:09 -0700 (PDT)
-X-Gm-Message-State: AOJu0Yy86JfQ1aSWmF8bxMrRJyZgRxivooM3KColWwb2wxGesfnjewtK
-	v6cIh08jxlG0ZQyv4SffwJy1AoteJFlmUpy2v50eSLltJ9x6S6DNY5eodo9yPHzSYFgjb9iSoMq
-	I0OSRkw25kc5iwcTJNArtkY5eqYb46/u37qZ5jhi5lQ==
-X-Received: by 2002:a05:6512:2203:b0:5a3:cc81:efdb with SMTP id
- 2adb3069b0e04-5a7466234c2mr724146e87.21.1777362968553; Tue, 28 Apr 2026
- 00:56:08 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Apr 2026 00:56:06 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 28 Apr 2026 00:56:06 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260427-arm-psci-system_reset2-vendor-reboots-v21-7-dcf937775e73@oss.qualcomm.com>
+	s=k20201202; t=1777362994;
+	bh=Mzlq90K/VTzR+F+26arnfLMjVpYCl7Zu2AB1/5S1PyI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cY/mOurfmE7MW35rMnA3eBhijxSBFke9z4rkAmG7LU/v+gt2QEXHGRGzRqHqjgZr0
+	 g9Z9+e1hlmA6psMDM97KuE9wpOGHHHXxVBQwUexE1J6eNwfCXKXAos1HwR93+77Ytr
+	 FiDLFjoo7k0+HjGtlzLiP2o8bl4JHz5OhXVUnEIPOqgNt6AKn7RINzjY0jqUoyPms5
+	 nYF1Bl0y59a/A6AuyCSNFc0PtkYsZgntKTPJpcr2KmnjuDOkc5qVHQqjACARtSSwQj
+	 m5Hibyqhg6s7h9T+2EdLCrGToPTepcMIVU6T6I/hwtc1mDm5Ue66tMdtDwR/JJWAXO
+	 x4h+gZHrWkx3w==
+Date: Tue, 28 Apr 2026 09:56:31 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Chris Morgan <macroalpha82@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, xsf@rock-chips.com, sre@kernel.org, 
+	simona@ffwll.ch, airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org, 
+	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com, neil.armstrong@linaro.org, 
+	heiko@sntech.de, conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org, 
+	Chris Morgan <macromorgan@hotmail.com>
+Subject: Re: [PATCH 2/6] power: supply: sgm41542: Add SG Micro sgm41542
+ charger
+Message-ID: <20260428-vivacious-fearless-monkey-fe433e@quoll>
+References: <20260427170914.5062-1-macroalpha82@gmail.com>
+ <20260427170914.5062-3-macroalpha82@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-7-dcf937775e73@oss.qualcomm.com>
-Date: Tue, 28 Apr 2026 00:56:06 -0700
-X-Gmail-Original-Message-ID: <CAMRc=MdLTMX34DEhoMskMzjRqx+Cdpm3=P5QTZ8S6sUVJ3eTbg@mail.gmail.com>
-X-Gm-Features: AVHnY4JQrBCpBs44aK1VESiHmvoftBhqWQglXzFZW2sthd0LKcTnrxCZ5nyahlo
-Message-ID: <CAMRc=MdLTMX34DEhoMskMzjRqx+Cdpm3=P5QTZ8S6sUVJ3eTbg@mail.gmail.com>
-Subject: Re: [PATCH v21 07/13] power: reset: Add psci-reboot-mode driver
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260427170914.5062-3-macroalpha82@gmail.com>
 
-On Mon, 27 Apr 2026 19:34:47 +0200, Shivendra Pratap
-<shivendra.pratap@oss.qualcomm.com> said:
-> PSCI supports different types of resets like SYSTEM_RESET, SYSTEM_RESET2
-> ARCH WARM reset and SYSTEM_RESET2 vendor-specific resets. Currently
-> there is no common driver that handles all supported psci resets at one
-> place. Additionally, there is no common mechanism to issue the supported
-> psci resets from userspace.
->
-> Add a psci-reboot-mode driver, and define two types of PSCI resets,
-> predefined-resets and vendor-specific resets. Predefined-resets are
-> defined by psci driver and vendor-specific resets are defined by SoC
-> vendors, under the psci:reboot-mode node of SoC device tree.
->
-> Register the driver with the reboot-mode framework to interface these
-> resets to userspace. When userspace initiates a supported command, pass
-> the reset arguments to the PSCI driver to enable command-based reset.
->
-> This change allows userspace to issue supported PSCI reset commands
-> using the standard reboot system calls while enabling SoC vendors to
-> define their specific resets for PSCI.
->
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  MAINTAINERS                            |   1 +
->  drivers/power/reset/Kconfig            |  10 +++
->  drivers/power/reset/Makefile           |   1 +
->  drivers/power/reset/psci-reboot-mode.c | 109 +++++++++++++++++++++++++++++++++
->  4 files changed, 121 insertions(+)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 333b01fa00b8fbd15e6f31a6b9af47600411624e..8cebc2c7e161c8a226802a4102756b4ed6034395 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -21240,6 +21240,7 @@ S:	Maintained
->  F:	Documentation/devicetree/bindings/arm/psci.yaml
->  F:	drivers/firmware/psci/
->  F:	drivers/mfd/psci-mfd.c
-> +F:	drivers/power/reset/psci-reboot-mode.c
->  F:	include/linux/psci.h
->  F:	include/uapi/linux/psci.h
->
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index 124afb99febe92450b6ae322aeed3b63fa2070df..d9d1f768b8691abc3b32f2675519f2ddbaf19b84 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -348,6 +348,16 @@ config NVMEM_REBOOT_MODE
->  	  then the bootloader can read it and take different
->  	  action according to the mode.
->
-> +config PSCI_REBOOT_MODE
-> +	bool "PSCI reboot mode driver"
-> +	depends on OF && ARM_PSCI_FW
-> +	select REBOOT_MODE
-> +	help
-> +	  Say y here will enable PSCI reboot mode driver. This gets
-> +	  the PSCI reboot mode arguments and passes them to psci
-> +	  driver. psci driver uses these arguments for issuing
-> +	  device reset into different boot states.
+On Mon, Apr 27, 2026 at 12:09:10PM -0500, Chris Morgan wrote:
+> +	strscpy(sgm->model_name, id->name, I2C_NAME_SIZE);
 > +
->  config POWER_MLXBF
->  	tristate "Mellanox BlueField power handling driver"
->  	depends on (GPIO_MLXBF2 || GPIO_MLXBF3) && ACPI
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index d7ae97241a838fe1b536b2f911868e7590d12e3b..02948622fe3d00e165f941108ab92ecb66b0f0e8 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -40,5 +40,6 @@ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
->  obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
->  obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
->  obj-$(CONFIG_NVMEM_REBOOT_MODE) += nvmem-reboot-mode.o
-> +obj-$(CONFIG_PSCI_REBOOT_MODE) += psci-reboot-mode.o
->  obj-$(CONFIG_POWER_MLXBF) += pwr-mlxbf.o
->  obj-$(CONFIG_POWER_RESET_QEMU_VIRT_CTRL) += qemu-virt-ctrl.o
-> diff --git a/drivers/power/reset/psci-reboot-mode.c b/drivers/power/reset/psci-reboot-mode.c
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..29f53d2f50da8e34e714adef9507d340bc4130e2
-> --- /dev/null
-> +++ b/drivers/power/reset/psci-reboot-mode.c
-> @@ -0,0 +1,109 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + */
+> +	sgm->regmap = devm_regmap_init_i2c(client, &sgm4154x_regmap_config);
+> +	if (IS_ERR(sgm->regmap))
+> +		return dev_err_probe(dev, PTR_ERR(sgm->regmap),
+> +				     "Failed to allocate register map\n");
 > +
-> +#include <linux/device.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/psci.h>
-> +#include <linux/reboot.h>
-> +#include <linux/reboot-mode.h>
-> +#include <linux/types.h>
+> +	i2c_set_clientdata(client, sgm);
 > +
-> +/* Predefined modes use reset_type = 0 and cookie in magic[63:32]. */
-> +#define PSCI_PREDEF_MAGIC(cookie)	((cookie) * BIT_ULL(32))
-> +
-> +struct psci_predefined_reset {
-> +	const char *mode;
-> +	u64 magic;
-> +};
-> +
-> +static const struct psci_predefined_reset psci_resets[] = {
-> +	{
-> +		.mode = "psci-system-reset",
-> +		.magic = PSCI_PREDEF_MAGIC(PSCI_RESET_TYPE_SYSTEM_RESET),
-> +	},
-> +	{
-> +		.mode = "psci-system-reset2-arch-warm-reset",
-> +		.magic = PSCI_PREDEF_MAGIC(PSCI_RESET_TYPE_SYSTEM_RESET2_ARCH_WARM),
-> +	},
-> +};
-> +
-> +static int psci_reboot_mode_add_predefined_mode(struct device *dev,
-> +						struct reboot_mode_driver *reboot,
-> +						const struct psci_predefined_reset *predef)
-> +{
-> +	struct mode_info *info;
-> +
-> +	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	INIT_LIST_HEAD(&info->list);
-> +	info->mode = predef->mode;
-> +	info->magic = predef->magic;
-> +	list_add_tail(&info->list, &reboot->predefined_modes);
-> +
-> +	return 0;
-> +}
-> +
-> +static int psci_reboot_mode_set_predefined_modes(struct device *dev,
-> +						 struct reboot_mode_driver *reboot)
-> +{
-> +	int ret;
-> +
-> +	INIT_LIST_HEAD(&reboot->predefined_modes);
-> +
-> +	/* Always register psci-system-reset. */
-> +	ret = psci_reboot_mode_add_predefined_mode(dev, reboot, &psci_resets[0]);
+> +	ret = sgm4154x_hw_chipid_detect(sgm);
 > +	if (ret)
-> +		return ret;
+> +		dev_err_probe(dev, ret, "Unable to read HW ID\n");
 > +
-> +	/* Register arch warm reset only if SYSTEM_RESET2 is supported. */
-> +	if (!psci_has_system_reset2_support())
-> +		return 0;
+> +	device_init_wakeup(dev, 1);
 > +
-> +	return psci_reboot_mode_add_predefined_mode(dev, reboot, &psci_resets[1]);
+> +	if (client->irq) {
+> +		ret = devm_request_threaded_irq(dev, client->irq, NULL,
+> +						sgm4154x_irq_handler_thread,
+> +						IRQF_TRIGGER_FALLING |
+> +						IRQF_ONESHOT,
+> +						"sgm41542-irq", sgm);
 
-Looking at this, I'd introduce a core reboot-mode helper for initializing the
-predefined_modes field and adding an array of modes and use it here and earlier
-in the series.
+Interrupt should be requested and enabled at the end or almost at the
+end. If it is triggered now, which supply are you marking as "changed"?
 
-> +}
+Code looks at least correct in relation between interrupt and workqueue,
+but it is not really obvious and thus not following established coding
+practice. Practice is usually: first you allocate driver-like or
+memory-like resources, then you request hardware related resources.
+That's why every probe starts with devm_kzalloc(). Similarly with
+workqueue, initializing power supply etc.
+
+> +		if (ret)
+> +			return ret;
+> +		enable_irq_wake(client->irq);
+> +	}
 > +
-> +/*
-> + * Pass the encoded magic to psci_set_reset_cmd.
-> + * magic is encoded as reset_type (low 32 bits) and cookie (high 32 bits).
-> + */
-> +static int psci_reboot_mode_write(struct reboot_mode_driver *reboot, u64 magic)
-> +{
-> +	psci_set_reset_cmd(magic);
-> +	return 0;
-> +}
-> +
-> +static int psci_reboot_mode_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct reboot_mode_driver *reboot;
-> +	int ret;
-> +
-> +	reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
-> +	if (!reboot)
-> +		return -ENOMEM;
-> +
-> +	ret = psci_reboot_mode_set_predefined_modes(dev, reboot);
+> +	ret = sgm4154x_power_supply_init(sgm, dev);
 > +	if (ret)
-> +		return ret;
+> +		return dev_err_probe(dev, ret, "Failed to register power supply\n");
 > +
-> +	reboot->write = psci_reboot_mode_write;
-> +	reboot->dev = dev;
+> +	ret = sgm4154x_hw_init(sgm);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "Cannot initialize the chip.\n");
 > +
-> +	return devm_reboot_mode_register(dev, reboot);
-> +}
+> +	sgm->sgm_monitor_wq = alloc_ordered_workqueue("%s",
+> +			WQ_MEM_RECLAIM | WQ_FREEZABLE, "sgm-monitor-wq");
+> +	if (!sgm->sgm_monitor_wq)
+> +		return -EINVAL;
 > +
-> +static struct platform_driver psci_reboot_mode_driver = {
-> +	.probe  = psci_reboot_mode_probe,
-> +	.driver = {
-> +		.name	= "psci-reboot-mode",
-> +	},
-> +};
-> +
-> +module_platform_driver(psci_reboot_mode_driver);
-> +
-> +MODULE_LICENSE("GPL");
->
-> --
-> 2.34.1
->
->
+> +	ret = devm_add_action_or_reset(dev, sgm4154x_destroy_workqueue,
+> +				       sgm->sgm_monitor_wq);
 
-Looks good otherwise!
+Use rather devm_alloc_ordered_workqueue().
 
-Bart
+Best regards,
+Krzysztof
+
