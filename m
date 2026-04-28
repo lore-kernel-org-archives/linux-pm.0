@@ -1,55 +1,51 @@
-Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C3603C1F;
-	Tue, 28 Apr 2026 08:59:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 19DBB3DE420;
+	Tue, 28 Apr 2026 09:09:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777366795; cv=none; b=rsr/u4b3bRwxF5JQsBjipSUCSDbb1aNaTedffcmjB4I9KSSfpLfCGcNHRIqbPUuTpNxuXmPx0j9vtmVveoejt6/56dEkWcmalQ0civov9yu8LuXCbrHa5F/CAB+ZCk8gTie4lN47lHlUNKsioNHaZJGRvGEw1YhJjpKs/CUUryw=
+	t=1777367381; cv=none; b=bXR1Zkbvm5qqkfXVY7rTOgZMAUD1ukfZFEOfZl1tlt6b2tzv7LVoZp1fFAAp67YW6/x6/Yq6plxT05ZCOq0O3cidrh8Yf8ckztrtUSdywsuchT4gFO8gxkLWpgm3YX1WGr76RK3uFX7RZt5Qr5E3dYwfuF+CoU0xpFqRagCDWV8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777366795; c=relaxed/simple;
-	bh=A8mYPFb8sbnOQ4syqsN5w2yehB+6fF93UgowW68OsyE=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Sub6jszYbda/wxO4LhQ1xXCw99h/edza8OpDJLNAbWgE36dOlv/uvCs+KdPadfm0SAY8A+skdoCI5FdFQ2ZydxMhxYrHiqmqDiihHgswMvH29jxvFpdin7m6IP7Kv0sb7BdnS3wvbPJvA/8N4gTsIA8u3BeI9oyaboFhXrN9Qog=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=TB6cqteP; arc=none smtp.client-ip=54.206.34.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1777367381; c=relaxed/simple;
+	bh=Args02vC7ufHcOsK1lIdG/wj0Yi0DEK78CIUPWUKCkU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iogDzOGgaayszDEhYoEGL413CW7oGmw2oB/ZXR47udajSDtvaSWXUTEpfhjr3AiKTeyQTud1L5jZlEGEzc9q5RObLlAVrLUNLQc2ZhbA67rGcxDF2ApcQ064w22F61aQcTd5p6dTtWqOK0WTZ3BJS7a0XLHCvbIRgphrOP5oYds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=tHdznVRF; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="TB6cqteP"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1777366762;
-	bh=A8mYPFb8sbnOQ4syqsN5w2yehB+6fF93UgowW68OsyE=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=TB6cqteP2u4d7bx22tgyGVdbUhAG9QgzlU4+HAhz7ovGbXHjdT7ZNtGLANMOVAQ51
-	 BSrqHYO9SjuxykxVE4G8q3YTcoC/AtY4vuGnNQTiXRDAHHdjrkiwv3Jt981RCSYO16
-	 efKP5wEFomZNL35PzZ+dphfnxGrcYlN7CjSmu160=
-X-QQ-mid: zesmtpip3t1777366744t926689e0
-X-QQ-Originating-IP: Ieehv/HRYEeC4IUIhcXSKRJEUN/kBgZA1Ulmm8I5h/Y=
-Received: from localhost.localdomain ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 28 Apr 2026 16:59:02 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 346598132270762092
-EX-QQ-RecipientCnt: 11
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: oneukum@suse.com
-Cc: hansg@kernel.org,
-	laurent.pinchart@ideasonboard.com,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	mchehab@kernel.org,
-	pavel@kernel.org,
-	rafael@kernel.org,
-	tuhaowen@uniontech.com
-Subject: Re: [PATCH 2/2] media: uvcvideo: skip resume when writing hibernation image
-Date: Tue, 28 Apr 2026 16:58:59 +0800
-Message-Id: <20260428085859.1840613-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <937aca8d-805b-418e-a2ed-58c1e38f45e7@suse.com>
-References: <937aca8d-805b-418e-a2ed-58c1e38f45e7@suse.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="tHdznVRF"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 76D5115A1;
+	Tue, 28 Apr 2026 02:09:30 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A1D083F62B;
+	Tue, 28 Apr 2026 02:09:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1777367375; bh=Args02vC7ufHcOsK1lIdG/wj0Yi0DEK78CIUPWUKCkU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=tHdznVRFGyC0NgbhxeV1+dU2xMFpstF681U36jZoy+mFn5c4yxGt2TCWYaoOgXATF
+	 7FCgk+VMfTSWr/DTCNIFWXPdjsIwnVt74PHsC/J5boTetVFAG/tEZKiCtUID1RKMEZ
+	 1t41k3hryF4nlu3sUFmWhcNK4asIT35a0yFODhCo=
+From: Philip Radford <philip.radford@arm.com>
+To: linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: sudeep.holla@arm.com,
+	james.quinlan@broadcom.com,
+	f.fainelli@gmail.com,
+	vincent.guittot@linaro.org,
+	etienne.carriere@st.com,
+	peng.fan@oss.nxp.com,
+	michal.simek@amd.com,
+	quic_sibis@quicinc.com,
+	dan.carpenter@linaro.org,
+	d-gole@ti.com,
+	souvik.chakravarty@arm.com,
+	Philip Radford <philip.radford@arm.com>
+Subject: [PATCH v5 00/12] Add support for SCMIv4.0 Powercap Extensions
+Date: Tue, 28 Apr 2026 10:09:09 +0100
+Message-ID: <20260428090922.346069-1-philip.radford@arm.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -57,43 +53,107 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: NI6TJc3opC6FET3uPTLYQyZ1qdIKMgP/5Kf6sbL4WTgPhmRIhowxKroL
-	6IESgh6kbsjMjhMuOewRE4uCvd9aRgbhZ/+2x+5Gz4E4zMVN/7aCMz2fx9Rwl4xT+09o58w
-	b29tpVNG8f7btMF5Fbo4CE91g4U1YCVr0zS+8JY4Yh+ZrmX6fG8kVPbZBaCnl1+aaUoDuss
-	VkpD/LzDekE+qld6YyONQIM3zeDYUs+iHUuh1YY0cySwQvj8tsM8MKouqCERVWtBcmMA4fR
-	GrBF4usUCqinoCTKNZBxnegE3BZU8QBGWzqras57bYzBY235WU8oxyRtvJ8dH0KDmt6Uj7O
-	B6LRBeJoIfolYKXgFvqKqNMcZ4E9xCJYesG6BZzxSRkfe1oa39pjix5Tov8zfiAVYj17C6e
-	nucpU4cmCTz4zjDm8H4zFrGq7JS4MsYCbhkaZvtZiKeMTj/KaodEiJBH9FmayLhvgOcalii
-	CvIEp190Bj6VKHyjygnlqZAQT55B6CzRXKUD8dCNsFDeHDfqR/6Ve0kBMp+QyqCEBOOCsvl
-	G2auUxVJczP3pxlwuZjsxmGz0iiHr/dh2YyLjLufjwpgH6KYZznz1cekaGKbUzqBVfBCCgW
-	QE6NyEtHN4lX/cAR5S93Q6jfLrH3A0DltlVTeXt5I8SxPot+HrivvKXbx62nvG+Cid34l8U
-	e0z1uYV8+De5cx9cBod3BNeMwDdekIjD0cVWFE1U7ksqQDALJJUommBJjV2t2QDRfjtdLWb
-	z6xFjx+QjYM4ZmVfu32Lb54NEUxaaR8Lep4wySb6TaQ/ikhS0zIobe8/+SmkbMAkDtnMmoc
-	V38yRr2bpou11tvbLV/Bi+PBd5R5/B+hBYwx5f+zPOaH/QjorbJhhmGgi2MXQgquQKet5W4
-	t1s+iaoHtKWx1nM1MzENQ/mhUnAXXM86RYGrPJMndnx1x+NZvRJtEqZFC89UqijJGlNRKfI
-	e/iN9CAaC1xCzeDBLsxlKYozPZLkpbJ8YUjFTxZd01ex1bmQNdUqlCnYsIv5zdVt6n4SiFr
-	h/w6GANG+OtYtrEhX8KMfnf/4UKKGQCbSkKNBS+ApLsRurSYLyOEfoKS5VdXIzgCHVr3WKz
-	7f47ua3R6v+
-X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
-X-QQ-RECHKSPAM: 0
 
-Hi Oliver,
+Hi all,
 
-On Tue, 28 Apr 2026, Oliver Neukum wrote:
-> What happens if writing out the image fails?
+I will be taking over this series from Cristian and in doing so I have
+addressed a couple of issues raised by the first version and added five
+additional patches since Cristian's original series:
 
-Thanks for pointing this out.
+[6/12] exposes the measurement averaging interval (MAI) value when the
+agent has registered to receive power measurement change notifications
+for the power capping domain.
 
-If swsusp_write() fails, the system resumes in the original kernel
-instead of powering off, so the failure path needs to be considered as
-well. I was reasoning about the successful hibernation path here, but
-you are right that skipping resume work during THAW may not be safe if
-the image write does not complete.
+[9/12] adds MAI get and set support for the powercap protocol.
 
-I will trace the failure path more carefully and update the series
-accordingly.
+[10/12] introduces a synthetic root zone to act as a common parent for all
+top-level domains.
+
+[11/12] adds get_power_uw to synthetic root zone, summing the per-zone
+power of immediate child zones.
+
+[12/12] adds enable/disable functionality to synthetic root zone to
+enable/disable immediate children.
+
+The original series was based on v6.17-rc1 whereas this version has been
+based on v7.1-rc1.
+
+The rest of Cristian's series is explained below;
+
+SCMIv4.0 [1] introduces some new features and commands into the Powercap
+protocol. In a nutshell, such protocol changes add support for:
+
+ - setting multiple powercap limit/interval constraints for each SCMI
+   powercap domain which supports multiple Concurrent Power Limit
+ - enabling more Powercap commands to use Fastchannels mechanism
+ - adding multiple constraints support to the existing notifications
+
+After a bit of needed updates in the SCMI core this series adds:
+
+- support for the idea of optional multiple Concurrent Power Limit (CPLs)
+- support for the new FCs
+- support for extended notifications
+- enable usage of such multiple constraint in the ARM SCMI Powercap driver
+
+Note that the public SCMIv4.0 spec at [1] is currently still BETA0, so
+this series could anyway need some minor rework along the way and
+definitely will need to wait for a final public release before being
+possibly merged.
+
+Tested on a single and multi-instance scenario on an emulated setup
+implementing the new protocol extensions.
+
+Based on v7.1-rc1.
 
 Thanks,
-Haowen Tu
+Phil
+---
+V4->V5
+- Added enable/disable functionality to synthetic node
+- Rebased on v7.1-rc1
+V3->V4
+- Rebased on v7.0-rc4
+- Added sythentic parent node and functionality
+- Moved fastchannel inits outside of loop
+- Renamed arguments for consistency
+V2->V3
+- Added powercap MAI get/set support
+V1->V2
+- Rebased on sudeep/for-next/scmi/updates
+- Amended Copyright to include 2026
+- Added patch to extend powercap report to include MAI
+- Removed creation of pi powercap_info struct due to legacy code change
+- Amended references to pi->version and similar, which were based on
+  legacy code
+- Wrapped two variables in le32_to_cpu() to appease Sparse warnings
+- Amended comparing operator value in response to feedback
+
+Cristian Marussi (7):
+  firmware: arm_scmi: Add an optional custom parameter to fastchannel
+    helpers
+  firmware: arm_scmi: Refactor powercap domain layout
+  firmware: arm_scmi: Add SCMIv4.0 Powercap basic support
+  firmware: arm_scmi: Add SCMIv4.0 Powercap FCs support
+  firmware: arm_scmi: Add SCMIV4.0 Powercap notifications support
+  include: trace: Add new parameter to trace_scmi_fc_call
+  powercap: arm_scmi: Enable multiple constraints support
+
+Philip Radford (5):
+  firmware: arm_scmi: Extend powercap report to include MAI
+  firmware: arm_scmi: add Powercap MAI get/set support
+  powercap: arm_scmi: Create synthetic parent node for multi-instance
+  powercap: arm_scmi: Add get_power_uw to synthetic node
+  powercap: arm_scmi: Synthetic zone enable/disable
+
+ drivers/firmware/arm_scmi/driver.c    |  12 +-
+ drivers/firmware/arm_scmi/perf.c      |  16 +-
+ drivers/firmware/arm_scmi/powercap.c  | 984 ++++++++++++++++++++------
+ drivers/firmware/arm_scmi/protocols.h |   2 +-
+ drivers/powercap/arm_scmi_powercap.c  | 227 +++++-
+ include/linux/scmi_protocol.h         |  87 ++-
+ include/trace/events/scmi.h           |  12 +-
+ 7 files changed, 1067 insertions(+), 273 deletions(-)
+
+--
+2.47.3
+
