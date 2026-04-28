@@ -1,54 +1,42 @@
-Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
+Received: from out-170.mta0.migadu.com (out-170.mta0.migadu.com [91.218.175.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB2D43451B3;
-	Tue, 28 Apr 2026 08:06:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7192B29B20A
+	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 08:26:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777363573; cv=none; b=uZZVcLuVnk6Vl1hyrtEJyxqB9xuFzzNHIQuOaHs11lvGOD/SPajF/N/+QDM7UeAEpC5RGyITZxdsvH9PdFT4w5m9ALXJGzV1o+dAH19e+PXuXUB1r7NC3zm3joQOszNc3H12XqtUW+5u5seRPq6tafFeuTlo/epN0HZQI4cZYSQ=
+	t=1777364809; cv=none; b=NUGY+tgRYhLiVNw9dbk4HodNh0u2A9AdVcyBaMkscaSsop0mpGNxPzrIhSU3mMq0TQ3F/0jVJgeDg2TxCpIITbuA4tVZchD2+OM5uMA/S1kCXmChMdLhkAjV8PsItT+4t/44nd9QN6ddXBewNp9lEPHjzGMOLxv/GgMNlFXh9ps=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777363573; c=relaxed/simple;
-	bh=OYob8fSUnpI9y6Gvd+dqzpKjsH6b68SDcumXg9R7qxQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=UQbaLpsgJOz2a7VIBdKb0F9BfnGL2sM3J8rGrczph2K3n5HK9ugZ3DeHGWsSTToAlxcFh7Dwvz4qqxz7+/gQglMKfZvE0m6ZzfQOqDuPCecIYGdPkGFZRSXqBtrFRhkCS9NPTJ8dC0vTAY2zbIBzb37vgMCLPJWE1uUkBy5TfMg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=AGDli7+k; arc=none smtp.client-ip=54.206.34.216
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	s=arc-20240116; t=1777364809; c=relaxed/simple;
+	bh=wrLGlLnRnuHNeLR/XJRx6AUTo4j9X+V4rjRWujMtMUs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PwrK/gqCqa0d0ze0I8WvviqzY5Sh6EqqvLY7wur90qpHRTYgsZvIb9KD4NAAKwXrkJfTTXywaUXtkX4TphY5i3UASTbiLJOmfTGvZi9g3rpA9ozT+UGfTmcZB2FLXlA3AFGjDd2ABtEfaKneRQfQhaFi+SUt1znGXYpRG4gvq+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=ndOVl9kA; arc=none smtp.client-ip=91.218.175.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="AGDli7+k"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1777363555;
-	bh=zCCooQNkuhbrhVqN/DKbRXTuGY/qI92cGD/gbm9ZT8k=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=AGDli7+kqHXmhASE7qIhkAKrcfK1Ne0MZqIKJyOBygbrALo+tz9hO6oYJ/mXWO1/2
-	 STKX9N5QgYZ7jjaYIUdlqI6FezJlQ10ouLNW1Qu6mdeWsFIiyYOxOhlptrVnyfXHTl
-	 sIkKWcR8FBmO6loYrrrKVtOafd+JmRDKP86p06aM=
-X-QQ-mid: zesmtpip2t1777363550t3c09782c
-X-QQ-Originating-IP: D7QBc+Gq/wa23NcgnaXkDpaStXRKIJCGv/NNNT/U82I=
-Received: from localhost.localdomain ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 28 Apr 2026 16:05:47 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 11922991574654543991
-EX-QQ-RecipientCnt: 10
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: rafael@kernel.org
-Cc: lenb@kernel.org,
-	pavel@kernel.org,
-	linux-pm@vger.kernel.org,
-	laurent.pinchart@ideasonboard.com,
-	hansg@kernel.org,
-	mchehab@kernel.org,
-	linux-media@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="ndOVl9kA"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1777364806;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=DXKeliB+XhMjzKveQR7TBPCM8hGDZOG662zKo4luP/E=;
+	b=ndOVl9kA9mGYQK4NmafBuRRjiS8JFa3UfqcJAdk75hZvgurx2LH4TcyH3+hSIto9K5c/7/
+	dKwzxEPOimavx8QJvxxTdwWxBo3jbm7J2DsK7ooEIINXpGGoOljFILScnDq3gGlecx/Hku
+	ahkQoY8g/l8COGPaUkhzpm0SevfMIp8=
+From: Fushuai Wang <fushuai.wang@linux.dev>
+To: srinivas.pandruvada@linux.intel.com,
+	lenb@kernel.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	currojerez@riseup.net
+Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Haowen Tu <tuhaowen@uniontech.com>
-Subject: [PATCH 2/2] media: uvcvideo: skip resume when writing hibernation image
-Date: Tue, 28 Apr 2026 16:05:13 +0800
-Message-Id: <20260428080513.1833515-3-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260428080513.1833515-1-tuhaowen@uniontech.com>
-References: <20260428080513.1833515-1-tuhaowen@uniontech.com>
+	wangfushuai@baidu.com
+Subject: [PATCH] cpufreq: intel_pstate: Sync policy->cur when setting min pstate during CPU offline
+Date: Tue, 28 Apr 2026 16:26:20 +0800
+Message-Id: <20260428082620.26583-1-fushuai.wang@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -56,82 +44,45 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: OUKBLrr/x8hbTTvrmt755Oqiyj63BMUepaw8In70Sh6KvjazYshk3JOo
-	ykx1+fjrRqjJXuYNR02Hxn39PcNxOjjt161UTro6TSzdgUo1vbtRSTIpPzzoHUpit+gTAbf
-	idUfyUMyeAvMLhxSi8PA1CELhmLN/RySXJ30I8s/d+i3ApyiQ1pIGd7X7PeIo6qyPEcxNbK
-	V8Ex4xBfHWtjEJUe/yUldqt3rMZZlRIYaKFB9da9XwVGgYP2CS/T3OjWOu3+ZYeR4V1B6lW
-	Zl/r/8/uhJrVeOU1eFWmeNcOJUwwjgS6iqLbhPZo7QJDFPFUIaBv31wS6mCdwDiGiYu646i
-	WIIFoXCjMp7q4qSytST+nu0muUAM6suhjlDVkpu/xoZmqYar9krpKm9w43pPu1Tb95rCKot
-	mW/I9mFi9xqREeafwNV7m26M3mWo2r2L4054cK3hO/uiS8FlOMMr3hAsPfDkgmugghH/WLM
-	GuQpt23I/ilqqXl2X8+eaEwAWpl+RzDa+YHbf+cYNV8YhLFOORlFuvg+Mf8LYcqTQRR5YPZ
-	FBy0QcJXADchH6YRJLKzXX/HjI4Rn7j1bW5aXIAf/Utm9nKXPQZ2ukbiOs5+GI2K5j5cDZJ
-	WMR3gp4uxmyOx953YMEM1SYvHNT+3f1AmtP1Lw3vCQIS1AxehCNOVMx95BG5msQPHiqxKvk
-	nimtVkpxfZzH8aLabs4FFIDBTd7csIEpJUm//jX18Q498nMAuOKg0VyaDZDlGJzhT+0dmN1
-	roFG2DTwS5t3J5UQbA1rLqLAvCiSw+sarFTYZaotjJOomzTWz+EBeRLR3g7lj1wtICJb/eB
-	fPvKs124otyTER+8SpEC0lSJR/GFyhoRgmIyuhxvJdNw+u8l05FOnSYjKZoedxEjdy65H5K
-	ph/8P/exUeEmivPJcw78T0x+FqgVm26zJi7ktVHVYJpmizF1gj2eEWw1j+yg9YpBk9YSlYe
-	PKd1rA9rOi2bqcpWQF1aObQDvZI34y208vIHYoM9uFk7NrubeT6sR0K2PkTTW8549RFPWCe
-	gq2xKvZBMbZUelMzOVA45/HpJs6Kkst6kXUbHREfXAlLqr75/iEKHUS6lSffQ=
-X-QQ-XMRINFO: NyFYKkN4Ny6FuXrnB5Ye7Aabb3ujjtK+gg==
-X-QQ-RECHKSPAM: 0
+X-Migadu-Flow: FLOW_OUT
 
-When a UVC camera is in active use and the system enters S4 hibernation,
-the camera is suspended as part of the normal device freeze sequence.
-However, after create_image() saves the memory snapshot, the kernel
-briefly resumes all devices with PMSG_THAW to write the hibernation image
-to storage.  This causes uvc_video_resume() to run and reinitialize the
-camera hardware, which visibly turns on the camera indicator LED during
-this intermediate phase -- even though the system is about to power off.
+From: Fushuai Wang <wangfushuai@baidu.com>
 
-The UVC device is not needed during the image-write window, where the
-system only needs devices required for writing the hibernation image.
-USB .resume callbacks do not receive pm_message_t (unlike .suspend),
-so use the PM-layer helper to detect this phase and return early from
-uvc_video_resume(), preventing the unnecessary hardware reinitialization
-and the spurious LED activation.
+When a CPU goes offline with HWP disabled, intel_pstate_set_min_pstate()
+sets the MSR_IA32_PERF_CTL to minimum frequency to prevent SMT siblings
+from being restricted. However, the policy->cur value was not updated,
+leaving it at the previous value.
 
-Skipping the THAW resume is safe: stream->frozen remains 1 (set during
-the earlier FREEZE suspend), the device is powered off immediately after
-swsusp_write() with no intervening suspend, and the subsequent
-PMSG_RESTORE resume on the restored kernel calls uvc_video_resume()
-with pm_hibernation_storing_image() returning false, performing the full
-reinitialization as normal.
+When the CPU comes back online, governor->limits() checks if target_freq
+equals policy->cur and skips the frequency adjustment if they match. Since
+policy->cur still holds the previous value, the governor does not call
+cpufreq_driver->target to update MSR_IA32_PERF_CTL.
 
-Signed-off-by: Haowen Tu <tuhaowen@uniontech.com>
+Fix this by synchronizing policy->cur with the hardware state when setting
+minimum pstate during CPU offline.
+
+Fixes: f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive mode with HWP enabled")
+Signed-off-by: Fushuai Wang <wangfushuai@baidu.com>
 ---
- drivers/media/usb/uvc/uvc_video.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/media/usb/uvc/uvc_video.c b/drivers/media/usb/uvc/uvc_video.c
-index f6c8e3223796..16a911b684d5 100644
---- a/drivers/media/usb/uvc/uvc_video.c
-+++ b/drivers/media/usb/uvc/uvc_video.c
-@@ -12,6 +12,7 @@
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
- #include <linux/usb.h>
- #include <linux/usb/hcd.h>
- #include <linux/videodev2.h>
-@@ -2135,6 +2136,15 @@ int uvc_video_resume(struct uvc_streaming *stream, int reset)
- {
- 	int ret;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1292da53e5fc..0bd6388caa9d 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2986,8 +2986,10 @@ static int intel_cpufreq_cpu_offline(struct cpufreq_policy *policy)
+ 	 */
+ 	if (hwp_active)
+ 		intel_pstate_hwp_offline(cpu);
+-	else
++	else {
+ 		intel_pstate_set_min_pstate(cpu);
++		policy->cur = cpu->pstate.min_freq;
++	}
  
-+	/*
-+	 * After taking the hibernation memory snapshot, the kernel briefly resumes
-+	 * devices with PMSG_THAW to write the image to storage before powerdown.
-+	 * The UVC device is not involved in storage I/O, so skip reinitializing
-+	 * it to avoid unnecessary USB traffic during this transient phase.
-+	 */
-+	if (pm_hibernation_storing_image())
-+		return 0;
-+
- 	/*
- 	 * If the bus has been reset on resume, set the alternate setting to 0.
- 	 * This should be the default value, but some devices crash or otherwise
+ 	intel_pstate_exit_perf_limits(policy);
+ 
 -- 
-2.20.1
+2.36.1
 
