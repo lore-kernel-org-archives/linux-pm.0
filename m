@@ -1,42 +1,55 @@
-Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [91.218.175.181])
+Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BA513921ED
-	for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2026 08:43:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C3603C1F;
+	Tue, 28 Apr 2026 08:59:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.34.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777365836; cv=none; b=M3OtsGvvtf2EN9RCLcBZULUGiyZEjdkcs6c/1TD+Y4Up3MCa3TiYW2K8byfNktIF0PzInNA+zadlI+ws0IYgSAF+MYrtYsSYIVD2THfcBxKg2ro53n4byqKiNR3B8M6Bl6+H/x3WpMrWYwTx/DEGatC0nIpAwfm29bLFDlNh3o4=
+	t=1777366795; cv=none; b=rsr/u4b3bRwxF5JQsBjipSUCSDbb1aNaTedffcmjB4I9KSSfpLfCGcNHRIqbPUuTpNxuXmPx0j9vtmVveoejt6/56dEkWcmalQ0civov9yu8LuXCbrHa5F/CAB+ZCk8gTie4lN47lHlUNKsioNHaZJGRvGEw1YhJjpKs/CUUryw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777365836; c=relaxed/simple;
-	bh=BzxBDY+RbekA7FiYpK54JLWfpwZkZSZLsmwzTf60Pro=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jqaic6GXZd/iyPZj6/ec1JzfWiQ8ewSOVCNAmzE6yx6raeLvdT6xUp4imfOMxyuZlL+8cQV0qvMwX4xJ7/Dxa1+88RWw5wA4hp2GX6ZxzkGfrIarKD8NqlXLgJ13O2lE8rv2EZgLq4hY9imvHH18uMQZUXPuRyw6PjpHxPHvJ6c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=FokZKGYN; arc=none smtp.client-ip=91.218.175.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1777366795; c=relaxed/simple;
+	bh=A8mYPFb8sbnOQ4syqsN5w2yehB+6fF93UgowW68OsyE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=Sub6jszYbda/wxO4LhQ1xXCw99h/edza8OpDJLNAbWgE36dOlv/uvCs+KdPadfm0SAY8A+skdoCI5FdFQ2ZydxMhxYrHiqmqDiihHgswMvH29jxvFpdin7m6IP7Kv0sb7BdnS3wvbPJvA/8N4gTsIA8u3BeI9oyaboFhXrN9Qog=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=TB6cqteP; arc=none smtp.client-ip=54.206.34.216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="FokZKGYN"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1777365832;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Lp+O1aEXV6LC2MJz4rOO8/Y3DHAti+ZfPdBZjKr/n0I=;
-	b=FokZKGYNmsLuoM/nS7ILC2BF0kVROitBmJfS1P8u9LXS1EQCkaP6mCxngeg9lmCxAK94XM
-	zp3z6xfzzK9kvLzKSHcBJA1PmqJg9S7NP9gi2O+2XNklF/XpzkYwqNmPFRooyfoVuJSJWI
-	wCIKEVAsBIzw0SSw21OPbDTrfOLgqZ8=
-From: Fushuai Wang <fushuai.wang@linux.dev>
-To: gregkh@linuxfoundation.orgsrinivas.pandruvada@linux.intel.com,
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="TB6cqteP"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1777366762;
+	bh=A8mYPFb8sbnOQ4syqsN5w2yehB+6fF93UgowW68OsyE=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=TB6cqteP2u4d7bx22tgyGVdbUhAG9QgzlU4+HAhz7ovGbXHjdT7ZNtGLANMOVAQ51
+	 BSrqHYO9SjuxykxVE4G8q3YTcoC/AtY4vuGnNQTiXRDAHHdjrkiwv3Jt981RCSYO16
+	 efKP5wEFomZNL35PzZ+dphfnxGrcYlN7CjSmu160=
+X-QQ-mid: zesmtpip3t1777366744t926689e0
+X-QQ-Originating-IP: Ieehv/HRYEeC4IUIhcXSKRJEUN/kBgZA1Ulmm8I5h/Y=
+Received: from localhost.localdomain ( [localhost])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Tue, 28 Apr 2026 16:59:02 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 346598132270762092
+EX-QQ-RecipientCnt: 11
+From: Haowen Tu <tuhaowen@uniontech.com>
+To: oneukum@suse.com
+Cc: hansg@kernel.org,
+	laurent.pinchart@ideasonboard.com,
 	lenb@kernel.org,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	currojerez@riseup.net
-Cc: linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	wangfushuai@baidu.com
-Subject: [PATCH v2] serial: 8250: Clear CON_PRINTBUFFER on port re-registration
-Date: Tue, 28 Apr 2026 16:43:35 +0800
-Message-Id: <20260428084335.27993-1-fushuai.wang@linux.dev>
+	linux-media@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	mchehab@kernel.org,
+	pavel@kernel.org,
+	rafael@kernel.org,
+	tuhaowen@uniontech.com
+Subject: Re: [PATCH 2/2] media: uvcvideo: skip resume when writing hibernation image
+Date: Tue, 28 Apr 2026 16:58:59 +0800
+Message-Id: <20260428085859.1840613-1-tuhaowen@uniontech.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <937aca8d-805b-418e-a2ed-58c1e38f45e7@suse.com>
+References: <937aca8d-805b-418e-a2ed-58c1e38f45e7@suse.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,65 +57,43 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
+X-QQ-XMAILINFO: NI6TJc3opC6FET3uPTLYQyZ1qdIKMgP/5Kf6sbL4WTgPhmRIhowxKroL
+	6IESgh6kbsjMjhMuOewRE4uCvd9aRgbhZ/+2x+5Gz4E4zMVN/7aCMz2fx9Rwl4xT+09o58w
+	b29tpVNG8f7btMF5Fbo4CE91g4U1YCVr0zS+8JY4Yh+ZrmX6fG8kVPbZBaCnl1+aaUoDuss
+	VkpD/LzDekE+qld6YyONQIM3zeDYUs+iHUuh1YY0cySwQvj8tsM8MKouqCERVWtBcmMA4fR
+	GrBF4usUCqinoCTKNZBxnegE3BZU8QBGWzqras57bYzBY235WU8oxyRtvJ8dH0KDmt6Uj7O
+	B6LRBeJoIfolYKXgFvqKqNMcZ4E9xCJYesG6BZzxSRkfe1oa39pjix5Tov8zfiAVYj17C6e
+	nucpU4cmCTz4zjDm8H4zFrGq7JS4MsYCbhkaZvtZiKeMTj/KaodEiJBH9FmayLhvgOcalii
+	CvIEp190Bj6VKHyjygnlqZAQT55B6CzRXKUD8dCNsFDeHDfqR/6Ve0kBMp+QyqCEBOOCsvl
+	G2auUxVJczP3pxlwuZjsxmGz0iiHr/dh2YyLjLufjwpgH6KYZznz1cekaGKbUzqBVfBCCgW
+	QE6NyEtHN4lX/cAR5S93Q6jfLrH3A0DltlVTeXt5I8SxPot+HrivvKXbx62nvG+Cid34l8U
+	e0z1uYV8+De5cx9cBod3BNeMwDdekIjD0cVWFE1U7ksqQDALJJUommBJjV2t2QDRfjtdLWb
+	z6xFjx+QjYM4ZmVfu32Lb54NEUxaaR8Lep4wySb6TaQ/ikhS0zIobe8/+SmkbMAkDtnMmoc
+	V38yRr2bpou11tvbLV/Bi+PBd5R5/B+hBYwx5f+zPOaH/QjorbJhhmGgi2MXQgquQKet5W4
+	t1s+iaoHtKWx1nM1MzENQ/mhUnAXXM86RYGrPJMndnx1x+NZvRJtEqZFC89UqijJGlNRKfI
+	e/iN9CAaC1xCzeDBLsxlKYozPZLkpbJ8YUjFTxZd01ex1bmQNdUqlCnYsIv5zdVt6n4SiFr
+	h/w6GANG+OtYtrEhX8KMfnf/4UKKGQCbSkKNBS+ApLsRurSYLyOEfoKS5VdXIzgCHVr3WKz
+	7f47ua3R6v+
+X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
+X-QQ-RECHKSPAM: 0
 
-From: Fushuai Wang <wangfushuai@baidu.com>
+Hi Oliver,
 
-When two PnP devices map to the same physical port, the serial8250 driver
-removes and re-registers the console structure for the same port.
+On Tue, 28 Apr 2026, Oliver Neukum wrote:
+> What happens if writing out the image fails?
 
-During re-registration, the console structure still has CON_PRINTBUFFER set
-from the initial registration, which causes console_init_seq() to set
-console->seq to syslog_seq. This results in re-printing the entire
-system log buffer, which may lead to RCU stall on slow serial consoles.
+Thanks for pointing this out.
 
-Clear CON_PRINTBUFFER when re-registering a port to prevent duplicate
-log printing.
+If swsusp_write() fails, the system resumes in the original kernel
+instead of powering off, so the failure path needs to be considered as
+well. I was reasoning about the successful hibernation path here, but
+you are right that skipping resume work during THAW may not be safe if
+the image write does not complete.
 
-Fixes: 835d844d1a28 ("8250_pnp: do pnp probe before legacy probe")
-Signed-off-by: Fushuai Wang <wangfushuai@baidu.com>
----
-V1->V2: Add Fixes tag
-previous discussion: https://lore.kernel.org/all/20260416092917.27301-1-fushuai.wang@linux.dev/T/#u
+I will trace the failure path more carefully and update the series
+accordingly.
 
- drivers/tty/serial/8250/8250_core.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
-index a428e88938eb..01b14392d9f7 100644
---- a/drivers/tty/serial/8250/8250_core.c
-+++ b/drivers/tty/serial/8250/8250_core.c
-@@ -694,6 +694,7 @@ int serial8250_register_8250_port(const struct uart_8250_port *up)
- {
- 	struct uart_8250_port *uart;
- 	int ret;
-+	bool was_removed = false;
- 
- 	if (up->port.uartclk == 0)
- 		return -EINVAL;
-@@ -716,8 +717,10 @@ int serial8250_register_8250_port(const struct uart_8250_port *up)
- 	if (uart->port.type == PORT_8250_CIR)
- 		return -ENODEV;
- 
--	if (uart->port.dev)
-+	if (uart->port.dev) {
- 		uart_remove_one_port(&serial8250_reg, &uart->port);
-+		was_removed = true;
-+	}
- 
- 	uart->port.ctrl_id	= up->port.ctrl_id;
- 	uart->port.port_id	= up->port.port_id;
-@@ -819,6 +822,10 @@ int serial8250_register_8250_port(const struct uart_8250_port *up)
- 					&uart->capabilities);
- 
- 		serial8250_apply_quirks(uart);
-+
-+		if (was_removed && uart_console(&uart->port))
-+			uart->port.cons->flags &= ~CON_PRINTBUFFER;
-+
- 		ret = uart_add_one_port(&serial8250_reg,
- 					&uart->port);
- 		if (ret)
--- 
-2.36.1
-
+Thanks,
+Haowen Tu
