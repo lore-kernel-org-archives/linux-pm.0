@@ -1,100 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5583E347FE1
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:51:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DED9B1A9FBC
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:51:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777456272; cv=none; b=L7LnJQMkCwtJu86es1bJuqNRGab3oKqPobebzLnuzEpL58IH57bkiyqqLdlJGr83qFQrOUYyLOyKmcsxw+y+w9IJ3kEqLQyfKj8yivuzCffCGKVXXdsJpke3FrJpVBGK6QJaRwvL0cWojp0XPoaDeLGCVwUphaHSF7W/Px/m+pQ=
+	t=1777456285; cv=none; b=sVSu4PWSvs97fzKkL3rKgo6VxP2h8EvDrKKUyWfs6jbYV/UtBr+/T7paS36jzCRGcGv4ETitL7nf/fAP9ZgjZSsHXtbckCL4sTSWm/qHfPsW0XzlngXdkF++F04nr9hshDNiNZUqbSwGKxZM8PHF5WUhyiqOH/Q4+jugbMdoWn0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777456272; c=relaxed/simple;
-	bh=xl75P3m2W4e1+CXN4v9hPNik1UQ7Md24Me8vwhtUHnI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TKI+97DqOJszImttWjMHxQGex2WSxsnYSDC5k7ivfZtPlaEspDcJQ6UWkZLiGML7ZduTA0H30vxZAzAlDcekWAuAKBlpwzHaS510X3ZxkiCNRKVmRNrMnGZY0Qkc1Ra/LDc6iF/4IdzdJXHa0paPdU5rlStMILU6JqBl8PFeZF8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r1LsHEep; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777456285; c=relaxed/simple;
+	bh=iQ5IhtZgLm+rkc5eoGm9hIH3ZDzmZomFvTPndZ9kpjY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kWJdZkMqfphxVvw/6uS/QQsI0HCAqmq9xo0u1NoRkmrQa1SlFzIB61Lhno+E0IllGNp7RHRzQ1//iwoBSe7sNEv4LncSBk5/S/f12+mHjfGLSH1ciQQVBt/aeokdseeJmBpt/4s0tAG5M1cO9KjM2yTu+Lr7QgJ6ttvYDQVEE0M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass smtp.mailfrom=suse.cz; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=nd+Z1WXr; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=Z5o48gII; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b=nd+Z1WXr; dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b=Z5o48gII; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r1LsHEep"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7901C2BCC7
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:51:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777456271;
-	bh=xl75P3m2W4e1+CXN4v9hPNik1UQ7Md24Me8vwhtUHnI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=r1LsHEeptVM1+C5tb/F06/FEv+YdBnyquB99JAZrLKmItqwb7+lOoFfUrzYG3P2aZ
-	 TaQKktyRsDc1TXy9LiocFB3U5YQYVd2dEesCp5M7GkvQCSfeVIJZ80oRtpq58ZSRbr
-	 A/PMnsK5Y/PqwpN1k0aiWSdmIv3xtSmC8jkr5B3kJeVaWorsJ3dZqBeu7EBewryMEr
-	 x5boLEYdBYJ1RAgegju5fNrYHLQiyYt//71nSkAfnP8MY8qvsJkZ8mPorObi711bJn
-	 OMCK+5uRi+l/2+vHANE7hBCmOeABKcUiZJRPUEPB5jHN0qFdjZ4RZ8Q0GlyhuU4+YV
-	 h8rV5BRs+RL+w==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a525aedb24so12351321e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 02:51:11 -0700 (PDT)
-X-Gm-Message-State: AOJu0YyxxauRgE0Tw7MGt7B1fGqgbmWfpCD2tuuaI5ObYdy4NycoCINB
-	T7HVzwVmUoNsIhGgVHbG6I+tiIVe75wGUJflGIIxbHDzM6q00NAeUoWYt299et4gqenVd2t5/or
-	dDQNVKweFd27T7ny/vi2ujsFu/1RM+5yHy8s97K+lag==
-X-Received: by 2002:a05:6512:15a4:b0:5a2:c0d8:e634 with SMTP id
- 2adb3069b0e04-5a746409fc9mr3018093e87.8.1777456270423; Wed, 29 Apr 2026
- 02:51:10 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="nd+Z1WXr";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="Z5o48gII";
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.b="nd+Z1WXr";
+	dkim=permerror (0-bit key) header.d=suse.cz header.i=@suse.cz header.b="Z5o48gII"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id AA77D6A864;
+	Wed, 29 Apr 2026 09:51:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1777456275; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+qEjuQevZqyO6CweEJ3yMgcImI5q9b4HueNFxukrWBY=;
+	b=nd+Z1WXrdftM/Yws3FDBOCRnKHWOyFxJw6AaWYqAMH5amNzr/ZKJB40b1la0nLZei9904h
+	8Ep88nHZrFt8zhFwmqG56ubiYExFVzoaT2KbMuXRXcYml4Ji9bkVQY/YgkUyTU8/i6i1yu
+	ZnH2nAZfNQrhUlN4+AyaGqTlJ84j+Ic=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1777456275;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+qEjuQevZqyO6CweEJ3yMgcImI5q9b4HueNFxukrWBY=;
+	b=Z5o48gIIf+6soxhr8c++2NokHAz+Aou0gFlzFBNzRRipMfgL7/VPRfk+1C3+PtQV2VDjhA
+	WDFMjwV8iDrtJDDA==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1777456275; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+qEjuQevZqyO6CweEJ3yMgcImI5q9b4HueNFxukrWBY=;
+	b=nd+Z1WXrdftM/Yws3FDBOCRnKHWOyFxJw6AaWYqAMH5amNzr/ZKJB40b1la0nLZei9904h
+	8Ep88nHZrFt8zhFwmqG56ubiYExFVzoaT2KbMuXRXcYml4Ji9bkVQY/YgkUyTU8/i6i1yu
+	ZnH2nAZfNQrhUlN4+AyaGqTlJ84j+Ic=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1777456275;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+qEjuQevZqyO6CweEJ3yMgcImI5q9b4HueNFxukrWBY=;
+	b=Z5o48gIIf+6soxhr8c++2NokHAz+Aou0gFlzFBNzRRipMfgL7/VPRfk+1C3+PtQV2VDjhA
+	WDFMjwV8iDrtJDDA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 95062593B0;
+	Wed, 29 Apr 2026 09:51:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id CSMLIZPU8WmeSwAAD6G6ig
+	(envelope-from <chrubis@suse.cz>); Wed, 29 Apr 2026 09:51:15 +0000
+Date: Wed, 29 Apr 2026 11:51:11 +0200
+From: Cyril Hrubis <chrubis@suse.cz>
+To: Petr Vorel <pvorel@suse.cz>
+Cc: ltp@lists.linux.it, Li Wang <liwang@redhat.com>,
+	Jan Stancek <jstancek@redhat.com>,
+	Andrea Cervesato <andrea.cervesato@suse.com>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	linux-pm@vger.kernel.org, helena.anna.dubel@intel.com,
+	tomasz.ossowski@intel.com, Piotr Kubaj <piotr.kubaj@intel.com>,
+	automated-testing@lists.yoctoproject.org
+Subject: Re: [PATCH v2 1/2] Remove now unsupported power management tests
+Message-ID: <afHUjxwBaXNa3dIi@yuki.lan>
+References: <20260330090844.79598-1-pvorel@suse.cz>
+ <20260330090844.79598-2-pvorel@suse.cz>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-8-dcf937775e73@oss.qualcomm.com>
- <CAMRc=Mf+-04Zr7jjRoaxTzO3LKSMyQ7DzxJc=dHNSyThEUiq_Q@mail.gmail.com>
- <c0677503-8073-4940-8eb0-c06b34f843d2@oss.qualcomm.com> <CAMRc=MdxpSXiqAn-8Az4ig4N8TFVdE9psacPVG9J9KehuFnbwA@mail.gmail.com>
- <d6112b9c-01ea-483c-98fe-b480e78872e5@oss.qualcomm.com> <ce92a493-5016-41a2-8337-d2227cdf760a@oss.qualcomm.com>
-In-Reply-To: <ce92a493-5016-41a2-8337-d2227cdf760a@oss.qualcomm.com>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Wed, 29 Apr 2026 11:50:58 +0200
-X-Gmail-Original-Message-ID: <CAMRc=Md_OON4cAGcJ=jDu=VY_mw0qa8HPz4VCDxYLpr7JMxLRw@mail.gmail.com>
-X-Gm-Features: AVHnY4LjKEpG9nYw8-Iw2BW7MqAsGu51jz6EVLHSjBeVIe-JDK-BL3dxnn93Q4c
-Message-ID: <CAMRc=Md_OON4cAGcJ=jDu=VY_mw0qa8HPz4VCDxYLpr7JMxLRw@mail.gmail.com>
-Subject: Re: [PATCH v21 08/13] mfd: core: Add firmware-node support to MFD cells
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260330090844.79598-2-pvorel@suse.cz>
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
+X-Spam-Flag: NO
+X-Spam-Score: -4.30
+X-Spam-Level: 
 
-On Wed, Apr 29, 2026 at 11:46=E2=80=AFAM Shivendra Pratap
-<shivendra.pratap@oss.qualcomm.com> wrote:
->
-> >>
-> >> If set, it would be called from MFD core and would do the name lookup
-> >> and return the fwnode which would then be assigned to the cell device?
-> >
->
-> Or should we just drop this patch for fwnode in mfd-core?
->
-> Export a new call in reboot-mode framework as:
-> reboot_mode_register_node(struct reboot_mode_driver *reboot,
->                    struct device_node *np / fwnode)
->
-> Use the parent node in psci-reboot-mode and find reboot-mode and call
-> reboot_mode_register_node?
->
+Hi!
+Reviewed-by: Cyril Hrubis <chrubis@suse.cz>
 
-No, I think the reboot-mode device (as pointed to by the dev field of
-struct reboot_mode_driver) should be associated with the right fwnode
-from the start so it should be handled in MFD core.
-
-I'm of course open to other ideas on how to do it.
-
-Bart
+-- 
+Cyril Hrubis
+chrubis@suse.cz
