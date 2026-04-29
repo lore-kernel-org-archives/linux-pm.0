@@ -1,221 +1,209 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8578339B2D
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 17:16:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3FB94218B4;
+	Wed, 29 Apr 2026 18:22:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777482977; cv=none; b=mPEQAy6oam7qmuwtFBUAzXrn4Ol8UMJDj41583/LwIN/J6w/kU1sAplqhi9iZADgri+veHRuSib5C0RwXy8Jz+AQI1rZtddpu5nLYn97jNJpI1PLdWNFqZ2CCLmW0FxUq2mglbbeY0qgapcUa/xiJ/IMicpMtiv7AgBfzOJrzAs=
+	t=1777486922; cv=none; b=RrRGvJp09IY9DXxrnlgVoXWs7rXmndeCImbAc1HtV/uE4D7ZgBbs/HHWP6E8VJ5UBiXVSDQqEYMmECM9dbETCeCnza61hi1Z9gxdmNy0efoucXlMLtfsDPzejpiaYam6XFF6LEpcV6eMIZP0G9zu/S4tpQn13/TRBRebmb6bM1M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777482977; c=relaxed/simple;
-	bh=MsBhThXBOL7FXkcrmXSBCXSaa9bFMViErbsSDfLMBwo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Z9UZv3kzRKG2a+MyRRU32shOsVBdWNtJV7xOv6F1XvHF2snn3SgjvolKHhK7AYo9u1chC0egTSwjBviXjL+EiFrV2MqZJkMCFrCL8czGqwXKkMGOnayv3zfyXg6SkBgMfxmNGHCJR+VEpGBt5GMsxKkgWmsgTiiOvfa3S5CS3J4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=GfMZtjN+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=c9bpj1GU; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1777486922; c=relaxed/simple;
+	bh=oK5pms9uVEMP/3te4JTH9eo/pbWJdjojqvXsoKHPuoc=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=SzbLl6YqvMv15C2tHcMbYzpMowQQb7EKTnC3q6okEkIZxIEZ/eYTVd1gz0lmbSbVQdJILPrSAZOLi6ilb7dUH6LIAzBzZCD2XoIKIFuhM0r4K9jMaI40BwW+BeMfqkQusJpXRd5F8FDiJQf0cexY9Poyqp7U6ICkq0G7ZumrP7o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZT+JMtaK; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="GfMZtjN+";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="c9bpj1GU"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63TF3sUm2094208
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 17:16:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	jMxYNFxFR2tPReBltRPoY8GIp5YswuV6ifrNHfP0XAg=; b=GfMZtjN+zIK4VOAA
-	BNXRZya0yClTFAhjLemCDUj7FZhy/b2Bn3vaBrbWSFt2qnQy9lx0xat0R6U1IPVB
-	pYeTfn5wZ2dxPzpOt+oLeqVNmBMKwXju8ntHQwR8JrF2us5yAOVYesb44qA/3vbQ
-	KE2wuN18n59HHBMGOJdAl/BEeDWWBa+Y/iOFZEEYG2JwBeFJBjAKMfqYsDJyMGRR
-	d+H1thTYB3wbYnziX/9U0T3HXf+z85CtzfBaigMaw/74aCBFLPQUmNfuLFdacjcb
-	h6uQHuvLGAqbV18aE8s8MNaq84uHh/PKscuMwJMYeqr/GmsI67/+i0OvqF0QPR2L
-	0GJsWg==
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dudh3tffm-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 17:16:14 +0000 (GMT)
-Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2b4678c6171so307275ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 10:16:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1777482974; x=1778087774; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=jMxYNFxFR2tPReBltRPoY8GIp5YswuV6ifrNHfP0XAg=;
-        b=c9bpj1GU0pcUnNYM3H+2s8bWdQiO8/7FrlPWRxGHK6gH7/UhUDIEMjtjKrXpxMCMzb
-         hvYWJHLPJ3e9mZS08vMJsuUddjdwj1vD1I8h+qaN2x3l6KgHcXJKf47THNCXfr0me4Ck
-         zz2CRTxjd1J+9ESjF5R24rN+6jC1wouCw/kcUOEN5scRkq1mNM5Ze2CWO1I/jOLyOqX7
-         MPKZUYesoLvUOILCm93TqkgCP0+phBQmo++0YWxLHiaIk1oj8XXuairKZpu5l2o8hR7i
-         ZazupPR0IL7lQ1xZsWLwe967KjcZX3V8Un6g2XVMCt08c7tzRp2V6RdzcjtXfIFyyfIO
-         yvmA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777482974; x=1778087774;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=jMxYNFxFR2tPReBltRPoY8GIp5YswuV6ifrNHfP0XAg=;
-        b=YBCBzNpAWhHWxumkzwQMFaS340l/RV9u7LwT4++Do4vcbnidRUNNO4eR3P8ZF5znuG
-         F6M4bNx6IpCZajOB4mOwwqzgn/2ceJH2/rk4hO7oEnh/I+KGYLzuOF4Z0jAHTRTG/lf+
-         jVFqfwEqmSWWNlPRHmpN6c8D2N8z+OVoGnRCoo1glW69UHVRwgT6/cRlAQJukNH+VkZA
-         dlKpQmvy87//6LlCXRhLw7Ybz5ndXHyfUnkSBTfetHOYor/V0+YXSqqCDb4ED0jVKhMk
-         8HYMqNMjvJrdKAaOjixX+SjpRxAhmfeEuX5u1Glbdi+rujzQaWiH7YK5Kb3NLousESXU
-         Oy3g==
-X-Gm-Message-State: AOJu0Yz/pK1Y3RajEKlavDEnvgPSvsnTh3rMZF0rhGUKUq2Ljco9CVOW
-	b5ssfthxdRwMxFVfsuZvZyE0hkxMmvo3AFArX7L4mA7+H1sDVGY4dPHgNmCT2wiL7wF8oswiM1R
-	JPNQdfVJeupTOjcJCP4fOQClL5rlS9EjBBw+ps6bgkDSBuHBAbWFiBS7mmjv8ug==
-X-Gm-Gg: AeBDietrNqFO4s2muZZB/WZVZLTrm9M+3c/d/N5e07oln5wEb1kRS8H1yYszVpi8fvW
-	8BcGntIyqiCs9IfVdNmHLkMeeDJdwL1mXLGqUkJrc5IpG8BZd8gWMkStClhmVF3o0bhZZ5Vv/ru
-	B3ZPt5BMqfuS2qghR0HJbEPgKaoErFQjZac6uAIr2AQU7q4q4bWtjZ3U9xxMjPJR75/PJFINZIs
-	nnNvwuOI3tPGKNQdlScQ+JiuYVaZELNt+qYYOHT009BgAkwxBZjLhAyesF4Dxldjcrc+FHOn6Bt
-	rp4oT76jdBVzfNuqRGVSOTpiCc9c3q52vd8iSwZWsRmR5Yb50AbGdgxNUpDoKOHEfbHaC4JPYIc
-	am/Q36T46UlC7GkC6wXtjUaxZS4i/DQH8H/hhWB9U918vval6eR96EbG+Ic3Sx1fBzQ==
-X-Received: by 2002:a17:903:11d0:b0:2ae:6192:8d78 with SMTP id d9443c01a7336-2b97c3df3d6mr82119485ad.1.1777482973779;
-        Wed, 29 Apr 2026 10:16:13 -0700 (PDT)
-X-Received: by 2002:a17:903:11d0:b0:2ae:6192:8d78 with SMTP id d9443c01a7336-2b97c3df3d6mr82118625ad.1.1777482973066;
-        Wed, 29 Apr 2026 10:16:13 -0700 (PDT)
-Received: from [192.168.29.31] ([49.43.226.7])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b988785db2sm30726005ad.21.2026.04.29.10.16.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Apr 2026 10:16:12 -0700 (PDT)
-Message-ID: <2e77bf2c-4335-4147-aa90-0192e2a164bf@oss.qualcomm.com>
-Date: Wed, 29 Apr 2026 22:46:01 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZT+JMtaK"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id BC87FC2BCC4;
+	Wed, 29 Apr 2026 18:22:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777486921;
+	bh=oK5pms9uVEMP/3te4JTH9eo/pbWJdjojqvXsoKHPuoc=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=ZT+JMtaKcKrQ8/vbWXgJWayChR83Sxg0r7Kf62JgweJKpu+7Rc4HkMTp/h5D0XrSP
+	 rmRIlNvyAWtTI8metgXWpYznkO/lQVRKBiyK0beohpd7N20ftuOz3iRVisws72YMmI
+	 6V+hTHiBmJ1cmIiuUyHznm+bDow9bi8FDRIH66FohFPyeWtZZEEFjDVSJ13t8KvVDG
+	 ZYIu8fP1iFHxKlkxaGVpTvQLE1r7C4QlKy3wWLu4EPnLSHkVxJJInBD7eSL5uiU+9o
+	 Ebk9PvOqJJm/rSvsFxfJu89WnUMrxJpIXVOxbFKg+an8E5OZv6B8MlD66DJwtfpTQK
+	 Di0Z610+nfzNw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5923FF8875;
+	Wed, 29 Apr 2026 18:22:01 +0000 (UTC)
+From: Markus Probst via B4 Relay <devnull+markus.probst.posteo.de@kernel.org>
+Subject: [PATCH v7 0/4] rust: add basic serial device bus abstractions
+Date: Wed, 29 Apr 2026 20:21:30 +0200
+Message-Id: <20260429-rust_serdev-v7-0-0d89c791b5c8@posteo.de>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v21 05/13] mfd: psci-mfd: Add PSCI MFD driver for
- cpuidle-psci-domain cell
-To: Pankaj Patil <pankaj.patil@oss.qualcomm.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger
- <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org,
-        Florian Fainelli
- <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-5-dcf937775e73@oss.qualcomm.com>
- <e494ba66-3f8d-4d71-a82e-b37f5b34d45d@oss.qualcomm.com>
-Content-Language: en-US
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <e494ba66-3f8d-4d71-a82e-b37f5b34d45d@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: F32A_AHiwe9rVhoq4WwUh4tSaaSsURZ-
-X-Authority-Analysis: v=2.4 cv=A4dc+aWG c=1 sm=1 tr=0 ts=69f23cde cx=c_pps
- a=JL+w9abYAAE89/QcEU+0QA==:117 a=Y3Rdv8TwbQrKP7QTPRCa6w==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=EUspDBNiAAAA:8 a=JfrnYn6hAAAA:8 a=2MFqQf0nztRcsXl5dLQA:9 a=QEXdDO2ut3YA:10
- a=324X-CrmTo6CU4MGRt3R:22 a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-ORIG-GUID: F32A_AHiwe9rVhoq4WwUh4tSaaSsURZ-
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDE3NCBTYWx0ZWRfX0uR+679Xbi7l
- 78nEJ7cL3jlKqidEJPLlQx+ByjFD8qlrt28/pqddYTwxT3pl+2XUQOjCHapd0tjOCZhZaEgbLGk
- XAkB0nTkl9fOAXL9VmbzhbY0bb6YOuhExR2zM4LxhLxEbbbqQEgNd2W9H8dUD7hDf7orp1WH/Iw
- jiJ7AQ/2RGKUawyg5jnUuXKE7HbMTCUxZeIbsqREE0TqEW6sMAWQbOw79wnYc44Ao6YACDJ0Tof
- YZiIzukI2DyWVspS4JGq1Mls2nZOO94jSSoKuvCkXUOC29fFNygnaYhfsk0ZFTijWlSKAqdNAOO
- Z1UIInokAcW1EBBEE0uOmeVYldYzJuezXUB3W+1IEm0RKQTW2SV2SbW7r10SdiYjVtQugZTk49m
- aLmfV21RiJUkxIe9jX4Vjbye5hhme4BGA1IbksyUAdz3yCBo4iPpCb1gY+j23irKZgncKEjaVKw
- mQQSIZgAJ5OG/inJE0A==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-29_01,2026-04-28_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 phishscore=0 bulkscore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604290174
+X-B4-Tracking: v=1; b=H4sIACpM8mkC/3XRTW7CMBAF4KtEXteRZ/wbVtyjqionmUBEIWAHq
+ xXi7nWgqCRql2Ppe/LMu7BIoafIVsWFBUp97IdDHuxLwZqtP2yI922eGQrUgGB5OMfxPaOWEif
+ SygFVwumGZXEM1PWft7TXtzxv+zgO4esWnmB6/clBMctJwAUnpYzS1liDsD4OcaShbIlNOQkf1
+ ggpzNziZKsaZa2wRq2XVj5ZkHMrs20qL32HoDrbLa36tQpgblW2TmmqjGiMQbu0+sku99XZaku
+ u9kJD1cmlNc92fvNksgUrbeVaTeBn9novIdDpnJsc702wPcXob02uikcmIgiBZV5bOgMceOt3Y
+ b2jcKCPcgibqc5/HGg9OeWU+9vVPhJvhv2+H1dFsmU+XAP5c9dvhJxzN24CAAA=
+X-Change-ID: 20251217-rust_serdev-ee5481e9085c
+To: Rob Herring <robh@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, 
+ Gary Guo <gary@garyguo.net>, 
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
+ Danilo Krummrich <dakr@kernel.org>, 
+ Kari Argillander <kari.argillander@gmail.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng <boqun@kernel.org>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Boqun Feng <boqun@kernel.org>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ rust-for-linux@vger.kernel.org, linux-pm@vger.kernel.org, 
+ driver-core@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ Markus Probst <markus.probst@posteo.de>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5457;
+ i=markus.probst@posteo.de; h=from:subject:message-id;
+ bh=oK5pms9uVEMP/3te4JTH9eo/pbWJdjojqvXsoKHPuoc=;
+ b=owEBiQJ2/ZANAwAIATR2H/jnrUPSAcsmYgBp8kxHBzqHPk16mBaErmeqnqv5EIEd9OpEUXPlr
+ 30+9hosimWJAk8EAAEIADkWIQSCdBjE9KxY53IwxHM0dh/4561D0gUCafJMRxsUgAAAAAAEAA5t
+ YW51MiwyLjUrMS4xMiwyLDIACgkQNHYf+OetQ9JoYg//ZbQae5uhbRVIAsl7El1cMu6wwgX2d4X
+ W7FKaoZlupCzASxnyCrznyMLmV37wBQ3wg9Gq7OautEqryG7bjoGzR3skJ4IZY6gt0FdRH9LOsj
+ j6IVr9vKAkvWk9uXobkTyul2MfL3nxtKCCFAhFUznf11aaiEtsjXT1yvKdgcfJmR/qFH3nzXFe/
+ HlRBumC8oETC0G6Nl/d7UFpGhXnYELWc+ZCFPLfS/KRPF4eGs7jLPsa3HWL2wzvm/97goZJa6KN
+ twadXdACFiQNu1Lw/GVJl50QoN6hwZmIwC+GF7Pl9naTS0kQ+ULgeC31KpVtiE7dDIFd4JyHOok
+ TwI4GowcCdMUzNXxoPr1aX2eHWlhx3+cjhvK7+4UBP0OjXJXw6b36iIA2H0RmruAPtaszMnFswB
+ rOxh02YYC68z7JTiqA/dQkBz5dTuL8TWy1vWh+0wlvbBAbgtynL3PTRazMxwmAflOFLg9Vssd+o
+ N1wfrtTCJCjg9D6KhNrjYRM7oyCTNfuekkGTo10VJ0bwuFEyoVDLmbwKTJEGTXnRB3G0Ob9rRMn
+ zDoeiQHwX8MLbWnZg+F7SR9vTqu/Y8zHCpMTALdSv5xb8mrVwdy/f6uMLcAJt/xfDZMVGCpbUmc
+ AIsolueDT7n4ZPRRZfK0DSumycpDD8wenJm3+xAm5iAzTHzz8Tds=
+X-Developer-Key: i=markus.probst@posteo.de; a=openpgp;
+ fpr=827418C4F4AC58E77230C47334761FF8E7AD43D2
+X-Endpoint-Received: by B4 Relay for markus.probst@posteo.de/default with
+ auth_id=680
+X-Original-From: Markus Probst <markus.probst@posteo.de>
+Reply-To: markus.probst@posteo.de
+
+This patch series adds the serdev device bus rust abstraction into the
+kernel.
+
+This abstraction will be used by a driver,
+which targets the MCU devices in Synology devices.
+
+Kari Argillander also messaged me, stating that he wants to write a
+watchdog driver with this abstraction (needing initial device data).
+
+@Rob: Are you willing to maintain these rust abstractions yourself,
+as you are the expert on this subsystem, otherwise I would take care of
+it with a "SERIAL DEVICE BUS [RUST]" section in the MAINTAINERS file. In
+the second case, I assume you are going to pick those patches as-is into
+your tree, after they have been reviewed?
+
+This series depends on [1].
+
+[1]
+https://lore.kernel.org/driver-core/20260427221155.2144848-1-dakr@kernel.org/
+
+Signed-off-by: Markus Probst <markus.probst@posteo.de>
+---
+Changes in v7:
+- adapted to driver-lifetime patch series
+- Link to v6: https://patch.msgid.link/20260427-rust_serdev-v6-0-173798d5e1a3@posteo.de
+
+Changes in v6:
+- rebased onto v7.1-rc1
+- Link to v5: https://patch.msgid.link/20260420-rust_serdev-v5-0-57e8ba0519f3@posteo.de
+
+Changes in v5:
+- fix typo in documentation
+- Link to v4: https://lore.kernel.org/r/20260411-rust_serdev-v4-0-845e960c6627@posteo.de
+
+Changes in v4:
+- fixed not selecting rust serdev abstraction in sample
+- Link to v3: https://lore.kernel.org/r/20260313-rust_serdev-v3-0-c9a3af214f7f@posteo.de
+
+Changes in v3:
+- fix vertical import style
+- add Kconfig entry for the rust abstraction
+- fix documentation in include/linux/serdev.h
+- rename private_data to rust_private_data
+- fix `complete_all` <-> `wait_for_completion` typo
+- move drvdata_borrow call after the completion
+- Link to v2: https://lore.kernel.org/r/20260306-rust_serdev-v2-0-e9b23b42b255@posteo.de
+
+Changes in v2:
+- fix documentation in `serdev::Driver::write` and
+  `serdev::Driver::write_all`
+- remove use of `dev_info` in probe from the sample
+- remove `properties_parse` from the sample
+- add optional `baudrate` property to the sample
+- remove 1. patch
+- remove `TryFrom<&device::Device<Ctx>> for &serdev::Device<Ctx>`
+  implementation
+- fix import style
+- add patch to return reference in `devres::register` to fix safety
+  issue
+- add patch to add private data to serdev_device, to fix
+  `Device.drvdata()` from failing
+- simplify abstraction by removing ability to receive the initial
+  transmission. It may be added later in a separate patch series if
+  needed.
+- Link to v1: https://lore.kernel.org/r/20251220-rust_serdev-v1-0-e44645767621@posteo.de
+
+---
+Markus Probst (4):
+      rust: devres: return reference in `devres::register`
+      serdev: add rust private data to serdev_device
+      rust: add basic serial device bus abstractions
+      samples: rust: add Rust serial device bus sample device driver
+
+ drivers/tty/serdev/Kconfig         |   7 +
+ include/linux/serdev.h             |  15 +-
+ rust/bindings/bindings_helper.h    |   1 +
+ rust/helpers/helpers.c             |   1 +
+ rust/helpers/serdev.c              |  22 ++
+ rust/kernel/cpufreq.rs             |   3 +-
+ rust/kernel/devres.rs              |  15 +-
+ rust/kernel/drm/driver.rs          |   3 +-
+ rust/kernel/lib.rs                 |   2 +
+ rust/kernel/serdev.rs              | 571 +++++++++++++++++++++++++++++++++++++
+ samples/rust/Kconfig               |  11 +
+ samples/rust/Makefile              |   1 +
+ samples/rust/rust_driver_serdev.rs |  86 ++++++
+ 13 files changed, 728 insertions(+), 10 deletions(-)
+---
+base-commit: 5e9b7d093f3f77cb0af4409559e3d139babfb443
+change-id: 20251217-rust_serdev-ee5481e9085c
+prerequisite-message-id: 20260427221002.2143861-1-dakr@kernel.org
+prerequisite-patch-id: 925690ac15ddd64777b2da34b343d2547bbf79e8
+prerequisite-patch-id: 67318671a5eed5fb4ad23a450f1cf0e442bf8ca2
+prerequisite-message-id: 20260427221155.2144848-1-dakr@kernel.org
+prerequisite-patch-id: 87127047dbf7d948ae98f1ff0f4a782214a516e2
+prerequisite-patch-id: 7664165039fb510368a721edfe60f5b67449b7b6
+prerequisite-patch-id: 1e8c97720bab512d8646409c129edd6047164c4c
+prerequisite-patch-id: f0fdd1e9912f31a3945f1c0f227dcb64cf71885d
+prerequisite-patch-id: be515f7e13f7800eaadb3ed85dec6a9ddb733828
+prerequisite-patch-id: 3a3c7749e017d9335f58497404d1350e96caf471
+prerequisite-patch-id: 3526c9154f581497a11465b936d83ef61a875454
+prerequisite-patch-id: 65d8c757b52475c2acc7d22ddc92cd3f0152b55d
+prerequisite-patch-id: 4bd31f1414d5248dc080884caadf5f21684a8427
+prerequisite-patch-id: 7beadbb0da3e589ed86d12f512d1c83427dd82b4
+prerequisite-patch-id: f04f5427c592cb078c08ee071b965ef6fd4a9a48
+prerequisite-patch-id: 64c0098c3d2420f82c89f44fccd3eed459557bfc
+prerequisite-patch-id: 3294340ecd964b8e3e87e5a787ff1ffa28e0b698
+prerequisite-patch-id: b2c14d06f068dc6a52814fc55d1188737dc29861
+prerequisite-patch-id: c7fd96983b606bc42cc5b003022b8fa2bb1c0c34
+prerequisite-patch-id: 8e9f4c2d5521fb6cdc5bed2d6661f4bbed5eb63d
+prerequisite-patch-id: d868f7925ee9dfe44c5ddf50f4deb50263ff203f
+prerequisite-patch-id: 5677248690560ec45e512a8cdbbf8aecfad62d77
+prerequisite-patch-id: 5d9674da330ee9d0f4c91edb8acc20727ba1cd9c
+prerequisite-patch-id: d5f29453bfd2e3354fb96b57d7a55521bedb2b0b
+prerequisite-patch-id: 9d6f96e26fe651304e950766d6bc2006dd33e86a
+prerequisite-patch-id: c7a73c58c6d4ca8556d29ce651ad78cc647f6f31
+prerequisite-patch-id: c5f35030637e78ab6f5fa489172f1506493fbae1
+prerequisite-patch-id: aad19e48d4fa45734050bba927a5b72d6def9673
 
 
-
-On 29-04-2026 20:10, Pankaj Patil wrote:
-> On 4/27/2026 11:04 PM, Shivendra Pratap wrote:
->> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
->> Currently, both the PSCI core driver and cpuidle-psci-domain bind
->> directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
->> introduced, would also need to bind in the same way, leading to several
->> drivers attached to a single device node.
->>
->> Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and registers
->> PSCI child cells. As the first user, register cpuidle-psci-domain as a
->> child cell.
->>
->> Update cpuidle-psci-domain to probe as an MFD child and use the parent
->> PSCI node for power-domain traversal.
->>
->> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
->> ---
->>   MAINTAINERS                           |  1 +
->>   drivers/cpuidle/Kconfig.arm           |  1 +
->>   drivers/cpuidle/cpuidle-psci-domain.c |  9 +-------
->>   drivers/mfd/Kconfig                   | 10 ++++++++
->>   drivers/mfd/Makefile                  |  2 ++
->>   drivers/mfd/psci-mfd.c                | 43 +++++++++++++++++++++++++++++++++++
->>   6 files changed, 58 insertions(+), 8 deletions(-)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index c871acf2179ce16c80b404027e6b969c7787a6bb..333b01fa00b8fbd15e6f31a6b9af47600411624e 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -21239,6 +21239,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
->>   S:	Maintained
->>   F:	Documentation/devicetree/bindings/arm/psci.yaml
->>   F:	drivers/firmware/psci/
->> +F:	drivers/mfd/psci-mfd.c
->>   F:	include/linux/psci.h
->>   F:	include/uapi/linux/psci.h
->>   
->> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
->> index a1ee475d180dacab245510674514811aec337ad3..1a1316d11e0a2e4f61801586229f5104e2435865 100644
->> --- a/drivers/cpuidle/Kconfig.arm
->> +++ b/drivers/cpuidle/Kconfig.arm
->> @@ -36,6 +36,7 @@ config ARM_PSCI_CPUIDLE_DOMAIN
->>   	bool "PSCI CPU idle Domain"
->>   	depends on ARM_PSCI_CPUIDLE
->>   	depends on PM_GENERIC_DOMAINS_OF
->> +	depends on MFD_PSCI
-> 
-> Should this be select MFD_PSCI?
-> We're seeing bootup issues on Glymur when MFD_PSCI is not y
-
-sure. Let me check on this. We may need to make a change at "config 
-MFD_PSCI" --
-
-    config MFD_PSCI
-         bool "PSCI MFD for psci child cells"
-         depends on ARM_PSCI_FW
-   +     default y if ARM_PSCI_CPUIDLE
-
---
-thanks,
-Shivendra
