@@ -1,86 +1,86 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 112A4363C57
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 14:40:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4779A26F28D
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 15:09:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777473640; cv=none; b=GDrpbrjAXQ7oEgEaEljy0ke66z7UinhYet7/RhgpKWRVNXVyoTtWyRhGrXzYB+eZyQ1WrMVpPh/vS54sjmzyYRiuXg1mOCUSaanWv2aq9/nkP4z3SbE1JG4U/ohb4b72DxxL1ZwjDV/QqSXYCuBzGlsyLVj4tYmdv1yathCNoVo=
+	t=1777475363; cv=none; b=ligQXk8EZ2v3u0UKFzW4FP0HGbIW0aMsCYLG/f7eOX0qaSWT7w4pc5gnRPxAshtTDYaKepbsvXIuXQRnggTQf741iWH8el7VwM1cHqgK0ozGtUh05ZFsRCR3mTCVvznnsSpbjrtn9xtJp4JE6Xou8xHztKrp6UVtTDfOQOat7kU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777473640; c=relaxed/simple;
-	bh=niI+3mQl4evkN4UDHgVij5jImVtE8gOR0Lbni2M5DOM=;
+	s=arc-20240116; t=1777475363; c=relaxed/simple;
+	bh=gtnFX59B1anRZ4vdjMqWGofH8RnHiE4XajnuH5mLi1Y=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dY4uVwAqAWRfGHAwIOah2mi7ZNR8JemIHcAjKT5UZTTBqFOKgZNu2gB+iYxqXO0PebweShqoQ7NpCRGdkfcPJhGnH/EEMKxW7VC+u2susj6FeXvqgxRonm1o56b0eieMcdoGddPT3MSiEdUXmmCkzcfkPCqtCEbL5+AvQ/zLcFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=ef4lgzEQ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UCOJrjCo; arc=none smtp.client-ip=205.220.168.131
+	 In-Reply-To:Content-Type; b=uiGMd37i1DzNcr/zCASjXcIX1/Jqj22ZEwrVTrZmfkTC7vkPru7km/ooMJpqcApRDpU7Lr4igdG02ulGPEn/icvLMp6izOw5P6ySjL2V8bMcppCnxswVXX3RshxnM8FRX6MOs0fnua8DApEUhRL1fLaavqpqf74jNw7PV65xy08=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=kXOWK4FY; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=RKqGfMuz; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="ef4lgzEQ";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UCOJrjCo"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63T8pmCx901571
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 14:40:37 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="kXOWK4FY";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="RKqGfMuz"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63T8q0Cu963229
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 15:09:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	LTvtklw7T1tb7yJFotQqtbbrKTIyjQvnhgz95DrLbqg=; b=ef4lgzEQ0flJSMRZ
-	KCnuAiih1mbTvqZvzGBYQboodTPMVkgCKfwmA5v0NlHDxRLUAe5/usrRvZ5DunCd
-	Dtjq0bLjjK3NrCNYRkODrOqac+6ckiFHH6fmetbhcIKei5jHHb+guSZrHefwBrGg
-	FoyPOBVEtGV92AmsE50FouavHUlLT8wCyRDvN4QBXV0ev0XkwZEoB2P50ez9bd9q
-	7h7a3sEek4My4c3w+FppcLU8QeCdwUdddAENA6g/bEViMqXg4Op+3Sg7d7SJgik3
-	L5inTOStIvMr3tGDYjL5P8c0QrSJPEcn26vs2X3sbdU4Ugl+yq7SJ6TS8ccR4a6y
-	KsSeCA==
-Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dubq9j5dk-1
+	878qtYQe4fjVo5NqOixdnFpHTcI6ba58NmRzlD/+pms=; b=kXOWK4FYDMIl0i0k
+	xYFSCh32mDwTTpWHsrMx+KAVzh9f4fdZGPheBiBrf3Dr3mwtMm2GAJ+PSRmgLdk8
+	IZpBbIrjVWQTmpQT3gCQeSxqxGC/5xEam9uQwivEDMSzfnwpzfVeUrCMT8VVPEzD
+	EO84TDk/dkVeW7Xlpxldg6af8ggOx8kCpBXgSG5FFsIUdhTw8BueRlB6v7Jpc8eH
+	Sh6fussvOQtBugPAKPpU4RTuR2aGyNsv7xVJ5hinERpcxIZ/l8K4zqVY3nwr8P9C
+	FK+e6KKkho06mNsfL3WqHuKPZqI9epKb/6zuF5AvkLluy8JvW22OUdhStaTV4Aa1
+	FJ51nA==
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4du2m4uyhw-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 14:40:37 +0000 (GMT)
-Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-35da99b90f6so14966136a91.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 07:40:37 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 15:09:21 +0000 (GMT)
+Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-47bd318565dso1980431b6e.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 08:09:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1777473637; x=1778078437; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=LTvtklw7T1tb7yJFotQqtbbrKTIyjQvnhgz95DrLbqg=;
-        b=UCOJrjCoQniY+ZspQrTPdxh1CP37X+0Vw6j/gDLdk8qtn9KDdemql1OErNxg5iBn0a
-         Kn9nZpdYg5vqzsCTa3SBeBJhUNPR/EMXa1YgmV9KT4Ze9Tdn00wXCs1oAcmooouQnHL+
-         qkPPtvXX93qgTYllTbqHaUvZiMB1TfVmc8a8GS26gnLG4Jeifedjx63zEVt/06EQ2m0m
-         gFntdgqQE1ZjQZyfKMMq6lISSd/3Gn+4maihhUfeOBdsnq3Aqnu90mNHEXdddLDhd5rJ
-         FzqlMZrJveOirNDzOu359iO9qCt1c923C/nL2q7LgfUG8ERiKGJ4X4bqKfsrF8P5+ccE
-         F2Hg==
+        d=oss.qualcomm.com; s=google; t=1777475360; x=1778080160; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=878qtYQe4fjVo5NqOixdnFpHTcI6ba58NmRzlD/+pms=;
+        b=RKqGfMuzXzuOE6OQd/X6zfwIBMHDJhYjml/qb4E8lDeJ8OSpV1T4/gPClKVvK+cKFE
+         txZyIQvRh0d2xM7n22ww6ku/8l/Nzts+XDB4AYwSn/RWmBm5ekU3RR9Kkr1KNEZTYKAb
+         AYAVhVPAY8UlJCt/vBXHZjkKubySgm6r72abvgadZkf29wnGudTD4pb2r2KRX5V+KrMD
+         uIRqL4yJpVT11dGboTu0PVUOpoxkoUeRQZ1zkZpRNKBo7N0SqyFOuFAZZxp2j/A+Wjg+
+         nLj2jy5aJ+jOTg/XvwSNDnljwGJBX8gtm4bvSOiKAJ7I5jykdqMXpg4t72VEBGP5v1Sv
+         GU5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777473637; x=1778078437;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=LTvtklw7T1tb7yJFotQqtbbrKTIyjQvnhgz95DrLbqg=;
-        b=VwjjPaEQ+LPww/9rV7se58MBnCyTUljzrNhmncR8kxqJMZC0NiRwMmemxyzCuqVex9
-         0PxEpd/DrX7WegHTX1yipdnGFfKAEpRALqVXLjiGK4Z4opioQ7SmQH5D24if8b19tTly
-         o9NDGBEZTPW3X9OkNHDAcA+vHqDj+LGya+rx4q3EojP322zYl3qwx3Q1+O9wLrlTVWA3
-         +tthDDwOy4vQnM5MD0JDpNbA1XDOjcotXbqZ24fRJJEKPdpA4JAJgfQ1KODQqxpfcwrI
-         6vTCrfaNiUXNFtP0A4YkklKtMtr7uLGQBO0Yf83p1h2o4UFl1wqN/onym2boUgm7lX5o
-         maIw==
-X-Gm-Message-State: AOJu0YwVsBSvtmCrBXN6hQeS6FBcagOmrE8i3S7zyk6/qscFmsZDr9pn
-	BFqowrSiTyrZQ2fZUPZN23qydVA1nzNcEAn/krebo+iUvNFXMauJF1t/PFxtNOg3l76lh/9dEkR
-	RNbTEDmytbBwYzYDTEOXD+4AQJMIUJIGhCs9DRNVGBx0NFJqcopI760j4GEdF8g==
-X-Gm-Gg: AeBDietqzuQr9yazKYEU64egqQcxMyzn38r8V6t+lsbyg0ny4ny02+fjaeO7EFnFUCe
-	LmJV1n2XdC4I5STO5vAr1jyDq7oUWgTsyjQcEar+8mQ/D+AbTVIeHp5u1y5OTKkhnwphq07oBsI
-	+/kX8WVswzF/0ELPi9IcIM7eg/qrQ5PLdvd8QumxsUWOTyofB7ZlcZe8ErqecZYaLT6gFWTUEGy
-	xfL6aSDdGUiwICi5RLTfXVIJAKwFfb2u3cY2bGgJTu8ef97pGifZ/f25WuYwEP5sAqC3nezKgqz
-	mIRL+9FznHLKOwGDaKkPsVqM2loxY9fOg3Y+TGqXwTnkHG+ZtpRD2zTVARy6penYDx874cvQ77F
-	GJEvq5xWBWokUqg9xmIsC2wVKU9mGOEpnuqkAgCprjmNm8wh7DRJiU9+DSNqe+bSRtfRmeQShqi
-	DQ0rjd609s354oOfv4Lm3LeBr9vZmTxAbCvk8IdvjxMzIcl9conVw=
-X-Received: by 2002:a17:90b:5828:b0:35b:97ba:acee with SMTP id 98e67ed59e1d1-364a0d2ca8emr4196244a91.17.1777473636543;
-        Wed, 29 Apr 2026 07:40:36 -0700 (PDT)
-X-Received: by 2002:a17:90b:5828:b0:35b:97ba:acee with SMTP id 98e67ed59e1d1-364a0d2ca8emr4196167a91.17.1777473635798;
-        Wed, 29 Apr 2026 07:40:35 -0700 (PDT)
-Received: from [10.190.200.117] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-364a0303f52sm4214118a91.16.2026.04.29.07.40.25
+        d=1e100.net; s=20251104; t=1777475360; x=1778080160;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=878qtYQe4fjVo5NqOixdnFpHTcI6ba58NmRzlD/+pms=;
+        b=OomJrLveJ9hvAUZmJ11QDsunikRZoVwuevv2gpCdbKWyFp6YtXkOX+GU/5g6uUxMQh
+         ctYtuOoKwEUqCmh6p1xTdmC9DBSbsuH8Ml6zb61DdcHMmrmdh3/E0hWwKQ9upif2DAzz
+         mHUnUt8xVCIyGDRcRnUZ8LjpxQAELMH84xQTduQHfa0Eel/OXV8BHGShSszn1mMo6PJE
+         AYr9IvXSJyAtPnysg/kIR0mGq5UenNNP+wuMWlGX0lRIijXNNjJ0fy942FDP6mVb8MCT
+         u1GhPLK4wSFvJx+0SO2bgBkIWdu+P+snPSOZjxrsHClat0X3Ckwza0TIUidQEcVqG89z
+         2mSQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/Hl5E90XPkvfzIj6BH7l7/K0DhbmNttEfe6wplHP+D/h0NKF+2gWF+Yi9+3LSSl/D3/cuA5hkENQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YziF9RNm1ajKv0AeQ7fMR2iCPF8vGijvyg2Ow+VHojj5eNlyqRB
+	/sSQzlpy6QF2aytyyHqckpTxXfHuojpxicvCFvo9mMdexG+by2SDcOpT3naYC5JzDOvgi3QOA7s
+	wxMe24vuEF6kiaiVAZhxc7rSgRKn1RN3YSWmf1drApNBye54afkQvkIZnOrAZMg==
+X-Gm-Gg: AeBDievo6V5DGuyojTGGm3hDP9m+A1qnM78M69dkA7DoX5JW1mAjCJAtZ35BZgmNJTC
+	mqL9Dx8Z2TbMTxbrABWFOk0zW12j4U802/SNKPHFWi/Prvs39hhfGIIZlfLqs2c7RM250uX61Ii
+	YH7+pkVcWrPXTaYquLW224D8itAo7H6tckXgJscSrnoHCQ//ZGIvg1cVSOGInnKNkFHrH8rU39Y
+	3vJ+3IORG2C2RwN/OxBdJiZBXrL5nHJpdaZYtw6CLG1iLsbLFVZgiudw0+i3U28V1gA6DP75XbX
+	JZZE+5xIZVByKrx1FQNY+0ii0kuxCgdy4pZmuhdMKK3OU+L+QH/QEfpZDk27Z/LekjbxOKURCuA
+	gbtXLilhnBAkqQmZP8Qkl62PlKjbCrL5KKOnNv62Ux0VxR3lp/uiwPbrSR/Q=
+X-Received: by 2002:a05:6808:14c5:b0:467:de0e:feb6 with SMTP id 5614622812f47-47c3d96ee0bmr2047597b6e.11.1777475360106;
+        Wed, 29 Apr 2026 08:09:20 -0700 (PDT)
+X-Received: by 2002:a05:6808:14c5:b0:467:de0e:feb6 with SMTP id 5614622812f47-47c3d96ee0bmr2047563b6e.11.1777475359694;
+        Wed, 29 Apr 2026 08:09:19 -0700 (PDT)
+Received: from [192.168.1.29] ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-447b4216675sm6501075f8f.11.2026.04.29.08.09.17
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Apr 2026 07:40:35 -0700 (PDT)
-Message-ID: <e494ba66-3f8d-4d71-a82e-b37f5b34d45d@oss.qualcomm.com>
-Date: Wed, 29 Apr 2026 20:10:24 +0530
+        Wed, 29 Apr 2026 08:09:18 -0700 (PDT)
+Message-ID: <ca6c656c-07a1-466c-9c1f-a2efbf1498d0@oss.qualcomm.com>
+Date: Wed, 29 Apr 2026 17:09:16 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -88,244 +88,108 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v21 05/13] mfd: psci-mfd: Add PSCI MFD driver for
- cpuidle-psci-domain cell
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
+Subject: Re: [PATCH 3/3] interconnect: qcom: Make important drivers default
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Georgi Djakov <djakov@kernel.org>,
         Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger
- <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Sudeep Holla <sudeep.holla@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org,
-        Florian Fainelli
- <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-5-dcf937775e73@oss.qualcomm.com>
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20260428-interconnect-qcom-clean-arm64-v1-0-e6bc3f7832db@oss.qualcomm.com>
+ <20260428-interconnect-qcom-clean-arm64-v1-3-e6bc3f7832db@oss.qualcomm.com>
+ <bb02291a-1579-4069-b6b1-757a0b5fb7e6@oss.qualcomm.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Content-Language: en-US
-From: Pankaj Patil <pankaj.patil@oss.qualcomm.com>
-In-Reply-To: <20260427-arm-psci-system_reset2-vendor-reboots-v21-5-dcf937775e73@oss.qualcomm.com>
+Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
+ 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
+ cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
+In-Reply-To: <bb02291a-1579-4069-b6b1-757a0b5fb7e6@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: LrmUPjDLIW9Rqgj8VkluAaT_d5gtRGHl
-X-Proofpoint-ORIG-GUID: LrmUPjDLIW9Rqgj8VkluAaT_d5gtRGHl
-X-Authority-Analysis: v=2.4 cv=Wak8rUhX c=1 sm=1 tr=0 ts=69f21865 cx=c_pps
- a=0uOsjrqzRL749jD1oC5vDA==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDE1MSBTYWx0ZWRfXwDzKs0JryP1N
+ uhtVo+cxGmsKExB/dA8TMzyt59odE8HA6nk2pFBHlYOqueZmcphrQNwOqXaPSrZQhzz2SoqyGyi
+ VDWkL5MByZaNs82DycZhytNrAGcptPWHzqW/te4/UTd3sTer1CPO5jh+dQsUWJvQAL7vlyKfP0f
+ Cp+mEcfzPlgWdgMxg1QqHJr62867kg19ZDR06d5JpxKjXWmJdk7uTNwkkMwYMHiFCB3pSQmFZO8
+ 0oaiJtM1d+lB6CzIsrq8WTmUVsUOe1XqeVCnjk925xhtqGLBU6spBrzIE9dqyivlQ+8+Ga1QMH6
+ ba3Oqtmeug/8CtOAF1BnNeOiP9P6TNO883VLXrhal6HWUcStR7pn2TZWbNQZAs5QehzLh6Zw8kN
+ RC12LShNBsuj0p2Asks7RcLbI6mGnwixeCyfun5uryapDS8yUUMXqULGAiUUU77vn0/Sv1pSL3f
+ T5jp28z4ofBeStVLyXg==
+X-Proofpoint-GUID: HU1xiOEv-MCFNc70uO-vUUMYdhqp-eCj
+X-Authority-Analysis: v=2.4 cv=MuFiLWae c=1 sm=1 tr=0 ts=69f21f21 cx=c_pps
+ a=4ztaESFFfuz8Af0l9swBwA==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=JfrnYn6hAAAA:8 a=U_Ea8TlPRqx-BgSQmf4A:9 a=QEXdDO2ut3YA:10
- a=mQ_c8vxmzFEMiUWkPHU9:22 a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDE0OCBTYWx0ZWRfXw4QDBN/sHdDk
- npFNhRK7sHVFPB+xzdXBWbPnnspauR3Rnq2snO9Qzqme4xipfJQV7BLk6eeD3ZQbsUez5LMifFt
- xBo34S7RQWhcKuRYWA60NNkLBDg/ak7nD9CsVZP3iKsUfHs4ez+pIHebBUaGKH01IyfIUPuJMv6
- TRimojn6tKlPOUX1m6wR5HM5VCa/Xa27bK60gpbvxFRxaaixymhst0LX2Yq6OxgkFbXH/IKnJVT
- AiF8skwYV81Vq81blvwYxoHbmeHtmq3yhTRQaJfJlj+ygIEP4EH3twtsVZqRYaEE2mz5yPFIoC8
- YxyHn7wZw19iMpCq4Qz4sd6Bxv5JDRBs6vtDbCXb4lcU8SD4ZuH1Y88GYv649eZl7Rgeslpa/JQ
- 6+sfi42LsMRT6rlm2VaSMRmfVFORS9SA1QG2DGdQHO3+sfbaehvjMCuAeCbwL469vD9xryvCLJQ
- 15U83lmgWbdQhd3MR6w==
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=XT8seR4E2Wfhm39xuMUA:9 a=QEXdDO2ut3YA:10 a=TPnrazJqx2CeVZ-ItzZ-:22
+X-Proofpoint-ORIG-GUID: HU1xiOEv-MCFNc70uO-vUUMYdhqp-eCj
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-28_05,2026-04-28_01,2025-10-01_01
+ definitions=2026-04-29_01,2026-04-28_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 malwarescore=0 suspectscore=0 spamscore=0 clxscore=1015
- bulkscore=0 impostorscore=0 adultscore=0 phishscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604290148
+ bulkscore=0 clxscore=1015 phishscore=0 impostorscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 suspectscore=0 lowpriorityscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2604290151
 
-On 4/27/2026 11:04 PM, Shivendra Pratap wrote:
-> PSCI has multiple kernel consumers, such as cpuidle-psci-domain.
-> Currently, both the PSCI core driver and cpuidle-psci-domain bind
-> directly to the same PSCI node "arm,psci-1.0". Additional consumers, if
-> introduced, would also need to bind in the same way, leading to several
-> drivers attached to a single device node.
+On 29/04/2026 11:23, Konrad Dybcio wrote:
+> On 4/28/26 7:32 PM, Krzysztof Kozlowski wrote:
+>> The interconnect drivers for Qualcomm SoC Network-on-Chip are covering a
+>> basic or fundamental SoC feature: bandwidth management between internal
+>> SoC blocks.  SoC can boot without these, but power management or
+>> performance will be affected.  These drivers do not represent any sort
+>> of buses visible to the board designers/configurators, thus they should
+>> be always enabled, regardless how SoC is used in the final board.
+>>
+>> Kernel configuration should not ask users choice of drivers when that
+>> choice is obvious and known to the developers that answer should be
+>> 'yes' or 'module'.
 > 
-> Introduce a PSCI MFD driver that binds to "arm,psci-1.0" and registers
-> PSCI child cells. As the first user, register cpuidle-psci-domain as a
-> child cell.
-> 
-> Update cpuidle-psci-domain to probe as an MFD child and use the parent
-> PSCI node for power-domain traversal.
-> 
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  MAINTAINERS                           |  1 +
->  drivers/cpuidle/Kconfig.arm           |  1 +
->  drivers/cpuidle/cpuidle-psci-domain.c |  9 +-------
->  drivers/mfd/Kconfig                   | 10 ++++++++
->  drivers/mfd/Makefile                  |  2 ++
->  drivers/mfd/psci-mfd.c                | 43 +++++++++++++++++++++++++++++++++++
->  6 files changed, 58 insertions(+), 8 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index c871acf2179ce16c80b404027e6b969c7787a6bb..333b01fa00b8fbd15e6f31a6b9af47600411624e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -21239,6 +21239,7 @@ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
->  S:	Maintained
->  F:	Documentation/devicetree/bindings/arm/psci.yaml
->  F:	drivers/firmware/psci/
-> +F:	drivers/mfd/psci-mfd.c
->  F:	include/linux/psci.h
->  F:	include/uapi/linux/psci.h
->  
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> index a1ee475d180dacab245510674514811aec337ad3..1a1316d11e0a2e4f61801586229f5104e2435865 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -36,6 +36,7 @@ config ARM_PSCI_CPUIDLE_DOMAIN
->  	bool "PSCI CPU idle Domain"
->  	depends on ARM_PSCI_CPUIDLE
->  	depends on PM_GENERIC_DOMAINS_OF
-> +	depends on MFD_PSCI
+> I'd say let's make them all `default ARCH_QCOM` - all of these drivers
+> are required to boot (minus the OSM_L3 driver which is "only" highly
+> desired, so that your CPU's bus isn't heavily bottlenecked)
 
-Should this be select MFD_PSCI?
-We're seeing bootup issues on Glymur when MFD_PSCI is not y
+So the few of them should not be a module? That's what you want to say?
 
->  	select DT_IDLE_GENPD
->  	default y
->  	help
-> diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
-> index b9e4ad7d43a3310a76ce62018dff0af1488e33d2..a2d01810f2957abdfa52ae66503dc0cbb205f163 100644
-> --- a/drivers/cpuidle/cpuidle-psci-domain.c
-> +++ b/drivers/cpuidle/cpuidle-psci-domain.c
-> @@ -17,7 +17,6 @@
->  #include <linux/pm_runtime.h>
->  #include <linux/psci.h>
->  #include <linux/slab.h>
-> -#include <linux/string.h>
->  
->  #include "cpuidle-psci.h"
->  #include "dt_idle_genpd.h"
-> @@ -122,14 +121,9 @@ static void psci_pd_remove(void)
->  	}
->  }
->  
-> -static const struct of_device_id psci_of_match[] = {
-> -	{ .compatible = "arm,psci-1.0" },
-> -	{}
-> -};
-> -
->  static int psci_cpuidle_domain_probe(struct platform_device *pdev)
->  {
-> -	struct device_node *np = pdev->dev.of_node;
-> +	struct device_node *np = pdev->dev.parent->of_node;
->  	bool use_osi = psci_has_osi_support();
->  	int ret = 0, pd_count = 0;
->  
-> @@ -181,7 +175,6 @@ static struct platform_driver psci_cpuidle_domain_driver = {
->  	.probe  = psci_cpuidle_domain_probe,
->  	.driver = {
->  		.name = "psci-cpuidle-domain",
-> -		.of_match_table = psci_of_match,
->  	},
->  };
->  
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 7192c9d1d268e93d1557ca6519ac96056e37e221..75ea5b47315cedfd1153899eef28614a165a14f5 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -2376,6 +2376,16 @@ config MFD_KHADAS_MCU
->  	  additional drivers must be enabled in order to use the functionality
->  	  of the device.
->  
-> +config MFD_PSCI
-> +	bool "PSCI MFD for psci child cells"
-> +	depends on ARM_PSCI_FW
-> +	select MFD_CORE
-> +	help
-> +	  PSCI MFD registers PSCI child cells and exposes them as
-> +	  platform devices. Child drivers are probed only if enabled in the
-> +	  kernel configuration. Select this option whenever a supported PSCI
-> +	  child driver is selected.
-> +
->  config MFD_ACER_A500_EC
->  	tristate "Support for Acer Iconia Tab A500 Embedded Controller"
->  	depends on I2C
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index e75e8045c28afae975ac61d282b3b85af5440119..36e872b11b995135a04ca24c33fd3a4d08e4f49a 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -24,6 +24,8 @@ obj-$(CONFIG_MFD_EXYNOS_LPASS)	+= exynos-lpass.o
->  obj-$(CONFIG_MFD_GATEWORKS_GSC)	+= gateworks-gsc.o
->  obj-$(CONFIG_MFD_MACSMC)	+= macsmc.o
->  
-> +obj-$(CONFIG_MFD_PSCI)		+= psci-mfd.o
-> +
->  obj-$(CONFIG_MFD_TI_LP873X)	+= lp873x.o
->  obj-$(CONFIG_MFD_TI_LP87565)	+= lp87565.o
->  obj-$(CONFIG_MFD_TI_AM335X_TSCADC)	+= ti_am335x_tscadc.o
-> diff --git a/drivers/mfd/psci-mfd.c b/drivers/mfd/psci-mfd.c
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..7affd6bb09dd83452664edeccb09290fe4f43186
-> --- /dev/null
-> +++ b/drivers/mfd/psci-mfd.c
-> @@ -0,0 +1,43 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-> + */
-> +
-> +#include <linux/mfd/core.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +
-> +static const struct mfd_cell psci_cells[] = {
-> +	{
-> +		.name = "psci-cpuidle-domain",
-> +	},
-> +};
-> +
-> +static int psci_mfd_probe(struct platform_device *pdev)
-> +{
-> +	return devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_AUTO, psci_cells,
-> +				   ARRAY_SIZE(psci_cells), NULL, 0, NULL);
-> +}
-> +
-> +static const struct of_device_id psci_mfd_of_match[] = {
-> +	{ .compatible = "arm,psci-1.0" },
-> +	{ }
-> +};
-> +
-> +static struct platform_driver psci_mfd_driver = {
-> +	.probe = psci_mfd_probe,
-> +	.driver = {
-> +		.name = "psci-mfd",
-> +		.of_match_table = psci_mfd_of_match,
-> +	},
-> +};
-> +
-> +static int __init psci_mfd_init(void)
-> +{
-> +	return platform_driver_register(&psci_mfd_driver);
-> +}
-> +
-> +core_initcall(psci_mfd_init);
-> +
-> +MODULE_LICENSE("GPL");
-> 
-
+Best regards,
+Krzysztof
