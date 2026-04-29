@@ -1,67 +1,87 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5083C3B635A
-	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 08:43:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A7073BE644
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:21:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777452186; cv=none; b=Y14v2cev5n1Vyltw+oEOm98IwqP7b11O5qTiMZ/XiDfIwo+DqeBMXvxbZzPL64s4TKfqxECO/MLBu3X0uT1EUluFlaIDYYu+WC7OSJM5keb1m1vYafykmwa1CtSIOWku1Kk9vkZT9xjqpeV3lquYgG0Bf+ZBASMEy5DLLQdGxuQ=
+	t=1777454487; cv=none; b=nA1Jg5q53nP7C4/ekpf/RZ22DXIiIBvmh4a1NeK3URkUnQARp6dp756ZFWsi3pevLTqnN9ogkFGXKuvYlXWadOeY+T/Km/u69vY2AZ0dPJX1Oki6LmmRkwreSBPlg4Ta1YZk769zRVnk6eBi5yy0UuHYm3vBNryretTXpLb0wyw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777452186; c=relaxed/simple;
-	bh=tupiD11ATds5ekAH11VAwc8M0ubbtZCVy5mgO77Hq00=;
+	s=arc-20240116; t=1777454487; c=relaxed/simple;
+	bh=UD2OhGRoOiRQuRu8hyYHXs+pUDM3OGDO2qM5ioTS5r8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=unVa1y1sZuY9KLG7rrMJMvZvasHktv2yI8fzAtncbV9oTeh3bJ1/8D0Ru7FWjnqTDJhjIAA5OkVrUbGEZuqnafFwHi1H1b1gSiXuviDCTV5ewnLGx4mcKitPWiGvSc+a6AUMs6Rsdi0cJ+74gMS/vAjRMkZde6q4AGg1IkYbzls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=f16KYBLM; arc=none smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	 In-Reply-To:Content-Type; b=aXlpI3ZDzp0sJWOPr7O0DSoamC4YU6AjIHI7QI7snBrYI/BKJl2VSPloFi440Id0dDkewKl6i2TE4rjuqqaw6J5OPIeIWeU4R/SPNKGb3ovH/az/VJZk3PnNe3fkpRF+NsM+k/l0hG0TkyL40JsssO7iElpJeNUnDMjrlOoVnRc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=eMao1LGA; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=aeO0vdxi; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="f16KYBLM"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-43d73422431so11404524f8f.2
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 01:43:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="eMao1LGA";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="aeO0vdxi"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63T8ptIG1641654
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:21:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	j+VxMDfovcPTHc1i48TzmhGmrYWTJq7vT35UvWMuOzM=; b=eMao1LGAfGVaxmB5
+	X9pwAUr5On72I3xyLO+PlNjo+tPH9GDaxkifxY/6ZQNyNTqeQ/gf8PdF3aF+Q95V
+	Fe0DB4B8B5wwHcMIBJttov5QHsq8naxUPaWM7tlLcnhrim7kNZKF2oTvIPvwAngr
+	RZwzgPpuRe3p57smW9bfS7YlJUscIulxXNRqkXONl1WH6ZriTigbE3KtgRvXCivW
+	GtYcEOFfw7HeZ9ocyy3ST/2CKa7xNDLS5RTdAeNPx+OMAK6RmSExXYw2EPt/9s2R
+	t0GHEkPhl6MWloE4bF+7e3aXHJ5nCKCtXR2lL0w6GmarIFzE9SLYz3Cx9Y7PCJLY
+	2MiPKg==
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com [209.85.221.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4ducj80t77-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 09:21:25 +0000 (GMT)
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-56f6ee26adbso874698e0c.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 02:21:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1777452184; x=1778056984; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1777454484; x=1778059284; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=aEw2E2UxluXLM5FnKmomLkyyPldPWoTTdKM8dvkkUPc=;
-        b=f16KYBLMIzZYLjPY3dRyCZf1zyHDvtBrrzWgpNSuIqO3GcXITs6GeAqF0JvIrgqkOW
-         mX0wW+l86BtExzi1nnlBSa0GbxrigLA/1+FOKxZFU+9c9UjDQr6ZvA9jDjA+uV8fn4ns
-         KhAaNI6HSY1HC8QWkqRRNRXSFzE/UselxsNwC9h3S7iOUnLmRSaczB34jxi7vLGL1oRJ
-         S/dfS4BgGBgZq83+tKaPpycbUtul/xS/tABFk6t9VdkHUqjCWvX0vd7kCJrxNCB/bZD3
-         WhDJ5QXHc+0wBjsqdnj1zCUkp6C/UM6djT04HvAaWIrsdBp8uhA5a4Y7EId83T/DpVc1
-         /8jA==
+        bh=j+VxMDfovcPTHc1i48TzmhGmrYWTJq7vT35UvWMuOzM=;
+        b=aeO0vdxigr/A5pzPrMBIvejYeCunIrQReYnfDlrTTH0nYnmPQB+8EobQbjKYKgX54L
+         +rTqsy9PSUmFLHq4xfJIJ60QCSPkSrhzcAYYffjLolGtzrpbsl0y9Zh961PQQ7KEfDhe
+         yYehtxxxj71l7jJK2vyL0EDAFzPXgaJEg4mD/rrHGXq2wyjdlavqQZ3GKAFz8oNbfFEU
+         R6bjleQwLIKWWcHJwrcX5fT96ZGAZxfZ0Xd7gr6VseWNxV1zbjbXZpAg4iFdS5Xoyt47
+         TYbu5j2RztFB0VR5ctRd01nTczZ+YSDAMHfVWIeEyQfFrEDdvPUOTx8pfx+3XcIM6vcS
+         qKnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777452184; x=1778056984;
+        d=1e100.net; s=20251104; t=1777454484; x=1778059284;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=aEw2E2UxluXLM5FnKmomLkyyPldPWoTTdKM8dvkkUPc=;
-        b=KIhsO2Cl2m+C8LCaXLWWjxRiTZa4yFu2MTZnCKTV4czw5werag6sW6oMHZ17RSXrNQ
-         rf5FMuXYdZZvOo1E163yWTVqHPDnscka+T0Vb76nW+7RhWvKOkgxOfAUXvreqz0vTC6v
-         M9bsfCoqmKmOPtadRViVe8MIMSLD3Q6a68rffF/yKpq40cp7q4kUyoOGWWoouASCpOso
-         AoA1jej9eGTas+mcF5YA/teFAuuQqcUQkDv/Ey9v2trPrdaNQWmU7lB76RwzihztMWC5
-         yPQNKarZWwo0+uaeGwI/SYVVeO7bzzYLKBgx7qGvsOOyONAg2hgnOXPHeulSvfdMkKNT
-         SxCQ==
-X-Forwarded-Encrypted: i=1; AFNElJ88lhVlqMQohzAzyz5M8zxxYtinRO2gry1J9gAAuEsMqkQqSMkykFHIyiuDdRXqU+aVSmPi50kyZg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzhWvZQFp2sLMJtuZTWafaAL7whh2ESLyodLUpEKABGh8dSt1P5
-	QiEs++r8YcBRYv5ebSE7rA3F1juPcfhJy85KG1mAz/eA806TVBTU7otZGpYy0CIIK1E=
-X-Gm-Gg: AeBDietq2X0YZ1jUrB/ebUgEASj1KoxtrRwcx+vONBvVPcJdTYDDvVWg8SJjEjxUq3P
-	2eckN4eKuQJ0VqlNCa3avK3OAP9w3YiVNyN36/p4KOR97YdFw8ZlHldEnUsrVtmLxYCrNus/69e
-	uY+X6hb0qVVeMKxZ/nxUH9/SqGzIEu+ZQUu9+PGN8wrH/bZTnABlXmVbE564yKk/J5XmSuKEbc0
-	3mxiJxlxoR+rntQEl4mtRLiTOwyCmKBLMWT3T/Ap7gawlnEKdoWy3nO46uGNMtRzgb+fZUS/i/Y
-	SEuAlnatZTuHLgxHB17sIKiVHj7RZhftu/TqazT7EZdLkwQuITUv8NxOqmXzT4xf9mKn92oAUGv
-	OtTWH9yAOzuEMMj7hLoVeq1+RGbzw4K9MpIvGCI/VgWromYBttd+eoRVUo7gjwJgPS9R4eLlcl7
-	BguVRQ0qdDSRJQfJxaEk5InNCiavaR9izJqO80rWYr23iKvK0HM57lRu3L0JBMP6cUNFy9zup1c
-	1/16g==
-X-Received: by 2002:a5d:5d08:0:b0:43f:e7fe:421f with SMTP id ffacd0b85a97d-44790efd49fmr4716396f8f.40.1777452183598;
-        Wed, 29 Apr 2026 01:43:03 -0700 (PDT)
-Received: from ?IPV6:2001:a61:13a6:c701:bf3c:e2f0:87b2:c525? ([2001:a61:13a6:c701:bf3c:e2f0:87b2:c525])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-447b3d48131sm4260624f8f.3.2026.04.29.01.43.02
+        bh=j+VxMDfovcPTHc1i48TzmhGmrYWTJq7vT35UvWMuOzM=;
+        b=GOUEYadIY/CaFBubEimxJDvAltFPU2fr1imG+JWadQ/AM/cTG/+uxBpEOL/O4wAucg
+         e5dT/tqDvoM32J9wu4WkZK23U/4bFPI6PdktNUuvi32KUyd7N819/8YK4PYl57Lebi2C
+         zu1npJ6JxdM8ZnDthwGfoUDGW3QB4FmJLpG/gHtoG+LumI4mVlCCLHD9n12x2pQEv8Cw
+         HBDAPEt+bRKGbNvum7ZBJfyDetuQKd4SJTd+JOxU1Po6g7YWGUmULllkUFiGcqzjskOx
+         yLxCE674sk+XUd+8N2E8EkzFTy/bGikdfmz00zsV0TAwRvWEHYZyNISLWizY6Kw8KC1i
+         RhzQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/nMJPrGDHpRfkrr0c0IkKOA6ZRexI9s7/h1znu0Exsvc2YMPlLs3clq1zc0Pwb6Y+Iy0GOagNLYQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzULLGXXDFQcFtaN30cCf+h4DyxXJXm2LklJAl5CnIXJy+fqLyk
+	0Ph/N1pPKM28UMXB42im5fyfkWk9aeW7U11erEbvxkpacpMQ0LGSihfYo0qw1NcZN3tdJXjBk1X
+	XdP1tvW614Jp1C3nUKd9RQFfiWSaNVkz5yy58zSPWrntKQBCOU8vGB9GaQI0vbQ==
+X-Gm-Gg: AeBDievG8OOWLoRLYqwhRB9lwhl1heoFblBytvynYtUgtiL5hoGXuMr6YSK52MEY3Ye
+	CuUnLzsnDSh0lDmCo5uz7ap8kJ+uayWKal2tI+avt80BztNTNu6L8k5NV4hK+bPGbRkTihwRL5S
+	ZDU++d8tMiDJHMj2BOV9g8WQVbBcaH/rarjrOAtc+hOTFhOGpiSWwN5spzPs51yQx7blvGElcB2
+	W/G7ErWLO0KF1w48IYDbna+WG6NY1iZr5rT68C71+90kFVi8b4JlD306e8RYfJRvnuD4gpCrOK5
+	9AgFy5uCsu0J7KX23QZELwzXi36jtxNqlbE/ARATvT2bUzhbXwkCeY3vIt1C6d7dwhYGGnh2R3c
+	xjYJNSAxfUIXe7f9h13ygPrCCHh9wHcVT//n1S4dyVFzEWk7r/AoOZKUm0h57//NV/d4PRiOSPY
+	hyvaY4V6NERLsy7Q==
+X-Received: by 2002:a05:6122:2a50:b0:567:4293:8d38 with SMTP id 71dfb90a1353d-573a294c552mr1851423e0c.0.1777454484399;
+        Wed, 29 Apr 2026 02:21:24 -0700 (PDT)
+X-Received: by 2002:a05:6122:2a50:b0:567:4293:8d38 with SMTP id 71dfb90a1353d-573a294c552mr1851417e0c.0.1777454484002;
+        Wed, 29 Apr 2026 02:21:24 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bb98543bf48sm65502366b.41.2026.04.29.02.21.22
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Apr 2026 01:43:03 -0700 (PDT)
-Message-ID: <6d0f7bdc-bdb8-4d9c-887e-8a5f3d4c6b98@suse.com>
-Date: Wed, 29 Apr 2026 10:42:55 +0200
+        Wed, 29 Apr 2026 02:21:23 -0700 (PDT)
+Message-ID: <d4962403-4e54-466e-baaa-6bbe28707c5f@oss.qualcomm.com>
+Date: Wed, 29 Apr 2026 11:21:21 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,104 +89,59 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC] USB/PM: should USB interface drivers distinguish
- hibernation THAW from RESTORE?
-To: Haowen Tu <tuhaowen@uniontech.com>, gregkh@linuxfoundation.org,
- rafael@kernel.org
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
- laurent.pinchart@ideasonboard.com, hansg@kernel.org, mchehab@kernel.org,
- pavel@kernel.org, lenb@kernel.org, oneukum@suse.com, kernel@uniontech.com
-References: <20260429033617.1954257-1-tuhaowen@uniontech.com>
+Subject: Re: [PATCH 2/3] interconnect: qcom: Restrict drivers per ARM/ARM64
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Georgi Djakov <djakov@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20260428-interconnect-qcom-clean-arm64-v1-0-e6bc3f7832db@oss.qualcomm.com>
+ <20260428-interconnect-qcom-clean-arm64-v1-2-e6bc3f7832db@oss.qualcomm.com>
 Content-Language: en-US
-From: Oliver Neukum <oneukum@suse.com>
-In-Reply-To: <20260429033617.1954257-1-tuhaowen@uniontech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260428-interconnect-qcom-clean-arm64-v1-2-e6bc3f7832db@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: ikX_N2vQ-hAy3GCkzj5GnrbM9Aw-EOm7
+X-Authority-Analysis: v=2.4 cv=RI6D2Yi+ c=1 sm=1 tr=0 ts=69f1cd95 cx=c_pps
+ a=wuOIiItHwq1biOnFUQQHKA==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=EUspDBNiAAAA:8 a=pmW9M_d3okJ3YB8kds8A:9 a=QEXdDO2ut3YA:10
+ a=XD7yVLdPMpWraOa8Un9W:22
+X-Proofpoint-GUID: ikX_N2vQ-hAy3GCkzj5GnrbM9Aw-EOm7
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDA5MyBTYWx0ZWRfX7kIuvC02K81o
+ J0SttPTX/sfWm1BWi9bu7aagh+xng47c0K3eX26es1/Jo5hE96uXz6voLlghwoyJB+g52y2yW0f
+ SY1O0ldQiA0BVognW05wXbW6pWvCuL84Bflh9+VVpcN1zw1FqSvtsuS+aFpwW0WBmkqGmabskdK
+ jiiYCUgnZe2dIlC1hAHYuzvfd1SnkDnYjP/wCaOfDGfcC3HE7FgE6XTAVkKJBc6PWlAliju7rYA
+ +DIj9w6X3Fz0D7rIfOoVdu1iRhPo30uOyi+9bams/wnrcT9qB9T7zdd4og2lrutl34YltECyZ0i
+ /+KFgGJWDZbC/EfZTapApXp0uBWedNoXEJBoXvSK0UwIPEGwCDZTfyITwdCGYKRZzv75X5O4go5
+ FtJYqbRSV22Dngovm32PXrbBVAk/LK5eeM14U5NWyk1nRl2A4I1YsYhm0t0za2gWiNGS2JCPH6K
+ jevQNZpm524Fd2Yx1ow==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-28_05,2026-04-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 malwarescore=0 suspectscore=0
+ lowpriorityscore=0 adultscore=0 clxscore=1015 impostorscore=0 bulkscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2604290093
 
-On 29.04.26 05:36, Haowen Tu wrote:
-  
-First, to which extent is the issue specific to USB? I suppose
-you'd see the same issue on a camera connected via PCI.
-
-> In the hibernation flow, after the memory snapshot has been created, the
-> kernel briefly resumes devices in order to write the image to storage.
-
-Yes. But you cannot just restrict the thaw to storage devices.
-You also want
-
-a) displays (to show the user what is going on)
-b) keyboards (sysrq key)
-c) anything used for logging
-d) devices for the visually impaired
-
-> On the successful hibernation path, the system is then powered off. For
-
-Keyword: successful
-
-> a USB camera that was actively streaming before hibernation, this means
-> the USB resume path runs during that intermediate THAW phase, even
-> though the final RESTORE path has not happened yet.
-
-Yes, though it will not happen if the writeout fails.
-
->  From the driver's point of view, that THAW phase is not semantically the
-> same as the later RESTORE path after booting from the image.
-
-That is the key point. In the error case it is.
-  
-> The difficulty is that USB interface drivers currently get
+On 4/28/26 7:32 PM, Krzysztof Kozlowski wrote:
+> There is no point to allow selecting core SoC drivers like interconnects
+> for Qualcomm ARMv7 SoCs when building ARM64 kernel, and vice versa.
 > 
->      int (*suspend)(struct usb_interface *intf, pm_message_t message);
+> This makes kernel configuration more difficult as many do not remember
+> the Qualcomm SoCs model names/numbers and their properties like
+> architecture.  No features should be lost because:
+> 1. There won't be a single image for ARMv7 and ARMv8/9 SoCs.
+> 2. Newer ARMv8/9 SoCs won't be running in arm32 emulation mode.
 > 
-> but resume-side callbacks are only
-> 
->      int (*resume)(struct usb_interface *intf);
->      int (*reset_resume)(struct usb_interface *intf);
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> ---
 
-That depends on whether the device has lost state.
-  
-> so by the time a USB interface driver's resume path runs, it has no
-> direct way to distinguish a hibernation image-write THAW from the later
-> RESTORE path.
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-That is not true. A thaw should call resume(). A restore after STD
-should call reset_resume().
-  
-> The immediate trigger here is UVC, where resuming the streaming path
-> during that THAW phase can turn the camera LED back on and cause other
-> visible device activity even though the system is about to power off.
-> More generally, review feedback on that patch was that solving this in
-> individual leaf drivers would not scale well if other USB interface
-> drivers ever need similar behavior.
-
-Storage and UAS devices need to thaw. As well as the devices listed above.
-
-> So the question is whether USB interface drivers should be able to
-> distinguish these two phases, and if so, what the right interface would
-> be.
-> 
-> Possible directions could include:
-> 
->    1. Exposing the phase distinction to USB interface drivers
->    2. Handling it inside usbcore
-
-Not possible. Some devices need to be thawed. Writing an image
-to a USB device must work. At the very minimum you need a flag
-and a mechanism to handle a failed writeout.
-
->    3. Adding a USB-specific callback or other mechanism for this
->       transition
-> 
-> I'm intentionally not proposing a concrete API in this RFC yet. I'd
-> first like to understand whether this should be considered a real USB PM
-> interface issue, and if so, which direction would be the least
-> intrusive and most maintainable.
-
-I am sorry, but your basic assumption that all USB devices can be handled
-in the same way is not correct.
-
-	Regards
-		Oliver
-
-
+Konrad
