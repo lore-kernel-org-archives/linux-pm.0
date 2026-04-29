@@ -1,180 +1,193 @@
-Received: from mail3-relais-sop.national.inria.fr (mail3-relais-sop.national.inria.fr [192.134.164.104])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 269F93A382D;
-	Wed, 29 Apr 2026 21:18:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.134.164.104
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8877B330649
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 21:49:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777497509; cv=none; b=FsiZ1EgciECHO6DK3C8CHO7Q59Eqf+Sgxhzczp9hplma/Ibmo2XTN7r/kq8VDFmgGtp5fHyX9tMQN1gMrHgyuDYV6DEhz/G8wGgJTFS9xJleFSdulD6a1c5RyK/2/r5hsxa4ZU9p++tcsTHJbsRqKQ65hIkMQc5VRv000PdrWdM=
+	t=1777499353; cv=none; b=cr2sHVF6U13+O25WgHBOig16Nar1Hu4ZcktDVD+bvA/1g3cPBE/kTZWOQJTlde/myjuCLBzAaT2k0NyOK0mI7HH12I75hzJFDf72jUAicaZmsr0ykcL8A8V1CywX+kbdEuQfiFzX0iC8XtiQ4/qvZY2BSadxBs5xU9WFhgTN1Is=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777497509; c=relaxed/simple;
-	bh=+Zoa5fWSAnJ+ICqNbcHOzXk9P0t+8/+omdy3Xl66DJo=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=lAzZ1FDtfuAYwhpvlFoMWCHNtR9znEdloux4zEIyI+Z3SBbIaMka1ayRLR8mSxYmVr9cOeh1rq/al4QzdclrbhbOPxThs+QshN9mj6EmwMZ892SfPlZtC+E6oTBO/bbV1SWMZZW2PYUcLsTA0KdTsaXDGnPhyVil+ERNvsk6BD4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=inria.fr; spf=pass smtp.mailfrom=inria.fr; dkim=pass (1024-bit key) header.d=inria.fr header.i=@inria.fr header.b=pAjjUnAc; arc=none smtp.client-ip=192.134.164.104
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=inria.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=inria.fr
+	s=arc-20240116; t=1777499353; c=relaxed/simple;
+	bh=sxpoMQENbm/mrNXCZHU23pnzSF7EQ886NX5Ro1+KlR0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=L3EDo5LjJwAsEGN52lBGopkR7NMtj3JcPmJHdZCZ4A/4h48YOYCl2fvHuMmvYLNihCWLmz5sxgXMgPgIiErjRXgC5bnFfgAvY8S/6slgJUzY4s8tS92cWSw2YWTYrcQCvY1IlUPOtlQeujwyXnlXVZ1iJFQ+gM42uil4pmwOIT0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Gv8+oxk1; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=inria.fr header.i=@inria.fr header.b="pAjjUnAc"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Gv8+oxk1"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ab232cc803so1025795ad.3
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 14:49:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=inria.fr; s=dc;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=uPX3kDTl6ZZxuziu834VSUYY6cPdVQdQ9nEU9mi1qNM=;
-  b=pAjjUnAcp2/GlU9skP/Uwy9vZvFZMqa2Y1izJK9Kq76T3CWtDYVxHptG
-   hSk433WQrS22fMAf3rzrZ2PuBMzCyPEtjOkq2naOW6+iWy4hRnwMa2AyP
-   X1vNSv9drIYxzo/xCUQTbhCDLpwtcg4vQJQbgbWdhYiTTMSyQGLmt0AG1
-   U=;
-X-CSE-ConnectionGUID: vxrgS5nxQguyQYyfaSRnhA==
-X-CSE-MsgGUID: iBFc9tVmQLuueLz1OtTsDg==
-Authentication-Results: mail3-relais-sop.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
-X-IronPort-AV: E=Sophos;i="6.23,206,1770591600"; 
-   d="scan'208";a="145376762"
-Received: from default-80-209-135-165.interdsl.co.uk (HELO hadrien) ([80.209.135.165])
-  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 23:18:24 +0200
-Date: Wed, 29 Apr 2026 22:18:22 +0100 (BST)
-From: Julia Lawall <julia.lawall@inria.fr>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-cc: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
-    Aboorva Devarajan <aboorvad@linux.ibm.com>, 
-    kernel-janitors@vger.kernel.org, 
-    Daniel Lezcano <daniel.lezcano@linaro.org>, 
-    Christian Loehle <christian.loehle@arm.com>, linux-pm@vger.kernel.org, 
-    linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpuidle: menu: correct variance calculation
-In-Reply-To: <CAJZ5v0hVbda_ZjQ-j5t0MRCN9C6TUwN7dy-U89tm77DZDkdx8g@mail.gmail.com>
-Message-ID: <c5fc3d94-ae4e-5879-bacd-645ed26f2cc0@inria.fr>
-References: <20260429153357.2350958-1-Julia.Lawall@inria.fr> <CAJZ5v0hVbda_ZjQ-j5t0MRCN9C6TUwN7dy-U89tm77DZDkdx8g@mail.gmail.com>
+        d=gmail.com; s=20251104; t=1777499351; x=1778104151; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=JFQFsEdE3UBmdH8kb6QnmUfDGvd+PW0laJUz1O9//bY=;
+        b=Gv8+oxk1yJmBsTGE5ByvQXk2kWcwcmInmI5DumemL0+Q7HZDTjiY6CQKX4w94Mh2sH
+         WvSE0DZsqOSxdVVDDmIFdJaH4ISsoPLAzTpAVRpbSXo7Waq9AdIpLQyugqYccXZAJNZw
+         83UCE74EUNwo7bITuir0b8BYr/sqtLehmVNZjgOGflDSRgAM6Db4vf7TxjSijUv14EYS
+         PzW1EM600lakcJPGJjnUmEX+O4zL2JGJUq1Vly+ythcLWiBKeTP8T8z5uWAkAU27TRYA
+         boIA0zJKBlgeYh4qK+vfqGQ/jFh4J4fCpgk9Z3Cn305YIqSy9DDYDJE6FYmlIauI5fAb
+         RvRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777499351; x=1778104151;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=JFQFsEdE3UBmdH8kb6QnmUfDGvd+PW0laJUz1O9//bY=;
+        b=DjJvsUH+tcEDhxh/RgGfCxnp7tkLuLe9nCD0xLoGI3wSvdrS7ORd7G4oq3TFberVOq
+         iZzC795kmt/e4YW24yQJNkzAUHiCNTb8SoSxAgikzg2kKxgDLf82HzNeCz3ro5pvv+Zb
+         sSf1KQH98m2LDXUnjkODEBIEcRsyXRQTJOmUM2YVxHZnGlkbsvwAMLWjuT+u6s4il/Qj
+         d2EVUk3rdYIkd7MCNpyNPT5fJBnJzWeAPnxF64ltl6ZTJ3fWkYWQoRm9BwwK5tv78Ri+
+         3SmYm08b8WsDgofv3PRVGIcD6WUJqyO83S7zlRe8qVHhWawUCavkCO+ELp3j5nkMYoHx
+         vu+A==
+X-Gm-Message-State: AOJu0Yy+KMUYsfTL+S6Wboe0ofwKG0+uE/hb/Z4TnxvDLQXYcYI0lHVE
+	0SKdkMAW5El9C1PVUqs9XM1srUahPnyWdwly8Y1oLWXnbdNs8G4Qd5kx
+X-Gm-Gg: AeBDiesDNDSNYjy2BVbM7IbqZ8h+g0Z+OQ15YGaIaVnHpvg8PNZHYi0dGO03eGE0qrf
+	w7d5CRpr9Fr/PCug9RNEcDJKWjrYZ8hXotfhge2s/D07/fpmSyiwn/BtAXYB8tI1RoSZjIjXI9L
+	AMqWUhpZxKGXgSuS3W4tzeiaVJrprz7Trb9Whqv/GXOYReYCsCtJ4G/G9FPOkC6UbmYR8i/8nkx
+	nzdDXKFTwuXGA/clwLQzhpk81sE/pxCl+WEagVrSwUKxlIwpDqA7AZcqP+FnUyo2VRy+j7F02Yo
+	2r3mw9cfzUUb0oT9EdpBup3UnqsxLd+tGRYlH6GptL2rz5IOQMgdi6/NMcPQ5s1HrVhmpbRCv5S
+	1eztgsxu8a0CA4B8Xi0l0DD9RMYSNRwUrnl2nD5SUEUAMV6+83Z0du/TymQDW/EIS+mAcwHvQr8
+	jafdwPf8DYdcvJZG7vh9GNXeN9E8EbjHGerLnEGprtH0xw0erx28601g7g2DRZ
+X-Received: by 2002:a17:903:390f:b0:2b2:67ca:5ff1 with SMTP id d9443c01a7336-2b9a24ff5a6mr1573315ad.31.1777499350816;
+        Wed, 29 Apr 2026 14:49:10 -0700 (PDT)
+Received: from [172.30.1.27] ([222.106.243.217])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b98898c7cbsm30535635ad.77.2026.04.29.14.49.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Apr 2026 14:49:10 -0700 (PDT)
+Message-ID: <267c9317-0cf3-44d5-b442-2bd713163312@gmail.com>
+Date: Thu, 30 Apr 2026 06:49:07 +0900
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323329-256966742-1777497503=:4434"
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-256966742-1777497503=:4434
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/4] PM / devfreq: Fix possible null pointer issue in
+ devfreq_add_governor()
+To: Yaxiong Tian <tianyaxiong@kylinos.cn>, myungjoo.ham@samsung.com,
+ kyungmin.park@samsung.com, cw00.choi@samsung.com, zhanjie9@hisilicon.com,
+ nm@ti.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260401032838.66168-1-tianyaxiong@kylinos.cn>
+ <20260401033046.67482-1-tianyaxiong@kylinos.cn>
+Content-Language: ko
+From: Choi Chanwoo <cwchoi00@gmail.com>
+In-Reply-To: <20260401033046.67482-1-tianyaxiong@kylinos.cn>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 
 
 
-On Wed, 29 Apr 2026, Rafael J. Wysocki wrote:
+2026-04-01 PM 12:30에 Yaxiong Tian 이(가) 쓴 글:
+> When a user removes a governor using devfreq_remove_governor(), if
+> the current device is using this governor, devfreq->governor will
+> be set to NULL. When the user registers any governor
+> using devfreq_add_governor(), since devfreq->governor is NULL, a
+> null pointer error occurs in strncmp().
+> 
+> For example: A user loads the userspace gov through a module, then
+> a device selects userspace. When unloading the userspace module and
+> then loading it again, the null pointer error occurs:
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address
+> 0000000000000010
+> Mem abort info:
+> ESR = 0x0000000096000004
+> EC = 0x25: DABT (current EL), IL = 32 bits
+> *******************skip *********************
+> Call trace:
+> __pi_strncmp+0x20/0x1b8
+> devfreq_userspace_init+0x1c/0xff8 [governor_userspace]
+> do_one_initcall+0x4c/0x278
+> do_init_module+0x5c/0x218
+> load_module+0x1f1c/0x1fc8
+> init_module_from_file+0x8c/0xd0
+> __arm64_sys_finit_module+0x220/0x3d8
+> invoke_syscall+0x48/0x110
+> el0_svc_common.constprop.0+0xbc/0xe8
+> do_el0_svc+0x20/0x30
+> el0_svc+0x24/0xb8
+> el0t_64_sync_handler+0xb8/0xc0
+> el0t_64_sync+0x14c/0x150
+> 
+> To fix this issue, remove the list_for_each_entry() logic, as
+> find_devfreq_governor() has already checked for the existence of
+> governor with the same name. This makes it impossible to find a
+> duplicate governor in the list, so the subsequent logic is
+> unreachable and can be removed.
+> 
+> Fixes: 1b5c1be2c88e ("PM / devfreq: map devfreq drivers to governor using name")
+> Signed-off-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+> ---
+>  drivers/devfreq/devfreq.c | 33 ---------------------------------
+>  1 file changed, 33 deletions(-)
+> 
+> Hi Jie Zhan: 
+> 	If you're willing, I'd like to add your Co-developed-by tag.
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 82dd9a43dc62..994984f7b6e1 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -1261,7 +1261,6 @@ void devfreq_resume(void)
+>  int devfreq_add_governor(struct devfreq_governor *governor)
+>  {
+>  	struct devfreq_governor *g;
+> -	struct devfreq *devfreq;
+>  	int err = 0;
+>  
+>  	if (!governor) {
+> @@ -1280,38 +1279,6 @@ int devfreq_add_governor(struct devfreq_governor *governor)
+>  
+>  	list_add(&governor->node, &devfreq_governor_list);
+>  
+> -	list_for_each_entry(devfreq, &devfreq_list, node) {
+> -		int ret = 0;
+> -		struct device *dev = devfreq->dev.parent;
+> -
+> -		if (!strncmp(devfreq->governor->name, governor->name,
+> -			     DEVFREQ_NAME_LEN)) {
+> -			/* The following should never occur */
+> -			if (devfreq->governor) {
+> -				dev_warn(dev,
+> -					 "%s: Governor %s already present\n",
+> -					 __func__, devfreq->governor->name);
+> -				ret = devfreq->governor->event_handler(devfreq,
+> -							DEVFREQ_GOV_STOP, NULL);
+> -				if (ret) {
+> -					dev_warn(dev,
+> -						 "%s: Governor %s stop = %d\n",
+> -						 __func__,
+> -						 devfreq->governor->name, ret);
+> -				}
+> -				/* Fall through */
+> -			}
+> -			devfreq->governor = governor;
+> -			ret = devfreq->governor->event_handler(devfreq,
+> -						DEVFREQ_GOV_START, NULL);
+> -			if (ret) {
+> -				dev_warn(dev, "%s: Governor %s start=%d\n",
+> -					 __func__, devfreq->governor->name,
+> -					 ret);
+> -			}
+> -		}
+> -	}
+> -
+>  err_out:
+>  	mutex_unlock(&devfreq_list_lock);
+>  
 
-> On Wed, Apr 29, 2026 at 5:35 PM Julia Lawall <Julia.Lawall@inria.fr> wrote:
-> >
-> > Commit 13982929fb08 ("cpuidle: menu: Use one loop for average and
-> > variance computations") simplified the numerator of the variance
-> > calculation to:
-> >
-> > sum of squares of idle times - (average idle time)^2
-> >
-> > This computes a value that is typically too big.  The formula should be
-> >
-> > sum of squares of idle times - (sum of idle times * average idle time)
->
-> I'm not sure why.
->
-> According to Wikipedia Var(X) = E[X^2] - E[X]^2:
->
-> https://en.wikipedia.org/wiki/Variance
 
-Suppose you have 10 10 10 10 10 10 10 10 10
-The sum of the squares is 800.
-The average is 10.
-The square of the average is 100.
-So the current formula gives 800 - 100 = 700 as the numerator.  It is
-supposed to be 0.
+Hi,
 
-800 - (80 * 10) = 0
+Applied it. Thanks for fixing it.
 
-I took the formula from the same page but in the discrete random variable
-section, in the sentence:
+Thanks,
+Chanwoo Choi
 
-The variance of a collection of n {\displaystyle n} equally likely values
-can be written as ...
 
-julia
-
->
-> > On a small number of tests I didn't find any significant performance
-> > change.  Likewise, the original patch was tested by various people and
-> > was presumably not observed to cause any problem.  My impression is
-> > that this is because the actual variance is almost always quite high
-> > (greater than the threshold of 400 used by get_typical_interval), so
-> > having a value that is even higher than it should be doesn't matter.
-> >
-> > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
-> > Fixes: 13982929fb08 ("cpuidle: menu: Use one loop for average and variance computations")
-> >
-> > ---
-> >
-> >  drivers/cpuidle/governors/menu.c |   14 +++++++-------
-> >  1 file changed, 7 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> > index 64d6f7a1c776..8cbd70cafe89 100644
-> > --- a/drivers/cpuidle/governors/menu.c
-> > +++ b/drivers/cpuidle/governors/menu.c
-> > @@ -117,14 +117,14 @@ static unsigned int get_typical_interval(struct menu_device *data)
-> >  {
-> >         s64 value, min_thresh = -1, max_thresh = UINT_MAX;
-> >         unsigned int max, min, divisor;
-> > -       u64 avg, variance, avg_sq;
-> > +       u64 avg, variance, sum;
-> >         int i;
-> >
-> >  again:
-> >         /* Compute the average and variance of past intervals. */
-> >         max = 0;
-> >         min = UINT_MAX;
-> > -       avg = 0;
-> > +       sum = 0;
-> >         variance = 0;
-> >         divisor = 0;
-> >         for (i = 0; i < INTERVALS; i++) {
-> > @@ -138,7 +138,7 @@ static unsigned int get_typical_interval(struct menu_device *data)
-> >
-> >                 divisor++;
-> >
-> > -               avg += value;
-> > +               sum += value;
-> >                 variance += value * value;
-> >
-> >                 if (value > max)
-> > @@ -151,17 +151,17 @@ static unsigned int get_typical_interval(struct menu_device *data)
-> >         if (!max)
-> >                 return UINT_MAX;
-> >
-> > +       avg = sum;
-> >         if (divisor == INTERVALS) {
-> >                 avg >>= INTERVAL_SHIFT;
-> > +               variance = variance - (sum * avg);
-> >                 variance >>= INTERVAL_SHIFT;
-> >         } else {
-> >                 do_div(avg, divisor);
-> > +               variance = variance - (sum * avg);
-> >                 do_div(variance, divisor);
-> >         }
-> >
-> > -       avg_sq = avg * avg;
-> > -       variance -= avg_sq;
-> > -
-> >         /*
-> >          * The typical interval is obtained when standard deviation is
-> >          * small (stddev <= 20 us, variance <= 400 us^2) or standard
-> > @@ -175,7 +175,7 @@ static unsigned int get_typical_interval(struct menu_device *data)
-> >          * Use this result only if there is no timer to wake us up sooner.
-> >          */
-> >         if (likely(variance <= U64_MAX/36)) {
-> > -               if ((avg_sq > variance * 36 && divisor * 4 >= INTERVALS * 3) ||
-> > +               if ((avg * avg > variance * 36 && divisor * 4 >= INTERVALS * 3) ||
-> >                     variance <= 400)
-> >                         return avg;
-> >         }
-> >
->
---8323329-256966742-1777497503=:4434--
