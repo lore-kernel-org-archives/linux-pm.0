@@ -1,132 +1,173 @@
-Received: from smtpbgau1.qq.com (smtpbgau1.qq.com [54.206.16.166])
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012038.outbound.protection.outlook.com [52.101.43.38])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 975C1225A38;
-	Wed, 29 Apr 2026 03:36:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.206.16.166
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777433795; cv=none; b=iGcp1ATUhvvTOPXoII+fH2/MnkowLG+YbLb5mWwJ+JimVDLrcibQrrAAeTcjwSgCh06HPevAJGe8kPKPAkNYOv/Bv9kuwuDudQuTpT1w6pZTmX5Ipak9DcTIjQcpJ9w2hTEB1MGyb28jdDdwggUO9N8cKbbkOmoHIVbmo3bh7/M=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777433795; c=relaxed/simple;
-	bh=08OmEsr1hCRDH/YORMa9v5Gjh7FzbFNCu850g0aXVR0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=CAOQSMbgqkLRBFrGfWacVAZzvRsDcgcxiHPyMf0fpTnGR2cXlVY6w7e+T+Moqp+5jPGWIwQV4aV4rdG3fsWaeoAAjtZ7sqgWftRl2uIjGBRDXxJhpApPrnfJ1nki6Z6jZrYtx+yR4MxfqVHi1lWKnXa+Sr54NXq/AGgSrdm8yI8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=JPuYivBw; arc=none smtp.client-ip=54.206.16.166
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B1D42AD0C;
+	Wed, 29 Apr 2026 04:34:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.38
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777437254; cv=fail; b=aovM6QK8X0xbdIRNyE2KQgcvz/V+266rZ/sRXFLRuJisTLPIkSV68w0b2x/ls67MoCY2TRmVw+/CPL/d07HxgbnaCO+LVWfqfIGHubffcKjC1W0YNmV5eqx6A2Da5/WGckvqRCsMcyDE4aMM31hw6yEl7pJ+hfKAgAiY4VYvA+4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777437254; c=relaxed/simple;
+	bh=KfTqWyaggYxaSXO8aXiX/pEbLDd4XAPbiZ83zf4fHXg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=EqrOX+D+C0Dh8QgRSsYBr0NhLzQY86LX/+FznTGxMTX/v/JGfir0GM/PDQOcPWxjuqcvk2MbA5w2jFR1Mt/M/IrZsGZ4qONYs9O4LSZc2vJuvKqa1fiGsLAn9aRqs2BPP1GrV5z0F6UF+ODA9oH5gcZ4itbmH/NGztRO90Dk5Fc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=noueqMT9; arc=fail smtp.client-ip=52.101.43.38
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="JPuYivBw"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1777433787;
-	bh=T92eqt1ZCY3opLCeE0wWBQVRlnkO8R7C9G7IEAWn3qQ=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=JPuYivBwwqklvimbNCYnreXxOGB3QWlh1WGdwWJhtCdXB/nST84d6wnrI1JiMnZ5C
-	 Bt2Q/vd5ipxSN9r6KVDJ4sTk2DnvuxOJ3LZhoVQyqICDqfbmTiR7cLqvQRn0BOrxeh
-	 UC/Ryeq3adhXshFvXXcjR3xcnhHpAYDhK8mQBRSg=
-X-QQ-mid: zesmtpip3t1777433780td3efc152
-X-QQ-Originating-IP: OqaDPEAT1Wdwt0z7nXhNiZTObUmblkbnDqWfTxWVa5o=
-Received: from localhost.localdomain ( [localhost])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Apr 2026 11:36:18 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 15583585262135573335
-EX-QQ-RecipientCnt: 13
-From: Haowen Tu <tuhaowen@uniontech.com>
-To: gregkh@linuxfoundation.org,
-	rafael@kernel.org
-Cc: linux-usb@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	laurent.pinchart@ideasonboard.com,
-	hansg@kernel.org,
-	mchehab@kernel.org,
-	pavel@kernel.org,
-	lenb@kernel.org,
-	oneukum@suse.com,
-	kernel@uniontech.com
-Subject: [RFC] USB/PM: should USB interface drivers distinguish hibernation THAW from RESTORE?
-Date: Wed, 29 Apr 2026 11:36:17 +0800
-Message-Id: <20260429033617.1954257-1-tuhaowen@uniontech.com>
-X-Mailer: git-send-email 2.20.1
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="noueqMT9"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=tKrKevH+EtyMelljyYoFzk47psTMuf3fxbI+HaRkdhvcAaNIIpIOB+s5hF1P+bZtmg/M1ZYkovCsbSCBu5GzXEdB6dJ4eTpVuq6SAwySOGh5PKf8guisPEI1smffaogIWqY4s9x3qwxvy5QeE98l4OcFnq9hUKkquM5z0aRzWp06skTktBI4vjbQHyfyixUezUG6KFjZQgk1RPGMqlf3+dIe78gABeu6c73HAXm8xsZXVeVtZL2/APkR0fvKsf7PGTcMbDZqW9F2tOURcB7Rz/lftb2y9HX4WzgQ4UscMubIJfMm7hl5e+Fj7TCohECaavtQ7tP5MtpOg/IMje2i7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IY+u3f1fDqQPle01cBWyGkYBl0QGzDm2Kd0ogLXs2uk=;
+ b=YBa8HLffpi8nsQ0j7GXV74RTLMlkxmS5+GwZt5G7c2LNsr7rOiQNr/vVmCcEeO9eNRLHZUcLmKior6inZ15awcRZVr92rJGbmHdx/rQ7NJC+O20IGS+RkPlBoc0ToOqYUWO4G6XhCW1C83w73MPXu6ftetPpDVMAh7ayvZ8MhcR7WYBf1/P18JAMGMJ46Pf7HPgsJCuRMik2PWVkbs6d180iflWrBaJlVA9ZL4Z84QefgmVHEzMYVKaw+RGZGV8MiRKgovH9gsi8WsptwyLpxOJ5Yjexl87qxBNPA+vYN7ijaiFpYcQIHUGILWoIf6QcXlVFTCY20nmcgIK76u4dHQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 198.47.23.195) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
+ dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IY+u3f1fDqQPle01cBWyGkYBl0QGzDm2Kd0ogLXs2uk=;
+ b=noueqMT9+I1NjzHz/S8Mb0RjvlJYqc3q+H6cyuugokZsPgovw4NOLXX9H11zHMTLc2m6mLuAEhnFHv1OxTpfXuLqo8G4A7J7LYp7s3lYv7VW5lRUN5BJnI0xMlKm0gxizcNxUNwDT8fwk14Pjt964i+pnKP9DXWDRHHh3KZwVCo=
+Received: from SA1P222CA0082.NAMP222.PROD.OUTLOOK.COM (2603:10b6:806:35e::29)
+ by SJ0PR10MB5892.namprd10.prod.outlook.com (2603:10b6:a03:422::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Wed, 29 Apr
+ 2026 04:34:10 +0000
+Received: from SN1PEPF00026368.namprd02.prod.outlook.com
+ (2603:10b6:806:35e:cafe::a) by SA1P222CA0082.outlook.office365.com
+ (2603:10b6:806:35e::29) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.30 via Frontend Transport; Wed,
+ 29 Apr 2026 04:34:10 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.195)
+ smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
+ action=none header.from=ti.com;
+Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
+ 198.47.23.195 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.23.195; helo=lewvzet201.ext.ti.com; pr=C
+Received: from lewvzet201.ext.ti.com (198.47.23.195) by
+ SN1PEPF00026368.mail.protection.outlook.com (10.167.241.133) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9846.18 via Frontend Transport; Wed, 29 Apr 2026 04:34:10 +0000
+Received: from DLEE200.ent.ti.com (157.170.170.75) by lewvzet201.ext.ti.com
+ (10.4.14.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 28 Apr
+ 2026 23:34:00 -0500
+Received: from DLEE205.ent.ti.com (157.170.170.85) by DLEE200.ent.ti.com
+ (157.170.170.75) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 28 Apr
+ 2026 23:34:00 -0500
+Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE205.ent.ti.com
+ (157.170.170.85) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
+ Transport; Tue, 28 Apr 2026 23:34:00 -0500
+Received: from [172.24.233.103] (uda0132425.dhcp.ti.com [172.24.233.103])
+	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 63T4XtD22593536;
+	Tue, 28 Apr 2026 23:33:56 -0500
+Message-ID: <1fb0739e-b84f-42f1-9c96-88b5cc5866a8@ti.com>
+Date: Wed, 29 Apr 2026 10:03:55 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: M3vv73qU6a4uPXcIldRwK9B4UiSgdQBKdeFslIBdSbWPEUBpzKXLYxLF
-	21s8R3cyHwacTVaXM5Jnf5sCb0X4eIVR7pgT+50uSEzvQkxKSAVE81aLqO0RUs6DR2ZWcox
-	W29QLDWFRtJ5TVMIHohgnbGjoNA5g9z8XIbhrKBqp/GF0pf9+rCfFFcqmbhl5rKybU0IYIx
-	DuZ5VP9i1rCJKfV5j9v3HFzdST4H8jFgum0GihVaSPCPIM/x8YPMr44vi7dGeSfznucXhbP
-	ETCAH2TtPJS/iSM4SSPr3KHGKHRMRjVpmnXJRo8tLQi4x4JnGEW4hyDRL3WwwfYHV+QXwZ8
-	Q9Csv9v6orA17T0AJXkJa7pdRHLLgUDk5PKATRBsQkGGOwOILFyYff3zTVTp5km7XNHzW9o
-	wDUEJizHDv3x+LRibpbCePT3ZOCtUCQn3Ia1ln02/Sldv+qfAIYFL4ra0m6nauD1N2mQpjk
-	FUmIAg+JbqAXHH0gW5DuFQnMFy/1dpMp/jPatEv/phgoUFPqW16B7aL6ZscN4e/Ook+1j3h
-	m4iE7DxxGXlyWo+MHpC2tRTGQRg+5mdsuejJSLxgsb86ZlZYJ2h8g68hbkpoGycY45GkNJ8
-	t7qTqUz0ZvcQQ/90opSmBMxQvFiC1lR9Q0CVWSy86RuwosgedR4mbjY7Tn7/609NAdEey+W
-	x6YTD3wq+4KsX5X+ZrKXHSWNSpdU3rpRvdljSLUbmsysMGSMmAIBEdgBwIQwEEe6cMFxcnc
-	UO4+Fy66kxtnxsPwvArmgsxlttQBd+nkf+xvLDkItTUeqqefuG/WAl7+cLO32qW6gVjkHDA
-	oXVM0f1XRFp/cwaMqFmmmHuuI/9JoaR5hAy3E0+ayTfP/7EFQI5gqs1JghKmYpIRL7r0vPM
-	JCWdfvGd0ORmuoLIDgpj5WAiIXSr23pHBnEle11ijJ7DfCBfYJstxsnsc5PtCGDisuST7yX
-	cNBV/Csh6IeN7lsXdB47nn9q293he0yVuYQBSwj0KmKw5JTd818QD19ZCfVMdZm0RoqLNuv
-	B5yNvLFFLgZRptVyzv
-X-QQ-XMRINFO: M/715EihBoGS47X28/vv4NpnfpeBLnr4Qg==
-X-QQ-RECHKSPAM: 0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] pmdomain: ti_sci: re-sync TIFS with genpd on resume
+To: Vitor Soares <ivitro@gmail.com>, Nishanth Menon <nm@ti.com>, Tero Kristo
+	<kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Ulf Hansson
+	<ulfh@kernel.org>
+CC: Vitor Soares <vitor.soares@toradex.com>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, Tomi Valkeinen
+	<tomi.valkeinen@ideasonboard.com>, Kevin Hilman <khilman@baylibre.com>,
+	<vishalm@ti.com>, <sebin.francis@ti.com>, <d-gole@ti.com>, Devarsh Thakkar
+	<devarsht@ti.com>, <stable@vger.kernel.org>
+References: <20260427074808.3244226-2-ivitro@gmail.com>
+From: Vignesh Raghavendra <vigneshr@ti.com>
+Content-Language: en-US
+In-Reply-To: <20260427074808.3244226-2-ivitro@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN1PEPF00026368:EE_|SJ0PR10MB5892:EE_
+X-MS-Office365-Filtering-Correlation-Id: bc2d188b-2548-48e4-4f8a-08dea5a88f17
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|7416014|376014|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	XdmNYrxRb9RPT0sPIGYQ09FBHGwiIU6QwJC7fQ68ZhKotgZ5OdZCAHiYikbV7bTrIAdajOrT8Lc0pdUVJ9YukSgW3MW+pFkLXrmDqsi6QjdF73ocWWKexD7ftzr+9UiJ7bFcj12A1tuTbbX6WbJb54+rVWsMWhNZ5/KEvG9Fov8bKK3SaErVs4dXKdxwyIOKiSKmMMvN37lOaNAJpMN12CtBgXMSwfSh53eGv4WVZ2K3h5RX1XYTaxvA/Z6JGV7Naxc0r7U/6M2NNzul5LEhMB4TGCYH2oIwV37lIuTAjYnUWgtuWWj6l5P01FB4KGBhLJLcZxAIromwW1lsvlVMR2z5YrJ6YuQnHHWhGf6aBNMb9HZtw2UUcy448frzAi9V1jNf8DTukXri/lFjklJ31eFyBfTY7oENqgwqiY0XOi+11NliD6owP8fF0AqW3vQ4JDDT1Qun5GJSL6Bl1R6ltWP1yIcMjU22161I6CoA0lTEDrFGVfWwN+THJ+JntCfGgQUJlX/R0Oh4i7M+w4fXNjLpsSSI5PUti/IV0eRI+K3abj0RBfE8nLkzPvkDWlGhkfH1R/HDIV4eVD2LpV5qZrFgSTR6cbXphJn4ThzvW/4MalXtJfQVDPfKxLUjh11zGP9IJ63O8BoOa3W8j5XhPXLydn9Xkz1ra6tZ2NA8r5aZ22yIYJxIs089rGVTIHYNxRAg2jYWEwYCzxNBTWopjUQGNSGwHU8NgMK0MSjB30cbcxe1WNB14DzS/dow9wW/olPrWn+kpZ3CzWq3Qs5AbA==
+X-Forefront-Antispam-Report:
+	CIP:198.47.23.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet201.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(7416014)(376014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	qYrEgTddHZC/QA+BrhgIxUGms0jaDK9lOJlRzOKPkQyL464aIj6ra0xEBAh9Fy4zFoTcTgDA7AIvSVje3fsTsu0chTfDP3xS/PXi93m+tzf/SuSiPxkUpBksGUZqoC3zzpnufs+AJgNl3cRcVGbnC6tyjv858cl3mgjhQZBLELJF7kzVscPF50KN5VP3OxAUiaAc/jPn8ytl0dDePeUxF8/J/E7Y6PLMBrLxx8I5e3D6Vvmfl7bTzhcw/AJdr1HDoSzp9KoVV7f6CPzAguiAXqIAO7cgWdwnVVISor+0P/RY7aX+8niDtUe36mAb6rf0bX0XBBJ3b+ucXyop06VGqGvufzV/PHde/7E0O3GZF5PYJQFWIV3Rc9rF2B85hhOGzhw1Y9ZLGOqdVE0vgQROei6MCnhikOv7q2sV25lAsE5tm+vJBayz1CCne5bZ0Ce2
+X-OriginatorOrg: ti.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Apr 2026 04:34:10.6266
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: bc2d188b-2548-48e4-4f8a-08dea5a88f17
+X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.195];Helo=[lewvzet201.ext.ti.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SN1PEPF00026368.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB5892
 
-Hi,
+Hi Vitor
 
-I'm looking for feedback on a USB/PM design question that came up while
-investigating a UVC hibernation issue.
+On 27/04/26 13:18, Vitor Soares wrote:
+> From: Vitor Soares <vitor.soares@toradex.com>
+> 
+> When a device in a TI SCI power domain is on the wakeup path of a
+> wakeup-capable child, the suspend path skips genpd_sync_power_off().
+> No put_device is sent to TIFS and the domain's genpd status remains
+> ON.
 
-In the hibernation flow, after the memory snapshot has been created, the
-kernel briefly resumes devices in order to write the image to storage.
-On the successful hibernation path, the system is then powered off. For
-a USB camera that was actively streaming before hibernation, this means
-the USB resume path runs during that intermediate THAW phase, even
-though the final RESTORE path has not happened yet.
+Correction of terminologies: TIFS is Root of trust component and is not
+usually involved in power management, that would be DM (Device Manager)
 
-From the driver's point of view, that THAW phase is not semantically the
-same as the later RESTORE path after booting from the image.
+But to be really sure who is doing what, Could you provide an example
+and the platform on which you see the issue / external abort?
 
-The difficulty is that USB interface drivers currently get
 
-    int (*suspend)(struct usb_interface *intf, pm_message_t message);
+> 
+> TIFS powers off the hardware during deep sleep regardless, since it
+> was never informed to keep the domain active. On resume, because the
+> domain's genpd status is ON, no get_device is issued. The driver
+> then accesses registers of a powered-off domain, causing a
+> synchronous external abort (AXI bus error, ESR 0x96000010).
 
-but resume-side callbacks are only
+Hmm, if something is wakeup source, I would expect even TIFS/DM not to
+turn if off, else module wakeup wouldn't work.
 
-    int (*resume)(struct usb_interface *intf);
-    int (*reset_resume)(struct usb_interface *intf);
+> 
+> Commit 0b5fe1c4ab3c ("pmdomain: ti-sci: Set PD on/off state according
+> to the HW state") exposed this. Before, domain status was initialized
+> to OFF, so get_device was always issued on resume.
+> 
+> Add a .resume hook that queries the domain's state from TIFS and
+> re-syncs TIFS with get_device when genpd has it ON but TIFS has it
+> OFF. The hook is only registered when the is_on op is available,
+> since detection depends on it.
+> 
+> Move ti_sci_pm_pd_is_on() earlier in the file so it is available to
+> the resume hook.
+> 
+> Fixes: 0b5fe1c4ab3c ("pmdomain: ti-sci: Set PD on/off state according to the HW state")
+> Cc: stable@vger.kernel.org # 6.18+
+> Signed-off-by: Vitor Soares <vitor.soares@toradex.com>
+> ---
 
-so by the time a USB interface driver's resume path runs, it has no
-direct way to distinguish a hibernation image-write THAW from the later
-RESTORE path.
+[...]
 
-The immediate trigger here is UVC, where resuming the streaming path
-during that THAW phase can turn the camera LED back on and cause other
-visible device activity even though the system is about to power off.
-More generally, review feedback on that patch was that solving this in
-individual leaf drivers would not scale well if other USB interface
-drivers ever need similar behavior.
+-- 
+Regards
+Vignesh
+https://ti.com/opensource
 
-So the question is whether USB interface drivers should be able to
-distinguish these two phases, and if so, what the right interface would
-be.
-
-Possible directions could include:
-
-  1. Exposing the phase distinction to USB interface drivers
-  2. Handling it inside usbcore
-  3. Adding a USB-specific callback or other mechanism for this
-     transition
-
-I'm intentionally not proposing a concrete API in this RFC yet. I'd
-first like to understand whether this should be considered a real USB PM
-interface issue, and if so, which direction would be the least
-intrusive and most maintainable.
-
-Thanks,
-Haowen Tu
