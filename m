@@ -1,42 +1,41 @@
-Received: from mout.freenet.de (mout.freenet.de [194.97.196.12])
+Received: from galaxy.gendns.com (galaxy.gendns.com [66.235.175.158])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 015F5413259;
-	Wed, 29 Apr 2026 18:33:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.97.196.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DDE03876C4;
+	Wed, 29 Apr 2026 19:30:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=66.235.175.158
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777487642; cv=none; b=eOxjozw1bXmBjgaM5nXXPFHL80hTcje3SHNH5tdBDS18rs48owqesCunKXnXsE3g37wtbKqQ68KDzDWBcVXgJowgef41LQVqmBQrofdEICo0XYLsDGwxjF2agxohEjX02ooP+rzTxG7rEuc0xUldqAJfnYu7ALgRySjJk9JD500=
+	t=1777491012; cv=none; b=dLM8BkvXrzUtnvPVJMnVZ2cWREgb1Ob1rICIJsgzaFpnzFa8x2RGgywdB67bTDfAob7WA1J1VMjUgu6nLBMqA4MBUXdxycudZbC9X9rVZls+EPsJq6dwbgNaPm+mN6ldiAgwjNU/CPlFyKQKx/nM8nQOxrH/xk6CnNfi+2/S6Zg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777487642; c=relaxed/simple;
-	bh=aOXvlqcFXDIAIjS/YSIfqhBw4JN6tbUAHNJaRvcCDIo=;
+	s=arc-20240116; t=1777491012; c=relaxed/simple;
+	bh=tLcXE4u37iY612aBqtUVzzqPp78W6x+jCC5YRteRtss=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ckDmokOBy3V57lhk3SnbTS1z3nK6xLvoZDE3uzzB7IeCQWGFe4/AipKOdou6cRopsmnE1bq8XRs2tNF+iqNoQHOn6eCm+XyCMs10zJmpkkwqvToW2u381HjPNsvniJOusbEaggkjwZ2WnwlfJ7eKyFdQmRIszqEz52+rDa+GLaU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=freenet.de; spf=pass smtp.mailfrom=freenet.de; dkim=pass (2048-bit key) header.d=freenet.de header.i=@freenet.de header.b=q5pQsXsZ; arc=none smtp.client-ip=194.97.196.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=freenet.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=freenet.de
+	 In-Reply-To:Content-Type; b=VHZPw+Kun+r6x2dcS3b/+FCqv7zfE/ZHquoVV63d5TePFY0eWqcQkebItLYlhzcOvjZIO8PJDaKA4t6T5lvtVuB9mux5H4VKQn76l3fhtCJmhtTRnn64h8c0kG/jlAvz/Va6uiL81Ar/vGVIm/xHq+W1ho0DAZK75syJPTGcFBk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com; spf=pass smtp.mailfrom=lechnology.com; dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b=GxUzOIDw; arc=none smtp.client-ip=66.235.175.158
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lechnology.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lechnology.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=freenet.de header.i=@freenet.de header.b="q5pQsXsZ"
-Received: from [2001:748:400:2319::4] (helo=sub5.mail.fnrz.de)
-	by mout4.mail.fnrz.de with esmtpa (ID viktor.jaegerskuepper@freenet.de) (port 25) (Exim 4.98.2 #2)
-	id 1wI9jQ-0000000Dr4k-11ed;
-	Wed, 29 Apr 2026 20:33:56 +0200
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=freenet.de;
-	s=mjaymdexmjqk; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID;
-	bh=XWGuEDTfJRtDBo4pG6lazlPWC8lsHVAK6JjqE/fY0DU=; b=q5pQsXsZakDaOqDdF4QTT+xYhN
-	dsyOgQjaR/7sQzDZmGY7lJaGm23POVX9IkD5z9ED39MH82DgmDVHngjqME1mvexlKOcObaVtPZicV
-	iITMa9G/vvXLjeDficn5wrWOKGffysBss7/r/kTyHe+XVKHCGy/VwU37yRGNNv1SjSaoEiPfRaM0z
-	pTfwtLtXNqY9rijWF2TtQU4M9ZkRg38pX9u7tYY1mscq+v8P2u/04RyYZoB9+CQ7dqgt3TZF8S2bJ
-	Q02+BrjnGrR1w+amftXfdIgO7vKU01YjLiP3zZP2vW5vxrHcx1X0EwZFCJ9dWQM2F659kl7cEpM4x
-	ReJVxGIg==;
-Received: from [2a02:8071:a85:f020:6f5e:4793:860f:7675] (port=36968 helo=[127.0.0.1])
-	by sub5.mail.fnrz.de with esmtpsa (ID viktor.jaegerskuepper@freenet.de) (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (port 465) (Exim 4.96 #2)
-	id 1wI9jQ-005MXh-0C;
-	Wed, 29 Apr 2026 20:33:56 +0200
-Message-ID: <33a693a8-a460-49b7-83cb-1ab7b66ce69e@freenet.de>
-Date: Wed, 29 Apr 2026 20:34:14 +0200
+	dkim=pass (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="GxUzOIDw"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=1uYlkmmUjhEZU9MRSVp1p5qfsoKp1wSS/Mt3AOlgm2I=; b=GxUzOIDwtt2nMElGg95J6m+1jm
+	aULQk9oQfnpZfrG2Q25K8BrC1E6uAhy3ylPCI6F3AtFybhaf0VJY5YaVJX0uOHgWG7TgPvJZJp3Nb
+	q01yqlQ4idoTseVt9+kr3U8Lbte5D5f5NwVZbK8pRB8vrqHMiD4PkkMwtD+YeBSoIwTWSIrqIE8BG
+	WBRAacEj7fCS8hM8Dripgj3HcNjmQ5Y6W7aYTCuwPPe8x6DFtDXudyNaknkXjZ2gfcp38m5bCn3gm
+	lQWK3197cDbERTFDI0Rv8Fy6LrvjWztgOV27HudXgak2B/JnhQkgXnx169RFvnd9Dcgagyi0vUIcd
+	1asYmzkA==;
+Received: from ip98-183-112-25.ok.ok.cox.net ([98.183.112.25]:58506 helo=[192.168.1.142])
+	by galaxy.gendns.com with essmtpa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
+	(Exim 4.99.1)
+	(envelope-from <david@lechnology.com>)
+	id 1wIAbi-00000002pNB-4A3S;
+	Wed, 29 Apr 2026 15:30:01 -0400
+Message-ID: <6b4840ea-fff9-4683-b595-e594435ee594@lechnology.com>
+Date: Wed, 29 Apr 2026 14:30:01 -0500
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -44,182 +43,170 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [REGRESSION] CPU running at fixed frequency (~1.7 GHz) with
- kernel 7.1-rc1
-To: Mario Limonciello <mario.limonciello@amd.com>,
- Huang Rui <ray.huang@amd.com>
-Cc: linux-pm@vger.kernel.org, regressions@lists.linux.dev
-References: <14a87c99-785c-4b16-bfce-35ecbf053448@freenet.de>
- <f35244cb-1f17-42a9-9479-5eee196cae5e@amd.com>
- <f0b13b69-f5fa-4346-b1cd-dbae4a450c80@freenet.de>
- <fbfea6b5-eb13-484d-bf66-6fb1dee4d30d@amd.com>
- <8654f7a1-5023-4874-a90a-5332ba6301b3@freenet.de>
- <dba72492-e96f-4fd8-9520-89fee242271f@amd.com>
- <dea2c864-bd47-4bc8-a46b-f061771c2b4d@freenet.de>
- <f4fd9018-2a05-454b-a887-9b1c9a8a14df@amd.com>
+Subject: Re: [PATCH v2] counter: ti-eqep: fix runtime PM leak in probe error
+ path
+To: Linux PM <linux-pm@vger.kernel.org>, Felix Gu <ustc.gu@gmail.com>,
+ William Breathitt Gray <wbg@kernel.org>, Judith Mendez <jm@ti.com>
+Cc: linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260418-ti-eqep-v2-1-2f803963c4fc@gmail.com>
 Content-Language: en-US
-From: =?UTF-8?B?VmlrdG9yIErDpGdlcnNrw7xwcGVy?=
- <viktor_jaegerskuepper@freenet.de>
-In-Reply-To: <f4fd9018-2a05-454b-a887-9b1c9a8a14df@amd.com>
+From: David Lechner <david@lechnology.com>
+Autocrypt: addr=david@lechnology.com; keydata=
+ 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
+In-Reply-To: <20260418-ti-eqep-v2-1-2f803963c4fc@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-FN-MUUID: 1777487636589011215825O
-X-Scan-TS: Wed, 29 Apr 2026 20:33:56 +0200
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - galaxy.gendns.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - lechnology.com
+X-Get-Message-Sender-Via: galaxy.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
+X-Authenticated-Sender: galaxy.gendns.com: davidmain@lechnology.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 
-Am 29.04.26 um 19:14 schrieb Mario Limonciello:
+On 4/17/26 11:08 AM, Felix Gu wrote:
+> In ti_eqep_probe(), if devm_clk_get_enabled() fails, the function
+> returns without cleaning up the runtime PM state.
 > 
+> Switch to devm functions to fix the problem and remove unneeded
+> remove() callback.
 > 
-> On 4/29/26 11:20, Viktor Jägersküpper wrote:
->> Am 29.04.26 um 17:54 schrieb Mario Limonciello:
->>>
->>>
->>> On 4/29/26 10:38, Viktor Jägersküpper wrote:
->>>> Am 29.04.26 um 16:25 schrieb Mario Limonciello:
->>>>>
->>>>>
->>>>> On 4/29/26 08:54, Viktor Jägersküpper wrote:
->>>>>> [You don't often get email from viktor_jaegerskuepper@freenet.de. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
->>>>>>
->>>>>> Am 29.04.26 um 15:04 schrieb Mario Limonciello:
->>>>>>>
->>>>>>>
->>>>>>> On 4/29/26 07:34, Viktor Jägersküpper wrote:
->>>>>>>> [You don't often get email from viktor_jaegerskuepper@freenet.de. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
->>>>>>>>
->>>>>>>> Hi,
->>>>>>>>
->>>>>>>> when I boot my desktop system running with an AMD Ryzen 9 5900X using
->>>>>>>> the kernel 7.1-rc1, all CPU cores seem to run at ~1.7 GHz constantly,
->>>>>>>> i.e. I don't observe any core frequency boosting under load. This never
->>>>>>>> happened with older kernel releases, e.g. with 7.0-rc7. I ran
->>>>>>>> 'git bisect' and found this first bad commit:
->>>>>>>>
->>>>>>>> e30ca6dd5345c5b8ba05f346a8e81105352fe571 cpufreq/amd-pstate: Add dynamic energy performance preference
->>>>>>>
->>>>>>> If you compile with CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP=n (instead of using kernel command line to turn it off) does the issue go away?
->>>>>>>
->>>>>>
->>>>>> No, and still nothing about amd-pstate in dmesg.
->>>>>
->>>>> Can you turn on dynamic debugging for amd-pstate.c?  Something like this:
->>>>>
->>>>> dyndbg='file drivers/cpufreq/amd-pstate.c +p'
->>>>>
->>>>
->>>> Both kernel builds (with CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP=y/n) have the following config:
->>>> CONFIG_DYNAMIC_DEBUG=y
->>>> CONFIG_DYNAMIC_DEBUG_CORE=y
->>>>
->>>> Booting with the above dyndbg parameter gives me only this line about amd-pstate in dmesg:
->>>> [    0.844066] amd_pstate: AMD CPPC shared memory based functionality is supported
->>>>
->>>> Do I have to do anything else besides booting with the dyndbg parameter? I have tried
->>>> both builds.
->>>
->>> You shouldn't have to.  I think there might be something silently failing in the init path now.  Maybe platform profile registration is failing for your system?  I haven't reproduced this on my side on any of my systems unfortunately.
->>>
->>> Do you think you can sprinkle printk()'s around the init to figure it out?  If you need me to write a patch that does this I can try to whip one up.
->>>
->>
->> Please write a patch, I am just a user trying to help.
+> Fixes: 0cf81c73e4c6 ("counter: ti-eqep: enable clock at probe")
+> Signed-off-by: Felix Gu <ustc.gu@gmail.com>
+> ---
+> Changes in v2:
+> - Switch to devm functions to fix David's comment.
+> - Link to v1: https://lore.kernel.org/r/20260417-ti-eqep-v1-1-a7db4642d9d0@gmail.com
+> ---
+>  drivers/counter/ti-eqep.c | 33 +++++++++++++--------------------
+>  1 file changed, 13 insertions(+), 20 deletions(-)
 > 
-> OK thanks.  Here is a debugging patch that should show what's happening in the new paths from e30ca6dd5345c5b8ba05f346a8e81105352fe571 so we can confirm root cause on your system.
+> diff --git a/drivers/counter/ti-eqep.c b/drivers/counter/ti-eqep.c
+> index d21c157e531a..08dc6d0ad5e4 100644
+> --- a/drivers/counter/ti-eqep.c
+> +++ b/drivers/counter/ti-eqep.c
+> @@ -492,6 +492,11 @@ static const struct regmap_config ti_eqep_regmap16_config = {
+>  	.max_register = QCPRDLAT,
+>  };
+>  
+> +static void pm_put_sync(void *data)
 
-These are the dmesg lines concerning amd-pstate:
-[    0.845044] amd_pstate: amd_pstate: CPU 0: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.845047] amd_pstate: amd_pstate: CPU 0: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.845059] amd_pstate: amd_pstate: CPU 0: platform_profile_register succeeded
-[    0.845060] amd_pstate: amd_pstate: CPU 0: registering power supply notifier
-[    0.849046] amd_pstate: amd_pstate: CPU 1: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.849047] amd_pstate: amd_pstate: CPU 1: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.849058] amd_pstate: amd_pstate: CPU 1: platform_profile_register succeeded
-[    0.849059] amd_pstate: amd_pstate: CPU 1: registering power supply notifier
-[    0.853043] amd_pstate: amd_pstate: CPU 2: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.853044] amd_pstate: amd_pstate: CPU 2: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.853054] amd_pstate: amd_pstate: CPU 2: platform_profile_register succeeded
-[    0.853054] amd_pstate: amd_pstate: CPU 2: registering power supply notifier
-[    0.857043] amd_pstate: amd_pstate: CPU 3: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.857044] amd_pstate: amd_pstate: CPU 3: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.857054] amd_pstate: amd_pstate: CPU 3: platform_profile_register succeeded
-[    0.857054] amd_pstate: amd_pstate: CPU 3: registering power supply notifier
-[    0.861045] amd_pstate: amd_pstate: CPU 4: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.861046] amd_pstate: amd_pstate: CPU 4: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.861056] amd_pstate: amd_pstate: CPU 4: platform_profile_register succeeded
-[    0.861057] amd_pstate: amd_pstate: CPU 4: registering power supply notifier
-[    0.865044] amd_pstate: amd_pstate: CPU 5: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.865046] amd_pstate: amd_pstate: CPU 5: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.865057] amd_pstate: amd_pstate: CPU 5: platform_profile_register succeeded
-[    0.865058] amd_pstate: amd_pstate: CPU 5: registering power supply notifier
-[    0.870044] amd_pstate: amd_pstate: CPU 6: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.870046] amd_pstate: amd_pstate: CPU 6: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.870058] amd_pstate: amd_pstate: CPU 6: platform_profile_register succeeded
-[    0.870058] amd_pstate: amd_pstate: CPU 6: registering power supply notifier
-[    0.874044] amd_pstate: amd_pstate: CPU 7: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.874045] amd_pstate: amd_pstate: CPU 7: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.874056] amd_pstate: amd_pstate: CPU 7: platform_profile_register succeeded
-[    0.874057] amd_pstate: amd_pstate: CPU 7: registering power supply notifier
-[    0.878045] amd_pstate: amd_pstate: CPU 8: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.878046] amd_pstate: amd_pstate: CPU 8: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.878055] amd_pstate: amd_pstate: CPU 8: platform_profile_register succeeded
-[    0.878056] amd_pstate: amd_pstate: CPU 8: registering power supply notifier
-[    0.882045] amd_pstate: amd_pstate: CPU 9: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.882046] amd_pstate: amd_pstate: CPU 9: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.882055] amd_pstate: amd_pstate: CPU 9: platform_profile_register succeeded
-[    0.882056] amd_pstate: amd_pstate: CPU 9: registering power supply notifier
-[    0.886045] amd_pstate: amd_pstate: CPU 10: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.886046] amd_pstate: amd_pstate: CPU 10: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.886055] amd_pstate: amd_pstate: CPU 10: platform_profile_register succeeded
-[    0.886056] amd_pstate: amd_pstate: CPU 10: registering power supply notifier
-[    0.890045] amd_pstate: amd_pstate: CPU 11: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.890046] amd_pstate: amd_pstate: CPU 11: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.890056] amd_pstate: amd_pstate: CPU 11: platform_profile_register succeeded
-[    0.890056] amd_pstate: amd_pstate: CPU 11: registering power supply notifier
-[    0.894046] amd_pstate: amd_pstate: CPU 12: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.894047] amd_pstate: amd_pstate: CPU 12: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.894056] amd_pstate: amd_pstate: CPU 12: platform_profile_register succeeded
-[    0.894057] amd_pstate: amd_pstate: CPU 12: registering power supply notifier
-[    0.898046] amd_pstate: amd_pstate: CPU 13: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.898047] amd_pstate: amd_pstate: CPU 13: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.898055] amd_pstate: amd_pstate: CPU 13: platform_profile_register succeeded
-[    0.898056] amd_pstate: amd_pstate: CPU 13: registering power supply notifier
-[    0.902046] amd_pstate: amd_pstate: CPU 14: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.902048] amd_pstate: amd_pstate: CPU 14: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.902059] amd_pstate: amd_pstate: CPU 14: platform_profile_register succeeded
-[    0.902059] amd_pstate: amd_pstate: CPU 14: registering power supply notifier
-[    0.906046] amd_pstate: amd_pstate: CPU 15: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.906048] amd_pstate: amd_pstate: CPU 15: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.906060] amd_pstate: amd_pstate: CPU 15: platform_profile_register succeeded
-[    0.906060] amd_pstate: amd_pstate: CPU 15: registering power supply notifier
-[    0.910046] amd_pstate: amd_pstate: CPU 16: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.910048] amd_pstate: amd_pstate: CPU 16: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.910058] amd_pstate: amd_pstate: CPU 16: platform_profile_register succeeded
-[    0.910059] amd_pstate: amd_pstate: CPU 16: registering power supply notifier
-[    0.914047] amd_pstate: amd_pstate: CPU 17: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.914048] amd_pstate: amd_pstate: CPU 17: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.914059] amd_pstate: amd_pstate: CPU 17: platform_profile_register succeeded
-[    0.914060] amd_pstate: amd_pstate: CPU 17: registering power supply notifier
-[    0.918049] amd_pstate: amd_pstate: CPU 18: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.918051] amd_pstate: amd_pstate: CPU 18: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.918081] amd_pstate: amd_pstate: CPU 18: platform_profile_register succeeded
-[    0.918082] amd_pstate: amd_pstate: CPU 18: registering power supply notifier
-[    0.922049] amd_pstate: amd_pstate: CPU 19: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.922051] amd_pstate: amd_pstate: CPU 19: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.922070] amd_pstate: amd_pstate: CPU 19: platform_profile_register succeeded
-[    0.922071] amd_pstate: amd_pstate: CPU 19: registering power supply notifier
-[    0.926049] amd_pstate: amd_pstate: CPU 20: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.926052] amd_pstate: amd_pstate: CPU 20: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.926073] amd_pstate: amd_pstate: CPU 20: platform_profile_register succeeded
-[    0.926074] amd_pstate: amd_pstate: CPU 20: registering power supply notifier
-[    0.930049] amd_pstate: amd_pstate: CPU 21: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.930052] amd_pstate: amd_pstate: CPU 21: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.930071] amd_pstate: amd_pstate: CPU 21: platform_profile_register succeeded
-[    0.930072] amd_pstate: amd_pstate: CPU 21: registering power supply notifier
-[    0.934050] amd_pstate: amd_pstate: CPU 22: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.934052] amd_pstate: amd_pstate: CPU 22: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.934072] amd_pstate: amd_pstate: CPU 22: platform_profile_register succeeded
-[    0.934073] amd_pstate: amd_pstate: CPU 22: registering power supply notifier
-[    0.938050] amd_pstate: amd_pstate: CPU 23: calling amd_pstate_set_dynamic_epp (current_profile=3)
-[    0.938052] amd_pstate: amd_pstate: CPU 23: get_balanced_epp: power_supply_is_system_supplied=1, returning EPP=0x0 (ac=0x0, dc=0x80)
-[    0.938073] amd_pstate: amd_pstate: CPU 23: platform_profile_register succeeded
-[    0.938074] amd_pstate: amd_pstate: CPU 23: registering power supply notifier
+This should have ti_eqep_ prefix in function name.
+
+> +{
+> +	pm_runtime_put_sync(data);
+> +}
+> +
+>  static int ti_eqep_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+> @@ -544,31 +549,20 @@ static int ti_eqep_probe(struct platform_device *pdev)
+>  	 * parent PWMSS bus driver. On AM17xx, this comes from the PSC power
+>  	 * domain.
+>  	 */
+> -	pm_runtime_enable(dev);
+> +	err = devm_pm_runtime_enable(dev);
+> +	if (err)
+> +		return err;
+> +
+>  	pm_runtime_get_sync(dev);
+> +	err = devm_add_action_or_reset(dev, pm_put_sync, dev);
+
+I have no idea if this is OK or not. It seems like devm_pm_runtime_get_sync()
+would exist already if it was OK. So that makes me think it is not OK.
+
+I added PM mailing list to see if anyone can advise.
+
+> +	if (err)
+> +		return err;
+>  
+>  	clk = devm_clk_get_enabled(dev, NULL);
+>  	if (IS_ERR(clk))
+>  		return dev_err_probe(dev, PTR_ERR(clk), "failed to enable clock\n");
+>  
+> -	err = counter_add(counter);
+> -	if (err < 0) {
+> -		pm_runtime_put_sync(dev);
+> -		pm_runtime_disable(dev);
+> -		return err;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static void ti_eqep_remove(struct platform_device *pdev)
+> -{
+> -	struct counter_device *counter = platform_get_drvdata(pdev);
+> -	struct device *dev = &pdev->dev;
+> -
+> -	counter_unregister(counter);
+> -	pm_runtime_put_sync(dev);
+> -	pm_runtime_disable(dev);
+> +	return devm_counter_add(dev, counter);
+
+Using devm_counter_add() is not part of the fix, so should be in
+a separate patch.
+
+>  }
+>  
+>  static const struct of_device_id ti_eqep_of_match[] = {
+> @@ -580,7 +574,6 @@ MODULE_DEVICE_TABLE(of, ti_eqep_of_match);
+>  
+>  static struct platform_driver ti_eqep_driver = {
+>  	.probe = ti_eqep_probe,
+> -	.remove = ti_eqep_remove,
+>  	.driver = {
+>  		.name = "ti-eqep-cnt",
+>  		.of_match_table = ti_eqep_of_match,
+> 
+> ---
+> base-commit: 452c3b1ea875276105ac90ba474f72b4cd9b77a2
+> change-id: 20260417-ti-eqep-8efb9cc713ea
+> 
+> Best regards,
 
