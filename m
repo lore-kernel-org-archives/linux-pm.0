@@ -1,173 +1,159 @@
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012038.outbound.protection.outlook.com [52.101.43.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B1D42AD0C;
-	Wed, 29 Apr 2026 04:34:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.38
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0E303A7828
+	for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 08:07:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.169
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777437254; cv=fail; b=aovM6QK8X0xbdIRNyE2KQgcvz/V+266rZ/sRXFLRuJisTLPIkSV68w0b2x/ls67MoCY2TRmVw+/CPL/d07HxgbnaCO+LVWfqfIGHubffcKjC1W0YNmV5eqx6A2Da5/WGckvqRCsMcyDE4aMM31hw6yEl7pJ+hfKAgAiY4VYvA+4=
+	t=1777450077; cv=pass; b=N5/gmhRCkuSELKYdRzQexjuLhVY91c7SfKPkqrquqM0b7N5AEfGHuc1nYow8h0FVmvOfgh9ZK7XnsOCMSQYSCu3/Lul2Hwq7e3Tnr2r7TDSvcSsQz0ZjcI0e90No2Yk+INuv31S2aPOV6W1exj5jsmCB56Omu2wDdzD7oThgKVE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777437254; c=relaxed/simple;
-	bh=KfTqWyaggYxaSXO8aXiX/pEbLDd4XAPbiZ83zf4fHXg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=EqrOX+D+C0Dh8QgRSsYBr0NhLzQY86LX/+FznTGxMTX/v/JGfir0GM/PDQOcPWxjuqcvk2MbA5w2jFR1Mt/M/IrZsGZ4qONYs9O4LSZc2vJuvKqa1fiGsLAn9aRqs2BPP1GrV5z0F6UF+ODA9oH5gcZ4itbmH/NGztRO90Dk5Fc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=noueqMT9; arc=fail smtp.client-ip=52.101.43.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	s=arc-20240116; t=1777450077; c=relaxed/simple;
+	bh=jVRamOO/72w3UmYxi61IAg0s6iEnA3gdt3beTXXuUB8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ZXTgiE9ZAI+Fz12dXbH2HgjIOeLPVMMUnQPybI0+GSXznAs5FliRYPzk8hdt0+W/GqIg7scnrQd+/WyjMajB5MlXNM25ERg2hDb3izuqCIEdCPwIH83c4nhZRTfx0OLNW5SIKLOEIMah1wpp2yxw9IWsRRGaouvj3cCUUk8iWNs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=g7EpGDNf; arc=pass smtp.client-ip=209.85.160.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="noueqMT9"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=tKrKevH+EtyMelljyYoFzk47psTMuf3fxbI+HaRkdhvcAaNIIpIOB+s5hF1P+bZtmg/M1ZYkovCsbSCBu5GzXEdB6dJ4eTpVuq6SAwySOGh5PKf8guisPEI1smffaogIWqY4s9x3qwxvy5QeE98l4OcFnq9hUKkquM5z0aRzWp06skTktBI4vjbQHyfyixUezUG6KFjZQgk1RPGMqlf3+dIe78gABeu6c73HAXm8xsZXVeVtZL2/APkR0fvKsf7PGTcMbDZqW9F2tOURcB7Rz/lftb2y9HX4WzgQ4UscMubIJfMm7hl5e+Fj7TCohECaavtQ7tP5MtpOg/IMje2i7Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IY+u3f1fDqQPle01cBWyGkYBl0QGzDm2Kd0ogLXs2uk=;
- b=YBa8HLffpi8nsQ0j7GXV74RTLMlkxmS5+GwZt5G7c2LNsr7rOiQNr/vVmCcEeO9eNRLHZUcLmKior6inZ15awcRZVr92rJGbmHdx/rQ7NJC+O20IGS+RkPlBoc0ToOqYUWO4G6XhCW1C83w73MPXu6ftetPpDVMAh7ayvZ8MhcR7WYBf1/P18JAMGMJ46Pf7HPgsJCuRMik2PWVkbs6d180iflWrBaJlVA9ZL4Z84QefgmVHEzMYVKaw+RGZGV8MiRKgovH9gsi8WsptwyLpxOJ5Yjexl87qxBNPA+vYN7ijaiFpYcQIHUGILWoIf6QcXlVFTCY20nmcgIK76u4dHQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.23.195) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
- dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IY+u3f1fDqQPle01cBWyGkYBl0QGzDm2Kd0ogLXs2uk=;
- b=noueqMT9+I1NjzHz/S8Mb0RjvlJYqc3q+H6cyuugokZsPgovw4NOLXX9H11zHMTLc2m6mLuAEhnFHv1OxTpfXuLqo8G4A7J7LYp7s3lYv7VW5lRUN5BJnI0xMlKm0gxizcNxUNwDT8fwk14Pjt964i+pnKP9DXWDRHHh3KZwVCo=
-Received: from SA1P222CA0082.NAMP222.PROD.OUTLOOK.COM (2603:10b6:806:35e::29)
- by SJ0PR10MB5892.namprd10.prod.outlook.com (2603:10b6:a03:422::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Wed, 29 Apr
- 2026 04:34:10 +0000
-Received: from SN1PEPF00026368.namprd02.prod.outlook.com
- (2603:10b6:806:35e:cafe::a) by SA1P222CA0082.outlook.office365.com
- (2603:10b6:806:35e::29) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.30 via Frontend Transport; Wed,
- 29 Apr 2026 04:34:10 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.23.195)
- smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
- action=none header.from=ti.com;
-Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.23.195 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.23.195; helo=lewvzet201.ext.ti.com; pr=C
-Received: from lewvzet201.ext.ti.com (198.47.23.195) by
- SN1PEPF00026368.mail.protection.outlook.com (10.167.241.133) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9846.18 via Frontend Transport; Wed, 29 Apr 2026 04:34:10 +0000
-Received: from DLEE200.ent.ti.com (157.170.170.75) by lewvzet201.ext.ti.com
- (10.4.14.104) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 28 Apr
- 2026 23:34:00 -0500
-Received: from DLEE205.ent.ti.com (157.170.170.85) by DLEE200.ent.ti.com
- (157.170.170.75) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 28 Apr
- 2026 23:34:00 -0500
-Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DLEE205.ent.ti.com
- (157.170.170.85) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
- Transport; Tue, 28 Apr 2026 23:34:00 -0500
-Received: from [172.24.233.103] (uda0132425.dhcp.ti.com [172.24.233.103])
-	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 63T4XtD22593536;
-	Tue, 28 Apr 2026 23:33:56 -0500
-Message-ID: <1fb0739e-b84f-42f1-9c96-88b5cc5866a8@ti.com>
-Date: Wed, 29 Apr 2026 10:03:55 +0530
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="g7EpGDNf"
+Received: by mail-qt1-f169.google.com with SMTP id d75a77b69052e-50d87c138e1so122681631cf.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2026 01:07:55 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777450075; cv=none;
+        d=google.com; s=arc-20240605;
+        b=lWhG+BYEqy7j/yJX31GtzbbInQ8bFaUFg/ZcwSLQ1pkTWh5eAog1P9HPmElQ8A2skd
+         kJL1twPje5oV7iBFfjVspVfWT1U4INrDY5sv1hSuchXmaa7kR6d0LAE+Fqcz/mAbqWwh
+         TTdYASkIy9Pp87ffKqRv9QW2vgs+nSijEKQ9pzbvistVXKzbDVNJ2EXIvtONwJvALgfo
+         dMaWgCey5/BKnjD/4DB7oJjC2RrMZ3/7YTnDPHtSlhn7HrwePPzRrTx4eHfQTnNZNVzk
+         ftiSWaCr+gwu6OcfymWJJxh3tUEympF2RF4ZV3OJXx3ntW0pJ4S7hoefBAtXGWWpUksQ
+         2mvw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=R4vgqVSWQ1DzDgT21DMwC3x5aq70ARBIRF80eGWCgco=;
+        fh=2ERdyJuP0pRXpaN6WGqeOjuSsCJBcGDE/TMasUbXNb4=;
+        b=E+zOLnTi6/Cmz2Vpab+vVlexd8nXRC4h7tUZcpyFZVlLUR52EqeZ7SKvWOZa6q/Ort
+         CtHq+CXwRAfd9fhmXSTl5z31rnRbSZsJ2Ddr+X7V3/YZZPmkCyXKqtsBqaWylVTfl+W7
+         YffksOyDzlrwypIR7X8TCtvblK3UGh2ALk7/6T9y4Y8ot9vQaXKzhlCN0jG25t6pgqtM
+         Ipjdfqk6rOi/SIaZY5epf9HIik2AtwnrUpa6PubwNnFqdrDH5Lb/JRqL9/Zt00wIhZzK
+         j2hkpvdKGaOUxt32deAKFU/CFCP38rxGpcmmGOPl/f6leAxk5vFX/+W/YLAh16wO6Li2
+         s0Mw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777450075; x=1778054875; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=R4vgqVSWQ1DzDgT21DMwC3x5aq70ARBIRF80eGWCgco=;
+        b=g7EpGDNfrCGVPSQr0RP0QuYEuPy7q0O6kuko5MdUsEMwj6i3wO3ZEr3Atw+y/UlXqG
+         HgXzAAQ8Leziw3yy/itWKkvh8q1dJ9ywGyaladXSu7yBgo7abyCAw2gAVQdu7sSVqcV2
+         wC+A+DVsLJjo3m8WZZSPXbUq8bVRg8qPbwaGisQ3b2m9K38TTSRXWOojcLtlkcV5TtQM
+         e4+isWvSh39qS3pnE/tdyK2SuWL8sJd92nEo1p0OUquzUUXhRzD5BUq55Xaplk/eWpST
+         OkSSNzIUzSMOZav3w8TzjfNeWWQ+oDwa/CcmUG4W/SFp4bpWRmsCrjpq9kjrTXt777Dd
+         +7ew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777450075; x=1778054875;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=R4vgqVSWQ1DzDgT21DMwC3x5aq70ARBIRF80eGWCgco=;
+        b=nYvm1Z5eAh3JgYa4RXIu4XHqGLiwwZsfGk6FF67tEC0AdzVQkiklAv2TS2ZKTprBBA
+         vtx1TDOnIOgxHfAQ//ASCk4KFPW9HQ2BDBNWMvdieLTBSN9nFEe37XExGY306ktTO0BR
+         ynOe8tXkh/K4VlsT2HoQxPefHIXT0VEpa82Sep0cibrTYonyoxdk1j07+DKOBIKb/90D
+         FAoVNql2+czdcv/8OhD83HIx2JvqL8nYnQFJ2PfQf4Gnbqo5G0zHuHHyLQ3Q4c76eMBN
+         +kA0B24rhzkLZEHb8linaqKPGhDrOhCsd9PSpaTkTwbvFSfH0ECigStImoYMy5usT7Aa
+         LuDw==
+X-Forwarded-Encrypted: i=1; AFNElJ8aITNn54JZW6aCRmT3jmq6BN3Mq8iQ0PC+Wg63RCpdbAdIzkzvvy+uwHk2xGYdl8ddpjZVWaKURw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy/pOZZGoRti1VW0wS7e1EtSZF90NPmB6y+OjijefsMVNC/TLDA
+	1g8alq4Aai5V80TskFmwnTkIUrwqePDvwWQF77a9IidnJoXzHAF7dZAOzQMTCCx9m1fGgyMHBwX
+	1ZarIjkvBC9/Dco4CZgeQ76LrnsSFEY0=
+X-Gm-Gg: AeBDievDKlUeRES1PkrJfkgeXFoOa2pX0JdS0crv2Mu5Mo2Q8IAJ2QlCd6VJH/WOtWQ
+	Yf+9BUhuGFizdl9V3IK/YAYikozFivpJsDNeGy6s5Hh83H4G691KZ47wOeLtvjfjrr6NoWfRppv
+	xuNyAt+c1etj6FUhuQ/dCvXF/3gvjLqH6SObf3DPiw25CYg1DAWUopqh+CEDbj1+2v8fB0GMu94
+	tPFJZmaX1qUPH67CzDs/cucC1TtmDXFzPBp/9B1SAF9efSFPlv/0tEUFTqrxlwwqLsBLIel4PgJ
+	yaZKm9yiQRdP8BxwEig=
+X-Received: by 2002:ac8:58d2:0:b0:4ff:c17b:5ab0 with SMTP id
+ d75a77b69052e-5100e0f5105mr85723871cf.9.1777450074893; Wed, 29 Apr 2026
+ 01:07:54 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] pmdomain: ti_sci: re-sync TIFS with genpd on resume
-To: Vitor Soares <ivitro@gmail.com>, Nishanth Menon <nm@ti.com>, Tero Kristo
-	<kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Ulf Hansson
-	<ulfh@kernel.org>
-CC: Vitor Soares <vitor.soares@toradex.com>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, Tomi Valkeinen
-	<tomi.valkeinen@ideasonboard.com>, Kevin Hilman <khilman@baylibre.com>,
-	<vishalm@ti.com>, <sebin.francis@ti.com>, <d-gole@ti.com>, Devarsh Thakkar
-	<devarsht@ti.com>, <stable@vger.kernel.org>
-References: <20260427074808.3244226-2-ivitro@gmail.com>
-From: Vignesh Raghavendra <vigneshr@ti.com>
-Content-Language: en-US
-In-Reply-To: <20260427074808.3244226-2-ivitro@gmail.com>
+References: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+In-Reply-To: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+From: Xuewen Yan <xuewen.yan94@gmail.com>
+Date: Wed, 29 Apr 2026 16:07:43 +0800
+X-Gm-Features: AVHnY4LFHNiffwCxL5zMPrydkdlGfWNx3f6Mw8wznYQTfO1arjhpvC1v91DjTtc
+Message-ID: <CAB8ipk_R8=m3AfB=Fw5Tag3SPONH2ZbKnUR+AZq2DSS1MHJHyA@mail.gmail.com>
+Subject: Re: [PATCH] pm/opp: fix race between opp_add and opp_get
+To: Xuewen Yan <xuewen.yan@unisoc.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, di.shen@unisoc.com, ling_ling.xu@unisoc.com, 
+	ke.wang@unisoc.com
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN1PEPF00026368:EE_|SJ0PR10MB5892:EE_
-X-MS-Office365-Filtering-Correlation-Id: bc2d188b-2548-48e4-4f8a-08dea5a88f17
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|7416014|376014|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	XdmNYrxRb9RPT0sPIGYQ09FBHGwiIU6QwJC7fQ68ZhKotgZ5OdZCAHiYikbV7bTrIAdajOrT8Lc0pdUVJ9YukSgW3MW+pFkLXrmDqsi6QjdF73ocWWKexD7ftzr+9UiJ7bFcj12A1tuTbbX6WbJb54+rVWsMWhNZ5/KEvG9Fov8bKK3SaErVs4dXKdxwyIOKiSKmMMvN37lOaNAJpMN12CtBgXMSwfSh53eGv4WVZ2K3h5RX1XYTaxvA/Z6JGV7Naxc0r7U/6M2NNzul5LEhMB4TGCYH2oIwV37lIuTAjYnUWgtuWWj6l5P01FB4KGBhLJLcZxAIromwW1lsvlVMR2z5YrJ6YuQnHHWhGf6aBNMb9HZtw2UUcy448frzAi9V1jNf8DTukXri/lFjklJ31eFyBfTY7oENqgwqiY0XOi+11NliD6owP8fF0AqW3vQ4JDDT1Qun5GJSL6Bl1R6ltWP1yIcMjU22161I6CoA0lTEDrFGVfWwN+THJ+JntCfGgQUJlX/R0Oh4i7M+w4fXNjLpsSSI5PUti/IV0eRI+K3abj0RBfE8nLkzPvkDWlGhkfH1R/HDIV4eVD2LpV5qZrFgSTR6cbXphJn4ThzvW/4MalXtJfQVDPfKxLUjh11zGP9IJ63O8BoOa3W8j5XhPXLydn9Xkz1ra6tZ2NA8r5aZ22yIYJxIs089rGVTIHYNxRAg2jYWEwYCzxNBTWopjUQGNSGwHU8NgMK0MSjB30cbcxe1WNB14DzS/dow9wW/olPrWn+kpZ3CzWq3Qs5AbA==
-X-Forefront-Antispam-Report:
-	CIP:198.47.23.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:lewvzet201.ext.ti.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(7416014)(376014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	qYrEgTddHZC/QA+BrhgIxUGms0jaDK9lOJlRzOKPkQyL464aIj6ra0xEBAh9Fy4zFoTcTgDA7AIvSVje3fsTsu0chTfDP3xS/PXi93m+tzf/SuSiPxkUpBksGUZqoC3zzpnufs+AJgNl3cRcVGbnC6tyjv858cl3mgjhQZBLELJF7kzVscPF50KN5VP3OxAUiaAc/jPn8ytl0dDePeUxF8/J/E7Y6PLMBrLxx8I5e3D6Vvmfl7bTzhcw/AJdr1HDoSzp9KoVV7f6CPzAguiAXqIAO7cgWdwnVVISor+0P/RY7aX+8niDtUe36mAb6rf0bX0XBBJ3b+ucXyop06VGqGvufzV/PHde/7E0O3GZF5PYJQFWIV3Rc9rF2B85hhOGzhw1Y9ZLGOqdVE0vgQROei6MCnhikOv7q2sV25lAsE5tm+vJBayz1CCne5bZ0Ce2
-X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Apr 2026 04:34:10.6266
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: bc2d188b-2548-48e4-4f8a-08dea5a88f17
-X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.23.195];Helo=[lewvzet201.ext.ti.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SN1PEPF00026368.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB5892
+Content-Transfer-Encoding: quoted-printable
 
-Hi Vitor
+Hi Viresh,
 
-On 27/04/26 13:18, Vitor Soares wrote:
-> From: Vitor Soares <vitor.soares@toradex.com>
-> 
-> When a device in a TI SCI power domain is on the wakeup path of a
-> wakeup-capable child, the suspend path skips genpd_sync_power_off().
-> No put_device is sent to TIFS and the domain's genpd status remains
-> ON.
+Do you have any comments on this patch?
 
-Correction of terminologies: TIFS is Root of trust component and is not
-usually involved in power management, that would be DM (Device Manager)
+Thanks!
 
-But to be really sure who is doing what, Could you provide an example
-and the platform on which you see the issue / external abort?
-
-
-> 
-> TIFS powers off the hardware during deep sleep regardless, since it
-> was never informed to keep the domain active. On resume, because the
-> domain's genpd status is ON, no get_device is issued. The driver
-> then accesses registers of a powered-off domain, causing a
-> synchronous external abort (AXI bus error, ESR 0x96000010).
-
-Hmm, if something is wakeup source, I would expect even TIFS/DM not to
-turn if off, else module wakeup wouldn't work.
-
-> 
-> Commit 0b5fe1c4ab3c ("pmdomain: ti-sci: Set PD on/off state according
-> to the HW state") exposed this. Before, domain status was initialized
-> to OFF, so get_device was always issued on resume.
-> 
-> Add a .resume hook that queries the domain's state from TIFS and
-> re-syncs TIFS with get_device when genpd has it ON but TIFS has it
-> OFF. The hook is only registered when the is_on op is available,
-> since detection depends on it.
-> 
-> Move ti_sci_pm_pd_is_on() earlier in the file so it is available to
-> the resume hook.
-> 
-> Fixes: 0b5fe1c4ab3c ("pmdomain: ti-sci: Set PD on/off state according to the HW state")
-> Cc: stable@vger.kernel.org # 6.18+
-> Signed-off-by: Vitor Soares <vitor.soares@toradex.com>
+On Mon, Apr 27, 2026 at 8:01=E2=80=AFPM Xuewen Yan <xuewen.yan@unisoc.com> =
+wrote:
+>
+> From: Di Shen <di.shen@unisoc.com>
+>
+> There is a race between opp_table_find_key and dev_pm_opp_add_dynamic:
+>
+> dev_pm_opp_add_dynamic                dev_pm_opp_find_freq_exact
+> _opp_add_v1                           _find_key
+> _opp_add                              _opp_table_find_key
+> mutex_lock(opp_table->lock)
+> list_add(&new_opp->node, head)
+> mutex_unlock(opp_table->lock)
+>                                      mutex_lock(opp_table->lock)
+>                                      dev_pm_opp_get(opp)
+>                                      kref_get(&opp->kref)
+>                                        refcount_inc(&kref->refcount);
+>                                      mutex_unlock(opp_table->lock)
+> kref_init(&new_opp->kref)
+>   refcount_set(&kref->refcount, 1);
+>                                      dev_pm_opp_put()
+>                                      kref_put_mutex()
+>
+> This would cause the opp be freed.
+>
+> So use the mutex to protect opp's ref count.
+>
+> Co-developed-by: Ling Xu <ling_ling.xu@unisoc.com>
+> Signed-off-by: Ling Xu <ling_ling.xu@unisoc.com>
+> Signed-off-by: Di Shen <di.shen@unisoc.com>
 > ---
-
-[...]
-
--- 
-Regards
-Vignesh
-https://ti.com/opensource
-
+>  drivers/opp/core.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 866641666e41..34cdcf8f598d 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -2088,11 +2088,10 @@ int _opp_add(struct device *dev, struct dev_pm_op=
+p *new_opp,
+>                         return ret;
+>
+>                 list_add(&new_opp->node, head);
+> +               new_opp->opp_table =3D opp_table;
+> +               kref_init(&new_opp->kref);
+>         }
+>
+> -       new_opp->opp_table =3D opp_table;
+> -       kref_init(&new_opp->kref);
+> -
+>         opp_debug_create_one(new_opp, opp_table);
+>
+>         if (!_opp_supported_by_regulators(new_opp, opp_table)) {
+> --
+> 2.25.1
+>
