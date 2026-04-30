@@ -1,133 +1,158 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54E64407598
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:46:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A773407582
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:50:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777553194; cv=none; b=YlnPR8IjIjWoGm0M/RA7vaFAdoec02PWbYTLG+ib3AK872CVA1ev3Ow5/YF/4bJhrsIrVKcdcpZcwkjWDD5BAmycA0lShn0eU/LOKZ9WlCZS7tLFBMIMMzhOZG53/9usUtazCln5/ul5lVtOiNfbhDrFmn6jSqNAjDHsAXEJL1U=
+	t=1777553412; cv=none; b=WXLexOqYrm78HiLuJj6ri0oOwSawlgUMDH2Fu3DKTINnc4lun6WdISc/JvSRfTTFqsSML8p+bPyBLJgi8LRW0/hYL2qNYxNqGgl7YGVbAiNsnSTc2MyLQIs0IVgJdOXjk/nHbZObkjRHIwdq7cpY74qONtq4ytECiBcaaBKm/TI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777553194; c=relaxed/simple;
-	bh=D1ewCxGAb2m3foREBIoGUCfKhLRzglsJCqliRhlc5uM=;
+	s=arc-20240116; t=1777553412; c=relaxed/simple;
+	bh=EUAeZZiWir+om8O/lfmhWKlIvgnl/Vp0lghxn/70ykI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Xzh9PQr1VrbRLePElk+7rNrwyklCaF6E527I5aIM1j8eHz1OGmjmRl+UbTKbKRpdcDMwZbe/Y4R523bMaSOgmCZmgaW7XdVPnTG6YDgsgt0h7WFPqHJu9lBCCUVr/e2/Nwt7ob2sdSBcsFBUgMpPIoUXgPKOsAF6Aqxb53met2U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EB61SP83; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EB61SP83"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF250C2BCFA
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:46:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777553194;
-	bh=D1ewCxGAb2m3foREBIoGUCfKhLRzglsJCqliRhlc5uM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=EB61SP83XT8Wxl4rL9jsKqwm3TfIBflkG3FXxPOa8N1RtHeOibrAo1kLff64bzobM
-	 8g6nXPIGbfk1pDoEgZ/d6B3tJcVqreztpFAIfg1ibwE+UiVp972JnF6xrQJfEiE5Wd
-	 Jawi554qbrcl8lbFJNgw6a/2z/OSw+O4jDJ80zpApastWquSpXkdOAnGTft86bw5Iy
-	 2SQEfVn50kMRAkGXxcJqyjAXxHPgvMc6p+PcIb1NffgE7gMRugiMYa04LVTksC1EX6
-	 wQYot1UvGm4PkAHBVA0O88nE/omrLuPCPG/luE3YN3L7zWDWqVieh5VIIGFy9JHgP/
-	 1ENXa5lzCpP+A==
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-38e7d984096so10267881fa.2
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 05:46:33 -0700 (PDT)
-X-Gm-Message-State: AOJu0YwiWLyvf6/omiTmtI9+Ah1T+37UP0d2apdimMyh8LlBgZxGKYez
-	6ZBs/flUCsWgldTi+yHcfOeAaddsq6SMgh4MXoEXb6PFY4GK0SxNqBPBhrCGzWNdifQrpSGtHlI
-	JICTzedFno/ApZViqcFXGlENLSpOxbMAg00Y+GrAD0w==
-X-Received: by 2002:a2e:a108:0:b0:392:5c61:c583 with SMTP id
- 38308e7fff4ca-3934e1f951dmr8911411fa.23.1777553192507; Thu, 30 Apr 2026
- 05:46:32 -0700 (PDT)
+	 To:Cc:Content-Type; b=Ma6Noi89e8mPuhkUXxfmNT59ZtoOSRH+yj6TgiHXyIybiwRk6AbNZEEXPWuMwTTO1JQvfa95IxZf6FzPSyewOiYtc2seEfntlJcDDndNiIxZAfNPXgAdWszcJeh1DwFDuQFS/3j6i7A6OEyzy8c0GU6XtWIV4MAGBLnObqeMs1M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=csie.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.208.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=csie.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-38e12c67a6fso9370381fa.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 05:50:06 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777553402; x=1778158202;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :reply-to:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=nuQFrVM35wc/XdWiWZfeFiOqf6xuZFSJEgb1hfqaX5M=;
+        b=aHI/6ht1HJwYO1mnqS9gxg72Fu1vrAF/IKIpLDxL8ubz0uerfVNHc4ntZtH3J4XLTv
+         b/FRUyOPjdf3p9uAvNKMpypCPRUCnC41CJ5bsY87q5yOfaH12X8fmGmVW9Kgd2nFNlLW
+         WzIVu5dayhhhO+wIbA/3DsLhrjwozK1DeQ4Sm84IDa2iE+cH+oJ0luQeIouyRdlLad5l
+         0sYV3INr07F//V+t/0cEbYGWShqete+xG+xg3IdWfiuvZknqBI5AuqEI6+DBSGYGZDzx
+         23/s/dB48oIKq1QYpKY4C0YmyKfa5/KMApxDGiTXXH8L7eQnwlbUPTNQnRph188nPiHd
+         ER+Q==
+X-Forwarded-Encrypted: i=1; AFNElJ8PAHSt/4/DQd+8XyrFoe3kUV/aTaaK2qo1TPr4ng1wPWyUqS5pfkCUwQTka64fONbp7sNcjBssqg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YziC3ERS8hKxgaEy/RbO26I9gKQK6/uO5yvxJ+1IAS4oNmzHVPv
+	907L7Ehdv0sL58lOXSHjC9cvX4VwL8UwDqu00/s4Mr+XJEIRYNh4+Ww2xHlWcg1booU=
+X-Gm-Gg: AeBDieuVkoWT5eG/NOvw/yO1biECsObL6cjCaKIVObYfDRW8QFGnKOWBHMeNHDLwHCX
+	ecMurJIEHV+UdLOuX5LRrrd+K/kORmbt1lo5YhaLwCJSupIc9ZZ+XQG6F/F05LJ/tWynrVCWD6m
+	OooMgPSD3WZmwogt6cov3aLgv5uR/bWrAXW6yXaiGZy/6C5qua2yWoIRxqlYLjuG7RJ6O7H2JyF
+	cyAIawKJ5HtWGZrymhnrZ1fPJeO68SmJdeaCqkN6LE+hZ3yLaLEfbwXBZ4NTayEh6QnK6JbpxHF
+	wVPyek/tKxKK6JD/epUSzvftZgVQ/nJqBkiwziKpY4KjPTnqM215YMHEXnr/8K9W4eXeP7U97Yz
+	GkTXl3ZWIHqT39N7T5alQ++8qBy3CsxeBdLNmka80cEG1xfjO93SsyOL1e15K9In6hLccq9Wtrh
+	8A7e7eAXgGr+XFtF3utYYP6xs+QBUO5UGHYEy1LGWLe7rECxPRBS2O2xxEA9UDNA==
+X-Received: by 2002:a05:6512:6c8:b0:5a7:4ac8:b332 with SMTP id 2adb3069b0e04-5a8522dc1ecmr937014e87.38.1777553402089;
+        Thu, 30 Apr 2026 05:50:02 -0700 (PDT)
+Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com. [209.85.167.53])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a74a773599sm1411071e87.77.2026.04.30.05.49.59
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 30 Apr 2026 05:50:01 -0700 (PDT)
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5a2c3dfb4a1so818754e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 05:49:59 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+iNDxE2rUjAtnDSvNGX0qHg+YbtWWXASSGPLCZvM0ln5ozZfVKvlFk3OC0eHxrDQMn9nyF68Krfw==@vger.kernel.org
+X-Received: by 2002:a05:6512:10c8:b0:5a4:175a:ce72 with SMTP id
+ 2adb3069b0e04-5a8522dd822mr1025501e87.39.1777553399625; Thu, 30 Apr 2026
+ 05:49:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
- <20260427-arm-psci-system_reset2-vendor-reboots-v21-8-dcf937775e73@oss.qualcomm.com>
- <CAMRc=Mf+-04Zr7jjRoaxTzO3LKSMyQ7DzxJc=dHNSyThEUiq_Q@mail.gmail.com>
- <c0677503-8073-4940-8eb0-c06b34f843d2@oss.qualcomm.com> <CAMRc=MdxpSXiqAn-8Az4ig4N8TFVdE9psacPVG9J9KehuFnbwA@mail.gmail.com>
- <d6112b9c-01ea-483c-98fe-b480e78872e5@oss.qualcomm.com> <ce92a493-5016-41a2-8337-d2227cdf760a@oss.qualcomm.com>
- <CAMRc=Md_OON4cAGcJ=jDu=VY_mw0qa8HPz4VCDxYLpr7JMxLRw@mail.gmail.com> <37ab0178-1c9d-409e-bbaa-832f8075afa4@oss.qualcomm.com>
-In-Reply-To: <37ab0178-1c9d-409e-bbaa-832f8075afa4@oss.qualcomm.com>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Thu, 30 Apr 2026 14:46:19 +0200
-X-Gmail-Original-Message-ID: <CAMRc=Mcqa5RMarC+6pVYYvYsuJ03GQMtM=69bQMxyotN1u2B0w@mail.gmail.com>
-X-Gm-Features: AVHnY4IEmLYwEMMCdiN8KiXAHy3-1wn0tdvvY2-O1xx2kdj2ex6VTQTyzM2bmGc
-Message-ID: <CAMRc=Mcqa5RMarC+6pVYYvYsuJ03GQMtM=69bQMxyotN1u2B0w@mail.gmail.com>
-Subject: Re: [PATCH v21 08/13] mfd: core: Add firmware-node support to MFD cells
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
-	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
-	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+References: <20251025043129.160454-1-iuncuim@gmail.com> <20251025043129.160454-2-iuncuim@gmail.com>
+ <20251026210905.GA2941518-robh@kernel.org> <1935223.tdWV9SEqCh@jernej-laptop>
+In-Reply-To: <1935223.tdWV9SEqCh@jernej-laptop>
+Reply-To: wens@csie.org
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Thu, 30 Apr 2026 21:49:47 +0900
+X-Gmail-Original-Message-ID: <CAGb2v64z9RMsGiy0skudn4cgo=RajxCho-vaXr5rUo5HPpqjPQ@mail.gmail.com>
+X-Gm-Features: AVHnY4IT6nLdgfoMRlxWNV7nGADa-98ikdi3BEcPI2XpUYcTyVZLvYz4C1kzI-g
+Message-ID: <CAGb2v64z9RMsGiy0skudn4cgo=RajxCho-vaXr5rUo5HPpqjPQ@mail.gmail.com>
+Subject: Re: [PATCH v3 1/6] dt-bindings: thermal: sun8i: Add A523 THS0/1 controllers
+To: =?UTF-8?Q?Jernej_=C5=A0krabec?= <jernej.skrabec@gmail.com>
+Cc: iuncuim <iuncuim@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
-	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>
+	Samuel Holland <samuel@sholland.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	Andre Przywara <andre.przywara@arm.com>, linux-pm@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 29, 2026 at 6:10=E2=80=AFPM Shivendra Pratap
-<shivendra.pratap@oss.qualcomm.com> wrote:
+On Tue, Oct 28, 2025 at 3:01=E2=80=AFAM Jernej =C5=A0krabec <jernej.skrabec=
+@gmail.com> wrote:
 >
+> Hi,
 >
->
-> On 29-04-2026 15:20, Bartosz Golaszewski wrote:
-> > On Wed, Apr 29, 2026 at 11:46=E2=80=AFAM Shivendra Pratap
-> > <shivendra.pratap@oss.qualcomm.com> wrote:
-> >>
-> >>>>
-> >>>> If set, it would be called from MFD core and would do the name looku=
-p
-> >>>> and return the fwnode which would then be assigned to the cell devic=
-e?
-> >>>
-> >>
-> >> Or should we just drop this patch for fwnode in mfd-core?
-> >>
-> >> Export a new call in reboot-mode framework as:
-> >> reboot_mode_register_node(struct reboot_mode_driver *reboot,
-> >>                     struct device_node *np / fwnode)
-> >>
-> >> Use the parent node in psci-reboot-mode and find reboot-mode and call
-> >> reboot_mode_register_node?
-> >>
+> Dne nedelja, 26. oktober 2025 ob 22:09:05 Srednjeevropski standardni =C4=
+=8Das je Rob Herring napisal(a):
+> > On Sat, Oct 25, 2025 at 12:31:24PM +0800, iuncuim wrote:
+> > > From: Mikhail Kalashnikov <iuncuim@gmail.com>
+> > >
+> > > Add a binding for D1/T113s thermal sensor controller. Add dt-bindings
+> > > description of the thermal sensors in the A523 processor.
+> > > The controllers require activation of the additional frequency of the
+> > > associated gpadc controller, so a new clock property has been added.
+> > >
+> > > The calibration data is split into two cells that are in different ar=
+eas
+> > > of nvmem. Both controllers require access to both memory cell, so a n=
+ew
+> > > property nvmem-cells has been added. To maintain backward compatibili=
+ty,
+> > > the name of the old cell remains the same and the new nvmem-cell-name=
+s is
+> > > called calibration-second-part
+> > >
+> > > Signed-off-by: Mikhail Kalashnikov <iuncuim@gmail.com>
+> > > ---
+> > >  .../thermal/allwinner,sun8i-a83t-ths.yaml     | 56 +++++++++++++++++=
++-
+> > >  1 file changed, 53 insertions(+), 3 deletions(-)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/thermal/allwinner,sun8=
+i-a83t-ths.yaml b/Documentation/devicetree/bindings/thermal/allwinner,sun8i=
+-a83t-ths.yaml
+> > > index 3e61689f6..b2f750ef2 100644
+> > > --- a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-=
+ths.yaml
+> > > +++ b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-=
+ths.yaml
+> > > @@ -24,18 +24,23 @@ properties:
+> > >        - allwinner,sun50i-h5-ths
+> > >        - allwinner,sun50i-h6-ths
+> > >        - allwinner,sun50i-h616-ths
+> > > +      - allwinner,sun55i-a523-ths0
+> > > +      - allwinner,sun55i-a523-ths1
+> > >
+> > >    clocks:
+> > >      minItems: 1
+> > >      items:
+> > >        - description: Bus Clock
+> > >        - description: Module Clock
+> > > +      - description: GPADC Clock
+> > >
+> > >    clock-names:
+> > >      minItems: 1
+> > > +    maxItems: 2
 > >
-> > No, I think the reboot-mode device (as pointed to by the dev field of
-> > struct reboot_mode_driver) should be associated with the right fwnode
-> > from the start so it should be handled in MFD core.
+> > How can the max be both 2 and...
+> >
+> > >      items:
+> > >        - const: bus
+> > >        - const: mod
+> > > +      - const: gpadc
+> >
+> > ...3 entries?
+> >
 >
-> Ack. something like should be fine?
+> Because old variant uses "bus" and "mod" and new variant uses "bus" and
+> "gpadc" and none of them uses all 3 entries.
 >
-> drivers/mfd/mfd-core.c :
-> +       if (!pdev->dev.fwnode && cell->get_fwnode) {
-> +               fwnode =3D cell->get_fwnode(parent);
-> +               if (fwnode)
-> +                       device_set_node(&pdev->dev, fwnode);
-> +       }
->
+> Although, I guess we can simplify and just use "mod" in both cases.
 
-Possibly we could find a better name, but yeah the general idea is sound.
+Yes. Please just keep using "mod".
 
-Of course, let's maybe here from Lee if he's ok before sending a new versio=
-n.
 
-> drivers/mfd/psci-mfd.c (goes next patch):
-> +static struct fwnode_handle *psci_reboot_mode_get_fwnode(struct device
-> *parent)
-> +{
-> +       return fwnode_get_named_child_node(dev_fwnode(parent),
-> "reboot-mode");
-> +}
->
-
-Yes, something like this.
-
-Bart
+ChenYu
