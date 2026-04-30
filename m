@@ -1,123 +1,91 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp.forwardemail.net (smtp.forwardemail.net [121.127.44.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAB1D3542D4
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:29:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DE372253EB
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:54:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=121.127.44.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777577364; cv=none; b=h650AKmocqXNsa+FuHfJIuNhAuOrllK8UtH8EgAz32WBm4i47nQ/E4Y386owiwaro3HP4gdjxPoZlofU2P4snljCxbZdwjFJ4j7MzOFr/SttYmqabwQZHZKXFBNMdpgm+F05dLYr9KVB7rqlBVESOaF3/YRLBj+zjqxGal3yUhM=
+	t=1777578895; cv=none; b=uYuKoIKXOH95mwwuqv5vMFWj6epEBRL0a4FG/xYp9opXSVDo9i64nLBUWHOKmT6gSsbAolj2M54rS1/A5OKRZMmTrU2qpFkDLS+JwS0cZiCWtoK6nakt0cAOg12ILx+N0H/Ba2XARvN3kIjTzDET1/h2sY7iVCyv1XZUB5oN1e0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777577364; c=relaxed/simple;
-	bh=dTbw3wSrZFQuB/Nkq3QnZP6ghP7nPWaMNBKGvmgfPHw=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=gTnQfaYzXpEuQgLmrAzbJVIyabkS2Yv/BQqoilFhvxDLZh7t+LFq/x4IHd87P1fPPXN36p1UbZydMSe1Fm36RRd0OfQTFYoYUR/fftwjwnyD+oKPSqmJOJJCcJSf+hRylZ8TaesiTSeiEqi1EwCms0msoG88/RFJBetqyKL9/g8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SZFwbIZf; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777578895; c=relaxed/simple;
+	bh=mTShDs3qFh8Xph4TeQW7wpoAVzLqWhiZ9mAFw583TTI=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
+	 References:In-Reply-To; b=p/Sv7H3pHwwWFP5bA+hn1MoPysaOxahG8HA2PYbo6DOp+bgcVLhtcgV5pg+vGM2hIONczgGp98jHCwqZHPVpVvP6VpXam2/75f/dgC8gfeBE7V2+Nx9zUpEGOywPNRgqQ9yCAmxFJz0O9i4MReWe8mAXV5c1wC1RUvUMOHkV4KY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com; dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b=ClwAgaiR; arc=none smtp.client-ip=121.127.44.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ubuntu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fe-bounces.ubuntu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SZFwbIZf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86A39C2BCB3
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:29:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777577364;
-	bh=dTbw3wSrZFQuB/Nkq3QnZP6ghP7nPWaMNBKGvmgfPHw=;
-	h=From:Date:Subject:To:Cc:From;
-	b=SZFwbIZfqfvEvGBwTzcUB5tg3JafQdM2f5spJOhVSD5J1M+tncqXuTkSL6fnmlF20
-	 d6YhB6srj3xotyW+e4hsJNCGKb/+Hy0HobVkhYIWuSVF+r72dlhLjhMj0j/y6aG9Pa
-	 ChWAfBmx6UcW9HA1yxTMDfBaygOxGf7Eu97u+YEeXGPNZC8R1A7Qw0sZQMNJTar+JG
-	 17yPivZPbDzxA/xyKv7S4LhApU6HdfTv76JspLIlNRpOC5aui9C3/sM7keJSpz+5zz
-	 JcNsN8NdWwmaNuRxj9tuIglaRWWeyd4ySc5ovuiEXPpTDQ8ykkMC12MfR5IEB1b/rG
-	 3D7FqDd0iBSxA==
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a3af1b7549so1660382e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:29:24 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+53DOI4tr84SwAikDudICMKo1n+LMuTeY6QUvHm6+O9licNalHgGP1JhX3iTJWmwF2PoV1QyosQw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzbgq8XKY9bUREf/TMsvhJlFTkNr6RpL0YACnCXNK6lq1eCDT9G
-	2Erkc1Lbx3i+sdDn1HPuR0/I0zxv7yvfjc9rRKkAxlDxuSammkH6XYf01EdTtmM1iID4x7QuQ5v
-	xK75pbYzD5Kk34jQ6zkTxjFU4nWKCbEA=
-X-Received: by 2002:a05:6512:b9c:b0:5a4:1902:3d17 with SMTP id
- 2adb3069b0e04-5a8522bc1cfmr1429017e87.12.1777577362843; Thu, 30 Apr 2026
- 12:29:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=ubuntu.com header.i=@ubuntu.com header.b="ClwAgaiR"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ubuntu.com;
+ h=In-Reply-To: References: Cc: To: From: Subject: Message-Id: Date:
+ Content-Type: Content-Transfer-Encoding: Mime-Version; q=dns/txt;
+ s=fe-953a8a3ca9; t=1777578885;
+ bh=EbR5+jcTj2Ecv9c7ESRhGNAPx8DtjjuvHNmmdJxNTMU=;
+ b=ClwAgaiRgFlQjbJTcWkNzoxWejpKVu9UYHC9pEGJQIQhOuvNmEjVe14JvtO+5jIsWpcUZ4Yi7
+ dKdoDiQJbLtTv4MHB1jCsZRbZZsfHpndoVyIGWhmEnmYOdwarMB+ZpT3lEVfniVNTCD62ifFXZk
+ IjiGVsKeSr5dLtxaUFpVowSlmQVqOVqqPkWr2tG9+z/MUp19Dql0J8oUnb9IsQw14XlgjVzSUKE
+ ZH1v1cqjbTGInsoeMAS+A35TigW/R/sLjuNp12/zNs4Ny1GhFVe6MRI4FS3ozxpgUmI6t0TD0bA
+ IhNHDxkADiG+WNYfLqfVO5aGk9UUw9fK/ugHCI3qkPBA==
+X-Forward-Email-ID: 69f3b382d1381ba2713053ad
+X-Forward-Email-Sender: rfc822; jpeisach@ubuntu.com, smtp.forwardemail.net,
+ 121.127.44.66
+X-Forward-Email-Version: 2.7.7
+X-Forward-Email-Website: https://forwardemail.net
+X-Complaints-To: abuse@forwardemail.net
+X-Report-Abuse: abuse@forwardemail.net
+X-Report-Abuse-To: abuse@forwardemail.net
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 30 Apr 2026 21:29:09 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ibhdW57s-68e_kHCZ6b=YXi5o74ykS=pd5vRTiXnbsAQ@mail.gmail.com>
-X-Gm-Features: AVHnY4J-HUSqyT3rD1_5p2ahJwaO3TazlQd8p_WtwzYeNOpp_bcvKMkj7INHwIM
-Message-ID: <CAJZ5v0ibhdW57s-68e_kHCZ6b=YXi5o74ykS=pd5vRTiXnbsAQ@mail.gmail.com>
-Subject: [GIT PULL] ACPI support fixes for v7.1-rc2
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8; format=Flowed
+Date: Thu, 30 Apr 2026 15:54:39 -0400
+Message-Id: <DI6R4FYDSY08.LDHU6EZTXS9X@ubuntu.com>
+Subject: Re: [PATCH 2/2] cpufreq: apple-soc: Use FIELD_MODIFY()
+From: "Joshua Peisach" <jpeisach@ubuntu.com>
+To: "Hans Zhang" <18255117159@163.com>, <ray.huang@amd.com>,
+ <mario.limonciello@amd.com>, <rafael@kernel.org>,
+ <viresh.kumar@linaro.org>, <sven@kernel.org>, <j@jannau.net>
+Cc: <perry.yuan@amd.com>, <kprateek.nayak@amd.com>, <neal@gompa.dev>,
+ <linux-pm@vger.kernel.org>, <asahi@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>
+X-Mailer: aerc 0.21.0
+References: <20260430163213.44695-1-18255117159@163.com>
+ <20260430163213.44695-3-18255117159@163.com>
+In-Reply-To: <20260430163213.44695-3-18255117159@163.com>
 
-Hi Linus,
+On Thu Apr 30, 2026 at 12:32 PM EDT, Hans Zhang wrote:
+> Use FIELD_MODIFY() to remove open-coded bit manipulation.
+> No functional change intended.
+>
+> Signed-off-by: Hans Zhang <18255117159@163.com>
+> ---
+>  drivers/cpufreq/apple-soc-cpufreq.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpufreq/apple-soc-cpufreq.c b/drivers/cpufreq/apple-=
+soc-cpufreq.c
+> index 9396034167e5..638e5bf72185 100644
+> --- a/drivers/cpufreq/apple-soc-cpufreq.c
+> +++ b/drivers/cpufreq/apple-soc-cpufreq.c
+> @@ -187,10 +187,8 @@ static int apple_soc_cpufreq_set_target(struct cpufr=
+eq_policy *policy,
+> =20
+>  	reg &=3D ~priv->info->ps1_mask;
+>  	reg |=3D pstate << priv->info->ps1_shift;
+> -	if (priv->info->has_ps2) {
+> -		reg &=3D ~APPLE_DVFS_CMD_PS2;
+> -		reg |=3D FIELD_PREP(APPLE_DVFS_CMD_PS2, pstate);
+> -	}
+> +	if (priv->info->has_ps2)
+> +		FIELD_MODIFY(APPLE_DVFS_CMD_PS2, &reg, pstate);
+>  	reg |=3D APPLE_DVFS_CMD_SET;
+> =20
+>  	writeq_relaxed(reg, priv->reg_base + APPLE_DVFS_CMD);
 
-Please pull from the tag
+Looks okay.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-7.1-rc2
-
-with top-most commit 36a96eda15bf66a18ca472aef9242e57551016ab
-
- Merge branches 'acpi-apei', 'acpi-bus', 'acpi-cppc' and 'acpi-video'
-
-on top of commit 254f49634ee16a731174d2ae34bc50bd5f45e731
-
- Linux 7.1-rc1
-
-to receive ACPI support fixes for 7.1-rc2.
-
-These fix leftover issues in the ACPI Time and Alarm Device (TAD)
-driver on top of the recently merged updates of it and address
-assorted issues in the ACPI support code:
-
- - Fix removal code ordering in the ACPI TAD driver, refine timer value
-   computations and checks in its RTC class device interface, make it
-   use the __ATTRIBUTE_GROUPS() macro, and fix a comment in it (Rafael
-   Wysocki)
-
- - Fix EINJV2 memory error injection in APEI (Tony Luck)
-
- - Add missing notifier_block structure forward declaration to
-   acpi_bus.h (Bartosz Golaszewski)
-
- - Fix related_cpus inconsistency during CPU hotplug in the ACPI CPPC
-   library (Jinjie Ruan)
-
- - Add a quirk to force native backlight on HP OMEN 16 (8A44) in the
-   ACPI video bus driver (Shivam Kalra)
-
-Thanks!
-
-
----------------
-
-Bartosz Golaszewski (1):
-      ACPI: bus: add missing forward declaration to acpi_bus.h
-
-Jinjie Ruan (1):
-      ACPI: CPPC: Fix related_cpus inconsistency during CPU hotplug
-
-Rafael J. Wysocki (4):
-      ACPI: TAD: Use __ATTRIBUTE_GROUPS() macro
-      ACPI: TAD: Use devres for all driver cleanup
-      ACPI: TAD: RTC: Refine timer value computations and checks
-      ACPI: TAD: Fix up a comment in acpi_tad_probe()
-
-Shivam Kalra (1):
-      ACPI: video: force native backlight on HP OMEN 16 (8A44)
-
-Tony Luck (2):
-      ACPICA: Provide #defines for EINJV2 error types
-      ACPI: APEI: EINJ: Fix EINJV2 memory error injection
-
----------------
-
- drivers/acpi/acpi_tad.c       | 35 ++++++++++++++++++---------------
- drivers/acpi/apei/einj-core.c | 45 ++++++++++++++++++++++++-------------------
- drivers/acpi/cppc_acpi.c      |  6 +++---
- drivers/acpi/video_detect.c   |  8 ++++++++
- include/acpi/acpi_bus.h       |  2 ++
- include/acpi/actbl1.h         |  6 ++++++
- 6 files changed, 63 insertions(+), 39 deletions(-)
+Reviewed-by: Joshua Peisach <jpeisach@ubuntu.com>
