@@ -1,118 +1,123 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 437E847CC86
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 18:35:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CAB1D3542D4
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:29:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777574129; cv=none; b=dw3HW5euAoUTWiB0bMq+vLkjCMtQ7euAv+z5l0yqIh7qz+55D0WPRf4Fwf+mFbCer2XbW0L0Lb4VO2xbjifIc0EzFm3wgTkc/Jh4ElPTfVsRwozm6/RybejRRboVdyiRWilsrolLHsEfkw8pfebSOvIbdXjjFVqZF0SayD2VlPw=
+	t=1777577364; cv=none; b=h650AKmocqXNsa+FuHfJIuNhAuOrllK8UtH8EgAz32WBm4i47nQ/E4Y386owiwaro3HP4gdjxPoZlofU2P4snljCxbZdwjFJ4j7MzOFr/SttYmqabwQZHZKXFBNMdpgm+F05dLYr9KVB7rqlBVESOaF3/YRLBj+zjqxGal3yUhM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777574129; c=relaxed/simple;
-	bh=mjidQwhgTPS5ymc6PF2cFzKEGOZes6LTWPDInPeiDnc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rze1IaBQX13G+yV44RAy/IEgHLMWewfA2/DgBUBNPZBk4MnGZvaDWAD8Ie0bq7Ak6+PdHPaRr21heAEGubQ2nYfQ0A3IBFwlxMBKh5IkuWXQ38I+4c1bGu3EAD8/9+EHMCwv5v5MBMwj9CuuTVHdx0B+6GugNgpb7FLPMeWDJjM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ouh8BzP9; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777577364; c=relaxed/simple;
+	bh=dTbw3wSrZFQuB/Nkq3QnZP6ghP7nPWaMNBKGvmgfPHw=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=gTnQfaYzXpEuQgLmrAzbJVIyabkS2Yv/BQqoilFhvxDLZh7t+LFq/x4IHd87P1fPPXN36p1UbZydMSe1Fm36RRd0OfQTFYoYUR/fftwjwnyD+oKPSqmJOJJCcJSf+hRylZ8TaesiTSeiEqi1EwCms0msoG88/RFJBetqyKL9/g8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SZFwbIZf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ouh8BzP9"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E520FC2BCB9
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 18:35:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SZFwbIZf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86A39C2BCB3
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:29:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777574128;
-	bh=mjidQwhgTPS5ymc6PF2cFzKEGOZes6LTWPDInPeiDnc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Ouh8BzP9c096d4TULbB5B5svtO2LMjtA9tOj76irZ6OBnsv5L9vVGJG325lNAEPxA
-	 vj6Wg2vdXmJoAAoqFXxHy6wlqGxgLcyli4cbqwpjTZJFE1WxWtJHl8Pliis74yaGpf
-	 1GfPQE7CYIfH7llItM/lqEf//Pd0M70KA7Uj+RD6mv8U7G4YME6OxCW49qB/ATLjLV
-	 mIE1wGmSRj+XVlf4GsY1URmfCr+F4FlIULzSbjYHSu9nqyyX07iEDRTJ1COvg+gv2H
-	 z2dRBluhpFXnTy2yV1B4E7/ZA0i4p3fEJbZrDBiH4AxiIkyPxQeXiEQXTxYNhs57sC
-	 SfNdqOpHjsmwg==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5a3af1b7549so1587536e87.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 11:35:28 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+6JXxoQ8zOR6wVtS1Yglqw4/b1W75bd7zD5pwAaB4PRqRX5I+w/dLZAelbjaeYH5kI+c/Um4PORg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwrR1Ucz7x0S3BDiQoBnrvg7vIyK92UlP/mgIXbabSGRESd0MOT
-	15xVw9jUeVY04+e8dEjyhco84lPEkPvFWZMdkqQ1Ogf1KytkTEfRTq3srn0NyQ4xQk6gPMi0MCi
-	kJDsq8cj0oLXeV7807hqAoiuBkbmidSc=
-X-Received: by 2002:a05:6512:2350:b0:5a7:49ed:8aa with SMTP id
- 2adb3069b0e04-5a8522bc25emr1200888e87.11.1777574127250; Thu, 30 Apr 2026
- 11:35:27 -0700 (PDT)
+	s=k20201202; t=1777577364;
+	bh=dTbw3wSrZFQuB/Nkq3QnZP6ghP7nPWaMNBKGvmgfPHw=;
+	h=From:Date:Subject:To:Cc:From;
+	b=SZFwbIZfqfvEvGBwTzcUB5tg3JafQdM2f5spJOhVSD5J1M+tncqXuTkSL6fnmlF20
+	 d6YhB6srj3xotyW+e4hsJNCGKb/+Hy0HobVkhYIWuSVF+r72dlhLjhMj0j/y6aG9Pa
+	 ChWAfBmx6UcW9HA1yxTMDfBaygOxGf7Eu97u+YEeXGPNZC8R1A7Qw0sZQMNJTar+JG
+	 17yPivZPbDzxA/xyKv7S4LhApU6HdfTv76JspLIlNRpOC5aui9C3/sM7keJSpz+5zz
+	 JcNsN8NdWwmaNuRxj9tuIglaRWWeyd4ySc5ovuiEXPpTDQ8ykkMC12MfR5IEB1b/rG
+	 3D7FqDd0iBSxA==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a3af1b7549so1660382e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:29:24 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+53DOI4tr84SwAikDudICMKo1n+LMuTeY6QUvHm6+O9licNalHgGP1JhX3iTJWmwF2PoV1QyosQw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzbgq8XKY9bUREf/TMsvhJlFTkNr6RpL0YACnCXNK6lq1eCDT9G
+	2Erkc1Lbx3i+sdDn1HPuR0/I0zxv7yvfjc9rRKkAxlDxuSammkH6XYf01EdTtmM1iID4x7QuQ5v
+	xK75pbYzD5Kk34jQ6zkTxjFU4nWKCbEA=
+X-Received: by 2002:a05:6512:b9c:b0:5a4:1902:3d17 with SMTP id
+ 2adb3069b0e04-5a8522bc1cfmr1429017e87.12.1777577362843; Thu, 30 Apr 2026
+ 12:29:22 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260424071208.3610628-1-13875017792@163.com> <d23a53f21083acc1d370569d4d9393b777509bf7.camel@linux.intel.com>
-In-Reply-To: <d23a53f21083acc1d370569d4d9393b777509bf7.camel@linux.intel.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 30 Apr 2026 20:35:14 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gBKKHhr0CLhN5wT=R1Lw+Tx0q8zWa+_0vUZyuhKcUCnQ@mail.gmail.com>
-X-Gm-Features: AVHnY4LHHhBTRwlDPJ9E9qVZnqNlG2OZQjv_z8RQdkI3iTjo_aPIHUEWdxpGP8w
-Message-ID: <CAJZ5v0gBKKHhr0CLhN5wT=R1Lw+Tx0q8zWa+_0vUZyuhKcUCnQ@mail.gmail.com>
-Subject: Re: [PATCH] PM: tools: fix ValueError when parsing incomplete device properties
-To: todd.e.brandt@linux.intel.com, Gongwei Li <13875017792@163.com>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Gongwei Li <ligongwei@kylinos.cn>
+Date: Thu, 30 Apr 2026 21:29:09 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0ibhdW57s-68e_kHCZ6b=YXi5o74ykS=pd5vRTiXnbsAQ@mail.gmail.com>
+X-Gm-Features: AVHnY4J-HUSqyT3rD1_5p2ahJwaO3TazlQd8p_WtwzYeNOpp_bcvKMkj7INHwIM
+Message-ID: <CAJZ5v0ibhdW57s-68e_kHCZ6b=YXi5o74ykS=pd5vRTiXnbsAQ@mail.gmail.com>
+Subject: [GIT PULL] ACPI support fixes for v7.1-rc2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 30, 2026 at 7:38=E2=80=AFPM Todd Brandt
-<todd.e.brandt@linux.intel.com> wrote:
->
-> On Fri, 2026-04-24 at 15:12 +0800, Gongwei Li wrote:
-> > From: Gongwei Li <ligongwei@kylinos.cn>
-> >
-> > When parsing device properties from ftrace data, the devprops()
-> > function
-> > assumes that each line has at least three fields and that the third
-> > field
-> > (f[2]) always contains a valid integer. However, due to incomplete or
-> > corrupted ftrace logs, f[2] may be missing, empty, or non-existent.
-> >
-> > This can lead to the following error:
-> >
-> >     Traceback (most recent call last):
-> >       File "../sleepgraph.py", line 7142, in <module>
-> >         stamp =3D rerunTest(sysvals.outdir)
-> >       File "../sleepgraph.py", line 6255, in rerunTest
-> >         testruns, stamp =3D processData()
-> >       File "../sleepgraph.py", line 6181, in processData
-> >         testruns, error =3D parseTraceLog(live)
-> >       File "../sleepgraph.py", line 3470, in parseTraceLog
-> >         tp, tf =3D loadTraceLog()
-> >       File "../sleepgraph.py", line 3398, in loadTraceLog
-> >         if tp.stampInfo(line, sysvals):
-> >       File "../sleepgraph.py", line 3073, in stampInfo
-> >         self.parsePlatformInfo(line, sv)
-> >       File "../sleepgraph.py", line 3177, in parsePlatformInfo
-> >         sv.devprops =3D self.devprops(sv.b64unzip(info))
-> >       File "../sleepgraph.py", line 3158, in devprops
-> >         if int(f[2]):
-> >     ValueError: invalid literal for int() with base 10: ''
-> >
-> > To prevent this crash, add proper validation before accessing.
-> >
-> > Signed-off-by: Gongwei Li <ligongwei@kylinos.cn>
-> > ---
-> >  tools/power/pm-graph/sleepgraph.py | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/tools/power/pm-graph/sleepgraph.py b/tools/power/pm-
-> > graph/sleepgraph.py
-> > index 1555b51a7d55..f6d172254829 100755
-> > --- a/tools/power/pm-graph/sleepgraph.py
-> > +++ b/tools/power/pm-graph/sleepgraph.py
-> > @@ -3155,7 +3155,7 @@ class TestProps:
-> >                         dev =3D f[0]
-> >                         props[dev] =3D DevProps()
-> >                         props[dev].altname =3D f[1]
-> > -                       if int(f[2]):
-> > +                       if len(f) > 2 and f[2] and int(f[2]):
-> >                                 props[dev].isasync =3D True
-> >                         else:
-> >                                 props[dev].isasync =3D False
->
-> This looks good, thanks for the catch! Rafael can you apply this?
->
-> Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+Hi Linus,
 
-Changed the tag to Acked-by and applied the patch as 7.2 material, thanks!
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-7.1-rc2
+
+with top-most commit 36a96eda15bf66a18ca472aef9242e57551016ab
+
+ Merge branches 'acpi-apei', 'acpi-bus', 'acpi-cppc' and 'acpi-video'
+
+on top of commit 254f49634ee16a731174d2ae34bc50bd5f45e731
+
+ Linux 7.1-rc1
+
+to receive ACPI support fixes for 7.1-rc2.
+
+These fix leftover issues in the ACPI Time and Alarm Device (TAD)
+driver on top of the recently merged updates of it and address
+assorted issues in the ACPI support code:
+
+ - Fix removal code ordering in the ACPI TAD driver, refine timer value
+   computations and checks in its RTC class device interface, make it
+   use the __ATTRIBUTE_GROUPS() macro, and fix a comment in it (Rafael
+   Wysocki)
+
+ - Fix EINJV2 memory error injection in APEI (Tony Luck)
+
+ - Add missing notifier_block structure forward declaration to
+   acpi_bus.h (Bartosz Golaszewski)
+
+ - Fix related_cpus inconsistency during CPU hotplug in the ACPI CPPC
+   library (Jinjie Ruan)
+
+ - Add a quirk to force native backlight on HP OMEN 16 (8A44) in the
+   ACPI video bus driver (Shivam Kalra)
+
+Thanks!
+
+
+---------------
+
+Bartosz Golaszewski (1):
+      ACPI: bus: add missing forward declaration to acpi_bus.h
+
+Jinjie Ruan (1):
+      ACPI: CPPC: Fix related_cpus inconsistency during CPU hotplug
+
+Rafael J. Wysocki (4):
+      ACPI: TAD: Use __ATTRIBUTE_GROUPS() macro
+      ACPI: TAD: Use devres for all driver cleanup
+      ACPI: TAD: RTC: Refine timer value computations and checks
+      ACPI: TAD: Fix up a comment in acpi_tad_probe()
+
+Shivam Kalra (1):
+      ACPI: video: force native backlight on HP OMEN 16 (8A44)
+
+Tony Luck (2):
+      ACPICA: Provide #defines for EINJV2 error types
+      ACPI: APEI: EINJ: Fix EINJV2 memory error injection
+
+---------------
+
+ drivers/acpi/acpi_tad.c       | 35 ++++++++++++++++++---------------
+ drivers/acpi/apei/einj-core.c | 45 ++++++++++++++++++++++++-------------------
+ drivers/acpi/cppc_acpi.c      |  6 +++---
+ drivers/acpi/video_detect.c   |  8 ++++++++
+ include/acpi/acpi_bus.h       |  2 ++
+ include/acpi/actbl1.h         |  6 ++++++
+ 6 files changed, 63 insertions(+), 39 deletions(-)
