@@ -1,49 +1,49 @@
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013038.outbound.protection.outlook.com [40.107.162.38])
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011059.outbound.protection.outlook.com [52.101.65.59])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92CAB40FDA1;
-	Thu, 30 Apr 2026 13:42:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.162.38
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B61D42846A;
+	Thu, 30 Apr 2026 13:42:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.59
 ARC-Seal:i=3; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777556539; cv=fail; b=M74naJLbF2QJDI/GS3HYmHlIQqrqrrDUbY3jOYcyQU6VIxA3qo5cu1hBEa/kTIh7T/2M/j4yqUbSd1A2IbT+oW0NJV+uE2sARjbYLIWsAb8BBsh9WRrvA6OddNBSnZRqcPQocwXJyqy9ubc1uubac9K4jxWMnWRKzRNqvYxkKW4=
+	t=1777556543; cv=fail; b=tsG9oqmw8iFpQZt8b3Sbl83HKrmZ+gm2O19ioXAVbCj+H2mgxi7mMZDp6EG4D4/Bzc+MajzX6zgnC2a1AsWb31M92jl8Na8QQKhSrGEov1KryzSJwhfe4ieOYmPn+ICa6MPK+MWDlYmapZa8Lm8WGIRAkxK7/rx+oghFZIFqa0E=
 ARC-Message-Signature:i=3; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777556539; c=relaxed/simple;
-	bh=ubRx6K9782Sem+bLVJUSq/2CqkxRmceeWeccJUm6DLE=;
-	h=Message-ID:Date:From:Subject:To:Cc:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=cx150uDOytORB6QLkgafSvgv7qExtr3ZjWAul/FofDe89cBEnyh2d5YLj9xsH0HP02tsvYfzqHhI+v4R7m3BTlDnU+7dDJE9Z4W/LZ347FguHseRJ1f6AJlJcPZEvdpkvfVIBDpytAMg/H4UFUclBw6Iv/C7FIlA+5ln98GF1Lo=
-ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rV0xfpex; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=rV0xfpex; arc=fail smtp.client-ip=40.107.162.38
+	s=arc-20240116; t=1777556543; c=relaxed/simple;
+	bh=Oqbls6eEbNPurB9ozIlULZFuAb1TlS9noRWvWe8M9Ak=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Q6lXXoUVL6a19vUYJvAJhDpiErhJRGbuG1gr3dAP5si5q1h7+i/ZjD6rp/54CKkpFqaVrcTXwdj/xKP4rgQxNCgw6e4y1idP4/8QyaPRM8C1p3frvNn1ttn5S3IpxwBDmkUr+AMs7b+5CC9UnP7WO6pNKpo+Qe64tY4lIKMrEtE=
+ARC-Authentication-Results:i=3; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Xg/oByhw; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Xg/oByhw; arc=fail smtp.client-ip=52.101.65.59
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rV0xfpex";
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="rV0xfpex"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Xg/oByhw";
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Xg/oByhw"
 ARC-Seal: i=2; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=pass;
- b=mkchzxV09Zh0L/3gIgfP1menpGR6wrDtBvOr9NZrcOENOSFf6PJIcTrUWV+vbdNNkAa6P1EUf1XL1PP3y0N61kU6Dtakc2ur/L4wEyM7v1lrDHGpbEswKE/7TQhEtkugELLFWNef2dyYGBtkem9BY3KSAkMQ0MjSiVQAukCW2WZQloOxfy/8+PGadrOrkgn0NLB13LW1Jl0yIExsVeEBMMP/F/v7S11QTClgvezPiHo3MY5GVgU1fG15Y9k1MveFh6gSmNs9XwEWERbBW5q9SNfWfJrK3GH/uzT3nd98Rc8qgZjTuWEqGP+z5iYAP4Q1bzjgzLQ96f5R9fJ7t19EIQ==
+ b=PTQJS+uGOUbwwPl/mtxv4aQP+wkDMV/tZyv0I8LHfR+KWjzIqsOXTQ1d3T4jIhmnVKaOlaQjRPePs/N3dMorpPZU0zTYP93vwujYyfS2KjUG6epqAaibmDHjQGk2OxfaYwyBXhwSucgCrAhzilYTbjH7WdeAKDQW8Q2UgF4pCXdKEClJ5+L9DII8IYWMCbx1q4Kajzhd+cNTVvp2JoKu5j2ZPhyfMYDQipK1046ICU2mh5ILNPFAFx3D2o9uYqtU+gMxplYXHumLEuB/Ckbd2c59zTRNqwDPA9nDxB6eyBw/ENxbx3IfGLXUf8Xkhztm8iEAZIzos0+QkQ3fMpLO8w==
 ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ubRx6K9782Sem+bLVJUSq/2CqkxRmceeWeccJUm6DLE=;
- b=wF4kjZ4KCpBFvEXozmt+D6v3C2m6kG71ixVc2lf9eqEKArYrjq2WR6ZczfftsxZP/WOAfnDmKqT8MQ6Q7md/9FaPM1eCU2LiJVfb8ARQl8Bh0pZXU+hUbrrTJxpzfoR+Xt609KidzRT1n5OCfjCnOoleN+TiV1eGuKF1Q0Lq7EV0Gxy1tcLhMrGE/ACKjt4ygbJjqktpdizOmcJzjFb4+aQuUrRESyEbaQYm7tIsRgFONb1dflF074+/pswpgShD6US6QUkiEn5LsMKC1x8RMjyQqo7HYoDFdfea4L+98ydyv5NUUZpd1LBCfG0tP1LrStK7rZryy5Lb6OOi8ndG7w==
+ bh=sBHqKK31tgFSJZCE9aQhpOe181ee4pzI3L0nti08upA=;
+ b=KlvhonqrcwqIeqIRhUXIc0pZ/gpWOqBuGIPLJ9K2/ztTFuPiKboga2YhM8lZZ574ykt5IBNmyJiXnQLJpuWqJl7nInt5tcBgPNHvOiNw0bYcFxBIgWIT64hvAbXss2rSQL9+chMAIYArE3h7hTac3yamRfjoyDO+RiQOt3OPpcZBnob4wRTItQe2FE8E0QC0XEaraMS3aiSSFLsi615Y3bwa3j3vNmO3OsarjucaDzSIjD/YcyG4zQChMgjnkCi9nIHyPGUcArs3R5Cev0ao1xifL1mgB929iKOritysWMNLzHv0HeOFw6xg+J1dasf6JbofoI44gi0lMbaxLvUGTw==
 ARC-Authentication-Results: i=2; mx.microsoft.com 1; spf=pass (sender ip is
- 4.158.2.129) smtp.rcpttodomain=nvidia.com smtp.mailfrom=arm.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=arm.com; dkim=pass
- (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
+ 4.158.2.129) smtp.rcpttodomain=oss.qualcomm.com smtp.mailfrom=arm.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=arm.com;
+ dkim=pass (signature was verified) header.d=arm.com; arc=pass (0 oda=1 ltdi=1
  spf=[1,1,smtp.mailfrom=arm.com] dkim=[1,1,header.d=arm.com]
  dmarc=[1,1,header.from=arm.com])
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ubRx6K9782Sem+bLVJUSq/2CqkxRmceeWeccJUm6DLE=;
- b=rV0xfpex+h+rzbqOTQ6TUYUllyPE1jy+LH77v8DkrqqjVTkH1eqo+at59WWWT3JCZF8rIK8MwzUFbVysj4YCl/8hVqLOm2TO2NIhPAFPDnkzY6VMy/Gmb5A1QF3uRNZOz3/xVQxd6mnqygdjkod/R5XvZseuhFFUFqZndIp3lg8=
-Received: from AS4P190CA0064.EURP190.PROD.OUTLOOK.COM (2603:10a6:20b:656::16)
- by GVXPR08MB11012.eurprd08.prod.outlook.com (2603:10a6:150:1ff::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.19; Thu, 30 Apr
- 2026 13:42:11 +0000
-Received: from AMS1EPF00000041.eurprd04.prod.outlook.com
- (2603:10a6:20b:656:cafe::36) by AS4P190CA0064.outlook.office365.com
- (2603:10a6:20b:656::16) with Microsoft SMTP Server (version=TLS1_3,
+ bh=sBHqKK31tgFSJZCE9aQhpOe181ee4pzI3L0nti08upA=;
+ b=Xg/oByhwumedlj3eXSX3MdgGOyJ4zUJr+5xsUZNhPHVzER2FVC6vlc2sZqj8lxFmVmNRxV9MAumTcvAHTNgzM2eI9lIEub+ty1TNuhf9IYWXpkMcAtZHwMXAiM7utk9PHCzv+E3/2bhGmib1s55r1UrSDsk9SsUW8cpqBymAlr4=
+Received: from DUZPR01CA0049.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:469::9) by MI3PR08MB11905.eurprd08.prod.outlook.com
+ (2603:10a6:290:77::19) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.20; Thu, 30 Apr
+ 2026 13:42:16 +0000
+Received: from DU6PEPF0000A7E0.eurprd02.prod.outlook.com
+ (2603:10a6:10:469:cafe::24) by DUZPR01CA0049.outlook.office365.com
+ (2603:10a6:10:469::9) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.30 via Frontend Transport; Thu,
- 30 Apr 2026 13:42:11 +0000
+ 30 Apr 2026 13:42:16 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 4.158.2.129)
  smtp.mailfrom=arm.com; dkim=pass (signature was verified)
  header.d=arm.com;dmarc=pass action=none header.from=arm.com;
@@ -51,46 +51,45 @@ Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
  4.158.2.129 as permitted sender) receiver=protection.outlook.com;
  client-ip=4.158.2.129; helo=outbound-uk1.az.dlp.m.darktrace.com; pr=C
 Received: from outbound-uk1.az.dlp.m.darktrace.com (4.158.2.129) by
- AMS1EPF00000041.mail.protection.outlook.com (10.167.16.38) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.18
- via Frontend Transport; Thu, 30 Apr 2026 13:42:11 +0000
+ DU6PEPF0000A7E0.mail.protection.outlook.com (10.167.8.39) with Microsoft SMTP
+ Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9846.18 via
+ Frontend Transport; Thu, 30 Apr 2026 13:42:15 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=HgLHIf3XHi7IMZXPBDbI+BfCrWJgI20F+qMpDcrJCbVWzN4QWXYC2ZnbqPWb+o9NFoiQPCbmHgnuWBRazMxDfSk7U0+myyFJOnE724a0apzhoaYZN1jSeOGLCykiFbbxrwtRdMwxOV3791ttSU86zRlWo7+XkoJRc6v9Wfi0bA3EgufgufFxNM1DwdmCZNG9PbcxnaBpkbbois21b2Bhs7VjSGxGtQNvDoUf7Ib/AMsVEGO3VedWOdyl7SKHgUiFWabcOMfLA/s5C333wMUKmBAxTHJ1cocA98sgaA/r03fhMLYxoS1FxSqmvjJbiKdkoVQxxxjDr2A8CmslqgpsMg==
+ b=xEdbh1rUNRWXQPxEJ9rAa67R1pm6LuDTQY3qeOES+mljBYHOYAXRCiI5xTi4mFPbUMTSj4gt4agipZlgLChJ8rASkhJW5WSNwAK+O6Sv6AVWTG2Z6u1cLZtzzIyGxS0ZjjjR7ojdCR07eGxkIxqSfI3DuKnm0oO9pjoelPzbDyO8oJZ/Vyf8J97oR2KjKGRZ4a1h077K+ShJoZueHhVQH5hYNw67LpDdzbj+5ZO57W6N1VZAkRssOtMAaxb6B7qAu1eRwZuHzVJSkGhjvfuCUwq9ItL5a+aJKxWR8Kybi7BrUR4mYaaxLsH/c7QWAnmW4dTU/zEpQR8wb1YlKeeivQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ubRx6K9782Sem+bLVJUSq/2CqkxRmceeWeccJUm6DLE=;
- b=SV2RlDR3Lx9wg77dOfMeHG4AGiwLUvh5GJAUNC+J5+42PrbvCM2eC6tjFESw3HYsufLmlvMicwHxUaygPMV8kKqsGoSdj2p2mSMFn4nhBkumSbPl//pc0k/6XDU58RCc42EOzAVFI2m8jWEk8f6PnzwfYjif0lnuHCfN2VbgOkz73Xc+b8nhuqytKygvbwrIUEdBhdLvidqcn5dY+ZnSKyc8s+7wJxlTB/2KotfMiLhD+zal268bsWtyBtDb+EqfEKdFR8g7YvEwClxRhOouMQapewXkCvQEgzH4cM9UMzNK37iQJmY//AV8li9BxYFWCECiWi6ob9vqtQLwC3UiTw==
+ bh=sBHqKK31tgFSJZCE9aQhpOe181ee4pzI3L0nti08upA=;
+ b=SOQm7rnqdJhoIXfjFc+j7p+062/T28lTi+nGxpboNxyCT/Jk5TuasrmQB6XaQ6CgrJwJKsaOJD54nfCLOx5J5Yn9VpKO3CAaCcaYxbg/v6A5K6jQevz/6ndLewfKx9t+a2GuB3Ol2yyidkOLCMXPjyZCH77Bv1si8cMzwJByIJ9r+Emnq91o/cPTiO9whIRnPQnU86j0hdErG1GXA13trSKk862Zr/Te+rgel8053GCXahY/llOvAuIZOhhafMUA+t3Fbjvq2SiFps2ZOfFDp5Uxb2HkHZashrJZXKJnj46gfV+Qkfu28dStyQmLYf6INovx98Hihn9UlmZR+Y9Zyw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
  header.d=arm.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arm.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ubRx6K9782Sem+bLVJUSq/2CqkxRmceeWeccJUm6DLE=;
- b=rV0xfpex+h+rzbqOTQ6TUYUllyPE1jy+LH77v8DkrqqjVTkH1eqo+at59WWWT3JCZF8rIK8MwzUFbVysj4YCl/8hVqLOm2TO2NIhPAFPDnkzY6VMy/Gmb5A1QF3uRNZOz3/xVQxd6mnqygdjkod/R5XvZseuhFFUFqZndIp3lg8=
+ bh=sBHqKK31tgFSJZCE9aQhpOe181ee4pzI3L0nti08upA=;
+ b=Xg/oByhwumedlj3eXSX3MdgGOyJ4zUJr+5xsUZNhPHVzER2FVC6vlc2sZqj8lxFmVmNRxV9MAumTcvAHTNgzM2eI9lIEub+ty1TNuhf9IYWXpkMcAtZHwMXAiM7utk9PHCzv+E3/2bhGmib1s55r1UrSDsk9SsUW8cpqBymAlr4=
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=arm.com;
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com (2603:10a6:800:20c::6)
- by AS8PR08MB9409.eurprd08.prod.outlook.com (2603:10a6:20b:5a8::11) with
+ by DBAPR08MB5592.eurprd08.prod.outlook.com (2603:10a6:10:1a8::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.20; Thu, 30 Apr
- 2026 13:41:08 +0000
+ 2026 13:41:12 +0000
 Received: from VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91]) by VI0PR08MB10391.eurprd08.prod.outlook.com
  ([fe80::fa6b:9ba8:5c2f:ac91%3]) with mapi id 15.20.9870.020; Thu, 30 Apr 2026
- 13:41:07 +0000
-Message-ID: <5b4bdb55-705d-43e7-b871-d6c4bf87da95@arm.com>
-Date: Thu, 30 Apr 2026 15:41:05 +0200
+ 13:41:12 +0000
+Message-ID: <3efe318a-52bf-4c92-8b86-03e0bb6a9a93@arm.com>
+Date: Thu, 30 Apr 2026 15:41:10 +0200
 User-Agent: Mozilla Thunderbird
-From: Pierre Gondois <pierre.gondois@arm.com>
 Subject: Re: [PATCH 1/1] cpufreq: Set policy->min and max as real QoS
  constraints
-To: Sumit Gupta <sumitg@nvidia.com>, linux-kernel@vger.kernel.org
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, linux-kernel@vger.kernel.org
 Cc: Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng
  <zhenglifeng1@huawei.com>, Ionela Voinescu <ionela.voinescu@arm.com>,
- Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>,
+ Sumit Gupta <sumitg@nvidia.com>, Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
  "Rafael J. Wysocki" <rafael@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>,
  Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
@@ -98,9 +97,10 @@ Cc: Jie Zhan <zhanjie9@hisilicon.com>, Lifeng Zheng
  linux-pm@vger.kernel.org
 References: <20260423084731.1090384-1-pierre.gondois@arm.com>
  <20260423084731.1090384-2-pierre.gondois@arm.com>
- <a7b7c4b6-59ce-40bf-91c0-de630ba7a638@nvidia.com>
+ <73fac9ca-451d-49f0-b9c7-5ef6bc0119bf@oss.qualcomm.com>
 Content-Language: en-US
-In-Reply-To: <a7b7c4b6-59ce-40bf-91c0-de630ba7a638@nvidia.com>
+From: Pierre Gondois <pierre.gondois@arm.com>
+In-Reply-To: <73fac9ca-451d-49f0-b9c7-5ef6bc0119bf@oss.qualcomm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-ClientProxiedBy: LO4P265CA0041.GBRP265.PROD.OUTLOOK.COM
@@ -113,56 +113,52 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-TrafficTypeDiagnostic:
-	VI0PR08MB10391:EE_|AS8PR08MB9409:EE_|AMS1EPF00000041:EE_|GVXPR08MB11012:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1812ccab-c53d-4b19-3498-08dea6be47c0
+	VI0PR08MB10391:EE_|DBAPR08MB5592:EE_|DU6PEPF0000A7E0:EE_|MI3PR08MB11905:EE_
+X-MS-Office365-Filtering-Correlation-Id: b4d5f74b-35e7-4599-4a90-08dea6be4a56
 x-checkrecipientrouted: true
 NoDisclaimer: true
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|366016|1800799024|376014|7416014|22082099003|56012099003|18002099003;
+ BCL:0;ARA:13230040|1800799024|376014|7416014|366016|56012099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info-Original:
- LGB98zGdlIgQHGhE5u5GrzJq8DMeFEs4/APXR9U1d58Gm2fJozoAyfGFEkNZUgxumfl7KoRdp+CrvlzNPpaV6TnrWP7hO+s27F6XE4uugZwwcD9P91LSNFR+fE0t/LgR8NpWCn1eCbs+8yjktudXxv7Z+bEUWapra4KoPdNjFXx3H3cKPzbZubwUto5SSvlk4PYYFSmEQJyGhqxFjuMSzReV+sPu/S+cnR0z0s3bSOb1ckqwKSH5Zi4ImnRxT1w8MUW3xFjtk4oHwpYWWdnSDu1MsajmLZhBGvGtKEbFgIjo/Iuga5pLPQCA/hyZo4chyNc2RmPxg+iQ2hIlJdTyjLFG3lKvbROHKI/XpBfRSe0swEA2Ovx2c4yz+uJmXvSzixtzs23N+IYsrxZmJcDdoWFNJj0ijwNsNAFgHZN9RwPwI74Vk/yOqvemaxDd8pDXlJv5mx29Ut9xviCtQ9a1ayb1yujc2fDegTUUfkpqJkSzWEMbygzENzYNLPD/GhALgfRlUU68BjfsonGLJL9Hluwri/W6MZs5T7Woz0DUrIF7Zl2nrXPq2ldxPlmkQ/ugTjadfIflhjfDa+UopCRpEvN9oLfvRz09rhvYKFBXbQhSBnrhzX/Wyh67iDnnQsGGvKBnMqDz2z347Zirgc1Wn4l8Rex7KvJw1iMkTgQUzquX+4Lkzt/8KnbDddadu4Hhs54+BFNlj5Bj3xxfS/kIHGoqhbjVNokXpJiJUxd4QcA=
+ o1GTLeO1HjVH9b1OAuRm9rFeBPFcxkyl5X3vtIZF4zLV8V6iwgGdHCgss/BbY2pmqTp+xBr8TY9yrkkv9ssAqJBmEz2SUEK/TX/IGW8T7kXbm7GQtK2ms7m0JfyA+m3yHK3oxNORZW7LBqaa3Xitr8DgrTyfzo+0NbD0ynnHsU6fzK2T3XAb8tjz7dQFU9/EUfmzOxd+BLmqXOe3ZrsSsda1qEkhD9OMux86V6BMCYdolsbWMyRIRwNvPUKYysAYe1gb9ghW9o/0UXMej0C+NETDI/uFA4Tq/T7M4oAHcOlPXaA76XM3ZLx1ykOUDsXaR1cHQYXxZDaDMlE/QgYOcCqSjk1BbIW2juIT4C2W4txNOtbBd9D+nUqcz1Ri/mE1aaQLY9bEFEKTuAiGoih6I3Bs2d/u0kSOUBA9iyYaz/np+XDvhin+DN2lyZaiXQpmiWik7qGVFZ0AzJ4Fzt/D7CVed8wR7bZVQSPd/tVL5UVPIyK0UxJ9b3Mo3L1/C1VyHcZu8Y3zq/G6wDRZKsjnJCdeSu4STromzOAgsHShD0JSGe2jXuMWakYsnKbVyugxNxBfOc24xArWBgmxCLtJae1TFVtB4BpKou8q/6yxLW+G1D8AedY2tPbFaz9yROOEvwO/d9VSxBUASSSVYeoH1/2rhBwrwINna5Ki7lH9co3EpHt5Y/07RLg83gs2Bm2qLo2KNjW4Eo/CChugJX3l6IYehH2mfD27S3AGw1m2PDJr6SHMbArzZ5ZpYcbqQjqE
 X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR08MB10391.eurprd08.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-Exchange-RoutingPolicyChecked:
- wDThv195L5lN491+f4jlaXOrT9xYUh3VH6P8WrcoKqmeLg2cl5uJhJPqo34k1zkUrpGBTTDbAYRBjcidujwO6NVMTSDe021eNxqP/sV22KCTeU2bo6T8/9vp0AzK541RMSnMf0G0v4RK+iSQ9xg3fhJcL8gwcjeoDM4uMp8EuNAujmPsDMVC5ANyi/I4sjMMOp4tr04hElB/AVmcIhSxcvUnrhIDJS92Kq8dHNvEAU/Dup3/vIuLoUnyJmkG15DscIUcqYys8ZgbYOuzCZtcuhtf5JD6a3l39Mab944kPOTycSN2Zh4CJkB43GgJsRGK2A5I0YdBDAbiTdbXDKwtWw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR08MB9409
+ GWRS4F4Wz/J9pV1c3Ltye/UZjkR+druqM58//4UlsagfOUacHmqLmyFzPoy2oPwndZrKltFHUeqwF80vVwJLo/BaVFLQNaM1rv3n1M6ga3il6T+xq6eCqLBXsnjh6IyDcFZ6MQ32dkfgG9Ye26SqQ7ehbYzPNVUet8rdmmmMNoIeEonhwUMMEoB9RJiFGn7GFsbt/GkO/5pioSxzqPJ9CqRS5t5ePb3AiM498GLhR3H1B/ZCpiSrQHjY2L7acMfH1D/Go/txcsmBO+ZqP7jSxn8BRvbL56Yur5Hila2WOnX8Pcd4GV/+muS9WhAEsBihMJF+Zx551s3yq1d2rAa9vQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR08MB5592
 X-EOPAttributedMessage: 0
 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- AMS1EPF00000041.eurprd04.prod.outlook.com
+ DU6PEPF0000A7E0.eurprd02.prod.outlook.com
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	bf74069e-9c64-4872-8dca-08dea6be21ce
+	911db8c0-ee9d-417d-ed80-08dea6be2462
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|14060799003|7416014|1800799024|376014|82310400026|35042699022|22082099003|56012099003|18002099003|13003099007;
+	BCL:0;ARA:13230040|36860700016|35042699022|82310400026|14060799003|376014|7416014|1800799024|18002099003|56012099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	HJCLY8mmILVsMLfsZ7t35FAPGbMqeZTFE57eQeI5NqWBjwjOgojMwANtHS87TIRI+nzDgnXoxms7PQGfFLWBrq9b9VXAcg5K7gHXkNTJJ6QCmz4/yeZM/+9UtJAibF28A6NBYDDBSGgoN2yXv9AV5e1iw8+9VckCf5A1MdRFFAhtQ01ByApBZUIdGWfCA1vtIPGHR99tZqg23gSnQQ4FIZySI6PBTv3hbd7Zs4G5VLfCdLZn9Gf9/DTWtOJpLGKjEKSvkHf/4ZSMlSlrYvIURZbK2QgG7wpYtXThlLDrHddtnZljBWly3drvMUfU2cunC/7eY3mcfiF6J1QrGo0epSDe58aBJwM648SY/Uthu3GSpLA4zW9iikakrVOFXf7PoYiI031emfDBuZv09uswt/tv2jVp2o4Imlw76d659sI459ENvtqaWaNVCDzvLBsKf1aiI/CEQpdMMUZ+8P3AZVcGn6LN15KUx7/+U6hlvyByZkOcNdoMP5DMEaeNbi8pCvT9keJ6UJOZh1CyJeYn97qqFqNZoln3UnvB+BHpwP1FNaNCqYiutHChivCXJz0EjbNwitXrm1qpYa0qJjwvtt2F8/ygkxGHVXN/hQxVbHS8vzCeBL+8Dm5UrRZVrG0sZkBJDsvxKw30j/XJZfGJO0y2GnhAcd16YbY8p6MhLCHycK6AqfV9EPBYlOpuBDA7DMa+i1WlZhEFy+xWpgej7LHg4Y+xuRFzVKIhUjR1SvhJQifTKBCO2hzg8Z/fWOqG2PazlKb+c6+IsQT9xnToFw==
+	q8DrfsRu5RIwVmupRxkcMx/3VeSpruK7t3uY5ShhwTR28A0HvmpMB5g1V2HUtGz1Po0IxVyS5S+fxJnukgd8/48Y7FvV0sqgSSW/uv9ccv1cYRGWhpkYZrTHuGOCEuLTDBUM90IhxH65AAASDNY+sc9wQ89jj+bOSgmYhj6y2OEObrpJhQ+L0MYAryqH8jES+h0EleM2umR8VuE7zxpEIB4t0iCiDrnaD5Ap3BZ2a8whXH1ID2ikWsoj6fskAUgaFD1sqIjPhL+x6gED10BbTd2J/ZU78xz7/V/IGjJcZgUcNrnIiEf+bX/+teHkZo3X47Vy5nwnQbFRf0cr0F4w/Sf2+Cqi1EGk+WQ8kdTuTadk/nYbG4CFW9Y3qar0RxU2c9r5Up0SqPwXWZWlXJMnXFcrIgbpaaZTYUXbgBJUjHTffSa6OKzIIfnylDs7KZlMGagUKbX8Xsx/6l/ZTGMv95zSjtmkDspcgGleN/MnG4GT19eociN1c0P6J8Db1GzAKMxeFBLa5BHeOQMVRXhA4fT/64KRALQ5NODRXxNCNwgaBumJLQ9A6G6YOyd61aXYEHB9BNP9EyxGjiJVOefZkk0/PgD3+4yyPGW2Yqy2NtJuw3cw3Ok3qD/QBVaDErvTAMK0hVQ4u2HNnjgzS/8NEqJN0oiuUHZC4iljz9gMxCvTkgXq8N2BrD4y6nEAbJLH4RfD5OY/7T8StUoJpk1JqHlv1GEe7yxBWaFojPwPLSgFVnyTme3XvsgRbpzwcIn7Vq6fKD2/JH4rRUWvx1ouOCBIz0MLzMrmZrWw534hQ9Q=
 X-Forefront-Antispam-Report:
-	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(14060799003)(7416014)(1800799024)(376014)(82310400026)(35042699022)(22082099003)(56012099003)(18002099003)(13003099007);DIR:OUT;SFP:1101;
+	CIP:4.158.2.129;CTRY:GB;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:outbound-uk1.az.dlp.m.darktrace.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(35042699022)(82310400026)(14060799003)(376014)(7416014)(1800799024)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	PP0ZOj90Yjo2+bmzrJqW4UJSK013+rhUIMsXLRsKKyC1GiGbL9fmgmjqw0Z0v67YBTWO4Is8GaZFgW1amSjgDiNi7YgMR3fPs+Ak/1QZ7IIABSemHY63UDDYtpBqjHqqr73CDJfCYXBlaO5nCZPTRKecQ7RkoJ6caYcu3ol6c9HZ+7TM/GuRAtFE4wDI0MmEiC4j1UYpF8Dvvex+oQbqY5UodF71QlS3Vaa7dYR6XZFouUpb6vmbGSrEAiBYfJWZapbuALeIoxe8Q7361Ie698ElaT6TLjzaCZ4+aMscj+2nChyxvtrGy6knLj6gRQfqHcaXnyDgVs0agrEijAUhrJFeQhcWj4Y7tw4SUPMeXW/+Ogu+s3eVl+RHpR6/UxHNkyDYsTXy6HtKak8MljSceOUyHxC863Aq/ldhQ3PXuYxn6X7IQXze5IwgN/w7nrNs
+	iYpIt1ObgCYkK5xOSvwcs3NHLoDAyOO8nqRTMUGjEz3RjFwiu8gbryURN6Lytg8zYzmNK/pyVelur9zEnbgp24RDgMYwT10iJjnd0IbTY9yznRJN1jYj0j3Nbq7VjID+Qd4SvuRqzVMJS4IXyWlYVns8PQcfPqmovYq86LyQBdLUxoiFXODRs9uaFtaAVdJVvaxISUIoHKzvq6pg9lmxbcTdGOKNTMAq6scU+8ClafnU0JS97tRpFiuYkubNyN3PNZ84wcM9KE2eZSE5NcecH/SzXlzvwzC0WQYAs/crnbrDFbrzvlVlSZ47AkCoZlUqJK+HDqoFsDsbl9YHFDwx662M9vjlsdxWMY5CkFRI09Ybe78Hh1ijhFThuPJOqO4i3anyLyETwDsmNNQ6ApTFgLLImF5O6xMJmYcQJdzAg8X26a/qrYAaX6X+wdgf7iVE
 X-OriginatorOrg: arm.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Apr 2026 13:42:11.0053
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Apr 2026 13:42:15.3226
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1812ccab-c53d-4b19-3498-08dea6be47c0
+X-MS-Exchange-CrossTenant-Network-Message-Id: b4d5f74b-35e7-4599-4a90-08dea6be4a56
 X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d;Ip=[4.158.2.129];Helo=[outbound-uk1.az.dlp.m.darktrace.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	AMS1EPF00000041.eurprd04.prod.outlook.com
+	DU6PEPF0000A7E0.eurprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR08MB11012
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MI3PR08MB11905
 
-Hello Sumit,
+Hello Zhongqiu,
 
-On 4/28/26 18:37, Sumit Gupta wrote:
->
-> On 23/04/26 14:17, Pierre Gondois wrote:
->> External email: Use caution opening links or attachments
->>
->>
+On 4/29/26 15:00, Zhongqiu Han wrote:
+> On 4/23/2026 4:47 PM, Pierre Gondois wrote:
 >> cpufreq_set_policy() will ultimately override the policy min/max
 >> values written in the .init() callback through:
 >> cpufreq_policy_online()
@@ -194,7 +190,266 @@ On 4/28/26 18:37, Sumit Gupta wrote:
 >>
 >> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 >
-> Tested-by: Sumit Gupta <sumitg@nvidia.com>
-> Reviewed-by: Sumit Gupta <sumitg@nvidia.com>
-Thanks!
-There might be a v2 with some small modifications.
+>
+> Hi Pierre,
+> Thanks for the patch. I have a few additional inline comments/questions
+> below.
+>
+>
+>> ---
+>>   drivers/cpufreq/amd-pstate.c      | 16 ++++++++--------
+>>   drivers/cpufreq/cppc_cpufreq.c    | 11 +++++++----
+>>   drivers/cpufreq/cpufreq-nforce2.c |  4 ++--
+>>   drivers/cpufreq/cpufreq.c         | 19 +++++++++++++++++--
+>>   drivers/cpufreq/freq_table.c      |  7 +++----
+>>   drivers/cpufreq/gx-suspmod.c      |  9 +++++----
+>>   drivers/cpufreq/intel_pstate.c    |  3 ---
+>>   drivers/cpufreq/pcc-cpufreq.c     |  8 ++++----
+>>   drivers/cpufreq/pxa3xx-cpufreq.c  |  4 ++--
+>>   drivers/cpufreq/sh-cpufreq.c      |  4 ++--
+>>   drivers/cpufreq/virtual-cpufreq.c |  5 +----
+>>   11 files changed, 51 insertions(+), 39 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+>> index 453084c67327f..1ed4bcdcc957f 100644
+>> --- a/drivers/cpufreq/amd-pstate.c
+>> +++ b/drivers/cpufreq/amd-pstate.c
+>> @@ -1090,10 +1090,10 @@ static int amd_pstate_cpu_init(struct 
+>> cpufreq_policy *policy)
+>>         perf = READ_ONCE(cpudata->perf);
+>>   -    policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
+>> -                                  cpudata->nominal_freq,
+>> -                                  perf.lowest_perf);
+>> -    policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
+>> +    policy->cpuinfo.min_freq = perf_to_freq(perf,
+>> +                        cpudata->nominal_freq,
+>> +                        perf.lowest_perf);
+>> +    policy->cpuinfo.max_freq = cpudata->max_freq;
+>
+>
+> It is better to update doc as well to avoid new dirver developmenter set
+> policy->min / policy->max again?
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/tree/Documentation/cpu-freq/cpu-drivers.rst#n102 
+>
+
+Yes sure, does the following works for you:
+(tabs might not be conserved in the mail)
+
+diff --git a/Documentation/cpu-freq/cpu-drivers.rst 
+b/Documentation/cpu-freq/cpu-drivers.rst
+index c5635ac3de547..12dc4dcbdd5a6 100644
+--- a/Documentation/cpu-freq/cpu-drivers.rst
++++ b/Documentation/cpu-freq/cpu-drivers.rst
+@@ -114,8 +114,14 @@ Then, the driver must fill in the following values:
+  |policy->cur                       | The current operating frequency 
+of   |
+  |                                  | this CPU (if appropriate)         |
+  +-----------------------------------+--------------------------------------+
+-|policy->min,                      |             |
+-|policy->max,                      |             |
++|policy->min                       | Minimum frequency QoS constraint.    |
++|                                  | Can be overwritten by writing to     |
++|                                  | scaling_min sysfs file.         |
+++-----------------------------------+--------------------------------------+
++|policy->max                       | Maximum frequency QoS constraint.    |
++|                                  | Can be overwritten by writing to     |
++|                                  | scaling_max sysfs file.         |
+++-----------------------------------+--------------------------------------+
+  |policy->policy and, if necessary,  |            |
+  |policy->governor                  | must contain the "default policy" 
+for|
+  |                                  | this CPU. A few moments later,    
+    |
+
+>
+>>         policy->driver_data = cpudata;
+>>       ret = amd_pstate_cppc_enable(policy);
+>> @@ -1907,10 +1907,10 @@ static int amd_pstate_epp_cpu_init(struct 
+>> cpufreq_policy *policy)
+>>         perf = READ_ONCE(cpudata->perf);
+>>   -    policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
+>> -                                  cpudata->nominal_freq,
+>> -                                  perf.lowest_perf);
+>> -    policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
+>> +    policy->cpuinfo.min_freq = perf_to_freq(perf,
+>> +                        cpudata->nominal_freq,
+>> +                        perf.lowest_perf);
+>> +    policy->cpuinfo.max_freq = cpudata->max_freq;
+>>       policy->driver_data = cpudata;
+>>         ret = amd_pstate_cppc_enable(policy);
+>> diff --git a/drivers/cpufreq/cppc_cpufreq.c 
+>> b/drivers/cpufreq/cppc_cpufreq.c
+>> index 7e7f9dfb7a24c..c6fcecdbbab0c 100644
+>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>> @@ -645,6 +645,7 @@ static int cppc_cpufreq_cpu_init(struct 
+>> cpufreq_policy *policy)
+>>       unsigned int cpu = policy->cpu;
+>>       struct cppc_cpudata *cpu_data;
+>>       struct cppc_perf_caps *caps;
+>> +    unsigned int min, max;
+>>       int ret;
+>>         cpu_data = cppc_cpufreq_get_cpu_data(cpu);
+>> @@ -655,13 +656,15 @@ static int cppc_cpufreq_cpu_init(struct 
+>> cpufreq_policy *policy)
+>>       caps = &cpu_data->perf_caps;
+>>       policy->driver_data = cpu_data;
+>>   +    min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
+>> +    max = cppc_perf_to_khz(caps, policy->boost_enabled ?
+>> +                   caps->highest_perf : caps->nominal_perf);
+>> +
+>>       /*
+>>        * Set min to lowest nonlinear perf to avoid any efficiency 
+>> penalty (see
+>>        * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
+>>        */
+>> -    policy->min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
+>> -    policy->max = cppc_perf_to_khz(caps, policy->boost_enabled ?
+>> -                        caps->highest_perf : caps->nominal_perf);
+>> +    policy->min = min;
+>>         /*
+>>        * Set cpuinfo.min_freq to Lowest to make the full range of 
+>> performance
+>> @@ -669,7 +672,7 @@ static int cppc_cpufreq_cpu_init(struct 
+>> cpufreq_policy *policy)
+>>        * nonlinear perf
+>>        */
+>>       policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, 
+>> caps->lowest_perf);
+>> -    policy->cpuinfo.max_freq = policy->max;
+>> +    policy->cpuinfo.max_freq = max;
+>>         policy->transition_delay_us = 
+>> cppc_cpufreq_get_transition_delay_us(cpu);
+>>       policy->shared_type = cpu_data->shared_type;
+>> diff --git a/drivers/cpufreq/cpufreq-nforce2.c 
+>> b/drivers/cpufreq/cpufreq-nforce2.c
+>> index fbbbe501cf2dc..831102522ad64 100644
+>> --- a/drivers/cpufreq/cpufreq-nforce2.c
+>> +++ b/drivers/cpufreq/cpufreq-nforce2.c
+>> @@ -355,8 +355,8 @@ static int nforce2_cpu_init(struct cpufreq_policy 
+>> *policy)
+>>           min_fsb = NFORCE2_MIN_FSB;
+>>         /* cpuinfo and default policy values */
+>> -    policy->min = policy->cpuinfo.min_freq = min_fsb * fid * 100;
+>> -    policy->max = policy->cpuinfo.max_freq = max_fsb * fid * 100;
+>> +    policy->cpuinfo.min_freq = min_fsb * fid * 100;
+>> +    policy->cpuinfo.max_freq = max_fsb * fid * 100;
+>>         return 0;
+>>   }
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 44eb1b7e7fc1b..b30bfa3e27daa 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1453,6 +1453,14 @@ static int cpufreq_policy_online(struct 
+>> cpufreq_policy *policy,
+>>       cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+>>         if (new_policy) {
+>> +        unsigned int min, max;
+>> +
+>> +        /* Use policy->min/max set by the driver as QoS requests. */
+>> +        min = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
+>> +        if (policy->max)
+>> +            max = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
+>> +        else
+>> +            max = FREQ_QOS_MAX_DEFAULT_VALUE;
+>
+>
+> Nit: Using local variables named min/max is confusing here since they
+> shadow the common min()/max() macros; renaming them (e.g. min_freq
+> / max_freq) would improve readability and maintainability.
+>
+Ok yes sure
+>
+>>           for_each_cpu(j, policy->related_cpus) {
+>>               per_cpu(cpufreq_cpu_data, j) = policy;
+>>               add_cpu_dev_symlink(policy, j, get_cpu_device(j));
+>> @@ -1469,18 +1477,25 @@ static int cpufreq_policy_online(struct 
+>> cpufreq_policy *policy,
+>>             ret = freq_qos_add_request(&policy->constraints,
+>>                          &policy->min_freq_req, FREQ_QOS_MIN,
+>> -                       FREQ_QOS_MIN_DEFAULT_VALUE);
+>> +                       min);
+>
+> It seems that the current patch is not merely a superficial cleanup; it
+> also changes the policy->min value in the GX driver, setting it to the
+> 5% value expected by the driver. If so, we should document it in the
+> commit message.
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/
+> tree/drivers/cpufreq/gx-suspmod.c#n137
+>
+> /* gx-suspmod.c constants:
+>  *   POLICY_MIN_DIV = 20
+>  *   max_duration   = 255
+>  *   maxfreq = e.g. 300000 kHz (300 MHz)
+>  */
+>
+> cpufreq_policy_online()
+>   cpufreq_driver->init(policy)      /* cpufreq_gx_cpu_init() */
+>     policy->min = maxfreq/20        /* 15000 kHz, 5% */
+>     cpuinfo.min_freq = maxfreq/255  /* 1176 kHz, 0.39% */
+>
+>   /* Before current patch: 0, not policy->min */
+>   freq_qos_add_request(..., FREQ_QOS_MIN, 0)
+>
+>   cpufreq_init_policy()
+>     cpufreq_set_policy()
+>       /* reads QoS=0, discards init()'s 15000 */
+>       new_data.min = freq_qos_read_value(FREQ_QOS_MIN)
+>       cpufreq_gx_verify()
+>         cpufreq_verify_within_cpu_limits()
+>           /* 0 < 1176: clamp to hw floor */
+>           new_data.min = cpuinfo.min_freq  /* 1176 kHz */
+>       WRITE_ONCE(policy->min, 1176)  /* 0.39%, not 5% */
+>
+> After current patch:
+> freq_qos_add_request(..., FREQ_QOS_MIN, policy->min)
+>   => new_data.min stays 15000, no clamping, policy->min = 15000
+>
+Prior to [1], the policy->min/max values were used as QoS constraint.
+This patch effectively set a min QoS constraint, but it should be no
+different from what the driver was setting initially.
+
+I will add a reference to the patch + explanation in the commit
+message to avoid any ambiguities.
+
+[1] 521223d8b3ec ("cpufreq: Fix initialization of min and max frequency 
+QoS requests")
+
+
+>
+>>           if (ret < 0)
+>>               goto out_destroy_policy;
+>>             ret = freq_qos_add_request(&policy->constraints,
+>>                          &policy->max_freq_req, FREQ_QOS_MAX,
+>> -                       FREQ_QOS_MAX_DEFAULT_VALUE);
+>> +                       max);
+>>           if (ret < 0)
+>>               goto out_destroy_policy;
+>> blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>>                   CPUFREQ_CREATE_POLICY, policy);
+>> +
+>> +        /*
+>> +         * If the driver didn't set QoS constraints, policy->min/max 
+>> still
+>> +         * need to be set as they are used to clamp frequency requests.
+>> +         */
+>> +        policy->min = policy->min ? policy->min : 
+>> policy->cpuinfo.min_freq;
+>> +        policy->max = policy->max ? policy->max : 
+>> policy->cpuinfo.max_freq;
+>
+>
+> Does it make sense to set policy->min / policy->max before the
+> CPUFREQ_CREATE_POLICY notifier, since some drivers may use them in their
+> callbacks?
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/tree/Documentation/cpu-freq/core.rst#n58 
+>
+>
+>
+Yes right indeed, this would be better.
+
+Thanks for the review
+
