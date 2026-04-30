@@ -1,89 +1,133 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F2752580D7;
-	Thu, 30 Apr 2026 12:37:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54E64407598
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:46:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777552630; cv=none; b=q/jg5UpFj14pZ+gi367vvA/RNJCDE+usmC9kOvRha6DV66zKMOPU7VSJxZvblxOrI3C6CLG4M1ZQgYGHFnqpLRSpMBeB5racGIoWoKTNWJAPhm2UnW1V+9ksJcrfzbEA5jEwiMj6o7qHFaHGJRVA1w9Vbh9/caEjzhr46Vb/D30=
+	t=1777553194; cv=none; b=YlnPR8IjIjWoGm0M/RA7vaFAdoec02PWbYTLG+ib3AK872CVA1ev3Ow5/YF/4bJhrsIrVKcdcpZcwkjWDD5BAmycA0lShn0eU/LOKZ9WlCZS7tLFBMIMMzhOZG53/9usUtazCln5/ul5lVtOiNfbhDrFmn6jSqNAjDHsAXEJL1U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777552630; c=relaxed/simple;
-	bh=mR9AQJnykFvzCVGNFszfC6SYPqN8+eFh24emSOY9PvE=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=DMMaTgsEnH6NuyS13X2I5xSRih751lsVr4esCPlOOIhJQ9KQWuJffLyciKILp9NjnhtJjPcIzUq1EsBkIL2zR5yEUzzdiuMQ/chvzljCuglU80aGITV6bzGT1rQiNHfqEmy3Z9Xdn/A2l8noKYl+M+r7pDhqynNgfuDXDPMSrQ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qXNby89r; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777553194; c=relaxed/simple;
+	bh=D1ewCxGAb2m3foREBIoGUCfKhLRzglsJCqliRhlc5uM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Xzh9PQr1VrbRLePElk+7rNrwyklCaF6E527I5aIM1j8eHz1OGmjmRl+UbTKbKRpdcDMwZbe/Y4R523bMaSOgmCZmgaW7XdVPnTG6YDgsgt0h7WFPqHJu9lBCCUVr/e2/Nwt7ob2sdSBcsFBUgMpPIoUXgPKOsAF6Aqxb53met2U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EB61SP83; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qXNby89r"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E048C2BCB3;
-	Thu, 30 Apr 2026 12:37:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EB61SP83"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF250C2BCFA
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:46:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777552630;
-	bh=mR9AQJnykFvzCVGNFszfC6SYPqN8+eFh24emSOY9PvE=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=qXNby89rGpmxXEpD4eilUWVa7ROY8o55qxV+s0sQQ4z1fwIhJr9vDdm4TdqxthZny
-	 98IMnwzqgEKBfukuXylk1WiNXrup/tR+tPOhKnant2PNuYzceC/u17AA3/iOTRFEBW
-	 jj3Lwzx0EjArowVkbBAqcypMxoj+Cqs9cTN0JweYa8xYKKM5QL5EaGA4dgUD0g+asU
-	 20p5y7CSLSVGTIadqAdQiJDdJkyXJTEp20HeVhIR3sAqwqGhhTitez2e8PewsDKMzr
-	 0vnIo0yxjNr/aeWjDWsOfqglJw9JajaLK9HwZeN4Xh6IElrArQkIOujXXQSyjAGpOm
-	 AwSXgQJsBoeVA==
-From: Lee Jones <lee@kernel.org>
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, Alexey Charkov <alchark@flipper.net>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- linux-pm@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- stable@vger.kernel.org
-In-Reply-To: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
-References: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
-Subject: Re: (subset) [PATCH v6 00/11] Add support for the TI BQ25792
- battery charger
-Message-Id: <177755262690.2557411.9260557703583835724.b4-ty@b4>
-Date: Thu, 30 Apr 2026 13:37:06 +0100
+	s=k20201202; t=1777553194;
+	bh=D1ewCxGAb2m3foREBIoGUCfKhLRzglsJCqliRhlc5uM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=EB61SP83XT8Wxl4rL9jsKqwm3TfIBflkG3FXxPOa8N1RtHeOibrAo1kLff64bzobM
+	 8g6nXPIGbfk1pDoEgZ/d6B3tJcVqreztpFAIfg1ibwE+UiVp972JnF6xrQJfEiE5Wd
+	 Jawi554qbrcl8lbFJNgw6a/2z/OSw+O4jDJ80zpApastWquSpXkdOAnGTft86bw5Iy
+	 2SQEfVn50kMRAkGXxcJqyjAXxHPgvMc6p+PcIb1NffgE7gMRugiMYa04LVTksC1EX6
+	 wQYot1UvGm4PkAHBVA0O88nE/omrLuPCPG/luE3YN3L7zWDWqVieh5VIIGFy9JHgP/
+	 1ENXa5lzCpP+A==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-38e7d984096so10267881fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 05:46:33 -0700 (PDT)
+X-Gm-Message-State: AOJu0YwiWLyvf6/omiTmtI9+Ah1T+37UP0d2apdimMyh8LlBgZxGKYez
+	6ZBs/flUCsWgldTi+yHcfOeAaddsq6SMgh4MXoEXb6PFY4GK0SxNqBPBhrCGzWNdifQrpSGtHlI
+	JICTzedFno/ApZViqcFXGlENLSpOxbMAg00Y+GrAD0w==
+X-Received: by 2002:a2e:a108:0:b0:392:5c61:c583 with SMTP id
+ 38308e7fff4ca-3934e1f951dmr8911411fa.23.1777553192507; Thu, 30 Apr 2026
+ 05:46:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev-ad80c
+References: <20260427-arm-psci-system_reset2-vendor-reboots-v21-0-dcf937775e73@oss.qualcomm.com>
+ <20260427-arm-psci-system_reset2-vendor-reboots-v21-8-dcf937775e73@oss.qualcomm.com>
+ <CAMRc=Mf+-04Zr7jjRoaxTzO3LKSMyQ7DzxJc=dHNSyThEUiq_Q@mail.gmail.com>
+ <c0677503-8073-4940-8eb0-c06b34f843d2@oss.qualcomm.com> <CAMRc=MdxpSXiqAn-8Az4ig4N8TFVdE9psacPVG9J9KehuFnbwA@mail.gmail.com>
+ <d6112b9c-01ea-483c-98fe-b480e78872e5@oss.qualcomm.com> <ce92a493-5016-41a2-8337-d2227cdf760a@oss.qualcomm.com>
+ <CAMRc=Md_OON4cAGcJ=jDu=VY_mw0qa8HPz4VCDxYLpr7JMxLRw@mail.gmail.com> <37ab0178-1c9d-409e-bbaa-832f8075afa4@oss.qualcomm.com>
+In-Reply-To: <37ab0178-1c9d-409e-bbaa-832f8075afa4@oss.qualcomm.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Thu, 30 Apr 2026 14:46:19 +0200
+X-Gmail-Original-Message-ID: <CAMRc=Mcqa5RMarC+6pVYYvYsuJ03GQMtM=69bQMxyotN1u2B0w@mail.gmail.com>
+X-Gm-Features: AVHnY4IEmLYwEMMCdiN8KiXAHy3-1wn0tdvvY2-O1xx2kdj2ex6VTQTyzM2bmGc
+Message-ID: <CAMRc=Mcqa5RMarC+6pVYYvYsuJ03GQMtM=69bQMxyotN1u2B0w@mail.gmail.com>
+Subject: Re: [PATCH v21 08/13] mfd: core: Add firmware-node support to MFD cells
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	devicetree@vger.kernel.org, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>, Andre Draszik <andre.draszik@linaro.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>, 
+	Srinivas Kandagatla <srini@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Christian Loehle <christian.loehle@arm.com>, 
+	Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Souvik Chakravarty <Souvik.Chakravarty@arm.com>, 
+	Andy Yan <andy.yan@rock-chips.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	John Stultz <john.stultz@linaro.org>, Moritz Fischer <moritz.fischer@ettus.com>, 
+	Sudeep Holla <sudeep.holla@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 31 Mar 2026 19:43:37 +0400, Alexey Charkov wrote:
-> This adds support for the TI BQ25792 battery charger, which is similar in
-> overall logic to the BQ25703A, but has a different register layout and
-> slightly different lower-level programming logic.
-> 
-> The series is organized as follows:
-> - Patch 1 adds the new variant to the existing DT binding, including the
->   changes in electrical characteristics
-> - Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
->   driver, slimming down the code and making it more reusable for the new
->   BQ25792 variant
-> - Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
->   (this is a standalone fix which can be applied independently and may be
->   backported to stable)
-> - Patches 6-8 are slight refactoring of the existing BQ25703A charger
->   driver to make it more reusable for the new BQ25792 variant
-> - Patch 9 adds platform data to distinguish between the two variants in
->   the parent MFD driver, and binds it to the new compatible string
-> - Patches 10-11 add variant-specific code to support the new BQ25792
->   variant in the regulator part and the charger part respectively,
->   selected by the platform data added in patch 9
-> 
-> [...]
+On Wed, Apr 29, 2026 at 6:10=E2=80=AFPM Shivendra Pratap
+<shivendra.pratap@oss.qualcomm.com> wrote:
+>
+>
+>
+> On 29-04-2026 15:20, Bartosz Golaszewski wrote:
+> > On Wed, Apr 29, 2026 at 11:46=E2=80=AFAM Shivendra Pratap
+> > <shivendra.pratap@oss.qualcomm.com> wrote:
+> >>
+> >>>>
+> >>>> If set, it would be called from MFD core and would do the name looku=
+p
+> >>>> and return the fwnode which would then be assigned to the cell devic=
+e?
+> >>>
+> >>
+> >> Or should we just drop this patch for fwnode in mfd-core?
+> >>
+> >> Export a new call in reboot-mode framework as:
+> >> reboot_mode_register_node(struct reboot_mode_driver *reboot,
+> >>                     struct device_node *np / fwnode)
+> >>
+> >> Use the parent node in psci-reboot-mode and find reboot-mode and call
+> >> reboot_mode_register_node?
+> >>
+> >
+> > No, I think the reboot-mode device (as pointed to by the dev field of
+> > struct reboot_mode_driver) should be associated with the right fwnode
+> > from the start so it should be handled in MFD core.
+>
+> Ack. something like should be fine?
+>
+> drivers/mfd/mfd-core.c :
+> +       if (!pdev->dev.fwnode && cell->get_fwnode) {
+> +               fwnode =3D cell->get_fwnode(parent);
+> +               if (fwnode)
+> +                       device_set_node(&pdev->dev, fwnode);
+> +       }
+>
 
-Applied, thanks!
+Possibly we could find a better name, but yeah the general idea is sound.
 
-[01/11] dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
-        commit: 2a0bd270f95a774349e85c8eabac5a275298b6fc
-[09/11] mfd: bq257xx: Add BQ25792 support
-        commit: fb0d8bbcaf2355a7a06b053efa77f09766948313
+Of course, let's maybe here from Lee if he's ok before sending a new versio=
+n.
 
---
-Lee Jones [李琼斯]
+> drivers/mfd/psci-mfd.c (goes next patch):
+> +static struct fwnode_handle *psci_reboot_mode_get_fwnode(struct device
+> *parent)
+> +{
+> +       return fwnode_get_named_child_node(dev_fwnode(parent),
+> "reboot-mode");
+> +}
+>
 
+Yes, something like this.
+
+Bart
