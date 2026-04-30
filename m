@@ -1,47 +1,48 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 013C6401A2A;
-	Thu, 30 Apr 2026 12:28:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F2752580D7;
+	Thu, 30 Apr 2026 12:37:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777552117; cv=none; b=eT1HNayFnhLE6pe2vWQCCm1y2phnHPAs90iRLvruMB3KBZnjOCHP+Jo4cmMALY5pbeL035e9DMzYSNibvvGkgrL9x4EbVWAMg6q8+Po9JU6llE02tC/tVSc0yDDn/xyuQsv6so8+3jnEozRVhNT7PjxcQif7xSBS/W+EilDC33I=
+	t=1777552630; cv=none; b=q/jg5UpFj14pZ+gi367vvA/RNJCDE+usmC9kOvRha6DV66zKMOPU7VSJxZvblxOrI3C6CLG4M1ZQgYGHFnqpLRSpMBeB5racGIoWoKTNWJAPhm2UnW1V+9ksJcrfzbEA5jEwiMj6o7qHFaHGJRVA1w9Vbh9/caEjzhr46Vb/D30=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777552117; c=relaxed/simple;
-	bh=6B0X6HrcdX6z6dBIJfJ7PomqkAZaJ9Jzm+7wSfebQDI=;
+	s=arc-20240116; t=1777552630; c=relaxed/simple;
+	bh=mR9AQJnykFvzCVGNFszfC6SYPqN8+eFh24emSOY9PvE=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=cuwPsGpZv73IcZmtKod56wNGacYnlsoe95WLaxFCARcFaK3v2XofhjJjq1+yo6N18q4mFq5R1GNMpOHS4ytciS5YvvsVzw5vVMOxp1Q9AKlflHqNUr4LhdrEq0VH2uCOJYpWXfel9UF89wJR/h2qh21Gbw+bOlV07Kikw23pRCo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M8AWEWWW; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=DMMaTgsEnH6NuyS13X2I5xSRih751lsVr4esCPlOOIhJQ9KQWuJffLyciKILp9NjnhtJjPcIzUq1EsBkIL2zR5yEUzzdiuMQ/chvzljCuglU80aGITV6bzGT1rQiNHfqEmy3Z9Xdn/A2l8noKYl+M+r7pDhqynNgfuDXDPMSrQ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qXNby89r; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M8AWEWWW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3113DC2BCB3;
-	Thu, 30 Apr 2026 12:28:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qXNby89r"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E048C2BCB3;
+	Thu, 30 Apr 2026 12:37:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777552116;
-	bh=6B0X6HrcdX6z6dBIJfJ7PomqkAZaJ9Jzm+7wSfebQDI=;
+	s=k20201202; t=1777552630;
+	bh=mR9AQJnykFvzCVGNFszfC6SYPqN8+eFh24emSOY9PvE=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=M8AWEWWWyxV2EuxEvVIMWWA6vnsHj7Sga3jbF6L1GllCvHd97bns6VBGOKnf6w6CY
-	 L382QOdzUqjfcGa82LUuLzNbe0MFlmdvusi1gB1c5xcJF15GdIZrN+tpSQHncA+W4f
-	 giDu0fjHmNj7JCDBMe+2eFpegxbs0QzS1KTh549z7tq84tBK0+a245Cf6h/anUxadp
-	 fkYB4AsFvh5KDNzfvzoz/HM1Fc6T3t/DGYfoBtZKE4bsQ2cLRMQCWbsi3RS3YQsA0a
-	 PGBdaSmcFtRAMiq7QqqGTLAmtu/9OkEmJKM3mInyb7xwwVTASf5qe6LbUxulz3gq/f
-	 Z2lC5WidB1+mA==
+	b=qXNby89rGpmxXEpD4eilUWVa7ROY8o55qxV+s0sQQ4z1fwIhJr9vDdm4TdqxthZny
+	 98IMnwzqgEKBfukuXylk1WiNXrup/tR+tPOhKnant2PNuYzceC/u17AA3/iOTRFEBW
+	 jj3Lwzx0EjArowVkbBAqcypMxoj+Cqs9cTN0JweYa8xYKKM5QL5EaGA4dgUD0g+asU
+	 20p5y7CSLSVGTIadqAdQiJDdJkyXJTEp20HeVhIR3sAqwqGhhTitez2e8PewsDKMzr
+	 0vnIo0yxjNr/aeWjDWsOfqglJw9JajaLK9HwZeN4Xh6IElrArQkIOujXXQSyjAGpOm
+	 AwSXgQJsBoeVA==
 From: Lee Jones <lee@kernel.org>
-To: linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>, 
- Sebastian Reichel <sre@kernel.org>, 
- Troy Mitchell <troy.mitchell@linux.spacemit.com>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
- linux-riscv@lists.infradead.org, spacemit@lists.linux.dev, 
- Yixun Lan <dlan@kernel.org>, Aurelien Jarno <aurelien@aurel32.net>
-Cc: linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org, 
- spacemit@lists.linux.dev
-In-Reply-To: <20251102230352.914421-3-aurelien@aurel32.net>
-References: <20251102230352.914421-3-aurelien@aurel32.net>
-Subject: Re: (subset) [PATCH v5 2/2] mfd: simple-mfd-i2c: add a reboot cell
- for the SpacemiT P1 chip
-Message-Id: <177755211394.2550722.15714399977264400993.b4-ty@b4>
-Date: Thu, 30 Apr 2026 13:28:33 +0100
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Chris Morgan <macromorgan@hotmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Sebastian Reichel <sre@kernel.org>, Alexey Charkov <alchark@flipper.net>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, 
+ linux-pm@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
+ stable@vger.kernel.org
+In-Reply-To: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
+References: <20260331-bq25792-v6-0-0278fba33eb9@flipper.net>
+Subject: Re: (subset) [PATCH v6 00/11] Add support for the TI BQ25792
+ battery charger
+Message-Id: <177755262690.2557411.9260557703583835724.b4-ty@b4>
+Date: Thu, 30 Apr 2026 13:37:06 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -52,13 +53,36 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailer: b4 0.16-dev-ad80c
 
-On Mon, 03 Nov 2025 00:02:00 +0100, Aurelien Jarno wrote:
-> Add a "spacemit-p1-reboot" cell for the SpacemiT P1 chip.
+On Tue, 31 Mar 2026 19:43:37 +0400, Alexey Charkov wrote:
+> This adds support for the TI BQ25792 battery charger, which is similar in
+> overall logic to the BQ25703A, but has a different register layout and
+> slightly different lower-level programming logic.
+> 
+> The series is organized as follows:
+> - Patch 1 adds the new variant to the existing DT binding, including the
+>   changes in electrical characteristics
+> - Patches 2-4 are minor cleanups to the existing BQ25703A OTG regulator
+>   driver, slimming down the code and making it more reusable for the new
+>   BQ25792 variant
+> - Patch 5 is a logical fix to the BQ25703A clamping logic for VSYSMIN
+>   (this is a standalone fix which can be applied independently and may be
+>   backported to stable)
+> - Patches 6-8 are slight refactoring of the existing BQ25703A charger
+>   driver to make it more reusable for the new BQ25792 variant
+> - Patch 9 adds platform data to distinguish between the two variants in
+>   the parent MFD driver, and binds it to the new compatible string
+> - Patches 10-11 add variant-specific code to support the new BQ25792
+>   variant in the regulator part and the charger part respectively,
+>   selected by the platform data added in patch 9
+> 
+> [...]
 
 Applied, thanks!
 
-[2/2] mfd: simple-mfd-i2c: add a reboot cell for the SpacemiT P1 chip
-      commit: b84a9ac61080735b615233e1231ddd19f6624869
+[01/11] dt-bindings: mfd: ti,bq25703a: Expand to include BQ25792
+        commit: 2a0bd270f95a774349e85c8eabac5a275298b6fc
+[09/11] mfd: bq257xx: Add BQ25792 support
+        commit: fb0d8bbcaf2355a7a06b053efa77f09766948313
 
 --
 Lee Jones [李琼斯]
