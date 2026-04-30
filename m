@@ -1,244 +1,152 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D37973033F8
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:56:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 103E434B1A7
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:57:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777579018; cv=none; b=SeDtPf0M7NhzfzWtXw9Co6P6YgE/0S1B2qI0ubAi1zaNpq8qa/yWburkjOCxVqBBfadc0IsPvb3SIjOQIbeIKYs3ZzfROx9H55aHRD1JYmF+7pjMhdZoyZyT5yYRALlq2bLZ1RxIGpBr0/+4YD/Pq5UOBr5D+VNeTS1uzC3hLKo=
+	t=1777579059; cv=none; b=T12XQxC6kplx6jCUMW5IRxJHG0p6YYtcgAej3ejC1CJDgpZNVAk9KTEFBsh/whF3HtHFtitw3BJJ41tc/J/BVfEBSVx+wRC3D92k77LDoyiY4vCT2vSwwkubc7N+mpVTmc2RxPPbmjH8B9UTuj9KF+rq+hfHfjDW0WVdA/QoLfs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777579018; c=relaxed/simple;
-	bh=EuaZpVYp/Skz5QTKHgDy/F1bCVr6eX5QViNZis4mmpo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ozob2wn6zEdVLipaM6psKQ5tzgRA1yMWBFCW1BEsn3vvTdDRV/Qo/9WWOgBBKRLIFCMPDLN/rGx1E02SLI4MoAchD95dqpQKX8Afd3TB0elYDSWR+fKZXoSBNaGsTU8u5oeVaz7knnnbivJd+2MRzpuLZAyRKoBU/o4IQmG3sb4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sDIjcPTj; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1777579059; c=relaxed/simple;
+	bh=K7UUnm7+0T1FluJsMAj98tyxebsG7OvNNIYLUVmk6U8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XQ7B+mIqXyGjKYqOIOjltCiuDfEzITA3mvIOLDIrPl2gieuV0+f5n0pd4U9y0hTsn6VltKww4NQgRT3nbECOPqikrGL8Qgjm30tAiPaoB2Eha88ZrHJCzknrUz7PfySwRpcYmGprSkU13Cl2n6GwwPf7RpiApwg0jhCgHYsEDqE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eNiqCZP6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sDIjcPTj"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48984d29fe3so19138735e9.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:56:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777579015; x=1778183815; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9suyq7OsGoU5hjx6DKCtQZWhNejxcqAH+lNu/8skT/U=;
-        b=sDIjcPTjC18pnIyGizeBT+GBDBcWuOZMpCjsiz03JTbNT3WQoo+shcxFJ8UGtcu0ZS
-         oWn2ITLwQQ3Hi+6hhlX52A92CBK/Qy0+ql8DWJVBDst3pwCoitVhnf+XClpQ1gs64nN2
-         kKBE5bde5Za3JGtaNj6c/ahRbjXufho7fm54DXzvQf/G3oF/99Sk4sf0c6AFSB4DXUYL
-         TA55pXGV7QABY5rgqFZo4F20rnMNOP3fsTpH0P4ny/n8UqMpo95KkJbG4fbT4hV275Zv
-         wbp59nolhgeKGH9s7deGroq26oV+q6PYV8Z9Nh/ZYXyeSEjCNHXe6d1zEvFR8+kgzksX
-         Dnvw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777579015; x=1778183815;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9suyq7OsGoU5hjx6DKCtQZWhNejxcqAH+lNu/8skT/U=;
-        b=dcpF4lWBfZeMSxLrOIacqf/xQ2hKKn9xBvyAeTaWb5XZxSwYRd/Kqw57mkn8oc6Te/
-         OZpyqkgeJEvHqOZtj/Cq12Gx7lWGOsxFHdTtgvyY0voDJvDpNQW5PZ9sxzbdQlj9tKn+
-         ziRJpMIH412OhR4HH5bc7+F3Ph4OM/vijCilEbS9D5dovghEC+LxAHbmEY6/emgi9J7b
-         r17FyvTVc36XVKubJUrrKLrcPa+eaI/bJv86vT32eRhavbFIxWywkSTurdYn85Sv25iU
-         Wa0qZ5qdX90J8nnLoQhIMQ2+FsfU9G/EJqkok6vInw28aJRn8vyOHx9fKjrTlEqDKS0w
-         Xkag==
-X-Forwarded-Encrypted: i=1; AFNElJ/lTdjFfGd1J8Ni2pENXVsyBc3fyRmhx9/uf5YSc31JbOqHAKqMzR1QRlnMxfa3zt9nrcGRLZ/+EQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwZCCprGFeU7R0SiW/F+5FvFQh8kgdE3JLLspfVM5lMvP5wKmrg
-	ClSnM1NlJtUF9HhBSn56c6vasUsiQUJl1k7PfrCt2L+oiyQk1/guJwR7
-X-Gm-Gg: AeBDiesxdKJsvseeROgKvYRsTo9rpKQslsA/PnBwwoSlVXX0TcNCIQjJ3gh9cKGAchp
-	LzC8wWxbci0qKEJf/k10WTsTq/gKxClKMsclGXCwS7y5ob5xKe7wg8D3MlYPR63S1hbSuRSVmwi
-	W3Wvvmliv7WsIQHKT07khe82kdqQ/5DeBp1xPYVVVcU7DhHEUsNW5Mubj7O/RKlj2mBRlsiJEg+
-	uOcBF5MGwgPDREu2R0GQpx3FEohCFoP+3ehe2GCm8cuvYJ1rrWM8WxB5l3+tXkBC3THSB7snPNa
-	TmMMnS2+Fi+HeuQtBGP7S1cYMyKgs5dbB/SsxEQ8BpcywhQHBI9odJyBbpCXWDAjAvldvUAlozA
-	43QJhFoz8PG0g3zMme4i+r7QkMBqOM8w+DsU5DSxPTqM2wG43Lx0V6vSjA32yvVcfRrOy8hL7j6
-	4n1O7U7k4cXbjB3kMEMDq7Q49L1r1CmqboFRXHJRBmOucDMBgDa2Wlt+Su/oa+Bg9rb12oF8Kkg
-	rjdCdGqwmXCcIzV+MgUsw==
-X-Received: by 2002:a05:600c:26d2:b0:48a:89d9:a419 with SMTP id 5b1f17b1804b1-48a89d9a46emr28797275e9.11.1777579015006;
-        Thu, 30 Apr 2026 12:56:55 -0700 (PDT)
-Received: from dohko.chello.ie (188-141-5-72.dynamic.upc.ie. [188.141.5.72])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a8eb72184sm922615e9.32.2026.04.30.12.56.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Apr 2026 12:56:54 -0700 (PDT)
-From: David Carlier <devnexen@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Chris Li <chrisl@kernel.org>,
-	Kairui Song <kasong@tencent.com>,
-	Kemeng Shi <shikemeng@huaweicloud.com>,
-	Nhat Pham <nphamcs@gmail.com>,
-	Baoquan He <bhe@redhat.com>,
-	Barry Song <baohua@kernel.org>,
-	Youngjun Park <youngjun.park@lge.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: David Carlier <devnexen@gmail.com>
-Subject: [PATCH] mm/swap, PM: hibernate: atomically replace hibernation pin
-Date: Thu, 30 Apr 2026 20:56:51 +0100
-Message-ID: <20260430195651.287659-1-devnexen@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eNiqCZP6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE6A2C2BCFA
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 19:57:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777579058;
+	bh=K7UUnm7+0T1FluJsMAj98tyxebsG7OvNNIYLUVmk6U8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=eNiqCZP6K15SUCDKxqrrC3nMc6dHqpDr47XJOS0ufEyfx8v8tevv3bRSba2yjtOp4
+	 x1WsmBXBZNDYOa6Vhq2WjQKmjLV5+AvKl+pyr4j9tAVzDHVJOikbCIh+71fua8kue7
+	 wA4R/3g1+anlirVmDbElfr4KIntS6bolFIMcfj/gcpaG4IpwN2m8B+i4zc1NjKRjhZ
+	 BEhFNf/H1r/DjrxD8n6yBaVLusuMVhwaEqjpV5vLkHEBYq0hz0/VYwKVFNfG7urRkH
+	 vonGMlTd5DF4MOAKxvEs+ouiqpc7CfPLOpe2W1lXh/T5x2qajJ33M9hyvNRXi4tG8V
+	 8CJl7v5riswtA==
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a2c3dfb4a1so1216002e87.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 12:57:38 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9PFwzMwWuYAGNp2R2oaosCacf3583nz+/VjSljgInmI/4IBpSfRA3JDxWEiFGHMqJ2p5quJg7cMg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz9u7+F1YKbz7Fz3Z2Opzc5Se+m6/VQvch5JGxBKhd+BPrBb2MM
+	AmXOXCcWqCNkqLa4PiliDMMLh9gacmHffLPblrEGM74I+UKA//Ogow3vwLJpsx16c7tG/8gZyYE
+	W+tBLKJf1D3Np/QQMMpWR7kShhzbk5qA=
+X-Received: by 2002:a05:6512:3d02:b0:5a4:7ec:145a with SMTP id
+ 2adb3069b0e04-5a85ae832fbmr37218e87.10.1777579056797; Thu, 30 Apr 2026
+ 12:57:36 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260429161430.3802970-1-daniel.lezcano@oss.qualcomm.com> <20260429161430.3802970-2-daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260429161430.3802970-2-daniel.lezcano@oss.qualcomm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 30 Apr 2026 21:57:23 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gYRuEBhdfeZ-kcwFPWxrRVFgA7+mBoTMnfeRk=8MBsBA@mail.gmail.com>
+X-Gm-Features: AVHnY4Jed_Zripca-VuCTXVAOcFTR8TI5HZ5ISsU6Twu3YasOnvmA_Ii-p9O6sI
+Message-ID: <CAJZ5v0gYRuEBhdfeZ-kcwFPWxrRVFgA7+mBoTMnfeRk=8MBsBA@mail.gmail.com>
+Subject: Re: [PATCH v3 01/11] thermal/core: Use devm_add_action_or_reset()
+ when registering a cooling device
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, 
+	gaurav.kohli@oss.qualcomm.com, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Lucas Stach <l.stach@pengutronix.de>, Russell King <linux+etnaviv@armlinux.org.uk>, 
+	Christian Gmeiner <christian.gmeiner@gmail.com>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+	Benson Leung <bleung@chromium.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
+	Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, 
+	Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, 
+	Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, 
+	Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-snapshot_set_swap_area() unpins the previously selected swap device
-and pins the new one in two separate swap_lock critical sections.
-In the gap between them, swapoff() observes SWP_HIBERNATION cleared,
-bypasses the guard, and tears down the device, reopening the race
-the SWP_HIBERNATION pin was meant to close. The window is reachable
-on any SNAPSHOT_SET_SWAP_AREA call after the snapshot device is
-opened for hibernation, and on any retry after the resume path's
-first selection.
+On Wed, Apr 29, 2026 at 6:14=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+> Use devm_add_action_or_reset() which does the replaced code. It
+> results in a simpler and more concise code.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 
-Add repin_hibernation_swap_type(), which looks up the new device,
-clears the old SWP_HIBERNATION flag and sets the new one under a
-single swap_lock acquisition. The same-device case is short-
-circuited so userspace can re-select the same swap area without
-tripping WARN_ON_ONCE and -EBUSY. Switch snapshot_set_swap_area()
-to the new helper.
+Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
 
-A failed lookup now preserves the previous pin instead of dropping
-it, so a bad SNAPSHOT_SET_SWAP_AREA leaves the prior selection
-intact. The open and release paths keep using
-pin_hibernation_swap_type() and unpin_hibernation_swap_type().
-
-The race was identified during AI-assisted review of the
-SWP_HIBERNATION pinning series.
-
-Fixes: 8e6e0d845823 ("mm/swap, PM: hibernate: fix swapoff race in uswsusp by pinning swap device")
-Assisted-by: Codex (gpt-5-codex)
-Signed-off-by: David Carlier <devnexen@gmail.com>
----
- include/linux/swap.h |  2 ++
- kernel/power/user.c  | 17 ++++--------
- mm/swapfile.c        | 61 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 68 insertions(+), 12 deletions(-)
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 1930f81e6be4..213ecb627a39 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -436,6 +436,8 @@ static inline long get_nr_swap_pages(void)
- extern void si_swapinfo(struct sysinfo *);
- extern int pin_hibernation_swap_type(dev_t device, sector_t offset);
- extern void unpin_hibernation_swap_type(int type);
-+extern int repin_hibernation_swap_type(int old_type, dev_t device,
-+                                       sector_t offset);
- extern int find_hibernation_swap_type(dev_t device, sector_t offset);
- int find_first_swap(dev_t *device);
- extern unsigned int count_swap_pages(int, int);
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index d0fcfba7ac23..6e4f40e49319 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -218,6 +218,7 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- {
- 	sector_t offset;
- 	dev_t swdev;
-+	int new_type;
- 
- 	if (swsusp_swap_in_use())
- 		return -EPERM;
-@@ -238,19 +239,11 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
- 		offset = swap_area.offset;
- 	}
- 
--	/*
--	 * Unpin the swap device if a swap area was already
--	 * set by SNAPSHOT_SET_SWAP_AREA.
--	 */
--	unpin_hibernation_swap_type(data->swap);
-+	new_type = repin_hibernation_swap_type(data->swap, swdev, offset);
-+	if (new_type < 0)
-+		return new_type;
- 
--	/*
--	 * User space encodes device types as two-byte values,
--	 * so we need to recode them
--	 */
--	data->swap = pin_hibernation_swap_type(swdev, offset);
--	if (data->swap < 0)
--		return swdev ? -ENODEV : -EINVAL;
-+	data->swap = new_type;
- 	data->dev = swdev;
- 	return 0;
- }
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index c7e173b93e11..4840fd40f36f 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -2219,6 +2219,67 @@ int pin_hibernation_swap_type(dev_t device, sector_t offset)
- 	return type;
- }
- 
-+/**
-+ * repin_hibernation_swap_type - Atomically replace the hibernation pin
-+ * @old_type: Swap type currently pinned (or < 0 if none).
-+ * @device:   Block device of the new resume image.
-+ * @offset:   Offset identifying the new swap area.
-+ *
-+ * Look up the swap device for @device/@offset and atomically transfer
-+ * the SWP_HIBERNATION pin from @old_type (if valid) to the new device,
-+ * all under a single swap_lock critical section. This closes the
-+ * swapoff() window that exists when callers unpin and re-pin in two
-+ * separate operations.
-+ *
-+ * If the new device cannot be located, the existing pin on @old_type
-+ * is preserved and an error is returned. If @old_type already refers
-+ * to the same swap_info_struct as the new lookup, no flag changes are
-+ * made and @old_type is returned.
-+ *
-+ * Return:
-+ * >= 0 on success (new swap type).
-+ * -EINVAL if @device is invalid.
-+ * -ENODEV if the swap device is not found.
-+ * -EBUSY  if the new device is already pinned by another context.
-+ */
-+int repin_hibernation_swap_type(int old_type, dev_t device, sector_t offset)
-+{
-+	struct swap_info_struct *old_si, *new_si;
-+	int new_type;
-+
-+	spin_lock(&swap_lock);
-+
-+	new_type = __find_hibernation_swap_type(device, offset);
-+	if (new_type < 0) {
-+		spin_unlock(&swap_lock);
-+		return new_type;
-+	}
-+
-+	new_si = swap_type_to_info(new_type);
-+	if (WARN_ON_ONCE(!new_si)) {
-+		spin_unlock(&swap_lock);
-+		return -ENODEV;
-+	}
-+
-+	old_si = swap_type_to_info(old_type);
-+	if (new_si == old_si) {
-+		spin_unlock(&swap_lock);
-+		return new_type;
-+	}
-+
-+	if (WARN_ON_ONCE(new_si->flags & SWP_HIBERNATION)) {
-+		spin_unlock(&swap_lock);
-+		return -EBUSY;
-+	}
-+
-+	if (old_si)
-+		old_si->flags &= ~SWP_HIBERNATION;
-+	new_si->flags |= SWP_HIBERNATION;
-+
-+	spin_unlock(&swap_lock);
-+	return new_type;
-+}
-+
- /**
-  * unpin_hibernation_swap_type - Unpin the swap device for hibernation
-  * @type: Swap type previously returned by pin_hibernation_swap_type()
--- 
-2.53.0
-
+> ---
+>  drivers/thermal/thermal_core.c | 30 +++++++++++++-----------------
+>  1 file changed, 13 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
+e.c
+> index 2f4e2dc46b8f..664a4cc95199 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1187,10 +1187,11 @@ thermal_of_cooling_device_register(struct device_=
+node *np,
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
+>
+> -static void thermal_cooling_device_release(struct device *dev, void *res=
+)
+> +static void thermal_cooling_device_release(void *data)
+>  {
+> -       thermal_cooling_device_unregister(
+> -                               *(struct thermal_cooling_device **)res);
+> +       struct thermal_cooling_device *cdev =3D data;
+> +
+> +       thermal_cooling_device_unregister(cdev);
+>  }
+>
+>  /**
+> @@ -1216,23 +1217,18 @@ devm_thermal_of_cooling_device_register(struct de=
+vice *dev,
+>                                 const char *type, void *devdata,
+>                                 const struct thermal_cooling_device_ops *=
+ops)
+>  {
+> -       struct thermal_cooling_device **ptr, *tcd;
+> +       struct thermal_cooling_device *cdev;
+> +       int ret;
+>
+> -       ptr =3D devres_alloc(thermal_cooling_device_release, sizeof(*ptr)=
+,
+> -                          GFP_KERNEL);
+> -       if (!ptr)
+> -               return ERR_PTR(-ENOMEM);
+> +       cdev =3D __thermal_cooling_device_register(np, type, devdata, ops=
+);
+> +       if (IS_ERR(cdev))
+> +               return cdev;
+>
+> -       tcd =3D __thermal_cooling_device_register(np, type, devdata, ops)=
+;
+> -       if (IS_ERR(tcd)) {
+> -               devres_free(ptr);
+> -               return tcd;
+> -       }
+> -
+> -       *ptr =3D tcd;
+> -       devres_add(dev, ptr);
+> +       ret =3D devm_add_action_or_reset(dev, thermal_cooling_device_rele=
+ase, cdev);
+> +       if (ret)
+> +               return ERR_PTR(ret);
+>
+> -       return tcd;
+> +       return cdev;
+>  }
+>  EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
+>
+> --
+> 2.43.0
+>
