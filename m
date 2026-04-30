@@ -1,174 +1,244 @@
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010037.outbound.protection.outlook.com [52.101.46.37])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B30F73E5EC1;
-	Thu, 30 Apr 2026 11:35:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.46.37
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FA483115AF
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 11:41:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.43
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777548926; cv=fail; b=Ghte+AB3TKN/j4LuJA6NZ6X//qHysPhLUhRl57ivdCaB6J8xXcTVlgqKvSjotllMkeFa2oJKbUeLuRSnxlfjLJYWX4oNGocmpl8TDwLSR7Cfq6qYDTpDqTxYYZluSZi2ZISpITC+mSUtqKqpaSGRVcBys2GzvfqeLL66aH29ZxQ=
+	t=1777549316; cv=pass; b=hp32tNrn9uBYP6k/+2q/XZDGNDpUtlGc5DlukW9anHjB/dnVC1h/tbD2qqAhV5nIyEtnutUMzypw5vV1RJHMOsCV9C33NeBAopbVDLtiDgu2JuY65zEU4lvUtpeaDJGSjfsAjcVY9q7husMs0nrQMFhLHyUSHYOTpXz/PhW6uko=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777548926; c=relaxed/simple;
-	bh=jlM417uB4Y685ka7rUIYAteyU5jo23XaJgZNk9WdG5U=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=t7lq5zdRWgGHh3skw7COOXK7+bkpsHvm1CJpKQA9qabDIpvDy9Zi+fhLiww6TAy7AUNAFHJDgPOfHi3lCA+oovvmwa9LWfgQBxkB80GpmpNoUJ+ffM7ktgEjk93WV//+H/eDnU13PhSRZFxiJmx2Dfu+jj1gDGYoKUkapL9oi6I=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=mewDGSZl; arc=fail smtp.client-ip=52.101.46.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1777549316; c=relaxed/simple;
+	bh=/5pzMFPyyu5B1ZrMTUDdPrpWXVCAGEdpGUv3o/pBFuQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=M2ueW3MO2CZpX51kKkASdkyex6LEVTUs2tUtgVMmO7h437z+Kem6jbf0pkWRpe3rG7Vsoekl18otqra9caP/jCD9p63a7JXlQMtExe/xbm4i3jWqkr1U7TH+7g/hvbclxMtEFyEx62h7bhHXlZDPBLwxGaJ3hS29G0J/rGobb6I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r1FNI3/p; arc=pass smtp.client-ip=209.85.208.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="mewDGSZl"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rTO/cXmWx0n4IKH3AeIQYeE6nxmO8l7RSQJtFTXWe/p9N8eNcC+auUgY4O8ChuSHHORd7vTinqs5TEIMjZGwzHdaKDMug9Hp01Gs+Jz94evnoPWyPFkPRfAesLpnOFSq8MBgBfCtj3hIiXp5+63toBR1KLrImPsiHWiIG53UAh9mweNjXfUWBmXK8hX2fzTMNMYpv827BeOnIMylqbJQxKGcsbktYpJk0G+/BvIOusGoE+WdrJ2wbAwpbNSNajFGJ9gO4tloalXOegIo4Yaq6vnXtiTEl7Xm3RunIIQUP2R1Oo77XN/c2+l8RGXDaO+b6fPal/fudVcGluHEMkEkAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DGR+pgZuqSMxtoJt/ELViCmVYkmDlwFezP9s7An5obE=;
- b=iLNpGQLWBHPSMzHZLQpv0J9QyAoByc+VlX587lGzuHKcdAK6QYXHVGE2aHUfCGpuPFifYU8GcI/A3fmC0NIkcBWc15i3PkUOaxtexhnTlYBvUYIh6EsPByDp7ScH5x5A1FrirJzJXqtaKjcGEpdnj9836qDGokOp8/0jUzIIffe/xn9AcM+BRiGa2e07AKlaNlaAyMvj1KZaLOHqLDutGWrGgECfr3UX5gPWRjbqnZ5yq/BDYOUig2uiQoMReYqjsliiy8KKwKCQgFbMNoi0z5b6Bkg7Iyx81/WuhUsBObMgFBa4oT37+DdZWK6mjCAcUZg/U61xlMe7gARxhuxQ4w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=DGR+pgZuqSMxtoJt/ELViCmVYkmDlwFezP9s7An5obE=;
- b=mewDGSZlbB01OfIc6xxQChiR73NiyQIMidW4iZUmxqh/HOsHH4oYtoHXbsitH7Y+lBxOdnOqRxfn0hEVb8vnKxO52pYCrTII0ej9qhLGPOptIrsQX3uVaUHUmI10N6XEJjuuDjaTggbPWRUNyPtWfdPQGPlkvewLgN6Z1zGYjtIojcqyK8pT0yoE/S9mNkmzNhxhk6+9hO16YJElQGqdFrCB9Y9pKkGYnQf6Y3KNq7bT8ZjekiGEzSrQR7TAbaH0IUgR862gNnsOuiHmE5rLBFzL99K7CWJhkCMMr2BTiGYMqJEo9Sclo0Br0KrII6UXDLWjYc8dXol4dGH0/TlPUg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
- by CY5PR12MB6550.namprd12.prod.outlook.com (2603:10b6:930:42::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.18; Thu, 30 Apr
- 2026 11:35:10 +0000
-Received: from CH2PR12MB3990.namprd12.prod.outlook.com
- ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
- ([fe80::7de1:4fe5:8ead:5989%4]) with mapi id 15.20.9870.013; Thu, 30 Apr 2026
- 11:35:10 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 30 Apr 2026 20:35:06 +0900
-Message-Id: <DI6GHYH4LC4V.2JXRHZWLEJ8L2@nvidia.com>
-Cc: "Danilo Krummrich" <dakr@kernel.org>, <gregkh@linuxfoundation.org>,
- <rafael@kernel.org>, <david.m.ertman@intel.com>, <ira.weiny@intel.com>,
- <leon@kernel.org>, <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
- <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
- <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
- <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
- <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
- <a.hindborg@kernel.org>, <tmgross@umich.edu>,
- <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
- <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
- <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
-Subject: Re: [PATCH 00/24] rust: device: Higher-Ranked Lifetime Types for
- device drivers
-From: "Alexandre Courbot" <acourbot@nvidia.com>
-To: "Alice Ryhl" <aliceryhl@google.com>
-References: <20260427221155.2144848-1-dakr@kernel.org>
- <afMdfs0segrRBx34@google.com>
-In-Reply-To: <afMdfs0segrRBx34@google.com>
-X-ClientProxiedBy: TY4P286CA0014.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:26d::8) To CH2PR12MB3990.namprd12.prod.outlook.com
- (2603:10b6:610:28::18)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r1FNI3/p"
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-67b32c695efso2142387a12.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 04:41:54 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777549313; cv=none;
+        d=google.com; s=arc-20240605;
+        b=On3r5npF+2DAnxxGhfyj6Ep+Xw9VxuWYZ1M/q/T80DeOPNCxFXAqmHq0Csylb0/jFE
+         yKghKHi6wAje/QOgJzW1d+oMYdn+rzv2v/55vwg9A522LS8kQ3tZRhajQ+3oZQzTsP2u
+         48NHc1JaItvT5xyIen2o3RV1pg157qMZ94bbfCN9BfackWMYfmj78PTEUVrIhWQDGX5Q
+         NLN8X5xon9pznHWvsGkW8lodcv+uPbK6PxOgFWMt3+GNH5NbawdAiYTgMsLy6LwIK1hl
+         IGFAqIq9jr7KZctoFNk8LQNfb+lEbvGiL8oV8n5ZkKWMwC0KmkFHc89/UZXhilvjel7t
+         nAzA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=DazGWBgk03LG4+OcyJaAsBQ8XTHJgJmb+GxkgUCMjvA=;
+        fh=naJR1J73w9k6IE2coGo3OQgKioX1OOnXX8JAjS8MbCo=;
+        b=BlCzp/yLHnK7GNySOUFzxpvS4CIRgvz5QM3TwnabekRWhY0BINlzXd/xeYOrS/izX1
+         sy3HStV6C9ggoALoSrqV0O+y+0sgFe/boho/TruUhT4qdm3SQmpSB6uIaGWJuj+L2b08
+         6oIFUEwSmlr5zqydZ28/yW4aZQYaOsX/xVRw1M3pyX52g51ljSoyTY1s4AHdCYvUWxge
+         r1t2NDtXsRUzngIxzVcFf0HpbWpFWxU4ZnS5b5NDXangyMduJBw9cey8bhE8nwutIcdG
+         koY1YSwtaQDtT+lTDWNejnpFu5j0C7M3tKVx7quXblyVBFqemWbWbepPVDGjMhHe9zzF
+         n1hg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777549313; x=1778154113; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DazGWBgk03LG4+OcyJaAsBQ8XTHJgJmb+GxkgUCMjvA=;
+        b=r1FNI3/pgkBLpElkOwNyo1iW38IyN2ueezsc1BCsGeh8CstoA06wOKsgkRAIRop5Uu
+         ZVv5HtkIg3c1t3uR9Tt1HkDaPhkBSfEapkJlAu4pBoJaI3gwYUST0q212sHTO44Y5QiN
+         gZqMY345z41s8uk57tUN4i8ZvjHcjh5Avfo8DYQZD4AWRhl1C8N5GaOJs9PBpm5JlkUH
+         KOeYrLjZBL3Gqf6trNp00iCaQnGqO2EDh8PV/Y7p1rCSekIloZnj9jVZjxaUWESPQKcJ
+         TzQXJC120rMixso9+GNWJFORoFBX/Dpx2shbn8VEBsrhxrRq7NebJbXwaNv61PdqqY3t
+         eKcA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777549313; x=1778154113;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=DazGWBgk03LG4+OcyJaAsBQ8XTHJgJmb+GxkgUCMjvA=;
+        b=mLC/V8MACrjj1jGi5IhtZ8MKPm3dxVpAM83yXx+mzZNT1u84dU0Su+zZTsYtEhjWMO
+         DXg04eWWUx6Y1C5Ik6PF3nU2r4LyixL6RI2shKJ7CWw3cd8FOMXMe9iCHDOBqrixyRxi
+         +fWsykHtxqmgFkMBiuaunDn52/Q2PWxZccdKzCNLKHkKv4xPLP1uer4f4O5dvH485FJL
+         lXZJWrLRcP7Ez9EdL+NgoOdoRBrIuInQWNXPO1Wlwmkb3ihewcXTKVFTgJHOONie3Kup
+         ASLSL++NA8qj6ANk9gFwVMPvQcUxh46KFMbVjHpUahvZJRH4IKjpZ9thhcKuUt4YUuvy
+         TUBA==
+X-Forwarded-Encrypted: i=1; AFNElJ/1HfHn/LZozp6XXplQ/UvrR54+RcI4Dzg8la0U9qyIoRx/7Gw1NnhhP1Fp0FryKCz2/+LC+PSOyA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzwR1q/baj19HwpTOUEXXwAFa2YZVohX4CSxvv1K+qxRaUr5CuY
+	n/nqt+BHO08ts/XYdLKLNe/XGK9KNPcSHUP8fOHvZvzUJOy9xarSSDyvS4mkiQxnsvkOPaq/qnx
+	wqHXhNR2WQHtvRB48VaWyDbz18UtTcPc=
+X-Gm-Gg: AeBDietJRF6EsbRfuvguLYaCEXISdLaeMuLyF+wNxg8JBa5T8Cs4ySavKn87GFcqGbW
+	RCqJV1qLR6AWRmIWGJ4xFi89zwApYDaaXAqNtjbKzhFMyQmWfUUNNJ+T0ZYp3whjAjLdqNLG2Y+
+	LbSQ2kC56JXqoQSFBNkxiUsPkmslfar5+/D3USSk+DI7Q6Lp0Obwo3UDwicCG76aQsrDYJ2xzE/
+	4pNpGaF1CqV5H1HCyc82Iss7bytPqpEFViscKZR/NX99H129OCj/qxG4VCRabHkY64kR9G+4tXk
+	5X2w6pd4fpba8thdKg==
+X-Received: by 2002:a17:907:9307:b0:ba6:4eea:c1e1 with SMTP id
+ a640c23a62f3a-bbb98f6d53emr115233366b.17.1777549313324; Thu, 30 Apr 2026
+ 04:41:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|CY5PR12MB6550:EE_
-X-MS-Office365-Filtering-Correlation-Id: 034c2e85-c686-4782-3fe7-08dea6ac8906
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|1800799024|366016|7416014|376014|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	gxM/bfbMlWx6PzM7Tc8wGbr7MrfF6JTUzGHmB7X6WPybwzpVLGdSrLcNbojgkTlP9nk5l2N4KIy9grSQAl5+Oc29mx8mBMjWqWGR7Lxqunw0R2ZZ8YhVam1ZJaNk7qwCvjoN599k1MQTRZ4Lm5B+NiLbnwKFU7Vb2gu/ciZn0gCA+0cMDPX5DunDSu5j8xoC2rTmu+jKnIiWJVC0GgEV/zAOJy+pXsES0TgVnkzEMxUrdmGazpF14dhbM907FGIcTrLzK1wtdOWN/parHdK+05zh2V7QLAZnDYGlcLzrnZgglZh8ETzjuYbIwzydVPdWQXzki9EdJPCnlQWWypW9eZVzddXY+OXuVzD515DVLQD9hv0e37xDTgnmEnyd8jOZ3FNLgAFMXecoiGe0xFbN4znj4/ykUdFNGY+ZVijV8upTBbS5U/1x4UowUJp0RRO3iMkfGTwRA76IeuIOcaYNmn4sk5Wh2MZQh/SVVNTxXK3FbbwAzdpEIKmPB6nlABAr0C4Ee/ZZa/TJkf6GaMgVidT35Km7EFkWYtq84eVz0RjrPNJ66OJ3u5A+fnlAJkzTO2ITpf2KlTeabstEwylVo+gnHeEwBTY/Am40Ey5xHgqkUi1tdVCwCmopSQKIIM0zZMsE+dFFrhMkdQy/UjSnqe5i15Mjsr/ok57AM8l2EAmNWIu+ch3LaPNnIxbnarCKUPnd19f+lvVrltsBq1WQES7XhoNbunsI8J4l/KPZr6U=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(1800799024)(366016)(7416014)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?SGU5cFVwWW1MUTdSQTlVMUE2MVRSK3J0YW1saGVsSmlJV1Q3OWNkUndVUjNl?=
- =?utf-8?B?eUpuVlVsZ2M1T280RE9sUTBxeTBYTnBscFpvKzBndVBZYm9VYUlzZVJ1Nk1u?=
- =?utf-8?B?VXdpRHBrSnUzTWJQVDdVY2JpbklITzZXdWpnTHZnekdOTzR6N2ZNbGx0OUxZ?=
- =?utf-8?B?aC9XczJmNnU0VzAwaDFKWWVNSXpVbUYrV0pENkU3T0FtUVJCMnk0bHJhQzFY?=
- =?utf-8?B?Vk52em13b0pOR3RndE5VVy9UUjZQWTUrSG5KdTN0WVpCb3FoWU9udzE1d0Fs?=
- =?utf-8?B?RkRjVE1zcjMxM3Qrc3BYTi9wVFc0azlBYXlLeWU5aWR2TlFMRTFnQkxXRS9V?=
- =?utf-8?B?MHQ1VmNnMW9xU3g0QmFDVXM1Z2RhSWU5QUFUbUJmWk1UdVVlQ2lESVpubko4?=
- =?utf-8?B?Wm15OXBVVjRYYWEvNVkxeWd3RzF0Q0dTMTVlM0p1L3RUM1h0ZkFKd3VGeStM?=
- =?utf-8?B?dys0WjUrVzd6Rk9QRXlaeUg0Kys3Yk5oMEJkWWRVNUhzOTJRMFVKRmN5bVpv?=
- =?utf-8?B?WlFhN0RHNEd2YlBBeWxTVE5HY08wMGErdityb0k1ckl6OCtVczRBN0JrcFZY?=
- =?utf-8?B?eFJhS2VmNjlBZ0Jja0g3aUxBVUM5dkJ1ZTJtSjN2U2s3RGxta3NjSlJZNEU0?=
- =?utf-8?B?WjZNY2pnTWpxRFZFUGhDbzBjQ1N6dTRMa1E0ek4xbSsyVDZLRHkwRmlIZGh1?=
- =?utf-8?B?bzM2cjd5OWZ2amljaVdrMlQrWStVQTNlRWhyS1MycTRHeGxDdS9WMkVRVW9h?=
- =?utf-8?B?UWd2TEJrb1NrdUMvdUJBZS85c1JyMkpFOXQyclUyN1BucFVxMUdVeTZEamp0?=
- =?utf-8?B?bWZZdmtwUXZMNitPQllBTDFPVXgrNTVNdDBYcncwZVkvYWI2cXUxZzdPRzky?=
- =?utf-8?B?azdxNXl2Rm9hc2NaTGRzUTlZZERoYVlMSTBBZUl4TDUrVG9HNkJ5bDFVYkp1?=
- =?utf-8?B?U1dhdXhxR3ZYT1F2K211MWJ3TldreHNGUE9sc0cvZ0dTTUVSMlNTNHNVckQ4?=
- =?utf-8?B?akNmSlBic1dwK1VJSnN3UGZ5TDFyYlgrRm1pWEJodmdSSFRyZTJsNkk2SFBU?=
- =?utf-8?B?WmdndXFrYkoySVZjSHN6S1BtVGt1R0srNnFaQ0xCbGdjZStnbGpIYTlCd2t4?=
- =?utf-8?B?S1pMZlhpNEhUZ25Fd0dJZVdFdUpGLzJEM3BjY0pjR2Npa0FSYmxiUE5hZlNn?=
- =?utf-8?B?NWh6Zmszb09FRFZrNDVzN3lMUEt0MHF1NHhPOHdSQ0RXRkw3UUlzenRVNm81?=
- =?utf-8?B?UDROcTFGVXdid05Kbm51c1dxQnVhd3A3TUxqTzNlYkZGQU1HSmYzQWc3UzZn?=
- =?utf-8?B?SGRZdFJSdWwyWlhIS3JzeWM2cDFDdGQveEM0ejQvWVdoQmpkZ1hYUjZqV2FY?=
- =?utf-8?B?aXhYb0lKZWM4ZW4rVVlCLzdFSGF3TnRZL0NNUHRMVkQ2WHZnY0ZUclB1RGlO?=
- =?utf-8?B?U2ZwM1JqMm04cnVIY3lLS2RMTlI4SmFSaUgyWS9icFBhcThBNkhFV0RmTkVC?=
- =?utf-8?B?OHh1emJ6OE9ZMEJpUm1Wckpxdkh6a0I5MkxDVzVRMzlwZ2tTR0Q5RWNBRlFm?=
- =?utf-8?B?bHBaYlBGM1hnaVlvZWRVOGVuSTE4cWJKeEswTE13Qm0rejE1YXJHYWlTT3lQ?=
- =?utf-8?B?dS8xUEZWV2FuOGdBeHoxVWVaMUNhcHB3RjlpT28yMTlqTXEveTdLdVc2UWM0?=
- =?utf-8?B?Mkl0ZXgzNm93Um40R3lwVW5RNkZMMnpWT1ZFbkpiR3gyVGVEM0MwMGpiVElW?=
- =?utf-8?B?L1ZxbG1ibWNScXd1aE5jTVNUeG9OWGxRa3V5VmwyOXFpLzNCVHVFclRSN2FN?=
- =?utf-8?B?VmsweWllYmhCWHVOZ3dJNG1PcndJdy95dVgrcUpOTURwUGxwaERlUHd6VFdv?=
- =?utf-8?B?cFR4dzE3VnBqeWZBbytib0llMXl6Q2J5Y2dabVkrakwzbm8wcVBCbzJrd1Ba?=
- =?utf-8?B?dERNMTNEMUtOak5LOEJ4V1RYWkV6TFJMdFlKR21WbzhLTmU5MjZ1RjYxRjZw?=
- =?utf-8?B?RDVxM1MrR2ROSEV2a2N6RFNHbWhIYm5MYlI0RWozUm5TN0VNRk9NNUtWa3d3?=
- =?utf-8?B?VVpsdlFVOXowTWJBZEprcW5BK09hbUpoMk9aTUFmY1RNeVd1VWVaM2dIclhi?=
- =?utf-8?B?bCtoWUpGcVZ6blFvZm96M1VTL2RrNXdEMlVnZmF0VW93bFd6R051L0E4NERR?=
- =?utf-8?B?bFlsSTN2cXdsaUZUOWFHS3N6Smxtd2RQL1pJSk5yZ1RJQkx0TXZRTjVDRjBE?=
- =?utf-8?B?YW5VWUszc1J1TkFxUEFHc3ZJRmc4cjJEQlBuYURmbVd1ZTMwY2lIdTJhQXd2?=
- =?utf-8?B?b3ZodlZsbXJrcUF1U0x2a2lISkUvV0ZieFdsQ3dIeksxQzZmMW8vS1Nydy8z?=
- =?utf-8?Q?9GY+0B/pkhHuXYYys8BfKeCgzO43mC66sPyJXeTyHE2fv?=
-X-MS-Exchange-AntiSpam-MessageData-1: S5TbD9j2zNBw7g==
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 034c2e85-c686-4782-3fe7-08dea6ac8906
-X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Apr 2026 11:35:09.8663
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /bGRyL5RJ+Dq1HPJhxJ1ec8mQX0AI4Zn1Cks/Gm0bH9wDvr7HkpzXNVSzhCw95VA/mZUm4McvVq59r355Vc+6Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6550
+References: <12879883.O9o76ZdvQC@rafael.j.wysocki> <CAGAxtY2SEkx7OgMgM5ypA8qsBN0h6pcs111VjnhD-5ZGq7Je6Q@mail.gmail.com>
+ <CAJZ5v0ikAeu7cW9K6sfKYbbsVK51GOsFrX-qv3KJ7cVr-gRHew@mail.gmail.com>
+ <6010375.DvuYhMxLoT@rafael.j.wysocki> <CAGAxtY2N-=3taOBCTFZzEmm4NqJ-KhtsWq0fNts_tn3nAxpkTA@mail.gmail.com>
+ <CAJZ5v0j2MKGRFRRVT4rFuzr2OwJg7ufAfDKUS0rgAsg-EBH6Kg@mail.gmail.com> <CAJZ5v0jhjXap6gSZ5unR7cE+CQQPk1tDnAXLm9rkGsC2AnZTew@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jhjXap6gSZ5unR7cE+CQQPk1tDnAXLm9rkGsC2AnZTew@mail.gmail.com>
+From: Evgeny Sagatov <evgeny.sagatov@gmail.com>
+Date: Thu, 30 Apr 2026 14:41:41 +0300
+X-Gm-Features: AVHnY4JKI49zCihyCRiDCHor3psH662OA-YRmGfRM8cz3gfxerDwOZjw7eShbjI
+Message-ID: <CAGAxtY3h4sEphqKL-jiSn4p0NT9mdZtOFrVxW7CDo22XdL56iw@mail.gmail.com>
+Subject: Re: Pressing the power button causes the device to freeze completely
+ (schedutil involved)
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux regressions mailing list <regressions@lists.linux.dev>, 
+	ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Wysocki Rafael J <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu Apr 30, 2026 at 6:14 PM JST, Alice Ryhl wrote:
-> Super cool to see this!
->
-> On Tue, Apr 28, 2026 at 12:10:58AM +0200, Danilo Krummrich wrote:
->> Before:
->>=20
->> 	struct MyDriver {
->> 	    pdev: ARef<pci::Device>,
->> 	    bar: Devres<pci::Bar<BAR_SIZE>>,
->> 	}
->>=20
->> 	let io =3D self.bar.access(dev)?;
->> 	io.read32(OFFSET);
->>=20
->> After:
->>=20
->> 	struct MyDriver<'a> {
->> 	    pdev: &'a pci::Device,
->> 	    bar: pci::Bar<'a, BAR_SIZE>,
->> 	}
->>=20
->> 	self.bar.read32(OFFSET);
->
-> I think we should establish a convention for how to name the lifetime
-> early. Using just the generic name 'a is probably not ideal.
->
-> How about using 'dev for lifetimes that correspond to the lifetime of
-> the device being bound?
+I noticed that for powersave mode, I'm getting the following values:
+cat /proc/cpuinfo | grep MHz
+cpu MHz         : 2798.689
+cpu MHz         : 1999.659
+cpu MHz         : 1999.797
+cpu MHz         : 2741.103
+Also, there's now no difference in the single-core benchmark between
+schedutil, ondemand, powersave and performance modes. The benchmark
+always gives a very high result.
+This wasn't the case before; the modes had different performance levels.
 
-Good idea, it's not obvious what this lifetime covers at first sight.
-I'd even hammer it a bit more in the documentation as it is quite an
-essential point.
+I switched to ondemand, did a reset and waited a few minutes:
+grep -r . /sys/devices/system/cpu/cpufreq/
+/sys/devices/system/cpu/cpufreq/ondemand/up_threshold:95
+/sys/devices/system/cpu/cpufreq/ondemand/ignore_nice_load:0
+/sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor:1
+/sys/devices/system/cpu/cpufreq/ondemand/powersave_bias:0
+/sys/devices/system/cpu/cpufreq/ondemand/sampling_rate:8000
+/sys/devices/system/cpu/cpufreq/ondemand/io_is_busy:1
+/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:2000000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:ondeman=
+d
+performance schedutil
+/sys/devices/system/cpu/cpufreq/policy0/freqdomain_cpus:0 1 2 3
+/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:2834000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:28340=
+00
+2000000
+/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0 1 2 3
+/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:2000000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+grep: /sys/devices/system/cpu/cpufreq/policy0/stats/reset: Access denied
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   From  :    To
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:         :
+2834000   2000000
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:  2834000:
+      0        80
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:  2000000:
+     80         0
+/sys/devices/system/cpu/cpufreq/policy0/stats/total_trans:160
+/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:2834000 397
+/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:2000000 68525
+/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0 1 2 3
+/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:2834000
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:160000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:acpi-cpufreq
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:2000000
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_avg_freq:2000000
+/sys/devices/system/cpu/cpufreq/policy0/bios_limit:2834000
+
+=D1=87=D1=82, 30 =D0=B0=D0=BF=D1=80. 2026=E2=80=AF=D0=B3. =D0=B2 13:53, Raf=
+ael J. Wysocki <rafael@kernel.org>:
+>
+> On Thu, Apr 30, 2026 at 12:40=E2=80=AFPM Rafael J. Wysocki <rafael@kernel=
+.org> wrote:
+> >
+> > On Wed, Apr 29, 2026 at 11:17=E2=80=AFPM Evgeny Sagatov
+> > <evgeny.sagatov@gmail.com> wrote:
+> > >
+> > > The PC froze when I pressed the power button.
+> >
+> > Well, we need to dig more I guess.
+> >
+> > > grep -r . /sys/devices/system/cpu/cpufreq/
+> > > /sys/devices/system/cpu/cpufreq/schedutil/rate_limit_us:240
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:2000000
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:p=
+erformance
+> > > schedutil
+> > > /sys/devices/system/cpu/cpufreq/policy0/freqdomain_cpus:0 1 2 3
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor:schedutil
+> > > /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:2834000
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies=
+:2834000
+> > > 2000000
+> > > /sys/devices/system/cpu/cpufreq/policy0/related_cpus:0 1 2 3
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:1999759
+> >
+> > This kind of calls for some investigation.  It should not be less than
+> > scaling_min_freq, even though this looks like a rounding error.
+> >
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported=
+>
+> > > grep: /sys/devices/system/cpu/cpufreq/policy0/stats/reset: =D0=9E=D1=
+=82=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=BE =D0=B2 =D0=B4=D0=BE=D1=81=D1=82=D1=
+=83=D0=BF=D0=B5
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   From  : =
+   To
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:         :
+> > > 2834000   2000000
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:  2834000:
+> > >       0       844
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:  2000000:
+> > >     843         0
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/total_trans:1687
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:2834000 1=
+164
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:2000000 1=
+4130
+> > > /sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0 1 2 3
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:2834000
+> > > /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:16=
+0000
+> > > /sys/devices/system/cpu/cpufreq/policy0/scaling_driver:acpi-cpufreq
+> > > /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:2000000
+> > > /sys/devices/system/cpu/cpufreq/policy0/cpuinfo_avg_freq:1999759
+> > > /sys/devices/system/cpu/cpufreq/policy0/bios_limit:2834000
+> >
+> > So with the same patch applied (because I think that the one-policy
+> > configuration is suitable for this platform), please capture the
+> > output of
+> >
+> > grep -r . /sys/devices/system/cpu/cpufreq/
+>
+> Actually, the step above isn't necessary.
+>
+> > switch over to the ondemand governor,
+>
+> It is better to reset the cpufreq statistics after switching over to
+> ondemand by writing 1 to
+>
+> /sys/devices/system/cpu/cpufreq/policy0/stats/reset
+>
+> as root.  Then, wait for some time and capture the output of
+>
+> grep -r . /sys/devices/system/cpu/cpufreq/
+>
+> just once.
+>
+> > wait for some time, capture the
+> > output of the above command again and send both.
+> >
+> > Also, please send the output of
+> >
+> > grep . /sys/firmware/acpi/interrupts/sci*
+> >
+> > acquired after doing all of the above.
+> >
+> > You may as well check again if the power button works after switching
+> > to ondemand.
