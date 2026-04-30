@@ -1,118 +1,108 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7226B39FCAB
-	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 07:44:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 364FB3B8958
+	for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 08:10:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777535052; cv=none; b=aiF0fGBFzwyjYnOj/fgOZIJc6ehrd091tu4FLSzGvD41wzYxyOGpkEti+ugwrPANOwTmwHlByD2tMgB4tIYQZsX9wfmzxRiFRZb8WR5V0iJ/g9iSysgFrMk23H32UMvASCNYbkn0/Mm48yQhbZCFKg6ArT1m98RP4ETolXoV9Vk=
+	t=1777536639; cv=none; b=XnhBzctJK8SpT150HqIuUASJhYATLfnl7x8WP7bmS5p+5JCX5j1nqcs62x6oU3KYQmvmS0KowJUl9ztB6eJeyBJ1SUXRrHASrol7frPL1f2XhYONSDhfWmRH3kpOZAg7LcR3VQ+ZjWDGoLDN5PLaocdC/7ob5OvZEuqzWOe9KjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777535052; c=relaxed/simple;
-	bh=xQAiWiKRZknMt4OiF6xRbP6A9xpo4UcsDr6nkkq1v3Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PXK+CEBLhalXU1hfXX7VAnRNDf3XiJqS2+yS/7Jn9KTLNbHl7RFzg8y1Ik0xYCgtiRrk2OXvLnxKjgFn+aR8iPQHsRNVI/Yc5xUpwBAAq62pIjwG6B7XFXt34m83TqvdVjRFDh93S6J2zmI795tO+6cyfVQtu9Jk7bfHvGTqFGw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=bFb8c50c; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1777536639; c=relaxed/simple;
+	bh=Y7Z+f4twj102MaqgafUmbmWhaBz0+bcIsL4YX6/rdag=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=eF19iJYC7a123xn3MDf9KFS71Eecq/YMx0rCddhi4RHNeisWAm48IHBaS6ECk9HrsriM1EEjaKGikcVvpRSQOEK1yIO79o8sKlDDKDEMzGv6/RwUEFrjfyruiworMDO4Gv2kjpFYUJzHc7p7eLxoTFp1SO0X3xmupQFvbc645jY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Z7KfP51d; arc=none smtp.client-ip=209.85.221.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="bFb8c50c"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-43fe62837baso318545f8f.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 00:44:10 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z7KfP51d"
+Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-449de065cb3so4997f8f.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2026 01:10:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1777535049; x=1778139849; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Xjr3lQ9N85a7v4wbfT9HJYQv0tAfWVt69OdXRIx5aeQ=;
-        b=bFb8c50c50RLq/L6Hp4X+Dth1+9LEo8KPouDqKcw7hc7Zmg2I9MptGukJnHL2UaIly
-         HD4aLwJHDl2u1lKZS3rWxYr2Evdu9D/Tmj2/xyktSJX+zACz83lAAxgmaleQK4feSVEz
-         kUSCJvP0qkpcugfe2wNFildvbehSg6ONQ2TbDrT28NBbYfGKX3s7P14vw8UUy59aPItG
-         vYrItOZtAJzlz6pJPfNtkbNHKMM1ci8zQCrYQQ4+JlhCf/BitBMdmf4UfzSQBMLu7+ye
-         Pu+M8m215PqdOxmYrWr8gTzg/Y7sq6GuVefmNEfivraTkWxNKJyGkoURQDCcvUhQLsat
-         ABMg==
+        d=gmail.com; s=20251104; t=1777536637; x=1778141437; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4VTLShMWp8Pof70NawJHNcJQ7O87q7RcUOF6Y6NMU6I=;
+        b=Z7KfP51dmH0v9j+barHH7eiqByr37ZEp1hNdtF0TEs3EPQCceqBdUqvf7l/gKnc+tz
+         /uVve7xARNXVr07PSZ3F7zKHejYPi+5LTgXu3WDUsbx9JayM+2OJ+dLuXTfHGumKqqJY
+         ehEaYvEbxN9H1Xai337//LDQ0K3RCH1h5bCOkiF96ekTJ2ddHNpvD+YKLC03P4Z+4AoF
+         FyTWB7dDkxWeJI/QEzaixXCOc/7HJ5fubV9sz5uOQdHwNUjStZYjqnh0bWaRoIIdl2U8
+         IPZupobdFrWn73sTxvkMBzAhUEYIEZ2q1rmQ+WayCd/S2afijDkRUAhNUIGq2yc8spFX
+         oqaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777535049; x=1778139849;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Xjr3lQ9N85a7v4wbfT9HJYQv0tAfWVt69OdXRIx5aeQ=;
-        b=MV9dLV10HIvtXLsjdTAbq6Rw2fCJOPsHOV6Qnq8g5aYBhMy4jbZOF9UhADGz/Kvl3P
-         Rg5lKO8agQF/pSqeetGwR2IB1xDvdDQlghluRNWv5cv3DqtzSG/0XvnWaOSfqxS4m7sQ
-         rSl7Gzz4yjUbKpHT4Fu6r0PjBK82MIUAui3kPmHrjh8wpa8lun6iwckdxD2fWM390u/y
-         vx5hpumNach/+NQYueJiW161WP64Mt6xCueJkRAPy2eGmOuPpaEQ5ueDOanQRgtGCgH1
-         F0geHsku/Xj080kya3UmO7BHUIblhlTkYZXihHzRobEV8WZC+AxeHTa+QOuflMyhchb/
-         wuSA==
-X-Forwarded-Encrypted: i=1; AFNElJ9S7oi8PWWjzWwf+JiTH4MZXUWnCm2ZRLpqyFy+kjC1iH1DSSrxdk8IuYT2BhaA2dTmk59xzUQogg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzN+VVYWhrpJD9QvkDOWkksMjOQRBT7Famb6rKQZEajVkL/tNlk
-	J7W7UEqTo0W6x52LxYMx0Fx63sdkpR9YCHJt3jIVgCap3EQLHsassc+OZ4cSY8bYzwg=
-X-Gm-Gg: AeBDiesBFMCraFfxQ8jC+heaRCUPJGekXZYc4J+e6sxgf24Jc+eNW5JoQnQPyQF5kzQ
-	JLo2Hmt/I+hICpEUNaTDZy02o2FCbwJgtG9MQ7IVoCGEySliO//2Tx/yRXCRlOfgwn+2DDxRp/s
-	1BL+3nH8hGCWWkU/+Kg5ftat7kDx2wzVxOvPODTFwte1ZWz0VTuuA2QlgH4GAOat3uwyZYStm33
-	I7D6Pfb6mTVihFZ+ogqi+E7uCIjZkv/m5LhZkA7t37ZU9fpo43l5FCw+8u1Yije8NAYT0JpJDtO
-	2ufW7KdHpe33yJ6ALj/teXbVw8ZVpCe01jGY0m5P5d+cnGHEhuHHJmRlgYabnw36p4g3rUeGGMG
-	D8ybY1x3/r2OJMcw7kjHLBoSmrSahWX8OVSVCCpPIn0ai0ttZio49zEaWw0DjggJu4O97Hg6P6V
-	u8OWrM8Hrz6uWKM/d37MV8HKcXdT9z8BDvTQ9leNBmrN0Aoztm7GJK30pGrhQy38OYs/DFX4u0b
-	YLFMH77RISGpU9J
-X-Received: by 2002:a05:6000:2389:b0:43d:14ae:1340 with SMTP id ffacd0b85a97d-4493f812569mr2534686f8f.23.1777535048727;
-        Thu, 30 Apr 2026 00:44:08 -0700 (PDT)
-Received: from ?IPV6:2001:a61:13b3:7c01:f1f9:97ca:8fa3:c597? ([2001:a61:13b3:7c01:f1f9:97ca:8fa3:c597])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-447b72176fesm10563356f8f.17.2026.04.30.00.44.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 30 Apr 2026 00:44:08 -0700 (PDT)
-Message-ID: <8591a0ab-2d53-4223-99e6-fdc15851f737@suse.com>
-Date: Thu, 30 Apr 2026 09:44:07 +0200
+        d=1e100.net; s=20251104; t=1777536637; x=1778141437;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4VTLShMWp8Pof70NawJHNcJQ7O87q7RcUOF6Y6NMU6I=;
+        b=hlPNTwFtkd/eZOUZts+xluj+F/kcA4+dpHPON79CkQ6NHjjkgrzqWXY4i20QkOS05I
+         ApCU1pwgQw0CbbV+4DaGnbkf3uCvvlu2NJbHzltqLUV1Wo01DuWMj8k2uzOJ8QJcTgNk
+         1r+I/q2hcwPEbBQf+BDO4Xmjgnb5O6V9nqn6jEvC3NXsnz8VUaVtM0jf8/S5psLHhR5b
+         QjbOK6eAq7dJxnlQVi4E5JSJaeUXw5alsrnfT3syKtC4hKhXgT15hGyt1Rp9t0F00Xl5
+         aA0213kXtmJvZVUpCxZnzixlzhZKDWcW9UEiPiANvDlRNnHc+68+rokXuPweglGQETK1
+         DlxA==
+X-Forwarded-Encrypted: i=1; AFNElJ90HG4nAzGWRfFAb8JC0IORMglZ9v9javv+FbCAsj9PssrMdbZoBIJPwguTTH+P364x4YerJ2dh+g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyNya48FNxAUjGBNnyVh/ylrocQ5Gzo06PHoi7/obVZt6tlP8d4
+	uGFrPH3JztoQlLypNwLf8aitoynZMO4gvpmIKg7oudmc4apvXO3+fnB0UzMoXoNi
+X-Gm-Gg: AeBDieuLEkXBp19O7D/Bf9HHcHF6sUyNSVMr2tnGaQK0Cbo34QOnxBABgsRuhpumwPN
+	tdFZU1oA/yfuRMKtDrUn7b9iPV9BBR4BDT3Gm60Sojjf0lY68h1HRzXN50TQQ40TIiERUYXdGrx
+	B0Q2VppIsNJ481G4xDdL7PWKXRH1Zy37WQD7WbnXqPfZvQ13/oEjnThzepro2KWQ9NGDP5LV7SV
+	rUYCfvxAB044DWWkoB7sse98t45x+wGobrwR5g4lD6ZjiHXNUz6HLagUc7V7t41XIS4/4pUwtzT
+	AeEFvzFVF1CttK4aPLPmH/UWtrOdrUXr+5oY083MxbdR22lKLLKH7FWGwjF9+9MwjYZ1O0HzRBg
+	w8LP0kO2rcAtwMaxP380hDZ8ffSJMqXUdorEvpB1LNqbU5k05M6oR5Umm6u+yga7iwCpxUgm3uY
+	0A9dq9bao6Kaq1N/QsebFI3bI=
+X-Received: by 2002:a05:6000:2c11:b0:43d:6787:992f with SMTP id ffacd0b85a97d-4493d02a39bmr2853909f8f.10.1777536636357;
+        Thu, 30 Apr 2026 01:10:36 -0700 (PDT)
+Received: from xeon ([188.163.112.56])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-447b120bdefsm11809517f8f.0.2026.04.30.01.10.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 30 Apr 2026 01:10:35 -0700 (PDT)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	Svyatoslav Ryhel <clamor95@gmail.com>,
+	=?UTF-8?q?Jonas=20Schw=C3=B6bel?= <jonasschwoebel@yahoo.de>
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/2] power: supply: Add support for Surface RT battery and charger
+Date: Thu, 30 Apr 2026 11:10:13 +0300
+Message-ID: <20260430081017.59345-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC] USB/PM: should USB interface drivers distinguish
- hibernation THAW from RESTORE?
-To: Haowen Tu <tuhaowen@uniontech.com>, stern@rowland.harvard.edu
-Cc: oneukum@suse.com, gregkh@linuxfoundation.org, rafael@kernel.org,
- linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
- laurent.pinchart@ideasonboard.com, hansg@kernel.org, mchehab@kernel.org,
- pavel@kernel.org, lenb@kernel.org, kernel@uniontech.com
-References: <37c9bf07-7b21-403c-b4fe-d54ff6f811db@rowland.harvard.edu>
- <20260430021433.2083281-1-tuhaowen@uniontech.com>
-Content-Language: en-US
-From: Oliver Neukum <oneukum@suse.com>
-In-Reply-To: <20260430021433.2083281-1-tuhaowen@uniontech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On 30.04.26 04:14, Haowen Tu wrote:
-Hi,
+Add support for Embedded Controller found in the Microsoft Surface RT and
+used to monitor battery cell and charger input status and properties.
+Controller works both for UEFI and APX booting.
 
-  
-> But after your replies, I agree that this is not really a USB-specific
-> problem. The more fundamental question seems to be whether, in the
-> current S4 flow, resuming the full device set at that point is the
-> intended model, or whether there is any room for resuming only the
-> subset of devices needed for image writeout and whatever else must
-> remain functional during that phase.
+---
+Changes in v2:
+- srt_bat_get_string > i2c_smbus_read_i2c_block_data
+- added devm_kasprintf return check
+---
 
-In principle you could do so. Your problem would be
-a) computing the subset of devices that need not be thawed
-b) error handling
+Jonas Schwöbel (1):
+  power: supply: Add support for Surface RT battery and charger
 
->    1. a full THAW of the suspended system, as it is today, or
->    2. potentially a narrower resume of only the devices needed for
->       writeout, followed by broader recovery only if writeout fails.
+Svyatoslav Ryhel (1):
+  dt-bindings: embedded-controller: Document Surface RT EC
 
-Well, that is a question of motivation. Why do you want to avoid
-thawing devices? What advantage justifies deviating from the simple
-model?
+ .../microsoft,surface-rt-ec.yaml              |  63 +++
+ drivers/power/supply/Kconfig                  |  11 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/surface-rt-ec.c          | 389 ++++++++++++++++++
+ 4 files changed, 464 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/embedded-controller/microsoft,surface-rt-ec.yaml
+ create mode 100644 drivers/power/supply/surface-rt-ec.c
 
-If you really wanted to do this, the implementation would be rather
-straight forward. The difficult question is deciding whether you
-want to do it at all. Do you have systems in which going STD is
-critical in terms of performance?
-
-	Regards
-		Oliver
+-- 
+2.51.0
 
