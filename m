@@ -1,49 +1,49 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81CF0477983;
-	Thu, 30 Apr 2026 17:26:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E67A1FBC8E;
+	Thu, 30 Apr 2026 17:38:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777570002; cv=none; b=im+Xyb0eFGABoRXGnhJWNyTXMRIrQAj8/kY6Qh8uYEqa0qHwRkzwK1gctHIUhIcQguOPERMuYJ2xf7KrEhaXkvfXWR5P7tItjZSnvh6yKKExccx3LSTRsU7DY5NtY9rJ6JcsoSJjTsWN3HLrxSsdf6aoROSIfKcIRkq4qfI5mcE=
+	t=1777570695; cv=none; b=uuL7ckaq25ToANyr8Mu4s7wbUfieM1gJWnRC/9GxD8xvf8FQuGUZ2cAxOHoUd3eqmbRaNyg8ynQt9aRMUhcEA3Qzj4aCrPbOZHQwp3g1OmGI9PQCDubsIIFiDm2UK41EY4p3Uz/MaB2ze9Qa1a0PishJm0fkg62mtv2vfZx4KPs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777570002; c=relaxed/simple;
-	bh=jL+gANFznSru+9CcfAGa9hjDPDdwv96mRKeWD/jUees=;
+	s=arc-20240116; t=1777570695; c=relaxed/simple;
+	bh=9pt5YwauH8j/TWKGz7UH48FXnLaZv6BxlSWPpRblkuU=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=BZbUJosR63yyvtlU8anhZyRvYLuY0ZRqpekmFc337prIp6Cm1+BIYNVgFbEl7S461DG3tIOH2Cd7o0q5wSzLQ8b+gpP54yi01LUEJHaySBucM2oIbE+7kOfAMOe7vr3j+Rsk1P5WpMt/wWykKP/mIvk2IKnT8TvZT8TWtSo9xxA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=iasLoaeI; arc=none smtp.client-ip=198.175.65.11
+	 Content-Type:MIME-Version; b=HNWX2g3P7Zi6up+dxxsBSMXCBgc6ZkljginQ/y2IUpQ9gkII6AQBXPnK07Lne86FHhJ994l/CR4ZDStmaqgfZYh2zOn5A4QztAO7+YeXPip8QUiHcqkZUteKB2v6vRBqAaxotMKjaWbACt2/D4BT0J8xGvRQs6fopwvz5gc0aGo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=YyOHXx9N; arc=none smtp.client-ip=192.198.163.10
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iasLoaeI"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="YyOHXx9N"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777570000; x=1809106000;
+  t=1777570694; x=1809106694;
   h=message-id:subject:from:reply-to:to:cc:date:in-reply-to:
    references:content-transfer-encoding:mime-version;
-  bh=jL+gANFznSru+9CcfAGa9hjDPDdwv96mRKeWD/jUees=;
-  b=iasLoaeIPVD59jJ/EMBVtcKC0dCjcZoThOmq4uGgt6m6SWsyDmKMzvJ9
-   YPfoSI6YBvaOZY6g3VXZsjtdXTKuG+L57iEXrurIU1d/sGRw7twZarAyl
-   5oHA9QLSzPcM2eXv35iLHtsPvOqXq2qxGhpVtPoHWNwBbZEaU1MQSYrgM
-   YygVpf3DJL463/Wq1KndIRM+KIn4dSEb9+ujpphxtDTPBmCCkTE3+Elx/
-   9a4TxE8+gHXPM2OdFAx58Tqf4KcPvm5fsvu6FS1vF1j2NilaiCd+N4zID
-   PS4rg5386PeCoT/DL36LA9ZjOKifSqkPe95fLctDG1O9mA8X30Wn9T+vM
-   g==;
-X-CSE-ConnectionGUID: U/irvPLOTXWYyxDLm41yCg==
-X-CSE-MsgGUID: 1ONnKESiSx+hzwFiF0AnfA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11772"; a="88845115"
+  bh=9pt5YwauH8j/TWKGz7UH48FXnLaZv6BxlSWPpRblkuU=;
+  b=YyOHXx9NjImzK6KPhE6SWXh1wZ+qdYtDtxc+5hSRTcyMtZhxxtpNMOKd
+   QiKZtUKIJsNT3jJOaGg+CzlApdflGyleWOYYhvFaylEsQai4u1MYBWJbY
+   6PL3hZ0HHPv5QoOtNmlthQyXGobp63DjmRfGSYeEgfKtAECmE4YYkdQ/9
+   +i2y4yOTUoRzb+6sCUZYSVfSm0rk71pGa9y6DtCpd+RfdaOQOv4VOqiEl
+   u4Aq9+MMtnO5JWL63cFWMs+qcS+rmYKStEbwKbsRP6G8NCUuBUl1AFAXX
+   IIu4WnNRR5VUAUZmfZm5nxK1p0YW24a9I/JTaguYPNHbqLiCneVOQrXcv
+   Q==;
+X-CSE-ConnectionGUID: W+PoQT8xQ+q+hu4U9W8cFA==
+X-CSE-MsgGUID: CBXWfkNZQSOKZfxuZbe2Ng==
+X-IronPort-AV: E=McAfee;i="6800,10657,11772"; a="89910550"
 X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; 
-   d="scan'208";a="88845115"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Apr 2026 10:26:40 -0700
-X-CSE-ConnectionGUID: MUpxuDowRWyv8g7YXm0L1g==
-X-CSE-MsgGUID: DH8LMrc9Snu8MLSu9OYq9w==
+   d="scan'208";a="89910550"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Apr 2026 10:38:13 -0700
+X-CSE-ConnectionGUID: J1LUkZT3TjW8S0H72UUQ8A==
+X-CSE-MsgGUID: lEnjIv+bQiekOMmk5NVNIg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; 
-   d="scan'208";a="239638951"
+   d="scan'208";a="234911672"
 Received: from lstrano-mobl6.amr.corp.intel.com ([10.124.222.88])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Apr 2026 10:26:39 -0700
-Message-ID: <31cae88810593e091de28809a220ba31a67ee0bd.camel@linux.intel.com>
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Apr 2026 10:38:13 -0700
+Message-ID: <d23a53f21083acc1d370569d4d9393b777509bf7.camel@linux.intel.com>
 Subject: Re: [PATCH] PM: tools: fix ValueError when parsing incomplete
  device properties
 From: Todd Brandt <todd.e.brandt@linux.intel.com>
@@ -52,7 +52,7 @@ To: Gongwei Li <13875017792@163.com>, "Wysocki, Rafael J"
 	 <rafael.j.wysocki@intel.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Gongwei Li
 	 <ligongwei@kylinos.cn>
-Date: Thu, 30 Apr 2026 10:26:39 -0700
+Date: Thu, 30 Apr 2026 10:38:12 -0700
 In-Reply-To: <20260424071208.3610628-1-13875017792@163.com>
 References: <20260424071208.3610628-1-13875017792@163.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -110,6 +110,6 @@ wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwcm9wc1tkZXZdLmlzYXN5bmMgPSBUcnVlCj4gwqDC
 oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZWxzZToKPiDCoMKg
 wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
 oMKgcHJvcHNbZGV2XS5pc2FzeW5jID0gRmFsc2UKClRoaXMgbG9va3MgZ29vZCwgdGhhbmtzIGZv
-ciB0aGUgY2F0Y2ghIFJhcGhhZWwgY2FuIHlvdSBhcHBseSB0aGlzPwoKU2lnbmVkLW9mZi1ieTog
-VG9kZCBCcmFuZHQgPHRvZGQuZS5icmFuZHRAaW50ZWwuY29tPgoK
+ciB0aGUgY2F0Y2ghIFJhZmFlbCBjYW4geW91IGFwcGx5IHRoaXM/CgpTaWduZWQtb2ZmLWJ5OiBU
+b2RkIEJyYW5kdCA8dG9kZC5lLmJyYW5kdEBpbnRlbC5jb20+Cgo=
 
