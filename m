@@ -1,109 +1,141 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+Received: from smtpbguseast2.qq.com (smtpbguseast2.qq.com [54.204.34.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD9903A8727;
-	Wed, 29 Apr 2026 23:58:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A762C287263;
+	Thu, 30 Apr 2026 02:14:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.204.34.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777507111; cv=none; b=iptcgwN6N35YmmQXmuUGPGxS18PnJU/5PDgtS4BCchGBW3Fnrx5jxKfB4y5MMYTnUIDl31vwIqHvUjXzqPhLh9VI4BuecmpOKvMBOsyrMreu3Zaolugl1xUK9508PGJOb3tdOxzYwHPVr0dndpWwoBYVUBxYxZTIiWngN6izFls=
+	t=1777515302; cv=none; b=JqjDRQ9v5EW7BefNdpONy/CEiqXOEjzboOZ97+j3oJAD8Pq3quc4xTFDxdVhniNPBMAzr5xYvE1VjjyXuFiVWCKrfniEuJGZDccnNkW3mVfuDKWKnoYcBbJCl0SbTlOYIu/sZoMhpKNbLtXI+wlH2DSt+6g8trRD0IfSvvsyjrU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777507111; c=relaxed/simple;
-	bh=Pu4fVYnH7q5npdPgyoceDoc1BZOuu6ZywYbkG9peCbQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P+VpsLLW1s5NDK7WTNJ+xEP6MUpvqMoNXVG/pCq9HBZX+6w0TcDVmRPUhGyeDSIEh5mIq/jHcLg8jYlGSiKad63oKQhwAf2Vg+RwTzEbV7Jl7DfwpoYC452ygcjXhTXwN/Lf2j/bGCGP2EXwZCXJuzejIu2Z4tdArgde1LJicDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Wzv+s/Hh; arc=none smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1777515302; c=relaxed/simple;
+	bh=1zCC7AKObbyieR95/cFJ9+NHzXUtcyrsCGYZkWH+vHc=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=hZHBB4X35DVObABdROcT05UGL5QHYqhsLOvNl7bUL81sPQQgiumO3CoJpsZTQrz7wWfIXY7kOS9N1vUBma4vF7UHhdk/JNDWcJyVjk6xSh7G94tDc+HtkCG6NSogLYs1TWLvG0+fU2IDYJHLC0hamwTe7peTe4z1c/AislWVHEI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com; spf=pass smtp.mailfrom=uniontech.com; dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b=Wv3wlnJw; arc=none smtp.client-ip=54.204.34.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Wzv+s/Hh"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777507110; x=1809043110;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Pu4fVYnH7q5npdPgyoceDoc1BZOuu6ZywYbkG9peCbQ=;
-  b=Wzv+s/HhqakWw4ZlUtPXurmBcFI6VOFGT4Enn0QOu+VsarsrSwxHSJQ6
-   MVwJK+3z5bND29nkws8UJ/pFIBsuUt18q06LsHWyqAErIJkA5t7kWCdNt
-   dMJGir37VDRXpR3MqmJGBFmM4/o3VPHwFRXpC1NEKuE0L6b4Qv5oCDYmp
-   qrUcf/+VA9CBSfqZwNqzbEPRxV5TG2X2I4EVsrkziuX1Y5cUAbrb4ZPz9
-   P7mrLjGg5JkCwCodJswnpJBDsIa2CyH6x5nVfrBCClq2DdWFTMFqeW7uM
-   jIm2raAhBr7EjfxZPohyBrLwLzYd6KAK025YLPyu89ZaF7cPU3g1hDvfV
-   A==;
-X-CSE-ConnectionGUID: EH+LSCz5QsWZXumZebKJhA==
-X-CSE-MsgGUID: Mz1unzksRquDTSMTDks/Hg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="78554394"
-X-IronPort-AV: E=Sophos;i="6.23,207,1770624000"; 
-   d="scan'208";a="78554394"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 16:58:29 -0700
-X-CSE-ConnectionGUID: 7tW+9+ojQaCMSzeyuRirng==
-X-CSE-MsgGUID: bbpw/1a4SSin7IcUrK1bTg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,207,1770624000"; 
-   d="scan'208";a="234301597"
-Received: from igk-lkp-server01.igk.intel.com (HELO bdf09bfdbd5f) ([10.211.93.152])
-  by orviesa008.jf.intel.com with ESMTP; 29 Apr 2026 16:58:27 -0700
-Received: from kbuild by bdf09bfdbd5f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wIEnQ-000000004eL-2Zik;
-	Wed, 29 Apr 2026 23:58:24 +0000
-Date: Thu, 30 Apr 2026 01:58:17 +0200
-From: kernel test robot <lkp@intel.com>
-To: chenheyun <chen_heyun@163.com>, rafael@kernel.org, pavel@ucw.cz
-Cc: oe-kbuild-all@lists.linux.dev, linux-pm@vger.kernel.org,
-	linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
-	chenheyun <chen_heyun@163.com>
-Subject: Re: [PATCH] [PATCH] PM: docs: Add comprehensive wakeup_count
- documentation
-Message-ID: <202604300146.7zqFMAu9-lkp@intel.com>
-References: <20260419072330.101419-1-chen_heyun@163.com>
+	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.b="Wv3wlnJw"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
+	s=onoh2408; t=1777515287;
+	bh=HW+NJazsSNoz1Jtg9xGELfevFxqLCMTYFWcOjXN5PKY=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=Wv3wlnJwUfwxASUZweujIH/F4/muUUi4LBk9h0ZUB0ZWJToTiY97Db4v9tu9ItZOM
+	 JxpaWxSIwIwFc4cQD7Ho8Y9xu2bzMH3mp32McSymzaNKnKkVlnBUwUDjIKUdZUnrj2
+	 0ohKK3CiiNQmPM0PZYq6vAlgTE2FzXsR9XKraXPw=
+X-QQ-mid: zesmtpip4t1777515277t274f69a4
+X-QQ-Originating-IP: VddoJS8umxccj0SlXDjXRRJDPuzqz5Aeq5L4hpRgcm8=
+Received: from localhost.localdomain ( [localhost])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Thu, 30 Apr 2026 10:14:34 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 2437857808746587561
+EX-QQ-RecipientCnt: 14
+From: Haowen Tu <tuhaowen@uniontech.com>
+To: stern@rowland.harvard.edu
+Cc: oneukum@suse.com,
+	gregkh@linuxfoundation.org,
+	rafael@kernel.org,
+	linux-usb@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	laurent.pinchart@ideasonboard.com,
+	hansg@kernel.org,
+	mchehab@kernel.org,
+	pavel@kernel.org,
+	lenb@kernel.org,
+	kernel@uniontech.com
+Subject: Re: [RFC] USB/PM: should USB interface drivers distinguish hibernation THAW from RESTORE?
+Date: Thu, 30 Apr 2026 10:14:33 +0800
+Message-Id: <20260430021433.2083281-1-tuhaowen@uniontech.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <37c9bf07-7b21-403c-b4fe-d54ff6f811db@rowland.harvard.edu>
+References: <37c9bf07-7b21-403c-b4fe-d54ff6f811db@rowland.harvard.edu>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260419072330.101419-1-chen_heyun@163.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: zesmtpip:uniontech.com:qybglogicsvrsz:qybglogicsvrsz3b-0
+X-QQ-XMAILINFO: MMKcwIwa79XOzWP9S0oGJ8R7pp/e2PghilABU/Y/Kx6rKng6RE6qLaZP
+	EkVKvn7ajABE9XrvDTPjEU/RqHf+p3Cj6XEZodMoLXs6I/odAdhlLUHvNpoZRK55bSyR70W
+	CUSe4wArVZQSUSJdNZO3OQUlNJYfrhfAelNSgd0f4UVuju2axaX6THNipWoGro2dnP2aRs6
+	H8vUm/KG4JLfIzBcDF9+gd8xcp8emC+mAIdfKOH/EfG+wCJgagpLudGgZglSUqka74NUoMl
+	igO2dKzt/x+HPZqBNmwLk0VNPyQcKnsjAn/jCqlrPTtXAPM+BfToZ7FDO9gX+MJnBs2OBVG
+	tA49GeFCzxHd+00H4vXmbSWX3ceyoErjONnqUShELHCqdwiKX1yq2S6Rxk+puxCWuOHu9Dm
+	+V/Kgey6db44pOtfPAFG3NpAH7M3b5DBkzlDgGmVwCBdIniCK497ELNP9snm7mCWjLnIwdk
+	E7H1WjjcslqfR4ki0B0/jATmP0D6NlK3H4+O5fAHqnWdh0Jtoqgjn60IIyGttMp6wEqiLBZ
+	MhsxJ0fOLcvIN8yBs6ia2/CK43cf2shAUHzJC5HZHwHR/tDfbXYk6EshYIX34/1LL08dXbc
+	CnCrr89Oz144YCV8VhlxJCzYgLtVPE/0VNcrF801hB3gWzXwmhDZaIYpVSz30idlaqqND2D
+	IEkeO+Oglnu/5rxrHKHYy9/lQ0ZtuRstMZfZUWtxcEZ/GJVd8sfc32662QCd9gatdE2vuIZ
+	4aQgNgfO/N36HGaxl33W8Enr+/N2PNgFXxRl09hRcMVsekSYWnflcgkzYAkQn7kMpzG76r9
+	TD4TbNaYT3zUjTn3co7QCVZ5fzy3KJdBMokPAhkaeCJPRXrX6l+9pKB5ufPYmZYduBiBdoH
+	GVmFn/y082fW7ovTjqG4Nnyh/mSCH1FmWEzFbedTrzk32kj5JfJGXFFaaitERNM/hevBd83
+	JtW5bd33Gjw/zutNYSAOtxIZC83xhJa2Sc/oVJJUnOX0Poq7RliQXjxI8t4TpdttTrJQ=
+X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
+X-QQ-RECHKSPAM: 0
 
-Hi chenheyun,
+Hi Oliver, Alan,
 
-kernel test robot noticed the following build warnings:
+Thanks for the feedback.
 
-[auto build test WARNING on lwn/docs-next]
-[also build test WARNING on linus/master v7.1-rc1 next-20260429]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+I think my original RFC title and framing were too narrow.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/chenheyun/PM-docs-Add-comprehensive-wakeup_count-documentation/20260420-160506
-base:   git://git.lwn.net/linux.git docs-next
-patch link:    https://lore.kernel.org/r/20260419072330.101419-1-chen_heyun%40163.com
-patch subject: [PATCH] [PATCH] PM: docs: Add comprehensive wakeup_count documentation
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-docutils: docutils (Docutils 0.21.2, Python 3.13.5, on linux)
-reproduce: (https://download.01.org/0day-ci/archive/20260430/202604300146.7zqFMAu9-lkp@intel.com/reproduce)
+What originally triggered this discussion was a UVC camera: during the
+THAW phase used for hibernation image writeout, the camera's streaming
+resume path runs again and can turn the indicator LED back on. From that
+observation, I started by looking at the USB side.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604300146.7zqFMAu9-lkp@intel.com/
+But after your replies, I agree that this is not really a USB-specific
+problem. The more fundamental question seems to be whether, in the
+current S4 flow, resuming the full device set at that point is the
+intended model, or whether there is any room for resuming only the
+subset of devices needed for image writeout and whatever else must
+remain functional during that phase.
 
-All warnings (new ones prefixed by >>):
+So the real issue I wanted to ask about is closer to this:
 
-   Warning: Documentation/devicetree/bindings/mfd/motorola-cpcap.txt references a file that doesn't exist: Documentation/devicetree/bindings/rtc/cpcap-rtc.txt
-   Warning: Documentation/devicetree/bindings/regulator/siliconmitus,sm5703-regulator.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/siliconmitus,sm5703.yaml
-   Warning: Documentation/devicetree/bindings/rtc/motorola,cpcap-rtc.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/motorola,cpcap.yaml
-   Warning: Documentation/doc-guide/parse-headers.rst references a file that doesn't exist: Documentation/userspace-api/media/Makefile
-   Warning: Documentation/leds/leds-lp5812.rst references a file that doesn't exist: Documentation/ABI/testing/sysfs-class-led-multicolor.rst
->> Warning: Documentation/power/wakeup-count.rst references a file that doesn't exist: Documentation/power/wakeup-events.rst
-   Warning: Documentation/translations/it_IT/doc-guide/parse-headers.rst references a file that doesn't exist: Documentation/userspace-api/media/Makefile
-   Warning: Documentation/translations/ja_JP/SubmittingPatches references a file that doesn't exist: linux-2.6.12-vanilla/Documentation/dontdiff
-   Warning: Documentation/translations/ja_JP/process/submit-checklist.rst references a file that doesn't exist: Documentation/translations/ja_JP/SubmitChecklist
-   Warning: Documentation/translations/zh_CN/doc-guide/parse-headers.rst references a file that doesn't exist: Documentation/userspace-api/media/Makefile
-   Warning: Documentation/translations/zh_CN/filesystems/gfs2-glocks.rst references a file that doesn't exist: Documentation/filesystems/gfs2-glocks.rst
+  during hibernation image writeout, should PM resume all previously
+  frozen devices, or is there any room for a more minimal resume of only
+  the devices required for writeout and their dependencies?
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+If writeout succeeds, the system will power off afterward, which made me
+wonder whether every previously frozen device must be resumed at that
+stage in the same way it would be for ordinary recovery. If not,
+avoiding unnecessary resume work in that phase might also reduce the
+time spent before final poweroff, although I do not have measurements
+for that. On the other hand, if writeout fails, the system needs to
+continue running, so the remaining devices would still have to be
+recovered correctly. I agree that this failure path makes the problem
+much more subtle than I described in the RFC.
+
+I also agree with Oliver's point that this cannot be expressed as
+"storage devices only". In practice, any such approach would need to
+account for dependencies and for other classes of devices that may still
+matter during the writeout phase.
+
+So at this point I am no longer trying to argue for a USB-specific
+interface change. Instead, I am trying to understand whether this is a
+valid PM/hibernate design question at all, namely whether the writeout
+phase should conceptually be treated as:
+
+  1. a full THAW of the suspended system, as it is today, or
+  2. potentially a narrower resume of only the devices needed for
+     writeout, followed by broader recovery only if writeout fails.
+
+I do not have a concrete implementation in mind yet, and I am not sure
+whether such an approach would even fit well with the current PM core
+model. I first wanted to check whether this is considered a valid
+problem to discuss.
+
+If the answer is that the current full-THAW behavior is simply the
+intended model, that is also useful for me. In that case, I should not
+treat the UVC behavior as evidence of a missing USB-side mechanism.
+
+Thanks,
+Haowen
