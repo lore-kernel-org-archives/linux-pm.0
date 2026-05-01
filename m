@@ -1,127 +1,182 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 219A73806A0
-	for <linux-pm@vger.kernel.org>; Fri,  1 May 2026 09:18:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63ED526056A
+	for <linux-pm@vger.kernel.org>; Fri,  1 May 2026 12:00:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777627137; cv=none; b=FtR9vy08N+NQ12cSJn9bd9xoEYOwArpgEtaegYp9umSShz9KsEddd/Hn38XgDyFgcMxwdJbTMLcKXgPF1spyn2Z8HubfxawkfvRA2xUItRE9kZ9+6RrUO+fyLbnpGJ9YWe1mY6MSLof0gdNOPDGyEQfHhPgc21z8dL1hmpAQbAE=
+	t=1777636845; cv=none; b=b720vUiuSWVWTdkHMqigyDayKe9jcb6qUscVggBgHrFklhQqO1WYsZVH1ma7n7N9RigeGNEoKnu4Ud3C64oMq+H1w8YjZ1jONr1q5zLcDO+RWn+ubDvForihaZtSVthLWnmu4uSiMmZbhPLssfjYAokbDce89sCr9CR0m2WPMZI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777627137; c=relaxed/simple;
-	bh=XcfJhcCYTkjzBCvg/Cxuww7QqKifGaagi9xIyyI67cY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MLVxvwGUVIaman0FWz/Yqf8AowEZkz/MpNZXrCNOlQDVA190fILI1hWWBmr7pfzr9Vga+UTTEAZV94YQpTddJ/cXha5sgCIV4PndnKdBqml3Q6cPjWbvdxmhgWq1cA4G/15J9LUSZOBwr8COI/Gl/6kCC3wQ7uYkH8aAQKJfJ6I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com; spf=pass smtp.mailfrom=fairphone.com; dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b=UmFMgQ38; arc=none smtp.client-ip=209.85.221.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=fairphone.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fairphone.com
+	s=arc-20240116; t=1777636845; c=relaxed/simple;
+	bh=Prvv7B0ov4/EhjwbeFDd/isxbU+ETX0Tg1NWb+ujt4c=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=adZxyyeC58T1V5dMVy1oe3IW7M6nvIcL/lV5DPxEmDsbZ9nXuVuAu+XoJkt+6JboCZ0JH/GFb/gaa36jrdTil1ANbmPaNsqUDLjXyviaLeJJOIh0JuakdX73i592+Z+IJw7VFpdLzrJcvNyYqypclN3nn4TFb2I6Tm+IzE+ihog=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DC6M8WON; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fairphone.com header.i=@fairphone.com header.b="UmFMgQ38"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-449d6c68ed8so1073220f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 01 May 2026 02:18:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair; t=1777627123; x=1778231923; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZnuErBRIZTrfkelR+38i2qfJhgtaQ07JLYCEdmx/1ig=;
-        b=UmFMgQ38nVJ/7i+khKEJsxD3GRutbNe3PNGcY5YY/XzZs/AE2Hp9KL50iJ9hPe0S1W
-         NlwTiiQ7eYOMW/uRpxKHacoOu8xkBe1f0bur6yjdfIuCUTvEAMcMBXZi2zVathZbyIjc
-         qW0GdJPpqhGq5dAGfL5gEh9D5hKTBantio369Yh2ThDrwHpFEzQgLXHfw9nBUKxyu0mD
-         cmuNxQVO5CRhaKrxOcjyK8rVzAE2JIowROne/CiskazjT8W9iGu+cP/+rEPBAdsInZkn
-         TFfWO8PHzgRYjqxFiLQzYUBw225rZrDdcRu5bR9OOS/tHShTVQhokAkAVzdHNLuAKLv+
-         Q6yg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777627123; x=1778231923;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=ZnuErBRIZTrfkelR+38i2qfJhgtaQ07JLYCEdmx/1ig=;
-        b=bdEoCRkR7tSL9NJ5oR6ZTUg2T86HhPuLV0WvgxDe9h5nb5Otc0AvtQVzyRYvQ5ZtT3
-         gRGEOo74/QpBCzIHyPGg659C05G4ZoZzZ146KcJGW5++5Ot+d2+PCc6PLhrdD9kGiPOE
-         cnzdmOD1/sAYtpspzSzuL/2CgAi3fttNzq+PHiQxfW0euS+gr18grU2wClYAv6SwF7VM
-         yxVXqrnitbPqLMr9SD1L8X1G3tDmDfU+a4m31pda3ccx76eLE8Wk+TM672YtZUCAlJei
-         sEl1nF3XkvTNa2dlkg6uL79Gs3W7NG+fTiU5B2gq+en9bSO5XhXYcOzCT5O/3uoXiORY
-         q0iA==
-X-Forwarded-Encrypted: i=1; AFNElJ/dq+AgCdMkt7ixn22UiCLF7c+Wx8sl34xw+FxBAT+8IZFTWRYKFJyS7QfexooQsq82Npf90AywsA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyBIDI76szfAy17n3/gvc1o6HjoN8/5WOcUWZaeUlCl/RMLpMe5
-	QEQ9cgPpsEPKJnGfiWRBg0MEBxqJI/zKNVfCWoeO7YHP99y3JHTtwWiRRdEm4inilGA=
-X-Gm-Gg: AeBDieuUm4xsB7adSFwaPW+UVbR8wuvFOroVqftf9idHj5NDqd5o1Yy6Je5UFDty0Ik
-	hRpKHIW0/g7e+VV6Ok+ulXF4KM7mlY/vflb8kiMKgvI5yVDZtikdAojvMWK7Bud+nqadCcUVMxt
-	WgByljwZLdwWvLcdGBzZDrPyaWWF1MlcqEUJMkz0jDof+A3J4qw9pC1y5Lfyd/4zSzWfNjlUV6i
-	qIQwgxRNF72oTKHTuVvg+UbaZellkCCH9qG9JY/VO9NSnMPlGSTPfZXjK8JJNiM6neZ7ogUDn7S
-	Tfo6DlJ8gC6kPW193eEanSscRj3+lyb9v1g1bOaYsEYufQJhMdLTHx+ycgL+Ti82toVWK9fGuc9
-	eAp77/eKjGyJuVySRcvxHBVRk3aMXHQd9wM79t9bXYWWAxVE72U8lAzqxTEWDS2ta20sAdQTDV9
-	8eQE+3zW5WQeu+2OGhbMrUe9QXA3QjK0qx9KWD63txQxojOw6A6rpR4LWY2If67seR7KQhpdW8X
-	gp6utFH
-X-Received: by 2002:a05:6000:22c2:b0:43c:ef4f:79dc with SMTP id ffacd0b85a97d-44a857c070emr3502853f8f.8.1777627123520;
-        Fri, 01 May 2026 02:18:43 -0700 (PDT)
-Received: from [192.168.178.36] (046124199213.public.t-mobile.at. [46.124.199.213])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-44a98b76fd0sm3820787f8f.35.2026.05.01.02.18.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 May 2026 02:18:43 -0700 (PDT)
-From: Luca Weiss <luca.weiss@fairphone.com>
-Date: Fri, 01 May 2026 11:18:33 +0200
-Subject: [PATCH v2 5/5] arm64: dts: qcom: milos: Add interconnects to camcc
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DC6M8WON"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AD2FC2BCC7
+	for <linux-pm@vger.kernel.org>; Fri,  1 May 2026 12:00:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777636845;
+	bh=Prvv7B0ov4/EhjwbeFDd/isxbU+ETX0Tg1NWb+ujt4c=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=DC6M8WON5YvLORhN4QtI6pjt5reE5F0a+Wa1WMFUuH0ZsAr5ih8+mRJazO/x28+/j
+	 ImoTl4LyLMcbz1wKLFNc9UgYiyUhKOkaMGb+FvytX2LwqecmdtG+jdgbC8yNpJPxx2
+	 GzESMNHmqxZtUTb3BE87gJHegOpNtceIM33HAYPOJ5s2i0gRzo/dDdILWprKh/ecet
+	 uepihGtnJCB2Xt2q5VhEfuYuTrzyMgE3tyBGeotjkfCObc3YrswYP0f1kSjtEV2ka+
+	 ENvksu/nE+NHKDinzpaTAdmQqGtJRM+vJPE0XPbe9ZjepBibNHxoLZAmOEyu+3uAXI
+	 U9pfsXhb3qeGA==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5a2c500750dso3289125e87.1
+        for <linux-pm@vger.kernel.org>; Fri, 01 May 2026 05:00:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9N7+DyBeRf/me3y1+S6FEpjm0qJ6hEcHjKzo+pz/h8wnCechWjUSwzTDdExzfvuRgrwPqBuR5TqA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzYwrZ5f7h+FXQdjDYTre/MX47AV0ss33MObjjB1x3DTFVeiPXp
+	9HftCLOefLQntaHO6lD9ctb+3z5TufFL3QWN1VZXCg421cLC4WR9Qrv7CXVsBYbI6XKbqlE4vfm
+	PdH83T+kLpA4hrT2m5bbPKPyBHmny6z8=
+X-Received: by 2002:a05:6512:1253:b0:5a2:b51a:6a55 with SMTP id
+ 2adb3069b0e04-5a8522d919emr2916721e87.29.1777636843461; Fri, 01 May 2026
+ 05:00:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260501-milos-camcc-icc-v2-5-bb83c1256cc3@fairphone.com>
-References: <20260501-milos-camcc-icc-v2-0-bb83c1256cc3@fairphone.com>
-In-Reply-To: <20260501-milos-camcc-icc-v2-0-bb83c1256cc3@fairphone.com>
-To: Georgi Djakov <djakov@kernel.org>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
- Mike Tipton <mike.tipton@oss.qualcomm.com>, 
- Taniya Das <taniya.das@oss.qualcomm.com>
-Cc: ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org, 
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, 
- devicetree@vger.kernel.org, Luca Weiss <luca.weiss@fairphone.com>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777627112; l=1001;
- i=luca.weiss@fairphone.com; s=20250611; h=from:subject:message-id;
- bh=XcfJhcCYTkjzBCvg/Cxuww7QqKifGaagi9xIyyI67cY=;
- b=RVgZP6zl4igJW2UZF4EhCIuRsywJ8TJPAYhxRoM9TMx2tC4OgST/C3rBNwMdp80Ll37kF/tYZ
- MYGuDVYg64VBfwf+ZTJzwnsyd0MuFm5A68MD5NmQcV2KBVshRvgGaqL
-X-Developer-Key: i=luca.weiss@fairphone.com; a=ed25519;
- pk=O1aw+AAust5lEmgrNJ1Bs7PTY0fEsJm+mdkjExA69q8=
+References: <12879883.O9o76ZdvQC@rafael.j.wysocki> <CAGAxtY3h4sEphqKL-jiSn4p0NT9mdZtOFrVxW7CDo22XdL56iw@mail.gmail.com>
+ <CAJZ5v0ixuF=AQf0_VcPH=4jo5X-HbEB3WvJAnk8_fZes+bjyLg@mail.gmail.com>
+ <12909238.O9o76ZdvQC@rafael.j.wysocki> <CAGAxtY2J3vBJ9oUh1nt1c9ytRE_o=-rwk7nLKuDN==jW2kodbA@mail.gmail.com>
+In-Reply-To: <CAGAxtY2J3vBJ9oUh1nt1c9ytRE_o=-rwk7nLKuDN==jW2kodbA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 1 May 2026 14:00:30 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gX3O5rQ21WedZD8v-hJgBN=U67TwETGNuPquk4u+AhtQ@mail.gmail.com>
+X-Gm-Features: AVHnY4LyegHNXIktJOgi8NQ9SuD6HKNF69LprPtSs1OL2JnnuUQxHDKy9ENV8iw
+Message-ID: <CAJZ5v0gX3O5rQ21WedZD8v-hJgBN=U67TwETGNuPquk4u+AhtQ@mail.gmail.com>
+Subject: Re: Pressing the power button causes the device to freeze completely
+ (schedutil involved)
+To: Evgeny Sagatov <evgeny.sagatov@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Linux regressions mailing list <regressions@lists.linux.dev>, 
+	ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Wysocki Rafael J <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The CAMSS_TOP_GDSC inside camcc requires an interconnect path to be
-enabled, otherwise the GDSC will be stuck on 'off' and can't be enabled.
+On Fri, May 1, 2026 at 1:18=E2=80=AFAM Evgeny Sagatov <evgeny.sagatov@gmail=
+.com> wrote:
+>
+> Rafael,
+>
+> I'm leaving on vacation today. I'll be able to conduct new checks
+> starting May 17th.
 
-Add the interconnect path so that this requirement can be satisfied by
-the kernel.
+Sure, thanks for the notice!
 
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
----
- arch/arm64/boot/dts/qcom/milos.dtsi | 3 +++
- 1 file changed, 3 insertions(+)
+> Thanks for helping with resolving the issue!
 
-diff --git a/arch/arm64/boot/dts/qcom/milos.dtsi b/arch/arm64/boot/dts/qcom/milos.dtsi
-index 4a64a98a434b..80208bc33730 100644
---- a/arch/arm64/boot/dts/qcom/milos.dtsi
-+++ b/arch/arm64/boot/dts/qcom/milos.dtsi
-@@ -1923,6 +1923,9 @@ camcc: clock-controller@adb0000 {
- 				 <&sleep_clk>,
- 				 <&gcc GCC_CAMERA_AHB_CLK>;
- 
-+			interconnects = <&mmss_noc MASTER_CAMNOC_HF QCOM_ICC_TAG_ALWAYS
-+					 &mmss_noc SLAVE_MNOC_HF_MEM_NOC QCOM_ICC_TAG_ALWAYS>;
-+
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
- 			#power-domain-cells = <1>;
+No problem.
 
--- 
-2.54.0
-
+> =D1=87=D1=82, 30 =D0=B0=D0=BF=D1=80. 2026=E2=80=AF=D0=B3. =D0=B2 17:42, R=
+afael J. Wysocki <rafael@kernel.org>:
+> >
+> > On Thursday, April 30, 2026 3:57:41 PM CEST Rafael J. Wysocki wrote:
+> > > On Thu, Apr 30, 2026 at 1:41=E2=80=AFPM Evgeny Sagatov <evgeny.sagato=
+v@gmail.com> wrote:
+> > > >
+> > > > I noticed that for powersave mode, I'm getting the following values=
+:
+> > >
+> > > I guess you mean with the powersave governor.
+> > >
+> > > > cat /proc/cpuinfo | grep MHz
+> > > > cpu MHz         : 2798.689
+> > > > cpu MHz         : 1999.659
+> > > > cpu MHz         : 1999.797
+> > > > cpu MHz         : 2741.103
+> > > > Also, there's now no difference in the single-core benchmark betwee=
+n
+> > > > schedutil, ondemand, powersave and performance modes. The benchmark
+> > > > always gives a very high result.
+> > > > This wasn't the case before; the modes had different performance le=
+vels.
+> > >
+> > > I would expect schedutil, ondemand and performance to give similar
+> > > scores, but for powersave I would expect the score to be lower.
+> > >
+> > > With the same patch applied, can you please switch over to powersave,
+> > > reset the stats and then capture the output of
+> > >
+> > > grep -r . /sys/devices/system/cpu/cpufreq/
+> > >
+> > > Also, I'd still like to see the output of
+> > >
+> > > grep . /sys/firmware/acpi/interrupts/sci*
+> >
+> > Additionally, please remove all of the debug patches sent so far, apply
+> > the one below and send a dmesg boot log.
+> >
+> > I want to check if all of the CPUs use the same control values when
+> > they write to the frequency scaling control register.
+> >
+> > ---
+> >  drivers/cpufreq/acpi-cpufreq.c |   12 +++++++++---
+> >  drivers/cpufreq/cpufreq.c      |    1 +
+> >  2 files changed, 10 insertions(+), 3 deletions(-)
+> >
+> > --- a/drivers/cpufreq/acpi-cpufreq.c
+> > +++ b/drivers/cpufreq/acpi-cpufreq.c
+> > @@ -887,9 +887,14 @@ static int acpi_cpufreq_cpu_init(struct
+> >                  * unknown and not detectable via IO ports.
+> >                  */
+> >                 policy->cur =3D acpi_cpufreq_guess_freq(data, policy->c=
+pu);
+> > +               pr_info("CPU%u: Using I/O space for frequency scaling\n=
+", cpu);
+> > +               pr_info("CPU%u: frequency scaling control address: %llu=
+, bit width: %u\n",
+> > +                       cpu, perf->control_register.address,
+> > +                       perf->control_register.bit_width);
+> >                 break;
+> >         case ACPI_ADR_SPACE_FIXED_HARDWARE:
+> >                 acpi_cpufreq_driver.get =3D get_cur_freq_on_cpu;
+> > +               pr_info("CPU%u: Using FFH for frequency scaling\n", cpu=
+);
+> >                 break;
+> >         default:
+> >                 break;
+> > @@ -898,13 +903,14 @@ static int acpi_cpufreq_cpu_init(struct
+> >         /* notify BIOS that we exist */
+> >         acpi_processor_notify_smm(THIS_MODULE);
+> >
+> > -       pr_debug("CPU%u - ACPI performance management activated.\n", cp=
+u);
+> > +       pr_info("CPU%u - ACPI performance management activated.\n", cpu=
+);
+> >         for (i =3D 0; i < perf->state_count; i++)
+> > -               pr_debug("     %cP%d: %d MHz, %d mW, %d uS\n",
+> > +               pr_info("     %cP%d: %d MHz, %d mW, %d uS, %u\n",
+> >                         (i =3D=3D perf->state ? '*' : ' '), i,
+> >                         (u32) perf->states[i].core_frequency,
+> >                         (u32) perf->states[i].power,
+> > -                       (u32) perf->states[i].transition_latency);
+> > +                       (u32) perf->states[i].transition_latency,
+> > +                       (u32) perf->states[i].control);
+> >
+> >         /*
+> >          * the first call to ->target() should result in us actually
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -473,6 +473,7 @@ void cpufreq_enable_fast_switch(struct c
+> >         if (cpufreq_fast_switch_count >=3D 0) {
+> >                 cpufreq_fast_switch_count++;
+> >                 policy->fast_switch_enabled =3D true;
+> > +               pr_info("CPU%u: Fast frequency switching enabled\n", po=
+licy->cpu);
+> >         } else {
+> >                 pr_warn("CPU%u: Fast frequency switching not enabled\n"=
+,
+> >                         policy->cpu);
+> >
+> >
+> >
+> >
