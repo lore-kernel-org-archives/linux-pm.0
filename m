@@ -1,156 +1,130 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B60E02857EA
-	for <linux-pm@vger.kernel.org>; Fri,  1 May 2026 15:32:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37D5B3E0236;
+	Fri,  1 May 2026 16:33:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.195.75.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777649576; cv=none; b=a4hceVQu5fR6++0lZDLNJy9ncdsobFWbZS6np9JbCIOmewk+11ceSvBHoEE6oE+LOFMws4gzLQmZpRBzOd9yVNmzGaFKk2Sr3UeX6yx7FHjKpm+0vZZaVnu1UkcAqEUVTy3E1czbfPrODOw3o9w5c9oAx4mxR/4/sT0danD23zI=
+	t=1777653217; cv=none; b=amt5G58VC/j0vrNG7kx2rtdYADHAeLFZluKfj0N5fX2h1eZQLz+I95i8ZcTSrA06QyfIYBt9H2lqeoTZ0fe7osXM8Xu2IQlO9ghw+NC2fZy2n47+TXDKi8rDJCBh8MKeKLvLhnFi/h9boURT8i3BuvQiSr2frCZunKvFC/kY3qw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777649576; c=relaxed/simple;
-	bh=auIWNOK7TliDHRa41hP4h/ZGSc9hDRKRewTuikcXQhg=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=trcoaPLIEbt038pcgMOlA/WJSO6oxXrWWdred4qJ8kwDB9skmkKkDX+VXGRExXsZ0z1PE8TbYGEjw0Iu1F8ZGva4pOBxWq1bTx7eRtWnaTgIwZAJcNBWOjLQ1QFrsXMAZEiOSqNnJnk18M9Lg+xxcGazhp/U2C4x8JA/UR1F6xQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=BN9VVDzC; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1777653217; c=relaxed/simple;
+	bh=FmjJIxcZFvR9c0k9reaUBJOzOZJq8TZJ0hL8k5OorwM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=aougPiRBy4USmMeLg6LGC+nx/8Qo4LewQMb9vX+z001S19RA14qFgdipnko/8iyMFCBCgPShb1N+VpoYnKM9cd4BuGPkUyFU3ypev37tYrxzknj6fy7pUsirtVmz6b101RGaINy3tqfJCwrrau0l/Qr4s65NQeezTS4+FXlieg8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org; spf=none smtp.mailfrom=debian.org; dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b=RhiPHM1/; arc=none smtp.client-ip=82.195.75.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=debian.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BN9VVDzC"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-488d2079582so22565325e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 01 May 2026 08:32:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777649573; x=1778254373; darn=vger.kernel.org;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nIFGJkIeWdUt+CmNJefoaOlO/byGEQ4fNf280dgFKws=;
-        b=BN9VVDzC6SvjqYqG/OHlCXcINCVckD0HtROIzL6RxLMR+tr3zBdJEHwK62QlKfW380
-         VKDGQd6oNEcs/8fZ9DvIqSMkidhkAVsuXJYrwCyqNUMb0FDNMHetWeV43FBWNxB6zMNN
-         XCUgOclQQkPYH50LQFmEueTpZTA6jPjfmIfJGz4eDUJeda+LU9nNZc70tQSeKRDSgbU9
-         E2iD0pjNLqTXnWb5K81cNq4xbdmZQxwdV56YqJ4yA2rQZOghOFSfg+njv8ecBAWPoRh0
-         43y5LlVHo/vwB4a7xo3q7ygrZYGpIDruDUj+J6bs7Cux+cvvHU0wbrx4XNuadCc4fCtf
-         q6Mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777649573; x=1778254373;
-        h=in-reply-to:references:cc:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=nIFGJkIeWdUt+CmNJefoaOlO/byGEQ4fNf280dgFKws=;
-        b=PRTUd55UMHedKI3cHApWBLhGatdUBxTBCYTlaVPTnZL/Dhmc3ZrSH+MFY23yW6RDlb
-         sgRnPmdD60VB6CyIRXAnIDsiw53hMNT4G5FVtxg8RLErFQhU3h8L2eQZ8Q24CSQTfZVx
-         4c2hLiDI9uupfGzGsPHIMb4nQH6ursX5luFF5/3gfB2sxXmOU8rUoit62c9r7gwFr8cN
-         gYwDWx7p0kCMKU94mEcPBcEvzxAByevZXzTtKcNyng4XbyQWp1Kcfpm1YGsKPz9U86qb
-         g3gv9s7CHUx/pv4wf2iihfKFjY+4ihDUUkSqdHBxnQMgjm+I7X5gidhXFcBgjq5bWLra
-         Upqg==
-X-Forwarded-Encrypted: i=1; AFNElJ+WyLCKBRUUtrX2zeTIfe8N2XEXgc+au0Xgn4Ou9j/hcHonHBhVlH3x7dXpZQlPKWn6XjB/YyOFWA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwKjw+YAk5Kauoj44HhEpIQc05+9lsl92gTmIXyPXPKPy9iCfRx
-	fhXuoLm57Ced8rhK9I/uTwqEHX7ifXwdZvjoFIpTBtKdFbWKGkYpUCAMVYkeLc0J6xw=
-X-Gm-Gg: AeBDietDCvg4Ylyl3DKt/S6vq+l9m0pPzgqvbC322h3ZCjdR/y1sljpQ3GrdfmdMAWg
-	DVJVhM9+W/9LPYW4dhh8zeZ1QE3T4I+YK3hbgm4HB9C0Uia8rN2EOzUNP/T4Emo2/AUPnJ5PJ0L
-	Hps4p94WDqHOj2CIDflVmasIQfyK97I6uzheNuBZUv8bMa+WQ9Ae4RESX+15VI1Yu+aTGLF9KA/
-	L0mp9uiqVZy1vwE7W4pEUiBrbMIPkqAqks4S39p47mlEzdX1wKZmjV4/Hbu0qDFApcXRBMrbUAn
-	gcB7hLx12PHbLC2+kGt2pDwdFoeaBeV9moTH3+sRR6K8e4WNB26N/7AZeyQoh+B50IlnNrT0Uxf
-	rknk3CBQuamweReR+9d+iA2ZfWOYFeOFfXtJEre6CmZaJYgXrlkVs1wmU2QfGlFQYdnk6XmTwo/
-	c/ng+paECrVJfFEykLMWo6zw0tHHIgoEtjYN+hXjan8GCwd56cz9inLAXPWH6aYtDS/GGmEA4sh
-	KL/iMGzapEY8W8Uh1BVtlxAUE4KJRvuSVI=
-X-Received: by 2002:a05:600c:354d:b0:488:8b99:54a1 with SMTP id 5b1f17b1804b1-48a8445e8bcmr124239825e9.28.1777649573128;
-        Fri, 01 May 2026 08:32:53 -0700 (PDT)
-Received: from localhost ([94.4.195.193])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-44a8ef50e59sm5648768f8f.10.2026.05.01.08.32.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 01 May 2026 08:32:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b="RhiPHM1/"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:Cc:To:Message-Id:
+	Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:
+	Reply-To:Content-ID:Content-Description:In-Reply-To:References;
+	bh=M63oadhbiLEZWn2nFClNFifg5s97W6zysQfmoUQmtJI=; b=RhiPHM1/+eT/nVp9SLJbXEq6IA
+	FW9QLY9ll+bzM+bbPexeLmO98fYQIxtsISuBTtmEJN7Mewt9ZpIFMEcvqPE+yplC/+LS3XJpTi7Ce
+	Ljs1g9iYvE768FY+Tmhutz+H6HDpKxXZkOjnjOZh4AIsOAuHu08ye4zf1mqnx41CRgYcRVHWNE8et
+	gyT7iO7ntoTECkAKE0Yvh/Fnju6bj4sKqjqxh7+RSa46O0Ucr5nx0WHM4iz+07pwOE09Q3WVIHkn5
+	+EdT+7+23J/2tdtc2fCptctuMTAGTolvfxJt6e/hFycCaVFl/7dW6eJAK+cJuziKbZJJf2m79Tsh8
+	9NZbSYmA==;
+Received: from authenticated user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1wIqnO-008hv8-0Y;
+	Fri, 01 May 2026 16:32:54 +0000
+From: Breno Leitao <leitao@debian.org>
+Date: Fri, 01 May 2026 09:32:42 -0700
+Subject: [PATCH] cpufreq: cppc: discard out-of-range delivered_perf samples
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 01 May 2026 16:32:51 +0100
-Message-Id: <DI7G6J6LMC4T.2LQ8SEC6HMM1L@linaro.org>
-Subject: Re: [PATCH v4 00/11] thermal: samsung: Add support for Google GS101
- TMU
-From: "Alexey Klimov" <alexey.klimov@linaro.org>
-To: "Tudor Ambarus" <tudor.ambarus@linaro.org>, "Alexey Klimov"
- <alexey.klimov@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Zhang
- Rui" <rui.zhang@intel.com>, "Lukasz Luba" <lukasz.luba@arm.com>, "Rob
- Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "Krzysztof Kozlowski"
- <krzk@kernel.org>, "Alim Akhtar" <alim.akhtar@samsung.com>, "Bartlomiej
- Zolnierkiewicz" <bzolnier@gmail.com>, "Kees Cook" <kees@kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, "Peter Griffin"
- <peter.griffin@linaro.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Daniel Lezcano" <daniel.lezcano@kernel.org>,
- "Sylwester Nawrocki" <s.nawrocki@samsung.com>, "Chanwoo Choi"
- <cw00.choi@samsung.com>, "Michael Turquette" <mturquette@baylibre.com>,
- "Stephen Boyd" <sboyd@kernel.org>, "Lee Jones" <lee@kernel.org>
-Cc: <willmcvicker@google.com>, <jyescas@google.com>, <shin.son@samsung.com>,
- <linux-samsung-soc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-hardening@vger.kernel.org>,
- <linux-clk@vger.kernel.org>, "Krzysztof Kozlowski"
- <krzysztof.kozlowski@oss.qualcomm.com>
-X-Mailer: aerc 0.21.0
-References: <20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org>
- <DI7D7JXW4RGK.XB0BE6ZXNMHS@linaro.org>
- <b9fa48f1-0ace-4a8b-b2bf-b5e01f789f7b@linaro.org>
-In-Reply-To: <b9fa48f1-0ace-4a8b-b2bf-b5e01f789f7b@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260501-cur_freq-fix-v1-1-f84c9a423366@debian.org>
+X-B4-Tracking: v=1; b=H4sIAKnV9GkC/yXMQQqDMBAF0KsMf20gCURoriKltMmkjgttJ00Rx
+ LuX6vJt3obKKlwRaYPyV6osMyK5jpDG+/xkIxmR4K3vbbDOpKa3ovw2RVaTQ39JxWVng0dHeCk
+ XWY9uuJ6u7TFx+vwP7PsPaC+CunAAAAA=
+X-Change-ID: 20260501-cur_freq-fix-d569cf1d1052
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Viresh Kumar <viresh.kumar@linaro.org>, Jie Zhan <zhanjie9@hisilicon.com>, 
+ Lifeng Zheng <zhenglifeng1@huawei.com>, 
+ Pierre Gondois <pierre.gondois@arm.com>, Sumit Gupta <sumitg@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ dcostantino@meta.com, pjaroszynski@nvidia.com, Al.Grant@arm.com, 
+ linux-arm-kernel@lists.infradead.org, kernel-team@meta.com, 
+ Breno Leitao <leitao@debian.org>
+X-Mailer: b4 0.16-dev-453a6
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1951; i=leitao@debian.org;
+ h=from:subject:message-id; bh=FmjJIxcZFvR9c0k9reaUBJOzOZJq8TZJ0hL8k5OorwM=;
+ b=owEBbQKS/ZANAwAIATWjk5/8eHdtAcsmYgBp9NWx4EhnDPE40uinVf8leUXOkdnI7x97OYB1P
+ nsE2jEhh32JAjMEAAEIAB0WIQSshTmm6PRnAspKQ5s1o5Of/Hh3bQUCafTVsQAKCRA1o5Of/Hh3
+ bQROD/9wl3/kVjyOb4HzxpnFsylR7KOnoL/UxsOE9Si0157sOGEEVeokfYutxdm54KVwwZEptkM
+ 6o1rsAice1O42JBahRGuF1MRooc7ZXX4uQ7ao32HfZwScw/V+L8J3CTKm0hWyk3LjPoXUhoXjV4
+ UKvjUIgE36yTJLa0QvthcjAFTs55jJ5WZA5EdJXUwIXjibHXxSC1hZLIfz/LQiMzXevbNlVvKcF
+ mbt1z2XxR0xApZ3s7mD218nF5Hu73AmpzNAWmkygr+jSIx5pUydv/dSZqcRRiJ/Mah8HU6VmEDi
+ aXaewv79g1p++hK7u4XKGqXh+XOASnUpwl8P64czuR8RKTqpDrmgk2Ut8HJ+4Wq0C2d1qJnWFnN
+ LVTMW5dJcDk+MbuMqO82PHxnVnRvismFvOVtYhR9HKqewTZjQ5yuPL2UkRyVHPDcuKKWkRPA3N/
+ ubic+ncT62GZo+8NYL8Yvp55bqOK+2+jzpM8636RpoXTdEGzf7PWSbLb5eQubjAtsmAw3yeeprq
+ 2veHDzs5J6nEKS+HgPCNyZN1W6L9Z855+Kc+IkxaejRBYVW/J88NtxjZvEXMAAB2H+54ZBHVybj
+ fwDr6VfbuDtABmAHY2PKU29L2E/RMtaCsvkuioU0t+M9i5mzhhx5TCPK8s7PvBIEwN5mXMo6Gjw
+ v6iY3n+h0YquYHQ==
+X-Developer-Key: i=leitao@debian.org; a=openpgp;
+ fpr=AC8539A6E8F46702CA4A439B35A3939FFC78776D
+X-Debian-User: leitao
 
-On Fri May 1, 2026 at 3:33 PM BST, Tudor Ambarus wrote:
->
->
-> On 5/1/26 4:13 PM, Alexey Klimov wrote:
->>> Dependencies
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> - context dependency on the ACPM fixes sent at:
->>>   Link: https://lore.kernel.org/linux-samsung-soc/20260423-acpm-fixes-s=
-ashiko-reports-v1-0-2217b790925e@linaro.org/T/#t
->
-> cut
->
->> I've took series locally using b4 and result doesn't compile:
->
-> take the set linked above as well please.
+cppc_cpufreq_get_rate() derives delivered_perf as:
 
-Okay, now I am lost. Were dependencies incorrectly described in this
-series?
+    delivered_perf = reference_perf * delta_delivered / delta_reference
 
-Log below of applying patches below:
+over a short udelay()-bounded window between two cppc_get_perf_ctrs()
+calls. Per-read latency jitter on the underlying CPC register access
+can skew the ratio, occasionally producing delivered_perf >
+highest_perf. cppc_perf_to_khz() then linearly extrapolates above
+(nominal_perf, nominal_freq), so the value reported via
+/sys/.../cpufreq/cpuinfo_cur_freq exceeds cpuinfo_max_freq.
 
-Total patches: 11
+Observed on an arm64 host (governor=performance,
+cpuinfo_max_freq=3339 MHz): 15 back-to-back reads returned values
+between 2997 and 4230 MHz.
+
+Treat an out-of-range sample as invalid and reuse the existing
+out_invalid_counters fallback, which returns the platform's
+desired_perf. This keeps cpuinfo_cur_freq within
+[0, cpuinfo_max_freq] without reporting a value the hardware did
+not deliver.
+
+Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
- Base: using specified base-commit 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
- Deps: looking for dependencies matching 4 patch-ids
-Grabbing search results from lore.kernel.org
- Deps: Applying prerequisite patch: [PATCH v3 1/6] firmware: samsung: acpm:=
- Fix cross-thread RX length corruption
- Deps: Applying prerequisite patch: [PATCH 2/4] firmware: samsung: acpm: Fi=
-x sequence number leak and infinite loop
- Deps: Applying prerequisite patch: [PATCH 3/4] firmware: samsung: acpm: Fi=
-x mailbox channel leak on probe error
- Deps: Applying prerequisite patch: [PATCH v3 3/6] firmware: samsung: acpm:=
- Fix dummy stubs to return ERR_PTR
-Applying: firmware: samsung: acpm: Fix cross-thread RX length corruption
-Applying: firmware: samsung: acpm: Fix sequence number leak and infinite lo=
-op
-Applying: firmware: samsung: acpm: Fix mailbox channel leak on probe error
-Applying: firmware: samsung: acpm: Fix dummy stubs to return ERR_PTR
-Applying: dt-bindings: thermal: Add Google GS101 TMU
-Applying: firmware: samsung: acpm: Consolidate transfer initialization help=
-er
-Applying: firmware: samsung: acpm: Annotate rx_data->cmd with __counted_by_=
-ptr
-Applying: firmware: samsung: acpm: Drop redundant _ops suffix in acpm_ops m=
-embers
-Applying: firmware: samsung: acpm: Make acpm_ops const and access via point=
-er
-Applying: firmware: samsung: acpm: Add TMU protocol support
-Applying: firmware: samsung: acpm: Add devm_acpm_get_by_phandle helper
-Applying: thermal: samsung: Add Exynos ACPM TMU driver GS101
-Applying: MAINTAINERS: Add entry for Samsung Exynos ACPM thermal driver
-Applying: arm64: dts: exynos: gs101: Add thermal management unit
-Applying: arm64: defconfig: enable Exynos ACPM thermal support
+ drivers/cpufreq/cppc_cpufreq.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 7e7f9dfb7a24c..dd92aa2bca464 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -814,6 +814,14 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ 	if (!delivered_perf)
+ 		goto out_invalid_counters;
+ 
++	/*
++	 * Sampling jitter on the CPC counter pair can produce
++	 * delivered_perf > highest_perf, which cppc_perf_to_khz() would
++	 * extrapolate to a frequency above cpuinfo_max_freq. Discard.
++	 */
++	if (delivered_perf > cpu_data->perf_caps.highest_perf)
++		goto out_invalid_counters;
++
+ 	return cppc_perf_to_khz(&cpu_data->perf_caps, delivered_perf);
+ 
+ out_invalid_counters:
+
+---
+base-commit: 26fd6bff2c050196005312d1d306889220952a99
+change-id: 20260501-cur_freq-fix-d569cf1d1052
 
 Best regards,
-Alexey
+--  
+Breno Leitao <leitao@debian.org>
+
