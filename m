@@ -1,63 +1,63 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BE371EB5FD
-	for <linux-pm@vger.kernel.org>; Mon,  4 May 2026 02:00:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D499E1DA60D
+	for <linux-pm@vger.kernel.org>; Mon,  4 May 2026 02:00:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777860016; cv=none; b=QLsZril7kmDz0TtMit5L4Zvvv43tacW2+L/v3717QuM4WzVO7ZiZEUyyjg1CEEqFVTPbX3klj+DpFSFZn9lpmrNiiszpcF0KtqknyDo0X8txBzHlWP9AkVAfNJR7HqCvh7ZXHuLrDbUs378BjrzQ59uX1d+MIXXYWIrQrz3+xz8=
+	t=1777860019; cv=none; b=frx17UYSSFNeLlrIN1uv/YkqP1yZfUVYDAl83R8+6XOKFxY1zFS06qAecF6iODsV3Wsfs2indTKJwrY0FlnbZG6JujcFjozw6McucisI3pZGHagRIUeoaMSwNf25iCMzzVhjnFlY/NXyQ8iLTPhkkfvUWkz/jZqm8w6cY/TSEac=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777860016; c=relaxed/simple;
-	bh=E0eOydXd6tos3soGOgmN/ynT018kCln/FbX5evGbwxU=;
+	s=arc-20240116; t=1777860019; c=relaxed/simple;
+	bh=jNS5ugF6VA1XQQCNnhAQXK2hOKiFWxczMDSZ5HOFuUs=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Cdq3ufRwlRDVC0ePDRsh7gyDt7GEnyaHBRHoUDvNC9OACcziYyQpo+v0B7ZxhKZjaOalXPuj4tUBsAcLVtwFYAaIGoz0bmaqL+SFn5FTIvYao0Bf3PU9P7yzGF3+hCQJU06+/b+z79mPqlqeVXhSXRzJWjOf2mjfiIv677VtnE8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=MA6tL0Db; arc=none smtp.client-ip=209.85.128.45
+	 MIME-Version; b=KWgTJI02+jYBGlCUefNpjlY/uKmxXfTBCUzRKf8NHPi/teAKsDHehl4cJcWhaVYIzRONmDczu9drTxEaSPGBS6IwM2DhebwWP6ll83NqRJmoBMdtnFLTVTgv7buP5Df3253ktLeAUUJ4Socw4Vfg8QNI1LSGQnNIxOGFNFJpovg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=u7FUT96S; arc=none smtp.client-ip=209.85.128.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="MA6tL0Db"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4891c0620bcso24245115e9.1
-        for <linux-pm@vger.kernel.org>; Sun, 03 May 2026 19:00:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="u7FUT96S"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4852b81c73aso23867855e9.3
+        for <linux-pm@vger.kernel.org>; Sun, 03 May 2026 19:00:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1777860013; x=1778464813; darn=vger.kernel.org;
+        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1777860016; x=1778464816; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wd98iPPe5qNyrXCohE1KHWmMS9J/mTeoNujknNshEaI=;
-        b=MA6tL0Dbfy6ra/uxYYbet0+M+K6YOuDbr6alQ/mim4xZgZQT/jf1sFGGb+0Gs3QOfA
-         2V785mryMPgNQPsWvSWG1Ndq+UlOtPvY0ZMLfnck4uLBv5pjdE5ozepKmuS+pqoQNeiM
-         FsucTN6J/KgbBZ2estZ4UqGGLu5DKacrfvUVu5PUBbF3BYoEHdtELqCntnLWsRa8WwO2
-         vFxFlJBN0xaV/I50bYS0lt0BD43th3hJF95pjJ5EJaRF3FPJwwtmnN+4B+7UIRGzs1aQ
-         n+S8ysKUJoIE8kcHs2j/Ys3MZ/+0cQ2txRrcPBQ50Y3QHOS6qTc74Edg3E0P7RUd5hz5
-         CgZA==
+        bh=VGX9LyWWhnXaPHL2xAB0hm15nm1TdqQjuBEHx8htUtM=;
+        b=u7FUT96SLKXTZPSzpz+e1Vz6PLtLbwEr0an4RkODpJu7J1rxyPUUnmiMRHt2FftjG5
+         vn93FwLbgohRJsv76HW6h4fUXEDR1DTSMvphKZvZ3zCQUQp7PjN77Gw5uUmJbAklexzu
+         Vh834BSS5VRKCB6pVYQXUPNLW0+9DtKrhHo4UgfG/fx18mbWWnZ0QWGiy6Hw5OqdZjmA
+         n2pXYQ0gDs1eeGI04m7bY9UCUFlBa1IB5nWIt3/kF6JYWckhBbb8dhFBgAsaQizucCyR
+         r/+jMymtVZSIbxy5dOElH40LHwJD49goZvnGgPLa12Jlnn2gT/oQzJHr4NEunG9Ct6wC
+         glVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777860013; x=1778464813;
+        d=1e100.net; s=20251104; t=1777860016; x=1778464816;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=wd98iPPe5qNyrXCohE1KHWmMS9J/mTeoNujknNshEaI=;
-        b=U29oG5P5jCtbFqmpEmJb0eXQL1GkFXjCxOF8h3Q4NDhkx+3vVUHmS72Oadcz8+AzZK
-         KqDwJAbIZ4BzUYucLD/C8Fvu0C/csZ6lj15umwjOi6SpPZACYbm6CbcAuDRRwIEeLvnq
-         /VmqGTzT4bIbrnGR/29+KUk7XQFuHfT/Jucti9M5wFXFJMRoHo4Te7SAYRgCLezWSxb2
-         ifaNVLfr35A9cLTUL/qSMwcyc7eP24pH5XE0EZNH8N779S96b5E1pJ0ohaSMBmro8vz9
-         E3KKah/w1tV0Li0EIltDK1xt4rybweGHERz9XHjB9gdDggvRj8Pu/CD09ErUOfGHLZB+
-         /lEw==
-X-Forwarded-Encrypted: i=1; AFNElJ/04rH/MpiEZ2X6A+/LtOODDyFncYgPC5iLCDyq/LOCkfJnxMnwK2lbsrPtSkD+eXEl96MgcdyDgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzrBpEWZ0OZKncf1QCP3mB/BK9bijiBlWVV6HbEmu10ZGJf4cOF
-	ehIRYt7qzk451w6DpQVxlrBTRtfb7zmCeS0vIof3H6XA5y/82gMkwvnF7KII0EJYVBs=
-X-Gm-Gg: AeBDievTMn5tUZcNBrC2pjj4WtasKA51CaypMLrnhc3HtxfQBpKNZjpjX+4saDohiTS
-	qvm8AjtU/2yq2CUMhwuoB3CVcqqPpiWes0pph4Qm/ZbZCQ1nwHYyUsMCRqyJInhBci1UMIbYnAz
-	1ewqGjSSX4J2LqQQDbo57p1lcYqX7jqvOq3Uso5fjjW1nfOhgFrXPv9rYTt8/ZsfwdeM+sfR/z0
-	w1oZc6LRGM+LTBdi0UP/A2uoyJD0SLUnfv8lq3uny5sMWlwY3TCC7AVHsOfv1ek3wOsPlH3ofcU
-	AjRzdM5v0onEfWNJdD+lOHQWnGvca4XVRxP0IpdNAcCV//NcfPct1tnKCJXEDRnuTlpUF4v9Ars
-	iyAbnzjYNTBXLW7rCd9i9bzvm9fhNKMSjX5cOCmIRshGK1pD+oTVM68K6h4QmqJBdVOv5O9twXZ
-	fCrdYByp8Kr125teryW50yTpq4x+1aQX4=
-X-Received: by 2002:a05:600c:6215:b0:47e:e2eb:bc22 with SMTP id 5b1f17b1804b1-48a988a9c49mr113907935e9.5.1777860013459;
-        Sun, 03 May 2026 19:00:13 -0700 (PDT)
+        bh=VGX9LyWWhnXaPHL2xAB0hm15nm1TdqQjuBEHx8htUtM=;
+        b=rDZY3aZwk2RWGviwZ3ZRiRsFmVG5QJJ4B63s3YDDRq2LqHefa6fZ1ehB20rsbJPTmr
+         ZjlypV7iAMWD7CY0W2d0HPOUBP3JsN6K7qVV78T9Pn4MFNpxa5CgUlQABIOS/Kf6/twR
+         M7lXvYsggCxDlaD1COqeaSOADpROdLWfAeb8lhbvmXO6Ldvkjm0amy3MBxRGyw1+uHiO
+         uus0OB2K3hpBtquPB1s5BVA+HP82hEnnh5M0mtJWwUjpdyYYQneA1kmtUntioKNMJXaO
+         5gt/F6hniW31W8R3GuPnljoio6YojSss/UcXWWq13g8FwVDo/ryuyHB5T7q5W/alH1Js
+         hyEg==
+X-Forwarded-Encrypted: i=1; AFNElJ9P/hJkpeezqzG+LK/j+dTKXqnHSBm7pec7CAHMIHTDh1pCD+tRxT+4AwmmwJbV5FiNmZM1QIdiLA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz8i9HfmZmWpFNKB9+lH7IMFaIC/PkbzKgGwSHRIdkTVbH9dUzp
+	xZ43ugaDkgEOdZp4pbsevOcjllWZ15D9I/Mq8itggIKa+av7s5CAJzVkPArnKSX9U6I=
+X-Gm-Gg: AeBDietLInHK8gQlLbPiM5adGuQ5xBIKoe7j29D5WicYv6dx1K2z8R9aOiuS8LfJHE9
+	ePgiTVpyW2TkT3MhhtY8sxNkJieVtrTxugto/V63M/3ZP4M+K/mw6ckTX4/dRgcZim2tXe77471
+	YKG9UpqjfUh1Vitn3JYtXBOY68pcgDjvprTNU4f4sQrCLUEHwug3kkkGvEuwZeNoD5XgTArDqCo
+	nuaD3z6Lx9rEx6ZX65YcR0S7DOvahcR1FpyVwnHqbDgquUyHiwymbYnxdlzQjeYhF6oXA6ZtEi+
+	+LqlSU0vpDYh5XFX2tu42aG9PKINlttwSPVzSt0TglxwGuGsiD7M4EMkTXRIxjLb4YY1LgYZ9mX
+	r5HuFl57cjdyT3eLhtuxfmQwsOmRnZku3WvJeWMYbo2Glcla1Ocpuln4J+tjo8PWfqKnIfhYX7O
+	HYyjEmz5m7D+McaXHWDWH0y/9sXxmIaNA=
+X-Received: by 2002:a05:600c:8b0e:b0:485:ae14:8191 with SMTP id 5b1f17b1804b1-48a9852d122mr117385575e9.5.1777860016270;
+        Sun, 03 May 2026 19:00:16 -0700 (PDT)
 Received: from airbuntu.. ([146.70.179.108])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a8fee5033sm68064215e9.22.2026.05.03.19.00.09
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a8fee5033sm68064215e9.22.2026.05.03.19.00.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 May 2026 19:00:10 -0700 (PDT)
+        Sun, 03 May 2026 19:00:15 -0700 (PDT)
 From: Qais Yousef <qyousef@layalina.io>
 To: Ingo Molnar <mingo@kernel.org>,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -74,9 +74,9 @@ Cc: Juri Lelli <juri.lelli@redhat.com>,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
 	Qais Yousef <qyousef@layalina.io>
-Subject: [PATCH v2 01/13] sched: cpufreq: Rename map_util_perf to sugov_apply_dvfs_headroom
-Date: Mon,  4 May 2026 02:59:51 +0100
-Message-Id: <20260504020003.71306-2-qyousef@layalina.io>
+Subject: [PATCH v2 02/13] sched/pelt: Add a new function to approximate the future util_avg value
+Date: Mon,  4 May 2026 02:59:52 +0100
+Message-Id: <20260504020003.71306-3-qyousef@layalina.io>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260504020003.71306-1-qyousef@layalina.io>
 References: <20260504020003.71306-1-qyousef@layalina.io>
@@ -88,76 +88,58 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-We are providing headroom for the utilization to grow until the next
-decision point to pick the next frequency. Give the function a better
-name and give it some documentation. It is not really mapping anything.
+Given a util_avg value, the new function will return the future one
+given a runtime delta.
 
-Also move it to cpufreq_schedutil.c. This function relies on updating
-util signal appropriately to give a headroom to grow. This is tied to
-schedutil and scheduler and not something that can be shared with other
-governors.
+This will be useful in later patches to help replace some magic margins
+with more deterministic behavior.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
-Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Qais Yousef <qyousef@layalina.io>
 ---
- include/linux/sched/cpufreq.h    |  5 -----
- kernel/sched/cpufreq_schedutil.c | 20 +++++++++++++++++++-
- 2 files changed, 19 insertions(+), 6 deletions(-)
+ kernel/sched/pelt.c  | 20 ++++++++++++++++++++
+ kernel/sched/sched.h |  1 +
+ 2 files changed, 21 insertions(+)
 
-diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-index bdd31ab93bc5..d01755d3142f 100644
---- a/include/linux/sched/cpufreq.h
-+++ b/include/linux/sched/cpufreq.h
-@@ -28,11 +28,6 @@ static inline unsigned long map_util_freq(unsigned long util,
- {
- 	return freq * util / cap;
+diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
+index 897790889ba3..5a8f4dc99ffc 100644
+--- a/kernel/sched/pelt.c
++++ b/kernel/sched/pelt.c
+@@ -488,3 +488,23 @@ bool update_other_load_avgs(struct rq *rq)
+ 		update_hw_load_avg(rq_clock_task(rq), rq, hw_pressure) |
+ 		update_irq_load_avg(rq, 0);
  }
--
--static inline unsigned long map_util_perf(unsigned long util)
--{
--	return util + (util >> 2);
--}
- #endif /* CONFIG_CPU_FREQ */
- 
- #endif /* _LINUX_SCHED_CPUFREQ_H */
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 153232dd8276..f6de241fc62c 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -206,12 +206,30 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
- 	return cpufreq_driver_resolve_freq(policy, freq);
- }
- 
-+/*
-+ * DVFS decision are made at discrete points. If CPU stays busy, the util will
-+ * continue to grow, which means it could need to run at a higher frequency
-+ * before the next decision point was reached. IOW, we can't follow the util as
-+ * it grows immediately, but there's a delay before we issue a request to go to
-+ * higher frequency. The headroom caters for this delay so the system continues
-+ * to run at adequate performance point.
-+ *
-+ * This function provides enough headroom to provide adequate performance
-+ * assuming the CPU continues to be busy.
-+ *
-+ * At the moment it is a constant multiplication with 1.25.
-+ */
-+static inline unsigned long sugov_apply_dvfs_headroom(unsigned long util)
-+{
-+	return util + (util >> 2);
-+}
 +
- unsigned long sugov_effective_cpu_perf(int cpu, unsigned long actual,
++/*
++ * Approximate the new util_avg value assuming an entity has continued to run
++ * for @delta us.
++ */
++unsigned long approximate_util_avg(unsigned long util, u64 delta)
++{
++	struct sched_avg sa = {
++		.util_sum = util * PELT_MIN_DIVIDER,
++		.util_avg = util,
++	};
++
++	if (unlikely(!delta))
++		return util;
++
++	accumulate_sum(delta, &sa, 1, 0, 1);
++	___update_load_avg(&sa, 0);
++
++	return sa.util_avg;
++}
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index c95584191d58..190515b50dc8 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -3527,6 +3527,7 @@ unsigned long sugov_effective_cpu_perf(int cpu, unsigned long actual,
  				 unsigned long min,
- 				 unsigned long max)
- {
- 	/* Add dvfs headroom to actual utilization */
--	actual = map_util_perf(actual);
-+	actual = sugov_apply_dvfs_headroom(actual);
- 	/* Actually we don't need to target the max performance */
- 	if (actual < max)
- 		max = actual;
+ 				 unsigned long max);
+ 
++unsigned long approximate_util_avg(unsigned long util, u64 delta);
+ 
+ /*
+  * Verify the fitness of task @p to run on @cpu taking into account the
 -- 
 2.34.1
 
