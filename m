@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C85E3E92BF;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F1033E715F;
 	Mon,  4 May 2026 18:24:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777919099; cv=none; b=DTZoa0HknDdSoK9NtXmZU+rpkCJREmeWIx/08Z6w3LaSz4IlBXlvkqmP39uR+FThLCNAaJ3wababHIZB9k7yEKg43Rf/SAYLPdRwlPzvNjsbr8Jt0ACf0ncXkZ0UkcLe4e/Zh0qfOmfChFwMwdDJr7Zl5a9Gu9WkUfs6sDjnJ/4=
+	t=1777919099; cv=none; b=Z0bCHI7aWYUBEnmgFjTGLFyKqRKqGh8QkbyExiggVY4pEosP7w+19Q9fRr7qp3dR+u2YvSz7/ZvDyZy7Ih2jeyg8Y7CGjvtuBcDyTNLjfi3+M0jl0N+LvDv0E2imcVZMuJ2vXZ2Gklaq2EHZyYQkhmEbhKEf/jFdKljL2kbyOR0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1777919099; c=relaxed/simple;
-	bh=wMsaPJTluTOvZFL0m5jH60KdVathnpyRBOWpiXT7BKk=;
+	bh=4qPDy49jygT3//9CQLjty/Jo02gzR1H6Rh0ksy7xUUU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NJpUMCEMnCmGpTO1sQrMU1KcxfJ8YsHDiJksw5ElLkwS4FC4ARN2sL93CdaNKzY1mDlMioOuF5y/pqE/hQNFaW+anF25whw6ck41axQ7V6Xds1Oir3sRs89YuI0TEKlainclJlsXeMyzhAhcihjAO/sQW4NS97bSFsgcTj5uKP8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QCnLNbmm; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=LVYNZxkvDgbsZDIM3ehztN9jSz6EzbjJOEcwj8zu/ZsPeJ7MU1noSkzT7zMv+W+rqOJthVQ4UIvhUmKCvqxR34k57Y9NKBUh1BCzv1afBTSLdXpBVVw4xnX3EuUf+jRHUn79jJKPNSjn3u343d/+ZlbhhVj4GV/vCPCeZ8HUagI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fatflkky; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QCnLNbmm"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 204ACC2BCC4;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fatflkky"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5C000C2BCB8;
 	Mon,  4 May 2026 18:24:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1777919099;
-	bh=wMsaPJTluTOvZFL0m5jH60KdVathnpyRBOWpiXT7BKk=;
+	bh=4qPDy49jygT3//9CQLjty/Jo02gzR1H6Rh0ksy7xUUU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=QCnLNbmmWof8Rok38vimSq3yfhpYRhsZAPXK4G23WrDHwrY68/ebOnrMabSFzDzp3
-	 TwwljkP+gXxfWiqepRdkBst5Bz4qom16o58qb+152eoRQtwGOsyWfo3WqALmO8mSvs
-	 G9kqgErY5FJmte1VBF3M+ObKj+NyulqOghKx8oSoSDyjpAOigJnQeiz70wPL+OxXVp
-	 0hAwZeq7vzl7lXjGyh9haqdAjgG68dMJW0JDgOjirY/fnbnnmOegEXWiwvMprUb7RM
-	 5ipOMAIPb0pfYdzJ+GsnVp94xH4NP7Z5/Tnde1wwA2XZ1yHCRb9MBQQGcOlmQWpePC
-	 /Q8llwSLUxRQw==
+	b=fatflkkyr4qCZ5LLVtK5tIbpgLFUIz7ELnQxINcEMqoRieia5+eZxVc3+0ehlKw1M
+	 0LBKpHPx9GUo3ZhwBpZObj3UfGsKZbmPTzdRBCwBZnMtJXckdRp0ieiYAeXIbIOo9e
+	 ZqHWjqcPqfBrbmsBYBZk210Xk6dlzrXLAT4vfjyH6oKog44W40qFFAobQQujWH6NL6
+	 rKyB/XPfDr8nBj8fKdfvyhN/4SlexammzTg9CVIiY0rybuVaxhWdcZ8SF5ZqiWn9Ev
+	 EOsojhVIotfAzxkvxlYO+HD0iBHR3DgHNnrE1IKqEWkm5Hiy2uYWzNSX/sO8peXecP
+	 DhLqPp3VvVHLw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 176F9CD3427;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD26FF885A;
 	Mon,  4 May 2026 18:24:59 +0000 (UTC)
 From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Date: Mon, 04 May 2026 21:25:01 +0300
-Subject: [PATCH 09/13] mfd: mt6397-core: add support for mt6323 thermal
+Date: Mon, 04 May 2026 21:25:04 +0300
+Subject: [PATCH 12/13] ARM: dts: mediatek: mt6323: add support for thermal
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260504-mt6323-v1-9-799b58b355ff@protonmail.com>
+Message-Id: <20260504-mt6323-v1-12-799b58b355ff@protonmail.com>
 References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
 In-Reply-To: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
 To: Jonathan Cameron <jic23@kernel.org>, 
@@ -61,11 +61,11 @@ Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
  Ben Grisdale <bengris32@protonmail.ch>, 
  Roman Vivchar <rva333@protonmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777919095; l=903;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777919095; l=1739;
  i=rva333@protonmail.com; s=20260325; h=from:subject:message-id;
- bh=1GBl1TpFBcVXYGizGdKi1F7hlRKLPxUy3Qzy4DpQjMM=;
- b=8nyO1z82QxMlj6H0WEVe86aCBbZcH4auRH3dTb7ryxt+R5BbJ1NJpZ0rlhv416KiWWfCYbyhM
- VaAhTEw+tP3ChoTAZAIFSwzFtWpJxazwDOCBgmDQ680MNhJw61JUEO0
+ bh=RnX15Bbq0POSOMld8rImsDthXoY2gvxd4clxXzA+bLs=;
+ b=jW2y5q+4ec0II0RivLcNCB19jAdPdayHabag4j3LyuTqfh8CcsUQSchx+QYvx94osw2zOF/wY
+ JeaBhZfg5ODAnnCm2PTOt7Ne47BabO61K4FNAWW8mMO1afuvQNniTBz
 X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
  pk=euuVBZGtA2Cqb8Dju84qpQPhvwxyUirJlXpqEPQWKBM=
 X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260325 with
@@ -75,30 +75,73 @@ Reply-To: rva333@protonmail.com
 
 From: Roman Vivchar <rva333@protonmail.com>
 
-The mt6323 PMIC temperature can be measured using AUXADC channel.
-Register the thermal in the mt6323 devices array to allow the
-corresponding driver to probe using compatible string.
+Add the devicetree node for the mt6323 thermal.
 
 Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
 Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 ---
- drivers/mfd/mt6397-core.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm/boot/dts/mediatek/mt6323.dtsi | 35 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 33 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
-index 2d9419b80a5c..061ac242f1f8 100644
---- a/drivers/mfd/mt6397-core.c
-+++ b/drivers/mfd/mt6397-core.c
-@@ -151,6 +151,9 @@ static const struct mfd_cell mt6323_devs[] = {
- 		.num_resources = ARRAY_SIZE(mt6323_pwrc_resources),
- 		.resources = mt6323_pwrc_resources,
- 		.of_compatible = "mediatek,mt6323-pwrc"
-+	}, {
-+		.name = "mt6323-thermal",
-+		.of_compatible = "mediatek,mt6323-thermal",
- 	},
- };
+diff --git a/arch/arm/boot/dts/mediatek/mt6323.dtsi b/arch/arm/boot/dts/mediatek/mt6323.dtsi
+index 3fe6a5e35e70..bdfa177aa1e3 100644
+--- a/arch/arm/boot/dts/mediatek/mt6323.dtsi
++++ b/arch/arm/boot/dts/mediatek/mt6323.dtsi
+@@ -6,6 +6,8 @@
+  *
+  */
  
++#include <dt-bindings/iio/adc/mediatek,mt6323-auxadc.h>
++
+ &pwrap {
+ 	pmic: mt6323 {
+ 		compatible = "mediatek,mt6323";
+@@ -21,8 +23,16 @@ mt6323_adc: adc {
+ 
+ 		mt6323_efuse: efuse {
+ 			compatible = "mediatek,mt6323-efuse";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
++
++			nvmem-layout {
++				compatible = "fixed-layout";
++				#address-cells = <1>;
++				#size-cells = <1>;
++
++				mt6323_thermal_calibration_data: thermal-data@14 {
++					reg = <0x14 0x4>;
++				};
++			};
+ 		};
+ 
+ 		mt6323_leds: leds {
+@@ -276,5 +286,26 @@ power-controller {
+ 		rtc {
+ 			compatible = "mediatek,mt6323-rtc";
+ 		};
++
++		mt6323_thermal: thermal {
++			compatible = "mediatek,mt6323-thermal";
++			nvmem-cells = <&mt6323_thermal_calibration_data>;
++			nvmem-cell-names = "calibration-data";
++
++			io-channels = <&mt6323_adc MT6323_AUXADC_CHIP_TEMP>;
++			io-channel-names = "vts";
++			#thermal-sensor-cells = <1>;
++		};
++	};
++};
++
++/ {
++	thermal-zones {
++		pmic_vts_thermal {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&mt6323_thermal 0>;
++		};
+ 	};
+ };
 
 -- 
 2.53.0
