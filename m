@@ -1,351 +1,205 @@
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B97D425A2BB
-	for <linux-pm@vger.kernel.org>; Mon,  4 May 2026 05:04:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CBC42853FD
+	for <linux-pm@vger.kernel.org>; Mon,  4 May 2026 06:24:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777871065; cv=none; b=PKu20Jp17Z6T8hHzXJRMjMjX6Bxt99xPYNFRwr7lVxKKTsFCbbU+4AkcVsMPXke3iE82RfIh/LHVgaHyyumVhg0fLPhT7/xTEeFuN6tDk4orkg7ALuGJXIOrxEIosrjOTbOwPg7QSoutxh9OKWoSOfcQC0Tl+tUFP7C8640jVF4=
+	t=1777875864; cv=none; b=a7+XOVD3fV4s7kZ8mvXs2pz7exSk1BoqiPrhn1aPq2ReSv7G/xWyukx6ixbufmc9n95gzZcHPQnGJ5uoDUd5QIm05B5Snf/wRTLzla4eZGU28co6l7wYYLlofP1N2syY2BYlVFk6YmAi70OY8Y1MtGf5V/2apS3E+3R44W6pMeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777871065; c=relaxed/simple;
-	bh=+AfMOyYfNSai/vzHaaojDNYbQlGipPu5vQcMVMO/QuY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CVr/yuLHwMZKf/Ok4JME1paC8Ryw+8+z00v9i66bmVZv1gbu8YA+WisQhODlYDMmG4htNKK6uR1LoCi64jYeXAFkuIhWgAZ/tE7eLDaT22toHJxlP/xjwQ9cyi5OhYk/1bd0YgXuhb4uBcDlKKGPDEO71FAQtAx8j1mYWR1mG94=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QFTTDpdh; arc=none smtp.client-ip=209.85.216.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1777875864; c=relaxed/simple;
+	bh=bcTkj7z6FKGNVOHa6c1rxzRLMWKib6fRDMdYaX8gzSU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=pLyureuWkATOUKXZe44jG9w0pmffQ+4a0eiOLct7ZrZQsG/s2UnG4kNZ0p7svVJ2hNea30MLyeqFH/CdhxaH1DRa7hoD2UCMQTkt/7E0DumUv3k1gmk97FgorSg9N9UMADwixZWQ59f6kWK4x9dymZtEj/USkXRqWsu4g9l2XSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=j9makQ2V; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=cCcLpQjZ; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QFTTDpdh"
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-364ef7a759bso1443467a91.1
-        for <linux-pm@vger.kernel.org>; Sun, 03 May 2026 22:04:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="j9makQ2V";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="cCcLpQjZ"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6446DNWU118944
+	for <linux-pm@vger.kernel.org>; Mon, 4 May 2026 06:24:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	TNyRR0rELfmD0/XXE4YuZsBRKd2/cuC3uluE9QU1vLU=; b=j9makQ2VCl7+a92H
+	Ms359avakOcDGNz8ZJfzNQmBfTNA946xGHczlH1u6/6vSkDQkPY4jefB3GjtSIq6
+	Fh5DSTC7ycKn6SYkIHN2O3x6Dwj0VrrEMzuSoFvLnbA/UPcfXrWszK3c5D7KRTjY
+	Cx6xeG4+uRVJUIvkKPeEExDpqxzA0YMDmG327Qu4oWSloLysl6GNdZaKgDDiCC3l
+	WZM+2VX2q7wO99Q+4pB7Z11FKIpnDxh1adEAU3VWQspVaSeg4OTyHKaQmwnFNfpn
+	PcYy93sNJBnQV91mpvmhR1VGVZ/M+V+aKqRZxAKtyjJwOcmyRwUIg94RIpbMPHb4
+	oCfZ7A==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dwaejmdkb-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 04 May 2026 06:24:22 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2b9fe2d6793so24901815ad.0
+        for <linux-pm@vger.kernel.org>; Sun, 03 May 2026 23:24:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777871063; x=1778475863; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2Zx5JZiDM7P1W4ijYGbXe8KVsddltmoo33akfRDuMeY=;
-        b=QFTTDpdh6uV0ywKQpwihWGLymYwcci3jkbDVCkPvU0ezxBoFu11JOsd7F2Dqk+lWrm
-         w/GfR2fGYewpQyjZCTJdV811NHknQJro3obZ5Y3zWu7gPZBD3d3y+lWj52SiTq538c3h
-         tshF7+s/ymtdN8cL71U4oH2z2+/vjsZCxZSwUVbXjmE/kkjuAiuhKKkXAqrRoU668CTv
-         zZmrh2AGD+zV1Ism/57WhPB5a6IbYMHSpqgZ2E6RX8hnOjZKaITBIOZqftLWqV7XvkGI
-         1ryR72fPSHpWwemKC04v8U2Lyebq72fKeQzsn28OT6K3tHBmmT4SlcYTQhEBw4ELZjtZ
-         ZBvQ==
+        d=oss.qualcomm.com; s=google; t=1777875862; x=1778480662; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=TNyRR0rELfmD0/XXE4YuZsBRKd2/cuC3uluE9QU1vLU=;
+        b=cCcLpQjZEdw1EPmTIsL0A2oMoXIAq3oKwkn01qeiiU4fVaELGnxBzqlOgZrSqs96Rk
+         yR9nvlVNwuX8ExbxXzqY4JpQ4WVoDn5vpGcGVCX5cOL5I6iHkOXtfWf34cXuFWTIxjbF
+         nyUdt/nef5tmzikwCstoFPFm7bj8otOf26CdtPO3gtlO8NmytUesmO/iDevboV2kSA80
+         c+P2g++ywOA6mVHapWyu+av6zkJPHt53nzBV2aTIThjD146gK5N10kOkgR/cKx48UBAm
+         P1N72cbqE9/sZmXXX6SYxbKNv/iD+qVhZy90ksPmFaexGYW4QyWYH5HUrkhu8F3AC35u
+         G4lQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777871063; x=1778475863;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=2Zx5JZiDM7P1W4ijYGbXe8KVsddltmoo33akfRDuMeY=;
-        b=M2lylJCnkOZSH/zAsLNO3kJiMuApCOWB5PajolNF3jR66Lpvpkv1jf/rY5zu8wppiv
-         oYu57ztINWuqQ6k3XorUKM+N10ZlW9katfTWxE0jkH6Ca8xMdvgaIKVozGDcDtB3tYeB
-         pf9YmEjHBV4mxvoXRDJV7jWMW2XiA1BT0HpwFDFunw7cjeGthI84jBsReJPh42WAxLCi
-         Oucu/WKpyPz0tlHwVbejhGTKnZHnE9IXt7uT5kMJAIOCjwtL/WVQBD+FQnzWEbNsyl67
-         4qxOck020MHHa6XFyYuD0jJFtrWj2F2pEOgo4twtpuEXmD0dPDo+x+jkLoXwVcOrJYXQ
-         OYXw==
-X-Gm-Message-State: AOJu0Yya+T97qtsPPzHq/RvqCYcxZVmrVYfPUzatvK0EuSlN4B87LWsI
-	4vd6qaX0B+27IayTod9k6vPCE9SWbBhsSUINFpkENLEohMcqm48yPiQx
-X-Gm-Gg: AeBDievn/nV+LGaNgr8SkeVSLsCc4uuz5pR1He5EtXoSkD39aLRBhEs+EzjcAWYbp8G
-	dlKIvCvN5qLzk/AmwfFXUZJUGqOMy+leaauWOYQbQ1Kb4bhtv0ZIutL4NhjERjxVbpMavDZSjnN
-	GmzKBY9ariMvaA5d9EMcrK5BCg0w4j2ABonrIATujfKmmnkiJMiROgfl4RITBYh1ioX3qX/5aYR
-	5aZoGeOoW3L20jHqAMV898YwJmz/OAl01wD4csehpn2Yj2rEOeNdvY4ob0VKPJy0R/dH3uHYQWs
-	toiUo7ooOH++HL4sHBvnvxcXpTuqU4912Yv7jyArA5AD6sbgVT+L0j55Xhr6VdSpCYpS/13lQGJ
-	oI+4/d74CpDr923csE3WMPccBFYmQC3KPo2dJAD2WsNTuhJcIoLxHzkucqnIDDKdD+7xB5mVEm+
-	QXAg==
-X-Received: by 2002:a17:90b:2586:b0:35f:c258:a9a2 with SMTP id 98e67ed59e1d1-364c49fc890mr13397626a91.17.1777871062958;
-        Sun, 03 May 2026 22:04:22 -0700 (PDT)
-Received: from archlinux ([2605:e440:15::152])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-365437b50b0sm2662908a91.0.2026.05.03.22.04.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 May 2026 22:04:22 -0700 (PDT)
-From: Mikhail Kalashnikov <iuncuim@gmail.com>
-To: Vasily Khoruzhick <anarsoul@gmail.com>,
-	Yangtao Li <tiny.windzz@gmail.com>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-sunxi@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 5/5] Allwinner: A523: add support for A523 THS0/1 controllers
-Date: Mon,  4 May 2026 13:02:45 +0800
-Message-ID: <20260504050245.646078-6-iuncuim@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260504050245.646078-1-iuncuim@gmail.com>
-References: <20260504050245.646078-1-iuncuim@gmail.com>
+        d=1e100.net; s=20251104; t=1777875862; x=1778480662;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=TNyRR0rELfmD0/XXE4YuZsBRKd2/cuC3uluE9QU1vLU=;
+        b=Bj9CJjgO7VzqjWVGja9ejaVhVexk0u6SloUULAyc1SyC6tDbqFV5BJ4eaPKvfG46lr
+         1ZqXygBG+9R5ZvVkij6uY2G5u6DQ2bt5EQI54WqCOG4aOUqhjXDvLgMaNyZirBhn6ekP
+         bDttcdRXYXpJj1GW5fyjxScCBAQ1MA+nL3ZGD58apWWSk/EbLXB5oLatWJzllk8YgAjN
+         jdDLBq0BZY1tMmThFNJgu2alRI/PawwZD7E53m4pzBKUpeG3Y1IdAAtZQZkd8I/FHeIJ
+         jSZ2JNGWF6BJuYW1vFZGcH0ujKT5HABlTxScCL7eQZVdpUt7JYzbFVLp5qjyBEhG21rv
+         GfZg==
+X-Forwarded-Encrypted: i=1; AFNElJ8gPwQxPue2f4fZPp42bMudvbn8wch9eCT4bbCbYLjdNF79G4tsECRbnfCK7fIetNL+73GAm+F9OQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyooc91Z6HJMyngAGcoTDwMKyefgiwlr5RkyhnyBut7AAart6NH
+	P+tgIsy59HIdGLbnKWkZtfPLtUdj9JHDJeXyKMDjRMXzWQJCqtgfpkymysfAzMa1X0IzkPC7Ri+
+	s5cOFRC6JC/5vKZc7NyGY/Dkg+Ohc5K3pbK3ja2bQ14i8wRnl77oehK3ODhxjyw==
+X-Gm-Gg: AeBDieuHvb1z2jo1mQIm1XZAGXx24O+1O4chXjkgnlv/7Ro/LApvIWScTG2P83iQJ+k
+	Flr0LDaeuWjWz0OypJRtkqGmEfRuUkRdybJCsMk28ykQAErZAyveTq45ftF8jfEqyZZSEqpY5YK
+	txdEPvGoinsqV3F9X+llb7cqrKKdeXq+ZeD2rWQ2C6KMQR8+s2OINqMjnAbTn4axBgYXUty/rKe
+	JDfd+yCqFVUIOW5rC5fZQxYvYM02FVpQauqwMfSncNsTr5j0aBiL5JbyniTXSO+ag9F8Tm6fkTj
+	ORpLdhv5a6yrfGltYLnIjMw1YmTzmHLZ0RCHNlDmnKhjacXyNQKzNFNowz0TvdwTZxoD177mYu6
+	xrsgqr2VWxqkKc6Ft7PQKstFxRf76j1Pl+3v6r7bsCnLF2LbIbn4ga0p4ZpWZFuD65Nv9KaQKxB
+	xvSI+vt6As0I3T/bOPDnk+
+X-Received: by 2002:a17:902:d506:b0:2b2:4d36:7aa with SMTP id d9443c01a7336-2b9f280fe1emr84277295ad.35.1777875862059;
+        Sun, 03 May 2026 23:24:22 -0700 (PDT)
+X-Received: by 2002:a17:902:d506:b0:2b2:4d36:7aa with SMTP id d9443c01a7336-2b9f280fe1emr84277065ad.35.1777875861559;
+        Sun, 03 May 2026 23:24:21 -0700 (PDT)
+Received: from ?IPV6:240e:400:e18:23b6:48a3:6006:2608:1239? ([240e:400:e18:23b6:48a3:6006:2608:1239])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b9cae0f67esm96626775ad.51.2026.05.03.23.24.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 03 May 2026 23:24:21 -0700 (PDT)
+Message-ID: <ff263bb6-1e0b-4cd8-a1c3-82ee162427bf@oss.qualcomm.com>
+Date: Mon, 4 May 2026 14:24:12 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: qcom-cpufreq-hw: Fix possible double free
+To: Guangshuo Li <lgs201920130244@gmail.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Manivannan Sadhasivam <mani@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org, zhongqiu.han@oss.qualcomm.com
+References: <20260501190005.504962-1-lgs201920130244@gmail.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260501190005.504962-1-lgs201920130244@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA0MDA2NiBTYWx0ZWRfX8tI+ij3xvg+Z
+ GA9s15pa+dtieQl+H6RapuULzbBvhDA1LVidxUuPXPTX/wUlKZXXRmGbn0xehuLByvU+tLDVKiY
+ zbYXLyXIMLnyyrKCBMU5pxPGl+m6kQ6epsjjzS2sv6bXVJlQu3idOLSzaLmz9RNLUBKZ8VyYTwY
+ kOP14FiajA0IkaUrulEHXPo0nJwEdi25l109BgUALBVMdIe5/Y2oavMOT3SzZASxDNnt3y1ZMZP
+ UelRrhIgDOEKNa5tGmdRCp0tHpyjHyUZX4bx41tXwQ9Dd4kGAEEPAGnBR7W/EkLhjute1ubTTa4
+ PazIBiY3DNcGI+72yuJ7fMLTxbFyArPw6l9dUhA7t7bKrZxuavp99M72tjXr2KYHLtq0YjbXmD5
+ bKPg5OVuNuVSnvrb72THWTpRmF6Hs+tR+h8RY296738LfFH3lae9Blb8MMGmUnrtd3NkOo+PlQJ
+ 8lcriyVH4uZ8PY3pIKA==
+X-Authority-Analysis: v=2.4 cv=Wa48rUhX c=1 sm=1 tr=0 ts=69f83b96 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=c92rfblmAAAA:8
+ a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=g1ydD-XOTWB8Hi5v_0UA:9
+ a=QEXdDO2ut3YA:10 a=uG9DUKGECoFWVXl0Dc02:22 a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-ORIG-GUID: -OZQkL2RsqOh90GbkykmUQeRYaeQUbzz
+X-Proofpoint-GUID: -OZQkL2RsqOh90GbkykmUQeRYaeQUbzz
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-04_02,2026-04-30_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 adultscore=0 clxscore=1015 impostorscore=0 suspectscore=0
+ bulkscore=0 phishscore=0 spamscore=0 malwarescore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605040066
 
-The A523 processor has two temperature controllers, THS0 and THS1.
-THS0 has only one temperature sensor, which is located in the DRAM.
+On 5/2/2026 3:00 AM, Guangshuo Li wrote:
+> qcom_cpufreq.data is allocated with devm_kzalloc() in probe() as an
+> array of per-domain data. qcom_cpufreq_hw_cpu_init() stores a pointer to
+> one element of this array in policy->driver_data.
+> 
+> qcom_cpufreq_hw_cpu_exit() currently calls kfree() on policy->driver_data.
+> This is not valid because the memory is devm-managed. For the first
+> domain, this can free the devm-managed allocation while the devres entry
+> is still active, leading to a possible double free when the platform
+> device is later detached. For other domains, the pointer may refer to an
+> element inside the array rather than the allocation base.
+> 
+> Remove the kfree(data) call and let devres release qcom_cpufreq.data.
+> 
+> This issue was found by a static analysis tool I am developing.
+> 
+> Fixes: 054a3ef683a1 ("cpufreq: qcom-hw: Allocate qcom_cpufreq_data during probe")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
 
-THS1 does have 3 sensors:
-ths1_0 - "big" cores
-ths1_1 - "little" cores
-ths1_2 - gpu
 
-Add the thermal sensor configuration and the thermal zones.
-Trips temperature, polling-delay and sustainable-power parameters are
-derived from the manufacturer's BSP.
+Hi Guangshuo,
 
-Signed-off-by: Mikhail Kalashnikov <iuncuim@gmail.com>
----
- .../arm64/boot/dts/allwinner/sun55i-a523.dtsi | 154 ++++++++++++++++++
- 1 file changed, 154 insertions(+)
+Thanks for fixing this.
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-index 5afa8d92a..288a4710b 100644
---- a/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun55i-a523.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/reset/sun55i-a523-r-ccu.h>
- #include <dt-bindings/power/allwinner,sun55i-a523-ppu.h>
- #include <dt-bindings/power/allwinner,sun55i-a523-pck-600.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	interrupt-parent = <&gic>;
-@@ -26,6 +27,7 @@ cpu0: cpu@0 {
- 			device_type = "cpu";
- 			reg = <0x000>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu1: cpu@100 {
-@@ -33,6 +35,7 @@ cpu1: cpu@100 {
- 			device_type = "cpu";
- 			reg = <0x100>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu2: cpu@200 {
-@@ -40,6 +43,7 @@ cpu2: cpu@200 {
- 			device_type = "cpu";
- 			reg = <0x200>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu3: cpu@300 {
-@@ -47,6 +51,7 @@ cpu3: cpu@300 {
- 			device_type = "cpu";
- 			reg = <0x300>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu4: cpu@400 {
-@@ -54,6 +59,7 @@ cpu4: cpu@400 {
- 			device_type = "cpu";
- 			reg = <0x400>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu5: cpu@500 {
-@@ -61,6 +67,7 @@ cpu5: cpu@500 {
- 			device_type = "cpu";
- 			reg = <0x500>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu6: cpu@600 {
-@@ -68,6 +75,7 @@ cpu6: cpu@600 {
- 			device_type = "cpu";
- 			reg = <0x600>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu7: cpu@700 {
-@@ -75,6 +83,7 @@ cpu7: cpu@700 {
- 			device_type = "cpu";
- 			reg = <0x700>;
- 			enable-method = "psci";
-+			#cooling-cells = <2>;
- 		};
- 	};
- 
-@@ -565,12 +574,46 @@ dma: dma-controller@3002000 {
- 			#dma-cells = <1>;
- 		};
- 
-+		ths1: thermal-sensor@2009400 {
-+			compatible = "allwinner,sun55i-a523-ths1";
-+			reg = <0x02009400 0x400>;
-+			interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_GPADC1>;
-+			clock-names = "bus", "mod";
-+			resets = <&ccu RST_BUS_THS>;
-+			nvmem-cells = <&ths_calibration0>, <&ths_calibration1>;
-+			nvmem-cell-names = "calibration",
-+				     "calibration-second-part";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
-+		ths0: thermal-sensor@200a000 {
-+			compatible = "allwinner,sun55i-a523-ths0";
-+			reg = <0x0200a000 0x400>;
-+			interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_GPADC0>;
-+			clock-names = "bus", "mod";
-+			resets = <&ccu RST_BUS_THS>;
-+			nvmem-cells = <&ths_calibration0>, <&ths_calibration1>;
-+			nvmem-cell-names = "calibration",
-+				     "calibration-second-part";
-+			#thermal-sensor-cells = <0>;
-+		};
-+
- 		sid: efuse@3006000 {
- 			compatible = "allwinner,sun55i-a523-sid",
- 				     "allwinner,sun50i-a64-sid";
- 			reg = <0x03006000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-+
-+			ths_calibration0: ths-calibration0@38 {
-+				reg = <0x38 0x8>;
-+			};
-+
-+			ths_calibration1: ths-calibration1@44 {
-+				reg = <0x44 0x8>;
-+			};
- 		};
- 
- 		gic: interrupt-controller@3400000 {
-@@ -1087,4 +1130,115 @@ npu: npu@7122000 {
- 			power-domains = <&ppu PD_NPU>;
- 		};
- 	};
-+
-+	thermal-zones {
-+		cpu0_thermal: cpu0-thermal {
-+			polling-delay-passive = <100>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths1 1>;
-+			sustainable-power = <1200>;
-+
-+			trips {
-+				cpu0_threshold: cpu-trip-0 {
-+					temperature = <70000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				cpu0_target: cpu-trip-1 {
-+					temperature = <90000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				cpu0_critical: cpu-trip-2 {
-+					temperature = <110000>;
-+					type = "critical";
-+					hysteresis = <0>;
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu0_target>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		cpu4_thermal: cpu4-thermal {
-+			polling-delay-passive = <100>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths1 0>;
-+			sustainable-power = <1600>;
-+
-+			trips {
-+				cpu4_threshold: cpu-trip-0 {
-+					temperature = <70000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				cpu4_target: cpu-trip-1 {
-+					temperature = <90000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				cpu4_critical: cpu-trip-2 {
-+					temperature = <110000>;
-+					type = "critical";
-+					hysteresis = <0>;
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu4_target>;
-+					cooling-device = <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		gpu-thermal {
-+			polling-delay-passive = <100>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths1 2>;
-+			sustainable-power = <2400>;
-+
-+			gpu-trips {
-+				gpu_temp_threshold: gpu-trip-0 {
-+					temperature = <60000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				gpu_temp_target: gpu-trip-1 {
-+					temperature = <90000>;
-+					type = "passive";
-+					hysteresis = <0>;
-+				};
-+				gpu_temp_critical: gpu-trip-2 {
-+					temperature = <110000>;
-+					type = "critical";
-+					hysteresis = <0>;
-+				};
-+			};
-+		};
-+
-+		ddr-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&ths0>;
-+
-+			trips {
-+				ddr_temp_critical: ddr-trip-0 {
-+					temperature = <110000>;
-+					type = "critical";
-+					hysteresis = <0>;
-+				};
-+			};
-+		};
-+	};
- };
+Yes, qcom_cpufreq.data is devm-managed and policy->driver_data
+points into that per-domain array, so freeing it from ->exit() is
+invalid (and for non-zero domains it can even be a non-base pointer).
+Dropping kfree(data) is the correct fix.
+
+
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+
+
+Regarding the sashiko.dev AI-generated review comments[1]: all four
+issues raised are pre-existing possible problems in the driver and were
+not introduced by this patch.
+
+- The data->policy dangling pointer via the clock provider path
+- The race window in qcom_cpufreq_hw_cpu_offline() between
+   cancel_delayed_work_sync() and disable_irq_nosync()
+- The unowned IRQ operations when request_threaded_irq() fails
+- The freq_table/OPP leak on cpu_init() error paths
+
+They are potentially valid observations worth addressing, but should be
+handled as separate follow-up patches.
+
+[1]https://sashiko.dev/#/patchset/20260501190005.504962-1-lgs201920130244%40gmail.com
+
+
+
+
+
+
+
+> ---
+>   drivers/cpufreq/qcom-cpufreq-hw.c | 1 -
+>   1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> index ea9a20d27b8f..ef19faedbfec 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -578,7 +578,6 @@ static void qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+>   	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+>   	qcom_cpufreq_hw_lmh_exit(data);
+>   	kfree(policy->freq_table);
+> -	kfree(data);
+>   }
+>   
+>   static void qcom_cpufreq_ready(struct cpufreq_policy *policy)
+
+
 -- 
-2.54.0
-
+Thx and BRs,
+Zhongqiu Han
