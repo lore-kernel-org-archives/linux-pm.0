@@ -1,106 +1,103 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74D003E959A;
-	Mon,  4 May 2026 18:24:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E6EC3C1419;
+	Mon,  4 May 2026 19:41:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777919099; cv=none; b=U6Xm9VqPCfKiVdbMZYCOjA6P4mqIjznZQmixPyZvgWCxeA751jdCqSkYfyMUn/YbGbLdei9/2XHB9vp4nI9MKd6uONAjnHlmag229IDmadgDS+z2OnqeX0BW5HZIhYj3HL5rGxnJx3zaorNg4uZDYZwSwt8Lpz4v9xTZZ5LOu+Q=
+	t=1777923700; cv=none; b=g4XlYX3gzau4hkpmJe8miI48VC1aKgpGXeYB2Q5sZnpCTaAgXKum3+rwr6/VqiZC1ANvBhXvJ241VvpGUiLkb5VLwUNHpqpg7hKWbXcImn0VwBzi7myN+4bILyjU0TbEAivowfHsKpQ+yJK91gXVC/v984gFASD9sEdqvYffa9g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777919099; c=relaxed/simple;
-	bh=0fwwYNeYc3kr+antF5NrKzPSvQ6OoHbAnhgXEJEye30=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=R9I3swSO2ZNiGyo3XevgoQGZlEgfVBoLqILo5mFaqHPFX4H0M+KkicVFNV+N/sVIBecyde5v5FKkDTPPTL+JcCcB7u7BmUmu0WK0xblM4sQwQRXAuYRmxMNqdE1PEvcFO9xZPCVHcXbLljZXQEG3B39fyH1JRqWdqovwVa36Fzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QkRYfLSp; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777923700; c=relaxed/simple;
+	bh=mgdlbKlEQOWDLqR92Whq5tURhflQ2Yr9KuyXqkV/fOc=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=jA/BoIrMFkFlaTkXUNB2Xv8oAmOEI/z3ft1j1aa02nE/aRHZ2GqXgiuoSiyFk0uKQGqdnJGLsqgyk1bhO9b8XWqWGiSWZUmR3uQRmwT3xvDmKDMDtCxXMa0kBaK2i1L6qnenA8AQ6rEizEJSNp3DaOSKEeVNHMoux0Nn1iU4dOo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bXDisUIN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QkRYfLSp"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3241EC2BCFA;
-	Mon,  4 May 2026 18:24:59 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bXDisUIN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B22FC2BCB8;
+	Mon,  4 May 2026 19:41:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777919099;
-	bh=0fwwYNeYc3kr+antF5NrKzPSvQ6OoHbAnhgXEJEye30=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=QkRYfLSpf98W7hQ4ObbEW1P7mNvxg0uTiNgwI3is1u4TqGRHjMiiCysDYbGlpvVH4
-	 sE3NHndNy09z1N+ONPBEnxhlSFDQHCx2hVCFgyGf018Rv3mV8H6QAoqRQIsEr+Ta1b
-	 AiiSRl/+pU5ZcNP+mKWCz/TvUA85+fPnxqtnJ92I1xXYIpA/3laMq9HZ/FmtcoCsIv
-	 8mo3+fmi2Naih0QAYTtXf4jCm1UbLooH6ylk3Dr35BH3Ro648LhDMyinsW5/4kfVyw
-	 GXckxmtOTkT+vdctqOR2lgqI7EMUB9zDpFB+vFEWuJDZN18q0LQ8UQHRzRuiakku5g
-	 a2V3dsFurWRsg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 286F0CD3436;
-	Mon,  4 May 2026 18:24:59 +0000 (UTC)
-From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Date: Mon, 04 May 2026 21:25:02 +0300
-Subject: [PATCH 10/13] ARM: dts: mediatek: mt6323: add support for AUXADC
+	s=k20201202; t=1777923700;
+	bh=mgdlbKlEQOWDLqR92Whq5tURhflQ2Yr9KuyXqkV/fOc=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=bXDisUINjwgG9lK4I/Zqy+kk2M+5q38IGKVNjSDriMrjWELbxnJlkuM5RDqwoBYWR
+	 lfAY1WaarsJU5oxnO15BRLy3rZmOWDgFmZG6eckX6eUQRbnQGDcSiLYFJcFhnAOOYA
+	 Cgt/FlhKZqkjxxT3PWe1Nf81n/pYY5BW88eMoPg3GD70VoEZyh/zZ0666xWTWqhiFx
+	 AHLCL5+1TzKcYpIKvZx3v9fiqkrvHd8hgrhf4ksarSL/AG7dW5PvcXnhcgwZu5/hH/
+	 n1z95QK/UCsjVOpdF6t4WhT5kJnjMhy5YXZxA/aVuxabP6ViC9shu3G8Cs9M/ATX/P
+	 iD6hvGg1cWrFg==
+Date: Mon, 04 May 2026 14:41:38 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260504-mt6323-v1-10-799b58b355ff@protonmail.com>
-References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
-In-Reply-To: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
-To: Jonathan Cameron <jic23@kernel.org>, 
- David Lechner <dlechner@baylibre.com>, 
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: David Lechner <dlechner@baylibre.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, 
  =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
- Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Zhang Rui <rui.zhang@intel.com>, Ben Grisdale <bengris32@protonmail.ch>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Srinivas Kandagatla <srini@kernel.org>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>, Lee Jones <lee@kernel.org>
-Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ben Grisdale <bengris32@protonmail.ch>, 
- Roman Vivchar <rva333@protonmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777919095; l=814;
- i=rva333@protonmail.com; s=20260325; h=from:subject:message-id;
- bh=La2MB3KRVqMYMwKFh7B+QquLap8lejJsUVONHZ0oCfM=;
- b=If4UY3kmkGiEJJtVFcFrKYvQsaQvfITJvuCaHU1csy8WFVf6gx+wsgv7vYyM5HTJ73TbQgOTx
- WkNqaEcst4fCb1ix8Y3iJ4sOMMXOH9KGgZQl8YBm0mb/AlQVmgIlyRm
-X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
- pk=euuVBZGtA2Cqb8Dju84qpQPhvwxyUirJlXpqEPQWKBM=
-X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260325 with
- auth_id=695
-X-Original-From: Roman Vivchar <rva333@protonmail.com>
-Reply-To: rva333@protonmail.com
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, 
+ linux-mediatek@lists.infradead.org, Andy Shevchenko <andy@kernel.org>, 
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, Jonathan Cameron <jic23@kernel.org>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Srinivas Kandagatla <srini@kernel.org>, 
+ linux-iio@vger.kernel.org
+To: Roman Vivchar <rva333@protonmail.com>
+In-Reply-To: <20260504-mt6323-v1-3-799b58b355ff@protonmail.com>
+References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
+ <20260504-mt6323-v1-3-799b58b355ff@protonmail.com>
+Message-Id: <177792369830.4148180.15587020526695376827.robh@kernel.org>
+Subject: Re: [PATCH 03/13] dt-bindings: thermal: add mt6323 PMIC thermal
 
-From: Roman Vivchar <rva333@protonmail.com>
 
-Add the devicetree node for the mt6323 AUXADC.
+On Mon, 04 May 2026 21:24:55 +0300, Roman Vivchar wrote:
+> The MediaTek mt6323 PMIC temperature can be read using AUXADC channel.
+> 
+> Add the devicetree binding documentation for the MediaTek mt6323 thermal.
+> Due similarities with newer PMICs like mt6358, which include more than
+> one thermal sensor, the #thermal-sensor-cells should be set to 1, to
+> avoid breaking devicetree ABI in future.
+> 
+> Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
+> Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+> ---
+>  .../bindings/thermal/mediatek,mt6323-thermal.yaml  | 63 ++++++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+> 
 
-Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
-Signed-off-by: Roman Vivchar <rva333@protonmail.com>
----
- arch/arm/boot/dts/mediatek/mt6323.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+My bot found errors running 'make dt_binding_check' on your patch:
 
-diff --git a/arch/arm/boot/dts/mediatek/mt6323.dtsi b/arch/arm/boot/dts/mediatek/mt6323.dtsi
-index c230c865116d..c070f4b0936c 100644
---- a/arch/arm/boot/dts/mediatek/mt6323.dtsi
-+++ b/arch/arm/boot/dts/mediatek/mt6323.dtsi
-@@ -14,6 +14,11 @@ pmic: mt6323 {
- 		interrupt-controller;
- 		#interrupt-cells = <2>;
- 
-+		mt6323_adc: adc {
-+			compatible = "mediatek,mt6323-auxadc";
-+			#io-channel-cells = <1>;
-+		};
-+
- 		mt6323_leds: leds {
- 			compatible = "mediatek,mt6323-led";
- 			#address-cells = <1>;
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/arm/mediatek/mediatek,audsys.yaml:52:2: [warning] wrong indentation: expected 2 but found 1 (indentation)
+./Documentation/devicetree/bindings/arm/mediatek/mediatek,audsys.yaml:84:1: [warning] too many blank lines (2 > 1) (empty-lines)
 
--- 
-2.53.0
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/net/renesas,ether.example.dtb: ethernet-phy@1 (ethernet-phy-id0022.1537): compatible: ['ethernet-phy-id0022.1537', 'ethernet-phy-ieee802.3-c22'] is too long
+	from schema $id: http://devicetree.org/schemas/net/micrel.yaml
 
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.kernel.org/project/devicetree/patch/20260504-mt6323-v1-3-799b58b355ff@protonmail.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
