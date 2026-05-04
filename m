@@ -1,37 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3212C3E714C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 303443E714A;
 	Mon,  4 May 2026 18:24:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777919099; cv=none; b=m1z+PHeP0NOEX5+GopQV93HHvyYOHyA0MCKwa2HPjeDASS3RiegLkI26qJK7msy8K+KHf4dRqqBOHYMPHdOhk1U6S+071ALhauMAm0ACFrH5enuZ3wUTrxciBhTDItFmjwvX/oUfqSaZ44jGouq1K/blDMcCWYKOOddIQYnmGWU=
+	t=1777919099; cv=none; b=n2+8YMT97FRKcMiTewwOY9vP5od2KAmoMy2GrxEDQtZQ3LaFxWv7VXDZXUopLlUO8jgodOhCy9CJ9tgFfJO7ryTkrLqWXb7UhfTbWfwz57bcAVys4IJNinF8G0QN5s6cnyZl7xcRPe5yGvhVLVbgAEujYkaThlZL2wngbltOVms=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1777919099; c=relaxed/simple;
-	bh=roplHQL+mzNZNXWyR2ZxnPRzTcKtQ62wvrEUaeGypbo=;
+	bh=SFyDTRyWZjDxmsFtAqwCPfeazjDIIWp9P+6ztku6jaM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Jj5X0O8/gePSU2VXOtefrTuP7yVd/zYAvRp8G3fw04e1+w76r6tNAO8Iju2X3pJbKX1WzyEkawVl8S4jaqHB0hGplchV+mzaqAmdHKLODMxA/dCTw5PxAh0zn5KrMvWmxDP2aitgfSmS1jTnSCforSx9Qb74SoZu4gMn6RCn6AU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KtHYrT0T; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=M2vo431KEZHPwijiGwT9e0lFyShE2JDNMm/UQVkCLvstU4HpiizqkOJY+lvYEkhh75+1ss/oMtqfoOsW4d0m4cy6IP3Xk5W+kEo9R1n6NqiuFAABi/rl6/ZdeRtLu4Ka60RyU9WGxaITarr+xSG+K1JM4sf2OEETtEVyfrYI90k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=s2UAt5ov; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KtHYrT0T"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E07EAC2BCF6;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="s2UAt5ov"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D0621C2BCFF;
 	Mon,  4 May 2026 18:24:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1777919098;
-	bh=roplHQL+mzNZNXWyR2ZxnPRzTcKtQ62wvrEUaeGypbo=;
+	bh=SFyDTRyWZjDxmsFtAqwCPfeazjDIIWp9P+6ztku6jaM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=KtHYrT0TbkzS1gcMfaadit4TgU5GNk2kk/hQbGbPLBOHZeFkE4JDwcI5pbXi3QHfQ
-	 N5EhoBmClAM4OyuDur01Niv9exQA6DVkcgDK09PduqS8QgN5BBQww7Fw7E7zB3Ukeb
-	 +8GbyXKVPI7VR43J45exgaVMf6hFSL5Su+GCYh5v+GbNt/w8wyBdXlER7Cli79UiqY
-	 LAaKT6vE7MaxecetHu9Kg44F1gTSD6Xs81+UOrJgO6xD+sC9IdJiOAd5wsr/nSPSbw
-	 VCHjpVwVCE4Bw+R2mjT+yfILi9a6qXX/nHKT8XB5sDBkBXF+B/APa0u3LDaiW1qNOy
-	 EdLSv2PkD5CGg==
+	b=s2UAt5ovqGlDNFbvBTOq9Ul3dNhnc8+V4nJQ46Am+zdgmiXhdKT+g0jZ0Q8ix3IZj
+	 O2/VeKbMqjR3qc7N/pLMAiC2vLZfx7v8A1TDWEPO7mzEnMe6iuLR7Z4bt08xQVfoqx
+	 +g47+4YP6+SaIvYJik8QeCbV86R+KhJVsfZ3acj9IqauGEuo4Cay6pSTSurvHmG4B9
+	 QQeAEpk0E8PmMKb919W7ExNurr5gq0+GVF3tu4NTCGHVbztRVypUfhSjcX5p9Ep2rv
+	 HV/8B4b4aqHbekZ7A70x8he6Tad6ccU5VeYc2vGLY+ywBYgrIP3JgX8TRtqqoz+iFt
+	 l14GrneLJz23A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7171CD342F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5DBDCD3427;
 	Mon,  4 May 2026 18:24:58 +0000 (UTC)
 From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Date: Mon, 04 May 2026 21:24:58 +0300
-Subject: [PATCH 06/13] thermal: mediatek: add pmic thermal support
+Date: Mon, 04 May 2026 21:24:57 +0300
+Subject: [PATCH 05/13] nvmem: add mt6323 PMIC EFUSE driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260504-mt6323-v1-6-799b58b355ff@protonmail.com>
+Message-Id: <20260504-mt6323-v1-5-799b58b355ff@protonmail.com>
 References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
 In-Reply-To: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
 To: Jonathan Cameron <jic23@kernel.org>, 
@@ -61,11 +61,11 @@ Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
  Ben Grisdale <bengris32@protonmail.ch>, 
  Roman Vivchar <rva333@protonmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1777919095; l=9247;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777919095; l=4311;
  i=rva333@protonmail.com; s=20260325; h=from:subject:message-id;
- bh=+z1fPADxDwcxEADv1H3y1Q2TiS13p9Uu+a5I0Q7eIOk=;
- b=EpoNV1dOvs0MavUph11WXvlVWBpmd6xjPWpBTmLi4qRrYaQYq708+u3aEdeypvELcCTvkPQMF
- ghMHThzYfbaD6HKQ2XrfrUbFvV0BIq1bhWV+7Srv57VInSgiReAhDbl
+ bh=1nnD8x2/YfoddlKavtCr39AhwjwKkPATibCGf0JcRFk=;
+ b=CI5X+E7LWYk0XH+OzSwni+MoWgPTu5HtndpDXnOqF9faEAkuaULlKcmd0lygCathpvFdBASrg
+ 4bDRnzyx1tNB1bkDi+UHEUCBKymKHiNPndUPXJqGBcyuGzcbcrQiVoC
 X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
  pk=euuVBZGtA2Cqb8Dju84qpQPhvwxyUirJlXpqEPQWKBM=
 X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260325 with
@@ -75,327 +75,144 @@ Reply-To: rva333@protonmail.com
 
 From: Roman Vivchar <rva333@protonmail.com>
 
-Add a new driver to support thermal monitoring on MediaTek PMICs.
-
-The driver retrieves calibration data from EFUSE, calculates the
-temperature using a linear interpolation, and registers the device with
-the thermal framework.
-
-Initial support is added for the mt6323 PMIC.
+Add support for the EFUSE controller found in the Mediatek MT6323 PMIC.
+The MT6323 EFUSE stores 24 bytes of hardware-related data, such as
+thermal sensor calibration values.
 
 Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
 Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 ---
- drivers/thermal/mediatek/Kconfig        |   9 ++
- drivers/thermal/mediatek/Makefile       |   1 +
- drivers/thermal/mediatek/pmic_thermal.c | 274 ++++++++++++++++++++++++++++++++
- 3 files changed, 284 insertions(+)
+ drivers/nvmem/Kconfig        | 11 ++++++
+ drivers/nvmem/Makefile       |  2 ++
+ drivers/nvmem/mt6323-efuse.c | 86 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 99 insertions(+)
 
-diff --git a/drivers/thermal/mediatek/Kconfig b/drivers/thermal/mediatek/Kconfig
-index d82c86d9be56..f2da7d14a01a 100644
---- a/drivers/thermal/mediatek/Kconfig
-+++ b/drivers/thermal/mediatek/Kconfig
-@@ -34,4 +34,13 @@ config MTK_LVTS_THERMAL_DEBUGFS
-        help
-          Enable this option to debug the internals of the device driver.
+diff --git a/drivers/nvmem/Kconfig b/drivers/nvmem/Kconfig
+index 74ddbd0f79b0..db248a3c4e87 100644
+--- a/drivers/nvmem/Kconfig
++++ b/drivers/nvmem/Kconfig
+@@ -227,6 +227,17 @@ config NVMEM_MTK_EFUSE
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called efuse-mtk.
  
-+config MTK_PMIC_THERMAL
-+	tristate "AUXADC temperature sensor driver for MediaTek PMICs"
++config NVMEM_MT6323_EFUSE
++	tristate "Mediatek MT6323 PMIC EFUSE support"
++	depends on ARCH_MEDIATEK || COMPILE_TEST
 +	depends on MFD_MT6397
 +	help
-+	  Enable this option if you want to get PMIC temperature
-+	  information for MediaTek platforms.
-+	  This driver configures thermal controllers to collect
-+	  temperature via AUXADC interface.
++	  This is a driver to access hardware related data like sensor
++	  calibration, etc.
 +
- endif
-diff --git a/drivers/thermal/mediatek/Makefile b/drivers/thermal/mediatek/Makefile
-index 1c6daa1e644b..22fce58aafd2 100644
---- a/drivers/thermal/mediatek/Makefile
-+++ b/drivers/thermal/mediatek/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_MTK_SOC_THERMAL)	+= auxadc_thermal.o
- obj-$(CONFIG_MTK_LVTS_THERMAL)	+= lvts_thermal.o
-+obj-$(CONFIG_MTK_PMIC_THERMAL)	+= pmic_thermal.o
-diff --git a/drivers/thermal/mediatek/pmic_thermal.c b/drivers/thermal/mediatek/pmic_thermal.c
++	  This driver can also be built as a module. If so, the module
++	  will be called efuse-mt6323.
++
+ config NVMEM_MXS_OCOTP
+ 	tristate "Freescale MXS On-Chip OTP Memory Support"
+ 	depends on ARCH_MXS || COMPILE_TEST
+diff --git a/drivers/nvmem/Makefile b/drivers/nvmem/Makefile
+index 7252b8ec88d4..0e2b73f42b25 100644
+--- a/drivers/nvmem/Makefile
++++ b/drivers/nvmem/Makefile
+@@ -48,6 +48,8 @@ obj-$(CONFIG_NVMEM_MICROCHIP_OTPC)	+= nvmem-microchip-otpc.o
+ nvmem-microchip-otpc-y			:= microchip-otpc.o
+ obj-$(CONFIG_NVMEM_MTK_EFUSE)		+= nvmem_mtk-efuse.o
+ nvmem_mtk-efuse-y			:= mtk-efuse.o
++obj-$(CONFIG_NVMEM_MT6323_EFUSE)		+= nvmem_mt6323-efuse.o
++nvmem_mt6323-efuse-y			:= mt6323-efuse.o
+ obj-$(CONFIG_NVMEM_MXS_OCOTP)		+= nvmem-mxs-ocotp.o
+ nvmem-mxs-ocotp-y			:= mxs-ocotp.o
+ obj-$(CONFIG_NVMEM_NINTENDO_OTP)	+= nvmem-nintendo-otp.o
+diff --git a/drivers/nvmem/mt6323-efuse.c b/drivers/nvmem/mt6323-efuse.c
 new file mode 100644
-index 000000000000..1dce106a28c3
+index 000000000000..0c1b405fbc89
 --- /dev/null
-+++ b/drivers/thermal/mediatek/pmic_thermal.c
-@@ -0,0 +1,274 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/drivers/nvmem/mt6323-efuse.c
+@@ -0,0 +1,86 @@
++// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright (c) 2026 Roman Vivchar <rva333@protonmail.com>
-+ *
-+ * Based on drivers/thermal/mediatek/auxadc_thermal.c
 + */
 +
-+#include <linux/err.h>
-+#include <linux/iio/consumer.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+
++#include <linux/device.h>
++#include <linux/io.h>
 +#include <linux/mfd/mt6323/registers.h>
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/nvmem-provider.h>
++#include <linux/platform_device.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
 +
-+#define MAX_SENSORS			1
++#define MT6323_EFUSE_DOUT_BASE MT6323_EFUSE_DOUT_0_15
++#define MT6323_EFUSE_SIZE 24
 +
-+#define MT6323_TEMP_MIN			-20000
-+#define MT6323_TEMP_MAX			150000
-+
-+/* Layout of the fuses providing the calibration data */
-+#define CALIB_BUF0_VTS(x)		(((x) >> 8) & 0xff)
-+#define CALIB_BUF0_DEGC_CALI(x)		(((x) >> 2) & 0x3f)
-+#define CALIB_BUF0_ADC_CALI_EN(x)	(((x) >> 1) & 0x1)
-+
-+#define CALIB_BUF1_ID_20(x)		(((x) >> 14) & 0x1)
-+#define CALIB_BUF1_ID_10(x)		(((x) >> 12) & 0x1)
-+#define CALIB_BUF1_O_SLOPE_20(x)	(((((x) >> 11) & 0x7) << 3) + (((x) >> 6) & 0x7))
-+#define CALIB_BUF1_O_SLOPE_10(x)	(((x) >> 6) & 0x3f)
-+#define CALIB_BUF1_O_SLOPE_SIGN(x)	(((x) >> 5) & 0x1)
-+#define CALIB_BUF1_VTS(x)		((((x) >> 0) & 0x1f) << 8)
-+
-+#define MT6323_CALIBRATION		171
-+
-+struct mtk_pmic_thermal;
-+
-+struct mtk_thermal_data {
-+	const char *const *sensors;
-+	s32 num_sensors;
-+	const int cali_val;
-+
-+	int (*extract_efuse)(struct mtk_pmic_thermal *mt, u16 *buf);
-+	void (*precalc)(struct mtk_pmic_thermal *mt, s32 vts, s32 degc_cali,
-+			s32 o_slope, s32 o_slope_sign);
-+};
-+
-+struct mtk_pmic_sensor {
-+	struct mtk_pmic_thermal *mt;
-+	int id;
-+	struct iio_channel *adc_channel;
-+	struct thermal_zone_device *tzdev;
-+};
-+
-+struct mtk_pmic_thermal {
-+	struct device *dev;
++struct mt6323_efuse {
 +	struct regmap *regmap;
-+	struct mtk_pmic_sensor sensors[MAX_SENSORS];
-+
-+	s32 t_slope1;
-+	s32 t_slope2;
-+	s32 t_intercept;
-+
-+	const struct mtk_thermal_data *data;
 +};
 +
-+static bool mtk_pmic_thermal_temp_is_valid(int temp)
++static int mt6323_efuse_read(void *context, unsigned int offset, void *val,
++			     size_t bytes)
 +{
-+	return (temp >= MT6323_TEMP_MIN) && (temp <= MT6323_TEMP_MAX);
-+}
-+
-+static int mtk_pmic_read_temp(struct thermal_zone_device *tz, int *temperature)
-+{
-+	struct mtk_pmic_sensor *sensor = thermal_zone_device_priv(tz);
-+	int ret, raw, temp;
-+
-+	ret = iio_read_channel_processed(sensor->adc_channel, &raw);
-+	if (ret < 0) {
-+		dev_err(sensor->mt->dev, "failed to read iio channel: %d\n",
-+			ret);
-+		return ret;
-+	}
-+
-+	temp = sensor->mt->t_intercept +
-+	       ((sensor->mt->t_slope1 * raw) / sensor->mt->t_slope2);
-+
-+	if (!mtk_pmic_thermal_temp_is_valid(temp))
-+		return -EINVAL;
-+
-+	*temperature = temp;
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops mtk_pmic_thermal_ops = {
-+	.get_temp = mtk_pmic_read_temp,
-+};
-+
-+static void mtk_pmic_thermal_precalc_mt6323(struct mtk_pmic_thermal *mt,
-+					    s32 vts, s32 degc_cali, s32 o_slope,
-+					    s32 o_slope_sign)
-+{
-+	s32 vbe_t;
-+
-+	mt->t_slope1 = 100 * 1000;
-+
-+	if (o_slope_sign == 0)
-+		mt->t_slope2 = -(mt->data->cali_val + o_slope);
-+	else
-+		mt->t_slope2 = -(mt->data->cali_val - o_slope);
-+
-+	vbe_t = -1 * (((vts + 9102) * 1800) / 32768) * 1000;
-+
-+	if (o_slope_sign == 0)
-+		mt->t_intercept =
-+			(vbe_t * 100) / -(mt->data->cali_val + o_slope);
-+	else
-+		mt->t_intercept =
-+			(vbe_t * 100) / -(mt->data->cali_val - o_slope);
-+
-+	mt->t_intercept += (degc_cali * (1000 / 2));
-+}
-+
-+static int mtk_pmic_thermal_extract_efuse_mt6323(struct mtk_pmic_thermal *mt,
-+						 u16 *buf)
-+{
-+	u32 reg;
-+	s32 vts, degc_cali, o_slope, o_slope_sign, id;
-+	int ret;
-+
-+	if (!CALIB_BUF0_ADC_CALI_EN(buf[0]))
-+		return -EINVAL;
-+
-+	vts = CALIB_BUF1_VTS(buf[1]) + CALIB_BUF0_VTS(buf[0]);
-+	degc_cali = CALIB_BUF0_DEGC_CALI(buf[0]);
-+	o_slope_sign = CALIB_BUF1_O_SLOPE_SIGN(buf[1]);
-+
-+	ret = regmap_read(mt->regmap, MT6323_CID, &reg);
-+	if (ret) {
-+		dev_err(mt->dev, "failed to read chip id\n");
-+		return ret;
-+	}
-+
-+	if (reg == 0x1023) {
-+		o_slope = CALIB_BUF1_O_SLOPE_10(buf[1]);
-+		id = CALIB_BUF1_ID_10(buf[1]);
-+	} else if (reg == 0x2023) {
-+		o_slope = CALIB_BUF1_O_SLOPE_20(buf[1]);
-+		id = CALIB_BUF1_ID_20(buf[1]);
-+	} else {
-+		dev_err(mt->dev, "invalid chip id: 0x%x\n", reg);
-+		return -EINVAL;
-+	}
-+
-+	if (id == 0)
-+		o_slope = 0;
-+
-+	mt->data->precalc(mt, vts, degc_cali, o_slope, o_slope_sign);
-+
-+	return 0;
-+}
-+
-+static int mtk_pmic_thermal_get_calib_data(struct device *dev,
-+					   struct mtk_pmic_thermal *mt)
-+{
-+	struct nvmem_cell *cell;
-+	void *buf;
-+	size_t len;
-+	int ret;
-+
-+	cell = nvmem_cell_get(dev, "calibration-data");
-+	if (IS_ERR(cell))
-+		return PTR_ERR(cell);
-+
-+	buf = nvmem_cell_read(cell, &len);
-+	nvmem_cell_put(cell);
-+
-+	if (IS_ERR(buf))
-+		return PTR_ERR(buf);
-+
-+	if (len < 2 * sizeof(u16)) {
-+		dev_warn(dev, "invalid calibration data length\n");
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = mt->data->extract_efuse(mt, buf);
-+	if (ret) {
-+		dev_info(dev, "device not calibrated, using default values\n");
-+		mt->data->precalc(mt, 3698, 50, 0, 0);
-+		ret = 0;
-+	}
-+
-+out:
-+	kfree(buf);
-+	return ret;
-+}
-+
-+static int mtk_pmic_thermal_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct mtk_pmic_thermal *mt;
++	struct mt6323_efuse *efuse = context;
++	u32 tmp;
++	u16 *buf = val;
 +	int i, ret;
 +
-+	mt = devm_kzalloc(dev, sizeof(*mt), GFP_KERNEL);
-+	if (!mt)
-+		return -ENOMEM;
-+
-+	mt->regmap = dev_get_regmap(dev->parent->parent, NULL);
-+	if (!mt->regmap)
-+		return dev_err_probe(dev, -ENODEV, "failed to get regmap");
-+
-+	mt->dev = dev;
-+	mt->data = of_device_get_match_data(dev);
-+
-+	ret = mtk_pmic_thermal_get_calib_data(dev, mt);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < mt->data->num_sensors; i++) {
-+		struct mtk_pmic_sensor *sensor = &mt->sensors[i];
-+
-+		sensor->id = i;
-+		sensor->mt = mt;
-+
-+		sensor->adc_channel =
-+			devm_iio_channel_get(dev, mt->data->sensors[i]);
-+		if (IS_ERR(sensor->adc_channel))
-+			return dev_err_probe(dev, PTR_ERR(sensor->adc_channel),
-+					     "failed to get channel %s\n",
-+					     mt->data->sensors[i]);
-+
-+		sensor->tzdev = devm_thermal_of_zone_register(
-+			dev, i, sensor, &mtk_pmic_thermal_ops);
-+		if (IS_ERR(sensor->tzdev))
-+			return dev_err_probe(
-+				dev, PTR_ERR(sensor->tzdev),
-+				"failed to register thermal zone %d\n", i);
++	for (i = 0; i < bytes; i += 2) {
++		ret = regmap_read(efuse->regmap,
++				  MT6323_EFUSE_DOUT_BASE + offset + i, &tmp);
++		if (ret)
++			return ret;
++		buf[i / 2] = tmp;
 +	}
-+
 +	return 0;
 +}
 +
-+static const char *const mt6323_adc_channels[] = { "vts" };
++static int mt6323_efuse_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct mt6323_efuse *priv;
++	struct nvmem_config config = {
++		.name = "mt6323-efuse",
++		.stride = 2,
++		.word_size = 2,
++		.size = MT6323_EFUSE_SIZE,
++		.reg_read = mt6323_efuse_read,
++	};
++	struct nvmem_device *nvmem;
 +
-+static const struct mtk_thermal_data mt6323_thermal_data = {
-+	.sensors = mt6323_adc_channels,
-+	.num_sensors = ARRAY_SIZE(mt6323_adc_channels),
-+	.cali_val = MT6323_CALIBRATION,
-+	.extract_efuse = mtk_pmic_thermal_extract_efuse_mt6323,
-+	.precalc = mtk_pmic_thermal_precalc_mt6323,
-+};
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
 +
-+static const struct of_device_id mtk_pmic_thermal_of_match[] = {
-+	{ .compatible = "mediatek,mt6323-thermal",
-+	  .data = &mt6323_thermal_data },
++	/* efuse -> mfd -> pwrap */
++	priv->regmap = dev_get_regmap(dev->parent->parent, NULL);
++	if (!priv->regmap)
++		return -ENODEV;
++
++	config.dev = dev;
++	config.priv = priv;
++
++	nvmem = devm_nvmem_register(dev, &config);
++	return PTR_ERR_OR_ZERO(nvmem);
++}
++
++static const struct of_device_id mt6323_efuse_of_match[] = {
++	{ .compatible = "mediatek,mt6323-efuse" },
 +	{ /* sentinel */ },
 +};
-+MODULE_DEVICE_TABLE(of, mtk_pmic_thermal_of_match);
++MODULE_DEVICE_TABLE(of, mt6323_efuse_of_match);
 +
-+static struct platform_driver mtk_pmic_thermal_driver = {
-+	.probe = mtk_pmic_thermal_probe,
++static struct platform_driver mt6323_efuse_driver = {
++	.probe = mt6323_efuse_probe,
 +	.driver = {
-+		.name = "mtk-pmic-thermal",
-+		.of_match_table = mtk_pmic_thermal_of_match,
++		.name = "mt6323-efuse",
++		.of_match_table = mt6323_efuse_of_match,
 +	},
 +};
-+module_platform_driver(mtk_pmic_thermal_driver);
++module_platform_driver(mt6323_efuse_driver);
 +
-+MODULE_DESCRIPTION("MediaTek PMIC thermal driver");
++MODULE_DESCRIPTION("Mediatek MT6323 PMIC EFUSE driver");
 +MODULE_LICENSE("GPL");
 
 -- 
