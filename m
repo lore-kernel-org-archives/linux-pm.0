@@ -1,126 +1,83 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9165F4921B2
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 18:09:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B815A3D1CDF;
+	Tue,  5 May 2026 19:41:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778004576; cv=none; b=OUeCc6RgGwHZe/bN8/yBC9tORfgZrNRw+3fTfm+OfSXsd1Op8QZnfQO3YLgEHs8svbq0w8xAXPI4t85T0Xh0XTznupkLVX64ISxL8H1CCM1moxHuM7Nlyhxj1a+nqi1p6p3/JGZgmbd3tgK/ivk25ByLR2vgkhoTWl3s2lT9Vpg=
+	t=1778010107; cv=none; b=Stzj4PluQjKc1GyE4WlLmjbAI17zGbka1+TsbT6prfHYeEPZBotYgi8aF23C1shHC6VUMzzfyc6CwMDoB60v1P/Mqo3Np+mYoznoqSRSIbVmFdFJIalYtEWR7pkMiz4oYDXu8JO7+2vFqScprEJNigQokNnHy3yXXJnlpTnVFxM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778004576; c=relaxed/simple;
-	bh=MLgyzFRgufGYkU5ISwC+ZrbjcgCWw3g6pOSfMpAdo5Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Nk7Boo+FmSYqcYasFngnRF1qcPSRQVwZpVOyj2c/B9MCWc9UNAvmtAUH0Kon2yZ52hWxxP17uRUjctCUm3mvUMpsKRLo6y4fq7QQ5tvE21EEtRLLlXK4aDn1ah5eJpKYwJ7AbeoWzZgnOiyF7BfyHPiVCCg2P+iUK1k1ul7XPqA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B7L1h97H; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778010107; c=relaxed/simple;
+	bh=f+zthwuppfpFTa8b8uyHJmInP9s5La5GZHSH/CQEOa4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iDHaHJ/+lVLWIw5cG/WGKukxkRHibu/Lpv7GaXAs/fOElvMxheOROLQRAeW1vupNSPerbOysEYlnRIUlDj4GHWs4UiEWhzAhKManIcvcliWDGa54Jivpk/os1JuRN/fqOyDgPAhn/Rk8IJ/1O7N39quJxSBoKajWTVdlclCgjtc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NUROvmTj; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B7L1h97H"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57EA9C2BCF5
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 18:09:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NUROvmTj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E4BCC2BCB4;
+	Tue,  5 May 2026 19:41:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778004576;
-	bh=MLgyzFRgufGYkU5ISwC+ZrbjcgCWw3g6pOSfMpAdo5Y=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=B7L1h97H7NMDS+9N6vFZdMlITAUWcIBKUJoDlwkXDtH/wLWDYQJnsFe3UL4woiT+M
-	 peXWjB19lv2sBNJIoxmH/jX7/wlnAItwxJAUCGNyNOP82EPVwPB0wDFebKBEfNdR+J
-	 UeFo7EJGtnGfsDXjQghTAiwe9Lg0l+PfMMtDTLKM5edZeCUoVebq1iTVoELqZlbn4h
-	 u+q0MRf4XdhnHI/+QIgDFwRzdXyTFbEY8oWiYOomx60ZOdh5qpYuUhFfvqUBM8VXwR
-	 P1vV4gyLmkKeVQFZPo6fyoh23rpEMC1NwceZaKQcVkkXFFzQZ1uESpQfbP0xNQx0VG
-	 J/GN/c214uyKw==
-Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-38e7d984096so62776401fa.2
-        for <linux-pm@vger.kernel.org>; Tue, 05 May 2026 11:09:36 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8hFnFzfDqBycwvMOIQdyFqZOgm29Z6BUIzV++Io0WGxm9ADgkUM0bswxHs3Zi7XXcEqzOCTmqKSQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcVXOGWGPtxnfbc4I/sLWwUzPehWgTZc7762kQ0qJorBUvfecu
-	vsoJUs5So70cX81sZxCAqKMHSHzD/HlK3fUmoZ3J8P1QpbOl6m2aK0NPSZHPgGQaVggikWjFlsw
-	cXRXII/N+ShCAUv6vLxDGWhDYDTMQvHk=
-X-Received: by 2002:a05:6512:39d2:b0:5a8:6e69:de98 with SMTP id
- 2adb3069b0e04-5a86e69df06mr5145712e87.32.1778004574650; Tue, 05 May 2026
- 11:09:34 -0700 (PDT)
+	s=k20201202; t=1778010107;
+	bh=f+zthwuppfpFTa8b8uyHJmInP9s5La5GZHSH/CQEOa4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=NUROvmTjlsPg6l30xYj3CqxY+c99n1i7qfItZZvbymBEeQr2WwOY4HVw6KGNUhXmm
+	 8pDlHR+A6EOAZcTEsVmjf+1MKasze01GDQSdeieKoxSyiGO+f1b7vN9LdhJEghaxYv
+	 Fw5pbBkw6/tnsG7Z0HzR/Kg0RhjQJHHniCNFY81vIXm+E/dkLtEMY8OeVTHByaBWSo
+	 PclJN70pGhz8Jqqgu2KF1DUJKy47haFlJKfRxXkmF2D3NUrPBVn4Edw7sQaM6u1sNm
+	 /xcljRt7QpHTRVa0meiOobjQZEIC0i5ma2Q9jUMFn3N+swNB3Eedvyj6Rc483sPx1o
+	 ownyMgcLaNoTw==
+Date: Tue, 5 May 2026 14:41:45 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+Cc: Sen Chu <sen.chu@mediatek.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Gary Bisson <bisson.gary@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Lee Jones <lee@kernel.org>, linux-mediatek@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+	Louis-Alexis Eyraud <louisalexis.eyraud@collabora.com>,
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Julien Massot <julien.massot@collabora.com>,
+	Fabien Parent <parent.f@gmail.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Val Packett <val@packett.cool>, Liam Girdwood <lgirdwood@gmail.com>,
+	Linus Walleij <linusw@kernel.org>, linux-pm@vger.kernel.org,
+	Sean Wang <sean.wang@mediatek.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Akari Tsuyukusa <akkun11.open@gmail.com>,
+	Chen Zhong <chen.zhong@mediatek.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>
+Subject: Re: [PATCH v5 4/9] dt-bindings: pinctrl: mediatek,mt65xx: Add MT6392
+ pinctrl
+Message-ID: <177801010490.3801319.4232280510868698517.robh@kernel.org>
+References: <20260420213529.1645560-1-l.scorcia@gmail.com>
+ <20260420213529.1645560-5-l.scorcia@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260504225246.480921-1-mario.limonciello@amd.com>
-In-Reply-To: <20260504225246.480921-1-mario.limonciello@amd.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 5 May 2026 20:09:22 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h2NKNU2NTkXbH0FrBsYQJXVbNVxKCMtUUkNcSkFuMQLg@mail.gmail.com>
-X-Gm-Features: AVHnY4Jnzbaa3zK5Y3utMPenN_GfnIUBus9Mv-ao9roezATLuZlg2Eb4ZaMPaeI
-Message-ID: <CAJZ5v0h2NKNU2NTkXbH0FrBsYQJXVbNVxKCMtUUkNcSkFuMQLg@mail.gmail.com>
-Subject: Re: [PATCH] PCI/ASPM: Enable L0s/L1 for removable devices when BIOS
- didn't configure ASPM
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, 
-	"open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, linux-pm@vger.kernel.org, 
-	Mika Westerberg <mika.westerberg@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260420213529.1645560-5-l.scorcia@gmail.com>
 
-+Mika Westerberg
 
-On Tue, May 5, 2026 at 12:53=E2=80=AFAM Mario Limonciello
-<mario.limonciello@amd.com> wrote:
->
-> When comparing lspci output between Windows and Linux for hotplugged
-> Thunderbolt 5 eGPU devices, Windows enables ASPM L1 but Linux doesn't:
->
->   Windows: LnkCtl: ASPM L1 Enabled
->   Linux:   LnkCtl: ASPM Disabled
->
-> This difference in ASPM configuration can cause behavioral differences
-> between the two operating systems for the same hardware.
->
-> The root cause is that Linux's default ASPM policy (POLICY_DEFAULT) relie=
-s
-> on firmware/BIOS configuration. For hotplugged devices like Thunderbolt/U=
-SB4
-> eGPUs, the BIOS may not have configured ASPM since the device wasn't pres=
-ent
-> at boot time. As a result, link->aspm_enabled is 0, link->aspm_default is
-> set to 0, and Linux never enables ASPM for these devices.
->
-> Devicetree platforms already have special handling to enable L0s/L1 by
-> default regardless of firmware configuration. Extend this same logic to
-> removable devices when firmware hasn't configured any ASPM states.
->
-> This makes Linux behavior more consistent with Windows for hotplugged
-> Thunderbolt/USB4 devices.
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D221319
-> Assisted-by: Claude Opus 4.6 <noreply@anthropic.com>
-> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
+On Mon, 20 Apr 2026 22:30:03 +0100, Luca Leonardo Scorcia wrote:
+> Add a compatible for the pinctrl device of the MT6392 PMIC, a variant of
+> the already supported MT6397.
+> 
+> Signed-off-by: Luca Leonardo Scorcia <l.scorcia@gmail.com>
+> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 > ---
->  drivers/pci/pcie/aspm.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-> index 925373b98dff0..77497d90be0b7 100644
-> --- a/drivers/pci/pcie/aspm.c
-> +++ b/drivers/pci/pcie/aspm.c
-> @@ -804,8 +804,15 @@ static void pcie_aspm_override_default_link_state(st=
-ruct pcie_link_state *link)
->         struct pci_dev *pdev =3D link->downstream;
->         u32 override;
->
-> -       /* For devicetree platforms, enable L0s and L1 by default */
-> -       if (of_have_populated_dt()) {
-> +       /*
-> +        * For devicetree platforms, enable L0s and L1 by default.
-> +        *
-> +        * For removable devices (e.g., Thunderbolt/USB4), enable L0s and=
- L1
-> +        * by default if BIOS didn't configure any ASPM states. This hand=
-les
-> +        * hotplugged devices where firmware may not have configured ASPM=
-.
-> +        */
-> +       if (of_have_populated_dt() ||
-> +           (dev_is_removable(&pdev->dev) && !link->aspm_enabled)) {
->                 if (link->aspm_support & PCIE_LINK_STATE_L0S)
->                         link->aspm_default |=3D PCIE_LINK_STATE_L0S;
->                 if (link->aspm_support & PCIE_LINK_STATE_L1)
-> --
-> 2.43.0
->
+>  .../pinctrl/mediatek,mt65xx-pinctrl.yaml      |  1 +
+>  .../pinctrl/mediatek,mt6392-pinfunc.h         | 39 +++++++++++++++++++
+>  2 files changed, 40 insertions(+)
+>  create mode 100644 include/dt-bindings/pinctrl/mediatek,mt6392-pinfunc.h
+> 
+
+Acked-by: Rob Herring (Arm) <robh@kernel.org>
+
