@@ -1,151 +1,85 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from stravinsky.debian.org (stravinsky.debian.org [82.195.75.108])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76C4325A655;
-	Tue,  5 May 2026 12:46:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D5A5176FB1;
+	Tue,  5 May 2026 12:52:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=82.195.75.108
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777985216; cv=none; b=Wi96lTVb3ZZ4B012HjGVja9kBf4sEbmnqo/zVci9/VmWK1db3Ylm/KoixVlB8+upNVQWX9xumsj59y/7h3qPxh0QvHPCEgzpKCKriV6UZrCJ8acJAasS1LC04AkPYR9hip5ZtZXQ03w5ZZFzR5N907Sp8fPjPm1pPnJ95x3F5PY=
+	t=1777985576; cv=none; b=ZtoKRer/gMHwzOWnGP4zDhmnTjrEIf+ZyAgz4TbgQpmbfP2+FOKz1vL70u4jEKvB1ooCOrDzAGI0NQfqHCskUJdWvdICCmYPsfKdZfzXVpeNcU+gZLf2Ffn+pV46S1L6QAiplA5buNyS1Di3NcQc4NhdseQCTIFOIohnii8zGZQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777985216; c=relaxed/simple;
-	bh=596sMWZzO6rtiPjU1JWkqiiSWIQcxiR85HlwQ2gSnXg=;
-	h=Mime-Version:Content-Type:Date:Message-Id:To:From:Subject:Cc:
-	 References:In-Reply-To; b=RP7LFR9mmt1TX85OyOwManYFUPFc8NkRV3hTS7njxQ5rKQ4lA3cGKQ/g0nDE8UDfCHXo7gGl4Z+iFR3nfpunZb4xylGlkYdwGbZHjQlbngSka6/18MzNTWqyVsSRp6RLnCHwC7T/d/g0HxG9wZ0mpbCHfIhCJcNH291K+XIFuqE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZbU9ITGb; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777985576; c=relaxed/simple;
+	bh=VHZTb6n+KvqvYEtebqkQe4HIy4j42NHHqjdkTR0J2Hw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=vCEWQUb4TIX0ryX12KtfO4O41WPReqtmjBbnpAF+2z1EZ303eVTWzYKrg8IXxu8ps1YNNQW0edd26WXCn95CJE6dxmemX70aRUI2Jy96mww9qZB3uhGVstPd4GRz2EQJsnpnJfLqKLgabh2eHY1Fr6bp/p5rn2KjBS9eXWg6FBI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org; spf=pass smtp.mailfrom=debian.org; dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b=YB6QYryU; arc=none smtp.client-ip=82.195.75.108
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=debian.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=debian.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZbU9ITGb"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12EF2C2BCC7;
-	Tue,  5 May 2026 12:46:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777985215;
-	bh=596sMWZzO6rtiPjU1JWkqiiSWIQcxiR85HlwQ2gSnXg=;
-	h=Date:To:From:Subject:Cc:References:In-Reply-To:From;
-	b=ZbU9ITGb91UZX09/qUN7UK+C66NqfMP+rt4z3zVV5PRWg6VyC3VUNmo/QH2vkf6E3
-	 1CJJFrw42Vj/Nn57WBhZHnqrkCLhUKKYMVqUSa/LGx3QPS40ZWxm+8LUe2/G/j31aI
-	 /LnN2J0G5PMTtqnIX2rDri3L4/NDxcLPAxCokN/Fh9PMxN1L5btTgH+oKRxvG6Q/H6
-	 goaafdhFwuzeNXSfCPPW9CqFWJFUb+BINS/qdXA1pi6pWqZiyH1fv7/uldf9S4joKq
-	 Mll2fB6ZEFBIGARw0FzIlqEafFI3HJLPjoF5gjN3waJKaDUX2ADsdA5NKnhR8Fqtpy
-	 du+oNQMpcmAfA==
+	dkim=pass (2048-bit key) header.d=debian.org header.i=@debian.org header.b="YB6QYryU"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=VHZTb6n+KvqvYEtebqkQe4HIy4j42NHHqjdkTR0J2Hw=; b=YB6QYryUqpX2gSTgIChWdZ9EHo
+	oFk0vGvoxBh4K9fqxQibZe09Jg6ig8cOEJ8YXAG/IEuNN9aOmv7H6puIjHOKef3TVW1rbw/TlptZ3
+	YBrDC/oGfG5p4i8xACHFqzlAKMN3Wj5JYOuROZVB6vZ95Nvw3mxvy9dC4vxnvwcHlBMM17FHcIjY1
+	59UtF2t9VkINctNQkSn5+/x079agbUWZ6itgRyhhu8Gsjoe/SvpncqMqEhL/mEXENweTCTSg8qkTF
+	yNnxoGgjsellET6FuLk7DwuHiLodMU33PQsXWEP1zCYHvZhai2tiH1W+BHB6QVu+/vWdR3bmw+3aB
+	Io4ybtvw==;
+Received: from authenticated user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1wKFGF-002ouv-03;
+	Tue, 05 May 2026 12:52:27 +0000
+Date: Tue, 5 May 2026 05:52:21 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Viresh Kumar <viresh.kumar@linaro.org>, Jie Zhan <zhanjie9@hisilicon.com>, 
+	Lifeng Zheng <zhenglifeng1@huawei.com>, Pierre Gondois <pierre.gondois@arm.com>, 
+	Sumit Gupta <sumitg@nvidia.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	dcostantino@meta.com, pjaroszynski@nvidia.com, Al.Grant@arm.com, 
+	linux-arm-kernel@lists.infradead.org, kernel-team@meta.com
+Subject: Re: [PATCH] cpufreq: cppc: discard out-of-range delivered_perf
+ samples
+Message-ID: <afnnPRZBdWlriZON@gmail.com>
+References: <20260501-cur_freq-fix-v1-1-f84c9a423366@debian.org>
+ <7e55dd1e-2841-4918-8e3d-82203a70451a@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 05 May 2026 14:46:49 +0200
-Message-Id: <DIAR5LATLBNK.1CSW7AD5VRN77@kernel.org>
-To: "Ulf Hansson" <ulf.hansson@linaro.org>
-From: "Danilo Krummrich" <dakr@kernel.org>
-Subject: Re: [PATCH v2 1/9] driver core: Enable suppliers to implement fine
- grained sync_state support
-Cc: "Saravana Kannan" <saravanak@kernel.org>, "Rafael J . Wysocki"
- <rafael@kernel.org>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- <linux-pm@vger.kernel.org>, "Sudeep Holla" <sudeep.holla@kernel.org>,
- "Cristian Marussi" <cristian.marussi@arm.com>, "Kevin Hilman"
- <khilman@baylibre.com>, "Stephen Boyd" <sboyd@kernel.org>, "Marek
- Szyprowski" <m.szyprowski@samsung.com>, "Bjorn Andersson"
- <andersson@kernel.org>, "Abel Vesa" <abel.vesa@oss.qualcomm.com>, "Peng
- Fan" <peng.fan@oss.nxp.com>, "Tomi Valkeinen"
- <tomi.valkeinen@ideasonboard.com>, "Maulik Shah"
- <maulik.shah@oss.qualcomm.com>, "Konrad Dybcio" <konradybcio@kernel.org>,
- "Thierry Reding" <thierry.reding@gmail.com>, "Jonathan Hunter"
- <jonathanh@nvidia.com>, "Geert Uytterhoeven" <geert@linux-m68k.org>,
- "Dmitry Baryshkov" <dmitry.baryshkov@oss.qualcomm.com>,
- <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
- "Geert Uytterhoeven" <geert+renesas@glider.be>,
- <driver-core@lists.linux.dev>
-References: <20260410104058.83748-1-ulf.hansson@linaro.org>
- <20260410104058.83748-2-ulf.hansson@linaro.org>
- <DHW8QPU1VU1F.3P6PH69HLFBYC@kernel.org>
- <CAPDyKFqMDPiqvqJrq5Qs6Tw4Sc7szG4G-=y0NFkNSPoNd9kdVA@mail.gmail.com>
- <DHZMQLCIRJIS.174HZR6DIAOMM@kernel.org>
- <CAPDyKFoKNpUexGrM0zcysKMKcdYT-cU0_Q_AHbgiGPk_gU-3nA@mail.gmail.com>
-In-Reply-To: <CAPDyKFoKNpUexGrM0zcysKMKcdYT-cU0_Q_AHbgiGPk_gU-3nA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7e55dd1e-2841-4918-8e3d-82203a70451a@arm.com>
+X-Debian-User: leitao
 
-On Tue May 5, 2026 at 1:12 PM CEST, Ulf Hansson wrote:
-> On Wed, 22 Apr 2026 at 12:59, Danilo Krummrich <dakr@kernel.org> wrote:
->>
->> On Wed Apr 22, 2026 at 12:07 PM CEST, Ulf Hansson wrote:
->> > On Sat, 18 Apr 2026 at 13:23, Danilo Krummrich <dakr@kernel.org> wrote=
-:
->> >> On Fri Apr 10, 2026 at 12:40 PM CEST, Ulf Hansson wrote:
->> >> > @@ -1126,6 +1128,9 @@ static void __device_links_queue_sync_state(s=
-truct device *dev,
->> >> >       if (dev->state_synced)
->> >> >               return;
->> >> >
->> >> > +     if (dev->driver && dev->driver->queue_sync_state)
->> >> > +             dev->driver->queue_sync_state(dev);
->> >>
->> >> This seems to be called without the device lock being held, which see=
-ms to allow
->> >> the queue_sync_state() callback to execute concurrently with remove()=
-. This
->> >> opens the door for all kinds of UAF conditions in drivers.
->> >
->> > If that were the case, this whole function would be unsafe even before
->> > this change. I assume this isn't because of how the function is being
->> > called, but I may be wrong.
->>
->> This function does not issue any driver callbacks intentionally; the exi=
-sting
->> sync_state() callback is deferred to device_links_flush_sync_list(), whi=
-ch is
->> called without the device_links_write_lock() held, but takes the device_=
-lock()
->> to protect against other concurrent driver callbacks, such as remove().
->>
->> I.e. we can't take the device_lock() when the device_links_write_lock() =
-is held,
->> as it would be prone to lock inversion.
->
-> You are right, the device_lock() is needed in
-> device_links_flush_sync_list() to protect against concurrent driver
-> callbacks from being invoked, such as the ->remove().
->
-> However, as part of the removal procedure in
-> __device_release_driver(), we also need to account for device links.
-> Hence we call device_links_busy() which takes the
-> device_links_write_lock().
+Hello Jeremy,
 
-I don't think this is sufficient.
+On Fri, May 01, 2026 at 12:41:45PM -0500, Jeremy Linton wrote:
+> A little jitter over, is probably expected. If that is what is happening
+> then clamping to highest_perf makes sense instead.
 
-I wrapped my head around this about three weeks ago and I think there were
-multiple cases where this falls apart. I think one case was:
+Based on my analysis of the code, interrupts appear to remain enabled
+during the delay, which could introduce significant jitter if an IRQ
+fires during that window.
 
-  1. Consumer binds, supplier is added to deferred_sync. Consumer unbinds,
-     link goes to AVAILABLE.
+I'd be interested in testing this under an IRQ storm to quantify the
+actual impact on the measurements.
 
-  2. device_links_busy(supplier) takes and releases device_links_write_lock=
-(),
-     finds no ACTIVE consumers, returns false -- drv->remove() starts witho=
-ut
-     device_links_write_lock() held.
+> But then, this is really
+> a sampling problem so does it go away if you double the udelay slightly.
+> Maybe the udelay value should be proportional to the reference_perf value?
 
-  3. device_links_supplier_sync_state_resume() takes device_links_write_loc=
-k(),
-     finds supplier still on deferred_sync -- device_links_driver_cleanup()
-     hasn't run yet, blocked on the lock. queue_sync_state() is called
-     concurrently with drv->remove().
+That's a reasonable approach. What would you suggest for the
+implementation?
 
-But again, I think that's what I concluded three weeks ago and this state
-machine is rather tricky.
+I considered making it a kernel or module parameter, but I'm not certain
+that's the best solution, since the "user" might not know what to
+set/use.
 
-That said, *even if* we could prove that this works in all cases, it would =
-be
-very subtle, pretty fragile and not by design.
-
-The whole state machine around sync state is already rather complicated. So=
-, if
-we really want to make it an invariant that it is valid to call bus device
-callbacks without holding the device lock from
-__device_links_queue_sync_state(), I think this has to be carefully reflect=
-ed by
-the overall design making it *very explicit* how this invariant holds up in=
- all
-cases.
-
-Otherwise, I'd be rather concerned that this becomes a source of subtle bug=
-s.
+Thanks for your review,
+--breno
