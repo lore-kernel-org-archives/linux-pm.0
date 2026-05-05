@@ -1,165 +1,151 @@
-Received: from mail-24426.protonmail.ch (mail-24426.protonmail.ch [109.224.244.26])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013044.outbound.protection.outlook.com [40.93.196.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D79D48B388
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 16:24:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=109.224.244.26
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777998298; cv=none; b=MQ0yV6jHPvqdf0dzGWXnnZ17FkFXJ3L3iRZ3z3KsAcfnCDsv3asjqBh+r3+qpixJ5hp9+0jdLfgvZCeWk4ZToK0rZhoPbh4GWeY2lCnVrSDN5OMhNAbg7U6CLZnXjyLQakyrqFVQFmlN6dKgsmqTbzXEBz1PVtJmRjoh6bbnKoQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777998298; c=relaxed/simple;
-	bh=zNiWv6rRMr8VglHjj6vRucPyNjtedqguSDscHAx+XdI=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=luEpCdg32rCvNyqLhfSDPbugRL4PjyeZVSW9XKrz3/5G9ufj+RmaOefdTpwOnH5i+4MUYMOO/UFZRvA37sAjcGahWCLJuRPkJwotFqCwsFTHmCgJZDty+VA+Jb4A/gfyFKiou/IgjZsXtLPuw/7U7W56pgmghLPMEH7jgOodn9A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=M+F3yhx7; arc=none smtp.client-ip=109.224.244.26
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7071B48C8C1;
+	Tue,  5 May 2026 16:31:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.44
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777998674; cv=fail; b=nbXnellexVOaH5s7wCEMbuxmEXz+WBzbCwpTspY6hXK06gjzcjk9e7rgy0iCAMLrZZkwWNeAcX7Xilt0c/eg4aSzLiV6rfeag4P5kYDFu5+aDaV472tBtwreKgJ2Awe9Uf/vhX0eZAvVhYtDEmLx1sG+gVtLZjea7EoBJrz5cH4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777998674; c=relaxed/simple;
+	bh=wsWxgrn/kHdq4l2uMbD/f65Hrk7tb1tLAVpWLREoRc4=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Y5X++W0C/TU8G/+3L/VDdoE8KOcGgUW6F0mO8VZJE1qi1qbrb0W0/nI7Qr/pSSW0ozykI5ogVTxXX5HI2c8O7cjgHfDR/9AIb4CKgPDLz0TK4QE8FQL41wBQaZz7pMc8AIDBKToG5lqnUflpS1xmjVQdXQDHUQxLBxR0vO/hQ7k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=OjdPK41l; arc=fail smtp.client-ip=40.93.196.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="M+F3yhx7"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1777998287; x=1778257487;
-	bh=ASWqzKjXrD7GPPPq7eqcATqg6A70mPRmdB4ZyDBwEK0=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=M+F3yhx7dJ2rhFSJAZcFeXyevkNolOGRHAyGx9L5V9zEwV48mNW0/j1DxaK2EZV3A
-	 sOI77K5RJdv6vOQ4iT0XOz7d7KLFmOkC+jHajqCLIfMwCKTNmoZk26ZlwEiaoyoM9j
-	 b0Jm6p/Ff5EtNIHmXiEyFH/VfiVWcUCBVrOwkIFsGzbQoFISKrRmmTf1YBwE6BKG50
-	 jEC/Wpla8r4KX6aKV8Ln+iyPz5DRcWZf6WmD+D+yqDdYEw+FuY37PxcYMtVcMYDeHg
-	 ZFaIG7dN5yXP2FY+Ojke22qfg31drHoBz2zpt6/kca1w+FzeqPMI0bs85GKPo37cug
-	 sJC/bk/aU+nQA==
-Date: Tue, 05 May 2026 16:24:41 +0000
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-From: Roman Vivchar <rva333@protonmail.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, =?utf-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, Lee Jones <lee@kernel.org>, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
-Subject: Re: [PATCH 05/13] nvmem: add mt6323 PMIC EFUSE driver
-Message-ID: <Bn1O24yJ2aBvKUTpiFUzxnqbuuybRirR73G7R38ghYtwhFvQqWJb3HPgcikEa1otDw6n07nX_g8khZUHXJ_QRA--LrV5yj5Mcg1QzrWt6vA=@protonmail.com>
-In-Reply-To: <afmjfWtt7Vii6xfH@ashevche-desk.local>
-References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com> <20260504-mt6323-v1-5-799b58b355ff@protonmail.com> <afmjfWtt7Vii6xfH@ashevche-desk.local>
-Feedback-ID: 173184497:user:proton
-X-Pm-Message-ID: 70e68a78b3333f71307d661d5a8c93410d5d2dc7
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="OjdPK41l"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=bnMQsX3cVvNM71bhSWXvNfb1/xPmmkYCPu6keoQ0ZG9BdLNlkoQ0rYCjCxy5i4DaZmuKzFqgS0WzsxDshQyxrguEYApwh8ipZVZgdSQFuRw2HE03FJ9CmJiVXdNDpTebHe9rog0NOTz1OWfbd98bxYR68Jiicmcq0MvhZ456Z39ZrBTzvEhiDZYLF4uM/5EGDDgwJNzKRntUhmzwVMxTlfzny+5kOR5zIKvxYJSr/AFFdjGs2UlM5Hcwdtle6Lf/XtN2xGXS5EMs4SF1WLW0Bg6ThlziPO7L6R2joHNz4ffkGZkmnBIvXMtUGnKN+CS0YGUUCpVgMziJQv1RXaBVeA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=GWiJzAIZn5/hqVS/2iMNLTYzB69nUyBfC5JpBllzJiY=;
+ b=wfzZeflKeMudZxh3OtnkGsONQH7p+b6y8jDVQcDmu+TC52QHblUIUQhuwKnsffm4qzRrqRH+K6BQmZnS2TAkTLnBVCaTj97Xf75Sb+cIaCYRAIvn9Uii7IrWK7mMsibmeb0Yu/vNShwBD7qkJK7ywgsVUtY4lTDQmhrAe7qtbnRgINANYghb3BaavY0XcY55BKEK6tD9z0xP4GfS5lX2OcgIrMANitTSd8wq7O4MRhl5S45ZEe5tcHZoqrPZc1nXTuk2X52FQgTpA023ZNd5CtDCcFR6KLUVf9zXr7tXHmniBqxQvOYhy0ly/NzuljNaNhQ0ffyWEb+Rcty56hkbYw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GWiJzAIZn5/hqVS/2iMNLTYzB69nUyBfC5JpBllzJiY=;
+ b=OjdPK41l6uYKLgqK0/Xzb4BE+0MWnvo3KcsY5+NMg0/BH8sjPeeLi4IXFznqKnMkW4LecmZ0sfhAs3dRoIyPcimu6Wk14moNNV4xsICX8bH2L05YVAKdvONCoPkbxEZ2pp2X040XcPzJKEMciBxfrcFsYJCocftoRiNIWetYFhE=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DS7PR12MB6263.namprd12.prod.outlook.com (2603:10b6:8:95::17) by
+ CY8PR12MB8265.namprd12.prod.outlook.com (2603:10b6:930:72::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9870.25; Tue, 5 May 2026 16:31:04 +0000
+Received: from DS7PR12MB6263.namprd12.prod.outlook.com
+ ([fe80::c748:abd5:8638:f377]) by DS7PR12MB6263.namprd12.prod.outlook.com
+ ([fe80::c748:abd5:8638:f377%4]) with mapi id 15.20.9891.008; Tue, 5 May 2026
+ 16:31:04 +0000
+Message-ID: <6ca4ac03-7d6f-4320-8ac6-0556f408059b@amd.com>
+Date: Tue, 5 May 2026 11:30:46 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/5] Revert "ACPI: CPPC: Adjust debug messages in
+ amd_set_max_freq_ratio() to warn"
+To: Mario Limonciello <mario.limonciello@amd.com>,
+ "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, K Prateek Nayak <kprateek.nayak@amd.com>,
+ x86@kernel.org, stable@vger.kernel.org
+References: <20260504230141.484743-1-mario.limonciello@amd.com>
+ <20260504230141.484743-2-mario.limonciello@amd.com>
+Content-Language: en-US
+From: Kim Phillips <kim.phillips@amd.com>
+In-Reply-To: <20260504230141.484743-2-mario.limonciello@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: BN9PR03CA0237.namprd03.prod.outlook.com
+ (2603:10b6:408:f8::32) To DS7PR12MB6263.namprd12.prod.outlook.com
+ (2603:10b6:8:95::17)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB6263:EE_|CY8PR12MB8265:EE_
+X-MS-Office365-Filtering-Correlation-Id: f9d21d25-579e-4ca4-2040-08deaac3b35f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|366016|1800799024|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	nIUHYiB+vPlBPvkrOUtKYRsgPZpo0E+UjLE0kDSR9gOOOMqJ4/xXel3p5wi8676tMtSypOa1M49mgKnOFr86AiZ4VUA4Sbzgez91GsZK2dEx5dVgG5H122LdRrqZmJ85+9negpGDp0fGC4oXgZAvf/i5tgA3w49cIkIGZl1Dda1/MvR7x7t5sBAQESJ6tI1yBJpLqT1P2o0TKC8PMHpWRs5DAuLrXfLilAT5QmVox2knB4qJApthwUklNN2Vpuh5fsayzHudNkavyHnADek2EhpMuaU6xkNaPuYFhS9LmOyC2Icy0d+/QsH+JyNZnE3uRyrN4SewlKmbfDjVirmsJcxZ0giFvrG1QXE9UsUSkZ0dBXydTwcSdOlRELC6WiI6g+J4g2Vc2g1F/VZs2GWZ7kuIEJwKdAnzV33SU6wWqVIu0wXnYxZBA2UF1DECIq6Fd1gE7L+xxhxEppC6OEFra0V820srMh0VuuS2gHDgKTYDgsTKRniTpf+dQWwQqsEeXXAZVJJ7bONlC4GbJBzgjf8BYhG+1uCo75X0z0+dsYw1GGcuvKhtOYzS8ewV5w11m8nj9byiEs9xVFQ3Q26F4j/hs83sGVfQZk+9+3Wq4JXC54JNuRFit4MsYJDssMuCeL8+OXxRlHoTp0RhOSJkGLe44Qz8SGbJhChieR4arbv05RtzRP+GOuSioXpoHJpi
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB6263.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(1800799024)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?d1ptTEZGY0RCd0VhYmJnMVVEOEVZYjI5MTdVcVU2S1JhSThkMXc4SnB3K2Rv?=
+ =?utf-8?B?Zkt1cDQraDE0Q1oxa1pJRFhYRCt1eWpLRUNBT2xxb0FYRmU4aVExajlwZlI3?=
+ =?utf-8?B?RCsxOUNodTlwV1I3TzhKdnVVMEFlTTBrb1BJdG1tS0o5Y0kySkluNW03VjBW?=
+ =?utf-8?B?YjV0WGQ3dFFXMEF4ODd2ZHV1NTdDdExRVDE1YXNpNEltbzVncDJqTXJrMzBI?=
+ =?utf-8?B?UjhDOFQyN1N0TjRJUy9INE1tZ2RoMzJJc0xjQzdsNVorczA5QU9YdTcvcEJ3?=
+ =?utf-8?B?YThscy9sRGNHSlFKM3ExaHF5ckNGa1AyQ1hxeGxoNTlIZG1MVTVBaWpKVDhW?=
+ =?utf-8?B?YW1ITDM0bUtKTjllWmVNSGVqeWdFT3RmK3lSMXl1bUUrcytra1oxUEFxb3V0?=
+ =?utf-8?B?N0w2SHQxdmVUU3phRTNRcHZZZlNOb3JzVWZDOXQ5SWY1NTlTMXkwVXUzNlZu?=
+ =?utf-8?B?ejRrYjNtR2VCaFRXODBvclVCd1huUnZRSDRaa1hobXRYaExRTmh2QndKWnJ1?=
+ =?utf-8?B?TzkvMklFVzc5d0xvZVR5K2RFWkhsNWFoZ0ZxSFRmbTNMTC94VDRXTFVBMEI3?=
+ =?utf-8?B?US9sUVFiWFNpbVo0M3VTUVdMTXQ4SEEvZWlLcnROazIweTkyNlR5OWdlUHVG?=
+ =?utf-8?B?aFJZSUc5WVROVDg0VUxKaC91MXROcTJ2QUZNY09JRi9Qc3J3NWdFMThoVzE3?=
+ =?utf-8?B?dFhXMHJCT0xjQ0tPY3JnZWh5elpOdVlGZUluS1BuSjBDY1VkeVBxOUhsLzk1?=
+ =?utf-8?B?bXNkNXd4NC9yc1JUYkdrZHkwVUt5Qzcvc0g3eTZBM044eklySmpNMFJvK1VS?=
+ =?utf-8?B?MUJMd2pZZW9TZCtRSm9jYzgvUnIwcEh1VVl1RThjdGpSSGRqV1EzQUdJTlpL?=
+ =?utf-8?B?YnBxNEh6MEhSd3hXRU1FTEZoM1d2eXU3NUxaS3h1LzF1SHlDL2I4bzhwUUVv?=
+ =?utf-8?B?Y0RPSXMrRlUxdjJldWhwM2lUVldodHB4U1YzbmRJa0h3a2JnUVpZeWRYMTkz?=
+ =?utf-8?B?RUx6MUVZTjJ5TG83OUswOXFTOEdlTEZOQml4Y1NHTTU0RkJpb2hOQlBwakg0?=
+ =?utf-8?B?KzlwUFRrR0NVd1VMWDhKc0daUU1jbDYxbDlCZ3JPR0dBVXNDQUVsNkVDdTk2?=
+ =?utf-8?B?RHlsdXFZOCszZ0tUbXVRRzFJQ09yOGxCaG5LY1Z5aXdWNmtqUmxZRUtoSEpj?=
+ =?utf-8?B?SmZNTlgwYnZJNW5vcEdtU3psMm5OT3N5dVVCYi9vbWh0VXpYTDcvVEF0SnZV?=
+ =?utf-8?B?UzNoaDl0RFNSbTdNdXZzMzZBT2NMbXNWSGdTZGhoVGpJWGtXUmR3RGRJSFhU?=
+ =?utf-8?B?c2xteEdodmxUZHlua204MW5lZTVWY2V1VE5LZmZiMVRHeGJLbVFzc01IK1JJ?=
+ =?utf-8?B?QTZHSUdKYURONGUyVlZiQUU5UWxUaVFXQStYQXZTbWpFSjBKdUpsSUxZQ1c0?=
+ =?utf-8?B?aVhMcFlhYkw4TmxYKzU5cHdWdDR2dUNFS0NiZ2NoQzlwTHBxZVc4VmF5NmFS?=
+ =?utf-8?B?TS9MT1hYTExPZlYyMnkrUVh6Y1FGMFhxNC91TFRpS1BCcEN5dmpwMnQwWjMv?=
+ =?utf-8?B?akVUVVZqNVRJRHVqNlpHSGFxR0dkNVhpUXQ3SnU3SHFvTUsrUmNIUUN4VFJh?=
+ =?utf-8?B?T25hSGJ2Zmp3bVBWT0ZpMEpHTjk5bjdneEpHWXpsVkhrR3dnK0c1QUNFYnVr?=
+ =?utf-8?B?MDRVb0MrMXN6OXVMdFN5Ui9zOEtIUW5hYTFFQ1pYYkthWTNTeVFER1VUOGVD?=
+ =?utf-8?B?SmZaTSsvRHFRZnVqR0pGVGhGSWVwd3hSU1Z0aWEva0Y1QWM2U0ppT1JkeVd5?=
+ =?utf-8?B?OEMrTTloZDEvUkVqc1FXTWpQRUpBNlBMQkFZZ2kwYlM1ck43Ky8yZzdCYkti?=
+ =?utf-8?B?dGRvZEsweDRDMCtQTWdWdEhVdk02TmRncVB6MUhCYWhWWmlLU2FFeUNWOGdv?=
+ =?utf-8?B?QUc4ZmhVaVBBbzJqUkRLdWszSlcxQkJ0Nzl2ZzBjOGgvUEJuZU10QmlLM3oz?=
+ =?utf-8?B?di9oVEpHdW9yQ1JVenEvOUJCZVBOUjMwdThSQWFkVDVweThWeUJsWElRa01q?=
+ =?utf-8?B?eEl1MW9wWEJMOER3QXpBYk50MHp6bHh0MEdHUHd6N0xYVzBkaUs3Y2pVTWww?=
+ =?utf-8?B?dmIvS0VleXRWcThPUzZUMDZiNlFtNG9lK0RndHBhNmlWQytkamM5QVBVdW51?=
+ =?utf-8?B?UUNYODNETDUxdG0xQ05Id3VHRmE5c0ZMZlVGczRpVU5NNXh2d2xicmpPMzNF?=
+ =?utf-8?B?MlBoMy92R3NrNlFDOVl5bFlPZ1ZFSnROUEh5UVFyQWdBYnUvTW16aGh6MG4z?=
+ =?utf-8?B?Uk9SZS9pdXpnMkFEM0M5eUhUZUdDUERHTUIwejNBTUtSSHNhdWFJUT09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f9d21d25-579e-4ca4-2040-08deaac3b35f
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB6263.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 May 2026 16:31:04.0208
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ggeJmfsQBsIfy/TKhMuIJ+hROUmgRgfnec60ok68aSJ1rHIDY9o3wRex7R27CKG3afk88CwweopPGUypYIxTUA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB8265
 
-On Tuesday, May 5th, 2026 at 11:00 AM, Andy Shevchenko <andriy.shevchenko@i=
-ntel.com> wrote:
+On 5/4/26 6:01 PM, Mario Limonciello wrote:
+> Some older systems don't support CPPC in the firmware and this just makes
+> noise for them when booting.  Drop back to debug.
+> 
+> This reverts commit 21fb59ab4b9767085f4fe1edbdbe3177fbb9ec97.
+> 
+> Fixes: 21fb59ab4b976 ("ACPI: CPPC: Adjust debug messages in amd_set_max_freq_ratio() to warn")
+> Suggested-by: Kim Phillips <kim.phillips@amd.com>
+> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
 
-> On Mon, May 04, 2026 at 09:24:57PM +0300, Roman Vivchar via B4 Relay wrot=
-e:
->=20
-> > Add support for the EFUSE controller found in the Mediatek MT6323 PMIC.
-> > The MT6323 EFUSE stores 24 bytes of hardware-related data, such as
-> > thermal sensor calibration values.
->=20
-> Besides below comments, check for the similar issues that previous patche=
-s in
-> the series have.
->=20
-> ...
->=20
-> > +#include <linux/device.h>
->=20
-> Not needed as platform_device.h implies this ("is this good or bad?" is a
-> different story).
->=20
-> > +#include <linux/io.h>
-> > +#include <linux/mfd/mt6323/registers.h>
-> > +#include <linux/mod_devicetable.h>
-> > +#include <linux/module.h>
-> > +#include <linux/nvmem-provider.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/property.h>
-> > +#include <linux/regmap.h>
->=20
-> Follow IWYU. At least missing types.h.
->=20
-> ...
->=20
-> > +struct mt6323_efuse {
-> > +=09struct regmap *regmap;
-> > +};
->=20
-> Do you really need a custom wrapper data structure? Can't regmap be used
-> directly?
->=20
-> ...
->=20
-> > +static int mt6323_efuse_read(void *context, unsigned int offset, void =
-*val,
-> > +=09=09=09     size_t bytes)
-> > +{
-> > +=09struct mt6323_efuse *efuse =3D context;
-> > +=09u32 tmp;
->=20
-> > +=09u16 *buf =3D val;
->=20
-> Really? CPU order all the time?
->=20
-> > +=09int i, ret;
->=20
-> Why is 'i' signed?
->=20
-> > +=09for (i =3D 0; i < bytes; i +=3D 2) {
->=20
-> sizeof()?
->=20
-> And since 'i' is used only inside the loop
->=20
-> =09for (size_t i =3D 0; i < bytes; i +=3D sizeof(*buf)) {
->=20
-> > +=09=09ret =3D regmap_read(efuse->regmap,
-> > +=09=09=09=09  MT6323_EFUSE_DOUT_BASE + offset + i, &tmp);
-> > +=09=09if (ret)
-> > +=09=09=09return ret;
-> > +=09=09buf[i / 2] =3D tmp;
-> > +=09}
->=20
-> + blank line.
->=20
-> Isn't this reimplementation of bulk read? Why the latter may not be used?
+Re-adding:
 
-Yes, but the PWRAP (the regmap which the driver uses) doesn't support read
-callback, only reg_read is implemented in the driver.
-It hits the map->cache_type =3D=3D REGCACHE_NONE in the regmap_read_raw, an=
-d falls
-for the !map->read check, so regmap_bulk_read neither the regmap_read_raw
-can be used.
+Cc: stable@vger.kernel.org
+Tested-by: Kim Phillips <kim.phillips@amd.com>
 
-Technically the PMIC is not continuous address space, but rather non-MMIO F=
-SM,
-so it makes sense to not implement the read callback. I guess the custom
-implementation is fine then?
+Thanks,
 
-All other suggestions will be applied for v2.
+Kim
 
->=20
-> > +=09return 0;
-> > +}
->=20
-> ...
->=20
-> > +static const struct of_device_id mt6323_efuse_of_match[] =3D {
-> > +=09{ .compatible =3D "mediatek,mt6323-efuse" },
-> > +=09{ /* sentinel */ },
->=20
-> Having trailing comma in the terminator is nonsense. Do we expect anythin=
-g
-> behind it?
->=20
-> > +};
->=20
-> --
-> With Best Regards,
-> Andy Shevchenko
->=20
->=20
->
-
-Best regards,
-Roman
