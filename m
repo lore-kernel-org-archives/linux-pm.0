@@ -1,167 +1,111 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id A3F6434BA5B;
-	Tue,  5 May 2026 22:28:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F5072DEA7B
+	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 22:33:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778020101; cv=none; b=PlUsE4qQcyB4wekcEw+hmTWlwtVec+5+Sbseq9YLAb+ibTEJu5ccl8qRNQbL2BUp88+dT4jHnkwVPgUS6csW9QKaiZqJnkpj4w8+Qpd80wqMUDxEp3xwh+MVDiI+PtR9rgC+1NqvDz8MSlm5RJs6pJzshD37NoiOTJdzHSx9Q6Y=
+	t=1778020387; cv=none; b=LGEDg3/oc14pve0ylvamcBygxcEn67/mE+WBIBqblQHL5xe1VsjZ1B1GMdYMwUkxhc3Spt7PBqJ1glVMUS5dkclSnGYEFmcAq1DIG/Pu81yZpQzH0jU1bKEnP036SeLxvUjcy4gfCd8ToWgbRhvOrrjVw0WeBVrtqmqmc5m54zQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778020101; c=relaxed/simple;
-	bh=XfWxOyUGLD2q5cof5u5Eo/MmH1s8P7/d+G6YyWOX2e0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lygWJBI8Wwyt2C7R3yD4UIbLgU0s9M+1RG8rayTllA65xzC4NeTHBKBSFwyluRwG5i9a8pFQOj1yy32FNoalli8203ptg+lrou+jZUYc9KiEzftNfDuqZieIj1nSvn3ZaDgMhKB8PtAnDgbJ/tAJ2iYqRnMENJxtrxvANYh4EXA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=nbhvuImU; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1778020387; c=relaxed/simple;
+	bh=QG4+v9HWXFG1GRswUr//AO+jT/MDyrnxE+RlC0mz04E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oAWA9dpeEd40M20Sym/oaIdoX6MTVpKTzZvPyguvKIROB+GYa67kNZD7R6+zciNIm3IF77tuiwduAyWCenAZ0spXl30uDuzpR8GYd+XlVKVthgqckH+hg5v0ZxsIKv+1mdbWk8QHuygMgJKFew9exzrjJxjEv/fMd9RysCFKBAU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AGrTNu4i; arc=none smtp.client-ip=209.85.208.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="nbhvuImU"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 84E281A9A;
-	Tue,  5 May 2026 15:28:13 -0700 (PDT)
-Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E51593F763;
-	Tue,  5 May 2026 15:28:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778020098; bh=XfWxOyUGLD2q5cof5u5Eo/MmH1s8P7/d+G6YyWOX2e0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=nbhvuImUGE4b0qAbtBjMGQQQnDSIO7MvehIX21CZkMQAR+8dHPU8pP2bURbOtaEDj
-	 rxFOhZolX/2jijLkPvaMkhzvSk2z/2Lco4cPYmiTL1CfK/b0Dfm0LNH/Um67mI9Bfg
-	 gw2hvi4R1dYwu7NwUuDYF6FuPSQqT/76B3yxteUs=
-Date: Tue, 5 May 2026 23:28:09 +0100
-From: Cristian Marussi <cristian.marussi@arm.com>
-To: Philip Radford <philip.radford@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
-	sudeep.holla@arm.com, james.quinlan@broadcom.com,
-	f.fainelli@gmail.com, vincent.guittot@linaro.org,
-	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
-	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
-	souvik.chakravarty@arm.com, cristian.marussi@arm.com
-Subject: Re: [PATCH v5 12/12] powercap: arm_scmi: Synthetic zone
- enable/disable
-Message-ID: <afpu-Wf01J3l0gAu@pluto>
-References: <20260428090922.346069-1-philip.radford@arm.com>
- <20260428090922.346069-13-philip.radford@arm.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AGrTNu4i"
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-38ea6a5a0b3so57299811fa.3
+        for <linux-pm@vger.kernel.org>; Tue, 05 May 2026 15:33:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778020384; x=1778625184; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=QWmXw1Ld65p4SM1p3E/vhOe4lxBprGFlawGmgtaD0cI=;
+        b=AGrTNu4iHFGBJYUK7MHp1Evg24HvhgvUcf3Ofz4E90vKDZu67gcXSszILOddT1IX3g
+         paMM+7l7fXkv+JAuaQmT9CyCTANz35jwUzS4DFSrxTylxpo3aSI3k/eiKLZT6Ehh5d1/
+         VSVl9vxYob0WQ095v6nHxgLfzLd5tdWTHLa4BtXhYGtAuSpA7QwGEGfIczC+/a5+2s5k
+         k/THggprYid+iEz5mwLuB/JkxX4e+DD0TMr07NzbLTpW2LGphtyVplDGaYvah2UUihkO
+         NWPGJS83iOnInuLD46HB2bRCx2V3ImykQKf1quioc0811DQje3NgqV3uPmRhZVzg1Wj2
+         aP6Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778020384; x=1778625184;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QWmXw1Ld65p4SM1p3E/vhOe4lxBprGFlawGmgtaD0cI=;
+        b=cndNEXHbMRKc6nlgaU7Bl98lCUsT19HE2bzMrKd44uUDaCutCwB0sENFdgn4ZVd67V
+         HCud4kuR+nc6fxR2IY4DBDNaCA3+inCaeg8IOSI/rvy1jCBZAqcdFCKvN2Xoq1R3GjET
+         BmTUXsHCtgzPCjEsq3n0JYFmvPliI5D4/Eq7O6nIKwrkbytcKSZYQBOPZBacm9GubJUW
+         jgC1oTCwKMWqJ6J/dkxF36zB53p9bnuNkDqNJztACQoI71XF7fi6nYQyqhWqlX5RNQ1L
+         cYPxGBo1Ct+s1PB+8IeQ9d7+dNltZXOjFfvc57vaIZKG5ZTb1sA8RcIjCdyVsz15XuHG
+         Hsbw==
+X-Gm-Message-State: AOJu0YwVYqZhXhy+vGRrssarA5D/67DRbtTZcULHBspHtR7YINKYK2R7
+	WDfr/n2JLTgOOtKKMdtq4lOKn/Ncnf9+9HIxLmq12yWn9f30HtDoe2t1cFCw6rWJ
+X-Gm-Gg: AeBDietKO/oJWH2VDJqp2p3dmHnaqqdnVlHGud08KR8mw0AlRHP06XQ+TtMjzGsxupv
+	songVYNmOfRysVwRWGasT1ibwoqKYnc6vqlvYFxGkIeADbkhlaGa/ATxlxBo6yiWf9lZbVhbDmc
+	aCeO5UEgEFthaXAI6JHwJt7zvwitFfIYFV6sUvTYn/SNqqNO+UqXrHX41deTqRYmXJTpc4iE2V+
+	fp+6AReQss+tfKFsJQVrK0MJBzG3yraZk2G5EQKwdBMFoF21dT3z/nG6lTWOZIki7Kbc4TFyblC
+	LPFlls9/4kdRK2qpCYEp7UxFtdNhoYZvcnP+IFuj6hGq6pSvZOFFnfjHGelLlKP23Fx0e2XvL0Q
+	luU2YwyzHNSTbXSbRwpHOaTI5gSWj4VW84xSrD+svEj2NpIMRwWb02W9DKN6U9yluvd1x9M0Fct
+	cKZgGSRGgavzvLmwnffWj4pOARPagJbzLnTAVAgMZ0rUQOwo8M2qzDOWyCrUuxd4HMfUo=
+X-Received: by 2002:a2e:838b:0:b0:38e:83a6:d37 with SMTP id 38308e7fff4ca-393c4136104mr3238681fa.13.1778020384115;
+        Tue, 05 May 2026 15:33:04 -0700 (PDT)
+Received: from Shofiq.home (87-92-218-151.rev.dnainternet.fi. [87.92.218.151])
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3936108fb8bsm43321321fa.2.2026.05.05.15.33.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 May 2026 15:33:03 -0700 (PDT)
+From: Md Shofiqul Islam <shofiqtest@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org,
+	linusw@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Md Shofiqul Islam <shofiqtest@gmail.com>
+Subject: [PATCH] power: supply: Fix typos in comments
+Date: Wed,  6 May 2026 01:33:02 +0300
+Message-ID: <20260505223302.5628-1-shofiqtest@gmail.com>
+X-Mailer: git-send-email 2.51.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260428090922.346069-13-philip.radford@arm.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 28, 2026 at 10:09:21AM +0100, Philip Radford wrote:
-> Add functionality to disable and enable the synthetic zone which
-> also affects the immediate children of the synthetic zone by applying
-> the same command to them.
-> 
-> Signed-off-by: Philip Radford <philip.radford@arm.com>
-> ---
->  drivers/powercap/arm_scmi_powercap.c | 81 ++++++++++++++++++++++++++++
->  1 file changed, 81 insertions(+)
-> 
-> diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-> index 81b5214acda4..1ed2949b06cb 100644
-> --- a/drivers/powercap/arm_scmi_powercap.c
-> +++ b/drivers/powercap/arm_scmi_powercap.c
-> @@ -270,6 +270,85 @@ static int instance_root_release(struct powercap_zone *pz)
->  	return 0;
->  }
->  
-> +static int instance_root_set_enable_state(struct powercap_zone *pz, bool enable)
-> +{
-> +	struct scmi_powercap_zone *root;
-> +	struct scmi_powercap_root *pr;
-> +	struct scmi_powercap_zone *child;
+Fix spelling mistake in comments:
+ - occured -> occurred (twice)
+---
+ drivers/power/supply/ab8500_fg.c      | 2 +-
+ drivers/power/supply/smb347-charger.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-...child and root on the same line of declarations...
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 9dd997226..eb5c1ae68 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -2037,7 +2037,7 @@ static irqreturn_t ab8500_fg_cc_convend_handler(int irq, void *_di)
+ }
+ 
+ /**
+- * ab8500_fg_batt_ovv_handler() - Battery OVV occured
++ * ab8500_fg_batt_ovv_handler() - Battery OVV occurred
+  * @irq:       interrupt number
+  * @_di:       pointer to the ab8500_fg structure
+  *
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index 8b95f7e87..fc3f90ef2 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -1083,7 +1083,7 @@ static int smb347_get_charging_status(struct smb347_charger *smb,
+ 		} else {
+ 			/*
+ 			 * in this case no charger error or termination
+-			 * occured but charging is not in progress!!!
++			 * occurred but charging is not in progress!!!
+ 			 */
+ 			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+ 		}
+-- 
+2.51.1
 
-> +	int ret, first_err = 0;
-> +
-> +	if (!pz)
-> +		return -EINVAL;
-> +
-> +	root = to_scmi_powercap_zone(pz);
-> +	pr = container_of(root, struct scmi_powercap_root, instance_root);
-
-...another user of you new macro !
-
-> +
-> +	list_for_each_entry(child, &pr->registered_zones[0], node) {
-> +		if (child == &pr->instance_root)
-> +			continue;
-> +
-> +		if (child->info->parent_id != SCMI_POWERCAP_ROOT_ZONE_ID)
-> +			continue;
-> +
-> +		if (!child->info->cpli[0].cap_config)
-> +			continue;
-> +
-> +		ret = powercap_ops->cap_enable_set(child->ph, child->info->id, enable);
-> +
-> +		if (ret && !first_err) {
-
-...mmm what is the logic here ? why not bailing out on any error ?
-
-> +			first_err = ret;
-> +			dev_err(child->dev, "failed to %s zone %s: %d\n",
-> +				enable ? "enable" : "disable",
-> +				child->info->name, ret);
-> +		}
-> +	}
-> +
-> +	return first_err;
-
-...especially if you anyway fails globally on any error....
-..I am not completely sure bit given that youare operating on a
-synthetic zone that you enable as a whole, while acting on its children
-in the backstage...I would say that if any enable/disable fails on a
-chidlren you should revert the enable status of the children thate were
-succesffull and report the error...I mean the state of top synthatic
-zones AND the states of the children MUST remain consistent...
-...it CANNOT be that some chidlren fails, some succeeds and you report
-an error..it must be all or nothing...
-...example..top syntethic zone is OFF if all children were successfully
-disabled...on a failure with one of the children you shoudl revert the
-already successfully set children and report the global error...
-
-> +}
-> +
-> +static int instance_root_set_enable(struct powercap_zone *pz, bool mode)
-> +{
-> +	return instance_root_set_enable_state(pz, mode);
-> +}
-> +
-> +static int instance_root_get_enable(struct powercap_zone *pz, bool *mode)
-> +{
-> +	struct scmi_powercap_zone *root;
-> +	struct scmi_powercap_root *pr;
-> +	struct scmi_powercap_zone *child;
-> +	bool enabled;
-> +	int ret;
-> +
-> +	if (!pz || !mode)
-> +		return -EINVAL;
-> +
-> +	root = to_scmi_powercap_zone(pz);
-> +	pr = container_of(root, struct scmi_powercap_root, instance_root);
-> +
-> +	*mode = true;
-> +
-> +	list_for_each_entry(child, &pr->registered_zones[0], node) {
-
-mmm...what is the point here of scanning the children to GET the
-state...you should report the top syntethic zone state right ?
-You could have disable children directly...that wont be reflected in the
-Linux powercap hiearcrhy right ?
-I mean should you NOT simply return the stae of the top syntethic zone
-which is should have saved in the previous state_set operation above ?
-
-I think that anyway if you disable a zone...any zone...ONLY that zone is
-marked as disable in Lnux powercap ... am I right ? 
-
-Then probably our SCMI fw will do much more on all the children..
-
-Thanks,
-Cristian
