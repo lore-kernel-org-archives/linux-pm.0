@@ -1,71 +1,72 @@
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
+Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3B7A3A1686
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 03:36:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89DD7392C28
+	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 03:59:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777952187; cv=none; b=EjspasHWZKXmdmh56wH/6x13aXZCsMAzhAIl52jB0EiFnPSpmzSOleTSMfl/7feVdydKpFu/FhA91yL94hC3ctWCpCt3PsTanwbxuagbY1NdajKhcKehtsRnKI2tZz49J5RWBdEDPCVkIeNfyKNUOllP9rTTVzLs6pvFC3fxUYY=
+	t=1777953581; cv=none; b=sDKkdkWuCm0W80qekK5wlkvLEmd/d7KXr80ppZaM3D6R91gnCuLwPIdCXU8+rIQ9QYbVuI7RzP772TPZsdYwp5mEMnL1HGEWB//AP0WwyDWsuAZYSQEanfW/DOyYfOy6zBM/Z1qJKfzSe+KW5cUTot/bVJxMqwsnJrNxL/ov4Us=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777952187; c=relaxed/simple;
-	bh=hDs2H23HmFbI/mqU3orYz5fx03GSck/LtWiJajuL9hg=;
+	s=arc-20240116; t=1777953581; c=relaxed/simple;
+	bh=a+YUDaVvYwmqejKggDNsG92A1d16l1vbsSGStD94968=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IAiQike88x3o3BhEPi9h9YVLX71Lg6otEjIOCeSYVAiV4qqqNChQFvZL5zOQ2AXr++gy7+oO5D7IR/9AwcILbRbhSEU8t/QYn3bsTGb2VcqvKnHNKWs7QM2VsBL9YlSkP5IGJo/WaiJ6He9OGK2tShvpX0uyreJVd0jqc3Q8Ljc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=I9BTPfwA; arc=none smtp.client-ip=209.85.210.176
+	 Content-Type:Content-Disposition:In-Reply-To; b=dKKGmgXNVr/nKERNVwbjrEwJdbC/SB/VAmSTIyjJGBiMsOxTNhAoU7vbupgTiOpfWcXs08X99PgFOqD34g64NAI3zlHeTQyfa4dzcKcYeHV2x8cF5PGbnU3U6FO2m3CKsAwQBZx01kaJnjWDtbslgR7skADVTcW+p2KcW1z0lNE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=V2tf1Oa5; arc=none smtp.client-ip=209.85.210.177
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="I9BTPfwA"
-Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-8383fb7143aso661250b3a.3
-        for <linux-pm@vger.kernel.org>; Mon, 04 May 2026 20:36:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="V2tf1Oa5"
+Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8353fd1cb5fso945748b3a.0
+        for <linux-pm@vger.kernel.org>; Mon, 04 May 2026 20:59:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777952184; x=1778556984; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1777953580; x=1778558380; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=7FA4gZEhIa99vJb/LHUbt5O9v35tP5Lp3TC5lHmjSZc=;
-        b=I9BTPfwAwEXuYf/k4TCDWo4XT4Nviwmjgob63T6+aKuU2CNSkw1sc17O29UWkngoKG
-         IB3/9WtvmEv/9xLJTdYmyd2yUWo6pdks6wKD+BmLNJtKqPx/PMPRoaWeUBGZW6XPP6Xn
-         kAwWF/CE6diGG1asvycfQApHMZwEbLB4/vXbZDStV+sTzFltL8ciJqxiTonJe9R/I53f
-         PhJnd5CTz8bqhmXlATEcW7kvWpNB+gLVeJ8XsZmN6SeIWVqm8TXM+b2mdqnud7PnT8UC
-         0mewaJY0x4QBFABaWbmirnU3f7ZQaEa/nOaUkysU5xBarm3wSn/FFpR6wpXvxOVtyGcj
-         0UiA==
+        bh=UDkBs+2XbGaX1zTF0vQnJxBMgO6n5hP8tSgf7oIzT00=;
+        b=V2tf1Oa5lV3q6gaX2VOxUKnAWbTnSCfCp+NOmknxQEOWXFJNfAFeSdIyLW/B9uUlSq
+         5t2TRAc/kpUIR3R1Cc2nDK1VGl+Mc4/jbnUYSz/SCYfh3TJLWTR8SAhlxio5wZC2RkS2
+         xwGxwMFXJuctMfVhbp3aHGfQulJXzTJwvtRy9T+3lHPMD1avJMErBERpktmPYX00s/PU
+         BGTkcBgrg+nMax8eDLX9SGhA3vg0oxQJi9rKHk1zN0CwuEI2xzFSE/1/RQ6SidkPi/sC
+         Sz0uFuM7SxxJQDnyrfuHYBEADtvY97iv5xNFn9EW3fHQa8LI2Cz+5qM+XK9vXZjyI5UG
+         8diw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777952184; x=1778556984;
+        d=1e100.net; s=20251104; t=1777953580; x=1778558380;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=7FA4gZEhIa99vJb/LHUbt5O9v35tP5Lp3TC5lHmjSZc=;
-        b=a9RqPnbubuY7EZfNENgHh9MC8a9rZTus5lRSO8UylXjZkGomti2MlYrDy/lCtPmo6e
-         GLsdD/QmLtvXObGTmp7KmjuzbVtZXrz9gVuVYuPcrXehNX9BlcyNoF6F7EM274WZSwln
-         zY2QED8pu76cY4R1RkBJRwVsD3gHokDsEvLkGYmMl7tKrTkHBwOsG+Rk97Cv2m8N+/H4
-         0tdQKdH9VeB2fQMg9uvTSu8MWvH9mSrVI+JbATlWNA1YHNH/dog9MbOFZegRGoe9Ys+3
-         7BGdIH9k0nPYx6QtO7aj1wKZ4NQ2f78lsBE5gJDcgqGuBlogHykpQpYuvmeD3azIYc6d
-         h+Nw==
-X-Forwarded-Encrypted: i=1; AFNElJ+ZrkOOO51J2b8SohDhIDRV/2oKcOn224xYRR/50jLTSbi1+osM3uOYQsTRfICiHLJvYZzLF0B5UA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyxt/b4iIxh+qpohf2uOUGiyDIEFHMH210Q7lbEVZt42Kuut7JZ
-	cUunPOa+vNowo9GIbc22L2ohjYp4vOPyzwy57HXVllNlqimUMPPgqdJRLw3RdQhhNEw=
-X-Gm-Gg: AeBDietTIGAWDmtPYraDbaaAevV0OW8EuPcb3MVW75emr88xdO/E3AxO9+Hny6p5oEb
-	0mJh4HuRAQgS9rpLhm58oWA/0VW8m789RyPyeoc/jSq7XiSZgPyTtaaYiUbXe8FFukD+hAQ7WaL
-	VNqxkBu+oMVTbPgU/fOFEtT6mqDshEK7PyCp1uuGXzJRVlnT0JqOyM2rthh4Ozx9RO1jgmXj6x2
-	jZk5+d2uVY2V92s3ld6jPeu42+Yta4sx/04CCT7BhZTBFdSkR07xRfjprWtJyn+W0sCGF995bSW
-	VTzmBNGjti0Tpr7DeeLP0gC+1Jl4RoC4AdVUP6vSjm61bTtB9V+AzyLxHkQXAaMjree9yl88Mpn
-	m5lOpHINuha88IbTPxUivPQNub8Khw7tQ/eF1FBL5w8VoXKXH1eWOCv1I2iUXmsP9Fmiebe/E+U
-	pSaDjikC3rPOeB0NhmvMK3VGl1mHlerh8gXw==
-X-Received: by 2002:a05:6a00:1d8d:b0:82f:6841:8733 with SMTP id d2e1a72fcca58-8352d2ff78cmr11366441b3a.48.1777952184146;
-        Mon, 04 May 2026 20:36:24 -0700 (PDT)
+        bh=UDkBs+2XbGaX1zTF0vQnJxBMgO6n5hP8tSgf7oIzT00=;
+        b=bdOcRr/kPVb3NUzw6tmzv5v2KCRsv9rbqM9AVTn47bkHYB135R5hzcV3+72MOnCk3a
+         74VpLB7m9qSlb8AKYQ1VBej28tkhqLZWPZJPtbm5IpYUmit8WevL//ZnrpHx9X2mkhxm
+         knVG/F9wqSaXJTpPMCZdwPasbNmg24fi1UPUJIjgtJSky0b82+RhfPe1t7nrJxww7wvX
+         CmSJZnBGCJwJE7MVoEMsur/jWdli7yvKnYjEEKfpC8t+OwI85292lWu1ZDJrF2Pnm1ov
+         Hk3FlVyxYx++x9sI456mQzGUMiHGytKbwvJyLtEP7lUWxc5vQoa5AHCsVi0TXmYI/9fE
+         HIIQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/t6ytQmXJuzNTu9IQsMgTVSfZTqi6O3SVVQqsNoZAnwkPo+ak3WFOUTzfudTlFXKHP0oo2Shu6TQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLRIGMKuxaSy58eHYkXufm/bTCw1ryxUudltj2NkSRdighmOU+
+	9TPdcvVznBj/n/NBvqVt0TCtUSGizZJWU71GeSogaJARQnVt3NSUgMiHpnTkJiFB3Og=
+X-Gm-Gg: AeBDiesD1BRNlDRHv9P8UGX27J1xkrwvP6vD/hHgIKp/ol3cClg6pGCXltU7BH+/ElG
+	7VpeGgh0e5UxqNBe7rOCmHFDUHo2+QPKpUioTAPJKV2mki5lCU05I4lFWJVBnVSQ8tWcSu6DZeU
+	/pfpgM+mH3vV2YRJjEyUpTD+etXG4M8MMZEwFpk7eWVPHnIJF2YdP85ZH0Ubrf/2/UfoYIyn8X3
+	rtQzBaXQYkJFM7Ozd0vXOPWRlKXpSYM8USFlRZZU2jLlvYdLyCp96I4dYCL2S8e0OTflO2UQYLh
+	AWh8P4t7PPaJRZNMg62xNTmFLpmAPdq4/d1JJM7MSo9SyjomLlqHyahGPaJfFE1xW3P+xNtQdPR
+	PpcREulRHS2j0kyiMqISIfQ2v80oGHIbEXFCJHaS6Op0E0bKNQPvkUziJ+ntgGmQH/BwSYUSimD
+	bjZ0191S/nYJAXtZ4yGu/+5QZQppK3TmV6HA==
+X-Received: by 2002:a05:6a00:2346:b0:82c:9c90:6ea0 with SMTP id d2e1a72fcca58-838fc20cda8mr1565125b3a.3.1777953579622;
+        Mon, 04 May 2026 20:59:39 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839681a9e33sm466364b3a.50.2026.05.04.20.36.23
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83967dbee14sm573002b3a.48.2026.05.04.20.59.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 May 2026 20:36:23 -0700 (PDT)
-Date: Tue, 5 May 2026 09:06:21 +0530
+        Mon, 04 May 2026 20:59:38 -0700 (PDT)
+Date: Tue, 5 May 2026 09:29:36 +0530
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Xuewen Yan <xuewen.yan@unisoc.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, di.shen@unisoc.com, 
-	ling_ling.xu@unisoc.com, ke.wang@unisoc.com, xuewen.yan94@gmail.com
-Subject: Re: [PATCH] pm/opp: fix race between opp_add and opp_get
-Message-ID: <7k6ttcmptilvxmp36dvtznor2gfd33rzledbqfsigmjbkx2rhy@iv4lyzej6ibc>
-References: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+To: Hans Zhang <18255117159@163.com>
+Cc: ray.huang@amd.com, mario.limonciello@amd.com, rafael@kernel.org, 
+	sven@kernel.org, j@jannau.net, perry.yuan@amd.com, kprateek.nayak@amd.com, 
+	neal@gompa.dev, linux-pm@vger.kernel.org, asahi@lists.linux.dev, 
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] *cpufreq: Use FIELD_MODIFY() for bitfield operations
+Message-ID: <xguly4zwdl4bloaq4wbb445vl7otmjlnitzr2xhvfosncnjgvi@e2sbpnk6e2ff>
+References: <20260430163213.44695-1-18255117159@163.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -74,41 +75,23 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+In-Reply-To: <20260430163213.44695-1-18255117159@163.com>
 
-On 27-04-26, 20:00, Xuewen Yan wrote:
-> From: Di Shen <di.shen@unisoc.com>
+On 01-05-26, 00:32, Hans Zhang wrote:
+> Replace open-coded bitfield modifications with the standard FIELD_MODIFY()
+> macro. This improves code readability and safety without functional
+> changes.
 > 
-> There is a race between opp_table_find_key and dev_pm_opp_add_dynamic:
+> FIELD_MODIFY() internally performs the same mask-clear + set operation but
+> adds type checking and compile-time field boundary verification.
 > 
-> dev_pm_opp_add_dynamic                dev_pm_opp_find_freq_exact
-> _opp_add_v1                           _find_key
-> _opp_add                              _opp_table_find_key
-> mutex_lock(opp_table->lock)
-> list_add(&new_opp->node, head)
-> mutex_unlock(opp_table->lock)
->                                      mutex_lock(opp_table->lock)
->                                      dev_pm_opp_get(opp)
->                                      kref_get(&opp->kref)
->                                        refcount_inc(&kref->refcount);
->                                      mutex_unlock(opp_table->lock)
-> kref_init(&new_opp->kref)
->   refcount_set(&kref->refcount, 1);
->                                      dev_pm_opp_put()
->                                      kref_put_mutex()
+> Hans Zhang (2):
+>   cpufreq/amd-pstate: Use FIELD_MODIFY()
+>   cpufreq: apple-soc: Use FIELD_MODIFY()
 > 
-> This would cause the opp be freed.
-> 
-> So use the mutex to protect opp's ref count.
-> 
-> Co-developed-by: Ling Xu <ling_ling.xu@unisoc.com>
-> Signed-off-by: Ling Xu <ling_ling.xu@unisoc.com>
-> Signed-off-by: Di Shen <di.shen@unisoc.com>
-> ---
->  drivers/opp/core.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-
-Good catch.
+>  drivers/cpufreq/amd-pstate.c        | 26 ++++++++++----------------
+>  drivers/cpufreq/apple-soc-cpufreq.c |  6 ++----
+>  2 files changed, 12 insertions(+), 20 deletions(-)
 
 Applied. Thanks.
 
