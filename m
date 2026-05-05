@@ -1,56 +1,55 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1858A3C6A2B
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 14:18:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3008947277B
+	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 14:23:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777990709; cv=none; b=TxGKubQ7csHkbbGhWTSyhdqjkAWcQ8MBKaF6Ts9eo4a1Ig5PAv7cIa8d1zdr6BSt5GXQrGPdtJG5f75osjGQhQiymco4WFZfZW6tUMsqHm2MO24GoqPcZWdFRqGCh7HeCAASfAOFPvRTvMfZ8ZAHbK7s0yw4c5XB4jbrW1sOmVc=
+	t=1777990991; cv=none; b=BhWdMbhUK2PUt7kYgIozQtOWJVqv0dh8Jl3syq5EVv732TMGyYyGcNCufn5g/5NpFFcPj+i78+tddPhzABBFAE9VcKYEnECiNI0jEz5o/6OMVFRx7dWP3MULMuO7pUhrPcmqkJRcp+HXgaQLvKNWnKnPAB/ZHGrEraYDD4LYId0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777990709; c=relaxed/simple;
-	bh=fs3WyS86P1cobei063vHZNvMniQJ2L/6DB9bU5unqVg=;
+	s=arc-20240116; t=1777990991; c=relaxed/simple;
+	bh=HQZYBvl7+ZdVK9hmm8ojyOJt6oqctALFLglRGbD1qtc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XfZ+wEaASpFfsLaMxi6Y1zWXOSv+NgouS0rRvw1D9PcGJdRKmjUuJdAB9B86dNJVa9EFdeju5UpzDQZOcUQ9+qdMJ1O6Tg7K2apzThV4T0qVG6BBpKgkymENDyzQkqJCyeSx6LFDUmUMgFNleHOSNkxa+7V/kTYE+6baDElbgvs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MfHraLEM; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=AP8/8guzG1M9gS9F4MZzEO2khMWFGK9ghixpJ6gUrRTVBJNBNL9FL2upO37XhjDBo9wqGgUZxhgyiOsIevTWvkkaaPkp6Zc2uqL0pWBqYtJqswjyLMJe2uFYFIe90Ho95Nnp9xQARqPK2Ppwu2njHhEQTtWaGWuS6GpnHVpO6TI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=u3pY+Vki; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MfHraLEM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD96BC2BCB4
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 14:18:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="u3pY+Vki"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE318C2BD04
+	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 14:23:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777990708;
-	bh=fs3WyS86P1cobei063vHZNvMniQJ2L/6DB9bU5unqVg=;
+	s=k20201202; t=1777990990;
+	bh=HQZYBvl7+ZdVK9hmm8ojyOJt6oqctALFLglRGbD1qtc=;
 	h=References:In-Reply-To:Reply-To:From:Date:Subject:To:Cc:From;
-	b=MfHraLEMUeP5/DREGDITghSU061dKucJWDUFrnk8jCXYIKx5Dg4x54wkgQjgv4hBX
-	 pvOqXXodq7LYNdorCxk5Tj2SMYbCtYOc6IKIOuLrarwJ2A3eAgbnbcila2Ttyz4hoY
-	 IW7exvNyHOY0xwekMFjow46Fcr0jW4kcz4PRC9xMGbbdN7A5TCENuk4/uusLUtQN9k
-	 Edm2gqrpAknf/RXi7ygvs7ctkZwVWdSfTtwY2fmtibC/aatUj9Z4I8ZaOOtvx3JoNT
-	 KVe+1PIN/RstreoU/fA5oM/YVJMstXbeNSVmiHMfJBvOQfMdfPr+gSM/lTIvKoBzjp
-	 6p4rFjdvMTTMg==
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-38e7d983f50so60956051fa.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 May 2026 07:18:28 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8U4Omdpwp22Y7h4qv8HPn7xq78IrMtFbiu9kxQzlPlezxFh9ft6ZSf3vSgwwUsVgVA1hhXCwAwAA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxMMk1NKty50+0EZgG01bImXomi4W/SPzZbY6iimFKeZlNo1QXY
-	R8I5i/JcEqHk//snwa7j41PAl1l1gkD0mDOdfcXNX38R9mHe+Wf+9Dax10YHTxIYlksp2gXT9TH
-	LB9qb/L4GJIDjPS0iCd3uqpor6avEtg4=
-X-Received: by 2002:a05:651c:550:b0:393:9cd4:ea5 with SMTP id
- 38308e7fff4ca-3939cd4108bmr40207251fa.13.1777990707140; Tue, 05 May 2026
- 07:18:27 -0700 (PDT)
+	b=u3pY+VkicQSkstCCYNbM8IM1G/jsPOzKFmutNJBvm1CNsoRYUmoEZrL4oPvW52U0X
+	 Iuwq7HmqxN8/uQ96+m8jG98BbagZ4qiMvBEq+eAWs2YyLEYnWcxNpenh97GFNHHUdq
+	 QsBka3fDG6JeBhC5biY2ksp7oxozqLnkPDTKE2KTph9/xhCqfiaJK3/cEHoSviatks
+	 3dfrWre8X3r/p+v7fPH9GHXaRtZZPulpM9uoCExSrUZJ4clTh5FSMyoRjHLQEv0zCZ
+	 wo9CRR8lonApJ3yejHq8w2maoQJlF0ugmdU16QbMMksqEO0BufGT+WQN9ut4lGSZjd
+	 nXExBEL16eSXg==
+Received: by mail-lj1-f171.google.com with SMTP id 38308e7fff4ca-3870778358aso37341101fa.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 May 2026 07:23:10 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/kz6P11VOQt2I3Jq/IA6DfYdpZ3HQfMKYv3ubAu8d0179V8iPm2LohvlOsZJwvX1duONfNt5RS4w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yznwswpd17+8wfv8EWMv18Nxsy3fdSPrw6Md3sepeAF/EqhYAx3
+	lXuoFzlGLhtbaPq0xK1FY6rPOeNmIHXY1ozBhTJnJqPjOOIjEfP4wYkJ9i1ROzN60ElF8sloeiz
+	4BnNliGo1zcpldybNK2HYQumlNv6I7n8=
+X-Received: by 2002:a05:651c:41c8:b0:391:1570:b6c5 with SMTP id
+ 38308e7fff4ca-393784e0257mr46633361fa.17.1777990989183; Tue, 05 May 2026
+ 07:23:09 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260504050245.646078-1-iuncuim@gmail.com> <20260504050245.646078-4-iuncuim@gmail.com>
-In-Reply-To: <20260504050245.646078-4-iuncuim@gmail.com>
+References: <20260504050245.646078-1-iuncuim@gmail.com> <20260504050245.646078-5-iuncuim@gmail.com>
+In-Reply-To: <20260504050245.646078-5-iuncuim@gmail.com>
 Reply-To: wens@kernel.org
 From: Chen-Yu Tsai <wens@kernel.org>
-Date: Tue, 5 May 2026 22:18:14 +0800
-X-Gmail-Original-Message-ID: <CAGb2v674Ash+eiN42EkiCCsjN1Y7+iRmZR+Bt37e+EtnfOE0tg@mail.gmail.com>
-X-Gm-Features: AVHnY4Iw15ROowKdMFkqI-ON5u3aYZ0szmXhIXedM9DZoTYlirjw1ecxwjFWiYo
-Message-ID: <CAGb2v674Ash+eiN42EkiCCsjN1Y7+iRmZR+Bt37e+EtnfOE0tg@mail.gmail.com>
-Subject: Re: [PATCH v4 3/5] thermal/drivers/sun8i: get calibration data from
- two nvmem cells
+Date: Tue, 5 May 2026 22:22:56 +0800
+X-Gmail-Original-Message-ID: <CAGb2v67S7jYa5-pxE=VLjaSQb_SmqQiv3CEvH7h+EZk9dKMx2w@mail.gmail.com>
+X-Gm-Features: AVHnY4JKSgfn-se-YEytQuckVs7_oUre-tJGFE7Sp6lhUi0lzQsj21ANm3z7qyY
+Message-ID: <CAGb2v67S7jYa5-pxE=VLjaSQb_SmqQiv3CEvH7h+EZk9dKMx2w@mail.gmail.com>
+Subject: Re: [PATCH v4 4/5] thermal/drivers/sun8i: Add support for A523 THS0/1 controllers
 To: Mikhail Kalashnikov <iuncuim@gmail.com>
 Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>, 
 	"Rafael J . Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
@@ -63,140 +62,232 @@ Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Yangtao Li <tiny.windzz@gmail.com>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 4, 2026 at 1:03=E2=80=AFPM Mikhail Kalashnikov <iuncuim@gmail.c=
+On Mon, May 4, 2026 at 1:04=E2=80=AFPM Mikhail Kalashnikov <iuncuim@gmail.c=
 om> wrote:
 >
-> The A523 processor has calibration data in two nvmem cell. To be able to
-> add support, the ability to add data from two cells into one array must b=
-e
-> added.
+> The A523 processor has two temperature controllers, THS0 and THS1.
+> THS0 has only one temperature sensor, which is located in the DRAM.
+
+in the DRAM controller.
+
+Otherwise,
+
+Reviewed-by: Chen-Yu Tsai <wens@kernel.org>
+
+> THS1 does have 3 sensors:
+> ths1_0 - "big" cores
+> ths1_1 - "little" cores
+> ths1_2 - gpu
+>
+> The datasheet mentions a fourth sensor in the NPU, but lacks any register=
+s
+> for operation other than calibration registers. The vendor code reads the
+> value from ths1_2, but uses separate calibration data, so we get two
+> different values from real one.
 >
 > Signed-off-by: Mikhail Kalashnikov <iuncuim@gmail.com>
 > ---
->  drivers/thermal/sun8i_thermal.c | 77 ++++++++++++++++++++++-----------
->  1 file changed, 52 insertions(+), 25 deletions(-)
+>  drivers/thermal/sun8i_thermal.c | 133 ++++++++++++++++++++++++++++++++
+>  1 file changed, 133 insertions(+)
 >
 > diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_ther=
 mal.c
-> index df0c26970..c4aaff8f7 100644
+> index c4aaff8f7..3b73aafab 100644
 > --- a/drivers/thermal/sun8i_thermal.c
 > +++ b/drivers/thermal/sun8i_thermal.c
-> @@ -301,43 +301,70 @@ static int sun50i_h6_ths_calibrate(struct ths_devic=
-e *tmdev,
+> @@ -59,6 +59,12 @@
+>  #define SUN50I_H6_THS_PC_TEMP_PERIOD(x)                ((GENMASK(19, 0) =
+& (x)) << 12)
+>  #define SUN50I_H6_THS_DATA_IRQ_STS(x)          BIT(x)
 >
+> +#define SUN55I_A523_DELIMITER                  0x7c8
+> +#define SUN55I_A523_OFFSET_ABOVE               2736
+> +#define SUN55I_A523_OFFSET_BELOW               2825
+> +#define SUN55I_A523_SCALE_ABOVE                        74
+> +#define SUN55I_A523_SCALE_BELOW                        65
+> +
+>  struct tsensor {
+>         struct ths_device               *tmdev;
+>         struct thermal_zone_device      *tzd;
+> @@ -114,6 +120,15 @@ static int sun50i_h5_calc_temp(struct ths_device *tm=
+dev,
+>                 return -1590 * reg / 10 + 276000;
+>  }
+>
+> +static int sun55i_a523_calc_temp(struct ths_device *tmdev,
+> +                                int id, int reg)
+> +{
+> +       if (reg >=3D SUN55I_A523_DELIMITER)
+> +               return SUN55I_A523_SCALE_ABOVE * (SUN55I_A523_OFFSET_ABOV=
+E - reg);
+> +       else
+> +               return SUN55I_A523_SCALE_BELOW * (SUN55I_A523_OFFSET_BELO=
+W - reg);
+> +}
+> +
+>  static int sun8i_ths_get_temp(struct thermal_zone_device *tz, int *temp)
+>  {
+>         struct tsensor *s =3D thermal_zone_device_priv(tz);
+> @@ -299,6 +314,97 @@ static int sun50i_h6_ths_calibrate(struct ths_device=
+ *tmdev,
+>         return 0;
+>  }
+>
+> +/*
+> + * The A523 nvmem calibration values. The ths1_3 is not used as it
+> + * doesn't have its own sensor and doesn't have any internal switch.
+> + * Instead, the value from the ths1_2 sensor is used, which gives the
+> + * illusion of an independent sensor for NPU and GPU when using
+> + * different calibration values.
+> + *
+> + * efuse layout 0x38-0x3F (caldata[0..3]):
+> + *     caldata[0]      caldata[1]      caldata[2]      caldata[3]
+> + * 0               16      24      32  36          48          60 64
+> + * +---------------+---------------+---------------+---------------+
+> + * |               |       |   temp    |  ths1_0   |  ths1_1   |   +
+> + * +---------------+---------------+---------------+---------------+
+> + *
+> + * efuse layout 0x44-0x4B (caldata[4..7]):
+> + *     caldata[4]      caldata[5]      caldata[6]      caldata[7]
+> + * 0           12  16      24      32  36          48             64
+> + * +---------------+---------------+---------------+---------------+
+> + * |  ths1_2   |  ths1_3   |    ths0   |           |               +
+> + * +---------------+---------------+---------------+---------------+
+> + */
+> +static int sun55i_a523_ths_calibrate(struct ths_device *tmdev,
+> +                                    u16 *caldata, int callen)
+> +{
+> +       struct device *dev =3D tmdev->dev;
+> +       int i, ft_temp;
+> +
+> +       if (!caldata[0])
+> +               return -EINVAL;
+> +
+> +       ft_temp =3D (((caldata[2] << 8) | (caldata[1] >> 8)) & FT_TEMP_MA=
+SK) * 100;
+> +
+> +       for (i =3D 0; i < tmdev->chip->sensor_num; i++) {
+> +               int sensor_reg, sensor_temp, cdata, offset;
+> +               /*
+> +                * Chips ths0 and ths1 have common parameters for value
+> +                * calibration. To separate them we can use the number of
+> +                * temperature sensors on each chip.
+> +                * For ths0 this value is 1.
+> +                */
+> +               if (tmdev->chip->sensor_num =3D=3D 1) {
+> +                       sensor_reg =3D ((caldata[5] >> 8) | (caldata[6] <=
+< 8)) & TEMP_CALIB_MASK;
+> +               } else {
+> +                       switch (i) {
+> +                       case 0:
+> +                               sensor_reg =3D (caldata[2] >> 4) & TEMP_C=
+ALIB_MASK;
+> +                               break;
+> +                       case 1:
+> +                               sensor_reg =3D caldata[3] & TEMP_CALIB_MA=
+SK;
+> +                               break;
+> +                       case 2:
+> +                               sensor_reg =3D caldata[4] & TEMP_CALIB_MA=
+SK;
+> +                               break;
+> +                       default:
+> +                               sensor_reg =3D 0;
+> +                               break;
+> +                       }
+> +               }
+> +
+> +               sensor_temp =3D tmdev->chip->calc_temp(tmdev, i, sensor_r=
+eg);
+> +
+> +               /*
+> +                * Calibration data is CALIBRATE_DEFAULT - (calculated
+> +                * temperature from sensor reading at factory temperature
+> +                * minus actual factory temperature) * X (scale from
+> +                * temperature to register values)
+> +                */
+> +               cdata =3D CALIBRATE_DEFAULT -
+> +                       ((sensor_temp - ft_temp) / SUN55I_A523_SCALE_ABOV=
+E);
+> +
+> +               if (cdata & ~TEMP_CALIB_MASK) {
+> +                       /*
+> +                        * Calibration value more than 12-bit, but calibr=
+ation
+> +                        * register is 12-bit. In this case, ths hardware=
+ can
+> +                        * still work without calibration, although the d=
+ata
+> +                        * won't be so accurate.
+> +                        */
+> +                       dev_warn(dev, "sensor%d is not calibrated.\n", i)=
+;
+> +                       continue;
+> +               }
+> +
+> +               offset =3D (i % 2) * 16;
+> +               regmap_update_bits(tmdev->regmap,
+> +                                  SUN50I_H6_THS_TEMP_CALIB + (i / 2 * 4)=
+,
+> +                                  TEMP_CALIB_MASK << offset,
+> +                                  cdata << offset);
+> +       }
+> +
+> +       return 0;
+> +}
+> +
 >  static int sun8i_ths_calibrate(struct ths_device *tmdev)
 >  {
-> -       struct nvmem_cell *calcell;
-> +       struct nvmem_cell *calcell =3D NULL;
->         struct device *dev =3D tmdev->dev;
-> -       u16 *caldata;
-> -       size_t callen;
-> +       struct device_node *np =3D dev_of_node(dev);
-> +       struct property *prop;
-> +       const char *cellname;
-> +       u8 *caldata =3D NULL;
-> +       size_t callen =3D 0;
->         int ret =3D 0;
+>         struct nvmem_cell *calcell =3D NULL;
+> @@ -722,6 +828,31 @@ static const struct ths_thermal_chip sun50i_h616_ths=
+ =3D {
+>         .calc_temp =3D sun8i_ths_calc_temp,
+>  };
 >
-> -       calcell =3D nvmem_cell_get(dev, "calibration");
-> -       if (IS_ERR(calcell)) {
-> -               if (PTR_ERR(calcell) =3D=3D -EPROBE_DEFER)
-> -                       return -EPROBE_DEFER;
-> -               /*
-> -                * Even if the external calibration data stored in sid is
-> -                * not accessible, the THS hardware can still work, altho=
-ugh
-> -                * the data won't be so accurate.
-> -                *
-> -                * The default value of calibration register is 0x800 for
-> -                * every sensor, and the calibration value is usually 0x7=
-xx
-> -                * or 0x8xx, so they won't be away from the default value
-> -                * for a lot.
-> -                *
-> -                * So here we do not return error if the calibration data=
- is
-> -                * not available, except the probe needs deferring.
-> -                */
-> -               goto out;
-> +       of_property_for_each_string(np, "nvmem-cell-names", prop, cellnam=
-e) {
-> +               size_t len;
-> +               u8 *caldatapart;
+> +/* The A523 has a shared reset line for both chips */
+> +static const struct ths_thermal_chip sun55i_a523_ths0 =3D {
+> +       .sensor_num =3D 1,
+> +       .has_bus_clk_reset =3D true,
+> +       .has_mod_clk =3D true,
+> +       .ft_deviation =3D 5000,
+> +       .temp_data_base =3D SUN50I_H6_THS_TEMP_DATA,
+> +       .calibrate =3D sun55i_a523_ths_calibrate,
+> +       .init =3D sun50i_h6_thermal_init,
+> +       .irq_ack =3D sun50i_h6_irq_ack,
+> +       .calc_temp =3D sun55i_a523_calc_temp,
+> +};
 > +
-> +               calcell =3D of_nvmem_cell_get(np, cellname);
-> +               if (IS_ERR(calcell)) {
-> +                       if (PTR_ERR(calcell) =3D=3D -EPROBE_DEFER)
-> +                               return -EPROBE_DEFER;
-> +                       /*
-> +                        * Even if the external calibration data stored i=
-n sid is
-> +                        * not accessible, the THS hardware can still wor=
-k, although
-> +                        * the data won't be so accurate.
-> +                        *
-> +                        * The default value of calibration register is 0=
-x800 for
-> +                        * every sensor, and the calibration value is usu=
-ally 0x7xx
-> +                        * or 0x8xx, so they won't be away from the defau=
-lt value
-> +                        * for a lot.
-> +                        *
-> +                        * So here we do not return error if the calibrat=
-ion data is
-> +                        * not available, except the probe needs deferrin=
-g.
-> +                        */
-> +                       goto out;
-> +               }
+> +static const struct ths_thermal_chip sun55i_a523_ths1 =3D {
+> +       .sensor_num =3D 3,
+> +       .has_bus_clk_reset =3D true,
+> +       .has_mod_clk =3D true,
+> +       .ft_deviation =3D 5000,
+> +       .temp_data_base =3D SUN50I_H6_THS_TEMP_DATA,
+> +       .calibrate =3D sun55i_a523_ths_calibrate,
+> +       .init =3D sun50i_h6_thermal_init,
+> +       .irq_ack =3D sun50i_h6_irq_ack,
+> +       .calc_temp =3D sun55i_a523_calc_temp,
+> +};
 > +
-> +               caldatapart =3D nvmem_cell_read(calcell, &len);
-> +               nvmem_cell_put(calcell);
-> +               calcell =3D NULL;
-> +               if (IS_ERR(caldatapart)) {
-> +                       ret =3D PTR_ERR(caldatapart);
-> +                       goto out;
-> +               }
-> +
-> +               caldata =3D devm_krealloc(dev, caldata, callen + len, GFP=
-_KERNEL);
-> +               if (!caldata) {
-> +                       kfree(caldatapart);
-> +                       ret =3D -ENOMEM;
-> +                       goto out;
-> +               }
-> +
-> +               memcpy(caldata + callen, caldatapart, len);
-> +               callen +=3D len;
-> +               kfree(caldatapart);
->         }
->
-> -       caldata =3D nvmem_cell_read(calcell, &callen);
-
->         if (IS_ERR(caldata)) {
->                 ret =3D PTR_ERR(caldata);
->                 goto out;
->         }
-
-This will never happen now.
-
->
-> -       tmdev->chip->calibrate(tmdev, caldata, callen);
-> +       tmdev->chip->calibrate(tmdev, (u16 *)caldata, callen);
-> -       kfree(caldata);
-> +       devm_kfree(dev, caldata);
-> +       caldata =3D NULL;
->  out:
-> -       if (!IS_ERR(calcell))
-> +       if (calcell && !IS_ERR(calcell))
-
-          if (!IS_ERR_OR_NULL(calcell))
-
->                 nvmem_cell_put(calcell);
->         return ret;
->  }
+>  static const struct of_device_id of_ths_match[] =3D {
+>         { .compatible =3D "allwinner,sun8i-a83t-ths", .data =3D &sun8i_a8=
+3t_ths },
+>         { .compatible =3D "allwinner,sun8i-h3-ths", .data =3D &sun8i_h3_t=
+hs },
+> @@ -732,6 +863,8 @@ static const struct of_device_id of_ths_match[] =3D {
+>         { .compatible =3D "allwinner,sun50i-h6-ths", .data =3D &sun50i_h6=
+_ths },
+>         { .compatible =3D "allwinner,sun20i-d1-ths", .data =3D &sun20i_d1=
+_ths },
+>         { .compatible =3D "allwinner,sun50i-h616-ths", .data =3D &sun50i_=
+h616_ths },
+> +       { .compatible =3D "allwinner,sun55i-a523-ths0", .data =3D &sun55i=
+_a523_ths0 },
+> +       { .compatible =3D "allwinner,sun55i-a523-ths1", .data =3D &sun55i=
+_a523_ths1 },
+>         { /* sentinel */ },
+>  };
+>  MODULE_DEVICE_TABLE(of, of_ths_match);
 > --
 > 2.54.0
->
 >
