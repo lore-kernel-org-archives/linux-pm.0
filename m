@@ -1,43 +1,47 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4629A48A2DE;
-	Tue,  5 May 2026 21:42:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1326F48A2DE;
+	Tue,  5 May 2026 21:44:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778017358; cv=none; b=NKlk3YK+KEYIYtXaHWcWOc3sCuzExtkZngmZhzg0yLL6FAm1AVOVZZjLhqGYf3WFRw6Jewzo0FtGIFUFqGN9lyUXZTV5koupGVx079nEftWB0b7Wi4lvi7hwmWWSFQ0x7RlsQhhhkhw3lH2kgZlM1oCr+Qdd3lSrEg226vpFhlQ=
+	t=1778017453; cv=none; b=ql+EjRM9m7xjLWLXRsfcAgg0tbU5JTDMOOTK+RlOK+WMrm/0zxFGByPOjwQOWloD2UW2PCGzZbYbK72HYodVbzDzFPwbkp/fO2FBlnq5uVU+eopiVtqoOfkvVljWC3eZOj4NYFPjuLdi0COwn8tX6reT82M+WoSFwjmb/gX+xCM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778017358; c=relaxed/simple;
-	bh=a3YOnkajHyfwERXeEYwLVyZkFUh4Eg/Ia/6U/YCqEjs=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=TLHRLfBkM+TxcyBOhhpaB2O8qz1/9d+17kIvvHAAzlmaGZ44lrmge1oxg0ggGNuJnzd+HyS7zZ3m4qLsQyySmIQdO2cbaa6+yTXVkbzfdtCEEFXcVUL+MupknvCYoqTeTMsx2qtsPYJJr/DNeF/9KFwaiOTEaRZ9PPuEBX4sR5Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g8Rs5Ysq; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778017453; c=relaxed/simple;
+	bh=wn++sDs6bzfikHLcTyLewysJeV6R0AgYt4Hgu4eJvZU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MGNmfcqIbd3bAlhscXyVovvziYqhUKn/KLQ8dD7Caqf+gpfBQ7cT2W3icWWHxPl6hTV35NR49/jdcuM/1UUEch49bDRDXGGy2Du3QGwpQZEZbjNL6AoSF3DnUAQ7Dm5UivsmG1RCqqLqekQE5Fs0YMGsnl5dIJHTBSlPgfe7q2w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=GNWwXzjX; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g8Rs5Ysq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA7F4C2BCB4;
-	Tue,  5 May 2026 21:42:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778017357;
-	bh=a3YOnkajHyfwERXeEYwLVyZkFUh4Eg/Ia/6U/YCqEjs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=g8Rs5Ysq3yjrmKJLH79HPwie7wxnTr7A7fvQQc7zwaMklNAczNvZ6oxdnnL3aJdkN
-	 X7EzUEMiyaUoyLinPcDcaf0IFJjLHjpKSJ8mF9SCG8XRLWHamJOMJyxIxxDD9wOYtU
-	 asSzF+Ybj0WQazrgHiEbinySZssq45BaPVQxC+hF64Xz2axWfGPyzz9Moag11TrdG9
-	 ACWa9/VVU3XZBUogIJSLbEmqLX9Up1A3W4tElWjZtEkrzh4DoGY4sp/jkVSMSUWt+t
-	 uVv6u01rQPqHXdl2hJb2Qu7h2wT4oEnXYI5tbkwrHTt4S7rUJbozqVi4T6dY15UdnH
-	 WRF2n3Mh4cvEA==
-Date: Tue, 5 May 2026 16:42:34 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	"open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
-	open list <linux-kernel@vger.kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Lukas Wunner <lukas@wunner.de>, linux-pm@vger.kernel.org,
-	Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI/ASPM: Enable L0s/L1 for removable devices when BIOS
- didn't configure ASPM
-Message-ID: <20260505214234.GA751157@bhelgaas>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="GNWwXzjX"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C07D61A25;
+	Tue,  5 May 2026 14:44:04 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AE6453F7B4;
+	Tue,  5 May 2026 14:44:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1778017450; bh=wn++sDs6bzfikHLcTyLewysJeV6R0AgYt4Hgu4eJvZU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GNWwXzjXR4Zbk1WYsiIebDPMyTjJ8m8Ta9mJdD732DE9nlWq7e8EtG/GSLnMvee63
+	 cfEEOO/I2PZj4fWvTNASzR2QSXxQgSi1USAFeoawNVXfAPxhyRWaZ6c7NzMm7xJ4Qs
+	 7Gufebq6KtlMyBpTiedfc44Wm5X13w5GB2PRiwRA=
+Date: Tue, 5 May 2026 22:44:05 +0100
+From: Philip Radford <philip.radford@arm.com>
+To: Cristian Marussi <cristian.marussi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
+	sudeep.holla@arm.com, james.quinlan@broadcom.com,
+	f.fainelli@gmail.com, vincent.guittot@linaro.org,
+	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
+	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
+	souvik.chakravarty@arm.com
+Subject: Re: [PATCH v5 09/12] firmware: arm_scmi: add Powercap MAI get/set
+ support
+Message-ID: <afpkpUcevUh_Z8kQ@donnerap.manchester.arm.com>
+References: <20260428090922.346069-1-philip.radford@arm.com>
+ <20260428090922.346069-10-philip.radford@arm.com>
+ <afpUytkInNKLTB0k@pluto>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -46,43 +50,283 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <66ceb34e-17a0-4ff5-8534-9067d4e9b32c@amd.com>
+In-Reply-To: <afpUytkInNKLTB0k@pluto>
 
-[+cc Mika]
+On Tue, May 05, 2026 at 09:36:26PM +0100, Cristian Marussi wrote:
+> On Tue, Apr 28, 2026 at 10:09:18AM +0100, Philip Radford wrote:
+> > Add support for Power Measurement Averaging Interval (MAI)
+> 
+> Hi,
+> 
 
-On Tue, May 05, 2026 at 11:08:14AM -0500, Mario Limonciello wrote:
-> On 5/5/26 11:05, Bjorn Helgaas wrote:
-> > On Mon, May 04, 2026 at 05:52:46PM -0500, Mario Limonciello wrote:
-> > > When comparing lspci output between Windows and Linux for hotplugged
-> > > Thunderbolt 5 eGPU devices, Windows enables ASPM L1 but Linux doesn't:
-> > > 
-> > >    Windows: LnkCtl: ASPM L1 Enabled
-> > >    Linux:   LnkCtl: ASPM Disabled
-> > > 
-> > > This difference in ASPM configuration can cause behavioral differences
-> > > between the two operating systems for the same hardware.
+Hi,
+Thanks for the review.
+
+> > get and set operations to the SCMI powercap protocol driver.
+> > Extends scmi_powercap_info to store MAI configuration and
+> > implement MAI get/set via xfer and optional fast-channel
+> > support.
+> 
+> You have to stay under 75 chars...ok...but I'd say this commit message
+> lines are way to short...you can stretch a bit more towards 75chars
+> without having to split words I think....because
+> 
+> t
+> o
+> o
+> 
+> s
+> h
+> o
+> r
+> t
+> 
+> l
+> i
+> n
+> e
+> s
+> 
+> are not so good anyway :P
+> 
+
+Noted. I was too concerned about going over the limit and didn't think
+about the opposite being an issue.
+
 > > 
-> > A tangent, not a comment on the patch itself, but what sort of
-> > behavioral differences are these?  If ASPM is working correctly, the
-> > only differences *should* be in power consumption and performance.
+> > Signed-off-by: Philip Radford <philip.radford@arm.com>
+> > ---
+> >  drivers/firmware/arm_scmi/powercap.c | 120 +++++++++++++++++++++++++++
+> >  include/linux/scmi_protocol.h        |   8 ++
+> >  2 files changed, 128 insertions(+)
+> > 
+> > diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
+> > index 86262eb0f34a..b5879f204b5e 100644
+> > --- a/drivers/firmware/arm_scmi/powercap.c
+> > +++ b/drivers/firmware/arm_scmi/powercap.c
+> > @@ -401,6 +401,34 @@ scmi_powercap_domain_attrs_process(const struct scmi_protocol_handle *ph,
+> >  		dom_info->notify_powercap_measurement_change =
+> >  			SUPPORTS_POWERCAP_MEASUREMENTS_CHANGE_NOTIFY(flags);
+> >  
+> > +	if (PROTOCOL_REV_MAJOR(ph->version) >= 0x3) {
+> > +		struct scmi_msg_resp_powercap_domain_attributes_v3 *resp_v3 = r;
+> > +
+> > +		flags = le32_to_cpu(resp_v3->attributes);
+> > +		if (pinfo->notify_measurements_cmd)
+> > +			dom_info->notify_powercap_measurement_change =
+> > +			       SUPPORTS_POWERCAP_MEASUREMENTS_CHANGE_NOTIFY(flags);
+> > +
+> > +		dom_info->mai_config = SUPPORTS_POWERCAP_MAI_CONFIGURATION(flags);
+> > +		dom_info->min_mai = le32_to_cpu(resp_v3->min_mai);
+> > +		dom_info->max_mai = le32_to_cpu(resp_v3->max_mai);
+> > +		dom_info->mai_step = le32_to_cpu(resp_v3->mai_step);
+> > +
+> > +		if (dom_info->mai_config) {
+> > +			ret = scmi_powercap_validate(dom_info->min_mai,
+> > +						     dom_info->max_mai,
+> > +						     dom_info->mai_step,
+> > +						     dom_info->mai_config);
+> > +
+> > +			if (ret) {
+> > +				dev_warn(ph->dev, "Platform reported problem MAI config for domain %d - %s\n",
 > 
-> This originally stemmed from a significant performance difference that was
-> observed between Windows and Linux with eGPUs.  The link in the patch points
-> at that bug if you want to look more closely at it.
-
-Hmm.  The bug (https://bugzilla.kernel.org/show_bug.cgi?id=221319)
-reports "instant reboot", which is definitely a behavioral difference.
-But AFAICS this patch would just fix something noticed along the way
-but not the reboot itself.
-
-To avoid confusion, I would use "performance difference" or "power
-difference" when describing this patch.
-
-> I was hopeful that aligning ASPM would align the behavior, but alas this
-> didn't.
+> "....reported invalid MAI config for domain..."
 > 
-> It was still a difference that I figured we should discuss whether it should
-> be changed to be consistent.
 
-Definitely.  I hope we can at least enable L1.1.  L1.2 is a whole
-'nother issue.
+Noted, will change.
+
+> > +					 dom_info->id, dom_info->name);
+> > +
+> > +				return ret;
+> > +			}
+> > +		}
+> > +	}
+> > +
+> >  	dom_info->extended_names = SUPPORTS_EXTENDED_NAMES(flags);
+> >  
+> >  	dom_info->async_powercap_cap_set =
+> > @@ -1082,6 +1110,96 @@ static int scmi_powercap_cap_enable_get(const struct scmi_protocol_handle *ph,
+> >  	return 0;
+> >  }
+> >  
+> > +static int scmi_powercap_xfer_mai_get(const struct scmi_protocol_handle *ph, u32 domain_id,
+> > +				      u32 *mai)
+> 
+> ..bad alignment and till now we try still to stick tpo 80cols in the SCMI
+> stack if it does NOT really hamper readability...
+> 
+
+I will address this, but I'm quite certain it wasn't flagged by checkpatch.
+
+> > +{
+> > +	int ret;
+> > +	struct scmi_xfer *t;
+> > +
+> > +	ret = ph->xops->xfer_get_init(ph, POWERCAP_MAI_GET, sizeof(u32),
+> > +								sizeof(u32), &t);
+> 
+> ...terrible alignment...and you know why :D
+> 
+
+Will address.
+
+> > +
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	put_unaligned_le32(domain_id, t->tx.buf);
+> > +
+> > +	ret = ph->xops->do_xfer(ph, t);
+> > +	if (!ret)
+> > +		*mai = get_unaligned_le32(t->rx.buf);
+> > +
+> > +	ph->xops->xfer_put(ph, t);
+> > +	return ret;
+> > +}
+> > +
+> > +static int scmi_powercap_xfer_mai_set(const struct scmi_protocol_handle *ph, u32 domain_id, u32 mai)
+> 
+> ..same...try to stick to 80 cols when not impossibly ugly..
+> 
+
+Will do.
+
+> > +{
+> > +	int ret;
+> > +	struct scmi_xfer *t;
+> > +	struct scmi_msg_powercap_cap_or_pai_set *msg;
+> > +
+> > +	ret = ph->xops->xfer_get_init(ph, POWERCAP_MAI_SET, sizeof(*msg), 0, &t);
+> 
+> same
+> 
+
+I'm not sure why I split that over two lines, will change.
+
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	msg = t->tx.buf;
+> > +	msg->domain_id = cpu_to_le32(domain_id);
+> > +	msg->flags = cpu_to_le32(0);
+> > +	msg->value = cpu_to_le32(mai);
+> > +
+> > +	ret = ph->xops->do_xfer(ph, t);
+> > +
+> > +	ph->xops->xfer_put(ph, t);
+> > +	return ret;
+> > +}
+> > +
+> > +static int scmi_powercap_measurements_interval_get(const struct scmi_protocol_handle *ph,
+> > +						   u32 domain_id, u32 *val)
+> > +{
+> 
+> ditto
+> 
+
+Will do.
+
+> > +	const struct scmi_powercap_info *pc;
+> > +	struct scmi_fc_info *fci;
+> > +
+> > +	if (!val)
+> > +		return -EINVAL;
+> > +
+> > +	pc = scmi_powercap_dom_info_get(ph, domain_id);
+> > +	if (!pc)
+> > +		return -EINVAL;
+> > +
+> > +	fci = pc->cpli[CPL0].fc_info;
+> > +	if (fci && fci[POWERCAP_FC_MAI].get_addr) {
+> > +		*val = ioread32(fci[POWERCAP_FC_MAI].get_addr);
+> > +		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_MAI_GET, domain_id, 0, *val, 0);
+> ditto
+
+Noted
+
+> > +		return 0;
+> > +	}
+> > +
+> > +	return scmi_powercap_xfer_mai_get(ph, domain_id, val);
+> > +}
+> > +
+> > +static int scmi_powercap_measurements_interval_set(const struct scmi_protocol_handle *ph,
+> > +						   u32 domain_id, u32 val)
+> > +{
+> 
+> ditto
+> 
+
+Noted.
+
+> > +	const struct scmi_powercap_info *pc;
+> > +	struct scmi_fc_info *fci;
+> > +
+> > +	pc = scmi_powercap_dom_info_get(ph, domain_id);
+> > +	if (!pc)
+> > +		return -EINVAL;
+> > +
+> > +	if (!pc->mai_config || !val || val < pc->min_mai || val > pc->max_mai)
+> > +		return -EINVAL;
+> > +
+> > +	fci = pc->cpli[CPL0].fc_info;
+> > +	if (fci && fci[POWERCAP_FC_MAI].set_addr) {
+> > +		iowrite32(val, fci[POWERCAP_FC_MAI].set_addr);
+> > +		ph->hops->fastchannel_db_ring(fci[POWERCAP_FC_MAI].set_db);
+> > +		trace_scmi_fc_call(SCMI_PROTOCOL_POWERCAP, POWERCAP_MAI_SET, domain_id, 0, val, 0);
+> > +		return 0;
+> > +	}
+> > +
+> > +	return scmi_powercap_xfer_mai_set(ph, domain_id, val);
+> > +}
+> > +
+> >  static const struct scmi_powercap_proto_ops powercap_proto_ops = {
+> >  	.num_domains_get = scmi_powercap_num_domains_get,
+> >  	.info_get = scmi_powercap_dom_info_get,
+> > @@ -1094,6 +1212,8 @@ static const struct scmi_powercap_proto_ops powercap_proto_ops = {
+> >  	.measurements_get = scmi_powercap_measurements_get,
+> >  	.measurements_threshold_set = scmi_powercap_measurements_threshold_set,
+> >  	.measurements_threshold_get = scmi_powercap_measurements_threshold_get,
+> > +	.measurements_interval_get = scmi_powercap_measurements_interval_get,
+> > +	.measurements_interval_set = scmi_powercap_measurements_interval_set,
+> >  };
+> >  
+> >  static void scmi_powercap_domain_init_fc(const struct scmi_protocol_handle *ph,
+> > diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
+> > index d0f6c0102559..73d66281dcc3 100644
+> > --- a/include/linux/scmi_protocol.h
+> > +++ b/include/linux/scmi_protocol.h
+> > @@ -675,6 +675,10 @@ struct scmi_powercap_info {
+> >  	bool powercap_scale_uw;
+> >  	bool extended_names;
+> >  	bool fastchannels;
+> > +	bool mai_config;
+> > +	u32 min_mai;
+> > +	u32 max_mai;
+> > +	u32 mai_step;
+> 
+> No docs for new fields ?
+> 
+
+Will add them.
+
+> >  	char name[SCMI_MAX_STR_SIZE];
+> >  	unsigned int sustainable_power;
+> >  	unsigned int accuracy;
+> > @@ -758,6 +762,10 @@ struct scmi_powercap_proto_ops {
+> >  	int (*measurements_threshold_get)(const struct scmi_protocol_handle *ph,
+> >  					  u32 domain_id, u32 *power_thresh_low,
+> >  					  u32 *power_thresh_high);
+> > +	int (*measurements_interval_get)(const struct scmi_protocol_handle *ph,
+> > +					 u32 domain_id, u32 *val);
+> > +	int (*measurements_interval_set)(const struct scmi_protocol_handle *ph,
+> > +					 u32 domain_id, u32 val);
+> 
+> No docs for new fields ?
+> 
+
+Will add them.
+And will pay more attention to col length from now on.
+
+Regards,
+Phil.
