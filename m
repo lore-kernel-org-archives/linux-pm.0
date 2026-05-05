@@ -1,97 +1,167 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E0581A682E
-	for <linux-pm@vger.kernel.org>; Tue,  5 May 2026 20:07:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1BD923D0914;
+	Tue,  5 May 2026 20:13:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778011653; cv=none; b=oAj8Xf3Cy3I63UNqLAh7x92TKAY8iw3SNi78rd3G9e1aQeszEtP+BBYDvqmXRwoepMtAB2YOJn57Oo4nIadcUSi3TtWDgmR8rv1ctZas0oaAT1tLoV8gWKK9lVrfEvAYXsmON8IoLpdUW56hrj91lToljFVO++u1dnUtKU7DJXY=
+	t=1778012027; cv=none; b=rpHJzt2XtKDbMlo+eSLrIrSeLvpHpv8QG12GbK5a1bssgYmT+XjRCh9V2A8HdTdoninaj6+O136bO71gQJ9tFcODe/BnMQmp3XhF99LKBnQLJJChKhdaG13xoYryVXDpS82QZQH6hzXMX878XMEaYoEB0SAZBCqEmCdaV9Od4sQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778011653; c=relaxed/simple;
-	bh=72OHu7enNqcJFfpBOsKNgC5fc40GMPq9oSc/T3JEAVE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PkdzmNJCYP5wQb0Q5opNTp2wVVyCUJ2QPf4WQ2k6iNZ1oLDdnHu70itUHtSjZ/F2flt9v0ldH6e8gBQrcSkpLraELcZt1YfDvXWVEa7VgXWNvGmta41J1viM7KlsKE5beUyCG2msgP9b+aqJdxatDEOPFd9i91eHp/Q8MofvhoE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pYo0wYzc; arc=none smtp.client-ip=209.85.214.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778012027; c=relaxed/simple;
+	bh=ynAbCMg2qQJVXRYbA6ts9gqhSiOUCgGSYE0bBVHxnsc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=W1h7hujIIIi33fHe8yzsGR8BlRrUIDA2wL+nPgmLhoAzY+tYrSqI/fBgNag3f8brJnaBKOZB44i45qzlOjxioaJMp5j7prZeCU8On24y2Gt2oWzgLWbaM6OgVCkeetnLLP4gCqxn9BJ90ozhX3aZ8kHOwT/f7msPg6PRhtFICo4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=VBmwRDCc; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pYo0wYzc"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-2a3e79fe2b8so3092155ad.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 May 2026 13:07:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778011651; x=1778616451; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FZMEaIxTwwgj3zyVbxHfeuR77dvZtji4RLCiRmy4JEA=;
-        b=pYo0wYzcUgdfp2dMrhUrritbC7OF+K2w3WXeYMtk4b69N1QsW91yVPf8RBHaIvKWxC
-         nSM2zNz1sfhc4olvDkSC/lMOl6MA0jmtoCtHgjZBz/L/Yr3Lt+QCYEdhA81KTiadOAeQ
-         ynSpsP9/8398xYy70xBryUsdLW1I8crA5lkpuS3+AejUeJ6uN+ycnLYfMGHFIlrwHj/a
-         NQMFgRsDb5L6eO55Esp6cTDKnAYnXD1F7I1h8wws+N4G+iTB6KuxyqLgRTyT02PsWquf
-         rmhR1HSII5uy0wL3dFHXZybTLBKcjgvxPNC+LK+jsB2+Ks7cMhYO1Q0rYuuwwd+Ypayh
-         L8ZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778011651; x=1778616451;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=FZMEaIxTwwgj3zyVbxHfeuR77dvZtji4RLCiRmy4JEA=;
-        b=WEtcnQz7tgBMpgJxi5WcssQnVwwbjTI2M6y5ZwYhtFfYxQC/M/Kc3PCpBuADv3XtPi
-         fH0jZdhUSOOl3iTn/qtr1jLZMhiG+gntsLcSht+DmZ5yzPGWZip9jMU/2DmDQgNXUDwX
-         SdxRfsZsrJvkil16bvXxuwcgjb8yf004dYsVX8j4ZOMUMbEyHTUUXVFv/qBzhTHa0va7
-         5bG1/eViDL/noKn+CkjYwxF22JuyZSifS3lN5/mWoMDc0/4E4gcBfciPj2buY3HKuv9L
-         vh4NLTGi4RDKtToOBOwcuqTAnQj0fO9M6U2ZUG7bIUKRkVm9YiDLulRTmsut9VJa3BMU
-         Jp8Q==
-X-Forwarded-Encrypted: i=1; AFNElJ8w83lB5mJvehvXqrNJ2qotnb+d/2YXxP4Y4QkMzWIj9txY8zF5dXN1HaJDfKnpO+sndhOoQJU2yg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxBVMUggSccLPRGjlh/1HTWz4lTpIVY6i6TTPWy6FWSyEk6oNoD
-	V9hx74Yl2pgBjfYgvVP5/ERQRp7J9RfmhIvKt1UD0QFb1i+qwnHUHzEM
-X-Gm-Gg: AeBDiespBWVFE+yVpf29qmH4ViHBsJOvWOfsF2AZ8hpwYgoh6Znw4Xz5e+FMMreqztA
-	qtLbPsVKqUpRxV9e9BTjUg4pLGS1ePEmZmS7UcH6z6FRaLnzTbdYhNZD8Z2fL1s/i11PcnjUpyv
-	bvpoYDcYOHT+iRWaK5VqBnlTvi6Mn1NsYATAy4MPptioMD8CXqfJ+47yzm1Me3Xlc7AM5+NkXVF
-	dkJkGGXvVAWQ96XkTingS+Z0M4800wu7WFK5S06jygERXOYMehIgVGnEWc8bGW5Al/BgTLxEvhF
-	hJzEnUH/9pFFcizWAHAt8NdCOLstBZaJCDgsj7YXzWxarxlA9xVsiSmohNYhzSssUP+qFxma9Bh
-	akZr2c8c+PU0RqAAaK/QH21QWpcSxMMZ2AZ7TgbRTDxa1bVdPz0FM71mY1znnr2p4t+ZIRiztRN
-	QOkonUUMw9ppVZrKDW/wgaFMbEWSTeIlEb7b9+NRih
-X-Received: by 2002:a17:903:1a2f:b0:2b9:42a3:6013 with SMTP id d9443c01a7336-2ba7afccfa5mr1584845ad.1.1778011651275;
-        Tue, 05 May 2026 13:07:31 -0700 (PDT)
-Received: from magniquick ([45.112.148.110])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ba7ca37a5esm659045ad.81.2026.05.05.13.07.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 May 2026 13:07:30 -0700 (PDT)
-From: Navon John Lukose <navonjohnlukose@gmail.com>
-To: Hans de Goede <hansg@kernel.org>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Sebastian Reichel <sre@kernel.org>
-Cc: platform-driver-x86@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jorge Lopez <jorge.lopez2@hp.com>
-Subject: Re: [RFC] HP laptop charge mode control via POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR
-Date: Wed,  6 May 2026 01:37:24 +0530
-Message-ID: <20260505200724.158389-1-navonjohnlukose@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <abfc9469-5d47-4e83-8c3c-03138f1b2ade@kernel.org>
-References: <20260427140857.397971-1-navonjohnlukose@gmail.com> <abfc9469-5d47-4e83-8c3c-03138f1b2ade@kernel.org>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="VBmwRDCc"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B7A4C1BB0;
+	Tue,  5 May 2026 13:13:37 -0700 (PDT)
+Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9C9383F763;
+	Tue,  5 May 2026 13:13:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1778012023; bh=ynAbCMg2qQJVXRYbA6ts9gqhSiOUCgGSYE0bBVHxnsc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=VBmwRDCc0L1cw4zLU+zTUNzgXz2NbrRwLCbgnkFP1rkdLhEqhpUNe7oxGqlaZeg2z
+	 vua1SsfGoEsgdqpKayF1Mawrc2PdTs5A6wBFXd6hxLDGKoQyUds2S0hFeq9gH7EIOP
+	 EZvyVz5Ggk2I1yb42cso9mRXhe/Qisi9iQ99JNco=
+Date: Tue, 5 May 2026 21:13:32 +0100
+From: Cristian Marussi <cristian.marussi@arm.com>
+To: Philip Radford <philip.radford@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
+	sudeep.holla@arm.com, james.quinlan@broadcom.com,
+	f.fainelli@gmail.com, vincent.guittot@linaro.org,
+	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
+	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
+	souvik.chakravarty@arm.com, cristian.marussi@arm.com
+Subject: Re: [PATCH v5 06/12] firmware: arm_scmi: Extend powercap report to
+ include MAI
+Message-ID: <afpPbHkvNE0ijM9n@pluto>
+References: <20260428090922.346069-1-philip.radford@arm.com>
+ <20260428090922.346069-7-philip.radford@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260428090922.346069-7-philip.radford@arm.com>
 
-Hi,
+On Tue, Apr 28, 2026 at 10:09:15AM +0100, Philip Radford wrote:
+> Extend scmi_powercap_meas_changed_report to include MAI change
+> notifications.
+> 
 
-I sent the hp-wmi implementation RFC as a standalone thread by mistake
-instead of replying here.
+Hi
 
-The submitted patch is:
+> Signed-off-by: Philip Radford <philip.radford@arm.com>
+> ---
+>  drivers/firmware/arm_scmi/powercap.c | 20 ++++++++++++--------
+>  include/linux/scmi_protocol.h        |  1 +
+>  2 files changed, 13 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
+> index 1d1188e98d49..b9d50f4e8ae5 100644
+> --- a/drivers/firmware/arm_scmi/powercap.c
+> +++ b/drivers/firmware/arm_scmi/powercap.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/io.h>
+>  #include <linux/module.h>
+>  #include <linux/scmi_protocol.h>
+> +#include <linux/stddef.h>
+>  
+>  #include <trace/events/scmi.h>
+>  
+> @@ -164,6 +165,7 @@ struct scmi_powercap_meas_changed_notify_payld {
+>  	__le32 agent_id;
+>  	__le32 domain_id;
+>  	__le32 power;
+> +	__le32 mai;
+>  };
+>  
+>  struct scmi_msg_powercap_cpc {
+> @@ -1212,13 +1214,6 @@ static int scmi_powercap_notify(const struct scmi_protocol_handle *ph,
+>  		if (ret)
+>  			return ret;
+>  
+> -		if (enable && !low && !high) {
+> -			dev_err(ph->dev,
+> -				"Invalid Measurements Notify thresholds: %u/%u\n",
+> -				low, high);
+> -			return -EINVAL;
+> -		}
+> -
 
-  Subject: [RFC PATCH] platform/x86: hp-wmi: Add charge behaviour support
-  Message-ID: <20260505200222.157144-1-navonjohnlukose@gmail.com>
+Ok so you removed this check because now that a notification can be
+emitted even only to notify a MAI change, it is possible that the
+thresholds are zero and the notification will be emitted anyway due to
+a MAI change....BUT you have to review or completely remove the comment
+block that precedes this that says:
 
-Sorry for splitting the discussion. I should have threaded it under this
-RFC thread.
+   /*                                                               
+    * Note that we have to pick the most recently configured        
+    * thresholds to build a proper POWERCAP_MEASUREMENTS_NOTIFY     
+    * enable request and we fail, complaining, if no thresholds     
+    * were ever set, since this is an indication the API has been   
+    * used wrongly.                                                 
+    */                                                              
+
+...becasue NOW is no more true and misleading, since you just removed the
+fail and complain part...
+
+It would be good to shortly explain in a comment the new possible
+scenarios in which notification can be enabled...
+
+>  		ret = ph->xops->xfer_get_init(ph, message_id,
+>  					      sizeof(*notify), 0, &t);
+>  		if (ret)
+> @@ -1333,14 +1328,23 @@ scmi_powercap_fill_custom_report(const struct scmi_protocol_handle *ph,
+>  	{
+>  		const struct scmi_powercap_meas_changed_notify_payld *p = payld;
+>  		struct scmi_powercap_meas_changed_report *r = report;
+> +		const size_t sz_v2 = offsetofend(struct scmi_powercap_meas_changed_notify_payld,
+> +						 power);
+> +		const size_t sz_v3 = sizeof(*p);
+
+While this is a valid and nice construct, I think is overkill here since
+these offsets/sizes will never change at runtime....
+
+...you can just define above a couples of DEFINE that hardcodes the
+sizes of the v2 and v3 by using the
+
+	#define SZ_V2 	(sizeof(struct scmi_powercap_meas_changed_notify_payld))
+
+and
+	#define SZ_V3   (SZ_V2 - sizeof(__le32))
+
+>  
+> -		if (sizeof(*p) != payld_sz)
+> +		if (payld_sz != sz_v2 && payld_sz != sz_v3)
+>  			break;
+>  
+>  		r->timestamp = timestamp;
+>  		r->agent_id = le32_to_cpu(p->agent_id);
+>  		r->domain_id = le32_to_cpu(p->domain_id);
+>  		r->power = le32_to_cpu(p->power);
+
+maybe more clear to simply:
+		
+		r->mai = 0;
+		if (payld_sz == SZ_V3 && PROTOCOL_REV_MAJOR(ph->version) >= 0x3)
+			r->mai = le32_to_cpu(p->mai);
+
+		
+> +
+> +		if (payld_sz == sz_v3 && PROTOCOL_REV_MAJOR(ph->version) >= 0x3)
+> +			r->mai = le32_to_cpu(p->mai);
+> +		else
+> +			r->mai = 0;
+> +
+>  		*src_id = r->domain_id;
 
 Thanks,
-Navon
+Cristian
