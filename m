@@ -1,330 +1,256 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011063.outbound.protection.outlook.com [40.107.208.63])
+Received: from extorris.mess.org (extorris.mess.org [92.243.27.206])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EE68480950;
-	Wed,  6 May 2026 14:26:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.63
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778077623; cv=fail; b=cr/N6/hUyKtN4ux/m7AfG94RKWaBEgnwvZrXGQMR2CqSCqoVdCV6jUaPA//VLzv7X791DCkMmhjNlF2MYAdH8/nMKUhAbDnEFgkuxqVcfu1PL+Y2MyaAjLl1/XZk27GdSy1SUohXuPgxbtxDlaFYGl8iRurSGabU6C30FtJ8k0o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778077623; c=relaxed/simple;
-	bh=c7Nn5u3vTMTj83ESkyQxm9N5gwkc5lRY4cU+B6yLzX8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ZlhsdmU0+/l2H4u9adv3Z/Eq1z2Fpf05/0MFv/1Fc7sdQCOVOPQ/ElGN3QfXY4gGcI4hcVLR+5yQEXti4JovZre9m7thQoGwfhc4vIpaBi10GGaRBKdTbr4CmP17+/jJ6ttyRW7z3u6QX9hD0hfIX82cW9GDH323ccvfakwLFv4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=DOa5zTQl; arc=fail smtp.client-ip=40.107.208.63
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C383E481FCA;
+	Wed,  6 May 2026 14:43:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=92.243.27.206
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778078611; cv=none; b=JwIlrhjPsiA3jlWKHxmKFrulbMGVrxIaCjDk0O8U04VgPrL6Cq3SVCUIRvteCEzyGdjmszA+frIRJG+YYOAom0X9agEtDQKvMHrv5X403B4mVZexsQ/oHG6HaO2dYaCGAScgXUroNeDBTmUjdm9Wu19PSTF+cnd9EZAVsuwXD6g=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778078611; c=relaxed/simple;
+	bh=Ny7nqMN8NxdAkg6MWBl3xuIS09EV4Jp6rIEFDcRJSV8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=krI5EP+RiYhSYn/6Onf4REZ7iws4C5/ykD/H+N5tNGjRMrRgRlRJJ8hAVlbSTC4FhP/Pztz636O5MItUcgrcrPtMjIQdKL+0fkOo2ApdiCHxp0yMh8m2lSkF1DVG3JXjTurNutKDFKD5LvkXEPgzJOtO12PtWqcgBtxcAXoyC2I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org; spf=pass smtp.mailfrom=mess.org; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=KVQSWrZ2; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=Q/xJpGIN; arc=none smtp.client-ip=92.243.27.206
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mess.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="DOa5zTQl"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PscSrwiccbOue7ku+Yv5LjdAwJ3BOkcFYAkaFNOCBSnZGXqYtGygTorNeOQaYSPPqSUvyfmI3mULm+SmVrZ4fWdTaeCD0ZG5pma44o1dEYUDTRd0siZ8J9vIAyv4zUHr0DMS7ebDWYaD9UpXNCFVBwPsGEGVmWbQc12rN6jYm0LMCqJHy9DpnTY2ihQHNIZu4V3KJDU/DHC7HVi9nYMoZzhm42MhXgOldmsXe5dJIM9SpO+r4ydeaZgBVx1mbR4ytqarnYAMDepTXu8jrNATrbjipIw15Z2BQ+A1R+3Ye1ObaOCzhuFldm8JRX49rhfFWVB9UPDeckWzmpOEaTmLHg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zQhYy9gPESy8bRx5UoJO0Yv9s4OIXZWK4rcQn4S1Hn8=;
- b=PTwJTj0/vsZkJt9c+KBRty75WE2Iadh+Z05R4QQT0R1buERcS+ZbD1xvkjA/FgjdUHoUXykt6Lzp/53bx7IMtgyFUAL99dl2Ym20IsBxh7La4Y8T4gwJkh7QA/hfG9EFxtWkui+7tpR7y3j/KPWgTQOWIQiYFz1XztWcp/4A58aGIwanxVXJJ4JwTaLKE0GslSz28AUzAi1R+xS5lOFmTGGeaH+PVNmoGVpzgxOQCLwi47A26jSkDQtlW9DcurrS/1Al2B8rX/HTiHcR9f358H0bQRL8XIX51TO02TaDk22ddgQp+j17hksRpMMOmP7lHsjcQnDIkm5KQs/BaUe/ug==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.21.195) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=ti.com;
- dmarc=pass (p=quarantine sp=none pct=100) action=none header.from=ti.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zQhYy9gPESy8bRx5UoJO0Yv9s4OIXZWK4rcQn4S1Hn8=;
- b=DOa5zTQlp+4+JknAmbQHVlyKiyGg4b5RjLfH7+hvfD3Ety5BKYm0BaGDrlOklEZrK87r17jiCXA34+oq3mWtijacq/uyXDCNtug0YcqExPvLhon0iWtmYWrRIGYzwZGfOHzrRcZkpjhQpWPbu8f9JjE1IQNOJLHJ8B1vPLt2FD0=
-Received: from MN2PR06CA0024.namprd06.prod.outlook.com (2603:10b6:208:23d::29)
- by SA1PR10MB5758.namprd10.prod.outlook.com (2603:10b6:806:235::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Wed, 6 May
- 2026 14:26:55 +0000
-Received: from BL6PEPF0001AB72.namprd02.prod.outlook.com
- (2603:10b6:208:23d:cafe::d1) by MN2PR06CA0024.outlook.office365.com
- (2603:10b6:208:23d::29) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.15 via Frontend Transport; Wed,
- 6 May 2026 14:26:54 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.21.195)
- smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
- action=none header.from=ti.com;
-Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.21.195 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.21.195; helo=flwvzet201.ext.ti.com; pr=C
-Received: from flwvzet201.ext.ti.com (198.47.21.195) by
- BL6PEPF0001AB72.mail.protection.outlook.com (10.167.242.165) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.9 via Frontend Transport; Wed, 6 May 2026 14:26:53 +0000
-Received: from DFLE213.ent.ti.com (10.64.6.71) by flwvzet201.ext.ti.com
- (10.248.192.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Wed, 6 May
- 2026 09:26:31 -0500
-Received: from DFLE202.ent.ti.com (10.64.6.60) by DFLE213.ent.ti.com
- (10.64.6.71) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 6 May
- 2026 09:26:30 -0500
-Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DFLE202.ent.ti.com
- (10.64.6.60) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
- Transport; Wed, 6 May 2026 09:26:30 -0500
-Received: from [172.24.233.55] (uda0490799.dhcp.ti.com [172.24.233.55] (may be forged))
-	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 646EQQXx1545089;
-	Wed, 6 May 2026 09:26:26 -0500
-Message-ID: <bb80889e-0b25-4ea0-b895-83c2b1683272@ti.com>
-Date: Wed, 6 May 2026 19:56:25 +0530
+	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="KVQSWrZ2";
+	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="Q/xJpGIN"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
+	t=1778078608; bh=Ny7nqMN8NxdAkg6MWBl3xuIS09EV4Jp6rIEFDcRJSV8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=KVQSWrZ2ZT0ahZElPyJhfmve9L7mYtNymM9jIxuIXBJOcGoQnL4BHfJ4N7uNfQ9hm
+	 I95pe1t9tYixLFMUZzqHNwFf6U0rVCeTR2JDSfoaj97TC8+zyhSTb8hCJ+r2zTpxG4
+	 c+WYnC8kszF6Il1d/p6NSoitg9HKNGqifqvYErT7vab4KQpljL9IGQqk83HgApHV/K
+	 +qOMv5+bOIlJhGMJcVjOfEqRciKzL4D0TNm40s3vl7Nva8iY45ypLQ3FDK9o6u7ry9
+	 7eHvcYFk1Cwxij53PvK5TUs3dla2P9anuHcpcEvAhhtiajmNL5z/AuINOMTlVjX7lq
+	 q3jid4y3BeK7A==
+Received: by extorris.mess.org (Postfix, from userid 1004)
+	id 94F7241CE6; Wed, 06 May 2026 15:43:28 +0100 (BST)
+X-Spam-Level: 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
+	t=1778078592; bh=Ny7nqMN8NxdAkg6MWBl3xuIS09EV4Jp6rIEFDcRJSV8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Q/xJpGINnFJoJi5k/0Nsh3lNKvSppoZhvVKWu7GHbVX6JkdXPfHN4uD4EEnSTQOIJ
+	 aFXedWaqKtDgW5MSpUO/BTRzUELJNzoxlQ2GN7RnNFz3waqVgNHHPORVwBxWQ6r8+O
+	 p+p3cJoc0D4JUvVqrzsSaL9vbsoJYbkJzG/r4IR9NRKqNp8fjl/R2/GtV8fvmKdz0K
+	 TnpQz2oQaIjq7E9kLPlpIk46IforZ8kYsDUXbJufQOTgtZVzTf1Y/FN+Zq+TRkmWvG
+	 WDLypgPfYGnef9AFkuadMZjvxIH05Dw6KI2rVK0sabn4qVHMVjmu5JQmtsVMSYsUSr
+	 n0bFganxaojpw==
+Received: from maru.local (unknown [140.228.74.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by extorris.mess.org (Postfix) with ESMTPSA id 780A541CE1;
+	Wed, 06 May 2026 15:43:12 +0100 (BST)
+From: Sean Young <sean@mess.org>
+To: linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Subject: [PATCH 7/8] cpufreq: sc520_freq: Drop support for AMD Elan SC520
+Date: Wed,  6 May 2026 15:42:52 +0100
+Message-ID: <12a3abd097fda750ae905290c86ddb8d2b0a716c.1778071745.git.sean@mess.org>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <cover.1778071745.git.sean@mess.org>
+References: <cover.1778071745.git.sean@mess.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] pmdomain: ti_sci: re-sync TIFS with genpd on resume
-To: Vitor Soares <ivitro@gmail.com>, Vignesh Raghavendra <vigneshr@ti.com>,
-	Nishanth Menon <nm@ti.com>, Tero Kristo <kristo@kernel.org>, "Santosh
- Shilimkar" <ssantosh@kernel.org>, Ulf Hansson <ulfh@kernel.org>
-CC: Vitor Soares <vitor.soares@toradex.com>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, Tomi Valkeinen
-	<tomi.valkeinen@ideasonboard.com>, Kevin Hilman <khilman@baylibre.com>,
-	<vishalm@ti.com>, <d-gole@ti.com>, Devarsh Thakkar <devarsht@ti.com>,
-	<stable@vger.kernel.org>, Kendall Willis <k-willis@ti.com>
-References: <20260427074808.3244226-2-ivitro@gmail.com>
- <1fb0739e-b84f-42f1-9c96-88b5cc5866a8@ti.com>
- <c0fe43a2339c802e9ce5900092cd530a2ba17a6b.camel@gmail.com>
- <17cbaadb-5aa7-40f4-848c-ba8e88fbd333@ti.com>
- <0cad7e5e41b9e2c6ec545050dd0d3c6b3e085d2c.camel@gmail.com>
-Content-Language: en-US
-From: Sebin Francis <sebin.francis@ti.com>
-In-Reply-To: <0cad7e5e41b9e2c6ec545050dd0d3c6b3e085d2c.camel@gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL6PEPF0001AB72:EE_|SA1PR10MB5758:EE_
-X-MS-Office365-Filtering-Correlation-Id: f25a0df7-6f1e-4aea-8249-08deab7b8506
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|1800799024|7416014|36860700016|376014|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	T6wVrj59qFODCFq7q9DCFEI9z3wwTu/AxEaS2uH11ZKohPDHWooqKK2W50ljiLPSKj9rlE3mZxOaRjNdTYb/6YQOkIm/G17Vpl9kOYqXCoY3yHni+TJ6NrtWwoTb5yiCqsbDiQWckvecBDvjaL19Y0u8/nVOCLXQz1ZEUj92jo8NVsLjOXlTWGgusqSYcztM+eWUWjUnL2WUjpYxd2w1z7/VCVGK8y7gpn4iolPxCiLDzeUR2JKMsyY2sfYJe2y17mJPk/zSMSoWCfLxM36BVj+MJf+Raf8x5/TUe3uGyr/gbDWEPZLSaPxQ0KUG1rZGdJEFsFIvo66PzmehHz70/FXsOYYCEiIAvHC4/tS49YX5aH6pwSwLynKcwxMyc+OKaE1Xi9gYx4vX1tJcZnfQ+/tjPiXnIkp1Pn+QJbgUDnYgvWBl68+mx7osk3+H7GB0ISta07U8xuyAnwjkDu4PpqiVBAvLBLfce4DQGbICd7/ULVsnYg1YjK/On3H8Vo4s1quFRD+kgCbN5LxNTm3mo3uIA3/DUU3F6otUAnyQ0s7O42sERaOxdvFHwEXtzhKCpXOtXOJraQj4KPVSxp7EWz5+ec+B+ccckY27WvXeAE/OW+250riS2/716C2Et8BUk4+DIKXC61rQzx6ysKnAfX6dQWKjUbSqJx0x/nDyqRFGjp1D2lQl0wXoYhRRy1YS72EdebyjYdt85Uufvx5qFage1wAADGr5mmEJTo8vwUQ=
-X-Forefront-Antispam-Report:
-	CIP:198.47.21.195;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:flwvzet201.ext.ti.com;PTR:ErrorRetry;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(7416014)(36860700016)(376014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	zIX8nEAloS3EIg3OgOd5Ed5dWHVWSbo3NUyvAbQ3yBbojcn5cKajn6ldbdl4VwHTihXpLK3GVEji8kMvmgN9BE5GmLDCH8a8d0WFTZGjdRfIhEkhJ5W9SpOMRc8wOxUNeRzUF+ZssWwx43oVATTH34VLnAJR5hwJqA07+EP93p1m3hge6GoofQdR7Rgw89PLOyaIyGnqyKKLttJ/oJEGPCUXzPsGHvgYn5D4Yy2JdJ04Ndb/0r5KVoo1FqPSCxfhHVD4t3PfHJ92LjKqs5PIZgeTX4tNkXN9cImfnBLmXtZLsYIxTK09uNs9ribLPi7KYFCwKaYHea6RQj1V497Mh/NvTJiYS4MDsV7Q1bcwrLK6xroo31og2yuzaEGNZWWNVShcb0Y1Nci5uqrGSGTHr4XXxa7dsu9OojqWjbBl6A5fdaIE3WK/IVwWpF3/FXcM
-X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 May 2026 14:26:53.3074
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: f25a0df7-6f1e-4aea-8249-08deab7b8506
-X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.21.195];Helo=[flwvzet201.ext.ti.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BL6PEPF0001AB72.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR10MB5758
 
-Hi Vitor
+Since commit 8b793a92d862 ("x86/cpu: Remove M486/M486SX/ELAN support"),
+the AMD Elan SC520 is no longer supported, so the cpu frequency
+driver is no longer needed.
 
-On 04/05/26 11:56, Vitor Soares wrote:
-> Hello Sebin
-> 
-> On Thu, 2026-04-30 at 16:17 +0530, Sebin Francis wrote:
->> Hi Vitor,
->>
->> On 29/04/26 21:56, Vitor Soares wrote:
->>> Hi Vignesh
->>>
->>> Thank you for the review.
->>>
->>> On Wed, 2026-04-29 at 10:03 +0530, Vignesh Raghavendra wrote:
->>>> Hi Vitor
->>>>
->>>> On 27/04/26 13:18, Vitor Soares wrote:
->>>>> From: Vitor Soares <vitor.soares@toradex.com>
->>>>>
->>>>> When a device in a TI SCI power domain is on the wakeup path of a
->>>>> wakeup-capable child, the suspend path skips genpd_sync_power_off().
->>>>> No put_device is sent to TIFS and the domain's genpd status remains
->>>>> ON.
->>>>
->>>> Correction of terminologies: TIFS is Root of trust component and is not
->>>> usually involved in power management, that would be DM (Device Manager)
->>>>
->>>
->>> Thank you for the clarification. I will address this on v2. Also, I was
->>> thinking
->>> to replace put_device/get_device with ti_sci_pd_power_off/ti_sci_pd_power_on
->>> if
->>> that makes more clear the content.
->>>
->>>> But to be really sure who is doing what, Could you provide an example
->>>> and the platform on which you see the issue / external abort?
->>>>
->>>
->>> This was reproduced on our Toradex Verdin AM62P WB and the driver for our
->>> Wi-Fi
->>> module on the SDIO bus calls device_init_wakeup() during the initialization.
->>>
->>> After enter in suspend, it show the following error resume path:
->>>
->>>
->>> [   41.759341] Internal error: synchronous external abort: 0000000096000010
->>> [#1]
->>> SMP
->>> [   41.843286] CPU: 0 UID: 0 PID: 933 Comm: rtcwake Tainted: G   M       O
->>> 6.18.21-dirty #3 PREEMPT
->>> [   41.852762] Tainted: [M]=MACHINE_CHECK, [O]=OOT_MODULE
->>> [   41.857891] Hardware name: Toradex Verdin AM62P WB on Verdin Development
->>> Board (DT)
->>> [   41.865537] pstate: 200000c5 (nzCv daIF -PAN -UAO -TCO -DIT -SSBS BTYPE=-
->>> -)
->>> [   41.872492] pc : regmap_mmio_read32le+0x8/0x20
->>> [   41.876941] lr : regmap_mmio_read+0x44/0x70
->>> [   41.881120] sp : ffff800081fdb8e0
->>> [   41.884428] x29: ffff800081fdb8e0 x28: 0000000000000000 x27:
->>> ffffa95bb64aa9c8
->>> [   41.891563] x26: 0000000000000000 x25: 0000000000000000 x24:
->>> 0000000000000000
->>> [   41.898697] x23: 0000000080000000 x22: ffff000002df5c00 x21:
->>> ffff800081fdb9b4
->>> [   41.905831] x20: 0000000000000100 x19: ffff000001286400 x18:
->>> 0000000000000000
->>> [   41.912965] x17: 2d69696d67722f79 x16: 687020726f662067 x15:
->>> ffff00007fb74f40
->>> [   41.920100] x14: 00000000000002ea x13: 000000000000031f x12:
->>> 0000000000000000
->>> [   41.927234] x11: 00000000000000c0 x10: 00000000000009e0 x9 :
->>> ffff800081fdb7a0
->>> [   41.934368] x8 : ffff00007fb6ce00 x7 : 0000000000000000 x6 :
->>> 0000000000000000
->>> [   41.941502] x5 : ffffa95bb57948d8 x4 : 0000000000000100 x3 :
->>> 0000000000000100
->>> [   41.948636] x2 : ffffa95bb5795034 x1 : 0000000000000100 x0 :
->>> ffff80008025d100
->>> [   41.955770] Call trace:
->>> [   41.958211]  regmap_mmio_read32le+0x8/0x20 (P)
->>> [   41.962655]  _regmap_bus_reg_read+0x70/0xb0
->>> [   41.966839]  _regmap_read+0x64/0xdc
->>> [   41.970327]  _regmap_update_bits+0xf4/0x140
->>> [   41.974509]  regmap_update_bits_base+0x64/0x98
->>> [   41.978952]  sdhci_am654_runtime_resume+0x138/0x208
->>> [   41.983830]  pm_generic_runtime_resume+0x2c/0x44
->>> [   41.988445]  __genpd_runtime_resume+0x30/0x7c
->>> [   41.992804]  genpd_runtime_resume+0xdc/0x2e8
->>> [   41.997073]  pm_runtime_force_resume+0x68/0xf4
->>> [   42.001517]  dpm_run_callback+0x8c/0x14c
->>> [   42.005439]  device_resume+0x11c/0x34c
->>> [   42.009188]  dpm_resume+0x178/0x1f0
->>> [   42.012673]  dpm_resume_end+0x18/0x34
->>> [   42.016332]  suspend_devices_and_enter+0x4a4/0x668
->>> [   42.021123]  pm_suspend+0x170/0x2dc
->>> [   42.024610]  state_store+0x80/0x104
->>> [   42.028096]  kobj_attr_store+0x18/0x2c
->>> [   42.031845]  sysfs_kf_write+0x7c/0x94
->>> [   42.035508]  kernfs_fop_write_iter+0x130/0x1fc
->>> [   42.039949]  vfs_write+0x200/0x370
->>> [   42.043351]  ksys_write+0x6c/0x100
->>> [   42.046752]  __arm64_sys_write+0x1c/0x28
->>> [   42.050673]  invoke_syscall.constprop.0+0x50/0xe4
->>> [   42.055378]  do_el0_svc+0x40/0xc4
->>> [   42.058691]  el0_svc+0x40/0x15c
->>> [   42.061834]  el0t_64_sync_handler+0xa0/0xe4
->>> [   42.066015]  el0t_64_sync+0x198/0x19c
->>> [   42.069680] Code: aa0603e0 d65f03c0 f9400000 8b214000 (b9400000)
->>>
->>>>
->>>>>
->>>>> TIFS powers off the hardware during deep sleep regardless, since it
->>>>> was never informed to keep the domain active. On resume, because the
->>>>> domain's genpd status is ON, no get_device is issued. The driver
->>>>> then accesses registers of a powered-off domain, causing a
->>>>> synchronous external abort (AXI bus error, ESR 0x96000010).
->>>>
->>>> Hmm, if something is wakeup source, I would expect even TIFS/DM not to
->>>> turn if off, else module wakeup wouldn't work.
->>>>
->>>
->>> I tested UART as a wakeup source and I couldn't reproduce this issue. My
->>> understanding is that UART has its own TI SCI domain and device_may_wakeup()
->>> is
->>> true directly on that domain device, so the set_device_constraint fires
->>> correctly and DM keeps it powered.
->>>
->>> Here is my tracking of the issue:
->>>
->>> Wi-Fi driver registers as wakeup source:
->>> device_init_wakeup(mmc0:0001)
->>>
->>> During suspend/resume.
->>> dpm_suspend()
->>> ->genpd_suspend_dev(fa20000.mmc)
->>>      ->ti_sci_pd_suspend(fa20000.mmc)
->>>         ->ti_sci_pd_set_wkup_constraint(fa20000.mmc)
->>>           device_may_wakeup(fa20000.mmc)  = false
->>>           set_device_constraint never sent to DM
->>>
->>>
->>> dpm_suspend_noirq()
->>> ->genpd_finish_suspend(fa20000.mmc)
->>>     ->device_awake_path(fa20000.mmc) = true
->>>     ->GENPD_FLAG_ACTIVE_WAKEUP = true
->>>       genpd status = GENPD_STATE_ON
->>>       skip power_off (ti_sci_pd_power_off)
->>>
->>> On deep sleep entry, DM powers off fa20000.mmc independently.
->>> It received no set_device_constraint nor ti_sci_pd_power_off.
->>
->> In AM62P fa20000.mmc is part of main domain. During deepsleep the entire
->> main domain is turned off by the DM, that is why you see the failures.
->>
->> In-order to debug this we need to check why pd off and pd on call is not
->> getting called for fa20000.mmc during suspend and resume.
-> 
-> This is an expected behavior from genpd. On suspend, ti_sci_pd_power_off is not
-> called because genpd_finish_suspend() takes an early return when both
-> device_awake_path() and GENPD_FLAG_ACTIVE_WAKEUP are true.
->                                                                 
-> On resume, ti_sci_pd_power_on is not called because genpd sees the domain status
-> as GENPD_STATE_ON (it was never cleared) and skips the power-on entirely.
->
->>
->>>
->>> I attempted to fix this by calling set_device_constraint when
->>> device_wakeup_path() is true but it prevented the system from entering deep
->>> sleep entirely.
->>
->> In AM62P the DM manager selects the low power mode to enter based on the
->> constrains set. The mode selection logic will ensure that if a
->> constraint is set on the device, it will select a low power mode in
->> which the device is kept on or can wake the system up. the MMC is part
->> of main domain and there is no low power mode in which the MMC can stay
->> alive or generate a wake up interrupt. so when a constraint is set of
->> MMC, we cannot enter any low power mode. that why you see a failure.
->>
-> 
-> This is consistent with what we observed. I am open to suggestions if there is a
-> better way to handle this.
+Signed-off-by: Sean Young <sean@mess.org>
+---
+ drivers/cpufreq/Kconfig.x86  |  11 ---
+ drivers/cpufreq/Makefile     |   1 -
+ drivers/cpufreq/sc520_freq.c | 136 -----------------------------------
+ 3 files changed, 148 deletions(-)
+ delete mode 100644 drivers/cpufreq/sc520_freq.c
 
-We looked into this issue and found the root-cause. What we have 
-identified is that, there was bug in our ti_sci driver. In ti_sci driver 
-we were not handling the devices in which the child device can act as a 
-wake up source, we only handled the cases in which the device can act as 
-a wake up source. Kendall is working on fix for this. soon she will post 
-the fix.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 027e6ea2e038..865b290b01ff 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -141,17 +141,6 @@ config ELAN_CPUFREQ
+ 
+ 	  If in doubt, say N.
+ 
+-config SC520_CPUFREQ
+-	tristate "AMD Elan SC520"
+-	depends on MELAN
+-	help
+-	  This adds the CPUFreq driver for AMD Elan SC520 processor.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-
+ config X86_POWERNOW_K6
+ 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
+ 	depends on X86_32
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 385c9fcc65c6..96196edf79d5 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,7 +41,6 @@ obj-$(CONFIG_X86_POWERNOW_K7)		+= powernow-k7.o
+ obj-$(CONFIG_X86_LONGHAUL)		+= longhaul.o
+ obj-$(CONFIG_X86_E_POWERSAVER)		+= e_powersaver.o
+ obj-$(CONFIG_ELAN_CPUFREQ)		+= elanfreq.o
+-obj-$(CONFIG_SC520_CPUFREQ)		+= sc520_freq.o
+ obj-$(CONFIG_X86_LONGRUN)		+= longrun.o
+ obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
+ obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+deleted file mode 100644
+index b360f03a116f..000000000000
+--- a/drivers/cpufreq/sc520_freq.c
++++ /dev/null
+@@ -1,136 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- *	sc520_freq.c: cpufreq driver for the AMD Elan sc520
+- *
+- *	Copyright (C) 2005 Sean Young <sean@mess.org>
+- *
+- *	Based on elanfreq.c
+- *
+- *	2005-03-30: - initial revision
+- */
+-
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-
+-#include <linux/delay.h>
+-#include <linux/cpufreq.h>
+-#include <linux/timex.h>
+-#include <linux/io.h>
+-
+-#include <asm/cpu_device_id.h>
+-
+-#define MMCR_BASE	0xfffef000	/* The default base address */
+-#define OFFS_CPUCTL	0x2   /* CPU Control Register */
+-
+-static __u8 __iomem *cpuctl;
+-
+-static struct cpufreq_frequency_table sc520_freq_table[] = {
+-	{0, 0x01,	100000},
+-	{0, 0x02,	133000},
+-	{0, 0,	CPUFREQ_TABLE_END},
+-};
+-
+-static unsigned int sc520_freq_get_cpu_frequency(unsigned int cpu)
+-{
+-	u8 clockspeed_reg = *cpuctl;
+-
+-	switch (clockspeed_reg & 0x03) {
+-	default:
+-		pr_err("error: cpuctl register has unexpected value %02x\n",
+-		       clockspeed_reg);
+-		fallthrough;
+-	case 0x01:
+-		return 100000;
+-	case 0x02:
+-		return 133000;
+-	}
+-}
+-
+-static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int state)
+-{
+-
+-	u8 clockspeed_reg;
+-
+-	local_irq_disable();
+-
+-	clockspeed_reg = *cpuctl & ~0x03;
+-	*cpuctl = clockspeed_reg | sc520_freq_table[state].driver_data;
+-
+-	local_irq_enable();
+-
+-	return 0;
+-}
+-
+-/*
+- *	Module init and exit code
+- */
+-
+-static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+-{
+-	struct cpuinfo_x86 *c = &cpu_data(0);
+-
+-	/* capability check */
+-	if (c->x86_vendor != X86_VENDOR_AMD ||
+-	    c->x86 != 4 || c->x86_model != 9)
+-		return -ENODEV;
+-
+-	/* cpuinfo and default policy values */
+-	policy->cpuinfo.transition_latency = 1000000; /* 1ms */
+-	policy->freq_table = sc520_freq_table;
+-
+-	return 0;
+-}
+-
+-
+-static struct cpufreq_driver sc520_freq_driver = {
+-	.get	= sc520_freq_get_cpu_frequency,
+-	.verify	= cpufreq_generic_frequency_table_verify,
+-	.target_index = sc520_freq_target,
+-	.init	= sc520_freq_cpu_init,
+-	.name	= "sc520_freq",
+-};
+-
+-static const struct x86_cpu_id sc520_ids[] = {
+-	X86_MATCH_VENDOR_FAM_MODEL(AMD, 4, 9, NULL),
+-	{}
+-};
+-MODULE_DEVICE_TABLE(x86cpu, sc520_ids);
+-
+-static int __init sc520_freq_init(void)
+-{
+-	int err;
+-
+-	if (!x86_match_cpu(sc520_ids))
+-		return -ENODEV;
+-
+-	cpuctl = ioremap((unsigned long)(MMCR_BASE + OFFS_CPUCTL), 1);
+-	if (!cpuctl) {
+-		pr_err("sc520_freq: error: failed to remap memory\n");
+-		return -ENOMEM;
+-	}
+-
+-	err = cpufreq_register_driver(&sc520_freq_driver);
+-	if (err)
+-		iounmap(cpuctl);
+-
+-	return err;
+-}
+-
+-
+-static void __exit sc520_freq_exit(void)
+-{
+-	cpufreq_unregister_driver(&sc520_freq_driver);
+-	iounmap(cpuctl);
+-}
+-
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Sean Young <sean@mess.org>");
+-MODULE_DESCRIPTION("cpufreq driver for AMD's Elan sc520 CPU");
+-
+-module_init(sc520_freq_init);
+-module_exit(sc520_freq_exit);
+-
+-- 
+2.54.0
 
-With the fix, if you suspend it will fail because the wake up is enabled 
-for the WiFi, as a constraint will be sent to the DM firmware and DM 
-will NACK the suspend because it cannot suspend with WiFi acting as a 
-wake up source. But you can disable the wake up of WiFi from the sysfs 
-entry and try suspend then suspend and resume will work.
-
-Thankyou very much for digging deep into this issue and proposing a 
-solution.
-
-Thanks
-Sebin
-
-> 
-> Thanks,
-> Vitor Soares
-> 
