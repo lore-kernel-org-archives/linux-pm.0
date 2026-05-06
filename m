@@ -1,124 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com [44.246.1.125])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 484E02F547F;
-	Wed,  6 May 2026 07:59:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C51F83E123A;
+	Wed,  6 May 2026 08:08:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=44.246.1.125
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778054360; cv=none; b=IMjyLTkJWRRIeZMg/KiA1F9d5M8GUAGvArYabIBuEmXSWOoGdhUC8FYj8BZdeRXhz3aRFWarOi7/pv+tRywP8Mvs1AoPnlYcxzq1DiyCVyUOUAWb2ma5eOS27zze3qhjzYXYvcEusRNy3E/lL7h60UvauJhHUKXduaS+3TzP1W4=
+	t=1778054902; cv=none; b=HR3WOs7Ja2eh1TvGbXchV5JIFq0KEV/8X2D979+F034arWQ6wqgREKDP4KEXw4Mt5sCNJcE61akfIfh9YlJutbLO6kZOcjAooo3ZkXLQ9mtUIxjNVJeSp0bEJPHiZftJYmW0WZUdAwS2u2tp+2cMIhEoUFlHC0AEAZbvcDGLRSo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778054360; c=relaxed/simple;
-	bh=pB30BlcIrCXz0IZNJpuu/INS+jtNlnSuRPHllEtjWfg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jsSRvcB1j3ziRiW9ykTygD1YFcSaS/4CpbyKrscn8iYrx8k/Y3+x6Yv3p635NSrrSJmEw+ai69S9KMIk1PawocMUyEbSbVwbp+4KDiBmc35i0fcFEXXXLNYgdeZldNxQEpA7qUN/bZF/eMjmEvlbk+1XG6sy/O8Vpu9T48qRcdo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Iv5qbtu1; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778054902; c=relaxed/simple;
+	bh=LakSgXK9xZWfp62uOJDjuByvdgT3HOkvb9TfiFQGvLA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TVG39jySvJ/+3ee7DQECwTBZ09B3nHnwfKA1bs6/JCudtcE2X1XMsLcEeWjP9ohBlOFjIA+KoUEc8F62Jvg1Ai/80p1MHnuY0DBvvvsvz/z4kVCzTaRKFmLXL4g/iS7lSANmj4cxHMOL9vBqHOHjg66z2SzDNC66KUKP9jc6gsE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.co.uk; dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b=XmfCuIXA; arc=none smtp.client-ip=44.246.1.125
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.co.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Iv5qbtu1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C1F0C2BCB8;
-	Wed,  6 May 2026 07:59:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778054359;
-	bh=pB30BlcIrCXz0IZNJpuu/INS+jtNlnSuRPHllEtjWfg=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Iv5qbtu1aQmatclyLbOnRdZorbsoXE7y2ppNXNy34OM6i9761Xg+WKQnfdZlGxlia
-	 92iQUrE1QtFtJBST3md8W10xrtPWegNrwvkjD7n3m1HXGC5cPrOyMPjDf7Qi8HxxJy
-	 uU9Zv0ZruzQStGhl6oqRU4KTCHHW7xnDX80y5N7cIuVUfRBeu6U8Divh5TAeZhIcB/
-	 S9qw0f4LmK7vWEmUCZ3maE7SQCAu54v/AirJGs+B7r1r/y46QiPf6xAx+iaKiWrjfA
-	 CO5q+IZe31PRbHE8FqBqy2aCaMMovBxUFgngHxsgqWOit4ckEi9aGSEodiMTDAM3a4
-	 oTOV8O1p20VCQ==
-Message-ID: <80d8a2ff-9b5d-4318-b806-1fed38f66983@kernel.org>
-Date: Wed, 6 May 2026 09:59:13 +0200
+	dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b="XmfCuIXA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
+  t=1778054900; x=1809590900;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=bfdMAsgvM6p8hWk2sdmIXhE1O1tOVF0HFNlReXBroqU=;
+  b=XmfCuIXAF6d7b2BBCfezzI6lhB2W3xRFdTJ58T7uFoDIjOQRXC/wdaZY
+   ThKAkg+TdefJtTnaGAg4Wu+hZk0qtvw3DpMIVGO7XTouuWs8WbfODJmtt
+   BxGb4uhnzZxBGiIPEPhiz6+LuQnrTTdtWBDPGCgje78IZBtJGAnXt30Nx
+   FBUmVOzjTRUr4uZDqVNBU7hqMbLE4D2TfkHcUDdaMGuHHfYBlvxnzrcL9
+   GY8aA5L3yMpDf0cqksUWxseGsaEG/g5O+G72uJLm6AP8BPfZd6sAhNLVK
+   UewJGEb4jl7vd3wAvmrnP5xMZ/hKYzU9VdAAleMG+HOszeHEouwQAyZ+H
+   g==;
+X-CSE-ConnectionGUID: MmMFvwZCQLewcyBwlWjNrw==
+X-CSE-MsgGUID: dKPa6oOPR+SZmZUz/KuDQg==
+X-IronPort-AV: E=Sophos;i="6.23,219,1770595200"; 
+   d="scan'208";a="18975878"
+Received: from ip-10-5-9-48.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.9.48])
+  by internal-pdx-out-002.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 May 2026 08:08:18 +0000
+Received: from EX19MTAUWA002.ant.amazon.com [205.251.233.178:20934]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.20.153:2525] with esmtp (Farcaster)
+ id 4c3798b6-d4c5-412e-bccc-51de55c2e359; Wed, 6 May 2026 08:08:17 +0000 (UTC)
+X-Farcaster-Flow-ID: 4c3798b6-d4c5-412e-bccc-51de55c2e359
+Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
+ EX19MTAUWA002.ant.amazon.com (10.250.64.202) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.37;
+ Wed, 6 May 2026 08:08:17 +0000
+Received: from dev-dsk-itazur-1b-11e7fc0f.eu-west-1.amazon.com (172.19.66.53)
+ by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.37;
+ Wed, 6 May 2026 08:08:03 +0000
+From: Takahiro Itazuri <itazur@amazon.com>
+To: <seanjc@google.com>, <ljs@kernel.org>
+CC: <Liam.Howlett@oracle.com>, <ackerleytng@google.com>,
+	<agordeev@linux.ibm.com>, <ajones@ventanamicro.com>,
+	<akpm@linux-foundation.org>, <alex@ghiti.fr>, <andrii@kernel.org>,
+	<aou@eecs.berkeley.edu>, <ast@kernel.org>, <baolu.lu@linux.intel.com>,
+	<borntraeger@linux.ibm.com>, <bp@alien8.de>, <bpf@vger.kernel.org>,
+	<catalin.marinas@arm.com>, <chenhuacai@kernel.org>, <corbet@lwn.net>,
+	<coxu@redhat.com>, <daniel@iogearbox.net>, <dave.hansen@linux.intel.com>,
+	<david@kernel.org>, <derekmn@amazon.com>, <dev.jain@arm.com>,
+	<eddyz87@gmail.com>, <gerald.schaefer@linux.ibm.com>, <gor@linux.ibm.com>,
+	<haoluo@google.com>, <hca@linux.ibm.com>, <hpa@zytor.com>,
+	<itazur@amazon.co.uk>, <jackabt@amazon.co.uk>, <jackmanb@google.com>,
+	<jannh@google.com>, <jgg@ziepe.ca>, <jgross@suse.com>, <jhubbard@nvidia.com>,
+	<jiayuan.chen@shopee.com>, <jmattson@google.com>, <joey.gouly@arm.com>,
+	<john.fastabend@gmail.com>, <jolsa@kernel.org>, <jthoughton@google.com>,
+	<kalyazin@amazon.co.uk>, <kas@kernel.org>, <kernel@xen0n.name>,
+	<kpsingh@kernel.org>, <kvm@vger.kernel.org>, <kvmarm@lists.linux.dev>,
+	<lenb@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-doc@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-kselftest@vger.kernel.org>,
+	<linux-mm@kvack.org>, <linux-pm@vger.kernel.org>,
+	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+	<loongarch@lists.linux.dev>, <lorenzo.stoakes@oracle.com>, <luto@kernel.org>,
+	<maobibo@loongson.cn>, <martin.lau@linux.dev>, <maz@kernel.org>,
+	<mhocko@suse.com>, <mingo@redhat.com>, <mlevitsk@redhat.com>,
+	<nikita.kalyazin@linux.dev>, <oupton@kernel.org>, <palmer@dabbelt.com>,
+	<patrick.roy@linux.dev>, <pavel@kernel.org>, <pbonzini@redhat.com>,
+	<peterx@redhat.com>, <peterz@infradead.org>, <pfalcato@suse.de>,
+	<pjw@kernel.org>, <prsampat@amd.com>, <rafael@kernel.org>,
+	<riel@surriel.com>, <rppt@kernel.org>, <ryan.roberts@arm.com>,
+	<sdf@fomichev.me>, <shijie@os.amperecomputing.com>,
+	<skhan@linuxfoundation.org>, <song@kernel.org>, <surenb@google.com>,
+	<suzuki.poulose@arm.com>, <svens@linux.ibm.com>, <tabba@google.com>,
+	<tglx@kernel.org>, <thuth@redhat.com>, <urezki@gmail.com>,
+	<vannapurve@google.com>, <vbabka@kernel.org>, <will@kernel.org>,
+	<willy@infradead.org>, <wu.fei9@sanechips.com.cn>, <x86@kernel.org>,
+	<yang@os.amperecomputing.com>, <yangyicong@hisilicon.com>,
+	<yonghong.song@linux.dev>, <yosry@kernel.org>, <yu-cheng.yu@intel.com>,
+	<yuzenghui@huawei.com>, <zhengqi.arch@bytedance.com>
+Subject: Re: [PATCH v12 00/16] Direct Map Removal Support for guest_memfd
+Date: Wed, 6 May 2026 08:07:52 +0000
+Message-ID: <20260506080753.14517-1-itazur@amazon.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <aeennZlV60k81OBf@google.com>
+References: <aeennZlV60k81OBf@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 11/13] ARM: dts: mediatek: mt6323: add support for EFUSE
-To: rva333@protonmail.com, Jonathan Cameron <jic23@kernel.org>,
- David Lechner <dlechner@baylibre.com>, =?UTF-8?Q?Nuno_S=C3=A1?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
- <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- Lee Jones <lee@kernel.org>
-Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- Ben Grisdale <bengris32@protonmail.ch>
-References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
- <20260504-mt6323-v1-11-799b58b355ff@protonmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260504-mt6323-v1-11-799b58b355ff@protonmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-ClientProxiedBy: EX19D037UWB002.ant.amazon.com (10.13.138.121) To
+ EX19D001UWA001.ant.amazon.com (10.13.138.214)
 
-On 04/05/2026 20:25, Roman Vivchar via B4 Relay wrote:
-> diff --git a/arch/arm/boot/dts/mediatek/mt6323.dtsi b/arch/arm/boot/dts/mediatek/mt6323.dtsi
-> index c070f4b0936c..3fe6a5e35e70 100644
-> --- a/arch/arm/boot/dts/mediatek/mt6323.dtsi
-> +++ b/arch/arm/boot/dts/mediatek/mt6323.dtsi
-> @@ -19,6 +19,12 @@ mt6323_adc: adc {
->  			#io-channel-cells = <1>;
->  		};
->  
-> +		mt6323_efuse: efuse {
-> +			compatible = "mediatek,mt6323-efuse";
+Hi Lorenzo and Sean,
 
-You clearly did not checked the DTS with tools. This will fail, because
-mt6323 schema does not allow such nodes.
+Apologies for the delayed reply =E2=80=94 Nikita is leaving Amazon, and I'm
+taking over this series going forward. Thanks for your patience.
 
-All bindings patch are incomplete or oddly organized. You need to
-provide AND TEST complete picture.
+On Tue, Apr 21, 2026 at 01:40:00PM +0000, Lorenzo Stoakes wrote:
+> Hm, given this touches a fair bit of mm, I wonder if we shouldn't try to =
+do this
+> through the mm tree?
 
-Best regards,
-Krzysztof
+On Tue, Apr 21, 2026 at 04:36:00PM +0000, Sean Christopherson wrote:
+> Yeah, when the time comes, the mm pieces definitely need to go through th=
+e mm
+> tree.  Ideally, I think this would be merged in two separate parts, with =
+all mm
+> changes going through the mm tree, and then the KVM changes through the K=
+VM tree
+> using a stable topic branch/tag from Andrew.
+
+Thanks for the guidance. The split makes sense to me; I'm planning to
+follow this approach with patches 1-6 (mm) going through the mm tree
+and patches 7-16 (KVM) through the KVM tree on top of a stable
+branch/tag from mm. I'll confirm the exact boundary and coordination
+details as I prepare the repost.
+
+On Tue, Apr 21, 2026 at 01:40:00PM +0000, Lorenzo Stoakes wrote:
+> In any case, we definitely need a rebase on something not-next :) if not =
+mm then
+> Linus's tree at least maybe?
+>
+> I'm seeing a lot of conflicts against mm-unstable, it can't b4 shazam eve=
+n patch
+> 1 and in Linus's tree it's failing at an mm patch (mm: introduce
+> AS_NO_DIRECT_MAP).
+
+I'll rebase onto v7.1-rc1 and resolve the conflicts as part of the split.
+
+Takahiro
+
