@@ -1,144 +1,181 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C332E346E6D;
-	Wed,  6 May 2026 13:08:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E97D428474;
+	Wed,  6 May 2026 13:26:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778072896; cv=none; b=be7v8XghqX6PeEHEn0QuyjyRX7eHLqL3fy+BaMYH0AS8uY1yo4+HtiVvpVfPV2aa8M7/yXdP8z2CFrlbgHAK85BoKDl79VN3OWnFtJg44BfiLiRiohuI8z9FlAjAerxI+AuBVtkg8ksFRxwlEnCKwR0qFNwNVlv80GvprRGfLWs=
+	t=1778073986; cv=none; b=WQVwBnMWyVw/DZJYu21tlhRd1BBRJh81gWeyuRikPqkFf+TjKwsHG1gUjIQmbssoXiGqQyNYyLnPHSHO1V/63ReflsidRNCWe8WDzv6++Di4WeKZzoUYiHHNxzBsXt0AxhucdoFxP0RyQC4wp4aL7oM2czo4HM5DJQJHMvbWqAQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778072896; c=relaxed/simple;
-	bh=9OVWyBMTIv1qHfDj+4mWQFWJ5hA9S8PB01gNeTpSYIk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HBeuIEbVpFK9ug4rKgCT8vvGh0jUVkOFUOZTyDwIU9iTAw28Txt0rgAO7FOy0I7b5gNhD+7E2St9zNjf4Wqkc+2xeeqHIbWlDnKwjzLHcGixYMlngPME8ZtErVWhB2aCprcmnLiwTh1c5jaWkyPLGpx9hwshyZcF7RLPSPCjs/E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X3MQEhj8; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778073986; c=relaxed/simple;
+	bh=xaKcmCC+I9v/E09bRdoBMaTkVzosR8rUiWNrEUV6lAg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=J5sH5Dg06AAqC0YrR6dD4UQIBP7m/OJ7W0WFoi1/EXzzaT7KmbGwRadrRsa+kWyypFPB3Pbho/OqyPSgMqZ6C9qYcbtGFZRbnAUMUVrBQPIT03BAmaZaYcErfcpNoyKJs6yxwZ6y8YXDXKigp2BpdLEeklUpJ1vxM/K3Pogm3Ag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Kn+Nojck; arc=none smtp.client-ip=198.175.65.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X3MQEhj8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66834C2BCB8;
-	Wed,  6 May 2026 13:08:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778072896;
-	bh=9OVWyBMTIv1qHfDj+4mWQFWJ5hA9S8PB01gNeTpSYIk=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=X3MQEhj8vCdODlxuWRmr5O8HzDG49l2HcZ68ZY0ECM3hGwG5dkTB2mfgWfrmGfXAN
-	 e6d94OtkGskFTKry7c0STFF/YimcRvEWzABRm+qVXsdaelGxB0iXiBNRsiTbgTDeie
-	 fJxAMLPP7mcvpnyO8czmABY9qhI6PmQwyC7gixNbnTkhVSb7ISywri3TP0YBSdQ5rZ
-	 6/loiLf9WvC1F2GeANrqz0w5vPlMSxj6HYnYWnXUNw+7zg0+Oolv33UvqkfFlcP+6m
-	 1Nlq8FflD1efVzEGikYLg2L2xMaowkwPLmQ//piaUvGQODaxDWGZ/a7bMxcSaGd3+/
-	 nMnzESkFuOIaw==
-Message-ID: <b66ec605-d120-46b8-89b4-89bc40c1575e@kernel.org>
-Date: Wed, 6 May 2026 15:08:07 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Kn+Nojck"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778073984; x=1809609984;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=xaKcmCC+I9v/E09bRdoBMaTkVzosR8rUiWNrEUV6lAg=;
+  b=Kn+Nojck1aQDpvDs6sZpBe+keJhErcrZLKGJxT+oyOMP0h0IOBHqxV1p
+   1Tk05lqs4qKHuQxX09uG1Pejy/q53jcEQWdeRE1qBRsvkBcqHv01hZVwj
+   B//qJvxTZqZH+7omXrQbztU+Zel4Qd79zqEvbPWwloVTfHNGX8fMXdZox
+   UGCQ4PNCXDWZJp7zuekqY8BwTUmdB6vaXmcrXl8oIzqNq1ZfWoAtpg19f
+   J7uTQkp/+NdPB47QXfw8T+LRwY/p4NfcKF8fli2KB41Dz7zGumCkfukx+
+   xMZg4kBq2DlVqkoJDXbFU5DK6V3exKq0yrkjxSUjwEDTfEinlEd0qaqlE
+   g==;
+X-CSE-ConnectionGUID: G6eMnH1hTYuQP1PlIslZHA==
+X-CSE-MsgGUID: 62NSLGv9QwikO+m2V57evA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11777"; a="89312838"
+X-IronPort-AV: E=Sophos;i="6.23,219,1770624000"; 
+   d="scan'208";a="89312838"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 May 2026 06:26:23 -0700
+X-CSE-ConnectionGUID: 1H3000o9TMadDzDQXXLY9Q==
+X-CSE-MsgGUID: tL+QbN0HRuqstpiz/lB/YA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,219,1770624000"; 
+   d="scan'208";a="235306952"
+Received: from abityuts-desk.ger.corp.intel.com (HELO localhost) ([10.245.244.183])
+  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 May 2026 06:26:19 -0700
+Date: Wed, 6 May 2026 16:26:16 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Roman Vivchar <rva333@protonmail.com>
+Cc: Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Lee Jones <lee@kernel.org>, linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+	Ben Grisdale <bengris32@protonmail.ch>
+Subject: Re: [PATCH 06/13] thermal: mediatek: add pmic thermal support
+Message-ID: <aftBeFbVIap59FFS@ashevche-desk.local>
+References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
+ <20260504-mt6323-v1-6-799b58b355ff@protonmail.com>
+ <afmnUG8dG0N0HpV6@ashevche-desk.local>
+ <cgsML96DsJh_Ow9XsSnyrZ3NhlCnNj1rKegzYNR3eQzkWoF5xQB5-aU6Zi7pKcT8GfUnO3B-D71je60APUtorB7p_A3GtUCp2oer3KYLn6k=@protonmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/13] dt-bindings: iio: adc: add mt6323 PMIC AUXADC
-To: Roman Vivchar <rva333@protonmail.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, David Lechner
- <dlechner@baylibre.com>, =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
- Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- Lee Jones <lee@kernel.org>, linux-iio@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
- linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
-References: <20260504-mt6323-v1-0-799b58b355ff@protonmail.com>
- <20260504-mt6323-v1-1-799b58b355ff@protonmail.com>
- <389917bb-c64c-4ac2-ab8f-b28ab0a89ecb@kernel.org>
- <evJBbJD1B9GjUyj5xyiJVUw-Ufib330tbUxxamM8-e4kJeNlwcENufbYZHdDWb0ZItz1fsEAbDaSFk0ObL4y0zenRr4vA4KOn6IHxuBP4VQ=@protonmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <evJBbJD1B9GjUyj5xyiJVUw-Ufib330tbUxxamM8-e4kJeNlwcENufbYZHdDWb0ZItz1fsEAbDaSFk0ObL4y0zenRr4vA4KOn6IHxuBP4VQ=@protonmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cgsML96DsJh_Ow9XsSnyrZ3NhlCnNj1rKegzYNR3eQzkWoF5xQB5-aU6Zi7pKcT8GfUnO3B-D71je60APUtorB7p_A3GtUCp2oer3KYLn6k=@protonmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On 06/05/2026 12:59, Roman Vivchar wrote:
-> On Wednesday, May 6th, 2026 at 10:56 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+On Wed, May 06, 2026 at 11:22:15AM +0000, Roman Vivchar wrote:
+> On Tuesday, May 5th, 2026 at 11:16 AM, Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
+> > On Mon, May 04, 2026 at 09:24:58PM +0300, Roman Vivchar via B4 Relay wrote:
+
+...
+
+> > > +struct mtk_pmic_sensor {
+> > > +	struct mtk_pmic_thermal *mt;
+> > > +	int id;
+> > > +	struct iio_channel *adc_channel;
+> > > +	struct thermal_zone_device *tzdev;
+> > > +};
+> > 
+> > Can you confirm with `pahole` that this is the best layout (taking into account
+> > the use in the below data structure)?
+> > 
+> > > +struct mtk_pmic_thermal {
+> > > +	struct device *dev;
+> > > +	struct regmap *regmap;
+> > > +	struct mtk_pmic_sensor sensors[MAX_SENSORS];
+> > > +
+> > > +	s32 t_slope1;
+> > > +	s32 t_slope2;
+> > > +	s32 t_intercept;
+> > > +
+> > > +	const struct mtk_thermal_data *data;
+> > > +};
 > 
->> On 04/05/2026 20:24, Roman Vivchar via B4 Relay wrote:
->>> From: Roman Vivchar <rva333@protonmail.com>
->>>
->>> The MediaTek mt6323 PMIC includes an AUXADC used for battery voltage,
->>> temperature, and other internal measurements.
->>>
+> On the ARMv7 it shouldn't be an issue, because pointer size equals to
+> the s32 or int. However, I've reordered the fields to group pointers
+> and integers together.
 > 
-> ...
+> struct mtk_pmic_sensor {
+> 	struct mtk_pmic_thermal *  mt;                   /*     0     4 */
+> 	struct iio_channel *       adc_channel;          /*     4     4 */
+> 	struct thermal_zone_device * tzdev;              /*     8     4 */
+> 	int                        id;                   /*    12     4 */
 > 
->>> +
->>> +properties:
->>> +  compatible:
->>> +    const: mediatek,mt6323-auxadc
->>> +
->>> +  "#io-channel-cells":
->>> +    const: 1
->>> +
->>> +required:
->>> +  - compatible
->>> +  - "#io-channel-cells"
->>
->>
->> This is heavily incomplete node... or unnecessarily split. Why it cannot
->> be part of parent binding? Or even parent node?
->>
+> 	/* size: 16, cachelines: 1, members: 4 */
+> 	/* last cacheline: 16 bytes */
+> };
 > 
-> The MediaTek mt6359 AUXADC also has a very similar binding. The mt6323
-> cannot be merged there because it has a different hardware.
+> struct mtk_pmic_thermal {
+> 	struct device *            dev;                  /*     0     4 */
+> 	struct regmap *            regmap;               /*     4     4 */
+> 	const struct mtk_thermal_data  * data;           /*     8     4 */
+> 	s32                        t_slope1;             /*    12     4 */
+> 	s32                        t_slope2;             /*    16     4 */
+> 	s32                        t_intercept;          /*    20     4 */
+> 	struct mtk_pmic_sensor     sensors[1];           /*    24    16 */
+> 
+> 	/* size: 40, cachelines: 1, members: 7 */
+> 	/* last cacheline: 40 bytes */
+> };
+> 
+> The compiler will still add some padding on the AArch64 though.
+> 
+> struct mtk_pmic_sensor {
+> 	struct mtk_pmic_thermal *  mt;                   /*     0     8 */
+> 	struct iio_channel *       adc_channel;          /*     8     8 */
+> 	struct thermal_zone_device * tzdev;              /*    16     8 */
+> 	int                        id;                   /*    24     4 */
+> 
+> 	/* size: 32, cachelines: 1, members: 4 */
+> 	/* padding: 4 */
+> 	/* last cacheline: 32 bytes */
+> };
+> 
+> struct mtk_pmic_thermal {
+> 	struct device *            dev;                  /*     0     8 */
+> 	struct regmap *            regmap;               /*     8     8 */
+> 	const struct mtk_thermal_data  * data;           /*    16     8 */
+> 	s32                        t_slope1;             /*    24     4 */
+> 	s32                        t_slope2;             /*    28     4 */
+> 	s32                        t_intercept;          /*    32     4 */
+> 
+> 	/* XXX 4 bytes hole, try to pack */
+
+^^^^
+
+> 	struct mtk_pmic_sensor     sensors[1];           /*    40    32 */
+> 
+> 	/* size: 72, cachelines: 2, members: 7 */
+> 	/* sum members: 68, holes: 1, sum holes: 4 */
+> 	/* last cacheline: 8 bytes */
+> };
+> 
+> Is this good enough?
+
+In the last it seems moving the s32 members to be the last will removes
+the 4-byte hole.
 
 
-I did not propose that, but since you are mentioning it: it is 100% the
-same, so I do not understand why it cannot be merged. That would save
-you a few questions :/
+-- 
+With Best Regards,
+Andy Shevchenko
 
-Best regards,
-Krzysztof
+
