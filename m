@@ -1,290 +1,147 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 900863EAC81
-	for <linux-pm@vger.kernel.org>; Wed,  6 May 2026 08:58:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C00623DA5BC
+	for <linux-pm@vger.kernel.org>; Wed,  6 May 2026 09:38:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778057924; cv=none; b=hbLVOZaXPYiOicmpq9krjnKKuUmaH7O3PJAep6hMOehlF1en7T5tmwbHxm+emG4s9ZV4NLcG7N8LaT4dPXtz2ywiyaGvthaVUAwGtkpyMNRgtdHrxI1wr3LOnYWs6mqg6Hu9WNPnxaB6vat2myfhP3IpGze859tvfPIyrord7LE=
+	t=1778060281; cv=none; b=iRMzOY6Zm+dEtS8skbAaAGrZypIltVufPFvhfOaw9xdJcA7yD9JBlzyxPhRgdu0cqAV974x+dIxEy2KZZQflYB2ZdNxWBscKLpVHd8GTDPoSTA6BZ3AKPmtZUREenTzJSFSp89LjhIsNOm//NNN9Ph0ZGfSzAbkYf6Sh1M259FM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778057924; c=relaxed/simple;
-	bh=eD+Yz7GzQtMbbGfGGTFutD9Fa1k6iUTPX/y/AAqXEfI=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TajMZxTJU+PVih/CqaeP4DmOupAWNAXOMTTNKQ84TWEhBn/b/212UoO2qojl4qOVlu5JyVQMevwTDKzRjs+AQzRBDKaF8sFoLzPCdPz4dBcZp+/F+MHqwMTgC8PxsGYhh284ZhUOljY7o7FCZJgqjKTqUogPZXAUEUI4SL+mSSw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N1R5A6j1; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778060281; c=relaxed/simple;
+	bh=qr0ZiLB9ps2AVAiHqe6DE5oXw1vLc5bxId3xZMuHxWQ=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=H2CYD8lCu5ppfhlhyuTJxNvohtl22U8oU2aWpXAyhh4TnAVAo3B4CSp66xPfnGKbEkdqlZoiHbthkFx0t/ZBgqvWSr/5WvtLDoKAbg38RmEZLUuOTLvTiKQQZ6M4rHcuVK74wN1BfnEgFNLcc4ZXv8v/G+fk+aa/sQwY1mwJ7g8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aCGHThI8; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=LvDJqWuV; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N1R5A6j1"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4896c22fcbaso47167015e9.0
-        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 01:58:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aCGHThI8";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="LvDJqWuV"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6465cffx3501529
+	for <linux-pm@vger.kernel.org>; Wed, 6 May 2026 09:38:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	7s+0qxdlCAN7+C0UZ4qVMPuFKE1Jpl403dvIhapVC3o=; b=aCGHThI8+xqnNP47
+	1V5hQbi2vxrSnRHadLez/6ke9qHEC+15f0ZL3nvu6rGaLMM1w8FO2lJsXARR9J/N
+	J07NrjEedeTtwb6QWNLpRtTJRGi14GiAPFI7gs4oRf5V+ZFTxOseb1wkvHB9aqMT
+	nHgf6Ey3UaFOOcBkrgEc/DzEYBYaDqZ4UV+myKREUzDWaSTPwwwk+J5udSh+XCA+
+	Klksst+wugFxivHwO21f9FaPVSSc++PqDYWKpjbC0jxeRKD12EsbO4C/bm08yQ6p
+	jWX1X21bR3kqUb3HTBvhU3KHUobaT1OjeYkJ3knps1587ggzoBnHbnsbPksJjZYW
+	Bg9IAw==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dyhqfc70s-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 09:37:59 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50d890580e1so108595741cf.3
+        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 02:37:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778057918; x=1778662718; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EhzB8ETmB1Gn6S1MA51/Lwkn0HDnlQZbCh2CXttfCBk=;
-        b=N1R5A6j1KHqEnuDzehRV6x+CkZA0wfw4LWwjh5newBX0VQKGkpuvZGxFkaP0+33IyO
-         d1swmpE/ROmeIEi3Y3p2mkIVM9RF9j7Q17sqOdkKDMcRFL7MqScv6SszLF6K+IX0zcxG
-         WCCiawKpINnNY9phFqnNtxm6jikCx3IptBLI8ntluz1RRyzOvmezphYb2SbONwSj3dpz
-         fAkD5Xc3uTaz29UELJnjA+n3B53lpg+YhP+I3pHczprCvGkmb67tS+q1UAShLaWGDa5k
-         68sFn6Mt1/Jw7Kpj2ssU3xGhMCwysaDAF/ztDoEwzCUYadBxGZsN5NMRTYe5K4Og6+RU
-         5y3w==
+        d=oss.qualcomm.com; s=google; t=1778060279; x=1778665079; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=7s+0qxdlCAN7+C0UZ4qVMPuFKE1Jpl403dvIhapVC3o=;
+        b=LvDJqWuVNRaMWTBA1dQQmd74DsC0QdWz4ua7bkoWC7SLrLIO5LwIYy2PjxLZStqLJZ
+         T62BHVVvvfQe6EeSoHFu9/2nafJIN0d8BVeUtqE/0/5Y/ab+qEq78Y9dHaNfgb6lme9f
+         dMf85PhgSHGypli8NrEpnC+7N+JVZi7NVvX4q8ymnGl6b4qI34VcVtyfSppClvc9REah
+         67fDnFl/S6/ELrscjjgFPQeB6B40wvN44k17/Ii09qY1cpxqnjY7feZ7RFSJLrG8AbIo
+         IL4aawLgVHHGNuUABSKdr/XDQ1eDUgiu+ORMkVmwcuOCXeIIoQlx1GhW1YLx/VysoJM4
+         j2xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778057918; x=1778662718;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=EhzB8ETmB1Gn6S1MA51/Lwkn0HDnlQZbCh2CXttfCBk=;
-        b=AqasZ80vAsYYPnIugK8S8nPdZP73VP/TVAOIHxoPj4yZb0MgE9pOQclurhXmabNQFi
-         yepTyujkEbM3oD8n/8CSWgFb6QsK3Equwzk2f1aW7vSQ9zQhOhMwFN/UvtIjeBZIQXqK
-         JkxYCRMiFCe7Fq1lAeQYT60gnnKlLWiFlnJ6TlGwXNV73XnEyFhgFQALwnn0hB6NXs44
-         pMewr1wwMHx1U2Z6/7D/UaDixrOXmqYxcXMPopvUlAuAI7szhm6V9YyktGtLON54akmh
-         IrYCsPEcTs2L2cIKOzRKABzFjpUureHXWm61uyQR1zhiVbpoB0OUBEyOxrcO2FxM2yQI
-         di+g==
-X-Forwarded-Encrypted: i=1; AFNElJ/mS8orBpT62SZZ6GRr/uSjfcgK+7Nj0uIW02e//ZUAyx271E3fEgcYwMP/NKmLc/LiCeQx71w3Vg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyzf567OqKpE9wt7RA4B5Lab/LHl9gfnlsOPaOt66tRQTN4FyiV
-	zHFR/eNdichs4wnRWoPJ4/Lq89GJBLA4WCN6dtzoKNgd6bw48KrH//kN
-X-Gm-Gg: AeBDiesz0bUbKSnawlbFNRi9Fb+pjd555LR1dF8F/FPqS4VNNFYG30BmGphP61MOFYN
-	sp1qxIDMYjoKGCX9Wd22/3vZA442uDwpt7TT1CVr2+bJ6LAqC7QR17Rpcz6pYd/McTUenQw9zeL
-	mS/aBi2WlOkr9GUJ5CGpTpPg/dJNy19f59D1ZoF4MdfszEXYciloFC7h+bitTEpq04auC4+Tv2p
-	C9c1SpcrqOarX58X5ZFDfWEnXwWJ9zUeUkv83k8RqKkIICLfZ82KbSOEezd2pSrJu9NYJ3me7zX
-	BbkPz6ryViHmhiOoBQubPOoVfOyiXkngoaaolB7PIwHJ8tQM+daj1yToQUc/veWarxCZS7Hu9Lz
-	uBJ4j60CA/f4oU3CRJibdOD/qyO6iC6HiomIxEN1zB2+liWRbth06sXo7yh8fVYIi5MrPZA1un3
-	7x6r/HMyGfHpl+Srtr8aiO73vj5L46H/2h34WBF38P22sEf1jDb89tHnCeYfqO9PbwDHpSm1CCS
-	fY=
-X-Received: by 2002:a05:600d:6:b0:48a:8905:a500 with SMTP id 5b1f17b1804b1-48e51f1d04bmr31640885e9.12.1778057917950;
-        Wed, 06 May 2026 01:58:37 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e538a50d0sm55769975e9.5.2026.05.06.01.58.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 May 2026 01:58:37 -0700 (PDT)
-Date: Wed, 6 May 2026 09:58:36 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Ankur Arora <ankur.a.arora@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
- bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
- will@kernel.org, peterz@infradead.org, akpm@linux-foundation.org,
- mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
- rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
- zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com, rdunlap@infradead.org,
- joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
- konrad.wilk@oracle.com, ashok.bhat@arm.com
-Subject: Re: [PATCH v11 01/14] asm-generic: barrier: Add
- smp_cond_load_relaxed_timeout()
-Message-ID: <20260506095836.216d9cc5@pumpkin>
-In-Reply-To: <874iklm1uy.fsf@oracle.com>
-References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
-	<20260408122538.3610871-2-ankur.a.arora@oracle.com>
-	<874iklm1uy.fsf@oracle.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        d=1e100.net; s=20251104; t=1778060279; x=1778665079;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=7s+0qxdlCAN7+C0UZ4qVMPuFKE1Jpl403dvIhapVC3o=;
+        b=AkEKgExOOvbAphaeFR+YfrmcMaRw+Q96Q63ehTfLKWOr0I4eSXLYFrl4+/Ie3H69H3
+         CmubI8TV4tqYNHn0s3wgirnL+LwcFwZf4Zwynhln4dKLt19nSKrU6JIG5LRGcAA/VDhk
+         pYcwNcWO+9u2X8qNZuHXlk1nzNg/M8WuNKS/bk3e1bKJcwi5gxTRIuCKItVynHJ8eC3q
+         MoKOu6fNVJroDw+Vu7VYlgMJAsLrJQlx2vy8L44LQE/k91bwhTYxGwGR9hXRvyl30R9Z
+         N2VwdzhKnxiLyuvPueSLF+6jNYI/V8Vg9Z9AFG6peYk6OL8C53Uaq9IHS3jsAx90mQSE
+         y33w==
+X-Forwarded-Encrypted: i=1; AFNElJ+idE9u9WzlJGzwIE9Vra7aKbraZLSq+gA2LCSOFB6bkgmObhtjb/m7ovlAHYbVQdzOE3SnPSQPEA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YymBsTU3yqJxUdkk5S9FgQ2HhLIrEYOI6/M6Dm4E2JXGpmf2YnX
+	+6L3l3ojEP3wmU9EKICQFVJreUUEHQVegIIY0x9U8pAcVp2tRoe2pESci4TlYuPJcdBeRSfosc/
+	o+5I7aI+S4WSS2OGhfms4D5LxcTAwtqG/8CTwS0YtTD5lUBZ8zLjNVxgdiHIF2w==
+X-Gm-Gg: AeBDieujOxOZ60jKSSj5ge0M2px9p70i5qXtLhApoNkwnhdh5FEsQvrBoiedpcZmZQE
+	ucgkCB33VKQn1h9zool6Ycm3+xZ9TIRsOPNuwOJUvyV3s1ufvj/76yzerUPDTZKSAA8tGdNaewm
+	QJV255fMgCU6VCt0JzSYNvdPA9YEK/PHxxmtDK6pv+8hFcYLgNLQrtsF0hiDrBzSTo5Y4ZRAKqP
+	XbobTo0ytSQLKYGOjiK3/g0aExarsLd62wEgHKdH7NG56oDEo1pzi+Jsg9nkqzYZ2Ysi3wOZKKF
+	3ZxsGrNut1toCTlk54Aq9GPSmmX0K3awwyZN7DyXMAHptwLSSpLKIEir3H70CuO+KIt0H1ZuI3M
+	uOGxEYZjHbdN7gTKznIjhJq7xw1XPHABxlZXRE1/U16/Ldu+MoklTA8ghKf16ms3Xl71NTmqmGN
+	UkHjcfV8z8z+kRRHDLyL8=
+X-Received: by 2002:a05:622a:6096:b0:50b:4337:179a with SMTP id d75a77b69052e-51461bdb369mr34218791cf.3.1778060279165;
+        Wed, 06 May 2026 02:37:59 -0700 (PDT)
+X-Received: by 2002:a05:622a:6096:b0:50b:4337:179a with SMTP id d75a77b69052e-51461bdb369mr34218481cf.3.1778060278755;
+        Wed, 06 May 2026 02:37:58 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:41ef:7b80:b3e8:2c1a? ([2a05:6e02:1041:c10:41ef:7b80:b3e8:2c1a])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e538a547bsm38519455e9.5.2026.05.06.02.37.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 06 May 2026 02:37:58 -0700 (PDT)
+Message-ID: <d60b7b44-37e4-47ae-9af4-0c8d24b6c599@oss.qualcomm.com>
+Date: Wed, 6 May 2026 11:37:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] drivers/thermal/tegra/soctherm: Use
+ devm_add_action_or_reset() for clock disable
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+To: rafael@kernel.org, daniel.lezcano@kernel.org, thierry.reding@gmail.com,
+        jonathanh@nvidia.com
+Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+References: <20260424160019.41710-1-daniel.lezcano@oss.qualcomm.com>
+ <3075fe5c-e8c3-4439-be5c-0f6eb2fb6e48@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <3075fe5c-e8c3-4439-be5c-0f6eb2fb6e48@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDA5MyBTYWx0ZWRfX7OzEnSFbBw0e
+ iiUF4xc8MyLbsqu6l/X10ksJt3lmYWKXhA3VBV3i/FDCl4gHA8CiPAr8Sa9934mOh2IYdHa0Nfw
+ Xtx59/36k1MyE4A23NMlr2ADXz6PXKU3bu3O33o4rviHerjncY4A3JkJFwzUBh86MSve4/OrblJ
+ wjrCzE1x0RowNK2AE2Sk8zNTGq0Wd17Y3fq7c+DEwu26D4uB66spGTlxH7fvjbrpGgxV7EZ8R3X
+ Z3TS56CiDrVIaLsgGHwwbzFdv2qCbSt8UaAD9i7CbBCU9aFyetBRlbFp+z8S3Xbb1sVjtUxsnHt
+ YJqOdwxibFniQRsOyVruCIebOmKNXXBnrYfzimqc/FUuNSMHZsXXDtCayS6g/Q5SU21JsO10HaE
+ VXNhd/FYjNk8wuNnotENKpfMCAKVr8s/niNwtRNQFBYVzhCUim5k0tVogE3l38lgUwpaYKy6SEY
+ DBtv4rvPlWWpCYIJs/A==
+X-Proofpoint-ORIG-GUID: _kfAfY-olri-YCwBpuMA242TdFEumBKJ
+X-Proofpoint-GUID: _kfAfY-olri-YCwBpuMA242TdFEumBKJ
+X-Authority-Analysis: v=2.4 cv=NPvlPU6g c=1 sm=1 tr=0 ts=69fb0bf7 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=dtrGPWWTKDy4za8dmv8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-05_03,2026-04-30_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 spamscore=0 priorityscore=1501
+ clxscore=1015 suspectscore=0 phishscore=0 bulkscore=0 adultscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605060093
 
-On Wed, 06 May 2026 00:30:29 -0700
-Ankur Arora <ankur.a.arora@oracle.com> wrote:
-
-> Ankur Arora <ankur.a.arora@oracle.com> writes:
+On 5/5/26 14:10, Daniel Lezcano wrote:
+> On 4/24/26 18:00, Daniel Lezcano wrote:
+>> Replace the manual error handling paths disabling the clocks with
+>> devm_add_action_or_reset(). This ensures the clocks are properly
+>> disabled on probe failure and driver removal, while simplifying the
+>> code by removing the explicit error paths.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+>> ---
 > 
-> > Add smp_cond_load_relaxed_timeout(), which extends
-> > smp_cond_load_relaxed() to allow waiting for a duration.
-> >
-> > We loop around waiting for the condition variable to change while
-> > peridically doing a time-check. The loop uses cpu_poll_relax() to slow
-> > down the busy-wait, which, unless overridden by the architecture
-> > code, amounts to a cpu_relax().
-> >
-> > Note that there are two ways for the time-check to fail: the timeout
-> > case or, @time_expr_ns returning an invalid value (negative or zero).
-> > The second failure mode allows for clocks attached to the clock-domain
-> > of @cond_expr --  which might cease to operate meaningfully once some
-> > state internal to @cond_expr has changed -- to fail.
-> >
-> > Evaluation of @time_expr_ns: in the fastpath we want to keep the
-> > performance close to smp_cond_load_relaxed(). So defer evaluation
-> > of the potentially costly @time_expr_ns to the slowpath.
-> >
-> > This also means that there will always be some hardware dependent
-> > duration that has passed in cpu_poll_relax() iterations at the time
-> > of first evaluation. Additionally cpu_poll_relax() is not guaranteed
-> > to return at timeout boundary. In sum, expect timeout overshoot when
-> > we exit due to expiration of the timeout.
-> >
-> > The number of spin iterations before time-check, SMP_TIMEOUT_POLL_COUNT
-> > is chosen to be 200 by default. With a cpu_poll_relax() iteration
-> > taking ~20-30 cycles (measured on a variety of x86 platforms), we
-> > expect a time-check every ~4000-6000 cycles.
-> >
-> > The outer limit of the overshoot is double that when working with the
-> > parameters above. This might be higher or lower depending on the
-> > implementation of cpu_poll_relax() across architectures.
-> >
-> > Lastly, config option ARCH_HAS_CPU_RELAX indicates availability of a
-> > cpu_poll_relax() that is cheaper than polling. This might be relevant
-> > for cases with a long timeout.
-> >
-> > Cc: Arnd Bergmann <arnd@arndb.de>
-> > Cc: Will Deacon <will@kernel.org>
-> > Cc: Catalin Marinas <catalin.marinas@arm.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: linux-arch@vger.kernel.org
-> > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> > Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
-> > ---
-> > Notes:
-> >    - add a comment mentioning that smp_cond_load_relaxed_timeout() might
-> >      be using architectural primitives that don't support MMIO.
-> >      (David Laight, Catalin Marinas)
-> >
-> >  include/asm-generic/barrier.h | 69 +++++++++++++++++++++++++++++++++++
-> >  1 file changed, 69 insertions(+)
-> >
-> > diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
-> > index d4f581c1e21d..e5a6a1c04649 100644
-> > --- a/include/asm-generic/barrier.h
-> > +++ b/include/asm-generic/barrier.h
-> > @@ -273,6 +273,75 @@ do {									\
-> >  })
-> >  #endif
-> >
-> > +/*
-> > + * Number of times we iterate in the loop before doing the time check.
-> > + * Note that the iteration count assumes that the loop condition is
-> > + * relatively cheap.
-> > + */
-> > +#ifndef SMP_TIMEOUT_POLL_COUNT
-> > +#define SMP_TIMEOUT_POLL_COUNT		200
-> > +#endif
-> > +
-> > +/*
-> > + * Platforms with ARCH_HAS_CPU_RELAX have a cpu_poll_relax() implementation
-> > + * that is expected to be cheaper (lower power) than pure polling.
-> > + */
-> > +#ifndef cpu_poll_relax
-> > +#define cpu_poll_relax(ptr, val, timeout_ns)	cpu_relax()
-> > +#endif
-> > +
-> > +/**
-> > + * smp_cond_load_relaxed_timeout() - (Spin) wait for cond with no ordering
-> > + * guarantees until a timeout expires.
-> > + * @ptr: pointer to the variable to wait on.
-> > + * @cond_expr: boolean expression to wait for.
-> > + * @time_expr_ns: expression that evaluates to monotonic time (in ns) or,
-> > + *  on failure, returns a negative value.
-> > + * @timeout_ns: timeout value in ns
-> > + * Both of the above are assumed to be compatible with s64; the signed
-> > + * value is used to handle the failure case in @time_expr_ns.
-> > + *
-> > + * Equivalent to using READ_ONCE() on the condition variable.
-> > + *
-> > + * Callers that expect to wait for prolonged durations might want
-> > + * to take into account the availability of ARCH_HAS_CPU_RELAX.
-> > + *
-> > + * Note that @ptr is expected to point to a memory address. Using this
-> > + * interface with MMIO will be slower (since SMP_TIMEOUT_POLL_COUNT is
-> > + * tuned for memory) and might also break in interesting architecture
-> > + * dependent ways.
-> > + */
-> > +#ifndef smp_cond_load_relaxed_timeout
-> > +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,			\
-> > +				      time_expr_ns, timeout_ns)		\
-> > +({									\
-> > +	typeof(ptr) __PTR = (ptr);					\
-> > +	__unqual_scalar_typeof(*ptr) VAL;				\
-> > +	u32 __n = 0, __spin = SMP_TIMEOUT_POLL_COUNT;			\
-> > +	s64 __timeout = (s64)timeout_ns;				\
-> > +	s64 __time_now, __time_end = 0;					\
-> > +									\
-> > +	for (;;) {							\
-> > +		VAL = READ_ONCE(*__PTR);				\
-> > +		if (cond_expr)						\
-> > +			break;						\
-> > +		cpu_poll_relax(__PTR, VAL, (u64)__timeout);		\
-> > +		if (++__n < __spin)					\
-> > +			continue;					\
-> > +		__time_now = (s64)(time_expr_ns);			\
-> > +		if (unlikely(__time_end == 0))				\
-> > +			__time_end = __time_now + __timeout;		\
-> > +		__timeout = __time_end - __time_now;			\
-> > +		if (__time_now <= 0 || __timeout <= 0) {		\
-> > +			VAL = READ_ONCE(*__PTR);			\
-> > +			break;						\
-> > +		}							\
-> > +		__n = 0;						\
-> > +	}								\
-> > +	(typeof(*ptr))VAL;						\
-> > +})
-> > +#endif
-> > +  
-> 
-> A cluster of issues that got flagged by sashiko was around timeout_ns
-> being specified as s64 and a bunch of potential edge cases around
-> that.
-> 
-> These were mostly caused by an implicit assumption in the code that
-> the timeout specified by the caller is generally reasonable. So, way
-> below S64_MAX, not 0 etc.
-
-There are plenty of ways kernel code can break things.
-Provided this code doesn't itself overwrite anywhere (rather than
-just loop forever or return immediately etc) I'd be tempted to
-just document the valid range rather than slow everything down
-with the extra tests.
-
-	David
-
-> 
-> I think this is worth cleaning up a bit. The change is mostly around
-> introducing a u32 __itertime and explicitly computing the waiting time.
-> And adding a check to ensure that we start with a valid value.
-> 
-> This does make the implementation a little more involved. So just wanted
-> to see if people have any opinions on this?
-> 
-> +#ifndef smp_cond_load_relaxed_timeout
-> +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,          \
-> +                                     time_expr_ns, timeout_ns) \
-> +({                                                             \
-> +       typeof(ptr) __PTR = (ptr);                              \
-> +       __unqual_scalar_typeof(*(ptr)) VAL;                     \
-> +       u32 __count = 0, __spin = SMP_TIMEOUT_POLL_COUNT;       \
-> +       s64 __timeout = (s64)(timeout_ns);                      \
-> +       s64 __time_now, __time_end = 0;                         \
-> +       u32 __maybe_unused __itertime;                          \
-> +                                                               \
-> +       for (__itertime = NSEC_PER_USEC;                        \
-> +               VAL = READ_ONCE(*__PTR), __timeout > 0; ) {     \
-> +               if (cond_expr)                                  \
-> +                       break;                                  \
-> +               cpu_poll_relax(__PTR, VAL, __itertime);         \
-> +               if (++__count < __spin)                         \
-> +                       continue;                               \
-> +               __time_now = (s64)(time_expr_ns);               \
-> +               if (unlikely(__time_end == 0))                  \
-> +                       __time_end = __time_now + __timeout;    \
-> +               __timeout = __time_end - __time_now;            \
-> +               if (__time_now <= 0 || __timeout <= 0) {        \
-> +                       VAL = READ_ONCE(*__PTR);                \
-> +                       break;                                  \
-> +               }                                               \
-> +               __itertime = __timeout % NSEC_PER_MSEC +        \
-> +                               NSEC_PER_USEC;                  \
-> +               __count = 0;                                    \
-> +       }                                                       \
-> +       (typeof(*(ptr)))VAL;                                    \
-> +})
-> +#endif
+> If nobody is against these two changes, I'll apply them
 > 
 > Thanks
 > 
-> --
-> ankur
+>    -- Daniel
 > 
 
+Applied, thanks
