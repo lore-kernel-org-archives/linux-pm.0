@@ -1,32 +1,32 @@
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8B089401A35;
-	Wed,  6 May 2026 10:37:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 6DC95282F0E;
+	Wed,  6 May 2026 10:51:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778063845; cv=none; b=tKPdZ1N0FuNyHx5QESIL1KD+UWuFC6h8hMMazTRkjj6t9SmBTbB5FSoalpj+cw6Wfd+fUUse0Xpg6MjReAfwXxcdQYiCE+qLTAK741Ah7G8WABNk5UfQJGVZzqqRPbX//ruPVwNfCwL/ji1KpVH1eiSPxkas16R+86k26hwQhck=
+	t=1778064705; cv=none; b=YxDdhQWWqKfPSADailawQXqatXzd8EcMDw4wSkdb4Hqnjei4DOfazXcO/NBJYKXIp19Kclu9frhHMuyevVUuNZlM7oD0xTRHQz1hPm51ydFnLuXSTj7aYKkDkLFvTm8Qm5fzjK6G6D6t1gv38j4sC8+xV9ZZg+K5e3MDyHsAS2g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778063845; c=relaxed/simple;
-	bh=5c4pTncPmX+luIL7Evtc7A40nYaSrPqfh+f4kQDYM2k=;
+	s=arc-20240116; t=1778064705; c=relaxed/simple;
+	bh=iYNXb++hIJ9OfRQc9+FWnMLqhZrlCDWvv412uOnwE/g=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mw3jbsJ5gwOyQ/7oqlZ4dtHzkzw/GiyaaS30eUnGpOfnsvSq3hVRdN8oGhb1Pajf9atv3Shzpm3dpKe1QxyJw0Ri7QqJatSUaO2jsYbMkExvzasPoGH1VFh6xBZaFDpvxYN6lP3h4I5/TZOcJmpApshPKJLvweAtLYRCgtaO0RI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Z5myFUTO; arc=none smtp.client-ip=217.140.110.172
+	 Content-Type:Content-Disposition:In-Reply-To; b=KxJsdLMdEuDKoN/sL1ELma5xVJ9iXXzKPbkud7Gb4iTo8z35owkt1zSH0G3HkHU340AL/mkJuyrVonmhobuR2qbOo3WqGD2TcEcEohpu+XN0mZ7NHIqf8fWKdcTw7re4tq3SowmB95eAtpz+qyf7Ks6dMRAgDSGFKgvh9caPAds=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=CLbSYu+s; arc=none smtp.client-ip=217.140.110.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Z5myFUTO"
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="CLbSYu+s"
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6AEC23319;
-	Wed,  6 May 2026 03:37:16 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 867413319;
+	Wed,  6 May 2026 03:51:37 -0700 (PDT)
 Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B20843F836;
-	Wed,  6 May 2026 03:37:19 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 49EA53F836;
+	Wed,  6 May 2026 03:51:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778063841; bh=5c4pTncPmX+luIL7Evtc7A40nYaSrPqfh+f4kQDYM2k=;
+	t=1778064702; bh=iYNXb++hIJ9OfRQc9+FWnMLqhZrlCDWvv412uOnwE/g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Z5myFUTOkpLhUhZHLyv4iC+h4GXSOln/Lh+okHyslh8+3y4BGuAqNbdZFUUGrw4Iw
-	 jzwkPZNwVVn+7QKwVJMbmpDhzyYdEBeWI7OTDrdCOQRYXVAChEdEWtqN4gpYCiZHeO
-	 ErBYfHXa+rzFploFlocnXV7x9AjHC/oz7YEc85Ho=
-Date: Wed, 6 May 2026 11:37:17 +0100
+	b=CLbSYu+sRwtJr3t9K16SL9rXHW8Z+pbVRQ+RJhmov6xkSlmuLFbW/FfcaeqvTpJ+V
+	 p9B3F82aA9Gq8jU87onEpr6LkVcoe/pE5Co5Z+plDH5fLGRiM2Kvox/A4beffwA4Rq
+	 QCTUJyzR9QEdd3QKEfZIbyYQdzHUy8dROaLjdR3E=
+Date: Wed, 6 May 2026 11:51:37 +0100
 From: Philip Radford <philip.radford@arm.com>
 To: Cristian Marussi <cristian.marussi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -36,12 +36,12 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
 	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
 	souvik.chakravarty@arm.com
-Subject: Re: [PATCH v5 11/12] powercap: arm_scmi: Add get_power_uw to
- synthetic node
-Message-ID: <afsZ3WFA38iiifsw@donnerap.manchester.arm.com>
+Subject: Re: [PATCH v5 12/12] powercap: arm_scmi: Synthetic zone
+ enable/disable
+Message-ID: <afsdOZ690p_vn9sq@donnerap.manchester.arm.com>
 References: <20260428090922.346069-1-philip.radford@arm.com>
- <20260428090922.346069-12-philip.radford@arm.com>
- <afprmEnMf5mNf8NE@pluto>
+ <20260428090922.346069-13-philip.radford@arm.com>
+ <afpu-Wf01J3l0gAu@pluto>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -50,69 +50,140 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <afprmEnMf5mNf8NE@pluto>
+In-Reply-To: <afpu-Wf01J3l0gAu@pluto>
 
-On Tue, May 05, 2026 at 11:13:44PM +0100, Cristian Marussi wrote:
-> On Tue, Apr 28, 2026 at 10:09:20AM +0100, Philip Radford wrote:
-> > Exposes the current power usage from the immediate children of
-> > the synthetic (root) powercap node. Iterates over pr->spzones and
-> > sums per-zone power.
+On Tue, May 05, 2026 at 11:28:09PM +0100, Cristian Marussi wrote:
+> On Tue, Apr 28, 2026 at 10:09:21AM +0100, Philip Radford wrote:
+> > Add functionality to disable and enable the synthetic zone which
+> > also affects the immediate children of the synthetic zone by applying
+> > the same command to them.
 > > 
 
 Hi,
 
 > > Signed-off-by: Philip Radford <philip.radford@arm.com>
 > > ---
-> >  drivers/powercap/arm_scmi_powercap.c | 29 ++++++++++++++++++++++++++--
-> >  1 file changed, 27 insertions(+), 2 deletions(-)
+> >  drivers/powercap/arm_scmi_powercap.c | 81 ++++++++++++++++++++++++++++
+> >  1 file changed, 81 insertions(+)
 > > 
 > > diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
-> > index d74869af1633..81b5214acda4 100644
+> > index 81b5214acda4..1ed2949b06cb 100644
 > > --- a/drivers/powercap/arm_scmi_powercap.c
 > > +++ b/drivers/powercap/arm_scmi_powercap.c
-> > @@ -270,9 +270,34 @@ static int instance_root_release(struct powercap_zone *pz)
+> > @@ -270,6 +270,85 @@ static int instance_root_release(struct powercap_zone *pz)
 > >  	return 0;
 > >  }
 > >  
-> > -static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *v)
-> > +static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *power_uw)
-> >  {
-> > -	*v = 0;
-> > +	struct scmi_powercap_zone *root = to_scmi_powercap_zone(pz);
-> > +	struct scmi_powercap_zone *child;
+> > +static int instance_root_set_enable_state(struct powercap_zone *pz, bool enable)
+> > +{
+> > +	struct scmi_powercap_zone *root;
 > > +	struct scmi_powercap_root *pr;
-> > +	u64 acc = 0;
-> > +	u64 p;
+> > +	struct scmi_powercap_zone *child;
 > 
-> These u64 can live on a single line...
+> ...child and root on the same line of declarations...
 > 
 
-No probs.
+Noted.
 
-> > +	int ret;
+> > +	int ret, first_err = 0;
 > > +
-> > +	if (!pz || !power_uw)
+> > +	if (!pz)
 > > +		return -EINVAL;
 > > +
+> > +	root = to_scmi_powercap_zone(pz);
 > > +	pr = container_of(root, struct scmi_powercap_root, instance_root);
 > 
-> usually we define macros to wrap this like to_scmi_powercap_zone()...
-> ...even if used only once...this could be a new to_scmi_powercap_root()
+> ...another user of you new macro !
 > 
 
-Will do.
+:)
 
-> > +	if (!pr)
-> > +		return -ENODEV;
 > > +
 > > +	list_for_each_entry(child, &pr->registered_zones[0], node) {
 > > +		if (child == &pr->instance_root)
 > > +			continue;
+> > +
+> > +		if (child->info->parent_id != SCMI_POWERCAP_ROOT_ZONE_ID)
+> > +			continue;
+> > +
+> > +		if (!child->info->cpli[0].cap_config)
+> > +			continue;
+> > +
+> > +		ret = powercap_ops->cap_enable_set(child->ph, child->info->id, enable);
+> > +
+> > +		if (ret && !first_err) {
 > 
-> You'll need to check this in light of the fixes of previous patch
+> ...mmm what is the logic here ? why not bailing out on any error ?
 > 
 
-No worries.
+Good point. I was initially trying to prevent one error stopping everything without
+checking the other children, but even as I'm writing this out I can see the fault in
+that logic.
+
+> > +			first_err = ret;
+> > +			dev_err(child->dev, "failed to %s zone %s: %d\n",
+> > +				enable ? "enable" : "disable",
+> > +				child->info->name, ret);
+> > +		}
+> > +	}
+> > +
+> > +	return first_err;
+> 
+> ...especially if you anyway fails globally on any error....
+> ..I am not completely sure bit given that youare operating on a
+> synthetic zone that you enable as a whole, while acting on its children
+> in the backstage...I would say that if any enable/disable fails on a
+> chidlren you should revert the enable status of the children thate were
+> succesffull and report the error...I mean the state of top synthatic
+> zones AND the states of the children MUST remain consistent...
+> ...it CANNOT be that some chidlren fails, some succeeds and you report
+> an error..it must be all or nothing...
+> ...example..top syntethic zone is OFF if all children were successfully
+> disabled...on a failure with one of the children you shoudl revert the
+> already successfully set children and report the global error...
+> 
+
+Point taken, this needs reworking.
+
+> > +}
+> > +
+> > +static int instance_root_set_enable(struct powercap_zone *pz, bool mode)
+> > +{
+> > +	return instance_root_set_enable_state(pz, mode);
+> > +}
+> > +
+> > +static int instance_root_get_enable(struct powercap_zone *pz, bool *mode)
+> > +{
+> > +	struct scmi_powercap_zone *root;
+> > +	struct scmi_powercap_root *pr;
+> > +	struct scmi_powercap_zone *child;
+> > +	bool enabled;
+> > +	int ret;
+> > +
+> > +	if (!pz || !mode)
+> > +		return -EINVAL;
+> > +
+> > +	root = to_scmi_powercap_zone(pz);
+> > +	pr = container_of(root, struct scmi_powercap_root, instance_root);
+> > +
+> > +	*mode = true;
+> > +
+> > +	list_for_each_entry(child, &pr->registered_zones[0], node) {
+> 
+> mmm...what is the point here of scanning the children to GET the
+> state...you should report the top syntethic zone state right ?
+> You could have disable children directly...that wont be reflected in the
+> Linux powercap hiearcrhy right ?
+> I mean should you NOT simply return the stae of the top syntethic zone
+> which is should have saved in the previous state_set operation above ?
+> 
+> I think that anyway if you disable a zone...any zone...ONLY that zone is
+> marked as disable in Lnux powercap ... am I right ? 
+> 
+> Then probably our SCMI fw will do much more on all the children..
+> 
+
+Good point, I'll simplify it to report a saved state for the synthetic root.
 
 Regards,
 Phil
