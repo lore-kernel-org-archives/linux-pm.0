@@ -1,161 +1,279 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C13B2FFDCB
-	for <linux-pm@vger.kernel.org>; Wed,  6 May 2026 10:27:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 3B8CD3EB807;
+	Wed,  6 May 2026 10:35:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778063258; cv=none; b=YhfWICGIwCVI1OaXpfKBkGDnBLcOGhHxJTLxMUiNpt+Q9Hho1BEw+CzHOCEUIrMWhrIee7UuAREGZzz1gd8IcDyCdmaYXWeBF2SSan46bWZlDHESLm2VzjulEyFueVJifALW57pQZtlfn9KAk4OM451k4PM1n0b/pDNkd7Sg5o8=
+	t=1778063735; cv=none; b=Hmlvh1Cx4f7HdZkBINX7u3N9BMJKu2PfrkbGsuAOLBK5TPlFn3iS8Pn0LIeqJo0243mU+fqAUxWzBDNTzEyfM6eqTVmURjvDOnhe8RwUn0C15s1xDZ+vFTkCqezvp/hcKWXH21vZx+sPwGmFPpmjRh+CHYd1e9YTwpXMXNbFhRg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778063258; c=relaxed/simple;
-	bh=nmDqBEuuNrd55Xf0EKOMVEeQIuKmfwnGUnA5AYldlNU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=in4wU5ZuYxSAAfPsVBfoQuY+c4dKUUSkEesHne1v0IzK15+X9f3QL0DaHPJprHZ/DJPZiJ8pZoakU1ccaKJ434/hdENDMDyEexZdO8ilm1sWv3u1b/DN74iDUm8nZyFsBgqbvcyDPwCcFZSIRuhemk11nhIdiBYi6rXEXEKZqj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=FQXRtTCw; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=X0Ytu/hS; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778063735; c=relaxed/simple;
+	bh=lFBt7cX5hmxlQcwDFjhXc5XRX3lnJKyd2KhSymeJKco=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=diMhFY1Uf6yXDTLb+fvak2kJf21znEwZS11uHf9GmXhIH92/9wPoTaAcXYBuaenbWI9b5E8kPgRoP9MZr1BYVcJ5VBu39guxqbz7/MeEuiiMzb/BLzTPvmMFrIxNoorUEMFQP3IusCCfkUFItsa3wPtIdm77i1Trnz6L1NjeQH4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=XSHmFbca; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="FQXRtTCw";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="X0Ytu/hS"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6468ZrPV442617
-	for <linux-pm@vger.kernel.org>; Wed, 6 May 2026 10:27:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	BsZLiSX2Y5MimoIZwLQ0CXLNavG9OJUKdcX3jVhpm9g=; b=FQXRtTCwLZnb0KTo
-	A8sQ23tDcmxK0ajaw5PkJorRHsaGeX/gk5Bc1s2oLLkXKzfzCTbg1KtG4kK8Smgt
-	KJhe+qAKkMLcD5wy4fKFQfWT12EvkP+aV4M3gpSb+iIfjf5xikUJvbVbjum+JMea
-	s78QQr86xe201fPON5H1pHDmUZtl/Ej8TwDFHVN3BGa38Z4Mp0fI0uvIQ8hO4ckP
-	v3ZNhAbU0DBeOtO5DjEgMxT8iLFGZ6V5KIx3Omq94RulUK40LZklc5krb06uR6L3
-	72JUddchXTUG8XIooi55X7r/IwfRmb9wEuHrcuk7uco3VDWcojV9D2PdSQW6UcBJ
-	eOfI2A==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e0299gdkm-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 10:27:36 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50fb6d713ddso116938871cf.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 03:27:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778063255; x=1778668055; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=BsZLiSX2Y5MimoIZwLQ0CXLNavG9OJUKdcX3jVhpm9g=;
-        b=X0Ytu/hS4BlmPX+pW2t8sd2fxUYyIplv6sRVU808FTc7prIVxy8iAh/NRgxkiSyrOB
-         opIyinhjyiVLa0OEzwziuykHOw1vabGWyGPMzyqWrbAJ6tEmfcFIqxsqaSpVUxBdbygy
-         M2B8+dfbRAq2SZhNIMcJrrAiI5noFoovgFeBwqZ92t2sOLkUIo/5RqXeAZHEfXkVAb9Y
-         lv+fKbhB8jY/xa3uEal/G1c6ZlxEGutG+Be0C1UZDi89mwqIWFBPVpiH7+e3Q+DICI/x
-         y/EnZR9Nn7q6cRApJ7idG1Y72k4ypxzzxB6RmE8ZjY+wIOIq5LBsVbSIPSVLMvBiJUVg
-         thug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778063255; x=1778668055;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BsZLiSX2Y5MimoIZwLQ0CXLNavG9OJUKdcX3jVhpm9g=;
-        b=GiT9ipgepukrI20gpzsHE2OwQON6sax+IRRS9BXIB/YGg80PBPwPbXaoq9kbWAq+IZ
-         0XLNuotDkVIynw9UxrOjUE02UOJKSVcWczJYD6eAJymc8kxBS1QjFkqIe8i5XuvtDbaQ
-         k1I1fpBPtso1ZkyUAJpSK8wKXzTBS19ZDThxMuyZyC5H7wPFyQFJjGmgFkch8x/IWCJO
-         uzlmQsqXvd8W+VgOw2jEuHjBsaM02LXHIEMMv+lTrX0/YU/23rqGznpMfd5mun8+gJNg
-         /KGfn0MMynztC/T/07x+Ed4UeJ7n719sV9sXPB5v9F4kmHDpYLdI+tBTLeYCmNXDHuKu
-         YVHA==
-X-Forwarded-Encrypted: i=1; AFNElJ84WxuscFr4sdPADihcFKLf06rG6EExSIXE3QSikaPKQ3CpcebgFqsnyHW/zYjU92H8hgLGyjqW1Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyfgWlg3Au8DFYnHWvPg97v4TjVUyxcGww89Bs7lIp6Gcfypx93
-	3ldTdQudjqERbSIlBXAnG6VrUafl7ym8kE+nVyuW1WfJzUCyXV3o1evflPfTWCKWvprMuZu2xt2
-	VNxm/5DLJAxhaXnSqkql2rQaAPnevYgGR/Dy9U/4HOgf5cCH2/UbjFMO6voRfpQ==
-X-Gm-Gg: AeBDiet/Hk1jPCScs9mDq3388VkKmHRturf2q+pESlctmGNlvRFoicqQJvELBGbk9e0
-	eqUd2Ped1IurHQpD3DoxjUChFfor6WmVxS1GaX2n1ZzzDSstxdo9/aQ1L5Hjq8+FDTNWeYOrqhP
-	SISC5J6Ymq+r6vp6j76DdIvMLpUc0iP08dQIZihciv6o7r/xp6f4f5HzBHWI5r2tLSmMJ8k/pmt
-	80Dy0dueQ2t3RGI4vAMTVFLMMxHGrzVYnb43hVQ4j1fHh/S+So/UT1PKBwt0hDJflN5mNdArime
-	8WebYYHT1Vn6U8ZcJweqvGoOiruFrJhI+dZm7N2t+FyZdyapWiYWEcvrOjyolIrERwbvupPpDgY
-	qawXfGPAIbY+kXxf6DS2TRNGNdm8+NZYpk1avE9RFiTLmC7EsLq+9BAtuibL+mTHsfe6UShPmdX
-	pIbM0uoR7oag/KsmMWE0Y=
-X-Received: by 2002:a05:622a:410f:b0:50d:8080:2a7 with SMTP id d75a77b69052e-51461c268b9mr42610701cf.21.1778063255517;
-        Wed, 06 May 2026 03:27:35 -0700 (PDT)
-X-Received: by 2002:a05:622a:410f:b0:50d:8080:2a7 with SMTP id d75a77b69052e-51461c268b9mr42610431cf.21.1778063255124;
-        Wed, 06 May 2026 03:27:35 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:41ef:7b80:b3e8:2c1a? ([2a05:6e02:1041:c10:41ef:7b80:b3e8:2c1a])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4505238e174sm11525885f8f.1.2026.05.06.03.27.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 06 May 2026 03:27:34 -0700 (PDT)
-Message-ID: <2740bf17-27b5-4a68-8eaf-589252a84436@oss.qualcomm.com>
-Date: Wed, 6 May 2026 12:27:33 +0200
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="XSHmFbca"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 461173319;
+	Wed,  6 May 2026 03:35:26 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 903EB3F836;
+	Wed,  6 May 2026 03:35:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1778063731; bh=lFBt7cX5hmxlQcwDFjhXc5XRX3lnJKyd2KhSymeJKco=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XSHmFbcaMIX7DwiulDd8W4KXYW7o/+2OKEwZA0mbEVgbjTQVFXMtDMLnZLjMvmpEK
+	 MkpTGQzO35C6VAxBd26OmTVz4Xa/kVaB3hRRGeB9XawxsiwvkeHpbewTD8L8gm//SX
+	 ZfDDsXNsxWFC/uFxk7cG/vKCn41Lcn56+M/FT6z8=
+Date: Wed, 6 May 2026 11:35:27 +0100
+From: Philip Radford <philip.radford@arm.com>
+To: Cristian Marussi <cristian.marussi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org,
+	sudeep.holla@arm.com, james.quinlan@broadcom.com,
+	f.fainelli@gmail.com, vincent.guittot@linaro.org,
+	etienne.carriere@st.com, peng.fan@oss.nxp.com, michal.simek@amd.com,
+	quic_sibis@quicinc.com, dan.carpenter@linaro.org, d-gole@ti.com,
+	souvik.chakravarty@arm.com
+Subject: Re: [PATCH v5 10/12] powercap: arm_scmi: Create synthetic parent
+ node for multi-instance
+Message-ID: <afsZbxQO5Akcvgnl@donnerap.manchester.arm.com>
+References: <20260428090922.346069-1-philip.radford@arm.com>
+ <20260428090922.346069-11-philip.radford@arm.com>
+ <afppNhDnS3IuwelG@pluto>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] drivers/thermal/tegra/soctherm: Use
- devm_add_action_or_reset() for clock disable
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, jonathanh@nvidia.com,
-        linux-tegra@vger.kernel.org, thierry.reding@gmail.com,
-        rafael@kernel.org, daniel.lezcano@kernel.org
-References: <20260424160019.41710-1-daniel.lezcano@oss.qualcomm.com>
- <3075fe5c-e8c3-4439-be5c-0f6eb2fb6e48@oss.qualcomm.com>
- <d60b7b44-37e4-47ae-9af4-0c8d24b6c599@oss.qualcomm.com>
- <c45c96a3-535c-4374-b9b2-cf75240a8b05@arm.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <c45c96a3-535c-4374-b9b2-cf75240a8b05@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=fMMJG5ae c=1 sm=1 tr=0 ts=69fb1798 cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=EUspDBNiAAAA:8
- a=7CQSdrXTAAAA:8 a=q-kRPO7bpnIDiy-Y-2EA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=uxP6HrT_eTzRwkO_Te1X:22 a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-ORIG-GUID: yPEgQTUs2vMCtX8lavAQ0Bu3ey4tK2PV
-X-Proofpoint-GUID: yPEgQTUs2vMCtX8lavAQ0Bu3ey4tK2PV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA2MDEwMiBTYWx0ZWRfX+7H5xmLl5Zan
- RUhOtMlqLU2cfmf9hKHJ4Vq4HHuD2RuQNGyykKMooaiTjV7pjM9Ri4++BDGa5ReDac+yW4wZfZH
- lyra+jbcajHLxR9tWekpjtr/gFAGxBN++9HdbsXnQgXe7mNcY7p5d2vF+8sNXjPrGDO/RuJKNxl
- EYB8fRARZEzHBadeECXdWXp4yTVeQdcqyhJQAHXScDPU6ep/RlO0ybpzvrgBb4yNcfO06FAgBSw
- PNvzicEWAJufdp90oYQADwPXnx2AmYDVM3sCtx1BwqIxv9oB2USj3tvxxjj6dYL08PqAh9/jX32
- 0lY6ncJO+Olwj9RdyZIu4pW/QmfXSGRVyEBScw2gNhFKv6HZe3LTwN0Q8V5V7eFni1OFhvmH2R3
- BLy/rQ6LprNpLWqwkm2leJxjpjWsL4V3AK+/QCgC965s7yPrKR37GhRDBjbTXFfRsm/flc7Ewv7
- 3H8lYu9pHAazld4qxMw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-05_03,2026-04-30_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 phishscore=0 priorityscore=1501 suspectscore=0
- lowpriorityscore=0 bulkscore=0 impostorscore=0 spamscore=0 malwarescore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2605060102
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <afppNhDnS3IuwelG@pluto>
 
-On 5/6/26 12:26, Lukasz Luba wrote:
-> Hi Daniel,
+On Tue, May 05, 2026 at 11:03:34PM +0100, Cristian Marussi wrote:
+> On Tue, Apr 28, 2026 at 10:09:19AM +0100, Philip Radford wrote:
+> > SCMI powercap domains are exposed as a flat list and may include
+> > multiple top-level domains without a parent. When registered with
+> > the powercap framework, these appear as independent root zones
+> > with no common hierarchy. The driver probes domains per SCMI
+> > instance, but when registering with the powercap framework, these
+> > would be combined into a single tree. This is particularly evident
+> > in multi-instance setups where zone IDs and parent zones can only
+> > coexist with other zones and parents from the same instance.
 > 
-> On 5/6/26 10:37, Daniel Lezcano wrote:
->> On 5/5/26 14:10, Daniel Lezcano wrote:
->>> On 4/24/26 18:00, Daniel Lezcano wrote:
->>>> Replace the manual error handling paths disabling the clocks with
->>>> devm_add_action_or_reset(). This ensures the clocks are properly
->>>> disabled on probe failure and driver removal, while simplifying the
->>>> code by removing the explicit error paths.
->>>>
->>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
->>>> ---
->>>
->>> If nobody is against these two changes, I'll apply them
->>>
->>> Thanks
->>>
->>>    -- Daniel
->>>
->>
->> Applied, thanks
+> Hi,
 > 
-> My apologies for being late. The changes make perfect sense.
-> Feel free to add to both patches:
-> 
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 
-Thanks for the review
+Hi, thanks for the review.
+
+> I know the problem you are trying to solve is real and advised for this
+> solution BUT saying that the domains are exposed in a flat list upfront
+> is not correct and misleading I think...the problem revolves around the
+> fact that...
+> 
+> SCMI powercap domains are represented with a hierarchical structure
+> (if any such structure exists platform side) which can be comprised
+> of multiple trees (a forest of powercap zones trees) each with its own
+> top root powercap zone.
+> On a system designed to expose multipe SCMI instances each of such
+> instance could enumerate a pretty much similar/simmetrical hierarchy of
+> powercap zomes, all sharing most probably the same IDs for children and
+> parents...all of these simmetrical hierarchies can coexist as long as
+> they are confined into their own instance 'space'.
+> 
+> Given that the Powercap framework does NOT have the concept of instances
+> collating all of these zones into the same Linux Powercap top node leads
+> to an artificially flattened tree of powercap where all the boudnaries
+> between instances are squashes into one single structure....possibly
+> combining multiple unrelated SCMI zones under a single unrelated Linux
+> powercap zone (by virtue of simmetrical parent-child relations)
+> 
+> So the need for a (functionally limited) unifying synthetic top root for
+> each instance...
+> 
+> I am sure you can summarize all of these better :P):
+> 
+
+Understood. I will re-work the explanation in a better way.
+
+> > 
+> > Create a synthetic root zone to act as a common parent for all
+> > top-level domains. Creates a single hierarchy and unified entry
+> > point per-instance for userspace.
+> > 
+> > Signed-off-by: Philip Radford <philip.radford@arm.com>
+> > ---
+> > ---
+> >  drivers/powercap/arm_scmi_powercap.c | 67 ++++++++++++++++++++++++++--
+> >  1 file changed, 64 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/powercap/arm_scmi_powercap.c b/drivers/powercap/arm_scmi_powercap.c
+> > index 7f2bb162f96c..d74869af1633 100644
+> > --- a/drivers/powercap/arm_scmi_powercap.c
+> > +++ b/drivers/powercap/arm_scmi_powercap.c
+> > @@ -36,6 +36,7 @@ struct scmi_powercap_root {
+> >  	struct scmi_powercap_zone *spzones;
+> >  	struct list_head *registered_zones;
+> >  	struct list_head scmi_zones;
+> > +	struct scmi_powercap_zone instance_root;
+> >  };
+> >  
+> >  static struct powercap_control_type *scmi_top_pcntrl;
+> > @@ -263,12 +264,47 @@ static const struct powercap_zone_constraint_ops constraint_ops  = {
+> >  	.get_name = scmi_powercap_get_name,
+> >  };
+> >  
+> > +/* Multi-instance constraints to meet driver requrements */
+> > +static int instance_root_release(struct powercap_zone *pz)
+> > +{
+> > +	return 0;
+> > +}
+> > +
+> > +static int instance_root_get_power_uw(struct powercap_zone *pz, u64 *v)
+> > +{
+> > +	*v = 0;
+> > +	return 0;
+> > +}
+> > +
+> > +static int instance_root_set_constraint(struct powercap_zone *pz, int cid, u64 v)
+> > +{
+> > +	return -EOPNOTSUPP;
+> > +}
+> > +
+> > +static int instance_root_get_constraint(struct powercap_zone *pz, int cid, u64 *v)
+> > +{
+> > +	return -EOPNOTSUPP;
+> > +}
+> 
+> I would explain here better WHY you cannot really implement all the
+> fuctionalities on these toproot syntehtc zones...and WHY it is NOT an
+> issue but STILL it is enough to solve our problem with the multiple
+> instances configurations...
+> 
+
+No probs. I'll include the fact that full zone semantics aren't available for the
+synthetic zone.
+
+> > +
+> > +static const struct powercap_zone_ops instance_root_ops = {
+> > +	.get_max_power_range_uw = scmi_powercap_get_max_power_range_uw,
+> > +	.get_power_uw = instance_root_get_power_uw,
+> > +	.release = instance_root_release,
+> > +};
+> > +
+> > +static const struct powercap_zone_constraint_ops instance_root_const_ops = {
+> > +	.set_power_limit_uw = instance_root_set_constraint,
+> > +	.get_power_limit_uw = instance_root_get_constraint,
+> > +	.set_time_window_us = instance_root_set_constraint,
+> > +	.get_time_window_us = instance_root_get_constraint,
+> > +};
+> > +
+> >  static void scmi_powercap_unregister_all_zones(struct scmi_powercap_root *pr)
+> >  {
+> >  	int i;
+> >  
+> >  	/* Un-register children zones first starting from the leaves */
+> > -	for (i = pr->num_zones - 1; i >= 0; i--) {
+> > +	for (i = pr->num_zones; i >= 0; i--) {
+> >  		if (!list_empty(&pr->registered_zones[i])) {
+> >  			struct scmi_powercap_zone *spz;
+> >  
+> > @@ -313,7 +349,6 @@ static int scmi_powercap_register_zone(struct scmi_powercap_root *pr,
+> >  				   parent ? &parent->zone : NULL,
+> >  				   &zone_ops, spz->info->num_cpli, &constraint_ops);
+> >  	if (!IS_ERR(z)) {
+> > -		spz->height = scmi_powercap_get_zone_height(spz);
+> 
+> I have to admit I'd have to look back at how I implemneted this powercap zone
+> walking at registration tome :D .. but HOW can you get rid of spz->height here ?
+> 
+
+I've overlooked this, sorry. I'd removed it to set spz to include the synthetic zone if it
+was teh parent zone and ignore it if not. I can't rememeber removing the new logic but I'll
+rectify it for V6.
+
+> ...also because now spz->height is NOT set anywhere (presumable zeroed
+> at init) and also why you have NOT removed also scmi_powercap_get_zone_height
+> since nobody is calling it ?
+> 
+> ...also because I am pretty sure that all the management of the height of
+> the nodes in the binary trees where crucial when tearing down the hierarchy of
+> powercap zones ... (see explanation preceding scmi_zones_register())
+> 
+> ...mmmm.... have you tried to unload the arm_scmi_powercap driver with these
+> new changes for the syntethic powercap zones ?
+> 
+> I just did :P
+> 
+> ---8<----
+> root@deb-guest:~# modprobe -r arm_scmi_powercap
+> [   28.939470] Unable to handle kernel paging request at virtual address fffffffffffffc90
+> [   28.942910] Mem abort info:
+> [   28.947866]   ESR = 0x0000000096000006
+> [   28.953034]   EC = 0x25: DABT (current EL), IL = 32 bits
+> [   28.957189]   SET = 0, FnV = 0
+> [   28.957437]   EA = 0, S1PTW = 0
+> [   28.958254]   FSC = 0x06: level 2 translation fault
+> [   28.959025] Data abort info:
+> [   28.959511]   ISV = 0, ISS = 0x00000006, ISS2 = 0x00000000
+> [   28.960049]   CM = 0, WnR = 0, TnD = 0, TagAccess = 0
+> [   28.961191]   GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0
+> [   28.962227] swapper pgtable: 4k pages, 48-bit VAs, pgdp=000000010261b000
+> [   28.963105] [fffffffffffffc90] pgd=0000000000000000, p4d=00000001030ff403, pud=0000000103100403, pmd=0000000000000000
+> [   28.964189] Internal error: Oops: 0000000096000006 [#1]  SMP
+> [   28.964994] Modules linked in: arm_scmi_powercap(-) cpufreq_powersave cpufreq_conservative
+> [   28.966300] CPU: 2 UID: 0 PID: 227 Comm: modprobe Not tainted 7.1.0-rc1-00012-g383eb3db9548 #2 PREEMPT 
+> [   28.967170] Hardware name: linux,dummy-virt (DT)
+> [   28.967925] pstate: 61400005 (nZCv daif +PAN -UAO -TCO +DIT -SSBS BTYPE=--)
+> [   28.969245] pc : device_del+0x3c/0x3b0
+> [   28.969963] lr : device_unregister+0x28/0x90
+> [   28.970342] sp : ffff800083b73b30
+> [   28.970753] x29: ffff800083b73b50 x28: ffff000005d86000 x27: 0000000000000000
+> [   28.971448] x26: 0000000000000000 x25: 0000000000000000 x24: 0000000000000000
+> [   28.972159] x23: fffffffffffffff0 x22: ffff80007b1e30c0 x21: ffff000006f3c080
+> [   28.972701] x20: fffffffffffffc30 x19: fffffffffffffc50 x18: 0000000000000000
+> [   28.973237] x17: 0000000000000000 x16: 0000000000000000 x15: 0000000000000000
+> [   28.973899] x14: 0000000000000000 x13: 0000000000000000 x12: ffff000007338880
+> [   28.974795] x11: ffff0000056bbc10 x10: ffff000009ca0c00 x9 : ffff800080c44480
+> [   28.975483] x8 : 0101010101010101 x7 : 7f7f7f7f7f7f7f7f x6 : fefefeff6364626d
+> [   28.976161] x5 : 8080808000000000 x4 : 0000000000000020 x3 : ffff80008243c534
+> [   28.976842] x2 : ffff000005d86000 x1 : 0000000000000000 x0 : fffffffffffffce0
+> [   28.977511] Call trace:
+> [   28.977738]  device_del+0x3c/0x3b0 (P)
+> [   28.978047]  device_unregister+0x28/0x90
+> [   28.978371]  powercap_unregister_zone+0x54/0x78
+> [   28.978781]  scmi_powercap_unregister_all_zones+0x84/0xc8 [arm_scmi_powercap]
+> [   28.979344]  scmi_powercap_remove+0x1c/0x38 [arm_scmi_powercap]
+> [   28.979821]  scmi_dev_remove+0x28/0x40
+> [   28.980136]  device_remove+0x54/0x90
+> [   28.980428]  device_release_driver_internal+0x1cc/0x230
+> [   28.980845]  driver_detach+0x54/0xc0
+> [   28.981136]  bus_remove_driver+0x74/0x100
+> [   28.981454]  driver_unregister+0x38/0x68
+> [   28.981774]  scmi_driver_unregister+0x28/0x1a0
+> [   28.982147]  scmi_powercap_exit+0x18/0xe20 [arm_scmi_powercap]
+> [   28.982560]  __arm64_sys_delete_module+0x1b0/0x2e0
+> [   28.982870]  invoke_syscall.constprop.0+0x48/0x120
+> [   28.983219]  el0_svc_common.constprop.0+0x40/0xe8
+> [   28.983628]  do_el0_svc+0x24/0x38
+> [   28.983916]  el0_svc+0x38/0x138
+> [   28.984201]  el0t_64_sync_handler+0xa0/0xe8
+> [   28.984557]  el0t_64_sync+0x198/0x1a0
+> [   28.984901] Code: f9429c01 f9000fe1 d2800001 91024260 (f9402276) 
+> [   28.985443] ---[ end trace 0000000000000000 ]---
+> Segmentation fault
+> --->8----
+> 
+> This does NOT happen without your syntethic node changes since the driver on
+> unload took care to remove/unregister powercap zones starting from the
+> leaves so as not to remove parents that were still referenced ....
+> 
+> .... you should always test also as a loadable module and manually load/unload
+> then testing...
+> 
+> I will review this again in V6...plesse double check to preserve the
+> original zone-walking algo...
+
+Understood. Sorry, I'll fully test for V6.
