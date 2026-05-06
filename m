@@ -1,138 +1,78 @@
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com [209.85.210.196])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 156683EB81D
-	for <linux-pm@vger.kernel.org>; Wed,  6 May 2026 10:18:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.196
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7D0B52FFDCB;
+	Wed,  6 May 2026 10:26:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778062734; cv=none; b=FTVGETMpL2pQA6thzzskH533AEyqe4a+39yH4H4/VaWqdWxDJl1KD/uReQrjMrVThdrTRKIkm9R5QMILCjkZDzm+KH4/xIszkzApBITCgMlzBP/F7Z6w6zEkah9k/Awyt6O7WYKlo0FGkTwwifK5XPPG/WxHihulxxwBXLOZN+8=
+	t=1778063200; cv=none; b=U3ra/hp0K2N/XGYHlQ6611arFKIH6iL6wdBKGVLh08QgsKerllKAIngZ5CaeWri/ixsbLSwuYhuwmBFNIral6vl8599AalzSFIYx99W5tmHXJiUQHZU2IOGKnBdNBFRDbmIhiH2H/d+B8H3niBIX3trfQvx7JRc6uOfMRVOX+tE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778062734; c=relaxed/simple;
-	bh=KbpXX1Ym1bmxn0ZLZ/2SX9JWOdVZecC6m9Km1cJugQM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pi06jpFLiVITwKOH4JP59KwRWOEKKudgDSTFzZBLyY+gkgIWcJnQWJzqWPzn2GiZZD6gumwbPDuScbu+mRo5tAnfaSGSH6b8MN3THbwQ7rX3WvyodTzng1ilqmsN9v9S6EFl7aAD/PTUn+q9ckRT/zaXw180qBNWRgZtkH/bESA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.196
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f196.google.com with SMTP id d2e1a72fcca58-8367df48711so1536968b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 03:18:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778062727; x=1778667527;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=5hJfO0HN9ehRLvbvP5xDLTjyEfOl5gQpG4emVlBW6Xo=;
-        b=aT25/omqApuTreuvW4WmIO/f6ZT+wxiQCqzPMcoVmL4KgCGyqTw8VaBI2PAoSSZVeU
-         5D5snS7bn3r/tkCfDA7QAQEM3GThNlk/VAePKQjqITsfhpd8CTgfs1R1dSFVxlZid+6e
-         FYHwrtbzLpxl8q66avRHgdW0IlbWjJ2UMISV5OaHyZv1HFdZwa/egE1+cKvqtRSeP+gL
-         SrDDT2LTOfOn20ixpWQItgo3oluIuJTd23Rw4nIeJBBA3fPm3H/37B0iI5/9THMs7dhW
-         wBia37CWNQCOKgJcGZgW1WnFzjRKYS9z6CdhJgHqzRbv9ZARHmsUSooMb//T5BuSFKE+
-         NhdQ==
-X-Forwarded-Encrypted: i=1; AFNElJ98LXmnuVXmEhHYEji3QkKX/uHpVpZTJ83c/dJyySA68tl3l3sQTMz+1kBGtOnDsVCQD0K252cocA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzxTjIlLTBjyMAWMN+jn97x3WMJ7EyByLqlZnYX88cfv/+3frV2
-	NcEZJSAkFSGxGFbcnvYquYtM+rmVFUSLS22Ys3OIe+aU0Gm0FLaqj2o/
-X-Gm-Gg: AeBDietZWrtRfUOYbE3jLRgvys1//utJu4oURUCQdcKJg7z8FeR37tq6HmlJol0JA+m
-	I4U3ruDOcTqVdR8rtfx70m/QvaUsiUfkK57XuvkkZO4uJm9vQ5+6IVlZTctayfIBrBhAQlHKQp/
-	bhHENpgSYovgrNOFRkovKKtKdr6vO7MTz5IFCzM5Mittwl3O7hm3Mdrga7aP3N2YMQgZ3EVx8l5
-	J4I2knxf8nU9PMwZ440JWbiDv8u+rnsOKBeH6XInVVF6offp7kGwo5vP51h0EOTqv6C/KHNjP2B
-	QS7KweyxooO9osdYASTCpYbelRnkNatZIchnD4Jm+p58c0dFKh9vC10bBNloGCPNBxRzJgEzc35
-	PcDrhXnnawJ1ISqhfX8nL+xbiujHnfMmOqVWFUQluiZDlFlWXtNMQnzfN1nRpUdqmiQmYWxGMR6
-	/BKhoehF4azyIkf/0POlrCIjakfen9lRh+a+c59r47Mfa8PVZLMSJysO1keGpw3aCDuLE=
-X-Received: by 2002:a05:6a00:288d:b0:82f:72e6:ed4 with SMTP id d2e1a72fcca58-83a58736dacmr2697578b3a.0.1778062726927;
-        Wed, 06 May 2026 03:18:46 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839682a52cesm4870070b3a.57.2026.05.06.03.18.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 May 2026 03:18:46 -0700 (PDT)
-From: luoxueqin <luoxueqin@kylinos.cn>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	zhanjie9@hisilicon.com,
-	zhenglifeng1@huawei.com,
-	pierre.gondois@arm.com,
-	sumitg@nvidia.com,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH v3] cpufreq: CPPC: mask Desired_Excursion when autonomous selection is enabled
-Date: Wed,  6 May 2026 18:18:34 +0800
-Message-ID: <20260506101834.343001-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1778063200; c=relaxed/simple;
+	bh=qnXPHve10K2UEmeQMM5zVUaJgqpW7fMW37Ix4xSCP4k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AUWAKWYtDS5HETV97A+9Q6paBmXKPD1sMakLZys8BYZyAev771Z1+Yo1Xe/qshR7Hdh4BWV/Z0Th/jGwTHjGWLolUI1ERIHEFIllEpziNl4OO3cAqDZkd3pTi9S8wxjWpiTzKDotPpX73wZdMS6ORCO1dXDv41BCv+t/5Fqdw6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=plxSIP6d; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="plxSIP6d"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 749E8331A;
+	Wed,  6 May 2026 03:26:32 -0700 (PDT)
+Received: from [10.57.21.9] (unknown [10.57.21.9])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AB3423F836;
+	Wed,  6 May 2026 03:26:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1778063197; bh=qnXPHve10K2UEmeQMM5zVUaJgqpW7fMW37Ix4xSCP4k=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=plxSIP6du5Vm5zaw7YJGybbdrPUZlDHmFap5X1Xa8taXqMuWv65j6cJidi7A08wgv
+	 kSr+hTdo+tzqRcky+oyQW8XfeNRUp8hBT84vIR4sn8WZh00juxMWFLA68f2kQQZQP1
+	 bRoxTKJvDKfWvUkrvXQOl1XFtrWTMnj2qvht1NAQ=
+Message-ID: <c45c96a3-535c-4374-b9b2-cf75240a8b05@arm.com>
+Date: Wed, 6 May 2026 11:26:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] drivers/thermal/tegra/soctherm: Use
+ devm_add_action_or_reset() for clock disable
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, jonathanh@nvidia.com,
+ linux-tegra@vger.kernel.org, thierry.reding@gmail.com, rafael@kernel.org,
+ daniel.lezcano@kernel.org
+References: <20260424160019.41710-1-daniel.lezcano@oss.qualcomm.com>
+ <3075fe5c-e8c3-4439-be5c-0f6eb2fb6e48@oss.qualcomm.com>
+ <d60b7b44-37e4-47ae-9af4-0c8d24b6c599@oss.qualcomm.com>
+Content-Language: en-US
+From: Lukasz Luba <lukasz.luba@arm.com>
+In-Reply-To: <d60b7b44-37e4-47ae-9af4-0c8d24b6c599@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-From: Xueqin Luo <luoxueqin@kylinos.cn>
+Hi Daniel,
 
-According to the ACPI specification, the Desired_Excursion field is not
-utilized when Autonomous Selection is enabled. In this mode, the bit is
-architecturally ignored and does not carry meaningful information.
+On 5/6/26 10:37, Daniel Lezcano wrote:
+> On 5/5/26 14:10, Daniel Lezcano wrote:
+>> On 4/24/26 18:00, Daniel Lezcano wrote:
+>>> Replace the manual error handling paths disabling the clocks with
+>>> devm_add_action_or_reset(). This ensures the clocks are properly
+>>> disabled on probe failure and driver removal, while simplifying the
+>>> code by removing the explicit error paths.
+>>>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+>>> ---
+>>
+>> If nobody is against these two changes, I'll apply them
+>>
+>> Thanks
+>>
+>>    -- Daniel
+>>
+> 
+> Applied, thanks
 
-Currently, the kernel exposes the raw Performance Limited register
-value to userspace through the cpufreq sysfs interface. This may lead to
-misinterpretation, as userspace may assume Desired_Excursion is valid
-even when autonomous selection is active.
+My apologies for being late. The changes make perfect sense.
+Feel free to add to both patches:
 
-To provide a stable and semantically correct ABI, mask out the
-Desired_Excursion bit when autonomous selection is enabled, so that
-userspace does not observe undefined or misleading values.
-
-Writes are left unchanged, as the field is architecturally ignored in
-this mode and write attempts are harmless.
-
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
----
-v2->v3:
-- Use cached auto_sel from cpufreq driver data
-- Fall back to raw value when policy is unavailable
-- Keep sysfs ABI unchanged by using a wrapper around cppc_get_perf_limited()
----
- drivers/cpufreq/cppc_cpufreq.c | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24..a439d9621eed 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -982,7 +982,34 @@ store_energy_performance_preference_val(struct cpufreq_policy *policy,
- 	return count;
- }
- 
--CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited,
-+static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
-+{
-+	struct cpufreq_policy *policy;
-+	struct cppc_cpudata *cpu_data;
-+	bool auto_sel_enabled = false;
-+	int ret;
-+
-+	policy = cpufreq_cpu_get_raw(cpu);
-+	if (policy && policy->driver_data) {
-+		cpu_data = policy->driver_data;
-+		auto_sel_enabled = cpu_data->perf_ctrls.auto_sel;
-+	}
-+
-+	ret = cppc_get_perf_limited(cpu, perf_limited);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Desired_Excursion is ignored when Autonomous Selection is enabled.
-+	 * Mask it to avoid exposing misleading values to userspace.
-+	 */
-+	if (auto_sel_enabled)
-+		*perf_limited &= ~CPPC_PERF_LIMITED_DESIRED_EXCURSION;
-+
-+	return 0;
-+}
-+
-+CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
- 			 cppc_set_perf_limited)
- 
- cpufreq_freq_attr_ro(freqdomain_cpus);
--- 
-2.43.0
-
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
