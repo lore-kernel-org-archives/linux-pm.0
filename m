@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 402A33ED104;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CAA03F20EF;
 	Thu,  7 May 2026 16:06:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778169978; cv=none; b=h4GrpwR9mhlZllDrPU3yEZjEAcaczoDLo01zGbZ/KACVbE8cumIgJk9fRfrR53jXkldLWwnIr1qBv+TLGiCw7PANhLUkj9y0I+ucPsV767BNNzBJPCYaJmvofXOB+itVktCGjALi5/BMKXy8/IMh6Bllnt5fINAa//MFOTr/c1o=
+	t=1778169978; cv=none; b=j3QLdcUw0SdO4I/L5OCxlXt5/OfnGdmeX0czWW5cP8OGIH7Nvx9oe8pR7OtkD6s+ciBc2zM3nYzXcIbYFS+Z4OK1pae69i71t5e4dTm5gqFX+/p78dW7ll51vsuADP0Zl9GqnY/qlOAFQP0eNSz0j9fr37yZvvsAm8p3yeYNbHs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1778169978; c=relaxed/simple;
-	bh=zGHrjUbTsBJODVwJt0zPGcwNmFYKbjrI5btim8cwJxA=;
+	bh=1kU9oAqoS3HVSM+ImlILsRWAgX9G6w98W2IXLdlUQ+8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=IKYcGe8Hmvhzhk33vwLfz1FpWnLxqnNboocDOjwc+LluAreea9rKiOmWUyNjBbaMCsMAdAWTWYi+ZGc+gtjGMBlKmqZrjwwZ9Mg9DsSdrOQ0Agd/7dlNOv0vVonbdfvqDAMBHj97Q97nAXb44KUI+j4Y4dYVwVZjYsY/X0+4JD4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Har/HBkR; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=it13WEFwERfJWCJDQtuOqBy4oyg2zZU5BuigrSL50elbwApclrpYBESD8Qd1xSUbpeKoR7djxNO3bVuzq5dbGGNnbcsvKMLVGs73sV8tshKI0bjcD33R8/piN+aN0Y4rWcvg30MrLtSYqMx2wt3v6PmM8zKvo1vYzszQPjs+Nk0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cOX1Xk3b; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Har/HBkR"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F3FD1C2BCB2;
-	Thu,  7 May 2026 16:06:17 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cOX1Xk3b"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1A423C2BCF6;
+	Thu,  7 May 2026 16:06:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1778169978;
-	bh=zGHrjUbTsBJODVwJt0zPGcwNmFYKbjrI5btim8cwJxA=;
+	bh=1kU9oAqoS3HVSM+ImlILsRWAgX9G6w98W2IXLdlUQ+8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Har/HBkRX7QzEqAwXxRMNulHINL7H1TAOMlOAQdNqkzRK4EyaZJZFGOXZluqarP/Z
-	 ogAsaOfi+J68l+ffS0o/5c1uSJf9se41t/yBmgIeyhtn7dn+jIxI6rsAHC05hzIgiu
-	 BRrWi83m8UbaGGHimMXBUndbdbMRDXhZwDCqRmJteJSIBjBIeE3PLQ9ifx4vvJ6YKY
-	 25bfaJCK10032zNZPH2h7Jd1lnmA1E3umNY76EdIN44ru238BiLWG6YHg+IG0qoWin
-	 PAS5L371/eaKNC7RcOP+U4pTfsIzu0Z9guRdwW9BLwrNaVvVdK08x8b19nFaM8sY9J
-	 RkSUPxkaAD/Qw==
+	b=cOX1Xk3b/13kV96R2qpze3LL+9mVQ3LACToIocC8PvcGpRHbHR5hWTM/NczLwKjq1
+	 ivHf8+GoGZYlBq8yKO5/PoQX2jWh3r7J59qCos5Ni/ckXHS4zXxXpROTbBYw+w5dv1
+	 OPZ4pMPf+h17+v3+WmdfDlCiTDGIDDJt3pJvHKh+xM1oWP6PA2XLKjGicIYJByitKZ
+	 coIuZESUK/rphx1cV7rZkjCF3l5OQLEl7A6Z1xtjK4Jgqw+njlRgF7F+KoUEDoG5nl
+	 QsAfxygm5slw9KR13IBpsJ9VeVYOGstHNdhQSJqFldWjPb8vKAwbQoH11CMR9eTb2d
+	 cbFHOVU6AMtFg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5997CD3442;
-	Thu,  7 May 2026 16:06:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1280CCD3439;
+	Thu,  7 May 2026 16:06:18 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Thu, 07 May 2026 21:36:09 +0530
-Subject: [PATCH v2 1/9] power: sequencing: pcie-m2: Fix inconsistent
- function prefixes
+Date: Thu, 07 May 2026 21:36:11 +0530
+Subject: [PATCH v2 3/9] power: sequencing: pcie-m2: Improve PCI device ID
+ check
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260507-pwrseq-m2-bt-v2-1-1740bd478539@oss.qualcomm.com>
+Message-Id: <20260507-pwrseq-m2-bt-v2-3-1740bd478539@oss.qualcomm.com>
 References: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com>
 In-Reply-To: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com>
 To: Bartosz Golaszewski <brgl@kernel.org>, 
@@ -53,18 +53,19 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
  linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
  Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2033;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1781;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=Uc7cveSGHgeTaUIcgh89hECpJqoA4JfjoqnuyhFDQqg=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp/Lh2LT2yjjAir33NLBnHxeeoubmgYStCcAq9M
- xXXFJ3vkVqJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCafy4dgAKCRBVnxHm/pHO
- 9YQpCACbSKaEjzH4pTRNlOO9MMv4qGNFvDJbCSKU+rW0kuy1AOdzEK8DRjMYSniR3vacNqgAaW7
- jfdD3nhST6J/Rnf9+jev5SQpRAkKinqaxWh3/1fShDsrtFUvB1F3jwhMJlzRr8YGNtSd2tdfDiF
- dFxAGaP52L1gOiOsWOlhNYxfiVDVsMcr5nZ9nK5CztsGDPpOA2s4/Pxqi9TgU/bVFHMVN6EFp+p
- LfzPkrfYv23hVFoB2h+b2zu7McFmTkz4ghpi3o5nxCP/Rp+2I6P67dQdDdgUiJOLvSRQr11o1mP
- zUCGoHRa1Ex6V0kwn8pQwiMpDRpYEsmiDHurAlsVIiwooNOh
+ bh=8A3jxl2QdUuP5KU+w9PLhgemuGtALcmy2NxpKxBwBT8=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp/Lh2TDAvxxjvZtrtADHQF0z/JDOamCojQkHE3
+ K6Pm1DtPTiJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCafy4dgAKCRBVnxHm/pHO
+ 9cVzB/4ohIU0XRnYHWB45I0Mwpu/iTt83ZvLI0NFytSIkWBMwDHYlx9EkFrdH/T72dd/E4zxGei
+ K+WfR12Kj1+DuU1DcqXoVyqIAb6QgGIMGaG9VfINxANB671iUD9iPM3da9npdv7WvVv7d1VGGbw
+ mVDUp4hXCn65H38uKafSYfx9shPz4YZyy7kQgZdQPXnlgpo9JSceJUBHNZSwYzzArwnsd57n9of
+ 5+MgPX+wKrpBO1gE18f01B5rgSCb0ZrZIOlaVtEThLfaxP7KoQ3FZABL7GPgyknQo4ANPsefYSG
+ oquofbqKA8Orr4CcbIfFVh7xZNBsEmbgrATbRfzFkHmxLVXU
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -74,54 +75,52 @@ Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-All functions in this driver follow 'pwrseq_pcie_m2' prefix except a few.
-Fix them to avoid inconsistency.
+Instead of hardcoding the PCI device check, use pci_match_id() to check for
+the known IDs using the pwrseq_m2_pci_ids[] array.
 
+This makes adding support for new devices easier.
+
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/power/sequencing/pwrseq-pcie-m2.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/sequencing/pwrseq-pcie-m2.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-index ef69ae268059..b2ed336fd5ad 100644
+index 469e130330fa..038271207a27 100644
 --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
 +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-@@ -177,7 +177,7 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
- 	return PWRSEQ_NO_MATCH;
+@@ -343,6 +343,11 @@ static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx,
+ 	mutex_unlock(&ctx->list_lock);
  }
  
--static int pwrseq_m2_pcie_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
-+static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
- 					struct device_node *parent)
- {
- 	struct device *dev = ctx->dev;
-@@ -254,7 +254,7 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx)
- 		goto err_put_ctrl;
- 	}
- 
--	ret = pwrseq_m2_pcie_create_bt_node(ctx, serdev_parent);
-+	ret = pwrseq_pcie_m2_create_bt_node(ctx, serdev_parent);
- 	if (ret)
- 		goto err_free_serdev;
- 
-@@ -299,7 +299,7 @@ static void pwrseq_pcie_m2_remove_serdev(struct pwrseq_pcie_m2_ctx *ctx)
- 	}
- }
- 
--static int pwrseq_m2_pcie_notify(struct notifier_block *nb, unsigned long action,
-+static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
++static const struct pci_device_id pwrseq_m2_pci_ids[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107) },
++	{ } /* Sentinel */
++};
++
+ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action,
  			      void *data)
  {
- 	struct pwrseq_pcie_m2_ctx *ctx = container_of(nb, struct pwrseq_pcie_m2_ctx, nb);
-@@ -364,7 +364,7 @@ static int pwrseq_pcie_m2_register_notifier(struct pwrseq_pcie_m2_ctx *ctx, stru
- 	if (pwrseq_pcie_m2_check_remote_node(dev, 3, 0, "serial")) {
- 		if (pwrseq_pcie_m2_check_remote_node(dev, 0, 0, "pcie")) {
- 			ctx->dev = dev;
--			ctx->nb.notifier_call = pwrseq_m2_pcie_notify;
-+			ctx->nb.notifier_call = pwrseq_pcie_m2_notify;
- 			ret = bus_register_notifier(&pci_bus_type, &ctx->nb);
+@@ -362,16 +367,14 @@ static int pwrseq_pcie_m2_notify(struct notifier_block *nb, unsigned long action
+ 
+ 	switch (action) {
+ 	case BUS_NOTIFY_ADD_DEVICE:
+-		/* Create serdev device for WCN7850 */
+-		if (pdev->vendor == PCI_VENDOR_ID_QCOM && pdev->device == 0x1107) {
++		if (pci_match_id(pwrseq_m2_pci_ids, pdev)) {
+ 			ret = pwrseq_pcie_m2_create_serdev(ctx, pdev);
  			if (ret)
- 				return dev_err_probe(dev, ret,
+ 				return notifier_from_errno(ret);
+ 		}
+ 		break;
+ 	case BUS_NOTIFY_REMOVED_DEVICE:
+-		/* Destroy serdev device for WCN7850 */
+-		if (pdev->vendor == PCI_VENDOR_ID_QCOM && pdev->device == 0x1107)
++		if (pci_match_id(pwrseq_m2_pci_ids, pdev))
+ 			pwrseq_pcie_m2_remove_serdev(ctx, pdev);
+ 
+ 		break;
 
 -- 
 2.51.0
