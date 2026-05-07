@@ -1,63 +1,89 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37224472774;
-	Thu,  7 May 2026 16:07:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B37C44D68E;
+	Thu,  7 May 2026 16:10:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778170024; cv=none; b=q4lD4CtgXqKEo9CqBw20nKGFP0ZdKXDLlapCo5S8LpvhabxJSN8sUPuNEfbmmdOPuf8Pj9ISuKLEQFgzKg/6JW1MSDi+8/MBrvLrQl+nup8MxGLuZuTuc+addl9ZG94bTQXsI3Odjfw7ykb2gROtDieCSOqCamdlTNYfKjqmgdg=
+	t=1778170226; cv=none; b=tkNajqOJgmqAAAw50wteE8HLdDfkBk4OAeEMBG320lsPDlMJNpdbjeVyhYX3YxAFL2ahA09MOPPdCJTU/LzLpTFrdTmyf+J2y3OCBiSZZYN0KXiiNrigLTD56QJ69JlHVhgMIRRZGY/sJ9iM2yX7kwpiOcivbt8DqA2g78LcXy4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778170024; c=relaxed/simple;
-	bh=5z1MGFO+USucjV/1tjsmkRhMpG8nWbc9mYG4cOnHawY=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=ZPSPBb0N3LtPR/FSI3JJGso/BsrxK9eSH4OyEUSKt3MZe1Luca+Kzdy7+2G2M3ah5W3uYuHNrht2eDclsc30BBJbaT2iXpkKaLK96KETzIr6rKTEFdb/5k8X9RvkTPoGMs/4rGGRej1aqtCgmNL1+jxPqiG3qfERGKuw8R1r8eY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wj5vVx05; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778170226; c=relaxed/simple;
+	bh=dgn+jjgJKPGC81JPFtn2yoqRYAjX19lpvF99R30744o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Japx6tWIjUkHO6/62JfXUVHxzMI/4/axm3hwgYAhXGLw5Je41x2/K1JeSrlTjLwRTDC/IU19hy4cQt3pTSr2vtrlBtEvKJcEn2ueXPeAgAUau573CCc5U9IGQhw8xqQ3+EVnS/HUPaBsrAemL0xzX5BcjSSIpHyQ9veCsFhTLq8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qwsGN46P; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wj5vVx05"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEE27C2BCB2;
-	Thu,  7 May 2026 16:07:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qwsGN46P"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0DB1C2BCFA;
+	Thu,  7 May 2026 16:10:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778170023;
-	bh=5z1MGFO+USucjV/1tjsmkRhMpG8nWbc9mYG4cOnHawY=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=Wj5vVx05fyg+WhDGWxOHgQr2h8zk28EVv2ZwT/ipJZWYCfYyBlaDiCa1Deg5CrAmy
-	 9YVKfiI+1eY1NCHkueVfC5/SSrop83ftQy+VgGUBV3j3SC9SiVr4dIyXsqBsOlYyWm
-	 y4VFhNdN+twGT/lCxSg/Fq48kIhY2lLajU/vAY4UYmfSKQ8WphSz+fPAlQE+feXbV8
-	 k7tw02pIkkFXrxnnhjU7sym5tveNzZtUPG8kusx3g/FW8k6H/C41F6POlyHQtLG1WG
-	 O076S3yXOpQkJAEV2JkEuKN8zPbu8BK/RNfFPNO4PZ+tNrE7fQuj/Acp/WDvBTFQnx
-	 tFsQ2JgNeFu7g==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3FE303930909;
-	Thu,  7 May 2026 16:06:14 +0000 (UTC)
-Subject: Re: [GIT PULL] pmdomain fixes for v7.1-rc3
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <20260507100304.8170-1-ulf.hansson@linaro.org>
-References: <20260507100304.8170-1-ulf.hansson@linaro.org>
-X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20260507100304.8170-1-ulf.hansson@linaro.org>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1-rc1
-X-PR-Tracked-Commit-Id: ec1fcddb3117d9452210e838fd37389ee61e10e8
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: b3737eac0a0f70b2a6b6a872213f0f235624e487
-Message-Id: <177816997280.4057089.14466103668847479623.pr-tracker-bot@kernel.org>
-Date: Thu, 07 May 2026 16:06:12 +0000
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, linux-arm-kernel@lists.infradead.org
+	s=k20201202; t=1778170226;
+	bh=dgn+jjgJKPGC81JPFtn2yoqRYAjX19lpvF99R30744o=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=qwsGN46PFRhYO7poMmpih4+1qMa8SFLcZ91atZrJn0+ktmx0WbquPAjVu6dKcwNra
+	 9I6UQczo25a9b1tZgTLUf0SP+4S9I6EwDjXEGpPi9SafuKyUy3J/GFuYh2nTvIxPjw
+	 fxO5GtfXkyG7mIkn6/on7rCe7fopAB2tpjbHMaHq7sVlHFaVq9aYMXspYNfPHDi4ou
+	 17KdqkiDgDZmEkbMA3+AKVkgQOZLgfQlogIHsRZYfXuwyqnPxbj5Wd8TMDYHIghVj9
+	 hfZGOawq+wVDLrrZYCyp6CSnLPRYXpLxcSWhjF+7OY6B+asME3Tp8qDwAyUbcnMhnS
+	 tA8k/xsv+nR7Q==
+Date: Thu, 7 May 2026 21:40:13 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	Shuai Zhang <quic_shuaz@quicinc.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
+	stable+noautosel@kernel.org, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Subject: Re: [PATCH 12/12] Bluetooth: hci_qca: Fix the broken BT_EN GPIO
+ detection for Qcom WCN devices
+Message-ID: <xinajhircn4zqrap6mqzveettm7q5uhhzt46mocmkckp534gse@ogdvbjleeczy>
+References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
+ <20260422-pwrseq-m2-bt-v1-12-720d02545a64@oss.qualcomm.com>
+ <klxyhlqwzl6dzk76lrhugxqdsv4hushphlfchuorcmvx5yja7q@pdmp3abepldg>
+ <u65dquj6im54rc6w5apmq2a6mcpndvh3slcxbjh2bs5el7epw4@zjovdsjkm6ur>
+ <CAMRc=MdvhMBpunaitGv7yv3sTqkTYviaeAJzphTS5dBUOFPpHw@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMRc=MdvhMBpunaitGv7yv3sTqkTYviaeAJzphTS5dBUOFPpHw@mail.gmail.com>
 
-The pull request you sent on Thu,  7 May 2026 12:03:04 +0200:
+On Thu, May 07, 2026 at 09:55:16AM -0500, Bartosz Golaszewski wrote:
+> On Thu, May 7, 2026 at 1:59 PM Manivannan Sadhasivam <mani@kernel.org> wrote:
+> > >
+> > > This will break the case of WCN399x devices without the PMU in device
+> > > tree. There is no enable-gpios since BT is not controllable, but if
+> > > there is no PMU, then devm_pwrseq_get() will always return
+> > > -EPROBE_DEFER.
+> > >
+> >
+> > Hmm. I missed that the pwrseq returns -EPROBE_DEFER even if the client doesn't
+> > require power sequencing. It is because, it has no way to figure it out.
+> >
+> > But I think the client can parse the regulator phandle, reach the regulator
+> > parent, then check for the '-pmu' suffix in the compatible to make sure that it
+> > has the power sequencing requirement. Then it can call devm_pwrseq_get() only if
+> > that check passes.
+> >
+> 
+> I'm wondering if we could maybe provide pwrseq_get_optional() that would only
+> really be optional with fw_devlink enabled (where we'd be able to ensure the
+> provider is probed before the consumer thus be able to tell right away if the
+> device is power-sequenced or not) while with fw_devlink disabled, it would
+> just behave like pwrseq_get() and return -EPROBE_DEFER?
+> 
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1-rc1
+But if fw_devlink is disabled, then the consumer drivers cannot rely on this API
+to decide whether power sequencing is required or not. IOW, the error handling
+would be broken in consumer drivers if fw_devlink is not enabled.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/b3737eac0a0f70b2a6b6a872213f0f235624e487
-
-Thank you!
+- Mani
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+மணிவண்ணன் சதாசிவம்
