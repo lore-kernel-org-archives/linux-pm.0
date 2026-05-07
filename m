@@ -1,163 +1,90 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011006.outbound.protection.outlook.com [40.93.194.6])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A3CD1B4257;
-	Thu,  7 May 2026 03:17:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.6
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778123845; cv=fail; b=c8tsxt9Y6Mt3vgtIJL/5qmwLHyzEDPEnqh8HztVpvKqhd3cFPjPRxwfFjyHnW2q7aRLdXnX8uTAY+9EcpFLH4jMtzMPczMvUxB5vHG+NW+jEZUJIxfDXTCl71wNS/a6JKfw/91T4w7my2xD21EqXltfZiN8mjUd+8CMUOreX7vw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778123845; c=relaxed/simple;
-	bh=v5b0bO4IYPY94fPXW6+PlvHeAXTy1iy7DmFyjIg56iI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=hwbiYVloPywwYT4ICs54rk7a4F8Njnom86E+FzushFRs7U063n5anXzyY3gp1ju6J7JELZP8/spglWQbs6JiE4LRWy1hXahzbJOyM6xMGTRBVLVayCCou3vc17nrSmADLKJxLcUUkza56l6Pf10s/2HHskTgOms8gyjyc4+DLe8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=vJQC8e9X; arc=fail smtp.client-ip=40.93.194.6
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 582B02877DE
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 03:24:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778124292; cv=none; b=g/oZ46AHK9lhemvJQf1rxlVqcLpTgeKPf76tASWCY/ECmXCkchxqAiiG0pCLIDBigfX2E6ixQam414gKkjlfXvmNH3/IOAcCLMeGhFfjCP0zUlit7Ujjzv4qb0yUT2XKybQTXXVtU5VLj2jLfOUVaG7qMtlH44LY13St1hsDIRI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778124292; c=relaxed/simple;
+	bh=nEkgXAD6eX1ksTJ2iy3XW26cA/MEHmgv3SE92Ooie6U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SMEk3qz9KYWsHuANY/4vk2CqmY55Zef7PIlqc4Cc5Kc0Htp4zc8+Eewc8lWsg1r/Y+D/TxoJcmikvXE6i2mS9T2nPvodCZ9JkvEw/4qxioc+p7vEm3H3IHok2RxnWSLWEgU1OJk201KB8qoAbdO0OH8PrSPq1qb68Zzw8ExWGM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Ia8Qp3kX; arc=none smtp.client-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="vJQC8e9X"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=QjZOMvXbupZasEAId5jaryW8hBvYL4a8wBBFAF/2FOZVdvecrJUUtFvccSafMSNJgBqypYA4tTabnuqOpXmuCx7tnpQNLjYSkVXDJhUrhQxvraT1GlcXs0vbgyBL/wuA3lO5qyMycEksFYm5Yz7+F3u3nlQ2qTSN//pjvTQgKTZ4wuH0JE4blEjXsB6ZwIak87YUNNzI6ORRh57XwHk5JfduL/55xZ4EYWrk+fmRi9sz8C0Zt51YyPsbKppA8nnPibPd+BPE2G6ef3L949OeTPXsW98jAAImgcCPEC0QHpbKq7ng9L2S3AqBpMV3zYYKEpGjNK0H3Aw9fO13rJJ6hA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FHYeVsZlYDuwrT66+RPKXe9mu5xt5fLGZJCRXG9QAmk=;
- b=PczrFe3WOzFQ4E+f+4S846b4D1AnLu8hqp/PYQ0QSFMHZyfF/GmjyB2om2nytjbN3nx5MlzJRrFJNLzWJAr9RqQXKWs3YIM+CMS9YJm0FoPu1pKTnw2U51Rf15cMhPAKaa8n1yG9uQGuNBz5zLGEwClrlomsuMyuGCsnpFH7UErHJ9IgnR4LIiN9TYbMZspY1bBPY13PW9RCxbqWeMRtNdtuTdv5nquyUvu1twNBT9BNiJ82yNydpp7pannuEeCcX1UerA0xfzmvRd5s/4Ks0SF/8ojr7jcIdHWACdP6IzMmPeYv1K7oFDPHj2tR9vTtGD0kfVvmKxWPgHYYvh6gXw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.21.194) smtp.rcpttodomain=gmail.com smtp.mailfrom=ti.com; dmarc=pass
- (p=quarantine sp=none pct=100) action=none header.from=ti.com; dkim=none
- (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FHYeVsZlYDuwrT66+RPKXe9mu5xt5fLGZJCRXG9QAmk=;
- b=vJQC8e9XvLYRO51vw40rhhX8+aCW/DtRdRbCOOOj1ZUe3Qjvj32DgJYQLsCAcUIXYD7hBkL/rBFH4JBN9qktge71MtNRyd1BsYtPE3Xl+mAzi68G5v4ps8BqkF4Tf0GHJoYpFk+kNqk4T+H8KSniVjp0UaoGxReFF2WkosKRzUc=
-Received: from BL1PR13CA0211.namprd13.prod.outlook.com (2603:10b6:208:2bf::6)
- by LV3PR10MB7940.namprd10.prod.outlook.com (2603:10b6:408:20f::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Thu, 7 May
- 2026 03:17:19 +0000
-Received: from BL02EPF0001A108.namprd05.prod.outlook.com
- (2603:10b6:208:2bf:cafe::7) by BL1PR13CA0211.outlook.office365.com
- (2603:10b6:208:2bf::6) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.9 via Frontend Transport; Thu, 7
- May 2026 03:17:19 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.21.194)
- smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
- action=none header.from=ti.com;
-Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.21.194 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.21.194; helo=flwvzet200.ext.ti.com; pr=C
-Received: from flwvzet200.ext.ti.com (198.47.21.194) by
- BL02EPF0001A108.mail.protection.outlook.com (10.167.241.138) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.9 via Frontend Transport; Thu, 7 May 2026 03:17:17 +0000
-Received: from DFLE203.ent.ti.com (10.64.6.61) by flwvzet200.ext.ti.com
- (10.248.192.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Wed, 6 May
- 2026 22:17:10 -0500
-Received: from DFLE200.ent.ti.com (10.64.6.58) by DFLE203.ent.ti.com
- (10.64.6.61) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 6 May
- 2026 22:17:09 -0500
-Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DFLE200.ent.ti.com
- (10.64.6.58) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37 via Frontend
- Transport; Wed, 6 May 2026 22:17:09 -0500
-Received: from [127.0.1.1] (uda0506412.dhcp.ti.com [128.247.81.196])
-	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 6473H9nd2726995;
-	Wed, 6 May 2026 22:17:09 -0500
-From: Kendall Willis <k-willis@ti.com>
-Date: Wed, 6 May 2026 22:16:45 -0500
-Subject: [PATCH] pmdomain: ti_sci: add wakeup constraint to parent devices
- of wakeup source
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ia8Qp3kX"
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-36535998b71so182327a91.0
+        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 20:24:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1778124291; x=1778729091; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=pXqN27eudQQFvoICR2kx2MkixOHAEunSRWTV3og+HAQ=;
+        b=Ia8Qp3kXcc0BTbdZko+TAGNEQsfwiHmqbxuxAtCE/bJo4ZQ5D82zuZM6fAmJW0UPVr
+         TR5WjVLnDTk2opQYMyZVDksQeDuW5FBd7SWMeVP3lG4pUlKE04AUNI3oWlUoFAwF1tiq
+         TP6KPksE4ctuUJQqtWGbiY6v/uImdD7PT2WPPnogbt/YYmWPCYc3oaAPbCEMK0DAji7K
+         9iPXSfvaZJHIiiSeQZWSibTWEt0fY9RQOolugfUPY8Z4DMWGAvQHp9/kzlN5dUVGtam6
+         AgSToyc7vQz5vrifKTWgqVAc24khHMS81QIt4eMs9tA3GhP9iUGE0V18wFp7STqPnc+f
+         CBQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778124291; x=1778729091;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=pXqN27eudQQFvoICR2kx2MkixOHAEunSRWTV3og+HAQ=;
+        b=G+EIAqMhteqKnnPfGP2KDH2v0HXvCm4QknydSiQYTserST0KtkiVN7WuF4iYMh04Ff
+         ZOb72JILj3YF3KlIkzoBJ6Zxd5jbyjmTvVv+xMf7HkGKizX1SNycYNHSdDi0Z3LZFj2a
+         3ji83NCiW6mpW+yow/C9gz8i7FSgKblCzXlXRFnILl2nqMU1bAhbcfYGywwjZPUbo+YK
+         Ey4WjxMADSC4K1xbsulMdg29rPJFyPCm7ZNDhgF9m/6uO1Jp5f7dDk6pAf67zaLPUsgc
+         8Uxh4bFaOqJMveJ96d5MbSaGRClgJkpq7dw/Q1SHS2z4Dbx4j31au37fJbaOsJvqcZu2
+         3xTA==
+X-Forwarded-Encrypted: i=1; AFNElJ9LxZMn8p71S8Ol3qwYXn/kv4sPZPk3Vnus4ThDzD9IrdK4S5UnQUpsUy98led65neAd+z62mfeKQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKCIvwbGrbR9l3nIBB6GdcAnbL9QJdHI39uoeIvtuv7Dimtp/m
+	AbIDzov0gMt1NBheZSgiA9tYphlDJ8daTZe8/CoMeQU1EFhXOC8NPfmF+fJlItEg72U=
+X-Gm-Gg: AeBDietAXTsTUwDTp1Rtu9w1d+LCUGAhuZi7w01gzMsntCtxEw7EQP2ErIAM1ed3Y3F
+	rbqktsG9s1Htq2BVnRt0tmQFMDteQrd2Y+8jwnQwXMe0TNuZzkADvPFLaKIHFTpGKwz+DLDW2Wo
+	Jlk1HO6iSPm8jrxBELjIkwYYHfzhPoeJCdZnXinxSUKxASUoKJ0n+jXaU24Od/+xTaVe33YqWlg
+	g2KVT4E9M33t1ccxv4MMETsNwaXgcPIdC10bnonEi9kpok4aQxdAPZnpiqPb6evHrVYrh+/vBS4
+	Du9PgJa6vWDFhkg8c8S9EhCmlEWXKfypgmEoT4rt6qeOsvT6qYjguHk7Jp+RKi1LiCfjvfIqvTE
+	vMhfq7Yx1HAlAdOjKipmBb/ys6wR1F0F1L1GPcBSdsysFQzTDksCBlAWa3Gex4VvfF2ntz2E53G
+	dwJjkoQ0Y+GuaDzHsNTf8uHCByXBuGxpyx1w==
+X-Received: by 2002:a17:90b:2cc5:b0:35f:b9ba:45b4 with SMTP id 98e67ed59e1d1-366050e8ad3mr1024038a91.0.1778124290490;
+        Wed, 06 May 2026 20:24:50 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-365b10d3e04sm1878330a91.9.2026.05.06.20.24.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 May 2026 20:24:49 -0700 (PDT)
+Date: Thu, 7 May 2026 08:54:46 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Xuewen Yan <xuewen.yan94@gmail.com>
+Cc: Xuewen Yan <xuewen.yan@unisoc.com>, vireshk@kernel.org, nm@ti.com, 
+	sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	di.shen@unisoc.com, ling_ling.xu@unisoc.com, ke.wang@unisoc.com
+Subject: Re: [PATCH] pm/opp: fix race between opp_add and opp_get
+Message-ID: <lhzkb77zezcwhk6oapioe23sjd7rsea36rp76umqfz2crvdlgc@mvfa6i7asnkg>
+References: <20260427120047.10830-1-xuewen.yan@unisoc.com>
+ <7k6ttcmptilvxmp36dvtznor2gfd33rzledbqfsigmjbkx2rhy@iv4lyzej6ibc>
+ <CAB8ipk8XGBtChKV7ub6UcqYyfmnJSvuTX5DmCQrgf8ci9f9cMQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260506-wkup-constraint-v1-1-0a4bce791b29@ti.com>
-X-B4-Tracking: v=1; b=H4sIABwE/GkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDUwMz3fLs0gLd5Py84pKixMy8El3LJKCMYZKBSUqaoRJQV0FRalpmBdj
- E6NjaWgABkJSpYQAAAA==
-X-Change-ID: 20260506-wkup-constraint-9b0261b04df1
-To: Nishanth Menon <nm@ti.com>, Tero Kristo <kristo@kernel.org>, "Santosh
- Shilimkar" <ssantosh@kernel.org>, Ulf Hansson <ulfh@kernel.org>, Kevin Hilman
-	<khilman@baylibre.com>, Dhruva Gole <d-gole@ti.com>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <stable@vger.kernel.org>,
-	<tomi.valkeinen@ideasonboard.com>, <sebin.francis@ti.com>, <devarsht@ti.com>,
-	<vigneshr@ti.com>, <vishalm@ti.com>, <vitor.soares@toradex.com>,
-	<ivitro@gmail.com>, <k-willis@ti.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1778123829; l=1442;
- i=k-willis@ti.com; s=20251230; h=from:subject:message-id;
- bh=v5b0bO4IYPY94fPXW6+PlvHeAXTy1iy7DmFyjIg56iI=;
- b=5ZwKsL40rqmXK7xp/RQM7zaU24Kk2vk9zUb3P94XDwGJI3/M+NZXSIn7Lt/vNuR/XhI/P13iv
- P3BbqeQtFixDFi2l1S9CnWLz1RFMYaueR007MTV9o0au6QLqG+fml8S
-X-Developer-Key: i=k-willis@ti.com; a=ed25519;
- pk=fQiPVFwmogfDAKdaAKq163RWSfgHZVE/MrsDzp0Xo1k=
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL02EPF0001A108:EE_|LV3PR10MB7940:EE_
-X-MS-Office365-Filtering-Correlation-Id: 366860de-7b81-4d0b-3025-08deabe72514
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700016|376014|7416014|82310400026|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	5uojdVGdDObhNgWTcVmK++ThAK8hZexKA1rX5KlPXdR5Hqv1nAPvct26WSVnNUYihzBQ0qkEB38VcmO9jSQrKE/+cerUn8ma9sb/CmsOhxFwvBQagRdScYuGkROwAIdChG21YClx1EHDCTNcVUnPbzKOWhaqP9YTVS+g1eOPs0D6WctjfALkFAUF5JeyPgGHhFDqTgcSg3r297MHAd85txkgOPkfahd+Om/OKFI2YmqLppnUYSo/W+zFZZb0Uj1UWZwZ5H0riCJSYYlNvbevXOsE+/cGAEo8cpF5fRZ4lxGKDGpcsxtoJcHL+8QxmbV5D81GmDNA1SqQlslblkx6o5S4OGSKfTMFAVlGLihQADV+ylznmYr6Rc394YbArPWEmAAmB3GTAVMiQ/2HNRyD8Y9sk76YUydht5EMLYtdUb1n+K0F5OOTUB5ldo7RmP9vNEzp9G7srdR8zhHOKEB0Z+W3xOJ13EvbpFUNRKv4av2SakwiGUz+pPqkJNqEyKtIX3wvAsjZwyjwJzp3ulKhWbd4kXnc/M7Daqele7rm+RdKn43adB1ULh7Mq9wtz17DJ9USH7oJMhNh0jfvp8pnPR1qgZ4S6twKMCRt9Ff5M1ytjIfUvZKo51Zsu5+Mrs9qpGuKnS7IsY/xBjbRYnoIN6+tU5m/VqWzpyNTr/7lZW0qwmPCG2dOklHOROZxJ+nsc0DPt4q4lkFC4oyZwv18gup51f7wW9x9gH53I4tfONM=
-X-Forefront-Antispam-Report:
-	CIP:198.47.21.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:flwvzet200.ext.ti.com;PTR:ErrorRetry;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(376014)(7416014)(82310400026)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	bkw3WWz/UmDDREdeAgSFOmsKZBoh6X+GtDMsLSoTjGJkZnSIsb/3O6TOFL5yy+1Sl8w+qEG6CaQgk/HFwq0va8O5BqHxgAXfNmpsUWkO6x59Zt/Pxq9uxSbXac/TRQIk3VKEpWkyvZzHSx851MJJg93BmNI1/mRbJBZYu62bhNLQdkdCjVme3e1hOzyiIp3A1O5bS5DFcKYWcl322NV/QdlYl8Jfuqq3T4cmaH2hLby304ptV8QTbPLaMxsRlgPdEXRkGVPl6lymsTDa3XNSXzDVln2zPUlreTy3yPL/yJ6zbkE2asMJf26ToEOCFxPuUmfr0iNvEZ7jlDNWK4t6hQ6FUy8TDvOIS4WgFGNt4ZDRh2zqg0MJbgwkO3f2lh6RY6tkhccXEg11cMFNuNry2G8sJZ6nZsAUhE6cM3V66pmfgA59/hSbLEonWscUiuWC
-X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 May 2026 03:17:17.9840
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 366860de-7b81-4d0b-3025-08deabe72514
-X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.21.194];Helo=[flwvzet200.ext.ti.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BL02EPF0001A108.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR10MB7940
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAB8ipk8XGBtChKV7ub6UcqYyfmnJSvuTX5DmCQrgf8ci9f9cMQ@mail.gmail.com>
 
-Set wakeup constraint for any device in a wakeup path. All parent devices
-of a wakeup device should not be turned off during suspend. This ensures
-the wakeup device is kept on while the system is suspended.
+On 07-05-26, 10:09, Xuewen Yan wrote:
+> Need we add fix tag？
+> Fixes: 7034764a1e4a (PM / OPP: Add 'struct kref' to struct dev_pm_opp)
 
-Cc: stable@vger.kernel.org
-Fixes: 9d8aa0dd3be4 ("pmdomain: ti_sci: add wakeup constraint management")
-Reported-by: Vitor Soares <vitor.soares@toradex.com>
-Closes: https://lore.kernel.org/linux-pm/c0fe43a2339c802e9ce5900092cd530a2ba17a6b.camel@gmail.com/
-Signed-off-by: Kendall Willis <k-willis@ti.com>
----
- drivers/pmdomain/ti/ti_sci_pm_domains.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Done
 
-diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-index 18d33bc35dee1b3bf6107af1e414db377d515199..949e4115f930b93b18216fde46131b5c8931c9aa 100644
---- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-+++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-@@ -86,7 +86,7 @@ static inline void ti_sci_pd_set_wkup_constraint(struct device *dev)
- 	const struct ti_sci_handle *ti_sci = pd->parent->ti_sci;
- 	int ret;
- 
--	if (device_may_wakeup(dev)) {
-+	if (device_may_wakeup(dev) || device_wakeup_path(dev)) {
- 		/*
- 		 * If device can wakeup using IO daisy chain wakeups,
- 		 * we do not want to set a constraint.
-
----
-base-commit: 7fd2df204f342fc17d1a0bfcd474b24232fb0f32
-change-id: 20260506-wkup-constraint-9b0261b04df1
-
-Best regards,
 -- 
-Kendall Willis <k-willis@ti.com>
-
+viresh
