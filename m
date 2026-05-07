@@ -1,114 +1,63 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E9504508F2;
-	Thu,  7 May 2026 16:06:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37224472774;
+	Thu,  7 May 2026 16:07:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778169978; cv=none; b=dayUQaHH2AcMD2FeDTt2QtEoLK+WIDKFvQdVpDnkvIzhl0VAz8fK57qWrNVfG7g61mGeaoSdd7aO2Zeu0We6tF3utbzuEXjB9wbWc34pr6wZ894fIkjF9yvHqBSbNHtydT2uFdPww2yxNEoFx+/Lzs/yt5XKjEc5DFQvT9wmb4I=
+	t=1778170024; cv=none; b=q4lD4CtgXqKEo9CqBw20nKGFP0ZdKXDLlapCo5S8LpvhabxJSN8sUPuNEfbmmdOPuf8Pj9ISuKLEQFgzKg/6JW1MSDi+8/MBrvLrQl+nup8MxGLuZuTuc+addl9ZG94bTQXsI3Odjfw7ykb2gROtDieCSOqCamdlTNYfKjqmgdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778169978; c=relaxed/simple;
-	bh=aNhmryQKE395W4APYigHylzo2/j+j50biYPcg5iB8Ns=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=D9enl6YdhPCDOWsQVpVc9Tsa4Y2Onz9ewkPAXYVZCcu22IxQEoTqlj3JQFCUg4HpcwuMneTRGsVjpMmiKRK+rt/QmY94RmQicIp/+G6lF3dYApOcj80Pla4hmTRb+eL7N5eFS0TXXLPQnGhuSE99lvRWvwdU4bco17crAWqSvTo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qGykYgPG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778170024; c=relaxed/simple;
+	bh=5z1MGFO+USucjV/1tjsmkRhMpG8nWbc9mYG4cOnHawY=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=ZPSPBb0N3LtPR/FSI3JJGso/BsrxK9eSH4OyEUSKt3MZe1Luca+Kzdy7+2G2M3ah5W3uYuHNrht2eDclsc30BBJbaT2iXpkKaLK96KETzIr6rKTEFdb/5k8X9RvkTPoGMs/4rGGRej1aqtCgmNL1+jxPqiG3qfERGKuw8R1r8eY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wj5vVx05; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qGykYgPG"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8353AC2BCB2;
-	Thu,  7 May 2026 16:06:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wj5vVx05"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEE27C2BCB2;
+	Thu,  7 May 2026 16:07:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778169978;
-	bh=aNhmryQKE395W4APYigHylzo2/j+j50biYPcg5iB8Ns=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=qGykYgPGQ1F1vJkiDVZ3m6JEZ0OwWb8W/escRi1aoONHoqCqMOKzkPISI9Xzx4NNH
-	 WuF1ZUBTdm/hbeym2W+xTHSab9HhSCibBnV/jHS2mz0/Ujxa7RdByDskZev4h3r7qH
-	 hDrl0e/tfm4XPgBMBb3M8zTrOguTmDAOG7FQoU11kPkGtpCMb4GTPIM6w2OVgDCZPB
-	 CxC07yCUm4lZp1NxtfuIxSedoTEnIon4xX8zN40h6WMliuq5PNN1j4Is1EhhA0k/M3
-	 EZFzrYOsngYvlSmet6uroOUIedNnaYNwK7O+wduZJX0p6JCmpWKilPjWjO5Wua+c44
-	 FSO3IZrZSWpkw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B2FDCD3442;
-	Thu,  7 May 2026 16:06:18 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Thu, 07 May 2026 21:36:17 +0530
-Subject: [PATCH v2 9/9] Bluetooth: hci_qca: Set 'bt_en_available' based on
- W_DISABLE2# presence in M.2 connector
+	s=k20201202; t=1778170023;
+	bh=5z1MGFO+USucjV/1tjsmkRhMpG8nWbc9mYG4cOnHawY=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=Wj5vVx05fyg+WhDGWxOHgQr2h8zk28EVv2ZwT/ipJZWYCfYyBlaDiCa1Deg5CrAmy
+	 9YVKfiI+1eY1NCHkueVfC5/SSrop83ftQy+VgGUBV3j3SC9SiVr4dIyXsqBsOlYyWm
+	 y4VFhNdN+twGT/lCxSg/Fq48kIhY2lLajU/vAY4UYmfSKQ8WphSz+fPAlQE+feXbV8
+	 k7tw02pIkkFXrxnnhjU7sym5tveNzZtUPG8kusx3g/FW8k6H/C41F6POlyHQtLG1WG
+	 O076S3yXOpQkJAEV2JkEuKN8zPbu8BK/RNfFPNO4PZ+tNrE7fQuj/Acp/WDvBTFQnx
+	 tFsQ2JgNeFu7g==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3FE303930909;
+	Thu,  7 May 2026 16:06:14 +0000 (UTC)
+Subject: Re: [GIT PULL] pmdomain fixes for v7.1-rc3
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <20260507100304.8170-1-ulf.hansson@linaro.org>
+References: <20260507100304.8170-1-ulf.hansson@linaro.org>
+X-PR-Tracked-List-Id: <linux-pm.vger.kernel.org>
+X-PR-Tracked-Message-Id: <20260507100304.8170-1-ulf.hansson@linaro.org>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1-rc1
+X-PR-Tracked-Commit-Id: ec1fcddb3117d9452210e838fd37389ee61e10e8
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: b3737eac0a0f70b2a6b6a872213f0f235624e487
+Message-Id: <177816997280.4057089.14466103668847479623.pr-tracker-bot@kernel.org>
+Date: Thu, 07 May 2026 16:06:12 +0000
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linus <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulfh@kernel.org>, linux-arm-kernel@lists.infradead.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260507-pwrseq-m2-bt-v2-9-1740bd478539@oss.qualcomm.com>
-References: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com>
-In-Reply-To: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com>
-To: Bartosz Golaszewski <brgl@kernel.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Marcel Holtmann <marcel@holtmann.org>, 
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
- Shuai Zhang <quic_shuaz@quicinc.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
- linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
- Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-X-Mailer: b4 0.15.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1280;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=kT/daCATvUeblQjstk/xz8aGuQ4+x8sVK/KhZTDC6as=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBp/Lh3qBHbqcZIzl+5YqO+PrOKii2iHINB9NljG
- TRznrWuJaGJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCafy4dwAKCRBVnxHm/pHO
- 9dQAB/9HaNIKcu7vecDN+DH8+r+PzhQyxhZlVjgokj6XPnBAtQXxdPZn699QwTXKoypwr4XcS65
- 2J+gS2k8DRc3GVP3nADCvi0rLacpymyyucsPKiAmZGVXOn24XH6YDzhoO3ki4OUyfsb+D7D7GbR
- E2e8KpXCaVg94siJVNbfD9z+U6fyUEQvJ3G5vG0+DN4wcNxD9huMPcL74NCw+6eYjfy7Pwyo2VI
- 6hf6age9p8eUQ+OriJXToL6Dt0nQjzSBbVUNpnMCKZc7CgCgbSQfGRJZw1ZeAy62ADFx7cgdm9i
- 2yfrUrQ9Mfhm29bBqDTYgAHGqMWqkxmqF7A5IFBI/YzDbZUK
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+The pull request you sent on Thu,  7 May 2026 12:03:04 +0200:
 
-Check if the M.2 connector supports the W_DISABLE2# property or not by
-querying the pwrseq provider's DT node. If not available, then set
-'bt_en_available' flag to 'false'. This flag is used to set the
-HCI_QUIRK_NON_PERSISTENT_SETUP HCI quirk, which informs the HCI layer
-whether the shutdown() callback for the device can be triggered or not.
+> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1-rc1
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
----
- drivers/bluetooth/hci_qca.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/b3737eac0a0f70b2a6b6a872213f0f235624e487
 
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index 3e71a72ea7c7..b5439b9956cf 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -2449,10 +2449,17 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 		 * the M.2 Key E connector.
- 		 */
- 		if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
-+			struct device *dev;
-+
- 			qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->ctrl->dev,
- 								   "uart");
- 			if (IS_ERR(qcadev->bt_power->pwrseq))
- 				return PTR_ERR(qcadev->bt_power->pwrseq);
-+
-+			dev = pwrseq_to_device(qcadev->bt_power->pwrseq);
-+			if (!device_property_present(dev, "w-disable2-gpios"))
-+				bt_en_available = false;
-+
- 			break;
- 		}
- 
+Thank you!
 
 -- 
-2.51.0
-
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
