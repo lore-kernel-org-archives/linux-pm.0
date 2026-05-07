@@ -1,266 +1,117 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 10FA73CF05E;
-	Thu,  7 May 2026 10:02:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 899D53793C1
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 10:03:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778148144; cv=none; b=FHCdpu6vK4ludU6ssJk64C1QlW4QOKYGcd+QShrQBe6LVfM+QOZVWoRYI8A1Gfw3ieP9pN3ZPZzTCZeVIZ8GyKP+txfvDu3I/Oz0DWC6jaJrELf0+7L6PTZB6y+9Fkp0iF1KQ2hdxkKcY1kTwnwJFJXcWqvppEw6LlhwQbMk1Ok=
+	t=1778148191; cv=none; b=MWGEsK4ZteiJWlnNJItu2Z/jSGTrwTNhE9DsWEaAz+H/IY1S29/WfsJXyae3maiDTedk1tLmfjEuAiyPWhzX+1Mzal2WjDk3POlPwiXsX+euJrxkE3a6hKDwsuD6ptswW+icHvqnupoKeb8zolD7jTRo35Q+17pI5n8+6nzYmik=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778148144; c=relaxed/simple;
-	bh=j/IEEiLS0P881qaC5FiyBW62HgEJkePONUiFsmT1P5s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PifOob/W/wMD63IONXoPMHzZXMCeTwgiSZBBAyInUEg07yC9xMMvEX8+MQ8Z1EQv7cEkvXX66hCJ6ejZ/Umpw1XHL0f18LXCXccl1yD5p9bC5QmwqL1/ne3KxtCfwm77j2cfclJ2s3WdhE6Zy2eU5boD+WgBnBZpYjOwTVzl0+Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=qSGz8AuL; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1778148191; c=relaxed/simple;
+	bh=qW9egvQsS3QMkv5KcImTDLT4sI8AVlLS9i2+sX8oTC4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Heq26HtPvLb7X7SxCl+cEBT0gAnK6kS2DYLrgyfZnar15Ny4C9DHG8+vnRwrj6qVKkrHG5RDGcnCibPgeLGu2fbsfYt2mHDl857MlI6PnW7ZpC69La24t7dHaVznjtEDYLWm4C2V2F1ifs3iUe1nauMXT6dQPK5W5R8E9afcJPs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=IWIprLyV; arc=none smtp.client-ip=209.85.208.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="qSGz8AuL"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 46C341476;
-	Thu,  7 May 2026 03:02:11 -0700 (PDT)
-Received: from [10.57.21.243] (unknown [10.57.21.243])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9A68D3F763;
-	Thu,  7 May 2026 03:02:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778148136; bh=j/IEEiLS0P881qaC5FiyBW62HgEJkePONUiFsmT1P5s=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qSGz8AuL+k3oFTOmy0quS6KmrVyRoCxNFAxDaXr3Hgs1wiNiD+SkhuhRfuGt26X7B
-	 EIKwezDs3db9f015SDCE3MetozyUMKfsJk2+IZmGy+CEeOlbBIqkht6IHrKIUDQDYJ
-	 feJZbNJKNwTCIRv2sJZ2XLiYCcE6CN7TW1OKuzUE=
-Message-ID: <96515043-d9be-475e-81ba-71a8fbeeaedd@arm.com>
-Date: Thu, 7 May 2026 11:02:11 +0100
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IWIprLyV"
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-38e7d983f91so5667151fa.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 03:03:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1778148186; x=1778752986; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=n/gFcE0bu0rJve9uKyHSH4ubBqFP+IcaKsA+2O0rr/w=;
+        b=IWIprLyVXMD/imEP9AsoaJu0BBpzCiAt5haI40sPK0CKzuUjqmXOQU6mR8lVAHSNap
+         Z1gcRdiTZE1hBSS+XNfjom4O/JkGt0jkX6vmPFFjXIHj4bid5IXiILlUfEdERXrE5nx/
+         1sHzbiYO8Szvvo2TV+Tdt04goAeS9TCfjuMWJLQEAOkSdBBAHJPI6i/ig1ewZm/2zi8c
+         y1F9UHQ/I7yyL+nw95ulNqTUNBS1msNBWGO8jF0Cxmos0dIA2g1kQEVNGw3XQJwwc10Y
+         540yWKfMHe/OIasXRXWqNYqiSRWZZOhedGjbZkK00QPQhlbJDBn8IVWVN7TgMLV7GGLw
+         54ZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778148186; x=1778752986;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=n/gFcE0bu0rJve9uKyHSH4ubBqFP+IcaKsA+2O0rr/w=;
+        b=Wf+NU+WDKQv75YB1CNdZQ7iAW2ahCjGgzj8cq1LHdJmFHJ/Lme63Ek2rV01UL9bVnc
+         E4p7h3TTdxG+B+jKUTlibLJvRUHnou7ZtkYMjssVDrVamePUwmRPFrz+5+zDJBBGtt1Z
+         uaMGyHeZWboHoKYWtnF4X5jCHjzhYlO5c/d2EiwtGc3Qz9q6fJn+lPfCVVuY+FmXbgPl
+         sTEpZxHWv8AMHdNf+bYPAt7ecOB6/W37HJrAU9Q0Pr5UnvEK9F0CmTTlMVQOkLVQ8gV8
+         yiey9Z5okxKQWp9dxVSa3zr6U/NI5ZQGxfKNzxldGnRP9yJRtOSsEm0o0Q+OrtI18M3C
+         a8bw==
+X-Forwarded-Encrypted: i=1; AFNElJ/TQ0B9hu0qXGVzh4pzv3l/KllqO8urUd1xknBDlzDl18HvTlJ/osYS4RpUa9rNRLhCk0H3ugP/dQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx4jBoPe5mdRQWFhvmoS3z/1g+l/GcO4026pHRNSwkSRk7fZmaY
+	S/b1KIRhXWjX8zirfoxo0ZaI9vEv1PMDebgK7oeNk08ueZBKh1M1Jz/PW19tdPEBVCo=
+X-Gm-Gg: AeBDievaJR6kcH6mawLpzbFjKM87CguAEKBgYSw10hEl+P8udZJGEfIkDCmN+BUOL83
+	g8mQgHykVFHpzWK2B/nTxSc/1ypnz9nbYDZP85g6VCNnSj2COPywNwRUB8eurCKXpGggTKg1O2Z
+	ahlof4Gj+vyPWFaRbM2xyQPSqHgOWHzHZw8UEN321YH6M+N0brnRS4nGyMnDNAq+bJjoXsPdfBt
+	Z3JiSQdNTlNYtnLXxki4hzPWPtOrGkGxHqagnxCsLoLKZndOYi7Zvb5db+O3OBqTqIpAzj/urFx
+	7m7ZlnVoE7W/LDgf3uEd71u/UK1oUJUx+EtKDkSZQZ0LUiA2e86Qv249VPGIlKJdyErqxWoz5gT
+	aceY3KQ43i+FOXLpTTRrg5mcuMV259SCdDwwVub1qyF9HPc3pNpJ60Yx4uHQ/A3XylaBYU8LVS1
+	LTUOqtlQvmt12u8EOm5SNxOZS/EyqhK1gBd3gJZicYoP/Hnu+0nW/Cd7EmsXJ2EbogBCRaUYKjv
+	+ojRZuVr40=
+X-Received: by 2002:a05:6512:3046:b0:5a4:1914:bae3 with SMTP id 2adb3069b0e04-5a887ce5f32mr3013919e87.27.1778148186116;
+        Thu, 07 May 2026 03:03:06 -0700 (PDT)
+Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a8683ff452sm4587537e87.63.2026.05.07.03.03.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 07 May 2026 03:03:05 -0700 (PDT)
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Linus <torvalds@linux-foundation.org>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Ulf Hansson <ulfh@kernel.org>,
+	linux-arm-kernel@lists.infradead.org
+Subject: [GIT PULL] pmdomain fixes for v7.1-rc3
+Date: Thu,  7 May 2026 12:03:04 +0200
+Message-ID: <20260507100304.8170-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] thermal/core: Split __thermal_cooling_device_register()
- into two functions
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, rafael@kernel.org
-References: <20260505144447.2853933-1-daniel.lezcano@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260505144447.2853933-1-daniel.lezcano@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi Daniel,
+Hi Linus,
 
-On 5/5/26 15:44, Daniel Lezcano wrote:
-> In preparation for the upcoming changes separating OF and non-OF code,
-> split __thermal_cooling_device_register() into allocation and addition
-> phases.
-> 
-> This allows moving the device node assignment out of the core
-> initialization path.
-> 
-> This change is not a trivial split. The lifetime of the cooling device
-> is managed by the device core through put_device(), which triggers
-> thermal_release() to free all associated resources.
-> 
-> With the introduction of thermal_cooling_device_alloc(), the allocation
-> path must mirror what thermal_release() undoes. In contrast,
-> thermal_cooling_device_add() must not perform any rollback and relies
-> on put_device() for cleanup on error paths. This avoids both double
-> free and resource leaks.
-> 
-> As part of this rework, add the missing device_initialize() call when
-> allocating the cooling device.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
->   drivers/thermal/thermal_core.c | 117 ++++++++++++++++++++-------------
->   1 file changed, 73 insertions(+), 44 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 664a4cc95199..fd4c61197d1e 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1040,29 +1040,10 @@ static void thermal_cooling_device_init_complete(struct thermal_cooling_device *
->   		thermal_zone_cdev_bind(tz, cdev);
->   }
->   
-> -/**
-> - * __thermal_cooling_device_register() - register a new thermal cooling device
-> - * @np:		a pointer to a device tree node.
-> - * @type:	the thermal cooling device type.
-> - * @devdata:	device private data.
-> - * @ops:	standard thermal cooling devices callbacks.
-> - *
-> - * This interface function adds a new thermal cooling device (fan/processor/...)
-> - * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-> - * to all the thermal zone devices registered at the same time.
-> - * It also gives the opportunity to link the cooling device to a device tree
-> - * node, so that it can be bound to a thermal zone created out of device tree.
-> - *
-> - * Return: a pointer to the created struct thermal_cooling_device or an
-> - * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-> - */
->   static struct thermal_cooling_device *
-> -__thermal_cooling_device_register(struct device_node *np,
-> -				  const char *type, void *devdata,
-> -				  const struct thermal_cooling_device_ops *ops)
-> +thermal_cooling_device_alloc(const char *type, const struct thermal_cooling_device_ops *ops)
->   {
->   	struct thermal_cooling_device *cdev;
-> -	unsigned long current_state;
->   	int ret;
->   
->   	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
-> @@ -1076,6 +1057,8 @@ __thermal_cooling_device_register(struct device_node *np,
->   	if (!cdev)
->   		return ERR_PTR(-ENOMEM);
->   
-> +	cdev->ops = ops;
-> +
->   	ret = ida_alloc(&thermal_cdev_ida, GFP_KERNEL);
->   	if (ret < 0)
->   		goto out_kfree_cdev;
-> @@ -1087,17 +1070,36 @@ __thermal_cooling_device_register(struct device_node *np,
->   		goto out_ida_remove;
->   	}
->   
-> +	return cdev;
-> +
-> +out_ida_remove:
-> +	ida_free(&thermal_cdev_ida, cdev->id);
-> +out_kfree_cdev:
-> +	kfree(cdev);
-> +	return ERR_PTR(ret);
-> +}
-> +
-> +static int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void *devdata)
-> +{
-> +	unsigned long current_state;
-> +	int ret;
-> +
->   	mutex_init(&cdev->lock);
->   	INIT_LIST_HEAD(&cdev->thermal_instances);
-> -	cdev->np = np;
-> -	cdev->ops = ops;
->   	cdev->updated = false;
->   	cdev->device.class = &thermal_class;
-> +	device_initialize(&cdev->device);
->   	cdev->devdata = devdata;
->   
-> +	thermal_cooling_device_setup_sysfs(cdev);
-> +
-> +	ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
-> +	if (ret)
+Here's a pull-request with a couple of pmdomain fixes intended for v7.1-rc3.
+Details about the highlights are as usual found in the signed tag.
 
-In case of error here, when the cdev->device won't have this name,
-would thermal_release() still be able to call the cleanup
-for the sysfs bits?
-IMHO the check 'if()' there might bite us and we might not free
-the sysfs allocated memory.
+Please pull this in!
+
+Kind regards
+Ulf Hansson
 
 
-> +		goto out_put_device;
-> +
->   	ret = cdev->ops->get_max_state(cdev, &cdev->max_state);
->   	if (ret)
-> -		goto out_cdev_type;
-> +		goto out_put_device;
->   
->   	/*
->   	 * The cooling device's current state is only needed for debug
-> @@ -1111,35 +1113,62 @@ __thermal_cooling_device_register(struct device_node *np,
->   	if (ret)
->   		current_state = ULONG_MAX;
->   
-> -	thermal_cooling_device_setup_sysfs(cdev);
-> -
-> -	ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
-> -	if (ret)
+The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
 
-In this current code case, we explicitly call the
-thermal_cooling_device_destroy_sysfs() which will definitely clean-up
-all stuff.
+  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
 
+are available in the Git repository at:
 
-> -		goto out_cooling_dev;
-> -
->   	ret = device_register(&cdev->device);
-> -	if (ret) {
-> -		/* thermal_release() handles rest of the cleanup */
-> -		put_device(&cdev->device);
-> -		return ERR_PTR(ret);
-> -	}
-> +	if (ret)
-> +		goto out_put_device;
->   
->   	if (current_state <= cdev->max_state)
->   		thermal_debug_cdev_add(cdev, current_state);
->   
->   	thermal_cooling_device_init_complete(cdev);
->   
-> -	return cdev;
-> +	return 0;
->   
-> -out_cooling_dev:
-> -	thermal_cooling_device_destroy_sysfs(cdev);
-> -out_cdev_type:
-> -	kfree_const(cdev->type);
-> -out_ida_remove:
-> -	ida_free(&thermal_cdev_ida, cdev->id);
-> -out_kfree_cdev:
-> -	kfree(cdev);
-> -	return ERR_PTR(ret);
-> +out_put_device:
-> +	/*
-> +	 * The device core will release the memory via
-> +	 * thermal_release() after put_device() is called in the error
-> +	 * path
-> +	 */
-> +	put_device(&cdev->device);
-> +	return ret;
-> +}
-> +
-> +/**
-> + * __thermal_cooling_device_register() - register a new thermal cooling device
-> + * @np:		a pointer to a device tree node.
-> + * @type:	the thermal cooling device type.
-> + * @devdata:	device private data.
-> + * @ops:	standard thermal cooling devices callbacks.
-> + *
-> + * This interface function adds a new thermal cooling device (fan/processor/...)
-> + * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-> + * to all the thermal zone devices registered at the same time.
-> + * It also gives the opportunity to link the cooling device to a device tree
-> + * node, so that it can be bound to a thermal zone created out of device tree.
-> + *
-> + * Return: a pointer to the created struct thermal_cooling_device or an
-> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-> + */
-> +static struct thermal_cooling_device *
-> +__thermal_cooling_device_register(struct device_node *np,
-> +				  const char *type, void *devdata,
-> +				  const struct thermal_cooling_device_ops *ops)
-> +{
-> +	struct thermal_cooling_device *cdev;
-> +	int ret;
-> +
-> +	cdev = thermal_cooling_device_alloc(type, ops);
-> +	if (IS_ERR(cdev))
-> +		return cdev;
-> +
-> +	cdev->np = np;
-> +
-> +	ret = thermal_cooling_device_add(cdev, devdata);
-> +	if (ret)
-> +		return ERR_PTR(ret);
-> +
-> +	return cdev;
->   }
->   
->   /**
+  git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/linux-pm.git tags/pmdomain-v7.1-rc1
 
-The rest looks OK
+for you to fetch changes up to ec1fcddb3117d9452210e838fd37389ee61e10e8:
 
-Regards,
-Lukasz
+  pmdomain: mediatek: fix use-after-free in scpsys_get_bus_protection_legacy() (2026-04-27 14:53:30 +0200)
 
+----------------------------------------------------------------
+pmdomain core:
+ - Fix detach procedure for virtual devices in genpd
+
+pmdomain providers:
+ - mediatek: Fix use-after-free in scpsys_get_bus_protection_legacy()
+
+----------------------------------------------------------------
+Ulf Hansson (1):
+      pmdomain: core: Fix detach procedure for virtual devices in genpd
+
+Wentao Liang (1):
+      pmdomain: mediatek: fix use-after-free in scpsys_get_bus_protection_legacy()
+
+ drivers/pmdomain/core.c                    | 10 +++++++++-
+ drivers/pmdomain/mediatek/mtk-pm-domains.c | 10 +++++++---
+ 2 files changed, 16 insertions(+), 4 deletions(-)
