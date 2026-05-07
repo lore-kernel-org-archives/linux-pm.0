@@ -1,216 +1,104 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 298D03EF656
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 14:47:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B0563C73D7
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 14:55:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778165232; cv=none; b=lb6l9pH38hmw5dXlsdK/P0yz8umPbvQ6qWpnS188vsMvVEIA+fxBl/Fyk2LbKr6mFzs2WHzHI4hoH4O/PC62jhMe+zTh05CPbcHmVzUi8MxLEPLy5pcqg4N3enP0FqakL1KWvmyLQ/5sJEn4ICuhXcWrQGZvW1M2iwczoj4Gc4g=
+	t=1778165721; cv=none; b=sNnqwqklsBUVLg5a0nV7Gf/HkOGbnvPl7h6KF4s9gP/Qa3QVDFv6iPDRHR6+sAX5/8j8bJiSJtu6qJg2PM2Sdt3HYG0CeAU8xAEgJwBI6CeEfvVkjs8Xjlml58wBiXjBa/b/GIzwXQroR5i4F6kebh5Jp4VfETcioi0CViqL0OU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778165232; c=relaxed/simple;
-	bh=j5AwfqRpfLcGlU3nvL8d5anpS5Z5nq565SF8GAfQdcI=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=F0eFrsaBP2RZZJxVMPIrOtQ1Q0uTpGzAhmqBa3J8ubMnzpBYCeVGqLVxV47NO/Q9NuIkzPJlGQ2sA27iv7Nlsf/cdIEoYb76Mz7kRVoow30OLIu+xqouU4+evwZy4daNOiBVJPxK4j9FSFJM1nF1dldSYO9nJNppOMQ4hzD7TfY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Cq8B0T0g; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778165721; c=relaxed/simple;
+	bh=sBoMTZxot/GUH7ltJZqbnKFUhlhK3zt+1l5cTgivvao=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Sx3lTHPRt1QDG0agoo9dqvIE66xDRX4ULZ0oIIKxpa/Nni/iHFGcJ3+9pcwgG/rPaISxSZbv3T3WGMPMwzh3xbBC+MErpb2aNhqkCD9uRx3YSpQfJcfaEY6FMzv7w7htYYt2RYncgX2bvM7QKa8LJE6Mf6AKMVur7k0X2deqL8o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PoZqAsce; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Cq8B0T0g"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778165229; x=1809701229;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=j5AwfqRpfLcGlU3nvL8d5anpS5Z5nq565SF8GAfQdcI=;
-  b=Cq8B0T0gM2EcRTDgY7zJGT/GsQ1wmyDMBH0oRVvgctGGV/t2ruFMNjK8
-   zO4nloIfl9OK20t/fbkLJuM2O7kuciogiV4sBW9Xzf18fOi235f50rj4g
-   mAp5cgp5487rvB5WHSqYPS10FpzfIY5QwoSgeIYf/oL+WF4nrRA+q7q/F
-   kP6OWZt3OngTDgeTFPTb5sMLBsponQe2dSsq9sOP3UUEj2dXaMsk5N6TC
-   ZTP//6UOsTKf/qMDxkKGSc5eu96mT5EMJ0KrqyC5846c3LOh69g0ppn3P
-   YFld+VP26RGcTyv+iX3j0JkNZu3jvJrpeaD1VGGjvQvUDXMMwcPSUz1uz
-   Q==;
-X-CSE-ConnectionGUID: EtmdXqaKSpyauhybkGiK1A==
-X-CSE-MsgGUID: GUn3ceSsTlG2K/qZ6VjlRg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79108644"
-X-IronPort-AV: E=Sophos;i="6.23,221,1770624000"; 
-   d="scan'208";a="79108644"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:47:09 -0700
-X-CSE-ConnectionGUID: Pvld9wC0R2itro2kmhXHsw==
-X-CSE-MsgGUID: tvshUlyRSPutImgQatUlcg==
-X-ExtLoop1: 1
-Received: from ssimmeri-mobl2.amr.corp.intel.com (HELO [10.125.110.223]) ([10.125.110.223])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:47:07 -0700
-Message-ID: <5ff02dfbafea7f5a9129853ae147e6de1cefb281.camel@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Use CPPC to get scaling factor
- for Bartlett Lake
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Henry Tseng <henrytseng@qnap.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>,  Len Brown <lenb@kernel.org>, Viresh Kumar
- <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, SW Chen <swchen@qnap.com>, Kevin Ko
-	 <kevinko@qnap.com>
-Date: Thu, 07 May 2026 07:47:05 -0700
-In-Reply-To: <20260507092554.2631883-1-henrytseng@qnap.com>
-References: <20260506095157.1591221-1-henrytseng@qnap.com>
-		 <7d47a806110c750c47c4b473f45eff6d7f3ebc18.camel@linux.intel.com>
-	 <20260507092554.2631883-1-henrytseng@qnap.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PoZqAsce"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9918C2BCFD
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 14:55:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778165720;
+	bh=sBoMTZxot/GUH7ltJZqbnKFUhlhK3zt+1l5cTgivvao=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
+	b=PoZqAsceOba+Tqbr9an0bHdgoUbWBFPi5NsLr5LxhkmRNbKeoIrV2x3jc1XN5cgbe
+	 PfV/+Ki7m2qWr2bGIqAn9FfxuDsPj7vOHD8Nk2Zrgk6EUwmcyrYv5YdJYXUvl9jx9J
+	 0A27K1MbOg5+IIqMXlvqpwlPb/1Ww/Gzq56FsvyERuwsxjYR7LuQJvTQ+eA0bO1RlY
+	 XxPyf6p44e/8mwVJefgXManMBW49iWL5dQL3elQOqOdG1Ww+ng8NSKrWlbA0K2xYFN
+	 8bqlswstnWkOgVFP4R9cOs3mJAJTI6MaDRlCQvJvv780HwDSg+K7qhqHqCtV+FDmKD
+	 dtNaMuX3j8yyA==
+Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a8891febd2so1087622e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 07:55:20 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9fLhD5XV5CqIzQrbrVh7YU9nhpH8yVXiZaxiesR9DhUMVQNR9GrsaccLB2qEvpvfdEq1CN8pyZCg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUJfBtaPSmp/kzjsq/l5OJq5kar6zQnyXnXMAbXYPwQUINVH2v
+	qylbVe/uwHQa0JANqkZUkbXbV3z7PRWQNoNMDXY/4bOd+8jDMKI+SIQI8qKVh47ufMP2vJazC4t
+	YwcwRlmDOHIubuLq6lLuOfHPlH1PE+xt4mZksI9Norw==
+X-Received: by 2002:a05:6512:3f1a:b0:5a3:cc81:eff3 with SMTP id
+ 2adb3069b0e04-5a887cdff2emr3195899e87.26.1778165719299; Thu, 07 May 2026
+ 07:55:19 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 7 May 2026 09:55:16 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 7 May 2026 09:55:16 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <u65dquj6im54rc6w5apmq2a6mcpndvh3slcxbjh2bs5el7epw4@zjovdsjkm6ur>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
+ <20260422-pwrseq-m2-bt-v1-12-720d02545a64@oss.qualcomm.com>
+ <klxyhlqwzl6dzk76lrhugxqdsv4hushphlfchuorcmvx5yja7q@pdmp3abepldg> <u65dquj6im54rc6w5apmq2a6mcpndvh3slcxbjh2bs5el7epw4@zjovdsjkm6ur>
+Date: Thu, 7 May 2026 09:55:16 -0500
+X-Gmail-Original-Message-ID: <CAMRc=MdvhMBpunaitGv7yv3sTqkTYviaeAJzphTS5dBUOFPpHw@mail.gmail.com>
+X-Gm-Features: AVHnY4IsmCMvQGmDlHA5wh2Ec390AWskAmVhnqo9T8ZXKWT1l4nlrdNCQ_BYEec
+Message-ID: <CAMRc=MdvhMBpunaitGv7yv3sTqkTYviaeAJzphTS5dBUOFPpHw@mail.gmail.com>
+Subject: Re: [PATCH 12/12] Bluetooth: hci_qca: Fix the broken BT_EN GPIO
+ detection for Qcom WCN devices
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com, 
+	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Shuai Zhang <quic_shuaz@quicinc.com>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	Wei Deng <wei.deng@oss.qualcomm.com>, 
+	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, stable+noautosel@kernel.org, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2026-05-07 at 17:25 +0800, Henry Tseng wrote:
-> On Wed, 06 May 2026 05:15:49 -0700, Srinivas Pandruvada wrote:
-> > This is a special embedded processor, so to reduce enabling effort
-> > by=20
-> > in BIOS, why not just add
-> >=20
-> > diff --git a/drivers/cpufreq/intel_pstate.c
-> > b/drivers/cpufreq/intel_pstate.c
-> > index ec4abe374573..763598ca13cd 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -3732,6 +3732,7 @@ static const struct x86_cpu_id
-> > intel_hybrid_scaling_factor[] =3D {
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
-KE, HYBRID_SCALING_FACTOR_ADL),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
-KE_P,
-> > HYBRID_SCALING_FACTOR_ADL),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
-KE_S,
-> > HYBRID_SCALING_FACTOR_ADL),
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_BARTLETTLAKE,
-> > HYBRID_SCALING_FACTOR_ADL),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_METEORLA=
-KE_L,
-> > HYBRID_SCALING_FACTOR_MTL),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_LUNARLAK=
-E_M,
-> > HYBRID_SCALING_FACTOR_LNL),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 {}
-> >=20
-> > CPPC scaling introduces rounding issues for some frequency. This
-> > will
-> > avoid introducing another CPU model list.
->=20
-> Thanks for the review, the static table is definitely simpler. I had
-> referenced commit 9b18d536b124 and went with CPPC, but I take your
-> point
-> about the rounding issues.
-> After adding INTEL_BARTLETTLAKE to intel_hybrid_scaling_factor[], I
-> noticed hwp_get_cpu_scaling() still falls back to core_get_scaling()
-> on
-> 273PE, because hybrid_get_cpu_type() returns 0 (not
-> INTEL_CPU_TYPE_CORE)
-> on a non-hybrid CPU, so the table value doesn't get picked up. I
-> added a
-> check for X86_FEATURE_HYBRID_CPU there to let non-hybrid CPUs in the
-> table
-> use hybrid_scaling_factor.
->=20
+On Thu, May 7, 2026 at 1:59=E2=80=AFPM Manivannan Sadhasivam <mani@kernel.o=
+rg> wrote:
+> >
+> > This will break the case of WCN399x devices without the PMU in device
+> > tree. There is no enable-gpios since BT is not controllable, but if
+> > there is no PMU, then devm_pwrseq_get() will always return
+> > -EPROBE_DEFER.
+> >
+>
+> Hmm. I missed that the pwrseq returns -EPROBE_DEFER even if the client do=
+esn't
+> require power sequencing. It is because, it has no way to figure it out.
+>
+> But I think the client can parse the regulator phandle, reach the regulat=
+or
+> parent, then check for the '-pmu' suffix in the compatible to make sure t=
+hat it
+> has the power sequencing requirement. Then it can call devm_pwrseq_get() =
+only if
+> that check passes.
+>
 
-This situation is not new, refer to commit
-0fcfc9e51990246a9813475716746ff5eb98c6aa
-    cpufreq: intel_pstate: Fix scaling for hybrid-capable systems with
-disabled E-cores
+I'm wondering if we could maybe provide pwrseq_get_optional() that would on=
+ly
+really be optional with fw_devlink enabled (where we'd be able to ensure th=
+e
+provider is probed before the consumer thus be able to tell right away if t=
+he
+device is power-sequenced or not) while with fw_devlink disabled, it would
+just behave like pwrseq_get() and return -EPROBE_DEFER?
 
-So it seems some regression as it should returned hybrid scaling
-factor.
-Don't have this system handy to test. hybrid_get_cpu_type() will return
-0 when hybrid feature is not set.
+Would it make sense?
 
-With this commit
-9b18d536b124357fee56d82b1462c02f78d219e5
-
-adding if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU)), will break
-such configuration.
-
-So I suggest to send two patches. The first one can have=20
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2273,6 +2273,9 @@ static int knl_get_turbo_pstate(int cpu)
- static int hwp_get_cpu_scaling(int cpu)
- {
-        if (hybrid_scaling_factor) {
-+               if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
-+                       return hybrid_scaling_factor;
-+
-
-You can add Fixes tag for commit
-9b18d536b124357fee56d82b1462c02f78d219e5.
-
-The second patch with hybrid scaling factor for Bartlett Lake, which is
-like RPL.=20
-
-Thanks,
-Srinivas
-
-
-> I also kept hwp_is_hybrid =3D 0 on 273PE to match the current mainline
-> behavior on non-hybrid CPUs.
->=20
-> Draft below, based on v7.1-rc2 (7fd2df204f34), tested on Intel Core 9
-> 273PE:
->=20
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 1292da53e5fc..b66455252745 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -585,7 +585,7 @@ static void intel_pstate_hybrid_hwp_adjust(struct
-> cpudata *cpu)
-> =C2=A0	if (scaling =3D=3D perf_ctl_scaling)
-> =C2=A0		return;
-> =C2=A0
-> -	hwp_is_hybrid =3D true;
-> +	hwp_is_hybrid =3D cpu_feature_enabled(X86_FEATURE_HYBRID_CPU);
-> =C2=A0
-> =C2=A0	cpu->pstate.turbo_freq =3D rounddown(cpu->pstate.turbo_pstate
-> * scaling,
-> =C2=A0					=C2=A0=C2=A0 perf_ctl_scaling);
-> @@ -2279,7 +2279,8 @@ static int hwp_get_cpu_scaling(int cpu)
-> =C2=A0		 * Return the hybrid scaling factor for P-cores and
-> use the
-> =C2=A0		 * default core scaling for E-cores.
-> =C2=A0		 */
-> -		if (hybrid_get_cpu_type(cpu) =3D=3D INTEL_CPU_TYPE_CORE)
-> +		if (hybrid_get_cpu_type(cpu) =3D=3D INTEL_CPU_TYPE_CORE
-> ||
-> +		=C2=A0=C2=A0=C2=A0 !cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
-> =C2=A0			return hybrid_scaling_factor;
-> =C2=A0
-> =C2=A0		return core_get_scaling();
-> @@ -3734,6 +3735,7 @@ static const struct x86_cpu_id
-> intel_hybrid_scaling_factor[] =3D {
-> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE, HYBRID_SCALING_FACTOR_ADL),
-> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,
-> HYBRID_SCALING_FACTOR_ADL),
-> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,
-> HYBRID_SCALING_FACTOR_ADL),
-> +	X86_MATCH_VFM(INTEL_BARTLETTLAKE,
-> HYBRID_SCALING_FACTOR_ADL),
-> =C2=A0	X86_MATCH_VFM(INTEL_METEORLAKE_L,
-> HYBRID_SCALING_FACTOR_MTL),
-> =C2=A0	X86_MATCH_VFM(INTEL_LUNARLAKE_M, HYBRID_SCALING_FACTOR_LNL),
-> =C2=A0	{}
->=20
-> Result on 273PE:
->=20
-> =C2=A0 intel_pstate: CPU0:=C2=A0 HWP_CAP highest =3D 70, scaling =3D 7874=
-1,
-> cpuinfo.max =3D 5500000
-> =C2=A0 intel_pstate: CPU12: HWP_CAP highest =3D 73, scaling =3D 78741,
-> cpuinfo.max =3D 5700000
->=20
-> If this direction looks OK, I'll send a v2 with a proper commit
-> message.
->=20
-> Thanks,
-> Henry
+Bart
