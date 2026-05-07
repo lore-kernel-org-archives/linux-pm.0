@@ -1,44 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E9B547CC65;
-	Thu,  7 May 2026 19:13:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DED2E481230;
+	Thu,  7 May 2026 19:14:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778181211; cv=none; b=FLaVXXnO7cDBse2mTV26Bqp5iw2qk7Z9GJ/ly964910v9CFhzhN7wjda2i8cKNuVcpa2ZJ7ecQPMOOrTe8gSjXKJKNKBQB+3JwEMkOIaYGbKvqaM+bSgzcovEKxKefXpcUXeOtb+eTcCXQtXi61O8jbociYySFQJxcrPOifjLvk=
+	t=1778181249; cv=none; b=GesR7ZKwq+9Os4BTgfrHFZYobSRfkLVyIZSIweRI5ArxbCIknOAL/8ksuB/PS2Nk0Po61DBT6X3hwx/XrQwDNAN4AsLnA5+he99riNd3YdyLWlsE5iQ9vmMWjTO4e+ov00OrznBITtII1tgyOZ51ssyety23wx3U1QSQMBJ3aws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778181211; c=relaxed/simple;
-	bh=4y9RhudWpEqHHtY3XucMq7OeCBeVoOP9PD0gGjA5N0I=;
+	s=arc-20240116; t=1778181249; c=relaxed/simple;
+	bh=i46srF+xQLZ+/JXzvyjfYSk4bP7BIO/nlJqPXGnWWAE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZzBL99M/99ud3dy4zeYTT3Gm06cIFYgHLV6AlqyD0Jrz82IeqlHEoSO9W2CxkgUn5ng3X2aPpJRnnPmt6dXFytH/Yl1D4Q+KbK3sp9dmfqBP4iVRDJ7QkA2nmpEMeTXyX7eMpxLLZO1quc0x6Vaohx1/7gTVcZuEDRLgzW9BSqA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ELiMFNqf; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=clCq2i+DIxDc1CqyDDsAhqjV7qvpOu1ms/xhfbR4TnMYGhxDC73fOvPAQGsUwGvrCIR4bM7xfrthyaT0ubhwK7ZrqQAsMZ84qC4cwXZXTRCsvARKGXSdoTUhOve32ByQ8hKX589eM2r2pzSFkwgGhx4CaCz+Cfol9+f6Aorz8+w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GxtNf4tm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ELiMFNqf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82DDAC2BCB2;
-	Thu,  7 May 2026 19:13:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GxtNf4tm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FF5FC2BCF4;
+	Thu,  7 May 2026 19:14:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778181209;
-	bh=4y9RhudWpEqHHtY3XucMq7OeCBeVoOP9PD0gGjA5N0I=;
+	s=k20201202; t=1778181248;
+	bh=i46srF+xQLZ+/JXzvyjfYSk4bP7BIO/nlJqPXGnWWAE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ELiMFNqfAPy/FzzHpvfHBj2TbmLhOVd2cxsGcREwE7TOR8N7dv2WMriuudBMkMHA4
-	 RUTmd26PFYqb0znNmzU8hXWe85Cg6z/8SMsvSkKGeQRYR30h9MQAxfnV3b1pwqN0e6
-	 FXzua0kuGe340Z2YfyWU+NATvnemSw0JMr96oGi7KAKgoZOCRvIiE9fDjdBVsQbSpE
-	 jMVXAOBeu9DYxpeaih+UwhmOrm9RLO/+0joYy1b41xMkL/selXlvFzJI8zyUVAzhMN
-	 y86HXIR5eO7NXoMVHNQnTplhyP0zJOZYs6jl+HYoQyTUwoWB9NACLi2KHs0qdjIWMQ
-	 qJi6Q0WDWtWgg==
-Date: Thu, 7 May 2026 14:13:27 -0500
+	b=GxtNf4tmdiZ2R3noRYL3VMuBMbd3W58mjZYxCtVsSHjWSxh4rrOQDjWGe/WreyG/R
+	 VeP1naQNWJ0CO/Cc2BCC9YNrOQKSwSyQPgco2WFHcPQ3VW3X1BFmAg/DmX0rrqEgDr
+	 7234/EFJB1Ihy1dPQ4tag3gzwR6BmToU3cBTN3gq2+G+V4ZMaGgeGfVQ81thTiOUmQ
+	 7lDplW4a0kQADGkindVPtCEartTlNmUwSXpDmvI4z3USYvF73BTAYnGL6eaXcBJ2P0
+	 8H5FdyCSxQ9Vb2iydBxteNXAsUeK6TmDJ8x6SM9P6lerHe9X7Hklfm3EXXzVxgciZF
+	 IiVyO7mTWktNw==
+Date: Thu, 7 May 2026 14:14:06 -0500
 From: "Rob Herring (Arm)" <robh@kernel.org>
 To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: linux-arm-msm@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+	Conor Dooley <conor+dt@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Georgi Djakov <djakov@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: qcom,sdm660: Disallow
- clocks when appropriate
-Message-ID: <177818120709.2314237.7569681224064848107.robh@kernel.org>
+	Georgi Djakov <djakov@kernel.org>
+Subject: Re: [PATCH 2/3] dt-bindings: interconnect: qcom,sm6115: Drop
+ incorrect children if:then: block
+Message-ID: <177818124572.2320607.5201244025665342538.robh@kernel.org>
 References: <20260503161653.60785-4-krzysztof.kozlowski@oss.qualcomm.com>
+ <20260503161653.60785-5-krzysztof.kozlowski@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -47,18 +48,23 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260503161653.60785-4-krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260503161653.60785-5-krzysztof.kozlowski@oss.qualcomm.com>
 
 
-On Sun, 03 May 2026 18:16:54 +0200, Krzysztof Kozlowski wrote:
-> Only qcom,sdm660-mnoc and qcom,sdm660-a2noc devices from what is covered
-> by this binding have clocks.  Others do not, so restrict the schema to
-> be more accurate.
+On Sun, 03 May 2026 18:16:55 +0200, Krzysztof Kozlowski wrote:
+> This binding has children, so any if:then: block restricting them,
+> cannot be defined in top-level allOf:if:then:properties:, because it
+> simply does not match these children.  The block, if it was useful,
+> should be defined within patternProperties for the children, however
+> since child nodes do not have clocks at all, there is little point in
+> disallowing them in the first place.
+> 
+> Remove completely redundant and ineffective piece of code.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 > ---
->  .../bindings/interconnect/qcom,sdm660.yaml          | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
+>  .../bindings/interconnect/qcom,sm6115.yaml         | 14 --------------
+>  1 file changed, 14 deletions(-)
 > 
 
 Acked-by: Rob Herring (Arm) <robh@kernel.org>
