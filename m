@@ -1,83 +1,83 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CF662FE59B
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 06:23:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B099433AD99
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 06:23:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778134989; cv=none; b=I5/y4dVwb7xPXqUVrYqbBum4KIqesuzjKoPFQpYvpHaQnbj9TCEIKWrrQVvlZvnu7t887vqadjcd9KjKNExpsZyji7P9HrKwP1E3XaprmIPJEk/g2hMh8Aw3NAnd4APckn6rKHKrof+MrSUMJ809+JCf8C7sbSVrBAq55yCio/s=
+	t=1778134996; cv=none; b=QRahbueF6GNzmt1obclrBqvhd9GxBeKnIC8l/KEN8L6Y6t7JFtXxqUz0U0BwKjRzdfSyvLUS09aqtNWYHAzabXAAxSbJXEJ9mgEygUIo1nEbb5Y+3s7wpPXlzJIINC55JfcAMaX6g85HAuOUFDVo80eFp6SnZ2YivyqHeIO8EOo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778134989; c=relaxed/simple;
-	bh=crif14YmbOExkSC7ZauwFjleVb0oyJmI7QPRCBQarmI=;
+	s=arc-20240116; t=1778134996; c=relaxed/simple;
+	bh=TE4I9dLAziE4F6f8zleSD7WBcoGLgMMGcIxpRrGy/4w=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ZR1CNx0nT0Jbx5tJE7IQnbwQTASn1OVI1I4yGAIlhToH7+s3IVEWcEsPPEaLsAoM43fdtutHs7r9bPwc+lqPh57lsV/uJjEMLHzFZhY1Cz/dEoWVRQnhAojG7d3mwnl8/r1hwg26y+d/68X/Q1WN2Xa2S2Sn0u9lZbLDVsw6MDA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=AmU4McbE; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=JMNeHU9v; arc=none smtp.client-ip=205.220.180.131
+	 MIME-Version; b=pi2OnD5I7WKc9EP1L0gpeTNaDHVD1cTWpD0B6+RILryDqL9hIeiOEoyRkv9VCyESa+DXrywN5/0pfnY7p6XkZkgYHr5bHHVFZeheU7Ev6LBXEOFpH2Xwr3b6GObg/NoA3k7UHFE2e0KFoTqj/Q4Uqm1iR/JF4DawAby+IbT4E2c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=cKSvLFDa; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=MF6SnteI; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="AmU4McbE";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="JMNeHU9v"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6475MA1n3156937
-	for <linux-pm@vger.kernel.org>; Thu, 7 May 2026 06:23:06 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="cKSvLFDa";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="MF6SnteI"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6474sj2j3924172
+	for <linux-pm@vger.kernel.org>; Thu, 7 May 2026 06:23:12 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=wqlIPTlhmBb
-	CJdFzW+UetDgAOjHAm1lIAxJEuFxtZms=; b=AmU4McbEwZZVev9lpbyDoJqTvkZ
-	hPQDHckicgyHEsO+7eCNACzVUDqFQXOUhqezQRHVclxaFZm+SHG6FRNI/rOlCv2N
-	v84rEOSh/q8us6rcEnKVLT//YfH/KFJ6nLLSYk+lLh1wjNuqaLQBlXlz+uIWGE+t
-	GUp0xGIDMMdKgDuGy2I1FG/2aFj9DZ4fnaJOWoma1snmn/vP+Ql+J/EEgraTZ8e4
-	UHiU4S0sfBGXAdovky7ykT3CikzEM2uhFH5Srs7HTKiFysCPQXPzDptzYJNBxHKD
-	QduVFEoV+rWvGGQ+fVqUM3zhbUefWap01NyQhR/hGxOwdE+RbooicRwOAAQ==
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com [209.85.210.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e0mhf069j-1
+	:mime-version:references:subject:to; s=qcppdkim1; bh=4b06huhDhBP
+	LgQXsILfi1dnmLMKdgyO1zEklZp2Wyqc=; b=cKSvLFDaeHA5jl47fC2yTYhRLH9
+	KVIgCApPKLnuPVk2LTHTfwNPPR7OSTgCILVDh1xSmjDXIX82biexdVdB6PikHYl/
+	3TF7VytTY6WF0UwYWRIVIHD3Wd8w42tU6a8oVlooshzOeTw1ock67uders5SyfmQ
+	gzPGsIWfXoLTQd+81mn5v79ZziADqbHw1Qzux1ldnvgcpQExUPClsegAiqED0T6p
+	A+CKcuV3jJQRNqDQEqFHDKhXcY3czbi6aMNUMGoMLEB0oiBhkDjdHdX3YmZ6CFx8
+	mEU4M80BEkNGRaCq3qEOjv6Pd9gkFOLMwPlrylPxbz+CegmcyBcO3BCyLHw==
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e0c889r0h-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 06:23:06 +0000 (GMT)
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-8354503d9acso519598b3a.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 23:23:05 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 06:23:12 +0000 (GMT)
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-b6097ca315bso767273a12.3
+        for <linux-pm@vger.kernel.org>; Wed, 06 May 2026 23:23:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778134985; x=1778739785; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1778134991; x=1778739791; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=wqlIPTlhmBbCJdFzW+UetDgAOjHAm1lIAxJEuFxtZms=;
-        b=JMNeHU9vP5YfLEuGdAvlNw2kWQBZyk/eU9h+WET4j3L3XQQ70W03wAJWCVMwG1oFHi
-         nm4xvLnt68znYhKsswianjYOjKXO82CsNkdBPmwnAsXfZIiIcCC5DcBLgPNdaBcVtj2A
-         Un5JRibtlYW3aS0EL2xfd6MSVSTFPq8hI7bbg0qiGdRDgoAJro/mPnESDaXqeavKuzyv
-         qb402P2Dqpgu4UoaQQtOeankZ4DCbJhBwopIN+l7ZWD4fbMfgm8ma9qXgOeLWb7fmdIo
-         3WcW/vyJK6r2yKSuBJrULhadYGWRMBiL7BfSh4Iic1/Za1DBQ59K3VRmb0Jzv3Cn/DsA
-         /few==
+        bh=4b06huhDhBPLgQXsILfi1dnmLMKdgyO1zEklZp2Wyqc=;
+        b=MF6SnteIzHWaeeNFbBcgvDApQKjghbu+kgySRybPtx1FisHFjMfeNHjcxZUUWLVl2Z
+         9sAZLisgnJoagy0VdML4MyuURq1QCrkE3zyjX1oKGRJEYqFyRoNK2UaDjQ69SVvchjSU
+         dYmeqgkwajtOj0c7CgCxrjJyOZFQ0rQbXFxJRYoDd67xQOAWospHI+r1agkcK9GJd/DF
+         ueYkBvbW0utR/W5NJt71bP3AixMitzwe4ajwGK40Q6poR4WIYPd/xZnaj0Jb8hcI62mx
+         T+sZfx1aFzme/eYnpRxy8H0/SGkYF97HVD9b5tMBLgepAl9+S+O0i+xxy9SD7Fry9mny
+         MV5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778134985; x=1778739785;
+        d=1e100.net; s=20251104; t=1778134991; x=1778739791;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=wqlIPTlhmBbCJdFzW+UetDgAOjHAm1lIAxJEuFxtZms=;
-        b=SqGMvl2g8DGzmcp27ePEBAC+lY9J1PfqCEe7wtwi1gzJGatT8Z6k/AJmgQviCznJGv
-         8RKRlsd1HOJLi2ppySZFNuvI63hqKnjMtMO8QRd/FJOYEG4jzejhXRsBkMZfRUgGz2uu
-         3MYCYWTV5xZa0DeAwleFJHq7ldrh2mLM5LSA7nsy4vkghHefLBCkeqbN+79bUVv/HyNS
-         kvcho77/A+Uz3okBk2MzHOgiu1ncRc/DECcB+s8F6mi14M766tepYASNGmDd0ioDXyBg
-         3it5SC5ZhvFpkQ+JPbT0Ic6gIfDEHtWTzpVSh/4D7yZ3jVa2PgCkvnRroXikKM7z7Iwn
-         a7sw==
-X-Forwarded-Encrypted: i=1; AFNElJ+ugNIZOyfJRl002CaoVlvBmhRYsgk+PSUij/sS+H34fBOzxZyfGQILouqIZOw9RDyGx8lYK+LcOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YziH9nt7+yV3ROUAZEV1FRKI4uUfK6o/zo+uEto23ALyb4xAtJC
-	nyiP6cpSqRCl6LUN//arL40fwx4fJRZ3wMU0daD+z31HjEeAnGEDNe1jHzgv/3OE5pI8IyEWloY
-	RdH3ifpUSXh+00ApxqggIVPh47mQn/z+s8uBnrlFMWwu9PkyFJZ/3YyFl7vj8Kw==
-X-Gm-Gg: AeBDietxkxu19ZLZrH6Vi++2AF2kq1QWnWUjlB7It4KEnBMsisvyNvge1+v9AZCMwDk
-	Eez0EyGQjxb9ZDegDiNH7X/fh0ndiBlFzd7Ytw+vrItGnnn5LXqpRqK8KbshW077iVz560ecHY/
-	5NRB92owLQf0lYwlcre9VnI8UFCvA5scMPv7uRHwO0ozH66aADRfnQk5OYawGFYIEWhsUb9jejO
-	2wZslxTvleAeCwOy3pvSPV6slgFRhRkH5k9vEnBxZY9dJNmkntI1CCJOj0aJNMfrKJgqTMlkdgU
-	BVNSRCNWftb4dQh+svCffgpyf1i42YZEKLN+q1IVv2FN0ngg1EMr3VMPAbEIhyfKWVTopbXwakb
-	TkeNF0iavfr2iFx3azqe4vZL8Xyv1X6AQJIloiDOoiVb66+ZErYcRv158gbl/mjuYF5NOB1UE5b
-	9deWrM9Z1e2BIz/HBQ3sUtyzpxDESlpnWchuGouIk08X7lPhA=
-X-Received: by 2002:a05:6a00:c95:b0:82a:65fa:cecf with SMTP id d2e1a72fcca58-83a5bada322mr6431044b3a.4.1778134984990;
-        Wed, 06 May 2026 23:23:04 -0700 (PDT)
-X-Received: by 2002:a05:6a00:c95:b0:82a:65fa:cecf with SMTP id d2e1a72fcca58-83a5bada322mr6431017b3a.4.1778134984445;
-        Wed, 06 May 2026 23:23:04 -0700 (PDT)
+        bh=4b06huhDhBPLgQXsILfi1dnmLMKdgyO1zEklZp2Wyqc=;
+        b=GA4SJ5wzae176dOVD+42FnzjUrVz8kzmLl0gCVexLNXh/kVJOeD/gfonvzY1zHQ0Fe
+         YnomL/GND2+O8YPcNVIy3pYlBDsq82O2wZPfQwYT5a8O34qtWt9rvgZt5eBagghWs7qF
+         OdlrXEB3ekTD1XY6EUgAoiFcm7J4A3GToeIvnICbfE+stbeMbzHG1LZGWC2QSxOPQOgr
+         oaFYQh69UdE8ih/4uRWT1TI3n19CRsrKvo1DWKmnhxUuzjtMZzl7VQTCRRt7/dpcaotO
+         rw7WcENRngULfW43zAF7JmYIZdBXOPAs2nkBLmCpT7OSn6T+uK+Qh0S4akxRUzTKW1v1
+         Ivfg==
+X-Forwarded-Encrypted: i=1; AFNElJ8R667fXWZiaquyfn/E2gaZuNZaQOJnRbjbyNKBj4riM5+arojZ4YgnBGW/0IObMVMUERcYOH2bow==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwhBQGHKaE72vrOq0PdoFlhqukJRfdjPC+cU/9X3rV6/Yzkrt/l
+	VR8IXv2ZJkyskTcg7VHQgq6sr0Ok8ZzhjjgmtpIHpIJxCOAES50q8ZtD6AKxNXZ7oSNBbQpdTBZ
+	LWdwRevURfhTEEu8ky9a7X92Op/Ke7r//aeareXQyUkYOGkYqGrjSUrr66FpItw==
+X-Gm-Gg: AeBDies6TQaerS9pBOix3gC/3r9AcHVok1BK6XC23PKV5AkfP2O/kVku2sTstSY3Y43
+	MEWZrJs3BW0S00jsnWTETAAxwcd4m0HYDKPbYbQ0BPU7HIKznkA+Am1D+toATGakfc5NgPqY5Pa
+	32F/CeU04AyqxQ5d/poY+UD/ec515wkVPwddQnHuVX64S8ZiJ18uyBr7HVQ4Uwbk860o3wCJrr3
+	3zsw8gyLBClz3AUru+XrvjD+vcsiHZ9RlZ0l7Ot2aio+QSZFZndhjr+N6D/q9OUN2FzroFM28hh
+	YrxCcfxPEb9XCbElk0RsNyvYp8zWPxXQIq/MvyX1QaQpwTbgk5MBthcsdFoMK0wagWyKe96nn9d
+	zeqPOmNejgyPnXWpGtzop2N7spDBFSEvrW58a6yywWoFt/ctHBNzwqL8yzJHGOHYf8SAS8Dm9TP
+	Wap6oDsnaC+WwrUrJjJ57sgIjRFSfwmgnqgSsMmYkkEJQZljM=
+X-Received: by 2002:a05:6a00:12d2:b0:835:cc47:6fe7 with SMTP id d2e1a72fcca58-83a5dd5c9f0mr6280911b3a.30.1778134991260;
+        Wed, 06 May 2026 23:23:11 -0700 (PDT)
+X-Received: by 2002:a05:6a00:12d2:b0:835:cc47:6fe7 with SMTP id d2e1a72fcca58-83a5dd5c9f0mr6280877b3a.30.1778134990795;
+        Wed, 06 May 2026 23:23:10 -0700 (PDT)
 Received: from hu-sibis-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83965945101sm7346557b3a.13.2026.05.06.23.22.57
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83965945101sm7346557b3a.13.2026.05.06.23.23.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 May 2026 23:23:04 -0700 (PDT)
+        Wed, 06 May 2026 23:23:10 -0700 (PDT)
 From: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
 To: cristian.marussi@arm.com, sudeep.holla@kernel.org, cw00.choi@samsung.com,
         kyungmin.park@samsung.com, myungjoo.ham@samsung.com,
@@ -87,13 +87,10 @@ Cc: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
         arm-scmi@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, dmitry.baryshkov@oss.qualcomm.com,
         jonathanh@nvidia.com, thierry.reding@kernel.org, digetx@gmail.com,
-        conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org,
-        Shivnandan Kumar <quic_kshivnan@quicinc.com>,
-        Ramakrishna Gottimukkula <quic_rgottimu@quicinc.com>,
-        Amir Vajid <avajid@quicinc.com>
-Subject: [RFC V6 2/8] firmware: arm_scmi: vendors: Add QCOM SCMI Generic Extensions
-Date: Thu,  7 May 2026 11:52:31 +0530
-Message-Id: <20260507062237.78051-3-sibi.sankar@oss.qualcomm.com>
+        conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org
+Subject: [RFC V6 3/8] PM / devfreq: Add new target_freq attribute flag for governors
+Date: Thu,  7 May 2026 11:52:32 +0530
+Message-Id: <20260507062237.78051-4-sibi.sankar@oss.qualcomm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
 References: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
@@ -104,298 +101,165 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDA2MCBTYWx0ZWRfX+IQZj9+lWsss
- Tx//AcIQHjt8rBeeB1PdycMC3oX/G4zSjKNqMEJVa9DIdxSGidxahrRxbn2X8+bBJQIk9Mahxws
- dWjBuq8vqDa+ysR0+zk4zH1DKHh8UuG+fnsglM6epsN314dzk+0VvCsWJMZ+osueHivJsLKVMIe
- 078ZjHC7OZwMCBmOU3u+NNr/zN+eoDAECvj6QS/QTFQxXmpo/cSujkbl20Gu+7pnE4JgfgAHQYW
- ahXetllQn+1CbQfRHzpgTCvxb1oqjS8cVWEz3HUn7Rxch3rV8TKitXh5FdKhS+vHIioUwG352fo
- 0JzUd2UwS8GLFs7RqqEPL9e6fZejf6vdDxnmnZ6fYKGHnGdfgHtYX8ZV6NVPUdAiPReq4WKJ7R/
- BKnPRtVe/LXZkvzUmga2OHgaJo3bvi3MLZ+u5GUxmskBXY/UpTtGovry9sdvTjLBAaHg83D4xlr
- 30ahBtYuLf1PyGmZJDw==
-X-Proofpoint-ORIG-GUID: HGt6RK-h3IDdBdgeI4iRjwh9YCtot5n8
-X-Authority-Analysis: v=2.4 cv=SuagLvO0 c=1 sm=1 tr=0 ts=69fc2fca cx=c_pps
- a=mDZGXZTwRPZaeRUbqKGCBw==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+X-Proofpoint-ORIG-GUID: 3d_TJl6Z4y_AyzcWe6p7FgUdmkv8OJpL
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDA2MCBTYWx0ZWRfX3Uyq5EDIjTVv
+ khNTMm5eqih6Cu/UnlMFW2IuN8EfQ8jPKS6QyUhcq+OAwLZvzD2q5sNZ+abFNOPG9YB766VnYwP
+ OFmQv1KuIQ6vHVDrmlcgVlOOQK1SC5pYBFssMGqgQuk2PqL4+I4qX6u7ksmH0TORArx58agdts/
+ HTKnvaRS7vvDWXweYbuCYmNxekAa/bnzbrp54rQp7kIkn8RUazKPaysvF1/tk9AupTYIj1l2epa
+ 4AJlvbm3Jen1X3tn1eR95OR7UQ44CXeHv/eL6NtHJT6oY9SkxWUI7x+JJWwcvI9GxtpoGmkn3IA
+ yhvhHVFE7JtekIVxZkfYtIuP4JHIZr1zTVBOw2J4bpAteRcfBih6DKfiarPccNRifrpu/BtCv/v
+ SWauOEX/TU41h3Qodst/w3sksfVwKlqTuCDHpAzp984PlOkzP0kNQ40u/w9BOJJEr4eeLhv2Szs
+ lFdPOfW4eYf4jPeamqA==
+X-Proofpoint-GUID: 3d_TJl6Z4y_AyzcWe6p7FgUdmkv8OJpL
+X-Authority-Analysis: v=2.4 cv=X8Zi7mTe c=1 sm=1 tr=0 ts=69fc2fd0 cx=c_pps
+ a=rz3CxIlbcmazkYymdCej/Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
  a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=COk6AnOGAAAA:8
- a=EUspDBNiAAAA:8 a=5qo32d-oOMBYuVP3DBMA:9 a=zc0IvFSfCIW2DFIPzwfm:22
- a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-GUID: HGt6RK-h3IDdBdgeI4iRjwh9YCtot5n8
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
+ a=K3uUPCIpGL4zgFOSzcMA:9 a=bFCP_H2QrGi7Okbo017w:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 suspectscore=0 bulkscore=0 lowpriorityscore=0
- impostorscore=0 spamscore=0 adultscore=0 phishscore=0 priorityscore=1501
+ impostorscore=0 suspectscore=0 spamscore=0 adultscore=0 malwarescore=0
+ lowpriorityscore=0 clxscore=1015 phishscore=0 priorityscore=1501 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070060
 
-The QCOM SCMI Generic Extensions Protocol provides a generic way of
-exposing a number of Qualcomm SoC specific features (like memory bus
-scaling) through a mixture of pre-determined algorithm strings and
-param_id pairs hosted on the SCMI controller.
+Introduce the target_freq attribute flag as a pre-cursor to adding support
+for devfreq governors who do not explicitly allow for a method to get/set
+target frequency.
 
-Co-developed-by: Shivnandan Kumar <quic_kshivnan@quicinc.com>
-Signed-off-by: Shivnandan Kumar <quic_kshivnan@quicinc.com>
-Co-developed-by: Ramakrishna Gottimukkula <quic_rgottimu@quicinc.com>
-Signed-off-by: Ramakrishna Gottimukkula <quic_rgottimu@quicinc.com>
-Co-developed-by: Amir Vajid <avajid@quicinc.com>
-Signed-off-by: Amir Vajid <avajid@quicinc.com>
 Signed-off-by: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
 ---
+ drivers/devfreq/devfreq.c                 | 4 ++++
+ drivers/devfreq/governor_passive.c        | 1 +
+ drivers/devfreq/governor_performance.c    | 1 +
+ drivers/devfreq/governor_powersave.c      | 1 +
+ drivers/devfreq/governor_simpleondemand.c | 1 +
+ drivers/devfreq/governor_userspace.c      | 1 +
+ drivers/devfreq/hisi_uncore_freq.c        | 1 +
+ drivers/devfreq/tegra30-devfreq.c         | 3 ++-
+ include/linux/devfreq-governor.h          | 3 +++
+ 9 files changed, 15 insertions(+), 1 deletion(-)
 
-@Sudeep/@Christian, Just moving the series back in RFC mode to get feedback
-on the devfreq part of the series. Will add a lot more documentation in the
-next re-spin, so definitely not ignoring your earlier comments :).
-
- drivers/firmware/arm_scmi/Kconfig             |   1 +
- drivers/firmware/arm_scmi/Makefile            |   1 +
- .../firmware/arm_scmi/vendors/qcom/Kconfig    |  15 ++
- .../firmware/arm_scmi/vendors/qcom/Makefile   |   2 +
- .../arm_scmi/vendors/qcom/qcom-generic-ext.c  | 135 ++++++++++++++++++
- include/linux/scmi_qcom_protocol.h            |  37 +++++
- 6 files changed, 191 insertions(+)
- create mode 100644 drivers/firmware/arm_scmi/vendors/qcom/Kconfig
- create mode 100644 drivers/firmware/arm_scmi/vendors/qcom/Makefile
- create mode 100644 drivers/firmware/arm_scmi/vendors/qcom/qcom-generic-ext.c
- create mode 100644 include/linux/scmi_qcom_protocol.h
-
-diff --git a/drivers/firmware/arm_scmi/Kconfig b/drivers/firmware/arm_scmi/Kconfig
-index e3fb36825978..a52f4d1b8b2c 100644
---- a/drivers/firmware/arm_scmi/Kconfig
-+++ b/drivers/firmware/arm_scmi/Kconfig
-@@ -84,6 +84,7 @@ config ARM_SCMI_QUIRKS
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index e5d3f9cf94dc..85e937e321e8 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1526,6 +1526,10 @@ static ssize_t target_freq_show(struct device *dev,
+ {
+ 	struct devfreq *df = to_devfreq(dev);
  
- source "drivers/firmware/arm_scmi/transports/Kconfig"
- source "drivers/firmware/arm_scmi/vendors/imx/Kconfig"
-+source "drivers/firmware/arm_scmi/vendors/qcom/Kconfig"
++	if (!df->profile || !df->governor ||
++	    !IS_SUPPORTED_ATTR(df->governor->attrs, TARGET_FREQ))
++		return -EINVAL;
++
+ 	return sprintf(buf, "%lu\n", df->previous_freq);
+ }
+ static DEVICE_ATTR_RO(target_freq);
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+index d7feecd900f1..b75e4bbee4b1 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -448,6 +448,7 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
  
- endif #ARM_SCMI_PROTOCOL
+ static struct devfreq_governor devfreq_passive = {
+ 	.name = DEVFREQ_GOV_PASSIVE,
++	.attrs = DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.flags = DEVFREQ_GOV_FLAG_IMMUTABLE,
+ 	.get_target_freq = devfreq_passive_get_target_freq,
+ 	.event_handler = devfreq_passive_event_handler,
+diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+index fdb22bf512cf..b9ec587f582c 100644
+--- a/drivers/devfreq/governor_performance.c
++++ b/drivers/devfreq/governor_performance.c
+@@ -37,6 +37,7 @@ static int devfreq_performance_handler(struct devfreq *devfreq,
  
-diff --git a/drivers/firmware/arm_scmi/Makefile b/drivers/firmware/arm_scmi/Makefile
-index 780cd62b2f78..5a0e003c2477 100644
---- a/drivers/firmware/arm_scmi/Makefile
-+++ b/drivers/firmware/arm_scmi/Makefile
-@@ -13,6 +13,7 @@ scmi-module-objs := $(scmi-driver-y) $(scmi-protocols-y) $(scmi-transport-y)
+ static struct devfreq_governor devfreq_performance = {
+ 	.name = DEVFREQ_GOV_PERFORMANCE,
++	.attrs = DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.get_target_freq = devfreq_performance_func,
+ 	.event_handler = devfreq_performance_handler,
+ };
+diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
+index ee2d6ec8a512..69eab1d0a7fc 100644
+--- a/drivers/devfreq/governor_powersave.c
++++ b/drivers/devfreq/governor_powersave.c
+@@ -37,6 +37,7 @@ static int devfreq_powersave_handler(struct devfreq *devfreq,
  
- obj-$(CONFIG_ARM_SCMI_PROTOCOL) += transports/
- obj-$(CONFIG_ARM_SCMI_PROTOCOL) += vendors/imx/
-+obj-$(CONFIG_ARM_SCMI_PROTOCOL) += vendors/qcom/
+ static struct devfreq_governor devfreq_powersave = {
+ 	.name = DEVFREQ_GOV_POWERSAVE,
++	.attrs = DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.get_target_freq = devfreq_powersave_func,
+ 	.event_handler = devfreq_powersave_handler,
+ };
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index ac9c5e9e51a4..65ff9d912ef9 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -118,6 +118,7 @@ static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+ static struct devfreq_governor devfreq_simple_ondemand = {
+ 	.name = DEVFREQ_GOV_SIMPLE_ONDEMAND,
+ 	.attrs = DEVFREQ_GOV_ATTR_POLLING_INTERVAL
++		| DEVFREQ_GOV_ATTR_TARGET_FREQ
+ 		| DEVFREQ_GOV_ATTR_TIMER,
+ 	.get_target_freq = devfreq_simple_ondemand_func,
+ 	.event_handler = devfreq_simple_ondemand_handler,
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 3906ebedbae8..d1b765a7b8e5 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -135,6 +135,7 @@ static int devfreq_userspace_handler(struct devfreq *devfreq,
  
- obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-core.o
- obj-$(CONFIG_ARM_SCMI_PROTOCOL) += scmi-module.o
-diff --git a/drivers/firmware/arm_scmi/vendors/qcom/Kconfig b/drivers/firmware/arm_scmi/vendors/qcom/Kconfig
-new file mode 100644
-index 000000000000..5dd9e8a6b75f
---- /dev/null
-+++ b/drivers/firmware/arm_scmi/vendors/qcom/Kconfig
-@@ -0,0 +1,15 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+menu "ARM SCMI QCOM Vendor Protocols"
-+
-+config QCOM_SCMI_GENERIC_EXT
-+	tristate "Qualcomm Technologies, Inc. Qcom SCMI vendor Protocol"
-+	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST
-+	help
-+	  The QCOM SCMI vendor protocol provides a generic way of exposing
-+	  a number of Qualcomm SoC specific features (like memory bus scaling)
-+	  through a mixture of pre-determined algorithm strings and param_id
-+	  pairs hosted on the SCMI controller.
-+
-+	  This driver defines/documents the message ID's used for this
-+	  communication and also exposes the operations used by the clients.
-+endmenu
-diff --git a/drivers/firmware/arm_scmi/vendors/qcom/Makefile b/drivers/firmware/arm_scmi/vendors/qcom/Makefile
-new file mode 100644
-index 000000000000..6b98fabbebb8
---- /dev/null
-+++ b/drivers/firmware/arm_scmi/vendors/qcom/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_QCOM_SCMI_GENERIC_EXT) += qcom-generic-ext.o
-diff --git a/drivers/firmware/arm_scmi/vendors/qcom/qcom-generic-ext.c b/drivers/firmware/arm_scmi/vendors/qcom/qcom-generic-ext.c
-new file mode 100644
-index 000000000000..4f9eba8ff4bd
---- /dev/null
-+++ b/drivers/firmware/arm_scmi/vendors/qcom/qcom-generic-ext.c
-@@ -0,0 +1,135 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (c) Qualcomm Innovation Center, Inc. All rights reserved.
-+ */
-+
-+#include <linux/scmi_qcom_protocol.h>
-+
-+#include "../../common.h"
-+
-+/**
-+ * enum qcom_generic_ext_protocol_cmd - vendor specific commands supported by SCMI Qualcomm
-+ *                                      generic vendor protocol.
-+ *
-+ * This protocol is intended as a generic way of exposing a number of Qualcomm SoC
-+ * specific features through a mixture of pre-determined algorithm string and param_id
-+ * pairs hosted on the SCMI controller.
-+ *
-+ * The QCOM SCMI Vendor Protocol has the protocol id as 0x80 and vendor id set to
-+ * Qualcomm and the supported version is set to 0x10000. The PROTOCOL_VERSION command
-+ * returns version 1.0.
-+ *
-+ * @QCOM_SCMI_SET_PARAM: is used to set the parameter of a specific algo_str hosted on
-+ *			 QCOM SCMI Vendor Protocol. The tx len depends on the algo_str used.
-+ * @QCOM_SCMI_GET_PARAM: is used to get parameter information of a specific algo_str
-+ *			 hosted on QCOM SCMI Vendor Protocol. The tx and rx len depends
-+ *			 on the algo_str used.
-+ * @QCOM_SCMI_START_ACTIVITY: is used to start the activity performed by the algo_str.
-+ * @QCOM_SCMI_STOP_ACTIVITY: is used to stop a pre-existing activity performed by the algo_str.
-+ */
-+enum qcom_generic_ext_protocol_cmd {
-+	QCOM_SCMI_SET_PARAM = 0x10,
-+	QCOM_SCMI_GET_PARAM = 0x11,
-+	QCOM_SCMI_START_ACTIVITY = 0x12,
-+	QCOM_SCMI_STOP_ACTIVITY = 0x13,
-+};
-+
-+/**
-+ * struct qcom_scmi_msg - represents the various parameters to be populated
-+ *                        for using the QCOM SCMI Vendor Protocol
-+ *
-+ * @ext_id: reserved, must be zero
-+ * @algo_low: lower 32 bits of the algo_str
-+ * @algo_high: upper 32 bits of the algo_str
-+ * @param_id: serves as token message id to the specific algo_str
-+ * @buf: serves as the payload to the specified param_id and algo_str pair
-+ */
-+struct qcom_scmi_msg {
-+	__le32 ext_id;
-+	__le32 algo_low;
-+	__le32 algo_high;
-+	__le32 param_id;
-+	__le32 buf[];
-+};
-+
-+static int qcom_scmi_common_xfer(const struct scmi_protocol_handle *ph,
-+				 enum qcom_generic_ext_protocol_cmd cmd_id, void *buf,
-+				 size_t buf_len, u64 algo_str, u32 param_id, size_t rx_size)
-+{
-+	struct scmi_xfer *t;
-+	struct qcom_scmi_msg *msg;
-+	int ret;
-+
-+	ret = ph->xops->xfer_get_init(ph, cmd_id, buf_len + sizeof(*msg), rx_size, &t);
-+	if (ret)
-+		return ret;
-+
-+	msg = t->tx.buf;
-+	msg->algo_low = cpu_to_le32(lower_32_bits(algo_str));
-+	msg->algo_high = cpu_to_le32(upper_32_bits(algo_str));
-+	msg->param_id = cpu_to_le32(param_id);
-+	memcpy(msg->buf, buf, buf_len);
-+
-+	ret = ph->xops->do_xfer(ph, t);
-+	if (!ret && rx_size)
-+		memcpy(buf, t->rx.buf, t->rx.len);
-+	ph->xops->xfer_put(ph, t);
-+
-+	return ret;
-+}
-+
-+static int qcom_scmi_set_param(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			       u64 algo_str, u32 param_id)
-+{
-+	return qcom_scmi_common_xfer(ph, QCOM_SCMI_SET_PARAM, buf, buf_len, algo_str,
-+				     param_id, 0);
-+}
-+
-+static int qcom_scmi_get_param(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			       u64 algo_str, u32 param_id, size_t rx_size)
-+{
-+	return qcom_scmi_common_xfer(ph, QCOM_SCMI_GET_PARAM, buf, buf_len, algo_str,
-+				     param_id, rx_size);
-+}
-+
-+static int qcom_scmi_start_activity(const struct scmi_protocol_handle *ph, void *buf,
-+				    size_t buf_len, u64 algo_str, u32 param_id)
-+{
-+	return qcom_scmi_common_xfer(ph, QCOM_SCMI_START_ACTIVITY, buf, buf_len, algo_str,
-+				     param_id, 0);
-+}
-+
-+static int qcom_scmi_stop_activity(const struct scmi_protocol_handle *ph, void *buf,
-+				   size_t buf_len, u64 algo_str, u32 param_id)
-+{
-+	return qcom_scmi_common_xfer(ph, QCOM_SCMI_STOP_ACTIVITY, buf, buf_len, algo_str,
-+				     param_id, 0);
-+}
-+
-+static struct qcom_generic_ext_ops qcom_proto_ops = {
-+	.set_param = qcom_scmi_set_param,
-+	.get_param = qcom_scmi_get_param,
-+	.start_activity = qcom_scmi_start_activity,
-+	.stop_activity = qcom_scmi_stop_activity,
-+};
-+
-+static int qcom_generic_ext_protocol_init(const struct scmi_protocol_handle *ph)
-+{
-+	dev_dbg(ph->dev, "QCOM Generic Vendor Version %d.%d\n",
-+		PROTOCOL_REV_MAJOR(ph->version), PROTOCOL_REV_MINOR(ph->version));
-+
-+	return 0;
-+}
-+
-+static const struct scmi_protocol qcom_generic_ext = {
-+	.id = SCMI_PROTOCOL_QCOM_GENERIC,
-+	.owner = THIS_MODULE,
-+	.instance_init = &qcom_generic_ext_protocol_init,
-+	.ops = &qcom_proto_ops,
-+	.vendor_id = "Qualcomm",
-+	.supported_version = 0x10000,
-+};
-+module_scmi_protocol(qcom_generic_ext);
-+
-+MODULE_DESCRIPTION("QCOM SCMI Generic Vendor protocol");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/scmi_qcom_protocol.h b/include/linux/scmi_qcom_protocol.h
-new file mode 100644
-index 000000000000..465b2522ca29
---- /dev/null
-+++ b/include/linux/scmi_qcom_protocol.h
-@@ -0,0 +1,37 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * SCMI Message Protocol driver QCOM extension header
-+ *
-+ * Copyright (c) 2024, Qualcomm Innovation Center, Inc. All rights reserved.
-+ */
-+
-+#ifndef _LINUX_SCMI_QCOM_PROTOCOL_H
-+#define _LINUX_SCMI_QCOM_PROTOCOL_H
-+
-+#include <linux/types.h>
-+
-+#define SCMI_PROTOCOL_QCOM_GENERIC    0x80
-+
-+struct scmi_protocol_handle;
-+
-+/**
-+ * struct qcom_generic_ext_ops - represents the various operations provided
-+ *				 by QCOM Generic Vendor Protocol
-+ *
-+ * @set_param: set parameter specified by param_id and algo_str pair.
-+ * @get_param: retrieve parameter specified by param_id and algo_str pair.
-+ * @start_activity: initiate a specific activity defined by algo_str.
-+ * @stop_activity: halt previously initiated activity defined by algo_str.
-+ */
-+struct qcom_generic_ext_ops {
-+	int (*set_param)(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			 u64 algo_str, u32 param_id);
-+	int (*get_param)(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			 u64 algo_str, u32 param_id, size_t rx_size);
-+	int (*start_activity)(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			      u64 algo_str, u32 param_id);
-+	int (*stop_activity)(const struct scmi_protocol_handle *ph, void *buf, size_t buf_len,
-+			     u64 algo_str, u32 param_id);
-+};
-+
-+#endif /* _LINUX_SCMI_QCOM_PROTOCOL_H */
+ static struct devfreq_governor devfreq_userspace = {
+ 	.name = DEVFREQ_GOV_USERSPACE,
++	.attrs = DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.get_target_freq = devfreq_userspace_func,
+ 	.event_handler = devfreq_userspace_handler,
+ };
+diff --git a/drivers/devfreq/hisi_uncore_freq.c b/drivers/devfreq/hisi_uncore_freq.c
+index 4d00d813c8ac..0800116e3334 100644
+--- a/drivers/devfreq/hisi_uncore_freq.c
++++ b/drivers/devfreq/hisi_uncore_freq.c
+@@ -399,6 +399,7 @@ static struct devfreq_governor hisi_platform_governor = {
+ 	 * Set interrupt_driven to skip the devfreq monitor mechanism, though
+ 	 * this governor is not interrupt-driven.
+ 	 */
++	.attrs = DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.flags = DEVFREQ_GOV_FLAG_IRQ_DRIVEN,
+ 	.get_target_freq = hisi_platform_gov_func,
+ 	.event_handler = hisi_platform_gov_handler,
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index 401aac6a9f07..fcb278c4a74c 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -776,7 +776,8 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+ 
+ static struct devfreq_governor tegra_devfreq_governor = {
+ 	.name = "tegra_actmon",
+-	.attrs = DEVFREQ_GOV_ATTR_POLLING_INTERVAL,
++	.attrs = DEVFREQ_GOV_ATTR_POLLING_INTERVAL
++		| DEVFREQ_GOV_ATTR_TARGET_FREQ,
+ 	.flags = DEVFREQ_GOV_FLAG_IMMUTABLE
+ 		| DEVFREQ_GOV_FLAG_IRQ_DRIVEN,
+ 	.get_target_freq = tegra_governor_get_target,
+diff --git a/include/linux/devfreq-governor.h b/include/linux/devfreq-governor.h
+index dfdd0160a29f..2853f571dfdf 100644
+--- a/include/linux/devfreq-governor.h
++++ b/include/linux/devfreq-governor.h
+@@ -43,9 +43,12 @@
+  *   : Indicate polling_interval sysfs attribute
+  * - DEVFREQ_GOV_ATTR_TIMER
+  *   : Indicate timer sysfs attribute
++ * - DEVFREQ_GOV_ATTR_TARGET_FREQ
++ *   : Indicate the target freq sysfs attribute
+  */
+ #define DEVFREQ_GOV_ATTR_POLLING_INTERVAL		BIT(0)
+ #define DEVFREQ_GOV_ATTR_TIMER				BIT(1)
++#define DEVFREQ_GOV_ATTR_TARGET_FREQ			BIT(2)
+ 
+ /**
+  * struct devfreq_governor - Devfreq policy governor
 -- 
 2.34.1
 
