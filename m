@@ -1,534 +1,235 @@
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77F1A3FBEB3
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 13:46:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778161586; cv=none; b=VfuiVUGoKyfcGf5DYndr13WLLrWV89ISfTCEZgO8mwqTbbDUi7MQfgJFAv2vvs7rmczbH0mZlxav2vPCLbgjyq10r7UEtJBwnsv0rMZP2euZiFnNk9FND5Y1aPiPFh3ooitjnqEyhFXHomRIml0zHsVP8y4S2v6Bd5weHfwKTMk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778161586; c=relaxed/simple;
-	bh=WKPXbH5h2ybjOzoEHWip6SrvY2ABnzJ8hFR5GMG71uw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=u22JpwKWBToOBL2HftSzaiF0f0U5mAkvVjqZt2n6qklSJQ3sm54qYJtL0GqZrL8ErUvwSX9j8/wFP8JXVGNeTlyN2gzOqvwEJkwb/1u/PEXkfC4VGIe9w3+CTmE8mtpvhvPuZAjzaRmZKU1E3HW9HutJTnBXoZD/T+W8Dew2ojk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XkcLbesU; arc=none smtp.client-ip=209.85.221.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E0F12DF136;
+	Thu,  7 May 2026 14:21:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=192.198.163.13
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778163669; cv=fail; b=PpLzo6oUcMHoQIYodRWigl7wR3i7V/aWoDTwY9ULo/WkcdxI0aBZzDtroIVUZ99OPAyVJwe31a/Buz7dmz5aOp0hunmqYX7zq/SXl0bOrrApVRiLrTbnGMyJfn/rAZB7A2aRCSYrVnBW+tHMUpEb73wwl14Ke9kQl/ynOj+Fg3M=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778163669; c=relaxed/simple;
+	bh=R06daNP9YSnJFrAzmFGW6mtt3m18uyCh6R8cL4NatDI=;
+	h=Message-ID:Date:Subject:To:CC:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Vi0sMTTojrHwIdK6z0gOaIQ/nI4tJl+uDN1eNFi+jaNxmU8noqVqvqVlTl5I9ddczb75uTX9P5J4Xu2ycwWEEbWLdpJ+8Zb+vsuqvWPq7h41Xpwov1KzpggwMnS+Mmj75mYyf7PcI+SyKwCPsqIm9CByrJlig2fJBbX9KJIxr/8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=L/xJblet; arc=fail smtp.client-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XkcLbesU"
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-44da2de25f3so661089f8f.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 06:46:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778161582; x=1778766382; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bNwuVHvFu1s7Mk8GKLERrP4YE5NdZti4xQ+xBZhJ0RM=;
-        b=XkcLbesUnwo9v82LePnSXIrVw5UeoYgG4TI4clBtNF+IcOOH6IeoVO0xKwoLcYCkWZ
-         gr9wwrRZEKK9/cY+J/kkJZej3x6xSGBQd5epZc652BsOfmQwL9NMzA4EIMq/Xuc39KZ2
-         0MuGzfS8/PTAVkSdhrpGhrCv9nuWDtTc7RKC8AFCCryPA813gDn6czu5twGjSmsBviXc
-         fb9FYVyaw/SYDrCco5d67bs2MC/Ilids5cBfZR1ey5fV/yd9otFgtVlnRJPicHzCzIi8
-         gqmY1QHgzbTfktnWvE9fjiCMow3KJLAy9HHAyiiFt6kVSmRGi5+GZrhwAdEbFhj5izmG
-         MR6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778161582; x=1778766382;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bNwuVHvFu1s7Mk8GKLERrP4YE5NdZti4xQ+xBZhJ0RM=;
-        b=dfPCo49iiELpnqldBb6B3LPP8QzUX5fJFwiFEZg0y8ahrrFszoKcUslk/th4PHbt7r
-         X9Qha0THOgsKSAKg1ZPHN4vpQuqwNvuGP/e6Y+Lzx+UJ2x3HTZiCqRXQFJ7VvwMXbrSR
-         IWdeH0+6/J3r7HhiiOZkKLYnz5iCKPIl8hNydNZvcpli/uLzHPI5wc31CfazwZe/fA+j
-         XwvnS7Sck86wb/BEswWvFHMaa5zb6nv+0wjiAEam4q5CLO7ne1fn6Dse4qX7qmDAu9sk
-         Z+HBa/byd7gnRwk72/+qG8n8RtILkaBQNxphilqNKd92rCVPb/YLkPucQ8Z2r6UMS3tX
-         D0BA==
-X-Forwarded-Encrypted: i=1; AFNElJ+0QpKJzOjYuKYbwhOx31uszm5GJpqCmM3yHkoHjUmHUOAoOVnkRuw5rzn/ZYZxNGn+mBPpx1JdYQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwQUzHa+z+fGq8Qfh4OoEWORn+/x1dbf/05TmBULnPXhXmpho4D
-	HcpcHwfEWV+JX7FEetp+A+qnyq8W5nO0xNcyuvGzTBdWrO8iPVJqk25J
-X-Gm-Gg: AeBDievezDjB9LnEt9uIni5VExn8FUj2NUwvaZfHXdHqBAQnrgp2HZXMndLI+hIxwQ5
-	RkEcsijbUBLlhExH92Nw0cOW8e5OQSLBtVNBaUsK+K/4ws05+r9QOJIcjUgEYIj8ZXyrZbQiyWP
-	3zCrxcstA9rU9fevgoZMB2niW8UxSqE+flcuExG4cHga5Fs9+RDpL7krxH1r6uiC8SfhlqrSr/I
-	Y9CYSi08nZDZ3ch4fgDm1qEzTYMD56IPcDSBGd8yT9lKr8Sh7JjpUz2ubd5b+UZWTw0JUmm1CYH
-	aQyZTkqwYJYeDcVfoCRwnQtgUBGCYNu/v60fDSBtPoktYpuUOa9IAC3y+rFLHXJS/zzIo1nZRiv
-	Etkb6EYvo0HhyMz74VFjRQFEczVSxGS1hww1Mu5ggpyt0Bh9vJo5aQSeyxFlfKK7T72xjJwoPoq
-	r/mioVBe/xkQbRvJUFqjpk628=
-X-Received: by 2002:a05:6000:1366:b0:453:aad2:77a0 with SMTP id ffacd0b85a97d-453aad2783cmr1379837f8f.3.1778161581612;
-        Thu, 07 May 2026 06:46:21 -0700 (PDT)
-Received: from xeon ([188.163.112.56])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-450524833e1sm20701615f8f.2.2026.05.07.06.46.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 May 2026 06:46:19 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Svyatoslav Ryhel <clamor95@gmail.com>,
-	=?UTF-8?q?Jonas=20Schw=C3=B6bel?= <jonasschwoebel@yahoo.de>
-Cc: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v4 2/2] power: supply: Add support for Surface RT battery and charger
-Date: Thu,  7 May 2026 16:46:07 +0300
-Message-ID: <20260507134608.76222-3-clamor95@gmail.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260507134608.76222-1-clamor95@gmail.com>
-References: <20260507134608.76222-1-clamor95@gmail.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="L/xJblet"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778163668; x=1809699668;
+  h=message-id:date:subject:to:cc:references:from:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=R06daNP9YSnJFrAzmFGW6mtt3m18uyCh6R8cL4NatDI=;
+  b=L/xJbletcUFddSmIyaFhxKWMlMdbo4h469r6/lRKja3FA8OhnA9JztZ8
+   JvoviI6xZHb0HJfy5kTyPWoxCyuwiBgpnrQg5X1bbzh/59CJQxYnhOTtN
+   jPCy9Ae4Lv8h/kwimpcryjB+wWZUupMfMMF+HeAyZ2XOCIV/OQ3bdf/+D
+   DEie0YT2x6WljbWzZDgL4vExO+i5RmxLWArEF6QnItZufYKqB8sO4do9l
+   Axa/q6inA9iTqcs+I0rCI51mKZ8+bRBotAjNNM4o7xWFKgsSHz3JB0HUk
+   sgUAf3KCemsQO1IYeGmi3FI/YUUYTSQgmw3SB3tqaIC2CMkjBI8n+GcVr
+   w==;
+X-CSE-ConnectionGUID: J+i1LN06S9OJGslwq4FfCA==
+X-CSE-MsgGUID: hqpBWgeOSzKVUYZMCU7w/A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="81684072"
+X-IronPort-AV: E=Sophos;i="6.23,221,1770624000"; 
+   d="scan'208";a="81684072"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:21:07 -0700
+X-CSE-ConnectionGUID: ed72vs0+TFWaSKe80qMoFg==
+X-CSE-MsgGUID: L8Do5d7QS8CzqEfEAhFYlw==
+X-ExtLoop1: 1
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+  by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:21:07 -0700
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 7 May 2026 07:21:06 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Thu, 7 May 2026 07:21:06 -0700
+Received: from PH0PR06CU001.outbound.protection.outlook.com (40.107.208.22) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Thu, 7 May 2026 07:21:06 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=NkkWPPrPwrdanfSHhu/DivP1GPEnqIbAIS9ZRmTXxb0rGMJEHoqztmZ45cXim+sBGZpj+MnuVQl5HRG7kcdb+AkIsMcgvuy7KODU0xUXJD44mtYcaoQawBmYeRV1Zdf+z14q2brP75FDzvWmbAny82K5p2HP33AigrelKfB0nNbJnQtJSqW5WFKxgJMbaFpA1wVMNobz7s7A7kQf5bZkTQnaFY9n7/uYQIyZGByaobrE7ZmbGe4CH0T5pzJ2jklyOhbRcTpVXqoNieuyuxFlja4mXx8SFO8uUPjGLWkHGe3pWA4XW1nwxY1xXeZsj80UtT0pnhmIQq8aUoWTDdURow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=YXKLUZY49d1P/Y1YfGW3aVuqN+2H5vizDBXbSMW1DQk=;
+ b=nvlPf7Q2rVf5L25hHzw6rLx8BDUPV4JSXlUT7NyPRHCyUOXuVbhHludmwnKdt5OZgmsZ7j0vJQ4Wm4djI9vqJqFi1Pbd+fqPFH0x6BUnYfSijMuy0a7LQLxTM5G9h7/ep0lNjl7ysUgfLWNGexdnFqxOd23fPcPZRraXn0YbwOpt4jbo9qbAUVZ8fp/WHUVNTrQjqCe63ohVFmuwQWIACRyJNck4vibyyUcNGGx7FnF26ldGMUflzc+wvS1TTozCenD6MWjhrepyz51fT8NA3Uliz8IrhckXCJVKvUx3MtSpARL6YvYp92/LSpsYIH/caK+9P38X+nB8vcvYHguv4Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19) by
+ PH3PPFA3FE8A23F.namprd11.prod.outlook.com (2603:10b6:518:1::d3f) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.17; Thu, 7 May
+ 2026 14:21:04 +0000
+Received: from DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765]) by DM4PR11MB6020.namprd11.prod.outlook.com
+ ([fe80::3058:1480:e4ac:5765%6]) with mapi id 15.20.9870.023; Thu, 7 May 2026
+ 14:21:04 +0000
+Message-ID: <615dfcf8-31da-4e65-8964-c39022b5a1b2@intel.com>
+Date: Thu, 7 May 2026 22:20:52 +0800
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 RFC 08/13] sched/qos: Add a new sched-qos interface
+To: Qais Yousef <qyousef@layalina.io>, Tim Chen <tim.c.chen@linux.intel.com>
+CC: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki"
+	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli
+	<juri.lelli@redhat.com>, Steven Rostedt <rostedt@goodmis.org>, John Stultz
+	<jstultz@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Thomas
+ Gleixner" <tglx@kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, Vern Hao <vernhao@tencent.com>, Vern Hao
+	<haoxing990@gmail.com>
+References: <20260504020003.71306-1-qyousef@layalina.io>
+ <20260504020003.71306-9-qyousef@layalina.io>
+ <2b9fd875df1f71d2c12c21938784a6c1fd38c04a.camel@linux.intel.com>
+ <20260507095516.vv7blulzskkyezin@airbuntu>
+Content-Language: en-US
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+In-Reply-To: <20260507095516.vv7blulzskkyezin@airbuntu>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: TP0P295CA0056.TWNP295.PROD.OUTLOOK.COM (2603:1096:910:3::7)
+ To DM4PR11MB6020.namprd11.prod.outlook.com (2603:10b6:8:61::19)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6020:EE_|PH3PPFA3FE8A23F:EE_
+X-MS-Office365-Filtering-Correlation-Id: 03eba2be-eadd-44b2-0b2d-08deac43df5e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|366016|376014|1800799024|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info: 14hw1zfjrxKRriHLi6mDAZKbbFK4Wi11xnZk1epHdLawaQMPNuThzG2sMMU90GxYvCU5HykHbVrd6ex1b/zC/8Q5wieHwjkPFR3q2cXZattPWnr6wVr9ReCzFnHPumgZLaoMdkbp98FxvklvBZDgKrAMY+0Sgo1OkEwhBXCNZrFFU03awmNhA+EubsMGT8P0tb9eOapr0JH0qHmAmRYwD/fyjmUz9tOZr3LWves6EHu5ki74zCxuL2aJ2uWrNBZwdJqWvJMpg2QT7+gRf56I3KGINDU1C7e1FPw1ADS6ELpGYdTQ1KCxt1C7iMmbYuGawwNMcFtI7DjnxJiOwNG86UDgLvWsjADeLtHsgxi/AZQhuhB0XXri1e3jw3yaXU2vUrUtzXdWfUW8WeKTwUvExFTPVL9VzOI0q154zmdegEnpGwqULj6BupqvuU8cLpBrYW/TGrLhUFuSychj75oLNt3Yi7urz701NjYLManWoy0YXh7IPGASi2ZPXw2aE2FTZhA9wAWuG6k5V/k6jWEPVejNoVt2eHO0WVK6L9ec5vOnLMT34OhJxHBOiQGXWczqBSWDBsM+z0DvfVMgMaV9et2UXBX6BflR4O1sHVNoynFeMTRhrWOLjddSHi50cBswUdgEwFa1Vo/ybdc+66fWnFwv7xU+DrT9dhq/ye/iy5pO+b73q5y+kEfmLv9OdppF
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR11MB6020.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(376014)(1800799024)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SW1HVkM0S014OVdhV0lnYnNPQ1VJcVR4UkxHbENncU4wWUJnQ1ZlclRNWEU1?=
+ =?utf-8?B?Ymp4ckVSSU1wQzVwRXhGMG5nenFjMUpic1pvaWdJZHk1VFA2di9nczloWGM5?=
+ =?utf-8?B?OFlzZ1I0NWFwc3l5OU42OGRoMS9BZUhmNm4xTG5aOGVlRFlFRjI0SElVNi84?=
+ =?utf-8?B?dWlIYlg2MmlpN2xnYnBMZkJQK0JPMmxLQlM0QncxVXBYcHJlb0k3ay8wVGp1?=
+ =?utf-8?B?ODU1aXA2MUJvU3Fhc1QyZ2Uwb0ZTazQ1bmNoM2J0YzUwU1RFRDJ0WUVlb0xp?=
+ =?utf-8?B?bGVJL1pOMUFVQnpsNlZpbTlQTmMyYWNOR2NoNWdrL0o4NWprcWMvNmtwVGpN?=
+ =?utf-8?B?UWFlTVl3N0VQN1NvSE9XUVVGbmVtb3R2RWxjQ25HM24xeHBzNEx3TGg5R3Zs?=
+ =?utf-8?B?VjhoYXVzenNzME5kekNPSksyQmhnUXFRbkprSmdMZk1HUnUrazlSVTQyM2Vl?=
+ =?utf-8?B?dkJTeUJFWWtQbWlqTzFUdzA3bUxuK0gyVE05bGQ0cHBHR0prMVBsSVlyZHRB?=
+ =?utf-8?B?eEk5NXJ3U3Yza1RhNm9lVGpHYTNHM0FhbDViUi9JN0FrbzFxcVZ2Wnd3dmR0?=
+ =?utf-8?B?UllFVlJ1VHQ2RFZvYll5Q2Zmck15YWwwN25LWk5wOFUvUjhhcUJSenVHL09i?=
+ =?utf-8?B?Zm1ySmtHeFhubFFNQ2Y1MmM2cnEvZ0o0VVRwWlRkVnBhalc1UTRCbVdGVVd1?=
+ =?utf-8?B?NWQxd0xKa1dUNUNsbWtqbTEzdXY5V3cwdzFkQ3FHZjFEVkYvM1RjdHRRT0py?=
+ =?utf-8?B?NDJFSytXY0JGT2ZBdWpPWXB1dmExVk1kVk8vRjFZVDRvZjNYakxWZUNBNUV4?=
+ =?utf-8?B?MVpicXpneEQ0NWhZZkFudEJYNXN5d0xnZEQ3RlVCMFo4UU1nNm5HVm4xTXVO?=
+ =?utf-8?B?Yi8wTFV5U2VPYmdaV0hFZHdPTVk2S01PWGdxaExISmtVWEdhMytTNG42WS81?=
+ =?utf-8?B?UkJHempVR3lYWnRRQnVkbnhIa2JZS3dBQ1dvdDdsU1R3V2U0RnduSlNiNlhl?=
+ =?utf-8?B?dHVOT0FIUEphb0QvMlc5dGM5dUZ4ZS9EaUF0MHdJUFZIdG5DV0xGUUI2c3FG?=
+ =?utf-8?B?ZThUZjBaODdsdGxTNU8vR0xFVnN6UFk0N0p1SFZJT1h4Um9TdTlsWXdjTEVS?=
+ =?utf-8?B?YUYvamRRdlBQTGdoR1hjeUg3QnhnbVAyS0RlZU9oTDhkUlFUTkVsWEtTNWM0?=
+ =?utf-8?B?ZHBGZ09HZHhpR3p4YWxPUkJyTVpJUjFvT1ZWNVpPTzlXUVNXcWU2MHFTcVNL?=
+ =?utf-8?B?ME1wSVp6alFvcmJYWmtRZ1BEMjJ4VUxSWGdQaXYzSHBjdUNuWWZDNVhraHB2?=
+ =?utf-8?B?UFM1ek5ESGkvYm5UNFNoUEVKenZVbm5sNUs2Qy9zb0tka2I3T0VRNUY0SG5i?=
+ =?utf-8?B?VGJ3K1JkRkpkYUdoN0NodVErT3ZheHlNRGJwOEozVThQaXN1c0pEQ0FyTTVq?=
+ =?utf-8?B?ZHhTL3JUMjgxa2FXMzRhTHdEL2M2UkYrVi9DYm1mYklOSnRuSmx3c1ptNThE?=
+ =?utf-8?B?RUZHczFFUFlSV3RjTlFOdmdLYURnNUxmUWs2TXRvRmlZL3lveE94bjZpS05D?=
+ =?utf-8?B?R3FQbmpCN1psODlNVHVvelBtdjdGbksvTTlSak53Q0hvZXo1bVQwd2lQSlp4?=
+ =?utf-8?B?Q3hYdEpZV0xYK3lJaW1rb2ltRkpOQXdzemNrSStJVUNLbkFsTFQ0WExkU2xK?=
+ =?utf-8?B?dy91YjV0NU1XalN5SGRzSmlJcTArbGZUZDE4ZHV3QzRQMVVNemxUWkFTa3Fp?=
+ =?utf-8?B?cTg1eGI3U2ZHaCtUN05VVnVBOVlPNVBqaFlMY3BKSnF1RjdvTWl6aWxjUWJz?=
+ =?utf-8?B?cXJadllNaVZFU0pjbFN4UVhZRTVZWTFBa2FRVFhlbkpYSmpUSmNCaHovYW5N?=
+ =?utf-8?B?Yjkrb3Y1a0o5eTlrVHlaZ0pIc05xaEowdmJwaVhzMEhvM2lFYmdPQVlwOExr?=
+ =?utf-8?B?d0ZRRmNGVnFvMUREVWhpV3ZyUTd4cVV3dWwwWS9sMGFZbE5KY0FkcU5KbmRp?=
+ =?utf-8?B?K09XbUQ2Ykx1amZLMldLNlpzMkNWUlVBNUI5UEtoZzVTN3h4S0xVZEJSTEpU?=
+ =?utf-8?B?elhrdS9HNVdTSkltb3RvcXhBck53Mnl0Q09kNzZjZklXR3lHZENTL3JBMWo4?=
+ =?utf-8?B?aklIUGZ2TjFreU1adWFCOVp6YXFIWldqL1VCaVU1cVNPVmFYeGxYZmVZemQx?=
+ =?utf-8?B?QnAyOFg1WE5tYXpKUFQ0QmMzdFR1R2tBOVRKNTVWTEFDODZlR1l1cjBnVFVL?=
+ =?utf-8?B?ZWY5THRvdGg5ZDdiMElIZmo0cmx3TWtlcmpjM0N5RU1jQ0VYOCt3SU84a3Y2?=
+ =?utf-8?B?LzZtVW9tM1NtWnRSZ0NkOTA5aGZDaHJXUEJxYlVoTGpHT3pHOFZ0dz09?=
+X-Exchange-RoutingPolicyChecked: Y6PgKE5sRkpLAHqJzHsKkRDrDNJUKUE4WjVj7aP9Ybf31gxMB/Pdab0OAVmLGezCSTvTziVcFmVwsUvN3KftjQO8B7/TSsj6X7oDN087m7rECFXV/glHYXwKWVeNO3NI9hV5O8fghoLp0Jo74mslsu4nvicrhASGdp50hZwumT+bpY0lXANjP4mMrzsCv34+LnuhZHwWW5AHjyJIpdpKoR+ewisfEVBwCjBy+nIdn3w5SEIs0n5GahHV8OZRP7WIIhuR5ATBUCrKPhn7OtBOAp7wu+RJrU0jzXUhy56iyhkogirJpLGvp1MXxF7LIBubCI/vszEUim5mTKIltv8ydQ==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 03eba2be-eadd-44b2-0b2d-08deac43df5e
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6020.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 May 2026 14:21:04.6072
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: BObgDw2iLjIqKStGlt/KdWDY3F/CsH2c6sU4fJR+jGvUAPktLuXMqcdjPpg8fhhiDDW8mOj+LSvGXhasN8P5+g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH3PPFA3FE8A23F
+X-OriginatorOrg: intel.com
 
-From: Jonas Schwöbel <jonasschwoebel@yahoo.de>
+On 5/7/2026 5:55 PM, Qais Yousef wrote:
+> On 05/06/26 13:38, Tim Chen wrote:
+>> On Mon, 2026-05-04 at 02:59 +0100, Qais Yousef wrote:
 
-Add support for Embedded Controller found in the Microsoft Surface RT and
-used to monitor battery cell and charger input status and properties.
-Controller works both for UEFI and APX booting.
+[ ... ]
 
-[wmjb: added POWER_SUPPLY_PROP_CHARGE_NOW support]
-Signed-off-by: Jethro Bull <jethrob@hotmail.com>
-Signed-off-by: Jonas Schwöbel <jonasschwoebel@yahoo.de>
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
----
- drivers/power/supply/Kconfig         |  11 +
- drivers/power/supply/Makefile        |   1 +
- drivers/power/supply/surface-rt-ec.c | 389 +++++++++++++++++++++++++++
- 3 files changed, 401 insertions(+)
- create mode 100644 drivers/power/supply/surface-rt-ec.c
+> The idea is that the cookie is per QOS per process. So QOS_TYPE_A would have
+> its unique cookie range, and QOS_TYPE_B would have its independent unique
+> cookie range. To allow flexibility and extensibilty to describe independent
+> behavior that requires independent grouping.
+> 
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 4d04de6586ae..13661d3d39b4 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -1168,6 +1168,17 @@ config BATTERY_UG3105
- 	  device is off or suspended, the functionality of this driver is
- 	  limited to reporting capacity only.
- 
-+config BATTERY_CHARGER_SURFACE_RT
-+	tristate "Battery & Charger driver for Microsoft Surface RT"
-+	depends on I2C && GPIOLIB
-+	help
-+	  UEFI/APX driver for the 1st-generation Microsoft Surface RT
-+	  battery. Driver supports reading battery properties and
-+	  charger status.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called surface-rt-ec.
-+
- config CHARGER_QCOM_SMB2
- 	tristate "Qualcomm PMI8998 PMIC charger driver"
- 	depends on MFD_SPMI_PMIC
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 3959b974ec84..ebd3beef4c84 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -129,6 +129,7 @@ obj-$(CONFIG_RN5T618_POWER)	+= rn5t618_power.o
- obj-$(CONFIG_BATTERY_ACER_A500)	+= acer_a500_battery.o
- obj-$(CONFIG_BATTERY_SURFACE)	+= surface_battery.o
- obj-$(CONFIG_CHARGER_SURFACE)	+= surface_charger.o
-+obj-$(CONFIG_BATTERY_CHARGER_SURFACE_RT) += surface-rt-ec.o
- obj-$(CONFIG_BATTERY_UG3105)	+= ug3105_battery.o
- obj-$(CONFIG_CHARGER_QCOM_SMB2)	+= qcom_smbx.o
- obj-$(CONFIG_FUEL_GAUGE_MM8013)	+= mm8013.o
-diff --git a/drivers/power/supply/surface-rt-ec.c b/drivers/power/supply/surface-rt-ec.c
-new file mode 100644
-index 000000000000..a728ae0db858
---- /dev/null
-+++ b/drivers/power/supply/surface-rt-ec.c
-@@ -0,0 +1,389 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+
-+#include <linux/devm-helpers.h>
-+#include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/property.h>
-+#include <linux/power_supply.h>
-+#include <linux/types.h>
-+
-+/* Register Addresses (B=byte; W=word; S=string) */
-+#define REGB_STATUS			0x02
-+#define REGW_VOLTAGE_NOW		0x20
-+#define REGW_CURRENT_NOW		0x24
-+#define REGW_CAPACITY			0x28
-+#define REGW_CHARGE_NOW			0x2a
-+#define REGW_CHARGE_FULL		0x2c
-+#define REGW_CYCLE_COUNT		0x3a
-+#define REGW_CHARGE_FULL_DESIGN		0x3c
-+#define REGW_VOLTAGE_MAX_DESIGN		0x3e
-+#define REGW_SERIAL_NUMBER		0x44
-+#define REGS_MANUFACTURER		0x46
-+#define REGS_MODEL_NAME			0x52
-+#define REGS_TECHNOLOGY			0x5a
-+#define REGB_ONLINE			0x67
-+
-+struct srt_ec_device {
-+	struct i2c_client *client;
-+
-+	struct power_supply *bat;
-+	struct power_supply *psy;
-+
-+	struct gpio_desc *enable_gpiod;
-+	struct delayed_work poll_work;
-+
-+	unsigned int technology;
-+	unsigned int capacity;
-+
-+	const char *serial;
-+	char manufacturer[13];
-+	char model_name[10];
-+};
-+
-+static const enum power_supply_property srt_bat_power_supply_props[] = {
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CYCLE_COUNT,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+};
-+
-+static const enum power_supply_property srt_psy_power_supply_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_PRESENT,
-+};
-+
-+static int srt_bat_get_value(struct i2c_client *client, int reg, int *val)
-+{
-+	int ret;
-+
-+	switch (reg) {
-+	case REGW_CHARGE_NOW:
-+	case REGW_CHARGE_FULL_DESIGN:
-+	case REGW_CHARGE_FULL:
-+	case REGW_VOLTAGE_MAX_DESIGN:
-+	case REGW_VOLTAGE_NOW:
-+		ret = i2c_smbus_read_word_data(client, reg);
-+		if (ret < 0)
-+			return ret;
-+
-+		*val = ret * 1000;
-+		break;
-+
-+	case REGW_CURRENT_NOW:
-+		ret = i2c_smbus_read_word_data(client, reg);
-+		if (ret < 0)
-+			return ret;
-+
-+		*val = (s16)ret * 1000;
-+		break;
-+
-+	case REGW_CAPACITY:
-+	case REGW_CYCLE_COUNT:
-+		ret = i2c_smbus_read_word_data(client, reg);
-+		if (ret < 0)
-+			return ret;
-+
-+		*val = ret;
-+		break;
-+
-+	case REGB_STATUS:
-+		ret = i2c_smbus_read_byte_data(client, reg);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (ret & BIT(0))
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			*val =  POWER_SUPPLY_STATUS_DISCHARGING;
-+		break;
-+
-+	case REGB_ONLINE:
-+		ret = i2c_smbus_read_byte_data(client, reg);
-+		if (ret < 0)
-+			return ret;
-+
-+		*val = (ret & BIT(1)) >> 1;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int srt_bat_power_supply_get_property(struct power_supply *psy,
-+					     enum power_supply_property psp,
-+					     union power_supply_propval *val)
-+{
-+	struct srt_ec_device *srt = power_supply_get_drvdata(psy);
-+	struct i2c_client *client = srt->client;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = srt->manufacturer;
-+		break;
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = srt->model_name;
-+		break;
-+	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-+		val->strval = srt->serial;
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = srt_bat_get_value(client, REGW_CAPACITY, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		ret = srt_bat_get_value(client, REGW_CHARGE_NOW, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL:
-+		ret = srt_bat_get_value(client, REGW_CHARGE_FULL, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		ret = srt_bat_get_value(client, REGW_CHARGE_FULL_DESIGN,
-+					&val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		ret = srt_bat_get_value(client, REGW_CURRENT_NOW, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CYCLE_COUNT:
-+		ret = srt_bat_get_value(client, REGW_CYCLE_COUNT, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = 1;
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = srt_bat_get_value(client, REGB_ONLINE, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (srt->capacity < 100)
-+			ret = srt_bat_get_value(client, REGB_STATUS, &val->intval);
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_FULL;
-+		break;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = srt->technology;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		ret = srt_bat_get_value(client, REGW_VOLTAGE_MAX_DESIGN,
-+					&val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = srt_bat_get_value(client, REGW_VOLTAGE_NOW, &val->intval);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int srt_psy_power_supply_get_property(struct power_supply *psy,
-+					     enum power_supply_property psp,
-+					     union power_supply_propval *val)
-+{
-+	struct srt_ec_device *srt = power_supply_get_drvdata(psy);
-+	struct i2c_client *client = srt->client;
-+	int ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		ret = i2c_smbus_read_byte_data(client, REGB_ONLINE);
-+		if (ret < 0)
-+			return ret;
-+
-+		val->intval = ret & BIT(0);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static void srt_bat_poll_work(struct work_struct *work)
-+{
-+	struct srt_ec_device *srt =
-+		container_of(work, struct srt_ec_device, poll_work.work);
-+	int ret, capacity;
-+
-+	ret = srt_bat_get_value(srt->client, REGW_CAPACITY, &capacity);
-+	if (!ret && capacity != srt->capacity) {
-+		srt->capacity = capacity;
-+		power_supply_changed(srt->bat);
-+	}
-+
-+	/* continuously send uevent notification */
-+	schedule_delayed_work(&srt->poll_work, 30 * HZ);
-+}
-+
-+static irqreturn_t srt_psy_detect_irq(int irq, void *dev_id)
-+{
-+	struct srt_ec_device *srt = dev_id;
-+
-+	power_supply_changed(srt->psy);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static const struct power_supply_desc srt_bat_power_supply_desc = {
-+	.name = "surface-rt-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = srt_bat_power_supply_props,
-+	.num_properties = ARRAY_SIZE(srt_bat_power_supply_props),
-+	.get_property = srt_bat_power_supply_get_property,
-+	.external_power_changed = power_supply_changed,
-+};
-+
-+static const struct power_supply_desc srt_psy_power_supply_desc = {
-+	.name = "surface-rt-ac-adapter",
-+	.type = POWER_SUPPLY_TYPE_MAINS,
-+	.properties = srt_psy_power_supply_props,
-+	.num_properties = ARRAY_SIZE(srt_psy_power_supply_props),
-+	.get_property = srt_psy_power_supply_get_property,
-+};
-+
-+static char *battery_supplied_to[] = { "surface-rt-battery" };
-+
-+static int srt_ec_probe(struct i2c_client *client)
-+{
-+	struct power_supply_config bat_cfg = {};
-+	struct power_supply_config psy_cfg = {};
-+	struct device *dev = &client->dev;
-+	struct srt_ec_device *srt;
-+	char str_buf[4];
-+	int ret;
-+
-+	srt = devm_kzalloc(dev, sizeof(*srt), GFP_KERNEL);
-+	if (!srt)
-+		return -ENOMEM;
-+
-+	i2c_set_clientdata(client, srt);
-+	srt->client = client;
-+
-+	srt->enable_gpiod = devm_gpiod_get(dev, "enable", GPIOD_OUT_HIGH);
-+	if (IS_ERR(srt->enable_gpiod))
-+		return dev_err_probe(dev, PTR_ERR(srt->enable_gpiod),
-+				     "failed to get enable gpio\n");
-+
-+	/* wait till EC is ready */
-+	usleep_range(1000, 1500);
-+
-+	ret = i2c_smbus_read_word_data(client, REGW_SERIAL_NUMBER);
-+	if (ret < 0)
-+		return ret;
-+
-+	srt->serial = devm_kasprintf(dev, GFP_KERNEL, "%04x", ret);
-+	if (!srt->serial)
-+		return -ENOMEM;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client, REGS_MANUFACTURER,
-+					    sizeof(srt->manufacturer) - 1,
-+					    srt->manufacturer);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client, REGS_MODEL_NAME,
-+					    sizeof(srt->model_name) - 1,
-+					    srt->model_name);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client, REGS_TECHNOLOGY,
-+					    sizeof(str_buf), str_buf);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!strncmp(str_buf, "LION", 4))
-+		srt->technology = POWER_SUPPLY_TECHNOLOGY_LION;
-+	else
-+		srt->technology = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
-+
-+	bat_cfg.drv_data = srt;
-+	bat_cfg.fwnode = dev_fwnode(dev);
-+
-+	srt->bat = devm_power_supply_register(dev, &srt_bat_power_supply_desc,
-+					      &bat_cfg);
-+	if (IS_ERR(srt->bat))
-+		return dev_err_probe(dev, PTR_ERR(srt->bat),
-+				     "failed to register battery power supply\n");
-+
-+	psy_cfg.drv_data = srt;
-+	psy_cfg.fwnode = dev_fwnode(dev);
-+	psy_cfg.supplied_to = battery_supplied_to;
-+	psy_cfg.num_supplicants = ARRAY_SIZE(battery_supplied_to);
-+
-+	srt->psy = devm_power_supply_register(dev, &srt_psy_power_supply_desc,
-+					      &psy_cfg);
-+	if (IS_ERR(srt->psy))
-+		return dev_err_probe(dev, PTR_ERR(srt->psy),
-+				     "failed to register AC power supply\n");
-+
-+	ret = devm_request_threaded_irq(dev, client->irq, NULL, srt_psy_detect_irq,
-+					IRQF_ONESHOT, client->name, srt);
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "failed to request interrupt\n");
-+
-+	ret = devm_delayed_work_autocancel(dev, &srt->poll_work, srt_bat_poll_work);
-+	if (ret < 0)
-+		return ret;
-+
-+	schedule_delayed_work(&srt->poll_work, HZ);
-+
-+	return 0;
-+}
-+
-+static int srt_ec_suspend(struct device *dev)
-+{
-+	struct srt_ec_device *srt = dev_get_drvdata(dev);
-+
-+	cancel_delayed_work_sync(&srt->poll_work);
-+
-+	return 0;
-+}
-+
-+static int srt_ec_resume(struct device *dev)
-+{
-+	struct srt_ec_device *srt = dev_get_drvdata(dev);
-+
-+	schedule_delayed_work(&srt->poll_work, HZ);
-+
-+	return 0;
-+}
-+
-+static DEFINE_SIMPLE_DEV_PM_OPS(srt_ec_pm_ops, srt_ec_suspend, srt_ec_resume);
-+
-+static const struct of_device_id srt_ec_of_match[] = {
-+	{ .compatible = "microsoft,surface-rt-ec" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, srt_ec_of_match);
-+
-+static struct i2c_driver srt_ec_driver = {
-+	.driver = {
-+		.name = "surface-rt-ec",
-+		.of_match_table = srt_ec_of_match,
-+		.pm = &srt_ec_pm_ops,
-+	},
-+	.probe = srt_ec_probe,
-+};
-+module_i2c_driver(srt_ec_driver);
-+
-+MODULE_AUTHOR("Jonas Schwöbel <jonasschwoebel@yahoo.de>");
-+MODULE_DESCRIPTION("Surface RT Embedded Controller driver");
-+MODULE_LICENSE("GPL");
--- 
-2.51.0
+ From a user point of view, I can think of the following use cases for 
+fine-grained
+cache-aware scheduling:
 
+u1. A user wants to enable or disable cache-aware scheduling for all
+     threads of a process. (No extra tagging is needed.)
+u2. A user wants to enable or disable cache-aware scheduling for all
+     tasks within a cgroup. (No extra tagging is needed.) Vern from
+     Tencent was advocating for this model.
+u3. A user wants to enable or disable cache-aware scheduling for an
+     arbitrary set of tasks. (Userspace tagging is required.)
+
+If I understand correctly, u3 is exactly the use case where schedqos
+cookie can help. Under your design, we cannot tag an arbitrary set of
+tasks with the same cookie; we are only allowed to assign the same cookie
+to threads within the same process and under the same QoS type. So
+this might eliminate the case where different processes share data
+with each other that we want to aggregate(NUMA balancing's numa_group
+is an indicator of tasks sharing data)
+
+>>
+>> We probably need a sched_qos_cookie structure defined analogous to
+>> the sched_core_cookie to anchor the tasks.  And sched_qos_cookie could be a ptr value
+>> to sched_qos_cookie, as in sched_core_cookie instead of it being a __u32
+>> as in the patch below.
+> 
+> As part of the API or internal implementation detail? I think we do need
+> a cookie structure that stores the sched_qos_type and sched_qos_cookie tuple
+> internally as implementation detail. But not expose it as an interface.
+> 
+
+Yes, I think Tim was referring to the internal implementation. We need
+a pointer to link tasks to their shared sched_qos_cookie.
+
+> I think the cookie values should be userspace managed. From experience, this
+> has to be done in a centralized way via a service otherwise you'd end up with
+> a mess. There has to be an all knowledgeable entity managing things, which is
+> what I am proposing in schedqos service. That's why the whole QOS now is
+> protected with CAP_NICE capability - which I forgot to mention this change from
+> v1.
+> 
+
+Not sure why we do not leverage the OS to allocate and manage cookies.
+The OS has full visibility of system-wide information and can maintain 
+globally
+unique cookies. Users only need to request the OS to allocate, attach, 
+or detach
+tasks to an existing group without supplying an explicit cookie value.
+One possible reason I can think of: since the schedqos cookie is defined 
+per QoS
+type and per process,it may be more convenient to manage it entirely 
+within the
+schedqos service？
+
+thanks,
+Chenyu
