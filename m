@@ -1,31 +1,32 @@
-Received: from smtpbgeu2.qq.com (smtpbgeu2.qq.com [18.194.254.142])
+Received: from smtpbgsg2.qq.com (smtpbgsg2.qq.com [54.254.200.128])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54CF2413245;
-	Thu,  7 May 2026 14:25:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=18.194.254.142
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8969340FD80;
+	Thu,  7 May 2026 14:26:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.254.200.128
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778163963; cv=none; b=P9RSBBmrBSYjXdswgM2pDS73EmDVeUsv/ZFerw0PrOIVKWaIUXIagZTYseHSXoeo4G+o13B/IVJNJ/41A/AuDeLeVjUCojB3e3+xaPATbNLWswJS7mPeSOt401/qhZeLNLSnYSuUFcQ4devVcqmnX/D8azAABzD6ZeVq+pAas5Q=
+	t=1778163981; cv=none; b=nw2MAXeX0OKtNNq2+QfdNuJllfCTBvrZC6SGLUz61pFfQRBKihU9J3HR/bZmPlPMMmRdejQcTk12s2LNePvyS2xgscrxHH9cbNxPwzaCzxLofvZrdeM7Hx7FB2aRV8UaigAfD2vBbcmwE4gwMihrjWZfnvWP+8mmOrla15dWBX0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778163963; c=relaxed/simple;
-	bh=qC5aHtTCc9n3icRBU1s4JlGsfI3jA82q/Cz+XsUhyu0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=XvBhZQg1vEGcloDX3JhFG0QXB3rD8H5hQW8eVXq5hEPPleNIZDUxlnovugjw/pIWqX70dQG6fh2tvNV8hDb/FgkvFRYTagrvNvf3ksFPTntTXPNECmNsmcr9iO/lvQQM7EipDLF6DSL8qDdwS2saGMABAhCBhl06HJjP70P98vE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=radxa.com; spf=pass smtp.mailfrom=radxa.com; arc=none smtp.client-ip=18.194.254.142
+	s=arc-20240116; t=1778163981; c=relaxed/simple;
+	bh=s1q8Z2zLk379tlyeuEzoNaf2j3FUEhXmKv5Jezkio8k=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=qUitmJd3onPm8gzwGLgyCfuoxbiwJOYXc4Ojd/rjPfmqiKL3mehWb6FiJ1N1XE1Atll9BiuMs7Jr6IO+V3fhWjpPp7rajYTAiRZQEw3A0HrhluLm8TwJAQ9D/LcAJKgJwKn16PS7KWUj4dcIjPLSCXBbtbGYLzvCaw8GNOammrA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=radxa.com; spf=pass smtp.mailfrom=radxa.com; arc=none smtp.client-ip=54.254.200.128
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=radxa.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=radxa.com
-X-QQ-mid: esmtpgz12t1778163919t67769640
-X-QQ-Originating-IP: sALCS/5WbOyZmdkawfHBQABNKWV3XgulXx5zQ2cmCB4=
+X-QQ-mid: esmtpgz12t1778163927tf302c174
+X-QQ-Originating-IP: 6pNkx+/7pJSdKrmK5R1qZXvcMjj4jKpdhHhLnPpID5o=
 Received: from [192.168.30.32] ( [116.234.74.217])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 07 May 2026 22:25:16 +0800 (CST)
+	id ; Thu, 07 May 2026 22:25:26 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 3191623375150751920
+X-BIZMAIL-ID: 7635637047860514937
 EX-QQ-RecipientCnt: 11
 From: Xilin Wu <sophon@radxa.com>
-Subject: [PATCH 0/3] Enable QoS configuration on SC8280XP
-Date: Thu, 07 May 2026 22:25:11 +0800
-Message-Id: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
+Date: Thu, 07 May 2026 22:25:14 +0800
+Subject: [PATCH 3/3] arm64: dts: qcom: sc8280xp: Add reg and clocks for QoS
+ configuration
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -34,10 +35,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMyw5AMBBA0V+RWWtSjUf5FbGoGoyFRwdpIv5ds
- TyLey9gdIQMVXSBw5OYljkgiSOwo5kHFNQFg5Iql5ksBFuttPSr2BYWJje61Vma9iVCSFaHPfl
- vVze/+WgntPv7gPt+AIojWIlwAAAA
-X-Change-ID: 20260507-sc8280xp-qos-a6a8b8544f9e
+Message-Id: <20260507-sc8280xp-qos-v1-3-15135858cd98@radxa.com>
+References: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
+In-Reply-To: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
 To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
@@ -46,63 +46,264 @@ Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Xilin Wu <sophon@radxa.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1370; i=sophon@radxa.com;
- h=from:subject:message-id; bh=qC5aHtTCc9n3icRBU1s4JlGsfI3jA82q/Cz+XsUhyu0=;
- b=owGbwMvMwCVmdFg0fe08Iz/G02pJDJl/FpzdujWNg0+soeTstHXfSq5s2Sxzb7Mm99FtXYUpN
- 6eFPEkR6ihlYRDjYpAVU2RRiGeYy16Ze+2pWKkezBxWJpAhDFycAjCR0kxGhq0C/7TXGYTMWcTW
- 9+Y/5xam+FJd2fPcXgoyale8XllPzGdkOGgfuvnqA5Ft56WVIk76/9D0ds6YoSwtu3dVwtrsaed
- 3cgMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6485; i=sophon@radxa.com;
+ h=from:subject:message-id; bh=s1q8Z2zLk379tlyeuEzoNaf2j3FUEhXmKv5Jezkio8k=;
+ b=owGbwMvMwCVmdFg0fe08Iz/G02pJDJl/Fpw9mCc9Oyk0sXTFFobP0hNKWSPaTMI38X80V77xP
+ zJu1WfHjlIWBjEuBlkxRRaFeIa57JW5156KlerBzGFlAhnCwMUpABNpXM3w35Gh4foRLqV7L3x3
+ 9emV99+1F9Hbnpqj5fv/Zx7johnvuBgZJmdxG20u03Litv0mFed6dcrVMIecoM2/FR/2CP6Yqyr
+ LDwA=
 X-Developer-Key: i=sophon@radxa.com; a=openpgp;
  fpr=205F009D07796DD6E516752E32C31567AD9E324E
 X-QQ-SENDSIZE: 520
 Feedback-ID: esmtpgz:radxa.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: NvjhxCSDgXICj91atmTlnbXm5emu8HPVsa6vnzyWfyoE8/1Dnuryulaw
-	gSmvC+UAcyzlY+WHWG/5QSflP60VNeevatHNib5Jpy8CdzNYBcFcl+i9hS4/7Jzkb0efgh5
-	AtM/Ii/88OqcaA1BhHxP3zBj7x0Rku+RsIxmh1EHUjMOdWptR2gH2cm7pFbOkLNdo9dp26q
-	OH8FJEouo9Nv4nwVm5kIPL6cgmNaVjiVYDvz/I4lsHZVQPK4gZvO5AtyOMRjBlAatfq7r6K
-	VbKDmeWVfBpU4osxBpBneSNqpZw2UOW+hrDCmlobwA9kaKgCLV5QW81Kb7eWdNKL2/HJFlA
-	AwCYSvvJBucLvHwV/B+XnbEFbap16zPJBBvbRTaQ19EKTmUaITaJtH1eZ6ZdeNl27oG9Beh
-	4O2rqHnW2swZV9ZSFi+bU9orajDuzUS5/1br0nXYHvH9OrNaC0hE/CRwigWmo3IxqSoXpOC
-	MyMsmJvhYz5Ak/KxjwW98Lq7iNiQMfZGPSUV5RVx7cDoZ/D4PQ6XT+7954rP97klTm1xcrF
-	L8WblWWtNRR+j1SWxufHdsuNQOb4mSr6mN5RHmZSyhf2dk1H15OSI1hGaxuhpEGDB2CalQ0
-	mVuOfm1Zi0Kcf/cGIjcWcDhvtLCfsafCvbhk9M0Ox2KiWz7oSDn/ushbB1TIqX7FrmBKBNA
-	5XsrhUwpMU9Tf562lRQMEiB9NmVv+AcdbDDOfDgPqLuBSN5OTafGI6TOQExjXIn1IQMhnKq
-	3bSKuvfsrViKL4meGL9kbxs8iD/MJsjQzZY4B53hZOINFhSYzfuaaOeR2Y0O7x14deqYNUF
-	E5DKIVf1shOx03KN4lPgZU+66tYlRReTsrQW5+AZWY+3n3nsVI/OiUYe7UBuwafytzaYZWr
-	nCE79zriy+KyVm7gqHSE4HZJHMpU7/Jj3XJIUDuhlsIFR88uMpA81fyTEl3w6YALbr8ZSWg
-	tEoy3hdAjH4yxkgwgY2fLNFcu8ocWVBCS2lc4JW4nDr9eKvVnYkrmeVqL0YhH7Bys5s6+kH
-	Svy13CjheEpCkibI9x/HYO0n1KooY=
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+X-QQ-XMAILINFO: MLY6kX+APjAQ3XvEyTG3A63TZMprpixo0rLkwGVpgV89wUgZlq80gsoY
+	trJji5sKrFe9T+X1v4Td+aWT40V/Jo7SplzX0Rg78P4eQICRlMEH6pc44zqqzah7lV9bS6P
+	M38gjS2l0s9iKQSiW4wQNoFfF/RB9F0UlrrFvCszLpYUQqZjZ2tS6k/MnVokeSbp0b6BYVc
+	dz6l2kSWUBfSV44CmWOdlsHenM67fTHjpCm8JCPJU5beswC0CcOOg3ZsLhmRos2r4CpCKlH
+	XZHs9iOET5lcogIZ4JjwIqKDooUudiSWUdPv39+u8LjJm6OTKSN+v4N80c0SkfxkRKo1GPs
+	5l3vqNxPpQE5Ako6nZqn8cuGAc7w49E9duNcSlM3rmMT9HxcikO1+IPZDcVk4H1XkINFuCU
+	H3q4PyNTAKqqCyJCrDH7StZMjK6uaSriL9Ml0DSUvnGQqELAgYBsKEC68UtyTuKzqB75ZHC
+	C7BCmT2uLHrrT1/Jrdy5QSgrOP9+EQytpryW2Y7RjnoJA4f9Ulae5PcOLd70s6C9+owd2AA
+	NHU8W/48LBrlDI5BjIgt6FVrXo4rYW8xhC+5RfksE+P2+rkEgvgXfX/BdgXwhoTNn5Qma+3
+	QTfYVZqMRJTwP5/t8fVJnXLCV7EgF/MlePmoSJxWyfE47/FOrREzKFzf1VdCSRFWOlRj/ZC
+	eHkX+xrOImIAseSz1v5zigad43JfgMBkjgO8Tgk6w0xeOaH8zHO4KCCrKo0S3AruM2p8d0F
+	/xsS7BYkcP1Zmx8oOkdrlVVn5Sv+R5opWDy5U1HxutGlPrY/FvF3TFa0fDh55yVrK3fQwpI
+	em0YS7PJZMV1ymTTRlz13b7FpfA+tDd4zc96EuU2U4lV2Egw+Ntln3f+00tBB6uPOSeaOoP
+	MTjmi11hxg78jfkrgSaNsHx1WDSz1tDZUFfFHYPV5VJALy+nfpkhzADd9LzOR0pz5zBoR1g
+	LrXKDVzpTdjZsiwqWQpW3gMghQnGnwv4aTzF1JzYlTc5NRam7blmabRAMLjxlC0OE5TlC9t
+	/MC+OH6qwlJ8qES3YfpJD2E/PW845zg3BsWjDKflwKZlHZPyelgVmrwAusmTYwRZrXj1Xk3
+	qTF0c0WOmFh
+X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
 X-QQ-RECHKSPAM: 0
 
-This series enables QoS configuration for QNOC type device which
-can be found on SC8280XP platform. It enables QoS configuration
-for master ports with predefined priority and urgency forwarding.
-This helps in prioritizing the traffic originating from different
-interconnect masters at NOC (Network On Chip).
+Add register ranges for the SC8280XP interconnect providers so the driver
+can program the NoC QoS registers.
 
-The system may function normally without this feature. However,
-enabling QoS helps optimize latency and bandwidth across subsystems
-like CPU, GPU, and multimedia engines, which becomes important in
-high-throughput scenarios. This is a feature aimed at performance
-enhancement to improve system performance under concurrent workloads.
+Move the real NoC providers under soc@0, keep clk_virt and mc_virt as
+virtual top-level providers, and add the clocks required for QoS
+programming on aggre1_noc and aggre2_noc.
 
 Signed-off-by: Xilin Wu <sophon@radxa.com>
 ---
-Xilin Wu (3):
-      dt-bindings: interconnect: qcom,sc8280xp-rpmh: Add reg and clocks for QoS
-      interconnect: qcom: sc8280xp: Enable QoS configuration
-      arm64: dts: qcom: sc8280xp: Add reg and clocks for QoS configuration
+ arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 157 ++++++++++++++++++++-------------
+ 1 file changed, 97 insertions(+), 60 deletions(-)
 
- .../bindings/interconnect/qcom,sc8280xp-rpmh.yaml  |  99 +++++-
- arch/arm64/boot/dts/qcom/sc8280xp.dtsi             | 157 +++++----
- drivers/interconnect/qcom/sc8280xp.c               | 356 +++++++++++++++++++++
- 3 files changed, 551 insertions(+), 61 deletions(-)
----
-base-commit: 735d2f48cadaa9a87e7c7601667878de70c771c5
-change-id: 20260507-sc8280xp-qos-a6a8b8544f9e
+diff --git a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
+index 761f229e8f47..8e64db07a9e9 100644
+--- a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
++++ b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
+@@ -314,78 +314,18 @@ scm: scm {
+ 		};
+ 	};
+ 
+-	aggre1_noc: interconnect-aggre1-noc {
+-		compatible = "qcom,sc8280xp-aggre1-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	aggre2_noc: interconnect-aggre2-noc {
+-		compatible = "qcom,sc8280xp-aggre2-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+ 	clk_virt: interconnect-clk-virt {
+ 		compatible = "qcom,sc8280xp-clk-virt";
+ 		#interconnect-cells = <2>;
+ 		qcom,bcm-voters = <&apps_bcm_voter>;
+ 	};
+ 
+-	config_noc: interconnect-config-noc {
+-		compatible = "qcom,sc8280xp-config-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	dc_noc: interconnect-dc-noc {
+-		compatible = "qcom,sc8280xp-dc-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	gem_noc: interconnect-gem-noc {
+-		compatible = "qcom,sc8280xp-gem-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	lpass_noc: interconnect-lpass-ag-noc {
+-		compatible = "qcom,sc8280xp-lpass-ag-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+ 	mc_virt: interconnect-mc-virt {
+ 		compatible = "qcom,sc8280xp-mc-virt";
+ 		#interconnect-cells = <2>;
+ 		qcom,bcm-voters = <&apps_bcm_voter>;
+ 	};
+ 
+-	mmss_noc: interconnect-mmss-noc {
+-		compatible = "qcom,sc8280xp-mmss-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	nspa_noc: interconnect-nspa-noc {
+-		compatible = "qcom,sc8280xp-nspa-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	nspb_noc: interconnect-nspb-noc {
+-		compatible = "qcom,sc8280xp-nspb-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+-	system_noc: interconnect-system-noc {
+-		compatible = "qcom,sc8280xp-system-noc";
+-		#interconnect-cells = <2>;
+-		qcom,bcm-voters = <&apps_bcm_voter>;
+-	};
+-
+ 	memory@80000000 {
+ 		device_type = "memory";
+ 		/* We expect the bootloader to fill in the size */
+@@ -2152,6 +2092,63 @@ rng: rng@10d3000 {
+ 			clock-names = "core";
+ 		};
+ 
++		config_noc: interconnect@1500000 {
++			compatible = "qcom,sc8280xp-config-noc";
++			reg = <0 0x01500000 0 0x2c000>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
++		system_noc: interconnect@1680000 {
++			compatible = "qcom,sc8280xp-system-noc";
++			reg = <0 0x01680000 0 0x1a400>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
++		aggre1_noc: interconnect@16c0000 {
++			compatible = "qcom,sc8280xp-aggre1-noc";
++			reg = <0 0x016c0000 0 0x3af80>;
++
++			clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB3_SEC_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB3_MP_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB4_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB4_1_AXI_CLK>,
++				 <&gcc GCC_AGGRE_USB_NOC_SOUTH_AXI_CLK>,
++				 <&rpmhcc RPMH_IPA_CLK>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
++		aggre2_noc: interconnect@1700000 {
++			compatible = "qcom,sc8280xp-aggre2-noc";
++			reg = <0 0x01700000 0 0x3af80>;
++
++			clocks = <&gcc GCC_AGGRE_NOC_PCIE0_TUNNEL_AXI_CLK>,
++				 <&gcc GCC_AGGRE_NOC_PCIE1_TUNNEL_AXI_CLK>,
++				 <&gcc GCC_AGGRE_NOC_PCIE_4_AXI_CLK>,
++				 <&gcc GCC_AGGRE_NOC_PCIE_SOUTH_SF_AXI_CLK>,
++				 <&gcc GCC_AGGRE_UFS_CARD_AXI_CLK>,
++				 <&gcc GCC_DDRSS_GPU_AXI_CLK>,
++				 <&gcc GCC_DDRSS_PCIE_SF_TBU_CLK>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
++		mmss_noc: interconnect@1740000 {
++			compatible = "qcom,sc8280xp-mmss-noc";
++			reg = <0 0x01740000 0 0x1fa80>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
+ 		pcie4: pcie@1c00000 {
+ 			device_type = "pci";
+ 			compatible = "qcom,pcie-sc8280xp";
+@@ -3352,6 +3349,14 @@ lpasscc: clock-controller@33e0000 {
+ 			#reset-cells = <1>;
+ 		};
+ 
++		lpass_noc: interconnect@3c40000 {
++			compatible = "qcom,sc8280xp-lpass-ag-noc";
++			reg = <0 0x03c40000 0 0xf080>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
+ 		gpu: gpu@3d00000 {
+ 			compatible = "qcom,adreno-690.0", "qcom,adreno";
+ 
+@@ -3927,6 +3932,22 @@ opp-6 {
+ 			};
+ 		};
+ 
++		dc_noc: interconnect@90e0000 {
++			compatible = "qcom,sc8280xp-dc-noc";
++			reg = <0 0x090e0000 0 0x5080>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
++		gem_noc: interconnect@9100000 {
++			compatible = "qcom,sc8280xp-gem-noc";
++			reg = <0 0x09100000 0 0xb8400>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
+ 		system-cache-controller@9200000 {
+ 			compatible = "qcom,sc8280xp-llcc";
+ 			reg = <0 0x09200000 0 0x58000>, <0 0x09280000 0 0x58000>,
+@@ -5977,6 +5998,14 @@ cpufreq_hw: cpufreq@18591000 {
+ 			#clock-cells = <1>;
+ 		};
+ 
++		nspa_noc: interconnect@1b0c0000 {
++			compatible = "qcom,sc8280xp-nspa-noc";
++			reg = <0 0x1b0c0000 0 0x10000>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
+ 		remoteproc_nsp0: remoteproc@1b300000 {
+ 			compatible = "qcom,sc8280xp-nsp0-pas";
+ 			reg = <0 0x1b300000 0 0x10000>;
+@@ -6112,6 +6141,14 @@ compute-cb@14 {
+ 			};
+ 		};
+ 
++		nspb_noc: interconnect@210c0000 {
++			compatible = "qcom,sc8280xp-nspb-noc";
++			reg = <0 0x210c0000 0 0x10000>;
++
++			#interconnect-cells = <2>;
++			qcom,bcm-voters = <&apps_bcm_voter>;
++		};
++
+ 		remoteproc_nsp1: remoteproc@21300000 {
+ 			compatible = "qcom,sc8280xp-nsp1-pas";
+ 			reg = <0 0x21300000 0 0x10000>;
 
-Best regards,
---  
-Xilin Wu <sophon@radxa.com>
+-- 
+2.54.0
 
