@@ -1,309 +1,216 @@
-Received: from smtpbgsg2.qq.com (smtpbgsg2.qq.com [54.254.200.128])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8969340FD80;
-	Thu,  7 May 2026 14:26:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=54.254.200.128
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 298D03EF656
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 14:47:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778163981; cv=none; b=nw2MAXeX0OKtNNq2+QfdNuJllfCTBvrZC6SGLUz61pFfQRBKihU9J3HR/bZmPlPMMmRdejQcTk12s2LNePvyS2xgscrxHH9cbNxPwzaCzxLofvZrdeM7Hx7FB2aRV8UaigAfD2vBbcmwE4gwMihrjWZfnvWP+8mmOrla15dWBX0=
+	t=1778165232; cv=none; b=lb6l9pH38hmw5dXlsdK/P0yz8umPbvQ6qWpnS188vsMvVEIA+fxBl/Fyk2LbKr6mFzs2WHzHI4hoH4O/PC62jhMe+zTh05CPbcHmVzUi8MxLEPLy5pcqg4N3enP0FqakL1KWvmyLQ/5sJEn4ICuhXcWrQGZvW1M2iwczoj4Gc4g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778163981; c=relaxed/simple;
-	bh=s1q8Z2zLk379tlyeuEzoNaf2j3FUEhXmKv5Jezkio8k=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=qUitmJd3onPm8gzwGLgyCfuoxbiwJOYXc4Ojd/rjPfmqiKL3mehWb6FiJ1N1XE1Atll9BiuMs7Jr6IO+V3fhWjpPp7rajYTAiRZQEw3A0HrhluLm8TwJAQ9D/LcAJKgJwKn16PS7KWUj4dcIjPLSCXBbtbGYLzvCaw8GNOammrA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=radxa.com; spf=pass smtp.mailfrom=radxa.com; arc=none smtp.client-ip=54.254.200.128
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=radxa.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=radxa.com
-X-QQ-mid: esmtpgz12t1778163927tf302c174
-X-QQ-Originating-IP: 6pNkx+/7pJSdKrmK5R1qZXvcMjj4jKpdhHhLnPpID5o=
-Received: from [192.168.30.32] ( [116.234.74.217])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Thu, 07 May 2026 22:25:26 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 7635637047860514937
-EX-QQ-RecipientCnt: 11
-From: Xilin Wu <sophon@radxa.com>
-Date: Thu, 07 May 2026 22:25:14 +0800
-Subject: [PATCH 3/3] arm64: dts: qcom: sc8280xp: Add reg and clocks for QoS
- configuration
+	s=arc-20240116; t=1778165232; c=relaxed/simple;
+	bh=j5AwfqRpfLcGlU3nvL8d5anpS5Z5nq565SF8GAfQdcI=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=F0eFrsaBP2RZZJxVMPIrOtQ1Q0uTpGzAhmqBa3J8ubMnzpBYCeVGqLVxV47NO/Q9NuIkzPJlGQ2sA27iv7Nlsf/cdIEoYb76Mz7kRVoow30OLIu+xqouU4+evwZy4daNOiBVJPxK4j9FSFJM1nF1dldSYO9nJNppOMQ4hzD7TfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Cq8B0T0g; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Cq8B0T0g"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778165229; x=1809701229;
+  h=message-id:subject:from:to:cc:date:in-reply-to:
+   references:content-transfer-encoding:mime-version;
+  bh=j5AwfqRpfLcGlU3nvL8d5anpS5Z5nq565SF8GAfQdcI=;
+  b=Cq8B0T0gM2EcRTDgY7zJGT/GsQ1wmyDMBH0oRVvgctGGV/t2ruFMNjK8
+   zO4nloIfl9OK20t/fbkLJuM2O7kuciogiV4sBW9Xzf18fOi235f50rj4g
+   mAp5cgp5487rvB5WHSqYPS10FpzfIY5QwoSgeIYf/oL+WF4nrRA+q7q/F
+   kP6OWZt3OngTDgeTFPTb5sMLBsponQe2dSsq9sOP3UUEj2dXaMsk5N6TC
+   ZTP//6UOsTKf/qMDxkKGSc5eu96mT5EMJ0KrqyC5846c3LOh69g0ppn3P
+   YFld+VP26RGcTyv+iX3j0JkNZu3jvJrpeaD1VGGjvQvUDXMMwcPSUz1uz
+   Q==;
+X-CSE-ConnectionGUID: EtmdXqaKSpyauhybkGiK1A==
+X-CSE-MsgGUID: GUn3ceSsTlG2K/qZ6VjlRg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="79108644"
+X-IronPort-AV: E=Sophos;i="6.23,221,1770624000"; 
+   d="scan'208";a="79108644"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:47:09 -0700
+X-CSE-ConnectionGUID: Pvld9wC0R2itro2kmhXHsw==
+X-CSE-MsgGUID: tvshUlyRSPutImgQatUlcg==
+X-ExtLoop1: 1
+Received: from ssimmeri-mobl2.amr.corp.intel.com (HELO [10.125.110.223]) ([10.125.110.223])
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 07:47:07 -0700
+Message-ID: <5ff02dfbafea7f5a9129853ae147e6de1cefb281.camel@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Use CPPC to get scaling factor
+ for Bartlett Lake
+From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Henry Tseng <henrytseng@qnap.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>,  Len Brown <lenb@kernel.org>, Viresh Kumar
+ <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, SW Chen <swchen@qnap.com>, Kevin Ko
+	 <kevinko@qnap.com>
+Date: Thu, 07 May 2026 07:47:05 -0700
+In-Reply-To: <20260507092554.2631883-1-henrytseng@qnap.com>
+References: <20260506095157.1591221-1-henrytseng@qnap.com>
+		 <7d47a806110c750c47c4b473f45eff6d7f3ebc18.camel@linux.intel.com>
+	 <20260507092554.2631883-1-henrytseng@qnap.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260507-sc8280xp-qos-v1-3-15135858cd98@radxa.com>
-References: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
-In-Reply-To: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
-To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Xilin Wu <sophon@radxa.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6485; i=sophon@radxa.com;
- h=from:subject:message-id; bh=s1q8Z2zLk379tlyeuEzoNaf2j3FUEhXmKv5Jezkio8k=;
- b=owGbwMvMwCVmdFg0fe08Iz/G02pJDJl/Fpw9mCc9Oyk0sXTFFobP0hNKWSPaTMI38X80V77xP
- zJu1WfHjlIWBjEuBlkxRRaFeIa57JW5156KlerBzGFlAhnCwMUpABNpXM3w35Gh4foRLqV7L3x3
- 9emV99+1F9Hbnpqj5fv/Zx7johnvuBgZJmdxG20u03Litv0mFed6dcrVMIecoM2/FR/2CP6Yqyr
- LDwA=
-X-Developer-Key: i=sophon@radxa.com; a=openpgp;
- fpr=205F009D07796DD6E516752E32C31567AD9E324E
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:radxa.com:qybglogicsvrsz:qybglogicsvrsz3b-0
-X-QQ-XMAILINFO: MLY6kX+APjAQ3XvEyTG3A63TZMprpixo0rLkwGVpgV89wUgZlq80gsoY
-	trJji5sKrFe9T+X1v4Td+aWT40V/Jo7SplzX0Rg78P4eQICRlMEH6pc44zqqzah7lV9bS6P
-	M38gjS2l0s9iKQSiW4wQNoFfF/RB9F0UlrrFvCszLpYUQqZjZ2tS6k/MnVokeSbp0b6BYVc
-	dz6l2kSWUBfSV44CmWOdlsHenM67fTHjpCm8JCPJU5beswC0CcOOg3ZsLhmRos2r4CpCKlH
-	XZHs9iOET5lcogIZ4JjwIqKDooUudiSWUdPv39+u8LjJm6OTKSN+v4N80c0SkfxkRKo1GPs
-	5l3vqNxPpQE5Ako6nZqn8cuGAc7w49E9duNcSlM3rmMT9HxcikO1+IPZDcVk4H1XkINFuCU
-	H3q4PyNTAKqqCyJCrDH7StZMjK6uaSriL9Ml0DSUvnGQqELAgYBsKEC68UtyTuKzqB75ZHC
-	C7BCmT2uLHrrT1/Jrdy5QSgrOP9+EQytpryW2Y7RjnoJA4f9Ulae5PcOLd70s6C9+owd2AA
-	NHU8W/48LBrlDI5BjIgt6FVrXo4rYW8xhC+5RfksE+P2+rkEgvgXfX/BdgXwhoTNn5Qma+3
-	QTfYVZqMRJTwP5/t8fVJnXLCV7EgF/MlePmoSJxWyfE47/FOrREzKFzf1VdCSRFWOlRj/ZC
-	eHkX+xrOImIAseSz1v5zigad43JfgMBkjgO8Tgk6w0xeOaH8zHO4KCCrKo0S3AruM2p8d0F
-	/xsS7BYkcP1Zmx8oOkdrlVVn5Sv+R5opWDy5U1HxutGlPrY/FvF3TFa0fDh55yVrK3fQwpI
-	em0YS7PJZMV1ymTTRlz13b7FpfA+tDd4zc96EuU2U4lV2Egw+Ntln3f+00tBB6uPOSeaOoP
-	MTjmi11hxg78jfkrgSaNsHx1WDSz1tDZUFfFHYPV5VJALy+nfpkhzADd9LzOR0pz5zBoR1g
-	LrXKDVzpTdjZsiwqWQpW3gMghQnGnwv4aTzF1JzYlTc5NRam7blmabRAMLjxlC0OE5TlC9t
-	/MC+OH6qwlJ8qES3YfpJD2E/PW845zg3BsWjDKflwKZlHZPyelgVmrwAusmTYwRZrXj1Xk3
-	qTF0c0WOmFh
-X-QQ-XMRINFO: OWPUhxQsoeAVwkVaQIEGSKwwgKCxK/fD5g==
-X-QQ-RECHKSPAM: 0
 
-Add register ranges for the SC8280XP interconnect providers so the driver
-can program the NoC QoS registers.
+On Thu, 2026-05-07 at 17:25 +0800, Henry Tseng wrote:
+> On Wed, 06 May 2026 05:15:49 -0700, Srinivas Pandruvada wrote:
+> > This is a special embedded processor, so to reduce enabling effort
+> > by=20
+> > in BIOS, why not just add
+> >=20
+> > diff --git a/drivers/cpufreq/intel_pstate.c
+> > b/drivers/cpufreq/intel_pstate.c
+> > index ec4abe374573..763598ca13cd 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -3732,6 +3732,7 @@ static const struct x86_cpu_id
+> > intel_hybrid_scaling_factor[] =3D {
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
+KE, HYBRID_SCALING_FACTOR_ADL),
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
+KE_P,
+> > HYBRID_SCALING_FACTOR_ADL),
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_RAPTORLA=
+KE_S,
+> > HYBRID_SCALING_FACTOR_ADL),
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_BARTLETTLAKE,
+> > HYBRID_SCALING_FACTOR_ADL),
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_METEORLA=
+KE_L,
+> > HYBRID_SCALING_FACTOR_MTL),
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 X86_MATCH_VFM(INTEL_LUNARLAK=
+E_M,
+> > HYBRID_SCALING_FACTOR_LNL),
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 {}
+> >=20
+> > CPPC scaling introduces rounding issues for some frequency. This
+> > will
+> > avoid introducing another CPU model list.
+>=20
+> Thanks for the review, the static table is definitely simpler. I had
+> referenced commit 9b18d536b124 and went with CPPC, but I take your
+> point
+> about the rounding issues.
+> After adding INTEL_BARTLETTLAKE to intel_hybrid_scaling_factor[], I
+> noticed hwp_get_cpu_scaling() still falls back to core_get_scaling()
+> on
+> 273PE, because hybrid_get_cpu_type() returns 0 (not
+> INTEL_CPU_TYPE_CORE)
+> on a non-hybrid CPU, so the table value doesn't get picked up. I
+> added a
+> check for X86_FEATURE_HYBRID_CPU there to let non-hybrid CPUs in the
+> table
+> use hybrid_scaling_factor.
+>=20
 
-Move the real NoC providers under soc@0, keep clk_virt and mc_virt as
-virtual top-level providers, and add the clocks required for QoS
-programming on aggre1_noc and aggre2_noc.
+This situation is not new, refer to commit
+0fcfc9e51990246a9813475716746ff5eb98c6aa
+    cpufreq: intel_pstate: Fix scaling for hybrid-capable systems with
+disabled E-cores
 
-Signed-off-by: Xilin Wu <sophon@radxa.com>
----
- arch/arm64/boot/dts/qcom/sc8280xp.dtsi | 157 ++++++++++++++++++++-------------
- 1 file changed, 97 insertions(+), 60 deletions(-)
+So it seems some regression as it should returned hybrid scaling
+factor.
+Don't have this system handy to test. hybrid_get_cpu_type() will return
+0 when hybrid feature is not set.
 
-diff --git a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-index 761f229e8f47..8e64db07a9e9 100644
---- a/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc8280xp.dtsi
-@@ -314,78 +314,18 @@ scm: scm {
- 		};
- 	};
- 
--	aggre1_noc: interconnect-aggre1-noc {
--		compatible = "qcom,sc8280xp-aggre1-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	aggre2_noc: interconnect-aggre2-noc {
--		compatible = "qcom,sc8280xp-aggre2-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
- 	clk_virt: interconnect-clk-virt {
- 		compatible = "qcom,sc8280xp-clk-virt";
- 		#interconnect-cells = <2>;
- 		qcom,bcm-voters = <&apps_bcm_voter>;
- 	};
- 
--	config_noc: interconnect-config-noc {
--		compatible = "qcom,sc8280xp-config-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	dc_noc: interconnect-dc-noc {
--		compatible = "qcom,sc8280xp-dc-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	gem_noc: interconnect-gem-noc {
--		compatible = "qcom,sc8280xp-gem-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	lpass_noc: interconnect-lpass-ag-noc {
--		compatible = "qcom,sc8280xp-lpass-ag-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
- 	mc_virt: interconnect-mc-virt {
- 		compatible = "qcom,sc8280xp-mc-virt";
- 		#interconnect-cells = <2>;
- 		qcom,bcm-voters = <&apps_bcm_voter>;
- 	};
- 
--	mmss_noc: interconnect-mmss-noc {
--		compatible = "qcom,sc8280xp-mmss-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	nspa_noc: interconnect-nspa-noc {
--		compatible = "qcom,sc8280xp-nspa-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	nspb_noc: interconnect-nspb-noc {
--		compatible = "qcom,sc8280xp-nspb-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
--	system_noc: interconnect-system-noc {
--		compatible = "qcom,sc8280xp-system-noc";
--		#interconnect-cells = <2>;
--		qcom,bcm-voters = <&apps_bcm_voter>;
--	};
--
- 	memory@80000000 {
- 		device_type = "memory";
- 		/* We expect the bootloader to fill in the size */
-@@ -2152,6 +2092,63 @@ rng: rng@10d3000 {
- 			clock-names = "core";
- 		};
- 
-+		config_noc: interconnect@1500000 {
-+			compatible = "qcom,sc8280xp-config-noc";
-+			reg = <0 0x01500000 0 0x2c000>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		system_noc: interconnect@1680000 {
-+			compatible = "qcom,sc8280xp-system-noc";
-+			reg = <0 0x01680000 0 0x1a400>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		aggre1_noc: interconnect@16c0000 {
-+			compatible = "qcom,sc8280xp-aggre1-noc";
-+			reg = <0 0x016c0000 0 0x3af80>;
-+
-+			clocks = <&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_PRIM_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_SEC_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB3_MP_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB4_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB4_1_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_USB_NOC_SOUTH_AXI_CLK>,
-+				 <&rpmhcc RPMH_IPA_CLK>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		aggre2_noc: interconnect@1700000 {
-+			compatible = "qcom,sc8280xp-aggre2-noc";
-+			reg = <0 0x01700000 0 0x3af80>;
-+
-+			clocks = <&gcc GCC_AGGRE_NOC_PCIE0_TUNNEL_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_NOC_PCIE1_TUNNEL_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_NOC_PCIE_4_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_NOC_PCIE_SOUTH_SF_AXI_CLK>,
-+				 <&gcc GCC_AGGRE_UFS_CARD_AXI_CLK>,
-+				 <&gcc GCC_DDRSS_GPU_AXI_CLK>,
-+				 <&gcc GCC_DDRSS_PCIE_SF_TBU_CLK>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		mmss_noc: interconnect@1740000 {
-+			compatible = "qcom,sc8280xp-mmss-noc";
-+			reg = <0 0x01740000 0 0x1fa80>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		pcie4: pcie@1c00000 {
- 			device_type = "pci";
- 			compatible = "qcom,pcie-sc8280xp";
-@@ -3352,6 +3349,14 @@ lpasscc: clock-controller@33e0000 {
- 			#reset-cells = <1>;
- 		};
- 
-+		lpass_noc: interconnect@3c40000 {
-+			compatible = "qcom,sc8280xp-lpass-ag-noc";
-+			reg = <0 0x03c40000 0 0xf080>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		gpu: gpu@3d00000 {
- 			compatible = "qcom,adreno-690.0", "qcom,adreno";
- 
-@@ -3927,6 +3932,22 @@ opp-6 {
- 			};
- 		};
- 
-+		dc_noc: interconnect@90e0000 {
-+			compatible = "qcom,sc8280xp-dc-noc";
-+			reg = <0 0x090e0000 0 0x5080>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		gem_noc: interconnect@9100000 {
-+			compatible = "qcom,sc8280xp-gem-noc";
-+			reg = <0 0x09100000 0 0xb8400>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		system-cache-controller@9200000 {
- 			compatible = "qcom,sc8280xp-llcc";
- 			reg = <0 0x09200000 0 0x58000>, <0 0x09280000 0 0x58000>,
-@@ -5977,6 +5998,14 @@ cpufreq_hw: cpufreq@18591000 {
- 			#clock-cells = <1>;
- 		};
- 
-+		nspa_noc: interconnect@1b0c0000 {
-+			compatible = "qcom,sc8280xp-nspa-noc";
-+			reg = <0 0x1b0c0000 0 0x10000>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		remoteproc_nsp0: remoteproc@1b300000 {
- 			compatible = "qcom,sc8280xp-nsp0-pas";
- 			reg = <0 0x1b300000 0 0x10000>;
-@@ -6112,6 +6141,14 @@ compute-cb@14 {
- 			};
- 		};
- 
-+		nspb_noc: interconnect@210c0000 {
-+			compatible = "qcom,sc8280xp-nspb-noc";
-+			reg = <0 0x210c0000 0 0x10000>;
-+
-+			#interconnect-cells = <2>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		remoteproc_nsp1: remoteproc@21300000 {
- 			compatible = "qcom,sc8280xp-nsp1-pas";
- 			reg = <0 0x21300000 0 0x10000>;
+With this commit
+9b18d536b124357fee56d82b1462c02f78d219e5
 
--- 
-2.54.0
+adding if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU)), will break
+such configuration.
 
+So I suggest to send two patches. The first one can have=20
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2273,6 +2273,9 @@ static int knl_get_turbo_pstate(int cpu)
+ static int hwp_get_cpu_scaling(int cpu)
+ {
+        if (hybrid_scaling_factor) {
++               if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
++                       return hybrid_scaling_factor;
++
+
+You can add Fixes tag for commit
+9b18d536b124357fee56d82b1462c02f78d219e5.
+
+The second patch with hybrid scaling factor for Bartlett Lake, which is
+like RPL.=20
+
+Thanks,
+Srinivas
+
+
+> I also kept hwp_is_hybrid =3D 0 on 273PE to match the current mainline
+> behavior on non-hybrid CPUs.
+>=20
+> Draft below, based on v7.1-rc2 (7fd2df204f34), tested on Intel Core 9
+> 273PE:
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index 1292da53e5fc..b66455252745 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -585,7 +585,7 @@ static void intel_pstate_hybrid_hwp_adjust(struct
+> cpudata *cpu)
+> =C2=A0	if (scaling =3D=3D perf_ctl_scaling)
+> =C2=A0		return;
+> =C2=A0
+> -	hwp_is_hybrid =3D true;
+> +	hwp_is_hybrid =3D cpu_feature_enabled(X86_FEATURE_HYBRID_CPU);
+> =C2=A0
+> =C2=A0	cpu->pstate.turbo_freq =3D rounddown(cpu->pstate.turbo_pstate
+> * scaling,
+> =C2=A0					=C2=A0=C2=A0 perf_ctl_scaling);
+> @@ -2279,7 +2279,8 @@ static int hwp_get_cpu_scaling(int cpu)
+> =C2=A0		 * Return the hybrid scaling factor for P-cores and
+> use the
+> =C2=A0		 * default core scaling for E-cores.
+> =C2=A0		 */
+> -		if (hybrid_get_cpu_type(cpu) =3D=3D INTEL_CPU_TYPE_CORE)
+> +		if (hybrid_get_cpu_type(cpu) =3D=3D INTEL_CPU_TYPE_CORE
+> ||
+> +		=C2=A0=C2=A0=C2=A0 !cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
+> =C2=A0			return hybrid_scaling_factor;
+> =C2=A0
+> =C2=A0		return core_get_scaling();
+> @@ -3734,6 +3735,7 @@ static const struct x86_cpu_id
+> intel_hybrid_scaling_factor[] =3D {
+> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE, HYBRID_SCALING_FACTOR_ADL),
+> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_P,
+> HYBRID_SCALING_FACTOR_ADL),
+> =C2=A0	X86_MATCH_VFM(INTEL_RAPTORLAKE_S,
+> HYBRID_SCALING_FACTOR_ADL),
+> +	X86_MATCH_VFM(INTEL_BARTLETTLAKE,
+> HYBRID_SCALING_FACTOR_ADL),
+> =C2=A0	X86_MATCH_VFM(INTEL_METEORLAKE_L,
+> HYBRID_SCALING_FACTOR_MTL),
+> =C2=A0	X86_MATCH_VFM(INTEL_LUNARLAKE_M, HYBRID_SCALING_FACTOR_LNL),
+> =C2=A0	{}
+>=20
+> Result on 273PE:
+>=20
+> =C2=A0 intel_pstate: CPU0:=C2=A0 HWP_CAP highest =3D 70, scaling =3D 7874=
+1,
+> cpuinfo.max =3D 5500000
+> =C2=A0 intel_pstate: CPU12: HWP_CAP highest =3D 73, scaling =3D 78741,
+> cpuinfo.max =3D 5700000
+>=20
+> If this direction looks OK, I'll send a v2 with a proper commit
+> message.
+>=20
+> Thanks,
+> Henry
