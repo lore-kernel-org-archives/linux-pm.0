@@ -1,131 +1,92 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20D1A3EDABB;
-	Thu,  7 May 2026 11:59:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBB3E3B8BD4;
+	Thu,  7 May 2026 12:00:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778155160; cv=none; b=kx9/v6X6N3SosbuzVLTi8p/33Ft+roei1FUbQ4tWP34baW0pGd01EdjQ5wdgt8UKn9bA6BWnOPWUOLx7JohNF/tq6gHmAuJ36Q6VBaOFT3G6NyDgV6nCfBChKyQRgiv+ERSaPCBmBidQNcDDzeW8lKrigoyltGUbIoabOL6d3lI=
+	t=1778155213; cv=none; b=G4nzyOvoWMPsR0/StIYlyOcTIM9d3aUqf9s+wOxFGSQl+SiZ5X1adYrrrf402bokKizgnjd61qvEER+4j9YhTQz7I3BoKNx/zA6UUuEHdhD+60zgn5JDEXrFj/Fz5luVoNHo5rghIoBc7L6q0PzWBMEMpjQFGyNKsF8+Sf6Xb4c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778155160; c=relaxed/simple;
-	bh=7Dv78dPHpwiIhvWhF88DDJPcf7VAJ8SNWBAQJdLzKEk=;
+	s=arc-20240116; t=1778155213; c=relaxed/simple;
+	bh=4P63+pMF5hPGAISna7ea2oO0XmA+Gl8rd2gi9zdqbEc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XrzO+VD41FoKRN52XuGdWPu330jEe5mq6wCp/6jXZ+FcqOxK8WDOrx8BP4bP+CsT7Hsy/Pgf5HzIXZAJALJGJyKxFFBDKU3onLsqJ+QNF79m0VtczZ1r8vLM2LjSDdO2GgFpWaPGuYATvr2cWd4kY6NKPyv0Jslvj7K7JJbUNfs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hGdH4KVW; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=WXv5Xa60GIb9zwQur1chqEheD35P/XHGxHU5TZR4qADj5PvmVgppc+jJ8ztxjv7JqcG0g7m/05kWTf0bnoboeehDBZmGjqxJS48A0+BQw5fAkJDrPN0d9Y911Lq+SmgGWPtRGk7lxoS11hKxfs2EXJKS6LC/lK+xmWXuR1Rbflo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dj6NZvVv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hGdH4KVW"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 143EFC2BCB2;
-	Thu,  7 May 2026 11:59:14 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dj6NZvVv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F70AC2BCB8;
+	Thu,  7 May 2026 12:00:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778155159;
-	bh=7Dv78dPHpwiIhvWhF88DDJPcf7VAJ8SNWBAQJdLzKEk=;
+	s=k20201202; t=1778155211;
+	bh=4P63+pMF5hPGAISna7ea2oO0XmA+Gl8rd2gi9zdqbEc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=hGdH4KVW5+m/0FDhqPVhqTuLYSZ1Mtb/p4X06PPr1WOiOjp9gaII94BITfW/cGF1T
-	 42okWI++PIA97lJDOVB5Q+GpiaeHk9VRAR3HbhwVi03QtRS25ib5d3gYfc/hhqef8o
-	 hKsksNjNDK04bz2d1Jq8uBzmHeWMLrxaaS1LBJQy5U7OFKAWuXtVMhyWhHNDB/csx2
-	 I/Ltl+zjgWH5sAnDd3FI4s6JhYAlB3CaibnA4pxi7d3UsijzkrImYhuk37EkXiMYax
-	 X3+1ibtGFqLiNiv7anQZ+cX6gSvMVXxMMppaAnjhLlTohFGEFAaPpwgRsJlTt6Y8RX
-	 iIwf4LlWX7Muw==
-Date: Thu, 7 May 2026 17:29:06 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Cc: manivannan.sadhasivam@oss.qualcomm.com, 
-	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Shuai Zhang <quic_shuaz@quicinc.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
-	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, stable+noautosel@kernel.org
-Subject: Re: [PATCH 12/12] Bluetooth: hci_qca: Fix the broken BT_EN GPIO
- detection for Qcom WCN devices
-Message-ID: <u65dquj6im54rc6w5apmq2a6mcpndvh3slcxbjh2bs5el7epw4@zjovdsjkm6ur>
-References: <20260422-pwrseq-m2-bt-v1-0-720d02545a64@oss.qualcomm.com>
- <20260422-pwrseq-m2-bt-v1-12-720d02545a64@oss.qualcomm.com>
- <klxyhlqwzl6dzk76lrhugxqdsv4hushphlfchuorcmvx5yja7q@pdmp3abepldg>
+	b=dj6NZvVvVdOgDw+LjcXmghm4lgzB0yLDuhWRWp6+T1Ab+ZYzJKC2uAEiWaO1m8cmY
+	 6fFESU1DwxI99LL4EouzKOWCzyS2GGh9n5dErai0qC1ZuojTipZeVZEbk1Q94thy4d
+	 P0VP9ZdJ2RiUYT2vfZ31Gr2SVPLgg5n9ba0LinPQ4w8HC8ywZ764RI8QLKbVhBFDno
+	 36OuvxzmLV7EDgAIy6A9MdahCwYHddaXy+bLHpaCkPBW4GLNaKzCV2gGN2zzCeJT1v
+	 jh8ToM18pipZRbdpWWSgbSr3cU2OHxam70kBlSkRnXAUGiRxib+9on4Q4WWMvjhu2n
+	 jdKoP6EWKNK3g==
+Date: Thu, 7 May 2026 13:00:03 +0100
+From: Lee Jones <lee@kernel.org>
+To: Tudor Ambarus <tudor.ambarus@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>, willmcvicker@google.com,
+	jyescas@google.com, shin.son@samsung.com,
+	linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-hardening@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH v3 03/10] firmware: samsung: acpm: Drop redundant _ops
+ suffix in acpm_ops members
+Message-ID: <20260507120003.GG305027@google.com>
+References: <20260420-acpm-tmu-v3-0-3dc8e93f0b26@linaro.org>
+ <20260420-acpm-tmu-v3-3-3dc8e93f0b26@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <klxyhlqwzl6dzk76lrhugxqdsv4hushphlfchuorcmvx5yja7q@pdmp3abepldg>
+In-Reply-To: <20260420-acpm-tmu-v3-3-3dc8e93f0b26@linaro.org>
 
-On Wed, Apr 22, 2026 at 09:13:31PM +0300, Dmitry Baryshkov wrote:
-> On Wed, Apr 22, 2026 at 04:54:53PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> > 
-> > Commit 'db0ff7e15923 ("driver: bluetooth: hci_qca:fix unable to load the BT
-> > driver")' tried to check the presence of the BT_EN GPIO in Qcom WCN devices
-> > to indicate the HCI layer whether this BT device can be power controlled or
-> > not.
-> > 
-> > But it was broken for two reasons:
-> > 
-> > 1. Assumes that when devm_pwrseq_get() API returns an error, BT_EN is not
-> > controllable. This is no way true as the API can fail for various reasons
-> > and also the pwrseq-qcom-wcn driver treats the BT_EN GPIO as optional. So
-> > even if the GPIO is not present, it will not fail the probe and this API
-> > will not fail.
-> > 
-> > 2. By skipping the error return, probe deferral is completely broken as the
-> > API may return -EPROBE_DEFER to indicate the caller that the pwrseq driver
-> > is not yet probed. Skipping the return value means, this driver is not
-> > going to depend on pwrseq driver probing again and it just assumes that
-> > the pwrseq is not available.
-> > 
-> > So to fix these issues, fail the probe if devm_pwrseq_get() returns an
-> > error and if it succeeds, use the newly introduced pwrseq_is_fixed() API to
-> > check whether the power sequencer is fixed or not (i.e., whether the
-> > Bluetooth interface on the Qcom WCN device is controllable using BT_EN GPIO
-> > or not) and set the 'bt_en_available' flag accordingly.
-> > 
-> > Cc: <stable+noautosel@kernel.org> # Depends on pwrseq change
-> > Fixes: db0ff7e15923 ("driver: bluetooth: hci_qca:fix unable to load the BT driver")
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> > ---
-> >  drivers/bluetooth/hci_qca.c | 15 ++++++---------
-> >  1 file changed, 6 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-> > index 27e52b08ec47..dd1d93cbb3d8 100644
-> > --- a/drivers/bluetooth/hci_qca.c
-> > +++ b/drivers/bluetooth/hci_qca.c
-> > @@ -2470,16 +2470,13 @@ static int qca_serdev_probe(struct serdev_device *serdev)
-> >  			qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->dev,
-> >  								   "bluetooth");
-> >  
-> > -			/*
-> > -			 * Some modules have BT_EN enabled via a hardware pull-up,
-> > -			 * meaning it is not defined in the DTS and is not controlled
-> > -			 * through the power sequence. In such cases, fall through
-> > -			 * to follow the legacy flow.
-> > -			 */
-> >  			if (IS_ERR(qcadev->bt_power->pwrseq))
-> > -				qcadev->bt_power->pwrseq = NULL;
-> > -			else
-> > -				break;
-> > +				return PTR_ERR(qcadev->bt_power->pwrseq);
+On Mon, 20 Apr 2026, Tudor Ambarus wrote:
+
+> Rename the `dvfs_ops` and `pmic_ops` members of `struct acpm_ops` to
+> `dvfs` and `pmic` respectively.
 > 
-> This will break the case of WCN399x devices without the PMU in device
-> tree. There is no enable-gpios since BT is not controllable, but if
-> there is no PMU, then devm_pwrseq_get() will always return
-> -EPROBE_DEFER.
+> Since these members are housed within the `acpm_ops` structure and
+> utilize the `acpm_*_ops` types, the `_ops` suffix on the variable names
+> creates unnecessary redundancy (e.g., `handle.ops.dvfs_ops`).
 > 
+> This cleanup removes the stuttering, leading to cleaner consumer code.
+> 
+> Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+> ---
+>  drivers/clk/samsung/clk-acpm.c                        | 8 ++++----
+>  drivers/firmware/samsung/exynos-acpm.c                | 4 ++--
+>  drivers/mfd/sec-acpm.c                                | 6 +++---
 
-Hmm. I missed that the pwrseq returns -EPROBE_DEFER even if the client doesn't
-require power sequencing. It is because, it has no way to figure it out.
+Acked-by: Lee Jones <lee@kernel.org>
 
-But I think the client can parse the regulator phandle, reach the regulator
-parent, then check for the '-pmu' suffix in the compatible to make sure that it
-has the power sequencing requirement. Then it can call devm_pwrseq_get() only if
-that check passes.
-
-I'll do it in a separate series though as this series fixes a different problem
-altogether.
-
-- Mani
+>  include/linux/firmware/samsung/exynos-acpm-protocol.h | 4 ++--
+>  4 files changed, 11 insertions(+), 11 deletions(-)
 
 -- 
-மணிவண்ணன் சதாசிவம்
+Lee Jones
