@@ -1,370 +1,144 @@
-Received: from extorris.mess.org (extorris.mess.org [92.243.27.206])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95FDF38F639;
-	Thu,  7 May 2026 09:01:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=92.243.27.206
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 155D936E498
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 09:10:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778144491; cv=none; b=dDj1rtwyj639E7cr0PKkD6rBKT6oJZ3FtxhFRNPWcPyyUXYr/Cd7mmAcmC335ljBkJR/I/LkBzOquAKzy8fretR6rGMx/jaL9ldizySn/XuzUmEutXam0ikF33ND43rRPZycvbIlAZFzjxdu0M96Ke2OKgj+lYxZG2zIMXVu2dY=
+	t=1778145051; cv=none; b=TN6ebZm/UqDzk0WMuu9XzGCePfPgJkLpn+qseF4PtXUYPvoHIX8NFJLcnU0FML89b5PaXEppbh43NOjWv+vkuZmX1HUnOKOgs4Ce/mPCz16I1KPVPHLQPIN18V2pGDwFXb0u2W5+fntPJFvBroDS5FfUF/3Gg1nU6GNvWSH19PM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778144491; c=relaxed/simple;
-	bh=jBR2yJ3vDFclS/Qxd6iymiJ6fZA4U+sR34CBEL1IsMA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gjuxlZ9f6bhdewkMTuijH5GqcLcczDeCYSLHWw5wZUIOD58zEYSO4Nqd2nCrIR+MgFEWgRjTn0fOjAUbn+XzS+mFPW5/7WlC4qbhpWY4Za6CTUK6JnB2+zHQ8durRQA8Od2YUeAQKR5mq3MeYjPbFUS7Qrzot7MSpW7MuAZlL3U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org; spf=pass smtp.mailfrom=mess.org; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=gQi+xfn2; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=s/X1XAdJ; arc=none smtp.client-ip=92.243.27.206
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mess.org
+	s=arc-20240116; t=1778145051; c=relaxed/simple;
+	bh=cSbnmKIeK5PiH7jDW+BQqyiKxH8RY05vb4L396PVn/s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SIBUVmL8MpeRIy6nPBapLy/hcU5V/tTPzyYqTRcnTK9u3JqK7KEAk8oa7y7+VUWJRNEYxKMNxY9l2/7NqYi4kqwFz7y/p93Gg2f0feOuwSt8QmpNBL7XVRJhNPWmErUoTM9+5iLjQEZrI609YFal81jkxtSUj9Jnhx1jCagc5do=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=aaj2kPf7; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=eaayxXqs; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="gQi+xfn2";
-	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="s/X1XAdJ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
-	t=1778144482; bh=jBR2yJ3vDFclS/Qxd6iymiJ6fZA4U+sR34CBEL1IsMA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=gQi+xfn2yDp/gtSOxRVOuo2bHZ5FZFfV+07nEsZQPZgNTWLllD9eWwQ7Z3tZOnt0B
-	 p2U2b3EG9E04o9OKTe9pMlJQ6kjxnmIRqvWHBk9ff9u1z22ljRG0d/XbWZU6TjUr8p
-	 ES6ZZ6iX4iOhOiJiYbCfjxuOCACeTCLozrELJi9vYSbnJ8l8c8fHKxswYfFcydVWaE
-	 yrgrDcKd/5efvkjlHsfZZOj7+TcJobzAyRsOe7/XoFCtgaQAvJuiBF12FnlLsxU3pT
-	 fey44mTli/9gQ3OrSaRFlsAx19nqf19M9GTnCqEMJnLoXmgG3A/Bbw7lJIeBxppgys
-	 T05mWhgZueCJw==
-Received: by extorris.mess.org (Postfix, from userid 1004)
-	id 8B51F41CDC; Thu, 07 May 2026 10:01:22 +0100 (BST)
-X-Spam-Level: 
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
-	t=1778144472; bh=jBR2yJ3vDFclS/Qxd6iymiJ6fZA4U+sR34CBEL1IsMA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=s/X1XAdJeGfhUhk1itUPYAuqv34PN19ReL8VVJ6Ulk2ZKQGeQM2V/2/HJgjWmTZHx
-	 pZZI3rc64fwMxsWTB9UPkfM5s4z98ZOaEFw6V5hjDoiEYvaJa2HbcUgmUKCMX+nSb0
-	 nVtAOOtj1hZQshTvTwTzNJ1eSEQeS92Txj08WIf2dcyA7E7MpDZswwrkPk+YGYoSU3
-	 ROrNtkQll3kppdvJBD3wSi+qmE6Rdp8WMRGyvaSnDYpC3lzSMp/lL57hFIUCNQivu0
-	 CYWZpjnZIu2AbmYUFH6vtnp1ZXFABfXrUurDmegg5SNf1wg4c70NBGlaCTjQlE5/+9
-	 4oN8PJ6JnfUow==
-Received: from maru.local (unknown [140.228.74.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by extorris.mess.org (Postfix) with ESMTPSA id 9822441CD2;
-	Thu, 07 May 2026 10:01:12 +0100 (BST)
-From: Sean Young <sean@mess.org>
-To: Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v2] cpufreq: elanfreq: Drop support for AMD Elan SC4*
-Date: Thu,  7 May 2026 10:01:04 +0100
-Message-ID: <20260507090107.10113-1-sean@mess.org>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="aaj2kPf7";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="eaayxXqs"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 647440wf150875
+	for <linux-pm@vger.kernel.org>; Thu, 7 May 2026 09:10:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=fiLRyqVWGS0Ix+7Et8ZETjKI
+	EZ4pzdPJfw5gz/TlT3w=; b=aaj2kPf7Vt70KA2i3+8H5rqr4GaTBRUxUXfFCAIX
+	1wdBO8jPUfsMqMrznswtbQ2P2Sc+PW6u3Lv/QSqcGF6r0+iMf3u3kaQtK6o9hdEQ
+	CbqLEGnxg2KU0oLYXWLl4EXauJIGscXmUQ7FkaJ5ATmeVNCi9CPdyPreNdMhujls
+	lo2BJ7dWx4/ULLNGvksEnomZ1gSIjLo9AVuTUsGBgxibOK+a9ikaCy7nV2o1vnKy
+	+7+q98leDPrDHpE1aow5LsCT1+nLVzy8Pwfnb6CvPbz7NcYllukprl0QwQL2LNMG
+	cMQ0cNd/S3qW7IY5fCfePp5fy9uOvRNQhHlP8BRedEPrmQ==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e0kcts3es-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 09:10:43 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50fba8d8c40so10481251cf.3
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 02:10:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778145043; x=1778749843; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=fiLRyqVWGS0Ix+7Et8ZETjKIEZ4pzdPJfw5gz/TlT3w=;
+        b=eaayxXqsFRTvarNydVcHFRARBFPSw+J57YxMg9pETfh8Dga987mHzV4BWW/Np7q1u6
+         g3MtwRlgZ4/rQksxVHQQC8hyu5qCqtpMHtKyd/wNSMP8q0I6bp86lycopKq+FeOBuKPo
+         NpLT19srU4rmTZH1UMu+19x9fCIuFl9TIfS1sdKzQMGIv97rsHnoH7SWVVHEjjqsZywM
+         Sxpft5Hd5cGHKWV3zLyFrAyDiFaSJiq/qQhN3Or2GP0TXk2ZJ93X7KCxnZnPEaxGHYwv
+         kf7u6M0+fxHKa3WueAMgXYneJGNfFvv1cPPfyy1cFfYmezT+GzBajtZi47wIu8toiRii
+         68ag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778145043; x=1778749843;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fiLRyqVWGS0Ix+7Et8ZETjKIEZ4pzdPJfw5gz/TlT3w=;
+        b=IfBaSlO/K+QfBnM6MdznsABM8oz2JmSst14Fe4MJAF6d+cRkVTYbeCVd9Cyc7316MC
+         TypkjRIy9KnTrMNxpQQA+TMGYNYBV2WctfTaF8Ri+WbghTyCVyQJPvi/j2YA7eE0nh98
+         rkeOI/gpHRvmnaMOuP5VjBIEFdlItRjlGfAn3ma0drhTnywazEyrsCH2MjkmR7o+P5l9
+         7Bboep3jiBbkPo3d2N9ik73R0FErnQRB8arASi8GyMyFfT92Au9qlS/tDAX35u+rnapm
+         d45jXFUHnCU5MfyGL3RJiohKlHUJ0SPC002ACtJgYmszjnIHhTXXRPmG7fRhar3uxLYU
+         nfpg==
+X-Forwarded-Encrypted: i=1; AFNElJ+pWFFjpYn2+CqqLrUK5ZvPkD/qIGNay/A/UBGpCDcYl41wnbTAoQk7zXiSZ/1hk6rgszcbL9vmdg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzMjwtadnlYUtfBda4NJZL8hlUkMWjecHC7N+T23sGbqU0e6/g1
+	K51obFmyRZC6pHtS6/+27jJbPFrgAyPr1vYDI4K5hkid9MhUGFN1DHUlQCtvIgpgzGCj/HIof0W
+	c3BcWPP1Ff/7BkLQ5WI9PsYtxq2v18girZK7PkUoZ9HEEkpfCv2u+zhPBq/GLEQ==
+X-Gm-Gg: AeBDietnRO4BewpFQuejsT1nfrRlQj89h8Wmzkw/KUcNTz9gPocaE7VXNx0+PCF0JU3
+	ZCdpPStcyMEvkkbHKvPJUwYQZcB4d55afoGI+xTjadBORYmgmsE0lf94Ah2wN1P+MbXTVQWBKkZ
+	lPgu8iIYmYK6R2fMEN0pJdLkXI5Ac1sADyLSaiFWgQDUM5EQ0ETXvmXZjNCcu58lg2EE2vLs/Fx
+	OKOY5rekEO+qNTkskJdmCByHMyW7X8Rliza2NfZgrS61Ns3rDLH4iJWAN9WNesMSCxs7jFTTS4X
+	6pbKwc55zA37883bSF0B7+WQ/aDH+RQmzRzFKGUWyzFhd/5OE28cLjgZhPXvEanOW775JSNHaA7
+	wdjcXJn+9dP9jewXzJcibQxWqdVUggs60viwyF5pclDGBYceRcab2hOVwPydEHOjaq/N5gev0dX
+	14gPzv9BOcYyEYDVDSuI4/XMv2//Nj9qFsrMYfHXki6Xgdwews1VfwNblr
+X-Received: by 2002:a05:620a:2848:b0:8d0:82e:7423 with SMTP id af79cd13be357-904d69d8e00mr989744985a.44.1778145043100;
+        Thu, 07 May 2026 02:10:43 -0700 (PDT)
+X-Received: by 2002:a05:620a:2848:b0:8d0:82e:7423 with SMTP id af79cd13be357-904d69d8e00mr989741085a.44.1778145042666;
+        Thu, 07 May 2026 02:10:42 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a86e65fdf6sm3822632e87.78.2026.05.07.02.10.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 07 May 2026 02:10:40 -0700 (PDT)
+Date: Thu, 7 May 2026 12:10:39 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
+Cc: cristian.marussi@arm.com, sudeep.holla@kernel.org, cw00.choi@samsung.com,
+        kyungmin.park@samsung.com, myungjoo.ham@samsung.com,
+        konradybcio@kernel.org, andersson@kernel.org,
+        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        arm-scmi@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, jonathanh@nvidia.com,
+        thierry.reding@kernel.org, digetx@gmail.com, conor+dt@kernel.org,
+        krzk+dt@kernel.org, robh@kernel.org
+Subject: Re: [RFC V6 0/8] arm_scmi: vendors: Qualcomm Generic Vendor
+ Extensions
+Message-ID: <mplk3qvyslzazuolwlcgy6fb6ta7ts63x3dq5wwybyejaxpyh3@fctfzjkyxi55>
+References: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
+X-Authority-Analysis: v=2.4 cv=XsPK/1F9 c=1 sm=1 tr=0 ts=69fc5713 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=RJIkCpciCD5dGSa3Y80A:9
+ a=CjuIK1q_8ugA:10 a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-GUID: Mg1daV8DJjJDoDaLGDEJ0od3gZjycDpe
+X-Proofpoint-ORIG-GUID: Mg1daV8DJjJDoDaLGDEJ0od3gZjycDpe
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDA5MSBTYWx0ZWRfX9x8RTIam6y5D
+ eVzoWQZwwdvzJZZTbH/KxS/c0blALSSfMO6jc76kCWIt5QNXTwCjZg97rfS7WQzaVC9I1+/PMFV
+ kvhjeYNpJPHbZpigfXksv27Iu9amDB812AHyJ7aCn7qKNhkF55OKvxk7SdBpRg2YDtF6FSboQLF
+ 7VW2JQF4hpxajnm2dllnVfCC8tf7NLmaGY/H6rLIDpSt3aoXwbKsqCCdhUod2LKUKAIsi/xqnXL
+ cwBr2D33RF9Hk6KZq7M52ICz+2nTNzmTrfwGlHARR/HHdrf+VAGdoESBtI+TT4Fq9thhuf8+Hft
+ qs4qinRlz704lM1cxc9PQmKoQ+et4ea2o1TCZoid6aMKzS5qz8HtybQhcQWX+htoM/zWQftOWHI
+ qLvaPYPUbmtYbb7xGoOqPLmg4Ise8UBDLvCwE3ScLPeNxFKXhNbNmgI6i8G8sqI0bQ6LxR0+iJd
+ eML0tC+0Xb4QmWxvEXg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 impostorscore=0 adultscore=0 suspectscore=0 phishscore=0
+ priorityscore=1501 malwarescore=0 bulkscore=0 spamscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070091
 
-Since commit 8b793a92d862 ("x86/cpu: Remove M486/M486SX/ELAN support"),
-the AMD Elan SC4* is no longer supported, so the cpu frequency
-driver is no longer needed.
+On Thu, May 07, 2026 at 11:52:29AM +0530, Sibi Sankar wrote:
+> The QCOM SCMI vendor protocol provides a generic way of exposing a number of
+> Qualcomm SoC specific features (like memory bus scaling) through a mixture of
+> pre-determined algorithm strings and param_id pairs hosted on the SCMI
+> controller. On Qualcomm Glymur and Hamoa SoCs, the memlat governor and the
+> mechanism to control the various caches and ram is hosted on the CPU Control
+> Processor (CPUCP) and the method to tweak and start the governor is exposed
+> through the QCOM SCMI Generic Extension Protocol.
 
-Signed-off-by: Sean Young <sean@mess.org>
----
-Changes since v1:
- - Also removes elanfreq= entry from kernel-parameters.txt
 
- .../admin-guide/kernel-parameters.txt         |   4 -
- drivers/cpufreq/Kconfig.x86                   |  15 --
- drivers/cpufreq/Makefile                      |   1 -
- drivers/cpufreq/elanfreq.c                    | 226 ------------------
- 4 files changed, 246 deletions(-)
- delete mode 100644 drivers/cpufreq/elanfreq.c
+Could you please clarify, does this apply to the common commercial
+Glymur and Hamoa laptops?
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 4d0f545fb3ec..7ab0e58c4aa9 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1669,10 +1669,6 @@ Kernel parameters
- 			very early in the boot process. For early debugging
- 			via a serial port see kgdboc_earlycon instead.
- 
--	elanfreq=	[X86-32]
--			See comment before function elanfreq_setup() in
--			arch/x86/kernel/cpu/cpufreq/elanfreq.c.
--
- 	elfcorehdr=[size[KMG]@]offset[KMG] [PPC,SH,X86,S390,EARLY]
- 			Specifies physical address of start of kernel core
- 			image elf header and optionally the size. Generally
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 865b290b01ff..c42dd39e0b2a 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -126,21 +126,6 @@ config X86_ACPI_CPUFREQ_CPB
- 	  By enabling this option the acpi_cpufreq driver provides the old
- 	  entry in addition to the new boost ones, for compatibility reasons.
- 
--config ELAN_CPUFREQ
--	tristate "AMD Elan SC400 and SC410"
--	depends on MELAN
--	help
--	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
--	  processors.
--
--	  You need to specify the processor maximum speed as boot
--	  parameter: elanfreq=maxspeed (in kHz) or as module
--	  parameter "max_freq".
--
--	  For details, take a look at <file:Documentation/cpu-freq/>.
--
--	  If in doubt, say N.
--
- config X86_POWERNOW_K6
- 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
- 	depends on X86_32
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 96196edf79d5..6c7a39b7f8d2 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -40,7 +40,6 @@ obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
- obj-$(CONFIG_X86_POWERNOW_K7)		+= powernow-k7.o
- obj-$(CONFIG_X86_LONGHAUL)		+= longhaul.o
- obj-$(CONFIG_X86_E_POWERSAVER)		+= e_powersaver.o
--obj-$(CONFIG_ELAN_CPUFREQ)		+= elanfreq.o
- obj-$(CONFIG_X86_LONGRUN)		+= longrun.o
- obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
- obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
-diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-deleted file mode 100644
-index fc5a58088b35..000000000000
---- a/drivers/cpufreq/elanfreq.c
-+++ /dev/null
-@@ -1,226 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *	elanfreq:	cpufreq driver for the AMD ELAN family
-- *
-- *	(c) Copyright 2002 Robert Schwebel <r.schwebel@pengutronix.de>
-- *
-- *	Parts of this code are (c) Sven Geggus <sven@geggus.net>
-- *
-- *      All Rights Reserved.
-- *
-- *	2002-02-13: - initial revision for 2.4.18-pre9 by Robert Schwebel
-- */
--
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/init.h>
--
--#include <linux/delay.h>
--#include <linux/cpufreq.h>
--
--#include <asm/cpu_device_id.h>
--#include <linux/timex.h>
--#include <linux/io.h>
--
--#define REG_CSCIR 0x22		/* Chip Setup and Control Index Register    */
--#define REG_CSCDR 0x23		/* Chip Setup and Control Data  Register    */
--
--/* Module parameter */
--static int max_freq;
--
--struct s_elan_multiplier {
--	int clock;		/* frequency in kHz                         */
--	int val40h;		/* PMU Force Mode register                  */
--	int val80h;		/* CPU Clock Speed Register                 */
--};
--
--/*
-- * It is important that the frequencies
-- * are listed in ascending order here!
-- */
--static struct s_elan_multiplier elan_multiplier[] = {
--	{1000,	0x02,	0x18},
--	{2000,	0x02,	0x10},
--	{4000,	0x02,	0x08},
--	{8000,	0x00,	0x00},
--	{16000,	0x00,	0x02},
--	{33000,	0x00,	0x04},
--	{66000,	0x01,	0x04},
--	{99000,	0x01,	0x05}
--};
--
--static struct cpufreq_frequency_table elanfreq_table[] = {
--	{0, 0,	1000},
--	{0, 1,	2000},
--	{0, 2,	4000},
--	{0, 3,	8000},
--	{0, 4,	16000},
--	{0, 5,	33000},
--	{0, 6,	66000},
--	{0, 7,	99000},
--	{0, 0,	CPUFREQ_TABLE_END},
--};
--
--
--/**
-- *	elanfreq_get_cpu_frequency: determine current cpu speed
-- *
-- *	Finds out at which frequency the CPU of the Elan SOC runs
-- *	at the moment. Frequencies from 1 to 33 MHz are generated
-- *	the normal way, 66 and 99 MHz are called "Hyperspeed Mode"
-- *	and have the rest of the chip running with 33 MHz.
-- */
--
--static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
--{
--	u8 clockspeed_reg;    /* Clock Speed Register */
--
--	local_irq_disable();
--	outb_p(0x80, REG_CSCIR);
--	clockspeed_reg = inb_p(REG_CSCDR);
--	local_irq_enable();
--
--	if ((clockspeed_reg & 0xE0) == 0xE0)
--		return 0;
--
--	/* Are we in CPU clock multiplied mode (66/99 MHz)? */
--	if ((clockspeed_reg & 0xE0) == 0xC0) {
--		if ((clockspeed_reg & 0x01) == 0)
--			return 66000;
--		else
--			return 99000;
--	}
--
--	/* 33 MHz is not 32 MHz... */
--	if ((clockspeed_reg & 0xE0) == 0xA0)
--		return 33000;
--
--	return (1<<((clockspeed_reg & 0xE0) >> 5)) * 1000;
--}
--
--
--static int elanfreq_target(struct cpufreq_policy *policy,
--			    unsigned int state)
--{
--	/*
--	 * Access to the Elan's internal registers is indexed via
--	 * 0x22: Chip Setup & Control Register Index Register (CSCI)
--	 * 0x23: Chip Setup & Control Register Data  Register (CSCD)
--	 *
--	 */
--
--	/*
--	 * 0x40 is the Power Management Unit's Force Mode Register.
--	 * Bit 6 enables Hyperspeed Mode (66/100 MHz core frequency)
--	 */
--
--	local_irq_disable();
--	outb_p(0x40, REG_CSCIR);		/* Disable hyperspeed mode */
--	outb_p(0x00, REG_CSCDR);
--	local_irq_enable();		/* wait till internal pipelines and */
--	udelay(1000);			/* buffers have cleaned up          */
--
--	local_irq_disable();
--
--	/* now, set the CPU clock speed register (0x80) */
--	outb_p(0x80, REG_CSCIR);
--	outb_p(elan_multiplier[state].val80h, REG_CSCDR);
--
--	/* now, the hyperspeed bit in PMU Force Mode Register (0x40) */
--	outb_p(0x40, REG_CSCIR);
--	outb_p(elan_multiplier[state].val40h, REG_CSCDR);
--	udelay(10000);
--	local_irq_enable();
--
--	return 0;
--}
--/*
-- *	Module init and exit code
-- */
--
--static int elanfreq_cpu_init(struct cpufreq_policy *policy)
--{
--	struct cpuinfo_x86 *c = &cpu_data(0);
--	struct cpufreq_frequency_table *pos;
--
--	/* capability check */
--	if ((c->x86_vendor != X86_VENDOR_AMD) ||
--	    (c->x86 != 4) || (c->x86_model != 10))
--		return -ENODEV;
--
--	/* max freq */
--	if (!max_freq)
--		max_freq = elanfreq_get_cpu_frequency(0);
--
--	/* table init */
--	cpufreq_for_each_entry(pos, elanfreq_table)
--		if (pos->frequency > max_freq)
--			pos->frequency = CPUFREQ_ENTRY_INVALID;
--
--	policy->freq_table = elanfreq_table;
--	return 0;
--}
--
--
--#ifndef MODULE
--/**
-- * elanfreq_setup - elanfreq command line parameter parsing
-- *
-- * elanfreq command line parameter.  Use:
-- *  elanfreq=66000
-- * to set the maximum CPU frequency to 66 MHz. Note that in
-- * case you do not give this boot parameter, the maximum
-- * frequency will fall back to _current_ CPU frequency which
-- * might be lower. If you build this as a module, use the
-- * max_freq module parameter instead.
-- */
--static int __init elanfreq_setup(char *str)
--{
--	max_freq = simple_strtoul(str, &str, 0);
--	pr_warn("You're using the deprecated elanfreq command line option. Use elanfreq.max_freq instead, please!\n");
--	return 1;
--}
--__setup("elanfreq=", elanfreq_setup);
--#endif
--
--
--static struct cpufreq_driver elanfreq_driver = {
--	.get		= elanfreq_get_cpu_frequency,
--	.flags		= CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING,
--	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_index	= elanfreq_target,
--	.init		= elanfreq_cpu_init,
--	.name		= "elanfreq",
--};
--
--static const struct x86_cpu_id elan_id[] = {
--	X86_MATCH_VENDOR_FAM_MODEL(AMD, 4, 10, NULL),
--	{}
--};
--MODULE_DEVICE_TABLE(x86cpu, elan_id);
--
--static int __init elanfreq_init(void)
--{
--	if (!x86_match_cpu(elan_id))
--		return -ENODEV;
--	return cpufreq_register_driver(&elanfreq_driver);
--}
--
--
--static void __exit elanfreq_exit(void)
--{
--	cpufreq_unregister_driver(&elanfreq_driver);
--}
--
--
--module_param(max_freq, int, 0444);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Robert Schwebel <r.schwebel@pengutronix.de>, "
--		"Sven Geggus <sven@geggus.net>");
--MODULE_DESCRIPTION("cpufreq driver for AMD's Elan CPUs");
--
--module_init(elanfreq_init);
--module_exit(elanfreq_exit);
 -- 
-2.54.0
-
+With best wishes
+Dmitry
