@@ -1,155 +1,202 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com [209.85.217.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78839352C28;
-	Thu,  7 May 2026 07:23:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 733AA311C35
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 07:37:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778138639; cv=none; b=LWcd0NH61XmFrOoTLeHw4M9ZmL/IvLN4FrA4pCcf2bkbwOlcMx3xFJQPLvASZpGJROoLUGOo/pcOMsbl5n3fTa+awrEXwgJlS0ArHP2eB0GSOpGzOuLL17F8mh10m92J1DqbcA4wiMC8a9LUkLj2OCD9iGTJYGMhZQjccJ8J0s4=
+	t=1778139471; cv=none; b=FmSR37oIFBnCTialv02b0TUG/YkVvqAKH3rMYsncFQJsqUUxld7+EZYV9au35bVZ4Gzb65YIAXdEBmzIDIQDDGPEkEzoraZOH/mm77Wxodgh6irsbq5MWEoxua5O1ltD+fb2AxbFsBKcb+GfUFybvrb0tBVEDFhk3vABbi/TePA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778138639; c=relaxed/simple;
-	bh=ag2e4rubDHljcUbsB2BC/MHj9ZFXFOBLhTjLy6JSlhk=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KL894vP18vVJKUpyKrcz39CEnf18I9lVSCvvsnIfaoGXEaSZ6JiPFTtdT0w9BDzXzOBPxoFFmrFObB+DOwo4+Z1MU3IUZNi4F7Sci2wzpmrMsV6Xo/1Bwigy4bN2vfNn8E+a+kP89WzI0EPnCTlutgcEJ/YeUopDnox5lyNpa+g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=ZLJf7HFo; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="ZLJf7HFo"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id D05FA4E42C1E;
-	Thu,  7 May 2026 07:23:53 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 90CF6605D0;
-	Thu,  7 May 2026 07:23:53 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 4F651107F1B9F;
-	Thu,  7 May 2026 09:23:28 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1778138630; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=KuHg3bpGpRy0j8zZGsR4xMbCeq+40KQNwSqwL73wrxg=;
-	b=ZLJf7HFoaWrA+QvjHT5Gh6TZeRPeQK7D9TRFNzAxGhp0EWNliZg4AwN/3MS8qxZ+WzAXXq
-	T6wrHBfmoxlIOCE0LR6qB6nNclEBnM62oa0qHR1b3eIxeSfrgMTMIlcTQI7nqZge15D0l+
-	sLj9R0qfJuv9VoGTvaYtmVXHcV/7jHrAKRNpo7q2YNgBW2BMI67agx51RlZqky+pM/DE/w
-	2FWDjIij6E4LO6ldmdu10VRhQ1jdNnY1LWBRw2nfeTqWN3+DsPlyj7HsjlEMWCYQvoebbU
-	LgYPnGZiAHv/HKhw9qbr3lFn7WqvriiVxW4qqE4OwbN85ifqMP1iikrTMszpLg==
-Date: Thu, 7 May 2026 09:23:26 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Geert
- Uytterhoeven <geert+renesas@glider.be>, Kalle Niemi <kaleposti@gmail.com>,
- Matti Vaittinen <mazziesaccount@gmail.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- Danilo Krummrich <dakr@kernel.org>, Frank Li <Frank.Li@nxp.com>, Sascha
- Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team
- <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Michael
- Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Andi
- Shyti <andi.shyti@kernel.org>, Wolfram Sang
- <wsa+renesas@sang-engineering.com>, Peter Rosin <peda@axentia.se>, Arnd
- Bergmann <arnd@arndb.de>, Saravana Kannan <saravanak@kernel.org>, Bjorn
- Helgaas <bhelgaas@google.com>, Charles Keepax
- <ckeepax@opensource.cirrus.com>, Richard Fitzgerald
- <rf@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, Ulf
- Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Len
- Brown <lenb@kernel.org>, Andy Shevchenko
- <andriy.shevchenko@linux.intel.com>, Daniel Scally <djrscally@gmail.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sakari Ailus
- <sakari.ailus@linux.intel.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Jonathan Cameron <jonathan.cameron@huawei.com>, Dave Jiang
- <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Dan Williams <dan.j.williams@intel.com>, Shawn Guo <shawnguo@kernel.org>,
- Wolfram Sang <wsa@kernel.org>, linux-kernel@vger.kernel.org,
- driver-core@lists.linux.dev, imx@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
- linux-i2c@vger.kernel.org, devicetree@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
- patches@opensource.cirrus.com, linux-gpio@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-cxl@vger.kernel.org, Allan Nielsen
- <allan.nielsen@microchip.com>, Horatiu Vultur
- <horatiu.vultur@microchip.com>, Steen Hegelund
- <steen.hegelund@microchip.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-Subject: Re: [PATCH v6 20/27] misc: lan966x_pci: Fix dtso nodes ordering
-Message-ID: <20260507092326.2f8e3b47@bootlin.com>
-In-Reply-To: <CAD++jLkFu+Z22QBFiaa9S+Epeh=RJZOYX8BOLVDFw4bhEoYF1Q@mail.gmail.com>
-References: <20260325143555.451852-1-herve.codina@bootlin.com>
-	<20260325143555.451852-21-herve.codina@bootlin.com>
-	<CAD++jLkFu+Z22QBFiaa9S+Epeh=RJZOYX8BOLVDFw4bhEoYF1Q@mail.gmail.com>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-redhat-linux-gnu)
+	s=arc-20240116; t=1778139471; c=relaxed/simple;
+	bh=BCBnzIbovSj6nZkSdLu43I/N8uho8yIG58ObXHwQhSQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=X79OVvKJmkc00Dh6EskQMGitod/1VWHXT/Y8uaehbRSFHW7ZaKQXi9IIAMKQrnVQ5fmIqh/bhmuvy2qEuAhxFWzdnTnPt3quohejFXPmimFT/rtk7zbqpFdjVeA8+OMpSaYhvdOBCxCOduB5usEdJISKgza7TPGUvdtcxuI6tac=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-610e2e8f57dso174989137.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 00:37:49 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778139468; x=1778744268;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Egy2nC9k2RFpcPzSIv9jZ/VwU1PCVKckuVqW7m7bXrc=;
+        b=iEcAgHHOWsFF/eED9EuupaFERrcrGuKufpU6ycfH9Xc7I7qR8ELCXZOW6BNct5GFbq
+         RsNKZpdPTTHtMHY7bpiOCXWU5p4PnMc9eSZdxn8o3RU8jYjEmUEXFYZUjsbO9uacs61s
+         ED5W1TgtVsoWNITLZOTzv1W6Ic34/HboFx1Go54qMZOdkzUHc/Bf/UHPjGENwmJl38bn
+         994Yd74fmvfbLQFKTTXsQ5m/9NW+s59aK55rWTGHKxjdF7DyGy/uGECRV+m4B/BNXXKP
+         D/9L3CA0fHsKPW34WyxcSgV3TLxIP/leiibafaGzU0Ob1b9288h9Rl2ezY3t0Rc2jdlm
+         UPYg==
+X-Forwarded-Encrypted: i=1; AFNElJ879VaqIHAKIcQzi2r3XbZRFMV+r4NIVl5Q3PnzON+4NjA3ZaimSQB4qOJqzlf6vXgVpX5PWuT3uQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzJ2pflDF4x9gJ4XhScBRgZXGMa+kNseiLolzI9pELGbrTKwyfU
+	/q9EBQNs4Aq+DBYs5m83RzXEwy5VcVl9Ha0hkmA6c34aYoqx1bXNNjQDUFMx6vZT4kw=
+X-Gm-Gg: AeBDiessVkRyarDQi0/XXSEgg9j3sZF2FFMgvYS4Ghy0KdOG/zY2wrnvzxU+t8v9/ih
+	OUkc2yK78As4CssVRwmvGmhyYroKt1U4gx1hiTe9dvKPDfG8sKmXPPyaj9VLWTTRTnuGnFVwwGB
+	SYWjKmn5IdWwJopYSky94IgyqTO4PNi/rlECwmq0WUJRwyD+XNIOn4vccZcsmqsle6Zr8S9xUm2
+	rcf33lsL+BiiPNU9liclF4vDh9asw0DL1g0tYSp1P0GZ79i9MVg6fWpas2AYfhuqbS1Lp7SitQN
+	GcJHhnyVsFXa5tTkGIrVdthVicGtVfSrlUCvVLDDQSYXOwoLRLk/JXdbF6NxK0pCKGwwIxCJ8uQ
+	xln1XK/uuiRe8qr96/ArGQ9sKUeA1AXTuylr0/wL7yS92jVwJpm7E2B+CpYZByn+1c17OUq9QUU
+	kSgCghc/kioxp1ajnbooa5WeNYxM+Y9OfPgAimBWsBP93ajVVlAS2k1XqkHYcXtzltbCyxErE=
+X-Received: by 2002:a67:e102:0:b0:5f5:40ab:2d65 with SMTP id ada2fe7eead31-630f902387amr3251389137.22.1778139468205;
+        Thu, 07 May 2026 00:37:48 -0700 (PDT)
+Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com. [209.85.217.51])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-630f858f550sm2966000137.3.2026.05.07.00.37.47
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 07 May 2026 00:37:47 -0700 (PDT)
+Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-63124ac76f5so36243137.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 00:37:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+gG5RfHivLqd5LM77iBCIWjIMXadQNabQ82sA57VYAnV+VF2Z5W3WkIOHbjvGqnWfQ9da8jzj/Wg==@vger.kernel.org
+X-Received: by 2002:a05:6102:38d3:b0:5f5:4055:4556 with SMTP id
+ ada2fe7eead31-630f8e752e6mr3312584137.4.1778139466906; Thu, 07 May 2026
+ 00:37:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+References: <cover.1776793163.git.geert+renesas@glider.be> <053c312d07445517d8f9c84bfe3cc8fb72d4cd9a.1776793163.git.geert+renesas@glider.be>
+ <bf83a028-3ef3-482a-9ce3-8aec16f6ebed@mailbox.org>
+In-Reply-To: <bf83a028-3ef3-482a-9ce3-8aec16f6ebed@mailbox.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 7 May 2026 09:37:34 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWN2zaZrY2jKKXpNqrP8xSqc-uJTr-siTBgaA=-EY_4BQ@mail.gmail.com>
+X-Gm-Features: AVHnY4KGlUYo0uuTDH3tynnil_8H5d8OEIYrlJIco2kr0W3O9LQYd8HP5vniIEg
+Message-ID: <CAMuHMdWN2zaZrY2jKKXpNqrP8xSqc-uJTr-siTBgaA=-EY_4BQ@mail.gmail.com>
+Subject: Re: [PATCH/RFC 10/14] dt-bindings: power: Document Renesas R-Car X5H
+ Module Controller
+To: Marek Vasut <marek.vasut@mailbox.org>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Magnus Damm <magnus.damm@gmail.com>, Saravana Kannan <saravanak@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@baylibre.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
+	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Linus,
+Hi Marek,
 
-On Thu, 26 Mar 2026 11:33:19 +0100
-Linus Walleij <linusw@kernel.org> wrote:
+On Thu, 7 May 2026 at 00:58, Marek Vasut <marek.vasut@mailbox.org> wrote:
+> On 4/21/26 8:11 PM, Geert Uytterhoeven wrote:
+> > +  '#power-domain-cells':
+> > +    description: |
+> > +      - The first power domain specifier cell must be either the Module
+> > +        Power Domain Gating (MPDG) register index (0x00-0x3f) from the
+> > +        datasheet,
+>
+> I agree with this part.
+>
+> > or a Power Domain number, as defined in
+> > +        <dt-bindings/power/renesas,r8a78000-mdlc.h>,
+>
+> I do not understand this part, please see end of this email ...
+>
+> > +      - The second power domain specifier cell must be the module number
+> > +        (0x00-0xff), composed of the Module System Reset (MSRES) register index
+> > +        in the high nibble, and the Module Reset Destination bitfield index in
+> > +        the low nibble.
+> > +    const: 2
+>
+> I am unsure about this part.
+>
+> There are multiple MDLC blocks, AON, SCP, HSCN, and so on. Each MDLC
+> block contains multiple Module Power Domain Gating registers (MPDGn) and
+> multiple Module System RESet register (MSRES) .
+>
+> I do understand and agree that the first power-domains-cells cell must
+> be the identifier of power domain within the MDLC block.
+>
+> However, I do not understand the second cell. The MDLC bindings already
+> contain reset-cells, which should be used to refer to a reset within the
+> MDLC block. Resets within the MDLC block are operated using the MSRES
+> registers. Why are resets conflated into power-domain-cells ?
 
-> Hi Herve,
-> 
-> this is nitpicking, but if you respin the series consider the following:
-> 
-> On Wed, Mar 25, 2026 at 3:42 PM Herve Codina <herve.codina@bootlin.com> wrote:
-> >
-> > Nodes available in the dtso are not ordered by their unit address.
-> >
-> > Fix that re-ordering them according to their unit address.
-> >
-> > Signed-off-by: Herve Codina <herve.codina@bootlin.com>  
-> (...)
-> > +                               switch: switch@e0000000 {  
-> 
-> Recommended practice is:
-> 
-> ethernet-switch@...
-> 
-> > +                                       compatible = "microchip,lan966x-switch";
-> > +                                       reg = <0xe0000000 0x0100000>,
-> > +                                             <0xe2000000 0x0800000>;
-> > +                                       reg-names = "cpu", "gcb";
+The Module Reset Destination bitfields in the MSRES registers are
+2-bit wide, and control both Reset and Module Standby.  Hence the
+same register bitfields are referred to in the power-domains and
+resets properties, through the module number.
+
+Module Standby controls the clock(s) going into the module,
+and is modelled as an SCMI clock (SCP_CLOCK_ID_MDLC_*) by the SCP
+firmware. This is very similar to how MSTP (Module Stop) clocks are
+handled on earlier R-Car SoCs (except that the SCP_CLOCK_ID_MDLC_*
+clocks have a zero rate :-(.
+
+Summarized, the first cell is the power domain part, and the second
+cell is the clock domain part.
+
+So perhaps I will clarify like this:
+
+      - The first power domain specifier cell is the power domain part, and
+        must be either the Module Power Domain Gating (MPDG) register index
+        (0x00-0x3f) from the datasheet, or a Power Domain number, as defined in
+        <dt-bindings/power/renesas,r8a78000-mdlc.h>,
+      - The second power domain specifier cell is the clock domain part, and
+        must be the module number (0x00-0xff), composed of the Module System
+        Reset (MSRES) register index in the high nibble, and the Module Reset
+        Destination bitfield index in the low nibble.
+
+> > +  '#reset-cells':
+> > +    description:
+> > +      The single reset specifier cell must be the module number (0x00-0xff).
+> > +    const: 1
+>
+> [...]
+>
+> > +#ifndef __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
+> > +#define __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
 > > +
-> > +                                       interrupt-parent = <&oic>;
-> > +                                       interrupts = <12 IRQ_TYPE_LEVEL_HIGH>,
-> > +                                                    <9 IRQ_TYPE_LEVEL_HIGH>;
-> > +                                       interrupt-names = "xtr", "ana";
+> > +/* R-Car X5H MDLC Power Domains */
 > > +
-> > +                                       resets = <&reset 0>;
-> > +                                       reset-names = "switch";
-> > +
-> > +                                       pinctrl-names = "default";
-> > +                                       pinctrl-0 = <&tod_pins>;
-> > +
-> > +                                       ethernet-ports {
-> > +                                               #address-cells = <1>;
-> > +                                               #size-cells = <0>;
-> > +
-> > +                                               port0: port@0 {  
-> 
-> Recommended practice is:
-> ethernet-port@...
-> 
+> > +#define R8A78000_MDLC_PD_AON                 0x40
+> > +#define R8A78000_MDLC_PD_SCP                 0x41
+> > +#define R8A78000_MDLC_PD_APL                 0x42
+> > +#define R8A78000_MDLC_PD_CMN                 0x43
+> > +#define R8A78000_MDLC_PD_ACL                 0x44
+> ... what do these numbers represent ? Shouldn't those be register
+> offsets from MDLC MPDG00 according to power-domain-cells ?
 
-Yes, it should be but the DT binding [0] says "switch" and "port".
+These are Power Domains that are not backed by any of the 64 Module
+Power Domain Gating (MPDG) registers in MDLC blocks.
+It is not clear to me if they can be controlled manually, probably
+they are just always sequenced automatically on power-up.  As the
+documentation does treat them as separate domains (see e.g. Table 14.1
+Power Supply Voltage Monitor Functions), I figured they would better be
+exposed as separate domains, instead of as a single always-on domain,
+like on earlier R-Car SoCs (cfr. R8A779*_PD_ALWAYS_ON domains number
+32 or 64).
 
-Those node names have to follow the DT binding even if this binding doesn't
-follow recommended practice.
+See also the X5H_Power_domain_structure.xlsx attachment in the R-Car
+X5H documentation.
 
-[0] https://elixir.bootlin.com/linux/v7.0/source/Documentation/devicetree/bindings/net/microchip,lan966x-switch.yaml
+> If those are power domain IDs, then I am unsure why e.g. for SCIF the
+> domain ID is R8A78000_MDLC_PD_APL in [PATCH/RFC 13/14] arm64: dts:
+> renesas: r8a78000: Add CPG/MDLC nodes . Could you please expand on that ?
 
-Best regards,
-Hervé
+See the "Module Standby" attachment X5H_MS.xlsx in the R-Car X5H
+documentation. The "PERW" tab shows that all PERW devices are located
+in the PD_APL power domain, which is always-on.
+This is different from e.g. the UFS controllers: they are located in
+their own PD_UFS0 and PD_UFS1 power domains, which are controlled
+through the Module Power Domain Gating registers (MPDGn) (cfr. the
+"PERE" tab).
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-Hervé Codina, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
