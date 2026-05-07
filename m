@@ -1,75 +1,88 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f74.google.com (mail-wm1-f74.google.com [209.85.128.74])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED2673EE1E7;
-	Thu,  7 May 2026 12:36:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EBD533F1662
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 12:51:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.74
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778157392; cv=none; b=kEF2dBbxlAPpIJnwn12261qH/lKW4jgAiDMlmgk4RKLQjg9D8hs93Q94kue6fyyWOhLZA5aAfM4kdHVjH2ZwT2J7jsatMTevSikzoFsvYYDgIvhpZq0y6a/sEZqMQC70V+Y8ZUa9SDZp9D1yni5Q+xS3g8GTKCbXeqfZ5gaLZMQ=
+	t=1778158263; cv=none; b=JqPGQK6x4r9C/Mcp+NI7izG8ttkTEIl8efc2/HlDznHrFit0BsKBVvzpkkB9T2U//mMSkj1YgQNLW3gaCfSQRJItgbH1zHwWliiPz1ObZd6jjZxXXhfAsoD7qP1JJmVlj4hcgkosUS4Hs6Zv2Oc3GYSc6hdu8QZ1d6rWQrgG6cc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778157392; c=relaxed/simple;
-	bh=t2FvFDrp9DlGESeahtlxW757S/4S7ucRFLPdAT++9jc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MtN5lbJ0fvuNI7UeLdEIxGNdj6CYVd2WdTqwlxXv7Em6nqzIVs1X7HcuzErBENUZMs8IIdteKE7Snnp6og/GNdDbGg7kRtGFtcLACKde5GEMsYU5oLE9YPBN003V9YZ8C1RNVUe6jSnEwNI6+f6LQL/QW5gwMocnIaNY5B4ZpUM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RbaIPUDj; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778158263; c=relaxed/simple;
+	bh=h3Vlkbk5sdnGg13yM94cBpckZTupKbTqjZZ6gANaolw=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=iPJ4kf1WHobHB6KB3pztFBj3Dxj8cxFDHZ/r8LtJ0fy09cKYTK+NL8luI4YuPmCssOH1LQJx7ggPfbuWfZJqOolDfqwHUUcKqjemaRZC1lV0Y9wmtOTfOFxZ7Tx2p7dfX7eHyVQJvAVgFdkIoYvawQ2S/d7GcKIQL0avPFMwxDA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=NRhZ5EgY; arc=none smtp.client-ip=209.85.128.74
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RbaIPUDj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA14AC2BCB2;
-	Thu,  7 May 2026 12:36:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778157391;
-	bh=t2FvFDrp9DlGESeahtlxW757S/4S7ucRFLPdAT++9jc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RbaIPUDj0OS761XR87i7NHCbgO2GWpMDxEt2U+gcIXAJHMzPi1ShYY+/e9pCySRhV
-	 IoW7OnLi62lBI39TisMHauWHsi/vuKQLPpiw1WPnoUIxaV9Ydv3IXGbx/sNEsUzMWm
-	 GrL9n5m3cSGirMLxmrKTaShWhsNbDTXc6BMztrG51ifH8o9avPlQBXBvc+JkKUbXBy
-	 yB8EjFpx4+fxJVSExuic9OdthmJkeDdMrjOEHgf7KPSPOqJneapAixgrHXub/unS+v
-	 8ZR+F4kEQtBC7GprQTaQeJ6INUPi48HUhbEoH5PQRkQe3et6AlGIaKDZKtPWW+gA57
-	 95U+pTy5SHM+Q==
-Date: Thu, 7 May 2026 13:36:25 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-Cc: cristian.marussi@arm.com, cw00.choi@samsung.com,
-	Sudeep Holla <sudeep.holla@kernel.org>, kyungmin.park@samsung.com,
-	myungjoo.ham@samsung.com, konradybcio@kernel.org,
-	andersson@kernel.org, linux-arm-msm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org,
-	linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-	dmitry.baryshkov@oss.qualcomm.com, jonathanh@nvidia.com,
-	thierry.reding@kernel.org, digetx@gmail.com, conor+dt@kernel.org,
-	krzk+dt@kernel.org, robh@kernel.org
-Subject: Re: [RFC V6 1/8] firmware: arm_scmi: Add QCOM Generic Vendor
- Protocol documentation
-Message-ID: <20260507-misty-neon-trout-7a3ada@sudeepholla>
-References: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
- <20260507062237.78051-2-sibi.sankar@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="NRhZ5EgY"
+Received: by mail-wm1-f74.google.com with SMTP id 5b1f17b1804b1-48d0889c1ecso5891335e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 05:50:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1778158256; x=1778763056; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=B8srcPUz2iRMxUgzpDjJPZ915RsxNlRqzvXbEly4DTQ=;
+        b=NRhZ5EgYtpSzRPVKw3l4G+F0UKuwmoEJ5Cqd01cStGdfNg3xeNHV/Dt5UTswLPUXpK
+         zkYls8UXWRP2uerd6G/MUIy6SvkquIO8r+Uakn1NTHvPDTj4/jQrhauhauWffyahmveA
+         RC+5V9qIfE71z8J88pcokSzUHd71kmfH9umxOV4wv+8asM7gIUJ38foCb/E8yc6sv3Ol
+         Yy4+IR8a7y3Uku9o10iwSRKy4FcAI57m4BZg3Jq7jWvjw0RSuAmP5ko8+6X1x1qOYO93
+         L1hirrbNxq2cisiIPqONHljKPXjb1uL0y9CLakiJA6R/0SuS5gq3Ss+h2nJJ74C5A48D
+         1cfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778158256; x=1778763056;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=B8srcPUz2iRMxUgzpDjJPZ915RsxNlRqzvXbEly4DTQ=;
+        b=tTDZqNNE2WK1ZkswRPbRbButvyI/x6Ljm6eXT1eLiU5X/Jml+4dIzBjR23MLwKAm9a
+         H/TrB1YkPycFuX4FHvMeQzxSlj/+eiGdPzHQ1sVgfWaBdjhucXtalDrIcUhOk/zjxhbr
+         YgfRIJWUHQxkz3D4zF+JcJsVAeiDkTAd41IVjTuj6vSUELZQY/kyTBZKXW8YWzQ6ZuQa
+         OMzCMvdaHckNLU+sWXPuIhtXcbI5pA45MQc1xV9rSzTkiJUVU4gpQ+9fRBPj/0RsGOl6
+         3pMWqO+UiiBW2yZ+fzY5hAUUGHmqO6q7TLbVgB0ysx5nY0XM4nK1PJ68MXEc661WZevy
+         U+RA==
+X-Forwarded-Encrypted: i=1; AFNElJ9UCKCNa8xyw+gc9SDPpwW9tjsn9vZeal5X/XdWo4daFFhuZf30o47W6OftkXh5Kw39zI8mOryBaw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxbL+OIuM9GRa4bmajrInnzvJcqP+MWPR8cusgysYmKV7IKZmnf
+	06QmPHZgr01XzRQUHNR9B4RyhTIXZ7wsuMJANlh0DfU1pIB0gbUE+j6n7jjHcJYz8Wq7W52M+Cd
+	W3OYJapheJTNo2fVALQ==
+X-Received: from wrpu17.prod.google.com ([2002:adf:f891:0:b0:43d:70b2:d297])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:600c:3f18:b0:487:2671:fb8f with SMTP id 5b1f17b1804b1-48e51e19668mr127556795e9.8.1778158255465;
+ Thu, 07 May 2026 05:50:55 -0700 (PDT)
+Date: Thu, 7 May 2026 12:50:51 +0000
+In-Reply-To: <20260506215113.851360-4-dakr@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260507062237.78051-2-sibi.sankar@oss.qualcomm.com>
+Mime-Version: 1.0
+References: <20260506215113.851360-1-dakr@kernel.org> <20260506215113.851360-4-dakr@kernel.org>
+Message-ID: <afyKqwxDxu3cT7U9@google.com>
+Subject: Re: [PATCH v2 03/25] rust: device: generalize drvdata methods over ForLt
+From: Alice Ryhl <aliceryhl@google.com>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, acourbot@nvidia.com, 
+	david.m.ertman@intel.com, ira.weiny@intel.com, leon@kernel.org, 
+	viresh.kumar@linaro.org, m.wilczynski@samsung.com, ukleinek@kernel.org, 
+	bhelgaas@google.com, kwilczynski@kernel.org, abdiel.janulgue@gmail.com, 
+	robin.murphy@arm.com, markus.probst@posteo.de, ojeda@kernel.org, 
+	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
+	lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, 
+	igor.korotin@linux.dev, daniel.almeida@collabora.com, 
+	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	nova-gpu@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+	linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, 
+	linux-pci@vger.kernel.org, rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 
-On Thu, May 07, 2026 at 11:52:30AM +0530, Sibi Sankar wrote:
-> Add QCOM System Control Management Interface (SCMI) Generic Vendor
-> Extensions Protocol documentation.
-> 
-> Signed-off-by: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-> ---
-> 
-> @Sudeep/@Christian, Just moving the series back in RFC mode to get feedback
-> on the devfreq part of the series. Will add a lot more documentation in the
-> next re-spin, so definitely not ignoring your earlier comments :).
-> 
+On Wed, May 06, 2026 at 11:50:39PM +0200, Danilo Krummrich wrote:
+> -    /// The type of the driver's device private data.
+> -    type DriverData;
+> +    /// The [`ForLt`](trait@ForLt) encoding of the driver's device private data type.
+> +    type DriverData: ForLt;
 
-Thanks for letting us know. We must settle the specification first before
-moving on to any implementation details. I will therefore skip reviewing this
-version, as requested.
+Associated types support ForLt natively.
 
--- 
-Regards,
-Sudeep
+    type DriverData<'bound>;
+
+Alice
