@@ -1,378 +1,301 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012002.outbound.protection.outlook.com [52.101.48.2])
+Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17DA22DFA2F;
-	Thu,  7 May 2026 21:07:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.2
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778188065; cv=fail; b=sqEvMKoEWjqhoo1V/qz9EdqifQ2bbJYJAuYdM+rJeZ0AWK1Wfg9qz/kkYu+9ebuibTGOpWo3QRuybfOuEECqSBVHui7DKnz8epFFCYz0wYGTs0xHM+HYLUreXU8V5QHezG9/n2DLnYuoYRbBdhvXiBnJ/vtKkgS7QCIMque3Ikc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778188065; c=relaxed/simple;
-	bh=X3OqBHs6tuD1fRWDhqflvc4YhFjWS0YN8wO7EBahnnw=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=H/XXrI/qzHBv9w291pftEE8bu3j/9SlsYidwoAaYtbXOoh/sLyTa8FKfSwGZyPQVV5KbJAMPEiXGQ32ZbZPP7uJEfdiFL/2Tqadxd7PbOZ0V/WOpmC2hIBl1gaNzfmq2KcICF0DhvmooQmq19VOJP9TLtbF2Fb6vJWyaoyT03dY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=kulDujol; arc=fail smtp.client-ip=52.101.48.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49E112F1FC9;
+	Thu,  7 May 2026 21:36:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778189793; cv=none; b=g1OSlTEzTFXtesEO2SJg5r16cjNyPteWywwOxkJ2Pe2wkpF0QfiZcRyZrV9adGWxvXPNZptcEk2gLWum0I9NUXK97mO+bC3phE98uwwxtRxFjXuVNpFhVb6An509qz5vDvgP1Th9baESmwYNUGAlynykRnL2TmCHzkTabUMRM0E=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778189793; c=relaxed/simple;
+	bh=p8BgNvjIw9XM568/P9xc8rYhcRi/3guX3yg9ZaYeUGk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TWwRj2GKavHFj0eM5w+rxdrfKSL6Dzmh2Vnz2dwiU8pSjINrUF/Dm28w6Pe5QfpD0+4+yIAYDCUFA/bMLDyCWoFfW/fNBxh260uQubRYI0CRgRh2YsJDb0G/T5XV2GzD4MwYhTHGDaevXuwipJtl57oROEmStQqUFxsVB4Zwt48=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=hid+k1D5; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=DHVO4ux1; arc=none smtp.client-ip=80.241.56.152
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="kulDujol"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Jbzityp8vx1c+ptDm5n/RqhkCnD/seI/bMtOQzE8M1q3I3SfiIHbH+LXF2jCCczPmMnmZwmGQ+pl1+tl7wW+EVMkEevsD47/iDrNILLATz/syVh8qi2yJOOe5wIiniTvttnfs7aqbKqNL+GAwBcqU30Rqm4uhdVOh4TLiqNYI4dg8VuxTWbUZkBzLAm3EJZ+etYcUGogvIjMGiwiBuJtivHDJusaAsLjhBC1XPJmAh6pCqEk65AtvxY/hbYSGN19B6LdHdpWnZpIfxm33hq6r9sLgo+QonvmrucWGzuKt6/z12E5+j3ruwxBUBex4YQPMbE5Vmva82kk1bVz4su0IQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=V2BYjLoee3eBFH54OKIZ6XvfuzTl+0E1ZtMD9EbXtyg=;
- b=f3s4K+WonZtDZMLIXIGChik8PQsNgBKFwme61MwmqLiJaIxmuC6bpKHxOsD3e/QQz7VobsG2Sdvt0IYNsso7FgtEIe6+PFG6799+xRqhjP0hmaU3mvcwlI2QZ5tI13vDwbGIA6y5jZn159AcoWU1dqQxV5ITW8wRBblBEfaqowOTLOl7Uyxlenv72Li/lMkBrJ5NHnTviQ1UWtYpmHvK2E1V735As31frE7cfX7Zr3EFhdxEAOOMVLAAuqKeH2FGvde1bc95vGpscf/2aH1A1OdHd/ziasRD/3IQ7rIZgPK+pvV4CyGJba6wVgRrmFtcMhCI9nR+g+UMd0BmGOE50g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=V2BYjLoee3eBFH54OKIZ6XvfuzTl+0E1ZtMD9EbXtyg=;
- b=kulDujoluu9rTCyH7ewT1Df/rr1QLfsaCDCTRgawDsqW68A8vCl0UJNW53Bw7fzzT5J/Us32COoQuY8wmbfulBpQ8Z6cKEJaHSP00wENJAMIXt3tjzzyPqCiRA5b7JO8RzOi+Z7Cdl7LlIYYbN8HSaku360VjB2wG3PF7vWeyILQXIMrsbenXKBh52/OqzxpRvQp78uHXa8wYp1E0tiE+xB7YaVa6jAV5XfNAo2nCAA7HfAEcbFVJwQW31Mbqq/hTnIUbiDnGn1pRGCH6w238bNjC5VDWKmwTUd1m/fiW8BgXcsTl0dSGudOCoTGnmuc2P/WcaKrVm7PZCXuSy2HpA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by DM4PR12MB5746.namprd12.prod.outlook.com (2603:10b6:8:5d::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Thu, 7 May
- 2026 21:03:27 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.20.9891.017; Thu, 7 May 2026
- 21:03:27 +0000
-Message-ID: <9c32f75a-294f-4cea-810e-c011c4dd91ab@nvidia.com>
-Date: Fri, 8 May 2026 02:33:17 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] ACPI: CPPC: Add ospm_nominal_perf support
-To: Pierre Gondois <pierre.gondois@arm.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, lenb@kernel.org, zhenglifeng1@huawei.com,
- zhanjie9@hisilicon.com, mario.limonciello@amd.com, saket.dumbre@intel.com,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, acpica-devel@lists.linux.dev
-Cc: treding@nvidia.com, jonathanh@nvidia.com, vsethi@nvidia.com,
- ksitaraman@nvidia.com, sanjayc@nvidia.com, bbasu@nvidia.com,
- sumitg@nvidia.com
-References: <20260430142430.755437-1-sumitg@nvidia.com>
- <20260430142430.755437-3-sumitg@nvidia.com>
- <8516aeea-f20b-4afa-a737-1dff636f5c2d@arm.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <8516aeea-f20b-4afa-a737-1dff636f5c2d@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5P287CA0224.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1b4::16) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="hid+k1D5";
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="DHVO4ux1"
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4gBQYR6z4vz9vHM;
+	Thu,  7 May 2026 23:36:27 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1778189788;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aN/MoGo/0OBj5lX14oDE14F1c1D7CB1rzMZQxCCROZQ=;
+	b=hid+k1D5ogrx5G1lWd7pUQ9CoVlwl9a/2OZM8TPGYYY64ydMa9M+cAHol5Vq69qSY1wD+w
+	c3OAPMLqyGmMPyPaDWwjVQHxfyfrcof9UdlEiKt6pQzfnI7grBUM6NQO6VooYzKrHhMV96
+	zoHb/KRQ44q8MEKR9XMkWRyHcGJRqfuoWyxLIq2/bYM9VeOHNLkK7BzxqL0Zi3ATWfy90O
+	KH2bp7vOzWUHfEaE+caQun7dox5w3HvaVjaHVm31R4oP/LyBgg13gYNlkRuC405HG0/STE
+	U6v54wENsDBgOwzNkT4dAjaTFanls6nJ46k1Yp5ruhNpN9Y3VvUGcNO8aA/+dA==
+Authentication-Results: outgoing_mbo_mout;
+	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=DHVO4ux1;
+	spf=pass (outgoing_mbo_mout: domain of marek.vasut@mailbox.org designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=marek.vasut@mailbox.org
+Message-ID: <fa28c6fe-484c-4133-824e-649c52ef2200@mailbox.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1778189786;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aN/MoGo/0OBj5lX14oDE14F1c1D7CB1rzMZQxCCROZQ=;
+	b=DHVO4ux1H/KOBsyRCO1LJQTL1AsPUk6OH15mgKVB2SR719sbrwLhBqkf0pJwNw2F/u1RCY
+	Xh1DXe05bHIeDCthuo/tmzyeZJtI0jKnm+R5/Shf7GM1aYMEdaOVfuFuScpklPu/EERepj
+	WEeEsEZSS5pAUtOnT0ZsMV0HHcOMRPseJ0+gxoKKrlx/0cgy5HwKejkeo2dHciYNIzAMtL
+	cTPHYXxVywmd6sldoy8hVdioPDpoqEbYQwLRSTBb44R31vSLBkcInog6QLffxaDN1cK24L
+	LRq2M1TQQWvGGxiol6tiquQp8uS+EokFt+VaF15ueTD/H8i6t7cxAoubvrvsBQ==
+Date: Thu, 7 May 2026 23:36:17 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|DM4PR12MB5746:EE_
-X-MS-Office365-Filtering-Correlation-Id: 406737ef-c04b-4bc9-3ce4-08deac7c1592
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|56012099003|22082099003|921020|3023799003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	KZHCIupNrjyyz3p/PIM+pq18XWQj6vgKa+nOwKflzc/GVlO2EsvG+Um7zT3Lh7Ukb4eLcpidJKxjjWFzGSPCY6gewmJmOw+PKMSq5EMztaPhN0XAan6i3SQ9Vk8+Bcwx5TB13hOM6VTBPjntpqo71bpFmrXkTDikcT7uLSphscFVFIYn+LQ0f2pAgXGpSli2hzMLMcFGJ119Xt7YPmWKJ5bVc5uhc3eYOM1N2NI9V9SUi92QvrEW1eaH+G9EQBzKfKnT5EWKqQEDYT3LEJ5At+FVB64WFA4HIhgwQnoNhIGjuijgyzonN+xrgDr8bBZ+SiZ4/DtNm9sd+cAyWXSGbx3+8tOkKCKtkdvRW+v1teC7jVk1tXyfe7kCMIohHqLeyv5ysZ2j4zOEMsCIavGO3MQlw3bcpK+KOaixCF9RDutGTwUGhgbjBJKlXqn8bxFC0nd5vjlkxYE0nbYtwboHfMygrnDoRaq17d4jK3aDIVftLqZUt13/Vsq9Yf9NBoPiQIwywncyAHYi5ixkG6d+THkl0E55Ck/KZJoKwbVYku+YtPor3j8xi+PTme6m6fOxwzfhujM1VpBktMC7DnVe0PrftEuUi+0WrmJPXdcKb6vG59Kgr3ZwEY05qSIlcIrj3xDJGDK7/Hndorm5lwz6iFjDz7FbKjoWe9/yRZmBuOW4tPZa3wk6WXS2XGriv76zQJ/y8gLGk/VD67HwLOAxtgi+jxco7TonPNEH4/yQXq1t2TQPw3+rAtRndf9SFJvC
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(56012099003)(22082099003)(921020)(3023799003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?RXUzZitONnBQcCtFcnVtU0dJSUZCN2dNWlpDWlhXZldUc0Q4M2wrZEs5Ry9Y?=
- =?utf-8?B?NUVTdTZXQmZlZ2RibXBCbTVTQXNpWmlqUGc3bDR5NUxxT2J2b0JjdS9CYlVZ?=
- =?utf-8?B?dmlGMEJPckFNeldNSWZXbGdsSFNLOWhWNnpyT0t1Wml2VzhWdFJIY3NIOVY1?=
- =?utf-8?B?SUNrMlVhWmQzckpJTjBCS0ZOTi9ZRVQrVThvem5kNElXdWVnMklEWUVZRDJk?=
- =?utf-8?B?ODMvd3Vwc2djS01tWFExVkdMbFhMeEJFVmNXK0tuWkljZ2hOT0U5aDY2NkJj?=
- =?utf-8?B?WlZOV2ZzR05ZZVI0V3lML2JQRVBkcHNaWXA2dkk0WDAvVUMrcG9JTG5BNGVK?=
- =?utf-8?B?STBlVnd6b3NNaHV1eUR4dzQ3Q3JUQXF0eXpkQ2FzSkVjNkVHRkFsSHpjQ1V5?=
- =?utf-8?B?cjZrMHpXK3AxNklMbmlXUXlDL2c2OGZ1Z01pOWV3RXBkRk9EWlZFUGFGWUNl?=
- =?utf-8?B?VXF0Vkprb29XTmZ3aDNYaW9QUVVvOEtEZFVpM3BWVkJuVkJzZ0NUN1JYSExa?=
- =?utf-8?B?MXVzSEpEeC9rNzgvT2ZiOEh2eU96aExXcFNMdW1VM3BKTnFZM3h5S1dwZXhl?=
- =?utf-8?B?UXByZ0w0a21rSUthNm5TT25FS0JBbnNDQVRzblNNTDdadDFPdHZmNUZsUVRG?=
- =?utf-8?B?bFIrTHgxVEF2cm5JRm5UMGhvdmxJckt3T3BGSzNQdEkwVVpzMFhsVjhJdHhx?=
- =?utf-8?B?emgxWGpxU2ZmaGp2YkRlemR6TTk0Q0VZWWlwenN1MWR3S2lvWk1CaEMwT3lW?=
- =?utf-8?B?eTNFN3VENHlUKzFCdllnTlVUcXpqdkpIOXFCVkJwd1FpTU9nZ0s0YjlZNkJD?=
- =?utf-8?B?L0lObTk1NEdQY2FNL0p3YW1SQ2pVcEdWMXdvYnIrN0tmN3hCc0VROHpGL2lX?=
- =?utf-8?B?NW9FNTU3QVpDWG1Cdy94YnZVVDBkRktHcEtKN09vRjgzSlJ6TFpFeGhFUlUz?=
- =?utf-8?B?ZTEyZmlkOVJtdEczQlJkbzg3M0MwOUJMRWt1OEQwcFVqby8vL2RFb0RHVzE2?=
- =?utf-8?B?a2N0c3lxaFhoVDY3N2loU2YxZFBlNGVvaEUrek1qQVhvNUFGWW04Y1E0UGRy?=
- =?utf-8?B?SjJQOExTUG1DazFRV29ETndJem9VWXFoVmdBUTlsdEFWUlJzSnNrZnVRc0gw?=
- =?utf-8?B?czBUT2pCNUFFRUVwVHQ0RE1TMmdlUzVrVUN3NzRmVG43aFYyclhPUGVlRnpZ?=
- =?utf-8?B?dlVETU9qeHJVcjRTVFRpUDNXWlBqMzFpWDcvZW9qYWc0bFZxbVdnNVBoLzhR?=
- =?utf-8?B?SEZhTVpyQ3JjaUpZdnJCaE9xRWw1bjBzUWNqbVB4UGZBMU9kTmZPRXRVcUpM?=
- =?utf-8?B?ZmJkOGo2VTVHTWF6TWtlMUJYcGdGZlcxV1pBNG14dXhpQ1lWeG1zSEFEaUpi?=
- =?utf-8?B?UjNONkxFb1ZTTjZjUUVVUVdlNDJVUncyS1l1VFFyMlB4S2Z3a0dhcDIzdGxj?=
- =?utf-8?B?T1l4MmVQVnlzOElISFVTS01zRkIwWkdOaU03alZxZUNZdzI1MTJNOVRQQWl3?=
- =?utf-8?B?ekowejZXd0dKaFV4YkVmOUtkR0pOWldjaURKcjRSb0N5OXhTQnprLzV6a0pP?=
- =?utf-8?B?WkdwTUhpNXFuTFczNTBwUGlGODZPZ0svTkRGdnM3MEQ4c3B3MGM0czU2cFpl?=
- =?utf-8?B?TVNndFhnRXBnWlNLVmFaNjVRUUJvYXI1aGJ6eHZ6cXNCektlMHB5Zmd5RkZL?=
- =?utf-8?B?OFNNR21QaE8vRy82czBNdFJhZitOazZqOHkrQnFOdDNHdXpVc01SUWxtVFhh?=
- =?utf-8?B?NjB3cnZTbXR1WlBKQklYYkErbWlYNm8rY2V4azVqSVBWam5qTllsd1F2SkVn?=
- =?utf-8?B?TlB6bkkybkptOENDeXJCNFZIMWFjemZsNmFZc1pHOWk0MGxPOUtrRHR3TGJs?=
- =?utf-8?B?akIxWUxEckUyWUo2RjJpRnNPYVpwNTVqRTNqRWFUZmpmaUlscm45S3NuYStP?=
- =?utf-8?B?K1E2aGNvYUJFakdvd1dZS09qZE85emRweGMxZ21OUlFRdXZINFltRVNIMFBl?=
- =?utf-8?B?YnIzY0xza2JtNi9Vc0tmNk1sdW55RWlEcWtiMnphSzFrYTdTdnA3aHd3Z1dI?=
- =?utf-8?B?VHRIRGhhZ2t1SzRTS3YzNEJGaURiQjkxeVlqUEVtM0tuOEs0OTlkT0kzL3c1?=
- =?utf-8?B?R1haUC9xNitOaFZoMXcvL1dGd05zN1VxZXNuZ2RmQjFlVUluWm1LL0hJRzFw?=
- =?utf-8?B?YmttUlo1b0NYMC9OV1JXR1Job3hkY09MTGg3L3lSNlFwRU0vRjFjcUVNTDRD?=
- =?utf-8?B?Y0crdVR6UlBIYkJqWHNNbEZGUzkrd0N5TXNpZHFHQndaRUliTlNjdlIvY1V5?=
- =?utf-8?Q?OeLmmHwVG/klBtrltv?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 406737ef-c04b-4bc9-3ce4-08deac7c1592
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 May 2026 21:03:27.6041
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AWNrBsNjSquiKW4TWYPl02RXrohPtrTOns/tiEjjxYSzJtMg14uk0SZ5TvG8xCHNIXT+s3KMSv1aurJmFc+jRQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5746
+Subject: Re: [PATCH/RFC 10/14] dt-bindings: power: Document Renesas R-Car X5H
+ Module Controller
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sudeep Holla <sudeep.holla@kernel.org>,
+ Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
+ Saravana Kannan <saravanak@kernel.org>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Marek Vasut <marek.vasut+renesas@mailbox.org>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <cover.1776793163.git.geert+renesas@glider.be>
+ <053c312d07445517d8f9c84bfe3cc8fb72d4cd9a.1776793163.git.geert+renesas@glider.be>
+ <bf83a028-3ef3-482a-9ce3-8aec16f6ebed@mailbox.org>
+ <CAMuHMdWN2zaZrY2jKKXpNqrP8xSqc-uJTr-siTBgaA=-EY_4BQ@mail.gmail.com>
+Content-Language: en-US
+From: Marek Vasut <marek.vasut@mailbox.org>
+In-Reply-To: <CAMuHMdWN2zaZrY2jKKXpNqrP8xSqc-uJTr-siTBgaA=-EY_4BQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-MBO-RS-META: zpfhg6i8eyntcpfuwy38ym1zyrgr17gc
+X-MBO-RS-ID: 45b055b3220d0470145
+X-Rspamd-Queue-Id: 4gBQYR6z4vz9vHM
 
+On 5/7/26 9:37 AM, Geert Uytterhoeven wrote:
 
-On 30/04/26 21:55, Pierre Gondois wrote:
-> External email: Use caution opening links or attachments
->
->
-> Hello Sumit,
->
-> On 4/30/26 16:24, Sumit Gupta wrote:
->> Add acpi_cppc/ospm_nominal_perf sysfs attribute (read-write) and
->> cppc_set_ospm_nominal_perf() API for the OSPM Nominal Performance
->> register (ACPI 6.6, Section 8.4.6.1.2.6).
+Hello Geert,
+
+> On Thu, 7 May 2026 at 00:58, Marek Vasut <marek.vasut@mailbox.org> wrote:
+>> On 4/21/26 8:11 PM, Geert Uytterhoeven wrote:
+>>> +  '#power-domain-cells':
+>>> +    description: |
+>>> +      - The first power domain specifier cell must be either the Module
+>>> +        Power Domain Gating (MPDG) register index (0x00-0x3f) from the
+>>> +        datasheet,
 >>
->> The register conveys the desired nominal performance level at which
->> the platform may run. OSPM can request a lower level than platform
->> nominal. Valid range is [Lowest Performance, Nominal Performance].
->> The value tells the platform what OSPM considers nominal. The
->> platform classifies performance above this as boosted and below as
->> throttled. It uses that for its power/thermal decisions.
+>> I agree with this part.
 >>
->> Although the register is write-only per spec, cache the OSPM-written
->> value in cpc_desc so userspace can observe it via sysfs, and to
->> skip redundant writes.
+>>> or a Power Domain number, as defined in
+>>> +        <dt-bindings/power/renesas,r8a78000-mdlc.h>,
 >>
->> Initialize to platform nominal at policy init. Override via sysfs
->> if needed.
+>> I do not understand this part, please see end of this email ...
 >>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>   drivers/acpi/cppc_acpi.c       | 69 ++++++++++++++++++++++++++++++++++
->>   drivers/cpufreq/cppc_cpufreq.c | 10 +++++
->>   include/acpi/cppc_acpi.h       |  6 +++
->>   3 files changed, 85 insertions(+)
+>>> +      - The second power domain specifier cell must be the module number
+>>> +        (0x00-0xff), composed of the Module System Reset (MSRES) register index
+>>> +        in the high nibble, and the Module Reset Destination bitfield index in
+>>> +        the low nibble.
+>>> +    const: 2
 >>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index a1c91ce20cc8..fbc620adafad 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -155,6 +155,10 @@ static DEFINE_PER_CPU(struct cpc_desc *, 
->> cpc_desc_ptr);
->>   static struct kobj_attribute _name =                \
->>   __ATTR(_name, 0444, show_##_name, NULL)
+>> I am unsure about this part.
 >>
->> +#define define_one_cppc_rw(_name)            \
->> +static struct kobj_attribute _name =         \
->> +__ATTR(_name, 0644, show_##_name, store_##_name)
->> +
->>   #define to_cpc_desc(a) container_of(a, struct cpc_desc, kobj)
+>> There are multiple MDLC blocks, AON, SCP, HSCN, and so on. Each MDLC
+>> block contains multiple Module Power Domain Gating registers (MPDGn) and
+>> multiple Module System RESet register (MSRES) .
 >>
->>   #define show_cppc_data(access_fn, struct_name, member_name)         \
->> @@ -211,6 +215,38 @@ static ssize_t show_feedback_ctrs(struct kobject 
->> *kobj,
->>   }
->>   define_one_cppc_ro(feedback_ctrs);
+>> I do understand and agree that the first power-domains-cells cell must
+>> be the identifier of power domain within the MDLC block.
 >>
->> +static ssize_t show_ospm_nominal_perf(struct kobject *kobj,
->> +                                   struct kobj_attribute *attr, char 
->> *buf)
->> +{
->> +     struct cpc_desc *cpc_ptr = to_cpc_desc(kobj);
->> +     u64 val = READ_ONCE(cpc_ptr->ospm_nominal_perf);
->> +
->> +     if (!val)
->> +             return -ENODATA;
->> +
->> +     return sysfs_emit(buf, "%llu\n", val);
->> +}
->> +
->> +static ssize_t store_ospm_nominal_perf(struct kobject *kobj,
->> +                                    struct kobj_attribute *attr,
->> +                                    const char *buf, size_t count)
->> +{
->> +     struct cpc_desc *cpc_ptr = to_cpc_desc(kobj);
->> +     u64 val;
->> +     int ret;
->> +
->> +     ret = kstrtou64(buf, 0, &val);
->> +     if (ret)
->> +             return ret;
->> +
->> +     ret = cppc_set_ospm_nominal_perf(cpc_ptr->cpu_id, val);
->> +     if (ret)
->> +             return ret;
->> +
->> +     return count;
->> +}
->> +define_one_cppc_rw(ospm_nominal_perf);
->> +
->>   static struct attribute *cppc_attrs[] = {
->>       &feedback_ctrs.attr,
->>       &reference_perf.attr,
->> @@ -222,6 +258,7 @@ static struct attribute *cppc_attrs[] = {
->>       &nominal_perf.attr,
->>       &nominal_freq.attr,
->>       &lowest_freq.attr,
->> +     &ospm_nominal_perf.attr,
->>       NULL
->>   };
->>   ATTRIBUTE_GROUPS(cppc);
->> @@ -1683,6 +1720,38 @@ int cppc_set_epp(int cpu, u64 epp_val)
->>   }
->>   EXPORT_SYMBOL_GPL(cppc_set_epp);
+>> However, I do not understand the second cell. The MDLC bindings already
+>> contain reset-cells, which should be used to refer to a reset within the
+>> MDLC block. Resets within the MDLC block are operated using the MSRES
+>> registers. Why are resets conflated into power-domain-cells ?
+> 
+> The Module Reset Destination bitfields in the MSRES registers are
+> 2-bit wide, and control both Reset and Module Standby.  Hence the
+> same register bitfields are referred to in the power-domains and
+> resets properties, through the module number.
+> 
+> Module Standby controls the clock(s) going into the module,
+> and is modelled as an SCMI clock (SCP_CLOCK_ID_MDLC_*) by the SCP
+> firmware. This is very similar to how MSTP (Module Stop) clocks are
+> handled on earlier R-Car SoCs (except that the SCP_CLOCK_ID_MDLC_*
+> clocks have a zero rate :-(.
+> 
+> Summarized, the first cell is the power domain part, and the second
+> cell is the clock domain part.
+
+Thank you for the clarification.
+
+Since there are up to 32 MPDG registers, and 256 resets, can we encode 
+both into a single cell ?
+
+(mpdg_register_offset << 16) | (reset_bit_offset << 0)
+
+I cannot tell whether this is much better, but it at least ties the PD 
+components (power domain and clock domain) into a single value, which 
+matches reality a bit better. The current split power domain and clock 
+domain description in two cells gives me the illusion that it is 
+possible to mix and match power domains and clock domains in DT 
+description, but in fact the two cells are strongly tied together.
+
+If we cannot encode the two into a single cell, maybe we can at least 
+have some sort of macro for this, e.g. this (0xff as no MPDG register 
+bits for this block):
+#define R8A78000_MDLC_PD_HSCIF0 (0xff << 16) ((0x5 << 4) | (0x3 << 0))
+
+What do you think ?
+
+> So perhaps I will clarify like this:
+> 
+>        - The first power domain specifier cell is the power domain part, and
+>          must be either the Module Power Domain Gating (MPDG) register index
+
+... for power domains which are backed by MDPG bits, and which can be 
+controlled in that manner ...
+
+>          (0x00-0x3f) from the datasheet, or a Power Domain number, as defined in
+>          <dt-bindings/power/renesas,r8a78000-mdlc.h>,
+
+... for power domains which are always on, and for which there are no 
+MPDG bits which can be used to control them ...
+
+>        - The second power domain specifier cell is the clock domain part, and
+>          must be the module number (0x00-0xff), composed of the Module System
+>          Reset (MSRES) register index in the high nibble, and the Module Reset
+>          Destination bitfield index in the low nibble.
+
+I can understand this.
+
+>>> +  '#reset-cells':
+>>> +    description:
+>>> +      The single reset specifier cell must be the module number (0x00-0xff).
+>>> +    const: 1
 >>
->> +/**
->> + * cppc_set_ospm_nominal_perf() - Write OSPM Nominal Performance 
->> register.
->> + * @cpu: CPU on which to write register.
->> + * @ospm_nominal_perf: Value to write to the OSPM Nominal 
->> Performance register.
->> + *
->> + * OSPM Nominal Performance allows OSPM to inform the platform of 
->> the nominal
->> + * performance level it intends to maintain.
->> + *
->> + * Return: 0 for success, -EINVAL on invalid input, -EOPNOTSUPP if not
->> + * supported, -EIO otherwise.
->> + */
->> +int cppc_set_ospm_nominal_perf(int cpu, u64 ospm_nominal_perf)
->> +{
->> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
->> +     int ret;
->> +
->> +     if (!ospm_nominal_perf || ospm_nominal_perf > U32_MAX)
->> +             return -EINVAL;
-> I think the spec also requests to have a value in the range
->
-> [lowest:nominal]. As these registers are read-only it should
->
-> be ok to read the values here ?
-
-Will add the [lowest_perf, nominal_perf] range check in v3,
-fetching the bounds via cppc_get_perf_caps().
-
-
->
->> +
->> +     if (cpc_desc &&
->> +         READ_ONCE(cpc_desc->ospm_nominal_perf) == ospm_nominal_perf)
->> +             return 0;
->> +
->> +     ret = cppc_set_reg_val(cpu, OSPM_NOMINAL_PERF, ospm_nominal_perf);
->> +     if (ret)
->> +             return ret;
->> +
->
-> Shouldn't we have some protection against concurrent accesses ?
->> + WRITE_ONCE(cpc_desc->ospm_nominal_perf, ospm_nominal_perf);
->> +     return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(cppc_set_ospm_nominal_perf);
->> +
->>   /**
->>    * cppc_get_auto_act_window() - Read autonomous activity window 
->> register.
->>    * @cpu: CPU from which to read register.
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c 
->> b/drivers/cpufreq/cppc_cpufreq.c
->> index 7e7f9dfb7a24..d06cba963550 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -715,6 +715,16 @@ static int cppc_cpufreq_cpu_init(struct 
->> cpufreq_policy *policy)
->>               goto out;
->>       }
+>> [...]
 >>
->> +     /*
->> +      * Initialize OSPM Nominal Performance to inform firmware of
->> +      * OSPM's nominal level. Performance above this value = boost;
->> +      * below = throttle. Uses platform nominal by default.
->> +      */
->> +     ret = cppc_set_ospm_nominal_perf(cpu, caps->nominal_perf);
->> +     if (ret && ret != -EOPNOTSUPP)
->> +             pr_debug("Failed to set ospm_nominal_perf for CPU%d: 
->> %d\n",
->> +                      cpu, ret);
->> +
->
-> IIUC, if (ospm_nominal_perf == nominal_perf), the firmware should
-> not behave differently. Is this really useful ?
->
+>>> +#ifndef __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
+>>> +#define __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
+>>> +
+>>> +/* R-Car X5H MDLC Power Domains */
+>>> +
+>>> +#define R8A78000_MDLC_PD_AON                 0x40
+>>> +#define R8A78000_MDLC_PD_SCP                 0x41
+>>> +#define R8A78000_MDLC_PD_APL                 0x42
+>>> +#define R8A78000_MDLC_PD_CMN                 0x43
+>>> +#define R8A78000_MDLC_PD_ACL                 0x44
+>> ... what do these numbers represent ? Shouldn't those be register
+>> offsets from MDLC MPDG00 according to power-domain-cells ?
+> 
+> These are Power Domains that are not backed by any of the 64 Module
+> Power Domain Gating (MPDG) registers in MDLC blocks.
 
-Right, it's a no-op from the firmware's side. The init was only so that
-sysfs would show a value (platform nominal) before any userspace write.
-Will drop it in v3 and return 0 from sysfs until userspace writes a value.
+I suspect that might not be entirely correct for all of them, please 
+read on and see CMN below.
 
+> It is not clear to me if they can be controlled manually, probably
+> they are just always sequenced automatically on power-up.  As the
+> documentation does treat them as separate domains (see e.g. Table 14.1
+> Power Supply Voltage Monitor Functions), I figured they would better be
+> exposed as separate domains, instead of as a single always-on domain,
+> like on earlier R-Car SoCs (cfr. R8A779*_PD_ALWAYS_ON domains number
+> 32 or 64).
+> 
+> See also the X5H_Power_domain_structure.xlsx attachment in the R-Car
+> X5H documentation.
 
-> ------------
->
-> Also this seems like there will need some synchronization
-> mechanism to keep-up with the boost state.
->
-> If the ospm_nominal_perf is lowered and boost is disabled,
-> a freq. update should happen. IMO it looks like this could
-> be handled with (another) freq_qos_request.
->
-> This new freq_qos_request, if we name it ospm_nominal_freq_req,
-> should only be taken into account if boost is disabled.
-> Otherwise, if boost is enabled, ospm_nominal_freq_req
-> should be ignored.
->
+This is indeed helpful piece of documentation, together with X5H_MS, but 
+I think the later is still being updated.
 
-Agreed, will add the new freq_qos_request in a follow-up patch.
+Let's take PD_AC00 , AP core 0 , as a domain of interest. My 
+understanding is, that the domain structure for PD_AC00 looks as follows:
 
-> ------------
->
-> Also, the function seems to set the ospm_nominal_freq for
-> a single CPU when the policy might be common for multiple
-> CPUs right ?
+PD_AON {
+   PD_SCP { };
+   PD_APL {
+     hierarchy is SYSSS
+     always-power-on
+     PD_CMN {
+       hierarchy is CMNN
+       power-gating-bit is MDLC_CMNN 20
+       PD_APU0 {
+         hierarchy is SYSSS
+         power-gating is done by APMU
+         PD_ACL0 {
+           hierarchy is CMNN
+           power-gating-bit is MDLC_CMNN 16
+           PD_AC00 {
+             hierarchy is CMNN
+             power-gating-bit is MDLC_CMNN 0
+           };
+           ...
+         };
+         ...
+       };
+       ...
+     };
+     ...
+     PD_HSCIF0 {
+       hierarchy is PERW
+       power-gating-bit is MDLC_PERW 23
+     };
+   };
+   ...
+};
 
-In v3, after dropping the change from cppc_cpufreq_cpu_init,
-the problem won't come in this specific instance.
+With this in mind, I think CPU 0 DT node should refer to the PD_AC00 
+power domain this way:
 
+cpu@0 {
+   ...
+   power-domains = <&mdlc_cmnn R8A78000_MDLC_PD_AC00>;
+   ...
+};
 
->
-> The issues this field raises seems similar to the auto_sel
-> ones. I.e. :
->
-> - concurrency accesses + need for a scratch value
->
-> - what should happen when unloading the driver
->
-> - the value can be set for single CPUs but we might
-> want to have the same value for the whole policy
->
-> Maybe a common solution should be found.
-> (I m not suggesting anything right now unfortunately).
->
+The MDLC driver would pass the PD_AC00 domain ID to matching SCMI power 
+domain management protocol call, or, for bare-metal MDLC driver, would 
+have to internally encode PD hierarchy, walk it, and apply PD operations 
+in each step.
 
-One way to address this is to move the sysfs from per-CPU acpi_cppc to
-a per-policy node under cpufreq (ospm_nominal_perf_freq, kHz).
-In the sysfs callback, we can convert kHz to perf and write the register
-on every CPU in policy->cpus.
-Concurrency is already covered by policy->rwsem at the cpufreq layer.
-This is similar to how we were handling min/max_perf in earlier version.
-Does this approach make sense?
+I think even for SCIF/HSCIF, the power domain reference should be 
+something along the lines of the following description. The MDLC driver 
+should internally encode that R8A78000_MLDC_PD_HSCIF0 is a sub-domain of 
+R8A78000_MDLC_PD_APL .
 
-Thank you,
-Sumit Gupta
+serial@c0710000 {
+   ...
+   power-domains = <&mdlc_perw R8A78000_MDLC_PD_HSCIF0>;
+   ...
+};
 
-....
-
-
+>> If those are power domain IDs, then I am unsure why e.g. for SCIF the
+>> domain ID is R8A78000_MDLC_PD_APL in [PATCH/RFC 13/14] arm64: dts:
+>> renesas: r8a78000: Add CPG/MDLC nodes . Could you please expand on that ?
+> 
+> See the "Module Standby" attachment X5H_MS.xlsx in the R-Car X5H
+> documentation. The "PERW" tab shows that all PERW devices are located
+> in the PD_APL power domain, which is always-on.
+> This is different from e.g. the UFS controllers: they are located in
+> their own PD_UFS0 and PD_UFS1 power domains, which are controlled
+> through the Module Power Domain Gating registers (MPDGn) (cfr. the
+> "PERE" tab).
+Thank you for this clarification !
