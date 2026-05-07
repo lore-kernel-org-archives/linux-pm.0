@@ -1,146 +1,204 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9056D37AA9C
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 19:39:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ED864508E5;
+	Thu,  7 May 2026 19:57:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778182752; cv=none; b=OCKJv+4G4GGyJwlTwZ9Uwm21nt0qdcfUTC5/rnaPZ6cZZseVetXqvTlkQZY2393fG2+oDh3GDt53d1yuYPPRZNQ/uY4gTdFpcdar6I7spRlySx3Ni0/Zti2QYiufUQxmH4pNQf3nV2sGK0w4bXycurdtVs3asBV8mpTayz56m9g=
+	t=1778183861; cv=none; b=bGo40sP71dXGgewRRGUBBSB3YHw6FW96Buutd2zebyx4vmYCRHWu9zbQoUrhltN9Px7/M3e3Mi2ww1K7HbR5atJnty/FI/5bO4VSNNoxbYX9nOQgjrEoRmKjy5avmxM/oYv2I1r3lb5OwB8qtYpXyW+Cr0BH0DOgSrVkIubRo0Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778182752; c=relaxed/simple;
-	bh=jKnGNKLqkB8e0df/XKOKodfYrWmIj9cCVvEjPQpZrkI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UUc7SpeE+Reol+oJuH7n4OVQ2ntoclnEMRJIjV/IZjybK+U5mpHPK0wtrz2+xCISDuDrvujhSLUWLgkcJleh8ic5TwPbXkhGJ3fvq8LG1A7mUmdCR1Ihewvsff3lZfwQEgWivZhwGyiQ/m19Iyo5TMLXH3RlGD0s7pjmIfhoXAc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CspOxCzI; arc=none smtp.client-ip=209.85.218.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778183861; c=relaxed/simple;
+	bh=34OJZhJ5yG++EW43nWqRAhv5Or5whGUi9gWAxb0QMZo=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=f2WDmgD7x673jVrc+vyIPSE7dCjCfnQkYBuXnlV5XszH1Xne1FQiRaUp8oAatOmwgJudTbd8UKtLEaKVeik2UKCbT1aESgwQmYYOIAbDoXI0uiRX4/ebgsJLAcsv9Nn94Gv4Gg9B/XQ2iHOJnWwVyNrl/oTWXHrXjSEJn+yGCv8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Pb6ocjBS; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CspOxCzI"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b8f97c626aaso217502266b.2
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 12:39:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778182749; x=1778787549; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=HtUJyWhJ561fYSVag2QyjsbPKhV41JyyzBoUWpnRnL0=;
-        b=CspOxCzIqfROLf+4CckaCs5hMw3yebEWWKkwREfo/8CzFRLP6/EMaVHyvXWHv2JkQ0
-         wFjsyX0WqYdCOdpuQeAHg5oO1p9+wJd9bv8aL/8z0DdCA79ET8YEASxuKGGnYIzQutDP
-         iNGgLC+au7l+P42D5SHkjuxez8eSXoNUGk9gQh4p0EWdfPlEtXKFOxPmKNGAj2zJQUTB
-         74YXUPABMCj2b2KjwbBGW/OJzPtu9NRzL+2qEent+58w2XMvSvFf+PBhUwDPFI4USwd5
-         MsoI2k0Q6rvMK/2Gsb7kCI+bNaelvHUkUzAlfzlW4bEoNqteFqtiNnTXJGKnWAA/FJsB
-         jQ9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778182749; x=1778787549;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HtUJyWhJ561fYSVag2QyjsbPKhV41JyyzBoUWpnRnL0=;
-        b=aK92QG4xp9VU+dvSLHu2gb4Ar2gFXu80z9ICbnAbdIiFfcRNrmuUqRB17DbbrJEPMM
-         Ce9zNHobashFCJ5Z26C95zc9PEGmhHFgntntxc+XOzoYKjIs6VA6fEZ2sOds8soFiPHY
-         LsMYqBd/tepRmPcB0H/UKwkDFP0zH+/O/Ykm9WuDNQf7cjmiszGxOQfZcNgDqbhI9Pj9
-         wSZEby5UGS2yyUJQWnp47Mp8VCSmoNkD8djfaTQlEZKr6RVYV+tX0xC5H6+gklstVYLz
-         EfCS1LiCW+jhAj6ScnX/ZucHoSV20MP2ZNsCb3xWRTdsX7x9tFTmmZU9xtLNanln5DS4
-         jSJA==
-X-Forwarded-Encrypted: i=1; AFNElJ+FLSRbYTfeZSWtJwo2JeEcjp+CD5Cm3P8p2SRFWvWIFcut2/AigEPc7Fkef1QWFU71RET1+BVEjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz2M4G8s41TcECdrZQWnbRJSYeYcAGNwkclmhAvV0XLe4dTAH0I
-	5c3fM0n/H/crRTrfxLuru3PDzhJ2I6MHViPuF9990WvPfxtsrtiNPkzA
-X-Gm-Gg: AeBDieufdSvvDfsCD2g5lqztmpfEd1QGIUJwTovZJ413idOYLJ28/AFbXKyUnGHt3+j
-	wYwDmev+YwCvo2eBGft5W0Zn1Up8cFG1UQUG+uEEKdvipo5lSW0JhP4dSq1kKWk+zZrtRn5L7lw
-	8qE4cezJnkE2aQmqVvnBKiQu8T9PhifqK/76hlm44XC4MSLW0/2BEpZOhxBqI9pHAk+WRUNL7Ev
-	7jDOvi2tWSQH/1yx5nhdmswz37s517hNBJLuKI355Ts5ta1fgJq4/1wQsqrP0i9lWtLCXkzpC6A
-	osEW9TauudIxCwrayaZK7LXR2usPyaNLz+uGVa5CNN9qJCeREEWhgbtbnvomHPkS5IxcWPWjnZr
-	rJv5eN0iCkWI3X+HFzhaYez9FCxh8ajUemlA5i1Dro9Z+5qwF84OrhNgFW7DzI3ivO8yekK/XZd
-	fdFSMJwf1R0Y/uXWizUUqbroxDimg0Nl88Xs+8ChxnEiO4Vg==
-X-Received: by 2002:a17:906:6a26:b0:b9d:e301:20db with SMTP id a640c23a62f3a-bc56e316a92mr576277166b.25.1778182748538;
-        Thu, 07 May 2026 12:39:08 -0700 (PDT)
-Received: from [192.168.0.193] ([194.183.54.57])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bca578b332fsm20347966b.33.2026.05.07.12.39.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 07 May 2026 12:39:07 -0700 (PDT)
-Message-ID: <80d85385-f5af-44e3-b9ed-d4489542d4da@gmail.com>
-Date: Thu, 7 May 2026 21:39:05 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Pb6ocjBS"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778183860; x=1809719860;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=34OJZhJ5yG++EW43nWqRAhv5Or5whGUi9gWAxb0QMZo=;
+  b=Pb6ocjBSUnQuNhfa5WbzlHuGs9O53rYm17JQX5nLrB6qvz6IneHUTyNP
+   Oq7PXDP4B+O2nY5JmUj+vxGHwRo0/zqx/FS0H0V4xCoYXpLgT02qUVULi
+   JzW9MfUs6983bSk/lT5cZlqkybNoPqEf5G21YHz+uzTqYneWiNXhm4Rw+
+   4HY+2F2PMgpV27JynojJ32myGOlD2Cvu0JKyVAHlkKtgtGp+UpO3cDGAp
+   6CA0dfAQcGOQ8dByDmNOA9pLFknRh7K8y18io3PfiiGqpi+havGdSUhwf
+   b4SNP852XH2S+kRpx+pfosMFz5V37U0Z7P2vH/LBhChKp2U+6ES0kiynH
+   g==;
+X-CSE-ConnectionGUID: /fsY0rzlR8OxcTlJAtS8JQ==
+X-CSE-MsgGUID: yhasLK1eT1+EycGuwZndnQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11779"; a="89843711"
+X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; 
+   d="scan'208";a="89843711"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2026 12:57:39 -0700
+X-CSE-ConnectionGUID: gfg9R6fiRDmA/gZxfpFeUQ==
+X-CSE-MsgGUID: bzow6c6WQoOZxBN1Wy1PMA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,222,1770624000"; 
+   d="scan'208";a="240549809"
+Received: from lkp-server01.sh.intel.com (HELO d6e19f2f5857) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 07 May 2026 12:57:37 -0700
+Received: from kbuild by d6e19f2f5857 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wL4ql-000000000Pf-0KFw;
+	Thu, 07 May 2026 19:57:35 +0000
+Date: Fri, 08 May 2026 03:56:54 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: oe-kbuild-all@lists.linux.dev, linux-acpi@vger.kernel.org,
+ linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge 15/24]
+ drivers/platform/x86/xo15-ebook.c:104:17: error: label 'err_free_input' used
+ but not defined
+Message-ID: <202605080333.a4CP1ejZ-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 07/11] leds: flash: add support for Samsung S2M series
- PMIC flash LED device
-To: Lee Jones <lee@kernel.org>, Kaustabh Chakraborty <kauschluss@disroot.org>
-Cc: Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>,
- Nam Tran <trannamatk@gmail.com>, =?UTF-8?B?xYF1a2FzeiBMZWJpZWR6acWEc2tp?=
- <kernel@lvkasz.us>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org,
- linux-doc@vger.kernel.org
-References: <20260424-s2mu005-pmic-v5-0-fcbc9da5a004@disroot.org>
- <20260424-s2mu005-pmic-v5-7-fcbc9da5a004@disroot.org>
- <20260507164654.GS305027@google.com>
-Content-Language: en-US
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-In-Reply-To: <20260507164654.GS305027@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi Lee,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git=
+ bleeding-edge
+head:   232e74ed0633787ae1258c7d33ef7599210396ce
+commit: f3f83acc4b2615dc2f4a25bc5bcca4af83cf0cae [15/24] platform/x86: xo15=
+-ebook: Register ACPI notify handler directly
+config: i386-buildonly-randconfig-004-20260507 (https://download.01.org/0da=
+y-ci/archive/20260508/202605080333.a4CP1ejZ-lkp@intel.com/config)
+compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
+reproduce (this is a W=3D1 build): (https://download.01.org/0day-ci/archive=
+/20260508/202605080333.a4CP1ejZ-lkp@intel.com/reproduce)
 
-On 5/7/26 6:46 PM, Lee Jones wrote:
-> On Fri, 24 Apr 2026, Kaustabh Chakraborty wrote:
-> 
->> Add support for flash LEDs in certain Samsung S2M series PMICs.
->> The device has two channels for LEDs, typically for the back and front
->> cameras in mobile devices. Both channels can be independently
->> controlled, and can be operated in torch or flash modes.
->>
->> The driver includes initial support for the S2MU005 PMIC flash LEDs.
->>
->> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
->> ---
->>   drivers/leds/flash/Kconfig          |  12 ++
->>   drivers/leds/flash/Makefile         |   1 +
->>   drivers/leds/flash/leds-s2m-flash.c | 358 ++++++++++++++++++++++++++++++++++++
->>   3 files changed, 371 insertions(+)
->>
->> diff --git a/drivers/leds/flash/Kconfig b/drivers/leds/flash/Kconfig
->> index 5e08102a67841..be62e05277429 100644
->> --- a/drivers/leds/flash/Kconfig
->> +++ b/drivers/leds/flash/Kconfig
->> @@ -114,6 +114,18 @@ config LEDS_RT8515
->>   	  To compile this driver as a module, choose M here: the module
->>   	  will be called leds-rt8515.
->>   
->> +config LEDS_S2M_FLASH
->> +	tristate "Samsung S2M series PMICs flash/torch LED support"
->> +	depends on LEDS_CLASS
->> +	depends on MFD_SEC_CORE
->> +	depends on V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS
-> 
-> The `|| !V4L2_FLASH_LED_CLASS` part of this dependency makes it
-> unconditionally true. Was this intended? Perhaps this dependency can be
-> removed entirely.
-This is for a reason to allow building the driver if
-V4L2_FLASH_LED_CLASS is turned off, or build it as a module
-if V4L2_FLASH_LED_CLASS=m. You will get nice explanation from
-Google AI if you type just
-"V4L2_FLASH_LED_CLASS || !V4L2_FLASH_LED_CLASS".
+If you fix the issue in a separate patch/commit (i.e. not just a new versio=
+n of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605080333.a4CP1ejZ-lkp@i=
+ntel.com/
 
-See e.g. [0], which fixes undefined symbol error by adding this.
+All errors (new ones prefixed by >>):
 
-[0] 
-https://git.paulk.fr/projects/linux.git/commit/drivers?h=sunxi/cedrus/jpeg-nv16&id=dbeb02a0bc41b9e9b9c05e460890351efecf1352
+   drivers/platform/x86/xo15-ebook.c: In function 'ebook_switch_add':
+>> drivers/platform/x86/xo15-ebook.c:104:17: error: label 'err_free_input' =
+used but not defined
+     104 |                 goto err_free_input;
+         |                 ^~~~
 
--- 
-Best regards,
-Jacek Anaszewski
 
+vim +/err_free_input +104 drivers/platform/x86/xo15-ebook.c
+
+44cb98c48e19f5 Rafael J. Wysocki 2012-06-27   80 =20
+89ca11771a4b50 Paul Fox          2011-02-03   81  static int ebook_switch_a=
+dd(struct acpi_device *device)
+89ca11771a4b50 Paul Fox          2011-02-03   82  {
+39789590cff404 Andy Shevchenko   2023-10-10   83  	const struct acpi_device=
+_id *id;
+89ca11771a4b50 Paul Fox          2011-02-03   84  	struct ebook_switch *but=
+ton;
+89ca11771a4b50 Paul Fox          2011-02-03   85  	struct input_dev *input;
+89ca11771a4b50 Paul Fox          2011-02-03   86  	int error;
+89ca11771a4b50 Paul Fox          2011-02-03   87 =20
+bf4afc53b77aea Linus Torvalds    2026-02-21   88  	button =3D kzalloc_obj(s=
+truct ebook_switch);
+89ca11771a4b50 Paul Fox          2011-02-03   89  	if (!button)
+89ca11771a4b50 Paul Fox          2011-02-03   90  		return -ENOMEM;
+89ca11771a4b50 Paul Fox          2011-02-03   91 =20
+89ca11771a4b50 Paul Fox          2011-02-03   92  	device->driver_data =3D =
+button;
+89ca11771a4b50 Paul Fox          2011-02-03   93 =20
+89ca11771a4b50 Paul Fox          2011-02-03   94  	button->input =3D input =
+=3D input_allocate_device();
+89ca11771a4b50 Paul Fox          2011-02-03   95  	if (!input) {
+89ca11771a4b50 Paul Fox          2011-02-03   96  		error =3D -ENOMEM;
+89ca11771a4b50 Paul Fox          2011-02-03   97  		goto err_free_button;
+89ca11771a4b50 Paul Fox          2011-02-03   98  	}
+89ca11771a4b50 Paul Fox          2011-02-03   99 =20
+39789590cff404 Andy Shevchenko   2023-10-10  100  	id =3D acpi_match_acpi_d=
+evice(ebook_device_ids, device);
+39789590cff404 Andy Shevchenko   2023-10-10  101  	if (!id) {
+39789590cff404 Andy Shevchenko   2023-10-10  102  		dev_err(&device->dev, "=
+Unsupported hid\n");
+89ca11771a4b50 Paul Fox          2011-02-03  103  		error =3D -ENODEV;
+89ca11771a4b50 Paul Fox          2011-02-03 @104  		goto err_free_input;
+89ca11771a4b50 Paul Fox          2011-02-03  105  	}
+89ca11771a4b50 Paul Fox          2011-02-03  106 =20
+8625c4c06a79dd Ilpo J=C3=A4rvinen     2025-04-07  107  	strscpy(acpi_device=
+_name(device), XO15_EBOOK_DEVICE_NAME);
+8625c4c06a79dd Ilpo J=C3=A4rvinen     2025-04-07  108  	strscpy(acpi_device=
+_class(device), XO15_EBOOK_CLASS "/" XO15_EBOOK_SUBCLASS);
+89ca11771a4b50 Paul Fox          2011-02-03  109 =20
+39789590cff404 Andy Shevchenko   2023-10-10  110  	snprintf(button->phys, s=
+izeof(button->phys), "%s/button/input0", id->id);
+89ca11771a4b50 Paul Fox          2011-02-03  111 =20
+8625c4c06a79dd Ilpo J=C3=A4rvinen     2025-04-07  112  	input->name =3D acp=
+i_device_name(device);
+89ca11771a4b50 Paul Fox          2011-02-03  113  	input->phys =3D button->=
+phys;
+89ca11771a4b50 Paul Fox          2011-02-03  114  	input->id.bustype =3D BU=
+S_HOST;
+89ca11771a4b50 Paul Fox          2011-02-03  115  	input->dev.parent =3D &d=
+evice->dev;
+89ca11771a4b50 Paul Fox          2011-02-03  116 =20
+89ca11771a4b50 Paul Fox          2011-02-03  117  	input->evbit[0] =3D BIT_=
+MASK(EV_SW);
+89ca11771a4b50 Paul Fox          2011-02-03  118  	set_bit(SW_TABLET_MODE, =
+input->swbit);
+89ca11771a4b50 Paul Fox          2011-02-03  119 =20
+89ca11771a4b50 Paul Fox          2011-02-03  120  	error =3D input_register=
+_device(input);
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  121  	if (error) {
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  122  		input_free_device(input=
+);
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  123  		goto err_free_button;
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  124  	}
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  125 =20
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  126  	error =3D acpi_dev_insta=
+ll_notify_handler(device, ACPI_DEVICE_NOTIFY,
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  127  						ebook_switch_notify=
+, device);
+89ca11771a4b50 Paul Fox          2011-02-03  128  	if (error)
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  129  		goto err_unregister_inp=
+ut;
+89ca11771a4b50 Paul Fox          2011-02-03  130 =20
+89ca11771a4b50 Paul Fox          2011-02-03  131  	ebook_send_state(device);
+89ca11771a4b50 Paul Fox          2011-02-03  132 =20
+89ca11771a4b50 Paul Fox          2011-02-03  133  	if (device->wakeup.flags=
+.valid) {
+89ca11771a4b50 Paul Fox          2011-02-03  134  		/* Button's GPE is run-=
+wake GPE */
+89ca11771a4b50 Paul Fox          2011-02-03  135  		acpi_enable_gpe(device-=
+>wakeup.gpe_device,
+89ca11771a4b50 Paul Fox          2011-02-03  136  				device->wakeup.gpe_nu=
+mber);
+89ca11771a4b50 Paul Fox          2011-02-03  137  		device_set_wakeup_enabl=
+e(&device->dev, true);
+89ca11771a4b50 Paul Fox          2011-02-03  138  	}
+89ca11771a4b50 Paul Fox          2011-02-03  139 =20
+89ca11771a4b50 Paul Fox          2011-02-03  140  	return 0;
+89ca11771a4b50 Paul Fox          2011-02-03  141 =20
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  142  err_unregister_input:
+f3f83acc4b2615 Rafael J. Wysocki 2026-02-09  143  	input_unregister_device(=
+input);
+89ca11771a4b50 Paul Fox          2011-02-03  144  err_free_button:
+89ca11771a4b50 Paul Fox          2011-02-03  145  	kfree(button);
+89ca11771a4b50 Paul Fox          2011-02-03  146  	return error;
+89ca11771a4b50 Paul Fox          2011-02-03  147  }
+89ca11771a4b50 Paul Fox          2011-02-03  148 =20
+
+:::::: The code at line 104 was first introduced by commit
+:::::: 89ca11771a4b50ed616ab6c37e0ef333d02f1d47 OLPC XO-1.5 ebook switch dr=
+iver
+
+:::::: TO: Paul Fox <pgf@laptop.org>
+:::::: CC: Matthew Garrett <mjg@redhat.com>
+
+--=20
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
