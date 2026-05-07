@@ -1,293 +1,405 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3349133262A
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 09:55:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A5C63C5535
+	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 09:57:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778147725; cv=none; b=aC6thwRrADUQIXENMaicx8HbmkV5SbFLbKlQpZ/ScL9egoHzxztkiWzoUI2Zvn1xuDNzOFyer7GvLdorT80YEgZpS+Y9M+BSfcI+u9tHlGEUCMFkYjx97V1KbofS6lRKPFVQRiJ3gDBS/5ZiInnwjaCqZUtRW4p8cYYA90WfUSY=
+	t=1778147847; cv=none; b=GcXizVBaefK5IFTjuF1OSyzlxDpswj+x6LFk0IcN1jSc4rsh/J6wSSMqZAHJS4q4MCrv+xzpnHnqtsnDUeZoXOsmqxR4WYlh8J98Yg80fwefsBjG14bcFuLo4xXY0cpKIuL+q6IkaWq3w26PzwZ8XdNmD+s/ALPHCHOjn2Ipank=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778147725; c=relaxed/simple;
-	bh=la5GBb/qjFJDBd0cmtfhPBlQAUFlcJqggm5HPizD5/M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JQV6eUqERwG5SQ7g5h2vwOIazo09fQjYpwAxNNOXeq+JpQPJDc1LMhoqFgiz4AclyRNOHQ05l2hBvMAsPE/Lsi53GxsvqyVwz6SbzJ+nwmuXtnp0pERglWrnrkvLpgHX9Dyh2OGS9dnMzVIhtuEz0CLUILZHBzLYuhZue27fJXA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=DwAVHMAS; arc=none smtp.client-ip=209.85.221.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1778147847; c=relaxed/simple;
+	bh=hfGaOaB91E+XZBFp379GHs8PshD6s7Rlikxhrr5afig=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cL9QhcB6Oqx8rmvSTGCOBrL2JVBePVrKt2E88na725emoYYT1fBpYVkbF7laKrl2sQ3VhvKNzfU1uxVZqHnUUqX97AUfwUURo/mQ3Kw9SIQrE/NCU5EoHe710+uus1H8eiwWihEteZcSTb29rVpAgCaoDaTQkEg6+tgTe126iiY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=f9iGJjtG; arc=none smtp.client-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="DwAVHMAS"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-45297094718so526860f8f.3
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 02:55:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f9iGJjtG"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-48334ee0aeaso4809875e9.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 02:57:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778147721; x=1778752521; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=1Y9OUrxI1EEhChI+FN7an5sN3VNq14WY8yokYelYb1c=;
-        b=DwAVHMASberoIqtWej8FGIfw29C6Eam4mw9TBr9inguIsaslmF6HKST4LFc2r8U9kt
-         ln3bzj6hxkfX6KWF2h8F4QkJysJcgpeY81/66dEw3arTuR04MuTRMantKnVMyN3tWsLY
-         xX2SzIk+yhzPbewcnRVd7fb4JbrBUEl2K+Qq2bGOq1ar+dXnAPT+LV3SnRdvGk9rjLNr
-         omnB0i974V6HHpltkRI332qALgiT7nsk2T4bK1bVHUM1u0qJceBriRJVakoqmqGjC5Ki
-         jV/cP6vC872zOt+yaQFZ9eNqymZbiT4ZV9FWk5zZYXfWDpU1qspRCusxXN52YrFMpRvC
-         gDng==
+        d=gmail.com; s=20251104; t=1778147843; x=1778752643; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vhLkLTolbyFKFrJFgOsn5aZNEw5iIaEfKoEnlONf3Ys=;
+        b=f9iGJjtGGW5OD/Z68PnTMAc5pa5IGJBpfme4iErpujL9IruYgzql5GlO+A4wJ103Xr
+         5COnQ7DVUtmvB/3MEYGEgCIOY/IwhB8ORUoOYMNEQcHQNgAWPkq7VGrk1FIwT9QtwRzp
+         7s48Yotw7pQ5izpZJYMJ1EirPvE1cE6wbXRRGKWeAlzRM3wZsrFosjyERRC71RovadUH
+         qjQLG0AivQh59Xssk6gQVZWMFhZgDSgcovqQ8W/XpXF6/aaTM/BUVgaiQBBooboWEg0C
+         tJ0LcMnetpMCP/y60FAJtH+0vPVcsUymFcdjL4kJXaDLlGuDpr1oxs4HEI7XzCfY2aqf
+         QP5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778147721; x=1778752521;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=1Y9OUrxI1EEhChI+FN7an5sN3VNq14WY8yokYelYb1c=;
-        b=s+aDA5c5E5Rl/ngkwDNtsB5C+oVLyI6eahsLuuiPaeVMSDbU1ar1x63hArxUTU+H+b
-         Gb04QqEOYU3WuS1dEOkhYDcbTaR2K1iJ54xo0ALcJnIVoLaTSTT6z/vpT1n44IunOyFA
-         PwyQfdS+iizdyxCoU3s5F4Bl0R2Db455BjY6PCGQsYzXxR+uhYD5jvvgrYKwfKaK7Ofo
-         nmXVWjp1o/r/sQcp4Jd25sRkBhCUQqNJI9WevVQaOMct0Vlt9oeLQIvBBEiO+Myosf2a
-         +IgLder/DSNo84wPVWMhvhokUnUwC0goZAw3N/e3hU8mTMbbT1j9LUg02J3pWkGuslyC
-         SG3w==
-X-Forwarded-Encrypted: i=1; AFNElJ+O22yUMwebj4wEum92tuaFvjgevbPH/h9xsdhR9vt5RWL35yTl3xT25PTs019BL6M+X3iLwf+KNA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywz2cWdtj2HrVHN0S4NEhwbZj8WesnD/IVRw8LtFN4pvv2odMM2
-	QWfTh4p1unG3tiWYDntmz7W22fdNlbaAG/yoPf9m2f0e/waUUvIuGE7Aw4LfGeHtnvA=
-X-Gm-Gg: AeBDieuPNZCc55mwmfH77sdUwySP93Ibbm1371mr6K2SwP4A5Ir9fatdymOHNFfF82q
-	QjnFaKZnM/CJ46EQjSeHFCpa+rOyzH4V2X+IBg9s34UR4/ASivCs9Llc1srTdq+fgDKoQonT8Uc
-	7AflNci05nVi2iYLtlkNZfCh/9hd1DfpXTBYe/2394a2I9RAM1IGrCfw+Lkvew5chSf123PS41B
-	HLEGRxMy6/wQV+A8cMupitOqtL1RJhJE5VF9wys7iTK0x3i6jL0Yw8L+DnnxW56yJh7MDPO87It
-	dL8iImy+jWyL0vUfznOk7Y/HowxEh6rpmXZP/8FWeSe03jyivmPdngvWW7pLLiVruYQGi6pDERG
-	ocOwXJKE/0nfl4KVF/I7pZLBA23wpzK0mpIKEpRbJbIt1g4erWqQ1mUWepkZw7BR83W9Hl9pxHG
-	R2cemGYK1j7pRrOUZ9cdX8CMP5BTY=
-X-Received: by 2002:a05:6000:1acf:b0:446:189c:ac4e with SMTP id ffacd0b85a97d-4515d5c63f0mr11429737f8f.34.1778147720994;
-        Thu, 07 May 2026 02:55:20 -0700 (PDT)
-Received: from airbuntu ([146.70.179.99])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45052a48911sm19172094f8f.11.2026.05.07.02.55.18
+        d=1e100.net; s=20251104; t=1778147843; x=1778752643;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=vhLkLTolbyFKFrJFgOsn5aZNEw5iIaEfKoEnlONf3Ys=;
+        b=SQUpgEHBMpcJrF1jx1CjtIiYFNjDsHbM+HmCdvTzZRpZ6GOo8AUKUq+zt/LqblSFoV
+         vPcHcNnyJzOkR6PnQKXCHFA3qJCdfa6lovE2cb4EAZoHZCqU9mHL8PZu4/+1BNzvw4XO
+         dIhbJiF3IU1DW0vUULJEdD2uwWWBhW/GzlFpGOu0abW0YUFyTC/9jER4gUEGf0hN0KbN
+         A9CI5RvFRzU3czAGMTyir5auDtO01EpbaQwfVTJqs7q8HBM2qtVgDLztCWFOgWJP4BfC
+         tk+0LBdDUCs+0tQpvMakb4VeJWjKRVfrpF9Y+hGqKHQDLmMJvGVgS645umQavYKFguq5
+         OvNg==
+X-Forwarded-Encrypted: i=1; AFNElJ+B+9ESU/BIvXlI7yth7yt+8+hDhg0jumZllt+lfkjQeMMNOHF2MqqEMzYP52xFpPZWHW4xi2UNkg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxiurnGjJsV89BAf64/HTquZhBryXP06aNsdaZDgaFQN1Iu/83C
+	HIgxdgWn7Hy4lM5sUDqzXngC+LqWXzwx8u2Ll0SPEQU3BHIwtxIktaAf
+X-Gm-Gg: AeBDiev3v19KbypVIHR088LSenVRb6dOiH7QUS1UdD8cJQGplG42sQUmoQFvdS43aE1
+	ErdT6B3J5yPEkuNGKFAqjqsdHTh0CBRZ+/JHFOyam2DT1oGdZdzyOMewpIQUqm3KTmpaiylQ16m
+	uUvs6tCHtyFKa58CRAxmvXqhwH2II8g+XYkFF0tDEt8ecpnCIJ6fZ0x3BhpuwhT8lfZJEwhfZEn
+	XlEuqby2e/qMU+IyVFFHbOcRgimHk4SJTiZVMvXSFBdtr/HFbD/yPDZPZv72Sm3lWO3L7hurWc4
+	YrliQDMzzv8fRjYX2l+loM0PhEjmOk2mqq6otMfLd2o7lXWPtKv7TluwnNBA8DhhZuDVWb7kbjW
+	YmcQ4MbWYwZZsf4fX13pj81cs2mD9ArV4K5OIY7dSf60ZQLAibFkIMjidpLqx36R6CdsXRz5FVf
+	kNsvdSuczYNH9Q42B2zQQof5/881t55QKBmWTZKwM3bPw2QXXjfaC04r7W6DV5NvixT+uEn1A=
+X-Received: by 2002:a05:600c:1e8a:b0:488:fd7e:1063 with SMTP id 5b1f17b1804b1-48e51f4cdcdmr114717615e9.29.1778147843159;
+        Thu, 07 May 2026 02:57:23 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e538ca8c0sm104145975e9.13.2026.05.07.02.57.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 May 2026 02:55:20 -0700 (PDT)
-Date: Thu, 7 May 2026 10:55:16 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 RFC 08/13] sched/qos: Add a new sched-qos interface
-Message-ID: <20260507095516.vv7blulzskkyezin@airbuntu>
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-9-qyousef@layalina.io>
- <2b9fd875df1f71d2c12c21938784a6c1fd38c04a.camel@linux.intel.com>
+        Thu, 07 May 2026 02:57:22 -0700 (PDT)
+Date: Thu, 7 May 2026 10:57:21 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
+ will@kernel.org, peterz@infradead.org, akpm@linux-foundation.org,
+ mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
+ rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
+ zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com, rdunlap@infradead.org,
+ joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
+ konrad.wilk@oracle.com, ashok.bhat@arm.com
+Subject: Re: [PATCH v11 01/14] asm-generic: barrier: Add
+ smp_cond_load_relaxed_timeout()
+Message-ID: <20260507105721.66ba1e45@pumpkin>
+In-Reply-To: <87o6isl0nl.fsf@oracle.com>
+References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
+	<20260408122538.3610871-2-ankur.a.arora@oracle.com>
+	<874iklm1uy.fsf@oracle.com>
+	<20260506095836.216d9cc5@pumpkin>
+	<87o6isl0nl.fsf@oracle.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2b9fd875df1f71d2c12c21938784a6c1fd38c04a.camel@linux.intel.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On 05/06/26 13:38, Tim Chen wrote:
-> On Mon, 2026-05-04 at 02:59 +0100, Qais Yousef wrote:
-> > Provide a generic and extensible interface to describe arbitrary QoS
-> > tags to tell the kernel about specific behavior that is doesn't fall
-> > into the existing sched_attr.
-> > 
-> > The interface is broken into three parts:
-> > 
-> > * Type
-> > * Value
-> > * Cookie
-> > 
-> > Type is an enum that should be give us enough space to extend (and
-> > deprecate) comfortably.
-> > 
-> > Value is a signed 64bit number to allow for arbitrary high values.
-> > 
-> > Cookie is to help group tasks selectively so that some QoS might want to
-> > operate on tasks per groups. A value of 0 indicates system wide.
-> > 
-> > There are two anticipated users being discussed on the list.
-> > 
-> > 1. Per task rampup multiplier to allow controlling how fast util rises,
-> >    and by implication it can migrate between cores on HMP systems and
-> >    cause freqs to rise with schedutil.
-> > 
-> > 2. Tag a group of task that are memory dependent for Cache Aware
-> >    Scheduling.
-> > 
-> > The interface is anticipated to be provisioned to apps via utilities and
-> > libraries. schedqos [1] is an example how such interface can be used to
-> > provide higher level QoS abstraction to describe workloads without
-> > baking it into the binaries, and by implication without worrying about
-> > potential abuse. The interface requires privileged access since QoS is
-> > considered scarce resource and requires admin control to ensure it is
-> > set properly. Again that admin control is anticipated to be the schedqos
-> > utility service.
-> > 
-> > QoS is treated as a scarce resource and the intention is for the
-> > a syscall to be done for each individual QoS tag. QoS tags are not
-> > inherited on fork by default too for the same reason.
-> > 
-> > A reasonable point of debate is whether to make the sched_qos an array
-> > of 3 or 5 value to avoid potential bottleneck if this grows large and
-> > users do end up hitting a bottleneck of having to issue too many
-> > syscalls to set all QoS. Being limited as it is now helps enforce
-> > intentionality and scarcity of tagging.
-> > 
-> > [1] https://github.com/qais-yousef/schedqos
-> > 
-> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
-> > ---
-> >  Documentation/scheduler/index.rst             |  1 +
-> >  Documentation/scheduler/sched-qos.rst         | 44 ++++++++++++++++++
-> >  include/uapi/linux/sched.h                    |  4 ++
-> >  include/uapi/linux/sched/types.h              | 46 +++++++++++++++++++
-> >  kernel/sched/syscalls.c                       | 10 ++++
-> >  .../trace/beauty/include/uapi/linux/sched.h   |  4 ++
-> >  6 files changed, 109 insertions(+)
-> >  create mode 100644 Documentation/scheduler/sched-qos.rst
-> > 
-> > diff --git a/Documentation/scheduler/index.rst b/Documentation/scheduler/index.rst
-> > index 17ce8d76befc..6652f18e553b 100644
-> > --- a/Documentation/scheduler/index.rst
-> > +++ b/Documentation/scheduler/index.rst
-> > @@ -23,5 +23,6 @@ Scheduler
-> >      sched-stats
-> >      sched-ext
-> >      sched-debug
-> > +    sched-qos
+On Wed, 06 May 2026 13:54:06 -0700
+Ankur Arora <ankur.a.arora@oracle.com> wrote:
+
+> David Laight <david.laight.linux@gmail.com> writes:
+> 
+> > On Wed, 06 May 2026 00:30:29 -0700
+> > Ankur Arora <ankur.a.arora@oracle.com> wrote:
 > >  
-> >      text_files
-> > diff --git a/Documentation/scheduler/sched-qos.rst b/Documentation/scheduler/sched-qos.rst
-> > new file mode 100644
-> > index 000000000000..0911261cb124
-> > --- /dev/null
-> > +++ b/Documentation/scheduler/sched-qos.rst
-> > @@ -0,0 +1,44 @@
-> > +.. SPDX-License-Identifier: GPL-2.0
-> > +
-> > +=============
-> > +Scheduler QoS
-> > +=============
-> > +
-> > +1. Introduction
-> > +===============
-> > +
-> > +Different workloads have different scheduling requirements to operate
-> > +optimally. The same applies to tasks within the same workload.
-> > +
-> > +To enable smarter usage of system resources and to cater for the conflicting
-> > +demands of various tasks, Scheduler QoS provides a mechanism to provide more
-> > +information about those demands so that scheduler can do best-effort to
-> > +honour them.
-> > +
-> > +  @sched_qos_type	what QoS hint to apply
-> > +  @sched_qos_value	value of the QoS hint
-> > +  @sched_qos_cookie	magic cookie to tag a group of tasks for which the QoS
-> > +			applies. If 0, the hint will apply globally system
-> > +			wide. If not 0, the hint will be relative to tasks that
-> > +			has the same cookie value only.
-> 
-> Qais,
-> 
-> Thanks for your proposal. I have some follow up thoughts.
-> 
-> How can we query all the tasks that use a cookie?
+> >> Ankur Arora <ankur.a.arora@oracle.com> writes:
+> >>  
+> >> > Add smp_cond_load_relaxed_timeout(), which extends
+> >> > smp_cond_load_relaxed() to allow waiting for a duration.
+> >> >
+> >> > We loop around waiting for the condition variable to change while
+> >> > peridically doing a time-check. The loop uses cpu_poll_relax() to slow
+> >> > down the busy-wait, which, unless overridden by the architecture
+> >> > code, amounts to a cpu_relax().
+> >> >
+> >> > Note that there are two ways for the time-check to fail: the timeout
+> >> > case or, @time_expr_ns returning an invalid value (negative or zero).
+> >> > The second failure mode allows for clocks attached to the clock-domain
+> >> > of @cond_expr --  which might cease to operate meaningfully once some
+> >> > state internal to @cond_expr has changed -- to fail.
+> >> >
+> >> > Evaluation of @time_expr_ns: in the fastpath we want to keep the
+> >> > performance close to smp_cond_load_relaxed(). So defer evaluation
+> >> > of the potentially costly @time_expr_ns to the slowpath.
+> >> >
+> >> > This also means that there will always be some hardware dependent
+> >> > duration that has passed in cpu_poll_relax() iterations at the time
+> >> > of first evaluation. Additionally cpu_poll_relax() is not guaranteed
+> >> > to return at timeout boundary. In sum, expect timeout overshoot when
+> >> > we exit due to expiration of the timeout.
+> >> >
+> >> > The number of spin iterations before time-check, SMP_TIMEOUT_POLL_COUNT
+> >> > is chosen to be 200 by default. With a cpu_poll_relax() iteration
+> >> > taking ~20-30 cycles (measured on a variety of x86 platforms), we
+> >> > expect a time-check every ~4000-6000 cycles.
+> >> >
+> >> > The outer limit of the overshoot is double that when working with the
+> >> > parameters above. This might be higher or lower depending on the
+> >> > implementation of cpu_poll_relax() across architectures.
+> >> >
+> >> > Lastly, config option ARCH_HAS_CPU_RELAX indicates availability of a
+> >> > cpu_poll_relax() that is cheaper than polling. This might be relevant
+> >> > for cases with a long timeout.
+> >> >
+> >> > Cc: Arnd Bergmann <arnd@arndb.de>
+> >> > Cc: Will Deacon <will@kernel.org>
+> >> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> >> > Cc: Peter Zijlstra <peterz@infradead.org>
+> >> > Cc: linux-arch@vger.kernel.org
+> >> > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> >> > Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+> >> > ---
+> >> > Notes:
+> >> >    - add a comment mentioning that smp_cond_load_relaxed_timeout() might
+> >> >      be using architectural primitives that don't support MMIO.
+> >> >      (David Laight, Catalin Marinas)
+> >> >
+> >> >  include/asm-generic/barrier.h | 69 +++++++++++++++++++++++++++++++++++
+> >> >  1 file changed, 69 insertions(+)
+> >> >
+> >> > diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
+> >> > index d4f581c1e21d..e5a6a1c04649 100644
+> >> > --- a/include/asm-generic/barrier.h
+> >> > +++ b/include/asm-generic/barrier.h
+> >> > @@ -273,6 +273,75 @@ do {									\
+> >> >  })
+> >> >  #endif
+> >> >
+> >> > +/*
+> >> > + * Number of times we iterate in the loop before doing the time check.
+> >> > + * Note that the iteration count assumes that the loop condition is
+> >> > + * relatively cheap.
+> >> > + */
+> >> > +#ifndef SMP_TIMEOUT_POLL_COUNT
+> >> > +#define SMP_TIMEOUT_POLL_COUNT		200
+> >> > +#endif
+> >> > +
+> >> > +/*
+> >> > + * Platforms with ARCH_HAS_CPU_RELAX have a cpu_poll_relax() implementation
+> >> > + * that is expected to be cheaper (lower power) than pure polling.
+> >> > + */
+> >> > +#ifndef cpu_poll_relax
+> >> > +#define cpu_poll_relax(ptr, val, timeout_ns)	cpu_relax()
+> >> > +#endif
+> >> > +
+> >> > +/**
+> >> > + * smp_cond_load_relaxed_timeout() - (Spin) wait for cond with no ordering
+> >> > + * guarantees until a timeout expires.
+> >> > + * @ptr: pointer to the variable to wait on.
+> >> > + * @cond_expr: boolean expression to wait for.
+> >> > + * @time_expr_ns: expression that evaluates to monotonic time (in ns) or,
+> >> > + *  on failure, returns a negative value.
+> >> > + * @timeout_ns: timeout value in ns
+> >> > + * Both of the above are assumed to be compatible with s64; the signed
+> >> > + * value is used to handle the failure case in @time_expr_ns.
+> >> > + *
+> >> > + * Equivalent to using READ_ONCE() on the condition variable.
+> >> > + *
+> >> > + * Callers that expect to wait for prolonged durations might want
+> >> > + * to take into account the availability of ARCH_HAS_CPU_RELAX.
+> >> > + *
+> >> > + * Note that @ptr is expected to point to a memory address. Using this
+> >> > + * interface with MMIO will be slower (since SMP_TIMEOUT_POLL_COUNT is
+> >> > + * tuned for memory) and might also break in interesting architecture
+> >> > + * dependent ways.
+> >> > + */
+> >> > +#ifndef smp_cond_load_relaxed_timeout
+> >> > +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,			\
+> >> > +				      time_expr_ns, timeout_ns)		\
+> >> > +({									\
+> >> > +	typeof(ptr) __PTR = (ptr);					\
 
-At the moment you can use sched_getattr() to query the cookie set for
-a specific QOS.
+		auto __PTR = ptr;
 
-We'll probably have to expose something in procfs to allow parsing all tasks
-that share a cookie.
+> >> > +	__unqual_scalar_typeof(*ptr) VAL;				\
 
-Generally the idea is that this is managed by userspace and I'd expect schedqos
-service to already know this info as it has to set it.
+It can't matter if integer promotions before assigning to VAL.
+So something like:
+		auto VAL = 1 ? 0 : *__PTR + 0;
+will generate a suitable writable variable.
+(The '+ 0' is needed because some versions of gcc incorrectly propagate
+'const'.)
 
-> A scenario I can think of is there may be two group of tasks, and we may
+> >> > +	u32 __n = 0, __spin = SMP_TIMEOUT_POLL_COUNT;			\
+> >> > +	s64 __timeout = (s64)timeout_ns;				\
 
-To be clear, two group of tasks belonging to the same process, right?
+The (s64) cast can only hide errors.
 
-I am still not clear on grouping tasks to different processes. Nothing in the
-API prevents it, but I am wary of inter-process task grouping as same
-application can have several instances running in the system and this is
-a layer of complexity that I am not sure warranted. That said, nothing in the
-proposal prevents us from handling this if it ends up really making sense.
-It'd be a matter of saying QOS_TYPE_XYZ cookie has to be system wide unique and
-can be used to tag tasks to different processes, unlike the default behavior
-which is unique per process. It's still have to be unique per sched_qos_type.
+> >> > +	s64 __time_now, __time_end = 0;					\
+> >> > +									\
+> >> > +	for (;;) {							\
+> >> > +		VAL = READ_ONCE(*__PTR);				\
+> >> > +		if (cond_expr)						\
+> >> > +			break;						\
+> >> > +		cpu_poll_relax(__PTR, VAL, (u64)__timeout);		\
 
-> want to merge the two group of tasks into one when they start sharing
-> data in the context of cache aware scheduling.  In that case, we
-> need to get all the tasks under the second cookie and change them to
-> that of the first.  We may need to link together tasks sharing a cookie.
+That doesn't look right, __timeout is relative; if the underlying code
+uses the timeout then the code delays for 200 * timeout_ns before even
+looking at the actual time.
+If you want to spin then you may not even want the cpu_relax() at all.
+(Or with a very short timeout as in the version below.)
 
-My implementation for cookie should have been explicit to return EOPNOTSUP if
-spescified. And the doc text could have been clearer.
+> >> > +		if (++__n < __spin)					\
+> >> > +			continue;					\
+> >> > +		__time_now = (s64)(time_expr_ns);			\
 
-The idea is that the cookie is per QOS per process. So QOS_TYPE_A would have
-its unique cookie range, and QOS_TYPE_B would have its independent unique
-cookie range. To allow flexibility and extensibilty to describe independent
-behavior that requires independent grouping.
+Another cast that can only hide bugs.
 
-So in your example assuming the grouping is done for a single process, group_a
-would have QOS_DATA_DEP with cookie value of 1, and group_b would have
-QOS_DATA_DEP with cookie value of 2. To merge them, you'd change group_a or
-group_b cookie to match the other group's value.
+> >> > +		if (unlikely(__time_end == 0))				\
+> >> > +			__time_end = __time_now + __timeout;		\
+> >> > +		__timeout = __time_end - __time_now;			\
+> >> > +		if (__time_now <= 0 || __timeout <= 0) {		\
+> >> > +			VAL = READ_ONCE(*__PTR);			\
+> >> > +			break;						\
+> >> > +		}							\
+> >> > +		__n = 0;						\
 
-I still haven't thought fully through how to do this with schedqos configs, but
-one idea
-
-{
-	"process_a" {
-		"thread_qos" {
-			"task_1": [ ... ],
-			"task_2": [ ... ],
-			"task_3": [ ... ],
-			"task_4": [ ... ]
-		},
-		"qos_groups" {
-			"group_a" {
-				"QOS_DATA_DEP": ["task_1", "task_2"],
-			},
-			"group_b" {
-				"QOS_DATA_DEP": ["task_3", "task_4"],
+Resetting the spin count doesn't look right at all.
+In principle the code will delay for 200 * __timeout.
+Possibly the earlier check should be:
+			if (__n < __spin) {
+				__n++;
+				continue;
 			}
-		}
-	}
-}
+(Or just don't worry that the code will spin again after 4M loops.
+The problem you have is that if cpu_poll_relay() ignores the timeout you
+probably want to spin 'for a bit' in code that only accesses local data
+(in particular avoiding evaluating cond_expr or time_expr_ns).
 
-It implies of course to merge you'd have to change the description and restart
-the service..
+> >> > +	}								\
+> >> > +	(typeof(*ptr))VAL;						\
 
-If you want to merge and unmerge at runtime, then I'd have big question marks
-on the fact they belong to a group. From experience for this to be really
-beneficial you need to describe the dominant behavior even if sometimes it is
-untrue. Trying to be exact tends to backfire.
+That cast is pointless; the return value will be subject to 'integer promotion'
+and converted to a rvalue - which removes any const/volatile qualifiers. 
 
-If we really want to do something at runtime, then group control (the planned
-userspace extension to exercise QOS control based on cgroup grouping) would be
-the way to go IMO.
-
+> >> > +})
+> >> > +#endif
+> >> > +  
+> >>
+> >> A cluster of issues that got flagged by sashiko was around timeout_ns
+> >> being specified as s64 and a bunch of potential edge cases around
+> >> that.
+> >>
+> >> These were mostly caused by an implicit assumption in the code that
+> >> the timeout specified by the caller is generally reasonable. So, way
+> >> below S64_MAX, not 0 etc.  
+> >
+> > There are plenty of ways kernel code can break things.
+> > Provided this code doesn't itself overwrite anywhere (rather than
+> > just loop forever or return immediately etc) I'd be tempted to
+> > just document the valid range rather than slow everything down
+> > with the extra tests.  
 > 
-> We probably need a sched_qos_cookie structure defined analogous to
-> the sched_core_cookie to anchor the tasks.  And sched_qos_cookie could be a ptr value
-> to sched_qos_cookie, as in sched_core_cookie instead of it being a __u32
-> as in the patch below.
+> I don't disagree. In this case, however, it's somewhat borderline.
+> 
+> On the pro side, we get rid of some of the implicit type conversions
+> and assumptions around those.
+> 
+> On the negative, it adds an extra modulo operation in the slow path.
+> And, the for loop is structured a little differently from the usual
+> version.
+> 
+> On balance, I think this is a good change if only because it makes
+> the types a little more explicit.
+> 
+> Ankur
+> 
+> > 	David
+> >  
+> >>
+> >> I think this is worth cleaning up a bit. The change is mostly around
+> >> introducing a u32 __itertime and explicitly computing the waiting time.
+> >> And adding a check to ensure that we start with a valid value.
+> >>
+> >> This does make the implementation a little more involved. So just wanted
+> >> to see if people have any opinions on this?
+> >>
+> >> +#ifndef smp_cond_load_relaxed_timeout
+> >> +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,          \
+> >> +                                     time_expr_ns, timeout_ns) \
+> >> +({                                                             \
+> >> +       typeof(ptr) __PTR = (ptr);                              \
+> >> +       __unqual_scalar_typeof(*(ptr)) VAL;                     \
+> >> +       u32 __count = 0, __spin = SMP_TIMEOUT_POLL_COUNT;       \
+> >> +       s64 __timeout = (s64)(timeout_ns);                      \
+> >> +       s64 __time_now, __time_end = 0;                         \
+> >> +       u32 __maybe_unused __itertime;                          \
+> >> +                                                               \
+> >> +       for (__itertime = NSEC_PER_USEC;                        \
 
-As part of the API or internal implementation detail? I think we do need
-a cookie structure that stores the sched_qos_type and sched_qos_cookie tuple
-internally as implementation detail. But not expose it as an interface.
+Ok, so that limits the initial 'spin' to 200 usecs.
+That gets added to any caller-specified timeout.
 
-I think the cookie values should be userspace managed. From experience, this
-has to be done in a centralized way via a service otherwise you'd end up with
-a mess. There has to be an all knowledgeable entity managing things, which is
-what I am proposing in schedqos service. That's why the whole QOS now is
-protected with CAP_NICE capability - which I forgot to mention this change from
-v1.
+> >> +               VAL = READ_ONCE(*__PTR), __timeout > 0; ) {     \
 
-We want the interface to be flexible and survive the test of time. I don't just
-want to support extensibility, but for us to be able to say we know better now
-and we must deprecate something in favour of a new thing that does it better.
-It means schedqos has to deal with some complexity to manage deprecation, but
-kernel side hopefully we can just delete code with ease. Hopefully there will
-be one or few centralized entities around.
+Broken indentation.
+I'd change it back to a for (;;) loop.
+
+If __timeout <= 0 then the code goes through the 'timer expired'
+path (below) on the first iteration.
+So the extra check is just bloat.
+
+> >> +               if (cond_expr)                                  \
+> >> +                       break;                                  \
+> >> +               cpu_poll_relax(__PTR, VAL, __itertime);         \
+> >> +               if (++__count < __spin)                         \
+> >> +                       continue;                               \
+> >> +               __time_now = (s64)(time_expr_ns);               \
+> >> +               if (unlikely(__time_end == 0))                  \
+> >> +                       __time_end = __time_now + __timeout;    \
+> >> +               __timeout = __time_end - __time_now;            \
+> >> +               if (__time_now <= 0 || __timeout <= 0) {        \
+> >> +                       VAL = READ_ONCE(*__PTR);                \
+> >> +                       break;                                  \
+> >> +               }                                               \
+
+How about:
+			if (unlikely(__time_end == 0)) {
+				if (__time_now <= 0)
+					goto timed_out;
+				__time_end = __time_now + __timeout;
+			} else {
+				if (__time_now >= __time_end) {
+timed_out:
+					VAL = READ_ONCE(*__PTR);
+					break;
+				}
+				__timeout = __time_end - __time_now;
+			}
+				
+> >> +               __itertime = __timeout % NSEC_PER_MSEC +        \
+> >> +                               NSEC_PER_USEC;                  \
+
+That seems to just be putting a bound on the timeout.
+So the '% NSEC_PER_MSEC' could be '& ((1u << 20) - 1)'
+replacing an expensive signed divide with a cheap mask.
+
+But overall this is a lot of code to inline.
+It has to be possible to get it down to something like:
+	struct info info = { .tmo_ns = timeout_ns };
+	for (;;) {
+		VAL = READ_ONCE(PTR);
+		if (cond_expr)
+			break;
+		if (_smp_cond_load_relaxed_timeout(&info, PTR, VAL))
+			break;
+	}
+	VAL;
+(yes, I know it isn't that simple because the arm 'relax' code
+has a re-read in it so needs to know the size.)
+
+-- David
+
+
+> >> +               __count = 0;                                    \
+> >> +       }                                                       \
+> >> +       (typeof(*(ptr)))VAL;                                    \
+> >> +})
+> >> +#endif
+> >>
+> >> Thanks
+> >>
+> >> --
+> >> ankur
+> >>  
+> 
+> 
+> --
+> ankur
+> 
+
