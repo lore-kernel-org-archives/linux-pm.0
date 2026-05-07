@@ -1,155 +1,354 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from extorris.mess.org (extorris.mess.org [92.243.27.206])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A1A3A4505
-	for <linux-pm@vger.kernel.org>; Thu,  7 May 2026 08:29:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 989CB3AE1AF;
+	Thu,  7 May 2026 08:58:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=92.243.27.206
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778142585; cv=none; b=Y4bXeO288I7pYM/3JdsyA9ogeITUlaamsccGDpLDRuvRAvR/aSfjQIWIwRfa2fjwFQvnSrfB/0PV6m1/QNW5iMimk5+AVFMSNgnU6/QKAVZtvIVLt64TlFBYl8whlTdPoVDFvxdArvRMnvOsjW3pkbbQjs9OhEpVmfPYyC5lgow=
+	t=1778144314; cv=none; b=eH7YPt9eUlueDNKb667MW1107sZpxe63Lhhrm9Xj3qTHBgsHp4tq0uvvh53qUj4xPro6nW0wxvB2y8ANzLoV2GNlOQ6rEYwQ01mDE4/6pDc4H7X0G15e6Cf1knciaF0aWNQ7cHdSNCfDwwLY4XNREWPOesRgiAtCmJ47V57NsCo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778142585; c=relaxed/simple;
-	bh=xbT7uS2ko3LS9LfWfODXj5s+ARausbqKmwBO4cHbBEI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iqeJy/XTXUfLwYDYArVJs6lK+aSe720wmCJTp2IAAjaGTCCi2oXB7Lbsrjhu9WK9u3R9iAWDB+0GlUurT0q3xT/6oG4k2EZrFT3ulMQ+tYtQJKE6K/exn/BQXSdV25fQjlH9X4+WQJynGUVYyApwsHPR5STgnV0C4pCYH7904UA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=F+08H1eY; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CP9Ld1RM; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778144314; c=relaxed/simple;
+	bh=c+AMYaVSpNmXDeiYLhix81XGrb8e3IIdeCn6xT12faE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gc67FKZFx4uxgYHpN7g1aFS6Lsu2i5okBbFU4S5hklziYyZPXLP3pqZeNGkAweY44n6e0jqwyI0V1VIByS6pNjWFdXmAI/e8xcmk6O43BhJNP3jI5KtyxX3S9MEDzJgr35WdYiA3bBKz2EWfsP/j/0lmxkoFm9loHn9F2aqwmnk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org; spf=pass smtp.mailfrom=mess.org; dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b=TA/xHZcu; arc=none smtp.client-ip=92.243.27.206
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mess.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mess.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="F+08H1eY";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CP9Ld1RM"
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6477q63j1425037
-	for <linux-pm@vger.kernel.org>; Thu, 7 May 2026 08:29:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	L0nSTx9b2aAqA4L87YJfIvaaJ8Ye42UC7DNezCsKjms=; b=F+08H1eYJpGWp7cS
-	bZgVcOweegFcAdKe5BnrL1cBQgBE/f/oL5P4c/LuTH3FhvAplNtxPkevM6Y87KBg
-	IAYPsb2T2iPpWTp64LcFuCMgQDb0Xp2RMV1RayKqHG9bwHGbAEdVWjw+mb7FdTI2
-	ytApVN86u/ergo530NNLpQJACWL91cF81OTBMi2C6OdgTASUfqcAtcBdptikjGvY
-	wiwB0PdFhguRCqgo2HUMD9rW6A80svhUKRVkJ3mP6lYYfnDt0ki3FagDLGjeV+8U
-	109Robt9xkLMPTdtRxO6OWH6Sp1xjfbJgWwxne//inySululbzJWK5eYrO1DzSHz
-	5EYzdQ==
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e0pqfr4qg-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 08:29:40 +0000 (GMT)
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-50fb3403e99so12512201cf.2
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2026 01:29:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778142580; x=1778747380; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=L0nSTx9b2aAqA4L87YJfIvaaJ8Ye42UC7DNezCsKjms=;
-        b=CP9Ld1RMVDu0dFPUjZbHFn9t4aYAVYptzKhALQKq7SM7gKNhJbBPGHhfTQqHfzoztG
-         OWhgns3Aw5IGCOEebJRvAoYx5jRr0IkxJk9lHy2X/YK5Tgdqxzr2HXxWEcd/MrSdk0yL
-         OFcPBz5zz3nc6xqJNyQAxM0CWG/K9yPllYXld/rsqp9vbrH4wPEJn0lvgfbQzqytCExb
-         tuCOQO8WdoHHBF3XXCF0Xl10/s6TBfKCxZMI7sYuUvN58V2yWEgHZOctK6yPrlv0w4Ia
-         AOlV/awo1qg1lznaexFMVbLx83xOYYwMNiWpM1M5owDjJIOH7FSwy3xRectwI6lipOHf
-         1big==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778142580; x=1778747380;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=L0nSTx9b2aAqA4L87YJfIvaaJ8Ye42UC7DNezCsKjms=;
-        b=GffN3LlA0ka8gMYnSgYV/+ui4G2MWPnRT/6Hlxb67QItPqzrrztLkGfljWxAivnxY8
-         80dnvtT75gtRpKp44nDb7Ylxh27bP0yEfeLmbHUhXIxzL8c31SoMD7GxMVKGUhLTIH0P
-         vhpI2I+7hPnpA4pVLDfh6AyyYKQmy86Ikrj7W7D44r+wiM4E2rdA7bUqRmFdc6QqVDpM
-         cm+amYtPCC/QSSu9qY7vfCJ7CWabn5O+Z/SkOweHLLTob2WUQrQNEnp0q3bkbfKYfnRh
-         s+JUOSWvOSVDyxAasYtHQs2KRP9B1HPcIJdcs4/4FxSBLC58YLSAhOLkEb6z4oKNm+AZ
-         RNXQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9C5VNoJCidD8QJLH6kppz9myGzEBJ0A+Gl4qm5EfoHH7omU0Lc4J2RbEiq2wd4VTv91SdYWLkAtw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwXDfwZgHomS1u5BDyeVsiNVUn9yaZbV9C4uENNY7s6jRDrHybx
-	dyXww0C3ESISQPinDDSeyTvnFl5Ln702TSx0rpMKwIRsxKURpGlCNCSxD0sLUhzvSYGjTVfyggO
-	nNmAexRzXRieyUVe/HS287tCiQuhq/V5uyVnsK5JURtN02fiQOH2Q9ziIishCOw==
-X-Gm-Gg: AeBDiev6zqpWFtZN/07uxA701YxTA9ZOo8UqaNiqDgTrbHiIy1rXAnlRCm3hffDl/bo
-	J0MP3p0bTFiZdwaPNPVpus93KIm0PfQLnnUrz4AMVhMXmgvbFxEPItLQbvvln+KEkWOpf3MZjUe
-	GizAuN56/ayOOxhCWCAEypG7m2WMOSL4608HkjhGeUuh4EhGQCT2LJJLd5VVjYrhCdvtE4N/aTD
-	Q/8IZ81TUYOBPov8/HVPBzg9K4FTgHDOzaCETebc+gCe8S0rphEW9yue0/4AT+yLed5zlFNu6Va
-	+zEviqq6zSjX7W1buRspgINSo1KCEaOH6PiS/H/EukqPLXejILWVmlypE4/xvoJD70PU7nBav5k
-	J02XgOm4SEIY17elCweVY1NdDo+CNfufC0VwdFxOqO4a+92esCU0e1x4l5YlHFoirywjsTSggt+
-	ukXYxJUcSD+CoPvCvbwlg=
-X-Received: by 2002:a05:622a:1182:b0:50f:c245:85fd with SMTP id d75a77b69052e-51461fce778mr99136241cf.31.1778142580113;
-        Thu, 07 May 2026 01:29:40 -0700 (PDT)
-X-Received: by 2002:a05:622a:1182:b0:50f:c245:85fd with SMTP id d75a77b69052e-51461fce778mr99136081cf.31.1778142579748;
-        Thu, 07 May 2026 01:29:39 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:2319:772a:829b:bcac? ([2a05:6e02:1041:c10:2319:772a:829b:bcac])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e538a547bsm117331015e9.5.2026.05.07.01.29.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 07 May 2026 01:29:39 -0700 (PDT)
-Message-ID: <806833f0-0843-4d0d-9e5f-d38b1589ddfd@oss.qualcomm.com>
-Date: Thu, 7 May 2026 10:29:38 +0200
+	dkim=pass (2048-bit key) header.d=mess.org header.i=@mess.org header.b="TA/xHZcu"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mess.org; s=2020;
+	t=1778144301; bh=c+AMYaVSpNmXDeiYLhix81XGrb8e3IIdeCn6xT12faE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=TA/xHZcuoy8qafv81B4i8rKRxtIF9x22aHjt5u7vSbydiOBTHJjDqIftED4TX+n0i
+	 Ub4SN8rS01RXH67SUhgOuECL3ejPmKVFoYBWSIkE+6pLTtbp1gXjJLUs7jTZI8svIE
+	 QYUXjj9ElXMguCg8Zyxf84KFldH6sMxG2GcF97GcH5oUBlh1QsEMB9z8xDAyMEt0zi
+	 NAHkRLN/jSd7mF9F39RU9GdVFFpeknszB3na9XvElzX13G+cOTp8T2KV9wdH/buJt1
+	 EOp8S8HmOoc3d0zPL0Usj/5BWEnHSXu7RLxuwi9Oe2yiEsDCcoswP/p5/vK57hJJa8
+	 i0Ht2VROsP/fA==
+Received: by extorris.mess.org (Postfix, from userid 1001)
+	id 65F4141CDC; Thu, 07 May 2026 09:58:21 +0100 (BST)
+Date: Thu, 7 May 2026 09:58:21 +0100
+From: Sean Young <sean@mess.org>
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 8/8] cpufreq: elanfreq: Drop support for AMD Elan SC4*
+Message-ID: <afxULci9-K9o90Ag@extorris.mess.org>
+References: <cover.1778071745.git.sean@mess.org>
+ <ab6775ddd8aa71f3a5a329500de24ff7f5c25ac8.1778071745.git.sean@mess.org>
+ <1680200e-453f-4a2b-b407-4f703dd0a541@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] thermal/core: Split __thermal_cooling_device_register()
- into two functions
-To: rafael@kernel.org
-Cc: rui.zhang@intel.com, lukasz.luba@arm.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20260505144447.2853933-1-daniel.lezcano@oss.qualcomm.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260505144447.2853933-1-daniel.lezcano@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=TJB1jVla c=1 sm=1 tr=0 ts=69fc4d74 cx=c_pps
- a=WeENfcodrlLV9YRTxbY/uA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=ad5PGLBgRj6ha0h2GxQA:9 a=QEXdDO2ut3YA:10
- a=kacYvNCVWA4VmyqE58fU:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA3MDA4MiBTYWx0ZWRfX9rwkQV22lBgb
- kaFJBAs0AtqAOejbW7vlQy8X09Hp030gfDtBCozY8iWGVLPSof0AyCbN36IgUbXmgs5GPuMMGeb
- xM3GmSQ9Yb/6Y8h2BSv2Os7D0cZhc4ElAVx1of6N3JITCHuqI8cwL7xrkvNKqbc7AuGObYG6Y3M
- NVACSE6ztBvEznffBFJkacjKST27i7TWtw75u2XgVCSPrm0s80c+XSVI1aeRWnXwAUudN5RfDJO
- VVOCtwX1unvOOdKTubnFPlXaVDkeb4//g1VlypU4ApDObN06lhbDg66zQno7DfgBOVsmUslo4nk
- DrkUMbPIS2rHf5FrcGmyiJ1R24cfXR09VEgG/cxmwuP/BcadWsSvvM8IPk9T+350tp11xIKQhtU
- 8wBRue7thyYySIswN6hgFotITgrk31UnTC9dmgUTcifwvo0J3a/0r8FDfFS1/JF22Cl7AfhckOK
- PHbpb8y1pSZGSg6PE8A==
-X-Proofpoint-GUID: 524rjE1UVd9uim2aXwVNa8Y9kyin_dEx
-X-Proofpoint-ORIG-GUID: 524rjE1UVd9uim2aXwVNa8Y9kyin_dEx
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-06_02,2026-05-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 lowpriorityscore=0 malwarescore=0 impostorscore=0 bulkscore=0
- phishscore=0 priorityscore=1501 adultscore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605070082
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1680200e-453f-4a2b-b407-4f703dd0a541@oss.qualcomm.com>
 
+On Thu, May 07, 2026 at 12:50:55PM +0800, Zhongqiu Han wrote:
+> On 5/6/2026 10:42 PM, Sean Young wrote:
+> > Since commit 8b793a92d862 ("x86/cpu: Remove M486/M486SX/ELAN support"),
+> > the AMD Elan SC4* is no longer supported, so the cpu frequency
+> > driver is no longer needed.
+> > 
+> > Signed-off-by: Sean Young <sean@mess.org>
+> > ---
+> >   drivers/cpufreq/Kconfig.x86 |  15 ---
+> >   drivers/cpufreq/Makefile    |   1 -
+> >   drivers/cpufreq/elanfreq.c  | 226 ------------------------------------
+> >   3 files changed, 242 deletions(-)
+> >   delete mode 100644 drivers/cpufreq/elanfreq.c
+> > 
+> 
+> Thanks Sean,
+> 
+> One minor nit: now that the elanfreq driver and its setup code are
+> removed, should the corresponding elanfreq= entry in
+> Documentation/admin-guide/kernel-parameters.txt be dropped as well?
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/tree/Documentation/admin-guide/kernel-parameters.txt?h=linux-next#n1671
 
-Hi Rafael,
+Yes, good catch. I'll send out a v2 shortly.
 
-On 5/5/26 16:44, Daniel Lezcano wrote:
-> In preparation for the upcoming changes separating OF and non-OF code,
-> split __thermal_cooling_device_register() into allocation and addition
-> phases.
+Thanks,
+
+Sean
+
 > 
-> This allows moving the device node assignment out of the core
-> initialization path.
 > 
-> This change is not a trivial split. The lifetime of the cooling device
-> is managed by the device core through put_device(), which triggers
-> thermal_release() to free all associated resources.
+> > diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+> > index 865b290b01ff..c42dd39e0b2a 100644
+> > --- a/drivers/cpufreq/Kconfig.x86
+> > +++ b/drivers/cpufreq/Kconfig.x86
+> > @@ -126,21 +126,6 @@ config X86_ACPI_CPUFREQ_CPB
+> >   	  By enabling this option the acpi_cpufreq driver provides the old
+> >   	  entry in addition to the new boost ones, for compatibility reasons.
+> > -config ELAN_CPUFREQ
+> > -	tristate "AMD Elan SC400 and SC410"
+> > -	depends on MELAN
+> > -	help
+> > -	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
+> > -	  processors.
+> > -
+> > -	  You need to specify the processor maximum speed as boot
+> > -	  parameter: elanfreq=maxspeed (in kHz) or as module
+> > -	  parameter "max_freq".
+> > -
+> > -	  For details, take a look at <file:Documentation/cpu-freq/>.
+> > -
+> > -	  If in doubt, say N.
+> > -
+> >   config X86_POWERNOW_K6
+> >   	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
+> >   	depends on X86_32
+> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> > index 96196edf79d5..6c7a39b7f8d2 100644
+> > --- a/drivers/cpufreq/Makefile
+> > +++ b/drivers/cpufreq/Makefile
+> > @@ -40,7 +40,6 @@ obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
+> >   obj-$(CONFIG_X86_POWERNOW_K7)		+= powernow-k7.o
+> >   obj-$(CONFIG_X86_LONGHAUL)		+= longhaul.o
+> >   obj-$(CONFIG_X86_E_POWERSAVER)		+= e_powersaver.o
+> > -obj-$(CONFIG_ELAN_CPUFREQ)		+= elanfreq.o
+> >   obj-$(CONFIG_X86_LONGRUN)		+= longrun.o
+> >   obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
+> >   obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
+> > diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
+> > deleted file mode 100644
+> > index fc5a58088b35..000000000000
+> > --- a/drivers/cpufreq/elanfreq.c
+> > +++ /dev/null
+> > @@ -1,226 +0,0 @@
+> > -// SPDX-License-Identifier: GPL-2.0-or-later
+> > -/*
+> > - *	elanfreq:	cpufreq driver for the AMD ELAN family
+> > - *
+> > - *	(c) Copyright 2002 Robert Schwebel <r.schwebel@pengutronix.de>
+> > - *
+> > - *	Parts of this code are (c) Sven Geggus <sven@geggus.net>
+> > - *
+> > - *      All Rights Reserved.
+> > - *
+> > - *	2002-02-13: - initial revision for 2.4.18-pre9 by Robert Schwebel
+> > - */
+> > -
+> > -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > -
+> > -#include <linux/kernel.h>
+> > -#include <linux/module.h>
+> > -#include <linux/init.h>
+> > -
+> > -#include <linux/delay.h>
+> > -#include <linux/cpufreq.h>
+> > -
+> > -#include <asm/cpu_device_id.h>
+> > -#include <linux/timex.h>
+> > -#include <linux/io.h>
+> > -
+> > -#define REG_CSCIR 0x22		/* Chip Setup and Control Index Register    */
+> > -#define REG_CSCDR 0x23		/* Chip Setup and Control Data  Register    */
+> > -
+> > -/* Module parameter */
+> > -static int max_freq;
+> > -
+> > -struct s_elan_multiplier {
+> > -	int clock;		/* frequency in kHz                         */
+> > -	int val40h;		/* PMU Force Mode register                  */
+> > -	int val80h;		/* CPU Clock Speed Register                 */
+> > -};
+> > -
+> > -/*
+> > - * It is important that the frequencies
+> > - * are listed in ascending order here!
+> > - */
+> > -static struct s_elan_multiplier elan_multiplier[] = {
+> > -	{1000,	0x02,	0x18},
+> > -	{2000,	0x02,	0x10},
+> > -	{4000,	0x02,	0x08},
+> > -	{8000,	0x00,	0x00},
+> > -	{16000,	0x00,	0x02},
+> > -	{33000,	0x00,	0x04},
+> > -	{66000,	0x01,	0x04},
+> > -	{99000,	0x01,	0x05}
+> > -};
+> > -
+> > -static struct cpufreq_frequency_table elanfreq_table[] = {
+> > -	{0, 0,	1000},
+> > -	{0, 1,	2000},
+> > -	{0, 2,	4000},
+> > -	{0, 3,	8000},
+> > -	{0, 4,	16000},
+> > -	{0, 5,	33000},
+> > -	{0, 6,	66000},
+> > -	{0, 7,	99000},
+> > -	{0, 0,	CPUFREQ_TABLE_END},
+> > -};
+> > -
+> > -
+> > -/**
+> > - *	elanfreq_get_cpu_frequency: determine current cpu speed
+> > - *
+> > - *	Finds out at which frequency the CPU of the Elan SOC runs
+> > - *	at the moment. Frequencies from 1 to 33 MHz are generated
+> > - *	the normal way, 66 and 99 MHz are called "Hyperspeed Mode"
+> > - *	and have the rest of the chip running with 33 MHz.
+> > - */
+> > -
+> > -static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
+> > -{
+> > -	u8 clockspeed_reg;    /* Clock Speed Register */
+> > -
+> > -	local_irq_disable();
+> > -	outb_p(0x80, REG_CSCIR);
+> > -	clockspeed_reg = inb_p(REG_CSCDR);
+> > -	local_irq_enable();
+> > -
+> > -	if ((clockspeed_reg & 0xE0) == 0xE0)
+> > -		return 0;
+> > -
+> > -	/* Are we in CPU clock multiplied mode (66/99 MHz)? */
+> > -	if ((clockspeed_reg & 0xE0) == 0xC0) {
+> > -		if ((clockspeed_reg & 0x01) == 0)
+> > -			return 66000;
+> > -		else
+> > -			return 99000;
+> > -	}
+> > -
+> > -	/* 33 MHz is not 32 MHz... */
+> > -	if ((clockspeed_reg & 0xE0) == 0xA0)
+> > -		return 33000;
+> > -
+> > -	return (1<<((clockspeed_reg & 0xE0) >> 5)) * 1000;
+> > -}
+> > -
+> > -
+> > -static int elanfreq_target(struct cpufreq_policy *policy,
+> > -			    unsigned int state)
+> > -{
+> > -	/*
+> > -	 * Access to the Elan's internal registers is indexed via
+> > -	 * 0x22: Chip Setup & Control Register Index Register (CSCI)
+> > -	 * 0x23: Chip Setup & Control Register Data  Register (CSCD)
+> > -	 *
+> > -	 */
+> > -
+> > -	/*
+> > -	 * 0x40 is the Power Management Unit's Force Mode Register.
+> > -	 * Bit 6 enables Hyperspeed Mode (66/100 MHz core frequency)
+> > -	 */
+> > -
+> > -	local_irq_disable();
+> > -	outb_p(0x40, REG_CSCIR);		/* Disable hyperspeed mode */
+> > -	outb_p(0x00, REG_CSCDR);
+> > -	local_irq_enable();		/* wait till internal pipelines and */
+> > -	udelay(1000);			/* buffers have cleaned up          */
+> > -
+> > -	local_irq_disable();
+> > -
+> > -	/* now, set the CPU clock speed register (0x80) */
+> > -	outb_p(0x80, REG_CSCIR);
+> > -	outb_p(elan_multiplier[state].val80h, REG_CSCDR);
+> > -
+> > -	/* now, the hyperspeed bit in PMU Force Mode Register (0x40) */
+> > -	outb_p(0x40, REG_CSCIR);
+> > -	outb_p(elan_multiplier[state].val40h, REG_CSCDR);
+> > -	udelay(10000);
+> > -	local_irq_enable();
+> > -
+> > -	return 0;
+> > -}
+> > -/*
+> > - *	Module init and exit code
+> > - */
+> > -
+> > -static int elanfreq_cpu_init(struct cpufreq_policy *policy)
+> > -{
+> > -	struct cpuinfo_x86 *c = &cpu_data(0);
+> > -	struct cpufreq_frequency_table *pos;
+> > -
+> > -	/* capability check */
+> > -	if ((c->x86_vendor != X86_VENDOR_AMD) ||
+> > -	    (c->x86 != 4) || (c->x86_model != 10))
+> > -		return -ENODEV;
+> > -
+> > -	/* max freq */
+> > -	if (!max_freq)
+> > -		max_freq = elanfreq_get_cpu_frequency(0);
+> > -
+> > -	/* table init */
+> > -	cpufreq_for_each_entry(pos, elanfreq_table)
+> > -		if (pos->frequency > max_freq)
+> > -			pos->frequency = CPUFREQ_ENTRY_INVALID;
+> > -
+> > -	policy->freq_table = elanfreq_table;
+> > -	return 0;
+> > -}
+> > -
+> > -
+> > -#ifndef MODULE
+> > -/**
+> > - * elanfreq_setup - elanfreq command line parameter parsing
+> > - *
+> > - * elanfreq command line parameter.  Use:
+> > - *  elanfreq=66000
+> > - * to set the maximum CPU frequency to 66 MHz. Note that in
+> > - * case you do not give this boot parameter, the maximum
+> > - * frequency will fall back to _current_ CPU frequency which
+> > - * might be lower. If you build this as a module, use the
+> > - * max_freq module parameter instead.
+> > - */
+> > -static int __init elanfreq_setup(char *str)
+> > -{
+> > -	max_freq = simple_strtoul(str, &str, 0);
+> > -	pr_warn("You're using the deprecated elanfreq command line option. Use elanfreq.max_freq instead, please!\n");
+> > -	return 1;
+> > -}
+> > -__setup("elanfreq=", elanfreq_setup);
+> > -#endif
+> > -
+> > -
+> > -static struct cpufreq_driver elanfreq_driver = {
+> > -	.get		= elanfreq_get_cpu_frequency,
+> > -	.flags		= CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING,
+> > -	.verify		= cpufreq_generic_frequency_table_verify,
+> > -	.target_index	= elanfreq_target,
+> > -	.init		= elanfreq_cpu_init,
+> > -	.name		= "elanfreq",
+> > -};
+> > -
+> > -static const struct x86_cpu_id elan_id[] = {
+> > -	X86_MATCH_VENDOR_FAM_MODEL(AMD, 4, 10, NULL),
+> > -	{}
+> > -};
+> > -MODULE_DEVICE_TABLE(x86cpu, elan_id);
+> > -
+> > -static int __init elanfreq_init(void)
+> > -{
+> > -	if (!x86_match_cpu(elan_id))
+> > -		return -ENODEV;
+> > -	return cpufreq_register_driver(&elanfreq_driver);
+> > -}
+> > -
+> > -
+> > -static void __exit elanfreq_exit(void)
+> > -{
+> > -	cpufreq_unregister_driver(&elanfreq_driver);
+> > -}
+> > -
+> > -
+> > -module_param(max_freq, int, 0444);
+> > -
+> > -MODULE_LICENSE("GPL");
+> > -MODULE_AUTHOR("Robert Schwebel <r.schwebel@pengutronix.de>, "
+> > -		"Sven Geggus <sven@geggus.net>");
+> > -MODULE_DESCRIPTION("cpufreq driver for AMD's Elan CPUs");
+> > -
+> > -module_init(elanfreq_init);
+> > -module_exit(elanfreq_exit);
 > 
-> With the introduction of thermal_cooling_device_alloc(), the allocation
-> path must mirror what thermal_release() undoes. In contrast,
-> thermal_cooling_device_add() must not perform any rollback and relies
-> on put_device() for cleanup on error paths. This avoids both double
-> free and resource leaks.
 > 
-> As part of this rework, add the missing device_initialize() call when
-> allocating the cooling device.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
-Are you fine with this change ?
+> -- 
+> Thx and BRs,
+> Zhongqiu Han
