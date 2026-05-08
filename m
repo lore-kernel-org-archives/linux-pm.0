@@ -1,61 +1,63 @@
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
+Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com [209.85.208.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 847BF3DBD76
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 12:39:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D73C3DCD96
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 12:39:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778243961; cv=none; b=TkcP1mmZxGIZZLlLZIl81iioJ3pCwoTk55LMWc0HcrF9fVjPTdVKpZJuMoqS9hlczf4dgBxtmnxT1xQJlMlhLBCePnD/1RiA26w+onJlqpry1y1/fx3zIFkUOP0AokBk5Q1uWFITLsiEacshkPadd7gaYzI/X9J7MbXzYzzdHLA=
+	t=1778243962; cv=none; b=h4k3vIuO76Ntrerku3Ru7FzxEeeKbdzguGAmas+lp7d3yZ9oNbz1IMnaUiA4AjEbYC6A/XU/3nUMndgcM7Nu/ayRx/qAawgff/51/KuGS+22pJ3gDruHQazPzYvEjt988DEPWz8SCJ1MKn5i9Eq7P5wCyb4ikYEwPDdxDlp4BV0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778243961; c=relaxed/simple;
-	bh=p8gi3qjlLhtg1BCpOonW7EQL8OEq2teWXfzB6HK1X/I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e88CvWRpaXA98w04qQ5YGRivjDZ4fZTL62yDpeqXwW6RZ19+0IRgdT56i825H/cLDXXjnK4XhgZ+uPPXCu4eaEmhVsvYdGII/RNi/wntXYAD6mVYzDOTLxHk11Ud8e6ghmJAsm3pcQMnGiWPHPuL8P4cQ57+bn+2QHTyyvnDzHY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=GGLY+G2g; arc=none smtp.client-ip=209.85.208.170
+	s=arc-20240116; t=1778243962; c=relaxed/simple;
+	bh=/FNkLhSYKy6TJa1EV5G4UhF+wEANeDUJfI9WWCNYAYk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=YXK0UUMD8PAojBBaa/Aj4N43X0dlwBIojoiVbXVjWzIRm/wAUcPVTG58Gin0mONcvVX/PG6rIKiyGuxKpoVU7462wIhhhczavf/rP30zSdzocGEJ+fZ6z1iHX7SH94TU9UkppJt/cZMiSL30+XRmxBKTZGxsvgd+mV4C6Z6qGUo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Cyy1S6s5; arc=none smtp.client-ip=209.85.208.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GGLY+G2g"
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-393d07e8938so18074781fa.2
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 05:39:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Cyy1S6s5"
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-393d07e8938so18074981fa.2
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 05:39:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1778243958; x=1778848758; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=cDX108p0uzre2YaOaDlgaGo1Iqc97n6Wg0g1XdnjXXg=;
-        b=GGLY+G2gmPyQ484k9jroSD82EjFJiPf5p7tYZTmaEIlnIjNdoCQIVeqfwQ4PhgUiUv
-         5URbmnbFKeNmAzC6W7oWpIlRlEEBZsFvTDsbw4lyG34qwg19C3kPLX9jADk0Pxnldj5y
-         QHP3AIt20UEkF9YYg7JKxFLegEcH61D+G9hVgf4M/oNZOfIEHHgcngVWgTuTE0/EugOs
-         Bo1XCpZp+zgifxttyYDl7WmpwwTchtntuanYOy4wFlxst+pKALsVv1EIL4p8Ya/G8TAa
-         IZsBY4sVlXMv9yjW0zqDxjefV5/Djmi+wl1TK+Rg5cdGoMQrnYfL78zbJ95xYauvkeRj
-         DOFw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778243958; x=1778848758;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1778243959; x=1778848759; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=cDX108p0uzre2YaOaDlgaGo1Iqc97n6Wg0g1XdnjXXg=;
-        b=O5mjt+vvl1tOTEFGd6ElWYrfb0ioM9EVvzrnFTP/oBkN4Glr7pTtVzpxwa7PWJ83iQ
-         baK3oG/r4ZWvAUFJK9a3OOQ3Z5t05jObW4/Ew1LtRlyIpstY1iMBepKQElREnAcA5LR9
-         6VyjBJVup5UHcVV1mwCTBqZZvhcFlmAjUALCfKIDytTbnDoTO1SCLwoCqYmRbA4KjXGD
-         ut+DlIozXITKpEP2GoE2PPF5y2jNOd4COFidwmfaafafJC7lTn5AgkYX7X+HFgIlyYJh
-         Sut4fK0UCKJ5OC2IeLafOUxfYoQpb80dktRpCRLvt8gY9AfnVxzLQjzUGflas2nRuEMg
-         89wA==
-X-Forwarded-Encrypted: i=1; AFNElJ9SPbulDUuJueeU6dncB7sXb9MHiUSx6j1RFsAowUqgHV2+7xL35qD15PN/JXC0TQtrqy8OiHBIkg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzjvtX5+bJN7Ci50ghVUrG9uelnckEtgFjfVuAKpbiccTC/TBDw
-	SR9GevarY/S89AkV3ySyV8Gbng+h+6b03d2EpVf1raZr5hg4BMgo7pqGUB5PqsOLAGY=
-X-Gm-Gg: Acq92OG38Q2SpnQMC4Lc6WiXyfbvAML7RHcI047fGpz1q5DYoiVJyszOIO0UlVMI4GI
-	DbiQZbhu8XcVkxJMk4MHSGjR44lG3D/I6srSlnnKxnJk5A/GXjqdNwHXKDQKP1IaqSnaRxpVf0C
-	dGdCcbWKH5LByrny8U3oAit4EDiUZ7et6Kk7bSN8/gQNAU1o1SJ5ivf3trnawnLk/KTwc31wXCK
-	FoEgcXaStG123bH9o7QMWzLN4kuZQK2HKf/qgb0xlZaRNHKzWt2Hzyc+RzJduPG6hiRwaFt5PMP
-	buvqr8OCRRyasKIngYT0/rZR2Na5ix8dfr5GBLvwzeGADjKVwPO/5b0Kvj+4Jx8VQjNGlmTGXfC
-	1pF1VfIfu5ECVJt3uPtmjANa9gEk6QyatQDIYDE6AXzxvUZNwGtT3VOAfR13tiOlCAlATiifEBM
-	kLzw6DawESqVkN6f17b/otroSExaFicwihOnqtXYhDAaC5rxP8nYWztBv9ZZTyaDwVRmDThGQT
-X-Received: by 2002:a2e:9f08:0:b0:393:7ab3:6d50 with SMTP id 38308e7fff4ca-393c40bcc4dmr37791951fa.6.1778243957558;
-        Fri, 08 May 2026 05:39:17 -0700 (PDT)
+        bh=hZZm1gLHrIJZUIiM9XL9gym+JUwXXpMXWNiMLD+uRZ4=;
+        b=Cyy1S6s5JXPuJweuRX4TDxzj4hgNMF8ZPOoL8xx/mUX4lDivbmMUL9ow6UXz4P4PJj
+         1qSYJ6goTNuBwv4OlbsKepf705Cj6O9anDCxWzQpA4Cz9jWfed3xZLeCejLXO2cXybYx
+         NNv6v8XQURYH2PjdhIbwjg+a2+FHwTXA0vQdDC/RLSoEL73e44AM9OXMUMlR8ceZ90yG
+         opSrGisO0bmsxl86TAQGDV3Sl/wtS1U1iNQfvUa68tTGpMzOvYr728pbbXwdfjLiLrAF
+         f4MwjoUQ8eKQXP7ChJVRNzwlx6RxQ+HN4xUsUxHpYIXQREFnPnCwuc5AfMxQTHvGlOwV
+         zQcg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778243959; x=1778848759;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=hZZm1gLHrIJZUIiM9XL9gym+JUwXXpMXWNiMLD+uRZ4=;
+        b=LFQX5GAyjof8r9S4JqXZxsTz/ziXjyVvnmeksTP0U0R8eze0L81j5Ht+gJZDmXRCLY
+         L7Maw4Qmgn0xD3Eg10kVPQs+hxMFwQhEK3fJ8ODTLK52Z9AwDcM+CrneHPMrAOWz4hlS
+         DkBX27Ej7RFh0jq5CyfrOKakU7MhJSXa5CrruTEA2JOWKes4n43jVugxhjocW7ZoYVUW
+         q8KnWLF/Fi1btmCSSuKs82NNmpj2Igt72k+Cj09Oh5daugo3D6lIue+3N59ahysFrPKq
+         HBFJcYVj0VKaD7Zhj+nwGovjzUzILm1c65YY4LYx/xh3XH1rtc9inY4SviuQmMbocoMB
+         QJsA==
+X-Forwarded-Encrypted: i=1; AFNElJ852ElnRldoHOwJLSYW6+D9bytOG+JzW8W99/M3nNa5Uh/367P2m72WK2eZdbG/7zFwk213lq/ZmA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxWv6qinJm09/rCY9Ivj/FespcdZJpEZdLqW9RRStCU4ZLS3OF+
+	GE75BXm4TUReXn992NbF561+1l68JBePKtF5NM0t0jghK6OhzPCEKWwyKcuboxaeoPo=
+X-Gm-Gg: Acq92OHklF7O3ZlDp8oE8L4TZmPJR+JL1rEWiaDN5K9bI4tVerKlMeK2sHSUI1x34xr
+	QnF6j9BatQfMOBs2m7X49dzh0QtIQJa9/8EjQKBMjU0GzMHUZTPJDAL7/FjsMGdznUQnbjat/RD
+	4rvmJ3c19jQxs3MJ9nu5QjC2H5QHknZbweiqsPafjjHniG3zpN9ZiUzBZ/Daz2DcYjbAGZMQo5P
+	tGWTxjLijiGa+aY5Tzr606Vx7cITaOjfzJG5L/C8R+ac68+L+xFH5IT65xbrci/SjgKjSTYC9iK
+	kfmgYWFYiZq/YMBSEzy1i46jyYSnGNt2Mk+pDDJ7INmM+P/k03h/0nnPXpRFjWtqfA0l6vrMATz
+	olmpN3OSx06SlcRG5Zob+6DdlGuLw76qrchTGRX0XPEwgP7b95NctMD4X/MhzpiUj+ylnuaDJsC
+	PBHzsqBL38ZmUqd+bs+zxehXNFU+NPpQ1QHzyNueKrSA5g/v3tVgs3T7rQec3h4pHURFvoBE+R
+X-Received: by 2002:a05:651c:1050:b0:38e:8411:c304 with SMTP id 38308e7fff4ca-393c41c6deemr33966421fa.16.1778243958791;
+        Fri, 08 May 2026 05:39:18 -0700 (PDT)
 Received: from uffe-tuxpro14.. (h-178-174-189-39.A498.priv.bahnhof.se. [178.174.189.39])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-393f5f5fcc7sm4569621fa.18.2026.05.08.05.39.16
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-393f5f5fcc7sm4569621fa.18.2026.05.08.05.39.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 May 2026 05:39:17 -0700 (PDT)
+        Fri, 08 May 2026 05:39:18 -0700 (PDT)
 From: Ulf Hansson <ulf.hansson@linaro.org>
 To: Danilo Krummrich <dakr@kernel.org>,
 	Saravana Kannan <saravanak@kernel.org>,
@@ -81,10 +83,12 @@ Cc: Sudeep Holla <sudeep.holla@kernel.org>,
 	Ulf Hansson <ulf.hansson@linaro.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 00/13] driver core / pmdomain: Add support for fined grained sync_state
-Date: Fri,  8 May 2026 14:38:49 +0200
-Message-ID: <20260508123910.114273-1-ulf.hansson@linaro.org>
+Subject: [PATCH v3 01/13] Revert "driver core: move dev_has_sync_state() to drivers/base/base.h"
+Date: Fri,  8 May 2026 14:38:50 +0200
+Message-ID: <20260508123910.114273-2-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260508123910.114273-1-ulf.hansson@linaro.org>
+References: <20260508123910.114273-1-ulf.hansson@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -93,75 +97,72 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
+It turns out that the dev_has_sync_state() is needed outside the driver
+core. A subsequent change to the pmdomain subsystem starts making use of
+it.
+
+Fixes: 9db268212e0d ("driver core: move dev_has_sync_state() to drivers/base/base.h")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
 Changes in v3:
-	- Dropped tested-by tags from Geert, due to changes in patch2.
-	- Addressed the comments from Danilo and Geert, more information in the
-	changelog for each patch.
+	- New patch.
 
-Assuming this is accepted, the best merge strategy would be for Danilo to pick
-up the driver core patches (1 to 4) and host a branch that I can pull into my
-pmdomain tree so I can take the rest of the series. Danilo, please let me know
-what you prefer.
+---
+ drivers/base/base.h    | 14 --------------
+ include/linux/device.h | 14 ++++++++++++++
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-Since the introduction [1] of the common sync_state support for pmdomains
-(genpd), we have encountered a lot of various interesting problems. In most
-cases the new behaviour of genpd triggered some weird platform specific bugs.
-
-That said, in LPC in Tokyo me and Saravana hosted a session to walk through the
-remaining limitations that we have found for genpd's sync state support. In
-particular, we discussed the problems we have for the so-called onecell power
-domain providers, where a single provider typically provides multiple
-independent power domains, all with their own set of consumers.
-
-Note that, onecell power domain providers are very common. It's being used by
-many SoCs/platforms/technologies. To name a few:
-SCMI, Qualcomm, NXP, Mediatek, Renesas, TI, etc.
-
-Anyway, in these cases, the generic sync_state mechanism with fw_devlink isn't
-fine grained enough, as we end up waiting for all consumers for all power
-domains before the ->sync_callback gets called for the supplier/provider. In
-other words, we may end up keeping unused power domains powered-on, for no good
-reasons.
-
-The series intends to fix this problem. Please have a look at the commit
-messages for more details and help review/test!
-
-Kind regards
-Ulf Hansson
-
-[1]
-https://lore.kernel.org/all/20250701114733.636510-1-ulf.hansson@linaro.org/
-
-
-Ulf Hansson (13):
-  Revert "driver core: move dev_has_sync_state() to drivers/base/base.h"
-  driver core: Enable suppliers to implement fine grained sync_state
-    support
-  driver core: Add documentation for dev_set_drv_sync_state()
-  driver core: Add dev_set_drv_queue_sync_state()
-  pmdomain: core: Move genpd_get_from_provider()
-  pmdomain: core: Add initial fine grained sync_state support
-  pmdomain: core: Extend fine grained sync_state to more onecell
-    providers
-  pmdomain: core: Export a common function for ->queue_sync_state()
-  pmdomain: renesas: rcar-gen4-sysc: Drop GENPD_FLAG_NO_STAY_ON
-  pmdomain: renesas: rcar-sysc: Drop GENPD_FLAG_NO_STAY_ON
-  pmdomain: renesas: rmobile-sysc: Drop GENPD_FLAG_NO_STAY_ON
-  pmdomain: core: Avoid an unnecessary power off at sync_state
-  pmdomain: core: Add a couple of debug prints for sync_state
-
- drivers/base/base.h                       |  22 ++-
- drivers/base/core.c                       |  77 ++++++--
- drivers/base/driver.c                     |   7 +
- drivers/pmdomain/core.c                   | 227 ++++++++++++++++++----
- drivers/pmdomain/renesas/rcar-gen4-sysc.c |   1 -
- drivers/pmdomain/renesas/rcar-sysc.c      |   1 -
- drivers/pmdomain/renesas/rmobile-sysc.c   |   3 +-
- include/linux/device.h                    |  44 +++++
- include/linux/device/driver.h             |   7 +
- include/linux/pm_domain.h                 |   3 +
- 10 files changed, 318 insertions(+), 74 deletions(-)
-
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 0ed1e278b957..30b416588617 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -188,20 +188,6 @@ static inline int driver_match_device(const struct device_driver *drv,
+ 	return drv->bus->match ? drv->bus->match(dev, drv) : 1;
+ }
+ 
+-static inline bool dev_has_sync_state(struct device *dev)
+-{
+-	struct device_driver *drv;
+-
+-	if (!dev)
+-		return false;
+-	drv = READ_ONCE(dev->driver);
+-	if (drv && drv->sync_state)
+-		return true;
+-	if (dev->bus && dev->bus->sync_state)
+-		return true;
+-	return false;
+-}
+-
+ static inline void dev_sync_state(struct device *dev)
+ {
+ 	if (dev->bus->sync_state)
+diff --git a/include/linux/device.h b/include/linux/device.h
+index d54c86d77764..56a96e41d2c9 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -1061,6 +1061,20 @@ static inline void device_lock_assert(struct device *dev)
+ 	lockdep_assert_held(&dev->mutex);
+ }
+ 
++static inline bool dev_has_sync_state(struct device *dev)
++{
++	struct device_driver *drv;
++
++	if (!dev)
++		return false;
++	drv = READ_ONCE(dev->driver);
++	if (drv && drv->sync_state)
++		return true;
++	if (dev->bus && dev->bus->sync_state)
++		return true;
++	return false;
++}
++
+ static inline int dev_set_drv_sync_state(struct device *dev,
+ 					 void (*fn)(struct device *dev))
+ {
 -- 
 2.43.0
 
