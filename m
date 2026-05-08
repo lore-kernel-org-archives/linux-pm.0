@@ -1,132 +1,179 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDC6E2F8E8E;
-	Fri,  8 May 2026 01:32:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3339258CD7;
+	Fri,  8 May 2026 02:33:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778203939; cv=none; b=nGQzRd8ZVCUgo/omeZC6XPHoPtpxLwqXF10IzDQso4Pz0nR3qXKIUc7O541K8lChFYJUVDAaHLndQUNN+8RZf6zh0v7oZFYCeeRRJhqbUehxyn1ps5D0oNdx+N7KVZWO9g50dnRoG0ct9IoS4bigx47ZcYbHec7rU9+ERfCRbiE=
+	t=1778207634; cv=none; b=pjoKoTtR1RF4jaE7K0n7msOz8heLtqUF7EDGpt98xCekuTYFRjw/pVfH/3JMtHhoVqaf3Mjx3lpom0YF3yp1uj1TGbHCtzH90/xbx3apHi7ahPaFJagdgDbHMcl4I8zneCOS3tweKjnM4JaCXatVlDHPN0gPUItVMukdDvBDwZo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778203939; c=relaxed/simple;
-	bh=QP0xG48S9tXmtCpI+YjP2zIBDW86qbdVELRqOAKilqM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ajnXr/LbM7ff/1Db2zfyhJYypwSz2bldbPmzLsrFARqoKR0woraX5D5WJMJ/20yuT1c1f6oZOyrB6HQSax5FsgxyUQrvQELD1frIfrQbe4lZQrcX4af1F5WBAQ0Wz9jl9BHttVoX/NtfR2XCvTheT8HCNniEm2VPT4OemM8AEAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NPtgybFn; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NPtgybFn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AE15C2BCB2;
-	Fri,  8 May 2026 01:32:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778203938;
-	bh=QP0xG48S9tXmtCpI+YjP2zIBDW86qbdVELRqOAKilqM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NPtgybFnxiU/9wqeAjmLiX5jcpkh22KSrUmRWWc0ifwYDfYI5gyFBGwRIM2DZWZ5R
-	 shY1ZvtBAJTVNZs+G9H1+Jixrqyazmct2tfnZNPizRWaTh117NaqjFwo3rzZzFYAo2
-	 g0LzwlQDrL6HZ/LO5JD8KtZvLsuJmjZyl09ax92f6tEKDhuBtfotn2m390TJLJwF1y
-	 EJmhCPrNZaJSdSxyyEMA6T7JrmeM88MgwutZgQHhF2qF2dCfvMnf58uLHCj/yBiT18
-	 mftY56a1uPxo47dT3bpTwaKyvCPEyLqvN6s41QIPpaM72gFxzgTbUkup1Q+0eeKaLc
-	 ykXfd87BDzYTw==
-Date: Thu, 7 May 2026 20:32:13 -0500
-From: Bjorn Andersson <andersson@kernel.org>
-To: Luca Weiss <luca.weiss@fairphone.com>
-Cc: Georgi Djakov <djakov@kernel.org>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Mike Tipton <mike.tipton@oss.qualcomm.com>, 
-	Taniya Das <taniya.das@oss.qualcomm.com>, ~postmarketos/upstreaming@lists.sr.ht, 
-	phone-devel@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Subject: Re: [PATCH v2 1/5] interconnect: Add devm_of_icc_get_by_index() as
- exported API for users
-Message-ID: <af08-zMGzSSsw_NR@baldur>
-References: <20260501-milos-camcc-icc-v2-0-bb83c1256cc3@fairphone.com>
- <20260501-milos-camcc-icc-v2-1-bb83c1256cc3@fairphone.com>
+	s=arc-20240116; t=1778207634; c=relaxed/simple;
+	bh=33Kzi1QqQaOxup3HteWzWB4sskTQYnde6JYurTvGCjw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=NGFsSrISImWZEmFCLT2F7IFQSfspoJG6D3KPJOHmxc2Tzusn3HajrdKzbjvVe5MWA76cjQaq2eUvQcUvBl+tNDA+6EUAFtaSdGWQzE7pfPJekxipFjTigWNYR9CRE9ugeQcrnb2do92PGnGalGIHqjoxx5BXou79F2jAJgbCNaw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.226
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.163.127])
+	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4gBXzc50SkzKmT6;
+	Fri,  8 May 2026 10:26:04 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id E8FCF40572;
+	Fri,  8 May 2026 10:33:40 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 8 May
+ 2026 10:33:39 +0800
+Message-ID: <a9324a65-9da9-4e35-8c78-a054fb24bc8d@hisilicon.com>
+Date: Fri, 8 May 2026 10:33:39 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260501-milos-camcc-icc-v2-1-bb83c1256cc3@fairphone.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] cpufreq: CPPC: add autonomous mode boot parameter
+ support
+To: Sumit Gupta <sumitg@nvidia.com>, <rafael@kernel.org>,
+	<viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
+	<ionela.voinescu@arm.com>, <zhenglifeng1@huawei.com>, <corbet@lwn.net>,
+	<skhan@linuxfoundation.org>, <rdunlap@infradead.org>,
+	<mario.limonciello@amd.com>, <linux-pm@vger.kernel.org>,
+	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
+	<jonathanh@nvidia.com>, <vsethi@nvidia.com>, <ksitaraman@nvidia.com>,
+	<sanjayc@nvidia.com>, <mochs@nvidia.com>, <bbasu@nvidia.com>
+References: <20260424201814.230071-1-sumitg@nvidia.com>
+ <a4ed690a-50d6-4bfe-8810-86a75d7b51e3@hisilicon.com>
+ <bc06c3ab-0286-4e1e-a615-e704b267c21a@nvidia.com>
+Content-Language: en-US
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <bc06c3ab-0286-4e1e-a615-e704b267c21a@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-On Fri, May 01, 2026 at 11:18:29AM +0200, Luca Weiss wrote:
-> Users can use devm version of of_icc_get_by_index() to benefit from
-> automatic resource release.
-> 
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 
-Georgi, can I have an ack on this, or an immutable branch and a ping
-once it's available?
 
-Thanks,
-Bjorn
+On 5/5/2026 8:29 PM, Sumit Gupta wrote:
+> Hi Jie,
+> 
+> 
+> On 27/04/26 13:54, Jie Zhan wrote:
+>> External email: Use caution opening links or attachments
+>>
+>>
+>> Hi Sumit,
+>>
+>> In general, I would expect this parameter only toggles on auto_sel by
+>> default.  IIUC, other CPPC configurations (min/max/desired perf, EPP,
+>> enable) are optional and not closely related to this.
+>>
+>> Why including those stuff here?
+>>
+>>
+>> Please see other questions inline.
+>>
+>> Thanks!
+>> Jie
+> 
+> These together provide a known, predictable autonomous mode boot.
+> min/max/desired seeding ensures HW has a known starting bound (BIOS
+> may leave them unset).
+> EPP=PERFORMANCE_PREF is needed as BIOS defaults often bias toward
+> energy saving, and admins on many CPU systems shouldn't have to script
+> per CPU sysfs writes at every boot to undo that.
+Hi Sumit,
 
-> ---
->  drivers/interconnect/core.c  | 20 ++++++++++++++++++++
->  include/linux/interconnect.h |  6 ++++++
->  2 files changed, 26 insertions(+)
+The min/max/desired perf might be a slightly different case, but the EPP
+value should probably follow the default if there is?
+Otherwise, users may complain that their BIOS defaults don't work and find
+out it's driver's fault.
+
+Alternatively, we may also make an assumption that we ignore BIOS EPP
+config, but not sure if that's suitable?
+
+(Perhaps let's just discuss in the bottom trunk because the main issue is
+pretty much the same.)
+>>
+>> On 4/25/2026 4:18 AM, Sumit Gupta wrote:
+>>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
+>>> CPPC autonomous performance selection on all CPUs at system startup.
+>>> When autonomous mode is enabled, the hardware automatically adjusts
+>>> CPU performance based on workload demands using Energy Performance
+>>> Preference (EPP) hints.
+>>>
+>>> When auto_sel_mode=1:
+>>> - Configure all CPUs for autonomous operation on first init
+>>> - Set EPP to performance preference (0x0)
+>>> - Use HW min/max_perf when available; otherwise initialize from caps
+>>> - Clamp desired_perf to bounds before enabling autonomous mode
+>>> - Hardware controls frequency instead of the OS governor
+>>>
+>>> The boot parameter is applied only during first policy initialization.
+>>> Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
+>>>
+>>> This patch depends on patch [2] ("cpufreq: Set policy->min and max
+>>> as real QoS constraints") so that the policy->min/max set in
+>>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
+>>> during init.
+>>>
+>>> Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
+>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>> ---
+>>> v[1] -> v2:
+>>> - Call cppc_set_enable() unconditionally so CPPC is enabled for both
+>>>    OS-driven and autonomous modes.
+>> Why adding this in v2?
+>> This looks like a separate issue since setting CPPC Enable reg doesn't seem
+>> to be related with autonomous control.
 > 
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-> index 8569b78a1851..bc2e416dbcb2 100644
-> --- a/drivers/interconnect/core.c
-> +++ b/drivers/interconnect/core.c
-> @@ -443,6 +443,26 @@ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
->  }
->  EXPORT_SYMBOL_GPL(devm_of_icc_get);
->  
-> +struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx)
-> +{
-> +	struct icc_path **ptr, *path;
-> +
-> +	ptr = devres_alloc(devm_icc_release, sizeof(*ptr), GFP_KERNEL);
-> +	if (!ptr)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	path = of_icc_get_by_index(dev, idx);
-> +	if (!IS_ERR(path)) {
-> +		*ptr = path;
-> +		devres_add(dev, ptr);
-> +	} else {
-> +		devres_free(ptr);
-> +	}
-> +
-> +	return path;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_of_icc_get_by_index);
-> +
->  /**
->   * of_icc_get_by_index() - get a path handle from a DT node based on index
->   * @dev: device pointer for the consumer device
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-> index 4b12821528a6..75a32ad0482e 100644
-> --- a/include/linux/interconnect.h
-> +++ b/include/linux/interconnect.h
-> @@ -47,6 +47,7 @@ struct icc_path *of_icc_get(struct device *dev, const char *name);
->  struct icc_path *devm_of_icc_get(struct device *dev, const char *name);
->  int devm_of_icc_bulk_get(struct device *dev, int num_paths, struct icc_bulk_data *paths);
->  struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
-> +struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx);
->  void icc_put(struct icc_path *path);
->  int icc_enable(struct icc_path *path);
->  int icc_disable(struct icc_path *path);
-> @@ -79,6 +80,11 @@ static inline struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
->  	return NULL;
->  }
->  
-> +static inline struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx)
-> +{
-> +	return NULL;
-> +}
-> +
->  static inline void icc_put(struct icc_path *path)
->  {
->  }
+> In v2, moved it out of the auto_sel specific check.
+> Agree that cppc_set_enable() is general CPPC enablement and can be split
+> into a separate patch in v3 if preferred.
 > 
-> -- 
-> 2.54.0
+Yeah it should be a separate patch I think.
+>>> - Init min/max from caps instead of cppc_cpufreq_update_perf_limits()
+>>>    as policy->min/max aren't yet populated.
+>>>
+>>> [1] https://lore.kernel.org/lkml/20260317151053.2361475-1-sumitg@nvidia.com/
+>>> [2] https://lore.kernel.org/lkml/20260423084731.1090384-2-pierre.gondois@arm.com/
+>>> ---
+>>>   .../admin-guide/kernel-parameters.txt         | 13 +++
+>>>   drivers/cpufreq/cppc_cpufreq.c                | 89 +++++++++++++++++--
+>>>   2 files changed, 97 insertions(+), 5 deletions(-)
+>>>
+...
+>>> +
+>>> +             policy->cur = cppc_perf_to_khz(caps,
+>>> +                                            cpu_data->perf_ctrls.desired_perf);
+>>> +
+>>> +             /* EPP is optional - some platforms may not support it */
+>>> +             ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
+>> Why setting this to PERFORMANCE by default?
+>> A platform can have its own default EPP value.  This would override that.
 > 
+> The boot option targets performance oriented use cases on many CPU
+> systems, avoiding sysfs scripting across all CPUs on every boot.
+> The BIOS default EPP (often biased toward energy saving) would otherwise
+> steer HW away from that goal. Admins can still re-tune EPP at runtime via
+> the existing energy_performance_preference_val sysfs.
+> 
+Yeah, avoiding scripting makes sense for sure.
+The thing is how do we do this nicely.
+
+For now we need to consider follow either the BIOS default or the driver
+default.
+They seem to be exclusive since there isn't a clear way to support both at
+the same time.
+
+So, are we going to support the BIOS default case?
+For example, users can config a default EPP in the BIOS setup menu.
+>>> +             if (ret && ret != -EOPNOTSUPP)
+>>> +                     pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
+>>> +             else if (!ret)
+>>> +                     cpu_data->perf_ctrls.energy_perf = CPPC_EPP_PERFORMANCE_PREF;
+>>> +
+...
