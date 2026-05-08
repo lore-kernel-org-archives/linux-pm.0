@@ -1,268 +1,166 @@
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AA0A1C6FF5
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 09:47:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604633C3C03
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 10:07:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778233649; cv=none; b=Owa2DvYuOHPwPLJ9ME0aX/cgD5eBirt3YVvQwBQlezuCvEMdOOR350aDO4Icza7KPpq2AI4IqJXhqM1kiJfAo1XXvTyO9aO99gUIswPvXjuBQs4UVBmYixgWxrJ7nN/s4zHtHhCHNIEGkNnBO5X0gI5txCHl3YH+G1B33UYM83U=
+	t=1778234839; cv=none; b=luShs8m8xd7Ar5mSgFIDYTUHmLiVsQX828h6lgkFK5xNMnGP4JrBTnv+rmp3nqw/ej/5ZRE1Qx9dGcAZuVFS6INDuZ78/eWdM7yI8zBoFS3jDbf7h0QBqgE5Kzm8GAsQzJWaADjLD2hmj6g7QCsVeyVYkhPDKy2ZGxAMWckA7EA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778233649; c=relaxed/simple;
-	bh=LhA8nA/gePJ8iZnIhEqq+AusqUBfhy5De2Ul3UbWBIA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XaoGaHDLxtpY5R42KaoJ9SaT8GsN0tzMIm2dTcCSiGzSBiL78UuZnFr8LCEgsNi2IDWTNHcsxZbIq+MGuiCmVMQjIJQRFa0T9LegmxT4Qz3LcIsB1p27zahyJN5BfhxWKPy/zO1YKZXaehhBtOi0W4iwyOYqhUWOW+Jyh/Hm9Io=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=cejYDDMf; arc=none smtp.client-ip=209.85.216.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1778234839; c=relaxed/simple;
+	bh=y/GfofqIHQANQ5CHSFxmSZ4K6zI+EcLOlo/P5fAMq2M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fT/1myRmVX24+paGQmQPT86ht8dG11N6kVxYgoZlFV1GX1YdFdt3QZHhanPamINQgd8xjrOyArSshqwEowH/3czHQeGmVmEh+7AUbWrf+z8mhDwUgSdqoLe3lu0ZQR1DnmTxmM1Vnzn/dnyH86E/sF/0IE/QgnqAvVxaVRpTkTY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=CN3Upoy3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=dgOmnlFe; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cejYDDMf"
-Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-366375c4076so613842a91.3
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 02:47:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="CN3Upoy3";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="dgOmnlFe"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6485orUQ2778224
+	for <linux-pm@vger.kernel.org>; Fri, 8 May 2026 10:07:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=xsznKWdZhGfdpuJiM4vIT0
+	VCeBhgZXrDmZgPnKnhX6g=; b=CN3Upoy3B5dpTIDfkvKDpPNR2pCrXSzBUxh3pf
+	931ZnX6lOylU6mm9dpr76YA7sVX7MaSuJ97McOybCXcfH+I5sxPAWhSm8H3GFxmw
+	vs7xRUFvc136KsttmL6buUoQOgrWBFYWVfF84p3ekvwlmn2gHbwQtpDtWowEB3+T
+	U0SeGOfLI5P3fUUmaWgga4hbu6I9pvCCZuLEDNzLcLXsin2dEF6lKsFeeRhqRYmH
+	53bYbATBel7wH7vkFJNco4SVAPHJndqEvSxipzAEXt68Q22l9uzTjt0rXc8egjah
+	F6RyNC8BRp7BCWAG71DOpn8a9NRx9diAgB0qV1NpAgEiNohw==
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1285jhnc-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 10:07:08 +0000 (GMT)
+Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-b6097ca315bso2834590a12.3
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 03:07:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1778233647; x=1778838447; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=n9WFo19/tiacPEZko0UlNLOgNR3VTMpCZ9FxtExVQYw=;
-        b=cejYDDMft9X07kCb3KrBXQxTrGm7AEEZbtGHCaGYldxi83t5VOE4LWq1Y9y2PcKTaJ
-         /kH7Gc4hqYA03K/EbF7AINwPkv3BEIscjddk4al8r6C0l7jZWTaHtLQPVEwURJZY55CV
-         F74FzmMK9NbLfi/lmdQgJ6uYDeua5MyIT5UlzqL4gEgVBtDG5Je1NwNCanKWRnv+pwsJ
-         H0B1pIfUbG5ulUxD/MpmS/nzjLnWuHabeev/X88Cq6/g+Esm0p6uRHAKVQYmwS0hHcKy
-         gOnpOBOQIXxR+a1FC9Na6x1URmLePf7pIq6GbcV3Sajliz5W0K/ptkJ1CUKEkd4lx1vB
-         Ufbg==
+        d=oss.qualcomm.com; s=google; t=1778234828; x=1778839628; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xsznKWdZhGfdpuJiM4vIT0VCeBhgZXrDmZgPnKnhX6g=;
+        b=dgOmnlFeBzdwHYxxvq3HScGG5AmvdWR7BEhoB8n93JNQjITBp0GloaNHGQtWfMT1fP
+         ETKviYFh2wKbw2JemGcV8SSHE1HHwV7bwK5cz2Imt+uLXtw+7P4cmyMuXh7L58bTFdGj
+         aOjpFctrRDUCMZlPxWLrFDQCdDmEAvXspIamGAFIfp66KwZDt2S6k7x8PZVeGKJy45X7
+         89ZaBAFSmnuzoA0DoCv8oGV0976//S3mPC15MH8Njo/0HlAszDEMan6TTXu1XSkUrCqm
+         vTqgI/cXfI8cyQxy5O3alU6oIoNAE2+zP+rEObW0nhT9Bov7GVKuhAR/BtwohUS5APr2
+         hSag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778233647; x=1778838447;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=n9WFo19/tiacPEZko0UlNLOgNR3VTMpCZ9FxtExVQYw=;
-        b=YoSHGYSNQcqKnWAh1QPREvPGYLnR8DCMRsSGD3m5Zg957smnb5SFlPfzwoAllHJRog
-         tNppWFDf+83cQwK6hZoeZy3uwvzHnc77F9/33Y2jMCd4GtF+8+UbhpFLzP6pt2ayLSxU
-         MV4X8SFLpXRrBb6YjQZ3VqEMmsqJJq/jOanImP13S1xmnJC20kguAbWYO4t5YAwPJhQo
-         3QVW3JRs/j+iw+f8ywrZRG+xLu4LCvHFj98Dk7BTY7GxzoFombbuV65lq+8SCgi0Xujz
-         13MZj4Ab8pim+zbEF9NCEuOfMK9SOxnCRm5+mAlbLykmtzDltdCxkuwv+T95zmyJGeWc
-         l5NQ==
-X-Forwarded-Encrypted: i=1; AFNElJ80zQv8/JHEICRMkhX63CCrQ3Rp0Mmj48EnsGJqZyb4StgYEvX6CRBBCybdBhP71oSwLn8+ikjiZQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy3f282wp15TSP/Hs00ioNWWs7BCPAA/zhbqbjy0ht/fdBnj4Up
-	z6W2sWwOf/aO9klUnUCftml3XXpIlZ9we2/rS76RwpYV8VRfPAmjStzNt+DBd0rPt0U=
-X-Gm-Gg: Acq92OEEZdeUpeQsAT87zCePhlui9GoLMuQLiRPqdUEyw0r06aiDhNbxDe9MEBQ+K0K
-	mSMblr+ybN19nMO9/OTOZ2hnBHWsPI9YXaRSUQwMsAtqdo+ndWkFgpEyUMdDq4l2GtCMsZh0wNy
-	pa2ma1EALf3gIV8WtnDIpeGrglP4Yc8uRguyHPaNa0O4MaBEXTGV0cNCY3gGbPp9Vbz78OgJ0ML
-	taz7y/tUBWQ8a5FCsynzrgRlNnQo6AuUSNcZi8LFs7X0wPMxScRfoMiP0O8AyO9iDvbcl1sIIa6
-	1jMpTp2/KXbW3uDVhg3nINJf2BUYdUSDs1ETWB21Ycduzb0NJZq1PBxZ8QUJmzVLzXE8N+IWdws
-	Lt8AQt3wFDQ7mhlvgx3syX/muq6Vb2MsnOoIEMpxSPPvDY9RnmPTCOzLD05FhwLOPEOy/mxv7N6
-	ol4swrtSfCbEkzBZrQueomYsY=
-X-Received: by 2002:a17:90b:2248:b0:35f:bd51:cf60 with SMTP id 98e67ed59e1d1-365ab9b8e8dmr11345395a91.1.1778233647084;
-        Fri, 08 May 2026 02:47:27 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3664da1f5d6sm1741682a91.3.2026.05.08.02.47.25
+        d=1e100.net; s=20251104; t=1778234828; x=1778839628;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xsznKWdZhGfdpuJiM4vIT0VCeBhgZXrDmZgPnKnhX6g=;
+        b=AjIvlKT76x1u5W2dKQrKjVe2jh8X4mFb7sfH5vG++6wc5H7j5o93wONGmroj4Wa2Fd
+         inCI3FVQfgXZUHts2T8iNs89aDqZL3+uWcdAZOJ9MioN8erlNYWNMuccQuDptgpezPsL
+         gpDQkc7WzzFsAbLvnQCtrGw7aM9yAZJ2THsmBQ/GNAz6TMl6Mk6LRieFhGwIE21IgVuu
+         TQDfTJDtmBXh6x3OP/1xYqADug/6PsE55gG/KhBKTFSn5+EUq/qlfncWyQGPwHYRKpY0
+         1RU5VHClCz9qzxAf3ga4V2BidLAFRZzyTZxcwlFhq5BETADlgSwayRoql7OB5QNgCbVa
+         KfQA==
+X-Gm-Message-State: AOJu0YyOdRDTQCg8ZfZ7dv5PbfRlspWtCkWmWiFcnm8l0c2+O0biF8ea
+	FxC+yKrUuvjAN/kpGeiv4AYG3bF/JYY3TnDketFOyQnQEw3CoyB5o0Zt288xNZjhX6xg4bcIRN/
+	e6DCyGdBig4laPKevINYH5VCPka1yOkOJFHK0hCCf9s5h108L3j4PqphHEdkmIg==
+X-Gm-Gg: AeBDieslRFYsPTKqopp0TYyfXbbbVJL/NAjMvtRm95t/jY6Kl665iISultju7zEHqJN
+	tVDk2Ao3kDMyF91rnKBM5gfNDO5RPp0wCv0an+vTy1vuX1sAtVfpppxEijiE4zrv1ONrTRIB7+x
+	4fgOQmS80EdbHK12dbW+yhz23bD1Lnw76BqHTd6bkYZ8urJWZ84TvBjXpsG9wIMCWfXBdrh+miS
+	mP5WfjT4DIMmiZfn0vI9nTpPZPFOZBr4Luc0NsurA2xoAq7XkjDvdu675PcWqk4d41OD1LRA/Mf
+	kHlKjbo67refzU6QBjoDTSqOp6oa50Tm2junHfc5Q+7qMOmQvdtQ7wkypXHGEwt8uA1sbALMVdF
+	EPzxNnHFgLLHFy27SKDRc6f2ID5lW3O2uOOWrEo5yDb1c2d7apP5o5to=
+X-Received: by 2002:a05:6a00:440c:b0:835:45bf:9659 with SMTP id d2e1a72fcca58-83a5e45319fmr11575604b3a.41.1778234827983;
+        Fri, 08 May 2026 03:07:07 -0700 (PDT)
+X-Received: by 2002:a05:6a00:440c:b0:835:45bf:9659 with SMTP id d2e1a72fcca58-83a5e45319fmr11575564b3a.41.1778234827418;
+        Fri, 08 May 2026 03:07:07 -0700 (PDT)
+Received: from hu-priyjain-hyd.qualcomm.com ([202.46.22.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83967dbf7d2sm15876379b3a.49.2026.05.08.03.07.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 May 2026 02:47:26 -0700 (PDT)
-Date: Fri, 8 May 2026 15:17:23 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, Ionela Voinescu <ionela.voinescu@arm.com>, 
-	Sumit Gupta <sumitg@nvidia.com>, Huang Rui <ray.huang@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	K Prateek Nayak <kprateek.nayak@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/1] cpufreq: Set policy->min and max as real QoS
- constraints
-Message-ID: <6cq7e26levlhwh6aoq6aii3vsyjqtvp2ksymovkosfhuuunv6u@cyab7jjd2fgy>
-References: <20260423084731.1090384-1-pierre.gondois@arm.com>
- <20260423084731.1090384-2-pierre.gondois@arm.com>
+        Fri, 08 May 2026 03:07:06 -0700 (PDT)
+From: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+To: Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com,
+        Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+Subject: [PATCH v2 0/2] thermal: qcom: tsens: fix temperature handling
+Date: Fri,  8 May 2026 15:36:58 +0530
+Message-ID: <20260508100700.772985-1-priyansh.jain@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260423084731.1090384-2-pierre.gondois@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDEwNCBTYWx0ZWRfXytsG/+L2DkBO
+ hF6poNy1Hy/WSClhwAyy8Kre9YG0nDS27kvmpB/hIZV11170hv2LOLmoLXu1UmUiV8y0ybKObzj
+ +3X7hdQYb5naI0PQjGuhCfB3pxzk7hGPg81XiEKXYCyAQQz2F0WqM1JfAxepSWk2mUvmjhzhaY6
+ wVS8nPrlS1dNNAE+H64NZ8tf5xsrY+uRZJ4Fr+5Xt0TdHDTvoYJwc8DeEyF00nn7LKEKYYTHWI+
+ e0xxbjVBiJ3ZNI0H419kjddq/HypSQE0WLaqBkCqzvOZCXEDEEonYRXrMDbOFvelBec6P7WzkJ8
+ j+RlOadA6u9sW44AWXDUGe3KPfOztki/o/XYTi9PjrDr00ju4nsb72PYiOBzTthr8rzTohz2bwr
+ D6JG5KIPh4beOkfftMz6iPwey+Keiq6UfbzaKrzEPR3ZGoiJRftUpInc+9WUwCp2Ce4zlR+UxDX
+ NT6jXttaF1NIB8o+cqQ==
+X-Proofpoint-GUID: clb57_mVg-MD3-QdX_I4P1b3HccGrY6r
+X-Proofpoint-ORIG-GUID: clb57_mVg-MD3-QdX_I4P1b3HccGrY6r
+X-Authority-Analysis: v=2.4 cv=NKblPU6g c=1 sm=1 tr=0 ts=69fdb5cc cx=c_pps
+ a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=14Z0-YueNKWrp6JypdoA:9 a=QEXdDO2ut3YA:10 a=3WC7DwWrALyhR5TkjVHa:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-07_02,2026-05-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 impostorscore=0 spamscore=0 clxscore=1015 malwarescore=0
+ lowpriorityscore=0 phishscore=0 priorityscore=1501 suspectscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605080104
 
-On 23-04-26, 10:47, Pierre Gondois wrote:
-> cpufreq_set_policy() will ultimately override the policy min/max
-> values written in the .init() callback through:
-> cpufreq_policy_online()
-> \-cpufreq_init_policy()
->   \-cpufreq_set_policy()
->     \-/* Set policy->min/max */
-> Thus the policy min/max values provided are only temporary.
-> 
-> There is an exception if CPUFREQ_NEED_INITIAL_FREQ_CHECK is set and:
-> cpufreq_policy_online()
-> \-cpufreq_init_policy()
->   \-__cpufreq_driver_target()
->     \-cpufreq_driver->target()
-> is called. To avoid any regression, set policy->min/max in cpufreq.c
-> if the values were not initialized.
-> 
-> In this patch:
-> - Setting policy->min or max value in driver .init() cb is
->   interpreted as setting a QoS constraint.
-> - Remove policy->min/max initialization in drivers if the values
->   are similar to policy->cpuinfo.min_freq/max_freq.
->   The only drivers where these values are different are:
->   - gx-suspmod.c
->   - cppc-cpufreq.c
->   - longrun.c
-> - For the cppc-cpufreq driver, the lowest non-linear freq. is
->   used as a min QoS constraint as suggested at:
->   https://lore.kernel.org/lkml/20260213100633.15413-1-zhangpengjie2@huawei.com/
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-> ---
->  drivers/cpufreq/amd-pstate.c      | 16 ++++++++--------
->  drivers/cpufreq/cppc_cpufreq.c    | 11 +++++++----
->  drivers/cpufreq/cpufreq-nforce2.c |  4 ++--
->  drivers/cpufreq/cpufreq.c         | 19 +++++++++++++++++--
->  drivers/cpufreq/freq_table.c      |  7 +++----
->  drivers/cpufreq/gx-suspmod.c      |  9 +++++----
->  drivers/cpufreq/intel_pstate.c    |  3 ---
->  drivers/cpufreq/pcc-cpufreq.c     |  8 ++++----
->  drivers/cpufreq/pxa3xx-cpufreq.c  |  4 ++--
->  drivers/cpufreq/sh-cpufreq.c      |  4 ++--
->  drivers/cpufreq/virtual-cpufreq.c |  5 +----
->  11 files changed, 51 insertions(+), 39 deletions(-)
+This series fixes multiple issues in the Qualcomm TSENS thermal driver
+related to temperature sampling and trip threshold handling.
 
-I was looking for this series to be divided in 2-3 patches:
-- 1st patch would set policy->min/max from cpufreq_policy_online(), if they
-  aren't already set.
-- 2nd patch changes all drivers to not set it anymore, unless QoS thingy.
-- Last change talks about QoS and default values.
+Patch 1 updates the temperature read path to atomically sample the
+temperature value along with its valid bit, in accordance with hardware
+programming guidelines. It also implements the recommended retry and
+fallback behavior to avoid incorrect readings during transient hardware
+update windows.
 
-> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-> index 453084c67327f..1ed4bcdcc957f 100644
-> --- a/drivers/cpufreq/amd-pstate.c
-> +++ b/drivers/cpufreq/amd-pstate.c
-> @@ -1090,10 +1090,10 @@ static int amd_pstate_cpu_init(struct cpufreq_policy *policy)
->  
->  	perf = READ_ONCE(cpudata->perf);
->  
-> -	policy->cpuinfo.min_freq = policy->min = perf_to_freq(perf,
-> -							      cpudata->nominal_freq,
-> -							      perf.lowest_perf);
-> -	policy->cpuinfo.max_freq = policy->max = cpudata->max_freq;
-> +	policy->cpuinfo.min_freq = perf_to_freq(perf,
-> +						cpudata->nominal_freq,
-> +						perf.lowest_perf);
-
-This can come in two lines now instead of three. Similar issue at few more
-places.
-
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 7e7f9dfb7a24c..c6fcecdbbab0c 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -645,6 +645,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	unsigned int cpu = policy->cpu;
->  	struct cppc_cpudata *cpu_data;
->  	struct cppc_perf_caps *caps;
-> +	unsigned int min, max;
->  	int ret;
->  
->  	cpu_data = cppc_cpufreq_get_cpu_data(cpu);
-> @@ -655,13 +656,15 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	caps = &cpu_data->perf_caps;
->  	policy->driver_data = cpu_data;
->  
-> +	min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
-> +	max = cppc_perf_to_khz(caps, policy->boost_enabled ?
-> +			       caps->highest_perf : caps->nominal_perf);
-> +
->  	/*
->  	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
->  	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
->  	 */
-> -	policy->min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
-> -	policy->max = cppc_perf_to_khz(caps, policy->boost_enabled ?
-> -						caps->highest_perf : caps->nominal_perf);
-> +	policy->min = min;
->  
->  	/*
->  	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
-> @@ -669,7 +672,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	 * nonlinear perf
->  	 */
->  	policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
-> -	policy->cpuinfo.max_freq = policy->max;
-> +	policy->cpuinfo.max_freq = max;
-
-I think the use of local variables isn't making it any better.
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24..700abcb3e2e0 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -660,8 +660,6 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
-         * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
-         */
-        policy->min = cppc_perf_to_khz(caps, caps->lowest_nonlinear_perf);
--       policy->max = cppc_perf_to_khz(caps, policy->boost_enabled ?
--                                               caps->highest_perf : caps->nominal_perf);
-
-        /*
-         * Set cpuinfo.min_freq to Lowest to make the full range of performance
-@@ -669,7 +667,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
-         * nonlinear perf
-         */
-        policy->cpuinfo.min_freq = cppc_perf_to_khz(caps, caps->lowest_perf);
--       policy->cpuinfo.max_freq = policy->max;
-+       policy->cpuinfo.max_freq = cppc_perf_to_khz(caps, policy->boost_enabled ?
-+                                  caps->highest_perf : caps->nominal_perf);
-
-        policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
-        policy->shared_type = cpu_data->shared_type;
+Patch 2 widens the software trip temperature limits to match the full
+hardware-supported range. This prevents repeated threshold
+reprogramming and interrupt storms when devices operate beyond the
+previously clamped limits on newer chipsets, while preserving behavior
+for platforms operating within the original range.
 
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 44eb1b7e7fc1b..b30bfa3e27daa 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1453,6 +1453,14 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
->  	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
->  
->  	if (new_policy) {
-> +		unsigned int min, max;
-> +
-> +		/* Use policy->min/max set by the driver as QoS requests. */
-> +		min = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
-> +		if (policy->max)
-> +			max = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
-> +		else
-> +			max = FREQ_QOS_MAX_DEFAULT_VALUE;
->  		for_each_cpu(j, policy->related_cpus) {
->  			per_cpu(cpufreq_cpu_data, j) = policy;
->  			add_cpu_dev_symlink(policy, j, get_cpu_device(j));
-> @@ -1469,18 +1477,25 @@ static int cpufreq_policy_online(struct cpufreq_policy *policy,
->  
->  		ret = freq_qos_add_request(&policy->constraints,
->  					   &policy->min_freq_req, FREQ_QOS_MIN,
-> -					   FREQ_QOS_MIN_DEFAULT_VALUE);
-> +					   min);
->  		if (ret < 0)
->  			goto out_destroy_policy;
->  
->  		ret = freq_qos_add_request(&policy->constraints,
->  					   &policy->max_freq_req, FREQ_QOS_MAX,
-> -					   FREQ_QOS_MAX_DEFAULT_VALUE);
-> +					   max);
->  		if (ret < 0)
->  			goto out_destroy_policy;
->  
->  		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->  				CPUFREQ_CREATE_POLICY, policy);
-> +
-> +		/*
-> +		 * If the driver didn't set QoS constraints, policy->min/max still
-> +		 * need to be set as they are used to clamp frequency requests.
-> +		 */
-> +		policy->min = policy->min ? policy->min : policy->cpuinfo.min_freq;
-> +		policy->max = policy->max ? policy->max : policy->cpuinfo.max_freq;
+v2:
 
-Why aren't we doing this right after cpufreq_driver->init() ?
+- Reverted merging of the valid-bit and LAST_TEMP register field logic
+  to preserve the regmap differences between TSENS versions
+- Defined valid-bit support and last temperature resolution for all
+  TSENS v1 and v2 feature structures
+- Defined last temperature resolution for Tsens v0 feature structure
+- Dropped tsens version checks in favor of valid-bit capability
+- Computed masks from resolution to keep a single source of truth
+- Minor code cleanups based on review feedback
+
+
+
+Priyansh Jain (2):
+  thermal: qcom: tsens: atomic temperature read with hardware-guided
+    retries
+  thermal: qcom: tsens: widen temperature limits to match hardware range
+
+ drivers/thermal/qcom/tsens-v0_1.c |   1 +
+ drivers/thermal/qcom/tsens-v1.c   |   4 ++
+ drivers/thermal/qcom/tsens-v2.c   |  10 ++-
+ drivers/thermal/qcom/tsens.c      | 114 ++++++++++++++++++++----------
+ drivers/thermal/qcom/tsens.h      |   7 ++
+ 5 files changed, 98 insertions(+), 38 deletions(-)
 
 -- 
-viresh
+2.43.0
+
