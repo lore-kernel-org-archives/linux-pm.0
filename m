@@ -1,209 +1,543 @@
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011068.outbound.protection.outlook.com [52.101.62.68])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CA0633C183;
-	Fri,  8 May 2026 05:19:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.68
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778217590; cv=fail; b=OkHreki5cpxikLVe05e3k8Kqzy/IQ9XI9yghz0RPxbzLUrMDNtt8zF0g9yuFzwF6QYXpBiArCKJWhVCNIqr+QXvOjVLgZrF0menUqerhPaBTR+prM5zx2HF24Xh2DpEbdB9M7jbl6VnoEAripd1tlFfNnhTAhdsO/dKHxKydosw=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778217590; c=relaxed/simple;
-	bh=dJIqznGqM+gnMXuVyyzrX7QS0qb+/J4ly8x3ec1JWKY=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LbmeBDyqPbhv8ej2Ke7MBJd3ZvgVhUzWFG3jBq/ZdWyJJAVMNt25WwfJSWi4apnn7x/zD2hSA6Lm5eOzr600Sj1ZTSelPppgvJoNLQaQ7Cx5CmrgiyZiBoEV7sD88mlz7a4+5T+o9vDXmCeDIqx+rid5oOE8DAMdvVJDxXbhZ2c=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=JRXgB++K; arc=fail smtp.client-ip=52.101.62.68
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA012374E64;
+	Fri,  8 May 2026 05:40:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778218858; cv=none; b=LRKVIeU+RSiqww7YXe46Yw7KfppwhKoL+ZnMqfWNgq5vLeBVwRLzX6UGfUOEsBilocDnzENiW09RA1d2xs6VWQgdGoOWErJFvHEDFhtnS/lQ3J1WD8/IfcEixCHxPCyp/UaHoC+qF+fEllYwDlGKIN3/oJ3HF+ZIuDelDa1il9A=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778218858; c=relaxed/simple;
+	bh=cynXXSgjQoxjt1yV7PCFZoBYxgoh2ClKXKIP6d8PFUk=;
+	h=Date:From:To:Subject:Cc:MIME-Version:Message-ID:Content-Type; b=jVP2RVupDXYglajvTpoKmzywPo6DirfYDwhT6vM8Xfs7cGaiYcv/HR7bXTP6a2V3NkFFNlvIC1tUafDEw27jePQpf5MunQ8q0kYrDQ8ZdqOKyN++5hjQxiwjs4HcuY1ZGKFurqf+Nez4vQNi/rmIOk2MIMlb4M0BsNNAIoQXh7U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=ATqy14fq; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=FYOzfpi8; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="JRXgB++K"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WM0qR5p1BuSmreT75iVn+V+BPERucpvak6JC2xldnkCxWoHQczyiNlVKeMUydw8WBLIJQwfzOpJqwKj/aO8HL+b9wd5L2QHR301ZkSUoXiHzPi7H2/PhzD8vV8CWPn0XrWoxfZAsOqjt2UoSRSCT30jTqs8aLwy0eVhh0M2GtD8zMOlio7E7WmRLq4//GShPJ+jt+0ybWk9QpDbGooTBVHfZPYR20Je6nBKsjJBE2AqvUc/DeBL+T9n8jBP+UxxvGKv6ygEU8hwNpt+Bavn63W60x00PhHW9ISz3oomBDpKME2zNqiar6k9KPKjBGizPhoCaODSIcWjnj/ZQa7SVSw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9DNirSYPs3x1/vkTRnXBI7ucNRIpJXmG4BdUNqHklds=;
- b=qc6G4SCziBtR7EaPchrDeHglHN0IlPf7fQRxhBJLDP4v6ydMHvMozz1l73SKXM5lc6079m0ZI1Oz5G49gGaDE2xBpKcslCeLzWoQLgX2WCdOTdENxoa09A0Dm9GlIrTWyFcma4yvXQ/FW97J8PFVuh3uCaz8CWKrs7t9wAt6wCgEkEu/mWFgM3yhdwGvG2dcjZZYveSn6IXYKyg1CJk0sI50jVL/7/YxlEtF9ujUGZFPo2Xt5/hEGigBLqK1etpuYKaRIrgyecwIXubTSqG0KbcmBoP6snZh1nh9uB5kN0dj7zB1kHLNROLepog9ENruF0zYExtzmg2QZIHHV4Dxjw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9DNirSYPs3x1/vkTRnXBI7ucNRIpJXmG4BdUNqHklds=;
- b=JRXgB++K6UFGAeC2nlFsfvY5Y6UUnrc6enHg5/v2YEFlYAYXcmdJ/FzI3pBLP609+Xpbv+ZPBDkqsxjuAlNJGfCCrLjuX8e9vVq1gDkfTZU+EGnDwK8IxSy505gJMxLCGwPaHxK2z6D3aJrKI5qVYKc/Cdp1Il9HYkK/dN9RSd4=
-Received: from CH2PR05CA0006.namprd05.prod.outlook.com (2603:10b6:610::19) by
- CY8PR12MB7585.namprd12.prod.outlook.com (2603:10b6:930:98::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.18; Fri, 8 May 2026 05:19:44 +0000
-Received: from CH3PEPF00000010.namprd04.prod.outlook.com
- (2603:10b6:610:0:cafe::aa) by CH2PR05CA0006.outlook.office365.com
- (2603:10b6:610::19) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9913.7 via Frontend Transport; Fri, 8
- May 2026 05:19:44 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- CH3PEPF00000010.mail.protection.outlook.com (10.167.244.41) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.9 via Frontend Transport; Fri, 8 May 2026 05:19:44 +0000
-Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Fri, 8 May
- 2026 00:19:40 -0500
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-To: Mario Limonciello <mario.limonciello@amd.com>, Huang Rui
-	<ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
-	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
-	Kalpana Shetty <kalpana.shetty@amd.com>
-Subject: [PATCH 6/6] cpufreq/amd-pstate-ut: Drop policy reference before driver switch
-Date: Fri, 8 May 2026 05:17:48 +0000
-Message-ID: <20260508051748.10484-7-kprateek.nayak@amd.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260508051748.10484-1-kprateek.nayak@amd.com>
-References: <20260508051748.10484-1-kprateek.nayak@amd.com>
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ATqy14fq";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="FYOzfpi8"
+Date: Fri, 08 May 2026 05:40:30 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1778218838;
+	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+	bh=1AdsrNKD/WNYUMwcAy3yzTErq5fLzOTLmGXPp5gqBhU=;
+	b=ATqy14fqmS2fm+OTZZJB8qZIIgiYGCvN0/K+rsPrXVrKPcbwEstsPlAhTh30u6Cihq8QZc
+	qjhAeNLMoPF1jFnwBuqznywwPNJ78oyW4kW8AeR+OZ9TmF1uT6/mtYYy7M09QV46oJ6ARE
+	oCNyJlG/vfaT7zseKqnYWLYY2F5/qVqJEHZ7EPVnBlCxgWLULFZQQASDUxdxFIzj7/XmiO
+	na5mSGp9W8juxbpqjO6laoF1qS/u0mw64XyR1EiCKKobTNv5SxcNEnKrYn7dgQNs+7IARh
+	5T8vz0enMRLGieBBN7UUjev2D/mSiUvttCIFvWnldmBH7rdPtzOu+i8pZR55pQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1778218838;
+	h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+	 message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+	 content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+	bh=1AdsrNKD/WNYUMwcAy3yzTErq5fLzOTLmGXPp5gqBhU=;
+	b=FYOzfpi8IFMM1RE26ZB6NN+VwDpKch4ODas8t9AJMaEPVCzsLNiyxrbSM0zxrHLhBdzpfB
+	BEy+cgPLpEMPyKBQ==
+From: "tip-bot2 for Ingo Molnar" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-kernel@vger.kernel.org
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip: x86/cpu] x86/cpu, cpufreq: Remove AMD ELAN support
+Cc: Ingo Molnar <mingo@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ linux-pm@vger.kernel.org (open list:CPU FREQUENCY SCALING FRAMEWORK),
+ x86@kernel.org, linux-kernel@vger.kernel.org
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PEPF00000010:EE_|CY8PR12MB7585:EE_
-X-MS-Office365-Filtering-Correlation-Id: 503d21f9-59e4-4f98-1fda-08deacc16a05
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|1800799024|36860700016|376014|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	q5u40o56zzNH3shddhYASpfRUr6cMvhWCABx0es3l7yz5ku8vf+NPiIH3JQ1C0oAcUvGDuib9AyxeqvY6yWBxQSmApiPlfIQCrCNPrS9qe5rXCgMM9+GssvolWAtelw82ZkUcY2aYDQNNMIX7Djcnr+soM6LHws4m+7RmI9OTZTpDNaU+WsDSX1ldc3TiNBKjHz/L8D7jTskTxMd0VUr2GmIMvb7FomFoPwecuY3rVZl57mR0skZWXEjqFB5Gl/PbTNbCKTGR7/v5h62M9lZ206OfQCoKW9R/bDghFRfy6PVVErA9q55l0qKYgCOa7nde0TYrg6JmaM9sKBZe+tEKkTxw9YdkMWSw8fm8hYMczIg0b88RVduT66WcQ0qL6bECTwxdngcQ9vXNX3wNmaJc3G6I5cHPpBJRxzpDk/n9u8Qp3fOQznmpdgafbz6WrsuvHVu7RMBdz56VM2G1c/mAtZDxlhzQwLwq5BZ79avWN+CLImFsOhONCZ8E5wbHXoxUWw1ikqv6z+f6ctRu0QH1dR5DTcuPd/yNi/8kG3OpB2zhIE9SiYLQ3HqktnESEi1elPIUgdwtKkzDYUWz5IcCdU7TjaCffa5bbJwbSu2apOwhY1ce3jakyju0QxCTJtfMr+fkD92HvWi7BdaxobH1HPfpg6JaZ8EEgXEjIamCYG9WfbjFg6WMA/yNEXzwyeo+TWp6hIUS5XvTt5y2apMxSnUAFT82w5KE2f7F7iqX4g=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(36860700016)(376014)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	3tQ++UxKrTPIJOtO9J5S/E9SF1HVz7tcZt8cAyqvJfjgpwdPUI+2yruLO9enEdYs53zOfBFRS4EMWnE4fjcVDF0Ci8JnQFXLIPleDutsnc10yZIIlMICsoP75OH/7RntlG8mx/3YIkYiz2qsUVjlMUgmBf6ZqBnO+BzX/P36Rnc2fFYHjTQa/6kZo+EBpVd6QjZmtQsyOEOTW0tadP+hBEJ/DkBydJIuevHTaY070LxScrLDDw/L3SfL0dkcyYBCevDQot2lYYMqv3KGalnHPOoH3XvQH+fUwCRJMfQpqRfAC7Ic8eMnQ6mNUoiTx7GqLaYskSAsO75rR7IXATiRGbBZP9dQZoC+IDyKuefMRKA+qO1aKHkG3IBnqrkDIvAAyA8/m7rQ6Q67JogPgfvQQzBMuj8RL11il5fEPCugBZH+w8fSJmGRZkFLKiGwlFZR
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 05:19:44.0300
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 503d21f9-59e4-4f98-1fda-08deacc16a05
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CH3PEPF00000010.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB7585
+Message-ID: <177821883088.864.5785990608593634039.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe:
+ Contact <mailto:tglx@kernel.org> to get blacklisted from these emails
+Precedence: bulk
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Recent changes to the EPP unit test tries to perform a driver switch
-with a cpufreq_policy reference held when the driver is loaded into
-anything but the active mode which leads to a circular dependency and
-the unit test hanging indefinitely.
+The following commit has been merged into the x86/cpu branch of tip:
 
-Drop the reference before driver switch and grab it back once the driver
-mode is stabilized for the test.
+Commit-ID:     435ef16e69b9d7f9cdf460a4c2edd20bb47d51fa
+Gitweb:        https://git.kernel.org/tip/435ef16e69b9d7f9cdf460a4c2edd20bb47=
+d51fa
+Author:        Ingo Molnar <mingo@kernel.org>
+AuthorDate:    Thu, 15 May 2025 10:26:39 +02:00
+Committer:     Ingo Molnar <mingo@kernel.org>
+CommitterDate: Fri, 08 May 2026 07:34:03 +02:00
 
-The EPP writes are only possible with CPUFREQ_POLICY_POWERSAVE policy.
-Temporarily switch the cpudata->policy (while holding the write end of
-the policy->rwsem) to CPUFREQ_POLICY_POWERSAVE and restore the original
-policy once tests are done. To ensure the final EPP is correct in case
-the driver started with CPUFREQ_POLICY_PERFORMANCE, EPP performance is
-tested last.
+x86/cpu, cpufreq: Remove AMD ELAN support
 
-The __free() based cleanup for cpufreq_policy is lost in the process.
+Now that i486 and CONFIG_MELAN support has been removed upstream:
 
-Reported-by: Kalpana Shetty <kalpana.shetty@amd.com>
-Fixes: 7e173bc310d2b ("cpufreq/amd-pstate-ut: Add a unit test for raw EPP")
-Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
-Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+  8b793a92d862c ("x86/cpu: Remove M486/M486SX/ELAN support")
+
+the CONFIG_ELAN_CPUFREQ and CONFIG_SC520_CPUFREQ cpufreq
+drivers can be removed as well, as they depend on CONFIG_MELAN.
+
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org (open list:CPU FREQUENCY SCALING FRAMEWORK)
+Link: https://lore.kernel.org/r/20250425084216.3913608-8-mingo@kernel.org
 ---
- drivers/cpufreq/amd-pstate-ut.c | 36 ++++++++++++++++++++++++++-------
- 1 file changed, 29 insertions(+), 7 deletions(-)
+ arch/x86/Makefile_32.cpu     |   3 +-
+ drivers/cpufreq/Kconfig.x86  |  26 +----
+ drivers/cpufreq/Makefile     |   2 +-
+ drivers/cpufreq/elanfreq.c   | 226 +----------------------------------
+ drivers/cpufreq/sc520_freq.c | 136 +--------------------
+ 5 files changed, 393 deletions(-)
+ delete mode 100644 drivers/cpufreq/elanfreq.c
+ delete mode 100644 drivers/cpufreq/sc520_freq.c
 
-diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-index aa8a464fab47a..13a23dac477d1 100644
---- a/drivers/cpufreq/amd-pstate-ut.c
-+++ b/drivers/cpufreq/amd-pstate-ut.c
-@@ -274,20 +274,21 @@ static int amd_pstate_set_mode(enum amd_pstate_mode mode)
- 
- static int amd_pstate_ut_epp(u32 index)
- {
--	struct cpufreq_policy *policy __free(put_cpufreq_policy) = NULL;
--	char *buf __free(cleanup_page) = NULL;
- 	static const char * const epp_strings[] = {
--		"performance",
--		"balance_performance",
--		"balance_power",
- 		"power",
-+		"balance_power",
-+		"balance_performance",
-+		"performance",
- 	};
--	struct amd_cpudata *cpudata;
-+	char *buf __free(cleanup_page) = NULL;
-+	struct cpufreq_policy *policy = NULL;
- 	enum amd_pstate_mode orig_mode;
-+	struct amd_cpudata *cpudata;
-+	unsigned long orig_policy;
- 	bool orig_dynamic_epp;
- 	int ret, cpu = 0;
--	int i;
- 	u16 epp;
-+	int i;
- 
- 	policy = cpufreq_cpu_get(cpu);
- 	if (!policy)
-@@ -297,6 +298,10 @@ static int amd_pstate_ut_epp(u32 index)
- 	orig_mode = amd_pstate_get_status();
- 	orig_dynamic_epp = cpudata->dynamic_epp;
- 
-+	/* Drop reference before potential driver change. */
-+	cpufreq_cpu_put(policy);
-+	policy = NULL;
-+
- 	/* disable dynamic EPP before running test */
- 	if (cpudata->dynamic_epp) {
- 		pr_debug("Dynamic EPP is enabled, disabling it\n");
-@@ -311,6 +316,17 @@ static int amd_pstate_ut_epp(u32 index)
- 	if (ret)
- 		goto out;
- 
-+	policy = cpufreq_cpu_get(cpu);
-+	if (!policy) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	down_write(&policy->rwsem);
-+	cpudata = policy->driver_data;
-+	orig_policy = cpudata->policy;
-+	cpudata->policy = CPUFREQ_POLICY_POWERSAVE;
-+
- 	for (epp = 0; epp <= U8_MAX; epp++) {
- 		u8 val;
- 
-@@ -358,6 +374,12 @@ static int amd_pstate_ut_epp(u32 index)
- 	ret = 0;
- 
- out:
-+	if (policy) {
-+		cpudata->policy = orig_policy;
-+		up_write(&policy->rwsem);
-+		cpufreq_cpu_put(policy);
-+	}
-+
- 	if (orig_dynamic_epp) {
- 		int ret2;
- 
--- 
-2.34.1
-
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index ec9f34d..c5aa169 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -28,9 +28,6 @@ cflags-$(CONFIG_MVIAC3_2)	+=3D $(call cc-option,-march=3Dc3=
+-2,-march=3Di686)
+ cflags-$(CONFIG_MVIAC7)		+=3D -march=3Di686
+ cflags-$(CONFIG_MATOM)		+=3D -march=3Datom
+=20
+-# AMD Elan support
+-cflags-$(CONFIG_MELAN)		+=3D -march=3Di486
+-
+ # Geode GX1 support
+ cflags-$(CONFIG_MGEODEGX1)	+=3D -march=3Dpentium-mmx
+ cflags-$(CONFIG_MGEODE_LX)	+=3D $(call cc-option,-march=3Dgeode,-march=3Dpen=
+tium-mmx)
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 027e6ea..c42dd39 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -126,32 +126,6 @@ config X86_ACPI_CPUFREQ_CPB
+ 	  By enabling this option the acpi_cpufreq driver provides the old
+ 	  entry in addition to the new boost ones, for compatibility reasons.
+=20
+-config ELAN_CPUFREQ
+-	tristate "AMD Elan SC400 and SC410"
+-	depends on MELAN
+-	help
+-	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
+-	  processors.
+-
+-	  You need to specify the processor maximum speed as boot
+-	  parameter: elanfreq=3Dmaxspeed (in kHz) or as module
+-	  parameter "max_freq".
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-config SC520_CPUFREQ
+-	tristate "AMD Elan SC520"
+-	depends on MELAN
+-	help
+-	  This adds the CPUFreq driver for AMD Elan SC520 processor.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq/>.
+-
+-	  If in doubt, say N.
+-
+-
+ config X86_POWERNOW_K6
+ 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
+ 	depends on X86_32
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 385c9fc..6c7a39b 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -40,8 +40,6 @@ obj-$(CONFIG_X86_POWERNOW_K6)		+=3D powernow-k6.o
+ obj-$(CONFIG_X86_POWERNOW_K7)		+=3D powernow-k7.o
+ obj-$(CONFIG_X86_LONGHAUL)		+=3D longhaul.o
+ obj-$(CONFIG_X86_E_POWERSAVER)		+=3D e_powersaver.o
+-obj-$(CONFIG_ELAN_CPUFREQ)		+=3D elanfreq.o
+-obj-$(CONFIG_SC520_CPUFREQ)		+=3D sc520_freq.o
+ obj-$(CONFIG_X86_LONGRUN)		+=3D longrun.o
+ obj-$(CONFIG_X86_GX_SUSPMOD)		+=3D gx-suspmod.o
+ obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+=3D speedstep-ich.o
+diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
+deleted file mode 100644
+index fc5a580..0000000
+--- a/drivers/cpufreq/elanfreq.c
++++ /dev/null
+@@ -1,226 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- *	elanfreq:	cpufreq driver for the AMD ELAN family
+- *
+- *	(c) Copyright 2002 Robert Schwebel <r.schwebel@pengutronix.de>
+- *
+- *	Parts of this code are (c) Sven Geggus <sven@geggus.net>
+- *
+- *      All Rights Reserved.
+- *
+- *	2002-02-13: - initial revision for 2.4.18-pre9 by Robert Schwebel
+- */
+-
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-
+-#include <linux/delay.h>
+-#include <linux/cpufreq.h>
+-
+-#include <asm/cpu_device_id.h>
+-#include <linux/timex.h>
+-#include <linux/io.h>
+-
+-#define REG_CSCIR 0x22		/* Chip Setup and Control Index Register    */
+-#define REG_CSCDR 0x23		/* Chip Setup and Control Data  Register    */
+-
+-/* Module parameter */
+-static int max_freq;
+-
+-struct s_elan_multiplier {
+-	int clock;		/* frequency in kHz                         */
+-	int val40h;		/* PMU Force Mode register                  */
+-	int val80h;		/* CPU Clock Speed Register                 */
+-};
+-
+-/*
+- * It is important that the frequencies
+- * are listed in ascending order here!
+- */
+-static struct s_elan_multiplier elan_multiplier[] =3D {
+-	{1000,	0x02,	0x18},
+-	{2000,	0x02,	0x10},
+-	{4000,	0x02,	0x08},
+-	{8000,	0x00,	0x00},
+-	{16000,	0x00,	0x02},
+-	{33000,	0x00,	0x04},
+-	{66000,	0x01,	0x04},
+-	{99000,	0x01,	0x05}
+-};
+-
+-static struct cpufreq_frequency_table elanfreq_table[] =3D {
+-	{0, 0,	1000},
+-	{0, 1,	2000},
+-	{0, 2,	4000},
+-	{0, 3,	8000},
+-	{0, 4,	16000},
+-	{0, 5,	33000},
+-	{0, 6,	66000},
+-	{0, 7,	99000},
+-	{0, 0,	CPUFREQ_TABLE_END},
+-};
+-
+-
+-/**
+- *	elanfreq_get_cpu_frequency: determine current cpu speed
+- *
+- *	Finds out at which frequency the CPU of the Elan SOC runs
+- *	at the moment. Frequencies from 1 to 33 MHz are generated
+- *	the normal way, 66 and 99 MHz are called "Hyperspeed Mode"
+- *	and have the rest of the chip running with 33 MHz.
+- */
+-
+-static unsigned int elanfreq_get_cpu_frequency(unsigned int cpu)
+-{
+-	u8 clockspeed_reg;    /* Clock Speed Register */
+-
+-	local_irq_disable();
+-	outb_p(0x80, REG_CSCIR);
+-	clockspeed_reg =3D inb_p(REG_CSCDR);
+-	local_irq_enable();
+-
+-	if ((clockspeed_reg & 0xE0) =3D=3D 0xE0)
+-		return 0;
+-
+-	/* Are we in CPU clock multiplied mode (66/99 MHz)? */
+-	if ((clockspeed_reg & 0xE0) =3D=3D 0xC0) {
+-		if ((clockspeed_reg & 0x01) =3D=3D 0)
+-			return 66000;
+-		else
+-			return 99000;
+-	}
+-
+-	/* 33 MHz is not 32 MHz... */
+-	if ((clockspeed_reg & 0xE0) =3D=3D 0xA0)
+-		return 33000;
+-
+-	return (1<<((clockspeed_reg & 0xE0) >> 5)) * 1000;
+-}
+-
+-
+-static int elanfreq_target(struct cpufreq_policy *policy,
+-			    unsigned int state)
+-{
+-	/*
+-	 * Access to the Elan's internal registers is indexed via
+-	 * 0x22: Chip Setup & Control Register Index Register (CSCI)
+-	 * 0x23: Chip Setup & Control Register Data  Register (CSCD)
+-	 *
+-	 */
+-
+-	/*
+-	 * 0x40 is the Power Management Unit's Force Mode Register.
+-	 * Bit 6 enables Hyperspeed Mode (66/100 MHz core frequency)
+-	 */
+-
+-	local_irq_disable();
+-	outb_p(0x40, REG_CSCIR);		/* Disable hyperspeed mode */
+-	outb_p(0x00, REG_CSCDR);
+-	local_irq_enable();		/* wait till internal pipelines and */
+-	udelay(1000);			/* buffers have cleaned up          */
+-
+-	local_irq_disable();
+-
+-	/* now, set the CPU clock speed register (0x80) */
+-	outb_p(0x80, REG_CSCIR);
+-	outb_p(elan_multiplier[state].val80h, REG_CSCDR);
+-
+-	/* now, the hyperspeed bit in PMU Force Mode Register (0x40) */
+-	outb_p(0x40, REG_CSCIR);
+-	outb_p(elan_multiplier[state].val40h, REG_CSCDR);
+-	udelay(10000);
+-	local_irq_enable();
+-
+-	return 0;
+-}
+-/*
+- *	Module init and exit code
+- */
+-
+-static int elanfreq_cpu_init(struct cpufreq_policy *policy)
+-{
+-	struct cpuinfo_x86 *c =3D &cpu_data(0);
+-	struct cpufreq_frequency_table *pos;
+-
+-	/* capability check */
+-	if ((c->x86_vendor !=3D X86_VENDOR_AMD) ||
+-	    (c->x86 !=3D 4) || (c->x86_model !=3D 10))
+-		return -ENODEV;
+-
+-	/* max freq */
+-	if (!max_freq)
+-		max_freq =3D elanfreq_get_cpu_frequency(0);
+-
+-	/* table init */
+-	cpufreq_for_each_entry(pos, elanfreq_table)
+-		if (pos->frequency > max_freq)
+-			pos->frequency =3D CPUFREQ_ENTRY_INVALID;
+-
+-	policy->freq_table =3D elanfreq_table;
+-	return 0;
+-}
+-
+-
+-#ifndef MODULE
+-/**
+- * elanfreq_setup - elanfreq command line parameter parsing
+- *
+- * elanfreq command line parameter.  Use:
+- *  elanfreq=3D66000
+- * to set the maximum CPU frequency to 66 MHz. Note that in
+- * case you do not give this boot parameter, the maximum
+- * frequency will fall back to _current_ CPU frequency which
+- * might be lower. If you build this as a module, use the
+- * max_freq module parameter instead.
+- */
+-static int __init elanfreq_setup(char *str)
+-{
+-	max_freq =3D simple_strtoul(str, &str, 0);
+-	pr_warn("You're using the deprecated elanfreq command line option. Use elan=
+freq.max_freq instead, please!\n");
+-	return 1;
+-}
+-__setup("elanfreq=3D", elanfreq_setup);
+-#endif
+-
+-
+-static struct cpufreq_driver elanfreq_driver =3D {
+-	.get		=3D elanfreq_get_cpu_frequency,
+-	.flags		=3D CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING,
+-	.verify		=3D cpufreq_generic_frequency_table_verify,
+-	.target_index	=3D elanfreq_target,
+-	.init		=3D elanfreq_cpu_init,
+-	.name		=3D "elanfreq",
+-};
+-
+-static const struct x86_cpu_id elan_id[] =3D {
+-	X86_MATCH_VENDOR_FAM_MODEL(AMD, 4, 10, NULL),
+-	{}
+-};
+-MODULE_DEVICE_TABLE(x86cpu, elan_id);
+-
+-static int __init elanfreq_init(void)
+-{
+-	if (!x86_match_cpu(elan_id))
+-		return -ENODEV;
+-	return cpufreq_register_driver(&elanfreq_driver);
+-}
+-
+-
+-static void __exit elanfreq_exit(void)
+-{
+-	cpufreq_unregister_driver(&elanfreq_driver);
+-}
+-
+-
+-module_param(max_freq, int, 0444);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Robert Schwebel <r.schwebel@pengutronix.de>, "
+-		"Sven Geggus <sven@geggus.net>");
+-MODULE_DESCRIPTION("cpufreq driver for AMD's Elan CPUs");
+-
+-module_init(elanfreq_init);
+-module_exit(elanfreq_exit);
+diff --git a/drivers/cpufreq/sc520_freq.c b/drivers/cpufreq/sc520_freq.c
+deleted file mode 100644
+index b360f03..0000000
+--- a/drivers/cpufreq/sc520_freq.c
++++ /dev/null
+@@ -1,136 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- *	sc520_freq.c: cpufreq driver for the AMD Elan sc520
+- *
+- *	Copyright (C) 2005 Sean Young <sean@mess.org>
+- *
+- *	Based on elanfreq.c
+- *
+- *	2005-03-30: - initial revision
+- */
+-
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-
+-#include <linux/delay.h>
+-#include <linux/cpufreq.h>
+-#include <linux/timex.h>
+-#include <linux/io.h>
+-
+-#include <asm/cpu_device_id.h>
+-
+-#define MMCR_BASE	0xfffef000	/* The default base address */
+-#define OFFS_CPUCTL	0x2   /* CPU Control Register */
+-
+-static __u8 __iomem *cpuctl;
+-
+-static struct cpufreq_frequency_table sc520_freq_table[] =3D {
+-	{0, 0x01,	100000},
+-	{0, 0x02,	133000},
+-	{0, 0,	CPUFREQ_TABLE_END},
+-};
+-
+-static unsigned int sc520_freq_get_cpu_frequency(unsigned int cpu)
+-{
+-	u8 clockspeed_reg =3D *cpuctl;
+-
+-	switch (clockspeed_reg & 0x03) {
+-	default:
+-		pr_err("error: cpuctl register has unexpected value %02x\n",
+-		       clockspeed_reg);
+-		fallthrough;
+-	case 0x01:
+-		return 100000;
+-	case 0x02:
+-		return 133000;
+-	}
+-}
+-
+-static int sc520_freq_target(struct cpufreq_policy *policy, unsigned int sta=
+te)
+-{
+-
+-	u8 clockspeed_reg;
+-
+-	local_irq_disable();
+-
+-	clockspeed_reg =3D *cpuctl & ~0x03;
+-	*cpuctl =3D clockspeed_reg | sc520_freq_table[state].driver_data;
+-
+-	local_irq_enable();
+-
+-	return 0;
+-}
+-
+-/*
+- *	Module init and exit code
+- */
+-
+-static int sc520_freq_cpu_init(struct cpufreq_policy *policy)
+-{
+-	struct cpuinfo_x86 *c =3D &cpu_data(0);
+-
+-	/* capability check */
+-	if (c->x86_vendor !=3D X86_VENDOR_AMD ||
+-	    c->x86 !=3D 4 || c->x86_model !=3D 9)
+-		return -ENODEV;
+-
+-	/* cpuinfo and default policy values */
+-	policy->cpuinfo.transition_latency =3D 1000000; /* 1ms */
+-	policy->freq_table =3D sc520_freq_table;
+-
+-	return 0;
+-}
+-
+-
+-static struct cpufreq_driver sc520_freq_driver =3D {
+-	.get	=3D sc520_freq_get_cpu_frequency,
+-	.verify	=3D cpufreq_generic_frequency_table_verify,
+-	.target_index =3D sc520_freq_target,
+-	.init	=3D sc520_freq_cpu_init,
+-	.name	=3D "sc520_freq",
+-};
+-
+-static const struct x86_cpu_id sc520_ids[] =3D {
+-	X86_MATCH_VENDOR_FAM_MODEL(AMD, 4, 9, NULL),
+-	{}
+-};
+-MODULE_DEVICE_TABLE(x86cpu, sc520_ids);
+-
+-static int __init sc520_freq_init(void)
+-{
+-	int err;
+-
+-	if (!x86_match_cpu(sc520_ids))
+-		return -ENODEV;
+-
+-	cpuctl =3D ioremap((unsigned long)(MMCR_BASE + OFFS_CPUCTL), 1);
+-	if (!cpuctl) {
+-		pr_err("sc520_freq: error: failed to remap memory\n");
+-		return -ENOMEM;
+-	}
+-
+-	err =3D cpufreq_register_driver(&sc520_freq_driver);
+-	if (err)
+-		iounmap(cpuctl);
+-
+-	return err;
+-}
+-
+-
+-static void __exit sc520_freq_exit(void)
+-{
+-	cpufreq_unregister_driver(&sc520_freq_driver);
+-	iounmap(cpuctl);
+-}
+-
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Sean Young <sean@mess.org>");
+-MODULE_DESCRIPTION("cpufreq driver for AMD's Elan sc520 CPU");
+-
+-module_init(sc520_freq_init);
+-module_exit(sc520_freq_exit);
+-
