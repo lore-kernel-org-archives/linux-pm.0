@@ -1,136 +1,102 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEC472BEFED
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 18:24:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D410A3E51E3;
+	Fri,  8 May 2026 18:54:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778264658; cv=none; b=Toa4nnB9URTKtc2oOiqqaduu2rkhXjrsiRoSlK1JWG4kMG9eUbz4iwbV6baL+xWW1X3wk+ipjwjjdb1mSsN/m0eR6CRfhOPpkH8J2xULVT/Ldq4D3Pbt8Ah+rRKcguLalebR0y5Ed9HY3LzmcJVV5hg2CBdF8NoNkd6yjdD1uXg=
+	t=1778266472; cv=none; b=pzmo/KOBAtRoa0oevWc7ye0CZmDoKf6oemL/aVCBcXeaezc1oKKWRyr/Wk9GVcQB9G/fbnm6iMnBZ9GKMshU6bxWDLvYvLQ2S3wooaAP+4LpDsB/wE99vVDbjHF82PTNaWsGWaUSsKkm6Qie6ztRcGLbyAEb+ZLqkWjDMCZKCjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778264658; c=relaxed/simple;
-	bh=fmM8DFIHbC3QaC5wvFbfqSNNn08F8rFAdy+EOYybKD0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RRa5+SSDojVqfXDeBQBga/f5kBKg6lcYXR7kGwdXJqR6WkdTuENxOW4zmN6U6apKvODBr8sU1C2Ezl3tzAeufGyD+mHz7yJWPyJs2sy2HfU8ksGuuQJ/GkGZmmJCp/7Z5ozvIF41F1ceMiIa7rbchEdJVFdnvw9SRr4yREFo8aE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qKgn/gcu; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778266472; c=relaxed/simple;
+	bh=uIdL8/fLOPsOkGJNDM45smulPXjw6aAf4dO5G05Gt2w=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=MfBQwOiF+wgr1V7iDKuhrSsOZ7vbUj3o1DB/VKAZrQZzBAdAytAHe74k4krS54uqeNZNGyPOObCwPPgeDI4e8uwaofTWtKmRcfWh9kpXkkTvugCmKp+K/FsUTufmHaYxlR1WWOarf27C7F0POUPLXy7f35c3xXLTM0ESJ8z6tac=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=a4HxuWG8; arc=none smtp.client-ip=198.175.65.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qKgn/gcu"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6292CC2BCB0
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 18:24:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778264658;
-	bh=fmM8DFIHbC3QaC5wvFbfqSNNn08F8rFAdy+EOYybKD0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=qKgn/gcucuJYCJkFbM2BgWgw/jEGEijf6fFYcwzjKCpE4ypoiH3tPFIwuQbXZsXxu
-	 Ny3zQIQvdyEYu1q3Ok29HtqEtWdl40xad8Xp21brhoWqaI18M2cymq8DDeORbxjyc4
-	 UcRMOJ6tUjrLZWsaW+PAoKXaE4rH14MypKKItKgVk/TmkxXR4i4U/pIqpXP6kXOt7a
-	 BD6oPlf7EqwWupzXPs+LK3uTmbAd883+WKfExvNZ0SiNgRDsEWPYu2z+EndAzoNlN7
-	 /1VW7CKyfZRlEwqfZXdBd8Nd4H8B12kkATMeN+mazSqlUAH51amTmVHo/+SotcWXeK
-	 u/mx43OntHxkg==
-Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-39393ec4ed0so20644381fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 11:24:18 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9mESOFK3Fl3BbCvtoGLYEGLb/cRrcAod9OCEI8kfedzPMbIjl5P84LFs9bVS/GArFGvb1ku3t6yQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzkPJnya1xHiyXDHcVffogCPP7PEZZIr/TmvPWrkkfxBU0auN2g
-	bxCBHxRXx5Gt1aWmnkEeVKu3rsTAjSfEzayGN1HjF+9WdogvkBgI+YqyCo6Spi+d6gtJ4kuuh6d
-	9vFQh70Jg2/DMeN1fGy8gYcVsh+SRhak=
-X-Received: by 2002:a05:6512:3dab:b0:5a4:1198:5016 with SMTP id
- 2adb3069b0e04-5a887ae01b0mr4821357e87.11.1778264656813; Fri, 08 May 2026
- 11:24:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="a4HxuWG8"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778266470; x=1809802470;
+  h=from:to:in-reply-to:references:subject:message-id:date:
+   mime-version:content-transfer-encoding;
+  bh=uIdL8/fLOPsOkGJNDM45smulPXjw6aAf4dO5G05Gt2w=;
+  b=a4HxuWG8TnNiS0AyDpJ4nbzyHZCRuvwYFFMxOZK56ChU7iPTO4nRbUJH
+   QKRX5moxpgmB3E/0xePg4VgseS3EOyGRnMy1iBTT3C3qXkKhrWIayTlPj
+   fHbIHMSGPoYBdQg7neAbHa7YHKhwakRsvmiPaoPvjM5AlIvjeTArN33ry
+   KdZVjhvUPDBgvrlSMKo0Rprh1VaD8NO2/Ed7u6YWsmYJon82x3XleSAfg
+   DXcanWJNmFygr+TCxYf+xuavPO1L20+UgAKNvaluFa28ht1UPmuNHvrKH
+   7u2YpiS4kL7+h4452Z/WMjmXqQmj2YyQSERieQa2c+YreTXTSq6WbOD6b
+   w==;
+X-CSE-ConnectionGUID: X0rXTeKaTcmZk4mg4zwnWA==
+X-CSE-MsgGUID: CpF4O8BMTeaIjSiruW95HQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11780"; a="82865092"
+X-IronPort-AV: E=Sophos;i="6.23,224,1770624000"; 
+   d="scan'208";a="82865092"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2026 11:54:30 -0700
+X-CSE-ConnectionGUID: rsdERbEJS8Gvutq6KCQN4Q==
+X-CSE-MsgGUID: a9+2AxUYTzOql4OrFE18Ng==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,224,1770624000"; 
+   d="scan'208";a="236016453"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.100])
+  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2026 11:54:27 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: irenic.rajneesh@gmail.com, david.e.box@linux.intel.com, 
+ platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-pm@vger.kernel.org, Xi Pardee <xi.pardee@linux.intel.com>
+In-Reply-To: <20260505043342.2573556-1-xi.pardee@linux.intel.com>
+References: <20260505043342.2573556-1-xi.pardee@linux.intel.com>
+Subject: Re: [PATCH v3 0/7] Enable NVL support in intel_pmc_core
+Message-Id: <177826646106.13514.14306221058288030989.b4-ty@linux.intel.com>
+Date: Fri, 08 May 2026 21:54:21 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260508180511.1306659-1-daniel.lezcano@oss.qualcomm.com> <20260508180511.1306659-4-daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260508180511.1306659-4-daniel.lezcano@oss.qualcomm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 8 May 2026 20:24:05 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gWgoZtuK6nZ+71QbdV96GXq8McQ=azcCuceph3XxBD4w@mail.gmail.com>
-X-Gm-Features: AVHnY4I54hGeOJ5pgs4tBL5t2sv_By9Bo4PpiltaN-5u-ccw7dAdRgrBoVfGTEM
-Message-ID: <CAJZ5v0gWgoZtuK6nZ+71QbdV96GXq8McQ=azcCuceph3XxBD4w@mail.gmail.com>
-Subject: Re: [PATCH 3/4] thermal/core: Allocate the thermal class dynamically
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: lukasz.luba@arm.com, rafael@kernel.org, rui.zhang@intel.com, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13.0
 
-On Fri, May 8, 2026 at 8:05=E2=80=AFPM Daniel Lezcano
-<daniel.lezcano@oss.qualcomm.com> wrote:
->
-> Use class_create() instead of a statically allocated struct class.
->
-> This allows the thermal class to be managed through a dynamically
-> allocated class object and avoids keeping a static class instance
-> around.
+On Mon, 04 May 2026 21:33:31 -0700, Xi Pardee wrote:
 
-I changed it the other way around during the last cycle, so is it
-really worth changing again?
+> This patch series introduces two new features, enhances existing
+> functionalities, and adds NVL support to the intel_pmc_core driver.
+> 
+> The first three patches add new attributes to improve Package C-state
+> debugging. The fourth and fifth patches refine current functionality
+> for better support. The sixth patch enables the intel_pmc_core driver
+> retrieves PMC information only for available PMCs. Finally, the last
+> patch adds support for Nova Lake platforms.
+> 
+> [...]
 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
->  drivers/thermal/thermal_core.c | 15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index a79fc4cdb078..748ab76823a3 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -949,9 +949,7 @@ static void thermal_unbind_cdev_from_trip(struct ther=
-mal_zone_device *tz,
->         kfree(pos);
->  }
->
-> -static const struct class thermal_class =3D {
-> -       .name =3D "thermal",
-> -};
-> +static struct class *thermal_class;
->  static bool thermal_class_unavailable __ro_after_init =3D true;
->
->  static inline
-> @@ -1078,7 +1076,7 @@ __thermal_cooling_device_register(struct device_nod=
-e *np,
->         cdev->np =3D np;
->         cdev->ops =3D ops;
->         cdev->updated =3D false;
-> -       cdev->device.class =3D &thermal_class;
-> +       cdev->device.class =3D thermal_class;
->         cdev->device.release =3D thermal_cdev_release;
->         cdev->devdata =3D devdata;
->
-> @@ -1574,7 +1572,7 @@ thermal_zone_device_register_with_trips(const char =
-*type,
->         if (!tz->ops.critical)
->                 tz->ops.critical =3D thermal_zone_device_critical;
->
-> -       tz->device.class =3D &thermal_class;
-> +       tz->device.class =3D thermal_class;
->         tz->device.release =3D thermal_zone_device_release;
->         tz->devdata =3D devdata;
->         tz->num_trips =3D num_trips;
-> @@ -1898,15 +1896,18 @@ static int __init thermal_init(void)
->         if (result)
->                 goto destroy_workqueue;
->
-> -       result =3D class_register(&thermal_class);
-> -       if (result)
-> +       thermal_class =3D class_create("thermal");
-> +       if (IS_ERR(thermal_class)) {
-> +               result =3D PTR_ERR(thermal_class);
->                 goto unregister_governors;
-> +       }
->
->         thermal_class_unavailable =3D false;
->
->         return 0;
->
->  unregister_governors:
-> +       thermal_class =3D NULL;
->         thermal_unregister_governors();
->  destroy_workqueue:
->         destroy_workqueue(thermal_wq);
-> --
-> 2.43.0
->
->
+
+Thank you for your contribution, it has been applied to my local
+review-ilpo-next branch. Note it will show up in the public
+platform-drivers-x86/review-ilpo-next branch only once I've pushed my
+local branch there, which might take a while.
+
+The list of commits applied:
+[1/7] platform/x86/intel/pmc: Use __free() in pmc_core_punit_pmt_init()
+      commit: dfe614f82e445a65cb2afd01859b06b01fce8889
+[2/7] platform/x86/intel/pmc: Enable PkgC LTR blocking counter
+      commit: 38c79dd63b72e36919ef097d4e5025ca0fa17f34
+[3/7] platform/x86/intel/pmc: Enable Pkgc blocking residency counter
+      commit: d727eb1c3ede7c21f885ded1f1ad65b47434a9b9
+[4/7] platform/x86/intel/pmc: Use PCI DID for PMC SSRAM device discovery
+      commit: 11de0586ecf40aa747972f1b0bf88bac192d7b06
+[5/7] platform/x86/intel/pmc: Add support for variable DMU offsets
+      commit: ebbf33380896cc489e870d88004ad3750e908a6c
+[6/7] platform/x86/intel/pmc: Retrieve PMC info only for available PMCs
+      commit: a7d5916d132300b1ff6ac0c5f6d7a7cb7817a7fc
+[7/7] platform/x86/intel/pmc: Add Nova Lake support to intel_pmc_core driver
+      commit: 41354f4c8a791d3059f4355945e550693ac87ce8
+
+--
+ i.
+
