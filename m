@@ -1,238 +1,433 @@
-Received: from pdx-out-011.esa.us-west-2.outbound.mail-perimeter.amazon.com (pdx-out-011.esa.us-west-2.outbound.mail-perimeter.amazon.com [52.35.192.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E35336403A;
-	Fri,  8 May 2026 08:18:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.35.192.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30FD0282F23
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 08:32:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778228319; cv=none; b=c43kfh65tIJ0DrHDOcEoV5MKayoOfqYTMGOklFOMB5wjwT8t5L5/WcOKEH2xWt95J9tGscIuejjUPEazYxjw83J7417IOGU69P8ZqAeilP9l8RiEmzlfl3Y2tsZt6nIBdy5/bP+I4CGmi43Iz0xQ9YKDdw8PMhW9yTIGuCuRISg=
+	t=1778229134; cv=none; b=IDrBzK8P/BRZIa8ZA6mkOewT2RLo3Y064U5z4Npea53LJ/YpnLyOjJswpiexRO6VLZHz94AvSOTrfmQakqyp3nuBj96cUI3vxk06czJB8g7TAv2Xgv2/Wm/bhK/aZq2pohmxgo6jH2KGf28vq5PabzWHD5XLXsfWfUJQ1mYSo/E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778228319; c=relaxed/simple;
-	bh=Jc3PpcNd3ZxX08IHUJtRP179UXyMvc29rNhuJm7NkoM=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iVqVnJ+RxrMKTf0e0WUu1dNoR72yBGnG4/417ywyKyYb3YvWSSgudHFXC7vusVZ+1DAEJ5+qKJtx0T8f6i4blYzDQJLH7UQOcoE7CV5hNxcerIMZN+H7oHcH5EQkxyY8vM4/iVgQJG2QLGCEg89f7zcmdi5P67s7lq0zqmNl82g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.co.uk; dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b=mpDmhIDH; arc=none smtp.client-ip=52.35.192.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.co.uk
+	s=arc-20240116; t=1778229134; c=relaxed/simple;
+	bh=WCiA+7utCacQFgzJ8tiXSHFYh0uUZ6mMktYRNgx1ZS4=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=N8Uc28qtlYEOoGYkK7WHQe7wdpLtRao1k505l5ayhFewF3IveMSXXSiG9Nd2fAihWtvxU96OMGsl20sIC4qDiSdmwbsSdwacv/nXtfeP6mAC+wxUVTtOKIOAchvtbOBBT44rNhSnSB2cYArIToRGBz3VtfYGAIOKF1YGxyxL+lU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NW1nVRxw; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amazon.com header.i=@amazon.com header.b="mpDmhIDH"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NW1nVRxw"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-48a563e4ef7so15947225e9.0
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 01:32:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
-  t=1778228318; x=1809764318;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=he6DON9jfdhSLBt5e/vXn3CElWPL4k8qbH0NcK/2obw=;
-  b=mpDmhIDHD9Z9dIBy2Xr9/PGUfqlwPzQOsrVF1L+8dRzQXh4VWb6Lknfu
-   viYhguRusJq2uwxyhC7BLQ4Qer0k2W7yBTuSLHltw10UfN+LaTU/y2Yaw
-   N4VEBsUzGEQENERkloUMUDXEVmAocjvKMEt+toFlc3hbW5QoqC4Htw829
-   IpUSLopwAmAcPju6UHTPUIF7Rc9WMPZsbD6O0k2Qc3u1r2cr8Brp2fz2J
-   QoMIEU83/+OD4CmftCgWXiQEzMi96JyC1ZGJ36tAljgfgWosM3FMPP6Q6
-   vR18d8uiC9+3c16HSmqrgMYTNGrrhERX6iGxONV2frmr612c+VIJ7rmIB
-   A==;
-X-CSE-ConnectionGUID: T2XNpIqvShm0IOn66vQpwQ==
-X-CSE-MsgGUID: K+8ujvsvQ+aWk2f8+1q5Sw==
-X-IronPort-AV: E=Sophos;i="6.23,223,1770595200"; 
-   d="scan'208";a="18948631"
-Received: from ip-10-5-0-115.us-west-2.compute.internal (HELO smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.0.115])
-  by internal-pdx-out-011.esa.us-west-2.outbound.mail-perimeter.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 May 2026 08:18:34 +0000
-Received: from EX19MTAUWB002.ant.amazon.com [205.251.233.111:1235]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.8.77:2525] with esmtp (Farcaster)
- id 181a188e-b1e1-456f-b102-a9f2c8f54015; Fri, 8 May 2026 08:18:34 +0000 (UTC)
-X-Farcaster-Flow-ID: 181a188e-b1e1-456f-b102-a9f2c8f54015
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.37;
- Fri, 8 May 2026 08:18:31 +0000
-Received: from dev-dsk-itazur-1b-11e7fc0f.eu-west-1.amazon.com (172.19.66.53)
- by EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.37;
- Fri, 8 May 2026 08:18:18 +0000
-From: Takahiro Itazuri <itazur@amazon.com>
-To: <fvdl@google.com>, <seanjc@google.com>, <ljs@kernel.org>
-CC: <Liam.Howlett@oracle.com>, <ackerleytng@google.com>,
-	<agordeev@linux.ibm.com>, <ajones@ventanamicro.com>,
-	<akpm@linux-foundation.org>, <alex@ghiti.fr>, <andrii@kernel.org>,
-	<aou@eecs.berkeley.edu>, <ast@kernel.org>, <baolu.lu@linux.intel.com>,
-	<borntraeger@linux.ibm.com>, <bp@alien8.de>, <bpf@vger.kernel.org>,
-	<catalin.marinas@arm.com>, <chenhuacai@kernel.org>, <corbet@lwn.net>,
-	<coxu@redhat.com>, <daniel@iogearbox.net>, <dave.hansen@linux.intel.com>,
-	<david@kernel.org>, <derekmn@amazon.com>, <dev.jain@arm.com>,
-	<eddyz87@gmail.com>, <gerald.schaefer@linux.ibm.com>, <gor@linux.ibm.com>,
-	<haoluo@google.com>, <hca@linux.ibm.com>, <hpa@zytor.com>,
-	<itazur@amazon.co.uk>, <jackabt@amazon.co.uk>, <jackmanb@google.com>,
-	<jannh@google.com>, <jgg@ziepe.ca>, <jgross@suse.com>, <jhubbard@nvidia.com>,
-	<jiayuan.chen@shopee.com>, <jmattson@google.com>, <joey.gouly@arm.com>,
-	<john.fastabend@gmail.com>, <jolsa@kernel.org>, <jthoughton@google.com>,
-	<kalyazin@amazon.co.uk>, <kas@kernel.org>, <kernel@xen0n.name>,
-	<kpsingh@kernel.org>, <kvm@vger.kernel.org>, <kvmarm@lists.linux.dev>,
-	<lenb@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-doc@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-kselftest@vger.kernel.org>,
-	<linux-mm@kvack.org>, <linux-pm@vger.kernel.org>,
-	<linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
-	<loongarch@lists.linux.dev>, <lorenzo.stoakes@oracle.com>, <luto@kernel.org>,
-	<maobibo@loongson.cn>, <martin.lau@linux.dev>, <maz@kernel.org>,
-	<mhocko@suse.com>, <mingo@redhat.com>, <mlevitsk@redhat.com>,
-	<nikita.kalyazin@linux.dev>, <oupton@kernel.org>, <palmer@dabbelt.com>,
-	<patrick.roy@linux.dev>, <pavel@kernel.org>, <pbonzini@redhat.com>,
-	<peterx@redhat.com>, <peterz@infradead.org>, <pfalcato@suse.de>,
-	<pjw@kernel.org>, <prsampat@amd.com>, <rafael@kernel.org>,
-	<riel@surriel.com>, <rppt@kernel.org>, <ryan.roberts@arm.com>,
-	<sdf@fomichev.me>, <shijie@os.amperecomputing.com>,
-	<skhan@linuxfoundation.org>, <song@kernel.org>, <surenb@google.com>,
-	<suzuki.poulose@arm.com>, <svens@linux.ibm.com>, <tabba@google.com>,
-	<tglx@kernel.org>, <thuth@redhat.com>, <urezki@gmail.com>,
-	<vannapurve@google.com>, <vbabka@kernel.org>, <will@kernel.org>,
-	<willy@infradead.org>, <wu.fei9@sanechips.com.cn>, <x86@kernel.org>,
-	<yang@os.amperecomputing.com>, <yangyicong@hisilicon.com>,
-	<yonghong.song@linux.dev>, <yosry@kernel.org>, <yu-cheng.yu@intel.com>,
-	<yuzenghui@huawei.com>, <zhengqi.arch@bytedance.com>, <zulinx86@gmai.com>
-Subject: Re: [PATCH v12 10/16] KVM: guest_memfd: Add flag to remove from direct map
-Date: Fri, 8 May 2026 08:18:10 +0000
-Message-ID: <20260508081812.12345-1-itazur@amazon.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <CAPTztWb67XZvfcMVnbegDNNW0LJa9UsaTGx3M898xJUJrekk0w@mail.gmail.com>
-References: <CAPTztWb67XZvfcMVnbegDNNW0LJa9UsaTGx3M898xJUJrekk0w@mail.gmail.com>
+        d=gmail.com; s=20251104; t=1778229131; x=1778833931; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=AWwFa4pj4HdftCfFhlpM5f3biTFRHPg+OaCJzQMTcbM=;
+        b=NW1nVRxw4euprXmY1ykOvrrxh+RMp8QCV6KICOOkPYRjPYU7uPHUQVPaVn4Q3T3Djx
+         lWe/LWEebAqKQOc6BznQTPuYYhjJ81iDCT+CnqveUBNwDpGLpvEYOTSHKsJ6WcXenimV
+         DVC4DMURdF5bRytNXTGhMxoJQbqfRu4aa0W71pYv1ZYRHZi88pEW81KDQto7VDD3vW8B
+         mQ/c9WvxIvDQcF3o3PTtRBcmtUztEYejA8dJvfdc5fOoZ7CA1zBfBkdiWxJmCO6Shr5r
+         s7zkVWJejxIN2wBQaI4LpbkPXwdr05W5Rxw9txEr5apmOoEhtM0c5CdxgN/LrzTpgmDk
+         XJeA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778229131; x=1778833931;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=AWwFa4pj4HdftCfFhlpM5f3biTFRHPg+OaCJzQMTcbM=;
+        b=VB1aVAuF/bdd6HpHxJP+VZ/fhMXQVBYpq7DfG3ByXrxYUdzZsn2BtixsbSoOLeFOD0
+         7tDyg45NkNkI6YZ4KjatavHDKn1lrXRzA1zAT44op94t0fgQNqOlttfikTMdopQuZ8i+
+         jfRmoIdjM9Lis6A/7euzqoHRBUNKJYLrBE1fRGKU849RU1ggA775bnGX+3f+W77GhsVR
+         pMQ4vYtvCB7YbvYDZ6QRxerFdCWFif/mZLKGYaIW+lZVv51hVhK9rQhIpepNmSld/7h8
+         qvNLVS9ps8DmunssCCtSGyOZjwrt9OfDbdXzu83GRvuwoRsDe26qfCPAvjTQgO0czmYy
+         0PgQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+TJsrutQ0sHHr3pKUTS2FrGBVSprXQcZg0OrbnX/EzAmULSnjcWE8UasLNAgHBPhVIAMLwpVk2IQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy8kIXDjbsdZ1eP//m2mxFNiXBt4sKU2pv+goWrCpnk2+EzK/s8
+	MFs+zvZZq88fzFajblmNO51Ti1RJR4KUuMaOaYY4ufMyioj1JZABInfP
+X-Gm-Gg: AeBDietOKvyhku+Ay812toqI0zRFxKK166j13Z2ZTaes0Zs1O+BbskQc+gU0/TCHfgd
+	3JnHWiK1m3mW4sokh6KVFh4RAwScCmdlFsmrfhZOLu1s6KkMnbR60cQ7kuPT7jKtUYwHLn4kO2o
+	AI7FcC4S21oDdQCi1ip9OXhaQD1Hi4+PHKt3OpHZTf9LBhihSsR6D/VHgqdAs7PrDPyh0HemIp/
+	1975ILHWbBy3CYc273i3CJyNHHxEqrkhfVzr/mkPfa/IeXfAw7/Lw4pTsphBa99/r+t8z9RYfWt
+	3ftzoCSuzk18wAa46P2/BXKBQ+chby4FBqtNW8FHYOGAvjxMp9zdVwrqRWV7UBw3qQKkrzqdL6r
+	pYpHB+147/4YOAE4HgvH2LxpjP6CSI9b/qV8l5+uZWrQMDz0l55zw17ZDQa/M128rH0R9TExZlp
+	5vWhj8Iio/ZQICUtb5IgFzSOLOofon3tjoyNxX7/e7JeJSUw64DLSs0m+8/+votIlp
+X-Received: by 2002:a05:600c:1d11:b0:48a:7f90:2231 with SMTP id 5b1f17b1804b1-48e51f364f3mr189545395e9.19.1778229129820;
+        Fri, 08 May 2026 01:32:09 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e68ef5209sm20514445e9.15.2026.05.08.01.32.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 May 2026 01:32:08 -0700 (PDT)
+Date: Fri, 8 May 2026 09:32:06 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
+ will@kernel.org, peterz@infradead.org, akpm@linux-foundation.org,
+ mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
+ rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
+ zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com, rdunlap@infradead.org,
+ joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
+ konrad.wilk@oracle.com, ashok.bhat@arm.com
+Subject: Re: [PATCH v11 01/14] asm-generic: barrier: Add
+ smp_cond_load_relaxed_timeout()
+Message-ID: <20260508093206.389d9af2@pumpkin>
+In-Reply-To: <87lddujttz.fsf@oracle.com>
+References: <20260408122538.3610871-1-ankur.a.arora@oracle.com>
+	<20260408122538.3610871-2-ankur.a.arora@oracle.com>
+	<874iklm1uy.fsf@oracle.com>
+	<20260506095836.216d9cc5@pumpkin>
+	<87o6isl0nl.fsf@oracle.com>
+	<20260507105721.66ba1e45@pumpkin>
+	<87lddujttz.fsf@oracle.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: EX19D033UWA002.ant.amazon.com (10.13.139.10) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Sean, Frank, Lorenzo,
+On Thu, 07 May 2026 23:31:20 -0700
+Ankur Arora <ankur.a.arora@oracle.com> wrote:
 
-On Tue, Apr 21, 2026 at 10:08:48AM -0700, Frank van der Linden wrote:
-> On Tue, Apr 21, 2026 at 9:31 AM Sean Christopherson <seanjc@google.com> w=
-rote:
-> > Making guest_memfd responsible for zapping and restoring the direct map=
- on a per-
-> > folio basis feels wrong given the addition of AS_NO_DIRECT_MAP.  I espe=
-cially don't
-> > like that the "rules" for when an AS_NO_DIRECT_MAP folio has a direct m=
-ap will vary
-> > based on the owner, and even within an owner (e.g. guest_memfd) will be=
- ad hoc.
+> David Laight <david.laight.linux@gmail.com> writes:
+> 
+> > On Wed, 06 May 2026 13:54:06 -0700
+> > Ankur Arora <ankur.a.arora@oracle.com> wrote:
+> >  
+> >> David Laight <david.laight.linux@gmail.com> writes:
+> >>  
+> >> > On Wed, 06 May 2026 00:30:29 -0700
+> >> > Ankur Arora <ankur.a.arora@oracle.com> wrote:
+> >> >  
+> >> >> Ankur Arora <ankur.a.arora@oracle.com> writes:
+> >> >>  
+> >> >> > Add smp_cond_load_relaxed_timeout(), which extends
+> >> >> > smp_cond_load_relaxed() to allow waiting for a duration.
+> >> >> >
+> >> >> > We loop around waiting for the condition variable to change while
+> >> >> > peridically doing a time-check. The loop uses cpu_poll_relax() to slow
+> >> >> > down the busy-wait, which, unless overridden by the architecture
+> >> >> > code, amounts to a cpu_relax().
+> >> >> >
+> >> >> > Note that there are two ways for the time-check to fail: the timeout
+> >> >> > case or, @time_expr_ns returning an invalid value (negative or zero).
+> >> >> > The second failure mode allows for clocks attached to the clock-domain
+> >> >> > of @cond_expr --  which might cease to operate meaningfully once some
+> >> >> > state internal to @cond_expr has changed -- to fail.
+> >> >> >
+> >> >> > Evaluation of @time_expr_ns: in the fastpath we want to keep the
+> >> >> > performance close to smp_cond_load_relaxed(). So defer evaluation
+> >> >> > of the potentially costly @time_expr_ns to the slowpath.
+> >> >> >
+> >> >> > This also means that there will always be some hardware dependent
+> >> >> > duration that has passed in cpu_poll_relax() iterations at the time
+> >> >> > of first evaluation. Additionally cpu_poll_relax() is not guaranteed
+> >> >> > to return at timeout boundary. In sum, expect timeout overshoot when
+> >> >> > we exit due to expiration of the timeout.
+> >> >> >
+> >> >> > The number of spin iterations before time-check, SMP_TIMEOUT_POLL_COUNT
+> >> >> > is chosen to be 200 by default. With a cpu_poll_relax() iteration
+> >> >> > taking ~20-30 cycles (measured on a variety of x86 platforms), we
+> >> >> > expect a time-check every ~4000-6000 cycles.
+> >> >> >
+> >> >> > The outer limit of the overshoot is double that when working with the
+> >> >> > parameters above. This might be higher or lower depending on the
+> >> >> > implementation of cpu_poll_relax() across architectures.
+> >> >> >
+> >> >> > Lastly, config option ARCH_HAS_CPU_RELAX indicates availability of a
+> >> >> > cpu_poll_relax() that is cheaper than polling. This might be relevant
+> >> >> > for cases with a long timeout.
+> >> >> >
+> >> >> > Cc: Arnd Bergmann <arnd@arndb.de>
+> >> >> > Cc: Will Deacon <will@kernel.org>
+> >> >> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> >> >> > Cc: Peter Zijlstra <peterz@infradead.org>
+> >> >> > Cc: linux-arch@vger.kernel.org
+> >> >> > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> >> >> > Signed-off-by: Ankur Arora <ankur.a.arora@oracle.com>
+> >> >> > ---
+> >> >> > Notes:
+> >> >> >    - add a comment mentioning that smp_cond_load_relaxed_timeout() might
+> >> >> >      be using architectural primitives that don't support MMIO.
+> >> >> >      (David Laight, Catalin Marinas)
+> >> >> >
+> >> >> >  include/asm-generic/barrier.h | 69 +++++++++++++++++++++++++++++++++++
+> >> >> >  1 file changed, 69 insertions(+)
+> >> >> >
+> >> >> > diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
+> >> >> > index d4f581c1e21d..e5a6a1c04649 100644
+> >> >> > --- a/include/asm-generic/barrier.h
+> >> >> > +++ b/include/asm-generic/barrier.h
+> >> >> > @@ -273,6 +273,75 @@ do {									\
+> >> >> >  })
+> >> >> >  #endif
+> >> >> >
+> >> >> > +/*
+> >> >> > + * Number of times we iterate in the loop before doing the time check.
+> >> >> > + * Note that the iteration count assumes that the loop condition is
+> >> >> > + * relatively cheap.
+> >> >> > + */
+> >> >> > +#ifndef SMP_TIMEOUT_POLL_COUNT
+> >> >> > +#define SMP_TIMEOUT_POLL_COUNT		200
+> >> >> > +#endif
+> >> >> > +
+> >> >> > +/*
+> >> >> > + * Platforms with ARCH_HAS_CPU_RELAX have a cpu_poll_relax() implementation
+> >> >> > + * that is expected to be cheaper (lower power) than pure polling.
+> >> >> > + */
+> >> >> > +#ifndef cpu_poll_relax
+> >> >> > +#define cpu_poll_relax(ptr, val, timeout_ns)	cpu_relax()
+> >> >> > +#endif
+> >> >> > +
+> >> >> > +/**
+> >> >> > + * smp_cond_load_relaxed_timeout() - (Spin) wait for cond with no ordering
+> >> >> > + * guarantees until a timeout expires.
+> >> >> > + * @ptr: pointer to the variable to wait on.
+> >> >> > + * @cond_expr: boolean expression to wait for.
+> >> >> > + * @time_expr_ns: expression that evaluates to monotonic time (in ns) or,
+> >> >> > + *  on failure, returns a negative value.
+> >> >> > + * @timeout_ns: timeout value in ns
+> >> >> > + * Both of the above are assumed to be compatible with s64; the signed
+> >> >> > + * value is used to handle the failure case in @time_expr_ns.
+> >> >> > + *
+> >> >> > + * Equivalent to using READ_ONCE() on the condition variable.
+> >> >> > + *
+> >> >> > + * Callers that expect to wait for prolonged durations might want
+> >> >> > + * to take into account the availability of ARCH_HAS_CPU_RELAX.
+> >> >> > + *
+> >> >> > + * Note that @ptr is expected to point to a memory address. Using this
+> >> >> > + * interface with MMIO will be slower (since SMP_TIMEOUT_POLL_COUNT is
+> >> >> > + * tuned for memory) and might also break in interesting architecture
+> >> >> > + * dependent ways.
+> >> >> > + */
+> >> >> > +#ifndef smp_cond_load_relaxed_timeout
+> >> >> > +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,			\
+> >> >> > +				      time_expr_ns, timeout_ns)		\
+> >> >> > +({									\
+> >> >> > +	typeof(ptr) __PTR = (ptr);					\  
 > >
-> > E.g. as per the series to add guest_memfd write() support[*]:
+> > 		auto __PTR = ptr;
+> >  
+> >> >> > +	__unqual_scalar_typeof(*ptr) VAL;				\  
 > >
-> >   When direct map removal is implemented [2]
-> >    - write() will not be allowed to access pages that have already
-> >      been removed from direct map
-> >    - on completion, write() will remove the populated pages from
-> >      direct map
+> > It can't matter if integer promotions before assigning to VAL.
+> > So something like:
+> > 		auto VAL = 1 ? 0 : *__PTR + 0;
+> > will generate a suitable writable variable.
+> > (The '+ 0' is needed because some versions of gcc incorrectly propagate
+> > 'const'.)  
+> 
+> Thanks. This is useful to know. However, we use the unqualified typeof
+> dictum all over barrier.h. I didn't really see the need to depart from
+> that.
+
+The have been discussions in other threads, my interpretation of the result
+is that the use of __unqual_scalar_typeof() should be limited to a few places
+where there really is no other option.
+If you've ever looked at the preprocessor output you'll understand part of the
+problem.
+
+> 
+> >> >> > +	u32 __n = 0, __spin = SMP_TIMEOUT_POLL_COUNT;			\
+> >> >> > +	s64 __timeout = (s64)timeout_ns;				\  
 > >
-> > That's pretty gross ABI, because with KVM_GMEM_FOLIO_NO_DIRECT_MAP, use=
-rspace can
-> > write() exactly once.  To re-write memory, I assume userspace would nee=
-d to do a
-> > PUNCH_HOLE or truncate.
+> > The (s64) cast can only hide errors.
+> >  
+> >> >> > +	s64 __time_now, __time_end = 0;					\
+> >> >> > +									\
+> >> >> > +	for (;;) {							\
+> >> >> > +		VAL = READ_ONCE(*__PTR);				\
+> >> >> > +		if (cond_expr)						\
+> >> >> > +			break;						\
+> >> >> > +		cpu_poll_relax(__PTR, VAL, (u64)__timeout);		\  
 > >
-> > What's preventing us from handling this automagically in e.g. filemap_a=
-dd_folio()
-> > and filemap_remove_folio()?  Then the usage rules are pretty straightfo=
-rward: the
-> > kernel must *always* assume the direct map is invalid for folios from
-> > AS_NO_DIRECT_MAP mappings.
+> > That doesn't look right, __timeout is relative; if the underlying code
+> > uses the timeout then the code delays for 200 * timeout_ns before even
+> > looking at the actual time.
 > >
-> > Then if KVM needs to utilize a kernel mapping, e.g. in kvm_gmem_populat=
-e(), KVM
-> > could use dedicated variants of kmap_local_xxx() to deal with a local m=
-apping for
-> > a folio/page without a direct map.  Or, KVM could simply disallow the s=
-pecific
-> > sequence that would require KVM to do the memcpy (I'm pretty sure we ca=
-n do that
-> > with in-place shared=3D>private conversion support).
+> > If you want to spin then you may not even want the cpu_relax() at all.
+> > (Or with a very short timeout as in the version below.)  
+> 
+> Yeah, BPF uses this in the fastpath where we want to avoid looking at
+> the clock in the fastpath.
+> Overshooting the deadline was a minor problem in comparison.
+> 
+> But I agree the version below with the shorter timeout works better.
+> Unfortunately it doesn't help on arm64 if we are using WFE.
+
+Yes, the code is ok if cpu_poll_relax() ignores the timeout.
+But for WFE it is all broken.
+
+Perhaps refactoring/optimising the WFE code might help.
+IIRC it converts the relative timeout_ns into an absolute 'end time'
+(of some other clock).
+So if you do that conversion once, returning 0 (usually compile-time)
+when WFE isn't in use then it should be possible to make this code work.
+
+Actually, if you assume/require that the converted time is either 0 or
+greater than 200 then it can be used as the initialiser for __n.
+
+Even if the timeout passed to cpu_poll_relax() is relative, it doesn't
+necessarily need reducing.
+I'd expect that the timeout is only a 'guard' timeout to detect lockups.
+So just documenting that the timeout might be double the specified value
+would solve that problem.
+
+> 
+> >> >> > +		if (++__n < __spin)					\
+> >> >> > +			continue;					\
+> >> >> > +		__time_now = (s64)(time_expr_ns);			\  
 > >
-> > I realize that could throw a big wrench into write() performance, but I=
-MO, before
-> > merging either series, we need a complete story for exactly how this wi=
-ll all fit
-> > together, in a maintainable fashion and with sane ABI.
->
-> I agree with this - this approach would also allow for memory that was
-> never in the direct map to begin with, or has been taken out already
-> (for which I happen to have a use case :-)). guest_memfd and other
-> code can then assume that AS_NO_DIRECT_MAP means they have to take
-> explicit action to map it if needed. It's a clean, simple ABI.
->
-> With the current set of patches, it seems like this couldn't be done
-> in a clean manner.
+> > Another cast that can only hide bugs.
+> >  
+> >> >> > +		if (unlikely(__time_end == 0))				\
+> >> >> > +			__time_end = __time_now + __timeout;		\
+> >> >> > +		__timeout = __time_end - __time_now;			\
+> >> >> > +		if (__time_now <= 0 || __timeout <= 0) {		\
+> >> >> > +			VAL = READ_ONCE(*__PTR);			\
+> >> >> > +			break;						\
+> >> >> > +		}							\
+> >> >> > +		__n = 0;						\  
+> >
+> > Resetting the spin count doesn't look right at all.
+> > In principle the code will delay for 200 * __timeout.
+> > Possibly the earlier check should be:
+> > 			if (__n < __spin) {
+> > 				__n++;
+> > 				continue;
+> > 			}
+> > (Or just don't worry that the code will spin again after 4M loops.
+> > The problem you have is that if cpu_poll_relay() ignores the timeout you
+> > probably want to spin 'for a bit' in code that only accesses local data
+> > (in particular avoiding evaluating cond_expr or time_expr_ns).  
+> 
+> Yeah we do avoid evaluating the time_expr_ns. And I agree we don't want
+> to hammer the cond_expr but the cpu_relax() should help with that.
+> (In my measurements I see an IPC of ~0.05 in a cpu_relax() loop of this
+> kind.)
 
-Agreed with both of you.  I'll adopt the filemap-level approach:
+I'm not sure what cpu_relax() really does.
+I suspect it helps if hyperthreading is in use, and may reduce power a bit
+(and may be quite slow).
+But the cpu will still be hammering cond_expr.
+This is probably fine most of the time - since it will just hit the local
+d-cache. Even if the line is evicted I'd expect the cost to mainly be load
+on the inter-cpu bus (slowing down cond_expr won't matter).
 
-- Move the zap/restore hooks from guest_memfd into filemap_add_folio()
-  / filemap_remove_folio().
-- Tighten AS_NO_DIRECT_MAP semantics so that, for folios in such a
-  mapping, the direct map is invalid for the entire time the folio
-  resides in the page cache.
-- Drop the per-folio KVM_GMEM_FOLIO_NO_DIRECT_MAP bookkeeping in
-  folio->private, since the existence of the folio in the mapping is
-  itself the state.
+I have a feeling that one of the reasons that WFE was better than just
+spinning was that the expressions read a per-cpu variable; and doing that
+on arm64 required locked bus cycles so affected system performance.
+I'm sure that using mwait (or equivalent) will almost always increase latency
+over just reading the variable, it is lower power - but that is different.
 
-On each guest memory population path,
+...
 
-- memcpy-based population from userspace goes through the userspace
-  mapping of guest_memfd, not through the kernel direct map, so the
-  filemap-level invariant doesn't affect it.  But this is slow, which
-  is what motivated the write() syscall support.
+> >> >> I think this is worth cleaning up a bit. The change is mostly around
+> >> >> introducing a u32 __itertime and explicitly computing the waiting time.
+> >> >> And adding a check to ensure that we start with a valid value.
+> >> >>
+> >> >> This does make the implementation a little more involved. So just wanted
+> >> >> to see if people have any opinions on this?
+> >> >>
+> >> >> +#ifndef smp_cond_load_relaxed_timeout
+> >> >> +#define smp_cond_load_relaxed_timeout(ptr, cond_expr,          \
+> >> >> +                                     time_expr_ns, timeout_ns) \
+> >> >> +({                                                             \
+> >> >> +       typeof(ptr) __PTR = (ptr);                              \
+> >> >> +       __unqual_scalar_typeof(*(ptr)) VAL;                     \
+> >> >> +       u32 __count = 0, __spin = SMP_TIMEOUT_POLL_COUNT;       \
+> >> >> +       s64 __timeout = (s64)(timeout_ns);                      \
+> >> >> +       s64 __time_now, __time_end = 0;                         \
+> >> >> +       u32 __maybe_unused __itertime;                          \
+> >> >> +                                                               \
+> >> >> +       for (__itertime = NSEC_PER_USEC;                        \  
+> >
+> > Ok, so that limits the initial 'spin' to 200 usecs.
+> > That gets added to any caller-specified timeout.
+> >  
+> >> >> +               VAL = READ_ONCE(*__PTR), __timeout > 0; ) {     \  
+> >
+> > Broken indentation.
+> > I'd change it back to a for (;;) loop.
+> >
+> > If __timeout <= 0 then the code goes through the 'timer expired'
+> > path (below) on the first iteration.
+> > So the extra check is just bloat.  
+> 
+> Yes, but by the time of the first check we've done this
+> computation with it:
+> >> >> +               if (unlikely(__time_end == 0))                  \
+> >> >> +                       __time_end = __time_now + __timeout;    \
+> >> >> +               __timeout = __time_end - __time_now;            \  
 
-- write(): meant to speed up the userspace-memcpy case above by doing
-  the copy in the kernel.  I believe Brendan's __GFP_UNMAPPED/mermap
-  work [1] would give us a low-overhead way to get temporary kernel
-  access to an AS_NO_DIRECT_MAP.  Landing mermap may take a while, but
-  this series does not introduce the write() path, so mermap is not a
-  blocker for now.
+Yep, but you don't expect 0 so there is no point optimising for it.
 
-- kvm_gmem_populate(): this is a TDX/SNP-only path, and NO_DIRECT_MAP
-  is not available on those VM types =E2=80=94
-  kvm_arch_gmem_supports_no_direct_map() returns false for
-  KVM_X86_TDX_VM and KVM_X86_SNP_VM, which are its only callers
-  today.  So it doesn't interact with the filemap invariant IIUC.
+> >> >> +               if (cond_expr)                                  \
+> >> >> +                       break;                                  \
+> >> >> +               cpu_poll_relax(__PTR, VAL, __itertime);         \
+> >> >> +               if (++__count < __spin)                         \
+> >> >> +                       continue;                               \
+> >> >> +               __time_now = (s64)(time_expr_ns);               \
+> >> >> +               if (unlikely(__time_end == 0))                  \
+> >> >> +                       __time_end = __time_now + __timeout;    \
+> >> >> +               __timeout = __time_end - __time_now;            \
+> >> >> +               if (__time_now <= 0 || __timeout <= 0) {        \
+> >> >> +                       VAL = READ_ONCE(*__PTR);                \
+> >> >> +                       break;                                  \
+> >> >> +               }                                               \  
+> >
+> > How about:
+> > 			if (unlikely(__time_end == 0)) {
+> > 				if (__time_now <= 0)
+> > 					goto timed_out;
+> > 				__time_end = __time_now + __timeout;
+> > 			} else {
+> > 				if (__time_now >= __time_end) {
+> > timed_out:
+> > 					VAL = READ_ONCE(*__PTR);
+> > 					break;
+> > 				}
+> > 				__timeout = __time_end - __time_now;
+> > 			}  
+> 
+> I had a version like that for one of the iterations. One of the problems
+> with it was that needed a named goto (because the whole thing is wrapped
+> in a macro). I don't tihnk the extra check is expensive enough in the
+> slowpath that it's worth rewriting this code.
 
-So, unless I'm missing any path, adopting the filemap-level approach in
-this series should be fine.
+It is probably possible to write it all in one condition - but it would
+be unreadable :-)
 
+Actually if you require that time_expr_ns be -1 on failure and use u64
+(not s64) then you can do:
+	if (!__time_end)
+		__time_end = __time_now + __timeout;
+	if (__time_now >= __time_end) {
+		VAL = READ_ONCE(*__PTR);
+		break;
+	}
+That relies on the '+' wrapping when the initial time_expr_ns fails.
 
-I'd like to consult with you folks on how to proceed in advance.  In a
-separate reply on the cover letter thread [2], Lorenzo and Sean
-suggested that the mm pieces should go through the mm subsystem:
+> 
+> >> >> +               __itertime = __timeout % NSEC_PER_MSEC +        \
+> >> >> +                               NSEC_PER_USEC;                  \  
+> >
+> > That seems to just be putting a bound on the timeout.
+> > So the '% NSEC_PER_MSEC' could be '& ((1u << 20) - 1)'
+> > replacing an expensive signed divide with a cheap mask.  
+> 
+> I think this is a good idea. Let me do something like that instead.
+> 
+> > But overall this is a lot of code to inline.  
+> 
+> Sure. But it's a small number of callsites (and it's a relatively niche
+> interface) so I don't think inlining it is a huge problem.
 
-On Tue, Apr 21, 2026 at 04:36:00PM +0000, Sean Christopherson wrote:
-> Yeah, when the time comes, the mm pieces definitely need to go through th=
-e mm
-> tree.  Ideally, I think this would be merged in two separate parts, with =
-all mm
-> changes going through the mm tree, and then the KVM changes through the K=
-VM tree
-> using a stable topic branch/tag from Andrew.
+Until 'next week' :-)
 
-I see two reasonable paths to get there, and would appreciate your
-input on which you prefer:
-
-Path A =E2=80=94 validate on KVM side first, then split:
-  - Post v13 as a single series on the KVM list, gather feedback and
-    make sure the design is acceptable to KVM reviewers.
-  - Once v13 looks good ("the time comes"), do the MM/KVM split,
-    rebase the MM part onto the appropriate MM branch, and post the
-    MM part to linux-mm to build consensus with MM maintainers.
-
-Path B =E2=80=94 split early and seek MM consensus in parallel:
-  - With the filemap rework already in place, do the MM/KVM split
-    now and post the MM part to linux-mm directly.  The KVM part follows
-    on top of a stable topic from MM.
-
-Which of the two would you rather see?  Happy to go either way.
-
-
-[1] https://lore.kernel.org/all/20260320-page_alloc-unmapped-v2-0-28bf1bd54=
-f41@google.com/
-[2] https://lore.kernel.org/all/20260506080753.14517-1-itazur@amazon.com/
-
-Takahiro
-
+	David
