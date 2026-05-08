@@ -1,46 +1,46 @@
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022081.outbound.protection.outlook.com [40.107.75.81])
+Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11022105.outbound.protection.outlook.com [52.101.126.105])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C2E2374E7F
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 06:31:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D13437105A
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 06:32:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.105
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778221926; cv=fail; b=dBm4jBrPMIrtfUXO9KBFrpNKgLiGkrwxEQdjCBsIpa5oyGz/2t+JM6OSwcnpN+hacrVyOcnmgs+1H2uXPobGjyNlNsAe56/RNxl2A4KDpw/uvu0z+DYD5G949rprP50asYrz+1Mzetk05O/HiYJld4eySeS5iUBk2RCLtfsl7Gc=
+	t=1778221928; cv=fail; b=ducf5aHIeQqDEMG31lab52B2eyU4RgioUCk/aA7bQhlDI/7fT1iwc6QiXb3a8oesm8lVlbSRl6jjFgJt1bxeKr2ileYo6C7af0xDn9ByQm54UVuUDS5GIzF4swMAaW4O6TXqU2kkEWRvEzt5QjtPzHjqWMndADd7dGOE27+sAwE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778221926; c=relaxed/simple;
-	bh=e/C5rLPgztHLsJFSZeyOhZRZVkM+lH5AkrpqxC3ybJg=;
+	s=arc-20240116; t=1778221928; c=relaxed/simple;
+	bh=hxUwV5UNMhiMJyl7o2H6AADtjrsOZt/rg6Cyhuj6TVE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lETJnfU5S5DzVHL2tqcRlYnrpl8JPLouConsW2zSYCG1coqX99AarC8Mz3TAvNSmCugH/gNw3inardYlpmIuviisZkulC/vTsI6HRzpjAHEzIjeT7KCQ0YIKJ8+PhithH/wIkg0mGb8+UCpntv4j2uHAXy3tfLyaMp9pJmNBUdk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=dVjDr5If; arc=fail smtp.client-ip=40.107.75.81
+	 MIME-Version:Content-Type; b=iFu3x7UJMzGxpVixP6BXbAlnFI/6M2qSBa7RasVcI/rLfuNSPji/R4kx+2Nxk525W0rSGv7n6QDsN3aRf5Ld1AAkcLYmUpIxFfq7SqYsw4fdzVoHoC0JxRYKVzxKDKXI+oQCWdTlZMFCxhyPBg621f5Mrib6CDYcL5SAz2dCPuc=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=pHKDWk00; arc=fail smtp.client-ip=52.101.126.105
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qnap.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="dVjDr5If"
+	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="pHKDWk00"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cDaxSZrEAg2rseadI7YrxtgQyqhgjabj5yVKORTkgowncFehPoaNkVTQxSqCP0N5hvAhER53LbkV0K/Tqm44IA7SNvkEBZdJXefwqcKYqIFOuGGIm3JsXv4Hd165Z9FG6P9nSQiONO5XnikqipGiUX/tM6WJpgIg+i50KudrTlmM0ezfbJ625Q5jysRmMovVZeGT8QskiinWZL76gxalwDPTo2ll5FraR4zsNcywfi5s/bKtXaYy43rIovV/u0BfaePEQVrnyRRo2xTYeuYk/GHIwCDxNXb0SmjcZLmWhSDBhF+qA7JwL891H8ZhYAxhAMGCsIEYFaw/AghQgKfLFQ==
+ b=W4jbazyOiPZpaYuW58W3HlFudYND4MW13KpFPAUnzhY90y0EZVXPIVQ++4vz4y/euTAwjbPa43T1+ZKzhewmVdhLfnWM+u/VWLUgAPRvRy1DFORUmYzSG/3Tbs9jYW3iOiFn+bkbPm957YftMlKs1t8WRcEYbM7vzqJTensQaifQgwZD0A66KwanGqlHlA5GpdfR9OzPfKap1PJ9SybLM4ER7gk0f7GD8htpYotbPg0qkCPlJRlFccQ21AEFaCbHYE3zK8ghmilqpdiIaOhmy+xRFlEIzwpVgIRkbR8JuBuN3z/myTvMmIJAlmjwjO8FagZxjBjlEtI7ZylYdkkHFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GK+XLqCcQcC2byg88+nfcn+wehDjpFL5CZb6iCUKd9M=;
- b=qQi4S25UuVpO1hX0SYbiosxZYjxh5uDXRqowbuztM3p/m83Lm2pMyVKGgRAbnNs5BKmGNKJyi8fJdC3sMuxN2VaZPKqFHBvhr7kzYT8GA+wFYYU1saOa0x2ZeVr1yn43SqrcRXq43xoi629feo/qZ9Ozoq4P2Qyg4ypa6CvH7dXLANyjGQSyhvTljbgelhGlNw9CN+Fjp8v9h3CEPocPaBSStpa2rPhEin7Uguv0By4TB04/DY4qyo2yGECDV+im2mTO7jgKi1dPiimphbpZjhnZs+u1V1+FN6X6Qe0/Sqjrl8oooO8cSzt7gpi39XG+vkkhruDphNgc54CFP8MQrw==
+ bh=Es6cct218TgjUZmie3HEDdffneXiqKYhXYIT6JHyme4=;
+ b=Q2CEmhofO+wywpITggU9Eeq+SEyKt3duzRhdiBhL1Ld21PsP+6IF8Ov9WAqn/gA3ZatPgBt7plnEedGaTJ6HFVor4LCZsVZdY3hsymZ1mve8q1eKOAgNM5KRiJlJzwE1YobYSV7IuTadAmY/VsrCTcAngzMKB6VqGmpr73XZAKlg2mUJd/3fFoMT4Wyq9HkynnNmO7PhdH0kNWBXTubbdsrLbbjJgvwsGhPOqvMXAALxaBsP9APk/lRqLiW3CyYNdQ5ldLYzal8hfwljRT0gDE877wXAS7O0t94Qb5BVMXYqkqA9E2ecAROriLqg2jfACnpZoc2VCOaEUCoAFn7+Jw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
  122.147.219.42) smtp.rcpttodomain=kernel.org smtp.mailfrom=qnap.com;
  dmarc=fail (p=quarantine sp=quarantine pct=100) action=quarantine
  header.from=qnap.com; dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qnap.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GK+XLqCcQcC2byg88+nfcn+wehDjpFL5CZb6iCUKd9M=;
- b=dVjDr5IfagCm9rlVpdBjVGU18De1RgzBnxopWQw0aLjXTnzL+tKKEftuYVbuYojAIXs97Q52gWUOfpelILdNyKpQtT2zRJW5oCT2OrxCC6HzoGwbjDhr/cxVjddmaBRSzQjRIJRf8QbvxslE9gweTCLZBH0XHldx3afkMp7N9V9DR1sx5l9EilMLwy3ucA4WfwcXuLfvtJnwbvopMbB7bRX/0Dddyeo7mJfOOpMKysH7yTcHKf3dPQrHmwC5RDRhPpUpOF14rSyUT9Utn/PeVVeBwFaTDIUxVZVI6/4KhWpQapuTDkq5/y/R8binFG+TbDlY09lpCbmSMrP7CO+9IA==
-Received: from TYCP286CA0227.JPNP286.PROD.OUTLOOK.COM (2603:1096:400:3c7::14)
- by SI2PR04MB6099.apcprd04.prod.outlook.com (2603:1096:4:1fa::6) with
+ bh=Es6cct218TgjUZmie3HEDdffneXiqKYhXYIT6JHyme4=;
+ b=pHKDWk00Enjc05B6murEmdJTREuT7JMvSn94VwTsLK/m6J5ts1AkdKSMjZjqlnTtygepU7S34oesb5Tetcpr+xRk82yPJnvhc7DtgViLojw5E/no/s+MQfffRE9ruovLaWWik8GWnL5AS+U+LAELrS1/tgPT7Fvp0wbTRmzRVz4SJOILJVN7RN9jrLOc8ZpueLRznnWUKiyWNcaZBtN+eOdc3gdSt9bTOtcI9v05hOvJLGw+0Cn1XnKUUJBcx0EN0B40c1pCBP9Gj2E+vsABL2zt/X/u0TLWvcfQJUBgxQnsZf1e7zBWJNM76bO30CPepKinY0wB9UWZvOCz2deuLg==
+Received: from SI2PR06CA0003.apcprd06.prod.outlook.com (2603:1096:4:186::14)
+ by TYQPR04MB9205.apcprd04.prod.outlook.com (2603:1096:405:374::20) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.19; Fri, 8 May
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Fri, 8 May
  2026 06:31:51 +0000
-Received: from TY2PEPF0000AB88.apcprd03.prod.outlook.com
- (2603:1096:400:3c7:cafe::ea) by TYCP286CA0227.outlook.office365.com
- (2603:1096:400:3c7::14) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.19 via Frontend Transport; Fri,
- 8 May 2026 06:31:50 +0000
+Received: from SG2PEPF000B66CB.apcprd03.prod.outlook.com
+ (2603:1096:4:186:cafe::5c) by SI2PR06CA0003.outlook.office365.com
+ (2603:1096:4:186::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.18 via Frontend Transport; Fri,
+ 8 May 2026 06:31:51 +0000
 X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 122.147.219.42)
  smtp.mailfrom=qnap.com; dkim=none (message not signed)
  header.d=none;dmarc=fail action=quarantine header.from=qnap.com;
@@ -49,11 +49,11 @@ Received-SPF: Fail (protection.outlook.com: domain of qnap.com does not
  receiver=protection.outlook.com; client-ip=122.147.219.42;
  helo=mail19.qnap.com;
 Received: from mail19.qnap.com (122.147.219.42) by
- TY2PEPF0000AB88.mail.protection.outlook.com (10.167.253.11) with Microsoft
+ SG2PEPF000B66CB.mail.protection.outlook.com (10.167.240.24) with Microsoft
  SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.9
  via Frontend Transport; Fri, 8 May 2026 06:31:50 +0000
 Received: from localhost (unknown [172.17.22.18])
-	by mail19.qnap.com (Postfix) with ESMTP id BEC543A2;
+	by mail19.qnap.com (Postfix) with ESMTP id B184935F;
 	Fri,  8 May 2026 14:31:49 +0800 (CST)
 From: Henry Tseng <henrytseng@qnap.com>
 To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
@@ -64,9 +64,9 @@ Cc: linux-pm@vger.kernel.org,
 	SW Chen <swchen@qnap.com>,
 	Kevin Ko <kevinko@qnap.com>,
 	Henry Tseng <henrytseng@qnap.com>
-Subject: [PATCH v2 2/2] cpufreq: intel_pstate: Use HYBRID_SCALING_FACTOR_ADL for Bartlett Lake
-Date: Fri,  8 May 2026 14:30:32 +0800
-Message-ID: <20260508063032.3248602-3-henrytseng@qnap.com>
+Subject: [PATCH v2 1/2] cpufreq: intel_pstate: Fix scaling for hybrid-capable CPUs not reporting hybrid
+Date: Fri,  8 May 2026 14:30:31 +0800
+Message-ID: <20260508063032.3248602-2-henrytseng@qnap.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260508063032.3248602-1-henrytseng@qnap.com>
 References: <20260508063032.3248602-1-henrytseng@qnap.com>
@@ -79,102 +79,91 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY2PEPF0000AB88:EE_|SI2PR04MB6099:EE_
+X-MS-TrafficTypeDiagnostic: SG2PEPF000B66CB:EE_|TYQPR04MB9205:EE_
 Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 5b587339-6da1-4a05-766d-08deaccb7cba
+X-MS-Office365-Filtering-Correlation-Id: fd3135e4-bfc3-4c61-0f8d-08deaccb7cc6
 X-MS-Exchange-AtpMessageProperties: SA
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700016|1800799024|376014|55112099003|22082099003|56012099003|18002099003;
+	BCL:0;ARA:13230040|376014|82310400026|1800799024|36860700016|56012099003|18002099003|22082099003|55112099003|3023799003;
 X-Microsoft-Antispam-Message-Info:
-	L11fzOr0ho1EQASfNyEuUYy7axkhJlSf43J6g3CwOnAW4J3XmY8SCR2VHT7ILUrTqRN1fl7pYF8qnZMuHOQtP2HwgvnQ4SCbNIvlY7PmplSu+ZU6FxyUpZZqbCOLhmJNPGaC1YTuRJAB47V5hq+nfvCjFcaw5PJUl168RrS8H0Bm+9jN5HgtJeFE65KQNQFbybvvof3C5dhbjgD5KR6CQaZeJ8eoRknKp/iIZsoT+HSu3Yn+jjuvsqe32lrxmP98DqVW2C3fhoecVgyrmdx9aM6R47YJzAFDLsw5uwNdHOXnYGuRVkXVFsdKjzxFW8aNuK7ZyrIL7Bc/MCFYGfoT45NSKsbbHhT4qOmeXXuEo8h2WJkbTEVvOQrzpCd9OYzZpcJgvknmcr6DxzAewVXlIjHuNbv94i1wAaSlq6x/ltQ4SO26Ga3qS3CDGztw0mpxpu9Al4jGal3/fcji7BHLE6N8aEvAtJE+bhA8s0zLGG8yAa3xifZbUB98XXCQkKjDc5kpLLFZGvhS/ixXcw+AeXGPOBRDsRh2JouUMoQdBVYJwzERXtEO+kaJELLkpqSnGSaA7WNVWR0QvvH9saVxJ7PQI08H7rPkGbxMguItYudvLa4NVg4lKFYGNS1goLKpzTmK96cU+9vjmegt5uMVH7ops0IyPkd6Q273/sKpXkhTNw462ZAJk8k+icN6X7hjemn64AgZVQdWuNLbV0dGhxDufg7Yebkt8tSc77r+oSU=
+	Kn1LpKCpz4RSRH0CMFqR2yB32q1YfWR+nvdOukT2n7XEwq8M1RZJ7atrjrKdmZJ/cNum5xlTpw8+KojkK8Bem4rm9M2j7H7FeshPvBqJUkdvowIWg5K5iOieWCd9PphBSiXhqp/r9JIL6cmNDat9gPgitM6W/epwBbWYvFgAaIrv1d8E5S9OW/6lXuJLRtBhXny+/tb95qRnI4J34M+2oajCHd1AKqhD0HlHPshjvQZKhbY/G1c4+Vp4qvNsrnFUBs92X4Tpt6ZjgtBFN6+EF1SbTVeKxukJVwxNhm+CEECRRj1dv1Rr4gAmxE4Xv8zakavUFsmOldZJklwNaBhmJj8QM24atH36HRsDWhgptb3T6d+QMSvd3a5r9AT0SKJP+ijrJRTbcuDeaDooO8AhVcEreIhxK7SVXR8rRXHuVPVihH+guUJAY4/TllFzio98kJeqs8MSuqS/LjfKJnzocxk+efznItSjLb4Q/MEMmjfzpgFaL180RpfESAl75Jpb8dq8Xw2qNSZSHZdsNi+CFQznJItltLWzQjIGjeui4c7oXjY+BrKieYAKmT6JlzR5joHjMFpixfprcHUnyrk5Gfbhp0Jog9tbgGCUkJ/GbuAsBj51NeElV/U+UjswPC3VF41E6tkZ1q6gfQROGn9AuF2A9+2VSobzoKShQWNTUbJxCUpzvTtZohtYeikuufcojY1IalYf2LOzeKahLKoSrc1pwWJi7bxahUsgo006ZVo=
 X-Forefront-Antispam-Report:
-	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:122-147-219-42.static.sparqnet.net;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(1800799024)(376014)(55112099003)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1102;
+	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:ErrorRetry;CAT:NONE;SFS:(13230040)(376014)(82310400026)(1800799024)(36860700016)(56012099003)(18002099003)(22082099003)(55112099003)(3023799003);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	mYgzXQlEhkJi7WaCCUXlSEO7a/4wsHGvbXE2cffBlNpsjx2Yk1fQYP4cUuMnZaWfoHnkT1ZCS8tbgngAPOagRuO9b5t9U2kWlrSmsEhI5Qun8McPQvUb2F5/cmsfm9lwDuTsYBmvePDOIADjgA3oOoHJOPYOHYQDbfGb86Nl97oby+QdatD5PcPaYaDCY5oa/sxhmMOzBiIPTvjX9g/2UUksR+PMP1Fz72b6llqCUbbC7Roz5T5wQWhTN39feAeobu0buRfSFUln7IlrL2LsXpTPFahQycKytuwVl7Mnawuxop8K3kY5jdt56zyYXmWp/IUfvlYFdYkgY5+MDga2dlqMQAHudAi/ZVWNzY8MCpDZAZkSaD14E1bnIPlQ+JW2WP7xspunziAsOXUqbU7YaITQNyeCMaAf9B9S8HUJdCL1kHgxTjV6E0dobg+Phbs7
+	I3RYLnam1oFzh/8KBC5Ts2FJZq/UzfXlogIOQMu7c2gjZxer8LCr58uqNkHnmeJpXBFqNzWkJY82cocgPTl0/exY/iG3+tubVHMCD72oewKPqXH5gDXN+W4bLgPyVuvXtE0UMKENFMDNhcxiI+dF7wUvL1oWmF2ZgldqDCdxEec1fguzZWzYKWpU4GJhVux3EuWmEEoDE64QrudbiASb7cVml6yDFbPtv0gtSvaONbMJ8T+6U+NRMsCDlKCDNrpsCtisXYSo/dHIqbLSTJrxksu0Gv8zKWsFBmoWVmRV2sS0SIE1xd5gxWn27gzfOrTyU7Mmv8pJOeRnv0JmZpnPg1IZovjOf8YGjm8G8coUDybPY370RozRz3jNvWxw3WO1PlPLsCKLLlbqfDgBsGaytlzFBRQRlCiWyjgB/2C8ftXE7xDWJ35opAt+RV1T9hLT
 X-OriginatorOrg: qnap.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 06:31:50.2979
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 06:31:50.3550
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5b587339-6da1-4a05-766d-08deaccb7cba
+X-MS-Exchange-CrossTenant-Network-Message-Id: fd3135e4-bfc3-4c61-0f8d-08deaccb7cc6
 X-MS-Exchange-CrossTenant-Id: 6eba8807-6ef0-4e31-890c-a6ecfbb98568
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6eba8807-6ef0-4e31-890c-a6ecfbb98568;Ip=[122.147.219.42];Helo=[mail19.qnap.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	TY2PEPF0000AB88.apcprd03.prod.outlook.com
+	SG2PEPF000B66CB.apcprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR04MB6099
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYQPR04MB9205
 
-Bartlett Lake shares the same HWP-to-PERF_CTL scaling factor as Alder
-Lake / Raptor Lake P-cores.  Add Bartlett Lake to
-intel_hybrid_scaling_factor[] with HYBRID_SCALING_FACTOR_ADL so HWP
-performance levels map to the correct CPU frequencies.
+Commit 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling
+factors") restructured hwp_get_cpu_scaling() so that, when the CPU
+model is registered in intel_hybrid_scaling_factor[] and
+hybrid_get_cpu_type() does not return INTEL_CPU_TYPE_CORE, the
+function early-returns core_get_scaling() (100000) instead of
+falling through to intel_pstate_cppc_get_scaling().
 
-Per the Intel datasheet [1], the Intel Core 9 273PE specifies:
+This regresses the behavior previously addressed by
+commit 0fcfc9e51990 ("cpufreq: intel_pstate: Fix scaling for
+hybrid-capable systems with disabled E-cores").  On hybrid-capable
+processors not reporting X86_FEATURE_HYBRID_CPU (no E-cores
+enumerated), hybrid_get_cpu_type() returns 0.  Before 9b18d536b124,
+such CPUs fell through to intel_pstate_cppc_get_scaling(), which
+returned the registered hybrid_scaling_factor.  After 9b18d536b124,
+for models registered in the table the early return takes
+core_get_scaling() before reaching that fallback, so the registered
+factor is not used.
 
-  Performance-cores:                                 12
-  Efficient-cores:                                   0
-  Max Turbo Frequency:                               5.7 GHz
-  Intel Thermal Velocity Boost Frequency:            5.7 GHz
-  Intel Turbo Boost Max Technology 3.0 Frequency:    5.6 GHz
-  Performance-core Max Turbo Frequency:              5.4 GHz
-  Performance-core Base Frequency:                   2.3 GHz
+Fix this by returning hybrid_scaling_factor directly for CPU models
+registered in intel_hybrid_scaling_factor[] that do not report
+X86_FEATURE_HYBRID_CPU, before checking hybrid_get_cpu_type().
 
-Because this CPU has no E-cores and does not report
-X86_FEATURE_HYBRID_CPU, hwp_get_cpu_scaling() returns 100000 (the
-default core scaling).  In intel_pstate_get_cpu_pstates(), the
-condition cpu->pstate.scaling == perf_ctl_scaling then takes the
-early path that simply multiplies HWP performance levels by 100000,
-producing cpuinfo_max_freq values that exceed the documented Max
-Turbo Frequency:
+With that fix, non-hybrid CPUs in the table now reach
+intel_pstate_hybrid_hwp_adjust() with scaling != perf_ctl_scaling.
+Since commit 5313ec4a215a ("cpufreq: intel_pstate: Improve printing of
+debug messages") sets hwp_is_hybrid = true unconditionally inside that
+function, set hwp_is_hybrid based on X86_FEATURE_HYBRID_CPU instead,
+so the flag is not set on non-hybrid systems.
 
-  intel_pstate: CPU0: PERF_CTL turbo = 57
-  intel_pstate: CPU0: HWP_CAP guaranteed = 30
-  intel_pstate: CPU0: HWP_CAP highest = 70
-  intel_pstate: CPU0: HWP-to-frequency scaling factor: 100000
-  intel_pstate: set_policy cpuinfo.max 7000000 policy->max 7000000
-  ...
-  intel_pstate: CPU12: HWP_CAP highest = 73
-  intel_pstate: CPU12: HWP-to-frequency scaling factor: 100000
-  intel_pstate: set_policy cpuinfo.max 7300000 policy->max 7300000
-
-With this patch, the registered HYBRID_SCALING_FACTOR_ADL (78741) is
-used:
-
-  intel_pstate: hybrid scaling factor: 78741
-  intel_pstate: CPU0: PERF_CTL turbo = 57
-  intel_pstate: CPU0: HWP_CAP guaranteed = 30
-  intel_pstate: CPU0: HWP_CAP highest = 70
-  intel_pstate: CPU0: HWP-to-frequency scaling factor: 78741
-  intel_pstate: set_policy cpuinfo.max 5500000 policy->max 5500000
-  ...
-  intel_pstate: CPU12: HWP_CAP highest = 73
-  intel_pstate: CPU12: HWP-to-frequency scaling factor: 78741
-  intel_pstate: set_policy cpuinfo.max 5700000 policy->max 5700000
-
-The reported cpuinfo_max_freq (5.5/5.7 GHz) now matches the
-datasheet's Max Turbo Frequency.
-
-[1] https://www.intel.com/content/www/us/en/products/sku/245717/intel-core-9-processor-273pe-36m-cache-up-to-5-70-ghz/specifications.html
-
+Fixes: 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling factors")
 Signed-off-by: Henry Tseng <henrytseng@qnap.com>
 ---
- drivers/cpufreq/intel_pstate.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/intel_pstate.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index d39592e86570..82e82a70cacb 100644
+index 1292da53e5fc..d39592e86570 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -3737,6 +3737,7 @@ static const struct x86_cpu_id intel_hybrid_scaling_factor[] = {
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE, HYBRID_SCALING_FACTOR_ADL),
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE_P, HYBRID_SCALING_FACTOR_ADL),
- 	X86_MATCH_VFM(INTEL_RAPTORLAKE_S, HYBRID_SCALING_FACTOR_ADL),
-+	X86_MATCH_VFM(INTEL_BARTLETTLAKE, HYBRID_SCALING_FACTOR_ADL),
- 	X86_MATCH_VFM(INTEL_METEORLAKE_L, HYBRID_SCALING_FACTOR_MTL),
- 	X86_MATCH_VFM(INTEL_LUNARLAKE_M, HYBRID_SCALING_FACTOR_LNL),
- 	{}
+@@ -585,7 +585,7 @@ static void intel_pstate_hybrid_hwp_adjust(struct cpudata *cpu)
+ 	if (scaling == perf_ctl_scaling)
+ 		return;
+ 
+-	hwp_is_hybrid = true;
++	hwp_is_hybrid = cpu_feature_enabled(X86_FEATURE_HYBRID_CPU);
+ 
+ 	cpu->pstate.turbo_freq = rounddown(cpu->pstate.turbo_pstate * scaling,
+ 					   perf_ctl_scaling);
+@@ -2275,6 +2275,9 @@ static int knl_get_turbo_pstate(int cpu)
+ static int hwp_get_cpu_scaling(int cpu)
+ {
+ 	if (hybrid_scaling_factor) {
++		if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
++			return hybrid_scaling_factor;
++
+ 		/*
+ 		 * Return the hybrid scaling factor for P-cores and use the
+ 		 * default core scaling for E-cores.
 -- 
 2.43.0
 
