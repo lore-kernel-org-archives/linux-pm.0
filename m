@@ -1,46 +1,45 @@
-Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011054.outbound.protection.outlook.com [52.101.57.54])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011068.outbound.protection.outlook.com [52.101.62.68])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 355A33264F2;
-	Fri,  8 May 2026 05:19:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CA0633C183;
+	Fri,  8 May 2026 05:19:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.68
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778217573; cv=fail; b=KG7c3xT2OJrEpwqwef0ODgX4gNFjTgAEnWQ1CsRQGUxzbzJh/LMzFS2C0M0MhMIN6fJlaww2IS+piWrFQNhP0AL5lAshHsWMWsOpZRapToS8oA79LrNHf2tS6Tf/HpqwL8Oot06WXAfeStG0TNDSRqYW2nStrVeIupFnzX6eCtg=
+	t=1778217590; cv=fail; b=OkHreki5cpxikLVe05e3k8Kqzy/IQ9XI9yghz0RPxbzLUrMDNtt8zF0g9yuFzwF6QYXpBiArCKJWhVCNIqr+QXvOjVLgZrF0menUqerhPaBTR+prM5zx2HF24Xh2DpEbdB9M7jbl6VnoEAripd1tlFfNnhTAhdsO/dKHxKydosw=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778217573; c=relaxed/simple;
-	bh=4dxRSuQK05T4suWPQbAfTI/j3pJJ/pPYbOQ15DK00bQ=;
+	s=arc-20240116; t=1778217590; c=relaxed/simple;
+	bh=dJIqznGqM+gnMXuVyyzrX7QS0qb+/J4ly8x3ec1JWKY=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=FQqTzyRQ+9dzAFH0yc1cxgSOWLS37EbDPkdvDgGk7OCgUmnVvQrqp5srKyrCP2JxzqeBsRPcJRL0wSevHrMg+qhYAk56B8GY2IacZHJ8DX7TChwYVauEpSNmzVM4dW7bz8CwcgXJljEVZAhIU/eNyMEkQEhn+TYkQmJeKxEq7OE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=olyLZfun; arc=fail smtp.client-ip=52.101.57.54
+	 MIME-Version:Content-Type; b=LbmeBDyqPbhv8ej2Ke7MBJd3ZvgVhUzWFG3jBq/ZdWyJJAVMNt25WwfJSWi4apnn7x/zD2hSA6Lm5eOzr600Sj1ZTSelPppgvJoNLQaQ7Cx5CmrgiyZiBoEV7sD88mlz7a4+5T+o9vDXmCeDIqx+rid5oOE8DAMdvVJDxXbhZ2c=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=JRXgB++K; arc=fail smtp.client-ip=52.101.62.68
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="olyLZfun"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="JRXgB++K"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wb4bSVXcg5TLpXsDGZk8Az++3CpYO86t7sF63lB5BI72P/YLxmwWb7OZszG2gTwFfb54QGlzWNRFB28uEtiqscwk0iPi9XS3EYS6ONLpS1Y1m39/bVql9P7uOCsCjycSnb3z9FZJ/KNyD9aYOqUZ0u+C/h06XPF4ciNokfAsLvWr7VrrGC/46Hs1ALMHq9aMuML3aWJN+bRIzI2nQuIj1U5VzHpp/R8BeX6lqXLmiGuLguHyCQYFjo9sYygemEJbmGG92AEP7Nt5BWSuxYMibLxHLYwzFKgbZ9kUzVmzMF7KLliGM6zA5lyUjLTBPWrkTUy8y0Hre8CttV6BJdZUVQ==
+ b=WM0qR5p1BuSmreT75iVn+V+BPERucpvak6JC2xldnkCxWoHQczyiNlVKeMUydw8WBLIJQwfzOpJqwKj/aO8HL+b9wd5L2QHR301ZkSUoXiHzPi7H2/PhzD8vV8CWPn0XrWoxfZAsOqjt2UoSRSCT30jTqs8aLwy0eVhh0M2GtD8zMOlio7E7WmRLq4//GShPJ+jt+0ybWk9QpDbGooTBVHfZPYR20Je6nBKsjJBE2AqvUc/DeBL+T9n8jBP+UxxvGKv6ygEU8hwNpt+Bavn63W60x00PhHW9ISz3oomBDpKME2zNqiar6k9KPKjBGizPhoCaODSIcWjnj/ZQa7SVSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0jOU7Yvynf67M5csXD4P91qfZXsJldoJf6vW0JAWLjM=;
- b=OtJhKhMkljyCuc70HlG/V+1mcXetrjxdR6ccI8Iq0AIJfQdGTAdwRzhNwOywsHG1FRBWXhAPSGo5VkWra9KVZHWUMyJpw4y9djY4Nroo57weeFVDFQd2rkC7L09bjGxmPmM3I9vehrjlzZHMMYpjEXc+c68jF7WKSyCtg5kVDKsQ+BABHdjf6q7QEaKfe/IJKqj0iGE9tU6PD1krrHvnW0F4u0BO6V3UzxB7Pna4NuQBDhZSGyC3xw+FdK1d8+Go9+a67OnJEyf1+qUg5DbVMS/vJwLRqLMTQp3AQ+Es0oSqxbH9W885q3Tc20zlRV45XdIS+KVJ0nZAY5Hj+7na7A==
+ bh=9DNirSYPs3x1/vkTRnXBI7ucNRIpJXmG4BdUNqHklds=;
+ b=qc6G4SCziBtR7EaPchrDeHglHN0IlPf7fQRxhBJLDP4v6ydMHvMozz1l73SKXM5lc6079m0ZI1Oz5G49gGaDE2xBpKcslCeLzWoQLgX2WCdOTdENxoa09A0Dm9GlIrTWyFcma4yvXQ/FW97J8PFVuh3uCaz8CWKrs7t9wAt6wCgEkEu/mWFgM3yhdwGvG2dcjZZYveSn6IXYKyg1CJk0sI50jVL/7/YxlEtF9ujUGZFPo2Xt5/hEGigBLqK1etpuYKaRIrgyecwIXubTSqG0KbcmBoP6snZh1nh9uB5kN0dj7zB1kHLNROLepog9ENruF0zYExtzmg2QZIHHV4Dxjw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0jOU7Yvynf67M5csXD4P91qfZXsJldoJf6vW0JAWLjM=;
- b=olyLZfunG6yel0dusprzdOLHc0zl218JzmQrAsd5xXsUGq6Vdspcq8rDd8HEQCVSyfxTD7JGIQqbSOJyaI+3pbDMcq8Vlh6wN3M2ev623+C3MLsO3jzxUV85Fb2yxzset2coKMfmzx82YBKhwji3LUeIeFp1+tVAlrlKbEwxWBY=
-Received: from CY5PR14CA0009.namprd14.prod.outlook.com (2603:10b6:930:2::31)
- by SJ5PPF3487F9737.namprd12.prod.outlook.com (2603:10b6:a0f:fc02::990) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Fri, 8 May
- 2026 05:19:27 +0000
-Received: from CH3PEPF00000009.namprd04.prod.outlook.com
- (2603:10b6:930:2:cafe::65) by CY5PR14CA0009.outlook.office365.com
- (2603:10b6:930:2::31) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.18 via Frontend Transport; Fri,
- 8 May 2026 05:19:27 +0000
+ bh=9DNirSYPs3x1/vkTRnXBI7ucNRIpJXmG4BdUNqHklds=;
+ b=JRXgB++K6UFGAeC2nlFsfvY5Y6UUnrc6enHg5/v2YEFlYAYXcmdJ/FzI3pBLP609+Xpbv+ZPBDkqsxjuAlNJGfCCrLjuX8e9vVq1gDkfTZU+EGnDwK8IxSy505gJMxLCGwPaHxK2z6D3aJrKI5qVYKc/Cdp1Il9HYkK/dN9RSd4=
+Received: from CH2PR05CA0006.namprd05.prod.outlook.com (2603:10b6:610::19) by
+ CY8PR12MB7585.namprd12.prod.outlook.com (2603:10b6:930:98::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9891.18; Fri, 8 May 2026 05:19:44 +0000
+Received: from CH3PEPF00000010.namprd04.prod.outlook.com
+ (2603:10b6:610:0:cafe::aa) by CH2PR05CA0006.outlook.office365.com
+ (2603:10b6:610::19) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9913.7 via Frontend Transport; Fri, 8
+ May 2026 05:19:44 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,22 +47,23 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
 Received: from satlexmb07.amd.com (165.204.84.17) by
- CH3PEPF00000009.mail.protection.outlook.com (10.167.244.36) with Microsoft
+ CH3PEPF00000010.mail.protection.outlook.com (10.167.244.41) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.9 via Frontend Transport; Fri, 8 May 2026 05:19:27 +0000
+ 15.20.9891.9 via Frontend Transport; Fri, 8 May 2026 05:19:44 +0000
 Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Fri, 8 May
- 2026 00:19:24 -0500
+ 2026 00:19:40 -0500
 From: K Prateek Nayak <kprateek.nayak@amd.com>
 To: Mario Limonciello <mario.limonciello@amd.com>, Huang Rui
 	<ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
 	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-CC: Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>
-Subject: [PATCH 5/6] cpufreq/amd-pstate: Use "epp_default_dc" as default when dynamic_epp is disabled
-Date: Fri, 8 May 2026 05:17:47 +0000
-Message-ID: <20260508051748.10484-6-kprateek.nayak@amd.com>
+CC: Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+	Kalpana Shetty <kalpana.shetty@amd.com>
+Subject: [PATCH 6/6] cpufreq/amd-pstate-ut: Drop policy reference before driver switch
+Date: Fri, 8 May 2026 05:17:48 +0000
+Message-ID: <20260508051748.10484-7-kprateek.nayak@amd.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260508051748.10484-1-kprateek.nayak@amd.com>
 References: <20260508051748.10484-1-kprateek.nayak@amd.com>
@@ -79,73 +79,130 @@ X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
  (10.181.42.216)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PEPF00000009:EE_|SJ5PPF3487F9737:EE_
-X-MS-Office365-Filtering-Correlation-Id: 649cc8ed-0ca3-42ba-2921-08deacc1600b
+X-MS-TrafficTypeDiagnostic: CH3PEPF00000010:EE_|CY8PR12MB7585:EE_
+X-MS-Office365-Filtering-Correlation-Id: 503d21f9-59e4-4f98-1fda-08deacc16a05
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|36860700016|82310400026|56012099003|22082099003|18002099003;
+	BCL:0;ARA:13230040|82310400026|1800799024|36860700016|376014|22082099003|18002099003|56012099003;
 X-Microsoft-Antispam-Message-Info:
-	uAnWDqfGCzUy325VyHzKNKLynLbQ+E00wESGE/MnUfCUMRPreq05R4xES//R4/Xw8MONSILk/+94o1F/bbs4+WjOKoj2RlFfTYh0g0IYuuS2V59rzarnrQD2HKr+V13+mIzkAmDhtNAw6hEQ9ONkZWIpopMD6E41oCrwl71W2eKNii/JY6tjtwhIorBItDNzp28ABKB/LByH0WO5h61JY/IN4T1PPp99Hmfic1bA3+g4WV2jmwvLdWho5D57fGRN2CCgK3Gxw47mjOmwDKCkJx8EOLfv485avOq76mYJjCpWdNrE2rJuvfSs2svjCQVMMvTG6rfq9fR09YQtODNJUrxCsKHUhDu2N2BWJwL4csFQvDaTkQaDhENqIO+tdzvEblIbkZl5IkfY0fibm/JKQrFkKAbGGgp6ZTcKWyUF2iHWsRcXBHhgY8oBVpRkJIh+QUIRdSLSGlkk2Lihh2r7bdDBQJlXiHMD/7BD1z+2MVLv8eYl3aHmPeDksAytX00Vhq9asR3LfLl+sOz4N5uAhJ/yryRZShy2XomybUnqAd212imIbDn7oNjyrxwCb2vcdcmNoulcDR4AutyIPsywK0pt/nxrlJgVZ92F1MecrNNN7Lu77sRvUXP+Zcih8fIqusMrpPe2ePKeYajfTPAsdI65ybMC4ssUy4bp4FlArYZ8FuiIMLKZtsI5EQwqTTWmOnY40tjoReYB9Pz7SXw7nob3juKvR8uaeTG3oWVYXog=
+	q5u40o56zzNH3shddhYASpfRUr6cMvhWCABx0es3l7yz5ku8vf+NPiIH3JQ1C0oAcUvGDuib9AyxeqvY6yWBxQSmApiPlfIQCrCNPrS9qe5rXCgMM9+GssvolWAtelw82ZkUcY2aYDQNNMIX7Djcnr+soM6LHws4m+7RmI9OTZTpDNaU+WsDSX1ldc3TiNBKjHz/L8D7jTskTxMd0VUr2GmIMvb7FomFoPwecuY3rVZl57mR0skZWXEjqFB5Gl/PbTNbCKTGR7/v5h62M9lZ206OfQCoKW9R/bDghFRfy6PVVErA9q55l0qKYgCOa7nde0TYrg6JmaM9sKBZe+tEKkTxw9YdkMWSw8fm8hYMczIg0b88RVduT66WcQ0qL6bECTwxdngcQ9vXNX3wNmaJc3G6I5cHPpBJRxzpDk/n9u8Qp3fOQznmpdgafbz6WrsuvHVu7RMBdz56VM2G1c/mAtZDxlhzQwLwq5BZ79avWN+CLImFsOhONCZ8E5wbHXoxUWw1ikqv6z+f6ctRu0QH1dR5DTcuPd/yNi/8kG3OpB2zhIE9SiYLQ3HqktnESEi1elPIUgdwtKkzDYUWz5IcCdU7TjaCffa5bbJwbSu2apOwhY1ce3jakyju0QxCTJtfMr+fkD92HvWi7BdaxobH1HPfpg6JaZ8EEgXEjIamCYG9WfbjFg6WMA/yNEXzwyeo+TWp6hIUS5XvTt5y2apMxSnUAFT82w5KE2f7F7iqX4g=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(376014)(36860700016)(82310400026)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(36860700016)(376014)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	NiEEJFWSrgbNj7J7gtRZfXEwzGeJ9x6UhhgNrLpw9q+iriksVLCms6PY1UswQBcS6cmbTUKxbBHFz+8bxsnG6+41z7Y+VUbnuzAd0ytOGO30X8SGqnqWRInUAuFh5ptZ1S2AySSe+xQbhTcTonEhPC7pTZqeRJg6dhz2TGT7FtV4Dki7cYK00nDkQnkAWKWoW73woHD80aPaEMr2NkcKJfpg6dSkROavaF+YAxvA4oC/VSDhRbUutX3EJAIxDDyhcBPZGl8gg6pStvQghngxnBbCiudoC18zKv24QAMchBXEUQvmm6mUmAQ9SI3ZUrDtR/3ih2xCokQKYJ3NNLSnbTjjUKhRav/FELlvYu6MTri/f0iFTMYopjrUHsQK7wS53suJy/ovpeQnwfAiqmnkGu2m2A8MJmmuYNdiAZyKxqgv7grn6gkdBZ+01uhCtPp3
+	3tQ++UxKrTPIJOtO9J5S/E9SF1HVz7tcZt8cAyqvJfjgpwdPUI+2yruLO9enEdYs53zOfBFRS4EMWnE4fjcVDF0Ci8JnQFXLIPleDutsnc10yZIIlMICsoP75OH/7RntlG8mx/3YIkYiz2qsUVjlMUgmBf6ZqBnO+BzX/P36Rnc2fFYHjTQa/6kZo+EBpVd6QjZmtQsyOEOTW0tadP+hBEJ/DkBydJIuevHTaY070LxScrLDDw/L3SfL0dkcyYBCevDQot2lYYMqv3KGalnHPOoH3XvQH+fUwCRJMfQpqRfAC7Ic8eMnQ6mNUoiTx7GqLaYskSAsO75rR7IXATiRGbBZP9dQZoC+IDyKuefMRKA+qO1aKHkG3IBnqrkDIvAAyA8/m7rQ6Q67JogPgfvQQzBMuj8RL11il5fEPCugBZH+w8fSJmGRZkFLKiGwlFZR
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 05:19:27.2658
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 05:19:44.0300
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 649cc8ed-0ca3-42ba-2921-08deacc1600b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 503d21f9-59e4-4f98-1fda-08deacc16a05
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	CH3PEPF00000009.namprd04.prod.outlook.com
+	CH3PEPF00000010.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ5PPF3487F9737
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR12MB7585
 
-If "dynamic_epp" is disabled, the driver initialization and the default
-EPP selection from sysfs currently sets the EPP based on the power
-supply state of the system at that time but there is no power supply
-callbacks registered to toggle it when the power supply state changes.
+Recent changes to the EPP unit test tries to perform a driver switch
+with a cpufreq_policy reference held when the driver is loaded into
+anything but the active mode which leads to a circular dependency and
+the unit test hanging indefinitely.
 
-This can lead to faster battery drain on platforms that start off while
-being plugged to the wall but later move to battery power since the EPP
-stays at AMD_CPPC_EPP_PERFORMANCE.
+Drop the reference before driver switch and grab it back once the driver
+mode is stabilized for the test.
 
-Use "epp_default_dc" as the default EPP selection when dynamic_epp is
-disabled, restoring older behavior. On servers, this defaults to
-AMD_CPPC_EPP_PERFORMANCE and on other platforms, it defaults to
-AMD_CPPC_EPP_BALANCE_PERFORMANCE.
+The EPP writes are only possible with CPUFREQ_POLICY_POWERSAVE policy.
+Temporarily switch the cpudata->policy (while holding the write end of
+the policy->rwsem) to CPUFREQ_POLICY_POWERSAVE and restore the original
+policy once tests are done. To ensure the final EPP is correct in case
+the driver started with CPUFREQ_POLICY_PERFORMANCE, EPP performance is
+tested last.
 
-Fixes: e30ca6dd5345 ("cpufreq/amd-pstate: Add dynamic energy performance preference")
+The __free() based cleanup for cpufreq_policy is lost in the process.
+
+Reported-by: Kalpana Shetty <kalpana.shetty@amd.com>
+Fixes: 7e173bc310d2b ("cpufreq/amd-pstate-ut: Add a unit test for raw EPP")
 Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 ---
- drivers/cpufreq/amd-pstate.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/amd-pstate-ut.c | 36 ++++++++++++++++++++++++++-------
+ 1 file changed, 29 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 175925762a93c..9eb9c3f4e809a 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -1429,7 +1429,7 @@ ssize_t store_energy_performance_preference(struct cpufreq_policy *policy,
- 		if (ret)
- 			epp = epp_values[ret];
- 		else
--			epp = amd_pstate_get_balanced_epp(policy);
-+			epp = cpudata->epp_default_dc;
- 	}
+diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
+index aa8a464fab47a..13a23dac477d1 100644
+--- a/drivers/cpufreq/amd-pstate-ut.c
++++ b/drivers/cpufreq/amd-pstate-ut.c
+@@ -274,20 +274,21 @@ static int amd_pstate_set_mode(enum amd_pstate_mode mode)
  
- 	if (cpudata->policy == CPUFREQ_POLICY_PERFORMANCE) {
-@@ -1954,7 +1954,7 @@ static int amd_pstate_epp_cpu_init(struct cpufreq_policy *policy)
- 	if (dynamic_epp)
- 		ret = amd_pstate_set_dynamic_epp(policy);
- 	else
--		ret = amd_pstate_set_epp(policy, amd_pstate_get_balanced_epp(policy));
-+		ret = amd_pstate_set_epp(policy, cpudata->epp_default_dc);
+ static int amd_pstate_ut_epp(u32 index)
+ {
+-	struct cpufreq_policy *policy __free(put_cpufreq_policy) = NULL;
+-	char *buf __free(cleanup_page) = NULL;
+ 	static const char * const epp_strings[] = {
+-		"performance",
+-		"balance_performance",
+-		"balance_power",
+ 		"power",
++		"balance_power",
++		"balance_performance",
++		"performance",
+ 	};
+-	struct amd_cpudata *cpudata;
++	char *buf __free(cleanup_page) = NULL;
++	struct cpufreq_policy *policy = NULL;
+ 	enum amd_pstate_mode orig_mode;
++	struct amd_cpudata *cpudata;
++	unsigned long orig_policy;
+ 	bool orig_dynamic_epp;
+ 	int ret, cpu = 0;
+-	int i;
+ 	u16 epp;
++	int i;
+ 
+ 	policy = cpufreq_cpu_get(cpu);
+ 	if (!policy)
+@@ -297,6 +298,10 @@ static int amd_pstate_ut_epp(u32 index)
+ 	orig_mode = amd_pstate_get_status();
+ 	orig_dynamic_epp = cpudata->dynamic_epp;
+ 
++	/* Drop reference before potential driver change. */
++	cpufreq_cpu_put(policy);
++	policy = NULL;
++
+ 	/* disable dynamic EPP before running test */
+ 	if (cpudata->dynamic_epp) {
+ 		pr_debug("Dynamic EPP is enabled, disabling it\n");
+@@ -311,6 +316,17 @@ static int amd_pstate_ut_epp(u32 index)
  	if (ret)
- 		goto free_cpudata1;
+ 		goto out;
+ 
++	policy = cpufreq_cpu_get(cpu);
++	if (!policy) {
++		ret = -ENODEV;
++		goto out;
++	}
++
++	down_write(&policy->rwsem);
++	cpudata = policy->driver_data;
++	orig_policy = cpudata->policy;
++	cpudata->policy = CPUFREQ_POLICY_POWERSAVE;
++
+ 	for (epp = 0; epp <= U8_MAX; epp++) {
+ 		u8 val;
+ 
+@@ -358,6 +374,12 @@ static int amd_pstate_ut_epp(u32 index)
+ 	ret = 0;
+ 
+ out:
++	if (policy) {
++		cpudata->policy = orig_policy;
++		up_write(&policy->rwsem);
++		cpufreq_cpu_put(policy);
++	}
++
+ 	if (orig_dynamic_epp) {
+ 		int ret2;
  
 -- 
 2.34.1
