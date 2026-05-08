@@ -1,129 +1,100 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 01C3D33B97B;
-	Fri,  8 May 2026 10:35:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-pf1-f195.google.com (mail-pf1-f195.google.com [209.85.210.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 116D1352C54
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 11:19:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778236517; cv=none; b=n0CApQGIrluR1ZNpAuLdwRwINevOYSjpfsS+FZ3vwq4oB89rwn4PALysuCtRJUGouZePQvd5me3u9It2fRfjEhwHcg1kBpnJJIALujId8xj6Uux690SjNqogoeVpVlyAj+xsqOsgUunlKJhPrsTD6r8SAsg+Gr8pWL5kqvoQ+4Y=
+	t=1778239186; cv=none; b=AXVfYur/P72nYMwHZHLLHoj9cMrv1FV5h+QicipvaEE/lhG0mW+uXYyPp9mD/uLchR/6njtlud5991/TKn/fM1vtOu+eGvmSz9Ud7Kmd1x7Lo8r3PSOfO5POOFuxuTU271+ZB0ZkuCZaZAs7sAVjwlCd0FLNazO/ZAWPl2xFraw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778236517; c=relaxed/simple;
-	bh=RinE6Qqw5D+3/Xg38mnb+wwSYgqoEoP/oeoxRHzz7aM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mh+DYCvg6mllnhRWXXrlkYe9CiHF8n5SgL5orb2IyGwSlr8PuQUJfF15Ein4CudYefRSs/zjnK03SY9r89NwMDYFqcVmCmHQBIA3pBC3gIy/BU6xW2JZIgxo8j50ORaMe2scTuW3W4fjKWgiAutamUY9DBaM4B9U5ZHXPdJs4jo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=QrTlsGpK; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="QrTlsGpK"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 096651BCA;
-	Fri,  8 May 2026 03:35:10 -0700 (PDT)
-Received: from [10.57.24.14] (unknown [10.57.24.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3075C3F763;
-	Fri,  8 May 2026 03:35:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778236515; bh=RinE6Qqw5D+3/Xg38mnb+wwSYgqoEoP/oeoxRHzz7aM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=QrTlsGpKHH5ENPJ5rqUmas8W0ejXRIPHBj1ytDfIDkM6kLUhJkI6zEGXM1ByoiUtU
-	 dYQpVan+ld90Lef6c+WoNFr4LKQpk2swmbaT2i4ylEvw2IYQ91uPLr9KaAxD+HKKRA
-	 vNFg/lg6JTmV4tI6HVkVPW24MV9+KTIxHpx/qBfU=
-Message-ID: <70f2b2b4-6066-4c48-8834-b907b5146a08@arm.com>
-Date: Fri, 8 May 2026 11:35:11 +0100
+	s=arc-20240116; t=1778239186; c=relaxed/simple;
+	bh=7PFWaPTRo170KBxBNZkzEELORWuNP+pfj1WqHbuK910=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uxa7WO0aeMHYnloZP5PPZhZ0m2C2tbtdhQhGpW/K45PgwkD+i63huAB+NdWV8VzIqfCljeRZ3xD02BvVvq4FajqzdVRC4t4yFPTd5ACC4pSS1Cx/q0xpMPHzPD60OV7QXQ+tnU9QoI0Kos0cXGEO8w7DSmiVtgD6/aBbHE1tGTc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pf1-f195.google.com with SMTP id d2e1a72fcca58-82fbf5d4dc2so1299324b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 04:19:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778239184; x=1778843984;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NwNQ+m5gGF4bs/oU4ZgcM23K1Vev0nPqtDKm/rgCKC4=;
+        b=aoRrdNjZFr2RRGqIotyBlgy/w+lMHWWL+pzh0qH87+bo2ct1vkOoySFJRHup//tvJK
+         H7LvSdPFZsi4JUnwHitPN6QCUJHmkiIEezNOI7inEftdgVmTNi9fmZ0Tprl74Cp+JRp7
+         xnvlyp528bMvtGxKaw2oopPfI3+4H/vg7OpTMJFrRQDjdDTZZIth/Y7Ni+Y8wgbNj2Yz
+         D6m4blvgNSqSqoi5o2ihT7ckKzPa4QVOLiwvWgMUBlX3I/KC+rjetPKaYyiyISWnmt1e
+         fSEAvnDWI6inu2Ody0unTjPMjK9k4yaZGJLlb4fkthxj0JpSpuoPRG0oHTlqh9tluJpa
+         8OTQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9Jzcigeyi7xQKJ+RZ2hyItvvjq/GcnB+7JgGw/wiG9LWjztejoKthtUnv52VUDY8vC9M0//8bm3Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx+hMsjFxB632wcKFv1Q+wsk0U6o82QCzK5QM9Ha2mgWdLC+mj3
+	hi09jHGvtxgInpj4764KauHJ8L7qE/m1lN+UYPGIhwngBdMWYv0NGbTv
+X-Gm-Gg: AeBDieu8OxTS/PCjQ3eaiS/xMf4N+40WvaKcolPoIDiyNRImTRWSxKSem8SfIHn/VPG
+	nOjMmRMrDY/A3ThrxvA4IoNxPgHvN4WOZB76jFA1Q3HYN012Y6RQqq6JntBVOyHGEkZ6lk2Clib
+	YbDP1EJRQZx4+SMSq1fFM6HjwBc3nYhsLODGBZQVnmsjFrfZ/T1ZcDzVM8Valb79KaZH91gnF2f
+	HYCR4XDcgYlmhhoL/EQZtwyy9K7HO3gbSG1l+++cK25oJ+LdFr0O8ILglIv8z9n1PQhUNLURWJS
+	Kn6nKlCPgq4BY/MEuRxjsVRZl5bKE64tzoWZUZPbSEUAki+9TNdSQbHWDEAYjHqiAzPVTeQYH6e
+	9ncodxg9eOJODkKITF2MN6nnL/C0lw2H7MMpNnZ8nPnBl2JruYNxNob8Tv56XcIjPLn+JkOnUPe
+	OA0C7lVeXXiHSjRqWAesg9V1kgEJVlzTE7TmYn8WVXVm2mhg==
+X-Received: by 2002:a05:6a00:3c81:b0:821:7d7e:41cd with SMTP id d2e1a72fcca58-83a5bad9ef1mr12730324b3a.10.1778239184357;
+        Fri, 08 May 2026 04:19:44 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839683a088fsm11947041b3a.58.2026.05.08.04.19.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 May 2026 04:19:43 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	zhanjie9@hisilicon.com,
+	zhenglifeng1@huawei.com,
+	pierre.gondois@arm.com,
+	sumitg@nvidia.com,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH v2 0/2] cpufreq: cppc: Add update_limits support for Highest Performance changes
+Date: Fri,  8 May 2026 19:19:30 +0800
+Message-ID: <20260508111932.185886-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] thermal/core: Split __thermal_cooling_device_register()
- into two functions
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, rafael@kernel.org
-References: <20260505144447.2853933-1-daniel.lezcano@oss.qualcomm.com>
- <96515043-d9be-475e-81ba-71a8fbeeaedd@arm.com>
- <e7d09cf5-e653-4668-88a9-b6bf51240ac2@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <e7d09cf5-e653-4668-88a9-b6bf51240ac2@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Hi,
 
+This series adds update_limits support for cppc_cpufreq to handle
+dynamic Highest Performance updates triggered by ACPI Notify(0x85).
 
-On 5/7/26 19:26, Daniel Lezcano wrote:
-> On 5/7/26 12:02, Lukasz Luba wrote:
->> Hi Daniel,
->>
->> On 5/5/26 15:44, Daniel Lezcano wrote:
->>> In preparation for the upcoming changes separating OF and non-OF code,
->>> split __thermal_cooling_device_register() into allocation and addition
->>> phases.
->>>
->>> This allows moving the device node assignment out of the core
->>> initialization path.
->>>
->>> This change is not a trivial split. The lifetime of the cooling device
->>> is managed by the device core through put_device(), which triggers
->>> thermal_release() to free all associated resources.
->>>
->>> With the introduction of thermal_cooling_device_alloc(), the allocation
->>> path must mirror what thermal_release() undoes. In contrast,
->>> thermal_cooling_device_add() must not perform any rollback and relies
->>> on put_device() for cleanup on error paths. This avoids both double
->>> free and resource leaks.
->>>
->>> As part of this rework, add the missing device_initialize() call when
->>> allocating the cooling device.
->>>
->>> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
->>> ---
-> 
-> [ ... ]
-> 
->>> +static int thermal_cooling_device_add(struct thermal_cooling_device 
->>> *cdev, void *devdata)
->>> +{
->>> +    unsigned long current_state;
->>> +    int ret;
->>> +
->>>       mutex_init(&cdev->lock);
->>>       INIT_LIST_HEAD(&cdev->thermal_instances);
->>> -    cdev->np = np;
->>> -    cdev->ops = ops;
->>>       cdev->updated = false;
->>>       cdev->device.class = &thermal_class;
->>> +    device_initialize(&cdev->device);
->>>       cdev->devdata = devdata;
->>> +    thermal_cooling_device_setup_sysfs(cdev);
->>> +
->>> +    ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
->>> +    if (ret)
->>
->> In case of error here, when the cdev->device won't have this name,
->> would thermal_release() still be able to call the cleanup
->> for the sysfs bits?
->> IMHO the check 'if()' there might bite us and we might not free
->> the sysfs allocated memory.
-> 
-> Hmm, I wondering if we can invert dev_set_name() and 
-> thermal_cooling_device_setup_sysfs() ?
-> 
+According to the ACPI CPPC specification, OSPM is required to
+re-evaluate the Highest Performance register when Notify(0x85)
+is received for a processor device.
 
+Patch 1 refactors the autonomous performance limit programming
+logic into a helper function.
 
-I've checked that. It looks like the guarded 'if()'
-in thermal_release which needs a dev_name() to clean-up the memory i
-an issue in this case.
+Patch 2 implements cppc_cpufreq_update_limits() to refresh the
+cached highest_perf capability and update autonomous performance
+bounds when needed.
 
-When this dev_set_name() fails, we won't go into the
-clean up code to free cdev->type, ida, cdev...
+Changes in v2:
 
-I would call them explicitly in case of 'if(ret)'
-error from dev_set_name()...
-Then the rest could end in case of error with that new
-'put_device()' logic at the bottom.
-Would you agree?
+Fix incorrect variable name causing build issue
 
-A different option would be to refactor thermal_release()
-and somehow recognize the cooling device not based on name.
+Thanks.
+
+Xueqin Luo (2):
+  cpufreq: cppc: Refactor autonomous perf limit programming
+  cpufreq: cppc: Add update_limits support for Highest Performance
+    changes
+
+ drivers/cpufreq/cppc_cpufreq.c | 89 +++++++++++++++++++++++++++++-----
+ 1 file changed, 76 insertions(+), 13 deletions(-)
+
+-- 
+2.43.0
+
