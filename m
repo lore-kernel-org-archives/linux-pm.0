@@ -1,31 +1,31 @@
-Received: from canpmsgout11.his.huawei.com (canpmsgout11.his.huawei.com [113.46.200.226])
+Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3339258CD7;
-	Fri,  8 May 2026 02:33:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.226
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E4E02FE58C;
+	Fri,  8 May 2026 03:23:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778207634; cv=none; b=pjoKoTtR1RF4jaE7K0n7msOz8heLtqUF7EDGpt98xCekuTYFRjw/pVfH/3JMtHhoVqaf3Mjx3lpom0YF3yp1uj1TGbHCtzH90/xbx3apHi7ahPaFJagdgDbHMcl4I8zneCOS3tweKjnM4JaCXatVlDHPN0gPUItVMukdDvBDwZo=
+	t=1778210606; cv=none; b=Ez2T4VKkEdp4hRXJXdXugh4EeUsdhjlNGu0//ovgO64tBvYbELZh/bN94L2irblRjBJFzelQlNupz9GKL0XmnedBahO/kR8hs2WDPSSpe2GV/1j2sm1FucRjQHF5zsrqNArFrsAh+sHjVtNl/8o3ZSdTuPYxjpicqhhCKhEuGwM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778207634; c=relaxed/simple;
-	bh=33Kzi1QqQaOxup3HteWzWB4sskTQYnde6JYurTvGCjw=;
+	s=arc-20240116; t=1778210606; c=relaxed/simple;
+	bh=+f8rg+d/X7/VwbU2lqyTWTZLvlzGG3wpfVYYfabsHNQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=NGFsSrISImWZEmFCLT2F7IFQSfspoJG6D3KPJOHmxc2Tzusn3HajrdKzbjvVe5MWA76cjQaq2eUvQcUvBl+tNDA+6EUAFtaSdGWQzE7pfPJekxipFjTigWNYR9CRE9ugeQcrnb2do92PGnGalGIHqjoxx5BXou79F2jAJgbCNaw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.226
+	 In-Reply-To:Content-Type; b=AhHydsLdth8JQMX+WtpV5Dbzd16vBeS96t2os36bHw8piZu2nwxvGIhbvtbejmGEfiHViAuxNbNjtMNN4dHDoET8OjTXmfv6ggLsv+5PN6Njk1gDB4Pj/wPueD+wj2NYBwIUnPYdQxHSVQLq2bX5uQk76+QFwP2pyoVUh0iz8dY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.227
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4gBXzc50SkzKmT6;
-	Fri,  8 May 2026 10:26:04 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4gBZ5V0pXLznTVY;
+	Fri,  8 May 2026 11:16:14 +0800 (CST)
 Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id E8FCF40572;
-	Fri,  8 May 2026 10:33:40 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id E0B3D40539;
+	Fri,  8 May 2026 11:23:19 +0800 (CST)
 Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
  (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 8 May
- 2026 10:33:39 +0800
-Message-ID: <a9324a65-9da9-4e35-8c78-a054fb24bc8d@hisilicon.com>
-Date: Fri, 8 May 2026 10:33:39 +0800
+ 2026 11:23:19 +0800
+Message-ID: <26deca86-44e3-4fd5-950e-59f913d9ee37@hisilicon.com>
+Date: Fri, 8 May 2026 11:23:18 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -33,147 +33,61 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: CPPC: add autonomous mode boot parameter
- support
-To: Sumit Gupta <sumitg@nvidia.com>, <rafael@kernel.org>,
-	<viresh.kumar@linaro.org>, <pierre.gondois@arm.com>,
-	<ionela.voinescu@arm.com>, <zhenglifeng1@huawei.com>, <corbet@lwn.net>,
-	<skhan@linuxfoundation.org>, <rdunlap@infradead.org>,
-	<mario.limonciello@amd.com>, <linux-pm@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC: <linux-tegra@vger.kernel.org>, <treding@nvidia.com>,
-	<jonathanh@nvidia.com>, <vsethi@nvidia.com>, <ksitaraman@nvidia.com>,
-	<sanjayc@nvidia.com>, <mochs@nvidia.com>, <bbasu@nvidia.com>
-References: <20260424201814.230071-1-sumitg@nvidia.com>
- <a4ed690a-50d6-4bfe-8810-86a75d7b51e3@hisilicon.com>
- <bc06c3ab-0286-4e1e-a615-e704b267c21a@nvidia.com>
+Subject: Re: [PATCH] cpufreq: cppc: discard out-of-range delivered_perf
+ samples
+To: Breno Leitao <leitao@debian.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, Lifeng Zheng
+	<zhenglifeng1@huawei.com>, Pierre Gondois <pierre.gondois@arm.com>, Sumit
+ Gupta <sumitg@nvidia.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<dcostantino@meta.com>, <pjaroszynski@nvidia.com>, <Al.Grant@arm.com>,
+	<linux-arm-kernel@lists.infradead.org>, <kernel-team@meta.com>
+References: <20260501-cur_freq-fix-v1-1-f84c9a423366@debian.org>
 Content-Language: en-US
 From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <bc06c3ab-0286-4e1e-a615-e704b267c21a@nvidia.com>
+In-Reply-To: <20260501-cur_freq-fix-v1-1-f84c9a423366@debian.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemf200017.china.huawei.com (7.202.181.10)
 
 
 
-On 5/5/2026 8:29 PM, Sumit Gupta wrote:
-> Hi Jie,
+On 5/2/2026 12:32 AM, Breno Leitao wrote:
+> cppc_cpufreq_get_rate() derives delivered_perf as:
 > 
+>     delivered_perf = reference_perf * delta_delivered / delta_reference
 > 
-> On 27/04/26 13:54, Jie Zhan wrote:
->> External email: Use caution opening links or attachments
->>
->>
->> Hi Sumit,
->>
->> In general, I would expect this parameter only toggles on auto_sel by
->> default.  IIUC, other CPPC configurations (min/max/desired perf, EPP,
->> enable) are optional and not closely related to this.
->>
->> Why including those stuff here?
->>
->>
->> Please see other questions inline.
->>
->> Thanks!
->> Jie
+> over a short udelay()-bounded window between two cppc_get_perf_ctrs()
+> calls. Per-read latency jitter on the underlying CPC register access
+> can skew the ratio, occasionally producing delivered_perf >
+> highest_perf. cppc_perf_to_khz() then linearly extrapolates above
+> (nominal_perf, nominal_freq), so the value reported via
+> /sys/.../cpufreq/cpuinfo_cur_freq exceeds cpuinfo_max_freq.
 > 
-> These together provide a known, predictable autonomous mode boot.
-> min/max/desired seeding ensures HW has a known starting bound (BIOS
-> may leave them unset).
-> EPP=PERFORMANCE_PREF is needed as BIOS defaults often bias toward
-> energy saving, and admins on many CPU systems shouldn't have to script
-> per CPU sysfs writes at every boot to undo that.
-Hi Sumit,
+> Observed on an arm64 host (governor=performance,
+> cpuinfo_max_freq=3339 MHz): 15 back-to-back reads returned values
+> between 2997 and 4230 MHz.
+Hi Breno,
 
-The min/max/desired perf might be a slightly different case, but the EPP
-value should probably follow the default if there is?
-Otherwise, users may complain that their BIOS defaults don't work and find
-out it's driver's fault.
+Frequency sampling discrepancy through 'cpuinfo_cur_freq' in the
+cppc_cpufreq driver has been an issue discussed for a very long time.
 
-Alternatively, we may also make an assumption that we ignore BIOS EPP
-config, but not sure if that's suitable?
+If the CPPC feedback counters are FFH on your platform, can you have a look
+at [1] and see if that helps?
 
-(Perhaps let's just discuss in the bottom trunk because the main issue is
-pretty much the same.)
->>
->> On 4/25/2026 4:18 AM, Sumit Gupta wrote:
->>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
->>> CPPC autonomous performance selection on all CPUs at system startup.
->>> When autonomous mode is enabled, the hardware automatically adjusts
->>> CPU performance based on workload demands using Energy Performance
->>> Preference (EPP) hints.
->>>
->>> When auto_sel_mode=1:
->>> - Configure all CPUs for autonomous operation on first init
->>> - Set EPP to performance preference (0x0)
->>> - Use HW min/max_perf when available; otherwise initialize from caps
->>> - Clamp desired_perf to bounds before enabling autonomous mode
->>> - Hardware controls frequency instead of the OS governor
->>>
->>> The boot parameter is applied only during first policy initialization.
->>> Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
->>>
->>> This patch depends on patch [2] ("cpufreq: Set policy->min and max
->>> as real QoS constraints") so that the policy->min/max set in
->>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
->>> during init.
->>>
->>> Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
->>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>> ---
->>> v[1] -> v2:
->>> - Call cppc_set_enable() unconditionally so CPPC is enabled for both
->>>    OS-driven and autonomous modes.
->> Why adding this in v2?
->> This looks like a separate issue since setting CPPC Enable reg doesn't seem
->> to be related with autonomous control.
+Thanks,
+Jie
 > 
-> In v2, moved it out of the auto_sel specific check.
-> Agree that cppc_set_enable() is general CPPC enablement and can be split
-> into a separate patch in v3 if preferred.
+> Treat an out-of-range sample as invalid and reuse the existing
+> out_invalid_counters fallback, which returns the platform's
+> desired_perf. This keeps cpuinfo_cur_freq within
+> [0, cpuinfo_max_freq] without reporting a value the hardware did
+> not deliver.
 > 
-Yeah it should be a separate patch I think.
->>> - Init min/max from caps instead of cppc_cpufreq_update_perf_limits()
->>>    as policy->min/max aren't yet populated.
->>>
->>> [1] https://lore.kernel.org/lkml/20260317151053.2361475-1-sumitg@nvidia.com/
->>> [2] https://lore.kernel.org/lkml/20260423084731.1090384-2-pierre.gondois@arm.com/
->>> ---
->>>   .../admin-guide/kernel-parameters.txt         | 13 +++
->>>   drivers/cpufreq/cppc_cpufreq.c                | 89 +++++++++++++++++--
->>>   2 files changed, 97 insertions(+), 5 deletions(-)
->>>
-...
->>> +
->>> +             policy->cur = cppc_perf_to_khz(caps,
->>> +                                            cpu_data->perf_ctrls.desired_perf);
->>> +
->>> +             /* EPP is optional - some platforms may not support it */
->>> +             ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
->> Why setting this to PERFORMANCE by default?
->> A platform can have its own default EPP value.  This would override that.
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+>  drivers/cpufreq/cppc_cpufreq.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> The boot option targets performance oriented use cases on many CPU
-> systems, avoiding sysfs scripting across all CPUs on every boot.
-> The BIOS default EPP (often biased toward energy saving) would otherwise
-> steer HW away from that goal. Admins can still re-tune EPP at runtime via
-> the existing energy_performance_preference_val sysfs.
-> 
-Yeah, avoiding scripting makes sense for sure.
-The thing is how do we do this nicely.
-
-For now we need to consider follow either the BIOS default or the driver
-default.
-They seem to be exclusive since there isn't a clear way to support both at
-the same time.
-
-So, are we going to support the BIOS default case?
-For example, users can config a default EPP in the BIOS setup menu.
->>> +             if (ret && ret != -EOPNOTSUPP)
->>> +                     pr_warn("Failed to set EPP for CPU%d (%d)\n", cpu, ret);
->>> +             else if (!ret)
->>> +                     cpu_data->perf_ctrls.energy_perf = CPPC_EPP_PERFORMANCE_PREF;
->>> +
 ...
