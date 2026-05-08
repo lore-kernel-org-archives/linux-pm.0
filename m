@@ -1,209 +1,163 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010004.outbound.protection.outlook.com [52.101.201.4])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79A1315E8B;
-	Fri,  8 May 2026 19:21:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.4
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778268117; cv=fail; b=MCNgkFv/EGENtXrNcNsH9Rlnhv5LSFo+DWcc7+7m8GCy605M4lwvg2txu5BGh73GdmUrtEk/yhNx9PhWNcH0kzBLe8Rz2sxdMlAGbEfBe2vRXtXnGWDGgd/RzIVSldn90s0gO3PTaQTmrRzlMoy7ETpXhbWlgd6F3dg9zMJ09nM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778268117; c=relaxed/simple;
-	bh=NR+GIm+EKYXGJTXS1616TOyGH4Atuxs0fEdSUy6oZRM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=CybzJd3cxlWXH5lsD3/hl4maS0XUQss4cHzRe2fZOxq7uX+jn+7fKqwDR4By3+QGlKZAENUpa6p+QRak1XxoyrrC2Kk2PEegQKno+628mpd3czk/4EzwgUi5RwCbu1+IUsU+siLn7AjTqWQDjqhTDOJNvnELSNVnOqE2ic6rJ4E=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=KCt/Fr6A; arc=fail smtp.client-ip=52.101.201.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 002532D8795
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 19:22:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778268164; cv=none; b=S51j5LCjkykN8XMVtLMJRZwISWhNXoG2ivUpkXW1Gc/n7DP/xW9Ud5daVzwbVggXT0MoJ+GDMLDVTMfj1suh6YQpE5vggtH+niO7Fvappv5dleIJ9zRai2PG3ov7GXrYsqrmWL/5KRrUhzgxvYSrFRmF/KYutG+G7lOzSc9bcpg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778268164; c=relaxed/simple;
+	bh=blPrQv6Ns3Mit0Hx70fOfY+zeFSu52/E1w2zNv7yzLM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FZ8lods70ZQqHmbstKKCneBmlx+SbYLfRxY5VsklRwStlpyEKH/f7VuinNgPwgg04L6aW6AFdWGfc+AQI/sAEGbGtPc2ajBcda9nrLE9m1zotZgAE8+v2Gg582DxkGnzKo87Ri0J8P92Fvm48YoV3d6kxOzCxwXv4xVm0brc+JY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Tg7y34L+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TUo4Ebkp; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="KCt/Fr6A"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vNIH2pJMqegvF8KhJ3Wlw4zBpZJGp9ACv7k7P3Rr7/wHMiAXdyRY9lv2XfrWHwaMOBpvpKx0uvUqIGZUzpBR2nYzyDV00MLzBhG4YvDoXFYmdyDLWzfjSFSjvSTzGsu5nyw7egtMkvzyxxRRd/5xuqg7wESLviQhBJlNwNHSupvm+yRAqJLWnBSqBTDKECgD9R7jOAFeh9Fm4lbs3/3M8oh3MjXhozS+W3frmIyW2DLPB2FmTCO1HIYApgD0zxD7QXvcZlQ3SarpSuBtUHhVge/8zxUcwvadncafw69FgPCi4BMMLfTr5v8cIKN2vBvIRFA7b1iFw3qZhW3Q7UbKrw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Wu9MG2JscksneQuhvlniPYieT2JrPxnEkw1mcRT2kZA=;
- b=KgDFVEWBOPTPlu2oac4xOozjw+aTgpejDZ/zChYDwtn7pn5irg+IEaLv3aIeDrSuSfoYRfTwHN0O0TrB+9hUPR+GUGQrscjKPrdwXNc0EQ+Btg89hv11JUMj/Hirk2R8RREqIPNxiPOXgnM5uhr6hNHP8rn0EK8MgzFtbqnztWxPwW/qLTMGDl5vJmI73rwfJGOKuOOf93aFu/M+Wk78Rb5rmnY7w6u8x4C2AupxPr0Bsbzh/vNW9KryQxnLuXh34uy2NUxBIEJbdlUZvlwxNIV/1pF3laED0uS2EzmTkaHFHQr1nbBntVj5uMFocbTdapDavVVx1Lnen7Y8ph3xsg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Wu9MG2JscksneQuhvlniPYieT2JrPxnEkw1mcRT2kZA=;
- b=KCt/Fr6A9DIPlfeGq+nbw99+KR2vs19J1n4UQ0wGOz8jZPZlb4l7BLhhnr1GGyKontsJLnbPIEqG8K70voMp0ARuvX3gEHC95yGAOv3iAkp2GSSki50yb152gzxqSvAvMPFrGGNHMoXAVQY57sM3+bJ81CmdwlijAfhSfCT5e0U=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from SA0PR12MB4557.namprd12.prod.outlook.com (2603:10b6:806:9d::10)
- by IA0PR12MB7626.namprd12.prod.outlook.com (2603:10b6:208:438::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.18; Fri, 8 May
- 2026 19:21:52 +0000
-Received: from SA0PR12MB4557.namprd12.prod.outlook.com
- ([fe80::885a:79b3:8288:287]) by SA0PR12MB4557.namprd12.prod.outlook.com
- ([fe80::885a:79b3:8288:287%5]) with mapi id 15.20.9891.019; Fri, 8 May 2026
- 19:21:52 +0000
-Message-ID: <0cd54a26-9a36-4b61-8415-5691411ab027@amd.com>
-Date: Fri, 8 May 2026 14:21:48 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/5] Revert "ACPI: CPPC: Adjust debug messages in
- amd_set_max_freq_ratio() to warn"
-Content-Language: en-US
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, K Prateek Nayak <kprateek.nayak@amd.com>,
- x86@kernel.org, Kim Phillips <kim.phillips@amd.com>
-References: <20260504230141.484743-1-mario.limonciello@amd.com>
- <20260504230141.484743-2-mario.limonciello@amd.com>
- <CAJZ5v0gBTxzkQU1EduyBNx2fCYfVU92XcNU8+AbSZziymBdJJw@mail.gmail.com>
- <8e2c9db5-fd24-43a2-af0c-cb2cb54f5102@amd.com>
- <CAJZ5v0ima4+ieyE1Jem=PRpk1JgZvZQ2sZWBv43=ARWde8jipg@mail.gmail.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <CAJZ5v0ima4+ieyE1Jem=PRpk1JgZvZQ2sZWBv43=ARWde8jipg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: CH0PR03CA0290.namprd03.prod.outlook.com
- (2603:10b6:610:e6::25) To SA0PR12MB4557.namprd12.prod.outlook.com
- (2603:10b6:806:9d::10)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Tg7y34L+";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TUo4Ebkp"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 648G2wH6724365
+	for <linux-pm@vger.kernel.org>; Fri, 8 May 2026 19:22:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	1OZKH5y7iZAGgxSzgL7TtICfgLbmwbiTKLrVadgAsLk=; b=Tg7y34L+Fnjw5R4X
+	dJD9purB3UVRz4qUc3jfvZN0YRrjhRPWOlqSE4sS6a2S2Js7EZc/gNvpdqs4e5Oy
+	C1yvJOfxCkZxmXNSFZ0yWPIHPdRxyxJhNrjrRHUrkvP1/+KdgEo/vtoYV2NfkRTj
+	Lzm89OnXvsDAdWqpQ/urxH5qiK9yNnwUipqGqcd0gOPZ/6fWc1Lwnl/QEpQ4w/Im
+	6di+Rj8aBbB+UAd+SCx0xxkDch6hiNZwXNCkKPzRla9r8oBunQYJknWMh/bXiI71
+	07I0H1usUqbvNkYF40odNF5HZ5/CbSyvwZTQBEN5dorLZvtF9vASLON+7VymLXfw
+	coBWiA==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1k0ugpub-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 19:22:41 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-50d812c898cso56034121cf.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 12:22:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778268161; x=1778872961; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=1OZKH5y7iZAGgxSzgL7TtICfgLbmwbiTKLrVadgAsLk=;
+        b=TUo4Ebkp4d3uNwSEQdkBp47AXbGIU86zpUQXmt9ojaG8GduF678sYYirowBfYZiYVa
+         9v1JxVVFkrSg8O+O3WhK58QRz/aW6QksiPxdS9i8kxVaFtMF30p7D2HSsReyD7VnSz9D
+         kbI5mHPKz0jbIBwP0wFV5rlqxMxUwczuPa3fxIxBkiG52Zb5wO9v1TXoUtpbWbD5n6Z/
+         No5AWHC6bnsqJMBxRvYadczi+IpnvJbDV96SKB8L6Lvs32R6hQiipHylzRWrypL7NG2L
+         7rAUUJZ6iocLJK2lZhESeek5mPSjm6Y0md6lJRdHK95rbEio/g1sGW+QkrzDGvpGFsR3
+         wTjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778268161; x=1778872961;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1OZKH5y7iZAGgxSzgL7TtICfgLbmwbiTKLrVadgAsLk=;
+        b=IwrnmKn5hxZXkW6hyv/dl/EOstccqjmDYNBvyHrH0mtpMpYiSEqIU12DI2EEKieZSx
+         zsSTESbIuc4WRpf5kKJHfIXdleFjHbjgz+lJ3twu6J6DCSIhHT8TBHDwIEArKK/UkiQM
+         924kCMgEHDIN8OK1qh5Fbv9Jt34Ygx4+yrps/6HNoDAt0BV+H6CBVAMJLNJHF8XUelSd
+         S6b0BIm06pJkmCuoT4CmRjd03J+f5P0RshL2OhNM7uotLHiqz7m31iT4zy/2eSUez2o7
+         u2tI7AOThininNngvImQcZIFJXUpzrcszBftpz0PXdczfB0VU8Fq+UWV0/T/vOkNWFMe
+         QZgQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9mCUYtjKQGtBND+kkDVwR0Bb/00ohf/aD33K3vAFS56mv8R8Jf5xL1yq0Hv/+0tuGtTEQUYUOMSw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwGG6dZYepggoXKXSjrVqLmLiuh98ZTq41shAhL04lx+NiX4Hdz
+	z4PU33eoJR2tFER7J/MAM79Qn2YGvG+KZsEUMlluwTxlgfEKkbQcNBbGPlPBZDsuuc1+zphuXV0
+	RRXKmsCc2eBlkwrTutsn5T/qsbsjc6b/vPLECGC1o4a7sOVPqoGmjbBQc/hNY5uJqStXn4ER3
+X-Gm-Gg: AeBDiesHA1JbEphGpgVbRGDavQPPxRekxjQlFurRZZ3bCLVlBPlcIbhdhZKNSPp8EFv
+	l6uyw8NkMeNBtcwCtxxFzh7z6ZOJRRHxNIGjDhfPnhKGiy1yXFoje7CkVuQwEonhLMlVNOIchrS
+	R+6Uj9JHZ/nq4u0a57rKL5BY3U76Ntb0R6w4QlGHSK0VYVZIHDR1dxHnBaEDSocbTpGZrWj5cf/
+	gzOvFzcUwjwq5gMTMlxrRLWX+piZ40VxzsDKtl5d4iq/Ln2whSFAsf3trotg2Cm63AW+1g9nvUK
+	aOeASffk5k67UYAtOmJ7q27jUAn+8wwgJffu9Qf7bciIkXdLDEqmHj64PL4PtE6c5Anv5lQoB9C
+	gRTpuXbb6r9foMaTYbg8zvvy2JY33YfbDCLfsRkNy+iYeXAUCabdE4j59tcBtPprCbOlgcGe7Cl
+	Pgq/uUDcld
+X-Received: by 2002:a05:622a:18a9:b0:50f:c36a:3828 with SMTP id d75a77b69052e-514621f7ca9mr207125751cf.58.1778268161086;
+        Fri, 08 May 2026 12:22:41 -0700 (PDT)
+X-Received: by 2002:a05:622a:18a9:b0:50f:c36a:3828 with SMTP id d75a77b69052e-514621f7ca9mr207125301cf.58.1778268160628;
+        Fri, 08 May 2026 12:22:40 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:cda6:5a1c:b564:d3ee? ([2a05:6e02:1041:c10:cda6:5a1c:b564:d3ee])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e6db13717sm5497605e9.28.2026.05.08.12.22.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 08 May 2026 12:22:39 -0700 (PDT)
+Message-ID: <f00ef10a-9adb-4553-84cf-24995598ec1b@oss.qualcomm.com>
+Date: Fri, 8 May 2026 21:22:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SA0PR12MB4557:EE_|IA0PR12MB7626:EE_
-X-MS-Office365-Filtering-Correlation-Id: d5f170d0-1a24-4821-6293-08dead370ef2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|1800799024|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	c2tHNoKT6oxerWTHx1+HyE+duaZEIOGungvvC4qp61yOpRMABP/QZnyJTfubuIgD+BYZCGY4SJ8eJz0FmpIv3VlUt3cvZTemRDRfgguVd+zi5t7L3LM1HGqOg0PPi9eNhwQ3wruBT0BeYRR2N4Gfr93BoydbrXXtXoL7at/53b4XUxbwj7WrfDUXnfK+JjvUYWvJUzqhNOtzSVLVCmTM9hpIiRgE0WYnFbZJx8CNp2ZqX+p8bCTNHt9fc3k0sjWnanA/+063sCljAsRZzIfMFdv450MIXT/99zQf+6DpUCFhSe3brpFp2GyGWDEWKhhDU2ceHyyXDznoAdsmpd0gBza9Qko6CL4X7fXJpzHGTzAiQuPUr7fTufCVMn49MZF6kcwgq4r85sQCgkwamo1QOkHSUcplxCGhA7+vnfMoU+wFX2YxpAqT9kp7sxuaSFlBtqY/a0fSO/paCqdLloON0EmRqNcya4DxfY9Owi4gaREoyBNB7GKL902Bc7m0vrcXAtiLi/fInz0GGs6eoiLk86eaDs616MihWzNE7+ba1Ha3Zo7hJiVENoQMzWq5vtaI6zu/B7KvSqljIwgnpq1D4JPfvMAOYvVYU0JQFHBT7S4co2fUQmD27w5dVnEyWw4/pUOp9ykvmO5RILY+ammDEn+SaZrHwQk+KXPqYvfjzkxF5O889jHEZT3ycEQjztLN
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SA0PR12MB4557.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UU5SMTdiUE1mRE1JL3VjQmdtNzg3c2xONmZwdHF5bVBnUWFJdzFQS2NUS1hG?=
- =?utf-8?B?MllqejBaK2tHclEvL1JSbkYxWjUrM1BuaHY2eWxoVEZMa2RHbVhlajBuRXZn?=
- =?utf-8?B?d1VEUENwb1Z5MmpEanI4RWgzKzJ1YVdKS01Kc1g4clZ3MlY3dW5oK25OR01Z?=
- =?utf-8?B?VEZhNzN0eXVMYWFkOWdhZXUvbmpRVWZkdVVWWkRyOXQ5bjB6OTltS2s5UjR2?=
- =?utf-8?B?Rzl4bWdZL2ZsZUJyek15QXRHWFE0MVNZemhVNWo5bXBoQU5oMmh3eHRBa1dM?=
- =?utf-8?B?M01lYUVSNm9vRTZCdHFCWEFIN0IzR0RsR2lkc2lGY1VXcWZhWm9aVFEvUnZL?=
- =?utf-8?B?d0xDUlgwejBObEcrSHdlSEY2ZG4yU3plMDRuelR1bVMzb2ZGWUl4dVVhT1Bx?=
- =?utf-8?B?YVRFd2x1TVhqdmVKQXo4UW8xOEIwYzVNOUpQODliTUdYSEN2dm1hdDBnb01Y?=
- =?utf-8?B?OVhUZTBQSTdseHp3YmtCZTdUTEJTZFNocEZjRE1wT3MyWE5SQTJjTml0akY3?=
- =?utf-8?B?OWxlYmU3NkVoL0tBVERDdG04TldkVDJMVEFlTklqWTBZVS9nMXAwbXdaTjgv?=
- =?utf-8?B?WnVOdVZ1cm5qZHZRNUo2UVR4Z1QrTnRmUFpCUWZZYkUzamtYUzQ0U2NVQW5V?=
- =?utf-8?B?cEFoUEUyVTlnYkIweit6bWFoUFR4enhBVVNGYWpUY1VlL0g4Q3ZSejlIVjVH?=
- =?utf-8?B?VXBWdmtMTm1Mbk0vdGlOVHplRVllaS8xVTZ2Q3hCYysveERYS2pYVnMrRUpL?=
- =?utf-8?B?Rlg4RlFBVWxrUHVRU3N2VVZtRjdHYkJLNzZtZElidVMyUTRsMW40eHMxMDUx?=
- =?utf-8?B?WEVNVlFsWXo5MkZYTG8xT0l0Qk9OdkpybEhnN3cwS1dVMGRLRHBTN29MdlZQ?=
- =?utf-8?B?eVhOMUFpWjEzQUxvTDVIOFpDMzdIYXIrV3pMWXR3c2E5TTVhcDh5YVRzQVBo?=
- =?utf-8?B?VG00eG51WEVTbndVRTN6NmhtWjEwVExEcVVhZm10eDYxVlhMcHpEMzl0Y0w3?=
- =?utf-8?B?UkZKcG9Rc3ZyckVVakd0UEI2ZlFUVjd5WmMxMDlRMmZ2azN4QnZ4UG02Ym95?=
- =?utf-8?B?c3BhZnIxTHpsSW50WnZIYklDNk9jeWNvSmxTMitwQ2RMYjlyWkV5ay9BYmdR?=
- =?utf-8?B?RkpkTzJiNko5T2xVVVZrMkxnZWhocGxWSTZiUGxhclRocWlXL000WG9sMmNP?=
- =?utf-8?B?cEhBQ0VvOHdRK0ZLM01iaGdvTmtNQjFsMU0xQUZzQnpiQnhCS1Y1b1o5aldz?=
- =?utf-8?B?T2pJSnpEK0lhdU5pNlZCbGdLcVJUenZuTGk3Qy94UDRLYVpEcmpRK2MzaHJ3?=
- =?utf-8?B?Mm5EYXFVMHJJNjZLZldQTjRaY05IcTE5VXg5d1RkRE9STGZ5Yk8xaHZJNHBU?=
- =?utf-8?B?OGs0VEd5Tzk5QmFRc09VTmpneGxsNHQveVJ1VGlNWEVIVHB0YXhUdmxYMnpv?=
- =?utf-8?B?RHZ5dHNDRkIxM1lyZHlrakxEWDJnVDVzU3JuSHhjdndjdXliSkZrYTNJdG1T?=
- =?utf-8?B?c2lSWnpyT2lBQVFvWitnR1VJeDRtcmZiNDhGQ2ozMGxKcFR4YUF1dXdHZ3RT?=
- =?utf-8?B?UzZKTit4eVo0c0tVNU0vVDQvT0k4aktwZ0Jqd0VvbkhwUHBnVUlaQjVYSlRx?=
- =?utf-8?B?SU93blZWYzc1RXlmV3F5dngwNnl5N054YVd5aU9mSndGRDJOZUpjaG8xd2Ew?=
- =?utf-8?B?eVg4eEFaWGYzYmFVYWhhcW5sWDZ4TW9oVU4xTW5GUjZlREVQSWJkTUh4bkhG?=
- =?utf-8?B?bEpGaWNrTCsxQVdpSXlVSXJLOCs4U3JtWHQ2M1d2eXlYOXFleTlTN2g5c2NJ?=
- =?utf-8?B?ejduano5a294d0ZIWU1KSEFEL0Ruc3dMRDZvSlpxckEzSDNuM2NZcGRCaHhS?=
- =?utf-8?B?WU01Rk0ybVNwR1RPdUQxN1pQcTNNZ001dEZHVjFDczFzdVVTY2FOb252TGVL?=
- =?utf-8?B?ZkVkVHgyOGs1VzA5eFBCYkhnMEFhTnlnQVVKRUtpZ1czRnM1YjF5eWV0WkdU?=
- =?utf-8?B?NUxndUYzSDdOSU5nWlFmbFVOK0krTzZ2cGE5SS8vRTVFMk51SEtzNG1VWUlm?=
- =?utf-8?B?RGNzcGlFTm1rUVprVFZDTGtwQUMxQ25wNzlQUjkvV20ycEhoR2VYNFM3anM0?=
- =?utf-8?B?b0Q5SFJDSFVPZEk0WVE1NXJBSDVaR1lzM01lT1IwVmZocUZvYWhEN2NLTXJB?=
- =?utf-8?B?Qm5kbUYwQWJEaFJBVUdRb0pxWVdhUE5IMSswSGUzb0p5eXpLazUvR3ljeGRj?=
- =?utf-8?B?Rk9QZTNLbGNydWFvYUhWaDBuVU9TaWVFbG1pclJQeGdjQjVLM3M1L05uMk15?=
- =?utf-8?B?ejBUMUZtMXpPSGd1aWM2VU90UTRhU3JZbjNxd2gxQkdVaEFqS1RmUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d5f170d0-1a24-4821-6293-08dead370ef2
-X-MS-Exchange-CrossTenant-AuthSource: SA0PR12MB4557.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 19:21:52.1496
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: rTVKkB4o6gNaeSU35aPXQ1XvInPKPfUW3oGwo82h1/g4QbGAJk+o29Gsv01zzxNZutKMJIkyfq2L2NOPWBgLhQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7626
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/4] thermal/core: Allocate the thermal class dynamically
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: lukasz.luba@arm.com, rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20260508180511.1306659-1-daniel.lezcano@oss.qualcomm.com>
+ <20260508180511.1306659-4-daniel.lezcano@oss.qualcomm.com>
+ <CAJZ5v0gWgoZtuK6nZ+71QbdV96GXq8McQ=azcCuceph3XxBD4w@mail.gmail.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <CAJZ5v0gWgoZtuK6nZ+71QbdV96GXq8McQ=azcCuceph3XxBD4w@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=dIqWXuZb c=1 sm=1 tr=0 ts=69fe3801 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8
+ a=2VRkuRyHidHvWF5fyokA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=a_PwQJl-kcHnX1M80qC6:22
+X-Proofpoint-ORIG-GUID: EVGwckRIQzKBWx58Yz0pqcFRAN6TIhJs
+X-Proofpoint-GUID: EVGwckRIQzKBWx58Yz0pqcFRAN6TIhJs
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA4MDE5MyBTYWx0ZWRfX3AC3IQn2P471
+ 0S28XJtLquv2bp8FxzJ7hDILBydM1cvXs8IeXNUofNYzoUcn3KiN7T+J6q4SG8FubuzvI2Rm+l2
+ 3eXNY4X02p0X3b4BjPKElhI1664nRO2Z4OmzaWxXonS85NiSoUptNv8md83otFNwYAu5WG9p2bm
+ DgLwCRNBLQtXkyXigQX0o6KcMMttusCqDxZtwdeKdjY4FxIXtXb4nmQDjdcRaD+KEYSR54CWy0n
+ VXw2EFltZW2oJ5R/qCxXWqBcTBXNlTZ6qdzhHsBE0UQzBtfFvn4x4PPLj7TIX0W1aA0PcUbwyTf
+ KLPvu5+BwCgmGQTMwlERw4iSBgmjg/ZxhLuZ5l1Sci7O6flUx4uA2pyZsIbVUjg4ECo++JzKaVB
+ LpAM8ix6lOZWmY4W80aeQ7PiqxKuPNrcSvAIbZSjtJFPs+hZ2E2+70CviGtYyp0Ad2GtBNuVK+0
+ 2zI0GYtvrMzjyZ7NJvA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-07_02,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0 phishscore=0 suspectscore=0 malwarescore=0
+ clxscore=1015 lowpriorityscore=0 adultscore=0 priorityscore=1501 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605080193
 
-
-
-On 5/8/26 14:17, Rafael J. Wysocki wrote:
-> On Fri, May 8, 2026 at 9:09 PM Mario Limonciello
-> <mario.limonciello@amd.com> wrote:
+On 5/8/26 20:24, Rafael J. Wysocki wrote:
+> On Fri, May 8, 2026 at 8:05 PM Daniel Lezcano
+> <daniel.lezcano@oss.qualcomm.com> wrote:
 >>
+>> Use class_create() instead of a statically allocated struct class.
 >>
->>
->> On 5/8/26 14:04, Rafael J. Wysocki wrote:
->>> On Tue, May 5, 2026 at 1:01 AM Mario Limonciello
->>> <mario.limonciello@amd.com> wrote:
->>>>
->>>> Some older systems don't support CPPC in the firmware and this just makes
->>>> noise for them when booting.  Drop back to debug.
->>>>
->>>> This reverts commit 21fb59ab4b9767085f4fe1edbdbe3177fbb9ec97.
->>>>
->>>> Fixes: 21fb59ab4b976 ("ACPI: CPPC: Adjust debug messages in amd_set_max_freq_ratio() to warn")
->>>> Suggested-by: Kim Phillips <kim.phillips@amd.com>
->>>> Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
->>>> ---
->>>>    arch/x86/kernel/acpi/cppc.c | 6 +++---
->>>>    1 file changed, 3 insertions(+), 3 deletions(-)
->>>>
->>>> diff --git a/arch/x86/kernel/acpi/cppc.c b/arch/x86/kernel/acpi/cppc.c
->>>> index d7c8ef1e354d3..be4c5e9e5ff6f 100644
->>>> --- a/arch/x86/kernel/acpi/cppc.c
->>>> +++ b/arch/x86/kernel/acpi/cppc.c
->>>> @@ -88,19 +88,19 @@ static void amd_set_max_freq_ratio(void)
->>>>
->>>>           rc = cppc_get_perf_caps(0, &perf_caps);
->>>>           if (rc) {
->>>> -               pr_warn("Could not retrieve perf counters (%d)\n", rc);
->>>> +               pr_debug("Could not retrieve perf counters (%d)\n", rc);
->>>>                   return;
->>>>           }
->>>>
->>>>           rc = amd_get_boost_ratio_numerator(0, &numerator);
->>>>           if (rc) {
->>>> -               pr_warn("Could not retrieve highest performance (%d)\n", rc);
->>>> +               pr_debug("Could not retrieve highest performance (%d)\n", rc);
->>>>                   return;
->>>>           }
->>>>           nominal_perf = perf_caps.nominal_perf;
->>>>
->>>>           if (!nominal_perf) {
->>>> -               pr_warn("Could not retrieve nominal performance\n");
->>>> +               pr_debug("Could not retrieve nominal performance\n");
->>>>                   return;
->>>>           }
->>>>
->>>> --
->>>
->>> It looks like this could be applied without the rest of the series.
->>> Do you want me to do that?
->>
->> Yeah; go ahead and pick this one up.  Thanks.
+>> This allows the thermal class to be managed through a dynamically
+>> allocated class object and avoids keeping a static class instance
+>> around.
 > 
-> Done, thanks!
-> 
->>>
->>> Also, do I understand correctly that the rest of the series depends on
->>> Sumit's patch set at
->>>
->>> https://lore.kernel.org/all/20260430142430.755437-2-sumitg@nvidia.com/#r
->>
->> That's correct.
-> 
-> OK, so changes are requested in that patchset and there will be a v3
-> (at least), so please resend this one when the dependency is
-> finalized.
+> I changed it the other way around during the last cycle, so is it
+> really worth changing again?
 
-No problem, will rebase on the v3 for that and come along for the ride 
-until ready.
+Yes, I think it is because it does not reintroduce this change:
+
+-       thermal_class = kzalloc_obj(*thermal_class);
+-       if (!thermal_class) {
+-               result = -ENOMEM;
++       result = class_register(&thermal_class);
++       if (result)
+                 goto unregister_governors;
+-       }
+
+-       thermal_class->name = "thermal";
+-       thermal_class->dev_release = thermal_release;
+-
+-       result = class_register(thermal_class);
+-       if (result) {
+-               kfree(thermal_class);
+-               thermal_class = NULL;
+-               goto unregister_governors;
+-       }
+
+It is replaced by thermal_create("thermal") which allocates and 
+registers the class and we get rid of two global variables. But up to you.
