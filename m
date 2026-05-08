@@ -1,46 +1,46 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010060.outbound.protection.outlook.com [40.93.198.60])
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013027.outbound.protection.outlook.com [40.107.201.27])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 655D72750E6;
-	Fri,  8 May 2026 05:18:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.60
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D20AA33C195;
+	Fri,  8 May 2026 05:18:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.27
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778217526; cv=fail; b=a8o4QT9izNri3WegZZJP1YEskte7SYTAL6hSq+fUBZBCxyINY3RXXVgUEK3guuga3zKdT95d48cfhNCX03AgvmOCc7yBc2PlFTXJOKlZUVpJjE7Ge/wj5KUYAWAp+04toOo3QLSUoqMZn7Zzgjwhj4To7mbhYs8lKmuPJSydh/w=
+	t=1778217541; cv=fail; b=LDLGMTEaFkWcBQoqJaQaOdAAVQtI/5UaVFoUEtMX+jIgjZ4nCdcMf0ulETyjbuD+USaFz2CIjjfvrX84zxOHMdQ1aZuayHjhc8OxrLqqyo0CGYmoNFa9hY7TXllfigh2JIPDlnbHfbtYIqii467s2www/v8/zFV/B75NO9AhNqY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778217526; c=relaxed/simple;
-	bh=ypoI1an7l7zqWvdnA/EKlnGWJUNvc+om8GX6CEDxfVE=;
+	s=arc-20240116; t=1778217541; c=relaxed/simple;
+	bh=4zqdQXHMWijf5u+2l2HJs0Hs5p+Cn2ZUwql1mhZbHRo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NBuajfHITBatTPCJIDgFMpLkIfjl3elCzvHI6NQuBTtCvuFHVKzP8SJ4oMAaOtE1IknujGWC8tdOSpUug5aU1UN1N0S8xlkjEi+onJjH+r9QpSztGJPGYKlUNJ4WelFo9es/I3QjIndd2BUvkHVkIYUyIPXs3yJpgV+Ao/Jbss8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=JM9jGnD0; arc=fail smtp.client-ip=40.93.198.60
+	 MIME-Version:Content-Type; b=E3z3jWQ+81eKw7uzz9wZrXyQiAYXgCNQm+UACoLUJ3LxzGa/JPVzpyRKkw4KPNabC8cuFFUbooqGdWvnqXxrqGNu+hZmqd9r02VnPujUh2kJwMRN4XqFPj3HpjK+v9cIKA3NBr8hxRvpdrf6QXt362wVUUbqAbQKS2PHG4ZGTlI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=fkJbvYwu; arc=fail smtp.client-ip=40.107.201.27
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="JM9jGnD0"
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="fkJbvYwu"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wk98911TpfOPg4ukzeuyfqzOSpNUrA9vYSWGlMjMiNVTf4A/UVB9paKZm9JS9rCTMP/zWvobJFAnSoMk6jmlf3etnaLjRcsprWPegJpE50VbLeJTvHR6cFmwIakYQnUI9FhpOVgWYi5H/4MAfUz6w6VtVzinBNxKhJrZBQ06UTJAaNLurieSWi08bsMvQWNvEZSW6TLfTLOR/ab1/oXOqTnmWwrC2Z4i9Zb7Zvq8ejsLlRWh0FxS+v3KMsCvuZiC0p3Eo6/rkOMDEZ0JtNYEjDYqP0BCd2fhrvkaTto1Sidmf3QQgo95kBZXfEQi29Bygazd9ruHIxMExLiWBr4XBw==
+ b=Ann/bGnrkhrmgI4/A0JORnLHHxeLRN/KHhzC/9hmlAbH9WZLdKW2nwjuox+E7Wp7XpUICwb8mJBtxOrcCuorMv/daaTAVSLbQjutgsRRyWbxzs5i1ietmv3TWTn7DLmU6UlpQxFB9twP7Ho2gCeLq2yUzzKk6gLZ6j76YKAM3qM0OAoahdcGGPqgq47BwT5WfmW/+mlTlBI7naU9EntelGb0gjSvyV+ux9stN3A4bW5HOWmnSxKOQ0mOjgLVuz7i7Yqd+DnhHf+1WxSUuWlFOJYLz/uRtFtZI5JXE3aoyu65GmfepCrA46f5qHiqcUKwDM77V50vDiYOvnJ35mkHbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=iS30NqUeJkgpMIq2Tfz9buWechDzrqa7doXl7DjUd7U=;
- b=QLG0zJ7vB16oHLfsNeBrONe7cAxp4BNJdQinTAsTxsHwq4vEzAxZPBoOm/8lYWunFvCiTNLiJee8hzIAqSLqAGwmpB33rtqwXJ8YYocdxvIz22IDKx71Bw6wwkCRdGL3vYcYBM4EmoVMdBdqGaDwGoIatssR/8gFmrpOilQ6puINCsRzuZsC/9ScSxOnV3r+/zJfJf85JK3jrFAZXePKmTP0KNVUVRmRTuhS0M1n7pnyzco4AsVxoMLhLbsKm2OJ3eDRYXGLisJe/WdPaCnGZiDlZkfaG19F6jWaWyByCJlxjp/lqCA/u6EfaXIi7n+V450Joz8vAPJnusdjOEzDSw==
+ bh=pqpYsqAS6dPcuJ9s11SwEkE8/O5Gs/3V1Wc8SIFwEGI=;
+ b=xdqYvH6i5RRZ9KSwBo5DDyVrH36A3d07lJHXrabZz0MR1yNNz0dMRezCXmdSpLGI1nYSzBCOwd6vGc0g+TosXG3/ZFu2P9kyE6XzMERrNEQE3JVmkf/+KHuNwDXyjhsOpbS1r0X8mvFu6ht3MmMd49DDW+DvSVJb/OS+eRiN3hpiZW5k3h4+vNHZer7DGCD5K7qCU4QKl2swUWTwVh+1tdHgTeccDPKunrLvBGW4dVgmImk5hpCSPp1aj/CGsQMXIHgZQhssIDXWDw9AhSMysXlZXBGdkE0nWvVE6LYino9nr0zO5EKOgGXaKgm4VNzCFLHjytzFSnlTwiyZK0Rj0Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
  (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=iS30NqUeJkgpMIq2Tfz9buWechDzrqa7doXl7DjUd7U=;
- b=JM9jGnD0RsEXrR3Vhu8y3GRvKQOw12UzyI9+bBEiW6+EBwjSGxzi0vupUcgkkM8WNrVnJfJWsbOHqZ5wHmnUcm02wJYQOfMrTTitHW9ydSiJWVd2XD5+HQEoOF4NSzmj4xxcdqVb/+a7dxzER5+NeFPcNM3neK67MDr0z3lJZ4E=
-Received: from CY5PR14CA0003.namprd14.prod.outlook.com (2603:10b6:930:2::19)
- by LV2PR12MB5941.namprd12.prod.outlook.com (2603:10b6:408:172::21) with
+ bh=pqpYsqAS6dPcuJ9s11SwEkE8/O5Gs/3V1Wc8SIFwEGI=;
+ b=fkJbvYwuniaDGLEV8VuWOSYfq+ICdF6NuiFI4DeU6mrsp2YIqRJXId+0yMPC9PGWAwejgPEl0KI3iA2yJ/zhJn3APwFZEI+K87aCgM/4LBB8MTTGIkEUSf/TkdF+ngTOV0K1XNFCDXIfYzFhwhLDNYAhvpudYO5QVhk/P1WsrYU=
+Received: from CYZPR20CA0020.namprd20.prod.outlook.com (2603:10b6:930:a2::25)
+ by SJ2PR12MB9163.namprd12.prod.outlook.com (2603:10b6:a03:559::17) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.19; Fri, 8 May
- 2026 05:18:40 +0000
-Received: from CH3PEPF00000009.namprd04.prod.outlook.com
- (2603:10b6:930:2:cafe::7c) by CY5PR14CA0003.outlook.office365.com
- (2603:10b6:930:2::19) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.18 via Frontend Transport; Fri,
- 8 May 2026 05:18:40 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.16; Fri, 8 May
+ 2026 05:18:55 +0000
+Received: from CH3PEPF0000000E.namprd04.prod.outlook.com
+ (2603:10b6:930:a2:cafe::97) by CYZPR20CA0020.outlook.office365.com
+ (2603:10b6:930:a2::25) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9891.19 via Frontend Transport; Fri,
+ 8 May 2026 05:18:55 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -48,22 +48,22 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
 Received: from satlexmb07.amd.com (165.204.84.17) by
- CH3PEPF00000009.mail.protection.outlook.com (10.167.244.36) with Microsoft
+ CH3PEPF0000000E.mail.protection.outlook.com (10.167.244.42) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9891.9 via Frontend Transport; Fri, 8 May 2026 05:18:39 +0000
+ 15.20.9891.9 via Frontend Transport; Fri, 8 May 2026 05:18:55 +0000
 Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Fri, 8 May
- 2026 00:18:36 -0500
+ 2026 00:18:52 -0500
 From: K Prateek Nayak <kprateek.nayak@amd.com>
 To: Mario Limonciello <mario.limonciello@amd.com>, Huang Rui
 	<ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
 	<viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>
-Subject: [PATCH 2/6] cpufreq/amd-pstate: Return -ENOMEM on failure to allocate profile_name
-Date: Fri, 8 May 2026 05:17:44 +0000
-Message-ID: <20260508051748.10484-3-kprateek.nayak@amd.com>
+Subject: [PATCH 3/6] cpufreq/amd-pstate: Allow writes to dynamic_epp when state isn't modified
+Date: Fri, 8 May 2026 05:17:45 +0000
+Message-ID: <20260508051748.10484-4-kprateek.nayak@amd.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260508051748.10484-1-kprateek.nayak@amd.com>
 References: <20260508051748.10484-1-kprateek.nayak@amd.com>
@@ -79,57 +79,57 @@ X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
  (10.181.42.216)
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PEPF00000009:EE_|LV2PR12MB5941:EE_
-X-MS-Office365-Filtering-Correlation-Id: 42bd3ba0-3981-4770-026e-08deacc14395
+X-MS-TrafficTypeDiagnostic: CH3PEPF0000000E:EE_|SJ2PR12MB9163:EE_
+X-MS-Office365-Filtering-Correlation-Id: d05ffd4b-0b28-4264-87b8-08deacc14d18
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|1800799024|36860700016|82310400026|56012099003|22082099003|18002099003;
+	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|376014|18002099003|56012099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	5T21xXabEtB0OwNWv2XEAobSasUYzC9nxHYnGmvqv9XiKH1IZWJ29cUzFgOT6YWP76NdqlV5hiwkZUuPt7WDtPbTVZc3erbT1sRIW3LhD2ANAJWWHiwYqe6p8Ez7AfvvtcoHjQJqGYvONVhpAYFtk69HYBOdvxhqLg0PehDgo7Bl0EL9ZxDMo8I0tqYhIoFhnCkXuA1Qjpb7k9fQl1h61BsHikEOtkwSXkYTx0vvA+FIoBSNHzd9vSedtwf5ub0IF/Eqp1yW/wZHrYMNNFbVAp/aW8FOO59gid3RrFklDqsQS5LX7jHJ8WJbUzxUzPSV63B6ONca0RDdAeMUdW7T5mdzT46ProoPjyzP6aD0XQTS2sUtcrnG/XzksDg5xqzFcQLjLEy4x6/qNs+EEW9Hu57CxHPQPzEQ9XqSDKKt37C45bohnQVyVOPtUxZtojy5FODxW2dVIjFzHbec2nfBElcjnpeg/WxK8BgoOkORqhvEkj7zqCuN7RQBvKbZPe6Yig3STP3rT+N42t3CkTtg+W+vJJo9RRTybNsxH9ndyj608mC04o1H+Vky+XSMykgH9r7A/Hc6NC+655taDRc3DZQMy9H8dH+L3uAd0WHPqlS9ORPREgsQJ3NoKW3+ax8aHV1E9aJLznRXO1JIQw8lM6Zn1PKh9/uDfpAEMPf6iPHyUOFRYRomhp5M2LYtMuGUcESCtugdOJ9Bd6WwqEGfnkwHvdx0xH+Q76mDKKB9Lc8=
+	QnEwygY590gLeXLjRPvMJSJ9nwx/hVwpQcPPXReRHyd/aNoD2JQnvYYYpbD+EsYtgv/I793FZtraoevdIdFsgbyTfGrxvxHeb9FIq4SJw3YxOPWjvqCL8cNw34YfqO7VwF9dAYupHbMO+Wt17IjtZwOXldzypDROFDHKPQNAcUPs7xn6utD05mO4rigAsxqhbTGbziLV7Sp3stSQ2ZLWa5cIJF1M4N0H41HEtrySBBAdxSrtXzFz5Rhas7/HVrE/vr9wz/SNs/dA+N/2aovNxy2/UBH+ZATaA0e1g8qrxe8bHyDywFhAp4/DiVFkNFga4rMoSR90hIhNUfkEqvBCdPAfirDDPLWGMLiD57kzVCVi/0dYirZgioeyPPnMXetPTE73Aaal4/1dtrkZpFSn+bX//lhxzDffQXYm6Vlf7eZ7/NvYxvngjKaEESr7iFsZ1oABpEuvfg0gcft7oT+xHb5fore0OqKb7/AEXat3aLYGfTDFBUtUZvtfYgeTLt/QGl2eZHMJBmgGpVzTWiCVJsULRhrOTSTWuUcugfSRcLsfyouXHZot1XzZXA2nvJnH6/O/tfJP04v9xMJWH+nInaARsyPjgFjlfVitR7dJZG41+TaAq694qwOj3l/jQjF4Z/dJEP0ZIgGSpiQ7/p6CIl5hFXIjqlyLEea7GcjrVlZrd547+cek2yTxMrYwLVd28xBgQLCh/kLVfw6QZXhJ7kjVI2wCLkBMRbgu+gK3tMI=
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(1800799024)(36860700016)(82310400026)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(376014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	PXq8bzl7cWPpcrqP9eaxkcFG36IdcOqhzYVSezWv5vfm/NjZOnDtoZezVZixbuigQoPbdo2ho6kisY4+MxkhY7v6jSQunvlRoUBGZSaPict1WCzgUGUPfyZeOCe3zSAnYxbKQI5MxqQQYHlakPjmxkBpV8UN/URGEooK9c31JVYNHKynIM8PoK8fAPvS98WC8VtM1qt112v6X6BkmlYrsU/j2sfHPAG+oOKrjcWILuzWum/4cob1VuVvMpx47l7Ji8VKaZbJ33lQCxsJzEY+3pgyaIb72tVnEsS6CfwYt72HBMNaS3CCtCuPX2GAI9UbTIvLQyNIuB013wMuQdhPZOI1BjrXmsS/LDglrNp83apPA5c1yjd2AdndHMZEzWfwyijhhd348mIt1Wmve80PIF21boEcidQBaZ0TpMwqNdkTQ7MWknaR646j9eKoaA2O
+	t0dljC6UZXG8kroon9U/PkKOJa360xZNYeiQW7QtPE+xwvxSstKDLhYmW+NcEuohL/KWvhAWsgj5htjamN18n5TZqnez++UKhnQwjQnpk5mf3wlrkuPZ3J/XYX5MQeASGwMFueVVboNRtDihdjEqi8JKTAtb/NluYRqEZF4rqgapK5J3kbuWZ1+t7BFy0MRoZNe5jyO+ajAISOs9G48vO2s2zD/LuKabYTQc77CCYBhgg6TK9xxERyIDqRgMyERefnpNwSqbBPV4jUJtXpqhQVfwyoJtbcGAI0x0tSk/Y7I5JehpDBUW1Ys6HgsGhNe6bQJcrXu0VpHbDqNRWboXGdmmvsjGjp0jkJeZs/jZiZ+l/bvwqkklFHn557cMgqAt/su+lwDtgS+JFmhZrYhkPQaTvfzzobmmRcutP35L5EtlWCoQ2/F2FSC3MGjZwr5j
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 05:18:39.5398
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 May 2026 05:18:55.4779
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 42bd3ba0-3981-4770-026e-08deacc14395
+X-MS-Exchange-CrossTenant-Network-Message-Id: d05ffd4b-0b28-4264-87b8-08deacc14d18
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	CH3PEPF00000009.namprd04.prod.outlook.com
+	CH3PEPF0000000E.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5941
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB9163
 
-Failure to allocate profile name will return -EINVAL from
-platform_profile_register() while in fact, it is a failure to allocate
-memory for the profile_name string.
-
-Return -ENOMEM when kasprintf() fails to allocate profile_name string.
+Writing the current "dynamic_epp" state to sysfs fails with -EINVAL even
+though the desired result was achieved. Allow writes to "dynamic_epp"
+that does not modify the state.
 
 Fixes: e30ca6dd5345 ("cpufreq/amd-pstate: Add dynamic energy performance preference")
 Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
 Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 ---
- drivers/cpufreq/amd-pstate.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/cpufreq/amd-pstate.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 5e2d28c73294d..72514be2f30fb 100644
+index 72514be2f30fb..462ddad7bc79e 100644
 --- a/drivers/cpufreq/amd-pstate.c
 +++ b/drivers/cpufreq/amd-pstate.c
-@@ -1291,6 +1291,8 @@ static int amd_pstate_set_dynamic_epp(struct cpufreq_policy *policy)
- 		return ret;
+@@ -1832,8 +1832,9 @@ static ssize_t dynamic_epp_store(struct device *a, struct device_attribute *b,
+ 		return -EINVAL;
+ 	}
  
- 	cpudata->profile_name = kasprintf(GFP_KERNEL, "amd-pstate-epp-cpu%d", cpudata->cpu);
-+	if (!cpudata->profile_name)
-+		return -ENOMEM;
++	/* Nothing to do */
+ 	if (dynamic_epp == enabled)
+-		return -EINVAL;
++		return count;
  
- 	cpudata->ppdev = platform_profile_register(get_cpu_device(policy->cpu),
- 						   cpudata->profile_name,
+ 	/* reinitialize with desired dynamic EPP value */
+ 	dynamic_epp = enabled;
 -- 
 2.34.1
 
