@@ -1,48 +1,49 @@
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com [209.85.210.196])
+Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com [209.85.215.193])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37B3837186E
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 10:27:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.196
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 859DE37186E
+	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 10:27:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.193
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778236022; cv=none; b=sn2Oibx8+uhRQbWJzje3uL3SrO51DkadH/RHvSfn7qfN3bxQxvnzS+oHzI5L21a1pyACnkxiGofYHtvW1nLtfjfsyg0la8ZB4rTZfQCPrE1RIJhIF//oeM+BZ3Job+CCDOmNAL8lfUeNCi0l9Apk5Bwgd83+sxNtqqU1D/yO80E=
+	t=1778236033; cv=none; b=jVl+hykgzAcrMT0R62ieHSV9a8MS6K9YqpcTQCz0z2tHcnJFAVTFKjEO/jYbR/y/ge5NJ3e+AF7WnXv+dJe6Fe27Tx2+BaaV32FdHqM4BFSWAqf+Je4D72vcedWU3PK0CZoYltrSqH1EVgxl+eNAGH1SJUZ5DLQ+PF7US/5y1sQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778236022; c=relaxed/simple;
-	bh=9n1RvP17fserjXZKFvAHvgL52IYHi10a5qX7cWdWDpU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DB2jXCQ4538XT/mqR2Bc4V8xIN9Sj7zUoJMvzH+/8oGs0F80/1dCPJxzCIIkIvLAf9kxS3KE33saIITuJK/nXqUhN5TlZIiHNWUjndSr0gf+z1frzl31ZD6RdOlsvktrKTPhRBXL4q369blAYoUjS67T+CKbnRMCLt5Eyt/O9co=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.196
+	s=arc-20240116; t=1778236033; c=relaxed/simple;
+	bh=0D7MRQxHEn04ATSWBkzBguDZ9exycFH13LNzkzZHI9s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=essJUsPsu/ehl0Mz0CG6d9Gq4a3iFmRCa2lHHvfYJrbWCHRGQLfncWTv3ZQDpIkMWMiBKMyuHu6FI4wAWUfh2i5qeHd4f3BJtSaBMoEztEDTe5P7JoZMY8BBr4dOGfVtLQBs+Q1tEKb0QpP7ocn+kESLbLCZ1wuxzUnEYCQQfsA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.215.193
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f196.google.com with SMTP id d2e1a72fcca58-835b78c3797so808364b3a.2
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 03:27:01 -0700 (PDT)
+Received: by mail-pg1-f193.google.com with SMTP id 41be03b00d2f7-c802803ac17so807570a12.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 03:27:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778236021; x=1778840821;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wUkFwkajaVekOiCVKQrl4E7oDyn2kxG0GWVyrnxa15I=;
-        b=aMeLd1GY9OTBbYgHeXJ0dmjozFtTlMkbE0L9om1jC9x50hcwhgkbKpAQo8kyG2fYDD
-         xEVIn/loG7s6i2WWRBU4sZW3BvlTRoyNxmEjhgTeSlpmqE0nRSLh3LOH4eNnhTwBEXtC
-         No1CIGYiNY8RDGDpMG7rsr02mVfMabRkpOrmIkj9LNd8EGQktAPpOMG/pvvOHLNQ5hnl
-         XkWvWXxnR8WFmxKZjapcvnPWKPGioAZPiAeUys+xkBqvgWJ04syRgVTGK4EoRi+Ji3re
-         xq/5d6U3T2JJIvwuANPSbLT8GV1WzVC2gvCD7m8G2fw8U4w2DtdXpAbBB0sYyIa1bvL2
-         jo1w==
-X-Forwarded-Encrypted: i=1; AFNElJ8d/Zrx1WLhFwzWWTSGed81EC45/enAtuftsy6x5CejkCzHEGc+Jc8vXV290I8pF44yHYD3coyNAA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy5BJhXKC0pZMbsVnSptyo1QNei01oLmFGTero4FlhqbmgfL/iO
-	moasSjkTzOSq2DFPXBkVmzia9M38zy9+Tr1lK87yOO5admAiGRu8us+p
-X-Gm-Gg: Acq92OGjRAFu9dZFFzGHpYXQTqJ+IUGblPkZFTmF/LW92sebj9rb1mknwmRJRK5fn5C
-	NILWhemYLaPsp+PXLbe+1wg1ImEGbOHdo++1FHjGUxrWK9ofW4JW47Y3kmdnpLIS3ygb4TLCt38
-	UFSShwXln/jOz79T95Bn04E21NYK9ryWVatchnETmZL8p6Zcqq5iO/2VycxOGsF57bDhH38uw7x
-	6Ol4GhEiqoJIyZYKKc0KcqOkQVZpsbC8pm93492ibVQNtQzk62C/U3PUHPSqcOvNxHd3JDPxf83
-	Z6SC/x+PZH9m0CLNDyz6UBMctpQexO2P8wtrrZCRUefw5bmSt5ZzsVwLwAe9kMX4HJv8HF9iu7G
-	rg3PQy0OA/WSbNvHTHYee8SetgRnEp4joz5cTKoH5YVCkUAmrj3ANfF/6BoFzRZojB0wPEHtun1
-	xrmt3gzg4K6IY0sm684wLYe0LfgLrZYFYYs+o7kLpLzzvbwg==
-X-Received: by 2002:a05:6a00:4ac8:b0:83b:40c8:6de4 with SMTP id d2e1a72fcca58-83cf6a39c5bmr2472379b3a.28.1778236020509;
-        Fri, 08 May 2026 03:27:00 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778236032; x=1778840832;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=OnNuKtVj1c3jsevSEXyLLwmSEHEWjAVF1+jRORGv2IY=;
+        b=gbTXrw5NE3dHAXbyyeCUnLbJzJYfZ0XUnonwPhAWDu+BK5kpaMx0B3ndU+5vn8YyYe
+         MAZJXsMxAGFyFWUz/2SeRDikselGmtMFMN8a5NQpIluG4JBHqXEUA5xUVM21sxKyfcMg
+         ofRhaiXMwaLdMcrpVqqdHKr3o1zd65027UHkezUpM+cnuWEVS0+lmpU7Yk2CZ3mWwwJa
+         v0BzuCZ9WuivSVEaXoI0e4u1FKes/FU3pI0Z07y173xRk4EqdLj3wBNqRWWJqHMiPiX3
+         h72fIyXqXWhU77rVjjIqs4OC+f/qI+x/DHccJh7vc1uorD56MEKC6yJyDelnWCR5KEXp
+         U8tg==
+X-Forwarded-Encrypted: i=1; AFNElJ8Tp3L25DGKdGtmwR8MW/k3AejaYT+xy0VlW1hxZPz5pieRX2Qlwh6oE5tBtTvE/6Pm8+AF96XLLg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw+a25MHUn7Vh49xGlQojZJZzI+Y/QZFI6TuiCVO9EMWxeK7ia8
+	h/kireNHEzz/TnvcWobHMKZHNJQzNYKetaQw0SY+ryjHFH9iJWK5Dbg+
+X-Gm-Gg: AeBDiesvY84YndXAiQuJi6QcvJxa6r5ZV+elswafzLHAqGP1u94VXXPWbkXu+5hi08X
+	/THMf0L8eHpFPXYpZGdpBlCS7s9GrkFKMsqXpy3P9BNuwThHRN5kpkvwFU4kcziBb6CvFBCymUI
+	GsZa3Csa9sLsak5hiVTrxB1BfnvtghMkWf/K0eRA4R4L9VNsuy+W64QbSfrnwkysbG2nLzr6uQt
+	6PCj7JfbsVrAG1UeQ0/CN+7S98lgn9wum64RfA+QrwLfksl/DyJyewOpyY4MUPuLJiqHEwxzxFR
+	3uKSi6jsnVbXh9/zvdMUixPQnRoD+nZ9jVuPTiZ9vPiPXjerqhn/hGMNSLtjC5yvoiXLA4PeY5j
+	Z2AknUqbYsqEVr+t/NaL3GfmITwz7TcI6sLE6xSc68fBmOHS+LqV2I3iHXnnb1PVtAw0/225RYM
+	zJVyroVmj4IIs/diH/7pqMpeHhs/h759IhQnIc2AMXTDPd6A==
+X-Received: by 2002:a05:6a20:7f8d:b0:3a0:bc61:62e5 with SMTP id adf61e73a8af0-3aa5ac62b2bmr12200186637.44.1778236031661;
+        Fri, 08 May 2026 03:27:11 -0700 (PDT)
 Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839679c8c00sm11021319b3a.32.2026.05.08.03.26.55
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839679c8c00sm11021319b3a.32.2026.05.08.03.27.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 May 2026 03:27:00 -0700 (PDT)
+        Fri, 08 May 2026 03:27:11 -0700 (PDT)
 From: Xueqin Luo <luoxueqin@kylinos.cn>
 To: rafael@kernel.org,
 	viresh.kumar@linaro.org,
@@ -53,10 +54,12 @@ To: rafael@kernel.org,
 	linux-pm@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 Cc: Xueqin Luo <luoxueqin@kylinos.cn>
-Subject: [PATCH 1/2] cpufreq: cppc: Refactor autonomous perf limit programming
-Date: Fri,  8 May 2026 18:26:47 +0800
-Message-ID: <20260508102648.142688-1-luoxueqin@kylinos.cn>
+Subject: [PATCH 2/2] cpufreq: cppc: Add update_limits support for Highest Performance changes
+Date: Fri,  8 May 2026 18:26:48 +0800
+Message-ID: <20260508102648.142688-2-luoxueqin@kylinos.cn>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260508102648.142688-1-luoxueqin@kylinos.cn>
+References: <20260508102648.142688-1-luoxueqin@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -65,79 +68,86 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Factor out the autonomous performance limit update logic into
-cppc_cpufreq_set_autonomous_perf().
+ACPI CPPC specification requires OSPM to re-evaluate the Highest
+Performance register when Notify(0x85) is received for a processor
+device.
 
-There should be no functional change as a result of this patch.
+Implement cppc_cpufreq_update_limits() to refresh the cached
+highest_perf capability through cppc_get_highest_perf() and update
+policy->cpuinfo.max_freq accordingly.
+
+When autonomous selection mode is enabled, reprogram the runtime
+MIN_PERF/MAX_PERF envelope against the updated Highest Performance
+capability through cppc_cpufreq_set_autonomous_perf().
 
 Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
 ---
- drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++----------
- 1 file changed, 31 insertions(+), 13 deletions(-)
+ drivers/cpufreq/cppc_cpufreq.c | 45 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
 diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24..7ddf4296c474 100644
+index 7ddf4296c474..fc0fc27342c1 100644
 --- a/drivers/cpufreq/cppc_cpufreq.c
 +++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -843,6 +843,36 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
+@@ -873,6 +873,50 @@ static int cppc_cpufreq_set_autonomous_perf(struct cpufreq_policy *policy)
  	return 0;
  }
  
-+/**
-+ * cppc_cpufreq_set_autonomous_perf - Configure performance bounds for
-+ *                                     autonomous mode
-+ * @policy: cpufreq policy structure
-+ *
-+ * When enabling autonomous selection, program MIN_PERF and MAX_PERF from
-+ * current policy limits so that the platform uses the correct performance
-+ * bounds immediately.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+static int cppc_cpufreq_set_autonomous_perf(struct cpufreq_policy *policy)
++static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
 +{
 +	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	u32 old_min_perf = cpu_data->perf_ctrls.min_perf;
-+	u32 old_max_perf = cpu_data->perf_ctrls.max_perf;
++	u32 prev_highest_perf;
++	u32 highest_perf;
 +	int ret;
 +
-+	cppc_cpufreq_update_perf_limits(cpu_data, policy);
++	guard(cpufreq_policy_write)(policy);
 +
-+	ret = cppc_set_perf(policy->cpu, &cpu_data->perf_ctrls);
-+	if (ret) {
-+		cpu_data->perf_ctrls.min_perf = old_min_perf;
-+		cpu_data->perf_ctrls.max_perf = old_max_perf;
-+		return ret;
-+	}
++	prev_highest_perf = cpu_data->perf_caps.highest_perf;
 +
-+	return 0;
++	ret = cppc_get_highest_perf(policy->cpu, &highest_perf);
++	if (ret)
++		return;
++
++	if (highest_perf == prev_highest_perf)
++		return;
++
++	cpu_data->perf_caps.highest_perf = highest_perf;
++	if (cpu_data->perf_caps.nomianl_perf > highest_perf)
++		cpu_data->perf_caps.nomianl_perf = highest_perf;
++
++	policy->max = cppc_perf_to_khz(&cpu_data->perf_caps,
++			policy->boost_enabled ?
++			highest_perf :
++			cpu_data->perf_caps.nominal_perf);
++
++	policy->cpuinfo.max_freq = policy->max;
++
++	/*
++	 * Autonomous selection mode uses MIN/MAX performance as runtime
++	 * hardware control bounds.
++	 *
++	 * Re-program them when highest_perf changes.
++	 */
++	if (cpu_data->perf_ctrls.auto_sel)
++		cppc_cpufreq_set_autonomous_perf(policy);
++
++	pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
++		 policy->cpu,
++		 prev_highest_perf,
++		 highest_perf);
 +}
 +
  static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
  {
  	struct cppc_cpudata *cpu_data = policy->driver_data;
-@@ -885,20 +915,8 @@ static ssize_t store_auto_select(struct cpufreq_policy *policy,
- 	cpu_data->perf_ctrls.auto_sel = val;
- 
- 	if (val) {
--		u32 old_min_perf = cpu_data->perf_ctrls.min_perf;
--		u32 old_max_perf = cpu_data->perf_ctrls.max_perf;
--
--		/*
--		 * When enabling autonomous selection, program MIN_PERF and
--		 * MAX_PERF from current policy limits so that the platform
--		 * uses the correct performance bounds immediately.
--		 */
--		cppc_cpufreq_update_perf_limits(cpu_data, policy);
--
--		ret = cppc_set_perf(policy->cpu, &cpu_data->perf_ctrls);
-+		ret = cppc_cpufreq_set_autonomous_perf(policy);
- 		if (ret) {
--			cpu_data->perf_ctrls.min_perf = old_min_perf;
--			cpu_data->perf_ctrls.max_perf = old_max_perf;
- 			cppc_set_auto_sel(policy->cpu, false);
- 			cpu_data->perf_ctrls.auto_sel = false;
- 			return ret;
+@@ -1027,6 +1071,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
+ 	.init = cppc_cpufreq_cpu_init,
+ 	.exit = cppc_cpufreq_cpu_exit,
+ 	.set_boost = cppc_cpufreq_set_boost,
++	.update_limits = cppc_cpufreq_update_limits,
+ 	.attr = cppc_cpufreq_attr,
+ 	.name = "cppc_cpufreq",
+ };
 -- 
 2.43.0
 
