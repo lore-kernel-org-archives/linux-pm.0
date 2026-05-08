@@ -1,115 +1,132 @@
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [80.241.56.152])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F40892F8EBD;
-	Thu,  7 May 2026 21:53:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.152
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDC6E2F8E8E;
+	Fri,  8 May 2026 01:32:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778190834; cv=none; b=V4mRk8HLVq+fouTWs6PsX1/eNklVBpTIot1Qe06r6G+8UwD9xZePU6n+aNdfRy8w+FyKCBzvIQ0Bv4hUxbws8mIDz7vc3gCr9G8zdkfMTMGFilGiy/AT0AaYCuhhgqfPUCpXWel4aacjN+FSgljKBfDhbcSoRgsUPDajfKsoqZ0=
+	t=1778203939; cv=none; b=nGQzRd8ZVCUgo/omeZC6XPHoPtpxLwqXF10IzDQso4Pz0nR3qXKIUc7O541K8lChFYJUVDAaHLndQUNN+8RZf6zh0v7oZFYCeeRRJhqbUehxyn1ps5D0oNdx+N7KVZWO9g50dnRoG0ct9IoS4bigx47ZcYbHec7rU9+ERfCRbiE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778190834; c=relaxed/simple;
-	bh=dGZ2DZ8oN6uc5ihVECHMatrJC+gGm4uDt3Q9fk2imVM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fnwH9sqKdeKrI4pcnu94z6UDSRYOPZIqiPaWkOh3HOfCY3zHRhZljVYeyUzJZV4d8BLhJLzXfBIFI+jhImIN1Mxu2zk7rbP0yVDjUL3XNQ8TvcRr7eEcIRKuu/pT5PRGL7bDz7vBnz/ujCcKkTgxxrUedgfvWjsTwrpmD6deHSw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=XiA+ouV7; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=pRz70iYR; arc=none smtp.client-ip=80.241.56.152
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1778203939; c=relaxed/simple;
+	bh=QP0xG48S9tXmtCpI+YjP2zIBDW86qbdVELRqOAKilqM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ajnXr/LbM7ff/1Db2zfyhJYypwSz2bldbPmzLsrFARqoKR0woraX5D5WJMJ/20yuT1c1f6oZOyrB6HQSax5FsgxyUQrvQELD1frIfrQbe4lZQrcX4af1F5WBAQ0Wz9jl9BHttVoX/NtfR2XCvTheT8HCNniEm2VPT4OemM8AEAg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NPtgybFn; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="XiA+ouV7";
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="pRz70iYR"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4gBQxT5l6Rz9twx;
-	Thu,  7 May 2026 23:53:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1778190829;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=U3x8MabeutXi5u2ZOxPKzmW168+rCRgMi6Wqf4CXVKE=;
-	b=XiA+ouV74XwrFS2c6bCxNrbZF4lGYa1XCo8iercJWPL49ZdSe8kfdzB8tjApOutgCTcpnZ
-	CqTOr8C3Spvpn9VDaukgaO9CEDWMwLOim3rETaGi0WwCgVCz8tORmem4S5klqT71tyGfq6
-	q9/daLb4ik2BJIOnkME32/g+JPXC9XGddaYUMdpa/S+1doN8qVxZ9gZtLWxrxWC8E6as/Z
-	zQT9I63YABLdE8Gixi4HDxY90zjgh2+NesZY6kmJ8NCAI6nLlCilWIqJnsvnMVOLyAqPSO
-	C4FXpf1O/RO41PnpWwNARqkC57IT/LPzEnjQCL0Gq09yLkYwBxbwZXHn7OgaOQ==
-Authentication-Results: outgoing_mbo_mout;
-	dkim=pass header.d=mailbox.org header.s=mail20150812 header.b=pRz70iYR;
-	spf=pass (outgoing_mbo_mout: domain of marek.vasut@mailbox.org designates 2001:67c:2050:b231:465::202 as permitted sender) smtp.mailfrom=marek.vasut@mailbox.org
-Message-ID: <39879eae-39dd-4b4d-9469-d238cd7d120a@mailbox.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1778190828;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=U3x8MabeutXi5u2ZOxPKzmW168+rCRgMi6Wqf4CXVKE=;
-	b=pRz70iYRIabwZds/zBkOfIz7ffBSzxWr8QrUffnhoqMNYGWEIlt7PVDu3K3nnZGwTE5Ela
-	c7x1+KJQxV29dro9uGPtoHlPA1Vvt0AqPnuc5w5UIk0iKvhzBQLNCmfudJzjPtK01v18Yi
-	mMes+3se5GI995OFeMmSW7mZK2RQxprHL+1Zh3kfAiX2js5MZR19b/+f5lyxcN/gYX/+Tm
-	+uFD73FkDEVfHCgyks7X07UORDcPuVh/pekhNOJb6qiGjPQgUY5ulXsC99jbh8AMEO/8QT
-	DFax6wvBEM+q01D7qMts5CKlCnHobpbPhD97DUSjnrQ6lOlhNpMBclmzNdgJig==
-Date: Thu, 7 May 2026 23:53:40 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NPtgybFn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AE15C2BCB2;
+	Fri,  8 May 2026 01:32:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778203938;
+	bh=QP0xG48S9tXmtCpI+YjP2zIBDW86qbdVELRqOAKilqM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=NPtgybFnxiU/9wqeAjmLiX5jcpkh22KSrUmRWWc0ifwYDfYI5gyFBGwRIM2DZWZ5R
+	 shY1ZvtBAJTVNZs+G9H1+Jixrqyazmct2tfnZNPizRWaTh117NaqjFwo3rzZzFYAo2
+	 g0LzwlQDrL6HZ/LO5JD8KtZvLsuJmjZyl09ax92f6tEKDhuBtfotn2m390TJLJwF1y
+	 EJmhCPrNZaJSdSxyyEMA6T7JrmeM88MgwutZgQHhF2qF2dCfvMnf58uLHCj/yBiT18
+	 mftY56a1uPxo47dT3bpTwaKyvCPEyLqvN6s41QIPpaM72gFxzgTbUkup1Q+0eeKaLc
+	 ykXfd87BDzYTw==
+Date: Thu, 7 May 2026 20:32:13 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Luca Weiss <luca.weiss@fairphone.com>
+Cc: Georgi Djakov <djakov@kernel.org>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Mike Tipton <mike.tipton@oss.qualcomm.com>, 
+	Taniya Das <taniya.das@oss.qualcomm.com>, ~postmarketos/upstreaming@lists.sr.ht, 
+	phone-devel@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Subject: Re: [PATCH v2 1/5] interconnect: Add devm_of_icc_get_by_index() as
+ exported API for users
+Message-ID: <af08-zMGzSSsw_NR@baldur>
+References: <20260501-milos-camcc-icc-v2-0-bb83c1256cc3@fairphone.com>
+ <20260501-milos-camcc-icc-v2-1-bb83c1256cc3@fairphone.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH/RFC 10/14] dt-bindings: power: Document Renesas R-Car X5H
- Module Controller
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
- Saravana Kannan <saravanak@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Marek Vasut <marek.vasut+renesas@mailbox.org>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <cover.1776793163.git.geert+renesas@glider.be>
- <053c312d07445517d8f9c84bfe3cc8fb72d4cd9a.1776793163.git.geert+renesas@glider.be>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <053c312d07445517d8f9c84bfe3cc8fb72d4cd9a.1776793163.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 2cc6b046b50a6ef62f4
-X-MBO-RS-META: shaqte9razzqy9pddg5m6mj3cujbz7ph
-X-Rspamd-Queue-Id: 4gBQxT5l6Rz9twx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260501-milos-camcc-icc-v2-1-bb83c1256cc3@fairphone.com>
 
-On 4/21/26 8:11 PM, Geert Uytterhoeven wrote:
+On Fri, May 01, 2026 at 11:18:29AM +0200, Luca Weiss wrote:
+> Users can use devm version of of_icc_get_by_index() to benefit from
+> automatic resource release.
+> 
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 
-[...]
+Georgi, can I have an ack on this, or an immutable branch and a ping
+once it's available?
 
-> +  '#power-domain-cells':
-> +    description: |
-> +      - The first power domain specifier cell must be either the Module
-> +        Power Domain Gating (MPDG) register index (0x00-0x3f) from the
-> +        datasheet, or a Power Domain number, as defined in
-> +        <dt-bindings/power/renesas,r8a78000-mdlc.h>,
-> +      - The second power domain specifier cell must be the module number
-> +        (0x00-0xff), composed of the Module System Reset (MSRES) register index
-> +        in the high nibble, and the Module Reset Destination bitfield index in
-> +        the low nibble.
-> +    const: 2
+Thanks,
+Bjorn
+
+> ---
+>  drivers/interconnect/core.c  | 20 ++++++++++++++++++++
+>  include/linux/interconnect.h |  6 ++++++
+>  2 files changed, 26 insertions(+)
+> 
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> index 8569b78a1851..bc2e416dbcb2 100644
+> --- a/drivers/interconnect/core.c
+> +++ b/drivers/interconnect/core.c
+> @@ -443,6 +443,26 @@ struct icc_path *devm_of_icc_get(struct device *dev, const char *name)
+>  }
+>  EXPORT_SYMBOL_GPL(devm_of_icc_get);
+>  
+> +struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx)
+> +{
+> +	struct icc_path **ptr, *path;
 > +
-> +  '#reset-cells':
-> +    description:
-> +      The single reset specifier cell must be the module number (0x00-0xff).
-> +    const: 1
-Just one more question -- the power-domain-cells second cell and 
-reset-cells are always going to be identical values, correct ? If so, it 
-would be nice to keep the description: aligned, and maybe even indicate 
-in the description that those two values have to be the same.
+> +	ptr = devres_alloc(devm_icc_release, sizeof(*ptr), GFP_KERNEL);
+> +	if (!ptr)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	path = of_icc_get_by_index(dev, idx);
+> +	if (!IS_ERR(path)) {
+> +		*ptr = path;
+> +		devres_add(dev, ptr);
+> +	} else {
+> +		devres_free(ptr);
+> +	}
+> +
+> +	return path;
+> +}
+> +EXPORT_SYMBOL_GPL(devm_of_icc_get_by_index);
+> +
+>  /**
+>   * of_icc_get_by_index() - get a path handle from a DT node based on index
+>   * @dev: device pointer for the consumer device
+> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+> index 4b12821528a6..75a32ad0482e 100644
+> --- a/include/linux/interconnect.h
+> +++ b/include/linux/interconnect.h
+> @@ -47,6 +47,7 @@ struct icc_path *of_icc_get(struct device *dev, const char *name);
+>  struct icc_path *devm_of_icc_get(struct device *dev, const char *name);
+>  int devm_of_icc_bulk_get(struct device *dev, int num_paths, struct icc_bulk_data *paths);
+>  struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
+> +struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx);
+>  void icc_put(struct icc_path *path);
+>  int icc_enable(struct icc_path *path);
+>  int icc_disable(struct icc_path *path);
+> @@ -79,6 +80,11 @@ static inline struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+>  	return NULL;
+>  }
+>  
+> +static inline struct icc_path *devm_of_icc_get_by_index(struct device *dev, int idx)
+> +{
+> +	return NULL;
+> +}
+> +
+>  static inline void icc_put(struct icc_path *path)
+>  {
+>  }
+> 
+> -- 
+> 2.54.0
+> 
