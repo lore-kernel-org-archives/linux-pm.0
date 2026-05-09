@@ -1,211 +1,168 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 137CE846A
-	for <linux-pm@vger.kernel.org>; Sat,  9 May 2026 09:39:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A47141DE8BF;
+	Sat,  9 May 2026 13:11:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778319560; cv=none; b=s8GM0wX6gX04B67IFep6jbD6ok4Umzns6B9r2jgL1Ki5+CMySaZOoLHNuhU37dCqDaZZVQvr2VkR4Dl8igLtob2/4Ah2BLBPsByUpQdVx0GuOMWvqBZRK1Q0li7FozN3tcZeZDLDOObY1i2ZNG+EKncctvakzETSuYxC/JPZ4Eg=
+	t=1778332276; cv=none; b=sPjU7+pocLsG76GWH89A/wJf+a2cs6CcsxfgI67fEgwEU2npL7owf8QwWINGp8YIyDfusSdj0zsVMcWH2koMXKokOPygNe2kjhwPvUiYy5xfZxQAswrssUy0UPrssFk7g4RD/e9ILCE0C5W24Tl7M0KDk3oQtXCu3NV2RCHhHTw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778319560; c=relaxed/simple;
-	bh=s59hq7ofQy10K5TAr45AegO8DqtMpdcwABj4ejLj+Qc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MJ3oXw/KIfecrEjtqAmq0pNIAVeLIXQh3M8yc3BsbQ68pp/VB2joUEEX4zMJE2EPtpCnM0VRokiYNSBn2coEkqBRBT9SfYktzMc6HAzkAtZdMsQGIuRlTjSfxcqk0TbNVe0DxltBbEU6HZlBIUEgd5TweEyJq/3pdf98RHFqq4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=fdYx9MwV; arc=none smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1778332276; c=relaxed/simple;
+	bh=2aSWZc8Dwk+9kmPDchePM9KLcf+qoHLMBnMSgU4iMzs=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=iB6RkyseM779fQyF1IchvhcMWFaRdFWkEFaLTWutvyoAMECTeYumjeQMmo1P9MsmkSC1nqxO4z5WllFFrUXkbiYCQ+AwF+Z5WgiCB0UC+SB9vPfsEGKvV8Fx5FTFVrogdjMHUaaDDy6eEuJ3z3kmO5EIR/OFm35MB1Y2k5SDwI0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net; spf=pass smtp.mailfrom=gmx.net; dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b=eSCATAeh; arc=none smtp.client-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="fdYx9MwV"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-bc3582acc23so418833566b.3
-        for <linux-pm@vger.kernel.org>; Sat, 09 May 2026 02:39:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778319556; x=1778924356; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=hO8PVrigNakGtQ8OxMq5Ncf0k1CMm9+uGBhvQnIye7g=;
-        b=fdYx9MwV9FljHsFtAH8PJvk3krTD24LfI3PKn0xADS1LCjPZuq47KEhuBRjRlPrLYx
-         kipyzYxLfpfSIah05g5TfKDlHA8/EFa27KiTVLmvM7ssGucA4q9W40SUUde/CO4naT2f
-         iZGCDX4zFlIWs3hOcmLnsxV8785mNgScOlDP9iuxVA4jy7WpKn5dKANuurctZ8hI8afZ
-         HBf9NAefZNhtYwtGdjnovHr2qo8tjDj8vIjZFwRVOh1MBfsiAGpC0lokvPAwG9nzSncB
-         vwFt6OSWEGQj3Rm7/Tr7k7v5M9bM+XGoNqLrmUkj9G1i2+RlGRb6umjBqaH95tCc0rQ5
-         sSew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778319556; x=1778924356;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=hO8PVrigNakGtQ8OxMq5Ncf0k1CMm9+uGBhvQnIye7g=;
-        b=Xg7ftMpRhwGNMHRJ7cWUNiWccRpIoM0Yz4Xfxx8cHfR2+l10yTZ/uKGoMBPuAP0A+3
-         C7S6LT4MC8MyIeRYdpF/Umk1m+UaSuePbcPDufez2KC7XnV7PBtdfN/BAEwRthg5lgSR
-         ZEbyqyzFyBRSkUJeB3cOuN/xRGTaB0VMyzXa+q+Se//dhA/yCewDlny9PMPg4vhhzCwI
-         Kt9sEU1mkqoOSmL4adu5JKsGxyXCgA64pI0isF8MiQ3C6OvKKWccGmxSEXY5v0m8tzdU
-         wngNfvVhi6Q0/KG8pnD0CodM/Qv5dFI3DGKPvxc3VadC1KmMILpb9LGZwLalV2cFYntw
-         j3ig==
-X-Forwarded-Encrypted: i=1; AFNElJ8B3SjLsJDAUpDOXQcLHgrst2uU+WssGJcTuzOoGR7S5djaAmTljyytecJyrxMkRo3WsuF+rJnxlg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyKwUjoDli3QU9I/WikcM8iiZGTXQiaZ+RZdCh4YmDZIPEiHBDz
-	7jj9mTKLEDtmGCLjsNK1UgW4sGfoMANJZy36R6kz6znnEcgGfLWSvEW98RDPc5g74AI=
-X-Gm-Gg: Acq92OHsccALII2mWDarCp+za6j3g27rcYuBc0crEejR0aZ/NufCm9TzpVAKiJpAv9t
-	zqgUgpYJwwkVl5TG+BG3blKSYPeGHlxFPAST1SJK4Y84mDq68w2WCZdyNlDbZ8356QhYGBaKAwr
-	KKW/iivXe/8n5RPoJpTCjcApVocJ3n4P/IwKPjAuX5T7QR4PFXdDg+CDfPUo7YREzehna+Ap0UN
-	FaqvC3lKUYENIath1cB50MF1jEMlA9pGpiZVwxQGARiCmGFnr5DFaR5l5zVagGU+YpuygSKikWl
-	FiihTIDFJ9vqp6QU6cjXJSSm7AQ5CJ/JrSLYTzXzIHEJUGCdpZKNhoPJmXJMqUqZkYI6s3K58ST
-	ka2BbfqNDaiUsdpjXl/yv/kaKIVPUlxZaQOn018B9GBwKQlz2iv19KsnjPLsshRmMdPy/AHrvME
-	ZYYC0wjGp1uqpjk12kWw==
-X-Received: by 2002:a17:906:208f:b0:bc5:cff4:8e20 with SMTP id a640c23a62f3a-bc5cff4afa7mr670496866b.27.1778319555868;
-        Sat, 09 May 2026 02:39:15 -0700 (PDT)
-Received: from airbuntu ([146.70.179.100])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bcbcd90cd1csm104922766b.60.2026.05.09.02.39.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 02:39:14 -0700 (PDT)
-Date: Sat, 9 May 2026 10:39:11 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org, Vern Hao <vernhao@tencent.com>,
-	Vern Hao <haoxing990@gmail.com>
-Subject: Re: [PATCH v2 RFC 08/13] sched/qos: Add a new sched-qos interface
-Message-ID: <20260509093911.iwqkomyoapnlgmnn@airbuntu>
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-9-qyousef@layalina.io>
- <2b9fd875df1f71d2c12c21938784a6c1fd38c04a.camel@linux.intel.com>
- <20260507095516.vv7blulzskkyezin@airbuntu>
- <615dfcf8-31da-4e65-8964-c39022b5a1b2@intel.com>
+	dkim=pass (2048-bit key) header.d=gmx.net header.i=wahrenst@gmx.net header.b="eSCATAeh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.net;
+	s=s31663417; t=1778332268; x=1778937068; i=wahrenst@gmx.net;
+	bh=2aSWZc8Dwk+9kmPDchePM9KLcf+qoHLMBnMSgU4iMzs=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
+	 Subject:Content-Type:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=eSCATAeh/rYH2RtMo7rm93DJeMU8R1p4GPuXStRs+mnvo7ObWZQ6LzmG2m8YN0az
+	 p1d/FjF4UPssLlH/thJWOls6Up4+xmj75UhwDDbjLarIOt+f+kwbVJEbSlhROXqUi
+	 QHyCOvkOX3kuu/AbpWv0YK35Ji1RSE4ZmD9UziAgyEgFGeLvl+ALXvI+KCT/IirZf
+	 uf7WFO8kCDuMrOIXeXFP2VeHnXltWMUXgLcbcQ7KcqZDB0Gl4fLj+wTk5KtY323dD
+	 2ymp9k7ksaXQoLj5QZYzvz+Q/IozPORDKuy8YqcFBpZ22AkaBkevkIrn0BjShIpJ5
+	 1fc32QqujT8+/aClmQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mv31c-1vV6s74Bua-017vLv; Sat, 09
+ May 2026 15:11:08 +0200
+Message-ID: <6e863b3f-9fa6-4a5a-8ef1-08af4b1d3c33@gmx.net>
+Date: Sat, 9 May 2026 15:11:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <615dfcf8-31da-4e65-8964-c39022b5a1b2@intel.com>
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Haibo Chen <haibo.chen@nxp.com>
+Cc: "imx@lists.linux.dev" <imx@lists.linux.dev>,
+ linux-mmc <linux-mmc@vger.kernel.org>,
+ "open list:GENERIC PM DOMAINS" <linux-pm@vger.kernel.org>
+From: Stefan Wahren <wahrenst@gmx.net>
+Subject: sdhci-esdhc-imx: How to disable runtime PM via sysfs
+Autocrypt: addr=wahrenst@gmx.net; keydata=
+ xjMEZ1dOJBYJKwYBBAHaRw8BAQdA7H2MMG3q8FV7kAPko5vOAeaa4UA1I0hMgga1j5iYTTvN
+ IFN0ZWZhbiBXYWhyZW4gPHdhaHJlbnN0QGdteC5uZXQ+wo8EExYIADcWIQT3FXg+ApsOhPDN
+ NNFuwvLLwiAwigUCZ1dOJAUJB4TOAAIbAwQLCQgHBRUICQoLBRYCAwEAAAoJEG7C8svCIDCK
+ JQ4BAP4Y9uuHAxbAhHSQf6UZ+hl5BDznsZVBJvH8cZe2dSZ6AQCNgoc1Lxw1tvPscuC1Jd1C
+ TZomrGfQI47OiiJ3vGktBc44BGdXTiQSCisGAQQBl1UBBQEBB0B5M0B2E2XxySUQhU6emMYx
+ f5QR/BrEK0hs3bLT6Hb9WgMBCAfCfgQYFggAJhYhBPcVeD4Cmw6E8M000W7C8svCIDCKBQJn
+ V04kBQkHhM4AAhsMAAoJEG7C8svCIDCKJxoA/i+kqD5bphZEucrJHw77ujnOQbiKY2rLb0pE
+ aHMQoiECAQDVbj827W1Yai/0XEABIr8Ci6a+/qZ8Vz6MZzL5GJosAA==
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:rQSQz9W9AzDHnpOJdX55z38qDFbwuvFZk5HhWtzumGeL6vvIy1j
+ ABK08AsrHT84eVdKs+ZWmL2sRRMLffXWmwiQj/dl0n26yEHvGtCEHWR+MgUlz6VFZqtBFho
+ ZL54lvtjRxcGTzzreVHlEq7uLxtjCV/tR5K8uBEtUr/o/0qiwSTBbSMWaMnnVCNYRFVjjJX
+ UtL5qv6TkFFoXoArAXXPQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:tKVqbKwA5xk=;G6di/+grf248MCQFOEhp5KDT9Jv
+ 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
+ 3boBamcXk/BRbt9qOJ+nZfqA==
 
-On 05/07/26 22:20, Chen, Yu C wrote:
-> On 5/7/2026 5:55 PM, Qais Yousef wrote:
-> > On 05/06/26 13:38, Tim Chen wrote:
-> > > On Mon, 2026-05-04 at 02:59 +0100, Qais Yousef wrote:
-> 
-> [ ... ]
-> 
-> > The idea is that the cookie is per QOS per process. So QOS_TYPE_A would have
-> > its unique cookie range, and QOS_TYPE_B would have its independent unique
-> > cookie range. To allow flexibility and extensibilty to describe independent
-> > behavior that requires independent grouping.
-> > 
-> 
-> From a user point of view, I can think of the following use cases for
-> fine-grained
-> cache-aware scheduling:
-> 
-> u1. A user wants to enable or disable cache-aware scheduling for all
->     threads of a process. (No extra tagging is needed.)
+Hi,
+I'm investigating a performance / latency issue on my i.MX93 board with=20
+an eMMC and sd card use Linux 7.0.3. With latencytop I found out that=20
+sdhci_start_signal_voltage_switch() is called from time to time (~ 5=20
+secs). The reason behind this is the runtime PM of the boot device is=20
+handled by sdhci-esdhc-imx.
 
-This is a special case of u3 where you say all threads are part of one group.
-So tagging is required; to enable/disable you'll have to have a knob to switch
-that behavior but you're deferring to the kernel to group, which IMO is
-a problem to delegate to the kernel. More on this below.
+So I tried to disable runtime PM via sysfs:
 
-> u2. A user wants to enable or disable cache-aware scheduling for all
->     tasks within a cgroup. (No extra tagging is needed.) Vern from
->     Tencent was advocating for this model.
+Strangely /sys/class/mmc_host/mmc*/power reports that changing=20
+autosuspend_delay_ms is not supported. But according to the driver code=20
+it should be set to 50 ms.
 
-Same as above. We can have a NETLINK to tell us when tasks switch group and
-auto tag based on that. Although I am still worried that this is not a great
-way to tag and should be based on process and task. But I guess we can try
-things out and see what works best. According to the plan this becomes
-a userspace (schedqos service) description problem rather than kernel
-implementation detail.
+Changing /sys/class/mmc_host/mmc*/power/control and=20
+/sys/class/mmc_host/mmc*/mmc*/power/control to "on" and=20
+sys/class/mmc_host/mmc*/mmc*/power/autosuspend_delay_ms to "-1" doesn't=20
+disable runtime PM of sdhci-esdhc-imx. The function=20
+sdhci_esdhc_runtime_resume is still called, I doublechecked it by adding=
+=20
+a dev_info into it.
 
-> u3. A user wants to enable or disable cache-aware scheduling for an
->     arbitrary set of tasks. (Userspace tagging is required.)
-> 
-> If I understand correctly, u3 is exactly the use case where schedqos
-> cookie can help. Under your design, we cannot tag an arbitrary set of
-> tasks with the same cookie; we are only allowed to assign the same cookie
-> to threads within the same process and under the same QoS type. So
-> this might eliminate the case where different processes share data
+Is this expected or do I miss something?
 
-Is this a real case? I'd really love to know more details on why. I still think
-inter-process grouping is better done via cpuset as this tends more towards
-a partitioning problem.
-
-That said nothing in the API actually prevent us from adding
-QOS_INTER_PROCESS_MEM_DEP tag and make the cookie global and unique. But this
-will come with implementation challenges and complexity. As a starter I'll make
-sure to catch and error on this case to not repeat latest tcmalloc mistake. If
-it makes sense at anytime, it'd be a matter of adding new qos for inter
-process support.
-
-> with each other that we want to aggregate(NUMA balancing's numa_group
-> is an indicator of tasks sharing data)
-> 
-> > > 
-> > > We probably need a sched_qos_cookie structure defined analogous to
-> > > the sched_core_cookie to anchor the tasks.  And sched_qos_cookie could be a ptr value
-> > > to sched_qos_cookie, as in sched_core_cookie instead of it being a __u32
-> > > as in the patch below.
-> > 
-> > As part of the API or internal implementation detail? I think we do need
-> > a cookie structure that stores the sched_qos_type and sched_qos_cookie tuple
-> > internally as implementation detail. But not expose it as an interface.
-> > 
-> 
-> Yes, I think Tim was referring to the internal implementation. We need
-> a pointer to link tasks to their shared sched_qos_cookie.
-> 
-> > I think the cookie values should be userspace managed. From experience, this
-> > has to be done in a centralized way via a service otherwise you'd end up with
-> > a mess. There has to be an all knowledgeable entity managing things, which is
-> > what I am proposing in schedqos service. That's why the whole QOS now is
-> > protected with CAP_NICE capability - which I forgot to mention this change from
-> > v1.
-> > 
-> 
-> Not sure why we do not leverage the OS to allocate and manage cookies.
-> The OS has full visibility of system-wide information and can maintain
-> globally
-> unique cookies. Users only need to request the OS to allocate, attach, or
-> detach
-> tasks to an existing group without supplying an explicit cookie value.
-> One possible reason I can think of: since the schedqos cookie is defined per
-> QoS
-> type and per process,it may be more convenient to manage it entirely within
-> the
-> schedqos service？
-
-Because for kernel to manage the cookies it means it needs to understand all
-the rules for grouping, corner cases and trade-offs. We lose flexibility of
-adding new QoS easily since for each new QoS we need to nail down all these
-rules and progress will never happen - or very slowly at best. AND the
-scheduler will have more policy embedded in it that will make it trickier to
-change and evolve code without breaking user space behavior since the behavior
-is purely embedded in kernel space.
-
-By delegating to userspace we remove all of this. We provide the mechanisms and
-the trade-offs, grouping rules etc are all managed by an all knowing entity. If
-grouping rule A is better than grouping rule B, we don't care. Even schedqos
-service hopefully wouldn't care. It'd be a matter for each admin to specify the
-grouping that makes sense to them in a config file and restart the service and
-hopefully everyone will stroll away happy. That's the dream at least :)
-
-Note users will still get an abstraction via schedqos, but this abstraction is
-in userspace rather than in the kernel. I anticipate users will just interact
-with config files to describe their cases.
-
-And as I mentioned in LPC, we can easily add a new service to schedqos to help
-admins find out which tasks are memory dependent and help them fine tune their
-configs. Perf can do that, and writing a simple daemon that can help admins
-monitor/profile a live workload and spit out that grouping these tasks based
-on cache would be beneficial shouldn't be too hard. The process can be fully
-automated too to change things on the fly if folks really want to.
+Best regards
