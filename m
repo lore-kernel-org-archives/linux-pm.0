@@ -1,168 +1,93 @@
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9589B3358D6
-	for <linux-pm@vger.kernel.org>; Fri,  8 May 2026 22:35:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7E3A2F8EBE;
+	Sat,  9 May 2026 01:54:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778279735; cv=none; b=c6oKn8FL0XZQPWYJ1FQ0uROLGFPwPXzyRqsk6dXv7t45359fD1x+5CwqnlToZFt6M3PDkxLE2zB+HPn3Dq8NR2vr/XBzAKB4e1ZD9z/0AGrUWNKAcYMiM68TVw+jfK3oSN1/yslasTte+SpH35gkAgT52Jr23v9IBOTKr6Jo2Jo=
+	t=1778291672; cv=none; b=ig/Gh4zjxFNMSjB+AN0/hHd76SNM7TA+zNtPJVB9Zn/Z3pFF1NVd1YfHeYc9p5C94uQdqRp3wGiCNwOlZcueff7D1UQjfLB7e0gEfFvjhwFY41ciZNEcvQtt+5qd4M2N6gWjW0LGY7fmvdtz+xWPalxaVQ+SGjOKfrROA8+vtJo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778279735; c=relaxed/simple;
-	bh=jgoLyTJUC2DaQZjW2lRPv7tRz+Xp8O5y2vmzcJ8Cqow=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=scflXPMz+cHEw2lGtkNGUR3t2axw9oq/rpImxsXvFroxBNIND4mTZ+zUIE85XsHtn6xNjxvIOuek+xlA6WtY7pxERacGpjVqzvhQkJv0ZPYQIUkBdfVUndoFGjuhBuo9G3PJnYpEQ80wEUzIgBlswmydh/4PHfUDCF8Uqw+EUeM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=n6a8oGki; arc=none smtp.client-ip=209.85.218.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778291672; c=relaxed/simple;
+	bh=HERyAdP+exSX9h4/WV6CKzMtXQyUWufjiWnu+jiS65Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=enA7t17JNezWufGwpF1MomUTHBi1S/G9NGrJ25cusZQd/K54M7v3LvcmyD0lbJtt/oxbXJ0eDRN2E2Xguw+R53RxP6f2SnTMJjIdTCyzkveuXVJCzXuqHpSTLkbZM9wrF18FsE4np+ArEyZFTHdZZHutPtWJ8jEqnl0B6UIqZXU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=tfwk4SfY; arc=none smtp.client-ip=113.46.200.227
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n6a8oGki"
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-bb962ce4dcfso379343866b.1
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2026 15:35:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778279732; x=1778884532; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=FZDAeJpt5wP846YrGUXohA2+OtQiagVtYiHK2L2jIog=;
-        b=n6a8oGki+F0myMefY3vxUFae7RzQf3lPLpI3syQYblSrHrnX/fBSTuu0RsatUWYCwq
-         f4vj+UGDfohFjo6McZQiFqlh/6WiQ0l5LIlK6I+Rcz27IUTXQN3ey/aycM4TyQekZ0RP
-         dZPqPlFPtdrcpG/6WkS9Bkwow9jjPCjyydCd+eDPY+rT0Cb1F1Poap7/HLt3P3VzPJnO
-         gUyRHDY+wRUGDqK+euvve8WFYo1pCBumkzfcYj7iTkhupNlauc42tTYEitR7eFkNrRIB
-         U2WdW/xXCfl4TIH67hdLUhoki3f5DBA1PhYRapC9mrBhmTGB89Yu4m4MvLVWG9VMW/cZ
-         PHTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778279732; x=1778884532;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FZDAeJpt5wP846YrGUXohA2+OtQiagVtYiHK2L2jIog=;
-        b=qaThzVRnZmTZlmT4Qvof4+PLPn90xJE0CNUUPcn2jxqZOhXHOQJ0c9vgKnCZIP0/jE
-         RcDK5RWMwOowlDkX0SpBTD09PvOASBqhrXKlTW04dwqtij1p3Yby5Feo32YXF30AejZ9
-         QwgtKRUbUB+R2HD+rkLfPt7YkcVJWUKyb810N9Y1/RHpnIMzIm2Zo0SLSIgDJleGVkO1
-         Ym1uNriTrUIsn8xnjLLgAlpOZ5ZLx7yhEws1ppK0K2qmXIe8LQQ1zOw4jviVnuUFzEtI
-         +JrNqq46uMLM/jzVt8pE1tSNlj65RN3+0Ozf9LSoDCzXsaQMhKUefmrMhmYDLYfsRc8H
-         9Q1Q==
-X-Gm-Message-State: AOJu0YxzxTDxLP+LfQUDKuOYCvDviOSxg0mI5dZCdy4GEGs2SMuXG8n4
-	+vfzw+OXiVg6IjXlFrJ9fH62vMpvMTJOBZ+7V80b1nAA1hBSWK2QN9rX
-X-Gm-Gg: Acq92OH5hfrodA1eL3m7/BUfVua0DlQTD8XpN+U9UKbnOCy3Nb8KYMDCVPJzm70YOup
-	T8hLs+vWDLkNf/mGIL1Qi9Bfw//7g3kkzobZ+z6+RREV19vCqha/mjNxZAZ0kaizZzvQbiBp0gv
-	tsD+lzUXWxZJDib410Grh3BEzWg4RxPVN32fpJWvpvbwLZ1RplqVtPJLHGhXX7zR9cox6iUXkJK
-	QZZ8s+NXEm5znrEmzE+xBzmTQSuIAjrb2g4E0IPxjEm5acv2lT+gMiD3josFX2GdgeRrd4hu5mw
-	E23tNLKc2IkR90V12TiERVqbVrUGu+U2WRlAJXrL5wEMdXXt1Ra/E5hui7TI1hs8ZaxGad1Z4ff
-	bHyX6Ae85hCmWy8TOFS00auvEJP66ExX0p3nV3TadZQgl5Pk8U2TseNyeyWdeczvfE2aduKIHQj
-	+t4nCgpfnQRGjT048ilRUiR41+l5fI08d2kI5CZwKjFVKNSKvg6ld4rWdLMIyt5NynMKPqRIv9k
-	cK2U6nD
-X-Received: by 2002:a17:907:fd8a:b0:bc2:1dab:3ea0 with SMTP id a640c23a62f3a-bc56aa45b32mr789198766b.8.1778279731722;
-        Fri, 08 May 2026 15:35:31 -0700 (PDT)
-Received: from powerpenguini-l140cu (staticline-31-183-167-127.toya.net.pl. [31.183.167.127])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bcac3a8063dsm143968066b.41.2026.05.08.15.35.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 May 2026 15:35:30 -0700 (PDT)
-From: =?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>
-To: Thomas Renninger <trenn@suse.com>,
-	Shuah Khan <shuah@kernel.org>,
-	"John B . Wyatt IV" <jwyatt@redhat.com>,
-	John Kacur <jkacur@redhat.com>
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?Mateusz=20Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>
-Subject: [PATCH] cpupower: Implement powercap enabled setters
-Date: Sat,  9 May 2026 00:35:24 +0200
-Message-ID: <20260508223524.1314573-1-jaskiewiczteo@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="tfwk4SfY"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=jVx9rVN4vouiKUeinE6cw7Q862gbOCVU/+d2XWxAAis=;
+	b=tfwk4SfYR99mq6c7G3WVfA4yGbbEM5PCgDaisDMgJzyn3hfzC2U0iZgO5SIcD9ylcPmIRPR8R
+	XjPk0w9SVW+8DweHgBNzBeurB6bSUgI901OcE9Mq+UiA/Hu1a4l1AM8weRkcqP3oLpjFW8EhYLR
+	n8eMqgTnNlzUM7du6UXg0lo=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4gC84M31yBznTxR;
+	Sat,  9 May 2026 09:47:15 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id A774640539;
+	Sat,  9 May 2026 09:54:20 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
+ (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Sat, 9 May
+ 2026 09:54:19 +0800
+Message-ID: <1d046cd5-8eea-4b1d-ad58-02346207a045@huawei.com>
+Date: Sat, 9 May 2026 09:54:19 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease
+ due to stale target
+To: Viresh Kumar <viresh.kumar@linaro.org>
+CC: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, <rafael@kernel.org>,
+	<stratosk@semaphore.gr>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
+	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
+	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
+	<linhongye@h-partners.com>
+References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
+ <cb369a6a-5462-4e6b-a132-ee016a4163ea@oss.qualcomm.com>
+ <b6d995f7-91c0-4f87-82e7-87cc50faa43d@huawei.com>
+ <aoo2k2uzi6zg6owrmi7qgcgjryxzk7l7f2mdo6vtjjdd576hpn@rg6zyqgn7grr>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <aoo2k2uzi6zg6owrmi7qgcgjryxzk7l7f2mdo6vtjjdd576hpn@rg6zyqgn7grr>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-public libcpupower API, but both currently return success without
-updating sysfs.
+On 5/7/2026 5:33 PM, Viresh Kumar wrote:
+> On 23-04-26, 15:12, zhenglifeng (A) wrote:
+>> Yes, I think you are right. The behaviors are not the same. I modified this
+>> just in order to keep it consistent with the case exceeding down_threshold.
+>> I'm not sure if this change of behavior is reasonable. Perhaps Rafael or
+>> Viresh could give us some advice.
+> 
+>>>> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+>>>> @@ -104,7 +104,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>>>>           dbs_info->down_skip = 0;
+>>>>             /* if we are already at full speed then break out early */
+>>>> -        if (requested_freq == policy->max)
+>>>> +        if (dbs_info->requested_freq == policy->max)
+>>>>               goto out;
+> 
+>>>> -        if (requested_freq == policy->min)
+>>>> +        if (dbs_info->requested_freq == policy->min)
+> 
+> What about dropping these `if` blocks completely ? i.e. always call
+> __cpufreq_driver_target().
+> 
+> __cpufreq_driver_target() already have similar checks in place to optimize
+> unnecessary freq changes. We don't really need callers to do the same.
+> 
 
-Write the requested value to the matching enabled attribute so callers
-can actually enable or disable the powercap control type or zone, and
-report write failures back to the caller.
-
-Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
----
- tools/power/cpupower/lib/powercap.c | 43 +++++++++++++++++++++++------
- 1 file changed, 35 insertions(+), 8 deletions(-)
-
-diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-index 94a0c69e5..6d8b83428 100644
---- a/tools/power/cpupower/lib/powercap.c
-+++ b/tools/power/cpupower/lib/powercap.c
-@@ -70,6 +70,27 @@ static int sysfs_get_enabled(char *path, int *mode)
- 	return ret;
- }
- 
-+static int sysfs_set_enabled(const char *path, int mode)
-+{
-+	char yes_no;
-+	int fd;
-+	ssize_t ret;
-+
-+	if (mode != 0 && mode != 1)
-+		return -1;
-+
-+	yes_no = mode ? '1' : '0';
-+	fd = open(path, O_WRONLY);
-+	if (-1 == fd)
-+		return -1;
-+	ret = write(fd, &yes_no, 1);
-+	if (ret != 1) {
-+		close(fd);
-+		return -1;
-+	}
-+	return close(fd);
-+}
-+
- int powercap_get_enabled(int *mode)
- {
- 	char path[SYSFS_PATH_MAX] = PATH_TO_POWERCAP "/intel-rapl/enabled";
-@@ -77,17 +98,13 @@ int powercap_get_enabled(int *mode)
- 	return sysfs_get_enabled(path, mode);
- }
- 
--/*
-- * TODO: implement function. Returns dummy 0 for now.
-- */
- int powercap_set_enabled(int mode)
- {
--	return 0;
-+	return sysfs_set_enabled(PATH_TO_RAPL "/enabled", mode);
- }
--
- /*
-  * Hardcoded, because rapl is the only powercap implementation
--- * this needs to get more generic if more powercap implementations
-+ * this needs to get more generic if more powercap implementations
-  * should show up
-  */
- int powercap_get_driver(char *driver, int buflen)
-@@ -180,8 +197,18 @@ int powercap_zone_get_enabled(struct powercap_zone *zone, int *mode)
- 
- int powercap_zone_set_enabled(struct powercap_zone *zone, int mode)
- {
--	/* To be done if needed */
--	return 0;
-+	char path[SYSFS_PATH_MAX];
-+	int ret;
-+
-+	if (!zone)
-+		return -1;
-+
-+	ret = snprintf(path, sizeof(path), "%s/%s/enabled",
-+		       PATH_TO_POWERCAP, zone->sys_name);
-+	if (ret < 0 || ret >= (int)sizeof(path))
-+		return -1;
-+
-+	return sysfs_set_enabled(path, mode);
- }
- 
- 
--- 
-2.54.0
+__cpufreq_driver_target() only skips this when !(cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS),
+this means that for cppc_cpufreq, amd-pstate and intel_pstate the
+unnecessary freq change will still be called.
 
