@@ -1,198 +1,186 @@
-Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com [209.85.222.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99A59317166
-	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 05:26:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7455B24E4AF;
+	Sun, 10 May 2026 06:15:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778390763; cv=none; b=oZ+yx2kLnMp3odL3fGb+ZmymfbBFmhdg4C4z8/vb+wjxWJ8Po77u5XdIeOeGUcCFdBieJJfQ8N3d5Qsj3GMLoCD0xpZUzGN50VUmGMrraqrZ9fo1Chhk6PzyK96iI021JOeSdphmNYFiU0Sn4CWkWAmoZJ1a9c1WY7CczUFRAa0=
+	t=1778393738; cv=none; b=hwtJ0ystp6dRO7w2pEONVlYxBeU0yJNtK1AAWxfIJr4EY9/f04w6svlYPMoNnpUqNykxut/pz34bYL3WEsQ0nGssV1M/FaDXEoayVOWBivgLde7TDel3zVI6Qye53LKXg4+gPmOaxpgad+8FQaedpg9qHdIs8b3S8th6tMooL+E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778390763; c=relaxed/simple;
-	bh=JFu6cv4iACQGbV5egz2iEUE7xkHI96ahMgLFv5+XVWo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=MvIMQd7GJ+TEviqFEXgr6DrqoWB6iQku++78lt5wkTFcjQrSjZP4vLV92RUOTMK2AukXtkNczbc3cFPjyC+b9OWkI6aQT9zfLi+nQt1bo+jyM67+drtezpHfOIPO1wHdT1BNu2WK7m5ttzMeUt39Cu6vdhvr1CIrP4LSpskXOrg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iWvXkr4e; arc=none smtp.client-ip=209.85.222.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778393738; c=relaxed/simple;
+	bh=zD3zC9CrfQa8lHkjHcUf9WWv3IQD31uQekPTskL+QiM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kUfbQK1esH13ITcdCjKDS6D/HOa/A+PNsQ2w+6WkVjNpnCZq5TMsnOpeGPmTf9jWQ8sScBANXSXIxj7VzpLKlfq5QmbfXssksz33SPKkX32WNt8heeV1uae1tsC0RlBbdwh+jrZVG0D8VggK3SNhqX+w8xb5QUfwLTlMylxXyic=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=PRgqwMdK; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iWvXkr4e"
-Received: by mail-qk1-f171.google.com with SMTP id af79cd13be357-8f0579401c4so420008385a.3
-        for <linux-pm@vger.kernel.org>; Sat, 09 May 2026 22:26:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778390760; x=1778995560; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=lkretJLhfB7+l1td9MLSNDIffxT6UR6I0FN9wkg9x/k=;
-        b=iWvXkr4eq8OJSNKzGuJhNNfOhGMETnLM6LSYD8x/L0+bH5GnI2Ive4HLM89SZPsz+P
-         eUt/eL2urhO4Wr9ZuGX80i0mTcNxLFRHFHN4JpDQ2ZRcTpxSQMqJj1nlVpydR1C40qIO
-         trNO7MBeTTqhkyR2qIKdqDGw67HFZnh06WwQFLfsJahUpxMhEbusXCEqPwjRDjXid/za
-         8xvnBhN1gxh+ZhNWmThIroznTF2hbrVGhyaEhjdh47K7tSIAT7TcXC6H+GNrDCiOkmmr
-         wRSg29w1ChP4W9b30B6noZ7u28+Xsn9IPlMM4oEGg6c3y0i1nZyj6q7OnnoSgSu2Y6n7
-         pqFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778390760; x=1778995560;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lkretJLhfB7+l1td9MLSNDIffxT6UR6I0FN9wkg9x/k=;
-        b=CYCMFZ3OBVT7ZtwRVQdD4tLUA4CLAZHE4QRmGvrm4FGMRf57x62PzCPsn/3QHNxZk1
-         nWROeq9kDxCzfTxkl/6M1c4Ziwg44fa2EMb+/cTtP7LuxUS1kWfCS6UztFMRIbWI80Gg
-         F5flEbSzj5z6coDgVyPEkvzl8K/Ir2yL9p29JDdxayVhyTKrnP/UJi6YXWDM3GuGNDuh
-         jKGPODmdMQEAEuy7+hMvKpjJ92O6UMB4DuEp4wDjoYPeaD4dh9fDJDMgC+pmLhgvt+Yp
-         BHnut6yhPt5Fx5c187Gumg7izr4XX8JjSZiotuOYh9bymodqxRBmbumwIhydwUZNNpsk
-         CiCQ==
-X-Gm-Message-State: AOJu0YxXhCtQgyNCQmGhiAWdXSW6002QaMcu9Mr0XGxsYg6ohuLZ8bHd
-	0vRXUSv6ai1hXWBC+Ls7pnPHSDbYFtHsVC0zKOd2ulxGRsxSfvc4Dq3L
-X-Gm-Gg: Acq92OGeivjtw+rcn4eDOBIN+eo/YcikshIcv8eoWRIjDAQmytev8GuBNOcY+iR1ubf
-	2Aw+Ty62+37CJYymd2FzFBph63J9EO0ug2QxdicD58BLRwXgmawndpOMSl4DkCDaIly6XNF5Fxv
-	zObDufTWwG94HZxMleIXzzdG3bcmB7gge8fJ7XeHDd5sUz5Uj8XHHPAvzJ6t9vhlIF83D0ynSBo
-	5+CM40uXDYHxl4VZdIzmIo01HWNl5t8VgL7h6yWzQVVCHWMznDahLbpsIeACVzyUhAvIT26HMmj
-	Bc9J6GIqpuKQMmunW87Wtr66b9GcTaktxd+f35dVzHv2bCkjaVoVkbA5xsvA+0HNSolyKh3X/4f
-	xhLPcmfepuJ55lihBnvhvtKWUaE1TtmOTdadOraaHkAa3LAnV8WAnyCRs4ZIBdlfOEiP/eOwk22
-	UJm6iCb1tPy5rw4XBx2SngfFPLhfw=
-X-Received: by 2002:a05:620a:28d3:b0:8f0:b0cb:190f with SMTP id af79cd13be357-904d60f695amr2567465085a.39.1778390760497;
-        Sat, 09 May 2026 22:26:00 -0700 (PDT)
-Received: from [172.17.0.2] ([134.128.219.200])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-907b9286f22sm689689085a.13.2026.05.09.22.25.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 22:26:00 -0700 (PDT)
-From: Yuanshen Cao <alex.caoys@gmail.com>
-Date: Sun, 10 May 2026 05:25:35 +0000
-Subject: [PATCH] pmdomain: sunxi: support power domain flags for pck600
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="PRgqwMdK"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778393737; x=1809929737;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=zD3zC9CrfQa8lHkjHcUf9WWv3IQD31uQekPTskL+QiM=;
+  b=PRgqwMdKB9n07b0OfT+k3JYIFCyBN9cD08tn+KKukpXMYkCJaYFDfIZQ
+   VK9bOrw/YVdOqKrsHpsHOnryLKJJSBtBrEx47wrxbFoVm3LowRdFZrnUz
+   J5rMi72oXNcfOIs1uZtgI6+0PQvs+kmu2++4n+e7/YaFF2EXxlSbkFhDj
+   CQTyYQ92blAXgwkWhs1UBfmIe1RVp0Ok8W81qynE5H/y2Cc4w+q32vtMT
+   s8NrMPAxiMxQ9NFtrI9zEK+1GIYBLIJpY5qGcodi7TeqFEaKfDWEFRaXu
+   9M4cqBMhD1Cjfu/LXJATvxJqAHTo6BtmlDU/cvze9O8On4rHptrzNkiOZ
+   A==;
+X-CSE-ConnectionGUID: +UNRnbzyRLKBx5daX84uvg==
+X-CSE-MsgGUID: UqoVI7+xS9uN9hNeaJKi7A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11781"; a="66848183"
+X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
+   d="scan'208";a="66848183"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 May 2026 23:15:37 -0700
+X-CSE-ConnectionGUID: LSAFUuayS3C7QuBifNq+Pg==
+X-CSE-MsgGUID: hWBHzN70R0G4r5SUNBlmkw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
+   d="scan'208";a="241505966"
+Received: from lkp-server01.sh.intel.com (HELO 82327192134e) ([10.239.97.150])
+  by orviesa004.jf.intel.com with ESMTP; 09 May 2026 23:15:34 -0700
+Received: from kbuild by 82327192134e with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wLxRr-000000001pR-1KDr;
+	Sun, 10 May 2026 06:15:31 +0000
+Date: Sun, 10 May 2026 14:14:56 +0800
+From: kernel test robot <lkp@intel.com>
+To: Xueqin Luo <luoxueqin@kylinos.cn>, rafael@kernel.org,
+	viresh.kumar@linaro.org, zhanjie9@hisilicon.com,
+	zhenglifeng1@huawei.com, pierre.gondois@arm.com, sumitg@nvidia.com,
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: Re: [PATCH] cpufreq: cppc: Add update_limits support for Highest
+ Performance changes
+Message-ID: <202605101404.fqz0MXIe-lkp@intel.com>
+References: <20260508111932.185886-3-luoxueqin@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260510-pck600-a733-gpu-v1-1-d6393646d714@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MMQqAMAxA0auUzAZiRaVeRRw0Rg2ClhZFKN7d4
- viG/xNECSoROpMgyK1RzyOjLAzwNh6roM7ZYMk2VJeEnveGCMe2qnD1F848LUzcsjgHufJBFn3
- +Yz+87wdJjmRzYQAAAA==
-X-Change-ID: 20260510-pck600-a733-gpu-dcbfc0c7ce99
-To: Ulf Hansson <ulfh@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
- Jernej Skrabec <jernej.skrabec@gmail.com>, 
- Samuel Holland <samuel@sholland.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org, 
- Icenowy Zheng <uwu@icenowy.me>, Mikhail Kalashnikov <iuncuim@gmail.com>, 
- Yuanshen Cao <alex.caoys@gmail.com>
-X-Mailer: b4 0.14.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260508111932.185886-3-luoxueqin@kylinos.cn>
 
-Hi everyone,
+Hi Xueqin,
 
-This patch refactors the sunxi pck600 power domain implementation to
-support individual power domain flags.
+kernel test robot noticed the following build errors:
 
-While bringing up the PowerVR GPU on the A733 (Radxa Cubie A7Z), we
-found that one of the GPU power domains must be configured as "always
-on." While the Radxa BSP device tree leaves the GPU power domain nodes
-commented out, the GPU driver code contains traces indicating an "always
-on" requirement [1].
+[auto build test ERROR on rafael-pm/linux-next]
+[also build test ERROR on rafael-pm/bleeding-edge linus/master v7.1-rc2 next-20260508]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Currently, sunxi_pck600_desc only supports specifying pd_names. This
-patch introduces sunxi_pck600_pd_desc, which stores both the name and
-its associated flags. This also (more or less) aligns the implementation
-with the existing sun50i PPU handling of always-on domains.
+url:    https://github.com/intel-lab-lkp/linux/commits/Xueqin-Luo/cpufreq-cppc-Add-update_limits-support-for-Highest-Performance-changes/20260510-093030
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+patch link:    https://lore.kernel.org/r/20260508111932.185886-3-luoxueqin%40kylinos.cn
+patch subject: [PATCH] cpufreq: cppc: Add update_limits support for Highest Performance changes
+config: riscv-randconfig-002-20260510 (https://download.01.org/0day-ci/archive/20260510/202605101404.fqz0MXIe-lkp@intel.com/config)
+compiler: clang version 23.0.0git (https://github.com/llvm/llvm-project 5bac06718f502014fade905512f1d26d578a18f3)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260510/202605101404.fqz0MXIe-lkp@intel.com/reproduce)
 
-With this change, individual power domains can now be configured more
-granularly. In particular, the GPU_CORE domain in sun60i_a733_pck600_pds
-can now be explicitly marked with GENPD_FLAG_ALWAYS_ON.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605101404.fqz0MXIe-lkp@intel.com/
 
-The patch was tested on the Radxa Cubie A7Z, where the GPU now functions
-as expected.
+All error/warnings (new ones prefixed by >>):
 
-Thanks to Icenowy for her support and expertise on sunxi and PowerVR,
-and thanks to Mikhail for identifying this exact cause of the GPU
-bring-up issue.
+>> drivers/cpufreq/cppc_cpufreq.c:857:43: error: incompatible pointer types passing 'u32 *' (aka 'unsigned int *') to parameter of type 'u64 *' (aka 'unsigned long long *') [-Wincompatible-pointer-types]
+     857 |         ret = cppc_get_highest_perf(policy->cpu, &highest_perf);
+         |                                                  ^~~~~~~~~~~~~
+   include/acpi/cppc_acpi.h:157:51: note: passing argument to parameter 'highest_perf' here
+     157 | extern int cppc_get_highest_perf(int cpunum, u64 *highest_perf);
+         |                                                   ^
+>> drivers/cpufreq/cppc_cpufreq.c:882:3: error: call to undeclared function 'cppc_cpufreq_set_autonomous_perf'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     882 |                 cppc_cpufreq_set_autonomous_perf(policy);
+         |                 ^
+>> drivers/cpufreq/cppc_cpufreq.c:886:4: warning: format specifies type 'unsigned long long' but the argument has type 'u32' (aka 'unsigned int') [-Wformat]
+     884 |         pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
+         |                                               ~~~~
+         |                                               %u
+     885 |                  policy->cpu,
+     886 |                  prev_highest_perf,
+         |                  ^~~~~~~~~~~~~~~~~
+   include/linux/printk.h:641:38: note: expanded from macro 'pr_debug'
+     641 |         no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+         |                                     ~~~     ^~~~~~~~~~~
+   include/linux/printk.h:134:18: note: expanded from macro 'no_printk'
+     134 |                 _printk(fmt, ##__VA_ARGS__);            \
+         |                         ~~~    ^~~~~~~~~~~
+   drivers/cpufreq/cppc_cpufreq.c:887:4: warning: format specifies type 'unsigned long long' but the argument has type 'u32' (aka 'unsigned int') [-Wformat]
+     884 |         pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
+         |                                                       ~~~~
+         |                                                       %u
+     885 |                  policy->cpu,
+     886 |                  prev_highest_perf,
+     887 |                  highest_perf);
+         |                  ^~~~~~~~~~~~
+   include/linux/printk.h:641:38: note: expanded from macro 'pr_debug'
+     641 |         no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+         |                                     ~~~     ^~~~~~~~~~~
+   include/linux/printk.h:134:18: note: expanded from macro 'no_printk'
+     134 |                 _printk(fmt, ##__VA_ARGS__);            \
+         |                         ~~~    ^~~~~~~~~~~
+   2 warnings and 2 errors generated.
 
-[1] https://github.com/radxa/allwinner-bsp/blob/cubie-aiot-v1.4.6/modules/gpu/img-bxm/linux/rogue_km/services/system/rogue/rgx_sunxi/sunxi_platform.c#L62
 
-Signed-off-by: Yuanshen Cao <alex.caoys@gmail.com>
----
- drivers/pmdomain/sunxi/sun55i-pck600.c | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+vim +857 drivers/cpufreq/cppc_cpufreq.c
 
-diff --git a/drivers/pmdomain/sunxi/sun55i-pck600.c b/drivers/pmdomain/sunxi/sun55i-pck600.c
-index 1d47bbd35ced..8a37d11b65a2 100644
---- a/drivers/pmdomain/sunxi/sun55i-pck600.c
-+++ b/drivers/pmdomain/sunxi/sun55i-pck600.c
-@@ -41,8 +41,13 @@
- 
- #define PPU_REG_SIZE	0x1000
- 
-+struct sunxi_pck600_pd_desc {
-+	const char *name;
-+	unsigned int flags;
-+};
-+
- struct sunxi_pck600_desc {
--	const char * const *pd_names;
-+	const struct sunxi_pck600_pd_desc *pd_descs;
- 	unsigned int num_domains;
- 	u32 logic_power_switch0_delay_offset;
- 	u32 logic_power_switch1_delay_offset;
-@@ -164,10 +169,12 @@ static int sunxi_pck600_probe(struct platform_device *pdev)
- 
- 	for (i = 0; i < desc->num_domains; i++) {
- 		struct sunxi_pck600_pd *pd = &pck->pds[i];
-+		const struct sunxi_pck600_pd_desc *pd_desc = &desc->pd_descs[i];
- 
--		pd->genpd.name = desc->pd_names[i];
-+		pd->genpd.name = pd_desc->name;
- 		pd->genpd.power_off = sunxi_pck600_power_off;
- 		pd->genpd.power_on = sunxi_pck600_power_on;
-+		pd->genpd.flags = pd_desc->flags;
- 		pd->base = base + PPU_REG_SIZE * i;
- 
- 		sunxi_pck600_pd_setup(pd, desc);
-@@ -195,13 +202,14 @@ static int sunxi_pck600_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static const char * const sun55i_a523_pck600_pd_names[] = {
--	"VE", "GPU", "VI", "VO0", "VO1", "DE", "NAND", "PCIE"
-+static const struct sunxi_pck600_pd_desc sun55i_a523_pck600_pds[] = {
-+	{ "VE", }, { "GPU", }, { "VI", }, { "VO0", }, { "VO1", },
-+	{ "DE", }, { "NAND", }, { "PCIE", },
- };
- 
- static const struct sunxi_pck600_desc sun55i_a523_pck600_desc = {
--	.pd_names = sun55i_a523_pck600_pd_names,
--	.num_domains = ARRAY_SIZE(sun55i_a523_pck600_pd_names),
-+	.pd_descs = sun55i_a523_pck600_pds,
-+	.num_domains = ARRAY_SIZE(sun55i_a523_pck600_pds),
- 	.logic_power_switch0_delay_offset = 0xc00,
- 	.logic_power_switch1_delay_offset = 0xc04,
- 	.off2on_delay_offset = 0xc10,
-@@ -213,14 +221,15 @@ static const struct sunxi_pck600_desc sun55i_a523_pck600_desc = {
- 	.has_rst_clk = true,
- };
- 
--static const char * const sun60i_a733_pck600_pd_names[] = {
--	"VI", "DE_SYS", "VE_DEC", "VE_ENC", "NPU",
--	"GPU_TOP", "GPU_CORE", "PCIE", "USB2", "VO", "VO1"
-+static const struct sunxi_pck600_pd_desc sun60i_a733_pck600_pds[] = {
-+	{ "VI", }, { "DE_SYS", }, { "VE_DEC", }, { "VE_ENC", }, { "NPU", },
-+	{ "GPU_TOP", }, { "GPU_CORE", GENPD_FLAG_ALWAYS_ON },
-+	{ "PCIE", }, { "USB2", }, { "VO", }, { "VO1", },
- };
- 
- static const struct sunxi_pck600_desc sun60i_a733_pck600_desc = {
--	.pd_names = sun60i_a733_pck600_pd_names,
--	.num_domains = ARRAY_SIZE(sun60i_a733_pck600_pd_names),
-+	.pd_descs = sun60i_a733_pck600_pds,
-+	.num_domains = ARRAY_SIZE(sun60i_a733_pck600_pds),
- 	.logic_power_switch0_delay_offset = 0xc00,
- 	.logic_power_switch1_delay_offset = 0xc04,
- 	.off2on_delay_offset = 0xc10,
+   845	
+   846	static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
+   847	{
+   848		struct cppc_cpudata *cpu_data = policy->driver_data;
+   849		u32 prev_highest_perf;
+   850		u32 highest_perf;
+   851		int ret;
+   852	
+   853		guard(cpufreq_policy_write)(policy);
+   854	
+   855		prev_highest_perf = cpu_data->perf_caps.highest_perf;
+   856	
+ > 857		ret = cppc_get_highest_perf(policy->cpu, &highest_perf);
+   858		if (ret)
+   859			return;
+   860	
+   861		if (highest_perf == prev_highest_perf)
+   862			return;
+   863	
+   864		cpu_data->perf_caps.highest_perf = highest_perf;
+   865		if (cpu_data->perf_caps.nominal_perf > highest_perf)
+   866			cpu_data->perf_caps.nominal_perf = highest_perf;
+   867	
+   868		policy->max = cppc_perf_to_khz(&cpu_data->perf_caps,
+   869				policy->boost_enabled ?
+   870				highest_perf :
+   871				cpu_data->perf_caps.nominal_perf);
+   872	
+   873		policy->cpuinfo.max_freq = policy->max;
+   874	
+   875		/*
+   876		 * Autonomous selection mode uses MIN/MAX performance as runtime
+   877		 * hardware control bounds.
+   878		 *
+   879		 * Re-program them when highest_perf changes.
+   880		 */
+   881		if (cpu_data->perf_ctrls.auto_sel)
+ > 882			cppc_cpufreq_set_autonomous_perf(policy);
+   883	
+   884		pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
+   885			 policy->cpu,
+ > 886			 prev_highest_perf,
+   887			 highest_perf);
+   888	}
+   889	
 
----
-base-commit: 1bfaee9d3351b9b32a99766bbfb1f5baed60ddef
-change-id: 20260510-pck600-a733-gpu-dcbfc0c7ce99
-
-Best regards,
 -- 
-Yuanshen Cao <alex.caoys@gmail.com>
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
