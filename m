@@ -1,81 +1,83 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D71F31D5170
-	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED58523EAA0
+	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778378800; cv=none; b=e92j6LZYsETq+q8RVcHichdjAd7pJbVMAA7xzpfQ3yWmtEkI4WwxNadSsPk8ICjem1ju/FDHrN2q5QWNNvyAUMHzx411qEvX+NfSAejm0X3OeAsS7c5tEpRAj3OrzaBcmoKzUatA0Pap1mDx5IzvPgdeYnSfLlv80UYJJYQGfB4=
+	t=1778378804; cv=none; b=ajxoQyWDs2ir2S8VwKCKcnoLOuXkWi2BMNTpLKlHHCBUyqsXDDzBsyusLhmKE9M4zBjLDoEizy8DJ4gsVkQQhAKARU8AD796W7dvF2tEFp5P/VZbuw6VBlwkxmyO6xIwBwjiwUv+0V9ImqKCNwFOnq3hlhTs9NaHtNvDn8jtDcM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778378800; c=relaxed/simple;
-	bh=W+DCCrpFowryX11pvJt2K1EBF8G5AAjkOkkiR7AQKV4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tAeWpzmh4q3Nyu6ZVFLGcAXaV7wOM6RsRZosH7b3BuWBl8N93vdgPhUAzeF+5ikULIJQeIFKtgedQAbOzvMS5cE0+iJTPlfg/7l0FnhNIFTlz/Y/odWLWrePwhoKT+4/vUUPAiSTWg12YcR8VX7wB1aWtiTW3/H4da56D4hCzWA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=GsEenpeq; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=K4WzNLyn; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1778378804; c=relaxed/simple;
+	bh=U6GVCV340jtCLmfAGv+f/GyE+U6EIjQmumP7M4IVBaA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=cYAoSnsPaDI8NQPZus/5TJBj1rGE7AEhUrrlAWKL51KBXD315khb4p7h7zAHKISGaFB4BSm5mUNSV72baIeV9M0tk7DpEky8VFH4SYKvJ1KZD9zaV74l8IDDgp2oN1TWLQPHOFKnJ/Jk9vgTjB9mOhnDfIRl+vGFHexbMMscK1Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nutn/9vy; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=QsuDFck6; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="GsEenpeq";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="K4WzNLyn"
-Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 649IW0jC3040596
-	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:38 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nutn/9vy";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="QsuDFck6"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64A1Z3Ab1815453
+	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:42 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=qcppdkim1; bh=Hc+dMOlXO4kmwhGVPeyOL2/tHkuEgcbSLt8
-	7GgpCmL8=; b=GsEenpeqGi0LnK8U5YdTsMsdz4WGa4i8gCIxSSZUGnBK+rU+Xu7
-	o3DeIahfJe38v2dL6XT0Kt47c1VRMtdn1G1lohHW3lQzCofJrVyygYgeXrsYJvN4
-	CQJf6af2Y5AxzTO3am2Z1tEmVUH4WswzQ4/QNTYse75yksHuU6i+zfbg2NqpNe60
-	+I4zBaqbQIpazCC17ev44u4j2Hfd310UZG61Ff8Vn/dtiCE+bCNWFE5WkOEEuA/R
-	urgEDpuOQftR5V5cVqk/q4+V32CGXsnAQPiVRTskvvjIpXy4V8mhyiITapixawMH
-	8ET0WidxVP9sk/YOcxLDXeUk7d/XTES/vEg==
-Received: from mail-dy1-f199.google.com (mail-dy1-f199.google.com [74.125.82.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1ux6t6qk-1
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=bahjhbI4zrf
+	QMtsSLvpBq28d3sDvLcpUg854PCnkgNI=; b=nutn/9vy4MkoksKc6DGv4bxj5xe
+	Bx/+enVrhF7FB2Gi3HQnkqXtHN1WgxwZ0WYaX9b9aWPnwU3iIL8x1lDqFZlcokiC
+	+ZqPUktZHmIJEnclyh2KqcH/PPzScx6RtIIOChEJzemqbWRm9lXQ0CUSQnvNDl0Y
+	HMv/nFNTyxwWU+D1J0oz/3/APsewPUVBmzlWBSzN83PXp7hcY+B3G+I3JSrLLaz7
+	Af9BphZ43lBWp9bSu3uB/bM2U61ov/19DxFd070upa1fZHU0oIkbjgfOgShBZuo7
+	oYvgaobieMklLCAMVZi1/DFMbsCBacf3LYheLDb+NMT8Fl/1uC9D+ldTh1w==
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1vgy24wv-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:37 +0000 (GMT)
-Received: by mail-dy1-f199.google.com with SMTP id 5a478bee46e88-2c0f6593ef5so4280839eec.1
-        for <linux-pm@vger.kernel.org>; Sat, 09 May 2026 19:06:37 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 02:06:41 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-2efc342ef15so4615714eec.1
+        for <linux-pm@vger.kernel.org>; Sat, 09 May 2026 19:06:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778378797; x=1778983597; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Hc+dMOlXO4kmwhGVPeyOL2/tHkuEgcbSLt87GgpCmL8=;
-        b=K4WzNLynl5mwFssbwycpdsAlj+u5KnWdvVp8Fm9+ctDG+xDf5iU1uWW4co/amLjCZx
-         OF52hOElOtRnexrdr4q4niNKUCy+hYe2hPnhOvOF5SzdWljFzx2/FWt0rDbWs6kxqSyl
-         jfoxqtT6Co9C+OP5OI+oz0GgUmAoUORMKNrYSxPeE2DB+Wxkv9t19rtMXKGy1rBheV3z
-         npD1YEf7xc/2EvAjf2JMraPj2+wBC8A6ktQiBvlGKvHQa5RNd0KwL3z+ex/a7/XmULJk
-         cqKpdCsWEqWNxfn8qSCnByEtdiVUIcjA9iF1bW+yN3eoHOHsCD8MG2502DRQEl9ohR7i
-         ChHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778378797; x=1778983597;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=oss.qualcomm.com; s=google; t=1778378801; x=1778983601; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Hc+dMOlXO4kmwhGVPeyOL2/tHkuEgcbSLt87GgpCmL8=;
-        b=n/YnTebTns86GccOT+VGimbFZpGmGmGQxJ0OAUH3+9tzeQZR6xhvBgrRoEZJVwYqOz
-         tfFidrtQj6GgJA6C5rIBzJdsla7+vExypYu8ZondY447d/uLnt9tBPKylZDj0ovjKkDD
-         uPW3DAzqKcDg6svam8nCXQPdZCRcZv/eJt8V2xwkEjXJZZArxlI5+sfx5icho4vA5tNj
-         wnn1Eajkr3Wn6LbAQ+bSv/nqIhp2m/UIE+wTXoz5vdkerFcWdwItyTO5vhibufO/lpiQ
-         tEw02FFigLNIr7PopQLIWrw7o9j9fA4wGG9UEGiL2WKt93vDfU+4sO+u26/2Nj+fiO42
-         Hjxw==
-X-Forwarded-Encrypted: i=1; AFNElJ+8Wa5TPEit+0pnA63a4hmKQ8eh5QJxsNJpvQMq6apn3J4fSHmEjGk4iX3Tzk5EG0An2r0aLlZRbw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzIeP34Hr+hi8DtlEhRFJkGgb0qXn+frHYLrxyROaxk+/ENptGp
-	cz+kAiRDFrNuOOSWi+IZr+F+jVWYQbHh32Gq4KVhGiQBFIsnv/widqyzlAw+R6BxHsYClwvevoV
-	/ni6LGYgljoggUXh/nxDnHmQMsYPWsefGgvGpl5PRwS2QJ9vnTlEjfo1uVGkbew==
-X-Gm-Gg: Acq92OGm8hOngtTx7rSBh0Pn9ZjeDO9eVJeDTDa4Tg/Spn4Iy9OrkZqC8l8kX7ioTba
-	jQaPnHdgQZ1grm1exNIMswen5RWC10B+TZ39ZxpK2xXkOJ/OHiDtt3YySn0Rr9NQKGvqDXG3RZO
-	RWZOnRQNsPov4KL6tflFwJFdS+wK1sUYKXfQR8z1Y/kvjKVBSA2SR6hCjl+iMkXZVdxOfpP1QUJ
-	p/Z+gGbCUUylTzNHaL3ysnkGzrbu4NTTW3mh965+wWy6DuYCZr5VXv4Zo5xIwi6VCjFeRRGjLeS
-	ZqbM1EYSmdTSJpV8sAmVoiCJgNGi7FFlHAhETrZiNjs0tybvA58xudB30KH9uJwZ3RiTKQkQRyU
-	RT27CoSj21ra5/c7zSpMKBm+NRHJpstZLFSLm5rrL+jNReezLjXiL2DM/26txp2G+DXbrNNorna
-	vVJgh3kw==
-X-Received: by 2002:a05:7300:ac82:b0:2ee:f85:ec3c with SMTP id 5a478bee46e88-2f54b466443mr7716725eec.30.1778378796545;
-        Sat, 09 May 2026 19:06:36 -0700 (PDT)
-X-Received: by 2002:a05:7300:ac82:b0:2ee:f85:ec3c with SMTP id 5a478bee46e88-2f54b466443mr7716695eec.30.1778378795363;
-        Sat, 09 May 2026 19:06:35 -0700 (PDT)
+        bh=bahjhbI4zrfQMtsSLvpBq28d3sDvLcpUg854PCnkgNI=;
+        b=QsuDFck61zO0Dm9yeRxo27ECbYszuS8bR44mEiHBLwbGFbCjQHpWoIuY5a4xjLnuYt
+         Rh0v6X6ZM15KYRinYzD4SwBMEc8uWAHY8pRh5sxy95CUIGdTWno16Ncjaqdglqmo8ftG
+         DeH9LDSubsqUbcaQG19FaJu0/jBKQBVOQRFrjHZMiur+OtLJ1DT3GmVaDhZIyLlnQIP3
+         Ey8tw/BzXK1YSmdMhcr+t5dLAXglvoZm/LD/M6pqNKffQKOIxL7/8StKiMX6y22/dZX5
+         Q3S09umiljQfHQFiwQeb6ow9SdtJeyU53EOhhYvkUmpJeWOePFKf1up56CYhDZTO8dJD
+         3SnA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778378801; x=1778983601;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=bahjhbI4zrfQMtsSLvpBq28d3sDvLcpUg854PCnkgNI=;
+        b=XnWDW2icKDUFxJuEyVjesogJg+EuhVq08piIJXsd4SQ7cvVZ2Qv6KVsLjMjQFumyP1
+         5OiWV7Tsw58LV39utIoRHw7pBnGltLwZqzZ0HhnjM1dSTAFeNKgaYfEgQPFTY5kv1oJt
+         TcfqAVeYc7ISV9U5wXXsyI0w9yN8NeDlcPGToIsf90zzLbD1cQeBJJUYKS37eR0n/LTj
+         5JsDYjRU35/tdQYv9zoXT/rSp+SgeOClD1Kh/6bCjmHSlqkcsy815fnY7fNYi/ErMZeK
+         QKwIGnP7jSpI/ZXjw31gio7PNrpAQEkjqRWKHI0WtQX046HUuO0D4N9YH72DmH9A7YDs
+         albw==
+X-Forwarded-Encrypted: i=1; AFNElJ/izh93kuok/2qZeBV8XG6/856W9ePvGU5vzPnjda7Xg5jAK4DOuGGbie8vpS1rgfEEHsIT14rJMw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy2QSHfx18wXFPDupB4zo8b1roy6um8m611eW5uJ11KpPcbO3fr
+	q/NSfIjaON6NPSisBpk5EN5slUyRSevgte1jwU7rw9RB+xKzdWPb5TkiWo9zSjER6QM5dO2Av96
+	sVSu8pxg9tdoYFqvVRBDQ3RBIT0yxuqKiBVERag8PsaPCGF75AVw++1ewVnp65A==
+X-Gm-Gg: Acq92OH5AqSm4uwbBsCplI5XSwDrKebb4113Hvq0CHco+/lqIF0XlWIxKn8mDsy9SyL
+	KWzTPIRaJX4YOiBej/RUyTnm67wNHscUKXIvvQQWBAuzxxN6HUhqa4cH8netF7UdKv9362mQjEb
+	IzWMb80T4oJgWaZcHFpextNqB46pYaB+Fz3MBwPedGxCuZWwv6Be7UE+VylN74oRgsjHWGvPA8v
+	eE+np2UJZUtbeUUutX2VbsgmRkDWoBlab7KyF7ZHvRDMbekMMX/wKzmsI1vPfQrIQ3JYQlUk8Bs
+	yK3FlyE/pCsWzNEZjmjjRDlpFooSE2FgUm5eF6QgVQrLHB2fTaxjsRlGaEtyyBFzQVhAcs/YVIF
+	iNXQdIzPDpoUO79O/aPAXloGEDcdVhwr3SSs/h9/Xc/z7zmECPzTjDPtjPqmRafjpLN/GnVMJgi
+	qAJRYJsA==
+X-Received: by 2002:a05:7301:1014:b0:2d9:bc8d:f62a with SMTP id 5a478bee46e88-2f54d79ba35mr8425057eec.16.1778378800877;
+        Sat, 09 May 2026 19:06:40 -0700 (PDT)
+X-Received: by 2002:a05:7301:1014:b0:2d9:bc8d:f62a with SMTP id 5a478bee46e88-2f54d79ba35mr8425043eec.16.1778378800276;
+        Sat, 09 May 2026 19:06:40 -0700 (PDT)
 Received: from QCOM-aGQu4IUr3Y.qualcomm.com (i-global052.qualcomm.com. [199.106.103.52])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2f8862d3047sm9645257eec.10.2026.05.09.19.06.31
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2f8862d3047sm9645257eec.10.2026.05.09.19.06.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 19:06:35 -0700 (PDT)
+        Sat, 09 May 2026 19:06:40 -0700 (PDT)
 From: Shawn Guo <shengchao.guo@oss.qualcomm.com>
 To: Georgi Djakov <djakov@kernel.org>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -87,11 +89,14 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Deepti Jaggi <deepti.jaggi@oss.qualcomm.com>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
         Shawn Guo <shengchao.guo@oss.qualcomm.com>
-Subject: [PATCH v2 0/2] Add interconnect support for Qualcomm Nord SoC
-Date: Sun, 10 May 2026 10:06:05 +0800
-Message-ID: <20260510020607.1129773-1-shengchao.guo@oss.qualcomm.com>
+Subject: [PATCH v2 1/2] dt-bindings: interconnect: Document RPMh Network-On-Chip for Qualcomm Nord SoC
+Date: Sun, 10 May 2026 10:06:06 +0800
+Message-ID: <20260510020607.1129773-2-shengchao.guo@oss.qualcomm.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260510020607.1129773-1-shengchao.guo@oss.qualcomm.com>
+References: <20260510020607.1129773-1-shengchao.guo@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -99,62 +104,406 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEwMDAxOSBTYWx0ZWRfX24la5ogdkdel
- f5eREHRywGQKSNue6SWtdYgbVo9LneAHPA2jQTQsZwliwNTuUUrlSYgmWZ7UhuBkQfTm9BlTskp
- bH6TDPboHpt6eYwPi0sbllTzImi7VBoHRRNBnwIQjBqWiucgJ02cYg5E10jtXp9vMDdR/yftVf5
- ieIlmNz3EF3CTJd+zgcEvHrwQxT/qwTxR1jVFN/e/UgTHMDyTODsh9XhHZ7rR10CGmxj0p4UKb/
- XtMXqhZ7hh/9gVmFI2hSY9MhqARODbWt8sEUw2ftCylgxOGRTUzk4i7VY1XQI/49UYt3Dl45RKo
- P5TcExIetKYz9WxliE1eyUvIbKKtz4eq4gL90u12l8vzLGqAhjFyhM7V6GCtFWm7zuU2aYQUMEw
- HcfSav5F0OVFJxxqDRVEOJCygYkxE2S4cXTQdMTFZjOQQXSy6o9Q6JOpREa+ueU38woJUyWV0GU
- PhOazkEVXf8d7BF87Eg==
-X-Authority-Analysis: v=2.4 cv=QJZYgALL c=1 sm=1 tr=0 ts=69ffe82d cx=c_pps
- a=cFYjgdjTJScbgFmBucgdfQ==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
+X-Authority-Analysis: v=2.4 cv=fpHsol4f c=1 sm=1 tr=0 ts=69ffe832 cx=c_pps
+ a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=b9+bayejhc3NMeqCNyeLQQ==:17
  a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22 a=VwQbUJbxAAAA:8
- a=EUspDBNiAAAA:8 a=fJYZd5zOr1s3VisSgZEA:9 a=scEy_gLbYbu1JhEsrz4S:22
-X-Proofpoint-ORIG-GUID: faASqNfmozNNp-IfT4H96sR5g01EKmW3
-X-Proofpoint-GUID: faASqNfmozNNp-IfT4H96sR5g01EKmW3
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=gEfo2CItAAAA:8
+ a=EUspDBNiAAAA:8 a=3U7udxK0YKKcqa3c1UMA:9 a=bBxd6f-gb0O0v-kibOvt:22
+ a=sptkURWiP4Gy88Gu7hUp:22
+X-Proofpoint-ORIG-GUID: 0D5EqVgmucW6DRqee0THW6oKhrxrQSXf
+X-Proofpoint-GUID: 0D5EqVgmucW6DRqee0THW6oKhrxrQSXf
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEwMDAxOSBTYWx0ZWRfX9k8a7TItYVYT
+ c5Btj80KFNwWdftBCYFkGw5IiTU9vzXnomTGOw9VEfdhFR1i2KMN4Mw2yFwwzYHbRf5gDYXiiE+
+ s6TuBTT4mwvtrEuJMRkzdESEqUQ30sIfaJnc+ug1OMZ8sZKaAwHJVHwheBExDAtfIg5JB94Wfbx
+ IAv5C8xZAmVRJNsObVrbQVvJwyOpf9qDRGwSF0kFRPHfsdjjH2yb8gHzalB9jeBN7nZThhTBgsD
+ KCZayg+pqgH4nziKcQi2SJOzdalh6lfTw5Wmt0UkDvCYm3cIzVj2o/Iz9gcNviRcq5UgVGcr4rN
+ 18zprgy0dUlV2sGpwASts6wCGU0HnDdL7ZXeKoUn6BGb5Gkk1a3PuuQfRBRIQ1o7n0QHXeRXlP5
+ XgynyyWCQiXlpT+GxsvW5HaCOhONXk5C0xp/XTvUZzqbFWLRDFvI5Io9QO7vwp/aRCDbmwc5pSu
+ P6VLiPQOuo+1VJZ6HkQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-10_01,2026-05-08_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 clxscore=1015 suspectscore=0 spamscore=0
- lowpriorityscore=0 bulkscore=0 priorityscore=1501 impostorscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ suspectscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501
+ adultscore=0 phishscore=0 clxscore=1015 spamscore=0 impostorscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
  definitions=main-2605100019
 
-This series adds RPMh-based interconnect support for the Qualcomm Nord SoC.
+From: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
 
-The Nord SoC features a rich Network-on-Chip topology comprising 19 NoCs
-including aggregate NoCs, a high-speed configuration NoC (HSCNOC),
-a multimedia NoC, four NSP data NoCs for AI/ML workloads, PCIe inbound and
-outbound NoCs, a system NoC, and virtual clock/MC nodes. Bandwidth requests
-are communicated to the RPMh hardware through Bus Clock Manager (BCM)
-resources via the Resource State Coordinator (RSC).
+Add RPMh Network-On-Chip interconnect bindings for Qualcomm Nord SoC.
 
-Changes in v2:
- - Fix .max_register of nord_hscnoc_regmap_config (Thanks Georgi!)
- - Fix .port_offsets of alm_qtc, qnm_pcie, qnm_mnoc_hf, alm_sys_tcu1
-   and qnm_mnoc_sf
- - Name QUP_3 nodes with '_qup3' rather than '_qup02'
- - Link to v1: https://lore.kernel.org/all/20260420021351.1239355-1-shengchao.guo@oss.qualcomm.com/
-
-Odelu Kukatla (2):
-  dt-bindings: interconnect: Document RPMh Network-On-Chip for Qualcomm
-    Nord SoC
-  interconnect: qcom: Add interconnect provider driver for Nord SoC
-
- .../bindings/interconnect/qcom,nord-rpmh.yaml |  131 +
- drivers/interconnect/qcom/Kconfig             |   11 +
- drivers/interconnect/qcom/Makefile            |    2 +
- drivers/interconnect/qcom/nord.c              | 2682 +++++++++++++++++
- .../dt-bindings/interconnect/qcom,nord-rpmh.h |  217 ++
- 5 files changed, 3043 insertions(+)
+Signed-off-by: Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: Shawn Guo <shengchao.guo@oss.qualcomm.com>
+---
+ .../bindings/interconnect/qcom,nord-rpmh.yaml | 131 +++++++++++
+ .../dt-bindings/interconnect/qcom,nord-rpmh.h | 217 ++++++++++++++++++
+ 2 files changed, 348 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml
- create mode 100644 drivers/interconnect/qcom/nord.c
  create mode 100644 include/dt-bindings/interconnect/qcom,nord-rpmh.h
 
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml b/Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml
+new file mode 100644
+index 000000000000..3650d3d5b918
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,nord-rpmh.yaml
+@@ -0,0 +1,131 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,nord-rpmh.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm RPMh Network-On-Chip Interconnect on Nord
++
++maintainers:
++  - Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>
++
++description: |
++  RPMh interconnect providers support system bandwidth requirements through
++  RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
++  able to communicate with the BCM through the Resource State Coordinator (RSC)
++  associated with each execution environment. Provider nodes must point to at
++  least one RPMh device child node pertaining to their RSC and each provider
++  can map to multiple RPMh resources.
++
++  See also: include/dt-bindings/interconnect/qcom,nord-rpmh.h
++
++properties:
++  compatible:
++    enum:
++      - qcom,nord-aggre1-noc
++      - qcom,nord-aggre1-noc-tile
++      - qcom,nord-aggre2-noc
++      - qcom,nord-aggre2-noc-tile
++      - qcom,nord-clk-virt
++      - qcom,nord-cnoc-cfg
++      - qcom,nord-cnoc-main
++      - qcom,nord-hpass-ag-noc
++      - qcom,nord-hscnoc
++      - qcom,nord-mc-virt
++      - qcom,nord-mmss-noc
++      - qcom,nord-nsp-data-noc-0
++      - qcom,nord-nsp-data-noc-1
++      - qcom,nord-nsp-data-noc-2
++      - qcom,nord-nsp-data-noc-3
++      - qcom,nord-pcie-cfg
++      - qcom,nord-pcie-data-inbound
++      - qcom,nord-pcie-data-outbound
++      - qcom,nord-system-noc
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    minItems: 1
++    maxItems: 4
++
++required:
++  - compatible
++
++allOf:
++  - $ref: qcom,rpmh-common.yaml#
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,nord-clk-virt
++              - qcom,nord-mc-virt
++    then:
++      properties:
++        reg: false
++    else:
++      required:
++        - reg
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,nord-aggre1-noc-tile
++    then:
++      properties:
++        clocks:
++          items:
++            - description: aggre UFS PHY AXI clock
++            - description: aggre USB2 AXI clock
++            - description: aggre USB3 PRIM AXI clock
++            - description: aggre USB3 SEC AXI clock
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,nord-aggre2-noc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: RPMH CC IPA clock
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,nord-aggre1-noc-tile
++              - qcom,nord-aggre2-noc
++    then:
++      required:
++        - clocks
++    else:
++      properties:
++        clocks: false
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    clk_virt: interconnect-clk-virt {
++      compatible = "qcom,nord-clk-virt";
++      #interconnect-cells = <2>;
++      qcom,bcm-voters = <&apps_bcm_voter>;
++    };
++
++    aggre1_noc_tile: interconnect@1720000 {
++      compatible = "qcom,nord-aggre1-noc-tile";
++      reg = <0x01720000 0x23400>;
++      #interconnect-cells = <2>;
++      qcom,bcm-voters = <&apps_bcm_voter>;
++      clocks = <&ne_gcc_aggre_noc_ufs_phy_axi_clk>,
++               <&ne_gcc_aggre_noc_usb2_axi_clk>,
++               <&ne_gcc_aggre_noc_usb3_prim_axi_clk>,
++               <&ne_gcc_aggre_noc_usb3_sec_axi_clk>;
++    };
+diff --git a/include/dt-bindings/interconnect/qcom,nord-rpmh.h b/include/dt-bindings/interconnect/qcom,nord-rpmh.h
+new file mode 100644
+index 000000000000..5bdce6a9bab7
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom,nord-rpmh.h
+@@ -0,0 +1,217 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_NORD_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_NORD_H
++
++#define MASTER_QSPI_0				0
++#define MASTER_SAILSS_MD1			1
++#define MASTER_QUP_3				2
++#define SLAVE_A1NOC_SNOC			3
++
++#define MASTER_QUP_2				0
++#define MASTER_CRYPTO_CORE0			1
++#define MASTER_CRYPTO_CORE1			2
++#define MASTER_CRYPTO_CORE2			3
++#define MASTER_SDCC_4				4
++#define MASTER_UFS_MEM				5
++#define MASTER_USB2				6
++#define MASTER_USB3_0				7
++#define MASTER_USB3_1				8
++#define SLAVE_A1NOC_HSCNOC			9
++
++#define MASTER_IPA				0
++#define MASTER_SOCCP_AGGR_NOC			1
++#define MASTER_QDSS_ETR				2
++#define MASTER_QDSS_ETR_1			3
++#define SLAVE_A2NOC_SNOC			4
++
++#define MASTER_QUP_0				0
++#define MASTER_QUP_1				1
++#define MASTER_EMAC_0				2
++#define MASTER_EMAC_1				3
++#define SLAVE_A2NOC_HSCNOC			4
++
++#define MASTER_QUP_CORE_0			0
++#define MASTER_QUP_CORE_1			1
++#define MASTER_QUP_CORE_2			2
++#define MASTER_QUP_CORE_3			3
++#define SLAVE_QUP_CORE_0			4
++#define SLAVE_QUP_CORE_1			5
++#define SLAVE_QUP_CORE_2			6
++#define SLAVE_QUP_CORE_3			7
++
++#define MASTER_CNOC_CFG				0
++#define SLAVE_PS_ETH_0				1
++#define SLAVE_PS_ETH_1				2
++#define SLAVE_SHS_SERVER			3
++#define SLAVE_AHB2PHY_0				4
++#define SLAVE_AHB2PHY_1				5
++#define SLAVE_AHB2PHY_2				6
++#define SLAVE_AHB2PHY_3				7
++#define SLAVE_AHB2PHY_ETH_0			8
++#define SLAVE_AHB2PHY_ETH_1			9
++#define SLAVE_CAMERA_CFG			10
++#define SLAVE_CLK_CTL				11
++#define SLAVE_CRYPTO_0_CFG			12
++#define SLAVE_CRYPTO_1_CFG			13
++#define SLAVE_CRYPTO_2_CFG			14
++#define SLAVE_DISPLAY_1_CFG			15
++#define SLAVE_DISPLAY_CFG			16
++#define SLAVE_DPRX0				17
++#define SLAVE_DPRX1				18
++#define SLAVE_EVA_CFG				19
++#define SLAVE_GFX3D_CFG				20
++#define SLAVE_GFX3D_1_CFG			21
++#define SLAVE_I2C				22
++#define SLAVE_IMEM_CFG				23
++#define SLAVE_MCW_PCIE				24
++#define SLAVE_MM_RSCC				25
++#define SLAVE_NE_CLK_CTL			26
++#define SLAVE_NSPSS0_CFG			27
++#define SLAVE_NSPSS1_CFG			28
++#define SLAVE_NSPSS2_CFG			29
++#define SLAVE_NSPSS3_CFG			30
++#define SLAVE_NW_CLK_CTL			31
++#define SLAVE_PRNG				32
++#define SLAVE_QDSS_CFG				33
++#define SLAVE_QSPI_0				34
++#define SLAVE_QUP_0				35
++#define SLAVE_QUP_3				36
++#define SLAVE_QUP_1				37
++#define SLAVE_QUP_2				38
++#define SLAVE_SAFEDMA_CFG			39
++#define SLAVE_SDCC_4				40
++#define SLAVE_SE_CLK_CTL			41
++#define SLAVE_TCSR				42
++#define SLAVE_TLMM				43
++#define SLAVE_TSC_CFG				44
++#define SLAVE_UFS_MEM_CFG			45
++#define SLAVE_USB2				46
++#define SLAVE_USB3_0				47
++#define SLAVE_USB3_1				48
++#define SLAVE_VENUS_CFG				49
++#define SLAVE_COMPUTENOC_CFG			50
++#define SLAVE_PCIE_NOC_CFG			51
++#define SLAVE_QTC_CFG				52
++#define SLAVE_QDSS_STM				53
++#define SLAVE_SYS_TCU0_CFG			54
++#define SLAVE_SYS_TCU1_CFG			55
++#define SLAVE_SYS_TCU2_CFG			56
++
++#define MASTER_MM_RSCC				0
++#define MASTER_HSCNOC_CNOC			1
++#define SLAVE_AOSS				2
++#define SLAVE_HBCU				3
++#define SLAVE_IPA_CFG				4
++#define SLAVE_IPC_ROUTER_CFG			5
++#define SLAVE_SOCCP				6
++#define SLAVE_TME_CFG				7
++#define SLAVE_PCIE_DMA				8
++#define SLAVE_CNOC_CFG				9
++#define SLAVE_DDRSS_CFG				10
++#define SLAVE_IMEM				11
++
++#define MASTER_HPASS_PROC_0			0
++#define MASTER_HPASS_PROC_1			1
++#define MASTER_HPASS_PROC_2			2
++#define SLAVE_HPASS_AGNOC_AUDIO			3
++
++#define MASTER_GPU_TCU				0
++#define MASTER_QTC_TCU				1
++#define MASTER_SYS_TCU_0			2
++#define MASTER_SYS_TCU_1			3
++#define MASTER_SYS_TCU_2			4
++#define MASTER_APPSS_PROC			5
++#define MASTER_A1NOC_TILE_HSCNOC		6
++#define MASTER_A2NOC_TILE_HSCNOC		7
++#define MASTER_GFX3D				8
++#define MASTER_GFX3D_1				9
++#define MASTER_HPASS_ADAS_HSCNOC		10
++#define MASTER_HPASS_AUDIO_HSCNOC		11
++#define MASTER_MNOC_HF_MEM_NOC			12
++#define MASTER_MNOC_SF_MEM_NOC			13
++#define MASTER_NSP0_HSCNOC			14
++#define MASTER_NSP1_HSCNOC			15
++#define MASTER_NSP2_HSCNOC			16
++#define MASTER_NSP3_HSCNOC			17
++#define MASTER_ANOC_PCIE_GEM_NOC		18
++#define MASTER_SAILSS_MD0_HSCNOC		19
++#define MASTER_SNOC_SF_MEM_NOC			20
++#define MASTER_GIC				21
++#define SLAVE_HSCNOC_CNOC			22
++#define SLAVE_LLCC				23
++#define SLAVE_MEM_NOC_PCIE_SNOC			24
++
++#define MASTER_LLCC				0
++#define SLAVE_EBI1				1
++
++#define MASTER_CAMNOC_HF			0
++#define MASTER_CAMNOC_NRT_ICP_SF		1
++#define MASTER_CAMNOC_RT_CDM_SF			2
++#define MASTER_CAMNOC_SF			3
++#define MASTER_DPRX0				4
++#define MASTER_DPRX1				5
++#define MASTER_MDP0				6
++#define MASTER_MDP1				7
++#define MASTER_VIDEO_CV_PROC			8
++#define MASTER_VIDEO_EVA			9
++#define MASTER_VIDEO_MVP0			10
++#define MASTER_VIDEO_MVP1			11
++#define MASTER_VIDEO_V_PROC			12
++#define SLAVE_MNOC_HF_MEM_NOC			13
++#define SLAVE_MNOC_SF_MEM_NOC			14
++
++#define MASTER_NSP0_PROC			0
++#define SLAVE_NSP0_HSC_NOC			1
++
++#define MASTER_NSP1_PROC			0
++#define SLAVE_NSP1_HSC_NOC			1
++
++#define MASTER_NSP2_PROC			0
++#define SLAVE_NSP2_HSC_NOC			1
++
++#define MASTER_NSP3_PROC			0
++#define SLAVE_NSP3_HSC_NOC			1
++
++#define MASTER_PCIE_NOC_CFG			0
++#define SLAVE_PCIE_AHB2PHY_CFG			1
++#define SLAVE_PCIE_CFG_0			2
++#define SLAVE_PCIE_CFG_1			3
++#define SLAVE_PCIE_CFG_2			4
++#define SLAVE_PCIE_CFG_3			5
++#define SLAVE_PCIE_DMA_0_CFG			6
++#define SLAVE_PCIE_DMA_1_CFG			7
++#define SLAVE_PCIE_DMA_2_CFG			8
++
++#define MASTER_PCIE_DMA_0			0
++#define MASTER_PCIE_DMA_1			1
++#define MASTER_PCIE_DMA_2			2
++#define MASTER_PCIE_0				3
++#define MASTER_PCIE_1				4
++#define MASTER_PCIE_2				5
++#define MASTER_PCIE_3				6
++#define SLAVE_PCIE_HSCNOC			7
++#define SLAVE_PCIE_OBNOC_DMA			8
++
++#define MASTER_CNOC_PCIE_DMA			0
++#define MASTER_ANOC_PCIE_HSCNOC			1
++#define MASTER_PCIE_IBNOC_DMA			2
++#define SLAVE_PCIE_DMA_0			3
++#define SLAVE_PCIE_DMA_1			4
++#define SLAVE_PCIE_DMA_2			5
++#define SLAVE_PCIE_0				6
++#define SLAVE_PCIE_1				7
++#define SLAVE_PCIE_2				8
++#define SLAVE_PCIE_3				9
++
++#define MASTER_A1NOC_SNOC			0
++#define MASTER_A2NOC_SNOC			1
++#define MASTER_CNOC_SNOC			2
++#define MASTER_NSINOC_SNOC			3
++#define MASTER_SAFE_DMA				4
++#define SLAVE_SNOC_HSCNOC_SF			5
++
++#endif
 -- 
 2.43.0
 
