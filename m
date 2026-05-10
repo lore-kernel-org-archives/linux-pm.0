@@ -1,144 +1,102 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from sonic311-31.consmr.mail.ir2.yahoo.com (sonic311-31.consmr.mail.ir2.yahoo.com [77.238.176.163])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECEC537B019
-	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 14:34:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 290E330F55B
+	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 15:28:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.238.176.163
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778423673; cv=none; b=EIW64FfYTL4R5QoXpVhTHyrWQU0EaPp+SYzaclosY/dwtop1FWxqXHjg8T8pbbZA62W+ycM/J7h76KVpqEtssawDIMwsniFxl5KUGXJ3xx1jC76kalSytrfWpjnkz1J6SupC+Ct6bzR862tteTOlijzaw7NHFVxNQ35fXXdzV+c=
+	t=1778426895; cv=none; b=P4tNjyNBbaQVbUwOuPPf6oqBW6TREk7WQkFkqz52caarex/GihCqUpbaQNauHAopgZE3sQwMaQGwCkT43wUqraB3zaZUM2LQsU7fWwFJPe/SLrUXPouwUn6hWlcPLv3Qke6O/NJHyQqJNzx115Ts6Vj6crtioUsdUXMoQbPgRaY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778423673; c=relaxed/simple;
-	bh=akX6oc/UBhFIsH6/xvzRFQmuOSqP2wkx384H9qJdowY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Wy9gy8jtCAVap0aR7X/NtF1MWBjTDoI02v0igeec+omUf0hLfI9vglWsSx4TO5ecUy9fVvw5id5oX0bHMK5gHYyB/kJtN8r9qxNCripbMaE78+/qvMwToTmNEHFQP5DIRGSvpVfDVdWRnwzqQE8Rxd1/+wSvSIhA4zIRi+yS9Ek=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JqaMcN/o; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778426895; c=relaxed/simple;
+	bh=k4vrdSdqTYKtlpA2IBcDPZn6DPODy3ZPA/tWBDDOKsE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:References; b=pQymK63GXuHA/ogXSQp2D++tTNMvzRwSSDu1X29dhVsGGTrWabnMGRGjRRfqP1qlyVMAqnoGapEjbT8aPJ/GR8ovU9i/J0+rSdT0qt2WNF2cSHrhEVYJ0k+2l9bAnxtjEVXi0N+DPsULRIEgfg8bBnLRdt7bEIGdPJoxleon6sg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com; spf=pass smtp.mailfrom=yahoo.com; dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b=T6gpSFhi; arc=none smtp.client-ip=77.238.176.163
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JqaMcN/o"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778423671; x=1809959671;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=akX6oc/UBhFIsH6/xvzRFQmuOSqP2wkx384H9qJdowY=;
-  b=JqaMcN/o5WiYdBqaTgZyvzjJDjG6dnsB/vTOZOvjolK05dDfbfB2dNbi
-   gk6Qhdvy5WRztDcoCm3388emFLB4QZMYEDIkQ3ioDpZtmdZXRBhB9Zkk2
-   jj9PrJIegK/oK8W1HB5Vk6hjyMI0A3WWvyjTJrkdvDQL3dEmsyR3rFkMi
-   Wl9uxwX81KQMGSYaFtuQh39aZq/RRJatKyuJoxiksyFzrzfw3OzWMVgHI
-   AORXlupWbcMw1sXvzK7AQt1jxbyOK9m0MxTjJoy88eNl+4Lx/DBiWINdO
-   Bm46Z/gl5yDhfZmdg5tg32aylG8hJ6iQq7af0ydSAcy/ic2O0dwgKF1JP
-   Q==;
-X-CSE-ConnectionGUID: 5AI/EDMfSNWXCDLwKTqx/g==
-X-CSE-MsgGUID: Y/ztSaY1T+WQiaidjXuS4g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11781"; a="83177756"
-X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
-   d="scan'208";a="83177756"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2026 07:34:30 -0700
-X-CSE-ConnectionGUID: G4OMi87qT0ioDv7aR1fFQg==
-X-CSE-MsgGUID: WjKR2javQPWGKwsd53Cg8g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,227,1770624000"; 
-   d="scan'208";a="236376949"
-Received: from spandruv-mobl5.amr.corp.intel.com (HELO [10.125.111.113]) ([10.125.111.113])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2026 07:34:30 -0700
-Message-ID: <3bc634d8d8566f188909fca9e176f651f6295dfb.camel@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] cpufreq: intel_pstate: Fix scaling for
- hybrid-capable CPUs not reporting hybrid
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Henry Tseng <henrytseng@qnap.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>,  Len Brown <lenb@kernel.org>, Viresh Kumar
- <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, SW Chen <swchen@qnap.com>, Kevin Ko
-	 <kevinko@qnap.com>
-Date: Sun, 10 May 2026 07:34:28 -0700
-In-Reply-To: <20260508063032.3248602-2-henrytseng@qnap.com>
-References: <20260508063032.3248602-1-henrytseng@qnap.com>
-	 <20260508063032.3248602-2-henrytseng@qnap.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+	dkim=pass (2048-bit key) header.d=yahoo.com header.i=@yahoo.com header.b="T6gpSFhi"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1778426892; bh=yhzNK1MxXhWyKER6B16J+oTKxIWa+vvZ+vg1sOhzKfc=; h=From:To:Cc:Subject:Date:References:From:Subject:Reply-To; b=T6gpSFhiUSkh/li8UsQ6f6WOYtsU7ea/FbC0RrVOHW0AwxY826GptzdjJvkw9RW7STtibWL8Rarc2/ZoxsqxfZqEPN5XluVbJyyuJbDCYUu1ukWD4xnsIcwAO2AFhYfhZWotHaARy7urqjxMLwwfM1Gxpl/FiPVM+ZOKWNwaKYNHgUjqRuHj/KM+EVDDkMkSEJ8piBzzlhi2pEPfBCjcV2wJbRIU+YypffY47ldnxfgz4z+DsLsGTXBY6sojajLyvrCzICcty+CYyFiPTQVA8U63Li0OYLmsr91cumdVp3926YkCS1KnZfIVjzqrLthTy1qhgEpjhChvBPMMYIZOfQ==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1778426892; bh=9zsjJAA9irII3i8PLQQTsZR6wJHg2ZxsBgLqmRFYVS7=; h=X-Sonic-MF:From:To:Subject:Date:From:Subject; b=fM5hGbsAyOTougSH0p1pm9Tif81cgTgtRepUy5M51qeioeP4rFMsx/YnMVV5c02H9t/tJUrkyWHlbBCUpqJ1Yy9eW8+M+AQl9vZGpWEICx87X33jYAbHct5qOsGbM9Y1Rq+gBriTka/gXb0yUv7KmIq/9lW5cc+fsW9cHG1g7joH879IDBREXxC9zXrsT402K9jkOeXRmw14vOMqEd8ImZ6NqTnSK9Yq5HwpNrOD8yafKuIc+20sZYlSTTb9Ef/+t2wXXl2ezA//B0AJpTVVBwY76sOHJWLa0R7nX5ySshdx4NoabZIs+xtUJkdbJG2rDyqpRNTuDl0c9TehoEDf9A==
+X-YMail-OSG: LlHhvqEVM1lNCZ.JIjqOcpjJTUU04M6yKmfO34BA7SBoIjFfDrNQB65qDBeum70
+ BbD.NcuEZi0xCHWZt9bkYFwfrYPfJRTiCWnXx78rL.nMskrfaDY7ri3lT560GB5CV8FDmzLIele9
+ ta_yB2GN3Enwy7YPvDVQWqCGESoJHaA4diwL305SJ.GOqV1XGCoi7quZvI6UD0PNWlrPd.U4JG8c
+ 1lxdM35gd3Vfdi_nABvrqZh3OdSJRHQbe_FPXDZejzYfIB0gCN5Hfaahy7deY_RcvX3uc8O6btm9
+ k0mx65QZW7cZUouqCplU11zx_rM79MXF3jGFmarmKsrhtH5RqcW9xEtdaxnjObLRiWInBYlFVuHF
+ d6LbzqhBfKYzz9uwr.wiBIUq2c.lPcXLB59uv08eNe4cJp55aLu0rzQbhvsacdtBIb7OGVxlkM1D
+ Rwz0KlTFV.FoixyN2KnphB1giN444rteBvm4oFZLy164r0XrC3OJttfi_XhxNzPucANPOtudzZEQ
+ HdYXQTu0pClmjxkH2OJBUwLlSRzrq1KmrZQJldu8Z2CzovMGJyDSWcj4e9Tuag_KeFyrHKaEHH5V
+ XHKey71F1rq6.dWy1gbp7Wsksd1NE.4cprkz7inlM8B6Ge1xuxgxEd62wjvULmvi2eKmGOPTrH0.
+ KT5MrH1pcjRB7NGTzseOFuA6Gma86C.U2ALDiffFeZCBqf6hbGDJQyro8MrvgCCBaTsiR.uUl80n
+ 8H6zRNwtTYLbsbiERnWMcJ5MWlypMC6duSx5LadLmp53kiaX5CnZjJnPd_s_c5fMWnd6_hrSP39x
+ rVR.9zTAqIa4PnrjPNcx_FQUaw.38goJsBMU9n.pVvp0XxFD4kRW9fG0nPpMDk9zvveow0rnuu6L
+ 9IyM045Rmsa_6G9MYhc8ayy9I8l8JbZw3bb3yVjhUbGLIk3S72yFcYsjzaBjk51awote69HpBOQT
+ CwmxFf2AZFSFPVHW3wXkjs7WaA1Yho3E5ooOc6dNeZSICpMd9iOdc2Ev8QHHwE7Odqoh9dU4RH7q
+ Q51NblRVzTIq.qcHOCywrUFWnOG6hezFouJ2PhI7U6SVksOPP9fhvCrUrjxRpB9qdgZ4AK39XohV
+ vV99mLI5Ywx5NgouiqQVZ.yB_S7i8oaa1ir1CiL8Qx8U7S3_t_rabDJCYZR3On2CTY6vM8.Iqn2P
+ 88bRtAtXGWU3ouIURMBvdW2KSuwXJ_w_OP2x8sXZaUaBdgm.lmxq_TsJExRJzVEdrFfig6PV20I1
+ m3klIAJkPhKckzJ1QrGyuNRjKWluB4aE9voqoa0OOYvM0tXVkF1DhJBk_p9ftKtLePayfqw1SwD3
+ B8_PGZVZ8Kw2WviwjR1vbu5xK3aEr.RvDe1NVbzeco5TA4q8HiDxYMik3XUiyn_H7H1xUIYrdqmJ
+ RqV_KNKwsuaBuxqTgKxgqmkqjoLUGS7mnAJkgfzCtqg0IfDMAVX6RjpbTbEDSOREF1hQ.eZEd8lz
+ HvUawYTg7wrFVCNtMrfPR7OwUu74Twm.IFAPG9FvG7TFHx4XpleDJ4OGkBb42rqrm9Y_HNvntWhR
+ LcTKPChEB.tphGVoeUQQkOTvnqDP7VOR7DR5CC._h13zUUNXKqkgMIt6ovftmRaaaekEXh1zHNdl
+ Ez44Eu.teK9JLGUtYvtsFWuzcNg14TICXNux0tJdJq3uTzNbmjvlNZNUlexUCD.aAQ61_d33nXNV
+ _NMuofGj5XdZq3UJwNsyEzEz.bnqL_R.d3bF0Ga0IlPb0NkGutoKIdxbieEoPxjdaB5og7RU4rGw
+ x2tSMRYTmfOGYam_tYZLQZY0PaIx8nSrtkcvyfzvHyKoW3RzpHOQqyno5VgMJu3TOjXtTOvuVnrE
+ 3PugZl0ACuJ2yA1FjlhWJio9uA5N9fedSEbpnVJTTEdQU2tcWJO5bImu7R2uO9amyNAJzs_pncb0
+ 6rQBFg2A_yO1M_EZi5lt.eqKjGn2Vx8f0Jy.dSbkCJ1vyW1uu.ZPhmUaer2yBOmPw59twdtli3Sc
+ IB4zCe_g9PRFcoduIiqaXGLEBnt2yJzGkeXMNxNtAOD_tlY0ZLjJaHCJan6aql6VvY4w_t3e.rPu
+ XuGqrLWSMMpmD7QRomEmQRbBIjIjGOPBl_aASNzvvrxJGCGH9ZS9XH_zmtnL_QAdFsVn10fE4oLo
+ TKAH1yPuVgp9Ed6676Sh4I4l6bPtTpvgfX525RarQT9liorj43Ar_3GNGVkJVath0.rqWDIJ_GFQ
+ fjZSo55fPaL7YEluV4Q4HIVlP1aTXZcIoaKw3VO4YCr2D8N5PPfdSU1dQXxk-
+X-Sonic-MF: <nicobsc4@yahoo.com>
+X-Sonic-ID: 8edaed84-9363-45fc-8b94-d1167729b603
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic311.consmr.mail.ir2.yahoo.com with HTTP; Sun, 10 May 2026 15:28:12 +0000
+Received: by hermes--production-ir2-89844b765-82cnf (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID ce718115184f3a1163bd756cced3f7a1;
+          Sun, 10 May 2026 14:33:20 +0000 (UTC)
+From: NicoErdmann <nicobsc4@yahoo.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-doc@vger.kernel.org,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	corbet@lwn.net,
+	skhan@linuxfoundation.org,
+	NicoErdmann <nicobsc4@yahoo.com>
+Subject: [PATCH] cpufreq-stats: document limitations on modern cpufreq drivers
+Date: Sun, 10 May 2026 16:33:03 +0200
+Message-ID: <20260510143303.120863-1-nicobsc4@yahoo.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+References: <20260510143303.120863-1-nicobsc4.ref@yahoo.com>
 
-On Fri, 2026-05-08 at 14:30 +0800, Henry Tseng wrote:
-> Commit 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling
-> factors") restructured hwp_get_cpu_scaling() so that, when the CPU
-> model is registered in intel_hybrid_scaling_factor[] and
-> hybrid_get_cpu_type() does not return INTEL_CPU_TYPE_CORE, the
-> function early-returns core_get_scaling() (100000) instead of
-> falling through to intel_pstate_cppc_get_scaling().
->=20
-> This regresses the behavior previously addressed by
-> commit 0fcfc9e51990 ("cpufreq: intel_pstate: Fix scaling for
-> hybrid-capable systems with disabled E-cores").=C2=A0 On hybrid-capable
-> processors not reporting X86_FEATURE_HYBRID_CPU (no E-cores
-> enumerated), hybrid_get_cpu_type() returns 0.=C2=A0 Before 9b18d536b124,
-> such CPUs fell through to intel_pstate_cppc_get_scaling(), which
-> returned the registered hybrid_scaling_factor.=C2=A0 After 9b18d536b124,
-> for models registered in the table the early return takes
-> core_get_scaling() before reaching that fallback, so the registered
-> factor is not used.
->=20
-> Fix this by returning hybrid_scaling_factor directly for CPU models
-> registered in intel_hybrid_scaling_factor[] that do not report
-> X86_FEATURE_HYBRID_CPU, before checking hybrid_get_cpu_type().
->=20
-> With that fix, non-hybrid CPUs in the table now reach
-> intel_pstate_hybrid_hwp_adjust() with scaling !=3D perf_ctl_scaling.
-> Since commit 5313ec4a215a ("cpufreq: intel_pstate: Improve printing
-> of
-> debug messages") sets hwp_is_hybrid =3D true unconditionally inside
-> that
-> function, set hwp_is_hybrid based on X86_FEATURE_HYBRID_CPU instead,
-> so the flag is not set on non-hybrid systems.
->=20
-> Fixes: 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling
-> factors")
-> Signed-off-by: Henry Tseng <henrytseng@qnap.com>
-> ---
-> =C2=A0drivers/cpufreq/intel_pstate.c | 5 ++++-
-> =C2=A01 file changed, 4 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 1292da53e5fc..d39592e86570 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -585,7 +585,7 @@ static void intel_pstate_hybrid_hwp_adjust(struct
-> cpudata *cpu)
-> =C2=A0	if (scaling =3D=3D perf_ctl_scaling)
-> =C2=A0		return;
-> =C2=A0
-> -	hwp_is_hybrid =3D true;
-> +	hwp_is_hybrid =3D cpu_feature_enabled(X86_FEATURE_HYBRID_CPU);
-> =C2=A0
-> =C2=A0	cpu->pstate.turbo_freq =3D rounddown(cpu->pstate.turbo_pstate
-> * scaling,
-> =C2=A0					=C2=A0=C2=A0 perf_ctl_scaling);
-> @@ -2275,6 +2275,9 @@ static int knl_get_turbo_pstate(int cpu)
-> =C2=A0static int hwp_get_cpu_scaling(int cpu)
-> =C2=A0{
-> =C2=A0	if (hybrid_scaling_factor) {
-> +		if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
-> +			return hybrid_scaling_factor;
+Signed-off-by: NicoErdmann <nicobsc4@yahoo.com>
+---
+ Documentation/cpu-freq/cpufreq-stats.rst | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-It breaks Alder Lake systems with only E-cores and no P-cores. So need
-to think about this. So this change didn't restore the behavior of
-0fcfc9e51990.
-So need to think about this.
+diff --git a/Documentation/cpu-freq/cpufreq-stats.rst b/Documentation/cpu-freq/cpufreq-stats.rst
+index 9ad695b1c7db..e8a8b3a85ad8 100644
+--- a/Documentation/cpu-freq/cpufreq-stats.rst
++++ b/Documentation/cpu-freq/cpufreq-stats.rst
+@@ -28,6 +28,13 @@ Various statistics will form read_only files under this directory.
+ This driver is designed to be independent of any particular cpufreq_driver
+ that may be running on your CPU. So, it will work with any cpufreq_driver.
+ 
++.. note::
++	
++   On some modern systems, this interface may not be available or may not
++   expose meaningful statistics depending on the active CPU frequency scaling driver.
++
++   In particular, drivers such as intel_pstate or amd_pstate may use alternative
++   mechanisms for frequency scaling and accounting
+ 
+ 2. Statistics Provided (with example)
+ =====================================
+-- 
+2.54.0
 
-Thanks,
-Srinivas
-
-
-> +
-> =C2=A0		/*
-> =C2=A0		 * Return the hybrid scaling factor for P-cores and
-> use the
-> =C2=A0		 * default core scaling for E-cores.
