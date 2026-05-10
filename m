@@ -1,270 +1,198 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com [209.85.222.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 396E935979;
-	Sun, 10 May 2026 03:02:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99A59317166
+	for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 05:26:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778382177; cv=none; b=eJl3gHEWJRiqU43UquQziXWcydjaPOU9BIwmCCYm2WAn/r6OCDo4+YjSK/zQS3HedHZe3YWG/6q14VU2vTfKadfmflbQ90RgtmpusDbDiqiRjh4qJVnTvZGFrHTp73jci5gd1xz8/IRTYxDDAPvsPo/WDfRAgMsr1zCjPLaV9tc=
+	t=1778390763; cv=none; b=oZ+yx2kLnMp3odL3fGb+ZmymfbBFmhdg4C4z8/vb+wjxWJ8Po77u5XdIeOeGUcCFdBieJJfQ8N3d5Qsj3GMLoCD0xpZUzGN50VUmGMrraqrZ9fo1Chhk6PzyK96iI021JOeSdphmNYFiU0Sn4CWkWAmoZJ1a9c1WY7CczUFRAa0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778382177; c=relaxed/simple;
-	bh=r+v71hsEte8pWEv2C7BSE3iTj76Ojm2jtEj0SA6Z1RE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oChNf+lKEh4+apI8UTvjwFz9I7r+Op9gDNTg8tYkgoGsj9J5fIvLuwWMPFku+voorpqtWK2Zs8pp8W1YL+xEUj5yo99J092cBGePpoUCzF3Xb1AVUjJG5BuJUlJsZmO6U/0Vxnezc+lZ2/SCi/qbpvKTH2ZxpdLzf0XgqKiTxk8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=fdAObIBP; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1778390763; c=relaxed/simple;
+	bh=JFu6cv4iACQGbV5egz2iEUE7xkHI96ahMgLFv5+XVWo=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=MvIMQd7GJ+TEviqFEXgr6DrqoWB6iQku++78lt5wkTFcjQrSjZP4vLV92RUOTMK2AukXtkNczbc3cFPjyC+b9OWkI6aQT9zfLi+nQt1bo+jyM67+drtezpHfOIPO1wHdT1BNu2WK7m5ttzMeUt39Cu6vdhvr1CIrP4LSpskXOrg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iWvXkr4e; arc=none smtp.client-ip=209.85.222.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="fdAObIBP"
-Received: from smtp1.mailbox.org (smtp1.mailbox.org [10.196.197.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4gCnj12XFbz9ttT;
-	Sun, 10 May 2026 05:02:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1778382165;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9AG2mPgAOtJ8Me87PpVSnI+nay5U0EzVOgMVFYD/YiE=;
-	b=fdAObIBPln9zwt+xeHEPvt1bMvDO8JRvcTJPTX2mTY2J0WgZUFLZhsPyzpYNf06biWicyw
-	ptoiNBpq/YGPmw1Te1qySZ+QpzwTzoWX6WAcJfZF/deAobppogx1TrpBppUv0JhuC0I5U1
-	AZFbl4R/fbiQuDK6fnkU4+SbAAWEIxh6sCPRAEokqV/28NMezlffi68DwEFhXMpBtMDiDP
-	lNGhHwvkI53wWbFW8DKVlymF8MIfOIG3lJ2+SUyNSjZifsTKZ+0xa+1zg9eNGYD42AJA0u
-	Bq5BTd3155LGgq6ZCnFa5fg8gBF1Hba6Ayng2cj2WBLIrXcpiwY8A/cafFQBQw==
-Message-ID: <73602f40-45f0-4e4e-86cb-4a2c025f0491@mailbox.org>
-Date: Sun, 10 May 2026 05:02:39 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iWvXkr4e"
+Received: by mail-qk1-f171.google.com with SMTP id af79cd13be357-8f0579401c4so420008385a.3
+        for <linux-pm@vger.kernel.org>; Sat, 09 May 2026 22:26:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778390760; x=1778995560; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=lkretJLhfB7+l1td9MLSNDIffxT6UR6I0FN9wkg9x/k=;
+        b=iWvXkr4eq8OJSNKzGuJhNNfOhGMETnLM6LSYD8x/L0+bH5GnI2Ive4HLM89SZPsz+P
+         eUt/eL2urhO4Wr9ZuGX80i0mTcNxLFRHFHN4JpDQ2ZRcTpxSQMqJj1nlVpydR1C40qIO
+         trNO7MBeTTqhkyR2qIKdqDGw67HFZnh06WwQFLfsJahUpxMhEbusXCEqPwjRDjXid/za
+         8xvnBhN1gxh+ZhNWmThIroznTF2hbrVGhyaEhjdh47K7tSIAT7TcXC6H+GNrDCiOkmmr
+         wRSg29w1ChP4W9b30B6noZ7u28+Xsn9IPlMM4oEGg6c3y0i1nZyj6q7OnnoSgSu2Y6n7
+         pqFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778390760; x=1778995560;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lkretJLhfB7+l1td9MLSNDIffxT6UR6I0FN9wkg9x/k=;
+        b=CYCMFZ3OBVT7ZtwRVQdD4tLUA4CLAZHE4QRmGvrm4FGMRf57x62PzCPsn/3QHNxZk1
+         nWROeq9kDxCzfTxkl/6M1c4Ziwg44fa2EMb+/cTtP7LuxUS1kWfCS6UztFMRIbWI80Gg
+         F5flEbSzj5z6coDgVyPEkvzl8K/Ir2yL9p29JDdxayVhyTKrnP/UJi6YXWDM3GuGNDuh
+         jKGPODmdMQEAEuy7+hMvKpjJ92O6UMB4DuEp4wDjoYPeaD4dh9fDJDMgC+pmLhgvt+Yp
+         BHnut6yhPt5Fx5c187Gumg7izr4XX8JjSZiotuOYh9bymodqxRBmbumwIhydwUZNNpsk
+         CiCQ==
+X-Gm-Message-State: AOJu0YxXhCtQgyNCQmGhiAWdXSW6002QaMcu9Mr0XGxsYg6ohuLZ8bHd
+	0vRXUSv6ai1hXWBC+Ls7pnPHSDbYFtHsVC0zKOd2ulxGRsxSfvc4Dq3L
+X-Gm-Gg: Acq92OGeivjtw+rcn4eDOBIN+eo/YcikshIcv8eoWRIjDAQmytev8GuBNOcY+iR1ubf
+	2Aw+Ty62+37CJYymd2FzFBph63J9EO0ug2QxdicD58BLRwXgmawndpOMSl4DkCDaIly6XNF5Fxv
+	zObDufTWwG94HZxMleIXzzdG3bcmB7gge8fJ7XeHDd5sUz5Uj8XHHPAvzJ6t9vhlIF83D0ynSBo
+	5+CM40uXDYHxl4VZdIzmIo01HWNl5t8VgL7h6yWzQVVCHWMznDahLbpsIeACVzyUhAvIT26HMmj
+	Bc9J6GIqpuKQMmunW87Wtr66b9GcTaktxd+f35dVzHv2bCkjaVoVkbA5xsvA+0HNSolyKh3X/4f
+	xhLPcmfepuJ55lihBnvhvtKWUaE1TtmOTdadOraaHkAa3LAnV8WAnyCRs4ZIBdlfOEiP/eOwk22
+	UJm6iCb1tPy5rw4XBx2SngfFPLhfw=
+X-Received: by 2002:a05:620a:28d3:b0:8f0:b0cb:190f with SMTP id af79cd13be357-904d60f695amr2567465085a.39.1778390760497;
+        Sat, 09 May 2026 22:26:00 -0700 (PDT)
+Received: from [172.17.0.2] ([134.128.219.200])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-907b9286f22sm689689085a.13.2026.05.09.22.25.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 09 May 2026 22:26:00 -0700 (PDT)
+From: Yuanshen Cao <alex.caoys@gmail.com>
+Date: Sun, 10 May 2026 05:25:35 +0000
+Subject: [PATCH] pmdomain: sunxi: support power domain flags for pck600
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH/RFC 10/14] dt-bindings: power: Document Renesas R-Car X5H
- Module Controller
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>,
- Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>,
- Saravana Kannan <saravanak@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Ulf Hansson <ulfh@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
- devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <cover.1776793163.git.geert+renesas@glider.be>
- <053c312d07445517d8f9c84bfe3cc8fb72d4cd9a.1776793163.git.geert+renesas@glider.be>
- <bf83a028-3ef3-482a-9ce3-8aec16f6ebed@mailbox.org>
- <CAMuHMdWN2zaZrY2jKKXpNqrP8xSqc-uJTr-siTBgaA=-EY_4BQ@mail.gmail.com>
- <fa28c6fe-484c-4133-824e-649c52ef2200@mailbox.org>
- <CAMuHMdUU=RohST4LDDD27W5dj=HwJFApMcDpsXATQ1MaMH-tUA@mail.gmail.com>
-Content-Language: en-US
-From: Marek Vasut <marek.vasut@mailbox.org>
-In-Reply-To: <CAMuHMdUU=RohST4LDDD27W5dj=HwJFApMcDpsXATQ1MaMH-tUA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-MBO-RS-META: fbwz36b893qz5jidenhstwmckkgabocb
-X-MBO-RS-ID: 685120301b26aeb58c6
+Message-Id: <20260510-pck600-a733-gpu-v1-1-d6393646d714@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MMQqAMAxA0auUzAZiRaVeRRw0Rg2ClhZFKN7d4
+ viG/xNECSoROpMgyK1RzyOjLAzwNh6roM7ZYMk2VJeEnveGCMe2qnD1F848LUzcsjgHufJBFn3
+ +Yz+87wdJjmRzYQAAAA==
+X-Change-ID: 20260510-pck600-a733-gpu-dcbfc0c7ce99
+To: Ulf Hansson <ulfh@kernel.org>, Chen-Yu Tsai <wens@kernel.org>, 
+ Jernej Skrabec <jernej.skrabec@gmail.com>, 
+ Samuel Holland <samuel@sholland.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ Icenowy Zheng <uwu@icenowy.me>, Mikhail Kalashnikov <iuncuim@gmail.com>, 
+ Yuanshen Cao <alex.caoys@gmail.com>
+X-Mailer: b4 0.14.3
 
-On 5/8/26 10:26 AM, Geert Uytterhoeven wrote:
+Hi everyone,
 
-Hello Geert,
+This patch refactors the sunxi pck600 power domain implementation to
+support individual power domain flags.
 
->> Since there are up to 32 MPDG registers, and 256 resets, can we encode
->> both into a single cell ?
->>
->> (mpdg_register_offset << 16) | (reset_bit_offset << 0)
-> 
-> We could.  I did consider it (with a shift of 8 cfr. 256 modules),
-> but see below...
-> 
->> I cannot tell whether this is much better, but it at least ties the PD
->> components (power domain and clock domain) into a single value, which
->> matches reality a bit better. The current split power domain and clock
->> domain description in two cells gives me the illusion that it is
->> possible to mix and match power domains and clock domains in DT
->> description, but in fact the two cells are strongly tied together.
-> 
-> They are only tied together in the sense that a module (hardware block)
-> is part of a power domain, and has module standby (clock) control.
-> Some power domains are backed by MDLC hardware registers,
-> others are not, hence the need for the additional definitions in
-> <dt-bindings/power/renesas,r8a78000-mdlc.h>.
-> I am not aware (yet) of modules that are part of a power domain,
-> but do not have module standby control. If these exist, we
-> need an additional definition (R8A78000_MDLC_MODULE_NONE?) in
-> <dt-bindings/power/renesas,r8a78000-mdlc.h>.
+While bringing up the PowerVR GPU on the A733 (Radxa Cubie A7Z), we
+found that one of the GPU power domains must be configured as "always
+on." While the Radxa BSP device tree leaves the GPU power domain nodes
+commented out, the GPU driver code contains traces indicating an "always
+on" requirement [1].
 
-Maybe TAUJ3 in AON domain? I think HSCN also has abundance of examples.
+Currently, sunxi_pck600_desc only supports specifying pd_names. This
+patch introduces sunxi_pck600_pd_desc, which stores both the name and
+its associated flags. This also (more or less) aligns the implementation
+with the existing sun50i PPU handling of always-on domains.
 
-> Due to this separation, and due to a possible future need for expansion
-> (R8A78000_MDLC_MODULE_NONE, MDLCs with more than 256 modules, ...),
-> I went for two cells.
+With this change, individual power domains can now be configured more
+granularly. In particular, the GPU_CORE domain in sun60i_a733_pck600_pds
+can now be explicitly marked with GENPD_FLAG_ALWAYS_ON.
 
-I think I won't push for a single cell either, two cells are OK with me too.
+The patch was tested on the Radxa Cubie A7Z, where the GPU now functions
+as expected.
 
->> If we cannot encode the two into a single cell, maybe we can at least
->> have some sort of macro for this, e.g. this (0xff as no MPDG register
->> bits for this block):
->> #define R8A78000_MDLC_PD_HSCIF0 (0xff << 16) ((0x5 << 4) | (0x3 << 0))
->>
->> What do you think ?
-> 
-> I (and I believe the DT maintainers) are not so fond of defines for
-> numbers that can be (more or less) just read from the documentation.
+Thanks to Icenowy for her support and expertise on sunxi and PowerVR,
+and thanks to Mikhail for identifying this exact cause of the GPU
+bring-up issue.
 
-OK
+[1] https://github.com/radxa/allwinner-bsp/blob/cubie-aiot-v1.4.6/modules/gpu/img-bxm/linux/rogue_km/services/system/rogue/rgx_sunxi/sunxi_platform.c#L62
 
-> (and 0xff should be R8A78000_MDLC_PD_APL?)
+Signed-off-by: Yuanshen Cao <alex.caoys@gmail.com>
+---
+ drivers/pmdomain/sunxi/sun55i-pck600.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
-I think AON would have to be 0xff , since it is superdomain of APL ?
+diff --git a/drivers/pmdomain/sunxi/sun55i-pck600.c b/drivers/pmdomain/sunxi/sun55i-pck600.c
+index 1d47bbd35ced..8a37d11b65a2 100644
+--- a/drivers/pmdomain/sunxi/sun55i-pck600.c
++++ b/drivers/pmdomain/sunxi/sun55i-pck600.c
+@@ -41,8 +41,13 @@
+ 
+ #define PPU_REG_SIZE	0x1000
+ 
++struct sunxi_pck600_pd_desc {
++	const char *name;
++	unsigned int flags;
++};
++
+ struct sunxi_pck600_desc {
+-	const char * const *pd_names;
++	const struct sunxi_pck600_pd_desc *pd_descs;
+ 	unsigned int num_domains;
+ 	u32 logic_power_switch0_delay_offset;
+ 	u32 logic_power_switch1_delay_offset;
+@@ -164,10 +169,12 @@ static int sunxi_pck600_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < desc->num_domains; i++) {
+ 		struct sunxi_pck600_pd *pd = &pck->pds[i];
++		const struct sunxi_pck600_pd_desc *pd_desc = &desc->pd_descs[i];
+ 
+-		pd->genpd.name = desc->pd_names[i];
++		pd->genpd.name = pd_desc->name;
+ 		pd->genpd.power_off = sunxi_pck600_power_off;
+ 		pd->genpd.power_on = sunxi_pck600_power_on;
++		pd->genpd.flags = pd_desc->flags;
+ 		pd->base = base + PPU_REG_SIZE * i;
+ 
+ 		sunxi_pck600_pd_setup(pd, desc);
+@@ -195,13 +202,14 @@ static int sunxi_pck600_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static const char * const sun55i_a523_pck600_pd_names[] = {
+-	"VE", "GPU", "VI", "VO0", "VO1", "DE", "NAND", "PCIE"
++static const struct sunxi_pck600_pd_desc sun55i_a523_pck600_pds[] = {
++	{ "VE", }, { "GPU", }, { "VI", }, { "VO0", }, { "VO1", },
++	{ "DE", }, { "NAND", }, { "PCIE", },
+ };
+ 
+ static const struct sunxi_pck600_desc sun55i_a523_pck600_desc = {
+-	.pd_names = sun55i_a523_pck600_pd_names,
+-	.num_domains = ARRAY_SIZE(sun55i_a523_pck600_pd_names),
++	.pd_descs = sun55i_a523_pck600_pds,
++	.num_domains = ARRAY_SIZE(sun55i_a523_pck600_pds),
+ 	.logic_power_switch0_delay_offset = 0xc00,
+ 	.logic_power_switch1_delay_offset = 0xc04,
+ 	.off2on_delay_offset = 0xc10,
+@@ -213,14 +221,15 @@ static const struct sunxi_pck600_desc sun55i_a523_pck600_desc = {
+ 	.has_rst_clk = true,
+ };
+ 
+-static const char * const sun60i_a733_pck600_pd_names[] = {
+-	"VI", "DE_SYS", "VE_DEC", "VE_ENC", "NPU",
+-	"GPU_TOP", "GPU_CORE", "PCIE", "USB2", "VO", "VO1"
++static const struct sunxi_pck600_pd_desc sun60i_a733_pck600_pds[] = {
++	{ "VI", }, { "DE_SYS", }, { "VE_DEC", }, { "VE_ENC", }, { "NPU", },
++	{ "GPU_TOP", }, { "GPU_CORE", GENPD_FLAG_ALWAYS_ON },
++	{ "PCIE", }, { "USB2", }, { "VO", }, { "VO1", },
+ };
+ 
+ static const struct sunxi_pck600_desc sun60i_a733_pck600_desc = {
+-	.pd_names = sun60i_a733_pck600_pd_names,
+-	.num_domains = ARRAY_SIZE(sun60i_a733_pck600_pd_names),
++	.pd_descs = sun60i_a733_pck600_pds,
++	.num_domains = ARRAY_SIZE(sun60i_a733_pck600_pds),
+ 	.logic_power_switch0_delay_offset = 0xc00,
+ 	.logic_power_switch1_delay_offset = 0xc04,
+ 	.off2on_delay_offset = 0xc10,
 
->>> So perhaps I will clarify like this:
->>>
->>>         - The first power domain specifier cell is the power domain part, and
->>>           must be either the Module Power Domain Gating (MPDG) register index
->>
->> ... for power domains which are backed by MDPG bits, and which can be
->> controlled in that manner ...
-> 
-> OK.
-> 
->>>           (0x00-0x3f) from the datasheet, or a Power Domain number, as defined in
->>>           <dt-bindings/power/renesas,r8a78000-mdlc.h>,
->>
->> ... for power domains which are always on, and for which there are no
->> MPDG bits which can be used to control them ...
-> 
-> OK,
-> 
->>
->>>         - The second power domain specifier cell is the clock domain part, and
-> 
-> Upon second thought: s/clock domain/module standby/
+---
+base-commit: 1bfaee9d3351b9b32a99766bbfb1f5baed60ddef
+change-id: 20260510-pck600-a733-gpu-dcbfc0c7ce99
 
-If you could even mention that this refers to "Module STOP" column bit, 
-that would even clearer.
+Best regards,
+-- 
+Yuanshen Cao <alex.caoys@gmail.com>
 
->>>           must be the module number (0x00-0xff), composed of the Module System
->>>           Reset (MSRES) register index in the high nibble, and the Module Reset
->>>           Destination bitfield index in the low nibble.
->>
->> I can understand this.
->>
->>>>> +  '#reset-cells':
->>>>> +    description:
->>>>> +      The single reset specifier cell must be the module number (0x00-0xff).
->>>>> +    const: 1
->>>>
->>>> [...]
->>>>
->>>>> +#ifndef __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
->>>>> +#define __DT_BINDINGS_POWER_RENESAS_R8A78000_MDLC_H__
->>>>> +
->>>>> +/* R-Car X5H MDLC Power Domains */
->>>>> +
->>>>> +#define R8A78000_MDLC_PD_AON                 0x40
->>>>> +#define R8A78000_MDLC_PD_SCP                 0x41
->>>>> +#define R8A78000_MDLC_PD_APL                 0x42
->>>>> +#define R8A78000_MDLC_PD_CMN                 0x43
->>>>> +#define R8A78000_MDLC_PD_ACL                 0x44
->>>> ... what do these numbers represent ? Shouldn't those be register
->>>> offsets from MDLC MPDG00 according to power-domain-cells ?
->>>
->>> These are Power Domains that are not backed by any of the 64 Module
->>> Power Domain Gating (MPDG) registers in MDLC blocks.
->>
->> I suspect that might not be entirely correct for all of them, please
->> read on and see CMN below.
-> 
-> Thanks, looks like R8A78000_MDLC_PD_CMN should be dropped.
-> 
->> Let's take PD_AC00 , AP core 0 , as a domain of interest. My
->> understanding is, that the domain structure for PD_AC00 looks as follows:
->>
->> PD_AON {
->>     PD_SCP { };
->>     PD_APL {
->>       hierarchy is SYSSS
->>       always-power-on
->>       PD_CMN {
->>         hierarchy is CMNN
->>         power-gating-bit is MDLC_CMNN 20
->>         PD_APU0 {
->>           hierarchy is SYSSS
->>           power-gating is done by APMU
->>           PD_ACL0 {
->>             hierarchy is CMNN
->>             power-gating-bit is MDLC_CMNN 16
->>             PD_AC00 {
->>               hierarchy is CMNN
->>               power-gating-bit is MDLC_CMNN 0
->>             };
->>             ...
->>           };
->>           ...
->>         };
->>         ...
->>       };
->>       ...
->>       PD_HSCIF0 {
->>         hierarchy is PERW
->>         power-gating-bit is MDLC_PERW 23
->>       };
->>     };
->>     ...
->> };
->>
->> With this in mind, I think CPU 0 DT node should refer to the PD_AC00
->> power domain this way:
->>
->> cpu@0 {
->>     ...
->>     power-domains = <&mdlc_cmnn R8A78000_MDLC_PD_AC00>;
->>     ...
->> };
-> 
-> So we do have a few modules (I found a few more) that are part of
-> power domains, but do no support module standby.  One more reason to
-> decouple them in power-domains.
-
-I think HSCN is a really good example ?
-
-> However, CPU cores are controlled through PSCI (the slightly less evil
-> brother of SCMI? ;-), so
-> Documentation/devicetree/bindings/arm/psci.yaml applies, too?
-
-We can indeed control cores purely via PSCI , yes.
-
-(Upstream TFA needs one more platform patch to make this operable)
-
->> The MDLC driver would pass the PD_AC00 domain ID to matching SCMI power
->> domain management protocol call, or, for bare-metal MDLC driver, would
->> have to internally encode PD hierarchy, walk it, and apply PD operations
->> in each step.
->>
->> I think even for SCIF/HSCIF, the power domain reference should be
->> something along the lines of the following description. The MDLC driver
->> should internally encode that R8A78000_MLDC_PD_HSCIF0 is a sub-domain of
->> R8A78000_MDLC_PD_APL .
->>
->> serial@c0710000 {
->>     ...
->>     power-domains = <&mdlc_perw R8A78000_MDLC_PD_HSCIF0>;
->>     ...
->> };
-> 
-> R8A78000_MLDC_PD_HSCIF0 is a not a full sub-domain, but merely standby
-> (clock) control inside the PD_APL clock domain?
-Do you consider R8A78000_MDLC_PD_AC00 a full sub-domain ? Because that 
-one looks very similar to R8A78000_MDLC_PD_HSCIF0 , except the former 
-controls a core, the later an UART IP.
