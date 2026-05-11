@@ -1,187 +1,117 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EEB81285CAD
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 06:15:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80870331218
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 06:42:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778480146; cv=none; b=KnKN4KIAaVdyOwudf4+KHRk6AIU9UbbDERu5HYQewDpVEAlAkaPdtT7i3wqPS+SbJhC8tiixnql4frf2QIqjcuZ5/t5BJC9AiWNzpqdYMmRs0OjDyLbaZiTflypAUE8AnHH0rr+i50Xety5mPSVbLgbuFTvb08XPKMCeR8v3xxU=
+	t=1778481750; cv=none; b=USPDVacINuV+/UptZxM33ihE+KY3YdLt//vOD//k3J6lSAekW9w15v/Nz0Lfbc2uK0GLgGVXx6yvdIm+2XxyDmbotdHw/WvWA/wfUgzyX5l5MlCyyMgkHSp7XubSrbindtmiSphp+Uq7MGcNacBvACa2fHNiZn/u9Az0am8oD+I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778480146; c=relaxed/simple;
-	bh=nMNNMgNt0qQdYKCR7rqoHv/euvrL2jsocSLSsD4h6fw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TW9W1uyyC2kfBYSkVs/VaxUvljz0M0OTOUCj5yw6cFYlJ6dJJPtpkWivPXUdlyUrOiDUmO6oG9qJQ2PG7DdSgrmwph+5/PTZA81vUT9W9ZrvimeLBKHOmRPIMdd+2ERdgiAqhbU7MwlDRkUpVCq/ie4jovQlIq4kgyBKOOz7IDc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=EK9LmJ38; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=hIhrbZg+; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778481750; c=relaxed/simple;
+	bh=aqOreI6fX/uZN/lEw3smALiG7YxaCe62+LvjMxRJqj4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t7fOhH9D1OXaqEauDcUNZ7BIQWceZdOhHCDrmYoOZ9JnjDnlfDRqY0y3iKIR0ZsA5yDfsCE7tl/qDUngVvPwY9D8B3FMgyw9zcwY0jCAK1xfpCchcu69wce3O3jzB8JhiTyOsUYik+dYgXqWuq6WaVO4zKvMPsxkqwxyPtXkU9Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=G23YYp66; arc=none smtp.client-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="EK9LmJ38";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="hIhrbZg+"
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64B37UZT2640156
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 06:15:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	tiqxzGqdJED19gib91pm/fKKRdfR7tXGS5FzfvQm0To=; b=EK9LmJ38kWQuZnuL
-	/1pZnSBwVKgBb5Ut8kv96k2d9rMiok4HSQqvPM5D5rP6weIiBypL3N4lxCzW+pnT
-	B2KlJLsJnIVv/jVz0ZEWbkvfHHxFMvgJaWGaxwY618q/TGKvoSh9zI/kr6sjz1o0
-	xOCfyLe/7BQd0jQx9Z8ZB0jZQlJCuTYIcztHD0ZJtaqUdP19wHU12aHQa4r8nLAk
-	mvIL83mc33R/mLWCDR15ALqtEJTy/58D8th7cHrPCBaXRg0/ckhiObCmNptITvAW
-	WT/9nfQP+bEA+y3ReybGgPcpZWRPYrFBsUqSX7pi5QAdTGuTydw5gMvJ28lnxFb+
-	i/K6eQ==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1uvsmw0p-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 06:15:43 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-2ba7662827fso36491435ad.1
-        for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 23:15:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="G23YYp66"
+Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8367df48711so1725101b3a.1
+        for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 23:42:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778480143; x=1779084943; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=tiqxzGqdJED19gib91pm/fKKRdfR7tXGS5FzfvQm0To=;
-        b=hIhrbZg+xm0yaYtJ6qjACXTDOyExSR8uJkUhfXtg5ZpjhCzzsKumhnEeZblPvA7PoN
-         IBoMfv4yGsXtoSbiz5gShsbCX7z/pmiWrDH0/recVSnTYUUco54oJbqJpooPXaSxM142
-         y6fHhkLrFC6CQh2cLGv0DAgfO3/j/+luwiAbY6v5pQcSFqODdnXeODhpD+mB9hg7U6oP
-         ll6kojK8ds+pUnlyUSsQnWEfZ4cB65qrcvk35U4x7mwXKiMh1ixZkL/ftGf+S5ZeuX8k
-         3R83WhCxPwBbNPzOkWMqdmLWF4xUH0os8rvPvTKCtUHXDIJsDd1ufFhkT0De5Eqg88E2
-         7OSw==
+        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778481746; x=1779086546; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=6WETen+kRNNiAQvSfnOnKOKODS+5kYfhp3vdgbGUFvE=;
+        b=G23YYp66afKKdS1/yKrOpuu7iRiNGvR5H8hQRYpysbYLSad7TZOcUzcOvixDOZvlYD
+         pMoexS4VlqDwwm0WegrMRaUydqdR8F3mmLPyOmsXEpUAnxPGBxBBnZkcmffYpGJyGNVt
+         y1qdrmAKFvX/hKMGxQB+FAHloHYbIYNLeOzMK9edX5a3GxagB+CmDJ9YsgfAGs9Ss4AS
+         XMwjLo/2YsGzzz+1NoDnc98cQoF59DEg3hjQkY6RQ3iqUj+xdOfq1ZLD1BYhxFZ2rUkj
+         qZ0hAhBqzHH3m0/tdUd2MRy/zKYCaKd0E7sQJjKOghfCM6vhGXNUYoxZ8fFGAy+0e9+O
+         kPGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778480143; x=1779084943;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=tiqxzGqdJED19gib91pm/fKKRdfR7tXGS5FzfvQm0To=;
-        b=fJF6M569YYoWZ+lc+AXS+/oDaq907tfr+H5EQTvGAEezh4152Otq5Xv2mjIfhIGkpF
-         zt/LNsXPDQ2e/iegaKDpUNyDL8udh1u4zdSHQnVzosA77U+SPEsTMT0AaQDdQbYkUwIe
-         zf5S8LeJHKDaPioKMgDBLr9xnViwe2oI0MB0di9wEIKkzjnLolb10bzwaFZudiAZiTsM
-         GHK5JF+OkJdB6hxaIWpgRRO5jX95YlNm6qtxpS3Rh/PxeG3PHG/BY/HYKcNFQIveNuiL
-         /lrB6unxnE3ONJ945rybhpMNB6EyFUuQM7g3QT0a85TxA1q+ErSq4ybKKsablvIR6sS6
-         ogKA==
-X-Gm-Message-State: AOJu0YxcNMN0496UpcAm8elWH2JljBG+zZ9tXM3zDjUX9hYyboC9+Y21
-	6Y5gVIyp/usXYhGRDIDzBuoEtI1zMREnKRlApEnzakh9Iett+9LEhYbmQoFwt8jLPKqJ7UcnC2o
-	ystsazdiMOdnFzRMjKUveWi8/8aE/PfIyW6MprYGsfsErjPcmwOiSz68gewb86A==
-X-Gm-Gg: Acq92OG0alkzqebKid8qsJWDE4Y5qMzxRTikRuW1hNi009ltb7F+by+YZm+jomW5003
-	XRCKY/xCPoo21hDmJwQnarW4BU7GasDI2+iMPOoCvN1THkRAVlclhxizW9RObOYVtnIi/fJIfxQ
-	mwb1kKnRewdZcOfyYHmm2zyqjByo51K1uT4YWxBDDUO6c1yUqvzsTk1+OwGuVsKUH6KN4241TbQ
-	QbrXgQSbeRaEBXi+b+OE7rOkB1QvvrRcXHswDPue4ZQYIGlIVQcqW4kSb2DtgOBHkLzES4WSshs
-	3PJVR7XmtFel1tH1D30EXcXpWqRlhvh8i4YViiIk1VOirwh0BhnagmfunC7Bcm8Q+K5+KM9+90d
-	OIG8SnAsxXa4jcSChoSVp/hvVGJMwiWp8Obv0zP4MqjaJhN5wrkE=
-X-Received: by 2002:a17:903:1a86:b0:2b2:4bbc:14b0 with SMTP id d9443c01a7336-2babd4cd7fdmr142843505ad.20.1778480143248;
-        Sun, 10 May 2026 23:15:43 -0700 (PDT)
-X-Received: by 2002:a17:903:1a86:b0:2b2:4bbc:14b0 with SMTP id d9443c01a7336-2babd4cd7fdmr142842995ad.20.1778480142633;
-        Sun, 10 May 2026 23:15:42 -0700 (PDT)
-Received: from [10.218.50.10] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e36c65sm92563845ad.40.2026.05.10.23.15.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 10 May 2026 23:15:42 -0700 (PDT)
-Message-ID: <6e0081a3-a28b-49e5-825d-405cc157254f@oss.qualcomm.com>
-Date: Mon, 11 May 2026 11:45:36 +0530
+        d=1e100.net; s=20251104; t=1778481746; x=1779086546;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6WETen+kRNNiAQvSfnOnKOKODS+5kYfhp3vdgbGUFvE=;
+        b=lcWbwKCIoc7RFWN12QOaf+c4nHbFvHMrG3Yq141MorROpe/ZoQeYvAxg23gmNHX9mz
+         es8HY+BqqOSZwOIQ77b6I0EtzCwmOuJcOLNll6v12ZhZ6BBVJ7DIy2HWM2XsVNOtZ7zY
+         cqGdohAgCChUycoMQXUEXp22BYYVDhP5jpi7/wdzDSgCnP3YF58ojK0+PCFfZYCyY2/k
+         f0OLAWdGtlG413bBovntlPlgC2Oy9L04hUrbVsrciyUbIgQdTRQwjW9mA3tVyHOTv2S7
+         Xg5bkRrs5Faz66yzvQiPO98f7D6cflCbdlB1/Kw7lB4oqsEFkAEIQct/kCXmAJLY5rJN
+         n/ZA==
+X-Forwarded-Encrypted: i=1; AFNElJ9PExMvPH1j83sJNgPdpcZ7Fy8psV6Px2OVs6FDgj6Y173dXYS8Ou897AJGG6uWjyn62WXKtkXGlA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwbMIgZOLr4qzhqoMbAdKBrcDnkfY04KdgiF2XEafBLKxgkYPng
+	OT3rQ5rmrwwrlc8hWc73jRvTSVAiILNI5PZcWYU2m+SVBhuUsMHv37zBb/g/hpR5pkQ=
+X-Gm-Gg: Acq92OElAobtd9lVVwDaSxahnlACZNp1ONtOdPdIMfNqn1ZLo/uG2ttTHslmYlMlwPW
+	qCNlu8Et2gNebJEb6XoCB60A1FJKZhOeEsQrlWiICvfgR5Qu0UR+kWVZGC/whuPkR/z2NiLTfDa
+	pbkFVo/d9eRjIKEX0ZMOX3/6KDG24R+/+NTZ0vMKwa2H0UEWXlQKc+Slhdle/Za5Ywsr9fhf/Qm
+	YEcc0E4xuX/bgSmJJg9C/H59EFyLGHFYJCYBJdY3PLjF9T1GEUM3snYilxSrGoQDp2USQC2qHKf
+	RuogAg+oiBPjWQWfGVlaety7DDcLIYeuNeIvuadnUhPCOQC31EwpzRfAgFzJhMMNXQOCNqLw2hH
+	r4i7CCYT/tw7ao4BETLSzUD+QU40bm7Woi3ii/d2sEUV4YbrxIV1Pb0EZYdvPqttPR9g9GBr+mp
+	kiCaRA2mP3K6gv9MB2VY+FlZY4Ibk9q0uH67cGWZhoYafI/OLsnEf13LfPNEiMGBTu9MId5hYxK
+	b7MB+uJFVrxaKbptjp/Q4Ggq/fnv6NUX2qf+7UI/8MkbRVMXqxPoEECcQ==
+X-Received: by 2002:a05:6a00:12d2:b0:837:e9cc:d470 with SMTP id d2e1a72fcca58-83a5bfbd016mr22454757b3a.20.1778481745668;
+        Sun, 10 May 2026 23:42:25 -0700 (PDT)
+Received: from localhost.localdomain ([103.158.43.41])
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-83967dbcf36sm23339343b3a.41.2026.05.10.23.42.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 10 May 2026 23:42:25 -0700 (PDT)
+From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+To: vireshk@kernel.org
+Cc: Abdun Nihaal <nihaal@cse.iitm.ac.in>,
+	nm@ti.com,
+	sboyd@kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	jcalligeros99@gmail.com,
+	stable@vger.kernel.org
+Subject: [PATCH] OPP: of: Fix potential memory leak in opp_parse_supplies()
+Date: Mon, 11 May 2026 12:12:11 +0530
+Message-ID: <20260511064213.33638-1-nihaal@cse.iitm.ac.in>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] thermal: qcom: tsens: atomic temperature read with
- hardware-guided retries
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
-References: <20260508100700.772985-1-priyansh.jain@oss.qualcomm.com>
- <20260508100700.772985-2-priyansh.jain@oss.qualcomm.com>
- <000ababe-5f9d-400c-b7b0-380ff25e9fad@oss.qualcomm.com>
-Content-Language: en-US
-From: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
-In-Reply-To: <000ababe-5f9d-400c-b7b0-380ff25e9fad@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDA2NyBTYWx0ZWRfX1OfPKYTKRoZg
- zlosYBaf3j0WgpWvP5Z9DNMxcWBuOGPbgAvARwsMkAWBC9twfmpKBn1cVGJ14x8ZRrPEQ2a1XhG
- 74pHOsSlqQuScep/mkhavi09xb6Sjk30OnN36FFZXnhKT5aI3FzQgqGkA7FJsXRHZUd48z/hy+/
- axBUmoVH6Ca7i6jxrKotbucl+emFwZ26Fk3fvR6fNUg4CWUr6zswlgvsT7HbcGqbvcJXHcn3VKU
- 1XqZMPP3y14DINc17LZuzMs5ll2FAJl7oQe1hvsLxJNYGmRJTXPE9ps8RYok8s5572oXybXxcgE
- 3sfncqG8a1t2GWGF2c24cYxwzpnAj99yc8Q4C0k67EtN8rVwG07+BayTa9otzNgzFZpemecM7Op
- J1VkYDd5NG/oxJiJZCQdIiSA9i3YR+4UdfNTg/z7QfYgxVv1G9oP6nrGlRDOqH2mhhXLcMNphQL
- PxilGD1X0dDowsdfNWA==
-X-Authority-Analysis: v=2.4 cv=dujrzVg4 c=1 sm=1 tr=0 ts=6a01740f cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=c8u1hPl0b-36Wx5Zf68A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-ORIG-GUID: W3SeejqLpNs2_fA_BcsCEVRQWEzOdKE4
-X-Proofpoint-GUID: W3SeejqLpNs2_fA_BcsCEVRQWEzOdKE4
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_02,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 bulkscore=0 adultscore=0 malwarescore=0 impostorscore=0
- lowpriorityscore=0 clxscore=1015 suspectscore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605110067
 
+The memory allocated for microvolt, microamp and microwatt is not freed
+in one of the paths in opp_parse_supplies() which returns directly.
+Fix that by adding a goto to the error unwind ladder.
 
+Fixes: 2eedf62e66c2 ("OPP: decouple dt properties in opp_parse_supplies()")
+Cc: stable@vger.kernel.org
+Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+---
+Compile tested only. Issue found using static analysis.
 
-On 08-05-2026 05:39 pm, Konrad Dybcio wrote:
-> On 5/8/26 12:06 PM, Priyansh Jain wrote:
->> The existing TSENS temperature read logic polls the valid bit and then
->> reads the temperature register. When temperature reads are triggered
->> at very short intervals, this can race with hardware updates and allow
->> the temperature field to be read while it is still being updated.
->>
->> In this case, the valid bit may already be asserted even though the
->> temperature value is transitioning, resulting in an incorrect reading.
->>
->> Hardware programming guidelines require the temperature value and the
->> valid bit to be sampled atomically in the same read transaction. A
->> reading is considered valid only if the valid bit is observed set in
->> that same sample.
->>
->> The guidelines further specify that software should attempt the
->> temperature read up to three times to account for transient update
->> windows. If none of the attempts observe a valid sample, a stable
->> fallback value must be returned: if the first and second samples match,
->> the second value is returned; otherwise, if the second and third
->> samples match, the third value is returned.
->>
->> Update the TSENS sensor read logic to implement atomic sampling along
->> with the recommended retry-and-compare fallback behavior. This removes
->> the race window and ensures deterministic temperature values in
->> accordance with hardware requirements.
->>
->> Signed-off-by: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
->> ---
-> 
-> [...]
-> 
->>   struct tsens_features {
->>   	unsigned int ver_major;
->> @@ -522,6 +526,9 @@ struct tsens_features {
->>   	unsigned int max_sensors;
->>   	int trip_min_temp;
->>   	int trip_max_temp;
->> +	int valid_bit;
->> +	int last_temp_mask;
->> +	u32 last_temp_resolution;
-> 
-> You don't need this now that you aren't altering the regfield
-> definitions
-> 
-Yes, that's correct. Thanks for pointing this out — I will update the 
-code accordingly in the next patch version.
+ drivers/opp/of.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks,
-Priyansh
-
-> Konrad
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index f96adfd5b219..c02e20632fa6 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -673,7 +673,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 	 */
+ 	if (unlikely(opp_table->regulator_count == -1)) {
+ 		opp_table->regulator_count = 0;
+-		return 0;
++		goto free_microwatt;
+ 	}
+ 
+ 	for (i = 0, j = 0; i < opp_table->regulator_count; i++) {
+@@ -696,6 +696,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 			opp->supplies[i].u_watt = microwatt[i];
+ 	}
+ 
++free_microwatt:
+ 	kfree(microwatt);
+ free_microamp:
+ 	kfree(microamp);
+-- 
+2.43.0
 
