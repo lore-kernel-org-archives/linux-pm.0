@@ -1,110 +1,138 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5127724887E
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:43:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03DA5466B59
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:45:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778521393; cv=none; b=cfHr6KHMmk74sJN9sq4qGiTZeBl107hBXUGfvf3/W+96YL9HMt/Acwuz+DzOYdXZxrStmpzemrs+Jg61XLsrrzkGeFMilBDN0HOr5gvn0UC2IZqHv9y6T4ohiz9DjFr9rS6f46SZc3eB5TZYV980csyML72lZB+kwfC8kDSVs0A=
+	t=1778521506; cv=none; b=R/R9XmMgChwE0VKiRv9BtVVvm8wT2dTeODWqIQYT7hVEO2nrZzIkhJLoK1qkOVztHUyBj9D6ZruqFIMVa1PA+s5/0jGz1HfUeskFrYcW4RKTFnWjKA/FBNqccHAendh+bdN8inPc7u07wCGQBYGp5Bzkk4bjEy3prlCWcqiPKqc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778521393; c=relaxed/simple;
-	bh=NmpEIPGRlLUzKjoLSyn8mQV0OZgocjo2yX1kNidP4gQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=BCgMtPvAQAevGpanhQ4IuJNBrhmPaDjhzeyMcCmXAJu1fQo6/gJ0lpjwDxXUe14ruqiOsCos3sZgt5hnqZhp8JYKtaW1Q4bu8xXqyHazM3FprPvt9yK3ax4OZExdlGOd3v8LcUPo2tTQJHMaE1lelToaZZgLFHiQsI0tewVhWJ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=q76H8pZY; arc=none smtp.client-ip=209.85.215.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778521506; c=relaxed/simple;
+	bh=j0xQmkUIfpgWG4NeqGarVjzRbqQTwLyRuCy9jr98dR0=;
+	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=FSTvKdFCuzR0o4yvj7BfvLwqqI44jVhNvJgtQC/H/DuTOtwq2eZt3gEvxy/r4LrHgVnRU8KYRSlNQRO8tB0BwxuzfYwG4gGRzQ8fYM04omKgNO0vpGy3shapcYbjXl42SbotADcUbrRaZ9umRHoiTMLoOR+To6ic9lufiDvtOdw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Qgjz+2G6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q76H8pZY"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c8095d7d75bso1886023a12.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:43:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778521392; x=1779126192; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=H/v/BO2s+C/N+KeMLepP9unKc4wiBqpI25gDLTzhr3g=;
-        b=q76H8pZYFvxzBv8VfcrQlsftD09mPVh7I42rTvX/G87g7Ick7WvvBHT6HKaRHqEkBM
-         Vh8b0UxZWL0IQ2foZP02BdcG3eBz3amUBlK8Esx8TOn0g/svtD/tAx6ohpdYOifggP6D
-         9WIPy2/OiqPiAsBbvRLmxxy0VSdPfM7rf73owa53Ki+fK6dU5fdAXK+XuWOCwD3s8DED
-         93FbmMi+n1i7bucTNexe7Fay5NA5Og4/XT+I2zpUlOm6/MbKLp0eIdJEsJ9cfAqKHT1q
-         tl0lchfdrW7wrWjIYM6HOOplolpFpvYr13LdUV39crK1SWEOXbWN2h+EhswmZ5TqJW0P
-         1bxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778521392; x=1779126192;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=H/v/BO2s+C/N+KeMLepP9unKc4wiBqpI25gDLTzhr3g=;
-        b=Qz0DQoI0+JUEbLSggRmbTstf6xaJhTExjTb7J7Jo7JalJFLV1U5xQMyukOSwz4Lpiw
-         etzc7n5yJqVVL8GNfhl4KjewvUp7B7kMS+mMaH517wgNyu3sXkzA2BxZUWvyaL5Qp9km
-         3BQrLLWq07+QH838H6rm04BP3KuCggxw+3S+jMb9+v5iso/pgmacaVucZE7igO4s68rK
-         FUhmmlMZn2NZD3YT7BPoMu4uJdTdlsXKCVyyh6BTKc6dQCbFIs0XUTTzQ30cTMA76SEK
-         jmVVft7I2janFTC1WSzLO9Vc6nuPgLge/OOPMchf19iEA6y4ROdmmci2HHjHuz6ZqUld
-         g0mA==
-X-Gm-Message-State: AOJu0YzXasCsrz1r2NhSkkq1MQ1bv3JAPQM3feban8JeOsgVttkYS/8e
-	qtmZimRcxF1Lc9peqD/SK79CBFlzIicliK4sm1YNUlrd4EaUY5uWATyB
-X-Gm-Gg: Acq92OHYgl+ko4TqXeELnTQAuiDf4nBWstrKD62iEZGSplyorJQtIwj7Ksf6RmdBoW+
-	8Fhr6D7XpwYmwTTAFl8JGBq+M9ZHhcBqILIP3R3fzUdiCLHV2rZ6y8Nj4yPR/u69sIecnNFya7P
-	aVluLrl/rvra7xmFyDFfUtXmEGZbUWNnFadm4lbkpQ1XDfH6WBA8DZaZJ37zWxn3DCa8tWuhj+R
-	BAV59i5e+BgxD0zwqljpvDFuUWfvoqI2y/Xko8cmlwg2KJNyPaLYpbi+hZQs1JrJLJ52KsOhSdh
-	K9IUMG1gsfBsMS5JNckG9/M9mjHYrh409TaX5bwHKYqhyGw1t17R0FseSbEZUL1pUQKXE1HrrZ6
-	0R9LQLuPppT/VytfLr2wSzOugEJShyMu2gpLocJz7bGU+hhJxmtHw9bLQ+epd7Kbjr4S/Aw0pmf
-	CWp3/Fn/R0pxiIys3sQwiaAOgq+qDXK0XfbmTn
-X-Received: by 2002:a05:6a00:4b12:b0:82c:6f07:299f with SMTP id d2e1a72fcca58-83e39c37b69mr9964792b3a.14.1778521391621;
-        Mon, 11 May 2026 10:43:11 -0700 (PDT)
-Received: from Strong10mede.domain.name ([122.161.50.8])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83965d34872sm21398367b3a.22.2026.05.11.10.43.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2026 10:43:11 -0700 (PDT)
-From: Mayur Kumar <kmayur809@gmail.com>
-To: rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	Frank.Li@nxp.com,
-	s.hauer@pengutronix.de,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com,
-	festevam@gmail.com
-Cc: linux-pm@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	kernel@pengutronix.de,
-	Mayur Kumar <kmayur809@gmail.com>
-Subject: [PATCH] thermal: imx: do not split quoted string across lines
-Date: Mon, 11 May 2026 23:12:55 +0530
-Message-Id: <20260511174255.215207-1-kmayur809@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qgjz+2G6"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 95F23C2BCB0
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:45:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778521505;
+	bh=j0xQmkUIfpgWG4NeqGarVjzRbqQTwLyRuCy9jr98dR0=;
+	h=From:To:Subject:Date:From;
+	b=Qgjz+2G6eUp43FpueeeSKkwx3MmyUEb86WE6/W89tNhYi6Dhx0yyRkC3lt2LcPPxO
+	 U+Cs68KoijTXR4VrXpzK7AiU5lRee8O1BK4w/Qu9nkRYssl0qoDTuobHVbcpkyNwtK
+	 eefU4lM/SdwypnQTnk63Li4C60g+8yGRphW00QqiwhPNxWUsJZsaGzZ8GmZoT/MDpW
+	 rAUgr3XB1CS/Kdhpsn62rHR4zXeTMHsH9PdEdGSGOv9MMnxwS1GcX7zo2P2tDzB0ux
+	 IrvTs2Zj4ahMmSMt4JZeAXrO9kFIS1yur90mqw0paKLudpPJTeHqssDwUnMuOQQ5uh
+	 pQYR3GFzB3ftA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 5C2C5C41612; Mon, 11 May 2026 17:45:05 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 221505] New: REGRESSION][amd_pstate] "EPP cannot be set under
+ performance policy" (EBUSY) when switching to performance profile via PPD on
+ 7.1
+Date: Mon, 11 May 2026 17:45:03 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: sergeyluashkov@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version rep_platform
+ op_sys bug_status bug_severity priority component assigned_to reporter
+ cf_regression attachments.created
+Message-ID: <bug-221505-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-The checkpatch tool warns against splitting quoted strings across
-multiple lines. Join the dev_info message into a single line to
-improve the ability to grep for the message in the source.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
-Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
----
- drivers/thermal/imx_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+            Bug ID: 221505
+           Summary: REGRESSION][amd_pstate] "EPP cannot be set under
+                    performance policy" (EBUSY) when switching to
+                    performance profile via PPD on 7.1
+           Product: Power Management
+           Version: 2.5
+          Hardware: AMD
+                OS: Linux
+            Status: NEW
+          Severity: normal
+          Priority: P3
+         Component: cpufreq
+          Assignee: linux-pm@vger.kernel.org
+          Reporter: sergeyluashkov@gmail.com
+        Regression: No
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 38c993d1bcb..5aaacbc5347 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -693,8 +693,8 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		goto clk_disable;
- 	}
- 
--	dev_info(dev, "%s CPU temperature grade - max:%dC"
--		 " critical:%dC passive:%dC\n", data->temp_grade,
-+	dev_info(dev, "%s CPU temperature grade - max:%dC critical:%dC passive:%dC\n",
-+			 data->temp_grade,
- 		 data->temp_max / 1000, trips[IMX_TRIP_CRITICAL].temperature / 1000,
- 		 trips[IMX_TRIP_PASSIVE].temperature / 1000);
- 
--- 
-2.34.1
+Created attachment 310089
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D310089&action=3Dedit
+dmesg
 
+Hardware: ASUS TUF Gaming A14 (2026) FA401EA
+CPU: AMD Ryzen AI Max+ 932 (Strix Halo platform)
+Kernel: 7.1.0-mainline (including patches for Bugzilla #221310)
+Power Daemon: power-profiles-daemon 0.30
+
+Description:
+On kernel 7.1, power-profiles-daemon fails to activate the "performance"
+profile. The D-Bus error returned is Code 26 (Device or resource busy).
+
+After enabling dynamic debug for the amd_pstate module (echo 'module amd_ps=
+tate
++p' > /sys/kernel/debug/dynamic_debug/control), I captured the following re=
+ason
+for the failure in dmesg:
+
+[  299.585428] amd_pstate: EPP cannot be set under performance policy
+
+Steps to Reproduce:
+
+Use a system with amd_pstate in active mode on kernel 7.1.
+
+Attempt to switch profile: powerprofilesctl set performance.
+
+Failed to communicate with power-profiles-daemon: g-io-error-quark:
+GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dio_2derror_2dquark.Code=
+26:
+Failed to activate CPU driver 'amd_pstate': Error writing
+'/sys/devices/system/cpu/cpufreq/policy11/energy_performance_preference':
+Device or resource busy (26)
+
+
+The command fails, and dmesg logs: amd_pstate: EPP cannot be set under
+performance policy.
+
+Expected Result:
+The driver should allow setting the EPP value even if the policy is set to
+performance, or handle the transition gracefully without returning EBUSY to
+user-space daemons.
+
+Additional Context:
+This issue was observed on the new Strix Halo (Ryzen AI Max+) platform. The
+conflict between PPD's profile orchestration and the driver's internal state
+checks makes the "Performance" profile unusable via standard desktop tools
+(KDE/GNOME power settings).
+
+I can build and test custom patches on this hardware
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
