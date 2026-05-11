@@ -1,135 +1,110 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2828C223DFF
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:42:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5127724887E
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:43:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778521369; cv=none; b=lcv8mLP5/9WQhyQkZ947nX9YgyIP6MYiX58Wv7cZIWDuwKi9K6Rq4QVE1FR/I7BjU1010ZvPI8duUjPeT0ruZ8334+2vhyg1Q2Bs8ulUon/rWzvzrAMLVjj8fMiquG9Jq+56cBnMbzXPiu4WZFwaSZkyjgk3lMlvuwYsIOHP/Do=
+	t=1778521393; cv=none; b=cfHr6KHMmk74sJN9sq4qGiTZeBl107hBXUGfvf3/W+96YL9HMt/Acwuz+DzOYdXZxrStmpzemrs+Jg61XLsrrzkGeFMilBDN0HOr5gvn0UC2IZqHv9y6T4ohiz9DjFr9rS6f46SZc3eB5TZYV980csyML72lZB+kwfC8kDSVs0A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778521369; c=relaxed/simple;
-	bh=4X/QVUjKUtQcwje/UzwSBopWafmJVduPiwKIdJoHHcY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=b/AVrpBck8AU3rr5jA4xB5ZCi6o1AdzrCMRKT3IRoaolkuPzX3OdDEfuqAiGRUJuUHbqfE4hNdq0rUeAt4njAqK3b/2dkVu8fx7T8QwuFqyLVoYL19fMWKz8SeOVEwB3Y2GdlLhZIAi2dD0g2r89SifwD4DQDgHncIaEPH07HzY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HDSw+BQo; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778521393; c=relaxed/simple;
+	bh=NmpEIPGRlLUzKjoLSyn8mQV0OZgocjo2yX1kNidP4gQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=BCgMtPvAQAevGpanhQ4IuJNBrhmPaDjhzeyMcCmXAJu1fQo6/gJ0lpjwDxXUe14ruqiOsCos3sZgt5hnqZhp8JYKtaW1Q4bu8xXqyHazM3FprPvt9yK3ax4OZExdlGOd3v8LcUPo2tTQJHMaE1lelToaZZgLFHiQsI0tewVhWJ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=q76H8pZY; arc=none smtp.client-ip=209.85.215.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HDSw+BQo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03D06C4AF0B
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:42:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778521369;
-	bh=4X/QVUjKUtQcwje/UzwSBopWafmJVduPiwKIdJoHHcY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=HDSw+BQo9+mKuzXiEctWMpOUYP0/KffAP1aJIKQEC8Ns5ABwyU3n35WCh41OHIxnI
-	 ApGT/pITu0evyMev9iKkAGZDbmUtQQYN/lowrqRKBTtiYwyNQaeOLhqM/s6mk2+bzW
-	 wp1K7Qz96oXMxGoinsixnXYSf+QlxSsYnyyzcFJ0NDHKUY1GVmU0IR9faGtiWyCD+h
-	 9WdmiH1FDe3wjEkrxAgjs2ntfj/Z6zCsM+9v5aq+uckEVzcmSPwz+A451DIg30imhK
-	 fa8jTUiY6clvSh26CIgQFPODycWMvpVFo3AmJqZHwOrxHurnDZxH4ej0vvDJL1JRCa
-	 ShlIE9amp9UYg==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5a8891febd2so5402349e87.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:42:48 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8MYY4WfzRJ49YyczYGD/8qoPZKEpk3ldAWSx7o6ZGHTaMwHfnbtKKYdMcuJMNMoo2uQOtdeM6kzg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxslumszrhcSXYBPZPJjyDGVXN+0Y2BzSm1xQ+0ma4QJLD39dSR
-	Bnp/ALoO8J092FUFtTJ7bDHTtLh5Oq18ZK7DcOFvD6eiaAhDYzB6IPvHSIljszRbBGZQaXuaHhV
-	yZH1rVN0TkZ7JxJ1nKxeN/AuLf74jXxI=
-X-Received: by 2002:a05:6512:33c9:b0:5a3:fdf4:4899 with SMTP id
- 2adb3069b0e04-5a887ae368fmr8237155e87.16.1778521367417; Mon, 11 May 2026
- 10:42:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q76H8pZY"
+Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c8095d7d75bso1886023a12.1
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:43:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778521392; x=1779126192; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=H/v/BO2s+C/N+KeMLepP9unKc4wiBqpI25gDLTzhr3g=;
+        b=q76H8pZYFvxzBv8VfcrQlsftD09mPVh7I42rTvX/G87g7Ick7WvvBHT6HKaRHqEkBM
+         Vh8b0UxZWL0IQ2foZP02BdcG3eBz3amUBlK8Esx8TOn0g/svtD/tAx6ohpdYOifggP6D
+         9WIPy2/OiqPiAsBbvRLmxxy0VSdPfM7rf73owa53Ki+fK6dU5fdAXK+XuWOCwD3s8DED
+         93FbmMi+n1i7bucTNexe7Fay5NA5Og4/XT+I2zpUlOm6/MbKLp0eIdJEsJ9cfAqKHT1q
+         tl0lchfdrW7wrWjIYM6HOOplolpFpvYr13LdUV39crK1SWEOXbWN2h+EhswmZ5TqJW0P
+         1bxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778521392; x=1779126192;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=H/v/BO2s+C/N+KeMLepP9unKc4wiBqpI25gDLTzhr3g=;
+        b=Qz0DQoI0+JUEbLSggRmbTstf6xaJhTExjTb7J7Jo7JalJFLV1U5xQMyukOSwz4Lpiw
+         etzc7n5yJqVVL8GNfhl4KjewvUp7B7kMS+mMaH517wgNyu3sXkzA2BxZUWvyaL5Qp9km
+         3BQrLLWq07+QH838H6rm04BP3KuCggxw+3S+jMb9+v5iso/pgmacaVucZE7igO4s68rK
+         FUhmmlMZn2NZD3YT7BPoMu4uJdTdlsXKCVyyh6BTKc6dQCbFIs0XUTTzQ30cTMA76SEK
+         jmVVft7I2janFTC1WSzLO9Vc6nuPgLge/OOPMchf19iEA6y4ROdmmci2HHjHuz6ZqUld
+         g0mA==
+X-Gm-Message-State: AOJu0YzXasCsrz1r2NhSkkq1MQ1bv3JAPQM3feban8JeOsgVttkYS/8e
+	qtmZimRcxF1Lc9peqD/SK79CBFlzIicliK4sm1YNUlrd4EaUY5uWATyB
+X-Gm-Gg: Acq92OHYgl+ko4TqXeELnTQAuiDf4nBWstrKD62iEZGSplyorJQtIwj7Ksf6RmdBoW+
+	8Fhr6D7XpwYmwTTAFl8JGBq+M9ZHhcBqILIP3R3fzUdiCLHV2rZ6y8Nj4yPR/u69sIecnNFya7P
+	aVluLrl/rvra7xmFyDFfUtXmEGZbUWNnFadm4lbkpQ1XDfH6WBA8DZaZJ37zWxn3DCa8tWuhj+R
+	BAV59i5e+BgxD0zwqljpvDFuUWfvoqI2y/Xko8cmlwg2KJNyPaLYpbi+hZQs1JrJLJ52KsOhSdh
+	K9IUMG1gsfBsMS5JNckG9/M9mjHYrh409TaX5bwHKYqhyGw1t17R0FseSbEZUL1pUQKXE1HrrZ6
+	0R9LQLuPppT/VytfLr2wSzOugEJShyMu2gpLocJz7bGU+hhJxmtHw9bLQ+epd7Kbjr4S/Aw0pmf
+	CWp3/Fn/R0pxiIys3sQwiaAOgq+qDXK0XfbmTn
+X-Received: by 2002:a05:6a00:4b12:b0:82c:6f07:299f with SMTP id d2e1a72fcca58-83e39c37b69mr9964792b3a.14.1778521391621;
+        Mon, 11 May 2026 10:43:11 -0700 (PDT)
+Received: from Strong10mede.domain.name ([122.161.50.8])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83965d34872sm21398367b3a.22.2026.05.11.10.43.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 10:43:11 -0700 (PDT)
+From: Mayur Kumar <kmayur809@gmail.com>
+To: rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	Frank.Li@nxp.com,
+	s.hauer@pengutronix.de,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com,
+	festevam@gmail.com
+Cc: linux-pm@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	kernel@pengutronix.de,
+	Mayur Kumar <kmayur809@gmail.com>
+Subject: [PATCH] thermal: imx: do not split quoted string across lines
+Date: Mon, 11 May 2026 23:12:55 +0530
+Message-Id: <20260511174255.215207-1-kmayur809@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260511163718.198335-1-kmayur809@gmail.com>
-In-Reply-To: <20260511163718.198335-1-kmayur809@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 11 May 2026 19:42:35 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jskPFOQELt+XE6DhcTxVomqzuVJF322n3n3xffbG9Uog@mail.gmail.com>
-X-Gm-Features: AVHnY4IZ1l8kOlg8qbtxD3DrpxN0No0gFFNKhd38z7wTaq2LDo9ACspXOhdr9XU
-Message-ID: <CAJZ5v0jskPFOQELt+XE6DhcTxVomqzuVJF322n3n3xffbG9Uog@mail.gmail.com>
-Subject: Re: [PATCH] thermal: sysfs: fix whitespace and use octal permissions
-To: Mayur Kumar <kmayur809@gmail.com>
-Cc: rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com, 
-	lukasz.luba@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, May 11, 2026 at 6:37=E2=80=AFPM Mayur Kumar <kmayur809@gmail.com> w=
-rote:
->
-> Clean up thermal_sysfs.c by removing a space before a tab
+The checkpatch tool warns against splitting quoted strings across
+multiple lines. Join the dev_info message into a single line to
+improve the ability to grep for the message in the source.
 
-So please do the white space cleanup separately if you care enough.
+Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
+---
+ drivers/thermal/imx_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-The permissions are correct as they are AFAICS.
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 38c993d1bcb..5aaacbc5347 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -693,8 +693,8 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 		goto clk_disable;
+ 	}
+ 
+-	dev_info(dev, "%s CPU temperature grade - max:%dC"
+-		 " critical:%dC passive:%dC\n", data->temp_grade,
++	dev_info(dev, "%s CPU temperature grade - max:%dC critical:%dC passive:%dC\n",
++			 data->temp_grade,
+ 		 data->temp_max / 1000, trips[IMX_TRIP_CRITICAL].temperature / 1000,
+ 		 trips[IMX_TRIP_PASSIVE].temperature / 1000);
+ 
+-- 
+2.34.1
 
-> and replacing symbolic permissions (S_IRUGO, S_IWUSR) with their
-> preferred octal equivalents (0444, 0200) to improve readability.
->
-> Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
-> ---
->  drivers/thermal/thermal_sysfs.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sy=
-sfs.c
-> index 5eecae13f07..7cf6b0b060a 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -82,7 +82,7 @@ mode_store(struct device *dev, struct device_attribute =
-*attr,
->  }
->
->  #define thermal_trip_of_attr(_ptr_, _attr_)                            \
-> -       ({                                                              \
-> +       ({\
->                 struct thermal_trip_desc *td;                           \
->                                                                         \
->                 td =3D container_of(_ptr_, struct thermal_trip_desc,     =
- \
-> @@ -405,7 +405,7 @@ static int create_trip_attrs(struct thermal_zone_devi=
-ce *tz)
->
->                 sysfs_attr_init(&trip_attrs->type.attr.attr);
->                 trip_attrs->type.attr.attr.name =3D trip_attrs->type.name=
-;
-> -               trip_attrs->type.attr.attr.mode =3D S_IRUGO;
-> +               trip_attrs->type.attr.attr.mode =3D 0444;
->                 trip_attrs->type.attr.show =3D trip_point_type_show;
->                 attrs[i] =3D &trip_attrs->type.attr.attr;
->
-> @@ -415,10 +415,10 @@ static int create_trip_attrs(struct thermal_zone_de=
-vice *tz)
->
->                 sysfs_attr_init(&trip_attrs->temp.attr.attr);
->                 trip_attrs->temp.attr.attr.name =3D trip_attrs->temp.name=
-;
-> -               trip_attrs->temp.attr.attr.mode =3D S_IRUGO;
-> +               trip_attrs->temp.attr.attr.mode =3D 0444;
->                 trip_attrs->temp.attr.show =3D trip_point_temp_show;
->                 if (td->trip.flags & THERMAL_TRIP_FLAG_RW_TEMP) {
-> -                       trip_attrs->temp.attr.attr.mode |=3D S_IWUSR;
-> +                       trip_attrs->temp.attr.attr.mode |=3D 0200;
->                         trip_attrs->temp.attr.store =3D trip_point_temp_s=
-tore;
->                 }
->                 attrs[i + tz->num_trips] =3D &trip_attrs->temp.attr.attr;
-> @@ -428,10 +428,10 @@ static int create_trip_attrs(struct thermal_zone_de=
-vice *tz)
->
->                 sysfs_attr_init(&trip_attrs->hyst.attr.attr);
->                 trip_attrs->hyst.attr.attr.name =3D trip_attrs->hyst.name=
-;
-> -               trip_attrs->hyst.attr.attr.mode =3D S_IRUGO;
-> +               trip_attrs->hyst.attr.attr.mode =3D 0444;
->                 trip_attrs->hyst.attr.show =3D trip_point_hyst_show;
->                 if (td->trip.flags & THERMAL_TRIP_FLAG_RW_HYST) {
-> -                       trip_attrs->hyst.attr.attr.mode |=3D S_IWUSR;
-> +                       trip_attrs->hyst.attr.attr.mode |=3D 0200;
->                         trip_attrs->hyst.attr.store =3D trip_point_hyst_s=
-tore;
->                 }
->                 attrs[i + 2 * tz->num_trips] =3D &trip_attrs->hyst.attr.a=
-ttr;
-> --
