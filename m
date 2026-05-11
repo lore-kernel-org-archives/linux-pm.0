@@ -1,84 +1,72 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B729038332B;
-	Mon, 11 May 2026 22:46:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C065C2E0925;
+	Mon, 11 May 2026 22:56:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778539591; cv=none; b=t/YgP8hlMVzsWNGtWHi8LS/mkteFiCQ5ZtfKDMkpwzv79hK0RmOOAMfbl09U9ETX0oA8JSbdTw6onL8P4XEHLsJsTt19nH9oWz///dsMV0ejcriCUjnaihbuP8VBRmRcEzftT1JaZHP3e1hxYGUvjVdql2RNwFRoMGpVgn4OPYo=
+	t=1778540180; cv=none; b=p7fp379i8RcFdsltwLxqe9lyhoAHMv1V1gx8ZQPS3ttMam2hBqXCPAbniUOYtjm5m4yDjuq/OLBpGxhmxE0cZT2QX94lktAuqpHVg9itHMxa4Aonw4YQIvstSp6qfqvzYwohnYItre9EYD4tFuzbdPHTSPIUOFDldRC8Ewh6VoY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778539591; c=relaxed/simple;
-	bh=ZSi/5KocwBQnf1OnFPbhDuhQNcsMBXqvZzwUmu60IHE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pOaYvgRwPymPJAySQE/gYnRlbFkN92BzF2ZOuKf9tGVAkZN72TlbFatbBIPfOe39vxjmICnkoZJz8VgcHPxif6u/gf0BU6a2mtlJUPlf+vDHs7M40zi17bcDphwYwnanwHMcey623oG6owtbKqCD+FTkDAQ5qNbVNOwZlIyIgDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r2laXtpN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778540180; c=relaxed/simple;
+	bh=QWVDVaeWXV4GbyWgoNQbtUfQbuZpi8pMwF5GmRCH69s=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=VsnW0vgQTR+Tw1EXp9HNztrj5vY7LjjJD93qdE3fi5NuIPWiwZzclAoP8ZlJ8eVtQuUJmi9ZQl1jNu/612dVut5p1C4K5UaK92NHDIFW2T9lq1yTvXSQhdwiYwvNhqsLzjXpiUkmzTO7G0qYOlWSn7nGAvu8h7aYMDQyrGBfk2Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aTkUrt93; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r2laXtpN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91BF2C2BCB0;
-	Mon, 11 May 2026 22:46:29 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aTkUrt93"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33552C2BCB0;
+	Mon, 11 May 2026 22:56:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778539591;
-	bh=ZSi/5KocwBQnf1OnFPbhDuhQNcsMBXqvZzwUmu60IHE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=r2laXtpN2/+dlTE6cZ37R2GPzqKnLW8SO4fJywCOcZ4LZ5qaLvahducW4aXC4jzKj
-	 rH0SCuEV4+ishUl4E7JlREPWZwH1OESXTQHYQgv96VFzohw+PMXYim3HIVD0xD4E9G
-	 Wg8U2HzDDgVXd0dUyIX/6Gb01qDzstIBfHQ5UevZcl/DdS+q6wXoTBLzGXhRn5+H45
-	 hiRWlsNW2nwB8kaXTlA2X4CiklVSUZZpopI102dNT+xxRAcJQbCZIkUCWSCTPm5Mi/
-	 kdGFr2gKO+Q3YdQq/iLMXtJi7pTISjEV6+wXxcf6+7GoMXcB8XRmSM5Ddx8+V8/k4b
-	 ukccLcDtgUgUA==
-Date: Mon, 11 May 2026 22:46:28 +0000
-From: Yosry Ahmed <yosry@kernel.org>
-To: Nhat Pham <nphamcs@gmail.com>
-Cc: kasong@tencent.com, Liam.Howlett@oracle.com, akpm@linux-foundation.org, 
-	apopple@nvidia.com, axelrasmussen@google.com, baohua@kernel.org, 
-	baolin.wang@linux.alibaba.com, bhe@redhat.com, byungchul@sk.com, cgroups@vger.kernel.org, 
-	chengming.zhou@linux.dev, chrisl@kernel.org, corbet@lwn.net, david@kernel.org, 
-	dev.jain@arm.com, gourry@gourry.net, hannes@cmpxchg.org, hughd@google.com, 
-	jannh@google.com, joshua.hahnjy@gmail.com, lance.yang@linux.dev, lenb@kernel.org, 
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-pm@vger.kernel.org, lorenzo.stoakes@oracle.com, matthew.brost@intel.com, 
-	mhocko@suse.com, muchun.song@linux.dev, npache@redhat.com, pavel@kernel.org, 
-	peterx@redhat.com, peterz@infradead.org, pfalcato@suse.de, rafael@kernel.org, 
-	rakie.kim@sk.com, roman.gushchin@linux.dev, rppt@kernel.org, ryan.roberts@arm.com, 
-	shakeel.butt@linux.dev, shikemeng@huaweicloud.com, surenb@google.com, tglx@kernel.org, 
-	vbabka@suse.cz, weixugc@google.com, ying.huang@linux.alibaba.com, 
-	yosry.ahmed@linux.dev, yuanchu@google.com, zhengqi.arch@bytedance.com, ziy@nvidia.com, 
-	kernel-team@meta.com, riel@surriel.com, haowenchao22@gmail.com
-Subject: Re: [PATCH v6 01/22] mm/swap: decouple swap cache from physical swap
- infrastructure
-Message-ID: <agJcCZuLqWwU_sSR@google.com>
-References: <20260505153854.1612033-1-nphamcs@gmail.com>
- <20260505153854.1612033-2-nphamcs@gmail.com>
+	s=k20201202; t=1778540180;
+	bh=QWVDVaeWXV4GbyWgoNQbtUfQbuZpi8pMwF5GmRCH69s=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=aTkUrt93T4INKuz/JUkst2NoH/4WTrHZDn5J6NVFkO0Sjkv21Cnt18j1Q+2KOlFLA
+	 HkueXpk/4xIJ8PsT6YeQ1Wq6Ge6Al36L+JoX1wjcDplLOtT67dYkISlPXGRwELUwZv
+	 sAmSeWIPm5V/1bDyxMjQeUdiANWWWZZ8F/NWQMNYqRoPydnalHvLGnyg+viK1hMBDa
+	 cwkIAHNtXdhP1jw5GjPkDTafDVJJPM6AyFFCsFKXbZU0xegQ15GL8sqYF8VBYfzTQu
+	 3g/fpf+u9BtLBYNIpwtsRBCQy7pjqKvEq8x91V6w3iiuqUPCnBxnpoWng5fN3A0GRV
+	 /utGGdamwtkvQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260505153854.1612033-2-nphamcs@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 12 May 2026 00:56:11 +0200
+Message-Id: <DIG7VF8XA0KX.3GLHRET0SLOTN@kernel.org>
+Subject: Re: [PATCH v2 00/25] rust: device: Higher-Ranked Lifetime Types for
+ device drivers
+Cc: <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+ <acourbot@nvidia.com>, <aliceryhl@google.com>, <david.m.ertman@intel.com>,
+ <ira.weiny@intel.com>, <leon@kernel.org>, <viresh.kumar@linaro.org>,
+ <m.wilczynski@samsung.com>, <ukleinek@kernel.org>, <bhelgaas@google.com>,
+ <kwilczynski@kernel.org>, <abdiel.janulgue@gmail.com>,
+ <robin.murphy@arm.com>, <markus.probst@posteo.de>, <ojeda@kernel.org>,
+ <boqun@kernel.org>, <gary@garyguo.net>, <bjorn3_gh@protonmail.com>,
+ <lossin@kernel.org>, <a.hindborg@kernel.org>, <tmgross@umich.edu>,
+ <igor.korotin@linux.dev>, <daniel.almeida@collabora.com>,
+ <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
+To: "Dirk Behme" <dirk.behme@de.bosch.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260506215113.851360-1-dakr@kernel.org>
+ <2e1c9a71-46e7-4036-91ac-86453564b223@de.bosch.com>
+In-Reply-To: <2e1c9a71-46e7-4036-91ac-86453564b223@de.bosch.com>
 
-On Tue, May 05, 2026 at 08:38:30AM -0700, Nhat Pham wrote:
-> When we virtualize the swap space, we will manage swap cache at the
-> virtual swap layer. To prepare for this, decouple swap cache from
-> physical swap infrastructure.
-> 
-> We will also remove all the swap cache related helpers of swap table. We
-> will keep the rest of the swap table infrastructure, which will be
-> repurposed to serve as the rmap (physical -> virtual swap mapping)
-> later.
+On Thu May 7, 2026 at 2:14 PM CEST, Dirk Behme wrote:
+> I have applied this series together with [1] on top of 7.1.0-rc1. I made=
+=20
+> some adaptions to local changes (e.g. my ARM64 TMU interrupt test) and=20
+> boot tested it. Several parts this patch series touches (e.g. PCI,=20
+> auxiliary, gpu) I might not use or even don't have it enabled. So I=20
+> don't know if this is worth mentioning
+>
+> Tested-by: Dirk Behme <dirk.behme@de.bosch.com>
+>
+> Please feel free to ignore this, then.
 
-I didn't look through the entire series, but let me ask the same
-high-level question I asked before. Instead of moving things out of the
-swap table, why not reuse the swap table as the representation of the
-virtual swap space? Seems like most/all metadata is already moved there
-in a nice concise format.
-
-> 
-> Note that with this patch, we will move to a single global lock to
-> synchronize swap cache accesses. This is temporarily, as the swap cache
-> will be re-partitioned in to (virtual) swap clusters once we move the
-> swap cache to the soon-to-be-introduced virtual swap layer.
-> 
-> Signed-off-by: Nhat Pham <nphamcs@gmail.com>
+Thanks Dirk! Any test coverage is valuable and much appreciated.
