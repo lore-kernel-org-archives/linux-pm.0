@@ -1,302 +1,474 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AB1D54652
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:03:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 342B623E330
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 05:09:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778472235; cv=none; b=cZ+GFPRdzOJZJShU7f2WlhAN/RGPXfygI87GqqSYJA8h9v11dKYIiAOmJcTlt1jiNvWN+UQb/NxAQora0a5zfxMfnDX2F4LOM+lJ0/+Z788rFigfrzpafl3DhCgMjJ0Vg3MteasUl9fO+Fp6HO5OBpkoHPuBsmTQ0iVX8npBqFA=
+	t=1778476152; cv=none; b=I6CHitdCtlOZH6vv+nJJ1rBdwthVYPifNPuqIJrHvdeCsXYZ++jthjsIQGnKhxGUZxB5uFZytaP+P1hipVN+cE4wqMx/ou4/lIAaSW3bo835oQoU3H63nrp+iPYJu2wX3GIBUfx4n+dWPuAYyNLxRmkZKPfzUUDs6BKDvtHExF0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778472235; c=relaxed/simple;
-	bh=uAX43zJY9VCL5sRVk4Ac7LnG2HwQMuKTSjfY7y46+zs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nxEOed5fa22cZZEmEzmihQ9FN2K4G3xE4WkICfFF94UFVDnNtd2Ggi4Tltp87A2ceVxzSBJen1K8+Z9Y2s4FnhEaoxQ6IRA21hxWMAVlm4hRGy2iZanFAhdhZc9g7bUYroItyUNjcUk9B7ZJk0khINbKfXD76X9zhr9g4ZNhVD8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=XFjl8Bt+; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Z8+GP5se; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778476152; c=relaxed/simple;
+	bh=VjFgkcngnDyDi/6uf8HEAoafHucYPSUi6POvzSEjLaY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=V62Q7GUldmPGlIEo6Iw7i58kzojeeiSQuzd2M4+XXOl+dywWSsjs2r2vxSSG0CI1HghOx5DCocBwLXxtbd87ep3G+m55RF9iMHk/ncqqcKEeqTTLuCqTmhLjxnPy2VJutfGrmoKv9jqlq0/UW+e+knjIjh/hyx7itA8Np5pJwVI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mzhRRI3S; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="XFjl8Bt+";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Z8+GP5se"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64AMFSeS3876211
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:03:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	yzhbiFvZW3aBsGS+wWeIcjYiFitpSQhYtRKQkrKsr+A=; b=XFjl8Bt+WFU5otkR
-	g2l8OvBYI60ndnLYJqsZyO0JWyUBTYqRnh7gHL7jguHZ2nwZ5lg/k9SSjFx1rMTq
-	9TH42bckdIAFxZslCCT0PNl/ySYUeOZNzN3cTPV2gSy15p9E2Zr+oVgDSFDepq1K
-	q3bZcFNusGa0yNZ3oo3iOSMKk20ps9WWsI8FX8jv8TCNqO02CiJHcKGv2ZKwq4S2
-	r/C5rqLZR7ONytpbLu3D3ISqOXrSyCB4AXKsy/iRZP0OfX4/zKq47+iy/1N43QVQ
-	WMcSpQtk3ycTqRWRhsDP8iSc/zxClBjCylCH9ocAnQElREwZbtJfnSMz+HTtuF93
-	G1ELKA==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e1x3k48ch-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:03:53 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ba603a7d2cso41137145ad.1
-        for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 21:03:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778472233; x=1779077033; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=yzhbiFvZW3aBsGS+wWeIcjYiFitpSQhYtRKQkrKsr+A=;
-        b=Z8+GP5seEIKMgfozD0OtYQgV4zMJ7TIv2f/GanueKkup5sx0rXHF9vXEzE/JMM2Cut
-         k0Y25O5+EnfQuOkqMb1g8HAl5m9tLeMPlJrrPT6NHikCuDpii1ZZs0Li6t/fRd5/rozt
-         CLbt0PbaKqomKZiggSl2n08X5BaQejjrxmIx6Nne8fcs9k5YPSs1P7KkzgORl+XpxG0/
-         BZdNrBJ5VMskBAwot2cfvN1nupxuIDb1us3ADIE9lh7hbQed+0eyAGaNwpa8NjtgSrmV
-         /YAndQgtVHbHS9+uf8XalkPiv0kSv4FOt4fqNzpom82ncS7Ly7h3hDGwfE136d83ukPt
-         b2Bw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778472233; x=1779077033;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=yzhbiFvZW3aBsGS+wWeIcjYiFitpSQhYtRKQkrKsr+A=;
-        b=tKVamfALBTUtIHsqjLdjN/ge5XewBGd/knLLiTBM9nB5L4MESOsQDPCtiGo9keyk+h
-         Wa4bFgkJXVO1Ei+eBF+m4rz3fCiYvdOKj7xt8pTi32D11X9ji+6ptD7vMF7eK0yBczMG
-         ShL/+HwZ+sTnVqbjGdJKsc3Y+/5Qz3PkUowfETaLa1Z/Yg4KUaNxvOYpJGjg0cNHw8rh
-         7dJzN+jMhop5egONR/ZywoP3i3ZHQEOgmOw401aj6c3DOVs6P98/z09p/VLZZ1cuQNvI
-         V/kSN6siwxcyYTQmLHTtpNh9eFk6NlAY5N23WBs4bkhAxJRzwPwtawZ8Dj7exJ2+Ks/l
-         dYgg==
-X-Forwarded-Encrypted: i=1; AFNElJ9KcWm8D7Xv9pfrnzFViBEQsnkXhwXXkm7zT+s+BICA/Rx2FZUVUliohzIlPDBXgdoEmBMFnKC97w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzBU1TwY880YUlzFzx1uvUaNLx18nLrkrnGnQU808GvSzDa7+yq
-	dMORjVISZQHWOUmIIqhihu3PcUfeOLvuB8Dh0oQ8ETO88hjl1o5FFRCwtejr9xTqDN9U3LfmP/8
-	yEmrRmUm4JYCftKlI8CWBH2+gDg5acsPsGKANyZGM+vFxUkSMkqKeeDh7Qki9tw==
-X-Gm-Gg: Acq92OF9EuxKQ9ftASMplb7QjWXTyGHG/1rcjGfmxrF1/ATHAru2Sej8EQokNmcQIYs
-	vAkrtcfa2n8MsYGmRg7aFT94tDY/o/GFrDas2M617wOK7zVuKDOWSrNQERJYoi1BBPnIOK3IO6d
-	/lZj8AqW9cI/NoBYFbY6A507+2IeW+MJFS/m1rBagRxSNys14cfUREhLkGxwhh7sNqk1/MVAbA0
-	PtwK8FWj7W/8Vf/u2UUmFmJ76XSHt2Fxz2cJsVdvSJlMpkN2r5nSM0QleD5Cx1sgPoCGl7oJwqT
-	Co9T3QigcWvRn3oZ4oNc63Ki+ypgg1eNF71TNok/B4mxiyy0pGDPIqYVq5y9EVuQ3F56w3WlE0f
-	vaxwSGpWX07iUYjyCYt6t3Dcr0fYfXZjr1xFOHNc2l5PjivMitA6umUlSUX/8X/CZK3k7iGXADx
-	ALAVWSQm1BynlYPzJsAA==
-X-Received: by 2002:a17:903:946:b0:2b0:be79:e521 with SMTP id d9443c01a7336-2babd60bbddmr133614005ad.26.1778472232800;
-        Sun, 10 May 2026 21:03:52 -0700 (PDT)
-X-Received: by 2002:a17:903:946:b0:2b0:be79:e521 with SMTP id d9443c01a7336-2babd60bbddmr133613765ad.26.1778472232260;
-        Sun, 10 May 2026 21:03:52 -0700 (PDT)
-Received: from [10.133.33.247] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e365a1sm83935845ad.44.2026.05.10.21.03.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 10 May 2026 21:03:51 -0700 (PDT)
-Message-ID: <a028421a-de24-43cd-ac80-17de9b2fc523@oss.qualcomm.com>
-Date: Mon, 11 May 2026 12:03:46 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mzhRRI3S"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3FBFC2BCFD
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 05:09:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778476152;
+	bh=VjFgkcngnDyDi/6uf8HEAoafHucYPSUi6POvzSEjLaY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=mzhRRI3SVZ1aCFRMzQ+pmz2Gs+jRAME4gQ3VM40UWafxza8TThPla3CebYvtF89/8
+	 OnKYFRpILVl6tTozQeWvQyw8Ujh0/1yKpeYNEqsiEB/kh9ENUYddxFFksgH54xgWh2
+	 RwczW6CiLAprVg+zCatORUea5sxhNKR306DctcpaOZZOzpVtBr/TBucTTO+ycb+egI
+	 YUOGT6sHKMNF6j1w/HMJtqR8kd4g4lm6ckGXIYkItq2Y1rDTwW8NoXIsiujC0cUldQ
+	 0+enev0tH7DwXdNnSEkGnYu+Xs9PT3NSU6A5qxMAj8t3WxltLLRub6a3IR3V0A5zkR
+	 xckoJz/em9igg==
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-67bc6098640so6037293a12.0
+        for <linux-pm@vger.kernel.org>; Sun, 10 May 2026 22:09:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+7LrSIPuYik0zl77IlL8R7Z6iv4bdHrftrQ7ZaFK07hzhR93M1sQQlKtPYcA9rzIn6NFeFGSrvtQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzV5yMkU5ej44DObLuviULP0jw7GGX91z58b5yxeR/zbR5ms7vR
+	TfMXh869XEpdZtaKbf+cT6bagn1ryfSozHNxDasNzsq/L12R1LGhSBOc++u3zuNuNeybE2S6u0P
+	OCo93TDoHS9F8LpNUuO/L9ixftdtscZM=
+X-Received: by 2002:a05:6402:a587:10b0:66b:f527:c69d with SMTP id
+ 4fb4d7f45d1cf-67d63d8b66emr8455569a12.8.1778476150384; Sun, 10 May 2026
+ 22:09:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease
- due to stale target
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, rafael@kernel.org,
-        stratosk@semaphore.gr, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linuxarm@huawei.com,
-        zhanjie9@hisilicon.com, lihuisong@huawei.com, yubowen8@huawei.com,
-        zhangpengjie2@huawei.com, wangzhi12@huawei.com,
-        linhongye@h-partners.com, zhongqiu.han@oss.qualcomm.com
-References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
- <cb369a6a-5462-4e6b-a132-ee016a4163ea@oss.qualcomm.com>
- <b6d995f7-91c0-4f87-82e7-87cc50faa43d@huawei.com>
- <aoo2k2uzi6zg6owrmi7qgcgjryxzk7l7f2mdo6vtjjdd576hpn@rg6zyqgn7grr>
- <80d32bdb-f661-44cb-b529-3d5ce2142af0@oss.qualcomm.com>
- <pr25udlbea4vwtx27gfzlnqzv3lmmphkjx5xj2ggzdegmd4ntn@kiytfovoifi3>
-Content-Language: en-US
-From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-In-Reply-To: <pr25udlbea4vwtx27gfzlnqzv3lmmphkjx5xj2ggzdegmd4ntn@kiytfovoifi3>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDA0MSBTYWx0ZWRfX0X5AfI8bA1q3
- LVBYGqW6YDxC/8El/n5FOpvySf9GyLRcNHwXBECCtlz5m7AcLMMbM0My2lCxp7knlcf7GhoARdf
- OubF5F/Kc9q3Y0e801t6AAY+Nfl/s+SuoYzu0xJU4z+anRndvg4xqhHqg80zYK47rW+3FWKjXsV
- S3o6UV94r8ylA63whOIELhvpY2/aDYxL9EMezK6y6VGUAEYWXgdpLB4PplqjePDZ6tt7cp4mJjT
- +7ff59bEeDNwaWVJMm4+yQjY5OO/BBUQhj99LAkjS1hoUDCnRQTniA2kwD/CezZuIhMiBD/d8W2
- 9ulGBEAPiKy4Prne9dJQjwcSQXtRHP6Pl9WSaFh9V4AV2eIsyZsPRm2s+GYxBSNoJ4LyiOTvjwT
- 6YWiwXnMwnrgbwyL/BSZv7o/KvdJ0XO9k0g+O+EzeaC7R4mp/Ib9n94Mk6t+tHmaQFhSq6FsGmN
- mdugXyoQSQhsYT7UIag==
-X-Proofpoint-ORIG-GUID: wk1MZrc2fCMpERDCzJFUrkJRKyC54zIj
-X-Authority-Analysis: v=2.4 cv=UNvt2ify c=1 sm=1 tr=0 ts=6a015529 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=VwQbUJbxAAAA:8 a=RqrBSwbPjokQlsvh5zYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-GUID: wk1MZrc2fCMpERDCzJFUrkJRKyC54zIj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_01,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0 spamscore=0 priorityscore=1501 phishscore=0
- bulkscore=0 lowpriorityscore=0 malwarescore=0 impostorscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605110041
+References: <20260508123910.114273-1-ulf.hansson@linaro.org> <20260508123910.114273-3-ulf.hansson@linaro.org>
+In-Reply-To: <20260508123910.114273-3-ulf.hansson@linaro.org>
+From: Saravana Kannan <saravanak@kernel.org>
+Date: Sun, 10 May 2026 22:08:58 -0700
+X-Gmail-Original-Message-ID: <CACRMN=fseD6-ODYnOEE42S9VKAb2F33kRv_VPYBGyPsitG2how@mail.gmail.com>
+X-Gm-Features: AVHnY4Jyso8e2fZ7k8KjZKga2UrlRCr0usLugmNfu4YcyYocZL-OkXg90ISdkts
+Message-ID: <CACRMN=fseD6-ODYnOEE42S9VKAb2F33kRv_VPYBGyPsitG2how@mail.gmail.com>
+Subject: Re: [PATCH v3 02/13] driver core: Enable suppliers to implement fine
+ grained sync_state support
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Danilo Krummrich <dakr@kernel.org>, Saravana Kannan <saravanak@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
+	Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 5/8/2026 6:14 PM, Viresh Kumar wrote:
-> On 08-05-26, 14:46, Zhongqiu Han wrote:
->> Nice suggestion! — I think it aligns well with the general direction of
->> addressing this issue and relying more on the cpufreq core.
->>
->> That said, I have a concern if we drop the decrease-path early-exit
->> check while keeping the existing condition:
->>
->>          if (requested_freq > freq_step)
->>
->> unchanged. In that case, when the system is already at policy->min, this
->> appears to introduce a governor-level oscillation, even though the
->> effective hardware frequency remains unchanged:
->>
->> Consider the following scenario
->> (policy->min = 200, freq_step = 100, hardware already at min, low load):
->>
->>    Iteration N:
->>      requested_freq = 200
->>      decrease path: 200 > 100 -> requested_freq = 100
->>      __cpufreq_driver_target(100, LE):
->>          clamp -> 200, target == cur
->>          -> without CPUFREQ_NEED_UPDATE_LIMITS: driver not invoked
->>          -> with CPUFREQ_NEED_UPDATE_LIMITS: driver is still invoked
->>      dbs_info->requested_freq = 100 <- below min
->>
->>    Iteration N+1:
->>      requested_freq = 100
->>      out-of-range check: reset to policy->cur = 200
->>      decrease path: 200 > 100 -> requested_freq = 100
->>      dbs_info->requested_freq = 100   <- below min again
->>
->> This results in a repeated oscillation pattern. For drivers with
->> CPUFREQ_NEED_UPDATE_LIMITS (amd-pstate, intel_cpufreq, cppc_cpufreq),
->> the driver may be invoked every sampling period even though the
->> effective frequency does not change. I'm happy to defer to your judgment
->> on whether this is significant enough to warrant further changes.
->>
->> Given this, may i know would it make sense to adjust only the decrease
->> path early-exit condition to use dbs_info->requested_freq (i.e. the last
->> target actually requested from hardware), rather than the idle-adjusted
->> local requested_freq?
->>
->>    -     if (requested_freq == policy->min)
->>    +     if (dbs_info->requested_freq == policy->min)
->>              goto out;
->>
->> With this change, the scenario raised by Lifeng
->> (dbs_info->requested_freq = 400, idle_periods = 2, low load) behaves as
->> follows:
->>
->>    Iteration 1:
->>      requested_freq = 400
->>      idle decay: requested_freq = 200
->>      if (dbs_info->requested_freq(400) == min(200)) ? NO -> continue
->>      200 > 100 -> requested_freq = 100
->>      __cpufreq_driver_target(100, LE):
->>          clamp -> 200, target(200) != cur(400)
->>          -> driver invoked, hardware: 400 -> 200 MHz   [bug fixed]
->>      dbs_info->requested_freq = 100   <- one-time transient value
->>
->>    Iteration 2:
->>      requested_freq = 100
->>      out-of-range check: reset to policy->cur = 200
->>      if (dbs_info->requested_freq(200) == min(200)) ? YES -> goto out
->>
->>    -> Stable from iteration 2 onward, with no extra driver calls.
->>
->> There is a one-time transient where dbs_info->requested_freq briefly
->> drops below policy->min, but this is harmless: the existing out-of-range
->> check corrects it in the next iteration. A similar situation was
->> discussed before [1], where the conclusion at the time was that
->> __cpufreq_driver_target() already performs the necessary clamping. If it
->> would be clearer or more robust to add an explicit guard
->> here, this can be revisited as well at your discretion.😊
->>
->> [1]https://lore.kernel.org/linux-pm/20231005105746.ikezg2buza2qwvig@vireshk-i7/
->>
->> The increase-path early-exit is intentionally left unchanged, to avoid
->> altering the behavior in the scenario where conservative idle decay
->> would otherwise be ignored when the previous requested frequency was
->> already at policy->max.
-> 
-> What about this ?
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index df01d33993d8..c7ec11de9a43 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -103,10 +103,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->          if (load > dbs_data->up_threshold) {
->                  dbs_info->down_skip = 0;
-> 
-> -               /* if we are already at full speed then break out early */
-> -               if (requested_freq == policy->max)
-> -                       goto out;
-> -
->                  requested_freq += freq_step;
->                  if (requested_freq > policy->max)
->                          requested_freq = policy->max;
-> @@ -124,15 +120,8 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> 
->          /* Check for frequency decrease */
->          if (load < cs_tuners->down_threshold) {
-> -               /*
-> -                * if we cannot reduce the frequency anymore, break out early
-> -                */
-> -               if (requested_freq == policy->min)
-> -                       goto out;
-> -
-> -               if (requested_freq > freq_step)
-> -                       requested_freq -= freq_step;
-> -               else
-> +               requested_freq -= freq_step;
-> +               if (requested_freq < policy->min)
->                          requested_freq = policy->min;
-> 
->                  __cpufreq_driver_target(policy, requested_freq,
-> 
+On Fri, May 8, 2026 at 5:39=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.org>=
+ wrote:
+>
+> The common sync_state support isn't fine grained enough for some types of
+> suppliers, like power domains for example. Especially when a supplier
+> provides multiple independent power domains, each with their own set of
+> consumers. In these cases we need to wait for all consumers for all the
+> provided power domains before invoking the supplier's ->sync_state().
+>
+> To allow a more fine grained sync_state support to be implemented on per
+> supplier's driver basis, let's add a new optional callback. As soon as
+> there is an update worth to consider in regards to managing sync_state fo=
+r
+> a supplier device, __device_links_queue_sync_state() queues the device in=
+ a
+> list, allowing the new callback to be invoked when flushing the list in
+> device_links_flush_sync_list().
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>
+> Changes in v3:
+>         - Re-worked the approach to use a list to queue/flush devices for
+>         ->queue_sync_state(). This should make sure the device lock is be=
+ing
+>         held when it's needed, as pointed out by Danilo.
+>
 
-Just one small concern is that requested_freq may underflow as an
-unsigned value; perhaps this could be improved by:
+Hi Ulf,
 
--		if (requested_freq > freq_step)
-+		if (requested_freq > policy->min + freq_step)
-  			requested_freq -= freq_step;
-  		else
-  			requested_freq = policy->min;
+Thanks for working on this!
 
-or use min() func?
+And please bear with my slow replies.
 
-Additionally, it seems that dropping the early‑exit checks also appears
-to be a nice side effect fix for CPUFREQ_NEED_UPDATE_LIMITS drivers when
-updating internal upper and lower frequency boundaries.
+> ---
+>  drivers/base/base.h           | 18 ++++++++
+>  drivers/base/core.c           | 77 ++++++++++++++++++++++++++---------
+>  drivers/base/driver.c         |  7 ++++
+>  include/linux/device.h        |  2 +
+>  include/linux/device/driver.h |  7 ++++
+>  5 files changed, 91 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index 30b416588617..c8be24af92c3 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -196,6 +196,24 @@ static inline void dev_sync_state(struct device *dev=
+)
+>                 dev->driver->sync_state(dev);
+>  }
+>
+> +static inline bool dev_has_queue_sync_state(struct device *dev)
 
-As designed in commit 1c534352f47f ("cpufreq: Introduce
-CPUFREQ_NEED_UPDATE_LIMITS driver flag"), a cpufreq driver may need to
-update its internal frequency limits when policy min or max changes for
-drivers setting CPUFREQ_NEED_UPDATE_LIMITS.
+Let's please pick a better name. This is too similar to the actual
+queue function you call __device_links_queue_sync_state() and is very
+confusing. Maybe something that has a meaning along the lines of
+"another consumer probed". So, maybe:
+* consumer_probed()
+* change_of_active_consumers()
 
-However, the early‑exit in cs_dbs_update() can prevent
-__cpufreq_driver_target() from ever being called.
+I'm going to refer to this new callback as "consumer_probed()" in the
+rest of my replies so I can keep it straight in my head.
 
-For example, when policy->min rises from 200 to 400 kHz while policy
-->cur is already at 400 kHz, under low load:
+> +{
+> +       struct device_driver *drv;
+> +
+> +       if (!dev)
+> +               return false;
+> +       drv =3D READ_ONCE(dev->driver);
+> +       if (drv && drv->queue_sync_state)
+> +               return true;
+> +       return false;
+> +}
+> +
+> +static inline void dev_queue_sync_state(struct device *dev)
+> +{
+> +       if (dev->driver && dev->driver->queue_sync_state)
+> +               dev->driver->queue_sync_state(dev);
+> +}
+> +
+>  int driver_add_groups(const struct device_driver *drv, const struct attr=
+ibute_group **groups);
+>  void driver_remove_groups(const struct device_driver *drv, const struct =
+attribute_group **groups);
+>  void device_driver_detach(struct device *dev);
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index d49420e066de..f1f95b3c81e5 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1101,15 +1101,18 @@ int device_links_check_suppliers(struct device *d=
+ev)
+>  /**
+>   * __device_links_queue_sync_state - Queue a device for sync_state() cal=
+lback
+>   * @dev: Device to call sync_state() on
+> - * @list: List head to queue the @dev on
+> + * @s_list: List head for the sync_state to queue the @dev on
+> + * @q_list: List head for the queue_sync_state to queue the @dev on
+>   *
+>   * Queues a device for a sync_state() callback when the device links wri=
+te lock
+>   * isn't held. This allows the sync_state() execution flow to use device=
+ links
+>   * APIs.  The caller must ensure this function is called with
+> - * device_links_write_lock() held.
+> + * device_links_write_lock() held.  Note, if the optional queue_sync_sta=
+te()
+> + * callback has been assigned too, the device is queued for that list to=
+ allow a
+> + * more fine grained support to be implemented on per supplier basis.
 
-   cpufreq_policy_apply_limits():
-     policy->min(400) > policy->cur(400) ?  NO -> driver not called
+Why not keep this in the same format as the existing doc? Something like:
+If option list xxx is provided, queues the device for the
+consumer_probed() callback.
 
-   cs_limits():
-     dbs_info->requested_freq = policy->cur = 400
+>   *
+>   * This function does a get_device() to make sure the device is not free=
+d while
+> - * on this list.
+> + * on the corresponding list.
+>   *
+>   * So the caller must also ensure that device_links_flush_sync_list() is=
+ called
+>   * as soon as the caller releases device_links_write_lock().  This is ne=
+cessary
+> @@ -1117,7 +1120,8 @@ int device_links_check_suppliers(struct device *dev=
+)
+>   * put_device() is called on this device.
+>   */
+>  static void __device_links_queue_sync_state(struct device *dev,
+> -                                           struct list_head *list)
+> +                                           struct list_head *s_list,
+> +                                           struct list_head *q_list)
+>  {
+>         struct device_link *link;
+>
+> @@ -1129,8 +1133,14 @@ static void __device_links_queue_sync_state(struct=
+ device *dev,
+>         list_for_each_entry(link, &dev->links.consumers, s_node) {
+>                 if (!device_link_test(link, DL_FLAG_MANAGED))
+>                         continue;
+> -               if (link->status !=3D DL_STATE_ACTIVE)
+> +               if (link->status !=3D DL_STATE_ACTIVE) {
+> +                       if (dev_has_queue_sync_state(dev) &&
+> +                           list_empty(&dev->links.queue_sync)) {
+> +                               get_device(dev);
+> +                               list_add_tail(&dev->links.queue_sync, q_l=
+ist);
+> +                       }
+>                         return;
+> +               }
+>         }
+>
+>         /*
+> @@ -1144,25 +1154,28 @@ static void __device_links_queue_sync_state(struc=
+t device *dev,
+>                 return;
+>
+>         get_device(dev);
+> -       list_add_tail(&dev->links.defer_sync, list);
+> +       list_add_tail(&dev->links.defer_sync, s_list);
+>  }
+>
+>  /**
+> - * device_links_flush_sync_list - Call sync_state() on a list of devices
+> - * @list: List of devices to call sync_state() on
+> + * device_links_flush_sync_list - Call sync_state callbacks for the devi=
+ces
+> + * @s_list: List of devices to call sync_state() on
+> + * @q_list: List of devices to call queue_sync_state() on
+>   * @dont_lock_dev: Device for which lock is already held by the caller
+>   *
+> - * Calls sync_state() on all the devices that have been queued for it. T=
+his
+> - * function is used in conjunction with __device_links_queue_sync_state(=
+). The
+> - * @dont_lock_dev parameter is useful when this function is called from =
+a
+> - * context where a device lock is already held.
+> + * Calls sync_state() and queue_sync_state() on all the devices that hav=
+e been
+> + * queued for it. This function is used in conjunction with
+> + * __device_links_queue_sync_state(). The @dont_lock_dev parameter is us=
+eful
+> + * when this function is called from a context where a device lock is al=
+ready
+> + * held.
+>   */
+> -static void device_links_flush_sync_list(struct list_head *list,
+> +static void device_links_flush_sync_list(struct list_head *s_list,
+> +                                        struct list_head *q_list,
+>                                          struct device *dont_lock_dev)
+>  {
+>         struct device *dev, *tmp;
+>
+> -       list_for_each_entry_safe(dev, tmp, list, links.defer_sync) {
+> +       list_for_each_entry_safe(dev, tmp, s_list, links.defer_sync) {
+>                 list_del_init(&dev->links.defer_sync);
+>
+>                 if (dev !=3D dont_lock_dev)
+> @@ -1175,6 +1188,25 @@ static void device_links_flush_sync_list(struct li=
+st_head *list,
+>
+>                 put_device(dev);
+>         }
+> +
+> +       if (!q_list)
+> +               return;
+> +
+> +       list_for_each_entry_safe(dev, tmp, q_list, links.queue_sync) {
+> +               list_del_init(&dev->links.queue_sync);
+> +
+> +               if (dev !=3D dont_lock_dev)
+> +                       device_lock(dev);
+> +
+> +               device_links_write_lock();
+> +               dev_queue_sync_state(dev);
+> +               device_links_write_unlock();
+> +
+> +               if (dev !=3D dont_lock_dev)
+> +                       device_unlock(dev);
+> +
+> +               put_device(dev);
+> +       }
+>  }
+>
+>  void device_links_supplier_sync_state_pause(void)
+> @@ -1188,6 +1220,7 @@ void device_links_supplier_sync_state_resume(void)
+>  {
+>         struct device *dev, *tmp;
+>         LIST_HEAD(sync_list);
+> +       LIST_HEAD(queue_list);
+>
+>         device_links_write_lock();
+>         if (!defer_sync_state_count) {
+> @@ -1204,12 +1237,12 @@ void device_links_supplier_sync_state_resume(void=
+)
+>                  * sync_list because defer_sync is used for both lists.
+>                  */
+>                 list_del_init(&dev->links.defer_sync);
+> -               __device_links_queue_sync_state(dev, &sync_list);
+> +               __device_links_queue_sync_state(dev, &sync_list, &queue_l=
+ist);
+>         }
+>  out:
+>         device_links_write_unlock();
+>
+> -       device_links_flush_sync_list(&sync_list, NULL);
+> +       device_links_flush_sync_list(&sync_list, &queue_list, NULL);
+>  }
+>
+>  static int sync_state_resume_initcall(void)
+> @@ -1296,6 +1329,7 @@ void device_links_driver_bound(struct device *dev)
+>  {
+>         struct device_link *link, *ln;
+>         LIST_HEAD(sync_list);
+> +       LIST_HEAD(queue_list);
+>
+>         /*
+>          * If a device binds successfully, it's expected to have created =
+all
+> @@ -1351,7 +1385,7 @@ void device_links_driver_bound(struct device *dev)
+>         if (defer_sync_state_count)
+>                 __device_links_supplier_defer_sync(dev);
+>         else
+> -               __device_links_queue_sync_state(dev, &sync_list);
+> +               __device_links_queue_sync_state(dev, &sync_list, &queue_l=
+ist);
 
-   [next sampling period, low load]
-   cs_dbs_update():
-     requested_freq = 400
-     if (requested_freq == policy->min)  /* 400 == 400 -> true */
-         goto out;  /* __cpufreq_driver_target() never called */
+This path is really meant only for situations when the device has no
+consumers. So, I don't think fine grained control is relevant.
 
-With the early‑exit removed, __cpufreq_driver_target() is called with
-target == policy->cur, and CPUFREQ_NEED_UPDATE_LIMITS ensures the driver
-is invoked to update its internal performance boundaries.
+>
+>         list_for_each_entry_safe(link, ln, &dev->links.suppliers, c_node)=
+ {
+>                 struct device *supplier;
+> @@ -1393,14 +1427,15 @@ void device_links_driver_bound(struct device *dev=
+)
+>                 if (defer_sync_state_count)
+>                         __device_links_supplier_defer_sync(supplier);
+>                 else
+> -                       __device_links_queue_sync_state(supplier, &sync_l=
+ist);
+> +                       __device_links_queue_sync_state(supplier, &sync_l=
+ist,
+> +                                                       &queue_list);
+>         }
+>
+>         dev->links.status =3D DL_DEV_DRIVER_BOUND;
+>
+>         device_links_write_unlock();
+>
+> -       device_links_flush_sync_list(&sync_list, dev);
+> +       device_links_flush_sync_list(&sync_list, &queue_list, dev);
+>  }
+>
+>  /**
+> @@ -1516,6 +1551,7 @@ void device_links_driver_cleanup(struct device *dev=
+)
+>         }
+>
+>         list_del_init(&dev->links.defer_sync);
+> +       list_del_init(&dev->links.queue_sync);
+>         __device_links_no_driver(dev);
+>
+>         device_links_write_unlock();
+> @@ -1808,7 +1844,7 @@ void fw_devlink_probing_done(void)
+>         class_for_each_device(&devlink_class, NULL, &sync_list,
+>                               fw_devlink_dev_sync_state);
+>         device_links_write_unlock();
+> -       device_links_flush_sync_list(&sync_list, NULL);
+> +       device_links_flush_sync_list(&sync_list, NULL, NULL);
+>  }
+>
+>  /**
+> @@ -3169,6 +3205,7 @@ void device_initialize(struct device *dev)
+>         INIT_LIST_HEAD(&dev->links.consumers);
+>         INIT_LIST_HEAD(&dev->links.suppliers);
+>         INIT_LIST_HEAD(&dev->links.defer_sync);
+> +       INIT_LIST_HEAD(&dev->links.queue_sync);
+>         dev->links.status =3D DL_DEV_NO_DRIVER;
+>         dev_assign_dma_coherent(dev, dma_default_coherent);
+>         swiotlb_dev_init(dev);
+> diff --git a/drivers/base/driver.c b/drivers/base/driver.c
+> index 8ab010ddf709..b8f4d08bbd58 100644
+> --- a/drivers/base/driver.c
+> +++ b/drivers/base/driver.c
+> @@ -239,6 +239,13 @@ int driver_register(struct device_driver *drv)
+>                 pr_warn("Driver '%s' needs updating - please use "
+>                         "bus_type methods\n", drv->name);
+>
+> +       if (drv->queue_sync_state && !drv->sync_state &&
+> +           !drv->bus->sync_state) {
+> +               pr_err("Driver '%s' or its bus_type needs ->sync_state()"=
+,
+> +                      drv->name);
+> +               return -EINVAL;
+> +       }
+> +
+>         other =3D driver_find(drv->name, drv->bus);
+>         if (other) {
+>                 pr_err("Error: Driver '%s' is already registered, "
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 56a96e41d2c9..6848b0a2c2d9 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -414,12 +414,14 @@ enum device_removable {
+>   * @suppliers: List of links to supplier devices.
+>   * @consumers: List of links to consumer devices.
+>   * @defer_sync: Hook to global list of devices that have deferred sync_s=
+tate.
+> + * @defer_sync: Hook to global list of devices scheduled for queue_sync_=
+state.
+>   * @status: Driver status information.
+>   */
+>  struct dev_links_info {
+>         struct list_head suppliers;
+>         struct list_head consumers;
+>         struct list_head defer_sync;
+> +       struct list_head queue_sync;
+>         enum dl_dev_state status;
+>  };
+>
+> diff --git a/include/linux/device/driver.h b/include/linux/device/driver.=
+h
+> index bbc67ec513ed..bc9ae1cbe03c 100644
+> --- a/include/linux/device/driver.h
+> +++ b/include/linux/device/driver.h
+> @@ -68,6 +68,12 @@ enum probe_type {
+>   *             be called at late_initcall_sync level. If the device has
+>   *             consumers that are never bound to a driver, this function
+>   *             will never get called until they do.
+> + * @queue_sync_state: Similar to the ->sync_state() callback, but called=
+ to
+> + *             allow syncing device state to software state in a more fi=
+ne
+> + *             grained way. It is called when there is an updated state =
+that
+> + *             may be worth to consider for any of the consumers linked =
+to
+> + *             this device. If implemented, the ->sync_state() callback =
+is
+> + *             required too.
+
+Let's make it clear that if a device gets sync_state() callback, it
+needs to sync the state independent of whether it has received any/all
+"consumer_probed()".
+
+Thanks,
+Saravana
 
 
--- 
-Thx and BRs,
-Zhongqiu Han
+>   * @remove:    Called when the device is removed from the system to
+>   *             unbind a device from this driver.
+>   * @shutdown:  Called at shut-down time to quiesce the device.
+> @@ -110,6 +116,7 @@ struct device_driver {
+>
+>         int (*probe) (struct device *dev);
+>         void (*sync_state)(struct device *dev);
+> +       void (*queue_sync_state)(struct device *dev);
+>         int (*remove) (struct device *dev);
+>         void (*shutdown) (struct device *dev);
+>         int (*suspend) (struct device *dev, pm_message_t state);
+> --
+> 2.43.0
+>
