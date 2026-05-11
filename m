@@ -1,265 +1,194 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013032.outbound.protection.outlook.com [40.93.196.32])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18B72377020;
-	Mon, 11 May 2026 13:42:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778506977; cv=fail; b=bzBw1gmds9CXJ+PP9jjDZ2uHCkCyV3GjmB3apBkSCQIxcO2HpheFr2gmwt2qDd/+8QP1FqJliXK94PkHtM3+GgxvmBQutklx/ji3MVAYChLLTLEtO7Ax3mWYwpe7vhKEPjnbtaqSo9Az3orROksGmwT4PVWEc86H1Caidq7LV+4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778506977; c=relaxed/simple;
-	bh=+yh43JQrTJZ5JZJRzWsWPmfjXSY2ul5IP9xxp7/74fA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=lflxtvXsewkgAIG+PV+rsnZj77Qp0D8HBWt4GbeATJRGCGz81GqsAcechJFUb6RPz6iwy2XkLlh3WqpZ50silXUIFSCRJJsk9LN0dTYGRrQlDDpyN+8TPIQoY6w9lpNio1wVOXPqG5FCjzdpD67o2NUNQQo60ZcbgxXd8cJBBlk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=QeAjmU8W; arc=fail smtp.client-ip=40.93.196.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD86C3BFE33
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 13:54:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778507681; cv=none; b=JJ1gjTvzBJx9iAsHkvXSpmH1Xm7QelV1+LUBu7O9KpNOWKT8PvrK4YMITmhJgxAlfpmU2nMgeQBzdI1Z2O/gOfQR5HgkAU7n6K9dKfmPS61srWM9//T92DxX87zj4wy4X+pxNjhkBdNNNlv5GmV1FpNuikfxYkhWp1XQFkXd9m4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778507681; c=relaxed/simple;
+	bh=r4olRqtT25PRvXYjfynWFNGrzUlqBkKYLbJrQ1jwD8w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oeNOX6sr64glapHbWsm25VqnEEbDw65pT2TA1FcQ7F26rHka49048ZkFcieHKQjIrgzzS/+bMWVRfycDHyOuXN4GUt0cT44VwtFyUHJw1Hitm6GBe97aPfbnrzpQSNijNKoabbec8dpaUXWSC7KTkSqbODy/4j0xQKgZKjGyLKs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Da/O+MNt; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=VY1DTFJE; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="QeAjmU8W"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LvnTjHFQNFg+oVRfvcl7hgsqkIqRK5Hr3nLaneDLVlbrpl05xxbnB83x5S4oM3C2NlIwMt1H0bbzn2Mr/BE86gL+UmYWfxMD8iqxfMYc4WPP29CrWxhd10LQkEtKtZXRiiVfEQwrR3jYDr/N55puRyBfGXsUhA1TywyR0SaN8ViJtl31hcDs7CCf5iHr9ZQ5t9edl/hHyA4dc6FXDlVNxTZ9bJW15Z8R9hZd2YvW1+f+kqmZyD+NvBJnh8ORmT3+1mK+3TsbJQJJDSuWLNsqvKFUpSRcjmGawBoltVlXSA431t2CnjgNRfjOn2GbiX0uk0i2gb+72mkyiFRGl6c0nQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AQAD9TQk2Zlh41Gc676T1jVhFnzMpjG/OBq0i7AZ+OM=;
- b=fDvV56fm2iF3tgGyHTd4sIv5/p5oaHsNxCMv5DW7vvUCfh1kOjF0sa678BebfwfqQ0yYpEva8Qt+eIaEpUuu5T1VrgA59m1//n3ZDeoqkroSStq5twxVYe+KeHLxFm9jwAIZJayh+8nVyh0wDe5xSsiDpUS/j3x+3kfO2Ft9vMmfJ11fA34uY68CfmW1WM9uz1d7bLO7a0XYRQ7EKi4vcIQVLW+4WoHTgWUTzz2hoUuiZx7jHwpsXazTyP0K2jcU4QXBrQnDX6yWrvnn279HR7kreZEYgBPr3XmGOqVGPGYJcJ5o7Uf5P4nWJu4Z+vDf1TY+72HbKpyXRxUnVm5kRQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AQAD9TQk2Zlh41Gc676T1jVhFnzMpjG/OBq0i7AZ+OM=;
- b=QeAjmU8WYSb43Gsar9y1vwPRKrJ4dYJf9NNsicmltO6aqRp71OnrHZ3qrq5NkYylFA3PpHebVkQX9prJRFmJ7YVGKgokkrp5/0mvWMhfd2XVkWCmDl6JBtbu5eIdgVDNeNP1yav9p8QIITtqEe3ahDn7jTSval0nk3OLleTAVtSX9CiZtTd7S5iExhXnnGYyB3+UM4QfwTf/lBVDTSlr9zyCKxqy8j4IGyBsxsYFwUa9cEubFuvN3HFTBz8jI4mg5sUPapLx401gND3ITkGSmTHIV7qk5QvSxLH0/0Z4ZQD6kUDvTozX5M3DHtTYo3sCpxoD+Zt1a0Lc9KkFfhTDeQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by CH0PR12MB8551.namprd12.prod.outlook.com (2603:10b6:610:186::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.23; Mon, 11 May
- 2026 13:42:51 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.20.9891.021; Mon, 11 May 2026
- 13:42:51 +0000
-Message-ID: <ddb44aeb-c810-43e7-8a37-4e61a16e612d@nvidia.com>
-Date: Mon, 11 May 2026 19:12:40 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpufreq: CPPC: add autonomous mode boot parameter
- support
-To: Jie Zhan <zhanjie9@hisilicon.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, corbet@lwn.net, skhan@linuxfoundation.org,
- rdunlap@infradead.org, mario.limonciello@amd.com, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- mochs@nvidia.com, bbasu@nvidia.com, sumitg@nvidia.com
-References: <20260424201814.230071-1-sumitg@nvidia.com>
- <a4ed690a-50d6-4bfe-8810-86a75d7b51e3@hisilicon.com>
- <bc06c3ab-0286-4e1e-a615-e704b267c21a@nvidia.com>
- <a9324a65-9da9-4e35-8c78-a054fb24bc8d@hisilicon.com>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <a9324a65-9da9-4e35-8c78-a054fb24bc8d@hisilicon.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: DM6PR05CA0048.namprd05.prod.outlook.com
- (2603:10b6:5:335::17) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Da/O+MNt";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="VY1DTFJE"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64B9A9Ev017644
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 13:54:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	vseYlASF+Ag6wSqAVjdGQAFSwfi9OF8CpgFAIXGaYxE=; b=Da/O+MNtQqC81KKb
+	o2tDoRKXnJ5kteHJ4nFROUGCl8Y6CE1Pc8jciTW/tW1RndhLyT8kTpY4gx5jsTmJ
+	OugHOx8iD84k5vPcazZqZNdAUIgKOLezIBtc41F9aiQjdvnktoxbuWMRQocOWpHE
+	rwUTJGGtot6UOPSItX1mCAlbt/gqasVvUByvHbLXrjB6BGI118Te5tnKQLpmf2SH
+	mw7jAAomahMYGGs+HIKityAgAYGMyKCQHGGLcgexGNUn498JrorOqEMAYTtU/Frf
+	otD6E0M4bUI/7a2ggBSYA/GTaXodHkbscTxNbAQ8rZaEziEcwQp2peC58uTpdW8z
+	rwWtjA==
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e37xfsy7a-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 13:54:38 +0000 (GMT)
+Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2ba603a7d2cso47479655ad.1
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 06:54:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778507678; x=1779112478; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=vseYlASF+Ag6wSqAVjdGQAFSwfi9OF8CpgFAIXGaYxE=;
+        b=VY1DTFJEoT0bRXi8Hz9aed4pM3cqVlNppo9Ju7xEhtNuaLn1aIxSmOj5J27umRamwY
+         afMPXhixWhInweFIgpETWpNg/0A0SiDPOMgjYpngQ1fTHfzBGs2YI0YVK+8janvNJbG9
+         yJw/Avr3cA580b153yVLDG5dRLHNqqQn5GJZB/cAVN/660615KrFdhSKxfOFuGF7yeha
+         G4bOYSM/J0UZPtOhzGz9lPE2Lp/shDEOX/qRIiS2160RJqLWxCnjb2aA/l+h6hle5VPL
+         zOFgPB9Yo+mM+jbHLnzc46FsjU9wZ8nYLS09JqohS07q14OHIGhPVm1mFucNBuRSpo8o
+         5Bag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778507678; x=1779112478;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vseYlASF+Ag6wSqAVjdGQAFSwfi9OF8CpgFAIXGaYxE=;
+        b=etNpu5RXMsh8gP2h7sDxJ2O43i4QPNiwwOqiodWR6qQxOU5TDKyWrEDCWm0itt04+4
+         lwO0GIlaxPNOSCH34UK/ic6pRrA84DUWyywEo/iAMXW+1A+5PKeWJCZwg04QIXuYNe9j
+         8PwlEw2o0H3tPZEKTzsITSgy7dsPT2dQgFjgGliQvIsXflN0YRz1hi3BbBLSWzppOVr0
+         mYuzKs7pvsV65jTtC18HvmltuUV2sgxLptv+AF041N54RHUnU5TgLlWb2uetyB9WIcKW
+         t/fXGsIxEzip3E63TnhASfwlrRLFEmPef02+GZ4YDe1f16w7eEa6VZO8g5omDPPosQyi
+         Bmuw==
+X-Forwarded-Encrypted: i=1; AFNElJ/IJ2dSdnUXn6T3frRwPLA/WJn/AHsTVJGA/+NvPFC8ERzGWyKRTuIdU1obrEYp/rgRDQBGXFfFpA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw0mrVgbj6QduKxATpayl2Jcd9qFTSJtdjtz5T4NK8zUo7UFwFc
+	oCHv6fdMr7gYnK2iDsN5oqIcfRAXjRNVWc82jITo4xEu7LeO+WfsaEfY+u7lIb3a9A3jLYiIhD7
+	8InYr/LahmPj3TuYmQ9EUttlqWPxfty0VcBxKK3MfHdLCpV0mZc+xZoKBtGu3Sw==
+X-Gm-Gg: Acq92OECvfNz/T/bp954HivAi0fVy7mXBHcyvMQrhD3GAQp6Wp8dP4B2HNYyknSZpPN
+	nVEp36C9ERyi0UjTu3V99XDCqXhwx83vLTKjr8vV7C374dC9W6H1g2dyizCNNaX5LV7xg2+z/uP
+	1w7qj/rspEoq+e82VXbBuB4YSl/3ke7jaWz8eYDNFkXs2L+8LR8q39Q8iDtmFfmckcz8nGMtohN
+	WGuWxjghK6njd+Hq+rNSFex3bI12PJV+t7DkV38Ka04JNdwMpm5fH8khHtvEq2AeuonYEGDISGN
+	2G2oH7g+BjDJCuXqyrNc32meHBo5KZAw5Y8g8mmopNOT32ujCx2DexdcyQHfymojyJWtekRCiou
+	oo2RwxAf/qwL1OeKuV2cFhGevgIDaSZ1qZ7XD9v1gqasJoTr5Lxk7JUXp65WTMSCEXwuur+OkIX
+	VAGUaLWKDI2Uwal6sOeA==
+X-Received: by 2002:a17:903:4b03:b0:2ba:21c2:d6cb with SMTP id d9443c01a7336-2babd4bdb6dmr161931155ad.16.1778507677833;
+        Mon, 11 May 2026 06:54:37 -0700 (PDT)
+X-Received: by 2002:a17:903:4b03:b0:2ba:21c2:d6cb with SMTP id d9443c01a7336-2babd4bdb6dmr161930925ad.16.1778507677317;
+        Mon, 11 May 2026 06:54:37 -0700 (PDT)
+Received: from [10.133.33.247] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d27109sm106388885ad.1.2026.05.11.06.54.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 May 2026 06:54:36 -0700 (PDT)
+Message-ID: <ea8bbb35-0fc5-4d45-9c9c-577e97282afe@oss.qualcomm.com>
+Date: Mon, 11 May 2026 21:54:32 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|CH0PR12MB8551:EE_
-X-MS-Office365-Filtering-Correlation-Id: fa91d808-8d45-4f03-834c-08deaf6331ea
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|921020|22082099003|18002099003|56012099003|3023799003|11063799003;
-X-Microsoft-Antispam-Message-Info:
-	xGIDo4h/C+eR+vm9Ya/X5gsoLRzxf/8zNE6ggCpGyKn2AmH4pvYEV8Q+J+bzJ2nzxTrf4PNc7TONsYnrt1q1YnfPexW92oWuNTg1aTy25mDgjpG5xLXUfBeigoGrLfoh5JI+VMMqnKmzVqSmSCHnEJnaoWlaZLYdpvAJGw767v/HfpBJryDtW+sg0fItAI+jky7xWH+1ufHcOxcs/9Sm8t00gCV8l/ik0dozQeo8Jx/NhHW2+0SCiu/Zfdkiw9BZMCOA2l3DP7sJYNczQ+lZJcKKlSCeR4W2vhz8PEfhUKhgPh8u1t3er1t7qMmdI0TnuDcti30CsIuzzBo49cUPEOwCxGO1ffzyPXUGIsX6b9Qhm6wWyeFitX3rHtrL9xhKXxjSgPOj4g4Kqr3nQbtBtpLtkhDY9cywoa6sYEPjykfYgcBMBHAfpd9P3Md3L27kfEKdcgio20UmsQWAJyt7THFOoCy7cuUUyfH4fCeERAU/0WP3BfqDsQSZ7rEx0Rs9RbOPYpZ5J2uVN9B1lswOAWUxby5L0FDMgw53AYZ6ZSF8qRAAQF1YEATcu6FD7iStIZE4wndQdk1job1haX78OxQdfAjUvak/5y/ljfn6d57iSjW9D0xNA9oYTtiXf3ay7+B/aOvTbPRBsyLGO/c6dBlyxiqHJ0im/2bYckievxk/Ai8Wx7S2FCiETUQnbQZeiSU0hnaQ6V7m+dpebCOMj8gFfSA9rpMti5rV+u27jdeUqbbWqk/fn7nv11DfzSgf
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(921020)(22082099003)(18002099003)(56012099003)(3023799003)(11063799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?b2NINHZZUlI1L1RneVJiNjU3K1pjdVpsQnNUS1RJM3ZFUVYySStxSmVUanFz?=
- =?utf-8?B?VlRpb3VLbzVad1Q0ZW9YMHoxSWRDWUUzYm93NlIzZXJFUTVEUERaalN6ODJu?=
- =?utf-8?B?K1hOZXJlekNzRHp3Z09IN214alpYeTlDZXJIckZYRDFYVUJaMm5QSFhZZEJm?=
- =?utf-8?B?N1JmVGRuNHFjNDIzVmJyNElBSjZGdlpSMFlxOERiL25laGRIRllVRGtqVE5x?=
- =?utf-8?B?TEJlL0VvcUpLYk53OUhQVjlxcUsxaHVaVmpaUlcvdVRSeHJXem1leXZ0MEhm?=
- =?utf-8?B?M0MyWlNmS0I0YlFVU3A0ZEt2a0h2c09TUjF2ZzRnYXJzNGhEYlNMaDZzdHl4?=
- =?utf-8?B?MWU1dTBPRmUxbW5vUFl6M2Fxems1R0pvOTUrbzJ0Zzc1U1p0dHM0K2dtNitS?=
- =?utf-8?B?b1VqUFQ1MEtFZGxIcnRhQmdZTjh6ZWRlRm00d3ZkSFVwZjViazUxN1ZnWGtW?=
- =?utf-8?B?MlE2YU9QZGY5VDdBcTMzWTBQdDJVOG1BQm1VazRUNWtCMGVEcGpnL2xDeXRi?=
- =?utf-8?B?N0FOV09HU3FQQURYdEV2VFZQd2tqSlRBd29lVjlVVE4zWUo3SU55ZDlWeFFo?=
- =?utf-8?B?dzR5T1hwQzZaWWVDQ1RjK1M5bU9qTXFuSFVWRnlxMEVtU1BxZmJjbWtJbDdu?=
- =?utf-8?B?UVRMby9pWk1mc0NqWFhLVDNaTEMySjkzcG50aExLVkpYakx3NFJEMDlwR0J1?=
- =?utf-8?B?WVNLK2F1SUNiUEdQTCt3MlZpY25QbTdLYVlyNmpZbFNoRzl0YjFBTHZHdC9D?=
- =?utf-8?B?QTdSb0I2c0ZER3FzbzFQMU9LZFozaFdlQXQwbjF6aU4zVWs4aXpEb3BQdXhB?=
- =?utf-8?B?ODhiNG9BbXVxSm42dStSY1V3SVRMaVJwQTdpQnI4NTJKUmhyQTJjdVFWSG41?=
- =?utf-8?B?dVk4UlVMM1JXT21KTDlVTURsT1BUNzZiNUtETjluclU0NkIrUUFFOEdTMUF2?=
- =?utf-8?B?SXJtVHRVT05MNCtKRXJXdUhadm03bm13QnVGcmV0WXM1Z083YUM5TEN0L3Fx?=
- =?utf-8?B?UngwOVlPOXlTcDNMaGp3Qk5VYWdobjRvR1diMjlJWC9MTXFlS0pwazZLUGZE?=
- =?utf-8?B?ZmNTS2pkYXZNUkV2Q0xWTkgyRk05YjErbUU2WTE3UlRCU0EvV0Fxc2FGZEsw?=
- =?utf-8?B?VkV5N1RIWjR1ZEJRWGxaQW5oR0JaQjF2bEZRaGgrejl0QzFiSTB3U0trci9m?=
- =?utf-8?B?SnpYOHpsaElob2k5NGZjQkUrMkdPYmR4dTZERmtRMTdCMzNRR2Q1V3dIYWxh?=
- =?utf-8?B?QkZVT0tDaEFZRHRnYkwzd1gxRjhjSStTM1ZUeXgvY08zWGQ1N3ZUWkVudUo0?=
- =?utf-8?B?VUpKR2RNRHU2NlJJSDYrZzNVY2tQRktJMlNXUVhBTWZXNWE3blgraUxYYzlR?=
- =?utf-8?B?OEJkSnM1R2pURE9MVFA1OGVCSDhXVnBrZWxzOXBSZDZIVFFYUkRSeGdiMS9Z?=
- =?utf-8?B?Sk10TERjZWY4MTdZZDU5dWEvY2V4eTNoeFhkQVU4NDhOS0NkdkpYU3Nxa3VY?=
- =?utf-8?B?YUpXZ3BNV3BtQTZRTTR5VDFFTnJYeG03c214TnVEOGp6cTJaSTkwZFIzRjVZ?=
- =?utf-8?B?VENSUEdBYmk0WEhvaHorMnJrUkN2YndxQzQzL1RUTUNxeUIyaE94RGdibTYw?=
- =?utf-8?B?K3g1R2xaY3VhOFpuVTMzemErdWZ0aUdFa0Q5QkcxOUZDaFZnZmtXOFJCclhs?=
- =?utf-8?B?dkxncGowdWVtdmJWVVA0U3JBZmFEWStHbHRQZGZDRVFLV3ZzMEVieG1IMCtC?=
- =?utf-8?B?ZVJXU3A3UFRSSzNXdkJzZHFmbmFCZWdYQ2luN3A0QzQrYmg5ajNOYWw4TFpi?=
- =?utf-8?B?Y21uMWljNURFZVhKbk5HT3pIVTM4OGpWbkxvS1lqeEYwRHV6UUxoL3ZPMWY5?=
- =?utf-8?B?RG4xK0hyV05RRGtmS1V0VzE2UzJBWkcyUnloZkVBQ1h4V0hVZVdxZjRSMDgr?=
- =?utf-8?B?bUEzM0VYRDNvUmhza0s1T09mWnZpWmY3YXJFQzgwcVZQcEhlcm41biswNWgr?=
- =?utf-8?B?SFZqQ3FVMFEyNjFJM3BHNFduSGpraWZDbVI4ek1ucUNBQ2NibU5QWUM2OG9C?=
- =?utf-8?B?czNuYnI5VmNySFdsUkFzS3RaM1MzT3U2d1FPKy92QWQyengvMlZVZW5QQVpi?=
- =?utf-8?B?OTRQbFFpU2FIcVlXMElCckJSVGRDWUZiMC90MXZmSEthaWF6T0tRampRY09J?=
- =?utf-8?B?RTFVZEtaTVFGQktDV294ckFTTlh4WnBQajN4TDJQdkxjM0xmbC83Qm1sc2di?=
- =?utf-8?B?UHRMWDk0dHJzYVduQWRhMk5ObWhWUmdEcVhqQjhFalFJMmdiVlVnRksxdnF3?=
- =?utf-8?B?MlMvMndHZ01kT0ZGZWMwQkJUV2ZSRjNPYTBCeDRteldTNmF1NTQ5Zz09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: fa91d808-8d45-4f03-834c-08deaf6331ea
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 May 2026 13:42:50.9066
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6e+B6aOt8Lapu3V3Uc6/xdfEi3pM6WkAtjSFPHpIOIvQwRnycmvc1OzGFcaAS5u6ejkTSkGblPV03k+HURFeiw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR12MB8551
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] cpufreq: Fix hotplug-suspend race during reboot
+To: Tianxiang Chen <nanmu@xiaomi.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, lingyue@xiaomi.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        zhongqiu.han@oss.qualcomm.com
+References: <CAJZ5v0ie54h2aK05qNZTWNw5bu7GZDgsxM55KSsuF=ReLMkm-w@mail.gmail.com>
+ <20260408141914.35281-1-nanmu@xiaomi.com>
+ <b3cabf3d-7672-4816-91f0-e6fafd9db4d0@oss.qualcomm.com>
+ <20260511111407.455-1-nanmu@xiaomi.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260511111407.455-1-nanmu@xiaomi.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=TqXWQjXh c=1 sm=1 tr=0 ts=6a01df9e cx=c_pps
+ a=JL+w9abYAAE89/QcEU+0QA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
+ a=EUspDBNiAAAA:8 a=QsNdl-TZesgADIufeKYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=324X-CrmTo6CU4MGRt3R:22
+X-Proofpoint-GUID: Anmv6dB651QsnlWKnAfhQdgCUJ3hvpKW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTExMDE1NCBTYWx0ZWRfXwkZHiqfrw3uS
+ PPrZFJ1r74dGoLmthzArhTbDRDfTuMCe/0859Ay1dCCoUWmqZ+taK9bmsFdM1ht/y1U6ieKL4vB
+ aqzeUWC1+jviGOdJ2JtxckREORsU4Snq70lQjGOaX5aTIpxiIPbooML9G4fJYsMnGshJmF2zaTe
+ zpCd/WFGVFCRSb+XFVUKFW/laFDlVedrvRIrbxRSHUJDxEjN3TTRfLejTecXb2ogAnzcs2B1ZVt
+ PJhorFvutyYVUC7fgH+ssc1kyl8z+0G775r54ydZX+v/6+9dLWPdKBqUnKOR+wea6yhToXT9xi/
+ VnDreBNsMIlwua8VoG9A3AWTE0RRGZ4ETtlxubBBH99LztlND45NUi1lnrMGwxbA40H2e0oeJjy
+ jCCIlDf0MoasfMMvzccpKXi4Xm2yIgUoyqNgJhoZDS/9V08w2wdI1Sio9stcuI16THRgfqHxUoP
+ kQKpisSCudxcRkxOZ1A==
+X-Proofpoint-ORIG-GUID: Anmv6dB651QsnlWKnAfhQdgCUJ3hvpKW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_04,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 phishscore=0 lowpriorityscore=0 spamscore=0
+ clxscore=1015 impostorscore=0 priorityscore=1501 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2605110154
+
+On 5/11/2026 7:14 PM, Tianxiang Chen wrote:
+> On 4/14/2026 10:44 PM, Zhongqiu Han wrote:
+>> May I know did you test this with lockdep enabled? Specifically, does
+>> the new cpus_read_lock() -> policy->rwsem ordering in cpufreq_suspend()
+>> trigger any lockdep warnings? Thanks
+> 
+> Hi Zhongqiu,
+> 
+> Thanks for the review.
+> 
+> I did test v2 with lockdep enabled and was NOT able to reproduce any
+> warning.
+> 
+> No circular-locking splat or "possible deadlock" report was observed
+> in dmesg across multiple runs.
 
 
-On 08/05/26 08:03, Jie Zhan wrote:
-> External email: Use caution opening links or attachments
->
->
-> On 5/5/2026 8:29 PM, Sumit Gupta wrote:
->> Hi Jie,
->>
->>
->> On 27/04/26 13:54, Jie Zhan wrote:
->>> External email: Use caution opening links or attachments
->>>
->>>
->>> Hi Sumit,
->>>
->>> In general, I would expect this parameter only toggles on auto_sel by
->>> default.  IIUC, other CPPC configurations (min/max/desired perf, EPP,
->>> enable) are optional and not closely related to this.
->>>
->>> Why including those stuff here?
->>>
->>>
->>> Please see other questions inline.
->>>
->>> Thanks!
->>> Jie
->> These together provide a known, predictable autonomous mode boot.
->> min/max/desired seeding ensures HW has a known starting bound (BIOS
->> may leave them unset).
->> EPP=PERFORMANCE_PREF is needed as BIOS defaults often bias toward
->> energy saving, and admins on many CPU systems shouldn't have to script
->> per CPU sysfs writes at every boot to undo that.
-> Hi Sumit,
->
-> The min/max/desired perf might be a slightly different case, but the EPP
-> value should probably follow the default if there is?
-> Otherwise, users may complain that their BIOS defaults don't work and find
-> out it's driver's fault.
->
-> Alternatively, we may also make an assumption that we ignore BIOS EPP
-> config, but not sure if that's suitable?
->
-> (Perhaps let's just discuss in the bottom trunk because the main issue is
-> pretty much the same.)
->>> On 4/25/2026 4:18 AM, Sumit Gupta wrote:
->>>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
->>>> CPPC autonomous performance selection on all CPUs at system startup.
->>>> When autonomous mode is enabled, the hardware automatically adjusts
->>>> CPU performance based on workload demands using Energy Performance
->>>> Preference (EPP) hints.
->>>>
->>>> When auto_sel_mode=1:
->>>> - Configure all CPUs for autonomous operation on first init
->>>> - Set EPP to performance preference (0x0)
->>>> - Use HW min/max_perf when available; otherwise initialize from caps
->>>> - Clamp desired_perf to bounds before enabling autonomous mode
->>>> - Hardware controls frequency instead of the OS governor
->>>>
->>>> The boot parameter is applied only during first policy initialization.
->>>> Skip applying it on CPU hotplug to preserve runtime sysfs configuration.
->>>>
->>>> This patch depends on patch [2] ("cpufreq: Set policy->min and max
->>>> as real QoS constraints") so that the policy->min/max set in
->>>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
->>>> during init.
->>>>
->>>> Reviewed-by: Randy Dunlap <rdunlap@infradead.org> (Documentation)
->>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>>> ---
->>>> v[1] -> v2:
->>>> - Call cppc_set_enable() unconditionally so CPPC is enabled for both
->>>>     OS-driven and autonomous modes.
->>> Why adding this in v2?
->>> This looks like a separate issue since setting CPPC Enable reg doesn't seem
->>> to be related with autonomous control.
->> In v2, moved it out of the auto_sel specific check.
->> Agree that cppc_set_enable() is general CPPC enablement and can be split
->> into a separate patch in v3 if preferred.
->>
-> Yeah it should be a separate patch I think.
->>>> - Init min/max from caps instead of cppc_cpufreq_update_perf_limits()
->>>>     as policy->min/max aren't yet populated.
->>>>
->>>> [1] https://lore.kernel.org/lkml/20260317151053.2361475-1-sumitg@nvidia.com/
->>>> [2] https://lore.kernel.org/lkml/20260423084731.1090384-2-pierre.gondois@arm.com/
->>>> ---
->>>>    .../admin-guide/kernel-parameters.txt         | 13 +++
->>>>    drivers/cpufreq/cppc_cpufreq.c                | 89 +++++++++++++++++--
->>>>    2 files changed, 97 insertions(+), 5 deletions(-)
->>>>
-> ...
->>>> +
->>>> +             policy->cur = cppc_perf_to_khz(caps,
->>>> +                                            cpu_data->perf_ctrls.desired_perf);
->>>> +
->>>> +             /* EPP is optional - some platforms may not support it */
->>>> +             ret = cppc_set_epp(cpu, CPPC_EPP_PERFORMANCE_PREF);
->>> Why setting this to PERFORMANCE by default?
->>> A platform can have its own default EPP value.  This would override that.
->> The boot option targets performance oriented use cases on many CPU
->> systems, avoiding sysfs scripting across all CPUs on every boot.
->> The BIOS default EPP (often biased toward energy saving) would otherwise
->> steer HW away from that goal. Admins can still re-tune EPP at runtime via
->> the existing energy_performance_preference_val sysfs.
->>
-> Yeah, avoiding scripting makes sense for sure.
-> The thing is how do we do this nicely.
->
-> For now we need to consider follow either the BIOS default or the driver
-> default.
-> They seem to be exclusive since there isn't a clear way to support both at
-> the same time.
->
-> So, are we going to support the BIOS default case?
-> For example, users can config a default EPP in the BIOS setup menu.
+Thanks for the confirmation.
 
-To consider the BIOS default case, we can extend the parameter to accept
-an EPP mode in v3:
-- cppc_cpufreq.auto_sel_mode=performance / =1 (EPP=performance)
-- cppc_cpufreq.auto_sel_mode=default / =2 (preserve BIOS EPP)
+> 
+> My reasoning for why the new order should be safe:
+> 
+>    * The patch establishes  cpus_read_lock() -> policy->rwsem.
+>    * The hotplug path already holds cpu_hotplug_lock (write side,
+>      via the hotplug core) before taking policy->rwsem inside
+>      cpufreq_offline()/cpufreq_online(), i.e. the same direction.
+>    * I grep'd cpufreq and did not find an existing path that takes
+>      policy->rwsem first and then acquires cpus_read_lock()
+>      underneath. If I missed one, please point me at it.
+>    * cpus_read_lock() is a percpu-rwsem read side and is re-entrant,
+>      so even if an outer caller already holds it (e.g. via a pm
+>      notifier running inside a hotplug callback) this is safe.
+> 
+> May I ask whether you have actually observed a lockdep splat on this
+> change on any downstream tree, or is this a precautionary question?
+> If you have a specific call chain in mind, I would like to add
+> targeted coverage before v3 so we can nail it down definitively.
 
-Thank you,
-Sumit Gupta
 
-....
+This was mainly a precautionary question on my side, to make sure there
+aren't any hidden locking concerns. In my experience, running new
+locking changes under lockdep can be a useful sanity check, so I wanted
+to double‑check.
 
+
+For context, none of the existing cpufreq driver .suspend callbacks
+currently invoke cpus_read_lock() so this does not affect any existing
+suspend paths.
+
+
+Looks okay to me.
+
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+
+
+> 
+> Thanks,
+> Tianxiang
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
