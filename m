@@ -1,68 +1,69 @@
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com [209.85.214.195])
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EED1C3B4E9A
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 07:57:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 569AD37D11A
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 08:15:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778486242; cv=none; b=shiTm9/OABdYMeiE+oh1pOvzAGrlZkch9nPtWgoffQIdWcKPUMfte+caV+ZhfDHK+ZNcWy+rwhtuvli+Y+zW6paLDoZa0kl0z33DGWwchX0/Rpkx3n90+FZcpCDTM1K6sB8fNv5tTgWjlvmdwwqpL8ULaROTRKCU+5zETjtiwlI=
+	t=1778487315; cv=none; b=tYTnLy9MphZcJujmJyorfp2Sn39wBNLtBw0NlTI5IRqZ+qVe0jFwCAyKL75EvYZ01sskqAWdodyzVLVCiJMjtScHGNrZdPfY78glhOo+uA4obWm4DRPjMdj8vz3h8L2ksa9c/5vNgVAlLCM70Ey0SR2zK7uJgRaZ98CQbw+IW9E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778486242; c=relaxed/simple;
-	bh=ru3duGHXDkVmv8JGCmgXRMljYeKtJwyvnVrIDnm5YQA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SkN7avxX1I80iz6WpTn7o9CMlwWadArhiGouX273teFaijzX5ytYaxgd9uDe+LlEg68pX1yhtvwaefHVL2/L7ji4xN3uL7BvW+pAhS8zuIwZ+gUXcYtA+LVQMwTK3bTHKwTD3lkoN16o9h+qkqpd0GloEp9hdwxRUBSf1QpeC3s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.214.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+	s=arc-20240116; t=1778487315; c=relaxed/simple;
+	bh=wkfiffLi52YIzZgjn8/lfOs6K6OA7Q9OlhRyWbZa7TE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ORWPiTS0BPh8cL/wdfhN6Ezqm2KCJrZAdZHD5rYnW5LCGjNHRAiU0jq8dkQ/w8Wgeqx0GFRMx7uvMk46rSEiR1t+9dsTpHahaqWXFFZVZR0JXuVsb9EbU87reu4gmfiXsOd5bmY+KWifDzdonSWz6fS8neL7BdbUEtCCzRDsmMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NrrdUqry; arc=none smtp.client-ip=209.85.128.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pl1-f195.google.com with SMTP id d9443c01a7336-2ba928852a5so26066655ad.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 00:57:04 -0700 (PDT)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NrrdUqry"
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-48a7fe4f40bso46422435e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 01:15:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778487301; x=1779092101; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=9cpOYK/PWnBE5Ev+XOjugs5UodjEu5rWKkqqtc/AIb0=;
+        b=NrrdUqryh3HhSUyj3XMKRxQQLk7VYDSLMQ3bQlsK/UspvW/CgaBY+wDcT5k8gVVdTk
+         80OuTEQfQk8pJQL6MQokEsnjFNLS+nNRlCYJA1HBAmiP+d/3IeX0go2ajA9XHXhhu/o8
+         Ej0lLNxjhRp1RtEgfDXotzzrPd0rO7SOmBaaNT9KuBhjuv+n1uiv9IXUe68nvGPFezNM
+         fN0vNiUlBWxzmtnUGiR+hp7FGkCiNO4iRaSx3Q72FpFkuVtoPOWq4ARmaX1epWejXwjE
+         PL5/hSVryMiPXRQUz8EGugb7FBXvo21ATTLhYvsSXzbeob5SuEJcVN7RiLVZb0UenOSd
+         VApA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778486222; x=1779091022;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=dtfb9HyJCOsyqLRximz4+i4Nhc4/ec2A3CErNEubLZA=;
-        b=onAKe2hD4nxTJ2Dho8U52J/aPvcEfDdoKq/ydzsLi51mJeMalL8vARsBpwwvFBXUsT
-         omXHhO3w4ZlckglCOG8mHSZzDyNqxxqoWb9vI++jBzilXrGrhhUGoajhYUhVt8v62FDh
-         hH0sVAkWLvjKPjdrf4B6rVYeZBhjndscR+HWC5Gokq3hhXMZoLJ4Y3Xsc7J5VtNIfef5
-         E2ekOhgvR4eJlRcnJt9zBmUPGfdifdFgODS7Jap9Y9O6xWPvTmRNICRfvkAA5ZidEHHb
-         Zbw1h5+umkYrIeAWf7BxsU2mH+k4wtMNs84ivH4xT7eFDoHR7LsR5ZwbqBVShz2kacvm
-         ZWmA==
-X-Forwarded-Encrypted: i=1; AFNElJ/ofe5/wBlrXNhynqUMcerx37F734fU0Yg/Mj1R0K/xn6KKj530WwkKwf3F6uA9amVwN4qKhs/X5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywo0OdJK16f5aCDan76csHV3MEt9t29aYdoanFb2FDlZSsoJyqN
-	IeW41oB7YqWHdQaqn6NeCH1HgP3IUGSTwTr/5PBhi11U6pe33QkDmjZu
-X-Gm-Gg: Acq92OF0QxiLB3vrmSzRvx03m86HnuDikg0Vuj8nhlakT9aXIdnjnOqfy0TtUmpzgQ5
-	MbHDbTlhd14u4V/Tt1W+ak1CbtbtB8Fe8eXr42SNkKVWDwQ3eT1XLpZxbk/DhuccuudAjfFSA2/
-	stnVGTkMURSNtX+s4v9Yo3H6jocqg6RfznEKXChiJZ/jixSuNEz5hnM41kTdmW11puVvNXVRLMU
-	6BitlkOmcFvGeFVks5VPzRtlxiG3iKTY8YOz8YiihQnRkywUBwfo8QKeUH3/HeuMk7rzMWkn9mO
-	jB0nJAfBwSt89VHsMFDG6Sqtav9B18IoNhr38VylCfdCC6sGtTNwBbtBotYVzR2YE2/isIMhMyB
-	WNFNEcdK3piycs1y0quK4ciuNYCoN9eRG0vhDVISkqlrpatSqABlbF8+17pPCaygcUdEJT0Nj7a
-	FuedvK94KXTxRN1BeGTX1IwGdKFAF8CYLMX3k296gByiRsTURT1LJZ568=
-X-Received: by 2002:a17:902:da86:b0:2b4:5b9e:4edd with SMTP id d9443c01a7336-2bc7a9a7838mr94189145ad.9.1778486221628;
-        Mon, 11 May 2026 00:57:01 -0700 (PDT)
-Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d405adsm96889215ad.28.2026.05.11.00.56.55
+        d=1e100.net; s=20251104; t=1778487301; x=1779092101;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9cpOYK/PWnBE5Ev+XOjugs5UodjEu5rWKkqqtc/AIb0=;
+        b=rKnP6/NA046bkyfe6VgHC5fMqlu+mHisql0tBrfaFkqlYU/4luCHZtytJVfEn6E13B
+         jdFQ9cRA+pAL2EO8iBekHwMnGgUv5roNSIC1VkyEyJWvHma6GjUQruH0wPRwUss8YPmV
+         aZV8cSWbLTXjxkiWm0go+tSvyLYQ9eNApxDM9iBrMzfGA+xtwwTpOwGK+l5U6oFl3+33
+         3yIds2BAD3VbZgRFY6udLwtEEA8fP00fMr2B1Qs3a4WHe7ciawJ7PInPrYr8XzVXX0yJ
+         5zIgQHuYx2J/6R/Uk9gXeMBqR7GFeTlqbWkIN5JxMWG+RUmc6iaoNeIw46dpBXxoi9bH
+         I5AA==
+X-Gm-Message-State: AOJu0YythpKzybh1OMCvthOxPltTzwqjDFU/MOu+70t4KQJVdGLbEZfr
+	oV1sE7EVXLxeGNjXCueN7RLH24dq1/YQ229swIDqzg9CzTv/xXHaPYHT
+X-Gm-Gg: Acq92OH+IfCpNySh89Qmpo4tyNv3FTBRfT9HpRi5Rvc3/0JC2tcEeS8RaN+UG87IzML
+	FeDTSkBFIRhXGUfjdbjD5wM9NNGC6AxKX7PXaKnvPEwm6aShor04vpTUhHznZxX387vqk6QVriW
+	hAxUpZemNUWY0tu7MM7XHoPCBKIOuFttqbSWai94E/3M4lPsS/CMAFguAFRZu5bRsHDc6jw0eO9
+	VR6lBxVh0AhRUCTreeSgLHDgpXnU+1N0AUKB6QrGEF0iQUFqJrdHOG7ishHDKzhxNtbQ+el/3xO
+	UdchbjFAyZWbckjCVKAjDP0TGp2uqsReSB2RdjvpXAw47GRd863IP/XW44EzEfK8jsoxhu5y1oO
+	2C1uwAVpShegzUxAXlsBl97bm/7tRfwxMkb5ms+KH1RMoV26TrdjszA//fhUuDmnzH032Yi/e4o
+	YOH9k/vCwwNlx/P9d5KDlKQA==
+X-Received: by 2002:a05:600c:34c8:b0:486:fba7:b150 with SMTP id 5b1f17b1804b1-48e51f2ed22mr399104145e9.15.1778487300716;
+        Mon, 11 May 2026 01:15:00 -0700 (PDT)
+Received: from user ([104.28.162.239])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e6d895781sm102472635e9.0.2026.05.11.01.14.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2026 00:57:01 -0700 (PDT)
-From: Xueqin Luo <luoxueqin@kylinos.cn>
-To: lkp@intel.com
-Cc: linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	llvm@lists.linux.dev,
-	luoxueqin@kylinos.cn,
-	oe-kbuild-all@lists.linux.dev,
-	pierre.gondois@arm.com,
-	rafael@kernel.org,
-	sumitg@nvidia.com,
-	viresh.kumar@linaro.org,
-	zhanjie9@hisilicon.com,
-	zhenglifeng1@huawei.com
-Subject: [PATCH v3] cpufreq: cppc: Add update_limits support for Highest Performance changes
-Date: Mon, 11 May 2026 15:56:47 +0800
-Message-ID: <20260511075647.206642-1-luoxueqin@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <202605101404.fqz0MXIe-lkp@intel.com>
-References: <202605101404.fqz0MXIe-lkp@intel.com>
+        Mon, 11 May 2026 01:15:00 -0700 (PDT)
+From: yoy95104 <yahia.a.abdrabou@gmail.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org,
+	yoy95104 <yahia.a.abdrabou@gmail.com>
+Subject: [PATCH] cpufreq: acpi-cpufreq: Add better support for amd zen
+Date: Mon, 11 May 2026 11:14:56 +0300
+Message-ID: <20260511081456.306174-1-yahia.a.abdrabou@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -71,146 +72,220 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-ACPI CPPC specification requires OSPM to re-evaluate the Highest
-Performance register when Notify(0x85) is received for a processor
-device.
+On certain Amd Zen Laptops, Collaborative Processor
+Performance Control (CPPC) is disabled by the OEM.
+This forces to use of acpi-cpufreq, which uses a limited number of
+fixed ACPI P-states. This can lead to worse frequency scaling
+and higher temperatures during light tasks.
 
-Implement cppc_cpufreq_update_limits() to refresh the cached
-highest_perf capability through cppc_get_highest_perf() and update
-policy->cpuinfo.max_freq accordingly.
+I aim to fix this by using a virtual P-state table.
+By using direct MSR writes to MSR_AMD_PSTATE_DEF0, the driver can
+provide better frequency granularity without the need of
+the ACPI tables. This allows governors to scale frequencies more
+precisely.
 
-When autonomous selection mode is enabled, reprogram the runtime
-MIN_PERF/MAX_PERF envelope against the updated Highest Performance
-capability through cppc_cpufreq_set_autonomous_perf().
-
---
-change v2->v3:
-- Fix build issues reported by kernel test robot
-- Fold cppc_cpufreq_set_autonomous_perf() refactoring into
-  this patch to keep it self-contained
-
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202605101404.fqz0MXIe-lkp@intel.com/
-Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+Signed-off-by: yoy95104 <yahia.a.abdrabou@gmail.com>
 ---
- drivers/cpufreq/cppc_cpufreq.c | 89 +++++++++++++++++++++++++++++-----
- 1 file changed, 76 insertions(+), 13 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 136 +++++++++++++++++++++++++--------
+ 1 file changed, 104 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7e7f9dfb7a24..9184d5570de8 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -843,6 +843,80 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- 	return 0;
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 21639d9ac753..a488a2e2f914 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -50,6 +50,13 @@ enum {
+ #define AMD_MSR_RANGE		(0x7)
+ #define HYGON_MSR_RANGE		(0x7)
+ 
++#define MSR_AMD_PSTATE_DEF0 0xc0010064
++
++#ifndef rdmsrl_safe_on_cpu
++#define rdmsrl_safe_on_cpu(cpu, reg, val) rdmsrq_safe_on_cpu(cpu, reg, val)
++#define wrmsrl_safe_on_cpu(cpu, reg, val) wrmsrq_safe_on_cpu(cpu, reg, val)
++#endif
++
+ struct acpi_cpufreq_data {
+ 	unsigned int resume;
+ 	unsigned int cpu_feature;
+@@ -57,6 +64,8 @@ struct acpi_cpufreq_data {
+ 	cpumask_var_t freqdomain_cpus;
+ 	void (*cpu_freq_write)(struct acpi_pct_register *reg, u32 val);
+ 	u32 (*cpu_freq_read)(struct acpi_pct_register *reg);
++	int is_amd_zen;
++	int on_ac;
+ };
+ 
+ /* acpi_perf_data is a pointer to percpu data. */
+@@ -454,35 +463,50 @@ static unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 					     unsigned int target_freq)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+-	struct acpi_processor_performance *perf;
+-	struct cpufreq_frequency_table *entry;
+-	unsigned int next_perf_state, next_freq, index;
+-
+-	/*
+-	 * Find the closest frequency above target_freq.
+-	 */
+-	if (policy->cached_target_freq == target_freq)
+-		index = policy->cached_resolved_idx;
+-	else
+-		index = cpufreq_table_find_index_dl(policy, target_freq,
+-						    false);
++	if (!data->is_amd_zen) {
++		struct acpi_processor_performance *perf;
++		struct cpufreq_frequency_table *entry;
++		unsigned int next_perf_state, next_freq, index;
+ 
+-	entry = &policy->freq_table[index];
+-	next_freq = entry->frequency;
+-	next_perf_state = entry->driver_data;
+-
+-	perf = to_perf_data(data);
+-	if (perf->state == next_perf_state) {
+-		if (unlikely(data->resume))
+-			data->resume = 0;
++		/*
++		 * Find the closest frequency above target_freq.
++		 */
++		if (policy->cached_target_freq == target_freq)
++			index = policy->cached_resolved_idx;
+ 		else
+-			return next_freq;
+-	}
++			index = cpufreq_table_find_index_dl(policy, target_freq,
++							    false);
++
++		entry = &policy->freq_table[index];
++		next_freq = entry->frequency;
++		next_perf_state = entry->driver_data;
++
++		perf = to_perf_data(data);
++		if (perf->state == next_perf_state) {
++			if (unlikely(data->resume))
++				data->resume = 0;
++			else
++				return next_freq;
++		}
+ 
+-	data->cpu_freq_write(&perf->control_register,
+-			     perf->states[next_perf_state].control);
+-	perf->state = next_perf_state;
+-	return next_freq;
++		data->cpu_freq_write(&perf->control_register,
++				     perf->states[next_perf_state].control);
++		perf->state = next_perf_state;
++		return next_freq;
++	} else {
++		u64 val;
++		u8 fid = (u8)((target_freq / 1000 * 8) / 200);
++
++		if (target_freq > policy->cpuinfo.max_freq)
++			target_freq = policy->cpuinfo.max_freq * 7 / 10;
++
++		if (rdmsrl_safe_on_cpu(policy->cpu, MSR_AMD_PSTATE_DEF0, &val))
++			return policy->cur;
++		val &= ~0xFFULL;
++		val |= fid;
++		wrmsrl_safe_on_cpu(policy->cpu, MSR_AMD_PSTATE_DEF0, val);
++		return target_freq;
++	}
  }
  
-+/**
-+ * cppc_cpufreq_set_autonomous_perf - Configure performance bounds for
-+ *                                     autonomous mode
-+ * @policy: cpufreq policy structure
-+ *
-+ * When enabling autonomous selection, program MIN_PERF and MAX_PERF from
-+ * current policy limits so that the platform uses the correct performance
-+ * bounds immediately.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+static int cppc_cpufreq_set_autonomous_perf(struct cpufreq_policy *policy)
-+{
-+	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	u32 old_min_perf = cpu_data->perf_ctrls.min_perf;
-+	u32 old_max_perf = cpu_data->perf_ctrls.max_perf;
-+	int ret;
-+
-+	cppc_cpufreq_update_perf_limits(cpu_data, policy);
-+
-+	ret = cppc_set_perf(policy->cpu, &cpu_data->perf_ctrls);
-+	if (ret) {
-+		cpu_data->perf_ctrls.min_perf = old_min_perf;
-+		cpu_data->perf_ctrls.max_perf = old_max_perf;
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static void cppc_cpufreq_update_limits(struct cpufreq_policy *policy)
-+{
-+	struct cppc_cpudata *cpu_data = policy->driver_data;
-+	u64 prev_highest_perf;
-+	u64 highest_perf;
-+	u64 nominal_perf;
-+	int ret;
-+
-+	guard(cpufreq_policy_write)(policy);
-+
-+	prev_highest_perf = cpu_data->perf_caps.highest_perf;
-+
-+	ret = cppc_get_highest_perf(policy->cpu, &highest_perf);
-+	if (ret)
-+		return;
-+
-+	if (highest_perf == prev_highest_perf)
-+		return;
-+
-+	cpu_data->perf_caps.highest_perf = highest_perf;
-+	nominal_perf = min_t(u64, highest_perf,
-+			     cpu_data->perf_caps.nominal_perf);
-+
-+	policy->max = cppc_perf_to_khz(&cpu_data->perf_caps,
-+			policy->boost_enabled ?
-+			highest_perf : nominal_perf);
-+
-+	policy->cpuinfo.max_freq = policy->max;
-+
-+	/*
-+	 * Autonomous selection mode uses MIN/MAX performance as runtime
-+	 * hardware control bounds.
-+	 *
-+	 * Re-program them when highest_perf changes.
-+	 */
-+	if (cpu_data->perf_ctrls.auto_sel)
-+		cppc_cpufreq_set_autonomous_perf(policy);
-+
-+	pr_debug("CPU%d: highest_perf updated %llu -> %llu\n",
-+		 policy->cpu,
-+		 prev_highest_perf,
-+		 highest_perf);
-+}
-+
- static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- {
- 	struct cppc_cpudata *cpu_data = policy->driver_data;
-@@ -885,20 +959,8 @@ static ssize_t store_auto_select(struct cpufreq_policy *policy,
- 	cpu_data->perf_ctrls.auto_sel = val;
+ static unsigned long
+@@ -675,14 +699,25 @@ static inline u64 get_max_boost_ratio(unsigned int cpu, u64 *nominal_freq)
+ }
+ #endif
  
- 	if (val) {
--		u32 old_min_perf = cpu_data->perf_ctrls.min_perf;
--		u32 old_max_perf = cpu_data->perf_ctrls.max_perf;
++static unsigned int get_max_freq(unsigned int cpu)
++{
++	u64 cap1;
++	u32 highest_perf;
++
++	if (rdmsrl_safe_on_cpu(cpu, MSR_AMD_CPPC_CAP1, &cap1))
++		return 0;
++	highest_perf = (cap1 >> 24) & 0xFF;
++	return highest_perf * 100 * 1000;
++}
++
+ static void acpi_cpufreq_resolve_max_freq(struct cpufreq_policy *policy,
+ 					  unsigned int pss_max_freq)
+ {
+ #ifdef CONFIG_ACPI_CPPC_LIB
+-	u64 max_speed = cppc_get_dmi_max_khz();
++	u64 max_speed = get_max_freq(policy->cpu);
+ 	/*
+-	 * Use DMI "Max Speed" if it looks plausible: must be
+-	 * above _PSS P0 frequency and within 2x of it.
++	  Use DMI "Max Speed" if it looks plausible: must be
++	  above _PSS P0 frequency and within 2x of it.
+ 	 */
+ 	if (max_speed > pss_max_freq && max_speed < pss_max_freq * 2) {
+ 		policy->cpuinfo.max_freq = max_speed;
+@@ -698,6 +733,21 @@ static void acpi_cpufreq_resolve_max_freq(struct cpufreq_policy *policy,
+ 	arch_set_max_freq_ratio(true);
+ }
+ 
++static unsigned int get_current_freq(unsigned int cpu)
++{
++	u64 val;
++	u8 fid, did;
++
++	if (rdmsrl_safe_on_cpu(cpu, MSR_AMD_PSTATE_DEF0, &val))
++		return 0;
++	fid = val & 0xFF;
++	did = (val >> 8) & 0x3F;
++
++	if (!did)
++		return 0;
++	return (200 * fid / did) * 1000;
++}
++
+ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_frequency_table *freq_table;
+@@ -735,7 +785,31 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	perf = per_cpu_ptr(acpi_perf_data, cpu);
+ 	data->acpi_perf_cpu = cpu;
+ 	policy->driver_data = data;
 -
--		/*
--		 * When enabling autonomous selection, program MIN_PERF and
--		 * MAX_PERF from current policy limits so that the platform
--		 * uses the correct performance bounds immediately.
--		 */
--		cppc_cpufreq_update_perf_limits(cpu_data, policy);
++	if (c->x86_vendor == X86_VENDOR_AMD && c->x86 >= 0x17 && c->x86_model >= 0x30) {
++		data->is_amd_zen = 1;
++		policy->cur = get_current_freq(cpu);
++		policy->shared_type = CPUFREQ_SHARED_TYPE_NONE;
++		unsigned int max_boost = get_max_freq(cpu);
++		u8 virtual_pstates = 16;
++		unsigned int max_freq = get_max_freq(policy->cpu);
++		unsigned int min_freq = perf->states[perf->state_count - 1].core_frequency * 1000;
++		unsigned int step = (max_freq - min_freq) / (virtual_pstates - 1);
++		freq_table = kcalloc(virtual_pstates + 1, sizeof(*freq_table), GFP_KERNEL);
++		for (int i = 0; i < virtual_pstates; i++) {
++			freq_table[i].driver_data = i;
++			freq_table[i].frequency = max_freq - (i * step);
++		}
++		freq_table[virtual_pstates].frequency = CPUFREQ_TABLE_END;
++		policy->freq_table = freq_table;
++		if (max_boost) {
++			policy->cpuinfo.max_freq = max_boost;
++			policy->max = max_boost;
++		} else {
++			policy->cpuinfo.max_freq = perf->states[0].core_frequency * 1000;
++		}
++	} else {
++		policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
++	}
+ 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+ 		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
+ 
+@@ -743,8 +817,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (result)
+ 		goto err_free_mask;
+ 
+-	policy->shared_type = perf->shared_type;
 -
--		ret = cppc_set_perf(policy->cpu, &cpu_data->perf_ctrls);
-+		ret = cppc_cpufreq_set_autonomous_perf(policy);
- 		if (ret) {
--			cpu_data->perf_ctrls.min_perf = old_min_perf;
--			cpu_data->perf_ctrls.max_perf = old_max_perf;
- 			cppc_set_auto_sel(policy->cpu, false);
- 			cpu_data->perf_ctrls.auto_sel = false;
- 			return ret;
-@@ -1009,6 +1071,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.init = cppc_cpufreq_cpu_init,
- 	.exit = cppc_cpufreq_cpu_exit,
- 	.set_boost = cppc_cpufreq_set_boost,
-+	.update_limits = cppc_cpufreq_update_limits,
- 	.attr = cppc_cpufreq_attr,
- 	.name = "cppc_cpufreq",
- };
+ 	/*
+ 	 * Will let policy->cpus know about dependency only when software
+ 	 * coordination is required.
 -- 
-2.43.0
+2.54.0
 
