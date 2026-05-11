@@ -1,128 +1,78 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A417377034
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:45:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 967A33E5EC9;
+	Mon, 11 May 2026 13:17:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778499921; cv=none; b=rC1cFbVVkOp0KpdmaMDpjcCJbXyUZhDTBAHkSI/k1DOeP8rt4m4ilRq9zAw1WMU2zbkD4b/AvVNtgLznF+K30yf7Od3ToImHnp89336EDXs6DEaviFR2CA4gAmrNM248TXAgVJBvUFHgTarxAGwiahpVJOKPgIK8xgrqoMuDZFQ=
+	t=1778505479; cv=none; b=AvWFBa5meVmu99sPTmxvSSghAR+NmKpHTX4I0Kp+H+tlO/O3DcTnLdl/PklKepf3BY4EhHAq09Q1FlhTNrSiRvcr2XTIB6VbdLJuCo1eIcopHIYLYPBJnc7CgPPl/t93ABaxOyFF0IQaJIvEwa5ofHaSybL+g9OrvMeniL/qsOM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778499921; c=relaxed/simple;
-	bh=fz0jSbfuRK5dOsz4ATrwWYd/2Dc+G//arFfjMY262K8=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mXx3yLgp9cnpP2qvLVu0s5pX+CIm7GUYNaJip1T8ZpmbFvVE5elAAH4cg7rEsVEkiUpws6ZSVckiPoTMpLFvtdyYwZn2evoWna12TD1k9qvO+DEJxAZU3IxIfGFrcyqYQyXsoaUJehq3dEdAeYTcWZUQo3jJL3y+jOEP8P7zbK4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZKCaDER+; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778505479; c=relaxed/simple;
+	bh=1xM0Do21lUkMcZwS8TniHLHa4V5X/K9v0bdKRc6dvnA=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eMLT1tj9qFZW1zSi22f0045fc1/S/ab9GfPcruRl8Obxa1l8DkR1ydbkXWqzimiqXEr1mUyW9W366cZTAR+BOzYRDI9XNDC+khd5rcWNT95+QO9DKsrHoiiyzukvfr8NUICMebzOp9RDG7IT7c9MBPp1J2ERyWNdZYqKoikUg/U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MV0+gL+/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZKCaDER+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9D96C4AF09
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:45:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MV0+gL+/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C273BC2BCB0;
+	Mon, 11 May 2026 13:17:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778499920;
-	bh=fz0jSbfuRK5dOsz4ATrwWYd/2Dc+G//arFfjMY262K8=;
-	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
-	b=ZKCaDER+DJme5wJWTQafzm+Y12dF5K0zl7V3ReqTTQVyxvz33OWYZcxNRgun06EEf
-	 OYWldwHN63zniJfSIUY2YVs75IOX15KiyVhH7H1nTyCKFifeXwA6AuF7FvUdi0aaLw
-	 bsYFfeZtax/SV6gZNYUUjTu+fFhAxeMtXvcte30VZaxip4KgrPkh4iBsmFP8a3QZq3
-	 4r82xjf57xQlAEcmVCKJ/eER8hFHN0XwH4U9IL1VxywzLjMZbIlShUcKgpS953Ljra
-	 H+B3fInPwWo2RYnQWKJCkwhz0kbVnjOwaQbg6LCtpRzM39sKH663EHN5T0B/X0POP+
-	 KsLO3e9ja/KTA==
-Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5a8dc2606a0so55854e87.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:45:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+FcnA8QL6LyOvB2uEsweM9JxdtSLIxgHjMULSux752LzF27KXt9h3Z9JKU0ZSOQPTsbBHbVILLLg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyRmDzRAPSgUvJJk9AVYYuMKPaJuScjI3sHdk7AhwIfpDjT3g2L
-	jcgdLAGewS2kDs+/SYub1Gb6coN+yfy7gv9bJ/SiSXXs42xWnmzxRsRZG7dzaQkzSmkoyrKiO6G
-	kLYHTlvZEzILnnv3/QPrL7kVb8ddBHlUs9R5FgoT3Sw==
-X-Received: by 2002:a05:6512:2247:b0:5a8:9bb6:230a with SMTP id
- 2adb3069b0e04-5a8b6e9020fmr2575074e87.18.1778499919417; Mon, 11 May 2026
- 04:45:19 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 11 May 2026 04:45:17 -0700
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 11 May 2026 04:45:17 -0700
-From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260507-pwrseq-m2-bt-v2-4-1740bd478539@oss.qualcomm.com>
+	s=k20201202; t=1778505478;
+	bh=1xM0Do21lUkMcZwS8TniHLHa4V5X/K9v0bdKRc6dvnA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=MV0+gL+/NiF2hgdeRsE21e6vCy7M64tt8HfSrxS4ffJZ+5fusvFgztGFu3JXUVeuI
+	 ZY0vil+QPsWlCWDVVcLy2HaHoYEChq2I+BnNitpeQfDt6NhHYykzgE4Yst7indnAZr
+	 NWtSSBo3pr/f33WHSoXlcXl/RlF9h2nby/ja6iyWp/3tTVKR7ZM1nDuDodRmy1Lyjt
+	 17CMspMOx22/Xlc36PNivhIeliR50e2kcyQyKhRWKbBjrzszkXMysMWszl2sSWiLcU
+	 LZsv7YicsXGj946Ev/XZbfVX32a/VJdAFSJxRga71DKLawFltZRany2c94/Iie2b+s
+	 +LJ9dxwtDxylQ==
+Date: Mon, 11 May 2026 14:17:43 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org,
+ arnd@arndb.de, gregkh@linuxfoundation.org, srini@kernel.org,
+ vkoul@kernel.org, neil.armstrong@linaro.org, sre@kernel.org,
+ sboyd@kernel.org, krzk@kernel.org, dmitry.baryshkov@oss.qualcomm.com,
+ quic_wcheng@quicinc.com, melody.olvera@oss.qualcomm.com,
+ quic_nsekar@quicinc.com, ivo.ivanov.ivanov1@gmail.com, abelvesa@kernel.org,
+ luca.weiss@fairphone.com, konrad.dybcio@oss.qualcomm.com,
+ mitltlatltl@gmail.com, krishna.kurapati@oss.qualcomm.com,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+ linux-pm@vger.kernel.org, kernel@collabora.com
+Subject: Re: [PATCH RESEND v8 00/10] SPMI: Implement sub-devices and migrate
+ drivers
+Message-ID: <20260511141743.251a47e4@jic23-huawei>
+In-Reply-To: <20260511100805.121432-1-angelogioacchino.delregno@collabora.com>
+References: <20260511100805.121432-1-angelogioacchino.delregno@collabora.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com> <20260507-pwrseq-m2-bt-v2-4-1740bd478539@oss.qualcomm.com>
-Date: Mon, 11 May 2026 04:45:17 -0700
-X-Gmail-Original-Message-ID: <CAMRc=McJj1Wp_h5ReTJ68ddmgCg3RDuo4Hqar71O8MBtqT5ryQ@mail.gmail.com>
-X-Gm-Features: AVHnY4LSPzVLt5LgdyZOlSqyDWYcSbRKhI4C6lR7JUAJAnXf0Vx4688SEvTLvXg
-Message-ID: <CAMRc=McJj1Wp_h5ReTJ68ddmgCg3RDuo4Hqar71O8MBtqT5ryQ@mail.gmail.com>
-Subject: Re: [PATCH v2 4/9] power: sequencing: pcie-m2: Create serdev for PCI
- devices present before probe
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
-	linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
-	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Shuai Zhang <quic_shuaz@quicinc.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Thu, 7 May 2026 18:06:12 +0200, Manivannan Sadhasivam via B4 Relay
-<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
-> From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->
-> So far, the driver is registering a notifier to create serdev for the PCI
-> devices that are going to be attached after probe. But it doesn't handle
-> the devices present before probe. Due to this, serdev is not getting
-> created for those existing devices.
->
-> Hence, create serdev for PCI devices available before probe as well.
->
-> Note that the serdev for available devices are created before
-> registering the notifier. There is a small window where a device could
-> appear after pwrseq_pcie_m2_create_serdev(), before notifier registration.
-> But since M.2 cards are fixed to a slot, they are mostly added either
-> before booting the host or after using hotplug. So this window is mostly
-> theoretical.
->
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-> ---
->  drivers/power/sequencing/pwrseq-pcie-m2.c | 83 ++++++++++++++++++++++++++-----
->  1 file changed, 70 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
-> index 038271207a27..0a37a375a89d 100644
-> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
-> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
-> @@ -236,7 +236,7 @@ static int pwrseq_pcie_m2_create_bt_node(struct pwrseq_pcie_m2_ctx *ctx,
->  	return ret;
->  }
->
-> -static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx,
-> +static int __pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx,
->  					struct pci_dev *pdev)
+On Mon, 11 May 2026 12:07:55 +0200
+AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com> wrote:
 
-It may just be a personal preference but I dislike the __ prefix that doesn't
-really indicate how the function is different from the one without it. I prefer
-the name to reflect that - if it's because the function expects a mutex to be
-already taken then it should be called something_something_unlocked() etc.
+Hi Angelo,
 
-Maybe call it pwrseq_pcie_m2_create_serdev_for_pci()? Or at least:
-pwrseq_pcie_m2_do_create_serdev()?
+Why the resend?  If marking a series with that I expect to see it
+called out as first thing in the cover letter.
 
->  {
->  	struct serdev_controller *serdev_ctrl;
-> @@ -259,6 +259,16 @@ static int pwrseq_pcie_m2_create_serdev(struct pwrseq_pcie_m2_ctx *ctx,
->  		return 0;
->  	}
->
-> +	/* Bail out if the serdev device was already created for the PCI dev */
-> +	mutex_lock(&ctx->list_lock);
-> +	list_for_each_entry(pci_dev, &ctx->pci_devices, list) {
-> +		if (pci_dev->pdev == pdev) {
-> +			mutex_unlock(&ctx->list_lock);
-> +			return 0;
-> +		}
-> +	}
-> +	mutex_unlock(&ctx->list_lock);
+Jonathan
 
-Is there any reason to not use guard() here?
-
-Bart
+> Changes in v8:
+>  - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+>  - Changed kerneldoc wording to "error pointer" for function
+>    spmi_subdevice_alloc_and_add() (Andy)
+>  - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+>  - Used device_property_read_u32() instead of of_property_read_u32()
+>    in all of the migrated drivers (Andy)
+>  - Changed .max_register field in all of the migrated drivers from
+>    0x100 to 0xff (Andy)
+>  - Kept `sta1` declaration in reversed xmas tree order in function
+>    iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
