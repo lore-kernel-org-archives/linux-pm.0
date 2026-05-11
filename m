@@ -1,64 +1,67 @@
-Received: from mail-dy1-f201.google.com (mail-dy1-f201.google.com [74.125.82.201])
+Received: from mail-dy1-f202.google.com (mail-dy1-f202.google.com [74.125.82.202])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F1C031E823
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:50:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6952347277D
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 17:50:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.202
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778521809; cv=none; b=BuCDIiJhgTMjrKlo7rd5wsgqPj93fXdA7doh7ogXu3hqGgi8PUb3K6RFpKv8nFJ++9sOUiMujH4mEH+6dQgdckq6F0n8BTsJUwost1tJmRb7BT98Pp8xE5ESqgZienFBP2pM90Tc9aJKxi2m6kr83F48ob3wtMzjJFw9pdMa9tc=
+	t=1778521812; cv=none; b=XC1mq/GN3FahB0WO2LporowPCMYeIyhKsLCQAkQ8xoZjiWv3vllR5uOI9FTYITu3PO7A7hCbdhJj4zuCoDpRzi4hW3402Tm+qlSc3ANJJDdKlmPkIPJZpjtwlz2k5rPN78oc69VubMJnNOqQ+Uf/6+pRgaHbcRyrzxfyX+bHw1E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778521809; c=relaxed/simple;
-	bh=g1G/+PoWZdAvQmXojSHIDbtBFrtB6n8uPkg6HEziu0I=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=nEOpka+W5fzowd66udSH2vcKaipedgIkGsIjKupZ9ywRG0ma+1KfUNlQVR9HrQQgp8/0MtTmo3LTU9N1pMCSwi22VIJNcMyWiQXl7mxtldkRvLEjZZkrboxwBwUUwO48cR7+a0kBSuEXtvFlt8UcTof3wkLgkRaY6G4V8hNpxbY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=YX8qbPQF; arc=none smtp.client-ip=74.125.82.201
+	s=arc-20240116; t=1778521812; c=relaxed/simple;
+	bh=Oq67dXaTV+BHjGRbysYou0ulHtDM/4BziolaYr9VX4g=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=OGOnA2fc3QL67J3b9wrRBhju7+0ZAF6w3Y+czbeWa6vjzDhTr4YjQeOoksfpcM8EPWh979HGroQHqn0hpVhuxfDdz8CzqGjw7AaZ7iXjB7gpuEuZbAT/tu7Ex983TT+8RMW0TXGNIrereiC54+pz1WGDlieD5+QfZHtjPWMmCeA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=XXfxWev7; arc=none smtp.client-ip=74.125.82.202
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--wusamuel.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="YX8qbPQF"
-Received: by mail-dy1-f201.google.com with SMTP id 5a478bee46e88-2bda35eab74so3756356eec.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:50:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="XXfxWev7"
+Received: by mail-dy1-f202.google.com with SMTP id 5a478bee46e88-2f5943ca81aso4308005eec.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:50:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1778521807; x=1779126607; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=F3SSM/7OmGT1DQhDHuFPYpuDPGpRg8FSNXFpqlLPkoo=;
-        b=YX8qbPQFuxrP3RQRrJxvUSFsjDfM7kSkA2R8elGiHDepCtquMaq5t2sk3du0ILffT9
-         qkl3XvSIwPvMCV5l9hviHDPvTF6mJenOIUEYnMJiBpMQt1q7l7Q7UJ3lwaman0y5ZQtK
-         tYJBS2baMTV6Wni+CUo8hMIXTpEI+7TeU5eSy0uoOEYfYJKVc7TdF0alM51v9ShKOULs
-         2jOIfNY4csPn2JIqo/y1uQsvvp0gMMsqLnaE2pU8ub38Y0Bi6P14eCWEGHc7z5HXUp5n
-         PjYunRhoKdvKPbSWLHEZcqf3Fggl9eRxtktyD6UnwLbc/X8xTub7qStEPoUcPchReEWK
-         DmgQ==
+        d=google.com; s=20251104; t=1778521811; x=1779126611; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=/Hxl2WZ9OZBQQeGr1zOYQYix9RVHeZZ/4ou1EYE8Zvc=;
+        b=XXfxWev7tqekQC9QP5ywILRInc32GtHE1lW/7KNcb9Ix0IgtEco+B+D0nrQyH1QKeS
+         kRbKI4zc+y6C7RDMa11VogX4+diK5jhlnJMkekkMTe4z8hhllb5R0MuGx7uxnk1UtjPa
+         DKcTZUD5nH6HdEES58fURyboD5t0hqbT/TNK6L27t296GoOo1Chyf8DUQ2CKheVjxeSW
+         txscmudHLbNZ8Zeh4P1ZFAQ5RK5/I3LZg6jvZJtwsgciDWKZPx8Ac1PrE8luoc6Ow1Tq
+         oT3qWmLbsInlvL1LeiJADhLIoya3d0gC/Fh+3Eg7t8jj0MMO+xgoNlFkrKV9kWtwDWy/
+         /aLA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778521807; x=1779126607;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=F3SSM/7OmGT1DQhDHuFPYpuDPGpRg8FSNXFpqlLPkoo=;
-        b=L1c3m4sCrifHTMfHi0sBSsUOIy/tnYaBXXRAznyGWozgH7yAMKgd/KXPyDPewPY/U8
-         HEnc9b4qiza9xtFVHUSCTRebNKpsabI96k6xDg+FfQ4yc4pUI7rwj+sMIFHpaJ3+D2qg
-         HVCWsdisYN8lKxn0LgARVa7xoWwg7AF43dFYP7yq1/lD9QrwF6H23HbxMDo1ow0u5GXn
-         qoKS/qiGxd3TNVmU4N13bbV+vy0VIyJGUTnmI81zBIjfvmAJTUUHXEdAa/tN3DwYTnLg
-         O9RbUbsujr48EvvhLxgUvLzZD+uItDPAbaed+Bz9XI7FN7xmzLI7Ucmj+62ct5eSomnU
-         EznA==
-X-Forwarded-Encrypted: i=1; AFNElJ81gV/NrAx3qfmI1UlwTsIS4J4f3Tm95BbBdoQnMAverIy7NtAx7rEy4gl64QJ8tj73tB1NIqqzJQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwcoiXhyXQnj6yDIOZUSWvDnPNkvljTtE+t28CulFHv3AlHYcRF
-	XDbsguOAiks06xvL89qQgIWfzQKsYufYzHZQw4DGFrJVIAOIqS5ZFViQcsBrIF0dFMgbOMGKz2H
-	H3MvxKJC6TJb/lQ==
-X-Received: from dybdf6.prod.google.com ([2002:a05:7300:b586:b0:2da:4e8f:1752])
+        d=1e100.net; s=20251104; t=1778521811; x=1779126611;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/Hxl2WZ9OZBQQeGr1zOYQYix9RVHeZZ/4ou1EYE8Zvc=;
+        b=YcIuRCE+Y3zsdWYrIxWskbQQJN27ezD8oqWA/l63C4OSZ16SwqIh59c2cbfbJXZ7nX
+         /60pmiQSUeG+fCKE/Uj5n2w9MZ9av0cISUPAje7oRgvBfN7eJ6ZpUV4fydPiY4dN1Wwz
+         5Lx6hquL54D/zGw0KvXBNuPr+ZsufXfyq9UdD1pZv/YgHKKeeHzxJM8Vxd77xSkSyDd9
+         rB1r0h2RDLOMLQvJ9PuifYoWtcdRa+AurEfFsod8W2FPHE50kX1NF1Ci7+tLCrqaAMUi
+         Q3iw/aCosKt1rbfYO8kZfNphHYPLJrQsy5qWqwUZQotZNzZxS/Hq5x/uGaGNeL06pZMT
+         lNSw==
+X-Forwarded-Encrypted: i=1; AFNElJ89doNi7vi0Srn3UaPYHepuoVb691Vd2rZkduQbX6XeJCoTp26K9hFqwba1Np4d8hLrgD1LaNafMQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywrf4T/szDCrrLAWIFZGq12YKUiw54HDJaCylTR6KDkAo0u1/Fm
+	vC3dzaAlrZMsjhxwXgBwviZknfI3EzRElkN415gG+V4+FKmI3Xkf7KmdoVbX299zlgauHcq49Qv
+	EigqkBh9wBmsZLQ==
+X-Received: from dybkf34.prod.google.com ([2002:a05:7301:3aa2:b0:2f7:1410:b095])
  (user=wusamuel job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:7301:5807:b0:2f0:ee2:f6c6 with SMTP id 5a478bee46e88-2ff95e5e234mr269219eec.19.1778521806295;
- Mon, 11 May 2026 10:50:06 -0700 (PDT)
-Date: Mon, 11 May 2026 10:45:55 -0700
+ 2002:a05:7301:19a5:b0:2dd:6937:79b8 with SMTP id 5a478bee46e88-2fb3dbf98bamr5182384eec.5.1778521810205;
+ Mon, 11 May 2026 10:50:10 -0700 (PDT)
+Date: Mon, 11 May 2026 10:45:56 -0700
+In-Reply-To: <20260511174559.659782-1-wusamuel@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
+References: <20260511174559.659782-1-wusamuel@google.com>
 X-Mailer: git-send-email 2.54.0.563.g4f69b47b94-goog
-Message-ID: <20260511174559.659782-1-wusamuel@google.com>
-Subject: [PATCH v4 0/2] Support BPF traversal of wakeup sources
+Message-ID: <20260511174559.659782-2-wusamuel@google.com>
+Subject: [PATCH v4 1/2] PM: wakeup: Add kfuncs to traverse over wakeup_sources
 From: Samuel Wu <wusamuel@google.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, 
 	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
 	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
@@ -71,76 +74,126 @@ Cc: Samuel Wu <wusamuel@google.com>, kernel-team@android.com,
 	linux-kselftest@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-This patchset adds requisite kfuncs for BPF programs to safely traverse
-wakeup_sources, and puts a config flag around the sysfs interface.
+Iterating through wakeup sources via sysfs or debugfs can be inefficient
+or restricted. Introduce BPF kfuncs to allow high-performance and safe
+in-kernel traversal of the wakeup_sources list. There is at least a 30x
+speedup for walking 150 wakeup sources and all their attributes.
 
-Currently, a traversal of wakeup sources require going through
-/sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
-sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
-wakeup source also having multiple attributes. debugfs is unstable and
-insecure.
+The new kfuncs include:
+- bpf_wakeup_sources_get_head() to obtain the list head.
+- bpf_wakeup_sources_read_lock/unlock() to manage the SRCU lock.
 
-Adding kfuncs to lock/unlock wakeup sources allows BPF program to safely
-traverse the wakeup sources list, and a kfunc to get head of wakeup
-sources list is needed to start traversing the list.
+For verifier safety, the underlying SRCU index is wrapped in an opaque
+'struct bpf_ws_lock' pointer. This enables the use of KF_ACQUIRE and
+KF_RELEASE flags, allowing the BPF verifier to strictly enforce paired
+lock/unlock cycles and prevent resource leaks.
 
-On a quiescent Pixel 6 traversing 150 wakeup_sources, I am seeing ~34x
-speedup (sampled 75 times in table below). For a device under load, the
-speedup is greater.
-+-------+----+----------+----------+
-|       | n  | AVG (ms) | STD (ms) |
-+-------+----+----------+----------+
-| sysfs | 75 | 44.9     | 12.6     |
-+-------+----+----------+----------+
-| BPF   | 75 | 1.3      | 0.7      |
-+-------+----+----------+----------+
+Signed-off-by: Samuel Wu <wusamuel@google.com>
+---
+ drivers/base/power/power.h  |  7 ++++
+ drivers/base/power/wakeup.c | 71 +++++++++++++++++++++++++++++++++++--
+ 2 files changed, 76 insertions(+), 2 deletions(-)
 
-The initial attempts for BPF traversal of wakeup_sources was with BPF
-iterators [1]. However, BPF already allows for traversing of a simple list
-with bpf_for(), and this current patchset has the added benefit of being
-~2-3x more performant than BPF iterators.
-
-[1]: https://lore.kernel.org/all/20260225210820.177674-1-wusamuel@google.com/
-
-Changes in v4:
-- Removed `.owner = THIS_MODULE` for btf_kfunc_id_set per Greg
-- Add a graceful exit in selftest if bpf_wakeup_sources_get_head() is not
-  present due to kernel configs without CONFIG_PM_SLEEP (e.g. s390)
-- Relaxed substr match in wakeup_source_unlock_null() selftest
-- v3 link: https://lore.kernel.org/all/20260331153413.2469218-1-wusamuel@google.com/
-
-Changes in v3:
-- Changed return type of bpf_wakeup_sources_get_head() to `void *` per Alexei
-- Added failure test for direct dereference of wakeup source head
-- Use bpf_core_cast() instead of macros in BPF program per Kumar
-- v2 link: https://lore.kernel.org/all/20260326112521.2827500-1-wusamuel@google.com/
-
-Changes in v2:
-- Dropped CONFIG_PM_WAKEUP_STATS_SYSFS patch for future patchset
-- Added declarations for kfuncs to .h to fix sparse and checkpatch warnings
-- Added kfunc to get address of wakeup_source's head
-- Added example bpf prog selftest for traversal of wakeup sources per Kumar
-- Added *_fail.c selftest per Kumar
-- More concise commit message in patch 1/2
-- v1 link: https://lore.kernel.org/all/20260320160055.4114055-1-wusamuel@google.com/
-
-Samuel Wu (2):
-  PM: wakeup: Add kfuncs to traverse over wakeup_sources
-  selftests/bpf: Add tests for wakeup_sources kfuncs
-
- drivers/base/power/power.h                    |   7 ++
- drivers/base/power/wakeup.c                   |  71 ++++++++++-
- tools/testing/selftests/bpf/config            |   3 +-
- .../selftests/bpf/prog_tests/wakeup_source.c  | 118 ++++++++++++++++++
- .../selftests/bpf/progs/test_wakeup_source.c  |  92 ++++++++++++++
- .../selftests/bpf/progs/wakeup_source.h       |  22 ++++
- .../selftests/bpf/progs/wakeup_source_fail.c  |  76 +++++++++++
- 7 files changed, 386 insertions(+), 3 deletions(-)
- create mode 100644 tools/testing/selftests/bpf/prog_tests/wakeup_source.c
- create mode 100644 tools/testing/selftests/bpf/progs/test_wakeup_source.c
- create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source.h
- create mode 100644 tools/testing/selftests/bpf/progs/wakeup_source_fail.c
-
+diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+index 922ed457db19..8823aceeac8b 100644
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -168,3 +168,10 @@ static inline void device_pm_init(struct device *dev)
+ 	device_pm_sleep_init(dev);
+ 	pm_runtime_init(dev);
+ }
++
++#ifdef CONFIG_BPF_SYSCALL
++struct bpf_ws_lock { };
++struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void);
++void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock);
++void *bpf_wakeup_sources_get_head(void);
++#endif
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index b8e48a023bf0..80b497de2deb 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -1168,11 +1168,78 @@ static const struct file_operations wakeup_sources_stats_fops = {
+ 	.release = seq_release_private,
+ };
+ 
+-static int __init wakeup_sources_debugfs_init(void)
++#ifdef CONFIG_BPF_SYSCALL
++#include <linux/btf.h>
++
++__bpf_kfunc_start_defs();
++
++/**
++ * bpf_wakeup_sources_read_lock - Acquire the SRCU lock for wakeup sources
++ *
++ * The underlying SRCU lock returns an integer index. However, the BPF verifier
++ * requires a pointer (PTR_TO_BTF_ID) to strictly track the state of acquired
++ * resources using KF_ACQUIRE and KF_RELEASE semantics. We use an opaque
++ * structure pointer (struct bpf_ws_lock *) to satisfy the verifier while
++ * safely encoding the integer index within the pointer address itself.
++ *
++ * Return: An opaque pointer encoding the SRCU lock index + 1 (to avoid NULL).
++ */
++__bpf_kfunc struct bpf_ws_lock *bpf_wakeup_sources_read_lock(void)
++{
++	return (struct bpf_ws_lock *)(long)(wakeup_sources_read_lock() + 1);
++}
++
++/**
++ * bpf_wakeup_sources_read_unlock - Release the SRCU lock for wakeup sources
++ * @lock: The opaque pointer returned by bpf_wakeup_sources_read_lock()
++ *
++ * The BPF verifier guarantees that @lock is a valid, unreleased pointer from
++ * the acquire function. We decode the pointer back into the integer SRCU index
++ * by subtracting 1 and release the lock.
++ */
++__bpf_kfunc void bpf_wakeup_sources_read_unlock(struct bpf_ws_lock *lock)
++{
++	wakeup_sources_read_unlock((int)(long)lock - 1);
++}
++
++/**
++ * bpf_wakeup_sources_get_head - Get the head of the wakeup sources list
++ *
++ * Return: The head of the wakeup sources list.
++ */
++__bpf_kfunc void *bpf_wakeup_sources_get_head(void)
++{
++	return &wakeup_sources;
++}
++
++__bpf_kfunc_end_defs();
++
++BTF_KFUNCS_START(wakeup_source_kfunc_ids)
++BTF_ID_FLAGS(func, bpf_wakeup_sources_read_lock, KF_ACQUIRE)
++BTF_ID_FLAGS(func, bpf_wakeup_sources_read_unlock, KF_RELEASE)
++BTF_ID_FLAGS(func, bpf_wakeup_sources_get_head)
++BTF_KFUNCS_END(wakeup_source_kfunc_ids)
++
++static const struct btf_kfunc_id_set wakeup_source_kfunc_set = {
++	.set   = &wakeup_source_kfunc_ids,
++};
++
++static void __init wakeup_sources_bpf_init(void)
++{
++	if (register_btf_kfunc_id_set(BPF_PROG_TYPE_SYSCALL, &wakeup_source_kfunc_set))
++		pm_pr_dbg("Wakeup: failed to register BTF kfuncs\n");
++}
++#else
++static inline void wakeup_sources_bpf_init(void) {}
++#endif /* CONFIG_BPF_SYSCALL */
++
++static int __init wakeup_sources_init(void)
+ {
+ 	debugfs_create_file("wakeup_sources", 0444, NULL, NULL,
+ 			    &wakeup_sources_stats_fops);
++	wakeup_sources_bpf_init();
++
+ 	return 0;
+ }
+ 
+-postcore_initcall(wakeup_sources_debugfs_init);
++postcore_initcall(wakeup_sources_init);
 -- 
 2.54.0.563.g4f69b47b94-goog
 
