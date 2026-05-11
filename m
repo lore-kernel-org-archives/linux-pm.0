@@ -1,178 +1,106 @@
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A96573A1D05
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 14:54:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.67.36.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAD744014B4
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 15:38:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778511275; cv=none; b=IfeZjqlSyroKokG/DQDyJFYyMm03qROUxfmMtg0EHUl/hgapH+Y4R0KHPw3LVYPdop+8XQMeav1s9u5mAe0i2fZZDGPhWNetaMFguSkosZn/0vCmKPMA2hh2bRZY+DE14pI1vuq8cTa6ZEJm56fO1s3dT3EqJTlrruZJ0UW1l5I=
+	t=1778513902; cv=none; b=b6B/I73G3nAzW2hLSW9/r/Q7oDpIMP4zoGKB0lNOEM2ZQL8hW3izhsTqjb5Mm41jiCl+WTMOp4jK1kwllws95tRBtWACug7jBZLj9Qnsl3P70PmpN05O0PKvRGgmiA9cRjNCYxuqKJqOKBM8qwCENk6mg8+x9NlXOaBrjQv6syY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778511275; c=relaxed/simple;
-	bh=TpIGitQPS+l65xYL29D0NyyGS06BiAlFP4avKJ2ywDI=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Ttr5C295NMQ750XFZsTAdXcW81EjI1hCLMbdqzPoTq9zAl8Eu6kwu6xb7AVPB04E9krpJBXicSWbra1nc9YZYBWx6s+EeYWDv+hMK5UGY0EFYA5GFda78yi0Zh7X/4G4K1zAIrJKtYlXb/kPCuTCn1yi86apNj9ePFfU2XRkWpc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de; spf=pass smtp.mailfrom=posteo.de; dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b=kWB32BFY; arc=none smtp.client-ip=185.67.36.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=posteo.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=posteo.de
+	s=arc-20240116; t=1778513902; c=relaxed/simple;
+	bh=RwV1D+oa4zcp3ZhceD2ggFBWn2ZlXNP/BDlZMjKP6EM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=C2J/XCrIgfg29ZxPgzWWFjBQx2ThdigcA0HQYK4e6W8QMuOKmuty6jmGT2uqHPRxh1CSfhPXFOagDInb5x04oO+nqo/f3VS0t5gOqi0fGoom2JW1TFPbKCSJWJbNEWKfgFG/PxhNb9fo4YrFlAlxthoHkZ2oANZjcjtMfgVoy98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Gj1n2rPK; arc=none smtp.client-ip=209.85.216.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=posteo.de header.i=@posteo.de header.b="kWB32BFY"
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id 49FFE240103
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 16:54:26 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.de; s=2017;
-	t=1778511266; bh=TpIGitQPS+l65xYL29D0NyyGS06BiAlFP4avKJ2ywDI=;
-	h=Message-ID:Subject:From:To:Cc:Date:Autocrypt:Content-Type:
-	 MIME-Version:OpenPGP:From;
-	b=kWB32BFYEZB5xfowoDcFJ4+p6qFeUCM8ebf9+DchWTBMq9DTQNAZWEnfk7a8mIb5R
-	 iCQJzcv/24M6C8ZcJhXwd/sDjBbdqnqucWJQ0Gbo/sUom2o4yLC+m8ZAPL7+/zkQKM
-	 Ca60rMnHwtNr8upgrb6+BmTBb5UnOGuwQEnZ3bCbdSxI0KB+mHxpXnlx6sQnm1Buxq
-	 VwApVz7zePq/y59H24i6Ixf2jwPYtgaOi0JItSUQvZPoN9agSnZWlQbrqubDOrYdh7
-	 TuzYJuqZZKeELlck6F3Qii8lGN+S3T89XEQPDMyL7REEnQ+1VLFvYJ7hI91jj5yUAU
-	 eTqRyUaMyS5Xw==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4gDjRf30nYz9rxF;
-	Mon, 11 May 2026 16:54:22 +0200 (CEST)
-Message-ID: <da85ceb81f51079d4a8248a1ffde6a27d2ef24ad.camel@posteo.de>
-Subject: Re: [PATCH v7 0/4] rust: add basic serial device bus abstractions
-From: Markus Probst <markus.probst@posteo.de>
-To: Rob Herring <robh@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby	
- <jirislaby@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, Gary Guo	
- <gary@garyguo.net>, =?ISO-8859-1?Q?Bj=F6rn?= Roy Baron	
- <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, Andreas
- Hindborg	 <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
- Trevor Gross	 <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, Kari
- Argillander	 <kari.argillander@gmail.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>,  Viresh Kumar <viresh.kumar@linaro.org>, Boqun Feng
- <boqun@kernel.org>, David Airlie <airlied@gmail.com>,  Simona Vetter
- <simona@ffwll.ch>, linux-serial@vger.kernel.org,
- linux-kernel@vger.kernel.org, 	rust-for-linux@vger.kernel.org,
- linux-pm@vger.kernel.org, 	driver-core@lists.linux.dev,
- dri-devel@lists.freedesktop.org
-Date: Mon, 11 May 2026 14:54:25 +0000
-In-Reply-To: <20260430195858.GA1650658-robh@kernel.org>
-References: <20260429-rust_serdev-v7-0-0d89c791b5c8@posteo.de>
-	 <20260430195858.GA1650658-robh@kernel.org>
-Autocrypt: addr=markus.probst@posteo.de; prefer-encrypt=mutual;
- keydata=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
- jfGillcaQOqFZ3WwVqyzG1BUfTow==
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-hDVNd50c7cn2pQHHfTMl"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Gj1n2rPK"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-366070f71adso3978737a91.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 08:38:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778513899; x=1779118699; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/fBbUF0a0x5QMJc8UAtm+/YopfDSxJWDIKKR8Ya1zmY=;
+        b=Gj1n2rPKUgehhF/eQE43dig5YF6y7d/IZOK7GqoXoLwpmgFIeMxnDg0intKYvHae1a
+         5cbpxvseNTAwpyla0n8qGh1AMeNSG+YP0SieZZ84XJu7z+A+h3Ziq1AyI16bJ+N4U8I6
+         pWWIaiYqJIoZMquFVmJIjZAGn4Vn4bSgNs3f8MqC3ECuUbhte4as9LiD+O2vJG09uung
+         nj/9wfZNkTpiohcWLog2+IamfgTDj+AIH0NlZ3qAMUqBvv8b35zbe53nR5+4f6MvbZgf
+         DxR/17z30+i1DuJFg4ZpBeCXV3QAOCYqAAZNSmKhZFRRBsgUbPg5Sm4QFWM9IIEy1zyv
+         bOjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778513899; x=1779118699;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/fBbUF0a0x5QMJc8UAtm+/YopfDSxJWDIKKR8Ya1zmY=;
+        b=a3/HltS3ZxqkgFX9tCM45LJ4nzB2nW0BEZvjQFIEyACENxFAtqre7FHlJeEDX5N+SH
+         9pizU61836vdMo9RsT1YjKIfVyQvoPGXo6zuWSJHm9dN4GpW1TqqmPWUVd0Dwt2YPmBJ
+         oxbyYyidh6tKq1u1Oj0hA2SHl0J1gAno41hPAPdKcUZzJlJWErdzOOhXEAimigAi3+qz
+         zEkXdxrQBMDDF1KgW+Pi+IzpeFM0yz4PkgtKOwGi/OnZ0qiZFFqjyy3J9SLAq0Q68UGV
+         6cMlSIWAh1N7oBzSopmXHjJbLlZFxV5LrbRHyFVio3cnOeTym9dGKY7rcdkLkaQKbnwn
+         RLmw==
+X-Gm-Message-State: AOJu0YxNokU+bA6xynz7GDM0OAj6ocm6G2ByKg24r5zL5QxtjJdakrje
+	Nuj7+rqBMAf8zkh95pz76QPHv0MqciQTkQFHy3GQFfQnpdSl0PSVuaSji9HmsYV/piJpAQ==
+X-Gm-Gg: Acq92OEKwT59Y6nQghoxF7nM6pKwrliq0ZdFevUVDAQBwPyW7qs0S4TquxAMTvPZidI
+	zdEmh1k5yLRaQIR5IqrOSGFN35OfKABf9mrCCVMoWlKdiW2VkYpuIYFslufJVQGOChNBSwV2q6S
+	J8mZCGVsIk2nDc1/6rTxy8fkIh2J6wBplPYIgwjbwm2lc8z2YYdvcQZPjRjEtKM7ib+K44VYBY+
+	W88T0Tek1LxUCVhYjWJU7B3mDVhmf5F/nsHMPSrNkXJKo3MkxdP5tNemNFw5xVt/Jvipfxg+PtI
+	i0fL/YG9FRVSZSc7SZ0OH22dmsqWN6XbBYYkWxsnGNokJH05T/RH0UI+G05Bm0A81Xhe0WILGLW
+	5TTTCOYcmn2Hcxszy2i1DqxSkTVdnSFW3MsivtISgJ0MfS5gorHzEmkyaNXG2jtMq6gLhUzdhyd
+	Hhfan8jGJsJM8vT6ly6U9ot6mXPgN7djk7aGKHS5twQyCoLDw=
+X-Received: by 2002:a17:90b:2248:b0:35f:b348:63e with SMTP id 98e67ed59e1d1-365abbe373cmr26212235a91.9.1778513899071;
+        Mon, 11 May 2026 08:38:19 -0700 (PDT)
+Received: from Strong10mede.domain.name ([122.161.50.8])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-367be53e977sm4416285a91.2.2026.05.11.08.38.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 08:38:18 -0700 (PDT)
+From: Mayur Kumar <kmayur809@gmail.com>
+To: miquel.raynal@bootlin.com,
+	rafael@kernel.org,
+	daniel.lezcano@kernel.org,
+	rui.zhang@intel.com,
+	lukasz.luba@arm.com
+Cc: linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Mayur Kumar <kmayur809@gmail.com>
+Subject: [PATCH] thermal: armada: replace msleep with usleep_range for short durations
+Date: Mon, 11 May 2026 21:07:50 +0530
+Message-Id: <20260511153750.183640-1-kmayur809@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-OpenPGP: url=https://posteo.de/keys/markus.probst@posteo.de.asc; preference=encrypt
+Content-Transfer-Encoding: 8bit
 
+The checkpatch tool warns that msleep(10) can sleep for up to 20ms.
+According to Documentation/timers/timers-howto.rst, usleep_range()
+should be used for delays between 1ms and 20ms to provide better
+timing accuracy.
 
---=-hDVNd50c7cn2pQHHfTMl
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Replace the 10ms msleep with a 10ms-11ms usleep_range.
 
-On Thu, 2026-04-30 at 14:58 -0500, Rob Herring wrote:
-> On Wed, Apr 29, 2026 at 08:21:30PM +0200, Markus Probst wrote:
-> > This patch series adds the serdev device bus rust abstraction into the
-> > kernel.
-> >=20
-> > This abstraction will be used by a driver,
-> > which targets the MCU devices in Synology devices.
-> >=20
-> > Kari Argillander also messaged me, stating that he wants to write a
-> > watchdog driver with this abstraction (needing initial device data).
-> >=20
-> > @Rob: Are you willing to maintain these rust abstractions yourself,
-> > as you are the expert on this subsystem, otherwise I would take care of
-> > it with a "SERIAL DEVICE BUS [RUST]" section in the MAINTAINERS file. I=
-n
-> > the second case, I assume you are going to pick those patches as-is int=
-o
-> > your tree, after they have been reviewed?
->=20
-> Well I can ignore the Rust part as much as I ignore the C serdev part...=
-=20
-> Honestly, I need to find someone else to maintain all of it as I don't=
-=20
-> really have the bandwidth. I don't think we should split it though.
-I could maintain both C and Rust.
+Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
+---
+ drivers/thermal/armada_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-However my knowledge regarding the tty subsystem is very limited, so I
-would need to heavily rely on kernel documentation.
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index c2fbdb534f6..96965f393b4 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -178,7 +178,7 @@ static void armada370_init(struct platform_device *pdev,
+ 
+ 	regmap_write(priv->syscon, data->syscon_control1_off, reg);
+ 
+-	msleep(10);
++	usleep_range(10000, 11000);
+ }
+ 
+ static void armada375_init(struct platform_device *pdev,
+-- 
+2.34.1
 
-Thanks
-- Markus Probst
-
->=20
-> And I don't have a tree for serdev. Greg picks up the serdev patches. If=
-=20
-> the Rust folks are fine with them, then I am.
-
-
->=20
-> Rob
-
---=-hDVNd50c7cn2pQHHfTMl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQJPBAABCAA5FiEEgnQYxPSsWOdyMMRzNHYf+OetQ9IFAmoB7X0bFIAAAAAABAAO
-bWFudTIsMi41KzEuMTIsMiwyAAoJEDR2H/jnrUPST9IP/0MZdTYVvpOx0BsQaHF/
-+frOQadjjWHu49gobdboY7cKhmmHlYUzlKDGDFSvsqHXbq5LUjYgierU42jMZ0wC
-lMMApEvlGrMJstar62HcHgaA586CD2zxRMTrGfFu+1y93GlSYHU7KS9CuIy6BvK4
-pmP3Q4LP2PGbG7TCd2hso5MIl351mMBkMKuaPICFxyfviQvVeYE5TVK7AL792VvV
-FLnCv87PRvDZ/GRfZKyvx+E1KG7Yfu1XGoob1/1h6ifw7wNQ+bIjvx3+vtKNOjrF
-pt/JYgijkOuJBsQDWnz5wI0Qv96YTBHgEt87BvnQjxthuur0b2oPQgeZ6fen4w3X
-Z9DAIyNEpklHULovuoR0DOkJ5qRyrwGx7VjOBtPlq/yGTkQPPlZ2u8Q9zf6UicCM
-Y5DXZQL4F/n6i6HmZmm9tcC3sW++HBkgDaETFz/XfWX+Yrk6aze4ChGklIZO96WW
-a5UQiG0ytULXxAUzWAI4lcVArdZeJx7h1Iu4U5e1sgCezo5HBsC5gyk20L5hq1z1
-K2pEJEiS7YREaFvjMP9K65CQT74f3nzfwFiCfn/1IuzMd/Pu8QOPaJjBFJahjjwJ
-ljerP8O6cJkTFNw0fySmiaCPk9wSQBpOnG/gDiHfAHKbfpNwrRFHjwBe3767/dl/
-p7Vjc23uIYaww2yo6lXSOos/
-=AJzm
------END PGP SIGNATURE-----
-
---=-hDVNd50c7cn2pQHHfTMl--
