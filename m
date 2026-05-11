@@ -1,331 +1,347 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 690FE3D1CCA;
-	Mon, 11 May 2026 10:08:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778494105; cv=none; b=km4QkGCj2bVnNvx3EkgPgJMqi7WvRhyDgKONmUzx8ix6BjyTuphd7Iblgg8K3sti5qDLKGrBlg1elFAxFg+5oXFeqEmD9LK7av1x9AdGz6GHEVJlLwr9iHuCzZQxG8IVYZce8J3+AzYFdlPoQ3vFQ9OtRWVjSwTi14UjxldVRQQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778494105; c=relaxed/simple;
-	bh=xGqbaekXBIwazXODc92pEPI3eTzP0CIca9FRsBmggeA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tGB1r/wpyiLBt03mLnQwSTD0JmA0cVSdPLN9u6/Pr+13RCuY1t5/tyA41U/M9SKYcLqOQTe99zQqHdXvt8ADwFmLREuaLRYjMjlMX8xoCzFVMh99ykGKtMcvXACCE2DW55/7y/7NreG96U6+3wCsEhofMCAKxg21BlxkkpSqLQo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=FtTM7dCc; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 287D43D523E
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 10:25:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.181
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778495134; cv=pass; b=A30taAu9NiMx+tpSwfTHI6dUu61U22C1H7Tryw7PZQLFjgLzAkjkarzw0fbY+ZJpzgDYf0cTrWA2sNPaVvw8A+jfex5SOMoWQOjplGa3J2HabNkFT0nJZbb/GG4yT9354C8nEMSHUZA4gdTmSWXvG/V5yNd5etL2IuhS7JD+44o=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778495134; c=relaxed/simple;
+	bh=QaiOtwTHgPwAS4MTEKlsWHGSO02A2jICVaQP2YkoUas=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SseNQf6NXirlRUhU7gYgq1igQf3pUutUmRq6twWbwr3eXVnrDTlFQ5t3lZrSk7Yc+xlVlQJN/PJM8Zw47RuvG9wDYtZEEN10pK9h3urW6ju36t7DfneTIqSXr1UqQXb0mdtI8D4ILhpp1jhtnhqvvdgVFNpzzm0woAk7FkOgx0E=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EQisbdH2; arc=pass smtp.client-ip=209.85.208.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="FtTM7dCc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1778494102;
-	bh=xGqbaekXBIwazXODc92pEPI3eTzP0CIca9FRsBmggeA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=FtTM7dCc4qIA37Nk5W6myNf9v5ZUDRUZyXCkyByCYSan9Julx2ZGOnZRqDB5ATwtY
-	 UqlTRoR1xFBKE9J6kcaBNCM4w8/oI5OtzZG466jKiaO+3RNPAn4cWxWkRKJ9jYYGxy
-	 r7n1wCyqLXoaRPi9/yvmUHclkJhWznnfViJajZkBwZaE/QVBDgxX7Ju2Ujf5x5NVO7
-	 kBjpfRV0MDYBYQROMH4sXf6tglNB//JMYgTQ//u/o4PpzX2jpPOVwg8+3lflo0FY1q
-	 kolpyuNB3CHsPjeDiuNC9ZNl7YbOaUSCmFJFPvjyjHIq5QPugwKLQICfagn4l3pUOt
-	 7Od5R3xamkiAA==
-Received: from IcarusMOD.eternityproject.eu (unknown [100.64.1.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: kholk11)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id C51CC17E0F7B;
-	Mon, 11 May 2026 12:08:20 +0200 (CEST)
-From: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-To: jic23@kernel.org
-Cc: dlechner@baylibre.com,
-	nuno.sa@analog.com,
-	andy@kernel.org,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org,
-	srini@kernel.org,
-	vkoul@kernel.org,
-	neil.armstrong@linaro.org,
-	sre@kernel.org,
-	sboyd@kernel.org,
-	angelogioacchino.delregno@collabora.com,
-	krzk@kernel.org,
-	dmitry.baryshkov@oss.qualcomm.com,
-	quic_wcheng@quicinc.com,
-	melody.olvera@oss.qualcomm.com,
-	quic_nsekar@quicinc.com,
-	ivo.ivanov.ivanov1@gmail.com,
-	abelvesa@kernel.org,
-	luca.weiss@fairphone.com,
-	konrad.dybcio@oss.qualcomm.com,
-	mitltlatltl@gmail.com,
-	krishna.kurapati@oss.qualcomm.com,
-	linux-arm-msm@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-pm@vger.kernel.org,
-	kernel@collabora.com,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Andy Shevchenko <andriy.shevchenko@intel.com>
-Subject: [PATCH RESEND v8 10/10] iio: adc: qcom-spmi-iadc: Remove regmap R/W wrapper functions
-Date: Mon, 11 May 2026 12:08:05 +0200
-Message-ID: <20260511100805.121432-11-angelogioacchino.delregno@collabora.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260511100805.121432-1-angelogioacchino.delregno@collabora.com>
-References: <20260511100805.121432-1-angelogioacchino.delregno@collabora.com>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EQisbdH2"
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-393da8f389bso39987691fa.1
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 03:25:31 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778495130; cv=none;
+        d=google.com; s=arc-20240605;
+        b=PH2ny8lr3fATxvcyy+R339Mwe8YojUpTFFk4Ka45ycER/jLOsYkfPhjP4RIVIQsROy
+         YAPBknv4gtncTh28JqMX0QOTaultWRqc6U6B3JnNRK+5ECCkrSabipxPMj/hvXlmeYh0
+         Weyn290iDXKjEN0nGmKhvOlsXm9GLf9ZytAXUmH+TTCh+fN4VewWtdvsZfe5z6EdlEUe
+         2NPykafb788K/XsDXFL3wGyTtgV2GroEb9vDNDwuOGGKOfUoruxjMXrdP5Fdb67j9O0e
+         vUmOQuS4xLX6yDwyd/tY//+5IUP7QkIkR7ebUlFycsNI5k6R35SXbmqxTIECjgN/k251
+         t73w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=26pw5p2O4LfysMDPKO5lKRzkgvnLvc1tiwrtVXQtYAc=;
+        fh=HO9NYLSeAFRLDfEMUw2ZhAajcTOhSBwtrjT5m1iJohk=;
+        b=FOz3mEIml6MZSmZZ2aw65pAGJ9qovNJKW/07WunWezcAcJff1FTNvp8+sLhkc3R/K4
+         xp74qOWnr7HCUt78pU2qNbrIlVzJO36lptY0jYyLM0AnlpACU3ie+0l6MHpku8Xq3W6a
+         U15+K7JcrVKdLBmJYTnLKwWZ3BS08OPsoVMMzM4KHA5pVST0E6Dy1Z08tLcgfpd01Buq
+         2/ZAqh0K6ekpm2zSU1EzXdhtqwTXkBVlc4UCsnCkQGXDEHJT1ANku1lYDViHGQIYEgVe
+         2fi9X5Xx48PHMNfaI4D8Fr4Q/658IyzUY3Uuoq5harqXXVOEeUCtmvFJOwYWXouPJtt0
+         y2GQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1778495130; x=1779099930; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=26pw5p2O4LfysMDPKO5lKRzkgvnLvc1tiwrtVXQtYAc=;
+        b=EQisbdH294+EJYRMEVWtqqsq0iyPVYoWfqsLU1N9Z/8Ja1SxbBL4ipVq/m7ZfLn7VV
+         6PPsZYGaHxyHYywpshCPBAD2YRydiOfPIa8Ar5i0vLtfVwXUsyxXTEQR+52x7tNOgawR
+         OzwhDlwqOuuk81lyizLzfwCjyFQHuNjudrh/zTE4KmlVEBzhFjr2Fo9prQvbdpelzgQj
+         eWqJAxEwwOZ3u/QGjr1+rlODE0oVgLL9W75sNLGDVMpYhwUAtoIT9wd2+4ne6S3cHh+/
+         wor5X8Myu/5Q/Tb4oaOUjphsJjReQleqvjfscN4wUABo8/gG6jY4FtYErkHNuKVmEuz0
+         e4Hg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778495130; x=1779099930;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=26pw5p2O4LfysMDPKO5lKRzkgvnLvc1tiwrtVXQtYAc=;
+        b=VMpiNJaDCeUKiasJpM7FBD6yfu+r2T8iO97/uNFTDuJudWmkXjzMrEInzf2sJAvCAd
+         5VxTNdDgJre359MzRndlv3HVzpwkoWu6beUhXftRJyF3w50R2+F4tVmVScmb+b/NnTLV
+         nQlZI1aJEXA6Js+kqVtpw8ycpA7aBZSMJx3YCgin+NgaxPIM9ctG6SoSdMQxABWcEena
+         QdJIHN3EcENh9SqKFs0hMW4pL49Wci0yfkMY5zmb9olVHyqHdoS0lW5I7wgYg9siQDZ+
+         c9c5FgeZBilcSFvPiR3o+JtV+PhqMd9WebzFBIR0FafDOnBTV4c4TiVxwBiRLVpj7dGq
+         TJAA==
+X-Forwarded-Encrypted: i=1; AFNElJ9ooU+eJbMsate6Fl7ytJ0qfHvwvN2kp+TUAcxZSMMQigEp00QiZwtidloytohp0vOZPKJVUgG5Xg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz5QnMrbSxDSz2C0lvfPt0SbxtGQpaJuAnoMwbjBudIV1UEoouY
+	eqVCS6ZOUcKAqx+n98SmqvIBqlwTRHqJzd98v9Sh/2U2tQm5kjoBzYHfTwGHFbUze1mAJmxiRDK
+	uvqkFRYePkas0LnnECR8Pevv/guYycQSQKyL84Agckw==
+X-Gm-Gg: Acq92OEhJ/K35uhm90PBHws1t0dsqJUjmfhaNO9DHkDLMCiZNK+/UzmktuRPFqCbJYj
+	/7FSMNrtGz4Mj/zPS9GpaYso8yLQsA3XddiPlPt7ZXbJ1F4AXE6IuGjm66mNBBxHR1bcNlsVUrT
+	tQN7ehYH2ty4AoBvsKxY/AJ9ZAQVX2JdFRIntmvwrArnDiGvKYAgtqhFDG3sUDxn01wyV87cZ/E
+	NStnBLR1+84565KzPIIrhkHUa89p50adKBn5zIkYjZMeMCqZqYbunxrI9iwh4ilNiEaii0XrMEa
+	+lwUiW0J
+X-Received: by 2002:a05:6512:3c97:b0:5a8:750c:2f79 with SMTP id
+ 2adb3069b0e04-5a8b6c9d7f4mr2454726e87.3.1778495130112; Mon, 11 May 2026
+ 03:25:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260508123910.114273-1-ulf.hansson@linaro.org>
+ <20260508123910.114273-7-ulf.hansson@linaro.org> <CACRMN=cowCsGb3x=tPOWLYdittwLCsSb2N2SXVPyxBRHThGAVg@mail.gmail.com>
+In-Reply-To: <CACRMN=cowCsGb3x=tPOWLYdittwLCsSb2N2SXVPyxBRHThGAVg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Mon, 11 May 2026 12:24:52 +0200
+X-Gm-Features: AVHnY4KccwKVfW4opInH2wvv6H4LV9YYk-FND-WFVqnl0G_Vxtf7tdTrxriZmx0
+Message-ID: <CAPDyKFoxJ8AOyqzbEQc8x-e5fRf0p3faE23PRNcbA4aPSY_cdg@mail.gmail.com>
+Subject: Re: [PATCH v3 06/13] pmdomain: core: Add initial fine grained
+ sync_state support
+To: Saravana Kannan <saravanak@kernel.org>
+Cc: Danilo Krummrich <dakr@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Cristian Marussi <cristian.marussi@arm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abel.vesa@oss.qualcomm.com>, 
+	Peng Fan <peng.fan@oss.nxp.com>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This driver doesn't need to add any register base address to any
-regmap call anymore since it was migrated to register as a SPMI
-subdevice with its own regmap reg_base, which makes the regmap
-API to automatically add such base address internally.
+On Mon, 11 May 2026 at 07:09, Saravana Kannan <saravanak@kernel.org> wrote:
+>
+> On Fri, May 8, 2026 at 5:39=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.or=
+g> wrote:
+> >
+> > A onecell (#power-domain-cells =3D <1 or 2>; in DT) power domain provid=
+er
+> > typically provides multiple independent power domains, each with their =
+own
+> > corresponding consumers. In these cases we have to wait for all consume=
+rs
+> > for all the provided power domains before the ->sync_state() callback g=
+ets
+> > called for the supplier.
+> >
+> > In a first step to improve this, let's implement support for fine grain=
+ed
+> > sync_state support a per genpd basis by using the ->queue_sync_state()
+> > callback. To take step by step, let's initially limit the improvement t=
+o
+> > the internal genpd provider driver and to its corresponding genpd devic=
+es
+> > for onecell providers.
+> >
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >
+> > Changes in v3:
+> >         - Addressed some cosmetic comments from Geert.
+> >
+> > ---
+> >  drivers/pmdomain/core.c   | 124 ++++++++++++++++++++++++++++++++++++++
+> >  include/linux/pm_domain.h |   1 +
+> >  2 files changed, 125 insertions(+)
+> >
+> > diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> > index ad57846f02a3..c01a9a96e5c2 100644
+> > --- a/drivers/pmdomain/core.c
+> > +++ b/drivers/pmdomain/core.c
+> > @@ -2699,6 +2699,119 @@ static struct generic_pm_domain *genpd_get_from=
+_provider(
+> >         return genpd;
+> >  }
+> >
+> > +static bool genpd_should_wait_for_consumer(struct device_node *np)
+> > +{
+> > +       struct generic_pm_domain *genpd;
+> > +       bool should_wait =3D false;
+> > +
+> > +       mutex_lock(&gpd_list_lock);
+> > +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> > +               if (genpd->provider =3D=3D of_fwnode_handle(np)) {
+> > +                       genpd_lock(genpd);
+> > +
+> > +                       /* Clear the previous state before reevaluating=
+. */
+> > +                       genpd->wait_for_consumer =3D false;
+> > +
+> > +                       /*
+> > +                        * Unless there is at least one genpd for the p=
+rovider
+> > +                        * that is being kept powered-on, we don't have=
+ to care
+> > +                        * about waiting for consumers.
+> > +                        */
+> > +                       if (genpd->stay_on)
+> > +                               should_wait =3D true;
+> > +
+> > +                       genpd_unlock(genpd);
+> > +               }
+> > +       }
+> > +       mutex_unlock(&gpd_list_lock);
+>
+> I think I understand the intent of this function, but haven't dug into
+> genpd code enough to comment on this yet. I'll come back to this
+> later.
+>
+> > +
+> > +       return should_wait;
+> > +}
+> > +
+> > +static void genpd_parse_for_consumer(struct device_node *sup,
+> > +                                    struct device_node *con)
+> > +{
+> > +       struct generic_pm_domain *genpd;
+> > +
+> > +       for (unsigned int i =3D 0; ; i++) {
+> > +               struct of_phandle_args pd_args;
+> > +
+> > +               if (of_parse_phandle_with_args(con, "power-domains",
+> > +                                              "#power-domain-cells",
+> > +                                              i, &pd_args))
+> > +                       break;
+>
+> Why not use a while or a do while() instead of this infinite for loop
+> with a break?
 
-Since the iadc_{read,write,read_result}() functions now only do
-call regmap_{read,write,bulk_read}() and nothing else, simplify
-the driver by removing them and by calling regmap APIs directly.
+I guess it's a matter of personal preference. I'm not sure the code
+gets any nicer with a do/while, but if you really insist I can change
+it.
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-Tested-by: Neil Armstrong <neil.armstrong@linaro.org> # on SM8650-QRD
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-Signed-off-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
----
- drivers/iio/adc/qcom-spmi-iadc.c | 83 ++++++++++++--------------------
- 1 file changed, 30 insertions(+), 53 deletions(-)
+>
+> > +
+> > +               /*
+> > +                * The phandle must correspond to the supplier's genpd =
+provider
+> > +                * to be relevant else let's move to the next index.
+> > +                */
+> > +               if (sup !=3D pd_args.np) {
+> > +                       of_node_put(pd_args.np);
+> > +                       continue;
+> > +               }
+> > +
+> > +               mutex_lock(&gpd_list_lock);
+> > +               genpd =3D genpd_get_from_provider(&pd_args);
+> > +               if (!IS_ERR(genpd)) {
+> > +                       genpd_lock(genpd);
+> > +                       genpd->wait_for_consumer =3D true;
+> > +                       genpd_unlock(genpd);
+> > +               }
+> > +               mutex_unlock(&gpd_list_lock);
+> > +
+> > +               of_node_put(pd_args.np);
+> > +       }
+> > +}
+> > +
+> > +static void _genpd_queue_sync_state(struct device_node *np)
+> > +{
+> > +       struct generic_pm_domain *genpd;
+> > +
+> > +       mutex_lock(&gpd_list_lock);
+> > +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> > +               if (genpd->provider =3D=3D of_fwnode_handle(np)) {
+> > +                       genpd_lock(genpd);
+> > +                       if (genpd->stay_on && !genpd->wait_for_consumer=
+) {
+> > +                               genpd->stay_on =3D false;
+> > +                               genpd_queue_power_off_work(genpd);
+> > +                       }
+> > +                       genpd_unlock(genpd);
+> > +               }
+> > +       }
+> > +       mutex_unlock(&gpd_list_lock);
+> > +}
+> > +
+> > +static void genpd_queue_sync_state(struct device *dev)
+> > +{
+> > +       struct device_node *np =3D dev->of_node;
+> > +       struct device_link *link;
+> > +
+> > +       if (!genpd_should_wait_for_consumer(np))
+> > +               return;
+> > +
+> > +       list_for_each_entry(link, &dev->links.consumers, s_node) {
+>
+> Couple of issues:
+> 1. I don't want the frameworks to be so deeply aware of driver core
+> internals. I want the driver core maintainers to be able to change the
+> devlink implementation without having to worry about going and fixing
+> all the frameworks. So, please add a for_each_consumer_dev(supplier,
+> callback) and for_each_supplier_dev(consumer, callback) helper
+> functions.
 
-diff --git a/drivers/iio/adc/qcom-spmi-iadc.c b/drivers/iio/adc/qcom-spmi-iadc.c
-index 55a09c0e2d5c..503f90b2a5ba 100644
---- a/drivers/iio/adc/qcom-spmi-iadc.c
-+++ b/drivers/iio/adc/qcom-spmi-iadc.c
-@@ -113,77 +113,59 @@ struct iadc_chip {
- 	struct completion complete;
- };
- 
--static int iadc_read(struct iadc_chip *iadc, u16 offset, u8 *data)
--{
--	unsigned int val;
--	int ret;
--
--	ret = regmap_read(iadc->regmap, offset, &val);
--	if (ret < 0)
--		return ret;
--
--	*data = val;
--	return 0;
--}
--
--static int iadc_write(struct iadc_chip *iadc, u16 offset, u8 data)
--{
--	return regmap_write(iadc->regmap, offset, data);
--}
--
- static int iadc_reset(struct iadc_chip *iadc)
- {
--	u8 data;
-+	u32 data;
- 	int ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_read(iadc, IADC_PERH_RESET_CTL3, &data);
-+	ret = regmap_read(iadc->regmap, IADC_PERH_RESET_CTL3, &data);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
-+	ret = regmap_write(iadc->regmap, IADC_SEC_ACCESS, IADC_SEC_ACCESS_DATA);
- 	if (ret < 0)
- 		return ret;
- 
- 	data |= IADC_FOLLOW_WARM_RB;
- 
--	return iadc_write(iadc, IADC_PERH_RESET_CTL3, data);
-+	return regmap_write(iadc->regmap, IADC_PERH_RESET_CTL3, data);
- }
- 
- static int iadc_set_state(struct iadc_chip *iadc, bool state)
- {
--	return iadc_write(iadc, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
-+	return regmap_write(iadc->regmap, IADC_EN_CTL1, state ? IADC_EN_CTL1_SET : 0);
- }
- 
- static void iadc_status_show(struct iadc_chip *iadc)
- {
--	u8 mode, sta1, chan, dig, en, req;
-+	u32 mode, sta1, chan, dig, en, req;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_MODE_CTL, &mode);
-+	ret = regmap_read(iadc->regmap, IADC_MODE_CTL, &mode);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_DIG_PARAM, &dig);
-+	ret = regmap_read(iadc->regmap, IADC_DIG_PARAM, &dig);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CH_SEL_CTL, &chan);
-+	ret = regmap_read(iadc->regmap, IADC_CH_SEL_CTL, &chan);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_CONV_REQ, &req);
-+	ret = regmap_read(iadc->regmap, IADC_CONV_REQ, &req);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+	ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 	if (ret < 0)
- 		return;
- 
--	ret = iadc_read(iadc, IADC_EN_CTL1, &en);
-+	ret = regmap_read(iadc->regmap, IADC_EN_CTL1, &en);
- 	if (ret < 0)
- 		return;
- 
-@@ -199,34 +181,34 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 
- 	/* Mode selection */
- 	mode = (IADC_OP_MODE_NORMAL << IADC_OP_MODE_SHIFT) | IADC_TRIM_EN;
--	ret = iadc_write(iadc, IADC_MODE_CTL, mode);
-+	ret = regmap_write(iadc->regmap, IADC_MODE_CTL, mode);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Channel selection */
--	ret = iadc_write(iadc, IADC_CH_SEL_CTL, channel);
-+	ret = regmap_write(iadc->regmap, IADC_CH_SEL_CTL, channel);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* Digital parameter setup */
- 	decim = IADC_DEF_DECIMATION << IADC_DIG_DEC_RATIO_SEL_SHIFT;
--	ret = iadc_write(iadc, IADC_DIG_PARAM, decim);
-+	ret = regmap_write(iadc->regmap, IADC_DIG_PARAM, decim);
- 	if (ret < 0)
- 		return ret;
- 
- 	/* HW settle time delay */
--	ret = iadc_write(iadc, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
-+	ret = regmap_write(iadc->regmap, IADC_HW_SETTLE_DELAY, IADC_DEF_HW_SETTLE_TIME);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = iadc_write(iadc, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
-+	ret = regmap_write(iadc->regmap, IADC_FAST_AVG_CTL, IADC_DEF_AVG_SAMPLES);
- 	if (ret < 0)
- 		return ret;
- 
- 	if (IADC_DEF_AVG_SAMPLES)
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, IADC_FAST_AVG_EN_SET);
- 	else
--		ret = iadc_write(iadc, IADC_FAST_AVG_EN, 0);
-+		ret = regmap_write(iadc->regmap, IADC_FAST_AVG_EN, 0);
- 
- 	if (ret < 0)
- 		return ret;
-@@ -239,19 +221,19 @@ static int iadc_configure(struct iadc_chip *iadc, int channel)
- 		return ret;
- 
- 	/* Request conversion */
--	return iadc_write(iadc, IADC_CONV_REQ, IADC_CONV_REQ_SET);
-+	return regmap_write(iadc->regmap, IADC_CONV_REQ, IADC_CONV_REQ_SET);
- }
- 
- static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- {
- 	unsigned int count, retry;
-+	u32 sta1;
- 	int ret;
--	u8 sta1;
- 
- 	retry = interval_us / IADC_CONV_TIME_MIN_US;
- 
- 	for (count = 0; count < retry; count++) {
--		ret = iadc_read(iadc, IADC_STATUS1, &sta1);
-+		ret = regmap_read(iadc->regmap, IADC_STATUS1, &sta1);
- 		if (ret < 0)
- 			return ret;
- 
-@@ -267,11 +249,6 @@ static int iadc_poll_wait_eoc(struct iadc_chip *iadc, unsigned int interval_us)
- 	return -ETIMEDOUT;
- }
- 
--static int iadc_read_result(struct iadc_chip *iadc, u16 *data)
--{
--	return regmap_bulk_read(iadc->regmap, IADC_DATA, data, 2);
--}
--
- static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- {
- 	unsigned int wait;
-@@ -296,7 +273,7 @@ static int iadc_do_conversion(struct iadc_chip *iadc, int chan, u16 *data)
- 	}
- 
- 	if (!ret)
--		ret = iadc_read_result(iadc, data);
-+		ret = regmap_bulk_read(iadc->regmap, IADC_DATA, data, sizeof(*data));
- exit:
- 	iadc_set_state(iadc, false);
- 	if (ret < 0)
-@@ -392,10 +369,10 @@ static int iadc_update_offset(struct iadc_chip *iadc)
- 
- static int iadc_version_check(struct iadc_chip *iadc)
- {
--	u8 val;
-+	u32 val;
- 	int ret;
- 
--	ret = iadc_read(iadc, IADC_PERPH_TYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_TYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -404,7 +381,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_PERPH_SUBTYPE, &val);
-+	ret = regmap_read(iadc->regmap, IADC_PERPH_SUBTYPE, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -413,7 +390,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_REVISION2, &val);
-+	ret = regmap_read(iadc->regmap, IADC_REVISION2, &val);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -428,7 +405,7 @@ static int iadc_version_check(struct iadc_chip *iadc)
- static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- {
- 	int ret, sign, int_sense;
--	u8 deviation;
-+	u32 deviation;
- 
- 	ret = of_property_read_u32(node, "qcom,external-resistor-micro-ohms",
- 				   &iadc->rsense[IADC_EXT_RSENSE]);
-@@ -440,7 +417,7 @@ static int iadc_rsense_read(struct iadc_chip *iadc, struct device_node *node)
- 		return -EINVAL;
- 	}
- 
--	ret = iadc_read(iadc, IADC_NOMINAL_RSENSE, &deviation);
-+	ret = regmap_read(iadc->regmap, IADC_NOMINAL_RSENSE, &deviation);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.53.0
+I understand your concern and I like the idea. However, maybe it's
+better to get this landed (the series is complicated as is) first and
+then can continue to improve the code on top, with helper functions
+etc.
 
+>
+> 2. This doesn't ignore "SYNC_STATE_ONLY" links and that's going to
+> confuse the consumer count/check you might do or at the least waste
+> parsing those.
+
+I am not sure I understand how I should take SYNC_STATE_ONLY links
+into account here.
+
+At each call to the genpd_queue_sync_state(), we walk through all the
+provided genpds for the provider. No previous state is cached to track
+consumer counts.
+
+>
+> 3. **Device** links are not the complete list of consumers because
+> they can only link consumer **devices** once the consumer **device**
+> is created.
+>
+> 4. What you really need is a for_each_consumer_fwnode(supplier,
+> callback) that first loops through all the consumer device links and
+> calls the callback() on their fwnode and then the same function needs
+> to loop through all the fwnode links and then pass those consumer
+> fwnodes to the callback. And inside that callback you can do whatever
+> you want.
+
+The ->queue_sync_state() callback is invoked *after*
+__device_links_queue_sync_state() has been called for the device,
+which is also when the conditions for calling ->sync_state() is
+checked.
+
+If there are problems with not yet registered consumer device links,
+why isn't that as problem for regular ->sync_state() in
+__device_links_queue_sync_state()?
+
+>
+> 5. You might want to add a for_each_inactive_consumer(supplier,
+> callback) too to simplify your need for checking if a fwnode has a
+> device and then checking if it's probed.
+>
+> Thanks,
+> Saravana
+>
+>
+> > +               struct device *consumer =3D link->consumer;
+> > +
+> > +               if (!device_link_test(link, DL_FLAG_MANAGED))
+> > +                       continue;
+> > +
+> > +               if (link->status =3D=3D DL_STATE_ACTIVE)
+> > +                       continue;
+> > +
+> > +               if (!consumer->of_node)
+> > +                       continue;
+> > +
+> > +               /*
+> > +                * A consumer device has not been probed yet. Let's par=
+se its
+> > +                * device node for the power-domains property, to find =
+out the
+> > +                * genpds it may belong to and then prevent sync state =
+for them.
+> > +                */
+> > +               genpd_parse_for_consumer(np, consumer->of_node);
+> > +       }
+> > +
+> > +       _genpd_queue_sync_state(np);
+> > +}
+> > +
+
+[...]
+
+Kind regards
+Uffe
