@@ -1,81 +1,112 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB230372675
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:34:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E5FD372675
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:36:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778499285; cv=none; b=eISytCHZ/nElSOWkTUie0bIhMd2k4R4nTadJwG/E8VIMgr5qwG19KoRAhzU/3P21p4rdiusbvqra2DSNWIO8+TWBtEdQ4CEndQC9gOFBLOqhK6l02VRTZ4+x9mK11RCwb9O57SJmeu4H8RCHH9N9NsCps83t/9GcN5IUKQchZR4=
+	t=1778499372; cv=none; b=MMga8M4CMCXIEBM52BzjcGZBe96Rl31kTSxJyCzP7YFaRjVKkYWUjqCEXpxozCrb9LSjacCApa3xlkaHXp69/QDvyIIgZ699TCrMurm6wfq5vw7edHSo/gyDOBU2+GrtOiYjir/jk399SOnlkEyWTjm+1GFvSdrJcy4OPV5YhzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778499285; c=relaxed/simple;
-	bh=u/rO97GV6xIVvGPFxWf9uNLpL6SfF9y57ZKNbS3WREw=;
+	s=arc-20240116; t=1778499372; c=relaxed/simple;
+	bh=UoHrRBhiVhtypnZWjEzks4nsFfinmujGkJZDbMS325o=;
 	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tMRcgLbc/UGVNG8rLG5wgXb/wnocqmFa0X7+I/YkcGRiAJHZVUQB1+GaZLgw30vylafuIjDMBSgjRivjJTCF7xA8xtbcaINuptn5FCoFmHppnvrjm+kjWNldHKj0c4bsywqxC1LlcWIgiQhuKdVrjEqMG8aV4E87rMLmVLa38iE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P6xxq2N0; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=bAP0kvxCpbA+lEVJODd7V+HzI9jpa6pRgjWX0+cughpbpJlZPRYyOrt5dNCMotQZpiOrwk6vP4qwZuX8a+doR3bAFfe/hqnsJ+OgF6ND+ZO7SQISSU+3GXNSGZC7Nr1Uf+VQScmbQibchGHiZYYHt1CbZIKxVsjQQRYG+u47K1Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kyZg1UeT; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P6xxq2N0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81784C2BD05
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:34:45 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kyZg1UeT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4703C4AF0B
+	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 11:36:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778499285;
-	bh=u/rO97GV6xIVvGPFxWf9uNLpL6SfF9y57ZKNbS3WREw=;
+	s=k20201202; t=1778499371;
+	bh=UoHrRBhiVhtypnZWjEzks4nsFfinmujGkJZDbMS325o=;
 	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
-	b=P6xxq2N0GnxCNtkGfWuYp230OmxpZmt7XAGGhj4uZW7P7rvyk98AFcw87AYqJ49KI
-	 X3zD1PuIEPrEuKmbXetuRoKiz5AwcgvB2NiMmCz9oAuPvmvwuKpa3TcaMq4qpUFCLh
-	 7iZ3rsb0YmlC4HQKKNKzWfZC1V+UdfVMkSV2doH3nDdLCvjSlBDuPRkKj4YWz5INDc
-	 PNevJbqrtF04ZIJeBlCYGw3wlFhxDXzKdngF4wtOe+Tgh4H3iCCa8LO5NHTjUwUp3d
-	 t7HiLRLJnuHqfyM2UXOaNF24HDbVBRsHS17JnL5ghN5nlxs1FfDK/zH/40dD0dhtBh
-	 aCzyccJ1BMLBQ==
-Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a8d1f43432so952706e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:34:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ954Eszc7m6Q2nZCTzNdOBjvYWuM2LldLLaNzjR1d/slo/joPftowRZM5nQrUo0QwOX8wv2K6/U3w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwStM732ZVa/0iGp+7mV9pE19xZdIh3Kexcblx4au4vQWE41IyY
-	8HTIoKnzlORKgj4VmrxgjSegGVGXJy3CeAirZ49oq6/sLis8AaElyd8Otka/F16dz5eifn8ndzR
-	dePdIfU+DQlrIn79kogaCrhpaUbZIxEmzc9fy0k8/0w==
-X-Received: by 2002:a05:6512:1595:b0:5a8:9988:f1cf with SMTP id
- 2adb3069b0e04-5a89988f332mr7709402e87.31.1778499284173; Mon, 11 May 2026
- 04:34:44 -0700 (PDT)
+	b=kyZg1UeTVqp9JfmhFLdNIdCKfKpAiDKDdT77xunM5pr5xh6VxbZ0nxzYNSS4K1gy3
+	 /IGjRw695W8TgjhbKpfS7HvV2YWNuCO/lzkmTw4G2sSiylCCkYwZd99e9CVnEyoIAP
+	 hD6wtZnSALg7USgjWSFb/0QVBvOeNw9Rr45kL/EW562s1ZsvYS087PJ9n2B4kD4BDj
+	 z+jk/pu+SdQREDzWqX2kay3Qv9QBmEO09md5NOxCRmDivAY9Krx9M6mgz4W/reJ8H/
+	 hcWsJ/x6m5+PVmlwZM09HmHwmBEt6aNXGlvcefRsHce5IWwjbDQdasvViSovmyqqVM
+	 GB/7AqHwHXqsg==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-38ea6a5a0b3so34640731fa.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 04:36:11 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8s1UizLbgy8FIuD2ShbW28nJ5MWcyIb5PPWAkQpU5GYgU+wGuGl1VYs2qWc3zESTD2t/nOAsgm/w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzT+5vFVPIQ9Nld/VZKNbPm9O2L0TaViTHJkvBWt9d7mhuAomP+
+	LFQVB6Na9QJBKq3lFdmShx+GpukjBZ5djD0yNezT0KdW4BbKBEUxUsPKBXbKB7fEZwCTgA1B8Dt
+	sZYDLX0PpCYraATKJSU65b9O1DFNakTiLip5LyAblrQ==
+X-Received: by 2002:a2e:beaa:0:b0:38e:49e6:a376 with SMTP id
+ 38308e7fff4ca-393c41dd93dmr80689701fa.22.1778499370441; Mon, 11 May 2026
+ 04:36:10 -0700 (PDT)
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 11 May 2026 04:34:42 -0700
+ HTTPREST; Mon, 11 May 2026 13:36:08 +0200
 Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 11 May 2026 04:34:42 -0700
+ HTTPREST; Mon, 11 May 2026 13:36:08 +0200
 From: Bartosz Golaszewski <brgl@kernel.org>
-In-Reply-To: <20260507-pwrseq-m2-bt-v2-7-1740bd478539@oss.qualcomm.com>
+In-Reply-To: <20260507-pwrseq-m2-bt-v2-9-1740bd478539@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com> <20260507-pwrseq-m2-bt-v2-7-1740bd478539@oss.qualcomm.com>
-Date: Mon, 11 May 2026 04:34:42 -0700
-X-Gmail-Original-Message-ID: <CAMRc=Me7=Mf4U1macJUzhDAwUcXjqSu6K3joACTECnpEoVFNjg@mail.gmail.com>
-X-Gm-Features: AVHnY4KQwXOFJbCj0Fv2Swf6-OmzR6j41Xy0gf4jeamGfJl8dk0MuxJXia1DERg
-Message-ID: <CAMRc=Me7=Mf4U1macJUzhDAwUcXjqSu6K3joACTECnpEoVFNjg@mail.gmail.com>
-Subject: Re: [PATCH v2 7/9] Bluetooth: hci_qca: Rename 'power_ctrl_enabled' to 'bt_en_available'
+References: <20260507-pwrseq-m2-bt-v2-0-1740bd478539@oss.qualcomm.com> <20260507-pwrseq-m2-bt-v2-9-1740bd478539@oss.qualcomm.com>
+Date: Mon, 11 May 2026 13:36:08 +0200
+X-Gmail-Original-Message-ID: <CAMRc=MctPMuxbdX5etjf7YAdRokFHzytJ2d_XLJ5sF_VQiebnQ@mail.gmail.com>
+X-Gm-Features: AVHnY4KOYvtKbJK93XG_fcHF0tSVio3ofHekSu7kfAiAWf0UqYR7scUVWtjTLUQ
+Message-ID: <CAMRc=MctPMuxbdX5etjf7YAdRokFHzytJ2d_XLJ5sF_VQiebnQ@mail.gmail.com>
+Subject: Re: [PATCH v2 9/9] Bluetooth: hci_qca: Set 'bt_en_available' based on
+ W_DISABLE2# presence in M.2 connector
 To: manivannan.sadhasivam@oss.qualcomm.com
 Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
 	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
 	linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
 	linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
-	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, 
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>, Bartosz Golaszewski <brgl@kernel.org>, 
 	Manivannan Sadhasivam <mani@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
 	Luiz Augusto von Dentz <luiz.dentz@gmail.com>, Shuai Zhang <quic_shuaz@quicinc.com>
 Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 7 May 2026 18:06:15 +0200, Manivannan Sadhasivam via B4 Relay
+On Thu, 7 May 2026 18:06:17 +0200, Manivannan Sadhasivam via B4 Relay
 <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
 > From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 >
-> 'power_ctrl_enabled' flag is used to indicate the availability of the BT_EN
-> GPIO in devicetree. But the naming causes confusion with the new pwrctrl
-> framework.
+> Check if the M.2 connector supports the W_DISABLE2# property or not by
+> querying the pwrseq provider's DT node. If not available, then set
+> 'bt_en_available' flag to 'false'. This flag is used to set the
+> HCI_QUIRK_NON_PERSISTENT_SETUP HCI quirk, which informs the HCI layer
+> whether the shutdown() callback for the device can be triggered or not.
 >
-> So rename it to 'bt_en_available' to make it clear and explicit.
->
-> Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 > ---
+>  drivers/bluetooth/hci_qca.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+> index 3e71a72ea7c7..b5439b9956cf 100644
+> --- a/drivers/bluetooth/hci_qca.c
+> +++ b/drivers/bluetooth/hci_qca.c
+> @@ -2449,10 +2449,17 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+>  		 * the M.2 Key E connector.
+>  		 */
+>  		if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
+> +			struct device *dev;
+> +
+>  			qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->ctrl->dev,
+>  								   "uart");
+>  			if (IS_ERR(qcadev->bt_power->pwrseq))
+>  				return PTR_ERR(qcadev->bt_power->pwrseq);
+> +
+> +			dev = pwrseq_to_device(qcadev->bt_power->pwrseq);
+> +			if (!device_property_present(dev, "w-disable2-gpios"))
+> +				bt_en_available = false;
+> +
+>  			break;
+>  		}
+>
+>
 
 Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
+Just one nit: I'd switch the order of patches 7 and 8 in this series so that
+I can queue the pwrseq patches in an immutable branch and provide it to the
+bluetooth tree for v7.2
+
+Bart
