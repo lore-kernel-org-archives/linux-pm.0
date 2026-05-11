@@ -1,184 +1,273 @@
-Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com [209.85.167.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011018.outbound.protection.outlook.com [40.93.194.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 332E82D3ECF
-	for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 21:01:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.182
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778533291; cv=none; b=e4/wScydpAZ8q6V5YWmbFaTaOLkw14EjmshsAI944lcJaxsrxYeK9ZcdLQ2BQUdQ+BZ76egG/JSRSKRbVnvsrfWtDj6dOvoVrcmbmlBDZlhEumnJOL9Iq3weIzy52zZjSQTe/XG650Hzf+8vLKrn+psHm0Zw3xa0d8H8gQml6Jw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778533291; c=relaxed/simple;
-	bh=MbyntfESUSQ376pq7l61Mm9i+0drVptg+gEMrNuoL+I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=E/5UHl/VK5RLAH4VO1Ctu/GQMQvWWhdBerot4eViq8H7CRqL4n30EC9JXiGfmyjl0TfFXkT1UgdKmQZmFGvmAJpjM+JgpIVRS7FK8RlmTJ7Hwbbc3q1nqLaDUv0T1aPcfIZkx6DzTuUIPKa5y8OOsJ9dENrfUKejKBd+C4FinRQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=R/2JPElX; arc=none smtp.client-ip=209.85.167.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FAF7381B19;
+	Mon, 11 May 2026 21:20:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.18
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778534453; cv=fail; b=K5+wJ4reSiQnTd2UquhljZ2NecdzUtA+RRnWOwQpHQZBf6tSFIi3Ksmr/hrgX/iswTaHvH95/XmM/Nq2Dy/QG/StxdqkkoUPBNqfquMzZtcAQPgQGAKlSb/Vs6cryOOYFvGi6j0LHz1OAQZOBhKpg0eSJJiWIApAck1+udzJEsU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778534453; c=relaxed/simple;
+	bh=nXN3W2meuftnA0y5A54F7L9H4Cbz0EPW7Cw2+H+Ysoc=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Z9+wvSUg2IOvaIAFO2zx2BJpYUZzKXGqjPn302dhvHl3yLS3qW16jLQhflUiAsJaSR1ZwIXs1U0UkcD99WjmTaRz3nM0GihxIfZxfY8WKAoKfAjXqVw8nYJetu/MeRLrTeEkDewvuqRYwj8L91h1mXos5iNa0juYnVtZolviN38=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=g4OHo0XP; arc=fail smtp.client-ip=40.93.194.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="R/2JPElX"
-Received: by mail-oi1-f182.google.com with SMTP id 5614622812f47-4645dde00a7so4691348b6e.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 14:01:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1778533289; x=1779138089; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=tRjN2gtjd4eOAWZYX56Cs+TAhwG0rqDE9fnVl6jT2Iw=;
-        b=R/2JPElXeDpkAVArXYU+Vt+ufQPgYyl7qm+Bi6CZOjeEO3OibG6TMyFhejFAhBXT8l
-         eqpB1FMvmqnQTpDEGBFlSs00M1WocNzoYwv7snGQ9L6AGlHLMb4i4mIp0Ps9vdPYFANX
-         gnQF8AaS4k3wUnzJaKB7VmX819vtja8bU0WMk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778533289; x=1779138089;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=tRjN2gtjd4eOAWZYX56Cs+TAhwG0rqDE9fnVl6jT2Iw=;
-        b=iasZwHnprI6E9EcmokTZvyabd1RN/8zcgnG+e7quLPigMrRvw2GpJILa8mWp4d9aU0
-         Fef+57ZyKdOusDXjiYd/OJ+yqVxfqSiYpve/Y+p4DOD1njCLrpam6VQZo6XiL7SNv6cv
-         tCugeHzIY/1jQ3sW1AekvxGTXNrrJUb0R6fzUvPAF4iaCj3PcZET9NhSOZluRk8GZYS9
-         IsxSKiy9srUxRcH8NpIBY/V40DFO0ys7WCu1YUpYDQ7FuEOVyIHLwMufnmkZ7smqVN0r
-         T/7zFcTYmERcUNNaRVKsbkKYCd/8zY3SrHQwqImWTXIvL90cPYWpiCC4zSxmrfDk9bvf
-         /Ysw==
-X-Gm-Message-State: AOJu0Yy/qDcEM11t/IXheec1D5C8jHHEa0BfjUfjU1p7skmR4e7Sv5tf
-	WXhay7FClcj3BF1DvZH6hJYouAWNFZiLq/GZoSkeWFo9bpQd7bTV9QFrSf+0AFCIheU=
-X-Gm-Gg: Acq92OE5KAeBqwhU6mEmDjWXmo/8lp+hlipngvjikb5YdSVjQyhmPcx3sqpFnHtqWST
-	6BWhuCDIprl50PwVhCl3vwojNTpkCqTy1s1NvY66oDk7XLxAk0SHqdVPSnXL8N127AhDcbQ0Vjn
-	kZwUPQzYsKkTHH/abl4VLZFG5+Eb9X4JFJhKWwj1AXXeloImx0Z96N23NYo3314XyskWU4iuMJ3
-	zd96Hj/dywd1wfaUNQbxrA5S6cCG8SmGSKweo1tIKUL8PrYI/cv7O55B/mGZdSCSDRnNuJJ7rGK
-	wI0kistFI1crnnjjlIj+hRK0SDhkrYB2O6nnWcxaTeQxy6t1Le/bUtCEDdpOyosa1oRCjWtgMrG
-	duZsn6SYxkro+vkWcH5N7cY1unX215zko9Uv8pwkYtpyJw/BxBzfYZrG3Wmeunkjj4h6QrJ99LY
-	q40+tL1eTfPMvxRZ7mG5K5Tg3UZpJuEAA=
-X-Received: by 2002:a05:6808:4701:b0:479:fd47:6fac with SMTP id 5614622812f47-48293c4f3efmr815555b6e.12.1778533289166;
-        Mon, 11 May 2026 14:01:29 -0700 (PDT)
-Received: from [192.168.1.14] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-435570ac625sm10999052fac.1.2026.05.11.14.01.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 May 2026 14:01:28 -0700 (PDT)
-Message-ID: <60d4f650-84fc-4697-8390-98d9e9ebed31@linuxfoundation.org>
-Date: Mon, 11 May 2026 15:01:27 -0600
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="g4OHo0XP"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=iNUa5Q1I+KJeKJ8P3zFV+tmszoVYAhrHKZ0binu3ag3OwdDprfDu4Vm6t/fjU5gGmY0gsyQx1SZd/edIwUGoFuHY55apc5ZCnCPIz5uHL4oP4nb2E0WCWpNUrrS4A2wUFY8nXoNBeDzq+L/UDlm0D57NfnDqcSE6al0dlOLWia18HJvaaSMsfzrUzyFLrzlsX0nNtXeIl4HJBqOfEOk3syzf7gz0bINmumQrbJbyX9lsDZjRlNGpQoEqhQVpkwCR7a0fMT/azK1eigW93FQOpyaguVBqAKub60SuCbeIDxffOu6dv0ouLnTw34RD5ey3VvJTRiXIpyB0csHY3Kpz+A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6py+6TD2tMBRfsNgJAGQSY198l4u8URjgXsbJUogmS4=;
+ b=MMiemA+fVYOeMZEmDFW+bVaVGKkXZHA4172pH9+55pIDYJmanxvi8oSYUwISM/327LOL2TE7pXHUV3SrAKZ/FtEH13FW9G1Bq6v41tIzsA5fqmgXwqF9mzXpr1MyplYCvqHnSo7oNDXbs4PrjPE95WhcO9OfFzDobNv+pwasz4LDiBIPgjR7kKipglbTk0ggNR5El2imgCee9T5K9Zaoa7hPv7XYDiaZ+KuIs/lq+H14iu7pcJgCXgEd80dgPeAj4lZv1QLxfFelohCp2oIcDGLkJ5co/roZi8cWMUaYp0ueatJxhHysdVa6nebV9zNrafpy/id8z4ezIdXOQCvk/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=6py+6TD2tMBRfsNgJAGQSY198l4u8URjgXsbJUogmS4=;
+ b=g4OHo0XPeiKbHhbiwugLoZWn6+nKzYN74z+G8p/Bknbaq/jlXkl0xIeh5ERDoX5PC8DkRrmEKHqpneV2K4VsIvp1ZhIUeLy95z86uJG6XBZQSzOJb5qLX9tZMh6OD7WBLGzWQMmmrun3ddYPJ0fXXI1DQ4rjv1BoGKOL4mPqxTtwd/YCO3LKg1IPw4SV8oB8MVg7hwBm5eceoYyTbp3mlMoO7j1WysVEuKxy+T5H6IpAzIFjs8F5nu+uDFeCJOtgRItqEwsv3X1EsBoDyBCMFGVtt2MzCkVceLlhdIyB4KXrG9z2rBRC8sq1nTqAXn+SCoOHeWws362RZWJT/xVeOg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
+ by PH7PR12MB9102.namprd12.prod.outlook.com (2603:10b6:510:2f8::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.22; Mon, 11 May
+ 2026 21:20:44 +0000
+Received: from BN9PR12MB5179.namprd12.prod.outlook.com
+ ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
+ ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.20.9891.021; Mon, 11 May 2026
+ 21:20:43 +0000
+Message-ID: <3b0b5f30-437e-43c0-8b5a-d3ef84932113@nvidia.com>
+Date: Tue, 12 May 2026 02:50:33 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/2] ACPI: CPPC: Add CPPC v4 support (ACPI 6.6)
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: viresh.kumar@linaro.org, lenb@kernel.org, pierre.gondois@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, mario.limonciello@amd.com,
+ saket.dumbre@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ acpica-devel@lists.linux.dev, treding@nvidia.com, jonathanh@nvidia.com,
+ vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
+ bbasu@nvidia.com, sumitg@nvidia.com
+References: <20260430142430.755437-1-sumitg@nvidia.com>
+ <CAJZ5v0gCSPjnxE2Vd+Py14ENJ6U46KBQVHiBetLfEKGybtDh8g@mail.gmail.com>
+Content-Language: en-US
+From: Sumit Gupta <sumitg@nvidia.com>
+In-Reply-To: <CAJZ5v0gCSPjnxE2Vd+Py14ENJ6U46KBQVHiBetLfEKGybtDh8g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA0PR01CA0017.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:80::12) To BN9PR12MB5179.namprd12.prod.outlook.com
+ (2603:10b6:408:11c::18)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] cpupower: Implement powercap enabled setters
-To: =?UTF-8?Q?Mateusz_Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>,
- Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
- "John B . Wyatt IV" <jwyatt@redhat.com>, John Kacur <jkacur@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <skhan@linuxfoundation.org>
-References: <20260508223524.1314573-1-jaskiewiczteo@gmail.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260508223524.1314573-1-jaskiewiczteo@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|PH7PR12MB9102:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1dc70a52-63aa-4fe8-1533-08deafa3289c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|366016|1800799024|22082099003|56012099003|18002099003|11063799003;
+X-Microsoft-Antispam-Message-Info:
+	GMdT+ig2vnTn80padArk8J9LGpPWkVSIFoE4yYVfEQ/dzMhd7EH87dFQlAOVMtV0YOOZD2Z+aGbICLBF6q0w8xb25KchkSef03MdEvnxccDpP+e36i27gBH4HyB6NM2vq3+57GcIVBOHXHRAj3nIHyErN4MXM4lUidta1Faud7SpprL53e0kknX/qQRsY/0e0ChV5j3cP41fCjz/HsgVaGsdHzIp5w5owKW2v8dZG6PWRdv0PI1kAk+SLsPDGy45Hlt+oawbfQaJ0Ngk+/mur2ze9kdef5DNBbQlKzsaUGn5VPgce91+HqjmlOiKi8ujbztTs3KX0qIzR2nLB44f/pmCjB6coiXCT0NpGb4bL8bHxLYra8zoTKVlNW9FD9n0XPgvZFLZXkf/fjCtVFtdwKBmXKFtsY609JNzstXG/TAsRvJgizlDbo0/eEhHgMwRwXz4vfsEThquBjowodhpKwisBfDsel5Jj4JNec4UDz5dBGZaQyKwcOE11T3uHfCW/TIi2NEQAA9hwRy1JxuJWP1Gd/0Dwl4hHFZsQ/NjAPUesIiUvRwhJZTfGl62I3hg8Bqg5VZ0WQwz9aaRKWPWHOpWpVAVCq1RrrjNU5VJgsyVqzqrNISxRm11iUfQkB4g7g4zn6PK6n60CTx+qM9VOlU78iYA0WMWbL7tqS6Y0QR7rdqfMSRsXv79AJy/+WyR
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(22082099003)(56012099003)(18002099003)(11063799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?MWxnSlEzNFFSKy9aVDUya21Vcnhrb1dOSU90NnVLV2pncnRrTm9IMkVrb1lX?=
+ =?utf-8?B?bGVDMHRUcUxDL2RPcFRURXptQTRtSlhWVWJYRGQ5S0htRDBaRXdmcHdYV2Vn?=
+ =?utf-8?B?R0pSYXJkVXozVnRMWHJ0MVFXMU40UFRBem5xMjdpY0ZGbkVUMlIvdGRpUVlN?=
+ =?utf-8?B?Z3ZCejRLL0VIS1IxaGtIQjZ1UzlleUJVdnYzMCttZzZtZ3Zya3lxcEZqb2p3?=
+ =?utf-8?B?U052ZHZIY2orZjExS3ZXeWc2eThHZWEvMDN4cUs0L3NLNnVXbnBaOEhnaVJo?=
+ =?utf-8?B?d2RydG85SVE5dE0vaXNGajk0RkhmQmRMZHJYQ2dVZUpodlVMLzFHNzFTMElC?=
+ =?utf-8?B?WnNWS01aUE5OSDRUN3dUZWZ5VWZKSndaRXlYK0VqQm5Va0ZuUHE3MUplQjVm?=
+ =?utf-8?B?RERsWVI4Yk02RGp4cDcyZFhNSlJqZ2FEVnpZTkV1TVNLWlhYaGsvU0JVeUt3?=
+ =?utf-8?B?OUxDSm9qdXhIdlc0dUFTVVZDazZMMk1kZTFPSm15czk1WDhXcXRPNmVocGZi?=
+ =?utf-8?B?aDBzR3dJU3VReGtKQVk3SDJPWjRUUmZkY2hGbXZtaTlLbC9JV2d3ZGozd3pO?=
+ =?utf-8?B?MDhoY1cyVkdFWkVvRXdvUkZKUkNFZFZvbG5TRkY1R2ZRcGl5bVZQM2lhRVU1?=
+ =?utf-8?B?d0J5RW43aFBMbTFqcCtOb3IwdnE0cUtpamJsU2xLbG5VL0dmUUxNUEpIWXkr?=
+ =?utf-8?B?T2VOalVOSlZGNDBORlNTRXFORUVSZXdTbll0NTFxRVNYZGg0VzRMU3ROUFhB?=
+ =?utf-8?B?UE5yUFFyVExFaHZQbEVEbGFkeUpUUDVLNjVzeVBrQTUzbWxUQVFIK0NyS1ZU?=
+ =?utf-8?B?aHdmVFBtTjJIbWZEanlWUmZhb3R1RmUzVGJoTXlBbnNjb2pQWXZINnFZaHM1?=
+ =?utf-8?B?Ym13YzY5RmxJZ0pXTVlOZTBqTU1USGUydjZWZm8vU1h2eThoY2xqemNpZnpV?=
+ =?utf-8?B?WWo2eGxNbS8ydnJBUUdZM1hYc2VuZWlXdDhXNmxGSmZDdDFPMHRmeFd1bVVL?=
+ =?utf-8?B?YkY2bGxNaUxoNXJ6UGw0L2N1OFExREVlZVhyTmJpN1BFQVNEbWQwcHdjdU9X?=
+ =?utf-8?B?R0pKOG9ySHdQUmFCSU1lRmgzK2hFMjBSVDBaT3Voa3lUTHF0Nk1rbXMrKzNV?=
+ =?utf-8?B?Y2xNNFB6dER0b2ZzYmlQZ0FRanpMQ3ZFOGVJTG1WbFRQbXZVZzluSFQrUDAz?=
+ =?utf-8?B?VlpPUzJDdU54aHZzaDI0SmdmOFBKUmcyckVGVzhlaE5xcmRlUkhFNlVRcmho?=
+ =?utf-8?B?K0JzUWxXODlTc3cxaUsyZW5URGNqak5aZFNhYjgwL0srMkdlcXhoakg3bkFu?=
+ =?utf-8?B?dWozNDVZb0oybWlLdExPY2RnVWxZZ2M2ZkNnaUhZSWNlRjlUTVhxZ3ZHU0VH?=
+ =?utf-8?B?YWxJei9KVG5Ncld5YjlVOWE2YTFPRWFNWlBQZk1IR05uYjdGNXJ6NU9rbU00?=
+ =?utf-8?B?RzhjeUZDdUx3Zi9WR0licWZCWS90SldSc0RReWpTaFNVTk0vaUJHYjluY1hp?=
+ =?utf-8?B?OW5rcE5Ub29iNjZ2c3hMazZONHJtMFdPMWZHZGZseDd1aTBlMVJ2T1NCTkdH?=
+ =?utf-8?B?WXhTTDBUcXhPaHZxUVZueStwcTIybGdUQjhLdmx2d2hsdEJzTjUzQXFWQXhr?=
+ =?utf-8?B?bHloSGNzOUl4b1R2Mm93VVZzYzNOMGtZTDhxK3RReTRZYngvMTJQUXpNT21F?=
+ =?utf-8?B?YnRkSXZ5MmlOendLOTl5dXY0MXRMbWtKVldHZGwxMCtweE9YOENkc1A4NStt?=
+ =?utf-8?B?NGFrY0wyZFRYVFJHa3cxdm1Zd09MNVFhZVczOFhsZ1czVEpwZjdUeTJSVkRP?=
+ =?utf-8?B?MktKSm1tNkJKamJqUDlGV2c3djJSTG53Qkh4TU5kTGxRT205YXhpM1dweGoy?=
+ =?utf-8?B?THpKV2VjQVQ1VDB5azRHRHNubk1KTGttaUVnZHYrUzNKSHgxUnkvejJCZndZ?=
+ =?utf-8?B?dm1UWmhLRGFuY1kweTRmZ2Q5YkJzZi9pNXpZSEJFMmRQcUxTMVBsR3U1NHBr?=
+ =?utf-8?B?Q2ppR1piTlhCZ05NTjFTdUNMMFFjN09xUTZlY1lDVkduMjRKRjM1bjVmMVRR?=
+ =?utf-8?B?dk5xUmRIWjVSZWttMGU3dFprblFESzJLdDk0bnUyNEFpT0RwanluZUloSWtv?=
+ =?utf-8?B?d0NlV054TW5Ba3VIaUh5VUZZb2Ntd1lzQUw1dlVCZU1oWlIxSDdnTUFGUVdC?=
+ =?utf-8?B?V1Vuck9WUmxTN1NkM2t2RzZPcFpiUVBXRUFWTDliTXpYOFMyeHh6VTM0cU5M?=
+ =?utf-8?B?d3ZxQ2ExY0pZb21ydFh0RE9aSjVhTHgxbTR2SEc0RCtmWTQ1RXl3eUZJVGt2?=
+ =?utf-8?Q?8/snkVzF6F0CbNxPSz?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1dc70a52-63aa-4fe8-1533-08deafa3289c
+X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 May 2026 21:20:43.5725
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EX9zUBOOXGDvbs7yMB7KChTA58H3xbT84eu1ZzWF/4h7xqYYIfzE8wBeB5Fpt78X8+hzK/pZEKOR5o7KLRBKGg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB9102
 
-On 5/8/26 16:35, Mateusz Jaśkiewicz wrote:
-> powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-> public libcpupower API, but both currently return success without
-> updating sysfs.
-> 
-> Write the requested value to the matching enabled attribute so callers
-> can actually enable or disable the powercap control type or zone, and
-> report write failures back to the caller.
-> 
-> Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
-> ---
->   tools/power/cpupower/lib/powercap.c | 43 +++++++++++++++++++++++------
->   1 file changed, 35 insertions(+), 8 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-> index 94a0c69e5..6d8b83428 100644
-> --- a/tools/power/cpupower/lib/powercap.c
-> +++ b/tools/power/cpupower/lib/powercap.c
-> @@ -70,6 +70,27 @@ static int sysfs_get_enabled(char *path, int *mode)
->   	return ret;
->   }
->   
-> +static int sysfs_set_enabled(const char *path, int mode)
-> +{
-> +	char yes_no;
-> +	int fd;
-> +	ssize_t ret;
-> +
-> +	if (mode != 0 && mode != 1)
-> +		return -1;
-
-The default is enabled. You could check the current value
-and then do a write.
-
-> +
-> +	yes_no = mode ? '1' : '0';
-> +	fd = open(path, O_WRONLY);
-> +	if (-1 == fd)
-
-I prefer fd == value convention. Also checking fd < 0 is
-better than == -1 and printing error message calling perror()
+Hi Rafael,
 
 
+On 09/05/26 00:31, Rafael J. Wysocki wrote:
+> External email: Use caution opening links or attachments
+>
+>
+> On Thu, Apr 30, 2026 at 4:25 PM Sumit Gupta <sumitg@nvidia.com> wrote:
+>> Add initial kernel support for CPPC v4 (ACPI 6.6, Section 8.4.6),
+>> which extends the _CPC package from 23 to 25 entries with two
+>> optional fields:
+>>
+>>    - OSPM Nominal Performance (8.4.6.1.2.6): register used by OSPM
+>>      to tell the platform what it considers nominal. The platform
+>>      classifies performance above this as boost and below as
+>>      throttle for power/thermal decisions.
+>>
+>>    - Resource Priority (8.4.6.1.2.7): Package of Resource Priority
+>>      Register Descriptor sub-packages. Full parsing is not yet
+>>      implemented; such entries are marked as unsupported.
+>>
+>> Patch 1: Add v4 _CPC parsing - validate the 25-entry layout,
+>> handle the Resource Priority package, and mark the two new
+>> registers optional.
+>>
+>> Patch 2: Add acpi_cppc/ospm_nominal_perf as a read-write sysfs
+>> attribute, and initialize it to the platform nominal value
+>> during cppc_cpufreq policy init.
+>>
+>> ---
+>> v1[1] -> v2:
+>> - Patch 1: added Reviewed-by from Mario Limonciello.
+>> - Patch 2:
+>>    - Make ospm_nominal_perf sysfs read-write; cache last write in
+>>      cpc_desc and skip redundant register writes.
+>>    - Validate input in cppc_set_ospm_nominal_perf.
+>>
+>> Sumit Gupta (2):
+>>    ACPI: CPPC: Add support for CPPC v4
+>>    ACPI: CPPC: Add ospm_nominal_perf support
+>>
+>>   drivers/acpi/cppc_acpi.c       | 93 +++++++++++++++++++++++++++++++---
+>>   drivers/cpufreq/cppc_cpufreq.c | 10 ++++
+>>   include/acpi/cppc_acpi.h       | 14 ++++-
+>>   3 files changed, 109 insertions(+), 8 deletions(-)
+>>
+>> [1] https://lore.kernel.org/lkml/20260427051823.280419-1-sumitg@nvidia.com/
+>>
+>> --
+> Can you please see the sashiko.dev feedback on this set:
+>
+> https://sashiko.dev/#/patchset/20260430142430.755437-1-sumitg%40nvidia.com
+>
+> and let me know what you think?  Especially regarding the second patch?
 
-> +		return -1;
-> +	ret = write(fd, &yes_no, 1);
-> +	if (ret != 1) {
+
+Thank you for sharing this.
+
+Patch 1:
+- Comments #1 and #2 are pre-existing issues with rare occurrence.
+   I will address them in a separate hardening patch.
+
+- Comment #3: In v3, will limit the ACPI_TYPE_PACKAGE handling to the
+   RESOURCE_PRIORITY entry. So a Package at any other slot will be
+   treated as invalid and abort probe, as it did before this patch.
+
+----------------
+
+Patch 2:
+Discussed the changes for v3 in some detail on this thread already
+which address most of the points (Please see my reply to Pierre [1]).
+
+Summary of how each point will be addressed below:
 
 
-> +		close(fd);
-> +		return -1;
-> +	}
-> +	return close(fd);
-> +}
-> +
->   int powercap_get_enabled(int *mode)
->   {
->   	char path[SYSFS_PATH_MAX] = PATH_TO_POWERCAP "/intel-rapl/enabled";
-> @@ -77,17 +98,13 @@ int powercap_get_enabled(int *mode)
->   	return sysfs_get_enabled(path, mode);
->   }
->   
-> -/*
-> - * TODO: implement function. Returns dummy 0 for now.
-> - */
->   int powercap_set_enabled(int mode)
->   {
-> -	return 0;
-> +	return sysfs_set_enabled(PATH_TO_RAPL "/enabled", mode);
->   }
-> -
->   /*
->    * Hardcoded, because rapl is the only powercap implementation
-> -- * this needs to get more generic if more powercap implementations
-> + * this needs to get more generic if more powercap implementations
->    * should show up
->    */
->   int powercap_get_driver(char *driver, int buflen)
-> @@ -180,8 +197,18 @@ int powercap_zone_get_enabled(struct powercap_zone *zone, int *mode)
->   
->   int powercap_zone_set_enabled(struct powercap_zone *zone, int mode)
->   {
-> -	/* To be done if needed */
-> -	return 0;
-> +	char path[SYSFS_PATH_MAX];
-> +	int ret;
-> +
-> +	if (!zone)
-> +		return -1;
-> +
-> +	ret = snprintf(path, sizeof(path), "%s/%s/enabled",
-> +		       PATH_TO_POWERCAP, zone->sys_name);
-> +	if (ret < 0 || ret >= (int)sizeof(path))
+ > The commit message states the valid range is [Lowest Performance,
+ > Nominal Performance]. Does this code allow writing arbitrary values
+ > outside that range by only checking against U32_MAX, without fetching
+ > the CPU's capabilities to validate the input?
+Will fetch the bounds via cppc_get_perf_caps() and reject values
+outside [lowest_perf, nominal_perf] in v3.
 
-Drop the typecast
 
-> +		return -1;
-> +
-> +	return sysfs_set_enabled(path, mode);
->   }
->   
->   
+ > If the hardware loses state during a logical CPU hotplug or system
+ > suspend, but the software cache is not invalidated, will this check
+ > prevent the register from being correctly re-initialized when the CPU
+ > comes back online?
+The redundant write check will be removed in v3, so the stale cache
+failure mode won't be possible.
 
-thanks,
--- Shuah
+
+ > Can concurrent sysfs writes permanently desynchronize the software
+ > cache from the hardware register?
+ > ...
+ > Is a lock needed around the read-modify-write cycle?
+This will not occur in v3 since concurrent calls for the same
+policy are serialized by policy->rwsem at the cpufreq layer (see [1]).
+
+
+ > Additionally, can a time-of-check to time-of-use race lead to a NULL
+ > pointer dereference if cpc_desc_ptr is initialized concurrently?
+ > ...
+ > Would this cause the WRITE_ONCE() to dereference the locally fetched NULL
+ > cpc_desc pointer? Should this explicitly return -ENODEV early if 
+!cpc_desc?
+Will add the early -ENODEV return at the top of the function in v3,
+eliminating the NULL cpc_desc race.
+
+
+ > For shared cpufreq policies where policy->cpus contains multiple
+ > logical cores (such as CPUFREQ_SHARED_TYPE_ANY), does this skip
+ > initializing the secondary CPUs in the domain?
+ >
+ > If they are uninitialized, will their local cache remain 0, causing
+ > sysfs reads for those secondary CPUs to incorrectly return -ENODATA?
+Will move the rw sysfs from the per-CPU acpi_cppc interface to a
+per-policy cpufreq interface in v3, and write the register on every
+CPU in policy->cpus/domain.
+The -ENODATA on unwritten read path will go away with the per-CPU node,
+and the per-policy show returns 0 until user-space writes a value. See [1].
+
+
+ > Also, since the sysfs attribute is tied to the physical CPU device
+ > lifetime and persists independently of cpufreq policy teardowns, will
+ > unconditionally setting the nominal performance here silently clobber
+ > any persistent userspace configurations when a CPU is taken offline
+ > and online?
+Will drop the unconditional cpu_init write in v3, so the user-set
+value won't be overwritten on CPU hotplug.
+
+[1] 
+https://lore.kernel.org/all/9c32f75a-294f-4cea-810e-c011c4dd91ab@nvidia.com/
+
+Thank you,
+Sumit Gupta
+
+
