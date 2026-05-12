@@ -1,244 +1,158 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 448613911CD
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 12:37:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0C8937DAB1
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 12:47:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778589447; cv=none; b=oIDy5paHUUlQI8xWqbNM5VPkVws/dDojyQePkUlSt+thnEJEhX7XT2bda7YDyK/oKZtEZF5dwb3Xh66lZsyOkv/CUHQ/kVVYWWwCX841Cly7zEuBpQUYhzOYglqFWNIqrLZgmXK5YVU+ZaNrc4RSWdKVhw0aAXHHVeJPGkOkzXU=
+	t=1778590025; cv=none; b=qV4oJwZKDa1yWDJQaYvxZ5Nj+N911u9JoEwDELOBsQoS8bRAVGhL5pn+ieSl55fKu+izxjWYDv/vpeIOllhrmZksH840SMtUEs+ElILe9Fu+0xm7qnEQoEyIRePlY/Mb2IH+YrjHNRqLwcW5ucHmNCB+YEMntK/MvdaDdIwjnZk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778589447; c=relaxed/simple;
-	bh=DuVMza5iUPIUJ4S/iW1odGNYnuaSTN2j4lTMGVIW3vA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=c81YJrlSOVee+yA8KmI5h/jOftW8j/B9HPyFDMEsDZ3o3hhTjhE/W4q59X9zJN6SyvMY3qcXiTHRaOeTIaW0KVQXNWZkfq9ZLY1yqTUmEtrl3cRpB0NPBbmylwAS+BGRvnw8hytcDfNEe6Kn/BdNO6JQMzMCbwsjVaoz+hfv1vQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IHh1jqD8; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778590025; c=relaxed/simple;
+	bh=bInddkVfc+pXKGHkffHzPuEVIu2QTRfs6h6awa+Mp9U=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=TgvEYxhOzFYLoRCMNbzd5grGRDlxcYdsbbYIPQzR2i58/VERiCV9o8VstFhqIAuY/APTbITgbT9tYNTi+Nqwp7M66O3PiNFGEgar4ibJb0XkqTk9KUgjLVBuwptey0gMXR7XIlGujqc7YpoS7QS6rT03rRlBW9Du8FA0KMSVRYM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=yMXmNQiO; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IHh1jqD8"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D77D5C2BCFB
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 12:37:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778589445;
-	bh=DuVMza5iUPIUJ4S/iW1odGNYnuaSTN2j4lTMGVIW3vA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=IHh1jqD8sf6E2uD4LJwVhfO+jVfkFPhL/39nOClyfF8WOwfLGoQQZVGvFSwtdmhVb
-	 M6PAykrUbmkc+jL3MoUjk2phL2t2tl2N7EhPtGfSDapynF8rMG8cbT+M8JcQysh7GI
-	 CWFxV78/bOv3FYWt8UPh/RIPGjQN59PneEsHEJWGiqnBVyPujqKd+Ss8lLPjbjURb/
-	 blOxFUWtm3A8uCBO3xznVUIZaEUEg2JiuA8cAnwySgOud6+fF71HOxXVAjSiGSBqPc
-	 vdmhiTc2qS9IToMdslLiFkk4S6rQDEBDJtH49usg7nTnrO+PY4ttwr9qE4ZqvUZTGM
-	 mEYjnWruzCo4A==
-Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-393925cb1baso56037171fa.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 05:37:25 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/4dkKX1I206tNX7SLF//YlY7PgBlugUCHFKIT8ofoXvUDeRBs51XTEnrwUspV8xoodful3KB2BXw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywdd8OGAe7LSAaot11KXBvIsyx6WevEOSM0BeEHYjlimV+K6aiv
-	JHAwE0K7rgKPUziaXeTOSI4s0gJZSHxXomHLajuzv3qPTAR/Behdt2NlTGP3Yd+m0qDUni2lVH5
-	rgCgVtbUamZSTiDNwJu8PJSEZdwv+6nI=
-X-Received: by 2002:a05:6512:3e21:b0:5a8:6799:efb1 with SMTP id
- 2adb3069b0e04-5a887cdebbcmr10041896e87.25.1778589444177; Tue, 12 May 2026
- 05:37:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="yMXmNQiO"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-448528f4e69so3267122f8f.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 05:47:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778590019; x=1779194819; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=kr874m6JcLiCyYvzD6j4nKzU3/HV5h/qU/z04aUpwE4=;
+        b=yMXmNQiOH4vzaGBH0I9De7gaa578qEH1xGs0HWVjvw9dB6isrPVhzxOkLOJF0K0pFe
+         +G8BCTcPexS4n2bFwafUVYg7cD+wPbAh3VasGxkHe64apTrsmXleYWUgkNp7AtyGU3CV
+         8IPrtgdDO8L/8WG5i0NBwOXMdW8LFdCvbMxF1uXb9DQUSWQI8CrsXcbs1V8kwZHgxj6Q
+         8epxcCRZ+rVN8HY8VPQKpcVdb3iVFfgixlisaZ83wEf/S9OA98kt7iSbseIYbrWhuYxG
+         l+zt3IhNh5v/4an6xW0ATss4UUJuBRqqNP1FBTyPm6Ragmx9shpItxXUtLEqpStIxpS+
+         1vJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778590019; x=1779194819;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kr874m6JcLiCyYvzD6j4nKzU3/HV5h/qU/z04aUpwE4=;
+        b=Lt19zZNfp4bUAD7tI4HEvcQ757XKtKrMPhKXd3qrDVRAnGMysI2GeJlMOZLlD6QQoi
+         DCGsUWGRvYxtR5ldBATQyEN7x2XBl1QcrM/WYI4e5xhZnR/fXUJIeNtSOe5uq4dUItw4
+         ILM5grHy31An9affO7tZMSgj2Xbh54mUrlRJuoHq78lkhrux4HisSUf1xsEQSNbge4ap
+         V3XczRRsHUsUVLVTp5dDTGsmV6z9MeUBTQ+zCsHNKjA6Ba2bNYRUPPRu4o53O4seRY29
+         4cbYZVD4lkUmxyS2dSs5vhr9976TNDSQuZ+oCftDILCN7WZKRRW1e7n1jE5UdccfUrMn
+         brog==
+X-Forwarded-Encrypted: i=1; AFNElJ8RLHJQOIxuF0y399LT8Cl5EOETbVSA5w1BpxsGFoGTZVdD2XyaPQYtyGwTjK4gUfWsGI+rHuksig==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yww9cvrtfFxBIfNAeBU1mtEngRu+r58idX+KHFypW4w3G7j4H4C
+	86I3n+kmfiGewdjObrspnDiGqR/SLjkoBS7+2fHNTmgzsBxLa4oV2Jy10/BiX1xT5nQ=
+X-Gm-Gg: Acq92OF2nwCCyIe5bahxADgSgkmW7iZ7ZwI4OeO+ahcBOdMUFfoI6AzXy7Ckq8EV5+s
+	pZkSkRyVXh1M8zq4R2GnL6jI0TedZfUQIgA/mY0NdXuYEjhoRW0X3mv2A1OSwgeRtbj+Aaq90Jy
+	Sd5BZq+smVgk44TXlfTe/dNc7/Vi2fzwbPpPNFhP4eS4MRsoTGhtkAbGuYpFUgHQALDNqvhO0f/
+	WIKcPYoG2BXw9aR+yOkt1358EdzsBLlDxx6T3Kyjxc6xvC8cWK+r/7ePbkObWO3SddpM7qR35df
+	rwzPxagOft3HfI5akWgaLwv7uOc5AjYpACroXfoJeCX+wGcwnjjhgmh3tWTVMFZT08MS9mcOMOw
+	4dNJV5uC2IC1x3E2qVYCKB8ga19oYe0xcycIKhgM3UpijiumIbEYnBByyNFfH03OzxnIA6RsxGT
+	ZJ/Tc/KcDPTdikxcC/CyG16UlgtyFyuUg=
+X-Received: by 2002:a05:6000:2287:b0:43d:775b:c9bd with SMTP id ffacd0b85a97d-45461316920mr28476029f8f.10.1778590019078;
+        Tue, 12 May 2026 05:46:59 -0700 (PDT)
+Received: from airbuntu.. ([146.70.179.109])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4549130549bsm33224020f8f.18.2026.05.12.05.46.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 May 2026 05:46:58 -0700 (PDT)
+From: Qais Yousef <qyousef@layalina.io>
+To: Ingo Molnar <mingo@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	John Stultz <jstultz@google.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Tim Chen <tim.c.chen@linux.intel.com>,
+	"Chen, Yu C" <yu.c.chen@intel.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Qais Yousef <qyousef@layalina.io>
+Subject: [PATCH] sched/fair: Call update_util_est() after dequeue_entities()
+Date: Tue, 12 May 2026 13:46:53 +0100
+Message-Id: <20260512124653.305275-1-qyousef@layalina.io>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
- <CAJZ5v0gVK7qF9Bfw952Vkb+-5WPOH+_M9-bRAwjJvHX3U=WOOg@mail.gmail.com> <3a6b3499a8f2d39bac2bcf483ee48123823795d9.camel@linux.intel.com>
-In-Reply-To: <3a6b3499a8f2d39bac2bcf483ee48123823795d9.camel@linux.intel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 12 May 2026 14:37:12 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0imv=-NRy1e1mvEYFcyryr7kqyCu+nEzGW=S+PSzDJHWA@mail.gmail.com>
-X-Gm-Features: AVHnY4IZwyXmkNFk0i4LY7dMWA8hpaVkHe6hl_rw0wYZtQ8G-cI_hn4pYoRoARY
-Message-ID: <CAJZ5v0imv=-NRy1e1mvEYFcyryr7kqyCu+nEzGW=S+PSzDJHWA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix Raptor Lake-E cpufreq limits
-To: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Henry Tseng <henrytseng@qnap.com>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 12, 2026 at 1:15=E2=80=AFPM srinivas pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Tue, 2026-05-12 at 12:20 +0200, Rafael J. Wysocki wrote:
-> > On Tue, May 12, 2026 at 1:53=E2=80=AFAM Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > >
-> > > Raptor Lake-E processors are not correctly showing cpufreq
-> > > frequency
-> > > limits.
-> > >
-> > > These CPUs don't set X86_FEATURE_HYBRID_CPU and have no E-cores,
-> > > but
-> > > P-cores still use hybrid scaling factor.
-> > >
-> > > commit 0fcfc9e51990 ("cpufreq: intel_pstate: Fix scaling for
-> > > hybrid-capable systems with disabled E-cores") added support for
-> > > such configuration. Here using CPPC nominal freq and perf was
-> > > compared
-> > > to still return hybrid scaling factor.
-> > >
-> > > Commit 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get
-> > > scaling
-> > > factors") restructured hwp_get_cpu_scaling() and added an explicit
-> > > check
-> > > for X86_FEATURE_HYBRID_CPU and when not set returns core scaling
-> > > factor.
-> > >
-> > > To address this remove check for X86_FEATURE_HYBRID_CPU and call
-> > > intel_pstate_cppc_get_scaling().
-> > >
-> > > Ideally this change should be enough. But using CPPC for scaling
-> > > factor
-> > > results in rounding error, so still doesn't restore the original
-> > > behavior.
-> > >
-> > > In intel_pstate_cppc_get_scaling() return core scaling factor when
-> > > ACPI CPPC is not present or when CPPC nominal frequency or nominal
-> > > performance are invalid.
-> > >
-> > > Use hybrid_scaling_factor for P-cores when defined for a CPU, if
-> > > not
-> > > calculate from ACPI CPPC nominal frequency and performance.
-> > >
-> > > Fixes: 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get
-> > > scaling factors")
-> > > Reported-by: Henry Tseng <henrytseng@qnap.com>
-> > > Closes:
-> > > https://lore.kernel.org/linux-pm/20260508063032.3248602-1-henrytseng@=
-qnap.com/
-> > > Signed-off-by: Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com>
-> > > Cc: stable@vger.kernel.org
-> > > ---
-> > >  drivers/cpufreq/intel_pstate.c | 29 +++++++++++++++--------------
-> > >  1 file changed, 15 insertions(+), 14 deletions(-)
-> > >
-> > > diff --git a/drivers/cpufreq/intel_pstate.c
-> > > b/drivers/cpufreq/intel_pstate.c
-> > > index 1292da53e5fc..0379efdee5f8 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -421,15 +421,23 @@ static int intel_pstate_cppc_get_scaling(int
-> > > cpu)
-> > >  {
-> > >         struct cppc_perf_caps cppc_perf;
-> > >
-> > > +       if (cppc_get_perf_caps(cpu, &cppc_perf) ||
-> > > !cppc_perf.nominal_freq ||
-> > > +           !cppc_perf.nominal_perf)
-> > > +               goto core_scaling;
-> > > +
-> > > +       if (cppc_perf.nominal_perf * 100 =3D=3D cppc_perf.nominal_fre=
-q)
-> > > +               goto core_scaling;
-> > > +
-> > > +       if (hybrid_scaling_factor)
-> > > +               return hybrid_scaling_factor;
-> > > +
-> > >         /*
-> > > -        * Compute the perf-to-frequency scaling factor for the
-> > > given CPU if
-> > > -        * possible, unless it would be 0.
-> > > +        * Compute the perf-to-frequency scaling factor for the
-> > > given CPU
-> > > +        * from nominal freq and nominal_perf
-> > >          */
-> > > -       if (!cppc_get_perf_caps(cpu, &cppc_perf) &&
-> > > -           cppc_perf.nominal_perf && cppc_perf.nominal_freq)
-> > > -               return div_u64(cppc_perf.nominal_freq *
-> > > KHZ_PER_MHZ,
-> > > -                              cppc_perf.nominal_perf);
-> > > +       return div_u64(cppc_perf.nominal_freq * KHZ_PER_MHZ,
-> > > cppc_perf.nominal_perf);
-> > >
-> > > +core_scaling:
-> > >         return core_get_scaling();
-> > >  }
-> > >
-> > > @@ -2281,17 +2289,10 @@ static int hwp_get_cpu_scaling(int cpu)
-> > >                  */
-> > >                 if (hybrid_get_cpu_type(cpu) =3D=3D
-> > > INTEL_CPU_TYPE_CORE)
-> > >                         return hybrid_scaling_factor;
-> > > -
-> > > -               return core_get_scaling();
-> >
-> > Why is this change necessary or even useful?
-> >
-> > This is about E-cores (because P-cores have been covered above) and
-> > if
-> > hybrid_scaling_factor is set, it is known that the processor is
-> > hybrid
-> > and E-cores have the "core" scaling factor.
-> >
-> > Or is Raptor Lake-E covered by one of the
-> > intel_hybrid_scaling_factor[] entries and hybrid_get_cpu_type(cpu)
-> > doesn't return INTEL_CPU_TYPE_CORE on it?  This piece of information
-> > is missing from the changelog.
->
-> Raptor Lake-E (Xeon) uses CPU model as Raptor Lake-S, for which there
-> is already a hardcoded scaling factor in the driver.
+update_util_est() reads task_util() at dequeue which is updated in
+dequeue_entities(). To read the accurate util_avg at dequeue, make sure
+to do the read after load_avg is updated in dequeue_entities().
 
-This piece of information needs to be added to the changelog in the
-first place because it is key here.
+util_est for a periodic task before
 
-> So this "if" block will enter. But since there is no hybrid CPUID feature=
- is defined,
-> hybrid_get_cpu_type(cpu) will return 0 for P-core or E-core. Here there
-> are no E-cores. So need to remove core_get_scaling() as this will
-> return non hybrid factor.
+                                periodic-3114 util_est.enqueued running
+   ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+183┤                ▖▗  ▐▖         ▖ ▗▙   ▗   ▗▙▖▖       ▖▖   ▖       ▖▖        ▗  ▟  ▗▄▖          │
+139┤               ▐▛█▜▙▞▀▄▄▞▚▄▟█▞▙█▄▟▀▚▄▄▞▚▄▄▟▀▀▛▄▝▄▄▄▙█▛▛█▛▜▛▄▄▀▄█▙▛▛▛▙▄▀▄▄▖▜▄▟█▟▀▜▟▄▜▀▄▄▟▙▖     │
+ 95┤              ▐▀    ▘   ▝   ▝        ▝▘        ▘   ▘▘       ▝▘       ▝▘  ▝    ▝        ▀       │
+   │              ▛                                                                                │
+ 51┤             ▐▘                                                                                │
+  7┤      ▖▗▗  ▗▄▐                                                                                 │
+   └┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬┘
+  0.00      0.65       1.30      1.96       2.61      3.26       3.91      4.57       5.22     5.87
 
-Well, what about this:
+and after
 
+                                 periodic-2977 util_est.enqueued running
+     ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+157.0┤               ▙▄ ▗▄  ▗▄▄▄ ▗▄  ▗▄▄▄▗▄▄  ▗▄▄▖ ▄   ▄▄▄   ▄  ▄▖▖  ▄▄▄▄▄▖▖▝▙▄▄▄▄▄▄▖ ▗▄           │
+119.5┤             ▗▄▌▘▀▀ ▀▀▀ ▝▀▀▘▝▀▀▀ ▝▀▘ ▝▀▀▘ ▀▝▀▘▀▀▀▘▝▀▀▀▀▀▀▀▘▝▝▀▀ ▀   ▝▝▀  ▀   ▀▀▀▀            │
+ 82.0┤             ▟                                                                               │
+     │             ▌                                                                               │
+ 44.5┤             ▌                                                                               │
+  7.0┤      ▗   ▗▖ ▌                                                                               │
+     └┬─────────┬─────────┬──────────┬─────────┬─────────┬─────────┬──────────┬─────────┬─────────┬┘
+    0.00      0.65      1.30       1.95      2.60      3.25      3.90       4.56      5.21     5.86
+
+Note how the signal is noisier and can peak to 183 vs 157 now.
+
+Fixes: b55945c500c5 ("sched: Fix pick_next_task_fair() vs try_to_wake_up() race")
+Signed-off-by: Qais Yousef <qyousef@layalina.io>
 ---
- drivers/cpufreq/intel_pstate.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2279,7 +2279,7 @@ static int hwp_get_cpu_scaling(int cpu)
-          * Return the hybrid scaling factor for P-cores and use the
-          * default core scaling for E-cores.
-          */
--        if (hybrid_get_cpu_type(cpu) =3D=3D INTEL_CPU_TYPE_CORE)
-+        if (hybrid_get_cpu_type(cpu) !=3D INTEL_CPU_TYPE_ATOM)
-             return hybrid_scaling_factor;
+This is split from [1] series where I stumbled upon this problem. AFAICS it
+needs backporting all the way to 6.12 LTS.
 
-         return core_get_scaling();
+[1] https://lore.kernel.org/lkml/20260504020003.71306-1-qyousef@layalina.io/
 
-Or is the original Raptor Lake-S scaling factor unsuitable for Raptor Lake-=
-E?
+ kernel/sched/fair.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
->
->
-> >
-> > >         }
-> > >
-> > > -       /* Use core scaling on non-hybrid systems. */
-> > > -       if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
-> > > -               return core_get_scaling();
-> > > -
-> >
-> > So we're now exposing all of the non-hybrid processors to the fun
-> > with
-> > possibly incorrectly populated CPPC, which is kind of risky.
-> >
->
-> This was already used before with
-> commit0fcfc9e51990246a9813475716746ff5eb98c6aa
-> relying that all non hybrid processor (including servers) didn't set
-> nominal frequency, so will return core_scaling without using CPPC.
-> I retested change on servers and non hybrids.
->
-> > If Raptor Lake-E is not covered by an existing
-> > intel_hybrid_scaling_factor[] entry, why don't we add one for it with
-> > a "scaling factor" value indicating that CPPC needs to be used for
-> > computing it on all CPUs?
->
-> It is already covered by existing, but we can only call
-> for intel_pstate_cppc_get_scaling() when hybrid_scaling_factor is
-> defined. This will require a hardcoding for Bartlett Lake also which
-> uses different CPU model, which Henry Tseng is planing to send.
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 728965851842..96ba97e5f4ae 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7401,6 +7401,8 @@ static int dequeue_entities(struct rq *rq, struct sched_entity *se, int flags)
+  */
+ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ {
++	int ret;
++
+ 	if (task_is_throttled(p)) {
+ 		dequeue_throttled_task(p, flags);
+ 		return true;
+@@ -7409,8 +7411,9 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (!p->se.sched_delayed)
+ 		util_est_dequeue(&rq->cfs, p);
+ 
++	ret = dequeue_entities(rq, &p->se, flags);
+ 	util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
+-	if (dequeue_entities(rq, &p->se, flags) < 0)
++	if (ret < 0)
+ 		return false;
+ 
+ 	/*
+-- 
+2.34.1
 
-I would add a new intel_hybrid_scaling_factor[] entry for Bartlett
-Lake then with a proper scaling factor along with the change above.
