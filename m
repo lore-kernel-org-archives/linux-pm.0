@@ -1,130 +1,121 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF16C47DFAA
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 08:02:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 483E7379C4B
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 08:06:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778572923; cv=none; b=oDpgDKN14lPHgGwN5a0JJVLziFhm8vBiZoZUJgyVqznb1k2tyghd6fC6UD4pU7hdk9GxJROfANeEPQpF4p/vxFsYqFT+2FsZEQYl63YGLqQgvjyjw15E4AntkU7SP8GruXJ/QUrc6FzzcQUQ7Q1rMQUA2OsXIOVoRve/HszgL1Q=
+	t=1778573173; cv=none; b=bkwEGNV/Nc4BZf9tNYyqjDLvBHPClPlko8cerwlGG8eTEZvmVc7MvkPhAswuvWn5TxGP0x05wefVMc260ZI24wA1iabAvCkdILS5zGjDtG/8UP2T3pU1ZahMch98vVM5nCW/zkchmH+zLBo6VQhksZ/qOTpkdHHyaieKAcFvoSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778572923; c=relaxed/simple;
-	bh=HRve7wISN1SNhRpN4L+rhZ4bIdfnZccVt4pYYR98JBo=;
+	s=arc-20240116; t=1778573173; c=relaxed/simple;
+	bh=Cw5y9vpzQ+HGAAqvHwdnbCKDka1FgZ8X0LZB56QGS94=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pftjFJNAczJtF6MsC9Oc1GvYJ4hVdEY5aCEE0nVUtKXJgBnC/Qb+9LAFnSdS0ZHTabDJfczrDZ2/Pn1dfQkJ5H1HTQx917zdkh81ZBBUd0dmv2p2AxkMmz+rVLv4o64RotrkPvWdxVLxsYwL6hvAQY901d8YMntLyBivdFxpTPI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=p6FJ7l3D; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	 Content-Type:Content-Disposition:In-Reply-To; b=YuTPLQ2pC+QR9voBr4nKMuwi3R9MX654U64fuWIW3GqtFXROTB108WH1UWTot7PvFe267c+eyZW+mWUMxA89Hmz5knMya4KIrvMFYj5up32sQ+dECteyG/jPjUFXuDS11olSYdb/rb9g+f0hzTS5hqwjcQUnxVkJAKaW2uePZ5o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Gu/a4o4s; arc=none smtp.client-ip=209.85.221.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="p6FJ7l3D"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-48d102471a4so51296295e9.2
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 01:02:01 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Gu/a4o4s"
+Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-43d77f6092eso3198427f8f.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 01:06:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778572920; x=1779177720; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=j1XXmfhXa3+8cYJPPCDgRrPxl9mG1jVMFRcDSWwz1sw=;
-        b=p6FJ7l3D6N2I+kgf8q59BfuKwzicPLqncR1jeJVZDNXMKhv6hpAnu1hP+VMvIawMhL
-         BhSyZgWLOtMhSunAPsMgYOa/WseXDNDNiiAHsQVle+wRj0L/rM06RaajwJWwSMy8JXka
-         ijQMMwVXg2wMJvttdPPKCcO6z1bPS9OCDyWnoZxSYp+XsXns9/jzQl2gsEvi69b0zGir
-         RFHKX/uJZUr9r3aah0h1A1DnpULcx+JdRTsVW70W6IzQbRUkG6JB8/FMdsh9rjfRFiRn
-         Ig3DNkH7ZyhVMFzjD2cYRk4VdZrekiuGiszjohuCypu775JOcleLV94iLwC0PkQm0gL7
-         pa0g==
+        d=gmail.com; s=20251104; t=1778573171; x=1779177971; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ub9rCJB+xiyh5qMMvDQ8N4fa009xZ6N4W+3GYqzTDBs=;
+        b=Gu/a4o4s2OwYS3JU03JpPaNeZZRabZtomXxQ1eM7TOCuqMsFsv36gr4xJdezROV5IA
+         Ef6GhZPDMAWGYv1DhbOVvo0x0GMAQz3vek9ayZpChQARGZKWpvlfLNgPDmqwV0P2kY/g
+         m4PB8tXEOP8ozDRbk9QCFpuUP6EbksDulwlwQ2/ZVZw2rP3tybPV3mUlSA2UKyZicVou
+         69iJGyfFFkmSS8RagYoRY+kMPy9D+jlIA6JcfgX1SXaQFScsMcLx1OwPLqMe9cBsseBX
+         gILd5IAXOCHKqiHPSLQGJ0qYXYAtdqEiy3kIx4IPKa8q70tJ0GSEm6q/WiJnGk6MKWDa
+         FpCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778572920; x=1779177720;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=j1XXmfhXa3+8cYJPPCDgRrPxl9mG1jVMFRcDSWwz1sw=;
-        b=o05VCh9BLljLFkrTAhMaDhNSJH8oqxQHr4pBM5IzxRr6qWqxhagyyf5Hecte+jnl5T
-         Eo+qOpaPEHByGzSpEB/T8dRuc8NVm7YbmasdRRrYLgfK5p/SV7+cCoyrfyNfh8vkCgMS
-         d20uPCH1OORwNhS5PsUPPpRg3jR7dyRLGn3An/JL1w6p2K8kKNqEK1Kz9wZLmbzgdB8c
-         Y8gP8oX96xi6L0hGS/k8h9WnlXU4OOZLnV1ZyaTjt1tc0pMmT5ZgUQjJmNdI0EbzYp2c
-         yM5729vGDaOR2C3dpEjEdd6ggFlg+J14qCzZuZ64TjECKzxk9XKQr7P0jbBVDjh0Ar7r
-         voGA==
-X-Forwarded-Encrypted: i=1; AFNElJ/pMlHOSvhMlfsyCnHeG/z/LSQUneT/PYw0iYrk74yxeqBm+ud54+MsiQS9hJYMS6KAPF/n3PUhTw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw4QipcpevwFWCZVcu1QrQcuJp489jeByJOvNPDFmcDfOHfTui1
-	/QVazLMHpCB0pxl3TrVlX51mZONe59hW6LALv3xZNd1GaUMUfwFzMfHifV8EeInr+gs=
-X-Gm-Gg: Acq92OGm7gVepzAepzx1TCu8sSQ3ol0rj23t3B6oroqyt+F6x+55tdju50SZrWd3/7K
-	NlUNoRkouUxA1z2P0X0mD0wcw9Xgu19VAZy3k7CCk+YsnP0Txiow588W9+BTSzr6OydMGC3PI3J
-	x9NL6X8R3vixn8g9xkp1SU+vaivBWNH7FdCA3jGSUoUJ4kOjpfjbwLzkpmo3ClienvX/gfLbv+X
-	zM1ht2Nl7pcPQWmgXMUcND6/8KXZFSkRP4w6Ta9lscznG1WUVGsereaXFdscSzCkcgt7bhhESDL
-	sHXKuD/L1bwFuhKuhS1wt3+n7XP5PF1lOrIk7vW17QtA4cGE4EQf63M5je9O1tkohfte5AM1l2f
-	KPx1W9W+rebVn5P6SMRrRlVXs2XVgt/ImeHt8Qn1zhSz8IHGYBnXr4mdAu4+Jppw3WQ9WCkdDve
-	kWEIdt1VQEVnffpTTD
-X-Received: by 2002:a05:600c:4686:b0:488:aa33:dcbd with SMTP id 5b1f17b1804b1-48e676b6882mr283181255e9.26.1778572920015;
-        Tue, 12 May 2026 01:02:00 -0700 (PDT)
-Received: from airbuntu ([185.253.98.50])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e9053f690sm30133255e9.7.2026.05.12.01.01.58
+        d=1e100.net; s=20251104; t=1778573171; x=1779177971;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Ub9rCJB+xiyh5qMMvDQ8N4fa009xZ6N4W+3GYqzTDBs=;
+        b=i6wkPFrlsgUC0gK43USp8wdwJHGqwiAfoqqEG5s22oAwxK5XT2kyEbj6+M4sGUOG+r
+         O/H0kegWPH6IiWAhsLnaZHYPy73FQeDcJbhlBssJCHDmZfDoBeLDHPhOfN1xVZosSe2z
+         Wq5aj6Ljz84qWvbNjDCj/kO9/niJTmpncqf1nbFXrr7o8IUUH+hqJJZoc05Sktmup4yK
+         s6y66i1m/oAvGWLn0Qf0pnc8M30rhQH2++Tst19QGXgj1psdl9ZjW9hba/rI6mXhYA+a
+         exiaBgQp/b98U3pcbqarjemxnEzDq3p5wTSjInUUY4cCAdDDNEgZyfSiuoi62P1EMXTx
+         e1FA==
+X-Forwarded-Encrypted: i=1; AFNElJ9FtHiMNKEWXb9ggITRgGJfHuPEsA/phHE09ydYw/S+kVyK+nYYIl+a25BH4O2QUcjSATtGicMytQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzf8lT7vyyi2kVyiZM51ip0WiNOIyHfq4I3dm4qvZpP0/kn67/R
+	j3M/508Th1vmSOLlbRk+69WksBemQfiYxyvCv0nNd7a+3pWC0IEEq1NQ
+X-Gm-Gg: Acq92OEv/bUIA8QIm7pBXlOLkbQ1Z5mIUIJhaZZhXpJsgGGI1wPPCIcgqbcYhCKY0Gx
+	f3/Yry1ANy92RuJTXY6h6wPHQ1WTXSrQscHWluy/qUVNjSgCjxBbhNN6zrQmxfk4usHJ0vA1Pz4
+	eKAG34acIqe9xtUHraUW+olqS09B/FDBFUYWkNu4L5aRyR5hL1zuATO0m04W8c7Sw+rIAe7FBlD
+	bQrjQ5F4oZagZrPdYfM8UnQbtJsA2FZLGceRvbUaMyDRY5uJOVm0fYK3vN7vlsl7Etd9GQraxit
+	3sKgtqIXDoC8hXF+ictI4sRdlQkzVLeQng9xZxDlvgWCn2K+JarY9BndBcHTTsIC3jWWw5w3qgc
+	MP3R9OgbnjI43CB4OiQE7beMj6XHPOToZ/ql+ST951p3Tq3eOS6hZE1KsYPR1XFDa3LqQwVPPTw
+	HxPh9bbdgOH6WRGMOE4ZY=
+X-Received: by 2002:a05:600c:528e:b0:48e:7f1c:8778 with SMTP id 5b1f17b1804b1-48e8fe721bcmr30944315e9.17.1778573170670;
+        Tue, 12 May 2026 01:06:10 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45491e94c0fsm31909250f8f.32.2026.05.12.01.06.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 May 2026 01:01:59 -0700 (PDT)
-Date: Tue, 12 May 2026 09:01:57 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: John Stultz <jstultz@google.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Tim Chen <tim.c.chen@linux.intel.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 00/13] sched/fair/schedutil: Better manage system
- response time
-Message-ID: <20260512080157.ozdvvmezgkeurwbu@airbuntu>
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <CANDhNCqoqmU=xJJUhD3P5=5N=qqNNZ4DERezxecJ4HHuivRQpQ@mail.gmail.com>
+        Tue, 12 May 2026 01:06:09 -0700 (PDT)
+Date: Tue, 12 May 2026 11:06:06 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Calvin Owens <calvin@wbinvd.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+	linux-pm@vger.kernel.org, Pablo Neira Ayuso <pablo@netfilter.org>,
+	Florian Westphal <fw@strlen.de>, Phil Sutter <phil@nwl.cc>,
+	netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Subject: Re: [patch V2 01/11] hrtimer: Provide hrtimer_start_range_ns_user()
+Message-ID: <agLfbp9yEiQlTYYl@stanley.mountain>
+References: <20260408102356.783133335@kernel.org>
+ <20260408114951.995031895@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANDhNCqoqmU=xJJUhD3P5=5N=qqNNZ4DERezxecJ4HHuivRQpQ@mail.gmail.com>
+In-Reply-To: <20260408114951.995031895@kernel.org>
 
-On 05/11/26 10:58, John Stultz wrote:
-> On Sun, May 3, 2026 at 7:00 PM Qais Yousef <qyousef@layalina.io> wrote:
-> >
-> > This is the long delayed follow up to the series sent back in August 2024 [1].
-> > Life got in the way to some extent (I had a baby, and now my time that I used
-> > to do upstream work late at night was stolen :). Apologies for those who
-> > replied and I didn't get a chance to respond back.
-> >
-> ...
-> > Open questions:
-> >
-> > * The details of the QoS interface is the biggest one.
-> > * Would debugfs be better for setting the default rampup multiplier instead of sysctl?
-> > * Patch 13 makes updating load_avg unconditional not on period boundaries.
-> >
-> > Patches 1-3 are prepatory patches renaming a function and introducing new ones.
-> >
-> > Patches 4-5 handle the magic margin problem but making them dynamic based on
-> > actual hardware limitations.
-> >
-> > Patches 6-7 fix the black hole problem and teaches the scheduler how to handle
-> > bursty and periodic tasks via extending util_est.
-> >
-> > Patches 8-9 is where I expect most of the discussion on as I introduce a new
-> > sched_qos interface to support the new rampup_multiplier to help manage DVFS.
-> >
-> > Patches 10-11 introduces a couple of necessary optimizations to counter the
-> > power impact of increased responsiveness by disabling some features that we now
-> > know how to handle better.
-> >
-> > Patches 12-13 fix a couple of issues causing util_est and util_avg value to
-> > swing for a periodic task. Patch 12 must go via stable.
-> 
-> Just a minor nit, If 12/13 are fixes, should they not be at the front
-> of the series (or possibly sent separately) so they can potentially
-> move forward while the bigger changes in this series are discussed?
+On Wed, Apr 08, 2026 at 01:53:46PM +0200, Thomas Gleixner wrote:
+> +enum {
+> +	HRTIMER_REPROGRAM_NONE,
+> +	HRTIMER_REPROGRAM,
+> +	HRTIMER_REPROGRAM_FORCE,
+> +};
+> +
+>  static bool __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, u64 delta_ns,
+>  				     const enum hrtimer_mode mode, struct hrtimer_clock_base *base)
 
-Yeah  my plan was to split it and repost it with proper Fixes tag. I found it
-while verifying my patches so lumped it at the end. Will repost as soon as
-I can.
+The return type for this function needs to changed from bool to
+enum whatever...  Otherwise HRTIMER_REPROGRAM and HRTIMER_REPROGRAM_FORCE
+are both just true.
+
+>  {
+> @@ -1410,7 +1416,7 @@ static bool __hrtimer_start_range_ns(str
+>  	/* If a deferred rearm is pending skip reprogramming the device */
+>  	if (cpu_base->deferred_rearm) {
+>  		cpu_base->deferred_needs_update = true;
+> -		return false;
+> +		return HRTIMER_REPROGRAM_NONE;
+>  	}
+>  
+>  	if (!was_first || cpu_base != this_cpu_base) {
+> @@ -1423,7 +1429,7 @@ static bool __hrtimer_start_range_ns(str
+>  		 * callbacks.
+>  		 */
+>  		if (likely(hrtimer_base_is_online(this_cpu_base)))
+> -			return first;
+> +			return first ? HRTIMER_REPROGRAM : HRTIMER_REPROGRAM_NONE;
+
+regards,
+dan carpenter
+
