@@ -1,75 +1,94 @@
-Received: from mail-43167.protonmail.ch (mail-43167.protonmail.ch [185.70.43.167])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15A7A3B5DF9
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 14:35:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.167
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 967303C583B;
+	Tue, 12 May 2026 15:44:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778596505; cv=none; b=deHU5FjKHdzchuNd4evzDLYkjXROXamP4VnVaZ0MalH+dlPqhB+iEs1QRlTwYmzORYHGmFlamXg/IMAB+XKe5461CkIaNOMgYgh1a0LPmn2wdoW7U4MPrPSA3S8RvZLQ2/h+kHlJsVhwOR8j/tV8C+eNyszfLd89JZcK8kyTCTw=
+	t=1778600693; cv=none; b=jdcrz5HtIl7TacTKdyICOJ6GOUGBpitAYouqvWehI3Mk/Bm21lG5cJxBqnqKA/zK4UQ1uwSJXuirQsQ6vTBOxSswlU1oEwIBeEF38UpBnFNDbS20saeTkGs8g/t+hdvWQMFJlizINCywh+JPwrPCT4i9Dz0TuDH7Ma018sGVpGU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778596505; c=relaxed/simple;
-	bh=oePKEJkn2juqCCW/XpWjF9krjiF7QgG8BJrFN8PDLwg=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=i0UrZ84GTc6j9ARDK0IlJCjGozFuMViWo+qF58l41S7AIvKJiPW1X3bkzulxyVIooyJ8IAiyp5Z+AnJHnJ2wzoeECUSpOcK69DNH556eK/AYldMOi8E1g7MWM+u3Hky5WdFkS4MdPGCbW7BiNxGUiHuJ8rhofmRKCKwVxwAU1/k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=zPZD/p4S; arc=none smtp.client-ip=185.70.43.167
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
+	s=arc-20240116; t=1778600693; c=relaxed/simple;
+	bh=KeYuZ8GxrTdO4QCnUizgHtWp/2BUl0oj1XJ8jBhQa4o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fLx4470o0E+u3EXOSQLDxHqioOEqBR5ObcfwqguSyjeR/Bfrgv7HnKlCtZ8gdm9zVVtDiLGYJHLXgzVtGVaEVwsPr9AfnouI1ZH/JabjmTYM0+pZI0eJCOqVfTEHs6czgdDMFsMz6lNtJb97+37MQufScTka3WZkHsDW5N7vGYw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Z4cYTyni; arc=none smtp.client-ip=198.175.65.13
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="zPZD/p4S"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1778596500; x=1778855700;
-	bh=Bjvlgt0Lgrc9OBikw5UYF113Dh9R7321VRJTyU1aRkA=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=zPZD/p4SRQgqRukzsZL8bfeuoUSZlow8uaSZj8HdWMiT1ef1HN/ZIXaLy/0KCPInP
-	 SASaTb2/Z2Uf/M+XrpexvbSgYgxVF/Mo8BmlCpluMJAqcvhtKAIFImoy2WbaFWLjjR
-	 mAcTx4LqulUTmRWkPwhTE+WUSYzmuYsHUV2BtrdscD2iE9Tiv96KiUci86fVA3WieJ
-	 a9LmYG3HqnRq5QRH23n2Q9BRY8Agl2SQuRYPYs7xYnw3h3ii3aRjv33L/Oy9WvEDSt
-	 YV8KUgbSgbOfzSFuTvKXm7h4SYjEPN7IgvnCzrFq4yKc8S2ITo0KzlsG/AkD49NtuH
-	 xs/29bVL96M2A==
-Date: Tue, 12 May 2026 14:34:55 +0000
-To: Jonathan Cameron <jic23@kernel.org>, Andy Shevchenko <andy@kernel.org>
-From: Roman Vivchar <rva333@protonmail.com>
-Cc: David Lechner <dlechner@baylibre.com>, =?utf-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
-Subject: Re: [PATCH v2 05/16] iio: adc: mediatek: add mt6323 PMIC AUXADC driver
-Message-ID: <gWxamwTKyUeOF4QCsiIsrnh7DSWzIKFaY0h83qKq_0vg786xv1uFYhypix7BVO_ruG_vw3DrIsRhIKv5NAzl8hK72rjzPAjwAGU-rhkMgeA=@protonmail.com>
-In-Reply-To: <20260512142932.5c6801d1@jic23-huawei>
-References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com> <20260512-mt6323-v2-5-3efcba579e88@protonmail.com> <20260512142932.5c6801d1@jic23-huawei>
-Feedback-ID: 173184497:user:proton
-X-Pm-Message-ID: f3a0f1c1dc4818e265ee79b323d08552aaf3f4e5
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Z4cYTyni"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778600692; x=1810136692;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=KeYuZ8GxrTdO4QCnUizgHtWp/2BUl0oj1XJ8jBhQa4o=;
+  b=Z4cYTyniVRhHj9hSsOEWIy6eAXHMMf2Hl8eSXM6r3b3Qg6n55TCOWKof
+   mghWBClXg9EUFxx4KvUfERMPksw62i7UIhu5mxQv7CaMN94mBZBjpMcmK
+   ZgAWksEEmsjyPHuWsaMPfSA+shs1tmpMAB0MvjrKwhFOiitea+vTblodj
+   jw0PjPwXb8RSNmEh7hJIogEJ67/eRi+lnMg6e2ce4fHi+Lrq7St/MtzYL
+   tm2czDDKnrSAyVRUoBk91swYN0fxVK2V+wFFQVgxCylOkUWhG/KgObPG4
+   EqTAFFIJ4+Y+A+VvdS3gY0X6FcciANa4jU4eIkLWNskjxyPY/MwWb7gXY
+   w==;
+X-CSE-ConnectionGUID: yt+hnab+TPKmXUHgbgfPog==
+X-CSE-MsgGUID: /8aZefKwTU+wrtyRSRdjyQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="90616508"
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
+   d="scan'208";a="90616508"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 08:44:50 -0700
+X-CSE-ConnectionGUID: iLiBCTpWQXSkfOV5Cv/0bQ==
+X-CSE-MsgGUID: 9ZEmdtslRHu4DtVIXHY2lA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,231,1770624000"; 
+   d="scan'208";a="242773975"
+Received: from dnelso2-mobl.amr.corp.intel.com (HELO [10.125.111.237]) ([10.125.111.237])
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 08:44:47 -0700
+Message-ID: <6f82e991-30f7-4eb2-abdc-6b0bc704d4a6@intel.com>
+Date: Tue, 12 May 2026 08:44:45 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v8 0/9] dax/hmem, cxl: Coordinate Soft Reserved handling
+ with CXL and HMEM
+To: Tomasz Wolski <tomasz.wolski@fujitsu.com>
+Cc: alison.schofield@intel.com, ardb@kernel.org, benjamin.cheatham@amd.com,
+ bp@alien8.de, dave@stgolabs.net, gregkh@linuxfoundation.org,
+ huang.ying.caritas@gmail.com, ira.weiny@intel.com, jack@suse.cz,
+ jeff.johnson@oss.qualcomm.com, len.brown@intel.com,
+ linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ lizhijian@fujitsu.com, ming.li@zohomail.com, nathan.fontenot@amd.com,
+ nvdimm@lists.linux.dev, pavel@kernel.org, peterz@infradead.org,
+ rafael@kernel.org, rrichter@amd.com, smita.koralahallichannabasappa@amd.com,
+ terry.bowman@amd.com, vishal.l.verma@intel.com, willy@infradead.org,
+ yaoxt.fnst@fujitsu.com, yazen.ghannam@amd.com, Dan Williams
+ <djbw@kernel.org>, Jonathan Cameron <jic23@kernel.org>
+References: <20260416224618.12987-1-tomasz.wolski@fujitsu.com>
+ <20260512125759.30007-1-tomasz.wolski@fujitsu.com>
+Content-Language: en-US
+From: Dave Jiang <dave.jiang@intel.com>
+In-Reply-To: <20260512125759.30007-1-tomasz.wolski@fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tuesday, May 12th, 2026 at 4:29 PM, Jonathan Cameron <jic23@kernel.org> =
-wrote:
 
-> On Tue, 12 May 2026 08:18:19 +0300
-> Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org> wro=
-te:
 
-...
+On 5/12/26 5:57 AM, Tomasz Wolski wrote:
+> Hello Smita,
+> 
+> Do you plan to address the remaining minor comments from Dan and Jonathan in the next revision?
+> https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mobl4.notmuch/
+> https://lore.kernel.org/linux-cxl/20260323181331.000018f2@huawei.com/
 
-> > +#define VOLTAGE_FULL_RANGE=091800
-> Probably better to have this inline - however if you do keep it
-> prefix t he define  VOLTAGE_FULL_RANGE sounds too generic!
->=20
-> > +#define AUXADC_PRECISE=09=0932768
-> I'd put that inline.  Little benefit it in having it up here...
+Hi Tomaz,
 
-There was a mention about magic values in the v1 for the thermal patch [1].
-Andy, would it be better to use an inline style or a #define here?
-If the former, I'll rename the first constant to something like
-AUXADC_VOLTAGE_FULL_RANGE.
+Smita's series were merged in during the 7.1 merge window. So any additional changes will have to be follow on patches.
 
-[1]: https://lore.kernel.org/linux-mediatek/afmnUG8dG0N0HpV6@ashevche-desk.=
-local/
+> 
+> Best regards,
+> Tomasz
 
-Best regards,
-Roman
