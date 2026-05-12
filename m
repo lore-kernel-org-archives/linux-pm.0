@@ -1,172 +1,121 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 48FF330DEB8;
-	Tue, 12 May 2026 08:37:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1FDA38734D
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 08:47:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778575063; cv=none; b=WAozmkdW/ZB4fCJlHOjdlugDsnI/ob1mu2rdgaHpNJS896/Oj8OI41PMTO4ygz+Q4sQ+1fAOkNNLd2MCjJu89GW70H0lXvFRHUUiSY+kEewe/sXZ12pts/2t6roExAtvgGsFOrpiKPmh+U0UArvddq+zNXJDc8r/zTDILzqvwXI=
+	t=1778575682; cv=none; b=owou0XdtfZbZeUQHgIOVRYzhZcUva33cATy+XI3Z0hDT1xeOhleRolYPUQjJP7HXlqp8t1FFLx4kTxB7E/vkKA/3b4T116+turtLkAxLOhSNIHkzYK/DmqnHGGDq7sjQqsDwofzXKRP6mH9PouzP+sbrb7eQRAzEXz67peqXpHY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778575063; c=relaxed/simple;
-	bh=l5xq3vh/HJzjjyxvQH7htzddiAPqIIthJrzYqzSn+rY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BtVMeeQS36OCgzQOhWenhKMLWs7pjIdVTqKKUGYUfhCRGF4zpAVpsEFl6KjoIVu5yaBwAPGeW3iUwQeYcuU9szoHD/qxN0hJA/btgoGztkSIjREIkeSZlGsyo6G6Iq+i3SR3w4IL9LhjP3QsdlI/kaOApjpG2JKPi3r/FnuoGJs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=ZUUdFPOA; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1778575682; c=relaxed/simple;
+	bh=RFDRZ0P9Qvc4vKthE7AfKBJfxxb4zYyJ3FkJxGuoe6g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YFADLkkbtP+8MBxcTVG4IzjqacREb7+mZjTokwKb7TYng0wsvcRDl47ptEt5ePtsjnI/Aattn7AJ6GNIPNbs/jxlIUQNhKfWMPOVDdZld0F3KMUXqeQb7D7ZxKOD85nEXQFS9JZkvigeiJYY01uIuxxOi8DRFgjWL6tTvRY2ekA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=ozr+2/9O; arc=none smtp.client-ip=209.85.221.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="ZUUdFPOA"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 511521691;
-	Tue, 12 May 2026 01:37:35 -0700 (PDT)
-Received: from [10.57.32.148] (unknown [10.57.32.148])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CBF313F7B4;
-	Tue, 12 May 2026 01:37:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778575060; bh=l5xq3vh/HJzjjyxvQH7htzddiAPqIIthJrzYqzSn+rY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ZUUdFPOA4xI9EbuUaSFPWgiP1+aO6bV91sQMmO0HARFXFZUKLTbNDxgOcnBBvaIMN
-	 Qp7f+NST29CzFyl2pkKec/b4CoX4sxnvADoHYOajSrIRsDe3eozQAjVgTc13lVvTzf
-	 m+fAe1CQS4N4HN+3C9mweFbiVhd0h05Np1b72e4s=
-Message-ID: <1745c99b-4e31-4d7e-8221-c775ed30436f@arm.com>
-Date: Tue, 12 May 2026 09:37:32 +0100
+	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="ozr+2/9O"
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-449de065cb3so4755368f8f.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 01:47:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778575669; x=1779180469; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=9O4jHzVBdAwNrd2mArQ7dhJ6WlsevAEdelDSBRniGo8=;
+        b=ozr+2/9OnfqNmOV1QySVTe7DeWabrZPi4e4FIKo9xSVRUe6ttTSh8eNS2Z52xgD8hT
+         ghM4dR+M4kliAggyIVInPJ73viXG0tlpPrFRI7K03B2FgBzWlCr2tWEow8nFJu6CXoUP
+         6+AMKgRHdF/v4X/NPsc0DO6EcgwKPDc55eFNwMAOGXvUAm7XnMSLDPb8UVJY1uYMfMUl
+         SRo7RWjL/2Bs2d3UPFMcUW/gPodTh2okMf4hCltOps7NwGdQnm7RN+Q6xJK2dEvRLFSQ
+         XzVi60QqUWtLOGpbOp1ReZ7+YFFICxyrY7qjkWZUogry5XhVqrzn2Ed9W57lxtWQPCyW
+         wM4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778575669; x=1779180469;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=9O4jHzVBdAwNrd2mArQ7dhJ6WlsevAEdelDSBRniGo8=;
+        b=gon3tHHeqeGrwYPTBVoSsIZAA/ZZ3nuqIBS1mWKdxoUCA3I7CEbeOPALoi8DsFXs/U
+         jOxZFSc+kVuyjXbmTQowip3QPs9hDaCFyC6yreEkcyH+vlvXJknqFYWpPa6/zrty4SDv
+         OGQbRNRPZDh0UEPCLf0ZxbK3VJwgEhXzjeme/dzZy8A35XnmwvIY3c72YzL6HZduDYai
+         2lZVR9vGpysoEI4d2s1aN4A9JOM9NKaVffsBkljx3sWE4MGprvqOxGIbzrK9k8Q9ePNq
+         lJqmhCrNX2LDvAnHbQlhX+xArA8g+FJ/cg2MmlSQaN8ItRUdyYaTesLiEw/2wE6/1EWZ
+         +Fdg==
+X-Forwarded-Encrypted: i=1; AFNElJ+Y4MhTGl1YHTv106eXjPy8B8ZaeYgqiP/LhSlGlssXUUZNIQ/ZF9zePHJrEQF0fsDFn8j3daUQEg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz8Bt96wSMHCDEXB9DUBMbm4NoE4CBz/iVX41Hs3Qmqv4tY94z9
+	LBexAufCTl7GOWSPPaSM++WskatBTbuZLACtg/dEQVvA9+QNdyt+bZNPva6vLMzRe5hbcrgsa2Y
+	a88tD
+X-Gm-Gg: Acq92OHESY9pkH1Ncb+9imINTG6bkwG9dVlHH8gXDIQ4eDz1Kux5Zl9BP1Q+i9n2khI
+	II8GuAUSGn6Hms8o4jzbrsJ6Mu45rW8meJlFbhVu9dMHt+0H7uAj0OhQqHI0qg5hHYxqNkxCs6h
+	MbPu7XNzcvyyGlmXyUCHzCE94JGuLwbEk+ESh8eeJPvZzWpOu9nxHqoY+nE1s6MWWsDchA1VF6p
+	UIop942Ow7ekDeY8i2ZrzmA3hFhiIvEX6CTMyzP7BbaS7mDALL272RSdJruo93PKmrZcacXSfPI
+	v5tnoI8TlRVlzYmPuHUDTyCJA3WW59jV7gsYxMAfLU+rhfZuaRG3rhVw7SeRInpuIcvOtJIAlAL
+	MdK4UOfQAIkVd/3PAL6fHxFown/L/AOFI09pIxDGSbIgYTuHnIZ8JwEl5xMg5UJW6wrA2K4eS1p
+	nTo/KfUyxG1A7anQud
+X-Received: by 2002:a05:6000:4203:b0:44e:d7f8:3945 with SMTP id ffacd0b85a97d-4515b525c29mr45824736f8f.13.1778575669109;
+        Tue, 12 May 2026 01:47:49 -0700 (PDT)
+Received: from airbuntu ([146.70.179.99])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45491e94c0fsm32178544f8f.32.2026.05.12.01.47.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 May 2026 01:47:48 -0700 (PDT)
+Date: Tue, 12 May 2026 09:47:45 +0100
+From: Qais Yousef <qyousef@layalina.io>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	John Stultz <jstultz@google.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Tim Chen <tim.c.chen@linux.intel.com>,
+	"Chen, Yu C" <yu.c.chen@intel.com>,
+	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 RFC 08/13] sched/qos: Add a new sched-qos interface
+Message-ID: <20260512084745.s47ujqoymvbdz2uf@airbuntu>
+References: <20260504020003.71306-1-qyousef@layalina.io>
+ <20260504020003.71306-9-qyousef@layalina.io>
+ <20260511105704.GR3126523@noisy.programming.kicks-ass.net>
+ <20260512075809.5on43u3wrnelqe4i@airbuntu>
+ <20260512083054.GM3102624@noisy.programming.kicks-ass.net>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 09/13] sched/qos: Add rampup multiplier QoS
-To: Qais Yousef <qyousef@layalina.io>, Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@kernel.org>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>, John Stultz <jstultz@google.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Tim Chen <tim.c.chen@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>,
- Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-References: <20260504020003.71306-1-qyousef@layalina.io>
- <20260504020003.71306-10-qyousef@layalina.io>
- <20260511110328.GS3126523@noisy.programming.kicks-ass.net>
- <20260512075953.uoicyuwwvqcejxpn@airbuntu>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260512075953.uoicyuwwvqcejxpn@airbuntu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260512083054.GM3102624@noisy.programming.kicks-ass.net>
 
-On 5/12/26 08:59, Qais Yousef wrote:
-> On 05/11/26 13:03, Peter Zijlstra wrote:
->> On Mon, May 04, 2026 at 02:59:59AM +0100, Qais Yousef wrote:
->>
->>> diff --git a/Documentation/scheduler/sched-qos.rst b/Documentation/scheduler/sched-qos.rst
->>> index 0911261cb124..f68856f23b6b 100644
->>> --- a/Documentation/scheduler/sched-qos.rst
->>> +++ b/Documentation/scheduler/sched-qos.rst
->>> @@ -42,3 +42,25 @@ need for extension will arise; and when this happen the task should be
->>>  simpler to add the kernel extension and allow userspace to use readily by
->>>  setting the newly added flag without having to update the whole of
->>>  sched_attr.
->>> +
->>> +2. QoS Tags
->>> +===========
->>> +
->>> +SCHED_QOS_RAMPUP_MULTIPLIER
->>> +---------------------------
->>> +
->>> +Controls how fast util signal rises. Affects frequency selection when schedutil
->>> +is in use. And affects how fast tasks migrate between clusters on HMP systems.
->>> +
->>> +It affects bursty tasks only. Perfectly periodic tasks are well described by
->>> +util_avg and the rampup multiplier will have no effect on them.
->>> +
->>> +When set to 0, util_est will be disabled to help further with power saving.
->>> +This behavior can be controlled via UTIL_EST_RAMPUP_ZERO sched_feature.
->>> +
->>> +Value is not capped to retain flexibility, but it tapers off very quickly to
->>> +notice a difference above 16. Roughly it takes ~200ms to reach a util_avg of
->>> +1000 starting from 0. With 16 it should take ~12.5ms. A range of 0-8 is
->>> +advised for general use.
->>> +
->>> +Cookie must always be set to 0.
->>
->> So this is a very specific feature. This is made possible by basically
->> having a huge type space, allowing for throw-away hints (as per the
->> previous email).
+On 05/12/26 10:30, Peter Zijlstra wrote:
+> On Tue, May 12, 2026 at 08:58:09AM +0100, Qais Yousef wrote:
 > 
-> Hmm. It is specific and generic. It is specific in a sense it is about the rise
-> time through performance level and scheduler integration with schedutil. It is
-> generic also because it is about the time it takes scheduler/kernel to move
-> through performance levels. I could change the description to focus on these
-> generic elements of DVFS response time and migration time for HMP systems.
+> > If you saw schedqos code
 > 
-> I think if we move away from PELT etc, the concept will still be valid but
-> implemented differently unless the new implementation can't use the concept of
-> a multiplier for some reason to speed up the rise time.
-> 
->>
->> I suppose having these specific hints is easy, but as per always there
->> is the discussion about describing task behaviour vs implementation
->> details. With the argument being that task behaviour might be a more
->> lasting / stable hint, while implementation details are far easier to
->> actually do.
->>
->> I'm missing this discussion.
-> 
-> The intention is to describe task behavior. But being practical as well and
-> allow solve real world problems with ease - so if implementation detail
-> description will help us fix problems simply and easily, then I am for it.
-> 
-> The question is how to protect ourselves? :-)
-> 
-> This is where the two levels of QoS can help.
-> 
-> One level is for app developers, which is high level abstraction that is
-> detached from OS internals and details. This is done in schedqos I announced
-> recently. The goal is for users to use the QoS exposed by this service and not
-> to interact directly with scheduler/kernel.
-> 
-> The other level is this one proposed here; which is to enable this smart
-> service to provide a meaningful abstraction for end users, but not directly
-> being used by them - and we can define it whatever we like.
-> 
-> And this brings us to a contentious point, how to protect and enforce this
-> behavior?
-> 
-> I think we need to enforce that these hints are used by some all knowing entity
-> and for sched_attr to be locked down by everyone except it. Vincent was
-> suggesting to use SELinux to lockdown sched_attrs, but given recent issues with
-> tcmalloc I think we must eneforce something at kernel level. CAP_NICE is spread
-> around and we don't want to mix and match how sched_attr and these new QoS are
-> used.
-> 
-> To address this I think we need to introduce a new CAP_PERF_MANAGER (or pick
-> your favourite name here) that can only be set for specific binaries and only
-> one binary is allowed to exec with this capability. If two binaries with this
-> capability try to run, then the second one will fail unless the first one has
-> exited first. And when it is running, we lock down sched_setattr() except for
-> this CAP_PERF_MANAGER.> 
-> I am not sure if this is enough, but I think we must enforce the usage pattern
-> else we can end up with a mess. I think we all agree it is hard for
-> applications to use sched_attr in general directly, given the benefit of
-> a hindsight. I commonly see the simple nice value misused in practice for
-> example.
-> 
-> Ideally I'd love to enforce a single trusted binary if that can be done :p
-> 
+> I was in fact looking for that, but found this series did not include
+> it. Didn't get around to looking harder yet..
 
+I had a link to the commit that integrates rampup multiplier [1]. The utility
+is in my github [2] at the moment. I am hoping, if we all agree it is the right
+thing to do, to move it to kernel.org and get the development on the list.
 
-Just to follow along, does that mean if an application runs with CAP_PERF_MANAGER
-any other that doesn't have CAP_PERF_MANAGER and calls any of
-sched_setattr()
-sched_setscheduler()
-sched_setparam()
-nice()
-setpriority()
+I yet to introduce how to manage cookies there FWIW. I still need to spend more
+time to bring it to full shape.. I plan to add support to help Tim and Chen to
+easily tag QOS_MEM_DEP (or whatever name we choose) tasks/processes so that can
+help with driving how cache aware support can be added and managed by this
+service. And give us more confidence in the interface and overall concept.
 
-would get EPERM? Or silently be dropped?
-Either seems error-prone and potentially no longer work as a "Zero API adoption mechanism".
-Chromium and Unity seem to handle sched_setattr() failing, but unsure what the
-situation looks like generally.
+It'd be reassuring to know if it's moving in the right direction or not before
+I sink more time on it :)
 
+[1] https://github.com/qais-yousef/schedqos/compare/main...schedqos
+[2] https://github.com/qais-yousef/schedqos
+
+> 
+> > I already have to parse procfs to discover all existing running processes/tasks
+> > after connecting to netlink socket to listen to new forks/execs (and plug the
+> > race). 
+> 
