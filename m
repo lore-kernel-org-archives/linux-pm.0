@@ -1,115 +1,100 @@
-Received: from esa7.hc1455-7.c3s2.iphmx.com (esa7.hc1455-7.c3s2.iphmx.com [139.138.61.252])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A477360EEA;
-	Tue, 12 May 2026 12:59:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.61.252
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FD1139732E;
+	Tue, 12 May 2026 13:13:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778590758; cv=none; b=Lx1RmHHCzued+2V6XtwafkaKbR4PEfuYRBds8aAGXAS5MdikjwQcRy5pjAZFioxA6t66vAM1p0l5VAvuu8nUy1D/2I4j7fFNQDH7wrg4fuxDWwUIGSp+WYbsLxPDFoUvHu2o5WpAaL9kq208VWGeS18uYZtC0Ior/V9bhOckPcw=
+	t=1778591609; cv=none; b=bg1o44jZ0SoK7NWrZXi98QXL7jRD4wfPA60kWKAPmALzsJ4/s7rs6qxvKn0BkPVabLUHz7PRzrGq6dFjK1xeZYMeVCbIjDepeiJSuW/2vhlqZsI3elVUIBbobjVSMFaimFFlq95rhv2SRVHahNkj6Kh5IMWlsU71lKHaojg9Xjg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778590758; c=relaxed/simple;
-	bh=8k/X+GBcN3HecsH9d0ZY/G38JCz9EdOaVsc9Cwpw0Tw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=ob4+iMFpl4fYej3eB3JQLbptomHqPOEpfJefj7ZFvsNLBSVh+Ug8rzgPYKoHFvM47CjSwleJnZCtgpwYogyzKrfkxwtUc8dleORzRv08qdONze/rJokh3V8esXhtB60s/PWTITkxQ03j1OfBCwzc6jZ9MEE2IXJMxxcJ/ewbknE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=P5Od2HGZ; arc=none smtp.client-ip=139.138.61.252
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
+	s=arc-20240116; t=1778591609; c=relaxed/simple;
+	bh=CX64YbIUWl8RdUzb+Ud5wV0VY7WrYZ76F+BXobyWbII=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZcSUucOkXlfRUEVsQ+SOTeWlBwN9ys1fI7GNdiNOIS5fk4ja+UMEdfnOPRUw3KI49UtgraZYc5eERAvTEYyV24njW+agdFpPZzUrMuTUBk7VN5x7Ebb6aHc3cReo3XAl2SSYWOCYXR09+P4mealoI+jZ3uljQWOx9tbpyr80kDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AdVhf77D; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="P5Od2HGZ"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
-  t=1778590756; x=1810126756;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=8k/X+GBcN3HecsH9d0ZY/G38JCz9EdOaVsc9Cwpw0Tw=;
-  b=P5Od2HGZB9IAOU5LyUSwSP9luvp8NHYKITSaosgk+G1gNlcYkpW7Uh04
-   zrBIXiPqABpzGzTY18JRaAzRbD/YrDjZzhaolr9/cc97IkT5wyJD/zqKa
-   wqRxNtqVXR3ho8f068PTJFK/DKPZj5Gd5JOU5KdUfagc5MNn7vJ4EckJe
-   nF/dMda979b6l4xsyQiYTT3/DD8An0owM8qwrlp72PReuPrcRAZ+Qbg9x
-   XJXoCCU0wS/DSuOSHXJk4k1YIiwHKMYFP8gH7tH8/bBIM3wFW9pmwPpXE
-   eYrYIe9f2ez44LqA5rWtmoeHm2Gbs81bhWVyomTXTT+/aY1om5wTQcy3P
-   A==;
-X-CSE-ConnectionGUID: 0kPhNcvWQ32WScYsAXMHQA==
-X-CSE-MsgGUID: hPstsACCTgCfjMfKf7gCrQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11783"; a="218970910"
-X-IronPort-AV: E=Sophos;i="6.23,230,1770562800"; 
-   d="scan'208";a="218970910"
-Received: from gmgwuk01.global.fujitsu.com ([172.187.114.235])
-  by esa7.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2026 21:58:05 +0900
-Received: from az2uksmgm4.o.css.fujitsu.com (unknown [10.151.22.201])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by gmgwuk01.global.fujitsu.com (Postfix) with ESMTPS id 3309BC000A2;
-	Tue, 12 May 2026 12:58:05 +0000 (UTC)
-Received: from az2uksmom1.o.css.fujitsu.com (az2uksmom1.o.css.fujitsu.com [10.151.22.202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by az2uksmgm4.o.css.fujitsu.com (Postfix) with ESMTPS id E049A140036C;
-	Tue, 12 May 2026 12:58:04 +0000 (UTC)
-Received: from dhcp-portal (unknown [10.172.107.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by az2uksmom1.o.css.fujitsu.com (Postfix) with ESMTPS id 88AB01800A41;
-	Tue, 12 May 2026 12:58:03 +0000 (UTC)
-Received: from isar2.ecs00.fujitsu.local (unknown [10.172.183.27])
-	by dhcp-portal (Postfix) with ESMTP id D3033608BB;
-	Tue, 12 May 2026 14:58:02 +0200 (CEST)
-From: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-To: tomasz.wolski@fujitsu.com
-Cc: alison.schofield@intel.com,
-	ardb@kernel.org,
-	benjamin.cheatham@amd.com,
-	bp@alien8.de,
-	dan.j.williams@intel.com,
-	dave.jiang@intel.com,
-	dave@stgolabs.net,
-	gregkh@linuxfoundation.org,
-	huang.ying.caritas@gmail.com,
-	ira.weiny@intel.com,
-	jack@suse.cz,
-	jeff.johnson@oss.qualcomm.com,
-	jonathan.cameron@huawei.com,
-	len.brown@intel.com,
-	linux-cxl@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	lizhijian@fujitsu.com,
-	ming.li@zohomail.com,
-	nathan.fontenot@amd.com,
-	nvdimm@lists.linux.dev,
-	pavel@kernel.org,
-	peterz@infradead.org,
-	rafael@kernel.org,
-	rrichter@amd.com,
-	smita.koralahallichannabasappa@amd.com,
-	terry.bowman@amd.com,
-	vishal.l.verma@intel.com,
-	willy@infradead.org,
-	yaoxt.fnst@fujitsu.com,
-	yazen.ghannam@amd.com
-Subject: Re: [PATCH v8 0/9] dax/hmem, cxl: Coordinate Soft Reserved handling with CXL and HMEM
-Date: Tue, 12 May 2026 14:57:59 +0200
-Message-Id: <20260512125759.30007-1-tomasz.wolski@fujitsu.com>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20260416224618.12987-1-tomasz.wolski@fujitsu.com>
-References: <20260416224618.12987-1-tomasz.wolski@fujitsu.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AdVhf77D"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40D4FC2BCF5;
+	Tue, 12 May 2026 13:13:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778591608;
+	bh=CX64YbIUWl8RdUzb+Ud5wV0VY7WrYZ76F+BXobyWbII=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=AdVhf77DDYTVZmGXLlltu0/q6TBCLetH1UoFRP1R3kE5gCkvJp6uotziv0XpbnhvZ
+	 ZBXrMa7/wdpIGS7+aqDmIowf/NH9PUFAefogOzbqegaNUk/15Ez055zuXCEOhi4213
+	 7+6zJtg/85Ba46OXrtQJQwolpGtGo5gTEf/NW3B/mL13ydYbMpvzpxzkUbbRsX/1D+
+	 wkhHl6o8uMeAfTJwPBJ1GhnYK2K6LECg0Ho5SKIlBSe9oWU/r/hexQJ6vxpeB8ypOR
+	 AImGo0WI5aoCXBG/wMR3WrOvRW2jC0cMUkJVuWA1FMqJA2ckh1zLgRGWGRm0ZAbqj1
+	 T8VMzMJLfQNqA==
+Date: Tue, 12 May 2026 14:13:13 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Cc: rva333@protonmail.com, David Lechner <dlechner@baylibre.com>, Nuno
+ =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+ <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>, Sen Chu <sen.chu@mediatek.com>,
+ Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
+ Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, "Rafael
+ J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
+ <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
+ <lukasz.luba@arm.com>, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
+Subject: Re: [PATCH v2 01/16] dt-bindings: iio: adc: mt6359: generalize
+ description for mt63xx series
+Message-ID: <20260512141313.425535d9@jic23-huawei>
+In-Reply-To: <20260512-mt6323-v2-1-3efcba579e88@protonmail.com>
+References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
+	<20260512-mt6323-v2-1-3efcba579e88@protonmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hello Smita,
+On Tue, 12 May 2026 08:18:15 +0300
+Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org> wrote:
 
-Do you plan to address the remaining minor comments from Dan and Jonathan in the next revision?
-https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mobl4.notmuch/
-https://lore.kernel.org/linux-cxl/20260323181331.000018f2@huawei.com/
+> From: Roman Vivchar <rva333@protonmail.com>
+> 
+> Update binding title to the MT63xx, since the list of compatibles already
+> includes mt6363 and mt6373 which don't belong to the mt6350 family.
+Hi Roman,
 
-Best regards,
-Tomasz
+Wild cards have a nasty habit of going wrong.  I'd prefer to see
+language like: MT6359 and similar PMIC AUXADC
+
+It is less important here than in many other places because the
+file has an explicit list soon after this, but none the less
+we've been bitten by this too often to think manufacturers won't
+throw a completely non compatible part in the middle of a wild
+card covered range.
+
+> 
+> Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+> ---
+>  Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> index 5d4ab701f51a..2e8857e104f5 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> @@ -4,7 +4,7 @@
+>  $id: http://devicetree.org/schemas/iio/adc/mediatek,mt6359-auxadc.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
+>  
+> -title: MediaTek MT6350 series PMIC AUXADC
+> +title: MediaTek MT63xx series PMIC AUXADC
+>  
+>  maintainers:
+>    - AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+> 
+
