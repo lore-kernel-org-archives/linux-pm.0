@@ -1,85 +1,111 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CC95360EFD;
-	Tue, 12 May 2026 19:20:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14D5338333C
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 19:25:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778613633; cv=none; b=Fg6MmDoGhUrIhudFmTaV2IZL4SKsYPQcLAJkg0QdCwxKr3aM8L7jb8NrOMtv2hMfojEDBx86gCRbQDQ3TrrQB5qb/YnA+Wl0rb5TL+kZ2BgsPSftmvvxtICdp16KvhzpzUwdR9DZn5tTjRrSXtlgqAlZ1BPMO9bxxxHMsOXYXEI=
+	t=1778613951; cv=none; b=Du6NGNHNfnD7qjAzI0ayDquusrDVu8Xl0kPLSO9padax2VBFMxe7vqBD//6XMPu7YHOEPdlcNrgVKuaFVdepV2r8GwCn2pO2uUjXRNzE8RWTT3mrfdHaK3UR1tyVGYoElq694thC6O79z+B2IzX27D3OD9IsVYRK2DjHfuFTrzY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778613633; c=relaxed/simple;
-	bh=BEbA/FMgzSPuKY+gZWCij2cWKCdNuSnSxSiTdwBiglQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=g6AgXKy9RsqXp76TIdkHEPN6WIB85F2JyTPB2ELCSNzRLnX3ZIrZbwPdOOKzOpeOyQTuv0fyPpjdP3gRELxXSKP8383XYGcCTKGjIIgP9EQo6/WCxfOpVBaCJmOBkITQPiAZGCjRkwFrO+GYOuqzPF2vGjW8PL8K9oCBE3S0HXs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=o4ka0h6i; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778613951; c=relaxed/simple;
+	bh=erA00MWL5kTeYyzoTkdxuGpD4oQdijXGNkrzVRhZRx0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SSXCHyvZDdOANJyrk2vd3Kaxtwo1+nYb/YK3cL385A45Md6ts5tOAzrd6Vi+ck8hjJCwd37Eapb8vEH407UHVTXd4mKl/d7klnknZEah5S7uQHKQgkhEuQD7IB8UTR/R6yrRpqIfaOtBoN4xMT6c7mgvaESMFnI+t/zK5WjhmzY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lZ72Zh6X; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="o4ka0h6i"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C86DC2BCB0;
-	Tue, 12 May 2026 19:20:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lZ72Zh6X"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEA66C2BCF6
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 19:25:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778613633;
-	bh=BEbA/FMgzSPuKY+gZWCij2cWKCdNuSnSxSiTdwBiglQ=;
-	h=From:To:Cc:Subject:Date:From;
-	b=o4ka0h6icCH1UtJu5UtAX9EBXKGKKJHM+udGGv/QhQxvV+ATpBdIYFyk9N54Jlq2U
-	 h6UdIRuRxDjdsmlG3/NKo/05cbqmTQDyAJzavn9JKALtP4yA+ii6dMxH5fNvdG7B29
-	 twxm/0VZCGzq/IfJLdgA2D+qJq4/VZ04ULmxYlhUI/dAqd1ZSZpaAjccVC6g03JSX/
-	 d0FKcL3HvVID/1rngDWHCbAoTbLD0enicCMkOY+0qROAbogQ2mSUnZsFXZGVwBZmGD
-	 07xkVtnRNd8EgXlR7f4IEJrdO9+QS0XRBniIIidGdBF2lKzC/oSOTAzYsVLDckFqHj
-	 FLUZtRfUgjLfQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Henry Tseng <henrytseng@qnap.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- LKML <linux-kernel@vger.kernel.org>
-Subject:
- [PATCH v1] cpufreq: intel_pstate: Use correct scaling factor on Raptor Lake-E
-Date: Tue, 12 May 2026 21:20:30 +0200
-Message-ID: <4523296.ejJDZkT8p0@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1778613950;
+	bh=erA00MWL5kTeYyzoTkdxuGpD4oQdijXGNkrzVRhZRx0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=lZ72Zh6X34vKCv+57JtWW9VwjHpA98GKm8dj0aLtDnE9gxVDJEKDcskzeskHkhPC2
+	 r6TDArQStiFJNzsZZjjp5j1a6EPEv0Hc0OBwCab2aKk158fb3TlCKHzr1MXzggZcql
+	 kTjtYzwPp9teku+4GWqElYmobWzqcjDJM8DD0H7ILPPryccJlxYhBL+kNsthu1Zdv4
+	 ui6IYQ1wmci0VCb8vjG1BikOy2X3YXAMKptPruGfi24gtI/4YdnBqMouDA1BvT1l3j
+	 Q80MvFogyHfGw+U9c1tDWqfNHU+ALqdODmi78vLAhDpzc2lLuudvR8kzHJ7OKjaWkU
+	 25yVJeEA9aI6w==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5a88de2b52eso7721079e87.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 12:25:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9OBioc+ZTmKIAVLgIYG+NKRptKiH1B8ujrLZUXQRrXcFzliR70TMfR3+f2/rcj0+5HY8BXZEWJ0w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy0cA66knqn3qm1Z5wzEDhbezBclicvGZh4cIH5NlhFa1h/8v7s
+	UhNkgG1PXxwAlYWBvL77/7cXPBmlDs/+3eHvQNX9PuxP6s7CodwkEW0xm6+Cqqzs+1388CAlUKm
+	VNxhYMICN28olh1d5gTnFZPYcsQQi1ro=
+X-Received: by 2002:a05:6512:33c5:b0:5a4:1918:20e with SMTP id
+ 2adb3069b0e04-5a8ef99c093mr99052e87.30.1778613949135; Tue, 12 May 2026
+ 12:25:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+References: <20260509092707.3426533-1-xujiakai24@mails.ucas.ac.cn>
+In-Reply-To: <20260509092707.3426533-1-xujiakai24@mails.ucas.ac.cn>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 12 May 2026 21:25:37 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0i0MdJCS-0xeP3gZi30gYV4DMJxPceodRexksMcL=b5PA@mail.gmail.com>
+X-Gm-Features: AVHnY4JNkLjqw8Tb9wOYTn34zcqwbBvDwGdKMyY3vEj2AMJHNg3AP9vYF_t60lo
+Message-ID: <CAJZ5v0i0MdJCS-0xeP3gZi30gYV4DMJxPceodRexksMcL=b5PA@mail.gmail.com>
+Subject: Re: [PATCH] PM: sleep: Use complete() instead of complete_all() in device_pm_sleep_init()
+To: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
+Cc: driver-core@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Colin Cross <ccross@android.com>, Danilo Krummrich <dakr@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On Sat, May 9, 2026 at 11:27=E2=80=AFAM Jiakai Xu <xujiakai24@mails.ucas.ac=
+.cn> wrote:
+>
+> device_pm_sleep_init() is called during device initialization via
+> device_initialize(), where no threads can be waiting on
+> dev->power.completion. Using complete_all() here triggers a false-positiv=
+e
+> WARNING from lockdep_assert_RT_in_threaded_ctx() when
+> CONFIG_PROVE_RAW_LOCK_NESTING is enabled, because holding a raw_spinlock
+> elsewhere in the call chain makes lockdep_hardirq_context() appear non-ze=
+ro.
+>
+> Replace complete_all() with complete(), which is semantically equivalent
+> when no waiters exist (sets done to 1 instead of UINT_MAX). The completio=
+n
+> is always reinitialized via reinit_completion() in dpm_clear_async_state(=
+)
+> before each suspend/resume phase, so this initialization value has no
+> effect on later suspend operations.
+>
+> Signed-off-by: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
+> Fixes: 152e1d592071c ("PM: Prevent waiting forever on asynchronous resume=
+ after failing suspend")
+> ---
+>  drivers/base/power/main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e1b550664bab..7a948dd134df 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -115,7 +115,7 @@ void device_pm_sleep_init(struct device *dev)
+>         dev->power.is_noirq_suspended =3D false;
+>         dev->power.is_late_suspended =3D false;
+>         init_completion(&dev->power.completion);
+> -       complete_all(&dev->power.completion);
+> +       complete(&dev->power.completion);
+>         dev->power.wakeup =3D NULL;
+>         INIT_LIST_HEAD(&dev->power.entry);
+>  }
+> --
 
-Raptor Lake-E has the same processor ID as Raptor Lake-S, so there is
-an entry in intel_hybrid_scaling_factor[] for it.  It does not contain
-E-cores though and hybrid_get_cpu_type() returns 0 for its P-cores, so
-they get the default "core" scaling factor.  However, the original
-Raptor Lake scaling factor for P-cores still needs to be used for
-mapping the HWP performance levels of the P-cores in Raptor Lake-E to
-frequency, as though they were part of a real hybrid system.
+sashiko.dev complains about this one:
 
-To address this, update hwp_get_cpu_scaling() to return
-hybrid_scaling_factor, which is the P-core scaling factor
-retrieved from intel_hybrid_scaling_factor[], for all CPUs
-that are not enumerated as E-cores.
+https://sashiko.dev/#/patchset/20260509092707.3426533-1-xujiakai24%40mails.=
+ucas.ac.cn
 
-Fixes: 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling factors")
-Link: https://lore.kernel.org/all/20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com/
-Reported-by: Henry Tseng <henrytseng@qnap.com>
-Closes: https://lore.kernel.org/linux-pm/20260508063032.3248602-1-henrytseng@qnap.com/
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: All applicable <stable@vger.kernel.org>
----
- drivers/cpufreq/intel_pstate.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+and I think that it has a point.
 
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2279,7 +2279,7 @@ static int hwp_get_cpu_scaling(int cpu)
- 		 * Return the hybrid scaling factor for P-cores and use the
- 		 * default core scaling for E-cores.
- 		 */
--		if (hybrid_get_cpu_type(cpu) == INTEL_CPU_TYPE_CORE)
-+		if (hybrid_get_cpu_type(cpu) != INTEL_CPU_TYPE_ATOM)
- 			return hybrid_scaling_factor;
- 
- 		return core_get_scaling();
-
-
-
+Before this change, dpm_wait() needs to be updated to skip devices
+with no PM support.
