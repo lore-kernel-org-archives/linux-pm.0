@@ -1,132 +1,188 @@
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022074.outbound.protection.outlook.com [40.107.75.74])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D1625B0A1;
-	Tue, 12 May 2026 09:05:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.74
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778576705; cv=fail; b=ZuUlSCvIRQjW8tPoUopTmSCgd1ariSZCkOiTQrJndsIXh/IAmDddygBcVIs9jFRXg14VV7o/bDcK+jXFgq1sXvnvuEDaLOCdDSy3D6cM8PGRy9bbA6kBsazIrTcbB7RsIPHYt7bcnBEEGXBKVhKF3TXIqdR/z1/MCal4ey5cqLQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778576705; c=relaxed/simple;
-	bh=t4WprLnglpopj5PK12LzlniZ07Sm5lWhs+1gANPb4Vg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UIfR/1JJNCnVpzM9K7bkxh6l/LCzc5z73s37V1IJ6jLARLybupyb3/SlJPJYN825dsZavLigiXhRQ19AJSAwZOBquv+WJaEy332oN+OYl2BAnI4UD3dn7Kk7aPaLhxfD6PYmkcbUkxjhOs/YcysH0zVIjP7ylK6Rz6dEgC6ur3w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=pMXmdZfb; arc=fail smtp.client-ip=40.107.75.74
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qnap.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F2D639FCD7
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 09:19:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778577597; cv=none; b=L4zWAHyupvq/LIo8mr4aEcocdRQDxHmU1uqQCFIlHHoy9MxbMeAoMBI7S/TWJ7dVTOidtyF45BwlYH7LS1CG8eeZWsgJljPsrr82srks7pQlaWLgittBFy2kCrQcGI3d7l1Aq9cvzxmiQlC2fIWKpEbhff/Amsy5Kh3LuSxaaQs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778577597; c=relaxed/simple;
+	bh=pQa+x7m84PBnmw8b+C+pFcE/8l/E8CLRAzXl8GXueIA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KNntoCTym95oo/+0MHVxBMhL40+za/DajGpTXnnQBTBaIWtG78kTJiqh4uOZ4wV7iXrJo16W1nB4oww2Y7fKCk/MTG3fq4NpUNi3T0Yuhn8PllijV1OKLdzjNEcfF3v9PLT7ECpPtIdDMuVdM4/+hAhq20n8do01VgZ8WsBjrEE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=BY8GzujJ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=DYEm6525; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="pMXmdZfb"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PPMCNtKAqJILSYjLtORw4EnmKnWYWpQZNrLFm4Riz2U9WVe5oYODItRrmkelG0/jxaHopCQF/X2eNF3Prl2fbK+Vhyt52x4mqY/z5K0NVaMBWapTzlOEq1z45r69v5Aai76ucTNhrGMPOImj8CUbam7zmBfD4Rpt87BKQbuiJiQIiM9MfcFb1ZK3ku4BdgPo5no76SbQlr0kmu404Lri2ukWJGZ3wJG8IPyRjclfNDeGUd7xN/GTLkpv/MJp55D+ATAFqIHWa5WHytibHDJ8GjSSudUI3WLAYL6+yjH2XasX8MAs6sJvrO90WBYqm/x3vNty8kKaYJNlUiU1CvVaXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=jBQ/2xLRnYD0/W7EldmPIRa9vMUGSLHr8MhIdvjwvMc=;
- b=XX6M4Vsnr2LE3lUj1xxZy0iSxP1fPf6txN4e6gkbfrIw05fAuojWmK6pbSmijI908vEAeOkySnC7p0v+7e3ZY0GSEuMmhJmyKEOm/F6EVEeLj0LvxfnKaGVkYLyB2I184EA5h+Y2lUwmYqcbpqd3TEuDOBBCod6TUoQcdCrL0auklzUIu4s6BLJcNbqmMjcfmbEhenGqccGHnfqqSaemxG6pxDDPr4OUQRXMbPdNJEbN1NnYl3Lp45MJXQUwDEOHDS9D9TZdwVFm8n7hU/XPmlxJw1sWDLSpyKOAmVwPcoiweCppYU053ILFVZeloBorL/UtWO2w2rq822yEkCM3Kw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 122.147.219.42) smtp.rcpttodomain=kernel.org smtp.mailfrom=qnap.com;
- dmarc=fail (p=quarantine sp=quarantine pct=100) action=quarantine
- header.from=qnap.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qnap.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=jBQ/2xLRnYD0/W7EldmPIRa9vMUGSLHr8MhIdvjwvMc=;
- b=pMXmdZfb1wCtD9BQAFBKuqxTqV1Bvvt/izIE8c0KfeVyn4uQXnZPSn2BLrmD+1icKIEvP5Pihe2sbcMxrNRx8Fud9VNa76MAVjF0eWHl3E78oqdwJZ7ZKKbvdAm+LlusAyf2x0y47VDoYv12p88OajyEGcOF1TRIMRTP+XjbZGuoBcGTvg1cnKO3fPkynV8c0IkGuUCA2kTarGB9GCzu/8AiSXxbBXWAwGq9yHWhBJC8buAykkBqOdxvTYsoZnfHmMtDvMscVHomcWCsX1bCfMTYqcbM/zTukmlY+SAKzP7QQqAH43TgKh7DziT/z96MQZmLfTQkh2TYO/gUaQ1kqg==
-Received: from JH0PR01CA0008.apcprd01.prod.exchangelabs.com
- (2603:1096:990:56::9) by SI2PPF17766D185.apcprd04.prod.outlook.com
- (2603:1096:f:fff6::7c6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.21; Tue, 12 May
- 2026 09:04:57 +0000
-Received: from OSA0EPF000000C6.apcprd02.prod.outlook.com
- (2603:1096:990:56:cafe::de) by JH0PR01CA0008.outlook.office365.com
- (2603:1096:990:56::9) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9913.11 via Frontend Transport; Tue,
- 12 May 2026 09:04:56 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 122.147.219.42)
- smtp.mailfrom=qnap.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=quarantine header.from=qnap.com;
-Received-SPF: Fail (protection.outlook.com: domain of qnap.com does not
- designate 122.147.219.42 as permitted sender)
- receiver=protection.outlook.com; client-ip=122.147.219.42;
- helo=mail19.qnap.com;
-Received: from mail19.qnap.com (122.147.219.42) by
- OSA0EPF000000C6.mail.protection.outlook.com (10.167.240.52) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.13
- via Frontend Transport; Tue, 12 May 2026 09:04:56 +0000
-Received: from localhost (unknown [172.17.22.18])
-	by mail19.qnap.com (Postfix) with ESMTP id 8C5DE2AE;
-	Tue, 12 May 2026 17:04:55 +0800 (CST)
-From: Henry Tseng <henrytseng@qnap.com>
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: Henry Tseng <henrytseng@qnap.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix Raptor Lake-E cpufreq limits
-Date: Tue, 12 May 2026 17:04:02 +0800
-Message-ID: <20260512090403.2708970-1-henrytseng@qnap.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
-References: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="BY8GzujJ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="DYEm6525"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64C5FoAG2803758
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 09:19:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	xHMNfioUWjUvEEM4IfMYI16LOJp6emUsmPwwwed6elY=; b=BY8GzujJ3GMovGR4
+	a2g1cmvjsN0xcT+qpKy0zu/SRhzEgm3nI2aGqeE6sI0lGwhfEJV93HeC6uzLOxE/
+	xwxPwf9EBcf5s3CuiRvbaYstS10Fw3Cae8ctAxaPOG7kXFZUlmis1dEowjOS0BCl
+	VTmzVH7c5MEdcwzq2NDyLROiNgQhGR6M0Kc2ULU9EoUCKa3WPffSPk5s/FGA7/wR
+	CybFBHFwty42lBLjfDf5r4n4dj07OWaJyYUCNMLEqTzItSXLYOD+FCc+GK4SlRq6
+	AKhcJrb2RZ9iQzL0jloNvoEInH6YaU2mQD3mgP1OMRN2JcblQ9hhiXix3GPxCCGD
+	AJp4LA==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e3nv3agu5-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 09:19:54 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-514ae0edeb6so62005181cf.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 02:19:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778577594; x=1779182394; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=xHMNfioUWjUvEEM4IfMYI16LOJp6emUsmPwwwed6elY=;
+        b=DYEm6525d2evb8+ltLyVAA8LiiwsNLCHvx7hLoROM7l8UG97ysnYtgBkbRwCqeU7EA
+         WWnY+oFE+uKnpr5robJdzkvcDaMj5A3w/17XN44Q4msoUW3/rS+WqZrX6m3c+RCGBIGU
+         Q/MRTuwqDnZvi3JPQ58eG8hl7Ho93sMKpNFQ1seT425jI4tR6fdsx+acJE8ghgKFjPM/
+         vze5fd6OINED/DqwHgu33TPQqF7FddrkqKuTFDjEERM6tPvBhRL7bQ2XfcQjc8w0dpbQ
+         PKgVw5J8pCy/Q2zqrkls54GDdENw9t/HADQbHm91C1D0LduBUs47I3JRtysVwwrXAa9R
+         bXBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778577594; x=1779182394;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xHMNfioUWjUvEEM4IfMYI16LOJp6emUsmPwwwed6elY=;
+        b=HvlbVCDvQLJm9soZEP3FC81WALxfauyNSYYkCekXVHTFyUHnZ7BnF91iXme0Q+ppXC
+         NtCH9TqvG6CHjXhFZIPx06qk/sbFQZ5HB7C2ZS/Dmdnu/hDZwfmp7X2/1pf9pVJioU96
+         IK2fQpfubLmNvSL/6Bw/MwSYNYeHKivWI3lZol7NNUKV8BN9RdpwPs7mXth/rH6+j101
+         OQvH0tIOFYbadtx63eWJFFgY/T+SwozAUceemafLXQZ3kCS76b+xwlBrrvuhGFymzu6Q
+         gJDrpOGv6PaJhDiU5j4kVqqiBtHBCkYJYge5gFMhHRUxLYody2oQn3m+4JIAW7Zh14Ya
+         OGBg==
+X-Gm-Message-State: AOJu0YzPta+X2p0HzOqpfSouPCcqhEZEuZaCMvy+W3d2lYj/FBzxOzGZ
+	30AMFim6lXi1Y76lJ8lRK/2Yo13X5s+s6or3/yjiuvf+WK65ob1Uu4uaRUXYMpfhR1bLYQgK7j9
+	xcQtJ3qPqCNPaCGPDstQvihb4x9PaOlHKFSM1znaXp2GzxquXs2dc8zwT7Qi3lQ==
+X-Gm-Gg: Acq92OEWk9lSjjka+OOdZqVg65b1btuZboc441lVk/xE5LPJkQnULyRgB93Pp0yA38f
+	XjkBQLlUuIYR22843PDwQ7uuYQtu/4hp9eVHQawzd0OnyJAckO+BfAlNsJQ6aTeX6XqD1oZL4Ui
+	TDBNgDd7ym2tg5D17hTaK3aCG1MVUGTggc3K0pwzGKNtT+EwTxrTvvg6Hjd8H4wpGza026xrNbp
+	VwV5Uw3uZ/nR968Jv7et63d2u1AWQ5A1B/MrD01jpSeWzWDiIWxsI5SmSOV9aZwfKi2UZJJZDgZ
+	7L8PxF6BuFs8SKT0+JsZI/plip2jnA5/fEOFzAty/xUJQXLV+SR0kIVbCwqfceHAsQJrmNhF/yV
+	/jvuQjx+DTA76QQrvuHZpJTlM7N0M8IKP6BqPdUhCM3RyqX2gbuc6nghjdORXl2gU3kADA1giGR
+	CFFN11iuHC
+X-Received: by 2002:ac8:5804:0:b0:4ee:1bdb:a547 with SMTP id d75a77b69052e-514cef5f533mr37460101cf.14.1778577593845;
+        Tue, 12 May 2026 02:19:53 -0700 (PDT)
+X-Received: by 2002:ac8:5804:0:b0:4ee:1bdb:a547 with SMTP id d75a77b69052e-514cef5f533mr37459911cf.14.1778577593432;
+        Tue, 12 May 2026 02:19:53 -0700 (PDT)
+Received: from ?IPV6:2a05:6e02:1041:c10:ae20:597c:99b8:d161? ([2a05:6e02:1041:c10:ae20:597c:99b8:d161])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4548eb75c29sm30575148f8f.9.2026.05.12.02.19.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 12 May 2026 02:19:52 -0700 (PDT)
+Message-ID: <06073a6c-1f75-4dad-9309-9bc47a2b4708@oss.qualcomm.com>
+Date: Tue, 12 May 2026 11:19:50 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OSA0EPF000000C6:EE_|SI2PPF17766D185:EE_
-Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 6491e04a-98e4-45bc-16b3-08deb0058982
-X-MS-Exchange-AtpMessageProperties: SA
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|36860700016|82310400026|55112099003|11063799003|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	ws9j22TFKqRDeXiBsrhLKYFHH4MkfHmoETK5jh5YaqmUEZ5yu0MWYRfgWGjkPKeazTk+MoHRyWiQTv0mZjJY1yWSZPniuvBtVDNYmB8SsWCCGxUZ5kPOPkGUJ5x9uKU5bLhFKQLezU62YTvAHss4BqYwqBrbQyGo9EEcGGr+WsOUZkHJtNltS1rZlX3uTlO0vtrm1B9Pc9XQY1O7DyeuImVOOxIjCaw7A8Q/9DO0+2lsR3oRCG/6O2dWME+0DJtwugMprhLlQuNR0gEBC5SRpTseAEhYABwnXXKDgIeghnUqUQYsZxFLRVlIWSumnGjhjIQ2oxPqiB36vvocvbXpmysN1FD7yHqddBR4OTfuIajsZrVzxeOFhn1fjqGGQTY7gCmmPwBub+3PZNO83otVhdgnefYtF2GsA3GvjLjY/mUo1VG2/cTzjq/sl8OSnqXrgLdYCRZzyyP4iFrZJFJsJX9U479bPcZqaUv5kJjCDeqZWz8DB7A9T66j/cZHs32wkRLdvPFXOZYt3HkIOjmi4tCTq7POboNv/HZGUuw+ULBp54EfAcIE8dnMf1D4wIAYKiE4UamI2yAWArt+OvOWFUHIagaN5lccQ7WHVLwe50QMoQQd5uGNzV4f1HdUfUDBMYPQ95w+E0taFGR59okaits7so/WnuxTvtQI/maleh/6wM5Qy4fqALLHoqr+OBddPR7eWB3zhhGjgd1GzIVdLkdrd7F9Br3t/aBTACMc36o=
-X-Forefront-Antispam-Report:
-	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:122-147-219-42.static.sparqnet.net;CAT:NONE;SFS:(13230040)(1800799024)(376014)(36860700016)(82310400026)(55112099003)(11063799003)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	1Q6HKW4E5drs8t4Nba6/IOLYkYJTJ1YXDvlE6hwo77rx6G8wTinkCAs79YFCjFqe3l6qhWMzSUz2JGmI5MjrYpTDX5yk48nwZSn6Eukx3iuNixJUSw4P+6SZ0aIjZSFshjsLXoYRcVpxW1JQDgvt3VwU7Fs+wmv5kY7v6LoxXOXoE1v2m08DRROlALWBKXporR5sO+N8eYFLPJnHEbevd9I6aIbd3Ekd8nLIhlgsYcasrE2X8QNeUHMWvUJg7gK41YrEwEugjBBL2xZI8gpQOlT7MMS9Hwih+ffhztjsV4jvMvFmz99Nt2suiBlmOhFpTlzDXGhbvzCXZwJ7ZH5R7w/J0GFxVF7bvMBszqL68u9Brc+QdBYIwW4+67CGVgMwOGBePIXS8qTf0P0jgyQPUapTkcvvgsJgr1v1mt/aAzKZ52Ff8NPE+eMK1gX05TI7
-X-OriginatorOrg: qnap.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 May 2026 09:04:56.0205
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6491e04a-98e4-45bc-16b3-08deb0058982
-X-MS-Exchange-CrossTenant-Id: 6eba8807-6ef0-4e31-890c-a6ecfbb98568
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6eba8807-6ef0-4e31-890c-a6ecfbb98568;Ip=[122.147.219.42];Helo=[mail19.qnap.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	OSA0EPF000000C6.apcprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PPF17766D185
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] thermal: qcom: tsens: atomic temperature read with
+ hardware-guided retries
+To: Priyansh Jain <priyansh.jain@oss.qualcomm.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Thara Gopinath <thara.gopinath@gmail.com>,
+        "Rafael J . Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
+References: <20260511071024.3130247-1-priyansh.jain@oss.qualcomm.com>
+Content-Language: en-US
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+In-Reply-To: <20260511071024.3130247-1-priyansh.jain@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDA5NCBTYWx0ZWRfXynorgw7oWGbH
+ tRpP0yTy6LDNN9RpnO2/VnCPW0VdafePmG/1B8WJh3KG1lbscUkRIznyoblQ4ZhzlV8Uqp58FDU
+ 3iTLIlSTYaJCUJfdUHf5x1+sgCgIgmtdlFBtkCE22VtFxpMwtmLOxynXnIkuG9RUD8K9krWh8Kw
+ 048DsMhzZH/7NthIOBxPiyP/sRa9kBvY4cOsTgNEVHPuMnnSB+SxhjzuGCeCr1T/xqoBcQ8XswI
+ 1z9udC6zHnKjJ6XPAbLaVi9Z0B81d+aYo4OAMLK9ulCTTYrHapg2XNqWTK7M3UKuF7yH62GG2D3
+ Mykq7WKNURU4Ojz/n/+60PfwjlmPia2VoGjuSGKOEBTdaTYb+PjhEStSKZRFw2+BzQC0iLO/gC4
+ xK78JeSqinqUcrb+rkO/NtrILNGp/rp58YaB5XvZtuueIgtB4PIzQjjbEneFGgFlXw/eiQQdInf
+ c0CAl9VU5yij79qfLDA==
+X-Authority-Analysis: v=2.4 cv=Kvp9H2WN c=1 sm=1 tr=0 ts=6a02f0ba cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
+ a=-FAaCMRnIu1Sos4PegMA:9 a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: Es1QmK_qmugiOZoxfaxynFNWGUhyUQMX
+X-Proofpoint-GUID: Es1QmK_qmugiOZoxfaxynFNWGUhyUQMX
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 adultscore=0 bulkscore=0 suspectscore=0 spamscore=0
+ lowpriorityscore=0 impostorscore=0 clxscore=1015 phishscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605120094
 
-On Mon, 11 May 2026 16:53:28 -0700, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
-> Raptor Lake-E processors are not correctly showing cpufreq frequency
-> limits.
+
+Hi Priyansh,
+
+On 5/11/26 09:10, Priyansh Jain wrote:
+> The existing TSENS temperature read logic polls the valid bit and then
+> reads the temperature register. When temperature reads are triggered
+> at very short intervals, this can race with hardware updates and allow
+> the temperature field to be read while it is still being updated.
 > 
-> These CPUs don't set X86_FEATURE_HYBRID_CPU and have no E-cores, but
-> P-cores still use hybrid scaling factor.
-> ...
+> In this case, the valid bit may already be asserted even though the
+> temperature value is transitioning, resulting in an incorrect reading.
+> 
+> Hardware programming guidelines require the temperature value and the
+> valid bit to be sampled atomically in the same read transaction. A
+> reading is considered valid only if the valid bit is observed set in
+> that same sample.
+> 
+> The guidelines further specify that software should attempt the
+> temperature read up to three times to account for transient update
+> windows. If none of the attempts observe a valid sample, a stable
+> fallback value must be returned: if the first and second samples match,
+> the second value is returned; otherwise, if the second and third
+> samples match, the third value is returned.
+> 
+> Update the TSENS sensor read logic to implement atomic sampling along
+> with the recommended retry-and-compare fallback behavior. This removes
+> the race window and ensures deterministic temperature values in
+> accordance with hardware requirements.
 
-Tested on Intel Core 9 273PE (Bartlett Lake P-core only):
-cpuinfo_max_freq is now correctly reported as 5.5/5.7 GHz, matching
-the datasheet, via the dynamic CPPC compute path.
+In future, please add the '---' annotation in order to have the 
+changelog below not included when git-apply'ing the patch
 
-On another Bartlett Lake P-core only SKU (Intel Core 7 253PE), the
-CPPC-computed factor (80645) overshoots the datasheet Max Turbo
-Frequency (5.5 GHz) by 100 MHz, matching the CPPC rounding error
-described in the commit message.
+> Changes in v2:
+> 
+> - Reverted merging of the valid-bit and LAST_TEMP register field logic
+>    to preserve the regmap differences between TSENS versions
+> - Defined valid-bit support and last temperature resolution for all
+>    TSENS v1 and v2 feature structures
+> - Defined last temperature resolution for Tsens v0 feature structure
+> - Dropped tsens version checks in favor of valid-bit capability
+> - Computed masks from resolution to keep a single source of truth
+> - Minor code cleanups based on review feedback
+> 
+> Changes in v3:
+> - Remove valid_bit, last_temp_mask, and last_temp_resolution fields from
+>    struct tsens_features in tsens.h
+> - Compute last_temp_mask, resolution, and valid_bit on-the-fly using
+>    regmap field definitions
+> - Remove field initializations from all platform data files
+>    (tsens-v0_1.c, tsens-v1.c, tsens-v2.c)
+> - Remove the initialization line in init_common() that was computing
+>    last_temp_mask
+> 
+> Signed-off-by: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
+> ---
 
-I'll send a standalone patch adding Bartlett Lake to
-intel_hybrid_scaling_factor[] with HYBRID_SCALING_FACTOR_ADL to
-address the 253PE residual.
+Applied, thanks
 
-Tested-by: Henry Tseng <henrytseng@qnap.com>
-
-Thanks,
-Henry
