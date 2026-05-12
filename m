@@ -1,158 +1,106 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D762A363C75;
-	Mon, 11 May 2026 23:53:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D666A3033DE;
+	Tue, 12 May 2026 05:21:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778543615; cv=none; b=KkST1+g4wQfwbwIBxZGVRU7OOoTt+nv8oIvLLbLe/Cnj+80+N/jfTlvmL7iJKALBXN74DiUeWI/DFGO1xJW9mtvc/XFNlfcTAwCnWPp11NNvXF4WiST95lXsQWKDFH4PQLZT41tEfF33Y0LKnAa4crU4Qvb0rzUcj4Npqajl/VI=
+	t=1778563299; cv=none; b=N9BWGj8m+6kARs22nj35vO+4xZiCQGkXOxl4DOsCpoAE1uO0U+poyqaaOYRfZxu2hEfa465IgVK9S0hNh2nNa6u6sYx/2cAauCZeBKDY4+m2mGDKsv8Noiw/wmMy2/e62n5SW8wIqPhS+Kj14OHj8uF8tfHmOpSc9z9TdQdZYhI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778543615; c=relaxed/simple;
-	bh=bdqK3wxSZ7fn5l9i+QKCZmvLjVgO4GGihF8twhzJ9o8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uQneuR8RPk1CYUDGMUlHm08KSddv26hFJMdjz1QA8Z+BvBL8h+cFIIfHaClHKw2nDizRVMdsQRWImPJE3LAFy2FCVpinkNcb7DUHVsn4YWWjOzlQeqeBmm+JG/w4EWWUxdjdPGmnhVrCHilp6ZjATj13K+7kVe1PaKYbu2lJ8gc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kJns1m/+; arc=none smtp.client-ip=198.175.65.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1778563299; c=relaxed/simple;
+	bh=8rD3NqMbvfYvXT1U3COEaIqJZUm6U2f/YI8JsziTLi4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=a7gLKtY6OI/MoX21hZ7SkjKrNtgFJIjNT0wmbilPe9LYVtVjWPogXTjU0LQXpDVKRfu3GMA3nLiDWvL4nVn8WHoT0uVjcrx8PFqgDNGckZVILOtvTPRuzEogNdRa66hxlWbNJBahpx6LNEru9pRbv1mLSbY6erQQal9FvXau09M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mEDzgb47; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kJns1m/+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778543614; x=1810079614;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=bdqK3wxSZ7fn5l9i+QKCZmvLjVgO4GGihF8twhzJ9o8=;
-  b=kJns1m/+o7eCw2M4FqyBFixpshirGcDcvCamaS8ZNSkqzLq8stfPgPrh
-   21bgFA+7YX2KfMXVv1cIeDow1FIim4hnVh0UxbFdFPVtbAg5BssSeA4nq
-   wdZSFV3PuJMjdEJpNpxhK8/b9UFxw/37p3GTDJ7JMIwLlGftNJtqlMpQT
-   JhZxttUYzZiIVUTMcsiD0FDRnsD/24v8oT6tZbUIsjKl2REW7jWSsOTu5
-   vDBSDmPrRAdWP5fCE+9mAYyN+Z9QIRsMOnwZztbwrGNtgfOB+MiUt6uHO
-   LDBwHdwkLAcQlKJorM2e82mVglAHGjJXJdDU23S1kGPbRsm2sJl/dnMzz
-   g==;
-X-CSE-ConnectionGUID: DaoUFSDeQnuf/0BT+Ei1Iw==
-X-CSE-MsgGUID: 7/abrQAmQ6WHCndXJaTf/Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11783"; a="79393270"
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="79393270"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 May 2026 16:53:33 -0700
-X-CSE-ConnectionGUID: Wv2UeC1DRVarUf5MyxtcjA==
-X-CSE-MsgGUID: 5FO5m48+S52ff23cjdzqZA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="239423967"
-Received: from spandruv-desk.jf.intel.com ([10.54.55.20])
-  by fmviesa004.fm.intel.com with ESMTP; 11 May 2026 16:53:32 -0700
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To: rafael@kernel.org,
-	viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Henry Tseng <henrytseng@qnap.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] cpufreq: intel_pstate: Fix Raptor Lake-E cpufreq limits
-Date: Mon, 11 May 2026 16:53:28 -0700
-Message-ID: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mEDzgb47"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id ABA67C2BCC7;
+	Tue, 12 May 2026 05:21:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778563299;
+	bh=8rD3NqMbvfYvXT1U3COEaIqJZUm6U2f/YI8JsziTLi4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=mEDzgb47pH0Xm+QRZMUBy6VibEvTQOvbQ7VnJODdkwVS0RFi3IV97KSX1Sb4kIPY5
+	 SQa4/weqW05P+9L0F1qrcfZj7ABqovNB1065PqMtKF9E/nUY9dmjrkZAN+ZI59p4s2
+	 22daHJGbpf9ajy3JNNnRzLOQzWRrYW1JZcJ1sL3ENHpI7vgeomzmdVzBSX/wtY+RZr
+	 79E3ezw7IWFjPsHgKrl+6oZtF3AM3vbOz7r6ejAhcOQ6J9pAggzi1kVh2muDFZjkI+
+	 99kaD4xi+V7mZzGAWp+TGg9ED2sv/aSoib9SThraDe3LLWC+DwhtXF9CKc8oA4E7Fy
+	 XifHwYRGA3GTg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98A66CD37BE;
+	Tue, 12 May 2026 05:21:39 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Date: Tue, 12 May 2026 08:18:15 +0300
+Subject: [PATCH v2 01/16] dt-bindings: iio: adc: mt6359: generalize
+ description for mt63xx series
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260512-mt6323-v2-1-3efcba579e88@protonmail.com>
+References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
+In-Reply-To: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
+To: Jonathan Cameron <jic23@kernel.org>, 
+ David Lechner <dlechner@baylibre.com>, 
+ =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
+ Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
+ Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
+ Roman Vivchar <rva333@protonmail.com>, 
+ Srinivas Kandagatla <srini@kernel.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
+ Ben Grisdale <bengris32@protonmail.ch>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1778563297; l=1032;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=AYn0XjU2ae/zdyiw0ViO8BkZaJAkv3YZ+5qK7y/nM24=;
+ b=cI500HfBOYi++fLA+j7kNShbO0dyyIKQxeQSrjaUgFR9GTRMwmDJB7zwlbjlnlYUZoyOvdEa6
+ AVYu5CxEPWeAaImMRcxt2YYlc0zSb+PzjPNQpDJ65J7x39j+q8wrbHw
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
 
-Raptor Lake-E processors are not correctly showing cpufreq frequency
-limits.
+From: Roman Vivchar <rva333@protonmail.com>
 
-These CPUs don't set X86_FEATURE_HYBRID_CPU and have no E-cores, but
-P-cores still use hybrid scaling factor.
+Update binding title to the MT63xx, since the list of compatibles already
+includes mt6363 and mt6373 which don't belong to the mt6350 family.
 
-commit 0fcfc9e51990 ("cpufreq: intel_pstate: Fix scaling for
-hybrid-capable systems with disabled E-cores") added support for
-such configuration. Here using CPPC nominal freq and perf was compared
-to still return hybrid scaling factor.
-
-Commit 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling
-factors") restructured hwp_get_cpu_scaling() and added an explicit check
-for X86_FEATURE_HYBRID_CPU and when not set returns core scaling factor.
-
-To address this remove check for X86_FEATURE_HYBRID_CPU and call
-intel_pstate_cppc_get_scaling().
-
-Ideally this change should be enough. But using CPPC for scaling factor
-results in rounding error, so still doesn't restore the original
-behavior.
-
-In intel_pstate_cppc_get_scaling() return core scaling factor when
-ACPI CPPC is not present or when CPPC nominal frequency or nominal
-performance are invalid.
-
-Use hybrid_scaling_factor for P-cores when defined for a CPU, if not
-calculate from ACPI CPPC nominal frequency and performance.
-
-Fixes: 9b18d536b124 ("cpufreq: intel_pstate: Use CPPC to get scaling factors")
-Reported-by: Henry Tseng <henrytseng@qnap.com>
-Closes: https://lore.kernel.org/linux-pm/20260508063032.3248602-1-henrytseng@qnap.com/
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: stable@vger.kernel.org
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 ---
- drivers/cpufreq/intel_pstate.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1292da53e5fc..0379efdee5f8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -421,15 +421,23 @@ static int intel_pstate_cppc_get_scaling(int cpu)
- {
- 	struct cppc_perf_caps cppc_perf;
+diff --git a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+index 5d4ab701f51a..2e8857e104f5 100644
+--- a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
++++ b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+@@ -4,7 +4,7 @@
+ $id: http://devicetree.org/schemas/iio/adc/mediatek,mt6359-auxadc.yaml#
+ $schema: http://devicetree.org/meta-schemas/core.yaml#
  
-+	if (cppc_get_perf_caps(cpu, &cppc_perf) || !cppc_perf.nominal_freq ||
-+	    !cppc_perf.nominal_perf)
-+		goto core_scaling;
-+
-+	if (cppc_perf.nominal_perf * 100 == cppc_perf.nominal_freq)
-+		goto core_scaling;
-+
-+	if (hybrid_scaling_factor)
-+		return hybrid_scaling_factor;
-+
- 	/*
--	 * Compute the perf-to-frequency scaling factor for the given CPU if
--	 * possible, unless it would be 0.
-+	 * Compute the perf-to-frequency scaling factor for the given CPU
-+	 * from nominal freq and nominal_perf
- 	 */
--	if (!cppc_get_perf_caps(cpu, &cppc_perf) &&
--	    cppc_perf.nominal_perf && cppc_perf.nominal_freq)
--		return div_u64(cppc_perf.nominal_freq * KHZ_PER_MHZ,
--			       cppc_perf.nominal_perf);
-+	return div_u64(cppc_perf.nominal_freq * KHZ_PER_MHZ, cppc_perf.nominal_perf);
+-title: MediaTek MT6350 series PMIC AUXADC
++title: MediaTek MT63xx series PMIC AUXADC
  
-+core_scaling:
- 	return core_get_scaling();
- }
- 
-@@ -2281,17 +2289,10 @@ static int hwp_get_cpu_scaling(int cpu)
- 		 */
- 		if (hybrid_get_cpu_type(cpu) == INTEL_CPU_TYPE_CORE)
- 			return hybrid_scaling_factor;
--
--		return core_get_scaling();
- 	}
- 
--	/* Use core scaling on non-hybrid systems. */
--	if (!cpu_feature_enabled(X86_FEATURE_HYBRID_CPU))
--		return core_get_scaling();
--
- 	/*
--	 * The system is hybrid, but the hybrid scaling factor is not known or
--	 * the CPU type is not one of the above, so use CPPC to compute the
-+	 * The system is hybrid, so use CPPC to compute the
- 	 * scaling factor for this CPU.
- 	 */
- 	return intel_pstate_cppc_get_scaling(cpu);
+ maintainers:
+   - AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+
 -- 
-2.43.0
+2.54.0
+
 
