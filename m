@@ -1,108 +1,108 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1CB6356778;
-	Tue, 12 May 2026 05:21:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDAF43672BF
+	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 06:37:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778563301; cv=none; b=Mb0gpkm8scFif0Ki35w9opcUiC9dX2j3YWINPCiQWKQb/l6MTWKTdmh0MHgnvHmqrD6VUmTZ56hN+LH4FbXXDtDhmDW7iEI+ZBut9me8uc6aSJvxPmUTa+GqU5RqY2D0gBF5hQzQeBpDsUPu81VrngBM6v+2P7p28kkuIuozkhk=
+	t=1778567877; cv=none; b=FW+Nx7afl+ddItlZo2WowbkzJ9Gxh0Po2IHFKyNQJYC1JU2D8zllTdRaFU6MKpd2Xg0ys3LBqSMGrR9Y9Y9ofwRUXxfY/z7Uy/5qjn7x+JY8S+Ccjj78zdEFVVzNZ3U8GtGibRmUV3qPvPgvaSIJLnNJvborDB84Khz00B8GA/w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778563301; c=relaxed/simple;
-	bh=DE9DtCJhXP2BqElPVUX9ed0zgo/XCG9/i5jncW01HEU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LtkHpEo3XWyZ0vnwuBugwu3V3CcN8ZfEeN6rFVIcEsMGxTkVMrHG1egxYilHZJNtiXdgolI5Uywx0CRir76Sz5CkI4nzeDa9ieHMJZeSsbvzIn/B3Isthy4OBbaUXjAXhfjfke+D/rxlfaAULP6Jn30NDBgvcKB4J9mzsQSKkpw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ffbE+zGJ; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778567877; c=relaxed/simple;
+	bh=TXI1XtROLvlasjDeA+NEOLBXi1z7yuQZmjELABnGG3s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ov2ZKErlDnHec7KpRCIgQvn7i6141+tfPloSOOCRX0UzT5xY0QvvH1Ve9vdX9b1sq2XQKprfbET5yBKM7MOvPj4TKE98bas8UOpXJD2rv89DiuVsJSxNmlpmRL2qWBF08i5Xefu941yikiwO4B8UgkiEQJgO/83Gs/1Y5UVK6eU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hCkk/oUs; arc=none smtp.client-ip=209.85.210.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ffbE+zGJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C2EDBC4AF1C;
-	Tue, 12 May 2026 05:21:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778563300;
-	bh=DE9DtCJhXP2BqElPVUX9ed0zgo/XCG9/i5jncW01HEU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ffbE+zGJGCHr1lAYaJIR/6oJ9iU8LBZco0x0Tficx6r89p3Ly9zrEUzOegHrxguyd
-	 qHOFT0POxaO7S03I4cgc5yZAMDRAxQMQUTC+PSZMlg7Sc9MqOP47JUX3lhYI8vlfz0
-	 1Z1N0vv49imKJnADYpeKZgJ64GuxN+VSrNbwbHBlIPhOt5Gje3Y6ndZwiOjtzacyzB
-	 u1OgH0DaQFIpcE3UDC2lkylIhQu73XPQ4DgTiGLjb+ZEPjN/X1oRY5FOEN3IA+X+uo
-	 xGyojJehRUPIHVHvqr2OciQ/LU5bh5uM5XXFGg9qkbjq16PyZ+02f0ZpaoCFb7WBCU
-	 WJLAoViSUYHIA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9373CD4F24;
-	Tue, 12 May 2026 05:21:40 +0000 (UTC)
-From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Date: Tue, 12 May 2026 08:18:30 +0300
-Subject: [PATCH v2 16/16] MAINTAINERS: add MediaTek mt6323 PMIC thermal
- driver maintainer
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hCkk/oUs"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-835b78c3797so2151217b3a.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2026 23:37:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778567862; x=1779172662; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=lUbEBchgUvTXZkFDusQQ+51MvJx568z8YLE9Irrk804=;
+        b=hCkk/oUsAfYGquuvYaeQSFfSEDn93EGw7PTGoPE+ESgbX3mend8p9DexEIyRI9W/df
+         5c7Wnjs73beAyIUohfV+k/28qFJJ8WgfathfK9NwNWEULCQHSZT0qyrwMeETduXb2H2A
+         lD/GPfHmh1sIhMxvYbNfC6cEp8mdosQ363LI3h3unOVMM/C7of8UGPgsDMfXGoloSH05
+         m9SvKp3LHR7dQSjQmBH61yPE1NMBLWuFJws0aAIRDPhYk6NUIBg48Bv2m3yuOgd6jBf9
+         FzC2R4fBe3PrHs/qVsvW+tN97WWcFg5mPril7wIhj/BhXj8/gElm/8wag+bSK+qx7j2f
+         dn8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778567862; x=1779172662;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lUbEBchgUvTXZkFDusQQ+51MvJx568z8YLE9Irrk804=;
+        b=EQ3cALy142JJb8RhMbDEogv8pQr+NX4Mcna69TEtCBqqx2Aoxom65T0dofnWu6mXS3
+         FUCRHYv24SVl6NBK6KM9nF1CIh1LjD2ArZ5kPS7REqkm5JDfu3mW5ZI/JRhJX4IyI9wm
+         ibpulvQA8h0aFbp15yvwVv+m5Xu7tnh7rhOtF4rIJrDjuRqxeu+dgK2q4iP6qLw1EPLU
+         2UHWsF/nedxFqua2LtNMEhjecfNU/h+L1PRkZqIqyHilvUavS8zb7LEjnGi4l+hqIocV
+         ggTpQNfd8CojRuXZDE2/6lMv9EWE1t0CXN6R7xbm9S2sowypXOOpY+BMYCFxSMlOB/zy
+         DpAA==
+X-Gm-Message-State: AOJu0YwaDqNPZh+D/9NHP19Sb0xopVjhFvTb4nPieT2/Fz4V6//jHRou
+	NzIKqousKH3CKYLvljIVc33IS5Oh8/XRybl5onK6YXNbY4yZ0eL/DBhpp4t3SBKz2+c=
+X-Gm-Gg: Acq92OGmHnq7btSnZZjtSVolJFkH8pBxst0qQFwFno+D6MmH5efNhmJUsLtepTwDCOE
+	insii97ax4eutBkhmhPMeM1+Ootp/l7Ar13BXtFfpozhofM3DUpiwrHWx/p/pjBv/sz9fIgNSmD
+	onZ8ArdXXXhwT9r9sgJDOarLurSqT4Abh4rUouMXEWOiOmdnYsusQ81aQPH+nieCxl/wArWWxGG
+	rJ7D8/Gxe2e2T8aCo165G5X0Qxjz8N9St9AyvfbJNb7+Ot3x/g2z0vc0GTlEdydXgIUq6QBLjlF
+	Xyw3yUKsEqyEDYqLePRbCwZS/xa1Gg/JboH8/H8YI+KlRne7oYWnlOGTM1fMP6o7BiOly/oZPu7
+	hGRBPDJ91cfBu6AODyu4JdRnsNTXDoQhGnl+c0auxIhTKJ0wu/nsL3OujWbO+KFFYDryBhj39sd
+	wJyQO0OAaMkA7IFZpNdUhNfFXOQ9KlvMBmNlx2
+X-Received: by 2002:a05:6a00:3e09:b0:835:cc47:6ff8 with SMTP id d2e1a72fcca58-83cf7467698mr17420385b3a.45.1778567862438;
+        Mon, 11 May 2026 23:37:42 -0700 (PDT)
+Received: from swift ([2401:4900:1cb9:7c24:27e7:abab:d982:ef0d])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839656464fasm22356866b3a.11.2026.05.11.23.37.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 23:37:41 -0700 (PDT)
+From: Arun Rao Balappa <arunraobalappa@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: rafael@kernel.org,
+	lenb@kernel.org,
+	pavel@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Arun Rao Balappa <arunraobalappa@gmail.com>
+Subject: [PATCH] docs/power: note Btrfs limitation with FIBMAP for swap file offset
+Date: Tue, 12 May 2026 12:07:13 +0530
+Message-ID: <20260512063713.77200-1-arunraobalappa@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260512-mt6323-v2-16-3efcba579e88@protonmail.com>
-References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
-In-Reply-To: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
-To: Jonathan Cameron <jic23@kernel.org>, 
- David Lechner <dlechner@baylibre.com>, 
- =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
- Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Matthias Brugger <matthias.bgg@gmail.com>, 
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
- Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, 
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, 
- Roman Vivchar <rva333@protonmail.com>, 
- Srinivas Kandagatla <srini@kernel.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
- Ben Grisdale <bengris32@protonmail.ch>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1778563297; l=692;
- i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
- bh=8NVcmhjcZUhwoicnOrm6owXnni+d+cpxkUFwQ33c1Hk=;
- b=WuN6e8eFt0NDrjantucW+k4aytcYOhKb5NQLI+Q1K4YIL4RECU79bvOV8PH7sNGpbJyeE4bU4
- iSn4SKfdH5aBINvQ7Sxh1OHbZdW6DFMOJXAR0+SgjlrMcnNwh/x96mn
-X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
- pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
-X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
- auth_id=777
-X-Original-From: Roman Vivchar <rva333@protonmail.com>
-Reply-To: rva333@protonmail.com
+Content-Transfer-Encoding: 8bit
 
-From: Roman Vivchar <rva333@protonmail.com>
+On Btrfs, the FIBMAP ioctl does not return physical block addresses.
+Tools such as filefrag therefore cannot determine the correct swap file
+offset for use as resume_offset. Document the correct btrfs-progs
+command to use instead.
 
-Add myself as MediaTek mt6323 thermal driver maintainer.
-
-Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+Signed-off-by: Arun Rao Balappa <arunraobalappa@gmail.com>
 ---
- MAINTAINERS | 5 +++++
- 1 file changed, 5 insertions(+)
+ Documentation/power/swsusp-and-swap-files.rst | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index bf2e066f377d..3001a713b083 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -16355,6 +16355,11 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/mfd/mediatek,mt6397.yaml
- F:	drivers/leds/leds-mt6323.c
+diff --git a/Documentation/power/swsusp-and-swap-files.rst b/Documentation/power/swsusp-and-swap-files.rst
+index a33a2919d..44ffe02b3 100644
+--- a/Documentation/power/swsusp-and-swap-files.rst
++++ b/Documentation/power/swsusp-and-swap-files.rst
+@@ -35,6 +35,14 @@ FIBMAP ioctl and determine the location of the file's swap header, as the
+ offset, in <PAGE_SIZE> units, from the beginning of the partition which
+ holds the swap file.
  
-+MEDIATEK PMIC THERMAL DRIVER
-+M:	Roman Vivchar <rva333@protonmail.com>
-+S:	Odd Fixes
-+F:	drivers/thermal/mediatek/mtk_pmic_thermal.c
++.. note::
 +
- MEDIATEK RANDOM NUMBER GENERATOR SUPPORT
- M:	Sean Wang <sean.wang@mediatek.com>
- S:	Maintained
-
++   On Btrfs, the FIBMAP ioctl does not return physical block addresses, so
++   tools such as ``filefrag`` cannot be used to determine the correct offset.
++   On Btrfs, use btrfs-progs instead::
++
++      btrfs inspect-internal map-swapfile -r <swap_file_path>
++
+ 3) Add the following parameters to the kernel command line::
+ 
+     resume=<swap_file_partition> resume_offset=<swap_file_offset>
 -- 
-2.54.0
-
+2.53.0
 
