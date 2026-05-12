@@ -1,216 +1,367 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C41B63AA9D8
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 13:15:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0247F37DAB5;
+	Tue, 12 May 2026 13:29:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778591705; cv=none; b=BF/T7b73B/WWJZcftAZht6qdq96xD4CSoXlcszUFz8hnDoh2VPGQFyjstIGFHXivHlQ3583z+5ooP/s6NtMGiCrcsri0ac3EktLJTHC934HwSfKppCZpys+CUUw6Wb1IqrMXQX/+FR5AjjujAR0AMYrIvyrWx+bZrLft9bPcaoc=
+	t=1778592587; cv=none; b=FOGwlkWvbNA38A44OObWkBmf5OBtqu73znH+ESYDU5hdAshqjjNYaOaYgS4+phZVOZ86htUp3jwyclCwlpu8Vd1d3+8vE1mXU1+J7QiAMAqYxEHYjE08lk4Un4OS/du4d8oi60fYYRpL1ItKcWiambc8eM3nbiNgtddLgoiBw4Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778591705; c=relaxed/simple;
-	bh=vngOrHkgNad1Q4pt3o1jl/qHUnWu7b24wMujj5oCGFQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=f70jF+jxhpDDfQjNLCK027TTA4WlqewSFFMX33yL2lBRtsQlS390yEs3f2ctrxh/E7+oC3Qm23WSvujX4AQ4aio88R5p4rYE3JbmrRrT3M/F8sGgdRxwlidKYROg9oPMO4CN4mNpIdh1jNjLIfKhPg3xeX82tsp8n70BnTn05tE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Vfd6PmCB; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TZEypaob; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778592587; c=relaxed/simple;
+	bh=OE2XOA8Ys/J68M2y8Svmcp4K9BF42SihLc9PvIZ2c1U=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=RlJAIrRgDJ0t4+gLsQ41TbUVJjmETJc/7F8SMK8Q05yGGqUmu0OJeL45mbNHm/5V3IEXWTRe4h6yqbL1+GKHIotUNzFbP/ODBw+aNfxI1y7KQKEuqhSBdLv416KwW12LAG0TsTku835qBtDi3fRdDZk6Rkhf294tbbXD3bEg8TA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m3bqYVgs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Vfd6PmCB";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TZEypaob"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64CCL256545266
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 13:15:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	fDo1vV7+IOyQcOn5Aj7RJ30JqBUruSiA9OfWyU/LZEo=; b=Vfd6PmCBfd+Rg+jg
-	6RluTjMnnwSC+KO6mMAwb1VhwaU+ETxHk1On4h29lWOAvELvVKushktz/DactpZH
-	aZpi+ZYncxm/KAlJPw1z29B6OKjsifsIhaXHvJD/4QE1C2EF2DeE0mMfQ7a4dkT5
-	/B8CGl7H2zDBoXz/m7NWcpy9C8wQjcrCuyYP40tqix3p2xrL51dFiXPMua2F7NPv
-	ktd8z9LhM6x9Mp1/P3L4CNMP6DbqU/PNhPVjfHfdttlRr7s/LqpsH+AIPZTMPY9Y
-	D/jednpjaJ9TbLescHV0RXQEF2boCk5FHCQ2O3W2OTssKsGJkP2WI9utFiLmcy86
-	OEkvow==
-Received: from mail-ua1-f70.google.com (mail-ua1-f70.google.com [209.85.222.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e444sr5rs-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 13:15:03 +0000 (GMT)
-Received: by mail-ua1-f70.google.com with SMTP id a1e0cc1a2514c-95d5f0ac588so1939264241.3
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 06:15:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778591702; x=1779196502; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=fDo1vV7+IOyQcOn5Aj7RJ30JqBUruSiA9OfWyU/LZEo=;
-        b=TZEypaobp60AKwUlPncDRpWO8xAmNnHBTZmsuKP30nLJSCMAHUNSf5V/LWmuVt7L4h
-         KYQjRbRVJeQljjY0tcRhFgaP9KjOs/c0ZshXQ+IyLABO46NSWAizlCPQK07pCVF31npo
-         sek86r6xjVDo+2Ep/UJcRlcfJYRVomWMLxCZqJtJS6qid1Pyed+w5DCJ65lh8NyKbWA4
-         D4YStcOaTRYPSRUoLly5wehT0FR6g7G3warj143NALYfbuWUie4eoOa66nYfc4tFgjWD
-         eMIdO/kmn7etx1T2ave0GVwbYr6Eju+athYCL5Jgog9Mlj1GOv6Qkdwju1KQHN2hcLAr
-         cXPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778591702; x=1779196502;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fDo1vV7+IOyQcOn5Aj7RJ30JqBUruSiA9OfWyU/LZEo=;
-        b=QygzficSoEkbIFdgxxsSOVBLHEZdhxqQOl+eRWX+E8hBcujlw6C7+v9KDlt4ieDno1
-         tgSvtqAUtxD1Git939aBapqXhlXGRRW3grpHehkj+/PJ1oAirHqjdYIt7pWLHhGe3QXY
-         VPo2Bc8ZWfNcJiv5sWsWX9IOdN5NYZ09L2zrj3nhtoVCTjI/9ufOr8n8O5InjdAgLP9W
-         RMcgb/t9R+Q5um2O05nvfzCvTmd8VlG8bD6SJyJ6CkIBYztJXXnD/PVOGK1GpkrcIEa1
-         zy0rqTA/FPMePnuLVvyh1CtfQbs/XRbdD6kuV44stw1dWKrotnAJr6vaFZnQVjJnVo4x
-         519g==
-X-Forwarded-Encrypted: i=1; AFNElJ/Ow7PD1HlYojrq1MTmwDsIXIde+UMDm7pcPuPOsxH9f0GnVI+Km9fSyiG5lST4x3+mVd1voCUTVA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz7ro43IMcXiERm8uPUb9qCjuXMOtM3KhCu4wPrYIngQDFMAmDJ
-	mmUbBG8wKGLsic79QS2HZHgKEv3bwsoxpOSH2yitfV/lUjuIdb/9qCBowvdaJYzqQmo0jDLKWdL
-	QZNmdb/5znjGUbO2mhiBPz1wQ+bYSGGL+Sp9xH4N3tuXao3Ebtvo+Ld6nBFXGDw==
-X-Gm-Gg: Acq92OG1lT1QUCo+TXiDywnhxgC9MIv/3FzY3ZHZ3rSpNENLrHrnkVPfX6G5yFsIAB9
-	pasNYCRdngGEPqxTmQQksjY3f6i5tlkYjnU7eeXp+B9xXtupfR4EM5jifYs4oLScMohVzz8HV7B
-	p7jZ4MtNXSfw8uUZNr1jz21bpLHNBwUxK66nCTG6hAkWphGq3bxLyXGSDd5gtWhE2ehu1vipsWV
-	7TsJCGThFfKFpf9dF/XeRt2199A2yAA/gGuw8jdeH48TQEcYAWtDHY3D2S/YA2A313TWqGBzh/V
-	okyPOwHCRgLZuyImUZeJ16KWmvXMU8NawxzwAW5WcBJLz4Dz8ZKCW4a48bsuJu7c3oVea8ihGrQ
-	GoKbLQI4XaZYrz15OgQALjqSO0FhCNU9wCKTUnuOJl476Xl2RR6c1DFR/MBZCzacCxWQIGHOyLr
-	LWlEY/30eSKbp4Dl9vyv2aeG++JTysj/dx6eQ=
-X-Received: by 2002:a05:6102:dd1:b0:608:9a34:c8ea with SMTP id ada2fe7eead31-63615810378mr1185920137.10.1778591701765;
-        Tue, 12 May 2026 06:15:01 -0700 (PDT)
-X-Received: by 2002:a05:6102:dd1:b0:608:9a34:c8ea with SMTP id ada2fe7eead31-63615810378mr1185809137.10.1778591701211;
-        Tue, 12 May 2026 06:15:01 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-393f5f395d5sm35163281fa.10.2026.05.12.06.14.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 May 2026 06:14:56 -0700 (PDT)
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-Date: Tue, 12 May 2026 16:14:51 +0300
-Subject: [PATCH v6 2/2] arm64: dts: qcom: sm8250: correct frequencies in
- the Iris OPP table
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m3bqYVgs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DD06C2BCF6;
+	Tue, 12 May 2026 13:29:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778592586;
+	bh=OE2XOA8Ys/J68M2y8Svmcp4K9BF42SihLc9PvIZ2c1U=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=m3bqYVgss5gGSLp+d7Jk7GkVsx9WevUkW0NCpmq904DyHvmgN774LUagw55vDZGyu
+	 LFNVeRPgb3SGxxeC0uIzZco6gL3Ft1tWpZGWx0oINYONCbj04EL154U7vvLo/hn9mN
+	 j+ZdFPGuVyOsF1VjQO7nz3Ic49b76nyCvnnizE48f9VGyApyCQx+fw+ot2QqJa3uoS
+	 v4+ubQQhpwXR5P2rvgkUTS5OmYEexMko68cLgCXQtslT6heauPB8jNc6ZwN85IO/gZ
+	 sYLoBwrfAhqkGgRYZy+SSc2r8atrc0fyKxPINOG5COJuZdKjWuLqwkdSpSoXUVfVNJ
+	 xZxJOsN8dq/Sg==
+Date: Tue, 12 May 2026 14:29:32 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Cc: rva333@protonmail.com, David Lechner <dlechner@baylibre.com>, Nuno
+ =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Matthias Brugger
+ <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>, Sen Chu <sen.chu@mediatek.com>,
+ Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>,
+ Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, "Rafael
+ J. Wysocki" <rafael@kernel.org>, Daniel Lezcano
+ <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba
+ <lukasz.luba@arm.com>, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org,
+ linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
+Subject: Re: [PATCH v2 05/16] iio: adc: mediatek: add mt6323 PMIC AUXADC
+ driver
+Message-ID: <20260512142932.5c6801d1@jic23-huawei>
+In-Reply-To: <20260512-mt6323-v2-5-3efcba579e88@protonmail.com>
+References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
+	<20260512-mt6323-v2-5-3efcba579e88@protonmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260512-iris-venus-fix-sm8250-v6-2-51856dbef83c@oss.qualcomm.com>
-References: <20260512-iris-venus-fix-sm8250-v6-0-51856dbef83c@oss.qualcomm.com>
-In-Reply-To: <20260512-iris-venus-fix-sm8250-v6-0-51856dbef83c@oss.qualcomm.com>
-To: Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>, Taniya Das <quic_tdas@quicinc.com>,
-        Jonathan Marek <jonathan@marek.ca>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Bryan O'Donoghue <bod@kernel.org>,
-        Vikash Garodia <vikash.garodia@oss.qualcomm.com>,
-        Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Stanimir Varbanov <stanimir.varbanov@linaro.org>,
-        Abhinav Kumar <abhinav.kumar@linux.dev>,
-        Hans Verkuil <hverkuil@kernel.org>,
-        Stefan Schmidt <stefan.schmidt@linaro.org>,
-        Konrad Dybcio <konradybcio@kernel.org>,
-        Bryan O'Donoghue <bryan.odonoghue@linaro.org>,
-        Dikshita Agarwal <dikshita@qti.qualcomm.com>,
-        Ulf Hansson <ulfh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-media@vger.kernel.org,
-        Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1945;
- i=dmitry.baryshkov@oss.qualcomm.com; h=from:subject:message-id;
- bh=vngOrHkgNad1Q4pt3o1jl/qHUnWu7b24wMujj5oCGFQ=;
- b=owEBbQGS/pANAwAKAYs8ij4CKSjVAcsmYgBqAyfM4ux+oBQwIZEZ6sAiS58J7gOTOLKiw4t+w
- A5ZjUc/POWJATMEAAEKAB0WIQRMcISVXLJjVvC4lX+LPIo+Aiko1QUCagMnzAAKCRCLPIo+Aiko
- 1XgnCACOk+6lr+9DepHGfXKgOi+V2oxMVbImOmk50sdWQH2yW2zGxO3qMWy8WDKyKFcYwDTVMGE
- bbhvZOrvJe3WNY6XGx08fVJ6nb2jJlHJ35F13lYNj/faKykaE/e6tNIjkLRALQ7x2lNuViH0woS
- JXBb3+VF7VNK2oxsNktug9TrUpq2rTot9dFilMmlV+A3qDd/4k1uRmRFiqPTyT9W8tEERKuIo+B
- /gj5V0c8PgMrzptJLAZdln8bLe4NDEyi07YLT4m+OApasGBFAQ6viNoxnKsG/vA9USyorLdJety
- u149cXE1vBy/nq6wWDaZSEJXjGA/PKIYl7BNSc53rjLpPt6m
-X-Developer-Key: i=dmitry.baryshkov@oss.qualcomm.com; a=openpgp;
- fpr=8F88381DD5C873E4AE487DA5199BF1243632046A
-X-Proofpoint-GUID: HL7FezKvxqqa7C_wBckj9Oy5GLmHSz2A
-X-Authority-Analysis: v=2.4 cv=OcKoyBTY c=1 sm=1 tr=0 ts=6a0327d7 cx=c_pps
- a=R6oCqFB+Yf/t2GF8e0/dFg==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8
- a=EQKuo8RqpatckOKiKW0A:9 a=QEXdDO2ut3YA:10 a=TD8TdBvy0hsOASGTdmB-:22
-X-Proofpoint-ORIG-GUID: HL7FezKvxqqa7C_wBckj9Oy5GLmHSz2A
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEyMDEzNiBTYWx0ZWRfX6palXBuqcfFO
- oonAzHBq0o91Xt+L1NsfnzupLa/rgxcA7ld4uCGSDKJg6fHguPh97lFq5VOFUAnt75Lnb8+QHvl
- ddxzWuCqVKHyyHBJqnwm0ajaj2TyQ6MgCVX2e9W9LPus5EGWq+dYoQWfGXetjxebEZQkCPZuCLs
- wqt/tyEjGNcjfDV8rRS3DISM0T7raHoczctMLSo3VlSbP/LoVlZpH8ka1TAMAP5OoRXcBf4r/u4
- oME6KrrQIonTdwZ2Q39sra1XJNU4BbeHUUrnpbjce8ggbp4RUf4nGvsP0yZe8GFVDnohUfY/dZ+
- zUDwAuMJJp7ODX7h/iEDUzyMetp2TYbx1Gm6MecVwyD0Wg5UaFg2J/E6m6x6kkXcTxZdF6vuH+l
- R07830qwBXEvU3kzLzbXZH1VLV5eyplspVUmosQdtpM0XUvT4ph/+3qHVZNy9i5tQyn6woahRhH
- yh1/FgDfTg3FG8UnojQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 lowpriorityscore=0 priorityscore=1501 malwarescore=0
- clxscore=1015 phishscore=0 spamscore=0 bulkscore=0 adultscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605050000
- definitions=main-2605120136
 
-The OPP table for the Iris core is wrong, it copies the VDD table from
-the downstream kernel, but that table is written for the
-video_cc_mvs0_clk_src, while the upstream uses video_cc_mvs0_clk for OPP
-rate setting (which is clk_src divided by 3). Specify correct
-frequencies in the OPP table.
+On Tue, 12 May 2026 08:18:19 +0300
+Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org> wrote:
 
-Fixes: fa245b3f06cd ("arm64: dts: qcom: sm8250: Add venus DT node")
-Reported-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Reviewed-by: Dikshita Agarwal <dikshita.agarwal@oss.qualcomm.com>
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
----
- arch/arm64/boot/dts/qcom/sm8250.dtsi | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+> From: Roman Vivchar <rva333@protonmail.com>
+> 
+> The mt6323 AUXADC is a 15-bit ADC used for system monitoring. This driver
+> provides support for reading various channels including battery and
+> charger voltages, battery and chip temperature, current sensing and
+> accessory detection.
+> 
+> Add a driver for the AUXADC found in the MediaTek mt6323 PMIC.
+> 
+> Tested-by: Ben Grisdale <bengris32@protonmail.ch> # Amazon Echo Dot (2nd Generation)
+> Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+Hi Roman
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-index 1fcbd400a3be..9ef6f3df2d48 100644
---- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
-@@ -4355,26 +4355,26 @@ venus: video-codec@aa00000 {
- 			venus_opp_table: opp-table {
- 				compatible = "operating-points-v2";
- 
--				opp-720000000 {
--					opp-hz = /bits/ 64 <720000000>;
-+				opp-240000000 {
-+					opp-hz = /bits/ 64 <240000000>;
- 					required-opps = <&rpmhpd_opp_low_svs>,
- 							<&rpmhpd_opp_low_svs>;
- 				};
- 
--				opp-1014000000 {
--					opp-hz = /bits/ 64 <1014000000>;
-+				opp-338000000 {
-+					opp-hz = /bits/ 64 <338000000>;
- 					required-opps = <&rpmhpd_opp_svs>,
- 							<&rpmhpd_opp_svs>;
- 				};
- 
--				opp-1098000000 {
--					opp-hz = /bits/ 64 <1098000000>;
-+				opp-366000000 {
-+					opp-hz = /bits/ 64 <366000000>;
- 					required-opps = <&rpmhpd_opp_svs_l1>,
- 							<&rpmhpd_opp_svs_l1>;
- 				};
- 
--				opp-1332000000 {
--					opp-hz = /bits/ 64 <1332000000>;
-+				opp-444000000 {
-+					opp-hz = /bits/ 64 <444000000>;
- 					required-opps = <&rpmhpd_opp_nom>,
- 							<&rpmhpd_opp_nom>;
- 				};
+Various comments inline - mostly naming related.
 
--- 
-2.47.3
+Jonathan
 
+> diff --git a/drivers/iio/adc/mt6323-auxadc.c b/drivers/iio/adc/mt6323-auxadc.c
+> new file mode 100644
+> index 000000000000..2c2b495e3d38
+> --- /dev/null
+> +++ b/drivers/iio/adc/mt6323-auxadc.c
+> @@ -0,0 +1,319 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (c) 2026 Roman Vivchar <rva333@protonmail.com>
+> + *
+> + * Based on drivers/iio/adc/mt6359-auxadc.c
+> + */
+> +
+> +#include <linux/array_size.h>
+> +#include <linux/bitfield.h>
+> +#include <linux/bits.h>
+> +#include <linux/cleanup.h>
+> +#include <linux/delay.h>
+> +#include <linux/iio/iio.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/property.h>
+> +#include <linux/regmap.h>
+> +#include <linux/stringify.h>
+> +#include <linux/types.h>
+> +
+> +#include <linux/mfd/mt6397/core.h>
+> +#include <linux/mfd/mt6323/registers.h>
+> +
+> +#include <dt-bindings/iio/adc/mediatek,mt6323-auxadc.h>
+> +
+> +#define AUXADC_RSTB_SEL		BIT(7)
+> +#define AUXADC_RSTB_SW		BIT(5)
+> +
+> +#define AUXADC_CTL_CK		BIT(5)
+> +
+> +#define AUXADC_TRIM_CH2		(3 << 10)
+> +#define AUXADC_TRIM_CH4		(3 << 8)
+> +#define AUXADC_TRIM_CH5		(3 << 4)
+> +#define AUXADC_TRIM_CH6		(3 << 2)
+> +
+> +#define AUXADC_VREF18_ENB_MD	BIT(15)
+> +#define AUXADC_MD_STATUS	BIT(0)
+> +
+> +#define AUXADC_GPS_STATUS	BIT(1)
+> +
+> +#define AUXADC_VREF18_SELB	BIT(1)
+> +#define AUXADC_DECI_GDLY_SEL	BIT(0)
+> +
+> +#define AUXADC_VBUF_EN		BIT(4)
+> +
+> +#define AUXADC_DECI_GDLY_MASK		GENMASK(15, 14)
+Why you can it is much better to clearly associate a field mask
+definition with which register it is in. Lets us quickly spot
+if there is a missmatch.
+
+#define AUXADC_CON19_DECI_GDLY_MASK  for example.
+
+THough DECI_GDLY isn't exactly easy to understand as abbreviations
+go!
+
+> +#define AUXADC_ADC19_BUSY_MASK		GENMASK(15, 1)
+> +#define AUXADC_RDY_MASK			BIT(15)
+> +#define AUXADC_DATA_MASK		GENMASK(14, 0)
+> +
+> +#define AUXADC_OSR_MASK			GENMASK(12, 10)
+> +#define AUXADC_DEFAULT_OSR		3
+> +
+> +#define AUXADC_LOW_CHANNEL_MASK		GENMASK(9, 0)
+> +#define AUXADC_AUDIO_CHANNEL_MASK	GENMASK(8, 0)
+> +
+> +#define VOLTAGE_FULL_RANGE	1800
+Probably better to have this inline - however if you do keep it
+prefix t he define  VOLTAGE_FULL_RANGE sounds too generic!
+
+> +#define AUXADC_PRECISE		32768
+I'd put that inline.  Little benefit it in having it up here...
+> +
+> +#define MTK_PMIC_IIO_CHAN(_name, _idx, _ch_type)       \
+> +{                                                      \
+> +	.type = _ch_type,                              \
+> +	.indexed = 1,                                  \
+> +	.channel = _idx,                               \
+> +	.address = _idx,                               \
+
+Why put an index in address?  Seems to me that complicates things
+vs putting the relevant register address in there.
+
+> +	.datasheet_name = __stringify(_name),          \
+> +	.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | \
+> +			      BIT(IIO_CHAN_INFO_SCALE) \
+> +}
+> +
+> +static const struct iio_chan_spec mt6323_auxadc_channels[] = {
+> +	MTK_PMIC_IIO_CHAN(baton2, MT6323_AUXADC_BATON2, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(ch6, MT6323_AUXADC_CH6, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(bat_temp, MT6323_AUXADC_BAT_TEMP, IIO_TEMP),
+> +	MTK_PMIC_IIO_CHAN(chip_temp, MT6323_AUXADC_CHIP_TEMP, IIO_TEMP),
+> +	MTK_PMIC_IIO_CHAN(vcdt, MT6323_AUXADC_VCDT, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(baton1, MT6323_AUXADC_BATON1, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(isense, MT6323_AUXADC_ISENSE, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(batsns, MT6323_AUXADC_BATSNS, IIO_VOLTAGE),
+> +	MTK_PMIC_IIO_CHAN(accdet, MT6323_AUXADC_ACCDET, IIO_VOLTAGE),
+> +};
+> +
+> +/**
+> + * struct mt6323_auxadc - Main driver structure
+> + * @regmap:        Regmap from PWRAP
+> + * @lock:          Mutex to serialize AUXADC reading vs configuration
+> + *
+> + * The MediaTek MT6323 (as well as lot of other PMICs) have the following hierarchy:
+> + * PMIC AUXADC <- PMIC MFD <- SoC PWRAP (wrapper for PWRAP FSM)
+> + *
+> + * Therefore, PWRAP regmap should be get using dev->parent->parent.
+> + */
+> +struct mt6323_auxadc {
+> +	struct regmap *regmap;
+> +	struct mutex lock;
+> +};
+> +
+> +static u32 mt6323_auxadc_channel_to_reg(unsigned long channel)
+> +{
+> +	switch (channel) {
+> +	case MT6323_AUXADC_BATON2:
+> +		return MT6323_AUXADC_ADC6;
+
+You should put these in chan->address perhaps to avoid
+need for a separate lookup function.
+
+> +	case MT6323_AUXADC_CH6:
+> +		return MT6323_AUXADC_ADC11;
+> +	case MT6323_AUXADC_BAT_TEMP:
+> +		return MT6323_AUXADC_ADC5;
+> +	case MT6323_AUXADC_CHIP_TEMP:
+> +		return MT6323_AUXADC_ADC4;
+> +	case MT6323_AUXADC_VCDT:
+> +		return MT6323_AUXADC_ADC2;
+> +	case MT6323_AUXADC_BATON1:
+> +		return MT6323_AUXADC_ADC3;
+> +	case MT6323_AUXADC_ISENSE:
+> +		return MT6323_AUXADC_ADC1;
+> +	case MT6323_AUXADC_BATSNS:
+> +		return MT6323_AUXADC_ADC0;
+> +	case MT6323_AUXADC_ACCDET:
+> +		return MT6323_AUXADC_ADC7;
+> +	default:
+> +		return MT6323_AUXADC_ADC17;
+> +	}
+> +}
+
+> +static int mt6323_auxadc_request(struct mt6323_auxadc *auxadc,
+> +				 unsigned long channel)
+> +{
+> +	struct regmap *map = auxadc->regmap;
+> +	int ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_AUXADC_CON11, AUXADC_VBUF_EN);
+
+As above. I'd like that field name to include which register it is in.
+That makes it easier to spot mismatches.
+
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_clear_bits(map, MT6323_AUXADC_CON22, BIT(channel));
+> +	if (ret)
+> +		return ret;
+> +
+> +	return regmap_set_bits(map, MT6323_AUXADC_CON22, BIT(channel));
+> +}
+> +
+> +static int mt6323_auxadc_read(struct mt6323_auxadc *auxadc,
+> +			      const struct iio_chan_spec *chan, int *out)
+> +{
+> +	struct regmap *map = auxadc->regmap;
+> +	u32 val, reg = mt6323_auxadc_channel_to_reg(chan->address);
+
+Don't mix elements that assign with ones that don't. Doesn't make for easy
+to read code.
+
+> +	int ret;
+> +
+> +	ret = regmap_read_poll_timeout(map, reg, val, (val & AUXADC_RDY_MASK),
+> +				       1 * USEC_PER_MSEC, 100 * USEC_PER_MSEC);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*out = FIELD_GET(AUXADC_DATA_MASK, val);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mt6323_auxadc_read_raw(struct iio_dev *indio_dev,
+> +				  const struct iio_chan_spec *chan, int *val,
+> +				  int *val2, long mask)
+> +{
+> +	struct mt6323_auxadc *auxadc = iio_priv(indio_dev);
+> +	int ret, mult = 1;
+> +
+> +	if (mask == IIO_CHAN_INFO_RAW) {
+> +		guard(mutex)(&auxadc->lock);
+> +		ret = mt6323_auxadc_prepare_channel(auxadc);
+> +		if (ret)
+> +			return ret;
+> +
+> +		ret = mt6323_auxadc_request(auxadc, chan->address);
+> +		if (ret)
+> +			return ret;
+> +
+> +		fsleep(300);
+> +
+> +		ret = mt6323_auxadc_read(auxadc, chan, val);
+> +		if (ret)
+> +			return ret;
+> +		return IIO_VAL_INT;
+> +	} else if (mask == IIO_CHAN_INFO_SCALE) {
+Andy covered not having the else etc already I think. A switch might
+work better though.
+> +		if (chan->channel == MT6323_AUXADC_ISENSE ||
+> +		    chan->channel == MT6323_AUXADC_BATSNS)
+> +			mult = 4;
+> +
+> +		*val = mult * VOLTAGE_FULL_RANGE;
+> +		*val2 = AUXADC_PRECISE;
+
+IIO_VAL_FRACTIONAL_LOG2 probably more appropriate here
+(which would be more obvious with the values down here.
+
+
+> +
+> +		return IIO_VAL_FRACTIONAL;
+> +	} else
+> +		return -EINVAL;
+> +}
+> +
+> +static int mt6323_auxadc_init(struct mt6323_auxadc *auxadc)
+> +{
+> +	struct regmap *map = auxadc->regmap;
+> +	int ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_STRUP_CON10,
+> +			      AUXADC_RSTB_SW | AUXADC_RSTB_SEL);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_TOP_CKPDN2, AUXADC_CTL_CK);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_AUXADC_CON10,
+> +			      AUXADC_TRIM_CH2 | AUXADC_TRIM_CH4 |
+> +				      AUXADC_TRIM_CH5 | AUXADC_TRIM_CH6);
+
+	ret = regmap_set_bits(map, MT6323_AUXADC_CON10,
+			      AUXADC_TRIM_CH2 | AUXADC_TRIM_CH4 |
+			      AUXADC_TRIM_CH5 | AUXADC_TRIM_CH6);
+is fine.
+
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_AUXADC_CON27,
+> +			      AUXADC_VREF18_ENB_MD | AUXADC_MD_STATUS);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_AUXADC_CON19, AUXADC_GPS_STATUS);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_set_bits(map, MT6323_AUXADC_CON26,
+> +			      AUXADC_VREF18_SELB | AUXADC_DECI_GDLY_SEL);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = regmap_update_bits(map, MT6323_AUXADC_CON9, AUXADC_OSR_MASK,
+> +				 FIELD_PREP(AUXADC_OSR_MASK,
+> +					    AUXADC_DEFAULT_OSR));
+> +	return ret;
+
+Might as well do
+	return regmap_update_bits()
+
+> +}
