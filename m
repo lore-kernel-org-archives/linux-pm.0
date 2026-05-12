@@ -1,99 +1,132 @@
-Received: from mail-10696.protonmail.ch (mail-10696.protonmail.ch [79.135.106.96])
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022074.outbound.protection.outlook.com [40.107.75.74])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D34739DBDD
-	for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 08:56:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.96
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778576170; cv=none; b=WRSJhSpT5OjbuFCr/teGITMjbfcbnCTEmyzEnta6EPZ9Su04GPz7qTKVX4j08jyzwlOIEQ9s0lIR268DSZZEPn7FfJbYFY0S6gpOn3Pd5FV/GeGqlLQmlDjNmnagLqEcH3ozymKBjCe0H55XSF3CUsZ/lS4ZV+FBYHHvROIBKgY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778576170; c=relaxed/simple;
-	bh=ypEdE9S5W+el7BIfAW6PiDD5x4AkWrlByb2LeodoAac=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kLCbyzJlwuS6S79jSvpBW3h84CxTnBxeDLMdZvMeQcP3rbAIDsf1lXZaNFCBCSoYDjcCMTgDjXhkeW24TBoBt71VawUFmO15t5x/1LSz3oHaIWGXZ9tw2zsXkk3emzOXu4VP9ugBIQNWC49CF7ZlOPmPvSb03y1ygYSItMpt1aQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; spf=pass smtp.mailfrom=protonmail.com; dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b=u3/+/i0k; arc=none smtp.client-ip=79.135.106.96
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=protonmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D1625B0A1;
+	Tue, 12 May 2026 09:05:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.74
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778576705; cv=fail; b=ZuUlSCvIRQjW8tPoUopTmSCgd1ariSZCkOiTQrJndsIXh/IAmDddygBcVIs9jFRXg14VV7o/bDcK+jXFgq1sXvnvuEDaLOCdDSy3D6cM8PGRy9bbA6kBsazIrTcbB7RsIPHYt7bcnBEEGXBKVhKF3TXIqdR/z1/MCal4ey5cqLQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778576705; c=relaxed/simple;
+	bh=t4WprLnglpopj5PK12LzlniZ07Sm5lWhs+1gANPb4Vg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=UIfR/1JJNCnVpzM9K7bkxh6l/LCzc5z73s37V1IJ6jLARLybupyb3/SlJPJYN825dsZavLigiXhRQ19AJSAwZOBquv+WJaEy332oN+OYl2BAnI4UD3dn7Kk7aPaLhxfD6PYmkcbUkxjhOs/YcysH0zVIjP7ylK6Rz6dEgC6ur3w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com; spf=pass smtp.mailfrom=qnap.com; dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b=pMXmdZfb; arc=fail smtp.client-ip=40.107.75.74
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qnap.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qnap.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="u3/+/i0k"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-	s=protonmail3; t=1778576151; x=1778835351;
-	bh=WkOaXzKPMuxC5YGc6fREz2IvVZ152n0pdW2k9zoo3oc=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=u3/+/i0kg2rBQhVXxJemYSUcFAGCTQQ5eoCfvqgeXVzweKsu9dyDZqh1kHcAT5SEY
-	 mQ+DTe+TrXX/uL/DZc3SyZ38hw2gO7HNpiFSj7TD7Ehq+pYyzxurFV0HjjLtu1eNTl
-	 zrEeGMKk5pPvFwKkLtIVxUzMgdCgcNofjtO6D1gElCGO1lVHG7UNzUyJ+hAhDhYHfR
-	 UpfJlX6JvTnkRYftUjyZpxc/eaBPdcFV9B6BmBDUbi0E7mx0pXKK+uZuOCkVYSWg6P
-	 eS5OQmKBJPZMQrY0w+r996i5NkPtz0X/7ppBiM8aATXs99rfikyPazuN2FL/Jb3G/h
-	 Eqn06hkG1gDlg==
-Date: Tue, 12 May 2026 08:55:44 +0000
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-From: Roman Vivchar <rva333@protonmail.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, =?utf-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, Ben Grisdale <bengris32@protonmail.ch>
-Subject: Re: [PATCH v2 07/16] thermal: mediatek: add PMIC thermal support
-Message-ID: <j2uhavC9edilBoD6VJnlz8cCmMPhE9rQavh1epqLk61zrlZ3k1rqlyj8fVYWnkddIY1fEfPk1DfcW09i39hd-Q7I9Y8Vxd0w8C2eCjVGLc4=@protonmail.com>
-In-Reply-To: <CAHp75VfgrbEDLavMKFp2maFCH08RBUxF2wYhh56GG1HCq4ogmA@mail.gmail.com>
-References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com> <20260512-mt6323-v2-7-3efcba579e88@protonmail.com> <CAHp75VfgrbEDLavMKFp2maFCH08RBUxF2wYhh56GG1HCq4ogmA@mail.gmail.com>
-Feedback-ID: 173184497:user:proton
-X-Pm-Message-ID: 981c736e97e4dbd1e20caa42f42d8805c8c23015
+	dkim=pass (2048-bit key) header.d=qnap.com header.i=@qnap.com header.b="pMXmdZfb"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=PPMCNtKAqJILSYjLtORw4EnmKnWYWpQZNrLFm4Riz2U9WVe5oYODItRrmkelG0/jxaHopCQF/X2eNF3Prl2fbK+Vhyt52x4mqY/z5K0NVaMBWapTzlOEq1z45r69v5Aai76ucTNhrGMPOImj8CUbam7zmBfD4Rpt87BKQbuiJiQIiM9MfcFb1ZK3ku4BdgPo5no76SbQlr0kmu404Lri2ukWJGZ3wJG8IPyRjclfNDeGUd7xN/GTLkpv/MJp55D+ATAFqIHWa5WHytibHDJ8GjSSudUI3WLAYL6+yjH2XasX8MAs6sJvrO90WBYqm/x3vNty8kKaYJNlUiU1CvVaXg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jBQ/2xLRnYD0/W7EldmPIRa9vMUGSLHr8MhIdvjwvMc=;
+ b=XX6M4Vsnr2LE3lUj1xxZy0iSxP1fPf6txN4e6gkbfrIw05fAuojWmK6pbSmijI908vEAeOkySnC7p0v+7e3ZY0GSEuMmhJmyKEOm/F6EVEeLj0LvxfnKaGVkYLyB2I184EA5h+Y2lUwmYqcbpqd3TEuDOBBCod6TUoQcdCrL0auklzUIu4s6BLJcNbqmMjcfmbEhenGqccGHnfqqSaemxG6pxDDPr4OUQRXMbPdNJEbN1NnYl3Lp45MJXQUwDEOHDS9D9TZdwVFm8n7hU/XPmlxJw1sWDLSpyKOAmVwPcoiweCppYU053ILFVZeloBorL/UtWO2w2rq822yEkCM3Kw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 122.147.219.42) smtp.rcpttodomain=kernel.org smtp.mailfrom=qnap.com;
+ dmarc=fail (p=quarantine sp=quarantine pct=100) action=quarantine
+ header.from=qnap.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qnap.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jBQ/2xLRnYD0/W7EldmPIRa9vMUGSLHr8MhIdvjwvMc=;
+ b=pMXmdZfb1wCtD9BQAFBKuqxTqV1Bvvt/izIE8c0KfeVyn4uQXnZPSn2BLrmD+1icKIEvP5Pihe2sbcMxrNRx8Fud9VNa76MAVjF0eWHl3E78oqdwJZ7ZKKbvdAm+LlusAyf2x0y47VDoYv12p88OajyEGcOF1TRIMRTP+XjbZGuoBcGTvg1cnKO3fPkynV8c0IkGuUCA2kTarGB9GCzu/8AiSXxbBXWAwGq9yHWhBJC8buAykkBqOdxvTYsoZnfHmMtDvMscVHomcWCsX1bCfMTYqcbM/zTukmlY+SAKzP7QQqAH43TgKh7DziT/z96MQZmLfTQkh2TYO/gUaQ1kqg==
+Received: from JH0PR01CA0008.apcprd01.prod.exchangelabs.com
+ (2603:1096:990:56::9) by SI2PPF17766D185.apcprd04.prod.outlook.com
+ (2603:1096:f:fff6::7c6) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.21; Tue, 12 May
+ 2026 09:04:57 +0000
+Received: from OSA0EPF000000C6.apcprd02.prod.outlook.com
+ (2603:1096:990:56:cafe::de) by JH0PR01CA0008.outlook.office365.com
+ (2603:1096:990:56::9) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9913.11 via Frontend Transport; Tue,
+ 12 May 2026 09:04:56 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 122.147.219.42)
+ smtp.mailfrom=qnap.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=quarantine header.from=qnap.com;
+Received-SPF: Fail (protection.outlook.com: domain of qnap.com does not
+ designate 122.147.219.42 as permitted sender)
+ receiver=protection.outlook.com; client-ip=122.147.219.42;
+ helo=mail19.qnap.com;
+Received: from mail19.qnap.com (122.147.219.42) by
+ OSA0EPF000000C6.mail.protection.outlook.com (10.167.240.52) with Microsoft
+ SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.13
+ via Frontend Transport; Tue, 12 May 2026 09:04:56 +0000
+Received: from localhost (unknown [172.17.22.18])
+	by mail19.qnap.com (Postfix) with ESMTP id 8C5DE2AE;
+	Tue, 12 May 2026 17:04:55 +0800 (CST)
+From: Henry Tseng <henrytseng@qnap.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	rafael@kernel.org,
+	viresh.kumar@linaro.org
+Cc: Henry Tseng <henrytseng@qnap.com>,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix Raptor Lake-E cpufreq limits
+Date: Tue, 12 May 2026 17:04:02 +0800
+Message-ID: <20260512090403.2708970-1-henrytseng@qnap.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
+References: <20260511235328.2018458-1-srinivas.pandruvada@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OSA0EPF000000C6:EE_|SI2PPF17766D185:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 6491e04a-98e4-45bc-16b3-08deb0058982
+X-MS-Exchange-AtpMessageProperties: SA
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|36860700016|82310400026|55112099003|11063799003|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	ws9j22TFKqRDeXiBsrhLKYFHH4MkfHmoETK5jh5YaqmUEZ5yu0MWYRfgWGjkPKeazTk+MoHRyWiQTv0mZjJY1yWSZPniuvBtVDNYmB8SsWCCGxUZ5kPOPkGUJ5x9uKU5bLhFKQLezU62YTvAHss4BqYwqBrbQyGo9EEcGGr+WsOUZkHJtNltS1rZlX3uTlO0vtrm1B9Pc9XQY1O7DyeuImVOOxIjCaw7A8Q/9DO0+2lsR3oRCG/6O2dWME+0DJtwugMprhLlQuNR0gEBC5SRpTseAEhYABwnXXKDgIeghnUqUQYsZxFLRVlIWSumnGjhjIQ2oxPqiB36vvocvbXpmysN1FD7yHqddBR4OTfuIajsZrVzxeOFhn1fjqGGQTY7gCmmPwBub+3PZNO83otVhdgnefYtF2GsA3GvjLjY/mUo1VG2/cTzjq/sl8OSnqXrgLdYCRZzyyP4iFrZJFJsJX9U479bPcZqaUv5kJjCDeqZWz8DB7A9T66j/cZHs32wkRLdvPFXOZYt3HkIOjmi4tCTq7POboNv/HZGUuw+ULBp54EfAcIE8dnMf1D4wIAYKiE4UamI2yAWArt+OvOWFUHIagaN5lccQ7WHVLwe50QMoQQd5uGNzV4f1HdUfUDBMYPQ95w+E0taFGR59okaits7so/WnuxTvtQI/maleh/6wM5Qy4fqALLHoqr+OBddPR7eWB3zhhGjgd1GzIVdLkdrd7F9Br3t/aBTACMc36o=
+X-Forefront-Antispam-Report:
+	CIP:122.147.219.42;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail19.qnap.com;PTR:122-147-219-42.static.sparqnet.net;CAT:NONE;SFS:(13230040)(1800799024)(376014)(36860700016)(82310400026)(55112099003)(11063799003)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	1Q6HKW4E5drs8t4Nba6/IOLYkYJTJ1YXDvlE6hwo77rx6G8wTinkCAs79YFCjFqe3l6qhWMzSUz2JGmI5MjrYpTDX5yk48nwZSn6Eukx3iuNixJUSw4P+6SZ0aIjZSFshjsLXoYRcVpxW1JQDgvt3VwU7Fs+wmv5kY7v6LoxXOXoE1v2m08DRROlALWBKXporR5sO+N8eYFLPJnHEbevd9I6aIbd3Ekd8nLIhlgsYcasrE2X8QNeUHMWvUJg7gK41YrEwEugjBBL2xZI8gpQOlT7MMS9Hwih+ffhztjsV4jvMvFmz99Nt2suiBlmOhFpTlzDXGhbvzCXZwJ7ZH5R7w/J0GFxVF7bvMBszqL68u9Brc+QdBYIwW4+67CGVgMwOGBePIXS8qTf0P0jgyQPUapTkcvvgsJgr1v1mt/aAzKZ52Ff8NPE+eMK1gX05TI7
+X-OriginatorOrg: qnap.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 May 2026 09:04:56.0205
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6491e04a-98e4-45bc-16b3-08deb0058982
+X-MS-Exchange-CrossTenant-Id: 6eba8807-6ef0-4e31-890c-a6ecfbb98568
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6eba8807-6ef0-4e31-890c-a6ecfbb98568;Ip=[122.147.219.42];Helo=[mail19.qnap.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	OSA0EPF000000C6.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PPF17766D185
 
-On Tuesday, May 12th, 2026 at 10:05 AM, Andy Shevchenko <andy.shevchenko@gm=
-ail.com> wrote:
+On Mon, 11 May 2026 16:53:28 -0700, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
+> Raptor Lake-E processors are not correctly showing cpufreq frequency
+> limits.
+> 
+> These CPUs don't set X86_FEATURE_HYBRID_CPU and have no E-cores, but
+> P-cores still use hybrid scaling factor.
+> ...
 
-> On Tue, May 12, 2026 at 8:21=E2=80=AFAM Roman Vivchar via B4 Relay
-> <devnull+rva333.protonmail.com@kernel.org> wrote:
+Tested on Intel Core 9 273PE (Bartlett Lake P-core only):
+cpuinfo_max_freq is now correctly reported as 5.5/5.7 GHz, matching
+the datasheet, via the dynamic CPPC compute path.
 
-...
+On another Bartlett Lake P-core only SKU (Intel Core 7 253PE), the
+CPPC-computed factor (80645) overshoots the datasheet Max Turbo
+Frequency (5.5 GHz) by 100 MHz, matching the CPPC rounding error
+described in the commit message.
 
-> > +#include <linux/kernel.h>
->
-> No way the driver(s) nowadays use this header. Please, drop it and add
-> the ones that are really in use (there are missing ones).
+I'll send a standalone patch adding Bartlett Lake to
+intel_hybrid_scaling_factor[] with HYBRID_SCALING_FACTOR_ADL to
+address the 253PE residual.
 
-Is there a tool or script that can check for IWYU? For example,
-the u32 and s32 types are defined in the asm-generic/int-ll64.h, which
-is not used by any device driver. Instead, types.h should be used.
-It's difficult to guess which header to use for a given type/function.
+Tested-by: Henry Tseng <henrytseng@qnap.com>
 
-I've tried include-what-you-use [1], but it gives bad results like
-"add #include <asm-generic/int-ll64.h> // for u32".
-
-> > +#include <linux/module.h>
-> > +#include <linux/nvmem-consumer.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/property.h>
-> > +#include <linux/regmap.h>
->
-> > +#include <linux/slab.h>
->
-> Is it used?
-
-Yes, without slab.h the __free would complain about missing __free_kfree,
-which is DEFINE_FREE(kfree, void *, if (!IS_ERR_OR_NULL(_T)) kfree(_T)).
-
-...
-
-> > +#define MT6323_ADC_VOLTAGE_RANGE       1800
-> > +#define MT6323_ADC_RESOLUTION          32768
->
-> These two ring a bell with the first code patch. Are they the same?
-> Can they be deduplicated?
-
-They can, but I doubt it's worth creating a header just for 2 constants.
-It would look too small compared to the other headers in the include/linux/=
-iio/adc.
-
-1: https://github.com/include-what-you-use/include-what-you-use
-
-Best regards,
-Roman
+Thanks,
+Henry
