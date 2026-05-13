@@ -1,125 +1,93 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 33DEC3446AF;
-	Wed, 13 May 2026 15:03:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76D82315D53
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 15:07:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778684611; cv=none; b=rX7IUzTijbORTCwfPjlCjkdxQRmhwu9iijr9XZWny1OWtPG0IbfbbGCy37cFCtA4Vxtnk+hnb2Yqf+I1Xeev3z1uuNI3Q2Dx2bOWnpcUE7jH/702pqnJHP682PcOjSBUotkP8bpU3mC1S1+cRzZ8zK5DVZGdSUDDInjkQUiXX7s=
+	t=1778684827; cv=none; b=qYWZrRu1pKFBS8RFRPn6x4199MoE2sJjM0cKE8LPpT6LiwHxWoNipLRA7Kz5hyBOysdF065NWrbp1B5gFbpCc6DgFwyA/7VJFrmHnmNkXdJShlX+mF9QdFnF5JDx94JigAHq5AGT20MTrQYJ7sKzHWDqf3732wYQIQcA1wVVXxw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778684611; c=relaxed/simple;
-	bh=gDzVVFe1uaVzcYmtRNqlUx2pXZrJQ31QnikRj3m18oQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HYd0xiNg77BLgKN1Td5lWG2bwbBgWlzXPVnGGs8UKrFEPJSNFZgUXYKcB08MW7lKEi5hfBVKTAbW4O0IEMc0kYQUFmZlKeBFG9U22aDm7efkagtVIGWBewGWm8uz+3rbyVWamk+UsWkJGq5CwXYm+KZvwfi613pQT2f/G/QFQNU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=GH0XhdRR; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1778684827; c=relaxed/simple;
+	bh=+klZevnj7mVBnynzdY3C16pVIbJBKtFIfXA4RKS+Lsk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hXZ9gzSMoU6IXaD5DmLQKyvP6xZv8deSKoZbef+4GY7WxJh6a3vwOiA50S75lggX0fnTRxEXXuitJKy4CCyxpONwqaRoREDDukoIbK6iTAjXHNSshk52CItIeg+8cTKB1lnKKNq4HMD4ev8uecwmGL2apYc95pRKuzg92+cHpy4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KoDd4iNq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="GH0XhdRR"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 517651596;
-	Wed, 13 May 2026 08:03:24 -0700 (PDT)
-Received: from [10.57.24.48] (unknown [10.57.24.48])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A1C4E3F836;
-	Wed, 13 May 2026 08:03:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1778684609; bh=gDzVVFe1uaVzcYmtRNqlUx2pXZrJQ31QnikRj3m18oQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=GH0XhdRRe49hlmb5/56iPRHlGzqipAyp2K6rvmVTlkyYCLjNT/+c5tJze7cn1MTgP
-	 8IqWkQWzm+ZOGVut4B6DMm+zY8b25JK7qJz7bf7LNl03musHljyrpr1Ey95AYuI+cJ
-	 gZtG6DTa15llmGsN8FsIWPGFTko1LZsGMb20/fyU=
-Message-ID: <bf7b28aa-d7a2-4d21-ad76-c9855effae43@arm.com>
-Date: Wed, 13 May 2026 16:03:26 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KoDd4iNq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28099C19425
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 15:07:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778684827;
+	bh=+klZevnj7mVBnynzdY3C16pVIbJBKtFIfXA4RKS+Lsk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=KoDd4iNqNIKH2onymxVyFEmI7XgipOrIQ1kwk2sfSKS4A9CLHR3hH0TrnSF4hFtY2
+	 bVmOPuw8DtRcDL4bXc7VBM8h8W3JNHbIxLPhtP7CUUQYbEKS3eKcv1UzOdFQTjGHdd
+	 MIrSZCXBcEBUsK1/RvSxc7X3TNjeiBgbLuiELRsBxpA+yXuUlgwoZcShHr3FOC6Ko9
+	 gtsll64Zq1sFC4Be2iJ1D6SNtlXt43E4vgGhO4+tbdLcmoyVBgl+BDdXyNPXUIZju+
+	 Yp6Xgeh6nzw6K/faZSzaK0jUlc0PKnYcPEiCfI/VagzhfgzuHU3OoSWDcRmwzuNY4v
+	 Gwi/9qiy3VLww==
+Received: by mail-lj1-f169.google.com with SMTP id 38308e7fff4ca-39380e79936so82305811fa.2
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 08:07:07 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/TjrcIrCTVARZYr1IMBcHzDarPre/nZoNOEi150x5H04bWROixzHZUvaCuKByqOti3VzJM4Z30iQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxAA/XU7AK8IbWrxHIi0QJMDSd5GnifqKINUr0WIj+HeZuJTJ44
+	Zk4DGUyHY5pWYmx5Tk19jle9cOON+22FDmBY3Vd2cz3U42nkCoTHwYXFHP7Lt0PtGB4LpkyWfmE
+	7ymdznVCHrURYWxC1XWt324vDk1UHfnQ=
+X-Received: by 2002:a05:6512:6c6:b0:5a8:e367:5009 with SMTP id
+ 2adb3069b0e04-5a8ef92ccdcmr1405401e87.3.1778684825544; Wed, 13 May 2026
+ 08:07:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] thermal/core: Use the thermal class pointer as init
- guard
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, rafael@kernel.org
 References: <20260508180511.1306659-1-daniel.lezcano@oss.qualcomm.com>
- <20260508180511.1306659-5-daniel.lezcano@oss.qualcomm.com>
-Content-Language: en-US
-From: Lukasz Luba <lukasz.luba@arm.com>
-In-Reply-To: <20260508180511.1306659-5-daniel.lezcano@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <ce06dddf-3f47-4492-ab30-d3fde92e3b2a@oss.qualcomm.com> <48c1ae15-3fa7-439a-a492-c82b39fb0a89@oss.qualcomm.com>
+In-Reply-To: <48c1ae15-3fa7-439a-a492-c82b39fb0a89@oss.qualcomm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 13 May 2026 17:06:53 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hxWiPX2iGFZjsF8eiNuiXEXm_b0N9RH=Z1M+JsV268jQ@mail.gmail.com>
+X-Gm-Features: AVHnY4J9EUhGq1RKUxbLI1jreuCIzLZg5BAaDyfbe2hWhuLa10OIRdLYgOI6BU0
+Message-ID: <CAJZ5v0hxWiPX2iGFZjsF8eiNuiXEXm_b0N9RH=Z1M+JsV268jQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] thermal/core: Decouple release paths for tz and cdev
+To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+Cc: lukasz.luba@arm.com, rafael@kernel.org, rui.zhang@intel.com, 
+	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, May 13, 2026 at 4:22=E2=80=AFPM Daniel Lezcano
+<daniel.lezcano@oss.qualcomm.com> wrote:
+>
+>
+> Hi Rafael,
+>
+> On 5/8/26 20:10, Daniel Lezcano wrote:
+> > On 5/8/26 20:05, Daniel Lezcano wrote:
+> >> This series cleans up the lifetime handling of thermal devices.
+> >>
+> >> Currently, the thermal class release callback handles both thermal
+> >> zones and cooling devices by checking the device name prefix. This
+> >> approach is fragile and mixes responsibilities across different object
+> >> types.
+> >>
+> >> The first two patches introduce dedicated struct device release
+> >> callbacks for thermal zones and cooling devices. This removes the need
+> >> to rely on device names and keeps the lifetime management local to
+> >> each object.
+> >>
+> >> The last two patches convert the thermal class to a dynamically
+> >> allocated object and simplify the initialization logic by using the
+> >> class pointer itself as a guard instead of a separate boolean flag.
+> >>
+> >> Overall, this results in a clearer separation of responsibilities and
+> >> more robust lifetime management aligned with the device model.
+> >>
+> >> No functional change intended.
+> > Unless I=E2=80=99m mistaken, the patch sent to split the cooling device
+> > registration is correct with this cleanup.
+>
+> Were you able to apply the patch splitting the cooling device
+> registration on top of this series ?
 
-
-On 5/8/26 19:05, Daniel Lezcano wrote:
-> The thermal class is now dynamically allocated and stored as a
-> pointer.
-> 
-> Use the thermal_class pointer itself to check whether the thermal
-> class has been created instead of keeping a separate
-> thermal_class_unavailable flag.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-> ---
->   drivers/thermal/thermal_core.c | 11 ++++-------
->   1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 748ab76823a3..81f6bbaded65 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -950,7 +950,6 @@ static void thermal_unbind_cdev_from_trip(struct thermal_zone_device *tz,
->   }
->   
->   static struct class *thermal_class;
-> -static bool thermal_class_unavailable __ro_after_init = true;
->   
->   static inline
->   void print_bind_err_msg(struct thermal_zone_device *tz,
-> @@ -1053,7 +1052,7 @@ __thermal_cooling_device_register(struct device_node *np,
->   	    !ops->set_cur_state)
->   		return ERR_PTR(-EINVAL);
->   
-> -	if (thermal_class_unavailable)
-> +	if (!thermal_class)
->   		return ERR_PTR(-ENODEV);
->   
->   	cdev = kzalloc_obj(*cdev);
-> @@ -1536,7 +1535,7 @@ thermal_zone_device_register_with_trips(const char *type,
->   	if (polling_delay && passive_delay > polling_delay)
->   		return ERR_PTR(-EINVAL);
->   
-> -	if (thermal_class_unavailable)
-> +	if (!thermal_class)
->   		return ERR_PTR(-ENODEV);
->   
->   	tz = kzalloc_flex(*tz, trips, num_trips);
-> @@ -1834,7 +1833,7 @@ static void __thermal_pm_prepare(void)
->   
->   void thermal_pm_prepare(void)
->   {
-> -	if (thermal_class_unavailable)
-> +	if (!thermal_class)
->   		return;
->   
->   	__thermal_pm_prepare();
-> @@ -1865,7 +1864,7 @@ void thermal_pm_complete(void)
->   {
->   	struct thermal_zone_device *tz;
->   
-> -	if (thermal_class_unavailable)
-> +	if (!thermal_class)
->   		return;
->   
->   	guard(mutex)(&thermal_list_lock);
-> @@ -1902,8 +1901,6 @@ static int __init thermal_init(void)
->   		goto unregister_governors;
->   	}
->   
-> -	thermal_class_unavailable = false;
-> -
->   	return 0;
->   
->   unregister_governors:
-
-
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+I haven't tried that yet, but I'll do it later today.
