@@ -1,54 +1,54 @@
-Received: from mail-wm1-f74.google.com (mail-wm1-f74.google.com [209.85.128.74])
+Received: from mail-wr1-f74.google.com (mail-wr1-f74.google.com [209.85.221.74])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C80B5423A81
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:35:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.74
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F8BF426D19
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:35:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.74
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778675719; cv=none; b=VTPzAuhQGbZSjZnsgbFjoqggILrEpbmYf9z+kc10ZRJL5mRRT8y1oWfKlxmX/ACUSqOZ03OTyeKQQPgP/TfoF84StCXr9Gwdy+7VkMvY+35TEFLfODmqUv0hYcrwsQ56HZQJm9SyDS+iwjCZUxwj7FoTmAJK/OTbb5ENS6WHAIE=
+	t=1778675721; cv=none; b=ebq/hYal2/Y3k6HmEbfyrpC080lTC+tnDZ1e/ytSIkG3+d34dSTpdK31Xk9YA1nZtizWb3puCERxX8tdxfyL1qw4fPsosdkRfuA41ctf9DPk7G9PPoTRMfjM308nk2XnNLfS1Kgbz134pxH24foLjW4ub9/tW11UR0n3N3bgU6I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778675719; c=relaxed/simple;
-	bh=wJKc2L/2gOFq+4ciJL13zwsEExRmStV9nRngieSP9CQ=;
+	s=arc-20240116; t=1778675721; c=relaxed/simple;
+	bh=GLXrR2CnFpsGBxuXjZDHjUzrzViyjISnFoJLrUty2bw=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=l4UN5sWEvA0c0nk+2/UgohVVSQAWV2z52VC3YDyMcDQ5ndVbEkhD0WUgQ0cqLtLSYD3+2k4PkBT5PwGHj4zKLRnKtW/iV+qBJtRR7OxC0yIXp7eoAx3kylsTSS3MziBRSK9VuQrLWiCeJW3i6+rQHd03LZ7f5eLz2jekKmZELMQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jackmanb.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=F301OG4s; arc=none smtp.client-ip=209.85.128.74
+	 To:Cc:Content-Type; b=hMAWg7Vbde0DGGnIDJJC6IPgAxNBWpIJGGPc/BC5BvHJUwX8KhmnleDErXs9V6hbsKWvHvu4QmFSf39pjia55lvtaACmgAZ3/0ihGrLBrCCDLDTHh4ME4JzaQz25bfZhdnZBBgsL+3PCWlOU33WWwfwMTrCFqQvo/FkETYy98NE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jackmanb.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=XV7LkcLk; arc=none smtp.client-ip=209.85.221.74
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--jackmanb.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="F301OG4s"
-Received: by mail-wm1-f74.google.com with SMTP id 5b1f17b1804b1-48919890a95so47147445e9.2
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:35:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="XV7LkcLk"
+Received: by mail-wr1-f74.google.com with SMTP id ffacd0b85a97d-43efc93e4f6so4428892f8f.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:35:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1778675716; x=1779280516; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1778675718; x=1779280518; darn=vger.kernel.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=4WWLXd62Tgfh1ZCpYAiYrTX8S2ssjZcjbx8zKPYKSN8=;
-        b=F301OG4scjX+8cpGGiJSFlSFV5zfQqncClKPvFnbZEe8cl9d4WwBtsAg6x51B8Dur5
-         Wcv2RyH14MmpimSWwfuCC2aB/J50XwVepqlGUfm7my9LUcCN/dyR9Nsd+9yrvRFPqalO
-         r7AHhXgs0JlKiR0+UZJP1Gfq09BpMcq/Ge25vXnhUBrpPkiAxTe8s8pRItpK6tNQPZlH
-         ZeOlVIFI2CqTL/8BoaWFYc7IAWSvNq6+/VPY3Dqsdcd+vdN63CkKM1xC98OfngX/M58J
-         ASZgaR9DteL2AqURtwuPX9R5RGiU+fkN7H5WJrBsnheahQbgXX7htGf7kGviC0w1TUQP
-         iJdg==
+        bh=jK8oWMUhgh8u2h0g/pQlZW0WDLVUtUJGpIoHocj5R7o=;
+        b=XV7LkcLk/aiR2GO78oa13cdzKKm1xGbKho3YHZUucoD8jNs/6ZCZZvIyWjaFWM9kwq
+         ndIDWdu0UOZMC2VyhI0QJSoBDn1y62CVOjaJHJxtrBt/bJkPM0RwmZ07k7w/WMJ/8NiL
+         hxs4oSZxf6gRrQK4VRJgfhEaakA+2cudnUaPHQs34vblCGFs9j7Wl3BKnNugGr7DnbPP
+         4aJlfRNpz303Se9x5RmYv37RjABvoF2QQqV0hmOLKRLZKvficpTJtXDpfuq3nhsHq727
+         zj1Hru5H4yR/cv5/PlNlnzF14S+athMWn+TDvkXaw0V7WkCxMvWRqA8qAgWLdlu0fYIE
+         WpZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778675716; x=1779280516;
+        d=1e100.net; s=20251104; t=1778675718; x=1779280518;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=4WWLXd62Tgfh1ZCpYAiYrTX8S2ssjZcjbx8zKPYKSN8=;
-        b=qzBLZAcdl6vYLAP6mFV7B1jDNNwNuAAaBwbTdiQAgYYvvu1TeZ8g9z9OZe8T6Os8M9
-         itsDachpg/bhvnUFH/shDG9TP2aRHcB3h8bXh3kQ5OCTQBycIPLN88mYNKy2G12fgPFM
-         ZqaeNcsJVuCoHjL1BzzTTS8CSd+ftvWGFRA6adHK2tsg6BHfiAQ2hjv2UIdVjEVjbQQU
-         sOWl016UcpjcSHfDWIcVBqvwp3jbfCtDfT/k2O0R/NJUWXC7Tt4M4jo5dhmPcXa9FUtr
-         DH6bMMLXw2p1SXb+szJxDxfwTTSzR8mqADeT19z6Ha9zP/51mERuUbfpQLv2ESZxFo6E
-         r1DQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9zP06jIJ/xaKxwonFSu+FCj2sPdbnW+xCled0Am5OlfdQHIG666vvrB973Z3JSzkeCXCxKbDJbCQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwyBbdf8WxYP4vroPOoXwQzCiHP42nMrnP9U6o3u1bDP3nDKN8v
-	13QMrTsg5kTwmBLmjE0CV5ct7lxMPN9L6BXdJ2wzQclyHW/NVYgS69L4yUt1Jr1y4P54AZaLST6
-	VYWLrSWnBoiu+Gg==
-X-Received: from wmpj8.prod.google.com ([2002:a05:600c:4888:b0:48e:914f:1eff])
+        bh=jK8oWMUhgh8u2h0g/pQlZW0WDLVUtUJGpIoHocj5R7o=;
+        b=GYC0GwDcT1K5cgAcNCOEhS6dIfH6y4Z0B5AGugVPfXjMEh/OvLgUxDtep+61ni1BHm
+         buCbTczj4Xp9sCQDqZn+eW89J2wNUvacs5PqCHEHkr0dX76ZqKXtLSifX99wK12et9hk
+         xCzVpQ9MfLCt9dG+8dCNjZ3Hgae1i00S3VXDf7CC4nB81r63DukI7McPIyeKnROKqaMU
+         Hqy6+wF30J/XBYUVE7szLN3BKt1qUhIRyJBxbdxM9D4tpni8Wx5vuaDvgrfMT97R/l18
+         +O+ts9dd2wovd2qGSOOcN+Oo1JkewHeeYhhIAoFKOy3IVitLtIi1IO9kZZbkJWNkGskn
+         DXjA==
+X-Forwarded-Encrypted: i=1; AFNElJ/juoe6NiSrjgHUobBVUdsWMZp/gDKDUA3KEaH2eRXzmX7Mhfwuv8mceaVzwcQWcA1NyGVBSMboAA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUET9w4d4MAgXlVoSXxHiweho+58ccxYY6mKjy1DdE89kKXxGq
+	VwyBjPBYeEhRLQLxv1PMfgf0Tv4Px+xk5EliGsto0sFijlvzbqmOnYbSy6otkqm/5udg3pRnCb/
+	UZs+vG9WyPrUXDg==
+X-Received: from wrbdf7.prod.google.com ([2002:a5d:5b87:0:b0:44b:16d7:6b87])
  (user=jackmanb job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:8b86:b0:48a:563c:c8c5 with SMTP id 5b1f17b1804b1-48fce9ab28emr38271865e9.8.1778675716013;
- Wed, 13 May 2026 05:35:16 -0700 (PDT)
-Date: Wed, 13 May 2026 12:35:13 +0000
+ 2002:a05:6000:1acd:b0:44b:c220:f8ce with SMTP id ffacd0b85a97d-45c5762d633mr4903489f8f.6.1778675717362;
+ Wed, 13 May 2026 05:35:17 -0700 (PDT)
+Date: Wed, 13 May 2026 12:35:14 +0000
 In-Reply-To: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
@@ -58,8 +58,8 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 References: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
 X-Mailer: b4 0.14.2
-Message-ID: <20260513-page_alloc-unmapped-prep-v1-1-dacdf5402be8@google.com>
-Subject: [PATCH 1/4] mm: introduce for_each_free_list()
+Message-ID: <20260513-page_alloc-unmapped-prep-v1-2-dacdf5402be8@google.com>
+Subject: [PATCH 2/4] mm/page_alloc: don't overload migratetype in find_suitable_fallback()
 From: Brendan Jackman <jackmanb@google.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Kairui Song <kasong@tencent.com>, 
 	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
@@ -74,92 +74,144 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
 	Brendan Jackman <jackmanb@google.com>
 Content-Type: text/plain; charset="utf-8"
 
-There are a couple of places that iterate over the freelists with
-awareness of the data structures' layout.
+This function currently returns a signed integer that encodes status
+in-band, as negative numbers, along with a migratetype. Switch to a more
+explicit/verbose style that encodes the status and migratetype
+separately.
 
-It seems ideally, code outside of mm should not be aware of the page
-allocator's freelists at all. But, this patch just doesn't hide them
-completely, it's just a meek incremental step in that direction: provide
-a macro to iterate over it without needing to be aware of the actual
-struct fields.
+In the spirit of making things more explicit, also create an enum to
+avoid using magic integer literals with special meanings. This enables
+documenting the values at their definition instead of in one of the
+callers.
 
+Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 Signed-off-by: Brendan Jackman <jackmanb@google.com>
 ---
- include/linux/mmzone.h  |  9 ++++++---
- kernel/power/snapshot.c |  8 ++++----
- mm/mm_init.c            | 11 +++++++----
- 3 files changed, 17 insertions(+), 11 deletions(-)
+ mm/compaction.c |  3 ++-
+ mm/internal.h   | 14 +++++++++++---
+ mm/page_alloc.c | 40 +++++++++++++++++++++++-----------------
+ 3 files changed, 36 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 9adb2ad21da599354600b48b4f3f9a4158efa049..1331a7b93f33c67c6e07df1fd8c5e4504dc28e80 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -177,9 +177,12 @@ static inline bool migratetype_is_mergeable(int mt)
- 	return mt < MIGRATE_PCPTYPES;
+diff --git a/mm/compaction.c b/mm/compaction.c
+index 3648ce22c80728b894cffce502d8caa3e4532406..168e63940b78247e08aef8b177a4c68adb36db31 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -2340,7 +2340,8 @@ static enum compact_result __compact_finished(struct compact_control *cc)
+ 		 * Job done if allocation would steal freepages from
+ 		 * other migratetype buddy lists.
+ 		 */
+-		if (find_suitable_fallback(area, order, migratetype, true) >= 0)
++		if (find_suitable_fallback(area, order, migratetype, true, NULL)
++		    == FALLBACK_FOUND)
+ 			/*
+ 			 * Movable pages are OK in any pageblock. If we are
+ 			 * stealing for a non-movable allocation, make sure
+diff --git a/mm/internal.h b/mm/internal.h
+index 5a2ddcf68e0b6d1a9fbaeae07670dd252729f96a..09931b1e535f3f71887b5b6473f93ed21a41c7e7 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -1104,9 +1104,17 @@ static inline void init_cma_pageblock(struct page *page)
  }
+ #endif
  
--#define for_each_migratetype_order(order, type) \
--	for (order = 0; order < NR_PAGE_ORDERS; order++) \
--		for (type = 0; type < MIGRATE_TYPES; type++)
-+#define for_each_free_list(list, zone, order) 				\
-+	for (order = 0; order < NR_PAGE_ORDERS; order++) 		\
-+		for (unsigned int __type = 0; 				\
-+		     __type < MIGRATE_TYPES &&				\
-+			(list = &(zone)->free_area[order].free_list[__type], 1); \
-+		     __type++)
+-
+-int find_suitable_fallback(struct free_area *area, unsigned int order,
+-			   int migratetype, bool claimable);
++enum fallback_result {
++	/* Found suitable migratetype, *mt_out is valid. */
++	FALLBACK_FOUND,
++	/* No fallback found in requested order. */
++	FALLBACK_EMPTY,
++	/* Passed @claimable, but claiming whole block is a bad idea. */
++	FALLBACK_NOCLAIM,
++};
++enum fallback_result
++find_suitable_fallback(struct free_area *area, unsigned int order,
++		       int migratetype, bool claimable, int *mt_out);
  
- extern int page_group_by_mobility_disabled;
- 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index a564650734dcdceda7193ca3c1bc6b347cc1ec8b..d933b5b2c05d453bbda93c728136fc2a76758fc7 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1244,8 +1244,9 @@ unsigned int snapshot_additional_pages(struct zone *zone)
- static void mark_free_pages(struct zone *zone)
+ static inline bool free_area_empty(struct free_area *area, int migratetype)
  {
- 	unsigned long pfn, max_zone_pfn, page_count = WD_PAGE_COUNT;
-+	struct list_head *free_list;
- 	unsigned long flags;
--	unsigned int order, t;
-+	unsigned int order;
- 	struct page *page;
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index c9edffe968ac25b8cd9f6f983bf4c9ba21e73a11..91d83c967bd478982e0161a99d47d3a76bd89992 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2249,25 +2249,29 @@ static bool should_try_claim_block(unsigned int order, int start_mt)
+  * we would do this whole-block claiming. This would help to reduce
+  * fragmentation due to mixed migratetype pages in one pageblock.
+  */
+-int find_suitable_fallback(struct free_area *area, unsigned int order,
+-			   int migratetype, bool claimable)
++enum fallback_result
++find_suitable_fallback(struct free_area *area, unsigned int order,
++		       int migratetype, bool claimable, int *mt_out)
+ {
+ 	int i;
  
- 	if (zone_is_empty(zone))
-@@ -1269,9 +1270,8 @@ static void mark_free_pages(struct zone *zone)
- 			swsusp_unset_page_free(page);
+ 	if (claimable && !should_try_claim_block(order, migratetype))
+-		return -2;
++		return FALLBACK_NOCLAIM;
+ 
+ 	if (area->nr_free == 0)
+-		return -1;
++		return FALLBACK_EMPTY;
+ 
+ 	for (i = 0; i < MIGRATE_PCPTYPES - 1 ; i++) {
+ 		int fallback_mt = fallbacks[migratetype][i];
+ 
+-		if (!free_area_empty(area, fallback_mt))
+-			return fallback_mt;
++		if (!free_area_empty(area, fallback_mt)) {
++			if (mt_out)
++				*mt_out = fallback_mt;
++			return FALLBACK_FOUND;
++		}
  	}
  
--	for_each_migratetype_order(order, t) {
--		list_for_each_entry(page,
--				&zone->free_area[order].free_list[t], buddy_list) {
-+	for_each_free_list(free_list, zone, order) {
-+		list_for_each_entry(page, free_list, buddy_list) {
- 			unsigned long i;
+-	return -1;
++	return FALLBACK_EMPTY;
+ }
  
- 			pfn = page_to_pfn(page);
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index bd466a3c10c8e204dddd881c5334364e3d47d612..db5568cf36e12b6fe52854b274fc331d9b36cac3 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -1429,11 +1429,14 @@ static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
+ /*
+@@ -2377,16 +2381,16 @@ __rmqueue_claim(struct zone *zone, int order, int start_migratetype,
+ 	 */
+ 	for (current_order = MAX_PAGE_ORDER; current_order >= min_order;
+ 				--current_order) {
+-		area = &(zone->free_area[current_order]);
+-		fallback_mt = find_suitable_fallback(area, current_order,
+-						     start_migratetype, true);
++		enum fallback_result result;
  
- static void __meminit zone_init_free_lists(struct zone *zone)
- {
--	unsigned int order, t;
--	for_each_migratetype_order(order, t) {
--		INIT_LIST_HEAD(&zone->free_area[order].free_list[t]);
-+	struct list_head *list;
-+	unsigned int order;
+-		/* No block in that order */
+-		if (fallback_mt == -1)
++		area = &(zone->free_area[current_order]);
++		result = find_suitable_fallback(area, current_order,
++						start_migratetype, true, &fallback_mt);
 +
-+	for_each_free_list(list, zone, order)
-+		INIT_LIST_HEAD(list);
-+
-+	for (order = 0; order < NR_PAGE_ORDERS; order++)
- 		zone->free_area[order].nr_free = 0;
--	}
++		if (result == FALLBACK_EMPTY)
+ 			continue;
  
- #ifdef CONFIG_UNACCEPTED_MEMORY
- 	INIT_LIST_HEAD(&zone->unaccepted_pages);
+-		/* Advanced into orders too low to claim, abort */
+-		if (fallback_mt == -2)
++		if (result == FALLBACK_NOCLAIM)
+ 			break;
+ 
+ 		page = get_page_from_free_area(area, fallback_mt);
+@@ -2416,10 +2420,12 @@ __rmqueue_steal(struct zone *zone, int order, int start_migratetype)
+ 	int fallback_mt;
+ 
+ 	for (current_order = order; current_order < NR_PAGE_ORDERS; current_order++) {
++		enum fallback_result result;
++
+ 		area = &(zone->free_area[current_order]);
+-		fallback_mt = find_suitable_fallback(area, current_order,
+-						     start_migratetype, false);
+-		if (fallback_mt == -1)
++		result = find_suitable_fallback(area, current_order, start_migratetype,
++						false, &fallback_mt);
++		if (result == FALLBACK_EMPTY)
+ 			continue;
+ 
+ 		page = get_page_from_free_area(area, fallback_mt);
 
 -- 
 2.51.2
