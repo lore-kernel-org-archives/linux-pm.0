@@ -1,190 +1,153 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010051.outbound.protection.outlook.com [52.101.193.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CBF239DBC5;
-	Tue, 12 May 2026 22:20:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F068C299929
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 00:51:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.221.49
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778624424; cv=fail; b=ScPVpqkDn08WGyWuGJhy9Ai6x23OV0VG96Fcf9n1PKrnYW4pU4sU9HtlOVD2MAgB4+MbuYeqNJ6m5ZeojMXl5CFoyU79XBMZL37XGgXeblMCTeZDmTJREl4pioexXNRKmw2Is3Xarn2N8HqjsZ22HCLZaH3Q0MG+VrmcMnxD50o=
+	t=1778633488; cv=pass; b=GfrIyoyUSisW1sYS7sIAu3bBMDelxrau4X++pu7Tg2IMDrjpbqcGomBJoNMltVKY1uq+tPLCKTLuDqaR5xtV/2kJ/nrYRGgmD8MQnDNRpXa35IOExdGQpd5HpnsOthMgEr8eDHmQ5WhsAqw/qe+lvGIxJkLSeRU5ZTrxy+lNKCg=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778624424; c=relaxed/simple;
-	bh=3BC8Ei890QEmTTGuDrBgI32UNsWKsnr/8ZMW3dIuw9U=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=IB+QTdVUiCmnkja37RJ/bVhiq4LdPaenR0V3FBIfgvqRlLREkL5wn6+4CCPROhzjDGjdHyqFn4OsaamLdRHaInMs6v307QctWx08d+BTw7IeT7OKjf+u2EcQXCjtKFB3qmAjYWrgu9pV5ZBL2e8gq1QK1F+l96a8azRlN/A6SnA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=uXxhY1n2; arc=fail smtp.client-ip=52.101.193.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	s=arc-20240116; t=1778633488; c=relaxed/simple;
+	bh=izyNufNv3l0EJK2+rtZ1T7rBl3b1uNLGp9DIpmbczBM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=URdP+oAbIEjLG6tSBh7KWxOa5EljPQEdeQHKImyonKWn4ThljqJAkgl9AlByJqlO5i4XM5wb1ZWhmwGDxQa3d+vQztj2QaWfVKwln9DNe2X4be5n08I1uVUR3c7GxqekG5UowWlBq1L9bZXSdoqOcHaLRqjplJeQu/0PoI3WBdU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pC71eVXu; arc=pass smtp.client-ip=209.85.221.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="uXxhY1n2"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ovyC1k3TqXAX5fjPWvY2gwLnOuoJgGc2v7OlhjFY6Y/Su/cdSO43p+S21hURljqOqlA9xkD41pif1NWcnEgrsQszRzGkzq2vkcEb6Y9oa7dO5iH6ByUUDYUK0d1waefByRqLhf0PorUtNw/V/YhDjIPfiUTTlxl8ALw1ivWmCndelFnQLmiy4xrOIOSCplwM7diX4pMrXKHbXoA8HjSbGKUfAk7NKrq0BJJptJMrllllTrhLtXBocXrYf9PkQ4IShZAPO2SAYjafpPwfGYYji5UvmVRZMjulLa5xZiV5xE0s3a0HryN0t18JEd/ai1Axf02g4ElEyC+0fQLz7PTUqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7D69cQFQpFr7odzkb9fJy3s7FskIkMBqAytKh6Z844I=;
- b=DmfIzF/i9Ek332DOwZtFXWHIGrR2RuMA7Jz1eH1gOMpFK8u0b8a8pt0CeMSt6VYk32iiKnRPWdl1IPECtWyAVWo/bu+ChtjuDkusGkPEKIKerpSVvbTxAZa9o1q0oClnMkOuMpbnOAUdW8NgVWbVyGV2dPqO0o6t/KjrI5xjNZlI5E6G+QeawAJNrzjLUrAfYKDEtJl1jY0bSaYpb/GtlSDAVbVbs0TqGuU/l7ptAFNlPu6+scQSBJQoYZJaYXU3QhAXiMgWdJ/Z0Z1Sm/DtaTnD1g7tiLNJBUYxgL6fJm/FDTqV0JgvKb2hcHJnEjICb+lH2k5RuSotxQ7sbK80nQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=7D69cQFQpFr7odzkb9fJy3s7FskIkMBqAytKh6Z844I=;
- b=uXxhY1n2fhXaUJFMCEKYDpg2NbjpC6cmwktYiVM1Q/meGLXt025MkBuEPIjjncDnazTdB/aWo1EJNC99JdjF9yT4eat/aBHPtkCBTsES+yjU5cNyGd8fejDvC1OHgHFv3L+C5FRkhvwIxTTQINa70UEtoR8vW//yy2bpJKavwiU=
-Received: from BN1PR13CA0021.namprd13.prod.outlook.com (2603:10b6:408:e2::26)
- by SA1PR12MB7173.namprd12.prod.outlook.com (2603:10b6:806:2b4::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9913.11; Tue, 12 May
- 2026 22:20:06 +0000
-Received: from BN2PEPF000055DB.namprd21.prod.outlook.com
- (2603:10b6:408:e2:cafe::17) by BN1PR13CA0021.outlook.office365.com
- (2603:10b6:408:e2::26) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.17 via Frontend Transport; Tue, 12
- May 2026 22:20:03 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- BN2PEPF000055DB.mail.protection.outlook.com (10.167.245.5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.48.3 via Frontend Transport; Tue, 12 May 2026 22:20:03 +0000
-Received: from ausmlimonci-lx1.amd.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 12 May
- 2026 17:20:03 -0500
-From: Mario Limonciello <mario.limonciello@amd.com>
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-CC: Perry Yuan <perry.yuan@amd.com>, "open list:X86 ARCHITECTURE (32-BIT AND
- 64-BIT)" <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY SCALING
- FRAMEWORK" <linux-pm@vger.kernel.org>, Mario Limonciello
-	<mario.limonciello@amd.com>, Stuart Meckle <stuartmeckle@gmail.com>
-Subject: [PATCH] cpufreq/amd-pstate: Drop Kconfig option for dynamic EPP
-Date: Tue, 12 May 2026 17:19:47 -0500
-Message-ID: <20260512221947.1652988-1-mario.limonciello@amd.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pC71eVXu"
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-44b052142e1so3418534f8f.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 17:51:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778633484; cv=none;
+        d=google.com; s=arc-20240605;
+        b=aHhBA/LpIW156WNERacr1mTtGA3KfQvdDhB70468WLwBz69jEJj17jxKHY/7K3uekK
+         Fw/FwKSkBoiEIwHd3NsZ9svM/J0hllWA0k53ao/x2SS6N/LEU1MMlcbaXkAby3h57quR
+         QNp2tA3K8iIGvP8+zGOYjTd3MVe+sv9L3/Gf+QXzzSD1pH8VpD4wWGWMevJswOTjDwe5
+         8H8TqtUYvjrBwBoUOAnge/trEv/N6EJGHYWQMF78bu9tZ1vVaHZG7zYrTfF4u1Im7B7P
+         /xolHZ5zH/nFDGlVgVuC3Y4pyuduEHvCjf4Tqhzm13jwHKcgD+5IbyEz62OEVOJ737Ui
+         RCQg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=A0yqDbK591ypC5eJWQGsP1nPlMWdMRq98a5gApsWXZY=;
+        fh=qTikJx49CjKhTfrJlCxmBT/XwdmNOVE1kKof8R1/g64=;
+        b=Qtq2g0r99RBzl87M0wbOhYlkxIZehe5GUYi+rHvaWkYQIuII0CYXH3cfmsIuckLMt5
+         M4/fFRIpEUsvywZ0m1HKgOeGAQlk0psvzs22APR2AJqtJMv5e3ZxYkUHl6IoheW3WOkK
+         excZgVdHLaQdWALOkPNXn3eN/cBY5y3lYhekbDnrLXRolIG4UtUx9FJ2GCw1KxAF06sX
+         RamJRuCH67salzEc0/M7PLqn4uNGl1RCwYmUb1ZawG/DnD0BIPsSdSebqFlAOzIdYVOZ
+         mgGSAndr70qW/O35BGIYni7oXi1wq0j4waZky70Zy7JN/1UVgB/3fMGWr3FU7gwQ0g2r
+         1E9Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778633484; x=1779238284; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=A0yqDbK591ypC5eJWQGsP1nPlMWdMRq98a5gApsWXZY=;
+        b=pC71eVXurgf8caoIXfmSy14jVsV6DMbcG3ZpiY3KbFvMTBWgSBb0V0Ev8LJ3eUx85z
+         wb3FpsxuYOjXuky3A/MVX3+s3HnipsymhSvhNtKXddtSWPKT45kmbxrQPOClpE08eS9k
+         Fs8Z4a2y6C1CRwMedrrVbj8bCjJr5XGagYLgyh0KacbQPlKzMJ6Ewzn/wq7B1SpbUls/
+         5GrpGwLl9OASDSpYmyTqMAQ1RtM/ZlIcjGAmZHluO5cWODf3PtmlYCa6sNOxO9ZFTDqS
+         tOWjy2Bpdx+dFcsUZ5V7D+M5pJYH+tV20PYEJSPs97Met6N06ELVEl2HOhVPzlpdzrXI
+         y4kg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778633484; x=1779238284;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=A0yqDbK591ypC5eJWQGsP1nPlMWdMRq98a5gApsWXZY=;
+        b=GK9Jwo6IB3T6+bOlznOCn3N8siRAO/QEzEmVZi5lM6kZWdyud3AMDRIupTj8ZWHlzL
+         CT1IODg3X0AKb6XrfqZCB7+pS5Zk8m43oNrvjEj71Utp2EZOR3l05Q4n7i7zrN1jTunJ
+         8FQt/xqUkp5qEpxNJn+x5ij9+XINUM/KQ5zNp1DYJIrqPriUUrdfKQzuDC8XTtx35HXC
+         y+4E/tnbLoLpBn+d2okfJpN4dc+/xswIVgfeyt1l1ly8BSJUdMQp2sUSw235usSSmvRN
+         /oOxXqIKaYjxj29ChFGUESjaSKPWGMSu2Yk8RMN0ejEx9SmZ7l0nJ81I8vr5NwHScf8j
+         DY4A==
+X-Forwarded-Encrypted: i=1; AFNElJ8kiidZmrH1sFw6ClfZydBwGMB60CAPfY1AwtYPRw9Knz/boBFJsJnu/HZbOSBEcgrs/XauirLM5g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx6B0FrbF+Kx2g5wMB8Rwjr65DOZM1xJlCjrXjrmY9To5/e1wvc
+	bI82mrxz37+EcZZlOhfL1HymwXaTzyXMXrr4O1YrSh8u0xBf0gloL+f5WDf0I+bQ1ncTljTHm0Z
+	IJyfHyyurIDygkJEUr8Fke9d9R7I1wuU=
+X-Gm-Gg: Acq92OGFqJI/wxwHz5BzCbDnmdlZ5CedZAsTiO8KgWBVTtViYpJ3PpMPDneRbj5o7lq
+	MPOEj74BJugnbXISbP4R1WUz6IRO8BPHZ40D4xr50ZzI0v0KPJ64r0v98oLDHPobT7UQa/gE9XP
+	okIdt4Jfz65SkkcMTbRcI5xtH8AnxYtFVFsu+Zxt3lALFZ5/SGhBRAHZPgO04G3+J+NNd92oYIw
+	JaBm2Loydx7Hvuf/9bpyEbQmw10wGzj3VXBA3uMyOsycnlPz48NrBxz9ESyH7NIjNTtvSegW5xY
+	ofHXzGYxxo5lBTDQzPbKt04P0JzL8rKf0pTjxrE1ZIRnlng4+H7OdWJAR4ddxnZ+VQ7VHLBBWGa
+	Eu55PfJwggXRuITvQzD6wFnAnTg==
+X-Received: by 2002:a05:6000:3109:b0:43d:6f0f:32fe with SMTP id
+ ffacd0b85a97d-45c59702e8fmr1423029f8f.31.1778633484225; Tue, 12 May 2026
+ 17:51:24 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260511174559.659782-1-wusamuel@google.com> <CAP01T74KQ6bie5o++i_gHM19J+s2RzDyM6=w87=oUZgPagPejw@mail.gmail.com>
+In-Reply-To: <CAP01T74KQ6bie5o++i_gHM19J+s2RzDyM6=w87=oUZgPagPejw@mail.gmail.com>
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Date: Tue, 12 May 2026 17:51:12 -0700
+X-Gm-Features: AVHnY4K10O6Mxpl9QjZAt4PGuFBG9tJtHHyQLjkej2TGD7aWVby8-50dFABh7DA
+Message-ID: <CAADnVQJtuKQh-bpDDeqWCQRM1zb2sSgo0qET_+1+JFOL-6cpDg@mail.gmail.com>
+Subject: Re: [PATCH v4 0/2] Support BPF traversal of wakeup sources
+To: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+Cc: Samuel Wu <wusamuel@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, 
+	Pavel Machek <pavel@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Danilo Krummrich <dakr@kernel.org>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, Jiri Olsa <jolsa@kernel.org>, 
+	Shuah Khan <shuah@kernel.org>, Android Kernel Team <kernel-team@android.com>, 
+	LKML <linux-kernel@vger.kernel.org>, 
+	Linux Power Management <linux-pm@vger.kernel.org>, driver-core@lists.linux.dev, 
+	bpf <bpf@vger.kernel.org>, 
+	"open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN2PEPF000055DB:EE_|SA1PR12MB7173:EE_
-X-MS-Office365-Filtering-Correlation-Id: 075283d3-8b2d-46af-27c3-08deb0749d70
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|1800799024|82310400026|376014|11063799003|18002099003|56012099003|3023799003;
-X-Microsoft-Antispam-Message-Info:
-	XqwUzP9OfdbdaeiedAIg/N0ThHis3yq0FwCN7Fy3QmU6MwnH3BjHNaGhYVy3qEtGT5fbDulTeM2sNiWHcH1U0D/dVmf3gGAmJjFwmpKa5p2YCnM4Mdnzt7/U28GJHZNzYbO+lJRIcOSgC0o9KtmA++HcjQIYgP8OD7hj878uiQgB6MM7vjlMsedK97GW5zobj3joZcg3aXJtOHtcmNR1SZLRFDDCZV3vtQUovLXbLGWV0bHSHRcAOKr2MfU/A38uXC3fi2cXwn7LhWmxlXtKZqxTLbh2tH7za/9AmBXv8QDXeBql8HmuyCcHQx2SnCjb9xNRkVrVEJ1XQrBUn++CSeKd3bTqjNwPOhASqiur2o4BdE/QT9XzP8YJVCFMcBDjJNG+qBxrs93NRrJ524Q6rZtZSskxNg8pZx60UD7/fDUebsHA/9EyC3lUIm0eYp8vnqNAN3Pl6HW7cGJzCo9fuPqOjgUVhLQJQ9zblEwt6CxPPliXDNtbY9PVQec0iHkcnBy1zrafdGIzuwR9ZYrIfcKQUcezN3s0wJzFyBiWb9gVqXRRhU4DNtVKc/Llw0uW36n61waJTV0+889Q6T1+I6zhFZ22qMcnA3ZgrJXkXCeA2SPIx1uzdIHF8j3mTriRxiSWbFi9+F5PHCrdENpa+z1lcwB02yRyp3i439Uk1F31K3CYBqbgB07DUXsE3drZ8p61Go4S8AN5NRD9L5Y20/IBPftku09Y6nGvgDTK2z8=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(82310400026)(376014)(11063799003)(18002099003)(56012099003)(3023799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	Pq+MapC/anyfdFdr7HaIQZTmxhSBzn6LjUp3WXsQh60b/dc5eWRyXqSrfbHgShXBXiq3vsfSaJKLyrdObHLlvqzPELWT9yqagYCa8FW0hdShap+dRSfUEpeSNwc44q+wQnNbZ58Uo1r55wCWqhZjnfv6pV3TnQZNIDlejpFjZd5wtEQbDtjImX+le7gVCO6sciIPWcPLjZ8ta/dUey1LAwlgochprDNxC35sS8cym7iCx2BV3FwPo5U6u7UxWLoU6oHdU6s1hpbDeYMDGcJgyf0UUEfVWeCoYd1TrQe4sv07KQujBHE2Fcn5yHr7Ag+SwhfQMtVxvZxfRh7He6UC/bhvhc1fPIQEtEy0rZGu+pIiFahzcPi7/KBzg1nT5odHV0Vm+qUusGFftRZy9mRr+PlvMhEph9HSe45ZN/PVkkcwXBPrH8A1lHOokG6o/QQa
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 May 2026 22:20:03.6870
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 075283d3-8b2d-46af-27c3-08deb0749d70
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN2PEPF000055DB.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB7173
+Content-Transfer-Encoding: quoted-printable
 
-There are some performance issues being identified by dynamic EPP
-and we don't want to have distributions turning it on by default
-exposing them to users at this time.
+On Mon, May 11, 2026 at 1:44=E2=80=AFPM Kumar Kartikeya Dwivedi
+<memxor@gmail.com> wrote:
+>
+> On Mon, 11 May 2026 at 19:50, Samuel Wu <wusamuel@google.com> wrote:
+> >
+> > This patchset adds requisite kfuncs for BPF programs to safely traverse
+> > wakeup_sources, and puts a config flag around the sysfs interface.
+> >
+> > Currently, a traversal of wakeup sources require going through
+> > /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to qu=
+ery
+> > sysfs is inefficient, as there can be hundreds of wakeup_sources, with =
+each
+> > wakeup source also having multiple attributes. debugfs is unstable and
+> > insecure.
+> >
+> > Adding kfuncs to lock/unlock wakeup sources allows BPF program to safel=
+y
+> > traverse the wakeup sources list, and a kfunc to get head of wakeup
+> > sources list is needed to start traversing the list.
+> >
+> > On a quiescent Pixel 6 traversing 150 wakeup_sources, I am seeing ~34x
+> > speedup (sampled 75 times in table below). For a device under load, the
+> > speedup is greater.
+> > +-------+----+----------+----------+
+> > |       | n  | AVG (ms) | STD (ms) |
+> > +-------+----+----------+----------+
+> > | sysfs | 75 | 44.9     | 12.6     |
+> > +-------+----+----------+----------+
+> > | BPF   | 75 | 1.3      | 0.7      |
+> > +-------+----+----------+----------+
+> >
+> > The initial attempts for BPF traversal of wakeup_sources was with BPF
+> > iterators [1]. However, BPF already allows for traversing of a simple l=
+ist
+> > with bpf_for(), and this current patchset has the added benefit of bein=
+g
+> > ~2-3x more performant than BPF iterators.
+>
+> This looks good to me, you can add for the set:
+> Acked-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 
-Drop the kconfig option, and require an explicit opt in from kernel
-command line or runtime sysfs option to turn it on.
+Rafael,
+how do you want to route it?
 
-Reported-by: Viktor Jägersküpper" <viktor_jaegerskuepper@freenet.de>
-Closes: https://lore.kernel.org/linux-pm/14a87c99-785c-4b16-bfce-35ecbf053448@freenet.de/
-Reported-by: Stuart Meckle <stuartmeckle@gmail.com>
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=221473
-Signed-off-by: Mario Limonciello <mario.limonciello@amd.com>
----
- Documentation/admin-guide/pm/amd-pstate.rst |  9 ++++-----
- drivers/cpufreq/Kconfig.x86                 | 12 ------------
- drivers/cpufreq/amd-pstate.c                |  4 ----
- 3 files changed, 4 insertions(+), 21 deletions(-)
-
-diff --git a/Documentation/admin-guide/pm/amd-pstate.rst b/Documentation/admin-guide/pm/amd-pstate.rst
-index f8e7050fc7623..b53c752d58ca0 100644
---- a/Documentation/admin-guide/pm/amd-pstate.rst
-+++ b/Documentation/admin-guide/pm/amd-pstate.rst
-@@ -358,8 +358,8 @@ Dynamic energy performance profile
- The amd-pstate driver supports dynamically selecting the energy performance
- profile based on whether the machine is running on AC or DC power.
- 
--Whether this behavior is enabled by default depends on the kernel
--config option `CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`. This behavior can also be overridden
-+Whether this behavior is enabled by default depends on the kernel command line option
-+``amd_dynamic_epp`` is set. This behavior can also be overridden
- at runtime by the sysfs file ``/sys/devices/system/cpu/cpufreq/policyX/dynamic_epp``.
- 
- When set to enabled, the driver will select a different energy performance
-@@ -485,9 +485,8 @@ kernel parameter ``amd_prefcore=disable``.
- ``amd_dynamic_epp``
- 
- When AMD pstate is in auto mode, dynamic EPP will control whether the kernel
--autonomously changes the EPP mode. The default is configured by
--``CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`` but can be explicitly enabled with
--``amd_dynamic_epp=enable`` or disabled with ``amd_dynamic_epp=disable``.
-+autonomously changes the EPP mode. The default is disabled. It can be enabled
-+with the kernel parameter ``amd_dynamic_epp=enable``.
- 
- User Space Interface in ``sysfs`` - General
- ===========================================
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 027e6ea2e0384..a9093cd5e5d1b 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -70,18 +70,6 @@ config X86_AMD_PSTATE_DEFAULT_MODE
- 	  For details, take a look at:
- 	  <file:Documentation/admin-guide/pm/amd-pstate.rst>.
- 
--config X86_AMD_PSTATE_DYNAMIC_EPP
--	bool "AMD Processor P-State dynamic EPP support"
--	depends on X86_AMD_PSTATE
--	default n
--	help
--	  Allow the kernel to dynamically change the energy performance
--	  value from events like ACPI platform profile and AC adapter plug
--	  events.
--
--	  This feature can also be changed at runtime, this configuration
--	  option only sets the kernel default value behavior.
--
- config X86_AMD_PSTATE_UT
- 	tristate "selftest for AMD Processor P-State driver"
- 	depends on X86 && ACPI_PROCESSOR
-diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
-index 2234044c328ba..3f06e33f47120 100644
---- a/drivers/cpufreq/amd-pstate.c
-+++ b/drivers/cpufreq/amd-pstate.c
-@@ -87,11 +87,7 @@ static struct cpufreq_driver amd_pstate_driver;
- static struct cpufreq_driver amd_pstate_epp_driver;
- static int cppc_state = AMD_PSTATE_UNDEFINED;
- static bool amd_pstate_prefcore = true;
--#ifdef CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP
--static bool dynamic_epp = CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP;
--#else
- static bool dynamic_epp;
--#endif
- static struct quirk_entry *quirks;
- 
- /*
--- 
-2.43.0
-
+If you ack it we can take it into bpf-next.
+I'd think patch 1 shouldn't conflict with other 'wakeup' changes.
