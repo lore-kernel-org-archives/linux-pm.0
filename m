@@ -1,128 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA27734F483;
-	Wed, 13 May 2026 17:19:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C8D6388394;
+	Wed, 13 May 2026 18:02:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778692756; cv=none; b=dZywTxXLo+8rPyIjkn++hNwsTyEeifF2+O5K1Rnj/yAzpzKGFwxSd9LsfaUINBrsQhj3PgkOII1j3mG3fx4oFrI+zHGU8rjlHRgrRKMErB3tMPRx1PtGaaTAiA4xn3Y7TPdERK9pNwVjENqGBNuDTx/4EmncHwze+INBG2T0hHc=
+	t=1778695363; cv=none; b=mEWlM7McwT5nT73eDyUlrF6OhkHckk5uTNJP+9DqrtZXVBnxY4aOLhBighJ1Z7pwsrkp8REJLONqy5iwvEvzEolkQXHEyTdrqajlAMOnRvEVHG58ZXCqCMX4Y5hoOD4fXfdUSphHjSkP4aHk1oaH7TynPrwozHTxho2LuE5COgU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778692756; c=relaxed/simple;
-	bh=a2m0H9bRkehtzq1C47bsY9lKLcn1BhGr/BABwJip2hU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BtpTJIVKJfYdmvzJllKWFTz3yO+crXjDNR4+vND7EiUxsdfFHIu+69Prp+HNwjRLT5EvmQZeRwk9ZdU+jea2xStxDhCgL3SBtZVFTMFaIBC45NSbheDamZnhUZBXXBozyr9+8y0mnGD0IYZREwBDXb4sG4DfjGKhJxAJkQbuKh4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iGJBov3y; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778695363; c=relaxed/simple;
+	bh=aHZIz4hYTuSjsATQj/AJOW5Udmy+w4c+hHTnvk8Qu4E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=V3T2O4Ijc9H4WWyOaNOwQpdgN76jVGlGIXpTHZ87ZIr15Ba8Vx/JNY98jNEBZJeC80osVPnuP8ItdXOad+SRgEsD6BIAd5ecAevFqjSQ9XczcFbaSlKS+LkAZWJPltxF+lT/pHPXOK1uQYnDsR5Rm3VNDK+oXuOXwZr3EQXiqlg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=k64PxZSU; arc=none smtp.client-ip=192.198.163.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iGJBov3y"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35B24C19425;
-	Wed, 13 May 2026 17:19:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778692755;
-	bh=a2m0H9bRkehtzq1C47bsY9lKLcn1BhGr/BABwJip2hU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=iGJBov3y/YQVckiqnx77E8+ICLFUz4bhqGcVM6VJaS/O6Yz03Ti1LQWVHcKH1fVFu
-	 AtN57f+nCsK4WgzJ2b38M9JmXzTFElLiuh9CqGyG1HH/VXM7fEFFXmWe/duVezBZdC
-	 8PGJhEoYNEHfkWfdsF/tcR8cMIhRZ9fBxmcn0h92TNSMhuWcftmrxwyIyujE2msDfu
-	 uBHuVeQulmw985uYf2gBoVxu7bqvYxzGfbUBPzMeQ4xGLo5k317DmK+07AzEixx3ec
-	 SMs9AijHSttEKjdOgoPiyoRXkB2VoXrrUg5v/ZG8JIFqDwpWTF9RPAqjNlPqhMcmtl
-	 09CJNtLSeBiqg==
-Message-ID: <4074a816-9e75-45a6-8141-25459bcc106b@kernel.org>
-Date: Wed, 13 May 2026 19:19:09 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="k64PxZSU"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778695362; x=1810231362;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=aHZIz4hYTuSjsATQj/AJOW5Udmy+w4c+hHTnvk8Qu4E=;
+  b=k64PxZSUT/YUq7idtq/qBkS+Zzd52fBT4/qi10Or95LymjyM2A/8/sko
+   F5XlHdW3cg8Co2lYT1n3tcfCSpRvM50L4QXh7Ku4ZZntlz6D9rvPbqH2d
+   RpMce52WS2JGFInz6V+LdwpqHkbvZb2c4U/BuuGoAN5Bwo+odRm6ZyPjq
+   l6DVXRuCd8bLj2bZZ1w9CYllLe5lT9N5A/i0Ri0ccFNFrJWXOK7UE9Qnd
+   k78De2FKZ+IZs/OCYJE147ZgBkQwYruItS5SIxVQinqIROjDIXrKg+VZG
+   4fTGqiPWfEYQ2g3Yp0fq9tveSJNYiuMYMqr0ueNrYbgpVyeNvLX3LWife
+   g==;
+X-CSE-ConnectionGUID: T4527m1EQzWq5+m24kDrFA==
+X-CSE-MsgGUID: 8IoziHZPRzeMCcKj7CipfA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11785"; a="97201738"
+X-IronPort-AV: E=Sophos;i="6.23,233,1770624000"; 
+   d="scan'208";a="97201738"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2026 11:02:41 -0700
+X-CSE-ConnectionGUID: uHI03tMxSxWaY8esQUwn2A==
+X-CSE-MsgGUID: 4yUmGZg3Ra+2Wl66l+e5ew==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,233,1770624000"; 
+   d="scan'208";a="268488853"
+Received: from slindbla-desk.ger.corp.intel.com (HELO localhost) ([10.245.244.106])
+  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2026 11:02:36 -0700
+Date: Wed, 13 May 2026 21:02:33 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Alex Tran <alex.tran@oss.qualcomm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jyoti Bhayana <jbhayana@google.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Linus Walleij <linusw@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Guenter Roeck <linux@roeck-us.net>, linux-iio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+	linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
+Subject: Re: [PATCH 0/5] scmi: Log client subsystem entity counts
+Message-ID: <agS8udcvqgQmiqB4@ashevche-desk.local>
+References: <20260513-scmi-client-probe-log-v1-0-00b47b1be009@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] mm/page_alloc: remove ifdefs from pindex helpers
-Content-Language: en-US
-To: Brendan Jackman <jackmanb@google.com>,
- Andrew Morton <akpm@linux-foundation.org>, Kairui Song <kasong@tencent.com>,
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
- Barry Song <baohua@kernel.org>, Axel Rasmussen <axelrasmussen@google.com>,
- Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>,
- David Hildenbrand <david@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R. Howlett" <liam@infradead.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
- Zi Yan <ziy@nvidia.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
- <20260513-page_alloc-unmapped-prep-v1-4-dacdf5402be8@google.com>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <20260513-page_alloc-unmapped-prep-v1-4-dacdf5402be8@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260513-scmi-client-probe-log-v1-0-00b47b1be009@oss.qualcomm.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On 5/13/26 14:35, Brendan Jackman wrote:
-> The ifdefs are not technically needed here, everything used here is
-> always defined.
-> 
-> Switching to IS_ENABLED() makes the code a bit less tiresome to read.
-> 
-> Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
-> Signed-off-by: Brendan Jackman <jackmanb@google.com>
-> ---
->  mm/page_alloc.c | 30 ++++++++++++++----------------
->  1 file changed, 14 insertions(+), 16 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 5d6144c8860ed10fd641184f389c4953465d5178..2985ad0ab1044bdfda8ccc7aaed2ded19b5ac7ed 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -650,19 +650,17 @@ static void bad_page(struct page *page, const char *reason)
->  
->  static inline unsigned int order_to_pindex(int migratetype, int order)
->  {
-> +	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
-> +		bool movable = migratetype == MIGRATE_MOVABLE;
->  
-> -#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> -	bool movable;
-> -	if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> -		VM_BUG_ON(!is_pmd_order(order));
-> +		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> +			VM_BUG_ON(!is_pmd_order(order));
->  
-> -		movable = migratetype == MIGRATE_MOVABLE;
-> -
-> -		return NR_LOWORDER_PCP_LISTS + movable;
-> +			return NR_LOWORDER_PCP_LISTS + movable;
-> +		}
-> +	} else {
-> +		VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
->  	}
-> -#else
-> -	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
-> -#endif
++Greg (I believe the trend is to drop such messages and not add them [back]?)
 
-Uh yeah, VM_BUG_ONs are frowned upon now. But doing a VM_WARN_ON_ONCE here
-makes little sense. There's no safe fallback if we end up here with a wrong
-value. And it's all internal to page alloc so I'd just drop those checks
-completely at this point.
-
->  	return (MIGRATE_PCPTYPES * order) + migratetype;
->  }
-> @@ -671,12 +669,12 @@ static inline int pindex_to_order(unsigned int pindex)
->  {
->  	int order = pindex / MIGRATE_PCPTYPES;
->  
-> -#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> -	if (pindex >= NR_LOWORDER_PCP_LISTS)
-> -		order = HPAGE_PMD_ORDER;
-> -#else
-> -	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
-> -#endif
-> +	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
-> +		if (pindex >= NR_LOWORDER_PCP_LISTS)
-> +			order = HPAGE_PMD_ORDER;
-> +	} else {
-> +		VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
-> +	}
->  
->  	return order;
->  }
+On Wed, May 13, 2026 at 09:44:18AM -0700, Alex Tran wrote:
+> SCMI client drivers do not consistently log the number of supported
+> entities discovered from firmware. This information is useful during
+> debugging because it shows which domains or resources were exposed by
+> firmware during probe.
 > 
+> Add logging of the number of supported entities to the SCMI cpufreq,
+> pinctrl, reset, hwmon, and powercap client drivers after a successful
+> probe. This aligns these drivers with the existing logging in the SCMI
+> power and performance domain drivers.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 
