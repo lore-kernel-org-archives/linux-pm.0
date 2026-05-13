@@ -1,39 +1,62 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com [209.85.215.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9663334A3BC;
-	Wed, 13 May 2026 02:17:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DF243630A4
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 04:42:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778638624; cv=none; b=m3NlkQptrDmIw1flwmuxPWFeQ4FwUaKZgMSkHgRcSUJ2A4oyKvqyjuohvuaV/4XhIIQDPQXw6PKrRlzc3TGx5qgXq2XJRB/IhT/7CA5GaeD1osffvwOG9pMnQZ2w+1hPir2FDW3LGyXOtqGFWJ+pWCXKkqblPFhK7IOLU/N+vEY=
+	t=1778647347; cv=none; b=NpYoXlFmQfjSVYtnt+DZ6i6NN42GhF6wTzJ6HGZohBdO2lEhaEzqPQlh8LHia/l7dh9sARWF+4/UdPXippODkegmAfg3OE69S2oOeTbsTc27u3r66i0m78wOFr/RsAXbONElUJWfrFVujlegz7bUi1JBaay0I5ZM1z5zxRlgjQk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778638624; c=relaxed/simple;
-	bh=dkCUu38rWb7JolA3RArVchG6hM4JZsSM3EG+OE1Nw4U=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=YhptN7hUzm4k4WbI9inBnPL0d3pdUwMSPy1DXfq25Y6theukna2zUozmptq1QEm+BQbdpNel4hU3vHkGZTg+bS6P/AHUbOl9Ht2KsI/ooFiCtL5Cum2JxMgzGHBK5N6X1MOn9YiG/3Xtn/eIT+Csn5XADmkzOGc/WyG097Z228M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn; spf=pass smtp.mailfrom=mails.ucas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mails.ucas.ac.cn
-Received: from fric.. (unknown [36.110.52.2])
-	by APP-05 (Coremail) with SMTP id zQCowABX6QwP3wNqRiodEA--.19635S2;
-	Wed, 13 May 2026 10:16:47 +0800 (CST)
-From: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
-To: rafael@kernel.org
-Cc: ccross@android.com,
-	dakr@kernel.org,
-	driver-core@lists.linux.dev,
-	gregkh@linuxfoundation.org,
-	lenb@kernel.org,
-	linux-kernel@vger.kernel.org,
+	s=arc-20240116; t=1778647347; c=relaxed/simple;
+	bh=oULNC3UZCvjN2UcusK8Nb9sPh9TgG408pjBtAGXwaIA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cKQ9c+mCAVhploJ5ySUDFmTBCWW9J/NdmKmR3MFxITXlHmrLcdysc03MUmqPsw8Sp6OYSfXc63x4DPYhN/GGj1Yxy4SOTol1dVpf1aC7NB005OoNHS2yPOPoQcZpelJuNYPa3k41fAujMvWoG1QOWs3vmEN4atglKhjT6GRE9qA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.215.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pg1-f195.google.com with SMTP id 41be03b00d2f7-c798fc1a28cso2928694a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 21:42:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778647345; x=1779252145;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GUZqKHflH2DuRsg4tco5F2JeMX5q65irGwlJ5N7+VuA=;
+        b=itUr2TcRWPxhgkgf61T4kZv7yyaLh2e7IODEEfgacSCcsz6jE6aKtB7Tc2tMBnWcpB
+         7DlHa///RMJaU+PwYIR+ck7jieJu5AYUlSZqD1FOEiF2c8NqIUgUkQgdHM/3wLsNgmtv
+         l8DTtRnS5xj4Uq3kB7fXIUllT6UGK+YQOfFSYmkOEaBdQf7VLZC/Vu161GoqHRlk8463
+         8tlRP0INCfN+Co1/IJTmkLz0A6CbJqPPXiou/4MXC9RlJdGQKNEHhvly4okusY2HCLzm
+         ZmKiX1PVydtQ25w5v3TxgWoO4BuVhS6ZhiRJzbDa6f5LCR4Ohiy3sP00bYfSIqTzekjp
+         vQAQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8hdMpmxceMsogn80zAcVtrTXMS6NJQxLDPcW6makzTYEAnpYush4xqYoR7iMk438xj9dtRKU+rRQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwOhcwoB6XMw3/KK7H3O7wd/cAOP31/Ry7tEns92g+QAn0y195t
+	dwxJrvtMoynz/uhHXRIN7U5wdBE2vZrSIHEbZyUtQbTaAJuuB2iTYSxb
+X-Gm-Gg: Acq92OHe+s20ttTqFkH77x7MoBe1SSdmHDv3MakVJxOpbhK8XZPhFBDFAB2QVxM63jD
+	9dURQ+11x5wDGzY+TRO8APdmujPM+EOv+B1LsEm1Qm5Pv4jD2qWEKkgOR3lIu3jusUHDuasdQ0J
+	wGNnr50P6hFGw5qUfeNLScuPVM9AVdhuQ8WXbLlt5vAoC+ZKYG8nAnU9+DtxRxIkGVpJ7awhs6s
+	uEQKZTasxpSWAiaDNHM4VIhHUfe+b8u8JeBa3GrBtvYzI9a92qWktFs0v2UQ++ZAIeeDue3dilD
+	Dng9NfVTyES+co4dPiqH4pJe33v+e/A+n3fy98y/+W71vQS2rJ0Q4eY3YkSI4wSACcJCmVcOJ9l
+	NF+QrVAwI+xE2+lP0Xyb/EX/wxGm1fITNccGub9rSK9/DuO3xC9tgWq/Gf4FhftUJfnL2ZzGIMA
+	hBHJFUhY3Yxe9LAaUfy5Mt0AZKSbOlUb9jbqfjRagC+/3B
+X-Received: by 2002:a05:6a21:107:b0:3a1:1120:796e with SMTP id adf61e73a8af0-3af8187657emr1851509637.41.1778647344746;
+        Tue, 12 May 2026 21:42:24 -0700 (PDT)
+Received: from kylin-XiaoXinPro-16-AHP9.. ([116.128.244.171])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8267711513sm13445457a12.16.2026.05.12.21.42.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 12 May 2026 21:42:24 -0700 (PDT)
+From: Xueqin Luo <luoxueqin@kylinos.cn>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	zhanjie9@hisilicon.com,
+	zhenglifeng1@huawei.com,
+	pierre.gondois@arm.com,
+	sumitg@nvidia.com,
 	linux-pm@vger.kernel.org,
-	pavel@kernel.org,
-	xujiakai24@mails.ucas.ac.cn
-Subject: Re: [PATCH] PM: sleep: Use complete() instead of complete_all() in device_pm_sleep_init()
-Date: Wed, 13 May 2026 02:16:47 +0000
-Message-Id: <20260513021647.487957-1-xujiakai24@mails.ucas.ac.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <CAJZ5v0i0MdJCS-0xeP3gZi30gYV4DMJxPceodRexksMcL=b5PA@mail.gmail.com>
-References: <CAJZ5v0i0MdJCS-0xeP3gZi30gYV4DMJxPceodRexksMcL=b5PA@mail.gmail.com>
+	linux-kernel@vger.kernel.org
+Cc: Xueqin Luo <luoxueqin@kylinos.cn>
+Subject: [PATCH v4] cpufreq: cppc: mask Desired_Excursion when autonomous selection is enabled
+Date: Wed, 13 May 2026 12:42:08 +0800
+Message-ID: <20260513044208.161607-1-luoxueqin@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,35 +64,74 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowABX6QwP3wNqRiodEA--.19635S2
-X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYE7AC8VAFwI0_Gr0_Xr1l1xkIjI8I6I8E
-	6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28Cjx
-	kF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW7JVWDJwA2z4x0Y4vE2Ix0cI8I
-	cVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z2
-	80aVCY1x0267AKxVW8Jr0_Cr1UM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x2
-	0xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15Mc
-	Ij6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41l
-	F7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxAIw28IcxkI7V
-	AKI48JMxAqzxv26xkF7I0En4kS14v26r1q6r43MxC20s026xCaFVCjc4AY6r1j6r4UMI8I
-	3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxV
-	WUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8I
-	cVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aV
-	AFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZE
-	Xa7VU1c4S5UUUUU==
-X-CM-SenderInfo: 50xmxthndljko6pdxz3voxutnvoduhdfq/
 
-> sashiko.dev complains about this one:
-> 
-> https://sashiko.dev/#/patchset/20260509092707.3426533-1-xujiakai24%40mails.ucas.ac.cn
-> 
-> and I think that it has a point.
-> 
-> Before this change, dpm_wait() needs to be updated to skip devices
-> with no PM support.
+According to the ACPI 6.6 specification, the Desired_Excursion field is not
+utilized when autonomous selection is enabled. In this mode, the bit is
+architecturally ignored and does not carry meaningful information.
 
-Thanks for your review! I will send a v2 patch later.
+Currently, the kernel exposes the raw Performance Limited register
+value to userspace through the cpufreq sysfs interface. This may lead to
+misinterpretation, as userspace may assume Desired_Excursion is valid
+even when autonomous selection is active.
 
-Best regards,
-Jiakai
+To provide a stable and semantically correct ABI, mask out the
+Desired_Excursion bit when autonomous selection is enabled, so that
+userspace does not observe undefined or misleading values.
+
+Writes are left unchanged, as the field is architecturally ignored in
+this mode and write attempts are harmless.
+
+Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
+Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+---
+v3 -> v4:
+ - Address Sumit Gupta's review comments by reordering the
+   error check and simplifying auto_sel handling in the
+   perf_limited getter
+---
+ drivers/cpufreq/cppc_cpufreq.c | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 7e7f9dfb7a24..d2f86df06129 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -982,7 +982,34 @@ store_energy_performance_preference_val(struct cpufreq_policy *policy,
+ 	return count;
+ }
+ 
+-CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited,
++static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
++{
++	struct cpufreq_policy *policy;
++	struct cppc_cpudata *cpu_data;
++	int ret;
++
++	ret = cppc_get_perf_limited(cpu, perf_limited);
++	if (ret)
++		return ret;
++
++	policy = cpufreq_cpu_get_raw(cpu);
++	if (!policy)
++		return 0;
++
++	cpu_data = policy->driver_data;
++
++	/*
++	 * Desired Excursion is ignored when autonomous selection is
++	 * enabled. Clear the bit to avoid exposing meaningless state
++	 * to userspace.
++	 */
++	if (cpu_data && cpu_data->perf_ctrls.auto_sel)
++		*perf_limited &= ~CPPC_PERF_LIMITED_DESIRED_EXCURSION;
++
++	return 0;
++}
++
++CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
+ 			 cppc_set_perf_limited)
+ 
+ cpufreq_freq_attr_ro(freqdomain_cpus);
+-- 
+2.43.0
 
