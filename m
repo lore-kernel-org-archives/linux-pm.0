@@ -1,166 +1,239 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46EC337F8C1
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 07:32:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778657570; cv=none; b=oUuOpTx4qe4VuEKD+VlWSjOxuXBeo9XQAwRXLHUfvAUVLkP2OEBg3K+Se0E79WiC/WMlRNeRg5WiCyfmOZb9Pl6XpZKuaSoXiEaUAb0gNf4sUTpTzdjAEWtpiTto1KeFBpOOqIyxc106XFR34YKo6BVzjMmvl+hvPzogPmeWN5c=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778657570; c=relaxed/simple;
-	bh=pQgU2QaXkdIwBkCDq52VnyGH8FRn7TE/3ABrJD9FCLs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=pCD1ua4Y5YVqjZItNNTgaBJqQUFw0/GIBVUUopZYfSExb8/P6u+XU4vVQ0JuGqbgp+BblaeNWgcwxveDMKQNOIyyLFXiwiAozIhZWFNEdrFHG+kFWmJ/uTqmA0vFm2+g3HYGHBiGRKaa70QQDq9ovto3Qo2NnE/0Q3KWJfRvxII=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=fcFh27Sg; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Uncjfpli; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4860A3E5A37
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 09:05:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.43
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778663109; cv=pass; b=nEuofBjzdPfFPgFkUYyOJghqy/fa71glNl14xZCphyOrXwWGIOEucdYSo4eRDJBTaj5m6iWSBdeTTXLSs18PqqLT1K38SW51QC20Tv1xVMLwFM7YBxEaHho/V5e0LOV70UmLnv7MXUGQp2IyeYXTTEiY9Z16zU/KoyhGPuUyLSY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778663109; c=relaxed/simple;
+	bh=HVbPGmpsziIklRB2aj6jw58N/M9msEmJ9NtCMs5V62w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mCQyBX8EgV2frB481QR8u7EewLdMq/V0iXnOCY7dlhvm12pNk0/rHSLnILFYm89aTQW56ZwIpnfVvKCmbfdPNrtmmtjKe8AnOqYrSmF9moJSSiKuhRFiLCAzLQyyGogD+lmcJq+e6WFdcu3ekLBvGuyuLVN6CghDck6HAFsFbts=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=frs24xHO; arc=pass smtp.client-ip=209.85.167.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="fcFh27Sg";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Uncjfpli"
-Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D6idH22965186
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 07:32:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=Bt2Zs/rfUd1yin6uGJnZlg
-	C47x1PEKUQc5qaZ41AcQM=; b=fcFh27SgdkzknXKv6j2hqH2Om6RiHnkguZzWCW
-	91yotlBTXCkJtes8gfeK2Q/llkXnbDkvg/ujG4MlbUN76ijp9vs/8qj2vqLV3c55
-	UziSCXNsCaTzdkgDRXsYCqBVX8CftxY3BdkI94DJFcEVOAPW483bboMkfAC0/B24
-	wjuQKfn33raP6bDmR2hhvSkxpEjLvoq5cIb96MT14ix20QJ80VjHexbyMePc79Ml
-	O7kHY0u9W3GWj8KemdQADC3/bBuyo8Ld9JPJglkbopB9l20wVywUpXw9Y1whtkB8
-	bkKtNf0N1pYM8Nn5rwUqo7lkXZhrFpDBVqKr2TwGevshsYOQ==
-Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e4ma5860h-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 07:32:47 +0000 (GMT)
-Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-3663d5e9bf4so6062622a91.1
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 00:32:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="frs24xHO"
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5a8d648466bso4067744e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 02:05:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778663104; cv=none;
+        d=google.com; s=arc-20240605;
+        b=LjPJm4T61ZLu67Y3m1D66jqp38yZbv5HB4KcNFUBAhqHNRY+0xKTHfhsiRlm9c82fC
+         IOh88+3tBC7srN9r9RV+Y6EW+buS8M6gfZ0aALfPGQtwnhZDhDJnSCBVqv2H5Ozt5D3B
+         LW1Vw3uhcP1XY8wCCH+Uc0dtA1yFeErW9lztgVc85Z5LOoajeMuEstjVDZL4gscM3X1G
+         94rB5VxNyuL3N4AG4pq3AuENVXM1IBZ3v8PaMTyv3J9FJPZGuA0LoaUzfT6/y/dyMYdw
+         wFQq2p7b1mWvX7kCq4QK2vrzKu0SQE6ZFbU45Z8txd/lJLIOsqzGXeCMz3i6GKjkzM3/
+         9eXw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=vnSmxQtTUWEiFFU6qH7Iz8bWADJPw/bCswxBgGjsIdY=;
+        fh=qbgpKcc0GvxWrYUTJjgPWrGgOHB0BL9omClDqpiifwE=;
+        b=RXE81+G6V4xUh17buFq/QhnQ6mNow5igPT09Oioa9ww8g4LmknG8VAycHxReMD53Bm
+         SgF87eMntZMuAAj6ifVqgdhh18h3iHLgtuhwhfgqiLaJmEKXzsx+Alk7klHfy2Ivc+xf
+         VxxwJVJXYJjknGI14xwoNbHH7ulxggc8hVUyzRRHoXct4wyQMIDpstk1GI+iQEidLZlE
+         UgYvu+0mTpFBrcaAOWeiv8TTsj5/gme8oVZ7wJHXd4PSUFhyKqXdTxKWDk3EJvDfFCsb
+         qfGyrManSGO5malgDZ8CKsWuV4+QK+qkFu/xKh7jhJ9VmcVxHdJ4YE8IVPrryUH+ZXw8
+         RkJg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778657567; x=1779262367; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Bt2Zs/rfUd1yin6uGJnZlgC47x1PEKUQc5qaZ41AcQM=;
-        b=UncjfpliARL8ObkxMJsjt9+JiaRqMbd0+qv+B81smh6szRzsEqDGBaE6LjLp3ouOm2
-         MamDK1/L00uOOzBGmnZNGrpst9hiAIGNUth3XI04+EaFdK83KhnU+XHTNMnq5OkDIav5
-         csniceV4ca3Znx23UsML4mL033oWsDbfcuFSHC9ZCoY/TLt+od+gh7mFidraYJk2kx/C
-         s955L2Yz/lDWtrwjT8/lqf3PQSRhcNYgNeuf5TVaLx49dLzUp6au/1UiSNuoYvTKmRG4
-         NklgF8ALkJFlivY/T/jV6GV5gaKiDplsPy5FriAzmRMjsgJwMXC6BvvQGJApWsX5NBt0
-         CUrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778657567; x=1779262367;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1778663104; x=1779267904; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Bt2Zs/rfUd1yin6uGJnZlgC47x1PEKUQc5qaZ41AcQM=;
-        b=A0cuTf5X5NNo3q8XpppyWN/ySK4KO5is6quGHnBxZWzv3WsylEaK1KyY9PetZujHMr
-         YhrQ43G6rMEMoUrRNdt/e+2uC6F0+0l/LfzmpkN01IP74JNfpX3oPqsr8WUXLL8BaFq2
-         hPIBo1204z/2Xu5MCyqsfzhbbWfCU0CGvNXcM91W9PlNvcZD2TrMYo11vg+Hmn7yLDWD
-         FLsNJ/+83ZohuUIaRy/jrRVjlhvEW1HXmHBDcAnN8I4YDWDBdbr6fewnBQ+rAQHcdx7v
-         i6um8YYomNUBb/UgHzWYMNry3WxrJOQnur8jDJMezuGXF62K06SkMvUTHl29NpnyPGGf
-         1dpA==
-X-Forwarded-Encrypted: i=1; AFNElJ93MK6WUM4g+58luhae/u6XMLnFTgUocRH2gT22UvW27y617kThNdL+Hq/1XKEIgvsMboUkUczLdA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywyr8YrS8glaYd5yIWEEYhDM9whkBMEPcAW7fw6vyTgaiKsgn00
-	TeC9rcgsHVgF8zlqMAVOgCz6/f8TsCIy3GBZi5A7ZuKEDMgKg5IGaTAL85ABE0si1p4rdqIj1D8
-	yXFByyXUX4q9f8yLe0/r/QC0KLFxV/R0qay1cDeXqbZcTBu5mVeoqmi+hOZBGrg==
-X-Gm-Gg: Acq92OGkiVAkMrhv0hXGvcqN7UXIFqBNJP8/RJ+0LBDgeq9vtMDNUlbuxer2WikF2Q2
-	DdiQS3ZEQQKzrK81X5GREsNshq4Rr+VIeRMSaaqtzpupyiuHtJ1tj7DyajSXZyg+vzIcbN9tf09
-	qNJhlaxdbFVEDdUIB+dEd5ZAh6/TO0Xs4iYRW7CMpiXVreKPv9Pc4efCU/TbFV8HMzGBi8sU8Ca
-	yXrGj/UYlaeWCBw725BJ5eaT5btcNBLxuyHRN+Jf9AUyo+kySg8QnSo/2sAmrRr/PxGOMlukZdv
-	N8c9CuzJqsfnnq+x+vnLw9nm5xOtGVCphbTQQxhFp9PUF5K9pQMui0GVfWXOKNVFsn289fs8R9e
-	HoTwfcpRQeZBZBwCZ6elSZBB427rWTfWnhSx5bJ1WmmsY7AzTuqo=
-X-Received: by 2002:a17:90a:dfc4:b0:35c:30a8:32a with SMTP id 98e67ed59e1d1-368f3ab22cdmr2570547a91.9.1778657567202;
-        Wed, 13 May 2026 00:32:47 -0700 (PDT)
-X-Received: by 2002:a17:90a:dfc4:b0:35c:30a8:32a with SMTP id 98e67ed59e1d1-368f3ab22cdmr2570509a91.9.1778657566715;
-        Wed, 13 May 2026 00:32:46 -0700 (PDT)
-Received: from hu-gkohli-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-368edf90fbfsm2607593a91.15.2026.05.13.00.32.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 May 2026 00:32:46 -0700 (PDT)
-From: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-Date: Wed, 13 May 2026 13:00:58 +0530
-Subject: [PATCH] dt-bindings: thermal: qcom-tsens: Document the Shikra
- Temperature Sensor
+        bh=vnSmxQtTUWEiFFU6qH7Iz8bWADJPw/bCswxBgGjsIdY=;
+        b=frs24xHO6deIZSc9xZlYtYRcFJQ7cC1XNGgyjGwMejG5M1PdpmvL98kSMv/C/i4zVO
+         eRD3sp8UK7C/l440l4J4Tc/bLoLhvu+dz51OiCUHzF5sGJBakVY9Imxd0IwAIiaCcVEn
+         DMyh0svojq+LYt62fCZVNXMCTv2GqcRRl2MsLFmpUpm2xuiDZFFn9X1ex9F+W8YYGHc8
+         4e0dm6qTo0dDmbK8rV/MR46euzScs/R6+OvE8FIQzQ+BNHjr2RR0uxEzueLHCSwzC6v5
+         WQUsjh0ISYLEYI8IyhrodAR2O8qMh41Zz2vM9G8PBJ3mAJmGXHyHlplNaHTsK5KR4rVw
+         HcNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778663104; x=1779267904;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=vnSmxQtTUWEiFFU6qH7Iz8bWADJPw/bCswxBgGjsIdY=;
+        b=lb09OMSUegStFByh5WlxbxCx8uLZWwaLChw+AphUhY8qt6zYQd51s8oX4NtEhZwdlp
+         YdNq4P2nM7yJFwx6EZUdge0jaBfWjjXVeOTkdZWHNsEYoLN5VwDxu3ZTIEnO5hQx6rq3
+         7FlSMooeSVk2ieYBRArn5fmPHiv2Urmu4f2Ma0ytsgW1tMS3T1rrGKReTZGBeAEvxROT
+         sFTkTEa026Tg/aMEmzCs93fOlbWxWtTSLgTi9O5AtcmyjHIoW9GWa7Gydf8nS1hoGhh1
+         FJma8K4Na6doQ30DkxwP+ALV1Lycv5CDxVktxusDQPpO0k/0bj3wWDt4nWPTcvDswuh3
+         WMUA==
+X-Forwarded-Encrypted: i=1; AFNElJ+5CrynB9wEoJ2SnkigqX4/pazNoYelSPhVdPyT4tLPIMxamDXlpwKtxIqEXSUdXqFqdd73tFYwHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz0fgpsxzhgh+e6WAVpbB4SM0Mi0cxuumG6z4xxLlQbY8FuTHPI
+	8vAx1OU3JhpC+kjrGOSugJo1lwfOUGEaT9PtU4zU5oXztb7DmLMxxkkqII4UCemQypSRVvE9Z2y
+	ODDCaUUJNicqeI+ygTv49xBL/BI81GzGSz2iXkJAGBw==
+X-Gm-Gg: Acq92OEtjYbMkpsK/qPHXn+mi6xAEyukI0HldZ8YIUO/fMqKFOltnznEpEjyWFvrXXK
+	As7P/6N/4GVX42Y5QYLNzIk07UA7j3ElibuxHIJowuWoiV8nNUm5jZNfsoJulwAvTaaxztBt5jE
+	+ThCw2WWNgw06bps2j27MAw6bdKGB83N089Ooa2HlrQCvAi4D+6nBJfHj+r0CPwDI9VUWhQzvpZ
+	j/u+kIshxpHz4qfMTeLFr2d6ra4LEu1aMexlj2pQsyAi4YjKqq+sae6oyAg3ff1Rlc8kwnQhR0C
+	GLOubLSiUln7wUgC40oRZfN0M4dLDEdPbLzWHHuB
+X-Received: by 2002:a05:6512:3c8b:b0:5a8:d648:4601 with SMTP id
+ 2adb3069b0e04-5a8ef99cc5amr878284e87.38.1778663103512; Wed, 13 May 2026
+ 02:05:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260513-tsens_binding-v1-1-1780c6a6caf2@oss.qualcomm.com>
-X-B4-Tracking: v=1; b=H4sIALEoBGoC/x3MQQqAIBBA0avErBPUMqirRITmVLOZwokIpLsnL
- d/i/wyCiVBgqDIkvEno4AJTV7DsnjdUFIvBattpZ6y6BFnmQByJN9X7VWuHbWgsQmnOhCs9/2+
- c3vcDGEv5mF8AAAA=
-X-Change-ID: 20260512-tsens_binding-9af005e4b32e
-To: Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1778657562; l=993;
- i=gaurav.kohli@oss.qualcomm.com; s=20260302; h=from:subject:message-id;
- bh=pQgU2QaXkdIwBkCDq52VnyGH8FRn7TE/3ABrJD9FCLs=;
- b=ehkaQAWg+f+hsPihEsHpu2HbcnWnsz6CDtGPXUH3dexDiW2aNTepnWEolarGnoT5ZfPV3bpLY
- e1I0b39kCYaDm2GVpbj3CvYjte9MCTTtsw2Q+P9ky1QWX3N1mINslxe
-X-Developer-Key: i=gaurav.kohli@oss.qualcomm.com; a=ed25519;
- pk=IdNsqe8rWsF6dbpGHfwPEH9zM0nbOdRH72HxUT9qPak=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA3NiBTYWx0ZWRfXz2OKXEj12Cth
- IeijFsqrU8jv7X55N2/Zi5l7Xk5iWQev8L7XB9pFa00Rl/uCyj+ed8GZgsPH8jFvOelQegVcJcE
- fwnbgajsEsOw8Ml1JGC0p6Sea21ZA9DuMYRZyh6U0LljS6EUsOL1qep4Z2XI1c0i2GYnqQ0IzJx
- N6qwMYHMJK00oTaW4Ss8/akanGEAyk924CG/qsX0xjrVg7DyNokdTa4+jdl42TRScxW2jllQNIh
- 17M9CG0PBWlV8DKu8OQvMiQKCC89+N/gPi0cqaUYlz4y4k8agbzrHNM+ut/xzblF5BACWDBsBL9
- 2q8yEZNODjyCbvxMmpvRSgKjS8R4QbNb8Lrs7TNs9Xdv3bu+9Q2+Q77CRmKROEj1r4H9WKfN5MY
- IN+KhbK3uIm3cAKLhVweLSkLs4MJ9PV3ooIVz9I+Gj81OMTylBb/eUd9iC+U2YwaAHJdJdDSUDQ
- KOKeH7umEq7KrSAJDRw==
-X-Proofpoint-ORIG-GUID: MKDToyr69kb0JeNjBwg02S-JmbyH3-fV
-X-Authority-Analysis: v=2.4 cv=TJZ1jVla c=1 sm=1 tr=0 ts=6a04291f cx=c_pps
- a=vVfyC5vLCtgYJKYeQD43oA==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
- a=EUspDBNiAAAA:8 a=FISNJrs5UlbpyYEJD7IA:9 a=QEXdDO2ut3YA:10
- a=rl5im9kqc5Lf4LNbBjHf:22
-X-Proofpoint-GUID: MKDToyr69kb0JeNjBwg02S-JmbyH3-fV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 suspectscore=0 lowpriorityscore=0 malwarescore=0 adultscore=0
- impostorscore=0 spamscore=0 phishscore=0 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130076
+References: <20260508123910.114273-1-ulf.hansson@linaro.org>
+ <20260508123910.114273-3-ulf.hansson@linaro.org> <CACRMN=fseD6-ODYnOEE42S9VKAb2F33kRv_VPYBGyPsitG2how@mail.gmail.com>
+ <CAPDyKFq+F=zn_Coicb9LzyMtQ=b2Lrd+3Czx6r4ReY-DNyb9eg@mail.gmail.com> <CACRMN=dZFvbXjZGqTvFdNVyXfyvS6YtWNKQnej9A1jihGJHcqA@mail.gmail.com>
+In-Reply-To: <CACRMN=dZFvbXjZGqTvFdNVyXfyvS6YtWNKQnej9A1jihGJHcqA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 13 May 2026 11:04:25 +0200
+X-Gm-Features: AVHnY4IY1Hl3PHqVdEbwrzR1kYI3x6GJYuzpslvlmUfAwZ9a3eA_KZCjdMuftMI
+Message-ID: <CAPDyKFpYkzmmx+d2-x0YskO0H2UD2v1LmZLMRqMmDoLSfPk8Xg@mail.gmail.com>
+Subject: Re: [PATCH v3 02/13] driver core: Enable suppliers to implement fine
+ grained sync_state support
+To: Saravana Kannan <saravanak@kernel.org>
+Cc: Danilo Krummrich <dakr@kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, driver-core@lists.linux.dev, 
+	linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Cristian Marussi <cristian.marussi@arm.com>, Kevin Hilman <khilman@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Abel Vesa <abel.vesa@oss.qualcomm.com>, 
+	Peng Fan <peng.fan@oss.nxp.com>, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Document the Temperature Sensor (TSENS) on the Shikra SoC.
+On Wed, 13 May 2026 at 07:01, Saravana Kannan <saravanak@kernel.org> wrote:
+>
+> On Mon, May 11, 2026 at 2:43=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.o=
+rg> wrote:
+> >
+> > On Mon, 11 May 2026 at 07:09, Saravana Kannan <saravanak@kernel.org> wr=
+ote:
+> > >
+> > > On Fri, May 8, 2026 at 5:39=E2=80=AFAM Ulf Hansson <ulf.hansson@linar=
+o.org> wrote:
+> > > >
+> > > > The common sync_state support isn't fine grained enough for some ty=
+pes of
+> > > > suppliers, like power domains for example. Especially when a suppli=
+er
+> > > > provides multiple independent power domains, each with their own se=
+t of
+> > > > consumers. In these cases we need to wait for all consumers for all=
+ the
+> > > > provided power domains before invoking the supplier's ->sync_state(=
+).
+> > > >
+> > > > To allow a more fine grained sync_state support to be implemented o=
+n per
+> > > > supplier's driver basis, let's add a new optional callback. As soon=
+ as
+> > > > there is an update worth to consider in regards to managing sync_st=
+ate for
+> > > > a supplier device, __device_links_queue_sync_state() queues the dev=
+ice in a
+> > > > list, allowing the new callback to be invoked when flushing the lis=
+t in
+> > > > device_links_flush_sync_list().
+> > > >
+> > > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > > > ---
+> > > >
+> > > > Changes in v3:
+> > > >         - Re-worked the approach to use a list to queue/flush devic=
+es for
+> > > >         ->queue_sync_state(). This should make sure the device lock=
+ is being
+> > > >         held when it's needed, as pointed out by Danilo.
+> > > >
+> > >
+> > > Hi Ulf,
+> > >
+> > > Thanks for working on this!
+> > >
+> > > And please bear with my slow replies.
+> >
+> > I will try, but taking more than 2 months to reply isn't sustainable,
+> > I think. Let's hope you can get some more bandwidth for reviews when
+> > moving forward.
+> >
+> > >
+> > > > ---
+> > > >  drivers/base/base.h           | 18 ++++++++
+> > > >  drivers/base/core.c           | 77 ++++++++++++++++++++++++++-----=
+----
+> > > >  drivers/base/driver.c         |  7 ++++
+> > > >  include/linux/device.h        |  2 +
+> > > >  include/linux/device/driver.h |  7 ++++
+> > > >  5 files changed, 91 insertions(+), 20 deletions(-)
+> > > >
+> > > > diff --git a/drivers/base/base.h b/drivers/base/base.h
+> > > > index 30b416588617..c8be24af92c3 100644
+> > > > --- a/drivers/base/base.h
+> > > > +++ b/drivers/base/base.h
+> > > > @@ -196,6 +196,24 @@ static inline void dev_sync_state(struct devic=
+e *dev)
+> > > >                 dev->driver->sync_state(dev);
+> > > >  }
+> > > >
+> > > > +static inline bool dev_has_queue_sync_state(struct device *dev)
+> > >
+> > > Let's please pick a better name. This is too similar to the actual
+> > > queue function you call __device_links_queue_sync_state() and is very
+> > > confusing. Maybe something that has a meaning along the lines of
+> > > "another consumer probed". So, maybe:
+> > > * consumer_probed()
+> > > * change_of_active_consumers()
+> >
+> > The whole point of naming it "queue_sync_state" was exactly to refer
+> > to __device_links_queue_sync_state(). The point is, the callback can't
+> > be invoked unless __device_links_queue_sync_state() has been called
+> > for the device first.
+> >
+> > Not sure why you think that is confusing? To me, that is rather the
+> > opposite. :-)
+>
+>
+> sync_state() is a callback telling the driver that it's okay to sync
+> the state of the hardware with the software.
+>
+> queue_sync_state() means nothing to the driver. It's just leaking an
+> internal implementation detail (name of the internal function) to the
+> driver that's not really relevant. What you are really telling the
+> driver is that some additional consumers have probed.
+>
+> > Before deciding on another name, note also that
+> > __device_links_queue_sync_state() is called when resuming sync_state
+> > from device_links_supplier_sync_state_resume() and from
+> > device_links_driver_bound(). I am not sure "consumer_probed" a good
+> > name that covers both of these cases; what do you think?
+>
+> Yes, I'm well aware of that :) The contract of sync_state() is that
+> it'll come after a point where it's safe to sync the state. Not "as
+> soon as it's safe" -- meaning no timing guarantee. Really, this is
+> just to make sure sync_state() doesn't come before late initcalls
+> (because a lot of frameworks make assumptions around it) are done and
+> before all the top level devices are added.
+>
+> So, even today, sync_state() can come a bit late. In general, the
+> driver framework doesn't guarantee immediate action. There is no
+> guarantee that a drive probe will be called as soon as it's registered
+> (if there is a device) and vice versa. The same will be true for a
+> "consumer_probed()" callback too.
+>
+> Also, your implementation is literally trying to check which consumers
+> have probed and which ones haven't. So something like
+> "consumer_probed()" or "consumer_change()" should work well and is
+> actually meaningful for a driver developer.
 
-Signed-off-by: Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
----
- Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
- 1 file changed, 1 insertion(+)
+I have no strong opinion on the name, so if you prefer
+"consumer_probed|changed", let me just pick one of them then.
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index 7d34ba00e684..a986fdccd52e 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -74,6 +74,7 @@ properties:
-               - qcom,sdm630-tsens
-               - qcom,sdm670-tsens
-               - qcom,sdm845-tsens
-+              - qcom,shikra-tsens
-               - qcom,sm6115-tsens
-               - qcom,sm6350-tsens
-               - qcom,sm6375-tsens
+[...]
 
----
-base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
-change-id: 20260512-tsens_binding-9af005e4b32e
-
-Best regards,
--- 
-Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>
-
+Kind regards
+Uffe
