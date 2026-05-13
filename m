@@ -1,170 +1,379 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA899395AFD
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:13:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11FF4390616
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:34:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778649209; cv=none; b=IjXY6cYzdmjj9decwnhlwlPm4QHCwJ0vO1bxZiviokgn5gWqezyA8IdoavXqdK/aRuCbg1AvNzcQqxlvWCgrXPa83wfVnTU5CGhiTwB72Wpy6etgA/rQGt+3SoEXA8dwYDiehJ00cAaPM6wuhQF7BMcLy+89I5MlVyeeqEy9s7g=
+	t=1778650486; cv=none; b=tzSVDvjM77hCl6/X5VfPsxYohFfazEuPW2bvSoK5wfYWbJot5c6CAYznqYlsoXikrgmG1bpwYZbERdyvQ+ulvpiEDDjcm1wrPHtKYvrU18IH+p0StU2mow+CknjgpdmBguHcWqrS3NqXomSl05dpMgYdF3hKhEgMB0v//gavCwc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778649209; c=relaxed/simple;
-	bh=pM2DGxGrkoKJcE0Bm07o+fMroy+qeI2cYPvBR9adGSw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eNoPHm79yxeqpV3VBb3QH/zd2lKkCccqXbJuEObgKOjxQcrSb1C+bLFDdPlDH8Kmll3sZx1oXj0PR5fa9ctGdqvQ+kfpsbc0RUhtumcijEBhNREVeF66XoupdSjhZey0nVm5rACcNRYYli0p/y/uQ6Z8vm38lOtvaTi3W0Ldtx8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=CpKJSi3a; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CEgA01po; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1778650486; c=relaxed/simple;
+	bh=2dm9LJzKS2vHlnPyimeXOnAI0qwpLFhX3y1a2u/Y9Bw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=pQIIbTEWuCaMQt2luT5mGavMpPtJJuSm/swTN/x6dlE0z4610VGsigCaGPlf+/P5iO0bi9C+qNONyaVO8SkyQ0lfsisTjXK9wYanMDl5vi71l0Bb+f7/8H1ir9mhRS2bLQr5keFpNe7Zr+Q0SPFpfZm+ygbwmTaX3uSBxm/GZM0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=M8gM3oBs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="CpKJSi3a";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CEgA01po"
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D4p9Y43527635
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:13:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	HC9njI7Ve8bSEzotMi0PMuJUNcf0jXH4lvEu4Vd9J0o=; b=CpKJSi3aE9OwJ9Q1
-	mPX563krRDiFx1NVP6MCY32g4kWUSvbMlmjY3WuFoPXEHgSXRAJ8TtsWviVIkJxO
-	cnz8nUwy+Y1RmzKLX+AzjtftUZHXo8QJWizUTJIeCBHjdeBcqnWF+Xbl1bTWkVdN
-	hPYgOQSMqsuLcCj98iixQ5BMVY7KR0Emgb3EQk9jbXfX1lp6GzJuMd2stTRt+3EY
-	FEnMCpsjtF7K0ExIyv3ZQfXnaTtqhMSNqHuiiWaH7SKxtLQ4zzelllKilqVD003R
-	Jz01kOIQtGWxE2qRdX9l4PM+2nyxcLfEimrBV+AUa1NZs44TBRs3oCnED1is8sUO
-	PhnA8Q==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e44f3374b-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:13:27 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2ba6ca20ceeso69944905ad.2
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 22:13:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1778649206; x=1779254006; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=HC9njI7Ve8bSEzotMi0PMuJUNcf0jXH4lvEu4Vd9J0o=;
-        b=CEgA01poh/4pne6sLv9nlIPs50qUn+ANR6yeQ4zrGMTM80iC2UqA/us0SRynzj1hD4
-         AcDnpWLbNFE21HsVvN9FnfmKgXMUo28vTmNVuWODRfm93fiLfaHXU4UH9DBf4TkQNjng
-         sKdsb2Gk+Qo2A1OY3JU+/Adm8naWD7E+0PcaXrBXQn8FydVxfmLwgOzU5cb/Bsz9Yl1y
-         DMF4xxSroWd/HxwWvsOkD6/MCvkYT3MKZsPqx+0bgAhONXrZ+krWyaZaB7xYedhuwNXT
-         sxbUh0eLrodoKTHw7VT/P+//hM9r7YKDjZMvkiflCtwFGmj/uK6hnqgvlWFtgnprCxqD
-         MovQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778649206; x=1779254006;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HC9njI7Ve8bSEzotMi0PMuJUNcf0jXH4lvEu4Vd9J0o=;
-        b=DyMJMDeHM238KvKIeuj78Ydhnq15E2kgWQ9O+oRmf942nXVxVp7DfpQZqF/9FlhuG0
-         rFE3L3NVI4SCG6kCHnHHEHVM6+wuFU82/JtqC3klg3pstzBJ3X5ZXq163rTMBlLmR17K
-         ytZyM6exIWDLvPWJ9YiPp3WQzXpz8hIlKG+p61ZekQM1dDXCAnnsfyyzu4iXy9tSMzcA
-         SQ7YTtCVDWWlaYKPCqRuBEPOXQCO7RwEjBvJF5LkYFFfE8e+kqELAx653RpUKKh47l/1
-         88U1MoKCFE8vT3bWAcPFfcx8JpGI8MT2ByyElNZljKz8pOKjgFMD2XJmRnBZbBhJFpaJ
-         bDeA==
-X-Gm-Message-State: AOJu0Yy3L6O9MlzK28XI930NwkOSliMbgUn+BGh3Tmh8cvTd2pfxW21n
-	tVwVxpvtdn9srqIS2qQiFVIh16oBqUOuJTGrYCxpo7qNRWyWno1ob2iK5i/B4e9obg+FTiXdWVQ
-	Q0xeNFmXxMFUDVXiFIEu48zA96iZuRFh2j9G2V6GNI6ILTFfP5B6zEZM8dQFYc3Obk0Uzvg==
-X-Gm-Gg: Acq92OGXT7answtPKfoMX1n408uG9oehzwN+MZChr1wyiitjJ5r0M3VJUBBtICBjMBN
-	o5hNETNtVqiUOTskTuUwuYzqOsmjaz5vsD7Pnm8o+gL4Xbry34VJ/EdbwWEdy1SSvz0xPq6Gi/h
-	3ld2TVYsPO6akBmJ4i4D7V4zbW7Di8JDwSgTYtLzhNM9wK8yVve2fmknNSnTP3sVV0IktwCHD9h
-	ZCaWbs6xia/UKhCD4mzsztDS+WWMsX15vpPQGtmCFbAiE0DO235l6aRzbZRnYlm8MZQdgsxvpzp
-	8Ex/2mhbqWiqRV++yLUnC2be7nN/1ATpBznclo/Yfsq+p3hrJBwVISRFetfv0SGPp1D/zQUAlI3
-	ZowYMpdMk+51U3XHGOKAm9ZERqG7ip7Xd4vNTQROZbA5jquYNwv8=
-X-Received: by 2002:a17:903:907:b0:2bc:e216:db47 with SMTP id d9443c01a7336-2bd2713c36cmr20428765ad.8.1778649206356;
-        Tue, 12 May 2026 22:13:26 -0700 (PDT)
-X-Received: by 2002:a17:903:907:b0:2bc:e216:db47 with SMTP id d9443c01a7336-2bd2713c36cmr20428405ad.8.1778649205854;
-        Tue, 12 May 2026 22:13:25 -0700 (PDT)
-Received: from [10.218.50.10] ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1e99be6sm146767155ad.68.2026.05.12.22.13.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 12 May 2026 22:13:25 -0700 (PDT)
-Message-ID: <15e8fb71-1eb0-4440-a8cf-26f19f66b2bb@oss.qualcomm.com>
-Date: Wed, 13 May 2026 10:43:20 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="M8gM3oBs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3FC9C2BCFA
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:34:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778650485;
+	bh=2dm9LJzKS2vHlnPyimeXOnAI0qwpLFhX3y1a2u/Y9Bw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=M8gM3oBsbHV8k34o9bhkyMz0b5wdcK8C/sgC+p5gbihq2la7ktttWgVB3vtArXM+1
+	 a1cANCChgi94ji6Jt2qiuhzfW8fgQLwCYQzDR+c50iWBPXqWI9DBUhoi6w8fTKbEvL
+	 QSWCrAu8neKj7OqQ67rVcJ5ZtLhs4mAaPXnBChN0sEhB3Tkh0mE/beenNUP2q7IAKZ
+	 PPRCCPEhFGz7kJF16oOYq1AqQwPgxysQjE1rfDDtBAMlkcpYfwVYgP0GGxDQpvK5fD
+	 R9FVrGgfiEBeS1/rzLPTDZaTLyT0s8jE2d5zAdenyru+xuLG/IZ9DaJ6K5vYjeokGg
+	 FqV2o9LefrMgg==
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-67c9616b4feso9254420a12.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2026 22:34:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9efZ7s08QNBHtn5YPppagLusWkyq1E1A5J4wszssnNcDyc0UaAevTwyNF3hL3/cbjJhlOENa8QCA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxVPGAha+6u62K/wPZ9UP9yrW5a59QTKjiheGt52RPh53vUIxDQ
+	9OAg/AzxzB7Wp4kKDsspQ/+r+V6gxRa69HWI8VU7paaQpvi/4WGEHi/TMSJHBbRiswwwVmD2Dxf
+	jr1/JmDS+h96V7oF2i07BKeh74xUlUOc=
+X-Received: by 2002:a17:906:8d8b:b0:ba4:94f8:4df with SMTP id
+ a640c23a62f3a-bd3bfb8f581mr101033666b.17.1778650484437; Tue, 12 May 2026
+ 22:34:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] thermal: qcom: tsens: atomic temperature read with
- hardware-guided retries
-To: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, manaf.pallikunhi@oss.qualcomm.com
-References: <20260511071024.3130247-1-priyansh.jain@oss.qualcomm.com>
- <06073a6c-1f75-4dad-9309-9bc47a2b4708@oss.qualcomm.com>
- <eab8dcf5-080e-45c2-985c-b0711185bed9@oss.qualcomm.com>
-Content-Language: en-US
-From: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
-In-Reply-To: <eab8dcf5-080e-45c2-985c-b0711185bed9@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: oSsjBipW-kp6N7aLRHqwb9KIUL9_qr4F
-X-Authority-Analysis: v=2.4 cv=SpSgLvO0 c=1 sm=1 tr=0 ts=6a040877 cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=hyQ3UWTvvJBRuYoiHNwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDA0OSBTYWx0ZWRfX2w1zX19qZh7w
- COVvRSnD6g+pf6VkQEiVi0vNChfCWG++6DX6Bhvj9bU51FOWWyr3bcfndy+QSy81PmHJcUk1vaz
- KTAjdZCswZWlrc4doeAv8POjSrOqFHT80cfMsz8mgiZ8yY0T+6pbGTD6jsL3KWNSUjFjZPivTkg
- kbo+9c4xhAIy6btgDwDtBMKlkoW39Z9Wnx8yJ2C2o/OmXfYF9SAzXPLolnDh9BRsxONBksToEb9
- a0n6C/8bVFpPhxvKx9NKprcp7mBmZ3hwWefc1bx9Sf10Q8FEnlhXAulbiyZzoUiXpx+/P74ZXpS
- fQjom3OQHyAAx4b9SV8l+TDSdW+CrZ6OAHyXokP99f+aLxiTXSH5A6MJgQl5wucE7bFk6LPeeFf
- 9jLEn1xJh9EdyuB+IwHCNhPhbpV4/HUmogYDJ0DETza3IRNPkKYmnxhgBxfHWn6m2QMLwWTMoGH
- xqFVb/IKdX27LW4vkxg==
-X-Proofpoint-GUID: oSsjBipW-kp6N7aLRHqwb9KIUL9_qr4F
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-11_05,2026-05-08_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 suspectscore=0 impostorscore=0 bulkscore=0
- spamscore=0 phishscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130049
+References: <20260508123910.114273-1-ulf.hansson@linaro.org>
+ <20260508123910.114273-7-ulf.hansson@linaro.org> <CACRMN=cowCsGb3x=tPOWLYdittwLCsSb2N2SXVPyxBRHThGAVg@mail.gmail.com>
+ <CAPDyKFoxJ8AOyqzbEQc8x-e5fRf0p3faE23PRNcbA4aPSY_cdg@mail.gmail.com>
+In-Reply-To: <CAPDyKFoxJ8AOyqzbEQc8x-e5fRf0p3faE23PRNcbA4aPSY_cdg@mail.gmail.com>
+From: Saravana Kannan <saravanak@kernel.org>
+Date: Tue, 12 May 2026 22:34:28 -0700
+X-Gmail-Original-Message-ID: <CACRMN=cyMjHtW1xjoYPWa8_TjmQEoJBvKtMo-UgP5yZJ=zDh2Q@mail.gmail.com>
+X-Gm-Features: AVHnY4LyfY4cUuXax6ixWmnl65gxoZBZuMNMRgoV0xiInOYdE0OY_bavPn835OQ
+Message-ID: <CACRMN=cyMjHtW1xjoYPWa8_TjmQEoJBvKtMo-UgP5yZJ=zDh2Q@mail.gmail.com>
+Subject: Re: [PATCH v3 06/13] pmdomain: core: Add initial fine grained
+ sync_state support
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Saravana Kannan <saravanak@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	"Rafael J . Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	driver-core@lists.linux.dev, linux-pm@vger.kernel.org, 
+	Sudeep Holla <sudeep.holla@kernel.org>, Cristian Marussi <cristian.marussi@arm.com>, 
+	Kevin Hilman <khilman@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Marek Szyprowski <m.szyprowski@samsung.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Abel Vesa <abel.vesa@oss.qualcomm.com>, Peng Fan <peng.fan@oss.nxp.com>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, 
+	Maulik Shah <maulik.shah@oss.qualcomm.com>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, May 11, 2026 at 3:25=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.org=
+> wrote:
+>
+> On Mon, 11 May 2026 at 07:09, Saravana Kannan <saravanak@kernel.org> wrot=
+e:
+> >
+> > On Fri, May 8, 2026 at 5:39=E2=80=AFAM Ulf Hansson <ulf.hansson@linaro.=
+org> wrote:
+> > >
+> > > A onecell (#power-domain-cells =3D <1 or 2>; in DT) power domain prov=
+ider
+> > > typically provides multiple independent power domains, each with thei=
+r own
+> > > corresponding consumers. In these cases we have to wait for all consu=
+mers
+> > > for all the provided power domains before the ->sync_state() callback=
+ gets
+> > > called for the supplier.
+> > >
+> > > In a first step to improve this, let's implement support for fine gra=
+ined
+> > > sync_state support a per genpd basis by using the ->queue_sync_state(=
+)
+> > > callback. To take step by step, let's initially limit the improvement=
+ to
+> > > the internal genpd provider driver and to its corresponding genpd dev=
+ices
+> > > for onecell providers.
+> > >
+> > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > > ---
+> > >
+> > > Changes in v3:
+> > >         - Addressed some cosmetic comments from Geert.
+> > >
+> > > ---
+> > >  drivers/pmdomain/core.c   | 124 ++++++++++++++++++++++++++++++++++++=
+++
+> > >  include/linux/pm_domain.h |   1 +
+> > >  2 files changed, 125 insertions(+)
+> > >
+> > > diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+> > > index ad57846f02a3..c01a9a96e5c2 100644
+> > > --- a/drivers/pmdomain/core.c
+> > > +++ b/drivers/pmdomain/core.c
+> > > @@ -2699,6 +2699,119 @@ static struct generic_pm_domain *genpd_get_fr=
+om_provider(
+> > >         return genpd;
+> > >  }
+> > >
+> > > +static bool genpd_should_wait_for_consumer(struct device_node *np)
+> > > +{
+> > > +       struct generic_pm_domain *genpd;
+> > > +       bool should_wait =3D false;
+> > > +
+> > > +       mutex_lock(&gpd_list_lock);
+> > > +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> > > +               if (genpd->provider =3D=3D of_fwnode_handle(np)) {
+> > > +                       genpd_lock(genpd);
+> > > +
+> > > +                       /* Clear the previous state before reevaluati=
+ng. */
+> > > +                       genpd->wait_for_consumer =3D false;
+> > > +
+> > > +                       /*
+> > > +                        * Unless there is at least one genpd for the=
+ provider
+> > > +                        * that is being kept powered-on, we don't ha=
+ve to care
+> > > +                        * about waiting for consumers.
+> > > +                        */
+> > > +                       if (genpd->stay_on)
+> > > +                               should_wait =3D true;
+> > > +
+> > > +                       genpd_unlock(genpd);
+> > > +               }
+> > > +       }
+> > > +       mutex_unlock(&gpd_list_lock);
+> >
+> > I think I understand the intent of this function, but haven't dug into
+> > genpd code enough to comment on this yet. I'll come back to this
+> > later.
+> >
+> > > +
+> > > +       return should_wait;
+> > > +}
+> > > +
+> > > +static void genpd_parse_for_consumer(struct device_node *sup,
+> > > +                                    struct device_node *con)
+> > > +{
+> > > +       struct generic_pm_domain *genpd;
+> > > +
+> > > +       for (unsigned int i =3D 0; ; i++) {
+> > > +               struct of_phandle_args pd_args;
+> > > +
+> > > +               if (of_parse_phandle_with_args(con, "power-domains",
+> > > +                                              "#power-domain-cells",
+> > > +                                              i, &pd_args))
+> > > +                       break;
+> >
+> > Why not use a while or a do while() instead of this infinite for loop
+> > with a break?
+>
+> I guess it's a matter of personal preference. I'm not sure the code
+> gets any nicer with a do/while, but if you really insist I can change
+> it.
+>
+> >
+> > > +
+> > > +               /*
+> > > +                * The phandle must correspond to the supplier's genp=
+d provider
+> > > +                * to be relevant else let's move to the next index.
+> > > +                */
+> > > +               if (sup !=3D pd_args.np) {
+> > > +                       of_node_put(pd_args.np);
+> > > +                       continue;
+> > > +               }
+> > > +
+> > > +               mutex_lock(&gpd_list_lock);
+> > > +               genpd =3D genpd_get_from_provider(&pd_args);
+> > > +               if (!IS_ERR(genpd)) {
+> > > +                       genpd_lock(genpd);
+> > > +                       genpd->wait_for_consumer =3D true;
+> > > +                       genpd_unlock(genpd);
+> > > +               }
+> > > +               mutex_unlock(&gpd_list_lock);
+> > > +
+> > > +               of_node_put(pd_args.np);
+> > > +       }
+> > > +}
+> > > +
+> > > +static void _genpd_queue_sync_state(struct device_node *np)
+> > > +{
+> > > +       struct generic_pm_domain *genpd;
+> > > +
+> > > +       mutex_lock(&gpd_list_lock);
+> > > +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> > > +               if (genpd->provider =3D=3D of_fwnode_handle(np)) {
+> > > +                       genpd_lock(genpd);
+> > > +                       if (genpd->stay_on && !genpd->wait_for_consum=
+er) {
+> > > +                               genpd->stay_on =3D false;
+> > > +                               genpd_queue_power_off_work(genpd);
+> > > +                       }
+> > > +                       genpd_unlock(genpd);
+> > > +               }
+> > > +       }
+> > > +       mutex_unlock(&gpd_list_lock);
+> > > +}
+> > > +
+> > > +static void genpd_queue_sync_state(struct device *dev)
+> > > +{
+> > > +       struct device_node *np =3D dev->of_node;
+> > > +       struct device_link *link;
+> > > +
+> > > +       if (!genpd_should_wait_for_consumer(np))
+> > > +               return;
+> > > +
+> > > +       list_for_each_entry(link, &dev->links.consumers, s_node) {
+> >
+> > Couple of issues:
+> > 1. I don't want the frameworks to be so deeply aware of driver core
+> > internals. I want the driver core maintainers to be able to change the
+> > devlink implementation without having to worry about going and fixing
+> > all the frameworks. So, please add a for_each_consumer_dev(supplier,
+> > callback) and for_each_supplier_dev(consumer, callback) helper
+> > functions.
+>
+> I understand your concern and I like the idea. However, maybe it's
+> better to get this landed (the series is complicated as is) first and
+> then can continue to improve the code on top, with helper functions
+> etc.
 
+That patch should be pretty simple, so let's just do it? You are
+literally just moving the code to another file and massaging it a bit.
+I can send one out if you want/
 
-On 12-05-2026 02:59 pm, Daniel Lezcano wrote:
-> On 5/12/26 11:19, Daniel Lezcano wrote:
-> 
-> [ ... ]
-> 
->>> Signed-off-by: Priyansh Jain <priyansh.jain@oss.qualcomm.com>
->>> ---
->>
->> Applied, thanks
-> 
-> and dropped because of:
-> 
-> 
-> drivers/thermal/qcom/tsens.c:819:9: error: this ‘if’ clause does not 
-> guard... [-Werror=misleading-indentation]
->    819 |         if (!ret)
->        |         ^~
-> /home/dlezcano/Work/src/linux/thermal/drivers/thermal/qcom/ 
-> tsens.c:822:17: note: ...this statement, but the latter is misleadingly 
-> indented as if it were guarded by the  if’
->    822 |                 return ret;
->        |                 ^~~~~~
-> cc1: all warnings being treated as errors
-> 
-> Please next time test your changes before sending
+> >
+> > 2. This doesn't ignore "SYNC_STATE_ONLY" links and that's going to
+> > confuse the consumer count/check you might do or at the least waste
+> > parsing those.
+>
+> I am not sure I understand how I should take SYNC_STATE_ONLY links
+> into account here.
+>
+> At each call to the genpd_queue_sync_state(), we walk through all the
+> provided genpds for the provider. No previous state is cached to track
+> consumer counts.
 
-Yes, I compiled the changes without the indentation flag enabled, which 
-caused this issue to be missed during compilation. I will take care to 
-avoid this going forward and will fix it in the next patch.
+Ok, correct me if I'm wrong here, but it looks like you are looking at
+all the consumers, finding the ones that haven't probed yet and then
+trying to see which specific genpd provider each one of them is using
+by parsing their dt properties and then keep those ON.
+
+If my understanding above is wrong then, please help me understand
+what the code is trying to do.
+
+If it's right, then here's the issue:
+
+fw_devlink relies on device links and fwnode links to keep track of
+consumers. fwnode links get created first and then get converted to
+device links when both the supplier AND consumer devices are created.
+
+Consider a case when the supplier S is created and the consumer device
+C is several levels deep inside a parent device A.
+S { #power-domain-cells =3D <1>; }
+A { B { C { power-domains =3D <&S MY_DOMAIN>; } } }
+
+fw_devlink can't just go "oh there's no consumer device that hasn't
+probed yet, let me call sync_state()". It needs to wait for C. But
+there's no way to create a device link to C. So, here's the sequence
+that happens:
+
+1. When device A gets added, it creates a "proxy" SYNC_STATE_ONLY link
+between S and A.
+2. When A probes, it adds device B.
+3. The SYNC_STATE_ONLY link between S to B is created.
+4. The SYNC_STATE_ONLY link between S to A is deleted.
+5. When B probes, it adds device C.
+6. The actual device link between S and C is created.
+7. The SYNC_STATE_ONLY link between S to B is deleted.
+8. Device C probes, the device links get updated, sync_state() gets called.
+
+So, if your code doesn't account for SYNC_STATE_ONLY links, you are
+going to check device "A" to see which providers are used. You'll
+think that MY_DOMAIN isn't used by any unprobed consumer and turn it
+off.
+
+>
+> >
+> > 3. **Device** links are not the complete list of consumers because
+> > they can only link consumer **devices** once the consumer **device**
+> > is created.
+> >
+> > 4. What you really need is a for_each_consumer_fwnode(supplier,
+> > callback) that first loops through all the consumer device links and
+> > calls the callback() on their fwnode and then the same function needs
+> > to loop through all the fwnode links and then pass those consumer
+> > fwnodes to the callback. And inside that callback you can do whatever
+> > you want.
+>
+> The ->queue_sync_state() callback is invoked *after*
+> __device_links_queue_sync_state() has been called for the device,
+> which is also when the conditions for calling ->sync_state() is
+> checked.
+
+I'm not sure what you are trying to say here. Yes, what you are saying
+is true. But at the point the current code returns before calling
+sync_state(), your patch 2/13 ends up calling the "consumer_probed()"
+callback.
+
+If you see the example I gave above, there is a SYNC_STATE_ONLY link
+all the way up to step 7 that'll prevent sync_state() from being
+called. And until step 5, there is no device link between S and C and
+you'll have to go look at S's fwnode links to find C.
+
+> If there are problems with not yet registered consumer device links,
+> why isn't that as problem for regular ->sync_state() in
+> __device_links_queue_sync_state()?
+
+Does my explanation above make sense?
+
+Welcome to the annoying worlds of fw_devlink corner cases/nuances.
+There's a case where the child is the supplier of the
+parent/grandparent. There's a comment for that in the fw_devlink code.
 
 Thanks,
-Priyansh
+Saravana
 
-> 
-> Thanks
-
+> >
+> > 5. You might want to add a for_each_inactive_consumer(supplier,
+> > callback) too to simplify your need for checking if a fwnode has a
+> > device and then checking if it's probed.
+> >
+> > Thanks,
+> > Saravana
+> >
+> >
+> > > +               struct device *consumer =3D link->consumer;
+> > > +
+> > > +               if (!device_link_test(link, DL_FLAG_MANAGED))
+> > > +                       continue;
+> > > +
+> > > +               if (link->status =3D=3D DL_STATE_ACTIVE)
+> > > +                       continue;
+> > > +
+> > > +               if (!consumer->of_node)
+> > > +                       continue;
+> > > +
+> > > +               /*
+> > > +                * A consumer device has not been probed yet. Let's p=
+arse its
+> > > +                * device node for the power-domains property, to fin=
+d out the
+> > > +                * genpds it may belong to and then prevent sync stat=
+e for them.
+> > > +                */
+> > > +               genpd_parse_for_consumer(np, consumer->of_node);
+> > > +       }
+> > > +
+> > > +       _genpd_queue_sync_state(np);
+> > > +}
+> > > +
+>
+> [...]
+>
+> Kind regards
+> Uffe
