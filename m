@@ -1,88 +1,75 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78CD53A2E07
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 18:44:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9D9C3B9923;
+	Wed, 13 May 2026 19:09:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778697876; cv=none; b=GDtYs++L5SCIlgj0UPqppfOOKDVq8Xc9xHV1NYSlSb8Ompk04XtQWpoziQCbju2sy1uoIpEONVH7XJwFioUopIMIKDex+fxEBcg0u41++z9YvekdL2kK1kP5dcyuxECo7LTkxjNiPZB9W+p6jr3IYcl6gtndtoRnzM0v5gL8lns=
+	t=1778699390; cv=none; b=sXP4Q25ufkgSARai2Bm5svOLQy8J8Bldx8z2NZZ2l0/maFtyQU8mFicYA42U1p9UFDlNqTOIg2jcIi0cVo7db19/7psZhbbFyFCd6VYxyUhU9OXmlykX7r8nLu7hndFM/qBg08enmzgq9x5DRjtYLTdHvmQt+HVUZO+r1Q92DoA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778697876; c=relaxed/simple;
-	bh=f4nFtsfI8uezelwfD99eBtZ/Z20FFjnatzkg0oJHaBY=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=r0ZxnrjYm9cDUlP31kU6lTVa/L/KUApgeMRgmTTTRmznAnRtg+16t4URDL+bAjyAxqNfYeRwYmQdb70fkkJSbUDl4EUB0Wki2mcSB6arpIhW7OnmBcCm4j+eEemULVAVOcMwmcp8hiPgtfEh0IyhMr24pPpDTdhprcr1j9jBd+g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ajf8hp5a; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778699390; c=relaxed/simple;
+	bh=3NdldGtqog0JxqkuNYE3JXKsnKnLqZThga8HCNv24M0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=T7w9Myqo8cf4VxF62YO2grHWPR0TN4Uf+4TogTgMZyMXrQOxnKYBu3kQCSckyxB9MKWa3BhTmnkl1S7V1yqLT+vFhlr1Wml3sBemEdfY0BDH0bjZYxYk3Z/1SfNL4Xns5dtcDqarTC1DxtiTMqo+1juUgyjDVY/vylVdvuJhBjQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RM00sv0f; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ajf8hp5a"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 16FC5C2BCB7
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 18:44:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RM00sv0f"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCD3CC19425;
+	Wed, 13 May 2026 19:09:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778697876;
-	bh=f4nFtsfI8uezelwfD99eBtZ/Z20FFjnatzkg0oJHaBY=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Ajf8hp5akmr97rBWoGvJ9gzYuu+PbKJdywjNcM2Q4Xrl8lv8P0501tLTVXJ1g05Wr
-	 V+F0vFxfrAtEG7egr45oO7jJWhPnjv6dr+b7vXU4pxouIa/e1vMBUZd0FqIDp7vIAz
-	 bgK/f41xte2D4r62eMeMhNNxO7wJ+6Z5co+1gq9dgVWRifFlyINNUJQRm2qO4wlB37
-	 OaQ5+Eyra0elAuS+YVKAqv4TTHhQQDxat5nDvE1g8AutaxycXkDqNm6PUyrp9QVL2A
-	 rvvZEOiqImMfuMbsjNN786M3h0wvGt2C1Z3zPt+hoP+FDjmlhUDp4fUiRIbiev+EgN
-	 VMIbJP0eOgAQQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 0447CC41613; Wed, 13 May 2026 18:44:36 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Wed, 13 May 2026 18:44:35 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: mario.limonciello@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-JD7pFhv3Tn@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	s=k20201202; t=1778699390;
+	bh=3NdldGtqog0JxqkuNYE3JXKsnKnLqZThga8HCNv24M0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=RM00sv0fAGVdkyuJtuiKwlBriIjRSxfEvVqGOLIwWFWTUmiIBYNZ/7WP1ubC6XsoK
+	 ZarBkQAI7vDf5KpFF5Xi9aqRzvbaCxhdG9X3JESNCBcvEStcew0TG1sdULA+YxZ6g8
+	 NIOwxYc369NkvmCNyQnP62qmgBDCOxN3/spDPl9iyQokzN2uu9WD2tIDmU6HLLwMtF
+	 goka7SFkt5o+TJohifoOkga+e2Mf7OuYsgpU0t54NbGozXOp6vt5As3N6JfXsZHms1
+	 LGDRs2d74dTXDzCxnJr9cxLvxeKQunYw2bTFtBAMX2TWjMztse5Db2hSNFhDG7efzx
+	 2B3JZr+T6LYmQ==
+From: Bjorn Andersson <andersson@kernel.org>
+To: Konrad Dybcio <konradybcio@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Georgi Djakov <djakov@kernel.org>,
+	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
+	Aaron Kling <webgeek1234@gmail.com>
+Cc: linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v3 0/2] arm64: qcom: sm8550: add DDR, LLCC & L3 CPU bandwidth scaling
+Date: Wed, 13 May 2026 14:09:27 -0500
+Message-ID: <177869936428.1496622.16380520003909597184.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260219-sm8550-ddr-bw-scaling-v3-0-75c19152e921@gmail.com>
+References: <20260219-sm8550-ddr-bw-scaling-v3-0-75c19152e921@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
---- Comment #9 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
-> With amd_dynamic_epp=3Denable:
+On Thu, 19 Feb 2026 22:07:38 -0600, Aaron Kling wrote:
+> Add the OSM L3 controller node then add the necessary interconnect
+> properties with the appropriate OPP table for each CPU cluster to
+> allow the DDR, LLCC & L3 CPU bandwidth to scale along the CPU
+> cluster operating point.
+> 
+> 
 
-I'm not sure why this is happening.  What platform profiles does this other
-driver support?
+Applied, thanks!
 
-> With amd_dynamic_epp=3Ddisable (or no parameter):
+[2/2] arm64: dts: qcom: sm8550: add cpu OPP table with DDR, LLCC & L3 bandwidths
+      commit: 3f5dcc05cd33e85e897571b4e44feb06f5399b68
 
-So you're still seeing this?
-
-[  299.585428] amd_pstate: EPP cannot be set under performance policy
-
-Can I see the kernel log with dynamic debug for amd-pstate turned on?  And =
-also
-the output from the amd-pstate triage tool in amd-debug-tools.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+Best regards,
+-- 
+Bjorn Andersson <andersson@kernel.org>
