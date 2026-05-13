@@ -1,314 +1,439 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29070360EF1;
-	Wed, 13 May 2026 12:38:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50D8441B340
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:46:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778675909; cv=none; b=jux+Pt16fogMiKVIo9bRxfm4mz/HUzzjxoKzyhzGWtku7CPvvf1+CR11RHA0RRyfYbPJn4/X9KXsdkP9HOb77zkujuOAvNWokS0GbrvBf7MkBuUR7BRplPMdTPYve/RQvEHAaHKT1JMnK9vAoLNPoI8sEK/Q7qAAogxStA7F5DY=
+	t=1778676391; cv=none; b=rSiQTmf2t3VaWr/Py+H2+O0Vl+0WOV5rCNvWs9JfPixH6dx7TGkV/6u5tml6DM0glblVClWOn7S1EHgWeDo1x31PO7B/jvg22Wui8jfYJp7U4W2ml1dfd6SdIUwN1ybQAlQ6NssNgdpQfLS+bDFQopOIvmnd0tPtWri8pSXPw2c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778675909; c=relaxed/simple;
-	bh=Ot4PCcv1gASULHUzfXWFB1OhJaQ+8sbTD5uiYASFtzg=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=F5VXxyaap7sr2cSRT2P577uPtFNKPzsaWxOcDAoqQSf7n2TIRUDfz83maulMRrTFoOug9w60kJArOVsjoF6kVCub5ZehFF2WJYR9+zhgzv/WvUbXQ2CEYTHPwshCdVUxApqaqVUjMf40MUPjCW19qcBgnQ0BN/Hi886yYXJ036Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=iQXjaf9v; arc=none smtp.client-ip=198.175.65.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1778676391; c=relaxed/simple;
+	bh=F819HVJfVVEbUn1eomfSOkkaw5nwB8PAG2EEKY+pEm8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=r2xUGHHcHRu9druxw8/sikFDz8LUWtJ8HIe78c9fO4wrSv4+yt5UzkFzisM7mBSSvcZ7/gjJVXTpYQvLOpU2S6TVvZCOtWTgsON3BZzP1qFpg4H65QFbLm2fFBbLW4VoZcTF+IOTQdUYcB3ai+91prgiMJkyRhFYs4G1HIXnYzw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zsLXjbp1; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="iQXjaf9v"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778675908; x=1810211908;
-  h=date:from:to:cc:subject:message-id;
-  bh=Ot4PCcv1gASULHUzfXWFB1OhJaQ+8sbTD5uiYASFtzg=;
-  b=iQXjaf9v2vPoVH3qChhXl5U5SJCkjkt2Dnn1AXt2XOkEnzwj8mTsSY5A
-   +3exhBhsbyKWJwy/PhSjUCz5O5IC3oXTDyP4ZtqK4RKW3qEz6+QHDalcg
-   R9UE8bz8U4PmTwlPQOXli57JpNHywtYHb2qbfv0rs0CGgwQRut6dENHnc
-   TXPZaC10trOF0TlzQzHeW5iZrB6KrlLjUjz73qIjnmoyLx5A/UAaTJk1b
-   hnaUlAaRfx7hOYPuFpCVWZjOYZ5vmHYeTUPdx/cRqR6p/5FcSmiBNdEb0
-   1ENSOqcJDA97VaHDG/0zEI1d5CWDdXzyj/4MtTQezuDE38LnGxy649fSd
-   Q==;
-X-CSE-ConnectionGUID: cZHWnED+TV2Nzdpb/zkbtg==
-X-CSE-MsgGUID: rYUkrSbQT/CgpIdckciavw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="83215862"
-X-IronPort-AV: E=Sophos;i="6.23,232,1770624000"; 
-   d="scan'208";a="83215862"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2026 05:38:28 -0700
-X-CSE-ConnectionGUID: VixVzNuqRXGRQkr2Gvm09g==
-X-CSE-MsgGUID: sXUE3QnfR/mRdsKk/W1npw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,232,1770624000"; 
-   d="scan'208";a="233804298"
-Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 13 May 2026 05:38:26 -0700
-Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wN8r0-0000000045L-0VL5;
-	Wed, 13 May 2026 12:38:22 +0000
-Date: Wed, 13 May 2026 20:37:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [rafael-pm:fixes] BUILD SUCCESS
- 2dc295fbd5f0be4670f02bb1a0c8dc272acf3508
-Message-ID: <202605132032.ffI3wpYm-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zsLXjbp1"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-44e1860558fso4331620f8f.0
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:46:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1778676388; x=1779281188; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=c7eU4JPhtw1c7hjc4A2hrzIBeAUh0u29gCDSXvZHjqc=;
+        b=zsLXjbp1d09isor2PKaVSUo7JiVX/+Gb+Jz/os/G8+hDOvyFKBR5SRMsTwa69O9IXu
+         em1ZoTX05h+yNGQKLye3ZfFOVEQdwZCergXo7umptWlfZcyyTmtX6/29b0HcM6D9CAWf
+         6UxseizGqha2grXzCzdGiCFqFtNw78nyHxvvl8ZKt+aO2TxaJ7vlNBK6yXC2EmLdhzXa
+         vyKCZdqcQ+y0OSGX+Qx27bbBieZwUIwK9zM7xNKCGcvhzF5DGNpaCb1PfIRNBGppJW3+
+         oU1SP1J8Yk70eFKVXlX2/zj4LLDcHvcWMGLiK0N+MT7i47IymRm85TeaN2gYbtre+o2p
+         dNTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778676388; x=1779281188;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=c7eU4JPhtw1c7hjc4A2hrzIBeAUh0u29gCDSXvZHjqc=;
+        b=XGmmX+3Q2flrHz9H9g1wUN3h6ultlj+12grEh3Y5xcfWAjURxuCZl4Ml7UtmSmvIRG
+         Dd/Ixu/1/NXxFVTya2WX3rRccjTlib7Xh3/ybWnXTlca9dAXaHh6VyDosF6zatS5KaXn
+         K3Q9LnV1wT2RV5JrqVKII5yE4xcnlsi2rnYPCxZFay9xIq7GHwEJIIIfYOB+m2oZTs5A
+         uF7grrOP7PxAK+Q2/2KCOxZxZL8kBYLbGi/Ao+sBy06hjeO/Mc43rh58DBVvjg7t0Q4y
+         ZlnxyiSUkMh5+Pu8IHnXaTQqli1xpgj4ghEhf+mWaFByj7CKhoHAj1UBpVglkm/yPUFx
+         Nl6A==
+X-Forwarded-Encrypted: i=1; AFNElJ8FjVR4LB2EBlGnNRr7fBCRNIah5xzyxbcKilTNz4N3BehWWM79gIm8eMSkBh1b5k31bvmk2Q+fDQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwGDLjrpnJwG5X6maaLR4DhZcPpMeLjpNUxNi1O4N/HK+U5LQd3
+	O7HYhdP2Znmaqjzb2nsEEPi24UNCLkmnfmO7H58WceQ2PzYyj+VqFZiXFoM+uTBV0I4=
+X-Gm-Gg: Acq92OFl/mpveC3Z+5YUKGw18E47EPhln24U07hDBIwjVh7UF6jd84SSa/aobQysl97
+	GqLvCUA9pWNRLPaXz+HNsPgvAkmUF0yT0LaNqHBB9Iz42NYWFruhTxafSkNNABF/AJzxkBF0Cfm
+	63H0RMJJbRHWi025UFkCs7hvhNdDizNzJb5DJSuV0qlmAuOuXrs6Nw0T/KdmNSnITziLTNeiIkB
+	t+GWUaW9v5nBJS2o9Q1/AYYE6pH8WX7z8jILMEciRVPFwa2r/ktloo5bxXQsOKiFajql4NRHQYN
+	pAgIP2XWERMkrlyxZK2xeI+uGaz1FiUek5GEG9gPnpdifr1gZx6W3yJvoQnIYMS+n/DOX4cE5GV
+	vzXoFbT+lOGgwUakhzQe0hvype1vIUZq7Beu/wJT7yFeJlC6+TH5QFloVBSJ3egSzgPhyzlpLLJ
+	FugloREZkFkhL8gybkmwxWj9p7t9i7hw==
+X-Received: by 2002:a5d:5f82:0:b0:449:4079:4c39 with SMTP id ffacd0b85a97d-45c5a1a791bmr5023036f8f.29.1778676387540;
+        Wed, 13 May 2026 05:46:27 -0700 (PDT)
+Received: from vingu-cube ([2a01:e0a:f:6020:1b29:23a9:fb39:a3cd])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4548bb51d40sm39668569f8f.0.2026.05.13.05.46.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 May 2026 05:46:26 -0700 (PDT)
+Date: Wed, 13 May 2026 14:46:25 +0200
+From: Vincent Guittot <vincent.guittot@linaro.org>
+To: John Stultz <jstultz@google.com>
+Cc: Qais Yousef <qyousef@layalina.io>, Ingo Molnar <mingo@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Tim Chen <tim.c.chen@linux.intel.com>,
+	"Chen, Yu C" <yu.c.chen@intel.com>,
+	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH] sched/fair: Call update_util_est() after
+ dequeue_entities()
+Message-ID: <agRyoe1wHyZ-vMk9@vingu-cube>
+References: <20260512124653.305275-1-qyousef@layalina.io>
+ <CANDhNCqRU1paGDQPK8nHEA-yejxBm5ATPrNzvqSfnzU09Xk_7Q@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANDhNCqRU1paGDQPK8nHEA-yejxBm5ATPrNzvqSfnzU09Xk_7Q@mail.gmail.com>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git fixes
-branch HEAD: 2dc295fbd5f0be4670f02bb1a0c8dc272acf3508  Merge branch 'acpi-driver' into fixes
+Le mardi 12 mai 2026 à 13:52:09 (-0700), John Stultz a écrit :
+> On Tue, May 12, 2026 at 5:47 AM Qais Yousef <qyousef@layalina.io> wrote:
+> >
+> > update_util_est() reads task_util() at dequeue which is updated in
+> > dequeue_entities(). To read the accurate util_avg at dequeue, make sure
+> > to do the read after load_avg is updated in dequeue_entities().
+> >
+> > util_est for a periodic task before
+> >
+> >                                 periodic-3114 util_est.enqueued running
+> >    ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
+> > 183┤                ▖▗  ▐▖         ▖ ▗▙   ▗   ▗▙▖▖       ▖▖   ▖       ▖▖        ▗  ▟  ▗▄▖          │
+> > 139┤               ▐▛█▜▙▞▀▄▄▞▚▄▟█▞▙█▄▟▀▚▄▄▞▚▄▄▟▀▀▛▄▝▄▄▄▙█▛▛█▛▜▛▄▄▀▄█▙▛▛▛▙▄▀▄▄▖▜▄▟█▟▀▜▟▄▜▀▄▄▟▙▖     │
+> >  95┤              ▐▀    ▘   ▝   ▝        ▝▘        ▘   ▘▘       ▝▘       ▝▘  ▝    ▝        ▀       │
+> >    │              ▛                                                                                │
+> >  51┤             ▐▘                                                                                │
+> >   7┤      ▖▗▗  ▗▄▐                                                                                 │
+> >    └┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬┘
+> >   0.00      0.65       1.30      1.96       2.61      3.26       3.91      4.57       5.22     5.87
+> >
+> > and after
+> >
+> >                                  periodic-2977 util_est.enqueued running
+> >      ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+> > 157.0┤               ▙▄ ▗▄  ▗▄▄▄ ▗▄  ▗▄▄▄▗▄▄  ▗▄▄▖ ▄   ▄▄▄   ▄  ▄▖▖  ▄▄▄▄▄▖▖▝▙▄▄▄▄▄▄▖ ▗▄           │
+> > 119.5┤             ▗▄▌▘▀▀ ▀▀▀ ▝▀▀▘▝▀▀▀ ▝▀▘ ▝▀▀▘ ▀▝▀▘▀▀▀▘▝▀▀▀▀▀▀▀▘▝▝▀▀ ▀   ▝▝▀  ▀   ▀▀▀▀            │
+> >  82.0┤             ▟                                                                               │
+> >      │             ▌                                                                               │
+> >  44.5┤             ▌                                                                               │
+> >   7.0┤      ▗   ▗▖ ▌                                                                               │
+> >      └┬─────────┬─────────┬──────────┬─────────┬─────────┬─────────┬──────────┬─────────┬─────────┬┘
+> >     0.00      0.65      1.30       1.95      2.60      3.25      3.90       4.56      5.21     5.86
+> >
+> > Note how the signal is noisier and can peak to 183 vs 157 now.
+> >
+> > Fixes: b55945c500c5 ("sched: Fix pick_next_task_fair() vs try_to_wake_up() race")
+> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
+> > ---
+> >
+> > This is split from [1] series where I stumbled upon this problem. AFAICS it
+> > needs backporting all the way to 6.12 LTS.
+> >
+> > [1] https://lore.kernel.org/lkml/20260504020003.71306-1-qyousef@layalina.io/
+> >
+> >  kernel/sched/fair.c | 5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 728965851842..96ba97e5f4ae 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -7401,6 +7401,8 @@ static int dequeue_entities(struct rq *rq, struct sched_entity *se, int flags)
+> >   */
+> >  static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> >  {
+> > +       int ret;
+> > +
+> >         if (task_is_throttled(p)) {
+> >                 dequeue_throttled_task(p, flags);
+> >                 return true;
+> > @@ -7409,8 +7411,9 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> >         if (!p->se.sched_delayed)
+> >                 util_est_dequeue(&rq->cfs, p);
+> >
+> > +       ret = dequeue_entities(rq, &p->se, flags);
+> >         util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
+> > -       if (dequeue_entities(rq, &p->se, flags) < 0)
+> 
+> Hrm, so the Sashiko tool raised a reasonable concern on the earlier
+> version of this:
+>   https://sashiko.dev/#/patchset/20260504020003.71306-1-qyousef%40layalina.io?part=12
 
-elapsed time: 1148m
+Even without sashiko, this is what the comment says just below in the function ;-)
 
-configs tested: 237
-configs skipped: 13
+Below is a different way to fix it which also covers cases when we have both
+DEQUEUE_SLEEP and DEQUEUE_DELAYED
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+---
+ kernel/sched/fair.c | 189 ++++++++++++++++++++++----------------------
+ 1 file changed, 93 insertions(+), 96 deletions(-)
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260513    gcc-14.3.0
-arc                   randconfig-002-20260513    gcc-14.3.0
-arm                               allnoconfig    clang-23
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    gcc-15.2.0
-arm                          gemini_defconfig    clang-20
-arm                          ixp4xx_defconfig    gcc-15.2.0
-arm                   randconfig-001-20260513    gcc-14.3.0
-arm                   randconfig-002-20260513    gcc-14.3.0
-arm                   randconfig-003-20260513    gcc-14.3.0
-arm                   randconfig-004-20260513    gcc-14.3.0
-arm64                            allmodconfig    clang-19
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                          randconfig-001    clang-23
-arm64                 randconfig-001-20260513    clang-23
-arm64                 randconfig-001-20260513    gcc-12.5.0
-arm64                          randconfig-002    clang-23
-arm64                 randconfig-002-20260513    clang-23
-arm64                 randconfig-002-20260513    gcc-12.5.0
-arm64                          randconfig-003    clang-23
-arm64                 randconfig-003-20260513    clang-23
-arm64                 randconfig-003-20260513    gcc-12.5.0
-arm64                          randconfig-004    clang-23
-arm64                 randconfig-004-20260513    clang-23
-arm64                 randconfig-004-20260513    gcc-12.5.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                           randconfig-001    clang-23
-csky                  randconfig-001-20260513    clang-23
-csky                  randconfig-001-20260513    gcc-12.5.0
-csky                           randconfig-002    clang-23
-csky                  randconfig-002-20260513    clang-23
-csky                  randconfig-002-20260513    gcc-12.5.0
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    clang-23
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon                        randconfig-001    gcc-11.5.0
-hexagon               randconfig-001-20260513    gcc-11.5.0
-hexagon               randconfig-001-20260513    gcc-8.5.0
-hexagon                        randconfig-002    gcc-11.5.0
-hexagon               randconfig-002-20260513    gcc-11.5.0
-hexagon               randconfig-002-20260513    gcc-8.5.0
-i386                             allmodconfig    clang-20
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260513    clang-20
-i386        buildonly-randconfig-002-20260513    clang-20
-i386        buildonly-randconfig-003-20260513    clang-20
-i386        buildonly-randconfig-004-20260513    clang-20
-i386        buildonly-randconfig-005-20260513    clang-20
-i386        buildonly-randconfig-006-20260513    clang-20
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260513    clang-20
-i386                  randconfig-002-20260513    clang-20
-i386                  randconfig-003-20260513    clang-20
-i386                  randconfig-004-20260513    clang-20
-i386                  randconfig-005-20260513    clang-20
-i386                  randconfig-006-20260513    clang-20
-i386                  randconfig-007-20260513    clang-20
-i386                  randconfig-011-20260513    clang-20
-i386                  randconfig-012-20260513    clang-20
-i386                  randconfig-012-20260513    gcc-14
-i386                  randconfig-013-20260513    clang-20
-i386                  randconfig-014-20260513    clang-20
-i386                  randconfig-015-20260513    clang-20
-i386                  randconfig-016-20260513    clang-20
-i386                  randconfig-017-20260513    clang-20
-loongarch                        allmodconfig    clang-19
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch                      randconfig-001    gcc-11.5.0
-loongarch             randconfig-001-20260513    gcc-11.5.0
-loongarch             randconfig-001-20260513    gcc-8.5.0
-loongarch                      randconfig-002    gcc-11.5.0
-loongarch             randconfig-002-20260513    gcc-11.5.0
-loongarch             randconfig-002-20260513    gcc-8.5.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                             allyesconfig    gcc-15.2.0
-m68k                          atari_defconfig    gcc-15.2.0
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-mips                      loongson3_defconfig    gcc-15.2.0
-mips                    maltaup_xpa_defconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-19
-nios2                          randconfig-001    gcc-11.5.0
-nios2                 randconfig-001-20260513    gcc-11.5.0
-nios2                 randconfig-001-20260513    gcc-8.5.0
-nios2                          randconfig-002    gcc-11.5.0
-nios2                 randconfig-002-20260513    gcc-11.5.0
-nios2                 randconfig-002-20260513    gcc-8.5.0
-openrisc                         allmodconfig    clang-23
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    clang-19
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260513    gcc-8.5.0
-parisc                randconfig-002-20260513    gcc-8.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc                 mpc832x_rdb_defconfig    gcc-15.2.0
-powerpc                 mpc834x_itx_defconfig    clang-16
-powerpc                     rainier_defconfig    gcc-15.2.0
-powerpc               randconfig-001-20260513    gcc-8.5.0
-powerpc               randconfig-002-20260513    gcc-8.5.0
-powerpc64             randconfig-001-20260513    gcc-8.5.0
-powerpc64             randconfig-002-20260513    gcc-8.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260513    gcc-15.2.0
-riscv                 randconfig-002-20260513    gcc-15.2.0
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260513    gcc-15.2.0
-s390                  randconfig-002-20260513    gcc-15.2.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    clang-19
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sh                 kfr2r09-romimage_defconfig    gcc-15.2.0
-sh                    randconfig-001-20260513    gcc-15.2.0
-sh                    randconfig-002-20260513    gcc-15.2.0
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                          randconfig-001    gcc-11.5.0
-sparc                 randconfig-001-20260513    gcc-11.5.0
-sparc                          randconfig-002    gcc-11.5.0
-sparc                 randconfig-002-20260513    gcc-11.5.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64                        randconfig-001    gcc-11.5.0
-sparc64               randconfig-001-20260513    gcc-11.5.0
-sparc64                        randconfig-002    gcc-11.5.0
-sparc64               randconfig-002-20260513    gcc-11.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                             randconfig-001    gcc-11.5.0
-um                    randconfig-001-20260513    gcc-11.5.0
-um                             randconfig-002    gcc-11.5.0
-um                    randconfig-002-20260513    gcc-11.5.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260513    gcc-12
-x86_64      buildonly-randconfig-002-20260513    gcc-12
-x86_64      buildonly-randconfig-003-20260513    gcc-12
-x86_64      buildonly-randconfig-004-20260513    gcc-12
-x86_64      buildonly-randconfig-005-20260513    gcc-12
-x86_64      buildonly-randconfig-006-20260513    gcc-12
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260513    clang-20
-x86_64                randconfig-002-20260513    clang-20
-x86_64                randconfig-003-20260513    clang-20
-x86_64                randconfig-004-20260513    clang-20
-x86_64                randconfig-005-20260513    clang-20
-x86_64                randconfig-006-20260513    clang-20
-x86_64                randconfig-011-20260513    gcc-14
-x86_64                randconfig-012-20260513    gcc-14
-x86_64                randconfig-013-20260513    gcc-14
-x86_64                randconfig-014-20260513    gcc-14
-x86_64                randconfig-015-20260513    gcc-14
-x86_64                randconfig-016-20260513    gcc-14
-x86_64                randconfig-071-20260513    gcc-14
-x86_64                randconfig-072-20260513    gcc-14
-x86_64                randconfig-073-20260513    gcc-14
-x86_64                randconfig-074-20260513    gcc-14
-x86_64                randconfig-075-20260513    gcc-14
-x86_64                randconfig-076-20260513    gcc-14
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                           allyesconfig    clang-23
-xtensa                           allyesconfig    gcc-15.2.0
-xtensa                         randconfig-001    gcc-11.5.0
-xtensa                randconfig-001-20260513    gcc-11.5.0
-xtensa                         randconfig-002    gcc-11.5.0
-xtensa                randconfig-002-20260513    gcc-11.5.0
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index c83fbe4e88c1..0976adc12594 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -5120,13 +5120,87 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 	trace_pelt_cfs_tp(cfs_rq);
+ }
+
++#define UTIL_EST_MARGIN (SCHED_CAPACITY_SCALE / 100)
++
++static inline void util_est_update(struct sched_entity *se)
++{
++	unsigned int ewma, dequeued, last_ewma_diff;
++
++	if (!sched_feat(UTIL_EST))
++		return;
++
++	/* Get current estimate of utilization */
++	ewma = READ_ONCE(se->avg.util_est);
++
++	/*
++	 * If the PELT values haven't changed since enqueue time,
++	 * skip the util_est update.
++	 */
++	if (ewma & UTIL_AVG_UNCHANGED)
++		return;
++
++	/* Get utilization at dequeue */
++	dequeued = READ_ONCE(se->avg.util_avg);
++
++	/*
++	 * Reset EWMA on utilization increases, the moving average is used only
++	 * to smooth utilization decreases.
++	 */
++	if (ewma <= dequeued) {
++		ewma = dequeued;
++		goto done;
++	}
++
++	/*
++	 * Skip update of task's estimated utilization when its members are
++	 * already ~1% close to its last activation value.
++	 */
++	last_ewma_diff = ewma - dequeued;
++	if (last_ewma_diff < UTIL_EST_MARGIN)
++		goto done;
++
++	/*
++	 * To avoid underestimate of task utilization, skip updates of EWMA if
++	 * we cannot grant that thread got all CPU time it wanted.
++	 */
++	if ((dequeued + UTIL_EST_MARGIN) < READ_ONCE(se->avg.runnable_avg))
++		goto done;
++
++
++	/*
++	 * Update Task's estimated utilization
++	 *
++	 * When *p completes an activation we can consolidate another sample
++	 * of the task size. This is done by using this value to update the
++	 * Exponential Weighted Moving Average (EWMA):
++	 *
++	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
++	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
++	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
++	 *          = w * (      -last_ewma_diff           ) +     ewma(t-1)
++	 *          = w * (-last_ewma_diff +  ewma(t-1) / w)
++	 *
++	 * Where 'w' is the weight of new samples, which is configured to be
++	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
++	 */
++	ewma <<= UTIL_EST_WEIGHT_SHIFT;
++	ewma  -= last_ewma_diff;
++	ewma >>= UTIL_EST_WEIGHT_SHIFT;
++done:
++	ewma |= UTIL_AVG_UNCHANGED;
++	WRITE_ONCE(se->avg.util_est, ewma);
++
++	trace_sched_util_est_se_tp(se);
++}
++
+ /*
+  * Optional action to be done while updating the load average
+  */
+-#define UPDATE_TG	0x1
+-#define SKIP_AGE_LOAD	0x2
+-#define DO_ATTACH	0x4
+-#define DO_DETACH	0x8
++#define UPDATE_TG	0x01
++#define SKIP_AGE_LOAD	0x02
++#define DO_ATTACH	0x04
++#define DO_DETACH	0x08
++#define UPDATE_UTIL_EST	0x10
+
+ /* Update task and its cfs_rq load average */
+ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+@@ -5169,6 +5243,9 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 		if (flags & UPDATE_TG)
+ 			update_tg_load_avg(cfs_rq);
+ 	}
++
++	if (flags & UPDATE_UTIL_EST)
++		util_est_update(se);
+ }
+
+ /*
+@@ -5227,11 +5304,6 @@ static inline unsigned long task_util(struct task_struct *p)
+ 	return READ_ONCE(p->se.avg.util_avg);
+ }
+
+-static inline unsigned long task_runnable(struct task_struct *p)
+-{
+-	return READ_ONCE(p->se.avg.runnable_avg);
+-}
+-
+ static inline unsigned long _task_util_est(struct task_struct *p)
+ {
+ 	return READ_ONCE(p->se.avg.util_est) & ~UTIL_AVG_UNCHANGED;
+@@ -5274,88 +5346,6 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
+ 	trace_sched_util_est_cfs_tp(cfs_rq);
+ }
+
+-#define UTIL_EST_MARGIN (SCHED_CAPACITY_SCALE / 100)
+-
+-static inline void util_est_update(struct cfs_rq *cfs_rq,
+-				   struct task_struct *p,
+-				   bool task_sleep)
+-{
+-	unsigned int ewma, dequeued, last_ewma_diff;
+-
+-	if (!sched_feat(UTIL_EST))
+-		return;
+-
+-	/*
+-	 * Skip update of task's estimated utilization when the task has not
+-	 * yet completed an activation, e.g. being migrated.
+-	 */
+-	if (!task_sleep)
+-		return;
+-
+-	/* Get current estimate of utilization */
+-	ewma = READ_ONCE(p->se.avg.util_est);
+-
+-	/*
+-	 * If the PELT values haven't changed since enqueue time,
+-	 * skip the util_est update.
+-	 */
+-	if (ewma & UTIL_AVG_UNCHANGED)
+-		return;
+-
+-	/* Get utilization at dequeue */
+-	dequeued = task_util(p);
+-
+-	/*
+-	 * Reset EWMA on utilization increases, the moving average is used only
+-	 * to smooth utilization decreases.
+-	 */
+-	if (ewma <= dequeued) {
+-		ewma = dequeued;
+-		goto done;
+-	}
+-
+-	/*
+-	 * Skip update of task's estimated utilization when its members are
+-	 * already ~1% close to its last activation value.
+-	 */
+-	last_ewma_diff = ewma - dequeued;
+-	if (last_ewma_diff < UTIL_EST_MARGIN)
+-		goto done;
+-
+-	/*
+-	 * To avoid underestimate of task utilization, skip updates of EWMA if
+-	 * we cannot grant that thread got all CPU time it wanted.
+-	 */
+-	if ((dequeued + UTIL_EST_MARGIN) < task_runnable(p))
+-		goto done;
+-
+-
+-	/*
+-	 * Update Task's estimated utilization
+-	 *
+-	 * When *p completes an activation we can consolidate another sample
+-	 * of the task size. This is done by using this value to update the
+-	 * Exponential Weighted Moving Average (EWMA):
+-	 *
+-	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
+-	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
+-	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
+-	 *          = w * (      -last_ewma_diff           ) +     ewma(t-1)
+-	 *          = w * (-last_ewma_diff +  ewma(t-1) / w)
+-	 *
+-	 * Where 'w' is the weight of new samples, which is configured to be
+-	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
+-	 */
+-	ewma <<= UTIL_EST_WEIGHT_SHIFT;
+-	ewma  -= last_ewma_diff;
+-	ewma >>= UTIL_EST_WEIGHT_SHIFT;
+-done:
+-	ewma |= UTIL_AVG_UNCHANGED;
+-	WRITE_ONCE(p->se.avg.util_est, ewma);
+-
+-	trace_sched_util_est_se_tp(&p->se);
+-}
+-
+ static inline unsigned long get_actual_cpu_capacity(int cpu)
+ {
+ 	unsigned long capacity = arch_scale_cpu_capacity(cpu);
+@@ -5828,7 +5818,7 @@ static bool
+ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+ {
+ 	bool sleep = flags & DEQUEUE_SLEEP;
+-	int action = UPDATE_TG;
++	int action = 0;
+
+ 	update_curr(cfs_rq);
+ 	clear_buddies(cfs_rq, se);
+@@ -5848,15 +5838,23 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+
+ 		if (sched_feat(DELAY_DEQUEUE) && delay &&
+ 		    !entity_eligible(cfs_rq, se)) {
+-			update_load_avg(cfs_rq, se, 0);
++			if (entity_is_task(se))
++				action |= UPDATE_UTIL_EST;
++			update_load_avg(cfs_rq, se, action);
+ 			update_entity_lag(cfs_rq, se);
+ 			set_delayed(se);
+ 			return false;
+ 		}
+ 	}
+
+-	if (entity_is_task(se) && task_on_rq_migrating(task_of(se)))
+-		action |= DO_DETACH;
++	action = UPDATE_TG;
++	if (entity_is_task(se)) {
++		if (task_on_rq_migrating(task_of(se)))
++			action |= DO_DETACH;
++
++		if (sleep && !(flags & DEQUEUE_DELAYED))
++			action |= UPDATE_UTIL_EST;
++	}
+
+ 	/*
+ 	 * When dequeuing a sched_entity, we must:
+@@ -7628,7 +7626,6 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (!p->se.sched_delayed)
+ 		util_est_dequeue(&rq->cfs, p);
+
+-	util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
+ 	if (dequeue_entities(rq, &p->se, flags) < 0)
+ 		return false;
 
 --
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+
+
+
+
+> 
+> Specifically, we shouldn't reference p after dequeue_entities() or we
+> risk racing with it being woken up, running, and maybe exiting on
+> another cpu.
+> And this moves the util_est_updat() call to after dequeue finishes.
+> 
+> Maybe there's some way to have util_est_update() compensate for the
+> unfinished accounting that will be done in dequeue_entities()?
+> 
+> thanks
+> -john
