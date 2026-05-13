@@ -1,75 +1,88 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80793357D04
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 11:03:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE65E40627B;
+	Wed, 13 May 2026 12:11:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778670203; cv=none; b=ftqUGgv1DDJhpCQW+10lceCi71mEjINXiLUVlAqEq7hHKdIxwqX/UbEdgwubqMNSXgoB8eedWTqBSmNePckafUICI6rLthyOg1V3E8PwmVOREtl9SRd357Nl3PW9sUjkK7t4UkaL8BiDdGYoNv9RCw3Tgtb8CSl6M/INc3sqZ5Y=
+	t=1778674321; cv=none; b=QEc5Ja/wibnzjeOURp66LSLJih1UuA6wQzjg0StmkEIFkPhVoslKhd5Gt2G5AaGkpTNUEeE/nd5B7VdeV4JE6zcOwDG1hF2XxChyA8gChEIFOjB300J9qV4TR5YxqPMj6x6FPs3nEHKctG9g6mRJcjaBh+ys8uXkX/VBxefn7G0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778670203; c=relaxed/simple;
-	bh=okcgBjusIeMQD61yC2mSDKJqtxZo1srISQYNgMzoKGM=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=mCxw/+ZjPG2fH0bV/vvYAs2ssqNCWF1HPpmJ+VFFI+jMNzmDLkuFaNdXtubtK7O6T8x/xO4Bne9nUvEXwmDHqhNrmJ42+Uuu625HqMLbMsGLjVamBFeoIxhUH0EjWmSZWrkM5/leg23ywOm8VreR/osazsoTDr3Ked+/4QWnPeg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QrcvtNlz; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778674321; c=relaxed/simple;
+	bh=vNosVCYPJbIoWSprBUxUEYXiyygoyJw4B/8zom1JlYE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NrCxkRugQFGS7HnVLlIQHbbeR753HpD/ZLq4C3jZClGGD2oHrqnEQEk4AM7faru1J/nR5KJPY6oVfFS4EsdYtkjLqXNB1wK0e7Q64PKXDQ0Je1KQox2deeGoUdOai1GSAgDnpEPop0utTl1tbPdWLIQaQVvzqsguZxEJWle65NE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=fn8F+MWg; arc=none smtp.client-ip=45.254.49.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QrcvtNlz"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 15EC0C2BCB7
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 11:03:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778670203;
-	bh=okcgBjusIeMQD61yC2mSDKJqtxZo1srISQYNgMzoKGM=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=QrcvtNlzBACzSibgP1Mp+azIloF9C+LujBOPRcwBafQLbW0fUbJjCjBCeWDLAmIQF
-	 vKR3RUZ6eWVmjQvBzmFQYHyUHLwhoZhZF6BOLDO6y+IGLj9Xev92292JV4BQzMFca3
-	 retLDC64ITlEt9cBozuFtUcqWPna3ZvAEXpLjJMRQ9OHEjQ+z85PEj7SzI+p+HUjyN
-	 1Hp4d0olaXjdvB50tl0dO6yWWzLHnL8uz9EhI8gyxb8e+33fgB3oQLKYUbfIH0oDMk
-	 guvcn5WLt57c9HMOCpBtgzED78wpRISi0Gqcviq8c1kV8G+cBmVEr48pIxxz5RrWaA
-	 LnRplAhcPkoNQ==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 0B0B9C41612; Wed, 13 May 2026 11:03:23 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Wed, 13 May 2026 11:03:22 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: mario.limonciello@amd.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-VVk0IpHZlj@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="fn8F+MWg"
+Received: from LAPTOP-99KJFSET (unknown [112.10.223.127])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 3e4424636;
+	Wed, 13 May 2026 20:06:40 +0800 (GMT+08:00)
+From: Hongyan Xu <getshell@seu.edu.cn>
+To: rafael@kernel.org
+Cc: viresh.kumar@linaro.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	getshell@seu.edu.cn,
+	jianhao.xu@seu.edu.cn,
+	Slavin Liu <220245772@seu.edu.cn>
+Subject: [PATCH] cpufreq: pcc: fix use-after-free and double free in _OSC evaluation
+Date: Wed, 13 May 2026 20:06:39 +0800
+Message-ID: <20260513120639.894-1-getshell@seu.edu.cn>
+X-Mailer: git-send-email 2.50.1.windows.1
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0a9e213b60bc03a1kunm64400812664b2
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZSBkYVkNMT00fTUoYGB5JHVYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKSklVSktVSUlIVUpJTFlXWRYaDxIVHRRZQVlLVUtVS1VLWQ
+	Y+
+DKIM-Signature: a=rsa-sha256;
+	b=fn8F+MWgoVcBD5IppJ783ur477A7GeArqY6O/7yVpLhHTgpVqAXoaBJs40zNemKINKp7GPVnnPbzbBWTAdkYAmZx4QtQAmJkzk+hk2aLa4bOuNtUlN7V8j4NBqyjwQymHwDu9Pg6Mvalx9mYvLfEjAhBhirx0qAllg59dI8mhdo=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=v5il06slrm6Tekk/PCx0Ligp73KaVtwqcTsb36Hn8B4=;
+	h=date:mime-version:subject:message-id:from;
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
+pcc_cpufreq_do_osc() uses a two-phase _OSC evaluation and frees the
+output buffer returned by the first acpi_evaluate_object() call before
+reusing the same acpi_buffer in the second call.
 
---- Comment #3 from Mario Limonciello (AMD) (mario.limonciello@amd.com) ---
-Did you set CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP
+However, output.pointer and output.length are not reset after the
+first kfree(). That can make the second acpi_evaluate_object() treat
+the stale metadata as a caller-provided buffer and write into freed
+memory. The shared out_free path can then free the same pointer again.
 
---=20
-You may reply to this email to add a comment.
+Reset the output buffer state after the first kfree() so ACPICA
+allocates a fresh buffer for the second _OSC evaluation.
 
-You are receiving this mail because:
-You are the assignee for the bug.=
+Fixes: 0f1d683fb35d ("[CPUFREQ] Processor Clocking Control interface driver")
+Issue found using a prototype static analysis tool
+and confirmed by code review.
+
+Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
+Signed-off-by: Slavin Liu <220245772@seu.edu.cn>
+---
+ drivers/cpufreq/pcc-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index ac2e90a65f0c..a355ec4f3dd4 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -352,6 +352,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
+ 	}
+ 
+ 	kfree(output.pointer);
++	output.pointer = NULL;
++	output.length = ACPI_ALLOCATE_BUFFER;
+ 	capabilities[0] = 0x0;
+ 	capabilities[1] = 0x1;
+ 
+-- 
+2.50.1.windows.1
+
