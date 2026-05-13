@@ -1,471 +1,129 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18FE33AEF47
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 19:14:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 786B43ACF1D
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 19:41:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778699697; cv=none; b=k9NI31rRuNp07TfxACtrAlxDbzEAMFW0j2jQO3kTeBJpR0PV3toxUW2WpHMPZ8mp6WevbCjIAVvdpnJAmHOPbm9mjc3kTsG8P3i2XyfKQsz6D6pzbqCfDgE60nLjp8VcVwfByYnLTM8Fb0rh4cKWH6fv5Dj8aV76VSeS5XmHwsM=
+	t=1778701290; cv=none; b=c1OwzvCAopYFujJXFZvhsggc9zx3LFgWG4Vp9dUolAC6k3lt6o/EATAhTkzJcGepSIW1C3C+zeV+twKK1rTlaGBh25WBWFCZYo1EvboIKCFySX3zjCTzKVBmaKPEovPy32QB3T/m3FieS7CmKB8wrgE9G28SoU1YCH26pPko/AM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778699697; c=relaxed/simple;
-	bh=W0aSFub7T4kt6Q2Y7UedezcxCuTYwKBXKH/o8hY1PqU=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Z9GhZTVafp8hgHcfxGSWiu8DhFpkkDRn+UuZOdkLSGmwZOV+eFBTS5W3m49tCvYTPp5Z4yK6bTff/nBe8bjKGQ4Pf7AXMm/UouSU4iQ/sLyzlP+MGuMMvWJbpx2j67yoORxq55Dm2Qw2AgMNYRPmuNzRb5c/ZTsqSV4wHq5OR14=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=htwy80pG; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778701290; c=relaxed/simple;
+	bh=kLqt3YFgWMrNPw4WOcer0FJUQOS2lGXlmObFsHTUpDM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=F0rLBlC7+Eof691cZ59fnSsuTMFHMvT0AaQYS9iqcRr1pRMJffgBq3tIuawuhyfDrnOp73MKT9j4aL4mGjD9+s8waadBse8+L4+wVdSIEITnuMKyAzh1zT0NAamWMwESohAWb0z8baEnQKMMb8GBxtHAlpzok0pNTUAvVPWE1Jo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B/nHl+XU; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="htwy80pG"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id EF13DC2BCB7
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 19:14:56 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B/nHl+XU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4641FC4AF0B
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 19:41:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778699697;
-	bh=W0aSFub7T4kt6Q2Y7UedezcxCuTYwKBXKH/o8hY1PqU=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=htwy80pGO3M3WpGV+PJ09vbPtUtyV3bERJp5pkn/jNGV3UDutyapnxYWZQK9RocfD
-	 MchlkloWY0pG6ltXJPEQGC0qnbdQDLqrJLZuIhH6UyzOb2qY9RWZtdxsr+2npLu/rq
-	 cOgsAoDCJat+M1zbMRtyLGOiCk4DDxBefF1ojX1oU5M9AbXWnGO0yvcS9qiP/6+/LR
-	 q2xnwzHijIDKD01gqrO0/3duFEStAKZy1lpwo0YC+alWxIpwszHDKqb8mK9uLKQegd
-	 097ywtJLT6KIIwyicmP4iZ6hLLuzCtsnA2/fpR9B7iyjZUQzfcZ4QpSh9ognhJ+bRg
-	 7wsKIF7ha69Vg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id E2116C4160E; Wed, 13 May 2026 19:14:56 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Wed, 13 May 2026 19:14:56 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: sergeyluashkov@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-221505-137361-FjtMtlkOmP@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	s=k20201202; t=1778701290;
+	bh=kLqt3YFgWMrNPw4WOcer0FJUQOS2lGXlmObFsHTUpDM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=B/nHl+XUX/TkkfplsjY3cpWPjI/NMczHpaS6xIOzpKQC6tKH6cD2IdQ8mby0alK3p
+	 B3nd/rTlwb8Tqp75RyYP0hKJlCTc0r0Kt7hRX1f9bCJTQjb9sGJU0oJii51KBLITzp
+	 +kuE0o3m4OthupTZ2LogUi3VOZBaHsZcJZgTbYHhbP3vntJpMnqgDW/Cue0xvKHIW8
+	 FD+XJC/Cy9ihogCmBgJD37j5sdGeSTDs9loN8VooK2hzJChlQVH9bvVpZE0BfNZUOY
+	 YheZq9N2nq2Flpz1/vBeFcioEJZnzVnUGItK74wYg4m77CvjVhxDqS4Q7a6EILvuZ1
+	 GBo4py8C79uAg==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5a8891f0c51so6767844e87.1
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:41:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+OrpUSemMPfDXa2qZ+LGgoV2VZvG+Vk1MpQ1hxqeIzOBdlaKm5gsH4bl7OX5uD+GUOWZTkmDe6Iw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzD1Tak0+eHJnM0oUH/+0oKKEJPxPX2BPSKps7u9wgvozrhDUac
+	SvtbSXR7YsvL/aeQHmOEOe2akwzPC8kNGGpxGVBHsZ/Ya8GsqOPmL4v2wdb2IOzNhuuxDLporzd
+	Rb732yTvXWJVpWIr4Ahx5x0oHPcGPquI=
+X-Received: by 2002:a05:6512:108a:b0:5a8:a754:4b57 with SMTP id
+ 2adb3069b0e04-5a8f3cb2183mr1275131e87.41.1778701288582; Wed, 13 May 2026
+ 12:41:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260424-rneri-fix-intel-pstate-doc-smt-asym-packing-v1-1-317bf7d5c362@linux.intel.com>
+In-Reply-To: <20260424-rneri-fix-intel-pstate-doc-smt-asym-packing-v1-1-317bf7d5c362@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 13 May 2026 21:41:17 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0iTBH4x3JdtOGszakd=a_z8vV+JhhzkYpZwioJwDhZR_w@mail.gmail.com>
+X-Gm-Features: AVHnY4KtvsOf3ObHao5Lzll9_1SBfIx8WwD66IAIbQHpWoP7jJhyYGFo5_dKuYI
+Message-ID: <CAJZ5v0iTBH4x3JdtOGszakd=a_z8vV+JhhzkYpZwioJwDhZR_w@mail.gmail.com>
+Subject: Re: [PATCH] Documentation: intel_pstate: Fix description of
+ asymmetric packing with SMT
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ricardo Neri <ricardo.neri@intel.com>, 
+	linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
+On Fri, Apr 24, 2026 at 11:42=E2=80=AFPM Ricardo Neri
+<ricardo.neri-calderon@linux.intel.com> wrote:
+>
+> The patchset [1], of which commits 046a5a95c3b0 ("x86/sched/itmt: Give al=
+l
+> SMT siblings of a core the same priority") and 995998ebdebd ("x86/sched:
+> Remove SD_ASYM_PACKING from the SMT domain flags") are part, overhauled h=
+ow
+> the scheduler handles asym_packing on x86 hybrid processors with SMT. It
+> removed SD_ASYM_PACKING from the x86 SMT scheduling domain and made all S=
+MT
+> siblings of a core share the same priority. As a result, asym_packing
+> operates only across physical cores, spreading tasks among them and only
+> using idle SMT siblings once all physical cores are busy.
+>
+> Fix the documentation to reflect this behavior.
+>
+> Fixes: f20af84c29b2 ("cpufreq: intel_pstate: Document hybrid processor su=
+pport")
+> Link: https://lore.kernel.org/r/20230406203148.19182-1-ricardo.neri-calde=
+ron@linux.intel.com [1]
+> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> ---
+>  Documentation/admin-guide/pm/intel_pstate.rst | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+>
+> diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentatio=
+n/admin-guide/pm/intel_pstate.rst
+> index fde967b0c2e0..25fe5d88fea6 100644
+> --- a/Documentation/admin-guide/pm/intel_pstate.rst
+> +++ b/Documentation/admin-guide/pm/intel_pstate.rst
+> @@ -355,11 +355,12 @@ HyperThreading (HT) in the context of Intel process=
+ors, is enabled on at least
+>  one core, ``intel_pstate`` assigns performance-based priorities to CPUs.=
+  Namely,
+>  the priority of a given CPU reflects its highest HWP performance level w=
+hich
+>  causes the CPU scheduler to generally prefer more performant CPUs, so th=
+e less
+> -performant CPUs are used when the other ones are fully loaded.  However,=
+ SMT
+> -siblings (that is, logical CPUs sharing one physical core) are treated i=
+n a
+> -special way such that if one of them is in use, the effective priority o=
+f the
+> -other ones is lowered below the priorities of the CPUs located in the ot=
+her
+> -physical cores.
+> +performant CPUs are used when the other ones are fully loaded.  SMT sibl=
+ings
+> +(that is, logical CPUs sharing one physical core) are given the same pri=
+ority.
+> +The scheduler can pull tasks from lower-priority cores and place them on=
+ any
+> +sibling.  Since the scheduler spreads tasks among physical cores, tasks =
+will be
+> +placed on the SMT siblings of physical cores only after all physical cor=
+es are
+> +busy.
+>
+>  This approach maximizes performance in the majority of cases, but unfort=
+unately
+>  it also leads to excessive energy usage in some important scenarios, lik=
+e video
+>
+> ---
 
---- Comment #10 from Sergey (sergeyluashkov@gmail.com) ---
-(In reply to Mario Limonciello (AMD) from comment #9)
-> > With amd_dynamic_epp=3Denable:
->=20
-> I'm not sure why this is happening.  What platform profiles does this oth=
-er
-> driver support?
->=20
-> > With amd_dynamic_epp=3Ddisable (or no parameter):
->=20
-> So you're still seeing this?
->=20
-> [  299.585428] amd_pstate: EPP cannot be set under performance policy
->=20
-> Can I see the kernel log with dynamic debug for amd-pstate turned on?  And
-> also the output from the amd-pstate triage tool in amd-debug-tools.
-
-With amd_dynamic_epp=3Denable:
-cat /sys/devices/platform/asus-nb-wmi/platform-profile/platform-profile-25/=
-name=20
-asus-wmi
-
-cat
-/sys/devices/platform/asus-nb-wmi/platform-profile/platform-profile-25/prof=
-ile=20=20
-balanced
-
-cat
-/sys/devices/platform/asus-nb-wmi/platform-profile/platform-profile-25/choi=
-ces=20=20
-quiet balanced performance
-
-With amd_dynamic_epp=3Ddisable (or no parameter):
-
-[  128.393895] amd_pstate: EPP cannot be set under performance policy
-
-
-=F0=9F=90=A7 Arch Linux
-=F0=9F=90=A7 Kernel:      7.1.0-rc2-1-mainline-gf9f16835d4dc-dirty
-=E2=97=8B 'status':     active
-=E2=97=8B 'prefcore':   enabled
-=F0=9F=90=A7 ITMT:        Y
-=F0=9F=92=BB CPU:         AMD RYZEN AI MAX+ 392 w/ Radeon 8060S
-=F0=9F=94=8B Per-CPU sysfs files
-+---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------+
-|   CPU # |   CPU Min Freq |   CPU Nonlinear Freq |   CPU Max Freq |   Scal=
-ing
-Min Freq |   Scaling Max Freq | Energy Performance Preference   |   Prefcor=
-e |=20
- Boost |
-|---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------|
-|       0 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        206=
- |=20=20
-    0 |
-|       1 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        216=
- |=20=20
-    0 |
-|       2 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        201=
- |=20=20
-    0 |
-|       3 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        216=
- |=20=20
-    0 |
-|       4 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        196=
- |=20=20
-    0 |
-|       5 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        211=
- |=20=20
-    0 |
-|       6 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        176=
- |=20=20
-    0 |
-|       7 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        166=
- |=20=20
-    0 |
-|       8 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        186=
- |=20=20
-    0 |
-|       9 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        181=
- |=20=20
-    0 |
-|      10 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        171=
- |=20=20
-    0 |
-|      11 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        191=
- |=20=20
-    0 |
-|      12 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        206=
- |=20=20
-    0 |
-|      13 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        216=
- |=20=20
-    0 |
-|      14 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        201=
- |=20=20
-    0 |
-|      15 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        216=
- |=20=20
-    0 |
-|      16 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        196=
- |=20=20
-    0 |
-|      17 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        211=
- |=20=20
-    0 |
-|      18 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        176=
- |=20=20
-    0 |
-|      19 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        166=
- |=20=20
-    0 |
-|      20 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        186=
- |=20=20
-    0 |
-|      21 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        181=
- |=20=20
-    0 |
-|      22 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        171=
- |=20=20
-    0 |
-|      23 |         609334 |              1980334 |        3199000 |=20=20=
-=20=20=20=20=20=20=20=20=20
- 609334 |            3199000 | power                           |        191=
- |=20=20
-    0 |
-+---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------+
-=F0=9F=94=8B CPPC MSRs
-+---------+----------+----------+--------------------+---------+-----------=
--+
-|   CPU # |   Enable |   Status | Cap 1              | Cap 2   | Request   =
- |
-|---------+----------+----------+--------------------+---------+-----------=
--|
-|       0 |        1 |        0 | 0xce694114ce694114 | 0x0     | 0xff001569=
- |
-|       1 |        1 |        0 | 0xd8694114d8694114 | 0x0     | 0xff001569=
- |
-|       2 |        1 |        0 | 0xc9694114c9694114 | 0x0     | 0xff001569=
- |
-|       3 |        1 |        0 | 0xd8694114d8694114 | 0x0     | 0xff001569=
- |
-|       4 |        1 |        0 | 0xc4694114c4694114 | 0x0     | 0xff001569=
- |
-|       5 |        1 |        0 | 0xd3694114d3694114 | 0x0     | 0xff001569=
- |
-|       6 |        1 |        0 | 0xb0694114b0694114 | 0x0     | 0xff001569=
- |
-|       7 |        1 |        0 | 0xa6694114a6694114 | 0x0     | 0xff001569=
- |
-|       8 |        1 |        0 | 0xba694114ba694114 | 0x0     | 0xff001569=
- |
-|       9 |        1 |        0 | 0xb5694114b5694114 | 0x0     | 0xff001569=
- |
-|      10 |        1 |        0 | 0xab694114ab694114 | 0x0     | 0xff001569=
- |
-|      11 |        1 |        0 | 0xbf694114bf694114 | 0x0     | 0xff001569=
- |
-|      12 |        1 |        0 | 0xce694114         | 0x0     | 0xff001569=
- |
-|      13 |        1 |        0 | 0xd8694114         | 0x0     | 0xff001569=
- |
-|      14 |        1 |        0 | 0xc9694114         | 0x0     | 0xff001569=
- |
-|      15 |        1 |        0 | 0xd8694114         | 0x0     | 0xff001569=
- |
-|      16 |        1 |        0 | 0xc4694114         | 0x0     | 0xff001569=
- |
-|      17 |        1 |        0 | 0xd3694114         | 0x0     | 0xff001569=
- |
-|      18 |        1 |        0 | 0xb0694114         | 0x0     | 0xff001569=
- |
-|      19 |        1 |        0 | 0xa6694114         | 0x0     | 0xff001569=
- |
-|      20 |        1 |        0 | 0xba694114         | 0x0     | 0xff001569=
- |
-|      21 |        1 |        0 | 0xb5694114         | 0x0     | 0xff001569=
- |
-|      22 |        1 |        0 | 0xab694114         | 0x0     | 0xff001569=
- |
-|      23 |        1 |        0 | 0xbf694114         | 0x0     | 0xff001569=
- |
-+---------+----------+----------+--------------------+---------+-----------=
--+
-=F0=9F=94=8B MSR_AMD_CPPC_CAP1 (decoded)
-+---------+---------------+------------------+----------------+------------=
-----+
-|   CPU # |   Lowest Perf |   Nonlinear Perf |   Nominal Perf |   Highest P=
-erf
-|
-|---------+---------------+------------------+----------------+------------=
-----|
-|       0 |            20 |               65 |            105 |            =
-206
-|
-|       1 |            20 |               65 |            105 |            =
-216
-|
-|       2 |            20 |               65 |            105 |            =
-201
-|
-|       3 |            20 |               65 |            105 |            =
-216
-|
-|       4 |            20 |               65 |            105 |            =
-196
-|
-|       5 |            20 |               65 |            105 |            =
-211
-|
-|       6 |            20 |               65 |            105 |            =
-176
-|
-|       7 |            20 |               65 |            105 |            =
-166
-|
-|       8 |            20 |               65 |            105 |            =
-186
-|
-|       9 |            20 |               65 |            105 |            =
-181
-|
-|      10 |            20 |               65 |            105 |            =
-171
-|
-|      11 |            20 |               65 |            105 |            =
-191
-|
-|      12 |            20 |               65 |            105 |            =
-206
-|
-|      13 |            20 |               65 |            105 |            =
-216
-|
-|      14 |            20 |               65 |            105 |            =
-201
-|
-|      15 |            20 |               65 |            105 |            =
-216
-|
-|      16 |            20 |               65 |            105 |            =
-196
-|
-|      17 |            20 |               65 |            105 |            =
-211
-|
-|      18 |            20 |               65 |            105 |            =
-176
-|
-|      19 |            20 |               65 |            105 |            =
-166
-|
-|      20 |            20 |               65 |            105 |            =
-186
-|
-|      21 |            20 |               65 |            105 |            =
-181
-|
-|      22 |            20 |               65 |            105 |            =
-171
-|
-|      23 |            20 |               65 |            105 |            =
-191
-|
-+---------+---------------+------------------+----------------+------------=
-----+
-=F0=9F=94=8B MSR_AMD_CPPC_REQ (decoded)
-+---------+------------+------------+----------------+---------------------=
-------+
-|   CPU # |   Min Perf |   Max Perf |   Desired Perf |   Energy Performance
-Perf |
-|---------+------------+------------+----------------+---------------------=
-------|
-|       0 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       1 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       2 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       3 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       4 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       5 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       6 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       7 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       8 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|       9 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      10 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      11 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      12 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      13 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      14 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      15 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      16 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      17 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      18 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      19 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      20 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      21 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      22 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-|      23 |         21 |        105 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-255 |
-+---------+------------+------------+----------------+---------------------=
-------+
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+Applied (with some edits in the changelog) as 7.1-rc material, thanks!
