@@ -1,439 +1,183 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50D8441B340
-	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:46:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EBD8428468
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:53:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778676391; cv=none; b=rSiQTmf2t3VaWr/Py+H2+O0Vl+0WOV5rCNvWs9JfPixH6dx7TGkV/6u5tml6DM0glblVClWOn7S1EHgWeDo1x31PO7B/jvg22Wui8jfYJp7U4W2ml1dfd6SdIUwN1ybQAlQ6NssNgdpQfLS+bDFQopOIvmnd0tPtWri8pSXPw2c=
+	t=1778676794; cv=none; b=PaV35oP955+qbz2h5hC3hstz23ECkyYbN77Bb5GqmWvcPeCaf/MbR976WUBINo4M9I/zAyewNWpSKZjGkuwKIKxsUdhyjyc83GgPG+P+0QJWptm/IV1/M6YD5YwJArkZzOL9QlgsKN7QgvyTS8PqTPOKF5MAJJKww2YjIufy8aM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778676391; c=relaxed/simple;
-	bh=F819HVJfVVEbUn1eomfSOkkaw5nwB8PAG2EEKY+pEm8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=r2xUGHHcHRu9druxw8/sikFDz8LUWtJ8HIe78c9fO4wrSv4+yt5UzkFzisM7mBSSvcZ7/gjJVXTpYQvLOpU2S6TVvZCOtWTgsON3BZzP1qFpg4H65QFbLm2fFBbLW4VoZcTF+IOTQdUYcB3ai+91prgiMJkyRhFYs4G1HIXnYzw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=zsLXjbp1; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1778676794; c=relaxed/simple;
+	bh=/HH7haICvL607AxS8hNW9kSpLZhGR6SydcI2RJVfWCU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WtDITzThYpddev4LTWNxy51S8+zj+RGm9md2oYab/Ub1P71lM6TSc5nRKCZVWvdeh9wQXqgpdK/l0yNIyClwmt2L//WCkpWXxo79XK5ajCs9mMONwhHCm0DT5w8dFrz2c60Up4XCSZyLwuqbe5rO0n37gTRydMUaZr0DcMXTtkU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=AqiSairY; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UU7Oue2J; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zsLXjbp1"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-44e1860558fso4331620f8f.0
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:46:29 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="AqiSairY";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UU7Oue2J"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64D9k0W33008285
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:53:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	aTLeqmMmfK12s4Sze+pZmjyLHuMZbfIZnuitTDsnOuY=; b=AqiSairY52agx2UO
+	eVjuap63L6tTx/GauCDW4xJdqb+fclI9bH3ImGBjaUisyy8Qlp/qP7hdlY0idlY/
+	M2DvLTvldjKK1GsrRt4DfkYEDmS7cqbi3XV03Zo1pAf06KR4cv8nWez4pJ4Mwez6
+	G0IjagL8hTQLnAxh+BeH+esKtbfJNI3h/OSbtTmwU48wEh4RtZCvsgyUFqzM5PFD
+	NDtUfQlpiVcf3xy1wGz2IXTiuVQEFyd2qNv15myxvQ2WJzY07tcOIpsfcVUoZsPp
+	gIOHOLEI0b1QPjfpKq453c8kfnhlgl8daSvM8ys5IWaT3xU7Ie7s0CKovqMJOsaQ
+	mVWAiw==
+Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e4py0gmqb-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 12:53:12 +0000 (GMT)
+Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-82fd55bf6cdso4399020b3a.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2026 05:53:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1778676388; x=1779281188; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=c7eU4JPhtw1c7hjc4A2hrzIBeAUh0u29gCDSXvZHjqc=;
-        b=zsLXjbp1d09isor2PKaVSUo7JiVX/+Gb+Jz/os/G8+hDOvyFKBR5SRMsTwa69O9IXu
-         em1ZoTX05h+yNGQKLye3ZfFOVEQdwZCergXo7umptWlfZcyyTmtX6/29b0HcM6D9CAWf
-         6UxseizGqha2grXzCzdGiCFqFtNw78nyHxvvl8ZKt+aO2TxaJ7vlNBK6yXC2EmLdhzXa
-         vyKCZdqcQ+y0OSGX+Qx27bbBieZwUIwK9zM7xNKCGcvhzF5DGNpaCb1PfIRNBGppJW3+
-         oU1SP1J8Yk70eFKVXlX2/zj4LLDcHvcWMGLiK0N+MT7i47IymRm85TeaN2gYbtre+o2p
-         dNTQ==
+        d=oss.qualcomm.com; s=google; t=1778676791; x=1779281591; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=aTLeqmMmfK12s4Sze+pZmjyLHuMZbfIZnuitTDsnOuY=;
+        b=UU7Oue2JGTyMNnjjkyaED53TpVHaLWiCMU5SSOXmhITEVNiLs5wonrNmphd8LdZYXy
+         wQXIpY9nwcjQVuUZkxvtJUCmYggxkmxV9qPk+XZTfogUoNXCDF9W+3cJ6dVGFLcuN44d
+         9DO6MPBs6RTCOAu71HsBydcNEaZL/wuQb11vIE8pKQ6ukZxDodOJqJpqZFGgMyS4zLDl
+         F5QNpyQITdbSbrJ4AV1UwotBdyy/fHuUc75EZMPu8Kouk7vbIbdyCDCPJnbax4o66Y4P
+         6EOeU/2ZjHRYysoOW5HoFrt2/eV8eJI/1ckHuGgn3JpK/B7b15i6yn/YDsA/OGjkEgS3
+         xsHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778676388; x=1779281188;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=c7eU4JPhtw1c7hjc4A2hrzIBeAUh0u29gCDSXvZHjqc=;
-        b=XGmmX+3Q2flrHz9H9g1wUN3h6ultlj+12grEh3Y5xcfWAjURxuCZl4Ml7UtmSmvIRG
-         Dd/Ixu/1/NXxFVTya2WX3rRccjTlib7Xh3/ybWnXTlca9dAXaHh6VyDosF6zatS5KaXn
-         K3Q9LnV1wT2RV5JrqVKII5yE4xcnlsi2rnYPCxZFay9xIq7GHwEJIIIfYOB+m2oZTs5A
-         uF7grrOP7PxAK+Q2/2KCOxZxZL8kBYLbGi/Ao+sBy06hjeO/Mc43rh58DBVvjg7t0Q4y
-         ZlnxyiSUkMh5+Pu8IHnXaTQqli1xpgj4ghEhf+mWaFByj7CKhoHAj1UBpVglkm/yPUFx
-         Nl6A==
-X-Forwarded-Encrypted: i=1; AFNElJ8FjVR4LB2EBlGnNRr7fBCRNIah5xzyxbcKilTNz4N3BehWWM79gIm8eMSkBh1b5k31bvmk2Q+fDQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwGDLjrpnJwG5X6maaLR4DhZcPpMeLjpNUxNi1O4N/HK+U5LQd3
-	O7HYhdP2Znmaqjzb2nsEEPi24UNCLkmnfmO7H58WceQ2PzYyj+VqFZiXFoM+uTBV0I4=
-X-Gm-Gg: Acq92OFl/mpveC3Z+5YUKGw18E47EPhln24U07hDBIwjVh7UF6jd84SSa/aobQysl97
-	GqLvCUA9pWNRLPaXz+HNsPgvAkmUF0yT0LaNqHBB9Iz42NYWFruhTxafSkNNABF/AJzxkBF0Cfm
-	63H0RMJJbRHWi025UFkCs7hvhNdDizNzJb5DJSuV0qlmAuOuXrs6Nw0T/KdmNSnITziLTNeiIkB
-	t+GWUaW9v5nBJS2o9Q1/AYYE6pH8WX7z8jILMEciRVPFwa2r/ktloo5bxXQsOKiFajql4NRHQYN
-	pAgIP2XWERMkrlyxZK2xeI+uGaz1FiUek5GEG9gPnpdifr1gZx6W3yJvoQnIYMS+n/DOX4cE5GV
-	vzXoFbT+lOGgwUakhzQe0hvype1vIUZq7Beu/wJT7yFeJlC6+TH5QFloVBSJ3egSzgPhyzlpLLJ
-	FugloREZkFkhL8gybkmwxWj9p7t9i7hw==
-X-Received: by 2002:a5d:5f82:0:b0:449:4079:4c39 with SMTP id ffacd0b85a97d-45c5a1a791bmr5023036f8f.29.1778676387540;
-        Wed, 13 May 2026 05:46:27 -0700 (PDT)
-Received: from vingu-cube ([2a01:e0a:f:6020:1b29:23a9:fb39:a3cd])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4548bb51d40sm39668569f8f.0.2026.05.13.05.46.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 May 2026 05:46:26 -0700 (PDT)
-Date: Wed, 13 May 2026 14:46:25 +0200
-From: Vincent Guittot <vincent.guittot@linaro.org>
-To: John Stultz <jstultz@google.com>
-Cc: Qais Yousef <qyousef@layalina.io>, Ingo Molnar <mingo@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Tim Chen <tim.c.chen@linux.intel.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] sched/fair: Call update_util_est() after
- dequeue_entities()
-Message-ID: <agRyoe1wHyZ-vMk9@vingu-cube>
-References: <20260512124653.305275-1-qyousef@layalina.io>
- <CANDhNCqRU1paGDQPK8nHEA-yejxBm5ATPrNzvqSfnzU09Xk_7Q@mail.gmail.com>
+        d=1e100.net; s=20251104; t=1778676791; x=1779281591;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=aTLeqmMmfK12s4Sze+pZmjyLHuMZbfIZnuitTDsnOuY=;
+        b=d2BPz4Nh6FrbepcJ5IxM7aWpQI95MJZ7OCyMw40+525t8wd2UfoIZpWrcqhqmtUldN
+         wx18WF0Fx5udXV1z+cbkM2CcV3/gqrzYjWAqGqXGzbMoDNhrpX3wBFAowFkj1znW9fno
+         9btRoyvG9eefVOfhMDDfHgI9ORO+YGc/zDWR/oL17lq8tuyEnnu0A1GYrRm3ekSLenZ3
+         5DAV1wkwZy74+aZd6GIas0c/Rn4oesyJKEpBDureTR6GZoaZlXXbWN8W5gPXpxR8sxyN
+         kC1LKnK8h/X7+5DDuELm0le3pR4sWijiB/PvarlPPSYDgRrurYMkRuDDDIo4oze+NyZ8
+         5NDw==
+X-Forwarded-Encrypted: i=1; AFNElJ8VUj+ZhlUY0f6+IQXu+ooOf72lVzdi1XvfhUCQ3g5MdHR0n+EaX+SmDYjvfvu6al5EE0KyzIEaLg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywd8TIM42kwwpszbxhAdZ8lv2eYN3/X33D5PLW1zop3Bq7EDnBW
+	cjRN+3X3MHtUWw9ax5BRUX98dYqgCi1sa4qOZ4fD2/0YipYEK8KBuBT5E9N+E/LjxUKBjsnbBFL
+	e5oXsoIZStgfNyca9Nq1N6k28aATZuIHe5EnXC9KD7IaGp0mRZgW1LFFLlZCGHA==
+X-Gm-Gg: Acq92OF30UOV8NIYTWGwY0w/eAAaB9C4rwFfmGvnAic/nfVyRwf2rPaZXjAdEa3jlU5
+	iFoGk9p3GmhWD4Lj/T43TGGLVVarCtnoflC7zwY3ok7Wqqoz5DrGQrvi7icCb3P+zVpKulCZKv9
+	1Q88oLw1V4xSuCktXezFl2GqB3jylhmpq+zkJ2w0rdd18acocggkhVlMVT2SBI0utVVqbB6lLNZ
+	AtY55Ng05OG60JWQ6w95CII+QsgRuB8yOF2LZmvmeuQMtX9D4Ga9xYrdxPWvN3s2Wx1zZuHAAsN
+	VKHXWdhIQKKv9K1AI4S8p/JyOimXdzPxNXCPRmKpQTTWdmMyNbqCZ23WV1odM9ZIsg9eE1LuQY8
+	emeZgJsNnDtwi94G92NIAmbh/hnPAr5DXM9m3thwQ42ExzMMbq9pRbbxTmQYOliNjgtQusDJWQu
+	fVenv+Utb/dPy6ghdoXw==
+X-Received: by 2002:a05:6a00:a227:b0:81f:ac81:d597 with SMTP id d2e1a72fcca58-83f04fd7db0mr2661199b3a.0.1778676791364;
+        Wed, 13 May 2026 05:53:11 -0700 (PDT)
+X-Received: by 2002:a05:6a00:a227:b0:81f:ac81:d597 with SMTP id d2e1a72fcca58-83f04fd7db0mr2661165b3a.0.1778676790867;
+        Wed, 13 May 2026 05:53:10 -0700 (PDT)
+Received: from [10.133.33.247] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839682a52cesm25421224b3a.57.2026.05.13.05.53.08
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 13 May 2026 05:53:10 -0700 (PDT)
+Message-ID: <f45aa954-fce3-474a-a2de-916b4bfed542@oss.qualcomm.com>
+Date: Wed, 13 May 2026 20:53:06 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANDhNCqRU1paGDQPK8nHEA-yejxBm5ATPrNzvqSfnzU09Xk_7Q@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: pcc: fix use-after-free and double free in _OSC
+ evaluation
+To: Hongyan Xu <getshell@seu.edu.cn>, rafael@kernel.org
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, jianhao.xu@seu.edu.cn,
+        Slavin Liu <220245772@seu.edu.cn>, zhongqiu.han@oss.qualcomm.com
+References: <20260513120639.894-1-getshell@seu.edu.cn>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260513120639.894-1-getshell@seu.edu.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTEzMDEzMyBTYWx0ZWRfX3XcqvOuio8nj
+ Azq7lwqfWYb133J1hGkgKjCaSU4nAKRVtTQP+pbzQixlP5DKQQUxJAniAb/BEcrSsIaeTC2c+c1
+ WYEGCDY8OL9cvafKeJEOj7zoNwCi5xh6Yd8cqXm48oOZvsV30YX3DttQCZTeKKQxEKqb+KontWU
+ +P136kkMade6V7TvSE4HjGljgNkxdOcxZsJMjmou0g17NUWl2FYco0UOoMPbnAD4tRpRlDFCRJW
+ dGSyAGLjIGFySc4Btoor36ysXxuZqeR0frZ29hvBK/ZOZc7bLuvIl24lGAYxKmNu7GuyCM9BrYC
+ Eb4njwSnBo5yQrjaGJXyS0eKkLG/bEtunBdUs2INRfJ3g9mk5QFWSbOaZRdmlqgqwVFJuy18YMG
+ KMfKzWgXrdW/fqImD1y28rN9NSGDfvHDh8LwcKESL09R/SBCLyNOgdQa4Bx1SYCqz3cV269uJSN
+ mP6OvBVE6JHVKDhHuPw==
+X-Authority-Analysis: v=2.4 cv=XqXK/1F9 c=1 sm=1 tr=0 ts=6a047438 cx=c_pps
+ a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=6qQVmtZs7bol9fj5NwoA:9 a=QEXdDO2ut3YA:10
+ a=OpyuDcXvxspvyRM73sMx:22
+X-Proofpoint-ORIG-GUID: eU5MOIy86zj8WGj1T9E3n8SBCMeRaY80
+X-Proofpoint-GUID: eU5MOIy86zj8WGj1T9E3n8SBCMeRaY80
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-13_01,2026-05-08_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 spamscore=0 phishscore=0 bulkscore=0 impostorscore=0
+ lowpriorityscore=0 malwarescore=0 adultscore=0 clxscore=1015 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605130133
 
-Le mardi 12 mai 2026 à 13:52:09 (-0700), John Stultz a écrit :
-> On Tue, May 12, 2026 at 5:47 AM Qais Yousef <qyousef@layalina.io> wrote:
-> >
-> > update_util_est() reads task_util() at dequeue which is updated in
-> > dequeue_entities(). To read the accurate util_avg at dequeue, make sure
-> > to do the read after load_avg is updated in dequeue_entities().
-> >
-> > util_est for a periodic task before
-> >
-> >                                 periodic-3114 util_est.enqueued running
-> >    ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
-> > 183┤                ▖▗  ▐▖         ▖ ▗▙   ▗   ▗▙▖▖       ▖▖   ▖       ▖▖        ▗  ▟  ▗▄▖          │
-> > 139┤               ▐▛█▜▙▞▀▄▄▞▚▄▟█▞▙█▄▟▀▚▄▄▞▚▄▄▟▀▀▛▄▝▄▄▄▙█▛▛█▛▜▛▄▄▀▄█▙▛▛▛▙▄▀▄▄▖▜▄▟█▟▀▜▟▄▜▀▄▄▟▙▖     │
-> >  95┤              ▐▀    ▘   ▝   ▝        ▝▘        ▘   ▘▘       ▝▘       ▝▘  ▝    ▝        ▀       │
-> >    │              ▛                                                                                │
-> >  51┤             ▐▘                                                                                │
-> >   7┤      ▖▗▗  ▗▄▐                                                                                 │
-> >    └┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬┘
-> >   0.00      0.65       1.30      1.96       2.61      3.26       3.91      4.57       5.22     5.87
-> >
-> > and after
-> >
-> >                                  periodic-2977 util_est.enqueued running
-> >      ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-> > 157.0┤               ▙▄ ▗▄  ▗▄▄▄ ▗▄  ▗▄▄▄▗▄▄  ▗▄▄▖ ▄   ▄▄▄   ▄  ▄▖▖  ▄▄▄▄▄▖▖▝▙▄▄▄▄▄▄▖ ▗▄           │
-> > 119.5┤             ▗▄▌▘▀▀ ▀▀▀ ▝▀▀▘▝▀▀▀ ▝▀▘ ▝▀▀▘ ▀▝▀▘▀▀▀▘▝▀▀▀▀▀▀▀▘▝▝▀▀ ▀   ▝▝▀  ▀   ▀▀▀▀            │
-> >  82.0┤             ▟                                                                               │
-> >      │             ▌                                                                               │
-> >  44.5┤             ▌                                                                               │
-> >   7.0┤      ▗   ▗▖ ▌                                                                               │
-> >      └┬─────────┬─────────┬──────────┬─────────┬─────────┬─────────┬──────────┬─────────┬─────────┬┘
-> >     0.00      0.65      1.30       1.95      2.60      3.25      3.90       4.56      5.21     5.86
-> >
-> > Note how the signal is noisier and can peak to 183 vs 157 now.
-> >
-> > Fixes: b55945c500c5 ("sched: Fix pick_next_task_fair() vs try_to_wake_up() race")
-> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
-> > ---
-> >
-> > This is split from [1] series where I stumbled upon this problem. AFAICS it
-> > needs backporting all the way to 6.12 LTS.
-> >
-> > [1] https://lore.kernel.org/lkml/20260504020003.71306-1-qyousef@layalina.io/
-> >
-> >  kernel/sched/fair.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 728965851842..96ba97e5f4ae 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -7401,6 +7401,8 @@ static int dequeue_entities(struct rq *rq, struct sched_entity *se, int flags)
-> >   */
-> >  static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >  {
-> > +       int ret;
-> > +
-> >         if (task_is_throttled(p)) {
-> >                 dequeue_throttled_task(p, flags);
-> >                 return true;
-> > @@ -7409,8 +7411,9 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >         if (!p->se.sched_delayed)
-> >                 util_est_dequeue(&rq->cfs, p);
-> >
-> > +       ret = dequeue_entities(rq, &p->se, flags);
-> >         util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
-> > -       if (dequeue_entities(rq, &p->se, flags) < 0)
+On 5/13/2026 8:06 PM, Hongyan Xu wrote:
+> pcc_cpufreq_do_osc() uses a two-phase _OSC evaluation and frees the
+> output buffer returned by the first acpi_evaluate_object() call before
+> reusing the same acpi_buffer in the second call.
 > 
-> Hrm, so the Sashiko tool raised a reasonable concern on the earlier
-> version of this:
->   https://sashiko.dev/#/patchset/20260504020003.71306-1-qyousef%40layalina.io?part=12
-
-Even without sashiko, this is what the comment says just below in the function ;-)
-
-Below is a different way to fix it which also covers cases when we have both
-DEQUEUE_SLEEP and DEQUEUE_DELAYED
-
----
- kernel/sched/fair.c | 189 ++++++++++++++++++++++----------------------
- 1 file changed, 93 insertions(+), 96 deletions(-)
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index c83fbe4e88c1..0976adc12594 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5120,13 +5120,87 @@ static void detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 	trace_pelt_cfs_tp(cfs_rq);
- }
-
-+#define UTIL_EST_MARGIN (SCHED_CAPACITY_SCALE / 100)
-+
-+static inline void util_est_update(struct sched_entity *se)
-+{
-+	unsigned int ewma, dequeued, last_ewma_diff;
-+
-+	if (!sched_feat(UTIL_EST))
-+		return;
-+
-+	/* Get current estimate of utilization */
-+	ewma = READ_ONCE(se->avg.util_est);
-+
-+	/*
-+	 * If the PELT values haven't changed since enqueue time,
-+	 * skip the util_est update.
-+	 */
-+	if (ewma & UTIL_AVG_UNCHANGED)
-+		return;
-+
-+	/* Get utilization at dequeue */
-+	dequeued = READ_ONCE(se->avg.util_avg);
-+
-+	/*
-+	 * Reset EWMA on utilization increases, the moving average is used only
-+	 * to smooth utilization decreases.
-+	 */
-+	if (ewma <= dequeued) {
-+		ewma = dequeued;
-+		goto done;
-+	}
-+
-+	/*
-+	 * Skip update of task's estimated utilization when its members are
-+	 * already ~1% close to its last activation value.
-+	 */
-+	last_ewma_diff = ewma - dequeued;
-+	if (last_ewma_diff < UTIL_EST_MARGIN)
-+		goto done;
-+
-+	/*
-+	 * To avoid underestimate of task utilization, skip updates of EWMA if
-+	 * we cannot grant that thread got all CPU time it wanted.
-+	 */
-+	if ((dequeued + UTIL_EST_MARGIN) < READ_ONCE(se->avg.runnable_avg))
-+		goto done;
-+
-+
-+	/*
-+	 * Update Task's estimated utilization
-+	 *
-+	 * When *p completes an activation we can consolidate another sample
-+	 * of the task size. This is done by using this value to update the
-+	 * Exponential Weighted Moving Average (EWMA):
-+	 *
-+	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
-+	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
-+	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
-+	 *          = w * (      -last_ewma_diff           ) +     ewma(t-1)
-+	 *          = w * (-last_ewma_diff +  ewma(t-1) / w)
-+	 *
-+	 * Where 'w' is the weight of new samples, which is configured to be
-+	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
-+	 */
-+	ewma <<= UTIL_EST_WEIGHT_SHIFT;
-+	ewma  -= last_ewma_diff;
-+	ewma >>= UTIL_EST_WEIGHT_SHIFT;
-+done:
-+	ewma |= UTIL_AVG_UNCHANGED;
-+	WRITE_ONCE(se->avg.util_est, ewma);
-+
-+	trace_sched_util_est_se_tp(se);
-+}
-+
- /*
-  * Optional action to be done while updating the load average
-  */
--#define UPDATE_TG	0x1
--#define SKIP_AGE_LOAD	0x2
--#define DO_ATTACH	0x4
--#define DO_DETACH	0x8
-+#define UPDATE_TG	0x01
-+#define SKIP_AGE_LOAD	0x02
-+#define DO_ATTACH	0x04
-+#define DO_DETACH	0x08
-+#define UPDATE_UTIL_EST	0x10
-
- /* Update task and its cfs_rq load average */
- static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-@@ -5169,6 +5243,9 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 		if (flags & UPDATE_TG)
- 			update_tg_load_avg(cfs_rq);
- 	}
-+
-+	if (flags & UPDATE_UTIL_EST)
-+		util_est_update(se);
- }
-
- /*
-@@ -5227,11 +5304,6 @@ static inline unsigned long task_util(struct task_struct *p)
- 	return READ_ONCE(p->se.avg.util_avg);
- }
-
--static inline unsigned long task_runnable(struct task_struct *p)
--{
--	return READ_ONCE(p->se.avg.runnable_avg);
--}
--
- static inline unsigned long _task_util_est(struct task_struct *p)
- {
- 	return READ_ONCE(p->se.avg.util_est) & ~UTIL_AVG_UNCHANGED;
-@@ -5274,88 +5346,6 @@ static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
- 	trace_sched_util_est_cfs_tp(cfs_rq);
- }
-
--#define UTIL_EST_MARGIN (SCHED_CAPACITY_SCALE / 100)
--
--static inline void util_est_update(struct cfs_rq *cfs_rq,
--				   struct task_struct *p,
--				   bool task_sleep)
--{
--	unsigned int ewma, dequeued, last_ewma_diff;
--
--	if (!sched_feat(UTIL_EST))
--		return;
--
--	/*
--	 * Skip update of task's estimated utilization when the task has not
--	 * yet completed an activation, e.g. being migrated.
--	 */
--	if (!task_sleep)
--		return;
--
--	/* Get current estimate of utilization */
--	ewma = READ_ONCE(p->se.avg.util_est);
--
--	/*
--	 * If the PELT values haven't changed since enqueue time,
--	 * skip the util_est update.
--	 */
--	if (ewma & UTIL_AVG_UNCHANGED)
--		return;
--
--	/* Get utilization at dequeue */
--	dequeued = task_util(p);
--
--	/*
--	 * Reset EWMA on utilization increases, the moving average is used only
--	 * to smooth utilization decreases.
--	 */
--	if (ewma <= dequeued) {
--		ewma = dequeued;
--		goto done;
--	}
--
--	/*
--	 * Skip update of task's estimated utilization when its members are
--	 * already ~1% close to its last activation value.
--	 */
--	last_ewma_diff = ewma - dequeued;
--	if (last_ewma_diff < UTIL_EST_MARGIN)
--		goto done;
--
--	/*
--	 * To avoid underestimate of task utilization, skip updates of EWMA if
--	 * we cannot grant that thread got all CPU time it wanted.
--	 */
--	if ((dequeued + UTIL_EST_MARGIN) < task_runnable(p))
--		goto done;
--
--
--	/*
--	 * Update Task's estimated utilization
--	 *
--	 * When *p completes an activation we can consolidate another sample
--	 * of the task size. This is done by using this value to update the
--	 * Exponential Weighted Moving Average (EWMA):
--	 *
--	 *  ewma(t) = w *  task_util(p) + (1-w) * ewma(t-1)
--	 *          = w *  task_util(p) +         ewma(t-1)  - w * ewma(t-1)
--	 *          = w * (task_util(p) -         ewma(t-1)) +     ewma(t-1)
--	 *          = w * (      -last_ewma_diff           ) +     ewma(t-1)
--	 *          = w * (-last_ewma_diff +  ewma(t-1) / w)
--	 *
--	 * Where 'w' is the weight of new samples, which is configured to be
--	 * 0.25, thus making w=1/4 ( >>= UTIL_EST_WEIGHT_SHIFT)
--	 */
--	ewma <<= UTIL_EST_WEIGHT_SHIFT;
--	ewma  -= last_ewma_diff;
--	ewma >>= UTIL_EST_WEIGHT_SHIFT;
--done:
--	ewma |= UTIL_AVG_UNCHANGED;
--	WRITE_ONCE(p->se.avg.util_est, ewma);
--
--	trace_sched_util_est_se_tp(&p->se);
--}
--
- static inline unsigned long get_actual_cpu_capacity(int cpu)
- {
- 	unsigned long capacity = arch_scale_cpu_capacity(cpu);
-@@ -5828,7 +5818,7 @@ static bool
- dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
- {
- 	bool sleep = flags & DEQUEUE_SLEEP;
--	int action = UPDATE_TG;
-+	int action = 0;
-
- 	update_curr(cfs_rq);
- 	clear_buddies(cfs_rq, se);
-@@ -5848,15 +5838,23 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-
- 		if (sched_feat(DELAY_DEQUEUE) && delay &&
- 		    !entity_eligible(cfs_rq, se)) {
--			update_load_avg(cfs_rq, se, 0);
-+			if (entity_is_task(se))
-+				action |= UPDATE_UTIL_EST;
-+			update_load_avg(cfs_rq, se, action);
- 			update_entity_lag(cfs_rq, se);
- 			set_delayed(se);
- 			return false;
- 		}
- 	}
-
--	if (entity_is_task(se) && task_on_rq_migrating(task_of(se)))
--		action |= DO_DETACH;
-+	action = UPDATE_TG;
-+	if (entity_is_task(se)) {
-+		if (task_on_rq_migrating(task_of(se)))
-+			action |= DO_DETACH;
-+
-+		if (sleep && !(flags & DEQUEUE_DELAYED))
-+			action |= UPDATE_UTIL_EST;
-+	}
-
- 	/*
- 	 * When dequeuing a sched_entity, we must:
-@@ -7628,7 +7626,6 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 	if (!p->se.sched_delayed)
- 		util_est_dequeue(&rq->cfs, p);
-
--	util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
- 	if (dequeue_entities(rq, &p->se, flags) < 0)
- 		return false;
-
---
-2.43.0
-
-
-
-
+> However, output.pointer and output.length are not reset after the
+> first kfree(). That can make the second acpi_evaluate_object() treat
+> the stale metadata as a caller-provided buffer and write into freed
+> memory. The shared out_free path can then free the same pointer again.
 > 
-> Specifically, we shouldn't reference p after dequeue_entities() or we
-> risk racing with it being woken up, running, and maybe exiting on
-> another cpu.
-> And this moves the util_est_updat() call to after dequeue finishes.
+> Reset the output buffer state after the first kfree() so ACPICA
+> allocates a fresh buffer for the second _OSC evaluation.
 > 
-> Maybe there's some way to have util_est_update() compensate for the
-> unfinished accounting that will be done in dequeue_entities()?
+> Fixes: 0f1d683fb35d ("[CPUFREQ] Processor Clocking Control interface driver")
+> Issue found using a prototype static analysis tool
+> and confirmed by code review.
 > 
-> thanks
-> -john
+> Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
+> Signed-off-by: Slavin Liu <220245772@seu.edu.cn>
+> ---
+>   drivers/cpufreq/pcc-cpufreq.c | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+> index ac2e90a65f0c..a355ec4f3dd4 100644
+> --- a/drivers/cpufreq/pcc-cpufreq.c
+> +++ b/drivers/cpufreq/pcc-cpufreq.c
+> @@ -352,6 +352,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
+>   	}
+>   
+>   	kfree(output.pointer);
+> +	output.pointer = NULL;
+> +	output.length = ACPI_ALLOCATE_BUFFER;
+
+
+Hi Hongyan, Slavin,
+
+Thanks for the patch and for looking into this issue.
+
+There is already a similar patch under discussion:
+v1: https://lore.kernel.org/all/20260415165139.14113-1-dbgh9129@gmail.com/
+v2: https://lore.kernel.org/all/20260416144621.93964-1-dbgh9129@gmail.com/
+
+You may want to review that thread and see if your findings or testing
+can be contributed there.
+
+
+>   	capabilities[0] = 0x0;
+>   	capabilities[1] = 0x1;
+>   
+
+
+-- 
+Thx and BRs,
+Zhongqiu Han
