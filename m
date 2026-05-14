@@ -1,111 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f53.google.com (mail-lf1-f53.google.com [209.85.167.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CDF53E5A09
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 13:53:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778766797; cv=none; b=tJixcph+5cvoDPG/Tm+VIPWZ974Dqs8shqoe3TH92zUUA8fLu/7nu57VIZdWVR+zNTkN4QM2nR7BK3QlQlEzHkeMXRBoCwnzfOz+d1H93sKo22xTfS38l2xONYScBqkF4ghYxG+WH1PvMfBK5Zv5YEaRy+UQA/7ZN7Es+bj4WUw=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778766797; c=relaxed/simple;
-	bh=av3eSpj1tW2rVplRcN9wVd0AxBK0pxj5cQR1eI0GEug=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3C753C4165
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 14:03:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778767401; cv=pass; b=tUd3BiXhv9wDwVeUXLOdBI9MvTYaUG3u2nxWS//ySC22SQmXe+1K0SyiYqkyEUSmpw64Gpoqtbno3zLz6HQtg4rAFn+xEHYWMWSuzaDRuv9hmnTJ5HK6oWAIefMu+IAYRoYoBI0q/EVr+0XwHtYB/cyl1NDHGWeYvopmjXf1820=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778767401; c=relaxed/simple;
+	bh=VwNL5SFQSLsBM6TMMRqQ2lHSx56jQ+n0P1chNoMdV9E=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ACVFEyUqVFJwfe0TbIC6VXtc+8QQdb6hfNC4CNGlYCbZmEp7hPBamYubd6t3XXLhy5VyDSeHil9850pT3gU8Y7DW12Qn6Pe1xzw4bshixwSg9jqeq+eU+BKDaWa1hhfE1XJCktrUaIwrY6tdStlbNbWElFiVWPvThzwfHd6PnTo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=u7N+1txQ; arc=none smtp.client-ip=10.30.226.201
+	 To:Cc:Content-Type; b=mdnXpfIoRbfFcnPF74YsRBX1wGOajFQbSZwJjIEmId8eZprvGlpeNbjkcc8sCWTwcAaFadwUtat6T1VAwThnm74NAj20UxTaKDakodApwuxFo+obHI5vMSoetk3VyzyhnzAqm7mPapSD1b0EANlENx7Ov6uMZ6WhQgTCKnRRSpA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=MMGxd0fT; arc=pass smtp.client-ip=209.85.167.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="u7N+1txQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B14AC2BCF5
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 13:53:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778766797;
-	bh=av3eSpj1tW2rVplRcN9wVd0AxBK0pxj5cQR1eI0GEug=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=u7N+1txQhP35omH3QMQQoCxoDqizpNVhPhfvcgUJCe0vXuJFYnCnKuf0qc4r8MpNC
-	 F4M7ZDhc4WTnFeJVzcKUdP9Wmc8gHwXORSBYy/dvuoaJ+q4PiqlC9Ag4lvvvOsXj+W
-	 K4om+kHe7rzBrQ5wFZC/23cvRDk49mss3IPE0/OjLEKc1tGacaJhy3zGRS4F4icV9C
-	 nJcV6Wq7cnkMVQn/cHYh40RBOWpyOu7ZkEZryXxOJRzhyosn1/6mX79wNFv6x7kkOg
-	 Z9SZ2iQKkZzY+9AaGaMgJZKLIZ2XumDgfeFCpykLqVLk+hIX4ugZTN1/6r4ehN2vdD
-	 KI3rB/uUnIqZA==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5a8d1f43432so7243700e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 06:53:17 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9NIYHkKSV/6pkqIHGPdSmJzkgZ3GeWOMZn6z6dAzUivLf0gV4v1Z3mJaobkOnD5VjhZwBgrX5lyg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwfPDij0olxULuiu3dLfxDhXoVJqN1XbIXkkH6HCgK6NCOndqJA
-	2m+bZDMRgMTjQmkcjUzysMb/QOIlPan6JAVGZ94FaqwjOIgGMwni5vTvl2QM13BIMEckcfRHUpU
-	X3w7oxlTXKPML7FqIMkCC+0tFrozVRCI=
-X-Received: by 2002:a05:6512:124a:b0:5a8:73c3:f270 with SMTP id
- 2adb3069b0e04-5a8f37bb270mr2442952e87.8.1778766795597; Thu, 14 May 2026
- 06:53:15 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="MMGxd0fT"
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5a8e33556c0so3308724e87.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 07:03:18 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1778767397; cv=none;
+        d=google.com; s=arc-20240605;
+        b=OxZIX+ZgUgf2yNP9FcrPaEnWXryStI3iwYusvnQGQgOgRs2Kxf/A6Pjp+wJICRD0FR
+         dxTqIoG+YEznyH7LPykPwwqWU/dUujO+9wwV6h+UUnU3c07eAaE0kF3saaNGw4hmkUmm
+         4+OKc3XTkJa5R8FKlaoBnd0FXLll4orF+z4IDTOUW8AcmywpJ+Hx49lnlfE/97Mrfca+
+         zfW9QgjjkcPA3mwNC77pkQiReHYoIDOYAef0xbPlo+qSkkqiaMWw58wFEEig5Qs79y/W
+         JeJeXTPdAkL08Ik3aiHQf7u8r+VoZQOFc4uaGjxJ1M73lQKOxkxFFjekAdjO7DMc39Am
+         jFrA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=7BHEehGGNMhKvwv8Vl/50ol6VOhkpHoqMa4cnhCwak0=;
+        fh=rAtpHELHD5FAChiabMzfouBi3lVDsqVApdr7v5NKeqs=;
+        b=dcMXgREpL4xvCaNnaxxXN/p/3SnCCRNPPykFTyrmVJvSOLqX2h5xMzLe3HFfbdafZ+
+         elBcDJxcyOgNmDBjHZlEcvF7kDndzMFVg52ammh+USe5oaP1cLWfuE77ZN4hFI4Gvg39
+         Ydxrc6JRVWPGDEA27h4/Jt7PYhjGPwzERDiVQ5LQM77CuJPBhTDNE4bwal5PTTX9ElC/
+         oXmCRFM/iEqDHSGgtZiw6sr3Ojre9+VGisjFTciRrrMn7npbrjxQVmZfrYN6ce9lEKsg
+         zqLR+i1IbVpCpJ43PZGoclUPkpEBL675oh/ixjwqA09zAsVQf2mmOtYrPnXQqJ/W15bZ
+         EGkQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1778767397; x=1779372197; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7BHEehGGNMhKvwv8Vl/50ol6VOhkpHoqMa4cnhCwak0=;
+        b=MMGxd0fTu7yW451z7Pi5leF6TT0CAW63xQ6tYaPbXwmzDNY3xGyd9Tq38L1jS3gVop
+         d5Y2vsbnqmoiYsc0H8GU46k65ijQQ+I63J1qEbvoHMV1sWaqLYEYNWghzhoFfraV/XpH
+         QLPoyg4M6PhDnj6oomuhyw/8wmI3+ZZkCEQYzkjXg4G+iymsJ0eRZG0t15OezHWw+h0o
+         lP2fYPWpfrhvxaSgDl8soLfY8gtSvTOBMZOKTr22rdH0QjQ/Gjd3EjjPzXlHu4NcN4m4
+         IZzSVSzdjvWiQjrenQpymBN5cfaGLo0uM4Vx15s/V+4MIFxVi00cHLYqrjNTe9qbMBg4
+         xWVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778767397; x=1779372197;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=7BHEehGGNMhKvwv8Vl/50ol6VOhkpHoqMa4cnhCwak0=;
+        b=WwMeseH4E9+f9rz6wi2pMKPjxo+bSOHujRwhr4uZRI4+wfToneAINDw5WOt/vw44JJ
+         E5xDocQzR+xCP2ULxfD0uSSk8Aa58TdYALcaqyuxA67fb1/QF2L/KVv5YfYNfJOYWwGV
+         eio95fXtsr0eQ5uZibELf6Ua0R+qLpZjb5rCnCucSzuA9S0H29QApfOk5YvKw1EEJNNt
+         PNJTjBT1A3NwLqBQEO9S85WfzrBsK4xhcQXQhVEWY7Gqi2MBK8ZiivsE96df3lZnEuyD
+         /Aq6RIrr/NSaWR2ZoV2OFYxfCKfDs5Q2F3jvfuHsLnZepXXPYsrfAtt0S6U92Sb/8K7r
+         U9KA==
+X-Forwarded-Encrypted: i=1; AFNElJ93YXKFpVrq+GwDmnKPT2Yc5q0Z33xZgENXBF7tThTpnL5kKt9qH1PLXDaOPw+Ilxo4UK98q15C2A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxBYetpoJmfN4pTqedQBdenH3RUwZTt6KujluOXKD0eAwHOvzD7
+	qguTGULGnb+dOjLA3fg/iQCVODuh7bqErY7nIvlhEwVQuq3sQFI26BOt35g/wpRHSxmweinHD/d
+	Pkaa+XO1SVZTsp+h1Xb1yW18NS6Xt+rOCGPJj3J66UA==
+X-Gm-Gg: Acq92OGTBrsOBDndTTjTe2QLI+GEjnwivRr9/24fX/o95Wd+ksYLS+j9fuqvhOnQa1C
+	tHVnquiYvc4aTuJ+nV1RuPmTfWezDv19F49znzY1NORwbjOWtMcDhc8GFArx9vBnNg8mSDo9XJ+
+	ahBopvl4pXglB4u+8StCH28p/kiRRL+su+TCjvPUYYM57wbUulGl/HA7dcSucnVbfi4tZJbvRzq
+	3F2ocLNIe6/0wQo3tdsjZua5cLrcRRYy3SeHOng4QXuMCnC7CkWrlA9UAIKqc27vtYW5pVJElNf
+	8ZyOCWDxFD4GjPS/+n2c5Lx8RXphw+CFoLOkMC9xerx3p9wSAno=
+X-Received: by 2002:a05:6512:65d8:10b0:5a2:b514:4fbb with SMTP id
+ 2adb3069b0e04-5aa0b70911bmr298964e87.11.1778767396849; Thu, 14 May 2026
+ 07:03:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260514132901.275477-1-marco.crivellari@suse.com>
-In-Reply-To: <20260514132901.275477-1-marco.crivellari@suse.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 14 May 2026 15:53:04 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gGyceLJfNtiS+Asi2BRVP8SPjJDxKJrDK+gi9Bov3P5w@mail.gmail.com>
-X-Gm-Features: AVHnY4IqI59pmBwE8-GHHm-fR4KBUs0gZ76vZV-e9WdzKhN31p0vCcwKoRdkEXo
-Message-ID: <CAJZ5v0gGyceLJfNtiS+Asi2BRVP8SPjJDxKJrDK+gi9Bov3P5w@mail.gmail.com>
+References: <20260514132901.275477-1-marco.crivellari@suse.com> <CAJZ5v0gGyceLJfNtiS+Asi2BRVP8SPjJDxKJrDK+gi9Bov3P5w@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gGyceLJfNtiS+Asi2BRVP8SPjJDxKJrDK+gi9Bov3P5w@mail.gmail.com>
+From: Marco Crivellari <marco.crivellari@suse.com>
+Date: Thu, 14 May 2026 16:03:05 +0200
+X-Gm-Features: AVHnY4JkXLuQqeHOSX3inBst1UT9J22SexAPFRLlIBpTzCB2yfZrPJYR3TXEosg
+Message-ID: <CAAofZF4UMwpFz8-CqvPJzGEze40x+r_uXx9vTLqQGc3396EgiQ@mail.gmail.com>
 Subject: Re: [PATCH] thermal: core: Add WQ_PERCPU to alloc_workqueue users
-To: Marco Crivellari <marco.crivellari@suse.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
 	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
 	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	Michal Hocko <mhocko@suse.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>
+	Michal Hocko <mhocko@suse.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 14, 2026 at 3:29=E2=80=AFPM Marco Crivellari
-<marco.crivellari@suse.com> wrote:
+On Thu, May 14, 2026 at 3:53=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
+g> wrote:
+> [...]
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
+ore.c
+> > index 2f4e2dc46b8f..691c5e749c3e 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -1889,7 +1889,8 @@ static int __init thermal_init(void)
+> >         if (result)
+> >                 goto error;
+> >
+> > -       thermal_wq =3D alloc_workqueue("thermal_events", WQ_POWER_EFFIC=
+IENT, 0);
+> > +       thermal_wq =3D alloc_workqueue("thermal_events",
+> > +                                    WQ_POWER_EFFICIENT | WQ_PERCPU, 0)=
+;
 >
-> This continues the effort to refactor workqueue APIs, which began with
-> the introduction of new workqueues and a new alloc_workqueue flag in:
+> No, we actually don't want that here.  See
 >
->    commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_w=
-q")
->    commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
+> 26fd03effa94 thermal: core: Adjust thermal_wq allocation flags
 >
-> The refactoring is going to alter the default behavior of
-> alloc_workqueue() to be unbound by default.
->
-> With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
-> any alloc_workqueue() caller that doesn=E2=80=99t explicitly specify WQ_U=
-NBOUND
-> must now use WQ_PERCPU. For more details see the Link tag below.
->
-> In order to keep alloc_workqueue() behavior identical, explicitly request
-> WQ_PERCPU.
->
-> Link: https://lore.kernel.org/all/20250221112003.1dSuoGyc@linutronix.de/
-> Suggested-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
-> ---
->  drivers/thermal/thermal_core.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 2f4e2dc46b8f..691c5e749c3e 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1889,7 +1889,8 @@ static int __init thermal_init(void)
->         if (result)
->                 goto error;
->
-> -       thermal_wq =3D alloc_workqueue("thermal_events", WQ_POWER_EFFICIE=
-NT, 0);
-> +       thermal_wq =3D alloc_workqueue("thermal_events",
-> +                                    WQ_POWER_EFFICIENT | WQ_PERCPU, 0);
+> >         if (!thermal_wq) {
+> >                 result =3D -ENOMEM;
+> >                 goto unregister_netlink;
+> > --
 
-No, we actually don't want that here.  See
+Thanks for sharing the commit, I didn't see it.
+Quoting from the commit log:
 
-26fd03effa94 thermal: core: Adjust thermal_wq allocation flags
+> The thermal workqueue doesn't need to be freezable or per-CPU
+> [...]
 
->         if (!thermal_wq) {
->                 result =3D -ENOMEM;
->                 goto unregister_netlink;
-> --
+Currently, alloc_workqueue() without WQ_PERCPU is already per-cpu,
+so drop this flag it doesn't make the workqueue unbound.
+
+If you want it unbound WQ_UNBOUND must be used.
+If it's okay with you, I will send the v2 with WQ_UNBOUND.
+
+Thanks!
+
+--=20
+
+Marco Crivellari
+
+SUSE Labs
