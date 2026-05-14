@@ -1,353 +1,155 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33A303C196F
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 07:30:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB7A23DDDAC;
+	Thu, 14 May 2026 08:45:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778743828; cv=none; b=HH96sFOY+wl2IsS3nfMB5zDp3c4s+aXZxF1cXNQK1jbHEyUMBIWwdqpHt0Ifk4WUC80H5ejG9NMlTLL2DanXBnb+tnXWPI6MRvbPCVH8PdgeYC1p8wxfjOjIZuFf9QuT0jvqCGcP9c3Luy0oA/xit1pnTxBkaJpICH3eGIhdDws=
+	t=1778748322; cv=none; b=Rv9o0ogSXl7BOlgBimO2/QMkBRlco5SlwPUrLZgDlAWPPlpI4+Bn5kmIUPpU7jsEQWB8+UPgK6SWAJnnREYliggKf9wkG03mfFzPS4lRHlxXeVs/IgjYDbBwoF3bcN+52NI9WcWbj1uuV9dHuVt9Mvnmofh3bV+OoWmZAYMDhQg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778743828; c=relaxed/simple;
-	bh=y+8H6g1YZibvHMhChxFmJVrrZEQrDRIDRibsNpFbUrA=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=sKXCX0NZQsvYeaFHXCP5YD/8QZPtuTlNAM21FVM/uhsAH9VnTQ/uvonPD8IjQb/UD6+E68xMvxsx8qN0O+YpuaNRtmwWy4iORum/BSYch6gCosgf31Gtt+f7cWVMctNDqd1GpX80AASPYQC4FQwreKWGoU22RHRJOUiIia6O0fM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=buD8UGrL; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778748322; c=relaxed/simple;
+	bh=9uriHaR1uFYg2OnsESCBi4B2rNOe2rmUTNqUua9LI9k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MfMpa/klKrQ+JPdW7t0yMnKC8cEu+8oIlmBFgSVoPCVBHZlRxYem04wBHyc6eSnRL07wl54WZwZE0yTXuei/wFZ9IlWd4vsrClrpOdvKg4b9MScJlotk2yHumsr/0FKfbQihUZe1RThJRa/eCMHwCrS8O/a2YnSYrw6b5lo4WH0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=EAtrwwi/; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="buD8UGrL"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 4DA4BC2BCB7
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 07:30:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778743827;
-	bh=y+8H6g1YZibvHMhChxFmJVrrZEQrDRIDRibsNpFbUrA=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=buD8UGrL1JJHc//9p9TfvUQumOxLqu5xH8Q9JYukaGGL87N/DhLklvwD/abrs+7+/
-	 b8DgXoldAi33CHju8NT9FvVZaNXo98uV8BCrGY3nhCT37vBRAENt99LX5NMani/0Qy
-	 7XIe0+PRQ13txK+VvQEYxazB0jhVwGmiumZW9c0rO4+K5NK0JFlhQz/Xe4128tM9D3
-	 dB8yEX9ABVccXzTMoQBSOVoAFkUUye1e30paJlBsdmbLBPO7LcirPSKYRmtQ68g0Ii
-	 mK++woppU/iqo62ApFKAys2agVFdShPi5UFjpR1A9Xv9DXX02cddxPXZrVuqIaMCzd
-	 ODeYAx6z1miOw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 45D14C41616; Thu, 14 May 2026 07:30:27 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linux-pm@vger.kernel.org
-Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
- performance policy" (EBUSY) when switching to performance profile via PPD on
- 7.1
-Date: Thu, 14 May 2026 07:30:27 +0000
-X-Bugzilla-Reason: AssignedTo
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Power Management
-X-Bugzilla-Component: cpufreq
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: rhys.r.edwards@gmail.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P3
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-221505-137361-FpgUN2mveA@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
-References: <bug-221505-137361@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="EAtrwwi/"
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64E5SBJh2003931;
+	Thu, 14 May 2026 08:45:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	9tWGSa/zAJabm3ZSlF3cSWaOldMs2IRQgMl3EQ5D84Y=; b=EAtrwwi/Q963Vzfn
+	6oRkiQcry8iNaAiLlFly7VhM6LfGet/1oMGWN4wJv97crqPZKoPLiEq5nYLL8w1O
+	INR5IER/4kIaAmRirvtkdHYkolESFzTj4iH8PurXTjubMBwztn1nmyW+GW2iTUvy
+	3nLfJ2uaxjEan6vLw2huGjlew8kxrl3GQwhHYrf7aUAHGGcnImBTOemtktpp42Ap
+	oec84TJyJMxee869OyvOz06nphrUmamooi6kokPRBmlQicVM1kox/YYzj3pK6Qf3
+	t7v0Ve55zgnbRp0CGDNpuWxLI2ZOSfQKwRr04NcHNkX1InoLd7nv6FM3oWkRG8Jh
+	mB2cnw==
+Received: from apblrppmta01.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e5899rnyh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 May 2026 08:45:17 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 64E8gxSj030582;
+	Thu, 14 May 2026 08:45:14 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 4e1x0jnds3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 May 2026 08:45:14 +0000 (GMT)
+Received: from APBLRPPMTA01.qualcomm.com (APBLRPPMTA01.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 64E8jDMQ000923;
+	Thu, 14 May 2026 08:45:14 GMT
+Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
+	by APBLRPPMTA01.qualcomm.com (PPS) with ESMTPS id 64E8jDdM000922
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 May 2026 08:45:13 +0000 (GMT)
+Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
+	id F3841B22; Thu, 14 May 2026 14:15:12 +0530 (+0530)
+Date: Thu, 14 May 2026 14:15:12 +0530
+From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kamal.wadhwa@oss.qualcomm.com, jishnu.prakash@oss.qualcomm.com
+Subject: Re: [PATCH 2/2] soc: qcom: rpmpd: Add Shikra RPM Power Domains
+Message-ID: <20260514084512.q5pzh226zdkuw53f@hu-kotarake-hyd.qualcomm.com>
+References: <20260429-add_rpmpd_shikra-v1-0-fdba28564380@oss.qualcomm.com>
+ <20260429-add_rpmpd_shikra-v1-2-fdba28564380@oss.qualcomm.com>
+ <e032c072-57b3-44b4-84a7-5aff062b9c00@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e032c072-57b3-44b4-84a7-5aff062b9c00@oss.qualcomm.com>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE0MDA4NSBTYWx0ZWRfX778H1GSFMakl
+ CeFTFxhiZTcAusAYMkGp2Ma1/wEhj3X2KfbhDdWv0YZr94plfQh6wTAMXMeiHpUeasmLXssj6MI
+ sQUGjOoN6WBI4ovN5G0FK8VIiQ0GjC/zOuQnTJdKTir6Tr8AOPnTK6saywsJwQq+LEj49Hi/fbj
+ kEQM0hj1lm+Ppj1vwFEWS0Wgn0c+QEOSe+XcQc1MNJx5G7du58sGd2mYqvaFJClkV8NC65Fqfn3
+ SF6JBgPULLbsRJqDuPkN466u3har1RQRolfdMazLwitryRhELObQZqnmEsDXIcUieUwYKCw28Ca
+ caesXtIPkfnc+FSGfhKcMmwmcyrGRcQ7c8or9XkIfkE+0ZHJyDkw7Z4AS8X+CL/NCC0rOMV5Or2
+ mEmF06boKoTbpQ+9eHJRNoUmLiRb294bjBYTpAia/XFcKoTw9gtyWQTD8NwWy8LrAowKixyQ6tC
+ arf3+X/RjBzaJWBDk2A==
+X-Proofpoint-ORIG-GUID: nUuuMY1bPlFfzURQmQqActli9c6duzWl
+X-Authority-Analysis: v=2.4 cv=N6AZ0W9B c=1 sm=1 tr=0 ts=6a058b9d cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22 a=EUspDBNiAAAA:8
+ a=5b2juqbrW4aYtIvz6zQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: nUuuMY1bPlFfzURQmQqActli9c6duzWl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-14_02,2026-05-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 bulkscore=0 malwarescore=0 clxscore=1015
+ impostorscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605050000 definitions=main-2605140085
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
+On Tue, May 12, 2026 at 02:16:07PM +0200, Konrad Dybcio wrote:
+> On 4/29/26 4:09 PM, Rakesh Kota wrote:
+> > Add RPM Power Domains support for the Shikra platform.
+> > 
+> > Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> > ---
+> >  drivers/pmdomain/qcom/rpmpd.c | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> > 
+> > diff --git a/drivers/pmdomain/qcom/rpmpd.c b/drivers/pmdomain/qcom/rpmpd.c
+> > index 15a11ff282c3f86b1e86c6604d165e297620f6cf..6f751ee5a7833912d54d2bcfd5d85837ab7a97d3 100644
+> > --- a/drivers/pmdomain/qcom/rpmpd.c
+> > +++ b/drivers/pmdomain/qcom/rpmpd.c
+> > @@ -863,6 +863,21 @@ static const struct rpmpd_desc sdm660_desc = {
+> >  	.max_state = RPM_SMD_LEVEL_TURBO,
+> >  };
+> >  
+> > +static struct rpmpd *shikra_rpmpds[] = {
+> > +	[RPMPD_VDDCX] =		&cx_rwcx0_lvl,
+> > +	[RPMPD_VDDCX_AO] =	&cx_rwcx0_lvl_ao,
+> > +	[RPMPD_VDDCX_VFL] =	&cx_rwcx0_vfl,
+> > +	[RPMPD_VDDMX] =		&mx_rwmx0_lvl,
+> > +	[RPMPD_VDDMX_AO] =	&mx_rwmx0_lvl_ao,
+> > +	[RPMPD_VDDMX_VFL] =	&mx_rwmx0_vfl,
+> > +};
+> 
+> This is identical to sm6125_rpmpds. If you're sure the list is correct
+> and complete (no LPI domains etc.), you can drop this patch, and proceed
+> with just this change:
+>
+There is one difference — the max_state for Shikra is
+RPM_SMD_LEVEL_TURBO_NO_CPR, whereas sm6125 uses RPM_SMD_LEVEL_BINNING. 
 
-Rhys Edwards (rhys.r.edwards@gmail.com) changed:
+regards
+Rakesh Kota
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |rhys.r.edwards@gmail.com
-
---- Comment #11 from Rhys Edwards (rhys.r.edwards@gmail.com) ---
-Not sure if i'm adding much additional info here not already known but i al=
-so
-noticed this issue recently and believe it is also linked to the frequency
-limiting problem in https://bugzilla.kernel.org/show_bug.cgi?id=3D221473 as=
- i
-have/had both issues
-
-I've had cachyos installed using rc kernel on a desktop computer and last w=
-eek
-or so noticed cpu temps/wattage/frequency was much lower than normal, frequ=
-ency
-was specifically capping out at exactly 3Ghz regardless of workload.
-
-I don't recall changing any pstate profiles at any point since i installed a
-few months ago so i assume it was on performance(?)
-
-CPU: AMD Ryzen 7 5800x
-Mobo: MSI x570 Tomahawk
-Ram: 32GB DDR4 3600Mhz
-GPU: AMD RX570 4GB
-
-It seems mostly fixed when i switched back to balanced using powerprofilesc=
-tl,
-but now i also can't set back to performance getting the error mentioned he=
-re:
-
-Failed to communicate with power-profiles-daemon: g-io-error-quark:
-GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dio_2derror_2dquark.Code=
-26:
-Failed to activate CPU driver 'amd_pstate': Error writing
-'/sys/devices/system/cpu/cpufreq/policy11/energy_performance_preference':
-Device or resource busy (26)
-
-
-Here is my p-state triage if it's any use...
-
-=F0=9F=90=A7 CachyOS
-=F0=9F=90=A7 Kernel:      7.1.0-rc3-1-cachyos-rc
-=E2=97=8B 'status':     active
-=E2=97=8B 'prefcore':   enabled
-=F0=9F=90=A7 ITMT:        Y
-=F0=9F=92=BB CPU:         AMD Ryzen 7 5800X 8-Core Processor
-=F0=9F=94=8B Per-CPU sysfs files
-+---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------+
-|   CPU # |   CPU Min Freq |   CPU Nonlinear Freq |   CPU Max Freq |   Scal=
-ing
-Min Freq |   Scaling Max Freq | Energy Performance Preference   |   Prefcor=
-e |=20
- Boost |
-|---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------|
-|       0 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        176=
- |=20=20
-    1 |
-|       1 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        196=
- |=20=20
-    1 |
-|       2 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        186=
- |=20=20
-    1 |
-|       3 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        181=
- |=20=20
-    1 |
-|       4 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        171=
- |=20=20
-    1 |
-|       5 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        191=
- |=20=20
-    1 |
-|       6 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        166=
- |=20=20
-    1 |
-|       7 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        196=
- |=20=20
-    1 |
-|       8 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        176=
- |=20=20
-    1 |
-|       9 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        196=
- |=20=20
-    1 |
-|      10 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        186=
- |=20=20
-    1 |
-|      11 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        181=
- |=20=20
-    1 |
-|      12 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        171=
- |=20=20
-    1 |
-|      13 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        191=
- |=20=20
-    1 |
-|      14 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        166=
- |=20=20
-    1 |
-|      15 |         555531 |              1754308 |        4853585 |=20=20=
-=20=20=20=20=20=20=20=20=20
-1754308 |            4853585 | balance_performance             |        196=
- |=20=20
-    1 |
-+---------+----------------+----------------------+----------------+-------=
--------------+--------------------+---------------------------------+------=
-------+---------+
-=F0=9F=94=8B CPPC MSRs
-+---------+----------+----------+---------+---------+-----------+
-|   CPU # |   Enable |   Status | Cap 1   | Cap 2   | Request   |
-|---------+----------+----------+---------+---------+-----------|
-|       0 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       1 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       2 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       3 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       4 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       5 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       6 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       7 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       8 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|       9 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      10 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      11 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      12 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      13 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      14 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-|      15 |        0 |        0 | 0x0     | 0x0     | 0x0       |
-+---------+----------+----------+---------+---------+-----------+
-=F0=9F=94=8B MSR_AMD_CPPC_CAP1 (decoded)
-+---------+---------------+------------------+----------------+------------=
-----+
-|   CPU # |   Lowest Perf |   Nonlinear Perf |   Nominal Perf |   Highest P=
-erf
-|
-|---------+---------------+------------------+----------------+------------=
-----|
-|       0 |             0 |                0 |              0 |            =
-  0
-|
-|       1 |             0 |                0 |              0 |            =
-  0
-|
-|       2 |             0 |                0 |              0 |            =
-  0
-|
-|       3 |             0 |                0 |              0 |            =
-  0
-|
-|       4 |             0 |                0 |              0 |            =
-  0
-|
-|       5 |             0 |                0 |              0 |            =
-  0
-|
-|       6 |             0 |                0 |              0 |            =
-  0
-|
-|       7 |             0 |                0 |              0 |            =
-  0
-|
-|       8 |             0 |                0 |              0 |            =
-  0
-|
-|       9 |             0 |                0 |              0 |            =
-  0
-|
-|      10 |             0 |                0 |              0 |            =
-  0
-|
-|      11 |             0 |                0 |              0 |            =
-  0
-|
-|      12 |             0 |                0 |              0 |            =
-  0
-|
-|      13 |             0 |                0 |              0 |            =
-  0
-|
-|      14 |             0 |                0 |              0 |            =
-  0
-|
-|      15 |             0 |                0 |              0 |            =
-  0
-|
-+---------+---------------+------------------+----------------+------------=
-----+
-=F0=9F=94=8B MSR_AMD_CPPC_REQ (decoded)
-+---------+------------+------------+----------------+---------------------=
-------+
-|   CPU # |   Min Perf |   Max Perf |   Desired Perf |   Energy Performance
-Perf |
-|---------+------------+------------+----------------+---------------------=
-------|
-|       0 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       1 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       2 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       3 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       4 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       5 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       6 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       7 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       8 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|       9 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      10 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      11 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      12 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      13 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      14 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-|      15 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
-0 |
-+---------+------------+------------+----------------+---------------------=
-------+
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are the assignee for the bug.=
+> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> index 0bf1e13a9964..e7d9e8e65641 100644
+> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> @@ -73,6 +73,10 @@ properties:
+>            - enum:
+>                - qcom,msm8937-rpmpd
+>            - const: qcom,msm8917-rpmpd
+> +      - items:
+> +          - enum:
+> +              - qcom,shikra-rpmpd
+> +          - const: qcom,sm6125-rpmpd
+>  
+>    '#power-domain-cells':
+>      const: 1
+> 
+> 
+> Konrad
