@@ -1,138 +1,169 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013048.outbound.protection.outlook.com [40.93.196.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 87E853DD847;
-	Thu, 14 May 2026 13:05:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778763935; cv=none; b=XZ29mwXW3UP9jyKP4xAja4N83fANqQrxeEftDP3ovDrmYGrcE4uA34Y16XPUfS8tjG8toWwQeRT4NfHbpn3ClUWlu0vnZ0B9Slc7plNWoOiaLa2ZmlxmJBMt87zzmNCF3wAz5ti6XuohVK1emd/kliVa7ji3eSbtOJZal7MYEPU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778763935; c=relaxed/simple;
-	bh=qwpiFtWnr4LxDDLDUtr0TqHzCS9wJ3hUilfbgpQ/5g0=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=XZPJl/kjmeUQMmTm4+6BZ+acxgfnGTFbxsvetqhwwy/eHX/bkEBCYEbj+lKbS+4OcEiN5cXMTQgh5ETj3eWxsQdfmvOyOA7g59ZDBq10m3n+/FqGQQPVKU8g9ZG6F1hjvzskSZwb4/n2KFw7cdOqEkWcF7Ji+72g+VhxWRi4WvM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZsTLbai0; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2A3B13959D;
+	Thu, 14 May 2026 13:06:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.48
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778763974; cv=fail; b=Bi9Qi9CR2LF4mL7YGZRQg27RIkBxfqSQkzNJsEN3yOBsD/bufZ09dSdUDW7FX8ocvqjVBXzJlBVIbKhDGcy5B/qjznbf3xskpGCw2z1P6oisPI0YATEBp3X5EiTaOygYFlbXNFTPNGbozFpVZ4zo4aU0kQe2pS4wg/ii5sbAg94=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778763974; c=relaxed/simple;
+	bh=GIna8VHEUygm5Ql7RDIC8PBaFryhS4LxRjkAiWvC0oU=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=BQR+Q4SlMpvBJQOMzYviOvT4YmgPuTcRIVybzq7WBZvtYW03pDm7ARe7aUrAg5yIO0L+hx4O5T1gC6EI6Svu7fs3TMz4eNbF4JlHZZttDNYiKjKpq5tIwT1rijypV9g1lUI/a0SmaMAhNmB0W+mNUZAqi2YDhw3p6XdfNwpNovU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=yujg+e6O; arc=fail smtp.client-ip=40.93.196.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZsTLbai0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F25DC2BCB3;
-	Thu, 14 May 2026 13:05:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778763934;
-	bh=qwpiFtWnr4LxDDLDUtr0TqHzCS9wJ3hUilfbgpQ/5g0=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
-	b=ZsTLbai0ZhcbUjzN0IWudmSmptlkazUu16ecsRLC7b847WuBkDc3IqZv+KQR8pYSJ
-	 APv0ObE5E6HwSfyQu+IHr2wyKuWmY+JkGDkZwWq9i5VEfwfPAIpMpI/kG/48DCddq2
-	 vCzhM0NG1xJAMx202rdggv2OXBZJkUngyEu2q+WNH36u24KBM+80x5tD/iD07+FprA
-	 RrD4PNGx5HKmEWLNsTQT5ar8mVJhbukeYTSMMVydP4xfXT2e9fw7+robI3qca6XVt0
-	 tX69pZqT2flncaq8dypeobtZd1jBRlct+yutw8MY/irNo+usgblSRChddkgbQ80pbf
-	 RTBxU2YAEG1qA==
-Message-ID: <b001d2f2-9cfb-48dd-9ca8-c9b1b853ced9@kernel.org>
-Date: Thu, 14 May 2026 15:05:28 +0200
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="yujg+e6O"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=n+dXTdZaq3Vtz0y6YdDNDPwIFZohUz2dIwrwFTTmz6V3lH1NpOkA5kA46m3smGAtk9uAA5rHs90MNPLA34qTbJgwI2+TqMXfCev8xadGEICgNfhDrdZl/TAC+4s0BUC/9fRJnLCgX5smtUVbfNEqdzU9iR+jtAMi49B4oefJpnUeMPDyY/x/+nwEz1H5WU8k/4RGWAtmUbgOTS3Ybvpee0XwJo6QMFbNyG6vvPU8SjOhCr8Or4uWfNihtQC7DAGKd02vNsoTqndumn1yaRiFwxwj88RknnZUI61D8TES9R0+xjZ2iuHOuzxmEstCaJW6/H/LXjX9a8LqjwfHBv5C6w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=KzSAaBmge8DoHA3PIBv72FKKcLhnODM/pKtjEBQOgYg=;
+ b=XLR9nj3wt3KbUNN3NPE0PmtTzT2zPAAkCyvm8eiKcV+TuhpkJvt0iOeGTnPww02V33mLRoE7ZJNeew+ICfPEwd6nFx7cGNxR4D7RttThL7twRDl30sRVpr6eLny3skcogJiAj7uJpx8drUS/3K4h7FTs5e4J5NMFKZLFVSViBFfTqlsH0Ndmj2vaVUBpQxzaWqdLWRQyt9FXG5R1VsJ0tEASeDH72knHEzeNvAn2xya7xEU2kFJes6GwcDH+B7NikH72+Gayr7Yeox80DlkIVzRzNna52ia/W6jzUqgqmfVrXAOyB3+6ItN4hM/RxRtPA11CB58E59SXTRHp4nyR+w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=KzSAaBmge8DoHA3PIBv72FKKcLhnODM/pKtjEBQOgYg=;
+ b=yujg+e6OasolbOkLLE5ipYkZZcg5BJ0ki+ajC4vT7E1kEiCKqkFTS2ByLYAYkVMEfbvhXcSK1pzmlxZZwfTzynshVBjO6iMfx6knvPxEFdaGJ4Dbakn/byiFLkSonwJQ1fdZ9ouyXtHy1ZsZYqqeTCOfX6fATLbgrWEVd9nXucs=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com (2603:10b6:8:38b::11)
+ by IA0PR12MB8905.namprd12.prod.outlook.com (2603:10b6:208:484::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9913.12; Thu, 14 May
+ 2026 13:06:06 +0000
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445]) by DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445%3]) with mapi id 15.20.9870.023; Thu, 14 May 2026
+ 13:06:04 +0000
+Message-ID: <e1f2d095-68a1-4edf-9f10-b5fe84ca5de2@amd.com>
+Date: Thu, 14 May 2026 08:06:00 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq/amd-pstate: Drop Kconfig option for dynamic EPP
+Content-Language: en-US
+To: K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: Perry Yuan <perry.yuan@amd.com>,
+ "open list:X86 ARCHITECTURE (32-BIT AND 64-BIT)"
+ <linux-kernel@vger.kernel.org>,
+ "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>,
+ Stuart Meckle <stuartmeckle@gmail.com>
+References: <20260512221947.1652988-1-mario.limonciello@amd.com>
+ <3633a2df-73a8-46d0-a430-8f9502cfffd9@amd.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <3633a2df-73a8-46d0-a430-8f9502cfffd9@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SA0PR11CA0109.namprd11.prod.outlook.com
+ (2603:10b6:806:d1::24) To DSVPR12MB999147.namprd12.prod.outlook.com
+ (2603:10b6:8:38b::11)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 15/16] MAINTAINERS: add MediaTek mt6323 PMIC EFUSE
- driver maintainer
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Roman Vivchar <rva333@protonmail.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, David Lechner
- <dlechner@baylibre.com>, =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
- Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Sen Chu <sen.chu@mediatek.com>, Sean Wang <sean.wang@mediatek.com>,
- Macpaul Lin <macpaul.lin@mediatek.com>, Lee Jones <lee@kernel.org>,
- Srinivas Kandagatla <srini@kernel.org>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
- Ben Grisdale <bengris32@protonmail.ch>
-References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
- <20260512-mt6323-v2-15-3efcba579e88@protonmail.com>
- <20260514-spiritual-grouse-of-abracadabra-d91bc9@quoll>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260514-spiritual-grouse-of-abracadabra-d91bc9@quoll>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DSVPR12MB999147:EE_|IA0PR12MB8905:EE_
+X-MS-Office365-Filtering-Correlation-Id: f8b12a26-6da3-44f6-5fd7-08deb1b98dfe
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|1800799024|366016|3023799003|56012099003|4143699003|22082099003|11063799003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	/h/PKSvmgCZf/vH6LHEtQrjXyvwHK3JZ3HcTFvq+iXfUVijDUt7IrrZgDcftHvvSf/2DBFYJAL6J/ztehmFoOk18KbYn1zpync6oabTa57Px/jD4EbvkRgeR8LK0QBNSVmgHBwMN2/uclxHIigN8cDg27C9PqnHmqnnnlJorkQ2TcYx0nZbAYAIbk9gX6XO/00N+oMSI4oaM00DduqxiUhfpK5iSv56ofu+swUexMIrdieSkqEgDIPqrnwdvhWN18ly/slrOA7h04YHUdXx0AT/Rj374w5IYpEvSm/xDT3x2JeQpQsRmV0uy+NzccqoOlGoPoI3NjD+AgQ6q6QCi5tnIhWSaXuk8mD53QOE9PIc1Q9IzIdLuqjNEWXXNqGwr4/rGjPouGROGa7q9ri1+iWNmbINBHQYzhDudjDVXeqWZm0A2OoIH8qyO9wy+ow4oA5bAOPjvf6GqhU1KejOIHjM4o6qTthhQVRPnzo2EkGtOk7oAqBF4+foA2lEG/yo7cJ1T8eGXwgRQvkPyFZzmG31KfM43yw8arPJnHjzhyoP4SHRQAkoTvl+Po0R2TKcuojnFOPORCOX8EqtbB98g6zcktS/DeUHkl0O9EZT4kpDqR3vZWg8D1X2rOa6Gvyf5b4qfvITHMcmsjPyHaDIpSYWd+8ufCKB+XT2mwKH3FuqpefsKaWU8b1anQMVerefs
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DSVPR12MB999147.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(3023799003)(56012099003)(4143699003)(22082099003)(11063799003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?ZmF2dS9kOU1iYWdqaGQwWlpVYVhzbkZBOUljVnJmSjI4N1licERGYkFBczRQ?=
+ =?utf-8?B?TVdBRStJUWFBUEVxOENwSjB0UTVJNHNRaW9CekllWDhCc3JTSGV4OEM1S3Ru?=
+ =?utf-8?B?Y1Nka0hWS0R2TGNFOWNYRkd1T0Q2OWtpa0VtN1RVSFREZy9SVEVWUEZibytJ?=
+ =?utf-8?B?bFZhUFhNMUNuK1diMEpDNU4veVpCNlNxci8xSjB1c0pjQzNJR2FiaTZiLzRy?=
+ =?utf-8?B?YXhybURjWUY3YUdKZDZSNFoxUjFRcDhzdTNJazc0Z3RmT3hxSWIzU3hrZ1hG?=
+ =?utf-8?B?V1ZmMHpKZytmYTVXS2RFRUtucW52VFhUOG1CSnBaV1RGNW1BalpOMmp5aHlL?=
+ =?utf-8?B?OVN4YXhPVGRSdUxGUlB1S3IrS0NjdjQ0NjdYTS9PREZCRmFFQi9OVExlbllO?=
+ =?utf-8?B?QUVSeG9kQXZKMGt4Q0xVVThrK1IyeHg3bVRnWEFvUHEzVXJSa3BlVUYxWTQw?=
+ =?utf-8?B?aENDMS9pcU15bEFUbEEwSWN4Q1N0WDdtM0NKdW51alZlKzFNOHpmT0xLZmZQ?=
+ =?utf-8?B?OFV2RURpNHpML2R3NjBuZy8yMS80K3g3L3VoSFlWaWxOdUdqbEZOcDVjajJU?=
+ =?utf-8?B?aTdxV0RPeXl3Z25kY1dRRlQ5aXFXNDNGdzRIN2dIeEJudEE2ZXdUcm15Nkpq?=
+ =?utf-8?B?eEtHUmp6TVB1cGRuanIxbkFRRE1RWnl6Q3lRYjZSL2IwNFBjVjFWVU5xZzRv?=
+ =?utf-8?B?NTNRRU9ldnY0NEp6SUs0YTlyNFlIeW9veWJseko3TWtkWldtN0duM0lQTU9W?=
+ =?utf-8?B?cUUxNXRjQldxODF2aDJLYkxwMGhid05ZT0M5bGdkdjgvbklLSkw3TVhjYlFZ?=
+ =?utf-8?B?bzE2RFZlZHdXSFEyQ2xtVmt4NU1EdWlnb3BZUVYwWW1wbytMcTRHKy9sZm5U?=
+ =?utf-8?B?S0VTdGV3cDRvc0ZTbGZTZEh4R1ZsVXkzeDN5aGFLQitzR2ZCM3QzdkdYbnJv?=
+ =?utf-8?B?K1FsWmFEQmZRS0JScDlQcFlOYllCanhqZURRZ2gxbmFwVmorUVhDRFJsTUtx?=
+ =?utf-8?B?S1ZtV0FKTFphWSt3ZzNEeVcxL0RsSWJsQjFTNEorM2RzejRmZjRtaDlUWkxS?=
+ =?utf-8?B?b1BjSzRMWW90dkdGQWtYZzJPcUF5aEpYNWtMRWZOTGpLVitON2dtcGtXV0Vq?=
+ =?utf-8?B?QysydFk0NTVOZmpmMTVueEtjVGJJU25OVFRpUnN5RDdhdmV1VXRzV2R0a2sr?=
+ =?utf-8?B?Nk1xNllxa29HYUFmU1JLY0s4dU11ODBCU1dWWlA5WEEzWjU2RVpnYlp6c29P?=
+ =?utf-8?B?cUF1VXIrN0lEK2poZXhkSWR3M3dFU25iUTRmMktjajZyUElkZ28veG9qd3du?=
+ =?utf-8?B?YWlqQ09hamlYd0JHMWtsdDVmZkV4R0lVTFJ2MWtnY1ZOZ2hEbUZoOW5aclNL?=
+ =?utf-8?B?R21iR1JsNUkwcHV0dXBvck1aSjkwZDZtY2NnRzNxa25DV3BSQ2ZWUkVsQUJx?=
+ =?utf-8?B?Mm5uc1VDK21LOXNaekF4UHg2ZC9Rc1pqN2RERlNGVE9DNHMxb012VjA5UHRV?=
+ =?utf-8?B?WDZBblovTzA3QWtsTHNyMHhSREVZSDRmbEFQZXFPNC9oTjJRemRyK2svcmtN?=
+ =?utf-8?B?MythSWtZTVAwazZLRTZ0dWt2NlVMb29RMmlIMFFXdkN5NkUvSHlpaC9qUmdr?=
+ =?utf-8?B?ak5LRGd0anYza3NpRVRpaDFXR0ZRamtLMi85TTM1OVNLNWV3Sk5vYlIvMzQ4?=
+ =?utf-8?B?L1NaOG1hd3V3YWE5eDZBU3kzbWVPT2VXMFo0RVF0cVFVbVdZR29UcmtVQlNJ?=
+ =?utf-8?B?QmFQblRTTCt4RUFEYURNdzhJYmxSOXdLaFJtSlNSSldwZ0RsQTZLQnFsRXR6?=
+ =?utf-8?B?Si83QlJYUFNYUkw1RVZ6dWNSMW9ZQktlOS9oc3JLWjdyRW10Q0VMSFVVeFVD?=
+ =?utf-8?B?Z2pHR0J6Rm5zWkZjQUFacWE0Z0hJMlRHL21SWVRRUzI0a1RXbGZ0Q1FnaXFz?=
+ =?utf-8?B?U0NhTndvbFRIaUJVbHFGMnNHaU1rTEdSckJlQm8yMHhITno4M2FrTmlvTGpn?=
+ =?utf-8?B?YkxkZ0k4YUV4SnBoQ2tqRUwxU2trNTdZZm1EaTBmYStzN1RPTWZlUlFaRStu?=
+ =?utf-8?B?NzdDa0FCNVBtNVhTSkRjblRCOTF1UHZPaDU5aHNPRU1FR3piVno0eHhPeUFm?=
+ =?utf-8?B?M0YwWDd0UXEzWFBCNDVUUXp6RzJZeENFM1d1WWQyK0dHZ2ZtNUtiWDFNWjF1?=
+ =?utf-8?B?VjdZTkhEcDRQVktWVEI2cEM3MHpPU3RjQXJoSngvd0dkNWJJWGsreUxZcE80?=
+ =?utf-8?B?aHI0MnU5M2pXQS96T244b1dHZFpxTXRGTFAxMk85RW1GU0pJSFVaMytlOHE2?=
+ =?utf-8?Q?qcyrs9M/RDgLhT1y4v?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f8b12a26-6da3-44f6-5fd7-08deb1b98dfe
+X-MS-Exchange-CrossTenant-AuthSource: DSVPR12MB999147.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 May 2026 13:06:04.4258
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5/SvHMCTrB4JTfb3Glvqkepuf+wOTmJ2dNC7rPZBGhkWYd9SIlRNhOwn6r+XKKgWed5PU1hVAajmOk7KYBFfVA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8905
 
-On 14/05/2026 15:04, Krzysztof Kozlowski wrote:
-> On Tue, May 12, 2026 at 08:18:29AM +0300, Roman Vivchar wrote:
->> Add myself as MediaTek mt6323 EFUSE driver maintainer.
->>
->> Signed-off-by: Roman Vivchar <rva333@protonmail.com>
->> ---
->>  MAINTAINERS | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 52249c301633..bf2e066f377d 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -16342,6 +16342,11 @@ M:	Roman Vivchar <rva333@protonmail.com>
->>  S:	Odd Fixes
->>  F:	drivers/iio/adc/mt6323-auxadc.c
->>  
->> +MEDIATEK PMIC EFUSE DRIVER
->> +M:	Roman Vivchar <rva333@protonmail.com>
->> +S:	Odd Fixes
->> +F:	drivers/nvmem/mt6323-efuse.c
+
+
+On 5/14/26 08:05, K Prateek Nayak wrote:
+> Hello Mario,
 > 
-> I don't understand why this cannot be one maintainer entry.
-> Really, these are just single drivers.
+> On 5/13/2026 3:49 AM, Mario Limonciello wrote:
+>> --- a/Documentation/admin-guide/pm/amd-pstate.rst
+>> +++ b/Documentation/admin-guide/pm/amd-pstate.rst
+>> @@ -358,8 +358,8 @@ Dynamic energy performance profile
+>>   The amd-pstate driver supports dynamically selecting the energy performance
+>>   profile based on whether the machine is running on AC or DC power.
+>>   
+>> -Whether this behavior is enabled by default depends on the kernel
+>> -config option `CONFIG_X86_AMD_PSTATE_DYNAMIC_EPP`. This behavior can also be overridden
+>> +Whether this behavior is enabled by default depends on the kernel command line option
+>> +``amd_dynamic_epp`` is set. This behavior can also be overridden
+>>   at runtime by the sysfs file ``/sys/devices/system/cpu/cpufreq/policyX/dynamic_epp``.
+> 
+> Unrelated nit.
+> 
+> This file should have been
+> /sys/devices/system/cpu/amd_pstate/dynamic_epp right?
+> 
 
-Heh, and now I see my comment on v1 which you did not implement.
+Correct; thanks.  I'll roll that in.
 
-SQUASHED. Please see git rebase and the meaning of squash.
+> Apart from that, feel free to add:
+> 
+> Reviewed-by: K Prateek Nayak <kprateek.nayak@amd.com>
 
-Best regards,
-Krzysztof
+Appreciated.
+
+> 
+>>   
+>>   When set to enabled, the driver will select a different energy performance
+
