@@ -1,93 +1,85 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A29073A6B76;
-	Thu, 14 May 2026 22:54:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4258D319847;
+	Thu, 14 May 2026 23:21:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778799268; cv=none; b=N+wn4le9WiJwQgmjRePl/3o5LjxvtdPrPXYVb40A1MoXW2paOpTdVUGC9Vv0xuaaBAWKVxWr0ETpkM1ghI9Lf/bleqA7CNpoiOi0nrEwaUjNX90y9fAZ+ZyBBtJUMfod758h9ShwroFENpl8AfT1jvMCWVIFM8/df0o6O4Ne5mw=
+	t=1778800864; cv=none; b=jUDA/lhuCaoEds0uDRuKVXo/9aSGWN347UTETyKBbWu+60V6VXzFIUI5RYmCnFBkd5wPdvd0oQ6DYAs5nT2V6JtPhKFQ8yr5hzFKVB+s7brfr1jDJyypPp01Hf1UwWliqvmrTtTHwMUdwClCapBdXpYLut+RePs0MNCvEhHoWfg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778799268; c=relaxed/simple;
-	bh=V28hjOaAnmBMgpEZgMkM6AYG1yahj8QOBtL7VQ6JgnI=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=aiNbnrH0sJkAUE0k4eK6NBrliHKelnIFMd/jG8LGh0X0f0jyA46QNpxAQKhFJofKrY9aBfRabUON5GJojfXnSiY5A3L65eU+lKcQeqxmqMPgX1iOkYnXq5DDVDEqB66uojdtIg30sb6AlwWaKgjIfGBKGdN79ZaQgkPfVGyyuMc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mfai8ns5; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778800864; c=relaxed/simple;
+	bh=woR3eW2vN+nrbzCT/rg9ask53K0weHezP8BYoeNyT2M=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=aYjXRCNymSL10gNNbPw7gUnY7Tvg/49p7J0TngXy1sG+vpx7BfPsPgTSINF0PccEZola5ZOPbPPvoQmToKZflVwKuczUnjEvARpd+0drr3wFExvO68aZPFNla7NTMAG0KqsWcpxh/5Uzy3wpJ9JFz8V/9JGMLU0yNVAGyAATgBU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nbwhgxpG; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mfai8ns5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22180C2BCB3;
-	Thu, 14 May 2026 22:54:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nbwhgxpG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B63B6C2BCB3;
+	Thu, 14 May 2026 23:21:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778799268;
-	bh=V28hjOaAnmBMgpEZgMkM6AYG1yahj8QOBtL7VQ6JgnI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=mfai8ns5UAvaEaXCXFbfsG4ecZWU/uEml4YgLDNYlV/hKZVkdvlw3jiEZbEXTc1qZ
-	 kOv6oj+t0pwKkrkoIfurPX5B8qzlIl1GGihmiOHKPoGjjf+LAzKhPN/wJffHjxJm8I
-	 KNkHZhuf9r3fqK2XpnC7Xh0EM9pHpq7xDlgqlrDV0/Iz/ifFH1gYhz8/kgq/PRW/vO
-	 scYbo8/UeG948JXcXtahYX4SkYg5fIhMBR1i29WoC8fnsKNS9+Nau3DCgridNAK/ed
-	 OG5D4uPIYOGVbc46fX/49GT7fYKY7kJD3lpIT3kD6p+8/qbeCT8WrkIDIZZaaCc9tY
-	 +VlbvzSObHe/A==
-Date: Thu, 14 May 2026 17:54:26 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Mario Limonciello <mario.limonciello@amd.com>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	"open list:PCI SUBSYSTEM" <linux-pci@vger.kernel.org>,
-	open list <linux-kernel@vger.kernel.org>,
-	Lukas Wunner <lukas@wunner.de>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] PCI/ASPM: Enable L0s/L1 for removable devices when BIOS
- didn't configure ASPM
-Message-ID: <20260514225426.GA441423@bhelgaas>
+	s=k20201202; t=1778800863;
+	bh=woR3eW2vN+nrbzCT/rg9ask53K0weHezP8BYoeNyT2M=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=nbwhgxpGApskI74n3kYSrYrG4UapXenJ8Ooo2EiQkFQcJBsnMSkRZ9So1PTGiX3W5
+	 W1AkRWj2RozGO41ZpgsOoSoea3QXSQzV9iRs/38wuG8UOD3pJr0etlPqp3Xpk06C6y
+	 oWCGf6LZBIZosKcfLytux6o7mm6GE8onYd5/GTyw1Ei7bwqEjETTXYLBaRVdiY3O2H
+	 MUJVj9AEWEgHxkgFnpXFfyYCSHF41RwSoYN7X9KdgOAIlR/S/T0T6EqANxtqaRzIyp
+	 NuDnHKyH6fc9fBdFSREn7Lo5j2HM5FCkXGP56KSAXh1CoRqUmFLuN4zXZZlKvazh3s
+	 UZ2Q/Vls6kRlg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7CD5639E4DB3;
+	Thu, 14 May 2026 23:20:09 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3c6a9ff7-95b2-47dd-87c2-62eec4aefbb1@amd.com>
+Subject: Re: [PATCH v4 0/2] Support BPF traversal of wakeup sources
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <177880080805.121176.5183470343054925054.git-patchwork-notify@kernel.org>
+Date: Thu, 14 May 2026 23:20:08 +0000
+References: <20260511174559.659782-1-wusamuel@google.com>
+In-Reply-To: <20260511174559.659782-1-wusamuel@google.com>
+To: Samuel Wu <wusamuel@google.com>
+Cc: rafael@kernel.org, lenb@kernel.org, pavel@kernel.org,
+ gregkh@linuxfoundation.org, dakr@kernel.org, ast@kernel.org,
+ daniel@iogearbox.net, andrii@kernel.org, martin.lau@linux.dev,
+ eddyz87@gmail.com, memxor@gmail.com, song@kernel.org,
+ yonghong.song@linux.dev, jolsa@kernel.org, shuah@kernel.org,
+ kernel-team@android.com, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, driver-core@lists.linux.dev, bpf@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
 
-On Thu, May 14, 2026 at 12:14:29PM -0500, Mario Limonciello wrote:
-> On 5/6/26 10:27, Bjorn Helgaas wrote:
-> > On Wed, May 06, 2026 at 10:10:47AM -0500, Mario Limonciello wrote:
-> > > On 5/5/26 23:53, Mika Westerberg wrote:
-> > > > On Tue, May 05, 2026 at 08:09:22PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Tue, May 5, 2026 at 12:53 AM Mario Limonciello
-> > > > > <mario.limonciello@amd.com> wrote:
-> > > ...
-> > 
-> > > > > > +        * For devicetree platforms, enable L0s and L1 by default.
-> > > > > > +        *
-> > > > > > +        * For removable devices (e.g., Thunderbolt/USB4), enable L0s and L1
-> > > > > > +        * by default if BIOS didn't configure any ASPM states. This handles
-> > > > > > +        * hotplugged devices where firmware may not have configured ASPM.
-> > > > > > +        */
-> > > > 
-> > > > Only L1 is supported over TB/USB4 tunnel (no L0s, no L1 substates). The
-> > > > PCIe endpoint and the downstream port it connects to of course can support
-> > > > the full range as that's a real PCIe link.
-> > > 
-> > > OK - the comment should be updated but I do expect that below code
-> > > (link->aspm_support) should remain OK.
-> > 
-> > TB/USB4 are examples of removable devices but they're not the only
-> > ones, so I think it's OK for the comment to mention L0s.  In fact, it
-> > *should* mention L0s since the code below includes L0s, and mentioning
-> > only L1 would just be confusing.
-> > 
-> It sounds like you're suggesting no changes to this proposal then, right?
+Hello:
 
-I'm fine with the comment mentioning "L0s and L1", which matches the
-code:
+This series was applied to bpf/bpf-next.git (master)
+by Alexei Starovoitov <ast@kernel.org>:
 
-  if (link->aspm_support & PCIE_LINK_STATE_L0S)
-          link->aspm_default |= PCIE_LINK_STATE_L0S;
-  if (link->aspm_support & PCIE_LINK_STATE_L1)
-          link->aspm_default |= PCIE_LINK_STATE_L1;
+On Mon, 11 May 2026 10:45:55 -0700 you wrote:
+> This patchset adds requisite kfuncs for BPF programs to safely traverse
+> wakeup_sources, and puts a config flag around the sysfs interface.
+> 
+> Currently, a traversal of wakeup sources require going through
+> /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
+> sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
+> wakeup source also having multiple attributes. debugfs is unstable and
+> insecure.
+> 
+> [...]
 
-Sashiko had several comments.  I'm hoping for those to be addressed or
-responded to.  Unfortunately the complexity of the ASPM code means the
-sashiko comments are also very complicated and a lot of work to go
-though.
+Here is the summary with links:
+  - [v4,1/2] PM: wakeup: Add kfuncs to traverse over wakeup_sources
+    https://git.kernel.org/bpf/bpf-next/c/5ff44955447e
+  - [v4,2/2] selftests/bpf: Add tests for wakeup_sources kfuncs
+    https://git.kernel.org/bpf/bpf-next/c/9ef647114201
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
