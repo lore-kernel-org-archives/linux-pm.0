@@ -1,118 +1,107 @@
-Received: from esa8.hc1455-7.c3s2.iphmx.com (esa8.hc1455-7.c3s2.iphmx.com [139.138.61.253])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C86CD39D6E7;
-	Thu, 14 May 2026 09:34:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.61.253
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F5653A6EEB;
+	Thu, 14 May 2026 09:52:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778751259; cv=none; b=U8H2SDYZ60QWpyxWaFhJ1hjeDTofOJ9a8ebBY5DmER8Kn8AifBdhzKJ7pTty7b+E8o9yepFwpi0FYyTxQKvxD9nJ7t+i1ueVCahqk3vWFZQ8lvKMLj/F9xgfP5Qo1sDm8KuIXpYh7BtrpwKT6SQhKVnFEIeGeuEVTks3qjU3Pbw=
+	t=1778752355; cv=none; b=UcZ3kkswZ2c2hjfEZTJxi2cUyqU2B9CmoLu8NSfkMBZjPGnT9A2Yo14V8pzT8LHjNdU7lmIEg/5Sy3p1uL+zwjc/yvl7XrNAcypUqMTvnReOqzn8sww768cw4gz9/xBIYT3uYtbqNmaep7w5TjGbosWwIqk1igDwRpkwWxDILBY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778751259; c=relaxed/simple;
-	bh=fDawJLoVbJW9DQMIgEDksrxqneT+9Loc/Ww6UOHOFV8=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=Cfxjs/mzfkb7N51O0Ijn0SnDakedwNWEsutvoiyaq99U9E2/L7NweSIPEODVdxnrZcryNe6rSz3kIPaM5koaSEbWq9I4Cii/utucxiKAhk666iY2A8dvPlzymenPby1tEW+zkZyFwRjnM20bQUoO1PXp3iVRTIh2mvhwx3ia00U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=rt8dhCB6; arc=none smtp.client-ip=139.138.61.253
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
+	s=arc-20240116; t=1778752355; c=relaxed/simple;
+	bh=RgThfRfi90t4CYlBZ1BwD8ONPCbUAT3OicJlijcFJak=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HkXYlZ3yZRBLZv3zdosLGucjtyJ+a/m4AaXYmSTAk5DDon/rr7tLHTrz+B5AiuzLmeTp1o+iZdV9KkCXT6aFY+ZFLChQU81XCJwXvH6IPPM2xGORhuK01Y+MGLcPqcQ1sFKdgzsWwtRookhVIvTKHcee/4vxi4GHNeVCW5ETSZA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LypZscHL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="rt8dhCB6"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
-  t=1778751258; x=1810287258;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=fDawJLoVbJW9DQMIgEDksrxqneT+9Loc/Ww6UOHOFV8=;
-  b=rt8dhCB6YzvqDV29yqBTGnU2Ku1AsbVBk6aKhaoV63c27vVYBe0x+tKV
-   fxPkyeXUfMJa0p+hjbLcG0i/UMX4gi9NicGwA9Etkq+6xPzzHNYueboMP
-   cvrEubyu7feRtAaq8C3I0TDRLE6RRGlyoBVFYmI8x8OgtqEOeRPZ/PbI1
-   kfCO32x6+/kPz/mLnEerArP4FC/H5CX3el6NZ4mYGAJ9tuhrUqp7IRbXw
-   pBJi1UEVvKtL+8tk3DxoA0tC/F9VAnesXTqpHUKxPvQdM4m1WelTHrgt6
-   Qcv0pB1RbnWbLyrPM8SITbLmz4qxKE2OGx5y/C6RKIvq2Zkvb0ne0+8jk
-   A==;
-X-CSE-ConnectionGUID: SZ38OUN5TYSm18ggFaoR4Q==
-X-CSE-MsgGUID: HFhQfCOfRuaku5Ge1v7Tzg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11785"; a="228496063"
-X-IronPort-AV: E=Sophos;i="6.23,234,1770562800"; 
-   d="scan'208";a="228496063"
-Received: from gmgwnl01.global.fujitsu.com ([52.143.17.124])
-  by esa8.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2026 18:33:06 +0900
-Received: from az2nlsmgm3.fujitsu.com (unknown [10.150.26.205])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by gmgwnl01.global.fujitsu.com (Postfix) with ESMTPS id 1A1A61000349;
-	Thu, 14 May 2026 09:33:06 +0000 (UTC)
-Received: from az2uksmom4.o.css.fujitsu.com (az2uksmom4.o.css.fujitsu.com [10.151.22.204])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by az2nlsmgm3.fujitsu.com (Postfix) with ESMTPS id BE31F1807162;
-	Thu, 14 May 2026 09:33:05 +0000 (UTC)
-Received: from dhcp-portal (unknown [10.172.107.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by az2uksmom4.o.css.fujitsu.com (Postfix) with ESMTPS id 42F27406855;
-	Thu, 14 May 2026 09:33:04 +0000 (UTC)
-Received: from isar2.ecs00.fujitsu.local (unknown [10.172.183.27])
-	by dhcp-portal (Postfix) with ESMTP id 50BD3608E9;
-	Thu, 14 May 2026 11:33:03 +0200 (CEST)
-From: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-To: smita.koralahallichannabasappa@amd.com,
-	alison.schofield@intel.com,
-	dan.j.williams@intel.com
-Cc: linux-cxl@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	nvdimm@lists.linux.dev,
-	ardb@kernel.org,
-	benjamin.cheatham@amd.com,
-	dave.jiang@intel.com,
-	jonathan.cameron@huawei.com,
-	Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Subject: [PATCH] dax/bus: Upgrade resource conflict message to dev_err() in alloc_dax_region()
-Date: Thu, 14 May 2026 11:32:08 +0200
-Message-Id: <20260514093208.13110-1-tomasz.wolski@fujitsu.com>
-X-Mailer: git-send-email 2.35.3
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LypZscHL"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04706C2BCB3;
+	Thu, 14 May 2026 09:52:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778752355;
+	bh=RgThfRfi90t4CYlBZ1BwD8ONPCbUAT3OicJlijcFJak=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=LypZscHLziQriDtJv/Glk0fiYd5ADPqALEthu1bCkqdc4MnG4oVVyxOis86AtViaP
+	 HJD6bHU+bjrtX+CyKDWSk2LriIER/oiLrGH6jHsqUDfWpI6dhA3mTVXeXotEFWg0Np
+	 EsJ7piaDsoBPtgqe9Qv4fm4nvCGhehZ0V3c/dAt3m+MkpNnmWZxO+NywEMo6tLyQ90
+	 X3zCqWcxrxGI4V5AjxtGfC9wNV000nI3m0Eirx2hvDGE5+sA7nysidgyLon2+d067+
+	 1gFd9M5offUDtEGf+WFzHhW5jom+c1CcVM5pF0Ab9C2eVmJzauOG+1TkhipaoQkMio
+	 ajdZoCwhLjjGQ==
+Message-ID: <0aa79750-ac75-4111-ac82-ad5672157c90@kernel.org>
+Date: Thu, 14 May 2026 12:52:21 +0300
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] interconnect: qcom: eliza: Add SDCC1 slave node
+To: Abel Vesa <abel.vesa@oss.qualcomm.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+ linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260512-eliza-interconnect-add-missing-sdcc1-slave-node-v1-0-b1edf81bac3b@oss.qualcomm.com>
+ <20260512-eliza-interconnect-add-missing-sdcc1-slave-node-v1-2-b1edf81bac3b@oss.qualcomm.com>
+From: Georgi Djakov <djakov@kernel.org>
+Content-Language: en-US
+In-Reply-To: <20260512-eliza-interconnect-add-missing-sdcc1-slave-node-v1-2-b1edf81bac3b@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The dax_region resource conflict in alloc_dax_region() indicates a
-serious configuration problem — two subsystems (e.g. dax_hmem and
-dax_cxl) are attempting to register overlapping address ranges. This is
-not a transient or debug-level condition; it represents a genuine
-resource conflict that an administrator needs to be aware of.
+On 5/12/26 3:18 PM, Abel Vesa wrote:
+> The Eliza interconnect provider is missing the SDCC1 CNOC CFG slave
+> node. Add qhs_sdc1 to the provider node table and qsm_cfg links so
+> SDCC1 interconnect paths can resolve to a provider node.
+> 
+> Bump the qsm_cfg link count to match the new entry.
+> 
+> Fixes: a39efc80ff50 ("interconnect: qcom: Add Eliza interconnect provider driver")
+> Signed-off-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
+> ---
+>   drivers/interconnect/qcom/eliza.c | 11 +++++++++--
+>   1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/interconnect/qcom/eliza.c b/drivers/interconnect/qcom/eliza.c
+> index a4f7903f0524..6d12a1c3c034 100644
+> --- a/drivers/interconnect/qcom/eliza.c
+> +++ b/drivers/interconnect/qcom/eliza.c
+> @@ -127,6 +127,12 @@ static struct qcom_icc_node qhs_qup2 = {
+>   	.buswidth = 4,
+>   };
+>   
+> +static struct qcom_icc_node qhs_sdc1 = {
+> +	.name = "qhs_sdc1",
+> +	.channels = 1,
+> +	.buswidth = 4,
+> +};
+> +
+>   static struct qcom_icc_node qhs_sdc2 = {
+>   	.name = "qhs_sdc2",
+>   	.channels = 1,
+> @@ -383,7 +389,7 @@ static struct qcom_icc_node qsm_cfg = {
+>   	.name = "qsm_cfg",
+>   	.channels = 1,
+>   	.buswidth = 4,
+> -	.num_links = 29,
+> +	.num_links = 30,
+>   	.link_nodes = { &qhs_ahb2phy0, &qhs_ahb2phy1,
+>   			&qhs_camera_cfg, &qhs_clk_ctl,
+>   			&qhs_crypto0_cfg, &qhs_display_cfg,
+> @@ -392,7 +398,7 @@ static struct qcom_icc_node qsm_cfg = {
+>   			&qhs_mss_cfg, &qhs_pcie_0_cfg,
+>   			&qhs_prng, &qhs_qdss_cfg,
+>   			&qhs_qspi, &qhs_qup1,
+> -			&qhs_qup2, &qhs_sdc2,
+> +			&qhs_qup2, &qhs_sdc1, &qhs_sdc2,
+>   			&qhs_tcsr, &qhs_tlmm,
+>   			&qhs_ufs_mem_cfg, &qhs_usb3_0,
+>   			&qhs_venus_cfg, &qhs_vsense_ctrl_cfg,
 
-Promote the log level from dev_dbg() to dev_err() so that the conflict
-is visible by default without requiring dynamic debug to be enabled.
+Should we also add the sdc1 to some BCM?
 
-Suggested-by: Dan Williams <dan.j.williams@intel.com>
-Link: https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mobl4.notmuch/
-Fixes: 34f80bb969cc ("dax: Track all dax_region allocations under a global resource tree")
-Signed-off-by: Tomasz Wolski <tomasz.wolski@fujitsu.com>
----
- drivers/dax/bus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
-index 68437c05e21d..cd963eeeef7b 100644
---- a/drivers/dax/bus.c
-+++ b/drivers/dax/bus.c
-@@ -672,7 +672,7 @@ struct dax_region *alloc_dax_region(struct device *parent, int region_id,
- 
- 	rc = request_resource(&dax_regions, &dax_region->res);
- 	if (rc) {
--		dev_dbg(parent, "dax_region resource conflict for %pR\n",
-+		dev_err(parent, "dax_region resource conflict for %pR\n",
- 			&dax_region->res);
- 		goto err_res;
- 	}
--- 
-2.47.3
-
+Thanks,
+Georgi
