@@ -1,94 +1,84 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A58B735E93B;
-	Thu, 14 May 2026 12:40:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF642275B15;
+	Thu, 14 May 2026 12:57:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778762446; cv=none; b=uzi+s4uW1KsmZbAuHUm5HQw9sl8IO0uDCrDxLxkPdehgYTAimS+Of3ZuGkvHTonuo7u+ywuhzkbnUHminPQcaqoMstl0N1r+U/q/C/mclfY+bN+SEOP0CRJpz76idTmRL+54yaYsJdYgkJ+fgxVu2EZxW9v107xYCXXKKgjvfVg=
+	t=1778763447; cv=none; b=GhtmsHAARwcXl/PHc74tirvZrbZ544pYn7cc2xyr5DGiStK3Q9wodMFMJ6F/arkRlwEBN5MMp/kJnyp/qgM4jE32IDA7diirEN0rwsI4rSvEkWGuqTfO5yt+TUOxNuxUg5oDjD/81IF5kaMMBnn1AdYBL2BYDel3ujR1W78y9mg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778762446; c=relaxed/simple;
-	bh=iWCSZhdPb+8cBMuEmy8gSvTQVeilWYLmuEzyouzd7YI=;
+	s=arc-20240116; t=1778763447; c=relaxed/simple;
+	bh=AKwZQs2wlVU5d66RzEN5Yeb4ReFmnHAO0+173C7d698=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ioznIQJHJ8oQhxAVLQdfk7z11ejNEfHYSpJJArBizh4+3GTHhn7rlzvDYZ8UzTedm7yPb4ihYTzkClvpZAvvpy0QVMPar+9icdILR7t9aXtaWFinlR+QnuvIcFbIOWkPFONSvdKP2VAR/fdJVmQDzmeSxudlJYOSfyDpLp7nM18=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aX870/BR; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=kps4j4uXctpo+/QN/WqwVhaOKrmsq4ZzWoFNF7b/QqUMRgeZBh/EBxlnxK+wuOCtGmW2XHfD5lfRTTCrHQsgWhDvaXp+tYM734UKmwvo9LbnWFUDGeyMqgRYtFVsPCDz0ZnVV6YnDdlNRu+3gwMKkWRQ2aTcML1JLsijJ/cFsoc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JWHqLlK/; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aX870/BR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A76AC2BCB3;
-	Thu, 14 May 2026 12:40:42 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JWHqLlK/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C39F1C2BCB3;
+	Thu, 14 May 2026 12:57:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778762446;
-	bh=iWCSZhdPb+8cBMuEmy8gSvTQVeilWYLmuEzyouzd7YI=;
+	s=k20201202; t=1778763447;
+	bh=AKwZQs2wlVU5d66RzEN5Yeb4ReFmnHAO0+173C7d698=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aX870/BR4AkM531xo6QouLrnsue0uIXWdlOfArk/WJtHsanCKyTM2w9zXR28xVImI
-	 aR1ocP432CLGhdFFPANZ2zxuptdM6K4VLf6i9Ku61mNVNhnCi1OxvyG6QZsbxTgtz/
-	 k+TrwGz1rJ2PnAItjV2X6NpSsPFw0BwtEgIddkekqyUdA1cT+b/48EbhV4Dnh5Ff+F
-	 l4gysj8udrc7yx7I+I4SOFbO1zqwGK5j5nxHfAPzLQi4V6OqqS9IEaTTq1vfxaRbI8
-	 sZ055fcAAnQbZClSRkkMy80vdQdMAopGR7BxGlvCJ2QbKHk3kq+7ZbEwpra5IycTF9
-	 BybhmCNHu4eIw==
-Date: Thu, 14 May 2026 13:40:40 +0100
-From: Sudeep Holla <sudeep.holla@kernel.org>
-To: Sibi Sankar <sibi.sankar@oss.qualcomm.com>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, linux-arm-msm@vger.kernel.org,
-	Sudeep Holla <sudeep.holla@kernel.org>, andersson@kernel.org,
-	konradybcio@kernel.org, myungjoo.ham@samsung.com,
-	kyungmin.park@samsung.com, cw00.choi@samsung.com,
-	cristian.marussi@arm.com, dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	arm-scmi@vger.kernel.org, linux-tegra@vger.kernel.org,
-	linux-pm@vger.kernel.org, dmitry.baryshkov@oss.qualcomm.com,
-	jonathanh@nvidia.com, thierry.reding@kernel.org, digetx@gmail.com,
-	conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org
-Subject: Re: [RFC V6 0/8] arm_scmi: vendors: Qualcomm Generic Vendor
- Extensions
-Message-ID: <20260514-towering-heavenly-earwig-b18feb@sudeepholla>
-References: <20260507062237.78051-1-sibi.sankar@oss.qualcomm.com>
- <436ce846-bd9e-45bb-bdc2-d2a0fd00dc25@arm.com>
- <5494a379-1e49-4551-a5f0-50d0bd7cd7d0@oss.qualcomm.com>
+	b=JWHqLlK/wIwM/uCBb2Q7orVLvYK+1zY65FUJExviSdXrbpFG3rZp2RkmRNGEA9xLy
+	 vUlzRSt2sjt4Omv2vT3nHOZV4QLnETOk8XwsbcrTVjjIHjMiAkdzNX9nAHPIZAPvBZ
+	 fvFTsNC2+etSzMbeMG1XqkGkCbeDivxa2L5MMOMvUYoEjqkk/4tNS0yh/BxO61h5WT
+	 jFYVylaVULZdpPU46QKFfiAn6jH7lantX+Qte39+kTFwjApgi+zhy9i2EAqPP7seqG
+	 4GbFfz+2ly06YxzppyjZ7D2JBdjUfgsOaS+fwyH84bFJaF1a8FXlUfUufs6zDZf5Qv
+	 aFSS24mrSXWlg==
+Date: Thu, 14 May 2026 14:57:25 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Roman Vivchar <rva333@protonmail.com>
+Cc: Jonathan Cameron <jic23@kernel.org>, 
+	David Lechner <dlechner@baylibre.com>, Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Sen Chu <sen.chu@mediatek.com>, 
+	Sean Wang <sean.wang@mediatek.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Lee Jones <lee@kernel.org>, Srinivas Kandagatla <srini@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linux-iio@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, 
+	Ben Grisdale <bengris32@protonmail.ch>
+Subject: Re: [PATCH v2 01/16] dt-bindings: iio: adc: mt6359: generalize
+ description for mt63xx series
+Message-ID: <20260514-abiding-honored-mammoth-78dda0@quoll>
+References: <20260512-mt6323-v2-0-3efcba579e88@protonmail.com>
+ <20260512-mt6323-v2-1-3efcba579e88@protonmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <5494a379-1e49-4551-a5f0-50d0bd7cd7d0@oss.qualcomm.com>
+In-Reply-To: <20260512-mt6323-v2-1-3efcba579e88@protonmail.com>
 
-On Thu, May 14, 2026 at 05:11:41PM +0530, Sibi Sankar wrote:
+On Tue, May 12, 2026 at 08:18:15AM +0300, Roman Vivchar wrote:
+> Update binding title to the MT63xx, since the list of compatibles already
+> includes mt6363 and mt6373 which don't belong to the mt6350 family.
 > 
-> On 5/13/2026 10:30 PM, Lukasz Luba wrote:
-> > 
-> > 
-
-[...]
-
+> Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+> ---
+>  Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> > Based on this description I have a few questions:
-> > 1. Why we don't use SCMI notifications for this purpose?
-> 
-> 
-> This is an attempt to retrofit firmware, that is already out in the wild
-> running on X1E laptops and Glymur which continues to use the same firmware, into
-> generic linux frameworks, so that it provides some useful information to
-> user rather than it being a complete black box.
+> diff --git a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> index 5d4ab701f51a..2e8857e104f5 100644
+> --- a/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> +++ b/Documentation/devicetree/bindings/iio/adc/mediatek,mt6359-auxadc.yaml
+> @@ -4,7 +4,7 @@
+>  $id: http://devicetree.org/schemas/iio/adc/mediatek,mt6359-auxadc.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
+>  
+> -title: MediaTek MT6350 series PMIC AUXADC
+> +title: MediaTek MT63xx series PMIC AUXADC
 
-We cannot accept changes that rely on firmware interfaces that are not well
-defined. This is not a comment on any specific interface, but if an interface
-is not specified with the same level of rigor as a standard specification, it
-should not be expected to receive mainline support.
+Honestly that's close to churn... Do it while adding new compatibles.
 
-> We already have a ton of firmware changes suggested by Sudeep/Cristian that
-> will be taken into account for the next generation of SoCs, will make sure
-> this is accounted for as well :)
+Best regards,
+Krzysztof
 
-It is helpful to know this but also unfortunate as we have only just begun
-reviewing the interface and refining its shape. Please do not rely solely on
-the review completed so far, as the interface may still evolve. Until it is
-merged, it should not be considered accepted. This is why I am insisting that
-the interface document be reviewed and accepted before any driver changes are
-made.
-
--- 
-Regards,
-Sudeep
