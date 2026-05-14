@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DD813FFAAE;
-	Thu, 14 May 2026 14:39:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D24B33E5A09;
+	Thu, 14 May 2026 14:43:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778769562; cv=none; b=gagkXK5r9SDKt2kKw6vdBEess+gdKKhAaYsL/+emyJXWPSqGywhuwtfj0NXafUShs2AbrIhT+ISTg3P5SpenpezkHZUBAO+omOUGrsNGjbKk16iEu4rMDuRMOQk+ZzT6Wri67cnXf5JWYU/xCkc+45qYuEgU+TiIs/fmHLcv0/Y=
+	t=1778769813; cv=none; b=nldwxwYWF9VdPlJVomyn22wVP36xjb1U7e5uj2a33opCYMalW+RgwjAeZ3HASE2Qq9GsGCzAt8VwB0dDukRWdzrhij+A6O51cAmpr2FVOQmKIaxN9rxfc8kq6Fi6BqP0Wg2L4qiq4UjXsP6mAinlkPbOm/UHnRh2SCGry74jXJI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778769562; c=relaxed/simple;
-	bh=2eLDu+cIB6WpZJ+7MDE6H6VTqgwPFx5S6MkD59FtGV4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nPmXa0FI/NY1WWm36Krjx2N+bQWQrjUefb5Rm/vDlyi1z/c+9EbzRW0NHQ0muCpXuVbilayzw+qMHzZmQH8pEK/sv96ukyV4sacaN1vIHFeYTYGoYFuII6vLzdP4QrFNlvLu2iiIL6arl5TnUA9ZSwpkn2DFogOy9tdCUYGlS/E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CQM4bx0s; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778769813; c=relaxed/simple;
+	bh=i/jK49CxT9oEICFn8p23oUEK5wmemyon/94BmVW39cs=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=sxPqbfPLDr5YEF2jHhBYetDVHkEMTpDHnvfVcr1FzsWfhyqqQo3EOYkdBUlORO8qm3Wlqq0Z73Lu0NAFPkpFVDVeUoKBr/A9Wg+iU5Q9vaLqFFgOi9DycpLeDIYmQTObs+0QusguRhMDPkRatQf1HcUWI0/dArYAFB0Fkqr2bH8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=e4WmqPBF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CQM4bx0s"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B94EC2BCB3;
-	Thu, 14 May 2026 14:39:19 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="e4WmqPBF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BF92C2BCB8;
+	Thu, 14 May 2026 14:43:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778769562;
-	bh=2eLDu+cIB6WpZJ+7MDE6H6VTqgwPFx5S6MkD59FtGV4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=CQM4bx0sTTQjRRH48096Desv5d5lyA5WrCx/XTR0bcq9ZZ+UKVS+hOcK3oqX6BdEi
-	 ygoGZmI1I+80cb8SarcPcwYDXxLKCvEu6SlNB/dGs4aVk6+iW0WLBvmodgQYRJQAAM
-	 NmF2T5q6cdm7gw0t41tpIeYiQEMPfm5yoELezcpiTt72ViR5/BNoFvMrVUXknE20fa
-	 evqU5PDJAzPSb+wldiCPl1l9IEfvHLWbPZPEVjSGXPU9sBaseOkkube/Vf3DcJCSrU
-	 +5oAJBsvifMhAcwnZaDPn1LVyZzQ3MkAZSdl2S53C3PSB/HqKoKnr9r+eJIuxC6ygw
-	 1FFHe7YxXpBWg==
-Message-ID: <27cc44d7-b3d1-4610-8257-4aad4115cd36@kernel.org>
-Date: Thu, 14 May 2026 16:39:17 +0200
+	s=k20201202; t=1778769813;
+	bh=i/jK49CxT9oEICFn8p23oUEK5wmemyon/94BmVW39cs=;
+	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
+	b=e4WmqPBFGltctSkP7hkYFoILiyVQ0CjDHtUNMhKg5NzJqYCpJqw+AfpzetBt+H9PF
+	 Pq9L0rDbvja/SVfyJA/3OQMFFk29B/2pHmYkcpAC4XP04mDB+ZBIjO0iL9TU62R9rz
+	 3Om9EVgx9+YsBG99PI2ub+4l8BO7QHzlsN7EoU94slfxpYZgRjZS8uHjveFoQRczSa
+	 sT2NieiwSrmHkWKBeAwQ5P3h/O35h5FLJUz4rXgxX8yaLjkiNo/1w9XH47Hr9HVnyL
+	 CmdIrQar5YLvQyBlV/dckBnpzR9pb+Det6ZcHOZHLuYPKLGAv2qv/1PFQ/nxOPWONJ
+	 GCjZAyz5yIJXQ==
+Message-ID: <e5552777-a449-4640-993f-5cf9bacbda56@kernel.org>
+Date: Thu, 14 May 2026 16:43:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -37,6 +37,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: qcom-hw: Document Shikra
  CPUFREQ Hardware
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Imran Shaik <imran.shaik@oss.qualcomm.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
  Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>,
@@ -53,7 +54,7 @@ References: <20260501-shikra-cpufreq-scaling-v1-0-c78b95f53b91@oss.qualcomm.com>
  <8101e2c8-0593-4325-a701-84f776dd4b0a@oss.qualcomm.com>
  <eebae734-3b03-4848-a728-a29d8a210e57@kernel.org>
  <dfc3039b-c45c-44d3-85c0-0d131bb5e55a@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+ <27cc44d7-b3d1-4610-8257-4aad4115cd36@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
  xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
@@ -98,78 +99,98 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <dfc3039b-c45c-44d3-85c0-0d131bb5e55a@oss.qualcomm.com>
+In-Reply-To: <27cc44d7-b3d1-4610-8257-4aad4115cd36@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 08/05/2026 18:03, Imran Shaik wrote:
-> 
-> 
-> On 05-05-2026 02:23 pm, Krzysztof Kozlowski wrote:
->> On 05/05/2026 10:50, Imran Shaik wrote:
->>>
->>>
->>> On 04-05-2026 03:53 pm, Krzysztof Kozlowski wrote:
->>>> On Fri, May 01, 2026 at 12:45:44PM +0530, Imran Shaik wrote:
->>>>> The Qualcomm Shikra cpufreq hardware is functionally identical to EPSS,
->>>>> but supports only up to 12 frequency lookup table (LUT) entries. Introduce
->>>>> qcom,cpufreq-epss-lite to represent this constrained EPSS variant.
->>>>
->>>> The entire point of having a generic compatible is that it MUST match
->>>> all devices. If it does not, then it is pointless to push that generic
->>>> compatible.
->>>>
->>>> I am speaking about qcom,cpufreq-epss.
->>>>
->>>> That's nothing new, I was arguing about it already, but now you have
->>>> confirmation of the mess introduced by generic compatibles. Solution is
->>>> not to add more generic compatibles, because what will be next?
->>>> qcom,cpufreq-epss-lighter?
->>>> qcom,cpufreq-epss-more-lite?
->>>> qcom,cpufreq-epss-high?
->>>>
->>>> Same was here:
->>>> https://lore.kernel.org/all/20240828203721.2751904-17-quic_nkela@quicinc.com/
->>>>
->>>> So that's second time I object and do object for every new instance. No
->>>> to generic compatibles, they are proven to be wrong at least for
->>>> Qualcomm.
->>>>
->>>> Best regards,
->>>> Krzysztof
->>>>
->>>
->>> Hi Krzysztof,
->>>
->>> There is no functional change to the latest EPSS hardware
->>> (qcom,cpufreq-epss) in this case. The Shikra platform uses the CPU
->>> frequency scaling block, which is a predecessor of EPSS and is referred
->>> to as EPSS‑lite. The only difference between EPSS‑lite and EPSS is the
->>> maximum number of frequency look up table (LUT) entries.
->>>
->>> This constrained EPSS block is not specific to Shikra and can be reused
->>> by other SoCs that implement the same hardware. Hence, we have added a
->>> separate epss-lite compatible and reused the existing bindings, as all
->>> other aspects of the hardware behavior and interface remain identical.
+On 14/05/2026 16:39, Krzysztof Kozlowski wrote:
+> On 08/05/2026 18:03, Imran Shaik wrote:
 >>
->> I don't understand how any of this is relevant to my comment. I know
->> what you did.
 >>
+>> On 05-05-2026 02:23 pm, Krzysztof Kozlowski wrote:
+>>> On 05/05/2026 10:50, Imran Shaik wrote:
+>>>>
+>>>>
+>>>> On 04-05-2026 03:53 pm, Krzysztof Kozlowski wrote:
+>>>>> On Fri, May 01, 2026 at 12:45:44PM +0530, Imran Shaik wrote:
+>>>>>> The Qualcomm Shikra cpufreq hardware is functionally identical to EPSS,
+>>>>>> but supports only up to 12 frequency lookup table (LUT) entries. Introduce
+>>>>>> qcom,cpufreq-epss-lite to represent this constrained EPSS variant.
+>>>>>
+>>>>> The entire point of having a generic compatible is that it MUST match
+>>>>> all devices. If it does not, then it is pointless to push that generic
+>>>>> compatible.
+>>>>>
+>>>>> I am speaking about qcom,cpufreq-epss.
+>>>>>
+>>>>> That's nothing new, I was arguing about it already, but now you have
+>>>>> confirmation of the mess introduced by generic compatibles. Solution is
+>>>>> not to add more generic compatibles, because what will be next?
+>>>>> qcom,cpufreq-epss-lighter?
+>>>>> qcom,cpufreq-epss-more-lite?
+>>>>> qcom,cpufreq-epss-high?
+>>>>>
+>>>>> Same was here:
+>>>>> https://lore.kernel.org/all/20240828203721.2751904-17-quic_nkela@quicinc.com/
+>>>>>
+>>>>> So that's second time I object and do object for every new instance. No
+>>>>> to generic compatibles, they are proven to be wrong at least for
+>>>>> Qualcomm.
+>>>>>
+>>>>> Best regards,
+>>>>> Krzysztof
+>>>>>
+>>>>
+>>>> Hi Krzysztof,
+>>>>
+>>>> There is no functional change to the latest EPSS hardware
+>>>> (qcom,cpufreq-epss) in this case. The Shikra platform uses the CPU
+>>>> frequency scaling block, which is a predecessor of EPSS and is referred
+>>>> to as EPSS‑lite. The only difference between EPSS‑lite and EPSS is the
+>>>> maximum number of frequency look up table (LUT) entries.
+>>>>
+>>>> This constrained EPSS block is not specific to Shikra and can be reused
+>>>> by other SoCs that implement the same hardware. Hence, we have added a
+>>>> separate epss-lite compatible and reused the existing bindings, as all
+>>>> other aspects of the hardware behavior and interface remain identical.
+>>>
+>>> I don't understand how any of this is relevant to my comment. I know
+>>> what you did.
+>>>
+>>
+>> Hi Krzysztof,
+>>
+>> The intent behind proposing an epss-lite compatible was to describe a 
+>> common hardware variant and avoid introducing SoC‑specific handling in 
+>> the cpufreq driver.
 > 
-> Hi Krzysztof,
+> And I already objected. Look:
 > 
-> The intent behind proposing an epss-lite compatible was to describe a 
-> common hardware variant and avoid introducing SoC‑specific handling in 
-> the cpufreq driver.
+> "So that's second time I object and do object for every new instance. No
+> to generic compatibles"
+> 
+> I provided arguments for that in the past.
+> 
+> NAK
+> 
+> Best regards,
 
-And I already objected. Look:
+I already provided the arguments here:
 
-"So that's second time I object and do object for every new instance. No
-to generic compatibles"
+"The entire point of having a generic compatible is that it MUST match
+all devices. If it does not, then it is pointless to push that generic
+compatible."
 
-I provided arguments for that in the past.
+so if you have generic compatible, IT MUST be used. You cannot keep
+adding more generic compatibles just because existing generic compatible
+is not generic enough!
 
-NAK
+I gave you detailed reasoning and even example why this approach is
+getting ridiculous, but you just have to keep pushing your solution to
+maintainers and keep asking the same.
+
+You were given the answer and the argument. Now you are just wasting
+maintainers time.
 
 Best regards,
 Krzysztof
