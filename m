@@ -1,222 +1,145 @@
-Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012015.outbound.protection.outlook.com [40.107.200.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F1A43B7B91
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 21:28:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.181
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778794102; cv=none; b=rB/TOnTsmDNEtQoxnhlwct6jV+Rqo7RE88hAQiIpWBQsxLY20Jid8crQEbXxq1UUnSG26AqtHL5kmLlYMb73oqvqbtYgn0bWDMug/Y1ckO6C+Fkjh9pr0koewJaPkrc3Uk/z+qFgJoWU6VqaoP6skebkUviymbQCFSFsBZARhuk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778794102; c=relaxed/simple;
-	bh=UAAhc9zgRDY0OXnSKHtNpXtGmyU24TNIsmZkviQoHF4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RytGGWkX98QzE0PWUmmS/DFUrNYpc/pPCrpax90Je4MjOaDFuGpiwXbbeLmDf5Qn190Ewy4a9u8qapgf1xLPd6L80kO5AFPI17SyWx1tdcHDhS6nxiF1Mu3621K+BuMW5R3nbtmN3OvJVYM1rejtCdraaUbLgQoRdzkgkcywIgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Af4JmlKt; arc=none smtp.client-ip=209.85.167.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B61403D0914;
+	Thu, 14 May 2026 21:56:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.200.15
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778795815; cv=fail; b=GrY45Qqs5kW/t4UNSFfpmm2Z4Ak00wE/zZ32qi3zmMTmptBnZTSP6FbnGuH2IVowPnFkW5h+Pp2vXurNM/ur0j4+tv20qkjJGFGvOFpLnjj/1+m4IACrt8elJDjVDR7c6sgr9kgn9pPCmQR+JDb6MabMqC77hoOZqI0CNkUz9I0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778795815; c=relaxed/simple;
+	bh=PuRoDAdx5hzeDVK+2QbajURDfEmf877XItdsAZt9wns=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=A/QQl4VUq3SlhEIoooFgRaedqOPRpgaMyYvccYKvWTBUtJhqz/8SPxuuAV4srJhrssl/3TAIF2NmJC74epKofw23Z0qWIv+3gxhEbDFa31NrLHWH2R30nMXoFbf2OA/irA/pzMtmXMkKOedVgI4ulO8aPY5Ky/pe9I9vGgryQSY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=lAA6ymh0; arc=fail smtp.client-ip=40.107.200.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Af4JmlKt"
-Received: by mail-oi1-f181.google.com with SMTP id 5614622812f47-4824b15c19eso4967807b6e.2
-        for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 14:28:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1778794099; x=1779398899; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=E33PQQu0zlQU2AosJngpr83elBv9UBQweiCZeschgOs=;
-        b=Af4JmlKtj+C5sSm7mxl5wI6SEf09iJ022/5ozn9OetENmNO3HZHcOwNCVo9T8B4ndz
-         67GXdd6dh8vZMGNOiUWDs5FwXuTC3C1ieFTtNx6xS5g4S9//8FYwvrumxwciztCYWWsS
-         2QqZ404gL1p14aOt3dM94LdCwj8IQkJ8QqYL8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778794099; x=1779398899;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=E33PQQu0zlQU2AosJngpr83elBv9UBQweiCZeschgOs=;
-        b=cFxnwlZEhEZHYALLDjWUST0XibUk/0+lrcReJI8SfP08StSn2IA/2jQRBXI0aEIJtL
-         cfguuuBlgQtS8lneALWlZs9M31KfAu8/5hnO7xdpBJ8AgKavrDMvEJdkDUOBkax6gMaM
-         z1Ho+xTRWofLS4DMgwxF4CKDHhGpWLp09akiRAbicKrku7egWuhvnMqANezVB6Vg/7WT
-         4wRGghSKYJXpJgbh/Gmc9+Tz7ezSe8L2U5XF6S9A1ThxOPefeBRdXPC0uAK9ZZnAUrXD
-         UP2nKhz2DxGHR6bXfPEfjwVtTX+eC62ycNBZFYNhAZtQ4IVYb9qs99JT+D62wOdAoqRL
-         CfGg==
-X-Forwarded-Encrypted: i=1; AFNElJ+Sy4LgrfroPdDgpMdmXPlJYCY6Ql07AAwUF60IKX6F/kTlo0r9X71dTBelZ2aNA5/DZcXnklwlzQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwcS2Hr7frPXTZ/zlqgLH1fddoik59dRapCvsEcGmP3KMprLcMQ
-	FGyOkHCkjQEwcLPqrTTsPiF0PGUxhckrQ31zjpN0WUK+4kURvomHwNeTdIsDxLAYQfY=
-X-Gm-Gg: Acq92OGqzU4y9n67pOen+/cPPlVI3P+xN4M3C6LCIWF/KTok8RZeOJE3TmRWlHVZucD
-	vcYhMyypSg2mpv0qjodc1K0StPInca8u0Zgd8YjyKV8ZepfqO66CxuEhoonVlYNauufzq855Co8
-	tYieBiNewjIXKE5jpH+Llhn06/YDk6kFngX0QxYdTFQ8dizaHe6qqYuRaymNXemmpWq/EXYE0sc
-	aZRZHcELUMrsOVRUD6dLgVU8cUF/2D8rO/M3ktpx7aNRy9l7Ww1taLzbqY+jYH9plXla13Rowt4
-	lv5Br0KAQ6+cj3PZTyC3eB8dkrzkHAWTxScJ4mj7cLVdYrw5jDhB0bicAnBLsgjMLJ2z7+qB78a
-	o4iDo6l+79LjFUsVPuspvkM/QdUjkh6xKh6UpHqe/JUMYhCnVdvo9fUR2yjiHqLTIkwd90puNdL
-	0iW1fCvbnBQHAZZjJEjk3dqS8UfWMZSvU=
-X-Received: by 2002:a05:6808:894c:b0:482:49ed:9162 with SMTP id 5614622812f47-482e5943746mr890726b6e.24.1778794099349;
-        Thu, 14 May 2026 14:28:19 -0700 (PDT)
-Received: from [192.168.1.14] ([38.15.57.99])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7e55843cbaesm135843a34.3.2026.05.14.14.28.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 May 2026 14:28:18 -0700 (PDT)
-Message-ID: <6f9dcb57-24cb-4e5d-a31d-b11c1bb22392@linuxfoundation.org>
-Date: Thu, 14 May 2026 15:28:18 -0600
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="lAA6ymh0"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=JUDKFnpYDIo7/vCulK7YTfLrpjsQh0BfmsTFCCb2saum8nHmnQ/k4i/uIRFuwLjVPbImjn6LMv/4kNSvmSrxk8ZbDe2lb8KtSX+IJhmOQe46IX1deDp/pY88+/NjE05cv0DAXEBR3rNvqYKig6tNqttJnaLKqVhQfIdNUs2FcyTbpRgyl4tH7mZeaPCGyknEbyj+7Eo78IiB6Te64PmthX92Z68XqLK4sU1aSaKa7YRygCNGP2J0/1UcyfrfHco9U0ayzQtNgHpqgY8H0Qu/uQ54e5e/TewpAGywV4O27xCdQGeVbP8ZOWaqed8HiOBfXFjLHO/4iKSlP2LpTqNZXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=88sh/qqzfjFL3I7/v2js9czdWWG3HbqriL4dgXJNNrk=;
+ b=nZvu0avFnXH8xcuWy/bpu6YBTv3qLQfYj85nw3wCDb8FIOzKp3TvvVatHU5/QgSJrZY5U/7a8y71JBKUPM+iEwXb07VYX6UlmRBov0i1z7YMdgUNM3pix7AoCcOupgak5kutRKebyHrUFBS90LVC7nyZqUu6txGICSL8pZRPzbrBkBzzsdnQd0g9NAqq29xJElsM9eQcJgUf3H6uyw++kAh0x47uQCGhbfX5LZTBr0GNYM/HkCNPDYNX1Q75rmukP1ptvoKVfORVRZUcTDchUbNRcW8049fY+q3swsy/KWBPmYxdgX66xcDG9duw4Ni8F1Ont5wHaC1jJ70KnaoXgA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=88sh/qqzfjFL3I7/v2js9czdWWG3HbqriL4dgXJNNrk=;
+ b=lAA6ymh0KNU3iawGhldAk4B3SMNxZIjG+v8Iwy8dqsWS7LnxtXh4y9Y0hflQzqcyO+XXzfaUOatppy9HSpeOizOkmV1SPg6GJC8MrC5a0MwXdS8mFkW5DCMKGg1fTo92LCkwavXlhamg/1N2AGv/llKOP4wwicCnw+5WogGrEMU=
+Received: from SJ0PR03CA0206.namprd03.prod.outlook.com (2603:10b6:a03:2ef::31)
+ by BY5PR12MB4050.namprd12.prod.outlook.com (2603:10b6:a03:207::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.18; Thu, 14 May
+ 2026 21:56:49 +0000
+Received: from SJ1PEPF000023CC.namprd02.prod.outlook.com
+ (2603:10b6:a03:2ef:cafe::b7) by SJ0PR03CA0206.outlook.office365.com
+ (2603:10b6:a03:2ef::31) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9913.12 via Frontend Transport; Thu,
+ 14 May 2026 21:56:49 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ SJ1PEPF000023CC.mail.protection.outlook.com (10.167.244.6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.25.13 via Frontend Transport; Thu, 14 May 2026 21:56:48 +0000
+Received: from ausmlimonci-lx1.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Thu, 14 May
+ 2026 16:56:47 -0500
+From: Mario Limonciello <mario.limonciello@amd.com>
+To: "Rafael J . Wysocki" <rafael@kernel.org>
+CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-pm@vger.kernel.org>, K Prateek Nayak <kprateek.nayak@amd.com>,
+	<x86@kernel.org>, Mario Limonciello <mario.limonciello@amd.com>
+Subject: [PATCH v3 0/4] Add CPPC HighestFreq support
+Date: Thu, 14 May 2026 16:56:22 -0500
+Message-ID: <20260514215626.35327-1-mario.limonciello@amd.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] cpupower: Implement powercap enabled setters
-To: =?UTF-8?Q?Mateusz_Ja=C5=9Bkiewicz?= <jaskiewiczteo@gmail.com>,
- Thomas Renninger <trenn@suse.com>
-Cc: Shuah Khan <shuah@kernel.org>, "John B. Wyatt IV" <jwyatt@redhat.com>,
- John Kacur <jkacur@redhat.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <60d4f650-84fc-4697-8390-98d9e9ebed31@linuxfoundation.org>
- <20260512161101.2993280-1-jaskiewiczteo@gmail.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <20260512161101.2993280-1-jaskiewiczteo@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: satlexmb08.amd.com (10.181.42.217) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000023CC:EE_|BY5PR12MB4050:EE_
+X-MS-Office365-Filtering-Correlation-Id: 32bf4e38-a42d-4cad-628d-08deb203b2d5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|376014|36860700016|1800799024|18002099003|56012099003|13003099007|11063799003;
+X-Microsoft-Antispam-Message-Info:
+	MFbruAVTGD40MEwAGbQM34qdIEJvHofhYkCiKiOtZRMn2xSH7lWwiYzDDL1upmPAw3U7OXzKk9CvpNLI94LYY4c6bFqOlYFFUO1h9mTZTzu72j/lTFDt25lnkWvlXNZG0L279d1xrsRnsz6epIYyKZBZQQmAYec7jafHTM31EBZ7yHnp8/ElHq/CtdLCE/L3Pg/YoNEG5YCCaJKHweJfEEr1DctvSueHZUFnL4a9IviLsQuSsIGnyLbAEkcLWOd/fpHBlgrcgQfeaoymGCtxOTaY1xWgf0dQfBrtSeJW7/9LsGCznf5tBPpitpq1D1108xaAQpOXF93VFuo9YQKovDVU9LoOMiSd47K03xMbdCx3BOdohu+ej6E6/c4j6Yy6c3oYN/UVHZVyWE3OMLBYciTjaKOgJvKh/sK11zEq312cMivTsCcyZ+a92fi3Dtoc043zEalU9Dskd1hMRM1DPXzcA4/DeMRidao6JJ0JfPIR8tVNvlqNNSBCG7lqnRWVsYge2NplfoEMGNo6o+kUAxrZ+obKreDBSuIToMBWufiii44W7h2YQ8yU0DxmzkVzyo5AQ+Ej69RW6s4oUlAlTnXbDjygszahi4FwWrvLlq6wJl3firQkcl+2HfEjQYGhWMuYdNfI/cKnCFeFjsJFfLC/UM0RZCIIu8ynENARq0mdyoisXY6ZiY0DCkhY12xo98S5mDQTBgdYoZiYt7eY1sxi1IasV3RqEtZC7lyIYi8=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(376014)(36860700016)(1800799024)(18002099003)(56012099003)(13003099007)(11063799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	jnkkmCoed7LU6mDTgwODyUxREOvyC9dZNGiRjKG4cyrO/HuY0ToLEPDJHjjQ9kpX/N3pARIXZQI/Vwvm3+NfixI7hsOblmxUhu/SlD09ZIxsIaeNb91X2t19FTk0gsZ6sjt4YkJr2CEfXMcktXCgbKjBpVaqx2tGUfaNc2xzcRdcSIfO/DJovPR8qSO1ALXyusp+AiQ3JdEKD8C4KKTsiJZk18zKUofmXDcUwfKllne7qdl+xeswDUD3CF/NesxEIyberxOLDjOITuFC4KL2sHqnFNAoFEIJNv8tmU9UGG+GWxO0EOtZ9SOVzt9vVtlSnHhHE1r0x4Ww2tTt/SjkjmkIVq0o9HC0PbmIalCPiGENtdi2JFqmf37Og3+IQcZmEEkyR+pJLa57XL5zHsGnQoDcoWwZCKmaY3cCkm31AeSjvyv20dIHLhmPa2MmGmYn
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 May 2026 21:56:48.7363
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 32bf4e38-a42d-4cad-628d-08deb203b2d5
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF000023CC.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4050
 
-On 5/12/26 10:11, Mateusz Jaśkiewicz wrote:
-> powercap_set_enabled() and powercap_zone_set_enabled() are part of the
-> public libcpupower API, but both currently return success without
-> updating sysfs.
-> 
-> Write the requested value to the matching enabled attribute so callers
-> can actually enable or disable the powercap control type or zone, and
-> report write failures back to the caller.
-> 
-> ---
-> Changes in v2:
-> - Check current enabled value before writing.
-> - Use fd < 0 style for open() failures.
-> - Print sysfs open/write failures with perror().
-> - Drop the sizeof(path) typecast.
-> 
-> Signed-off-by: Mateusz Jaśkiewicz <jaskiewiczteo@gmail.com>
-> ---
->   tools/power/cpupower/lib/powercap.c | 58 +++++++++++++++++++++++------
->   1 file changed, 47 insertions(+), 11 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/lib/powercap.c b/tools/power/cpupower/lib/powercap.c
-> index 94a0c69e5..80af65287 100644
-> --- a/tools/power/cpupower/lib/powercap.c
-> +++ b/tools/power/cpupower/lib/powercap.c
-> @@ -21,7 +21,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
->   	ssize_t numread;
->   
->   	fd = open(path, O_RDONLY);
-> -	if (fd == -1)
-> +	if (fd < 0)
->   		return 0;
->   
->   	numread = read(fd, buf, buflen - 1);
-> @@ -36,7 +36,7 @@ static unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
->   	return (unsigned int) numread;
->   }
->   
-> -static int sysfs_get_enabled(char *path, int *mode)
-> +static int sysfs_get_enabled(const char *path, int *mode)
->   {
->   	int fd;
->   	char yes_no;
-> @@ -45,7 +45,7 @@ static int sysfs_get_enabled(char *path, int *mode)
->   	*mode = 0;
->   
->   	fd = open(path, O_RDONLY);
-> -	if (fd == -1) {
-> +	if (fd < 0) {
->   		ret = -1;
->   		goto out;
->   	}
-> @@ -70,6 +70,36 @@ static int sysfs_get_enabled(char *path, int *mode)
->   	return ret;
->   }
->   
-> +static int sysfs_set_enabled(const char *path, int mode)
-> +{
-> +	char yes_no;
-> +	int fd;
-> +	int current_mode;
-> +	ssize_t ret;
-> +
-> +	if (mode != 0 && mode != 1)
-> +		return -1;
-> +
-> +	if (sysfs_get_enabled(path, &current_mode) == 0 &&
-> +	    current_mode == mode)
-> +		return 0;
-> +
-> +	yes_no = mode ? '1' : '0';
-> +	fd = open(path, O_WRONLY);
-> +	if (fd < 0) {
-> +		perror(path);
-> +		return -1;
-> +	}
-> +	ret = write(fd, &yes_no, 1);
-> +	if (ret != 1) {
-> +		if (ret < 0)
-> +			perror(path);
-> +		close(fd);
-> +		return -1;
-> +	}
-> +	return close(fd);
-> +}
-> +
->   int powercap_get_enabled(int *mode)
->   {
->   	char path[SYSFS_PATH_MAX] = PATH_TO_POWERCAP "/intel-rapl/enabled";
-> @@ -77,17 +107,13 @@ int powercap_get_enabled(int *mode)
->   	return sysfs_get_enabled(path, mode);
->   }
->   
-> -/*
-> - * TODO: implement function. Returns dummy 0 for now.
-> - */
->   int powercap_set_enabled(int mode)
->   {
-> -	return 0;
-> +	return sysfs_set_enabled(PATH_TO_RAPL "/enabled", mode);
->   }
-> -
->   /*
->    * Hardcoded, because rapl is the only powercap implementation
-> -- * this needs to get more generic if more powercap implementations
-> + * this needs to get more generic if more powercap implementations
->    * should show up
->    */
->   int powercap_get_driver(char *driver, int buflen)
-> @@ -180,8 +206,18 @@ int powercap_zone_get_enabled(struct powercap_zone *zone, int *mode)
->   
->   int powercap_zone_set_enabled(struct powercap_zone *zone, int mode)
->   {
-> -	/* To be done if needed */
-> -	return 0;
-> +	char path[SYSFS_PATH_MAX];
-> +	int ret;
-> +
-> +	if (!zone)
-> +		return -1;
-> +
-> +	ret = snprintf(path, sizeof(path), "%s/%s/enabled",
-> +		       PATH_TO_POWERCAP, zone->sys_name);
-> +	if (ret < 0 || ret >= sizeof(path))
-> +		return -1;
-> +
-> +	return sysfs_set_enabled(path, mode);
->   }
->   
->   
+On some systems, the boost ratio cannot be accurately calculated
+using linear interpolation of CPPC performance values because the
+performance-to-frequency mapping is not linear across all cores.
 
-Thomas,
+This series introduces support for the CPPC HighestFreq register.  This
+register is under a proposal with ASWG at the moment and trending for
+inclusion in ACPI 6.7.
 
-Please take a look at the _set_enable() addition and let me
-know if it is okay to apply this patch.
+This optionally provides the actual highest frequency eliminating
+the need for interpolation. When available, this frequency value is used
+for more accurate CPU capacity calculations and boost ratio determination.
 
-Are there any tests you would like to see run to verify this
-set API?
+This series adds support for the ACPI 6.7 proposal. It require's Sumit's
+CPPC v4 patches.
 
-thanks,
--- Shuah
+---
+v3:
+ * Rebase on Sumit's CPPCv4 v3 submission [1]
+ * Drop "Revert "ACPI: CPPC: Adjust debug messages in amd_set_max_freq_ratio() to warn"
+   as this was merged through the PM tree already in 7.1-rc3.
+ * Add tags for Prateek.
+v2:
+ * Drop CPPC v4 patches, these are submitted separately by Sumit Gupta [2]
+
+Link: https://lore.kernel.org/linux-pm/20260514194822.1841748-1-sumitg@nvidia.com/ [1]
+Link: https://lore.kernel.org/linux-pm/20260430142430.755437-1-sumitg@nvidia.com/ [2]
+
+Mario Limonciello (4):
+  ACPI: CPPC: Add support for reading HighestFreq
+  ACPI: CPPC: Refactor boost ratio handling
+  cpufreq/acpi-cpufreq: Use amd_get_boost_ratio()
+  cpufreq/amd-pstate: Get highest freq from CPPC if available
+
+ arch/x86/kernel/acpi/cppc.c    | 122 ++++++++++++++++++---------------
+ drivers/acpi/cppc_acpi.c       |  31 ++++++---
+ drivers/cpufreq/acpi-cpufreq.c |  17 +++--
+ drivers/cpufreq/amd-pstate.c   |  18 +++--
+ include/acpi/cppc_acpi.h       |  16 ++++-
+ 5 files changed, 123 insertions(+), 81 deletions(-)
+
+-- 
+2.54.0
+
