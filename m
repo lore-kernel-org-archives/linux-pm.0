@@ -1,25 +1,25 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2952D1E515
-	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 06:09:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2ACB25B098
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 06:15:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778738979; cv=none; b=k07DlCiAkBL/pYfeGNRQhzhXZjFqfj8/PPsJkCR6McgjvAWtRfiyEJ6kNOK3Q8RpMoURDRW3UQ67wfpAK0wKSBQhg7gER/Sm4qUYxoLKfQIrnlHiumUkJTqfc8Ll7ShHZh/JBqpT0kbiswYBltcoLTni4BVb/UxBlAhg+twcdgg=
+	t=1778739303; cv=none; b=BL5lWPQ64nTPCwzZT7SrJhUoML+UM1wAGu/UAWEbsYyhKuKaB6SsRJJBH82+eSSq6jxlhGdGtDZHt8/YempDRhlQA5ypadDnTAch9hnMl9RRnLvVLLDmSbZWQQJlAiqqcWbGBKyYTxEYv1wXMK81ucLNvPr7+NHLtNDaqX2wmaU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778738979; c=relaxed/simple;
-	bh=y4inSwTySE//oFnL7J3rDLAcjKRq+yeo0jOr5sWnFd4=;
+	s=arc-20240116; t=1778739303; c=relaxed/simple;
+	bh=b8WRxpI6E8uzZo52rh40SNUXHfeL8DJr0bDCNWVVHRA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C80SghhqI3A/8hGhrHFOSJSR2FW+GhFUdSuxy/yBBlUAXzE28AD8xZCSiQeo/qUzR10XuiyhZT59iJwLxxusM/FpHcwVkxFREd9aixOufWOqPxUTNUTfg7RylnxK33DdRgKx5F8rORicYSr+8O5zqucIFpSMwSMzgJ27BAOI5tY=
+	 In-Reply-To:Content-Type; b=HPRs+3Fh+7TPZ8sM2vYCyokVy7/JI/LHMfilp203Z+SCLywDWl1sxzv1v9Oq8PcVOoqLcChItrkP6Uzr8/jngGBUw8Pck3P9MgsxjgdMvJHdmULXewfjGVPCt4Vks/JsGz83ZM76A8ITiFTMav3DS1TSM45kZnXIrB8N7AeApwY=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 788f28784f5b11f1aa26b74ffac11d73-20260514
+X-UUID: 39e1e9a24f5c11f1aa26b74ffac11d73-20260514
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:807cdf51-3dde-45ac-966d-4b36f420f80c,IP:0,U
+X-CID-O-INFO: VERSION:1.3.12,REQID:8e74f2ef-5e73-49bc-9a16-f10d93106e10,IP:0,U
 	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
 	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:907e599764adffaf773852cd53fe47d9,BulkI
+X-CID-META: VersionHash:e7bac3a,CLOUDID:292977be64a77d164356fa5b4f3e7cc1,BulkI
 	D:nil,BulkQuantity:0,Recheck:0,SF:80|81|82|83|102|898,TC:nil,Content:0|15|
 	52,EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0
 	,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
@@ -27,14 +27,14 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 788f28784f5b11f1aa26b74ffac11d73-20260514
+X-UUID: 39e1e9a24f5c11f1aa26b74ffac11d73-20260514
 X-User: tianyaxiong@kylinos.cn
 Received: from [10.42.13.21] [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <tianyaxiong@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 652903280; Thu, 14 May 2026 14:09:30 +0800
-Message-ID: <418993e5-ae44-48a4-98d7-250d0f359b0a@kylinos.cn>
-Date: Thu, 14 May 2026 14:09:28 +0800
+	with ESMTP id 1098404912; Thu, 14 May 2026 14:14:55 +0800
+Message-ID: <fdcac90b-b253-45f2-81fa-81c980671f28@kylinos.cn>
+Date: Thu, 14 May 2026 14:14:52 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -42,194 +42,167 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/6] devfreq: Factor out devfreq_set_governor()
+Subject: Re: [PATCH v2 4/6] devfreq: Add module owner to devfreq governor
 To: Jie Zhan <zhanjie9@hisilicon.com>, cwchoi00@gmail.com,
  cw00.choi@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
  linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: linuxarm@huawei.com, zhenglifeng1@huawei.com, zhangpengjie2@huawei.com,
  lihuisong@huawei.com, prime.zeng@hisilicon.com
 References: <20260513093832.1645890-1-zhanjie9@hisilicon.com>
- <20260513093832.1645890-4-zhanjie9@hisilicon.com>
+ <20260513093832.1645890-5-zhanjie9@hisilicon.com>
 Content-Language: en-US
 From: Yaxiong Tian <tianyaxiong@kylinos.cn>
-In-Reply-To: <20260513093832.1645890-4-zhanjie9@hisilicon.com>
+In-Reply-To: <20260513093832.1645890-5-zhanjie9@hisilicon.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 在 2026/5/13 17:38, Jie Zhan 写道:
-> Factor out common governor setting logic into devfreq_set_governor() so as
-> to consolidate the code in governor_store() and devfreq_add_device().
+> Add an 'owner' member to struct devfreq_governor, such that we can find
+> the module that holds the governor code when it's compiled as a kernel
+> module.  This allows the devfreq core to properly manage the lifecycle
+> of governors.
 >
-> The caller is expected to hold 'devfreq_list_lock', enforced via
-> lockdep_assert_held().  This is required because devfreq_add_device() must
-> hold the lock from setting governor until the device is added to
-> 'devfreq_list', so that a concurrent devfreq_remove_governor() cannot free
-> the governor in between.
+> Update devfreq_add_governor() and devm_devfreq_add_governor() to
+> automatically set 'owner' to THIS_MODULE via helper macros.
+>
+> This is a prerequisite for implementing governor reference counting to
+> prevent a governor module from being unloaded (except for force unload)
+> while a governor is in use.
 >
 > Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
-
-I'm a bit unclear about the purpose of this commit, or the problem it 
-solves. Can you explain it more clearly?
-
-
 > ---
->   drivers/devfreq/devfreq.c | 117 ++++++++++++++++++--------------------
->   1 file changed, 56 insertions(+), 61 deletions(-)
+>   drivers/devfreq/devfreq.c        | 26 +++++++++-----------------
+>   include/linux/devfreq-governor.h | 26 +++++++++++++++++++++++---
+>   2 files changed, 32 insertions(+), 20 deletions(-)
 >
 > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 53c40d795a13..9e3e6a7348f8 100644
+> index 9e3e6a7348f8..e1363ab69173 100644
 > --- a/drivers/devfreq/devfreq.c
 > +++ b/drivers/devfreq/devfreq.c
-> @@ -318,6 +318,59 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
->   	return governor;
+> @@ -1301,11 +1301,8 @@ void devfreq_resume(void)
+>   	mutex_unlock(&devfreq_list_lock);
 >   }
 >   
-> +static int devfreq_set_governor(struct devfreq *df,
-> +				const struct devfreq_governor *new_gov)
-> +{
-> +	const struct devfreq_governor *old_gov;
-> +	struct device *dev;
-> +	int ret;
-> +
-> +	lockdep_assert_held(&devfreq_list_lock);
-> +
-> +	old_gov = df->governor;
-> +	dev = &df->dev;
-> +
-> +	if (old_gov) {
-> +		if (old_gov == new_gov)
-> +			return 0;
-> +
-> +		if (IS_SUPPORTED_FLAG(old_gov->flags, IMMUTABLE) ||
-> +		    IS_SUPPORTED_FLAG(new_gov->flags, IMMUTABLE))
-> +			return -EINVAL;
-> +
-> +		/* Stop the current governor */
-> +		ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
-> +		if (ret) {
-> +			dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
-> +				 __func__, df->governor->name, ret);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	/* Start the new governor */
-> +	df->governor = new_gov;
-> +	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-> +	if (ret) {
-> +		dev_warn(dev, "%s: Governor %s not started(%d)\n",
-> +			 __func__, df->governor->name, ret);
-> +
-> +		/* Restore previous governor */
-> +		df->governor = old_gov;
-> +		if (!df->governor)
-> +			return ret;
-> +
-> +		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-> +		if (ret) {
-> +			dev_err(dev, "%s: restore Governor %s failed (%d)\n",
-> +				__func__, df->governor->name, ret);
-> +			df->governor = NULL;
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	return sysfs_update_group(&df->dev.kobj, &gov_attr_group);
-> +}
-> +
->   static int devfreq_notify_transition(struct devfreq *devfreq,
->   		struct devfreq_freqs *freqs, unsigned int state)
+> -/**
+> - * devfreq_add_governor() - Add devfreq governor
+> - * @governor:	the devfreq governor to be added
+> - */
+> -int devfreq_add_governor(struct devfreq_governor *governor)
+> +int __devfreq_add_governor(struct devfreq_governor *governor,
+> +			   struct module *mod)
 >   {
-> @@ -942,9 +995,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->   		goto err_init;
+>   	struct devfreq_governor *g;
+>   
+> @@ -1322,37 +1319,32 @@ int devfreq_add_governor(struct devfreq_governor *governor)
+>   		return -EINVAL;
 >   	}
 >   
-> -	devfreq->governor = governor;
-> -	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
-> -						NULL);
-> +	err = devfreq_set_governor(devfreq, governor);
->   	if (err) {
->   		dev_err_probe(dev, err,
->   			"%s: Unable to start governor for the device\n",
-> @@ -952,10 +1003,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
->   		goto err_init;
->   	}
+> +	governor->owner = mod;
+>   	list_add(&governor->node, &devfreq_governor_list);
 >   
-> -	err = sysfs_update_group(&devfreq->dev.kobj, &gov_attr_group);
-> -	if (err)
-> -		goto err_init;
-> -
->   	list_add(&devfreq->node, &devfreq_list);
+>   	return 0;
+>   }
+> -EXPORT_SYMBOL(devfreq_add_governor);
+> +EXPORT_SYMBOL(__devfreq_add_governor);
+
+It's a bit strange to use the __ symbol here. Generally speaking, 
+functions exported with EXPORT_SYMBOL are public, while __ indicates 
+internal.
+
+The same applies below.
+
 >   
->   	mutex_unlock(&devfreq_list_lock);
-> @@ -1380,7 +1427,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->   	struct devfreq *df = to_devfreq(dev);
->   	int ret;
->   	char str_governor[DEVFREQ_NAME_LEN + 1];
-> -	const struct devfreq_governor *governor, *prev_governor;
-> +	const struct devfreq_governor *governor;
+>   static void devm_devfreq_remove_governor(void *governor)
+>   {
+>   	WARN_ON(devfreq_remove_governor(governor));
+>   }
 >   
->   	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->   	if (ret != 1)
-> @@ -1391,59 +1438,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->   	if (IS_ERR(governor))
->   		return PTR_ERR(governor);
+> -/**
+> - * devm_devfreq_add_governor() - Add devfreq governor
+> - * @dev:	device which adds devfreq governor
+> - * @governor:	the devfreq governor to be added
+> - *
+> - * This is a resource-managed variant of devfreq_add_governor().
+> - */
+> -int devm_devfreq_add_governor(struct device *dev,
+> -			      struct devfreq_governor *governor)
+> +int __devm_devfreq_add_governor(struct device *dev,
+> +				struct devfreq_governor *governor,
+> +				struct module *mod)
+>   {
+>   	int err;
 >   
-> -	if (!df->governor)
-> -		goto start_new_governor;
-> -
-> -	if (df->governor == governor)
-> -		return count;
-> -
-> -	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
-> -	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
-> -		return -EINVAL;
-> -
-> -	/*
-> -	 * Stop the current governor and remove the specific sysfs files
-> -	 * which depend on current governor.
-> -	 */
-> -	ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
-> -	if (ret) {
-> -		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
-> -			 __func__, df->governor->name, ret);
-> -		return ret;
-> -	}
-> -
-> -start_new_governor:
-> -	/*
-> -	 * Start the new governor and create the specific sysfs files
-> -	 * which depend on the new governor.
-> -	 */
-> -	prev_governor = df->governor;
-> -	df->governor = governor;
-> -	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-> -	if (ret) {
-> -		dev_warn(dev, "%s: Governor %s not started(%d)\n",
-> -			 __func__, df->governor->name, ret);
-> -
-> -		/* Restore previous governor */
-> -		df->governor = prev_governor;
-> -		if (!df->governor)
-> -			return ret;
-> -
-> -		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-> -		if (ret) {
-> -			dev_err(dev,
-> -				"%s: reverting to Governor %s failed (%d)\n",
-> -				__func__, prev_governor->name, ret);
-> -			df->governor = NULL;
-> -			return ret;
-> -		}
-> -	}
-> -
-> -	/*
-> -	 * Create the sysfs files for the new governor. But if failed to start
-> -	 * the new governor, restore the sysfs files of previous governor.
-> -	 */
-> -	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
-> +	ret = devfreq_set_governor(df, governor);
->   	if (ret)
->   		return ret;
+> -	err = devfreq_add_governor(governor);
+> +	err = __devfreq_add_governor(governor, mod);
+>   	if (err)
+>   		return err;
 >   
+>   	return devm_add_action_or_reset(dev, devm_devfreq_remove_governor,
+>   					governor);
+>   }
+> -EXPORT_SYMBOL(devm_devfreq_add_governor);
+> +EXPORT_SYMBOL(__devm_devfreq_add_governor);
+>   
+>   /**
+>    * devfreq_remove_governor() - Remove devfreq feature from a device.
+> diff --git a/include/linux/devfreq-governor.h b/include/linux/devfreq-governor.h
+> index dfdd0160a29f..1c4ff57e24de 100644
+> --- a/include/linux/devfreq-governor.h
+> +++ b/include/linux/devfreq-governor.h
+> @@ -12,6 +12,7 @@
+>   #define __LINUX_DEVFREQ_DEVFREQ_H__
+>   
+>   #include <linux/devfreq.h>
+> +struct module;
+>   
+>   #define DEVFREQ_NAME_LEN			16
+>   
+> @@ -50,6 +51,7 @@
+>   /**
+>    * struct devfreq_governor - Devfreq policy governor
+>    * @node:		list node - contains registered devfreq governors
+> + * @owner:		Module that this governor belongs to
+>    * @name:		Governor's name
+>    * @attrs:		Governor's sysfs attribute flags
+>    * @flags:		Governor's feature flags
+> @@ -67,6 +69,7 @@
+>   struct devfreq_governor {
+>   	struct list_head node;
+>   
+> +	struct module *owner;
+>   	const char name[DEVFREQ_NAME_LEN];
+>   	const u64 attrs;
+>   	const u64 flags;
+> @@ -81,11 +84,28 @@ void devfreq_monitor_suspend(struct devfreq *devfreq);
+>   void devfreq_monitor_resume(struct devfreq *devfreq);
+>   void devfreq_update_interval(struct devfreq *devfreq, unsigned int *delay);
+>   
+> -int devfreq_add_governor(struct devfreq_governor *governor);
+> +/**
+> + * devfreq_add_governor() - Add devfreq governor
+> + * @governor:	The devfreq governor to be added
+> + */
+> +#define devfreq_add_governor(governor) \
+> +	__devfreq_add_governor((governor), THIS_MODULE)
+> +int __devfreq_add_governor(struct devfreq_governor *governor,
+> +			   struct module *mod);
+>   int devfreq_remove_governor(struct devfreq_governor *governor);
+>   
+> -int devm_devfreq_add_governor(struct device *dev,
+> -			      struct devfreq_governor *governor);
+> +/**
+> + * devm_devfreq_add_governor() - Add devfreq governor
+> + * @dev:	device which adds devfreq governor
+> + * @governor:	the devfreq governor to be added
+> + *
+> + * This is a resource-managed variant of devfreq_add_governor().
+> + */
+> +#define devm_devfreq_add_governor(dev, governor) \
+> +	__devm_devfreq_add_governor((dev), (governor), THIS_MODULE)
+> +int __devm_devfreq_add_governor(struct device *dev,
+> +				struct devfreq_governor *governor,
+> +				struct module *mod);
+>   
+>   int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
+>   int devfreq_update_target(struct devfreq *devfreq, unsigned long freq);
