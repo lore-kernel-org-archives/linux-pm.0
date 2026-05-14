@@ -1,218 +1,171 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011033.outbound.protection.outlook.com [40.93.194.33])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64CF63B6344;
-	Thu, 14 May 2026 20:12:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.33
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778789524; cv=fail; b=YxlMdOGgZoy6U4UFnOIJYm2yoS6D9oGw0Z9jlxm5avgxfDbzHReQOfiM+DvKHJv2cKO7dE1r4mR93THbpYAG3ixK5eZ/NSVbAvQpaiQTYYmSHowFuTcQg+otljbwt3SAumzNLo5dlnsaJ5ISXH1X2WMCouXD9Cd89K9si8N7zVE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778789524; c=relaxed/simple;
-	bh=NC1UPEmrqibzkRTVXbZ+Woi15ez52TObOHznaPBGxE0=;
-	h=Message-ID:Date:Subject:To:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=GoPEC+e0TpUxHyhBdhulNifliyg5c6sfvnoOEuPlpoT8qcKOCLTih7pC82PHgkT+JZT9fwBIwgTYcAKXne02olMkqivJt6PNWIYfeUA/xU+bUVcHLb73qndZl515SaE1JGuUhC8In7roOkEFvkIzsCAoJ0vYgUPJPJr3FPv7hK4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=tSgXk6O6; arc=fail smtp.client-ip=40.93.194.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD9913B8406
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 21:24:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778793842; cv=none; b=mO2Q4xwsu1b6dP/kXHTwRDsawNwX0nQmDr0n929RQwzflr2JY7SErHuELQaC+vy1CA1rV07TbIyIgcsNADEp6+iKeM4jFIJ36dhyJh/CS9EKfGTgdCFIUArCu59uEBNribwveme7zCoNuUv7ljHKJRJlL6a/WlTKdc7r+6REX4c=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778793842; c=relaxed/simple;
+	bh=Wi9wq6ITuBhZ0//XzAr/F1HphLRzl3ZxiOclMvD0KoE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bYhmT2+PgkVMZ3V1sBElJ3/db4GJmOGZV+EwXTMCuNDmdPyNemuKgcJ+EOoqOh0b4m5vPWComliKrapnZCqWbGI8GS96H5bS27fGNApKHG3LSKhNnC12pfVfwDFNNqrUcT+ySa42svDeZMftR1gSlAXtWmamdZm8vOiyoRpvSlY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=pB1PvYyE; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BC/6aT81; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="tSgXk6O6"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=R/j/o+RF7IOiuPpaE4VsrZSUTSr3DgMTWkSnzBTv4yy36aeOmU3yTCTCaHYGJzU9Op+zUXZxLtSoid7KIBKVtQxIre9plZZbLV6iqNAiPz5md9/FOXqSHQ4A4GJVKjM4UmrcTNo4VV19tOM5SKZA9CNOh8ql6F6V/hC1v6MHRomDh/CXIcYWkVKvUNc538wDYE93XhMOGS1rWspbhX9f5Nov7agt+8uSsjzd42kwB/IhjW3l4+j4g6RtAL2rcyitfCKNljzKpxE+xCpRqn2ecPhxG8j0TJR+nanKy/0zUFz5IzpDV+8FttK+d0kGFv9qEw7e5rnCO+ntGDQHxO3K5g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lM8g6xZvNLNoWxH5Q8XtSNcTUZr68ShU9zDBw0TnaYU=;
- b=iwl6auc1NUoHlwgAQdICW/9wTZ2MSMB3IXmQ6gMxKWBKYxe6tGXa/O8iKCbZQ95yUHfY2qR2X3mC/A76vXXmbq+ZRyaP9XPo7u18iCoo//PvkLH6gPpL0Bp+ntfUR7Ut46IP6UjjFrG1t1QmKM/6A1idd5IxZdklZYnyZKWFUXi0HQb6c+3vTpHk3j6Yf1PxAbirqXLkFLEoNMRu2R0SVMHx7bgaEA2rdAaQXzCgHHZS5GImc2dYjEXm/Ay/LsScVQW7NiyzT7Xy+/vEVunt2LOSm+/bQ+fLgYUwZl5kH0puSblyNxTb3jr61QY+32mLGVScIzTIx/eKtHwVqjvV5A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lM8g6xZvNLNoWxH5Q8XtSNcTUZr68ShU9zDBw0TnaYU=;
- b=tSgXk6O6sjPYZCyGIpIjfnLv2yG8kzFb66BiRHGRG2IlN/pdfl/UQfUUSoCq6F1F3J+f2zWm5f1VlfQcVw6yVdPyJjBbJrICSws6Io2tmxLR0T3HQsw6/jkhucsC8iWSZLdryK2EWUuyPd6g3qnAS5iT3nRpRwz9Samct4w6SoO0rycWIwlVtb7U+tk/BrKlXEUxavUP8WhF0y/BtUmDgIfD2QuNx+38PMHXYfnhuOl4wdAA7f4583gv92I83PSuQhWts1rXV35zII4nc/kJ8aEv/DU1Re9N0bPwhWlTZGhlGMrr6fTDag+2C+jVyd0LstjuDg+BrnhhC7qhZ/EIMA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by PH7PR12MB8595.namprd12.prod.outlook.com (2603:10b6:510:1b5::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9913.12; Thu, 14 May
- 2026 20:11:58 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.21.0025.012; Thu, 14 May 2026
- 20:11:58 +0000
-Message-ID: <1be44380-91cc-4eda-b7c6-43ac752c74c9@nvidia.com>
-Date: Fri, 15 May 2026 01:41:52 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4] cpufreq: cppc: mask Desired_Excursion when autonomous
- selection is enabled
-To: Xueqin Luo <luoxueqin@kylinos.cn>, rafael@kernel.org,
- viresh.kumar@linaro.org, zhanjie9@hisilicon.com, zhenglifeng1@huawei.com,
- pierre.gondois@arm.com, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260513044208.161607-1-luoxueqin@kylinos.cn>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <20260513044208.161607-1-luoxueqin@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: DS7PR05CA0082.namprd05.prod.outlook.com
- (2603:10b6:8:57::23) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="pB1PvYyE";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BC/6aT81"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64EIpsH63513372
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 21:23:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Wi9wq6ITuBhZ0//XzAr/F1HphLRzl3ZxiOclMvD0KoE=; b=pB1PvYyErK43eAPY
+	8GRxW3u7AM7AHohNM0M3cHCMCNo1VwAlgiEmlPBRRhAH3qzvDhBijYNB8Mozuu1t
+	A0lh6pes7yXko1c9nG+m9lUnW0Id2COTnlBJXuVbwlwJcKrTpdQyWe3r3T1io7Wj
+	SjhPG5n4X8xvsENTS0CdPmtrRTaEQKdFIWa0HxwsCZDv1rMxb4234qxcRW5FPYMB
+	6eFs8mtHEJekZQyzkcvtIws/TE/h1OvUe7QYba9+pcSqPKlYR/Ya1dKobZLgN1kS
+	yEs0DqhocJ+ok1uVUHzxmQen9ZwP+lp1oWjuC5BaSko7GFzEEpB+JYeXEl2cRUyP
+	AHWxDg==
+Received: from mail-dy1-f200.google.com (mail-dy1-f200.google.com [74.125.82.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e5m1v8f51-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 21:23:59 +0000 (GMT)
+Received: by mail-dy1-f200.google.com with SMTP id 5a478bee46e88-2f2d983d109so15903546eec.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 14:23:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778793838; x=1779398638; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Wi9wq6ITuBhZ0//XzAr/F1HphLRzl3ZxiOclMvD0KoE=;
+        b=BC/6aT81v1IKW/jRwglaUTZ4VgJb2m3X6e9uWA651mOdjSw+TgBCXkCV7f96Pw1cVl
+         wn6mSAxs4FEVjWeTtHXkzZtKjJV5huI2Zn7f+CDjCiriUFZLuPqDIG5YBVR5aldhMLXI
+         ci/VRXNk3Utuwa2don0zO2DNcyJuF//bCB/n3OJc73fNuQJhS5wB95iVyekLwW1+Nd2d
+         E6Uq5h+lRYDiFrhoqqChO++WST91KGaUC1AO5ucDI47A2hiC5JzpAM3B/iKZaXBSHwdc
+         Qs5XTy4XIjQf/6X108DAOmE/gUwpHCQJ1bDiJkcL9Dl41ELCKjU07Fw/MmIY36QF3jML
+         c/Dw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778793838; x=1779398638;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Wi9wq6ITuBhZ0//XzAr/F1HphLRzl3ZxiOclMvD0KoE=;
+        b=rrhU7C2dz5L9+IVzGhf0maWBNw3DaNV3ZZzt5qJFsmW1O5sFtGD5Wnd/wsVXWaqS0/
+         NfQ6GRTjne9SPDX4gus7p1ylXm9l73jjTPhzOd3eCBHpSb60AMHe4JRCaU8K66jW5Gbp
+         8shbfy+YCbaC/5Lc9gaYCr4MnlGlrTxKPSNvszPtwOtH7ZdNHZwK+P64W5UDDgJ3ZoIz
+         0hNLTLRo9qvlh8AV8YBdOTp2AJdOsVjTtNsSntayyLaoqVYu/7yTNxUfoKsgCfpTKqa6
+         ukcA3vydG7KYFxhKvj9ZHrXNU8CURsvnesGZheZNbHTLzy0MYz7V4tTiiBZAwqqqm94D
+         Sp6Q==
+X-Forwarded-Encrypted: i=1; AFNElJ9gUdsRn2dic7jI0bR7I6N5Cl0TeC34Cu9E55oQH/ceXi5Mh2jkMmN74yJ3RRy38vOuloViIC3iDw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzQK7abMOziRW8w2i1TW+Bf2o80+AQcH09Te41CvNlg4uRo4n95
+	ua3ep2E6QGMyRS6vegEanSLR/wfhY1ZH9o7zS1BXdcor9pA30dt/2QwPtID0ZZsUpbGrF1lkLUv
+	6hpgwcN/yYHMbas3YeY6ToOzHkmuIzXMgQWokFRMqYi4RYlou65aKgN86AeVc1w==
+X-Gm-Gg: Acq92OGBGfog6Gzraa5nRnAHdupv33j67+sMTHdNAT3Tz0eRfhHufQ0se0OaVdGTN+w
+	tRnMvRr9bG9eOB+ibOGheNz+6aGedT/ZYnCyEB7Lq5YcnLLzvrqCbQhoAld2IkHXU+p+0dsx3Np
+	1NARX4f1QBTAuSpcWrbstZEVFg7CV+fnHbm4B5RuQkYJo82dZguKg0VV6Cs9l6+xuSZGjYekdny
+	shlQvdZeysxqX15qPmwYBgOk+xGBOTKSxZOLm8U+2wblok88xy7xxcJ1MNOj8bjJTBInZ2Ri6FA
+	e/6BZ9I1TERQkQTcbEXI1Egd/ogHo3rlJVMOphi2z3UdDktYYXe/+oB2O603JffvsNOx/CJEwyR
+	bJRPiWZhlxnR418ZrtLVLmrvtmXdIgKZSR2szfUAhb1wR8NrB6L4mjsv3fWyxTTkzEtbAEZShMK
+	1i
+X-Received: by 2002:a05:7300:724f:b0:2ed:27a3:eae2 with SMTP id 5a478bee46e88-30398189fa8mr789534eec.15.1778793838372;
+        Thu, 14 May 2026 14:23:58 -0700 (PDT)
+X-Received: by 2002:a05:7300:724f:b0:2ed:27a3:eae2 with SMTP id 5a478bee46e88-30398189fa8mr789513eec.15.1778793837795;
+        Thu, 14 May 2026 14:23:57 -0700 (PDT)
+Received: from [10.73.236.148] (pat_11.qualcomm.com. [192.35.156.11])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-302946f2149sm4468333eec.11.2026.05.14.14.23.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 14 May 2026 14:23:57 -0700 (PDT)
+Message-ID: <8857fc71-aec6-4682-b4f4-0bd463f367c4@oss.qualcomm.com>
+Date: Thu, 14 May 2026 14:23:56 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|PH7PR12MB8595:EE_
-X-MS-Office365-Filtering-Correlation-Id: 372452f6-2be5-422d-27b8-08deb1f50d66
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|1800799024|18002099003|22082099003|11063799003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	K6ZKbLjhwJfxLppMGlr8kwg3cYrVJboGQS8ANJMn2fwnmsSM7UblrgLl52ayEFiqPSXJJqHB4gd2w2vVT3z+nU9IYkoPQaSHspOfX5zSz8B0bxe8WdTHjMOL367+mMcU9Bcc7DrEMVqMoQpt0xrcm60aZ4meMSSdBQ7HF2O+SqelxRR7Uk0pdKUDpWn2fBxeubXo626qEbQs5JXGiQuqrYdYtv0zI45BG4TStIvpgoheIKgyeNSpuM6go9gCsTZU8gxnjPlp27/GCpeK+q1WktQ4im7xz8leqcQ9RLPETaaBqTSUCUeUWnxNMSxq9h+ZYqAQj9GtIhTwAkovO1WsDc5iOmNPXYFzCHcaLowHRfQLwT40sLnSe7/fqxiA73JoohKaSaJ6MCxNJ/D0lGD17idVNBJcujFgmMh12zRGB5WvA/XMyh6q7e1Vdks++m8D8OUGOtQzaeIM33d1aB1cBQwMl2xtH8tj/RyV6bSC+fB/xNl640uiOGTy3c+CMbDlSYjIvBpjDe7RpRar3UW8xYq1vFWTXafjeqNTZvV9udGtnJljTrbsgeV4fs0rccmR6x4B+OEutTMc7kUviech5/UMA7+Sg6jv8/mo9cVUzu91AevE0pkQPTOg9lQPQ/BRqdJfuh4V4X5uhxaAHRD/KDFy+nsdSZCd9X/l6u36zWacIxSrsPMPkHMlzD4R3fzF
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(18002099003)(22082099003)(11063799003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZzRpL2MxRmRDd0RmMFhCZldlc0VtNXh6Qy9ITVYrblhUSk5QK0RHdDUrUkYx?=
- =?utf-8?B?eWNrZTZ5bDcrc20vMDZCc0pIZElyUlI0eXI1aUhzN0IxUnh6T3ljK3Y4ZHQ1?=
- =?utf-8?B?dStiQlU0ZmlETjBrQUxkS3VSWkQ4RVQ2ODg4d3BFclhLVnZhQ0JMekJreXVI?=
- =?utf-8?B?bXdCOVd3a0Jhbkd3YUZ0YUFpYWJKcTExYzRnWXl6Z1I4eThucG1hVUFPTER4?=
- =?utf-8?B?QkZUSXJXRVIzbDZkaGp5TTYySE43dWNCcTlpM096YnZ3MmUwQ3JlamxQNzZD?=
- =?utf-8?B?NkdyWjZXMnJzZzNHSVZKZWhxMjE5bEFJU1FKdHI5NDFTMXV6ZTFqd1REMERH?=
- =?utf-8?B?TEFVOVdCR0o2YXlabFZMdTczYng3dVQvNndZYkZkdzRRMEliNWRJemNFNzdE?=
- =?utf-8?B?Ukxic3dia1BCZ0Y5TGNCQW5lbEVOamRZT0lUcU9JNVVSNlBES2llN29ISXU1?=
- =?utf-8?B?cmQzaDhrdGlHYmdXOUU5VDhmNVljSFBpcWQ3RUNqM2Nxa3ZqRUdFQkdqalVp?=
- =?utf-8?B?N0JiTFYzblh1R2dLclR0cVBHQ1lHek1VTE5ZZTBXeXpmS2RVc3VORlRJdkNr?=
- =?utf-8?B?YWo3dVNSWCtXb3Q1SjhIWEZSL203YXU0cFdQMGpHN3o2Y2hVNFJ0ZVJXQSs3?=
- =?utf-8?B?eHJtUjhmTnhHR3djeGdCUEFDNzRzTlNQOXkwOGNQSTNQVFhTRXVDcms0ZUZ6?=
- =?utf-8?B?L2hpYzdZY0E5Tm4vK3E0SHlHdjFsM2s3ank5VkhaYW9lSlNlR2FHckVwbCtk?=
- =?utf-8?B?SVNOUVdHbjdaSUw0RUNyakl0dkN0RDJ6dFZlR2JlN2NmVkF1cTZhU1hKUWQ0?=
- =?utf-8?B?TnBWeDdOaHZ4bWpvZHpORVkyd0tReEZzVDQwZHplSGZZVkExeC82a2ZQY0FH?=
- =?utf-8?B?cDNnN1B4M1o0YTdtdVVUY3FVUEVqVG9qNjh1NWkxSFk4VWdKUWhwYncrRVY1?=
- =?utf-8?B?WnM1dTRDYmFGQklDSlMwMlQ2K3NCNVZ0bnVkTE50VWNQQ2F3TEZhT1h5SlJj?=
- =?utf-8?B?ZFFHa08rKytORCtzaFZyYW5aQk10WndIUThkaUZIRlNvZjBYMkVPYm5LTWVs?=
- =?utf-8?B?S2Q4ZVhjUXZ2MGhIS1hhbm1VWHJoQWJ6VVlVYTk4RFlWeXp6OTcxZ2s1Qkhm?=
- =?utf-8?B?c1JLM2hrS1NQMlgwMmZQOFV2YWZKY280c0tGOVczZjJvai8xMk5jZnBnc1h1?=
- =?utf-8?B?WE0wR241U0s1bUJwNmxFblIyRCsyalpsQjhqaUFqUGhndlJFU0phMTFpVCtR?=
- =?utf-8?B?MldvSG5YWTUwV25tWjJPUUVXRmlmUlhsbE9ZSTd6VjA4SjdzaU5SL0ZyNHF1?=
- =?utf-8?B?YTdrQklvQnZhemNRMDFDd2ZVdDRoN3Bpdm1nU1QxdFZiWlpLb01janFuQjhU?=
- =?utf-8?B?WHZGZjcyUHZ1RnU2TVViVEcybk0yUlVlS3NnZjFTTVFWTTc5Qjd4SzUrUFZy?=
- =?utf-8?B?Nmc3NVZ6dnBpeGYxblZXK1cvR215VTk1RUdCOXQ3OUQzTVIwNitwU2I0enJm?=
- =?utf-8?B?amJHY3ZiRFhSUjFwQXlsS0RISUMxeUE0V2pxV29TSkFQZmZNSUZrVXZDOEVJ?=
- =?utf-8?B?V1VwTWplRm14c3RJa0tJUHVxdFowakcvYXFwSmlJOE9EVmR2WEtOSEVLcDdj?=
- =?utf-8?B?TmVMY2xRRk5qd2dYRldIWVV6TytGdGVCd3VJRlJXdkRqMFhoUjFMUEZQSXgz?=
- =?utf-8?B?bFpWMHRQakVCdHk5amRHTDg5WVIxSnpDeTlFem9UeG53QzFNNitBaVAvUm5h?=
- =?utf-8?B?Um1ONnZjaXVHM05kNWE3Mk5KRC9nV1dPdXc0ZUdjMkFaYlZNZHlKVWE2UFFr?=
- =?utf-8?B?RWxSMVJGRW1MeHVmSlJmcjRiUUtEU3c2TFZYR0VwNlJtc3pRYjlISktFaS9m?=
- =?utf-8?B?aFpmMmcweVhxS3Bnd2dlS3JOR0dNZ3ZGbVlnMkcyKzR0K21KZG8vWUFwdkhy?=
- =?utf-8?B?V3VEOHZXUW1lOGtYUWw1SWdnc3YremFQV1Z3aWJFNTYyVjRFelBIUjhydjE2?=
- =?utf-8?B?bkcyeElZYW41aDZiSWpVeXRvdTd5ZnJLOVFGaWFjSlJicFNieHMrTDhhaFEr?=
- =?utf-8?B?ZE4zM0VjcTNhb093N29RRGZSZGhCNkxOQlg3bUloNHZZUXdHRGYxZXRxck5W?=
- =?utf-8?B?K1lPMjZielZaU21xWko0UDBFdkJqRm1PaWVNUFU1anZKMUtRRldCbFU0RlRo?=
- =?utf-8?B?cm5UT1FvWXAzeHJkUkM3ZlhFd3RJaThxOVpOcGdORWxvd2JCWDZ2TXh3eDU1?=
- =?utf-8?B?SGVzcHNnYTNTU3NwNjRNamN2aThQRlpwZ0owckZVZ3ZHZHV5QW5XWVlWWjA0?=
- =?utf-8?Q?eeCrmjvVlp0/RZHm6H?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 372452f6-2be5-422d-27b8-08deb1f50d66
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 May 2026 20:11:58.6302
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: TJsb3A2SuwMaNGUkrRngPkwW/0bRTORA+DGpoByj/SL7mbm1JQLifE2DgLgNFi1ObkjPS0eCxZ5d/P1McG/CpQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8595
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/5] scmi: Log client subsystem entity counts
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: Jyoti Bhayana <jbhayana@google.com>,
+        David Lechner
+ <dlechner@baylibre.com>,
+        =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Linus Walleij <linusw@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Guenter Roeck <linux@roeck-us.net>, linux-iio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
+References: <20260513-scmi-client-probe-log-v2-0-36607e9dd540@oss.qualcomm.com>
+ <20260514164422.0eba9a61@jic23-huawei>
+Content-Language: en-US
+From: Alex Tran <alex.tran@oss.qualcomm.com>
+In-Reply-To: <20260514164422.0eba9a61@jic23-huawei>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE0MDIxMSBTYWx0ZWRfX3avj/Cg1h4MJ
+ xdsD/1La+nqBSNx+/umnP4h37ix+ctKiLhRimOuaRDntb/e3Tn6jD99gz6ZB58JxGS7T9X+/4YN
+ QOwFo0oET8TYLvEfwkCIjSE1EwtFFwMEyXTUh5mVw8PZFVx7uU54hMTjrxWdb/hN+oDUzurkLRO
+ b7mi0kpVF7gpxPvauqln0d1E0H41Oh8dRWlU8Ua63e1gnIBrZUlnwhXcfBj8DzJ6Q8WJRmXwp0p
+ ALkrUQ0MaooMbKlqkFLfJ6XXr9IzPWU1oEnBWhGiGmNi3kkKJ/YGhrNJhFvJXmIqrg+dm79O27N
+ 1L3nNFMkGKJ8Q4yrlIIR4UuCexzPu7F7A2l5V/FCcdkB8sjjE0mK9TW6IiNaoHUe8U5xl+QXQP0
+ aBqFWNDItGZuw3Fh2C10AUsdYqPomm/yQyw9/IA3pkdq/Tyt/vg4w5oht0wxPAQyAl/YJf3us6f
+ yah8aku+YaLfrKVBTig==
+X-Proofpoint-GUID: ytOf77toxlsxftB1YKwn8MuZr5fJboDH
+X-Proofpoint-ORIG-GUID: ytOf77toxlsxftB1YKwn8MuZr5fJboDH
+X-Authority-Analysis: v=2.4 cv=BvqtB4X5 c=1 sm=1 tr=0 ts=6a063d6f cx=c_pps
+ a=PfFC4Oe2JQzmKTvty2cRDw==:117 a=ZdW6uxA9NKXbfdqeeS2OGA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=EUspDBNiAAAA:8 a=yQWfTViADuQTjb5oKp4A:9 a=QEXdDO2ut3YA:10
+ a=6Ab_bkdmUrQuMsNx7PHu:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-14_05,2026-05-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ spamscore=0 malwarescore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605140211
 
+On 5/14/2026 8:44 AM, Jonathan Cameron wrote:
 
-On 13/05/26 10:12, Xueqin Luo wrote:
-> External email: Use caution opening links or attachments
+> On Wed, 13 May 2026 10:16:53 -0700
+> Alex Tran <alex.tran@oss.qualcomm.com> wrote:
 >
+>> SCMI client drivers do not consistently log the number of supported
+>> entities discovered from firmware. This information is useful during
+>> debugging because it shows which domains or resources were exposed by
+>> firmware during probe.
+>>
+>> Add logging of the number of supported entities to the SCMI cpufreq,
+>> pinctrl, reset, hwmon, and powercap client drivers after a successful
+>> probe. This aligns these drivers with the existing logging in the SCMI
+>> power and performance domain drivers.
+>>
+>> Signed-off-by: Alex Tran <alex.tran@oss.qualcomm.com>
+> Hi Alex,
 >
-> According to the ACPI 6.6 specification, the Desired_Excursion field is not
-> utilized when autonomous selection is enabled. In this mode, the bit is
-> architecturally ignored and does not carry meaningful information.
+> Just curious but why +CC linux-iio and IIO folk?
 >
-> Currently, the kernel exposes the raw Performance Limited register
-> value to userspace through the cpufreq sysfs interface. This may lead to
-> misinterpretation, as userspace may assume Desired_Excursion is valid
-> even when autonomous selection is active.
+> May be you had a false suggestion to add them from get maintainers.
+> If so be sure to check it's suggestions make sense!
 >
-> To provide a stable and semantically correct ABI, mask out the
-> Desired_Excursion bit when autonomous selection is enabled, so that
-> userspace does not observe undefined or misleading values.
+> Not to worry - we can all hit the delete button ;)
 >
-> Writes are left unchanged, as the field is architecturally ignored in
-> this mode and write attempts are harmless.
->
-> Signed-off-by: Xueqin Luo <luoxueqin@kylinos.cn>
-> Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+> Jonathan
+Hi Jonathan,
 
-Reviewed-by: Sumit Gupta <sumitg@nvidia.com>>, with a nit
+Originally, there was another patch in this series to add the same functionality to scmi_iio probe but it was dropped. Apparently running b4 prep --auto-to-cc does not prune stale entries from the cover letter. Will manually remove all entries and rerun the command in the future.
 
-
-> ---
-> v3 -> v4:
->   - Address Sumit Gupta's review comments by reordering the
->     error check and simplifying auto_sel handling in the
->     perf_limited getter
-> ---
->   drivers/cpufreq/cppc_cpufreq.c | 29 ++++++++++++++++++++++++++++-
->   1 file changed, 28 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 7e7f9dfb7a24..d2f86df06129 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -982,7 +982,34 @@ store_energy_performance_preference_val(struct cpufreq_policy *policy,
->          return count;
->   }
->
-> -CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited,
-> +static int cppc_get_perf_limited_filtered(int cpu, u64 *perf_limited)
-> +{
-> +       struct cpufreq_policy *policy;
-> +       struct cppc_cpudata *cpu_data;
-> +       int ret;
-> +
-> +       ret = cppc_get_perf_limited(cpu, perf_limited);
-> +       if (ret)
-> +               return ret;
-> +
-> +       policy = cpufreq_cpu_get_raw(cpu);
-> +       if (!policy)
-> +               return 0;
-
-return -EINVAL ?
-
-Thank you,
-Sumit Gupta
-
-
-> +
-> +       cpu_data = policy->driver_data;
-> +
-> +       /*
-> +        * Desired Excursion is ignored when autonomous selection is
-> +        * enabled. Clear the bit to avoid exposing meaningless state
-> +        * to userspace.
-> +        */
-> +       if (cpu_data && cpu_data->perf_ctrls.auto_sel)
-> +               *perf_limited &= ~CPPC_PERF_LIMITED_DESIRED_EXCURSION;
-> +
-> +       return 0;
-> +}
-> +
-> +CPPC_CPUFREQ_ATTR_RW_U64(perf_limited, cppc_get_perf_limited_filtered,
->                           cppc_set_perf_limited)
->
->   cpufreq_freq_attr_ro(freqdomain_cpus);
-> --
-> 2.43.0
->
+Alex
