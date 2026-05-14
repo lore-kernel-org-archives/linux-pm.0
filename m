@@ -1,138 +1,353 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CD1939DBCA;
-	Thu, 14 May 2026 07:22:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33A303C196F
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 07:30:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778743355; cv=none; b=bNSVSh5a9zjuULueQPi9NLrHIh9U3bt+H9F00Nk30b605bXNQ/j8jJx5lKWptiKe0rGawDhvzeBTLKpWd6Zy6pdb2K5y6mRJApR8Ck36ayto5l9VRoiCbPzzzxre2VoaswaJTp4PZGzdiqozkaP6D0nxl82/4lJ51k5RmnS1YXs=
+	t=1778743828; cv=none; b=HH96sFOY+wl2IsS3nfMB5zDp3c4s+aXZxF1cXNQK1jbHEyUMBIWwdqpHt0Ifk4WUC80H5ejG9NMlTLL2DanXBnb+tnXWPI6MRvbPCVH8PdgeYC1p8wxfjOjIZuFf9QuT0jvqCGcP9c3Luy0oA/xit1pnTxBkaJpICH3eGIhdDws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778743355; c=relaxed/simple;
-	bh=SDSfEtpecQQXPBh9om6SLWCqztY/2MxKoykeg6ED4QM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gx2Q4cb84cxwQ0hyJTjeVEr7s8gHQ8+2ejy6ZeiJq4m38VM42rNhTlVFAPQdE3T/uAFR9vc8NBO3MUmYkaupxe6JWZSkNPgfyO4QKdhRZsd0esd2VpTay7JNcuCrzjiGV33cUY/COHA9tkEE97qWQ35T57VsP71E0s3F9e7EEjk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=z2zCe5sc; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778743828; c=relaxed/simple;
+	bh=y+8H6g1YZibvHMhChxFmJVrrZEQrDRIDRibsNpFbUrA=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=sKXCX0NZQsvYeaFHXCP5YD/8QZPtuTlNAM21FVM/uhsAH9VnTQ/uvonPD8IjQb/UD6+E68xMvxsx8qN0O+YpuaNRtmwWy4iORum/BSYch6gCosgf31Gtt+f7cWVMctNDqd1GpX80AASPYQC4FQwreKWGoU22RHRJOUiIia6O0fM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=buD8UGrL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="z2zCe5sc"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47AA6C2BCB7;
-	Thu, 14 May 2026 07:22:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1778743354;
-	bh=SDSfEtpecQQXPBh9om6SLWCqztY/2MxKoykeg6ED4QM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=z2zCe5sc2K/ZXdFiOraGh+Iyx3NKmV826UNPXHngbWCGbMnadzGuBH7sRWNjw2LVg
-	 FBqldvWkuzt4LCpgbgG1kFe0ErFXHqfh3dfA8LIDUbbKQ9GSpeOitVP2qYh1/N9sN/
-	 Vn87LrIpEG1RwIgW+Zdu1iquGXnev4FNORpaTl3c=
-Date: Thu, 14 May 2026 09:21:49 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-	Samuel Wu <wusamuel@google.com>, Len Brown <lenb@kernel.org>,
-	Pavel Machek <pavel@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
-	Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Martin KaFai Lau <martin.lau@linux.dev>,
-	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
-	Android Kernel Team <kernel-team@android.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux Power Management <linux-pm@vger.kernel.org>,
-	driver-core@lists.linux.dev, bpf <bpf@vger.kernel.org>,
-	"open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>
-Subject: Re: [PATCH v4 0/2] Support BPF traversal of wakeup sources
-Message-ID: <2026051417-handbook-uncivil-1a56@gregkh>
-References: <20260511174559.659782-1-wusamuel@google.com>
- <CAP01T74KQ6bie5o++i_gHM19J+s2RzDyM6=w87=oUZgPagPejw@mail.gmail.com>
- <CAADnVQJtuKQh-bpDDeqWCQRM1zb2sSgo0qET_+1+JFOL-6cpDg@mail.gmail.com>
- <CAJZ5v0hqdyMnBtvvo7RwUkh5saLvAHkTEVz8Ln09UaKMqoP=Dg@mail.gmail.com>
- <CAADnVQLvuCKLUHnxcEx2+t4diLmuOb9VSthoDea5iktsAZxhTg@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="buD8UGrL"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4DA4BC2BCB7
+	for <linux-pm@vger.kernel.org>; Thu, 14 May 2026 07:30:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778743827;
+	bh=y+8H6g1YZibvHMhChxFmJVrrZEQrDRIDRibsNpFbUrA=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=buD8UGrL1JJHc//9p9TfvUQumOxLqu5xH8Q9JYukaGGL87N/DhLklvwD/abrs+7+/
+	 b8DgXoldAi33CHju8NT9FvVZaNXo98uV8BCrGY3nhCT37vBRAENt99LX5NMani/0Qy
+	 7XIe0+PRQ13txK+VvQEYxazB0jhVwGmiumZW9c0rO4+K5NK0JFlhQz/Xe4128tM9D3
+	 dB8yEX9ABVccXzTMoQBSOVoAFkUUye1e30paJlBsdmbLBPO7LcirPSKYRmtQ68g0Ii
+	 mK++woppU/iqo62ApFKAys2agVFdShPi5UFjpR1A9Xv9DXX02cddxPXZrVuqIaMCzd
+	 ODeYAx6z1miOw==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 45D14C41616; Thu, 14 May 2026 07:30:27 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linux-pm@vger.kernel.org
+Subject: [Bug 221505] REGRESSION][amd_pstate] "EPP cannot be set under
+ performance policy" (EBUSY) when switching to performance profile via PPD on
+ 7.1
+Date: Thu, 14 May 2026 07:30:27 +0000
+X-Bugzilla-Reason: AssignedTo
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: None
+X-Bugzilla-Product: Power Management
+X-Bugzilla-Component: cpufreq
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: rhys.r.edwards@gmail.com
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P3
+X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-221505-137361-FpgUN2mveA@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-221505-137361@https.bugzilla.kernel.org/>
+References: <bug-221505-137361@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAADnVQLvuCKLUHnxcEx2+t4diLmuOb9VSthoDea5iktsAZxhTg@mail.gmail.com>
 
-On Wed, May 13, 2026 at 02:03:39PM -0700, Alexei Starovoitov wrote:
-> On Wed, May 13, 2026 at 12:52 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Wed, May 13, 2026 at 2:51 AM Alexei Starovoitov
-> > <alexei.starovoitov@gmail.com> wrote:
-> > >
-> > > On Mon, May 11, 2026 at 1:44 PM Kumar Kartikeya Dwivedi
-> > > <memxor@gmail.com> wrote:
-> > > >
-> > > > On Mon, 11 May 2026 at 19:50, Samuel Wu <wusamuel@google.com> wrote:
-> > > > >
-> > > > > This patchset adds requisite kfuncs for BPF programs to safely traverse
-> > > > > wakeup_sources, and puts a config flag around the sysfs interface.
-> > > > >
-> > > > > Currently, a traversal of wakeup sources require going through
-> > > > > /sys/class/wakeup/* or /d/wakeup_sources/*. The repeated syscalls to query
-> > > > > sysfs is inefficient, as there can be hundreds of wakeup_sources, with each
-> > > > > wakeup source also having multiple attributes. debugfs is unstable and
-> > > > > insecure.
-> > > > >
-> > > > > Adding kfuncs to lock/unlock wakeup sources allows BPF program to safely
-> > > > > traverse the wakeup sources list, and a kfunc to get head of wakeup
-> > > > > sources list is needed to start traversing the list.
-> > > > >
-> > > > > On a quiescent Pixel 6 traversing 150 wakeup_sources, I am seeing ~34x
-> > > > > speedup (sampled 75 times in table below). For a device under load, the
-> > > > > speedup is greater.
-> > > > > +-------+----+----------+----------+
-> > > > > |       | n  | AVG (ms) | STD (ms) |
-> > > > > +-------+----+----------+----------+
-> > > > > | sysfs | 75 | 44.9     | 12.6     |
-> > > > > +-------+----+----------+----------+
-> > > > > | BPF   | 75 | 1.3      | 0.7      |
-> > > > > +-------+----+----------+----------+
-> > > > >
-> > > > > The initial attempts for BPF traversal of wakeup_sources was with BPF
-> > > > > iterators [1]. However, BPF already allows for traversing of a simple list
-> > > > > with bpf_for(), and this current patchset has the added benefit of being
-> > > > > ~2-3x more performant than BPF iterators.
-> > > >
-> > > > This looks good to me, you can add for the set:
-> > > > Acked-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
-> > >
-> > > Rafael,
-> > > how do you want to route it?
-> > >
-> > > If you ack it we can take it into bpf-next.
-> >
-> > I guess if someone really wants this, I have no particular reason to
-> > object, so please feel free to add
-> >
-> > Acked-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-> >
-> > to the first patch.
-> >
-> > > I'd think patch 1 shouldn't conflict with other 'wakeup' changes.
-> >
-> > Sure, there are none ATM anyway.
-> 
-> Thanks!
-> 
-> Greg,
-> are you ok with it too?
-> I hear your api concerns, but imo it's a nice improvement.
-> And bpf is not a stable interface despite some sceptics saying otherwise.
-> Just see how much sched-ext api surface has changed.
-> 
-> So if pm:wakeup folks need to tweak it later they're certainly
-> free to do it. Of course, it's better to keep things backward compact
-> and deprecate gradually. All options in developer's hands.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D221505
 
-I still feel it's really odd to be wanting to iterate over a zillion
-sysfs files all at once, but sure, if this fixes the problem for this
-user, might as well take it...
+Rhys Edwards (rhys.r.edwards@gmail.com) changed:
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |rhys.r.edwards@gmail.com
+
+--- Comment #11 from Rhys Edwards (rhys.r.edwards@gmail.com) ---
+Not sure if i'm adding much additional info here not already known but i al=
+so
+noticed this issue recently and believe it is also linked to the frequency
+limiting problem in https://bugzilla.kernel.org/show_bug.cgi?id=3D221473 as=
+ i
+have/had both issues
+
+I've had cachyos installed using rc kernel on a desktop computer and last w=
+eek
+or so noticed cpu temps/wattage/frequency was much lower than normal, frequ=
+ency
+was specifically capping out at exactly 3Ghz regardless of workload.
+
+I don't recall changing any pstate profiles at any point since i installed a
+few months ago so i assume it was on performance(?)
+
+CPU: AMD Ryzen 7 5800x
+Mobo: MSI x570 Tomahawk
+Ram: 32GB DDR4 3600Mhz
+GPU: AMD RX570 4GB
+
+It seems mostly fixed when i switched back to balanced using powerprofilesc=
+tl,
+but now i also can't set back to performance getting the error mentioned he=
+re:
+
+Failed to communicate with power-profiles-daemon: g-io-error-quark:
+GDBus.Error:org.gtk.GDBus.UnmappedGError.Quark._g_2dio_2derror_2dquark.Code=
+26:
+Failed to activate CPU driver 'amd_pstate': Error writing
+'/sys/devices/system/cpu/cpufreq/policy11/energy_performance_preference':
+Device or resource busy (26)
+
+
+Here is my p-state triage if it's any use...
+
+=F0=9F=90=A7 CachyOS
+=F0=9F=90=A7 Kernel:      7.1.0-rc3-1-cachyos-rc
+=E2=97=8B 'status':     active
+=E2=97=8B 'prefcore':   enabled
+=F0=9F=90=A7 ITMT:        Y
+=F0=9F=92=BB CPU:         AMD Ryzen 7 5800X 8-Core Processor
+=F0=9F=94=8B Per-CPU sysfs files
++---------+----------------+----------------------+----------------+-------=
+-------------+--------------------+---------------------------------+------=
+------+---------+
+|   CPU # |   CPU Min Freq |   CPU Nonlinear Freq |   CPU Max Freq |   Scal=
+ing
+Min Freq |   Scaling Max Freq | Energy Performance Preference   |   Prefcor=
+e |=20
+ Boost |
+|---------+----------------+----------------------+----------------+-------=
+-------------+--------------------+---------------------------------+------=
+------+---------|
+|       0 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        176=
+ |=20=20
+    1 |
+|       1 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        196=
+ |=20=20
+    1 |
+|       2 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        186=
+ |=20=20
+    1 |
+|       3 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        181=
+ |=20=20
+    1 |
+|       4 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        171=
+ |=20=20
+    1 |
+|       5 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        191=
+ |=20=20
+    1 |
+|       6 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        166=
+ |=20=20
+    1 |
+|       7 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        196=
+ |=20=20
+    1 |
+|       8 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        176=
+ |=20=20
+    1 |
+|       9 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        196=
+ |=20=20
+    1 |
+|      10 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        186=
+ |=20=20
+    1 |
+|      11 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        181=
+ |=20=20
+    1 |
+|      12 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        171=
+ |=20=20
+    1 |
+|      13 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        191=
+ |=20=20
+    1 |
+|      14 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        166=
+ |=20=20
+    1 |
+|      15 |         555531 |              1754308 |        4853585 |=20=20=
+=20=20=20=20=20=20=20=20=20
+1754308 |            4853585 | balance_performance             |        196=
+ |=20=20
+    1 |
++---------+----------------+----------------------+----------------+-------=
+-------------+--------------------+---------------------------------+------=
+------+---------+
+=F0=9F=94=8B CPPC MSRs
++---------+----------+----------+---------+---------+-----------+
+|   CPU # |   Enable |   Status | Cap 1   | Cap 2   | Request   |
+|---------+----------+----------+---------+---------+-----------|
+|       0 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       1 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       2 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       3 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       4 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       5 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       6 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       7 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       8 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|       9 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      10 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      11 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      12 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      13 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      14 |        0 |        0 | 0x0     | 0x0     | 0x0       |
+|      15 |        0 |        0 | 0x0     | 0x0     | 0x0       |
++---------+----------+----------+---------+---------+-----------+
+=F0=9F=94=8B MSR_AMD_CPPC_CAP1 (decoded)
++---------+---------------+------------------+----------------+------------=
+----+
+|   CPU # |   Lowest Perf |   Nonlinear Perf |   Nominal Perf |   Highest P=
+erf
+|
+|---------+---------------+------------------+----------------+------------=
+----|
+|       0 |             0 |                0 |              0 |            =
+  0
+|
+|       1 |             0 |                0 |              0 |            =
+  0
+|
+|       2 |             0 |                0 |              0 |            =
+  0
+|
+|       3 |             0 |                0 |              0 |            =
+  0
+|
+|       4 |             0 |                0 |              0 |            =
+  0
+|
+|       5 |             0 |                0 |              0 |            =
+  0
+|
+|       6 |             0 |                0 |              0 |            =
+  0
+|
+|       7 |             0 |                0 |              0 |            =
+  0
+|
+|       8 |             0 |                0 |              0 |            =
+  0
+|
+|       9 |             0 |                0 |              0 |            =
+  0
+|
+|      10 |             0 |                0 |              0 |            =
+  0
+|
+|      11 |             0 |                0 |              0 |            =
+  0
+|
+|      12 |             0 |                0 |              0 |            =
+  0
+|
+|      13 |             0 |                0 |              0 |            =
+  0
+|
+|      14 |             0 |                0 |              0 |            =
+  0
+|
+|      15 |             0 |                0 |              0 |            =
+  0
+|
++---------+---------------+------------------+----------------+------------=
+----+
+=F0=9F=94=8B MSR_AMD_CPPC_REQ (decoded)
++---------+------------+------------+----------------+---------------------=
+------+
+|   CPU # |   Min Perf |   Max Perf |   Desired Perf |   Energy Performance
+Perf |
+|---------+------------+------------+----------------+---------------------=
+------|
+|       0 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       1 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       2 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       3 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       4 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       5 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       6 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       7 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       8 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|       9 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      10 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      11 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      12 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      13 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      14 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
+|      15 |          0 |          0 |              0 |=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20
+0 |
++---------+------------+------------+----------------+---------------------=
+------+
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are the assignee for the bug.=
