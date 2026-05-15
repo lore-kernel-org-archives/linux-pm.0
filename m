@@ -1,70 +1,90 @@
-Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 142193E16B2
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 18:43:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F9DB384CDF
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 18:51:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778870588; cv=none; b=hPpkiNI2UhG7QKkhLZp29yzaTYnd3BECPVeJdkkZb9XRProIB+a8ugSQ4l66bXuBKCsbTqZdSO+gKK3vP4efK+8yatBeezUFOkqkbOwJVbVkBY7Y7xSmyEQBqUjhTYFAB3lAIL08UCgxJl15JPeB1+F8tO8it84TPtvhYUegRSI=
+	t=1778871073; cv=none; b=dcBBqK4QAXhqa4rK2NGCS7qmp8W7lG7AR/1DVChZU4CcxB8RlarPOhm7i9EEEkjBixI6WhNx8tJdSAEuQ2pVqYWtgpWsqZbAyMvWKZpSxAjKaVbksBXXHH8hKbqLP0b6+yUCTW4Qj2sj3aGBtOuiq6768YoX33NNY67HHPyGitM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778870588; c=relaxed/simple;
-	bh=QH9FJvwVzG3kwhmgx+COL9mP2nHm1UlLgbekHxUB6dQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GM8g8u0UvVRkud49QsPMELPoUwzoygLjhYflZQBgnVlA7BizJD/rQaii6vnlDU0KyDEh3E2Qmhkva1J8wdp4drIbmOjWr4X7r14aJytZV3QWW4SNuOFIKVd1Sm1amkUkoset1RUEW3XFStkHsgFPb1y4UY61KMjwQA1Kh4oyymc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TX6CAtpp; arc=none smtp.client-ip=209.85.216.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778871073; c=relaxed/simple;
+	bh=WxhLrdxWoS3p0+Dx0yvDZ4xjG2ikKQkrruoWOpoCTqo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VP5KhqEEh2NGbLCI9RtqSrjzBd54jcucR1AvGASbmNHB8vdK6efjWH883ZAKPOvFpuqhLoliSA9Ov9EnmDGXdOpQm4jZVxuU4r8OU/hJP6/76htS5Zlu0DqehD4gxFLcQKG3HUNuLpZoFqdiFvVR5y76eKGQJfgOuhgPr5OHSiw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=NvOkiqMv; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=VmlYk8l1; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TX6CAtpp"
-Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-365e20fe3b8so57880a91.3
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 11:43:04 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="NvOkiqMv";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="VmlYk8l1"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1778871066;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
+	b=NvOkiqMv3tgQXNQoQs2uLbVLqeTFmv70w7m20GxDnXNtSuY/W+nGMDjgs5lrVPkS0mXYUL
+	7eb+V+lfVZE/c5eK6lymfAaVnvnq761mM3z5o7QwZ2edPexcM3qtRQDfHoJ5tWzMmQhbkU
+	/bgTKemrn41SfLYyjnH6quQlvsQw3fc=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-59-AVv5lmPAMoqBjPRulEqMBA-1; Fri, 15 May 2026 14:51:05 -0400
+X-MC-Unique: AVv5lmPAMoqBjPRulEqMBA-1
+X-Mimecast-MFC-AGG-ID: AVv5lmPAMoqBjPRulEqMBA_1778871064
+Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-44d68ed8f95so26469f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 11:51:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778870584; x=1779475384; darn=vger.kernel.org;
+        d=redhat.com; s=google; t=1778871064; x=1779475864; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Vx+lhp6XxON2YOyCdm1ChngOqSePZVBarBxt/yXA8c8=;
-        b=TX6CAtppauCYGpQNbOcCyrwgBiWs3/VypzNOssPTKX9/O1Rc4N2kJ4esBNwrQmK4ee
-         san7jdd5ryGMcMoinsNzXvZCmlfSKZc+B+BsX6goYSYmTPC2TiYK8UeKYJi7BkGDiKW9
-         dCjkOOvQidyvtX1Wh30xJoqM0ioUmmYLlzdbsdMymCYcC7Y4rcWaTNRRNi5o0NxR9RFb
-         TUzBS/97VEVSihPZuH5isQnwesyb4QkI83RS8C91zobabaLhBcq8SV7mBUzlquqk9x/7
-         pDqLCDgBbGtxB05Tn0yRj/apA/r5z2O5X4HXLu7Z81lNsXtUbqicmaRlTflL2OknhlGw
-         A04Q==
+        bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
+        b=VmlYk8l1/k+UOLhtbsrQJ/iCSibhxaKUBOknaMLh5CgWgIoxTVFgP9vhsqD6/cul5H
+         H659ejEVDSBoX3ar3ex+vdsp1Ng2x6ikTuqY41IINtHYlZO3rjWcPRYnEI/AOS0x5Oxx
+         XB+Qhr3Rj/zqCuO5TzDCQzYtyyzm1haFhrenPsWLVOvAK51+SE+Og/g1P/eSRbDqATZq
+         92kfjrD3fFzAuDGcZZ2VU47XDHzWQNjBQnQyUMDm4itYD+UWZXORZc0Seu3Wm8dNEz0E
+         3PvQvBCbyL1OAj2ayMS6TgBGGbRNt0LiDUdDTiErO3u/wg0tpBke9RAuRVUoDzSei/i2
+         Dlow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778870584; x=1779475384;
+        d=1e100.net; s=20251104; t=1778871064; x=1779475864;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Vx+lhp6XxON2YOyCdm1ChngOqSePZVBarBxt/yXA8c8=;
-        b=nO7b0JsUvY7Nvhew/9Hk1J5ImNKyXqhdEeBpfyE96XyST2QKzqYCn9IOTRP+KS1R2N
-         eol+67DucAgzhmPbxBChWdcCkqGSB7QOp7YNWKDaYvGM9cFjkSd09Ydes2uWRquktdXA
-         lT6JJ+aE0NyImFmx1oA7roBD15REaBWM5V13OEeaaNme/aqcGAlM25v7fezLmIRZwHvJ
-         sg0QoZWBJOZiRGOk5AB9tsQ8kxzk5JeYMbtdxGBlBoeLwGgA7RIj2maNGmi3n2jFDecA
-         ZLE7oz347k8o6BRQaAy0THyn2gYjFjcKt3wtGIFZj6MWo1lH8mcXuYCvXmVtn57aI9Zq
-         FfHw==
-X-Forwarded-Encrypted: i=1; AFNElJ/fYb2PheqPZXrQFUOIYCKW1HHFUa86mXMVlquCf0vogYPXSo+iqe7z0FwBHadIomB0SvG6yNigQA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywnkq587/p0C9KogZu2qQMGi0rCEmzmk3nkpZB8PMZYcbVRTIt3
-	4UTMDTEaviW6UcrTuMMK2j9gPOj2q7i9bdUfSGgkjzQWvRLdjdmgktsH
-X-Gm-Gg: Acq92OFI7mX0VxpmSIrExTt3fu/o0LEUKNQnvjX+H1UEqJsf+sO6uhpWAS+vBU9TDJU
-	Bq3F/SzzqD51vBblPKqXcJRZ+Jxaj0CyY/Vla8V5yuPJOGeVxkXtkVTG5dloHMvimPdSRRbdH/D
-	29viRjGYTAzsh3fsV7KKTb3cu+sQFBkP7B0jAJ6dcIjy8xj/LT9VetgqGiKQIztylwlhLbcSqFU
-	3VKCfPrIqCX+3rkd/B+4KUykOgQQl2ve+hRYfDQ3QxC6Dk0GxPruoQcoE6ZUrBQXKmtr9a8ZA27
-	qbSMDREe67OJfXKuqpi89fAX3Wz34N25NfN6x/WzK45jxRZM4CN6QW33dNZKQuYeKOSIjL3Yxg4
-	fozly7ZyuUHQzLO/kcHUM/hyeX2X7pFo8SxIeSIYYeZYXUQ9fIV5qdFgSBuWyKPCri3JpVQGOSP
-	3HyoGziwcRW+g5NV3tlpCJQ2fSSyvCq7qE
-X-Received: by 2002:a17:90b:5788:b0:368:4cb2:17b8 with SMTP id 98e67ed59e1d1-36951b9ad6amr5283785a91.21.1778870583733;
-        Fri, 15 May 2026 11:43:03 -0700 (PDT)
-Received: from gmail.com ([58.84.60.109])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3695155a0d7sm3315930a91.2.2026.05.15.11.43.01
+        bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
+        b=UJXsuaVaZ1rVy5B76yWUAnOggOWydxFdoLRvXHrWqrKoL0B+YcoxQtxTWoly2zWxiD
+         z9R03MMJgwrCx5NMtA0Vxt45Hnd8Z9kom01BZ4AQ4QeIYoMu7z/jrh7OcJTXq2a5zsek
+         gJr+2yTjoSw00p7U002l7O1XCP5hS7vlUQrTzVXYqevDjpWjARF6OOfrzKNrTgSGGKGa
+         4NJptLrP9JXLioO3GYvXiUVFVJLp0Wx4qhpH+MOZTmedKZATBH+7suIg720sHn3djnTd
+         E7n8fbreD9N1DIhNCyAJpeFTfZ8+ZdDp6vnDw+jOeEy4HScUBqe/szX1m9CObeWOQ39N
+         20Qw==
+X-Forwarded-Encrypted: i=1; AFNElJ+rfz/zlkb2oMHAJcNJrRw3QA/gQVgp/pNX3RzPw1xpX09SV7z7xKAsY8ccgICnZjQisVXbnIs79w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyWLc/bopyxerTi7TNWYzJmi09hENYg4O/lDlf10tAOwVJI9Z1C
+	K0DYQCs7p0ZFAuVylkplX5k9JbperVVNQw4gcmAB10EZDQpgW8sc6OIKJoKu6muasED+Ya2Glqu
+	kgewG/vyh8aPYF3uwHGcwMPx6YS/fwPAShKCAj7qVZqwNKZ/iYvIFWgL1/Tz5
+X-Gm-Gg: Acq92OF7nkYDVieaol8qzE5t2ng/xJvi12+Ya06RQcd+6Ai0H8cKMLDrIyyFligdHVx
+	+3B4nDgV3e8IDaCwgVUHjdec2Rj3z0uo/KPZdfOZ7uR9bVAH64gl1ryY4g7eBM2vY5QqxfGOfhS
+	OamPHeR5L8CG+ue+0fWVpMLw3z7QzkSmFy83T0Eqnmy2deDIWPmfIVn4BfsjCMWKwFf8v/lSQkv
+	S2fmT8aoByXKdYREVHJvLwD8ECDiBoULd2BnwltvmRcMLc9SusxyWL308kSkLl7ivw1p1pu1pVC
+	IfGEQPS5dsOFB/ydb1TqTEFZmgCVfeVzZg2ZCwwvP6DZMDQhD+D/aLsZij99Van07TdrengRwcE
+	RDN9UMSxLIdeLdmFSYqinmiMc6gcnw6UwWfk=
+X-Received: by 2002:a05:6000:4b07:b0:44f:69f4:39b5 with SMTP id ffacd0b85a97d-45d9502e84dmr14791856f8f.29.1778871064233;
+        Fri, 15 May 2026 11:51:04 -0700 (PDT)
+X-Received: by 2002:a05:6000:4b07:b0:44f:69f4:39b5 with SMTP id ffacd0b85a97d-45d9502e84dmr14791826f8f.29.1778871063793;
+        Fri, 15 May 2026 11:51:03 -0700 (PDT)
+Received: from costa-tp.bos2.lab ([2a00:a041:e223:1b00:fe51:8bb:7986:c897])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45da0a178adsm17740021f8f.18.2026.05.15.11.51.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 11:43:03 -0700 (PDT)
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
-To: rafael@kernel.org,
+        Fri, 15 May 2026 11:51:03 -0700 (PDT)
+From: Costa Shulyupin <costa.shul@redhat.com>
+To: Paul Cercueil <paul@crapouillou.net>,
+	Sebastian Reichel <sre@kernel.org>,
+	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	sumeet4linux@gmail.com
-Subject: [PATCH] powercap: intel_rapl_tpmi: Handle PMU registration failure during probe
-Date: Sat, 16 May 2026 00:12:50 +0530
-Message-ID: <20260515184250.228062-1-sumeet4linux@gmail.com>
-X-Mailer: git-send-email 2.43.0
+Cc: linux-mips@vger.kernel.org,
+	Costa Shulyupin <costa.shul@redhat.com>
+Subject: [PATCH v1] include: Remove unused jz4740-battery.h
+Date: Fri, 15 May 2026 21:50:41 +0300
+Message-ID: <20260515185043.1523363-1-costa.shul@redhat.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,40 +93,38 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-intel_rapl_tpmi_probe() invokes rapl_package_add_pmu() but it ignores
-the return value, so a PMU registration failure may leave the driver
-reporting probe success despite the PMU being absent, with no log
-trace. Worse case scenario, the previously-added RAPL package would
-not be torn down.
+The last user was removed in commit aea12071d6fc
+("power/supply: Drop obsolete JZ4740 driver") and replaced by
+a self-contained IIO-based driver. No file includes this header.
 
-Add check for the return value, log the failure, undo the package
-addition with rapl_remove_package() and fail the probe.
-
-Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+Assisted-by: Claude:claude-opus-4-6
+Signed-off-by: Costa Shulyupin <costa.shul@redhat.com>
 ---
- drivers/powercap/intel_rapl_tpmi.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ include/linux/power/jz4740-battery.h | 15 ---------------
+ 1 file changed, 15 deletions(-)
+ delete mode 100644 include/linux/power/jz4740-battery.h
 
-diff --git a/drivers/powercap/intel_rapl_tpmi.c b/drivers/powercap/intel_rapl_tpmi.c
-index 7f41491d9cd1..8bc95310b542 100644
---- a/drivers/powercap/intel_rapl_tpmi.c
-+++ b/drivers/powercap/intel_rapl_tpmi.c
-@@ -414,7 +414,14 @@ static int intel_rapl_tpmi_probe(struct auxiliary_device *auxdev,
- 		goto err;
- 	}
- 
--	rapl_package_add_pmu(trp->rp);
-+	ret = rapl_package_add_pmu(trp->rp);
-+	if (ret) {
-+		dev_err(&auxdev->dev, "Failed to add RAPL PMU for Package%d, %d\n",
-+			info->package_id, ret);
-+		rapl_remove_package(trp->rp);
-+		trp->rp = NULL;
-+		goto err;
-+	}
- 
- 	auxiliary_set_drvdata(auxdev, trp);
- 
+diff --git a/include/linux/power/jz4740-battery.h b/include/linux/power/jz4740-battery.h
+deleted file mode 100644
+index 10da211678c8..000000000000
+--- a/include/linux/power/jz4740-battery.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- *  Copyright (C) 2009, Jiejing Zhang <kzjeef@gmail.com>
+- */
+-
+-#ifndef __JZ4740_BATTERY_H
+-#define __JZ4740_BATTERY_H
+-
+-struct jz_battery_platform_data {
+-	struct power_supply_info info;
+-	int gpio_charge;	/* GPIO port of Charger state */
+-	int gpio_charge_active_low;
+-};
+-
+-#endif
 -- 
-2.43.0
+2.53.0
 
