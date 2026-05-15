@@ -1,93 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F120834B183;
-	Fri, 15 May 2026 17:16:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23ACC3EEAE0
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 18:26:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778865364; cv=none; b=qSZfAf6U/Xw3u6o0hs9Z7Alx2co+ElLRvZUz1Y2tzRwSc71ndIQ8a2Nas+3hyBUQfUMZUohY8VHbKU+XB1IJrSC41pq52ze4uDQia66TY42Bm4yiMdavlYXMOvcccl+EZ8mhGIbqDTdjTN29xMItRPWUWscguiZjb38fFO9lIfk=
+	t=1778869598; cv=none; b=Ft3/QSUDR7m7zgNhFUP0l7gi7FSC2cxS9x/I2oQoLsgzj2D8w7dSkXepA34x3051pREGp9tk8PRoYJ5+TMyt9omBosrBVLColJTwuDoVPzBQFyMPHKGy4Jwc83C3bSSheQB0kJEWiUkub0Is8PpLmjkbs2M8cG93olYF6WsjwKM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778865364; c=relaxed/simple;
-	bh=i8idn8H9HrZ9zikdnhtR4vW/A6+lT+Lu667jMNTNSzU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HTSGNQ6uR3an/P+gzwfzgayumVxtevX3+ZEvdGvGPbMf8b7+dbpdNn8wgYvcyC0c6RcJY9cp2tfrPUd0D304Vi24GietWI6LoRwA+6XG82//iDuGkRIgFYNHQqt1Njd+4C1qC5/hiulwSoT8jlUx5I+pvU7Gmhx9s8Aa3UIs+DE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F8t1oLyL; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778869598; c=relaxed/simple;
+	bh=f/nDi57hXZKLpfRoPJ5vE5kLX9ZIF184zHub2O3n6qI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HkCbhSdMORw8tmzqvuRKWRlZl2hqvnmE+AauOBzSIwO0BG4hhAsT3CK4AMA2Dn9XMWpYMdYszDk+7XwS1YxKCHxr4sU3EzRgmTY2NNKydiHkGf0POCO8+5EtaB+sBtLW6yiucBfFaToHUKyx73yuuc6cA8JudpFv8ciu5Sr/E7I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pJLRC+gT; arc=none smtp.client-ip=209.85.214.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F8t1oLyL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A764C2BCB3;
-	Fri, 15 May 2026 17:15:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778865363;
-	bh=i8idn8H9HrZ9zikdnhtR4vW/A6+lT+Lu667jMNTNSzU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=F8t1oLyLw9i0bV2+LIAxdoZI2cp9tEHtfEAhWZifrVS549qCdsUfhNe3KXAdDYVke
-	 kbKNQpwbzFsfSQXeQAgAXaZavx/Lou8daywkv3uCSK0Qxr6WQIagCnOngCrL/3MxPA
-	 EndRU0mu2/ulOiBrI/eurN3yp4x9KPOfUTrxxdorX2Dau3kiRSN02aEaZoa0fZOKJV
-	 mCYF08gWN2a5Zff2x4Htpb1GdfEHc99E4WrA5B6jc3YxcQYN+A6HAq/n8xh30GDFG5
-	 ciIBlw+jjK7TA+DWnLVieA5JR/FABqTIR5mmcEuqYy9ooDIYDlrpYbe5tR20djT9Ck
-	 3fXiQv8ueYE6g==
-Date: Fri, 15 May 2026 18:15:57 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Kaustabh Chakraborty <kauschluss@disroot.org>
-Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	MyungJoo Ham <myungjoo.ham@samsung.com>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Nam Tran <trannamatk@gmail.com>,
-	=?utf-8?B?xYF1a2FzeiBMZWJpZWR6acWEc2tp?= <kernel@lvkasz.us>,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org,
-	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v6 02/11] dt-bindings: extcon: document Samsung S2M
- series PMIC extcon device
-Message-ID: <20260515-mutable-urgency-305fecf3ffc4@spud>
-References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
- <20260515-s2mu005-pmic-v6-2-1979106992d4@disroot.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pJLRC+gT"
+Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2bd2051167eso998435ad.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 11:26:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778869596; x=1779474396; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=KU70qGgzHimS0wVKiiWBVevI3BHfnlIAnYvMEou4rn0=;
+        b=pJLRC+gTEfrIX+A0wSex9r+OhXWcc359iTt7lbyk+IqJRFtOU0qR7sNxF/qEIs/abb
+         0LQYfBOu6LNs7khqsZHqoffoQHAufNCInRwnNFSCAkCynb0Q9e+gMyZoqWIUeo1Zvkqc
+         QKdRIhisE+d3+tH1cjQrDYkLbu5FE01mFWlzOeVguWZ9rTYvZ8Qgq6YBxb3S7Q4zRnDr
+         9eF/EwNzYeQsXQkPQPk3azHfG1AEgeSYTGkXNvw53SJgKkLNnmsCV7u30ntGCB37/Vjc
+         cwfP3BjFUb4yAJOFAV8hVxbUgbNUI/bpzeqKJf9nDr4a3kLDRy3hpoAWdOZzbwO9+5WT
+         KxoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778869596; x=1779474396;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KU70qGgzHimS0wVKiiWBVevI3BHfnlIAnYvMEou4rn0=;
+        b=hFGWqXno7hfG+tj4jCpyUcn2DZcmdYv28cCQxxEL5gE81ywTv0kgAqXuZxC8Bz8KpO
+         PHqn/Fp/YMnVL1syAbnbdjAVys8k0Qsx6t1nHCUIDXrtzNO7K1y09kJljjq0ryO/2Wkh
+         zYk7ApNm5s5sTFEuLjaF4QT0ExQMkEctnyatUK764k6pQx65Gtn7Te3iZczV53z/qId2
+         u5FuAO8Ld+7V+ElGO0lI4jZXuZrdhhxZxQ9V1mRe5NNZnvFunoexbNo/SErAJHSFTd+B
+         RrtABGkWGEexg5lyq/3QzbrnIpvADjZ4fc35xgYdmtX3HvnTuj3wLsHuUgZKKTRlE9+B
+         /jCQ==
+X-Forwarded-Encrypted: i=1; AFNElJ94CbiHJrFAJLh4rxWcEO1Co7dpn5V/4533Zaabz221MM1YcaxLkGEJNpOSQcdxdW7YKAOHB3Dwiw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyTDcg4zf1eoZ+xzg8TtWphgfzyrDdNQRsuMFPkAq0Yaou8vUMU
+	6w/In3Nof3NaOPb9qhr5CWfgq0UQLiv68XVOJQoo7XISAHT3NLFE4fdW
+X-Gm-Gg: Acq92OEeter4re9zyJoMrpnrZ3jrV1LWVUEYTjCqSb0F6Z/YthpGBUJWw9YI93oS1uG
+	WSdThiKHpxqMz6SSfH7NZUJjKCREpzkxm8SRiev7DGJvDWjh80/IleREKqJzUickln9gfscnliJ
+	rB5UCNxRreMx5HQK1Yufg0bBT3wp8gy++QcHYKUMQcXsBltJSlYS/gb6uQRbP9KydgepWHOY8FJ
+	R1GzpnzIRnBzrBARXme14MYIOJt/PU1ihD0FuQMnD6gEv74fbph5ktv/Bd5/sHRv1Fy98MCO6oW
+	i8RKwt7EkMAtzqsjhqy4xqUE/UmXOAeC5jSgJyAceqpIFbH3tiGDixCii5ge2FWAW0Pi0JXwNtL
+	DdElsHRrm565AWCwXd84Tn4xx9sNosmFSjJwDxViEh0Oak1DR4tpUnpquZaQ6eyIXP7D4bo9XCb
+	lcQlgF3iBMW1w1jdFrkA1RsrpBVZzHpCGL
+X-Received: by 2002:a17:903:182:b0:2b9:cd2d:6f11 with SMTP id d9443c01a7336-2bd7e8bd35amr57059885ad.18.1778869596118;
+        Fri, 15 May 2026 11:26:36 -0700 (PDT)
+Received: from gmail.com ([58.84.60.109])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5d0fd279sm64428595ad.62.2026.05.15.11.26.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 May 2026 11:26:35 -0700 (PDT)
+From: Sumeet Pawnikar <sumeet4linux@gmail.com>
+To: rafael@kernel.org,
+	linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	sumeet4linux@gmail.com
+Subject: [PATCH] powercap: intel_rapl: Fix memory leak in rapl_add_package_cpuslocked()
+Date: Fri, 15 May 2026 23:56:16 +0530
+Message-ID: <20260515182616.227707-1-sumeet4linux@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="lKNSi/QIFdgUPR11"
-Content-Disposition: inline
-In-Reply-To: <20260515-s2mu005-pmic-v6-2-1979106992d4@disroot.org>
+Content-Transfer-Encoding: 8bit
 
+When topology_physical_package_id()/topology_logical_die_id() returns
+a negative value, rapl_add_package_cpuslocked() returns ERR_PTR(-EINVAL)
+directly without freeing the rapl_package structure that was just
+allocated by kzalloc_obj(), leaking memory on every failed package
+addition.
 
---lKNSi/QIFdgUPR11
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Use the existing err_free_package label so that the allocation is
+released on the error path.
 
-On Fri, May 15, 2026 at 04:08:58PM +0530, Kaustabh Chakraborty wrote:
-> Certain Samsung S2M series PMICs have a MUIC device which reports
-> various cable states by measuring the ID-GND resistance with an internal
-> ADC. Document the devicetree schema for this device.
->=20
-> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
+---
+ drivers/powercap/intel_rapl_common.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-pw-bot: not-applicable
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index a8dd02dff0a0..f8afb4461e45 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -1770,7 +1770,8 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
+ 			 topology_physical_package_id(id) : topology_logical_die_id(id);
+ 		if ((int)(rp->id) < 0) {
+ 			pr_err("topology_logical_(package/die)_id() returned a negative value");
+-			return ERR_PTR(-EINVAL);
++			ret = -EINVAL;
++			goto err_free_package;
+ 		}
+ 		rp->lead_cpu = id;
+ 		if (!rapl_msrs_are_pkg_scope() && topology_max_dies_per_package() > 1)
+-- 
+2.43.0
 
---lKNSi/QIFdgUPR11
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCagdUzQAKCRB4tDGHoIJi
-0ikJAQD8WkCIgSdf8UfUNAswa/AfHGZsFpJUqN9s8+XJXvQuDwD+IsAoeb4QTJCz
-CNcs/VFeH5Rwv9mL7y7G0wVc6It0ZAM=
-=2pni
------END PGP SIGNATURE-----
-
---lKNSi/QIFdgUPR11--
