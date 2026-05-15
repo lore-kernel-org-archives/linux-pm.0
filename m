@@ -1,83 +1,82 @@
-Received: from mail-oi1-f179.google.com (mail-oi1-f179.google.com [209.85.167.179])
+Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com [209.85.217.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25472314D18
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 14:15:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA3813B3BFF
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 14:39:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778854538; cv=none; b=Xmx9Marx7mRVEMVPCuOyaNTGq9AMsbNqD8sLrLtIzh5QzlRpSMMy9irVZmVsTUyy+CV9QcRjz6YWD1zo2q9hm11odKlpKYEKc2azo+UXFYkOc9LXxXILO3USPYS6YiN+QHPLsfMDMU57TL4qkHg+Vt5z8gdLQp5nYNB0gUuXhPU=
+	t=1778855952; cv=none; b=rltnV0X3Z5w7xVN2/tg6kLIfLUxp3SfcqBh5qkceJL1DW5CanKomfPijTW/gEUjlfQeDPLPbLR04H21Z6HRaVpITIDFbaVNPbqcxyvzRNtvjwKHGVE8482aUfD93Iz/C+fkzzEYRHVT/juKIrAUArwIrGFF/yf5G8USXA4Dra70=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778854538; c=relaxed/simple;
-	bh=AxIVVOkP8DzfUfnvY2EXq41TePoQG93Dw8tHUJ2/FXg=;
+	s=arc-20240116; t=1778855952; c=relaxed/simple;
+	bh=5ei7fh/Y69tCRQ3kK/dbGYFuojcIwy3an7mcbITipcU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ELVFH9VfrML8/3A8lGaIcmw0Q2lTW5MmGzyJ2mB4YcGVh46YM+5AtzVKI4F51FakpqxhvXP9s4JC0+Wt//wWg1EqksbBFc19WR/9mC2gmqzIzjdOGwx5fHDx8AUUAueGIqOKWi7azbjSRdoVffAXPw2wHMQhbfU30s8mSaEra9I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HLw/s0Tp; arc=none smtp.client-ip=209.85.167.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=A/jXAa4Q3cK1evOhc3QBt9TRglQmzrkbJjkb4GRSj0X0nlJ0ubd7e4479dPGTZhikwA+AXhLVyUV6yL3U445dEPe1eFGo81MI0WuCyTnWMOch2uMbgaUGBcA6kbwZAC5VwHfnElsobWRbvtgaYkrVpuyk+hIRDWlhElriRpW6ZI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu; spf=fail smtp.mailfrom=g.harvard.edu; dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b=r5fzMnjx; arc=none smtp.client-ip=209.85.217.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=g.harvard.edu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HLw/s0Tp"
-Received: by mail-oi1-f179.google.com with SMTP id 5614622812f47-479dd56d016so6957056b6e.3
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 07:15:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.b="r5fzMnjx"
+Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-6312970d9e3so5947030137.2
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 07:39:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778854536; x=1779459336; darn=vger.kernel.org;
+        d=rowland.harvard.edu; s=google; t=1778855949; x=1779460749; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=X3Ba1jDpFlV6BYps4ROIqTWMi/TLCycbOgGvzvGmAoI=;
-        b=HLw/s0TpdyB9b+Cnbtd5LNKL0CcnZSA4okKrMtybZgK0qcaGd8wCrP4vZerumNCP/S
-         g+/AbTg5JYBRDRL4pz9p0k+4SQrms9z6wqErao1Zdd4bR6RLBrQEwClsT3s4MXqUrzQ9
-         82ohDatr4nHoQlw2hqKmNvyUv26aXtnW0oQKZ4iclcCAt+t/MPhoDkqx6fKAPzK86krU
-         B7O4mwsaPr2LYALMRUzBgXNGsirvdjxs+IyyfBklQ42T45EgbhR83YRmR+zWxLCRwDcp
-         ny5hbvigiXRQlXZrIUoP4NhgEljHZyWJYQtKnKWMfuIBk0SWAeppoJcTFFN393VEGUXR
-         k+vg==
+        bh=BQxJjtW9NoHteCK0AjadT0ZiWp4xMo5S2G7yHBWhKm0=;
+        b=r5fzMnjxo0qn47DQheu+8z2BqVawUayNL19uz+3HNCVkcfleHmePGSySdncjPWRlFL
+         pyzYzWAhxGtYttSooQV6s0iEnztVj8Znl0pLey9ORkA+ry7diHDpSXXziTw4HzbpN+mL
+         5igrMArIrATYGLp9FMEWMoWAwbQRiX7FBxA88r1H74RNRo0QkogWc0Pfy3h0uzfgy2Ow
+         UOJpkHXJo1G9zABJeA/iUcFWpnGwA+3ztUcjxcxYS2KuQDWaMpKQrKJt6fpQyNp5Y1lw
+         oMcuYZtMhxuN9N0/NLYbsqbptZruq8Iv+HICmnHUG1iWpANS/ZrpA6TwTCe6khEjfn+S
+         hMeQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778854536; x=1779459336;
+        d=1e100.net; s=20251104; t=1778855949; x=1779460749;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=X3Ba1jDpFlV6BYps4ROIqTWMi/TLCycbOgGvzvGmAoI=;
-        b=Au16ttAo6Mufjx2BVxzQZegYmPE6kFLNUFggQdMavrB9pnRwjdl/PlY2VvVWdRUF4s
-         oy0ucTnt5LwQeUXcEIeFuO5JYM+oSQZU0XETjuPt875pjPnx4F4+IfzA+CJ/TM8AMG/G
-         o+qPVvJJQR9+aWeW7Aeemy6ERguF3keCEw3A9JyTeFATuxUisMOHfJZ0c7J1T2PQkRO+
-         P7a0vJonM8RNdMEce3j7dxLKFHcqsMH6wZs638j4w+Km/UdKF6ZY2ikWhhD+4SxGBsoE
-         hCi5rJOtTEUi4MzOpdOlatwmhJ5BbxNakJqgv9Y1vzZAYyMibzZdSriKLStoQLxZZx0x
-         QV0A==
-X-Forwarded-Encrypted: i=1; AFNElJ8ZqZRCseJYtdqjazEw8AyjNawY4wN2LQmDAdnTOwEu/q4MyXPvnxd4ofl1ml3DeiSVck2H4AmmNQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywi4NscqDymhTBWE7D6uCabjIeV2KvIN6keuYbPIPiIpVogKChw
-	8QOhtJ7Say70ln4AtlFHxFyuwJhIWEUUN3ge+jpHijL9lMQLbU1JZNDOGR5WU5hX
-X-Gm-Gg: Acq92OEyNYeIu1F6XvCp0qBhpPax/cTJ8z95OQrDyZGL667TNjxzf7tqnVtBPf9JEly
-	soFFsM7IDT3rqJO8s3RymffZIGyF6dlUxWxyv9omTipSGC/mlWZXyuRrIWf2ItqZti3mCSBYwEU
-	yLq4v5jGEvL9O3Ikqp7CZjeUZ3KM1V1V/s9W0YCE+kE1MABWSmbsfwqNbxU7XKxfkitkvTzshAp
-	KynYWYKsjBjeaGM3o6S1X+J6f24X86TTEIzke/4K4ElymGBcwLH71UyAj9VIxVFsQSKDJQ3BCWA
-	1Gy++kfWs/uir6DYPp4Dm9xwyXCJThmyNxOLgY+fO0vBhEI0V+HXrqHu1OnD9Hjpab/Zu/OL3zK
-	11S5KMLB6XbToptOrYie7xKDoXQ0uld8bAFOg5xn6+tFWB3GBqMC1RT9DFqTqRQ9oFG0pERqYEP
-	YlXN1JALKj+n8in/guDfL+uSIiR+mPWlLmWspoxP0Jat48
-X-Received: by 2002:a05:6808:1982:b0:467:2a6e:adb3 with SMTP id 5614622812f47-482e5729bb3mr2592192b6e.23.1778854535958;
-        Fri, 15 May 2026 07:15:35 -0700 (PDT)
-Received: from neuromancer.localdomain ([2600:1700:fb0:1bc0:8c2e:6a8e:445a:9169])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-482ee38a5ecsm876341b6e.7.2026.05.15.07.15.34
+        bh=BQxJjtW9NoHteCK0AjadT0ZiWp4xMo5S2G7yHBWhKm0=;
+        b=pZnrFeJiCE588EotFlIWT5HoXbrsPmZTVIeODGyalIENWY3aWW9aptloUOMx8MzZwg
+         ZaFknHeaS3l4iDDkGGQO5Fg1wJSi9cfyt2P5umgQ3MLTovOR1ZcEpRRESOWWfEoK9boP
+         0ZT6lnaw/HfRrnzCmejqDiAaHRCCnD7KW30S3sojKCGrIc+lWiv6NnmhUj5OJ2pvoqCi
+         4TcrvNIrlzgmPNKSzvnTLyVyarIOkfmWv2j1dOl9zLR574O8Kzp8QIhSGOHRglDIP+uO
+         edpxAO99e9JM2WNK4C++4d2ZFMEpxME4CZkOsEafE+nosfPLq/lQWrgCjtRZbTmAQH8a
+         SvPQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+61f+70rMQi6+iCqiF7adIl74niT1oCpmlVWKbJyg1KykoDOl54QC/1m5bzgamFWUd/i6OgAcIUQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YweJ7yhtM8c45K+guqTVXvKwgYvIjTUr425FvXpOaTrhSpJlEHC
+	HbyvKJ9KxCIPF/jrzPJO37RcUk9EXLvGDIkxunfp9udvbKuxe2IfYpR3f8uO+obSeR2ZISwAKBY
+	4JS8=
+X-Gm-Gg: Acq92OHH/RVM27e4ElsNnUTrCQ68RnZ366RCpDnMVcB0a3frTfN6E75eOPmKL6BSGNq
+	o0/4bys16AGmBafs8zUoVJTLi3oQ1s1c7NRzmB0yZ2WOaCOK1oz14qq90TJFWZKOT6JorhAjD3n
+	4KJLntIsP39S3HLWZVFjr6ViyqiS7r9sMjkMse88ZezR28JXRbJh+chGl1ZPoUMjPXlo7LW3GpM
+	jIj/Lg64mSfl+R0Qj6qQXQoYnRlRcviub0yU1TIU6K7E3fxqbbpheH8YaXEQsshOFToceAE5fNg
+	cnHp4luv7aYi72wbzBzrhp+Su2Y5sADZ+QgI0wTG+uG1SBxoeluvkI2wPXHr0UyheNEuXg6ydUe
+	8Ktok7TtPb9I0jkSwnpsFEKYVHsBlPuhVOMoOduavK8QmWYDoMtJ/NqNAGxzVVCSqWV0Tcyx/CS
+	jB4wQNqj3N94qjEJV9zQTIB0UCBz/pRpi4R+MTBk8mC0s=
+X-Received: by 2002:a05:6102:e14:b0:633:1fbe:79c8 with SMTP id ada2fe7eead31-63a3f597eb4mr2246407137.23.1778855948736;
+        Fri, 15 May 2026 07:39:08 -0700 (PDT)
+Received: from rowland.harvard.edu ([2601:19b:d01:d210:d62f:1911:f952:16ba])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8c90b3d0bdbsm51850896d6.24.2026.05.15.07.39.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 07:15:35 -0700 (PDT)
-Date: Fri, 15 May 2026 09:15:33 -0500
-From: Chris Morgan <macroalpha82@gmail.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Chris Morgan <macromorgan@hotmail.com>,
-	linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	xsf@rock-chips.com, sre@kernel.org, simona@ffwll.ch,
-	airlied@gmail.com, tzimmermann@suse.de, mripard@kernel.org,
-	maarten.lankhorst@linux.intel.com, jesszhan0024@gmail.com,
-	neil.armstrong@linaro.org, heiko@sntech.de, conor+dt@kernel.org,
-	krzk+dt@kernel.org, robh@kernel.org
-Subject: Re: [PATCH 1/6] dt-bindings: power: supply: sgm41542: document
- sgm41542
-Message-ID: <agcqhTCtrerKplSD@neuromancer.localdomain>
-References: <20260427170914.5062-1-macroalpha82@gmail.com>
- <20260427170914.5062-2-macroalpha82@gmail.com>
- <20260428-bulky-nebulous-reindeer-ed45ed@quoll>
- <PH0PR19MB997338F0B06B7B99AA0ED3C6C4A5372@PH0PR19MB997338.namprd19.prod.outlook.com>
- <534f0795-0002-4c04-a83c-fa1b3ce68216@kernel.org>
- <PH0PR19MB99733813E0295B511539050BA9A5372@PH0PR19MB997338.namprd19.prod.outlook.com>
- <20260429-boisterous-cyber-hyena-ce870a@quoll>
+        Fri, 15 May 2026 07:39:08 -0700 (PDT)
+Date: Fri, 15 May 2026 10:39:04 -0400
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Chen-Yu Tsai <wenst@chromium.org>
+Cc: Bartosz Golaszewski <brgl@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	linux-pm@vger.kernel.org, linux-usb@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Manivannan Sadhasivam <mani@kernel.org>
+Subject: Re: [PATCH RFC 05/12] usb: hub: Power on connected M.2 E-key
+ connectors
+Message-ID: <41260a6d-46fa-4a45-9906-e1bc5e5dd83a@rowland.harvard.edu>
+References: <20260515090149.3169406-1-wenst@chromium.org>
+ <20260515090149.3169406-6-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,101 +85,109 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260429-boisterous-cyber-hyena-ce870a@quoll>
+In-Reply-To: <20260515090149.3169406-6-wenst@chromium.org>
 
-On Wed, Apr 29, 2026 at 01:58:22PM +0200, Krzysztof Kozlowski wrote:
-> On Tue, Apr 28, 2026 at 02:54:53PM -0500, Chris Morgan wrote:
-> > On Tue, Apr 28, 2026 at 05:09:49PM +0200, Krzysztof Kozlowski wrote:
-> > > On 28/04/2026 16:09, Chris Morgan wrote:
-> > > > On Tue, Apr 28, 2026 at 09:47:00AM +0200, Krzysztof Kozlowski wrote:
-> > > >> On Mon, Apr 27, 2026 at 12:09:09PM -0500, Chris Morgan wrote:
-> > > >>> From: Chris Morgan <macromorgan@hotmail.com>
-> > > >>>
-> > > >>> Document the SG Micro sgm41542 battery charger/boost converter.
-> > > >>>
-> > > >>> Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
-> > > >>> ---
-> > > >>>  .../supply/sgmicro,sgm41542-charger.yaml      | 99 +++++++++++++++++++
-> > > >>>  1 file changed, 99 insertions(+)
-> > > >>>  create mode 100644 Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> > > >>>
-> > > >>> diff --git a/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> > > >>> new file mode 100644
-> > > >>> index 000000000000..3e5041e5b551
-> > > >>> --- /dev/null
-> > > >>> +++ b/Documentation/devicetree/bindings/power/supply/sgmicro,sgm41542-charger.yaml
-> > > >>
-> > > >> Filename must match compatible.
-> > > > 
-> > > > Acknowledged.
-> > > > 
-> > > >>
-> > > >>> @@ -0,0 +1,99 @@
-> > > >>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > >>> +%YAML 1.2
-> > > >>> +---
-> > > >>> +$id: http://devicetree.org/schemas/power/supply/sgmicro,sgm41542-charger.yaml#
-> > > >>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > >>> +
-> > > >>> +title: SGM41542 Battery Charger
-> > > >>> +
-> > > >>> +description: |
-> > > >>
-> > > >> Do not need '|' unless you need to preserve formatting.
-> > > >>
-> > > > 
-> > > > Will fix.
-> > > > 
-> > > >>> +  The SGMicro SGM41542 is a single cell battery charger/boost controller.
-> > > >>> +
-> > > >>> +maintainers:
-> > > >>> +  - Chris Morgan <macromorgan@hotmail.com>
-> > > >>> +  - Xu Shengfei <xsf@rock-chips.com>
-> > > >>> +
-> > > >>> +properties:
-> > > >>> +  compatible:
-> > > >>> +    const: sgmicro,sgm41542
-> > > >>> +
-> > > >>> +  input-current-limit-microamp:
-> > > >>
-> > > >> Missing vendor prefix.
-> > > >>
-> > > > 
-> > > > This *appears* to be a standard value (perhaps not formally, but in use by
-> > > > enough devices to suggest a defacto standard), which is why I did not use
-> > > > the vendor prefix here. Do I need to add that for this one?
-> > > 
-> > > I know, I found these other properties but I think they were just coming
-> > > from old schema.
-> > > 
-> > > If it is really a common property, then should be defined in a common
-> > > schema and this did not happen.
-> > 
-> > Would now be a good time to add it to the power-supply.yaml document?
-> > It looks like this value is used by about 10 other devices.
-> 
-> I have mixed feelings. Adding it there would mean that all schemas using
-> unevaluatedProperties will get that property. That suggests they have
-> such limiting ability in hardware or this ABI is implemented in some
-> generic part of the kernel.
-> 
-> None of these are true, I think.
-> 
-> Maybe we need some documented guidance on usage of common schemas.
-> 
-> Best regards,
-> Krzysztof
+On Fri, May 15, 2026 at 05:01:41PM +0800, Chen-Yu Tsai wrote:
+> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+> index 90ea597d42ae..4165f71e212b 100644
+> --- a/drivers/usb/core/hub.c
+> +++ b/drivers/usb/core/hub.c
+> @@ -31,7 +31,9 @@
+>  #include <linux/minmax.h>
+>  #include <linux/mutex.h>
+>  #include <linux/random.h>
+> +#include <linux/of_graph.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/kobject.h>
+>  
+>  #include <linux/bitfield.h>
+> @@ -888,13 +890,25 @@ int usb_hub_set_port_power(struct usb_device *hdev, struct usb_hub *hub,
+>  {
+>  	int ret;
+>  
+> +	if (set)
+> +		ret = pwrseq_power_on(hub->ports[port1 - 1]->pwrseq);
+> +	else
+> +		ret = pwrseq_power_off(hub->ports[port1 - 1]->pwrseq);
+> +	if (ret)
+> +		return ret;
+> +
+>  	if (set)
+>  		ret = set_port_feature(hdev, port1, USB_PORT_FEAT_POWER);
+>  	else
+>  		ret = usb_clear_port_feature(hdev, port1, USB_PORT_FEAT_POWER);
+>  
+> -	if (ret)
+> +	if (ret) {
+> +		if (set)
+> +			pwrseq_power_off(hub->ports[port1 - 1]->pwrseq);
+> +		else
+> +			pwrseq_power_on(hub->ports[port1 - 1]->pwrseq);
+>  		return ret;
+> +	}
+>  
+>  	if (set)
+>  		set_bit(port1, hub->power_bits);
+> @@ -1867,6 +1881,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
+>  	struct usb_host_interface *desc;
+>  	struct usb_device *hdev;
+>  	struct usb_hub *hub;
+> +	int ret;
+>  
+>  	desc = intf->cur_altsetting;
+>  	hdev = interface_to_usbdev(intf);
 
-Would you recommend I just use the vendor prefix then here? Or add this
-to power supply as an option? Or is there a 3rd option you would like
-for me to pursue?
+This change is totally useless.  Didn't you get a warning from the 
+compiler when you built it?
 
-Thank you,
-Chris
+> diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
+> index 9ebc5ef54a32..6039e5f5dcd7 100644
+> --- a/drivers/usb/core/hub.h
+> +++ b/drivers/usb/core/hub.h
+> @@ -85,6 +85,7 @@ struct usb_hub {
+>   * @port_owner: port's owner
+>   * @peer: related usb2 and usb3 ports (share the same connector)
+>   * @connector: USB Type-C connector
+> + * @pwrseq: power sequencing descriptor for the port
+>   * @req: default pm qos request for hubs without port power control
+>   * @connect_type: port's connect type
+>   * @state: device state of the usb device attached to the port
+> @@ -104,6 +105,7 @@ struct usb_port {
+>  	struct usb_dev_state *port_owner;
+>  	struct usb_port *peer;
+>  	struct typec_connector *connector;
+> +	struct pwrseq_desc *pwrseq;
+>  	struct dev_pm_qos_request *req;
+>  	enum usb_port_connect_type connect_type;
+>  	enum usb_device_state state;
 
-> 
-> 
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+The fact that hub.h uses struct pwrseq_desc indicates that it ought to 
+#include <linux/pwrseq/consumer.h>, instead of making the .c files do 
+so themselves.  Then you wouldn't have to add the #include lines to 
+hub.c and port.c.
+
+> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+> index b1364f0c384c..2d09037fee93 100644
+> --- a/drivers/usb/core/port.c
+> +++ b/drivers/usb/core/port.c
+> @@ -7,11 +7,14 @@
+>   * Author: Lan Tianyu <tianyu.lan@intel.com>
+>   */
+>  
+> +#include <linux/cleanup.h>
+
+Why is this needed?
+
+>  #include <linux/kstrtox.h>
+>  #include <linux/slab.h>
+>  #include <linux/string_choices.h>
+>  #include <linux/sysfs.h>
+> +#include <linux/of_graph.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pwrseq/consumer.h>
+>  #include <linux/component.h>
+>  #include <linux/usb/of.h>
+>  
+
+Alan Stern
