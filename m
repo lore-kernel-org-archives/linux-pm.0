@@ -1,130 +1,82 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F9DB384CDF
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 18:51:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B38D346AD5;
+	Fri, 15 May 2026 21:07:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778871073; cv=none; b=dcBBqK4QAXhqa4rK2NGCS7qmp8W7lG7AR/1DVChZU4CcxB8RlarPOhm7i9EEEkjBixI6WhNx8tJdSAEuQ2pVqYWtgpWsqZbAyMvWKZpSxAjKaVbksBXXHH8hKbqLP0b6+yUCTW4Qj2sj3aGBtOuiq6768YoX33NNY67HHPyGitM=
+	t=1778879274; cv=none; b=Pzh37pc7/+8hbVXfG2rd6UYaRCzsVPESW66i2BWyPnJQ7IUgbAb7XtEo+LmQW7HnXQ9Pu76s6QnfxjT4iX64Xg8DfXCO38JwvSAsQMI1u9O8KeSdStPBC14VOXP1wEAqLjwu7Cltbot4Y5G8vZifujTof2veLDxeiEzEYsb4sFM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778871073; c=relaxed/simple;
-	bh=WxhLrdxWoS3p0+Dx0yvDZ4xjG2ikKQkrruoWOpoCTqo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VP5KhqEEh2NGbLCI9RtqSrjzBd54jcucR1AvGASbmNHB8vdK6efjWH883ZAKPOvFpuqhLoliSA9Ov9EnmDGXdOpQm4jZVxuU4r8OU/hJP6/76htS5Zlu0DqehD4gxFLcQKG3HUNuLpZoFqdiFvVR5y76eKGQJfgOuhgPr5OHSiw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=NvOkiqMv; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=VmlYk8l1; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1778879274; c=relaxed/simple;
+	bh=UZQiu0VH2xAOXUxnfPEgUIj3JzYw5nHJpb6xLgSjZxw=;
+	h=Mime-Version:Content-Type:Date:Message-Id:From:To:Cc:Subject:
+	 References:In-Reply-To; b=vDP3SsEgmQ903+JuKrTR3cdIESH9hq2HyoL0l1RZ3Dq3p3GKYSAAzZuiNmxKctyw1qTMNgWK7B70Z7c3S/8PbyrOUt+2fxHKwic5rYjmEjBRPCScYDRWWPmeA4qJJFcaMtoLyPhCJuQ/uofXMjiiu9sgG4TAf067aJeMlLfJ9VM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=KZxDj9jU; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="NvOkiqMv";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="VmlYk8l1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1778871066;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
-	b=NvOkiqMv3tgQXNQoQs2uLbVLqeTFmv70w7m20GxDnXNtSuY/W+nGMDjgs5lrVPkS0mXYUL
-	7eb+V+lfVZE/c5eK6lymfAaVnvnq761mM3z5o7QwZ2edPexcM3qtRQDfHoJ5tWzMmQhbkU
-	/bgTKemrn41SfLYyjnH6quQlvsQw3fc=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-59-AVv5lmPAMoqBjPRulEqMBA-1; Fri, 15 May 2026 14:51:05 -0400
-X-MC-Unique: AVv5lmPAMoqBjPRulEqMBA-1
-X-Mimecast-MFC-AGG-ID: AVv5lmPAMoqBjPRulEqMBA_1778871064
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-44d68ed8f95so26469f8f.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 11:51:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1778871064; x=1779475864; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
-        b=VmlYk8l1/k+UOLhtbsrQJ/iCSibhxaKUBOknaMLh5CgWgIoxTVFgP9vhsqD6/cul5H
-         H659ejEVDSBoX3ar3ex+vdsp1Ng2x6ikTuqY41IINtHYlZO3rjWcPRYnEI/AOS0x5Oxx
-         XB+Qhr3Rj/zqCuO5TzDCQzYtyyzm1haFhrenPsWLVOvAK51+SE+Og/g1P/eSRbDqATZq
-         92kfjrD3fFzAuDGcZZ2VU47XDHzWQNjBQnQyUMDm4itYD+UWZXORZc0Seu3Wm8dNEz0E
-         3PvQvBCbyL1OAj2ayMS6TgBGGbRNt0LiDUdDTiErO3u/wg0tpBke9RAuRVUoDzSei/i2
-         Dlow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778871064; x=1779475864;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=uhprfnNhUrNF5Py1hQunNOKUDjGww1uCDzfWCNs8mHo=;
-        b=UJXsuaVaZ1rVy5B76yWUAnOggOWydxFdoLRvXHrWqrKoL0B+YcoxQtxTWoly2zWxiD
-         z9R03MMJgwrCx5NMtA0Vxt45Hnd8Z9kom01BZ4AQ4QeIYoMu7z/jrh7OcJTXq2a5zsek
-         gJr+2yTjoSw00p7U002l7O1XCP5hS7vlUQrTzVXYqevDjpWjARF6OOfrzKNrTgSGGKGa
-         4NJptLrP9JXLioO3GYvXiUVFVJLp0Wx4qhpH+MOZTmedKZATBH+7suIg720sHn3djnTd
-         E7n8fbreD9N1DIhNCyAJpeFTfZ8+ZdDp6vnDw+jOeEy4HScUBqe/szX1m9CObeWOQ39N
-         20Qw==
-X-Forwarded-Encrypted: i=1; AFNElJ+rfz/zlkb2oMHAJcNJrRw3QA/gQVgp/pNX3RzPw1xpX09SV7z7xKAsY8ccgICnZjQisVXbnIs79w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyWLc/bopyxerTi7TNWYzJmi09hENYg4O/lDlf10tAOwVJI9Z1C
-	K0DYQCs7p0ZFAuVylkplX5k9JbperVVNQw4gcmAB10EZDQpgW8sc6OIKJoKu6muasED+Ya2Glqu
-	kgewG/vyh8aPYF3uwHGcwMPx6YS/fwPAShKCAj7qVZqwNKZ/iYvIFWgL1/Tz5
-X-Gm-Gg: Acq92OF7nkYDVieaol8qzE5t2ng/xJvi12+Ya06RQcd+6Ai0H8cKMLDrIyyFligdHVx
-	+3B4nDgV3e8IDaCwgVUHjdec2Rj3z0uo/KPZdfOZ7uR9bVAH64gl1ryY4g7eBM2vY5QqxfGOfhS
-	OamPHeR5L8CG+ue+0fWVpMLw3z7QzkSmFy83T0Eqnmy2deDIWPmfIVn4BfsjCMWKwFf8v/lSQkv
-	S2fmT8aoByXKdYREVHJvLwD8ECDiBoULd2BnwltvmRcMLc9SusxyWL308kSkLl7ivw1p1pu1pVC
-	IfGEQPS5dsOFB/ydb1TqTEFZmgCVfeVzZg2ZCwwvP6DZMDQhD+D/aLsZij99Van07TdrengRwcE
-	RDN9UMSxLIdeLdmFSYqinmiMc6gcnw6UwWfk=
-X-Received: by 2002:a05:6000:4b07:b0:44f:69f4:39b5 with SMTP id ffacd0b85a97d-45d9502e84dmr14791856f8f.29.1778871064233;
-        Fri, 15 May 2026 11:51:04 -0700 (PDT)
-X-Received: by 2002:a05:6000:4b07:b0:44f:69f4:39b5 with SMTP id ffacd0b85a97d-45d9502e84dmr14791826f8f.29.1778871063793;
-        Fri, 15 May 2026 11:51:03 -0700 (PDT)
-Received: from costa-tp.bos2.lab ([2a00:a041:e223:1b00:fe51:8bb:7986:c897])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45da0a178adsm17740021f8f.18.2026.05.15.11.51.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 11:51:03 -0700 (PDT)
-From: Costa Shulyupin <costa.shul@redhat.com>
-To: Paul Cercueil <paul@crapouillou.net>,
-	Sebastian Reichel <sre@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: linux-mips@vger.kernel.org,
-	Costa Shulyupin <costa.shul@redhat.com>
-Subject: [PATCH v1] include: Remove unused jz4740-battery.h
-Date: Fri, 15 May 2026 21:50:41 +0300
-Message-ID: <20260515185043.1523363-1-costa.shul@redhat.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="KZxDj9jU"
+Received: from mail01.disroot.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id 4FCC9271BA;
+	Fri, 15 May 2026 23:07:52 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0_mgalvMmZ-c; Fri, 15 May 2026 23:07:51 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1778879271; bh=UZQiu0VH2xAOXUxnfPEgUIj3JzYw5nHJpb6xLgSjZxw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KZxDj9jUR9eWY6FtpDOfeAiHdPJhQRayv8CRJF0SCw/5/WwSUZmevrgvw/Fq4mYEC
+	 FvgYwNdWeUmcs6Rl+P9VBFdaAhnFR57l18isQVtNY/lx0nzvShZfuxXwg6YrjAO5oO
+	 4H7dHFV7DdVdr5ILFO/KJWDmXcVaFjqnI19H8hS9viNfoysLdTYusaC8oprMu1pn3R
+	 iYes4MaI9wvWM3s8arTr5vFrjfCa/h0C7z1WxAUKgX2DuphoS+9Fj2zPG619erC0w4
+	 E+PsYVzARBAHhJorueok+DNwSS83ke16/sMNQwTSnt1cYWXinUahBOMaT/e+eMrjnK
+	 UA41x/RhAlNzA==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 16 May 2026 02:37:34 +0530
+Message-Id: <DIJK2FWQOGCK.2WJ9FED9HKGHG@disroot.org>
+From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
+To: "Conor Dooley" <conor@kernel.org>, "Kaustabh Chakraborty"
+ <kauschluss@disroot.org>
+Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
+ <myungjoo.ham@samsung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>,
+ "Sebastian Reichel" <sre@kernel.org>, "Krzysztof Kozlowski"
+ <krzk@kernel.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, "Alexandre Belloni"
+ <alexandre.belloni@bootlin.com>, "Jonathan Corbet" <corbet@lwn.net>, "Shuah
+ Khan" <skhan@linuxfoundation.org>, "Nam Tran" <trannamatk@gmail.com>,
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>,
+ <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>
+Subject: Re: [PATCH v6 02/11] dt-bindings: extcon: document Samsung S2M
+ series PMIC extcon device
+References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
+ <20260515-s2mu005-pmic-v6-2-1979106992d4@disroot.org>
+ <20260515-mutable-urgency-305fecf3ffc4@spud>
+In-Reply-To: <20260515-mutable-urgency-305fecf3ffc4@spud>
 
-The last user was removed in commit aea12071d6fc
-("power/supply: Drop obsolete JZ4740 driver") and replaced by
-a self-contained IIO-based driver. No file includes this header.
+On 2026-05-15 18:15 +01:00, Conor Dooley wrote:
+> On Fri, May 15, 2026 at 04:08:58PM +0530, Kaustabh Chakraborty wrote:
+>> Certain Samsung S2M series PMICs have a MUIC device which reports
+>> various cable states by measuring the ID-GND resistance with an internal
+>> ADC. Document the devicetree schema for this device.
+>>=20
+>> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> pw-bot: not-applicable
 
-Assisted-by: Claude:claude-opus-4-6
-Signed-off-by: Costa Shulyupin <costa.shul@redhat.com>
----
- include/linux/power/jz4740-battery.h | 15 ---------------
- 1 file changed, 15 deletions(-)
- delete mode 100644 include/linux/power/jz4740-battery.h
-
-diff --git a/include/linux/power/jz4740-battery.h b/include/linux/power/jz4740-battery.h
-deleted file mode 100644
-index 10da211678c8..000000000000
---- a/include/linux/power/jz4740-battery.h
-+++ /dev/null
-@@ -1,15 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- *  Copyright (C) 2009, Jiejing Zhang <kzjeef@gmail.com>
-- */
--
--#ifndef __JZ4740_BATTERY_H
--#define __JZ4740_BATTERY_H
--
--struct jz_battery_platform_data {
--	struct power_supply_info info;
--	int gpio_charge;	/* GPIO port of Charger state */
--	int gpio_charge_active_low;
--};
--
--#endif
--- 
-2.53.0
-
+Thanks, but this patch has already been reviewed by Krzysztof in v5. I
+missed the Reviewed-by tags, sorry! I'd been preparing v7 after the
+reviews by Sashiko.
