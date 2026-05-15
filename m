@@ -1,278 +1,162 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013008.outbound.protection.outlook.com [40.93.196.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FD673AA1B5
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 02:43:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778813008; cv=none; b=ZS2YiCNNtot7iCnVjsKcf1kjp3OVF/ZyQHQDmVVtRkx8zV1a84Tu7cRhCQS7eFfg3x58Q74MzqLWuGmHxg7gmRA9iL7VJhuLqQvnWbHJXJxkzObV42CWz97CO+/QgYOoLBmONobH8bU7eFxzPsXFdLUfdqsPfzEbEoWua9kpB6I=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778813008; c=relaxed/simple;
-	bh=qDwTDzaDsQSrl5Rzp5GBnCI63D+YtmQ0Rq+/HBpbJx0=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=kMc2lGNTiBu1ICpu6kWBxbssQwrsC7xwoCpDmQlwjofaygchJx8Fr1D57U6XMD31cn+7Ii5RWIHe0XN4ER5EbCeU+3YLvpZFeUXreiNxIHtLbv2kjG8JKm/JEZT6E/AxyQrVBBR/voB1VDyG/HHswI43AIn0M+3xYsuwJipUBsQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=S6qFIWmP; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0182A2868B4;
+	Fri, 15 May 2026 05:22:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.8
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778822527; cv=fail; b=RDvfx1MbGFtVOaY/P4aQTsEIxNairmtK1h2HFkoLhxjIhHCvBIhre1Qr/z8QHRNMSoRJzLcrDCJHKyAwTWBx9tsmekpkoCSdeHi2u6uEnYpZxkYNohi2YgGNACuWok+Dj1e3DA0PRlmFZ5zSTZ+ZG96/kUf86pNtCvdkk6yy9VQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778822527; c=relaxed/simple;
+	bh=r+sODJuso5XYTMaNcgJ108f6kYMXUueLduCp3qCios8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=HDIOs6XihYmmryPliZnCLb56VED47QnPedb0GUBatW4A6AM67GB6TEwDd3+E2MFJFPbBPiCT8bfq/zlBK9ofXdcOW62cXT/aegvucYNqFrnK6vH+A376XcE0GVOZdBsJ1WTG6F33uu+BGwqbjhAxHFw5wpsGt5uQP+sPuI/uzDE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=i6jHKnte; arc=fail smtp.client-ip=40.93.196.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="S6qFIWmP"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778813006; x=1810349006;
-  h=date:from:to:cc:subject:message-id;
-  bh=qDwTDzaDsQSrl5Rzp5GBnCI63D+YtmQ0Rq+/HBpbJx0=;
-  b=S6qFIWmP6URp8vSsVn/6BAF+x+XX+Wdt7MNEFSmHrtVQrRQPITd0YU4g
-   IfWeqq4G5vAnrWRtwJw6fI3QvbsBp2UW8N6Oa7m9AzBZtsgCDHQ+dAZPH
-   GNQ4REzs6JLYHH71GVkcMGVD+PIoljsZ0n0s0jiqtCN7jICaJ4/zNGvjn
-   JjUf0rlMSEtJH/shmra4XuA/rsFoe0BvJuYYTeRxbJr+iU0C9cXfKxfih
-   CorxLKaAiN/QNQ6vqaslkK58bJc1t4GXximTQExSw5rrbP/OYKA78yqrQ
-   K8CBLsrpqPNsxZXnl9A84I1l2LyzpccdQNTBcLSVbpHfRiE/M+Ag2udAG
-   A==;
-X-CSE-ConnectionGUID: 4+W9xZasStSt+XCY2MAKvw==
-X-CSE-MsgGUID: TqzhFROpSFSa/Pq1hQRB6w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11786"; a="83620970"
-X-IronPort-AV: E=Sophos;i="6.23,235,1770624000"; 
-   d="scan'208";a="83620970"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2026 19:43:26 -0700
-X-CSE-ConnectionGUID: LyqISFT+TROGdUKptZkX7g==
-X-CSE-MsgGUID: okOjDW6fQY2B09ilogkW5Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,235,1770624000"; 
-   d="scan'208";a="234124132"
-Received: from lkp-server02.sh.intel.com (HELO 7a33ad3e7d27) ([10.239.97.151])
-  by fmviesa006.fm.intel.com with ESMTP; 14 May 2026 19:43:24 -0700
-Received: from kbuild by 7a33ad3e7d27 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wNiVj-000000000eN-2jcT;
-	Fri, 15 May 2026 02:42:54 +0000
-Date: Fri, 15 May 2026 10:33:05 +0800
-From: kernel test robot <lkp@intel.com>
-To: "Mario Limonciello (AMD)" <superm1@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Subject: [amd-pstate:bleeding-edge] BUILD SUCCESS
- e4e9b7b38d5db2cc6a8770bc0596bb8b36b92b1f
-Message-ID: <202605151055.UVP8y16u-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="i6jHKnte"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=awzBgpx2sRk89hg9ZR3cDSnS2jzOrjNc2ofeBOszYbMX3JhOKm7cVeUR/SHU17uJx1iH8OeJOu/bplq3Nr0eivoqCeY4cmDJaf4CesVs1QGhHwvSuraDGIaL3OI7mKizB7Rie6OP2Hp9Ee9tZUs7KfZDFVB6rKdmSbhImTy0CUUu6fXXvnoQCsyTCQ1LiNp+X1LIOG8spSyCisIZVnkdUCzAJYooa4Y6ZxRGnIXxIx62FZ1UTN6k5mO/ugpzfU2DGPaFFwlbhzTfWySZYyR52fdynnWDHbjDKIBaYfpLNZ2daCJVKWAgOLIhrBfd/Ihj0aenmRsjWGDj/qRbxNJqUg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=quwkjYOWK5mXLmSCOcRa7vg+tZDx2/baHWDpIeHq/j4=;
+ b=hr9YT+3WrO9u7qfZKQnHRp5Gn39t5pQ0ufTbCxVZ1gattPXBWZvKdR6V7XbQ10rT+J8V9Ct5TzKRnFKHPV82Omw3b0aVx2hbKOrsPQwTDkriTSJqyvKlbMB9Sd1p3vNfssZ16u36/vCerK7fKSUZnMXJly7aKWxxQhkIMGgpHeSYODshcWjpUIVh3viGgH3Q8cfE/vHIyJUDVmbXJFoTyWNL1wUro++Z/zibxlKF/7QpJsMl+izTfpML+I45M2NmStdQQ5KyXJA19zbEoZO1kA9+s2Mw7uFr9UFdmRe/ON5y9n+jWQUCsBoGTkmicz+M7apii3hhpcSt+bBhNfei2g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 198.47.21.194) smtp.rcpttodomain=gmail.com smtp.mailfrom=ti.com; dmarc=pass
+ (p=quarantine sp=none pct=100) action=none header.from=ti.com; dkim=none
+ (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=quwkjYOWK5mXLmSCOcRa7vg+tZDx2/baHWDpIeHq/j4=;
+ b=i6jHKnteT8vfhnQy1ffglJDH2R3WUnWCSoB2P3Q8cVuGNHT9g2YsYS9o/TpW2vpd8FqgCMchXKmxMe7JKd01RfHuml2cPhbjlDWdrz2AyzuFP0x0ZrHSilHwCm5F7zpmMGqgJI8pespsGDmfNIq8jTV5oOUOn+B/MAHCIlS4vRc=
+Received: from DS7PR05CA0027.namprd05.prod.outlook.com (2603:10b6:5:3b9::32)
+ by SJ2PR10MB7757.namprd10.prod.outlook.com (2603:10b6:a03:57b::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9913.12; Fri, 15 May
+ 2026 05:22:03 +0000
+Received: from DS2PEPF00003444.namprd04.prod.outlook.com
+ (2603:10b6:5:3b9:cafe::39) by DS7PR05CA0027.outlook.office365.com
+ (2603:10b6:5:3b9::32) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.18 via Frontend Transport; Fri, 15
+ May 2026 05:22:03 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.21.194)
+ smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
+ action=none header.from=ti.com;
+Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
+ 198.47.21.194 as permitted sender) receiver=protection.outlook.com;
+ client-ip=198.47.21.194; helo=flwvzet200.ext.ti.com; pr=C
+Received: from flwvzet200.ext.ti.com (198.47.21.194) by
+ DS2PEPF00003444.mail.protection.outlook.com (10.167.17.71) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.25.13 via Frontend Transport; Fri, 15 May 2026 05:22:01 +0000
+Received: from DFLE202.ent.ti.com (10.64.6.60) by flwvzet200.ext.ti.com
+ (10.248.192.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Fri, 15 May
+ 2026 00:22:00 -0500
+Received: from DFLE206.ent.ti.com (10.64.6.64) by DFLE202.ent.ti.com
+ (10.64.6.60) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Fri, 15 May
+ 2026 00:22:00 -0500
+Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DFLE206.ent.ti.com
+ (10.64.6.64) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
+ Transport; Fri, 15 May 2026 00:22:00 -0500
+Received: from [172.24.233.55] (uda0490799.dhcp.ti.com [172.24.233.55] (may be forged))
+	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 64F5Ltr53750021;
+	Fri, 15 May 2026 00:21:56 -0500
+Message-ID: <8d496b21-fc3c-48c7-aa75-8f1938906ce9@ti.com>
+Date: Fri, 15 May 2026 10:51:55 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: ti_sci: add wakeup constraint to parent devices
+ of wakeup source
+To: Kendall Willis <k-willis@ti.com>, Nishanth Menon <nm@ti.com>, Tero Kristo
+	<kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Ulf Hansson
+	<ulfh@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Dhruva Gole
+	<d-gole@ti.com>
+CC: <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <stable@vger.kernel.org>,
+	<tomi.valkeinen@ideasonboard.com>, <devarsht@ti.com>, <vigneshr@ti.com>,
+	<vishalm@ti.com>, <vitor.soares@toradex.com>, <ivitro@gmail.com>
+References: <20260506-wkup-constraint-v1-1-0a4bce791b29@ti.com>
+Content-Language: en-US
+From: Sebin Francis <sebin.francis@ti.com>
+In-Reply-To: <20260506-wkup-constraint-v1-1-0a4bce791b29@ti.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS2PEPF00003444:EE_|SJ2PR10MB7757:EE_
+X-MS-Office365-Filtering-Correlation-Id: 078f0290-b256-4617-5348-08deb241e4af
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|376014|1800799024|36860700016|7416014|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	vQSUFOuCnZFFkGNoVuQ3i5z2R9G5Vxg9z3OVCugeywrhGTBqymyIOezt2jFPIcNmdHI0EioBtjrugbe0rzc6uoDyO+1MEwrq7Kj2VZxUXES9Q7lry5lv53HBLPqyJwPVXNv5svgY+btqhuicGQnLJqyqllpC2Oj2h8EtP5b3um4TY9HG6cFiQtnvqc0HKUHIikg2aCO24vKx/MCVXn5nmaA8FOltPW6CJh7bCnraP7kpnLZos5jHPa5LJadz8ks58ESb8hNcWuz8zwAg8rODv3ygAAJXx3D7qAQDr4j28Z+ZaL+62NoWVn/d1F9YJrdRRJAwxCYQiGyOxTsN9PRPIUVl5gDC3TLhNMFZjyA54GJRiLE9WZZqdEKpWt4BpE5NATIojavhfZlN+RfjmyWCFsLTDgJnYuZu+0JoBOzEipQjEynsAzjCNKGO1DZC6RtvNwV7ZgLORKEMut6bf3HYEeYOdcBY4M0U75Q/hFTJemC5kdbrxG3nSXoEUkwCnNnYCfEvhkv4E9WO3j8cLMmtfW6d9MqGhq+3v4J2yDvkAXC6EDrTGGs1fM37nTLOb/J2qkvW/fyZpys4MuC5Yf1HAkL5+qtyMcs+aIRwWQEAEJ3gcOV/+3qpoXNlGr5uRhiqbFXKuclWZGiwXpAidXYLj6/zKlAO81+hRy48yFBr7ULv967qrV6w6dgdPymv9JoZjIPnZGCjAKFDuqUQosnc1NE+uyh5wdPv4JSVoWlk5aI=
+X-Forefront-Antispam-Report:
+	CIP:198.47.21.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:flwvzet200.ext.ti.com;PTR:ErrorRetry;CAT:NONE;SFS:(13230040)(82310400026)(376014)(1800799024)(36860700016)(7416014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	OM43YDgym3d61kv7CfCesvX6Cp9BJADFwjuijgpY4E5ajItfZXVmCTcASIuQbxScxK2LRQgBcLZz9UAxm1s848Kxkl4K3ZZcGgw22eDqt+67DtoYybOx2i/zKnkwY1hGpvBR0zJ+L7AA9BW6Gv6V3duS4OvWbRb/QGKD8q/Msx9do1an9zy9Hd3qGtwZ65srJ9nfUqsIWJils3efRooacWtXj0qJSxN+BycZ5NnFWb26WM52eJvxMQ8sajhNn1ytVRNdDdFBH4qjRTGt62xF0cZTRXFrdM4Nmrl8JKlfAUIWT4fi9D1PYSJAif/M7qFlP724d36VDY8mUS4JwvEDuezvUGrXrlVbbociV02T4XTiNgjWRxHt+QFJ9ODyWJUjo1lA8bbG38CjLuW9pbe/BpXSG+8L845pzprYU82CzjKFFeBCzAsK6ZDLXsaSnpqL
+X-OriginatorOrg: ti.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 May 2026 05:22:01.1484
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 078f0290-b256-4617-5348-08deb241e4af
+X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.21.194];Helo=[flwvzet200.ext.ti.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DS2PEPF00003444.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR10MB7757
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git bleeding-edge
-branch HEAD: e4e9b7b38d5db2cc6a8770bc0596bb8b36b92b1f  cpufreq/amd-pstate: Drop Kconfig option for dynamic EPP
 
-elapsed time: 744m
 
-configs tested: 201
-configs skipped: 2
+On 07/05/26 08:46, Kendall Willis wrote:
+> Set wakeup constraint for any device in a wakeup path. All parent devices
+> of a wakeup device should not be turned off during suspend. This ensures
+> the wakeup device is kept on while the system is suspended.
+> 
+> Cc: stable@vger.kernel.org
+> Fixes: 9d8aa0dd3be4 ("pmdomain: ti_sci: add wakeup constraint management")
+> Reported-by: Vitor Soares <vitor.soares@toradex.com>
+> Closes: https://lore.kernel.org/linux-pm/c0fe43a2339c802e9ce5900092cd530a2ba17a6b.camel@gmail.com/
+> Signed-off-by: Kendall Willis <k-willis@ti.com>
+> ---
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Looks good to me.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260515    clang-23
-arc                   randconfig-002-20260515    clang-23
-arm                               allnoconfig    clang-23
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    gcc-15.2.0
-arm                   randconfig-001-20260515    clang-23
-arm                   randconfig-002-20260515    clang-23
-arm                   randconfig-003-20260515    clang-23
-arm                   randconfig-004-20260515    clang-23
-arm64                            allmodconfig    clang-19
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260515    gcc-11.5.0
-arm64                 randconfig-002-20260515    gcc-11.5.0
-arm64                 randconfig-003-20260515    gcc-11.5.0
-arm64                 randconfig-004-20260515    gcc-11.5.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260515    gcc-11.5.0
-csky                  randconfig-002-20260515    gcc-11.5.0
-hexagon                          allmodconfig    clang-17
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    clang-23
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260515    gcc-8.5.0
-hexagon               randconfig-002-20260515    gcc-8.5.0
-i386                             allmodconfig    clang-20
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260515    gcc-14
-i386        buildonly-randconfig-002-20260515    gcc-14
-i386        buildonly-randconfig-003-20260515    gcc-14
-i386        buildonly-randconfig-004-20260515    gcc-14
-i386        buildonly-randconfig-005-20260515    gcc-14
-i386        buildonly-randconfig-006-20260515    gcc-14
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260515    clang-20
-i386                  randconfig-002-20260515    clang-20
-i386                  randconfig-003-20260515    clang-20
-i386                  randconfig-004-20260515    clang-20
-i386                  randconfig-005-20260515    clang-20
-i386                  randconfig-006-20260515    clang-20
-i386                  randconfig-007-20260515    clang-20
-i386                  randconfig-011-20260515    gcc-14
-i386                  randconfig-012-20260515    gcc-14
-i386                  randconfig-013-20260515    gcc-14
-i386                  randconfig-014-20260515    gcc-14
-i386                  randconfig-015-20260515    gcc-14
-i386                  randconfig-016-20260515    gcc-14
-i386                  randconfig-017-20260515    gcc-14
-loongarch                        alldefconfig    clang-20
-loongarch                        allmodconfig    clang-19
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260515    gcc-8.5.0
-loongarch             randconfig-002-20260515    gcc-8.5.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-mips                         bigsur_defconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260515    gcc-8.5.0
-nios2                 randconfig-002-20260515    gcc-8.5.0
-openrisc                         allmodconfig    clang-23
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    clang-19
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260515    gcc-8.5.0
-parisc                randconfig-002-20260515    gcc-8.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc                  mpc885_ads_defconfig    clang-23
-powerpc               randconfig-001-20260515    gcc-8.5.0
-powerpc               randconfig-002-20260515    gcc-8.5.0
-powerpc64             randconfig-001-20260515    gcc-8.5.0
-powerpc64             randconfig-002-20260515    gcc-8.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260515    gcc-15.2.0
-riscv                 randconfig-002-20260515    gcc-15.2.0
-s390                             allmodconfig    clang-18
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    clang-23
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260515    gcc-15.2.0
-s390                  randconfig-002-20260515    gcc-15.2.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    clang-19
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260515    gcc-15.2.0
-sh                    randconfig-002-20260515    gcc-15.2.0
-sh                     sh7710voipgw_defconfig    gcc-15.2.0
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260515    gcc-8.5.0
-sparc                 randconfig-002-20260515    gcc-8.5.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260515    gcc-8.5.0
-sparc64               randconfig-002-20260515    gcc-8.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260515    gcc-8.5.0
-um                    randconfig-002-20260515    gcc-8.5.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260515    gcc-14
-x86_64      buildonly-randconfig-002-20260515    gcc-14
-x86_64      buildonly-randconfig-003-20260515    gcc-14
-x86_64      buildonly-randconfig-004-20260515    gcc-14
-x86_64      buildonly-randconfig-005-20260515    gcc-14
-x86_64      buildonly-randconfig-006-20260515    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260515    clang-20
-x86_64                randconfig-002-20260515    clang-20
-x86_64                randconfig-003-20260515    clang-20
-x86_64                randconfig-004-20260515    clang-20
-x86_64                randconfig-005-20260515    clang-20
-x86_64                randconfig-006-20260515    clang-20
-x86_64                randconfig-011-20260515    clang-20
-x86_64                randconfig-012-20260515    clang-20
-x86_64                randconfig-013-20260515    clang-20
-x86_64                randconfig-014-20260515    clang-20
-x86_64                randconfig-015-20260515    clang-20
-x86_64                randconfig-016-20260515    clang-20
-x86_64                randconfig-071-20260515    gcc-12
-x86_64                randconfig-072-20260515    gcc-12
-x86_64                randconfig-073-20260515    gcc-12
-x86_64                randconfig-074-20260515    gcc-12
-x86_64                randconfig-075-20260515    gcc-12
-x86_64                randconfig-076-20260515    gcc-12
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                           allyesconfig    clang-23
-xtensa                           allyesconfig    gcc-15.2.0
-xtensa                randconfig-001-20260515    gcc-8.5.0
-xtensa                randconfig-002-20260515    gcc-8.5.0
+Reviewed-by: Sebin Francis <sebin.francis@ti.com>
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Sebin Francis
+
+>   drivers/pmdomain/ti/ti_sci_pm_domains.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> index 18d33bc35dee1b3bf6107af1e414db377d515199..949e4115f930b93b18216fde46131b5c8931c9aa 100644
+> --- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> +++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
+> @@ -86,7 +86,7 @@ static inline void ti_sci_pd_set_wkup_constraint(struct device *dev)
+>   	const struct ti_sci_handle *ti_sci = pd->parent->ti_sci;
+>   	int ret;
+>   
+> -	if (device_may_wakeup(dev)) {
+> +	if (device_may_wakeup(dev) || device_wakeup_path(dev)) {
+>   		/*
+>   		 * If device can wakeup using IO daisy chain wakeups,
+>   		 * we do not want to set a constraint.
+> 
+> ---
+> base-commit: 7fd2df204f342fc17d1a0bfcd474b24232fb0f32
+> change-id: 20260506-wkup-constraint-9b0261b04df1
+>  > Best regards,
