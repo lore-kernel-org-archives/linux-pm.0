@@ -1,59 +1,61 @@
-Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B198E3FE67C
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 09:02:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1956542B725
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 09:02:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778835731; cv=none; b=WpoiXmyP5uGB/Au3ZmWCoBfXzEkl8C2YjfC+Rxxq9zHhQzdbgHpiRV/eU37L8SHZmIAGWbOY3oDNrqYYJmWVtJ+Oxm+OFSt040gaZVmrt+lE0R4vJQNJzj5nV/4ZRYdBHkEnslhlA+k8/luO+Ad+TZFe/F3sjOt6PYVM6zFGous=
+	t=1778835733; cv=none; b=Rw8PiJ0pRqqhaudsIIz/p4g8IWKvv+p+zU01pupnLr/epSuW/ON1zkQOeKjA3UH+H9lJWMrs3YXWVkZ87lIlMrErmkyRBOS84HniAQ/AuieVApQQuRK48kvzkwcpPQP1/KU0quT6Cu3XTtUqFb/3hlqglcswIIif7CGDiReCwig=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778835731; c=relaxed/simple;
-	bh=bWc+EfUPJtEL5wZEtwgp5WJvNWmPURVY/3bNzMQXzuU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tQY11OCTam6wcL0Y50QkgbDEeu+K0DaFuCFv+5mZqX2PYr9UriCoNs0XuwJGwKp1cregCtcQQlZQY3bSkTmg7NWUTROWku8RIoGtfnuVS72HF74CSJaqdxe7oLMx8tWkrAEru6tnhfJ/29q1WCVlRV4In4CiVB3KwPThLi6/Z9k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=jA///pZl; arc=none smtp.client-ip=209.85.216.47
+	s=arc-20240116; t=1778835733; c=relaxed/simple;
+	bh=aAFwJQgIt7xDHMJ5j64aG3AQ7uDImuBxz1E2PHKbomw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=XFFJ6ccIrR+f+AtJBBd9eOmKLKu+hJd+WFk6kiKJrBShdbar1+VDLTQHedmHwR6uaOaxpAt+kMkByiRjmtuXfRXx1BDWqdoW9oTyLfwLzoAviU0uUNG90QviCIqYi6zprh5QZdZtqzZGMNjXXQWhcTxkSPUerEkyZ8gw/nmyjYQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=liyPZIAL; arc=none smtp.client-ip=209.85.216.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="jA///pZl"
-Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-368763a1bdfso3797932a91.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 02:02:08 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="liyPZIAL"
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-367d88b9940so4928774a91.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 02:02:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1778835728; x=1779440528; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=MeVtd5jgWtEcTyZTMUFtTZGp+FoBlkEpQv/hKwoH+Rk=;
-        b=jA///pZlI/8YewolEwY6hjJAMGoTMWeyd1XPgdy+j8OojqskrL6mUUkTAqZWB5HtEO
-         FLgbTH5LZKGkqFBD4aszwtNKG8zO8l5h9A7ucNeqG4XMVx+jEzmdhhQfUuTt7aTZzU2H
-         jZmTy+N/0NDHQywvp60nWzSZ7ynS1wbVLWGlU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778835728; x=1779440528;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=chromium.org; s=google; t=1778835731; x=1779440531; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=MeVtd5jgWtEcTyZTMUFtTZGp+FoBlkEpQv/hKwoH+Rk=;
-        b=mcM9AIzjb5+mJnSb8BDPraftjhIIQHQ+kIMNJYTMFg+64bVnTUtEmczx32EogH3aSu
-         9fDS98UMZF60WvJdHazdAQdQa+2U1bX3FT3hlhMxWeLxvMg4wz7KaTNnlDAXkp9J2CJd
-         uPPW/NiclQAMFGCEEa7Auz8EB5KK5VkpwvW/EkaNYOWb1ytuyk+Vi744hYU3qcJNWzdt
-         /ybJa9UCw8ruu7+VqbKehS+JRbtWIJeGF7u/RT+RLeLgA6gBerKpJ8uVwWkpQBzo1vw9
-         C2zRXfT9F4FsIBp+typKZ5XPNQN7vur6XXFCxsI/CFSXhIGENhH2oxL+4BAk4jcF5Td/
-         J6Xg==
-X-Forwarded-Encrypted: i=1; AFNElJ/LazWViya2LSbHOlVl/Wlqlgvf2bv1v9Fll7GKFxSID1GqSF3jiCL+j2EYBIHRhCu0l7hWZQC8HQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyrN65V3A8Zt47I2frQTFXVwYviAatjPzsizX87MqYghuR0h/w2
-	HCQfCl7oKHVdzdU2ysS+BVCNGEmKHZ1FdHLQwlpx2RnHOUDtoJS2I9vUkRofo608yg==
-X-Gm-Gg: Acq92OHgSo7NK64tyOON99YBJv+8bpzJKNE/r8nkSuVw05uNDIIgitHpv8LiYIpyMB/
-	crzJ7H9AnBodDAODKLSMymKSFX4xmxrU0bVQIS80wSFUf8xp9VeJ3SaT6BdajbDSna2Tl5C1+Cy
-	SaJh+6qTyAA1TOlytNu6w3jrlaRG7XbabbU+vZVH7xOIcV27HsDWtbDzJHy0MxdYwg2akhPBg+h
-	qtJRSYAyiaN94sm8Le2Gw/pDzECxckTcLCeC6hI/sduM4gUtqXO1g8bwYCaYZO3+2AEx666MKOs
-	GpAT41Xf49InCSqHJcPKqVZSUBh4dFxMAMFjcCEpxHILNuypJEkZ00muTCwSeMbEn4+iQTcvqsr
-	40z26TrGQ/WxF+bPB90zC9Zv454OY4DAqZOhKxEZAfh23vIj28QqgzvHJ6jWfwmuzKTfPXdyJCI
-	XmKZ/cdpdwZXTyCCMF7ShfmTMAi6Oy0HZHIZjDVc6oPJD5GI++5w9MVF6qlxRoir1x0jk6nmtkW
-	9e0GbY7
-X-Received: by 2002:a17:90b:2d08:b0:362:e826:cefe with SMTP id 98e67ed59e1d1-36951ca6064mr3062453a91.23.1778835727968;
-        Fri, 15 May 2026 02:02:07 -0700 (PDT)
+        bh=VXZt6qBmARZ13tXsBdYUa2P85z9cDemCtuWb0vwC4yk=;
+        b=liyPZIALxM6+z9ZGu5nXZEUgIre9qgeNd9WxG3qRseUNupPzCzh+tPk/eKHRVXJlHd
+         1j2ITUUxG+UAMVEnnFt66KZw4NDq+aIjgrVwO3uGt8stuh9cz6LBvbMMFXi9TJxexRNy
+         PzUZfQwRC9d2U1vVBxXvikdtfcfu/xMIDAa1k=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778835731; x=1779440531;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=VXZt6qBmARZ13tXsBdYUa2P85z9cDemCtuWb0vwC4yk=;
+        b=p5JZzSwKuH714Q9MZ61O5lUSYQO5pKg02zXVdZ2TEdzHiiGXQeyTzm+J7MUu+jdo5f
+         4JeRYGwAP1CG3kIow1FpPHw8iGNm6cR8vtgx++qYipWJ8f4cOGk6loeAdTBywfgPcata
+         JNuRD39CZjCTkF2CXlu3IssNh3tJ4WVkL4N59FVqsBAnWPQKx0+wpaYZSlAaait2jIGg
+         XYWW9bmj6L14B4PRpUo9SAcVY3Ae14ST7gALCOqlbVgGNWYwKBA6D8HT2+xN4VBCbkss
+         YR/8pKS+YPkJRyj9uU58z9Zhli8ODr3PwOCIbnkaEUM5Gcc47paFjvI5xelLxv47cTpg
+         u3EQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/1SaUsOO7qsffxP6Y+1ke4VRnZlB7W0h5RTquiC4Ha3D7E7VqmXxOr6bdJoHOrzC3eJ3nDuLPMMw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxPShdEsxA2x28zS0xDbP97b2RGybDXARwoax84Z6DD93wjh1cR
+	/bLn8yYwqkcC0zpBuMvJDtCfQGH3BkcPgvzLAzJgXGqe9hcRGHxhi63dPOUrHRkdFg==
+X-Gm-Gg: Acq92OEnQLfdSzFqHQRONdj+lKkQMgzqXINPPbNakplv7msRfV32GSXDSq7dMgNk1I9
+	3bh+aKupmvYSDUmdVk5tGdJN6RiBB7orZ2/0yTKZpSZjr/wAwr3eL4y9TXN0qmZB0R/t2247QUS
+	WkQC4bsm1tLa+nVFEjDRzRFDirGXkZJCuvDhEUNjHAWuNZfGyDn7FRk6LcFfEA7j9kI4guncdVE
+	49DfiS68h4hN78byDb/Z3qscxCxLFmAWdbnoF+rzu8nLQD3M4OErIU9Y/e05CNUPmx90NqKbydd
+	MkVjtRGIB0OgwgrTYNhDuFtrwMSX3icXwZzMTM1p1pLtmvq87uVLjRMYLgsXQkgAPfURVcRJTi2
+	xeD1fS8fcIXhQSyRABkpzVAbvzlQ3I9gfRYKrHRcUHfaLrJDhGrA+Q82eO+NalYFarp8ngELSfp
+	xztdw5P38+5bUtYVhKuBCVrDEmXRgPR5Sb9bdPsXD1iawQYYfyTGForE6rk0/jzdkJbMEpVXk+l
+	PZBscJs
+X-Received: by 2002:a17:90b:548b:b0:366:2668:b5b6 with SMTP id 98e67ed59e1d1-36951b9e004mr3400112a91.22.1778835731362;
+        Fri, 15 May 2026 02:02:11 -0700 (PDT)
 Received: from wenstp920.tpe.corp.google.com ([2a00:79e0:201d:8:b3d8:e32e:c2fc:c31e])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36951584654sm2076537a91.7.2026.05.15.02.02.04
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36951584654sm2076537a91.7.2026.05.15.02.02.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 02:02:07 -0700 (PDT)
+        Fri, 15 May 2026 02:02:10 -0700 (PDT)
 From: Chen-Yu Tsai <wenst@chromium.org>
 To: Bartosz Golaszewski <brgl@kernel.org>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -70,10 +72,12 @@ Cc: Chen-Yu Tsai <wenst@chromium.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Manivannan Sadhasivam <mani@kernel.org>
-Subject: [PATCH RFC 00/12] arm64: mediatek: Add M.2 E-key slot on Chromebooks
-Date: Fri, 15 May 2026 17:01:36 +0800
-Message-ID: <20260515090149.3169406-1-wenst@chromium.org>
+Subject: [PATCH RFC 01/12] power: sequencing: Add index parameter for getting power sequencer
+Date: Fri, 15 May 2026 17:01:37 +0800
+Message-ID: <20260515090149.3169406-2-wenst@chromium.org>
 X-Mailer: git-send-email 2.54.0.563.g4f69b47b94-goog
+In-Reply-To: <20260515090149.3169406-1-wenst@chromium.org>
+References: <20260515090149.3169406-1-wenst@chromium.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -82,107 +86,185 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi everyone,
+In some cases more than one sequencer could be associated with a
+particular device. For example, a USB hub has multiple downstream ports,
+and each port could be connected to a different M.2 E-key slot. In this
+case the index would be the port number. The index tells power
+sequencers for different slots (connected to different hub ports) apart.
 
-This series is my attempt at enabling power sequencing for USB to support
-the USB connection on M.2 E-key slots. M.2 E-key was enabled in v7.1-rc1
-with just PCIe and UART supported [1].
+For the consumer API, add a new pwrseq_get_index() for new users. The
+original pwrseq_get() now calls pwrseq_get_index() with index = -1.
 
-Most of the series is based on next-20260508, while the DT changes also
-depend on some other DT cleanup patches I sent [2][3].
+For the provider API, add the index parameter to the .match function
+signature, and tweak all existing providers to match. Actual use of
+the new index parameter will be introduced in the next change.
 
+Other than the API change, no functional changes are intended.
 
-Patch 1 reworks the power sequencing framework to allow matching against
-different USB ports. The consumer API gains an "index" parameter (which
-is the USB port number on the hub), while the provider API is reworked
-to pass the index to the matching function of the providing driver.
+Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
+---
+ drivers/power/sequencing/core.c             | 12 ++++++++----
+ drivers/power/sequencing/pwrseq-pcie-m2.c   |  2 +-
+ drivers/power/sequencing/pwrseq-qcom-wcn.c  |  6 +++---
+ drivers/power/sequencing/pwrseq-thead-gpu.c |  2 +-
+ include/linux/pwrseq/consumer.h             |  6 ++++--
+ include/linux/pwrseq/provider.h             |  2 +-
+ 6 files changed, 18 insertions(+), 12 deletions(-)
 
-Patch 2 implements the index matching in the pcie-m2 driver. Matching
-only happens when a valid (>= 0) index is given.
-
-Patch 3 reworks the power sequencing targets for the E-key connector in
-the pcie-m2 driver to add targets for USB and SDIO. The former is used
-later on in this series.
-
-Patch 4 reworks the USB hub driver to return the actual error code from
-hub_configure() in hub_probe(). This is needed in the next patch to
-correctly return -EPROBE_DEFER.
-
-Patch 5 lets the USB hub driver look for power sequencers for each port.
-Currently this only works for M.2 E-key connections, but it could be
-extended to cover other cases. It should also make port reset via turning
-off the port VBUS work, even when VBUS is not directly controlled by the
-hub.
-
-I expect some discussion on this patch, because a) it adds some
-OF-specific code into an otherwise generic (core) driver, and
-b) it doesn't yet handle USB 2.0 / 3.x shared ports; it ends up powering
-on the port twice, which negates the port reset part.
-
-Patch 6 reverts an incorrectly modeled OF graph connection for the
-MediaTek XHCI controller.
-
-Patch 7 then adds a proper representation.
-
-Patches 8 through 12 enable the M.2 E-key slots (used for WiFi/BT) and
-USB type-A connectors found on MediaTek-based Chromebooks. These are
-provided in this series for reference. The USB type-A connector changes,
-while not directly related, have overlapping context, and was easier to
-include. They were also used to test some extra local changes I tried
-to convert the USB A connector from an onboard USB device to a power
-sequencing provider.
-
-
-As this series changes existing power sequencing API, and also uses the
-changed API in subsequent patches, I think the best way to merge this
-is for Bartosz to take the power sequencing patches and provide an
-immutable tag for Greg to merge and then merge the USB patches.
-
-The DT patches can go through the soc tree once all the driver and DT
-binding changes are merged.
-
-
-Thanks
-ChenYu
-
-P.S. I'll be at Embedded Recipes if anyone wants to discuss details.
-
-[1] https://lore.kernel.org/all/20260326-pci-m2-e-v7-0-43324a7866e6@oss.qualcomm.com/
-[2] https://lore.kernel.org/all/20260505101408.1796563-1-wenst@chromium.org/
-[3] https://lore.kernel.org/all/20260514101254.2749300-1-wenst@chromium.org/
-
-
-Chen-Yu Tsai (12):
-  power: sequencing: Add index parameter for getting power sequencer
-  power: sequencing: pcie-m2: implement port index matching
-  power: sequencing: pcie-m2: Add usb and sdio targets for E-key
-    connector
-  usb: hub: Return actual error from hub_configure() in hub_probe()
-  usb: hub: Power on connected M.2 E-key connectors
-  Revert "dt-bindings: usb: mediatek,mtk-xhci: Add port for SuperSpeed
-    EP"
-  dt-bindings: usb: mediatek,mtk-xhci: Allow ports for USB connections
-  arm64: dts: mediatek: mt8192-asurada: Add USB type-A connector
-  arm64: dts: mediatek: mt8192-asurada: Add M.2 E-key slot
-  arm64: dts: mediatek: mt8195-cherry: Add M.2 E-key slot
-  arm64: dts: mediatek: mt8195-cherry: Add USB type-A connector
-  arm64: dts: mediatek: mt8188-geralt: Add WiFi/BT as M.2 E-key slot
-
- .../bindings/usb/mediatek,mtk-xhci.yaml       |  17 +-
- .../boot/dts/mediatek/mt8188-geralt.dtsi      |  93 ++++++++++-
- .../boot/dts/mediatek/mt8192-asurada.dtsi     | 139 +++++++++++++++--
- .../boot/dts/mediatek/mt8195-cherry.dtsi      | 146 +++++++++++++++++-
- drivers/power/sequencing/core.c               |  12 +-
- drivers/power/sequencing/pwrseq-pcie-m2.c     |  65 +++++---
- drivers/power/sequencing/pwrseq-qcom-wcn.c    |   6 +-
- drivers/power/sequencing/pwrseq-thead-gpu.c   |   2 +-
- drivers/usb/core/hub.c                        |  22 ++-
- drivers/usb/core/hub.h                        |   2 +
- drivers/usb/core/port.c                       |  54 ++++++-
- include/linux/pwrseq/consumer.h               |   6 +-
- include/linux/pwrseq/provider.h               |   2 +-
- 13 files changed, 508 insertions(+), 58 deletions(-)
-
+diff --git a/drivers/power/sequencing/core.c b/drivers/power/sequencing/core.c
+index 14335c4f813e..1a91ee6d416f 100644
+--- a/drivers/power/sequencing/core.c
++++ b/drivers/power/sequencing/core.c
+@@ -612,6 +612,7 @@ struct pwrseq_match_data {
+ 	struct pwrseq_desc *desc;
+ 	struct device *dev;
+ 	const char *target;
++	int index;
+ };
+ 
+ static int pwrseq_match_device(struct device *pwrseq_dev, void *data)
+@@ -627,7 +628,7 @@ static int pwrseq_match_device(struct device *pwrseq_dev, void *data)
+ 	if (!device_is_registered(&pwrseq->dev))
+ 		return 0;
+ 
+-	ret = pwrseq->match(pwrseq, match_data->dev);
++	ret = pwrseq->match(pwrseq, match_data->dev, match_data->index);
+ 	if (ret == PWRSEQ_NO_MATCH || ret < 0)
+ 		return ret;
+ 
+@@ -655,16 +656,18 @@ static int pwrseq_match_device(struct device *pwrseq_dev, void *data)
+ }
+ 
+ /**
+- * pwrseq_get() - Get the power sequencer associated with this device.
++ * pwrseq_get_index() - Get the power sequencer associated with this device.
+  * @dev: Device for which to get the sequencer.
+  * @target: Name of the target exposed by the sequencer this device wants to
+  *          reach.
++ * @index: Index of the sequencer associated with the device.
+  *
+  * Returns:
+  * New power sequencer descriptor for use by the consumer driver or ERR_PTR()
+  * on failure.
+  */
+-struct pwrseq_desc *pwrseq_get(struct device *dev, const char *target)
++struct pwrseq_desc *pwrseq_get_index(struct device *dev, const char *target,
++				     int index)
+ {
+ 	struct pwrseq_match_data match_data;
+ 	int ret;
+@@ -676,6 +679,7 @@ struct pwrseq_desc *pwrseq_get(struct device *dev, const char *target)
+ 	match_data.desc = desc;
+ 	match_data.dev = dev;
+ 	match_data.target = target;
++	match_data.index = index;
+ 
+ 	guard(rwsem_read)(&pwrseq_sem);
+ 
+@@ -689,7 +693,7 @@ struct pwrseq_desc *pwrseq_get(struct device *dev, const char *target)
+ 
+ 	return_ptr(desc);
+ }
+-EXPORT_SYMBOL_GPL(pwrseq_get);
++EXPORT_SYMBOL_GPL(pwrseq_get_index);
+ 
+ /**
+  * pwrseq_put() - Release the power sequencer descriptor.
+diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+index ef69ae268059..16a332f9da7d 100644
+--- a/drivers/power/sequencing/pwrseq-pcie-m2.c
++++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+@@ -158,7 +158,7 @@ static const struct pwrseq_pcie_m2_pdata pwrseq_pcie_m2_m_of_data = {
+ };
+ 
+ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
+-				 struct device *dev)
++				 struct device *dev, int index)
+ {
+ 	struct pwrseq_pcie_m2_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
+ 	struct device_node *endpoint __free(device_node) = NULL;
+diff --git a/drivers/power/sequencing/pwrseq-qcom-wcn.c b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+index b55b4317e21b..ac6b34e01c51 100644
+--- a/drivers/power/sequencing/pwrseq-qcom-wcn.c
++++ b/drivers/power/sequencing/pwrseq-qcom-wcn.c
+@@ -335,7 +335,7 @@ static const char *const pwrseq_wcn3990_vregs[] = {
+ };
+ 
+ static int pwrseq_qcom_wcn3990_match(struct pwrseq_device *pwrseq,
+-				     struct device *dev);
++				     struct device *dev, int index);
+ 
+ static const struct pwrseq_qcom_wcn_pdata pwrseq_wcn3990_of_data = {
+ 	.vregs = pwrseq_wcn3990_vregs,
+@@ -436,13 +436,13 @@ static int pwrseq_qcom_wcn_match_regulator(struct pwrseq_device *pwrseq,
+ }
+ 
+ static int pwrseq_qcom_wcn_match(struct pwrseq_device *pwrseq,
+-				 struct device *dev)
++				 struct device *dev, int index)
+ {
+ 	return pwrseq_qcom_wcn_match_regulator(pwrseq, dev, "vddaon-supply");
+ }
+ 
+ static int pwrseq_qcom_wcn3990_match(struct pwrseq_device *pwrseq,
+-				     struct device *dev)
++				     struct device *dev, int index)
+ {
+ 	int ret;
+ 
+diff --git a/drivers/power/sequencing/pwrseq-thead-gpu.c b/drivers/power/sequencing/pwrseq-thead-gpu.c
+index a45318b4b2c1..cb7a6ea66c4b 100644
+--- a/drivers/power/sequencing/pwrseq-thead-gpu.c
++++ b/drivers/power/sequencing/pwrseq-thead-gpu.c
+@@ -115,7 +115,7 @@ static const struct pwrseq_target_data *pwrseq_thead_gpu_targets[] = {
+ };
+ 
+ static int pwrseq_thead_gpu_match(struct pwrseq_device *pwrseq,
+-				  struct device *dev)
++				  struct device *dev, int index)
+ {
+ 	struct pwrseq_thead_gpu_ctx *ctx = pwrseq_device_get_drvdata(pwrseq);
+ 	static const char *const clk_names[] = { "core", "sys" };
+diff --git a/include/linux/pwrseq/consumer.h b/include/linux/pwrseq/consumer.h
+index 7d583b4f266e..d5d57cdb0c8e 100644
+--- a/include/linux/pwrseq/consumer.h
++++ b/include/linux/pwrseq/consumer.h
+@@ -11,10 +11,12 @@
+ struct device;
+ struct pwrseq_desc;
+ 
++#define pwrseq_get(dev, target) pwrseq_get_index(dev, target, -1)
++
+ #if IS_ENABLED(CONFIG_POWER_SEQUENCING)
+ 
+ struct pwrseq_desc * __must_check
+-pwrseq_get(struct device *dev, const char *target);
++pwrseq_get_index(struct device *dev, const char *target, int index);
+ void pwrseq_put(struct pwrseq_desc *desc);
+ 
+ struct pwrseq_desc * __must_check
+@@ -26,7 +28,7 @@ int pwrseq_power_off(struct pwrseq_desc *desc);
+ #else /* CONFIG_POWER_SEQUENCING */
+ 
+ static inline struct pwrseq_desc * __must_check
+-pwrseq_get(struct device *dev, const char *target)
++pwrseq_get_index(struct device *dev, const char *target, int index)
+ {
+ 	return ERR_PTR(-ENOSYS);
+ }
+diff --git a/include/linux/pwrseq/provider.h b/include/linux/pwrseq/provider.h
+index 33b3d2c2e39d..a2ec6c612c8b 100644
+--- a/include/linux/pwrseq/provider.h
++++ b/include/linux/pwrseq/provider.h
+@@ -11,7 +11,7 @@ struct module;
+ struct pwrseq_device;
+ 
+ typedef int (*pwrseq_power_state_func)(struct pwrseq_device *);
+-typedef int (*pwrseq_match_func)(struct pwrseq_device *, struct device *);
++typedef int (*pwrseq_match_func)(struct pwrseq_device *, struct device *, int);
+ 
+ #define PWRSEQ_NO_MATCH 0
+ #define PWRSEQ_MATCH_OK 1
 -- 
 2.54.0.563.g4f69b47b94-goog
 
