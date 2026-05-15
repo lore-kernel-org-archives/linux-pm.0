@@ -1,91 +1,244 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09AB1380FE5;
-	Fri, 15 May 2026 17:04:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1A8E2F7EFD;
+	Fri, 15 May 2026 17:14:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778864642; cv=none; b=BFY5zqK09M9rvDk4+dpAtESSUxl2k63GyDCsZizml1VYV05XgRET/v++MFxuMC0foTvxXDCivvJBtDo4BPi/Nm0TAZSVpbL77kXcRzwERFmDGIrgi7/+z0rGU1LmHx+q+QfP3wCUz9/qLajlJgzc2PwOPLYogX5pOLo6ovaiaK4=
+	t=1778865292; cv=none; b=BL1LtRc4YBdxUY4lptuaZDobuSsl5BG0yx8A6OpL9g4ldftI6ranIghi2z08A3OsWTUes7nk5WrVUmwpVfBCRWL2cmPcq45P3jIYMShDKIxPeYUB7b2NzNLuEqcyFZ8N4nQ1sQ7KwvolI/0NIqjJzPElq/67W5HimAyQEDJ08WY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778864642; c=relaxed/simple;
-	bh=1gXPdoQD3e4Q5DUENM1GUxiQTELoOco1WZdSLr6z0fw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ACWSV85k2zr8rNwKrgZSqVKUtlcx2y7cJVr1sgV9RsiZpu1Tiax5Kn4jms2gJ2dPNrdWTI92W/7ob2ir5BnhB+wOAdyQNDw1BFWjJ/w0PUnY8KU6R3vhGSkNNEm1BgcSNfr8hir08YJCwjHYnhOTCLUeK4BpBDJ47gBLYrR/Ox4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=q/Hpru5E; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778865292; c=relaxed/simple;
+	bh=CtDfgDqnfSE+2T16bU11fTNtbRMQMBr75uetjnKvV+s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=krKPEMyZQOm0wlexaNz610lP1SwPFOQMiNRVdpjWcmdIV3aM8U+EmUhxlpBHL3yTeMqGqxsZdtLDvBjKBcWECATVtkdxNPsAIXgPHDLuOEqt/N1mrFLOntOYjRz970IpfgrZZ9Hnwjel0KLzyBPHpAPYfQ2wvRX1kAG1BvSjP+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Bg4qjdF5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="q/Hpru5E"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48F01C2BCB0;
-	Fri, 15 May 2026 17:04:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Bg4qjdF5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53F6BC2BCB0;
+	Fri, 15 May 2026 17:14:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778864641;
-	bh=1gXPdoQD3e4Q5DUENM1GUxiQTELoOco1WZdSLr6z0fw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=q/Hpru5EKVATON/PELN6P+hPc4Mk+pBUAYDG3AyHGvJ2eccr/B+Rjrfjbj1e5dLzj
-	 tDhmNN6gzUIUoeo40bFxGC6c9YzhocbPhgQiWj9bOhvdNUB0XsKNG042snqYq+DCD1
-	 Ms0iSXtzuBG4oKATM4wp4MlhRtiF67E7zCOTFNHz5JPB/XnFPE0DYUhep9y+qrQDYS
-	 3f+M357WkTB+1/mbgP5ANw+/fc3MBirMTVTEue27uTeti2eTWvuma/xthwiERL2xGF
-	 ZTaHLpw7iStBG5ensOx1rZSkn2xyB1nGqsnMwpR4WFOw+J5uEGzaXND35tbUweIIsf
-	 qyRTYoyB+pxsQ==
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject:
- [PATCH v1] ACPI: battery: Fix system wakeup on critical battery status
-Date: Fri, 15 May 2026 19:03:59 +0200
-Message-ID: <12898712.O9o76ZdvQC@rafael.j.wysocki>
-Organization: Linux Kernel Development
+	s=k20201202; t=1778865291;
+	bh=CtDfgDqnfSE+2T16bU11fTNtbRMQMBr75uetjnKvV+s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Bg4qjdF5ocEF5GUSFUJ33VvqKPCY0vB5UZkWQSJzTTWpwwUnPh/62U2qYQATBWNXx
+	 IZBlUACG3Gh/ZcMuRouIZpdGthND4AjOKo45w889WFAPT8MeV/V14RhQkfTgEK1CBb
+	 14MOMJSKtsZ3fLUW46BV6IPJOfE81xXvrzm5FmdRiqUaxGO77Odgw0SQ1ZPgZ09WGS
+	 yJ34MhIA9Z5LzRgU3/mQa81lnOE/RnT+yof5qX+o4iT0s8X4nG5KsaSAw57daezUDJ
+	 JOzkZ0+qW2E01yyXa0ud9PAantD5m7Ms/BuND21fnbn4a8Sc9Z1cybQsrmpEwV7jGd
+	 BOQTJ3hraLQ2A==
+Date: Fri, 15 May 2026 18:14:45 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Nam Tran <trannamatk@gmail.com>,
+	=?utf-8?B?xYF1a2FzeiBMZWJpZWR6acWEc2tp?= <kernel@lvkasz.us>,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org,
+	linux-doc@vger.kernel.org
+Subject: Re: [PATCH v6 03/11] dt-bindings: mfd: add documentation for S2MU005
+ PMIC
+Message-ID: <20260515-justly-recite-6028f4bfb24a@spud>
+References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
+ <20260515-s2mu005-pmic-v6-3-1979106992d4@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Commit 0a869409a981 ("ACPI: battery: Convert the driver to a platform
-one") changed the parent of the battery wakeup source to the platform
-device used for driver binding, but it forgot to update the
-acpi_pm_wakeup_event() call in acpi_battery_update() accordingly.
-
-Do it now to unbreak waking up the system on critical battery status
-during suspend-to-idle and during transitions to ACPI S3/S4.
-
-Fixes: 0a869409a981 ("ACPI: battery: Convert the driver to a platform one")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: 7.0+ <stable@vger.kernel.org> # 7.0+
----
- drivers/acpi/battery.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -94,6 +94,7 @@ struct acpi_battery {
- 	struct power_supply *bat;
- 	struct power_supply_desc bat_desc;
- 	struct acpi_device *device;
-+	struct device *phys_dev;
- 	struct notifier_block pm_nb;
- 	struct list_head list;
- 	unsigned long update_time;
-@@ -1033,7 +1034,7 @@ static int acpi_battery_update(struct ac
- 	if ((battery->state & ACPI_BATTERY_STATE_CRITICAL) ||
- 	    (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
- 	     (battery->capacity_now <= battery->alarm)))
--		acpi_pm_wakeup_event(&battery->device->dev);
-+		acpi_pm_wakeup_event(battery->phys_dev);
- 
- 	return result;
- }
-@@ -1231,6 +1232,7 @@ static int acpi_battery_probe(struct pla
- 
- 	platform_set_drvdata(pdev, battery);
- 
-+	battery->phys_dev = &pdev->dev;
- 	battery->device = device;
- 
- 	result = devm_mutex_init(&pdev->dev, &battery->update_lock);
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="BicabgsLIYBYKY7x"
+Content-Disposition: inline
+In-Reply-To: <20260515-s2mu005-pmic-v6-3-1979106992d4@disroot.org>
 
 
+--BicabgsLIYBYKY7x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, May 15, 2026 at 04:08:59PM +0530, Kaustabh Chakraborty wrote:
+> Samsung's S2MU005 PMIC includes subdevices for a charger, an MUIC (Micro
+> USB Interface Controller), and flash and RGB LED controllers.
+>=20
+> Add the compatible and documentation for the S2MU005 PMIC. Also, add an
+> example for nodes for supported sub-devices, i.e. MUIC, flash LEDs, and
+> RGB LEDs. Charger sub-device uses the node of the parent.
+>=20
+> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+> ---
+>  .../bindings/mfd/samsung,s2mu005-pmic.yaml         | 120 +++++++++++++++=
+++++++
+>  1 file changed, 120 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.y=
+aml b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+> new file mode 100644
+> index 0000000000000..0e6afb7d2017b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+> @@ -0,0 +1,120 @@
+> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/mfd/samsung,s2mu005-pmic.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Samsung S2MU005 Power Management IC
+> +
+> +maintainers:
+> +  - Kaustabh Chakraborty <kauschluss@disroot.org>
+> +
+> +description: |
+> +  The S2MU005 is a companion power management IC which includes subdevic=
+es for
+> +  a charger controller, an MUIC (Micro USB Interface Controller), and fl=
+ash and
+> +  RGB LED controllers.
+> +
+> +allOf:
+> +  - $ref: /schemas/power/supply/power-supply.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    const: samsung,s2mu005-pmic
+> +
+> +  flash:
+> +    $ref: /schemas/leds/samsung,s2mu005-flash.yaml
+> +    description:
+> +      Child node describing flash LEDs.
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  muic:
+> +    $ref: /schemas/extcon/samsung,s2mu005-muic.yaml#
+> +    description:
+> +      Child node describing MUIC device.
+> +
+> +  multi-led:
+> +    type: object
+> +
+> +    allOf:
+> +      - $ref: /schemas/leds/leds-class-multicolor.yaml#
+
+Does this need to be an allOf when the other refs are not?
+
+> +
+> +    properties:
+> +      compatible:
+> +        const: samsung,s2mu005-rgb
+> +
+> +    required:
+> +      - compatible
+> +
+> +    unevaluatedProperties: false
+> +
+> +  reg:
+> +    maxItems: 1
+
+Move this above the child nodes please.
+
+Otherwise, I think this looks good.
+
+pw-bot: changes-requested
+
+Thanks,
+Conor.
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    #include <dt-bindings/leds/common.h>
+> +
+> +    i2c {
+> +        #address-cells =3D <1>;
+> +        #size-cells =3D <0>;
+> +
+> +        pmic@3d {
+> +            compatible =3D "samsung,s2mu005-pmic";
+> +            reg =3D <0x3d>;
+> +            interrupt-parent =3D <&gpa2>;
+> +            interrupts =3D <7 IRQ_TYPE_LEVEL_LOW>;
+> +
+> +            monitored-battery =3D <&battery>;
+> +
+> +            flash {
+> +                compatible =3D "samsung,s2mu005-flash";
+> +                #address-cells =3D <1>;
+> +                #size-cells =3D <0>;
+> +
+> +                led@0 {
+> +                    reg =3D <0>;
+> +                    color =3D <LED_COLOR_ID_WHITE>;
+> +                    function =3D LED_FUNCTION_FLASH;
+> +                };
+> +
+> +                led@1 {
+> +                    reg =3D <1>;
+> +                    color =3D <LED_COLOR_ID_WHITE>;
+> +                    function =3D LED_FUNCTION_FLASH;
+> +                    function-enumerator =3D <1>;
+> +                };
+> +            };
+> +
+> +            muic {
+> +                compatible =3D "samsung,s2mu005-muic";
+> +
+> +                connector {
+> +                    compatible =3D "usb-b-connector";
+> +                    label =3D "micro-USB";
+> +                    type =3D "micro";
+> +                };
+> +
+> +                port {
+> +                    muic_to_usb: endpoint {
+> +                        remote-endpoint =3D <&usb_to_muic>;
+> +                    };
+> +                };
+> +            };
+> +
+> +            multi-led {
+> +                compatible =3D "samsung,s2mu005-rgb";
+> +                color =3D <LED_COLOR_ID_RGB>;
+> +                function =3D LED_FUNCTION_INDICATOR;
+> +                linux,default-trigger =3D "pattern";
+> +            };
+> +        };
+> +    };
+>=20
+> --=20
+> 2.53.0
+>=20
+
+--BicabgsLIYBYKY7x
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCagdUhQAKCRB4tDGHoIJi
+0n5rAP967mHX7SEKc4HenoyiF+90zXGlTKi1jFFe8mJ5Mu7VNgD9GcMBGU4IFdCj
+uG66DaZrujqEElpBL/3tW71nwb4XvA8=
+=9VUh
+-----END PGP SIGNATURE-----
+
+--BicabgsLIYBYKY7x--
