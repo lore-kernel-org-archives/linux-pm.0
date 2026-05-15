@@ -1,38 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF00366830;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4591364E9C;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778824257; cv=none; b=CmdVTXdTl8/kvHU8nhRZBQnWTGM6FRW5PqByN3O9ihzV/7I+eMmVNeq3WKX3XjKNTLynQ3Ryl87leCu5vJnHC/M/N04ESInqmjU+abLSisB1swVuZrF3ol5ILf0ZSNmojyNJ9+4LVzVQx6QGU1bz60t2E/H/PyXAhxNTWdmCzOE=
+	t=1778824257; cv=none; b=O7wCWbY9M9V+dfnJFVS/FNUKzqSXLuxjihmOgE3CHOxpgSkmfpdEjgbUOWItXkpEEI6xHv1hTNdB2bOALS5ny4TxJBj44dvqCQhIbVQQvrtDT+itlHIyp/zVAgwguGqaEboyE/ZuJ4nk+2EwN7VAkq05SsUwYg08zkM/2w4WSYg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1778824257; c=relaxed/simple;
-	bh=v0n4iL+ec7ubF7WE3r+09txUZuNOlRfNgY9pxDWbRgY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TENKpT/1cLKj8x58UvLGzRcpaglWXQWp1qLi1KSn5KOIOskMbFpUjFscJkTehWJIc3uMx6C/6nAxijAUkam7wdW0f3lrw3E8uU1/VmPJpyFZQzDakyJ0C2rPWCbYJmlFHmbzrrfYAM1sXECZDiQ6guGQeGbQkvPxZ0MFy0VBXws=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hjC6g/ue; arc=none smtp.client-ip=10.30.226.201
+	bh=6rjMPk1stk8aZ3fMDqacMHJU1ErCel3DsuDHgbgKPm8=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=MOkaJhcnx+vWErI166rIRHKidHHDX/vgpMT4iaY/zc5q4hItUe8AMcnYfvckDdYyfvuOxcvtzOFBgYM1HXM24GOn4i1dYnh6c58uJryR09ffErfLiOnSHrS0J9sNQLzfL5HUVPKKZRsIOby4owdw3oSVgYg2hpMOD0kVPwuF6DE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DmOe7fpD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hjC6g/ue"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7C94DC2BCFB;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DmOe7fpD"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 44709C2BCB0;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1778824257;
-	bh=v0n4iL+ec7ubF7WE3r+09txUZuNOlRfNgY9pxDWbRgY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=hjC6g/ue5VGk+RAa2i/AZCUGdEKSMNl1UoJc9IAloUNrZ2EPx98qKWurWkR2spxYB
-	 3YBFnZDqrew8K6kX/rfmlds69+6YhcTzNZ2LoiGLomdYOktvc6O0MI3leYuDB8vTUk
-	 kS8cIuu3LhII3J5u/QPu4sWaxINSq6uw+qG1tfmkqK0m7xElyTRqHfXLMb+mgRMZlC
-	 0D/1DWNfRsyDVszpqatmTzminHVzeVe2Y1dhI/Cg6NOQE7txSCVt5bbb+ZUPm7NqBq
-	 qh0tAv/lMOveZuv0QNnv/nEwwgbYMcYkfGL1myfNrX1BUDhonbEB0vbqZZVjeX5tCQ
-	 7XEusK8P1+Gdg==
+	bh=6rjMPk1stk8aZ3fMDqacMHJU1ErCel3DsuDHgbgKPm8=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=DmOe7fpDZbnrP76BIX0o5cyqShnBzjm4ZWtFCTTomTTqYKL374y8/YrGGVud44g/3
+	 0L6+xNgm35uie7V2o1ZqilQshteUsJW4kmrHfbCDgoe7izSlfoS56ONEH7b3QHdVcq
+	 y0Uzg1Beva9gd87vRndC4kq/qS1zZNj/7/YsI663CzVetzIGAzYoe8+UPzgr/ZWMTD
+	 lMSDr/IhHlTBBtn8Dc2tLZPV7GMywX2y8nQU7xPTx1kPw9Lb9FosXlUgL9oCUGoR1K
+	 xVDkWCcMatLWX9fRWrh7bZSV6P5Ng+XYfYPefMwricaU2nfSfMDuYAPg5iMsoqdEDn
+	 Mil1tzgfMlwuQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73454CD4851;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 382F0CD4F25;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Fri, 15 May 2026 05:48:41 +0000
-Subject: [PATCH 3/3] power: supply: max17042: add handler for energy_now
- property
+Subject: [PATCH 0/3] Add support for Battery Status AMS
+Date: Fri, 15 May 2026 05:48:38 +0000
+Message-Id: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,9 +40,10 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260515-batt-status-v1-3-fed6b7d8cea7@google.com>
-References: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
-In-Reply-To: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
+X-B4-Tracking: v=1; b=H4sIALazBmoC/x3MQQqAIBBA0avErBMcIYOuEi3UppqNhWMRiHdPW
+ r7F/wWEEpPA1BVI9LDwGRuw7yAcLu6keG0Go43Vg0blXc5Kssu3KLTejhaD9h6hFVeijd//Ni+
+ 1fvGjbN1dAAAA
+X-Change-ID: 20260501-batt-status-16b6761c0bb1
 To: Sebastian Reichel <sre@kernel.org>, 
  Badhri Jagan Sridharan <badhri@google.com>, 
  Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
@@ -59,11 +59,11 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
  Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1778824256; l=3946;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1778824256; l=2299;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=rZ4iAk16d2xmYX+iRg9d3aLsjlCGLdVUfG6+D9Nq6hY=;
- b=mP5j13ZK2htM+zjnJ8ThHRPxXR/MqZXaXDsFwNM3MXuPFJnxgRn6pYa1b9P0EF0FZFZ5S6+mj
- ATw1BO4vO+EDPgUyeEPZXs0dSzHVvnkrmOZf/gtkg+HPU+v6ig8qNHs
+ bh=6rjMPk1stk8aZ3fMDqacMHJU1ErCel3DsuDHgbgKPm8=;
+ b=tO+0UgaaM/areUwX3b52bA9j0nJ7mOlUiPQ/fzlUEIz2mEckUae8JpJ8IkOA3lHB/J0K8mcTa
+ FvSL4BmlyCsCqlubwfSSV8n+1IyWPf1updfDOOi+aSjSrcL0m3n8xeQ
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -71,134 +71,56 @@ X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
 X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
 Reply-To: amitsd@google.com
 
-From: Amit Sunil Dhamne <amitsd@google.com>
+PD 3.1 v1.8 Spec necessitates a response to Get_Battery_Status request
+from the port partner (see "6.13.2 Applicability of Data Message").
+This patchset adds support to get all the battery type power supplies
+and query them to report the telemetry required to build a Battery
+Status Message. Right now, this submission assumes all the battery type
+power supplies that exist in the system are fixed (meaning cannot be hot
+swapped).
 
-Add handler to report power_supply_prop_energy_now so that users can get
-current SoC in uWH. Additionally, add helper functions to get avg_vcell
-and repcap values in uv and uah units respectively to avoid code
-duplication.
+Previously, I had sent a patch series [1]. However there were some
+concerns. Broadly:
+  * No client drivers
+  * Duplicating dt properties
+To address the above issues, we now have Fuel Gauge and Charger drivers.
+Also, I have rectified my approach to fetch information about batteries
+from the power supply core.
+
+While, the original patch series [1] added support for Battery Caps as
+well, this patch series only adds support for Battery Status. Therefore,
+I am sending it as a new series while incorporating relevant feedback.
+
+[1] https://lore.kernel.org/all/20250507-batt_ops-v2-0-8d06130bffe6@google.com/
+
+Patches in series:
+[A] "power: supply: core: Add power_supply_get_battery_all()"
+[B] "usb: typec: tcpm: Add support for Battery Status response message"
+[C] "power: supply: max17042: add handler for energy_now property"
+
+Technical dependency of patches:
+[C] is independent and can be applied in any order.
+[B] depends on [A] due to `power_supply_get_battery_all` symbol.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
- drivers/power/supply/max17042_battery.c | 60 ++++++++++++++++++++++++++-------
- 1 file changed, 47 insertions(+), 13 deletions(-)
+Amit Sunil Dhamne (3):
+      power: Add power_supply_get_battery_all() to fetch battery psy handles
+      usb: typec: tcpm: Add support for Battery Status response message
+      power: supply: max17042: add handler for energy_now property
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 167fb3fb3732..e16eb6985b70 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -81,6 +81,7 @@ static enum power_supply_property max17042_battery_props[] = {
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-+	POWER_SUPPLY_PROP_ENERGY_NOW,
- 	POWER_SUPPLY_PROP_TEMP,
- 	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
- 	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
-@@ -95,6 +96,36 @@ static enum power_supply_property max17042_battery_props[] = {
- 	POWER_SUPPLY_PROP_CURRENT_AVG,
- };
- 
-+static int max17042_get_repcap_uah(struct max17042_chip *chip, u64 *rep_cap)
-+{
-+	u32 data;
-+	int ret;
-+
-+	ret = regmap_read(chip->regmap, MAX17042_RepCap, &data);
-+	if (ret < 0)
-+		return ret;
-+
-+	*rep_cap = data * 5000000ll;
-+	*rep_cap *= chip->task_period;
-+	do_div(*rep_cap, MAX17042_DEFAULT_TASK_PERIOD);
-+	do_div(*rep_cap, chip->pdata->r_sns);
-+
-+	return 0;
-+}
-+
-+static int max17042_get_avgvcell_uv(struct max17042_chip *chip, u32 *vcell)
-+{
-+	int ret;
-+
-+	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, vcell);
-+	if (ret < 0)
-+		return ret;
-+
-+	*vcell = (*vcell * 625) / 8;
-+
-+	return 0;
-+}
-+
- static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
- {
- 	int ret;
-@@ -180,14 +211,12 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
- 	int temp, vavg, vbatt, ret;
- 	u32 val;
- 
--	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, &val);
-+	ret = max17042_get_avgvcell_uv(chip, &val);
- 	if (ret < 0)
- 		goto health_error;
- 
--	/* bits [0-3] unused */
--	vavg = val * 625 / 8;
- 	/* Convert to millivolts */
--	vavg /= 1000;
-+	vavg = val / 1000;
- 
- 	ret = regmap_read(chip->regmap, MAX17042_VCELL, &val);
- 	if (ret < 0)
-@@ -304,11 +333,10 @@ static int max17042_get_property(struct power_supply *psy,
- 		val->intval = data * 625 / 8;
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
--		ret = regmap_read(map, MAX17042_AvgVCELL, &data);
-+		ret = max17042_get_avgvcell_uv(chip, &data);
- 		if (ret < 0)
- 			return ret;
--
--		val->intval = data * 625 / 8;
-+		val->intval = data;
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
- 		ret = regmap_read(map, MAX17042_OCVInternal, &data);
-@@ -350,14 +378,9 @@ static int max17042_get_property(struct power_supply *psy,
- 		val->intval = data64;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_NOW:
--		ret = regmap_read(map, MAX17042_RepCap, &data);
-+		ret = max17042_get_repcap_uah(chip, &data64);
- 		if (ret < 0)
- 			return ret;
--
--		data64 = data * 5000000ll;
--		data64 *= chip->task_period;
--		do_div(data64, MAX17042_DEFAULT_TASK_PERIOD);
--		do_div(data64, chip->pdata->r_sns);
- 		val->intval = data64;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
-@@ -370,6 +393,17 @@ static int max17042_get_property(struct power_supply *psy,
- 		data64 = div_s64(data64, MAX17042_DEFAULT_TASK_PERIOD);
- 		val->intval = div_s64(data64, chip->pdata->r_sns);
- 		break;
-+	case POWER_SUPPLY_PROP_ENERGY_NOW:
-+		ret = max17042_get_repcap_uah(chip, &data64);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = max17042_get_avgvcell_uv(chip, &data);
-+		if (ret < 0)
-+			return ret;
-+
-+		val->intval = data64 * data / 1000000;
-+		break;
- 	case POWER_SUPPLY_PROP_TEMP:
- 		ret = max17042_get_temperature(chip, &val->intval);
- 		if (ret < 0)
+ drivers/power/supply/max17042_battery.c  |  60 ++++++++++---
+ drivers/power/supply/power_supply_core.c | 122 +++++++++++++++++++++++++++
+ drivers/usb/typec/tcpm/tcpm.c            | 140 ++++++++++++++++++++++++++++++-
+ include/linux/power_supply.h             |   9 ++
+ include/linux/usb/pd.h                   |  29 +++++++
+ 5 files changed, 344 insertions(+), 16 deletions(-)
+---
+base-commit: 57b8e2d666a31fa201432d58f5fe3469a0dd83ba
+change-id: 20260501-batt-status-16b6761c0bb1
 
+Best regards,
 -- 
-2.54.0.563.g4f69b47b94-goog
+Amit Sunil Dhamne <amitsd@google.com>
 
 
