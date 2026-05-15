@@ -1,137 +1,210 @@
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5C7044B66E
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 10:39:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DE0844BC93;
+	Fri, 15 May 2026 10:39:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778841554; cv=none; b=naDIyrknAkPMRucG43M9Cbe+i6MotlDL6G8tNtoRsMBYuHQGuYTYA8RpPndrCyKzNMKmBLq+odvyzq/bOMNOOL6vYAgK+sTnnRE/aXCzO4bAOXfSZFQ1LNZ4+1OgJV37ySC0JUZlx4pap2l2TxDA7vz+Ra/JMRqsRawzM4kzh6M=
+	t=1778841564; cv=none; b=q6OFUFT2UCqnfepVWKejN8uVftPJfC3vFboLCwWGw1ENIGawLDpzhDUvDP5deQP3UDuZjnoNhIh58T7bcJKb66HcWjHFl0CuLOjajU2Kf8PE7HH6QGTlcrdi4U5d+2/xf6GhnL1Fx8oQWiaHW2RyDVI/BXnlYLDjCnfkqumUz5Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778841554; c=relaxed/simple;
-	bh=XpB1hUSuFArN1MAWTh4YUrU+WzGunzy+3jVTNDnBKRI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=SL3nhWh5Qj8Biij3pyS+jakjw8ptb8i5e3Y6wuoqiZ1Zxe5wXkJ2YjJv4Z7mBhiaT98duLAFiZo1DafxVgTlkCsnLJJXumI0otElcvvIcnmtR77dqXkKp3Iks0TKHXw8dUlZpQWDo1l7JctcM3+StC0jKH1z7wlg/BS8aWEbg98=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.227
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.163.163])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4gH3R63NwnznTXv;
-	Fri, 15 May 2026 18:32:02 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id 123874048B;
-	Fri, 15 May 2026 18:39:04 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 15 May
- 2026 18:39:03 +0800
-Message-ID: <6f160e25-9903-4f49-8a95-1192b7acb96d@hisilicon.com>
-Date: Fri, 15 May 2026 18:39:02 +0800
+	s=arc-20240116; t=1778841564; c=relaxed/simple;
+	bh=xqJosKum8u3HfaS4s7QBFPoBoRkyRsgBlwzVgVbWZZQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=jgb58ymvvTQxPNAgPYvCxyI+W/kv8WZpR5bGRXLVlkLuL/cla5LP0OpmWlYiakrOOAzn2xqW9vTZXiEAD/szBca8f9ZwD4OQTE6s/CSxYg3852e258F7zUPSbw4LwBm//5IHFxAIsAm1crNq13BmSoTADHaPLwS9BYAhjO3+6ag=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=NSUsCuvn; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="NSUsCuvn"
+Received: from mail01.disroot.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id EDAD8270D2;
+	Fri, 15 May 2026 12:39:20 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nitB1vRL07iJ; Fri, 15 May 2026 12:39:20 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1778841560; bh=xqJosKum8u3HfaS4s7QBFPoBoRkyRsgBlwzVgVbWZZQ=;
+	h=From:Subject:Date:To:Cc;
+	b=NSUsCuvn9Hk64UQi5BXEvj2kJV376hVGDOyGiZQJXq+eLhE3Y06LdENJto7rmWPg1
+	 c9W2KuAr4jEQp4Pg6CEdYgLIhbmNi6f+bRy3hXsnhSngHkwVfL2rMXT7ywjFs5BW7q
+	 s9utDh4Ysc0mTfHNlrDvVJBs9kmENlDJ+kGHUEVh19sG3HAfVn3Fw02FXF96matvbh
+	 d8cHLhlj7AKFYVdqII42TO64CFZKgH9nkNrB0McM6JcMb5F8E33ojgtuBrZYnuHuA7
+	 xanlu0ALGlj4iUonamZ9j6/X4RIgCm9+MZ0t/mYcqzFaw7Qhx5+5g+SUqkg+lZUoyN
+	 t1kM/xGMSHvGg==
+From: Kaustabh Chakraborty <kauschluss@disroot.org>
+Subject: [PATCH v6 00/11] Support for Samsung S2MU005 PMIC and its
+ sub-devices
+Date: Fri, 15 May 2026 16:08:56 +0530
+Message-Id: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 5/6] devfreq: Get and put module refcount when
- switching governor
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <cwchoi00@gmail.com>,
-	<cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-CC: <linuxarm@huawei.com>, <zhenglifeng1@huawei.com>,
-	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
-	<prime.zeng@hisilicon.com>
-References: <20260513093832.1645890-1-zhanjie9@hisilicon.com>
- <20260513093832.1645890-6-zhanjie9@hisilicon.com>
- <d6e83d90-0c2a-40a7-a939-298c3b393602@kylinos.cn>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <d6e83d90-0c2a-40a7-a939-298c3b393602@kylinos.cn>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+X-B4-Tracking: v=1; b=H4sIAMH3BmoC/2XOQW7DIBCF4atErEs1DAPYWfUeVRcYDwmLhAhSq
+ 1XkuxdHitLYy4f0/cNNVC6Jq9jvbqLwlGrK5zbs206Eoz8fWKaxbYGARimFsuLpG8DIyykFCcG
+ 66O3ggw6ikUvhmH7uuc+vto+pXnP5vdcntbw+QvQampQE2bNWHY3aQ+g/xlRLztf3XA5iSU344
+ BYU2hXHxl0XlXcmGnJ+y/WTI5oV140P5CNzT86C3nJ6ctp8npbrkR11YJxju+XmH8c1N43HMIR
+ +9MYD0Cuf5/kPAcWbmKYBAAA=
+X-Change-ID: 20251112-s2mu005-pmic-0c67fa6bac3c
+To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Nam Tran <trannamatk@gmail.com>, 
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>
+Cc: linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ linux-doc@vger.kernel.org, Kaustabh Chakraborty <kauschluss@disroot.org>, 
+ Conor Dooley <conor.dooley@microchip.com>
 
+S2MU005 is an MFD chip manufactured by Samsung Electronics. This is
+found in various devices manufactured by Samsung and others, including
+all Exynos 7870 devices. It is known to have the following features:
 
+1. Two LED channels with adjustable brightness for use as a torch, or a
+   flash strobe.
+2. An RGB LED with 8-bit channels. Usually programmed as a notification
+   indicator.
+3. An MUIC, which works with USB micro-B (and USB-C?). For the micro-B
+   variant though, it measures the ID-GND resistance using an internal
+   ADC.
+4. A charger device, which reports if charger is online, voltage,
+   resistance, etc.
 
-On 5/14/2026 2:50 PM, Yaxiong Tian wrote:
-> 
-> 在 2026/5/13 17:38, Jie Zhan 写道:
->> A governor module can be dynamically inserted or removed if compiled as a
->> kernel module.  'devfreq->governor' would become NULL if the governor
->> module is removed when it's in use.
->>
->> To prevent the governor module from being removed (except for force
->> unload) when it's in use, get and put a refcount of the governor module
->> when starting and stopping the governor.
->>
->> As a result, unloading a governor module in use returns an error, e.g.:
->>    $ cat governor
->>    performance
->>    $ rmmod governor_performance
->>    rmmod: ERROR: Module governor_performance is in use
->>
->> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
->> ---
->>   drivers/devfreq/devfreq.c | 17 ++++++++++++++++-
->>   1 file changed, 16 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index e1363ab69173..2ea42325d030 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
->>                    __func__, df->governor->name, ret);
->>               return ret;
->>           }
->> +        module_put(old_gov->owner);
->>       }
->>         /* Start the new governor */
->> +    if (!try_module_get(new_gov->owner)) {
->> +        df->governor = NULL;
->> +        return -EINVAL;
->> +    }
->> +
-> 
-> Here, new_gov has already been checked in try_then_request_governor() for whether the module can be obtained.
-> 
-> I think it might be more reasonable to merge try_then_request_governor() and devfreq_set_governor(), so that when new_gov cannot be obtained, the operation of the old governor is not affected.
-> 
-Well yeah, indeed! I'll take a look at how to implement this.
-Thanks for the suggestion.
+This patch series implements a lot of these features. Naturally, this
+series touches upon a lot of subsystems. The 'parent' is the MFD driver,
+so the subsystems have some form of dependency to the MFD driver, so
+they are not separable.
 
-Jie
->>       df->governor = new_gov;
->>       ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>       if (ret) {
->>           dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>                __func__, df->governor->name, ret);
->> +        module_put(new_gov->owner);
->>             /* Restore previous governor */
->>           df->governor = old_gov;
->>           if (!df->governor)
->>               return ret;
->>   +        if (!try_module_get(old_gov->owner)) {
->> +            df->governor = NULL;
->> +            return -EINVAL;
->> +        }
->> +
->>           ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>           if (ret) {
->>               dev_err(dev, "%s: restore Governor %s failed (%d)\n",
->>                   __func__, df->governor->name, ret);
->> +            module_put(old_gov->owner);
->>               df->governor = NULL;
->>               return ret;
->>           }
->> @@ -1040,9 +1053,11 @@ int devfreq_remove_device(struct devfreq *devfreq)
->>         devfreq_cooling_unregister(devfreq->cdev);
->>   -    if (devfreq->governor)
->> +    if (devfreq->governor) {
->>           devfreq->governor->event_handler(devfreq,
->>                            DEVFREQ_GOV_STOP, NULL);
->> +        module_put(devfreq->governor->owner);
->> +    }
->>       device_unregister(&devfreq->dev);
->>         return 0;
+Here are the subsystems corresponding to the patch numbers:
+dt-bindings - 01, 02, 03
+mfd         - 03, 04, 05, 06
+led         - 01, 07, 08, 09
+extcon      - 02, 10
+power       - 11
+
+Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+---
+Changes in v6:
+- Fix build, UAF, and functional errors with
+  CONFIG_V4L2_FLASH_LED_CLASS=m (Lee Jones)
+- Remove (ret < 0) wherever redundant (Lee Jones)
+- Remove extra conditionals for supporting multiple variants (Lee Jones)
+- Fix OOB condition in initailizing flash LED channels (Lee Jones)
+- declare i inside for, like: for (int i = 0; ...) (Lee Jones)
+- Rewrite and simplify closest timing function for clarity (Lee Jones)
+- Link to v5: https://lore.kernel.org/r/20260424-s2mu005-pmic-v5-0-fcbc9da5a004@disroot.org
+
+Changes in v5:
+- Drop port property from charger dt binding (Krzysztof Kozlowski)
+- Create separate dt binding for S2MU005 MFD (Krzysztof Kozlowski)
+- Move RGB LED and charger schema to parent schema (Rob Herring)
+- Fix error of using invalid revision mask
+- Link to v4: https://lore.kernel.org/r/20260414-s2mu005-pmic-v4-0-7fe7480577e6@disroot.org
+
+Changes in v4:
+- Use OF graph to connect charger with MUIC in device tree
+- Move DMA coherent mask to all MFD PMICs (André Draszik)
+- Modify pointer names for flash/RGB drivers (Lee Jones)
+- Use 100-char line wrap for flash/RGB drivers (Lee Jones)
+- Revamp LED device initialization in flash driver (Lee Jones)
+- Add proper USB 2.0 support in charger driver (Łukasz Lebiedziński)
+- Link to v3: https://lore.kernel.org/r/20260225-s2mu005-pmic-v3-0-b4afee947603@disroot.org
+
+Changes in v3:
+- Remove "extcon" text from dt-bindings documentation (Rob Herring)
+- Add connector for MUIC node
+- Fix dt binding errors reported by robh's bot
+- Fix kernel test robot const errors 
+- Remove FIELD_PREP() values in register header file (André Draszik)
+- Add max_register, volatile_reg, cache_type (André Draszik)
+- Redo [v2 07/12] to NOT store the PMIC revision (André Draszik)
+- Add a commit to fix DMA coherent mask in I2C PMICs
+- Implement various flow changes in flash LED driver (André Draszik)
+- Use device_for_each_child_node_scoped() (André Draszik)
+- Fix CFI panic in devm_add_action_or_reset()
+- Link to v2: https://lore.kernel.org/r/20260126-s2mu005-pmic-v2-0-78f1a75f547a@disroot.org
+
+Changes in v2:
+- Drop [v1 06/13], instead use regmap_irq_chip::get_irq_regs() 
+- Remove references to driver in devicetree commits (Conor Dooley)
+- Propagate errors of sec_pmic_store_rev() (André Draszik)
+- Fix documentation language errors (Randy Dunlap)
+- Link to v1: https://lore.kernel.org/r/20251114-s2mu005-pmic-v1-0-9e3184d3a0c9@disroot.org
+
+To: Lee Jones <lee@kernel.org>
+To: Pavel Machek <pavel@kernel.org>
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Kaustabh Chakraborty <kauschluss@disroot.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+To: André Draszik <andre.draszik@linaro.org>
+To: Nam Tran <trannamatk@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+To: Shuah Khan <skhan@linuxfoundation.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-leds@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+
+---
+Kaustabh Chakraborty (11):
+      dt-bindings: leds: document Samsung S2M series PMIC flash LED device
+      dt-bindings: extcon: document Samsung S2M series PMIC extcon device
+      dt-bindings: mfd: add documentation for S2MU005 PMIC
+      mfd: sec: add support for S2MU005 PMIC
+      mfd: sec: set DMA coherent mask
+      mfd: sec: resolve PMIC revision in S2MU005
+      leds: flash: add support for Samsung S2M series PMIC flash LED device
+      leds: rgb: add support for Samsung S2M series PMIC RGB LED device
+      Documentation: leds: document pattern behavior of Samsung S2M series PMIC RGB LEDs
+      extcon: add support for Samsung S2M series PMIC extcon devices
+      power: supply: add support for Samsung S2M series PMIC charger device
+
+ .../bindings/extcon/samsung,s2mu005-muic.yaml      |  40 ++
+ .../bindings/leds/samsung,s2mu005-flash.yaml       |  52 +++
+ .../bindings/mfd/samsung,s2mu005-pmic.yaml         | 120 ++++++
+ Documentation/leds/index.rst                       |   1 +
+ Documentation/leds/leds-s2m-rgb.rst                |  60 +++
+ drivers/extcon/Kconfig                             |  10 +
+ drivers/extcon/Makefile                            |   1 +
+ drivers/extcon/extcon-s2m.c                        | 345 +++++++++++++++++
+ drivers/leds/flash/Kconfig                         |  12 +
+ drivers/leds/flash/Makefile                        |   1 +
+ drivers/leds/flash/leds-s2m-flash.c                | 352 +++++++++++++++++
+ drivers/leds/rgb/Kconfig                           |  11 +
+ drivers/leds/rgb/Makefile                          |   1 +
+ drivers/leds/rgb/leds-s2m-rgb.c                    | 416 +++++++++++++++++++++
+ drivers/mfd/sec-common.c                           |  37 +-
+ drivers/mfd/sec-i2c.c                              |  29 ++
+ drivers/mfd/sec-irq.c                              |  74 ++++
+ drivers/power/supply/Kconfig                       |  11 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/s2m-charger.c                 | 299 +++++++++++++++
+ include/linux/mfd/samsung/core.h                   |   1 +
+ include/linux/mfd/samsung/irq.h                    |  66 ++++
+ include/linux/mfd/samsung/s2mu005.h                | 332 ++++++++++++++++
+ 23 files changed, 2266 insertions(+), 6 deletions(-)
+---
+base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
+change-id: 20251112-s2mu005-pmic-0c67fa6bac3c
+
+Best regards,
+--  
+Kaustabh Chakraborty <kauschluss@disroot.org>
+
