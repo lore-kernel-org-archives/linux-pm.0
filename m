@@ -1,157 +1,164 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E17F73E00B4
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 15:40:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5231D3F58D3
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 15:41:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778859609; cv=none; b=KJztsXDqO8k7rIhk+9TQtkA/nBVLCinDWA+s1LzJshT83hYC5h1ObIDtDhJItRTHnbK6huFCYtzqHWC08TseNOEfrx7Sx2vBhIjFYR//GUhH2SAd4uM79WUyJ8tuUABd4LpCQ4rUeKua7RvyDv603wxNLjOioIrLPYw/FUizsEE=
+	t=1778859696; cv=none; b=RxdInD1Lr9SlcZYPKvodmmkR0FolRULXQVrD3gKhKJDxhY/5gHMxb0k4F7WlRvEbIDnRLNFLTC+UqEwzHEM4nWhV9wjghpL+KNqBNCE3M8fMWSX7gd0LjdXwKQThOjkTzx8OSafWo5W7+IwPlD4w7Z04JHSi1fHMOjxDinSeZMQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778859609; c=relaxed/simple;
-	bh=nSQhZQ6tGlBOmtUdwr13VWi2FIFZQeS4gjHokci/kyc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PSQ77ozKABGhJaiksu4/lnsyB6Wx7KZPIHiryyfY9umSsRODlLJE9KLno4s1B2sO4Q8f39/WMCnv2XIyHF1++ysRs3q1UjcqNlHlYct9A61SaABYTKaBkXse0RzmfIHpwriVuKDwwsmIbqQIhpT4qtuc6EtW2YPx/mG3R7duOAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.218.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-bd4f8260e4eso387506266b.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 08:40:05 -0700 (PDT)
+	s=arc-20240116; t=1778859696; c=relaxed/simple;
+	bh=Pc3MpCtVK8p6OudMDqnhjwapWxM0T8CO+YFnhbV1T6I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YBSncT/1uqL9NkcGWo9tU7MqnN1V5WGdOzlIodboJRImHqf8HZndnRxFCT7V9NnL5e7w0QEYuowCd3+T2dESX9swNMa+z4ASX/gL0grzwh61Ye1LJHWwLKWEM6AVA6c9Mrw9dxl6u2WsgKIuyc3bLyrBYpaK9J0ZcyZYC6gQU68=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=VIadg89s; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=XI/ZNVF8; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="VIadg89s";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="XI/ZNVF8"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64FBQF3f4022631
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 15:41:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=48QgJCSDGrxZEEMu60fAJNCo
+	YBZQJr3kDDsz/0EEYCc=; b=VIadg89sDaZvWClueo52v1sDS1B/qTeTPu3I8+xq
+	+s/bqhRXAb5w1C4wkhNEn34mfKed25guHcntxkeO0pduG/MoaWA9I9x/7l8jDC0k
+	vU5XBfJI9CZPjB1EuDsWhcNxP/XQI7IYGiKe/QaqhVmcFBJ7aqtWAhrfmoPV0Hl3
+	5HDE9Z8kdazyRMV11Ifumjyr9HYYY90gm9y/jdFI97gDG8QA8HW2x04tityde85h
+	CYqSpRrNz8qWSf4aV7MO2MXW+mQrKQwW/Pt9/0xU5DNzh3MZFKm25+2atgUNyev/
+	HnQB3ojb0tOelxpO5NgTLLoksTYR42yIGmqxkFK3CcZnyw==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e5m1ruv27-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 15:41:28 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82fa7c6699fso12148829b3a.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 08:41:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778859688; x=1779464488; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=48QgJCSDGrxZEEMu60fAJNCoYBZQJr3kDDsz/0EEYCc=;
+        b=XI/ZNVF84nrZAKcRgX8L0pw/ZhBrb9nZQW2EQJb9/YeXNbu1asTxQ+W0m/ZWOow+tX
+         hj1bCTApP7OWJ8iAEmUNs+4sPeFug9/98ORqW9d56sK8FM0Nmm8GeccSHhIW+LpzsCM5
+         EjTlLG/HwLGFUQCpQ/8/gcFGdYLzPNVQm3QkBzpWgtBI7C0QTah6DJoCFiQ6/+yRb/p6
+         OK2qfIMvYk414Gb6sUwVKOAsKrQ8d6GpjORw/qofvkL5m7k0c7WzFoc1IWbdYnlHxsTv
+         S5xpjtnW8Kzhe/DBTni+8MWwtkOQ/9F405Ob8jpniZIVs80ywcij9mKTkmzirDWWyjY9
+         jUyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778859604; x=1779464404;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=qkAu8P10dwihkNM39UctSZpVluViyWa9thhV649dqfg=;
-        b=qxh1AV4zuyl5/fZd1mEYayW10MC02Zr0pzDhi2dC+nTUtyF41+Y90bhn7m6Qq20joP
-         GZHm+q5TzeQJL0hzCsXMnx7ucWlhITk19KKP3qQsWyO2k1PQ96LtWvH3SqtxsIH1Min1
-         5DxFHN73XWWaGizzGrjTcx/k6LIaPHFF3jtvfRueSAQN0ivIO4t0pXmalLhPB3PK/ruf
-         j4bdbDK7FQQWOxlHZMlZP4IZ7JfaqSeYyD0CQq4WVuI74F5Kc2IQHl5qsoxu86eaZf+3
-         uJN61dLCH6cE+6Tu0kcWcOiLsXJu66tE6RmPWi13XQd/c2FLVxxW49ephXEI3vWxH5aC
-         OHjw==
-X-Forwarded-Encrypted: i=1; AFNElJ/6MD+EA8L0/pb3wyDyxSPeGztoN2ulPcty3F0bYUgYvk45hF1fQcrbhWJDu/ebefIPeicq3NqkWA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyUPElTtemx4kYQcNV6rzHfRnQTXCv2dEA5er5B7onsL0yI5HEe
-	ETkkrBYUS0m9nIIl28BR4Mn3FlQyVHZXzDQZZvyvvJT30gh05VKgJuiQ7c6s14CHjrE=
-X-Gm-Gg: Acq92OF2azmFLiRITEmG9z8YLrtlIsilCV/hyIsP2GHC6oj+i47w9qAEcrOrXbqu1NW
-	dTADs1Bod+f8y/fHAS2WYxifRmWKFfsLFJO/PIcPsNULAXz7/AT5B32INOlut31hPP70HA92kWX
-	cOslGUNmEkvKmgcJG1hbk9FWrBehJ+vnJscbGPqWy9IPmvLn9YqjVkeqczfAqi6aktDiGHLmD14
-	Cajx/rAonz3iWq8jRfJ2eCTNpImMydSakPBdqPH7FIeBm60xFm4A5ssJNYusLghbY/dZhlNC/zu
-	XAxtTIo/nYQMzsZZJKwVJGX4zr9hxHvgZ/edST/vqEF/yxrY4DBTV9ND0veBQFKWvM06qzh/7oy
-	JbhGc40y97mfiHdlx8Ei4Y7DoVuw8iImdNP4P0Ut1YZpWumyRUBcIdsVPRUfJO9G9vjV4uOQRcX
-	bJsPG5JZnXvRdwVT7tf8L4awMibQeAnImFOfeRNacNqG4ySItxxN54yQhe6f2iS1RMgr9nPtk=
-X-Received: by 2002:a17:906:f581:b0:bd4:8b66:c375 with SMTP id a640c23a62f3a-bd5177d0c3cmr248209866b.18.1778859603579;
-        Fri, 15 May 2026 08:40:03 -0700 (PDT)
-Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com. [209.85.208.53])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bd4f4c23feasm250305166b.14.2026.05.15.08.40.02
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 15 May 2026 08:40:03 -0700 (PDT)
-Received: by mail-ed1-f53.google.com with SMTP id 4fb4d7f45d1cf-67c2b4809baso18718656a12.3
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 08:40:02 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9vtUvSa7wvUpX/4xoUmcPgNUVca6ZDubmDcpX/8mQd2N6dKOOguo7gsYpKOHYZvFnTfX582hYmnQ==@vger.kernel.org
-X-Received: by 2002:a05:6402:e0d:b0:684:44f:d859 with SMTP id
- 4fb4d7f45d1cf-684044fdae7mr1374876a12.3.1778859601770; Fri, 15 May 2026
- 08:40:01 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778859688; x=1779464488;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=48QgJCSDGrxZEEMu60fAJNCoYBZQJr3kDDsz/0EEYCc=;
+        b=HpDGqednPFNl0D86x+FQhzlj0kIBIVt2so91ezCdyoORmLF9tp7bczm1y+miHA8OoG
+         aonZSdTAES1aHQNUQsNWHFFH62gXfHx4sMgFJCtcG8IIQLWABBYWoGsA/kPt345FHt7j
+         dQL7a7f1AaLGt16ejgut74+mc44eW8mlcpwhRb51vkGqo7uck5DCBufeua4EpQ9bTWmh
+         Eun5GhdwK0LKsB5vVnT4nKuJiRzXHovKhetA1SRow+dq2Ggd8idIacYaFBtR5HkSbsGM
+         71fvPP0/5VAux20RsXCrcm7GRzTE8JLbUF5WQaUEGUWNObRsRth/GgQbsQstPyvOtt8s
+         EBYA==
+X-Forwarded-Encrypted: i=1; AFNElJ/2tO9N8qazmYoRqhyR/tGL1i69RGTcbKgadjZE1/Lv364J8tULlf1Bgx619b3+ar+Cf3vzV++62g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyMeje1HAr54zsTwn/j+F6x8ZK9P3rQSWLsadLeQYPg+WReUOo8
+	gQ6pWbBZWaL7obNd52yMRrG6HOlJVTzirVGw55OrQYVgopJz8/iY4jBkP0rymzy9vMowrIBLBkV
+	c/Pi34Ubh/GDvWXEqXf9sAo45QbEZSNUnPZDGuzIQMK5IW8ZY5FpX92iEPSomUIggb3JASA==
+X-Gm-Gg: Acq92OGGv8iHfhf8PvUgDlMGosOSOaC0ohXxwpvAk0MnAXYgFjhI+MmGFFJXT6w9kAq
+	D5uSHBEVZJTtBuHFZssUxF4P6ax0loHdXaGwGC21jgu+Snhh94h4/xqWs5VNcQWVelzK/vk19H/
+	Grvyc5BLANPhNzZy2TPkmrf/D1E8wC+H5XZxI2LXyh2cMAZSWkRAMJQsNKAsjeSfBH1dfsOX4A3
+	q0YrvzXMg4XGBVttV7Pt7leRFwWz1xGxE7s+lLIA6Npw88X8Esxxj7LTK4MVi59OKOF/WzsTPqF
+	yVRx7kRaEK1SCsPc00LmA7Wn86+AZFHfsS9gjbtCV5WV5JE9zWfuj/TxLsWVjmYqdlATHYthvib
+	DV3pmq+/l+H9LsLARt+LKRJFTPCOoLSs6pbsHc7Wc6vI3F8dFNzKwHAr/Pg74QUoJFFJyiL1rNb
+	QkLBdqSjGsqnXPKlPgpBzdkO3tJWYD+VzXLyN1dYtd1rFxTSC5Up8=
+X-Received: by 2002:a05:6a00:3e22:b0:839:dd77:3501 with SMTP id d2e1a72fcca58-83f33c33546mr4982590b3a.1.1778859687689;
+        Fri, 15 May 2026 08:41:27 -0700 (PDT)
+X-Received: by 2002:a05:6a00:3e22:b0:839:dd77:3501 with SMTP id d2e1a72fcca58-83f33c33546mr4982557b3a.1.1778859687257;
+        Fri, 15 May 2026 08:41:27 -0700 (PDT)
+Received: from hu-varada-blr.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com. [103.229.18.19])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f19c5c39esm7532977b3a.36.2026.05.15.08.41.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 May 2026 08:41:26 -0700 (PDT)
+Date: Fri, 15 May 2026 21:11:19 +0530
+From: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
+        Konrad Dybcio <konradybcio@kernel.org>, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH 2/3] clk: qcom: ipq5210: Use icc-clk for enabling NoC
+ related clocks
+Message-ID: <agc+n28PfkrxwpuJ@hu-varada-blr.qualcomm.com>
+References: <20260514-icc-ipq5210-v1-0-b5070dfbe460@oss.qualcomm.com>
+ <20260514-icc-ipq5210-v1-2-b5070dfbe460@oss.qualcomm.com>
+ <5zdmbj56ndi7nrvdqadinrf3sneywft3uaplnoxugp5zetsfbj@5hazmuzyfz7u>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1776793163.git.geert+renesas@glider.be> <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
- <aekXUvIPb8nkhdKu@pluto>
-In-Reply-To: <aekXUvIPb8nkhdKu@pluto>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 15 May 2026 17:39:45 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdX8b9C3D8fV5th6GCgs6JAq7HZbF_SrOKz_gDy2H8ksow@mail.gmail.com>
-X-Gm-Features: AVHnY4L73EskDuVnlvp0bKAJEo06GxthEmZ8mwHk1YJIsXaKqejpar7GeFZqJcE
-Message-ID: <CAMuHMdX8b9C3D8fV5th6GCgs6JAq7HZbF_SrOKz_gDy2H8ksow@mail.gmail.com>
-Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
-To: Cristian Marussi <cristian.marussi@arm.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	Saravana Kannan <saravanak@kernel.org>, Michael Turquette <mturquette@baylibre.com>, 
-	Stephen Boyd <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@baylibre.com>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5zdmbj56ndi7nrvdqadinrf3sneywft3uaplnoxugp5zetsfbj@5hazmuzyfz7u>
+X-Proofpoint-GUID: RvJjMdFdeKZZbk_PhiTrT6JPIsNtK2Bf
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE1MDE2MCBTYWx0ZWRfX7DK0E9ACMkeU
+ oOxO6AaTtq1jsfxaU+KzmJUStsXffAuQ1HaOioJ06mw70B9X9h0Akn8fFp7M6qAOAu8o+rb66Se
+ Pa4IEzPkLcXX5xu1ryhKYnJ8n4/KWA6AB8n02ZL74zPXWdNZ66hBn5axlRlO/UUXaLT5uo9FgKQ
+ bVXzq+C80aEU1J40r6RCucFO9hgGq2p+OBNbLOO5/ghzDXi8XUJES9BO58pxbkDP+O14BjloC/t
+ LlBryFND3DS0PM7ae1TPOWk0zX7oa2ZoszK2LSvUqjJXkMB/NAd1MCXMeWnZMEchyPVWkflFrGK
+ jr38axLNfHLupvSJZsXF86OMb4h4is+5eOqI/acaTisAvHTuYrmXBoW+LX9d4RpKddZFhP30vI5
+ m2J6d1Yl50t50AAYj0HJ+tbaNe0sNZk+D4JigsK9r5fLTN+abH3MQD5vU2uDiWDJmyeBKIBaG2F
+ lGdwWGgR8wwRqbmIJYg==
+X-Proofpoint-ORIG-GUID: RvJjMdFdeKZZbk_PhiTrT6JPIsNtK2Bf
+X-Authority-Analysis: v=2.4 cv=JPELdcKb c=1 sm=1 tr=0 ts=6a073ea8 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=EUspDBNiAAAA:8 a=jBAFZfc0v9Tf_D0DgaEA:9 a=CjuIK1q_8ugA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-15_03,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 clxscore=1015 phishscore=0 priorityscore=1501 spamscore=0
+ malwarescore=0 suspectscore=0 impostorscore=0 adultscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605150160
 
-Hi Christian,
-
-On Wed, 22 Apr 2026 at 20:45, Cristian Marussi <cristian.marussi@arm.com> wrote:
-> On Tue, Apr 21, 2026 at 08:11:38PM +0200, Geert Uytterhoeven wrote:
-> > Currently non-SCMI drivers cannot find out what the specific versions of
-> > each SCMI provider implementation on the running system are.
+On Fri, May 15, 2026 at 04:31:42PM +0300, Dmitry Baryshkov wrote:
+> On Thu, May 14, 2026 at 09:35:36AM +0530, Varadarajan Narayanan wrote:
+> > Use the icc-clk framework to enable few clocks to be able to
+> > create paths and use the peripherals connected on those NoCs.
+> >
+> > Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
+> > ---
+> >  drivers/clk/qcom/gcc-ipq5210.c | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> >
+> > @@ -2642,6 +2657,7 @@ static struct platform_driver gcc_ipq5210_driver = {
+> >  	.driver = {
+> >  		.name   = "qcom,gcc-ipq5210",
+> >  		.of_match_table = gcc_ipq5210_match_table,
+> > +		.sync_state = icc_sync_state,
 >
-> Thanks for your patches....this is not a proper full review of the series,
-> BUT this patch catched my eye..
+> in Kconfig:
 >
-> Indeed, yes, it is deliberate that the SCMI version information is NOT
-> exposed out of the SCMI world, since being the SCMI an attempt to
-> standardize a common FW interface (as in [1] of course), you should not
-> know what runs inside the black-box, it should be irrelevant...
+> select INTERCONNECT
 >
-> ...indeed the versioning is used inside the SCMI stack to deal properly
-> with different protocol versions implemented by the server OR to apply
-> proper quirks when needed, but all the rest should be standard....
+> OR
+>
+> depends on INTERCONNECT
 
-[...]
+In drivers/clk/qcom/Kconfig, IPQ_GCC_5210 can be selected only if
+COMMON_CLK_QCOM is enabled. COMMON_CLK_QCOM selects both
+INTERCONNECT and INTERCONNECT_CLK.
 
-> I watched a bit of the LPC discussions around this (from Marek I think)
-> but sincerely most of those problems had one (not necessarily simple)
-> solution: fix your firmwares AND/OR apply quirks in the meantime...
+Is select (or) depends INTERCONNECT still needed for IPQ_GCC_5210.
+Please let me know.
 
-So let's forward to the future, where the firmware is fixed, is fully
-compliant with the SCMI spec, and all IDs are stable, so no quirks are
-needed.
-
-Where do we specify the SCMI IDs to use?  Unless when using the
-remapping driver proposed in this patch series, they must end up in the
-DTB.  Existing upstream users put them either in the SoC-specific .dtsi,
-or in board-specific .dts.
-
-The SCMI server is supposed to expose to an agent (e.g. Linux) a
-sequential and contiguous list of IDs that represent only resources that
-the agent is allowed to use.
-  - We cannot put the SCMI IDs in the SoC-specific .dtsi, as that
-    describes all hardware in the SoC, which is typically much more than
-    Linux can or even wants to use when running on a specific board.
-  - You would think we could put the SCMI IDs in the board-specific
-    .dts.  However, that would limit actual use cases later, which do
-    not necessarily depend on the board solely.
-      - E.g. when moving control of the CAN-FD controller from Linux to
-        the Realtime OS, the CAN-FD node must be disabled in the DTB (by
-        overriding status to "reserved", or by just deleting the CAN-FD
-        node, both of which can be done by the boot loader). However,
-        with SCMI, the IDs corresponding to CAN-FD resources must be
-        removed from the ID space, causing a full renumbering. Who is
-        supposed to update the IDs in the DTB?
-      - E.g. when partitioning a single Linux system in multiple VMs,
-        and distributing hardware across these VMs, all VMs need
-        different DTBs, each describing a subset of the hardware.  With
-        SCMI, each VM needs different SCMI ID spaces, causing not a
-        simple partitioning of the devices in the DTB, but also a
-        renumbering of all IDs.
-
-Hence there are no stable SCMI IDs in DT, by design!
-And what do we describe in the SoC-specific .dtsi?  E.g. U-Boot IPL
-still needs real hardware description.
-
-What is the stance on this from the DT maintainers?
-Thanks a lot for your answers!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks
+Varada
