@@ -1,131 +1,117 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99F41449EB6;
-	Fri, 15 May 2026 13:55:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0400382F28
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 13:59:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778853302; cv=none; b=lP+Umx6Y/7cf066N5eErkujGInrDxG8CAKwaf4dQaVmADbqO5vKy4O9mvDksK+MnUKoGQ8kX9HnTEFFubakE4/qgtRLmhTPPk5JI7ravRSMWPNTiYNA0QMaa7Mi/R3/GSpygPAP2icVdhN2S37HHsRRyFvKu/vgG1nf3LmnrCLc=
+	t=1778853569; cv=none; b=Xm3ypZb9q4qreO6d9NQ1+1wTik8svxxPWWnvudi7YsiA6wtTGw+YWrJe3Y05ch4pXTrV7cQOqblsAhnklMgeLHt1w7y5Td1Uxy0sZeYAWVPGvW2sXoM1Tv6sHom49ycmBLuIPZDisy4YlZhZEiSeBXpnkhqU1LiZS7NZr+wv7ZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778853302; c=relaxed/simple;
-	bh=YEw8QsNbTR0Bjj5KFEn2xnY8kv81Y3WRy0+A343Zzdw=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=e1tbh2sZO5BTslv3PvYxR7OceuziVAQZDPAXxFzfc0Zi+toAQO8A/xVcgf2p9ULLVwmTv2qw4boSXOznYYdauu6Ee7Gbn1LuVQgi4xPqi5ZZL2zcJD7px4JB/yb2vFpxmybBj7jbppkvflnbNT9n034RpT4xk/nlSVcoWk4kfEM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l/fRDR4U; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778853569; c=relaxed/simple;
+	bh=U6edhbWh87RxESbg8eIhij7NfrChti3tTebLnBZL1n8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GFLZ7mtvKPhyNBC4tSU420Sc9zvkPKwUS0RQkzFBQIxVE2eLqlB4OYWVOYdlZ+bIEeiD+eoCengiFdPg86JdyERy1V6qSGyGCxM//I/Br91UnM8RElic0BsFFWnBC3TVPdl6zP/Ec2vk5PccRaiU0BAYzqAjjjCI3bO0iQbOvvM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org; spf=pass smtp.mailfrom=bitbyteword.org; dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b=tVsz3RNu; arc=none smtp.client-ip=209.85.222.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bitbyteword.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bitbyteword.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l/fRDR4U"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54994C2BCB0;
-	Fri, 15 May 2026 13:54:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778853302;
-	bh=YEw8QsNbTR0Bjj5KFEn2xnY8kv81Y3WRy0+A343Zzdw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=l/fRDR4UWYXrQmT8brio4XNBW6Hu3zhuxgNUUKbDQ8EM5WB6hbmxI3bKQcPClBpu+
-	 dQ7GXzFaNFSo2IQ5eaN/yavI7W5WnDBU5ssi84pMsG/ixUOtSgPy3k+vrFeD3FL9Zt
-	 zTu3XlmdN28F2n5hRLIf+Rxa8Ls2KBL7K+/46yTp3PfKJAsbuvE0hT2HzQKQAdhH7m
-	 MSnd6fW4lK7/NbjQYyefHh6YtgnVJ1U12JUo4IThuD1goIYW4NMU2XsmPCtOtm6iTX
-	 GLMYXGZ0GCHWkFcbEsBtdfzYMuaEbHsj21SMG60dJJtVXnozdj+UKQDWO2y87tpGfC
-	 gFPHyZg69X/3A==
-Date: Fri, 15 May 2026 14:54:50 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Amit Kucheria
- <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
- <kamal.wadhwa@oss.qualcomm.com>, David Collins
- <david.collins@oss.qualcomm.com>, Anjelique Melendez
- <anjelique.melendez@oss.qualcomm.com>, Neil Armstrong
- <neil.armstrong@linaro.org>, Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ with
- ADC_TM auxiliary driver
-Message-ID: <20260515145450.3b1e9c3d@jic23-huawei>
-In-Reply-To: <20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
-References: <20260515-gen3_adc_tm-v1-0-39ba29f9b4ab@oss.qualcomm.com>
-	<20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=bitbyteword.org header.i=@bitbyteword.org header.b="tVsz3RNu"
+Received: by mail-qk1-f176.google.com with SMTP id af79cd13be357-912575fa768so100132485a.2
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 06:59:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bitbyteword.org; s=google; t=1778853567; x=1779458367; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=s/RNSJDlIzgHrmpqUt03igCYrU2Quge26dPpYnyZoWQ=;
+        b=tVsz3RNuz4mNpHK5dwu05b9eZRuBcBofhS8gDICoN8sUgmsktPRqCiZNMSwS2Yqhd2
+         XtJ1I2ZAU491xmDg6g8Zwwtwm4ilUyHiVs8P0E0GzvTW7QpadXJGD2hqV/fXPVk/o86N
+         tFNEkZ/xMixCK7O/02hn7UKUGq1f+bMPCHI3nw3GKJasF27PHhtnRrKc7Pc/VnTbWhdo
+         L8q+hajR29mlartN17rHfkRDe2Qdhvqk9cOFR0Qfy9qSjzl/Em6XKIQZxl5EBV4lOweH
+         7Lx93V8PXPPxy+f3t2yhgGgv4m3A5CzZkyXuEGnFIgBRoeT2BK+iFBTc9wRO3VJmn/HW
+         o09g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778853567; x=1779458367;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=s/RNSJDlIzgHrmpqUt03igCYrU2Quge26dPpYnyZoWQ=;
+        b=bbW7dkL0xpuPgdUpD9ClI75cWhuBJKsC/JBPm9MFCP3GkOhwwv+Plz/zd/dP/COdw2
+         MCSb9no2A/mlGy9Zw/74bbzHayHsfaa9FttTxPEcxpEaohW92jgZu3oIEDDrSVnhVtV7
+         zYeZvtBlvkVYkJ0FS5suO2FiC6CwJ6pT5IdSRTMc6rf3k1fV8XqYCeGWwJEVn4rGRPtJ
+         2NBVv4Ysh35encsQPEGpGBTr/YlRKlacYhXlL7X3QvpxKJPyDhM+iv3BnDsicEr3mpCZ
+         RljqO0dMHtroeQ2B3SgNF6padTp2QMH6TAPS1svbDLgDBApt3LK0K+qtzrKSnidt2lzS
+         ZSCA==
+X-Gm-Message-State: AOJu0YxlgBvG8rkE+oFwVff+QOLvSos6DbpU8WjSDThsZut2K9uRryg6
+	RyLkS+9Eo8dqycaCWHyMJxRDSp79XQXmgEjsBmZmMPQlLPz71f2z49yncy4iaC0la/Q=
+X-Gm-Gg: Acq92OHfIaNXXbB4PiGVQFgAdDMLVfez2yy68KW8MXBPMBXJul9Dv3hC8edIPKj1B4V
+	osyGUfv7lVXJ/LORHZEMS1s4/FTIpd2s8AtOqJhE7ld4r+cdMmVQ09rb5T9tQn3SKOJVeM83co9
+	AD/g/Os2O5/LH2NEgX7zeH6hdKBnnt49rWgf+e6XKQF0f1XtGPXLh6wb/C3GRsP7CPzjxqRMiuo
+	Jfryhle1CUzxKp1wqW62m34FGRLT9gEhpWfginPpDrn3YqUs8gOzeDdYOx9s35c/Z0ZC4qLM8IS
+	q6z0prTAtdl9WjPxg4qMA6uOiRLevzU4ujC/oLyCEQ0XfljJxr5GkltRVv8Vty4ZDtskE4IPlui
+	a35jtrrrlZxnw4eO9Xc5h1nf0EQ12BvaJgUQ7KnX3zYier5MbXUFKJ2iGBd0QKoZyuYdkbtV2/M
+	hKOk8rDAxY1FXq5bir6d+nu8z5WOh1
+X-Received: by 2002:a05:620a:45a9:b0:910:87f4:9a26 with SMTP id af79cd13be357-911cde539fbmr690372785a.41.1778853566881;
+        Fri, 15 May 2026 06:59:26 -0700 (PDT)
+Received: from vinp2.lan ([2607:fb92:1900:6734:902:ab48:6190:9c1e])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-8c90874e5e4sm53146416d6.6.2026.05.15.06.59.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 15 May 2026 06:59:26 -0700 (PDT)
+From: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>,
+	Kyungmin Park <kyungmin.park@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>,
+	linux-trace-kernel@vger.kernel.org,
+	Vineeth Pillai <vineeth@bitbyteword.org>,
+	Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH v3 04/11] devfreq: Use trace_call__##name() at guarded tracepoint call sites
+Date: Fri, 15 May 2026 09:59:20 -0400
+Message-ID: <20260515135920.2238808-1-vineeth@bitbyteword.org>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Fri, 15 May 2026 14:23:44 +0530
-Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+From: Vineeth Pillai <vineeth@bitbyteword.org>
 
-> The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
-> immediate ADC reads done in this driver and for threshold violation events,
-> based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
-> TM channels on the first SDAM.
-> 
-> At present, this interrupt is handled only in the ISR in the main ADC driver.
-> When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
-> driver by calling a notifier callback exposed from it for this purpose.
-> 
-> To simplify the interrupt handling in both drivers, share the interrupt between
-> the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
-> the ADC_TM driver, so remove the notifier callback and all TM interrupt
-> handling in the main ADC ISR.
-> 
-> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-> ---
+Replace trace_foo() with the new trace_call__foo() at sites already
+guarded by trace_foo_enabled(), avoiding a redundant
+static_branch_unlikely() re-evaluation inside the tracepoint.
+trace_call__foo() calls the tracepoint callbacks directly without
+utilizing the static branch again.
 
-Some stuff from Sashiko on this one:
-https://sashiko.dev/#/patchset/20260515-gen3_adc_tm-v1-0-39ba29f9b4ab%40oss.qualcomm.com
+Original v2 series:
+https://lore.kernel.org/linux-trace-kernel/20260323160052.17528-1-vineeth@bitbyteword.org/
 
-Given I assume you didn't see the warning (I'm fairly sure the bots analysis is correct
-as we've been busy fixing similar cases all cycle), can I just check, have you tested
-this on latest upstream?
+Parts of the original v2 series have already been merged in mainline.
+This patch is being reposted as a follow-up cleanup for the remaining
+unmerged pieces.
 
-Thanks,
+Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
+Assisted-by: Claude:claude-sonnet-4-6
+---
+ drivers/devfreq/devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Jonathan
-
-
->  drivers/iio/adc/qcom-spmi-adc5-gen3.c         | 52 +++++----------------------
->  include/linux/iio/adc/qcom-adc5-gen3-common.h |  2 --
->  2 files changed, 8 insertions(+), 46 deletions(-)
-> 
-> diff --git a/drivers/iio/adc/qcom-spmi-adc5-gen3.c b/drivers/iio/adc/qcom-spmi-adc5-gen3.c
-> index f8168a14b907..a819c3e627a0 100644
-> --- a/drivers/iio/adc/qcom-spmi-adc5-gen3.c
-> +++ b/drivers/iio/adc/qcom-spmi-adc5-gen3.c
-
->  static int adc5_gen3_probe(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
-> @@ -818,7 +782,7 @@ static int adc5_gen3_probe(struct platform_device *pdev)
->  	}
->  
->  	ret = devm_request_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
-> -			       adc5_gen3_isr, 0,
-> +			       adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,
-
-Sashikio points out that IRQF_ONESHOT is never correct for a non threaded
-interrupt.  The point of that flag is to ensure we don't handle another interrupt
-until the thread is done. If there isn't a thread then it doesn't do anything
-(other than omit a warning!)
-
->  			       adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
->  			       adc);
->  	if (ret)
-> diff --git a/include/linux/iio/adc/qcom-adc5-gen3-common.h b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> index 6303eaa6640b..39cbfcbdb101 100644
-> --- a/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> +++ b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> @@ -205,7 +205,5 @@ int adc5_gen3_get_scaled_reading(struct device *dev,
->  int adc5_gen3_therm_code_to_temp(struct device *dev,
->  				 struct adc5_channel_common_prop *common_props,
->  				 u16 code, int *val);
-> -void adc5_gen3_register_tm_event_notifier(struct device *dev,
-> -					  void (*handler)(struct auxiliary_device *));
->  
->  #endif /* QCOM_ADC5_GEN3_COMMON_H */
-> 
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 82dd9a43dc62..9f71d9dc4a70 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -370,7 +370,7 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 	 * change order of between devfreq device and passive devfreq device.
+ 	 */
+ 	if (trace_devfreq_frequency_enabled() && new_freq != cur_freq)
+-		trace_devfreq_frequency(devfreq, new_freq, cur_freq);
++		trace_call__devfreq_frequency(devfreq, new_freq, cur_freq);
+ 
+ 	freqs.new = new_freq;
+ 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+-- 
+2.54.0
 
