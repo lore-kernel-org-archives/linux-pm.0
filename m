@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A44F736405F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF00366830;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778824257; cv=none; b=k/40flXrfj/UqbZKHKbsZ42awPmoDlp8PMU3fE5mQP0Pg9G+y2nGI7jVQvJ1mkCRjwUOBz9+YiS9MJNyq19dVccS5gaYiUIIbhIdigkcHqz5J7Ue/s03Ud4IbxW1HoU3CxAtEQgklw3KoecBd1RQyR/0l7vCb0X8EUr4+z3MMHc=
+	t=1778824257; cv=none; b=CmdVTXdTl8/kvHU8nhRZBQnWTGM6FRW5PqByN3O9ihzV/7I+eMmVNeq3WKX3XjKNTLynQ3Ryl87leCu5vJnHC/M/N04ESInqmjU+abLSisB1swVuZrF3ol5ILf0ZSNmojyNJ9+4LVzVQx6QGU1bz60t2E/H/PyXAhxNTWdmCzOE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1778824257; c=relaxed/simple;
-	bh=lbXRCb+6WgnhUMlP2gJtywCmwUB9hvTGhwgtFvJ9Hi8=;
+	bh=v0n4iL+ec7ubF7WE3r+09txUZuNOlRfNgY9pxDWbRgY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=r+SNje1SaXvKbSkjYFhVAMsOjtuFJgV3N/h0JXek1KP7D8FDN+hX1UD7wa1t7pSkLieeRiPxo6PeDYX3yjPqEcQJeVCvjsK/aBwqC+Y8saF0snUAOawUU0GmYVUBDN4aMdNc0w9/CawZAHgyTBXD8ixJR74TA8Popzuuqd9XYLs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ffp7H76O; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=TENKpT/1cLKj8x58UvLGzRcpaglWXQWp1qLi1KSn5KOIOskMbFpUjFscJkTehWJIc3uMx6C/6nAxijAUkam7wdW0f3lrw3E8uU1/VmPJpyFZQzDakyJ0C2rPWCbYJmlFHmbzrrfYAM1sXECZDiQ6guGQeGbQkvPxZ0MFy0VBXws=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hjC6g/ue; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ffp7H76O"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5C696C2BCC7;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hjC6g/ue"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7C94DC2BCFB;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1778824257;
-	bh=lbXRCb+6WgnhUMlP2gJtywCmwUB9hvTGhwgtFvJ9Hi8=;
+	bh=v0n4iL+ec7ubF7WE3r+09txUZuNOlRfNgY9pxDWbRgY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=ffp7H76ODBCb2WaErbPAghtSz7YTm8jZSjYDSF4yhMEKvJZ5zh9bq/Ue4ZrvxG+fG
-	 zYUvQfnM93QMnBKFsC0n06sQfGIX6y09NkL7JTiSOACnMTylOOqytM/c/5hsP5EUMB
-	 b8pmROoKQtDXv03UJhRXtUjQWw2wcoma7HcqzS4/HysGryZ2MKOo4WaOJTSozGz6My
-	 7Zg0kA2IkheEr+Xxgx3FN78Od3wFz1rRZOKzbsjgL2YQCC+YCJoyLbCIaVoas4mTj0
-	 bnzB/gvie4iUU9EUVnkdKFniTI6ODLim7MeKebTepGtK8e1xe734yQ254Nkb6q4nnc
-	 bP4yVXHFYYmCQ==
+	b=hjC6g/ue5VGk+RAa2i/AZCUGdEKSMNl1UoJc9IAloUNrZ2EPx98qKWurWkR2spxYB
+	 3YBFnZDqrew8K6kX/rfmlds69+6YhcTzNZ2LoiGLomdYOktvc6O0MI3leYuDB8vTUk
+	 kS8cIuu3LhII3J5u/QPu4sWaxINSq6uw+qG1tfmkqK0m7xElyTRqHfXLMb+mgRMZlC
+	 0D/1DWNfRsyDVszpqatmTzminHVzeVe2Y1dhI/Cg6NOQE7txSCVt5bbb+ZUPm7NqBq
+	 qh0tAv/lMOveZuv0QNnv/nEwwgbYMcYkfGL1myfNrX1BUDhonbEB0vbqZZVjeX5tCQ
+	 7XEusK8P1+Gdg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B1C1CD343F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73454CD4851;
 	Fri, 15 May 2026 05:50:57 +0000 (UTC)
 From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
-Date: Fri, 15 May 2026 05:48:39 +0000
-Subject: [PATCH 1/3] power: Add power_supply_get_battery_all() to fetch
- battery psy handles
+Date: Fri, 15 May 2026 05:48:41 +0000
+Subject: [PATCH 3/3] power: supply: max17042: add handler for energy_now
+ property
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260515-batt-status-v1-1-fed6b7d8cea7@google.com>
+Message-Id: <20260515-batt-status-v1-3-fed6b7d8cea7@google.com>
 References: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
 In-Reply-To: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
 To: Sebastian Reichel <sre@kernel.org>, 
@@ -59,11 +59,11 @@ Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
  Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1778824256; l=5048;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1778824256; l=3946;
  i=amitsd@google.com; s=20241031; h=from:subject:message-id;
- bh=dFElzGvQasU7y5gAnjIepqrRB4ceeHil0GBlXrTuj7Q=;
- b=vQGrPaC36jMAjEK6RXyLkLAdq4BlXijz8krNqyDCGC+gu4Rg5eY9Kzj390Xv25deDtaiKrGo4
- 85xONKnKRd5BYcU0x+khDqfGLGToG3x6jR4l5p4wQ2C/6MRWs2HU4D2
+ bh=rZ4iAk16d2xmYX+iRg9d3aLsjlCGLdVUfG6+D9Nq6hY=;
+ b=mP5j13ZK2htM+zjnJ8ThHRPxXR/MqZXaXDsFwNM3MXuPFJnxgRn6pYa1b9P0EF0FZFZ5S6+mj
+ ATw1BO4vO+EDPgUyeEPZXs0dSzHVvnkrmOZf/gtkg+HPU+v6ig8qNHs
 X-Developer-Key: i=amitsd@google.com; a=ed25519;
  pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
 X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
@@ -73,173 +73,130 @@ Reply-To: amitsd@google.com
 
 From: Amit Sunil Dhamne <amitsd@google.com>
 
-Add power_supply_get_battery_all() to allow drivers to obtain a list of
-registered battery type power supply references in the system.
+Add handler to report power_supply_prop_energy_now so that users can get
+current SoC in uWH. Additionally, add helper functions to get avg_vcell
+and repcap values in uv and uah units respectively to avoid code
+duplication.
 
 Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
 ---
- drivers/power/supply/power_supply_core.c | 122 +++++++++++++++++++++++++++++++
- include/linux/power_supply.h             |   9 +++
- 2 files changed, 131 insertions(+)
+ drivers/power/supply/max17042_battery.c | 60 ++++++++++++++++++++++++++-------
+ 1 file changed, 47 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a446d3d086fc..697645426fb1 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -482,6 +482,128 @@ struct power_supply *power_supply_get_by_name(const char *name)
- }
- EXPORT_SYMBOL_GPL(power_supply_get_by_name);
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index 167fb3fb3732..e16eb6985b70 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -81,6 +81,7 @@ static enum power_supply_property max17042_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+ 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
++	POWER_SUPPLY_PROP_ENERGY_NOW,
+ 	POWER_SUPPLY_PROP_TEMP,
+ 	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
+ 	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+@@ -95,6 +96,36 @@ static enum power_supply_property max17042_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CURRENT_AVG,
+ };
  
-+static int __power_supply_get_num_battery(struct power_supply *epsy, void *data)
++static int max17042_get_repcap_uah(struct max17042_chip *chip, u64 *rep_cap)
 +{
-+	int *count = data;
-+
-+	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
-+		(*count)++;
-+
-+	return 0;
-+}
-+
-+static int power_supply_get_num_battery(struct device *dev)
-+{
-+	int ret, count = 0;
-+
-+	ret = power_supply_for_each_psy(&count, __power_supply_get_num_battery);
-+
-+	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
-+
-+	if (ret)
-+		return ret;
-+
-+	return count;
-+}
-+
-+struct psy_get_supplies_data {
-+	int cnt;
-+	int size;
-+	struct power_supply **psys;
-+};
-+
-+static int __power_supply_populate_battery_array(struct power_supply *epsy,
-+						 void *_data)
-+{
-+	struct psy_get_supplies_data *data = _data;
-+
-+	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY) {
-+		if (data->size <= data->cnt)
-+			return -EOVERFLOW;
-+
-+		get_device(&epsy->dev);
-+		data->psys[data->cnt] = epsy;
-+		atomic_inc(&epsy->use_cnt);
-+		data->cnt++;
-+	}
-+
-+	return 0;
-+}
-+
-+static int power_supply_populate_battery_array(struct device *dev, int size,
-+					       struct power_supply **batteries)
-+{
-+	int ret, i;
-+
-+	struct psy_get_supplies_data data = {
-+		.cnt = 0,
-+		.size = size,
-+		.psys = batteries,
-+	};
-+
-+	ret = power_supply_for_each_psy(&data, __power_supply_populate_battery_array);
-+
-+	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
-+		__func__, data.cnt, data.size, ret);
-+
-+	if (ret < 0) {
-+		for (i = 0; i < data.cnt; i++)
-+			power_supply_put(batteries[i]);
-+		return ret;
-+	}
-+
-+	return data.cnt;
-+}
-+
-+/**
-+ * power_supply_get_battery_all() - Searches for all battery type power supplies
-+ *				    and returns their references.
-+ * @dev: Pointer to device requesting the power supply refs.
-+ * @psys: Pointer to an array of power supply refs that will be filled by this
-+ *	  function.
-+ *
-+ * This function helps drivers get handles to all battery type power supplies.
-+ * If acquiring a ref to a power supply results in error, then the search for
-+ * battery type power supplies will abort and the acquired power supplies will
-+ * be "put".
-+ *
-+ * Return: Indicates the number of battery type power supplies returned on
-+ * success or the negative error code on failure.
-+ *
-+ * It's the responsibility of the caller to invoke power_supply_put() on the
-+ * individual psy refs and free the array returned by this function using kfree().
-+ */
-+int __must_check power_supply_get_battery_all(struct device *dev,
-+					      struct power_supply ***psys)
-+{
++	u32 data;
 +	int ret;
 +
-+	if (!psys)
-+		return -EINVAL;
-+
-+	ret = power_supply_get_num_battery(dev);
++	ret = regmap_read(chip->regmap, MAX17042_RepCap, &data);
 +	if (ret < 0)
 +		return ret;
 +
-+	if (!ret) {
-+		*psys = NULL;
-+		return 0;
-+	}
++	*rep_cap = data * 5000000ll;
++	*rep_cap *= chip->task_period;
++	do_div(*rep_cap, MAX17042_DEFAULT_TASK_PERIOD);
++	do_div(*rep_cap, chip->pdata->r_sns);
 +
-+	*psys = kzalloc_objs(**psys, ret);
-+	if (!*psys)
-+		return -ENOMEM;
-+
-+	ret = power_supply_populate_battery_array(dev, ret, *psys);
-+	if (ret <= 0) {
-+		kfree(*psys);
-+		*psys = NULL;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_battery_all);
-+
- /**
-  * power_supply_put() - Drop reference obtained with power_supply_get_by_name
-  * @psy: Reference to put
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 7a5e4c3242a0..2467530a5740 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -806,11 +806,20 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
- #if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern struct power_supply *power_supply_get_by_name(const char *name);
-+extern int __must_check power_supply_get_battery_all(struct device *dev,
-+						     struct power_supply ***psys);
- extern void power_supply_put(struct power_supply *psy);
- #else
- static inline void power_supply_put(struct power_supply *psy) {}
- static inline struct power_supply *power_supply_get_by_name(const char *name)
- { return NULL; }
-+static inline int __must_check power_supply_get_battery_all(struct device *dev,
-+							    struct power_supply ***psys)
-+{
-+	if (psys)
-+		*psys = NULL;
 +	return 0;
 +}
- #endif
- extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
- 							  const char *property);
++
++static int max17042_get_avgvcell_uv(struct max17042_chip *chip, u32 *vcell)
++{
++	int ret;
++
++	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, vcell);
++	if (ret < 0)
++		return ret;
++
++	*vcell = (*vcell * 625) / 8;
++
++	return 0;
++}
++
+ static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
+ {
+ 	int ret;
+@@ -180,14 +211,12 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
+ 	int temp, vavg, vbatt, ret;
+ 	u32 val;
+ 
+-	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, &val);
++	ret = max17042_get_avgvcell_uv(chip, &val);
+ 	if (ret < 0)
+ 		goto health_error;
+ 
+-	/* bits [0-3] unused */
+-	vavg = val * 625 / 8;
+ 	/* Convert to millivolts */
+-	vavg /= 1000;
++	vavg = val / 1000;
+ 
+ 	ret = regmap_read(chip->regmap, MAX17042_VCELL, &val);
+ 	if (ret < 0)
+@@ -304,11 +333,10 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = data * 625 / 8;
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+-		ret = regmap_read(map, MAX17042_AvgVCELL, &data);
++		ret = max17042_get_avgvcell_uv(chip, &data);
+ 		if (ret < 0)
+ 			return ret;
+-
+-		val->intval = data * 625 / 8;
++		val->intval = data;
+ 		break;
+ 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+ 		ret = regmap_read(map, MAX17042_OCVInternal, &data);
+@@ -350,14 +378,9 @@ static int max17042_get_property(struct power_supply *psy,
+ 		val->intval = data64;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		ret = regmap_read(map, MAX17042_RepCap, &data);
++		ret = max17042_get_repcap_uah(chip, &data64);
+ 		if (ret < 0)
+ 			return ret;
+-
+-		data64 = data * 5000000ll;
+-		data64 *= chip->task_period;
+-		do_div(data64, MAX17042_DEFAULT_TASK_PERIOD);
+-		do_div(data64, chip->pdata->r_sns);
+ 		val->intval = data64;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+@@ -370,6 +393,17 @@ static int max17042_get_property(struct power_supply *psy,
+ 		data64 = div_s64(data64, MAX17042_DEFAULT_TASK_PERIOD);
+ 		val->intval = div_s64(data64, chip->pdata->r_sns);
+ 		break;
++	case POWER_SUPPLY_PROP_ENERGY_NOW:
++		ret = max17042_get_repcap_uah(chip, &data64);
++		if (ret < 0)
++			return ret;
++
++		ret = max17042_get_avgvcell_uv(chip, &data);
++		if (ret < 0)
++			return ret;
++
++		val->intval = data64 * data / 1000000;
++		break;
+ 	case POWER_SUPPLY_PROP_TEMP:
+ 		ret = max17042_get_temperature(chip, &val->intval);
+ 		if (ret < 0)
 
 -- 
 2.54.0.563.g4f69b47b94-goog
