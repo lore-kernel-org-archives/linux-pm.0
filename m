@@ -1,162 +1,372 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013008.outbound.protection.outlook.com [40.93.196.8])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0182A2868B4;
-	Fri, 15 May 2026 05:22:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.8
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778822527; cv=fail; b=RDvfx1MbGFtVOaY/P4aQTsEIxNairmtK1h2HFkoLhxjIhHCvBIhre1Qr/z8QHRNMSoRJzLcrDCJHKyAwTWBx9tsmekpkoCSdeHi2u6uEnYpZxkYNohi2YgGNACuWok+Dj1e3DA0PRlmFZ5zSTZ+ZG96/kUf86pNtCvdkk6yy9VQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778822527; c=relaxed/simple;
-	bh=r+sODJuso5XYTMaNcgJ108f6kYMXUueLduCp3qCios8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=HDIOs6XihYmmryPliZnCLb56VED47QnPedb0GUBatW4A6AM67GB6TEwDd3+E2MFJFPbBPiCT8bfq/zlBK9ofXdcOW62cXT/aegvucYNqFrnK6vH+A376XcE0GVOZdBsJ1WTG6F33uu+BGwqbjhAxHFw5wpsGt5uQP+sPuI/uzDE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com; spf=pass smtp.mailfrom=ti.com; dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b=i6jHKnte; arc=fail smtp.client-ip=40.93.196.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ti.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A446F364025;
+	Fri, 15 May 2026 05:50:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778824257; cv=none; b=DahyfFS7WamA1PmnJScFkt/mUZc5Ks/kZbXNPQ6j7x7UWt3N0gt0VzoptAbRioXmhMU2di2kKOIHujiQlSSPmHrZCIVxjxd4WkKC9rDz/m+8vI2ezBRRKb7CEZCZaveWmb0mwGZaWTYgInICQA6zTlcGsLOaLpaBaMMO5d1aIlM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778824257; c=relaxed/simple;
+	bh=cCdb5iCvd/42l2xXrMcsmngetKkm5sLxqoOtfdNssfk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=imIIaMHyhkV4ubTWpIo494LTy4jep9MIXZNG2QswYquR6gcdaiJTaL+b5gvT3z3kcN6a/vgCrEfiiqsUtWbWnxrfWWta9ienpFFpyfsk9CRdagh/loQ9ikKGDHmjEiCOQ6XTWodZ2JmARMH62oGFrCSRgd4ITersid7qVdWJC64=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pVmtjzcE; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="i6jHKnte"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=awzBgpx2sRk89hg9ZR3cDSnS2jzOrjNc2ofeBOszYbMX3JhOKm7cVeUR/SHU17uJx1iH8OeJOu/bplq3Nr0eivoqCeY4cmDJaf4CesVs1QGhHwvSuraDGIaL3OI7mKizB7Rie6OP2Hp9Ee9tZUs7KfZDFVB6rKdmSbhImTy0CUUu6fXXvnoQCsyTCQ1LiNp+X1LIOG8spSyCisIZVnkdUCzAJYooa4Y6ZxRGnIXxIx62FZ1UTN6k5mO/ugpzfU2DGPaFFwlbhzTfWySZYyR52fdynnWDHbjDKIBaYfpLNZ2daCJVKWAgOLIhrBfd/Ihj0aenmRsjWGDj/qRbxNJqUg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=quwkjYOWK5mXLmSCOcRa7vg+tZDx2/baHWDpIeHq/j4=;
- b=hr9YT+3WrO9u7qfZKQnHRp5Gn39t5pQ0ufTbCxVZ1gattPXBWZvKdR6V7XbQ10rT+J8V9Ct5TzKRnFKHPV82Omw3b0aVx2hbKOrsPQwTDkriTSJqyvKlbMB9Sd1p3vNfssZ16u36/vCerK7fKSUZnMXJly7aKWxxQhkIMGgpHeSYODshcWjpUIVh3viGgH3Q8cfE/vHIyJUDVmbXJFoTyWNL1wUro++Z/zibxlKF/7QpJsMl+izTfpML+I45M2NmStdQQ5KyXJA19zbEoZO1kA9+s2Mw7uFr9UFdmRe/ON5y9n+jWQUCsBoGTkmicz+M7apii3hhpcSt+bBhNfei2g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 198.47.21.194) smtp.rcpttodomain=gmail.com smtp.mailfrom=ti.com; dmarc=pass
- (p=quarantine sp=none pct=100) action=none header.from=ti.com; dkim=none
- (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=quwkjYOWK5mXLmSCOcRa7vg+tZDx2/baHWDpIeHq/j4=;
- b=i6jHKnteT8vfhnQy1ffglJDH2R3WUnWCSoB2P3Q8cVuGNHT9g2YsYS9o/TpW2vpd8FqgCMchXKmxMe7JKd01RfHuml2cPhbjlDWdrz2AyzuFP0x0ZrHSilHwCm5F7zpmMGqgJI8pespsGDmfNIq8jTV5oOUOn+B/MAHCIlS4vRc=
-Received: from DS7PR05CA0027.namprd05.prod.outlook.com (2603:10b6:5:3b9::32)
- by SJ2PR10MB7757.namprd10.prod.outlook.com (2603:10b6:a03:57b::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9913.12; Fri, 15 May
- 2026 05:22:03 +0000
-Received: from DS2PEPF00003444.namprd04.prod.outlook.com
- (2603:10b6:5:3b9:cafe::39) by DS7PR05CA0027.outlook.office365.com
- (2603:10b6:5:3b9::32) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.25.18 via Frontend Transport; Fri, 15
- May 2026 05:22:03 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 198.47.21.194)
- smtp.mailfrom=ti.com; dkim=none (message not signed) header.d=none;dmarc=pass
- action=none header.from=ti.com;
-Received-SPF: Pass (protection.outlook.com: domain of ti.com designates
- 198.47.21.194 as permitted sender) receiver=protection.outlook.com;
- client-ip=198.47.21.194; helo=flwvzet200.ext.ti.com; pr=C
-Received: from flwvzet200.ext.ti.com (198.47.21.194) by
- DS2PEPF00003444.mail.protection.outlook.com (10.167.17.71) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.25.13 via Frontend Transport; Fri, 15 May 2026 05:22:01 +0000
-Received: from DFLE202.ent.ti.com (10.64.6.60) by flwvzet200.ext.ti.com
- (10.248.192.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Fri, 15 May
- 2026 00:22:00 -0500
-Received: from DFLE206.ent.ti.com (10.64.6.64) by DFLE202.ent.ti.com
- (10.64.6.60) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.37; Fri, 15 May
- 2026 00:22:00 -0500
-Received: from lelvem-mr05.itg.ti.com (10.180.75.9) by DFLE206.ent.ti.com
- (10.64.6.64) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20 via Frontend
- Transport; Fri, 15 May 2026 00:22:00 -0500
-Received: from [172.24.233.55] (uda0490799.dhcp.ti.com [172.24.233.55] (may be forged))
-	by lelvem-mr05.itg.ti.com (8.18.1/8.18.1) with ESMTP id 64F5Ltr53750021;
-	Fri, 15 May 2026 00:21:56 -0500
-Message-ID: <8d496b21-fc3c-48c7-aa75-8f1938906ce9@ti.com>
-Date: Fri, 15 May 2026 10:51:55 +0530
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pVmtjzcE"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6A049C2BCC9;
+	Fri, 15 May 2026 05:50:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778824257;
+	bh=cCdb5iCvd/42l2xXrMcsmngetKkm5sLxqoOtfdNssfk=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=pVmtjzcE8OLffrd+siyY4tZqVPnEaSCK5s8d23bEvCFmRf9NCkFcQxNG5Ci6f6aNM
+	 EkbRXK45hxipAWh3KdctRe9Tv7Rwqh6vsqrpj88BscplTm2583y8qPFoWfDD/TIuEF
+	 i7ah3yi3FrSyqjmcwETzMG9FxbhxJ3lPssBFm2ITret7Jv7szVFQgUktEd6Njm4t6d
+	 8Le305tY98Uqi7eqMRqtfjmZK27zEK6lPjI06JPDugO4ORvCSPoZU89zS1aW0mSaXf
+	 gMoWsi1vlvmFnxH5O4XDfmva1hZPx/xmUkic2c6hVZWWThLTUxASHBbW1QoSVBScua
+	 uo8K3aE5Nepvg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F2C0CD4F46;
+	Fri, 15 May 2026 05:50:57 +0000 (UTC)
+From: Amit Sunil Dhamne via B4 Relay <devnull+amitsd.google.com@kernel.org>
+Date: Fri, 15 May 2026 05:48:40 +0000
+Subject: [PATCH 2/3] usb: typec: tcpm: Add support for Battery Status
+ response message
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: ti_sci: add wakeup constraint to parent devices
- of wakeup source
-To: Kendall Willis <k-willis@ti.com>, Nishanth Menon <nm@ti.com>, Tero Kristo
-	<kristo@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Ulf Hansson
-	<ulfh@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Dhruva Gole
-	<d-gole@ti.com>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <stable@vger.kernel.org>,
-	<tomi.valkeinen@ideasonboard.com>, <devarsht@ti.com>, <vigneshr@ti.com>,
-	<vishalm@ti.com>, <vitor.soares@toradex.com>, <ivitro@gmail.com>
-References: <20260506-wkup-constraint-v1-1-0a4bce791b29@ti.com>
-Content-Language: en-US
-From: Sebin Francis <sebin.francis@ti.com>
-In-Reply-To: <20260506-wkup-constraint-v1-1-0a4bce791b29@ti.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-C2ProcessedOrg: 333ef613-75bf-4e12-a4b1-8e3623f5dcea
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS2PEPF00003444:EE_|SJ2PR10MB7757:EE_
-X-MS-Office365-Filtering-Correlation-Id: 078f0290-b256-4617-5348-08deb241e4af
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|376014|1800799024|36860700016|7416014|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	vQSUFOuCnZFFkGNoVuQ3i5z2R9G5Vxg9z3OVCugeywrhGTBqymyIOezt2jFPIcNmdHI0EioBtjrugbe0rzc6uoDyO+1MEwrq7Kj2VZxUXES9Q7lry5lv53HBLPqyJwPVXNv5svgY+btqhuicGQnLJqyqllpC2Oj2h8EtP5b3um4TY9HG6cFiQtnvqc0HKUHIikg2aCO24vKx/MCVXn5nmaA8FOltPW6CJh7bCnraP7kpnLZos5jHPa5LJadz8ks58ESb8hNcWuz8zwAg8rODv3ygAAJXx3D7qAQDr4j28Z+ZaL+62NoWVn/d1F9YJrdRRJAwxCYQiGyOxTsN9PRPIUVl5gDC3TLhNMFZjyA54GJRiLE9WZZqdEKpWt4BpE5NATIojavhfZlN+RfjmyWCFsLTDgJnYuZu+0JoBOzEipQjEynsAzjCNKGO1DZC6RtvNwV7ZgLORKEMut6bf3HYEeYOdcBY4M0U75Q/hFTJemC5kdbrxG3nSXoEUkwCnNnYCfEvhkv4E9WO3j8cLMmtfW6d9MqGhq+3v4J2yDvkAXC6EDrTGGs1fM37nTLOb/J2qkvW/fyZpys4MuC5Yf1HAkL5+qtyMcs+aIRwWQEAEJ3gcOV/+3qpoXNlGr5uRhiqbFXKuclWZGiwXpAidXYLj6/zKlAO81+hRy48yFBr7ULv967qrV6w6dgdPymv9JoZjIPnZGCjAKFDuqUQosnc1NE+uyh5wdPv4JSVoWlk5aI=
-X-Forefront-Antispam-Report:
-	CIP:198.47.21.194;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:flwvzet200.ext.ti.com;PTR:ErrorRetry;CAT:NONE;SFS:(13230040)(82310400026)(376014)(1800799024)(36860700016)(7416014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	OM43YDgym3d61kv7CfCesvX6Cp9BJADFwjuijgpY4E5ajItfZXVmCTcASIuQbxScxK2LRQgBcLZz9UAxm1s848Kxkl4K3ZZcGgw22eDqt+67DtoYybOx2i/zKnkwY1hGpvBR0zJ+L7AA9BW6Gv6V3duS4OvWbRb/QGKD8q/Msx9do1an9zy9Hd3qGtwZ65srJ9nfUqsIWJils3efRooacWtXj0qJSxN+BycZ5NnFWb26WM52eJvxMQ8sajhNn1ytVRNdDdFBH4qjRTGt62xF0cZTRXFrdM4Nmrl8JKlfAUIWT4fi9D1PYSJAif/M7qFlP724d36VDY8mUS4JwvEDuezvUGrXrlVbbociV02T4XTiNgjWRxHt+QFJ9ODyWJUjo1lA8bbG38CjLuW9pbe/BpXSG+8L845pzprYU82CzjKFFeBCzAsK6ZDLXsaSnpqL
-X-OriginatorOrg: ti.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 May 2026 05:22:01.1484
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 078f0290-b256-4617-5348-08deb241e4af
-X-MS-Exchange-CrossTenant-Id: e5b49634-450b-4709-8abb-1e2b19b982b7
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=e5b49634-450b-4709-8abb-1e2b19b982b7;Ip=[198.47.21.194];Helo=[flwvzet200.ext.ti.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DS2PEPF00003444.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR10MB7757
+Message-Id: <20260515-batt-status-v1-2-fed6b7d8cea7@google.com>
+References: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
+In-Reply-To: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
+To: Sebastian Reichel <sre@kernel.org>, 
+ Badhri Jagan Sridharan <badhri@google.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Hans de Goede <hansg@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Marek Szyprowski <m.szyprowski@samsung.com>, 
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>, 
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-usb@vger.kernel.org, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>, 
+ Kyle Tso <kyletso@google.com>, Amit Sunil Dhamne <amitsd@google.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1778824256; l=9712;
+ i=amitsd@google.com; s=20241031; h=from:subject:message-id;
+ bh=1K59n2Pevup2izoIUfqv/9QGzbYbeyKdP8619AxEAwM=;
+ b=/0u//9G1AjINaqvETsJ+5PujE7gO1XTTlVU/yw2lQHN4/htY0Ai+Pnr9/cS3VHF1FTqN2i5dH
+ /k4FzxSDoVsA3GMGtPwnyncWBhWFFE+4kIcnYYK9v6/EMU4cMv6WO+r
+X-Developer-Key: i=amitsd@google.com; a=ed25519;
+ pk=wD+XZSST4dmnNZf62/lqJpLm7fiyT8iv462zmQ3H6bI=
+X-Endpoint-Received: by B4 Relay for amitsd@google.com/20241031 with
+ auth_id=262
+X-Original-From: Amit Sunil Dhamne <amitsd@google.com>
+Reply-To: amitsd@google.com
+
+From: Amit Sunil Dhamne <amitsd@google.com>
+
+Add support for responding to a Get_Battery_Status request with a
+Battery_Status message. The port partner shall request the status of a
+port's battery by providing an index in the Get_Battery_Status AMS. In
+case of failure to identify the battery, the port shall reply with an
+appropriate message indicating so.
+
+Support for Battery_Status message is required for sinks that contain
+battery as specified in USB PD Rev3.1 v1.8
+("Applicability of Data Messages" section).
+
+Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+Reviewed-by: Badhri Jagan Sridharan <badhri@google.com>
+---
+ drivers/usb/typec/tcpm/tcpm.c | 140 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/usb/pd.h        |  29 +++++++++
+ 2 files changed, 166 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+index dfbb94ddc98a..a1abe0a177ac 100644
+--- a/drivers/usb/typec/tcpm/tcpm.c
++++ b/drivers/usb/typec/tcpm/tcpm.c
+@@ -232,7 +232,8 @@ enum pd_msg_request {
+ 	PD_MSG_DATA_SINK_CAP,
+ 	PD_MSG_DATA_SOURCE_CAP,
+ 	PD_MSG_DATA_REV,
+-	PD_MSG_EXT_SINK_CAP_EXT
++	PD_MSG_EXT_SINK_CAP_EXT,
++	PD_MSG_DATA_BATT_STATUS
+ };
+ 
+ enum adev_actions {
+@@ -389,6 +390,14 @@ struct pd_timings {
+ /* Convert microwatt to watt */
+ #define UW_TO_W(pow)					((pow) / 1000000)
+ 
++/*
++ * As per USB PD Spec Rev 3.18 (Sec. 6.5.13.11), the number of fixed batteries
++ * that a port can be queried is restricted to 4.
++ */
++#define MAX_NUM_FIXED_BATT				4
++
++#define BATTERY_PROPERTY_UNKNOWN			0xffff
++
+ /*
+  * struct pd_identifier - Contains info about PD identifiers
+  * @vid: Vendor ID (assigned by USB-IF)
+@@ -683,6 +692,9 @@ struct tcpm_port {
+ 
+ 	struct pd_identifier pd_ident;
+ 	struct sink_caps_ext_data sink_caps_ext;
++	struct power_supply *fixed_batt[MAX_NUM_FIXED_BATT];
++	u32 fixed_batt_cnt;
++	u32 batt_request_id;
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *dentry;
+ 	struct mutex logbuffer_lock;	/* log buffer access lock */
+@@ -1391,6 +1403,34 @@ static int tcpm_pd_send_revision(struct tcpm_port *port)
+ 	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+ }
+ 
++static void tcpm_init_fixed_batt(struct tcpm_port *port)
++{
++	struct power_supply **batteries;
++	int ret, i;
++
++	if (port->fixed_batt_cnt > 0)
++		return;
++
++	ret = power_supply_get_battery_all(port->dev, &batteries);
++	if (ret < 0) {
++		tcpm_log(port, "Failed to fetch batteries refs ret=%d", ret);
++		return;
++	}
++
++	for (i = 0; i < ret; i++) {
++		if (!batteries[i])
++			continue;
++
++		if (port->fixed_batt_cnt < MAX_NUM_FIXED_BATT)
++			port->fixed_batt[port->fixed_batt_cnt++] = batteries[i];
++		else
++			power_supply_put(batteries[i]);
++	}
++
++	if (ret)
++		kfree(batteries);
++}
++
+ static int tcpm_pd_send_source_caps(struct tcpm_port *port)
+ {
+ 	struct pd_message msg;
+@@ -1476,6 +1516,8 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+ 
+ 	if (!port->self_powered)
+ 		data->spr_op_pdp = operating_snk_watt;
++	else
++		tcpm_init_fixed_batt(port);
+ 
+ 	/*
+ 	 * SPR Sink Minimum PDP indicates the minimum power required to operate
+@@ -1502,6 +1544,7 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+ 	skedb.load_step = data->load_step;
+ 	skedb.load_char = cpu_to_le16(data->load_char);
+ 	skedb.compliance = data->compliance;
++	skedb.batt_info = port->fixed_batt_cnt;
+ 	skedb.modes = data->modes;
+ 	skedb.spr_min_pdp = data->spr_min_pdp;
+ 	skedb.spr_op_pdp = data->spr_op_pdp;
+@@ -1520,6 +1563,74 @@ static int tcpm_pd_send_sink_cap_ext(struct tcpm_port *port)
+ 					   port->message_id,
+ 					   data_obj_cnt,
+ 					   1 /* Denotes if ext header */));
++
++	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
++}
++
++static int tcpm_pd_send_batt_status(struct tcpm_port *port)
++{
++	u16 present_charge = BATTERY_PROPERTY_UNKNOWN;
++	bool batt_present = false, invalid_ref = true;
++	u32 batt_id = port->batt_request_id;
++	union power_supply_propval val;
++	struct power_supply *batt;
++	u8 charging_status = 0;
++	struct pd_message msg;
++	u32 bsdo;
++	int ret;
++
++	memset(&msg, 0, sizeof(msg));
++
++	if (batt_id >= port->fixed_batt_cnt || !port->fixed_batt[batt_id])
++		goto send_status;
++
++	invalid_ref = false;
++	batt = port->fixed_batt[batt_id];
++	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_PRESENT, &val);
++	if (ret)
++		tcpm_log(port,
++			 "Failed to fetch power_supply_prop_present ret %d",
++			 ret);
++	else
++		batt_present = val.intval > 0;
++
++	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_ENERGY_NOW,
++					&val);
++
++	/* Battery Present Charge is reported in increments of 0.1WH */
++	if (!ret)
++		present_charge = (u16)UW_TO_W(val.intval * 10);
++
++	ret = power_supply_get_property(batt, POWER_SUPPLY_PROP_STATUS, &val);
++	if (!ret) {
++		switch (val.intval) {
++		case POWER_SUPPLY_STATUS_CHARGING:
++			charging_status = BSDO_BATTERY_INFO_CHARGING;
++			break;
++		case POWER_SUPPLY_STATUS_DISCHARGING:
++			charging_status = BSDO_BATTERY_INFO_DISCHARGING;
++			break;
++		case POWER_SUPPLY_STATUS_NOT_CHARGING:
++		case POWER_SUPPLY_STATUS_FULL:
++			charging_status = BSDO_BATTERY_INFO_IDLE;
++			break;
++		default:
++			charging_status = BSDO_BATTERY_INFO_RSVD;
++			break;
++		}
++	}
++
++send_status:
++
++	bsdo = BSDO(present_charge, charging_status, batt_present, invalid_ref);
++	msg.payload[0] = cpu_to_le32(bsdo);
++	msg.header = PD_HEADER_LE(PD_DATA_BATT_STATUS,
++				  port->pwr_role,
++				  port->data_role,
++				  port->negotiated_rev,
++				  port->message_id,
++				  1);
++
+ 	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+ }
+ 
+@@ -3854,6 +3965,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+ {
+ 	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
+ 	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
++	const struct pd_chunked_ext_message_data *ext_msg = &msg->ext_msg;
+ 
+ 	/* stopping VDM state machine if interrupted by other Messages */
+ 	if (tcpm_vdm_ams(port)) {
+@@ -3862,7 +3974,7 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+ 		mod_vdm_delayed_work(port, 0);
+ 	}
+ 
+-	if (!(le16_to_cpu(msg->ext_msg.header) & PD_EXT_HDR_CHUNKED)) {
++	if (!(le16_to_cpu(ext_msg->header) & PD_EXT_HDR_CHUNKED)) {
+ 		tcpm_pd_handle_msg(port, PD_MSG_CTRL_NOT_SUPP, NONE_AMS);
+ 		tcpm_log(port, "Unchunked extended messages unsupported");
+ 		return;
+@@ -3887,9 +3999,17 @@ static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
+ 					     NONE_AMS, 0);
+ 		}
+ 		break;
++	case PD_EXT_GET_BATT_STATUS:
++		if (data_size >= 1) {
++			port->batt_request_id = ext_msg->data[0];
++			tcpm_pd_handle_msg(port, PD_MSG_DATA_BATT_STATUS,
++					   GETTING_BATTERY_STATUS);
++		} else {
++			tcpm_set_state(port, SOFT_RESET_SEND, 0);
++		}
++		break;
+ 	case PD_EXT_SOURCE_CAP_EXT:
+ 	case PD_EXT_GET_BATT_CAP:
+-	case PD_EXT_GET_BATT_STATUS:
+ 	case PD_EXT_BATT_CAP:
+ 	case PD_EXT_GET_MANUFACTURER_INFO:
+ 	case PD_EXT_MANUFACTURER_INFO:
+@@ -4100,6 +4220,14 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
+ 					 ret);
+ 			tcpm_ams_finish(port);
+ 			break;
++		case PD_MSG_DATA_BATT_STATUS:
++			ret = tcpm_pd_send_batt_status(port);
++			if (ret)
++				tcpm_log(port,
++					 "Failed to send battery status ret=%d",
++					 ret);
++			tcpm_ams_finish(port);
++			break;
+ 		default:
+ 			break;
+ 		}
+@@ -8566,6 +8694,7 @@ struct tcpm_port *tcpm_register_port(struct device *dev, struct tcpc_dev *tcpc)
+ 	typec_port_register_cable_ops(port->port_altmode, ARRAY_SIZE(port->port_altmode),
+ 				      &tcpm_cable_ops);
+ 	port->registered = true;
++	port->fixed_batt_cnt = 0;
+ 
+ 	mutex_lock(&port->lock);
+ 	tcpm_init(port);
+@@ -8597,6 +8726,11 @@ void tcpm_unregister_port(struct tcpm_port *port)
+ 	hrtimer_cancel(&port->vdm_state_machine_timer);
+ 	hrtimer_cancel(&port->state_machine_timer);
+ 
++	for (i = 0; i < port->fixed_batt_cnt; i++) {
++		if (port->fixed_batt[i])
++			power_supply_put(port->fixed_batt[i]);
++	}
++
+ 	tcpm_reset_port(port);
+ 
+ 	tcpm_port_unregister_pd(port);
+diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
+index 337a5485af7c..1f126f477c30 100644
+--- a/include/linux/usb/pd.h
++++ b/include/linux/usb/pd.h
+@@ -724,4 +724,33 @@ void usb_power_delivery_unlink_device(struct usb_power_delivery *pd, struct devi
+ 
+ #endif /* CONFIG_TYPEC */
+ 
++/* Battery Status Data Object */
++#define BSDO_PRESENT_CAPACITY				GENMASK(31, 16)
++#define BSDO_CHG_STATUS					GENMASK(11, 10)
++#define BSDO_BATTERY_PRESENT				BIT(9)
++#define BSDO_INVALID_BATTERY_REFERENCE			BIT(8)
++
++/*
++ * Battery Charge Status: Battery Charging Status Values as defined in
++ * "USB PD Spec Rev3.1 Ver1.8", "Table 6-46 Battery Status Data Object (BSDO)".
++ */
++#define BSDO_BATTERY_INFO_CHARGING			0x0
++#define BSDO_BATTERY_INFO_DISCHARGING			0x1
++#define BSDO_BATTERY_INFO_IDLE				0x2
++#define BSDO_BATTERY_INFO_RSVD				0x3
++
++/**
++ * BSDO() - Pack data into Battery Status Data Object format
++ * @batt_charge: Battery's present state of charge in 0.1WH increment
++ * @chg_status: Battery charge status
++ * @batt_present: Indicates that battery is present/attached when set else absent when unset
++ * @invalid_ref: Indicates that an invalid battery reference was made in the Get_Battery_Status
++ *		 request
++ */
++#define BSDO(batt_charge, chg_status, batt_present, invalid_ref)	\
++	((FIELD_PREP(BSDO_PRESENT_CAPACITY, batt_charge)) |		\
++	 (FIELD_PREP(BSDO_CHG_STATUS, chg_status)) |			\
++	 ((batt_present) ? BSDO_BATTERY_PRESENT : 0) |			\
++	 ((invalid_ref) ? BSDO_INVALID_BATTERY_REFERENCE : 0))
++
+ #endif /* __LINUX_USB_PD_H */
+
+-- 
+2.54.0.563.g4f69b47b94-goog
 
 
-
-On 07/05/26 08:46, Kendall Willis wrote:
-> Set wakeup constraint for any device in a wakeup path. All parent devices
-> of a wakeup device should not be turned off during suspend. This ensures
-> the wakeup device is kept on while the system is suspended.
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 9d8aa0dd3be4 ("pmdomain: ti_sci: add wakeup constraint management")
-> Reported-by: Vitor Soares <vitor.soares@toradex.com>
-> Closes: https://lore.kernel.org/linux-pm/c0fe43a2339c802e9ce5900092cd530a2ba17a6b.camel@gmail.com/
-> Signed-off-by: Kendall Willis <k-willis@ti.com>
-> ---
-
-Looks good to me.
-
-Reviewed-by: Sebin Francis <sebin.francis@ti.com>
-
-Sebin Francis
-
->   drivers/pmdomain/ti/ti_sci_pm_domains.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pmdomain/ti/ti_sci_pm_domains.c b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> index 18d33bc35dee1b3bf6107af1e414db377d515199..949e4115f930b93b18216fde46131b5c8931c9aa 100644
-> --- a/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> +++ b/drivers/pmdomain/ti/ti_sci_pm_domains.c
-> @@ -86,7 +86,7 @@ static inline void ti_sci_pd_set_wkup_constraint(struct device *dev)
->   	const struct ti_sci_handle *ti_sci = pd->parent->ti_sci;
->   	int ret;
->   
-> -	if (device_may_wakeup(dev)) {
-> +	if (device_may_wakeup(dev) || device_wakeup_path(dev)) {
->   		/*
->   		 * If device can wakeup using IO daisy chain wakeups,
->   		 * we do not want to set a constraint.
-> 
-> ---
-> base-commit: 7fd2df204f342fc17d1a0bfcd474b24232fb0f32
-> change-id: 20260506-wkup-constraint-9b0261b04df1
->  > Best regards,
