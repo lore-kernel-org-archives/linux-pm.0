@@ -1,61 +1,61 @@
-Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DB0143E4BE
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 09:02:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE216441049
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 09:02:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778835768; cv=none; b=gDw7v0ulHstFOZxYUK8G+3Aq36yToX4RdAc7781CG1nca+cpzjzcJkQk7ymEz86Kccv/LYSzBBFQhdb2ROr3Zs5e1zXc7DrfsCHa/3LZKM8YkuKDNSmOmzHt0+giU8OeP0CJ28cki0fbfON0CMJphKsRBRgbLELmlG4vWj3qDlg=
+	t=1778835772; cv=none; b=csCJrrGj+84ggchyq6GHsfZDzj86ASmx2XNC+j0Kpc2lGd+TK1o5pHVErNegId+mWm62qE/+tJarOgfvkwmPoIsvLy1FbvDhFoSrgkZqOye9tyUwCs4oMmZrjlBIkn3YPZAiD16su/MEoNJE/9yzg94+qVMrCR9KGCTuxtybMLQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778835768; c=relaxed/simple;
-	bh=Gz1BdO2CNIH1WVRh/auvzptyTOFoc+CyHx9t/Lizdxw=;
+	s=arc-20240116; t=1778835772; c=relaxed/simple;
+	bh=hzmFuLfaZehJONSUg8nNmwN5xN2aJspRaBE7HbdGagQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QI6nOAOXo2gvLsWEtoH8K9mF+L9CSv8WBBIyn8DZ5XQe4dBe/yx5AhYqPKtlYI1HXqvaYNPPtTXDQbicsWvrR3GvGNctT6lApRWjockwsmyfJFqLxMZTCyCS3XzZ3cD16AQGKaXRPzOev4EUIpHdoMXpAUV8Ktq/qyu9+5h0Des=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=M2v0VpvA; arc=none smtp.client-ip=209.85.216.46
+	 MIME-Version; b=WQjvO/ARiARo9kfBeman4MXWlCyquemiT4W+VeVtStZnmatHv9U8ZI5ml4Rv/scxZN25txMURijjIRQ59PJyNGxrpJHo37cT5aG5sJ2IUa2T7LJ2Pgl4L8P1SGSVqz+pd9Vlc/9JLz3spwCLvbTgb9BN4ZdduyUsZCOGoB03PMI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=fpbM0JDu; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="M2v0VpvA"
-Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-367d88b9940so4929192a91.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 02:02:45 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="fpbM0JDu"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-368977e33b1so3329617a91.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 02:02:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1778835765; x=1779440565; darn=vger.kernel.org;
+        d=chromium.org; s=google; t=1778835769; x=1779440569; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=T2ZaGVux29bB4QztqEVTUE9+3m9wph3XttnIMDbQw7w=;
-        b=M2v0VpvAjlya9oG55Sn6CgaBBDHW5/dZHaKggREN3ATYa9+fAnANphMS+zRZapskTf
-         BeOm2v1MqsAB/2o+441GRo1sjw/VMgch7S0wG5Cd/BpGFDY1wktLy70KpArBtgdORpR7
-         6X5jlTdwuJ02fwq2KqwgyRhZ3WJpS1tU3Wu+w=
+        bh=pt4T5ObMyYagXPbowM8Wn1tRV9x+5vQ2cef3iU5ynik=;
+        b=fpbM0JDuoHI1reJ6klWr2SLVRJe4FIi6JZOHStuaNlznIkJwajRajT0ocY1Q6F48V6
+         CnuDOr5LT0NMQqVBkqUastLg5gXGbnML6k2FXxP/PGgCqTgWme+2zQe3k5P8v+YJXHIq
+         k6up0xH7SzdepLAfaWrDzOlrTgJeNl4zSvqe0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778835765; x=1779440565;
+        d=1e100.net; s=20251104; t=1778835769; x=1779440569;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=T2ZaGVux29bB4QztqEVTUE9+3m9wph3XttnIMDbQw7w=;
-        b=Sa/GyCmDNJyPtQbtLjL6uZ4+z7tb03VwSeEMA/dVhxOfX2JZ4yeqINOz1E33NRLo+N
-         ctibYq3RjGh09DTcJMO4HwpLsmrF1/KQ/HBRgN3o2pqfMxdwWKoIRoqAoIB1JEcx81Hp
-         MmNJiaV74yOlK589A7A8hVFnH9+0F9wKltHA861msj6+RwPNAufRJipEVhYbcdAjaYss
-         tYql8SCGbxrrTbM2VKYNUb5WLFYaxt7TFXYY6fDfpaLyWYzZXzQUUTX/5we/8ub3nqFO
-         4Ir740S7/MznRtlc/R4fs+2TnixAvXjJ1jK0CdV3V5LW0mMzNX1I+8+HSmKhlzab6ubB
-         nQbA==
-X-Forwarded-Encrypted: i=1; AFNElJ/lqPgQeZ4XH2EZem1ZVoNsLyNuPbPBzYGaZ/g+Hkz1dvnn3yE1nZuj/vPEJB2wAoVTk1cT8Ehrsw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzTCafUhrWHXfiwwGPoMtEeUCwtDHyQrXqouQaQjKUTyfXHvIRN
-	XcUUM57cD8oZQXqQUns2vqfwgfqc3WmeS5Vf+YRI85ZtcvnJQdDcQkg+9RMTzkg4LQ==
-X-Gm-Gg: Acq92OHuyL/LDEScFo3iL3z106Djq1dcNBEv3TQqaBpwxy4FdhK7e4HRV3yNfLd8vXQ
-	WJzMevpmhG2YPExEmjo3HJpWQIxHMvAjoN71NZk9Zqx14y+vVrICysFRiM7hcpt2dMPmrqjw3XZ
-	qRL0mMa6MS/dMzCjbezDvu6hcqcuekeD9CpPAlWTDZH1BAuM8zpOnXp8d+tHv1IGH/GMKh4E4yd
-	yK1XliA5HnLWSx3cF+hJcv0NzpIB+Zz/w5OwZeF0cloBFCq4SB/1zY5w5UJdaBYVR4hsLL7vvOw
-	zCdZr+AVHKPu+uC8dExod7Eg0GttB1BesW/cdkizwoBhMhydtfk2iyYYYQMz+FlDHMQdGU3fyN/
-	xicPWgOvFzEvK2zoTEXJ6mhiVsG0xclBW2fCXZAfq32E3wMg4PGjTKll5fb9nb8EXK+fukpRbXn
-	CEOHyY85hGDeUpDKBscsw4135ICfX1AQw7IC1nFTVphno+g8zDECcvooH/mNVc4d27xvCZjzwvf
-	56Gtg/e3E8We6V0aHo=
-X-Received: by 2002:a17:90b:53cf:b0:366:16d1:6a25 with SMTP id 98e67ed59e1d1-369518b206cmr3162750a91.5.1778835765371;
-        Fri, 15 May 2026 02:02:45 -0700 (PDT)
+        bh=pt4T5ObMyYagXPbowM8Wn1tRV9x+5vQ2cef3iU5ynik=;
+        b=sYYeil5CfB98XmqeBjTo4uw1k0sQIy5UCXwDPu/MXtHCukRcF5BcHmC8Vi8dk6hpW9
+         TYL5Oyh8Qwi24NqpQuy823I/DY76MMv44xHn9ucls4IS4fNQLw3OQRyA+YU6PnQ6kvtC
+         Z5Egdk1A+r5kWEsPw7D0/wHze10fRrHOYSxmFZNTsxR/l4jnIFqqQAqpTeM/l8RGLAzv
+         GxXI+PTWvL6w/C6+H3z8h7kJ3qC2+SmcB/3FhzcbNF40J02yS6QJLTF9Ew+MfEp3l4Hb
+         ZflrXcy4hkqLimOYsueKwRi15eXqepxoR0t2gCUCn/jB9NOVIQk3PXjUTqSIeF74OTMX
+         +INQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+ofdDCZqm8HDtAV2TNRrvraaiNGHu5UQD1JZDIGnMK7t9kmRg9kfDe7m/LRBOPpukMIsWY5MKG4Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyqh3SqKu3wWlnS/7E4sDFzPjue/NA1+O+baDHHPVuWs+lZVW4Y
+	GT1bWU4qv4AUEiu5ksZgHkpZbIcZvAaqFiikieI5iSL8iEICNHbtIAycZELWec366w==
+X-Gm-Gg: Acq92OEzCSz8yNmun7y3dJvoc7jh5WH+vE2lg+vR9AwUlMAlTSC/IL4sA8FdmK+655q
+	OIqm8iuI6OZidI7hwPVVwhA7N0Z1FI74a8/eLZvVZDPC7Q6MwNOnIoCd2e4UEqGqCIZ1gKgzKzx
+	lIGS6KWui0v5zIOaQ7h/g0kxk284VjGx/gCOidYUUEXpwBZ1ywHt5Xr+hPAf3oovIp1Bag0CWZR
+	rWxYdfuf2PzroUIjGoDi9NjhBQp//aBQTpoUMTddXtiCfY93y5u8O/+AvNmnpMUUJJ+r90aGXle
+	rvNfu8lcaoT+4gczoxOa7CqLLWmad0wGE6Se1h8cNL3Pf7YLUGSUbzTRUyFO7gFa7PtvVZu/nKS
+	1uqQCPQv4TZkZYgNahG+51/yQBgsY97ihE8IVSehEh+Q0aji61AIMrKRtoNMXScnM6GRKqj7tGA
+	QfYEsePpV9TVisc7QBc/TNPpect1ixBUSF4AXsFGQWTW1cOz+K70U04vkJNBKY5lhh5LDs6xbgJ
+	P2CPjhD
+X-Received: by 2002:a17:90b:1344:b0:366:4782:138c with SMTP id 98e67ed59e1d1-36951b971ccmr3221579a91.17.1778835768758;
+        Fri, 15 May 2026 02:02:48 -0700 (PDT)
 Received: from wenstp920.tpe.corp.google.com ([2a00:79e0:201d:8:b3d8:e32e:c2fc:c31e])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36951584654sm2076537a91.7.2026.05.15.02.02.42
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36951584654sm2076537a91.7.2026.05.15.02.02.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 02:02:44 -0700 (PDT)
+        Fri, 15 May 2026 02:02:48 -0700 (PDT)
 From: Chen-Yu Tsai <wenst@chromium.org>
 To: Bartosz Golaszewski <brgl@kernel.org>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -72,9 +72,9 @@ Cc: Chen-Yu Tsai <wenst@chromium.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Manivannan Sadhasivam <mani@kernel.org>
-Subject: [PATCH RFC 11/12] arm64: dts: mediatek: mt8195-cherry: Add USB type-A connector
-Date: Fri, 15 May 2026 17:01:47 +0800
-Message-ID: <20260515090149.3169406-12-wenst@chromium.org>
+Subject: [PATCH RFC 12/12] arm64: dts: mediatek: mt8188-geralt: Add WiFi/BT as M.2 E-key slot
+Date: Fri, 15 May 2026 17:01:48 +0800
+Message-ID: <20260515090149.3169406-13-wenst@chromium.org>
 X-Mailer: git-send-email 2.54.0.563.g4f69b47b94-goog
 In-Reply-To: <20260515090149.3169406-1-wenst@chromium.org>
 References: <20260515090149.3169406-1-wenst@chromium.org>
@@ -86,116 +86,181 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The MT8195 Cherry design features a USB type-A connector for external
-devices.
+The MT8188 Geralt design features a chip-on-board WiFi/BT solution. This
+is a M.2 E-key WiFi/BT board layout directly inserted into the mainboard
+design. The connections to the rest of the board are almost the same as
+if it were a separate M.2 card. The only addition is the PMU_EN pin on
+the chip; on M.2 cards this would be tied to the primary power source.
 
-Add a proper representation for it with a node for the connector and
-OF graph connection to the USB hub behind it.
+Model the chip-on-board WiFi/BT solution as a M.2 E-key slot with PCIe,
+USB and auxiliary signals. The PMU_EN pin, which enables the internal
+power controls and regulators, is modeled as a regulator fed by the
+pp3300_wlan regulator. Since power sequencing is now correctly modeled
+using the M.2 E-key slot, drop the "regulator-always-on" property one
+pp3300_wlan regulator. Also drop the comment in xhci2 saying "MT7921's
+power is controlled by PCIe".
+
+Also drop the voltage range on the pp3300_wlan regulator. This
+"regulator" is just a load switch and does not provide any regulation.
 
 Signed-off-by: Chen-Yu Tsai <wenst@chromium.org>
 ---
- .../boot/dts/mediatek/mt8195-cherry.dtsi      | 72 ++++++++++++++++++-
- 1 file changed, 70 insertions(+), 2 deletions(-)
+ .../boot/dts/mediatek/mt8188-geralt.dtsi      | 93 ++++++++++++++++++-
+ 1 file changed, 89 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8195-cherry.dtsi b/arch/arm64/boot/dts/mediatek/mt8195-cherry.dtsi
-index c95a54de3567..b21cbe918c1f 100644
---- a/arch/arm64/boot/dts/mediatek/mt8195-cherry.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8195-cherry.dtsi
-@@ -153,7 +153,6 @@ usb_vbus: regulator-5v0-usb-vbus {
+diff --git a/arch/arm64/boot/dts/mediatek/mt8188-geralt.dtsi b/arch/arm64/boot/dts/mediatek/mt8188-geralt.dtsi
+index 4cb23595d17b..d7b5eb95ba0f 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8188-geralt.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8188-geralt.dtsi
+@@ -86,13 +86,11 @@ pp3300_z1: regulator-pp3300-z1 {
+ 	pp3300_wlan: regulator-pp3300-wlan {
  		compatible = "regulator-fixed";
- 		regulator-name = "usb-vbus";
- 		enable-active-high;
+ 		regulator-name = "pp3300_wlan";
 -		regulator-always-on;
- 		vin-supply = <&pp5000_s5>;
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+ 		enable-active-high;
+ 		gpio = <&pio 12 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-0 = <&wlan_en>;
+ 		pinctrl-names = "default";
++		/* load switch */
+ 		vin-supply = <&pp3300_z1>;
  	};
  
-@@ -267,6 +266,32 @@ tboard_thermistor2: thermal-sensor-t2 {
- 						125000 44>;
+@@ -159,6 +157,17 @@ ppvar_mipi_disp_avee: regulator-ppvar-mipi-disp-avee {
+ 		vin-supply = <&pp5000_z1>;
  	};
  
-+	usb-a-connector {
-+		compatible = "usb-a-connector";
-+		vbus-supply = <&usb_vbus>;
++	/* PMU_EN pin controls internal regulators and power sequence */
++	wlan_pmu: regulator-wlan-pmu {
++		compatible = "regulator-fixed";
++		regulator-name = "wlan-pmu";
++		enable-active-high;
++		gpio = <&pio 145 GPIO_ACTIVE_HIGH>;
++		pinctrl-0 = <&wlan_pmu_en>;
++		pinctrl-names = "default";
++		vin-supply = <&pp3300_wlan>;
++	};
++
+ 	reserved_memory: reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -193,6 +202,39 @@ adsp_dma_mem: memory@61000000 {
+ 			no-map;
+ 		};
+ 	};
++
++	wifi-bt-connector {
++		compatible = "pcie-m2-e-connector";
++		pinctrl-names = "default";
++		pinctrl-0 = <&m2_e_key_kill_pins>;
++		vpcie1v8-supply = <&mt6359_vcn18_ldo_reg>;
++		vpcie3v3-supply = <&wlan_pmu>;
++		w-disable1-gpios = <&pio 13 GPIO_ACTIVE_LOW>;
++		w-disable2-gpios = <&pio 14 GPIO_ACTIVE_LOW>;
 +
 +		ports {
 +			#address-cells = <1>;
 +			#size-cells = <0>;
 +
++			/* PCIe for WiFi */
 +			port@0 {
 +				reg = <0>;
 +
-+				usb_a_u2_ep: endpoint {
-+					remote-endpoint = <&usb2_hub_p3_ep>;
++				wifi_ep: endpoint {
++					remote-endpoint = <&pcie_ep>;
 +				};
 +			};
 +
-+			port@1 {
-+				reg = <1>;
++			/* USB for Bluetooth */
++			port@2 {
++				reg = <2>;
 +
-+				usb_a_u3_ep: endpoint {
-+					remote-endpoint = <&usb3_hub_p3_ep>;
-+				};
-+			};
-+		};
-+	};
-+
- 	wifi-bt-connector {
- 		compatible = "pcie-m2-e-connector";
- 		pinctrl-names = "default";
-@@ -1672,9 +1697,52 @@ vdosys1_ep_ext: endpoint@1 {
- 
- &xhci0 {
- 	rx-fifo-depth = <3072>;
--	vbus-supply = <&usb_vbus>;
-+	#address-cells = <1>;
-+	#size-cells = <0>;
- 	vusb33-supply = <&mt6359_vusb_ldo_reg>;
- 	status = "okay";
-+
-+	usb3_hub: usb-hub@1 {
-+		compatible = "usb5e3,620";
-+		reg = <1>;
-+		reset-gpios = <&pio 84 GPIO_ACTIVE_LOW>;
-+		vdd-supply = <&pp5000_s5>;
-+		peer-hub = <&usb2_hub>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@3 {
-+				reg = <3>;
-+
-+				usb3_hub_p3_ep: endpoint {
-+					remote-endpoint = <&usb_a_u3_ep>;
-+				};
-+			};
-+		};
-+	};
-+
-+	usb2_hub: usb-hub@2 {
-+		compatible = "usb5e3,610";
-+		reg = <2>;
-+		reset-gpios = <&pio 84 GPIO_ACTIVE_LOW>;
-+		vdd-supply = <&pp5000_s5>;
-+		peer-hub = <&usb3_hub>;
-+
-+		ports {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port@3 {
-+				reg = <3>;
-+
-+				usb2_hub_p3_ep: endpoint {
-+					remote-endpoint = <&usb_a_u2_ep>;
++				bt_ep: endpoint {
++					remote-endpoint = <&usb2_ep>;
 +				};
 +			};
 +		};
 +	};
  };
  
+ &adsp {
+@@ -656,6 +698,22 @@ &pcie {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pcie_pins>;
+ 	status = "okay";
++
++	pcie@0 {
++		compatible = "pciclass,0604";
++		reg = <0 0 0 0 0>;
++		device_type = "pci";
++		num-lanes = <1>;
++		#address-cells = <3>;
++		#size-cells = <2>;
++		ranges;
++
++		port {
++			pcie_ep: endpoint {
++				remote-endpoint = <&wifi_ep>;
++			};
++		};
++	};
+ };
+ 
+ &pciephy {
+@@ -999,6 +1057,14 @@ pins-bus {
+ 		};
+ 	};
+ 
++	m2_e_key_kill_pins: m2-e-key-kill-pins {
++		pins-kill {
++			pinmux = <PINMUX_GPIO13__FUNC_B_GPIO13>,
++				 <PINMUX_GPIO14__FUNC_B_GPIO14>;
++			output-high;
++		};
++	};
++
+ 	mipi_disp_avdd_en: mipi-disp-avdd-en-pins {
+ 		pins-en-ppvar-mipi-disp {
+ 			pinmux = <PINMUX_GPIO3__FUNC_B_GPIO3>;
+@@ -1163,6 +1229,13 @@ pins-bus {
+ 		};
+ 	};
+ 
++	wlan_pmu_en: wlan-pmu-en-pins {
++		pins-wlan-pmu-en {
++			pinmux = <PINMUX_GPIO145__FUNC_B_GPIO145>;
++			output-low;
++		};
++	};
++
+ 	wlan_en: wlan-en-pins {
+ 		pins-en-pp3300-wlan {
+ 			pinmux = <PINMUX_GPIO12__FUNC_B_GPIO12>;
+@@ -1342,10 +1415,22 @@ vdosys1_ep_ext: endpoint@1 {
+ };
+ 
  &xhci2 {
+-	/* no power supply since MT7921's power is controlled by PCIe */
+ 	/* MT7921's USB BT has issues with USB2 LPM */
+ 	usb2-lpm-disable;
+ 	status = "okay";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@1 {
++			reg = <1>;
++
++			usb2_ep: endpoint {
++				remote-endpoint = <&bt_ep>;
++			};
++		};
++	};
+ };
+ 
+ #include <arm/cros-ec-keyboard.dtsi>
 -- 
 2.54.0.563.g4f69b47b94-goog
 
