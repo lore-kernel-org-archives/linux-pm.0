@@ -1,174 +1,63 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF5603F99FA;
-	Fri, 15 May 2026 18:35:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B043A3FDBED;
+	Fri, 15 May 2026 18:40:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778870114; cv=none; b=JcoEu+j8MTKyKgqm/U8B0KjO+6l4F1quoVnc4IyjMMll6usiiBmFKeUdM4Jy15PUBcbuvbhYBOmekyNRpNlZ0oM4mGILUoyj2sO9J0lZ+4yPkY5z1OeG2GUYsTZngCdjjR0hm9xYeVRBUmJ11thz1FeZ3RUWgLWa9sbwqrbuxLA=
+	t=1778870453; cv=none; b=LlUlKyzKnav9ex8va7q8BXZR84uy7yCvCL3/8ZXwYYq0XX8QhyV5rxrlgHxvJOENhErDEY9W/haP1mvz90LwgCJ/W/E7UjLJ3TmAshJNR6FsIPYTLfL09fV9F3DzsgWtKTxGfMC4TIMzm8MZpfPSQupbzEYuG4hy/yhvlVshkFs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778870114; c=relaxed/simple;
-	bh=+mjI4XgFr3WKaf9tViU6pN2BNpxZplN12d3A978aOMg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=H5uHU5C6lJRbwP/LYTFJcHbMLXIhYbYyHE9K/IaztgkayqUKBXsplFilaWPchC0eULBJbJJGQ7ba+IC/Ide/EnCjkxCPHWcqQbPHQiYjisMT0zI3X6bvwuEL+fScJjFwGfe7Lgxc9vPC4lyiF8YtA+/C/Ir6bIgqAtCa2Tca/YU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=S/QqQrS8; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="S/QqQrS8"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778870112; x=1810406112;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=+mjI4XgFr3WKaf9tViU6pN2BNpxZplN12d3A978aOMg=;
-  b=S/QqQrS8Jyk39fkF4YxBWYjmx3xlnlZdhDzz/OkPECC1HJHcLs0if5Oo
-   BTBkrVCQt/mgu9sptUzbadylHWm3uee6iQkIYk8gvFT/Za/pmt79XiFLc
-   rDtSHTlN7WckwAlSyrg+5tWPk4oyjmBllBOXKTEz8EYD+SFTio2dvEtZu
-   9vRotsxFjGLqFBzBfKDS4L3r8mS6/wi1IhWa40HZ4mBmrM8Ldq+JbuJhR
-   ySp1ICSQLmjr4WrKNe37u1hq8MoWWuPth0/3f8czD8kj5ZIm7yTOqVZwV
-   /9r5+QaFqMSR0u8tua/lxDYTjYasELnp11E8ky8suORyo9x9U3B1JAFub
-   w==;
-X-CSE-ConnectionGUID: KuSCq6KXQQGCnXfSVQGTqg==
-X-CSE-MsgGUID: 3rOsS1URSNioNNuZPmPvZQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11787"; a="79685582"
-X-IronPort-AV: E=Sophos;i="6.23,236,1770624000"; 
-   d="scan'208";a="79685582"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2026 11:35:10 -0700
-X-CSE-ConnectionGUID: 2xLxB1kWQNeu5agdnLXogA==
-X-CSE-MsgGUID: O+CTHYs4RXWIrABFRGbv1g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,236,1770624000"; 
-   d="scan'208";a="262289802"
-Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.108.218]) ([10.125.108.218])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2026 11:35:10 -0700
-Message-ID: <15a0cfb8457b7d9d767e7f2d2bcfd56b155f6c0b.camel@linux.intel.com>
-Subject: Re: [PATCH] sched/fair: Call update_util_est() after
- dequeue_entities()
-From: Tim Chen <tim.c.chen@linux.intel.com>
-To: Qais Yousef <qyousef@layalina.io>, Ingo Molnar <mingo@kernel.org>, Peter
- Zijlstra <peterz@infradead.org>, Vincent Guittot
- <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar	
- <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, Steven
- Rostedt	 <rostedt@goodmis.org>, John Stultz <jstultz@google.com>, Dietmar
- Eggemann	 <dietmar.eggemann@arm.com>, "Chen, Yu C" <yu.c.chen@intel.com>,
- Thomas Gleixner	 <tglx@kernel.org>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Date: Fri, 15 May 2026 11:35:09 -0700
-In-Reply-To: <20260512124653.305275-1-qyousef@layalina.io>
-References: <20260512124653.305275-1-qyousef@layalina.io>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.58.1 (3.58.1-1.fc43) 
+	s=arc-20240116; t=1778870453; c=relaxed/simple;
+	bh=NlyxVwletN8VISE8HlIqhkDzqFEYxQqO7/BjIZcgBFc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JqUK7pHVzD9qzJrtSWBaVG5ucl/d5M9EmIHNWReS+zqzLMSCQiLyxPN829fS6e3MFe0gnNJ0hCpUSDUmradG+38J1RB/XsC2mYvp6b/bxvxIGWWomYReIMPyvhb8Ms2Gt8QrFuPdop3rjZ0PMAmXl1b1DR7XDlwYNRJEMMgImR4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
+Received: from omf03.hostedemail.com (lb01a-stub [10.200.18.249])
+	by unirelay03.hostedemail.com (Postfix) with ESMTP id A14F3A01FD;
+	Fri, 15 May 2026 18:40:43 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf03.hostedemail.com (Postfix) with ESMTPA id 99B596000A;
+	Fri, 15 May 2026 18:40:41 +0000 (UTC)
+Date: Fri, 15 May 2026 14:40:49 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mario Limonciello <mario.limonciello@amd.com>
+Cc: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>, Huang Rui
+ <ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar
+ <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/3] cpufreq: amd-pstate: Use trace_call__##name() at
+ guarded tracepoint call site
+Message-ID: <20260515144049.10fe72fa@gandalf.local.home>
+In-Reply-To: <00e25aaf-6b85-4717-9b63-2c607a446a77@amd.com>
+References: <20260515140121.2239414-1-vineeth@bitbyteword.org>
+	<00e25aaf-6b85-4717-9b63-2c607a446a77@amd.com>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Queue-Id: 99B596000A
+X-Stat-Signature: j6of5rfr46ugap6rr7hmeer1k6uaz4pi
+X-Rspamd-Server: rspamout03
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX1/zcGDGatqyq+IlbqyMXf9E/QXqIWz5W+4=
+X-HE-Tag: 1778870441-136073
+X-HE-Meta: U2FsdGVkX18yemvqUxsK7QQYN0EdKcHKNDLArV1Dp60Sz5Pfeqhp/hPzL5OucyPyIhgE7iaBYBgXaC3EUVub4/n1G2dT663203DolYJ2IHHtvbFqZq+rvw0rPZIZr9BAxQhFg7aE1t4BwN8i7WMxbCA4pZvtmJFnJimyQC6wHnOtAZsLzkHJ3xvkyhhuVgFVsBMqRibBrsfAWnUcwKHAU7cKtl2JyKhjqBqsIcE/Zc6anZdSMVBWhZQvTcM68O4dw90nXJfgCV7i4DLN+6hT/fUwCextG04NnALX1a1/sUKdLNR82e6AzCakMzAde/OQDDuu0FKAe2XH7fQBDuU0QMB8H7wq6b7Dy0af6nx74HyS+/PnBttTQQ==
 
-T24gVHVlLCAyMDI2LTA1LTEyIGF0IDEzOjQ2ICswMTAwLCBRYWlzIFlvdXNlZiB3cm90ZToKPiB1
-cGRhdGVfdXRpbF9lc3QoKSByZWFkcyB0YXNrX3V0aWwoKSBhdCBkZXF1ZXVlIHdoaWNoIGlzIHVw
-ZGF0ZWQgaW4KPiBkZXF1ZXVlX2VudGl0aWVzKCkuIFRvIHJlYWQgdGhlIGFjY3VyYXRlIHV0aWxf
-YXZnIGF0IGRlcXVldWUsIG1ha2Ugc3VyZQo+IHRvIGRvIHRoZSByZWFkIGFmdGVyIGxvYWRfYXZn
-IGlzIHVwZGF0ZWQgaW4gZGVxdWV1ZV9lbnRpdGllcygpLgo+IAo+IHV0aWxfZXN0IGZvciBhIHBl
-cmlvZGljIHRhc2sgYmVmb3JlCj4gCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBw
-ZXJpb2RpYy0zMTE0IHV0aWxfZXN0LmVucXVldWVkIHJ1bm5pbmcKPiAgICDilIzilIDilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilJAKPiAxODPi
-lKQgICAgICAgICAgICAgICAg4paW4paXICDilpDilpYgICAgICAgICDilpYg4paX4paZICAg4paX
-ICAg4paX4paZ4paW4paWICAgICAgIOKWluKWliAgIOKWliAgICAgICDilpbilpYgICAgICAgIOKW
-lyAg4pafICDilpfiloTilpYgICAgICAgICAg4pSCCj4gMTM54pSkICAgICAgICAgICAgICAg4paQ
-4pab4paI4pac4paZ4pae4paA4paE4paE4pae4paa4paE4paf4paI4pae4paZ4paI4paE4paf4paA
-4paa4paE4paE4pae4paa4paE4paE4paf4paA4paA4pab4paE4pad4paE4paE4paE4paZ4paI4pab
-4pab4paI4pab4pac4pab4paE4paE4paA4paE4paI4paZ4pab4pab4pab4paZ4paE4paA4paE4paE
-4paW4pac4paE4paf4paI4paf4paA4pac4paf4paE4pac4paA4paE4paE4paf4paZ4paWICAgICDi
-lIIKPiAgOTXilKQgICAgICAgICAgICAgIOKWkOKWgCAgICDilpggICDilp0gICDilp0gICAgICAg
-IOKWneKWmCAgICAgICAg4paYICAg4paY4paYICAgICAgIOKWneKWmCAgICAgICDilp3ilpggIOKW
-nSAgICDilp0gICAgICAgIOKWgCAgICAgICDilIIKPiAgICDilIIgICAgICAgICAgICAgIOKWmyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAg4pSCCj4gIDUx4pSkICAgICAgICAgICAgIOKWkOKWmCAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAg4pSCCj4gICA34pSkICAgICAg4paW4paX4paXICDilpfiloTilpAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICDilIIKPiAgICDilJTilKzilIDilIDilIDilIDilIDilIDi
-lIDilIDilIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilKzilIDilIDilIDilIDi
-lIDilIDilIDilIDilIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilKzilIDilIDi
-lIDilIDilIDilIDilIDilIDilIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilKzi
-lIDilIDilIDilIDilIDilIDilIDilIDilIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDi
-lIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDilKzilJgKPiAgIDAuMDAgICAgICAwLjY1
-ICAgICAgIDEuMzAgICAgICAxLjk2ICAgICAgIDIuNjEgICAgICAzLjI2ICAgICAgIDMuOTEgICAg
-ICA0LjU3ICAgICAgIDUuMjIgICAgIDUuODcKPiAKPiBhbmQgYWZ0ZXIKPiAKPiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBwZXJpb2RpYy0yOTc3IHV0aWxfZXN0LmVucXVldWVkIHJ1
-bm5pbmcKPiAgICAgIOKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKU
-gOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKU
-gOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKU
-gOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKU
-gOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKU
-gOKUgOKUgOKUgOKUkAo+IDE1Ny4w4pSkICAgICAgICAgICAgICAg4paZ4paEIOKWl+KWhCAg4paX
-4paE4paE4paEIOKWl+KWhCAg4paX4paE4paE4paE4paX4paE4paEICDilpfiloTiloTilpYg4paE
-ICAg4paE4paE4paEICAg4paEICDiloTilpbilpYgIOKWhOKWhOKWhOKWhOKWhOKWluKWluKWneKW
-meKWhOKWhOKWhOKWhOKWhOKWhOKWliDilpfiloQgICAgICAgICAgIOKUggo+IDExOS414pSkICAg
-ICAgICAgICAgIOKWl+KWhOKWjOKWmOKWgOKWgCDiloDiloDiloAg4pad4paA4paA4paY4pad4paA
-4paA4paAIOKWneKWgOKWmCDilp3iloDiloDilpgg4paA4pad4paA4paY4paA4paA4paA4paY4pad
-4paA4paA4paA4paA4paA4paA4paA4paY4pad4pad4paA4paAIOKWgCAgIOKWneKWneKWgCAg4paA
-ICAg4paA4paA4paA4paAICAgICAgICAgICAg4pSCCj4gIDgyLjDilKQgICAgICAgICAgICAg4paf
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIOKUggo+ICAgICAg4pSCICAgICAgICAgICAgIOKWjCAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICDilIIKPiAgNDQuNeKUpCAgICAgICAgICAgICDilowgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAg4pSCCj4gICA3LjDilKQgICAgICDilpcgICDilpfilpYg4paMICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgIOKUggo+ICAgICAg4pSU4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA
-4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA
-4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA
-4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA
-4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA
-4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSYCj4gICAgIDAuMDAgICAgICAwLjY1ICAgICAgMS4zMCAg
-ICAgICAxLjk1ICAgICAgMi42MCAgICAgIDMuMjUgICAgICAzLjkwICAgICAgIDQuNTYgICAgICA1
-LjIxICAgICA1Ljg2Cj4gCj4gTm90ZSBob3cgdGhlIHNpZ25hbCBpcyBub2lzaWVyIGFuZCBjYW4g
-cGVhayB0byAxODMgdnMgMTU3IG5vdy4KPiAKPiBGaXhlczogYjU1OTQ1YzUwMGM1ICgic2NoZWQ6
-IEZpeCBwaWNrX25leHRfdGFza19mYWlyKCkgdnMgdHJ5X3RvX3dha2VfdXAoKSByYWNlIikKPiBT
-aWduZWQtb2ZmLWJ5OiBRYWlzIFlvdXNlZiA8cXlvdXNlZkBsYXlhbGluYS5pbz4KPiAtLS0KPiAK
-PiBUaGlzIGlzIHNwbGl0IGZyb20gWzFdIHNlcmllcyB3aGVyZSBJIHN0dW1ibGVkIHVwb24gdGhp
-cyBwcm9ibGVtLiBBRkFJQ1MgaXQKPiBuZWVkcyBiYWNrcG9ydGluZyBhbGwgdGhlIHdheSB0byA2
-LjEyIExUUy4KPiAKPiBbMV0gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGttbC8yMDI2MDUwNDAy
-MDAwMy43MTMwNi0xLXF5b3VzZWZAbGF5YWxpbmEuaW8vCj4gCj4gIGtlcm5lbC9zY2hlZC9mYWly
-LmMgfCA1ICsrKystCj4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDEgZGVsZXRp
-b24oLSkKPiAKPiBkaWZmIC0tZ2l0IGEva2VybmVsL3NjaGVkL2ZhaXIuYyBiL2tlcm5lbC9zY2hl
-ZC9mYWlyLmMKPiBpbmRleCA3Mjg5NjU4NTE4NDIuLjk2YmE5N2U1ZjRhZSAxMDA2NDQKPiAtLS0g
-YS9rZXJuZWwvc2NoZWQvZmFpci5jCj4gKysrIGIva2VybmVsL3NjaGVkL2ZhaXIuYwo+IEBAIC03
-NDAxLDYgKzc0MDEsOCBAQCBzdGF0aWMgaW50IGRlcXVldWVfZW50aXRpZXMoc3RydWN0IHJxICpy
-cSwgc3RydWN0IHNjaGVkX2VudGl0eSAqc2UsIGludCBmbGFncykKPiAgICovCj4gIHN0YXRpYyBi
-b29sIGRlcXVldWVfdGFza19mYWlyKHN0cnVjdCBycSAqcnEsIHN0cnVjdCB0YXNrX3N0cnVjdCAq
-cCwgaW50IGZsYWdzKQo+ICB7Cj4gKwlpbnQgcmV0Owo+ICsKPiAgCWlmICh0YXNrX2lzX3Rocm90
-dGxlZChwKSkgewo+ICAJCWRlcXVldWVfdGhyb3R0bGVkX3Rhc2socCwgZmxhZ3MpOwo+ICAJCXJl
-dHVybiB0cnVlOwo+IEBAIC03NDA5LDggKzc0MTEsOSBAQCBzdGF0aWMgYm9vbCBkZXF1ZXVlX3Rh
-c2tfZmFpcihzdHJ1Y3QgcnEgKnJxLCBzdHJ1Y3QgdGFza19zdHJ1Y3QgKnAsIGludCBmbGFncykK
-PiAgCWlmICghcC0+c2Uuc2NoZWRfZGVsYXllZCkKPiAgCQl1dGlsX2VzdF9kZXF1ZXVlKCZycS0+
-Y2ZzLCBwKTsKPiAgCj4gKwlyZXQgPSBkZXF1ZXVlX2VudGl0aWVzKHJxLCAmcC0+c2UsIGZsYWdz
-KTsKPiAgCXV0aWxfZXN0X3VwZGF0ZSgmcnEtPmNmcywgcCwgZmxhZ3MgJiBERVFVRVVFX1NMRUVQ
-KTsKCkkgdGhvdWdodCB0aGF0IHV0aWxfZXN0X3VwZGF0ZSgpIHdhcyBjYWxsZWQgaW50ZW50aW9u
-YWxseSBiZWZvcmUgZGVxdWV1ZV9lbnRpdGllcwp0byB1cGRhdGUgdGhlIHV0aWxpemF0aW9uIG9m
-IHRhc2sgcCB1cCB0byB0aGlzIHRpbWUgcmlnaHQKYmVmb3JlIHRoZSBkZXF1ZXVlLiAgVGhlbiBk
-ZXF1ZXVlX2VudGl0aWVzKCkgaXMgY2FsbGVkIGxhdGVyCndpdGggdXAgdG8gZGF0ZSB0YXNrIHV0
-aWxpemF0aW9uIGVzdGltYXRlIG9mIHAuCgpQZXJoYXBzIHV0aWxfZXN0X3VwZGF0ZSgpIHNob3Vs
-ZCBiZSBtb3ZlZCBiZWZvcmUKdXRpbF9lc3RfZGVxdWV1ZSgpIHNvIHRoZSB1cGRhdGVkIHV0aWxp
-emF0aW9uIG9mIHAKaXMgc3VidHJhY3RlZCBmcm9tIHRoZSBycSB1dGlsaXphdGlvbi4KCkBAIC04
-MDAyLDEwICs4MDAyLDEwIEBAIHN0YXRpYyBib29sIGRlcXVldWVfdGFza19mYWlyKHN0cnVjdCBy
-cSAqcnEsIHN0cnVjdCB0YXNrX3N0cnVjdCAqcCwgaW50IGZsYWdzKQogICAgICAgICAgICAgICAg
-cmV0dXJuIHRydWU7CiAgICAgICAgfQogCisgICAgICAgdXRpbF9lc3RfdXBkYXRlKCZycS0+Y2Zz
-LCBwLCBmbGFncyAmIERFUVVFVUVfU0xFRVApOwogICAgICAgIGlmICghcC0+c2Uuc2NoZWRfZGVs
-YXllZCkKICAgICAgICAgICAgICAgIHV0aWxfZXN0X2RlcXVldWUoJnJxLT5jZnMsIHApOwogCi0g
-ICAgICAgdXRpbF9lc3RfdXBkYXRlKCZycS0+Y2ZzLCBwLCBmbGFncyAmIERFUVVFVUVfU0xFRVAp
-OwogICAgICAgIGlmIChkZXF1ZXVlX2VudGl0aWVzKHJxLCAmcC0+c2UsIGZsYWdzKSA8IDApCiAg
-ICAgICAgICAgICAgICByZXR1cm4gZmFsc2U7CgoKVGltCgo+IC0JaWYgKGRlcXVldWVfZW50aXRp
-ZXMocnEsICZwLT5zZSwgZmxhZ3MpIDwgMCkKPiArCWlmIChyZXQgPCAwKQo+ICAJCXJldHVybiBm
-YWxzZTsKPiAgCj4gIAkvKgo=
+On Fri, 15 May 2026 13:29:33 -0500
+Mario Limonciello <mario.limonciello@amd.com> wrote:
 
+> No concerns this going through another tree together.
+> 
+> Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+
+I'll apply it to my tree.
+
+Thanks,
+
+-- Steve
