@@ -1,106 +1,177 @@
-Received: from mail-pl1-f174.google.com (mail-pl1-f174.google.com [209.85.214.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010004.outbound.protection.outlook.com [52.101.201.4])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23ACC3EEAE0
-	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 18:26:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.174
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778869598; cv=none; b=Ft3/QSUDR7m7zgNhFUP0l7gi7FSC2cxS9x/I2oQoLsgzj2D8w7dSkXepA34x3051pREGp9tk8PRoYJ5+TMyt9omBosrBVLColJTwuDoVPzBQFyMPHKGy4Jwc83C3bSSheQB0kJEWiUkub0Is8PpLmjkbs2M8cG93olYF6WsjwKM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778869598; c=relaxed/simple;
-	bh=f/nDi57hXZKLpfRoPJ5vE5kLX9ZIF184zHub2O3n6qI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HkCbhSdMORw8tmzqvuRKWRlZl2hqvnmE+AauOBzSIwO0BG4hhAsT3CK4AMA2Dn9XMWpYMdYszDk+7XwS1YxKCHxr4sU3EzRgmTY2NNKydiHkGf0POCO8+5EtaB+sBtLW6yiucBfFaToHUKyx73yuuc6cA8JudpFv8ciu5Sr/E7I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pJLRC+gT; arc=none smtp.client-ip=209.85.214.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D79D3EEAF1;
+	Fri, 15 May 2026 18:29:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.4
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778869780; cv=fail; b=BweduvkCLlO/q7803l9F3Y4kBUQ00rDbJfY6Q0RckFMLmMRBUBizVijS/JO0ejN3k+UqlWYx+uZfbi+cquOAienQeB17+LLJCnG1nK53uFaEjhm6tbaEDv1rXs0skS1EIBTcoc65OXDjjVBH4hAyMOgmfMpEjd8VchfqRdKK2iU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778869780; c=relaxed/simple;
+	bh=FFTz0iZixrpCaJCbF4N76MT6t7n6rXITtFNU7FcP4CU=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=NTtvtfTaTI8g8zvSXuiXMk7yByXRPShsnSKYb06dwuMBu3asVAJ8ZTR12FCX5LWXek8Ioc/s5ZNU6gaNirqKR7mAg9gTR0caooJ5u5VwQx9fAZevqYL37vQGvFjlRN1toMP16mVQWP7A8ECf105UYhpk3ZnPcb3j2CZyGvsPxF4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=vO8VHDHU; arc=fail smtp.client-ip=52.101.201.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pJLRC+gT"
-Received: by mail-pl1-f174.google.com with SMTP id d9443c01a7336-2bd2051167eso998435ad.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 11:26:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778869596; x=1779474396; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=KU70qGgzHimS0wVKiiWBVevI3BHfnlIAnYvMEou4rn0=;
-        b=pJLRC+gTEfrIX+A0wSex9r+OhXWcc359iTt7lbyk+IqJRFtOU0qR7sNxF/qEIs/abb
-         0LQYfBOu6LNs7khqsZHqoffoQHAufNCInRwnNFSCAkCynb0Q9e+gMyZoqWIUeo1Zvkqc
-         QKdRIhisE+d3+tH1cjQrDYkLbu5FE01mFWlzOeVguWZ9rTYvZ8Qgq6YBxb3S7Q4zRnDr
-         9eF/EwNzYeQsXQkPQPk3azHfG1AEgeSYTGkXNvw53SJgKkLNnmsCV7u30ntGCB37/Vjc
-         cwfP3BjFUb4yAJOFAV8hVxbUgbNUI/bpzeqKJf9nDr4a3kLDRy3hpoAWdOZzbwO9+5WT
-         KxoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778869596; x=1779474396;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KU70qGgzHimS0wVKiiWBVevI3BHfnlIAnYvMEou4rn0=;
-        b=hFGWqXno7hfG+tj4jCpyUcn2DZcmdYv28cCQxxEL5gE81ywTv0kgAqXuZxC8Bz8KpO
-         PHqn/Fp/YMnVL1syAbnbdjAVys8k0Qsx6t1nHCUIDXrtzNO7K1y09kJljjq0ryO/2Wkh
-         zYk7ApNm5s5sTFEuLjaF4QT0ExQMkEctnyatUK764k6pQx65Gtn7Te3iZczV53z/qId2
-         u5FuAO8Ld+7V+ElGO0lI4jZXuZrdhhxZxQ9V1mRe5NNZnvFunoexbNo/SErAJHSFTd+B
-         RrtABGkWGEexg5lyq/3QzbrnIpvADjZ4fc35xgYdmtX3HvnTuj3wLsHuUgZKKTRlE9+B
-         /jCQ==
-X-Forwarded-Encrypted: i=1; AFNElJ94CbiHJrFAJLh4rxWcEO1Co7dpn5V/4533Zaabz221MM1YcaxLkGEJNpOSQcdxdW7YKAOHB3Dwiw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyTDcg4zf1eoZ+xzg8TtWphgfzyrDdNQRsuMFPkAq0Yaou8vUMU
-	6w/In3Nof3NaOPb9qhr5CWfgq0UQLiv68XVOJQoo7XISAHT3NLFE4fdW
-X-Gm-Gg: Acq92OEeter4re9zyJoMrpnrZ3jrV1LWVUEYTjCqSb0F6Z/YthpGBUJWw9YI93oS1uG
-	WSdThiKHpxqMz6SSfH7NZUJjKCREpzkxm8SRiev7DGJvDWjh80/IleREKqJzUickln9gfscnliJ
-	rB5UCNxRreMx5HQK1Yufg0bBT3wp8gy++QcHYKUMQcXsBltJSlYS/gb6uQRbP9KydgepWHOY8FJ
-	R1GzpnzIRnBzrBARXme14MYIOJt/PU1ihD0FuQMnD6gEv74fbph5ktv/Bd5/sHRv1Fy98MCO6oW
-	i8RKwt7EkMAtzqsjhqy4xqUE/UmXOAeC5jSgJyAceqpIFbH3tiGDixCii5ge2FWAW0Pi0JXwNtL
-	DdElsHRrm565AWCwXd84Tn4xx9sNosmFSjJwDxViEh0Oak1DR4tpUnpquZaQ6eyIXP7D4bo9XCb
-	lcQlgF3iBMW1w1jdFrkA1RsrpBVZzHpCGL
-X-Received: by 2002:a17:903:182:b0:2b9:cd2d:6f11 with SMTP id d9443c01a7336-2bd7e8bd35amr57059885ad.18.1778869596118;
-        Fri, 15 May 2026 11:26:36 -0700 (PDT)
-Received: from gmail.com ([58.84.60.109])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5d0fd279sm64428595ad.62.2026.05.15.11.26.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 11:26:35 -0700 (PDT)
-From: Sumeet Pawnikar <sumeet4linux@gmail.com>
-To: rafael@kernel.org,
-	linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	sumeet4linux@gmail.com
-Subject: [PATCH] powercap: intel_rapl: Fix memory leak in rapl_add_package_cpuslocked()
-Date: Fri, 15 May 2026 23:56:16 +0530
-Message-ID: <20260515182616.227707-1-sumeet4linux@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="vO8VHDHU"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=mmwx4F2skREgMbNDNDBrjs31K3vzndwDsDx7ult8//FInRoiU11C6hOKfpU4q4XNTLrBQ1mKqu+REWjhUhuYF6tqIP1F+TzTRLSXg+GnuW+TSUO490CXsgSWmJ3bw6the7mdeEF1reI4r7vrXCQU7sKGd0E6B7Jk151vTgcRauF2M+Jgk3hNc34Ykv1gS8y2tgEq9IJM1wqW9wVlmM2YkhtQLLwheIxsM52Km5IGeXz3j9pVG9a09qXGwfLE/aQNmcVnsvrpx7442/4rRMsfboAxhvn9bTqkAqC+6xj6LDyllDWdMdcYPxOCOBiqg3TtbJQl75MXxbpC2nEOmH7U6g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=chR/Qr1PjhWOzbDTZyNlCkwJ1XfXO0ku1Fod8LLGeuQ=;
+ b=Gz6y7rHePoPNtRQ0oZya0el0/tlu39FYKwYe0WDm6IFUKZXS1rsmCRXY8+7S4gtZie6eQdwjYb0QwOG94EUnGJo8PwJKFBvsjJl7dhz76XOSkFx784e8SIH6kzans2JCTBY+13UWM5ubJOZyq6crqwu8wcJzCMTK7620NFXB3JRHAqK1SRy/JYE3rxW4ofVkXvQcwKYrwh/IXQhc+wQjj4qzABzdjNbJbx5bbghyjJbkbdHX2Vsa7omGbmKxheLohoRWnozkdHiWtUd32BWJpKEzPxYHnh8H9gfuD47OhD1KzbZCsBupg9NhvQYAX37FEw6SHDCCjEEQzxatFmu24Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=chR/Qr1PjhWOzbDTZyNlCkwJ1XfXO0ku1Fod8LLGeuQ=;
+ b=vO8VHDHUcm7r3CgGaE6QgRBFQ0x+SL7UFqkuuwP4n3JwVcz/bk/gHHnohj+8MRsYE/2lkeE/SiD3Ku/Hswnkh05YS5dLVDoStmA2yPkXPiGYu2UfjpV26BbQQrqbFOODS+lORCFgdsJAjq/fc4NaBQfq/eg4XV8mqS2YWwl6w+s=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com (2603:10b6:8:38b::11)
+ by MW4PR12MB7335.namprd12.prod.outlook.com (2603:10b6:303:22b::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.19; Fri, 15 May
+ 2026 18:29:35 +0000
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445]) by DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445%3]) with mapi id 15.20.9870.023; Fri, 15 May 2026
+ 18:29:35 +0000
+Message-ID: <00e25aaf-6b85-4717-9b63-2c607a446a77@amd.com>
+Date: Fri, 15 May 2026 13:29:33 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] cpufreq: amd-pstate: Use trace_call__##name() at
+ guarded tracepoint call site
+Content-Language: en-US
+To: "Vineeth Pillai (Google)" <vineeth@bitbyteword.org>,
+ Huang Rui <ray.huang@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ linux-trace-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <20260515140121.2239414-1-vineeth@bitbyteword.org>
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <20260515140121.2239414-1-vineeth@bitbyteword.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SN1PR12CA0106.namprd12.prod.outlook.com
+ (2603:10b6:802:21::41) To DSVPR12MB999147.namprd12.prod.outlook.com
+ (2603:10b6:8:38b::11)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DSVPR12MB999147:EE_|MW4PR12MB7335:EE_
+X-MS-Office365-Filtering-Correlation-Id: 85f668d0-bfcd-4bb3-1b1b-08deb2afea0d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|376014|1800799024|18002099003|56012099003|22082099003|11063799003;
+X-Microsoft-Antispam-Message-Info:
+	XhfQ4srt5KE42kjqJ+oQyYflZ8jIy1ThmxqMywCcBxt45U1G9NMn1ZSTVbWdwpNTYs6xEknZMl+/Mi02GBNcrXUdQuOwlyEfSUSUjOlUigDuOYDV/6oPrRvjU/4vMg2VUy5Xpr32dhGOWiIoXMm94MCcz545aIXM+Qcz/xJ/bCuBUDX3KINyq09RdkPuwdTX23BcVj21CE/ME4tXZAS7KprWA+CUvQ/39PdetTxmzJtMzkdMxH+NCnEs4Qq0z1KYxfYUX9X9wbNI4INsF8m+/SxkOAsd/TGxVtEW6NPx6k6emCG+FwteabXyflB9hotavcQw/xYUoVnpBbV0POsysUArD/oypq0w9YOA0LlkYw3ciFvFLq6vFDMrVuMGMcBuocDvfyAR4O9rQb0vyjn3L4Vawb7QlaNCXRW+Qnvbwt0rkTfciNw1PZo/nVBEUQatZCKezFkU9H5N6ZwKpmnAqe872q6uVymCpKyujKFH+wlO05NY7x7nIYWKafJlo2MOGKNZcBGvb6h0qroa+KXIILxjotOXJYgrGrKwFYLmFSVPJ/S1fLpX9oA8uiXn9WCD7A/4mAlgWrfAFoyzliPVh78TdEsWYn6IZsEC/Yj0Q9RQgdn29hlmuHXk64+bs7BfiEoGvKuQIKiDpsDBhDP77IHlG71b3jAZOTzIFhdvb5+Hs1vJmuw9p0uUGiuse0gPRYrYpk4mYZpq+vKs2fkQRA==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DSVPR12MB999147.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(18002099003)(56012099003)(22082099003)(11063799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?SzdEQVlUZlpJTmZ4Z3BibTd4cWxMcS9nU1kwQVB2d2wyaWgzc1Q5OEJEbGU1?=
+ =?utf-8?B?dnNZNENFN3RtS25EY2x3SlVEV2w0azhzRHo1NGNvZ2gydnF1aFFCUlF4SCs1?=
+ =?utf-8?B?eklNMlRXcmM0bThMZmhyVFQxU2grYjB1MHBSZUtuYXZLaGFTUzd2N3R3bFU3?=
+ =?utf-8?B?M0QzU0lPeGloNVJvYXQ5cmRPTGExVjlwRTlYM2I0Z090Sy9aKzVyUm9wMVN0?=
+ =?utf-8?B?dEJ6SGVrTzdoV1RNNFEvc2kzRkROTjhMTzZDK1YvTXpUdjNEdXh5R21LQ2hP?=
+ =?utf-8?B?RThSMVRqc1BvcmdJeTUzcjZWbDV5ajlKWWdWV1dlZFpnZU5Pd1N1WnIySkxl?=
+ =?utf-8?B?L09qRWFFS0pkdzVPcU5BOGExQmRMRXowMDdmeW1WMktBTlRlMW5ac2UwTEVB?=
+ =?utf-8?B?N0hjVHV1bFcwMlcxM2d6M1IxZ0pDTno4a09HNUdaaDNlWVZoQkNDUjhKcmRR?=
+ =?utf-8?B?d213ajkrcFBVYTk4RmtkUTRGOXNhNTdnay9ydEJENHJJVDFzbFpuOVpzUzZj?=
+ =?utf-8?B?MDd1SWE1QXVEUUIyM3FBbTd5MHE1NEdOc0NIK1FJeitHVzZqZmVWN0E0K0JW?=
+ =?utf-8?B?QXYvT1dFek54WTZGcklJWkprcURSTU93UlkxQW1NNmdDOUU3MGRudW5OMnBn?=
+ =?utf-8?B?MXdoUkdWcmk2VUtOd0pRcW45SjhSUUY1d2hPU3g0dXJSNU83c0Z0bjVyQ0Jo?=
+ =?utf-8?B?TVFpaVprYSsxUVFKUk1MZ3BSK2RLV29uMVlLS2V4dkJpRzZpcHQyS3dUNDhj?=
+ =?utf-8?B?TEQzNkx0d09OdEk0Q1JmUGNGaUF2eHhCYjN0M0RhaWRueko1aThlTWlhRXlv?=
+ =?utf-8?B?QWNDZWEydU5zZzR0aEJlTVZtbHB1bWtYZ2JyRStNL0hjdmJ5bit1RElzY2Zp?=
+ =?utf-8?B?ZHdqajZjU2ZhcW8xR0swL2czZjdaNHNCNHBjbGtYRnNEc2NkWVhIR09sQXFv?=
+ =?utf-8?B?NS9ZUE8ycEcxRktxR2tFeE1mdEJPa2xBdkJyQlBIdS9Xd2VBbVhzb2R2bktk?=
+ =?utf-8?B?OXpXeGpHYzlBT3Z6UlY4eGtabzgvakw2ZGFrSlZiZ3pSYlNzVytlUFduRlE5?=
+ =?utf-8?B?YXhCUXZVR2I3Wm16bGYxR0Y2eUdicTliZE1VV3l5WW45MlNMbTZJRVE0ZTYv?=
+ =?utf-8?B?eHVtT0ZZYzBSdDRsQXJseGxPeEJWRVZUWFk4S2REZHJCVHBwT0hoYlM1ZW5M?=
+ =?utf-8?B?bVRveFVVT3B2U1JKaGtITUFMeVV5MjVoMEVBNDRCWXlaME5PWlJzRG9KbDZK?=
+ =?utf-8?B?VktXYWhSaldwSkZOZU1ZYUdheVdhUldFWEJja3RVYzVGTE9OTmU5NGNNVXpR?=
+ =?utf-8?B?bVBWamozNkwreS9Iam45TjZHQWhtMlJIS3JYekxXVkExb1hGSFZTWFhFMEFl?=
+ =?utf-8?B?SEh3MXI2VzlFbmo5c1lqUWZXUG1lODQrTS9WRW1sZmU0dWFNU3VqalZUNU1i?=
+ =?utf-8?B?OVhhTzdFNU80N0lnSkhESC9wbTRuMXdtZ2wrek45OHgrUVhVd0RKbHl4Mzk3?=
+ =?utf-8?B?VHFwenc3S2NOTUp2dUlCRitkdks3QktMand2Tlkxa3ZKc2RrMlpBQmFWVVdn?=
+ =?utf-8?B?UGlXN1NUWlBJeGR0Z1ZnZjdlRDVZR2hNcmdIWmcwWVNrc1kyT0tRcTRPVnpv?=
+ =?utf-8?B?UnFtRWlad1BTRWRmejRjaVJ2aXU1Q1ZMbm80ZUs5Y3BPdnhrZU9MUWNUVlBi?=
+ =?utf-8?B?dTlyQm0yYVR4ejNxVTRwb0JEL2x0RUJhRGRNSGJ2WUNzVWZzYURWU201Q3Vu?=
+ =?utf-8?B?bmhZMzIvSzFjUkwrY3FsS1BqMHBXQmhWTVRtd3pLK0pyRFJTampLcnBoSmph?=
+ =?utf-8?B?RlVxL05tOE9KZXRVOFJTdjJUd0tFSHRSMVliaXlBcEtpbS9iRE5oVjhFTDVQ?=
+ =?utf-8?B?bUxDTVFlZXlNY0I5OGx2eGs5RXc0KzdheUZ3cXZ3ZHZ1aGFNM3A0ZHZwTUVz?=
+ =?utf-8?B?L1pZY0VKR08wb2wvektCV3RTeXBZcS9mL1NiVFl0LzVEVTNKS0NzNE0zajQ5?=
+ =?utf-8?B?eXhCK1pZcjJ3bFFzc0s2OWdRbzNaMDZoTzdHcE1KcFZqakk5eW0yYmxHNlNQ?=
+ =?utf-8?B?dVcrQnhWcEZJaHdHZ0NEelNBR0lnMk5XNlpkS0tGM3ZNWHorY0JrM0hsdnFo?=
+ =?utf-8?B?dEFKckZ3bTNmM0tKeG1jWWxLUlY1OXRPK2FmQUtFTWd4OTAwZmV3MEhCbHVG?=
+ =?utf-8?B?ME1KOU1vc1o5d3E1ejhMRHJBQUk4NFdpSW9ObUIvRElub0FZL3FQaHBLSnJr?=
+ =?utf-8?B?MzFJNldDVGdoTWMyVmxab1M1d0hsMGYvR0dYNWZsaGZ1Snk5UUJwSDcyQnRv?=
+ =?utf-8?Q?vzVoLAOHkF5Gw4a5wh?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 85f668d0-bfcd-4bb3-1b1b-08deb2afea0d
+X-MS-Exchange-CrossTenant-AuthSource: DSVPR12MB999147.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 May 2026 18:29:35.0691
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: +N9YfAl7vDL8RlnYAWyqLgH+cLCfVEs9ySdR2Y2zvqxbjPQGj01fCFvU2kUyVqgESMy/lKEVfV76y5j4dHBGAg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB7335
 
-When topology_physical_package_id()/topology_logical_die_id() returns
-a negative value, rapl_add_package_cpuslocked() returns ERR_PTR(-EINVAL)
-directly without freeing the rapl_package structure that was just
-allocated by kzalloc_obj(), leaking memory on every failed package
-addition.
 
-Use the existing err_free_package label so that the allocation is
-released on the error path.
 
-Signed-off-by: Sumeet Pawnikar <sumeet4linux@gmail.com>
----
- drivers/powercap/intel_rapl_common.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On 5/15/26 09:01, Vineeth Pillai (Google) wrote:
+> From: Vineeth Pillai <vineeth@bitbyteword.org>
+> 
+> Replace trace_foo() with the new trace_call__foo() at sites already
+> guarded by trace_foo_enabled(), avoiding a redundant
+> static_branch_unlikely() re-evaluation inside the tracepoint.
+> trace_call__foo() calls the tracepoint callbacks directly without
+> utilizing the static branch again.
+> 
+> Original v2 series:
+> https://lore.kernel.org/linux-trace-kernel/20260323160052.17528-1-vineeth@bitbyteword.org/
+> 
+> Parts of the original v2 series have already been merged in mainline.
+> This patch is being reposted as a follow-up cleanup for the remaining
+> unmerged pieces.
+> 
+> Suggested-by: Steven Rostedt <rostedt@goodmis.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Vineeth Pillai (Google) <vineeth@bitbyteword.org>
+> Assisted-by: Claude:claude-sonnet-4-6
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index a8dd02dff0a0..f8afb4461e45 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -1770,7 +1770,8 @@ struct rapl_package *rapl_add_package_cpuslocked(int id, struct rapl_if_priv *pr
- 			 topology_physical_package_id(id) : topology_logical_die_id(id);
- 		if ((int)(rp->id) < 0) {
- 			pr_err("topology_logical_(package/die)_id() returned a negative value");
--			return ERR_PTR(-EINVAL);
-+			ret = -EINVAL;
-+			goto err_free_package;
- 		}
- 		rp->lead_cpu = id;
- 		if (!rapl_msrs_are_pkg_scope() && topology_max_dies_per_package() > 1)
--- 
-2.43.0
+No concerns this going through another tree together.
+
+Reviewed-by: Mario Limonciello <mario.limonciello@amd.com>
+> ---
+>   drivers/cpufreq/amd-pstate.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/amd-pstate.c b/drivers/cpufreq/amd-pstate.c
+> index 453084c67327..4722de25149b 100644
+> --- a/drivers/cpufreq/amd-pstate.c
+> +++ b/drivers/cpufreq/amd-pstate.c
+> @@ -368,7 +368,8 @@ static int amd_pstate_set_floor_perf(struct cpufreq_policy *policy, u8 perf)
+>   
+>   out_trace:
+>   	if (trace_amd_pstate_cppc_req2_enabled())
+> -		trace_amd_pstate_cppc_req2(cpudata->cpu, perf, changed, ret);
+> +		trace_call__amd_pstate_cppc_req2(cpudata->cpu, perf, changed,
+> +						 ret);
+>   	return ret;
+>   }
+>   
 
