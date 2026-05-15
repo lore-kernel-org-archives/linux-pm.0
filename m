@@ -1,37 +1,37 @@
 Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B38D346AD5;
-	Fri, 15 May 2026 21:07:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A5DB487BE;
+	Fri, 15 May 2026 21:11:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778879274; cv=none; b=Pzh37pc7/+8hbVXfG2rd6UYaRCzsVPESW66i2BWyPnJQ7IUgbAb7XtEo+LmQW7HnXQ9Pu76s6QnfxjT4iX64Xg8DfXCO38JwvSAsQMI1u9O8KeSdStPBC14VOXP1wEAqLjwu7Cltbot4Y5G8vZifujTof2veLDxeiEzEYsb4sFM=
+	t=1778879513; cv=none; b=YS6sdghOuWbpZdAMcT+99hCzYI7rtjpRvXQTJAw3Y/J5PwNivdNJeCp5A4/uPCMiVKxwjLjfELwr7NggWb/6nvR8SwJZAbrAGM1vkd+NRCnMB30j+4C2/w8gTe4eYu4q/+DDJziIe32eWcwuin11PyzEsHmwLhZI4EJdA/iyEOM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778879274; c=relaxed/simple;
-	bh=UZQiu0VH2xAOXUxnfPEgUIj3JzYw5nHJpb6xLgSjZxw=;
-	h=Mime-Version:Content-Type:Date:Message-Id:From:To:Cc:Subject:
-	 References:In-Reply-To; b=vDP3SsEgmQ903+JuKrTR3cdIESH9hq2HyoL0l1RZ3Dq3p3GKYSAAzZuiNmxKctyw1qTMNgWK7B70Z7c3S/8PbyrOUt+2fxHKwic5rYjmEjBRPCScYDRWWPmeA4qJJFcaMtoLyPhCJuQ/uofXMjiiu9sgG4TAf067aJeMlLfJ9VM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=KZxDj9jU; arc=none smtp.client-ip=178.21.23.139
+	s=arc-20240116; t=1778879513; c=relaxed/simple;
+	bh=NW9PHikwJQ3ZtX3oBjSMWYnrqk7Wju8+GpkDo/Fz3u8=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=FsoZFbTQ2hu5FJ0QCTvagHVVrVfuMhMGb0oCBOnfOI057s/qAk6SRO6+oFpRrRkeuIiEL0c+Fohde1MODWLNaMstsEk+KOR5r04cnXYj7Rf6c4mNoC80zBdGHge/juyhP/3BjgwmHvhyavLyCFx2OoLmarX5nypF/8MVlUtm/pc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=UqsszUUE; arc=none smtp.client-ip=178.21.23.139
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="KZxDj9jU"
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="UqsszUUE"
 Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id 4FCC9271BA;
-	Fri, 15 May 2026 23:07:52 +0200 (CEST)
+	by disroot.org (Postfix) with ESMTP id C93BB27249;
+	Fri, 15 May 2026 23:11:49 +0200 (CEST)
 X-Virus-Scanned: SPAM Filter at disroot.org
 Received: from layka.disroot.org ([127.0.0.1])
  by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0_mgalvMmZ-c; Fri, 15 May 2026 23:07:51 +0200 (CEST)
+ id oHfTVjZ0KNoU; Fri, 15 May 2026 23:11:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1778879271; bh=UZQiu0VH2xAOXUxnfPEgUIj3JzYw5nHJpb6xLgSjZxw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=KZxDj9jUR9eWY6FtpDOfeAiHdPJhQRayv8CRJF0SCw/5/WwSUZmevrgvw/Fq4mYEC
-	 FvgYwNdWeUmcs6Rl+P9VBFdaAhnFR57l18isQVtNY/lx0nzvShZfuxXwg6YrjAO5oO
-	 4H7dHFV7DdVdr5ILFO/KJWDmXcVaFjqnI19H8hS9viNfoysLdTYusaC8oprMu1pn3R
-	 iYes4MaI9wvWM3s8arTr5vFrjfCa/h0C7z1WxAUKgX2DuphoS+9Fj2zPG619erC0w4
-	 E+PsYVzARBAHhJorueok+DNwSS83ke16/sMNQwTSnt1cYWXinUahBOMaT/e+eMrjnK
-	 UA41x/RhAlNzA==
+	t=1778879508; bh=NW9PHikwJQ3ZtX3oBjSMWYnrqk7Wju8+GpkDo/Fz3u8=;
+	h=Date:Cc:Subject:From:To:References:In-Reply-To;
+	b=UqsszUUEXaXyvllsI8NE9KleLkIwLZwQ6d7IpoMs2tX2Vbf5NfvDiJd2h2d3JwVYl
+	 VYWYoXpLXHjQoB9gYu3lv9tlRl/VBD6RtZjpQv2YZN8Au89o4xRt5B/ahf+Nvblh5E
+	 rWmPU48hSf49bXn082NXVLrIiK0D/Za+5APDWzh8hEKMTrgYt1rJAyM2HkExBy6zuw
+	 Z1HVe/aTfnq57aco1VoGFhVLhEP/egzTu1MyBKVx7qy5e6U3ifOYEKO1hO+BEMb+hg
+	 /C3fV9CEoQe5A9n2Ldn1jOQzZCecbB9KQTzujFmQv93fOiMNjMkEoEqHR+UKpvZXgV
+	 zRzwErxLj5DPQ==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,11 +40,8 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 16 May 2026 02:37:34 +0530
-Message-Id: <DIJK2FWQOGCK.2WJ9FED9HKGHG@disroot.org>
-From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
-To: "Conor Dooley" <conor@kernel.org>, "Kaustabh Chakraborty"
- <kauschluss@disroot.org>
+Date: Sat, 16 May 2026 02:41:29 +0530
+Message-Id: <DIJK5FTQ5KWG.HOKZAOXHTGU7@disroot.org>
 Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
  Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
  "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
@@ -59,24 +56,181 @@ Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
  <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
  <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
  <linux-doc@vger.kernel.org>
-Subject: Re: [PATCH v6 02/11] dt-bindings: extcon: document Samsung S2M
- series PMIC extcon device
+Subject: Re: [PATCH v6 03/11] dt-bindings: mfd: add documentation for
+ S2MU005 PMIC
+From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
+To: "Conor Dooley" <conor@kernel.org>, "Kaustabh Chakraborty"
+ <kauschluss@disroot.org>
 References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
- <20260515-s2mu005-pmic-v6-2-1979106992d4@disroot.org>
- <20260515-mutable-urgency-305fecf3ffc4@spud>
-In-Reply-To: <20260515-mutable-urgency-305fecf3ffc4@spud>
+ <20260515-s2mu005-pmic-v6-3-1979106992d4@disroot.org>
+ <20260515-justly-recite-6028f4bfb24a@spud>
+In-Reply-To: <20260515-justly-recite-6028f4bfb24a@spud>
 
-On 2026-05-15 18:15 +01:00, Conor Dooley wrote:
-> On Fri, May 15, 2026 at 04:08:58PM +0530, Kaustabh Chakraborty wrote:
->> Certain Samsung S2M series PMICs have a MUIC device which reports
->> various cable states by measuring the ID-GND resistance with an internal
->> ADC. Document the devicetree schema for this device.
+On 2026-05-15 18:14 +01:00, Conor Dooley wrote:
+> On Fri, May 15, 2026 at 04:08:59PM +0530, Kaustabh Chakraborty wrote:
+>> Samsung's S2MU005 PMIC includes subdevices for a charger, an MUIC (Micro
+>> USB Interface Controller), and flash and RGB LED controllers.
+>>=20
+>> Add the compatible and documentation for the S2MU005 PMIC. Also, add an
+>> example for nodes for supported sub-devices, i.e. MUIC, flash LEDs, and
+>> RGB LEDs. Charger sub-device uses the node of the parent.
 >>=20
 >> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+>> ---
+>>  .../bindings/mfd/samsung,s2mu005-pmic.yaml         | 120 ++++++++++++++=
++++++++
+>>  1 file changed, 120 insertions(+)
+>>=20
+>> diff --git a/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.=
+yaml b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+>> new file mode 100644
+>> index 0000000000000..0e6afb7d2017b
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+>> @@ -0,0 +1,120 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/mfd/samsung,s2mu005-pmic.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Samsung S2MU005 Power Management IC
+>> +
+>> +maintainers:
+>> +  - Kaustabh Chakraborty <kauschluss@disroot.org>
+>> +
+>> +description: |
+>> +  The S2MU005 is a companion power management IC which includes subdevi=
+ces for
+>> +  a charger controller, an MUIC (Micro USB Interface Controller), and f=
+lash and
+>> +  RGB LED controllers.
+>> +
+>> +allOf:
+>> +  - $ref: /schemas/power/supply/power-supply.yaml#
+>> +
+>> +properties:
+>> +  compatible:
+>> +    const: samsung,s2mu005-pmic
+>> +
+>> +  flash:
+>> +    $ref: /schemas/leds/samsung,s2mu005-flash.yaml
+>> +    description:
+>> +      Child node describing flash LEDs.
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  muic:
+>> +    $ref: /schemas/extcon/samsung,s2mu005-muic.yaml#
+>> +    description:
+>> +      Child node describing MUIC device.
+>> +
+>> +  multi-led:
+>> +    type: object
+>> +
+>> +    allOf:
+>> +      - $ref: /schemas/leds/leds-class-multicolor.yaml#
 >
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> pw-bot: not-applicable
+> Does this need to be an allOf when the other refs are not?
 
-Thanks, but this patch has already been reviewed by Krzysztof in v5. I
-missed the Reviewed-by tags, sorry! I'd been preparing v7 after the
-reviews by Sashiko.
+It has it's own properties, that's the reason. This used to be it's own
+thing in dt-bindings/leds, but I was asked to move it here in prior
+reviews.
+
+>> +
+>> +    properties:
+>> +      compatible:
+>> +        const: samsung,s2mu005-rgb
+>> +
+>> +    required:
+>> +      - compatible
+>> +
+>> +    unevaluatedProperties: false
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>
+> Move this above the child nodes please.
+
+But properties are sorted in lex order?
+
+> Otherwise, I think this looks good.
+>
+> pw-bot: changes-requested
+>
+> Thanks,
+> Conor.
+>
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +
+>> +unevaluatedProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/interrupt-controller/irq.h>
+>> +    #include <dt-bindings/leds/common.h>
+>> +
+>> +    i2c {
+>> +        #address-cells =3D <1>;
+>> +        #size-cells =3D <0>;
+>> +
+>> +        pmic@3d {
+>> +            compatible =3D "samsung,s2mu005-pmic";
+>> +            reg =3D <0x3d>;
+>> +            interrupt-parent =3D <&gpa2>;
+>> +            interrupts =3D <7 IRQ_TYPE_LEVEL_LOW>;
+>> +
+>> +            monitored-battery =3D <&battery>;
+>> +
+>> +            flash {
+>> +                compatible =3D "samsung,s2mu005-flash";
+>> +                #address-cells =3D <1>;
+>> +                #size-cells =3D <0>;
+>> +
+>> +                led@0 {
+>> +                    reg =3D <0>;
+>> +                    color =3D <LED_COLOR_ID_WHITE>;
+>> +                    function =3D LED_FUNCTION_FLASH;
+>> +                };
+>> +
+>> +                led@1 {
+>> +                    reg =3D <1>;
+>> +                    color =3D <LED_COLOR_ID_WHITE>;
+>> +                    function =3D LED_FUNCTION_FLASH;
+>> +                    function-enumerator =3D <1>;
+>> +                };
+>> +            };
+>> +
+>> +            muic {
+>> +                compatible =3D "samsung,s2mu005-muic";
+>> +
+>> +                connector {
+>> +                    compatible =3D "usb-b-connector";
+>> +                    label =3D "micro-USB";
+>> +                    type =3D "micro";
+>> +                };
+>> +
+>> +                port {
+>> +                    muic_to_usb: endpoint {
+>> +                        remote-endpoint =3D <&usb_to_muic>;
+>> +                    };
+>> +                };
+>> +            };
+>> +
+>> +            multi-led {
+>> +                compatible =3D "samsung,s2mu005-rgb";
+>> +                color =3D <LED_COLOR_ID_RGB>;
+>> +                function =3D LED_FUNCTION_INDICATOR;
+>> +                linux,default-trigger =3D "pattern";
+>> +            };
+>> +        };
+>> +    };
+>>=20
+>> --=20
+>> 2.53.0
+>>=20
+
