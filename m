@@ -1,84 +1,149 @@
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FA7F43D4EC;
-	Fri, 15 May 2026 09:49:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.224
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1628943D4FA
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 10:10:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778838576; cv=none; b=d7l+dMPESmS1Jnn5FvGc40+Mie/O0fiATTL8hOvKmPeAYBWTKhZFuAJg78o3RBPReocfO3siw6SYF38gFj7s7dWrkP75jnYK/+SmqWVcIFElNNEmfbj6zY1avzG5xc+1tlUNsGRkOShFRBnL6SUR/NZsDKLbIC31it+dbGJBCd8=
+	t=1778839810; cv=none; b=oYVgrVHd9ufetKOnTwAogtgHVLQH2lYX9o5a6rPG5fFC+yhvKWCEXuZZPeuss6XguD1PMvIumlfgr5Fyo+TFPbvLCKsammfmPIt0ZJYlcddtMfeSHkC3QmR9suBuKknbYi6qj9SUrNSVzdpUKoxSbd/Vrx9DwzlVjwegZ5Ml1vg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778838576; c=relaxed/simple;
-	bh=rWTAaOAOYDmQ6UBxvzKThMN94E4arVA1Gebhj55YfcE=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=X12EJvK/8ZrrrZH9jCBymLkXoDQG49gLdKnDRr8IddEVU+AHYppmKMpL9gKN3qMhdUBu8nwatHdC0SUEhUPMG+9qQyOJ4mAfVf3aDpOOfZZ2JqbsIrp49hT+wj+g0fPgaWreS0QD6Ct29YPAhNYYh9jdVfWFIrwG6W/GCT/oErc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=HTNL3PEs; arc=none smtp.client-ip=113.46.200.224
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1778839810; c=relaxed/simple;
+	bh=r119k2qqSvMGfTsUYPr/T3TtmvauMbPiahQOfS/2/Cs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KnV7IPW2dEU/1gVatKyTevCl3nH5iPY2K54mttebdkW8zZPePvGOE+fmcxGXzIezjcnIxOPEMmVDZI+wgHiTlhokfb2fJuFfhk+A09JVoYnSwx9urEFnXnONvUUTwND1h7VEJOn3iuSoyN0cztcoUDVC03tPDQZbUxc9yN+KWVA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Kx8BpcW5; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Liwwskkb; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="HTNL3PEs"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=Ddf5rnkcewWB3VTTcGX1fHHmNywN/T2k0aDW7rLyNVA=;
-	b=HTNL3PEsw+EhyCcCe/PTiMxfjc/ZA4bYXbJXjsaPSiV7KqUFp0s6fqAOKsidZOcJ8RQYizoXx
-	ias266hbyn1eM215+JSc5LTrr6TMbPvkZi9wg6ZjlDMCnBXPiJlPL5riYDI7pnFzI3rZnGvJBCu
-	oRWVVL1EW0V9nxXJEF8LWtk=
-Received: from mail.maildlp.com (unknown [172.19.163.15])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gH2KG3QJkz1cyPB;
-	Fri, 15 May 2026 17:41:54 +0800 (CST)
-Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id 861F940539;
-	Fri, 15 May 2026 17:49:31 +0800 (CST)
-Received: from huawei.com (10.50.163.32) by kwepemr200004.china.huawei.com
- (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 15 May
- 2026 17:49:30 +0800
-From: Pengjie Zhang <zhangpengjie2@huawei.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <corbet@lwn.net>
-CC: <skhan@linuxfoundation.org>, <linux-pm@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <zhanjie9@hisilicon.com>,
-	<zhenglifeng1@huawei.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
-	<linhongye@h-partners.com>, <linuxarm@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>
-Subject: [PATCH] cpufreq: Documentation: fix sampling_down_factor documentation range
-Date: Fri, 15 May 2026 17:49:30 +0800
-Message-ID: <20260515094930.273599-1-zhangpengjie2@huawei.com>
-X-Mailer: git-send-email 2.33.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Kx8BpcW5";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Liwwskkb"
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64F5I4TP654903
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 10:10:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	xiB3OnvSBLF2318DOoqhFlBDTm1gOmHvdH9fY8XWtYM=; b=Kx8BpcW5CCOyLqn5
+	qPVO3Pg7IHdHtW8U9cVrC00Qqi8lDAW11Q1Hf5QcoAHzFatSVpHpoI+Xmo0KhVjs
+	vcjKuzpNo+SqBVRHKDOopfcJePRTwrDy/RM31PdKkR5oWqT2LLpazXl350Gri+Li
+	n6HCFyBsHP8Q+Nn2yjQ6286mdc+UC5pACubgd14eZQiDJAjj4J+0/SsSO1EJGeKx
+	+SUBIlxr3xdRNKFPLe1Am8QwA9/mgtPaxC0hCNwPQ8SR7FTZSB8dfMqqBuJR640U
+	wiBFXt+eT/lbUzO5IQFbu93ouufb70SBr9wxurFHKYLTOSoWwWQNHAlUVxhvkpVs
+	TyXKGw==
+Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com [209.85.219.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e5m1ptu5b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 10:10:08 +0000 (GMT)
+Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-8b58ab2c657so27208806d6.3
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 03:10:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1778839807; x=1779444607; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=xiB3OnvSBLF2318DOoqhFlBDTm1gOmHvdH9fY8XWtYM=;
+        b=Liwwskkbz4JRu8CuBB8Skq2nYGMPR+o5c4brv2Z+Xsjr2JkJCTGlDAp/LQ8aOXNBOP
+         sB7JDwZC0hG97Xm9Red39sR0wT7JRJvxwUvRzpVEY9Y6v2qumhfNiTFp/EHhBRW67UJJ
+         sie2cBurSXkkr4QNeRhLjZ7yOkxPDNAYwGg6pVufC32hEdzSxni4gMH6Pz2QjzfLe6g3
+         yto5mnFn5ggD+9R6xxomfWXuKlsdKsCKPD6wm91HTjQ98qJt9U2gm3D2jMHjf5fhegpj
+         CXWVu8FJkqQyha+J+8EFwha3RAeBJ7IRluyxOcXd9YaTeTIZ+VusS0+TwOUDGV5bhkhW
+         p0mg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778839807; x=1779444607;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xiB3OnvSBLF2318DOoqhFlBDTm1gOmHvdH9fY8XWtYM=;
+        b=PJeOdZ2xvfvBsQ84vxKp4FnW5i3qP9BPSWbWMgw1TDffLt1AoUJuXXc/K35MNmBc/5
+         8gbDIZxJMLbkteWZqEKJT56jijNcAGC0AEmehvjhH6k9cFlkHgXrXi2+9SI6Ejdyb16P
+         16gUFj7553K6qWAKFWIk8L0wAFvbOPuDAMh5zwU3kLxfQrVRDQrQyxLB95kB8L7zLkI+
+         kyna1UwYSSHVDCVmz6ZeqdpyCvh7V48F6tvzjAj5g7b5vnOYEz/MDM8ReicO4rd4gP4O
+         cH67mhDef/0uSK1bYISBzxJfm2Uc9927zFIgzL13VdyUKti3I/7ULquQ3XB534OmJ2u2
+         J7YA==
+X-Forwarded-Encrypted: i=1; AFNElJ9GoMteIYPwgdV9g89geO5Rxv5gC9i1irvSuCgQqeQyL485P8MSe+uB/zMqj4pSaGwRsZsQVEgNDg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxMb3p6yxQAcu9KXmzZuKx7xRgXVwNfkqlt9c6wLaOzPOHkMa9O
+	OPlYbLdVixPyKPXE/Z4azfeGpR48B1tXtU+4y3M1EzOJG/ObYFSzrkxeSGtJqhQg39EG8va4nzL
+	x0jkp/11zB1ozmsp9RVg0SL7Fha9zz9Sm5cNIf7wVKoY76sI3+1Kf+88m32HF2w==
+X-Gm-Gg: Acq92OHHGVglhpX3z6b+JxBLd4z7E3q7ALID+kLU08QLus9Z115sUM8TTP5KLeSoxOM
+	gDV2ZXqOlbR4YRHDsUGSIpmmzCYTf9sd9so7Zb0SYDolTBkTRomKqVJfjItwVW1U+ckoqPZE7/K
+	npeXMCDTt19N78JyD7dwKKozK96mVwImBHjngoMjr03Z0VEnC73XixXv0qG3f0FvEurKjXlbN0d
+	m82kNwhwEAaOLS7iJQ4fNkKci5okKt/TbcbFxx4jDN+D7xiVvNXAtXa/xQLaOBAd5hNVgI7mXX2
+	nkKItiRXZxd+r7+e8620KgeV65e+rcy+A2XwofmkImDkK3GIHiCWndm01+/vQK2hG4+f08HpNI6
+	HcCzxwvr/c6CBQ7EYsaaY8CagCRI/u2tyZosBu0ZT7MZh86ucGzh5lAOyE40VtvnhjbXpcTTOtn
+	Qfl2E=
+X-Received: by 2002:a05:622a:111:b0:509:d76:fe73 with SMTP id d75a77b69052e-5165a0dc367mr28649971cf.3.1778839807315;
+        Fri, 15 May 2026 03:10:07 -0700 (PDT)
+X-Received: by 2002:a05:622a:111:b0:509:d76:fe73 with SMTP id d75a77b69052e-5165a0dc367mr28649781cf.3.1778839806902;
+        Fri, 15 May 2026 03:10:06 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-68311879bb3sm1812289a12.26.2026.05.15.03.10.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 15 May 2026 03:10:05 -0700 (PDT)
+Message-ID: <d41015e9-c31d-475c-a88e-791351ed243f@oss.qualcomm.com>
+Date: Fri, 15 May 2026 12:10:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
- kwepemr200004.china.huawei.com (7.202.195.241)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] interconnect: qcom: sc8280xp: Enable QoS
+ configuration
+To: Xilin Wu <sophon@radxa.com>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260507-sc8280xp-qos-v1-0-15135858cd98@radxa.com>
+ <20260507-sc8280xp-qos-v1-2-15135858cd98@radxa.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260507-sc8280xp-qos-v1-2-15135858cd98@radxa.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: aywNh20j0nRC0i2PsjJZ9bb2fYlfcDY7
+X-Proofpoint-ORIG-GUID: aywNh20j0nRC0i2PsjJZ9bb2fYlfcDY7
+X-Authority-Analysis: v=2.4 cv=GrhyPE1C c=1 sm=1 tr=0 ts=6a06f100 cx=c_pps
+ a=wEM5vcRIz55oU/E2lInRtA==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=ksxQWNrZAAAA:8 a=EUspDBNiAAAA:8 a=NfFXuZlUh8PrNxB2MeMA:9 a=QEXdDO2ut3YA:10
+ a=zZCYzV9kfG8A:10 a=OIgjcC2v60KrkQgK7BGD:22 a=l7WU34MJF0Z5EO9KEJC3:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE1MDEwMSBTYWx0ZWRfX4p2W7X3FZQHv
+ xysCl0dtBq/LWZUrh1hbNzRmTDAq2a6MhVAONozrEGcBkoDiP5+kMscOfF+vWb+m6IFToHEcTer
+ UsPryK86lsxm/TCr1uoT3doqZnHhw6ur2lzRjOCOJOa/nI4iRgEq3fHydQy0dOTaovZ/iMotjok
+ 7zmWHhT8kwjS/kIJPbfdwkPgy+ogKPZcT8mjtSrO6/b1oSTe3NxKVRBvAqop7aJPlY3206RHRIe
+ TkNPXCDGV5Coqnt5tmmPLc7PMrejO+dT+Sqhg/gc4ToxvGsAC7qdlOOo/FmkD2iniyRFfg0zSrM
+ 4oItGmx32bw4qZmYPfWwuTkMr9HqYIW33cvPb184wlvXGwLc9RuBNgw49gAm6v/rORAf2bVkyEp
+ VwnwmStm1OAMUStaCrnrGF4Ay5nGFaCzmGprOt34CMoSa10ACdCvpofekKbKY/JGD21gam1Nq1V
+ XIvYJs8taP7vOXRhgEQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-15_02,2026-05-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 clxscore=1015 lowpriorityscore=0 adultscore=0 bulkscore=0
+ spamscore=0 suspectscore=0 impostorscore=0 phishscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605150101
 
-The ondemand governor implementation accepts sampling_down_factor values
-from 1 to 100000 via MAX_SAMPLING_DOWN_FACTOR, but the documentation in
-admin-guide/pm/cpufreq.rst still says the valid range is 1 to 100.
+On 5/7/26 4:25 PM, Xilin Wu wrote:
+> Enable static QoS configuration for SC8280XP NoC master ports with
+> predefined priority and urgency forwarding values.
+> 
+> Add the QoS box data for the SC8280XP providers, add regmap configurations
+> for the real NoCs, and mark only aggre1_noc and aggre2_noc as requiring
+> clocks for QoS register access.
+> 
+> Signed-off-by: Xilin Wu <sophon@radxa.com>
+> ---
 
-Update the documentation to match the actual code.
+Checked the QoS settings, they seem to match the info I have
 
-Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and consolidation")
-Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
----
- Documentation/admin-guide/pm/cpufreq.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
-index dbe6d23a5d67..fdca59c955dc 100644
---- a/Documentation/admin-guide/pm/cpufreq.rst
-+++ b/Documentation/admin-guide/pm/cpufreq.rst
-@@ -516,7 +516,7 @@ This governor exposes the following tunables:
- 	of those tasks above 0 and set this attribute to 1.
- 
- ``sampling_down_factor``
--	Temporary multiplier, between 1 (default) and 100 inclusive, to apply to
-+	Temporary multiplier, between 1 (default) and 100000 inclusive, to apply to
- 	the ``sampling_rate`` value if the CPU load goes above ``up_threshold``.
- 
- 	This causes the next execution of the governor's worker routine (after
--- 
-2.33.0
-
+Konrad
