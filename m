@@ -1,198 +1,291 @@
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+Received: from mail-yx1-f45.google.com (mail-yx1-f45.google.com [74.125.224.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CA4527707
-	for <linux-pm@vger.kernel.org>; Sat, 16 May 2026 03:08:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABC8519C542
+	for <linux-pm@vger.kernel.org>; Sat, 16 May 2026 03:16:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.224.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778900903; cv=none; b=Z4I6FMu0xHYv4DX6BupeQhzvWuzFI2wSynh60DlBBq4hbDHxqbfHJyc7RjF/zpsDCkMbYDsaZSiGblkvOhEtx/O9qB/dyrj0CUBc9cj36jsev5GTlZF/MgfaT1RQmAtYCEsBwQCfCyah/oVMpSdTpixE/oZsbkyfeKzIBPKklMI=
+	t=1778901415; cv=none; b=pnwe6XPKwGrbVgDsN6Ymmn0GMQGEjpabdtih948/PuuakPUCx2SIRJwS5AlHNCBFZE0OoUmLkLpaISm1JkkFDrfPjkxsqxmP9855i0jUd77AwaNStwqNASz4vtc4LZZHyhgLhsE9ef9E37YFd3k4MTTotjJV9oNrAiEe9/WIPQA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778900903; c=relaxed/simple;
-	bh=De2hxXjelXLIk6PTP47Rzp3UeCt6uyDrKW3n3h2Jj4s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=m42spQWaDjUupOCxjIJ9/+p5s3wJhPGvmX0+SeR8eUpBQxE0fokLcQcnx8BHGiJ9W8uZqWczVJpNeIco2IGKKYpCwQOUyKpY2zJuEjXjos26DblwgraOarsUXkIp7krxbLZwet8bBcxVs76PZD/nplSfqpJiZB7mShcdLl1X80Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io; spf=pass smtp.mailfrom=layalina.io; dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b=fTSOpnqy; arc=none smtp.client-ip=209.85.221.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=layalina.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=layalina.io
+	s=arc-20240116; t=1778901415; c=relaxed/simple;
+	bh=Lc729Y0xn224/idzeEfk3/KfNdWuCMbif9brSHxshEk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GcT0b5gsbUoeJQ67vEicMYwhdY5cjBXQ37HA9JnzS8niw94DXM4po9A5QNTSEfvf2+Zqlzg97lm+wvcAqqXtVtEKWQR6B+3edgD4BPMIi9vWkmWmdluZdSxNhRzlNFuPrTbmWn7ivmNXz8GhrY/PVwPp2K12p8XWRfotxZ08vOU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=KZPWVOP4; arc=none smtp.client-ip=74.125.224.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=layalina-io.20251104.gappssmtp.com header.i=@layalina-io.20251104.gappssmtp.com header.b="fTSOpnqy"
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-44a044cb827so240620f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 20:08:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="KZPWVOP4"
+Received: by mail-yx1-f45.google.com with SMTP id 956f58d0204a3-65c305f381eso1028741d50.3
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2026 20:16:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=layalina-io.20251104.gappssmtp.com; s=20251104; t=1778900900; x=1779505700; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=B+BgJ+JcnmfxGMf1H17dvufrUNSH2R/540QSZv4B4T0=;
-        b=fTSOpnqy4Fbze73DeL9a47OXz9EZ31xM/g72DQhbg++Ff+wxbj/k1Z+09gv/JL48g3
-         BWmcouZJA/ALd++NA6MiGt08ky2MWZqOXGMM7+tGVlG0vP+9WDS8CvN/4+kwjV5tKKUo
-         34+1Vx6L1ccgmbkCEDdDjPq0i4q+iUe9cLoM0u93vuKhBz78CZOHpkx5bfSBfvgiFFGc
-         haDhCAk7wl2/6DLazX1jmLDGRXBkZ2dkp9EtvjE2eQwVs+l+6iMt5ZTiH1AJVCq3xVPS
-         geeS9ZVZ2BSBhbtlakMSuAoxdrTbkH5U4R/X9A4klvLyO73tD169NFmGdaOGTQ7jw6Vs
-         xu0Q==
+        d=google.com; s=20251104; t=1778901412; x=1779506212; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=zrJh0LBRhfhE6RUeOB54ZELwAnToFXLSRbXNOLZrn9E=;
+        b=KZPWVOP4VSDw2nm1+DG8M6aUrS4q9b4Hg737MZ1uIBHdL3Rr1dowrV+cC0nYrvU8bG
+         /5m6mrOn9xXbTz1d8aqxbcklSWHJElOdITaXDTMz5xkSeLknsa8OcCgvxtJVmDpUDqCB
+         TaJkIbIxFo3XAx+3VarU18L18adpQ0Y1s2ULVpk3vEMqeMLeb1WN/PIRvgQXoDqwAFtV
+         BufsYcmX0WoluqaiI5Scj8dK0dC9yH/7xJWB5lNmqI2+0sKYLrKtv/UFRkRR05OK3uVV
+         llIhbgbgth3EV+EUcP/EUVdczR+xO/fpbf2+gNpPrKznNAqgoMWUFY1X5WjpvwUFxbNC
+         NpRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778900900; x=1779505700;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=B+BgJ+JcnmfxGMf1H17dvufrUNSH2R/540QSZv4B4T0=;
-        b=TJPCZCNplEMqm68O2YM8ujPiAyT9lMAmxrQohjHn89iKDfY7UcC3iw4nmad6qfq6ur
-         R1POL0dqPE7iiLEtxX7nMak44377L36njQscekN+oRIEAvHrlWEjG0Td7ai8W5f44lsk
-         vKb0ukACffP4Ct43H6KuwQcXaMwrT+yGsj+aHWIeRpxUPgPcDUQw7gMcQzvHi4AwUgRB
-         kwvNqG61XY7X9g8RdBVFH3qH1Xh7sOeXprDIrSWS6kR4BW1Y7wiYJ3avoDnSBl/xxPgL
-         Y811dJ4Oqoye/9lAmKBY/fP2khVg1Ir3jjGIs0E8nwprBpbMx0T9nOmrAJbhZO+pSIaI
-         IHLQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8qU71dcea8+vEmNnG/hJ8D5fDbAl41QWSugzPXiAQJy300F9uvvsVWlh6A833SQmECDuiLTkvGeA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzr9+fOHpTGO8Uu9tAGYCk9dwWrPa+canNvDnoFdywK2WopAw+u
-	9MwvrmNjGwivSQY/fZ4gtVAJFItjzQw1+R1TrcA2gf+VcH4Zb/Xhs3n4cJ6sadP713Q=
-X-Gm-Gg: Acq92OFVtLxm0njqlqNzkGmcgwH7J1gPm8NS1mt3Bqgkg27m+SoWnWh7Fmkfb//4XoP
-	gK4nOD65xd/T/7o7GcylTypSTqjObsZULpcLJb8hLoLGZC9vOABiqOh10oSMRY2vmTEl4wWyrtd
-	WRNoAcbpaNhEPT2H1rJZfX2i1yfVEVpBL0Ps8d3dmsbZ1CDLYqz3egZeWboIs4HlVRkSQEgxwrg
-	BQNoN3/9TRSVqIYVDjdRDcwbMGJK/WlZFY0osTc18PpN1YHcwzGJGbCv6aORajxFh8/upYSHO+o
-	piHJtNA7IvZpXYln624P6G3VU4SgXOtOIFqnfI5TxYjQeFoDd2e0Ce9M392ODIhzY56HcPkMAje
-	bBqj/EC3oiP3C4rwtp/SF5ri95iSPQVLDVC/76G43P124eVB1EjjSmIDYRG6ay6nWFQmZ4yUaTj
-	EVKGOeqYfWmcF2Ke/gXTF3lxUuwA==
-X-Received: by 2002:a05:6000:250a:b0:45d:4b37:7fcf with SMTP id ffacd0b85a97d-45e5c58951emr8858808f8f.15.1778900899984;
-        Fri, 15 May 2026 20:08:19 -0700 (PDT)
-Received: from airbuntu ([149.40.48.89])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45d9ed2ffdfsm17027129f8f.15.2026.05.15.20.08.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 May 2026 20:08:19 -0700 (PDT)
-Date: Sat, 16 May 2026 04:08:17 +0100
-From: Qais Yousef <qyousef@layalina.io>
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Stultz <jstultz@google.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	"Chen, Yu C" <yu.c.chen@intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, linux-kernel@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH] sched/fair: Call update_util_est() after
- dequeue_entities()
-Message-ID: <20260516030817.e2ysxb2s6pbq4nrr@airbuntu>
-References: <20260512124653.305275-1-qyousef@layalina.io>
- <15a0cfb8457b7d9d767e7f2d2bcfd56b155f6c0b.camel@linux.intel.com>
+        d=1e100.net; s=20251104; t=1778901412; x=1779506212;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zrJh0LBRhfhE6RUeOB54ZELwAnToFXLSRbXNOLZrn9E=;
+        b=glGiICEO1XSyli5J858rXPaYSa+FzM4KQIljgWj5WSvdPZvi0jrRIUQOr53Ijcl145
+         p2w/O6ybdseIUiQwWhOnE/mC29JwYWEs/rTZ2006Y+Pp7czoIuYlSkBRgKe5LODyEbkf
+         VZdWNrkoqXvUlx1NzcT7CuDUyGlZyd8R4q2+L+9i1cdDCxn6NXoiFnxR7kJr312oDBf5
+         nEL8jdEdrQ5OfJOAiw9ssj0/qcVu8JrgS+7aOwNZPgdG14HQbld/eRZb3ueThPRaCRgn
+         gXr6vnea/6WFBM2DsMRKVrl25sfSDfwESNQTtiI3El4MaKqodgGb9gzisy8mGx5RabPb
+         q9MQ==
+X-Gm-Message-State: AOJu0YzdpIGZEY5HGAMRGP/p9rxqMxUlXfLcvgOFTSk6fGYMeqdEFPnH
+	Yiw2VtcCyoyrZ9L03MgcvGI5jRcvFhuzF+1XCQmEWgEzEHfOTFtuOApSwwaBMhAScA==
+X-Gm-Gg: Acq92OFazAAQoNJ65snvDORlQpqEFLxunB/iYrDXaOhDYx8w611Wha65ZWA6JIjgyBn
+	KfQbMFiiRdD49P0j1mHnUT3LSBtzrll46sUZu/Hr6vxpoX4SOBRKdg9ceLXUt+z6M9GdhXnIIe1
+	MsUFxZ1s7vQEbRJdSzAvgJnMoZewnux4eHm2oZoW9Uox/loCdg72IOOtJ5WuNG5ua8SPnYuqKfs
+	evNxHw961yMOsHTBI+sFYn2DeUDcNf4VHzLMuEHXaXfdtK2kZG2ZbXD5acr6LFxkcx0+6kpqC2L
+	h5VAywNnyqpGsdVLsB1DmDmji24GxFKwb+wnAm8tQbw6qa0DRWwowHV/2Ot2X8w2GlplG01an76
+	MXayKM7mwJYhz55Y7PsiinuSO9PV8quZTDvAj0/NHNeoX8iSnUwo91klOwgV3eeZs92e4CnO0PW
+	k2RK3FEbGh5S+fLcVJIwR073SSSVTOHpsrV/cwK8J6S0EBIRPq4wk5ur3Hs0rQbwoHIO3A8ced1
+	9tuRIECOQzIPetQqpJa
+X-Received: by 2002:a05:690e:4419:b0:65d:7e64:7edf with SMTP id 956f58d0204a3-65e228a63f1mr5041425d50.60.1778901411196;
+        Fri, 15 May 2026 20:16:51 -0700 (PDT)
+Received: from ?IPV6:2600:1700:4570:89a0:9ee1:b971:dc61:3e74? ([2600:1700:4570:89a0:9ee1:b971:dc61:3e74])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-65e0db0aa51sm3395322d50.12.2026.05.15.20.16.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 15 May 2026 20:16:50 -0700 (PDT)
+Message-ID: <21100c24-1499-48c9-b8cc-0e82cf931c59@google.com>
+Date: Fri, 15 May 2026 20:16:48 -0700
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <15a0cfb8457b7d9d767e7f2d2bcfd56b155f6c0b.camel@linux.intel.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] power: Add power_supply_get_battery_all() to fetch
+ battery psy handles
+To: Hans de Goede <hansg@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+ Badhri Jagan Sridharan <badhri@google.com>,
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+ Purism Kernel Team <kernel@puri.sm>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, =?UTF-8?Q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Peter Griffin <peter.griffin@linaro.org>, RD Babiera <rdbabiera@google.com>,
+ Kyle Tso <kyletso@google.com>
+References: <20260515-batt-status-v1-0-fed6b7d8cea7@google.com>
+ <20260515-batt-status-v1-1-fed6b7d8cea7@google.com>
+ <f34a38e9-c6bc-4ccb-9c9b-23288e09d734@kernel.org>
+From: Amit Sunil Dhamne <amitsd@google.com>
+Content-Language: en-US
+In-Reply-To: <f34a38e9-c6bc-4ccb-9c9b-23288e09d734@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On 05/15/26 11:35, Tim Chen wrote:
-> On Tue, 2026-05-12 at 13:46 +0100, Qais Yousef wrote:
-> > update_util_est() reads task_util() at dequeue which is updated in
-> > dequeue_entities(). To read the accurate util_avg at dequeue, make sure
-> > to do the read after load_avg is updated in dequeue_entities().
-> > 
-> > util_est for a periodic task before
-> > 
-> >                                 periodic-3114 util_est.enqueued running
-> >    ┌───────────────────────────────────────────────────────────────────────────────────────────────┐
-> > 183┤                ▖▗  ▐▖         ▖ ▗▙   ▗   ▗▙▖▖       ▖▖   ▖       ▖▖        ▗  ▟  ▗▄▖          │
-> > 139┤               ▐▛█▜▙▞▀▄▄▞▚▄▟█▞▙█▄▟▀▚▄▄▞▚▄▄▟▀▀▛▄▝▄▄▄▙█▛▛█▛▜▛▄▄▀▄█▙▛▛▛▙▄▀▄▄▖▜▄▟█▟▀▜▟▄▜▀▄▄▟▙▖     │
-> >  95┤              ▐▀    ▘   ▝   ▝        ▝▘        ▘   ▘▘       ▝▘       ▝▘  ▝    ▝        ▀       │
-> >    │              ▛                                                                                │
-> >  51┤             ▐▘                                                                                │
-> >   7┤      ▖▗▗  ▗▄▐                                                                                 │
-> >    └┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬──────────┬─────────┬┘
-> >   0.00      0.65       1.30      1.96       2.61      3.26       3.91      4.57       5.22     5.87
-> > 
-> > and after
-> > 
-> >                                  periodic-2977 util_est.enqueued running
-> >      ┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-> > 157.0┤               ▙▄ ▗▄  ▗▄▄▄ ▗▄  ▗▄▄▄▗▄▄  ▗▄▄▖ ▄   ▄▄▄   ▄  ▄▖▖  ▄▄▄▄▄▖▖▝▙▄▄▄▄▄▄▖ ▗▄           │
-> > 119.5┤             ▗▄▌▘▀▀ ▀▀▀ ▝▀▀▘▝▀▀▀ ▝▀▘ ▝▀▀▘ ▀▝▀▘▀▀▀▘▝▀▀▀▀▀▀▀▘▝▝▀▀ ▀   ▝▝▀  ▀   ▀▀▀▀            │
-> >  82.0┤             ▟                                                                               │
-> >      │             ▌                                                                               │
-> >  44.5┤             ▌                                                                               │
-> >   7.0┤      ▗   ▗▖ ▌                                                                               │
-> >      └┬─────────┬─────────┬──────────┬─────────┬─────────┬─────────┬──────────┬─────────┬─────────┬┘
-> >     0.00      0.65      1.30       1.95      2.60      3.25      3.90       4.56      5.21     5.86
-> > 
-> > Note how the signal is noisier and can peak to 183 vs 157 now.
-> > 
-> > Fixes: b55945c500c5 ("sched: Fix pick_next_task_fair() vs try_to_wake_up() race")
-> > Signed-off-by: Qais Yousef <qyousef@layalina.io>
-> > ---
-> > 
-> > This is split from [1] series where I stumbled upon this problem. AFAICS it
-> > needs backporting all the way to 6.12 LTS.
-> > 
-> > [1] https://lore.kernel.org/lkml/20260504020003.71306-1-qyousef@layalina.io/
-> > 
-> >  kernel/sched/fair.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 728965851842..96ba97e5f4ae 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -7401,6 +7401,8 @@ static int dequeue_entities(struct rq *rq, struct sched_entity *se, int flags)
-> >   */
-> >  static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >  {
-> > +	int ret;
-> > +
-> >  	if (task_is_throttled(p)) {
-> >  		dequeue_throttled_task(p, flags);
-> >  		return true;
-> > @@ -7409,8 +7411,9 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >  	if (!p->se.sched_delayed)
-> >  		util_est_dequeue(&rq->cfs, p);
-> >  
-> > +	ret = dequeue_entities(rq, &p->se, flags);
-> >  	util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
-> 
-> I thought that util_est_update() was called intentionally before dequeue_entities
-> to update the utilization of task p up to this time right
-> before the dequeue.  Then dequeue_entities() is called later
-> with up to date task utilization estimate of p.
+Hi Hans,
 
-No. If you look at older versions of dequeue_task_fair() you'll see it was done
-at the end.
+On 5/15/26 12:15 AM, Hans de Goede wrote:
+> Hi,
+>
+> On 15-May-26 07:48, Amit Sunil Dhamne via B4 Relay wrote:
+>> From: Amit Sunil Dhamne <amitsd@google.com>
+>>
+>> Add power_supply_get_battery_all() to allow drivers to obtain a list of
+>> registered battery type power supply references in the system.
+>>
+>> Signed-off-by: Amit Sunil Dhamne <amitsd@google.com>
+>> ---
+>>  drivers/power/supply/power_supply_core.c | 122 +++++++++++++++++++++++++++++++
+>>  include/linux/power_supply.h             |   9 +++
+>>  2 files changed, 131 insertions(+)
+>>
+>> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+>> index a446d3d086fc..697645426fb1 100644
+>> --- a/drivers/power/supply/power_supply_core.c
+>> +++ b/drivers/power/supply/power_supply_core.c
+>> @@ -482,6 +482,128 @@ struct power_supply *power_supply_get_by_name(const char *name)
+>>  }
+>>  EXPORT_SYMBOL_GPL(power_supply_get_by_name);
+>>  
+>> +static int __power_supply_get_num_battery(struct power_supply *epsy, void *data)
+>> +{
+>> +	int *count = data;
+>> +
+>> +	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY)
+>> +		(*count)++;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int power_supply_get_num_battery(struct device *dev)
+>> +{
+>> +	int ret, count = 0;
+>> +
+>> +	ret = power_supply_for_each_psy(&count, __power_supply_get_num_battery);
+>> +
+>> +	dev_dbg(dev, "%s: count: %d ret %d\n", __func__, count, ret);
+>> +
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	return count;
+>> +}
+>> +
+>> +struct psy_get_supplies_data {
+>> +	int cnt;
+>> +	int size;
+>> +	struct power_supply **psys;
+>> +};
+>> +
+>> +static int __power_supply_populate_battery_array(struct power_supply *epsy,
+>> +						 void *_data)
+>> +{
+>> +	struct psy_get_supplies_data *data = _data;
+>> +
+>> +	if (epsy->desc->type == POWER_SUPPLY_TYPE_BATTERY) {
+>> +		if (data->size <= data->cnt)
+>> +			return -EOVERFLOW;
+>> +
+>> +		get_device(&epsy->dev);
+>> +		data->psys[data->cnt] = epsy;
+>> +		atomic_inc(&epsy->use_cnt);
+>> +		data->cnt++;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int power_supply_populate_battery_array(struct device *dev, int size,
+>> +					       struct power_supply **batteries)
+>> +{
+>> +	int ret, i;
+>> +
+>> +	struct psy_get_supplies_data data = {
+>> +		.cnt = 0,
+>> +		.size = size,
+>> +		.psys = batteries,
+>> +	};
+>> +
+>> +	ret = power_supply_for_each_psy(&data, __power_supply_populate_battery_array);
+>> +
+>> +	dev_dbg(dev, "%s Found %d batteries with array size %d ret %d\n",
+>> +		__func__, data.cnt, data.size, ret);
+>> +
+>> +	if (ret < 0) {
+>> +		for (i = 0; i < data.cnt; i++)
+>> +			power_supply_put(batteries[i]);
+>> +		return ret;
+>> +	}
+>> +
+>> +	return data.cnt;
+>> +}
+>> +
+>> +/**
+>> + * power_supply_get_battery_all() - Searches for all battery type power supplies
+>> + *				    and returns their references.
+>> + * @dev: Pointer to device requesting the power supply refs.
+>> + * @psys: Pointer to an array of power supply refs that will be filled by this
+>> + *	  function.
+>> + *
+>> + * This function helps drivers get handles to all battery type power supplies.
+>> + * If acquiring a ref to a power supply results in error, then the search for
+>> + * battery type power supplies will abort and the acquired power supplies will
+>> + * be "put".
+>> + *
+>> + * Return: Indicates the number of battery type power supplies returned on
+>> + * success or the negative error code on failure.
+>> + *
+>> + * It's the responsibility of the caller to invoke power_supply_put() on the
+>> + * individual psy refs and free the array returned by this function using kfree().
+> Not a full review, just a quick remark: It seems to me that there should
+> be some helper function e.g. :
+>
+> void power_supply_put_array(struct power_supply **psys, int count);
+>
+> Which can be called with the returned array + count to do this for the caller,
+> rather then expecting all callers to open code this.
 
-util_est is a holding function, it should remember the last util_avg value at
-dequeue, so the updates must happen first.
+I see. I will add this as a new helper in the next revision.
 
-> 
-> Perhaps util_est_update() should be moved before
-> util_est_dequeue() so the updated utilization of p
-> is subtracted from the rq utilization.
 
-We actually should subtract the old value always before updating it. The update
-happens only at dequeue. My rampup multiplier patches introduces updates for
-running tasks, but has to do the dance of subtract, update and re-add otherwise
-you'll end up with weird util values at the rq.
+Thanks,
 
-> 
-> @@ -8002,10 +8002,10 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->                 return true;
->         }
->  
-> +       util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
->         if (!p->se.sched_delayed)
->                 util_est_dequeue(&rq->cfs, p);
->  
-> -       util_est_update(&rq->cfs, p, flags & DEQUEUE_SLEEP);
->         if (dequeue_entities(rq, &p->se, flags) < 0)
->                 return false;
-> 
-> 
-> Tim
-> 
-> > -	if (dequeue_entities(rq, &p->se, flags) < 0)
-> > +	if (ret < 0)
-> >  		return false;
-> >  
-> >  	/*
+Amit
+
+>
+> Regards,
+>
+> Hans
+>
+>
+>> + */
+>> +int __must_check power_supply_get_battery_all(struct device *dev,
+>> +					      struct power_supply ***psys)
+>> +{
+>> +	int ret;
+>> +
+>> +	if (!psys)
+>> +		return -EINVAL;
+>> +
+>> +	ret = power_supply_get_num_battery(dev);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	if (!ret) {
+>> +		*psys = NULL;
+>> +		return 0;
+>> +	}
+>> +
+>> +	*psys = kzalloc_objs(**psys, ret);
+>> +	if (!*psys)
+>> +		return -ENOMEM;
+>> +
+>> +	ret = power_supply_populate_battery_array(dev, ret, *psys);
+>> +	if (ret <= 0) {
+>> +		kfree(*psys);
+>> +		*psys = NULL;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +EXPORT_SYMBOL_GPL(power_supply_get_battery_all);
+>> +
+>>  /**
+>>   * power_supply_put() - Drop reference obtained with power_supply_get_by_name
+>>   * @psy: Reference to put
+>> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+>> index 7a5e4c3242a0..2467530a5740 100644
+>> --- a/include/linux/power_supply.h
+>> +++ b/include/linux/power_supply.h
+>> @@ -806,11 +806,20 @@ extern int power_supply_reg_notifier(struct notifier_block *nb);
+>>  extern void power_supply_unreg_notifier(struct notifier_block *nb);
+>>  #if IS_ENABLED(CONFIG_POWER_SUPPLY)
+>>  extern struct power_supply *power_supply_get_by_name(const char *name);
+>> +extern int __must_check power_supply_get_battery_all(struct device *dev,
+>> +						     struct power_supply ***psys);
+>>  extern void power_supply_put(struct power_supply *psy);
+>>  #else
+>>  static inline void power_supply_put(struct power_supply *psy) {}
+>>  static inline struct power_supply *power_supply_get_by_name(const char *name)
+>>  { return NULL; }
+>> +static inline int __must_check power_supply_get_battery_all(struct device *dev,
+>> +							    struct power_supply ***psys)
+>> +{
+>> +	if (psys)
+>> +		*psys = NULL;
+>> +	return 0;
+>> +}
+>>  #endif
+>>  extern struct power_supply *power_supply_get_by_reference(struct fwnode_handle *fwnode,
+>>  							  const char *property);
+>>
