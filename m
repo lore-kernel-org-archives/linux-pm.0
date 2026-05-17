@@ -1,221 +1,179 @@
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4733D30C15F
-	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 04:36:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.44
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778992570; cv=pass; b=k7Ypya8uOCarro9lpe07XHlKDBQl3swqHDbI7cRrp6jHQyvTTUxJy1bQJYbs787OQBBGiUPvWPd1eYrwxg8SsbUhEd+yPUa19ym/2MXprUgO89X71LO9aJL5Oi30l7Gpfz3ogzUX8PouUPhsKImVXy7/DSwJSz9tDwcogMtD4NY=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778992570; c=relaxed/simple;
-	bh=3ROR8haixq5iyUq7s9jdGclt/nlPcyVxpVzKqaY2PhY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Content-Type; b=kL7QJXdl5eN6vtCRbncdIQaHU75mWuG4ySZem+GgnwDHsvzWNdfVBTQfH/cUfTmMsDXXwVUI8MqESMy+dhrRg2Ety4CAvsFDgnvL85GnmzGNZ6/lvmb5HoSbtdEaUE8kvq0+QG0RP87v6ke3pHrJRc3oeLpatHrsMkaT+o6PFpU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TNtilZgr; arc=pass smtp.client-ip=209.85.208.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64D13E54B
+	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 05:04:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1778994259; cv=none; b=ZmjM78DX/Yab3qGSuzs5hQGrzXRwRY/gK/iNrIp4PQIw/3LhROCFQCiI403wcQ0ssTZY8EAiTzqpejA037+HKZa3ftx4pJ4r9kQ8A4GXvKN8K/gLQ95Bcabmuj7uyE4XeYNCpbXlkFUPhoZ2+S1DudxMw4eZbMST5BUTnC5vy8w=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1778994259; c=relaxed/simple;
+	bh=9chvZhONWPW0yZQWwIdHzFAtCifRhqpM1JBcB87tDqs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=h38pXC8yPAxJqwh6xSIgPN9fOCOtG39sUSL30Tvs5fQmHUkPkKvq+oENcYSmoVCexTqBuj7awuqI4ha1gqIsLxU98DA//uSRczgrU2GX41ZkR3USKCp72aCR4vs1/ny7B1oRGkFlU8dYUHsiZIo+j3SltnRLKtpaxCOQjv/CR4A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JG7hSkx8; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UYEf+1AC; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TNtilZgr"
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-67929ff6dbfso2178248a12.2
-        for <linux-pm@vger.kernel.org>; Sat, 16 May 2026 21:36:09 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1778992568; cv=none;
-        d=google.com; s=arc-20240605;
-        b=L5P6jZn1RryaEAxO5JO4iPnYsUg/TUmGjJQSGSHLJT+zKT6jYTYLQVrYGI5sBwF3tq
-         ret+hYK4rNHxQxXJ8Us8XQOyY3kM6khsSONBR2d+isatvb9Dhi8Lvf9zuTEpCpXLzPWf
-         bwEgl+BtLOcyv3+vaJmopdbLcp0ctJMckkooVal7w4sZh8XoTjIOQcRd+ulwvWfJQtPm
-         E812N7MNYPN7NkZFLVY7h+sUqASYsF3wCQX1i07kDzbaU+IpuhMr4CKMBmb3vqopZcbu
-         5zgJKYULSxs8cWTuihw/iFm4zyz7qA2Pf+CZ4qSjJEpv/Zko55S4gog8fBg3WYTCV4/F
-         BrtQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=JQM4qBv1wE3brKr2hKxWej6MOZp+Tj3Sd6cgQ9f4fd8=;
-        fh=XZiCZhpBsw+0nY7W0RkKiZqXn4t1Pj7ghjrhSxdA5Lc=;
-        b=TPMjjkdbOqcfQ2KpOXRDqMVCIuOvRBU+i/wpgaKjKu19/8TRn08TfFDsMoeD6HmqRB
-         Sx2puHj+l7ft/0pMQfqPhAOpk1WpJNeV9Sm2QF2owTB30CnqHkD+b/+hNg1Aq2ysdAsf
-         oO8JtTechGM51W2CuaSxLeyHfN0Dq17WhxN2/al32kU+s8Oh81iehGuTllEOAuOc8O+k
-         pOkUFm1turC1D7xcvZtAxph8sKo5S2ActZgklorc/1lVwjcgZvQQENNbf3IgoeI6VYbN
-         xqPTUVVyYeDJ26+GnSslMytnQjKtvFY4sVdFEm621E3vdLLgoNuUcuspa9NIeSAsa870
-         VEYg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JG7hSkx8";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UYEf+1AC"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64H1B2Pm2067447
+	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 05:04:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	t5aq4c4WhfDevmOHXhOf6BjhCvkdaQq+LYOF9/fXEAg=; b=JG7hSkx85qL5y2ri
+	6dSNUeGJgko0nF68HUERZORBpIp8fGM2H8RqFhStrcATUvkB6Ax1AY9nYeZRrP4a
+	3JdIurV4ZMHGOw62GoUlGUkDBCuoe6+niSJNiIX5I+1Uae2Ghu3dCXYYR2hkTFC1
+	2WBKvI+Ax1wEB86QzyLpqHMPImpK3Gm36uAEt+PMNPqCOjStSYSPC7q/+/oU68L3
+	FHdG/467Jp51oO5KyJgePe1UayfVt5O/SdcTci1BIwrmTBAwRZP2QZviUoe2smWp
+	iVSqxOFEywSUk5m4elLcd9jqNJMRSV71HyzH3B+3nhqgW02qBP08F0X+JIfnxGsF
+	T47e+A==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e6gvqt8d4-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 05:04:17 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82f6e6a3a76so1509744b3a.0
+        for <linux-pm@vger.kernel.org>; Sat, 16 May 2026 22:04:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778992568; x=1779597368; darn=vger.kernel.org;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JQM4qBv1wE3brKr2hKxWej6MOZp+Tj3Sd6cgQ9f4fd8=;
-        b=TNtilZgrDSObvft0rs72S5LU8/iPtD5TFxdIS/zAxpziEZPYHXoGAeWPOadcggF9Ng
-         Xc72sGCuGXSc+e70weVKiVX0yXaEsto6hGwl+Y6TA+z4eb8VXSFu1troVNz781M1hQvm
-         4qNWQs8btax8sFq2ydZhfNtkVk+p2E1XS3bcrsL996P+nnWbUlW/+uZLHMl/9cEr905H
-         89jKYG9XulBZtBf9IYzKA+z41bE4vQejhoDiMmt4SBKRYMgESMesKG5hyb7Z8d69Ag1b
-         0YrRgNDe/+eM/dHZ+eE2FD3AejSub32bUgA6JPRV9qo5eTxbzRAI7fNxLGogSo9ePWcT
-         jZBw==
+        d=oss.qualcomm.com; s=google; t=1778994256; x=1779599056; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=t5aq4c4WhfDevmOHXhOf6BjhCvkdaQq+LYOF9/fXEAg=;
+        b=UYEf+1ACXbMDX86ZbNalg9wssWxCX1Od41GhAbWq9lm56OTH3ixgAb3qHusnlWEpqU
+         mj7u7mbi3A0rLOKBXY4ewZsq2Mdoe/GsJpvxUlu5G1coPBuGsikJfLIZ07YsYvHrDA82
+         KHtgM0ARZxVCk2QrsmrsBZukk3sSHzLC5CTHFjBBRzU6L7JAP8X3zTDt391ZMqweJZgN
+         MtQ988dyPUysJtEXcfxaJxuy7N/XtDELKr+ZWEBNZ5ZXVjXHKh9VqFuQSqIbrseUTU3l
+         wa3wyBOdy/ddIo/mYUV8RMOwBoSQJdGzCfwhRvk/Og59DDgIqTlYNE/gzfmVHWcmjFUG
+         MOdg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778992568; x=1779597368;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=JQM4qBv1wE3brKr2hKxWej6MOZp+Tj3Sd6cgQ9f4fd8=;
-        b=h1lkrPpdBcbaEzETmql2Lb1/uBlLff+7mK/HUO7cTpNHX2Iyf7XJfDsnEmFWE0erDS
-         oZ45JZsnoSn/Le7L3EnDHGzu57HMkcILUQwRPL5zJJxLkAastc7bnbSWCyx+wGf/LO+O
-         NiYcPrmnza+DUpMQbkOPCF6bhHVAAOVCfBqQg+Gg8NUQmGCMggnA00OopAtSOaXLTGhp
-         AnpEK2pllsx1d98AW8m+euIaBl2BmKaGEkGLr/ldN1IF+BlgLsGh/MEv4nhLK4MUiIWB
-         /1AFOlfYQpdd+jBnoKn6fTERj9CNSdmO8RoEyo0In+xwre0L9r5LvwTw8UkEsJtfJf+F
-         P2Lw==
-X-Forwarded-Encrypted: i=1; AFNElJ9Dpe24PX8bZ6LPMrrsCn98XzYQ++FisNWRiErPnG4YOoT+vTdM5H6dfIY4tYs4Mw5vcBEnd0NjkA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyr9eDzIUJ2AZp5hlvXSJEHlAPOE1bfN0mtSuGeTjzpMQq6ldPA
-	+Mu/QOmL/xbqUvVySzTUW3aUlOfv1gR+cqjwfeZuyij4PmkCbHLXdzZobYJHVOh5j1WRjR2Dv30
-	AhseUoTAigGTjaTG04R+aYpH1E7xpY+A=
-X-Gm-Gg: Acq92OFlc76H2AtaSKeBfodKhfOJeSBRDhCxGNhRkwH3kpHIAQ0hptAGIv8G+LlUwrw
-	dTIXE/ya9qZBWPX9K50X03iQs0ZujWh7KumZ1Mrnw/hooMZSN8Iq1trAnb57lggKQK3K1q0fWHd
-	sTRaZu/bPrgKL/rcc59PVtuKQmJa6KVN9YYU0RYnY1UVY0wJL0BRBhUycv1/zpBgUdGlrnLvJyv
-	NAao1/z8f+S3suzYCG9c1wCjsYVMuP+UV2P7DwlCmHAyeil2WbQgagiNucgE0sqeGxdEM3mkj3x
-	H+TARw==
-X-Received: by 2002:a05:6402:4541:b0:676:9c6d:5c59 with SMTP id
- 4fb4d7f45d1cf-683bc4b0a51mr3550891a12.2.1778992567465; Sat, 16 May 2026
- 21:36:07 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778994256; x=1779599056;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=t5aq4c4WhfDevmOHXhOf6BjhCvkdaQq+LYOF9/fXEAg=;
+        b=Yci96huId8bBLBiYFbfSEzP5TGpFPCfz71yVWEx04Fa/FjvrfZaQdEX0NZg+BeLAbd
+         crUwpZyx5CWUI4ijzJGX5l6LVJQzvz6FAG3oxw/c3EygJuDVmQdlLqpwjudOwZ8tf1vS
+         dakibHRuNhN0qNyOTr+k8Dmti8K6v7/9Xx+f/TejqPI6niJuhTqBmO/jZTNDlipr4hrR
+         phiOhKN/XJO1Z7L0L40nY0vS+gKKGWEyzGC0uK9xcPCbvoVzqJi87W7OwRmbTNDLeRE6
+         yhD8g0cdDf399LOw9MgXwhpKeXZ4RWUayUmIRnR48X/v6UIDMDPvB50NLTfqCMv32Xye
+         iYyw==
+X-Forwarded-Encrypted: i=1; AFNElJ8U/omakVzlDet4kUc/upMHer3v4rhTvXn2Mzdq2o0PztxW6UGKIHMy2YGU+StevBZB5Is5PS64mw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwhxzV0RJtPqiSbR8oWM1OP+o4Gj1xBksRxQPRcbYRrLGzKAfnA
+	PTSRyaUekABY6hwlBHn4H5WwFb+UD/gbjLJnlmWnlmL0T1jG3RD5mX5ap+8qAz0YIKau/lRljDa
+	RDOpfaQOFc56CaZyIXuf3tPQgWUpMjP5wHh+AnDfEjPYekHnh8S2prb8ytp3zmg==
+X-Gm-Gg: Acq92OEASYO60veHpZU0s5aOy9v228BJLnAe7+dLjprx9ckiPX6LtvyhyLgiFJ6KQeZ
+	y6KOLf1swKTGxk0tAXSOcOCl+ALjF2emSK4M2EQtHJSr6ExDf8oii+GUicutAd7o0kb8AIvtxwo
+	GO0TaQUhGRzKUJ+zDAyFj+cUPBaVDG6eIjK4rVTDe5Kqv/t4VxgXBDF3iVbMY7ghzaCO4Hci/wD
+	wfbOeW/thChCD0MYghGH4kJy9DmdQhfVkENFaZ9TnDYSyv6/fqwGb3LXEzFHuXD29ZDqGzitwqs
+	foRMpvpBZpuIeITSSY8xh85bB/Ty+COvWNXU6rgaux1QmdKL2UvmgD8ORTX5RiF2jzuIbfGD5AP
+	7XwFmSpLQv3LmdV+Mi5iPxns08lmi25t2nRANADjE3xmX7w3V5QTYmuA0S2Ys/bEJpncJffqS1+
+	MJxXv/0NJod6zHuOtM
+X-Received: by 2002:a05:6a00:3922:b0:83d:d2dc:6b7d with SMTP id d2e1a72fcca58-83f33aee78emr10692515b3a.5.1778994256162;
+        Sat, 16 May 2026 22:04:16 -0700 (PDT)
+X-Received: by 2002:a05:6a00:3922:b0:83d:d2dc:6b7d with SMTP id d2e1a72fcca58-83f33aee78emr10692474b3a.5.1778994255700;
+        Sat, 16 May 2026 22:04:15 -0700 (PDT)
+Received: from [10.133.33.58] (tpe-colo-wan-fw-bordernet.qualcomm.com. [103.229.16.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f19c77162sm11517986b3a.40.2026.05.16.22.04.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 16 May 2026 22:04:15 -0700 (PDT)
+Message-ID: <05980ed2-e591-468c-a528-5b2b74c192d8@oss.qualcomm.com>
+Date: Sun, 17 May 2026 13:04:09 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
- <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org> <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
- <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org> <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
- <aeaXszeaE62rM6BJ@aurel32.net> <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
- <aeevr6Zj3Pwm9wux@aurel32.net> <CANAwSgSCo-mESo6=KSc08oUzTWAgzpYu0JaW5KqmnCNiPYHjxQ@mail.gmail.com>
-In-Reply-To: <CANAwSgSCo-mESo6=KSc08oUzTWAgzpYu0JaW5KqmnCNiPYHjxQ@mail.gmail.com>
-From: Anand Moon <linux.amoon@gmail.com>
-Date: Sun, 17 May 2026 10:05:50 +0530
-X-Gm-Features: AVHnY4KOL2rGt_SSoRHMzxpCQMBvp_fsFHr614JlPdf6906rsMFKS9vQD857v9s
-Message-ID: <CANAwSgRFQiNEi1Ac+sCvJWkj1R+yEPGt0RCjZu-3ZiD0Ffm6Hg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
-To: Shuwei Wu <shuwei.wu@mailbox.org>, Anand Moon <linux.amoon@gmail.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Alexandre Ghiti <alex@ghiti.fr>, Yixun Lan <dlan@kernel.org>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	spacemit@lists.linux.dev, devicetree@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] cpufreq: Documentation: fix sampling_down_factor
+ documentation range
+To: Pengjie Zhang <zhangpengjie2@huawei.com>, rafael@kernel.org,
+        viresh.kumar@linaro.org, corbet@lwn.net
+Cc: skhan@linuxfoundation.org, linux-pm@vger.kernel.org,
+        linux-doc@vger.kernel.org, zhanjie9@hisilicon.com,
+        zhenglifeng1@huawei.com, lihuisong@huawei.com, yubowen8@huawei.com,
+        linhongye@h-partners.com, linuxarm@huawei.com, wangzhi12@huawei.com,
+        zhongqiu.han@oss.qualcomm.com
+References: <20260515094930.273599-1-zhangpengjie2@huawei.com>
+Content-Language: en-US
+From: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+In-Reply-To: <20260515094930.273599-1-zhangpengjie2@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: yDzIzgmqLjuHeozXoQu0CInhORVsYHOC
+X-Proofpoint-ORIG-GUID: yDzIzgmqLjuHeozXoQu0CInhORVsYHOC
+X-Authority-Analysis: v=2.4 cv=LKJWhpW9 c=1 sm=1 tr=0 ts=6a094c51 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=nuhDOHQX5FNHPW3J6Bj6AA==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=i0EeH86SAAAA:8 a=S1q_wTaEoxLjIr2KwyUA:9 a=QEXdDO2ut3YA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE3MDA1MSBTYWx0ZWRfX8UIwKrONy+6f
+ Bj+vjs0UJEOqgZYqn44ljf+XhlKf2bIqKLSeS+gavNax1ywiD670vi8uBpUyE42kL9Fph9iyYIY
+ 4tUoyOOdgqxD1HKtE7rd4ufg59sH3YVHx+i/BKuXZshmgBQ7lGTnL01XYWD7ghLkGNxJLlPwZ4r
+ Df0EX8b9szZX2y6n6uXwGmAGXtjZNJF8chApFuFaasrPVu8VPMNg65TNQoeGfPwra16FVDAQHA8
+ KAG41nZCSSRCXeL16EpeQpRyhtWdgRvlhDy2Mtynv4bIY6rvLPtzVXOH1tlw1zFzZWADezEjIpb
+ iLE90HZBSHS0KZmYpfJvYzFoXQu8rSGzY+ohOLIkV2711FzKOqtnKMI2p3HtWSbe0KtB5AJLYS/
+ /WvktiiHwvr3XfZJ+G48c5iOhi+drPRClZGP9+POfjfvwfZ/Z45AJ4TWQePEXSBogiMOz3eaTOt
+ SbuNEeqBTLDmi+FtM4Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-17_01,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 spamscore=0 adultscore=0 phishscore=0
+ clxscore=1015 lowpriorityscore=0 suspectscore=0 malwarescore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605170051
 
-Hi Shuwei,
+On 5/15/2026 5:49 PM, Pengjie Zhang wrote:
+> The ondemand governor implementation accepts sampling_down_factor values
+> from 1 to 100000 via MAX_SAMPLING_DOWN_FACTOR, but the documentation in
+> admin-guide/pm/cpufreq.rst still says the valid range is 1 to 100.
+> 
+> Update the documentation to match the actual code.
+> 
+> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and consolidation")
 
-On Wed, 22 Apr 2026 at 11:44, Anand Moon <linux.amoon@gmail.com> wrote:
->
-> Hi Shuwei,
->
-> On Tue, 21 Apr 2026 at 22:41, Aurelien Jarno <aurelien@aurel32.net> wrote=
-:
-> >
-> > Hi,
-> >
-> > On 2026-04-21 16:10, Shuwei Wu wrote:
-> > > Hi Aurelien,
-> > >
-> > > Thanks for your addition.
-> > >
-> > > On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
-> > > > Hi Anand,
-> > > >
-> > > > On 2026-04-16 17:07, Anand Moon wrote:
-> > > >> After reviewing the Banana Pi F3 schematics, I confirmed that Buck=
-1 and Buck2
-> > > >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the re=
-striction errors,
-> > > >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,000=
- =C2=B5V.
-> > > >>
-> sorry I was wrong from the doc below 1.2.1 CORE Power Design
->
-> The typical core voltage is 0.9 V to 1.05 V. Actual voltage is
-> dynamically regulated by
-> the **remote-sense dynamic voltage** adjustment circuit inside P1.
-> P1 BUCK1 and BUCK2 must be combined to supply the core rail.
->
-> [1] https://www.spacemit.com/community/document/info?nodepath=3Dhardware/=
-key_stone/k1/k1_hw/k1_hw_design_guide.md&lang=3Den
->
-> > > >> Additionally, I updated the DTS to map the second CPU cluster (cor=
-es 4=E2=80=937)
-> > > >> to Buck2 to better align with the hardware's power distribution.
-> > > >
-> > > > Actually the output of Buck1 and Buck2 are connected together, so t=
-hey
-> > > > should always be configured with the same output voltage. And both
-> > > > clusters should be mapped to both outputs.
-> > >
-> > > You are right, I received the same response from the official develop=
-ers.
-> > >
-> > > Therefore, I'm wondering if an additional regulator-coupled-with: pro=
-perty
-> > > definition is also needed here?
-> >
-> correct.
-> > Yes, I think this is the way to go. I even wonder if this shouldn't be =
-a
-> > fix with Cc: stable. This also has to be done for the Milk-V Jupiter
-> > board, I haven't checked the other boards yet, but I guess they all use
-> > the same schematics at that the PMIC level.
-> >
-> > Regards
-> > Aurelien
-> >
 
-The following changes resolve the warning on my setup.
-If possible, please integrate them into the next version.
+Thanks Pengjie,
 
-diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-index c2a1b759d41f..8512c7417f94 100644
---- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-+++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
-@@ -116,19 +116,19 @@ &cpu_3 {
- };
+Yes, commit 3f78a9f7fcee introduced MAX_SAMPLING_DOWN_FACTOR (100000),
+and commit 2a0e49279850 updated the documentation later, so the Fixes
+tag is correct.
 
- &cpu_4 {
--       cpu-supply =3D <&buck1_3v45>;
-+       cpu-supply =3D <&buck2_3v45>;
- };
+Small nit: "documentation range" feels a bit redundant; just "range"
+might be enough.
 
- &cpu_5 {
--       cpu-supply =3D <&buck1_3v45>;
-+       cpu-supply =3D <&buck2_3v45>;
- };
+Looks good to me.
 
- &cpu_6 {
--       cpu-supply =3D <&buck1_3v45>;
-+       cpu-supply =3D <&buck2_3v45>;
- };
+Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
 
- &cpu_7 {
--       cpu-supply =3D <&buck1_3v45>;
-+       cpu-supply =3D <&buck2_3v45>;
- };
 
- &emmc {
-@@ -248,14 +248,14 @@ pmic@41 {
-                regulators {
-                        buck1_3v45: buck1 {
-                                regulator-min-microvolt =3D <500000>;
--                               regulator-max-microvolt =3D <3450000>;
-+                               regulator-max-microvolt =3D <950000>;
-                                regulator-ramp-delay =3D <5000>;
-                                regulator-always-on;
-                        };
+> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
+> ---
+>   Documentation/admin-guide/pm/cpufreq.rst | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
+> index dbe6d23a5d67..fdca59c955dc 100644
+> --- a/Documentation/admin-guide/pm/cpufreq.rst
+> +++ b/Documentation/admin-guide/pm/cpufreq.rst
+> @@ -516,7 +516,7 @@ This governor exposes the following tunables:
+>   	of those tasks above 0 and set this attribute to 1.
+>   
+>   ``sampling_down_factor``
+> -	Temporary multiplier, between 1 (default) and 100 inclusive, to apply to
+> +	Temporary multiplier, between 1 (default) and 100000 inclusive, to apply to
+>   	the ``sampling_rate`` value if the CPU load goes above ``up_threshold``.
+>   
+>   	This causes the next execution of the governor's worker routine (after
 
--                       buck2 {
-+                       buck2_3v45: buck2 {
-                                regulator-min-microvolt =3D <500000>;
--                               regulator-max-microvolt =3D <3450000>;
-+                               regulator-max-microvolt =3D <1050000>;
-                                regulator-ramp-delay =3D <5000>;
-                                regulator-always-on;
-                        };
 
-Thnaks
--Anand
+-- 
+Thx and BRs,
+Zhongqiu Han
