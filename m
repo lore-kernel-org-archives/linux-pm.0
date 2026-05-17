@@ -1,147 +1,146 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id C5385271A6D;
-	Sun, 17 May 2026 20:58:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from mail-wr1-f73.google.com (mail-wr1-f73.google.com [209.85.221.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 418C63D669A
+	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 23:06:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.73
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779051503; cv=none; b=YCRG8yNXABoYYVHa7wNNUpcb6pgr8K1Qgq4PwHV5udiX3vUh+XYGLEEfVfCz1ekdd8dI1YL+ZqWGpH+4URphs9/fNsJXlNcYPRuznOjwi6bX/LdHcGf9udm355ku99lpUXbJCutlhQNA05iQvqDbl2NvOGIFOgZd+PcgbmlLDIo=
+	t=1779059164; cv=none; b=mZXiskJxAvN9ciO6Jyi0QIhFbwA6foBsAZEGoprJuV87AFrdIH44Wk6rc+i7K5WDdabE/n80a478qyF2U+9v/vwC+WJLe5+ciKChf8vbH9u1ntb+dQXAOXNKOxC86VpAooHqmn6eODOZrkZbZIfhpd5iNEDWyUsRyhYfyA3xFMw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779051503; c=relaxed/simple;
-	bh=8YdDtosc2yuBrzAdShLNX5Aura5/QzNzsydkW/hbS2I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=To7zqGtw9qA2xaAEEt5zEVjFZGlH0qTV9SMs7gaDQfcwrPc69O5oTqs2TEeMifzq5U0yf8VUapTnWMAtNrLr87XzZn+dvPhPz7JPNCw0/xzItc0oSeqxkM/DpbLHF2ima065E4ENYfmsLEifL454omrQlDhaMFiO+aIzNraSG6M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=FeT4EohV; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1779059164; c=relaxed/simple;
+	bh=GEIPvyLRYiAIqR/pv5iDg5p2UGFOLxobthzFMY7jTPU=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=CIQsfsh5iKbtOVpSe4pAP/Leh+dLlt3V4PG99rHOQB34a65OREaaVv3gq/fVx0xevd+C9dUdJ77P1LXt7QuFPdbY/cDOQLZ/XIDLdHBHesBrT8qfeHLkvoEwd0KC7/TFn3w4ug1AqPJ7M2vHsFqF/TJ2Z0rgBIv8+Q+gGnmBSpQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--jackmanb.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=HMxAZcKZ; arc=none smtp.client-ip=209.85.221.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--jackmanb.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="FeT4EohV"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 96A1F19F0;
-	Sun, 17 May 2026 13:58:14 -0700 (PDT)
-Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BA24E3F632;
-	Sun, 17 May 2026 13:58:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779051499; bh=8YdDtosc2yuBrzAdShLNX5Aura5/QzNzsydkW/hbS2I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FeT4EohVSdz0//AGj/+rybSIAktQFGsZBGx+b2XCfQ2fy4e0lQGswwBNToLuCEbRH
-	 fL+pIcQYwVjShNYdxaFGLRo9FGopvFEV0yggvFZyd2UCOGu+uHALw+dejaixXxB1Fh
-	 l59MX3c3/vu+4oE8sBj7+q0p9sMB92tUZlrBNv4k=
-Date: Sun, 17 May 2026 21:58:12 +0100
-From: Cristian Marussi <cristian.marussi@arm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Cristian Marussi <cristian.marussi@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Ulf Hansson <ulfh@kernel.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Marek Vasut <marek.vasut+renesas@mailbox.org>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
-Message-ID: <agor5HJ0JFBoX3sZ@pluto>
-References: <cover.1776793163.git.geert+renesas@glider.be>
- <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
- <aekXUvIPb8nkhdKu@pluto>
- <CAMuHMdX8b9C3D8fV5th6GCgs6JAq7HZbF_SrOKz_gDy2H8ksow@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="HMxAZcKZ"
+Received: by mail-wr1-f73.google.com with SMTP id ffacd0b85a97d-45e80183514so16714f8f.3
+        for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 16:06:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1779059161; x=1779663961; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=RucpAInGrAJfsY0XRVsWleuNH9XqB7VdVnWXH3TZFzQ=;
+        b=HMxAZcKZo6UMiKXrWkbygtZ82cjEB5f6r6WkYgBe9L0UAZT/cpo5UBpYvA6TjuDRBc
+         q1bbXcLZcs05+4sdL4HEjRSsYnsOrqBaUjvqqalO7Yif4WLaoRRhL2Bkjrkjut61Vx/I
+         omeKPHQgbEl31ecdePbeVjb+/tPZflhVHCz4ZfivaX3upFRhWQ/bxm+pjNEfi2xRf+4N
+         as71sYxHFmnXBmOt6bA9F1oJh3EDLvOgs7aBMU/RKQTziPsK2tpL+l3bCztRTdRBeIEt
+         8Mkpy27/qHSee0EW/7xZlPVcixqcfPAWh890UVxVZkZevNLI3ySDe9NJlR39KwQ32L/N
+         lIXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779059161; x=1779663961;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RucpAInGrAJfsY0XRVsWleuNH9XqB7VdVnWXH3TZFzQ=;
+        b=TzdZBPUOl9gHrG47mt8cSxDGlysFV9WcrnHKQfgOruKBojluYE9kqLe+pJZL9PeVx4
+         RjIvn2/hpoRtcqreNBimvivWhzWEcphA9jeHnAAYVXet+fuMyIQGMTmX1s+gRBUUphHQ
+         X2deREmhpm+2/AS6aOg4d0HiyFEYAZC7a6nyL83AFp4GJBCAc9dcDlDELFzMZVSiotdH
+         +qcvDY3orprM7GCzW0QVUwHOPiLVYPeveWdJEbiM65DWgTYykO9/1hgRYjH5PdwSosnx
+         NYyk0MCE2U2nhVH6QTjB5omh608vcsImRzD8vfnwraH+9Iplu169YjUladDAf3qhbc6h
+         FOdg==
+X-Forwarded-Encrypted: i=1; AFNElJ/FC0dx3nhikgIyNqAhn+d0dCD6oH8GRHG9FgP6vQjCSCWREHyDdIODYuedD+GXq4BRtxaHdqjm5Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxk1sbKGHs5Pkz77Xd4OcBZ0GjuW89lT29E3TWkSBfP+/6d/019
+	MHDH9/sI84kGIWmcFG1JpwdGWkXXsMRDSwLrvc5ug7S4Jw6mP4w4auLH6nHjHipddOJQB2ILVHs
+	rmVQ64JniEeFV/Q==
+X-Received: from wrxn17.prod.google.com ([2002:a5d:6b91:0:b0:43c:f700:880f])
+ (user=jackmanb job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a05:600c:3e1b:b0:48a:8905:a500 with SMTP id 5b1f17b1804b1-48fe60da647mr202718675e9.12.1779059161517;
+ Sun, 17 May 2026 16:06:01 -0700 (PDT)
+Date: Sun, 17 May 2026 23:05:56 +0000
+In-Reply-To: <4074a816-9e75-45a6-8141-25459bcc106b@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdX8b9C3D8fV5th6GCgs6JAq7HZbF_SrOKz_gDy2H8ksow@mail.gmail.com>
+Mime-Version: 1.0
+References: <4074a816-9e75-45a6-8141-25459bcc106b@kernel.org>
+X-Mailer: git-send-email 2.51.2
+Message-ID: <20260517230556.590677-1-jackmanb@google.com>
+Subject: [PATCH v2] mm/page_alloc: tidy up pindex helpers
+From: Brendan Jackman <jackmanb@google.com>
+To: vbabka@kernel.org
+Cc: akpm@linux-foundation.org, axelrasmussen@google.com, baohua@kernel.org, 
+	david@kernel.org, hannes@cmpxchg.org, jackmanb@google.com, kasong@tencent.com, 
+	lenb@kernel.org, liam@infradead.org, linux-kernel@vger.kernel.org, 
+	linux-mm@kvack.org, linux-pm@vger.kernel.org, ljs@kernel.org, mhocko@suse.com, 
+	pavel@kernel.org, qi.zheng@linux.dev, rafael@kernel.org, rppt@kernel.org, 
+	shakeel.butt@linux.dev, surenb@google.com, weixugc@google.com, 
+	yuanchu@google.com, ziy@nvidia.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, May 15, 2026 at 05:39:45PM +0200, Geert Uytterhoeven wrote:
-> Hi Christian,
-> 
-> On Wed, 22 Apr 2026 at 20:45, Cristian Marussi <cristian.marussi@arm.com> wrote:
-> > On Tue, Apr 21, 2026 at 08:11:38PM +0200, Geert Uytterhoeven wrote:
-> > > Currently non-SCMI drivers cannot find out what the specific versions of
-> > > each SCMI provider implementation on the running system are.
-> >
-> > Thanks for your patches....this is not a proper full review of the series,
-> > BUT this patch catched my eye..
-> >
-> > Indeed, yes, it is deliberate that the SCMI version information is NOT
-> > exposed out of the SCMI world, since being the SCMI an attempt to
-> > standardize a common FW interface (as in [1] of course), you should not
-> > know what runs inside the black-box, it should be irrelevant...
-> >
-> > ...indeed the versioning is used inside the SCMI stack to deal properly
-> > with different protocol versions implemented by the server OR to apply
-> > proper quirks when needed, but all the rest should be standard....
-> 
-> [...]
-> 
-> > I watched a bit of the LPC discussions around this (from Marek I think)
-> > but sincerely most of those problems had one (not necessarily simple)
-> > solution: fix your firmwares AND/OR apply quirks in the meantime...
-> 
-> So let's forward to the future, where the firmware is fixed, is fully
-> compliant with the SCMI spec, and all IDs are stable, so no quirks are
-> needed.
-> 
-> Where do we specify the SCMI IDs to use?  Unless when using the
-> remapping driver proposed in this patch series, they must end up in the
-> DTB.  Existing upstream users put them either in the SoC-specific .dtsi,
-> or in board-specific .dts.
-> 
-> The SCMI server is supposed to expose to an agent (e.g. Linux) a
-> sequential and contiguous list of IDs that represent only resources that
-> the agent is allowed to use.
->   - We cannot put the SCMI IDs in the SoC-specific .dtsi, as that
->     describes all hardware in the SoC, which is typically much more than
->     Linux can or even wants to use when running on a specific board.
->   - You would think we could put the SCMI IDs in the board-specific
->     .dts.  However, that would limit actual use cases later, which do
->     not necessarily depend on the board solely.
->       - E.g. when moving control of the CAN-FD controller from Linux to
->         the Realtime OS, the CAN-FD node must be disabled in the DTB (by
->         overriding status to "reserved", or by just deleting the CAN-FD
->         node, both of which can be done by the boot loader). However,
->         with SCMI, the IDs corresponding to CAN-FD resources must be
->         removed from the ID space, causing a full renumbering. Who is
->         supposed to update the IDs in the DTB?
+The ifdefs are not technically needed here, everything used here is
+always defined, so switch to IS_ENABLED() to make things a little less
+tiresome to read.
 
-As per my previous email, after such a breaking change I would expect a
-new DTB describing the new HW to be needed anyway.
+Also, Vlastimil pointed out that the VM_BUG_ON()s have fallen out of
+favour, so remove them.
 
->       - E.g. when partitioning a single Linux system in multiple VMs,
->         and distributing hardware across these VMs, all VMs need
->         different DTBs, each describing a subset of the hardware.  With
->         SCMI, each VM needs different SCMI ID spaces, causing not a
->         simple partitioning of the devices in the DTB, but also a
->         renumbering of all IDs.
+Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+Signed-off-by: Brendan Jackman <jackmanb@google.com>
+---
 
-Ok now I am lost..why do you need a distinct IDs space for each VM ?
+>> And it's all internal to page alloc so I'd just drop those checks
+>> completely at this point.
+>
+> But, I won't die on the above hill, if people really hate BUG that much
+> happy to go with the flow.
+>
+> In that case, I'd suggest we drop them as a separate patch.
 
-In a virtualized env, I would expect to leverage the SCMI stack to
-realize the exact opposite: same set of IDs advertised to each VM (and
-so same DTB potentially) by the server which in turn can decide to
-assign the same device (and handle the sharing) to some ID or assign
-different devices to the same or different IDs on each VM: i.e. you
-have a set of virtual_IDs that is what the server exposes to each VM
-SCMI agent, and then a bunch of real physical IDs, without any contraint
-on their numbering, that the server uses in the backstage to refer to
-the real resources and that it properly remaps to each per-VM set of
-exposed virtual_IDs during the build and/or boot board configuration
-phase....i.e. when the FW adapts and reconfigures to the specific
-board that is finally running on.
+Oh, actually no, the VM_BUG_ONs were the main thing making the ifdefs
+awkward, it makes sense to drop them together. Here's a combined patch.
 
-Thanks,
-Cristian
+ mm/page_alloc.c | 25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 5d6144c8860ed..76d5d9464e2ef 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -650,19 +650,12 @@ static void bad_page(struct page *page, const char *reason)
+ 
+ static inline unsigned int order_to_pindex(int migratetype, int order)
+ {
++	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
++		bool movable = migratetype == MIGRATE_MOVABLE;
+ 
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-	bool movable;
+-	if (order > PAGE_ALLOC_COSTLY_ORDER) {
+-		VM_BUG_ON(!is_pmd_order(order));
+-
+-		movable = migratetype == MIGRATE_MOVABLE;
+-
+-		return NR_LOWORDER_PCP_LISTS + movable;
++		if (order > PAGE_ALLOC_COSTLY_ORDER)
++			return NR_LOWORDER_PCP_LISTS + movable;
+ 	}
+-#else
+-	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
+-#endif
+ 
+ 	return (MIGRATE_PCPTYPES * order) + migratetype;
+ }
+@@ -671,12 +664,10 @@ static inline int pindex_to_order(unsigned int pindex)
+ {
+ 	int order = pindex / MIGRATE_PCPTYPES;
+ 
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-	if (pindex >= NR_LOWORDER_PCP_LISTS)
+-		order = HPAGE_PMD_ORDER;
+-#else
+-	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
+-#endif
++	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE)) {
++		if (pindex >= NR_LOWORDER_PCP_LISTS)
++			order = HPAGE_PMD_ORDER;
++	}
+ 
+ 	return order;
+ }
+-- 
+2.51.2
+
