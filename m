@@ -1,101 +1,63 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E7FD3254A5
-	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 18:51:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id F1F112236E3;
+	Sun, 17 May 2026 20:42:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779043920; cv=none; b=n13fMIytj66uUtp+rCW2A4jgc6LSR9AL16mwFgsqiC0IsSvkJ2QFUpunzFX0ZgHLjT98BtmmbwCWAEv066352oF7ekXlaNlUQI0RaC88HL4POpeM1QFjzWuD+7VOSzx3eIGM+q9bxjxO+TMVyHyr7SsseD+78nC7jUei3VWlb6g=
+	t=1779050560; cv=none; b=c8on3NVPk3XlHkqv4dn5NL7vhOlkAIPqya+CuThywqqe4A6YT+YCKNztQ/ZhpD1TTqTSUxrfmy3PQ5D5URnUJ4jAyUkFv5xWUNic+NcfURNxzfrjAep0g44IY5njbDAeGsxwaQLunaV1GP47euv92NHZw5Wuvw/rUkOeuDcd/lU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779043920; c=relaxed/simple;
-	bh=Y5i9WcyiDzQjtJSx79lz5XChtinSTRrDP5DUYMTy97Q=;
+	s=arc-20240116; t=1779050560; c=relaxed/simple;
+	bh=ibv6k4YlBc18EEJ4WtAjYGWP8e0aYlgR4UUrhJdd/EA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jBxZCIZI6vytfTWghErHvd43wnXql2UM3sXJOylSFEAo1mcE1Yt2Oo5MEKbAFIMTgwRozz7DkRLYreGX9cy9PwXdh0qJ1sdfwui4yqR1ATKKGfMdReyx/Je6kPTY6Mf1nI37yEM7y+3KzNwt3XUroQaQYWUqI8x4mSBREC4cjdE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=YqLG13MY; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BNKU4PAA; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=bTIj2cKUf0rDqs34EfuxRxugyR/na0a+PT4jruCNh8XPxMJQAwSG1SOv/Xmsx7kZmmHD9w3ofhO31FjC71P6R2IzVyndA/W73sqLgF1RiVksqTYU1mbjlgmbJRhjVw/o/vdleE9FlltIX4WcK+YDN2xllFaz1Ow3e1MoefE/sLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=Oxil/Pdk; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="YqLG13MY";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BNKU4PAA"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64H97DVI3124872
-	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 18:51:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=qcppdkim1; bh=w8qDcE/JkXAvARu8IjsWPZkQ
-	lthwgFQJ1bcCPlrXmHw=; b=YqLG13MYcGs2osLqpsGGB9+Ep4Lp7BVQA8pnn30n
-	jkCl2uge06yWxC1xdsrYDWBfPghOMZkIYeohGJmDgi/e9hRhVqjqg8u2y/RhdDqx
-	o1W3AgwnG9b2J9FjUEf+s2VAk5LM6c/1zKTytynM/QdjRxfC9aeE8SAYayA0r7wF
-	O5m+gOAec4uFNK5IGzqavxEDh/6ASx5DIhCnmEh0p0MUS1F1g4q+4tXbj+Ie86p+
-	3mm8v1l4npSsrls0yLneJYRfY/BDCgOJlf0S39CbRc6oOPIjQk61RhM4zYS+Zmr0
-	1RrQtnpX57ZmRTS+SsAytHuKx1YGusMguwe1jERRJB8qZg==
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e6gyw3d90-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 18:51:56 +0000 (GMT)
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-50d5d1c2289so51679651cf.2
-        for <linux-pm@vger.kernel.org>; Sun, 17 May 2026 11:51:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779043916; x=1779648716; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=w8qDcE/JkXAvARu8IjsWPZkQlthwgFQJ1bcCPlrXmHw=;
-        b=BNKU4PAAl/d/4hFcuu1gCJ882A6UYQAOoA6+BIhE9U5Qvb1tdyQjSzKk81MbVz+cFS
-         JkeEqwVWdvWFi66iO1tDY2XQgB+q900XS5E+hdth+Qfz7Lsq8kB+609x3V/v79KOJsfm
-         e/yULAAwQSa3oSpva5IeUR9TfRaIvcgyrl9h1ZyinJfHyYkBopg/aJ8+4WWqfSXMQqw2
-         SBe7/px5067JENK4ZJNt38cYq83cs+y6FrqPxuuoVdAraD8hnA9z3HijUlok2kW3Q8wH
-         xQHVAW4lwhKExwdRWr6vIY3np3/5KT6U+tsykprzGBljHvaRYm1zToREOzEk9brF2t8W
-         0Y4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779043916; x=1779648716;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=w8qDcE/JkXAvARu8IjsWPZkQlthwgFQJ1bcCPlrXmHw=;
-        b=ClLAGZjIMXfIil2I+Y93pZxtXPzORw4MtkUVSKWbS0pCVCrdkAKxILC+Svj2X1lsX9
-         W+uiN41t7x7X3shLM+WTQ4+Y473ohtACzWET/s1t5i5I6lwGkBeldEC8cyIcUyeD2dAd
-         8/x0tIvQEAw1g2zz6dQlVGqi6rv68vZew1cpZWdBZfXW87j88RQP7c6hYsZ3GQaARrPA
-         6SUICmHPDo0XA51aVmnYizokttV/wrdbBiKfFLD4YkAxG04EoiV9y76BuzhwEICrvtuG
-         f7L6pVzmxw/FvwzLgwvQsgAoaRrFumlAGMe30FEdmK4hcmxODVhUoRN9ujUsJrVNzd+6
-         7Tgg==
-X-Forwarded-Encrypted: i=1; AFNElJ+R6WeJk3ryWYdc6Zw7qE4s+jaANfYQhfwkLZyMKtTMwM49OjsWQhjSiy9BSvxS6C22/w1IO6ux0w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwjcTvIZeY19nY+AhAir5g0PMsX0XaUnAXlq6Cgi0VfzlASwmLo
-	IsEJSMgl1u3dAx8+1HYXyrysapNrCd/Zo8doPIduykp1Jw0Bf1jl6hcGO0CloWc2xxODl42dB8G
-	iR/WfkoO0tGS+ZJepX4IUnnZ+s8frAnQ3NVXsNsTZ1IzEX3PCnPxfh1TzQEvGVQ==
-X-Gm-Gg: Acq92OHajSv1O49XIbUpTs6/VgedyNbDZld74JVprZ9iL9wlY0yYn0HAbHoX81gpGxt
-	vhhdZuTzTY6er3Hxq7xFmU8NhbE2DdGVGhbvr18vu2ryqTEsC88iXH2hGJmpoBbpJY0ddmN/MSg
-	SHzMTkkUIar9/NmpVNiRg8ofkPMY15CfcGOhKPidqx3v8iGzzXhXGTS9sZQRYTcxE98z32yQc/O
-	WOhnVP5G4qEU6C0OOr8hBNNc6kL+gn5fBoB/KII3YxTUm/68tYXpUhvEbZQ6P2sDzPAGNcS6Nub
-	K+fYBmWV9Xt1UibcuW4cP5sFp3f8MFlY216uDH7qN3wCLkbET/hHrsV34voFIgZNpqKm6fazx96
-	+94pzTpeLinKqDr4Wo1Ug5di5GanXqC6UtWmXSOY0rC1d1jvDRzBUC0JttQSz37g4wmzF4A6QcN
-	A1n+vEkm0zTeX7VmiVdPNl4p87fV2WtI4fDPY=
-X-Received: by 2002:a05:622a:4a0f:b0:50d:a4e6:997f with SMTP id d75a77b69052e-5165a03ad56mr162139301cf.15.1779043916042;
-        Sun, 17 May 2026 11:51:56 -0700 (PDT)
-X-Received: by 2002:a05:622a:4a0f:b0:50d:a4e6:997f with SMTP id d75a77b69052e-5165a03ad56mr162138991cf.15.1779043915619;
-        Sun, 17 May 2026 11:51:55 -0700 (PDT)
-Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-395882c74d6sm6943301fa.15.2026.05.17.11.51.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 May 2026 11:51:54 -0700 (PDT)
-Date: Sun, 17 May 2026 21:51:52 +0300
-From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
-To: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-Cc: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-        Konrad Dybcio <konradybcio@kernel.org>, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH 2/3] clk: qcom: ipq5210: Use icc-clk for enabling NoC
- related clocks
-Message-ID: <whx5dpg3ji7lj62o5wvcytwfi7wphtlooqznkeeeeixkhegw5k@7bli6m4w6frn>
-References: <20260514-icc-ipq5210-v1-0-b5070dfbe460@oss.qualcomm.com>
- <20260514-icc-ipq5210-v1-2-b5070dfbe460@oss.qualcomm.com>
- <5zdmbj56ndi7nrvdqadinrf3sneywft3uaplnoxugp5zetsfbj@5hazmuzyfz7u>
- <agc+n28PfkrxwpuJ@hu-varada-blr.qualcomm.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="Oxil/Pdk"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 396B6165C;
+	Sun, 17 May 2026 13:42:25 -0700 (PDT)
+Received: from pluto (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E5E263F632;
+	Sun, 17 May 2026 13:42:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1779050550; bh=ibv6k4YlBc18EEJ4WtAjYGWP8e0aYlgR4UUrhJdd/EA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Oxil/PdkhVxEKri4W+21DCWJpSzmbyh//lSfNpbp7YNrzY0gBA77e2HPyJka8ivkE
+	 7jwKFD5fGgewZP7ZuvMxa7hNPL04sAoNbFt9TeMWR1R4qBuRII07O8mB5lqNpEjANF
+	 x9j5Yd3TDEkRJafg8JtoEMNt2coOZ/uH9P0Bv4MU=
+Date: Sun, 17 May 2026 21:42:18 +0100
+From: Cristian Marussi <cristian.marussi@arm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Cristian Marussi <cristian.marussi@arm.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Ulf Hansson <ulfh@kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Marek Vasut <marek.vasut+renesas@mailbox.org>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	arm-scmi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
+Message-ID: <agooKghZJw3iElvp@pluto>
+References: <cover.1776793163.git.geert+renesas@glider.be>
+ <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
+ <aekXUvIPb8nkhdKu@pluto>
+ <CAMuHMdWJvMH+a1RqozbaCxxH_8M569JcruTFa8PW+87FysnjHw@mail.gmail.com>
+ <ae6Zp54NhKlVes8J@pluto>
+ <CAMuHMdWK3Noh5ZQVWT9C0EKyXZePMaJ97C0A_syK+xCb_=abeQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -104,73 +66,131 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <agc+n28PfkrxwpuJ@hu-varada-blr.qualcomm.com>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE3MDIwMyBTYWx0ZWRfX1RFFLyuELEPM
- kDoVmxZNLSKgFqsDW28hmof0tCuG1JtCMp2EE9ueNbIuPXcP12ku9mPqS/Cvv550a6mYMvDL5wi
- kUpIbnzu94x7gXzQ4pxLfnQzKuDkTU41rlBDf2kQKsE6UmHiN4ixj189K352T2cfKUexqv3CfDm
- q5mUbYKCiKZUhr/yni1wgWMiybIBL+ijuAS03X1aSyB9Ur6DXjYk5heAUav1o2dRf/rRydCzKhV
- 0TgQgHBZ/kP04bjtDbhEUQvYQE9GfnuWV1ZQe+YREZQja7QKBpawEVWWT8TSYCze2IpPu+OYclv
- b+HuQ6kWBzXoycBmFAhdBCDdRTXucNn8JbM8/XjsYNPmHmajJmrCMKz7n2Hq0D5E5CLRPOK1enh
- SyRDJhOeihtb+Pw3mqgJKCiqeGgxfp+G13u2VqUqTYSzx3d27PAcBWaxQwQX1DD73Xk7Vc0GRLH
- QjC0Go6/MoAbTjmX1uw==
-X-Proofpoint-GUID: b7EDXMg8NglgxCzoSe7X4hXuwfAGgFRg
-X-Proofpoint-ORIG-GUID: b7EDXMg8NglgxCzoSe7X4hXuwfAGgFRg
-X-Authority-Analysis: v=2.4 cv=E5v9Y6dl c=1 sm=1 tr=0 ts=6a0a0e4c cx=c_pps
- a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=bC-a23v3AAAA:8
- a=EUspDBNiAAAA:8 a=92o4APbqSy6JO7topJkA:9 a=CjuIK1q_8ugA:10
- a=dawVfQjAaf238kedN5IG:22 a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-17_04,2026-05-15_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 bulkscore=0 adultscore=0 spamscore=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 phishscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
- definitions=main-2605170203
+In-Reply-To: <CAMuHMdWK3Noh5ZQVWT9C0EKyXZePMaJ97C0A_syK+xCb_=abeQ@mail.gmail.com>
 
-On Fri, May 15, 2026 at 09:11:19PM +0530, Varadarajan Narayanan wrote:
-> On Fri, May 15, 2026 at 04:31:42PM +0300, Dmitry Baryshkov wrote:
-> > On Thu, May 14, 2026 at 09:35:36AM +0530, Varadarajan Narayanan wrote:
-> > > Use the icc-clk framework to enable few clocks to be able to
-> > > create paths and use the peripherals connected on those NoCs.
+On Fri, May 08, 2026 at 12:26:19PM +0200, Geert Uytterhoeven wrote:
+> Hi Cristian,
+> 
+
+Hi,
+
+> On Mon, 27 Apr 2026 at 01:03, Cristian Marussi <cristian.marussi@arm.com> wrote:
+> > On Fri, Apr 24, 2026 at 02:08:55PM +0200, Geert Uytterhoeven wrote:
+> > > On Wed, 22 Apr 2026 at 20:45, Cristian Marussi <cristian.marussi@arm.com> wrote:
+> > > > Also because this should be one of the selling point of the SCMI stack
+> > > > in a virtualized environment: you can ship the same kernel drivers with
+> > > > the same DT and you know that ID=<N> will always identify the specific
+> > > > resource that is needed by your driver without worrying about the fact
+> > > > that in reality in the backstage the effectively managed physical resource
+> > > > could be different across different platforms, because that does not matter
 > > >
-> > > Signed-off-by: Varadarajan Narayanan <varadarajan.narayanan@oss.qualcomm.com>
-> > > ---
-> > >  drivers/clk/qcom/gcc-ipq5210.c | 16 ++++++++++++++++
-> > >  1 file changed, 16 insertions(+)
+> > > This sounds strange to me, do I understand it correctly?
+> > > So the ID should (1) be tied to the use-case, and not to the underlying
+> > > hardware, and (2) be the same for different platforms?
 > > >
-> > > @@ -2642,6 +2657,7 @@ static struct platform_driver gcc_ipq5210_driver = {
-> > >  	.driver = {
-> > >  		.name   = "qcom,gcc-ipq5210",
-> > >  		.of_match_table = gcc_ipq5210_match_table,
-> > > +		.sync_state = icc_sync_state,
+> > > For (1): Then we must not put these IDs in DT at all, as DT is supposed
+> > >     to describe the hardware (and firmware IDs in DT were IMHO already
+> > >     a stretch before).
+> > > For (2): How can there be a contiguous list of IDs, as not all platforms
+> > >     may have the same underlying hardware?
 > >
-> > in Kconfig:
+> > I would NOT say that an SCMI FW must behave like this regarding IDs, but it
+> > is a possible SCMI deployed setup that can be useful in virtualized setups
 > >
-> > select INTERCONNECT
+> > I mean, the DT describes the hardware of course BUT when you refer to
+> > some of this hardware DT bits from some other subsystem by referencing a
+> > phandle, even in the non-SCMI world, you are in fact selecting a specific
+> > resource that fit you use case, right ? Can we say this ?
+> > I mean you needed that specific clock or regulator that you described
+> > previously so as to be able to enable some other piece of HW...
 > >
-> > OR
+> > Now, the SCMI provides an abstraction on top of this, since you really
+> > discover domain IDs of a specific class (clocks/regulators etc) you are
+> > in fact describing an HW abstraction that you then refer with the usual
+> > phandle...also because there is NOT so much SCMI hardware to describe,
+> > given that the HW is handled transparently (opaquely really :P) by the
+> > driver on the FW side...
 > >
-> > depends on INTERCONNECT
+> > ...you basically obtain such domain ID, usable as phandles through dynamic
+> > SCMI enumeration so that you can use it all over your DT to make use of such
+> > resources...
+> >
+> > ...on top of this, consider that the SCMI server CAN provide to its agents
+> > a per-agent-view of the world, IOW it can (and should) expose to a specific
+> > agent ONLY the resources needed by that agent, i.e. it can expose the set
+> > of resources 1-N to two distinct agents and that does NOT mean that the
+> > underlying physical resource mapped by ID=3 in both agents has to be
+> > effectively the same piece of hardware: it could be the case, and this
+> > would be useful to exposed and managed properly a shared resource, or
+> > it could also be that the same ID=3 could refer to completely distinct
+> > pieces of the same class of hardware...(same protocol same class of
+> > resource...)
 > 
-> In drivers/clk/qcom/Kconfig, IPQ_GCC_5210 can be selected only if
-> COMMON_CLK_QCOM is enabled. COMMON_CLK_QCOM selects both
-> INTERCONNECT and INTERCONNECT_CLK.
+> Exposing only the clocks/reset/power domains the agent can use,
+> in a contiguous list of IDS, means that the number space changes,
+> depending on which resources are exposed.
 > 
-> Is select (or) depends INTERCONNECT still needed for IPQ_GCC_5210.
-> Please let me know.
 
-I've sent [1], let's see if it gets accepted or not.
+Yes, potentially, it depedns on how the HW/FW stack was designed I
+suppose...
 
-[1] https://patch.msgid.link/20260517-qcom-clk-icc-v1-1-1dc6ea8bdcd0@oss.qualcomm.com
+> Suppose you have a system where you want to assign a specific hardware
+> block in the SoC to the realtime CPU core instead of the application
+> CPU core running Linux.
+
+Ok, so this is definitely a considerable change.
+
+> That means all resources used by that block must no longer be exposed
+> to the Linux agent, and the corresponding IDs must be removed from
+> the ID space exposed to Linux.  As the ID space must be sequential
+> and contiguous, the IDs must be renumbered, impacting resources that
+> are exposed to Linux.  As these IDs are used in the SoC .dtsi, they
+> must be changed there, too, However, these IDs have become part of
+> the stable DT ABI, and thus cannot be changed.
+
+Well, you have to ship a final DTB blob that is crafted to describe the
+actual HW at the end, right ?
+
+I mean, in your example, it seems to me that you have changed considerably
+the HW surface by moving a clock (and its related resources) away from the
+reach of Linux as a whole, so should not be expected to have an updated
+DTB shipped ?
+
+And I am NOT saying to do this by changing the base SoC dtsi, but via build
+time overrides and/or runtime overlays so as to derive from that same SoC
+base dtsi a properly reviewed final DTB that describes how the HW has actually
+changed, becasue beside the renumbering that you mention there will be
+also a bunch of HW pieces that were relying on that clock that now will
+have to be removed from the DTB if no more usable (or remapped to use a
+different, maybe non SCMI resource)
+
+I maybe too naive and not used to very complex DTBs, but why all of the
+above cannot be done along the lines of how is done as an example in
+JUNO [1], where some initial base dtsi was overriden by virtue of includes
+and overrides to properly describe the board at hand (r0/r1/r2), even going
+to the extreme, funny enough, to move from the old SCPI to SCMI.
+
+[1]: https://elixir.bootlin.com/linux/v7.0.8/source/arch/arm64/boot/dts/arm/juno-scmi.dts
 
 > 
-> Thanks
-> Varada
+> This patch series fixes that issue, too, by describing the actual
+> hardware in DT, and doing the mapping to exposed SCMI features in the
+> kernel, based on which firmware version is running on the SCP.
+> 
 
--- 
-With best wishes
-Dmitry
+Which seems to me to go in the opposite direction to what SCMI expects:
+but I understand that we have to deal and cope with the existing already
+shipped FW, so my concern is not really around enabling this in particular,
+is much more the fact that we open the door and normalize this kind of
+design even with future, still to be developed, SCMI FWs.
+
+...otherwise...have the spec changed/clarified to allow for such
+non-contiguos IDs...
+
+...anyway let's hear Sudeep opinion on this general issue of contiguos
+remapped IDs and being able to peek into SCMI version from outside the
+SCMI world...
+
+Thanks,
+Cristian
+
