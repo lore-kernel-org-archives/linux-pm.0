@@ -1,103 +1,186 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 110A8282F12;
-	Sun, 17 May 2026 07:08:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84B29274B5F;
+	Sun, 17 May 2026 13:10:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779001694; cv=none; b=G3bOghUsXszqbb/hrFbslBFUdAqRV9NWqPSjdUS9/kMvjAjlqn3QHUqClVWzIwHIYC79sQzzcDpBZnrNMVJGWZg+zE/ESM16RatfKTxuFw1IVb4h8FZ8IWJTc5ofPPnl/XrrY6UuwqJ8Z1PnlLfBdOZhH3h+CSFg+Tpr2Tolqlk=
+	t=1779023405; cv=none; b=AL3hYA7EPWqNmMm2sk64GSy1NhnZe3LustAGKqUu8u2g1zzVOMz6ROlWa7ntk8ABNyHMKjDCiCmLrA74lMON5K7J0QQ6NcWMOijOumYCQJbK48jttD2xWjukVj/Lu/z9rqH+7noLs08WLo12DSC33dcFlwWxaADvxyFgvY3B2Zs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779001694; c=relaxed/simple;
-	bh=sPRnTzU+dJcq83qSDb71XWGiExHcCE/eGd012FRHJKU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q5BQ0WvGRywuv9GON8thCZdIYjAAIz6fvFOJxIH7EBAQRPMbwmXx9Va1lpRk9NsEu6t9Iuj8Yrm6WoJ8qLcBKMgpQHIDemQVMUKlBxdBffGtgeWzglxhuNMrG4CF5jjYMzFbSI/rHxtTZP285FNLzHWq8qS8Qhy2CgoXUTW7D80=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=UwToY7f+; arc=none smtp.client-ip=198.175.65.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1779023405; c=relaxed/simple;
+	bh=VmZO8wUns6Rzp7QhfWBpX9OW3ArS21uLigpWw23RVe0=;
+	h=Mime-Version:Content-Type:Date:Message-Id:To:Cc:Subject:From:
+	 References:In-Reply-To; b=rqgnPmNUVunzPPD6m/WtJ4hmJwa4Qf1akVyMd6N/IQgRLPLnZC+imuSeSqhCwvKO2yG3+LrGSpXJM3OFvChkH3ZfFW+sT3JFTLKQDPal1rZtuevrLZdSiRkFQd4HW+f4XVF+WAehgkjGnVDW6gao6t18YlPIcOB7csX+pwSWDO4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=S38s4N/3; arc=none smtp.client-ip=178.21.23.139
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="UwToY7f+"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779001693; x=1810537693;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=sPRnTzU+dJcq83qSDb71XWGiExHcCE/eGd012FRHJKU=;
-  b=UwToY7f+bO/xIDvN/AaFTwvwdnyQFOas/CPyZNdHyLHRNZkNrPhDOR+8
-   vTlnvdlvl9SnJ2m00AY/156zohsXtURmU1Tvu92z6IlxEGVRg0rmgLAml
-   PJseGfMKFvjp4El18+TSHkO8LH5bqnq64Z0S7T/wkndloUxN2AVPkMKhd
-   jb4AIB31ESnNh1aVZO7XQd6hoXXIXNL0Ia4JNBNxzRizKYD0B533ayFfp
-   B/GBqkM3ofFKuiAmm5icgMCSwlHdIOH9Jypd8vd50plQ4JYdvBsCvFKpu
-   aM0KVaHXLNnPehTRXOgQffjudxvUTxVgW5YaGzYz/NpUN+d1cR6DX6Wqv
-   A==;
-X-CSE-ConnectionGUID: DFT/Xy0+QAqO8piqrX+WYw==
-X-CSE-MsgGUID: no54KeLkSm2SrtzOw+eMNw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11788"; a="90200207"
-X-IronPort-AV: E=Sophos;i="6.23,239,1770624000"; 
-   d="scan'208";a="90200207"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 May 2026 00:08:12 -0700
-X-CSE-ConnectionGUID: zLs4LkmzQBexprDyHCQS+g==
-X-CSE-MsgGUID: pzUDhFfCT0y15UOy96bdsw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,239,1770624000"; 
-   d="scan'208";a="262635385"
-Received: from slindbla-desk.ger.corp.intel.com (HELO localhost) ([10.245.245.182])
-  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 May 2026 00:08:08 -0700
-Date: Sun, 17 May 2026 10:08:05 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-	Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-	David Collins <david.collins@oss.qualcomm.com>,
-	Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ with
- ADC_TM auxiliary driver
-Message-ID: <aglpVX2NeQ8jxN6Y@ashevche-desk.local>
-References: <20260515-gen3_adc_tm-v1-0-39ba29f9b4ab@oss.qualcomm.com>
- <20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="S38s4N/3"
+Received: from mail01.disroot.lan (localhost [127.0.0.1])
+	by disroot.org (Postfix) with ESMTP id AF548270F3;
+	Sun, 17 May 2026 15:09:52 +0200 (CEST)
+X-Virus-Scanned: SPAM Filter at disroot.org
+Received: from layka.disroot.org ([127.0.0.1])
+ by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iz7bdltAi84y; Sun, 17 May 2026 15:09:51 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
+	t=1779023391; bh=VmZO8wUns6Rzp7QhfWBpX9OW3ArS21uLigpWw23RVe0=;
+	h=Date:To:Cc:Subject:From:References:In-Reply-To;
+	b=S38s4N/3j/FiziIop4tsq8NahUewcH98fRM7YKQifUrAWbDncqY8LWkCTRCMS9UkI
+	 rpGjuV6ZjZ+5DJWl++KMcRG114tis08jxDUBOVxqqZIdy2IKEDddBiaxZM0uCadrE7
+	 HPVpyotSRXNTvouCqX51foNX17f8gXA65NemsiKM5MWGWMwfdX/5r6KGZI9kk1MTK1
+	 VR7w6C9N28B6bCaOnhSuCguWzs2BP+cJLTDNuiidp99hi4+UZpWzFj18L/O+cF+AkJ
+	 fWeCm2tIA9IFEEe8y7mK14ZjZsvR7kPTwr2vREd/jjvesnMF66Tt2ICMHbcLOFr9sw
+	 iLIx2voOesDAw==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 17 May 2026 18:39:37 +0530
+Message-Id: <DIKZ5L2HC2CV.YL3MZUJQ2EV6@disroot.org>
+To: "Conor Dooley" <conor@kernel.org>, "Kaustabh Chakraborty"
+ <kauschluss@disroot.org>
+Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
+ <myungjoo.ham@samsung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>,
+ "Sebastian Reichel" <sre@kernel.org>, "Krzysztof Kozlowski"
+ <krzk@kernel.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, "Alexandre Belloni"
+ <alexandre.belloni@bootlin.com>, "Jonathan Corbet" <corbet@lwn.net>, "Shuah
+ Khan" <skhan@linuxfoundation.org>, "Nam Tran" <trannamatk@gmail.com>,
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>,
+ <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>
+Subject: Re: [PATCH v6 03/11] dt-bindings: mfd: add documentation for
+ S2MU005 PMIC
+From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
+References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
+ <20260515-s2mu005-pmic-v6-3-1979106992d4@disroot.org>
+ <20260515-justly-recite-6028f4bfb24a@spud>
+ <DIJK5FTQ5KWG.HOKZAOXHTGU7@disroot.org>
+ <20260516-esquire-chitchat-0fffa597e2f3@spud>
+In-Reply-To: <20260516-esquire-chitchat-0fffa597e2f3@spud>
 
-On Fri, May 15, 2026 at 02:23:44PM +0530, Jishnu Prakash wrote:
-> The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
-> immediate ADC reads done in this driver and for threshold violation events,
-> based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
-> TM channels on the first SDAM.
-> 
-> At present, this interrupt is handled only in the ISR in the main ADC driver.
-> When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
-> driver by calling a notifier callback exposed from it for this purpose.
-> 
-> To simplify the interrupt handling in both drivers, share the interrupt between
-> the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
+On 2026-05-16 23:25 +01:00, Conor Dooley wrote:
+> On Sat, May 16, 2026 at 02:41:29AM +0530, Kaustabh Chakraborty wrote:
+>> On 2026-05-15 18:14 +01:00, Conor Dooley wrote:
+>> > On Fri, May 15, 2026 at 04:08:59PM +0530, Kaustabh Chakraborty wrote:
+>> >> Samsung's S2MU005 PMIC includes subdevices for a charger, an MUIC (Mi=
+cro
+>> >> USB Interface Controller), and flash and RGB LED controllers.
+>> >>=20
+>> >> Add the compatible and documentation for the S2MU005 PMIC. Also, add =
+an
+>> >> example for nodes for supported sub-devices, i.e. MUIC, flash LEDs, a=
+nd
+>> >> RGB LEDs. Charger sub-device uses the node of the parent.
+>> >>=20
+>> >> Signed-off-by: Kaustabh Chakraborty <kauschluss@disroot.org>
+>> >> ---
+>> >>  .../bindings/mfd/samsung,s2mu005-pmic.yaml         | 120 +++++++++++=
+++++++++++
+>> >>  1 file changed, 120 insertions(+)
+>> >>=20
+>> >> diff --git a/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pm=
+ic.yaml b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+>> >> new file mode 100644
+>> >> index 0000000000000..0e6afb7d2017b
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/mfd/samsung,s2mu005-pmic.yaml
+>> >> @@ -0,0 +1,120 @@
+>> >> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> >> +%YAML 1.2
+>> >> +---
+>> >> +$id: http://devicetree.org/schemas/mfd/samsung,s2mu005-pmic.yaml#
+>> >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> >> +
+>> >> +title: Samsung S2MU005 Power Management IC
+>> >> +
+>> >> +maintainers:
+>> >> +  - Kaustabh Chakraborty <kauschluss@disroot.org>
+>> >> +
+>> >> +description: |
+>> >> +  The S2MU005 is a companion power management IC which includes subd=
+evices for
+>> >> +  a charger controller, an MUIC (Micro USB Interface Controller), an=
+d flash and
+>> >> +  RGB LED controllers.
+>> >> +
+>> >> +allOf:
+>> >> +  - $ref: /schemas/power/supply/power-supply.yaml#
+>> >> +
+>> >> +properties:
+>> >> +  compatible:
+>> >> +    const: samsung,s2mu005-pmic
+>> >> +
+>> >> +  flash:
+>> >> +    $ref: /schemas/leds/samsung,s2mu005-flash.yaml
+>> >> +    description:
+>> >> +      Child node describing flash LEDs.
+>> >> +
+>> >> +  interrupts:
+>> >> +    maxItems: 1
+>> >> +
+>> >> +  muic:
+>> >> +    $ref: /schemas/extcon/samsung,s2mu005-muic.yaml#
+>> >> +    description:
+>> >> +      Child node describing MUIC device.
+>> >> +
+>> >> +  multi-led:
+>> >> +    type: object
+>> >> +
+>> >> +    allOf:
+>> >> +      - $ref: /schemas/leds/leds-class-multicolor.yaml#
+>> >
+>> > Does this need to be an allOf when the other refs are not?
+>>=20
+>> It has it's own properties, that's the reason. This used to be it's own
+>> thing in dt-bindings/leds, but I was asked to move it here in prior
+>> reviews.
+>
+> What do you mean by "its own properties"?
 
-"will"?! Do you mean this patch deliberately breaks the working setups?
+I mean, the other schemas (muic, flash) are in their own file, with
+compatible, and other properties too.
 
-> the ADC_TM driver, so remove the notifier callback and all TM interrupt
-> handling in the main ADC ISR.
+This one, inherits properties from leds-class-multicolor, AND has a
+"compatible" property with it, which is not defined in
+leds-class-multicolor. Now if you ask why does the compatible exist,
+that's something Krzysztof suggested in previous revisions.
 
--- 
-With Best Regards,
-Andy Shevchenko
+And, Krzysztof had also reviewed this patch, and (similar to the prev
+patch) I've missed the trailers, which have been addressed in v7 now.
 
+>>=20
+>> >> +
+>> >> +    properties:
+>> >> +      compatible:
+>> >> +        const: samsung,s2mu005-rgb
+>> >> +
+>> >> +    required:
+>> >> +      - compatible
+>> >> +
+>> >> +    unevaluatedProperties: false
+>> >> +
+>> >> +  reg:
+>> >> +    maxItems: 1
+>> >
+>> > Move this above the child nodes please.
+>>=20
+>> But properties are sorted in lex order?
+>
+> Typically the binding is sorted in the same order as properties go in
+> nodes. Common stuff like reg/clocks/interrupts therefore send up above
+> child nodes.
 
+So, do I change this? For one, I don't see the same being followed in
+other schemas of samsung in the same dir (not that I'm trying to pose it
+as an argument against your suggestion), and this was reviewed by
+Krzysztof and is adderssed in v7.
