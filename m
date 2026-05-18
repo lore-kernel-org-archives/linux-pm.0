@@ -1,135 +1,366 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from CWXP265CU008.outbound.protection.outlook.com (mail-ukwestazon11020113.outbound.protection.outlook.com [52.101.195.113])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A15037DE9B;
-	Mon, 18 May 2026 15:27:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779118073; cv=none; b=WTrfJHpYOaPdKzfLBGED3ZrSQmRMJ7uZm5q2Goux9EOyGbIvyM/2yhRTbs0LoNmjNI5WJw7GU3re0Wo3t/0ww2Y/Ycq3gO5nEKZzE/rJt9U+v8poHw2fu+4iORpSQed++9HTwYiRQiLznnKrCEyyr9S0OAZU8joImcjqTUJ+/Uc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779118073; c=relaxed/simple;
-	bh=uV/dNKDL67m/VfCon1aQ8zgvR05wzPVijS7dm06t6FE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uF1YWJusFol3u0RaqCt4XtsZL2mVixvV9THN4fd6C5LjorwRBRX8GLTXr9xIMxYrASGtRokFW9vVKX/ND0W8ei3dQUrUU+RRVv7DdBd05HcFSiBS+ZAmvQD+xmtzRUm4dDQAmoUFTROArjvvMOuwUuOLqL5c6qfd+6W/oR+CB+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=W5aekSJr; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94BA6404895;
+	Mon, 18 May 2026 15:36:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.195.113
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779118593; cv=fail; b=cu29/kQVQfhXRge4i7rk4Iw+jB2UtH1IwsdldJJWbz8AiuUD9R/RMkk4JY2QO/jI+Wo9yGVXsodr1gXmvCEKUHB1I/V1i65hmkhhdwsXI7/PhYdzmLLQz5Ih15zStuy4khAxz85qWsSBc88ttceWhgX4zOBf7VOn0TnrHOsQYVY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779118593; c=relaxed/simple;
+	bh=1w3xUmt5BMsvfa7uNNjdzaKMELub5UKM4YU/jVPh098=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=X94bbcBO0EW2znX9Dwyp2PRbIq+Ze1wLCUotlBYXqA+SyC3fw8ZwBPwMX0BGkh2iUYnLiOzn3t5hyTxtkuAPFFTHShqfEmC7j4AiZ9yjc1xrZhDQPViPTqja868yA0jVWkY8MbgA48Pp4Plky5RnYGkH/tcRt9qh9JDhrXjC9ps=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=fDHE2FE/; arc=fail smtp.client-ip=52.101.195.113
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="W5aekSJr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 728EAC2BCB7;
-	Mon, 18 May 2026 15:27:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779118072;
-	bh=uV/dNKDL67m/VfCon1aQ8zgvR05wzPVijS7dm06t6FE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=W5aekSJrAZCyhKc8kIlBPDvGxGA3izQi8HB/Yy4rz3ZIcgGsfHkamqwzz9MOFC5zH
-	 MsSIWi5wDZjV5ab0qMdUKsQ4zU4yICxqJqWrKiW3m+BLQHOd3erT5cBB6Znk2kRjCF
-	 VtVy+B2FQ++3mDx0qxRDEOZ8XDUUjYVYGmIbP4u38hSuQigCu3Sb6+taO8EuGPWX/L
-	 SmhkRHW1CbDr/LNg3XoH3xk9fLrdTTQZUHl4e1swm8Ws2PVOBWwSIxQV4vwJ/Id0L8
-	 3k/9u1C7fU0gu9PhMJB1kIWHd3K+LikvOvOiOETJKldZL0QvfST2s2K/Z1rnkuwfzR
-	 nlaNUC9AAmzxw==
-Message-ID: <fd58d6d7-26cf-4b11-82ad-05b4863b6dd1@kernel.org>
-Date: Mon, 18 May 2026 17:27:48 +0200
+	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="fDHE2FE/"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wUfrwGu6VEkUB+ZaTm1Ur3Ai3qapwMBk5z6FZCMiIea4kkoMKMAvY30kAjQp6ODNWyKzLz8I5BuLp2BXL90sr6svGYzxNr8E2ZkMVRBFyY7gJC49zSUHIDcUoWaBYfwv/KvD5Y5sK4SFDeZ0cEpIezqgCcnoAGNwPOqBEWyS1irvWxYh2l76h4TLK/S8lE3JCXIbaHWz2FxStgXv0R8gobLlRZfCxuwAV+6HoQnvfOLfS1nv8Dyx51358JhVNCKcbcYPZ51O9GOaCXIjHKgRmXR3KPNjBvjJLG2gpgSo9qFc+DyHqrQKZ+eOrv5g932edAqk3+Qg4UMF483Jv5b1Vw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AKjHB2QFXvYJWMAN4WnidWEgvW0Vy/z5udusgQgh0P4=;
+ b=IeudAWgcEhuL4OJwEv9rwrYgcF9bwiR1SZJekXr5jmK7qaT2I8IonPe7kLFrNfbswoPP1356kQNe8lhrO0I6DSFsbO1jG/ZGAFHayNyEuZT8mGGCik8W/zxnf2LipDpf3IAiM/CZvLarwuJwp1ntVJq21B3qUL8BeAZrcGA9a55xea5YoGfdbGTYgXrjC1V8eLTkG5Rhjm0IfkVgjYHtvv+F3bxnk24kBkVyIHoDrmgJ3m+PVvJTa96grRB2jUTz5NDCv2N1DPfXuH3w2LDy37kuT2rWGORaCw9TQPdlRtvByYoSkQmVcIdZlDEJqKtR6esFuq59FUCBp7Hyx/lORw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AKjHB2QFXvYJWMAN4WnidWEgvW0Vy/z5udusgQgh0P4=;
+ b=fDHE2FE/dL1jZFvIYqh9Ef4JosNBId+RisvPTnAnFytxSFZbs5pcJ8M3JtPTAXwRz9biqgEHgnwvqbSLkvDw56IRCj2Abx1M27oToGW94/yaJwRWUMH2GN4N5WPDMjz+9tOf+FQ+uboJVEfjBcqIdWunPPxXVQcuyURdvO4FPCw=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
+ by LO2P265MB5727.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:26d::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.23; Mon, 18 May
+ 2026 15:36:25 +0000
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9913.009; Mon, 18 May 2026
+ 15:36:25 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 18 May 2026 16:36:24 +0100
+Message-Id: <DILWWIPKW00V.2W06IJU4ET4AX@garyguo.net>
+Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
+Subject: Re: [PATCH v3 10/27] rust: pci: make Driver trait
+ lifetime-parameterized
+From: "Gary Guo" <gary@garyguo.net>
+To: "Danilo Krummrich" <dakr@kernel.org>, <gregkh@linuxfoundation.org>,
+ <rafael@kernel.org>, <acourbot@nvidia.com>, <aliceryhl@google.com>,
+ <david.m.ertman@intel.com>, <ira.weiny@intel.com>, <leon@kernel.org>,
+ <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
+ <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
+ <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
+ <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
+ <a.hindborg@kernel.org>, <tmgross@umich.edu>, <igor.korotin@linux.dev>,
+ <daniel.almeida@collabora.com>, <pcolberg@redhat.com>
+X-Mailer: aerc 0.21.0
+References: <20260517000149.3226762-1-dakr@kernel.org>
+ <20260517000149.3226762-11-dakr@kernel.org>
+In-Reply-To: <20260517000149.3226762-11-dakr@kernel.org>
+X-ClientProxiedBy: LO4P265CA0242.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:350::16) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:488::16)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] dt-bindings: soc: qcom: pmic-glink: Document
- batteryless property
-To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
- <20260518-add_dc_in_support-v1-1-31fbaa329879@oss.qualcomm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260518-add_dc_in_support-v1-1-31fbaa329879@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO2P265MB5727:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6d6d3ecc-6cd7-418f-9c25-08deb4f338b2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|1800799024|366016|7416014|376014|921020|18002099003|22082099003|56012099003|4143699003;
+X-Microsoft-Antispam-Message-Info:
+	p9Wg8zWzvz9N3FFTYDEG82QSxJ6iA5FaVBVvETMRJiT56ve+QsFvB2+UR9hznZmgo97DpUGyq1lR9VRgfayUKdcSXQlt8zszac7MHLbTdJLKxdD7vwCWLRp3RmDc0M2dEO1//+8xJ5s6EPVmdO4dKl/HpaEMjsw6Bok4cQhr+NHaSI+GXEJb8fBP1L9eZoLrKFMUYjEuWzt9F3iYi6MkrtzbMIxkid9B+Ap1X932DR8eXDNnGAUV4Gb7fTS7DR2R7HJs2P0znE0KbYGZXog6ftAEOxTEUEaqaz5XmOGaMhyM2YlTIsvNv6MRblTUbPUTi0bWkf6CE/UlKDDHRKRNHKgLGuIi/7OWzwE4B/3Y/r6K8aHE0TicBjMEt01IhBcPhgZKDhds+6XU9c/DBbdD0iXox809F8EXJZFeKuBQ8WFBtaFNrdkoezkVrshV6tN7qHBcXYmZOH6/RH8gJTuOaDD8LUoYI2YgA+vXSYZjVq1uD8PiADeLNu8jPW8eGxFy8QL8fbI6z9AxuoUzMp760auf5vinGP+HgdPEUnNdwFA0Krpo/66JPOIrWRroNvQobfFvaQ/+3naBAKIIbD2FiW78Gmg/as9i3yHIw2/p70KGUPsERZbV4Kcbl38rDa3pQb5ACWqcbYj1XfR/5LHhjw4rKSnn0NGb5yU+RQwgq1hfrp92M3u4bi6dXqnTN2YaZJPgUWSX/ti1Bh8xkAie1xxDXP3ySJrqRNedBO0O2uA=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(1800799024)(366016)(7416014)(376014)(921020)(18002099003)(22082099003)(56012099003)(4143699003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?SDVIZmowWnNHRDVZOXlPZFdJbzY4dkJ6anNQVEgxeUt5YWhDc0lEdFRuTTNn?=
+ =?utf-8?B?UDk3aVdOYkxnQW9RRzlybm1CbDZtL2FSK2VTaFRCV01lZVN1bDVvSThoeVNU?=
+ =?utf-8?B?UHptRVFwRGx1NjZhcjNGYWdadUlFMnVUNEk3NEtkWElVMmppS2ZKL1RxVjYz?=
+ =?utf-8?B?RGpHNGM4UGVqVWxjOUdBLzNmdWVaM0xFWXpNNjVOTUIzQ0ZGM0NIVTZuR1lF?=
+ =?utf-8?B?N2k0NHRTb3pjaTdBSmtWbTF3K01nL0krZnptWWo0Z0RDOFlnbVdXbnBUK0R6?=
+ =?utf-8?B?YTU1UE9kekhvbnBhTE1Ja3BvMEF6Y0owTjZaRkNYUmxsUFZkUDF5QjZrdWVN?=
+ =?utf-8?B?OUZuQVNHallVYUQvODhDbHdVUHFTaldSK2R2WFB4akVaN3ZhWFBMeU02TjU3?=
+ =?utf-8?B?dHRmMzdPcVhZNk5SVGRJQlM1Y3FBMlRneWJydjcwNjhSK2w2NFVRRk5hMEsr?=
+ =?utf-8?B?TG5RMWRZSDlvNzBXVU0vaHIvS3NIU2xsbGkvek0xZ05hV1BuM29QcmFEZXA2?=
+ =?utf-8?B?dVFMOGswRzkvVmJjMkQyU1NDMi8zby9wLzdjek50RTFUbUk3b3ltbFFZODNo?=
+ =?utf-8?B?c0dJUzN0Rk1pUlRTSlpqR21qeGtWVENPWm9CN2tpWXVqRWVhNW04bUttZk5S?=
+ =?utf-8?B?cmJPOXVjbEY5YkMyWHI2NmRybGtpNERqSlhQZkRzeTZxSkxZZmpYSElmMlVK?=
+ =?utf-8?B?WnBMcE83Tkx6SDJMVjU0Z2d6dlJxdnV4RXBOYjRudVBGV1drOGtOenZqZG5R?=
+ =?utf-8?B?YXpONnl1SXkrYnZyYmhocGFBQXRIVmp4VjhXbmcxd0RyMFZXOC9kbDJxZEg4?=
+ =?utf-8?B?di9iNEdZUzA5a2RtUGhJTExPNFRrNlh4TEN3cUZkU1pSKzJFelV0QWgvcFc2?=
+ =?utf-8?B?WVJEWmhTRGRVV3V3djlMZ3VYVXlGeUZRemtsTGM1N2gxWVgwdUpGZ1dWYzlI?=
+ =?utf-8?B?T3FsTmg2cThHay9hTTNVQzFMOTZvVGNiZVYvQmZ2REpRUFRXK2JIZDZQMzc2?=
+ =?utf-8?B?UmFNbDJzUWNQL2VTT1B1N0ZXMTRkVTJVc08yWE16eUZ6azhJOFh4a0NDYm14?=
+ =?utf-8?B?czlUWVR4UmJGWEdlZUxoWVZSZGNiU3JQYm42M25KdmdzaHRtWW1XemNPUmVN?=
+ =?utf-8?B?R3NnZUxGSkdFaXZERldFTnFxbUVKcXdmekRsczAzUGlIQm1XcWFjL2xuWnQz?=
+ =?utf-8?B?LzUwYzFWZjlJRFltNG5BZGlYTlY1U0h6VFhON0hYYkEzQlZWN0JBQms3VFJY?=
+ =?utf-8?B?enEzcDVQZWloNzBvSjJpTXJTNHNUOFdzYVRHWTNra1d2VnRxeXBWVlBFSGlL?=
+ =?utf-8?B?bUsvRkVhTkNhTldXemxPT01Gd2o3TlBFdHFaYzduVGhQWDdnS2g2Tzhlc0Rt?=
+ =?utf-8?B?bWZTQjJDeEljYWhnMDBTWkZ1cE1RQjEvQjU2L2FlOGgyUlVhUzVaUERFMlF5?=
+ =?utf-8?B?cFlCQjNGTlBzQjduOVVCaks3T2p0V3kySFRNVDl5RllVRE55dFQyWlZOc3Uv?=
+ =?utf-8?B?THpwUnZxbGg3N083cXIwQ0NHZU1jVGdVMGZyelgya0txeUpydW9odUxxakpK?=
+ =?utf-8?B?WTFVUWorZGg4V0d6anVaajlmY3Z4WlUxRm5vVXlxcXhISDU1NHR5SDAxcEhv?=
+ =?utf-8?B?ZlFabmhoSlIrT1kzYUw0dlRKbnV2OWRxcThrRngrTExGTzBZMk5MSmw2cjNn?=
+ =?utf-8?B?dlBleGx4YW1pWGdueExtbldSalcxUHBBUlNHREkyVW5RQVF1RVdaYVk1YzZh?=
+ =?utf-8?B?VGJjdjZuTTY0TVJYL3BUa0hiWU5HMzFyZHhJWUJwMEgxMlozc1Avc1VpbEwz?=
+ =?utf-8?B?bHRtaUhhR1lOcTNjaTlqejNOODg4ZjdVSGJHS3poMHp5SHFYaXBIODZsL0kx?=
+ =?utf-8?B?Rld6Um9lWHBZZjBFUHVTNzNWNFQzSXpHK3o3OXdDT2pLL2xOOEFyaEQ3SERh?=
+ =?utf-8?B?b0EwdGx2dmRaU2poMitkVkg2aThqaVJlS3dLdk8wUlNMcmhvdHNqU0p3V0k2?=
+ =?utf-8?B?ajJxZnRnL1N0Vk5TMWJFdFlSc3AyMmxSTEpnTlhVZlJUZEVPRW5hcU9teUxu?=
+ =?utf-8?B?eGRGcVpxeDlWaURCMWNMREx4dk9JL01DMitKUkFzSWt5Z2MvSlRuR0UxbEpP?=
+ =?utf-8?B?TzBpaDcyYWtUK1FzcmZzNWludkJJOE1tZWpqdGJodGtzWXhvbklhTFdQRlJ2?=
+ =?utf-8?B?bVBzemVIZ3J0TnBVMmpPSWhBbzgvWjVqTzdtTjlUSzlnUU9sbUhXcFpqWVlI?=
+ =?utf-8?B?c1J3VnNMMi8rSEFSME1CUlhGNDZaV0tDZHRlNm94T0Ztc1R0dnlqbndQWlFn?=
+ =?utf-8?B?UzRvb2IwN0FyWEo2bG1Td1JFcm9jYlp1QThZWVhRVS9kTlNvVG8rZz09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6d6d3ecc-6cd7-418f-9c25-08deb4f338b2
+X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 15:36:25.5651
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Dn7yaXToYNZ0qmSafDxCP7A+OqRGlsEAULtEHcgjP/QBlVbZ096P8o7FDI+xqjrywHDpRdJ7sHEnupAQ+8lQVg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO2P265MB5727
 
-On 18/05/2026 15:49, Rakesh Kota wrote:
-> Document the "qcom,batteryless" boolean device tree property
-> for the PMIC Glink battery manager node.
-> 
-> When this property is present, the battery manager driver registers
-> the power supply as POWER_SUPPLY_TYPE_MAINS instead of BATTERY.
-> This is intended for 12V DC adapters, where presenting the supply
-> as a battery would cause userspace to incorrectly trigger battery
-> power-saving sequences.
-> 
-> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+On Sun May 17, 2026 at 1:00 AM BST, Danilo Krummrich wrote:
+> Add a 'bound lifetime to the associated Data, changing type Data to type
+> Data<'bound>.
+>
+> This allows the driver's bus device private data to capture the device /
+> driver bound lifetime; device resources can be stored directly by
+> reference rather than requiring Devres.
+>
+> The probe() and unbind() callbacks thus gain a 'bound lifetime parameter
+> on the methods themselves; avoiding a global lifetime on the trait impl.
+>
+> Existing drivers set type Data<'bound> =3D Self, preserving the current
+> behavior.
+>
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 > ---
->  Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> index ff01d2f3ee5be18e404591e3f0382ff2b3f7d168..5f7b90d37ea09d9aacff463b2ff4b76d218bbeac 100644
-> --- a/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> +++ b/Documentation/devicetree/bindings/soc/qcom/qcom,pmic-glink.yaml
-> @@ -72,6 +72,14 @@ properties:
->        - const: charge_limit_end
->        - const: charge_limit_delta
->  
-> +  qcom,batteryless:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description:
-> +      When present, the battery manager registers the power supply as
-> +      POWER_SUPPLY_TYPE_MAINS instead of BATTERY. This is intended for
+>  drivers/gpu/nova-core/driver.rs       |  9 ++++++---
+>  rust/kernel/pci.rs                    | 24 +++++++++++++-----------
+>  samples/rust/rust_dma.rs              |  7 +++++--
+>  samples/rust/rust_driver_auxiliary.rs |  7 +++++--
+>  samples/rust/rust_driver_pci.rs       |  7 +++++--
+>  5 files changed, 34 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/gpu/nova-core/driver.rs b/drivers/gpu/nova-core/driv=
+er.rs
+> index 699e27046c93..fe4eafe1ebf0 100644
+> --- a/drivers/gpu/nova-core/driver.rs
+> +++ b/drivers/gpu/nova-core/driver.rs
+> @@ -74,10 +74,13 @@ pub(crate) struct NovaCore {
+> =20
+>  impl pci::Driver for NovaCore {
+>      type IdInfo =3D ();
+> -    type Data =3D Self;
+> +    type Data<'bound> =3D Self;
+>      const ID_TABLE: pci::IdTable<Self::IdInfo> =3D &PCI_TABLE;
+> =20
+> -    fn probe(pdev: &pci::Device<Core>, _info: &Self::IdInfo) -> impl Pin=
+Init<Self, Error> {
+> +    fn probe<'bound>(
+> +        pdev: &'bound pci::Device<Core>,
 
-You described the desired Linux feature or behavior, not the actual
-hardware. The bindings are about the latter, so instead you need to
-rephrase the property and its description to match actual hardware
-capabilities/features/configuration etc.
+This is technically incorrect, as the `Device<Core>` only lives as long as =
+the
+callback. Having `'bound` would be incorrect.
 
-And isn't lack of monitored battery property enough to indicate that?
+This can either be addressed via
 
-Best regards,
-Krzysztof
+    pdev: &pci::Device<Core>, pdev_bound: &'bound pci::Device<Bound>, ...
+
+or perhaps by adding a lifetime to `Core<'_>`
+
+    pdev: &'bound pci::Device<Core<'_>>,
+
+Best,
+Gary
+
+> +        _info: &'bound Self::IdInfo,
+> +    ) -> impl PinInit<Self, Error> + 'bound {
+>          pin_init::pin_init_scope(move || {
+>              dev_dbg!(pdev, "Probe Nova Core GPU driver.\n");
+> =20
+> @@ -109,7 +112,7 @@ fn probe(pdev: &pci::Device<Core>, _info: &Self::IdIn=
+fo) -> impl PinInit<Self, E
+>          })
+>      }
+> =20
+> -    fn unbind(pdev: &pci::Device<Core>, this: Pin<&Self>) {
+> +    fn unbind<'bound>(pdev: &'bound pci::Device<Core>, this: Pin<&'bound=
+ Self>) {
+>          this.gpu.unbind(pdev.as_ref());
+>      }
+>  }
+> diff --git a/rust/kernel/pci.rs b/rust/kernel/pci.rs
+> index c06ac3fb2a64..8060861199d4 100644
+> --- a/rust/kernel/pci.rs
+> +++ b/rust/kernel/pci.rs
+> @@ -64,7 +64,7 @@
+>  // - `DEVICE_DRIVER_OFFSET` is the correct byte offset to the embedded `=
+struct device_driver`.
+>  unsafe impl<T: Driver> driver::DriverLayout for Adapter<T> {
+>      type DriverType =3D bindings::pci_driver;
+> -    type DriverData<'bound> =3D T::Data;
+> +    type DriverData<'bound> =3D T::Data<'bound>;
+>      const DEVICE_DRIVER_OFFSET: usize =3D core::mem::offset_of!(Self::Dr=
+iverType, driver);
+>  }
+> =20
+> @@ -130,7 +130,7 @@ extern "C" fn remove_callback(pdev: *mut bindings::pc=
+i_dev) {
+>          // SAFETY: `remove_callback` is only ever called after a success=
+ful call to
+>          // `probe_callback`, hence it's guaranteed that `Device::set_drv=
+data()` has been called
+>          // and stored a `Pin<KBox<T::Data>>`.
+> -        let data =3D unsafe { pdev.as_ref().drvdata_borrow::<T::Data>() =
+};
+> +        let data =3D unsafe { pdev.as_ref().drvdata_borrow::<T::Data<'_>=
+>() };
+> =20
+>          T::unbind(pdev, data);
+>      }
+> @@ -279,13 +279,13 @@ macro_rules! pci_device_table {
+>  ///
+>  /// impl pci::Driver for MyDriver {
+>  ///     type IdInfo =3D ();
+> -///     type Data =3D Self;
+> +///     type Data<'bound> =3D Self;
+>  ///     const ID_TABLE: pci::IdTable<Self::IdInfo> =3D &PCI_TABLE;
+>  ///
+> -///     fn probe(
+> -///         _pdev: &pci::Device<Core>,
+> -///         _id_info: &Self::IdInfo,
+> -///     ) -> impl PinInit<Self, Error> {
+> +///     fn probe<'bound>(
+> +///         _pdev: &'bound pci::Device<Core>,
+> +///         _id_info: &'bound Self::IdInfo,
+> +///     ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound {
+>  ///         Err(ENODEV)
+>  ///     }
+>  /// }
+> @@ -302,7 +302,7 @@ pub trait Driver: Send {
+>      type IdInfo: 'static;
+> =20
+>      /// The type of the driver's bus device private data.
+> -    type Data;
+> +    type Data<'bound>: 'bound;
+> =20
+>      /// The table of device ids supported by the driver.
+>      const ID_TABLE: IdTable<Self::IdInfo>;
+> @@ -311,8 +311,10 @@ pub trait Driver: Send {
+>      ///
+>      /// Called when a new pci device is added or discovered. Implementer=
+s should
+>      /// attempt to initialize the device here.
+> -    fn probe(dev: &Device<device::Core>, id_info: &Self::IdInfo)
+> -        -> impl PinInit<Self::Data, Error>;
+> +    fn probe<'bound>(
+> +        dev: &'bound Device<device::Core>,
+> +        id_info: &'bound Self::IdInfo,
+> +    ) -> impl PinInit<Self::Data<'bound>, Error> + 'bound;
+> =20
+>      /// PCI driver unbind.
+>      ///
+> @@ -324,7 +326,7 @@ fn probe(dev: &Device<device::Core>, id_info: &Self::=
+IdInfo)
+>      /// operations to gracefully tear down the device.
+>      ///
+>      /// Otherwise, release operations for driver resources should be per=
+formed in `Drop`.
+> -    fn unbind(dev: &Device<device::Core>, this: Pin<&Self::Data>) {
+> +    fn unbind<'bound>(dev: &'bound Device<device::Core>, this: Pin<&'bou=
+nd Self::Data<'bound>>) {
+>          let _ =3D (dev, this);
+>      }
+>  }
+> diff --git a/samples/rust/rust_dma.rs b/samples/rust/rust_dma.rs
+> index e583c6b8390a..943655a85ec6 100644
+> --- a/samples/rust/rust_dma.rs
+> +++ b/samples/rust/rust_dma.rs
+> @@ -58,10 +58,13 @@ unsafe impl kernel::transmute::FromBytes for MyStruct=
+ {}
+> =20
+>  impl pci::Driver for DmaSampleDriver {
+>      type IdInfo =3D ();
+> -    type Data =3D Self;
+> +    type Data<'bound> =3D Self;
+>      const ID_TABLE: pci::IdTable<Self::IdInfo> =3D &PCI_TABLE;
+> =20
+> -    fn probe(pdev: &pci::Device<Core>, _info: &Self::IdInfo) -> impl Pin=
+Init<Self, Error> {
+> +    fn probe<'bound>(
+> +        pdev: &'bound pci::Device<Core>,
+> +        _info: &'bound Self::IdInfo,
+> +    ) -> impl PinInit<Self, Error> + 'bound {
+>          pin_init::pin_init_scope(move || {
+>              dev_info!(pdev, "Probe DMA test driver.\n");
+> =20
+> diff --git a/samples/rust/rust_driver_auxiliary.rs b/samples/rust/rust_dr=
+iver_auxiliary.rs
+> index 61d5bf2e8c0d..2f57912fe87f 100644
+> --- a/samples/rust/rust_driver_auxiliary.rs
+> +++ b/samples/rust/rust_driver_auxiliary.rs
+> @@ -66,11 +66,14 @@ struct ParentDriver {
+> =20
+>  impl pci::Driver for ParentDriver {
+>      type IdInfo =3D ();
+> -    type Data =3D Self;
+> +    type Data<'bound> =3D Self;
+> =20
+>      const ID_TABLE: pci::IdTable<Self::IdInfo> =3D &PCI_TABLE;
+> =20
+> -    fn probe(pdev: &pci::Device<Core>, _info: &Self::IdInfo) -> impl Pin=
+Init<Self, Error> {
+> +    fn probe<'bound>(
+> +        pdev: &'bound pci::Device<Core>,
+> +        _info: &'bound Self::IdInfo,
+> +    ) -> impl PinInit<Self, Error> + 'bound {
+>          Ok(Self {
+>              _reg0: auxiliary::Registration::new(
+>                  pdev.as_ref(),
+> diff --git a/samples/rust/rust_driver_pci.rs b/samples/rust/rust_driver_p=
+ci.rs
+> index f43c6a660b39..30b9311812f3 100644
+> --- a/samples/rust/rust_driver_pci.rs
+> +++ b/samples/rust/rust_driver_pci.rs
+> @@ -140,11 +140,14 @@ fn config_space(pdev: &pci::Device<Bound>) {
+> =20
+>  impl pci::Driver for SampleDriver {
+>      type IdInfo =3D TestIndex;
+> -    type Data =3D Self;
+> +    type Data<'bound> =3D Self;
+> =20
+>      const ID_TABLE: pci::IdTable<Self::IdInfo> =3D &PCI_TABLE;
+> =20
+> -    fn probe(pdev: &pci::Device<Core>, info: &Self::IdInfo) -> impl PinI=
+nit<Self, Error> {
+> +    fn probe<'bound>(
+> +        pdev: &'bound pci::Device<Core>,
+> +        info: &'bound Self::IdInfo,
+> +    ) -> impl PinInit<Self, Error> + 'bound {
+>          pin_init::pin_init_scope(move || {
+>              let vendor =3D pdev.vendor_id();
+>              dev_dbg!(
+
