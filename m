@@ -1,180 +1,158 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011056.outbound.protection.outlook.com [40.107.208.56])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82772311C11;
-	Mon, 18 May 2026 13:49:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.56
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779112181; cv=fail; b=GfoCRzfSUsEsU2l1toRrDAvqhJxJW9K3eZUWUQtdpSCq3T1w3QXxiYynbtlSDhuwebI/G3Q0A3M+o73cU9454Ljeilo3bHkxzqxinDFDi6BMMSlR0uIH/Zxv7UtuKvAyyXGQpE5iztCP3vmd7Dx57f7N4bGdDtwS9pwkTX3Y6fA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779112181; c=relaxed/simple;
-	bh=AnxyAl9ruVttnicTm2iznWmFc7rjGXk2n6DQFWO3CLc=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=QV+eznP2auKhDBOQawCRTJE5j4Wbao7mqLAHd8+LDZVdAhLwyqTQ2/24s6xmm+bvR1oKHU6FbRe25Q/F5+1IF4gM3mwmQnMh6qegDDS8fS6rFnF1YCgvTLgp7ddVDAqnhdcg9VIP+bAhHmz/ApnpxOAF1N2t/gdjZEi5PE36eWc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=IpazQwco; arc=fail smtp.client-ip=40.107.208.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D34F378833
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 13:50:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779112204; cv=none; b=UFyBm4dzDi+vmfx9i8W4TgvqzZsSiVtQAMjmNvz8kRH9DgqO+DagsCPmq2XhObEfuRoQWoIcDVLR7KUCHYXaYD7VRWk+oCDYGsSZ2Yh8SP05PsKFSivNF51oxL6WeFnE3tdHp95dAj5tLCRg8M4EO2cb4rww6o/HcOrJFjYX4L8=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779112204; c=relaxed/simple;
+	bh=AlGBGljytiN4hDB9oPg2R7DR+x7S1E5bboaK2Vh4TXg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=FQ8UWwJAYcP2Hs9yqeUhcZKXYYEZu/ekD/LP9RNWTsUzycIpRmVX6RDJpxxzTyMEe03psc/y8NX30bncQgZQ16ZclIyYURm/zz1JWWG2L4imhaxAtyPVXu9EAh8itfE+46VEIbU6vxWnts+uYmaEjaYSq1rZMuCDidYyOFYGqAc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=mLoe+VM3; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TQ5NjmPb; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="IpazQwco"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=eMUEgBjm+rPyQM98xFsTmVbY9rQSwm2CuRTFTKXZfOvqayj8cICrv3bi0l46pEryHD+liDqLWdpfkpUoeaUCrJoB9hp16JX9b7bKsfJ1DSdSmfNIbNpUjgqlAJjJLv2PizYv8M60zFouf+Kz8vBzf4trr6dwyQf+8M8/0aYJXCaFiUe/KMuNcWkcgD2ahHQAv6KLgJi83cs+mFLlSCDolJgVJP1v2Eo6TmVAnFuZjglSgufUf6nrYzbdpFGo7jZTaOb2ugo2AUGnKQRqAO34lNlhPppv8eG33jm4FbGilf6JwJvmH/drivH0E8V+JcFp3BzHgRedXxEtaUCU+HVaNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=YrLi6hSNJ0ONTrA5of3HOkKPX65r80QvdZicv7frO/Q=;
- b=AqNT2UxwyCo6vXvNgXC9ym3MgOaBfzdebeYO0eppAw0WWIDCbOa5TDJmc0DvzFb/Et/gfrun2MQwU4HTQRhNCjUheHkpHjUTRol83MvgKb3yKFrcR5+DFLtZm+xBRDUBHhIUbiHKRAyBqzzZcXwbO/8f0A9W98vD5l/pkCOel8A8bO0vZq2FwbxdkWuWvX4Y8dH4HjcdvHP1Rk30wgleZjeL1jaAq6WklodcQAhVnsQF+cvA/XByKRDOqvHXZ+BZWPeCe1Zge2Zjqthm0wyS5HQ7wf6dG8O1BTQnCQUSO+kRQGI2h8PuyJXvAve/vdEwDpbrBRZ1EB0Uury6Eu4CCA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=YrLi6hSNJ0ONTrA5of3HOkKPX65r80QvdZicv7frO/Q=;
- b=IpazQwcosSIcF1eVCE+4bMK74cm5lTgOYEnU0p87qRUKy7z9FsNtexDdyDCfIuPWAs8h7FoqA+jLwV/TkpDQWEwLyt+usNDZgOtDNRZcNUVnhxB45+YPrGE1Fk7oOd5byKlx7tfFOGskAroWsAhTPK/xlH8Q/0DI/9wpW075Oz//cTbzrVs+P77D1c2YKniCAew3bgGr5VRee98Khpr0qleGapMXW0Av5qPQ++UIGu0T6IErk+QnT+X1glFnCGhWRmSIzV5HMAAf1EvbMPwXmRS0eYnYc7HuX/sUNV+5VEf4Mm0lQcLLE5DbCBNFsOwaD9T98poFZmGL2Crzy/AJpg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
- by DS7PR12MB6239.namprd12.prod.outlook.com (2603:10b6:8:95::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.22; Mon, 18 May
- 2026 13:49:34 +0000
-Received: from BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
- ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.21.0025.022; Mon, 18 May 2026
- 13:49:34 +0000
-Message-ID: <f0a94119-478b-4118-aac9-486538b390b1@nvidia.com>
-Date: Mon, 18 May 2026 19:19:24 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] cpufreq: CPPC: add autonomous mode boot parameter
- support
-To: Randy Dunlap <rdunlap@infradead.org>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, corbet@lwn.net,
- skhan@linuxfoundation.org, mario.limonciello@amd.com,
- linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- mochs@nvidia.com, bbasu@nvidia.com
-References: <20260515122624.1920637-1-sumitg@nvidia.com>
- <20260515122624.1920637-3-sumitg@nvidia.com>
- <b4516579-c4bf-4ddd-843a-30d4a4992519@infradead.org>
-Content-Language: en-US
-From: Sumit Gupta <sumitg@nvidia.com>
-In-Reply-To: <b4516579-c4bf-4ddd-843a-30d4a4992519@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: DM6PR18CA0021.namprd18.prod.outlook.com
- (2603:10b6:5:15b::34) To BN9PR12MB5179.namprd12.prod.outlook.com
- (2603:10b6:408:11c::18)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="mLoe+VM3";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TQ5NjmPb"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64IBHRQo2482392
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 13:50:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=CC0Pys7yhh/moaCo/yEEim
+	J2CkQSGIL8p0FbL7FdrhI=; b=mLoe+VM3eBbzaYBOL9UBa9fAAycg3gl9C+gUF3
+	pmYIJd9yiNGV8ZCGxn3BugOQUZX/yjxDQIFqTrQFv8rPdPd/sxOq7kArRGOWZfg2
+	3gJFGXx15kidvlcvGeaSqwkFzT8RIraIdYEpcFZS2pgEYxb079w03/z0dFQTIbHo
+	wshfu9rHB+mHBfuBw6D7g73sHUhIVlcVQhS+GUmChkGt/TQPy5aB7HLG1AEwSath
+	16n9rt/dT2NxVvoQv5e/tluuLHIT4V6NadgVmDyhMpzr7a2SQPatiKiBQGTQxMHV
+	yvQZ1LXpF+YoTnRtfvQ3WGKewOIW58czwqxUZT8R28OhXV0g==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e81rvghwq-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 13:50:02 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2babbeff9e4so25288555ad.0
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 06:50:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779112201; x=1779717001; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=CC0Pys7yhh/moaCo/yEEimJ2CkQSGIL8p0FbL7FdrhI=;
+        b=TQ5NjmPbPsG88J8Wl+xFT8WJDq4DAHUDtfyphkMGdgGU1pVwbTXjOYNBpPRUone/F7
+         Xa1Id3W0122nVdeGlDKI9x9poebvzSnLp9ELQEiuAMIFUNrFJyNf6SPaMyy2C1bqZgGn
+         vkbKIevPtlSEbmS6i4wNe4cc+/y4d2/KO9f7LgnCD0btH4OR8RbqHl0K6D/pwrXVSTEq
+         xbIkjCFv8atzHLHLFysxDYEMu9/QbnMCWYDDrzDT61cU7C1zeN4cN1EVm2Fg48MH+GaY
+         TxVhIDEJp6aUNSoAmSD4eHmgY2mqROcFf6enW/xotsmGetztoY1xBf7Cf1X0cUHRLHlX
+         Y+8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779112201; x=1779717001;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CC0Pys7yhh/moaCo/yEEimJ2CkQSGIL8p0FbL7FdrhI=;
+        b=lfHAXLo8aBi7QDbBmtbA/tz0yPmsXLk/siWZFa3RAbdz8OyiKAsEaRdotW3S2F15D5
+         TYfLQnHh2bpq8QWYa9J1EnURcIs2+BEaNCv7Pgpxgr7Ok4E59IvWyEAUTlE2cUz38Lnb
+         s0qYzVKa0y9dgtLTlWOSHjTrhoyhFQ09znKgWnrk1Fd+sYU1H7CaIJU7kLkKF8f644Re
+         9gQJnuPz9ChwZ0xEpJW7LE0s89Ex3cIq4APSHsGdMi7LSp9zI6K8d1su4D3ofTdHfjyH
+         STD10oLo/++l5Ea/W+2iPdzo1MRrJFAQUP8bHUIMdOZEnTOLu3jtQgzITSJ/VD3Nv3vD
+         H2xQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9R8KMZ5a4Nh6pnD0wTZdnND+GNZWpX+XejTlf+O0aQf/jYyCaufvWjGO6fx6EuyclPF9Gf+kKwug==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxTZ5mfk1xAh/nEC/IctX2nR2f+FJFLyt+q/hEpANF8SR1Tkyxw
+	DGOixbE3XaYtxKbgMjiyAd7DdEexKFAumn958pKSptVUGKTCblnp6j1qXCnf188BO0Pb8Epm2sP
+	Cq6FeW2I+eXx5cZJak5bCW20fbzT4XstkATaFyeTxMR2O7tAuhN2WIV4SfgHdz4XwixRG
+X-Gm-Gg: Acq92OE/imdZBpr7z97TYUXlQqnq+FKcAmgIWYX4c5hgDMG5M0Ti15VxMNE281qImEl
+	/V3ibO694zbOaXOqVLdRHmZ6Fn02UFziT8atu+U6OC+xUEktbeDoVuXplNPhgPb2pHyd/gUiNum
+	yJ7Kr4+6DYhWPJVMpJKO25cHypUuRkR+qMuw095L2EvlgGPuY0y+0ws+Zp9Wi9nP+R1VwNKMnw2
+	Ao4aejTqyGu8KJ6MMTsQOjStXXBmfw5YxGmEiLXRYVpVrIw1WB/eH5lu4zKHrkEEUjNMNEr5Xr7
+	bnvgN/oFmgcvz52aMZySZ9hkquhrfW4mcVVmoUyWUnT5awOjIX7FwhGlKDBFm55MDL+glFpR1Bb
+	imZn5+AGh56itP1WUhPNlPhh1maE83d781tDTBq93eEcVKYLhZ1FGytYngwE31Q==
+X-Received: by 2002:a17:903:1109:b0:2bd:d6f1:3388 with SMTP id d9443c01a7336-2bdd6f13874mr43024635ad.28.1779112201412;
+        Mon, 18 May 2026 06:50:01 -0700 (PDT)
+X-Received: by 2002:a17:903:1109:b0:2bd:d6f1:3388 with SMTP id d9443c01a7336-2bdd6f13874mr43024295ad.28.1779112200943;
+        Mon, 18 May 2026 06:50:00 -0700 (PDT)
+Received: from hu-kotarake-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5c05f36fsm185411275ad.21.2026.05.18.06.49.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 May 2026 06:50:00 -0700 (PDT)
+From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Subject: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS support
+Date: Mon, 18 May 2026 19:19:38 +0530
+Message-Id: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|DS7PR12MB6239:EE_
-X-MS-Office365-Filtering-Correlation-Id: d0d4ed0a-ced9-4c00-6260-08deb4e44b19
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|18002099003|22082099003|56012099003|921020|11063799003|3023799003|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	R4h79SRD0S87D11RfAQCSZAtjswg6kW5q3lOaPrsFl4DPIzVbLlhRH1E2q00hnAALHLDH/rTcBtNq+sMnoKKnrh4lRzmqx6MeyFVznqH2PEHKLVy3x/Am9vWdX5hbxdQZkiL1gfxm07j5R6WAbw7xywiMjrOzg5VzzqCsbkRwuStJudRadInC4uvdHZBrV6/oAZic0YdpZ3DSHJ4XQ3Vf9obxTBm+GPdyvzSIb8XTa8tBZDGoiVfVtzm1NReDNOW8ouEKTZ/DjkSIaWNdPsUCriVtDQA50jizmHMOLSY+bI8P690vmx+JUB5uof+pMgk5cbpwvrL56U5vn/8YV/3WJeRRsiVhijg2rs9DvPfUr1LgNFGsek9ZFUb8wzUotjUEzmkxmKTQJaGMhK7u36C9PSLLCcqIsJFWMZuQJkeO1jxN4+KFs1Vr5F4k3wI2HxiQxmby1KxnhgTK6QQThJ2yRLEpBqzzU5StrtBI/jZNY1kv/4yGZYW7wmBkzwM/ZLVpYjodBgBD21wY+m4x604xz9LD884zZQ9nytwaVANFHa60CDvyEjRBNpb9rCeWdM+Q+FWzYhKmfxDJJTOxRPVlVgqCn/d+wrlKuZjBBEDaHQfmxnJjO87MjFSKCmL7oKardaVGMlk9QTbmxcisLIBBZ3/LZNhDXME+Bd5kLQdLsFjJR0EWrR6HAUAAZnaP6wTIu1OJ4mgcn2Q6jeMEZHGG43i0/1OnfuOY42lthJmZck=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(18002099003)(22082099003)(56012099003)(921020)(11063799003)(3023799003)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?dERLeVFCRVBoWUE3QndscTFHUXd4aklMbDBXMDlDdmRHWkpPRjUyZkpZRkVt?=
- =?utf-8?B?VUpkaWQrR3BKUUlOK3E5UGF5cTQ2OVFVNTBrM1EwcWpQT3hOTXZHdmkxNlBN?=
- =?utf-8?B?VFNrMDNUNzFOTG9GL3h5OFp0Z1JvZ1Q5bm1aTms4M3pqMkswWjJzUktuY2NP?=
- =?utf-8?B?cGJFeFBOK3ZJUTdUSDhuOE5yNkRpZ2tEdWoyaVA1allFWVVFa1BaeDlZNTQw?=
- =?utf-8?B?ckx3UHQvc2RsM2QyMkhULyt5TGhtbGR1ZHloSkJmZUtvUTZXSkF4ZjRUQmNa?=
- =?utf-8?B?MUVtbjVENnVZS0FCM0Q4dGF2L2VrMTI3ZXIzZmVwNEFYdnU2UzZyaXUycXZE?=
- =?utf-8?B?UndJcXJhZ1NONjVSdTRIVE1taE02T1dKT0U4Y0ZVb1BFaGRvdEhRYjhmR0xJ?=
- =?utf-8?B?L0U1ZDF3eGE1NHR4bTJsaWRzeHo5NFl0WWE1NXIzNElLekZZK0UyaHFLdDNJ?=
- =?utf-8?B?elNyeG5iV0QzbWtGTWZQUVQvMUt5TGJzUDRWejJVQ0hzM3JQNEdRMjd3QnRs?=
- =?utf-8?B?MUlyR2VranNHLzViVDVaUU9kb3ZQdEhVbEtQYUQ1UzdidG9Ea1FQU2plV1hT?=
- =?utf-8?B?R2laOUk3SDJwaDR3eUppTFVMbVk4dDF1MmFZZDljOUcyOFZLQ3lBb1UxT0hP?=
- =?utf-8?B?d0tjZXVXM0Uzay84dFFrc3N1amtOUDVVN3pocnNMOXRDajk2MDBoZ05WYjNT?=
- =?utf-8?B?ZURsVlF5aWRON1psVFFRWVFwOEZpT3lCdS9xRnk2cFdjd3dOeEF3TUNoMW5y?=
- =?utf-8?B?M3ZoQ1R2cnZXU205eEFTM1puT05kOUVOMDB5U0JYa0ZlZTlqOWJ0MnRON2k4?=
- =?utf-8?B?alhENlM4R09QYndVa0lqdEl4ajhWcDlQQmozL3Zkb0c3QXVOcmFLWXF1TitS?=
- =?utf-8?B?eGl5QThGaVE2OHptQ2FkcVo4M0pDNTZEOVhBVEpQQkhQaW8rR2hEN00xS01w?=
- =?utf-8?B?aW9wSE10eGVmV3Z4azJuTUN6dXdyME5MWlFGTUc2Rm9TT3FJa0ZlR0NuTUhu?=
- =?utf-8?B?bDN4ZlBnc3dub09EdEhPYVNBcXpaNWI5cjBUUUlmTDlBUmg1VFhWVUlEUnht?=
- =?utf-8?B?UnVld2N2cnoxd0kyTkgyaTJCS2d2c3htRUNiV2o2cmF1N015akFEaFFNVERL?=
- =?utf-8?B?a0ZscU9yVHE4NlJadjd1ZzdXbGRRb3hWNXZSSXhseG5PY2FsSU1tY0M4ZDg2?=
- =?utf-8?B?cDBNZjhiYytaaURZcVlXbEJzUEZWTmM5RVZSMUpoV0x0bzBmQWRBaEJuMDdF?=
- =?utf-8?B?RUJYQjlTQ3RIM2NMTnNpT3hVdXlvbXpaazFmYldXYmhZQVdtSVFEZ0VoaXQ1?=
- =?utf-8?B?aXZ6ci9hZGVaVTVnejVPWWtsL1BJNmtQUWJXanJCSFI2c2xKdStMMUVPdk9Q?=
- =?utf-8?B?V1hWQ2t3VDZiR0krM1QxRWUyYlBtaHJMZG9WODhvL2FaWnZuZ3FxeGRaWGhO?=
- =?utf-8?B?NWtuVE80YU13amJVbzdDOGVTcXJuOXZXRDhIemJpVit6a1dHaG4yZGNXNTZM?=
- =?utf-8?B?UktJRVJxWG5McUozbnI1Y013c21MSk1DbHNOM0dmVzJaU1ZUWm94cHRGTlBm?=
- =?utf-8?B?ZFdiWDJBTGVHNitoWmZvTkZGb2hBVFJ0U1dpWHVSanByajVIaUsyZFFqdDBn?=
- =?utf-8?B?TlQ1MGZaYVV4akdFWmU3d0ViWXZCUDQyQ2J4R3l6elBzVFZ4Qy9aVzhERUtr?=
- =?utf-8?B?SlRiaFFWQXdJU3E3YmR4VGU2YTRFQVNibk82VEVMZUlDN3ZtdG9ZRjhWV2FJ?=
- =?utf-8?B?aG9TZ0FRNENKak5CLzk3M0wwY1NOOXh3VmFZdVd6b1l4L2FLVFFRL3lkY2xX?=
- =?utf-8?B?cTl4Tk1pV2Nwak5MK3pCamdxalpBbjVPRy9ZcVV4eUtINnRnSjRaQWQybDBT?=
- =?utf-8?B?ZEFsaWdqcDNnL0lFVDA3TjJJOUdQOEN3dUNVWjZBNUFUY1F0TFE1UFdJeUt6?=
- =?utf-8?B?VmtGdEhUc3JVc3hTL1NMOHZCNXpoSk8rc205SUlYdVdMQW9qcHJLR2k0Q2xP?=
- =?utf-8?B?dDlkY1hpOXJIeThTbGNlSUpqeGN6OTdJZ1RiVXAvRHhPRjg3OExUZVBoaW5T?=
- =?utf-8?B?QzNKcmxhai9qSXlnelJwU1Y2OU95NDN1VGhkTzliSFhlTnVCRHFJK0VIS0VP?=
- =?utf-8?B?eVoreDFGeGJ6cnE4Vi9aRktXUkhnK0tNNEVhL2I2SW5TTFNqOHdxV3g3c2Nn?=
- =?utf-8?B?ck92RkI3NTZ4YlJQRThpN0NpVU5kZS9PYkVpLzRxSC9KOW9FMmxuZjh2OXBq?=
- =?utf-8?B?TGR5WlFDUjdUWi9VZWlYMjdJOGZjY1FGeWVSRFNkYTExMFBPMHpRYitaTlNV?=
- =?utf-8?Q?gi7uxD2vRE5kogH3Aw?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d0d4ed0a-ced9-4c00-6260-08deb4e44b19
-X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 13:49:34.0735
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Gre+YJAutbExQq+e4wisW4s5NICycBFIl0cfln/BjuyP64/0ZKdVbNUy9iS54mFTx1qanYgMCOG7SY8IlLlETw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6239
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAPIYC2oC/x3MQQqAIBBA0avIrBNKK6KrRIg4Y83GRCuC8O5Jy
+ 7f4/4VMiSnDLF5IdHPmI1R0jQC327CRZKwG1aqxHbpJWkSDznAw+YrxSKf02mvXo3UjTVC7mMj
+ z8z+XtZQPi7RmU2MAAAA=
+X-Change-ID: 20260518-add_dc_in_support-f3f3c4dac6e8
+To: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779112197; l=971;
+ i=rakesh.kota@oss.qualcomm.com; s=20250919; h=from:subject:message-id;
+ bh=AlGBGljytiN4hDB9oPg2R7DR+x7S1E5bboaK2Vh4TXg=;
+ b=AajfUv3+tI9ERd3k30BSORtEcMBzSPSdqFnpZ7pmCx16dx/V3w/9k3XHVKgWLxSiNMY02HevE
+ bVGQ9kIT/fRC2yMO9VEQEJFwKPWUup4Bv9CVsr+OtqpuaRUAQILbwLL
+X-Developer-Key: i=rakesh.kota@oss.qualcomm.com; a=ed25519;
+ pk=dFhv9yPC8egZglsSLDMls08cOvZKZkG6QQn1a/ofwNU=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDEzNCBTYWx0ZWRfXxbiHgzJSPchG
+ 8MJh5JvQ7xN0k4ZelCzHOYc39I9RagT50S+duEGK9Ap7tZu9ToiAg48npVOZ9+eCJVl9HQk201C
+ h1Z1j/GdMSfm1KmTHLhN6kUZ45acuGxglVIn8DJnveL83nVD/mtIEgyf+fSi/VLCqyZGgYrztjE
+ MwFk2u53oz01z9iN17ww0XXA8AGcrNNn91vBqvXnYr7NGfHIHup3V9sqO5y5IAgyuOCl4YSYFOr
+ JNqcvnqLru1ci/3m/tRkaTE4elWX8mDHrJFm/LdS4R0bm2drDOAgc3RsdTosNiJ8TpShg0wno+I
+ dR3QNR2o7Oz3Ikz8a75u0uqlp2W/ZbDpWpsclvdVKOKhgrNB9FBDlyE4pDKQ8d8W+3SPs6ZCUIt
+ 42k+NFwn7PLyhRZVqbaVh1B9RlngkIFqMeTPsp0HHroLjUOFzh7UYqR4uLHF1CXrbTmzlBQIw88
+ 4uT80UE0AIzpD6em9LQ==
+X-Proofpoint-GUID: gAXyji2PF2YbHPts_mzJxpVLlWp246zy
+X-Proofpoint-ORIG-GUID: gAXyji2PF2YbHPts_mzJxpVLlWp246zy
+X-Authority-Analysis: v=2.4 cv=Lf0MLDfi c=1 sm=1 tr=0 ts=6a0b190a cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=EUspDBNiAAAA:8 a=sIspjCRwiSg0d1WxQfkA:9 a=QEXdDO2ut3YA:10
+ a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-18_03,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0
+ adultscore=0 clxscore=1015 impostorscore=0 malwarescore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180134
 
-Hi Randy,
+On batteryless boards powered by 12V DC adapters, registering the
+power supply as BATTERY causes userspace to incorrectly trigger
+battery power-saving sequences.
 
+This series introduces a new "qcom,batteryless" boolean DT property.
+When present, the driver registers the power supply as
+POWER_SUPPLY_TYPE_MAINS instead, accurately reflecting the hardware.
 
-On 16/05/26 03:44, Randy Dunlap wrote:
->
-> On 5/15/26 5:26 AM, Sumit Gupta wrote:
->> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->> index 0eb64aab3685..7e4b3a8fd76f 100644
->> --- a/Documentation/admin-guide/kernel-parameters.txt
->> +++ b/Documentation/admin-guide/kernel-parameters.txt
->> @@ -1048,6 +1048,22 @@ Kernel parameters
->>   			policy to use. This governor must be registered in the
->>   			kernel before the cpufreq driver probes.
->>   
->> +	cppc_cpufreq.auto_sel_mode=
->> +			[CPU_FREQ] Enable ACPI CPPC autonomous performance
-> I just noticed that we should have both CPU_FREQ and CPU_IDLE added to the
-> legend (meanings) section at the very beginning of this file, but that
-> doesn't have to be part of this patch.
+Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+---
+Rakesh Kota (2):
+      dt-bindings: soc: qcom: pmic-glink: Document batteryless property
+      power: supply: qcom_battmgr: Add support batteryless boards as MAINS
 
-Thanks.
-Will send a separate patch adding CPU_FREQ and CPU_IDLE to the legend.
+ .../bindings/soc/qcom/qcom,pmic-glink.yaml         |  8 ++++
+ drivers/power/supply/qcom_battmgr.c                | 47 +++++++++++++++++++++-
+ 2 files changed, 54 insertions(+), 1 deletion(-)
+---
+base-commit: e98d21c170b01ddef366f023bbfcf6b31509fa83
+change-id: 20260518-add_dc_in_support-f3f3c4dac6e8
 
-Thank you,
-Sumit Gupta
+Best regards,
+-- 
+Rakesh Kota <rakesh.kota@oss.qualcomm.com>
 
-
->
->> +			selection. When enabled, hardware automatically adjusts
->> +			CPU frequency on all CPUs based on workload demands.
->> +			In Autonomous mode, Energy Performance Preference (EPP)
->> +			hints guide hardware toward performance (0x0) or energy
->> +			efficiency (0xff).
->> +			Requires ACPI CPPC autonomous selection register
->> +			support.
->> +			Accepts:
->> +			  performance, 1: enable auto_sel + set EPP to
->> +					  performance (0x0)
->> +			  default_epp, 2: enable auto_sel, preserve EPP value
->> +					  programmed by BIOS/firmware
->> +			Unset: cpufreq governors are used (auto_sel disabled).
