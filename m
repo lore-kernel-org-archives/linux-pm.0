@@ -1,90 +1,134 @@
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D6E3783C3;
-	Mon, 18 May 2026 13:35:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779111306; cv=none; b=GY+wDWZpydJ30fDd9tWLkM8nuYo4qxl1xVjgUfd7IFZpNqyD/RNeoS+Ox1nYybGl0ZopEs4bDgVvMoZ78QX1BdbbhlyHzUuOHXvyVUCfMg/MyBzwL7JuOyBGZUHE5Zds+pFAMUzPjOYdQ/SbgPXP6BnJ0Vvx9MuFztrEIWBtwJ0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779111306; c=relaxed/simple;
-	bh=ew2Tqhep/T7jvCIXj7uaGBDg+dnwzEJZ2P2BH/P98qw=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=gzBjW1JilVTfY70Nudks6b1fAVEQ+tLAc57uiEkvhQZrpEFohKUCiDbllxVzwrCXQxgtWD4YNLxLFG+rRp4BCYfJMGZm+MW8biznScaxb8O0J5ST71ZMy8gNh76U1fTL/a0WSnjAsK8/wTJQrMzddy5AQwZzSKRdjleCuDFkWic=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=FvH3zPJv; arc=none smtp.client-ip=113.46.200.218
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 927D248033E;
+	Mon, 18 May 2026 13:37:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779111454; cv=pass; b=a2g+nawIFP21vBIENwg5Afe2ANEBmWNfcrtrqngXhCZKRtGYU/0Ay6NmBmM8zB7ORQUxv/EX/sCLu7tbnbWW2X9sfnxGCJJ0ZynwpzU763jtKwBj0tmeR97wxuGKu8tfnh6PTqU83QJapZjXbyoKuFsuKtuvxOhD2ewk2+MjAeU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779111454; c=relaxed/simple;
+	bh=+e6oEH4tyTvnU6zYjbVd7MwiBzA7O8dMtV+mPe60CX0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Ga09YljTTT10Usk4XmBi1wJDvmS45t2/aNB46D+4jyzIRlA0hB/s9GHsN2tEzpkbzDl6qfssk6AfONMnar4gsNOd74uHoJD4OytPGcNU1tkYJvpeEQe881ArTyo3BSZPmZIQtxXBVsZJ447YQeW1owzCJKvvB9n4ZZEcQ7+dj54=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b=EVopXY/S; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="FvH3zPJv"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=fJmk12HcaeWEqgC6VcThQhjwf0CbSUyWqdGBfCJ4mVM=;
-	b=FvH3zPJvrUB8qUCYAFM+IxnQNYAzXYvr1ycaskuIP5Cq4rshaLrr20vv4zWGSFhTwHjy0qN6c
-	xfq4CURl4VZASk+r3N0ZcR56sOgSkn8Df8j2h+fqbWFKzW8CUF6fOqYh9ivy3xQRXcw6hV1O2Nn
-	mDGR46Tp/HPVaXwZbaHmSi4=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gJzBX4Ml5zpStK;
-	Mon, 18 May 2026 21:27:48 +0800 (CST)
-Received: from kwepemr200004.china.huawei.com (unknown [7.202.195.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id 3050540569;
-	Mon, 18 May 2026 21:34:59 +0800 (CST)
-Received: from huawei.com (10.50.163.32) by kwepemr200004.china.huawei.com
- (7.202.195.241) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 18 May
- 2026 21:34:58 +0800
-From: Pengjie Zhang <zhangpengjie2@huawei.com>
-To: <rafael@kernel.org>, <viresh.kumar@linaro.org>, <corbet@lwn.net>
-CC: <skhan@linuxfoundation.org>, <zhongqiu.han@oss.qualcomm.com>,
-	<linux-pm@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<zhanjie9@hisilicon.com>, <zhenglifeng1@huawei.com>, <lihuisong@huawei.com>,
-	<yubowen8@huawei.com>, <linhongye@h-partners.com>, <linuxarm@huawei.com>,
-	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>
-Subject: [PATCH v2] cpufreq: Documentation: fix sampling_down_factor range
-Date: Mon, 18 May 2026 21:34:57 +0800
-Message-ID: <20260518133457.2408463-1-zhangpengjie2@huawei.com>
-X-Mailer: git-send-email 2.33.0
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=matthew.leach@collabora.com header.b="EVopXY/S"
+ARC-Seal: i=1; a=rsa-sha256; t=1779111435; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=GYLw9qFnl1E1+BIUAhzm5KFnoggm8eNVenn2CYv6DPFFHFpWLlj/OfOMWNXKAE1j5YZQRm6Mf2iPDUUjOg2w7YCdNR8wjiics5yY1LLsetkLlDLgcaCrCLngNsbXX4zfgQYl6N/J3NKk/yw52XW+Wf4Oj48Iu0hVsvpvAX3Uj5k=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1779111435; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=pDmMt0d2TQjR2lzHcVcP/uxbNLOLbCHnHdsM8iEc370=; 
+	b=e2ul+0EeThu21NoW3ghCcJyVvdPHEC1wGCNOe3RHOjMqF2XHbaIPdi8a5QlHgDQ1ItolH7f5puyL6938uyUleqvuTdUlKjwD6ikCQKynB1rTweuwIzWxMJAGPyPT5nE8Jz2KDzXgV6umcDU3le9i+KGF6ECecDp7WeWOMNHMtLk=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=matthew.leach@collabora.com;
+	dmarc=pass header.from=<matthew.leach@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1779111435;
+	s=zohomail; d=collabora.com; i=matthew.leach@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:In-Reply-To:References:Date:Date:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
+	bh=pDmMt0d2TQjR2lzHcVcP/uxbNLOLbCHnHdsM8iEc370=;
+	b=EVopXY/SkUPK9/IL1aZgjUdJUIhoaIiC2qW+82DkLSJDKN8WOBjNHu/1CcSWONTZ
+	ichB53ZGXu/+3TQW4WnoTBLPMMv86MkKCl9GT3/yRS5ANJ49R9zUDroUhGj5lnD8A0F
+	lR6vxiBoGzsHI3Dvn9ZaxOMQsTESbucI5tc5kaeE=
+Received: by mx.zohomail.com with SMTPS id 1779111431150572.9013351128403;
+	Mon, 18 May 2026 06:37:11 -0700 (PDT)
+From: Matthew Leach <matthew.leach@collabora.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@kernel.org>,  Len Brown <lenb@kernel.org>,  Mario
+ Limonciello <mario.limonciello@amd.com>,  linux-pm@vger.kernel.org,
+  linux-kernel@vger.kernel.org,  YoungJun Park <youngjun.park@lge.com>,
+  kernel@collabora.com
+Subject: Re: [PATCH v3] PM: hibernate: call preallocate_image after freeze
+ prepare
+In-Reply-To: <87mrz78brw.fsf@collabora.com> (Matthew Leach's message of "Mon,
+	13 Apr 2026 10:12:03 +0100")
+References: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
+	<CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
+	<87mrz78brw.fsf@collabora.com>
+User-Agent: mu4e 1.14.1; emacs 30.2
+Date: Mon, 18 May 2026 14:37:08 +0100
+Message-ID: <877bp0q1ob.fsf@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
- kwepemr200004.china.huawei.com (7.202.195.241)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-ZohoMailClient: External
 
-The ondemand governor implementation accepts sampling_down_factor values
-from 1 to 100000 via MAX_SAMPLING_DOWN_FACTOR, but the documentation in
-admin-guide/pm/cpufreq.rst still says the valid range is 1 to 100.
+Hi Rafael,
 
-Update the documentation to match the actual code.
+Matthew Leach <matthew.leach@collabora.com> writes:
 
-Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and consolidation")
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
----
-Changes in v2:
-- Modify the title.
-- Add Reviewed-by tag.
-Link to v1:https://lore.kernel.org/all/20260515094930.273599-1-zhangpengjie2@huawei.com/
----
- Documentation/admin-guide/pm/cpufreq.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Hi Rafael,
+>
+> "Rafael J. Wysocki" <rafael@kernel.org> writes:
+>
+>> On Fri, Apr 3, 2026 at 9:36=E2=80=AFAM Matthew Leach
+>> <matthew.leach@collabora.com> wrote:
+>>>
+>
+> [...]
+>
+>> Can you please have a look at
+>>
+>> https://sashiko.dev/#/patchset/20260403-hibernation-fixes-v3-1-31bc9fa3b=
+a2d%40collabora.com
+>
+> [pasting comment in-line here for comment]
+>
+>
+>> Does this relocation introduce a deadlock during memory reclaim?
+>>=20
+>> hibernate_preallocate_memory() allocates a large amount of memory and
+>> triggers direct reclaim. Direct reclaim needs to write back dirty file
+>> pages and swap out anonymous pages.
+>>=20
+>> Since freeze_kernel_threads() just ran, threads required for I/O
+>> completion (like kswapd, jbd2 for Ext4, or WQ_FREEZABLE workqueues) are
+>> currently frozen. Will the I/O for page reclaim block indefinitely
+>> waiting on these frozen threads?
+>
+> The existing code already performs a memory reclaim after
+> freeze_kernel_threads(). The old shrink_shmem_memory() called
+> shrink_all_memory() in the same position, after both
+> freeze_kernel_threads() and dpm_prepare(). This isn't a new pattern
+> being introduced by this patch.
+>
+> Nevertheless, the call chain looks like:
+>
+> shrink_all_memory()
+>   -> do_try_to_free_pages()
+>     -> shrink_zones()
+>       -> shrink_node()
+>         -> shrink_folio_list()
+>           -> pageout()
+>
+> pageout() only writes back shmem and anonymous folios to swap; so jdb2
+> and other FS threads being frozen isn't a concern. For the swap write
+> out, the I/O submission path is via submit_bio() which is also
+> synchronous.
+>
+>> Additionally, because the OOM killer is already disabled by
+>> freeze_processes() earlier in the hibernation path, can the reclaim path
+>> get stuck permanently without being able to fall back to killing
+>> processes?
+>
+> There's nothing new here regarding the OOM killer. freeze_processes()
+> disables it in hibernate() prior to calling hibernation_snapshot().
+> Since this patch is entirely contained within hibernation_snapshot()
+> that pattern hasn't changed.
+>
 
-diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
-index dbe6d23a5d67..fdca59c955dc 100644
---- a/Documentation/admin-guide/pm/cpufreq.rst
-+++ b/Documentation/admin-guide/pm/cpufreq.rst
-@@ -516,7 +516,7 @@ This governor exposes the following tunables:
- 	of those tasks above 0 and set this attribute to 1.
- 
- ``sampling_down_factor``
--	Temporary multiplier, between 1 (default) and 100 inclusive, to apply to
-+	Temporary multiplier, between 1 (default) and 100000 inclusive, to apply to
- 	the ``sampling_rate`` value if the CPU load goes above ``up_threshold``.
- 
- 	This causes the next execution of the governor's worker routine (after
--- 
-2.33.0
+Quick ping on this. Any throughts on the responses, or anything else
+you'd like me to dig into?
 
+Regards,
+--=20
+Matt
