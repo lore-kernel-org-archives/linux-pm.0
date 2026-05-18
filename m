@@ -1,163 +1,213 @@
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Received: from mout-p-103.mailbox.org (mout-p-103.mailbox.org [80.241.56.161])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52B783D25BC
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 08:39:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.218
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 238A43E120B;
+	Mon, 18 May 2026 08:47:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.161
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779093599; cv=none; b=OD6q90BmfuvaEJHDaJ3uvgstT33O/GnxlIzXPpcbqurcw/VraPTiTCLOBCo6hISX2Q6yEEpgqWUV7nocv+IEBILyc+9LvuYpNMLn0DhkXL9kU7nGqUNJRT7UHMrc+8K5nTpLgETgIBuVBL3DBxaC6RAqeKH9VW+R55xtqt227po=
+	t=1779094069; cv=none; b=LbnqWlTsqXriVBUe5/W7uQTrtdEhFRiYtXfPOOr4bI0QbgaeippFQmKAU7sMIOXucvGX36CRMag6Fl5A0BaUZ/P5ct9cEiOjTpsomoWX9JvgoO72IpyvCbRh6Dp1Y3I4SFOp6qEGw1Gz1pHRGDuv3HW+f5qUkC3c7PhLlXQb1DU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779093599; c=relaxed/simple;
-	bh=4y1LC1YDwLeEpUvHFIO6WSUTG7SMRhwPAaynwHeQ7XU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=nPMlVVC+rr/YB/sRsy6qmyARVxyLsSwaX7NTTiWuxsVgXSed1og0ZK86+Sgl8+UWFjQRT1sNJHph6H/X13YgntjO+5Fp7sAjbRj1FC9OuiI6vCHBhEe1MIB7UHL+ylBLGofBIqpOe/PnRMt99Ch316n0+79CBU50+w/yYuYZqM4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.218
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4gJrf23XJ2zpStD;
-	Mon, 18 May 2026 16:32:42 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id B2B7340569;
-	Mon, 18 May 2026 16:39:52 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 18 May
- 2026 16:39:52 +0800
-Message-ID: <66a14821-fd14-440e-b75f-98bc37eedba7@hisilicon.com>
-Date: Mon, 18 May 2026 16:39:51 +0800
+	s=arc-20240116; t=1779094069; c=relaxed/simple;
+	bh=DHPAKjRLYypwh3bA49mBwncAmaZJK8amg2Af0dOXzfY=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:
+	 References:In-Reply-To; b=FofwFkESKVJ4aTuzGqrzwbwcw7lbfxcTmP6mDrp3GPt+L3pOZx8JJgt6Wag7U0h2kcc4OatkLRRowyyV6Q8/VFOvQuhkZPz3bl9t+ORISfPM28KgCOqLSUvdm1fUEw5YTzbop0RU84zqze20XxO+MeqVCl9Nvm7f6JRhP/gMTbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=bbj+B+MR; arc=none smtp.client-ip=80.241.56.161
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="bbj+B+MR"
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-103.mailbox.org (Postfix) with ESMTPS id 4gJrzL552tz9v7Y;
+	Mon, 18 May 2026 10:47:42 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1779094062;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=GlgVOaC185Vrws/963WnBHTcONduokD+jbAIjLcGsU0=;
+	b=bbj+B+MRhSa8fFMr2AAd0F2ATSdCQS0S7e9bnjhpQdVICeI0aDR1I/DKWY8DPaDHQluakp
+	gwy92Ql3tC9F0fSIRLcOTvK0/ceDXpKh0aDz32TESqF19i1LKdZSVj/eKP/3q6DwPlUuj1
+	tXqFSOVJusgezXfrty1crLjjq2YdjDH/ZmAdNVEdZv906xklDJQsImlSz4QHDbxOhy8+bV
+	IqcgbA5gV06p4f0DatnC+D0brpT0GEKQMy7e/J23EfwC2AwhXvuy83l4dSI/U6aTll3kDW
+	yMB6H+DnXaufj/GVoA4PQFUvipRxmrdALASFF6HHz9yBoh2jhCI0MFe1/ZfLLw==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 5/6] devfreq: Get and put module refcount when
- switching governor
-To: Yaxiong Tian <tianyaxiong@kylinos.cn>, <cwchoi00@gmail.com>,
-	<cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-CC: <linuxarm@huawei.com>, <zhenglifeng1@huawei.com>,
-	<zhangpengjie2@huawei.com>, <lihuisong@huawei.com>,
-	<prime.zeng@hisilicon.com>
-References: <20260513093832.1645890-1-zhanjie9@hisilicon.com>
- <20260513093832.1645890-6-zhanjie9@hisilicon.com>
- <d6e83d90-0c2a-40a7-a939-298c3b393602@kylinos.cn>
- <6f160e25-9903-4f49-8a95-1192b7acb96d@hisilicon.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <6f160e25-9903-4f49-8a95-1192b7acb96d@hisilicon.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 18 May 2026 16:46:55 +0800
+Message-Id: <DILO6ZRWYPUO.3ULDGZ95JZ9SP@mailbox.org>
+Subject: Re: [PATCH v2 2/2] riscv: dts: spacemit: Add cpu scaling for K1 SoC
+From: "Shuwei Wu" <shuwei.wu@mailbox.org>
+To: "Anand Moon" <linux.amoon@gmail.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, "Viresh Kumar" <viresh.kumar@linaro.org>, "Rob
+ Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Paul Walmsley" <pjw@kernel.org>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Alexandre Ghiti" <alex@ghiti.fr>, "Yixun Lan" <dlan@kernel.org>,
+ <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <spacemit@lists.linux.dev>,
+ <devicetree@vger.kernel.org>
+References: <20260410-shadow-deps-v2-0-4e16b8c0f60e@mailbox.org>
+ <20260410-shadow-deps-v2-2-4e16b8c0f60e@mailbox.org>
+ <CANAwSgSNHO3MNewNzpYbhuj4K3NTdfzDC9KPoUHbFH97P4M_UQ@mail.gmail.com>
+ <DHUCL24GMX7D.369IWK9DLPZPX@mailbox.org>
+ <CANAwSgRt5-t_ah=phGc+CQYHG-CdWJuOX-2VTW6xE7n7EnVsFw@mail.gmail.com>
+ <aeaXszeaE62rM6BJ@aurel32.net> <DHYOIIFMGH7J.228ISQ7XYFGKE@mailbox.org>
+ <aeevr6Zj3Pwm9wux@aurel32.net>
+ <CANAwSgSCo-mESo6=KSc08oUzTWAgzpYu0JaW5KqmnCNiPYHjxQ@mail.gmail.com>
+ <CANAwSgRFQiNEi1Ac+sCvJWkj1R+yEPGt0RCjZu-3ZiD0Ffm6Hg@mail.gmail.com>
+In-Reply-To: <CANAwSgRFQiNEi1Ac+sCvJWkj1R+yEPGt0RCjZu-3ZiD0Ffm6Hg@mail.gmail.com>
+X-MBO-RS-META: nx3ns7n3zttnticfsuooxwsz1st8cz3x
+X-MBO-RS-ID: 516b02047a5133bc5ab
 
+Hi Anand,
 
+Thank you for your consistent attention and practical suggestions.
 
-On 5/15/2026 6:39 PM, Jie Zhan wrote:
-> 
-> 
-> On 5/14/2026 2:50 PM, Yaxiong Tian wrote:
+On Sun May 17, 2026 at 12:35 PM CST, Anand Moon wrote:
+> Hi Shuwei,
+>
+> On Wed, 22 Apr 2026 at 11:44, Anand Moon <linux.amoon@gmail.com> wrote:
 >>
->> 在 2026/5/13 17:38, Jie Zhan 写道:
->>> A governor module can be dynamically inserted or removed if compiled as a
->>> kernel module.  'devfreq->governor' would become NULL if the governor
->>> module is removed when it's in use.
->>>
->>> To prevent the governor module from being removed (except for force
->>> unload) when it's in use, get and put a refcount of the governor module
->>> when starting and stopping the governor.
->>>
->>> As a result, unloading a governor module in use returns an error, e.g.:
->>>    $ cat governor
->>>    performance
->>>    $ rmmod governor_performance
->>>    rmmod: ERROR: Module governor_performance is in use
->>>
->>> Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
->>> ---
->>>   drivers/devfreq/devfreq.c | 17 ++++++++++++++++-
->>>   1 file changed, 16 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index e1363ab69173..2ea42325d030 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
->>>                    __func__, df->governor->name, ret);
->>>               return ret;
->>>           }
->>> +        module_put(old_gov->owner);
->>>       }
->>>         /* Start the new governor */
->>> +    if (!try_module_get(new_gov->owner)) {
->>> +        df->governor = NULL;
->>> +        return -EINVAL;
->>> +    }
->>> +
+>> Hi Shuwei,
 >>
->> Here, new_gov has already been checked in try_then_request_governor() for whether the module can be obtained.
+>> On Tue, 21 Apr 2026 at 22:41, Aurelien Jarno <aurelien@aurel32.net> wrot=
+e:
+>> >
+>> > Hi,
+>> >
+>> > On 2026-04-21 16:10, Shuwei Wu wrote:
+>> > > Hi Aurelien,
+>> > >
+>> > > Thanks for your addition.
+>> > >
+>> > > On Tue Apr 21, 2026 at 5:16 AM CST, Aurelien Jarno wrote:
+>> > > > Hi Anand,
+>> > > >
+>> > > > On 2026-04-16 17:07, Anand Moon wrote:
+>> > > >> After reviewing the Banana Pi F3 schematics, I confirmed that Buc=
+k1 and Buck2
+>> > > >> Both supply the CORE_0V9 with 0.9V=C2=B11% rail. To resolve the r=
+estriction errors,
+>> > > >> I expanded the voltage range in the DTS to 500,000=E2=80=93950,00=
+0 =C2=B5V.
+>> > > >>
+>> sorry I was wrong from the doc below 1.2.1 CORE Power Design
 >>
->> I think it might be more reasonable to merge try_then_request_governor() and devfreq_set_governor(), so that when new_gov cannot be obtained, the operation of the old governor is not affected.
+>> The typical core voltage is 0.9 V to 1.05 V. Actual voltage is
+>> dynamically regulated by
+>> the **remote-sense dynamic voltage** adjustment circuit inside P1.
+>> P1 BUCK1 and BUCK2 must be combined to supply the core rail.
 >>
-> Well yeah, indeed! I'll take a look at how to implement this.
-> Thanks for the suggestion.
-> 
-> Jie
-Hi Yaxiong,
+>> [1] https://www.spacemit.com/community/document/info?nodepath=3Dhardware=
+/key_stone/k1/k1_hw/k1_hw_design_guide.md&lang=3Den
+>>
+>> > > >> Additionally, I updated the DTS to map the second CPU cluster (co=
+res 4=E2=80=937)
+>> > > >> to Buck2 to better align with the hardware's power distribution.
+>> > > >
+>> > > > Actually the output of Buck1 and Buck2 are connected together, so =
+they
+>> > > > should always be configured with the same output voltage. And both
+>> > > > clusters should be mapped to both outputs.
+>> > >
+>> > > You are right, I received the same response from the official develo=
+pers.
+>> > >
+>> > > Therefore, I'm wondering if an additional regulator-coupled-with: pr=
+operty
+>> > > definition is also needed here?
+>> >
+>> correct.
+>> > Yes, I think this is the way to go. I even wonder if this shouldn't be=
+ a
+>> > fix with Cc: stable. This also has to be done for the Milk-V Jupiter
+>> > board, I haven't checked the other boards yet, but I guess they all us=
+e
+>> > the same schematics at that the PMIC level.
+>> >
+>> > Regards
+>> > Aurelien
+>> >
+>
+> The following changes resolve the warning on my setup.
+> If possible, please integrate them into the next version.
+>
+> diff --git a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+> b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+> index c2a1b759d41f..8512c7417f94 100644
+> --- a/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+> +++ b/arch/riscv/boot/dts/spacemit/k1-bananapi-f3.dts
+> @@ -116,19 +116,19 @@ &cpu_3 {
+>  };
+>
+>  &cpu_4 {
+> -       cpu-supply =3D <&buck1_3v45>;
+> +       cpu-supply =3D <&buck2_3v45>;
+>  };
+>
+>  &cpu_5 {
+> -       cpu-supply =3D <&buck1_3v45>;
+> +       cpu-supply =3D <&buck2_3v45>;
+>  };
+>
+>  &cpu_6 {
+> -       cpu-supply =3D <&buck1_3v45>;
+> +       cpu-supply =3D <&buck2_3v45>;
+>  };
+>
+>  &cpu_7 {
+> -       cpu-supply =3D <&buck1_3v45>;
+> +       cpu-supply =3D <&buck2_3v45>;
+>  };
+>
+>  &emmc {
+> @@ -248,14 +248,14 @@ pmic@41 {
+>                 regulators {
+>                         buck1_3v45: buck1 {
+>                                 regulator-min-microvolt =3D <500000>;
+> -                               regulator-max-microvolt =3D <3450000>;
+> +                               regulator-max-microvolt =3D <950000>;
+>                                 regulator-ramp-delay =3D <5000>;
+>                                 regulator-always-on;
+>                         };
+>
+> -                       buck2 {
+> +                       buck2_3v45: buck2 {
+>                                 regulator-min-microvolt =3D <500000>;
+> -                               regulator-max-microvolt =3D <3450000>;
+> +                               regulator-max-microvolt =3D <1050000>;
+>                                 regulator-ramp-delay =3D <5000>;
+>                                 regulator-always-on;
+>                         };
 
-A follow-up after digging deeper.
+As previously discussed, Buck1 and Buck2 are connected and must share the s=
+ame
+voltage. However, you not only separated them but also set their voltage ra=
+nges
+to different values, which violates the requirement.
 
-1. To be clear, the try_module_get() / module_put() pairs in
-try_then_request_governor() and devfreq_set_governor() protect different
-ranges.  Assuming no FORCE_UNLOAD, the former protects the governor module
-from the time it's queried until it's set as the working governor, while
-the latter protects when the governor is in use.
+Additionally, in the schematic, 0.9V represents the default output voltage,
+not the maximum.
 
-However, I realized the former protection is no longer needed since I
-removed the governor list lock in v2.  devfreq_remove_governor() and the
-'request and set' governor sequence are already synchronized by
-'devfreq_list_lock'. Thus, patch 6 should be dropped.
+The problem you noted likely stems from different clusters sharing
+the same voltage while having different OPP tables.
 
-2. devfreq_add_device() needs error prints because it's a probe path.
-governor_store() doesn't want error prints since it's not a good practice
-to print on a sysfs read/write.  Merging the two functions will violate
-either of them.
+In the new patch, I will unify them to use the same OPP table.
 
-Thanks,
-Jie
->>>       df->governor = new_gov;
->>>       ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>       if (ret) {
->>>           dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>>                __func__, df->governor->name, ret);
->>> +        module_put(new_gov->owner);
->>>             /* Restore previous governor */
->>>           df->governor = old_gov;
->>>           if (!df->governor)
->>>               return ret;
->>>   +        if (!try_module_get(old_gov->owner)) {
->>> +            df->governor = NULL;
->>> +            return -EINVAL;
->>> +        }
->>> +
->>>           ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>           if (ret) {
->>>               dev_err(dev, "%s: restore Governor %s failed (%d)\n",
->>>                   __func__, df->governor->name, ret);
->>> +            module_put(old_gov->owner);
->>>               df->governor = NULL;
->>>               return ret;
->>>           }
->>> @@ -1040,9 +1053,11 @@ int devfreq_remove_device(struct devfreq *devfreq)
->>>         devfreq_cooling_unregister(devfreq->cdev);
->>>   -    if (devfreq->governor)
->>> +    if (devfreq->governor) {
->>>           devfreq->governor->event_handler(devfreq,
->>>                            DEVFREQ_GOV_STOP, NULL);
->>> +        module_put(devfreq->governor->owner);
->>> +    }
->>>       device_unregister(&devfreq->dev);
->>>         return 0;
+>
+> Thnaks
+> -Anand
+
+--=20
+Best regards,
+Shuwei Wu
+
