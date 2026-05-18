@@ -1,325 +1,155 @@
-Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1F9B3E6385
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 10:27:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.170
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779100083; cv=pass; b=Tyj90tkDuyXG/i/8d5qoXu/rm39FhuTWLP0vOQZXBC9C+0TKbxyDdJm2IHU/o/uG11SYTEf+VZ2NgwASc/BvxjUq2MraaYycdy7SMd3wD9ar2f1t2mNKh1RAh5EQK3rHaZMyELOOCVFjwHWJuW3cGdvKioYYliyAzlUepsamtX4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779100083; c=relaxed/simple;
-	bh=de/RGNl8I6Jd7XzCUxqk4t5+7GUeTAKsKoZdeyJFxBY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Szli4ElVuA2ElQAyENaYYl9WPa4ARLh1D8lMRsUnmvauHppH0eWv6FQiApEmrVX9untAgV/Mt+HoPVY9MGGqnvPF123r7crCjJfnmfhKzv4GG0p5dQACn+uNpde+Aq5kT1H0AK/tAxbzpSMVHBeEIaF/m4ysHJvboDbhdHIJBk0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=j4VCjgKQ; arc=pass smtp.client-ip=74.125.82.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 316863F5BD2
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 11:29:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779103802; cv=none; b=Zit+qyF4J5doEcGAx4fN8nqcKXhh0njfHRvWfqO7HMQSK5yO7heO+PfgytVEIvLV0iI1OF0FZA5DmBt4nNygqdWMRFdqr37tqc1RAH8/oas3z/E53/8q/i5eh3kSDCUkAM3JPHzthiSH8htWZwWI967+QY8+017kFzxNep9ejss=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779103802; c=relaxed/simple;
+	bh=D+JxwENoOUj3iS9Ow5TGib5JfpQ4/E5yu6fQWqjUhSk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=b5skRXqac2w3YvzI+4uKbJHFrHI4Fuq0xXC4hys2xHEKzP8rd5DJHXD9JDdQ+VtPhEGUMyAzMZhQW4Ist0Puque7jIsB1PHX2kylF+ohNnOBNQpfOmAkP4cPbTLoOhD9pcnYINuIciWBZMrac6h6XLZ5yhv+InQmSxm5f7AmUk8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Ymdn0rOC; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=gkFAnv5J; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j4VCjgKQ"
-Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-2c156c4a9efso2469535eec.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 03:27:57 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779100074; cv=none;
-        d=google.com; s=arc-20240605;
-        b=S6M8/TJlHtSs/m26R4NfAcKAha0uMici+iAz6QG52YJfLJU4qMPaOt61vySCcvga5A
-         mUbyhCLGyhRIv8ngl6hU9aHgpo+E36ZcBujW3ybuZpvNtL7UW62aX4XXIQuvyz625gou
-         QYUtOu/vnZLnb9rGHCTUERy4n+CVhBcEys9oUJKjM90GNCIKO3yvbqT54HWjGJaZjOXz
-         CcH+eDEvvzHRuWsMxVZIf5lhJEvpl4rC3pvFWeVV4EnZLOxLZT8fVQW9Zk43shu6kRtB
-         cHhnv+PjY4xkPaXQZLqzLd6Ra3ptgybAcZ3ei3mm+H1JPOGH68+4ybbuhb1LmzPt56pm
-         AdIg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=KDtWok6ghcbMOh+aRUPuJcRSWIrIOfWKuyRB73ATInw=;
-        fh=tbYo5tw5wj8mL+Ih8rcdrhmHSXt1KrpkMUoPXv3awXQ=;
-        b=gN5dMR/b0VhWHjKJEQZlDaAnOsQomwDkvmrbIbgIQFWf8f8kN26qoRgNvG6+WGGq7P
-         D2rGCFZAhmacOWq2U+WeJVaoWAtAJsbhAJ6MslCsF4hcbeieGoeVEsAn9GQ1wS7+Q0/h
-         OJ16k40qKC2//hzpl4IjT9kunSkCfAupbLev1U7sN8r0+bqHTEbsBw3hwvWOSFyqZvno
-         lvpSROVe1lKxATtx2Tkt6BqZX13KZcoxzOmwNx1uqCGaskPY6lch+Q1haNm5hr3gF0eg
-         fEWa1QJCxgFMNupO/K3ViEfq0oPXO20MX6yv8LXTG1e38NPPenWA51iUKXIPqwfKDxRJ
-         UO2A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Ymdn0rOC";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="gkFAnv5J"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64I6bBSf559349
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 11:29:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=G6hjDl458fg1vZmi1jXkcPSC
+	R1vUSBiQ5TtnFePeUdc=; b=Ymdn0rOCHG7oKgKuxMp8IZLFMqXGmaMdnTNt9X1l
+	MSlEyPIUBdbmL22N1kRTDc1HHWhpBLGSnvVtUr3Gik63yH5Ti3gbtbQTlSuCgZoe
+	l473jJhjcM0ZUPvDG3rsLBOpQuP2eRNrHqsNdvd5air7ONkUfy5swWiXsdjjWLnk
+	1yrkFGJ0+kA6+Wnj3N+J72qROiX8vtMGsWdA5zhtwh9UK70YmcZS0OSpqGl8EZM+
+	pwc27rUbzsJz2cHmcjzYn6bWic2+8qR/ggb7sfyntLuHS7wvUeH+giRqBJiIntTZ
+	SyAVV/Cw+75xTgKX/tP/ZK7R/WqsOjNIvLz3G6aJOCy0UQ==
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e6h0qe898-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 11:29:56 +0000 (GMT)
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2b9b8137828so25060265ad.0
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 04:29:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779100074; x=1779704874; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=KDtWok6ghcbMOh+aRUPuJcRSWIrIOfWKuyRB73ATInw=;
-        b=j4VCjgKQipWlMtiav+oRaPR0f0v1nvfzZapNCxenZbUZ3Mt3Rn7gmUEXq4oi7jkUIb
-         4HgX5uvcMi0RszlVOneYbNm1DM+mJU/JrJR0h0GO8g4bukkzMC7zMlBHjCSOgPkhMpTV
-         c4wzllyPVJm2XMA+DbO43unohFkJBR7zJC8kPgscsLXOrQoLc889x8CXLMCrjb7k7adz
-         Gsbumo9YHGirJUU0vfb33Y11pt7G3APC6WK3KmfUzHGeFwpngQRJCoM4161ft4aApt6w
-         Kt1L2d49HbFBUptVzh8i1FeIDgJkVcLkQkauv8bG7uF5x1ddFs4dXIs3THiHDz4MjsjJ
-         8/Rg==
+        d=oss.qualcomm.com; s=google; t=1779103796; x=1779708596; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=G6hjDl458fg1vZmi1jXkcPSCR1vUSBiQ5TtnFePeUdc=;
+        b=gkFAnv5JihYfb+qTRAoPKBhOEshRsCCY4oYYIwhpE+F9B1uoyX2yDwk0J2TMHA1BYt
+         dTpURmQjHd74R4OgOp24ZRKUKEwo205Pq9tGku0jJMqdNrmH3uYl7fXaRIBt+Xa5DP56
+         pclO8yNF/sxV3MGbLM4l3EPvtWPc4Hmcealpmmv5QxN7nVDptSQJcFXH13k3h43UMv3F
+         KKkluCI3fb1DfpNvJkHLDJfXgoq/fccTPwqszK+bCVCkQO3d4T7u4YNCegK/Pk8MpeVj
+         X//B5wtni1z3v9SZef4B6Oqa9pBYulv0vLUQZN8fR7vOf9TFJPTb0hI4U/L4UezKIWTO
+         D2LA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779100074; x=1779704874;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=KDtWok6ghcbMOh+aRUPuJcRSWIrIOfWKuyRB73ATInw=;
-        b=LjTZhBr43bQEVUcY4RpDO1msl2Zf4FIIcn2JtTUt6bJqaPd2NvRP051h5aF0EGMrFu
-         +/33LlsPiQOtBTP89SYmMQdoYnSJHs4jjsQMgZEzLDjvgtZgybthKyUmvAO7EghSld2s
-         lMsAakjPvhieqgt7Ge5wT+GztGC93YFQOuB1nT0x5IRmmfOvMZaBvcZjN/2ng/Ds/sDX
-         Y0YIabSAlSxuiBl8NbhOzz+zm8gH8V2MrJ2LEcL38Z0UdJCn2+0NNJx7GrTygg2lR1vi
-         4ez+Kic7+mpSA1sY5jqlC72FtvGbRi2iZoACTOM82XdFgd8H1BCNLkH7HBSEru8v8JJ3
-         dX2A==
-X-Forwarded-Encrypted: i=1; AFNElJ+nDN1aQkILH5fjKe+D0XPPqAitZ12kav9/Lt6CW8Cgwj4sDnN3OXd+WPorofa6oVfh2vmItGqfgg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxI56k4UOBA6CjCCRHcjlXtMPadR2AO/CX8m4ZmKgAPIZHYETbf
-	kbXqDq5H2yE9ymXoVArlRGGXu/Duo1RdJXASF9cpIzvBtcER/epm+hKgOI9i+8bz4JtmhUJyOW2
-	/YVcXB+ueY468UeBq/0nh+R8Vb+zIaO0=
-X-Gm-Gg: Acq92OGaDKu+2iiTk9LR0bmyHg2s1QCIZLdUTEevCQergjW4P7QmOGnWrNiT9wH7Lka
-	rzNwtpZkWwtZnOER1b1uEeJZ1xX5ny8qllUFkK4PRAV7VOrkvT9B0RSkZuii/4LSs9wqexOu6MQ
-	IWGCOWqw3UbdrKSdx+G1YsNnT97hgBrFUvoOkQ14LPcvTpAdoza1CwwjhV9WPoY631ElVdDgfnh
-	MBFKFv1N6lpnuSbXScvfwbLExA6b6q60OJvyoNTlMimYWRLoevYLrviYSrbupbCzvwoHa/+tau8
-	u+xWcFMA
-X-Received: by 2002:a05:7300:8b95:b0:2e0:1f09:d924 with SMTP id
- 5a478bee46e88-3039813cab5mr6740822eec.5.1779100073932; Mon, 18 May 2026
- 03:27:53 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779103796; x=1779708596;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=G6hjDl458fg1vZmi1jXkcPSCR1vUSBiQ5TtnFePeUdc=;
+        b=P+krr47ZKsmd4dTdNp0a0qgKZczRR8LXjThh//Lv8+90alKFEyKiWaVjum+GIp2vn2
+         DKQCynOj/2BsTCjUpPaJ9gPTfRvDvSaqdnOFAP4UGJp6HTchThfmbXAuLfWr4G26YsK7
+         94YigsYCo0vQHuqFf+F8bgVqTfyMFk1HnabqLFUutkbB6Q9nenq1cc5nNB4wGnUubYcC
+         NxdzrgNfX9yBLjbvgFL2UIhylGe5mtVMzRNRLfM7Jgw9RqrSRwRlEqDINIdbcQkEnj39
+         QB5HgEpQfSZjhMYRsL/Hvf+wQ5ZrwNG9sgN0MAWv+eW/ZiPMEdGTaz8YP/+tDeTxmhb7
+         561g==
+X-Forwarded-Encrypted: i=1; AFNElJ/adQ7AamxZCCGzFCybUshKLtJA4ji8UEByw7oBlZYaSaKep+sxC1ipYMs1K10s0Dybya7aX00k/A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzgeJj0Qgq2xw3m7igGDTIk0m6ku3mABxNRoAa9cs6UGHn3OK/j
+	jzpDC+i2SFJ1O6sT1bz9YW8dZiJQM0ikbprOcGtLx4SE+INoXUospeQRE9OlSjiiRAWR3aSBqmr
+	npTSs/NqBy1cQOgnIz2QDdcIXMuD1zQSZG1jCyy/ZGomN/+dTxn/LBLr3nLu/eg==
+X-Gm-Gg: Acq92OFo4ZJcWiKDsSc8JmfLGOiKzNJTyF9Bi8xYJUgQqSrVz/YvMSoiYtvJ0jdbBlq
+	P/vZx/3Qi6oVX9/CoDZL7F+s9T2XEQezmqbLI/Y0hfiXZz6MmxVF5a1eyCJNjMaY2fFSDAUHdDu
+	TzGzAfZVTvYUJZ7gjLaKfnAxxRbBYJxUWppL3pdx3MBofYfLbVpJ1f56kQtWaAy911ss/u2svbr
+	aV19IGr4MCQR6p4SY/YY3a0uBV3Mi0Oq9TDeOG9Zowfeku6qOQViijSwdQqepBjLJ02EX6aj0QO
+	1N6/aaBreV8SQCOe6wKNntUzAcS0xBBCHXQUZcfUXnX1j3Nb+vkoax/HmvaiPpbEP2AauXgXyXt
+	1CD+yzN+K9VEitwNhMQ8WpJYmRI2eTk61dCNW4abws3+3lXQa
+X-Received: by 2002:a17:902:d512:b0:2b4:5f96:184d with SMTP id d9443c01a7336-2bd7e86c6a4mr167038065ad.5.1779103795505;
+        Mon, 18 May 2026 04:29:55 -0700 (PDT)
+X-Received: by 2002:a17:902:d512:b0:2b4:5f96:184d with SMTP id d9443c01a7336-2bd7e86c6a4mr167037715ad.5.1779103794907;
+        Mon, 18 May 2026 04:29:54 -0700 (PDT)
+Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5d0fc2bdsm187835475ad.63.2026.05.18.04.29.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 May 2026 04:29:54 -0700 (PDT)
+Date: Mon, 18 May 2026 16:59:49 +0530
+From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: interconnect: qcom-bwmon: Add Hawi
+ cpu-bwmon compatible
+Message-ID: <20260518112949.ui2gfxvkjdmgc6ks@hu-mojha-hyd.qualcomm.com>
+References: <20260427182255.3649922-1-mukesh.ojha@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260502124055.22475-1-clamor95@gmail.com> <20260502124055.22475-3-clamor95@gmail.com>
- <20260514100205.GG305027@google.com> <CAPVz0n07EKiF=Gi=Po0zFVSuU=g4pbhJam7VHgiQsPTwtT2wQg@mail.gmail.com>
- <20260514155004.GO305027@google.com> <CAPVz0n1drWV6zMzOx93gHNaw+Tt0M9oAF2RyKW6tZcC2gF_HAQ@mail.gmail.com>
- <20260518101328.GS305027@google.com>
-In-Reply-To: <20260518101328.GS305027@google.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Mon, 18 May 2026 13:27:42 +0300
-X-Gm-Features: AVHnY4Kz1QJoA09br8muwyHJF2ZDsix5B0qlI6Cm2ua-EB9O61W3wDAYlVInIYQ
-Message-ID: <CAPVz0n0imF_ESoGMJSrEX7NOnBShFj8wehDtQKXZV_DMcGqq=A@mail.gmail.com>
-Subject: Re: [PATCH v6 2/7] mfd: Add driver for ASUS Transformer embedded controller
-To: Lee Jones <lee@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
-	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>, Ion Agorria <ion@agorria.com>, 
-	=?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260427182255.3649922-1-mukesh.ojha@oss.qualcomm.com>
+X-Proofpoint-ORIG-GUID: kOSOH1ul_dhyhrR022fT_d4aXsURaewh
+X-Proofpoint-GUID: kOSOH1ul_dhyhrR022fT_d4aXsURaewh
+X-Authority-Analysis: v=2.4 cv=fIMJG5ae c=1 sm=1 tr=0 ts=6a0af834 cx=c_pps
+ a=IZJwPbhc+fLeJZngyXXI0A==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22
+ a=EUspDBNiAAAA:8 a=O7OvwgOkGeDt5fK5py0A:9 a=CjuIK1q_8ugA:10
+ a=uG9DUKGECoFWVXl0Dc02:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDExMSBTYWx0ZWRfX+mYiuQrf4/z2
+ WZbtPVh+g2w9mqaQ/N7yvjqXtWFrU8TmVVADsgUox3ahIk9Ho8huiFzYyTuuWCx8enxGegL8Vdd
+ cc2ftI1YDVASYPbfYELDP5wRK5cyfgRnT+2Lcaqj5nSsEvZbqOFaKK6OjBALJDxGNqHDXMRatEX
+ VatpipBZ5iMgnWFadUFelq5cDQ/ha7skzC5+r5LRDI+emzkuqfjMSHCOskstZBJLybxaoavSEeF
+ TUdZDLBQsAgX3CI0qYMJBdO2C8QvJ9G+LDn1bZYXyfNu488gMFzsrs8xlk9/Db/0WCEdPTZgmnB
+ UWA7VQN7DIMJxg9HSKAfdhM/SM99clDrvwiUuILlXHqCXT2T0W6Cu8dAhBPReViSZilfxRoGcFH
+ yB8Kl5gP9oxoE7UgQAbZl/9DJvxbJdUfbOr4Ot2bnscFlp7wt2WR4vUiPvPWHk4gZMFa2D9WSrw
+ XDXv+sA3EnZ/s3oC2qw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-18_03,2026-05-15_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 impostorscore=0 spamscore=0 bulkscore=0 phishscore=0
+ priorityscore=1501 adultscore=0 suspectscore=0 lowpriorityscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605180111
 
-=D0=BF=D0=BD, 18 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 13:1=
-3 Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Thu, 14 May 2026, Svyatoslav Ryhel wrote:
->
-> > =D1=87=D1=82, 14 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE =
-18:50 Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> > >
-> > > On Thu, 14 May 2026, Svyatoslav Ryhel wrote:
-> > >
-> > > > =D1=87=D1=82, 14 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=
-=BE 13:02 Lee Jones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
-> > > > >
-> > > > > On Sat, 02 May 2026, Svyatoslav Ryhel wrote:
-> > > > >
-> > > > > > From: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.pl>
-> > > > > >
-> > > > > > Support Nuvoton NPCE795-based ECs as used in Asus Transformer T=
-F201,
-> > > > > > TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF=
-101 dock
-> > > > > > and TF600T, P1801-T and TF701T pad. This is a glue driver handl=
-ing
-> > > > > > detection and common operations for EC's functions.
-> > > > > >
-> > > > > > Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > > > > > Signed-off-by: Micha=C5=82 Miros=C5=82aw <mirq-linux@rere.qmqm.=
-pl>
-> > > > > > ---
-> > > > > >  drivers/mfd/Kconfig                     |  14 +
-> > > > > >  drivers/mfd/Makefile                    |   1 +
-> > > > > >  drivers/mfd/asus-transformer-ec.c       | 762 ++++++++++++++++=
-++++++++
-> > > > > >  include/linux/mfd/asus-transformer-ec.h | 162 +++++
-> > > > > >  4 files changed, 939 insertions(+)
-> > > > > >  create mode 100644 drivers/mfd/asus-transformer-ec.c
-> > > > > >  create mode 100644 include/linux/mfd/asus-transformer-ec.h
-> > >
-> > > [...]
-> > >
-> > > > > > +     unsigned int num_devices;
-> > > > > > +     bool clr_fmode; /* clear Factory Mode bit in EC control r=
-egister */
-> > > > > > +};
-> > > > > > +
-> > > > > > +struct asus_ec_data {
-> > > > > > +     struct asusec_info info;
-> > > > >
-> > > > > You have 'data' and 'info' which a) using non-forthcoming nomencl=
-ature
-> > > > > and doesn't tell me anything and then you b) put 'info' in the de=
-vice's
-> > > > > driver_data attribute which is very confusing.  driver_data shoul=
-d be
-> > > > > for what we call ddata which I assume is expressed as 'data' here=
-.
-> > > > >
-> > > >
-> > > > asusec_info is shared among all child devices and is exposed while
-> > > > remaining elements of this struct are for internal use only.
-> > >
-> > > Our terminology for that is usually ddata, that gets stored in
-> > > 'struct devices' device_data attribute.
-> > >
-> > > > > > +     struct mutex ecreq_lock; /* prevent simultaneous access *=
-/
-> > > > > > +     struct gpio_desc *ecreq;
-> > > > >
-> > > > > If I hadn't seen the declaration, I'd have no idea this was a GPI=
-O
-> > > > > descriptor.  Please improve the nomenclature throughout.
-> > > > >
-> > > > > > +     struct i2c_client *self;
-> > > > >
-> > > > > Again, please use standard naming conventions:
-> > > > >
-> > > > > % git grep "struct i2c_client" | grep "\*self" | wc -l
-> > > > > 0
-> > > > >
-> > > > > % git grep "struct i2c_client" | grep "\*client" | wc -l
-> > > > > 6304
-> > > > >
-> > > > > % git grep "struct i2c_client" | grep "\*i2c" | wc -l
-> > > > > 903
-> > > > >
-> > > >
-> > > > ok, noted.
-> > > >
-> > > > > > +     const struct asus_ec_chip_data *data;
-> > > > >
-> > > > > 'data', 'priv' and 'info' should be improved.
-> > > > >
-> > > > > > +     char ec_data[DOCKRAM_ENTRY_BUFSIZE];
-> > > > >
-> > > > > An array of chars called 'data'.  This could be anything.
-> > > > >
-> > > >
-> > > > Do you have a comprehensive list of name conventions you find suita=
-ble?
-> > >
-> > > Anything descriptive that alludes to the type of data being held ther=
-e.
-> > >
-> > > There are 100's of good examples, but a handful of generic / bad ones=
-.
-> > >
-> > > > > > +     bool logging_disabled;
-> > > > >
-> > > > > This debugging tool is probably never going to be used again.
-> > > > >
-> > > > > Keep it local.
-> > > > >
-> > > > > > +};
-> > > > > > +
-> > > > > > +struct dockram_ec_data {
-> > > > > > +     struct mutex ctl_lock; /* prevent simultaneous access */
-> > > > > > +     char ctl_data[DOCKRAM_ENTRY_BUFSIZE];
-> > > > > > +};
-> > > > > > +
-> > > > > > +#define to_ec_data(ec) \
-> > > > > > +     container_of(ec, struct asus_ec_data, info)
-> > > > > > +
-> > > > > > +/**
-> > > > > > + * asus_dockram_read - Read a register from the DockRAM device=
-.
-> > > > > > + * @client: Handle to the DockRAM device.
-> > > > > > + * @reg: Register to read.
-> > > > > > + * @buf: Byte array into which data will be read; must be larg=
-e enough to
-> > > > > > + *    hold the data returned by the DockRAM.
-> > > > > > + *
-> > > > > > + * This executes the DockRAM read based on the SMBus "block re=
-ad" protocol
-> > > > > > + * or its emulation. It extracts DOCKRAM_ENTRY_SIZE bytes from=
- the set
-> > > > > > + * register address.
-> > > > > > + *
-> > > > > > + * Returns a negative errno code else zero on success.
-> > > > > > + */
-> > > > > > +int asus_dockram_read(struct i2c_client *client, int reg, char=
- *buf)
-> > > > > > +{
-> > > > >
-> > > > > Have you considered using Regmap for register access instead of
-> > > > > implementing custom functions?  Remaps already deals with caching=
- and
-> > > > > locking mechanisms that you'd get for free.
-> > > > >
-> > > > > This looks like it would be replaced with devm_regmap_init_i2c().
-> > > > >
-> > > >
-> > > > I will consider this, thank you.
-> > > >
-> >
-> > It seems that regmap does not fit for this purpose, but I might switch
-> > to plain i2c_smbus_read_i2c_block_data
->
-> Can you explain why Regmap doesn't work for you?
->
-> Regmap is just a wrapper about i2c_smbus_read_i2c_block_data() and friend=
-s.
->
+Hi Georgi,
 
-Honestly, it seems that this will cause more hassle. Regmap has max
-bit size of reg 64 which will require use of regmap_read/write_raw and
-obviously no regmap bit update operations will be possible. If this
-chip was a plain 8 bit register i2c device, obviously I would use
-regmap.
+On Mon, Apr 27, 2026 at 11:52:55PM +0530, Mukesh Ojha wrote:
+> Add the Qualcomm Hawi SoC compatible string for the CPU bandwidth
+> monitor and there is single instance present globally to monitor
+> the traffic from CPU to LLCC.
+> 
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+> ---
+>  .../devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml     | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+> index ce79521bb1ef..82b1d94d3010 100644
+> --- a/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,msm8998-bwmon.yaml
+> @@ -26,6 +26,7 @@ properties:
+>        - items:
+>            - enum:
+>                - qcom,glymur-cpu-bwmon
+> +              - qcom,hawi-cpu-bwmon
+>                - qcom,kaanapali-cpu-bwmon
+>                - qcom,qcm2290-cpu-bwmon
+>                - qcom,qcs615-cpu-bwmon
+> -- 
+> 2.53.0
+> 
 
-I have removed most of custom functions in favor for i2c smbus block
-helpers and left only asus_dockram_access_ctl since it is used in many
-places.
+I am hoping, you would be picking this., let me know.
 
-> > > > > > +     struct device *dev =3D &client->dev;
-> > > > > > +     int ret;
-> > > > > > +
-> > > > > > +     memset(buf, 0, DOCKRAM_ENTRY_BUFSIZE);
-> > > > > > +     ret =3D i2c_smbus_read_i2c_block_data(client, reg,
-> > > > > > +                                         DOCKRAM_ENTRY_BUFSIZE=
-, buf);
-> > > > > > +     if (ret < 0)
-> > > > > > +             return ret;
-> > > > > > +
-> > > > > > +     if (buf[0] > DOCKRAM_ENTRY_SIZE) {
-> > > > > > +             dev_err(dev, "bad data len; buffer: %*ph; ret: %d=
-\n",
-> > > > > > +                     DOCKRAM_ENTRY_BUFSIZE, buf, ret);
-> > > > > > +             return -EPROTO;
-> > > > > > +     }
-> > > > > > +
-> > > > > > +     dev_dbg(dev, "got data; buffer: %*ph; ret: %d\n",
-> > > > > > +             DOCKRAM_ENTRY_BUFSIZE, buf, ret);
-> > > > >
-> > > > > Please remove all of these debug messages.
-> > > > >
-> > > >
-> > > > Why debug messages cannot be preserved? They are specifically marke=
-d as dev_dbg
-> > >
-> > > It's a general convention.
-> > >
-> > > After initial development, they tend to just litter the code-base.
-> > >
-> > > Debug prints can be useful higher up the stack though.
-> > >
-> >
-> > I am fine with removing all debugs and logging but I strongly would
-> > like to keep EC model and firmware version along with susb and factory
-> > status. That may be quite useful in identifying EC used and its
-> > behavior without need in rebuilding the kernel and digging huge piles
-> > of downstream code in order to find how to dump these values.
->
-> Yes, you can keep this sort of thing as INFO.
->
-
-Noted. I have send v7 with your suggestions applied. Change log is in
-the cover commit.
-
-> --
-> Lee Jones
+-- 
+-Mukesh Ojha
