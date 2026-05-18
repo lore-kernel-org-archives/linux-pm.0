@@ -1,243 +1,288 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011002.outbound.protection.outlook.com [40.107.208.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FAB03FCB3E
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 16:45:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779122750; cv=none; b=fg7aZZx3w0YqKqaf0yDZdLQiik92aZ/Ss1ZqRZeauHFf6Q1Z2ukiL7DFGJpqMy/h4UTUj5COOqsvw7TMjhzxtV+ihBO0ZO7yFxhgDut6eULioaDwp7eyWc4lbo0+EmrblNEglbX0UiuIxkVeb0LiP7E85FN+X+UgkgLDdNd5lo4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779122750; c=relaxed/simple;
-	bh=WPhVCpKbpwoDRiM7nIZ0if1ojNpzI4x4yH3wQxhgYIE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X9iPSZNgkjF3+KyFkdqVL7wkcJPOmIzaH+GZ0O0jh1EBhAOtX/dXzioTQ/EnFLToCMAaMFBRzTFMFjRwcupx7oBxfEEpSi+Uu9oFENB6n/rxxSOMSgn8nFIzJDKINSLlw+PhUPAdrs8dW/F3lXdMk1ZoJ6UA8bzt8acMkdJj09c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=hvo8jY5P; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=IgKI+xWk; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFC54384250;
+	Mon, 18 May 2026 17:22:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.2
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779124965; cv=fail; b=LQgttkwHRXq2Ky1uDjVPYJpSRptnMPNiHH97+M9ty8yMUXXc0c1G5FVddWkAmbK31YaQ6WyykzhWR34O5pTEA9vMlMG1FA48+GneeivWfOfI4lyj1/4hm+ffjJuJ3mZnIKYIqfsbTDPFL0FtjA/CCEhEvU3B7tKIXA0v3evhvTU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779124965; c=relaxed/simple;
+	bh=YShGaYtiiYwF3BgwWWlaIGqTGpzPopn5tgxZ1Od/UdM=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=V5iG8x8PMXxojij6B+QDlHUFsCYOYLQpElwz+MVLw9vxQi+zGNmyq4ba/FDiMzJMsECTeX5Lio/MVqWJwrb2u8lOsZTCjZ4tEeiv/JQwAiIgJSJHlFatTovkJu4rSAmKm8HYb6EC+X+dsVMx6EmCCxJ1Pf4oRUKsx8Fdot3lV0Q=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=h/Z16HuH; arc=fail smtp.client-ip=40.107.208.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="hvo8jY5P";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="IgKI+xWk"
-Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64IBwLCG1251904
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 16:45:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	uNBmZ+NCJjtEl6g0SpLmCb8kHltIWGvrKgOLmeM9zoA=; b=hvo8jY5Plsw1Yz+E
-	RdCH4GM79aGzqN5NMLXp7dg+eLE3RZzMYXH2CGLKHOXm5chzlcQ1b7Rh+Hf5PKY0
-	eRvv2GFc1qzvGnSknE+EfZEHchUnmJncTNyXUGfyeW2T8SusyZiu/VRG1RGNA1xP
-	LqbVnQShBJAa0l+idHuhs8drTwqK+exCgHdjLTqAYSkblMw6fZCtAmW8OzEwF1NY
-	4xn/SIRPGbDKe3riO6C1eY4TQlWUyO2WmcVT3Zstl8NRJQGiqNWnrev4qMWP7kUc
-	+hpVRRq574KMqqmxeFlYTU2ogX5uE6OheVIAM1010uUY0iBXXM+vx1XeY2oWRl59
-	rr7EGg==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e82c0h5k0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 16:45:48 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82fa2165c3eso1596155b3a.0
-        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 09:45:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779122748; x=1779727548; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=uNBmZ+NCJjtEl6g0SpLmCb8kHltIWGvrKgOLmeM9zoA=;
-        b=IgKI+xWk1Y0lMI0KcLHOo1hbWDoCV45NSw5pZZOvYS+3eGj901OfOQAyz0vBZWSo08
-         dm8Ep/bt/4njy8ld8S6mHmtHBXO1gm/kRujgjqdyJMayoh1nziRLLzXHVnXDMVinTtIe
-         HeuaKKaz2Nyy27QWpT6nDmuVLI+TYdwJI1FlrQIEt1HQ6gdZr3w058zx49MOmMKlibBp
-         14wo0dG8uzqmEhP7FS45vzMAGdi2nWq3URDi5fKbISPXf+SAzbs2BDsQUESnnv6E3T03
-         RzUj4lcSzCqG7k0Qj7p0mLRkNdwYe0EmKoq3PwabjK5n3eVlx/IFbY9vjMpZ15/v0QXs
-         iREA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779122748; x=1779727548;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=uNBmZ+NCJjtEl6g0SpLmCb8kHltIWGvrKgOLmeM9zoA=;
-        b=KnS/ZGL4OklrCLLauNXHrBxQBM+JYcMJwRJ77YQ6kMRPKgiGOta9X/Dq5rF2XoTVar
-         rTb7eqKyZAvTIRdV/16T7RTsfAz+USaxqN14AO5C2EHq8SA7ZcETkO3Z6ov1bxEVCcxa
-         JWVOGW5LYjq/RkllzIQc6WWjmhV9yxu0yGQWlY2TxyDa4PIpgLANUKNJVjKtIQUfS6xk
-         t4WNY3Xtt0qJZoyevyYkh/mt7Q2jBkXH4pORCLVDXvLoA7+DR4EWOTcpKuPzT42eOEzX
-         Sc/I6czzkARyYE6f9iw3JbKDF/EZQ5nl2vetLrrMpO4FqTGV8Z8BZ7hDt1jsrbnFF+9s
-         PPoA==
-X-Gm-Message-State: AOJu0Yy7cjIlzC3NGec9Un3wxFILb8GjXADf3aHA4/kv5Th1oLwoPYLm
-	JpXqAuLyqxkCv5SkQUWE8S2gYJrk5lICDuSTH8+4ozqoS4Tnm9VIqUNPqM1+q2HbPZq96EBs3Z7
-	0J3gznVAw+jj/gy4hTbiz0p76sQW51GfmxFY9R6GweDtPI3XrmI4ongIPDBa9KTDkB1jz4A==
-X-Gm-Gg: Acq92OEhib4tGqXOwQECESzINDnN7ZvuLB1789ir8XLkM0rtVj2MavR3wBqOd6Al+OM
-	HXeJtoei31BM0S8IlBUQ9KsFZljo7XZMDwsdEInlE8wDrLoJLLuwEs/bKfSwPogKMsbcDGjjR64
-	YLqf1keXUTKMrKEqXeIEOM+0kysIsDxrvVzaj88PJD+wO6dD7BdfYBzcOZlX+Tg52MZqpw0uQ8B
-	Ug2wJT9zNZJVmWUTyqUBpQVf3O3xMNKyq4F8uk+lMC8XKU7OgWhlXtlQEzhhMVc4XdaKpyT44G9
-	FR0VKnUsUeTLA//dp7o6MDxy1KrxnHB92YBB/HWOiQN9DG+CfPX+D1NWU4dVTQYaVSzfvxlE0CQ
-	elJ4FfsmLwbiod8TUXRizc44FO6bti+GRS15+AZpZsG9ggbyV911o0Lgp
-X-Received: by 2002:a05:6a00:2793:b0:83e:26b:528c with SMTP id d2e1a72fcca58-83f33d26f67mr15402138b3a.28.1779122747606;
-        Mon, 18 May 2026 09:45:47 -0700 (PDT)
-X-Received: by 2002:a05:6a00:2793:b0:83e:26b:528c with SMTP id d2e1a72fcca58-83f33d26f67mr15402086b3a.28.1779122746999;
-        Mon, 18 May 2026 09:45:46 -0700 (PDT)
-Received: from [192.168.29.31] ([49.43.226.67])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f197995absm14411850b3a.27.2026.05.18.09.45.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 May 2026 09:45:46 -0700 (PDT)
-Message-ID: <bb032ac7-d818-48ff-9b9e-6f4534a5292d@oss.qualcomm.com>
-Date: Mon, 18 May 2026 22:15:35 +0530
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="h/Z16HuH"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nVkUs9mE/ZeGWu2wrf4yHf0vmlR8e7pPsfwwAqqupX+ZEhHR+69TqSNFGgbra2IMcblsb/oWTH5bGMiUWUAcbGd0CQg25Hj1/xnBvpEI5G7/B7IlM+LSpC3oZU86iLUtC/2YC6MyRHnKEHpIan10gNsSoOUZmfoUk+hIahX4heoxy2Rk7LJdqedvyouHqqOBv+UYZx6hRNM07SEZhzM1OXt3Qxty3bUrsL66v6QV/sAQBvhfXTX+eQf6zb307a6fxVgkv529Tuq8tlGZotJgqxJGZcqCOSZovZc5+v0ZRaFUo+4X4ENiZGgPtXJLvfMFLDmmhFlj461bYENA+qPfvg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=GtZtQjUFYnitUt1W+35O0JYa2C4FrO1tHDAPplNRBXw=;
+ b=hGlmMTZ40SIoT/4yxHnbp39wbz2uCAhTyxG4VmHkjZv9+amwffuqjasTcbedWzN4kfmxvOK8OUoP7MHTLlvuLfTUr1mNQSZPCCE50swFUwe/lg5F7mp13nGKvcQybFdrqSX8+mEJNfRgwVtcedFvcc63Nm20KmQ8DaR6t11Wk6IZUA6GUw5xHCLdQrbuTB2LbY5nHmZndFopyXMU7xvz5j4P0RG0nU60XFYgu37xQQWZ1nwPItqFQHdZn7p614ZePPF5/eeKawOLtXQCGItwamM4Mb+/4O5r3/kv7b2YuNSiU0+ckQA8Qo++LlfOHEuaFgaznWIHGoGg9RXE2yuYCg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=GtZtQjUFYnitUt1W+35O0JYa2C4FrO1tHDAPplNRBXw=;
+ b=h/Z16HuHzXbtm6fr+2q9z1KCVYRkXeWJx+2fwyGoUcO20P5cZC2vPF8B4Y0pbZe3A9hDw8IwLsOKr/D3AQolMoil0C9ThVojiUnll2jqo7C1okOoLxm7FqWSRnRQL4R/N1EAvvaxrazHzFg8TEVo2rAxLsLBUf7ttGMLw/dhX9BB+RBZynKWeSYNJMT6CTEOsBBq4qjhUEZAhFhiivrfL8qIXqk9HuQ+gs/SObypdYVcLIraajTJoJwCE60O9RdBpJlOpypFbbh79faj226nPPEio2Nsi2HHiFCXUCapLWjbjVtcvOtEGL2yFp2LPK20HUM2WSN99qLt77+QHSLyVA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from BN9PR12MB5179.namprd12.prod.outlook.com (2603:10b6:408:11c::18)
+ by DM4PR12MB5794.namprd12.prod.outlook.com (2603:10b6:8:61::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9891.15; Mon, 18 May
+ 2026 17:22:34 +0000
+Received: from BN9PR12MB5179.namprd12.prod.outlook.com
+ ([fe80::cf08:f59b:d016:c95f]) by BN9PR12MB5179.namprd12.prod.outlook.com
+ ([fe80::cf08:f59b:d016:c95f%4]) with mapi id 15.21.0025.022; Mon, 18 May 2026
+ 17:22:34 +0000
+Message-ID: <985f976f-1144-445b-96c2-df5bd57ecf05@nvidia.com>
+Date: Mon, 18 May 2026 22:52:22 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/2] cpufreq: CPPC: add autonomous mode boot parameter
+ support
+To: Mario Limonciello <mario.limonciello@amd.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, corbet@lwn.net,
+ skhan@linuxfoundation.org, rdunlap@infradead.org, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
+ vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
+ mochs@nvidia.com, bbasu@nvidia.com
+References: <20260515122624.1920637-1-sumitg@nvidia.com>
+ <20260515122624.1920637-3-sumitg@nvidia.com>
+ <bf521e4e-1aa5-49ce-bec5-52845f02214e@amd.com>
+ <139d2f0e-72d9-4721-9d5a-d1d4a2a95fa1@nvidia.com>
+ <72fd2fcc-6303-4980-beb7-e4b711ad6406@amd.com>
+ <e1a546f2-6e7e-4236-97bb-f72bea0137f7@nvidia.com>
+ <7d7a6ab6-b1ea-484c-a275-19acca50c483@amd.com>
+Content-Language: en-US
+From: Sumit Gupta <sumitg@nvidia.com>
+In-Reply-To: <7d7a6ab6-b1ea-484c-a275-19acca50c483@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MA5P287CA0081.INDP287.PROD.OUTLOOK.COM
+ (2603:1096:a01:1d8::13) To BN9PR12MB5179.namprd12.prod.outlook.com
+ (2603:10b6:408:11c::18)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v22 07/13] power: reset: Add psci-reboot-mode driver
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        devicetree@vger.kernel.org,
-        Florian Fainelli
- <florian.fainelli@broadcom.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-        Andre Draszik <andre.draszik@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-        Srinivas Kandagatla <srini@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Christian Loehle <christian.loehle@arm.com>,
-        Ulf Hansson <ulfh@kernel.org>, Lee Jones <lee@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Matthias Brugger
- <matthias.bgg@gmail.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Moritz Fischer <moritz.fischer@ettus.com>,
-        Sudeep Holla <sudeep.holla@kernel.org>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
- <20260514-arm-psci-system_reset2-vendor-reboots-v22-7-28a5bde07483@oss.qualcomm.com>
- <CAMRc=MdNVBKH_4Ps_QSG_YzW3=BgsMo0bDk6vuJuH7VheY9PmQ@mail.gmail.com>
-Content-Language: en-US
-From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-In-Reply-To: <CAMRc=MdNVBKH_4Ps_QSG_YzW3=BgsMo0bDk6vuJuH7VheY9PmQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDE2NCBTYWx0ZWRfX22Fp86RvdMnG
- E47sUEx+vl8MoDEjpg+CWBN0z1gdsQ9DYSOGlXKxJ6wTJDB9rRPe5NQAppsSHSE/+KeWIUjweiy
- xKMOKayS7MVAJ+qfMi3+vL3Dmc8JBl3g4+0P6Xn7z5Af0BXENTSHbT3CnsqXhedgAEfsawVznym
- VN8H+sbhk2KxHZ6OKQSyCUuoS8ruzMN7Q/bIizCXG6QGzn74hMUBQ+5aPxv0UzulcyMfeavVFTi
- UZnw0Bl3uo48aZI6xuhK6FZZJvJwUXJLW3+cPauDrA+qKZLgVvaUDM13blmmJnoEgmE0ezhyQsu
- xPHq/Lj1Ec3Kt9lcoJyVvnmXgtVQt3MyffrDPnUeZEWaoP4TkMt4mz7WnFxs+dCEfzRG+KU4ttx
- 6FEaIIVvEC+WDlrezHDTNy3PNQPxAa3+sMm+vu75eLA+GO5GPjwOgCrvWH0U6yjHBlK4tcU6rUx
- gw01l38dPSaay9dmlyg==
-X-Authority-Analysis: v=2.4 cv=A5Jc+aWG c=1 sm=1 tr=0 ts=6a0b423c cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=y87zbT2qfcRNAzJ9VcpEUA==:17
- a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
- a=EUspDBNiAAAA:8 a=_FDhcvgZYVVR_81zoiMA:9 a=QEXdDO2ut3YA:10
- a=2VI0MkxyNR6bbpdq8BZq:22
-X-Proofpoint-GUID: rBo3YsKrPJ93mFoTXRK1-6eF0kH0osre
-X-Proofpoint-ORIG-GUID: rBo3YsKrPJ93mFoTXRK1-6eF0kH0osre
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-18_03,2026-05-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 spamscore=0 malwarescore=0 impostorscore=0
- clxscore=1015 adultscore=0 lowpriorityscore=0 priorityscore=1501 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180164
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN9PR12MB5179:EE_|DM4PR12MB5794:EE_
+X-MS-Office365-Filtering-Correlation-Id: 338ae25c-81c5-41a1-263f-08deb5020c7d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|366016|7416014|921020|56012099003|11063799003|4143699003|18002099003|3023799003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	tcANej4n2z6DoeA4b+q2GQBAmMKQEhUeH+eggK7sL9Kz//yxDnFonWbrUTKug9e1Ad+z30f1AiySMpI6KyXAxTnkhVGRggMhR61M7/1J0ucGR6cmfoC75eTp8coR5cYhpdqAwgEBUVNAyJfWYH5bXCMGDLaFvlHEQsy9fhZq9fqbWP1F5WXwK4WcQOqp+FgzdoETNxjer7xMsBDf6pEiW8OLl1ya88HH16YFZGZeL9/QVpvK+qx1dIEcNYQDA/5GiBWbFeZFgaKGZm055usDSLmI/X/w0NSiDT9t1VgQ/yFsJ+zjp7vjiALpw4uXQkPZ+xac/Sq7kBSfiZBZwW24Jmb8bgT6id4eNoa0i08wbhohjjS0E8ojiB6Ky3WIq92Ihv4VsbFvhoJnY4mI+tENDdPbpHjpiU35THdG6uWMrXG+egkxtmEtLMBRRIm2hU+xxMueiEPbDbsSDhmWHFLj/HO/xgxiBHs60eD597JudFKOHp3XPV7h9oMSbq8WyTaHOvd5Mfd6GqMv4QVH4b/DogS7B7hUshYtyJFJ6IfAlKD2z/tODALbbN86zac7UwIl6aEqWlIivr6gvOt7T21EulE5kKjGfvewnDJN7dKseAL+KUnuH/qlao5lOdj8hVSsg1vWV3FSew1B4b7Jn4RhsutDyVRUy9jdStUzJPnW4Wh2WEwtAvcWmtCVxdgqbRLDRZ/XkSL3EL1YKgapzuwRw2d9Fau4tl5cLYX8d+NSSLxVc8AP/QnrQKFBzEo5r6pQ
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5179.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(7416014)(921020)(56012099003)(11063799003)(4143699003)(18002099003)(3023799003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?QzFTOGFvUjRFS3dMM1I3dFdKN0phdkxtREpSZ1R0OWlrV3BuUXdqd0VGanRz?=
+ =?utf-8?B?MmtDYXpKU3F5cTNoN2w2QlI1SWZhdG0wMFVVL3BIampmUDFHTFJoOHpicXBJ?=
+ =?utf-8?B?VnlobVVBSjNCNnZGdFB2RGJuRXZBSkllcVNWTEp5cWxWWnh5M002SEswRy9P?=
+ =?utf-8?B?QlBvUlA2OC9DY29GYWxNbm5aWXQvQVdkTW01SCtXTWRRZEJERnJPTG56NDBB?=
+ =?utf-8?B?MXBHV2FDeUtQUXdKdjhvUFJjUkcyMEIyelNWOUtjSHI2T09FN1VDbzNBM1Jq?=
+ =?utf-8?B?eW15c2FPSjU3ZldlT1RiYmNjRjZGM3c3c216UE1oYlliSm5jVTNrTGNITlps?=
+ =?utf-8?B?bUlsU2pIUUhwa2J3aXNkNlVBRjJhdFpXMVlqTU5yR2U2VEJhMGtCYVdGWWJU?=
+ =?utf-8?B?S3NHYng1SjczRy8xSmlVY3h0aTJJbWhwVHR1RHpRbEtmc3M2M2lCYUdpeGZT?=
+ =?utf-8?B?RlpML0Y2d1QzaEpwUElPN1VDc1JacERzTUQvQUtrVVhaZ3dSK0Z2Mkg4S3N2?=
+ =?utf-8?B?d2hoOGtQM2xQR2RoWjAvZm5VZ0g2a1g0Vjd4ZEo0elVMOGVBUmtZelpndTJ2?=
+ =?utf-8?B?S3J6c3g4ZHdyVlpEcVZZa1AwTzdlVXZuUC8zZkQzUXY4Z05XOHJuWFRWejg0?=
+ =?utf-8?B?WE50cFRxd2FzbTY0WUU1MlFMT3c4UDJsTnRQa09Va29FODhieGhRSkx0NllM?=
+ =?utf-8?B?WTJmK05WVXp0enpyV0JsZmd3SUZ4cUgvK0E0cUpLeFowNEpCL1BjSGM5Szhi?=
+ =?utf-8?B?dDIwdUVHY21hTFJQZEQwa2xrSGwycThsWWk3eDJsVXlxRjFQbHB6S0ZNUTV4?=
+ =?utf-8?B?VElPc1MyUmkxZXhEVnF4a3VDVTRDNXJUeFBnNlpyMHZTc1pLK0lKeVRFNnVR?=
+ =?utf-8?B?RzRvZ2JaVW5qT1R6Q2hHMU1vZ0hWNnBUQmIyOEhQQmJsSmN6aWxZRGF6d3lx?=
+ =?utf-8?B?aUx5NHhLak5BaGF3Rm9ZazZ2a2pZVTEvZ0ZvVkJSSmJjV1kreHFqVE9BcGlq?=
+ =?utf-8?B?WGRrNVFDUjhjQThlZ2dEd2p2R2hKSWt4dVR6Q21HTXdQYm1XMjRiUWJDa3dv?=
+ =?utf-8?B?QTdBVW9kUTlGZDQ3SEZPMmx5QnplSG9ma2ttV2FrbEF4L2NDa1dvdkVhaHFk?=
+ =?utf-8?B?YVdtVjF2YnQzT2hST3hJRWFMT2puN1VwUmlmUU1LOEJuMHZRQVlmeVhkNUts?=
+ =?utf-8?B?Q1UwYnBJc3pBNThQcExraDA2ZWYrUkxuSWpnM2R0Y3Z2cmlVK0IvSVI2eEha?=
+ =?utf-8?B?ekRUcUZmdklIdVY1dmtTUXdXT3J6VkRKOWxlZnVQT2NLMFRnRDV3c2U5MGZ3?=
+ =?utf-8?B?RjE3TGZYL0xreS9UREhzOFIwdnRJU0o2RjZQeGJoRTBDdTY0RTBOQ3VqNmx1?=
+ =?utf-8?B?S0hBTldkSjdpOHlUZm93T1FlTmRMUDlwaGVLOHB6UHljUWlqeFNYTjljWVZ4?=
+ =?utf-8?B?QiszS29qWjNDMUdjUG5WeGpXbWJOWFM2UTZtQ1VUbFpiaTFZeWdtMlo3MWlu?=
+ =?utf-8?B?dndFdVFGVCt3L093LytPTk1wWTBjMlhoejVCWnEwQ1g4QlBVYkVsVlY3bk8w?=
+ =?utf-8?B?eWlJVGJpRGJ3ejNsb245TVRmRGRDdFRtd1Ara24vRjQrREl6VTZsZzZEYWI5?=
+ =?utf-8?B?bS9zRDA3WEF6bkxXY2RvNkRYdWIyMTgwcXR0dkpuMlB2dkovNzVBUE9xQUFX?=
+ =?utf-8?B?TDhRdjg0WnVFUTRpYkExZmtEZHg3UWE4VERkOUZHNmgraGxUTUdqMkl2OUJt?=
+ =?utf-8?B?dENJc1ExSlR5VTNFTit6RnRpN3RGbnAzSFo2WW5WczZnTmZoNVIrbVU2Skox?=
+ =?utf-8?B?M1RFNVVRSGFnNDJKODZPMXYrZzRUbTFzbS9vL1E5allMa1J4QW5wSW9QTEc1?=
+ =?utf-8?B?OEdzeFdDbzk0aTZoamZKaklMWGJUMmthRE5vOERVYVJ3MjNNejZiblNKU0Nz?=
+ =?utf-8?B?YVFWNWY2OFZpb0ZtWk5zTEdOWHVSQUp4cVpMZjU2VzFLVGIrN0JVejd6QU55?=
+ =?utf-8?B?bjFDOVg1VGtuc09ObzluMVZ0K0xzODRCcDZKMjd2REZTUG5nbjVldWNtMGtK?=
+ =?utf-8?B?M0N5eEZhUkZTaUVyOGNRNGRDZXJ6dEJkaVMwKzRCcWs2V21tcmNGNy8vNkZj?=
+ =?utf-8?B?U2NGQ1hCSzdEaFVIckk3bVM5bFBlMklCbDl4Y3JIUVlSN0Z1YUREdDhKeWp1?=
+ =?utf-8?B?WSsxcFlSMDJYc2VwTlpOak1VQTh1a2xiMzZYU3ZLRDFVcG5iK29vSVNoME1F?=
+ =?utf-8?B?YTh1RDFzb1BMSE9Za2xlYjVzaGh0VUs3N2VxWXdBMTJPcDJKSWt5N1RlaFUw?=
+ =?utf-8?B?UEtkYTF6L3dTdXNGOFhjdGJXaExvRE0yTDlaNlNyQmtlTUx2ZzNtUT09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 338ae25c-81c5-41a1-263f-08deb5020c7d
+X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5179.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 17:22:34.1429
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: UT216jOQRQkt+2Fdc88p4g57BYrjJfgKnYAXPzjD+ejyrrf5wkNlRNrcgq7KQ0VFvhjYyG/4dfLZTgk4chXukw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5794
 
 
-
-On 18-05-2026 14:28, Bartosz Golaszewski wrote:
-> On Thu, 14 May 2026 16:25:48 +0200, Shivendra Pratap
-> <shivendra.pratap@oss.qualcomm.com> said:
->> PSCI supports different types of resets like SYSTEM_RESET, SYSTEM_RESET2
->> ARCH WARM reset and SYSTEM_RESET2 vendor-specific resets. Currently
->> there is no common driver that handles all supported psci resets at one
->> place. Additionally, there is no common mechanism to issue the supported
->> psci resets from userspace.
+On 18/05/26 19:51, Mario Limonciello wrote:
+> External email: Use caution opening links or attachments
+>
+>
+> On 5/18/26 09:15, Sumit Gupta wrote:
 >>
->> Add a psci-reboot-mode driver, and define two types of PSCI resets,
->> predefined-resets and vendor-specific resets. Predefined-resets are
->> defined by psci driver and vendor-specific resets are defined by SoC
->> vendors, under the psci:reboot-mode node of SoC device tree.
+>> On 18/05/26 19:20, Mario Limonciello wrote:
+>>> External email: Use caution opening links or attachments
+>>>
+>>>
+>>> On 5/18/26 08:44, Sumit Gupta wrote:
+>>>> Hi Mario,
+>>>>
+>>>>
+>>>> On 16/05/26 02:43, Mario Limonciello wrote:
+>>>>> External email: Use caution opening links or attachments
+>>>>>
+>>>>>
+>>>>> On 5/15/26 07:26, Sumit Gupta wrote:
+>>>>>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
+>>>>>> CPPC autonomous performance selection on all CPUs at system startup.
+>>>>>> When autonomous mode is enabled, the hardware automatically adjusts
+>>>>>> CPU performance based on workload demands using Energy Performance
+>>>>>> Preference (EPP) hints.
+>>>>>>
+>>>>>> When the parameter is set:
+>>>>>> - Configure all CPUs for autonomous operation on first init
+>>>>>> - Use HW min/max_perf when available; otherwise initialize from caps
+>>>>>> - Initialize desired_perf to max_perf as a starting hint
+>>>>>> - Hardware controls frequency instead of the OS governor
+>>>>>> - EPP behavior depends on parameter value:
+>>>>>>    - performance (or 1): override EPP to performance preference 
+>>>>>> (0x0)
+>>>>>>    - default_epp (or 2): preserve EPP value programmed by BIOS/
+>>>>>> firmware
+>>>>>>
+>>>>>> The boot parameter is applied only during first policy 
+>>>>>> initialization.
+>>>>>> Skip applying it on CPU hotplug to preserve runtime sysfs
+>>>>>> configuration.
+>>>>>>
+>>>>>> This patch depends on patch series [1] ("cpufreq: Set policy->min 
+>>>>>> and
+>>>>>> max as real QoS constraints") so that the policy->min/max set in
+>>>>>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
+>>>>>> during init.
+>>>>>>
+>>>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>>>>> ---
+>>>>>> [1] https://lore.kernel.org/lkml/20260511135538.522653-1-
+>>>>>> pierre.gondois@arm.com/
+>>>>>> ---
+>>>>>>   .../admin-guide/kernel-parameters.txt         |  16 +++
+>>>>>>   drivers/cpufreq/cppc_cpufreq.c                | 122 +++++++++++++
+>>>>>> ++++-
+>>>>>>   2 files changed, 133 insertions(+), 5 deletions(-)
+>>>>>>
+>>>>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/
+>>>>>> Documentation/admin-guide/kernel-parameters.txt
+>>>>>> index 0eb64aab3685..7e4b3a8fd76f 100644
+>>>>>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>>>>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>>>>>> @@ -1048,6 +1048,22 @@ Kernel parameters
+>>>>>>                       policy to use. This governor must be 
+>>>>>> registered
+>>>>>> in the
+>>>>>>                       kernel before the cpufreq driver probes.
+>>>>>>
+>>>>>> +     cppc_cpufreq.auto_sel_mode=
+>>>>>> +                     [CPU_FREQ] Enable ACPI CPPC autonomous
+>>>>>> performance
+>>>>>> +                     selection. When enabled, hardware 
+>>>>>> automatically
+>>>>>> adjusts
+>>>>>> +                     CPU frequency on all CPUs based on workload
+>>>>>> demands.
+>>>>>> +                     In Autonomous mode, Energy Performance
+>>>>>> Preference (EPP)
+>>>>>> +                     hints guide hardware toward performance (0x0)
+>>>>>> or energy
+>>>>>> +                     efficiency (0xff).
+>>>>>> +                     Requires ACPI CPPC autonomous selection 
+>>>>>> register
+>>>>>> +                     support.
+>>>>>> +                     Accepts:
+>>>>>> +                       performance, 1: enable auto_sel + set EPP to
+>>>>>> +                                       performance (0x0)
+>>>>>> +                       default_epp, 2: enable auto_sel, preserve 
+>>>>>> EPP
+>>>>>> value
+>>>>>> +                                       programmed by BIOS/firmware
+>>>>>> +                     Unset: cpufreq governors are used (auto_sel
+>>>>>> disabled).
+>>>>>
+>>>>> Rather than unset doing nothing, have you considered having it take a
+>>>>> midpoint like 128?  That's what we do in amd-pstate (default to
+>>>>> balance_performance).  I think it turns into a reasonable balance.
+>>>>
+>>>> Thanks for the suggestion.
+>>>> I can add balance_performance that enables auto_sel with EPP=128 in 
+>>>> v4.
+>>>>
+>>>> On changing the driver default (no param behavior) to auto enable
+>>>> balance_performance, it would be good to keep the current behavior for
+>>>> now since cppc_cpufreq is generic across ARM64/RISC-V platforms where
+>>>> EPP and Autonomous Selection registers are optional.
+>>>> A default change would affect existing users relying on governors.
+>>>>
+>>>> Thank you,
+>>>> Sumit Gupta
+>>>
+>>> But couldn't you make the "no module parameter set" follow the behavior
+>>> to only set the registers if they're available?
+>>>
+>>> So the systems that support it start using it, the ones that don't it's
+>>> a NOP.
+>>>
 >>
->> Register the driver with the reboot-mode framework to interface these
->> resets to userspace. When userspace initiates a supported command, pass
->> the reset arguments to the PSCI driver to enable command-based reset.
+>> Would it work to add balance_performance as a new mode in v4,
+>> and discuss changing the default separately as a follow-up?
 >>
->> This change allows userspace to issue supported PSCI reset commands
->> using the standard reboot system calls while enabling SoC vendors to
->> define their specific resets for PSCI.
+>
+> Sure.
+>
+>> Runtime detection helps for unsupported platforms. But platforms which
+>> support the registers use OS governors today, and silently switching
+>> them to autonomous mode on a kernel update is a behavior change for
+>> existing users. They would also have no way to boot into sw governor.
 >>
->> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
->> ---
->>   MAINTAINERS                            |  1 +
->>   drivers/power/reset/Kconfig            | 10 +++++
->>   drivers/power/reset/Makefile           |  1 +
->>   drivers/power/reset/psci-reboot-mode.c | 72 ++++++++++++++++++++++++++++++++++
->>   4 files changed, 84 insertions(+)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 36ba42209c0b332813a296880cd55798a5592d2a..4b0815c31679550f5ab719de4a5852990c7cc643 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -21342,6 +21342,7 @@ S:	Maintained
->>   F:	Documentation/devicetree/bindings/arm/psci.yaml
->>   F:	drivers/firmware/psci/
->>   F:	drivers/mfd/psci-mfd.c
->> +F:	drivers/power/reset/psci-reboot-mode.c
->>   F:	include/linux/psci.h
->>   F:	include/uapi/linux/psci.h
->>
->> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
->> index 124afb99febe92450b6ae322aeed3b63fa2070df..d9d1f768b8691abc3b32f2675519f2ddbaf19b84 100644
->> --- a/drivers/power/reset/Kconfig
->> +++ b/drivers/power/reset/Kconfig
->> @@ -348,6 +348,16 @@ config NVMEM_REBOOT_MODE
->>   	  then the bootloader can read it and take different
->>   	  action according to the mode.
->>
->> +config PSCI_REBOOT_MODE
->> +	bool "PSCI reboot mode driver"
->> +	depends on OF && ARM_PSCI_FW
-> 
-> Can you add COMPILE_TEST coverage here too please?
+>
+> But hopefully it should be better battery life/responsiveness for those
+> scenarios too, right?
+>
 
-Ack. thanks.
+Yes in many cases, but if some workloads rely on specific OS governor
+configurations, then that would get impacted.
+I will send a separate change later to seek broader consensus on
+enabling auto_sel as default without any param.
 
-> 
->> +	select REBOOT_MODE
->> +	help
->> +	  Say y here will enable PSCI reboot mode driver. This gets
->> +	  the PSCI reboot mode arguments and passes them to psci
->> +	  driver. psci driver uses these arguments for issuing
->> +	  device reset into different boot states.
->> +
->>   config POWER_MLXBF
->>   	tristate "Mellanox BlueField power handling driver"
->>   	depends on (GPIO_MLXBF2 || GPIO_MLXBF3) && ACPI
-[SNIP..]
+Thank you,
+Sumit Gupta
 
->> +static struct platform_driver psci_reboot_mode_driver = {
->> +	.probe  = psci_reboot_mode_probe,
->> +	.driver = {
->> +		.name	= "psci-reboot-mode",
->> +	},
->> +};
->> +
-> 
-> You can drop the newline here.
+....
 
-Ack.
 
-thanks,
-Shivendra
