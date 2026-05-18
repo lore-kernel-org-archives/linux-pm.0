@@ -1,452 +1,144 @@
-Received: from CO1PR03CU002.outbound.protection.outlook.com (mail-westus2azon11010009.outbound.protection.outlook.com [52.101.46.9])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78F5D48C8A5;
-	Mon, 18 May 2026 14:21:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.46.9
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779114079; cv=fail; b=l4kU28dzYkPOehcp+tS/c0J4JT4k6miGb6Si5yIOy/i6oJVpSRnS+hWhihzkS0IQvbQgW/63UQu4+IRFWDp0AhDCFGpo9wAZU1mJJIYqVryQeze7Rm4RXfph2e/SLphnedepQb+XZe3kRDLkoDP96RWqpqupToosTs+GuDbOtzI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779114079; c=relaxed/simple;
-	bh=LtnWCo0oWV0NFrRna/Htg0s8PWTxbNMp6esDbBR8SyA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=KjAHkyU0izkj/G9CEMoW8IICa0NV8J02+p7grGf7n9uxgazJOjrVY3RlWU32mMC9GC33Sbk6rkYmMCHAxEnAGp1HarArOfl1R4zwi23BAr2pY3/UYp78iprtMHvgSGFZN+sdsQVmq7pUTXoV5aSGAWDt9Brz/ErZr3gzULb5/FI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=p4G9FleQ; arc=fail smtp.client-ip=52.101.46.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDD0044D6B2
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 14:36:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779114999; cv=none; b=m7NOE/F0mpKkrw359siiezJOGAYBirJHoyggK+LQaWRtXU325/mmBLIrCNRIjfDiEWF5/yFahzQZom9lM0A8F7aR/Raww+Ny8lRI8xCEr6UL8GsIn8C9CYW6oVpQI+SOr2li/m9CASXDtw+G86SSyG96Uc1yD+0ECG9L0hyNTgA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779114999; c=relaxed/simple;
+	bh=mrpjJ1xHCm6ZFYwwlJdMwjDopr2Sv4DPvW85D5MbBjc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=pPK0j1G1OUHMr+PwugjnYB/tCTu63KvaA82S9UIQ3IfHzOF1GpF8hMF1fl5ig2L6JCl8dxYsYSHpZk7Nk9cupNtwKGT85NCQHG/xGiX7pmmHhYmUVNEuZoDCsBPLgNrCQDZBgQsZafAfUvolhVFt8fe3Bc776muHAEXV1ZCyBQ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=JG96G61W; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=UKP/evWm; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="p4G9FleQ"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NSNY9sCQbUe8eHf/nXKl6NJZhSpopTivpB62SV0a8aLR8SBS7/4Q5jVVuSjTeNH99p4a2/JR1M9gkFPeEn2X1ADERHvT8SQgM+2aC1NaoBgRQ6qs9pTB97ubq/iY2gJFpAKSbKXtDARMe9WBb8mypJr6DCPDWYJyoam0Aa/a+az5R9vVLxBRAw1uWPQupuG+ZKhjJDW8NCteuC31v0CgkfloMtmbtXRxDzmPKpfSBWz4kTXah810zjjjJxR2ogDRPu1bb1SWvg/ZIHSW32csj3SQuvkUmeRJGGuwjYEXcAi5T6g1dQAJxhB1+Mf6xTZU5qnfzr8XmhsgTsDLkDf2gA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=h9Uy/0WPxKBuTsKCiSoAqjeEtppzmhEAyxUO67mUHzA=;
- b=l1XbvqcxdU8OwJmTshhM8J2xh+mDcOozYjMtHH/cXqQh4oT/BZJzr7GDXk1+LDvTYm+8uxYgIGKCVRxm0cUHkAJHucqyeKhwpy+ZJ5cCemxbOeciXlaZWoKy+QwAa/8Hp7YkQ3nT52ge5zdjdOwrLgK+gSCBfaBCj1E/OtI3VUR3FzwcJRNIqLe9OHXnDIJq1SpVbQCfU6h6qZmB2ufYQEexrWHkNXEk5Sm4w7iOGtAF/4ZDPz4tj9jiyynHCEbKVim7GSbjIfbooZ095NZ+Zugi+N2VwPuRBav0kJkhqFmSdcBDaK78aFzAfNFgDZfEk1xM6/NrtF54pLdBt9j7+w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=h9Uy/0WPxKBuTsKCiSoAqjeEtppzmhEAyxUO67mUHzA=;
- b=p4G9FleQ1s/eMuH5XhZ7Gx4ewDpLdq/fckUQKFQHqM1/5d9I5k9tW84J7+iTm0xDLhiI9GIgf8zPgBR9Tf+quc/MTl0H0IjpM7YOSDXtB95n80WDFm5NPWGNsA0Qv3TwQ8lYvTzisQbY5ulKsrshmkWqrpmEN6KdXUE0uSXVN3c=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DSVPR12MB999147.namprd12.prod.outlook.com (2603:10b6:8:38b::11)
- by CH3PR12MB9249.namprd12.prod.outlook.com (2603:10b6:610:1bc::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.25.23; Mon, 18 May
- 2026 14:21:08 +0000
-Received: from DSVPR12MB999147.namprd12.prod.outlook.com
- ([fe80::98c5:8206:6a4:c445]) by DSVPR12MB999147.namprd12.prod.outlook.com
- ([fe80::98c5:8206:6a4:c445%3]) with mapi id 15.20.9870.023; Mon, 18 May 2026
- 14:21:08 +0000
-Message-ID: <7d7a6ab6-b1ea-484c-a275-19acca50c483@amd.com>
-Date: Mon, 18 May 2026 09:21:05 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] cpufreq: CPPC: add autonomous mode boot parameter
- support
-Content-Language: en-US
-To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
- viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
- zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, corbet@lwn.net,
- skhan@linuxfoundation.org, rdunlap@infradead.org, linux-pm@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
- vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
- mochs@nvidia.com, bbasu@nvidia.com
-References: <20260515122624.1920637-1-sumitg@nvidia.com>
- <20260515122624.1920637-3-sumitg@nvidia.com>
- <bf521e4e-1aa5-49ce-bec5-52845f02214e@amd.com>
- <139d2f0e-72d9-4721-9d5a-d1d4a2a95fa1@nvidia.com>
- <72fd2fcc-6303-4980-beb7-e4b711ad6406@amd.com>
- <e1a546f2-6e7e-4236-97bb-f72bea0137f7@nvidia.com>
-From: Mario Limonciello <mario.limonciello@amd.com>
-In-Reply-To: <e1a546f2-6e7e-4236-97bb-f72bea0137f7@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DS7PR05CA0069.namprd05.prod.outlook.com
- (2603:10b6:8:57::21) To DSVPR12MB999147.namprd12.prod.outlook.com
- (2603:10b6:8:38b::11)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="JG96G61W";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="UKP/evWm"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64ICLVOT682839
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 14:36:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	mrpjJ1xHCm6ZFYwwlJdMwjDopr2Sv4DPvW85D5MbBjc=; b=JG96G61WhRcPHfvc
+	cPvSR6iIxeI+JicTQSeXwXnOKEmApx2Kb0APkcCCPRyjMahmGl4RPe1osyoWQ3KO
+	SQTnQvvmANJPVYGfWK7FzkwScHBoKbUhFSKT6Piqhk6d7lOLn914X+9RZsQ0VJQN
+	OGUzqvwEGjzFM42N7nkewCsvp7jAXUfnGW0yI2ogQrBtHmejPbkvkmK8LNt6fPz/
+	pnRSNkWntmhiw1OM8Fxuk2j56X9FMH7JhMpVIjM3Zqb1nNadhqM72JFZdvDWbCTj
+	P5lKsk0qG2elAwq75P5e1q81+zL9Q7WlF3tVLw/Opso1H9Dlg5hvoWMPpQEWioS2
+	jWrHJA==
+Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com [209.85.217.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e6tvcnskf-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 14:36:37 +0000 (GMT)
+Received: by mail-vs1-f69.google.com with SMTP id ada2fe7eead31-63126f42441so106116137.3
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 07:36:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779114996; x=1779719796; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=mrpjJ1xHCm6ZFYwwlJdMwjDopr2Sv4DPvW85D5MbBjc=;
+        b=UKP/evWmZ8vB+fFXLFqhytIAe5eLyDRtB8SoQ9OhTWErOzfHPwlwlDu+V02pMgDTDI
+         YMUjE+rq+uNVicDXGxHurjopFrCxIR/CRAPilyH4Ua2HE2PvktX/LP4pBAnA4go7x7mO
+         X5AIpbHXBa9m9J2UtD5lbV9p2Wz7C0Li7RY2XcaLerAEmEu20F6Ulk/xVXmGW3OndDlO
+         OCFj2G+HBz4E/CgcIaN0bAkF27KWSLJsfTgUWJMKJcdnvivRbNoLG2owJfPlB5Lox3yG
+         Z4pWp/s0ZkKA/iU2Bv1lkmNYUuq3btXOFssaU5BtZ9nAn6wDc/3qrinRoCi8mmxGJJJu
+         tBHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779114996; x=1779719796;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=mrpjJ1xHCm6ZFYwwlJdMwjDopr2Sv4DPvW85D5MbBjc=;
+        b=eyB723bCn4xW1m2fMX/KSlTwKEwKIlv405UwRhnk2ySCQpfnQtS9mODJItP9T2sYLr
+         C/SF8Zk+mXuQPIY+5SIFCgm5Lk3DYdfcodClA2aaRfkLhrQnHouuMYyUhiOjzmk5Ol9R
+         SnQm+1N1Swb5iRi5e7blxKQqNBoZJQ2BSXcix6aeM7UEkxC5Zol78YtRW7DkeJO1cy9n
+         7dfumeER9sItCPaLJrBA/JNget61t2oldgjuqlDIpZtLyyAgFUu1xlVttYP1Km5lQkm9
+         Lb14ipQb+gLOFsEvZdBL2CDLZWT3ndDA+1d8kcdQSJiCQHUW4sHPHL5C5IsTC/p27Zyl
+         PZ5Q==
+X-Forwarded-Encrypted: i=1; AFNElJ9qZVggPxmN7DwiezF5P33eEBEBM5zks+atyYXMS+jyVv+7IlIeNeSHg1mryNjiiJw7LtRigYCV+Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyYBz8PtGEDrEb18qoKYVsoViWrx9E3i6LsNI2ySXM7Le3Yopyh
+	P0rEOvQ72GH+I8jY9g7RY/D+taKM9jJJ6c2mVCRM+2sr2ZcXkWkc3jjKBxO3kgG3Og2l/sXXWvW
+	jGOVwpcHFTRPKIh0yuydqKmwMZam9VxSm4ZH2udAiw0BFoNeyeiXsIC6ojCMTtg==
+X-Gm-Gg: Acq92OEIvte165jm5BqAoNxQVh88mh0NCQRZrq2S4PPsyAUIJiLPLb7HnC+qqRYsjfP
+	Q9o5chvCBew6sgW6WDiIMgwow8/4VCDcLJgAniw39dbEKdXmseMFu7m3fpUTCmAyAD5J4OtLPPv
+	3a9nIZL+sbXRdxZHktGbGnM+b5PEua87HV79Mk+LFt6W5x4CcgdrTMgH8VShKBS6bXuR0x/fEED
+	EAnDFjJifPAdWjXadAtWVYPIoX03VhEZB24F6RIfSj/9DoJMQJop2lyPLqKbGDBfVIHK/r+zslu
+	eJSkiOO12rN1kmA+OTJ5u/6sGipaE+IE7nraj5Q/MFDhn+RjnHbTAOUT5BqTGq4bQWzfuW0TkWc
+	7MjsXCIjybCzpqXZ3G8+VA+N8If735Azvsp+1hZcYcGiw5YVaEKLaot3ZncUXzk/Ui+JBJ1kLkM
+	fTO9I=
+X-Received: by 2002:a05:6102:951:b0:636:c122:8583 with SMTP id ada2fe7eead31-63a40cb117amr3123964137.7.1779114996264;
+        Mon, 18 May 2026 07:36:36 -0700 (PDT)
+X-Received: by 2002:a05:6102:951:b0:636:c122:8583 with SMTP id ada2fe7eead31-63a40cb117amr3123956137.7.1779114995789;
+        Mon, 18 May 2026 07:36:35 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bd4f4eb6320sm571591966b.59.2026.05.18.07.36.33
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 18 May 2026 07:36:34 -0700 (PDT)
+Message-ID: <56a54a34-1040-44ae-92e2-ce65a3d3acb5@oss.qualcomm.com>
+Date: Mon, 18 May 2026 16:36:32 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DSVPR12MB999147:EE_|CH3PR12MB9249:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6cfed808-4e51-4544-4bf4-08deb4e8b3ee
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|18002099003|56012099003|22082099003|3023799003|921020|11063799003|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	3CvCQG7+SMTnP+u6qht1nZgWrOGoBBFT4ZW70//1tM4iDGDBQCE5PnYnpFWI1TCd8Cqe2KpG2XalC52EwT/zdUPYNjjNVEGGDKl90r2K04Lf2DhMaLaBElUAtaw3Si+o21eY191e/KH5nbzB+WWwIbusvqAm0q0/yynQmdVf+CUBln45roYxQ2q8p88hl7u9YlqgMzxcUy1hT1iPMOTkMUavn4Tgspn5Os45m3CYNhYIXpSR0aXl4GXE1rqnZXONgHXRnH+4RdwAfg+1ncwOmaI0gAiqDq62gZv6AHTpxixIvkw7mfDClpIUkmOQBe0YE1txFfi/zf7fXrbtrZy3g0Q/qTSWbimx+3egpjZVtoMtoJdxnwXIIUOTEARz8zVkhJOpzt90ZJNbV1PyG+ZduvwscMy3ARlzPTnW926keZOSuaEakhc6RrKjrJ0kNx32WTX4k2Bu4zmalnWBq1Dpc+W/pDxJq9+fQmsRSTjrVOB91kqvTruh7w4p0DD4E/2pU6M853UIGQry9jVzDhsjiLwZRlTP2BzRyQEIw/t0OxfS2AZNYjV6cPFr/8qt0UA978HKsLhRI+IleZW1TjkwkFtvt8KuvPR8AJKTCpVMHGxfqUiyO6E/PH0/6XLI97mix7jmV1TCFa5ycf5dh8fcR3duGu23n4EsyjgKq2JOSCwSGUwMzLp1cYVOWLa5MEhD
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DSVPR12MB999147.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(18002099003)(56012099003)(22082099003)(3023799003)(921020)(11063799003)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?US9UTFliNWtObTF2RGN2aGs5cHRpR3plN0NPemV3M3hseHZhR2lxV2k1aWZi?=
- =?utf-8?B?b0hnc0pPR1E4U0NDYmVWWFpId3o3eUJMTWY2ZFlFdU50VFgyemVrbFRpU282?=
- =?utf-8?B?UEdyZVBycmFkancyQUI0VHVKZktzVUs4ZXdZdWZPaE9NVFNHN3gxUTdhVVUw?=
- =?utf-8?B?bXExUGJJYm9jTEttYnVMYSt1eFJEZDB3UnhRbnJyMmNQNWRLWEVYWUtzLzNR?=
- =?utf-8?B?S0lmc2M5Z29tZkgwTkRBdFpVQ2JheCtzNWJOcnlJcTA5eE10QnBqWjVBWFRK?=
- =?utf-8?B?R3BmUXRwS2hyMGRPSVpwbDJlVTRJY1NuOWk3S3ZYUG5JbXNZWnpGUTVkcWFQ?=
- =?utf-8?B?NHRLUmk3bmJxcHRjTHNDN3N1UzZSZlVXYTEzUXQrZzZqK01sYVAzelR3VWQz?=
- =?utf-8?B?Q2VWTVJIQkZRdHlXV2JJamF6cXMwNExZNWpXSWV4dWQ0MysyUDRUZVpGTTdJ?=
- =?utf-8?B?emRPbGhVd01UaHJaNUJaSDc0dWN0SytJZzdzKzNkVkdnazE4eklnanN6cHJW?=
- =?utf-8?B?Nk9acXJLbnNrekU1ZFFySGZvcmFFUDFOYVJHaWFJN25mQ2xIVnlYSmdvdFJk?=
- =?utf-8?B?MHFOWGkrczBtUjRCVzhxYzVnQy9GNVlKd0s5YXZTZUhOK2oyU2JvaXlSQlp5?=
- =?utf-8?B?TlVyL053d1l4Q0ZkZjRpbERhcVVsQmtsQWY5eHZyTGE2VUxiQjNMUGUvQU5L?=
- =?utf-8?B?UnduclRHVGtnSXI2U3hiT1c5QWhzNVliemF3K0lSdlRrSHo3ZytEOVdlM3U2?=
- =?utf-8?B?OC9qQVdaVUV3ZmlqSU42UW1yOGFrMW9LUjdMbldQTFVSWUxLMEYydzRScXlr?=
- =?utf-8?B?VVJWZ3NnbFdqQU0wR2d1WXRlYTVUK1BsYTI2VEsxdWJ6VCs0MkYzLzFvOHZ6?=
- =?utf-8?B?ak9jWkJtWHFTQ0ZUVzF5aXZPMWRMbGFQR3pxUll5cDZuSVB5a2xTOThjMzZ4?=
- =?utf-8?B?TmJEQ3hVTHNFRTIwSERkS1BsQXUrV2dNL0hScGNJSjlJQXhRQlJqZU5waEdk?=
- =?utf-8?B?eDlXYkVzcmk4dzRnVE83dHVSa0QwWFhIdmtOMFVEdVRJcDBvOXBPTHBVZ0Zq?=
- =?utf-8?B?VTJMOXhUVDhHOWM5bjFBRllqZTdyYjVhYVppYkxzM1pHQWdtSEhHY0JUbEZR?=
- =?utf-8?B?OHBrVG4xRU9KUGJwVjNrWVhyTGFDWmZETlpBcUVsR1gxc2V6SjRxUzFjU0Zz?=
- =?utf-8?B?TFdQSE1tZUUxZlJPRU84QVcvZktpbE1oOHRWSi9OTzdWZHBXSUk0Undld0xS?=
- =?utf-8?B?ODlHQ05zalF1cTBic25qdEI4QXZvUGVwQVIrS0pZZDR6WUQyVmt4aGh5dWZN?=
- =?utf-8?B?TmMxY3RRMkgwYmF1QW9NQk40alVJYjVRUjFIVUFnaC9WWkVLZXdNdU9Mc2xO?=
- =?utf-8?B?STB0bmwwVS8ycWZEeUxHU0Jtby9wVjhFRXAyd0xlT3U4azZFSVdteHRNVUF0?=
- =?utf-8?B?TU9ORVJCeGpiRzkvNjhQeGRJZ2QwdXpkWVJDYk53OXlsdW1udTc0M2NvWGxZ?=
- =?utf-8?B?UTFqM1oyTEdxQy9pTjJHVHpodWs3TndwZ0hMei9VeU0wdDVXOFV4OGxaWlhm?=
- =?utf-8?B?QjZaWnA0NGQzZEdnR0xkZ2lhNTlKQi94amhzZnZJWk9pdTF5aUlGVCtMaTZO?=
- =?utf-8?B?NWNuL003RGR4OEE2ZWJhTVg2RVMwRDJzTFpPUDJSVjNDQkM3aEt0U3hiVjBF?=
- =?utf-8?B?RTVacWt5YWFMTXAyYlpxMkRwbEZ1VDg0V0RtMXlnZmdnT3hkYWVqSVZleTZx?=
- =?utf-8?B?Z1JxT3RaTDByYk9HQmRJUDdJOXdRNnovOVRKM3oyWkw5Tmc4UVZlZ0IwR2Rs?=
- =?utf-8?B?c0hFMEF0elBrUXBxN2tmRE9zZFVKeUdNclNFSjZPakVkZWtSU1FxTjRmb2JW?=
- =?utf-8?B?dzJraWRxWWpPMFJhRjBrVE5yaHlWM0ZsTmFRaGxET1dWWkZnVWMvWWpJTUpL?=
- =?utf-8?B?blFBdUh3OXhnTnNDSVNHcHVpNHV3M2Q4QXc5dFZ0N2pwcGpkZ283WkRFVWl0?=
- =?utf-8?B?cVVhcVdjblFOdjl2UERFOUk1WGVCdnFyTWFJS2dwUXMxMlFDZzNsM0NoNlJr?=
- =?utf-8?B?RVVKSFNGVm9rTlZnSDd0M3dtK0Jvekg1MnpvU3VXQ2tPTzF1c1NuUTlTOXo1?=
- =?utf-8?B?ckRMdEZBbGRqRG9XUE5ZWm5PaHJlZEdLWFBnMHl0NXp0Vy9LNWIvN3JTSW0x?=
- =?utf-8?B?VGoxaEhEbVBBYUt1Mkc1K3NZZTB1ZGt6UmpNcVlXSE5IcmhXaWdjbzZ4TlRX?=
- =?utf-8?B?Z3FGSnFjdlNuNjRRLzNFMXZveUY4WHpGM3hFbTlXcGx4MHp1ZmdEUTIyT01o?=
- =?utf-8?Q?xusM/fJt+9zf8fmwZq?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6cfed808-4e51-4544-4bf4-08deb4e8b3ee
-X-MS-Exchange-CrossTenant-AuthSource: DSVPR12MB999147.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 14:21:07.8754
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7A9EPn6Rzaf3Ct2M0mmoL3VSGNOCDwUZk55/LhxA6HlFeqZaLqQFhD1/qNZsONUeDz1C77F7ypxcm8BQY2J5lw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB9249
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
+ support
+To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-ORIG-GUID: jcpHehUt2gfM0L2jw6CA-0wapv7eJ320
+X-Authority-Analysis: v=2.4 cv=UIDt2ify c=1 sm=1 tr=0 ts=6a0b23f5 cx=c_pps
+ a=5HAIKLe1ejAbszaTRHs9Ug==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22
+ a=kDyHj_zsKyADgF95HkcA:9 a=QEXdDO2ut3YA:10 a=gYDTvv6II1OnSo0itH1n:22
+X-Proofpoint-GUID: jcpHehUt2gfM0L2jw6CA-0wapv7eJ320
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDE0MiBTYWx0ZWRfX2FBfYW4v+D2F
+ YpNTzDm1WW1Vt69DEeUxeeVjOlbd4fT4sRodKcx9GYIuIMtp/zijnYXTlaVyedvTeL0hFJ8Ti66
+ htiYS2/9CSwo8AdUWC0L5q2ddUFnzDFdgluHEkYN42cDt0KKFBzEYdc4d9I3hKyFp6Gnvoocog3
+ hIu3cdK0whFOrGP8aTlezEnEthShVZH3+pqH64uwuphzHJQaqfYSAZ8b0Ut73cypGcHET5vHSri
+ 3zzKtgo70P6LS/GJJIFVNh9k6OXuxkOSFPKg6XGro4nipxtIN6mMOyIDiou18AVGlcpJNjzQMbM
+ PwozRVbB6oqGUh4Ki5b4tB4w5PpDyHFkNRc6BnjQdg6szcCTeIf32txo0p1xKCjP5o07mK1uO0j
+ f2ixKQKhFSPb6VBGkXowZ3OMNa812ToHvG1DFl6nBDwKDGgrlMiEG2BKYi0VSuc62TSjr60YcYY
+ Qxsl3umT1H/bkyvaG3w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-18_03,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 impostorscore=0 phishscore=0 priorityscore=1501
+ bulkscore=0 suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605180142
 
+On 5/18/26 3:49 PM, Rakesh Kota wrote:
+> On batteryless boards powered by 12V DC adapters, registering the
+> power supply as BATTERY causes userspace to incorrectly trigger
+> battery power-saving sequences.
 
+Does battman really offer no way of differentiating whether a battery
+is *actually* present in such cases?
 
-On 5/18/26 09:15, Sumit Gupta wrote:
-> 
-> On 18/05/26 19:20, Mario Limonciello wrote:
->> External email: Use caution opening links or attachments
->>
->>
->> On 5/18/26 08:44, Sumit Gupta wrote:
->>> Hi Mario,
->>>
->>>
->>> On 16/05/26 02:43, Mario Limonciello wrote:
->>>> External email: Use caution opening links or attachments
->>>>
->>>>
->>>> On 5/15/26 07:26, Sumit Gupta wrote:
->>>>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
->>>>> CPPC autonomous performance selection on all CPUs at system startup.
->>>>> When autonomous mode is enabled, the hardware automatically adjusts
->>>>> CPU performance based on workload demands using Energy Performance
->>>>> Preference (EPP) hints.
->>>>>
->>>>> When the parameter is set:
->>>>> - Configure all CPUs for autonomous operation on first init
->>>>> - Use HW min/max_perf when available; otherwise initialize from caps
->>>>> - Initialize desired_perf to max_perf as a starting hint
->>>>> - Hardware controls frequency instead of the OS governor
->>>>> - EPP behavior depends on parameter value:
->>>>>    - performance (or 1): override EPP to performance preference (0x0)
->>>>>    - default_epp (or 2): preserve EPP value programmed by BIOS/ 
->>>>> firmware
->>>>>
->>>>> The boot parameter is applied only during first policy initialization.
->>>>> Skip applying it on CPU hotplug to preserve runtime sysfs 
->>>>> configuration.
->>>>>
->>>>> This patch depends on patch series [1] ("cpufreq: Set policy->min and
->>>>> max as real QoS constraints") so that the policy->min/max set in
->>>>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
->>>>> during init.
->>>>>
->>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->>>>> ---
->>>>> [1] https://lore.kernel.org/lkml/20260511135538.522653-1-
->>>>> pierre.gondois@arm.com/
->>>>> ---
->>>>>   .../admin-guide/kernel-parameters.txt         |  16 +++
->>>>>   drivers/cpufreq/cppc_cpufreq.c                | 122 +++++++++++++ 
->>>>> ++++-
->>>>>   2 files changed, 133 insertions(+), 5 deletions(-)
->>>>>
->>>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/
->>>>> Documentation/admin-guide/kernel-parameters.txt
->>>>> index 0eb64aab3685..7e4b3a8fd76f 100644
->>>>> --- a/Documentation/admin-guide/kernel-parameters.txt
->>>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
->>>>> @@ -1048,6 +1048,22 @@ Kernel parameters
->>>>>                       policy to use. This governor must be registered
->>>>> in the
->>>>>                       kernel before the cpufreq driver probes.
->>>>>
->>>>> +     cppc_cpufreq.auto_sel_mode=
->>>>> +                     [CPU_FREQ] Enable ACPI CPPC autonomous 
->>>>> performance
->>>>> +                     selection. When enabled, hardware automatically
->>>>> adjusts
->>>>> +                     CPU frequency on all CPUs based on workload
->>>>> demands.
->>>>> +                     In Autonomous mode, Energy Performance
->>>>> Preference (EPP)
->>>>> +                     hints guide hardware toward performance (0x0)
->>>>> or energy
->>>>> +                     efficiency (0xff).
->>>>> +                     Requires ACPI CPPC autonomous selection register
->>>>> +                     support.
->>>>> +                     Accepts:
->>>>> +                       performance, 1: enable auto_sel + set EPP to
->>>>> +                                       performance (0x0)
->>>>> +                       default_epp, 2: enable auto_sel, preserve EPP
->>>>> value
->>>>> +                                       programmed by BIOS/firmware
->>>>> +                     Unset: cpufreq governors are used (auto_sel
->>>>> disabled).
->>>>
->>>> Rather than unset doing nothing, have you considered having it take a
->>>> midpoint like 128?  That's what we do in amd-pstate (default to
->>>> balance_performance).  I think it turns into a reasonable balance.
->>>
->>> Thanks for the suggestion.
->>> I can add balance_performance that enables auto_sel with EPP=128 in v4.
->>>
->>> On changing the driver default (no param behavior) to auto enable
->>> balance_performance, it would be good to keep the current behavior for
->>> now since cppc_cpufreq is generic across ARM64/RISC-V platforms where
->>> EPP and Autonomous Selection registers are optional.
->>> A default change would affect existing users relying on governors.
->>>
->>> Thank you,
->>> Sumit Gupta
->>
->> But couldn't you make the "no module parameter set" follow the behavior
->> to only set the registers if they're available?
->>
->> So the systems that support it start using it, the ones that don't it's
->> a NOP.
->>
-> 
-> Would it work to add balance_performance as a new mode in v4,
-> and discuss changing the default separately as a follow-up?
-> 
+What boards are affected?
 
-Sure.
-
-> Runtime detection helps for unsupported platforms. But platforms which
-> support the registers use OS governors today, and silently switching
-> them to autonomous mode on a kernel update is a behavior change for
-> existing users. They would also have no way to boot into sw governor.
-> 
-
-But hopefully it should be better battery life/responsiveness for those 
-scenarios too, right?
-
-> 
-> 
->>>
->>>
->>>>
->>>>> +
->>>>>       cpu_init_udelay=N
->>>>>                       [X86,EARLY] Delay for N microsec between assert
->>>>> and de-assert
->>>>>                       of APIC INIT to start processors. This delay
->>>>> occurs
->>>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/
->>>>> cppc_cpufreq.c
->>>>> index 6b54427b52e1..5f4d735e7c7d 100644
->>>>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>>>> @@ -28,6 +28,43 @@
->>>>>
->>>>>   static struct cpufreq_driver cppc_cpufreq_driver;
->>>>>
->>>>> +/* Autonomous Selection boot parameter modes */
->>>>> +enum {
->>>>> +     AUTO_SEL_PERFORMANCE = 1,
->>>>> +     AUTO_SEL_DEFAULT_EPP = 2,
->>>>> +};
->>>>> +
->>>>> +static int auto_sel_mode;
->>>>> +
->>>>> +static int auto_sel_mode_set(const char *val, const struct
->>>>> kernel_param *kp)
->>>>> +{
->>>>> +     if (sysfs_streq(val, "performance") || sysfs_streq(val, "1"))
->>>>> +             *(int *)kp->arg = AUTO_SEL_PERFORMANCE;
->>>>> +     else if (sysfs_streq(val, "default_epp") || sysfs_streq(val, 
->>>>> "2"))
->>>>> +             *(int *)kp->arg = AUTO_SEL_DEFAULT_EPP;
->>>>> +     else
->>>>> +             return -EINVAL;
->>>>> +
->>>>> +     return 0;
->>>>> +}
->>>>> +
->>>>> +static int auto_sel_mode_get(char *buffer, const struct kernel_param
->>>>> *kp)
->>>>> +{
->>>>> +     switch (*(int *)kp->arg) {
->>>>> +     case AUTO_SEL_PERFORMANCE:
->>>>> +             return sysfs_emit(buffer, "performance\n");
->>>>> +     case AUTO_SEL_DEFAULT_EPP:
->>>>> +             return sysfs_emit(buffer, "default_epp\n");
->>>>> +     default:
->>>>> +             return sysfs_emit(buffer, "disabled\n");
->>>>> +     }
->>>>> +}
->>>>> +
->>>>> +static const struct kernel_param_ops auto_sel_mode_ops = {
->>>>> +     .set = auto_sel_mode_set,
->>>>> +     .get = auto_sel_mode_get,
->>>>> +};
->>>>> +
->>>>>   #ifdef CONFIG_ACPI_CPPC_CPUFREQ_FIE
->>>>>   static enum {
->>>>>       FIE_UNSET = -1,
->>>>> @@ -715,11 +752,75 @@ static int cppc_cpufreq_cpu_init(struct
->>>>> cpufreq_policy *policy)
->>>>>       policy->cur = cppc_perf_to_khz(caps, caps->highest_perf);
->>>>>       cpu_data->perf_ctrls.desired_perf = caps->highest_perf;
->>>>>
->>>>> -     ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>>>> -     if (ret) {
->>>>> -             pr_debug("Err setting perf value:%d on CPU:%d. ret: 
->>>>> %d\n",
->>>>> -                      caps->highest_perf, cpu, ret);
->>>>> -             goto out;
->>>>> +     /*
->>>>> +      * Enable autonomous mode on first init if boot param is set.
->>>>> +      * Check last_governor to detect first init and skip if auto_sel
->>>>> +      * is already enabled.
->>>>> +      */
->>>>> +     if (auto_sel_mode && policy->last_governor[0] == '\0' &&
->>>>> +         !cpu_data->perf_ctrls.auto_sel) {
->>>>> +             /* Init min/max_perf from caps if not already set by
->>>>> HW. */
->>>>> +             if (!cpu_data->perf_ctrls.min_perf)
->>>>> +                     cpu_data->perf_ctrls.min_perf = caps-
->>>>> >lowest_nonlinear_perf;
->>>>> +             if (!cpu_data->perf_ctrls.max_perf)
->>>>> +                     cpu_data->perf_ctrls.max_perf = policy-
->>>>> >boost_enabled ?
->>>>> +                             caps->highest_perf : caps->nominal_perf;
->>>>> +
->>>>> +             /*
->>>>> +              * In autonomous mode desired_perf is only a hint; 
->>>>> EPP and
->>>>> +              * the platform drive actual selection within [min, 
->>>>> max].
->>>>> +              * Initialize it to max_perf so HW starts at the upper
->>>>> bound.
->>>>> +              */
->>>>> +             cpu_data->perf_ctrls.desired_perf = cpu_data-
->>>>> >perf_ctrls.max_perf;
->>>>> +
->>>>> +             policy->cur = cppc_perf_to_khz(caps,
->>>>> + cpu_data->perf_ctrls.desired_perf);
->>>>> +
->>>>> +             /*
->>>>> +              * Override EPP only in 'performance' mode;
->>>>> 'default_epp' mode
->>>>> +              * preserves the BIOS/firmware programmed EPP value.
->>>>> +              * EPP is optional - some platforms may not support it.
->>>>> +              */
->>>>> +             if (auto_sel_mode == AUTO_SEL_PERFORMANCE) {
->>>>> +                     ret = cppc_set_epp(cpu,
->>>>> CPPC_EPP_PERFORMANCE_PREF);
->>>>> +                     if (ret && ret != -EOPNOTSUPP)
->>>>> +                             pr_warn("Failed to set EPP for CPU%d
->>>>> (%d)\n", cpu, ret);
->>>>> +                     else if (!ret)
->>>>> + cpu_data->perf_ctrls.energy_perf = CPPC_EPP_PERFORMANCE_PREF;
->>>>> +             }
->>>>> +
->>>>> +             /* Program min/max/desired into CPPC regs (non-fatal on
->>>>> failure). */
->>>>> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>>>> +             if (ret)
->>>>> +                     pr_warn("set_perf failed CPU%d (%d); using HW
->>>>> values\n",
->>>>> +                             cpu, ret);
->>>>> +
->>>>> +             ret = cppc_set_auto_sel(cpu, true);
->>>>> +             if (ret && ret != -EOPNOTSUPP)
->>>>> +                     pr_warn("auto_sel CPU%d failed (%d); using OS
->>>>> mode\n",
->>>>> +                             cpu, ret);
->>>>> +             else if (!ret)
->>>>> +                     cpu_data->perf_ctrls.auto_sel = true;
->>>>> +     }
->>>>> +
->>>>> +     if (cpu_data->perf_ctrls.auto_sel) {
->>>>> +             /* Sync policy limits from HW when autonomous mode is
->>>>> active */
->>>>> +             policy->min = cppc_perf_to_khz(caps,
->>>>> + cpu_data->perf_ctrls.min_perf ?:
->>>>> + caps->lowest_nonlinear_perf);
->>>>> +             policy->max = cppc_perf_to_khz(caps,
->>>>> + cpu_data->perf_ctrls.max_perf ?:
->>>>> + (policy->boost_enabled ?
->>>>> + caps->highest_perf :
->>>>> + caps->nominal_perf));
->>>>> +     } else {
->>>>> +             /* Normal mode: governors control frequency */
->>>>> +             ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
->>>>> +             if (ret) {
->>>>> +                     pr_debug("Err setting perf value:%d on CPU:%d.
->>>>> ret:%d\n",
->>>>> +                              caps->highest_perf, cpu, ret);
->>>>> +                     goto out;
->>>>> +             }
->>>>>       }
->>>>>
->>>>>       cppc_cpufreq_cpu_fie_init(policy);
->>>>> @@ -1079,10 +1180,21 @@ static int __init cppc_cpufreq_init(void)
->>>>>
->>>>>   static void __exit cppc_cpufreq_exit(void)
->>>>>   {
->>>>> +     unsigned int cpu;
->>>>> +
->>>>> +     for_each_present_cpu(cpu)
->>>>> +             cppc_set_auto_sel(cpu, false);
->>>>> +
->>>>>       cpufreq_unregister_driver(&cppc_cpufreq_driver);
->>>>>       cppc_freq_invariance_exit();
->>>>>   }
->>>>>
->>>>> +module_param_cb(auto_sel_mode, &auto_sel_mode_ops, &auto_sel_mode,
->>>>> 0444);
->>>>> +MODULE_PARM_DESC(auto_sel_mode,
->>>>> +              "Enable CPPC autonomous performance selection at 
->>>>> boot: "
->>>>> +              "performance or 1 (EPP=performance), "
->>>>> +              "default_epp or 2 (preserve BIOS/firmware EPP)");
->>>>> +
->>>>>   module_exit(cppc_cpufreq_exit);
->>>>>   MODULE_AUTHOR("Ashwin Chaugule");
->>>>>   MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+
->>>>> spec");
->>>>
->>
-
+Konrad
