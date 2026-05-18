@@ -1,358 +1,134 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE6F23E556E
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 09:59:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4CF5431AA87;
+	Mon, 18 May 2026 10:04:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779098391; cv=none; b=qW86CPU7HXghuWQxx9NtGlxcCoCElA8C0QFTeyJpZBPu9FS0qeOn5SA3Ieu/GsN9+sHXD2Bis/8OEj2v98m69TRdBA9jOvKKaRvJ0k/CAQmFzfrIw87kxTU4QRsW8KUNizJYgREtpYCHW9RfnY1gTTBenDMKeo4WaeWF0pQZqXA=
+	t=1779098697; cv=none; b=evlnaiyOi+bxDW4Ad1/NHE0ETaafcmu9aLH62lQOY7kZn6TFOh6Rk7OtazSOJuL8SZvH5p6ILMV3TvJLs4t0lDkBxwhdAtGBgMpBGQzTNzB+fdHJMoHqQUS+HwsUsaU1TEIkED0Ni1dHoC2RduziEcpKNoLD1hJyn3KWDGSLLX4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779098391; c=relaxed/simple;
-	bh=ax773twRtLZJ0kJ5Lx9vuD3uvjMxRvnjoBBROl6thDk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EJCHh7bAuq9bOqZd56xZM0vIcsa+aGiNZ/s4KlTzfOt97LdhPv8fnw/k6eWQRH6S5DpWtWNA29qVaE8JQBwTNXjnMFaC9mABEPfW3AIwU7tnCY443dOgKPdkd7zXNNJtgstDrQ2k04uWS/JMOZOEqI9mlRQ8/jpYXMjL+uc3uWY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SBj0a/KF; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1779098697; c=relaxed/simple;
+	bh=3SGirsIQ39+kMKyqY/YimrKHEAqax2zBIq2Eju3EyJs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=qilScxtpJ4arCo/c20GScRSOkSPfD0PJv3VSoiRVIhLlgLWZ/D+VjC+ilNw5uIl2+/Rjwq38ygMA7Z545lHv/4r0KJBxrNGGcHt3XuhXWr1EL0eTrmEArFZVSyAIhNpUDbdoSb7F2He7dClCgF3plP3ut/a3FPlUwAta11LUPf0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=AZyI8ktY; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SBj0a/KF"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-48d146705b4so22236565e9.3
-        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 02:59:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779098385; x=1779703185; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gppl+gtYL3otiuD11521yssyTqiCyHjPQDRoRmP2Zfc=;
-        b=SBj0a/KFcUOBJujGo3nHtKiu7UA6ZVhFLXchJSeM5xLr28tAkpMQE9cdPaXXHiq7n/
-         AE6oyvQaGjjRH0oErDGHfhMak4I+NWfECYkbr1O984jBlztkIgQKMU1izdFeXhX53AVp
-         anxS+5e0f+YRuTpra2+NOHWMf/YQENm6j1lvxGRohNEGEe3T4D7p0v2zmd4InLDva6Ea
-         WNt44kJlB0INxLrdNNXqqM5U6y1ANW5/tblQxepekk3NLndow6Tlxn8fXJHoQVTnM7Eq
-         /GI0lFrPVXQQ4n7QLPARUXLYdG2RKKmVr1L1xRIZfzBYZ9L0Nwu3Z+MP2tcvw6Asw1k6
-         21xw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779098385; x=1779703185;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=gppl+gtYL3otiuD11521yssyTqiCyHjPQDRoRmP2Zfc=;
-        b=mKElktDvSp12zhB/YHBLv62JkvYhKIRR0RRMjLcd+R18PyFW19rqTdqKf6TORTLPWC
-         iWysG8b112Qw1KWSyFAXShIvILxzLvBjwaCMmJzhkhCh8m3WqsYq4ILWtwvq/QI22TwH
-         IznRyuTOYDmB/j5F995YaGQgX1NFkTVG4ATa54ZFF2j4Ymwj+2j7nbRRo6XEK/uaOYbR
-         BDJAQR6LwF5IEI0AETFKqjpNNixiwsmmts79sT94xtCECyOTO6pn/slhRv4j3xTcPYxg
-         2LjLBMy+x0Uz9CCalK+yg6eYVJ0xGRNcIt+AUjlFGT2pdnY7XxNeeHPlFbgoSL/rmBAY
-         Sh+w==
-X-Forwarded-Encrypted: i=1; AFNElJ+y5atlarxZ6UXlNOAmpUikkTMkv58xLQOlMs1i/VPLiEP/7Pxc7PQv0PUUMR/5yQYJggtQoxuskQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxhCvt4IySQYeG7Dtbpjk45VS65Cg1tbDuZAZAZUtLcHSSQ0+2K
-	FSRyKG3vNdneJhCwH5LvuIjkNAbPU7IKQcfp3twk68M1QUyGwGgYz7D2
-X-Gm-Gg: Acq92OFbOoqywAHOy0AL4BV9auTdGXDGag64rRMw2DBMUrJ0JcD+6v9nppaj6kPhy1p
-	ybWJ8S1H93Qt86D6PYb3rowXuYfd6P9BEyqg2GCdnIk9S3gecQ/Lo8DJF7mfZQq8kj5E6eFezJJ
-	M95dTZcaWcROqr50DZtyJRj8jwJb510PncTUMJQu5BVdUm1bw4BC0QFrygCGESzsNKRHEUIYasI
-	gRFTNl7ewDCL7UqTGTbj+5/b7AcvzNovuVFeCELVuFCSqaQWSgKTMQIueZ1xuPIZsJOML8m51gv
-	rYQmnmPNm6mwGEipioCyAts13kMgK1G/ix+GMkkvcUggA1cFMzy221UIzs1gB8IUhxmad1Gy/e2
-	yv5OmOWHvQBmfx1eBUIaISlA32m4Fwp9S6RiLSi2dPch+OcjfxMadPRFgGAt7v+YJBigOa9ZhWI
-	MHFd1ocu3WnFMSNnupy4/gc5o=
-X-Received: by 2002:a05:600c:4a1a:b0:48a:592c:e655 with SMTP id 5b1f17b1804b1-48fe6325f25mr129726485e9.17.1779098385065;
-        Mon, 18 May 2026 02:59:45 -0700 (PDT)
-Received: from xeon ([188.163.112.61])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48febe7dd22sm102995005e9.7.2026.05.18.02.59.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 May 2026 02:59:44 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Sebastian Reichel <sre@kernel.org>,
-	Svyatoslav Ryhel <clamor95@gmail.com>,
-	Ion Agorria <ion@agorria.com>,
-	=?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-input@vger.kernel.org,
-	linux-leds@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: [PATCH v7 7/7] power: supply: Add charger driver for Asus Transformers
-Date: Mon, 18 May 2026 12:59:07 +0300
-Message-ID: <20260518095907.36158-8-clamor95@gmail.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260518095907.36158-1-clamor95@gmail.com>
-References: <20260518095907.36158-1-clamor95@gmail.com>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="AZyI8ktY"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 48F844617;
+	Mon, 18 May 2026 03:04:49 -0700 (PDT)
+Received: from [10.1.36.66] (e127648.arm.com [10.1.36.66])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AB9CB3F85F;
+	Mon, 18 May 2026 03:04:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1779098694; bh=3SGirsIQ39+kMKyqY/YimrKHEAqax2zBIq2Eju3EyJs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=AZyI8ktYKPVnwUVNlvYnn4fyOfEHC9aKsQPLH25Bf1nBPGMi7U3JlRweInCLwORDn
+	 hlqawdcL94sPHLIDyXc1xEGGaC+M1WKMCGdvLazXPaSMm/Kgs7u97RHbptTsxffxYe
+	 UnJvcdneL2ur8a/ThJujjgXxUe+oHn0G2FAj/UXg=
+Message-ID: <97ac52d6-98b4-4b15-b50b-f606b53a2288@arm.com>
+Date: Mon, 18 May 2026 11:04:48 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] sched/fair: Revert boost in cpu_util()
+To: =?UTF-8?B?aG9uZ3lhbi54aWEo5aSP5byY5b2mKQ==?= <hongyan.xia@transsion.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
+ K Prateek Nayak <kprateek.nayak@amd.com>
+Cc: =?UTF-8?B?aHVwdSjog6Hnkp4p?= <hupu@transsion.com>,
+ =?UTF-8?B?amlhemkubGko5p2O55Sy5a2QKQ==?= <jiazi.li@transsion.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Qais Yousef <qyousef@layalina.io>
+References: <20260518024039.932-1-hongyan.xia@transsion.com>
+Content-Language: en-US
+From: Christian Loehle <christian.loehle@arm.com>
+In-Reply-To: <20260518024039.932-1-hongyan.xia@transsion.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+On 5/18/26 03:40, hongyan.xia(夏弘彦) wrote:
+> From: Hongyan Xia <hongyan.xia@transsion.com>
+> 
+> We have seen a massive power consumption regression (20% SoC power
+> increase in many apps) after updating our kernel. After bisection we
+> pinpointed the regression to the cpu_util(boost) feature. After
+> reverting the boost feature the massive energy regression is gone.
+> Detailed trace analysis down below. The regression is found across quite
+> many apps but Youtube is one of the worst offenders, shown in the
+> 1080p60fps video benchmark:
+> 
+>  Setup      FPS   SoC Power (mW)  diff
+> w/  boost  59.94      913.6
+> w/o boost  59.93      720.4     -21.15%
+> 
+> Signed-off-by: Hongyan Xia <hongyan.xia@transsion.com>
+> 
+> ---
+> Analysis:
+> 
+> We found several problems that result in the power spike:
+> 
+> 1. Arithmetic should not happen between util_avg and runnable_avg:
+> 
+> After util = max(util, runnable) which potentially picks runnable value
+> in cpu_util(), we then add or subtract task util values from it. This
+> produces a value that is half-runnable-half-util which is ill-defined.
+> This alone should be a warning sign. This breaks EAS calculations in
+> many cases, leading to sub-optimal task placements.
+> 
+> 2. Using the absolute value of runnable_avg to drive frequency is
+>    too high to be reasonable:
+> 
+> We use runnable in a _relative_ way to util to know whether there is
+> contention in several places. However, the _absolute_ value should not
+> be used like util. Runnable_avg tends to be significantly higher,
+> making it much easier to saturate frequency.
+> 
+> For example, if three tasks each with a util of 100 contend on the same
+> rq, the rq util is 300 but runnable_avg shoots up to 900. 900 drives the
+> CPU at the max frequency, and it's highly questionable whether this
+> boost is the right decision.
+> 
+> 3. Runnable_avg may not even reflect true contention:
+> 
+> When tasks are dependent, the bottleneck is often the data flow between
+> tasks, not the contention seen by runnable_avg. Boosting frequency with
+> runnable in such scenarios wastes power without performance benefits.
+> 
+> We found 1 has minor power regression but 2 and 3 regresses power
+> significantly. We have seen multiple applications with the
+> producer-consumer model with many worker threads suffer. When there is
+> IPC between producer and consumer, boosting frequency blindly does not
+> help performance at all if consumer is limited by how much data is flown
+> through. Youtube suffer from 1, 2 and 3 at the same time, leading to a
+> total SoC power regression of 20% shown in the results above.
 
-Add support for charger detection capabilities found in the embedded
-controller of ASUS Transformer devices.
+We did discuss removing runnable boost internally as well, but I’d love to see
+more data too.
+The original issue it was trying to solve was avoiding jank frames during load
+spikes, which YouTube does not really exercise. Some gaming workload data would
+therefore be a useful addition here.
 
-Suggested-by: Maxim Schwalm <maxim.schwalm@gmail.com>
-Suggested-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/Kconfig                  |  11 +
- drivers/power/supply/Makefile                 |   1 +
- .../supply/asus-transformer-ec-charger.c      | 207 ++++++++++++++++++
- 3 files changed, 219 insertions(+)
- create mode 100644 drivers/power/supply/asus-transformer-ec-charger.c
+Runnable boost was considered as an alternative to approaches like reducing the
+PELT half-life and similar changes. Qais’ current ideas also try to tackle this
+problem, of course, so +CC.
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 1dc3d0b2e021..ebc6d5c01330 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -508,6 +508,17 @@ config CHARGER_88PM860X
- 	help
- 	  Say Y here to enable charger for Marvell 88PM860x chip.
- 
-+config CHARGER_ASUS_TRANSFORMER_EC
-+	tristate "Asus Transformer's charger driver"
-+	depends on MFD_ASUS_TRANSFORMER_EC
-+	help
-+	  Say Y here to enable support AC plug detection on Asus Transformer
-+	  Dock.
-+
-+	  This sub-driver supports charger detection mechanism found in Asus
-+	  Transformer tablets and mobile docks and controlled by special
-+	  embedded controller.
-+
- config CHARGER_PF1550
- 	tristate "NXP PF1550 battery charger driver"
- 	depends on MFD_PF1550
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 1313f367715c..93d17d28081e 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -69,6 +69,7 @@ obj-$(CONFIG_CHARGER_RT9471)	+= rt9471.o
- obj-$(CONFIG_CHARGER_RT9756)	+= rt9756.o
- obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
- obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
-+obj-$(CONFIG_CHARGER_ASUS_TRANSFORMER_EC)	+= asus-transformer-ec-charger.o
- obj-$(CONFIG_CHARGER_PF1550)	+= pf1550-charger.o
- obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
- obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o ab8500_chargalg.o
-diff --git a/drivers/power/supply/asus-transformer-ec-charger.c b/drivers/power/supply/asus-transformer-ec-charger.c
-new file mode 100644
-index 000000000000..e33f4389d337
---- /dev/null
-+++ b/drivers/power/supply/asus-transformer-ec-charger.c
-@@ -0,0 +1,207 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/err.h>
-+#include <linux/mfd/asus-transformer-ec.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+
-+struct asus_ec_charger_data {
-+	struct notifier_block nb;
-+	struct asusec_core *ec;
-+	struct power_supply *psy;
-+	struct power_supply_desc psy_desc;
-+};
-+
-+static enum power_supply_property asus_ec_charger_properties[] = {
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+};
-+
-+static int asus_ec_charger_get_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+	enum power_supply_usb_type psu;
-+	int ret;
-+	u64 ctl;
-+
-+	/* Check if model name is requested first since it needs no hw access */
-+	if (psp == POWER_SUPPLY_PROP_MODEL_NAME) {
-+		val->strval = priv->ec->model;
-+		return 0;
-+	}
-+
-+	ret = asus_dockram_access_ctl(priv->ec->dockram, &ctl, 0, 0);
-+	if (ret)
-+		return ret;
-+
-+	switch (ctl & (ASUSEC_CTL_FULL_POWER_SOURCE | ASUSEC_CTL_DIRECT_POWER_SOURCE)) {
-+	case ASUSEC_CTL_FULL_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_CDP;	/* DOCK */
-+		break;
-+	case ASUSEC_CTL_DIRECT_POWER_SOURCE:
-+		psu = POWER_SUPPLY_USB_TYPE_SDP;	/* USB */
-+		break;
-+	case 0:
-+		psu = POWER_SUPPLY_USB_TYPE_UNKNOWN;	/* no power source connected */
-+		break;
-+	default:
-+		psu = POWER_SUPPLY_USB_TYPE_ACA;	/* power adapter */
-+		break;
-+	}
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = psu != POWER_SUPPLY_USB_TYPE_UNKNOWN;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		val->intval = psu;
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		if (ctl & ASUSEC_CTL_TEST_DISCHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE;
-+		else if (ctl & ASUSEC_CTL_USB_CHARGE)
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO;
-+		else
-+			val->intval = POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE;
-+		return 0;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct asus_ec_charger_data *priv = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		switch ((enum power_supply_charge_behaviour)val->intval) {
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_USB_CHARGE);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE, 0);
-+
-+		case POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE:
-+			return asus_dockram_access_ctl(priv->ec->dockram, NULL,
-+				ASUSEC_CTL_TEST_DISCHARGE | ASUSEC_CTL_USB_CHARGE,
-+				ASUSEC_CTL_TEST_DISCHARGE);
-+		default:
-+			return -EINVAL;
-+		}
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int asus_ec_charger_property_is_writeable(struct power_supply *psy,
-+						 enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct power_supply_desc asus_ec_charger_desc = {
-+	.name = "asus-ec-charger",
-+	.type = POWER_SUPPLY_TYPE_USB,
-+	.charge_behaviours = BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE) |
-+			     BIT(POWER_SUPPLY_CHARGE_BEHAVIOUR_FORCE_DISCHARGE),
-+	.usb_types = BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_SDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
-+		     BIT(POWER_SUPPLY_USB_TYPE_ACA),
-+	.properties = asus_ec_charger_properties,
-+	.num_properties = ARRAY_SIZE(asus_ec_charger_properties),
-+	.get_property = asus_ec_charger_get_property,
-+	.set_property = asus_ec_charger_set_property,
-+	.property_is_writeable = asus_ec_charger_property_is_writeable,
-+	.no_thermal = true,
-+};
-+
-+static int asus_ec_charger_notify(struct notifier_block *nb,
-+				  unsigned long action, void *data)
-+{
-+	struct asus_ec_charger_data *priv =
-+		container_of(nb, struct asus_ec_charger_data, nb);
-+
-+	switch (action) {
-+	case ASUSEC_SMI_ACTION(POWER_NOTIFY):
-+	case ASUSEC_SMI_ACTION(ADAPTER_EVENT):
-+		power_supply_changed(priv->psy);
-+		break;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static int asus_ec_charger_probe(struct platform_device *pdev)
-+{
-+	struct asusec_core *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct asus_ec_charger_data *priv;
-+	struct device *dev = &pdev->dev;
-+	struct power_supply_config cfg = { };
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, priv);
-+	priv->ec = ec;
-+
-+	cfg.fwnode = dev_fwnode(dev->parent);
-+	cfg.drv_data = priv;
-+
-+	memcpy(&priv->psy_desc, &asus_ec_charger_desc, sizeof(priv->psy_desc));
-+	priv->psy_desc.name = devm_kasprintf(dev, GFP_KERNEL, "%s-charger",
-+					     priv->ec->name);
-+	if (!priv->psy_desc.name)
-+		return -ENOMEM;
-+
-+	priv->psy = devm_power_supply_register(dev, &priv->psy_desc, &cfg);
-+	if (IS_ERR(priv->psy))
-+		return dev_err_probe(dev, PTR_ERR(priv->psy),
-+				     "Failed to register power supply\n");
-+
-+	priv->nb.notifier_call = asus_ec_charger_notify;
-+
-+	return blocking_notifier_chain_register(&ec->notify_list, &priv->nb);
-+}
-+
-+static void asus_ec_charger_remove(struct platform_device *pdev)
-+{
-+	struct asus_ec_charger_data *priv = platform_get_drvdata(pdev);
-+	struct asusec_core *ec = priv->ec;
-+
-+	blocking_notifier_chain_unregister(&ec->notify_list, &priv->nb);
-+}
-+
-+static struct platform_driver asus_ec_charger_driver = {
-+	.driver.name = "asus-transformer-ec-charger",
-+	.probe = asus_ec_charger_probe,
-+	.remove = asus_ec_charger_remove,
-+};
-+module_platform_driver(asus_ec_charger_driver);
-+
-+MODULE_AUTHOR("Michał Mirosław <mirq-linux@rere.qmqm.pl>");
-+MODULE_DESCRIPTION("ASUS Transformer Pad battery charger driver");
-+MODULE_LICENSE("GPL");
--- 
-2.51.0
+If you have run many workloads, do you also have data on where this feature actually
+helped, especially in reducing jank frames?
 
+Some discussion from back then:
+https://lore.kernel.org/lkml/20230406155030.1989554-1-dietmar.eggemann@arm.com/
+https://lore.kernel.org/lkml/20220829055450.1703092-1-dietmar.eggemann@arm.com/
+
+> [snip]
