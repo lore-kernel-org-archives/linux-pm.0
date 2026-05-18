@@ -1,161 +1,288 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011028.outbound.protection.outlook.com [52.101.57.28])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25CA32367D9
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 17:57:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779127071; cv=none; b=ulgkJgRHbSaO77shOvnLG303VC1Y6MJvQ918sdQxeyjB90NsHfEDz7qnNN1Tqc/3iwz69SfBt5ij+9pWOf7pKWNRJ2xpTYpadlKV5VnTVfubaQMv1khIUq3M8Nagd+QDKkTqjT9wx1e9biaQA5Px48A72DEFfb8Fd2wzXsX/zTg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779127071; c=relaxed/simple;
-	bh=8Vp1BuTxGJcJD8AC4d+5NoDM0ihlVg+nG4ExSSlMHY4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YjgiMc8kHDRmJuKNITC1DjngvwHxSZNCtDqAT49u+6UwWw5VqgBGuvlgvXr+SSOtKTT+oiE6wEdMxw/CPET8/fUf7w7DeGVia0p9oa04iJ+iOXVJriDF8Gpny5PAV2gUMiRrfRNn6/gj186sB+Biv3cJZ2+kHGs0RN9/LYQDbUE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Gto/qZ9v; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=TxU8LZID; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 988723815F0;
+	Mon, 18 May 2026 18:08:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.28
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779127695; cv=fail; b=QAv23a60IEunTFLI0DHhS5hQDbLI9nxuCE5p0YoZDoJeneJf5udnF/1sqaQy21H98VPlnlNB3Uvm4pKHDj3mkPbZfgmTTBRwqpIa7/HxP+XH8MmnbldZAGLGtFslDz3KgV9hBQa0qJ6nYv5myvoXnisuPAva/g1pLwu8IvmIswU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779127695; c=relaxed/simple;
+	bh=Nlxi+X0afx/W4Z2OySGbtF2HBxPLx1Kh7rn5bnkjvjE=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=p7E06LvBl9pMj/wz5EDLPKsruNnrDxt6Mnj8iyWnRhZqWQ2Kw/2MZUA5fI2NbU6yzgRslZtAm2vIK6fHvaekNO9F5qTWFFYDk8g5eRUVsMS20mVt6RpMO9y5tgfIOLLVKOBvACqw/TsIipCo/HKKUkb3oc+PC8R8b958lOXqWR4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=NNV/bt5U; arc=fail smtp.client-ip=52.101.57.28
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Gto/qZ9v";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="TxU8LZID"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64IG72mG2091010
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 17:57:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	yc4/d8qtJswMAftQKu9HSCdPYUpDaigiy7xk3vlQtpg=; b=Gto/qZ9v871KoKiS
-	3kFXIT4ynbjQg/B30wEFJn+1nHNYBnPZcbo32cSDNRo1ljmQGs3VsiTE2dJiRxL+
-	7K6er9M3QzqxWyIYspq0MuK76TUh1gqeiPtVCfk1szGI4bgGqTJ3tSE9dop+T9/I
-	vUHCuuWSiaIUJIT7Tz9X6dQmCyMTMfSbyoNTMOYIlpML7Jgvv4tTg/IJ+eBvYy3t
-	z2jyVCe7jLPQaASt7PkD3nS0S8wFa+sKr0rwHlHHUPXaCYcormQh7wcsh+tl+d8E
-	RTiSSf5GuD9mGfL3i0dGGShSrEvg286fCaQAM71p8i5ccDS4fLJiiIgYQVDyPXfx
-	QDtx3A==
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com [209.85.160.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e80rphusg-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 17:57:49 +0000 (GMT)
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-51494d74d4bso61636891cf.1
-        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 10:57:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779127069; x=1779731869; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=yc4/d8qtJswMAftQKu9HSCdPYUpDaigiy7xk3vlQtpg=;
-        b=TxU8LZIDVi7a8twLt1a97YK4TgC6AiKYgSpEHOa7Ks75gfSyYuWbJqX0fnWSZHZE8T
-         iAxLIR1Us6bFslLFtMrb1tVCVuntVIAeBVk4voQGB+/EH5pTI2lVRoktRsLGNlx/ZqJz
-         eT+Ic0xKI2oFmwio2JPJPA2AF9P9K+vExzunsRoxemsW8AGEDaXZvepCkQFnYATkvWyt
-         TPsMObwFXqUT8jshzfFMp905/8/n9muat3qktU/pVZaTQriloM6sgYrkIJD1tHK8ECif
-         rCDz+iuIHwnu5OtDndwCIU11Ka3Q6bZkh2jbDXdm2qfQcTLEydmoh6MYrM33e1f7djLB
-         Pxgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779127069; x=1779731869;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=yc4/d8qtJswMAftQKu9HSCdPYUpDaigiy7xk3vlQtpg=;
-        b=IGmqytc9xUK7zv+U/UDJDwUt7Jq+UisjgWpApDtdez0gk2RiDP0x7qW7mXpa6xfev0
-         /PQcyI5HvRZMlmHI8sZWjQDB3Tbal46+sQSU511e+r57+4txQtPmRYsVIU3EdeXjNhie
-         2qQe5nscBybVCMLflrV3zgdWD9CtNZkKLAB2qbRTwR5aL7FoQzCB9IRl6CkjKV7QbSsk
-         J7kqQLJctG3eikSNzijgRf4WDX0Z6wPsAY4PcIzSgtRFZ0+4tLglLKo4SdAzdrzQKdw2
-         XNRpStSv9uszRhiz3ReJBmHwdQxiehKcGDCMI3sPthIeE0/yt4DUlIBGidrEp3wSqcY6
-         i8ew==
-X-Gm-Message-State: AOJu0YycOJix8U+JmyEsnJgyqNk2n8+A3hrQn2/6Izi0I1OJ2ABDdE2A
-	CENTO4NJhVxpN4Wo4zIDF5E05jfWxve2Rx5vb8+WTRnBcfFfzE7FQwh9ECuGF+GVxLgfjAk7A1B
-	Id547cKyZqTDpxaApiPlo4JFN9ZWS54JidVuBUgn+bLpsJsLV1zfuEADARKzzGg==
-X-Gm-Gg: Acq92OFcNaQbU+HnVcqrqqpeLq1gcv3cM9HJOzvZljQWrosCmALf3saIEO0nru6VJB2
-	eIWPdiYpuWV5vcAVo6qLSle7qv8L5dNp2UCGoo0miaA+o5epy4DFJ/d1UDHv0NS0J+NbOpS66xM
-	GNap4HkgOwLS0IrN3RaxVjn2KrJWkgNjoGRlC2CSlhX7n+IM7SZKdldGF+NP8uzMXQoah+jo9AJ
-	b/zGjc8tJofkpfi3rc9IPw4xoxrhhkFJGcsAZj9qb4PUhPIS48tIb3xVN6I/B90ax3RX8ynubD5
-	j204IkNDXX4A9XzJN9SuU2Ac4r/ZgRMo+J8Sxw9fi/WeiciaGWGlNf05MccdDgRfKWU5xxFWtGu
-	s5Z3P29R2N2L7Vpzo18aJvxcEc7qInjfetbngs35rBNQXXm8ozZx4T/XQGUCN0i6+Ebea8sSyQw
-	PTWIEGqu9t
-X-Received: by 2002:a05:622a:1386:b0:50f:b7b3:2ebb with SMTP id d75a77b69052e-51641928873mr254152581cf.33.1779127068684;
-        Mon, 18 May 2026 10:57:48 -0700 (PDT)
-X-Received: by 2002:a05:622a:1386:b0:50f:b7b3:2ebb with SMTP id d75a77b69052e-51641928873mr254152061cf.33.1779127068071;
-        Mon, 18 May 2026 10:57:48 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:e390:12f5:ed3c:ffd9? ([2a05:6e02:1041:c10:e390:12f5:ed3c:ffd9])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48fe4dac000sm276575975e9.0.2026.05.18.10.57.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 May 2026 10:57:47 -0700 (PDT)
-Message-ID: <9ae2a769-4b2a-4990-90d4-0a1c0f05ba82@oss.qualcomm.com>
-Date: Mon, 18 May 2026 19:57:46 +0200
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="NNV/bt5U"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=CKFXnymmcp5EfnBCWqFTiHGn/RUoPjOcOiLbJIjg5AaUdpZxoj4B3gZdjfydxjWAUP9QpHp/yr893obFTwrCvwRAtxR9lCZytde+bdvx1KZ+Rn0ewpnulfOgG3L3iJYVZEvG41ene3pgk+ObZU1nJhVq+j+jmfIj0WYRAAWQyqxWXQT8hPNCPalvTxcgr/YXS2U+n9kXfgzci6WOmb8hcay85w3USqUIobzXwjkVK7tteEFyJBd8EPm5nRqGOKoVUbqbnRobw7ULQrHPNCkLsHDJsj+baO5OfF68VnUnS4iCQOZ3IlAh6bEUF7Neksz8F//qTEINyJ4e/V1JrBRJsA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jNJziEFmDmxADJwwKP3qOl0oCvax7vYbimEJBl7ECr0=;
+ b=n7AReYJhO+QqkqXrU3pVkBxeMU8FbWd0UMUAQJZc7vtTA7z413fBB+hQk9VfVb7RjDczNWXIXrfKL59W++wqXdzQkKCxsde9VcHlW6/YFTXJfQ5ZogCmbOL32JlecOAVp0MjkTXrc6znNEzpyYYZdnIXFBEQXvxX4jCV3SALviA57NT01bjbPgxSvipLvkubvhy1sj2sOP1B7d3wHj7NxKxOpqtNXLAdtqtismQflunpc9sbVa/LsMbH8K7CWD7tuaItqmne/BKeLU3Qgx+BGujzRCU34Hef3Qj4XOjlRPlYiLx3EUJ3hPRM7ZTVmzs0EeeoRCZ9cF/ic7dUWfrebA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jNJziEFmDmxADJwwKP3qOl0oCvax7vYbimEJBl7ECr0=;
+ b=NNV/bt5UWHJM6MlbB7VCebQOimNr6hQZMMaxWB62nVKckyc4YI+csMZDT3/SVdlret66QVr+NCZAkCudWh4vg3K6mriJ9lk9fJzvPMaoVBr0BzINvOex6Hz2aVuJI85WDp6GOeTjz+oXlzQUD9ojdfhssmymB8yj/SAJwxhz5O8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com (2603:10b6:8:38b::11)
+ by DM4PR12MB5769.namprd12.prod.outlook.com (2603:10b6:8:60::6) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.25.23; Mon, 18 May 2026 18:08:09 +0000
+Received: from DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445]) by DSVPR12MB999147.namprd12.prod.outlook.com
+ ([fe80::98c5:8206:6a4:c445%3]) with mapi id 15.20.9870.023; Mon, 18 May 2026
+ 18:08:09 +0000
+Message-ID: <ad24ad9a-2b30-4952-b36a-210c08a62346@amd.com>
+Date: Mon, 18 May 2026 13:08:06 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/2] cpufreq: CPPC: add autonomous mode boot parameter
+ support
+Content-Language: en-US
+To: Sumit Gupta <sumitg@nvidia.com>, rafael@kernel.org,
+ viresh.kumar@linaro.org, pierre.gondois@arm.com, ionela.voinescu@arm.com,
+ zhenglifeng1@huawei.com, zhanjie9@hisilicon.com, corbet@lwn.net,
+ skhan@linuxfoundation.org, rdunlap@infradead.org, linux-pm@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org, treding@nvidia.com, jonathanh@nvidia.com,
+ vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com,
+ mochs@nvidia.com, bbasu@nvidia.com
+References: <20260515122624.1920637-1-sumitg@nvidia.com>
+ <20260515122624.1920637-3-sumitg@nvidia.com>
+ <bf521e4e-1aa5-49ce-bec5-52845f02214e@amd.com>
+ <139d2f0e-72d9-4721-9d5a-d1d4a2a95fa1@nvidia.com>
+ <72fd2fcc-6303-4980-beb7-e4b711ad6406@amd.com>
+ <e1a546f2-6e7e-4236-97bb-f72bea0137f7@nvidia.com>
+ <7d7a6ab6-b1ea-484c-a275-19acca50c483@amd.com>
+ <985f976f-1144-445b-96c2-df5bd57ecf05@nvidia.com>
+From: Mario Limonciello <mario.limonciello@amd.com>
+In-Reply-To: <985f976f-1144-445b-96c2-df5bd57ecf05@nvidia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: SN6PR01CA0033.prod.exchangelabs.com (2603:10b6:805:b6::46)
+ To DSVPR12MB999147.namprd12.prod.outlook.com (2603:10b6:8:38b::11)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] thermal: armada: replace msleep with usleep_range for
- short durations
-To: Mayur Kumar <kmayur809@gmail.com>, miquel.raynal@bootlin.com,
-        rafael@kernel.org, daniel.lezcano@kernel.org, rui.zhang@intel.com,
-        lukasz.luba@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260511153750.183640-1-kmayur809@gmail.com>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <20260511153750.183640-1-kmayur809@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: _Y0dBGussA_lApPnNr9wzbI3aol2jEp0
-X-Proofpoint-ORIG-GUID: _Y0dBGussA_lApPnNr9wzbI3aol2jEp0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE4MDE3NyBTYWx0ZWRfX98kW22gvY/RN
- X8UWzUP5phuo5VsDXpW5eRLeFqvsBksgvIKqs7LGBgPKFOXDqI12pixF4ZTh10t8PxTgLG0ZNnp
- GrSsRV93TPZgbwhTmz1BMkiyfjDkR2j78woM64aeH2Caa1h7EYLDAfxnYkAZ1puNecBfhi9DvIS
- bOwCDd5wOgJ/XaZntt1mX6PL6TGYUZCc5i1ApshHRKVaDY0asbDT1pVTCaSiOFVZ5bbnlJKG+OR
- no59SaFhMTYda/15cDecvBmLj2PaWVWg3FSu/OX7xajrg7TXwMFx0IfEG9pzL+zhvTFksVfnxzt
- swnddCQJz4Ir79f4KsvIYoy4Www6R7NCPw1AbC3gpeyh3z2s915ZatCM7xNRhPDf6DgRRPfuhkK
- R9245AKPRpHLXQNtFQ1E5YVu5INiELgl61d8wtawNR9eYR4SJgpwRs42VsHxnIo+PnCfQyY1Xhc
- /gPoidwxoqq/GSz+mDg==
-X-Authority-Analysis: v=2.4 cv=ecMNubEH c=1 sm=1 tr=0 ts=6a0b531d cx=c_pps
- a=WeENfcodrlLV9YRTxbY/uA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=pGLkceISAAAA:8
- a=CvSXXL9ViinJZdB_jLEA:9 a=QEXdDO2ut3YA:10 a=kacYvNCVWA4VmyqE58fU:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-18_03,2026-05-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0 adultscore=0 lowpriorityscore=0 impostorscore=0
- phishscore=0 priorityscore=1501 bulkscore=0 clxscore=1015 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605180177
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DSVPR12MB999147:EE_|DM4PR12MB5769:EE_
+X-MS-Office365-Filtering-Correlation-Id: ae4cf575-1ece-4bb1-e982-08deb5086aee
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|921020|11063799003|56012099003|22082099003|18002099003|4143699003|3023799003;
+X-Microsoft-Antispam-Message-Info:
+	SqCM5lkZwGxcKmq/HeQM2+hch/pTSv+o5MntWwsrdudoyhpY4hgUp2B4KBTuFq0MyYjfC4jR1DMWOLPKhVYDfE89UIrtZ+2eLgliellHayrWXZLLaP7WH8BDlNFXK37Qj4rKe/t8jbInAj2kEwhP0vQN1g+NxBixrKnigccfx2joSTsXLOL4Tvn0/uQPzZsReS560d8ad4bey7pg+GUzfcxfZxV+JIPaYtkN3gCEqpYXwMLwdo6yPpvwxSseCk0NgdujQobUNMLsbb6sSVQR1Zs3nRezAXJ9o7XTlCGqhPgEdSqN4UIGc4vQ1mOKg0Ni6m2HNC9Ac8gZ1pvcKNy1qT6by2eq+D7uRLXvh5rKsGLPEkRqsnaaMQNDwS617Ts4/gfmUisnSvxOgcveIzbMbusmrFIk4QFHaG6wQlxjh1Iy96DjLh9kbJ2FpZF8oT5i7s8aewMgOsPyGEvIQ8D0gZxcNZO9EskXLbFQ5aHKMCNlqwvKHpasCwjfYocIFftGWk3tSSnG0vaH9HEbBQ+oBT2vYC35+BxuHKMM9uyj+2895leGVnGrPkxXxvKRbgwAtAen+jXKVZitOR2UMoWARN0jL8swYDa6cN/kunvZIz2fZ8xUnK+4mnoQN2CuXrmLzbFVDTfe2U2tPeufH+AFIQzWlken5le6Q+kUeCKnRL5ro2wQxOMSZXHT2ZqvuB4F
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DSVPR12MB999147.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(921020)(11063799003)(56012099003)(22082099003)(18002099003)(4143699003)(3023799003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?K2RNOFZKZXFvT2VXamRLMm5uWGNHSDB2U2hNNUllTUVLc2VscUFXQWNVVW50?=
+ =?utf-8?B?djJwdEZkRml4cjNiaVlZQS9mVHBoOEYwOWFSNU1WdFBWU3lnTjZvb1ZMbFBq?=
+ =?utf-8?B?QmpHVHhOSXIvSjB5eHpBb0lKK1Y2dW9maGR5eWVLRGU1cENnZ2JPNDJIa1ZP?=
+ =?utf-8?B?bXpGemZsb3pGaDMxWHNvQ3IxU0hpNmhuektMa2psMmo0LzcwRjdsY0RxMzJS?=
+ =?utf-8?B?TmorR3lRRktpbHlDYXl2UTBKTkRTSmx2Y3lxSW9SY0VWQVg3TWRQM1VFNWJl?=
+ =?utf-8?B?bkhFdXg2UkdORkE4MjZvRlhpZWlwMG96WXlvakVaYWtBOVJwclNFeWxGMVYr?=
+ =?utf-8?B?VkV6MTN1RWlTdjV3R1Rnd24reHl0Mnl2YTV0MEpkWEJqeDRtNUxneFc4c3NC?=
+ =?utf-8?B?eERTM1BGajNxMFIwenhyNGRqbUlEODJrclMxSVVWdUFqbDNobE5wMHoxS1M5?=
+ =?utf-8?B?aGI5bGJqM2xpZ3o3L2tJREwrWGU4WVNGWC9qc0tGYW1SQnRwVmQ1WmxBaHVP?=
+ =?utf-8?B?RkhxV096Vno3NEZSd1Q2enNDSGJaUXZCN2hkTkJQVmk5OHpjZ2Zhd2wxVDRJ?=
+ =?utf-8?B?c285WGFlWFB6WTRmbmZZRDF4VC96RVpOL015dFowdVU4Nmt2dC9TY2dyNUdK?=
+ =?utf-8?B?SldPZTg3cFpnak03L0syWHZ4QWFZMHlzQldLdm9iNkwrRy9IYlFCZEg3eERW?=
+ =?utf-8?B?aUpVTEtrdHMwRzQya2dOdk11Um1yZlh5VUdSeE03TGlDVzM4MEx3b2F0dmFK?=
+ =?utf-8?B?KzU5dWRJV2VxVmhOSUkwUUNZNVAzRVFTVzZuZGIxSUw4VVc5c1BGMUZmc2wv?=
+ =?utf-8?B?T0VjbkFMVEwvYjNxWWwwRHZocjZNM2pYTFc0dFQ1N0hPbFEvV2k1L3RMd0k2?=
+ =?utf-8?B?cjBrOFNnY2FnVE1wUjF4dnpoM0JxR0pPajVFVVl4TmVCZ081dEtKL0RDVnEx?=
+ =?utf-8?B?by9PMG4yRjdEemxkWE5JWHZyeVdTQmt3QXZ2bityTytOdFI0Yng1blYrOVZx?=
+ =?utf-8?B?ZXMwa1hHeWloSitObEZtQXBCSzN3UjQzQ29LYXpkZmZweXFKK2xueTdaMnN2?=
+ =?utf-8?B?VXBydWh6SVMyK0tLbXpUN2Z6Y2VERktlYzZNNTFyMDFQM2M3ZnlDQVNMVi9K?=
+ =?utf-8?B?a0pXcDRqdmEyQmMwd1Vjbmthdnk3Sk5Iby9OV0RDVG1WaFk3UkkyOXJzK3Jv?=
+ =?utf-8?B?ZlNwWmptRitpbE1tb3lqYTRJUGpTK3hZdithVDNmWVNMNkx1N2E2MVYvTFdw?=
+ =?utf-8?B?Zk1USHBkVVZVSi83L2JXT1k2eGdEeXZTcS9RVGptZ1pmUHFrejdSYW1lUWQv?=
+ =?utf-8?B?RDhjVFRTc1NKZkg0R05WZTNJZzErRW5leGxvQm55ZTh6eHE1L3FxYUUxZ3ly?=
+ =?utf-8?B?RSt5SDZ6K1I4M2EzeGsrcmduLy8zQ3pYajZnc3cwSW9rckIveFJYdGNGeEV4?=
+ =?utf-8?B?dXZ1bjQzSXJaQkZ6UkVnak5LTHZOVDduK3I3b2pHSC9lTE83ZS95Y1REeDNz?=
+ =?utf-8?B?a2E5WHZZK1cycytOTlMvYkNoLzR6OVhWclR4Slp3YVNIVGQvdDVCUmRiNTNR?=
+ =?utf-8?B?N1RHL2VWNGx3UFBLcDRvcC9Edk9pYkdZZmZQbWxic2NLOXRicllQM0JPZ0Zh?=
+ =?utf-8?B?QWs5NjZrQldMWmh6dTZjKzNKNmFqcU8ya0FneU1jYklmYUV4em5ZQmJzdU9S?=
+ =?utf-8?B?K3FnRnd1Y1RhZWovdTNXR2FrMFVDUGRsZXFsOEZmelpoZm9BdUdSSlgwaGpu?=
+ =?utf-8?B?SnhUaklRMDVGM1BwbE5oa0dFeEowTWt0WFc1MXQ1Z0x2eU1EQktkWTdod3k1?=
+ =?utf-8?B?RHdnbmpBTEEveEFYanpIL1Nydnc1RFBTem5CTFp1SkhydlJ5VktXNjExRWFU?=
+ =?utf-8?B?OEM2TVJzQnZML3RvTlRsMGJRNjhRcVZyUVVwNEdRSmZweis5TnprUGt2T0xZ?=
+ =?utf-8?B?OU9hUjZRMzc2MTRNSDlJaTVaMWR0YUUxWWQrVnNRZlB5V2NlYlRwbU84VXFT?=
+ =?utf-8?B?b1hUWGtBNm4ySEJZeHlkb1J2djBmRk9CWjM5d0hTamRXNmtMU2s0S1J1M3V2?=
+ =?utf-8?B?c3FNU2szWEQ4SVh4UGtNaisvTkVmRU9KaS9nS3hIaWEvYkkyUm5VWHIyRnMw?=
+ =?utf-8?B?NjJYZnp0SHVlMXNYUndpWHFQR3lWbGVaQ0hyUTMvQmlTU1REYmZSb3Jkc3Az?=
+ =?utf-8?B?aDZubTNWZzJXTTV5WVp3bFBMb0VUaHQvekUvRWlRamdYRnNUcVphMzVtNXIy?=
+ =?utf-8?B?QzNsVU9Ec0hxNUd6SjF3dkRIZExFeGRWUGM5eWRPRW12YmVkQXZTVkdnUEdR?=
+ =?utf-8?B?RU9YeTNreEdLZjZncGxnT2RTeVFFRStaZEkrVGpONkJSRlUraGJmQT09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ae4cf575-1ece-4bb1-e982-08deb5086aee
+X-MS-Exchange-CrossTenant-AuthSource: DSVPR12MB999147.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 May 2026 18:08:09.3524
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: XM+N+9JcyIfcLvoc5ym6PsgNUpxqxW7U3fs80hdrUdyPy1hEEPV5Xu3HgMUMx47WwEtb+6Th3daGfKD64Q/KGg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5769
 
-On 5/11/26 17:37, Mayur Kumar wrote:
-> The checkpatch tool warns that msleep(10) can sleep for up to 20ms.
-> According to Documentation/timers/timers-howto.rst, usleep_range()
-> should be used for delays between 1ms and 20ms to provide better
-> timing accuracy.
+
+
+On 5/18/26 12:22, Sumit Gupta wrote:
 > 
-> Replace the 10ms msleep with a 10ms-11ms usleep_range.
+> On 18/05/26 19:51, Mario Limonciello wrote:
+>> External email: Use caution opening links or attachments
+>>
+>>
+>> On 5/18/26 09:15, Sumit Gupta wrote:
+>>>
+>>> On 18/05/26 19:20, Mario Limonciello wrote:
+>>>> External email: Use caution opening links or attachments
+>>>>
+>>>>
+>>>> On 5/18/26 08:44, Sumit Gupta wrote:
+>>>>> Hi Mario,
+>>>>>
+>>>>>
+>>>>> On 16/05/26 02:43, Mario Limonciello wrote:
+>>>>>> External email: Use caution opening links or attachments
+>>>>>>
+>>>>>>
+>>>>>> On 5/15/26 07:26, Sumit Gupta wrote:
+>>>>>>> Add a kernel boot parameter 'cppc_cpufreq.auto_sel_mode' to enable
+>>>>>>> CPPC autonomous performance selection on all CPUs at system startup.
+>>>>>>> When autonomous mode is enabled, the hardware automatically adjusts
+>>>>>>> CPU performance based on workload demands using Energy Performance
+>>>>>>> Preference (EPP) hints.
+>>>>>>>
+>>>>>>> When the parameter is set:
+>>>>>>> - Configure all CPUs for autonomous operation on first init
+>>>>>>> - Use HW min/max_perf when available; otherwise initialize from caps
+>>>>>>> - Initialize desired_perf to max_perf as a starting hint
+>>>>>>> - Hardware controls frequency instead of the OS governor
+>>>>>>> - EPP behavior depends on parameter value:
+>>>>>>>    - performance (or 1): override EPP to performance preference 
+>>>>>>> (0x0)
+>>>>>>>    - default_epp (or 2): preserve EPP value programmed by BIOS/
+>>>>>>> firmware
+>>>>>>>
+>>>>>>> The boot parameter is applied only during first policy 
+>>>>>>> initialization.
+>>>>>>> Skip applying it on CPU hotplug to preserve runtime sysfs
+>>>>>>> configuration.
+>>>>>>>
+>>>>>>> This patch depends on patch series [1] ("cpufreq: Set policy->min 
+>>>>>>> and
+>>>>>>> max as real QoS constraints") so that the policy->min/max set in
+>>>>>>> cppc_cpufreq_cpu_init() are not overridden by cpufreq_set_policy()
+>>>>>>> during init.
+>>>>>>>
+>>>>>>> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+>>>>>>> ---
+>>>>>>> [1] https://lore.kernel.org/lkml/20260511135538.522653-1-
+>>>>>>> pierre.gondois@arm.com/
+>>>>>>> ---
+>>>>>>>   .../admin-guide/kernel-parameters.txt         |  16 +++
+>>>>>>>   drivers/cpufreq/cppc_cpufreq.c                | 122 +++++++++++++
+>>>>>>> ++++-
+>>>>>>>   2 files changed, 133 insertions(+), 5 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/
+>>>>>>> Documentation/admin-guide/kernel-parameters.txt
+>>>>>>> index 0eb64aab3685..7e4b3a8fd76f 100644
+>>>>>>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>>>>>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>>>>>>> @@ -1048,6 +1048,22 @@ Kernel parameters
+>>>>>>>                       policy to use. This governor must be 
+>>>>>>> registered
+>>>>>>> in the
+>>>>>>>                       kernel before the cpufreq driver probes.
+>>>>>>>
+>>>>>>> +     cppc_cpufreq.auto_sel_mode=
+>>>>>>> +                     [CPU_FREQ] Enable ACPI CPPC autonomous
+>>>>>>> performance
+>>>>>>> +                     selection. When enabled, hardware 
+>>>>>>> automatically
+>>>>>>> adjusts
+>>>>>>> +                     CPU frequency on all CPUs based on workload
+>>>>>>> demands.
+>>>>>>> +                     In Autonomous mode, Energy Performance
+>>>>>>> Preference (EPP)
+>>>>>>> +                     hints guide hardware toward performance (0x0)
+>>>>>>> or energy
+>>>>>>> +                     efficiency (0xff).
+>>>>>>> +                     Requires ACPI CPPC autonomous selection 
+>>>>>>> register
+>>>>>>> +                     support.
+>>>>>>> +                     Accepts:
+>>>>>>> +                       performance, 1: enable auto_sel + set EPP to
+>>>>>>> +                                       performance (0x0)
+>>>>>>> +                       default_epp, 2: enable auto_sel, preserve 
+>>>>>>> EPP
+>>>>>>> value
+>>>>>>> +                                       programmed by BIOS/firmware
+>>>>>>> +                     Unset: cpufreq governors are used (auto_sel
+>>>>>>> disabled).
+>>>>>>
+>>>>>> Rather than unset doing nothing, have you considered having it take a
+>>>>>> midpoint like 128?  That's what we do in amd-pstate (default to
+>>>>>> balance_performance).  I think it turns into a reasonable balance.
+>>>>>
+>>>>> Thanks for the suggestion.
+>>>>> I can add balance_performance that enables auto_sel with EPP=128 in 
+>>>>> v4.
+>>>>>
+>>>>> On changing the driver default (no param behavior) to auto enable
+>>>>> balance_performance, it would be good to keep the current behavior for
+>>>>> now since cppc_cpufreq is generic across ARM64/RISC-V platforms where
+>>>>> EPP and Autonomous Selection registers are optional.
+>>>>> A default change would affect existing users relying on governors.
+>>>>>
+>>>>> Thank you,
+>>>>> Sumit Gupta
+>>>>
+>>>> But couldn't you make the "no module parameter set" follow the behavior
+>>>> to only set the registers if they're available?
+>>>>
+>>>> So the systems that support it start using it, the ones that don't it's
+>>>> a NOP.
+>>>>
+>>>
+>>> Would it work to add balance_performance as a new mode in v4,
+>>> and discuss changing the default separately as a follow-up?
+>>>
+>>
+>> Sure.
+>>
+>>> Runtime detection helps for unsupported platforms. But platforms which
+>>> support the registers use OS governors today, and silently switching
+>>> them to autonomous mode on a kernel update is a behavior change for
+>>> existing users. They would also have no way to boot into sw governor.
+>>>
+>>
+>> But hopefully it should be better battery life/responsiveness for those
+>> scenarios too, right?
+>>
 > 
-> Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
-> ---
-
-Miquel,
-
-if you are not against this change, I'll pick it up
-
-Thanks
-
-
->   drivers/thermal/armada_thermal.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Yes in many cases, but if some workloads rely on specific OS governor
+> configurations, then that would get impacted.
+> I will send a separate change later to seek broader consensus on
+> enabling auto_sel as default without any param.
 > 
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index c2fbdb534f6..96965f393b4 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -178,7 +178,7 @@ static void armada370_init(struct platform_device *pdev,
->   
->   	regmap_write(priv->syscon, data->syscon_control1_off, reg);
->   
-> -	msleep(10);
-> +	usleep_range(10000, 11000);
->   }
->   
->   static void armada375_init(struct platform_device *pdev,
+
+I suppose another option is to have a Kconfig to decide at compile time 
+whether to turn on autonomous mode by default, so systems can avoid 
+moving to this if they don't want to.
 
