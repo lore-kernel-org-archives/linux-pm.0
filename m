@@ -1,134 +1,236 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4CF5431AA87;
-	Mon, 18 May 2026 10:04:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D1A931F9B8;
+	Mon, 18 May 2026 10:13:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779098697; cv=none; b=evlnaiyOi+bxDW4Ad1/NHE0ETaafcmu9aLH62lQOY7kZn6TFOh6Rk7OtazSOJuL8SZvH5p6ILMV3TvJLs4t0lDkBxwhdAtGBgMpBGQzTNzB+fdHJMoHqQUS+HwsUsaU1TEIkED0Ni1dHoC2RduziEcpKNoLD1hJyn3KWDGSLLX4=
+	t=1779099214; cv=none; b=Mcft4UOAU0N4TyBm8DEa/Il54WStP42wleFFpGyeWYg7p20hHXYkfLDqNBuzqCk/WVJJZ7bjdSWfJfpMjSlAmeL1ruq0K/8L4zrDx1gBavpC2MrlVbKyz1sBudBOdWDPXWYcSzuSX1Csoymt96NBb99NTSeLf/SBsQoTn8xEetY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779098697; c=relaxed/simple;
-	bh=3SGirsIQ39+kMKyqY/YimrKHEAqax2zBIq2Eju3EyJs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qilScxtpJ4arCo/c20GScRSOkSPfD0PJv3VSoiRVIhLlgLWZ/D+VjC+ilNw5uIl2+/Rjwq38ygMA7Z545lHv/4r0KJBxrNGGcHt3XuhXWr1EL0eTrmEArFZVSyAIhNpUDbdoSb7F2He7dClCgF3plP3ut/a3FPlUwAta11LUPf0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=AZyI8ktY; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	s=arc-20240116; t=1779099214; c=relaxed/simple;
+	bh=BQnBx6WnqKgG+17up62Cx3dfKsGKFlZElr3ORMxdMWo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Aqz/cg4pfv6imypxe0lGBa6sTJQhbhq5sL7oD/SAoAv51CN/xJbusqqVe6wyPm6YNbWu81lgyOR68k7fRyNVcMFepAj0W+/wiunCZkMlw3dUuya0VQxxVLm5EJ14YiPosD0k6Kofl9NAfJUJ5vf8jatEhvdqva1HdQwCusPie0c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aW472Y2+; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="AZyI8ktY"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 48F844617;
-	Mon, 18 May 2026 03:04:49 -0700 (PDT)
-Received: from [10.1.36.66] (e127648.arm.com [10.1.36.66])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AB9CB3F85F;
-	Mon, 18 May 2026 03:04:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779098694; bh=3SGirsIQ39+kMKyqY/YimrKHEAqax2zBIq2Eju3EyJs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=AZyI8ktYKPVnwUVNlvYnn4fyOfEHC9aKsQPLH25Bf1nBPGMi7U3JlRweInCLwORDn
-	 hlqawdcL94sPHLIDyXc1xEGGaC+M1WKMCGdvLazXPaSMm/Kgs7u97RHbptTsxffxYe
-	 UnJvcdneL2ur8a/ThJujjgXxUe+oHn0G2FAj/UXg=
-Message-ID: <97ac52d6-98b4-4b15-b50b-f606b53a2288@arm.com>
-Date: Mon, 18 May 2026 11:04:48 +0100
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aW472Y2+"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C92FC2BCB7;
+	Mon, 18 May 2026 10:13:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779099214;
+	bh=BQnBx6WnqKgG+17up62Cx3dfKsGKFlZElr3ORMxdMWo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=aW472Y2+pFZ+EzChXNYWW6iOpgzrk5uXaaC7iqKp6atHhWSSU5/vCFwUmFtIuwPHO
+	 rLkACdXJSVwwG5eZsX9BzO88mxSrnMe9zysXIxbapMu3XkRROtjRVqdiC1jRCUK5GF
+	 QPOvJWAXFgQ92hvTO7+XzG6hoRH0arP8R5ztHUu9rAY/0EK7mL8nutdNN3daFNlgFs
+	 y4xNolZ5BBOm9tCqbd8IYe6efWFui04gRqdhSP2UZf39kRzo2gbd2wQOnWiW4DJ/+R
+	 +3KvrQMbk+hpSlHpmDrkOieHKswyEREcRtxVsR2A0UjvdZzAYW7eZBcwagLL7VQPnC
+	 BGCy8qVYj9Urg==
+Date: Mon, 18 May 2026 11:13:28 +0100
+From: Lee Jones <lee@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Pavel Machek <pavel@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+	Ion Agorria <ion@agorria.com>,
+	=?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v6 2/7] mfd: Add driver for ASUS Transformer embedded
+ controller
+Message-ID: <20260518101328.GS305027@google.com>
+References: <20260502124055.22475-1-clamor95@gmail.com>
+ <20260502124055.22475-3-clamor95@gmail.com>
+ <20260514100205.GG305027@google.com>
+ <CAPVz0n07EKiF=Gi=Po0zFVSuU=g4pbhJam7VHgiQsPTwtT2wQg@mail.gmail.com>
+ <20260514155004.GO305027@google.com>
+ <CAPVz0n1drWV6zMzOx93gHNaw+Tt0M9oAF2RyKW6tZcC2gF_HAQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/fair: Revert boost in cpu_util()
-To: =?UTF-8?B?aG9uZ3lhbi54aWEo5aSP5byY5b2mKQ==?= <hongyan.xia@transsion.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: =?UTF-8?B?aHVwdSjog6Hnkp4p?= <hupu@transsion.com>,
- =?UTF-8?B?amlhemkubGko5p2O55Sy5a2QKQ==?= <jiazi.li@transsion.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Qais Yousef <qyousef@layalina.io>
-References: <20260518024039.932-1-hongyan.xia@transsion.com>
-Content-Language: en-US
-From: Christian Loehle <christian.loehle@arm.com>
-In-Reply-To: <20260518024039.932-1-hongyan.xia@transsion.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPVz0n1drWV6zMzOx93gHNaw+Tt0M9oAF2RyKW6tZcC2gF_HAQ@mail.gmail.com>
 
-On 5/18/26 03:40, hongyan.xia(夏弘彦) wrote:
-> From: Hongyan Xia <hongyan.xia@transsion.com>
-> 
-> We have seen a massive power consumption regression (20% SoC power
-> increase in many apps) after updating our kernel. After bisection we
-> pinpointed the regression to the cpu_util(boost) feature. After
-> reverting the boost feature the massive energy regression is gone.
-> Detailed trace analysis down below. The regression is found across quite
-> many apps but Youtube is one of the worst offenders, shown in the
-> 1080p60fps video benchmark:
-> 
->  Setup      FPS   SoC Power (mW)  diff
-> w/  boost  59.94      913.6
-> w/o boost  59.93      720.4     -21.15%
-> 
-> Signed-off-by: Hongyan Xia <hongyan.xia@transsion.com>
-> 
-> ---
-> Analysis:
-> 
-> We found several problems that result in the power spike:
-> 
-> 1. Arithmetic should not happen between util_avg and runnable_avg:
-> 
-> After util = max(util, runnable) which potentially picks runnable value
-> in cpu_util(), we then add or subtract task util values from it. This
-> produces a value that is half-runnable-half-util which is ill-defined.
-> This alone should be a warning sign. This breaks EAS calculations in
-> many cases, leading to sub-optimal task placements.
-> 
-> 2. Using the absolute value of runnable_avg to drive frequency is
->    too high to be reasonable:
-> 
-> We use runnable in a _relative_ way to util to know whether there is
-> contention in several places. However, the _absolute_ value should not
-> be used like util. Runnable_avg tends to be significantly higher,
-> making it much easier to saturate frequency.
-> 
-> For example, if three tasks each with a util of 100 contend on the same
-> rq, the rq util is 300 but runnable_avg shoots up to 900. 900 drives the
-> CPU at the max frequency, and it's highly questionable whether this
-> boost is the right decision.
-> 
-> 3. Runnable_avg may not even reflect true contention:
-> 
-> When tasks are dependent, the bottleneck is often the data flow between
-> tasks, not the contention seen by runnable_avg. Boosting frequency with
-> runnable in such scenarios wastes power without performance benefits.
-> 
-> We found 1 has minor power regression but 2 and 3 regresses power
-> significantly. We have seen multiple applications with the
-> producer-consumer model with many worker threads suffer. When there is
-> IPC between producer and consumer, boosting frequency blindly does not
-> help performance at all if consumer is limited by how much data is flown
-> through. Youtube suffer from 1, 2 and 3 at the same time, leading to a
-> total SoC power regression of 20% shown in the results above.
+On Thu, 14 May 2026, Svyatoslav Ryhel wrote:
 
-We did discuss removing runnable boost internally as well, but I’d love to see
-more data too.
-The original issue it was trying to solve was avoiding jank frames during load
-spikes, which YouTube does not really exercise. Some gaming workload data would
-therefore be a useful addition here.
+> чт, 14 трав. 2026 р. о 18:50 Lee Jones <lee@kernel.org> пише:
+> >
+> > On Thu, 14 May 2026, Svyatoslav Ryhel wrote:
+> >
+> > > чт, 14 трав. 2026 р. о 13:02 Lee Jones <lee@kernel.org> пише:
+> > > >
+> > > > On Sat, 02 May 2026, Svyatoslav Ryhel wrote:
+> > > >
+> > > > > From: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> > > > >
+> > > > > Support Nuvoton NPCE795-based ECs as used in Asus Transformer TF201,
+> > > > > TF300T, TF300TG, TF300TL and TF700T pad and dock, as well as TF101 dock
+> > > > > and TF600T, P1801-T and TF701T pad. This is a glue driver handling
+> > > > > detection and common operations for EC's functions.
+> > > > >
+> > > > > Co-developed-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > > Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> > > > > ---
+> > > > >  drivers/mfd/Kconfig                     |  14 +
+> > > > >  drivers/mfd/Makefile                    |   1 +
+> > > > >  drivers/mfd/asus-transformer-ec.c       | 762 ++++++++++++++++++++++++
+> > > > >  include/linux/mfd/asus-transformer-ec.h | 162 +++++
+> > > > >  4 files changed, 939 insertions(+)
+> > > > >  create mode 100644 drivers/mfd/asus-transformer-ec.c
+> > > > >  create mode 100644 include/linux/mfd/asus-transformer-ec.h
+> >
+> > [...]
+> >
+> > > > > +     unsigned int num_devices;
+> > > > > +     bool clr_fmode; /* clear Factory Mode bit in EC control register */
+> > > > > +};
+> > > > > +
+> > > > > +struct asus_ec_data {
+> > > > > +     struct asusec_info info;
+> > > >
+> > > > You have 'data' and 'info' which a) using non-forthcoming nomenclature
+> > > > and doesn't tell me anything and then you b) put 'info' in the device's
+> > > > driver_data attribute which is very confusing.  driver_data should be
+> > > > for what we call ddata which I assume is expressed as 'data' here.
+> > > >
+> > >
+> > > asusec_info is shared among all child devices and is exposed while
+> > > remaining elements of this struct are for internal use only.
+> >
+> > Our terminology for that is usually ddata, that gets stored in
+> > 'struct devices' device_data attribute.
+> >
+> > > > > +     struct mutex ecreq_lock; /* prevent simultaneous access */
+> > > > > +     struct gpio_desc *ecreq;
+> > > >
+> > > > If I hadn't seen the declaration, I'd have no idea this was a GPIO
+> > > > descriptor.  Please improve the nomenclature throughout.
+> > > >
+> > > > > +     struct i2c_client *self;
+> > > >
+> > > > Again, please use standard naming conventions:
+> > > >
+> > > > % git grep "struct i2c_client" | grep "\*self" | wc -l
+> > > > 0
+> > > >
+> > > > % git grep "struct i2c_client" | grep "\*client" | wc -l
+> > > > 6304
+> > > >
+> > > > % git grep "struct i2c_client" | grep "\*i2c" | wc -l
+> > > > 903
+> > > >
+> > >
+> > > ok, noted.
+> > >
+> > > > > +     const struct asus_ec_chip_data *data;
+> > > >
+> > > > 'data', 'priv' and 'info' should be improved.
+> > > >
+> > > > > +     char ec_data[DOCKRAM_ENTRY_BUFSIZE];
+> > > >
+> > > > An array of chars called 'data'.  This could be anything.
+> > > >
+> > >
+> > > Do you have a comprehensive list of name conventions you find suitable?
+> >
+> > Anything descriptive that alludes to the type of data being held there.
+> >
+> > There are 100's of good examples, but a handful of generic / bad ones.
+> >
+> > > > > +     bool logging_disabled;
+> > > >
+> > > > This debugging tool is probably never going to be used again.
+> > > >
+> > > > Keep it local.
+> > > >
+> > > > > +};
+> > > > > +
+> > > > > +struct dockram_ec_data {
+> > > > > +     struct mutex ctl_lock; /* prevent simultaneous access */
+> > > > > +     char ctl_data[DOCKRAM_ENTRY_BUFSIZE];
+> > > > > +};
+> > > > > +
+> > > > > +#define to_ec_data(ec) \
+> > > > > +     container_of(ec, struct asus_ec_data, info)
+> > > > > +
+> > > > > +/**
+> > > > > + * asus_dockram_read - Read a register from the DockRAM device.
+> > > > > + * @client: Handle to the DockRAM device.
+> > > > > + * @reg: Register to read.
+> > > > > + * @buf: Byte array into which data will be read; must be large enough to
+> > > > > + *    hold the data returned by the DockRAM.
+> > > > > + *
+> > > > > + * This executes the DockRAM read based on the SMBus "block read" protocol
+> > > > > + * or its emulation. It extracts DOCKRAM_ENTRY_SIZE bytes from the set
+> > > > > + * register address.
+> > > > > + *
+> > > > > + * Returns a negative errno code else zero on success.
+> > > > > + */
+> > > > > +int asus_dockram_read(struct i2c_client *client, int reg, char *buf)
+> > > > > +{
+> > > >
+> > > > Have you considered using Regmap for register access instead of
+> > > > implementing custom functions?  Remaps already deals with caching and
+> > > > locking mechanisms that you'd get for free.
+> > > >
+> > > > This looks like it would be replaced with devm_regmap_init_i2c().
+> > > >
+> > >
+> > > I will consider this, thank you.
+> > >
+> 
+> It seems that regmap does not fit for this purpose, but I might switch
+> to plain i2c_smbus_read_i2c_block_data
 
-Runnable boost was considered as an alternative to approaches like reducing the
-PELT half-life and similar changes. Qais’ current ideas also try to tackle this
-problem, of course, so +CC.
+Can you explain why Regmap doesn't work for you?
 
-If you have run many workloads, do you also have data on where this feature actually
-helped, especially in reducing jank frames?
+Regmap is just a wrapper about i2c_smbus_read_i2c_block_data() and friends.
 
-Some discussion from back then:
-https://lore.kernel.org/lkml/20230406155030.1989554-1-dietmar.eggemann@arm.com/
-https://lore.kernel.org/lkml/20220829055450.1703092-1-dietmar.eggemann@arm.com/
+> > > > > +     struct device *dev = &client->dev;
+> > > > > +     int ret;
+> > > > > +
+> > > > > +     memset(buf, 0, DOCKRAM_ENTRY_BUFSIZE);
+> > > > > +     ret = i2c_smbus_read_i2c_block_data(client, reg,
+> > > > > +                                         DOCKRAM_ENTRY_BUFSIZE, buf);
+> > > > > +     if (ret < 0)
+> > > > > +             return ret;
+> > > > > +
+> > > > > +     if (buf[0] > DOCKRAM_ENTRY_SIZE) {
+> > > > > +             dev_err(dev, "bad data len; buffer: %*ph; ret: %d\n",
+> > > > > +                     DOCKRAM_ENTRY_BUFSIZE, buf, ret);
+> > > > > +             return -EPROTO;
+> > > > > +     }
+> > > > > +
+> > > > > +     dev_dbg(dev, "got data; buffer: %*ph; ret: %d\n",
+> > > > > +             DOCKRAM_ENTRY_BUFSIZE, buf, ret);
+> > > >
+> > > > Please remove all of these debug messages.
+> > > >
+> > >
+> > > Why debug messages cannot be preserved? They are specifically marked as dev_dbg
+> >
+> > It's a general convention.
+> >
+> > After initial development, they tend to just litter the code-base.
+> >
+> > Debug prints can be useful higher up the stack though.
+> >
+> 
+> I am fine with removing all debugs and logging but I strongly would
+> like to keep EC model and firmware version along with susb and factory
+> status. That may be quite useful in identifying EC used and its
+> behavior without need in rebuilding the kernel and digging huge piles
+> of downstream code in order to find how to dump these values.
 
-> [snip]
+Yes, you can keep this sort of thing as INFO.
+
+-- 
+Lee Jones
