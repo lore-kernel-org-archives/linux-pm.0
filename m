@@ -1,202 +1,118 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6CC778F3A;
-	Tue, 19 May 2026 00:26:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A9492571C0
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 00:42:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779150365; cv=none; b=uayZFf5iw0VCNgi/pM7XYMqL38C2Ryk365l7lYSFO0e5pz/NwfSiYWaGZ35NoY7P+mt2qXv0T1/XJW79dgnuuphtZ/zWuFGJ1BO4+dPxya+5mtza/TZmwfYOsaJwo45uZf/eEgXAt9J9mV/evqGBZULtyGnXEbamCaagf48sERk=
+	t=1779151324; cv=none; b=Av83FLwU3GPTWW4b0DClKFWFLEZnEF7oG8TO7zYXvLIKK0FMFEUkFsinir8O61sKEsO8tA6A5QriG1YGVKjVnGxgNuHrPBgOinnJkN/ukSudlWVuu8My66fByJF1JC+LydhbVyEAIUQ0Rsg/KK6Fex/HcoukguZxkRlDaDtnT9s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779150365; c=relaxed/simple;
-	bh=QeaGqPkY880B2H1MX0s9tMMl2MY+G0asnmaMXnfPQKc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sPD+uJ9DrShXHSxWWh8rtCkLXh6kB9byB/cnvFtxRvD//84JO1cpB20R0EI6k8b7S+E6I6VZ4MBRQVAptGNvZZ/VNLuq3gmRB/XiPfthM+pG0aOCl7DLvXGDaTT+ZBEes5C7Qb721K6XLQo0ZUJkCFvuaGHFAdI35dw1l5NMDvc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bwZ8fvVa; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1779151324; c=relaxed/simple;
+	bh=1YmX0fGkcJsbMLP5ma7XnXNn/SksmhSZbH30g99aBFs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F45S5/+yqlyDzlFPEcCJcOEazVXR9XT1G3cJ8E/dgACyEgSmpn2CP8gMf3QLIkeejMnkwyaz8/IiezCfma78PPdqFhwICJeih3k1OyLRKm7P+2eYBnQXHz6kFd7cFvKHME49JxGqVTqR7yvab+U5IdGDYrSE8voidT6egLXdIn8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pT84BESE; arc=none smtp.client-ip=209.85.210.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bwZ8fvVa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 085B1C2BCB7;
-	Tue, 19 May 2026 00:26:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779150365;
-	bh=QeaGqPkY880B2H1MX0s9tMMl2MY+G0asnmaMXnfPQKc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bwZ8fvVasjSWjmQ9trLx+1Kc5gEYizGmn7lCRAJ3ZRxP/pfxgUZa8rtV775wtpx1m
-	 tHaCds2m0Ako3CCgo6X+fRnql+QzxoUyW0MtsgvkaS1gy8reTi4JdInP7CR653uzFQ
-	 hsL/qKmtQJiZXXeOlgcagWqdykLArZ7cGBJN+V4zu9nQtQCXJct8HWpXRjNtUrbTCm
-	 1DSH9odRjxb7u25+z0qxBLXe52VOvrs3HEQ0IdMPBPkfcjV0QpjZSk4BzSP6GNuWF4
-	 z/KHfDMxjtzx1sNIIgCysBM15xtbWB8NRdHe4hVYsxac1n75G3/oPv436VI9tHGVm8
-	 sEuhyBWIdDL/w==
-Date: Tue, 19 May 2026 00:26:02 +0000
-From: Yixun Lan <dlan@kernel.org>
-To: Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-riscv@lists.infradead.org, spacemit@lists.linux.dev,
-	linux-kernel@vger.kernel.org, Vincent Legoll <legoll@online.fr>,
-	Gong Shuai <gsh517025@gmail.com>
-Subject: Re: [PATCH v5 3/3] riscv: dts: spacemit: Add thermal sensor for K1
- SoC
-Message-ID: <20260519002602-GKE3679294@kernel.org>
-References: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
- <20260427-k1-thermal-v5-3-df39187480ed@mailbox.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pT84BESE"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-838d0b7c950so2042601b3a.3
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2026 17:42:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779151322; x=1779756122; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BKPyDfzW/WAVTLGso+F2wDl5cgejxyDE1jm06Ek0+Ig=;
+        b=pT84BESE30sdB+23ko1kTegCOIWgB1FyNUWsp73xr8bDtTd/qO8On6CqKUbKQ4xYNR
+         iYqKr+MscXY4DWlxC0vnHEpmwxn4Z9KYxoVZkq2fomG/iHL3y9VP8TvOIq64ry3Kysn0
+         L2XxXKgX+kiAdablpfHzTmd+jwTD8TbbfoYMyzv7YYpw0lniDx96L31cLi0zRBWyL5Lk
+         aNO/eBJbNVUH8RGxvjW0/tLwFTVTSgag+20hoB5n150+WPjc5UEfainLfOHCWLILrtbF
+         61KUTR8fW0V0MU1812rU1Ac06daQJ4Zzu3K9JrGATV9ext7btSdgvkAC7XyszZwY6uNA
+         g1WA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779151322; x=1779756122;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BKPyDfzW/WAVTLGso+F2wDl5cgejxyDE1jm06Ek0+Ig=;
+        b=OSVhWPL/4GwY1Z1+7kyOWUwxQLIT1k820bdX05Pj/ue6kUUII3gFwLZTNBRu5ntD4D
+         9cSwHoLGoFqGOvsxS3Eo3WECwFUH+QMkkXlbS3U4QU0E3LDjnaYFQBO4LD+7VfcoA8OB
+         FAUoylQmERYB/pUrMQX8nqKkqA3pBJrmE/0oLugcCQBDhr+CJimrt3vOHCP4Iehp3UT4
+         UCZZDMMcY5nWKT47EW7eO9g/lLbUtxxXW+AVZz7uZpLWg4NI4Jx9e1KXxwecF0V+F+kE
+         7t2BRJ6WbqTsLpSfLZWceMFeXC9YV9QpFzp61QCU9HA19NuXxBOogcT8eaCROfQk4Zzy
+         vxrA==
+X-Gm-Message-State: AOJu0YwhslH6NmG8ie18IYlCyeSdfdxZsaQKGqesD349dElgoXJ6QzEN
+	KYMu2zwKSRlc2+4aHm/ZNvT5HfAHsWkGypTgcTu4YUxgKl27k86RKdkHzJQzreXV
+X-Gm-Gg: Acq92OGAIC+ilJocT9uCB3WE8SgQ0EJpBNIDziwboX/YLqP3+6fKpsE/JYA5zEd/om9
+	ZjXF2WO5spwMFMOAV+mY/fZNU3sU7Ad7tlNcpxV6eiwCgkxjpXvhmusmNp4yWdRH4D2rTjS0UZS
+	MYVxxZO7N8XhwO+ryuY8Eftud3WtYNKgibKCGZLALiySxIsFhWLdIf2z9WET34hT5orRC9P8Naf
+	Mc+lPTadLskdMANsWiFBkgc6DzhcbWoqv8FmUxYHaC46GmKVM6RF50k9gzvb5bofT3xOi6yU/ow
+	+OH2pox+N73DCW6T47XZ2SeHFPanaDKJ5g9nxnkU7rsVdpdnT62v5F6Chswmy85RXsznzUYR7zo
+	Z9I38iK8Fq0gCu6G6IiIO0DeN65CZDxnjde3aN3W198bwPDVRpqphxkIUNjcZphjwSAsQ3/h4co
+	cwUUdf0ENzKluKBeyBQK3g0HW0YzyGKM2wov7qWCs8Rxus+xjoahGdAJt6bwY5n/BPn3aP9QHMH
+	p5Hn1Muphg24vFk//dzISzk5tSL3uwULCQ=
+X-Received: by 2002:a05:6a20:9190:b0:38b:eadd:449a with SMTP id adf61e73a8af0-3b22ec635b9mr20395564637.38.1779151322481;
+        Mon, 18 May 2026 17:42:02 -0700 (PDT)
+Received: from ryzen ([2601:644:8000:5b5d:7285:c2ff:fe45:8a32])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c82bb062941sm18819785a12.2.2026.05.18.17.42.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 May 2026 17:42:01 -0700 (PDT)
+From: Rosen Penev <rosenp@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>,
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] power: reset: st-poweroff: Use of_device_get_match_data()
+Date: Mon, 18 May 2026 17:41:44 -0700
+Message-ID: <20260519004144.626969-1-rosenp@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260427-k1-thermal-v5-3-df39187480ed@mailbox.org>
+Content-Transfer-Encoding: 8bit
 
-Hi Shuwei,
+Use of_device_get_match_data() to fetch the reset syscfg data directly
+instead of open-coding an of_match_device() lookup.
 
-On 15:15 Mon 27 Apr     , Shuwei Wu wrote:
-> Include the Thermal Sensor node in the SpacemiT K1 dtsi
-> with definitions for registers, clocks, and interrupts.
-> Additionally, configure thermal zones for the soc, package, gpu, and
-> clusters to enable temperature monitoring via the thermal framework.
-> 
-> Tested-by: Vincent Legoll <legoll@online.fr> # OrangePi-RV2
-> Tested-by: Gong Shuai <gsh517025@gmail.com>
-> Signed-off-by: Shuwei Wu <shuwei.wu@mailbox.org>
-> 
-> ---
-> Changes in v2:
-> - Update compatible to "spacemit,k1-tsensor"
-> ---
->  arch/riscv/boot/dts/spacemit/k1.dtsi | 101 +++++++++++++++++++++++++++++++++++
->  1 file changed, 101 insertions(+)
-> 
-> diff --git a/arch/riscv/boot/dts/spacemit/k1.dtsi b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> index 529ec68e9c23..e9952204224e 100644
-> --- a/arch/riscv/boot/dts/spacemit/k1.dtsi
-> +++ b/arch/riscv/boot/dts/spacemit/k1.dtsi
-> @@ -339,6 +339,96 @@ osc_32k: clock-32k {
->  		};
->  	};
->  
-> +	thermal-zones {
-> +		soc-thermal {
-> +			polling-delay-passive = <0>;
-> +			polling-delay = <0>;
-> +			thermal-sensors = <&thermal 0>;
-> +
-> +			trips {
-> +				soc-crit {
-> +					temperature = <115000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		package-thermal {
-> +			polling-delay-passive = <0>;
-> +			polling-delay = <0>;
-> +			thermal-sensors = <&thermal 1>;
-> +
-> +			trips {
-> +				package-crit {
-> +					temperature = <115000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		gpu-thermal {
-> +			polling-delay-passive = <100>;
-> +			polling-delay = <0>;
-> +			thermal-sensors = <&thermal 2>;
-> +
-> +			trips {
-> +				gpu-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				gpu-crit {
-> +					temperature = <115000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		cluster0-thermal {
-> +			polling-delay-passive = <100>;
-> +			polling-delay = <0>;
-> +			thermal-sensors = <&thermal 3>;
-> +
-> +			trips {
-> +				cluster0-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				cluster0-crit {
-> +					temperature = <115000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		cluster1-thermal {
-> +			polling-delay-passive = <100>;
-> +			polling-delay = <0>;
-> +			thermal-sensors = <&thermal 4>;
-> +
-> +			trips {
-> +				cluster1-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				cluster1-crit {
-> +					temperature = <115000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +	};
-> +
->  	soc {
->  		compatible = "simple-bus";
->  		interrupt-parent = <&plic>;
-> @@ -494,6 +584,17 @@ syscon_apbc: system-controller@d4015000 {
->  			#reset-cells = <1>;
->  		};
->  
-> +		thermal: thermal@d4018000 {
-> +			compatible = "spacemit,k1-tsensor";
-> +			reg = <0x0 0xd4018000 0x0 0x100>;
-> +			clocks = <&syscon_apbc CLK_TSEN>,
-> +				 <&syscon_apbc CLK_TSEN_BUS>;
-> +			clock-names = "core", "bus";
-> +			interrupts = <61>;
-> +			resets = <&syscon_apbc RESET_TSEN>;
-> +			#thermal-sensor-cells = <1>;
-> +		};
-Ok, so if I understand correctly the thermal is a SoC feature, so with
-above it will be enabled by default for all boards, but for the convention
-we usually disable it in dtsi file, and enable it at board dts level
+This also lets the driver drop the of_device.h include.
 
-Please convince me doing above is better? as I'm not sure if there is
-cases that user want it disabled (but could possible)..
+Assisted-by: Codex:GPT-5.5
+Signed-off-by: Rosen Penev <rosenp@gmail.com>
+---
+ drivers/power/reset/st-poweroff.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
--- 
-Yixun Lan (dlan)
+diff --git a/drivers/power/reset/st-poweroff.c b/drivers/power/reset/st-poweroff.c
+index 85175066beea..2c0cedd18406 100644
+--- a/drivers/power/reset/st-poweroff.c
++++ b/drivers/power/reset/st-poweroff.c
+@@ -9,7 +9,6 @@
+
+ #include <linux/module.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/reboot.h>
+@@ -73,15 +72,12 @@ static const struct of_device_id st_reset_of_match[] = {
+ static int st_reset_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+-	const struct of_device_id *match;
+ 	struct device *dev = &pdev->dev;
+
+-	match = of_match_device(st_reset_of_match, dev);
+-	if (!match)
++	st_restart_syscfg = (struct reset_syscfg *)of_device_get_match_data(dev);
++	if (!st_restart_syscfg)
+ 		return -ENODEV;
+
+-	st_restart_syscfg = (struct reset_syscfg *)match->data;
+-
+ 	st_restart_syscfg->regmap =
+ 		syscon_regmap_lookup_by_phandle(np, "st,syscfg");
+ 	if (IS_ERR(st_restart_syscfg->regmap)) {
+--
+2.54.0
+
