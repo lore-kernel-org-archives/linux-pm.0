@@ -1,76 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C1A6352005;
-	Tue, 19 May 2026 10:35:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1EAC4D90DB;
+	Tue, 19 May 2026 10:39:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779186916; cv=none; b=nYw81rVE1Vhh5SfHI3GMnKQC6lD2+N/DFKYvU3XYHnxxxORUbPZAZ6U2VRYXfV0sshtSJZxxdoW/vf7c9TRS1HVv+K8xYtsDmGTrkt4uO2QJQp5AE1onfyYze6HNR9nKre7OLsXwoDM01nuomNRtH6JeNwyEmCET2EL+mw7ksFY=
+	t=1779187164; cv=none; b=nJJZvg5s8VKojuFE9+fHfqdFMcEZBZGDA5h0p+6kh4U9nWg5IWpCU5UPpC3xgaWs1mArTxhP9bC57MJq9GOrqxxg/UDrc2I2Fz6ZPDUg/VZx0TOyEfTUqwbVBPJ4wBunodRG55L9Wv/qYlq34r63d3oM8Gm+sZsTrdTkjonnveM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779186916; c=relaxed/simple;
-	bh=g5E7bT/PM4Dhfzh+9I5AFakJmUkK7R9MsAxESX5l0p4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ksLSft94lHdIXVegC8TaQ/wtsTazfT0Vo0MqYB4ynGOr/mGzj+r1396r7+fLJZH9cBMmyD3UmSBO4+wYoE8RdiWtBsNpUJVGcKksuOYZ++gcU/QDOCvydw4BPOuGAMS2BqigFYqsFwo9U5cEFWrEJAd4TbWF4sf+oxoO/fDeIqA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kCt2jVKD; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1779187164; c=relaxed/simple;
+	bh=5J8hmX1CCU0iLcpPMu5NtOM8FHJanErUGlCyNObqAGo=;
+	h=Content-Type:Date:Message-Id:Subject:Cc:To:From:Mime-Version:
+	 References:In-Reply-To; b=W0aPMzYGJMEtWJ3nsWgpOjpX2Vg0Z3F6LZGitk6xEsbxITL4RCcrsgy0eWJfemcbJ+jlRNKhdlAp2Cim3xZa8Gbh4OIL4BZ53s6i9hUwUJMq8Ad8bn6LBucQt6jsW6DHT6xfhI+y2Iz3cAdfX73Xv7WTG2G4aBMXi8TG1UVEP8E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WlzyzTrf; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kCt2jVKD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9644AC2BCB3;
-	Tue, 19 May 2026 10:35:15 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WlzyzTrf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32C81C2BCB3;
+	Tue, 19 May 2026 10:39:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779186916;
-	bh=g5E7bT/PM4Dhfzh+9I5AFakJmUkK7R9MsAxESX5l0p4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kCt2jVKDZ0fPj0IPRTU3IqEbCWO0BFwXBp0Mz54Xj9jS/4nqD0cBHnXpIMOCOnVmB
-	 NoOmOO9ofeToMba6qUK/4azWCFa3zyYGhsvjHmw9VbUVH4POhODq6jmgeX4SwoWTeu
-	 kLeR7sI5Y67BxbWLE2uzH8O3PkX9cCEM2f1LLkee1Vo37zCxODUOkuGRnnDeoqm2LC
-	 r0u/jHDHurK5RJf2RpxVoDmbMHg3Rd+imXYBsjkpdip7r3glGOdKlAki0AZYt17XaS
-	 AyaNcxJQ0HHq648ubUqOiyHz+Vipwf6qmUqoQ67WVV+htUZFgKTp82WCAUtLPja1aW
-	 w/PJDLiG0KEaA==
-Date: Tue, 19 May 2026 12:35:13 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, 
-	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jishnu.prakash@oss.qualcomm.com, 
-	kamal.wadhwa@oss.qualcomm.com
-Subject: Re: [PATCH 1/2] dt-bindings: soc: qcom: pmic-glink: Document
- batteryless property
-Message-ID: <20260519-first-wine-bulldog-a6a4c7@quoll>
-References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
- <20260518-add_dc_in_support-v1-1-31fbaa329879@oss.qualcomm.com>
- <fd58d6d7-26cf-4b11-82ad-05b4863b6dd1@kernel.org>
- <20260519082526.odmn5dqi2jftwnln@hu-kotarake-hyd.qualcomm.com>
+	s=k20201202; t=1779187164;
+	bh=5J8hmX1CCU0iLcpPMu5NtOM8FHJanErUGlCyNObqAGo=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=WlzyzTrfiapXBcLy/6izyhFaE+Ulg7HRdIMadQ7hTDarGnJnez4IPmK3n3+FbUfEX
+	 0qCGQS2eEE4Uzmqq4tltIvQLCfObxCmFIn2R8idpC/VvAmw8bf751KtnrYk3y8e8xf
+	 puwIBSuda04tXtpDp/1k37aHCAp2Nezb0a0TdrIBn7WZ5bvhQnCm4wqetagni4o5yt
+	 1LOWieJIVCn7g+Z7zBAuUjUpGvPSWZG5bpdIqJ3vDjWMLIvurI31NerM+pInCA2fkv
+	 QxFzIaYcjvwpYJciL5pSSZlE28Pj5ZYUy4pZHmD0G4HKc4n2nmQnk+kBO1/7a1g4hf
+	 j2eAV1vQ7jG+A==
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 19 May 2026 12:39:15 +0200
+Message-Id: <DIML7JNOV84D.1CK4G9MBZQJ3T@kernel.org>
+Subject: Re: [PATCH v3 17/27] rust: auxiliary: generalize Registration over
+ ForLt
+Cc: <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+ <acourbot@nvidia.com>, <aliceryhl@google.com>, <david.m.ertman@intel.com>,
+ <ira.weiny@intel.com>, <leon@kernel.org>, <viresh.kumar@linaro.org>,
+ <m.wilczynski@samsung.com>, <ukleinek@kernel.org>, <bhelgaas@google.com>,
+ <kwilczynski@kernel.org>, <abdiel.janulgue@gmail.com>,
+ <robin.murphy@arm.com>, <markus.probst@posteo.de>, <ojeda@kernel.org>,
+ <boqun@kernel.org>, <gary@garyguo.net>, <bjorn3_gh@protonmail.com>,
+ <lossin@kernel.org>, <a.hindborg@kernel.org>, <tmgross@umich.edu>,
+ <igor.korotin@linux.dev>, <daniel.almeida@collabora.com>,
+ <pcolberg@redhat.com>, <driver-core@lists.linux.dev>,
+ <linux-kernel@vger.kernel.org>, <nova-gpu@lists.linux.dev>,
+ <dri-devel@lists.freedesktop.org>, <linux-pm@vger.kernel.org>,
+ <linux-pwm@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>
+To: "Eliot Courtney" <ecourtney@nvidia.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260519082526.odmn5dqi2jftwnln@hu-kotarake-hyd.qualcomm.com>
+References: <20260517000149.3226762-1-dakr@kernel.org>
+ <20260517000149.3226762-18-dakr@kernel.org>
+ <DIMHR3ZPEL92.2HVZ0FGPM54MF@nvidia.com>
+In-Reply-To: <DIMHR3ZPEL92.2HVZ0FGPM54MF@nvidia.com>
 
-On Tue, May 19, 2026 at 01:55:26PM +0530, Rakesh Kota wrote:
->=20
-> > And isn't lack of monitored battery property enough to indicate that?
->=20
-> Regarding monitored-battery =E2=80=94 its absence alone isn't sufficient.=
- The
-> BATT_ID line on debug boards is pulled to ~10k=CE=A9, which is used during
-> development phase where some battery properties are still present. The
-> same ~10k=CE=A9 value is also used on some genuinely battery-less product=
-ion
-> platforms where no battery properties exist, making auto-detection
-> unreliable. Hence the need for an explicit DT property to identify
-> hardware platforms where no battery populated.=20
+On Tue May 19, 2026 at 9:56 AM CEST, Eliot Courtney wrote:
+> For example, in the next patch on the sample aux driver you can do:
+>
+> ```
+> let data =3D adev.registration_data::<ForLt!(for<'a> Data<'static>)>()?;
+> let pdev: &'static pci::Device<Bound> =3D data.parent;
+> ```
+>
+> and mint a 'static reference to a bound device, which seems unsound to
+> me.
 
-I don't understand this logic. So you claim you have debug boards which
-do not have battery, but define monitored-battery? Then these are wrong
-and fix them first.
+Good catch, I applied the fix.
 
-Best regards,
-Krzysztof
+Additionally, we could probably reject unused lifetime binders in the ForLt=
+!()
+macro, which doesn't help when used with a type alias, but may be a good
+defensive measure anyway.
 
+> What about requiring all device ids declared to be supported by an aux
+> bus driver to have the same rust registration data type?
+
+Please see [1] and [2].
+
+Thanks,
+Danilo
+
+[1] https://lore.kernel.org/driver-core/DIFBME3GXDC0.14UHJTPD6TTAE@kernel.o=
+rg/
+[2] https://lore.kernel.org/driver-core/DIFXM2N21Q5J.2RIYLU11C5FR6@kernel.o=
+rg/
