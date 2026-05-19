@@ -1,106 +1,163 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E126837FF40;
-	Tue, 19 May 2026 06:18:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B480C3612D8;
+	Tue, 19 May 2026 06:19:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779171505; cv=none; b=mZZZdElFO+wnYqJQtFA46Tc7n/7m5Y58B70hqi4WbKxxq1+q7pv4VEKZV7nE2R7FzX9MCd+G/imfLoPANVcRND+8bz6R01h2FqJCNACnVVZ0tJl1N5HwSziP+KV/NaXHISn4hxjcHJKG9yohi28ZKymrKvOleYEtuHrCgcJsS6E=
+	t=1779171556; cv=none; b=CCDJLdO4z/gZe3m8o9ijkhbYVUgYOXKk0QwG+t/5zUI2W5KOQrhxQE7V5xKUzMQBgL9BGmUgUDehDGAMdumsM1MF84ilU92XKK4xRPCA/8qLFpSi4Ogsu8mZHlGl0seW6dMHDegvfS5Q9LbfGXnSGpfKOjaPoMyZL2M+42MA0z8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779171505; c=relaxed/simple;
-	bh=HDRhc31CvFqZU4Dpr1nIp9CwCZi9lQiE1Y3CzkPcOBw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LNeudRWqIiVbJiKfM8AfmuE/awOpjSv9UsjrwdGx5mtJ7iGgfWMxHk8NIBO3Tdx/7jEevg2whyTW9uI77lrRZYlsk5ZEcWiIJec4hlso/6fsiXowi9pa7PS20+IcrsvxckZ8PBx/iZfbtz6dFDUowodzfZcJ1GxkKxeYFapSKFQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IFdgOXvR; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1779171556; c=relaxed/simple;
+	bh=rz0D5zfSNp1esvneIKvAlw/Q7/V7L+dv2t7L66cebPU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iQ5f9rAuikFZDEELi3G3ER5jaSTA2uVOMBNhXmBG5GEYFVM7rLuhvrNb9xqoLGkvF3xEDyGXT2mxH6au/R5/WZG3aeQA96VY2o/Xi7Y10dOEwaEZCh6HSrWhL0u8VT/7FFUQSOYrjv5E/0HpmvZOU+RmcoS2vvnMk3KLCmG8OLQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=HIkZL8Ek; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IFdgOXvR"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D0BEC2BCB3;
-	Tue, 19 May 2026 06:18:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779171504;
-	bh=HDRhc31CvFqZU4Dpr1nIp9CwCZi9lQiE1Y3CzkPcOBw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=IFdgOXvR5FfbL2FJUD97YOOt3Sv1+Nv/tSjIP6nRxI2USdT75QKo11r+xTpChQJ6l
-	 fgbALL14Rd5XrbJYisvNUOeYUg68203kO9k0dAaw6cbZrleZMPjWY8GDGkQm7BFKMA
-	 VtaJMA5yh8mIQp9egf7FjaV4xoH+6t/5xsq//Q1THQEOxT14t/V2M3VotK7osk2Sl7
-	 zAQiURosFfuRJX9mjdqQ4Fi+4PPIKg1HPB4/WWzKR1pKevRtohjbPFbsoeCMFsibRm
-	 d4RupwtWPF/Dm4yr3qwaMKsP/WjmZY5H8Z24Ar2M5LqVfAtUBKfskJvu5EwPDxL775
-	 pCtk6PBoC3CTQ==
-From: Jisheng Zhang <jszhang@kernel.org>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Danilo Krummrich <dakr@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] PM: Use LIST_HEAD() to initialize on stack list head
-Date: Tue, 19 May 2026 13:59:20 +0800
-Message-ID: <20260519055920.13180-1-jszhang@kernel.org>
-X-Mailer: git-send-email 2.51.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="HIkZL8Ek"
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64J4vPuQ2437943;
+	Tue, 19 May 2026 06:19:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	SIMOVFbm6deHTaj515NmN9Qa1sUot9x/t5Mz5A9Iy8o=; b=HIkZL8Ek6kQ51qPU
+	XU/G7lD9K58ScHlQxdZ3iXVzhsByObKyQUkr1gdpHmxiYYb9xtzlcKEBZWkjtPuG
+	zu+RYJMhPLY2HwnrY0uRNXl6sxws0jQSzYKJCWl3dyeBUw/mOh1I3hn+f6kKkNw+
+	dlRoUXnh8Gnc0J2Em2Z0I7jlhW9l8TEMyQloWq8JNfLtnCtq8bmeuw1WzMxcopKH
+	6uH5iw9/al9iLLCrY0k1VIZ2FQvQDVdAK1dH2pbfITuJzuTXvIZbgBcy2EnTQF75
+	/ZzQfiaVddipI0ArACVDuQSWaBI+V31Ct8d3TvmdHJPHwQOCnlTW11VZgbQp+frR
+	OLpOkw==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e834v3ees-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 May 2026 06:19:10 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 64J6J7VR030837;
+	Tue, 19 May 2026 06:19:07 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4e716dbfd9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 May 2026 06:19:07 +0000 (GMT)
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 64J6J7FY030830;
+	Tue, 19 May 2026 06:19:07 GMT
+Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 64J6J722030829
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 19 May 2026 06:19:07 +0000 (GMT)
+Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
+	id 66FCEB34; Tue, 19 May 2026 11:49:06 +0530 (+0530)
+Date: Tue, 19 May 2026 11:49:06 +0530
+From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kamal.wadhwa@oss.qualcomm.com, jishnu.prakash@oss.qualcomm.com
+Subject: Re: [PATCH 2/2] soc: qcom: rpmpd: Add Shikra RPM Power Domains
+Message-ID: <20260519061906.wma2xeshjyzorh2i@hu-kotarake-hyd.qualcomm.com>
+References: <20260429-add_rpmpd_shikra-v1-0-fdba28564380@oss.qualcomm.com>
+ <20260429-add_rpmpd_shikra-v1-2-fdba28564380@oss.qualcomm.com>
+ <e032c072-57b3-44b4-84a7-5aff062b9c00@oss.qualcomm.com>
+ <20260514084512.q5pzh226zdkuw53f@hu-kotarake-hyd.qualcomm.com>
+ <ezpigr442rjnodqcg5fqsyaik3tkp4yyw3cbu6j75ra2vidnnj@7svqkcz45sdi>
+ <d2025522-ac5c-4e45-8274-1cbb49b7b348@oss.qualcomm.com>
+ <xr57rqikcxgrrlj7or42r5frwhvvateeryfnqz7q4wkhfxffzr@intm5itd3ue6>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <xr57rqikcxgrrlj7or42r5frwhvvateeryfnqz7q4wkhfxffzr@intm5itd3ue6>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Authority-Analysis: v=2.4 cv=F9ZnsKhN c=1 sm=1 tr=0 ts=6a0c00df cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=SqZV5yZ3ZNr3PNtaPaEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: BUL3MfP4TwuLWGd3ndOZODSFxznGJNoW
+X-Proofpoint-GUID: BUL3MfP4TwuLWGd3ndOZODSFxznGJNoW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDA1OSBTYWx0ZWRfX+P2WWK8OazWU
+ GvF8kBpD9Kwq6yyJ145O337vgD8DISxcpUU0rz9pGWrib7mGl6O4vIqcWSwjjSELjzlPPNhhI/t
+ Gd3HSdnIhJSZZEpqxy/stMupBdjcS7ku+LPjUNY/f317tl7pJRe0DkvVmaluCjhRmH3+LMPHU/Z
+ 8WeQpR0wTYRXy43/7AAMR1Y4NXdoy89ZXguoo2+l9u6tLfraw2ExMV9zPDVQy2COF+rRZREC1pW
+ zXaPDDRiJsP6oGZbQ5ffSXBAN16b/3ZydELiJsqFLeDnfXC5SAnVk5i7X9+Jgz2uJpEJREagN3+
+ poN7dlQkd3sokq8G067NY+uelo0+ie150jO/xRw7Son9WGoJDZPBsfrP+8fJCY96B1NO5QF2Xhd
+ DjBu+tlS+80XP3mS9pGKTMEwb8Ysg02DMYFkUhWtFGfldK4cdk6MkFQ2HeDeY6tTPjKGP2eSR9g
+ pJT/8HZQ3I1c9+L5m5w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-19_02,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 malwarescore=0 priorityscore=1501 clxscore=1015
+ suspectscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0 spamscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605190059
 
-Use LIST_HEAD to initialize on stack list head. No intentional
-functional impact.
+On Thu, May 14, 2026 at 12:32:37PM +0300, Dmitry Baryshkov wrote:
+> On Thu, May 14, 2026 at 11:23:39AM +0200, Konrad Dybcio wrote:
+> > On 5/14/26 11:16 AM, Dmitry Baryshkov wrote:
+> > > On Thu, May 14, 2026 at 02:15:12PM +0530, Rakesh Kota wrote:
+> > >> On Tue, May 12, 2026 at 02:16:07PM +0200, Konrad Dybcio wrote:
+> > >>> On 4/29/26 4:09 PM, Rakesh Kota wrote:
+> > >>>> Add RPM Power Domains support for the Shikra platform.
+> > >>>>
+> > >>>> Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+> > >>>> ---
+> > >>>>  drivers/pmdomain/qcom/rpmpd.c | 16 ++++++++++++++++
+> > >>>>  1 file changed, 16 insertions(+)
+> > >>>>
+> > >>>> diff --git a/drivers/pmdomain/qcom/rpmpd.c b/drivers/pmdomain/qcom/rpmpd.c
+> > >>>> index 15a11ff282c3f86b1e86c6604d165e297620f6cf..6f751ee5a7833912d54d2bcfd5d85837ab7a97d3 100644
+> > >>>> --- a/drivers/pmdomain/qcom/rpmpd.c
+> > >>>> +++ b/drivers/pmdomain/qcom/rpmpd.c
+> > >>>> @@ -863,6 +863,21 @@ static const struct rpmpd_desc sdm660_desc = {
+> > >>>>  	.max_state = RPM_SMD_LEVEL_TURBO,
+> > >>>>  };
+> > >>>>  
+> > >>>> +static struct rpmpd *shikra_rpmpds[] = {
+> > >>>> +	[RPMPD_VDDCX] =		&cx_rwcx0_lvl,
+> > >>>> +	[RPMPD_VDDCX_AO] =	&cx_rwcx0_lvl_ao,
+> > >>>> +	[RPMPD_VDDCX_VFL] =	&cx_rwcx0_vfl,
+> > >>>> +	[RPMPD_VDDMX] =		&mx_rwmx0_lvl,
+> > >>>> +	[RPMPD_VDDMX_AO] =	&mx_rwmx0_lvl_ao,
+> > >>>> +	[RPMPD_VDDMX_VFL] =	&mx_rwmx0_vfl,
+> > >>>> +};
+> > >>>
+> > >>> This is identical to sm6125_rpmpds. If you're sure the list is correct
+> > >>> and complete (no LPI domains etc.), you can drop this patch, and proceed
+> > >>> with just this change:
+> > >>>
+> > >> There is one difference — the max_state for Shikra is
+> > >> RPM_SMD_LEVEL_TURBO_NO_CPR, whereas sm6125 uses RPM_SMD_LEVEL_BINNING. 
+> > > 
+> > > It's handled in the DT. As such, programming model and the domain list
+> > > looks the same and compatible.
+> > 
+> > Yes/no, this is an upper bound
+> > 
+> > one improvement we could still make to this patch is not to define
+> > shikra_rpmpds[], but refer to the existing sm6125 one
+> 
+> SGTM
+>
+posted the V2 as per suggestion.
+https://lore.kernel.org/all/20260514-add_rpmpd_shikra-v2-2-20bbd37592b0@oss.qualcomm.com/
 
-Change generated with below coccinelle script:
-
-@@
-identifier name;
-@@
-- struct list_head name;
-+ LIST_HEAD(name);
-... when != name
-- INIT_LIST_HEAD(&name);
-
-Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
----
- drivers/base/power/clock_ops.c | 4 +---
- drivers/base/power/main.c      | 3 +--
- 2 files changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 59bb37e8244c..1f708e10e711 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -422,13 +422,11 @@ void pm_clk_destroy(struct device *dev)
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce, *c;
--	struct list_head list;
-+	LIST_HEAD(list);
- 
- 	if (!psd)
- 		return;
- 
--	INIT_LIST_HEAD(&list);
--
- 	pm_clk_list_lock(psd);
- 
- 	list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e1b550664bab..d0c7b1d4101e 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1257,11 +1257,10 @@ static void device_complete(struct device *dev, pm_message_t state)
-  */
- void dpm_complete(pm_message_t state)
- {
--	struct list_head list;
-+	LIST_HEAD(list);
- 
- 	trace_suspend_resume(TPS("dpm_complete"), state.event, true);
- 
--	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_prepared_list)) {
- 		struct device *dev = to_device(dpm_prepared_list.prev);
--- 
-2.53.0
-
+regards
+Rakesh
+> -- 
+> With best wishes
+> Dmitry
