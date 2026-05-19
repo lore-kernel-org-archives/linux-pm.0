@@ -1,66 +1,65 @@
-Received: from esa3.hc1455-7.c3s2.iphmx.com (esa3.hc1455-7.c3s2.iphmx.com [207.54.90.49])
+Received: from esa9.hc1455-7.c3s2.iphmx.com (esa9.hc1455-7.c3s2.iphmx.com [139.138.36.223])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0163C3DFC93;
-	Tue, 19 May 2026 08:15:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=207.54.90.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A57823E1689;
+	Tue, 19 May 2026 08:25:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=139.138.36.223
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779178522; cv=none; b=Rliq9sH57t/sAeml/EsG3+dz0AN6Awm29V82Nf9csyYRqYcZzhczJMamczF+qcNuXccvFTzVM463g54/10dNPFqPWBiVDM1rjBvyvcbZatHE49PyJPFMVSIOkvY/Km7kRXJUZj+WKn3KdmVG2pFpfpWJY081duCgwFxgBGJKc/o=
+	t=1779179116; cv=none; b=hcg56Zw6fnhM63s1kNG2Nx0iIRFyofdxHcsPyZkavEOTDrZ1uJL5Cygy6qQyNH9r/TgIZxn0ELWcdXhK0LPBPVxNS2+J8YWoX5AINCBQSnYmChY1HqSmoqric8znIVkcvbaiZdMy/WAYsmvIkRBhiusv47rZHtHfLZDJ2FVpdHA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779178522; c=relaxed/simple;
-	bh=TJ8fpz1evDXICM3tkQS1KlJYrX6HFaEpbf6rZUzgB2c=;
+	s=arc-20240116; t=1779179116; c=relaxed/simple;
+	bh=GczDtyA7QqyhgpCt+uS5CB8iB1mmQPJ5p+3j3+yEVDU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=u00H2vcEqK5zn1YkhP4+digfAOM3oCHAJTShkY+gXnFRfSJMtzRyLIhsTesjhWRdTV4k07rQe3QksKohD9z4MFWkw8fIuabelbngaeYwh7/Y/Q1+wozSfNFt0Hhqw+ykPORTb7397afizfTpT/WODooHEkJNpoFhKNW1Moijk1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=bOK36c44; arc=none smtp.client-ip=207.54.90.49
+	 MIME-Version; b=fhO7yqjZlQdbeiBMGhSc9/xeA2EYuGLpkJK4KnKPnTSkbrRE+Ek0gLwQvnUz8phU5ZxuuvCn74+bwI2sl9U0tI2Jdw3d6pTHMNkl/cZbVkyMJqlqGq6N6x1ERGGVrjbPwpChNPUJ7a9tZeL7nxm+OTVOtSHPNpfGLYi8IqQa6Jc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; spf=pass smtp.mailfrom=fujitsu.com; dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b=FBTVmONd; arc=none smtp.client-ip=139.138.36.223
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fujitsu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="bOK36c44"
+	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.b="FBTVmONd"
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
-  t=1779178519; x=1810714519;
+  t=1779179115; x=1810715115;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=TJ8fpz1evDXICM3tkQS1KlJYrX6HFaEpbf6rZUzgB2c=;
-  b=bOK36c44Q3XmC1jYNoxmdOZqQU7hOaM03Z8I6Nfws4zy4WiST++8Khf5
-   6RlvJn/vOiRmx0RR18ySmSFk0ZyL6WWmXzoXBBewSQwAIHQU/7XCgtujp
-   WdhjJvnSlZQJUb7ZOh3IbsSkZ859dWSYfDlG59suHNAgy1bAAnLGJ9eE8
-   Nxi7RvNIMOoSIn0Kosgd+BG29KKSb+R5aR60WDqfIfeZApae6x6iCpTZy
-   6vXghYsn6A5zoUXjiJhgYd3QaXBLfQihe6xCRNHSdb0MgRUXRYn+lv9Zh
-   sAdSPs2F82dloIzpZeHJZxqdRhC0ibmhfsvlr+z7lkc1+JhbV1ZEIf4EJ
+  bh=GczDtyA7QqyhgpCt+uS5CB8iB1mmQPJ5p+3j3+yEVDU=;
+  b=FBTVmONdkiCymQR2yswNyEmxJVSdKhlzGXSJLdC88E1bzl9sdKf4NojA
+   RdUvNOkq5c/DoRmbjIAJ4q1liuWrMUT0gdR89wbOUfKYZAxolvg7UXRls
+   ieuz3OZS8w9CdPd+6KjP3pEtng1PkVrfQqVRDll8/EDCxDEkOe6ktKDFM
+   gKe2ZBdNavlYtlwSpG6NtN6qQ+1eK3pXDz7f4k8ijQHVj7uYBHl1jq9Tf
+   NH85AbLZrAkM4IJ/sZ193VKHbjTM7Nmm52CfCGC185p4mB+RMptobG8d4
+   KWS8QryLa90j2wAqT+SKSnpJRtswy5/9r9hoVBs1cn23aa1OYh6Ggs81p
    Q==;
-X-CSE-ConnectionGUID: 3QEqqa1TQla1Oqi2r4scHg==
-X-CSE-MsgGUID: xeeyy0e7TLaXFUJKYzyITw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11790"; a="241042763"
+X-CSE-ConnectionGUID: UBXCnxP2R4u09n3DKVCSbg==
+X-CSE-MsgGUID: QiBQK/B8TMSKjTz4DoQaPA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11790"; a="228455610"
 X-IronPort-AV: E=Sophos;i="6.23,243,1770562800"; 
-   d="scan'208";a="241042763"
-Received: from gmgwuk01.global.fujitsu.com ([172.187.114.235])
-  by esa3.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 17:15:10 +0900
-Received: from az2uksmgm4.o.css.fujitsu.com (unknown [10.151.22.201])
+   d="scan'208";a="228455610"
+Received: from gmgwnl01.global.fujitsu.com ([52.143.17.124])
+  by esa9.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 17:25:07 +0900
+Received: from az2nlsmgm1.o.css.fujitsu.com (unknown [10.150.26.203])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by gmgwuk01.global.fujitsu.com (Postfix) with ESMTPS id B93C7C0023C;
-	Tue, 19 May 2026 08:15:11 +0000 (UTC)
-Received: from az2nlsmom4.fujitsu.com (az2nlsmom4.o.css.fujitsu.com [10.150.26.201])
+	by gmgwnl01.global.fujitsu.com (Postfix) with ESMTPS id 5C2821000145;
+	Tue, 19 May 2026 08:25:07 +0000 (UTC)
+Received: from az2uksmom1.o.css.fujitsu.com (az2uksmom1.o.css.fujitsu.com [10.151.22.202])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by az2uksmgm4.o.css.fujitsu.com (Postfix) with ESMTPS id 70CA31400109;
-	Tue, 19 May 2026 08:15:11 +0000 (UTC)
+	by az2nlsmgm1.o.css.fujitsu.com (Postfix) with ESMTPS id 010D8C03707;
+	Tue, 19 May 2026 08:25:07 +0000 (UTC)
 Received: from dhcp-portal (unknown [10.172.107.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by az2nlsmom4.fujitsu.com (Postfix) with ESMTPS id DF3772000292;
-	Tue, 19 May 2026 08:15:09 +0000 (UTC)
+	by az2uksmom1.o.css.fujitsu.com (Postfix) with ESMTPS id 6D5671800C07;
+	Tue, 19 May 2026 08:25:05 +0000 (UTC)
 Received: from isar2.ecs00.fujitsu.local (unknown [10.172.183.27])
-	by dhcp-portal (Postfix) with ESMTP id 15594608BF;
-	Tue, 19 May 2026 10:15:09 +0200 (CEST)
+	by dhcp-portal (Postfix) with ESMTP id B25F960A84;
+	Tue, 19 May 2026 10:25:04 +0200 (CEST)
 From: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-To: icheng@nvidia.com
-Cc: alison.schofield@intel.com,
-	ardb@kernel.org,
+To: alison.schofield@intel.com
+Cc: ardb@kernel.org,
 	benjamin.cheatham@amd.com,
 	dan.j.williams@intel.com,
 	dave.jiang@intel.com,
@@ -73,11 +72,11 @@ Cc: alison.schofield@intel.com,
 	smita.koralahallichannabasappa@amd.com,
 	tomasz.wolski@fujitsu.com
 Subject: Re: [PATCH] dax/bus: Upgrade resource conflict message to dev_err() in alloc_dax_region()
-Date: Tue, 19 May 2026 10:15:06 +0200
-Message-Id: <20260519081506.17283-1-tomasz.wolski@fujitsu.com>
+Date: Tue, 19 May 2026 10:25:02 +0200
+Message-Id: <20260519082502.18627-1-tomasz.wolski@fujitsu.com>
 X-Mailer: git-send-email 2.35.3
-In-Reply-To: <agWfgLxDeu_duejj@MWDK4CY14F>
-References: <agWfgLxDeu_duejj@MWDK4CY14F>
+In-Reply-To: <agX7LCdvy38_z4Pt@aschofie-mobl2.lan>
+References: <agX7LCdvy38_z4Pt@aschofie-mobl2.lan>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -86,16 +85,12 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hello Richard,
+Hello Alison,
 
-Thanks for your feedback
+>> How about using request_resource_conflict() so that we can offer
+>> more description in the error message?
 
->> Did you run into any kind of error or even machine crashing from this ?
-No, I haven't hit this error path in practice. On systems I've tested, the deferral logic 
-in hmem_register_cxl_device() correctly drops ranges that CXL claims
-
->> btw, though I am not against the change, I don't think this is a fix, maybe you can consider to remove the Fixes tag.
-Agreed, I'll drop the tag in v2.
+Thanks for the hint - I will add that in v2.
 
 Best regards,
 Tomasz
