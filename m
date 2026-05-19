@@ -1,244 +1,240 @@
-Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
+Received: from LO2P265CU024.outbound.protection.outlook.com (mail-uksouthazon11021128.outbound.protection.outlook.com [52.101.95.128])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCE653F8EB7
-	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 11:37:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.219
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779190666; cv=none; b=VSnS/NVlqHCeSeLbHDilaUR+oE8tA+GNH8JglFaa11o4J6vwB/J0tkOHU0L1ihU6pzqimfbVkXJ2rqnMIJbdivU//7agzA6jZfyWKhVrOOjPjj7lKEJo1HKIWZP6YHCcZ/aLKfCSONnMu6JyUlxqvFLKzQ5BHHaj5jqs4dVMrgg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779190666; c=relaxed/simple;
-	bh=g5OYUU3WsFdGyw70fm8EL0I84pjxWFsul7bUbC5P1FQ=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KsaIla2Pk8JmDJ/HFzf2fsL7l6xxgPhLnmTuzM9Zd2J2vuaC99+xr7hygel0OmpANiuhDhtiUrvtdDeAr8CF3HPD2yyo0bSvo102JduQVTBRIuevF7fEYu4Ag5mnXx54h24hntMewXWOZIVHRf6Pl/HFDPmsaJTrzXLjZtmaFJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.219
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4gKXX12xbSz1prLM;
-	Tue, 19 May 2026 19:29:53 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id B6EFF2025F;
-	Tue, 19 May 2026 19:37:36 +0800 (CST)
-Received: from localhost.localdomain (10.50.163.32) by
- kwepemf200017.china.huawei.com (7.202.181.10) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 19 May 2026 19:37:35 +0800
-From: Jie Zhan <zhanjie9@hisilicon.com>
-To: <cwchoi00@gmail.com>, <cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
-	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-CC: <linuxarm@huawei.com>, <tianyaxiong@kylinos.cn>, <zhanjie9@hisilicon.com>,
-	<zhenglifeng1@huawei.com>, <zhangpengjie2@huawei.com>,
-	<lihuisong@huawei.com>, <prime.zeng@hisilicon.com>
-Subject: [PATCH v3 4/4] devfreq: Refcount governor modules while in use
-Date: Tue, 19 May 2026 19:32:50 +0800
-Message-ID: <20260519113251.3745140-5-zhanjie9@hisilicon.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
-References: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3E4335201E;
+	Tue, 19 May 2026 11:39:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.95.128
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779190783; cv=fail; b=WEd8LqdHnFekfh8pJKxtwbOjBBpi6r5sl73tzsxAyPYmZWCw4ANpR1PjZNYJoh4T0jErLy56vw6qeGXnfLpbC/VX+UqoS3zO7wm57wasq+nW5zK9xCKH07Vm3biM1VkSJX4ZYudfatwyDZ9go0uqRvEetO2iVvUsP4z9rEPA85w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779190783; c=relaxed/simple;
+	bh=BH5FcTYjH8aNgVTm0q5jGbNBjrS8ea4RYrwENJbhClc=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=n16COgEv2Hr2Ngrt7+E7ZeTs/uwh+mkeT3oXRzpnwNZbFCYtoRWb5slm/wpZ4OHlf0YXStg9skck6KQbT2KpxF9FCpCzYmM1MKpqcIZ4sdZdY8Gov0vo1WBVHiN1ideUL2tLJo8KgJ6LkvHdcvwH8gpORAAoOY3TkUuDlkRkFlQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; spf=pass smtp.mailfrom=garyguo.net; dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b=nic+UDoC; arc=fail smtp.client-ip=52.101.95.128
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=garyguo.net
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=garyguo.net header.i=@garyguo.net header.b="nic+UDoC"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=H4bfYz2OmZQLXN9gZTXGg4DwtIaJ1XbCI2K/06uAOQf3GImK2Ll88Q/Acn5uoohibofwDH4JatKTec+PuBH4tVbSLD2JTUVLTWoyELYRAKzqyseFBblffZhoBFe8sNdgnaUw5qj7hKXQuz0OJS6V6QbZZTrxEoMIyxofX0cipCFOBwJ4RLEV+pOZCQBQLu+vCLflviyWFW7XZyhM1VcQaXop+Ns5/An0ujzFAvSkHWtKaEaLLuwdpXeh2pyN396GGOWSTFwxtcV/1Zqb3+0sA4+rgeNd1Hcdl/E6NEgP4xqcEFLNMntkgRq3imEh+FvxAuFee6DsA48ChKSZxd75xg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FurdDLuIo3gHJoVhG2iUKfr0i5G9Qt0XJ09HBI9em64=;
+ b=oiSb3EZqhnNehzcBknBydUlwLeqj+LUBfHQkLxweLWY7aL8fLJZDiOj1DkiqAp2hESL3K5avYZSa+RrkCqbzo5BPDaghSF4GEOVuYTtdRTPtjSriL17nt4bIjCjsGNVVDt1E1s78BqcYgZ5/Sr88Jgfcd1J/fQ6AMrWReILdUBFmBZH6ccJYk76nkRWKzKfQvFOq4B66ePY38VCBJ1GsqQZptWcFud6k3Am+0jIOr29Ilxkno6yDFdhVD6EJxVl8smcdecjxbtW24rumlG/jsELCNrpQybJ7L6OIqJxgxvg9xO+YXkrpscPp+qzl4wMHe0kAMYGgnuPdHF251wJwZA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FurdDLuIo3gHJoVhG2iUKfr0i5G9Qt0XJ09HBI9em64=;
+ b=nic+UDoCgX6uFEz9YXhloSb4mAjeMAhTV1L2HvagCWvPntvYlJ/M0zWcrRTQMYzAFRiLRXbhREALtZihimWnKxYz/L5iCQGqkWhh8pggO37bp16wlPJtSMImsy7OqUjGTGYBIUEDpN/HjylgiLHrimtPPqYiyEI/BVgWLxVz97E=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
+ by LO2P265MB3625.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:1b7::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.14; Tue, 19 May
+ 2026 11:39:34 +0000
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.21.0025.023; Tue, 19 May 2026
+ 11:39:34 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 19 May 2026 12:39:33 +0100
+Message-Id: <DIMMHPLUV2LK.39WF9SGO8TLK5@garyguo.net>
+Cc: <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+ <aliceryhl@google.com>, <david.m.ertman@intel.com>, <ira.weiny@intel.com>,
+ <leon@kernel.org>, <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
+ <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
+ <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
+ <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
+ <a.hindborg@kernel.org>, <tmgross@umich.edu>, <igor.korotin@linux.dev>,
+ <daniel.almeida@collabora.com>, <pcolberg@redhat.com>,
+ <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
+Subject: Re: [PATCH v3 16/27] rust: types: add `ForLt` trait for
+ higher-ranked lifetime support
+From: "Gary Guo" <gary@garyguo.net>
+To: "Alexandre Courbot" <acourbot@nvidia.com>, "Danilo Krummrich"
+ <dakr@kernel.org>
+X-Mailer: aerc 0.21.0
+References: <20260517000149.3226762-1-dakr@kernel.org>
+ <20260517000149.3226762-17-dakr@kernel.org>
+ <DIMLSVG1IO07.28UMFL4GTCQG4@nvidia.com>
+In-Reply-To: <DIMLSVG1IO07.28UMFL4GTCQG4@nvidia.com>
+X-ClientProxiedBy: LO6P265CA0003.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:339::10) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:488::16)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO2P265MB3625:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7eb59d66-fd11-465f-dd74-08deb59b4c4e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|10070799003|366016|7416014|376014|22082099003|56012099003|18002099003|4143699003|3023799003;
+X-Microsoft-Antispam-Message-Info:
+	H7DcSUdwiO7vybdcLqi9ir3c3sRviuYwe0G9KmzYRcBCYEzijrpb0E2UScs94KSDIXSyLkUFNL3SgrR2LiM0I05fbkRi/zyHVqda48dKpzjRQHOJNJLEOtXWKA3VxWUrL0u0w4b2WR8hn+gjejzaVp321TV2WlkfizHgC5LlyBxPbkVe4aAKyZ5NTJ3Vd1zLuHmIq3ZEe30fNZL306VndbuwcszLifr8JDOryRLOEqAHqf2MfYnpZ5A/EiDkzeitP5MdJVnBlO2v82Fr+l3A5drFqg4/PPvDTJMvO6Et//Tn2LET54mLoqPYoVS1WJcZ8vYeWBdcqbecPE1V9Iy2721NsLlPH8ebdmBoB3jI3DE4nntwFF7LFEq8zR7uXyEeh+/R1RBUR3n71ZnKw8vORXOy8VTeI1hVj43Tl3DRgx+4GbOedcQITVHXQNWzFxT6vxdPZJT+tvIIjnI3RMxD0WCGZoALivSMmnEBVoQdmYeb2Duhq1r+GGN5GDhh/TUqmvilqEs2A5nQFCJ6b4KHqA8OfTWJtFjHyBlo32xlA+CsfGSw+RxDEOfJNMeC2OXxXb768qvOomPZaaC4adgctehTx61L+iLGL5y0rMA99LC1r+/gSLQTmzo5SuBd+g1kcC9EKoNuu6sglzJevdx1LFK0ym04MnRGjVrNqQewOur7H8AYyyAZmFJwuvAiaBn/
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(366016)(7416014)(376014)(22082099003)(56012099003)(18002099003)(4143699003)(3023799003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?TDV3TmtDMWlOV2NHRXVvUkZyanNqcGlrdHNmUEt2VXpJbjRyamNLUDhmWXJ3?=
+ =?utf-8?B?cWN1cTdGVVBsVFBpb3c0cHpJQmxTUUtaZnpXUWtMSkc3aHBjS01CdXlLOTFZ?=
+ =?utf-8?B?dUdTaUN3QlFCanZleGhiWEF3enBBMDJPS1NiTDdPTkJiRHE4YVhZSEdWNGNo?=
+ =?utf-8?B?bGJpNnk4d2tja2pkczYvci9YSGRFTFA3RE1sbTg1dEpuTXhPUTNqMWdxTXZH?=
+ =?utf-8?B?VkYwWGJFbGNPZUczL2lCR3JGRngwY2Q5RHVtZXg1WmUvbG0zVTJmRlBSRG1l?=
+ =?utf-8?B?b2t3S2FyUnBNbmVWNHpYTXdNWjl1bW9kcGhmS1RWNi9BVHpiZ2d1dTdXRUwy?=
+ =?utf-8?B?T0NteWI2RFMrRm5rVHRrTDNqZjNHNkI0VG4zTHRubm9ZUnhoV241VFFKclJO?=
+ =?utf-8?B?Tk9MU3NnK2R0NVRtanJhQzlDcWZmZDI5ZElNN3FmbEpTR2hsdHZpbXFWUDE1?=
+ =?utf-8?B?ZFhGUkgwOXM3bG9ucjI5VlZxR2t5MUl1UVBsWWI3TXk0MHZwODB4cXRoMU9V?=
+ =?utf-8?B?OFVxb1NFYWxUSFJiRDR6WWcwM1hxZ082ejRDQ0ZJOTM5UjR2eFhnaTdHQjAz?=
+ =?utf-8?B?bnp3c0RNVmxQd3BXeW1XMk56MThyR05rN3hmSDR2emJGV0VLVHJtZGVkS3Jl?=
+ =?utf-8?B?VkZLR2VBOVB6UEZYZ3Z2dEI5SW5hOGZkbFk3d1l6VDdCV0R4YW5BU29yU1pS?=
+ =?utf-8?B?VUd4a09oL2hXQVpzK1Z1Q21CTFVCVzNFMnVjcnpxR2xrRCtpZ0oxMHhsKzln?=
+ =?utf-8?B?UHdKMFhnVmMrbmdpYVNHY0JTWDk4ci80UHpzYXprb2tkZC93ZWhyZVdRVy96?=
+ =?utf-8?B?SUtjNVl3L0hzMUc2aDcvV0o1Y1lCa3ZyR01EZ2Vicm5DZm56QzdKZmV2NktW?=
+ =?utf-8?B?bXBpTnNIUndqdE4yRjRickFSbGRKbC92b09GQ3pNbm8wVklQN1NXZEhSUEI5?=
+ =?utf-8?B?NFBuVk5DOTRaZ2VhS0lJcmVSYXJXaSt3aldxcysxeFBtdnlJRU1paGNwY0RF?=
+ =?utf-8?B?ZGxxY0tRTHkrREtpbUFZck51RUpOaXpMU0pXYnh1ZnJVMFFxdFo3Ny9lNWl3?=
+ =?utf-8?B?ODlQSjJaa0ZibERYTmdtcU1scUx6QUgzaGNxWEFXcFBOU05xTVIvMlBrc2NY?=
+ =?utf-8?B?RDZvM1preGxvQ0hTYUs4Mm5YWGtFRWNqclBoMXpDN04wNExaSlprdnJvYzQ1?=
+ =?utf-8?B?cXZnaGQ5NnhrYXZNb1RGMHNjdlRoZ0VBVHJGcTJBeEFoYXhFMTQxSUFxY3dR?=
+ =?utf-8?B?MmtUVlJ3U1JXT3NZdVh3djh2czR3L0FIcG9hY3NMWVNJWGZ2dXIyTWRGTFJL?=
+ =?utf-8?B?NnFRZm1NaW9aN1FvNDNnVEN3N1J6N2M0WnoyTVVMSlVPellhZS83c1dKSGF1?=
+ =?utf-8?B?dTJYNmIzTDBLRnF0TnBlWEwrSkdtelNUZ1NzTFd4OHduRnJTaUJwY1dZQzhH?=
+ =?utf-8?B?MUF3S29PaTVpU0VpbGpycWNjcWZWOU12SVlBQm52d2gzSkxlVytVREtueTg3?=
+ =?utf-8?B?dmU4YmtuQW1oTExhNm5KMjdnejRVSEVRK2t5cm83bmgyb1pocVhoeUdmL2Qx?=
+ =?utf-8?B?ZXoxajUwSkhOQm96ODBXbTlyeFNFRVorbjR4ZG1RczdMdURTOTNEek52QStU?=
+ =?utf-8?B?Y2ExMlBDaVR6MmxjZmZwZkVqY2RiWm5JbDh3MzJoQzJ3MGNjK0xMQ3ptYmxy?=
+ =?utf-8?B?K0REY2ZLUDMxaUpaUWs1Si9TQVVIaW5QNk5xWFhQL2lNUTVVZ2M2UkcrR2RG?=
+ =?utf-8?B?Y3R3ZXQycThCa25haENRU24wb25RczJ6L1lZUHQ0bnBPMFdvZjQxeE95dXVT?=
+ =?utf-8?B?KytWWmtCc291dndMZDNrVVFmZ3FxYnVaUWRKcys4NEpNWU93QzRpRVJkVUNx?=
+ =?utf-8?B?MHVTU0d0U0VrWE5rRzlJNFh0eGR5WWdSQTJMSlVCWjZsQ3dDa2hGOUxEeDg2?=
+ =?utf-8?B?K01TMEZtRG9RQXFHUDBoNHRXOXlwdy93UjF5SXpNVHBpa1JPUmQ0Z3BTc29i?=
+ =?utf-8?B?T2RHNEpxWFdFcTVjVjl4OU90WEpTaGRvYzYwNGJsS09LczgvUkloRHZGSVYw?=
+ =?utf-8?B?aVpJMzFqUHdldzBuTWVEbExnMHJ4S1dKeXNabEx5K1dJcWc0VkgvQks4ekMz?=
+ =?utf-8?B?NWdlS0lpVmVOTnNBaHBIWEdaWnlUZC9jaUU4UkhCQlV4UVpqUmFBc0w1UFQ1?=
+ =?utf-8?B?VXdKZ1licnRJNHVMUUxiSWlzTEgwUDV2dEhNeG5JdWZ2a2ppYk1oaHl4Qzgx?=
+ =?utf-8?B?bjB0SDNJOGRwdmVpbmYwUUpUM3ZsVGRTbEE3NTJ0QWcreWRFY1plQ3k1T1d6?=
+ =?utf-8?B?ZHRrRytZbTlnQkhob1UxWG9LWm14eWhNdUtNQVBtZ3JHYlN0Y2dHZz09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7eb59d66-fd11-465f-dd74-08deb59b4c4e
+X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 May 2026 11:39:33.9109
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: bhuioIswpgT6mBSJcOUAlb7bQw2uzhSgg1RCr3hkHFyvFtJiIQQbCUvL0GQmZ6SpgguPFBshe58SPaRUQcHUpw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO2P265MB3625
 
-A governor module can be inserted or removed dynamically when built as a
-kernel module.  'devfreq->governor' would become NULL if the governor
-module is removed when it's in use.
+On Tue May 19, 2026 at 12:07 PM BST, Alexandre Courbot wrote:
+> On Sun May 17, 2026 at 9:01 AM JST, Danilo Krummrich wrote:
+> <snip>
+>> +/// This is intended to be an "unsafe-to-refer-to" type.
+>> +///
+>> +/// Must only be used by the `ForLt!` macro.
+>> +///
+>> +/// `T` is the magic `dyn for<'a> WithLt<'a, TypeThatUse<'a>>` generate=
+d by macro.
+>> +///
+>> +/// `WF` is a type that the macro can use to assert some specific type =
+is well-formed.
+>> +///
+>> +/// `N` is to provide the macro a place to emit arbitrary items, in cas=
+e it needs to prove
+>> +/// additional properties.
+>> +#[doc(hidden)]
+>> +pub struct UnsafeForLtImpl<T: ?Sized, WF, const N: usize>(PhantomData<(=
+WF, T)>);
+>
+> Although the documentation makes it clear this should never be
+> referenced directly, doing so is still possible, which creates a
+> loophole for breaking covariance using only safe code.
 
-Add a refcount mechanism for governor modules to prevent the governor
-module from being removed (except for force unload):
-1. Add an optional 'owner' member to struct devfreq_governor so the devfreq
-   core can identify the module that holds the governor code.
-2. Get and put a refcount of the governor module when starting and stopping
-   the governor.
+I'm aware. That's why it has `Unsafe` in the name. But there's no way to cr=
+eate
+unsafe-to-name types, and without adt_const_params only integers can be use=
+d as
+const generic parameters and thus I cannot use a unsafe-to-create const
+parameter for this.
 
-The new 'owner' field is optional:
-- Common governor modules (performance, powersave, simple_ondemand,
-  userspace, passive) set 'owner' to THIS_MODULE.
-- Governors that are bundled into a device driver module must leave 'owner'
-  NULL.  The device's lifetime already pins that module, and setting
-  'owner' would create a self-reference that blocks the driver from being
-  unloaded.
+>
+> For instance (untested, and based on my limited understanding of the
+> patch):
+>
+>   type Bad =3D UnsafeForLtImpl<
+>       dyn for<'a> WithLt<'a, Of =3D Cell<&'a u8>>,
+>       (),
+>       0,
+>   >;
+>
+> The blanket `ForLt` implementation applies, and now we can store a
+> shorter-lived reference into the `Cell` and potentially observe it after
+> its lifetime.
+>
+> This could be worked around by defining the type implementing `ForLt`
+> locally, at the cost of ergonomics since the `ForLt` type would be
+> declared separately:
+>
+>   // Defines `DataLt` and implements `ForLt` on it after emitting
+>   // covariance proof.
+>   define_for_lt!(DataLt =3D for<'a> Data<'a>);
 
-As a result, a non-forced rmmod of an in-use stand-alone governor now
-fails with -EBUSY, e.g.:
+An earlier version of this series have `ForLt!()` being quite ubiquitous, s=
+o I
+want to avoid this approach as this'll be need everywhere. But now we switc=
+h to
+use GAT for driver data, so perhaps this isn't too terrible anymore (only
+driver-core and aux device registration would need this).
 
-  $ cat governor
-  performance
-  $ rmmod governor_performance
-  rmmod: ERROR: Module governor_performance is in use
+This could even be extended to support generic types, such as
 
-Force unloads (rmmod -f, if configured) can't be blocked.
+    define_for_lt!(DataLt<T> =3D for<'a> Data<'a, T>);
 
-Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+This does also have th benefit of not having the `type_complexity` issue.
+
+Danilo, what do you think?
+
 ---
- drivers/devfreq/devfreq.c                 | 17 ++++++++++++++++-
- drivers/devfreq/governor_passive.c        |  1 +
- drivers/devfreq/governor_performance.c    |  1 +
- drivers/devfreq/governor_powersave.c      |  1 +
- drivers/devfreq/governor_simpleondemand.c |  1 +
- drivers/devfreq/governor_userspace.c      |  1 +
- include/linux/devfreq-governor.h          | 11 +++++++++++
- 7 files changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 9e3e6a7348f8..1cee43636ded 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -345,24 +345,37 @@ static int devfreq_set_governor(struct devfreq *df,
- 				 __func__, df->governor->name, ret);
- 			return ret;
- 		}
-+		module_put(old_gov->owner);
- 	}
- 
- 	/* Start the new governor */
-+	if (!try_module_get(new_gov->owner)) {
-+		df->governor = NULL;
-+		return -EINVAL;
-+	}
-+
- 	df->governor = new_gov;
- 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
- 	if (ret) {
- 		dev_warn(dev, "%s: Governor %s not started(%d)\n",
- 			 __func__, df->governor->name, ret);
-+		module_put(new_gov->owner);
- 
- 		/* Restore previous governor */
- 		df->governor = old_gov;
- 		if (!df->governor)
- 			return ret;
- 
-+		if (!try_module_get(old_gov->owner)) {
-+			df->governor = NULL;
-+			return -EINVAL;
-+		}
-+
- 		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
- 		if (ret) {
- 			dev_err(dev, "%s: restore Governor %s failed (%d)\n",
- 				__func__, df->governor->name, ret);
-+			module_put(old_gov->owner);
- 			df->governor = NULL;
- 			return ret;
- 		}
-@@ -1040,9 +1053,11 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 
- 	devfreq_cooling_unregister(devfreq->cdev);
- 
--	if (devfreq->governor)
-+	if (devfreq->governor) {
- 		devfreq->governor->event_handler(devfreq,
- 						 DEVFREQ_GOV_STOP, NULL);
-+		module_put(devfreq->governor->owner);
-+	}
- 	device_unregister(&devfreq->dev);
- 
- 	return 0;
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index d7feecd900f1..3e63dd200a04 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -449,6 +449,7 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
- static struct devfreq_governor devfreq_passive = {
- 	.name = DEVFREQ_GOV_PASSIVE,
- 	.flags = DEVFREQ_GOV_FLAG_IMMUTABLE,
-+	.owner = THIS_MODULE,
- 	.get_target_freq = devfreq_passive_get_target_freq,
- 	.event_handler = devfreq_passive_event_handler,
- };
-diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-index fdb22bf512cf..0a08b067ea6b 100644
---- a/drivers/devfreq/governor_performance.c
-+++ b/drivers/devfreq/governor_performance.c
-@@ -37,6 +37,7 @@ static int devfreq_performance_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_performance = {
- 	.name = DEVFREQ_GOV_PERFORMANCE,
-+	.owner = THIS_MODULE,
- 	.get_target_freq = devfreq_performance_func,
- 	.event_handler = devfreq_performance_handler,
- };
-diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
-index ee2d6ec8a512..3ae296d55e3e 100644
---- a/drivers/devfreq/governor_powersave.c
-+++ b/drivers/devfreq/governor_powersave.c
-@@ -37,6 +37,7 @@ static int devfreq_powersave_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_powersave = {
- 	.name = DEVFREQ_GOV_POWERSAVE,
-+	.owner = THIS_MODULE,
- 	.get_target_freq = devfreq_powersave_func,
- 	.event_handler = devfreq_powersave_handler,
- };
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index ac9c5e9e51a4..46287b279ded 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -119,6 +119,7 @@ static struct devfreq_governor devfreq_simple_ondemand = {
- 	.name = DEVFREQ_GOV_SIMPLE_ONDEMAND,
- 	.attrs = DEVFREQ_GOV_ATTR_POLLING_INTERVAL
- 		| DEVFREQ_GOV_ATTR_TIMER,
-+	.owner = THIS_MODULE,
- 	.get_target_freq = devfreq_simple_ondemand_func,
- 	.event_handler = devfreq_simple_ondemand_handler,
- };
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 3906ebedbae8..b1acccc79f7f 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -135,6 +135,7 @@ static int devfreq_userspace_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_userspace = {
- 	.name = DEVFREQ_GOV_USERSPACE,
-+	.owner = THIS_MODULE,
- 	.get_target_freq = devfreq_userspace_func,
- 	.event_handler = devfreq_userspace_handler,
- };
-diff --git a/include/linux/devfreq-governor.h b/include/linux/devfreq-governor.h
-index dfdd0160a29f..ae1721e58401 100644
---- a/include/linux/devfreq-governor.h
-+++ b/include/linux/devfreq-governor.h
-@@ -12,6 +12,7 @@
- #define __LINUX_DEVFREQ_DEVFREQ_H__
- 
- #include <linux/devfreq.h>
-+struct module;
- 
- #define DEVFREQ_NAME_LEN			16
- 
-@@ -53,6 +54,15 @@
-  * @name:		Governor's name
-  * @attrs:		Governor's sysfs attribute flags
-  * @flags:		Governor's feature flags
-+ * @owner:		Optional, module that owns this governor.
-+ *			When set (typically to THIS_MODULE), the devfreq core
-+ *			takes a reference on @owner while this governor is in
-+ *			use so that the governor module cannot be removed,
-+ *			except by a forced unload. Governors that are bundled
-+ *			into a device driver module must leave @owner NULL: the
-+ *			device's lifetime already pins that module, and setting
-+ *			@owner would create a self-reference that prevents the
-+ *			driver from being unloaded.
-  * @get_target_freq:	Returns desired operating frequency for the device.
-  *			Basically, get_target_freq will run
-  *			devfreq_dev_profile.get_dev_status() to get the
-@@ -70,6 +80,7 @@ struct devfreq_governor {
- 	const char name[DEVFREQ_NAME_LEN];
- 	const u64 attrs;
- 	const u64 flags;
-+	struct module *owner;
- 	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
- 	int (*event_handler)(struct devfreq *devfreq,
- 				unsigned int event, void *data);
--- 
-2.43.0
+I suppose If we're going down the new type approach, I also have some idea =
+about
+generalizing this further to a generic utility that annotate GAT about vari=
+ance.
 
+    #[variance_check]
+    trait MyTrait {
+        type MyGat<#[covariant] 'a>;
+    }
+
+    #[variance_check]
+    impl MyTrait for MyFoo {
+        type MyGat<#[covariant] 'a> =3D Bar;
+    }
+
+Then the expansion of `define_for_lt!` would just be
+
+    struct DataLt<T>(PhantomData<T>);
+
+    #[variance_check]
+    impl<T> ForLt for DataLt<T> {
+        type Of<#[covariant] 'a> =3D Data<'a, T>;
+    }
+
+Best,
+Gary
