@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 674E63F1656;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 606513F1648;
 	Tue, 19 May 2026 08:56:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779180964; cv=none; b=XxdjO6/GMABj2BiAeBT0YT7I0C0i6J4lBm6lKZOyKMUSt/vrMCqLtWyuc/a2K9s1Wqyym3EWbZUQ/3piRRCVGH8ad9XL3NpBkZOPt8qERZWaOSURVzSIyoLUAImoqbg15ieooQvo47MKiCuP1fuVVrVNzUtjB4CdELlxxVR056c=
+	t=1779180964; cv=none; b=OvCJrGvBnnQSjFxkbqhTA2aiP5bTqbT2h5oK484lT0qOkQn5j7/XzMdAE0a3AER9bUaFyF+Dcf0yHBjKYUWaH0FcB7i/2aVElX82Q6b54HIeYD2WCt9SkvTjOkYLcW+mqqM5A0du2RFjO/83edQmmntOJFG88BAHoSpYB9aNkXU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1779180964; c=relaxed/simple;
-	bh=qgyE4BavcdAMbmH3vIkn/RD22Ci57+1MFvlk9VlBUXg=;
+	bh=sLbNPtf1UiAji9Res0qUIW3W7ikPLHQsy+hj05755+s=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NO92faaPIeQe1Uk5ISKxMdGBCVRLWpZhvA64HY05YD7hwPKanEGSrwOIWl2CnTcyMM2sJUcr9Gb9CQkjqO8QGoQdb6MdsFwC2K6GfA07EhAPiBeKACfgeaP7JEs2X5YfZDyV3Rc1Nmpy/XTYlxD802uDyM5DBncfoCZl7f666cE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jEV28+Jw; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=AbUmG/WtNAbACjtaAkIhTgDROjSX1wBL1W5gHT8e9I4b7FIR5Q8QNbcpbZrahNiNMsQDMgb2zjiELEwoA03JiRJ1Q7MA4acuRK8gNDBF5dawiFhnY8xB6hVL4mC1mIzQ43NxDB/tDM3olpupzH1i6P9bqCltZOuoq6/ASfATbvk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QqXa6sWw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jEV28+Jw"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3A471C4AF0B;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QqXa6sWw"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 293F7C2BCFB;
 	Tue, 19 May 2026 08:56:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1779180964;
-	bh=qgyE4BavcdAMbmH3vIkn/RD22Ci57+1MFvlk9VlBUXg=;
+	bh=sLbNPtf1UiAji9Res0qUIW3W7ikPLHQsy+hj05755+s=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=jEV28+JwqqkO/sc1TDm2v8S6VcZUP3oZ8G4F15Q0F2h+HSbru0YG5S5y3bShTqXSF
-	 JAQU8F16GVdFblKY0aDHF53J0Mf7WjYkqvNORldSD8EwosVeuHwmNVXi/79Pu4mFdx
-	 wPziWEL2XnYnjvwozPhcGj8TB8qGn7bSAf5Vhiski3LSwNl9TumtDeChmNa0Za0QlQ
-	 KJB5bgGLc+HBQQVv8PnIKcoAs2wd5GJZrbBxv8kJ+EnAPZq8FtReZycIzByqLpr3Bo
-	 P+BkXrfseJADeCYhfqfqL796Y8zaJ7OzDk+YR//pk3y8+ZljYD+R4+/137bHfTx4jE
-	 ct1bdiBUq/8MA==
+	b=QqXa6sWw+21sYRnL37QJrJgod6m0/sPGcZGIj7JNN9Qu5HFdRpj6DOzFKwvH1c3so
+	 vc/tgaFk9Z015aQ5I/Ar0gDu0GHv108IFqcB/XmkYaGrMaGwvhuLVmnaf8mGR1fwff
+	 J0UCCq8s0VHCjdrbrlMlnaAfETZ1iis+JUEhj29Kh8oEaSfm8IWF6YV2QM5f2ubYiy
+	 kxuH8HNbcpQmBwGh5OIh9OBdwb52Rs3gUBsy0LlRxv5oLc529f5SAny70POXUkqCG2
+	 L1mJYUPcbNNOZxoKqXTL4EiWHqjvvr1b65nUXkcAqMi5hlVVFqWaZLz3mI80x8lX2s
+	 Hv2biZg+wwyqA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33311CD4F5B;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 215DDCD5BA3;
 	Tue, 19 May 2026 08:56:04 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 19 May 2026 14:26:03 +0530
-Subject: [PATCH v3 8/9] Bluetooth: hci_qca: Rename 'power_ctrl_enabled' to
- 'bt_en_available'
+Date: Tue, 19 May 2026 14:26:02 +0530
+Subject: [PATCH v3 7/9] Bluetooth: hci_qca: Add M.2 Bluetooth device
+ support using pwrseq
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260519-pwrseq-m2-bt-v3-8-b39dc2ae3966@oss.qualcomm.com>
+Message-Id: <20260519-pwrseq-m2-bt-v3-7-b39dc2ae3966@oss.qualcomm.com>
 References: <20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com>
 In-Reply-To: <20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com>
 To: Manivannan Sadhasivam <mani@kernel.org>, 
@@ -52,19 +52,19 @@ Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
  linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
  Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2044;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1767;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=1JRO5dSGOPrnel/y/+GxWrpu7wlYHN8HrLcjMdVlLBw=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqDCWgZT1oo7m2+M3nNcF0fXvZRDRGOAP0AxKQb
- 2GMks2jX7uJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCagwloAAKCRBVnxHm/pHO
- 9Zt1CACjhzfGGAunlIJwGOW0wmipI/1SxXqQIqU2kw26YlfrNwstH/CIqBTrAAO0sVEH9UsMmA5
- 7vhj3bZp+NmtKXDzveiTL7H2hOkguMEHY/6RJImjO9/vb+fYbBIlhis6fO7S4F+F/WZWQdnDN4h
- +0k625nbq/y6zlFiD5+GjKlUbPqlUUymoKcGRv+iwSsgzh35y7zJ33fe06a+aAuGD2qxDzmP27Q
- Ng5O6lM/9dQZkP1BwczE+8nsSMevYmwoqJdLrY2aa+dYr2PnP9hMTxTSnBGXtz2z0SbIIsVrLrW
- Lj1V/IYy52KaNIOCuz8jO7lJljmsOb31UmnLtgkY/O3r6OPk
+ bh=GJhR3pGJmBkuBiEdPQiIZNdHJxFMj5cpBFli453SiCY=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBqDCWg/NhLg95CymCV+6e6aupP7h1F+Dx/209WG
+ f2ElDHg9A2JATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCagwloAAKCRBVnxHm/pHO
+ 9RhyB/4qW2SabwLglJuVqNLjX5mS6UgCDHU7M7gLCNR7ptwdlInK6eZw8kFVW16ULVJgiRKYSDp
+ dVFdwttt7eu8tFN3wBCcr168pwI4Vj1NHoJC+vLguUGhHjBd4u1pE6I+C2akORGknv8Quw8+Tya
+ iD4wcFyLlfRkQWbYZnjEnxmPGHw856/qouL46oWFRcEjYrFI/RvCvChs9Pn7+lmMIn3Dw8O6GrK
+ fyednYHarb1ypB8alcjpLOLfAPFIN43mvj00AB4tBr8Vsa4lGWNhKFIG6zEWVQo/iuslD8YH0Yu
+ rJJXOcOkE+Tm4PzpCziVwOmhXBzt0Mp9B4Nb7PCJ7yW35kha
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -74,60 +74,51 @@ Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
 From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 
-'power_ctrl_enabled' flag is used to indicate the availability of the BT_EN
-GPIO in devicetree. But the naming causes confusion with the new pwrctrl
-framework.
-
-So rename it to 'bt_en_available' to make it clear and explicit.
+Power supply to the M.2 Bluetooth device attached to the host using M.2
+connector is controlled using the 'uart' pwrseq device. So add support for
+getting the pwrseq device if the OF graph link is present. Once obtained,
+the existing pwrseq APIs can be used to control the power supplies of the
+M.2 card.
 
 Tested-by: Wei Deng <wei.deng@oss.qualcomm.com>
-Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/bluetooth/hci_qca.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/bluetooth/hci_qca.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index c83fe72bc549..3e71a72ea7c7 100644
+index cd1834246b47..c83fe72bc549 100644
 --- a/drivers/bluetooth/hci_qca.c
 +++ b/drivers/bluetooth/hci_qca.c
-@@ -2391,7 +2391,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 	struct hci_dev *hdev;
- 	const struct qca_device_data *data;
- 	int err;
--	bool power_ctrl_enabled = true;
-+	bool bt_en_available = true;
- 
- 	qcadev = devm_kzalloc(&serdev->dev, sizeof(*qcadev), GFP_KERNEL);
- 	if (!qcadev)
-@@ -2499,7 +2499,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 		    (data->soc_type == QCA_WCN6750 ||
- 		     data->soc_type == QCA_WCN6855 ||
- 		     data->soc_type == QCA_WCN7850))
--			power_ctrl_enabled = false;
-+			bt_en_available = false;
- 
- 		qcadev->sw_ctrl = devm_gpiod_get_optional(&serdev->dev, "swctrl",
- 					       GPIOD_IN);
-@@ -2537,7 +2537,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 		}
- 
- 		if (!qcadev->bt_en)
--			power_ctrl_enabled = false;
-+			bt_en_available = false;
- 
- 		qcadev->susclk = devm_clk_get_optional_enabled_with_rate(
- 					&serdev->dev, NULL, SUSCLK_RATE_32KHZ);
-@@ -2555,7 +2555,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 
- 	hdev = qcadev->serdev_hu.hdev;
- 
--	if (power_ctrl_enabled) {
-+	if (bt_en_available) {
- 		hci_set_quirk(hdev, HCI_QUIRK_NON_PERSISTENT_SETUP);
- 		hdev->shutdown = qca_hci_shutdown;
- 	}
+@@ -26,6 +26,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_graph.h>
+ #include <linux/acpi.h>
+ #include <linux/platform_device.h>
+ #include <linux/pwrseq/consumer.h>
+@@ -2443,6 +2444,18 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+ 	case QCA_WCN6750:
+ 	case QCA_WCN6855:
+ 	case QCA_WCN7850:
++		/*
++		 * OF graph link is only present for BT devices attached through
++		 * the M.2 Key E connector.
++		 */
++		if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev))) {
++			qcadev->bt_power->pwrseq = devm_pwrseq_get(&serdev->ctrl->dev,
++								   "uart");
++			if (IS_ERR(qcadev->bt_power->pwrseq))
++				return PTR_ERR(qcadev->bt_power->pwrseq);
++			break;
++		}
++
+ 		if (!device_property_present(&serdev->dev, "enable-gpios")) {
+ 			/*
+ 			 * Backward compatibility with old DT sources. If the
 
 -- 
 2.48.1
