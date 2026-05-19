@@ -1,86 +1,86 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 727F4370AE9
-	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 147043F4DCA
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779187830; cv=none; b=IzmIo1wyUgON18DpvKUOG1fbNM/RG5aqdQ9ZXnVBnwcHNG/0+bJFYwC4iVPXYlE7aI2r9vtR68dh9CdR+ukbpzrYmTV7fCvdMx3gThaJ+rOJFbePpPltmQ+tG2GKLMllmKq4reCQEksmlj3SW1lRwV8kCaiT2NIfDVBW6y1Qz1k=
+	t=1779187834; cv=none; b=HfViYEkKSQWvKJo0rN4/g0G5J9vRYkKnnw+jMcp04c+Lmtp40IIHZfXJla6GvWCB20/xwG/tkvDirdvpWxH45ud1iNPMOqG/a8DU61HRwtJLQ1OoWpRBbDakMg0eW71St6SVsgWtxSZlZztx598Nv+EKyr8RDBse3Xuw9tDmK2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779187830; c=relaxed/simple;
-	bh=xhw0n2H0Ogr+XnpwObolDrQSmi6BKJK6KkfSM4an7WY=;
+	s=arc-20240116; t=1779187834; c=relaxed/simple;
+	bh=QkBvjzgzUPS7j6rbYYt0+plzzSIJ+yEdKR2h5bans+I=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lirDrW69VLWQ/qS/ObQdrwQkYlImu/sz+HtGC61/Ll3AugWu7pFwuzRMKngHYwl3tLhiV2aN8KT74AV0rWrN5iA5gbznQhvQuWscMEaDw9mymt+oZgtT6WNIEY4XMsv62nQNXXwrg+YDDobTpukll4jr72pkQTNeSQm/vByUtrs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=TYM8hqY2; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=GvW8Qv81; arc=none smtp.client-ip=205.220.180.131
+	 In-Reply-To:To:Cc; b=ODZZIOA21Irwoqz4BqqcdXRLhc0MiQZzrKJyv6E+ckdPX6JKvZFZQTL5VWeuzH4qwdrqg1+IGoB6GGiq0k07ZO55dL0ecKzTbyltpKyUCR6H4qHV7Qa5dka5YbSJGtG+NGD4walb/7GAEFumYKpoTCCE+Jiz4xM7N5fQoWxiNfs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=WZe77LZc; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=MCm1EZo9; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="TYM8hqY2";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="GvW8Qv81"
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64J9v5oi1054781
-	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:27 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="WZe77LZc";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="MCm1EZo9"
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64J8EXSf3612662
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:32 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	V7T5CBk0nxF6/mjhsou1VVPhQADaS6NTxrViWTKFrq0=; b=TYM8hqY2yZXiMZee
-	nLDqz1tEExBtPkJqqcUHMC0afRCg6LuPralfc4xxJdU4uwP6UhDNKu+F7AYJ8BNY
-	AYaQZiEXsSYfaiI8DfiU7oa81r67VXaZCetP9C9/IT2NcAGsmRKmt6zwe4rmI1UP
-	SNgcFypneqWocdi9AqBw+CfJ9VN5ji1lTc18Uo21NOsHnG5FenuROewTESydtlK8
-	3SgPtZxHmOUvx33+8rDraad6gS/CDxZNQGeI0My/kaZzmoMwZXxh7sO0igpouObY
-	6i1A9XMREPxHY2/ZYPCwRAwywbjV/1C5WcAvcSKrey+BxpwLV/YUkd0A7huDWuNQ
-	SqhGvQ==
-Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e8npar6cx-1
+	jD4A3DvHqusxb6pJNGa2ldrzXIBVdy3bObx9T0M3r9k=; b=WZe77LZctWPVbHmC
+	vPpddlNZhWFfM9Ue2oc1UBvOf6pMrLYI3iJs9GYi7NuCqTtfXYt3mBhBoQX7ZVV3
+	W1dWTqHETPMPBtHHPMrgq7Ulgquh+EqEIoTJwr/9hgQ+8/5GHyGnqSSZbvxWbtL2
+	tiAOzL8AqIxAOcZ/d4gx5msq4HxeXLOTXTdiTrnKj3FUuT5zpUq4RDyqRJN5pk2O
+	ufGhaq8giaj/nvs8wazW5NCli83ZjFDmu6wISfB1pbDnkrb6cP1e4Lr5iqhtVbNw
+	Dw9+ZhV3V+km0ZZp4qXbpLU2UKqXMAai36mmQ7SQV0vl12x47NbSF1Q8mDvtPXFY
+	sqKm6g==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e8m64rng4-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:27 +0000 (GMT)
-Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-83ef22f8e8bso2190215b3a.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 03:50:27 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 10:50:31 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-c82c477290bso1734420a12.3
+        for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 03:50:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779187826; x=1779792626; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1779187831; x=1779792631; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=V7T5CBk0nxF6/mjhsou1VVPhQADaS6NTxrViWTKFrq0=;
-        b=GvW8Qv818zKnCP4JuJUhApyMG8Ay0qJrjdZ0E1ssfG/XtnB2cV0Tqknq1FLXso1N2A
-         P/NbpOdybRdcNUb700rPCSxxYWZaU2TT92659e5TJT9F1EhvNfl2O+OGatIolypj29qz
-         2Rg4GTRAapAtv4z2I70dWllsrX/044kTS5gREejWaNuyuICbHPeUOb2hu7+1Ynfo7V5c
-         7xo/8M2PNaldjgWyP1ZvAQvlpT5lbUdi/9qZ3cCb1M8Xlb12IcAUXU2mryeyEJnpri9g
-         wjgEhVwyYkY+Pz7AapG0FwzqDDsGD2XCKIjM4aHOGpodPuVWoag/bBOiQkOdKbZuLbzl
-         XAjQ==
+        bh=jD4A3DvHqusxb6pJNGa2ldrzXIBVdy3bObx9T0M3r9k=;
+        b=MCm1EZo9NZAdAp1loIb1RNLVY7iTL6Am5H9z/UGDVjlvh3nGzTTSVhcK4xXQvzVgU1
+         HtkL63l7PQfDBUoHfdy2iGZeN6B+3PPnYH6+ANHK+oC60MW1iBwA8jG55ci3YUQ+xKLV
+         7fphrFQFzlMeEWnSN6WWJf8wwJ3q5eKHUMkj3ZOK56Qs7XYt/7ZePr4fxCAm1Q6f6xUX
+         bMA49qY9dUYK6wfJTDAfTS1LRx5gvkw708bUa9H3YYtqENUUYYipIk2iV0e5BHh+z8+2
+         tm8Ao6YglCVJdAwF/uyp31we9HF/1VTQ/WUbbiDT5Nws0Hts/WeDGgoltGfADhj+xbCc
+         8O9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779187826; x=1779792626;
+        d=1e100.net; s=20251104; t=1779187831; x=1779792631;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=V7T5CBk0nxF6/mjhsou1VVPhQADaS6NTxrViWTKFrq0=;
-        b=lVUJu1JPcpXFPQVkzbBJexGFEPpe3xDGXEUK5xMZ2jNTvo4BAq1DCouWADmQQGHAxt
-         RLVfatgC6iwNit7F74Yvb5Hn/1Y9xYgNtx9fJFZy2nipHS50q2J99cT+zxwlp41qYcHk
-         C/cYT189hFG8Llvr7BQQVP+LVm8tdxxkBW3v9wEPDyp9KvqUTI4VY0t5jp9Kx3hHhdJO
-         DXX7D2cMxznxcqiqKP8Y20Pvui2TXZdb2Tn4mJsd0iMMDC+Ip6RN8vq5wonpo9iJb6mH
-         y75SXUvEja6CUDKsKjkTyC19QtV/Zin8+CX4dmWq8SgHWFqC1rpLmwHxp59+lR5KTHDX
-         g1dg==
-X-Forwarded-Encrypted: i=1; AFNElJ8zqjQRik3YEot/LgjucneGQO8XOC/Y6xDdHvKsBzctsnZ9Y5fJF/V8XiVFJuI76Lk3nbbvIxL/ng==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwsyAxJu8TSiol2wKyWVEG31WU/epF626xXuwWrQZZLlQiPkPEu
-	ThIoMlkFCvWWChwClnxluULHqiUyZ6I/8wskXDH+MWwalW1gAXJGpGezCg/ETt06+v7A8facGcF
-	xUPyCE6ZSfvxIM+F70SDR33VqtpC0rBA9LWkGZQoqBGeZqLcsCDzc1rEn5qMZtQ==
-X-Gm-Gg: Acq92OGzWfaJcmwZfLHAwu4CfgUjMai8ILnVQSXXPRo1Pli0UaMd3gLD8ikh7IgSFgG
-	ux534HaFif+QO0bwPhqOwDrFg9pHbcsetc8WWySicDGjJ+P3soC7uCoOrQjhU9iuDP1gTtTEDFO
-	zNfoQfppqPVdwevCGSFS1HNVsBqGnwc3Ww5OHdM6wHf4doWZlEWeh3YfDlctnLF6P5zknWCXaAh
-	n2HIfArL2zlkM3P8GHGB5257QM4Xl9Rae6gHX280PXjlXgWRiyRIh03TqNkEnWYDWYiRIjYcpxb
-	dair6khk+HD9+smwnRBnnjHuzUCSK0MYpeNkOlIw0W+n+phssf2/y0ztYWGS80b8Ui+H5XKmyor
-	0CVShuq8gLA2Rr692W2jB943iKoG6dwxcB+UIPPJPrrV+tYBsf8rfqAmO
-X-Received: by 2002:a05:6a00:a203:b0:834:df57:9d36 with SMTP id d2e1a72fcca58-83f33d9de2dmr18978498b3a.25.1779187826056;
-        Tue, 19 May 2026 03:50:26 -0700 (PDT)
-X-Received: by 2002:a05:6a00:a203:b0:834:df57:9d36 with SMTP id d2e1a72fcca58-83f33d9de2dmr18978463b3a.25.1779187825263;
-        Tue, 19 May 2026 03:50:25 -0700 (PDT)
+        bh=jD4A3DvHqusxb6pJNGa2ldrzXIBVdy3bObx9T0M3r9k=;
+        b=imR21P8pIww0om9iSEQpsrdpYOTKfylEr/l7BSrOn2LW4yMw9//1aS47H9XGhEK2Mt
+         /M/Ikgau9IeCf/690HsrmmDBTymZgevUJCLHHbbtL0WYicT9H0+8wfBAZEHS46NE+yGE
+         00p8tBuu4/dM+v71ZsCpRLeETUDsw92izcU32HgmlGzYCrHxtVwO8U9dWlglzeJmnXlt
+         Y4MCg3tBNZN4SMFcXrZO0GXorPG2MFRUP1JqZ1Dbs0pr5jQdGdiUrJJbUr5aRqN9I4bd
+         n5U1L/dmoJEP3I3uxUBU3sWBxVbrLSKjbXhuytajP8jJ1eDLjeRAZ8wuFuMvBdkRt8Gc
+         Vt+g==
+X-Forwarded-Encrypted: i=1; AFNElJ/qAqGZS05iPSmxHJHpPftg5BGOsv6dLBS29rQ850XYBkV7svk51gLuaR0womv7KIdaoXT6We52Og==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz3QLCwoUrn3hFSIB+mPxt3bMC0wKSqyUejRop77MShqLwHRiA4
+	8yJM7lErihgbVpSslyK7LTVIL91A2vg6ojFnuP9Z0eZfC0fe9wWzCQKIrNT9y4GVzZTGwt3+jga
+	6v0jLlPP/xHobMf9Cl4OTS8/p8oPUxJcIdG3dxyqJaZf0gj3Q5egH8SAjn7+UGg==
+X-Gm-Gg: Acq92OE60Vqz39WCJiJqV1xRa9us0NhAhQHbnVI6CxhpkPg71BgLcpumT9lMn6pAId9
+	x004+ELYt+oLSGtzs4VVOm1nnAOENgxsrSB/wREsX0UI8MTMtEegjYgceFZySkxESRTJHTd/RMU
+	IRl7x9NQY54OUueVJ0/Ps0pSqpMqEHvyPnjE+1xZc1hlnzSoYXF2oPpky7+v5inE/vgl1BQrH6E
+	MchvK7ErYm14cwS8uxMm5YpeX59ci5SA7JYmLCEJ30k6IOo8dt6yp3+Wux3G/P+11mE+1sP8dIZ
+	a8vY3dVsZMPGQeVryM7kR9mPMlA0HY4L0QZzARuFSweDdvIYaR9a3rXzNy0xQ0DhrpUNSPVj/Go
+	/sa1rpFziznXHzOe7il0vUo5spUq3nnhfnPYNCXBVf3Tlf0qB3PNN8VTb
+X-Received: by 2002:a05:6300:218e:b0:3a2:bd1d:d68c with SMTP id adf61e73a8af0-3b22ecb3630mr22180406637.50.1779187831064;
+        Tue, 19 May 2026 03:50:31 -0700 (PDT)
+X-Received: by 2002:a05:6300:218e:b0:3a2:bd1d:d68c with SMTP id adf61e73a8af0-3b22ecb3630mr22180368637.50.1779187830541;
+        Tue, 19 May 2026 03:50:30 -0700 (PDT)
 Received: from hu-manafm-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f19fa869esm20877879b3a.61.2026.05.19.03.50.20
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83f19fa869esm20877879b3a.61.2026.05.19.03.50.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2026 03:50:24 -0700 (PDT)
+        Tue, 19 May 2026 03:50:29 -0700 (PDT)
 From: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
-Date: Tue, 19 May 2026 16:19:50 +0530
-Subject: [PATCH 2/3] powercap: qcom: Add SPEL powercap driver
+Date: Tue, 19 May 2026 16:19:51 +0530
+Subject: [PATCH 3/3] arm64: dts: qcom: glymur: Enable SPEL powercap driver
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -89,7 +89,7 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260519-qcom_spel_driver_upstream-v1-2-75356d1b7f94@oss.qualcomm.com>
+Message-Id: <20260519-qcom_spel_driver_upstream-v1-3-75356d1b7f94@oss.qualcomm.com>
 References: <20260519-qcom_spel_driver_upstream-v1-0-75356d1b7f94@oss.qualcomm.com>
 In-Reply-To: <20260519-qcom_spel_driver_upstream-v1-0-75356d1b7f94@oss.qualcomm.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -103,890 +103,69 @@ Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         Gaurav Kohli <gaurav.kohli@oss.qualcomm.com>,
         Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1779187810; l=23185;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779187810; l=1088;
  i=manaf.pallikunhi@oss.qualcomm.com; s=20260206; h=from:subject:message-id;
- bh=xhw0n2H0Ogr+XnpwObolDrQSmi6BKJK6KkfSM4an7WY=;
- b=upVBkGmk6KILkog95QPtcpBtHGHbFbY68UikQvYkLhz9wJGFxPH5+ymnK70MlqzZSk0qwj6oW
- W2EgM7hVQ4iAyxGkkAVduLczyUpq/NIb8SIInXpQ+vvghbVJkXOdeyK
+ bh=QkBvjzgzUPS7j6rbYYt0+plzzSIJ+yEdKR2h5bans+I=;
+ b=kdvWLzdOynXwDBoB2O6Sije04VhkPQ32HFwYGtVfrdeV/M/jABz/cCEHZAaxKeeyGpWxv3tMz
+ mbI5Yxlk7YkAjF9/AxW3B2mTSCZFacwYRr24sphwJ08M2pMuYIbXEr7
 X-Developer-Key: i=manaf.pallikunhi@oss.qualcomm.com; a=ed25519;
  pk=oZ3x9jh+FDyPwxHmCbyzEMQHMzKqrH6hUbbL7dEBe2g=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDEwNSBTYWx0ZWRfXzbkj5ScROhwZ
- x/k7fOTUgdeDK4XSFNwL4ZNRaI0pvZB7bedOeTMPDGdOVqkJiB0uO+QKMkmDdZ+LLmuc1aCRc+1
- Y3DTBzOUPtdlpv/OAFYIx2/fsENly0dZwL200Pgu5igKIJ53agowLnAT/7pzzUYLeN8WyPTv7lI
- BDFWpaGYjFeFEjU5UW1ofQw3chTJ97QcUWE5MsYxojcn1V2tY/WYZE8FHuUXVoqwcWnSG/RGV3y
- u2ctGMFhacEJJ8Dv5UonQvk9yAlMVFwllv85PU6pFO1k/MhDr/Ri73JQHs8rg8rvWFbgafEiOuy
- tfyxiZd3Ghfz7F4HYlXJih4YeVcDp1bRIXiIJmCw49MgIT0tToII5/TCJV2N6e66k9H36ZdWchj
- ZIJd7EiE+Pn5CesD++aeepPhh+ZhNEVNjSjeYcaRpUohf0rom4lRu8LxOlLwrJnfvH9q+hV5h0v
- QbKm1TyaFvfc3GSJYtQ==
-X-Authority-Analysis: v=2.4 cv=NrjhtcdJ c=1 sm=1 tr=0 ts=6a0c4073 cx=c_pps
- a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTE5MDEwNiBTYWx0ZWRfX75Lm/7Hrns63
+ rxmxqByDhapVNAa/ZHyLV2nAmG4N7oLgCOjI3rjLcFJIH617IUEp7/mUC8em7Qjps3cTGNxaBOW
+ 5SctEPr+5aBlSX7ncQf5zw8JxaobLVQzMozABXd0O1T70n5M0E0UkjB54vnqT8fbRGusSey3sUB
+ Rch+BiA15Bsc83g/TqzPL/w3MfYVjHW9AJla5olLaUdd11xEX3rLYo86HlA4+g0QbaL75zJuTPh
+ /RlfoSTs28znt6EqV9qwwnFHzcNF1S6SUBM+/DtIO0HLeGJV5zidWCG+UGhcmaRjt7NNsdgO/VZ
+ 3SZLgYFxwNgOv7a8CBSCaTYyO0HkdUvllR9rJx+HXOkuErQ2CyoiTCXvI1/RJ3kjiZUkC9kuy+e
+ v1HxPY8gl+qd5uJoPmixzULx7XMSmKZo4Z2EbqwVvA7/p4rz6UcnruPGoDdtsVvnmsstsjkssnR
+ YlIQx5bOpz2qrEiIe6g==
+X-Proofpoint-GUID: DxOD0mJojzac2QmZHWyjXp1LNSrTfTym
+X-Proofpoint-ORIG-GUID: DxOD0mJojzac2QmZHWyjXp1LNSrTfTym
+X-Authority-Analysis: v=2.4 cv=J8aaKgnS c=1 sm=1 tr=0 ts=6a0c4078 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22
- a=EUspDBNiAAAA:8 a=VwQbUJbxAAAA:8 a=COk6AnOGAAAA:8 a=KhCOZ2j7RViXKUWDOLQA:9
- a=QEXdDO2ut3YA:10 a=2VI0MkxyNR6bbpdq8BZq:22 a=TjNXssC_j7lpFel5tvFf:22
-X-Proofpoint-GUID: MV-ywl0ga4DKZ1Sd4owfphGf7-P0dafw
-X-Proofpoint-ORIG-GUID: MV-ywl0ga4DKZ1Sd4owfphGf7-P0dafw
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_glEPmIy2e8OvE2BGh3C:22
+ a=EUspDBNiAAAA:8 a=0DiunMzU2dUnP_sjRnAA:9 a=QEXdDO2ut3YA:10
+ a=x9snwWr2DeNwDh03kgHS:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-19_03,2026-05-18_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 priorityscore=1501 phishscore=0 clxscore=1015 impostorscore=0
- adultscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0 bulkscore=0
+ clxscore=1015 phishscore=0 impostorscore=0 malwarescore=0 adultscore=0
+ spamscore=0 priorityscore=1501 suspectscore=0 bulkscore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605190105
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605190106
 
 The Qualcomm SoC Power and Electrical Limits (SPEL) provides hardware
 based power monitoring and limiting capabilities for various power
 domains including System, SoC, CPU clusters, GPU, and various other
-subsystems.
-
-The driver integrates with the Linux powercap framework, exposing SPEL
-capabilities through powercap sysfs interfaces.
+subsystems for glymur.
 
 Signed-off-by: Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
 ---
- MAINTAINERS                  |   1 +
- drivers/powercap/Kconfig     |  13 +
- drivers/powercap/Makefile    |   1 +
- drivers/powercap/qcom_spel.c | 787 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 802 insertions(+)
+ arch/arm64/boot/dts/qcom/glymur.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c63f147e8c54..5c7542754ab6 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -22238,6 +22238,7 @@ M:	Manaf Meethalavalappu Pallikunhi <manaf.pallikunhi@oss.qualcomm.com>
- L:	linux-arm-msm@vger.kernel.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/power/limits/qcom,spel.yaml
-+F:	drivers/powercap/qcom_spel.c
+diff --git a/arch/arm64/boot/dts/qcom/glymur.dtsi b/arch/arm64/boot/dts/qcom/glymur.dtsi
+index 72c7dc6e4f09..c0ba8740ae41 100644
+--- a/arch/arm64/boot/dts/qcom/glymur.dtsi
++++ b/arch/arm64/boot/dts/qcom/glymur.dtsi
+@@ -5033,6 +5033,16 @@ spmi_bus2: spmi@c48000 {
+ 			};
+ 		};
  
- QUALCOMM PPE DRIVER
- M:	Luo Jie <quic_luoj@quicinc.com>
-diff --git a/drivers/powercap/Kconfig b/drivers/powercap/Kconfig
-index 03c4c796d993..e3a47c653499 100644
---- a/drivers/powercap/Kconfig
-+++ b/drivers/powercap/Kconfig
-@@ -93,4 +93,17 @@ config DTPM_DEVFREQ
- 	help
- 	  This enables support for device power limitation based on
- 	  energy model.
-+
-+config QCOM_SPEL
-+	tristate "Qualcomm SPEL Powercap driver"
-+	depends on ARM64 || COMPILE_TEST
-+	help
-+	  This enables support for the Qualcomm SoC Power and Electrical
-+	  Limits (SPEL) hardware, which allows power limits to be
-+	  enforced and monitored on Qualcomm SoCs.
-+
-+	  SPEL provides energy monitoring and power capping for multiple
-+	  domains including system, SoC, CPU clusters, GPU, and various
-+	  other subsystems.
-+
- endif
-diff --git a/drivers/powercap/Makefile b/drivers/powercap/Makefile
-index 5ab0dce565b9..8235fb9d3df6 100644
---- a/drivers/powercap/Makefile
-+++ b/drivers/powercap/Makefile
-@@ -8,3 +8,4 @@ obj-$(CONFIG_INTEL_RAPL) += intel_rapl_msr.o
- obj-$(CONFIG_INTEL_RAPL_TPMI) += intel_rapl_tpmi.o
- obj-$(CONFIG_IDLE_INJECT) += idle_inject.o
- obj-$(CONFIG_ARM_SCMI_POWERCAP) += arm_scmi_powercap.o
-+obj-$(CONFIG_QCOM_SPEL) += qcom_spel.o
-diff --git a/drivers/powercap/qcom_spel.c b/drivers/powercap/qcom_spel.c
-new file mode 100644
-index 000000000000..fed5647959a5
---- /dev/null
-+++ b/drivers/powercap/qcom_spel.c
-@@ -0,0 +1,787 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Qualcomm SPEL (SoC Power and Electrical Limits) Driver
-+ *
-+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-+ */
-+
-+#include <linux/bitmap.h>
-+#include <linux/device.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/mutex.h>
-+#include <linux/platform_device.h>
-+#include <linux/powercap.h>
-+#include <linux/slab.h>
-+#include <linux/types.h>
-+
-+/* SPEL register bitmasks */
-+#define ENERGY_STATUS_MASK		0xFFFFFFFF
-+
-+#define POWER_LIMIT_MASK		0x00007FFF
-+#define POWER_LIMIT_ENABLE		BIT(31)
-+
-+#define TIME_WINDOW_MASK_L		0x00007FFF	/* bits [14:0] */
-+#define TIME_WINDOW_MASK_H		0x007F0000	/* bits [22:16] */
-+
-+#define ENERGY_UNIT_OFFSET		16
-+#define ENERGY_UNIT_MASK		0xF0000
-+
-+#define TIME_UNIT_OFFSET		8
-+#define TIME_UNIT_MASK			0xF00
-+
-+#define POWER_UNIT_OFFSET		0
-+#define POWER_UNIT_MASK			0x7
-+
-+#define LIMITS_CAPABILITY_OFFSET	0x20
-+#define ENERGY_RPT_UNIT_OFFSET		0x04
-+
-+#define ENERGY_UNIT_SCALE		1000
-+
-+#define SPEL_DOMAIN_NAME_LENGTH		16
-+
-+/* Domain types */
-+enum spel_domain_type {
-+	SPEL_DOMAIN_SYS,
-+	SPEL_DOMAIN_SOC,
-+	SPEL_DOMAIN_CL0,
-+	SPEL_DOMAIN_CL1,
-+	SPEL_DOMAIN_CL2,
-+	SPEL_DOMAIN_IGPU,
-+	SPEL_DOMAIN_DGPU,
-+	SPEL_DOMAIN_NSP,
-+	SPEL_DOMAIN_MMCX,
-+	SPEL_DOMAIN_INFRA,
-+	SPEL_DOMAIN_DRAM,
-+	SPEL_DOMAIN_MDM,
-+	SPEL_DOMAIN_WLAN,
-+	SPEL_DOMAIN_USB1,
-+	SPEL_DOMAIN_USB2,
-+	SPEL_DOMAIN_USB3,
-+	SPEL_DOMAIN_MAX,
-+};
-+
-+/* Power limit IDs */
-+enum spel_power_limit_id {
-+	POWER_LIMIT1,
-+	POWER_LIMIT2,
-+	POWER_LIMIT3,
-+	POWER_LIMIT4,
-+	NR_POWER_LIMITS,
-+};
-+
-+/* Unit types for conversion */
-+enum unit_type {
-+	POWER_UNIT,
-+	ENERGY_UNIT,
-+	TIME_UNIT,
-+};
-+
-+/* Power limit operation types */
-+enum pl_ops_type {
-+	PL_LIMIT,
-+	PL_TIME_WINDOW,
-+};
-+
-+static const char *pl_names[NR_POWER_LIMITS] = {
-+	[POWER_LIMIT1] = "pl1",
-+	[POWER_LIMIT2] = "pl2",
-+	[POWER_LIMIT3] = "pl3",
-+	[POWER_LIMIT4] = "pl4",
-+};
-+
-+static const char *const spel_domain_names[] = {
-+	"sys", "soc", "cl0", "cl1", "cl2", "igpu", "dgpu", "nsp",
-+	"mmcx", "infra", "dram", "mdm", "wlan", "usb1", "usb2", "usb3",
-+};
-+
-+/* Domain register offsets in node base */
-+static const u32 domain_offsets[SPEL_DOMAIN_MAX] = {
-+	[SPEL_DOMAIN_SYS]	= 0x40,
-+	[SPEL_DOMAIN_SOC]	= 0x00,
-+	[SPEL_DOMAIN_CL0]	= 0x5C,
-+	[SPEL_DOMAIN_CL1]	= 0x60,
-+	[SPEL_DOMAIN_CL2]	= 0x64,
-+	[SPEL_DOMAIN_IGPU]	= 0x08,
-+	[SPEL_DOMAIN_DGPU]	= 0x44,
-+	[SPEL_DOMAIN_NSP]	= 0x0C,
-+	[SPEL_DOMAIN_MMCX]	= 0x10,
-+	[SPEL_DOMAIN_INFRA]	= 0x18,
-+	[SPEL_DOMAIN_DRAM]	= 0x1C,
-+	[SPEL_DOMAIN_MDM]	= 0x48,
-+	[SPEL_DOMAIN_WLAN]	= 0x4C,
-+	[SPEL_DOMAIN_USB1]	= 0x50,
-+	[SPEL_DOMAIN_USB2]	= 0x54,
-+	[SPEL_DOMAIN_USB3]	= 0x58,
-+};
-+
-+/**
-+ * struct spel_constraint_info - Power limit constraint information
-+ * @limit_offset:	Register offset for power limit value
-+ * @time_window_offset:	Register offset for time window
-+ * @supported_mask:	Bit mask in capability register
-+ * @domain_id:		Domain this constraint applies to
-+ * @pl_id:		Power limit ID (PL1, PL2, etc.)
-+ */
-+struct spel_constraint_info {
-+	u32 limit_offset;
-+	u32 time_window_offset;
-+	u32 supported_mask;
-+	enum spel_domain_type domain_id;
-+	int pl_id;
-+};
-+
-+/* Constraint configuration */
-+static struct spel_constraint_info constraints[] = {
-+	/* SYS domain constraints */
-+	{ 0x10, 0x70, BIT(0), SPEL_DOMAIN_SYS, POWER_LIMIT1 },
-+	{ 0x14, 0x74, BIT(1), SPEL_DOMAIN_SYS, POWER_LIMIT2 },
-+	{ 0x18, 0x78, BIT(2), SPEL_DOMAIN_SYS, POWER_LIMIT3 },
-+	{ 0x1C, 0x7C, BIT(3), SPEL_DOMAIN_SYS, POWER_LIMIT4 },
-+	/* SOC domain constraints */
-+	{ 0x00, 0x60, BIT(4), SPEL_DOMAIN_SOC, POWER_LIMIT1 },
-+	{ 0x04, 0x64, BIT(5), SPEL_DOMAIN_SOC, POWER_LIMIT2 },
-+	{ 0x08, 0x68, BIT(6), SPEL_DOMAIN_SOC, POWER_LIMIT3 },
-+	{ 0x0C, 0x6C, BIT(7), SPEL_DOMAIN_SOC, POWER_LIMIT4 },
-+};
-+
-+struct spel_system;
-+
-+/**
-+ * struct spel_domain - SPEL power domain
-+ * @power_zone:		Powercap zone
-+ * @lock:		Mutex protecting register access
-+ * @sp:			Parent system
-+ * @status_reg:		Energy counter register
-+ * @pl_name:		Power limit names
-+ * @name:		Domain name
-+ * @id:			Domain type ID
-+ */
-+struct spel_domain {
-+	struct powercap_zone power_zone;
-+	struct mutex lock; /* Protects register read/write operations */
-+	struct spel_system *sp;
-+	void __iomem *status_reg;
-+	const char *pl_name[NR_POWER_LIMITS];
-+	char name[SPEL_DOMAIN_NAME_LENGTH];
-+	enum spel_domain_type id;
-+};
-+
-+/**
-+ * struct spel_system -	SPEL system
-+ * @domains:		Array of domains
-+ * @power_zone:		Parent powercap zone
-+ * @node_base:		Base address for node registers
-+ * @constraint_base:	Base address for constraint registers
-+ * @config_base:	Base address for config registers
-+ * @control_type:	Powercap control type
-+ * @dev:		Device pointer for logging
-+ * @limits:		Supported power limits per domain
-+ * @power_unit:		Power unit in microWatts (common for all domains)
-+ * @energy_unit:	Energy unit in nanoJoules (common for all domains)
-+ * @time_unit:		Time unit in microseconds (common for all domains)
-+ */
-+struct spel_system {
-+	struct spel_domain *domains;
-+	struct powercap_zone *power_zone;
-+	void __iomem *node_base;
-+	void __iomem *constraint_base;
-+	void __iomem *config_base;
-+	struct powercap_control_type *control_type;
-+	struct device *dev;
-+	int limits[SPEL_DOMAIN_MAX];
-+	unsigned int power_unit;
-+	unsigned int energy_unit;
-+	unsigned int time_unit;
-+};
-+
-+#define power_zone_to_spel_domain(_zone) \
-+	container_of(_zone, struct spel_domain, power_zone)
-+
-+/* Helper functions */
-+static bool is_pl_valid(struct spel_domain *sd, int pl)
-+{
-+	if (pl < POWER_LIMIT1 || pl >= NR_POWER_LIMITS)
-+		return false;
-+	return sd->pl_name[pl] ? true : false;
-+}
-+
-+static int get_pl_ops_offset(struct spel_domain *sd, int pl, enum pl_ops_type pl_op)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(constraints); i++) {
-+		struct spel_constraint_info *ci = &constraints[i];
-+
-+		if (ci->domain_id == sd->id && ci->pl_id == pl) {
-+			switch (pl_op) {
-+			case PL_LIMIT:
-+				return ci->limit_offset;
-+			case PL_TIME_WINDOW:
-+				return ci->time_window_offset;
-+			default:
-+				return -EOPNOTSUPP;
-+			}
-+		}
-+	}
-+
-+	return -EOPNOTSUPP;
-+}
-+
-+static u64 spel_unit_xlate(struct spel_domain *sd, enum unit_type type,
-+			   u64 value, int to_raw)
-+{
-+	struct spel_system *sp = sd->sp;
-+	u64 units = 1;
-+	u64 scale = 1;
-+
-+	switch (type) {
-+	case POWER_UNIT:
-+		units = sp->power_unit;
-+		break;
-+	case ENERGY_UNIT:
-+		scale = ENERGY_UNIT_SCALE;
-+		units = sp->energy_unit;
-+		break;
-+	case TIME_UNIT:
-+		units = sp->time_unit;
-+		break;
-+	default:
-+		return value;
-+	}
-+
-+	if (to_raw)
-+		return div64_u64(value * scale, units);
-+
-+	value *= units;
-+	return div64_u64(value, scale);
-+}
-+
-+/* Power limit data access */
-+static int spel_read_pl_data(struct spel_domain *sd, int pl,
-+			     enum pl_ops_type pl_op, bool xlate, u64 *data)
-+{
-+	struct spel_system *sp = sd->sp;
-+	void __iomem *reg_addr;
-+	u64 value;
-+	int offset;
-+
-+	if (!is_pl_valid(sd, pl))
-+		return -EINVAL;
-+
-+	offset = get_pl_ops_offset(sd, pl, pl_op);
-+	if (offset < 0)
-+		return offset;
-+
-+	guard(mutex)(&sd->lock);
-+
-+	reg_addr = sp->constraint_base + offset;
-+	value = readl(reg_addr);
-+
-+	switch (pl_op) {
-+	case PL_LIMIT:
-+		value &= POWER_LIMIT_MASK;
-+		if (xlate)
-+			*data = spel_unit_xlate(sd, POWER_UNIT, value, 0);
-+		else
-+			*data = value;
-+		break;
-+	case PL_TIME_WINDOW:
-+		/* Decode time window: bits [22:16] are upper 7 bits, [14:0] are lower 15 bits */
-+		value = ((value & TIME_WINDOW_MASK_H) >> 16 << 15) |
-+			(value & TIME_WINDOW_MASK_L);
-+		if (xlate)
-+			*data = spel_unit_xlate(sd, TIME_UNIT, value, 0);
-+		else
-+			*data = value;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int spel_write_pl_data(struct spel_domain *sd, int pl,
-+			      enum pl_ops_type pl_op, unsigned long long value)
-+{
-+	struct spel_system *sp = sd->sp;
-+	void __iomem *reg_addr;
-+	u64 reg_val, new_val;
-+	int offset;
-+
-+	if (!is_pl_valid(sd, pl))
-+		return -EINVAL;
-+
-+	offset = get_pl_ops_offset(sd, pl, pl_op);
-+	if (offset < 0)
-+		return offset;
-+
-+	guard(mutex)(&sd->lock);
-+
-+	reg_addr = sp->constraint_base + offset;
-+	reg_val = readl(reg_addr);
-+
-+	switch (pl_op) {
-+	case PL_LIMIT:
-+		new_val = spel_unit_xlate(sd, POWER_UNIT, value, 1);
-+		if (new_val > POWER_LIMIT_MASK)
-+			return -EINVAL;
-+		reg_val = (reg_val & ~POWER_LIMIT_MASK) | new_val;
-+
-+		/*
-+		 * Enable/Disable PL based on the value:
-+		 * - If value is 0, disable the PL (clear enable bit)
-+		 * - If value is non-zero, enable the PL (set enable bit)
-+		 */
-+		if (new_val == 0)
-+			reg_val &= ~POWER_LIMIT_ENABLE;
-+		else
-+			reg_val |= POWER_LIMIT_ENABLE;
-+		break;
-+	case PL_TIME_WINDOW:
-+		/*
-+		 * Encode time window: upper 7 bits to [22:16], lower 15 bits to [14:0]
-+		 * Time window register is separate from limit register (different offset),
-+		 * so we write only the time window bits without preserving any enable bit.
-+		 */
-+		new_val = spel_unit_xlate(sd, TIME_UNIT, value, 1);
-+		reg_val = (((new_val >> 15) & 0x7F) << 16) |
-+			  (new_val & 0x7FFF);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	writel(reg_val, reg_addr);
-+	return 0;
-+}
-+
-+/* Powercap zone operations */
-+static int spel_get_energy_counter(struct powercap_zone *power_zone, u64 *energy_raw)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	u64 value;
-+
-+	value = readl(sd->status_reg);
-+	*energy_raw = spel_unit_xlate(sd, ENERGY_UNIT, value, 0);
-+
-+	return 0;
-+}
-+
-+static int spel_get_max_energy_counter(struct powercap_zone *pcd_dev, u64 *energy)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(pcd_dev);
-+
-+	*energy = spel_unit_xlate(sd, ENERGY_UNIT, ENERGY_STATUS_MASK, 0);
-+	return 0;
-+}
-+
-+static int spel_release_zone(struct powercap_zone *power_zone)
-+{
-+	return 0;
-+}
-+
-+static int spel_find_nr_power_limit(struct spel_domain *sd)
-+{
-+	int i, nr_pl = 0;
-+
-+	for (i = 0; i < NR_POWER_LIMITS; i++) {
-+		if (is_pl_valid(sd, i))
-+			nr_pl++;
-+	}
-+
-+	return nr_pl;
-+}
-+
-+static const struct powercap_zone_ops zone_ops = {
-+	.get_energy_uj = spel_get_energy_counter,
-+	.get_max_energy_range_uj = spel_get_max_energy_counter,
-+	.release = spel_release_zone,
-+};
-+
-+/* Constraint operations */
-+static int spel_constraint_to_pl(struct spel_domain *sd, int cid)
-+{
-+	int i, j;
-+
-+	for (i = POWER_LIMIT1, j = 0; i < NR_POWER_LIMITS; i++) {
-+		if (is_pl_valid(sd, i) && j++ == cid)
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int spel_set_power_limit(struct powercap_zone *power_zone, int cid,
-+				u64 power_limit)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	int id;
-+
-+	id = spel_constraint_to_pl(sd, cid);
-+	if (id < 0)
-+		return id;
-+
-+	return spel_write_pl_data(sd, id, PL_LIMIT, power_limit);
-+}
-+
-+static int spel_get_power_limit(struct powercap_zone *power_zone, int cid,
-+				u64 *data)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	u64 val;
-+	int ret, id;
-+
-+	id = spel_constraint_to_pl(sd, cid);
-+	if (id < 0)
-+		return id;
-+
-+	ret = spel_read_pl_data(sd, id, PL_LIMIT, true, &val);
-+	if (!ret)
-+		*data = val;
-+
-+	return ret;
-+}
-+
-+static int spel_set_time_window(struct powercap_zone *power_zone, int cid,
-+				u64 window)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	int id;
-+
-+	id = spel_constraint_to_pl(sd, cid);
-+	if (id < 0)
-+		return id;
-+
-+	return spel_write_pl_data(sd, id, PL_TIME_WINDOW, window);
-+}
-+
-+static int spel_get_time_window(struct powercap_zone *power_zone, int cid,
-+				u64 *data)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	u64 val;
-+	int ret, id;
-+
-+	id = spel_constraint_to_pl(sd, cid);
-+	if (id < 0)
-+		return id;
-+
-+	ret = spel_read_pl_data(sd, id, PL_TIME_WINDOW, true, &val);
-+	if (!ret)
-+		*data = val;
-+
-+	return ret;
-+}
-+
-+static const char *spel_get_constraint_name(struct powercap_zone *power_zone,
-+					    int cid)
-+{
-+	struct spel_domain *sd = power_zone_to_spel_domain(power_zone);
-+	int id;
-+
-+	id = spel_constraint_to_pl(sd, cid);
-+	if (id >= 0)
-+		return sd->pl_name[id];
-+
-+	return NULL;
-+}
-+
-+static const struct powercap_zone_constraint_ops constraint_ops = {
-+	.set_power_limit_uw = spel_set_power_limit,
-+	.get_power_limit_uw = spel_get_power_limit,
-+	.set_time_window_us = spel_set_time_window,
-+	.get_time_window_us = spel_get_time_window,
-+	.get_name = spel_get_constraint_name,
-+};
-+
-+static void spel_init_domains(struct spel_system *sp)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < SPEL_DOMAIN_MAX; i++) {
-+		struct spel_domain *sd = &sp->domains[i];
-+
-+		sd->sp = sp;
-+		snprintf(sd->name, SPEL_DOMAIN_NAME_LENGTH, "%s",
-+			 spel_domain_names[i]);
-+		sd->id = i;
-+		sd->status_reg = sp->node_base + domain_offsets[i];
-+
-+		/* PL1 is always supported (required for powercap registration) */
-+		sp->limits[i] = BIT(POWER_LIMIT1);
-+		sd->pl_name[POWER_LIMIT1] = pl_names[POWER_LIMIT1];
-+	}
-+}
-+
-+static int spel_check_unit(struct spel_system *sp)
-+{
-+	u32 value, shift;
-+
-+	/* Read power_unit and time_unit from offset 0x0 */
-+	value = readl(sp->config_base);
-+
-+	/*
-+	 * Unit calculation: 1 / (2^shift)
-+	 * Masks limit: TIME_UNIT (4 bits, max 15), POWER_UNIT (3 bits, max 7).
-+	 */
-+	shift = (value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
-+	sp->power_unit = 1000000 / (1 << shift);
-+
-+	shift = (value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
-+	sp->time_unit = 1000000 / (1 << shift);
-+
-+	/* Read energy_unit from ENERGY_RPT_UNIT_OFFSET */
-+	value = readl(sp->config_base + ENERGY_RPT_UNIT_OFFSET);
-+
-+	/*
-+	 * Unit calculation: 1 / (2^shift)
-+	 * Masks limit: ENERGY_UNIT (4 bits, max 15).
-+	 */
-+	shift = (value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
-+	sp->energy_unit = ENERGY_UNIT_SCALE * 1000000 / (1 << shift);
-+
-+	dev_dbg(sp->dev, "Units: energy=%dnJ, time=%dus, power=%duW\n",
-+		sp->energy_unit, sp->time_unit, sp->power_unit);
-+
-+	return 0;
-+}
-+
-+static void spel_detect_powerlimit(struct spel_domain *sd)
-+{
-+	struct spel_system *sp = sd->sp;
-+	u32 capabilities;
-+	int i, j;
-+
-+	capabilities = readl(sp->config_base + LIMITS_CAPABILITY_OFFSET);
-+
-+	/* Detect power limits from hardware capabilities */
-+	for (i = POWER_LIMIT2; i < NR_POWER_LIMITS; i++) {
-+		for (j = 0; j < ARRAY_SIZE(constraints); j++) {
-+			struct spel_constraint_info *ci = &constraints[j];
-+
-+			if (ci->domain_id == sd->id && ci->pl_id == i) {
-+				if (capabilities & ci->supported_mask) {
-+					sp->limits[sd->id] |= BIT(i);
-+					sd->pl_name[i] = pl_names[i];
-+				}
-+				break;
-+			}
-+		}
-+	}
-+}
-+
-+static int spel_init_system(struct spel_system *sp, struct device *dev)
-+{
-+	int i, ret;
-+
-+	/* Read unit configuration (common for all domains) */
-+	ret = spel_check_unit(sp);
-+	if (ret) {
-+		dev_err(dev, "Failed to read unit config\n");
-+		return ret;
-+	}
-+
-+	sp->domains = devm_kcalloc(dev, SPEL_DOMAIN_MAX,
-+				   sizeof(struct spel_domain), GFP_KERNEL);
-+	if (!sp->domains)
-+		return -ENOMEM;
-+
-+	spel_init_domains(sp);
-+
-+	for (i = 0; i < SPEL_DOMAIN_MAX; i++) {
-+		struct spel_domain *sd = &sp->domains[i];
-+
-+		ret = devm_mutex_init(dev, &sd->lock);
-+		if (ret) {
-+			dev_err(dev, "Failed to initialize mutex for domain %s\n", sd->name);
-+			return ret;
-+		}
-+
-+		spel_detect_powerlimit(sd);
-+	}
-+
-+	return 0;
-+}
-+
-+static int spel_register_powercap(struct spel_system *sp)
-+{
-+	struct spel_domain *sd;
-+	struct powercap_zone *power_zone = NULL;
-+	int nr_pl, ret, i;
-+
-+	/* Register SYS domain as parent zone */
-+	for (sd = sp->domains; sd < sp->domains + SPEL_DOMAIN_MAX; sd++) {
-+		if (sd->id == SPEL_DOMAIN_SYS) {
-+			nr_pl = spel_find_nr_power_limit(sd);
-+
-+			power_zone = powercap_register_zone(&sd->power_zone,
-+							    sp->control_type, sd->name,
-+					NULL, &zone_ops, nr_pl,
-+					&constraint_ops);
-+			if (IS_ERR(power_zone)) {
-+				dev_err(sp->dev, "Failed to register power zone %s\n",
-+					sd->name);
-+				return PTR_ERR(power_zone);
-+			}
-+			sp->power_zone = power_zone;
-+			break;
-+		}
-+	}
-+
-+	if (!power_zone) {
-+		dev_err(sp->dev, "No SYS domain found\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Register other domains as children */
-+	for (sd = sp->domains; sd < sp->domains + SPEL_DOMAIN_MAX; sd++) {
-+		struct powercap_zone *parent = sp->power_zone;
-+
-+		if (sd->id == SPEL_DOMAIN_SYS)
-+			continue;
-+
-+		/* SOC is child of SYS, others are children of SOC */
-+		if (sd->id != SPEL_DOMAIN_SOC) {
-+			for (i = 0; i < SPEL_DOMAIN_MAX; i++) {
-+				if (sp->domains[i].id == SPEL_DOMAIN_SOC) {
-+					parent = &sp->domains[i].power_zone;
-+					break;
-+				}
-+			}
-+		}
-+
-+		nr_pl = spel_find_nr_power_limit(sd);
-+		power_zone = powercap_register_zone(&sd->power_zone,
-+						    sp->control_type,
-+						    sd->name, parent,
-+						    &zone_ops, nr_pl,
-+						    &constraint_ops);
-+
-+		if (IS_ERR(power_zone)) {
-+			dev_err(sp->dev, "Failed to register power_zone %s\n",
-+				sd->name);
-+			ret = PTR_ERR(power_zone);
-+			goto err_cleanup;
-+		}
-+	}
-+
-+	return 0;
-+
-+err_cleanup:
-+	/* Unregister in reverse order: children first, then SOC, then SYS */
-+	for (i = (int)(sd - sp->domains) - 1; i >= 0; i--)
-+		powercap_unregister_zone(sp->control_type, &sp->domains[i].power_zone);
-+
-+	return ret;
-+}
-+
-+static int spel_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct spel_system *sp;
-+	struct resource *res;
-+	int ret;
-+
-+	sp = devm_kzalloc(dev, sizeof(*sp), GFP_KERNEL);
-+	if (!sp)
-+		return -ENOMEM;
-+
-+	sp->dev = dev;
-+
-+	/* Map spel domain registers (energy counters) */
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "nodes");
-+	if (!res) {
-+		dev_err(dev, "Failed to get nodes resource\n");
-+		return -EINVAL;
-+	}
-+	sp->node_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(sp->node_base))
-+		return PTR_ERR(sp->node_base);
-+
-+	/* Map constraint registers (power limits) */
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "constraints");
-+	if (!res) {
-+		dev_err(dev, "Failed to get constraints resource\n");
-+		return -EINVAL;
-+	}
-+	sp->constraint_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(sp->constraint_base))
-+		return PTR_ERR(sp->constraint_base);
-+
-+	/* Map config registers (units, capabilities) */
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "config");
-+	if (!res) {
-+		dev_err(dev, "Failed to get config resource\n");
-+		return -EINVAL;
-+	}
-+	sp->config_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(sp->config_base))
-+		return PTR_ERR(sp->config_base);
-+
-+	sp->control_type = powercap_register_control_type(NULL, "qcom-spel",
-+							  NULL);
-+	if (IS_ERR(sp->control_type)) {
-+		dev_err(dev, "Failed to register control type\n");
-+		return PTR_ERR(sp->control_type);
-+	}
-+
-+	/* Initialize system and domains */
-+	ret = spel_init_system(sp, dev);
-+	if (ret) {
-+		dev_err(dev, "Failed to initialize system\n");
-+		goto err_unregister_control;
-+	}
-+
-+	ret = spel_register_powercap(sp);
-+	if (ret) {
-+		dev_err(dev, "Failed to register powercap zones\n");
-+		goto err_unregister_control;
-+	}
-+
-+	platform_set_drvdata(pdev, sp);
-+
-+	return 0;
-+
-+err_unregister_control:
-+	powercap_unregister_control_type(sp->control_type);
-+	return ret;
-+}
-+
-+static void spel_remove(struct platform_device *pdev)
-+{
-+	struct spel_system *sp = platform_get_drvdata(pdev);
-+	int i;
-+
-+	if (!sp)
-+		return;
-+
-+	/* Unregister in reverse order: children first, then SOC, then SYS */
-+	for (i = SPEL_DOMAIN_MAX - 1; i >= 0; i--)
-+		powercap_unregister_zone(sp->control_type, &sp->domains[i].power_zone);
-+
-+	powercap_unregister_control_type(sp->control_type);
-+}
-+
-+static const struct of_device_id spel_of_match[] = {
-+	{ .compatible = "qcom,spel" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, spel_of_match);
-+
-+static struct platform_driver spel_driver = {
-+	.probe = spel_probe,
-+	.remove = spel_remove,
-+	.driver = {
-+		.name = "qcom_spel",
-+		.of_match_table = spel_of_match,
-+	},
-+};
-+
-+module_platform_driver(spel_driver);
-+
-+MODULE_DESCRIPTION("Qualcomm SPEL Powercap Driver");
-+MODULE_LICENSE("GPL");
++		power-controller@ef3b000 {
++			compatible = "qcom,spel";
++			reg = <0x0 0x0ef3e000 0x0 0x1000>,
++			      <0x0 0x0ef3d000 0x0 0x1000>,
++			      <0x0 0x0ef3b000 0x0 0x1000>;
++			reg-names = "nodes",
++				    "constraints",
++				    "config";
++		};
++
+ 		tlmm: pinctrl@f100000 {
+ 			compatible = "qcom,glymur-tlmm";
+ 			reg = <0x0 0x0f100000 0x0 0xf00000>;
 
 -- 
 2.43.0
