@@ -1,107 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EB273321D4;
-	Tue, 19 May 2026 11:31:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8E7B352026
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 11:37:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779190278; cv=none; b=Z94D5yIaAe6Svm2S2fZQ/Q/FEJDv21eWgVsWqOOoyABNaBx/M5U8Hf/IMwxW04r11Bg3hOB1ZQw26KRpMfMgDY0A0pDr9c6Y//x9VbzwDvmSdh9+rDHX/ZfiYJNlKFjqq6H5aib9yw0m/wpkee9vsQysPUq4gm4H2tDlzJhZrpM=
+	t=1779190660; cv=none; b=XlnwE4kEkzXW2VD/IpvuUwvdjrh6Y3xoUbnU6wtwQLrg62DriFCmnmBBIligSy41efioh7LLqhMqD6J99JySxLHCAmGy7LLF4r2KRSR14k9Ib6nLZSBOldIUc1aq2PZho69lkFJM92c2yvGN+wAlZT0Trxz+efr4DpbKj7QMoaY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779190278; c=relaxed/simple;
-	bh=YNM/fqs9TGWH1hPYSOkKh1B0729fn+GJaHi3vqaVG64=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=deqEqGwHeyyhx7v9DNQHcnnnjez12QeiEGXMmtk+0ZBOvAzIPMgtU5kA2Wph1/DpAiCGni8SxEc1puw+JLFP1LOzW7pEXc5312klqFBxi1qw0FSAfeD/Qad9Yhbm6T/N003gTsHdf15VmnxO/nvgeg6S191tqxYcedMo0VsmP1U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hlhI6SV1; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hlhI6SV1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FDC3C2BCB3;
-	Tue, 19 May 2026 11:31:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1779190278;
-	bh=YNM/fqs9TGWH1hPYSOkKh1B0729fn+GJaHi3vqaVG64=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=hlhI6SV1lH+42oYEQLI4i3vUNxcG67ocr6I0zWlpTD3s8NKuGNHKQ4SQJS3+r5XMc
-	 MAYwQEFXad0qtY0p3ZDGqq1zh0IWiArsQoIFAwKdp82emo5bCUh7aG0cylflNNRujG
-	 2Bu3OLzFQH+n1U14r6btcqaASvvtv5AdojJf3zjCiw4Wq+Gy9ItbZOvvM5KVbfp+bU
-	 WiYSIwUyaW/qqfV4XPYc17Bu84Q/JqSsKLHKFmRXZj2dVtqork2YArwvCTVwvnRPwC
-	 y7MdXCKJHWWSOVI2VDw56jneVinBj9r9xe1BPoJdaPyjYPZSsQa2AamVnhOwNlWcnx
-	 8tr4IJdBx5Ijw==
-Date: Tue, 19 May 2026 12:31:12 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Cc: smita.koralahallichannabasappa@amd.com, alison.schofield@intel.com,
- dan.j.williams@intel.com, icheng@nvidia.com, linux-cxl@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org, nvdimm@lists.linux.dev, ardb@kernel.org,
- benjamin.cheatham@amd.com, dave.jiang@intel.com,
- jonathan.cameron@huawei.com
-Subject: Re: [PATCH v2] dax/bus: Upgrade resource conflict message to
- dev_err() in alloc_dax_region()
-Message-ID: <20260519123112.5b5d34cd@jic23-huawei>
-In-Reply-To: <20260519101832.31988-1-tomasz.wolski@fujitsu.com>
-References: <20260519101832.31988-1-tomasz.wolski@fujitsu.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	s=arc-20240116; t=1779190660; c=relaxed/simple;
+	bh=QEcwuF+2Mf9bs4d/80X+a02PgKRKo3cQONv0ynLyX/A=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KFoAuDAfOclpGg2Sb2NRRbWga2Io8Nbp02PG69220T9Vo6Z7ldYxFaYWYFKGGWps1nMHDoGjYrFTm+REo7YnzfYLrLpHUoPv2933nePeBbZOrl1hLpGuyweP6+jgS7p1uXq57Tkg25bmOJpMksWSuiPDKJPAyMkKKzj9O2x/Xvc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.223
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4gKXX10GCZzmV96;
+	Tue, 19 May 2026 19:29:53 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 109BC40565;
+	Tue, 19 May 2026 19:37:35 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ kwepemf200017.china.huawei.com (7.202.181.10) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 19 May 2026 19:37:34 +0800
+From: Jie Zhan <zhanjie9@hisilicon.com>
+To: <cwchoi00@gmail.com>, <cw00.choi@samsung.com>, <myungjoo.ham@samsung.com>,
+	<kyungmin.park@samsung.com>, <linux-pm@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>
+CC: <linuxarm@huawei.com>, <tianyaxiong@kylinos.cn>, <zhanjie9@hisilicon.com>,
+	<zhenglifeng1@huawei.com>, <zhangpengjie2@huawei.com>,
+	<lihuisong@huawei.com>, <prime.zeng@hisilicon.com>
+Subject: [PATCH v3 1/4] devfreq: Use mutex guard in governor_store()
+Date: Tue, 19 May 2026 19:32:47 +0800
+Message-ID: <20260519113251.3745140-2-zhanjie9@hisilicon.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
+References: <20260519113251.3745140-1-zhanjie9@hisilicon.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-On Tue, 19 May 2026 12:18:32 +0200
-Tomasz Wolski <tomasz.wolski@fujitsu.com> wrote:
+Use mutex guard in governor_store() so as to simplify the locking logic.
 
-> The dax_region resource conflict in alloc_dax_region() indicates a
-> serious configuration problem =E2=80=94 two subsystems (e.g. dax_hmem and
-> dax_cxl) are attempting to register overlapping address ranges. This is
-> not a transient or debug-level condition; it represents a genuine
-> resource conflict that an administrator needs to be aware of.
->=20
-> Switch from request_resource() + dev_dbg() to
-> request_resource_conflict() + dev_err() so that the conflict is visible
-> by default and the colliding resource is identified in the message.
->=20
-> Suggested-by: Dan Williams <dan.j.williams@intel.com>
-> Link: https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-=
-mobl4.notmuch/
-> Signed-off-by: Tomasz Wolski <tomasz.wolski@fujitsu.com>
-Seems reasonable to me
-Reviewed-by: Jonathan Cameron <jic23@kernel.org>
-> ---
->  drivers/dax/bus.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
-> index 68437c05e21d..66413c6c2ba0 100644
-> --- a/drivers/dax/bus.c
-> +++ b/drivers/dax/bus.c
-> @@ -637,7 +637,7 @@ struct dax_region *alloc_dax_region(struct device *pa=
-rent, int region_id,
->  		unsigned long flags)
->  {
->  	struct dax_region *dax_region;
-> -	int rc;
-> +	struct resource *conflict;
-> =20
->  	/*
->  	 * The DAX core assumes that it can store its private data in
-> @@ -670,10 +670,11 @@ struct dax_region *alloc_dax_region(struct device *=
-parent, int region_id,
->  		.flags =3D IORESOURCE_MEM | flags,
->  	};
-> =20
-> -	rc =3D request_resource(&dax_regions, &dax_region->res);
-> -	if (rc) {
-> -		dev_dbg(parent, "dax_region resource conflict for %pR\n",
-> -			&dax_region->res);
-> +	conflict =3D request_resource_conflict(&dax_regions, &dax_region->res);
-> +	if (conflict) {
-> +		dev_err(parent,
-> +			"dax_region: can't claim %pR: address conflict with %s %pR\n",
-> +			&dax_region->res, conflict->name, conflict);
->  		goto err_res;
->  	}
-> =20
+No functional impact intended.
+
+Reviewed-by: Yaxiong Tian <tianyaxiong@kylinos.cn>
+Signed-off-by: Jie Zhan <zhanjie9@hisilicon.com>
+---
+ drivers/devfreq/devfreq.c | 38 ++++++++++++++++----------------------
+ 1 file changed, 16 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index f08fc6966eae..7a70dd051644 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1394,23 +1394,20 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	mutex_lock(&devfreq_list_lock);
++	guard(mutex)(&devfreq_list_lock);
+ 	governor = try_then_request_governor(str_governor);
+-	if (IS_ERR(governor)) {
+-		ret = PTR_ERR(governor);
+-		goto out;
+-	}
++	if (IS_ERR(governor))
++		return PTR_ERR(governor);
++
+ 	if (!df->governor)
+ 		goto start_new_governor;
+ 
+-	if (df->governor == governor) {
+-		ret = 0;
+-		goto out;
+-	} else if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)
+-		|| IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE)) {
+-		ret = -EINVAL;
+-		goto out;
+-	}
++	if (df->governor == governor)
++		return count;
++
++	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE) ||
++	    IS_SUPPORTED_FLAG(governor->flags, IMMUTABLE))
++		return -EINVAL;
+ 
+ 	/*
+ 	 * Stop the current governor and remove the specific sysfs files
+@@ -1420,7 +1417,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 	if (ret) {
+ 		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
+ 			 __func__, df->governor->name, ret);
+-		goto out;
++		return ret;
+ 	}
+ 
+ start_new_governor:
+@@ -1438,7 +1435,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 		/* Restore previous governor */
+ 		df->governor = prev_governor;
+ 		if (!df->governor)
+-			goto out;
++			return ret;
+ 
+ 		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+ 		if (ret) {
+@@ -1446,7 +1443,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 				"%s: reverting to Governor %s failed (%d)\n",
+ 				__func__, prev_governor->name, ret);
+ 			df->governor = NULL;
+-			goto out;
++			return ret;
+ 		}
+ 	}
+ 
+@@ -1455,13 +1452,10 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 	 * the new governor, restore the sysfs files of previous governor.
+ 	 */
+ 	ret = sysfs_update_group(&df->dev.kobj, &gov_attr_group);
++	if (ret)
++		return ret;
+ 
+-out:
+-	mutex_unlock(&devfreq_list_lock);
+-
+-	if (!ret)
+-		ret = count;
+-	return ret;
++	return count;
+ }
+ static DEVICE_ATTR_RW(governor);
+ 
+-- 
+2.43.0
 
