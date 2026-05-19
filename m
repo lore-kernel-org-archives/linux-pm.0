@@ -1,132 +1,114 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A187233AD9C;
-	Tue, 19 May 2026 17:56:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B0523E9295
+	for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 22:24:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779213409; cv=none; b=DHiypQnIKWbIpFzNXLIQff6rFLZezHmSuCrg+/vT65KBU9nD9kMeE5rN11hk6Hg7iZNy/h86PkpPl8SqCvL6kuGZN4jOzycsWCEGsJxBk7IHRfqfNDYs3CKZfqHovn3J1LNI5YEUWl+pbK3TSMvRAedUEtPpfrKTs2mFq34txmo=
+	t=1779229490; cv=none; b=X9AxW1LEGSm7FFeLnYcyAPbIE/7IgQPf9Jrk5h7ttFZGtC14Cg0zE+HH9xfgU79BjEeXwS9+Bq4KpGg5XOMFWON4PLmIWG6B0oHxscEabeCfrcWzbM/RrjfV9RcALRg4zX4DmObT8H0LRlTb2yjVs4zUEQ34PK6NS3B4tiW9XTA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779213409; c=relaxed/simple;
-	bh=OFiSDYdS5k0VeQ6U4dsONE+jKyL20p28JWfwIvG5vGc=;
-	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
-	 Date:MIME-Version; b=uITJSBRrxmrrr6v6FIuhgZeOOj2YP0X5LsiLcjNXW3RpjWGfalWZUs8mc7RiNG6sq0ykwc0OTiS2U/+q9TikDfV8TaCyMHhUzaVK5Lfl5VWaRs284Misb3C38EXsm6pvHXhRhWJwB8HLtEs/PxKRMQRd7Ng9ZmH43Kwutoy3XCk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EyGY32PQ; arc=none smtp.client-ip=192.198.163.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	s=arc-20240116; t=1779229490; c=relaxed/simple;
+	bh=HwoOXI2DQhslZxgsAIlcz2VGOtrsHLPz/EOPgv42pPU=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=Bq8lZeag5CGLi4YNJ2gBYyRP/rdDCdngSuS2kpssfXLI/TONe7PInXVSo/fnnVXfxaUFFPR/kT7LLlcrGfPQ6Lnx/Vrswxzb7o8JyF+whAGI9DPu7Cswkzns3lPYLXAq2qPshmJYh1BFVt2vtUS9clxXktuJCZms/3Mw1DfCOb4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jupnkzye; arc=none smtp.client-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EyGY32PQ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779213408; x=1810749408;
-  h=message-id:subject:from:to:cc:in-reply-to:references:
-   content-transfer-encoding:date:mime-version;
-  bh=OFiSDYdS5k0VeQ6U4dsONE+jKyL20p28JWfwIvG5vGc=;
-  b=EyGY32PQmL1MkFFlzgwRzknb3JBrq7zTu4ylMQAFu/0M2bbrAY8roGKx
-   NwOJfFY+kQlsewWRQF3I8R9HAYJqH+8Uh4APDYxwS1ilYKkCtSyCljVhd
-   dEMvp8XX2+Ixp5zSKQKzSx+vhuBJ9R7RhOdSjqXXHRyPztzkRUqmb8X9w
-   GnBON244Fq7Fv43cC1duZBinDVK/fcN1A5dlIoZuq7T0JXTRxFi3Fsd0a
-   OPIVYjFpMJuzLSkOuk/wYUHW5FcJqghBuASY2JgXaPrcldUXWEkEmxXXw
-   lIS1JznxieJ2UfA9lcCfIrgu1DxaaCncRAWUMIcP6s3hUG5BGuT66Q+Xf
-   A==;
-X-CSE-ConnectionGUID: ioo67g9hT3+lvVY/Q5Gy/A==
-X-CSE-MsgGUID: J2yWRPyXQ0OHqy314oW9lg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11791"; a="97669419"
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; 
-   d="scan'208";a="97669419"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 10:56:46 -0700
-X-CSE-ConnectionGUID: zx2h9XBhT7+/H1mP3OjSEw==
-X-CSE-MsgGUID: 3LJvjOy1T06GiF1s7JQTyw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; 
-   d="scan'208";a="236852506"
-Received: from unknown (HELO [10.241.243.24]) ([10.241.243.24])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 10:56:47 -0700
-Message-ID: <f9a3a391c5209ff7ffdd06223305b7b302977e51.camel@linux.intel.com>
-Subject: Re: [PATCH RESEND] cpufreq: intel_pstate: Sync policy->cur when
- setting min pstate during CPU offline
-From: srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-To: Fushuai Wang <fushuai.wang@linux.dev>, lenb@kernel.org,
- rafael@kernel.org, 	viresh.kumar@linaro.org, currojerez@riseup.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	wangfushuai@baidu.com
-In-Reply-To: <20260519112445.9986-1-fushuai.wang@linux.dev>
-References: <20260519112445.9986-1-fushuai.wang@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Date: Tue, 19 May 2026 10:56:22 -0700
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jupnkzye"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-488b8bc6bc9so24331865e9.3
+        for <linux-pm@vger.kernel.org>; Tue, 19 May 2026 15:24:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779229487; x=1779834287; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=alEIzjJTMkVGPCvhQaB5zhzTrToEQ8tZzyGfprUfAoM=;
+        b=JupnkzyexQ8FYtqRE5IPTXoLGp9FmRAD8CBWoJ5Y06YVveqb+jSzL0ekyx8pVGDeaA
+         ILNBjXlj1paWv6GW0oCN4K3VJatL60A3GGMwB3IYEXKrDaJa9My5K2bTUKjZQ9lfAOKc
+         FBEFkDHoFAFqAA8zb+mnb5xCw5DYxGVTdspKmi8u98g+3Vh7TDhqtcdgO+epcgIFlx4v
+         hsH60+zRxXc4pCaJW4nfKch+enoL+rkLoUluCKEstME9zOcufQXrfApSl1PDJwDVb+1x
+         w67BHxix9onqNMJ3yC6kx57CJHIDPxTDPllmDK4MVXZS3iMRbpB6cjTPuB1cv2nj1jCt
+         WD2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779229487; x=1779834287;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=alEIzjJTMkVGPCvhQaB5zhzTrToEQ8tZzyGfprUfAoM=;
+        b=BalgPaTLeyC9IOeHnI299MiBtdRz2lFUgXdYyhKzO+9QmnvhMOuk+4d+533aGNQkw/
+         w6c5OU1QgakMy80dNuXcH2kiJksLZVjKD4at+1hULxIia5He+fv4Jw22XDKTZtTDoSVB
+         gTpNYhPHTCOA50ptxBRmbSbGnUZvMyu2D0PcbHZA+m2lelqXEbHP3k7XPUSsJfWdYoX7
+         g5L2/ysky9b9danpTq0oO3q715kVxBK+6vMaI7IE1ijANl6emcRCSPO1praNjDwjmqQ7
+         V8wxuQa3SNSVvOqVtO8nV/CFMhTlAjtJYqqn67Es4Udofi4X2mp3VK3R5IuOHNRTqZqQ
+         r13Q==
+X-Forwarded-Encrypted: i=1; AFNElJ8wGjTkMe6+1u7oCw0Cg39kpGySRd3VR8TcO24xCOjZjEg4poaay1knZR5FajNskdC8Hm5Olg4kGQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwD+Z6oByB+gfE/mlgXKKgYTVN0ycKJ1jnFjQs0C8/fhjKOMkiT
+	choGmI/V5SD5TRQFBGUwWyE8+R09kHoO8daLE6yNw42BgKq51irBTKPy
+X-Gm-Gg: Acq92OGHwH4ZOAPHmIOxXwccBiRlU07+mJbA6tt0l+3j9dGuEL6Ay3B2uiH0HXHpv0r
+	Ritbq+JCJ29fi9fddor9TRUElfjdLQ5/ZEZU+xWeojLsbfWB5R2NlFdeHgoD0fEr64RG+uWB85u
+	lp8KGp+5/pPzBwiqZOu79bi3jqkyoa9HVVDLhWTNc+lCk2OVMQb3sYA7UJ9c/9NDlBWoaGgZhI5
+	uocIaRmScItGzf5KNnmvjJyobawT/rdzOxjIGykWv5k+DBZNRmgC0GtttUXilK95oBrJdGLiMvr
+	24/RHwyvfeHa5EGDcCK/ffwtvMkw7pPN4mkDcfggLnOINWqgVCiJUhqKTRFkLh10T/4PUvq/wn+
+	8995mL6OUbHvMFMDLwOV5usnFvn384LrSfNnjiPKjMN137SCJ401P1hM+XSzknL1S4S/Ny6YYcM
+	eDTkSRY482MSSiN/QKty+dF2Ch7u2y9XaEawr6Xy+37mQ/8vGAQ6+w+ffNAaTH37qKZj/fwVdcy
+	whg1oJUPA==
+X-Received: by 2002:a05:600c:4fcb:b0:488:a797:f0ac with SMTP id 5b1f17b1804b1-48fe6613ab3mr317571325e9.28.1779229486487;
+        Tue, 19 May 2026 15:24:46 -0700 (PDT)
+Received: from Ansuel-XPS24 (host-82-55-252-101.retail.telecomitalia.it. [82.55.252.101])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-48fe4c834besm381097435e9.3.2026.05.19.15.24.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 May 2026 15:24:46 -0700 (PDT)
+From: Christian Marangi <ansuelsmth@gmail.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Christian Marangi <ansuelsmth@gmail.com>,
+	Lorenzo Bianconi <lorenzo@kernel.org>,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v4 0/5] thermal/drivers: airoha: Add support for AN7583
+Date: Wed, 20 May 2026 00:24:21 +0200
+Message-ID: <20260519222433.29684-1-ansuelsmth@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+Content-Transfer-Encoding: 8bit
 
-On Tue, 2026-05-19 at 19:24 +0800, Fushuai Wang wrote:
-> From: Fushuai Wang <wangfushuai@baidu.com>
->=20
-> When a CPU goes offline with HWP disabled,
-> intel_pstate_set_min_pstate()
-> sets the MSR_IA32_PERF_CTL to minimum frequency to prevent SMT
-> siblings
-> from being restricted. However, the policy->cur value was not
-> updated,
-> leaving it at the previous value.
->=20
-> When the CPU comes back online, governor->limits() checks if
-> target_freq
-> equals policy->cur and skips the frequency adjustment if they match.
-> Since
-> policy->cur still holds the previous value, the governor does not
-> call
-> cpufreq_driver->target to update MSR_IA32_PERF_CTL.
->=20
-> Fix this by synchronizing policy->cur with the hardware state when
-> setting
-> minimum pstate during CPU offline.
->=20
-> Fixes: f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive mode
-> with HWP enabled")
+This small series implement all the required changes to
+support Airoha AN7583 Thermal Sensor.
 
-The patch is fine with some comments below, but this Fixes tag is not
-necessary added this. This was implementation from
-Commit bb18008f8086283f8f03e8e50fbbf17f213b9ea9
-Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-Date:   Wed Mar 19 08:45:54 2014 -0700
+The SoC dropped the Monitor subsystem and only provide
+temperature reading. Some generalization was required
+to at least save the common code with also the help of
+reg field API.
 
-    intel_pstate: Set core to min P state during core offline
-=20
+Changes v4:
+- Rebase on top of linux-next
+Changes v3:
+- Property use chip-scu for thermal sensor
+Changes v2:
+- Update DT schema patch to implement dedicated schema
 
+Christian Marangi (5):
+  thermal/drivers: airoha: Convert to regmap API
+  thermal/drivers: airoha: Generalize probe function
+  thermal/drivers: airoha: Generalize get_thermal_ADC and set_mux
+    function
+  dt-bindings: arm: airoha: Add the chip-scu node for AN7583 SoC
+  thermal/drivers: airoha: Add support for AN7583 Thermal Sensor
 
-> Signed-off-by: Fushuai Wang <wangfushuai@baidu.com>
-> ---
-> =C2=A0drivers/cpufreq/intel_pstate.c | 4 +++-
-> =C2=A01 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 1292da53e5fc..0bd6388caa9d 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2986,8 +2986,10 @@ static int intel_cpufreq_cpu_offline(struct
-> cpufreq_policy *policy)
-> =C2=A0	 */
-> =C2=A0	if (hwp_active)
+ .../bindings/arm/airoha,en7581-chip-scu.yaml  |  14 +
+ drivers/thermal/airoha_thermal.c              | 368 +++++++++++++++---
+ 2 files changed, 318 insertions(+), 64 deletions(-)
 
-{
+-- 
+2.53.0
 
-> =C2=A0		intel_pstate_hwp_offline(cpu);
-> -	else
-> +	else {
-
-s/else / } else {
-
-> =C2=A0		intel_pstate_set_min_pstate(cpu);
-> +		policy->cur =3D cpu->pstate.min_freq;
-> +	}
-
-> =C2=A0
-> =C2=A0	intel_pstate_exit_perf_limits(policy);
-> =C2=A0
