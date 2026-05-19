@@ -1,37 +1,31 @@
-Received: from layka.disroot.org (layka.disroot.org [178.21.23.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88E784C6F0A;
-	Tue, 19 May 2026 12:08:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.21.23.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75C714DB56F;
+	Tue, 19 May 2026 12:36:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779192493; cv=none; b=UB5Xs3YM+mIycGql/2odFPrPzuf+dJ2cYQMe/PRM2PfUfC+YxpRxEOp9OqtLMxrN9U5lZfsRBrP1uUZG+5axFLSVrSs/jTIDnQj00YLvYLPykfVPuf4zDNflUGzx4VhDSt8mgM9yQV7qCV6b1B97Yes+G0Wk2Nar4mNVXzM+8RI=
+	t=1779194213; cv=none; b=Ky1s5hU6ok38e0xPPgLrLKeVufLIqnfnmEkwi0XIXKwHyrRTlLdjQWpH49qX/XNX+pecgpBMvSjAaJEU2bwmCPYNV2PEPx/j/CxaZwTUn9b57Hgc+4UcB89+yRTAecd5J1b3oYn/mD6IDy7cMY9M1bn/l5HFkev19KXdEzzyrUU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779192493; c=relaxed/simple;
-	bh=HOH4zolnpjz17GuZevflHD1qmQ35A3RygmEY1pWBHCQ=;
-	h=Mime-Version:Content-Type:Date:Message-Id:To:Cc:Subject:From:
-	 References:In-Reply-To; b=TGX8zVy4Botg/+ps5sJumOeQEqqbT0WSZqMSR3by7mK7EIONDKaC2+dF8lHHtLe5LS1oTClty5ywEgOhXsXuf9wnQ0UT5XLxLvVuVrwzu/gfn+1PtliWmVhHxwG1ZRb/ZOeDSUpGynS6RbXYGeQEra5B+tQVLVAnLhSU24Wp6gI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org; spf=pass smtp.mailfrom=disroot.org; dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b=MDLo8o7h; arc=none smtp.client-ip=178.21.23.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=disroot.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=disroot.org
+	s=arc-20240116; t=1779194213; c=relaxed/simple;
+	bh=nJYV/ap6zHLvQFCShv1/uTv1aMCcDLeKnHs+8n4ntjw=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=DJSC2ek+nldA5j07utobbTCppzre+8OdTyaorVacTeaR98Wv0vec8nz2GhdqjAYETbFOJ75S99bTSx7ezgIYQuR92w76/0h2bpZ2cht0A8JI1lWi1XaY0B7iAKy7ZcBFQBVPvH2clGd647h5kwjWnIg9VUe05uROVcJj8/7ylIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pXdkD0ON; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=disroot.org header.i=@disroot.org header.b="MDLo8o7h"
-Received: from mail01.disroot.lan (localhost [127.0.0.1])
-	by disroot.org (Postfix) with ESMTP id BDE7F27713;
-	Tue, 19 May 2026 14:08:08 +0200 (CEST)
-X-Virus-Scanned: SPAM Filter at disroot.org
-Received: from layka.disroot.org ([127.0.0.1])
- by localhost (disroot.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HPM6vn7VwL0t; Tue, 19 May 2026 14:08:08 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=disroot.org; s=mail;
-	t=1779192488; bh=HOH4zolnpjz17GuZevflHD1qmQ35A3RygmEY1pWBHCQ=;
-	h=Date:To:Cc:Subject:From:References:In-Reply-To;
-	b=MDLo8o7hPr4AET7m7AYF//xh93Cl0MwxKi543eqRJOXBWyE8iTv4D7kzUYU9dBcq6
-	 qcZSSf3ADrzc9GoNnTgHzkgiUZYsIGJoYZrPiJp54itCF0lySVkczMwPd1JadRRtsE
-	 nDREAOhOjI79bJTNQCq/rETRSH24HG48Esr7qg6R3GPFB5OtbLS6KA582enf4G9iaK
-	 V+hYaiqvNLsfHcWGdHQYzDrXUICAOkuj+pmeqH1OZeqsOuF9qRhuNBvCCRGRHVOVrY
-	 tytRUXhWDvSfYPxTsvVBTUtN0SENIOBjxeHvmiuajPUZ5QjGDu1dWL1DsWZ1OmbrNw
-	 P4cLbI8NqyU7g==
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pXdkD0ON"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AF43C2BCB3;
+	Tue, 19 May 2026 12:36:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779194213;
+	bh=nJYV/ap6zHLvQFCShv1/uTv1aMCcDLeKnHs+8n4ntjw=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=pXdkD0ON+gTtqAfmHdV2+ZlJJdoHdFQI0lWKl2u+WYWQMoLn7gbY7EPrs2eSe3szw
+	 vH7vAu76tm5kEIjgDVABxnCGJvcXk+cVx4atcbY/dRM/247u+aecXZaa6Ey2m/Gieh
+	 P7bQjNQ6dC/7ynOZAhCNBPXQZ6WrIWJ1gj/JZbRN7ldklXmjrDeTvn2c+agudMk79N
+	 nuNRqoZPfbqjZtKbwa/pNSs/WGEuBxKzFkxN9GrEJIbK9pYHMFlYLNDncJMiOn8nQm
+	 jM7ds8QSjCecf0syRnMwaKhimwaXpklCU7tLUKZr2im5PUaSwqJHwobZwDenbDOHdE
+	 F95Qt0z7yLb5Q==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -40,114 +34,36 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Tue, 19 May 2026 17:37:50 +0530
-Message-Id: <DIMN3D9E8YCT.3T2PGAYYB2IOO@disroot.org>
-To: "Krzysztof Kozlowski" <krzk@kernel.org>, "Conor Dooley"
- <conor@kernel.org>, "Kaustabh Chakraborty" <kauschluss@disroot.org>
-Cc: "Lee Jones" <lee@kernel.org>, "Pavel Machek" <pavel@kernel.org>, "Rob
- Herring" <robh@kernel.org>, "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "MyungJoo Ham"
- <myungjoo.ham@samsung.com>, "Chanwoo Choi" <cw00.choi@samsung.com>,
- "Sebastian Reichel" <sre@kernel.org>, =?utf-8?q?Andr=C3=A9_Draszik?=
- <andre.draszik@linaro.org>, "Alexandre Belloni"
- <alexandre.belloni@bootlin.com>, "Jonathan Corbet" <corbet@lwn.net>, "Shuah
- Khan" <skhan@linuxfoundation.org>, "Nam Tran" <trannamatk@gmail.com>,
- =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>,
- <linux-leds@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-rtc@vger.kernel.org>,
- <linux-doc@vger.kernel.org>
-Subject: Re: [PATCH v6 03/11] dt-bindings: mfd: add documentation for
- S2MU005 PMIC
-From: "Kaustabh Chakraborty" <kauschluss@disroot.org>
-References: <20260515-s2mu005-pmic-v6-0-1979106992d4@disroot.org>
- <20260515-s2mu005-pmic-v6-3-1979106992d4@disroot.org>
- <20260515-justly-recite-6028f4bfb24a@spud>
- <DIJK5FTQ5KWG.HOKZAOXHTGU7@disroot.org>
- <20260516-esquire-chitchat-0fffa597e2f3@spud>
- <DIKZ5L2HC2CV.YL3MZUJQ2EV6@disroot.org>
- <20260517-corrode-tuesday-a598ca734b38@spud>
- <d2f4cb7d-5c3e-4b9a-86ca-04262cbb9775@kernel.org>
- <20260518-succulent-plethora-2dba60fad426@spud>
- <0240eb13-6c56-4879-8db7-b990a220a78f@kernel.org>
-In-Reply-To: <0240eb13-6c56-4879-8db7-b990a220a78f@kernel.org>
+Date: Tue, 19 May 2026 14:36:44 +0200
+Message-Id: <DIMNPI2H382T.2U2OH39B7C2B4@kernel.org>
+Subject: Re: [PATCH v3 10/27] rust: pci: make Driver trait
+ lifetime-parameterized
+Cc: "Eliot Courtney" <ecourtney@nvidia.com>, <gregkh@linuxfoundation.org>,
+ <rafael@kernel.org>, <acourbot@nvidia.com>, <aliceryhl@google.com>,
+ <david.m.ertman@intel.com>, <ira.weiny@intel.com>, <leon@kernel.org>,
+ <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
+ <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
+ <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
+ <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <bjorn3_gh@protonmail.com>, <lossin@kernel.org>, <a.hindborg@kernel.org>,
+ <tmgross@umich.edu>, <igor.korotin@linux.dev>,
+ <daniel.almeida@collabora.com>, <pcolberg@redhat.com>,
+ <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
+To: "Gary Guo" <gary@garyguo.net>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260517000149.3226762-1-dakr@kernel.org>
+ <20260517000149.3226762-11-dakr@kernel.org>
+ <DIMDU2XL6PKO.RUXA0XPFT94R@nvidia.com>
+ <DIML7T3R6BXP.2WSFVG2VY63LP@kernel.org>
+ <DIMMO6Q6WKOY.1DKWK8IBAP0W9@garyguo.net>
+In-Reply-To: <DIMMO6Q6WKOY.1DKWK8IBAP0W9@garyguo.net>
 
-On 2026-05-18 12:23 +02:00, Krzysztof Kozlowski wrote:
-> On 18/05/2026 11:45, Conor Dooley wrote:
->> On Mon, May 18, 2026 at 09:15:11AM +0200, Krzysztof Kozlowski wrote:
->>> On 17/05/2026 22:52, Conor Dooley wrote:
->>>> On Sun, May 17, 2026 at 06:39:37PM +0530, Kaustabh Chakraborty wrote:
->>>>>>>>>> +
->>>>>>>>> +    properties:
->>>>>>>>> +      compatible:
->>>>>>>>> +        const: samsung,s2mu005-rgb
->>>>>>>>> +
->>>>>>>>> +    required:
->>>>>>>>> +      - compatible
->>>>>>>>> +
->>>>>>>>> +    unevaluatedProperties: false
->>>>>>>>> +
->>>>>>>>> +  reg:
->>>>>>>>> +    maxItems: 1
->>>>>>>>
->>>>>>>> Move this above the child nodes please.
->>>>>>>
->>>>>>> But properties are sorted in lex order?
->>>>>>
->>>>>> Typically the binding is sorted in the same order as properties go i=
-n
->>>>>> nodes. Common stuff like reg/clocks/interrupts therefore send up abo=
-ve
->>>>>> child nodes.
->>>>>
->>>>> So, do I change this? For one, I don't see the same being followed in
->>>>> other schemas of samsung in the same dir (not that I'm trying to pose=
- it
->>>>> as an argument against your suggestion), and this was reviewed by
->>>>> Krzysztof and is adderssed in v7.
->>>>
->>>> If Krzysztof doesn't care, then I won't ask you to change it.
->>>
->>> This builds on top of bindings for previous Samsung PMIC devices, so
->>> that's why it keeps the compatibles for children, I guess. No one
->>> complained about this at v1-v2 reviews, so when I joined reviewing in v=
-3
->>> I did not, either.
->>>
->>> I don't think the compatible should be here, but I also don't want to
->>> stall that patchset. I understand that it is inconsistent review from m=
-y
->>> side, because other similar patchsets receive comment to drop the
->>> compatible. But I don't think we will be fair asking to drop the
->>> compatible now, when we did not ask for that in the early versions at a=
-ll.
->>=20
->>=20
->> I think you misunderstood, we were talking about the ordering of the
->> properties in the binding file being alphanumerical, rather than the
->> more typical approach of approximately following the order of
->> dts-coding-style.
->
->
-> Ah, then I misunderstood and, even though it is a nit, I do care because
-> old code is then used for new patches. Bindings follow DTS rules, thus
-> should be:
-> 1. compatible
-> 2. reg
-> 3. core properties
-> 4. vendor properties
->
-> Kaustabh, can you change it please?
+On Tue May 19, 2026 at 1:48 PM CEST, Gary Guo wrote:
+> the callback should have `Pin<&Self::Data<'bound>>` instead (the outer
+> lifetime should be callback-scoped)`. Did you forget to make the change?
 
-Ack, will do that in v8 then.
-
-While at it, do you also want me to drop the multi-led compatible string?
-So it would be:
-
-  multi-led:
-    $ref: /schemas/leds/leds-class-multicolor.yaml#
-
->
-> Best regards,
-> Krzysztof
-
+Yes, I thought I had that staged already, but forgot about it; good catch,
+thanks!
