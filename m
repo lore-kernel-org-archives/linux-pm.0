@@ -1,137 +1,86 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout01.his.huawei.com (canpmsgout01.his.huawei.com [113.46.200.216])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AF95367B83
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 08:11:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60D2332C924;
+	Wed, 20 May 2026 08:12:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.216
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779264705; cv=none; b=li6Tu+hH1ypwg/gBRZ07WqnZ3nbi8mOcx9mDk6CVF8jAsVxbeKHdif7GPCdir3ZwfotiIWcL6fi0VrSev51Frv/7e93ouLq38yq6e/CSiLDeFg7an8hsf15w1YUOIvIsUg2moCJmmI3PSoZ+IE7DBVz79Zz5KtflJTYY0TYgHC4=
+	t=1779264738; cv=none; b=q0A1ngz3Q/PcQi429HY2LE4G9CRTvlL85bY7m9ohuP+zNpkctCG7wsY7HpfI+BHVpcoVnB9Mo4qmDwxjt6hKNOzBbYiNKA3UYoNhuCDbT3iZ6PpDrnj8/MtMwUVn7p/OqAai6UP1JstjePUUIN7eKe+Mn2D9H8DutkqowevHn5Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779264705; c=relaxed/simple;
-	bh=dZTSqSu/MbSK1ONQ78RX/lDGhqUwxiThKPfbDd81m6o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EEsDztkJ+MZD0X3rd6E1FCNBT1E4X5/x//b2J1AxTMmO2Zt+jMNYirRTPjxRKK2iK789oAtL/zK0a8KUwZ0wArvPS+2s3/ivNVelxapSUSp/Xqzyw97yc+Ig74Z0bgInjIVtsIgC976H/FHYyFnvrCxirCtsU3y0tGuyme4yO7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=RqaNudvy; arc=none smtp.client-ip=209.85.214.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RqaNudvy"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2baef9f5ecdso36263895ad.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 01:11:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1779264703; x=1779869503; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=peIkH2jFEWiVrxLLP7kGKRZpoLe54YD0k6sn0w5+ggY=;
-        b=RqaNudvyI0r4XQ6HjnCjFTd4NbkHx/9PhLE689pqztfcpsL98tyhWeif4jGGwshFxO
-         9scuZbrGZajkeLVljKnPQBSwwXxB3vG3hFVIvReqXoX5mTBpSlBwPiKHwSnv7VuGra1b
-         vFYjCuRSzg+bC9veNKVzFSkVmOT0y27hgGaPXD8Ltzg8dfstwhotkliCb6AHw5DL5IyC
-         N/81VFh07u3C6WL0vcf3EqrWgi+onY2C7LF4a39uq4bXdgCqNUd3dBzZVbPretJKShXP
-         pOAEFzetMeJbDo12GQ01PPbkKAIiuVaT9wl9f1RkG8C0155fE1e98fnjg/RBk6je7XXp
-         afew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779264703; x=1779869503;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=peIkH2jFEWiVrxLLP7kGKRZpoLe54YD0k6sn0w5+ggY=;
-        b=n9tz+WN82t/RlFRbaMj2MjNsrf2w4F+qW/PjqZTaFNA0jeZy841c/xstlDPR77P2Rg
-         RXkOqqDN4TCKQM3r5YFkP0XKAyYPsjJCvdTovtKR+SzhbeeiFyTNPaM3/KGl0k2+g5Ai
-         GsMQ57gYQyzDn8cRPViykKVVPTPpMLTz7XHH02ziwWlfiEWAhCTqZ5rEBsdOcBf3BeRg
-         yIwmOOeu3VZl169bSc9MjHAGcOkhjDqvA4pEx6qc8deMmiZ+nNgC+X8DJUO9a/8XSSvQ
-         lxRXEO0NyilmV3FNxENFHJ4WarQSMv8DQruKeCSc06vmu5kAT4C4pmj88z+xldW3+OR6
-         v9IQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+jg8VehMqR/KX87f3Ng0rd+arZQi/747bIMLGj2tlCn59HzhgPODosHxJX1t6ZFVAI+bIO40UdxQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YytXYu3ZB6AQwnchQ8rFdeklwxE/Dhb9wbKU2u+ZVGF84iQssQJ
-	c1TCYVnrOpGWIUU5cfnQuhIuLQ9GPIW19x2yahuCeMRkdgyrC7MbDN6s6ANHSK4SlP4=
-X-Gm-Gg: Acq92OFAtkTqEMlkwhQPsfyVj7n7D0yUC+TCviKYlSZ1WnxZ2Y60jpoiAoavVn0sLbi
-	8JQmo6yT+hV0+rOaiiA2POGzo2udZrilkzB90AaMPO1RHf3bmedXubH/WDU1ztNAZP1yf//s78u
-	WSt7Qg0CyNHySoraFgyzI77DtYFXphMz7vr6PfNyhyJiopg6kISdnAj5E0v2cc1ZquzFPUiBLDy
-	qTQ0onA6+EezS1lLOOWY7qOUXIPHC2yS/YIW+o55VA0ZAwYSAJmwt7Ovlt2fnEf+onFClvUqrl3
-	rPWrpgEc+FSCO1OOXASIeAhPTTmAzWQOqOOZXZYZTLLQUrKhgnHzUqdZ+V155FwK2KJBu+LXpYl
-	TbPErGQ4w+tMS1RH2X3llfWa/epV5+q+FAF4oReAlA0Hop9FfKe8vI2uu2f48DT854+ERtrhtj8
-	HakV9u1fXipEvo4swfUmrm+hdrIz/MrCj3DA==
-X-Received: by 2002:a17:903:983:b0:2bd:8395:fed8 with SMTP id d9443c01a7336-2bd83960609mr258908775ad.27.1779264703294;
-        Wed, 20 May 2026 01:11:43 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5bd5f2dcsm210199835ad.13.2026.05.20.01.11.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 May 2026 01:11:42 -0700 (PDT)
-Date: Wed, 20 May 2026 13:41:40 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Pierre Gondois <pierre.gondois@arm.com>
-Cc: linux-kernel@vger.kernel.org, Jie Zhan <zhanjie9@hisilicon.com>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, Ionela Voinescu <ionela.voinescu@arm.com>, 
-	Sumit Gupta <sumitg@nvidia.com>, Huang Rui <ray.huang@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	K Prateek Nayak <kprateek.nayak@amd.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	Saravana Kannan <saravanak@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/1] cpufreq: Set policy->min and max as real QoS
- constraints
-Message-ID: <uydxaaj4laiaashghutb6h42ltb7qr4oyt5s2cxxqchnmffoam@uj7bl6t4rzsd>
-References: <20260423084731.1090384-1-pierre.gondois@arm.com>
- <20260423084731.1090384-2-pierre.gondois@arm.com>
- <6cq7e26levlhwh6aoq6aii3vsyjqtvp2ksymovkosfhuuunv6u@cyab7jjd2fgy>
- <066010f3-9973-4076-9ea1-0c675dc84420@arm.com>
+	s=arc-20240116; t=1779264738; c=relaxed/simple;
+	bh=MhXaYiT85I2NMAt1mEC1GMFV7LCZ6SP31AjjdrB9eQc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=JPYGdsUtZhljLgYfQ7rQDCt8SDyP6zCzeJqCvWHAdI4l/f/8YL9/pceov0FqKMFGNQcLTplHX9TZ/C7/53ATFndO/meJ0038yUFHTb3d54lcvW3djHQMK9nUO/xAbcry6l2ieBB9N9PE8jPxwewhyeY6H8CI8LY/KuAhiW/TGew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.216
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4gL3wQ3DTrz1T4Ht;
+	Wed, 20 May 2026 16:04:22 +0800 (CST)
+Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
+	by mail.maildlp.com (Postfix) with ESMTPS id 9ED6F4056A;
+	Wed, 20 May 2026 16:12:13 +0800 (CST)
+Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
+ (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 20 May
+ 2026 16:12:12 +0800
+Message-ID: <a2446156-99c3-4f5a-8868-a4c8d3323a34@hisilicon.com>
+Date: Wed, 20 May 2026 16:12:11 +0800
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <066010f3-9973-4076-9ea1-0c675dc84420@arm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/4] cpufreq: Set default policy->min/max values for
+ all drivers
+To: Pierre Gondois <pierre.gondois@arm.com>, <linux-kernel@vger.kernel.org>
+CC: Lifeng Zheng <zhenglifeng1@huawei.com>, Ionela Voinescu
+	<ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, Zhongqiu Han
+	<zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>, Mario
+ Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, K
+ Prateek Nayak <kprateek.nayak@amd.com>, Srinivas Pandruvada
+	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
+ Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>,
+	<linux-doc@vger.kernel.org>
+References: <20260511135538.522653-1-pierre.gondois@arm.com>
+ <20260511135538.522653-3-pierre.gondois@arm.com>
+Content-Language: en-US
+From: Jie Zhan <zhanjie9@hisilicon.com>
+In-Reply-To: <20260511135538.522653-3-pierre.gondois@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ kwepemf200017.china.huawei.com (7.202.181.10)
 
-I was away on vacation, sorry for the delay.
 
-On 11-05-26, 15:55, Pierre Gondois wrote:
-> The above code can be split in 2 functionalities:
-> A. Adding QoS constraints
-> B. Fetching the min/max QoS constraint as initialized by the driver.
+
+On 5/11/2026 9:55 PM, Pierre Gondois wrote:
+> Some drivers set policy->min/max in their .init() callback.
+> cpufreq_set_policy() will ultimately override them through:
+> cpufreq_policy_online()
+> \-cpufreq_init_policy()
+>   \-cpufreq_set_policy()
+>     \-/* Set policy->min/max */
+> Thus the policy min/max values provided are only temporary.
 > 
-> I think the main constraints are:
-> cpufreq_table_validate_and_sort()
-> \-cpufreq_frequency_table_cpuinfo() [1]
-> \-policy_has_boost_freq() [2]
+> There is an exception if CPUFREQ_NEED_INITIAL_FREQ_CHECK is set and:
+> cpufreq_policy_online()
+> \-__cpufreq_driver_target()
+>   \-cpufreq_driver->target()
 > 
-> [1] policy->cpuinfo.max_freq is updated
-> [2] Boost support is detected
+> To prepare for a following patch that will remove all
+> policy->min/max initialization in the driver .init() callback
+> if the min/max value is equal to the cpuinfo.min/max_freq,
+> set a default policy->min/max value for all drivers.
 > 
-> So the QoS logic relying on policy->boost_supported
-> or policy->cpuinfo.max_freq (i.e. A. and B.) must be added
-> after cpufreq_table_validate_and_sort().
-> 
+Reviewed-by: Jie Zhan <zhanjie9@hisilicon.com> 
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 > ---
+>  drivers/cpufreq/cpufreq.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> if (!new_policy && cpufreq_driver->online) {
-> } else {
->   cpufreq_driver->init()
->   cpufreq_table_validate_and_sort()
-
-Even we can remove the update of policy->min/max from
-cpufreq_table_validate_and_sort(). Just set cpuinfo.
-
-And right after the call, we can set policy->min/max.
-
->   // [3]
-> }
-> The else branch is executed if the policy is not new and there
-> is no .online() callback. To avoid initializing multiple times
-> the QoS constraints, A. can be done at [3] but only if
-> new_policy==true.
-> 
-> ---
-> 
-> I should have sent a V2 which does everything in a
-> cpufreq_policy_init_qos(). Please let me know if this
-> seems reasonable to you.
-
-Setting policy->min/max should be considered separate from QoS I
-think.
-
--- 
-viresh
+[ ... ]
