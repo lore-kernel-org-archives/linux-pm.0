@@ -1,168 +1,148 @@
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11012002.outbound.protection.outlook.com [52.101.66.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE96E3F4DFC
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 15:20:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779290431; cv=none; b=pcRI32oBVrk3z3A1mXHHjbv1mbVxhIUq09kiuAvo6SnltsT3wj+OPjdrV+BQyqFKF9+HrX2gHAhTHQ4Y42/pHE95xO+R7Rd07i6lcGzTUvECtkADm8rVzA3bNuLmU44s27Hr9P+lTlEaFb9roZg55FeVL1pBAo0289FWX6HqqYo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779290431; c=relaxed/simple;
-	bh=w/o8ALu3JhTui62UkO3C0AbOHfMtZJQPDhlfOzkGK7s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X90W4uTEyq8nspwcG1DyrrPPxw0SgnBiVMq9t4k+/EkLk9XDbYZOx25+KeiC5UBpzZcge9/AT3wKlrYv/yqzeB9T0Fi+jZwJnzIPrUsVqQS1SaAs7gUKdhOSOMXG4iARh7c2oLkM7aq/ZLWXi7XjpQY+RUEibu5z4CPc4kep7xI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=gTcRUO9W; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZLhPebip; arc=none smtp.client-ip=205.220.168.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E77CF31E83B;
+	Wed, 20 May 2026 15:49:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.66.2
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779292185; cv=fail; b=Z+IjC7RNpc7dNQTG62n6zKWHBYNutmaH2IWogApJ+Q6d52YLZxzcgBF0xCpqCdQLWVkiAKMP5QlEUthVBF2aYeYyhO6qX3hFgCuCR+l6TgeuVvc0iUMWS6jtduejcAyQMtHCrmPUGwzZxW9EWgR2yJmrnE197Nxg+essTV+QDZw=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779292185; c=relaxed/simple;
+	bh=cwaDI2vlstKm7zFa5FZ97M4lGcG7GOmMnSdffFERpaQ=;
+	h=From:To:CC:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=qrpEmXy+03BxwYl9qwT34osqzaiQg+7XcdKCqvH1QUxXrw6D9sh5xuaP3yOHBO/QcSRjG2GkbdgmgPddw5wOxO9RCJ67bP+k2YNCQOw7ePFaLl9K7jYDlv7YrDI+36ztLALuLzqbsIal4GyKR0tiBQCgMNJDKitLMB+kXygkeDw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com; spf=pass smtp.mailfrom=axis.com; dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b=PAxUXgah; arc=fail smtp.client-ip=52.101.66.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=axis.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=axis.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="gTcRUO9W";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZLhPebip"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64KE6ZYH119071
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 15:20:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	mT+rMK4/HIfny/f0nd19A06TzmRHuaqZ9n+4gyyLAbs=; b=gTcRUO9WY7w9IHBq
-	auVNP/PWNdAhI1JDrkGv+puTAs9PpXorZN5RUNjQianQ+YdeNO9TPyIYz3MJOgFV
-	BJZxcKBPEFEP8pV4XQBpE7ekshDVFiMq2IS64bgxSKRWTKfIoS9o0tcTVAfLiLgr
-	JaKdxj66r0t9f3rq3IRi0qxDJdvsXgQMCUmEUMxG207XAp0YNIi1NXUwif7nY/lL
-	YAXoqYIdamdvViB08Xcsym8Xirj+eU2qHCV4tLlzn6/1fOHqY9jxFtEObzv4lID2
-	VyFkjXCFJfZXGof0gXW8NdQvny8aKTr03A5j7WPxsmKfVLKyLoEpeHSbPilHoA4V
-	lbMoBg==
-Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com [209.85.167.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e9ee88ba2-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 15:20:29 +0000 (GMT)
-Received: by mail-oi1-f197.google.com with SMTP id 5614622812f47-482884a9ddaso12414611b6e.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 08:20:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779290428; x=1779895228; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mT+rMK4/HIfny/f0nd19A06TzmRHuaqZ9n+4gyyLAbs=;
-        b=ZLhPebipYPdVlkuDc3nYuv3uxf1Wni2t9WWXfxybT0KjbIEC57xO9KWc3TPLvDPEqZ
-         qCCpI1DJO7edlMFhtNORdxBmBRwhDlqgm1bsp7A7Lf1pfZzptICgI4S3QeucLIyYd3FY
-         XV/oMJjIPKiY6wEIxk4qC2imyQB7lEdwAYWScFEy4Z+930MZV93uJWa+jX4nr7ORduHl
-         WSP1QagFejztilRtRYcKIRhS9EVybfXSwevYInIYyyJoJasKi40wo4lNgjWyTsKWALAC
-         Ju/0Yfrh4CuZ9xg3ERqWO8DuIUH3bFPZELcsiZGtSNvQvEsa4d/RvbJTvQyqxWP+HVWr
-         ZPXQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779290428; x=1779895228;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mT+rMK4/HIfny/f0nd19A06TzmRHuaqZ9n+4gyyLAbs=;
-        b=pTBfkcKoxr4/3H1DivzMTKqPmX/H+Dyi1ynrgxHMcti2HMMbVCdRbhvZTm3P7FdiLS
-         AS/US6bbbXVTYYZSJohMlGGASfxg9O929GU1E10/+ouxIQnbelZS3o9c1X2TQuWK/WBx
-         BWT4GqPdG9Ia9+SfLYv8pK+Pk/9GVZiscunDarZlLWFmHb2nQjwIv4y7Lrx7KJGfPO1y
-         3ngyfPYdDSUpRHR3aKZE0nWB6AcvVqAuX9DV3F+o4ZVmGTeC0ePcJgBeNgM3zerd/g0g
-         N/FzBm54flHukWnBQ7foVtsyuA3kBt9ipnRm1i/W97HGrgbpn+xFs3+pHX4rYYfihfV8
-         c+og==
-X-Forwarded-Encrypted: i=1; AFNElJ9IGjdx8cEL+mybdyAPmHO4WGs9Wm7cBsSKefbvWN15XdAQXupXR0Yadi5sKshb6S5qzS5aPwWWCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwPSKuwvsHHppncHcIP8isNrKeFVEIc0J1Fe7OA3rfNLtafAVGy
-	wyqAZNeCunQLDUHLI0gvJi6YrZwgYY+vw0dIpaiGKv/zXclGgW0zvG3SoN0EQHeZlidFGLnD0zQ
-	4l8Tnekp6pFz/9QDC+KrEPZU4lN8M8vKFlJ1OoWawZCuZdsnfZdbxwUPF4oK8Xw==
-X-Gm-Gg: Acq92OFV6fPlm9M5ZH0/c8SygE3s+aA+ARl5cJtq6VT683stLLSviAiIKTEQPD/zkxE
-	VnDgXYIJ77UFzNJHAvnfPTokMOnBMaFTcI3SPrUqDZfSwVgkBonP993DufhCfCDzV01wPvhtfwP
-	asR8dtvgCC7C221aLpIhUAdHXQCBFz6y3nkUsbTio3q9ONt3AourcO1O4zwJfLt4Miz/N94GNUu
-	dPunv2cA2ce7YZZlZ+OEn3F0Vl/A+fFR6l4wnRYJHdLgixJhgmQ6yrctfcvo+lpgWvsISugF8c1
-	tnVLspMqFan4LsZKIGGV3uhRm0FyUMTtM+yPl0w0ARJ+MvkSfqmY1tVLjNgasf/X0Z9ZcnSkg1z
-	4Xg61e8Fx67Yoxlp7zTVXxgcF4oqIYneIisqKB16ffTqFPfWKG5PTkqS9hHRYqMB1Hlr9GWAuJH
-	P/RhvxSP/C0JZT6iCkrz8=
-X-Received: by 2002:a05:6808:2388:b0:479:d779:353e with SMTP id 5614622812f47-482e57c9a13mr17237412b6e.24.1779290428269;
-        Wed, 20 May 2026 08:20:28 -0700 (PDT)
-X-Received: by 2002:a05:6808:2388:b0:479:d779:353e with SMTP id 5614622812f47-482e57c9a13mr17237386b6e.24.1779290427794;
-        Wed, 20 May 2026 08:20:27 -0700 (PDT)
-Received: from ?IPV6:2a05:6e02:1041:c10:ed59:2b99:54ea:b713? ([2a05:6e02:1041:c10:ed59:2b99:54ea:b713])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4900c16c62dsm230047695e9.11.2026.05.20.08.20.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 20 May 2026 08:20:26 -0700 (PDT)
-Message-ID: <4d2cba0c-6418-4bb6-91e9-9730ad4d692f@oss.qualcomm.com>
-Date: Wed, 20 May 2026 17:20:25 +0200
+	dkim=pass (1024-bit key) header.d=axis.com header.i=@axis.com header.b="PAxUXgah"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=VZ5eQNsO9OVoC3KZp1oU5IprPiDewxe0jkWTcc4K4oR/CXXO8pPq0ceWXHZvSZ+WlE4KANvuxxUFawXZBpbfMYv67XgbszYQoGdABbNnT2YtZuy/JlYbpQ3nC+0Gf/9A2uMqayJQy3gitvT6ZVwJOZh4YjkNup86SyXYM4U2tY4KZmPy5Pu3AjDJARf9XP5Lcawhxg8/ex13XQyMZ+TUhwTs1+7s4VdSfWrJOAzWDj5LQImk+j5X5FTuXjgr28q2MhSxZP173F94dvGdb4/7/RJJxamKMnHC1ydU6b8Ohi7isQqER9eG/ltlc1pHpUyXwWvR1HaaGHx7MekgfugqaA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=N47dc96fYqFc0W3FNkdR6KHt51ckAAcL+lhKQVIe+xY=;
+ b=HbsHQ51T/gNse8LNtkCvfiBx6VCI3f4wB0vG/cgeNTZOVYvF24hml9rMYipC2fVRdLBvkRS7bBAyh1urbDi6XQ74uPdZgciTPQOaCcZEo5aI2NAnXFqkzM/hCDO4QtmacuX3JglcGEANGPS7zGi7BP2Oe11zussao+8or54H7JRuEyN70tESbMefwDndAP8VGKhHx75kCD11IJYzSu6WiejDSv0+QP2X/M+Gr93bo67L4eZlqxYq0CkTYEYTgIOGKt5lFgVIMwqBIaNwNk4NBwjtMtJxUDj37RNb+uhFm5EoaZ6JQsUEeQR5AnodrB+7eOAlfq815LjnzsUrQPoPsw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 195.60.68.100) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=axis.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=axis.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axis.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=N47dc96fYqFc0W3FNkdR6KHt51ckAAcL+lhKQVIe+xY=;
+ b=PAxUXgahdgEGifd4Gi0iTXhKDS9lQ6vXNtqd5DuRVB0JstGgfBttDn2ExVz13Epmo9+A/rTgyhk6cVj+wO2WOX5lHn1ailVAx8+KcCLm2I7XE6NS5Vi1B90aiEDHsDn5YGd5/BQ8qDgDhKZwVvTLstpylostyRLGgZiH0wtdaYA=
+Received: from AS4P251CA0002.EURP251.PROD.OUTLOOK.COM (2603:10a6:20b:5d2::8)
+ by VI0PR02MB11712.eurprd02.prod.outlook.com (2603:10a6:800:32d::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.14; Wed, 20 May
+ 2026 15:49:39 +0000
+Received: from AMS1EPF00000045.eurprd04.prod.outlook.com
+ (2603:10a6:20b:5d2:cafe::5f) by AS4P251CA0002.outlook.office365.com
+ (2603:10a6:20b:5d2::8) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.16 via Frontend Transport; Wed, 20
+ May 2026 15:49:39 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 195.60.68.100)
+ smtp.mailfrom=axis.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=axis.com;
+Received-SPF: Pass (protection.outlook.com: domain of axis.com designates
+ 195.60.68.100 as permitted sender) receiver=protection.outlook.com;
+ client-ip=195.60.68.100; helo=mail.axis.com; pr=C
+Received: from mail.axis.com (195.60.68.100) by
+ AMS1EPF00000045.mail.protection.outlook.com (10.167.16.42) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.48.11 via Frontend Transport; Wed, 20 May 2026 15:49:39 +0000
+Received: from pc67007-2609 (10.4.0.13) by se-mail10w.axis.com (10.20.40.10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Wed, 20 May
+ 2026 17:49:39 +0200
+From: Waqar Hameed <waqar.hameed@axis.com>
+To: Sebastian Reichel <sre@kernel.org>
+CC: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, <kernel@axis.com>,
+	<linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+	<devicetree@vger.kernel.org>
+Subject: Re: [RFC PATCH 0/2] Add driver for TI BQ25630 charger
+In-Reply-To: <cover.1772201049.git.waqar.hameed@axis.com> (Waqar Hameed's
+	message of "Fri, 27 Feb 2026 16:35:32 +0100")
+References: <cover.1772201049.git.waqar.hameed@axis.com>
+User-Agent: a.out
+Date: Wed, 20 May 2026 17:49:38 +0200
+Message-ID: <pnda4tunkrx.a.out@axis.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ with
- ADC_TM auxiliary driver
-To: Andy Shevchenko <andriy.shevchenko@intel.com>,
-        Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: Jonathan Cameron <jic23@kernel.org>,
-        David Lechner
- <dlechner@baylibre.com>,
-        =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
-        Andy Shevchenko <andy@kernel.org>, Amit Kucheria <amitk@kernel.org>,
-        Thara Gopinath <thara.gopinath@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
-        linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Kamal Wadhwa <kamal.wadhwa@oss.qualcomm.com>,
-        David Collins <david.collins@oss.qualcomm.com>,
-        Anjelique Melendez <anjelique.melendez@oss.qualcomm.com>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Stephan Gerhold <stephan.gerhold@linaro.org>
-References: <20260515-gen3_adc_tm-v1-0-39ba29f9b4ab@oss.qualcomm.com>
- <20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
- <aglpVX2NeQ8jxN6Y@ashevche-desk.local>
-Content-Language: en-US
-From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
-In-Reply-To: <aglpVX2NeQ8jxN6Y@ashevche-desk.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-ORIG-GUID: O3eNIo8XGfwdyjvvpGeRWdrn0VAcK38D
-X-Authority-Analysis: v=2.4 cv=e5k2j6p/ c=1 sm=1 tr=0 ts=6a0dd13d cx=c_pps
- a=WJcna6AvsNCxL/DJwPP1KA==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=-F_JFAN9hT3LZsc5xrMA:9
- a=QEXdDO2ut3YA:10 a=_Y9Zt4tPzoBS9L09Snn2:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIwMDE0OCBTYWx0ZWRfXwRcdV8TbM7gX
- 8BmdLPxOBEBphfeyV9MjqxugGtAYI1N/FDL+9yAhHZH6ZlqYw/KOSQ5K+JE/xG1LesrBuR3FYHD
- A7GGzReRczYpsd2VXYjY6Cb6UU21YTYPbn3Gipeyr1GK9asMmupVnj5cq42ZGdq/7+lQ0xs5KIz
- tBbJxCGP4TXWhH9fLdtfNiakwIVoMzsN14A8zKTjcWyiqsqZX3ixu4wYiquSqOqD0ljEdBZjq0r
- 46ssZYDnqX3cXBqxKpSb/SjnreFldh8OcrgsmcFBPwS9HcoM81fh+3iAVkbUqkbNoPhweF/CW2m
- l3Y3kLrq0YRCsJvfii1MgjDmvl54rchAlr86vdBzUpYYgDZkQ8i9BTzcah5HpRQ4KR/qVUoQP+p
- g5qoPrSMf0UAA3wHHQFR7hU49LgA3FqwNxJK6i8ZMhqO/F1HSApLTAAFnk8hMVzMEdDJ8f0DbwV
- ACasz9q4xfUnQnhCynA==
-X-Proofpoint-GUID: O3eNIo8XGfwdyjvvpGeRWdrn0VAcK38D
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-20_03,2026-05-18_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 malwarescore=0 bulkscore=0 lowpriorityscore=0
- adultscore=0 suspectscore=0 priorityscore=1501 clxscore=1015 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605200148
+Content-Type: text/plain
+X-ClientProxiedBy: se-mail10w.axis.com (10.20.40.10) To se-mail10w.axis.com
+ (10.20.40.10)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMS1EPF00000045:EE_|VI0PR02MB11712:EE_
+X-MS-Office365-Filtering-Correlation-Id: b27de30e-2523-4fa7-bf26-08deb6876709
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|36860700016|376014|82310400026|1800799024|13003099007|22082099003|18002099003|56012099003|11063799006;
+X-Microsoft-Antispam-Message-Info:
+	29iqq2OVA+MIjhUayVy0XULkoptgLYOjxh2xUihklrY23wnPm7xEFebQkOk52BS20DjmCQleiqAC7OmHdkwBll0Lc1ZYKa4gugdy5eI7wK+VEpRpIn+ZvOLzp3z53LBE0Qquz5jY/Zp9zLdZdHTahkp29vaDH87cUXwXKzK4DxP/A7N2AjmoBapHGzuJsnUnMqn9QJkfmJ/jq/QYsFAmoOZnsr/Wll8RgZ+k4cQ0ugkZXCikGbdzp78GoFN78D/mtDPSa1TeEicE9tSdA/Tb2hxpPsQuEdNMuvIdD3XqWTITA1t/f7kGYJuEIr1q7I1xaD+LE2E2bHhASaL2ydzfsrrSkqhgq2QYtmtmYLr69KEyYIM8BkfAL3k8DsKaj6ixmXRe4It6IRECuYplZ4D0N41pXjumpc8oV/lh9lGq0sN4HkbTDrYI3qJVhmVuKJQMqCB0lQ+gY/1bSN1c9n0+H0zngX7KcrfHoTtUe/bP9JLziTiTupAaHXlC8C/CmFwUQNDtdh+H3evcy1pmd0qT6Eb254+W3ZNtjPw6FmSda9n1manuUrz8Z1+xotaFffTovS9IiS8leAS3EPdlN3+vhNVELOqxekJGLyftq5yWA78JLLCBGhR+31RHEdf++XWY+qaMVN1coIFnNIlNEAshWQKdBooypn1mMePw8464ATZArx8u+G66eq9cmCS9SxMj40hUgssSV+OnlGTrATZNC+3olJz6oHBKQW3g5TF5frk=
+X-Forefront-Antispam-Report:
+	CIP:195.60.68.100;CTRY:SE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.axis.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(82310400026)(1800799024)(13003099007)(22082099003)(18002099003)(56012099003)(11063799006);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	D8cjjfpNwP1Fl5ciyJCOxV+JrUlwVMpUIEXsJaGMIe8WM/wSCQocDVHvg7O4K0MX/tzbXbkT32qwNY8Vw3+jelG1vzQii33Zg/9JhKDzdm/5USuqlvkY4LnzQ8BkXocyxpQHIzYiCchYvzq/Z7Kv0V9Y0X+zitCVh8kgOLEQk1SCkEjf2IZKMnL5W1UByJ8hNVQ+WZJYvqk23Karzj+x1ZeY/DUbGvwYX6FWPt/CTWjNm8Rn6SmCMp9KxT1GFjLMWNKLbUBNdHstAGVnIcQEJJhsLoXSstFVFEdO3uCKKtGQkVSykRld1kqdAQWh0xHZEVQ8cp08rAM/CLZIVVmcJzyFa88YHz5Wn7h2VRIUpFfwxDwwRnkvqY3s6gHig0H85fNyYDEzelWAXatxIuI6DCq1tD0fsXapjiH2AfQv/E9vj6BVIqkxT8a8zE95jl8n
+X-OriginatorOrg: axis.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 May 2026 15:49:39.8361
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: b27de30e-2523-4fa7-bf26-08deb6876709
+X-MS-Exchange-CrossTenant-Id: 78703d3c-b907-432f-b066-88f7af9ca3af
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=78703d3c-b907-432f-b066-88f7af9ca3af;Ip=[195.60.68.100];Helo=[mail.axis.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	AMS1EPF00000045.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR02MB11712
 
-Hi Andy,
+On Fri, Feb 27, 2026 at 16:35 +0100 Waqar Hameed <waqar.hameed@axis.com> wrote:
 
-On 5/17/26 09:08, Andy Shevchenko wrote:
-> On Fri, May 15, 2026 at 02:23:44PM +0530, Jishnu Prakash wrote:
->> The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
->> immediate ADC reads done in this driver and for threshold violation events,
->> based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
->> TM channels on the first SDAM.
->>
->> At present, this interrupt is handled only in the ISR in the main ADC driver.
->> When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
->> driver by calling a notifier callback exposed from it for this purpose.
->>
->> To simplify the interrupt handling in both drivers, share the interrupt between
->> the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
-> 
-> "will"?! Do you mean this patch deliberately breaks the working setups?
+> This patch series contains a fully working driver for the basic
+> functionality for the new TI BQ25630 charger (see datasheet [1]).
+> However, some functionality has no straightforward implementation. The
+> following features have therefore been left out and hopefully we can
+> have some design discussions to reach a clear resolution for the next
+> patch version (hence the RFC tag):
+>
+>   1. The USB OTG functionality (i.e. power *out* from the device) would
+>      probably need a minor refactorization to use the MFD sub-system to
+>      also register a regulator driver. Looking at the bq257xx driver,
+>      this should be the preferred design?
+>      
+>   2. Other drivers add a custom `sysfs` attributes for BATFET control.
+>      See for example rt9471 and bq24190. Is this the preferred approach?
+>      Should we add a new power `sysfs` class ABI for this? (There is a
+>      TODO left in the code for this.)
+>      
+>      I reckon it is quite common to have BATFET control for chargers,
+>      i.e. being able to set them in "ship mode", "stand-by mode",
+>      "shutdown mode" or "idle mode" (example values taken from the
+>      `BATFET_CTRL` register field from datasheet [1])?
+>      
+>   3. This device has liquid detection and corrosion mitigation. I
+>      couldn't find any existing device driver with this kind of
+>      functionality. The datasheet [1] even mentions "patent pending",
+>      although it refers to the USB type-C Specification 2.3... :)
+>      
+>      When liquid is detected in the charging port, an interrupt is
+>      fired. Likewise, an interrupt can be fired when the port is dry
+>      enough (according to some configured threshold value). My initial
+>      thought was that maybe we can add "liquid detected" to the `health`
+>      `sysfs` ABI? However, the question still remains though how one
+>      should enable/disable and set threshold values for this (new power
+>      class `sysfs` ABI or a custom one only for this driver)?
+>
+> [1] https://www.ti.com/lit/gpn/bq25630
 
-No, the interrupt is definitively shared between the iio and the thermal 
-sensor. So when submitting the previous series, all IIO patches were 
-picked up but I asked Jishnu to revisit the interrupt handling in order 
-to make it shared. That is what he did here by reworking the ISR in the 
-IIO and resending the thermal sensor I did not pick for this reason before.
+[...]
 
-This patch does not break working setups.
+Friendly ping incoming!
