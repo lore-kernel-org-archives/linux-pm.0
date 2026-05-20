@@ -1,141 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1DC136B05C
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:27:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 702AD372B4B
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:38:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779308879; cv=none; b=pT+PK2wMKiKeEG9GCigKbggMoYF8o+1HnjBX/N4YtSbyIDkxgMkCWyKePhkZFOH/PgMc4j8jA81igIAsG0h/ChjQTEoTCit4liJZ5TbgFONxGngad5Px9uDnU3DPnCIf0j+Ce9MTrhq6vvCnzpfZwAQ/47ocEHa6G9rx7gI7Z9s=
+	t=1779309529; cv=none; b=lqsUKkaXzYV6F3JeYUTalKV4l/M0qsHnXqmg7Ku07a41ljkp6Y+AsBcgjEHf+bt1Zdy9prThtMMkn5dBE65MgFjgFnxR8b1sFtHp/jU+qV1ReTjrnT+PkfKurUYDnReaA/vJAsPD+JVLcRODmULueTBEO+MgdbCEQpdzTNk7Bls=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779308879; c=relaxed/simple;
-	bh=gi6UtRTlbuAi9RQucnX6uaeP86tJKgsxLBI7G7zOkRU=;
+	s=arc-20240116; t=1779309529; c=relaxed/simple;
+	bh=mjc9BKSzcqA4odKa6iBUHm5H25UrsICDs2JtLhu4giU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=otGv5fUyxdD99E0/Qmn5BVzmvjnPQqYqnZ/USCaT7i6RhQqbamAhk2BamxiAOmTs+N1Zr9UAtRpHuYiDmFr5wKohDrk1VAVSN+7bdVkOCwWYes9vulzryPQSau4rOi6IUpfS1u+FCpO4kqNBHBZ31ct9Q93EUZSlGLcyJTYwrBo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bqYiho87; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=Rst7P/NjwpWTYEMz+NgTLYmQrPoM00GjFOegXfx3LPz9qdzIklrx+HhChLaiRI/M2CFUG9IMFVv48crETuI6iTj8899m1RJhVs+SkBdRpzmB+d6gIC1hBwIawv3+/qN4vsJtrPWnLtrsE8crlD8KbHeuGLO041lQsLy48FXj92M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DtxShjzV; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bqYiho87"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8FA31F00A39
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:27:57 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DtxShjzV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 116851F00A3A
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:38:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779308877;
-	bh=OUx6n8rVxotdniCFeqmbw7mrguld1SfwzgI1DlFukoM=;
+	s=k20260515; t=1779309528;
+	bh=lopEzg6fVxPqxOBEJbFnNrXn2r7gNpTUWBG4jtzlAK8=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=bqYiho87UcFjTl3Rxpb3jN/i8Ttt1pS7uH5HrKM3xAB8zrXKKfN3tekltTT+IdFEN
-	 Z+RMsbdieSsi2nuNad4glFkt7Wvgk/YZRMYsDLSxPs9JzIokmQHuneeZeTaj23IBSE
-	 Gbd6zducFM1Di+AUTXRHVxttZECNgy2yR3WfnOuvbNUP/0NwWFy+oUk5Mw9+hdvDfo
-	 rU+KhxOEmx4gCN8tOyTedj4CIOYlyAR8VonXQBnQ6/t6j8kiDFdDUapZYsSCqjWAei
-	 nwo1LRTTCRZ1sDGbT4lpifZW94ZOpo4OcWaS9eDXjitizq2/j2+so1WKAQo8NGXTyP
-	 WdSfRSEkxgZfA==
-Received: by mail-vk1-f172.google.com with SMTP id 71dfb90a1353d-57512a429d1so4459226e0c.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 13:27:57 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/MyU2pQ0iSxdjzrpSBBxrOwoEgrIWPtPSgcP9ObC1wlwaE61+Ite8bfgOkJCQMZ5rWtEkw3JUNgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyvvr+DS+pW/5bntqIUa5ZMZHs0dubOyCGwSs1cJxgVBZph5B5M
-	ZoBPYZe/fTV6Wvy4rYO76MO236h4zaFxV8hYplw/u9IIqXZflqUGxdByJEwUPeEnNoatwMgaVZ8
-	T0ABdtn+10rgo+66o/xikdrj3XcuBKdc=
-X-Received: by 2002:a05:6122:e44b:b0:575:e5d7:6f1c with SMTP id
- 71dfb90a1353d-5760be3bc83mr15943086e0c.1.1779308877026; Wed, 20 May 2026
- 13:27:57 -0700 (PDT)
+	b=DtxShjzVf0ulEC6SBvnqmmIC9Y/r+q7JHbsN2Vvw4Jdi0tU2mp89dFeDK/Qkt8urR
+	 Dn2nz2B7hAqqkMKupMRSEYVJS85vw7OBhByuHRC1C2fWOx0E+bG8Ik9jmaRJnrAoai
+	 M5+a2aaXpHfrExxnL3Cw2vPDJWIJJbE9shWiTIdvL656vg3iIQSoXzWuygDlPJjYBL
+	 1xESXQkKILpLb6zdwbJasjKINOsqage/pAFWnzCVslIAHywKUqwkpxZpn6uTBlOlez
+	 jrkSWkFB+MGja8OCjJxiZAZMSHf5C4hST+tMI1d1qgm9dgMOiHCdwecosbLQF+EjdQ
+	 fBAgvWg9moxEQ==
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5a8d1f43432so9525310e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 13:38:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9lRo39XXy7Iljc0asHG1GCmcixDtTzAs4ccv/2qyQDb4RY5Jn3xaFGzTy67UnNH+tndZHL58fk5w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxHpa6xE+cpBb/l89uvLe9tUbU7W295mw2/nnUxJdlwaAmIM3iX
+	yiuGhkrBluNoSV6G8M6F8JyyiwKC6Gf+3fdfq4RdeItuIYSOJseRWPFZ1XxuKLsklReswm7+VYa
+	VRsE3L/i+zUA6Y0cQVt5cXk+svrIDs0Q=
+X-Received: by 2002:a05:6512:448c:b0:5aa:b6b:a3f0 with SMTP id
+ 2adb3069b0e04-5aa2ba9b499mr8304e87.44.1779309526559; Wed, 20 May 2026
+ 13:38:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260403-hibernation-fixes-v3-1-31bc9fa3ba2d@collabora.com>
- <CAJZ5v0j7fqyL2GtWzwpWP8ATj=WnuQGC5z8Zhz7VO-jixrYnpA@mail.gmail.com>
- <87mrz78brw.fsf@collabora.com> <877bp0q1ob.fsf@collabora.com> <CAJZ5v0j_ox4Qe9_LBk+SHLKzo0NG+bjKH7DL7fG-zmGL=KRGYg@mail.gmail.com>
-In-Reply-To: <CAJZ5v0j_ox4Qe9_LBk+SHLKzo0NG+bjKH7DL7fG-zmGL=KRGYg@mail.gmail.com>
+References: <20260425072532.358365-1-dedekind1@gmail.com>
+In-Reply-To: <20260425072532.358365-1-dedekind1@gmail.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 20 May 2026 22:27:42 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hvrmEbEqitFVvVft7Y_EGGLTMyygmJBVysGCMTPyj3Sw@mail.gmail.com>
-X-Gm-Features: AVHnY4KcVtDrTWAttvsszEklGll2M9_ELUwKfvEMA6c18zBw8MhsrS9SsHaQLoE
-Message-ID: <CAJZ5v0hvrmEbEqitFVvVft7Y_EGGLTMyygmJBVysGCMTPyj3Sw@mail.gmail.com>
-Subject: Re: [PATCH v3] PM: hibernate: call preallocate_image after freeze prepare
-To: Matthew Leach <matthew.leach@collabora.com>
-Cc: Pavel Machek <pavel@kernel.org>, Mario Limonciello <mario.limonciello@amd.com>, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	YoungJun Park <youngjun.park@lge.com>, kernel@collabora.com
+Date: Wed, 20 May 2026 22:38:34 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0g_0pwTWnAVBuaHbWvC1NvOJ0Em3NUrcH0Ce7khm-_pUQ@mail.gmail.com>
+X-Gm-Features: AVHnY4LNiUyio5s1SUtShz7O7NCs09Pk1npW598YkuCz3clkUZa0Jqr4nNzYDZg
+Message-ID: <CAJZ5v0g_0pwTWnAVBuaHbWvC1NvOJ0Em3NUrcH0Ce7khm-_pUQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] intel_idle: Drop C-states redundant when PC6 is disabled
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM Mailing List <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 18, 2026 at 3:44=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
-g> wrote:
+On Sat, Apr 25, 2026 at 9:25=E2=80=AFAM Artem Bityutskiy <dedekind1@gmail.c=
+om> wrote:
 >
-> On Mon, May 18, 2026 at 3:37=E2=80=AFPM Matthew Leach
-> <matthew.leach@collabora.com> wrote:
-> >
-> > Hi Rafael,
-> >
-> > Matthew Leach <matthew.leach@collabora.com> writes:
-> >
-> > > Hi Rafael,
-> > >
-> > > "Rafael J. Wysocki" <rafael@kernel.org> writes:
-> > >
-> > >> On Fri, Apr 3, 2026 at 9:36=E2=80=AFAM Matthew Leach
-> > >> <matthew.leach@collabora.com> wrote:
-> > >>>
-> > >
-> > > [...]
-> > >
-> > >> Can you please have a look at
-> > >>
-> > >> https://sashiko.dev/#/patchset/20260403-hibernation-fixes-v3-1-31bc9=
-fa3ba2d%40collabora.com
-> > >
-> > > [pasting comment in-line here for comment]
-> > >
-> > >
-> > >> Does this relocation introduce a deadlock during memory reclaim?
-> > >>
-> > >> hibernate_preallocate_memory() allocates a large amount of memory an=
-d
-> > >> triggers direct reclaim. Direct reclaim needs to write back dirty fi=
-le
-> > >> pages and swap out anonymous pages.
-> > >>
-> > >> Since freeze_kernel_threads() just ran, threads required for I/O
-> > >> completion (like kswapd, jbd2 for Ext4, or WQ_FREEZABLE workqueues) =
-are
-> > >> currently frozen. Will the I/O for page reclaim block indefinitely
-> > >> waiting on these frozen threads?
-> > >
-> > > The existing code already performs a memory reclaim after
-> > > freeze_kernel_threads(). The old shrink_shmem_memory() called
-> > > shrink_all_memory() in the same position, after both
-> > > freeze_kernel_threads() and dpm_prepare(). This isn't a new pattern
-> > > being introduced by this patch.
-> > >
-> > > Nevertheless, the call chain looks like:
-> > >
-> > > shrink_all_memory()
-> > >   -> do_try_to_free_pages()
-> > >     -> shrink_zones()
-> > >       -> shrink_node()
-> > >         -> shrink_folio_list()
-> > >           -> pageout()
-> > >
-> > > pageout() only writes back shmem and anonymous folios to swap; so jdb=
-2
-> > > and other FS threads being frozen isn't a concern. For the swap write
-> > > out, the I/O submission path is via submit_bio() which is also
-> > > synchronous.
-> > >
-> > >> Additionally, because the OOM killer is already disabled by
-> > >> freeze_processes() earlier in the hibernation path, can the reclaim =
-path
-> > >> get stuck permanently without being able to fall back to killing
-> > >> processes?
-> > >
-> > > There's nothing new here regarding the OOM killer. freeze_processes()
-> > > disables it in hibernate() prior to calling hibernation_snapshot().
-> > > Since this patch is entirely contained within hibernation_snapshot()
-> > > that pattern hasn't changed.
-> > >
-> >
-> > Quick ping on this. Any throughts on the responses, or anything else
-> > you'd like me to dig into?
+> From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 >
-> Sorry for the delay, let me have a look at this again.
+> This patch series drops redundant requestable C-states when PC6 is disabl=
+ed in
+> BIOS. For example, Granite Rapids Xeon has two C6 flavors: C6 and C6P. C6
+> allows only core C6 (CC6), while C6P allows both CC6 and package C6 (PC6)=
+.
+> When PC6 is disabled, C6P becomes identical to C6 and is therefore redund=
+ant.
+> Refer to patch 3 for the full rationale and details.
+>
+> Patches 1 and 2 prepare the code for patch 3. They introduce no functiona=
+l
+> changes, only restructure it to improve readability and maintainability.
+>
+> For more information about Granite Rapids C6 vs C6P, refer to this articl=
+e:
+> https://github.com/intel/pepc/blob/main/docs/misc-c6p-c6sp.md
+>
+> Thanks, Artem.
+>
+> Artem Bityutskiy (3):
+>   intel_idle: Add constants for MSR_PKG_CST_CONFIG_CONTROL
+>   intel_idle: Introduce a helper for checking PC6
+>   intel_idle: Drop C-states redundant when PC6 is disabled
+>
+>  drivers/idle/intel_idle.c | 104 +++++++++++++++++++++++++++++---------
+>  1 file changed, 81 insertions(+), 23 deletions(-)
+>
+> --
 
-Applied as 7.2 material, thanks!
+Whole series applied as 7.2 material, thanks!
