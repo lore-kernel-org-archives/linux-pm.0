@@ -1,73 +1,56 @@
-Received: from mail-pg1-f172.google.com (mail-pg1-f172.google.com [209.85.215.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9819C351C2E
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 08:19:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C44FC3A9D9F;
+	Wed, 20 May 2026 08:22:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.224
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779265193; cv=none; b=VabdypmaeZD4ReQQvyVDUBPIhLQqOfZre/6ec+zVBjX4XPHHSDfHg3n7oOvz1+pmHknulPp4T3cKCGvDZI/CQpbJ+jkkG2ey3vGG+2U/PvXsdLmxvUciqG2Vn/aSerBq8vCPhje1yBjmXkL4zoeT8v42oJqbomgnB4WDwv8kO78=
+	t=1779265349; cv=none; b=kCpeha+UrIg03l044Ju5Ph9jEmTsLtJVhiSUe4ZSBz93PZhWhMs1DL2aRgN9a3w50gqZu2U2rHng/Almm9wVq3XwTy2EPKHsnMR1NUU99ItzW6vTmBoxzMQVCwxnt5JFgqDYF1vY3P/DPjlL8CUv0LQtWzaRI2CXOFd8BB5FG4k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779265193; c=relaxed/simple;
-	bh=cGlJCyHrFtIsKaGkJ63d49vDHuHKwYjkWL597O+/50s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FIFW0555paQPL3rpcz7ruzguaUQsLZ1/gdVmpyiFc9/s3TSNbFNlAbLMhanRdm0NZGgOvxGBElrhdm4qGLtcvSEJ8wubtrVCgCt8AmzFVESOATF/A3KkTzfRPQtk9yYc/qaV2OJu8oou7qlmI8B6jjz1LLg18Lr6+WUd1bqLNAM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=AHnRxIwj; arc=none smtp.client-ip=209.85.215.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1779265349; c=relaxed/simple;
+	bh=hA4BsjARQyani4hLNM7SCkULLZ2+Auw/DjmXMLy1nnE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=s2fzPwoAZUvihCKqefcYIIRaqIXpfRNvUJuPNkgCrJbhCmXQvcHSJIXVsGGuOneHhfV/u8rg6tV0MDth9jdO4kUhXlCxgVJ8OQDGA50GDyFOsHt9O0z2KlTHZMb/dvlGbl6mhyYVpbvELzAEBEAfvkHYXRPotTwcB0u08Ts4YIA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=Zva+iV5G; arc=none smtp.client-ip=113.46.200.224
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AHnRxIwj"
-Received: by mail-pg1-f172.google.com with SMTP id 41be03b00d2f7-c7ffe8eeaf2so1944428a12.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 01:19:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1779265192; x=1779869992; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=K0Pt9zcFI2zmEpQSoCxo83POMe6NZPHtZXzDHHMIPQ8=;
-        b=AHnRxIwj0X35AcztpSLdAhoofuxtgQOtbkJ+qzAFGeBi+tZK4O5pYVGun951/ZfcrU
-         FPi9DXc/WKOff35QNK9hWkcmkm9pzeTvHSE9pOjBsvbryCGaRwrMlYW2j2iG4Jnnf+5s
-         zYIeJn8kfHvY9G5jggkL7yT+paclpcKXPtsaCUPtpQLy8k41VrLCw08l1o6yc/SSpHAK
-         uJBo54G+mL+71EdWt9i/eE/mLaIZIIlmvn/+rMjge2Ep42yndROcDlq1HORbxElhxybG
-         pdFvNrlyg1LxMw4phnr/t2JkSnpDGfRLAZ8WqkFsTmPlSQUhJEqWFWzaegVhWDCYNtqk
-         Dfpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779265192; x=1779869992;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=K0Pt9zcFI2zmEpQSoCxo83POMe6NZPHtZXzDHHMIPQ8=;
-        b=QAaaOPulzdx3SbTyjUs/uSZ6FZKDlMVgJ+7Har9oBQJhX3zR96HNJ7uUpvHbBy4Y2E
-         006xipIHRRUyG+Cyx96YUYcndefvZYE93D39vrVLlj9i3ayNgMf+GZXMMmHfYlhHCsUZ
-         DGYC9o9XqjJsCeT1m1Zt6EBc1V6l28rI6emROuJ4A1rD9U70UooujeKRcqasxtDS/USy
-         Y3Xe9Oi3usapXgBEn09xa35i16Grs0FOawKzxHcxkwWvbz+Vy8qKSjUrHL8/WZcTncNc
-         hRpq1CAahnoQu+/67OWgAuYVHZeqkcB2EE9Lv5iE1/BCWmrkpnyWQF8CGV8w1v7yvqfI
-         1BhA==
-X-Forwarded-Encrypted: i=1; AFNElJ8xkGBpqiHrNF1VtVtit0HGcr+w0bD07k1xp6p7fZGNEIvUKd6VsYfD4BWFx4tEkdyVF8EWxhD6tA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzQoIweM9fY+ezr0JSo4V1bGAxIqkOrkgfZwoKrVXtQ2OwONTQ6
-	vahaXHexDfSlZ5s3A7D02uck0rt0o9olZEAUtdZsO7AwBzdo8FZB+6J3SQmnrPsSY9c=
-X-Gm-Gg: Acq92OG8Az/EwvsJFNJL6EerCS91n8XmtfnfB7H6Tio9ZHx6KRq+GqgWpWozclqNhze
-	/AyIEVrw4nlM9lcXSh1tLMYDCWKHe3r+geawyd5cFkaYlbcl2fGeL4KvdSz54YBE+GGet7GCrWx
-	xgZuByi+OiorG4eO1hnBFaE7MAWNuhgpjjXgKJkShSPBb73ljmxMoBLnkcIIdUQQVAR3SUcqhPz
-	c3W6xfUZSuR1TInmyC98NbKDPBFNT/FZNnsCmruOaHq5xp5Q3FaIkbDo6ANzN+QdskjAc5ep5p3
-	cmljrpOiF0IZYn+vO1hwin/fCpWcnYFkzGO1dRPswdelvC+AM7WKJT3ckbEwGQKDveLDapVk8h8
-	PTg5g0XcsDyoqqP+LCUnDlB1XXkZ5mCQo/2VFzDzvY3vJ79FgEs7IxARo4ck7Bqem5AV1K0CasN
-	8y1cp7h9934n53rET64dQZGzg=
-X-Received: by 2002:a05:6a20:7f93:b0:3aa:60e0:b2ed with SMTP id adf61e73a8af0-3b22ebc68ddmr25480318637.27.1779265191771;
-        Wed, 20 May 2026 01:19:51 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c82bb06268asm17918841a12.1.2026.05.20.01.19.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 May 2026 01:19:50 -0700 (PDT)
-Date: Wed, 20 May 2026 13:49:48 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, rafael@kernel.org, 
-	stratosk@semaphore.gr, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxarm@huawei.com, zhanjie9@hisilicon.com, lihuisong@huawei.com, 
-	yubowen8@huawei.com, zhangpengjie2@huawei.com, wangzhi12@huawei.com, 
-	linhongye@h-partners.com
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="Zva+iV5G"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=7iP6LNMu1EZGUbwp9bRM6TSZQkNco15M49WuWrxDYAs=;
+	b=Zva+iV5GJA1tduZG0qXJs247q6wag6F9HMDzggmUQFGXoRk+VVOn9h0LIlz6b45Fq4b/GsNCz
+	0HBUChTVqaEq2KxW6QL3CARw0BdoJ4vlavaBWySP9L1gRTm+qn5Qu1fcFzu77GTCu6I7QfSzIzp
+	yzoMT3CzYeX8Ws7wAyP3hCs=
+Received: from mail.maildlp.com (unknown [172.19.163.200])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4gL48G3msqz1cyTd;
+	Wed, 20 May 2026 16:14:38 +0800 (CST)
+Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
+	by mail.maildlp.com (Postfix) with ESMTPS id 9E2F54056A;
+	Wed, 20 May 2026 16:22:18 +0800 (CST)
+Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
+ (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Wed, 20 May
+ 2026 16:22:18 +0800
+Message-ID: <fc82e05b-db8b-4a15-b46d-332c9f2d95da@huawei.com>
+Date: Wed, 20 May 2026 16:22:17 +0800
+Precedence: bulk
+X-Mailing-List: linux-pm@vger.kernel.org
+List-Id: <linux-pm.vger.kernel.org>
+List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
+List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease
  due to stale target
-Message-ID: <kxluz43bkvqspji26x4hrh32j4ijpfjcbtoxawf2zvkpk7vw2h@yhj2jord4vpx>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Zhongqiu Han
+	<zhongqiu.han@oss.qualcomm.com>
+CC: <rafael@kernel.org>, <stratosk@semaphore.gr>, <linux-pm@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linuxarm@huawei.com>,
+	<zhanjie9@hisilicon.com>, <lihuisong@huawei.com>, <yubowen8@huawei.com>,
+	<zhangpengjie2@huawei.com>, <wangzhi12@huawei.com>,
+	<linhongye@h-partners.com>
 References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
  <cb369a6a-5462-4e6b-a132-ee016a4163ea@oss.qualcomm.com>
  <b6d995f7-91c0-4f87-82e7-87cc50faa43d@huawei.com>
@@ -76,21 +59,63 @@ References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
  <pr25udlbea4vwtx27gfzlnqzv3lmmphkjx5xj2ggzdegmd4ntn@kiytfovoifi3>
  <a028421a-de24-43cd-ac80-17de9b2fc523@oss.qualcomm.com>
  <5ivkhopr53lsrnlu62ucdn5yfyeh42nwq3knfifp4ihgv6kpzy@sd6eekl2r45a>
- <ddcad9ad-eb49-4e32-8b48-56a611758cde@oss.qualcomm.com>
-Precedence: bulk
-X-Mailing-List: linux-pm@vger.kernel.org
-List-Id: <linux-pm.vger.kernel.org>
-List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
-List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ddcad9ad-eb49-4e32-8b48-56a611758cde@oss.qualcomm.com>
+From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
+In-Reply-To: <5ivkhopr53lsrnlu62ucdn5yfyeh42nwq3knfifp4ihgv6kpzy@sd6eekl2r45a>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ kwepemf100001.china.huawei.com (7.202.181.215)
 
-On 20-05-26, 16:04, Zhongqiu Han wrote:
-> This approach looks good to me.
+On 5/20/2026 3:48 PM, Viresh Kumar wrote:
+> On 11-05-26, 12:03, Zhongqiu Han wrote:
+>> Just one small concern is that requested_freq may underflow as an
+>> unsigned value; perhaps this could be improved by:
+>>
+>> -		if (requested_freq > freq_step)
+>> +		if (requested_freq > policy->min + freq_step)
+>>  			requested_freq -= freq_step;
+>>  		else
+>>  			requested_freq = policy->min;
+> 
+> Looks fine.
+> 
+>> or use min() func?
+>>
+>> Additionally, it seems that dropping the early‑exit checks also appears
+>> to be a nice side effect fix for CPUFREQ_NEED_UPDATE_LIMITS drivers when
+>> updating internal upper and lower frequency boundaries.
+>>
+>> As designed in commit 1c534352f47f ("cpufreq: Introduce
+>> CPUFREQ_NEED_UPDATE_LIMITS driver flag"), a cpufreq driver may need to
+>> update its internal frequency limits when policy min or max changes for
+>> drivers setting CPUFREQ_NEED_UPDATE_LIMITS.
+>>
+>> However, the early‑exit in cs_dbs_update() can prevent
+>> __cpufreq_driver_target() from ever being called.
+>>
+>> For example, when policy->min rises from 200 to 400 kHz while policy
+>> ->cur is already at 400 kHz, under low load:
+>>
+>>   cpufreq_policy_apply_limits():
+>>     policy->min(400) > policy->cur(400) ?  NO -> driver not called
+>>
+>>   cs_limits():
+>>     dbs_info->requested_freq = policy->cur = 400
+>>
+>>   [next sampling period, low load]
+>>   cs_dbs_update():
+>>     requested_freq = 400
+>>     if (requested_freq == policy->min)  /* 400 == 400 -> true */
+>>         goto out;  /* __cpufreq_driver_target() never called */
+>>
+>> With the early‑exit removed, __cpufreq_driver_target() is called with
+>> target == policy->cur, and CPUFREQ_NEED_UPDATE_LIMITS ensures the driver
+>> is invoked to update its internal performance boundaries.
+> 
+> I think we are all in agreement on this now ?
+> 
 
-Lifeng, can you please send this as V2 ?
+For CPUFREQ_NEED_UPDATE_LIMITS drivers, dropping this early-exit checks
+means cpufreq_driver->target() will always be called every time when
+cs_dbs_update() is called. Is it OK?
 
--- 
-viresh
