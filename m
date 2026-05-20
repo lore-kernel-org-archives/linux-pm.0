@@ -1,108 +1,95 @@
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9085B3AFCE0;
-	Wed, 20 May 2026 08:38:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.217
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id E75963A254C;
+	Wed, 20 May 2026 08:58:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779266305; cv=none; b=L/ch5bygwhZnTjHJDVectRPKETeLTiF27ILYbO/GT8xA5YJQGUPVozhAKT3N9+zxZklnwDI1ySq57bPFKTsFmkseUCwtW+r9zuwfB/IB1VKfM1cpdXsZUd9ysfS1dD9hzEQ+WEU+sSjw1ioQ31nMiHZDZNwOgYzx9wE6yI4I0hE=
+	t=1779267537; cv=none; b=hknK71bNraga0QZNF43YkCn0EfbnK6Ekf2CdnZWTe3ctMOzJkykX42ovzmmXIMw52vuOMcpoeyWoWN8O0cZ3ueQohx1N6l0qtofc6MV3g0NSokrF+t1b4vFgoBFVI/1zoTSVAo0GEKZ7SZnVrnpEKLK8NyezaKdruT3lQzXRtgA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779266305; c=relaxed/simple;
-	bh=6TdI/ja1PsNCKs9SKLEiLWFN4YwBa8l55w+8z4ynOIY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=e1od1cBcE9LzvfYZ2CzpO+fUgds0/0MfEtnoEuNAwPgS8/Vakp3z581SFip8cLRQ3v/Ol7QuXLuJk9DW2BCi2DGznI2oj7Nvitp1b98XzT/O98q5G/sFXo/CTqAvBsreJ3P3N0hHPRgj8DXnOZXFv34IbxzPn7BFcPUdIfv1Pt4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com; spf=pass smtp.mailfrom=hisilicon.com; arc=none smtp.client-ip=113.46.200.217
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=hisilicon.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=hisilicon.com
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4gL4Vq6j2wzcb0T;
-	Wed, 20 May 2026 16:30:43 +0800 (CST)
-Received: from kwepemf200017.china.huawei.com (unknown [7.202.181.10])
-	by mail.maildlp.com (Postfix) with ESMTPS id DED7F4056D;
-	Wed, 20 May 2026 16:38:17 +0800 (CST)
-Received: from [10.67.121.58] (10.67.121.58) by kwepemf200017.china.huawei.com
- (7.202.181.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 20 May
- 2026 16:38:16 +0800
-Message-ID: <112c6947-d496-46a9-8561-bbc23793e615@hisilicon.com>
-Date: Wed, 20 May 2026 16:38:16 +0800
+	s=arc-20240116; t=1779267537; c=relaxed/simple;
+	bh=YfJrh2tqW4oiFxVzvovNy67le8j1cP8HssBVwy88V+s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bB6trVIsXs7Y3/+bMB5K39QV67gTaXPSQpG9i/Ns27tujJHsaZ+i9rBbXtoCIMSvQ/ufTxDbHgQRMWV6Ow3o3KRtF7pzIEBttQRhC+UQuX7vR+b++RRohUOXhJ0O/psxkodtpxd8De+sDoelqI3i3nEJy7b2DabX6Zd+7fE+prM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=LOWLPCEZ; arc=none smtp.client-ip=217.140.110.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="LOWLPCEZ"
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 29B47488B;
+	Wed, 20 May 2026 01:58:47 -0700 (PDT)
+Received: from donnerap.manchester.arm.com (donnerap.manchester.arm.com [10.33.8.81])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 59F183F85F;
+	Wed, 20 May 2026 01:58:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1779267532; bh=YfJrh2tqW4oiFxVzvovNy67le8j1cP8HssBVwy88V+s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=LOWLPCEZYS0lhB6TdtBQvXnHSQMYLBzWXJB/asOAQgDGMrUEG9NUFlOq/W1iwtNDD
+	 8+qwOoJlPvIH0xVw4Urg0nR5iBnZraNiPP7sscKh9EXCe1MSTbvr1FtPWehs7ESjYO
+	 BEI6OQ2TU+7ZHUIPZfZbCSbfD7ibOEf9NL5JjN6A=
+Date: Wed, 20 May 2026 09:58:47 +0100
+From: Philip Radford <philip.radford@arm.com>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	arm-scmi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: sudeep.holla@arm.com, james.quinlan@broadcom.com, f.fainelli@gmail.com,
+	vincent.guittot@linaro.org, etienne.carriere@st.com,
+	peng.fan@oss.nxp.com, michal.simek@amd.com, quic_sibis@quicinc.com,
+	dan.carpenter@linaro.org, d-gole@ti.com, souvik.chakravarty@arm.com
+Subject: Re: [PATCH v6 06/12] firmware: arm_scmi: Extend powercap report to
+ include MAI
+Message-ID: <ag13x1Wp7PQ-wa4q@donnerap.manchester.arm.com>
+References: <20260518135234.2953532-1-philip.radford@arm.com>
+ <20260518135234.2953532-7-philip.radford@arm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/4] cpufreq: Use policy->min/max init as QoS request
-To: Pierre Gondois <pierre.gondois@arm.com>, <linux-kernel@vger.kernel.org>
-CC: Lifeng Zheng <zhenglifeng1@huawei.com>, Ionela Voinescu
-	<ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, Zhongqiu Han
-	<zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>, Mario
- Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, K
- Prateek Nayak <kprateek.nayak@amd.com>, Srinivas Pandruvada
-	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
- Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>
-References: <20260511135538.522653-1-pierre.gondois@arm.com>
- <20260511135538.522653-5-pierre.gondois@arm.com>
-Content-Language: en-US
-From: Jie Zhan <zhanjie9@hisilicon.com>
-In-Reply-To: <20260511135538.522653-5-pierre.gondois@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf200017.china.huawei.com (7.202.181.10)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260518135234.2953532-7-philip.radford@arm.com>
 
-
-
-On 5/11/2026 9:55 PM, Pierre Gondois wrote:
-> Consider policy->min/max being set in the driver .init()
-> callback as a QoS request. Impacted driver are:
-> - gx-suspmod.c (min)
-> - cppc-cpufreq.c (min)
-> - longrun.c (min/max)
+On Mon, May 18, 2026 at 02:52:28PM +0100, Philip Radford wrote:
+> Extend scmi_powercap_meas_changed_report to include MAI change
+> notifications.
 > 
-> Update the documentation accordingly.
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> Signed-off-by: Philip Radford <philip.radford@arm.com>
 > ---
->  Documentation/cpu-freq/cpu-drivers.rst | 10 ++++++++--
->  drivers/cpufreq/cpufreq.c              | 12 ++++++++++--
->  2 files changed, 18 insertions(+), 4 deletions(-)
+> V5->V6
+> - Re-worded existing comment for POWERCAP_MEASUREMENTS_NOTIFY
+> - Added define for V2/V3 sizes
+> - Used new definitions
+> ---
+>  drivers/firmware/arm_scmi/powercap.c | 28 +++++++++++++++-------------
+>  include/linux/scmi_protocol.h        |  1 +
+>  2 files changed, 16 insertions(+), 13 deletions(-)
 > 
-> diff --git a/Documentation/cpu-freq/cpu-drivers.rst b/Documentation/cpu-freq/cpu-drivers.rst
-> index c5635ac3de547..ab4f3c0f3a89b 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.rst
-> +++ b/Documentation/cpu-freq/cpu-drivers.rst
-> @@ -114,8 +114,14 @@ Then, the driver must fill in the following values:
->  |policy->cur			    | The current operating frequency of   |
->  |				    | this CPU (if appropriate)		   |
->  +-----------------------------------+--------------------------------------+
-> -|policy->min,			    |					   |
-> -|policy->max,			    |					   |
-> +|policy->min			    | If set by the driver in ->init(),    |
-> +|				    | used as initial minimum frequency	   |
-> +|				    | QoS request.			   |
-> ++-----------------------------------+--------------------------------------+
-> +|policy->max			    | If set by the driver in ->init(),    |
-> +|				    | used as initial maximum frequency	   |
-> +|				    | QoS request.			   |
-> ++-----------------------------------+--------------------------------------+
-Hi Pierre,
+> diff --git a/drivers/firmware/arm_scmi/powercap.c b/drivers/firmware/arm_scmi/powercap.c
+> index 1d1188e98d49..fdfaf03277ab 100644
+> --- a/drivers/firmware/arm_scmi/powercap.c
+> +++ b/drivers/firmware/arm_scmi/powercap.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/io.h>
+>  #include <linux/module.h>
+>  #include <linux/scmi_protocol.h>
+> +#include <linux/stddef.h>
+>  
+>  #include <trace/events/scmi.h>
+>  
+> @@ -21,6 +22,8 @@
+>  #define SCMI_PROTOCOL_SUPPORTED_VERSION		0x30000
+>  
+>  #define CPL0	0
+> +#define SZ_V2 (sizeof(struct scmi_powercap_meas_changed_notify_payld))
+> +#define SZ_V3 (SZ_V2 - sizeof(__le32))
+>  
 
-Trivial bit: add the general meaning alongside its driver usage at the init
-stage, and mention it defaults to cpuinfo_min/max_freq if not set?
+Apologies all,
 
-I mean something like:
-The minimum/maximum scaling frequency.  If set by the driver in ->init(),
-used as initial minimum/maximum frequency QoS request; otherwise, follow
-policy->cpuinfo.min/max_freq.
+After posting I have realised that I mislabelled these macros where SZ_V2
+should be the smaller of the two.
 
-Thanks,
-Jie
->  |policy->policy and, if necessary,  |					   |
->  |policy->governor		    | must contain the "default policy" for|
->  |				    | this CPU. A few moments later,       |
-[ ... ]
+This will be fixed in a new version along with any further comments.
+
+Sorry again,
+Phil
