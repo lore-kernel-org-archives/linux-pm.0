@@ -1,94 +1,143 @@
-Received: from out-179.mta1.migadu.com (out-179.mta1.migadu.com [95.215.58.179])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85C8734887C
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 03:22:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9ED29371889;
+	Wed, 20 May 2026 03:56:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779247367; cv=none; b=aTClpsJhxdZOLwZ64TSRAqqJtgDV7T0piMaLmIVRme4MZQY1JI858BPXzqLeBd+N6jhX4zgZ/dtRlIPTRg2EEoFIB/DawOpz8NBFMEZBXpXAzsMsr40XRDav+vowYcaIFbg8T3TYGzH2oBAVfMKtRfeAnyCVnp3geUydHmCfjv0=
+	t=1779249395; cv=none; b=Ot5vBkY64vhVQlIvC1aTf11r5gBY+Jr2cLqzSx47XKCzaQUJQElHglWG2x6j0ledi/IFPHkGtTX9Fu1diEcupXpZ7go6fDYWS/Kcg3qveJFerNWpJrkVPA0aDYXI6/V4BqGVBJvarHGwcBQrlSEl+zsuT6U7wzpa0pO1fT9sukQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779247367; c=relaxed/simple;
-	bh=Cpu72zIKlP/5shzkvgl5+ibZqDu3fBT7lzprYTL58rM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Fexj0LI9w33eItLqz4eLXCgQjPpPx9qsgR9Oai2HVEfYnNILBZ4chpvVxLX9DlYR4QSL5U4td+wWdQRFqYPp6gw2YoxkmE7aJdPxcUA6lNhKjE7L64RVmKM3zCh/Q/0/RgtpY/vgQRzfOL/QRWbpmBHmZo2WVc4v0B1ew813/HU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=KV6qtBh2; arc=none smtp.client-ip=95.215.58.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1779249395; c=relaxed/simple;
+	bh=OYwWmGW4VJ45HybR3KWpW+Ex8/FpANhlftj9FMzMwWE=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=pHz67XEU3TCGdj2ZW4JdEwGkcdIZrRChOflofogItuPQ5d6SBkAzJZF1PUN25Gqs9kC9fETDPWOiLoSzE8S+huMutEtymgnkyoj/4QBeOmLiT+58kvVwMo57wU46g0rRee/thQPiQblG8VoDIUvFVUfg5Rvd8eJv1qrtwIHDv14=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Yi5WmgT9; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="KV6qtBh2"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1779247363;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ZqZmu0OqZXtv/PtHiYRsiCkX8ld0/Ake0qTSoL86xa8=;
-	b=KV6qtBh2zR13CBHHP4AaZRqqlnwcpLwTrs/mQpoSeDlAyDV9dX3SRyl8G8gp/HKwy/1v3/
-	B+09PLGFyRDmMdQNDUUUyj+fOiHTRAxhzviDuVinT1Hgc18kpKbxqyrUfyh+Hz+cAGUpP1
-	ExS8+ykyX70hxwuRZdMqISANBtnbk44=
-From: Fushuai Wang <fushuai.wang@linux.dev>
-To: srinivas.pandruvada@linux.intel.com,
-	lenb@kernel.org,
-	rafael@kernel.org,
-	viresh.kumar@linaro.org,
-	currojerez@riseup.net
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	wangfushuai@baidu.com,
-	stable@vger.kernel.org
-Subject: [PATCH v2] cpufreq: intel_pstate: Sync policy->cur when setting min pstate during CPU offline
-Date: Wed, 20 May 2026 11:21:19 +0800
-Message-Id: <20260520032119.30615-1-fushuai.wang@linux.dev>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Yi5WmgT9"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A66B1F000E9;
+	Wed, 20 May 2026 03:56:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779249391;
+	bh=Lf4BSX3FaLVLxFUZXG4X89++fzsTeeUiOreKare3NAE=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=Yi5WmgT9qNmzIgl56d/8FR7Zec2qjm/QGuwMJJVK/eiZ+iHrkP+HTlejkd27p2kMs
+	 DgRek713kzBYXkFUfqP7Jel+kY3sGBrncvmxsixNR9U5P/LCYZ3sXQprVSU/Mngp1E
+	 ajBqr+C/NOFBlMlWtjS5VsbgJ+1sCQELS67yBdY+gLcFMx5dONa2l/arBIveDdJyG4
+	 ltUJzugmZROiOzyn8SO0XGE70UjwmnzjoJkR6WAK92GGycDY9b+qRwyhUnxD4c2jIq
+	 IoL5HB0CBtL6ZIK1RjNQXGqX5VItFd4xKyeLgH6ADIXSLXGtTST5sSwBklLZUV1DX8
+	 lWUP2/lYIyb1g==
+Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
+	by mailfauth.phl.internal (Postfix) with ESMTP id B4533F40088;
+	Tue, 19 May 2026 23:56:30 -0400 (EDT)
+Received: from phl-imap-16 ([10.202.2.88])
+  by phl-compute-02.internal (MEProxy); Tue, 19 May 2026 23:56:30 -0400
+X-ME-Sender: <xms:7jANagnWq9yfpj9HU2UuHzAfR7RJZP1GNX34AMbOM3A4JVdf6PZC7g>
+    <xme:7jANaqoLUVFcEpaXUlGrNV5q5fiZf9Y40Jxh1ROH0D4n0h7yrMiIrsLgeQSfwLUDP
+    CxKJBDizbi0-KYnDIviUwzNKVCIh_hhT6dreG457Gkmj8GTX_G6YLV5>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgddugeefiedtucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedfffgrnhcu
+    hghilhhlihgrmhhsfdcuoegujhgsfieskhgvrhhnvghlrdhorhhgqeenucggtffrrghtth
+    gvrhhnpeegueekjeehudehheduffekgfehvddtgfeutdeukeeihefhleeuieeuuedtteeh
+    ieenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
+    enucfrrghrrghmpehmrghilhhfrhhomhepughjsgifodhmvghsmhhtphgruhhthhhpvghr
+    shhonhgrlhhithihqddujeejvdeftdegheehqdeffeefleegtdegjedqughjsgifpeepkh
+    gvrhhnvghlrdhorhhgsehfrghsthhmrghilhdrtghomhdpnhgspghrtghpthhtohepudeg
+    pdhmohguvgepshhmthhpohhuthdprhgtphhtthhopegsvghnjhgrmhhinhdrtghhvggrth
+    hhrghmsegrmhgurdgtohhmpdhrtghpthhtohepshhmihhtrgdrkhhorhgrlhgrhhgrlhhl
+    ihgthhgrnhhnrggsrghsrghpphgrsegrmhgurdgtohhmpdhrtghpthhtohepthhomhgrsh
+    iirdifohhlshhkihesfhhujhhithhsuhdrtghomhdprhgtphhtthhopehjohhnrghthhgr
+    nhdrtggrmhgvrhhonheshhhurgifvghirdgtohhmpdhrtghpthhtoheprghlihhsohhnrd
+    hstghhohhfihgvlhgusehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrnhdrjhdrfihi
+    lhhlihgrmhhssehinhhtvghlrdgtohhmpdhrtghpthhtohepuggrvhgvrdhjihgrnhhgse
+    hinhhtvghlrdgtohhmpdhrtghpthhtoheprghruggssehkvghrnhgvlhdrohhrghdprhgt
+    phhtthhopehnvhguihhmmheslhhishhtshdrlhhinhhugidruggvvh
+X-ME-Proxy: <xmx:7jANakhaQIct7-HcyDQh8Uys7wpXa4e7QFzi4zl6DeyKCBJ-bmeG2A>
+    <xmx:7jANasdESi0dWC1NCP28lLBSKgUX_GtnbBZAOSfMx-slJWtoeyob7Q>
+    <xmx:7jANatIXCZBblrz8LlnkrOwQ6a-nq_tzhE7gzrH2cBpeXFRjo7a8Nw>
+    <xmx:7jANaplDiMSFS8x-QBz0m3L-tG-9XWYTw3KXvWpQ88susceytl1ibg>
+    <xmx:7jANaleur3pSS5wx0W7GXKSDYWCwv4zBOLV7VZDQlkebo4W8TlDyGTgd>
+Feedback-ID: i67ae4b3e:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 9341A2CC0083; Tue, 19 May 2026 23:56:30 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+Date: Tue, 19 May 2026 20:56:11 -0700
+From: "Dan Williams" <djbw@kernel.org>
+To: "Tomasz Wolski" <tomasz.wolski@fujitsu.com>,
+ smita.koralahallichannabasappa@amd.com,
+ "Alison Schofield" <alison.schofield@intel.com>,
+ "Dan J Williams" <dan.j.williams@intel.com>
+Cc: icheng@nvidia.com, linux-cxl@vger.kernel.org,
+ "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ nvdimm@lists.linux.dev, ardb@kernel.org, benjamin.cheatham@amd.com,
+ "Dave Jiang" <dave.jiang@intel.com>,
+ "Jonathan Cameron" <jonathan.cameron@huawei.com>
+Message-Id: <ec26d3de-d556-4ab9-a333-d69d1e6cdda7@app.fastmail.com>
+In-Reply-To: <20260519101832.31988-1-tomasz.wolski@fujitsu.com>
+References: <20260519101832.31988-1-tomasz.wolski@fujitsu.com>
+Subject: Re: [PATCH v2] dax/bus: Upgrade resource conflict message to dev_err() in
+ alloc_dax_region()
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Fushuai Wang <wangfushuai@baidu.com>
 
-When a CPU goes offline with HWP disabled, intel_pstate_set_min_pstate()
-sets the MSR_IA32_PERF_CTL to minimum frequency to prevent SMT siblings
-from being restricted. However, the policy->cur value was not updated,
-leaving it at the previous value.
 
-When the CPU comes back online, governor->limits() checks if target_freq
-equals policy->cur and skips the frequency adjustment if they match. Since
-policy->cur still holds the previous value, the governor does not call
-cpufreq_driver->target to update MSR_IA32_PERF_CTL.
+On Tue, May 19, 2026, at 3:18 AM, Tomasz Wolski wrote:
+> The dax_region resource conflict in alloc_dax_region() indicates a
+> serious configuration problem =E2=80=94 two subsystems (e.g. dax_hmem =
+and
+> dax_cxl) are attempting to register overlapping address ranges. This is
+> not a transient or debug-level condition; it represents a genuine
+> resource conflict that an administrator needs to be aware of.
+>
+> Switch from request_resource() + dev_dbg() to
+> request_resource_conflict() + dev_err() so that the conflict is visible
+> by default and the colliding resource is identified in the message.
+>
+> Suggested-by: Dan Williams <dan.j.williams@intel.com>
+> Link:=20
+> https://lore.kernel.org/linux-cxl/69c1a8d1c0fa9_7ee3100a1@dwillia2-mob=
+l4.notmuch/
+> Signed-off-by: Tomasz Wolski <tomasz.wolski@fujitsu.com>
+> ---
+>  drivers/dax/bus.c | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/dax/bus.c b/drivers/dax/bus.c
+> index 68437c05e21d..66413c6c2ba0 100644
+> --- a/drivers/dax/bus.c
+> +++ b/drivers/dax/bus.c
+> @@ -637,7 +637,7 @@ struct dax_region *alloc_dax_region(struct device=20
+> *parent, int region_id,
+>  		unsigned long flags)
+>  {
+>  	struct dax_region *dax_region;
+> -	int rc;
+> +	struct resource *conflict;
+>=20
+>  	/*
+>  	 * The DAX core assumes that it can store its private data in
+> @@ -670,10 +670,11 @@ struct dax_region *alloc_dax_region(struct devic=
+e=20
+> *parent, int region_id,
+>  		.flags =3D IORESOURCE_MEM | flags,
+>  	};
+>=20
+> -	rc =3D request_resource(&dax_regions, &dax_region->res);
+> -	if (rc) {
+> -		dev_dbg(parent, "dax_region resource conflict for %pR\n",
+> -			&dax_region->res);
+> +	conflict =3D request_resource_conflict(&dax_regions, &dax_region->re=
+s);
 
-Fix this by synchronizing policy->cur with the hardware state when setting
-minimum pstate during CPU offline.
-
-Fixes: bb18008f8086 ("intel_pstate: Set core to min P state during core offline")
-Cc: stable@vger.kernel.org # 3.15+
-Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Fushuai Wang <wangfushuai@baidu.com>
----
- drivers/cpufreq/intel_pstate.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1292da53e5fc..11db1c887c80 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2984,10 +2984,12 @@ static int intel_cpufreq_cpu_offline(struct cpufreq_policy *policy)
- 	 * from getting to lower performance levels, so force the minimum
- 	 * performance on CPU offline to prevent that from happening.
- 	 */
--	if (hwp_active)
-+	if (hwp_active) {
- 		intel_pstate_hwp_offline(cpu);
--	else
-+	} else {
- 		intel_pstate_set_min_pstate(cpu);
-+		policy->cur = cpu->pstate.min_freq;
-+	}
- 
- 	intel_pstate_exit_perf_limits(policy);
- 
--- 
-2.36.1
-
+Just report the request_resource() failure. This case does not warrant e=
+xporting request_resource _conflict(). Historically one driver can not m=
+ess with another driver's resource beyond conflict detection.
