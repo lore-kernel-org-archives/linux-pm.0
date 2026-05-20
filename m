@@ -1,141 +1,116 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A6732F5487;
-	Wed, 20 May 2026 19:33:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33EA7346E7D
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:07:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779305638; cv=none; b=UDJE0GeIXs70IdC1CySCOxIAQRUFFFVppJYzMbjZ9lTybnFSE5MLDVclaXcWsGjYn0awK09Yp4k70V+jGYvUKASELP0Gw646hHGOwExyZjO82hEzZ170oih/Lrr0b2iQ4R6gek/5nNp6uoqJwr8dz88M106IWkrsrWfzHwW4f8k=
+	t=1779307628; cv=none; b=ZCSwjX7UTHjZHB1bjvYvvxtnFwgclpQL/dn0XsUVDFIb0oHjG6qDx5r+jXnTkBHIHoVMfWQjluUoVQSOxZHsA6XQY2a8QiXCOIVKNuDg2PuqnovOb5NliPgvL0oDUYuJkmMQc/a0muPMDy4ggGKUKD5nEiWPOOzSNYN3tmq8uus=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779305638; c=relaxed/simple;
-	bh=hP/QvGLqAiBzZVHn5zGbr/LAb2mLcc3F4+LaKejHdGs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hT7WQMff0TDjZ7q31HKBbhmJkA8jm7TU/Ted1c3BCtGCbLBex3ci/nwFH+zFskKONpC7eAxdosg5WBuM+IQJs0FMLYCEObSju6+9LhWxy45p3LiGiXCr24iPq6w/dzAruwtqs9ZzR23d874syzWEMsbQaEUmBI+CzZEtJq6LQ9U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MQgLjYmC; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779307628; c=relaxed/simple;
+	bh=5Mz0v38CbFiopNoMNy8Zs+kIgJklekqYQPhkEFFqjek=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ECL/qLYG0cwbHFGmjGNp+rOtS30mdEoFCidRyPikjBH5N2Yg/75HIa1JgbaB4PZQopWA2xuqFpXXMsgDm4Cto0YU/vFVC3tZ6cuLpnRnR1OR+L/ojYAqIcam0luKdAcxF3xwArT7HGJwAZ9TMXcERSo7oJOX8fGy9PdtA1yJCaU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cn/vs5Z0; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MQgLjYmC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EABB71F000E9;
-	Wed, 20 May 2026 19:33:53 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cn/vs5Z0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDF191F00899
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 20:07:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779305637;
-	bh=FwdNDljaMGup73w381sOoa6+KsM3P76fAXNy3Gbdf8w=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=MQgLjYmCkaBH3Tq2jLhFH41A2c/JLSOSb8EorHlVTcCGFOAnE32p0fxg+4PWYE27e
-	 6+jdxoAWCdVpauFKxN4WmmYBlNxcvWejVUx28CC9dAB/e4hUqB95XauYMnrqGtVYAO
-	 QwBt5+B8Ynn8VqMq45VE6P3SfKDlbfj5EzSxxnDhkPcjS1SwTLhBOMvxKj7ZzlPNga
-	 YKgRUUMvnO+akHcZh29unWQKhzMaNK56D5KW/iWmykRTiQUtzZvt4Lkt045arwrbpD
-	 lTFyRtE5L9wThuDFjdkT4ukzggrECpRaFh6iVyFuQrLi7u5VBK1VVsAmLlCsVhVZDI
-	 qNNctqIvMNOQg==
-Message-ID: <12e149c4-60f9-4ffb-b066-7611bdd15786@kernel.org>
-Date: Wed, 20 May 2026 21:33:52 +0200
+	s=k20260515; t=1779307626;
+	bh=eltgoZTbDlP19naAUzDKIMm3KfD2K9gnzkkfYyALvGw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=cn/vs5Z0cEdxBltTt/jrbuUvGoVt9d+aDEkqMqOJ/puzso7HcV1mHGBNdvhs7e4Rm
+	 bfyk0Kps9OALCRZ/geITFdvNmToU9JbsfE/PuaK/dQyA3Y7uuu0ple7bsX6hQUtoDy
+	 pupiFXP3c4LDK8AWlBlJ6UXLmeHWaWr9Qfy7k6ZirAYt2SaywTdo2m5uJLHOqn2oMF
+	 CkTWamkJ0VK1GQ3lF85aKEAceYbzB6sCEGsf/ueaLAz3IqUWdjkJvtCj5v/fpGDQ/n
+	 wCOihc7Vv90Re48tNlU1gP120HNMJp2Xi5xd2NrMJfIQJtEZd/qXlUbCZo5lh3NQY0
+	 VS0nScLugOz8A==
+Received: by mail-lf1-f54.google.com with SMTP id 2adb3069b0e04-5a858881ad2so7117325e87.3
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 13:07:06 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8/TzZJWWgJmL4ZAwUcmngmB4jMxWC9/Ykdv/9YmsHCGFGl9Ypp6LhPfgzK5tdbmPDPGzGkoj9DSA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwPb48IXBDRZpbBlkpUghKpea0aexi3Fl+Ebz/f0xGMAVOA8Rlq
+	kUOqaZCrnpiGMBzLZYXbYQAtgWrBUgbiShSSFZuvgCLMu/FSl13EQT1C9HDXO1hseKuRvDXXLLf
+	dCLRoNx4/kNfpg5HsPHCwMKPHvidzwFk=
+X-Received: by 2002:a05:6512:6d6:b0:5a3:ed0a:efb4 with SMTP id
+ 2adb3069b0e04-5aa0e7402f5mr6256328e87.38.1779307625288; Wed, 20 May 2026
+ 13:07:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: qcom,x1e80100-rpmh: add
- clocks property to enable QoS
-To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Georgi Djakov <djakov@kernel.org>
-Cc: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Rajendra Nayak
- <quic_rjendra@quicinc.com>, Abel Vesa <abelvesa@kernel.org>,
- Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>,
- Odelu Kukatla <odelu.kukatla@oss.qualcomm.com>,
- linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260422-x1e80100_qos-v1-0-bcc2afe4cc78@oss.qualcomm.com>
- <20260422-x1e80100_qos-v1-1-bcc2afe4cc78@oss.qualcomm.com>
- <20260423-thick-beneficial-capuchin-e4aaad@quoll>
- <99830e85-5837-4ed5-8f89-fea5d3e632f8@kernel.org>
- <c583a03f-381d-4af9-acb0-ac47a1e35b47@kernel.org>
- <7oador7jxw443astffc6hjuf3gots64fqmvsjdsshfhhonc2l7@2unu723p2orx>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <7oador7jxw443astffc6hjuf3gots64fqmvsjdsshfhhonc2l7@2unu723p2orx>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <fc712ca8-253a-4a08-8ed6-4082fc50fff2@kernel.org>
+In-Reply-To: <fc712ca8-253a-4a08-8ed6-4082fc50fff2@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Wed, 20 May 2026 22:06:52 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gJhhK-s2k82PJmPAqJHAXx1RxPm0v3MpfOrX3AmWOoow@mail.gmail.com>
+X-Gm-Features: AVHnY4LGjAJ6EW5_CoacCt7MSg0WcmMCS1VopPmgRwwyD3XUzbxBGBTemyCetqQ
+Message-ID: <CAJZ5v0gJhhK-s2k82PJmPAqJHAXx1RxPm0v3MpfOrX3AmWOoow@mail.gmail.com>
+Subject: Re: [GIT PULL] amd-pstate fixes for 7.1 (2026-05-14)
+To: Mario Limonciello <superm1@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, K Prateek Nayak <KPrateek.Nayak@amd.com>, 
+	"open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 20/05/2026 21:27, Dmitry Baryshkov wrote:
-> On Wed, May 20, 2026 at 10:11:47PM +0300, Georgi Djakov wrote:
->> On 5/20/26 9:51 PM, Krzysztof Kozlowski wrote:
->>> On 23/04/2026 10:38, Krzysztof Kozlowski wrote:
->>>> On Wed, Apr 22, 2026 at 02:05:11AM +0000, Raviteja Laggyshetty wrote:
->>>>> Some interconnect nodes on X1E80100 have QoS registers located inside
->>>>> a block whose interface is clock-gated. For those nodes, driver
->>>>> must enable the corresponding clock(s) before accessing the
->>>>> registers. Add the 'clocks' property so the driver can obtain
->>>>> and enable the required clock(s).
->>>>>
->>>>> Only interconnects that have clock-gated QoS register interface
->>>>> use this property; it is not applicable to all interconnect nodes.
->>>>>
->>>>> Signed-off-by: Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>
->>>>> ---
->>>>>   .../bindings/interconnect/qcom,x1e80100-rpmh.yaml  | 62 ++++++++++++++++++++++
->>>>>   1 file changed, 62 insertions(+)
->>>>
->>>> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->>>
->>> And unreviewed as it breaks users:
->>> https://krzk.eu/#/builders/102/builds/70/steps/23/logs/warnings__3_
->>>
->>
->> I will just drop these patches for now, i have put them in a separate branch anyway.
-> 
-> I think, dropping 'required' clause would be the easiest fix. Or just
-> wait for Bjorn to pick up the DT changes.
+Hi,
 
-Could be, initially I thought this is actual impact on users, but indeed
-now I recall that driver prints "info" message and continues. So the
-binding is not correct.
+On Thu, May 14, 2026 at 6:40=E2=80=AFPM Mario Limonciello <superm1@kernel.o=
+rg> wrote:
+>
+> Hi,
+>
+> Some fixes for this current cycle, thanks!
+>
+> The following changes since commit 7fd2df204f342fc17d1a0bfcd474b24232fb0f=
+32:
+>
+>    Linux 7.1-rc2 (2026-05-03 14:21:25 -0700)
+>
+> are available in the Git repository at:
+>
+>
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git
+> tags/amd-pstate-v7.1-2026-05-14
+>
+> for you to fetch changes up to e4e9b7b38d5db2cc6a8770bc0596bb8b36b92b1f:
+>
+>    cpufreq/amd-pstate: Drop Kconfig option for dynamic EPP (2026-05-14
+> 08:47:48 -0500)
+>
+> ----------------------------------------------------------------
+> amd-pstate fixes for 7.1 (05/14/2026)
+>
+> A number of fixes to the dynamic epp feature which was new
+> to kernel 7.1, including making it opt in only.
+>
+> ----------------------------------------------------------------
+> K Prateek Nayak (6):
+>        cpufreq/amd-pstate: Grab "amd_pstate_driver_lock" when toggling
+> dynamic_epp
+>        cpufreq/amd-pstate: Return -ENOMEM on failure to allocate
+> profile_name
+>        cpufreq/amd-pstate: Allow writes to dynamic_epp when state isn't
+> modified
+>        cpufreq/amd-pstate: Reorder notifier unregistration and floor
+> perf reset
+>        cpufreq/amd-pstate: Use "epp_default_dc" as default when
+> dynamic_epp is disabled
+>        cpufreq/amd-pstate-ut: Drop policy reference before driver switch
+>
+> Mario Limonciello (1):
+>        cpufreq/amd-pstate: Drop Kconfig option for dynamic EPP
+>
+>   Documentation/admin-guide/pm/amd-pstate.rst | 11 +++++------
+>   drivers/cpufreq/Kconfig.x86                 | 12 ------------
+>   drivers/cpufreq/amd-pstate-ut.c             | 36
+> +++++++++++++++++++++++++++++-------
+>   drivers/cpufreq/amd-pstate.c                | 27
+> ++++++++++++++++++---------
+>   4 files changed, 52 insertions(+), 34 deletions(-)
 
-Best regards,
-Krzysztof
+Sorry for the delay.
+
+Pulled and added to linux-pm.git/fixes, thanks!
