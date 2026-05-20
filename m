@@ -1,61 +1,63 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D3EC2D8391
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 15:55:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B3631E83B
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 15:55:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779292553; cv=none; b=DCMPOjf19buLlEi27NZELCJ475yzpq2iDrL2rQtpDp4FYCVbIh8YMjZv+7yaF2PHjDdXyHgd/6oho/y6cRi5ZsZxwbF4mJwdHav7Xh1bPZxOexdEpCYQtXUgefztwFvMbAoK/pfXdFw58/reoP56FykxVbVxIqqaRh9z8JAYmTg=
+	t=1779292553; cv=none; b=kuSXeJUnouKS/jscfb3FhIS/KQW7haES3OmAK36pY7ACEW4AegY8rSVSwBMu7z8Oo2VqjOmsVihABp7zVJ1e3djQe46GkaRbRPoldObso2gl/0lQ8T8p/EET5t0kd0A5N2D9QDCfWtNb4xI8JzUmX2tQS23vt4vs0cvXXxP69Yk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1779292553; c=relaxed/simple;
-	bh=OME4iRZ9Ykq7ao0fF8hkOXAZOgTqs3ImOztunYTtt98=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=RaMIE13xZ2GquhG4Ubu/h7Iokfrc2WJQz7VozrrQ4wKyqmiYLWleYIRYpUrgFVxYOlPHWH/Ht75s+TVEdqC8DkyDq4ZAZE7CGNrSpHYzlXAeSa2f58MUB8U4VBoir8I4j2yxRQJD/39gaVMioeRiGIy7YhpK30zkwwtk3azL72k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TvLMhsli; arc=none smtp.client-ip=209.85.128.48
+	bh=xObQCOiN0w+zUIIotJQUzrX+GI6lzkrYiMyhdIqPchs=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=kGufSlM3BqLAi9fg/prhjyBC+xITDsYrgdoBRgYGm80qxzsnHxCMSNqqLrjRzgRAG/QnWhIVKE3W+Dff9xyUyEb51qSp38YrP3MnL1MgmRce+zPez+RDR7UAfpVe14KSPr9vEfd9ShycBzOXfB2y2dDeDumg05+K9oNlIdOTFIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=j/ry8pf9; arc=none smtp.client-ip=209.85.128.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TvLMhsli"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48ff4f8ef0dso56469555e9.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 08:55:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j/ry8pf9"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-48984d29fe3so56146025e9.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 08:55:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779292548; x=1779897348; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jLqtTlusJPJ3GUT/Wg/5pbHzqJxtC12bc+X9tA+WV24=;
-        b=TvLMhslixZgBPKYpA7Zvc8fIcGicTv7G9TPiPTDGLJ3oqrnsUog/FnaQsZc5iJHZAI
-         9zdLGDfR6XcaXz1f+vhYh8/W8gDYUVmL/jJsHAvp73kfNeEbdtH45JXUrFCQEzHSi5Ve
-         j70fiJt/iMTdA53zqDG5+7ZvK1LEC76QOJtXaslXwsthKs59COS/v0AdsoPR8h6zk/p6
-         XnIr6I4HD/E+y62wrYc+fH/jPDHl++rNkvjARaHDGpSx6P4vjGv5cwGTCqp1RyJ4Y+I0
-         cQNMb92Pypr+v6KyN6ZuI+tBTXC/5zg1dv7exKJNrnIZzE++cNzj2xidVvjJK/zoVAYL
-         ApHw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779292548; x=1779897348;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20251104; t=1779292549; x=1779897349; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=jLqtTlusJPJ3GUT/Wg/5pbHzqJxtC12bc+X9tA+WV24=;
-        b=F1hrCnKqUj6ybGjqpQ4GUWIn8UV7sdbXtZFcdjoS7oKqAVBnB4txvMga7N3iWE+7s5
-         HDymcqs5E5JMESSfsqmrzcDwr1rdOXdEDoO4kVZML2CUeqTw+HoYVcXKr+jSpJafRDnY
-         NKf92/kePc0PvKaM3McKUido28d6zuNN8xOlaY6JFgKeYGg439ND6slw1D68rj2ieOnw
-         H6qSTC/vLVr/ZUp+sxHS0QvC//8/AtnkT2z7nbFruIyvOmdSbQodepcG7HYPN7iaULkC
-         qTRObGYJeQSSRLrc+dhVh4U7oeNfWGRH/srs0H0CRbJlBLn8Tj6Lk0WnmKysntPqEk2v
-         ybSA==
-X-Forwarded-Encrypted: i=1; AFNElJ+GmyufP8BMDgXtYVJxbiFv5aLb1qvue9GLhwom5EQfYMX+osEf+Fvlyju7V8MhX3YBzmiH47ykAg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YziWyoUey92Jj0hSirg6Vd4kT38PnfBPkjCLCieuLG4sl82/bja
-	ikGaf9oMboIS5fnPmxdQt4TcODB8Kas0F2Ltb8PHLAJh1o0m+8ViAYEB
-X-Gm-Gg: Acq92OFpHSVXYi7sIFjK0ggxbfYQ/9aMgj2SIhhwoGg8dhRAO7CcfYE0syERkcBfn7r
-	KTQGBmAYhrkZIW4Q5+1tEuL8WH3TAr+ZGiGxbXJH6SDQY1K7L634fkNqXS1o2tNEtSNVY4D0lUf
-	K65eS5zpnIJAoxD9+wUM53ZxnfUz+Kb51b6kgLedItoXsjPnnQ5IFiYdoDstUYTXypmemOfPjDh
-	g/T/Lu9hzX8PMNgF7d8muIIXsXcpUUeCq6QORV4CKuFSowZ8+CMDDzmZGSTHrN/WpB8uwyFnmJ5
-	DsEHKbg9T+GOwOIjsqqRLCNQgVN7g30s5SlGliIiTLmLL3+lKI6P1p/vC1T/a9MNm8qSYcCkGCZ
-	nUxmK5xYH+YF0ckUUZFzshqH00Fzs6KL8j3P75yB2hXLf0bvZivjAetvuiWvpl3xF5eJxGA0mmA
-	47ZeBKk71qlF827qzFMDSa9NHDWx6WiSnvw8Gi8L2HuXSBtl5wYfMg/skgEwRZcys=
-X-Received: by 2002:a05:600c:3506:b0:48f:e44c:e058 with SMTP id 5b1f17b1804b1-48fe60e13e7mr364388525e9.1.1779292547501;
-        Wed, 20 May 2026 08:55:47 -0700 (PDT)
+        bh=GV5z0VH3S60eKaBNh37Ayp3vpCM7R2YdmjwXSt3Qs84=;
+        b=j/ry8pf9D2wyaWwdx5UUKrTNiuH/vuTTnRGIYiSAhv+cfgsZoCfkvDFVixh+bMNwtG
+         2iAvEtPLgWoedHXJ/h1YMlWWtLGGjrctel3HjRX++4V82F3qprmKxER5W5Xtl5E1P+Kl
+         cPKGW7QG6hIJqaZdN6WtrgPKUn4FYdprfPObH/flFxsP8ltM6ta444+OKZMjj7m8bDJk
+         IwIJD23EdjDdpiZlSOxRQrZJkhkRU85FFNMnin92imZprpXbs11QWhDsODe+7wI05LRY
+         R7je0B0t6X+WnBEVsHw9gGIYlBH3sMbBB5gWeuBMpJCZJy648SeVYn/+GGiK2mXn5Obv
+         SXZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779292549; x=1779897349;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=GV5z0VH3S60eKaBNh37Ayp3vpCM7R2YdmjwXSt3Qs84=;
+        b=D2lHchozbxGHBp96OCuOE6GF0xEqbc9OUN2jMkXoykvOV1WQ2avUlc7M41tjxmmukY
+         MwniVYHKRh/RLW5uagUNHCIX21gtq9aBDxejifSl/BonGlU9b6fzO7PSFbawbhxo85M3
+         I1Umw/Wm+PjDZDUD8/YpAnO/KlwkM6zfoe9/SKUmtFBRhTkq7+rn3+TdwHu7jz/dnFcu
+         oU47bj8I3x9Ct0lQRhz+7b6b/pt9Om6XM6ki6YWDzSAzkY8k1bYL8B7f9fSbiiwlGZVm
+         X/UrgQ3rZFVPSRNyjK2IOzJsSNQOhiroL1QeB1xhXZCUqocyWjGTUnhUpcKfbNcIZAvy
+         jOEg==
+X-Forwarded-Encrypted: i=1; AFNElJ+O4QmLxbyHNVnhk5u0M3ZDvikw73y6oRjjyJri0T2hFycx/0q1bbpCO+qVWh3Sf2bwgUMuTOv+nA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwefvXfCeMYc0PN/cuBViCO/Vc7fHI92+HHMjl9I/MN6ml0v0F4
+	n5G7izEwl8UsAZpBC6/9TV+3trV0kombUezh/XJKuZNmpgmsT5JBw+Wv
+X-Gm-Gg: Acq92OHH70qHwKCWzA7FDHv9TUPGZRnOwcKQhErm2ngzJ7aox/1BGZqjLZBPiO8Pm/h
+	hcIKYAaCkmqYEKIKgp4X32fY9rfjykHLU6FccfQKBM9ru7IfyUUWtASusY4duuuNqySgdA5G7ob
+	63syNC352cqr/mhkoAx6b2ogxQWmKnBzLZrr5oMbRGVTRdwK4Iymb1STwB0BTO4A/2OBGc1vLzy
+	N2UaTpQzUTgP1Vy/UhhAQoIX0xXlj57zPMkV5ZujnP/qwSNz7d/me4Clef+kJB2LLDEfeghVTXW
+	rwjA7NF61X6yKRwMfuWhONpexpa/ICWRG1Igk0lpmMokiuYwACyv9bCrgMhblB6KaxQuWeiRU7A
+	uoYv8MEKWQRMuXC7VdaYidZ73FPZdGI6JDTsFF9ITadza20IHm/fjfTvUwdMHK2MOPeVLHDNXmb
+	bwNn/l6LVLbOxBP4PJcPvffcNcqb+l2aRY9DfDQ5XYfiRwPrigJ0GC+WHWV7SajWE=
+X-Received: by 2002:a05:600c:3b21:b0:48a:f18:ece4 with SMTP id 5b1f17b1804b1-48fe6514dd6mr361015365e9.24.1779292549009;
+        Wed, 20 May 2026 08:55:49 -0700 (PDT)
 Received: from Ansuel-XPS24 (host-79-22-5-99.retail.telecomitalia.it. [79.22.5.99])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-48fed253f93sm132123215e9.16.2026.05.20.08.55.46
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-48fed253f93sm132123215e9.16.2026.05.20.08.55.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 May 2026 08:55:46 -0700 (PDT)
+        Wed, 20 May 2026 08:55:48 -0700 (PDT)
 From: Christian Marangi <ansuelsmth@gmail.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -69,50 +71,44 @@ To: Rob Herring <robh@kernel.org>,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org
-Subject: [PATCH v5 0/7] thermal/drivers: airoha: Add support for AN7583
-Date: Wed, 20 May 2026 17:55:13 +0200
-Message-ID: <20260520155525.22239-1-ansuelsmth@gmail.com>
+Subject: [PATCH v5 1/7] thermal/drivers: airoha: fix copy paste error on clamp_t low temp
+Date: Wed, 20 May 2026 17:55:14 +0200
+Message-ID: <20260520155525.22239-2-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260520155525.22239-1-ansuelsmth@gmail.com>
+References: <20260520155525.22239-1-ansuelsmth@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-This small series implement all the required changes to
-support Airoha AN7583 Thermal Sensor.
+In airoha_thermal_set_trips, there is a copy paste error on clamping the
+value for the low trip temp point. Fix it to the correct value and actually
+clamp for the low variable.
 
-The SoC dropped the Monitor subsystem and only provide
-temperature reading. Some generalization was required
-to at least save the common code with also the help of
-reg field API.
+Fixes: 42de37f40e1b ("thermal/drivers: Add support for Airoha EN7581 thermal sensor")
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+---
+ drivers/thermal/airoha_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes v5:
-- Fix alpabetical order in Documentation patch
-- Address suggested change by AI Bot
-Changes v4:
-- Rebase on top of linux-next
-Changes v3:
-- Property use chip-scu for thermal sensor
-Changes v2:
-- Update DT schema patch to implement dedicated schema
-
-Christian Marangi (7):
-  thermal/drivers: airoha: fix copy paste error on clamp_t low temp
-  thermal/drivers: airoha: fix copy paste error for sen internal
-  thermal/drivers: airoha: Convert to regmap API
-  thermal/drivers: airoha: Generalize probe function
-  thermal/drivers: airoha: Generalize get_thermal_ADC and set_mux
-    function
-  dt-bindings: arm: airoha: Add the chip-scu node for AN7583 SoC
-  thermal/drivers: airoha: Add support for AN7583 Thermal Sensor
-
- .../bindings/arm/airoha,en7581-chip-scu.yaml  |  14 +
- drivers/thermal/airoha_thermal.c              | 380 +++++++++++++++---
- 2 files changed, 327 insertions(+), 67 deletions(-)
-
+diff --git a/drivers/thermal/airoha_thermal.c b/drivers/thermal/airoha_thermal.c
+index b9fd6bfc88e5..439aa011b75c 100644
+--- a/drivers/thermal/airoha_thermal.c
++++ b/drivers/thermal/airoha_thermal.c
+@@ -273,7 +273,7 @@ static int airoha_thermal_set_trips(struct thermal_zone_device *tz, int low,
+ 
+ 	if (low != -INT_MAX) {
+ 		/* Validate low and clamp it to a supported value */
+-		low = clamp_t(int, high, RAW_TO_TEMP(priv, 0),
++		low = clamp_t(int, low, RAW_TO_TEMP(priv, 0),
+ 			      RAW_TO_TEMP(priv, FIELD_MAX(EN7581_DOUT_TADC_MASK)));
+ 
+ 		/* We offset the low temp of 1°C to trigger correct event */
 -- 
 2.53.0
 
