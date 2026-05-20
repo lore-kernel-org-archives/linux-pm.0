@@ -1,82 +1,96 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C312E395DBF
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 11:16:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FD932E8B64;
+	Wed, 20 May 2026 11:51:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779275802; cv=none; b=hHawLCxFFuasNFSm0SgZXzk+FA8KPJvSyPYbC4htGiLEOJ+T7A/Z+M+6OPGAz0x5Ov7kwaY+6XKGXC9fZzZsyF3xcvq/sz5vxzGA4hEoFiXqXM67ImrC9oeg3Dy+NKWPp++PRANDUEq/qnuTAwG3ucz8TqCNt6OwTK+3qjCAG6k=
+	t=1779277895; cv=none; b=l0M9zuI1r14rFwUUN7I2UW0rI4DMpRN8OunSyWHrlOGHenmx0mizylcnItvccdOYQJ1Ra7jt/jqEDVrLgF81MfRKWg3ToJz7jv/y9o3wbem5G26oHjfSRmNOGAV10zXpDuuW+KMtF5W3Gu5+WREDoLYyz2u3Ovu3xjbSsxFl/BA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779275802; c=relaxed/simple;
-	bh=HK2L8GYcyvFen3RsKjQLL9V2bUHBT0R2L1ucEkObyEA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=r5rbO0qkUsSdBCqQXM5cxUQwWcRQM+oyK+ehz1YDrnh/qQzUspEBjs2rXslYgRLwF+eIBW2WhYzRMzXrEN+XivYeD6gIqfSWH4kRbX2yGBQ+TOEQdEgwibtCKNhAR2yEVfZGoNKJ+j56gm5c8A5uF+BhGhzrF1XUTRS74ILkm+s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MmG3j+9o; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779277895; c=relaxed/simple;
+	bh=yyDU9KwLvP8JNcMoT/S4fUI5/eacAI4JGK0D9tUG0ZU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ddOYrtexdOUfYCgYKlGWpDqEWpUWaOEsgMN3SCm8jXU19Mh+R7PglbREBCd6yiljLzM9LMQoc8nfKvF91ucTCQbTo6uDuS6y5cvha1T+Rue3lRDkZcJ5S+C4wWgw9PC/lMKPc8Vdt6N6S5E8SKKjtRYwmNVARdBRpjGspHDF/bQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kqkK6DFH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MmG3j+9o"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C719F1F00899
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 11:16:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kqkK6DFH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 444501F000E9;
+	Wed, 20 May 2026 11:51:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779275798;
-	bh=HK2L8GYcyvFen3RsKjQLL9V2bUHBT0R2L1ucEkObyEA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=MmG3j+9oMp9E66t6NBfPkBgDylmEBz4SdwXph5L6j/jGkn6eZ71ot8B7frPwL7n2E
-	 dYBbWpsvL/zghY10Ti3mU2YwOg5Suhnmg6zbGLTgNJplY9XkgRHdjW0VGCOv/4y3YT
-	 WGF1N17G0x4AKPBUeDa4R1o/U1wQpyz8fdcXdNrj80QvSpaEusUNDQLgH7nQFETNNe
-	 D6f6UDCwyNeGUzZM/lpsyJ1YFDJc8OfI85BBR2Y85OezWGqA/hSEvWbtCJsyHushjs
-	 AUClS2LPUaJKLRCTXAFL2OyAJgMkblRWPkxJMG95nMdCYUGvRC+PH9V7e31Wb6rEdo
-	 afXdz6PYVhFrQ==
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5a87edf88b3so5085324e87.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 04:16:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9ppaKHaBXyvkaDJ5BoRJgtWJwHCtvNYoMbQUK3lTKxWeKM/MQn2xhXgW9VWQw5X/gzluAD3QzwdA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyxLa/s7pFtcaiqvSSma/+sfwDrtZAN7HvCpSID8Ggpj8T/iQFZ
-	irrrUiJQHkeBojlEFgXRUt+6KcVwok0oUVmuSiidyk0SDXTIpWAJhONRJ1KT4LRBbClew4AGSQP
-	kSap+DR8RGYgJgtzX22PvLc+2YGnwFfA=
-X-Received: by 2002:a05:6512:1590:b0:5aa:b6b:93c3 with SMTP id
- 2adb3069b0e04-5aa0e74512dmr7661008e87.45.1779275797274; Wed, 20 May 2026
- 04:16:37 -0700 (PDT)
+	s=k20260515; t=1779277893;
+	bh=JHA2T/KyUeaBszSGfgww6SPBWhnX3PZMY/vXvIO6sQc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=kqkK6DFHrI8lgimdoKWRSBJpYDypKrZ11ISNayuMGXE6iWMc7LxnQkf8Q8y8HcYHI
+	 +k9IDkqra3CjHM4DH4+mOidsDa//dmww5hvFw0vZ+kvtnrcAtFYyTw6J43K0h/UZNY
+	 1cS4X6zc6XW3hYTQOhmWVcz7pvUB6d/5V3RP5bMIvAZIy4uAvG5aVSBMBSYTltwXWw
+	 50GGFIDp2VNPRtHt4GIporwT4lCCCdMub6AXmOVGIxnP0Y7gfaKZAqx4/Regu9VUkZ
+	 rOayFPcPqZd1+rCtmFnKLBeEtXqYUgW4RoCYJiodvWMmEp1R5XFp8ED2KG0MZAZQYC
+	 n+ksabzXuBIDw==
+Message-ID: <07739437-4720-4a15-87cc-40f6f92f3759@kernel.org>
+Date: Wed, 20 May 2026 13:51:26 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260421123545.1745998-1-zhenglifeng1@huawei.com>
- <cb369a6a-5462-4e6b-a132-ee016a4163ea@oss.qualcomm.com> <b6d995f7-91c0-4f87-82e7-87cc50faa43d@huawei.com>
- <aoo2k2uzi6zg6owrmi7qgcgjryxzk7l7f2mdo6vtjjdd576hpn@rg6zyqgn7grr>
- <80d32bdb-f661-44cb-b529-3d5ce2142af0@oss.qualcomm.com> <pr25udlbea4vwtx27gfzlnqzv3lmmphkjx5xj2ggzdegmd4ntn@kiytfovoifi3>
- <a028421a-de24-43cd-ac80-17de9b2fc523@oss.qualcomm.com> <5ivkhopr53lsrnlu62ucdn5yfyeh42nwq3knfifp4ihgv6kpzy@sd6eekl2r45a>
- <fc82e05b-db8b-4a15-b46d-332c9f2d95da@huawei.com> <ygm5rfevkxzoaapktjhku35ajrkzu75ebbwva4o4spp6wqay4z@txtjcnbjhx63>
-In-Reply-To: <ygm5rfevkxzoaapktjhku35ajrkzu75ebbwva4o4spp6wqay4z@txtjcnbjhx63>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 20 May 2026 13:16:23 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0i4_G+yzV0BSEOR=MVnV-9O-rXEAOLKWUKbMjgCvQuuQQ@mail.gmail.com>
-X-Gm-Features: AVHnY4LLrcb4Ps3HJGy3Q4ATObjfYkYBlMX-1Y19b3y-fTE3uuC1Xf7D8hirbrQ
-Message-ID: <CAJZ5v0i4_G+yzV0BSEOR=MVnV-9O-rXEAOLKWUKbMjgCvQuuQQ@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: conservative: Fix incorrect frequency decrease
- due to stale target
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "zhenglifeng (A)" <zhenglifeng1@huawei.com>, Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, 
-	rafael@kernel.org, stratosk@semaphore.gr, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linuxarm@huawei.com, zhanjie9@hisilicon.com, 
-	lihuisong@huawei.com, yubowen8@huawei.com, zhangpengjie2@huawei.com, 
-	wangzhi12@huawei.com, linhongye@h-partners.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND v8 00/10] SPMI: Implement sub-devices and migrate
+ drivers
+To: Jonathan Cameron <jic23@kernel.org>
+Cc: dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org,
+ arnd@arndb.de, gregkh@linuxfoundation.org, srini@kernel.org,
+ vkoul@kernel.org, neil.armstrong@linaro.org, sre@kernel.org,
+ sboyd@kernel.org, krzk@kernel.org, dmitry.baryshkov@oss.qualcomm.com,
+ quic_wcheng@quicinc.com, melody.olvera@oss.qualcomm.com,
+ quic_nsekar@quicinc.com, ivo.ivanov.ivanov1@gmail.com, abelvesa@kernel.org,
+ luca.weiss@fairphone.com, konrad.dybcio@oss.qualcomm.com,
+ mitltlatltl@gmail.com, krishna.kurapati@oss.qualcomm.com,
+ linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+ linux-pm@vger.kernel.org, kernel@collabora.com
+References: <20260511100805.121432-1-angelogioacchino.delregno@collabora.com>
+ <20260511141743.251a47e4@jic23-huawei>
+From: AngeloGioacchino Del Regno <angelogioacchino.delregno@kernel.org>
+Content-Language: en-US
+In-Reply-To: <20260511141743.251a47e4@jic23-huawei>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, May 20, 2026 at 11:57=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.=
-org> wrote:
->
-> On 20-05-26, 16:22, zhenglifeng (A) wrote:
-> > For CPUFREQ_NEED_UPDATE_LIMITS drivers, dropping this early-exit checks
-> > means cpufreq_driver->target() will always be called every time when
-> > cs_dbs_update() is called. Is it OK?
->
-> What about merging this change and implementing something like
-> limits_changed for the policy, which can be checked for
-> CPUFREQ_NEED_UPDATE_LIMITS drivers ? The variable will be updated
-> whenever policy min/max changes.
->
-> Rafael, that should be good for CPUFREQ_NEED_UPDATE_LIMITS drivers ?
+On 5/11/26 15:17, Jonathan Cameron wrote:
+> On Mon, 11 May 2026 12:07:55 +0200
+> AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com> wrote:
+> 
+> Hi Angelo,
+> 
+> Why the resend?  If marking a series with that I expect to see it
+> called out as first thing in the cover letter.
+> 
 
-Yes, it should AFAICS.
+Right, forgot to mention why.
+
+The v8 was sent on January 2026, I pinged maintainers to pick it on
+March 2026, even if this was fully reviewed by multiple people nobody
+picked anything here.
+
+....and I've resent it because pinging multiple times didn't work, and
+because the series got old all that much. :-)
+
+Regards,
+Angelo
+
+> Jonathan
+> 
+>> Changes in v8:
+>>   - Renamed *res to *sub_sdev in devm_spmi_subdevice_remove() (Andy)
+>>   - Changed kerneldoc wording to "error pointer" for function
+>>     spmi_subdevice_alloc_and_add() (Andy)
+>>   - Shuffled around some assignments in spmi_subdevice_alloc_and_add() (Andy)
+>>   - Used device_property_read_u32() instead of of_property_read_u32()
+>>     in all of the migrated drivers (Andy)
+>>   - Changed .max_register field in all of the migrated drivers from
+>>     0x100 to 0xff (Andy)
+>>   - Kept `sta1` declaration in reversed xmas tree order in function
+>>     iadc_poll_wait_eoc() of qcom-spmi-iadc.c (Andy)
+
+
