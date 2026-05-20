@@ -1,175 +1,1121 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F04363E5ECF
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 18:19:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6CF524293C
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 18:49:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779301158; cv=none; b=Av0KcLOc8QQpVTnCtO/cA0Df8sliRjZhOJxKfddoiOtMX1n2SadqbHBbBClXR47W7xEP4d3kO4IIDFJwFGB8pzHm1J4xm1F46IuMg3XaADMVHqH9svfuCJnOPOTEP8x+JTuccC8POR6jUWqg1+4hpyrn+yxUY/vVfSFwVxlF2io=
+	t=1779303004; cv=none; b=de7omibkU4MrlEh2F3JunbeWPItCSvuNE9E+5U++SMNVfpHkvMYf2T1UAWXoOtCe7oPDeMm7mxHC2qcZ031/17d/pbK82tPNHSyfymvQMoeu4E+QMnILi9do02THapJo27ASSxAve7pEuAARRQ1fizG3AgDhX2EXUroqCpMjcXM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779301158; c=relaxed/simple;
-	bh=L07ugexr4g98X11wi78Q+tqNnY75+cQ4PfhLNNWqWBc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=r65+wP1E876+OL8AufTB7LCTSrSYl8PrGMSe1kQCXH/XrdpgivGuYiQ3BQc626nfQolmaCKJqf1XUSiXumfYCn+kODU90B4EYqp5hfhsJa/wCPUzHVFNG1vKHpwuwiLZu+CWaLXfU6S3kMVWAktOV0B8JWmDDxHvxaWxyTOrDNI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SOpzEP6X; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779303004; c=relaxed/simple;
+	bh=FhLKN0G59flNMZn/FwygAvU+2rx7TbCMEf8i53MwUC4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V0jlfVGPh+7emewyVrM3y19clyStj4SonoO0HUOZeuP6vyz3d2vzgYTP84wlHwJ7NpEEOTrmi8Kw63Z2vGbs+RO5QLpG2bt8RGPD61UijdGTJPsqTU7z+f2DijO0RHWYF6i/UZAoQjUd81tIu2iD8G4SA3wc5kP8LhdnTTPRZl4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Fs+HKyDd; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CAgymznD; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SOpzEP6X"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A11961F00893
-	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 18:19:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779301156;
-	bh=r8k5uHCoRVBIv1c9oG1U/zO3ZMGj+nRan6mX7s9e7uc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=SOpzEP6XeuA3Q3JycuX1HpUG7nAfeozoZvhTBbRJuVxMY2Ise5Iob4+Wo4wr7I8PC
-	 vx300lRHoLbEr8v7IiMJrtFD1ezl/jht122a5YzXzA71RbcgSu301QwSPLZmoQBnQU
-	 1pzumfmXix892evdkafe343HNAhDb+QZ9lGPy+p8KaVhRYQr9ppVM5znFKx7szL8Rl
-	 5cRq79mxg1klZ4CeNcbRWD7oV4QbrTHUvZGUxZRF8wx0UjtGBiF7yjE51jFqKB0fAs
-	 6K2jOSaCzkm7RkkfoMY3x/+FN2Rbd3N6ZKywqfeLBGfGN73r+2/uS5M0o2QDHo0msk
-	 E0fs5zekeTqGA==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5a8dc2606a0so5832229e87.2
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 11:19:16 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/+4Emg8Q9jTv43ITrFNtZNRQ38blovLNFY3xmfkEFEj7+ZVXeIIF3NiToTfGxoL4lVxuusYfMByg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLv4Jk7/tFlBRUD8JCsXgKpRz1InLBUjuLMxconpeKQ594xc9D
-	VyS61hmV84BE8zid0AiUmQb8A49AI0dEa3rt6XoVEtUbXAo8lAU4GL7wZ0OFChbLBT2lx9N0aQW
-	QwG5ihadpeNkleRBZD/b3DNrnOUwtUFE=
-X-Received: by 2002:a05:6512:3188:b0:5a8:a555:f57e with SMTP id
- 2adb3069b0e04-5aa0e73da54mr9346298e87.30.1779301155154; Wed, 20 May 2026
- 11:19:15 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Fs+HKyDd";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CAgymznD"
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64KDXcMe1798088
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 18:49:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=DZNpBzAiTwb9zplejH0iPsSqnNfp8+kmLru
+	Xm4txizw=; b=Fs+HKyDdYfervsABLhMp/4PzQoWAM4EDxv/DlOqtXxIwTVwgVip
+	14OIJNV2PHcj+9B53aW4NJiHC5sA2sPMjsZp50nrwqORs/UUnxcgx+rt5246g7X0
+	ALkI/RMAwTC569wkT8+x1BIN5Fv2P5bCnfXPmD/GAZ9oXtdqRPUcbrw5ppH9NLKL
+	D3IuNOUbhrCFhGQ9YW8HNcxuEbjC08yaN57+3BGA5DeKk1B3dkcJrv5FfRktvGQE
+	4C1wvkyXlGY47nZul0g97kYZeoDwuoEvnsNX+WgscKXV/HNVXJGwEQXotd7fxxE5
+	kd67d1VbdEVhDiL+u8mTskMprxAieRnvtJg==
+Received: from mail-vs1-f70.google.com (mail-vs1-f70.google.com [209.85.217.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e9dxu1ban-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 18:49:57 +0000 (GMT)
+Received: by mail-vs1-f70.google.com with SMTP id ada2fe7eead31-6313cb80e7eso7808803137.2
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 11:49:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779302996; x=1779907796; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=DZNpBzAiTwb9zplejH0iPsSqnNfp8+kmLruXm4txizw=;
+        b=CAgymznDa9rbnbLC4lHOnm8vQHMILGc130oFs/UvRqbkMNMFIHqk9LOQxLJ2kDpWcE
+         Ppb4NNxtRYmOY3jb2G9JMgRM2RxEmbkiPkWF6PQOZ2lqn0SV7MuALVt23FRA/JZUyrtP
+         kulFc+rfqFDsJWfDoQetJJ3LqAnwd/uokEHxd4tT0sJa/8qeroVpIpmDfqk6JDoG0Xke
+         clftpcfpnTHh2vDXtyRW0sVC/vR857N/h7en5039B5YhQVv6BPiMMdEl574hQoCxTAuv
+         G687b3x69kpIAHW1NGdo939svXaWdwvm9WFjJLy31aFfvl8LrWOLj1/skCsB6wcxVVxu
+         ce8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779302996; x=1779907796;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DZNpBzAiTwb9zplejH0iPsSqnNfp8+kmLruXm4txizw=;
+        b=mwfHSasXp8MkJo47FZ2IwX4stOwQ3IOxXF9OXlHYpZv0JpFSvFDoI91uL7ER01JYVI
+         L3epVGETx1ZshFH6Vsb1xF2BhfAYHUT+AplDY36GCLiWGXfydJjJqU7icIz0J0p6Ffos
+         teztQjMNU0G9HvrYbDNTfZIs5Vx0V4qBdONSimd7PaR0dieHS+Bf4zZaYKP1xA/Tgrbw
+         TrDdpJlDFw8EEk1UA9bUhgEPn9yZuGzzwgPBwQQ9cu86vyByQubflFHyIHBMvwR8nO3E
+         RH3mmrYDxmr8YBMu3aAN/8xSRme6INF/gWbTsQRgqwY34zUJkzakU8EXyh+rIxdmRw0N
+         FwEg==
+X-Forwarded-Encrypted: i=1; AFNElJ8lhmT9DukeHXA/vGJY+YQgtQBuHKOqVoS8/GDsbidS9QMLbCqwohz0l6SsM3ra74zk6Dv3/YqTUA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz602add4/JcPGjgIJ3bAdkn8jT7SXNZkPtYe4pL+zJmPjv6apR
+	MvbRXF4rexdfsOmeOQqDom/TC3hrpaw9zUptIPGhOWff5y0reoQH1ujskuH4559zfPg8m2kpFav
+	+rzgNGsidLTAwfnHKw9WsWpsKogqDxnqYlEeGSGXHWGzbRZZL/HAP9xVccsmULw==
+X-Gm-Gg: Acq92OEPExd6A3pjnUFRRAGm4qX20BCTWCabNO2oiT+U5H839+MCYHneBCxebwM9dTC
+	8jvw6FF4X5CvEZ2Du+RHqI1P9lCGE7KbRuEjMK9SHAs5207B6pt5y7YwmgUpXKSLTJZEL40Tw9q
+	AQ5Df9me0q2yn2LOHoK4TygbHVLeVLdubt23cKUE1RoyCV1EDdN9R6OKvDPf6UrKaOAIs5sD1+n
+	bJ7ajtN413ON5xfySN66OoTZfsLZog6vmaK5gYvaXQkVaog9B+1a8j5inbnNJnhfIu4s7r0taLL
+	aBDP094JI4O1LXa+cVAGVKvYj83Wz5r3ZmcSxvf123s9HCMAFCix3GGohqB9Tjg4+AvNF6MI1xZ
+	AbOBTjyPRe9e6u7PRMrtQ2zFcrobEOQtST6CL
+X-Received: by 2002:a05:6102:94b:b0:604:f155:9374 with SMTP id ada2fe7eead31-63a3eb8af18mr14705415137.15.1779302995803;
+        Wed, 20 May 2026 11:49:55 -0700 (PDT)
+X-Received: by 2002:a05:6102:94b:b0:604:f155:9374 with SMTP id ada2fe7eead31-63a3eb8af18mr14705078137.15.1779302990344;
+        Wed, 20 May 2026 11:49:50 -0700 (PDT)
+Received: from quoll ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48feb8d838dsm139584905e9.1.2026.05.20.11.49.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 May 2026 11:49:49 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+To: Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Rajendra Nayak <quic_rjendra@quicinc.com>,
+        Abel Vesa <abelvesa@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH 1/2] interconnect: qcom: x1e80100: Revert ABI break
+Date: Wed, 20 May 2026 20:49:45 +0200
+Message-ID: <20260520184944.182148-3-krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260520150018.2491267-1-riel@surriel.com> <20260520150018.2491267-34-riel@surriel.com>
-In-Reply-To: <20260520150018.2491267-34-riel@surriel.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 20 May 2026 20:19:03 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gtkPK7+a3pBgiZRSHp7842L8aaZGOPG+SrdnuNebN0aA@mail.gmail.com>
-X-Gm-Features: AVHnY4K_PJZMu_LRCyJ1SsE4uQ8YoN1fMVm-ozSbCHY_r7CEJzG7JEw9O8vu1d8
-Message-ID: <CAJZ5v0gtkPK7+a3pBgiZRSHp7842L8aaZGOPG+SrdnuNebN0aA@mail.gmail.com>
-Subject: Re: [RFC PATCH 33/40] PM: hibernate: walk per-superpageblock free
- lists in mark_free_pages
-To: Rik van Riel <riel@surriel.com>
-Cc: linux-kernel@vger.kernel.org, kernel-team@meta.com, linux-mm@kvack.org, 
-	david@kernel.org, willy@infradead.org, surenb@google.com, hannes@cmpxchg.org, 
-	ljs@kernel.org, ziy@nvidia.com, usama.arif@linux.dev, fvdl@google.com, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=openpgp-sha256; l=27716; i=krzysztof.kozlowski@oss.qualcomm.com;
+ h=from:subject; bh=FhLKN0G59flNMZn/FwygAvU+2rx7TbCMEf8i53MwUC4=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBqDgJIDhaE00TheSimQuDIf6ClYp0FKETqqSZWZ
+ aL1PzmI1xCJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCag4CSAAKCRDBN2bmhouD
+ 19vdD/9dMTP5lTQEwC6uQ9ell3DKMFIym9InfL5/TmuUbQOr9VzPe9WiZGwMBJ7OxqTbtSRHknU
+ 03dFF9FSglP9cd5R4E2C6yHqtqiQs9g1czY+9z//yvqJNUOsokqVQWubcIfibJYaHpxq0iVu4Ir
+ kcoDWbmYFAXtsYLnQD037YDaEHpryhlkpU4bGZwCmLcUu0yQvWWCZQEukEX8vQGDYDpiD9BCsQj
+ NLNmDm7fr0RPC3QLlibhJnqzBY3nFh4W2LLRZzyjqrmw3flBb3A36gfs1Px+SAPvodcu6fuUw7J
+ 8Yks3Jsx5z60NEHd+4Ddij4Zr0/lNzeVMUF05hxykNXxoiuJat3q+0sgdxQ4aBOEbQIoJe6OmOf
+ Ja/iU5KSdlsvTtOPOIYtRZltnm/KvEVpq1Oq7c7hdafQwMP80rx9PNL3PSWfx9+ldFuYIiIkP1Q
+ ffkWuafJwuMK+dQ0slYEyL2ry72oYELUlN7juZ8f6u+WEqZMugpDSX3dXIgh5oHp2Gf5sZP7Evr
+ sQwECedqwlCrbhSKEEFoCO1h2jBTrNJRAH83jd1beCS9duiBYaMPEdCVoNR4nBmJzSe8Mec0HDC
+ xs1b8cZVoh6Ba7LluMa1dAwRi50IrQye7SbpZKziDvLiIIPT2YLpME+B3lt8iiqn3iGloeN8A76 goNy/KrFrj78s8Q==
+X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIwMDE4NCBTYWx0ZWRfX6dzEh3a2Qawi
+ XT7fcvnynd4+a0R4dWefjtKoVK67ODj47IW1th6pEDKTraCMXqJeyVQHU3tJnBq0TetSYqDvcjt
+ FAps4hRvX1T+Zz7vuLkZw0Yw0i/9Dcyz0secvMbqDV20/GozAOEzYl8fo/KZIVU1523ex9Hrb0i
+ R4WDTM6dKLoNsvHH7pBOyNicD0zGcmrfskboYXsNPDpvpPvlWU82v4QCefVrZvdBBK0982c5Uic
+ iIHFgpAUG0C1MY0SRX0D6bee8MlUSelWJMV1yM324NQtLeaRwESPWdCETxrKp7lSxFFhaLRQ/U6
+ wSWRkzAk4512oE5DJc/0mWkbJx38eyNiVgCmYudtawPwqaAWI8r9aXjgqCAf52WRl/XI+MrJVDE
+ XGyp5EpzF7WstV23NtcRXcCrMEGsp3Em4pnJXDKBS99SJ2DaPoMKMYW0CrDx0UcIMw2HBFGrnFr
+ Iq7fzIb6jJmTqixsHjw==
+X-Authority-Analysis: v=2.4 cv=Zckt8MVA c=1 sm=1 tr=0 ts=6a0e0255 cx=c_pps
+ a=N1BjEkVkxJi3uNfLdpvX3g==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22 a=Qe6B47XUAAAA:8
+ a=EUspDBNiAAAA:8 a=5vypnDYfi1zF71tmcu4A:9 a=crWF4MFLhNY0qMRaF8an:22
+ a=QWPKR-PWjQKaio0naagv:22
+X-Proofpoint-GUID: kAdGB7PRRO5uJrymFVNCtcrTye3dpaa0
+X-Proofpoint-ORIG-GUID: kAdGB7PRRO5uJrymFVNCtcrTye3dpaa0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-20_03,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ phishscore=0 bulkscore=0 lowpriorityscore=0 impostorscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605200184
 
-On Wed, May 20, 2026 at 5:01=E2=80=AFPM Rik van Riel <riel@surriel.com> wro=
-te:
->
-> mark_free_pages() walks the buddy allocator's free lists and calls
-> swsusp_set_page_free() on each free page so it is omitted from the
-> hibernation image. After the SPB rework, free pages live on per-
-> superpageblock free lists rather than the zone-level free list, so
-> the existing list_for_each_entry() walk over zone->free_area[order]
-> .free_list[t] found nothing. The hibernation snapshot then treated
-> every free page as needing to be saved, wasting image space and risking
-> OOM during the snapshot.
->
-> Wrap the existing per-page walk in an SPB iteration loop. When the
-> zone has no SPBs (e.g. an unpopulated hotplug zone), fall back to the
-> zone-level free list. The whole function still runs under
-> spin_lock_irqsave(&zone->lock) without drops, so there are no lock-
-> order or hotplug concerns.
->
-> Build-tested as part of the full mm series; kernel/power/snapshot.o
-> compiles cleanly in that build.  An -Werror=3Dreturn-type warning in
-> enough_free_mem() exists on some configurations but is unrelated to
-> this change and predates the SPB series.
->
-> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Pavel Machek <pavel@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Rik van Riel <riel@surriel.com>
-> Assisted-by: Claude:claude-opus-4.7 syzkaller
-> ---
->  kernel/power/snapshot.c | 35 +++++++++++++++++++++++++----------
->  1 file changed, 25 insertions(+), 10 deletions(-)
->
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index a564650734dc..f96885bc46f8 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1270,17 +1270,32 @@ static void mark_free_pages(struct zone *zone)
->         }
->
->         for_each_migratetype_order(order, t) {
-> -               list_for_each_entry(page,
-> -                               &zone->free_area[order].free_list[t], bud=
-dy_list) {
-> -                       unsigned long i;
-> -
-> -                       pfn =3D page_to_pfn(page);
-> -                       for (i =3D 0; i < (1UL << order); i++) {
-> -                               if (!--page_count) {
-> -                                       touch_nmi_watchdog();
-> -                                       page_count =3D WD_PAGE_COUNT;
-> +               unsigned long sb_idx;
-> +               unsigned long nr_lists =3D zone->nr_superpageblocks ? : 1=
-;
-> +
-> +               /*
-> +                * After the SPB rework, free pages live on per-superpage=
-block
-> +                * free lists. Walk every SPB's list for this (order, mt)=
- cell.
-> +                * If the zone has no SPBs (unpopulated zone), fall back =
-to the
-> +                * zone-level list head so that any pre-SPB pages are sti=
-ll
-> +                * marked.
-> +                */
-> +               for (sb_idx =3D 0; sb_idx < nr_lists; sb_idx++) {
-> +                       struct list_head *list =3D zone->nr_superpagebloc=
-ks ?
-> +                               &zone->superpageblocks[sb_idx].free_area[=
-order].free_list[t] :
-> +                               &zone->free_area[order].free_list[t];
-> +
+Revert commit c70f7dcd0921 ("interconnect: qcom: x1e80100: enable QoS
+configuration") because it breaks the ABI without justification what was
+broken and what was not working.  It claims the clocks are needed for
+QoS, which might be correct, but QoS itself is not a mandatory thing for
+the device to operate.
 
-Suppose the code below goes into a separate function returning the
-current page_count value and taking list, buddy_list and page_cout as
-arguments.  Say its name is do_mark_free_pages().
+Fixes: c70f7dcd0921 ("interconnect: qcom: x1e80100: enable QoS configuration")
+Closes: https://krzk.eu/#/builders/102/builds/70/steps/23/logs/warnings__3_
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+ drivers/interconnect/qcom/x1e80100.c | 485 ---------------------------
+ 1 file changed, 485 deletions(-)
 
-> +                       list_for_each_entry(page, list, buddy_list) {
-> +                               unsigned long i;
-> +
-> +                               pfn =3D page_to_pfn(page);
-> +                               for (i =3D 0; i < (1UL << order); i++) {
-> +                                       if (!--page_count) {
-> +                                               touch_nmi_watchdog();
-> +                                               page_count =3D WD_PAGE_CO=
-UNT;
-> +                                       }
-> +                                       swsusp_set_page_free(pfn_to_page(=
-pfn + i));
->                                 }
-> -                               swsusp_set_page_free(pfn_to_page(pfn + i)=
-);
->                         }
->                 }
->         }
-> --
+diff --git a/drivers/interconnect/qcom/x1e80100.c b/drivers/interconnect/qcom/x1e80100.c
+index 8075e0ff2059..2ba2823c7860 100644
+--- a/drivers/interconnect/qcom/x1e80100.c
++++ b/drivers/interconnect/qcom/x1e80100.c
+@@ -173,13 +173,6 @@ static struct qcom_icc_node qhm_qspi = {
+ 	.name = "qhm_qspi",
+ 	.channels = 1,
+ 	.buswidth = 4,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xb000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a1noc_snoc },
+ };
+@@ -188,13 +181,6 @@ static struct qcom_icc_node qhm_qup1 = {
+ 	.name = "qhm_qup1",
+ 	.channels = 1,
+ 	.buswidth = 4,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xc000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a1noc_snoc },
+ };
+@@ -203,13 +189,6 @@ static struct qcom_icc_node xm_sdc4 = {
+ 	.name = "xm_sdc4",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xd000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a1noc_snoc },
+ };
+@@ -218,13 +197,6 @@ static struct qcom_icc_node xm_ufs_mem = {
+ 	.name = "xm_ufs_mem",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xe000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a1noc_snoc },
+ };
+@@ -233,13 +205,6 @@ static struct qcom_icc_node qhm_qup0 = {
+ 	.name = "qhm_qup0",
+ 	.channels = 1,
+ 	.buswidth = 4,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x16000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -248,13 +213,6 @@ static struct qcom_icc_node qhm_qup2 = {
+ 	.name = "qhm_qup2",
+ 	.channels = 1,
+ 	.buswidth = 4,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x11000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -263,13 +221,6 @@ static struct qcom_icc_node qxm_crypto = {
+ 	.name = "qxm_crypto",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x12000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -286,13 +237,6 @@ static struct qcom_icc_node xm_qdss_etr_0 = {
+ 	.name = "xm_qdss_etr_0",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x13000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -301,13 +245,6 @@ static struct qcom_icc_node xm_qdss_etr_1 = {
+ 	.name = "xm_qdss_etr_1",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x14000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -316,13 +253,6 @@ static struct qcom_icc_node xm_sdc2 = {
+ 	.name = "xm_sdc2",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x15000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_a2noc_snoc },
+ };
+@@ -407,13 +337,6 @@ static struct qcom_icc_node alm_gpu_tcu = {
+ 	.name = "alm_gpu_tcu",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x271000 },
+-		.prio = 1,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -422,13 +345,6 @@ static struct qcom_icc_node alm_pcie_tcu = {
+ 	.name = "alm_pcie_tcu",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x27d000 },
+-		.prio = 3,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -437,13 +353,6 @@ static struct qcom_icc_node alm_sys_tcu = {
+ 	.name = "alm_sys_tcu",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x273000 },
+-		.prio = 6,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -461,13 +370,6 @@ static struct qcom_icc_node qnm_gpu = {
+ 	.name = "qnm_gpu",
+ 	.channels = 4,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 4,
+-		.port_offsets = { 0x51000, 0x58000, 0xd1000, 0xd8000 },
+-		.prio = 0,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -476,13 +378,6 @@ static struct qcom_icc_node qnm_lpass = {
+ 	.name = "qnm_lpass",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x275000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 3,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
+ 			&qns_pcie },
+@@ -492,13 +387,6 @@ static struct qcom_icc_node qnm_mnoc_hf = {
+ 	.name = "qnm_mnoc_hf",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x53000, 0xd3000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -507,13 +395,6 @@ static struct qcom_icc_node qnm_mnoc_sf = {
+ 	.name = "qnm_mnoc_sf",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x55000, 0xd5000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -522,13 +403,6 @@ static struct qcom_icc_node qnm_nsp_noc = {
+ 	.name = "qnm_nsp_noc",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x57000, 0xd7000 },
+-		.prio = 0,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 3,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
+ 			&qns_pcie },
+@@ -538,13 +412,6 @@ static struct qcom_icc_node qnm_pcie = {
+ 	.name = "qnm_pcie",
+ 	.channels = 1,
+ 	.buswidth = 64,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x277000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 2,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc },
+ };
+@@ -553,13 +420,6 @@ static struct qcom_icc_node qnm_snoc_sf = {
+ 	.name = "qnm_snoc_sf",
+ 	.channels = 1,
+ 	.buswidth = 64,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x27b000 },
+-		.prio = 2,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 3,
+ 	.link_nodes = { &qns_gem_noc_cnoc, &qns_llcc,
+ 			&qns_pcie },
+@@ -569,13 +429,6 @@ static struct qcom_icc_node xm_gic = {
+ 	.name = "xm_gic",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x27f000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_llcc },
+ };
+@@ -616,13 +469,6 @@ static struct qcom_icc_node qnm_av1_enc = {
+ 	.name = "qnm_av1_enc",
+ 	.channels = 1,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x2f000 },
+-		.prio = 4,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -631,13 +477,6 @@ static struct qcom_icc_node qnm_camnoc_hf = {
+ 	.name = "qnm_camnoc_hf",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x28000, 0x29000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_hf },
+ };
+@@ -646,13 +485,6 @@ static struct qcom_icc_node qnm_camnoc_icp = {
+ 	.name = "qnm_camnoc_icp",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x2a000 },
+-		.prio = 4,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -661,13 +493,6 @@ static struct qcom_icc_node qnm_camnoc_sf = {
+ 	.name = "qnm_camnoc_sf",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x2b000, 0x2c000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -676,13 +501,6 @@ static struct qcom_icc_node qnm_eva = {
+ 	.name = "qnm_eva",
+ 	.channels = 1,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x33000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -691,13 +509,6 @@ static struct qcom_icc_node qnm_mdp = {
+ 	.name = "qnm_mdp",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x2d000, 0x2e000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_hf },
+ };
+@@ -706,13 +517,6 @@ static struct qcom_icc_node qnm_video = {
+ 	.name = "qnm_video",
+ 	.channels = 2,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 2,
+-		.port_offsets = { 0x30000, 0x31000 },
+-		.prio = 0,
+-		.urg_fwd = 1,
+-		.prio_fwd_disable = 0,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -721,13 +525,6 @@ static struct qcom_icc_node qnm_video_cv_cpu = {
+ 	.name = "qnm_video_cv_cpu",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x32000 },
+-		.prio = 4,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -736,13 +533,6 @@ static struct qcom_icc_node qnm_video_v_cpu = {
+ 	.name = "qnm_video_v_cpu",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x34000 },
+-		.prio = 4,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_mem_noc_sf },
+ };
+@@ -783,13 +573,6 @@ static struct qcom_icc_node xm_pcie_3 = {
+ 	.name = "xm_pcie_3",
+ 	.channels = 1,
+ 	.buswidth = 64,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x7000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_north_gem_noc },
+ };
+@@ -798,13 +581,6 @@ static struct qcom_icc_node xm_pcie_4 = {
+ 	.name = "xm_pcie_4",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x8000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_north_gem_noc },
+ };
+@@ -813,13 +589,6 @@ static struct qcom_icc_node xm_pcie_5 = {
+ 	.name = "xm_pcie_5",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x9000 },
+-		.prio = 3,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_north_gem_noc },
+ };
+@@ -828,13 +597,6 @@ static struct qcom_icc_node xm_pcie_0 = {
+ 	.name = "xm_pcie_0",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x9000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_south_gem_noc },
+ };
+@@ -843,13 +605,6 @@ static struct qcom_icc_node xm_pcie_1 = {
+ 	.name = "xm_pcie_1",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xa000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_south_gem_noc },
+ };
+@@ -858,13 +613,6 @@ static struct qcom_icc_node xm_pcie_2 = {
+ 	.name = "xm_pcie_2",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xb000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_south_gem_noc },
+ };
+@@ -873,13 +621,6 @@ static struct qcom_icc_node xm_pcie_6a = {
+ 	.name = "xm_pcie_6a",
+ 	.channels = 1,
+ 	.buswidth = 32,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xc000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_south_gem_noc },
+ };
+@@ -888,13 +629,6 @@ static struct qcom_icc_node xm_pcie_6b = {
+ 	.name = "xm_pcie_6b",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xd000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_pcie_south_gem_noc },
+ };
+@@ -919,13 +653,6 @@ static struct qcom_icc_node qnm_gic = {
+ 	.name = "qnm_gic",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x1c000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_gemnoc_sf },
+ };
+@@ -958,13 +685,6 @@ static struct qcom_icc_node xm_usb2_0 = {
+ 	.name = "xm_usb2_0",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x6000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_north_snoc },
+ };
+@@ -973,13 +693,6 @@ static struct qcom_icc_node xm_usb3_mp = {
+ 	.name = "xm_usb3_mp",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0x7000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_north_snoc },
+ };
+@@ -988,13 +701,6 @@ static struct qcom_icc_node xm_usb3_0 = {
+ 	.name = "xm_usb3_0",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xa000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1003,13 +709,6 @@ static struct qcom_icc_node xm_usb3_1 = {
+ 	.name = "xm_usb3_1",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xb000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1018,13 +717,6 @@ static struct qcom_icc_node xm_usb3_2 = {
+ 	.name = "xm_usb3_2",
+ 	.channels = 1,
+ 	.buswidth = 8,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xc000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1033,13 +725,6 @@ static struct qcom_icc_node xm_usb4_0 = {
+ 	.name = "xm_usb4_0",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xd000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1048,13 +733,6 @@ static struct qcom_icc_node xm_usb4_1 = {
+ 	.name = "xm_usb4_1",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xe000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1063,13 +741,6 @@ static struct qcom_icc_node xm_usb4_2 = {
+ 	.name = "xm_usb4_2",
+ 	.channels = 1,
+ 	.buswidth = 16,
+-	.qosbox = &(const struct qcom_icc_qosbox) {
+-		.num_ports = 1,
+-		.port_offsets = { 0xf000 },
+-		.prio = 2,
+-		.urg_fwd = 0,
+-		.prio_fwd_disable = 1,
+-	},
+ 	.num_links = 1,
+ 	.link_nodes = { &qns_aggre_usb_south_snoc },
+ };
+@@ -1795,21 +1466,11 @@ static struct qcom_icc_node * const aggre1_noc_nodes[] = {
+ 	[SLAVE_A1NOC_SNOC] = &qns_a1noc_snoc,
+ };
+ 
+-static const struct regmap_config x1e80100_aggre1_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x14400,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_aggre1_noc = {
+-	.config = &x1e80100_aggre1_noc_regmap_config,
+ 	.nodes = aggre1_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(aggre1_noc_nodes),
+ 	.bcms = aggre1_noc_bcms,
+ 	.num_bcms = ARRAY_SIZE(aggre1_noc_bcms),
+-	.qos_requires_clocks = true,
+ };
+ 
+ static struct qcom_icc_bcm * const aggre2_noc_bcms[] = {
+@@ -1827,16 +1488,7 @@ static struct qcom_icc_node * const aggre2_noc_nodes[] = {
+ 	[SLAVE_A2NOC_SNOC] = &qns_a2noc_snoc,
+ };
+ 
+-static const struct regmap_config x1e80100_aggre2_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x1c400,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_aggre2_noc = {
+-	.config = &x1e80100_aggre2_noc_regmap_config,
+ 	.nodes = aggre2_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(aggre2_noc_nodes),
+ 	.bcms = aggre2_noc_bcms,
+@@ -1921,16 +1573,7 @@ static struct qcom_icc_node * const cnoc_cfg_nodes[] = {
+ 	[SLAVE_TCU] = &xs_sys_tcu_cfg,
+ };
+ 
+-static const struct regmap_config x1e80100_cnoc_cfg_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x6600,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_cnoc_cfg = {
+-	.config = &x1e80100_cnoc_cfg_regmap_config,
+ 	.nodes = cnoc_cfg_nodes,
+ 	.num_nodes = ARRAY_SIZE(cnoc_cfg_nodes),
+ 	.bcms = cnoc_cfg_bcms,
+@@ -1960,16 +1603,7 @@ static struct qcom_icc_node * const cnoc_main_nodes[] = {
+ 	[SLAVE_PCIE_6B] = &xs_pcie_6b,
+ };
+ 
+-static const struct regmap_config x1e80100_cnoc_main_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x14400,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_cnoc_main = {
+-	.config = &x1e80100_cnoc_main_regmap_config,
+ 	.nodes = cnoc_main_nodes,
+ 	.num_nodes = ARRAY_SIZE(cnoc_main_nodes),
+ 	.bcms = cnoc_main_bcms,
+@@ -1999,16 +1633,7 @@ static struct qcom_icc_node * const gem_noc_nodes[] = {
+ 	[SLAVE_MEM_NOC_PCIE_SNOC] = &qns_pcie,
+ };
+ 
+-static const struct regmap_config x1e80100_gem_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x311200,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_gem_noc = {
+-	.config = &x1e80100_gem_noc_regmap_config,
+ 	.nodes = gem_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(gem_noc_nodes),
+ 	.bcms = gem_noc_bcms,
+@@ -2023,16 +1648,7 @@ static struct qcom_icc_node * const lpass_ag_noc_nodes[] = {
+ 	[SLAVE_LPASS_GEM_NOC] = &qns_lpass_ag_noc_gemnoc,
+ };
+ 
+-static const struct regmap_config x1e80100_lpass_ag_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0xe080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_lpass_ag_noc = {
+-	.config = &x1e80100_lpass_ag_noc_regmap_config,
+ 	.nodes = lpass_ag_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(lpass_ag_noc_nodes),
+ 	.bcms = lpass_ag_noc_bcms,
+@@ -2048,16 +1664,7 @@ static struct qcom_icc_node * const lpass_lpiaon_noc_nodes[] = {
+ 	[SLAVE_LPIAON_NOC_LPASS_AG_NOC] = &qns_lpass_aggnoc,
+ };
+ 
+-static const struct regmap_config x1e80100_lpass_lpiaon_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x19080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_lpass_lpiaon_noc = {
+-	.config = &x1e80100_lpass_lpiaon_noc_regmap_config,
+ 	.nodes = lpass_lpiaon_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(lpass_lpiaon_noc_nodes),
+ 	.bcms = lpass_lpiaon_noc_bcms,
+@@ -2072,16 +1679,7 @@ static struct qcom_icc_node * const lpass_lpicx_noc_nodes[] = {
+ 	[SLAVE_LPICX_NOC_LPIAON_NOC] = &qns_lpi_aon_noc,
+ };
+ 
+-static const struct regmap_config x1e80100_lpass_lpicx_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x3a200,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_lpass_lpicx_noc = {
+-	.config = &x1e80100_lpass_lpicx_noc_regmap_config,
+ 	.nodes = lpass_lpicx_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(lpass_lpicx_noc_nodes),
+ 	.bcms = lpass_lpicx_noc_bcms,
+@@ -2126,16 +1724,7 @@ static struct qcom_icc_node * const mmss_noc_nodes[] = {
+ 	[SLAVE_SERVICE_MNOC] = &srvc_mnoc,
+ };
+ 
+-static const struct regmap_config x1e80100_mmss_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x5b800,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_mmss_noc = {
+-	.config = &x1e80100_mmss_noc_regmap_config,
+ 	.nodes = mmss_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(mmss_noc_nodes),
+ 	.bcms = mmss_noc_bcms,
+@@ -2151,16 +1740,7 @@ static struct qcom_icc_node * const nsp_noc_nodes[] = {
+ 	[SLAVE_CDSP_MEM_NOC] = &qns_nsp_gemnoc,
+ };
+ 
+-static const struct regmap_config x1e80100_nsp_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0xe080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_nsp_noc = {
+-	.config = &x1e80100_nsp_noc_regmap_config,
+ 	.nodes = nsp_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(nsp_noc_nodes),
+ 	.bcms = nsp_noc_bcms,
+@@ -2177,16 +1757,7 @@ static struct qcom_icc_node * const pcie_center_anoc_nodes[] = {
+ 	[SLAVE_ANOC_PCIE_GEM_NOC] = &qns_pcie_mem_noc,
+ };
+ 
+-static const struct regmap_config x1e80100_pcie_center_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x7000,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_pcie_center_anoc = {
+-	.config = &x1e80100_pcie_center_anoc_regmap_config,
+ 	.nodes = pcie_center_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(pcie_center_anoc_nodes),
+ 	.bcms = pcie_center_anoc_bcms,
+@@ -2203,16 +1774,7 @@ static struct qcom_icc_node * const pcie_north_anoc_nodes[] = {
+ 	[SLAVE_PCIE_NORTH] = &qns_pcie_north_gem_noc,
+ };
+ 
+-static const struct regmap_config x1e80100_pcie_north_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x9080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_pcie_north_anoc = {
+-	.config = &x1e80100_pcie_north_anoc_regmap_config,
+ 	.nodes = pcie_north_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(pcie_north_anoc_nodes),
+ 	.bcms = pcie_north_anoc_bcms,
+@@ -2231,16 +1793,7 @@ static struct qcom_icc_node * const pcie_south_anoc_nodes[] = {
+ 	[SLAVE_PCIE_SOUTH] = &qns_pcie_south_gem_noc,
+ };
+ 
+-static const struct regmap_config x1e80100_pcie_south_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0xd080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_pcie_south_anoc = {
+-	.config = &x1e80100_pcie_south_anoc_regmap_config,
+ 	.nodes = pcie_south_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(pcie_south_anoc_nodes),
+ 	.bcms = pcie_south_anoc_bcms,
+@@ -2262,16 +1815,7 @@ static struct qcom_icc_node * const system_noc_nodes[] = {
+ 	[SLAVE_SNOC_GEM_NOC_SF] = &qns_gemnoc_sf,
+ };
+ 
+-static const struct regmap_config x1e80100_system_noc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x1c080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_system_noc = {
+-	.config = &x1e80100_system_noc_regmap_config,
+ 	.nodes = system_noc_nodes,
+ 	.num_nodes = ARRAY_SIZE(system_noc_nodes),
+ 	.bcms = system_noc_bcms,
+@@ -2287,16 +1831,7 @@ static struct qcom_icc_node * const usb_center_anoc_nodes[] = {
+ 	[SLAVE_USB_NOC_SNOC] = &qns_aggre_usb_snoc,
+ };
+ 
+-static const struct regmap_config x1e80100_usb_center_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x8800,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_usb_center_anoc = {
+-	.config = &x1e80100_usb_center_anoc_regmap_config,
+ 	.nodes = usb_center_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(usb_center_anoc_nodes),
+ 	.bcms = usb_center_anoc_bcms,
+@@ -2312,21 +1847,11 @@ static struct qcom_icc_node * const usb_north_anoc_nodes[] = {
+ 	[SLAVE_AGGRE_USB_NORTH] = &qns_aggre_usb_north_snoc,
+ };
+ 
+-static const struct regmap_config x1e80100_usb_north_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0x7080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_usb_north_anoc = {
+-	.config = &x1e80100_usb_north_anoc_regmap_config,
+ 	.nodes = usb_north_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(usb_north_anoc_nodes),
+ 	.bcms = usb_north_anoc_bcms,
+ 	.num_bcms = ARRAY_SIZE(usb_north_anoc_bcms),
+-	.qos_requires_clocks = true,
+ };
+ 
+ static struct qcom_icc_bcm * const usb_south_anoc_bcms[] = {
+@@ -2342,21 +1867,11 @@ static struct qcom_icc_node * const usb_south_anoc_nodes[] = {
+ 	[SLAVE_AGGRE_USB_SOUTH] = &qns_aggre_usb_south_snoc,
+ };
+ 
+-static const struct regmap_config x1e80100_usb_south_anoc_regmap_config = {
+-	.reg_bits = 32,
+-	.reg_stride = 4,
+-	.val_bits = 32,
+-	.max_register = 0xf080,
+-	.fast_io = true,
+-};
+-
+ static const struct qcom_icc_desc x1e80100_usb_south_anoc = {
+-	.config = &x1e80100_usb_south_anoc_regmap_config,
+ 	.nodes = usb_south_anoc_nodes,
+ 	.num_nodes = ARRAY_SIZE(usb_south_anoc_nodes),
+ 	.bcms = usb_south_anoc_bcms,
+ 	.num_bcms = ARRAY_SIZE(usb_south_anoc_bcms),
+-	.qos_requires_clocks = true,
+ };
+ 
+ static const struct of_device_id qnoc_of_match[] = {
+-- 
+2.53.0
 
-Then, what you seem to be wanting to do is roughly
-
-if (zone->nr_superpageblocks =3D=3D 0) {
-        do_mark_free_pages(&zone->free_area[order].free_list[t],
-buddy_list, page_count);
-} else {
-        for (sb_idx =3D 0; sb_idx < zone->nr_superpageblocks; sb_idx++) {
-                page_count =3D
-do_mark_free_pages(&zone->superpageblocks[sb_idx].free_area[order].free_lis=
-t[t],
-
-   buddy_list, page_count);
-        }
-}
-
-which would be kind of easier to follow.
