@@ -1,164 +1,271 @@
-Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazon11011012.outbound.protection.outlook.com [40.107.74.12])
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 307F83D333A;
-	Wed, 20 May 2026 16:58:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.74.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779296331; cv=fail; b=TtIzyWWmbSdO59lFqEyFdgrVJ5B62oiieicIxjwBdDk7f25KPDj925DKOUJcF1JAULzjYI7ZJ7hJU+ijk3v1z1n4dwONfxTNQCLyAVxLzgI1f2NXNK5L8ZrO9GwRI2UltkCJgR6iINwrfCoDeeOg9SJ+pt4iFwK8Aj3C9ZDr7rk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779296331; c=relaxed/simple;
-	bh=vZJ3R+CACKazyW0kATVdwCmL4A8ic4x2QmpaYbHZVkc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZBTFZUbvXtNWiBjEu/eLMrI4/HnZKbQOowltqxG/hEZfHbL1mc0wAdv4IRNe/tQMWolbYtcrq+d55QEK71gvWmLNvXtzDxm2gtMgD0X8C21+pkOVhiJrLQVPuvhMR7jIIp03wEGkbhyTE19KsrSrhKGfYONCvX5mEIaw1Aba6L4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com; spf=pass smtp.mailfrom=renesas.com; dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b=nbMBmLKK; arc=fail smtp.client-ip=40.107.74.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=renesas.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=renesas.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 610783F20FA
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 17:51:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779299479; cv=none; b=d28fFTZfvhoSG1jNoqhJWtUsquFA0t62CxBLVE7PmHL8+i2ZFgBuvHuIV9aqgZZfBLPcIebSdgiRKwRprgTDM/yJ5DLYBXxVBakClfxbozmA2MS4Kokkhqym1NXe/YaIsD3yJzEtEQ3HFMFe1S0F2Fa0SCzL+CZsaxh4/EJasuE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779299479; c=relaxed/simple;
+	bh=EDn9tZ5+fUuBBKe3xoJ2cTQEWFARqiy4G3gqZ26/v0s=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=CEiVngpHRsVGrFF/9+ubXqULtJWoHcaIVCZWeyQKayueEdqSGi5RXkLZhlJVPN+6vJVRCqsBJhsTc6BgJ5wXl4vLWbprNLsXMOG1A9GrmndvRD92XGYErdCeDdT0PZYqjk7kXIx8KRcmqsnCSm6xTQ0FYOSdCsVhFkwrm9/II/Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QM+UTv5O; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ZeeR8inz; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesas.com header.i=@renesas.com header.b="nbMBmLKK"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=drfYa7Ivlyu4uGA5Ey99vTeH/rBx90IATpQdPSqjr7KePr0hbIfrli/bkDwBM5DVzrbIsossjyUCLB2/6T1r+7tY2vfOWiz6is2EaJCsoPaGQf/kq/OCi7dtVvsIv4FSrBKvc840PtB9c/4dZkHx+VGsYdP+bNBY7iyKVZ5XCAxt4yQE37ZSv0QflkJmR8cLnxb/TBLHp+a4T1B8QYG6Ac3edLHApcnhKjCkPzBq9mNYgyXPfi+5TPUSZe/z2N+R3r4PTdSND+PgUx1galdE1+zTRsIqoYq6cQtHxVN0KGXvBuOYko/lr7AK6lEQbFJuAe3+epkoiOVir9CAsZfQOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fInPvNYQ/2OlV8GHYfD0EFRsfiVXeUcJ0+rQjq0NDQU=;
- b=m89ozxbn+h8ckZ7FUFFEX1Sb3Ot8Swa0Mp3VawiiEu4C0WmdwJ0JrQxlyo42J62RrJw0bo/EF4y0ZDzfNBU0vMEPfrKzDp5Ywo/L8iiRk3DqLtyOoWFzkM8+xfZf5twyX2KDF5ePwMD/DqyUBPvRICkCr768fIwLfjaWuoncwTrSf4K4Jw0o8Tt8RlcDr4pKcAujTJInBcJQO13ULX1pvtr3T22XtIQnFwPMieGndKYntqZgmXrAm4Xiqdxlu2ROI4kUblcdC0azzSgrqPTHm48akp5c9muwq8RY7+SnX+bVO6Nnl5SZG4yIv189xnqIpFPI3lhRgBQNv/IUF3AKdA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 8.62.32.50) smtp.rcpttodomain=arm.com smtp.mailfrom=renesas.com; dmarc=pass
- (p=none sp=none pct=100) action=none header.from=renesas.com; dkim=none
- (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=renesas.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fInPvNYQ/2OlV8GHYfD0EFRsfiVXeUcJ0+rQjq0NDQU=;
- b=nbMBmLKKOy6za+ed7BcvXt3Pxn+Rxrtk2gg6HUOrlLyn3RGWzNThC5rOEZonCPdUgDjai7AH+rfJyIcJxnQ49AeW1EUe9rRm/PG2CkbTIMemWAmGoVc4E3BXnlyeA8ROgIjo2OXwbqpVmXgwHWnkTb76OQL7VSjR4CtSA7UcNCw=
-Received: from OS0PR01CA0068.jpnprd01.prod.outlook.com (2603:1096:604:99::15)
- by OS3PR01MB7924.jpnprd01.prod.outlook.com (2603:1096:604:1bd::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.14; Wed, 20 May
- 2026 16:58:44 +0000
-Received: from OS3PEPF0000003C.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:604:99:cafe::38) by OS0PR01CA0068.outlook.office365.com
- (2603:1096:604:99::15) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.16 via Frontend Transport; Wed, 20
- May 2026 16:58:44 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 8.62.32.50)
- smtp.mailfrom=renesas.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=renesas.com;
-Received-SPF: Pass (protection.outlook.com: domain of renesas.com designates
- 8.62.32.50 as permitted sender) receiver=protection.outlook.com;
- client-ip=8.62.32.50; helo=ejcrelay004p.adwin.renesas.com; pr=E
-Received: from ejcrelay004p.adwin.renesas.com (8.62.32.50) by
- OS3PEPF0000003C.mail.protection.outlook.com (10.167.240.5) with Microsoft
- SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.21.48.11
- via Frontend Transport; Wed, 20 May 2026 16:58:44 +0000
-Received: from vm01.adwin.renesas.com (DEU-5CG20946WF.adwin.renesas.com [10.226.92.217])
-	by ejcrelay004p.adwin.renesas.com (Postfix) with ESMTP id E5D3A3000159;
-	Thu, 21 May 2026 01:58:41 +0900 (JST)
-From: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
-To: rafael@kernel.org,
-	daniel.lezcano@kernel.org,
-	rui.zhang@intel.com,
-	lukasz.luba@arm.com
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Ovidiu Panait <ovidiu.panait.rb@renesas.com>
-Subject: [PATCH mainline-linux] thermal/core: Populate max_state before setting up cooling dev sysfs
-Date: Wed, 20 May 2026 16:58:34 +0000
-Message-ID: <20260520165835.90974-1-ovidiu.panait.rb@renesas.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QM+UTv5O";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ZeeR8inz"
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64KFKV5h4115166
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 17:51:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	mc/+ti7MrgQz8y3VEqUCtk+lZgtdhsk+7nKCgcRoRzc=; b=QM+UTv5OhjXtuCSi
+	KN1xd8tqFVIXPKAg5jpokGrnXAf0a1U4PUDSH3RX5ZcUSIfS/ljobzI66f/YMPd5
+	OeW7owetPzdc/VIDYIMFX5XxBnVHgbg1qEhvVvggSHh2Dt/Ai4ugHZN/Td7jCcq9
+	qyP882YaEvZp+IISYEfjT1pwzbZU9wdrEhAxs/IPN1KoC3Hi34gmT1kRn4vpCfso
+	bFoTCdn+DayrQ9/LCEQJ/yNsLfAEbMpX8BsqZXr3sSIunXz2D9AyUARKzHRV8lI0
+	3pkoMnRs95y7EPSnM6BdMWD7BEOab50OdNnC7yFkBK9+Zeqi1ejGSw4ewFaAHUWU
+	uy/sAw==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e99w0j5nh-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 17:51:16 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2ba3245a43dso53764735ad.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2026 10:51:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779299475; x=1779904275; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=mc/+ti7MrgQz8y3VEqUCtk+lZgtdhsk+7nKCgcRoRzc=;
+        b=ZeeR8inzCduryRtM+EI6j79s1QmDbtHjB0q7DV6gz/oujudf8o+kyFtou5z9yi0BNd
+         vTgkcqYwSK94MED1GspVtGAzunggJGNXXE9iecQaznKAkwrxNjql7PjvnG68+vLf40mv
+         MS2bHv9ijHNxJK3epFR1c0u4FRVkINXRwhyH/10oWILkcTVb7yXFuBvByI/Sj8KOGsTB
+         zN8lxpdCtUZZkcGVxyh8bo/Vp4KWFWgnBawKO6o1Vl7kbbjnRtTXw+XongU4vmppGtsP
+         ViBXvKS3UgM5Dk34bojYxdJBkGR/5k0690AtYbRRU6aHx0aU5aqnLjn2wrG8BPrcMyQa
+         VxAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779299475; x=1779904275;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :cc:to:from:subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mc/+ti7MrgQz8y3VEqUCtk+lZgtdhsk+7nKCgcRoRzc=;
+        b=k2TdwO3G31718+AQguTH6QjbA92tiumDiS1Mq3R+8g5fjTgPYkb+m0DWPDqwBMb2m8
+         Tyh9tfHxLgG9P3t8p/UccukO1ULXFnaiGZvl4EGQxDt5ChmwZUPvB3RDf5MCmMMjn9Ys
+         w1y12tX9TNjLfuTUUEP+e+w3vGqoyTL00+AVmXaR9WGIqGeLF19f1fwUYk+Z1yAQsulh
+         ajg4lkB+rWyg9Z8zMVgVGZty7iY51U1TWVSCFvCrfYrztHPptYY3+ALUtn6gec3E9CZJ
+         tAmlxMD9C7J/7ACBgDkjNs1CrXGACBPmrrKMF2mJZY9p9jdbR0HF8vn+bu87hX//SIUX
+         GupQ==
+X-Gm-Message-State: AOJu0YyEWVEr3MX9jESTrsz2ifIo5PUKVsw+K4eU4OthrjP96WA/76yy
+	FyjLrwbGyMdf03R8+sY87mxqHDXZIA119JAoQAFqo1+f1u+SwavLtJi4Q+v54ODWKutmQtDU/5s
+	zFtc1jxjIp9zQtPUJlkESzIhzTVcd+UY7LpK6s6SVHtsOhMSYHNsdnaduA1nCTQ==
+X-Gm-Gg: Acq92OGWUsAfz+jAyYDs9JxBhTdIuALcVwYvoaYzesvtoPUEOaDSY9+nxGhcxqDf92U
+	kPPj3PwXPQqwisurPU3amf+lHgLaEIVqFMdVkGlcrnNAoOKtvL4AwRD0TI5QY4RZs75RGwWYOy4
+	0vR8vy2O4/leQNUMK3/DTZ93LjKWfRaZ8WoIldBWHlpDFIpKadK+P9kNLdBVc2121dGXYFF5mVJ
+	C4jIRGhiqtHnaULs1i1jmiOyLOFOUCkbWdCkq/kym0eF1e9oWPjL5roVrHaEyQvG7XuPLpHH30M
+	yFp3CVncMLWqoRm2vayA5GnJNofKUuJxsFVeGmvlDzdWfFjfyrFbu9ydGGDqfscU4dZ88RxxfCa
+	HZ7pQ/2LZxXuv8fBJJxh6Vf07dTXasOCKkJs3SmTvP956N48MPRCP5Qm+lGQiEtwqMA5gZVsCRu
+	G44HNoGhR4YDkEsGO5
+X-Received: by 2002:a17:903:2ecb:b0:2bd:936c:8155 with SMTP id d9443c01a7336-2bd936c85b3mr230398905ad.13.1779299475119;
+        Wed, 20 May 2026 10:51:15 -0700 (PDT)
+X-Received: by 2002:a17:903:2ecb:b0:2bd:936c:8155 with SMTP id d9443c01a7336-2bd936c85b3mr230398345ad.13.1779299474561;
+        Wed, 20 May 2026 10:51:14 -0700 (PDT)
+Received: from ?IPV6:2405:201:c408:b079:35d3:6970:1f3c:72e2? ([2405:201:c408:b079:35d3:6970:1f3c:72e2])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5bd5f2dcsm225979395ad.13.2026.05.20.10.51.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 20 May 2026 10:51:14 -0700 (PDT)
+Message-ID: <b16ab4d5-40d0-4438-8fab-6cff3fa6845c@oss.qualcomm.com>
+Date: Wed, 20 May 2026 23:21:02 +0530
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
+ cells
+From: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+To: Bartosz Golaszewski <brgl@kernel.org>, Lee Jones <lee@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        devicetree@vger.kernel.org,
+        Florian Fainelli
+ <florian.fainelli@broadcom.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+        Andre Draszik <andre.draszik@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+        Srinivas Kandagatla <srini@kernel.org>,
+        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@kernel.org>,
+        Christian Loehle <christian.loehle@arm.com>,
+        Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+        Andy Yan <andy.yan@rock-chips.com>,
+        Matthias Brugger
+ <matthias.bgg@gmail.com>,
+        John Stultz <john.stultz@linaro.org>,
+        Moritz Fischer <moritz.fischer@ettus.com>,
+        Sudeep Holla <sudeep.holla@kernel.org>
+References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
+ <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
+ <CAMRc=Mde7Y3CQ3yi=U+999JyHTNacebiK8jJhHuYBGaqn59yYg@mail.gmail.com>
+ <f604833d-b333-4514-91fa-3cf95f99f9e7@oss.qualcomm.com>
+Content-Language: en-US
+In-Reply-To: <f604833d-b333-4514-91fa-3cf95f99f9e7@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: OS3PEPF0000003C:EE_|OS3PR01MB7924:EE_
-Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 3ee805af-6141-4fcd-265b-08deb6910d61
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|36860700016|82310400026|376014|18002099003|56012099003|11063799006|6133799003;
-X-Microsoft-Antispam-Message-Info:
-	tnjzP+55zs9AXGgnv025eOyU37Gp5K9ibqowyWCPUBM7Xt6sjQeT5lHePmkwY4wUW68+wbm15RJuxbA5fU/edz0v/6TVz9JgsfA1dpMAwPW7tn3h9rIi5qbDMJvozlLx7iZnaFnKcPjudhg3r1RALW4jXUwzzMNeDaBs/uFDs2gopdVN2L69FxVLEog2MHWNYwvYKdMquOK72t189vVEWfCjGCMjCJlxW1qdOlHbNf33jCRADMgcF5+fHa6dLpGMVY14ZISQf87MkjAlcZ0713VMDuX8fpf36Sh6o47cVt0Cr9r3pgXXxvCq/eygJOHBFeQl+nVBJvhEqjH+wfZMir4uGR3jr4Qtj8vcknulOkFoR5a3ZHHFKYgisCgmpxKCHqlgpU1V6kzr7gNcv2Pk2tzvJsZ4MZ0OdXkAfL4sUb0ZGkDeQuH9B97N1qzkC5mwwVbXMM/mB2SJvXPB9/p32EMuy9lH+LpUwRcaQn5e8kT1agP5BEEYigpG/zAvqwDOcpxHJ05JPTGMvTBFm7r4oqJQwBnj6q4ISsxka/kqtfxThnGQ7sPEweVO0zUy1PLfseSKfGUgcKtFmVu6zQGogRusmUgUlcwl6K07AyRja4yKwTU2IZ4mc7aSq3d6SbmlDTFwoTw3Ok5HXWBmE4qTFArS5w3bAW+O/Rzl1oY8N/RPIdSJ6cCr33lqUTDDCdcYDOMzyIxNzwfsBRCdIk2u4LdvoLPLnrz9HlZkqQsVle4=
-X-Forefront-Antispam-Report:
-	CIP:8.62.32.50;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:ejcrelay004p.adwin.renesas.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(36860700016)(82310400026)(376014)(18002099003)(56012099003)(11063799006)(6133799003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	0X274HDYQ/QuD/BASw391sdOU4lfcL4NehQNoAvoX/x2/wiDSblmM7owAeMFLsy2Eaw+xG6UyHXBBRxHs+dNOzMJze2hoiv0S0+xM+VIbwAI/LQLOBWsSyPZ3DiIMV56k6OAbSutzvI6NgApi8gfzziDgXfjl9EzyjFxT2Ci19x10iUH7LdfUhanYYUIgihepBmDOYMQ7HU13NHku3L4/xRw/GXgng6WRHRTVnwM/ijeXXvqR7uvD4Rl9h9w39UYz1HFHIawNQFyARC3S7P89WGuOMavJ18WYDnrqa0TIpQmYn3avbR0Gm3T3pWXKi7QCKrx0HdEU9e4uB781CW5zScSq9gtBjvHQI0d5OMTPHmIFOxU7lw5wGaf8QBN8hvizY6DVJTGLwpUaf9eA8VcffqfnQrwpmrR4xP+qNBuyyfENbC5mQ5fC6zhJFOsm7JY
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 May 2026 16:58:44.3512
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3ee805af-6141-4fcd-265b-08deb6910d61
-X-MS-Exchange-CrossTenant-Id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=53d82571-da19-47e4-9cb4-625a166a4a2a;Ip=[8.62.32.50];Helo=[ejcrelay004p.adwin.renesas.com]
-X-MS-Exchange-CrossTenant-AuthSource: OS3PEPF0000003C.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: OS3PR01MB7924
+X-Proofpoint-ORIG-GUID: Klll93oADissdTBGmMl8PUgbpFLycClR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIwMDE3MiBTYWx0ZWRfXzJqWc/IB5JhU
+ jGqCpBhKCRLRfSmqHvYVOuGOsf/BXXP7hK+lQFrQiZZOiVW96HxAVRbLB/UL4D7sNkSh6vvQknR
+ Wv5C11EQpKar6q9Vid9Tg7zEqNUrexuni9jDET1So8OjF3PDbLpGW9oz0QubQSu0/26biE3tvPI
+ dg6NheIXFo5xbQkw88sDzUQ5uFhOADbvCusRlKn6LcYUNoKRDhulYh5MOtzgFCr7xT6i2nBIwk7
+ EpgOvvUS3x4gLum1n0Hhigz2ebvO2UD/dgk9fXmN2P4EHyZydrrrKRM4Vua/9/QhWaXNISKtKgM
+ /c09NbKH5IvRdYTSQ8SdIKAF3w8iKZQdadz71DWqs82kporwWYdlAiUmhlwZTVktGE2JRHtMBTL
+ GwK0PEjULIAPjm4J4DluzRMLLSc//KdDwQjmGzIe+FOXlWBl4nz7D6ubip8ZjKQ/IQnK4OpFBhD
+ +Qhqx16iDljbdBp7eew==
+X-Authority-Analysis: v=2.4 cv=RZigzVtv c=1 sm=1 tr=0 ts=6a0df494 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=EUspDBNiAAAA:8
+ a=UQidBoyNrwidYc1BrrYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=GvdueXVYPmCkWapjIL-Q:22
+X-Proofpoint-GUID: Klll93oADissdTBGmMl8PUgbpFLycClR
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-20_03,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 suspectscore=0 lowpriorityscore=0 adultscore=0 clxscore=1015
+ priorityscore=1501 malwarescore=0 impostorscore=0 bulkscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605200172
 
-Since commit 13f4e660a126 ("thermal/core:
-Split __thermal_cooling_device_register() into two functions"),
-thermal_cooling_device_setup_sysfs() is called before the
-->get_max_state() callback in thermal_cooling_device_add().
-However, cooling_device_stats_setup() allocates space based on
-cdev->max_state, which is not initialized at that point.
 
-With CONFIG_THERMAL_STATISTICS=y, an out of bounds access happens
-inside thermal_cooling_device_stats_update(), followed by a kernel
-crash:
 
-Unable to handle kernel paging request at virtual address ffff800081329e60
-Call trace:
- queued_spin_lock_slowpath+0x1cc/0x320 (P)
- thermal_cooling_device_stats_update+0x28/0xa4
- __thermal_cdev_update+0x74/0x88
- thermal_cdev_update+0x44/0x58
- step_wise_manage+0x1b8/0x300
- __thermal_zone_device_update+0x270/0x414
- thermal_zone_device_check+0x28/0x40
- process_one_work+0x150/0x290
- worker_thread+0x18c/0x300
- kthread+0x114/0x120
- ret_from_fork+0x10/0x20
+On 18-05-2026 22:11, Shivendra Pratap wrote:
+> 
+> 
+> On 18-05-2026 14:27, Bartosz Golaszewski wrote:
+>> On Thu, 14 May 2026 16:25:49 +0200, Shivendra Pratap
+>> <shivendra.pratap@oss.qualcomm.com> said:
+>>> MFD core has no way to register a child device using an explicit 
+>>> firmware
+>>> node. This prevents drivers from registering child nodes when those 
+>>> nodes
+>>> do not define a compatible string. One such example is the PSCI
+>>> "reboot-mode" node, which omits a compatible string as it describes
+>>> boot-states provided by the underlying firmware.
+>>>
+>>> Extend struct mfd_cell with a callback that allows drivers to provide an
+>>> explicit firmware node. The node is added to the MFD child device during
+>>> registration when none is assigned by device tree, ACPI, or software
+>>> matching.
+>>>
+>>> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+>>> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+>>> ---
+>>>   drivers/mfd/mfd-core.c   | 30 ++++++++++++++++++++++++++++++
+>>>   include/linux/mfd/core.h | 14 ++++++++++++++
+>>>   2 files changed, 44 insertions(+)
+>>>
+>>> diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+>>> index 
+>>> 7aa32b90cf1eb7fa0a05bf3dc506e60a262c9850..cc2a2a924d6d3044e29a9f864b536ee325ed797b 100644
+>>> --- a/drivers/mfd/mfd-core.c
+>>> +++ b/drivers/mfd/mfd-core.c
+>>> @@ -10,6 +10,7 @@
+>>>   #include <linux/kernel.h>
+>>>   #include <linux/platform_device.h>
+>>>   #include <linux/acpi.h>
+>>> +#include <linux/fwnode.h>
+>>>   #include <linux/list.h>
+>>>   #include <linux/property.h>
+>>>   #include <linux/mfd/core.h>
+>>> @@ -148,6 +149,11 @@ static int mfd_match_of_node_to_dev(struct 
+>>> platform_device *pdev,
+>>>       return 0;
+>>>   }
+>>>
+>>> +static void mfd_child_fwnode_put(void *data)
+>>> +{
+>>> +    fwnode_handle_put(data);
+>>> +}
+>>
+>> Ah, this seems to answer my previous question, but...
+>>
+>>> +
+>>>   static int mfd_add_device(struct device *parent, int id,
+>>>                 const struct mfd_cell *cell,
+>>>                 struct resource *mem_base,
+>>> @@ -156,6 +162,7 @@ static int mfd_add_device(struct device *parent, 
+>>> int id,
+>>>       struct resource *res;
+>>>       struct platform_device *pdev;
+>>>       struct mfd_of_node_entry *of_entry, *tmp;
+>>> +    struct fwnode_handle *fwnode;
+>>>       bool disabled = false;
+>>>       int ret = -ENOMEM;
+>>>       int platform_id;
+>>> @@ -224,6 +231,29 @@ static int mfd_add_device(struct device *parent, 
+>>> int id,
+>>>
+>>>       mfd_acpi_add_device(cell, pdev);
+>>>
+>>> +    if (!pdev->dev.fwnode && cell->get_child_fwnode) {
+>>> +        fwnode = cell->get_child_fwnode(parent);
+>>> +        if (fwnode) {
+>>> +            device_set_node(&pdev->dev, fwnode);
+>>> +
+>>> +            /*
+>>> +             * platform_device_release() drops only of_node refs.
+>>
+>> Which is a separate problem we're discussing elsewhere. It should 
+>> probably drop
+>> the fwnode reference it holds, not the one of of_node.
+>>
+>>> +             * Track non-OF fwnodes explicitly so they are put on
+>>> +             * all teardown paths.
+>>> +             */
+>>> +            if (!to_of_node(fwnode)) {
+>>> +                ret = devm_add_action(&pdev->dev,
+>>> +                              mfd_child_fwnode_put,
+>>> +                              fwnode);
+>>
+>> What if the device never gets bound to the driver? The release will 
+>> never be
+>> called, this is why it's wrong to schedule devres actions for unbound 
+>> devices
+>> and one of the reasons for patch 1 in this series.
+>>
+>> What I suggest for now is: in tear-down path: see if the cell has the
+>> get_child_fwnode() callback and - if so - drop the reference. Add a 
+>> big, fat
+>> comment saying that this must be removed if we decide to switch to 
+>> dropping the
+>> device's fwnode reference in platform driver core which may happen soon.
+> 
+> Ack. sure. lets me work it out.
 
-To fix this, restore the original ordering of ->get_max_state() and
-thermal_cooling_device_setup_sysfs(). Note that with this reordering,
-the dev_set_name() and ->get_max_state() error paths now reach
-thermal_cdev_release() without setup_sysfs() having run. This is safe
-because cdev->stats is NULL in that case and destroy_sysfs() is a no-op.
+Hi Lee,
 
-Fixes: 13f4e660a126 ("thermal/core: Split __thermal_cooling_device_register() into two functions")
-Signed-off-by: Ovidiu Panait <ovidiu.panait.rb@renesas.com>
----
- drivers/thermal/thermal_core.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+While planning to address this for the next spin, it would be helpful if 
+you could review and share any additional comments that should be taken 
+care in next spin.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4e2a17fdb6a7..9b9fa51067bd 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1015,8 +1015,6 @@ static int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void
- 	device_initialize(&cdev->device);
- 	cdev->devdata = devdata;
- 
--	thermal_cooling_device_setup_sysfs(cdev);
--
- 	ret = dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
- 	if (ret)
- 		goto out_put_device;
-@@ -1037,6 +1035,8 @@ static int thermal_cooling_device_add(struct thermal_cooling_device *cdev, void
- 	if (ret)
- 		current_state = ULONG_MAX;
- 
-+	thermal_cooling_device_setup_sysfs(cdev);
-+
- 	ret = device_add(&cdev->device);
- 	if (ret)
- 		goto out_put_device;
--- 
-2.34.1
-
+thanks,
+Shivendra
