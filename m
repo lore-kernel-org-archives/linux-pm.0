@@ -1,142 +1,203 @@
-Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB6473AC0C8;
-	Thu, 21 May 2026 11:26:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61AEC38B131;
+	Thu, 21 May 2026 11:26:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779362781; cv=none; b=MN81spL/aGWr0V+d9LyM6KaIiKd7W2iwcoHUNH0on3VlbhWgxOv5oJFif3qyDX/sPTo1FoC4fjtRsTINkhiK1A376UbZZsBr7xra1RJEMgSUQsFI2HMkD7j6/vTExcd+AL5xIJZ1fSaiwzze+g/VfF0dtExgn6e2ggNFHyzc2Ro=
+	t=1779362809; cv=none; b=HERwawApsb/z9XeU+ALT0us4DsMDmcGmTv91zCg1PQ+J+HJXGCoYPjgJCp05W9BndLO8XaIiszYLQoCeWSFN3WPicNEg/D7bGE3aPQiKE/wl2p+oYMDpXdgfSzEj+r2PMUc4r+RypPn2+cnWVqPskGKO5p4Ii0Y8E6l/BX4Rz8E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779362781; c=relaxed/simple;
-	bh=F5ivitdu47V9DyWNdoSTTCf3jN3VTdTfnMDIaXUH0T0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ZepIbVUr+knrnR5R8Wx2QHCQl+GymUETH0rM6P7lWA6FZgVAoSAR9RQYwAQx65NA4hICDeTZUAe5cwJ1CnRpB7Z9O3HsDeDtxM2WYGFSnYzUK0F+4Vh13M7ZdwNgZZp+dxcwtKqE2H6i6ZouavCTxm02JnsAzhfBrSN8fPT9IDo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=h36F7SPP; arc=none smtp.client-ip=113.46.200.222
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1779362809; c=relaxed/simple;
+	bh=yEN8fhIxz2UwS5kyxtEBBv0dMXYljGUB8RPNNFeQVkQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Akor51YfEX0X4aMVCNVubUC7JjKArywun36vRFDJoI4lJVFr+dthb9sz26gHuWrzYkKKQY7F/y856Kk316y9GOfOY+s18bF/goKWX3b30LefqBdncGaothxOSiKciSH5a839qmFrjv4/CpjFv7yzwz+G1DsPZZSdh+4BqBdmZcg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YknBrn9k; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="h36F7SPP"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=7so2JjBPlPLcoVynX8Q4bTyEOxbr1x14Iqk3wRz/s88=;
-	b=h36F7SPPSwENps7O98JR1fPl3YacFK3OPZeWlm/vMZ2LuhP84KZiRemuRPq13U864fUepAzLC
-	rzCAIVxwXELszUrbDzwoghiXqdx48ImDWFegRboKs1LK1jJSkR9Ed2JnsjtKwQB5z1jReAADbtq
-	qPVxX4t/Ujsgb4c+QjqMHJ4=
-Received: from mail.maildlp.com (unknown [172.19.163.200])
-	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gLmB017qzzLlYW;
-	Thu, 21 May 2026 19:18:32 +0800 (CST)
-Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id BFD5140563;
-	Thu, 21 May 2026 19:26:13 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
- (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Thu, 21 May
- 2026 19:26:12 +0800
-Message-ID: <05a5a8a3-7153-460d-86f8-d2be04062d6b@huawei.com>
-Date: Thu, 21 May 2026 19:26:12 +0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YknBrn9k"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 207021F000E9;
+	Thu, 21 May 2026 11:26:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779362808;
+	bh=UZOTOngkbfj30aKE5h0OheISuX6tazoHMxsmKuVcuU8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=YknBrn9kiMeaSTRI5stxMpPOhLCuv//1zvSkCq9TrxnhvQVUZi90Ibx6SNCLL2+c9
+	 1f9NhY9sd9GPPpZl+xrHLLtgsR0jHAQrg2aAIdocwHaUOOJnoZS1Oq1XQ3Aome8SpV
+	 nB8o+D12abKjKOLGHshtpVVCPx/trcADPRHMA/dbbxJcR5NQ2dp7TjQse3XlQlk82h
+	 pPLFc954YP2q/udXd94u/7aALaBOfqHoXXVA67i7koQng6GhIR8dEKsHehwnAELkLl
+	 ikQcgsaQmJxnSiolThEawMr79VBhwBN4ckowU42WuBQznI+D203WXd2Zb2TtdTaXd/
+	 Uv+MRCmq+cMHA==
+Date: Thu, 21 May 2026 12:26:38 +0100
+From: Lee Jones <lee@kernel.org>
+To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
+ cells
+Message-ID: <20260521112638.GD2921053@google.com>
+References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
+ <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/4] cpufreq: Use policy->min/max init as QoS request
-To: Pierre Gondois <pierre.gondois@arm.com>, <linux-kernel@vger.kernel.org>
-CC: Jie Zhan <zhanjie9@hisilicon.com>, Ionela Voinescu
-	<ionela.voinescu@arm.com>, Sumit Gupta <sumitg@nvidia.com>, Zhongqiu Han
-	<zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>, Huang Rui <ray.huang@amd.com>, Mario
- Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, K
- Prateek Nayak <kprateek.nayak@amd.com>, Srinivas Pandruvada
-	<srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Saravana
- Kannan <saravanak@kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>
-References: <20260511135538.522653-1-pierre.gondois@arm.com>
- <20260511135538.522653-5-pierre.gondois@arm.com>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <20260511135538.522653-5-pierre.gondois@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemf100001.china.huawei.com (7.202.181.215)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
 
-On 5/11/2026 9:55 PM, Pierre Gondois wrote:
-> Consider policy->min/max being set in the driver .init()
-> callback as a QoS request. Impacted driver are:
-> - gx-suspmod.c (min)
-> - cppc-cpufreq.c (min)
-> - longrun.c (min/max)
+On Thu, 14 May 2026, Shivendra Pratap wrote:
+
+> MFD core has no way to register a child device using an explicit firmware
+> node. This prevents drivers from registering child nodes when those nodes
+> do not define a compatible string. One such example is the PSCI
+> "reboot-mode" node, which omits a compatible string as it describes
+> boot-states provided by the underlying firmware.
 > 
-> Update the documentation accordingly.
+> Extend struct mfd_cell with a callback that allows drivers to provide an
+> explicit firmware node. The node is added to the MFD child device during
+> registration when none is assigned by device tree, ACPI, or software
+> matching.
 > 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
 > ---
->  Documentation/cpu-freq/cpu-drivers.rst | 10 ++++++++--
->  drivers/cpufreq/cpufreq.c              | 12 ++++++++++--
->  2 files changed, 18 insertions(+), 4 deletions(-)
+>  drivers/mfd/mfd-core.c   | 30 ++++++++++++++++++++++++++++++
+>  include/linux/mfd/core.h | 14 ++++++++++++++
+>  2 files changed, 44 insertions(+)
 > 
-> diff --git a/Documentation/cpu-freq/cpu-drivers.rst b/Documentation/cpu-freq/cpu-drivers.rst
-> index c5635ac3de547..ab4f3c0f3a89b 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.rst
-> +++ b/Documentation/cpu-freq/cpu-drivers.rst
-> @@ -114,8 +114,14 @@ Then, the driver must fill in the following values:
->  |policy->cur			    | The current operating frequency of   |
->  |				    | this CPU (if appropriate)		   |
->  +-----------------------------------+--------------------------------------+
-> -|policy->min,			    |					   |
-> -|policy->max,			    |					   |
-> +|policy->min			    | If set by the driver in ->init(),    |
-> +|				    | used as initial minimum frequency	   |
-> +|				    | QoS request.			   |
-> ++-----------------------------------+--------------------------------------+
-> +|policy->max			    | If set by the driver in ->init(),    |
-> +|				    | used as initial maximum frequency	   |
-> +|				    | QoS request.			   |
-> ++-----------------------------------+--------------------------------------+
->  |policy->policy and, if necessary,  |					   |
->  |policy->governor		    | must contain the "default policy" for|
->  |				    | this CPU. A few moments later,       |
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 9e2d9d3fc5351..9a005367ed87b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1399,8 +1399,16 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+> diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+> index 7aa32b90cf1eb7fa0a05bf3dc506e60a262c9850..cc2a2a924d6d3044e29a9f864b536ee325ed797b 100644
+> --- a/drivers/mfd/mfd-core.c
+> +++ b/drivers/mfd/mfd-core.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/acpi.h>
+> +#include <linux/fwnode.h>
+>  #include <linux/list.h>
+>  #include <linux/property.h>
+>  #include <linux/mfd/core.h>
+> @@ -148,6 +149,11 @@ static int mfd_match_of_node_to_dev(struct platform_device *pdev,
+>  	return 0;
+>  }
 >  
->  static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
->  {
-> +	unsigned int min_freq, max_freq;
->  	int ret;
->  
-> +	/* Use policy->min/max set by the driver as QoS requests. */
-> +	min_freq = max(FREQ_QOS_MIN_DEFAULT_VALUE, policy->min);
-> +	if (policy->max)
-> +		max_freq = min(FREQ_QOS_MAX_DEFAULT_VALUE, policy->max);
-> +	else
-> +		max_freq = FREQ_QOS_MAX_DEFAULT_VALUE;
+> +static void mfd_child_fwnode_put(void *data)
+> +{
+> +	fwnode_handle_put(data);
+> +}
 > +
+>  static int mfd_add_device(struct device *parent, int id,
+>  			  const struct mfd_cell *cell,
+>  			  struct resource *mem_base,
+> @@ -156,6 +162,7 @@ static int mfd_add_device(struct device *parent, int id,
+>  	struct resource *res;
+>  	struct platform_device *pdev;
+>  	struct mfd_of_node_entry *of_entry, *tmp;
+> +	struct fwnode_handle *fwnode;
+>  	bool disabled = false;
+>  	int ret = -ENOMEM;
+>  	int platform_id;
+> @@ -224,6 +231,29 @@ static int mfd_add_device(struct device *parent, int id,
+>  
+>  	mfd_acpi_add_device(cell, pdev);
+>  
+> +	if (!pdev->dev.fwnode && cell->get_child_fwnode) {
+> +		fwnode = cell->get_child_fwnode(parent);
+> +		if (fwnode) {
+> +			device_set_node(&pdev->dev, fwnode);
+> +
+> +			/*
+> +			 * platform_device_release() drops only of_node refs.
+> +			 * Track non-OF fwnodes explicitly so they are put on
+> +			 * all teardown paths.
+> +			 */
+> +			if (!to_of_node(fwnode)) {
+> +				ret = devm_add_action(&pdev->dev,
+> +						      mfd_child_fwnode_put,
+> +						      fwnode);
+> +				if (ret) {
+> +					device_set_node(&pdev->dev, NULL);
+> +					fwnode_handle_put(fwnode);
+> +					goto fail_of_entry;
+> +				}
+> +			}
+> +		}
+> +	}
 
-Can't see the point of this. Why not just use policy->max and policy->min
-to init qos?
+mfd_add_device() is getting very busy now with support for all of these
+different registration APIs.  Suggest that we start breaking them out.
+
+> +
+>  	if (cell->pdata_size) {
+>  		ret = platform_device_add_data(pdev,
+>  					cell->platform_data, cell->pdata_size);
+> diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
+> index faeea7abd688f223fb0b31cde0a9b69dfe2a61ff..abfc26c057d6ee46947ba2b6f2e99f420e74b127 100644
+> --- a/include/linux/mfd/core.h
+> +++ b/include/linux/mfd/core.h
+> @@ -50,6 +50,7 @@
+>  #define MFD_DEP_LEVEL_HIGH 1
+>  
+>  struct irq_domain;
+> +struct fwnode_handle;
+>  struct software_node;
+>  
+>  /* Matches ACPI PNP id, either _HID or _CID, or ACPI _ADR */
+> @@ -80,6 +81,19 @@ struct mfd_cell {
+>  
+>  	/* Software node for the device. */
+>  	const struct software_node *swnode;
+> +	/*
+> +	 * Callback to return an explicit firmware node.
+> +	 * @parent: MFD parent device passed to mfd_add_devices().
+> +	 *
+> +	 * Called only if OF/ACPI matching did not assign a fwnode.
+> +	 * Ownership of the returned reference is transferred to MFD core.
+> +	 *
+> +	 * Return a referenced fwnode or NULL if none is available.
+> +	 *
+> +	 * mfd_cell must be zero-initialized or get_child_fwnode must be NULL
+> +	 * when unused.
+> +	 */
+> +	struct fwnode_handle *(*get_child_fwnode)(struct device *parent);
+
+I'm very much against pointers to functions if they can be avoided.  Why
+does fwnode need this and none of the other APIs do?
 
 >  	/*
->  	 * If the driver didn't set policy->min/max, set them as
->  	 * they are used to clamp frequency requests.
-> @@ -1418,12 +1426,12 @@ static int cpufreq_policy_init_qos(struct cpufreq_policy *policy)
->  	}
->  
->  	ret = freq_qos_add_request(&policy->constraints, &policy->min_freq_req,
-> -				   FREQ_QOS_MIN, FREQ_QOS_MIN_DEFAULT_VALUE);
-> +				   FREQ_QOS_MIN, min_freq);
->  	if (ret < 0)
->  		return ret;
->  
->  	ret = freq_qos_add_request(&policy->constraints, &policy->max_freq_req,
-> -				   FREQ_QOS_MAX, FREQ_QOS_MAX_DEFAULT_VALUE);
-> +				   FREQ_QOS_MAX, max_freq);
->  	if (ret < 0)
->  		return ret;
->  
+>  	 * Device Tree compatible string
+> 
+> -- 
+> 2.34.1
+> 
 
+-- 
+Lee Jones
