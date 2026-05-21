@@ -1,118 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C263525B0BF
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 15:19:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8C5E367283;
+	Thu, 21 May 2026 16:01:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779376773; cv=none; b=fByqowCQCStkZwEseHMyjPFEawRNGBBUO635o2b1kQtqdCSGf7smPqVejRxbe3H5tJwt8Pim8SwKpiiUh1H11nD1nA6vFdr7k2WqYZ0oW2RTsQ9h91JDW4iOWDvlm2XiqeJQZnQwyFc0GROntYJDxdvC/kBaqSLA9sxhaMMfE88=
+	t=1779379319; cv=none; b=IyGf/dWE83TXUmS5OGfD1mBV1cgdp/C06Re5f4GQOUjvL9gfJgZlu6Z9newqrnHdS/iAVAqx5B1dP8ieYmf2iCkpdZ4+WT8oqq9iA9KkCExEEok1wHYXaUTEuzipz8kESNQ/3DzG9MKi3eTp5iHJgzJCZslVId1X0yzso7EcQkY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779376773; c=relaxed/simple;
-	bh=BIsUe6w+KM5x0w/5vjYn2j7/HYDXWylVNp8CZFeTHaM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UrbVfuGUOvxmTeIR49SMuDqZdEOb7KuelL2Tq1RyxP95IFhUEkBeO3GIk8cDILiMuG6+siyTnDVnz9DN13pgGFnUVUSt53G4Iw5en785lVkP6TcFZvT69e7rMlLoxS6WBfa5wgLo6/y3uEIsBam84PAE7QJ0GRdtL/io/dGGZ6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=je3t1kkP; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779379319; c=relaxed/simple;
+	bh=4zajE+XzgFcsLyX8j+x7JiDph+E49fIHPxY+eOXUhmQ=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=npVePa1FstSZhVL73npwPaCt7TCKlI9kcL0Z7hgSHQNSrAUt2C/k++WBdJUh3lCoy9MJi9xrLS2kBL4b8MeULxNyrcxyPgOLdFgA+NR7/eQUXV/1eqCz7WGKKmm7RyT2GekqDxmlJIK4BuG2C9q4LUDKhCGcM2WDmpkp6gVcQlk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=U0Mw7OHN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="je3t1kkP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B53A1F00ADE
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 15:19:32 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="U0Mw7OHN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75AA81F000E9;
+	Thu, 21 May 2026 16:01:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779376772;
-	bh=aALeOR9hfy8bHyrlawuLA7z1MlWWj+GXYcbQDLYD2eA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=je3t1kkPF2eT9rIqHF2nxL4008/ld+vf7A8qVlX2Wc9/GPPBPGqZlWRHp5AXAfaFF
-	 a0sSDTVxYuIDKEJltNaa9yii1qwnrpYz6kMrza76Vf3P7u9paYas28hhlw6FugaqZe
-	 VNayY2FexTCVN5je7NTCsC8XOLpxIO/So28GXq/JXTqq9HoYYuFM4ERe3BRzYZ0UdX
-	 Yu10NhMkbuIx/IjMeDaKHLku8BQ7WANFfUSCzkPsh+dkmE1817PFQc5h1h5Y0Oqg9s
-	 e+64+af4SGC8FzoBfnjBIguKbyhjWpRNanO0lZzcEgMlphvQ3erdiJ+kKywzLbKRB2
-	 fTB3UyenaUp6A==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-5a8d1f43432so10801185e87.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 08:19:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8EcA/XyOxkjMpJtMKmYaIzjudkxRydQgg/+/3pRYdVE95CsuMvT8jrxQqFtD3tWdKpcufHnapahw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YywR4mG6bw4/WFW5kgnv+kVJWSq/p58vglvsMZQWu+Yiaxl/X3K
-	3ONYzhej15uABoMiWZY2cM20FqM/sRb6uf27Z7dd7gLr5b4f/3lXmZ32N2Hc2UqcPhwFRgMGamj
-	s+q6HcsbfhOqn8plhC8BKAx/JaMU5u30=
-X-Received: by 2002:a05:6512:2186:b0:5aa:143e:77b7 with SMTP id
- 2adb3069b0e04-5aa2ba98f34mr872047e87.43.1779376770909; Thu, 21 May 2026
- 08:19:30 -0700 (PDT)
+	s=k20260515; t=1779379318;
+	bh=A7T6j/QrLLiXEbu/eddyey1iiI6wVJ+gjyKGAr0u+C8=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=U0Mw7OHNbLU9Kn/7s7HXlkjcBqWEw0fNdqD5JWt6cd9lpGaRr61H0f2v+n2afXp7Q
+	 NMD1VYs1a/BrlIziwpF8q9Ku+mBSqp9Q8h8sIShrVf3cNzTB2yvcrJmwWXaTUvjNE9
+	 x73t3PiT2pM6xE9lopBCxAYcBYhoAEocF4yKQ/5Kez9TXP5z5JjWzt9d42H8Ykh7G0
+	 m5n9dH1hdzkWTv35Rgza1AsxKRCNenFTjUQOenyUFypQiJHh3WceAH6sU5qeoh3kt+
+	 meUVrKKpyUKt110VSr31SBQhA+2GlZLl969B5RE4Hy5ce/0p4fkQezE0uGBilmLWpS
+	 9KprmqBHhVDKQ==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+ Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+ Nam Tran <trannamatk@gmail.com>, 
+ =?utf-8?q?=C5=81ukasz_Lebiedzi=C5=84ski?= <kernel@lvkasz.us>, 
+ Yassine Oudjana <y.oudjana@protonmail.com>, 
+ Kaustabh Chakraborty <kauschluss@disroot.org>
+Cc: linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ linux-doc@vger.kernel.org, Conor Dooley <conor.dooley@microchip.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260516-s2mu005-pmic-v7-0-73f9702fb461@disroot.org>
+References: <20260516-s2mu005-pmic-v7-0-73f9702fb461@disroot.org>
+Subject: Re: (subset) [PATCH v7 00/10] Support for Samsung S2MU005 PMIC and
+ its sub-devices
+Message-Id: <177937931320.3705013.6267401057618787390.b4-ty@b4>
+Date: Thu, 21 May 2026 17:01:53 +0100
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <CAJZ5v0ie54h2aK05qNZTWNw5bu7GZDgsxM55KSsuF=ReLMkm-w@mail.gmail.com>
- <20260408141914.35281-1-nanmu@xiaomi.com> <b3cabf3d-7672-4816-91f0-e6fafd9db4d0@oss.qualcomm.com>
- <20260511111407.455-1-nanmu@xiaomi.com> <ea8bbb35-0fc5-4d45-9c9c-577e97282afe@oss.qualcomm.com>
-In-Reply-To: <ea8bbb35-0fc5-4d45-9c9c-577e97282afe@oss.qualcomm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 21 May 2026 17:19:18 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jwRPQCkeCpm8rgE7Hsbg8ZnHPLYxw=91FeFsdqBKeUzw@mail.gmail.com>
-X-Gm-Features: AVHnY4JHIxQJE9MR2VKyTWZUAuAU4CdggCoMQHfijiStRWhEyrD9xNsf6jpedJ0
-Message-ID: <CAJZ5v0jwRPQCkeCpm8rgE7Hsbg8ZnHPLYxw=91FeFsdqBKeUzw@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: Fix hotplug-suspend race during reboot
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Tianxiang Chen <nanmu@xiaomi.com>
-Cc: viresh.kumar@linaro.org, lingyue@xiaomi.com, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.16-dev-ad80c
 
-On Mon, May 11, 2026 at 3:54=E2=80=AFPM Zhongqiu Han
-<zhongqiu.han@oss.qualcomm.com> wrote:
->
-> On 5/11/2026 7:14 PM, Tianxiang Chen wrote:
-> > On 4/14/2026 10:44 PM, Zhongqiu Han wrote:
-> >> May I know did you test this with lockdep enabled? Specifically, does
-> >> the new cpus_read_lock() -> policy->rwsem ordering in cpufreq_suspend(=
-)
-> >> trigger any lockdep warnings? Thanks
-> >
-> > Hi Zhongqiu,
-> >
-> > Thanks for the review.
-> >
-> > I did test v2 with lockdep enabled and was NOT able to reproduce any
-> > warning.
-> >
-> > No circular-locking splat or "possible deadlock" report was observed
-> > in dmesg across multiple runs.
->
->
-> Thanks for the confirmation.
->
-> >
-> > My reasoning for why the new order should be safe:
-> >
-> >    * The patch establishes  cpus_read_lock() -> policy->rwsem.
-> >    * The hotplug path already holds cpu_hotplug_lock (write side,
-> >      via the hotplug core) before taking policy->rwsem inside
-> >      cpufreq_offline()/cpufreq_online(), i.e. the same direction.
-> >    * I grep'd cpufreq and did not find an existing path that takes
-> >      policy->rwsem first and then acquires cpus_read_lock()
-> >      underneath. If I missed one, please point me at it.
-> >    * cpus_read_lock() is a percpu-rwsem read side and is re-entrant,
-> >      so even if an outer caller already holds it (e.g. via a pm
-> >      notifier running inside a hotplug callback) this is safe.
-> >
-> > May I ask whether you have actually observed a lockdep splat on this
-> > change on any downstream tree, or is this a precautionary question?
-> > If you have a specific call chain in mind, I would like to add
-> > targeted coverage before v3 so we can nail it down definitively.
->
->
-> This was mainly a precautionary question on my side, to make sure there
-> aren't any hidden locking concerns. In my experience, running new
-> locking changes under lockdep can be a useful sanity check, so I wanted
-> to double=E2=80=91check.
->
->
-> For context, none of the existing cpufreq driver .suspend callbacks
-> currently invoke cpus_read_lock() so this does not affect any existing
-> suspend paths.
->
->
-> Looks okay to me.
->
-> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+On Sat, 16 May 2026 03:08:32 +0530, Kaustabh Chakraborty wrote:
+> S2MU005 is an MFD chip manufactured by Samsung Electronics. This is
+> found in various devices manufactured by Samsung and others, including
+> all Exynos 7870 devices. It is known to have the following features:
+> 
+> 1. Two LED channels with adjustable brightness for use as a torch, or a
+>    flash strobe.
+> 2. An RGB LED with 8-bit channels. Usually programmed as a notification
+>    indicator.
+> 3. An MUIC, which works with USB micro-B (and USB-C?). For the micro-B
+>    variant though, it measures the ID-GND resistance using an internal
+>    ADC.
+> 4. A charger device, which reports if charger is online, voltage,
+>    resistance, etc.
+> 
+> [...]
 
-Applied as 7.1-rc material, thanks!
+Applied, thanks!
+
+[03/10] dt-bindings: mfd: add documentation for S2MU005 PMIC
+        commit: 12479cc3750c6b741b6d87392e393d959cf2f013
+[04/10] mfd: sec: add support for S2MU005 PMIC
+        commit: aeff14ae7271cc3070312f894de9a4e075855d31
+[05/10] mfd: sec: set DMA coherent mask
+        commit: ba1f536070abd595a141c683f617eed3c6e42297
+
+--
+Lee Jones [李琼斯]
+
