@@ -1,107 +1,99 @@
-Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCAE0369234
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 09:14:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.117.254.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60B6A366822
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 09:18:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779354848; cv=none; b=ZTeb1lP22b+favLQpfvdh9t1QAP7Db2KddIdku/ouQDY/IzwwZ1DvYyyLB0CWKeEeRYDIrxzRs1+UjNUISTUWaSZ2SvMJiuVozxh6Twfzk4u6tiJSuzleL/VS3J/wD/12X6RwR6IgF53NsELjF/v9gZljLsrsqkbWCYVoN604nM=
+	t=1779355121; cv=none; b=JJ7vnxp/Ocffr3C7IKbDEgQ+NTLQk3aun/R7FLrx7wRZM2IrH6FNPhdxgqxUtYAHG8XnWPrZj/brGfpxH155qRzuxMwCQMZ/v4weJMX8yAn0KpybXvaKz080My05i7nk+19dilKKPx7lGcRhLBNJ61jZyqV3Pw5es3RV5KOx2Lg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779354848; c=relaxed/simple;
-	bh=i4LSJMuxYcgWYb3GPgbU+j9ntkVEZvedEpR1p4L24qk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SuAddFE3eXN5N8wM46anGjkiP6tdaj6un2ngFE3eA5t6plq8IwvxonzyB+70mUeqH2opTc5bbVbJmb0cJ2K6sFzrRUSmPlNByQaPZVTrU1WhTHtB7d50n/LVtB9Q6YROUqpadOwiibRwvowU7fIPxFTmum14rH+Uo9vzqSECbCA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; spf=pass smtp.mailfrom=sang-engineering.com; dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b=T5tm6Vpt; arc=none smtp.client-ip=194.117.254.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sang-engineering.com
+	s=arc-20240116; t=1779355121; c=relaxed/simple;
+	bh=azw12yvo1KzS4bOAY2lRlKmNg9Zna4MNvidgXEzteRo=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gNcBVEO54xKCHmej8a05PXNcg30Ue5PXtgfZ9oQYAuOHFjScgZoO4uE2H7UJDZwMqM8n8P8cETmsKC0/x2yLsXziz7CGTfKjQmq0UL+jvHxSYHVX8JA4qvT9EOckP0MXx0rBuLwXuYK3RbCQ78nq9R50igu2NKCeAk2uuW0ktcE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=OZjKXkQZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="T5tm6Vpt"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	sang-engineering.com; h=date:from:to:cc:subject:message-id
-	:references:mime-version:content-type:in-reply-to; s=k1; bh=Ff12
-	f+xeEXoOZ6ISjNWjK5es8Z76Ux83Stxx6bkIL2k=; b=T5tm6VptISE3O93lHV5y
-	d1q/FYUIW2uqPFQf4AutKE+i5zanr4UksjM12JMxuf3nzccBAC59W7CZrFMQf4ke
-	sYwjOF5rZY2SyYYDIJNe8nJH8ByPTr4OfMy9I9PZeD0YPhd2ivJwqtoVLrYHUqol
-	/qFE9/8U++tZNJHOjg8zaND7WbjUSiiz1WZbcFBTrKV/EIY7/NjJlJuBYuh7BD4z
-	LwWph88oAywOufRMhvrZsuYznaAwP8ZpzepDh50Uq3KZ7DRV9tY13cWYAUbbF62P
-	zMc0y1xCm5sFLOJwZQmj/qB46Aw1bcv3E7fQfmLpeC8uTSbrUAopKqMMpO19X8Qa
-	8Q==
-Received: (qmail 996243 invoked from network); 21 May 2026 11:13:53 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 21 May 2026 11:13:53 +0200
-X-UD-Smtp-Session: l3s3148p1@tTS7VFBSRpwujnvC
-Date: Thu, 21 May 2026 11:13:51 +0200
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Thierry Reding <thierry.reding@avionic-design.de>,
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>, Rob Herring <robh@kernel.org>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Doug Berger <opendmb@gmail.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ulf Hansson <ulfh@kernel.org>, Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Peter Chen <peter.chen@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>, Bin Liu <b-liu@ti.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Maximilian Luz <luzmaximilian@gmail.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, brgl@kernel.org,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-sound@vger.kernel.org,
-	driver-core@lists.linux.dev, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	iommu@lists.linux.dev, linux-pm@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org
-Subject: Re: [PATCH 11/23] i2c: pxa-pci: use platform_device_set_of_node()
-Message-ID: <ag7MzzkiA6sseuVb@shikoro>
-References: <20260521-pdev-fwnode-ref-v1-0-88c324a1b8d2@oss.qualcomm.com>
- <20260521-pdev-fwnode-ref-v1-11-88c324a1b8d2@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="OZjKXkQZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EE981F00A3D
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 09:18:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779355120;
+	bh=azw12yvo1KzS4bOAY2lRlKmNg9Zna4MNvidgXEzteRo=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=OZjKXkQZv5hnNqa14eYjTh92IdTWlvwfWTIj7QQ6zZkUx4SgYVrNqah27+wXDgjGC
+	 gWwVAF16Zx+3ZNyDxS6R+5KspgS41D1YJfszZPUbt2Md0a0LqzG7ynooFeMF2V31I8
+	 76cf66sJHbi5RPQcIc7DKra4Ji2OrLpqBOSTcDvYsrXUd2yw0e3ApjSrnJNYq6TT73
+	 58761eq7Ho0Sqkpuy5VllINNeKqtQSUBUGMhZN3puywZnymXRkvzVdipe1CKKmvPww
+	 ynhSv0XuKxAeDdeMgEcZavvEKxm7PRzgtkeJq5LP6jnjJG3BcpNij4gUdTpNghCnTH
+	 usyNtekRbqhxw==
+Received: by mail-dl1-f41.google.com with SMTP id a92af1059eb24-1357c851a48so6614710c88.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 02:18:40 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/tQ+jeDbXPGLqzXPjWEYGGovLu/mgjL/M70etbiKSp6+kj2VWaIPHzda4mzHrpfbNRVog3eCM58w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yywz2yjtEv16/952bppYmNU6qi0IfP/xwwKwbe61AGG8ZSEwgRJ
+	b9/wqIFa53dzDlMYbCxhczvQOQyzCWwZZ3aLAzGBdPGiIgc37VmRPSSf0ACgm8R/2FhjPvhekDN
+	hIy9Oj8tSIYiN7Tl3v1OdeuCkl6FlKIORFMC1YvQM0g==
+X-Received: by 2002:a05:7023:b82:b0:135:a75e:7d93 with SMTP id
+ a92af1059eb24-13632c2e98dmr919788c88.32.1779355119421; Thu, 21 May 2026
+ 02:18:39 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 21 May 2026 02:18:35 -0700
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Thu, 21 May 2026 02:18:35 -0700
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260521-pdev-fwnode-ref-v1-11-88c324a1b8d2@oss.qualcomm.com>
+References: <20260519-pwrseq-m2-bt-v3-0-b39dc2ae3966@oss.qualcomm.com>
+Date: Thu, 21 May 2026 02:18:35 -0700
+X-Gmail-Original-Message-ID: <CAMRc=MdddNGkost=5XD9nvxwcCE4mRHQhAow9gS+Hap_b32mpA@mail.gmail.com>
+X-Gm-Features: AVHnY4IBgnLNrnXiblCXaybZXjL6TZAv5y3zJhw560hCdBFpu5oS9qCU09vJltQ
+Message-ID: <CAMRc=MdddNGkost=5XD9nvxwcCE4mRHQhAow9gS+Hap_b32mpA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/9] Fixes/improvements for the PCI M.2 power
+ sequencing driver
+To: manivannan.sadhasivam@oss.qualcomm.com
+Cc: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>, 
+	linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, Wei Deng <wei.deng@oss.qualcomm.com>, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Marcel Holtmann <marcel@holtmann.org>, 
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, May 21, 2026 at 10:36:34AM +0200, Bartosz Golaszewski wrote:
-> Ahead of reworking the reference counting logic for platform devices,
-> encapsulate the assignment of the OF node for dynamically allocated
-> platform devices with the provided helper.
-> 
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+On Tue, 19 May 2026 10:55:55 +0200, Manivannan Sadhasivam via B4 Relay
+<devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org> said:
+> Hi,
+>
+> This series has several key improvements and fixes to the M.2 power sequencing
+> driver and also the BT HCI_QCA driver. Notably, this series allows the M.2 power
+> sequencing driver to work with more M.2 cards, not just WCN7850. It also allows
+> the BT HCI_QCA driver to detect whether it can control BT_EN (or W_DISABLE2#)
+> signal on the connector and set the HCI_QUIRK_NON_PERSISTENT_SETUP quirk.
+>
+> Testing
+> =======
+>
+> This series was tested on Lenovo Thinkpad T14s together with the below DTS
+> patches:
+> https://github.com/Mani-Sadhasivam/linux/commit/29534d15307551b2355eb254601dec511169f0aa
+> https://github.com/Mani-Sadhasivam/linux/commit/f4eaacfe647674be200847092b43cdef2194fc55
+>
+> Merge Strategy
+> ==============
+>
+> Since the BT HCI_QCA changes depend on the pwrseq changes, it would be good to
+> merge the whole series through pwrseq tree or through an immutable branch.
+>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> ---
 
-Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com> # for I2C
+Luiz, Augusto: this series looks good to me. Do you want me to queue the pwrseq
+patches on an immutable branch or should I just take the entire thing?
 
+Bart
