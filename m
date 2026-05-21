@@ -1,101 +1,90 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FE7A54652
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 20:40:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B7521A9B58;
+	Thu, 21 May 2026 21:46:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779396051; cv=none; b=pIk5BmeCYh6GZAu9JQJB9KUa/2fVRBb2NRD3CXXua+/zK94TixBTw0soQBqBOOr4Grx6CH5PAMoiZb9FdTW6+NQ4AVda/jCTl8iRZ++7HvP3LqH5GY6oiPQLhMKbtWdiG61Vkbb7oukuPaQEsZNYJA9J4i8KsdiwYxMKOJ21zX4=
+	t=1779399992; cv=none; b=adiRsf3mXmVkVdOcReHNHwHdoQE9sjafu2DjOns9VsXkuepmFAUg9OzwdOLUrGel/cuvVHaowmZE0qMmYUoOUzF6u9++/Z5ozdmWmARm4ayR2T7LScTYhRmlTyq7oPQCiCJMBEkNUjS7uu3/N7c1ekeU/qBTGaLVRVRandO7KAg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779396051; c=relaxed/simple;
-	bh=N27coMYwEp2DGiyL4nrNVp/z1fPJIQn6P59rUqU2+7M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=b14nV5BnOht2PRDxJg778tRoQF5fyPz+x7qh5cpmx3OVwlKRd5LRHnw5bTO6lYoDKpcVmXfXYvPZKkkREPItFIBsfmB1DTKKF2QECb7V9hbW00W+E4VtlcsLsAByjBT5dhlZKp5i5LGxVIkWa48iSCOoHJPH6Qbfo47jmyalmz4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Mfb6G+lN; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779399992; c=relaxed/simple;
+	bh=egj+N/8dzxEVdKsTe8WaX6PQDQMTC4uQHbYIhFHm4y0=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=VM8JvPZTCYRCbnE4XK7YduLc8MVYj97YWhhV7EpXsHd7yTx9VFEUwTBCbL3vKJFhG26IUGdorhjVZMRoMIpqeS1lJAiNnsUHnB2ifDy82Pzmnv++1I6TnXJxsU2zkHtBuw6HUkcjPQUnGLLFkzUBpkQL6Y3+MAQHLaaDc5iTRvA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=KsYqTJ5z; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mfb6G+lN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDE771F00A3C
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 20:40:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779396050;
-	bh=ZXzST3Bh75Y7QSlnRUQcKaXhhYpqam08EzqdmLwma0A=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Mfb6G+lN3KXu40twFKEARLPCGCOSvoLMvoJd4EwHh9pkxhnGJdrw7QRqS6cXLlXod
-	 fH5qCbt/I6ylmvzFjowEpJSHqD2tXY/SiTzM1O4W5+rmDPv6DjidWYf6+AzkQuD8Gl
-	 2tyDi9c6X4o9CLbBPNbqSefzAcDKI88b86myV7Lyn7GGjwMmHuqq9GNHwj1VZKWMmi
-	 1SAptJO9QXKY2i182VSadZHAASZTURVU5SlfJ9O6W6JEVSUWhYHqMgtFLWlz/xgwC0
-	 WR7SdlohnM+VPDnIrvYfXzKY/lZe1PBaQreM56dKH2fuNUMyqLfGzmnqqLqSO87IGr
-	 yj1nP7UcmNT0w==
-Received: by mail-lf1-f48.google.com with SMTP id 2adb3069b0e04-5a88db610ccso7025391e87.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 13:40:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8E0BLKTXGbkeODOJ9F3eEJnTw7BHdhsBF4ZKMR3QmMhlGCd2amr1mT/ItqXeA3bD8SikfhKto3hA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx6AZDpi8JXwnclk+7jLnz+h3KkBjbNniJJl+mCEZ94FGDGOeXx
-	dK9bXXvpOk0Y6YVdeKrydiAehabLXvnl+Sqmxy9jSl7oZUtDeahtuVPJ5Jb5qYkC4M1K6OfcGiF
-	puv3SLeXrS8y77mFJaE9z/7HyoAGveHM=
-X-Received: by 2002:a05:6512:378b:20b0:5a8:6391:4fe5 with SMTP id
- 2adb3069b0e04-5aa323a9bd1mr71115e87.26.1779396048430; Thu, 21 May 2026
- 13:40:48 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="KsYqTJ5z"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CF031F000E9;
+	Thu, 21 May 2026 21:46:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux-foundation.org; s=korg; t=1779399991;
+	bh=qEpxywtKvyKc8pR0UbQITNwH/Hn/3Ki68Ju72Ok+Xeo=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=KsYqTJ5zyrMd5A1ExmmDtQPu9yHezpY0U/H9UjN/u+a2IHt308AbfEh8k6kDioADF
+	 RtCRqizHjDZU5gcWhZhCBkTOQxscLp8rono5FninvrJX74DZUaq1PP4y0QpG917uPa
+	 iTdvlO/afgA7iKclb8Ltp9gRFnqX76vvfBTh8iD4=
+Date: Thu, 21 May 2026 14:46:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ankur Arora <ankur.a.arora@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-next@vger.kernel.org, bpf@vger.kernel.org, arnd@arndb.de,
+ catalin.marinas@arm.com, will@kernel.org, peterz@infradead.org,
+ mark.rutland@arm.com, harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
+ rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
+ zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com, rdunlap@infradead.org,
+ david.laight.linux@gmail.com, joao.m.martins@oracle.com,
+ boris.ostrovsky@oracle.com, konrad.wilk@oracle.com, ashok.bhat@arm.com,
+ Boqun Feng <boqun.feng@gmail.com>, Boqun Feng <boqun@kernel.org>, Christoph
+ Lameter <cl@linux.com>, Ingo Molnar <mingo@kernel.org>, Konrad Dybcio
+ <konradybcio@kernel.org>, Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v11 1/2] kunit: add tests for smp_cond_load_*_timeout()
+Message-Id: <20260521144629.11ee1e2ff88c5387a589f54a@linux-foundation.org>
+In-Reply-To: <20260521083038.134260-1-ankur.a.arora@oracle.com>
+References: <20260408122538.3610871-15-ankur.a.arora@oracle.com>
+	<20260521083038.134260-1-ankur.a.arora@oracle.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <6fef156008fc6b70069f3cfedb7de02fe54f2696.1779360823.git.viresh.kumar@linaro.org>
- <4c0a951bc57b7fd5cacb6211a96770e5791b1fbc.1779360823.git.viresh.kumar@linaro.org>
- <0078ab64-05a9-428c-a8ea-ae5a2df4c1e1@oss.qualcomm.com> <2l2wp32sms7vkr6brhdpi2jlcschagdrhrb5n7dimnqz4czpwo@3agems2d7qkc>
-In-Reply-To: <2l2wp32sms7vkr6brhdpi2jlcschagdrhrb5n7dimnqz4czpwo@3agems2d7qkc>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 21 May 2026 22:40:36 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hfj4a3PGj6W0_CMS-HF6hsrstBQP=O6E0rzhqyzFzsdQ@mail.gmail.com>
-X-Gm-Features: AVHnY4Jkb221ZS3XuigO4rP2GehBmvxPza85DcTHbf-0u5BWAg8aCA37tzd8nlE
-Message-ID: <CAJZ5v0hfj4a3PGj6W0_CMS-HF6hsrstBQP=O6E0rzhqyzFzsdQ@mail.gmail.com>
-Subject: Re: [PATCH 2/3] cpufreq: Avoid redundant target() calls for unchanged limits
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Sumit Semwal <sumit.semwal@linaro.org>, Lifeng Zheng <zhenglifeng1@huawei.com>, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Thu, May 21, 2026 at 4:33=E2=80=AFPM Viresh Kumar <viresh.kumar@linaro.o=
-rg> wrote:
->
-> On 21-05-26, 21:58, Zhongqiu Han wrote:
-> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
-state.c
-> > > index 1292da53e5fc..7f19ec6b70ba 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -2942,6 +2942,7 @@ static void intel_pstate_adjust_policy_max(stru=
-ct cpudata *cpu,
-> > >         policy->max > cpu->pstate.max_freq) {
-> > >             pr_debug("policy->max > max non turbo frequency\n");
-> > >             policy->max =3D policy->cpuinfo.max_freq;
-> > > +           policy->update_limits =3D true;
-> >
-> >
-> > Could this be redundant?
->
-> Yeah, this won't even compile I think. In my first attempt I tried to
-> make the update_limits change from within verify in cpufreq.h and that
-> caused a build failure and then I moved to cpufreq_set_policy() and
-> forgot to fix this one. And my arm64 build didn't cover this file.
-> Sorry about that.
->
-> > It seems that intel_pstate_adjust_policy_max() is only triggered when
-> > !hwp_active, whereas CPUFREQ_NEED_UPDATE_LIMITS is set when
-> > hwp_active is enabled. If so, the update_limits flag set here may not
-> > actually be consumed, as __cpufreq_driver_target() would skip the
-> > update_limits check for drivers without CPUFREQ_NEED_UPDATE_LIMITS.
->
-> Good catch.
->
-> Rafael, is the understanding correct ? I can drop the intel_pstate
-> change in that case.
+On Thu, 21 May 2026 01:30:37 -0700 Ankur Arora <ankur.a.arora@oracle.com> wrote:
 
-Yes, it is.  intel_pstate only sets CPUFREQ_NEED_UPDATE_LIMITS when
-hwp_active is set, in which case intel_pstate_adjust_policy_max() is a
-NOP.
+> Add success and failure case tests for smp_cond_load_*_timeout().
+> 
+> All of the test cases wait on some state in smp_cond_load_*_timeout().
+> In the success case we spawn a kthread that pokes the bit.
+> 
+> Success or failure cases depend on the expected bit being set (or not).
+> Additionally in failure cases smp_cond_load_*_timeout() cannot return
+> before timeout.
+
+Your title "kunit: ..." implies that this is a kunit patchset.  ie, and
+to my mind, this implies that the patchset makes changes to kunit
+infrastructure.  This isn't the case, of course.
+
+>
+> ...
+>  
+> +config BARRIER_TIMEOUT_TEST
+> +	tristate "KUnit tests for smp_cond_load_relaxed_timeout()"
+
+The patchset which attempted to add smp_cond_load_relaxed_timeout() was
+titled "barrier: ...", which is a more appropriate identifier for this
+patchset.
+
+Anyway, I removed the series "barrier: Add
+smp_cond_load_{relaxed,acquire}_timeout()" from mm.git on May 19 for
+forgotten reasons.  So I suggest that the series be respun and resent,
+with these two test patches included.
+
+Again, I'm really not the guy to be handling these patches.  But a 4-6%
+performance improvement in real world workloads is not to be ignored.
+
+Not by me, anyway.
+
