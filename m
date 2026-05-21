@@ -1,115 +1,113 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 250AB3126C2
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 14:33:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C77E33C1B4
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 14:45:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779373994; cv=none; b=C6GpItYb9nuYfKSnRgAOkjmLAiCM2FwhKMMOHA0C1R8+gYnkWygJxzaOajynexVCBD0qx8/5hOIY77hy6I2SP5SXbd2aseCW3c6n7A3asvYAw3SLy9UUqxR5DnfvqDlwQUOORyeEmE+FuHlIlASfM7ui6l1jS9FY6j2OBXIoPXc=
+	t=1779374732; cv=none; b=ae1HNM5yMiJgKF4P5cEh0DA//lLroKmnGUI8/o4vz5HvTLwuRWJXVYUqUCwF87kLMoKxWy5f9o4TJTdK81chT5Gvdh9gNxEJrAhlCxEy0IlgNTwN2U7mIKQkmi5pdqIJk7c5sbzEnl1iPe2Zvoq92gUB8SjOtuWiuYicyyuhhVE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779373994; c=relaxed/simple;
-	bh=VYwdSVqPSInNrw6KMxUqj1vQQpmkiT+o2nsFT5EFyX0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=c5d3ga//STuIaO8QJJuV5nuuCKFWQK9pIwyHgBCFgxjbu62CA8MC8h4ZOiJeKwKeO6PST+LpaH6FQM0ixIiGlkbLzdSRiwk6eD9UY3bbsitbEIq43gr6yCWV8vDJdZF2o/UFfbFh2DdHOAow6WbtUvYTzfJ+98R3IPfRJB2blV0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Env+mz7i; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1779374732; c=relaxed/simple;
+	bh=XwkEvUWSwFuzy0TZ9CixnXFx7oFCWYz47jRFWJ3sfM0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SMrBxhKj4lSSkMTdetYsXyaTDc0NexbBjgO/sWH8/c6mFKfUNaQHnfvC2u7R6z61tgYg04nIumQWkmgF9LR2j+A3rrA+hMNq+WbIbSAEM3O/AbEecIoDo5lEZ+mQmKKwgEvFZPzzQ37np/7cNH9TZwn9fTJzeqZYABd0qs4p4SY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m5pRyHis; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Env+mz7i"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2baca4df358so36927105ad.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 07:33:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1779373992; x=1779978792; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=v3YtKY0LYmXrvk3RGMocovCqKAP/yteUqxtZ9VWqvIk=;
-        b=Env+mz7iTdmPOwf4S7R2ah2nlIUWzX6lQt7uk0CmJTt4ZvoEqozeGJGEV2ra2tMKCp
-         hRy9GL3gS3gq/I967SeyLQagMHC+YFTIzIgBAHG0B/RniT4AMTyKYwYErHm8534Lzybw
-         jGTGYduMBjFcx5RYoQjIGvurIKc6IiZizSx7/nLcZn5bRRvJek613kRGBLcAqGhdx4Ab
-         NhQL2z5pSs92Cs66gDN92mD44vWQRQp0/30ibqhqIgygw9uQqiOHw4Tm+tKLoGwQz9NT
-         Q5pDWn06LonU6fKVR4+EZv0sdf/w9n5Rc7prR9l2N9oRBud0UNAx9UDtHxBCLGKOQMQj
-         vuRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779373992; x=1779978792;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=v3YtKY0LYmXrvk3RGMocovCqKAP/yteUqxtZ9VWqvIk=;
-        b=rXU41dUzaUFe6fk89x0D9Ru+teiHyUrjwBwSpBMil/9ic3bHMrFChKqZLZsQSHlFqR
-         S2kY9DFh1ZNY30XEWIeqvf7J2FAXdMh6DWu8JeMcwe6RrLwaixuhtZ9vxv3c23fHdTvJ
-         bBDWcmUh+mhugXa6BWUK88m50IRWsNp6Vqr35O60cUkxpAeM6VvDbf5EAhAQE2aOfG8G
-         xNHvN/WIXjCThnSSJXtYf+NCV8QjKW3SYJyJvWjvWDG6eGIMgJkQalbCy60JS6GeNM74
-         Cx9O5pdpM4wYfctaGksjg4rHSSCu9XCPq8DbssXJY1GHxQ2+uZCLTG2Yg+IUSHNN2CaS
-         Og6Q==
-X-Forwarded-Encrypted: i=1; AFNElJ/YsD4OQ8qSC+S40PoYcNozb0h+ECyqjlZ5vs4JVxuNCmtE5zvv7kGC+bu2TjUtKOgXu38RrlDJoA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw4vNsgozVnkZsh/fc1TuZjlCNDlQMpc4MJCxCdBLO7U4c9aplW
-	930PBdGv1L5AyNw4zkvRKtzRPPWBdrwuY8UVjkWRo5C3cNLzLam2ZgJTvJB8GO/X724=
-X-Gm-Gg: Acq92OH8FadY7gnZs4EV7b2kJnwlxwIBxBvTZa2Aw/fOziv9//EZnmRsBVOUS56HJ40
-	hBDslvAUArIh4mYQKv0SXOKkJYkYhbALlQh+XBvqo7q8CO0EV/Mp2BZIO0m+Y5U71LgXL+MH3y8
-	GplnVF2k+nYuJx+uRRRYus+v9eN5f+PjzvRFL84N8V2nSmZQqWz/jA4Yn1fdN8OhStMX5RtmFAl
-	yVHZJtcEzx1QqVcrXSLCjUtSsSfS36m9u6Vt6eQ+qIN8Pp6y522Z6n05oTFzGF+50mW6i1GHjgK
-	ckwlcUU6txniFaHsiBYw3/3qPGr0/OaL4X3jvQCX5T7NF2LNU5ydd6FZd8iW8WbKTDQX9s4bl9P
-	Q+m3RdfGMhfm0++XNwVhe46Ka623hOoLNGLPbe2x+gcD1nDGU6r2uLiw3VQfL5xixLi0zpqxxNv
-	X6bpkD+vGVwcm/Wg7dAABRsoY=
-X-Received: by 2002:a17:903:2305:b0:2b2:4260:109 with SMTP id d9443c01a7336-2bea330182cmr34793355ad.23.1779373992321;
-        Thu, 21 May 2026 07:33:12 -0700 (PDT)
-Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bea92a2571sm16988185ad.34.2026.05.21.07.33.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 May 2026 07:33:11 -0700 (PDT)
-Date: Thu, 21 May 2026 20:03:09 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, 
-	Lifeng Zheng <zhenglifeng1@huawei.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] cpufreq: Avoid redundant target() calls for
- unchanged limits
-Message-ID: <2l2wp32sms7vkr6brhdpi2jlcschagdrhrb5n7dimnqz4czpwo@3agems2d7qkc>
-References: <6fef156008fc6b70069f3cfedb7de02fe54f2696.1779360823.git.viresh.kumar@linaro.org>
- <4c0a951bc57b7fd5cacb6211a96770e5791b1fbc.1779360823.git.viresh.kumar@linaro.org>
- <0078ab64-05a9-428c-a8ea-ae5a2df4c1e1@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m5pRyHis"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 310F81F00A3B
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 14:45:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779374731;
+	bh=Iyub21GW2fVdfiJB2gsWGwjhhIYpi8EzhUGXYJ4fcfo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=m5pRyHisVAbbIP3CDO8RUL9823ou0aQaFwUKvDjl5rruSBTSQKPmWJW0IhQMvVzFZ
+	 19nNXQWcNIjMgZIDeNjQ05zgOul0dPTXnMZQQPLKEff/10uc4v7ESlIRYKZb8F23f8
+	 mZUcgKWzDL7j3DJSMf4DDvNEJtRbSppPf0Jn6bi0ezO/IdiZh1QdRDYANJTApdoDpC
+	 LU6GdtOfPMyi6iJ9t54ydZpkYsk+WrnFyehcWLzxJa/wlRmuQ7qGkuvna0KZfMfdPn
+	 52xN67yrJ+zoABcm2HkXF1++suuxmd48H+irXxgF4loPR65+a9lTJPJ2SL5RC/vHB+
+	 fevaG4wDKlgwQ==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5a8891f0c51so6645100e87.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 07:45:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9KOmLBQCm1fYblJAXC+2tNhhOAIgl/uMAlY82Lko40h2gALP0JwquWKaDqXiuBGUP27YuwUtCCYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzL7rq7Gk8/jnAUS9h0g3VFp8kB56G70s6As7lr12XO5Gn2hS89
+	ybCXkcM0Aqrri1uE4JGlNp1xLXHF4NisJC0tVdnNn665/TDmmkb3uasgP4nP/BFiMrVO0goZVSh
+	UPdvsCV6BE3OtazrU7bgvJAfu3bkpb6A=
+X-Received: by 2002:a05:6512:800d:20b0:5a8:9f6f:3212 with SMTP id
+ 2adb3069b0e04-5aa2ba9ab38mr976634e87.34.1779374729672; Thu, 21 May 2026
+ 07:45:29 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0078ab64-05a9-428c-a8ea-ae5a2df4c1e1@oss.qualcomm.com>
+References: <20260416144621.93964-1-dbgh9129@gmail.com> <203f2e52-bf9d-4055-88bd-d911bfecf082@oss.qualcomm.com>
+In-Reply-To: <203f2e52-bf9d-4055-88bd-d911bfecf082@oss.qualcomm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 21 May 2026 16:45:17 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hQnTxFp-T=WvXNMO45ucfb2X0Km8tcFSRvsfh9HgUqhg@mail.gmail.com>
+X-Gm-Features: AVHnY4JAY7qrxW6kff8W2_kXVCgYxIJ2GfDpoIfnqoEFYJQFH8uUUvtpEIckfe8
+Message-ID: <CAJZ5v0hQnTxFp-T=WvXNMO45ucfb2X0Km8tcFSRvsfh9HgUqhg@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: pcc: fix use-after-free and double free in
+ _OSC evaluation
+To: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, Yuho Choi <dbgh9129@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 21-05-26, 21:58, Zhongqiu Han wrote:
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 1292da53e5fc..7f19ec6b70ba 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -2942,6 +2942,7 @@ static void intel_pstate_adjust_policy_max(struct cpudata *cpu,
-> >   	    policy->max > cpu->pstate.max_freq) {
-> >   		pr_debug("policy->max > max non turbo frequency\n");
-> >   		policy->max = policy->cpuinfo.max_freq;
-> > +		policy->update_limits = true;
-> 
-> 
-> Could this be redundant?
+On Fri, Apr 17, 2026 at 5:29=E2=80=AFAM Zhongqiu Han
+<zhongqiu.han@oss.qualcomm.com> wrote:
+>
+> On 4/16/2026 10:46 PM, Yuho Choi wrote:
+> > pcc_cpufreq_do_osc() calls acpi_evaluate_object() twice for the
+> > two-phase _OSC negotiation. Between the two calls it freed
+> > output.pointer but left output.length unchanged. Since
+> > acpi_evaluate_object() treats a non-zero length with a non-NULL
+> > pointer as an existing buffer to write into, the second call wrote
+> > into freed memory (use-after-free). The subsequent kfree(output.pointer=
+)
+> > at out_free then freed the same pointer a second time (double free).
+> >
+> > Reset output.pointer to NULL and output.length to ACPI_ALLOCATE_BUFFER
+> > after freeing the first result, so ACPICA allocates a fresh buffer for
+> > each phase independently.
+> >
+> > Fixes: 0f1d683fb35d ("[CPUFREQ] Processor Clocking Control interface dr=
+iver")
+> > Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
+>
+>
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+>
+> > ---
+> >
+> > Changes in v1:
+> >    - Drop spurious #include "acpi/actypes.h" (Zhongqiu Han)
+> >    - Keep kfree() between the two calls and reset output.pointer =3D NU=
+LL
+> >      and output.length =3D ACPI_ALLOCATE_BUFFER
+> >
+> >   drivers/cpufreq/pcc-cpufreq.c | 2 ++
+> >   1 file changed, 2 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufre=
+q.c
+> > index ac2e90a65f0c4..a355ec4f3dd4c 100644
+> > --- a/drivers/cpufreq/pcc-cpufreq.c
+> > +++ b/drivers/cpufreq/pcc-cpufreq.c
+> > @@ -352,6 +352,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *h=
+andle)
+> >       }
+> >
+> >       kfree(output.pointer);
+> > +     output.pointer =3D NULL;
+> > +     output.length =3D ACPI_ALLOCATE_BUFFER;
+> >       capabilities[0] =3D 0x0;
+> >       capabilities[1] =3D 0x1;
+> >
+>
+>
+> --
 
-Yeah, this won't even compile I think. In my first attempt I tried to
-make the update_limits change from within verify in cpufreq.h and that
-caused a build failure and then I moved to cpufreq_set_policy() and
-forgot to fix this one. And my arm64 build didn't cover this file.
-Sorry about that.
-
-> It seems that intel_pstate_adjust_policy_max() is only triggered when
-> !hwp_active, whereas CPUFREQ_NEED_UPDATE_LIMITS is set when
-> hwp_active is enabled. If so, the update_limits flag set here may not
-> actually be consumed, as __cpufreq_driver_target() would skip the
-> update_limits check for drivers without CPUFREQ_NEED_UPDATE_LIMITS.
-
-Good catch.
-
-Rafael, is the understanding correct ? I can drop the intel_pstate
-change in that case.
-
--- 
-viresh
+Applied as 7.1-rc material, thanks!
