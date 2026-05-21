@@ -1,88 +1,215 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6D4125B09E;
-	Thu, 21 May 2026 13:01:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4978932B136;
+	Thu, 21 May 2026 13:24:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779368486; cv=none; b=UKHimv/q0nb/r26lnapLmBCTSLLQnxLt7/Q7OXD2nDaaP6pCOM3y4Gejb2FtQnS4IqlOJBsFpCRwLJ9wUyay2Q+iilubCQ+ipL/anXoPsVjw7r/WieP80h5At1Rpin1p8Ypb2rdEBeMeoiRoyS90J19Jg1Nje48mANew3fQ9flU=
+	t=1779369870; cv=none; b=hZjODyHhRvvRWzMEA+4P62Q8qZ26f1ON3SaHbkNpD+7eTm4D1IqtTcNKpVFUMbVlfTTlCJjWFVR1ccqKjQlWL6JJZh9IvpCCD8qATa6xuPe1atOtiUkCdpEbfGRdyJqzjmXsSqKzuK+69mZe/zXr3a/Ozfpwffi6uP7Cy1n/6Xs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779368486; c=relaxed/simple;
-	bh=LzBBA30mVQR9do3IoDIGdLISLgWIk5G5D/Lq3aUaJIc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YcucgJgkiIUt+O1sX+xcXapEGhSeAObJ7hZX/l/lc17ObvDPNtXeWZc1GxO15YRqlPeScsB0QgX+NhePCafi4KCxMN7AVQ9E2WIGprlzAk3YMkIwLHYXu7AwkWxFJI9EHevfqHiDFSWtdtldOWDHLXtkjj7MfzFH8r43Z2wHcfw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YQzDXNuy; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779369870; c=relaxed/simple;
+	bh=p7nP+/Ps/HoRMFi7YI2PAWRuV9bcG0vRk1LZ/WzADq8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=S1++RHPiLk+cJxVFRKn3e5+HchhZXCxZQGSSHt1n/1TxS2yy+93ojvd+JscvZ4ZG3eOIOFJnxJWFmPAlm/ZFwwgSQ4TDKwUaNYEhpiEP0jtygm2dgWgDTDZ7WvFOE+vBLhrZVL9iEyXYQTIVDEyPX8tYzeV58+sgIL9ft9N1QSU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wt1gJ/L/; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YQzDXNuy"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E454B1F000E9;
-	Thu, 21 May 2026 13:01:19 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wt1gJ/L/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B6601F000E9;
+	Thu, 21 May 2026 13:24:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779368485;
-	bh=YZ4Q3TUDO2GIop7GRyVIOG7OcA4OTXp7XlWjhqU8v/c=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=YQzDXNuydk9jwibHbEes12ds66ESkTE8eyo5qKVKsOw8bZclsMscV09t4FUiAnSoM
-	 5M64ai58AK16ClOm1Sf49PpUrAcfrPHjkYv/pQ0uS8LJQdve7+Y4gOo5iLTdokSpBC
-	 LPDLZqcwRMmUSCivmnekAB0cT98ufnYnPl5Gng4kjZiOiLbbAbaFF/sGFEEjJN1E0Y
-	 TYvc09KJIqjoU0x2J/CmwKybhFv8H1ELM/2W+NsoPQW+gFzQrlvoygYrBOWorEfzyP
-	 7pex8RxEPGnQTPpE1CGJwdK/QMn6z+bZxyl1a8BZSYDuhkHZ43N4HSLxivVeM4jwoy
-	 jdTyyg9Xhg45g==
-From: Yixun Lan <dlan@kernel.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	s=k20260515; t=1779369869;
+	bh=6mNExNFm3zMGc4yL+55czjAtplM3YZBBXYf2rNEsSlU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Wt1gJ/L/Ii/r0CNslJdXGcSk0iV5uUteyjluNNTVkUvbTYhiFQOBa179autMJ8DaT
+	 rhzwTncC/HoMx0iAasauSJOP9VxM0xMFY60XaWN2zyPst0/EDXFWXKotcSNWHuYpcb
+	 QQf4S9NwA6iVFXQ9CbX6XWtv8c4P5f54HMPPog2c7nRKFMrJZAoV4KW9yMU0cxUzNc
+	 VFECRBDC8SqMVQNN3dAgzZKW/5g7qqMvIiAtglPUkhFgPYL+IHBkqU+G4k/dlKbDr/
+	 zg/KERKK9/CJYJj6OpqQKaafJbdGt1CFwqYEpEqBW2+lVyI0Isvl/bafhSjLi6ZtGT
+	 i7QNGdNVDJaTw==
+Date: Thu, 21 May 2026 14:24:19 +0100
+From: Lee Jones <lee@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
+	Sebastian Reichel <sre@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Rob Herring <robh@kernel.org>,
+	Christian Loehle <christian.loehle@arm.com>,
+	Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Shuwei Wu <shuwei.wu@mailbox.org>
-Cc: Yixun Lan <dlan@kernel.org>,
-	linux-pm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	Anand Moon <linux.amoon@gmail.com>,
-	Troy Mitchell <troy.mitchell@linux.spacemit.com>,
-	Yao Zi <me@ziyao.cc>,
-	Vincent Legoll <legoll@online.fr>,
-	Gong Shuai <gsh517025@gmail.com>
-Subject: Re: (subset) [PATCH v5 0/3] thermal: spacemit: Add support for SpacemiT K1 SoC thermal sensor
-Date: Thu, 21 May 2026 13:01:16 +0000
-Message-ID: <177936776325.387485.15662058076324687710.b4-ty@b4>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
-References: <20260427-k1-thermal-v5-0-df39187480ed@mailbox.org>
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	John Stultz <john.stultz@linaro.org>,
+	Moritz Fischer <moritz.fischer@ettus.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
+	Andre Draszik <andre.draszik@linaro.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
+	Srinivas Kandagatla <srini@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
+ cells
+Message-ID: <20260521132419.GA3591266@google.com>
+References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
+ <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
+ <20260521112638.GD2921053@google.com>
+ <CAMRc=MfqaCjiALZyVBHQs=Taft1M9xmNTFvQHWPrd5PgcTfJDQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMRc=MfqaCjiALZyVBHQs=Taft1M9xmNTFvQHWPrd5PgcTfJDQ@mail.gmail.com>
 
+On Thu, 21 May 2026, Bartosz Golaszewski wrote:
 
-On Mon, 27 Apr 2026 15:15:14 +0800, Shuwei Wu wrote:
-> Introduce support for the on-die thermal sensor found
-> on the SpacemiT K1 SoC.
+> On Thu, May 21, 2026 at 1:26 PM Lee Jones <lee@kernel.org> wrote:
+> >
+> > On Thu, 14 May 2026, Shivendra Pratap wrote:
+> >
+> > > MFD core has no way to register a child device using an explicit firmware
+> > > node. This prevents drivers from registering child nodes when those nodes
+> > > do not define a compatible string. One such example is the PSCI
+> > > "reboot-mode" node, which omits a compatible string as it describes
+> > > boot-states provided by the underlying firmware.
+> > >
+> > > Extend struct mfd_cell with a callback that allows drivers to provide an
+> > > explicit firmware node. The node is added to the MFD child device during
+> > > registration when none is assigned by device tree, ACPI, or software
+> > > matching.
+> > >
+> > > Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> > > Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
+> > > ---
+> > >  drivers/mfd/mfd-core.c   | 30 ++++++++++++++++++++++++++++++
+> > >  include/linux/mfd/core.h | 14 ++++++++++++++
+> > >  2 files changed, 44 insertions(+)
+> > >
+> > > diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+> > > index 7aa32b90cf1eb7fa0a05bf3dc506e60a262c9850..cc2a2a924d6d3044e29a9f864b536ee325ed797b 100644
+> > > --- a/drivers/mfd/mfd-core.c
+> > > +++ b/drivers/mfd/mfd-core.c
+> > > @@ -10,6 +10,7 @@
+> > >  #include <linux/kernel.h>
+> > >  #include <linux/platform_device.h>
+> > >  #include <linux/acpi.h>
+> > > +#include <linux/fwnode.h>
+> > >  #include <linux/list.h>
+> > >  #include <linux/property.h>
+> > >  #include <linux/mfd/core.h>
+> > > @@ -148,6 +149,11 @@ static int mfd_match_of_node_to_dev(struct platform_device *pdev,
+> > >       return 0;
+> > >  }
+> > >
+> > > +static void mfd_child_fwnode_put(void *data)
+> > > +{
+> > > +     fwnode_handle_put(data);
+> > > +}
+> > > +
+> > >  static int mfd_add_device(struct device *parent, int id,
+> > >                         const struct mfd_cell *cell,
+> > >                         struct resource *mem_base,
+> > > @@ -156,6 +162,7 @@ static int mfd_add_device(struct device *parent, int id,
+> > >       struct resource *res;
+> > >       struct platform_device *pdev;
+> > >       struct mfd_of_node_entry *of_entry, *tmp;
+> > > +     struct fwnode_handle *fwnode;
+> > >       bool disabled = false;
+> > >       int ret = -ENOMEM;
+> > >       int platform_id;
+> > > @@ -224,6 +231,29 @@ static int mfd_add_device(struct device *parent, int id,
+> > >
+> > >       mfd_acpi_add_device(cell, pdev);
+> > >
+> > > +     if (!pdev->dev.fwnode && cell->get_child_fwnode) {
+> > > +             fwnode = cell->get_child_fwnode(parent);
+> > > +             if (fwnode) {
+> > > +                     device_set_node(&pdev->dev, fwnode);
+> > > +
+> > > +                     /*
+> > > +                      * platform_device_release() drops only of_node refs.
+> > > +                      * Track non-OF fwnodes explicitly so they are put on
+> > > +                      * all teardown paths.
+> > > +                      */
+> > > +                     if (!to_of_node(fwnode)) {
+> > > +                             ret = devm_add_action(&pdev->dev,
+> > > +                                                   mfd_child_fwnode_put,
+> > > +                                                   fwnode);
+> > > +                             if (ret) {
+> > > +                                     device_set_node(&pdev->dev, NULL);
+> > > +                                     fwnode_handle_put(fwnode);
+> > > +                                     goto fail_of_entry;
+> > > +                             }
+> > > +                     }
+> > > +             }
+> > > +     }
+> >
+> > mfd_add_device() is getting very busy now with support for all of these
+> > different registration APIs.  Suggest that we start breaking them out.
+> >
+> > > +
+> > >       if (cell->pdata_size) {
+> > >               ret = platform_device_add_data(pdev,
+> > >                                       cell->platform_data, cell->pdata_size);
+> > > diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
+> > > index faeea7abd688f223fb0b31cde0a9b69dfe2a61ff..abfc26c057d6ee46947ba2b6f2e99f420e74b127 100644
+> > > --- a/include/linux/mfd/core.h
+> > > +++ b/include/linux/mfd/core.h
+> > > @@ -50,6 +50,7 @@
+> > >  #define MFD_DEP_LEVEL_HIGH 1
+> > >
+> > >  struct irq_domain;
+> > > +struct fwnode_handle;
+> > >  struct software_node;
+> > >
+> > >  /* Matches ACPI PNP id, either _HID or _CID, or ACPI _ADR */
+> > > @@ -80,6 +81,19 @@ struct mfd_cell {
+> > >
+> > >       /* Software node for the device. */
+> > >       const struct software_node *swnode;
+> > > +     /*
+> > > +      * Callback to return an explicit firmware node.
+> > > +      * @parent: MFD parent device passed to mfd_add_devices().
+> > > +      *
+> > > +      * Called only if OF/ACPI matching did not assign a fwnode.
+> > > +      * Ownership of the returned reference is transferred to MFD core.
+> > > +      *
+> > > +      * Return a referenced fwnode or NULL if none is available.
+> > > +      *
+> > > +      * mfd_cell must be zero-initialized or get_child_fwnode must be NULL
+> > > +      * when unused.
+> > > +      */
+> > > +     struct fwnode_handle *(*get_child_fwnode)(struct device *parent);
+> >
+> > I'm very much against pointers to functions if they can be avoided.  Why
+> > does fwnode need this and none of the other APIs do?
+> >
 > 
-> Include the device tree binding documentation in YAML format, the
-> thermal sensor driver implementation, and the device tree changes to
-> enable the sensor on K1 SoC.
+> I suggested it because of its flexibility. The alternative I had in
+> mind is something like a new field in mfd_cell:
 > 
-> [...]
+>     const char *cell_node_name;
+> 
+> Which - if set - would tell MFD to look up an fwnode that's a child of
+> the parent device's node by name - as it may not have a compatible.
 
-Applied, thanks!
+Remind me why the chlid device can't look-up its own fwnode?
 
-[3/3] riscv: dts: spacemit: Add thermal sensor for K1 SoC
-      https://github.com/spacemit-com/linux/commit/247c77ff5806bcd6a5ff802718de1f0aa2bcba6c
-
-Best regards,
 -- 
-Yixun Lan <dlan@kernel.org>
+Lee Jones
