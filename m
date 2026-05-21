@@ -1,215 +1,216 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4978932B136;
-	Thu, 21 May 2026 13:24:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E3773D7D80;
+	Thu, 21 May 2026 13:33:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779369870; cv=none; b=hZjODyHhRvvRWzMEA+4P62Q8qZ26f1ON3SaHbkNpD+7eTm4D1IqtTcNKpVFUMbVlfTTlCJjWFVR1ccqKjQlWL6JJZh9IvpCCD8qATa6xuPe1atOtiUkCdpEbfGRdyJqzjmXsSqKzuK+69mZe/zXr3a/Ozfpwffi6uP7Cy1n/6Xs=
+	t=1779370408; cv=none; b=hKW9kln1PLK9mSTd0Ce7XrTssVlcSMyJCXs6/9mt9jzIiFvGUCdN49g9onMb9QgkjHqLgWd4AUcqIIjNQdb5fO1mJWX6ZPf9VkJiaQFkNsx+TZ8/QPqUcGZ0txesFbL+TqH3POBRYF+dEoOzvQeytL6IWm/rKyF4MetdB1W1ii0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779369870; c=relaxed/simple;
-	bh=p7nP+/Ps/HoRMFi7YI2PAWRuV9bcG0vRk1LZ/WzADq8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=S1++RHPiLk+cJxVFRKn3e5+HchhZXCxZQGSSHt1n/1TxS2yy+93ojvd+JscvZ4ZG3eOIOFJnxJWFmPAlm/ZFwwgSQ4TDKwUaNYEhpiEP0jtygm2dgWgDTDZ7WvFOE+vBLhrZVL9iEyXYQTIVDEyPX8tYzeV58+sgIL9ft9N1QSU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Wt1gJ/L/; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779370408; c=relaxed/simple;
+	bh=5uv+CTbn8AcIcVue/GiaGr9BSc0U2Of/hQLri15LfLg=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=j0thK6dLeDJ7ZgeB1y2FqTzEs33VjwJL8PzvLZBZQjdECQNPRI5QxRhmQn6yzv7Jk6LuoYKoPPiaTTiJvlpGprjysEn7NmDNZATRN19IbexzGsrVvaIv9J81CfQkvvm/5wcX9MDldl5wKCgscIIW9hkAyvmvP+M/jEqCKJfKJJ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=j4CDviTd; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Wt1gJ/L/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B6601F000E9;
-	Thu, 21 May 2026 13:24:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="j4CDviTd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 664AA1F00A3C;
+	Thu, 21 May 2026 13:33:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779369869;
-	bh=6mNExNFm3zMGc4yL+55czjAtplM3YZBBXYf2rNEsSlU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Wt1gJ/L/Ii/r0CNslJdXGcSk0iV5uUteyjluNNTVkUvbTYhiFQOBa179autMJ8DaT
-	 rhzwTncC/HoMx0iAasauSJOP9VxM0xMFY60XaWN2zyPst0/EDXFWXKotcSNWHuYpcb
-	 QQf4S9NwA6iVFXQ9CbX6XWtv8c4P5f54HMPPog2c7nRKFMrJZAoV4KW9yMU0cxUzNc
-	 VFECRBDC8SqMVQNN3dAgzZKW/5g7qqMvIiAtglPUkhFgPYL+IHBkqU+G4k/dlKbDr/
-	 zg/KERKK9/CJYJj6OpqQKaafJbdGt1CFwqYEpEqBW2+lVyI0Isvl/bafhSjLi6ZtGT
-	 i7QNGdNVDJaTw==
-Date: Thu, 21 May 2026 14:24:19 +0100
-From: Lee Jones <lee@kernel.org>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	s=k20260515; t=1779370406;
+	bh=ezV5ICAM2va0jVjd8iAniGdLxBSb69xxnF1gv2JwpSY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=j4CDviTd6M6LDTj5r6sQRqgJ6ESa9aWMu37zRV8mtOcXrJiE1zLL6x/OVHUw7taNB
+	 jl6ETIYiu8JAkRBqc4Wuv2aB534ln8Hu69MX1fb2GFClu2Mmurr/zb532bCHmICyRT
+	 bW4gGDuRH21kbO4Mt3QzAC1BgrPy+si2Rjb35ZfN4nboZAY9y9toARiousj3e/bp3M
+	 OhVS9wgD8OvUpe6jIOQ+pq818okRHEEM5Lah2/H+GkNEe7+pCkBUV/HEs3jXEYS4f4
+	 MtCRjjIGdmkPubfqUsmmCsve0nsahQ5jfKPmPGh0P3LHoWU280OP0E1I4NEEZgAN1h
+	 MDV3MyE2qhaxQ==
+From: Kees Cook <kees@kernel.org>
+To: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Kees Cook <kees@kernel.org>,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	stable@vger.kernel.org,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
 	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Corey Minyard <corey@minyard.net>,
+	Gabriel Somlo <somlo@cmu.edu>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Hannes Reinecke <hare@suse.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
 	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-	Andy Yan <andy.yan@rock-chips.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	John Stultz <john.stultz@linaro.org>,
-	Moritz Fischer <moritz.fischer@ettus.com>,
-	Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-	Andre Draszik <andre.draszik@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
- cells
-Message-ID: <20260521132419.GA3591266@google.com>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
- <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
- <20260521112638.GD2921053@google.com>
- <CAMRc=MfqaCjiALZyVBHQs=Taft1M9xmNTFvQHWPrd5PgcTfJDQ@mail.gmail.com>
+	Jiri Slaby <jirislaby@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
+	Jason Baron <jbaron@akamai.com>,
+	Jim Cromie <jim.cromie@gmail.com>,
+	Tiwei Bie <tiwei.btw@antgroup.com>,
+	Benjamin Berg <benjamin.berg@intel.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	"David E. Box" <david.e.box@linux.intel.com>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Frank Li <Frank.Li@kernel.org>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Georgia Garcia <georgia.garcia@canonical.com>,
+	kvm@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	kasan-dev@googlegroups.com,
+	linux-mm@kvack.org,
+	apparmor@lists.ubuntu.com,
+	linux-security-module@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-acpi@vger.kernel.org,
+	openipmi-developer@lists.sourceforge.net,
+	qemu-devel@nongnu.org,
+	intel-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-serial@vger.kernel.org,
+	linux-usb@vger.kernel.org,
+	usb-storage@lists.one-eyed-alien.net,
+	virtualization@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH 01/11] params: bound array element output to the caller's page buffer
+Date: Thu, 21 May 2026 06:33:14 -0700
+Message-Id: <20260521133326.2465264-1-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260521133315.work.845-kees@kernel.org>
+References: <20260521133315.work.845-kees@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2143; i=kees@kernel.org; h=from:subject; bh=3eO38ZdE0rbljlF5l/QfEOapKDQ3GxlJmKbxHXugskI=; b=owGbwMvMwCVmps19z/KJym7G02pJDFn8nAtqmS7cf3B//69jZ5rrq6va9p3fNOGM7h2Jd74Pn JTCV6u3dZSyMIhxMciKKbIE2bnHuXi8bQ93n6sIM4eVCWQIAxenAEzEYiojw//ne8uu9YZ9+sWp mJ7czDyrP2Afv+2f21+/99yL9Jp+OI2RYVNeQ9witS6BzPe55aerW/eveRmS81ixc8XMVftPpj7 OZQAA
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMRc=MfqaCjiALZyVBHQs=Taft1M9xmNTFvQHWPrd5PgcTfJDQ@mail.gmail.com>
 
-On Thu, 21 May 2026, Bartosz Golaszewski wrote:
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 
-> On Thu, May 21, 2026 at 1:26 PM Lee Jones <lee@kernel.org> wrote:
-> >
-> > On Thu, 14 May 2026, Shivendra Pratap wrote:
-> >
-> > > MFD core has no way to register a child device using an explicit firmware
-> > > node. This prevents drivers from registering child nodes when those nodes
-> > > do not define a compatible string. One such example is the PSCI
-> > > "reboot-mode" node, which omits a compatible string as it describes
-> > > boot-states provided by the underlying firmware.
-> > >
-> > > Extend struct mfd_cell with a callback that allows drivers to provide an
-> > > explicit firmware node. The node is added to the MFD child device during
-> > > registration when none is assigned by device tree, ACPI, or software
-> > > matching.
-> > >
-> > > Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> > > Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> > > ---
-> > >  drivers/mfd/mfd-core.c   | 30 ++++++++++++++++++++++++++++++
-> > >  include/linux/mfd/core.h | 14 ++++++++++++++
-> > >  2 files changed, 44 insertions(+)
-> > >
-> > > diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
-> > > index 7aa32b90cf1eb7fa0a05bf3dc506e60a262c9850..cc2a2a924d6d3044e29a9f864b536ee325ed797b 100644
-> > > --- a/drivers/mfd/mfd-core.c
-> > > +++ b/drivers/mfd/mfd-core.c
-> > > @@ -10,6 +10,7 @@
-> > >  #include <linux/kernel.h>
-> > >  #include <linux/platform_device.h>
-> > >  #include <linux/acpi.h>
-> > > +#include <linux/fwnode.h>
-> > >  #include <linux/list.h>
-> > >  #include <linux/property.h>
-> > >  #include <linux/mfd/core.h>
-> > > @@ -148,6 +149,11 @@ static int mfd_match_of_node_to_dev(struct platform_device *pdev,
-> > >       return 0;
-> > >  }
-> > >
-> > > +static void mfd_child_fwnode_put(void *data)
-> > > +{
-> > > +     fwnode_handle_put(data);
-> > > +}
-> > > +
-> > >  static int mfd_add_device(struct device *parent, int id,
-> > >                         const struct mfd_cell *cell,
-> > >                         struct resource *mem_base,
-> > > @@ -156,6 +162,7 @@ static int mfd_add_device(struct device *parent, int id,
-> > >       struct resource *res;
-> > >       struct platform_device *pdev;
-> > >       struct mfd_of_node_entry *of_entry, *tmp;
-> > > +     struct fwnode_handle *fwnode;
-> > >       bool disabled = false;
-> > >       int ret = -ENOMEM;
-> > >       int platform_id;
-> > > @@ -224,6 +231,29 @@ static int mfd_add_device(struct device *parent, int id,
-> > >
-> > >       mfd_acpi_add_device(cell, pdev);
-> > >
-> > > +     if (!pdev->dev.fwnode && cell->get_child_fwnode) {
-> > > +             fwnode = cell->get_child_fwnode(parent);
-> > > +             if (fwnode) {
-> > > +                     device_set_node(&pdev->dev, fwnode);
-> > > +
-> > > +                     /*
-> > > +                      * platform_device_release() drops only of_node refs.
-> > > +                      * Track non-OF fwnodes explicitly so they are put on
-> > > +                      * all teardown paths.
-> > > +                      */
-> > > +                     if (!to_of_node(fwnode)) {
-> > > +                             ret = devm_add_action(&pdev->dev,
-> > > +                                                   mfd_child_fwnode_put,
-> > > +                                                   fwnode);
-> > > +                             if (ret) {
-> > > +                                     device_set_node(&pdev->dev, NULL);
-> > > +                                     fwnode_handle_put(fwnode);
-> > > +                                     goto fail_of_entry;
-> > > +                             }
-> > > +                     }
-> > > +             }
-> > > +     }
-> >
-> > mfd_add_device() is getting very busy now with support for all of these
-> > different registration APIs.  Suggest that we start breaking them out.
-> >
-> > > +
-> > >       if (cell->pdata_size) {
-> > >               ret = platform_device_add_data(pdev,
-> > >                                       cell->platform_data, cell->pdata_size);
-> > > diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
-> > > index faeea7abd688f223fb0b31cde0a9b69dfe2a61ff..abfc26c057d6ee46947ba2b6f2e99f420e74b127 100644
-> > > --- a/include/linux/mfd/core.h
-> > > +++ b/include/linux/mfd/core.h
-> > > @@ -50,6 +50,7 @@
-> > >  #define MFD_DEP_LEVEL_HIGH 1
-> > >
-> > >  struct irq_domain;
-> > > +struct fwnode_handle;
-> > >  struct software_node;
-> > >
-> > >  /* Matches ACPI PNP id, either _HID or _CID, or ACPI _ADR */
-> > > @@ -80,6 +81,19 @@ struct mfd_cell {
-> > >
-> > >       /* Software node for the device. */
-> > >       const struct software_node *swnode;
-> > > +     /*
-> > > +      * Callback to return an explicit firmware node.
-> > > +      * @parent: MFD parent device passed to mfd_add_devices().
-> > > +      *
-> > > +      * Called only if OF/ACPI matching did not assign a fwnode.
-> > > +      * Ownership of the returned reference is transferred to MFD core.
-> > > +      *
-> > > +      * Return a referenced fwnode or NULL if none is available.
-> > > +      *
-> > > +      * mfd_cell must be zero-initialized or get_child_fwnode must be NULL
-> > > +      * when unused.
-> > > +      */
-> > > +     struct fwnode_handle *(*get_child_fwnode)(struct device *parent);
-> >
-> > I'm very much against pointers to functions if they can be avoided.  Why
-> > does fwnode need this and none of the other APIs do?
-> >
-> 
-> I suggested it because of its flexibility. The alternative I had in
-> mind is something like a new field in mfd_cell:
-> 
->     const char *cell_node_name;
-> 
-> Which - if set - would tell MFD to look up an fwnode that's a child of
-> the parent device's node by name - as it may not have a compatible.
+param_array_get() appends each element's string representation into the
+shared sysfs page buffer by passing buffer + off to the element getter.
 
-Remind me why the chlid device can't look-up its own fwnode?
+That works for getters that only write a small bounded string, but
+param_get_charp() and similar helpers format against PAGE_SIZE from the
+pointer they receive. Once off is non-zero, an element getter can
+therefore write past the end of the original sysfs page buffer.
 
+Collect each element into a temporary PAGE_SIZE buffer first and then
+copy only the remaining space into the caller's page buffer.
+
+Cc: stable@vger.kernel.org
+Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+ kernel/params.c | 26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/params.c b/kernel/params.c
+index 74d620bc2521..752721922a15 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -475,22 +475,36 @@ static int param_array_set(const char *val, const struct kernel_param *kp)
+ static int param_array_get(char *buffer, const struct kernel_param *kp)
+ {
+ 	int i, off, ret;
++	char *elem_buf;
+ 	const struct kparam_array *arr = kp->arr;
+ 	struct kernel_param p = *kp;
+ 
++	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!elem_buf)
++		return -ENOMEM;
++
+ 	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
+-		/* Replace \n with comma */
+-		if (i)
+-			buffer[off - 1] = ',';
+ 		p.arg = arr->elem + arr->elemsize * i;
+ 		check_kparam_locked(p.mod);
+-		ret = arr->ops->get(buffer + off, &p);
++		ret = arr->ops->get(elem_buf, &p);
+ 		if (ret < 0)
+-			return ret;
++			goto out;
++		ret = min(ret, (int)(PAGE_SIZE - 1 - off));
++		if (!ret)
++			break;
++		/* Replace the previous element's trailing newline with a comma. */
++		if (i)
++			buffer[off - 1] = ',';
++		memcpy(buffer + off, elem_buf, ret);
+ 		off += ret;
++		if (off == PAGE_SIZE - 1)
++			break;
+ 	}
+ 	buffer[off] = '\0';
+-	return off;
++	ret = off;
++out:
++	kfree(elem_buf);
++	return ret;
+ }
+ 
+ static void param_array_free(void *arg)
 -- 
-Lee Jones
+2.34.1
+
