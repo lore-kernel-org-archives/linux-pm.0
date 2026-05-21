@@ -1,203 +1,224 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61AEC38B131;
-	Thu, 21 May 2026 11:26:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1C4519E7F7;
+	Thu, 21 May 2026 11:29:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779362809; cv=none; b=HERwawApsb/z9XeU+ALT0us4DsMDmcGmTv91zCg1PQ+J+HJXGCoYPjgJCp05W9BndLO8XaIiszYLQoCeWSFN3WPicNEg/D7bGE3aPQiKE/wl2p+oYMDpXdgfSzEj+r2PMUc4r+RypPn2+cnWVqPskGKO5p4Ii0Y8E6l/BX4Rz8E=
+	t=1779362947; cv=none; b=qYryNqq83hL1YqxY0N6T8vnkA1y34tuaJQyGvzgFMUQWphNx02pUCigbeK27DkWaaFHcaT4ZXvhZnK3bEs4bl1tcopZAozDVfRaneyDj+yH8BwNSmd+YB3+0VLNXfPGX4yZEm0/JIoJaMREJrNKZgorCU1VcXVTxaYTxmK8pDLc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779362809; c=relaxed/simple;
-	bh=yEN8fhIxz2UwS5kyxtEBBv0dMXYljGUB8RPNNFeQVkQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Akor51YfEX0X4aMVCNVubUC7JjKArywun36vRFDJoI4lJVFr+dthb9sz26gHuWrzYkKKQY7F/y856Kk316y9GOfOY+s18bF/goKWX3b30LefqBdncGaothxOSiKciSH5a839qmFrjv4/CpjFv7yzwz+G1DsPZZSdh+4BqBdmZcg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YknBrn9k; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779362947; c=relaxed/simple;
+	bh=r2VbEkG2P6wCDPABwQmhLXjFxp+Dar+DSHzQ4UznYGQ=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=vGU0yhvv2hnYT1Ht5J7ivcotvANYzCHEXdbTut4gINQB+0l35C1t9P7FEbk79IiS4RuOBnjdGzbItk+3BdLG73U6qPdmqNtNEXnp72ASJU0lBQPKCib+0cOTCcHFz0DlODR7TlQRfsKXaewbHY6LmmfpdS7ZuewOCcJCnhqhVHY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DXp0gLsJ; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YknBrn9k"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 207021F000E9;
-	Thu, 21 May 2026 11:26:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779362808;
-	bh=UZOTOngkbfj30aKE5h0OheISuX6tazoHMxsmKuVcuU8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YknBrn9kiMeaSTRI5stxMpPOhLCuv//1zvSkCq9TrxnhvQVUZi90Ibx6SNCLL2+c9
-	 1f9NhY9sd9GPPpZl+xrHLLtgsR0jHAQrg2aAIdocwHaUOOJnoZS1Oq1XQ3Aome8SpV
-	 nB8o+D12abKjKOLGHshtpVVCPx/trcADPRHMA/dbbxJcR5NQ2dp7TjQse3XlQlk82h
-	 pPLFc954YP2q/udXd94u/7aALaBOfqHoXXVA67i7koQng6GhIR8dEKsHehwnAELkLl
-	 ikQcgsaQmJxnSiolThEawMr79VBhwBN4ckowU42WuBQznI+D203WXd2Zb2TtdTaXd/
-	 Uv+MRCmq+cMHA==
-Date: Thu, 21 May 2026 12:26:38 +0100
-From: Lee Jones <lee@kernel.org>
-To: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Souvik Chakravarty <Souvik.Chakravarty@arm.com>,
-	Andy Yan <andy.yan@rock-chips.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	John Stultz <john.stultz@linaro.org>,
-	Moritz Fischer <moritz.fischer@ettus.com>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Sudeep Holla <sudeep.holla@kernel.org>, linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
-	Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>,
-	Andre Draszik <andre.draszik@linaro.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Kathiravan Thirumoorthy <kathiravan.thirumoorthy@oss.qualcomm.com>,
-	Srinivas Kandagatla <srini@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v22 08/13] mfd: core: Add firmware-node support to MFD
- cells
-Message-ID: <20260521112638.GD2921053@google.com>
-References: <20260514-arm-psci-system_reset2-vendor-reboots-v22-0-28a5bde07483@oss.qualcomm.com>
- <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DXp0gLsJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779362946; x=1810898946;
+  h=date:from:to:cc:subject:message-id;
+  bh=r2VbEkG2P6wCDPABwQmhLXjFxp+Dar+DSHzQ4UznYGQ=;
+  b=DXp0gLsJWBpshRRA0EFjZz2wCUNTesqNP9pXaQMdZbdgLKMHUvI1qTJi
+   fEM8RsYHiz2joT9GDLn16By8JfZZm0oqT5N2WTe6bQUVrb4XiYLwg6yVy
+   /qTgB1KeaZ6IvD2tSaig4ViXlxO5P3Za46m70cbANfXgu28v88QW0Jc3n
+   79ygXPvRLCYHwqHJymeDUIjTq0w1xhUTN2pskK3bxzs/XYgtEfNCGsUrv
+   IZrurrD14kJv2/Yn0a8Tac6jVSF0/5UPvwe56ThQU+FV0AG0pOnUjgJoZ
+   Fc4P4nu3ZCChmT1A1wBpJXY/L3L4xd6njJA9oR/u8fNvZT+A7STTgZc3i
+   A==;
+X-CSE-ConnectionGUID: nlmmMdBsTNqsP7o6UL3enQ==
+X-CSE-MsgGUID: 9QNuSGHlRSic0ag642ntvA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11792"; a="80334416"
+X-IronPort-AV: E=Sophos;i="6.23,246,1770624000"; 
+   d="scan'208";a="80334416"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 May 2026 04:29:05 -0700
+X-CSE-ConnectionGUID: UuZaFRumSQC2SWzakXY9pA==
+X-CSE-MsgGUID: dkqufxtiQ7ikLDYzfMOk2w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,246,1770624000"; 
+   d="scan'208";a="239492391"
+Received: from lkp-server01.sh.intel.com (HELO fdb68b0ce653) ([10.239.97.150])
+  by orviesa006.jf.intel.com with ESMTP; 21 May 2026 04:29:04 -0700
+Received: from kbuild by fdb68b0ce653 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wQ1aH-000000000Cf-1hQ3;
+	Thu, 21 May 2026 11:29:01 +0000
+Date: Thu, 21 May 2026 19:28:57 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 5a12f05e047646e7c25c73482cd4d21fe297903b
+Message-ID: <202605211949.RW6CM6Jm-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260514-arm-psci-system_reset2-vendor-reboots-v22-8-28a5bde07483@oss.qualcomm.com>
 
-On Thu, 14 May 2026, Shivendra Pratap wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 5a12f05e047646e7c25c73482cd4d21fe297903b  Merge branch 'pm-cpuidle' into bleeding-edge
 
-> MFD core has no way to register a child device using an explicit firmware
-> node. This prevents drivers from registering child nodes when those nodes
-> do not define a compatible string. One such example is the PSCI
-> "reboot-mode" node, which omits a compatible string as it describes
-> boot-states provided by the underlying firmware.
-> 
-> Extend struct mfd_cell with a callback that allows drivers to provide an
-> explicit firmware node. The node is added to the MFD child device during
-> registration when none is assigned by device tree, ACPI, or software
-> matching.
-> 
-> Suggested-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> Signed-off-by: Shivendra Pratap <shivendra.pratap@oss.qualcomm.com>
-> ---
->  drivers/mfd/mfd-core.c   | 30 ++++++++++++++++++++++++++++++
->  include/linux/mfd/core.h | 14 ++++++++++++++
->  2 files changed, 44 insertions(+)
-> 
-> diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
-> index 7aa32b90cf1eb7fa0a05bf3dc506e60a262c9850..cc2a2a924d6d3044e29a9f864b536ee325ed797b 100644
-> --- a/drivers/mfd/mfd-core.c
-> +++ b/drivers/mfd/mfd-core.c
-> @@ -10,6 +10,7 @@
->  #include <linux/kernel.h>
->  #include <linux/platform_device.h>
->  #include <linux/acpi.h>
-> +#include <linux/fwnode.h>
->  #include <linux/list.h>
->  #include <linux/property.h>
->  #include <linux/mfd/core.h>
-> @@ -148,6 +149,11 @@ static int mfd_match_of_node_to_dev(struct platform_device *pdev,
->  	return 0;
->  }
->  
-> +static void mfd_child_fwnode_put(void *data)
-> +{
-> +	fwnode_handle_put(data);
-> +}
-> +
->  static int mfd_add_device(struct device *parent, int id,
->  			  const struct mfd_cell *cell,
->  			  struct resource *mem_base,
-> @@ -156,6 +162,7 @@ static int mfd_add_device(struct device *parent, int id,
->  	struct resource *res;
->  	struct platform_device *pdev;
->  	struct mfd_of_node_entry *of_entry, *tmp;
-> +	struct fwnode_handle *fwnode;
->  	bool disabled = false;
->  	int ret = -ENOMEM;
->  	int platform_id;
-> @@ -224,6 +231,29 @@ static int mfd_add_device(struct device *parent, int id,
->  
->  	mfd_acpi_add_device(cell, pdev);
->  
-> +	if (!pdev->dev.fwnode && cell->get_child_fwnode) {
-> +		fwnode = cell->get_child_fwnode(parent);
-> +		if (fwnode) {
-> +			device_set_node(&pdev->dev, fwnode);
-> +
-> +			/*
-> +			 * platform_device_release() drops only of_node refs.
-> +			 * Track non-OF fwnodes explicitly so they are put on
-> +			 * all teardown paths.
-> +			 */
-> +			if (!to_of_node(fwnode)) {
-> +				ret = devm_add_action(&pdev->dev,
-> +						      mfd_child_fwnode_put,
-> +						      fwnode);
-> +				if (ret) {
-> +					device_set_node(&pdev->dev, NULL);
-> +					fwnode_handle_put(fwnode);
-> +					goto fail_of_entry;
-> +				}
-> +			}
-> +		}
-> +	}
+elapsed time: 876m
 
-mfd_add_device() is getting very busy now with support for all of these
-different registration APIs.  Suggest that we start breaking them out.
+configs tested: 147
+configs skipped: 3
 
-> +
->  	if (cell->pdata_size) {
->  		ret = platform_device_add_data(pdev,
->  					cell->platform_data, cell->pdata_size);
-> diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
-> index faeea7abd688f223fb0b31cde0a9b69dfe2a61ff..abfc26c057d6ee46947ba2b6f2e99f420e74b127 100644
-> --- a/include/linux/mfd/core.h
-> +++ b/include/linux/mfd/core.h
-> @@ -50,6 +50,7 @@
->  #define MFD_DEP_LEVEL_HIGH 1
->  
->  struct irq_domain;
-> +struct fwnode_handle;
->  struct software_node;
->  
->  /* Matches ACPI PNP id, either _HID or _CID, or ACPI _ADR */
-> @@ -80,6 +81,19 @@ struct mfd_cell {
->  
->  	/* Software node for the device. */
->  	const struct software_node *swnode;
-> +	/*
-> +	 * Callback to return an explicit firmware node.
-> +	 * @parent: MFD parent device passed to mfd_add_devices().
-> +	 *
-> +	 * Called only if OF/ACPI matching did not assign a fwnode.
-> +	 * Ownership of the returned reference is transferred to MFD core.
-> +	 *
-> +	 * Return a referenced fwnode or NULL if none is available.
-> +	 *
-> +	 * mfd_cell must be zero-initialized or get_child_fwnode must be NULL
-> +	 * when unused.
-> +	 */
-> +	struct fwnode_handle *(*get_child_fwnode)(struct device *parent);
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I'm very much against pointers to functions if they can be avoided.  Why
-does fwnode need this and none of the other APIs do?
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+arc                              allmodconfig    gcc-15.2.0
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    gcc-15.2.0
+arc                   randconfig-001-20260521    gcc-13.4.0
+arc                   randconfig-002-20260521    gcc-12.5.0
+arm                               allnoconfig    clang-23
+arm                              allyesconfig    gcc-15.2.0
+arm                   randconfig-001-20260521    clang-23
+arm                   randconfig-002-20260521    gcc-12.5.0
+arm                   randconfig-003-20260521    gcc-13.4.0
+arm                   randconfig-004-20260521    gcc-8.5.0
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.2.0
+arm64                          randconfig-001    gcc-8.5.0
+arm64                 randconfig-001-20260521    clang-23
+arm64                          randconfig-002    gcc-14.3.0
+arm64                 randconfig-002-20260521    gcc-8.5.0
+arm64                          randconfig-003    clang-23
+arm64                 randconfig-003-20260521    gcc-8.5.0
+arm64                          randconfig-004    clang-23
+arm64                 randconfig-004-20260521    gcc-8.5.0
+csky                              allnoconfig    gcc-15.2.0
+csky                           randconfig-001    gcc-10.5.0
+csky                  randconfig-001-20260521    gcc-15.2.0
+csky                           randconfig-002    gcc-10.5.0
+csky                  randconfig-002-20260521    gcc-15.2.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-23
+hexagon               randconfig-001-20260521    clang-23
+hexagon               randconfig-002-20260521    clang-23
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386                  randconfig-011-20260521    gcc-14
+i386                  randconfig-012-20260521    clang-20
+i386                  randconfig-013-20260521    gcc-13
+i386                  randconfig-014-20260521    gcc-14
+i386                  randconfig-015-20260521    gcc-14
+i386                  randconfig-016-20260521    clang-20
+i386                  randconfig-017-20260521    clang-20
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-23
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20260521    gcc-12.5.0
+loongarch             randconfig-002-20260521    gcc-15.2.0
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    gcc-15.2.0
+m68k                                defconfig    gcc-15.2.0
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    gcc-15.2.0
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260521    gcc-11.5.0
+nios2                 randconfig-002-20260521    gcc-11.5.0
+openrisc                         allmodconfig    gcc-15.2.0
+openrisc                          allnoconfig    gcc-15.2.0
+openrisc                            defconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    gcc-15.2.0
+parisc                              defconfig    gcc-15.2.0
+parisc                         randconfig-001    gcc-13.4.0
+parisc                randconfig-001-20260521    gcc-12.5.0
+parisc                         randconfig-002    gcc-8.5.0
+parisc                randconfig-002-20260521    gcc-15.2.0
+parisc64                            defconfig    gcc-15.2.0
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc                        randconfig-001    gcc-13.4.0
+powerpc               randconfig-001-20260521    clang-23
+powerpc                        randconfig-002    gcc-10.5.0
+powerpc               randconfig-002-20260521    clang-17
+powerpc64                      randconfig-001    clang-17
+powerpc64             randconfig-001-20260521    clang-23
+powerpc64                      randconfig-002    clang-23
+powerpc64             randconfig-002-20260521    gcc-12.5.0
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260521    clang-23
+riscv                 randconfig-002-20260521    gcc-13.4.0
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    clang-23
+s390                  randconfig-001-20260521    gcc-8.5.0
+s390                  randconfig-002-20260521    clang-17
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-15.2.0
+sh                    randconfig-001-20260521    gcc-15.2.0
+sh                    randconfig-002-20260521    gcc-12.5.0
+sparc                             allnoconfig    gcc-15.2.0
+sparc                               defconfig    gcc-15.2.0
+sparc                 randconfig-001-20260521    gcc-8.5.0
+sparc                 randconfig-002-20260521    gcc-8.5.0
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    clang-20
+sparc64               randconfig-001-20260521    gcc-8.5.0
+sparc64               randconfig-002-20260521    gcc-8.5.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260521    gcc-14
+um                    randconfig-002-20260521    gcc-14
+um                           x86_64_defconfig    clang-23
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20260521    gcc-12
+x86_64      buildonly-randconfig-002-20260521    gcc-14
+x86_64      buildonly-randconfig-003-20260521    clang-20
+x86_64      buildonly-randconfig-004-20260521    gcc-14
+x86_64      buildonly-randconfig-005-20260521    clang-20
+x86_64      buildonly-randconfig-006-20260521    clang-20
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-001-20260521    clang-20
+x86_64                randconfig-002-20260521    clang-20
+x86_64                randconfig-003-20260521    gcc-14
+x86_64                randconfig-004-20260521    clang-20
+x86_64                randconfig-005-20260521    clang-20
+x86_64                randconfig-006-20260521    clang-20
+x86_64                         randconfig-011    gcc-14
+x86_64                         randconfig-015    gcc-14
+x86_64                randconfig-071-20260521    clang-20
+x86_64                randconfig-072-20260521    clang-20
+x86_64                randconfig-073-20260521    clang-20
+x86_64                randconfig-074-20260521    gcc-14
+x86_64                randconfig-075-20260521    clang-20
+x86_64                randconfig-076-20260521    clang-20
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                           allyesconfig    gcc-15.2.0
+xtensa                randconfig-001-20260521    gcc-8.5.0
+xtensa                randconfig-002-20260521    gcc-11.5.0
 
->  	/*
->  	 * Device Tree compatible string
-> 
-> -- 
-> 2.34.1
-> 
-
--- 
-Lee Jones
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
