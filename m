@@ -1,86 +1,130 @@
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FC103CD8C7;
-	Thu, 21 May 2026 12:23:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.217
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCFFD3CE0A2;
+	Thu, 21 May 2026 12:28:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779366184; cv=none; b=lKJi7vsMaWp5T6sIK6fHolJTw559HCoidzqZ2D0ApEvWpyUJiuEwut932oW5/60y9A4EG6C8SHr2YSkO9pG4xMnGU2qXnB+NX0hhen5Nd3AvqdCZdwT0cN6CDNkOIfRsugfJex1ZY3T2bgSPxnLpUI71og+acNLORLBw+6RWwWw=
+	t=1779366514; cv=none; b=jhC9GZUH085cuFZJ43Xtzp9YkfP7Qv11IJQltziZ8JXCOuJOPcPCp9ffQN5g1XR03Tyl5UK4fHytM2PWNqyN3wkaVOpBZh2ZvzJUO17lp3gwQ8nV4ebQLPvUQfLd2BEggK59Y9Ae+5CsvY+lUZN8HEioD2Qm5uQlIKDWe0pQrV8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779366184; c=relaxed/simple;
-	bh=1XFn7Ktf2O9hnTWVhIFaQs+iv6QZWebvBwLwbjM9J4w=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ZRgV3r29w3vHT5E/QNmCsWHtYm8az23+PnjI30uN4FxtdBgSxT1g4ZxijuhY9mtAYi29K9hTFPovBekZjkvzDWJSIYatUCD0xYhjABVXSBcFpPZcpLnkmuuIIOYHu97x83YzhyL0WFAtnJJ2HP41FsqwOWMULon+O1tufOxscxM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=ua/QpZFS; arc=none smtp.client-ip=113.46.200.217
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1779366514; c=relaxed/simple;
+	bh=TKIdjWtuJbDwOtSpj7b/Zh2d8/ZrukOOq3vxnWkUsXo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LC/T+GBcn2LJTo143T9NAiVUqFZrmIBZH6xe33pnQY01Z/tBb5lr9iEPC9MUNT/YIDFnl6Gf6g+JIhruosMB8BAX3o9zPddwUxJFPtVI+vM0WYmMtEHcxs3ydU1ioNqGWO785uj8yfejU3tzQ+q1piFx7XbgNvj5Vg7HaLwA8Kk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=M82Y8mbU; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="ua/QpZFS"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=BbhXJc4Kk8mAkPS6Z+ldMvtEPzzQworR68rQFh2fNUo=;
-	b=ua/QpZFSwO/963ISxGUPXC8kTZgQw1i+9+aO4yJdE4nLpGFq2dgdMmzMtWLh3IbRYesoWALKc
-	IhEyi4l1w3FdHT/9RZJeOXFv9hwLB8MVz5vYrU3q3CiEemOXEl5OIl27SOd4mcFd/k5fCx/eVh0
-	l48/fZXZRsMleRmiqnQhXVk=
-Received: from mail.maildlp.com (unknown [172.19.162.223])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4gLnRY4jtqzcb4G;
-	Thu, 21 May 2026 20:15:21 +0800 (CST)
-Received: from kwepemf100001.china.huawei.com (unknown [7.202.181.215])
-	by mail.maildlp.com (Postfix) with ESMTPS id B470140571;
-	Thu, 21 May 2026 20:22:57 +0800 (CST)
-Received: from [10.67.121.90] (10.67.121.90) by kwepemf100001.china.huawei.com
- (7.202.181.215) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.36; Thu, 21 May
- 2026 20:22:57 +0800
-Message-ID: <88b19c68-2a0e-4a65-948c-9c535b75620a@huawei.com>
-Date: Thu, 21 May 2026 20:22:56 +0800
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="M82Y8mbU"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64L99vdb2491833;
+	Thu, 21 May 2026 12:28:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=yuqEmGmJ+dJ3AxgG2mfeA7Qr
+	FNd0O3Iro8nSgbOpzyc=; b=M82Y8mbUuGWX2Ot47bzdbq1nU29gYG0iNMYxa81M
+	aPAS+DNjMcGMz7OPMnkKhYHMBMe2gHJ0ugHncLRRggiZ8X48l0n3KcxnxLbtrK6X
+	7qBMpAn/V0Xgi2UURRm2AgzBxZX8f4fOy9DxQ1POsUaHzJGcrSUAEma8HULUX23F
+	DoCesnTnIpRiKUGx3JlCV1wEiSE2sMlV+G0kzje88Tgy4S0k+BsXI+LEM+Rb38ib
+	5ev8pnXTjtvNUyY4wLDYOu7CgP5Z7ejhS+HNWSkFe6cVCH7MSnew1yrL0xwiThGq
+	uBh+iLyrVlsGTLesEDLoWM+j9Rt66PRn5R2iWjksPRifKQ==
+Received: from apblrppmta02.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e9e9j4xs2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 May 2026 12:28:30 +0000 (GMT)
+Received: from pps.filterd (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (8.18.1.7/8.18.1.7) with ESMTP id 64LCSROI007036;
+	Thu, 21 May 2026 12:28:27 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 4e716e9whx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 May 2026 12:28:27 +0000 (GMT)
+Received: from APBLRPPMTA02.qualcomm.com (APBLRPPMTA02.qualcomm.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 64LCSQBj007030;
+	Thu, 21 May 2026 12:28:26 GMT
+Received: from hu-devc-hyd-u22-c.qualcomm.com (hu-kotarake-hyd.qualcomm.com [10.213.97.140])
+	by APBLRPPMTA02.qualcomm.com (PPS) with ESMTPS id 64LCSQVu007029
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 May 2026 12:28:26 +0000 (GMT)
+Received: by hu-devc-hyd-u22-c.qualcomm.com (Postfix, from userid 2389607)
+	id F3181B36; Thu, 21 May 2026 17:58:25 +0530 (+0530)
+Date: Thu, 21 May 2026 17:58:25 +0530
+From: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        jishnu.prakash@oss.qualcomm.com, kamal.wadhwa@oss.qualcomm.com
+Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
+ support
+Message-ID: <20260521122825.tfntz6vu4omvwa6t@hu-kotarake-hyd.qualcomm.com>
+References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
+ <56a54a34-1040-44ae-92e2-ce65a3d3acb5@oss.qualcomm.com>
+ <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
+ <91832aec-22f0-4244-9989-39bbd8defb24@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] cpufreq: Fix typo in comment
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki"
-	<rafael@kernel.org>
-CC: <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>,
-	Sumit Semwal <sumit.semwal@linaro.org>, <linux-kernel@vger.kernel.org>
-References: <6fef156008fc6b70069f3cfedb7de02fe54f2696.1779360823.git.viresh.kumar@linaro.org>
-From: "zhenglifeng (A)" <zhenglifeng1@huawei.com>
-In-Reply-To: <6fef156008fc6b70069f3cfedb7de02fe54f2696.1779360823.git.viresh.kumar@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemf100001.china.huawei.com (7.202.181.215)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <91832aec-22f0-4244-9989-39bbd8defb24@oss.qualcomm.com>
+X-QCInternal: smtphost
+X-QCInternal: smtphost
+X-Authority-Analysis: v=2.4 cv=bfhbluPB c=1 sm=1 tr=0 ts=6a0efa6e cx=c_pps
+ a=Ou0eQOY4+eZoSc0qltEV5Q==:117 a=Ou0eQOY4+eZoSc0qltEV5Q==:17
+ a=kj9zAlcOel0A:10 a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22 a=4BUObyQTvJTuzYX1E2EA:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: ZyP4ISlPXVNytaebekqwfsHSp8xYGYni
+X-Proofpoint-ORIG-GUID: ZyP4ISlPXVNytaebekqwfsHSp8xYGYni
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIxMDEyNSBTYWx0ZWRfXxG3PB/k9roOg
+ a+7XVTJSJ3RbeAmCegj4H+zpBBwjwp/BgxlxrKYU1/YD6MNEVKx9RyKfX82x6w2qnQLsdw06y7i
+ ixYl+txudgneDkUBEsE9zOxpL4W2XZ00ZaZIFAuoKUNPz+W+vpuwOFs0p5YNVN01bPccvV/vlVZ
+ wm7xslbznB/3maftjWwS5q6Bxb63jDAP2s5zFdHihqgqBPFD+lH7YgJKH4PnDaKUT7fqsJktjqf
+ M78R36zOeosgcYqcHSQQg2OPY0Ryr/lT+09QXQ4UoD5D8z4eVgT6H5f4BW4V2MUSrAYusjc033Z
+ dTgYfKrX5srceGp6WloBGEy3OQmw3jhisB6e7W0KGlvhZXZzAbSyP/hYW0Wa4f0UK1GYtymRaph
+ +ET3rpvRf0QAaITroRIacCbIbQwJ4+CdTDaEcuaeXkVyiD3/Kk92nASS9uoIWW50T/t0Ht1/QXW
+ NJS0O+h7Fq8waV7UiUw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-21_02,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 lowpriorityscore=0 impostorscore=0 priorityscore=1501
+ bulkscore=0 clxscore=1015 adultscore=0 spamscore=0 malwarescore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605210125
 
-On 5/21/2026 7:39 PM, Viresh Kumar wrote:
-> Replace "diver" with "driver" in the comment describing
-> CPUFREQ_NEED_UPDATE_LIMITS.
+On Tue, May 19, 2026 at 12:58:06PM +0200, Konrad Dybcio wrote:
+> On 5/19/26 8:59 AM, Rakesh Kota wrote:
+> > On Mon, May 18, 2026 at 04:36:32PM +0200, Konrad Dybcio wrote:
+> >> On 5/18/26 3:49 PM, Rakesh Kota wrote:
+> >>> On batteryless boards powered by 12V DC adapters, registering the
+> >>> power supply as BATTERY causes userspace to incorrectly trigger
+> >>> battery power-saving sequences.
+> >>
+> >> Does battman really offer no way of differentiating whether a battery
+> >> is *actually* present in such cases?
+> >>
+> >> What boards are affected?
+> >>
+> > Currently, batteryless support is only implemented for the
+> > qcs6490-rb3gen2(Kodiak) board.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  include/linux/cpufreq.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 2ab691828e48..4d4b4ed24b30 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -434,7 +434,7 @@ struct cpufreq_driver {
->  /*
->   * Set by drivers that need to update internal upper and lower boundaries along
->   * with the target frequency and so the core and governors should also invoke
-> - * the diver if the target frequency does not change, but the policy min or max
-> + * the driver if the target frequency does not change, but the policy min or max
->   * may have changed.
->   */
->  #define CPUFREQ_NEED_UPDATE_LIMITS		BIT(0)
+> Does the firmware report anything obvious that would point to this not
+> being a battery, e.g. design_capacity = 0?
+>
+No. The firmware identifies the 10k Batt-ID resistor (which mimics a
+physical battery) and hardcodes capacity and status values to
+ensure boot stability. It does not report 0 capacity, as doing so would
+trigger an immediate system shutdown.
 
-For all three patches:
-
-Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
-
-Thanks for always doing things so fast.
-
+regards
+Rakesh
+> Konrad
