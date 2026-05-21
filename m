@@ -1,92 +1,82 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41DD629B79B;
-	Thu, 21 May 2026 21:57:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9C7735975;
+	Thu, 21 May 2026 22:56:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779400638; cv=none; b=g3ri1K2syi493HRXGabF/p0S3gcGPNeButlJaNXwoHQyMoBcuSUv9WrN272+s2rRSbREXkcI6rynEuzXXh9kX4UCXb5/ghk0qzjH1Sg96K6hWNeTOnEAsW+Y9LMGlaHjZ3X5TcgSp26ii/WCVTxHJM0N+wcd0ZwWmI0ndiOp54U=
+	t=1779404195; cv=none; b=Zkb9X04DrkiuO9KPJCr53RnmH3XtS0MU2U+C21Cy9zYlwrybEMKQk9n3weh1PkE4UR0QLyUDMHdKizyBx9lK9sGh724ZAwz7iI3gGSJeMU+/I2XQP+rYwkLWeKBp9nBytXV8Od1Xrg7MdNTbJPxOrgfkzfaMCMvG60+yQ8UwYhQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779400638; c=relaxed/simple;
-	bh=RKZaDLBpqrBx49aoCtLI+MLcTjOXaAaGMqfE5CYnRj0=;
+	s=arc-20240116; t=1779404195; c=relaxed/simple;
+	bh=bMZAJMrhnl5mtLM3XXeIQK/Kapd/yQRGPTj7JFVbg2s=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eEe3WjfnvMFf9p2zkAjWf5DXjf4gL2JaxLW0sA+smZfSS7ps0cCYQ+/ZCoRQsauJyrqj2YGfIQFSXurUqjv3nbvxIDpOzcZwsYt+J0xjJy11boTlBQBjCqJMmlUKJqi1NXXI1ZWrOVFiC7Wx/UH9fw/AsnD9JXoV+J19NEmd/4A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m4Sm8W4X; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=OGTsVCUjeo0j7f8ohGeB2a0GZ/ckihha3652RQUqdh+2e0qcuGeOr2BpiATh4h+xIvF6zRobwBzy9FQ8RuAUUMnd3bWbQ+FZlMhc2gxAN0dBWltbtf7TarBCDZcFg6Fds+4t6BkiWqmg7pMlxRB5/nnq5gBk8czFusq9QCz87EI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TwHlTSwN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m4Sm8W4X"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0201C1F000E9;
-	Thu, 21 May 2026 21:57:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TwHlTSwN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D2081F000E9;
+	Thu, 21 May 2026 22:56:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779400636;
-	bh=uQbQcM+2LFhGGCQDe0XZ51z9pdAsNMcpd6iW+ZY+bYQ=;
+	s=k20260515; t=1779404194;
+	bh=7cg3PP8ir4Dvr0mIjKf6vyi330dA3SFiHExUj/R/Euc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m4Sm8W4XsTe7axywiz1sP4asRFABCkdxRrgHOQEvE4uLdMIZTWhsxwDe+Qnon4pxz
-	 6vQUSsH5TKerM0Za1lrlru6wAE/9mibrGrvdOUPQBpFRlv9GgxY6b4K7+CG8ZfUOHj
-	 jsR+Dz7PYi7uM/35p8NwiI4yBBLlKaYcoy/lfVn2w8LVPSi8Ql/NBsjR+Z4hgMdxmh
-	 lJn+XXPfzvr1OLGB8uMECc8WGQ9ozLAT3aScQP8Z1QSu1L/PB3PRjEXejKxQkQivx+
-	 EKsFxS0VMMhLfdBD5J+z7uRPtLu0OyRmvQ+txqxoIrBPx8CS3hXETEG4sR0MHmVW4D
-	 H+/z/Pv9KKX8g==
-Date: Thu, 21 May 2026 22:57:08 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ankur Arora <ankur.a.arora@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org, linux-next@vger.kernel.org,
-	bpf@vger.kernel.org, arnd@arndb.de, catalin.marinas@arm.com,
-	will@kernel.org, peterz@infradead.org, mark.rutland@arm.com,
-	harisokn@amazon.com, cl@gentwo.org, ast@kernel.org,
-	rafael@kernel.org, daniel.lezcano@linaro.org, memxor@gmail.com,
-	zhenglifeng1@huawei.com, xueshuai@linux.alibaba.com,
-	rdunlap@infradead.org, david.laight.linux@gmail.com,
-	joao.m.martins@oracle.com, boris.ostrovsky@oracle.com,
-	konrad.wilk@oracle.com, ashok.bhat@arm.com,
-	Boqun Feng <boqun.feng@gmail.com>, Boqun Feng <boqun@kernel.org>,
-	Christoph Lameter <cl@linux.com>, Ingo Molnar <mingo@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>
-Subject: Re: [PATCH v11 1/2] kunit: add tests for smp_cond_load_*_timeout()
-Message-ID: <47cfb505-5d96-43d5-bc2c-961f61fa7fea@sirena.org.uk>
-References: <20260408122538.3610871-15-ankur.a.arora@oracle.com>
- <20260521083038.134260-1-ankur.a.arora@oracle.com>
- <20260521144629.11ee1e2ff88c5387a589f54a@linux-foundation.org>
+	b=TwHlTSwNc9VSV72PesrrH/8a3Q9VZZAvH0Oj8RNk3JnqzscjLlEfmiimuADYaTxSO
+	 lTlPhKGW8Fi0qhvQBgXq7n/jxVza8NsgWdR0X8fgG0hUdXl/gpK9ii1P1DpVbQtAY2
+	 M98jd/tvlmxRA4xaHvTcbALwNI2DkK8YNCIZhlhsuHgQ5ElKFS/Cg+zLDoqBDDvM2y
+	 Os4dwt+SYb1CJZxS5nMqt7PnC9gT6qp2DxVFBtAl4ZRQiItgMTNit/est6lO4jNF5N
+	 LqTHrsdLmvDJ3s4SF9C1M6jIVWFewzx/nRLcwNmHK7peV2O2IWvCfdaHmd5el04RLt
+	 0/S9idqtE66og==
+Date: Thu, 21 May 2026 17:56:29 -0500
+From: Bjorn Andersson <andersson@kernel.org>
+To: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jishnu.prakash@oss.qualcomm.com, 
+	kamal.wadhwa@oss.qualcomm.com
+Subject: Re: [PATCH 0/2] qcom_battmgr: Add batteryless DC-adapter MAINS
+ support
+Message-ID: <ag-NLvh4ROgTCs_L@baldur>
+References: <20260518-add_dc_in_support-v1-0-31fbaa329879@oss.qualcomm.com>
+ <56a54a34-1040-44ae-92e2-ce65a3d3acb5@oss.qualcomm.com>
+ <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="iR8o3p4d1Gu3Q0D/"
-Content-Disposition: inline
-In-Reply-To: <20260521144629.11ee1e2ff88c5387a589f54a@linux-foundation.org>
-X-Cookie: No shirt, no shoes, no service.
-
-
---iR8o3p4d1Gu3Q0D/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20260519065938.4i5wot72pfxy4m3d@hu-kotarake-hyd.qualcomm.com>
 
-On Thu, May 21, 2026 at 02:46:29PM -0700, Andrew Morton wrote:
+On Tue, May 19, 2026 at 12:29:38PM +0530, Rakesh Kota wrote:
+> On Mon, May 18, 2026 at 04:36:32PM +0200, Konrad Dybcio wrote:
+> > On 5/18/26 3:49 PM, Rakesh Kota wrote:
+> > > On batteryless boards powered by 12V DC adapters, registering the
+> > > power supply as BATTERY causes userspace to incorrectly trigger
+> > > battery power-saving sequences.
+> > 
+> > Does battman really offer no way of differentiating whether a battery
+> > is *actually* present in such cases?
+> >
+> > What boards are affected?
+> >
+> Currently, batteryless support is only implemented for the
+> qcs6490-rb3gen2(Kodiak) board.
+> 
 
-> Anyway, I removed the series "barrier: Add
-> smp_cond_load_{relaxed,acquire}_timeout()" from mm.git on May 19 for
-> forgotten reasons.  So I suggest that the series be respun and resent,
-> with these two test patches included.
+What do you mean?
 
-The tests were failing on arm64 when run on hardware (rather than qemu).
+Are you saying that the pmic_glink firmware in Kodiak has a one-off hack
+that no other implementation of this firmware has?
 
---iR8o3p4d1Gu3Q0D/
-Content-Type: application/pgp-signature; name="signature.asc"
+My Lenovo IdeaCentre (hamoa) doesn't have battery, what should I do now?
 
------BEGIN PGP SIGNATURE-----
+Regards,
+Bjorn
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmoPf7MACgkQJNaLcl1U
-h9ArKgf/WBzu7kRDlWjCMxxM9PE8zNgetiSk55MAn0i/cLo7V5upiJIuWjWAQ/5V
-HXFCzW8WqDm/C/fgLgagDfAeXryA8mQHNzj+/GfwyEMoi7U4axGE0JAbRApQG6tR
-pdoCuQvFQny3cRv8fUhuur9cUuk1bAqSyU1DJK3Cd3GsHu+WOZLAsAJ5ybxGhO+L
-2S58wosHLfeML83EnX2ksuxisglbtbLAolTETorArAclmbGRmeeUWDu7FEgbxJeV
-t3xPOoO0SEvmyi0l5pF0aS1qlhWanVmbPZeAojeRABt3u1fLn4RrBCD3QMmmovTA
-R2tbzJ5cLsnrfq45zTTFtfM1xAenLw==
-=i6eZ
------END PGP SIGNATURE-----
-
---iR8o3p4d1Gu3Q0D/--
+> regards
+> Rakesh
+> > Konrad
