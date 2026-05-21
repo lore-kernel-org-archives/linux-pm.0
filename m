@@ -1,242 +1,152 @@
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F6CC377EBF
-	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 07:58:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDACB399017
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 08:00:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779350331; cv=none; b=PbKinVaHXIsdSpJtNoDRVofgEq2ly9hcX/dRPzggoN7lWMcyshKl679BLd0GDzKzpN1nyL6TUkFp9eyojABU5apqvr9wXZj3y4mtWfEdb7CFfaRYXinE86dpupyAsS+6+JV5RyXdl5GaJEQon7h+YALdHcAJrbzeusbvQG706os=
+	t=1779350410; cv=none; b=sEIr1fmeOrYXpOq0OO5fezQuIvAGUC7yOU6//4H34SgMFvHitdQxEvJtlJDCDf5Z6DtgnOoZBbBiTGRCk9Yr0hHtHIaBAqY+4rUV1XlIJXw2fV0qkC9U6qH+5Jr7l01z6CsQrJXGiW8x80q5eOgcFuiOUEse4N2d1/qsL43E+pk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779350331; c=relaxed/simple;
-	bh=Elps9fBi5BZscgNouP94RbYaiN1UBZynj82GY8eI3js=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=d6vv6VrMLsSKiUE/3/OHvlYW720l34+ptHAjfacg/7pmvTtVHCaOb3vcbD7RB2G20La7Ea7EGdIpsXptR5ic55Gvee03WjVA2Cn4sBjyDmtTZe0QcliKXONXt2P6K8Q1QWa0hzReOxT5Ls1AAJsnjLc1ZyugawpdxIAzt8Pqvtc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.210.178
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pf1-f178.google.com with SMTP id d2e1a72fcca58-8413ac3d82fso1178358b3a.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 00:58:49 -0700 (PDT)
+	s=arc-20240116; t=1779350410; c=relaxed/simple;
+	bh=PIXdGqeVUA9gIf8fLO/9smTMqHiJUQLQYlG0rQP84Rw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=tuwtLJYxhYfFX7eBsWUMx35KkZPHxI6nv+mpp969oizqE2c/6x+5ppc+OJmbohnTJmJKtNPDUIY/B66NBCFl1LLhwoVXQQZAiWnxDlu1E8IkfGdemjw2W51eMceatTWnOd76I4t9Hl+OqjEz9LysEcAqNVQ1RmuX0WSJNLZ/7c8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=faC0/XMS; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=MEkZ8tfv; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="faC0/XMS";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="MEkZ8tfv"
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64L72fJL3049891
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 08:00:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	FOltQE9tPpawJwPt3pLzjokKU4kONo8BTpdoRrWvcOU=; b=faC0/XMSoJerD1AP
+	Xpk+BoX2bgGjtD4vqg9S9b34oxe+Me8ZLP9WAfPDAV4OWNMDXjLoJyiy8RXDR7Ib
+	oFpeR99e4NlRdedMV9z2WUBQR98OvW1o6EYteguRuVKSLHsWftTEsxrs0A1BEsmm
+	EzORaCy7hABAwBM3ZmCEmy4CX3ESbelJDb8PW6azZefp3YmrtnmIB4jGCk8RLhN0
+	WgI23qYBqJBBl7OgCYrw7DiBSmHqDxzQwKJc7OlcM2DHtSYmLCe7pUkRaGflZ/CF
+	BK6lgCMQ2sOQ0d0bQrF+KD6g0dViGsE5EdaVv9BQ1GhGVeku9ExzMT9+8Cx/LZdI
+	Noq5yA==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4e9wahr6xb-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 08:00:07 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50d5d076d88so14633261cf.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 01:00:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779350407; x=1779955207; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=FOltQE9tPpawJwPt3pLzjokKU4kONo8BTpdoRrWvcOU=;
+        b=MEkZ8tfvAUpnwQyLEjlCiHYzbJRMpepOgZff9rPraEv0/M8f+Ib3WMf0HvDaO1v0tb
+         txsYc9s/atz/Oz5/bOGtjKwpS2i7oZ3n+MTDOUjA1lS3NGsfiHh97FrXRgFF5Zy97kg5
+         SznstDrdLC4cypHXHDsniFzY/O5Du/wVEiQYq41n2ZV7qaPjT10GBP8Z3DnyrVE1aASp
+         36MP6OYb8653mD/JsVGbnbXuD9apUDuIdv/XtKaiNqWkNAhovowYHVEtHNkLmyQc00CI
+         +HK2l977Ou4UhImkPnwakIBS6J9PYjb3/U+8CrdpgUds/qS3rcL7NvHV8u8ZG63jDwue
+         0UeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779350328; x=1779955128;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8G/x4JJtOPaC66y0xIpsyhNcO8UWKG9STKYzUChGp/o=;
-        b=aDR0DAlDCTJBusgVYtTKcQ5mYOKFNsMHSvgG8zmQGjWVkepOUKA572hYYRQztjidfZ
-         V/oLdr43CUQTyAN+hZYCdMIVDrVT4O5BfAC2+ZSHh7zSoWyjwKOyTSoYD/5RSEOFHDQQ
-         A0e1gMSpYiQGkTq/furuxbk3WLk+HLqfblNr8fnhR49s7riFu8TUbPiVGhgwczLiRtnA
-         vWqAwnTplyHaVjHifIe5U0IZ1KDl49oW2yx0kXNBh7FAh9s9eVJWTydrH9pu6jMzyxW1
-         7wLyFHxzO3LdGMakLnYA9fn6waSluCQ83JIS28vD/CO9400X4ZJpLcVJBar06lUmB+TX
-         Gtgg==
-X-Forwarded-Encrypted: i=1; AFNElJ92KnomsHV+J5mTM7x3CQ95+0V/KxfGHoR5LV3YKDsMXgmt1XOQMs8MEe11rhQgPKDP4DTZ45C/3g==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw9Xe6+kjJPzBXawztFV4aLsS5GAdgHyHcWfAhhdSvJ2juYs3Ic
-	tAUkwjnH22XP42fpwabWix6AVDmr9FraFj6At+so5zi4RWzIXmAsjJy9eLzVP8fdJKE=
-X-Gm-Gg: Acq92OHBA2Lytgw8Fb5vopUkkLmtzkRAFTKPq6akAaAsZky89xgHJEgViVsnQGUe5km
-	yRy87TkDBww2q0pdQ1zTLAX2G9ePOM2YEWQsp1+yNsfUpCdTC/KKAEOBnVtAGfjxU1i4814wfYR
-	oPO4D8ky0r6T9GyljFAGzQlNfHTCg1lLwjQ/6q3PlzwUc71p6aH2RNwoWm77Bi+FiuM3jkR3XNA
-	2FbArtKxUP1odDFgoxopv3+MHX/ZzkVpQ1/nPiZ1yDJRpD1U4HQmJKAwbXJfWdwO6/jDLSq4IHu
-	rBna7xJt6Swb62gacEAHooenrgETz5EQtXNWJ+ZXrGcmoZ+G/Ji5seBmObi8nNrFFkHc25ejAWX
-	QxDsaX/DT5l7grJCI6r5ReQ5/p9NBI8n4jtLo39VOacXQGUsGGpuoaetJNpGiMojMI3EI1V44wj
-	m512E/3r9pjA8XcuclWWK54eQrtCP97il0Q3JG5K6drBa7wZmLn2vxe2vKKYMx/tyop34Dh2dQS
-	2j0ZosDx+osUg==
-X-Received: by 2002:a05:6a00:2a09:b0:82c:dfea:9e2a with SMTP id d2e1a72fcca58-8414ac7f26amr2083701b3a.2.1779350328408;
-        Thu, 21 May 2026 00:58:48 -0700 (PDT)
-Received: from mail-pg1-f174.google.com (mail-pg1-f174.google.com. [209.85.215.174])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-841549be393sm422672b3a.9.2026.05.21.00.58.48
-        for <linux-pm@vger.kernel.org>
+        d=1e100.net; s=20251104; t=1779350407; x=1779955207;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=FOltQE9tPpawJwPt3pLzjokKU4kONo8BTpdoRrWvcOU=;
+        b=ea2KRnmsLhjbfO4FmQIzoqEHOPjbB0wDXtYTXUD8Z4RkOKlIpKWkw3HOhtpL4m8Yu0
+         vJSYeflTYYKpsTDlZAmaL45kMvIoiO98JIvyya76/gsrY6PWqKx3foXP5xGPQcxr1aHY
+         Fk/ExI1L9FoZC1TkOWT8ged5RWjfr8vkjMoGRLwA53LnqhzOlEmXL10FGG6SnI9TQLr0
+         /4m1a1xLQIdUvjKqAykP+gM91iN/ImBhtz6odd19YLn2eogSZw1gr3GhR8Pawt6cSPZL
+         /WTGMwmE5sLXwY+WFfC3z4dO8YAkK/mXdKqM7481slyA5pJ6r5YfLrKFaeLhqLg+uG3b
+         NBsQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/u8RzDQrOywrzApE0WwU0Icyj5EyLNYRhcM4+OhNUCHTPzOIKYrkjAIjJTRT7cRCSWQ54JwqOExg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz6A3zuVFdAiotmvA7EQnj+JjWSKh9QA4ij4Xns2kLxNIO/XqaZ
+	e2C7nJN9QAFIWz2c2iZtrGmaUvYOHDXaWs5Y32qBMN9RGCzNp20rNHrGNmf5e8Mvq6xYw6YPa3a
+	bibDGq3L7nBBg4Zvu2qbcGCAAX3adfSNZ1Jj5LtospOTMDDkFr17hmrleAcawvQ==
+X-Gm-Gg: Acq92OGcX8vLbieXmmUedjBMNkVHdEGu3eAPRbzMGj133l7Iyo5/yNfeg4IL7nyzkNs
+	0/E9O5HM7kq+lECTrCp4zOoUbS6LxSA4GcAQj4W3UCIqI4Kp64cFmGZmju0DyK20Img8bJOmH7O
+	IAqOuaMVTvHruO1I3RbvhmBgCbg3ApxawEifXtBvx5zOEa+dyyY+ZyXhiQp3Qxet9R6X/UpETDm
+	Xi6J7Au8AyHGb1dJ15Agyi6mSj4+Gw9FwHD7Rjo1pXNY2EdQ3zsgamEXX9GX9bqh+X3j1hRuF42
+	FrnCL8uyUg3eQfnMtOZuOOCc++7Wl+KVGb8wzi3o0xF+pl/NEjdcpM9BrPbxMI7XytIyAK0gvBD
+	L7lRXTzowtcL0EUuPXe1DwmIvN7xEYyNlcm/jvxN1MjJzntQf1qzXAuDD1jjYy1avKmZZ0UqsA3
+	NWz+0=
+X-Received: by 2002:ac8:7f0b:0:b0:509:2b5a:808 with SMTP id d75a77b69052e-516c54c0464mr18827201cf.2.1779350407123;
+        Thu, 21 May 2026 01:00:07 -0700 (PDT)
+X-Received: by 2002:ac8:7f0b:0:b0:509:2b5a:808 with SMTP id d75a77b69052e-516c54c0464mr18826611cf.2.1779350406434;
+        Thu, 21 May 2026 01:00:06 -0700 (PDT)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bdc8a50594esm12245866b.33.2026.05.21.01.00.04
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 21 May 2026 00:58:48 -0700 (PDT)
-Received: by mail-pg1-f174.google.com with SMTP id 41be03b00d2f7-c70c112cb61so4777544a12.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 00:58:48 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+d5+NI4m+6fW72S9fwQGZ0JR+Diq3BwM2hKipiN7x0sy4sjolPgP9jW21LwZjcrgUAdQZOqS/d4A==@vger.kernel.org
-X-Received: by 2002:a05:6122:235:b0:575:a5b5:3233 with SMTP id
- 71dfb90a1353d-58424155ad5mr536200e0c.4.1779350001458; Thu, 21 May 2026
- 00:53:21 -0700 (PDT)
+        Thu, 21 May 2026 01:00:05 -0700 (PDT)
+Message-ID: <2b5a516d-f847-4cb6-9ea5-21f56448b00f@oss.qualcomm.com>
+Date: Thu, 21 May 2026 10:00:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1776793163.git.geert+renesas@glider.be> <72e2a0e7a5abda02fe36b3f5851842f7a77b2593.1776793163.git.geert+renesas@glider.be>
- <aekXUvIPb8nkhdKu@pluto> <CAMuHMdWJvMH+a1RqozbaCxxH_8M569JcruTFa8PW+87FysnjHw@mail.gmail.com>
- <ae6Zp54NhKlVes8J@pluto> <CAMuHMdWK3Noh5ZQVWT9C0EKyXZePMaJ97C0A_syK+xCb_=abeQ@mail.gmail.com>
- <agooKghZJw3iElvp@pluto>
-In-Reply-To: <agooKghZJw3iElvp@pluto>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 21 May 2026 09:53:09 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdU8VRCOZtLrM2EoHFmhd5XFs8cwXc2A1tPTTr01KvUx0g@mail.gmail.com>
-X-Gm-Features: AVHnY4LC2rjbQG8RkBy_xv_1xXXocYwPF3Jc-uBUk0RJlVpVup9HQXGw37O9RpM
-Message-ID: <CAMuHMdU8VRCOZtLrM2EoHFmhd5XFs8cwXc2A1tPTTr01KvUx0g@mail.gmail.com>
-Subject: Re: [PATCH/RFC 05/14] firmware: arm_scmi: Add scmi_get_base_info()
-To: Cristian Marussi <cristian.marussi@arm.com>
-Cc: Sudeep Holla <sudeep.holla@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Magnus Damm <magnus.damm@gmail.com>, Saravana Kannan <saravanak@kernel.org>, 
-	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Ulf Hansson <ulfh@kernel.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@baylibre.com>, 
-	Florian Fainelli <florian.fainelli@broadcom.com>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Marek Vasut <marek.vasut+renesas@mailbox.org>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, arm-scmi@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] interconnect: qcom: x1e80100: Revert ABI break
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+        Georgi Djakov <djakov@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley
+ <conor+dt@kernel.org>,
+        Rajendra Nayak <quic_rjendra@quicinc.com>,
+        Abel Vesa <abelvesa@kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Raviteja Laggyshetty <raviteja.laggyshetty@oss.qualcomm.com>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260520184944.182148-3-krzysztof.kozlowski@oss.qualcomm.com>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260520184944.182148-3-krzysztof.kozlowski@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIxMDA3NyBTYWx0ZWRfX9wMmHGoS4geU
+ QMp+9+jr6sYkSj6c5a/qUQkIuRP7C1v9VXVkaDqYj3TM4jg/PVMm5W1OmpjRDkgI6W/vapjMubL
+ EGn0DOgzTpA2EIEWlKgEY/37mNrdEwzJkAkdSbBJdsBs0sY3tgDPBA8cD/F6eqZls+DopQKNcAT
+ fLQJqR3Or4SIfQh7XkLK0hogZevrvwAAh4Dg7iiZZ0OfKf/BYqaKHGeeLasJwsKcRlClMdzrwix
+ cV11Jt6y0y6os6tijTo7psrZKnGXL4YQvswf4aw+aHkBGEyCaA6A1u197dXct6LsGOUnA0MML1y
+ a6OKZXeG6kKptGfv3bxlULl7D/BC+WnZPk26tyOPMqnuUI+MTToWkBajptM8QLcOsue2kV8IM1A
+ Tn7ZjRL5XNDLtYiJ67X3lw9KAECg91sWXb1rqagxALhbtRz+AmanqfbSdfd1eWpN6VvMkjMyuXC
+ 6YzMs7O2eWtUKMwkmoA==
+X-Proofpoint-ORIG-GUID: EkX91R_tJ1jalTwXvKKAf1sQJbu8Wux1
+X-Proofpoint-GUID: EkX91R_tJ1jalTwXvKKAf1sQJbu8Wux1
+X-Authority-Analysis: v=2.4 cv=H8LrBeYi c=1 sm=1 tr=0 ts=6a0ebb87 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=mQNDsmP-micbF6_pwTUA:9 a=QEXdDO2ut3YA:10 a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-21_01,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 adultscore=0 suspectscore=0
+ lowpriorityscore=0 spamscore=0 impostorscore=0 malwarescore=0 bulkscore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605210077
 
-Hi Cristian,
+On 5/20/26 8:49 PM, Krzysztof Kozlowski wrote:
+> Revert commit c70f7dcd0921 ("interconnect: qcom: x1e80100: enable QoS
+> configuration") because it breaks the ABI without justification what was
+> broken and what was not working.  It claims the clocks are needed for
+> QoS, which might be correct, but QoS itself is not a mandatory thing for
+> the device to operate.
 
-On Sun, 17 May 2026 at 22:42, Cristian Marussi <cristian.marussi@arm.com> wrote:
-> On Fri, May 08, 2026 at 12:26:19PM +0200, Geert Uytterhoeven wrote:
-> > On Mon, 27 Apr 2026 at 01:03, Cristian Marussi <cristian.marussi@arm.com> wrote:
-> > > On Fri, Apr 24, 2026 at 02:08:55PM +0200, Geert Uytterhoeven wrote:
-> > > > On Wed, 22 Apr 2026 at 20:45, Cristian Marussi <cristian.marussi@arm.com> wrote:
-> > > > > Also because this should be one of the selling point of the SCMI stack
-> > > > > in a virtualized environment: you can ship the same kernel drivers with
-> > > > > the same DT and you know that ID=<N> will always identify the specific
-> > > > > resource that is needed by your driver without worrying about the fact
-> > > > > that in reality in the backstage the effectively managed physical resource
-> > > > > could be different across different platforms, because that does not matter
-> > > >
-> > > > This sounds strange to me, do I understand it correctly?
-> > > > So the ID should (1) be tied to the use-case, and not to the underlying
-> > > > hardware, and (2) be the same for different platforms?
-> > > >
-> > > > For (1): Then we must not put these IDs in DT at all, as DT is supposed
-> > > >     to describe the hardware (and firmware IDs in DT were IMHO already
-> > > >     a stretch before).
-> > > > For (2): How can there be a contiguous list of IDs, as not all platforms
-> > > >     may have the same underlying hardware?
-> > >
-> > > I would NOT say that an SCMI FW must behave like this regarding IDs, but it
-> > > is a possible SCMI deployed setup that can be useful in virtualized setups
-> > >
-> > > I mean, the DT describes the hardware of course BUT when you refer to
-> > > some of this hardware DT bits from some other subsystem by referencing a
-> > > phandle, even in the non-SCMI world, you are in fact selecting a specific
-> > > resource that fit you use case, right ? Can we say this ?
-> > > I mean you needed that specific clock or regulator that you described
-> > > previously so as to be able to enable some other piece of HW...
-> > >
-> > > Now, the SCMI provides an abstraction on top of this, since you really
-> > > discover domain IDs of a specific class (clocks/regulators etc) you are
-> > > in fact describing an HW abstraction that you then refer with the usual
-> > > phandle...also because there is NOT so much SCMI hardware to describe,
-> > > given that the HW is handled transparently (opaquely really :P) by the
-> > > driver on the FW side...
-> > >
-> > > ...you basically obtain such domain ID, usable as phandles through dynamic
-> > > SCMI enumeration so that you can use it all over your DT to make use of such
-> > > resources...
-> > >
-> > > ...on top of this, consider that the SCMI server CAN provide to its agents
-> > > a per-agent-view of the world, IOW it can (and should) expose to a specific
-> > > agent ONLY the resources needed by that agent, i.e. it can expose the set
-> > > of resources 1-N to two distinct agents and that does NOT mean that the
-> > > underlying physical resource mapped by ID=3 in both agents has to be
-> > > effectively the same piece of hardware: it could be the case, and this
-> > > would be useful to exposed and managed properly a shared resource, or
-> > > it could also be that the same ID=3 could refer to completely distinct
-> > > pieces of the same class of hardware...(same protocol same class of
-> > > resource...)
-> >
-> > Exposing only the clocks/reset/power domains the agent can use,
-> > in a contiguous list of IDS, means that the number space changes,
-> > depending on which resources are exposed.
->
-> Yes, potentially, it depedns on how the HW/FW stack was designed I
-> suppose...
->
-> > Suppose you have a system where you want to assign a specific hardware
-> > block in the SoC to the realtime CPU core instead of the application
-> > CPU core running Linux.
->
-> Ok, so this is definitely a considerable change.
->
-> > That means all resources used by that block must no longer be exposed
-> > to the Linux agent, and the corresponding IDs must be removed from
-> > the ID space exposed to Linux.  As the ID space must be sequential
-> > and contiguous, the IDs must be renumbered, impacting resources that
-> > are exposed to Linux.  As these IDs are used in the SoC .dtsi, they
-> > must be changed there, too, However, these IDs have become part of
-> > the stable DT ABI, and thus cannot be changed.
->
-> Well, you have to ship a final DTB blob that is crafted to describe the
-> actual HW at the end, right ?
->
-> I mean, in your example, it seems to me that you have changed considerably
-> the HW surface by moving a clock (and its related resources) away from the
-> reach of Linux as a whole, so should not be expected to have an updated
-> DTB shipped ?
+???
 
-It is not necessary to ship an updated DTB.
-The bootloader stack can just change the "status" properties of devices
-nodes that are be taken away from Linux from "okay" to "reserved":
+Would a saner resolution not be to simply adjust the bindings change to
+mimic the other post-factum QoS clock additions, where `required:`
+wasn't altered?
 
-Devicetree Specification, Release v0.4, Table 2.4: Values for statu
-property states:
+e.g.
 
-    Value: "reserved"
-    Description:
-        Indicates that the device is operational, but should not be
-        used. Typically this is used for devices that are controlled
-        by another software component, such as platform firmware.
+e07f3b8c9e1c ("dt-bindings: interconnect: qcom,qcs615-rpmh: add clocks property to enable QoS")
 
-When all SCMI IDs change, too, much more work needs to be done.
-
-The remap driver could also help here: it could scan for device nodes
-that are marked "reserved", remove SCMI IDs used in these nodes from
-its internal tables, and adjust all later (higher) IDs.
-
-E.g. the existing drivers/clk/renesas/renesas-cpg-mssr.c already handles
-(ignores) clocks used by reserved nodes.
-
-> And I am NOT saying to do this by changing the base SoC dtsi, but via build
-> time overrides and/or runtime overlays so as to derive from that same SoC
-> base dtsi a properly reviewed final DTB that describes how the HW has actually
-> changed, becasue beside the renumbering that you mention there will be
-> also a bunch of HW pieces that were relying on that clock that now will
-> have to be removed from the DTB if no more usable (or remapped to use a
-> different, maybe non SCMI resource)
->
-> I maybe too naive and not used to very complex DTBs, but why all of the
-> above cannot be done along the lines of how is done as an example in
-> JUNO [1], where some initial base dtsi was overriden by virtue of includes
-> and overrides to properly describe the board at hand (r0/r1/r2), even going
-> to the extreme, funny enough, to move from the old SCPI to SCMI.
->
-> [1]: https://elixir.bootlin.com/linux/v7.0.8/source/arch/arm64/boot/dts/arm/juno-scmi.dts
-
-As long as the IDs in arch/arm64/boot/dts/arm/juno-scmi.dtsi
-match the actual SCMI implementation, that works...
-
-> > This patch series fixes that issue, too, by describing the actual
-> > hardware in DT, and doing the mapping to exposed SCMI features in the
-> > kernel, based on which firmware version is running on the SCP.
->
-> Which seems to me to go in the opposite direction to what SCMI expects:
-> but I understand that we have to deal and cope with the existing already
-> shipped FW, so my concern is not really around enabling this in particular,
-> is much more the fact that we open the door and normalize this kind of
-> design even with future, still to be developed, SCMI FWs.
->
-> ...otherwise...have the spec changed/clarified to allow for such
-> non-contiguos IDs...
->
-> ...anyway let's hear Sudeep opinion on this general issue of contiguos
-> remapped IDs and being able to peek into SCMI version from outside the
-> SCMI world...
-
-As long as the ID space becomes stable.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Konrad
