@@ -1,55 +1,76 @@
-Received: from jpms-ob02-os7.noc.sony.co.jp (jpms-ob02-os7.noc.sony.co.jp [211.125.139.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 342EA4594A;
-	Fri, 22 May 2026 00:14:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=211.125.139.72
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1587F1A6815
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 04:19:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779408880; cv=none; b=fMD0JF38GMAo0EughueGAsaF0RpXGE+cgJubFb4quNS+jNmQhfmfkDOnHix1+JDp9nI5vP+smhJw0MzYTbwDcrYc3F5O1m1kTeX2EIodJcoNc02QIMl+cZvtGiBEOh68tBgj5NSprUGYLfu0Y2NrJ3VTMkonON6UB4bxLh0KXIs=
+	t=1779423561; cv=none; b=p3M+gFpS4eFRj4iTzjCz21N0kwBXgQGzrMTHo+3ii7IPuwP8lLcnuYYcIKc/ox3wuDBLfIZALY6/HezTRcrLTdMUpRhe7+yfjXyqTxEZ4O+brhjciKeVZbNpZfMsVEpujXRPmI354pN8KOE00wX0CPGQT9AxRmoO+YG0RTLx4Co=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779408880; c=relaxed/simple;
-	bh=8p0JzPEZut0b39POIwOqxTLkBbyPo/mRDMlNnFPOu4U=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R7exOHTIS3v443oAzKDKCi19fVGmHe8im0Ht5b5r+DVdunJemcr8hIvVprOOJTnUiRZ02Sm55/HvrOILR/4Yws9T78vAaSF/2KcAtCzgsdzvwdbpXIVA7dzfBaPZ2aF5bmHWkBiqm4ePDxzzvOnm88fypOZc2YR/IiOX7jSHOWU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com; spf=fail smtp.mailfrom=sony.com; dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b=IDtqOPNH; arc=none smtp.client-ip=211.125.139.72
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=sony.com
+	s=arc-20240116; t=1779423561; c=relaxed/simple;
+	bh=aoAXD4FEj3mVD7KeLqDFcZWIdY1F4Zs2EUzdGYD6G1U=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=SvVUixVF3dUNhC47uHr9FzYnA5Q9mmaPMH3WCXZ6NI9XvVI9thk0IpBEZgZAdUeuwxtAHvrsifjc3wm+7kjS+wXojudtuTNOdfhaXsbJniz0BIrul3o9C/p5pOGD/PdnBb9Xurqo2vpTRwA23YODUMOMazmGovsWvrmz150/dpg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=PvpKzl4B; arc=none smtp.client-ip=209.85.215.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b="IDtqOPNH"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PvpKzl4B"
+Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-c80227c9572so3225169a12.2
+        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 21:19:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=sony.com; s=s1jp; t=1779408878; x=1810944878;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=xqa5yCDGyms4AKLGSH6vTpMr1EZ4ek5t4+BSVfGfaX0=;
-  b=IDtqOPNHgmaNn6vKnxjRpkX92vufzRGCgLr6CmHaEGv8ZrvX+yNPdAIP
-   xfbMvFdMzv4umlrssh6J3PptLz2ucCb7v3GHv4wPnfwJJzPGP312Y6h2/
-   RvAtWircGV3OMOJ1f5OUTjQ9UQD0Zqz799aCtcopNSm/Clp33J03dh9zY
-   So8leaKfW9EMXigOWClUGq3XzZf47n0pHgg8lFTXAfBd6UzrscaFtMRu0
-   Gd5NKnxpNvhldv8ToZxu29rww3IAk7/5vnejA8aiCXQsL7xzAl1K0IO5+
-   P3WzWBKMm0qOtIRPRMwN6aLzI0V3qWz7MRQmEGTTc+U2/nG3WG2GcqLcS
-   A==;
-X-CSE-ConnectionGUID: mWSfB9FFSpaMjMoJvnC5Pw==
-X-CSE-MsgGUID: 3zjKkfJ6S/iA0zV6AKL8Gw==
-Received: from unknown (HELO jpmta-ob02-os7.noc.sony.co.jp) ([IPv6:2001:cf8:acf:1104::7])
-  by jpms-ob02-os7.noc.sony.co.jp with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 May 2026 09:14:31 +0900
-X-CSE-ConnectionGUID: 4SJVwNiEQEKxyTKvDZMoUA==
-X-CSE-MsgGUID: 0hIQEsLDSH+ehvswlPwS6Q==
-X-IronPort-AV: E=Sophos;i="6.24,161,1774278000"; 
-   d="scan'208";a="56761144"
-Received: from unknown (HELO asagi..) ([43.11.56.84])
-  by jpmta-ob02-os7.noc.sony.co.jp with ESMTP; 22 May 2026 09:14:31 +0900
-From: Yohei Kojima <yohei.kojima@sony.com>
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Len Brown <lenb@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
+        d=linaro.org; s=google; t=1779423559; x=1780028359; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=HcHqVighP3V8aWHjL50Kv6EuFW3bfV6LWIgOlINaXQA=;
+        b=PvpKzl4BrCMiRroSxq3qw5v70hVncO5iAs8x9sxkMG9BcZdJdbdncvNAQqrAJQWacB
+         vtR08RUpVk1j/jT0XFIZrsxgPgiO9GKmeupM6bALpUKsP/6BSDPjmBv5Ky7aLy1jjXdc
+         9Zht+B7znuPT2UzgNZua0c5qdbu07x0BoK7X5D2t2rwPKINXo0CuzfR7eyDZB+e1vWVl
+         k/coUBUHuA9Ed84Xo8lon//j83F4CZNGIdGrAaUOqbrfX+XxomH/Kocjad154FwHrcD0
+         QpFMTvOMuBTlojKCcI7xwv2yXhB1c1KFA170/5t3QMbpf7G+UiwcJ+23HKJIcl42kYF2
+         1sAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779423559; x=1780028359;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HcHqVighP3V8aWHjL50Kv6EuFW3bfV6LWIgOlINaXQA=;
+        b=c1PcMfTVI8W2ZVd25HarelLXX3UeEfQMNhWkMlieQqrgeV34dwWHv8I2YMJna3scCp
+         LTEFv4Lex5AiMyY6jXymhmPkH0gfPj00MEW/7yWPLIVZDiJZ1/AOITtsqbPXVvPKCfOh
+         IcLDG94BRCRZZfbRk37zh+yzaNeMVD98THbYkxnoYFAxX9rWOGtLiAwNOfWaThWc1C1L
+         c3IPmjJH3FhhP+KQ64PZT8LaH4q339NtgLMeJ/gwoqaF9Lr++bOWdc2AF7kHejTTeoBR
+         GGO7OXZGJrANDeL1v5yW4HYq/9dHKlu2h2MY3nzSZTCQWWytTXS2NMuCJ/aHqV1FkTi/
+         moYw==
+X-Gm-Message-State: AOJu0YwwNpsuhMnNAY+846saU+oO2CASYkb9yOKLVfaCTAtQlHhdoKm9
+	m222RntnM6I0sf9nPG0He/8Er1WZ8VDldW/UgzbkNXMsgVndYgCv2WeAbnzUApPNs13niv0Yi9V
+	tDYfU
+X-Gm-Gg: Acq92OGKxse25+DlIQycUWxYnRNRxyEHmalxrKXUODNag7exwN4YsAtXxSozY7gJbdC
+	luQ2JqopMNERPL7JEkkbR2JLj/cBgZb6HAkmFlfzpk41p2iu6r+O88RqVJbBqDz5UePP4pqxsw4
+	B1xOHVXPi4omjoOmlljOYLHhoqyzxGJeSmT5qBqXd3hjZ4ftJ7b5mm+rlUk09Lyhhi95GmArM20
+	ZgJRVr9LyJuZabJRtIORQkOASrMGfZgCby+mZgWnqKRWdaN2y2Y9WciFFJjIrEBUAA+YAg47Nfb
+	JOjxv3XtcYbpUo6MuQdIAn3iGRu8Wi0Rz10arcAU5cHccZDt6h0I/YxpmVrlaLi4tTsM6cc9ZSd
+	Eky8e4Oouv3EmmkgY0NneiHWBPBhc31S4KPzAi9M8Vh7vvNjOQ/7L5/LnaXb/bI4e2lOzGSXlz3
+	37B1fQCMQs59ifhpDpmoaQkao=
+X-Received: by 2002:a05:6a21:7117:b0:3b3:2830:9448 with SMTP id adf61e73a8af0-3b328c93ee9mr2005600637.13.1779423559065;
+        Thu, 21 May 2026 21:19:19 -0700 (PDT)
+Received: from localhost ([122.172.82.94])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c852056d767sm224700a12.25.2026.05.21.21.19.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 May 2026 21:19:17 -0700 (PDT)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Stratos Karafotis <stratosk@semaphore.gr>,
 	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Yohei Kojima <yohei.kojima@sony.com>,
-	Daniel Palmer <daniel.palmer@sony.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] cpufreq: intel_pstate: Improve warning message on HWP-disabled hybrid CPUs
-Date: Fri, 22 May 2026 09:15:58 +0900
-Message-ID: <87f69971a9bf89fb4b51f128e8ae519cbaf5894e.1779406085.git.yohei.kojima@sony.com>
-X-Mailer: git-send-email 2.43.0
+Cc: linux-pm@vger.kernel.org,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Sumit Semwal <sumit.semwal@linaro.org>,
+	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+Subject: [PATCH V2 0/3] cpufreq: Simplify freq limit handling
+Date: Fri, 22 May 2026 09:49:07 +0530
+Message-Id: <cover.1779423281.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -58,51 +79,26 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Improve warning message on HWP-disabled hybrid processors to state that
-intel_pstate requires HWP to be enabled on such processors [1].
-Previously it warned that "intel_pstate: CPU model not supported", but
-it was misleading.
+Hello,
 
-[1]: https://docs.kernel.org/admin-guide/pm/intel_pstate.html
+Here is the second version of this patchset.
 
-Signed-off-by: Yohei Kojima <yohei.kojima@sony.com>
----
-I tested this patch on my PC equipped with i7-14700. Please note that
-you need hybrid processors (i.e. Alder Lake and later) to test this.
+V2:
+- Add tags from reviewers.
+- Drop intel-pstate change.
 
-After this patch, you will see the improved warning message if you
-disable hardware P-state in your BIOS,
+Lifeng Zheng (1):
+  cpufreq: conservative: Simplify frequency limit handling
 
-$ sudo dmesg -k | grep intel_pstate
-[    0.478616] intel_pstate: HWP-disabled hybrid CPU is not supported
+Viresh Kumar (2):
+  cpufreq: Fix typo in comment
+  cpufreq: Avoid redundant target() calls for unchanged limits
 
-whereas this driver works as before if HWP is enabled.
+ drivers/cpufreq/cpufreq.c              | 31 ++++++++++++++++++--------
+ drivers/cpufreq/cpufreq_conservative.c | 12 +---------
+ include/linux/cpufreq.h                |  5 ++++-
+ 3 files changed, 27 insertions(+), 21 deletions(-)
 
-$ sudo dmesg -k | grep intel_pstate
-[    0.471387] intel_pstate: HWP enabled by BIOS
-[    0.471388] intel_pstate: Intel P-state driver initializing
-[    0.472593] intel_pstate: HWP enabled
----
- drivers/cpufreq/intel_pstate.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 11c58af41900..99cac95537b5 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -3823,6 +3823,12 @@ static int __init intel_pstate_init(void)
- 		if (no_load)
- 			return -ENODEV;
- 
-+		id = x86_match_cpu(intel_hybrid_scaling_factor);
-+		if (id) {
-+			pr_info("HWP-disabled hybrid CPU is not supported\n");
-+			return -ENODEV;
-+		}
-+
- 		id = x86_match_cpu(intel_pstate_cpu_ids);
- 		if (!id) {
- 			pr_info("CPU model not supported\n");
 -- 
-2.43.0
+2.31.1.272.g89b43f80a514
 
