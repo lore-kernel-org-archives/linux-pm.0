@@ -1,33 +1,33 @@
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id AA6CB1991D4;
-	Fri, 22 May 2026 07:49:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.140.110.172
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2683396585;
+	Fri, 22 May 2026 07:59:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779436162; cv=none; b=XlCip+cdrRVWEi2zctmxlutI7GQyw/X1WT0f1Lns7fYKjSsgsnjCv5SqebE1NWjJlW7LTJ/jg/7bbCLLAC78VkWdD6HEWUGGjcQaD7XrrJN/5mctkT/C28IqgVRKf2WGKTRDOo/I4THeE/DYqcZE0MZMR67nSIuDus/2T3OMCM0=
+	t=1779436797; cv=none; b=j6xUKeJjPJCSLq5MqYfjERx6y3LJywve2Kh7SSbkayVpD320tZWibwwWe1K742QceqdBUMe5uuNQc5BovHgqDapa+vNfL+3X90a6zzaOfaSnI1rtgUy1MOuvwqG6pACcqFOFz+dMdN1XBnQRjbjuH3FkIUaMioZdFJAM3/J8Rps=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779436162; c=relaxed/simple;
-	bh=YrY7ixiPcCfLBxWM6J+jznQYF4i8oxMkGDgKtM/OfL4=;
+	s=arc-20240116; t=1779436797; c=relaxed/simple;
+	bh=TB49ymwVqi36H3keDXu65BReRm8av6F/UjDy7RV949s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZFnipFfYxnpoCx4GMqe4BTgQCCV7vjnZZyyydXhzpcZq0fR7db020Bs0FVaKyaTnUi5DtHCO/CtsUg5nYlxWIA9x4W65xJjKHYTmx8CIfBf5oh4zowcYZwQg+jwkk20NZJ21Q7SE6xMIrjm2bFRESPRCE7+b/PbFgxlWO3C1wiQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass smtp.mailfrom=arm.com; dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b=l96C3OFN; arc=none smtp.client-ip=217.140.110.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
+	 In-Reply-To:Content-Type; b=onZVx+myfaAuFcDW1UzELB3G5dXXkuUuDSoX4hqwGnfoJ6SRO9puy2fVzMUnnsOOibfH4sO2F0Ali/nRPL1Zr0oq9JOhB+vRIhnWBecugA5FjY6pT7zDWhlC780cqq6rrCo/Gy4Gtcg6RWK0+vmEWsrYxSR28O1tZ5gF6B5CXg8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mgcu1bJN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.b="l96C3OFN"
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 938154A92;
-	Fri, 22 May 2026 00:49:14 -0700 (PDT)
-Received: from [192.168.113.113] (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D6AB53F7B4;
-	Fri, 22 May 2026 00:49:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1779436159; bh=YrY7ixiPcCfLBxWM6J+jznQYF4i8oxMkGDgKtM/OfL4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=l96C3OFNdrCA8Z3XCywg7wpCeWPjETvO6fsKfcEkFu5v5DnZtJtOTCOLloN84jCNo
-	 WCDa/PcXVtsKIT9Iz/x4G+xRwXdoj2suu0i0xVuFtDrZvtsg0ie2qm+feME17XGCOO
-	 nowuHkCYKDbMrOlXeDQJ9rKI2ogYmdXNciq07Qc0=
-Message-ID: <0f7dd656-5ee4-4c14-a27c-fa30c12a676a@arm.com>
-Date: Fri, 22 May 2026 09:49:13 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mgcu1bJN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9654E1F00A3D;
+	Fri, 22 May 2026 07:59:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779436796;
+	bh=ksWIf070K7BXXzRSN1Ju2eTiWS9mqy4PNkoshlF94P0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mgcu1bJN0Zm5cDI8nGLE+7dAKJI9KXOskAQMhFcMbp58VdxiSkMAz797u0AxYJYZr
+	 6kocNK9k800jYEtIx3nmaVr4t8M0Euf0k0czqlPUEs9pu1mvRznDr7PTtg9DVJJ/TR
+	 2QnUzV2BPUZtIF2DUx6czqQkLEZjJEjj75T3HBmqYujrFAsSxkKhcpZzTvAUdLPUUn
+	 bVfZKSLsgVzVzh1Dy8aJ2xOW/ABuKXSlsO82wRmweyHdlHT2EogVZuICOXV+VnnAKY
+	 UkS6USaW8ElY8NbUSgkTUSeTbNr68010aDiwdp9oyO4fJproRDmCyU6nmyZG/wyzAG
+	 UUSNPevwk2Fkg==
+Message-ID: <cd721e44-05cf-470b-ae92-d86791778c28@kernel.org>
+Date: Fri, 22 May 2026 09:59:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -35,85 +35,76 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] sched/fair: Revert boost in cpu_util()
-To: =?UTF-8?B?aG9uZ3lhbi54aWEo5aSP5byY5b2mKQ==?= <hongyan.xia@transsion.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: =?UTF-8?B?aHVwdSjog6Hnkp4p?= <hupu@transsion.com>,
- =?UTF-8?B?amlhemkubGko5p2O55Sy5a2QKQ==?= <jiazi.li@transsion.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20260518024039.932-1-hongyan.xia@transsion.com>
-Content-Language: en-GB
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-In-Reply-To: <20260518024039.932-1-hongyan.xia@transsion.com>
+Subject: Re: [PATCH 0/4] mm: misc cleanups from __GFP_UNMAPPED series
+Content-Language: en-US
+To: Brendan Jackman <jackmanb@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>,
+ Shakeel Butt <shakeel.butt@linux.dev>, Barry Song <baohua@kernel.org>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, David Hildenbrand <david@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>,
+ Johannes Weiner <hannes@cmpxchg.org>, Zi Yan <ziy@nvidia.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20260513-page_alloc-unmapped-prep-v1-0-dacdf5402be8@google.com>
+ <20260518111546.3baebae99dc3f2a4fd65e605@linux-foundation.org>
+ <DIM2YAI5ORUU.2YLTV7PWKE516@google.com>
+ <20260518134811.b2b78352779d7519e8123597@linux-foundation.org>
+ <CA+i-1C1THr6fH=wdTKEngbCSD_DMS5tGroN64BEf3L56DH2XWA@mail.gmail.com>
+From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
+In-Reply-To: <CA+i-1C1THr6fH=wdTKEngbCSD_DMS5tGroN64BEf3L56DH2XWA@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 18.05.26 04:40, hongyan.xia(夏弘彦) wrote:
-> From: Hongyan Xia <hongyan.xia@transsion.com>
+On 5/18/26 22:58, Brendan Jackman wrote:
+> On Mon, 18 May 2026 at 13:48, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>> On Mon, 18 May 2026 20:20:50 +0000 Brendan Jackman <jackmanb@google.com> wrote:
+>>
+>> > On Mon May 18, 2026 at 6:15 PM UTC, Andrew Morton wrote:
+>> > > On Wed, 13 May 2026 12:35:12 +0000 Brendan Jackman <jackmanb@google.com> wrote:
+>> > >
+>> > >> In v2 of the __GFP_UNMAPPED series [0], we realised that some of the patches
+>> > >> could potentially be merged as independent cleanups.
+>> > >>
+>> > >> These are all independent of one another, if you think some are useful
+>> > >> cleanups and others are pointless churn, it should be fine to just pick
+>> > >> whatever subset you prefer.
+>> > >>
+>> > >> No functional change intended.
+>> > >
+>> > > Thanks, Brendan.  I added this to mm.git's mm-new branch for testing,
+>> > > along with a note that [4/4] may be getting an update arising from
+>> > > Vlastimil's feedback.
+>> >
+>> > Cool thanks, (also I got the "added to mm-new branch notification" and
+>> > realised why I missed it last time, broken mail filter).
+>> >
+>> > The 4/4 update is already up, in reply to the thread.
+>>
+>> Is that "mm/page_alloc: tidy up pindex helpers"?
+>>
+>> For some reason I didn't receive that email, directly or via any
+>> mailing list.  I do have the similar "mm/page_alloc: remove ifdefs from
+>> pindex helpers" from May 13.
 
-I'm on vacation this week so will have a closer look beginning of next week.
+Found it, seems to be threaded well with In-reply-to: too, maybe it's the
+different subject?
 
-> We have seen a massive power consumption regression (20% SoC power
-> increase in many apps) after updating our kernel. After bisection we
+https://lore.kernel.org/all/20260517230556.590677-1-jackmanb@google.com/
 
-What is the kernel version you updated to? Which one you have been using
-so far?
+Should be fine to replace the current "mm/page_alloc: remove ifdefs from
+pindex helpers" in mm.git with that.
 
-Are you using Android on your devices? I remember there was some
-functionality added to avoid janks in display pipeline.
-
-> pinpointed the regression to the cpu_util(boost) feature. After
-> reverting the boost feature the massive energy regression is gone.
-> Detailed trace analysis down below. The regression is found across quite
-> many apps but Youtube is one of the worst offenders, shown in the
-> 1080p60fps video benchmark:
+> Ooh, that's unfortunate... I used git-send-email directl to send that,
+> which is not how I work most of the time, so I suspect something went
+> wrong with that particular setup. Will keep an eye on that.
 > 
->  Setup      FPS   SoC Power (mW)  diff
-> w/  boost  59.94      913.6
-> w/o boost  59.93      720.4     -21.15%
+>> Oh well, please check tomorrow's mm.git and send along whatever is
+>> needed?
 > 
-> Signed-off-by: Hongyan Xia <hongyan.xia@transsion.com>
-> 
-> ---
-> Analysis:
-
-[...]
-
-> 2. Using the absolute value of runnable_avg to drive frequency is
->    too high to be reasonable:
-> 
-> We use runnable in a _relative_ way to util to know whether there is
-
-Is this part of the value adds you put on top of mainline kernel? Are
-you able to share this here?
-
-> contention in several places. However, the _absolute_ value should not
-> be used like util. Runnable_avg tends to be significantly higher,
-> making it much easier to saturate frequency.
-> 
-> For example, if three tasks each with a util of 100 contend on the same
-> rq, the rq util is 300 but runnable_avg shoots up to 900. 900 drives the
-> CPU at the max frequency, and it's highly questionable whether this
-> boost is the right decision.
-
-Shouldn't this be max 600, in case the task's runtime overlap perfectly?
-In case they don't overlap at all runnable_avg should be util_avg. Is
-this a theoretical example or taken from your traces?
-
-> 3. Runnable_avg may not even reflect true contention:
-> 
-> When tasks are dependent, the bottleneck is often the data flow between
-> tasks, not the contention seen by runnable_avg. Boosting frequency with
-> runnable in such scenarios wastes power without performance benefits.
-
-That's probably true. But here any global feature (which doesn't need
-per-task setup) won't be able to give perfect results, only per-task
-setup can fix this.
+> Ack, thanks again.
 
