@@ -1,307 +1,213 @@
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [81.169.146.161])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B5F03655F5;
-	Fri, 22 May 2026 18:14:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.161
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779473694; cv=pass; b=VGgiE0gFEFqU9mTqUjjEmiSOGIlqrD3UjOb9fX6dx5oBbejE2ApTzWbUbvSTNUvN84akroaWGQitAjZcPFfXtjJsvpcq1xRXZ4gVOnUth0E0cH1+DQ4LCeCW4vrTfA2s8yf3fzxqMB795H3TaXQI0io2VF80Y8j0SzKDT4+UxsE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779473694; c=relaxed/simple;
-	bh=DfPzjEY8G+RNzkaDeakBVpUBBuOZ/pfFgxMO3VwWeO4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ouKEqlqQRdY1X6evIRwrrdzR8BB5xfiPeDXUKsU4rRtUCaB26hzolY35lB8uWjf3mlptnHfy5DIHzXD8WVfrqhhk0Z3WDn6m87pz8uGWLmey/CP06NsMBzBFvfE8Oeh20wZoNlYAaCcgnTAD3BXaRYA6LSnRLulrJPK+4DIvE3o=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lechthaler.online; spf=none smtp.mailfrom=lechthaler.online; dkim=pass (2048-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b=izHONkSm; dkim=permerror (0-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b=IlE+f3pQ; arc=pass smtp.client-ip=81.169.146.161
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=lechthaler.online
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=lechthaler.online
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA1E634EF05;
+	Fri, 22 May 2026 22:48:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779490115; cv=none; b=JNJyuIUjA3yQx/ZXAgV2jW/4Ir6W221W35am4DPbDcFzwfKxZStT6jEoEMjFhBYWuwSHtFdUxQP9sPGeOs4wv7wmPy3iHCJ2nT9bSYLTuTbOQSmslXq35wjNFVVoB7JKMuIKasRniV/NIS6sktBAKevVPJ2gf5k/Be2l9sjJx4Y=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779490115; c=relaxed/simple;
+	bh=S4vcfrtwy9fIjOV0Im+sZ7KctQj8lUc/qAGhDNWt4vw=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=bL/ez/pdKMW+u5VBJBpLdy4nouJthZfFfDAKpHopbhTXdsBrYVuf3dI6RXKv/FZAZD4QzUMslNUu6W1lDVBP/yWg4mt1IEoAkJ3MGR0BWiZ7H8PY9KrBa91/uLITFkBgfJgjAhzzOojiLwfxd5IyjXdObTO1imq9aI+r/iYi4Ss=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=mFliS7Ix; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b="izHONkSm";
-	dkim=permerror (0-bit key) header.d=lechthaler.online header.i=@lechthaler.online header.b="IlE+f3pQ"
-ARC-Seal: i=1; a=rsa-sha256; t=1779473509; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=NAKyF8zuu4Y9o4BxaYZv0v6zeY3x5NsXlTRKjWsdzvteADLMwN8aDY/0vyxS3VnxqE
-    GShszibuXW2uvT8Yt2F7xwhCAHi5EERqEJf6O20UT50Dx18URE4jtpgh1B7MFpg07FZl
-    UY6X+5llDaOMViiFUE3H9GMSxurrqK1kc+BClPuGR/WxYL70lJYlQW0mJjerFXmLZWAu
-    aVwYsw/jy4vTNLA/wkwxVLfLUCvHglouCkxGO4Mbw6MyvHrmIlCa3Hkdpwi/K3UgsD71
-    giP4kkQqZNI3P9uh80/VUhtHHYMn/NiijIfzLt1WTLXJJCe0QkIVl8YRn7fVLjXnf5lP
-    IRig==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1779473509;
-    s=strato-dkim-0002; d=strato.com;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=gp81hopihzpS7aummvF2OS8HB0EuSBZZC7wouMmUSGA=;
-    b=DxvW8lz65RDAM8oUbeNvqZt5cDHaykrtpMPyOwjflj59/fvkOk5HOSAC+BL7L4u4jE
-    sF0JnWTmkj0FdEFSXVwbeINfj7is8oInDOa3RavRg9KWGXM6CT/Md6aJYSdCHIIYgzy9
-    gVmtCiebEezRfWOHNhFmT+wg/y9oCo0VUTRVVFdJefbuANHvqem76jdLQaGM8bi9/Eto
-    XBiSVOgnS+Qc0KsCkCb7rPSq3vOsWA0toIMw48A20ZTpSbmFHQa/r1GcNnGg52RsBPPP
-    Qnd/KQWoqNbROwE+k+/CDCvVzszH9dO97q+oqI95Cs8yNII58Cxgych8i1UOfdiPHuDd
-    0iZw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo00
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1779473509;
-    s=strato-dkim-0002; d=lechthaler.online;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=gp81hopihzpS7aummvF2OS8HB0EuSBZZC7wouMmUSGA=;
-    b=izHONkSm32cZJaqMJELqn3cDLQbaMTzit55N44Xaj4QqUTu7Z7GBZm3XkaPwihbqwx
-    Ve4lLEiV7jTzNdUNQ7Tan8Od+4XIf4IBP5VSxPKYKRv/F0OarU/ORJ4Ab38alWOsrSM5
-    woymMR4dfh26jfQv/ZYo5YPJJ60Iknt/rbgJ1c5f0TGDey9aZBwGtCXcx0KcnghPXuFJ
-    z65d6Zmemh19o81rLi550TA2kLs9xTRP6PuEmNjDqw4aIoN9ssSn+uAzQ1TjcfR32FJE
-    a+p3w73d/us1coB86lMztODp2SK18bO/oRM2AU3E6bpUJcVbUOkVTH8yS3743DqO2LRg
-    I00g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1779473509;
-    s=strato-dkim-0003; d=lechthaler.online;
-    h=Message-ID:Date:Subject:Cc:To:From:Cc:Date:From:Subject:Sender;
-    bh=gp81hopihzpS7aummvF2OS8HB0EuSBZZC7wouMmUSGA=;
-    b=IlE+f3pQuYacUfRFsPPPZj9iZacS8oC1trHH1yfwGuw8sET6rYgI8twradMZyGLaqg
-    14ExIOfYjwYrP0kgfTCQ==
-X-RZG-AUTH: ":LWABbUGmf/p3GWz138t3dAG4+iFy9XUTxnN94F8mUwTghZauya1bHdwWZANyhT7JUoBGg72fwp4OIxY="
-Received: from alex-e16..
-    by smtp.strato.de (RZmta 55.0.1 AUTH)
-    with ESMTPSA id j78f5a24MIBlP8M
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Fri, 22 May 2026 20:11:47 +0200 (CEST)
-From: Alexander Lechthaler <alexander@lechthaler.online>
-To: rafael@kernel.org,
-	pavel@kernel.org,
-	lenb@kernel.org
-Cc: linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Alexander Lechthaler <alexander@lechthaler.online>
-Subject: [PATCH] power: snapshot: fix missing kernel-doc parameter descriptions
-Date: Fri, 22 May 2026 20:11:13 +0200
-Message-ID: <20260522181113.40350-1-alexander@lechthaler.online>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="mFliS7Ix"
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 6A79C1F000E9;
+	Fri, 22 May 2026 22:48:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779490113;
+	bh=auzU48UECky/VhRsM1MIzHXMTSQQH38DGJK40Vy8La0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To;
+	b=mFliS7Ix7rqBthGHQaF5M6htxgc+ybi5mKkI/jhjzhUv2DB/LWOcg2o99/pXiq2JP
+	 522K3vZgppPOjIvvVDd7X2qj92uktNh04gvil8HJShJhNXcYTTsjX41nHrC3MrsD4N
+	 JTbVZNiNPrcpriJPnNj3yAnsWub1NN7yrjo4bdscyuml/hq44OHbEGVgW0mIVZp7+e
+	 tGdjWpvbioHmtbi5bRBANmyCwDDKfG5SWtic2myOgYBWY9aFEwwh2eom1ZWNcd2QEp
+	 wtlQkO7ok5K8k3vX6Ha/0yookF/2FebClHYQjXvKPXEd7IATRMXQz/upkUL/luodgb
+	 oUfjgYeuTLg0Q==
+Date: Fri, 22 May 2026 17:48:32 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+	Will Deacon <will@kernel.org>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, jonathanh@nvidia.com,
+	bjorn.andersson@oss.qualcomm.com, Frank Li <Frank.Li@nxp.com>,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v5 4/5] PCI: dwc: Use common D3cold eligibility helper in
+ suspend path
+Message-ID: <20260522224832.GA120697@bhelgaas>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260520000153.GA14400@bhelgaas>
 
-Add missing parameter descriptions to kernel-doc comments in
-kernel/power/snapshot.c to silence documentation warnings.
+On Tue, May 19, 2026 at 07:01:53PM -0500, Bjorn Helgaas wrote:
+> [+cc Frank, linux-pm]
+> 
+> On Wed, Apr 29, 2026 at 12:12:26PM +0530, Krishna Chaitanya Chundru wrote:
+> > Previously, the driver skipped putting the link into L2/device state in
+> > D3cold whenever L1 ASPM was enabled, since some devices (e.g. NVMe) expect
+> > low resume latency and may not tolerate deeper power states.
+> 
+> I think "some devices expect low resume latency and may not tolerate
+> deeper power states" conveys the wrong message.  It's not that NVMe
+> has a mysterious acceptable resume latency number that we have to meet
+> or that NVMe has some inherent aversion to D3cold or L1SS or whatever
+> "deeper power states" refers to.
+> 
+> It could be that ASPM L1 was configured incorrectly (e.g., an L1->L0
+> transition didn't happen within the advertised exit latency, leading
+> to some device access failure) or a device lost internal context when
+> the driver didn't expect it (e.g., the Qcom problem where L1SS exit
+> takes too long and results in a link-down and device reset [1]).
+> 
+> It sounds to me like the ASPM L1 check was a way to avoid problems
+> like that, but I don't think we ever really had a root cause.
 
-Signed-off-by: Alexander Lechthaler <alexander@lechthaler.online>
----
- kernel/power/snapshot.c | 52 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 50 insertions(+), 2 deletions(-)
+Possible updated commit log text:
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index a564650734dc..153c27439972 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -460,6 +460,10 @@ static struct rtree_node *alloc_rtree_node(gfp_t gfp_mask, int safe_needed,
- 
- /**
-  * add_rtree_block - Add a new leave node to the radix tree.
-+ * @zone: Radix tree where node gets added.
-+ * @gfp_mask: GFP mask for the allocation.
-+ * @safe_needed: Get pages not used before hibernation (restore only).
-+ * @ca: Pointer to a linked list of pages ("a chain") to allocate from.
-  *
-  * The leave nodes need to be allocated in order to keep the leaves
-  * linked list in order. This is guaranteed by the zone->blocks
-@@ -530,6 +534,11 @@ static void free_zone_bm_rtree(struct mem_zone_bm_rtree *zone,
- 
- /**
-  * create_zone_bm_rtree - Create a radix tree for one zone.
-+ * @gfp_mask: GFP mask for the allocation.
-+ * @safe_needed: Get pages not used before hibernation (restore only).
-+ * @ca: Pointer to a linked list of pages ("a chain") to allocate from.
-+ * @start: First page frame number (PFN) in the zone to build the tree for.
-+ * @end: PFN one past the last page covered by the tree.
-  *
-  * Allocated the mem_zone_bm_rtree structure and initializes it.
-  * This function also allocated and builds the radix tree for the
-@@ -568,6 +577,8 @@ static struct mem_zone_bm_rtree *create_zone_bm_rtree(gfp_t gfp_mask,
- 
- /**
-  * free_zone_bm_rtree - Free the memory of the radix tree.
-+ * @zone: Radix tree to free node pages from.
-+ * @clear_nosave_free: If set, clear the PageNosaveFree bit for the pages.
-  *
-  * Free all node pages of the radix tree. The mem_zone_bm_rtree
-  * structure itself is not freed here nor are the rtree_node
-@@ -680,6 +691,9 @@ static int create_mem_extents(struct list_head *list, gfp_t gfp_mask)
- 
- /**
-  * memory_bm_create - Allocate memory for a memory bitmap.
-+ * @bm: Memory bitmap.
-+ * @gfp_mask: Mask to use for memory allocations.
-+ * @safe_needed: Get pages not used before hibernation (restore only).
-  */
- static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
- 			    int safe_needed)
-@@ -723,6 +737,7 @@ static int memory_bm_create(struct memory_bitmap *bm, gfp_t gfp_mask,
- /**
-  * memory_bm_free - Free memory occupied by the memory bitmap.
-  * @bm: Memory bitmap.
-+ * @clear_nosave_free: If set, clear the PageNosaveFree bit for the pages.
-  */
- static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free)
- {
-@@ -738,9 +753,14 @@ static void memory_bm_free(struct memory_bitmap *bm, int clear_nosave_free)
- 
- /**
-  * memory_bm_find_bit - Find the bit for a given PFN in a memory bitmap.
-+ * @bm: Memory bitmap.
-+ * @pfn: Page Frame Number (PFN).
-+ * @addr: Returned address of the bitmap storage containing the bit.
-+ * @bit_nr: Returned bit number within @addr.
-  *
-  * Find the bit in memory bitmap @bm that corresponds to the given PFN.
-- * The cur.zone, cur.block and cur.node_pfn members of @bm are updated.
-+ * The cur.zone, cur.node, cur.node_pfn and cur.cur_pfn members
-+ * of @bm are updated.
-  *
-  * Walk the radix tree to find the page containing the bit that represents @pfn
-  * and return the position of the bit in @addr and @bit_nr.
-@@ -879,8 +899,9 @@ static bool memory_bm_pfn_present(struct memory_bitmap *bm, unsigned long pfn)
- 	return !memory_bm_find_bit(bm, pfn, &addr, &bit);
- }
- 
--/*
-+/**
-  * rtree_next_node - Jump to the next leaf node.
-+ * @bm: Memory bitmap.
-  *
-  * Set the position to the beginning of the next node in the
-  * memory bitmap. This is either the next node in the current
-@@ -990,6 +1011,8 @@ static void memory_bm_recycle(struct memory_bitmap *bm)
- 
- /**
-  * register_nosave_region - Register a region of unsaveable memory.
-+ * @start_pfn: Start page frame number (PFN).
-+ * @end_pfn: End page frame number (PFN).
-  *
-  * Register a range of page frames the contents of which should not be saved
-  * during hibernation (to be used in the early initialization code).
-@@ -1307,6 +1330,8 @@ static unsigned int count_free_highmem_pages(void)
- 
- /**
-  * saveable_highmem_page - Check if a highmem page is saveable.
-+ * @zone: Zone containing the PFN.
-+ * @pfn: Page frame number to check.
-  *
-  * Determine whether a highmem page should be included in a hibernation image.
-  *
-@@ -1364,6 +1389,8 @@ static unsigned int count_highmem_pages(void)
- 
- /**
-  * saveable_page - Check if the given page is saveable.
-+ * @zone: Zone containing the PFN.
-+ * @pfn: Page frame number to check.
-  *
-  * Determine whether a non-highmem page should be included in a hibernation
-  * image.
-@@ -1442,6 +1469,8 @@ static inline bool do_copy_page(long *dst, long *src)
- 
- /**
-  * safe_copy_page - Copy a page in a safe way.
-+ * @dst: Destination page.
-+ * @s_page: Source page.
-  *
-  * Check if the page we are going to copy is marked as present in the kernel
-  * page tables. This always is the case if CONFIG_DEBUG_PAGEALLOC or
-@@ -1689,6 +1718,9 @@ static unsigned long preallocate_image_highmem(unsigned long nr_pages)
- 
- /**
-  *  __fraction - Compute (an approximation of) x * (multiplier / base).
-+ * @x: Value the fraction is applied to.
-+ * @multiplier: Fraction numerator.
-+ * @base: Fraction denominator.
-  */
- static unsigned long __fraction(u64 x, u64 multiplier, u64 base)
- {
-@@ -1984,6 +2016,7 @@ int hibernate_preallocate_memory(void)
- #ifdef CONFIG_HIGHMEM
- /**
-  * count_pages_for_highmem - Count non-highmem pages needed for copying highmem.
-+ * @nr_highmem: Number of highmem pages to copy.
-  *
-  * Compute the number of non-highmem pages that will be necessary for creating
-  * copies of highmem pages.
-@@ -2005,6 +2038,8 @@ static unsigned int count_pages_for_highmem(unsigned int nr_highmem) { return 0;
- 
- /**
-  * enough_free_mem - Check if there is enough free memory for the image.
-+ * @nr_pages: Number of normal pages required for the image.
-+ * @nr_highmem: Number of highmem pages required for the image.
-  */
- static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
- {
-@@ -2025,6 +2060,7 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
- #ifdef CONFIG_HIGHMEM
- /**
-  * get_highmem_buffer - Allocate a buffer for highmem pages.
-+ * @safe_needed: Whether a safe buffer for copying highmem pages is needed.
-  *
-  * If there are some highmem pages in the hibernation image, we may need a
-  * buffer to copy them and/or load their data.
-@@ -2037,6 +2073,8 @@ static inline int get_highmem_buffer(int safe_needed)
- 
- /**
-  * alloc_highmem_pages - Allocate some highmem pages for the image.
-+ * @bm: Bitmap to mark allocated pages in.
-+ * @nr_highmem: Number of highmem pages to allocate.
-  *
-  * Try to allocate as many pages as needed, but if the number of free highmem
-  * pages is less than that, allocate them all.
-@@ -2067,6 +2105,9 @@ static inline unsigned int alloc_highmem_pages(struct memory_bitmap *bm,
- 
- /**
-  * swsusp_alloc - Allocate memory for hibernation image.
-+ * @copy_bm: Bitmap to mark allocated pages in.
-+ * @nr_pages: Number of normal pages to allocate.
-+ * @nr_highmem: Number of highmem pages to allocate.
-  *
-  * We first try to allocate as many highmem pages as there are
-  * saveable highmem pages in the system.  If that fails, we allocate
-@@ -2294,6 +2335,7 @@ static void duplicate_memory_bitmap(struct memory_bitmap *dst,
- 
- /**
-  * mark_unsafe_pages - Mark pages that were used before hibernation.
-+ * @bm: Bitmap containing PFNs of pages used before hibernation.
-  *
-  * Mark the pages that cannot be used for storing the image during restoration,
-  * because they conflict with the pages that had been used before hibernation.
-@@ -2332,6 +2374,7 @@ static int check_header(struct swsusp_info *info)
- 
- /**
-  * load_header - Check the image header and copy the data from it.
-+ * @info: Pointer to the structure to copy the header data to.
-  */
- static int load_header(struct swsusp_info *info)
- {
-@@ -2485,6 +2528,8 @@ static struct page *last_highmem_page;
- 
- /**
-  * get_highmem_page_buffer - Prepare a buffer to store a highmem image page.
-+ * @page: Page structure of the highmem image page to be loaded.
-+ * @ca: Chain allocator to allocate memory for the page copy if needed.
-  *
-  * For a given highmem image page get a buffer that suspend_write_next() should
-  * return to its caller to write to.
-@@ -2708,6 +2753,8 @@ static int prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm,
- 
- /**
-  * get_buffer - Get the address to store the next image data page.
-+ * @bm: Memory bitmap with the "original" PFNs of the image pages.
-+ * @ca: Chain allocator to allocate memory for the page copy if needed.
-  *
-  * Get the address that snapshot_write_next() should return to its caller to
-  * write to.
-@@ -2845,6 +2892,7 @@ int snapshot_write_next(struct snapshot_handle *handle)
- 
- /**
-  * snapshot_write_finalize - Complete the loading of a hibernation image.
-+ * @handle: Snapshot handle structure used for the loading.
-  *
-  * Must be called after the last call to snapshot_write_next() in case the last
-  * page in the image happens to be a highmem page and its contents should be
--- 
-2.43.0
+  Previously, the driver skipped putting the link into L2 and device
+  state in D3cold when L1 ASPM was enabled since some devices (e.g.
+  NVMe) failed to resume correctly if they were suspended with L1
+  enabled. The root cause of the failure is unknown.
 
+> [1] https://lore.kernel.org/linux-pci/20260519-l1ss-fix-v2-0-b2c3a4bdeb15@oss.qualcomm.com/
+> 
+> > However, such devices typically remain in D0 and are already covered
+> > by the new helper's requirement that all endpoints be in D3hot
+> > before the devices under host bridge may enter D3cold.
+
+It makes me nervous when we assume "typical" things, but I don't have
+any ideas about wording this.
+
+This is all merged and in pci/next, so we can leave it as-is or amend
+the commit log if anybody has better ideas.
+
+> If we put the host bridge in D3cold, I assume the hierarchy below is
+> either put in D3cold as well, or at least every device in the
+> hierarchy will be reset as a consequence of the Root Port link going
+> down.
+> 
+> If the driver doesn't manage the device power state itself, I assume
+> we have the freedom to put the hierarchy in D3cold or reset it.
+> 
+> Do we have the same freedom if the driver *does* manage the power
+> state itself?  What if the driver put the device in D3hot, expecting
+> it to *stay* in D3hot?
+> 
+> I think pci_host_common_d3cold_possible() will see the device in D3hot
+> and decide that D3cold is possible.
+> 
+> (I'm looking at https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/power/pci.rst?id=v7.0#n746)
+> 
+> > So, replace the local L1/L1SS-based check in dw_pcie_suspend_noirq() with
+> > the shared pci_host_common_d3cold_possible() helper to decide whether the
+> > devices under host bridge can safely transition to D3cold.
+> > 
+> > In addition, propagate PME-from-D3cold capability information from the
+> > helper and record it in skip_pwrctrl_off. Some devices (e.g. M.2 cards
+> > without auxiliary power) may lose PME detection when main power is
+> > removed, even if they advertise PME-from-D3cold support. This allows
+> > controller power-off to be skipped when required to preserve wakeup
+> > functionality.
+> > 
+> > Update the suspended flag in dw_pcie_resume_noirq() only after the PCIe
+> > link resumes successfully, to avoid marking the controller active when
+> > link resume fails.
+> > 
+> > Signed-off-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+> > ---
+> >  drivers/pci/controller/dwc/pcie-designware-host.c | 15 +++++++--------
+> >  drivers/pci/controller/dwc/pcie-designware.h      |  1 +
+> >  2 files changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/pci/controller/dwc/pcie-designware-host.c b/drivers/pci/controller/dwc/pcie-designware-host.c
+> > index c9517a348836..9e409a1909e6 100644
+> > --- a/drivers/pci/controller/dwc/pcie-designware-host.c
+> > +++ b/drivers/pci/controller/dwc/pcie-designware-host.c
+> > @@ -16,9 +16,11 @@
+> >  #include <linux/msi.h>
+> >  #include <linux/of_address.h>
+> >  #include <linux/of_pci.h>
+> > +#include <linux/pci.h>
+> >  #include <linux/pci_regs.h>
+> >  #include <linux/platform_device.h>
+> >  
+> > +#include "../pci-host-common.h"
+> >  #include "../../pci.h"
+> >  #include "pcie-designware.h"
+> >  
+> > @@ -1218,18 +1220,14 @@ static int dw_pcie_pme_turn_off(struct dw_pcie *pci)
+> >  
+> >  int dw_pcie_suspend_noirq(struct dw_pcie *pci)
+> >  {
+> > -	u8 offset = dw_pcie_find_capability(pci, PCI_CAP_ID_EXP);
+> > +	bool pme_capable = false;
+> >  	int ret = 0;
+> >  	u32 val;
+> >  
+> >  	if (!dw_pcie_link_up(pci))
+> >  		goto stop_link;
+> >  
+> > -	/*
+> > -	 * If L1SS is supported, then do not put the link into L2 as some
+> > -	 * devices such as NVMe expect low resume latency.
+> > -	 */
+> > -	if (dw_pcie_readw_dbi(pci, offset + PCI_EXP_LNKCTL) & PCI_EXP_LNKCTL_ASPM_L1)
+> > +	if (!pci_host_common_d3cold_possible(pci->pp.bridge, &pme_capable))
+> >  		return 0;
+> >  
+> >  	if (pci->pp.ops->pme_turn_off) {
+> > @@ -1273,6 +1271,7 @@ int dw_pcie_suspend_noirq(struct dw_pcie *pci)
+> >  	udelay(1);
+> >  
+> >  stop_link:
+> > +	pci->pp.skip_pwrctrl_off = pme_capable;
+> >  	dw_pcie_stop_link(pci);
+> >  	if (pci->pp.ops->deinit)
+> >  		pci->pp.ops->deinit(&pci->pp);
+> > @@ -1290,8 +1289,6 @@ int dw_pcie_resume_noirq(struct dw_pcie *pci)
+> >  	if (!pci->suspended)
+> >  		return 0;
+> >  
+> > -	pci->suspended = false;
+> > -
+> >  	if (pci->pp.ops->init) {
+> >  		ret = pci->pp.ops->init(&pci->pp);
+> >  		if (ret) {
+> > @@ -1313,6 +1310,8 @@ int dw_pcie_resume_noirq(struct dw_pcie *pci)
+> >  	if (pci->pp.ops->post_init)
+> >  		pci->pp.ops->post_init(&pci->pp);
+> >  
+> > +	pci->suspended = false;
+> > +
+> >  	return 0;
+> >  
+> >  err_stop_link:
+> > diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+> > index 3e69ef60165b..e759c5c7257e 100644
+> > --- a/drivers/pci/controller/dwc/pcie-designware.h
+> > +++ b/drivers/pci/controller/dwc/pcie-designware.h
+> > @@ -450,6 +450,7 @@ struct dw_pcie_rp {
+> >  	bool			ecam_enabled;
+> >  	bool			native_ecam;
+> >  	bool                    skip_l23_ready;
+> > +	bool			skip_pwrctrl_off;
+> >  };
+> >  
+> >  struct dw_pcie_ep_ops {
+> > 
+> > -- 
+> > 2.34.1
+> > 
