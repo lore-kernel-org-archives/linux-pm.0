@@ -1,81 +1,104 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0DA23A1CD
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:28:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53CEB32B10D
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:33:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779463702; cv=none; b=d9tTMdXPxhiD9rZm5X/TNh9dxPGrrxWJneEJM4oT3WtBAhTZTCL+IJRevLgoIZbdkZGJPZapHMPTb+tw2K62xXDNGU9zhfkA09UKvhLy6y/YsMilItZqknQrq7K4rqu7Onf9SGDGm4t7Y8tCScmlHl3PlnWOstIjah8zvMEWVvM=
+	t=1779464000; cv=none; b=JAluJpFYphemiYAc4EVFj6qf+LoR+SyqGONFagGLQlfXkIw6wmwRy/aNz5Y81DLdIrsB22XX3mNx1uoPIUomNbuTYMzMwlRpXTNS9s4HzYrvYyjf7ScD90HGcORR5dZe+4fFaLNWGYJh0/T4pcW0C2WyRTo6qjs55I0ZM3j1peY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779463702; c=relaxed/simple;
-	bh=N3vQcOwek+Tq06UaRQHlHhxUo/IIPqSOgaDKQhRyMe4=;
+	s=arc-20240116; t=1779464000; c=relaxed/simple;
+	bh=Tu2dSrBQnavKqtFMzRV2jXUSSDx9ZygUM22V3o+37e0=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HKAXuQhA06ZaHr5Xneyt2PtCS9KB960sK62AICJBp9uXZBeWV2X/81zevuNh9ZP3O7UUJyJ2APPeDoMX/opMChSa8gIKvahgN6uhA30FXkGyOjYjMBlrZ1C163mRFzEmKrL0ipiwT5BycT65YvYkm/Z8BpyjLAbzhJrW7Yi0Z9Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Uk7lh0Da; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=CxzcnVIOqWQcqBXhpUh5Oz1LYFJ5TyayxNxlKwct9CvbZ2rHXqrmVJ5gzTT1uTK0JhQMmcwQaaY7vvfocRRdcJJzcPDvFHWM3Q0wIpnBAPclOC50N64KIfHauZaS+4aHSQ8mvuKTUvSztODgBUrscNKoAp6dWb1dtiIwewdBuW4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=l0i2LBA7; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Uk7lh0Da"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC9641F00A3D
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:28:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="l0i2LBA7"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10DFD1F0155C
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:33:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779463700;
-	bh=DAT0Pn6btsy80tf5FRFYMIb1+4BzppbLEqYpwea85DU=;
+	s=k20260515; t=1779463999;
+	bh=ckkZ9rPSDdVH84BUrlor3t95Yr0kGa1Cl9MeWzIX5aw=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Uk7lh0DaG1JUaUyv93YEOz2am21NANln8HnXRnko/e7DWVU8Wq4ha8OC4rlLY51Fc
-	 frTgf8ggkl0l09vbGkfBnmeEP7w6//0kbvKrw9RRgfDYFcZksvsUKL3RAvOSCxJ8yY
-	 20BgAwnyvVmjEAb5vNok9JbDdgiwNQSuTIsTJQfpGdD9+g5mkXA5vHvPF1axFQHBSP
-	 JFwHIrSpNJzKp7UXEn5gTR76Yj8Jr3MpCquFUnAoTsxSoJOxpmGp1L921gZuf3PkDe
-	 qHLEWYI3q7Lx5j96rXmkEBF/PPC9TZ+jjrdl4h4P/JSqxHm2DQ43q7bfpGjboqayP4
-	 uqaS7xtPIoavg==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-394095009beso64706221fa.3
-        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 08:28:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9pl5zLJ8yAfqEoOWjWJ7fn3UIwYC9jbX/yWskiwc6Sddct2SaenL3U7ZdeDvolJManOyNiNszaYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwVrBGm6639vyJha4QWYNk8xU+cPzSB0okSvbwFvlbtYSBKjY/Y
-	gSPmddvncLgUUgR/o7iZY7SrljbLMfTfvaJHlORTywNBb6u4rPxnqGfHbKT1gmjRtCm+6AkxO8c
-	eM5DLDSrSpmvSv9nZRBLXV+MZkwr+hj4=
-X-Received: by 2002:a05:6512:3e16:b0:5a8:e367:4ddf with SMTP id
- 2adb3069b0e04-5aa323b34f1mr1604641e87.16.1779463699191; Fri, 22 May 2026
- 08:28:19 -0700 (PDT)
+	b=l0i2LBA70LUn9XV7oS+GDlKykoUrEraKD0B5u0cESrImBJfunqUVPP7tF4Xa1Et5K
+	 CBQ4sEk/j99jsVEdOG2GKr7nwlha0AvZODnWPqO37gWglT3GoJfYLCDb4HvYJvIY6a
+	 70udBjCl/PAONCGBpMvdKQfuXMMSTAjliw0ZEWYwqub8TOvXs4C1dl9G5XBjKF9Unz
+	 FLdgmfM1JkIu1ctkAr9EIz7uWSuIGCPREUjI1ccWvewJjXlBRtxhsh83g0hiiWLdMt
+	 7auugvH/Hh66Z22ED3BJSWhkzQqjkAuEpBB++FEGbNC14ShWCEjfso+0neUq1tjyHc
+	 0FpFKENy5wm7g==
+Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5aa0cf8bca3so7142272e87.0
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 08:33:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9Migsqeb/LAJ1t3gH+VHdH0a6RpiUU2Mn4LUzcKJerskDCdTlPKYyq4u+YXcNMwIJN/8KmOB/yIg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz7Bv7rYw4d1kxvTPskxzDC7sS34PklGpuGEbgQ9LEbeZiKbf+q
+	EjTGRondsVYITR0/+CB0SD56L/iDChR6+TatVW92OUAP5/+8IRLPM5G4T20IOVE29mPsGMKYG3L
+	/j0hc4UMy3VofR9i/wnR+VyxYQa1wvVw=
+X-Received: by 2002:ac2:4c4e:0:b0:5a8:89d6:93c3 with SMTP id
+ 2adb3069b0e04-5aa323bc5dbmr1225669e87.21.1779463997519; Fri, 22 May 2026
+ 08:33:17 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260507090107.10113-1-sean@mess.org> <nms5cy6tgpcteav34jdtjf5mbmidf6rwc2uuxxef456xzegsyv@54rbblkdjybt>
-In-Reply-To: <nms5cy6tgpcteav34jdtjf5mbmidf6rwc2uuxxef456xzegsyv@54rbblkdjybt>
+References: <20260518133457.2408463-1-zhangpengjie2@huawei.com>
+In-Reply-To: <20260518133457.2408463-1-zhangpengjie2@huawei.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 22 May 2026 17:28:07 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0j3ENHZw2YWCXSBoJ0H+wT-Nxsd6S_Vgcz2qnRi27d2Rg@mail.gmail.com>
-X-Gm-Features: AVHnY4KmkSfvnztTl3DuLQC3aNsUj_A5mK3oEQJDbbt1PDWa-JWdhQiQcoeeUEo
-Message-ID: <CAJZ5v0j3ENHZw2YWCXSBoJ0H+wT-Nxsd6S_Vgcz2qnRi27d2Rg@mail.gmail.com>
-Subject: Re: [PATCH v2] cpufreq: elanfreq: Drop support for AMD Elan SC4*
-To: Viresh Kumar <viresh.kumar@linaro.org>, Sean Young <sean@mess.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
-	Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Date: Fri, 22 May 2026 17:33:05 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gj2Qa_gy91QQ-wwWH6zGBhuO1SujSVXvr8UYp935btoQ@mail.gmail.com>
+X-Gm-Features: AVHnY4IvMxnx-fW5FH7lORMWVquEvE-K5lCPGGtA6lPS_7Da8kE-OIFWKujdpAE
+Message-ID: <CAJZ5v0gj2Qa_gy91QQ-wwWH6zGBhuO1SujSVXvr8UYp935btoQ@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: Documentation: fix sampling_down_factor range
+To: Pengjie Zhang <zhangpengjie2@huawei.com>
+Cc: rafael@kernel.org, viresh.kumar@linaro.org, corbet@lwn.net, 
+	skhan@linuxfoundation.org, zhongqiu.han@oss.qualcomm.com, 
+	linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, zhanjie9@hisilicon.com, 
+	zhenglifeng1@huawei.com, lihuisong@huawei.com, yubowen8@huawei.com, 
+	linhongye@h-partners.com, linuxarm@huawei.com, wangzhi12@huawei.com
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 8, 2026 at 7:48=E2=80=AFAM Viresh Kumar <viresh.kumar@linaro.or=
-g> wrote:
+On Mon, May 18, 2026 at 3:35=E2=80=AFPM Pengjie Zhang <zhangpengjie2@huawei=
+.com> wrote:
 >
-> On 07-05-26, 10:01, Sean Young wrote:
-> > Since commit 8b793a92d862 ("x86/cpu: Remove M486/M486SX/ELAN support"),
-> > the AMD Elan SC4* is no longer supported, so the cpu frequency
-> > driver is no longer needed.
-> >
-> > Signed-off-by: Sean Young <sean@mess.org>
-> > ---
-> > Changes since v1:
-> >  - Also removes elanfreq=3D entry from kernel-parameters.txt
-> >
-> >  .../admin-guide/kernel-parameters.txt         |   4 -
-> >  drivers/cpufreq/Kconfig.x86                   |  15 --
-> >  drivers/cpufreq/Makefile                      |   1 -
-> >  drivers/cpufreq/elanfreq.c                    | 226 ------------------
-> >  4 files changed, 246 deletions(-)
-> >  delete mode 100644 drivers/cpufreq/elanfreq.c
+> The ondemand governor implementation accepts sampling_down_factor values
+> from 1 to 100000 via MAX_SAMPLING_DOWN_FACTOR, but the documentation in
+> admin-guide/pm/cpufreq.rst still says the valid range is 1 to 100.
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Update the documentation to match the actual code.
+>
+> Fixes: 2a0e49279850 ("cpufreq: User/admin documentation update and consol=
+idation")
+> Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
+> Signed-off-by: Pengjie Zhang <zhangpengjie2@huawei.com>
+> ---
+> Changes in v2:
+> - Modify the title.
+> - Add Reviewed-by tag.
+> Link to v1:https://lore.kernel.org/all/20260515094930.273599-1-zhangpengj=
+ie2@huawei.com/
+> ---
+>  Documentation/admin-guide/pm/cpufreq.rst | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/adm=
+in-guide/pm/cpufreq.rst
+> index dbe6d23a5d67..fdca59c955dc 100644
+> --- a/Documentation/admin-guide/pm/cpufreq.rst
+> +++ b/Documentation/admin-guide/pm/cpufreq.rst
+> @@ -516,7 +516,7 @@ This governor exposes the following tunables:
+>         of those tasks above 0 and set this attribute to 1.
+>
+>  ``sampling_down_factor``
+> -       Temporary multiplier, between 1 (default) and 100 inclusive, to a=
+pply to
+> +       Temporary multiplier, between 1 (default) and 100000 inclusive, t=
+o apply to
+>         the ``sampling_rate`` value if the CPU load goes above ``up_thres=
+hold``.
+>
+>         This causes the next execution of the governor's worker routine (=
+after
+> --
 
-Applied as 7.2 material, thanks!
+Applied as 7.1-rc material, thanks!
