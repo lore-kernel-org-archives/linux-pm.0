@@ -1,73 +1,75 @@
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2725A280CD2
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 04:19:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A77271B6CE9
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 04:19:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779423571; cv=none; b=Tpfkm82bcQj019/XBujEh7JCIaWtbX5XByDAm0ApLc/XYShDDQn9gxWeAbT1HWhaNmIrC/GXyKOlKfz9KT9fbNBeZtAAsoGxBcoxNyoXAcw3+jpKQ3H/xgPCwDY+rlW3D3IFquB+c4XgJ8Rb31fw/qo7lF3p6z++cx7hsIfqi8w=
+	t=1779423579; cv=none; b=OiD+13IM+ExmYiziEd0q4l2XyRYyMHKDmi3lB3X+bNOASg0frnptudsjWLrPcqPTBA2yV80yweVeHOv+6dDIGWqqJ4/Y0EMkZ6KaUGmrp2bDR2JHs2VJvphDz4RkeygDeh1f2Av1iijPVk0KYRUB1hs1L0+rDpwPIAXbrP9/2JQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779423571; c=relaxed/simple;
-	bh=18MmaV5xr2ThwoQ2TPzXDnYl8fpUMUsNy/8B7Nk7jqc=;
+	s=arc-20240116; t=1779423579; c=relaxed/simple;
+	bh=Our/gfkfRbhQdh2DDIlx11+pI9CmQ6fn4czDbJq0OMc=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=FaxVAR9XuTQI9CGLX92tdCjrxCASTKQfy4tMCNlc3MEme32KGYmyl273KarNgep7D+aw50Di+HRfGlK/tNs2Fpr8pFu6tSJWOVG8zqfV0+M3obRayLfQADt0xOmMVLudhFAkdvom5WKUPV2H4XuLcCU791MSLsMnUpRxwjQP8qU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=y5tfumFG; arc=none smtp.client-ip=209.85.210.180
+	 MIME-Version; b=Iua6hcDCzRYFhl83Y8uGmXu2Mrr5yHmHrw/Z/roYNUTdP2uUtrtI9XfvrI8645Yc4JJ/Ea7NYxEdd8zjZ+OeJOCnreXep1XpJZ2tm4Y7MwJMdldqQwOoew/dxm9RxlEvCID/8aLBqDIGk4NbDSOLlsGAu8oLg0p28ZbB8+/Z34s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=n05PqfGP; arc=none smtp.client-ip=209.85.210.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="y5tfumFG"
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-83975e992e1so2705444b3a.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 21:19:29 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="n05PqfGP"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-8353c9f24d2so3538719b3a.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 May 2026 21:19:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1779423568; x=1780028368; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1779423572; x=1780028372; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=MlnszKvaLYniJylzFLq6RdE/rVHviJLfN/ZjcktsGLA=;
-        b=y5tfumFGLhHlkvcAnKurVV10IR6yUIUVvdkji615TSwLn3f0VxrHKGqATySVV/5P59
-         8BVDGlB70y75U40HICCfYOkVmmDCDHE3yT6JnQz/M33JvdQhVOwMmhWmPmgjyATJT3Rl
-         E4o3jqfPFF7stSo26uZ8mYJY6iyQGTVWnI9N49cfY7k+FbERYiRrPhK1xx4QAo6IQxNd
-         Ju6CyY4ELSdCK/8/NQYullQeA/Ady0a6lzTp0pdu6W7jjYfMMZaAlnAX/y1Zlm3wZvgb
-         nTt4dFhxq3nlGWW5T+gDuNRJxyxZCTgFG0IC09fdBA6kDIK+dFw6i4HHAAB1mFbqxExh
-         ogeA==
+        bh=n1RSHyMXOLN00W1XKagDrGlcaq3EJ8WQKXscx0rEp7A=;
+        b=n05PqfGPr09L07tK27Yu1c7wom2bYYq+cvt22fpt8rX25jtvp/IvMeuVh1T1UELFU1
+         fKgFwVZKcr5oqZQkNUhig5aaA4LXo0InoPLncV3HTPsnPOI0b8XrwqrSTj7gxVbCI1Sa
+         +DC++QR4zbD4dD0XMGslfGbRIgqbDnnkDJbT7uP4qgLU2/h7BPZ9nxxOBPJRbCCyfpkV
+         SuQNX/DqE4AWtouWMyx61UOgLtnqTP8lqhF30VNZBORCxq4rygAwoXCtPHK7fsFBnvni
+         H4+lORVkLFiX9ITF9Iai4ypsY4w8LK04jrfOlsJQjpIYJEN4arudBnC16/KOWP9qAYuy
+         1XYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779423568; x=1780028368;
+        d=1e100.net; s=20251104; t=1779423572; x=1780028372;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=MlnszKvaLYniJylzFLq6RdE/rVHviJLfN/ZjcktsGLA=;
-        b=idFvJ7gH1cDojorMIJzQ2ZvEdYNmP4GDogck4MqlPJyhdbZhX++i5gP0gpgYlrbCU3
-         8lweSMXZ/PRSRAlfV+JENp2oc+cIKJ4CxFIRjTDeb16CN3ZAtzt0xLZQxfWplhZaidKJ
-         itVlF64+PJikFiAPAp1ea9MnH8kEnaTB/GxGCzuV8H01Nhk5VLML/Yj4yxAswu7haXi0
-         In65FDawAFfyGThBDasCBQvnjVCMSUB7HxatVWEvyiX3yXXDC7HUyHrMMoEgHdrNNw40
-         GVHnzi01ua5nB8ZrX+axa+f3yWGUXhGJpefm27AxH+X96mlUZ70SqrtUIhhc9S5IP4wQ
-         yFGg==
-X-Gm-Message-State: AOJu0YxIhOKSwegT1FNDyyEIpNlmUsjvQ+rd+ybddcMiqo+unEasSilr
-	9V+wP2FkOWV6Y1roWVnRrn81yPMkVD3hxiP7q6+8VKFk3Sjm6sJLOGZnQktoM47dmUs=
-X-Gm-Gg: Acq92OEUWGOgX4PkcF6MaqdC0EEzkyysFvNM/UIeB2Ii5fHFMN1aUR3TFlr4xXOO8Oh
-	eofOZ7F9P88zMQlfA2txF3FD+BIKwL6Zb9E/fZGxdSj9yhnhU3F2VMtumsGcl25XGYW2gihjK+E
-	co5Fhov8zgonmLtaGUb1MAr3RmykES+UCLNWMWoasGyPxGek3yXXfaG1jvNtjbyD8A3FjimIpnc
-	hCkw9HkhqfFo5kDh4RXSx+vHxJ46TyDuJKi3AMtMjErDttEHjVjyZhw8V9mZvQ0OW/WtYHeM5py
-	QEj7A4YJLlvTtD7lUzoaJ13C9n4QtHB5K3hy1tr/Ut6q+3jDLdy+V1Ujyc++nBsSCt0UF+qADZ2
-	bF+QX0XFF8c6dSXdxFjMS7VaO8IJLadpO3DP647LvUjOhVK6vN1fnK4Vmr6QHj+uTT8gCY6XAGl
-	Q9GB/7h/L5DaVmCmz/E6S8d1k=
-X-Received: by 2002:a05:6a00:2e17:b0:82f:abc8:ae0 with SMTP id d2e1a72fcca58-8415f332af0mr1909886b3a.17.1779423568066;
-        Thu, 21 May 2026 21:19:28 -0700 (PDT)
+        bh=n1RSHyMXOLN00W1XKagDrGlcaq3EJ8WQKXscx0rEp7A=;
+        b=lsjyuMd5LLS9mJTphCjPpk3dFcuN8IU31bLUo7/edNgBAC8sUTPPKvICLYsogdA5dM
+         Ut/4NcQ8zawhUohicZSjGjpmCYuHsMD6OS5FCeMSPLayTfhpZGalM2KoJgSyvhjrAsAu
+         usYEYWyJfFtEZ1Fg/KCTL/FlBJbMAq+Y/ezQjhAdpc/LDlCvuFFxOs8xk60xgn0/h40V
+         Aa7/F/XBZtUlAE7ebWvsjw9x0c4dOIsfqEPKqGy7J7s8/Fs3E4N7L4q40CuvqnXEKQgD
+         cQskrlCn0/dCAAAuFdnAER9a4RrzQ0jzhfLFM45uGsTcr/vwuh9vNAvMxXmF9oVlzVHZ
+         8R5A==
+X-Gm-Message-State: AOJu0YydOc1cQJpDJhHwbrB8mOq7ND2X7u9qSD3z68eezkB6f3zso9Dt
+	G5gGC51JALW0J9Bc3P/CUxx7EEJmNl9iJc0043DNi5E9gTrhplVU6OJrnN82i6wOHRA=
+X-Gm-Gg: Acq92OE/V4osYkliHRFdJd6YAjrfPrSlkd47MelHlHZQy4O5LrqNIbG4lyNfXgzaLph
+	rqx7TgrqFhUCYG8L3pakuuJdXRJJWCvCNG6HlB+0Th/cy98nSpjABg9OlgAHoJCSw1HJpNdpVnI
+	u0hY59R7nJDdFa6b4ydGbBZG1jLccTU3BXi9FHMMiShbzx2sV+odrPRYIAtcrrGhuimcTRbJ0Xc
+	V9S2zTEuCfyWVNe1KZMJUiGKWb2vJVYqTSwdo23jLArjQwPSPmFsFEUpkRgz1aHOIbqYLSZdpSd
+	fq4y0niuOoQQJCdf1J9MmKkLTwfnf01g735ABqvk/stur/TB9bNKoaMtGhYvDIkhxls7PvNA+K5
+	BJCMAwzK/15+jueLHtA1blgJ+UPaijOOZDcerr+yiFVkNtD7U9SZFwpYofZ3BVy/PcDHCFAC0EG
+	sxqJOcsf+2ifG0/PITbRoDLRQ=
+X-Received: by 2002:a05:6a00:1d9b:b0:837:f79d:909 with SMTP id d2e1a72fcca58-8415f5459f4mr2150184b3a.39.1779423572261;
+        Thu, 21 May 2026 21:19:32 -0700 (PDT)
 Received: from localhost ([122.172.82.94])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164ad2ca6sm467296b3a.5.2026.05.21.21.19.26
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164ac9df3sm529288b3a.9.2026.05.21.21.19.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 May 2026 21:19:26 -0700 (PDT)
+        Thu, 21 May 2026 21:19:31 -0700 (PDT)
 From: Viresh Kumar <viresh.kumar@linaro.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Stratos Karafotis <stratosk@semaphore.gr>
 Cc: linux-pm@vger.kernel.org,
 	Vincent Guittot <vincent.guittot@linaro.org>,
 	Sumit Semwal <sumit.semwal@linaro.org>,
 	Lifeng Zheng <zhenglifeng1@huawei.com>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH V3 2/3] cpufreq: Avoid redundant target() calls for unchanged limits
-Date: Fri, 22 May 2026 09:49:09 +0530
-Message-Id: <d0107c364b709abca21acf88072220bc05478594.1779423281.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 3/3] cpufreq: conservative: Simplify frequency limit handling
+Date: Fri, 22 May 2026 09:49:10 +0530
+Message-Id: <292e6d937890f135e30ec0d2107eaad47cb9a976.1779423281.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
 In-Reply-To: <cover.1779423281.git.viresh.kumar@linaro.org>
 References: <cover.1779423281.git.viresh.kumar@linaro.org>
@@ -79,95 +81,59 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drivers setting CPUFREQ_NEED_UPDATE_LIMITS expect target() to be
-invoked even if the target frequency remains unchanged, so they can
-update their internal policy limits state.
+From: Lifeng Zheng <zhenglifeng1@huawei.com>
 
-Currently the core invokes target() unconditionally whenever the
-requested frequency matches policy->cur for such drivers, even if
-policy->min and policy->max haven't changed since the previous update.
+cs_dbs_update() performs explicit checks against policy->min/max
+before updating the target frequency. These checks are redundant as
+__cpufreq_driver_target() already clamps the requested frequency to
+the valid policy limits.
 
-Track pending policy limit updates explicitly and skip redundant
-target() invocations when neither the target frequency nor the
-effective limits changed.
+Remove the unnecessary boundary checks and simplify the update logic.
 
+This also fixes an issue introduced by commit 00bfe05889e9 ("cpufreq:
+conservative: Decrease frequency faster for deferred updates"), where
+stale target comparisons could cause frequency updates to be skipped
+entirely after deferred adjustments.
+
+Closes: https://lore.kernel.org/all/20260421123545.1745998-1-zhenglifeng1@huawei.com/
+Fixes: 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster for deferred updates")
+Signed-off-by: Lifeng Zheng <zhenglifeng1@huawei.com>
+Co-developed-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Lifeng Zheng <zhenglifeng1@huawei.com>
 ---
- drivers/cpufreq/cpufreq.c | 31 ++++++++++++++++++++++---------
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 25 insertions(+), 9 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 44eb1b7e7fc1..225228e9f4ed 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2366,9 +2366,13 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 	 * exactly same freq is called again and so we can save on few function
- 	 * calls.
- 	 */
--	if (target_freq == policy->cur &&
--	    !(cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS))
--		return 0;
-+	if (target_freq == policy->cur) {
-+		if (!(cpufreq_driver->flags & CPUFREQ_NEED_UPDATE_LIMITS) ||
-+		    !policy->update_limits)
-+			return 0;
-+
-+		policy->update_limits = false;
-+	}
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index df01d33993d8..0b32ae28ec85 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -103,10 +103,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 	if (load > dbs_data->up_threshold) {
+ 		dbs_info->down_skip = 0;
  
- 	if (cpufreq_driver->target) {
- 		/*
-@@ -2620,6 +2624,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- {
- 	struct cpufreq_policy_data new_data;
- 	struct cpufreq_governor *old_gov;
-+	unsigned int freq;
- 	int ret;
+-		/* if we are already at full speed then break out early */
+-		if (requested_freq == policy->max)
+-			goto out;
+-
+ 		requested_freq += freq_step;
+ 		if (requested_freq > policy->max)
+ 			requested_freq = policy->max;
+@@ -124,13 +120,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
  
- 	memcpy(&new_data.cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
-@@ -2652,12 +2657,20 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	 * compiler optimizations around them because they may be accessed
- 	 * concurrently by cpufreq_driver_resolve_freq() during the update.
- 	 */
--	WRITE_ONCE(policy->max, __resolve_freq(policy, new_data.max,
--					       new_data.min, new_data.max,
--					       CPUFREQ_RELATION_H));
--	new_data.min = __resolve_freq(policy, new_data.min, new_data.min,
--				      new_data.max, CPUFREQ_RELATION_L);
--	WRITE_ONCE(policy->min, new_data.min > policy->max ? policy->max : new_data.min);
-+	freq = __resolve_freq(policy, new_data.max, new_data.min, new_data.max,
-+			      CPUFREQ_RELATION_H);
-+	if (freq != policy->max) {
-+		WRITE_ONCE(policy->max, freq);
-+		policy->update_limits = true;
-+	}
-+
-+	freq = __resolve_freq(policy, new_data.min, new_data.min, new_data.max,
-+			      CPUFREQ_RELATION_L);
-+	freq = min(freq, policy->max);
-+	if (freq != policy->min) {
-+		WRITE_ONCE(policy->min, freq);
-+		policy->update_limits = true;
-+	}
- 
- 	trace_cpu_frequency_limits(policy);
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 4d4b4ed24b30..ae9d1ce4f49c 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -146,6 +146,9 @@ struct cpufreq_policy {
- 	/* Per policy boost supported flag. */
- 	bool			boost_supported;
- 
-+	/* Pending policy->min/max update for the driver */
-+	bool			update_limits;
-+
- 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
- 	unsigned int cached_target_freq;
- 	unsigned int cached_resolved_idx;
+ 	/* Check for frequency decrease */
+ 	if (load < cs_tuners->down_threshold) {
+-		/*
+-		 * if we cannot reduce the frequency anymore, break out early
+-		 */
+-		if (requested_freq == policy->min)
+-			goto out;
+-
+-		if (requested_freq > freq_step)
++		if (requested_freq > policy->min + freq_step)
+ 			requested_freq -= freq_step;
+ 		else
+ 			requested_freq = policy->min;
 -- 
 2.31.1.272.g89b43f80a514
 
