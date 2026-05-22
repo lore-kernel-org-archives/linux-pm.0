@@ -1,72 +1,55 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from jpms-ob02-os7.noc.sony.co.jp (jpms-ob02-os7.noc.sony.co.jp [211.125.139.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD4BA3A6F06;
-	Thu, 21 May 2026 23:42:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 342EA4594A;
+	Fri, 22 May 2026 00:14:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=211.125.139.72
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779406951; cv=none; b=Q37469vBDT722ereW7Q7AJtNbtzTSbaQ88F4tyGni/Vzj6I89xYKUUdCylEkCTRmwQm86slPIJvIEF6V/2EStU1T0d/0Dsr9uitoTihavVDtm/tA7vxabw0f+bMiiDXKvBT3nEVRSbAYKVCKyON9R9UWsyX3Fr5DaVxytEgWmnc=
+	t=1779408880; cv=none; b=fMD0JF38GMAo0EughueGAsaF0RpXGE+cgJubFb4quNS+jNmQhfmfkDOnHix1+JDp9nI5vP+smhJw0MzYTbwDcrYc3F5O1m1kTeX2EIodJcoNc02QIMl+cZvtGiBEOh68tBgj5NSprUGYLfu0Y2NrJ3VTMkonON6UB4bxLh0KXIs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779406951; c=relaxed/simple;
-	bh=1pqlI0q50ZlsodfxIO4XBVa2HMRipR+UTaeQVIkQ/0c=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f+6FbgJBrMsiqZr+p9QwNSdt6LRD3qk2Rd/BadvsOVWdVpYto5kUfcYG4gyjrkCbd46Oo8+7D4ILFsVKSp4Ol32yNNFt0UmYJO6lQCEHnCmcAKwcVoHaMRdAyC7WI3dDfvfpgVRT8sVkQG/SBIRr0Uy4ybfH74BvPYaFH5mj+zg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VqdUczTA; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779408880; c=relaxed/simple;
+	bh=8p0JzPEZut0b39POIwOqxTLkBbyPo/mRDMlNnFPOu4U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R7exOHTIS3v443oAzKDKCi19fVGmHe8im0Ht5b5r+DVdunJemcr8hIvVprOOJTnUiRZ02Sm55/HvrOILR/4Yws9T78vAaSF/2KcAtCzgsdzvwdbpXIVA7dzfBaPZ2aF5bmHWkBiqm4ePDxzzvOnm88fypOZc2YR/IiOX7jSHOWU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com; spf=fail smtp.mailfrom=sony.com; dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b=IDtqOPNH; arc=none smtp.client-ip=211.125.139.72
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=sony.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=sony.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VqdUczTA"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E059E1F000E9;
-	Thu, 21 May 2026 23:42:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779406945;
-	bh=RBPPIslRfw5zXe9mto9RQQTrjgY7NH52CbC9tVuj2I8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=VqdUczTAqWf26hDVbpNAFCMYsoUqwlYyAQCIyItdsy+U7mejKIZnNXq2jajlsqrIg
-	 +/6pOmZxDgcfURNUCE2JbwjhFQgZZyTvuCgjO/hqVhCw6fbQ1PSFN9y7OLH2+nQ6bX
-	 UnOXI2FFDd4UyyD/Dj153fdKNpPhQCBkKz91nle7eAK/FQRNT5jy7LlPiMQ7R5Mcyu
-	 xqoJU9Lx9HlbNg8anQdQ1oS6O2YkfXTSStoZPQS/VbeAxkUc7P76QdVuuUWGc25IRO
-	 cYKJpVp6a0RkbErXJQoES9jeQwjDQk+mvpDwKu2wc/kJYgqkBKvlAa7zUtyMFrk78a
-	 NKgHvKjH6OB+Q==
-From: Danilo Krummrich <dakr@kernel.org>
-To: gregkh@linuxfoundation.org,
-	rafael@kernel.org,
-	acourbot@nvidia.com,
-	aliceryhl@google.com,
-	david.m.ertman@intel.com,
-	ira.weiny@intel.com,
-	leon@kernel.org,
-	viresh.kumar@linaro.org,
-	m.wilczynski@samsung.com,
-	ukleinek@kernel.org,
-	bhelgaas@google.com,
-	kwilczynski@kernel.org,
-	abdiel.janulgue@gmail.com,
-	robin.murphy@arm.com,
-	markus.probst@posteo.de,
-	ojeda@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	tmgross@umich.edu,
-	igor.korotin@linux.dev,
-	daniel.almeida@collabora.com,
-	pcolberg@redhat.com
-Cc: driver-core@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	nova-gpu@lists.linux.dev,
-	dri-devel@lists.freedesktop.org,
+	dkim=pass (2048-bit key) header.d=sony.com header.i=@sony.com header.b="IDtqOPNH"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=sony.com; s=s1jp; t=1779408878; x=1810944878;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=xqa5yCDGyms4AKLGSH6vTpMr1EZ4ek5t4+BSVfGfaX0=;
+  b=IDtqOPNHgmaNn6vKnxjRpkX92vufzRGCgLr6CmHaEGv8ZrvX+yNPdAIP
+   xfbMvFdMzv4umlrssh6J3PptLz2ucCb7v3GHv4wPnfwJJzPGP312Y6h2/
+   RvAtWircGV3OMOJ1f5OUTjQ9UQD0Zqz799aCtcopNSm/Clp33J03dh9zY
+   So8leaKfW9EMXigOWClUGq3XzZf47n0pHgg8lFTXAfBd6UzrscaFtMRu0
+   Gd5NKnxpNvhldv8ToZxu29rww3IAk7/5vnejA8aiCXQsL7xzAl1K0IO5+
+   P3WzWBKMm0qOtIRPRMwN6aLzI0V3qWz7MRQmEGTTc+U2/nG3WG2GcqLcS
+   A==;
+X-CSE-ConnectionGUID: mWSfB9FFSpaMjMoJvnC5Pw==
+X-CSE-MsgGUID: 3zjKkfJ6S/iA0zV6AKL8Gw==
+Received: from unknown (HELO jpmta-ob02-os7.noc.sony.co.jp) ([IPv6:2001:cf8:acf:1104::7])
+  by jpms-ob02-os7.noc.sony.co.jp with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 May 2026 09:14:31 +0900
+X-CSE-ConnectionGUID: 4SJVwNiEQEKxyTKvDZMoUA==
+X-CSE-MsgGUID: 0hIQEsLDSH+ehvswlPwS6Q==
+X-IronPort-AV: E=Sophos;i="6.24,161,1774278000"; 
+   d="scan'208";a="56761144"
+Received: from unknown (HELO asagi..) ([43.11.56.84])
+  by jpmta-ob02-os7.noc.sony.co.jp with ESMTP; 22 May 2026 09:14:31 +0900
+From: Yohei Kojima <yohei.kojima@sony.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Len Brown <lenb@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Yohei Kojima <yohei.kojima@sony.com>,
+	Daniel Palmer <daniel.palmer@sony.com>,
 	linux-pm@vger.kernel.org,
-	linux-pwm@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	Danilo Krummrich <dakr@kernel.org>
-Subject: [PATCH REF v4 27/27] gpu: drm: tyr: use lifetime for IoMem
-Date: Fri, 22 May 2026 01:34:53 +0200
-Message-ID: <20260521233501.1191842-28-dakr@kernel.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260521233501.1191842-1-dakr@kernel.org>
-References: <20260521233501.1191842-1-dakr@kernel.org>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: intel_pstate: Improve warning message on HWP-disabled hybrid CPUs
+Date: Fri, 22 May 2026 09:15:58 +0900
+Message-ID: <87f69971a9bf89fb4b51f128e8ae519cbaf5894e.1779406085.git.yohei.kojima@sony.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -75,225 +58,51 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Take advantage of the lifetime-parameterized IoMem<'bound> to use the
-memory mapping directly during probe, eliminating the Arc<Devres<IoMem>>
-indirection.
+Improve warning message on HWP-disabled hybrid processors to state that
+intel_pstate requires HWP to be enabled on such processors [1].
+Previously it warned that "intel_pstate: CPU model not supported", but
+it was misleading.
 
-Since the IoMem is only used during probe, this also simplifies
-Register::read/write to be infallible -- the Devres access check is no
-longer needed, so reads return u32 directly and writes return ().
+[1]: https://docs.kernel.org/admin-guide/pm/intel_pstate.html
 
-Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+Signed-off-by: Yohei Kojima <yohei.kojima@sony.com>
 ---
-Not yet updated to Tyr using the register!() macro, but probably good enough for
-reference.
----
- drivers/gpu/drm/tyr/driver.rs | 14 ++++----
- drivers/gpu/drm/tyr/gpu.rs    | 62 +++++++++++++++++------------------
- drivers/gpu/drm/tyr/regs.rs   | 21 +++---------
- 3 files changed, 41 insertions(+), 56 deletions(-)
+I tested this patch on my PC equipped with i7-14700. Please note that
+you need hybrid processors (i.e. Alder Lake and later) to test this.
 
-diff --git a/drivers/gpu/drm/tyr/driver.rs b/drivers/gpu/drm/tyr/driver.rs
-index 04f83fcf0937..d0aa42129530 100644
---- a/drivers/gpu/drm/tyr/driver.rs
-+++ b/drivers/gpu/drm/tyr/driver.rs
-@@ -10,7 +10,6 @@
-         Core,
-         Device, //
-     },
--    devres::Devres,
-     drm,
-     drm::ioctl,
-     io::poll,
-@@ -23,7 +22,6 @@
-     sizes::SZ_2M,
-     sync::{
-         aref::ARef,
--        Arc,
-         Mutex, //
-     },
-     time, //
-@@ -37,7 +35,7 @@
-     regs, //
- };
+After this patch, you will see the improved warning message if you
+disable hardware P-state in your BIOS,
+
+$ sudo dmesg -k | grep intel_pstate
+[    0.478616] intel_pstate: HWP-disabled hybrid CPU is not supported
+
+whereas this driver works as before if HWP is enabled.
+
+$ sudo dmesg -k | grep intel_pstate
+[    0.471387] intel_pstate: HWP enabled by BIOS
+[    0.471388] intel_pstate: Intel P-state driver initializing
+[    0.472593] intel_pstate: HWP enabled
+---
+ drivers/cpufreq/intel_pstate.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 11c58af41900..99cac95537b5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3823,6 +3823,12 @@ static int __init intel_pstate_init(void)
+ 		if (no_load)
+ 			return -ENODEV;
  
--pub(crate) type IoMem = kernel::io::mem::IoMem<'static, SZ_2M>;
-+pub(crate) type IoMem = kernel::io::Mmio<SZ_2M>;
- 
- pub(crate) struct TyrDrmDriver;
- 
-@@ -65,11 +63,11 @@ pub(crate) struct TyrDrmDeviceData {
-     pub(crate) gpu_info: GpuInfo,
- }
- 
--fn issue_soft_reset(dev: &Device<Bound>, iomem: &Devres<IoMem>) -> Result {
--    regs::GPU_CMD.write(dev, iomem, regs::GPU_CMD_SOFT_RESET)?;
-+fn issue_soft_reset(dev: &Device<Bound>, iomem: &IoMem) -> Result {
-+    regs::GPU_CMD.write(iomem, regs::GPU_CMD_SOFT_RESET);
- 
-     poll::read_poll_timeout(
--        || regs::GPU_IRQ_RAWSTAT.read(dev, iomem),
-+        || Ok(regs::GPU_IRQ_RAWSTAT.read(iomem)),
-         |status| *status & regs::GPU_IRQ_RAWSTAT_RESET_COMPLETED != 0,
-         time::Delta::from_millis(1),
-         time::Delta::from_millis(100),
-@@ -110,12 +108,12 @@ fn probe<'bound>(
-         let sram_regulator = Regulator::<regulator::Enabled>::get(pdev.as_ref(), c"sram")?;
- 
-         let request = pdev.io_request_by_index(0).ok_or(ENODEV)?;
--        let iomem = Arc::new(request.iomap_sized::<SZ_2M>()?.into_devres()?, GFP_KERNEL)?;
-+        let iomem = request.iomap_sized::<SZ_2M>()?;
- 
-         issue_soft_reset(pdev.as_ref(), &iomem)?;
-         gpu::l2_power_on(pdev.as_ref(), &iomem)?;
- 
--        let gpu_info = GpuInfo::new(pdev.as_ref(), &iomem)?;
-+        let gpu_info = GpuInfo::new(&iomem);
-         gpu_info.log(pdev);
- 
-         let platform: ARef<platform::Device> = pdev.into();
-diff --git a/drivers/gpu/drm/tyr/gpu.rs b/drivers/gpu/drm/tyr/gpu.rs
-index a88775160f98..bb0473c85bf7 100644
---- a/drivers/gpu/drm/tyr/gpu.rs
-+++ b/drivers/gpu/drm/tyr/gpu.rs
-@@ -10,7 +10,6 @@
-         Bound,
-         Device, //
-     },
--    devres::Devres,
-     io::poll,
-     platform,
-     prelude::*,
-@@ -35,37 +34,36 @@
- pub(crate) struct GpuInfo(pub(crate) uapi::drm_panthor_gpu_info);
- 
- impl GpuInfo {
--    pub(crate) fn new(dev: &Device<Bound>, iomem: &Devres<IoMem>) -> Result<Self> {
--        let gpu_id = regs::GPU_ID.read(dev, iomem)?;
--        let csf_id = regs::GPU_CSF_ID.read(dev, iomem)?;
--        let gpu_rev = regs::GPU_REVID.read(dev, iomem)?;
--        let core_features = regs::GPU_CORE_FEATURES.read(dev, iomem)?;
--        let l2_features = regs::GPU_L2_FEATURES.read(dev, iomem)?;
--        let tiler_features = regs::GPU_TILER_FEATURES.read(dev, iomem)?;
--        let mem_features = regs::GPU_MEM_FEATURES.read(dev, iomem)?;
--        let mmu_features = regs::GPU_MMU_FEATURES.read(dev, iomem)?;
--        let thread_features = regs::GPU_THREAD_FEATURES.read(dev, iomem)?;
--        let max_threads = regs::GPU_THREAD_MAX_THREADS.read(dev, iomem)?;
--        let thread_max_workgroup_size = regs::GPU_THREAD_MAX_WORKGROUP_SIZE.read(dev, iomem)?;
--        let thread_max_barrier_size = regs::GPU_THREAD_MAX_BARRIER_SIZE.read(dev, iomem)?;
--        let coherency_features = regs::GPU_COHERENCY_FEATURES.read(dev, iomem)?;
--
--        let texture_features = regs::GPU_TEXTURE_FEATURES0.read(dev, iomem)?;
--
--        let as_present = regs::GPU_AS_PRESENT.read(dev, iomem)?;
--
--        let shader_present = u64::from(regs::GPU_SHADER_PRESENT_LO.read(dev, iomem)?);
-+    pub(crate) fn new(iomem: &IoMem) -> Self {
-+        let gpu_id = regs::GPU_ID.read(iomem);
-+        let csf_id = regs::GPU_CSF_ID.read(iomem);
-+        let gpu_rev = regs::GPU_REVID.read(iomem);
-+        let core_features = regs::GPU_CORE_FEATURES.read(iomem);
-+        let l2_features = regs::GPU_L2_FEATURES.read(iomem);
-+        let tiler_features = regs::GPU_TILER_FEATURES.read(iomem);
-+        let mem_features = regs::GPU_MEM_FEATURES.read(iomem);
-+        let mmu_features = regs::GPU_MMU_FEATURES.read(iomem);
-+        let thread_features = regs::GPU_THREAD_FEATURES.read(iomem);
-+        let max_threads = regs::GPU_THREAD_MAX_THREADS.read(iomem);
-+        let thread_max_workgroup_size = regs::GPU_THREAD_MAX_WORKGROUP_SIZE.read(iomem);
-+        let thread_max_barrier_size = regs::GPU_THREAD_MAX_BARRIER_SIZE.read(iomem);
-+        let coherency_features = regs::GPU_COHERENCY_FEATURES.read(iomem);
++		id = x86_match_cpu(intel_hybrid_scaling_factor);
++		if (id) {
++			pr_info("HWP-disabled hybrid CPU is not supported\n");
++			return -ENODEV;
++		}
 +
-+        let texture_features = regs::GPU_TEXTURE_FEATURES0.read(iomem);
-+
-+        let as_present = regs::GPU_AS_PRESENT.read(iomem);
-+
-+        let shader_present = u64::from(regs::GPU_SHADER_PRESENT_LO.read(iomem));
-         let shader_present =
--            shader_present | u64::from(regs::GPU_SHADER_PRESENT_HI.read(dev, iomem)?) << 32;
-+            shader_present | u64::from(regs::GPU_SHADER_PRESENT_HI.read(iomem)) << 32;
- 
--        let tiler_present = u64::from(regs::GPU_TILER_PRESENT_LO.read(dev, iomem)?);
--        let tiler_present =
--            tiler_present | u64::from(regs::GPU_TILER_PRESENT_HI.read(dev, iomem)?) << 32;
-+        let tiler_present = u64::from(regs::GPU_TILER_PRESENT_LO.read(iomem));
-+        let tiler_present = tiler_present | u64::from(regs::GPU_TILER_PRESENT_HI.read(iomem)) << 32;
- 
--        let l2_present = u64::from(regs::GPU_L2_PRESENT_LO.read(dev, iomem)?);
--        let l2_present = l2_present | u64::from(regs::GPU_L2_PRESENT_HI.read(dev, iomem)?) << 32;
-+        let l2_present = u64::from(regs::GPU_L2_PRESENT_LO.read(iomem));
-+        let l2_present = l2_present | u64::from(regs::GPU_L2_PRESENT_HI.read(iomem)) << 32;
- 
--        Ok(Self(uapi::drm_panthor_gpu_info {
-+        Self(uapi::drm_panthor_gpu_info {
-             gpu_id,
-             gpu_rev,
-             csf_id,
-@@ -88,7 +86,7 @@ pub(crate) fn new(dev: &Device<Bound>, iomem: &Devres<IoMem>) -> Result<Self> {
-             core_features,
-             pad: 0,
-             gpu_features: 0,
--        }))
-+        })
-     }
- 
-     pub(crate) fn log(&self, pdev: &platform::Device) {
-@@ -208,11 +206,11 @@ fn from(value: u32) -> Self {
- }
- 
- /// Powers on the l2 block.
--pub(crate) fn l2_power_on(dev: &Device<Bound>, iomem: &Devres<IoMem>) -> Result {
--    regs::L2_PWRON_LO.write(dev, iomem, 1)?;
-+pub(crate) fn l2_power_on(dev: &Device<Bound>, iomem: &IoMem) -> Result {
-+    regs::L2_PWRON_LO.write(iomem, 1);
- 
-     poll::read_poll_timeout(
--        || regs::L2_READY_LO.read(dev, iomem),
-+        || Ok(regs::L2_READY_LO.read(iomem)),
-         |status| *status == 1,
-         Delta::from_millis(1),
-         Delta::from_millis(100),
-diff --git a/drivers/gpu/drm/tyr/regs.rs b/drivers/gpu/drm/tyr/regs.rs
-index 611870c2e6af..0881b3812afd 100644
---- a/drivers/gpu/drm/tyr/regs.rs
-+++ b/drivers/gpu/drm/tyr/regs.rs
-@@ -7,16 +7,7 @@
- // does.
- #![allow(dead_code)]
- 
--use kernel::{
--    bits::bit_u32,
--    device::{
--        Bound,
--        Device, //
--    },
--    devres::Devres,
--    io::Io,
--    prelude::*, //
--};
-+use kernel::{bits::bit_u32, io::Io};
- 
- use crate::driver::IoMem;
- 
-@@ -29,15 +20,13 @@
- 
- impl<const OFFSET: usize> Register<OFFSET> {
-     #[inline]
--    pub(crate) fn read(&self, dev: &Device<Bound>, iomem: &Devres<IoMem>) -> Result<u32> {
--        let value = (*iomem).access(dev)?.read32(OFFSET);
--        Ok(value)
-+    pub(crate) fn read(&self, iomem: &IoMem) -> u32 {
-+        iomem.read32(OFFSET)
-     }
- 
-     #[inline]
--    pub(crate) fn write(&self, dev: &Device<Bound>, iomem: &Devres<IoMem>, value: u32) -> Result {
--        (*iomem).access(dev)?.write32(value, OFFSET);
--        Ok(())
-+    pub(crate) fn write(&self, iomem: &IoMem, value: u32) {
-+        iomem.write32(value, OFFSET);
-     }
- }
- 
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+ 		if (!id) {
+ 			pr_info("CPU model not supported\n");
 -- 
-2.54.0
+2.43.0
 
