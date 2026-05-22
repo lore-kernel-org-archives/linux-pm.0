@@ -1,172 +1,230 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C43A13CDBD8;
-	Fri, 22 May 2026 10:47:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA4DD23D2A1;
+	Fri, 22 May 2026 12:19:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779446856; cv=none; b=KpdiCFJH5W+41+A1NE5yO68YioUmAWIRGW8A87uECjHEOVDB8HbaFdG0quhSo1YoPIn9MFKU0lgcn1UTDgTn09DWNh0OScKId1kGHkudI1Fi8Vs9M/qJrLWUA7x8+9dHyQZrZI4SbV+12hFI1CuQuqiZb339mCKWalS0IRWVrC8=
+	t=1779452344; cv=none; b=HO9g5Bxs/Aog4wbW+mgbEp/fJ0zDZHd98JlsAqno5IpEnvW+NjAvIO0VWFqQI4RC9fyRLGNNRaGjkL1/psbsNg9p8ua+6DNWs9aMKZx6dKb9bZ1qQWrRJqND+kL5dkBrNVLNBplwJnr8cgNEDnnokID53c6/mfMX72fOsXf4xnI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779446856; c=relaxed/simple;
-	bh=QNdletnnGNblfetjlRW6ZCm9/bq4IaOYIpJ8Y2ip6so=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=g6VdhHle3D/sbh9M+LLq0ILBL+hGlO9xdB6EaR7yNpIT73JRPxMxT9VPVy0xYnSK0fpbBpHonxlc284vkt41nHrMwPaj/udsjs3srF/Ghtah5Nw9LUayeHH5DxNspG7Smb1UP+mxVl2KR5HrIy6ObHJbSEAPKlr02SlfIu5nfto=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NqoOW6Ru; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779452344; c=relaxed/simple;
+	bh=iEK0pm/OdSJMUQmbIRG7MGuwSTN/cahJFrtQLO+zWqg=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=U1SJ3UJ7c1lb9YH19iKt4XjN1K6kRw6B6iFvWyLhbdY8RwvWFG3Z9wZoBJclHHZeipTcJq/LinPGL9rjByyjJ5ikTgCz0i3gKvKiYv9hIjxhst/PGkeWNuPXZxzF/uqJes4/EoRmVSGFpTqYp5EwKnc4Q0uQaWIxBi0OyFjhdGw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=mFK7F0YX; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NqoOW6Ru"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1BE51F000E9;
-	Fri, 22 May 2026 10:47:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779446854;
-	bh=K7QkYbeKzf0diPzwFSy35esfS3DNOr7gU6+VWzSEYXw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=NqoOW6Ru5ewCnOZl4JPJNgROCMEbS2VYkGBvVV05HDjXUsmqvcZ/btGQX2aIUXrZ6
-	 8QvFlJ315J+uyGU+OY/HXdSDD6BJuriRtn0dMGKo2uVGcnnnaUJo8fs1OjHKP53H4M
-	 EvzTHTxJGlL4TywdE8zamWHjSZS8anCKmxL0wVDNTVz/YhoNaMG9+Fr7MEC7C2tlgJ
-	 SUWW/WdDiTNa1GIBkEwmxo62oWLLcoOtPIlSs7cVo2RVrUWpGFRDOpwsb9GfFhwGPg
-	 j6lLTBi7b/KDSfXbKVacEfpPmNc7ECF8OBYo2FuJbZXHkykbB/S7pAxQOv4YdRYD1r
-	 35AZXSnBLBsZA==
-Date: Fri, 22 May 2026 11:47:22 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
- <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Amit Kucheria
- <amitk@kernel.org>, Thara Gopinath <thara.gopinath@gmail.com>, "Rafael J.
- Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- linux-arm-msm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kamal Wadhwa
- <kamal.wadhwa@oss.qualcomm.com>, David Collins
- <david.collins@oss.qualcomm.com>, Anjelique Melendez
- <anjelique.melendez@oss.qualcomm.com>, Neil Armstrong
- <neil.armstrong@linaro.org>, Stephan Gerhold <stephan.gerhold@linaro.org>
-Subject: Re: [PATCH 1/2] iio: adc: qcom-spmi-adc5-gen3: Share SDAM0 IRQ with
- ADC_TM auxiliary driver
-Message-ID: <20260522114722.49b6055e@jic23-huawei>
-In-Reply-To: <6c876a92-e572-4cb9-8c31-bbf681a4770b@oss.qualcomm.com>
-References: <20260515-gen3_adc_tm-v1-0-39ba29f9b4ab@oss.qualcomm.com>
-	<20260515-gen3_adc_tm-v1-1-39ba29f9b4ab@oss.qualcomm.com>
-	<20260515145450.3b1e9c3d@jic23-huawei>
-	<6c876a92-e572-4cb9-8c31-bbf681a4770b@oss.qualcomm.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="mFK7F0YX"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1779452343; x=1810988343;
+  h=date:from:to:cc:subject:message-id;
+  bh=iEK0pm/OdSJMUQmbIRG7MGuwSTN/cahJFrtQLO+zWqg=;
+  b=mFK7F0YX6dvGN2cIOl/iZgkIdkczqSkBCSYOUD6Jt49cBJjLMOFn4wJU
+   oByOThp8nU8J54ATWSsNj7MOrpLzR1pw8ZyXci+P1qD1V4JKjYx8U100O
+   J9vUVUdI+zIVwjVgO8bXzmLo3r34GW8tH7koGdIjkGWhroWS5IfO8hHFZ
+   1gwp7h/rm8IRZlkYbWKgXC2W4teW2jQPE4lF3aRLsTTMo/xwjPzcLg/HS
+   J5i18RTcEc4I3W2eH/jQHjDC/4/BC5L/FtE4ekSQVOMRdb/g40kA6u4D4
+   JKe58oWofZNd16cecL4wLLWM2mmWjXxjmNUhz8QbD/cn5KmtkZ3fFXydH
+   g==;
+X-CSE-ConnectionGUID: oCRattJ7QXCn+XIIz6h4SA==
+X-CSE-MsgGUID: D0fXD7/cSB+ULnrpgLrk6g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11793"; a="91071163"
+X-IronPort-AV: E=Sophos;i="6.24,162,1774335600"; 
+   d="scan'208";a="91071163"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 May 2026 05:19:02 -0700
+X-CSE-ConnectionGUID: e0PIEjiBRrGFKK27VIRIcw==
+X-CSE-MsgGUID: IRHCPHW5TYqFSNNcfXRQeQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,162,1774335600"; 
+   d="scan'208";a="245879676"
+Received: from lkp-server01.sh.intel.com (HELO fdb68b0ce653) ([10.239.97.150])
+  by orviesa005.jf.intel.com with ESMTP; 22 May 2026 05:19:00 -0700
+Received: from kbuild by fdb68b0ce653 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wQOq9-000000002Kn-02aW;
+	Fri, 22 May 2026 12:18:57 +0000
+Date: Fri, 22 May 2026 20:18:40 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [rafael-pm:bleeding-edge] BUILD SUCCESS
+ 80e40181008d03fdebbe7a139fde29831321b147
+Message-ID: <202605222032.R1W88DNv-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 
-On Thu, 21 May 2026 16:16:17 +0530
-Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+branch HEAD: 80e40181008d03fdebbe7a139fde29831321b147  Merge branch 'pm-cpufreq-fixes-next' into bleeding-edge
 
-> Hi Jonathan,
-> 
-> On 5/15/2026 7:24 PM, Jonathan Cameron wrote:
-> > On Fri, 15 May 2026 14:23:44 +0530
-> > Jishnu Prakash <jishnu.prakash@oss.qualcomm.com> wrote:
-> >   
-> >> The SDAM0 IRQ can be triggered for both EOC (end of conversion) events for
-> >> immediate ADC reads done in this driver and for threshold violation events,
-> >> based on ADC_TM thresholds configured from the auxiliary ADC_TM driver on
-> >> TM channels on the first SDAM.
-> >>
-> >> At present, this interrupt is handled only in the ISR in the main ADC driver.
-> >> When the ISR is triggered for an ADC_TM event, this driver notifies the ADC_TM
-> >> driver by calling a notifier callback exposed from it for this purpose.
-> >>
-> >> To simplify the interrupt handling in both drivers, share the interrupt between
-> >> the drivers. With this, ADC_TM interrupts on SDAM0 will be handled directly in
-> >> the ADC_TM driver, so remove the notifier callback and all TM interrupt
-> >> handling in the main ADC ISR.
-> >>
-> >> Signed-off-by: Jishnu Prakash <jishnu.prakash@oss.qualcomm.com>
-> >> ---  
-> > 
-> > Some stuff from Sashiko on this one:
-> > https://sashiko.dev/#/patchset/20260515-gen3_adc_tm-v1-0-39ba29f9b4ab%40oss.qualcomm.com
-> > 
-> > Given I assume you didn't see the warning (I'm fairly sure the bots analysis is correct
-> > as we've been busy fixing similar cases all cycle), can I just check, have you tested
-> > this on latest upstream?  
-> 
-> I had tested on a build based on top of Linux 7.1-rc2 and verified the driver's basic
-> functionality, but I think I overlooked the warning from the interrupt management code,
-> sorry about the miss.
-> 
-> > 
-> > Thanks,
-> > 
-> > Jonathan
-> > 
-> >   
-> >>  drivers/iio/adc/qcom-spmi-adc5-gen3.c         | 52 +++++----------------------
-> >>  include/linux/iio/adc/qcom-adc5-gen3-common.h |  2 --
-> >>  2 files changed, 8 insertions(+), 46 deletions(-)
-> >>
-> >> diff --git a/drivers/iio/adc/qcom-spmi-adc5-gen3.c b/drivers/iio/adc/qcom-spmi-adc5-gen3.c
-> >> index f8168a14b907..a819c3e627a0 100644
-> >> --- a/drivers/iio/adc/qcom-spmi-adc5-gen3.c
-> >> +++ b/drivers/iio/adc/qcom-spmi-adc5-gen3.c  
-> >   
-> >>  static int adc5_gen3_probe(struct platform_device *pdev)
-> >>  {
-> >>  	struct device *dev = &pdev->dev;
-> >> @@ -818,7 +782,7 @@ static int adc5_gen3_probe(struct platform_device *pdev)
-> >>  	}
-> >>  
-> >>  	ret = devm_request_irq(dev, adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq,
-> >> -			       adc5_gen3_isr, 0,
-> >> +			       adc5_gen3_isr, IRQF_ONESHOT | IRQF_SHARED,  
-> > 
-> > Sashikio points out that IRQF_ONESHOT is never correct for a non threaded
-> > interrupt.  The point of that flag is to ensure we don't handle another interrupt
-> > until the thread is done. If there isn't a thread then it doesn't do anything
-> > (other than omit a warning!)  
-> 
-> I tried at first keeping only the IRQF_SHARED flag here, but it seems that
-> shared interrupts need to agree on the ONESHOT flag configuration, else the
-> second interrupt's IRQ request call fails.
-> 
-> And the ADC_TM interrupt needs to be ONESHOT, since we don't want that interrupt to
-> be rearmed before we have notified the thermal framework from the threaded
-> part of the handler. So I had to add the IRQF_ONESHOT here too, though it is
-> not useful here.
-That's an interesting corner case.  Maybe the warning needs to be more refined?
-(I don't think it checks for shared?)
+elapsed time: 935m
 
-> 
-> I think it's best to use a threaded IRQ handler in this driver too. I don't really
-> see any meaningful way to split the actions in the interrupt handler here into a primary
-> handler and a threaded handler, so is it fine if I just make the primary handler NULL
-> and move all the ISR functionality into the threaded handler part ?
+configs tested: 153
+configs skipped: 18
 
-That's fine by me.  Just add some comments on why.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-J
-> 
-> Thanks,
-> Jishnu
-> 
-> 
-> >   
-> >>  			       adc->dev_data.base[ADC5_GEN3_VADC_SDAM].irq_name,
-> >>  			       adc);
-> >>  	if (ret)
-> >> diff --git a/include/linux/iio/adc/qcom-adc5-gen3-common.h b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> >> index 6303eaa6640b..39cbfcbdb101 100644
-> >> --- a/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> >> +++ b/include/linux/iio/adc/qcom-adc5-gen3-common.h
-> >> @@ -205,7 +205,5 @@ int adc5_gen3_get_scaled_reading(struct device *dev,
-> >>  int adc5_gen3_therm_code_to_temp(struct device *dev,
-> >>  				 struct adc5_channel_common_prop *common_props,
-> >>  				 u16 code, int *val);
-> >> -void adc5_gen3_register_tm_event_notifier(struct device *dev,
-> >> -					  void (*handler)(struct auxiliary_device *));
-> >>  
-> >>  #endif /* QCOM_ADC5_GEN3_COMMON_H */
-> >>  
-> >   
-> 
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-15.2.0
+arc                              allmodconfig    gcc-15.2.0
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    gcc-15.2.0
+arc                                 defconfig    gcc-15.2.0
+arc                   randconfig-001-20260522    gcc-9.5.0
+arc                   randconfig-002-20260522    gcc-8.5.0
+arm                               allnoconfig    clang-23
+arm                              allyesconfig    gcc-15.2.0
+arm                                 defconfig    clang-23
+arm                   randconfig-001-20260522    gcc-8.5.0
+arm                   randconfig-002-20260522    gcc-10.5.0
+arm                   randconfig-003-20260522    gcc-11.5.0
+arm                   randconfig-004-20260522    clang-23
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-15.2.0
+arm64                          randconfig-001    gcc-8.5.0
+arm64                 randconfig-001-20260522    clang-20
+arm64                          randconfig-002    gcc-14.3.0
+arm64                 randconfig-002-20260522    gcc-14.3.0
+arm64                          randconfig-003    clang-23
+arm64                 randconfig-003-20260522    clang-23
+arm64                          randconfig-004    clang-23
+arm64                 randconfig-004-20260522    gcc-10.5.0
+csky                             allmodconfig    gcc-15.2.0
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-15.2.0
+csky                           randconfig-001    gcc-10.5.0
+csky                  randconfig-001-20260522    gcc-15.2.0
+csky                           randconfig-002    gcc-10.5.0
+csky                  randconfig-002-20260522    gcc-15.2.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-23
+hexagon                             defconfig    clang-23
+hexagon               randconfig-001-20260522    clang-23
+hexagon               randconfig-002-20260522    clang-23
+i386                              allnoconfig    gcc-14
+i386        buildonly-randconfig-001-20260522    clang-20
+i386        buildonly-randconfig-002-20260522    gcc-14
+i386        buildonly-randconfig-003-20260522    clang-20
+i386        buildonly-randconfig-004-20260522    gcc-14
+i386        buildonly-randconfig-005-20260522    clang-20
+i386        buildonly-randconfig-006-20260522    gcc-13
+i386                                defconfig    clang-20
+i386                  randconfig-001-20260522    gcc-14
+i386                  randconfig-002-20260522    clang-20
+i386                  randconfig-003-20260522    gcc-13
+i386                  randconfig-004-20260522    gcc-14
+i386                  randconfig-005-20260522    gcc-14
+i386                  randconfig-006-20260522    clang-20
+i386                  randconfig-007-20260522    gcc-13
+i386                  randconfig-011-20260522    gcc-14
+i386                  randconfig-012-20260522    clang-20
+i386                  randconfig-013-20260522    clang-20
+i386                  randconfig-014-20260522    gcc-14
+i386                  randconfig-015-20260522    clang-20
+i386                  randconfig-016-20260522    clang-20
+i386                  randconfig-017-20260522    gcc-14
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-23
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20260522    clang-23
+loongarch             randconfig-002-20260522    gcc-15.2.0
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    gcc-15.2.0
+m68k                                defconfig    gcc-15.2.0
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    gcc-15.2.0
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+mips                           jazz_defconfig    clang-17
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260522    gcc-8.5.0
+nios2                 randconfig-002-20260522    gcc-8.5.0
+openrisc                          allnoconfig    gcc-15.2.0
+openrisc                            defconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    gcc-15.2.0
+parisc                              defconfig    gcc-15.2.0
+parisc                randconfig-001-20260522    gcc-14.3.0
+parisc                randconfig-002-20260522    gcc-8.5.0
+parisc64                            defconfig    gcc-15.2.0
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc               randconfig-001-20260522    clang-20
+powerpc               randconfig-002-20260522    clang-18
+powerpc64             randconfig-001-20260522    gcc-10.5.0
+powerpc64             randconfig-002-20260522    gcc-12.5.0
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-23
+riscv                 randconfig-001-20260522    clang-17
+riscv                 randconfig-002-20260522    clang-23
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    clang-23
+s390                  randconfig-001-20260522    clang-23
+s390                  randconfig-002-20260522    clang-23
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-15.2.0
+sh                    randconfig-001-20260522    gcc-10.5.0
+sh                    randconfig-002-20260522    gcc-14.3.0
+sparc                             allnoconfig    gcc-15.2.0
+sparc                               defconfig    gcc-15.2.0
+sparc                 randconfig-001-20260522    gcc-15.2.0
+sparc                 randconfig-002-20260522    gcc-15.2.0
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    clang-20
+sparc64               randconfig-001-20260522    gcc-14.3.0
+sparc64               randconfig-002-20260522    gcc-12.5.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-23
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260522    clang-23
+um                    randconfig-002-20260522    gcc-14
+um                           x86_64_defconfig    clang-23
+x86_64                            allnoconfig    clang-20
+x86_64      buildonly-randconfig-001-20260522    clang-20
+x86_64      buildonly-randconfig-002-20260522    gcc-13
+x86_64      buildonly-randconfig-003-20260522    gcc-14
+x86_64      buildonly-randconfig-004-20260522    clang-20
+x86_64      buildonly-randconfig-005-20260522    clang-20
+x86_64      buildonly-randconfig-006-20260522    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                randconfig-001-20260522    clang-20
+x86_64                randconfig-002-20260522    clang-20
+x86_64                randconfig-003-20260522    gcc-14
+x86_64                randconfig-004-20260522    gcc-14
+x86_64                randconfig-005-20260522    gcc-14
+x86_64                randconfig-006-20260522    gcc-14
+x86_64                randconfig-071-20260522    gcc-14
+x86_64                randconfig-072-20260522    gcc-14
+x86_64                randconfig-073-20260522    clang-20
+x86_64                randconfig-074-20260522    gcc-14
+x86_64                randconfig-075-20260522    clang-20
+x86_64                randconfig-076-20260522    gcc-14
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                randconfig-001-20260522    gcc-9.5.0
+xtensa                randconfig-002-20260522    gcc-11.5.0
 
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
