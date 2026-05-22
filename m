@@ -1,138 +1,262 @@
-Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012059.outbound.protection.outlook.com [40.107.209.59])
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FBB7349CE9;
-	Fri, 22 May 2026 16:05:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.59
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFCC42882D6
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:11:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=205.220.168.131
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779465935; cv=fail; b=Me+mRFc0QR1EUoWF42ns99rNncA5MRyeZk8VCFSxlH5xwRyJC2dmNfsdZEcGZ+DjXlAhLiF8Pgtg5K9wrh8kAZ6voQwsusNUUjLTKF81I4Bi+YQcqw4pqnjRdehsgMDGryqXL6w/JhBKhxLmEzDp/+odWSwGqRXQbQF31WCYEsc=
+	t=1779466286; cv=pass; b=L6sPzWQNvnLN5q/kgnbg67b4X/JlaRjsdGPuryxyc0PdOHerik4czlnPHgEgsh+kJ1zP+UqmlJO85uARlHiw597gIeYr98nXwZ5tzqdfXMSttKuNtkG8LwWxzMmALEo7dAMeymLpXezFSvOPclsCxDCuzVbAm/l584AmvlN5bKs=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779465935; c=relaxed/simple;
-	bh=pOJ7Euij+hQ7DThGI0nSuI5zYo3AYd7h07xMKP/WOMY=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tC7a+Ed6BL6ZXBqwPp8dPdJBUyhcHtkc1NL/XjkFTyOIFt6tWNKQBoVchDzyZPtCmPhGEULDqk0jxZhGExbKkMGv1HvnswRN6+HF+E/RuoRMLjHBG/dmCd0oabzF+m9eBx1R8NfpGH/fEdQoV2iBW0yo4KX9CBOq2rh6D+ysrcY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=VRmIdq8H; arc=fail smtp.client-ip=40.107.209.59
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1779466286; c=relaxed/simple;
+	bh=bLtI2OBA5rafdql0eae6MY8/XGVx80bBush8lA9uIPE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=iYbl7+9xXU/9LU8XJZqZ9ZmErZMttliOIbblLVItPa6PAAylgns4A1OPaJCWnkDJ+tdcv2DfWkq3k4KR5zSNxl9HHCDQ37RaMQFUmRezbp5CPreG9jPGUzUZvUlxMkRfYSpeNhpJA2n+OYzfKD/AzRBxJMd5iNw9Rk1k8jE+Xj4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=C8UL5tlt; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=ab7yDX+7; arc=pass smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="VRmIdq8H"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VfQdfIcSfKpGAxfzI8DQ1k6LdJPB1G3tbuN/OIUVTw5ypUGfFp1NlkQe24hmzJTjCtqfwKCSqH/ffDW6tAGqmKQOayAdF4Q3InW+YweXGFAsei+xJZWN30QfBmyLNpDc5ysXQvtTbEvuTFOzWIEJe+Gv1JDQYLOLXnx2hC5vr+SWqREZcxIbhkH9yEt/jG4FHM2euT+W1J5zuPjUr6hYC6iJqPH8EsHLxw3R56MFjRaYFK6zLlG8eKbw4eRtf7gb1+orYJ9D4+GX3zh05cR/ZRk9xeLK3yqyx6bi3YQMvKs9qgAGVMysfWRgmxISnIIlMQ7Q9ehQLb+tJ0rNef4rHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NHIQeo10w53cisGaQ/DGM2zNjioaxgp2GdHG4DN8XrY=;
- b=DhkWkaGEhdGPxxrEch95NCG3tZ1TjcPvfxNvaGU/NlWVIVBdnCM85QTd5o9yovj8e0WTCcqpcLk0J0nu6u9SrzpAUyegex/gvq5CG8fKDHw0hfewtKsraKeDeWR4i7UzAM7DnkD7iDR7oKWak5iEO7PJhAvdWD2/jYYKA/HWSKapi/CiRxbphwvoCSoW6lq78oA2Qi1Ygy4OH19AO/C6af+lFDIejv7ve8uFp8ly9LnjFYB6y6MXhNB1L/DAQLmV5TuerqVYJoKB+O03NTdNvCItGlK5pW7wKbh8ucCp9YIULTGtdcR2k6f+v9RS23EsBVRTS3eA9WLJZj4IC/8WMw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NHIQeo10w53cisGaQ/DGM2zNjioaxgp2GdHG4DN8XrY=;
- b=VRmIdq8HSju+3vlYgoCcWiFKydlqPnMpm2OTRCQdYyqDX0lYVR4ACZ1V84aYh0YMn9pka9kd6vHWA7xFTPo/rcebgQkA47I6JCfXS42BYkHNpLHhMlshAIUbMVjrHkhDqwZwFFN7XWal9TTOf6jjPrIvqhQaJCWtvx626Ni2XG8Ru7TNdK2OrDNFhZaTURaM2nsXD/0txmRQZUEmPjBtwF2M2GRVpedQYZ56c60BQnLmE9rDHCssx4Ld6KIUJmLe5N4Xz1t+5PlV+jxjNrPdDyupDl90jZlJoN9ICJP0oBorId+XCz+PqT+mrkDDsi1h6GQkvd+ymSG+WCkWVsuTVw==
-Received: from BL1PR13CA0340.namprd13.prod.outlook.com (2603:10b6:208:2c6::15)
- by SN7PR12MB7882.namprd12.prod.outlook.com (2603:10b6:806:348::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.17; Fri, 22 May
- 2026 16:03:27 +0000
-Received: from BN2PEPF00004FBD.namprd04.prod.outlook.com
- (2603:10b6:208:2c6:cafe::4) by BL1PR13CA0340.outlook.office365.com
- (2603:10b6:208:2c6::15) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.9 via Frontend Transport; Fri, 22
- May 2026 16:03:27 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.160) by
- BN2PEPF00004FBD.mail.protection.outlook.com (10.167.243.183) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.71.7 via Frontend Transport; Fri, 22 May 2026 16:03:26 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 22 May
- 2026 09:03:06 -0700
-Received: from moonraker.home (10.126.231.37) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 22 May
- 2026 09:03:05 -0700
-From: Jon Hunter <jonathanh@nvidia.com>
-To: Ulf Hansson <ulfh@kernel.org>, Thierry Reding <thierry.reding@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>, Jon Hunter
-	<jonathanh@nvidia.com>
-Subject: [PATCH] pmdomain: tegra: Add support for multi-socket platforms
-Date: Fri, 22 May 2026 17:02:51 +0100
-Message-ID: <20260522160251.76862-1-jonathanh@nvidia.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="C8UL5tlt";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="ab7yDX+7"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64MBwFr01297937
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:11:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	0lu1niHMrECx4L7qZONZo2E7wZ8eqqnrUPVegshXdyA=; b=C8UL5tltXnXU+6nX
+	jHhbbZeMbZja0B7v1zrospoXn2ug1pL3ImgZciQ7OI7Py4ei7tviaRBOQVb6TZ1r
+	7I6Sb5E4UsdKg2h7pRgaEEj5/YV1kwv/Wjp+ceh6enYt2BxwvxAwubUsJLS51Ohc
+	d5cBl0XI2mFp9IWXX0Kfda9Zl5qiwh42eMTwIE5X1jsDKzWDHLF8Zb5SGuy7KHhE
+	yiAXYXtAXMz/bAsnEaIqUKCqh12KIGXxeMogYcgjahBO5eTLbxD6Ss+r2P1FRlzy
+	8oLVz+bFkGxYTiKaz1mHJxjjo40BRWgU2Am9jF3DdDh2Uc8jvHTiiiE5YVNpqxGQ
+	SlI3zQ==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eaah0bwuq-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:11:22 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-90f5248b209so355805785a.2
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 09:11:22 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779466281; cv=none;
+        d=google.com; s=arc-20240605;
+        b=X10CKZ8vckFY9OMUEwhSZae1SB8Tv2p6z1HJba/GdFbb25Ymy6tGwEbeINEj1WHibj
+         TlFFcp6WT/eMZNTEYkoKRw45kONYpPnh4w/Vo9aylk2IsSB53nwB72ePWKFfiXshV/84
+         6zYdIAa0EBwf2hhdGI48glD6PD0Mi23h+xBLx/+Wv54nxbIBLCcZcJ0ULQmk1WpxCeY1
+         lDmV73tYgnpAChMyYsW3Arw2OgzdNNc4mu888HO0YDruqMgUs4Z5f4aljVEku7lMhlRt
+         OpZLyikCWdjg5HhzqHKfbnCiN2lqdLGieen7ENAA/xDvhinILc48D45ZFFnGfHxtZBi3
+         +Vbw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=0lu1niHMrECx4L7qZONZo2E7wZ8eqqnrUPVegshXdyA=;
+        fh=7x8fuVPXWouGEIe90ylcymQKt6CenQNGJDVdVfdV1jA=;
+        b=eyqLlonEDt7721UiRnUI9gagcrNjo4lD3521TzAcXaU1WBmrkYKwRcxeWFlLlZ2BLQ
+         APFszj0mJbvYpkIu0zrqjqQuzqy01DVPZi4KKXM4AV47t65Refn6AkJ1Wh7eH858wTwY
+         fDx5ZHh6RW7HXFswdr9XGOE/OgDWdsaa48ER/4H07qFHJh0GzyzgAf+6RDPOC8JZtTqP
+         O7dlG2qHCLl+KgmTWcPxELN3GwACsfndqW8xyYpYrducbKTT86YnZK0fu6W2MgJy8Lcf
+         pLFkEiDCIFsWsHHQsrV0bgN3LMtmlEJrwOvA5yvcM/ON5zmNMLh4h336df3bPXKFgHHZ
+         X+RA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1779466281; x=1780071081; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0lu1niHMrECx4L7qZONZo2E7wZ8eqqnrUPVegshXdyA=;
+        b=ab7yDX+7wHyPQLuGi1en5pfbfQfl59c9deiCGFVI1FJDD/Nv/TMXhY+nMl2GjWOEBS
+         tvLp+pUuuQa3E/W/Sym0mij+VVP9qVZL2bCsTA5iCizlh6cuiRqlpYgvPgIYvJiB1nkk
+         lhyIeAOpdXHMxlbPFInMFsXW9mzOQgptTHJJDyJaCXk4F+4UUjX3oGCGtdMqUeTZNnSQ
+         zjsAWoyZeTh9dboFkNypurPhcyML/Be8CWgYZVmUTyPOSSVx0MvRrcgrV9sIczJzkGGw
+         ClFYASUKNyqw8A1NYTCI3HJZMTK/l3oTsSSqFWlDqMuOaVbUfmqcRdidoZMrN24lige9
+         TYbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779466281; x=1780071081;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=0lu1niHMrECx4L7qZONZo2E7wZ8eqqnrUPVegshXdyA=;
+        b=DI/jUiH5W9YGnhGGvBkTqolYKckv08nCSrKlGexr9eBrGtSJlSAd/ZHpLxEmNw073L
+         f3R1HfW2VYUCqg1iVHL+fUI0BCI7SO17o1jANHITsSrtcDeHgAhzvDqGM8+p8boxhRBn
+         FaXEDuDTJziITLaH52O/QVBX/sFILO7JMkW10Pnl94PziBxQesb6yS065fxe44QN8v8p
+         YD0FP38JgdXgMihVx1ZHS1RkrauxGuQCge0vBvuTSqDKUvIYEb2JKQPrP+al5W5b5CCI
+         zopUAktQTzF+pJOkK0l6RZ7E6ZKLmZzQR7fdRHf73ATS7KqsiY6sfmle8S/EIn/VhWic
+         bZ8g==
+X-Forwarded-Encrypted: i=1; AFNElJ9jc/qlTBR523Gds4Pe8L7f5a7DeBdCg1whSRaA8QXdnmaolc4ZWCvF9j94LjJTcdVsMGiZM414OQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx9T6eCXDz9cHJVqTep7/A77Q415W1CFqCmfs0L/+azotThh+CC
+	P8ETnNTd92DWxYoWd8nuOzeWi57YkUM6Cd6iyMiEMYtim297Wum69WMtU2y6m0jKaQHXGQ5jS/m
+	j2ibpQgJ6WVSWl26rTc+NRNNzI+vjR+UPi3X9Gj2aHB6oJmT79VR5v4Wz3aus7ksCSjBJFellaL
+	GTPAFAZ3kRAfgiMrp2e857ULvjvyt0nlRb7qRY
+X-Gm-Gg: Acq92OFN7CX11hcRg6Cd458oTPHJuFRyE7yI1BbjJMx6bnn8IqQebL+M+28ff2ld8Cn
+	OhHSmc55Msr0186aVpBc5e+pidnNzZ63jhiU4CQZaJahvbbWho/bB3y2X/qUVZLrCY5Pt74s4HF
+	o3dyzl+GuJ063okkpTdZBdVR+GJdP1ValWkZBJlN+HhtwYnmYhf4wljfXymeZXMH/hxV1T7f1fn
+	s0dw3vTDplkc4D11eF9QVrBqkKAFf6J+oaUCkM=
+X-Received: by 2002:a05:620a:1d0b:b0:90f:9cde:9788 with SMTP id af79cd13be357-914b48d6853mr675636685a.5.1779466280576;
+        Fri, 22 May 2026 09:11:20 -0700 (PDT)
+X-Received: by 2002:a05:620a:1d0b:b0:90f:9cde:9788 with SMTP id
+ af79cd13be357-914b48d6853mr675629485a.5.1779466280032; Fri, 22 May 2026
+ 09:11:20 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: rnnvmail203.nvidia.com (10.129.68.9) To
- rnnvmail201.nvidia.com (10.129.68.8)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN2PEPF00004FBD:EE_|SN7PR12MB7882:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4c734b67-7427-4aa5-fd6f-08deb81ba8a8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|82310400026|36860700016|11063799006|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	zCitlJaHQFINUi8ECe+/CZtFXo500HTz2CtLzD31fXIBp/fz5bHtExBS+gtzQMP5DLTwoflRBpCSy6S3bd8FQBJu2Y5XhxhX0G/33pIZt2mM3bms/mk9BKvA6uHiYzp5A6CLem0gdrl4fPyKRP2ebCBJ7WNGaMp2sWmUT70Fp2wsg9hRNglci6/iCnld+ytdbnemYqKPjRmU3c4IHzb6VWRf2m7sKMPEzDe4F3M/4Q4V8g+0DN2EZ7SHmM5FDw+RcIXWIiXCnw8oAeVRvwx2uC3LM3JGj+XGb2z6HqHLKVy+Rj1P6V9qugz68cAJfXKZhbKTr4VPLosrkd7YQm6+q/ZvuqRCmkAuxvixfMHBV3R11FZe4r9piPD2HpU64Uo3yyBHvAToMBPlaEkQqsfpB9NCusT3c730DK8yMSzacJsmU4Zp5E9eaUCfSyr958rKJKl0oF/oK1Z9GVYQem0c11x9Znrv5fMesBA6D3vygEZk/7om/WhEAI5P3vz4SWX6SpLvB1icamvjUtSu4RCr0uqU9TaaUtOIKuE0rNT0fjQjQBN+pnoit2XPl+NL5Vj2UlyTum9fhe3qaeJDk2YJkt6PDCb2Dk1/BfyX9RT/NhdpBN7TsfL0bLLV5ZsAd1iz/g/U2DWXqhuLmrEyJuTEpeTu6atWt/LRL0geYUkTsxflVIw07jImA12QgpNnzPI3PSJq8Eo3FEEMWiWWNh3fHj+wmR91u81w5NbY1MI+ads=
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(1800799024)(376014)(82310400026)(36860700016)(11063799006)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	0U4Vf22FshTx76Fgy7uPcQWwPP7/inO8cQwmkVM5IMSnRo+BdDzd9P+v19vB+bgoFnz93mSsHb8VNlJZnTA2+k0dLs7PItm4UHhhZOqshlNaHILWdte+eBRd5nZb2Ua6zUgvUPFrayOhc9+ofkARlXWDeztJYpzBHspeejs4+tv8OByF+KidTOCBB8AmCPdN4pJMEsIpJVvWeegPRfh5r7PYLGh9ouVDA6SA7tHjGgf6j23m3PjTgAOYGrPfAV8VppK/rjlH0s3JQhKNv09UBigC7EBFaWYIYkglYGBqKH9uOXO7t2aU1amVHQ4j4fYZ91suWkO7xBBnEcBtHeYAtR/XSdZh9gFwE0E6pvA3G+Sr7D6C/w1ZVec4xIXJ58s7FEZvvOcH3iSWITh0zpTra4RdXyUOyNBySx6lC39ajL/0p24TiD9Q5lfG0FUzHAYp
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 May 2026 16:03:26.4553
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4c734b67-7427-4aa5-fd6f-08deb81ba8a8
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN2PEPF00004FBD.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7882
+References: <20260520-monza-wireless-v1-0-9f6942310653@oss.qualcomm.com>
+ <20260520-monza-wireless-v1-2-9f6942310653@oss.qualcomm.com> <cx3pbr47tsy5mnag73oopkodnx4jgoiipz5pzrp4uze7mk4fgg@zogzww23ueni>
+In-Reply-To: <cx3pbr47tsy5mnag73oopkodnx4jgoiipz5pzrp4uze7mk4fgg@zogzww23ueni>
+From: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Date: Fri, 22 May 2026 18:11:08 +0200
+X-Gm-Features: AVHnY4KZcbVzn920hjyxYOpqLudIDkA1KQq_MhbagXA8SoEUbTo3JjxoNdQTHfM
+Message-ID: <CAFEp6-3_NuWwF=gthfJyqeHMivGnfF0xpsTXT-xGW7pgFs+j3Q@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Bluetooth: hci_qca: Support QCA2066 on M.2 connector
+ via pwrseq
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Manivannan Sadhasivam <mani@kernel.org>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Marcel Holtmann <marcel@holtmann.org>,
+        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+        devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIyMDE2MSBTYWx0ZWRfX+hup6Hndq9Dx
+ b7uw4mafTzpXcmdpPPTmMhor1t6w6Fwo+DeLYXIcPkQAj1jLcKH0qeGJRvRGj8Ua0NTu+SqEH9D
+ FiO7f3bMtryBYaz5oqlKAf8OI53sdkR525Q4+5u+lKAGddco2cK145B9XFUIGhF8X04pS/iKYRt
+ syd2l+N+yFum9U0i3/hB0wopud8LUAo7X6svXguOHG+31gi7Sfox5W25PjT+7TmKMILHWmWN25N
+ SmF+ozQlpEDpRDqBh0nRE8BrZk+eTryhY6sNX3G/htq4rSevMO675SOx3nYRzEOW28Bg1LKzXX6
+ uHSzzqt4LRn8RAZWk+H+nPLUbq/p+0rr+tkOTb8iGYwJcRkz4yEDdn3+igUI49VKysJPs6zx/t3
+ cCvFaGAijgAbgAymF3PrpTU/Tz381N0A5LT7Sgb8oq1diBPunRfuRUNkV1UrxnIdpcTBvarEqE7
+ AHVl2GIdVR/1M0hS4Pg==
+X-Proofpoint-GUID: fRegqIemV2gA7T8JzqZLImRiuZd8rz76
+X-Authority-Analysis: v=2.4 cv=LNdWhpW9 c=1 sm=1 tr=0 ts=6a10802a cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=DJpcGTmdVt4CTyJn9g5Z:22 a=EUspDBNiAAAA:8 a=O2y7hZ9sxHz_cEH75X4A:9
+ a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-ORIG-GUID: fRegqIemV2gA7T8JzqZLImRiuZd8rz76
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-22_04,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 clxscore=1015 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
+ definitions=main-2605220161
 
-On multi-socket platforms each socket has its own BPMP that is
-registered with the kernel. For such platforms append the NUMA ID for
-each socket to the BPMP powergate name to ensure there is a unique name
-for each power-domain. Note that we only append the NUMA ID for
-powergates that return a valid name because an invalid name indicates
-that the powergate ID is not supported.
+On Wed, May 20, 2026 at 2:33=E2=80=AFPM Dmitry Baryshkov
+<dmitry.baryshkov@oss.qualcomm.com> wrote:
+>
+> On Wed, May 20, 2026 at 01:01:43PM +0200, Loic Poulain wrote:
+> > For QCA2066 (and other QCA chips) on M.2 connectors, the UART enable
+> > is controlled by the W_DISABLE2# signal managed by the pcie-m2 power
+> > sequencer rather than a dedicated BT enable GPIO.
+> >
+> > When the serdev controller has an OF graph (indicating it is connected
+> > to an M.2 connector), acquire the 'uart' pwrseq target from the
+> > connector's power sequencer and use it to control BT power instead of
+> > the bt-enable GPIO.
+> >
+> > Also allocate bt_power unconditionally for all SOC types since the
+> > pwrseq path is independent of the SOC type switch.
+> >
+> > Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
+> > ---
+> >  drivers/bluetooth/hci_qca.c | 33 +++++++++++++--------------------
+> >  1 file changed, 13 insertions(+), 20 deletions(-)
+> >
+> > diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
+> > index b5439b9956cfb0497e6ba6ccd9ed61224d23a9dd..de5cba7b7f44e280a48dad5=
+d670fa2758d3268d0 100644
+> > --- a/drivers/bluetooth/hci_qca.c
+> > +++ b/drivers/bluetooth/hci_qca.c
+> > @@ -1873,6 +1873,9 @@ static int qca_power_on(struct hci_dev *hdev)
+> >                       /* Controller needs time to bootup. */
+> >                       msleep(150);
+> >               }
+> > +
+> > +             if (qcadev->bt_power && qcadev->bt_power->pwrseq)
+> > +                     pwrseq_power_on(qcadev->bt_power->pwrseq);
+> >       }
+> >
+> >       clear_bit(QCA_BT_OFF, &qca->flags);
+> > @@ -2415,25 +2418,9 @@ static int qca_serdev_probe(struct serdev_device=
+ *serdev)
+> >       else
+> >               qcadev->btsoc_type =3D QCA_ROME;
+> >
+> > -     switch (qcadev->btsoc_type) {
+> > -     case QCA_QCA6390:
+> > -     case QCA_WCN3950:
+> > -     case QCA_WCN3988:
+> > -     case QCA_WCN3990:
+> > -     case QCA_WCN3991:
+> > -     case QCA_WCN3998:
+> > -     case QCA_WCN6750:
+> > -     case QCA_WCN6855:
+> > -     case QCA_WCN7850:
+> > -             qcadev->bt_power =3D devm_kzalloc(&serdev->dev,
+> > -                                             sizeof(struct qca_power),
+> > -                                             GFP_KERNEL);
+> > -             if (!qcadev->bt_power)
+> > -                     return -ENOMEM;
+> > -             break;
+> > -     default:
+> > -             break;
+> > -     }
+> > +     qcadev->bt_power =3D devm_kzalloc(&serdev->dev, sizeof(struct qca=
+_power), GFP_KERNEL);
+> > +     if (!qcadev->bt_power)
+> > +             return -ENOMEM;
+>
+> This builds bt_power for all devices even though it wasn't the case
+> beforehand. As such, you can drop all further `if (qcadev->bt_power)`
+> checks in the driver. But, you also need to check that this won't break
+> support for other (older) chips.
 
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
----
- drivers/pmdomain/tegra/powergate-bpmp.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Ok, I will do, and double check.
 
-diff --git a/drivers/pmdomain/tegra/powergate-bpmp.c b/drivers/pmdomain/tegra/powergate-bpmp.c
-index 8cde4f384846..1faaa92a5b02 100644
---- a/drivers/pmdomain/tegra/powergate-bpmp.c
-+++ b/drivers/pmdomain/tegra/powergate-bpmp.c
-@@ -137,6 +137,11 @@ static char *tegra_bpmp_powergate_get_name(struct tegra_bpmp *bpmp,
- 	if (err < 0 || msg.rx.ret < 0)
- 		return NULL;
- 
-+	if (response.get_name.name[0] != '\0' &&
-+	    dev_to_node(bpmp->dev) != NUMA_NO_NODE)
-+		return kasprintf(GFP_KERNEL, "%s.%d", response.get_name.name,
-+				 dev_to_node(bpmp->dev));
-+
- 	return kstrdup(response.get_name.name, GFP_KERNEL);
- }
- 
--- 
-2.43.0
+>
+> >
+> >       switch (qcadev->btsoc_type) {
+> >       case QCA_WCN3950:
+> > @@ -2543,7 +2530,13 @@ static int qca_serdev_probe(struct serdev_device=
+ *serdev)
+> >                       return PTR_ERR(qcadev->bt_en);
+> >               }
+> >
+> > -             if (!qcadev->bt_en)
+> > +             if (of_graph_is_present(dev_of_node(&serdev->ctrl->dev)))=
+ {
+>
+> And this breaks support for pwrseq for non-M.2 BT devices. There is no
+> OF graph in such a case.
 
+Not sure why, here we handle OF graph as an optional pwrseq provider,
+but still support legacy enablement.
+
+>
+> > +                     qcadev->bt_power->pwrseq =3D devm_pwrseq_get(&ser=
+dev->ctrl->dev, "uart");
+> > +                     if (IS_ERR(qcadev->bt_power->pwrseq))
+> > +                             return PTR_ERR(qcadev->bt_power->pwrseq);
+> > +             }
+> > +
+> > +             if (!qcadev->bt_en && !qcadev->bt_power->pwrseq)
+> >                       bt_en_available =3D false;
+> >
+> >               qcadev->susclk =3D devm_clk_get_optional_enabled_with_rat=
+e(
+> >
+> > --
+> > 2.34.1
+> >
+>
+> --
+> With best wishes
+> Dmitry
