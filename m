@@ -1,113 +1,122 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9E5546AF39
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:46:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAFFC34D385
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:49:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779468400; cv=none; b=o7/nn9V8DvZqITVtMvnWUuha9WywRWFw9GlAwydbaCaBmP94/Rraruqtp+gMi1Q+5el4hst8824AK+/SsJSYiDlxtUzbW2wBTYBVnEAjB1uugJvP9PleP8VyH5r2uZJ0AF55rb5yk7i9APrijFPqnm45hJgCdhn1SIuxcVxq6eA=
+	t=1779468599; cv=none; b=AJuo27HIoX4cMOJO+J+YQmMxZtYq1ygMvda/oDdr8O9rNysqpUBOHusVEP6b7ulx+fESVQtWei+12dz2VfyA14K51I34Tr2avf4gT3oCa4QaylkL5nUomed5/AsDzgp+CA7DKfjZEakjrb3u1+rdsXPRCupzu6bvCYaCLfqDoFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779468400; c=relaxed/simple;
-	bh=HLMJgxUWYOOSTRsXAZt28lgkSIczeVfoBqHks/T+ntU=;
+	s=arc-20240116; t=1779468599; c=relaxed/simple;
+	bh=1fMd7J2OpID7k1eE4I4hSAR5xlYgk/E4KuFLmxL+6yE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hr+RVJoLHiDvHVpHvWrbVx30IlbpZAeti6L8CtNnQRZ/qd8G/BA3u7rYpNz9ajZDZeUWhqsIcSeV/mOLBi7K2c1Gbt2tj9ve/XWLtnqSx85hknujjIiAfGwOqK7ZcwQOHwwZFBpvzp2FcbLx878U4rnMVXKNN4zG4iRxTJ3ZEGI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=W8XxvdHL; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=rbwnJDTkPQvfNAXtyMaRuj8EpTg6MWVNx0vvfkuBcTnUyu22OzSol+MPhFjsDPjiQQ4ZG/kkWYZ8Y/H9TQBfxx4y9odXjLDCkhGI+GLmIkNPa1mZ9xLa++BDAYDXYaO8K3FdcbLUD4ghmzQqpAIJ7hzrSmPVC/ClXgreOvE6ots=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oAZEEZRl; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="W8XxvdHL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B174B1F0155C
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:46:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oAZEEZRl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CC9A1F00ADF
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:49:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779468399;
-	bh=tF8ASdjE2HPczN9pR2VCdsZp7GUY9mxxrNN4R5d5/+Y=;
+	s=k20260515; t=1779468598;
+	bh=I4lAVT9LFjDm7p4L9smIE40CmKR2TiHJdUznQaX6/EA=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=W8XxvdHLfTM7u7Z5YYSt+Se3WvyQq1W+qGJzUJD4UXq1Juy+YjinIXUsyAMRaPE3y
-	 MtdpGoWg6QzXOVl60adOMvQYAmu9XIDwUdXowNkfvPLEnoWGYroq8KLdOnoWw67s3l
-	 yQrbNhtgVR6e6UMJXYTaFNcR70Uy3EYvnjngn2miF0LPUbDGjOCinOGTansykDVaUy
-	 cORyOwBVC7mIqEVcRCw6n4itBZomNngufp1mQLMmSw38qiSjLMZg7bVC7GtzSsa+Vb
-	 3gwe/m88mHTz9QvfIF/ZY3PBv2FOGXk0b83mo4KUoWsghOOP1Bz3WKTHs6xAp1Eaq8
-	 yQEszDKHkAxLA==
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-5a85b30dd54so8117226e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 09:46:39 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8poogqvOF7R/wdtFgEdJqzaKR/hSZ36oVeFHFFBR/R9mnNd5xM6BwO4fDBNmVJqN04sUGi/1rnWg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzAoTM12Jz3WcJH9ukAZo/X2gLqlglJMqSAgxo5SUF3STPAne24
-	Xw1n1lVuX9g8f3rHzC4f2WbCjDDuDpcA7eXNLQSVS4AWBykSUxvI6AQGfEjDwDecW1KIPUePO+R
-	oTuR/nmI8/96OF2y3qS9PbKo4EZAaMos=
-X-Received: by 2002:a05:6512:a91:b0:5a9:163a:9ebc with SMTP id
- 2adb3069b0e04-5aa32328f6emr1516676e87.19.1779468398137; Fri, 22 May 2026
- 09:46:38 -0700 (PDT)
+	b=oAZEEZRlFsB+eoN4+eBJlFrRPWTH+N4qJltx/QpO+fFL3VXq5Tax0dRbt2clizGK4
+	 HAw7ShnJLE1lfXt8vQX7cFaEjq7EnaeS6TK+Pni+kg+p9qmEsg1AtZ9PzvGc4EAR99
+	 0ewSSGKEoeRZYyGzR+uvLxbOt5WKwdl61ViO9ZTMFRwQsGoronr5lA0rFlOtdr+SGe
+	 Kk/P7paOtoposHexVyoT8WNCLmB8egLF3reFh41xrAZNyjKR/05iQYD3/PN4HNRI9i
+	 uDnX+55fFCHYPQeWj/fvIpYGFV+p1bjrwumXmHnEfSeYY3ZuJsHQL/JXpWIkA1JSTh
+	 qbh9cYN6VmUOw==
+Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-39556b00a85so59628381fa.0
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 09:49:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ88vGQVn09GLfXODvU9NNPSmaugNtTGeejIKXR9pb+fg+kFWMMFNlsXfFlDWizX8av8HR7Taghncg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw11Yw4R2uj/m5Htu81vXMpDDQZ2jriOQiXU+G3bW9yAT9uUg/f
+	V84Ue4L6spf5YcrUAvNzRW55HLr7SKfxaBo4l/7KlGfsWdEf6ijyOb2fZGspAEy8dLULWSE1nIG
+	16PgTg7SJhs/AvOBpjmk/LgUHjDo5Syw=
+X-Received: by 2002:a05:6512:65:b0:5a4:17a6:9780 with SMTP id
+ 2adb3069b0e04-5aa3234c7c5mr1029387e87.14.1779468597033; Fri, 22 May 2026
+ 09:49:57 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <87f69971a9bf89fb4b51f128e8ae519cbaf5894e.1779406085.git.yohei.kojima@sony.com>
-In-Reply-To: <87f69971a9bf89fb4b51f128e8ae519cbaf5894e.1779406085.git.yohei.kojima@sony.com>
+References: <20260515084920.70544-1-marco.crivellari@suse.com>
+In-Reply-To: <20260515084920.70544-1-marco.crivellari@suse.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 22 May 2026 18:46:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0h70i3+Undx7X2OmQAkXbwoS+T6SWUGf_BxtRhKL8=j2w@mail.gmail.com>
-X-Gm-Features: AVHnY4Lgf7wnXcuaph0IEmkzXuvQNPL3d0lpNpiuRSrxoHmrXm8gYgCkfRFf0dw
-Message-ID: <CAJZ5v0h70i3+Undx7X2OmQAkXbwoS+T6SWUGf_BxtRhKL8=j2w@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Improve warning message on
- HWP-disabled hybrid CPUs
-To: Yohei Kojima <yohei.kojima@sony.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Daniel Palmer <daniel.palmer@sony.com>, linux-pm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+Date: Fri, 22 May 2026 18:49:44 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
+X-Gm-Features: AVHnY4IqxjakekXbxc4Fm91KPw1U-c1aObimX29-KltDabIIOXmD-syVnV5ORI4
+Message-ID: <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
+Subject: Re: [PATCH v3] thermal: core: Add WQ_UNBOUND to alloc_workqueue users
+To: Marco Crivellari <marco.crivellari@suse.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
+	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+	Michal Hocko <mhocko@suse.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 22, 2026 at 2:14=E2=80=AFAM Yohei Kojima <yohei.kojima@sony.com=
-> wrote:
+On Fri, May 15, 2026 at 10:49=E2=80=AFAM Marco Crivellari
+<marco.crivellari@suse.com> wrote:
 >
-> Improve warning message on HWP-disabled hybrid processors to state that
-> intel_pstate requires HWP to be enabled on such processors [1].
-> Previously it warned that "intel_pstate: CPU model not supported", but
-> it was misleading.
+> This continues the effort to refactor workqueue APIs, which began with
+> the introduction of new workqueues and a new alloc_workqueue flag in:
 >
-> [1]: https://docs.kernel.org/admin-guide/pm/intel_pstate.html
+>    commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_w=
+q")
+>    commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
 >
-> Signed-off-by: Yohei Kojima <yohei.kojima@sony.com>
+> The refactoring is going to alter the default behavior of
+> alloc_workqueue() to be unbound by default.
+>
+> With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
+> any alloc_workqueue() caller that doesn=E2=80=99t explicitly specify WQ_U=
+NBOUND
+> must now use WQ_PERCPU. For more details see the Link tag below.
+>
+> This workqueue has no benefits being per-CPU, so make it unbound adding
+> WQ_UNBOUND, removing also the WQ_POWER_EFFICIENT flag.
+>
+> Link: https://lore.kernel.org/all/20250221112003.1dSuoGyc@linutronix.de/
+> Suggested-by: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
 > ---
-> I tested this patch on my PC equipped with i7-14700. Please note that
-> you need hybrid processors (i.e. Alder Lake and later) to test this.
+> Changes in v3:
+> - remove WQ_POWER_EFFICIENT: the workqueue has more benetifs being unboun=
+d,
+>   so just drop this flag and keep only WQ_UNBOUND.
 >
-> After this patch, you will see the improved warning message if you
-> disable hardware P-state in your BIOS,
+> Link to v2: https://lore.kernel.org/all/20260514142511.325446-1-marco.cri=
+vellari@suse.com/
 >
-> $ sudo dmesg -k | grep intel_pstate
-> [    0.478616] intel_pstate: HWP-disabled hybrid CPU is not supported
+> Changes in v2:
+> - "thermal_events" workqueue has more benefits being unbound, so instead
+>   of WQ_PERCPU, use WQ_UNBOUND.
 >
-> whereas this driver works as before if HWP is enabled.
+> Link to v1: https://lore.kernel.org/all/20260514132901.275477-1-marco.cri=
+vellari@suse.com/
 >
-> $ sudo dmesg -k | grep intel_pstate
-> [    0.471387] intel_pstate: HWP enabled by BIOS
-> [    0.471388] intel_pstate: Intel P-state driver initializing
-> [    0.472593] intel_pstate: HWP enabled
-> ---
->  drivers/cpufreq/intel_pstate.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/thermal/thermal_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
 e.c
-> index 11c58af41900..99cac95537b5 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -3823,6 +3823,12 @@ static int __init intel_pstate_init(void)
->                 if (no_load)
->                         return -ENODEV;
+> index 2f4e2dc46b8f..0b322473deac 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1889,7 +1889,7 @@ static int __init thermal_init(void)
+>         if (result)
+>                 goto error;
 >
-> +               id =3D x86_match_cpu(intel_hybrid_scaling_factor);
-> +               if (id) {
-> +                       pr_info("HWP-disabled hybrid CPU is not supported=
-\n");
-> +                       return -ENODEV;
-> +               }
-> +
->                 id =3D x86_match_cpu(intel_pstate_cpu_ids);
->                 if (!id) {
->                         pr_info("CPU model not supported\n");
+> -       thermal_wq =3D alloc_workqueue("thermal_events", WQ_POWER_EFFICIE=
+NT, 0);
+> +       thermal_wq =3D alloc_workqueue("thermal_events", WQ_UNBOUND, 0);
+>         if (!thermal_wq) {
+>                 result =3D -ENOMEM;
+>                 goto unregister_netlink;
 > --
 
 Applied as 7.2 material, thanks!
