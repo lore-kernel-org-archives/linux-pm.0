@@ -1,84 +1,87 @@
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40B32472771
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC42F477982
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779463106; cv=none; b=PoUqUZUdXSeVssr+euQsAemDx0A8NnB/Jdu2dAiLxZ5v1H1Tm3OZKSSuoIpCoPxOqYYCftb1cRqd4SbcGM90eb/fuZg9SyA8VXDNeL5wCrhwixUZH8XgLoqrncFHIe1pj++K/0FTrxoBFj76n7CrhdjLFNSJIa8HlzDNVQ66xz0=
+	t=1779463113; cv=none; b=l6Vya7Wb3JhwKcIzW+5bwS8kBhzfikB1az4NoPKYyJXLjW3i/bf7tXbRu6oQRcQmO7nYA6xJCuAlqOYWA91APW9m9U5SpYYate7lLy0/kCyO5rWjyPWS+Y3IhOxItBbyNVKV2i/Eh4AGGh4lU5/2+7IT+nVwHzgxFPnnk4XTz9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779463106; c=relaxed/simple;
-	bh=5xzbxVE4zky4rnTKO3zxGHdYa5RsWAP5zVmb3Xty3fg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=jckVVGPe+9PyDIERvB3AmQZ0kgAB7pBbgMQMuS0ej743n1spQeIcOitzO4tim+OI/t3/p8y/k30B5WbjZjah4AQExC9M8OGIb5ItN3DkJ94HMN1oZxY6vnVkE8/XvCJc5/mbywS1ssXo2jn2I5Pwj78U7+4Sab6uA9orGdiAMVY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=Rn11n1by; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=SEXaLWpJ; arc=none smtp.client-ip=205.220.180.131
+	s=arc-20240116; t=1779463113; c=relaxed/simple;
+	bh=2fruTuJGgso+AVSjN86SFOWYtIxEi2oXmlzdSiu8LiQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=NAiyTDR1YDJxxItn2Vkb0kzHcxduqvUiDqNMfV0xase2DR7V3mLxPnPK7zhZyQtxnghzbplmKkBwipJrDkp7uLxLQgqkvc4nPrsdXQdgVdu5jT4bNlU1eyVvoC0cwZrxaNkUUGyfy4upc92aq4oE4nFtWi6Eh4ibF/n+Xkwb9+U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=OHvfl8aZ; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=CaqwGPct; arc=none smtp.client-ip=205.220.180.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="Rn11n1by";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="SEXaLWpJ"
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64MC7Dhd1959980
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:16 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="OHvfl8aZ";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="CaqwGPct"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64MC1uKa779268
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=b5qd0Jvl8aH9HRjSEREJvf
-	KNf3cggNHxWlONW/RoqxY=; b=Rn11n1byuvPM5NlHFhX9fP0DCXRgTcB9f2h1qf
-	BWlBWX3xeik2JrKetT8Dwg5oCh+1xwlVjIpxEPHSwrBmqiRopGGoXwJIwFjtFo6O
-	Ry1Thj2ylOr/xYQMTA5oiwnHQR9/XhAGoofyfWdrcRDiW8lbuQLQOiYSQP5zlK0t
-	b0ghlx0k9KnA//833tUtyUftansrq8wTzyDa+VAKjTr3N11X2DcSw1q2/D5CFwzn
-	GRblcV3FOB5swi2g1dFJvWjh2RBwDxKj+sN0jqD6CNQ4Aevjzn2LMLBSCSWH0axg
-	emV12i2+/T4mjOY0GyEH80qBTHEFbNTkOiiWe9UBeU9TJG1A==
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eahxet54n-1
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	c4wgPZzl341OGf2dUgGOsYttbVFxmjqeXYFCtkA02/8=; b=OHvfl8aZ/nYC9rck
+	TE10u0vJ8/UUZ2UcshGddAF4VrHkrG5GkFmAocdo07MBj39ngLWHvAyqD487asLv
+	TxrIaHYWlnKL5/u8d9st0o9isslGp7fQbKeGO1HSTTLqFA/OTv6pooxCw7vd7MY5
+	CZGt2Rqy4dDGfwG6xh0NZcpNJu6IWoATKjsZP+4IHnbBgaBKflGoMgX5QZdDxW4J
+	pJGtwkUv72wpNv/pGAzCptSaWO0BEqRRMYmeoaNeXcKIXNkC5KEwPY9oYOE7blvL
+	k424ICQ8jp/v72Ozxrx8V+pi0aJ+74eJQtxjFPH0Hb9mwhwOEpntRz8KHwubst40
+	C54eSg==
+Received: from mail-pf1-f197.google.com (mail-pf1-f197.google.com [209.85.210.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eac7aud8x-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:16 +0000 (GMT)
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-83536dc3be5so8520325b3a.1
-        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 08:18:16 -0700 (PDT)
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 15:18:26 +0000 (GMT)
+Received: by mail-pf1-f197.google.com with SMTP id d2e1a72fcca58-82f85179263so9480867b3a.3
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 08:18:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1779463095; x=1780067895; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=b5qd0Jvl8aH9HRjSEREJvfKNf3cggNHxWlONW/RoqxY=;
-        b=SEXaLWpJzlun+HlqmuhaDLdd5Me5t6ZVehr3Mnf5adIvCHwipA4iwZWcm3e6IHWZ57
-         q5TQSGb8qfvmxzXIM6jvREjnD/docbwCNqZZTy/ehfR9hFQ71Tvtqt7pItOJ7ttls522
-         ggbfMNr5LVZN4I/C4PqXmP1uPNkQJsvFDTugYksfVGp1qlgKRAmusTppaffAVZ0mM+CZ
-         APswmr0Bc39Poyvwst96PfNh6tZhnEnEx7chl+XWp+CHMFw2GlCaRb3fMmNFemiDowiK
-         hLK9G0Ibdt390RZV/D03KS+rhyxuStY+LCKszOaRIPMGsBF9Ra++ZqIMR/b7HcIEYZZ4
-         J7KQ==
+        d=oss.qualcomm.com; s=google; t=1779463105; x=1780067905; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=c4wgPZzl341OGf2dUgGOsYttbVFxmjqeXYFCtkA02/8=;
+        b=CaqwGPctH/Fxv07tJi5n66aaTEqjlEquS+TLNykWv4TDWc4U7aXIVQ6i+u0nu+9Jjb
+         xA+HM8nWL/FxXLfpRrCpDKyy20B+Xxs+UjmUDridMC3Fyjre2QEKvhdiolrhG7BGFZXW
+         tno47JlBK9MH75ZAu543hmnXJqQxrIiNmIVKkcVq62Gyx8TUFUdLw0FFvuteDG0vTXxz
+         ex+gk2qeTDKcBmOcHDUxW6Bv19yFumDoxS4/kbzdNRhUC3LTI6x01edEv4HWZ7Mwq0Yu
+         ds29+u/GZ7Wj+IMnKmUlVWEXsMn9PHZlbNIMoUNNnnAStvuGeM1jxoZcujJ9MkQ8Ll82
+         gi8A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779463095; x=1780067895;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=b5qd0Jvl8aH9HRjSEREJvfKNf3cggNHxWlONW/RoqxY=;
-        b=SXNrYuXHdobedR2ehRBZ2ruzSdW93CgmzrHXuRxNSgsBqZIgemKdn70d0Bo3obwBUZ
-         R81KrdUMnWCcKMIrI6ndaCF/j+NHuwndudfqsbxkmK03GkWBR9bas92aUMRaupygYlfN
-         L45wJoLQZNfGA5hty+JIefTdom4R7HdwqOrrHc6qI0ytnndqfBLRB6EO015r8ePXQPg8
-         TRawmXRUt0EPMaLB8EllkSoD/WMTljgRLVEkIxcfj6pGOEgkHGQGgSc4W8ADnM9IJ/Vc
-         FsXNCWjy/BktScsk0Z9rdcQ8wk6fD6lAf9il0bTtSq1TXCl23Ght6f9qa6vzp5AndM60
-         nxpw==
-X-Forwarded-Encrypted: i=1; AFNElJ+szv/P8EAfheGTy1iz0DcvBYieXPeCZSl4MrKXkSRYec4VlzZ+/2W3lf5YsLOOv5WCiFmTxX7iEQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw89G4lWiBp4SSBDeRD+OeNGxcK96MAwLW2kQMHwz5UR7bUCKOS
-	7NdonwCsJ16C5px9xNCJMAycPSlCKiG0UUebmcwSfiLSs63NMIeU0rh4CqP3ZCJ2P5iYxYB2KDa
-	OwF3xXwQ6FqPxVo2cgr83UMRGfwHP9gvpHdBscsf7SkE18cB1gBQncvzAQ7xLRg==
-X-Gm-Gg: Acq92OHiSkOcj9rOiNp4TmXCd1FeurRex7Odq0/oe/xKiLw0UtozJwT67wEftr8FP8Y
-	RAVL0pYIZ9h51SB0sLbJcpcumO1q4DfyWRqR/nqmXIxv03xgMoHgYnip98ULuDpfnGA8F4c6pXL
-	3yjcmcZZV4mOlFgyN0kzEmYcwtqFuu+X5dumL32gpHX3QlzKPAzKnV2Ou4Ngl9vwjxOCZwqiKCH
-	44x5qQ7jcJlx4zfCqoETPhgyReM/bD76eNglnz1Svspi2uLvY7NKGL5Tro9S3TkHFa2kTjbEO06
-	z1xfr2eG8fWVQhcTdcSZJQqXdXg63OHTRuARPKq9aBYtDzbDuW2cdHEbsVnPyCHEP2QOlrXLq0F
-	ELnv28jrOUTcN99Oqu3KV/M6iOjTPLAOmcK8OFRkM4i94cRzcsHdu
-X-Received: by 2002:a05:6a00:ac0b:b0:82f:7b98:e499 with SMTP id d2e1a72fcca58-8415f303dccmr4421004b3a.31.1779463095256;
-        Fri, 22 May 2026 08:18:15 -0700 (PDT)
-X-Received: by 2002:a05:6a00:ac0b:b0:82f:7b98:e499 with SMTP id d2e1a72fcca58-8415f303dccmr4420961b3a.31.1779463094724;
-        Fri, 22 May 2026 08:18:14 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779463105; x=1780067905;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=c4wgPZzl341OGf2dUgGOsYttbVFxmjqeXYFCtkA02/8=;
+        b=PHFCElvndeN0WSkBP2aqCPXGY2k9ulb8h+JYAXPF/Llm10TpqmkRqx/bhwCpFoyHfE
+         FDZSH7ln+UovUCxOyMgsf4RONU/vhrX872DopBKviMtzQDqhVb94RCbjXkHQULCvqQgo
+         yUHv6biMspmOuGwdhLduQyh4aWob7iWnRWssCqLieRvd8BLxlCW4PVDf0HhKJISz7JHu
+         CXJxPoFM/oTXH0Jfy5gVg1UgYOiKUrQ3SXiSq8cUNtu+pweBQ7fLQzBl8lE++pekgCSx
+         XxUN8ztBO9S7gY9sePcdQRA5sO/k3ncFl15LdFT5+NomhwfyySjkvwiKH7Dr0J52WYY3
+         d2MQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/Ql+JJtbN1iu/CoLknWK0K4rdgCvqjfLaFbsGNlVprxDkCEMUSxluWvQWDdWnIJwct61Ton3lMuw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzpvfrs4/Tf9aMPxOAWVYnAOTX1fASTWnYS9AlkD985OYfQUlvL
+	nRTrkGUBahzpKy318QaZGqm2dQdsA6xTVpeFNG7UqclH9yjm235Bx/rStVOoL/l+f+40QZpkRCe
+	jIb5MFu3IzJue535ANYGkFomBWxFvGSr6uocDvlrr5bPaEh+bL67LqKloV2wRhA==
+X-Gm-Gg: Acq92OHB6CimM7evouLaMQvMEMx63agUgouMcUy8PKZScFZ3oeaSM0RCnx3fTYvPP3N
+	cXFweA7yt0bURaf+nwCJNidQvOlNbfFPCgygzSd/gh+9s5YSxo78cEEYFBQjgEyjGUx/5ab+L1U
+	CH54Wl2MJeUP7/LNYZp8iQpL40yQvujHsi/+HgoCDRi4n0bTIPsEWr4+MwMVsZMaCJN0WlvyYep
+	MdVD8S1mhOdCEvwJSGHXuis1zrqQK93yxHTKn1hh3sCHIyUlHft6trK1m2Pj2Ueacgft+ujG93J
+	K4SVhHVq+0wuYl0C8Z9NjkSmcYua/QskGbvxni67OPgobgwk5A9n/291sl7Bd8rr5hT76qnbceo
+	LsVroBogDJ2+iWui5708MWwY+Mfb5G5YkacpyVh/5hlfDA2hJci5r
+X-Received: by 2002:a05:6a00:181f:b0:82f:aae5:c7a6 with SMTP id d2e1a72fcca58-8415f6613abmr4078498b3a.43.1779463105288;
+        Fri, 22 May 2026 08:18:25 -0700 (PDT)
+X-Received: by 2002:a05:6a00:181f:b0:82f:aae5:c7a6 with SMTP id d2e1a72fcca58-8415f6613abmr4078454b3a.43.1779463104793;
+        Fri, 22 May 2026 08:18:24 -0700 (PDT)
 Received: from hu-imrashai-hyd.qualcomm.com ([202.46.22.19])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164fe97c0sm2083042b3a.53.2026.05.22.08.18.09
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84164fe97c0sm2083042b3a.53.2026.05.22.08.18.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 May 2026 08:18:14 -0700 (PDT)
+        Fri, 22 May 2026 08:18:24 -0700 (PDT)
 From: Imran Shaik <imran.shaik@oss.qualcomm.com>
-Subject: [PATCH v4 0/2] Add cpufreq scaling support for Qualcomm Shikra SoC
-Date: Fri, 22 May 2026 20:46:21 +0530
-Message-Id: <20260522-shikra-cpufreq-scaling-v4-0-f042a25896c5@oss.qualcomm.com>
+Date: Fri, 22 May 2026 20:46:23 +0530
+Subject: [PATCH v4 2/2] cpufreq: qcom: Add cpufreq scaling support for
+ Qualcomm Shikra SoC
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -87,11 +90,9 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAEVzEGoC/3XOTQ6CMBAF4KuYri2ZaQGpK+9hXJTSQiO/rRAN4
- e4W3LCQzSRvkvfNzMRrZ7Un19NMnJ6st10bQnw+EVXJttTUFiETBiyFmAP1lX06SVU/GqcH6pW
- sbVtSaUwqADlAykko904b+97g+yPkyvpX5z7bnQnX7Y9MAI/ICSlQdclykZiE5wJvnffRMMpad
- U0ThUFWeWI7DcWhxoLGchAGNCpRZAca32ns+DcetCzjCnmBOsH4j7Ysyxf1owL1XwEAAA==
-X-Change-ID: 20260430-shikra-cpufreq-scaling-aff690130063
+Message-Id: <20260522-shikra-cpufreq-scaling-v4-2-f042a25896c5@oss.qualcomm.com>
+References: <20260522-shikra-cpufreq-scaling-v4-0-f042a25896c5@oss.qualcomm.com>
+In-Reply-To: <20260522-shikra-cpufreq-scaling-v4-0-f042a25896c5@oss.qualcomm.com>
 To: "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -103,72 +104,131 @@ Cc: Ajit Pandey <ajit.pandey@oss.qualcomm.com>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Imran Shaik <imran.shaik@oss.qualcomm.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
         Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 X-Mailer: b4 0.14.2
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIyMDE1MiBTYWx0ZWRfX+dJU2qyTDS5i
- kMn7ZG8p2pYzisaJ+XeRvkjPUQoG9zNUnNAZsiK/ploiRLEUJ93CnhVp7UPU9Bt0+oJdi9ri1Cn
- Em16l90s3A74kLbrhrr+F1KnR2HWUwUn65bKoK3qT4lYRrDg/lgnv6nvolPgDIktdl2bomuAWL5
- pM9HCuprZbIZxJDH7Gwr6QY8wroEofRFNlM/2DVFcAgdSQhBPg92LBdHV7dwpnMOYAvrLY6d8SS
- pKq165lHXfyH/qqhTRzXesv+lpKmqyhx0IJIIGpR6pnob8GEZhHhpLatZXGjpjqOEGKMfBpJXmx
- 24cowpjvw+m8fGhGt1vqnAk5CKlyEz3cUlH5bvxBxpYsAptKAavubo905jk21q8WGbRrqNFQ2C3
- MDuTq3I4+Gb5gqxiYkMEZmbNfsVlS0jwY3nJ1O8nl/ZeVU2em5ps8bTcHPI8fU5j+ECICyFDSoh
- QmqKbprvtcLFrBGA3rA==
-X-Proofpoint-GUID: KA-TnR6ZY9Jo3Tas9h53WgJ137G773d8
-X-Proofpoint-ORIG-GUID: KA-TnR6ZY9Jo3Tas9h53WgJ137G773d8
-X-Authority-Analysis: v=2.4 cv=ar2CzyZV c=1 sm=1 tr=0 ts=6a1073b8 cx=c_pps
- a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
+X-Proofpoint-ORIG-GUID: anw0808N_E_-s-SjY52ugkSGRREu9bNE
+X-Authority-Analysis: v=2.4 cv=JrbBas4C c=1 sm=1 tr=0 ts=6a1073c2 cx=c_pps
+ a=rEQLjTOiSrHUhVqRoksmgQ==:117 a=fChuTYTh2wq5r3m49p7fHw==:17
  a=IkcTkHD0fZMA:10 a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=v_g_bJvqKrPZ60Du8zUA:9 a=QEXdDO2ut3YA:10
- a=OpyuDcXvxspvyRM73sMx:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=rJkE3RaqiGZ5pbrm-msn:22
+ a=EUspDBNiAAAA:8 a=8xPgF8R1Jm-cxLKBqHoA:9 a=QEXdDO2ut3YA:10
+ a=2VI0MkxyNR6bbpdq8BZq:22
+X-Proofpoint-GUID: anw0808N_E_-s-SjY52ugkSGRREu9bNE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTIyMDE1MSBTYWx0ZWRfX5kLA1B1DrtVr
+ AWixkUY9wAiyHmQh8yP4FR8qthjyAfo//6wXxOhITHWCymuyu5GSakppcOIlmAZhXaJFg4fS4Qs
+ KF6xUhVXT3VFb+gBOqpThBjrWXW6k4LK7dMuZqvHiCzo4g0pYNZdeN4MX5xRcMg+ZXU/tH+FuMp
+ zL0ddC1zoSM2uSfAYPeI6gWXTN4PVfwy65LktoQx2yRhNYYIbmNp/uZtqjdhi4Q+nr5imlqR39y
+ NgDjZPsFFDXkazMWhL5Y69Q7mSlFu1LLwvAH3uaeHVjzfdtQgF31/HFhNgQSOdzbO81wpzii0aT
+ Xj8Ci0Z2yRreWpRrgKLRe8ahrLcIz1Ew90+duakhtTDDlJsACUhUOgu/lXHXPOxYfqurHPVMbhH
+ I4O0+EwwL4CUnpjerrqCxo5hJJJlRmiMTrpiXnX/AR+qkzNr94QjbTC8YUDFXp+M25Qosneu6E9
+ 0w8hj72wQRN6KJE/0YQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-22_04,2026-05-18_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 spamscore=0 malwarescore=0 adultscore=0
- clxscore=1015 priorityscore=1501 phishscore=0 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2605130000
- definitions=main-2605220152
+ priorityscore=1501 impostorscore=0 suspectscore=0 clxscore=1015 adultscore=0
+ lowpriorityscore=0 spamscore=0 malwarescore=0 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605220151
 
-This series adds cpufreq scaling support on Qualcomm Shikra SoC.
+From: Taniya Das <taniya.das@oss.qualcomm.com>
 
+The Qualcomm Shikra cpufreq hardware is functionally identical to EPSS,
+but supports only up to 12 frequency lookup table (LUT) entries. When all
+12 entries are populated, the existing repetitive LUT entry check may read
+beyond valid entries and expose incorrect frequencies. Hence, introduce
+shikra_epss_soc_data that reuses EPSS configuration with appropriate LUT
+entries limit.
+
+Signed-off-by: Taniya Das <taniya.das@oss.qualcomm.com>
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 Signed-off-by: Imran Shaik <imran.shaik@oss.qualcomm.com>
 ---
-Changes in v4:
-- Drop CPUFREQ and use EPSS in bindings [Krzysztof]
-- Update bindings patch commit subject with correct subsystem prefix [Krzysztof]
-- Link to v3: https://lore.kernel.org/r/20260521-shikra-cpufreq-scaling-v3-0-883c13d1e514@oss.qualcomm.com
+ drivers/cpufreq/qcom-cpufreq-hw.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-Changes in v3:
-- Updated bindings as per the review comments [Krzysztof]
-- Updated driver patch commit text [Dmitry]
-- Updated compatible in driver patch as per the bindings
-- Link to v2: https://lore.kernel.org/r/20260519-shikra-cpufreq-scaling-v2-0-2b09f0e1c9d8@oss.qualcomm.com
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index ea9a20d27b8fdceb9341ee53e5fa27b7a6d92483..3d5a865fb8a35e112cb4d040fb519e2c122a91dc 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+  */
+ 
+ #include <linux/bitfield.h>
+@@ -40,6 +41,7 @@ struct qcom_cpufreq_soc_data {
+ 	u32 reg_intr_clr;
+ 	u32 reg_current_vote;
+ 	u32 reg_perf_state;
++	u32 lut_max_entries;
+ 	u8 lut_row_size;
+ };
+ 
+@@ -156,7 +158,7 @@ static unsigned int qcom_cpufreq_get_freq(struct cpufreq_policy *policy)
+ 	soc_data = qcom_cpufreq.soc_data;
+ 
+ 	index = readl_relaxed(data->base + soc_data->reg_perf_state);
+-	index = min(index, LUT_MAX_ENTRIES - 1);
++	index = min(index, soc_data->lut_max_entries - 1);
+ 
+ 	return policy->freq_table[index].frequency;
+ }
+@@ -211,7 +213,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 	struct qcom_cpufreq_data *drv_data = policy->driver_data;
+ 	const struct qcom_cpufreq_soc_data *soc_data = qcom_cpufreq.soc_data;
+ 
+-	table = kzalloc_objs(*table, LUT_MAX_ENTRIES + 1);
++	table = kzalloc_objs(*table, soc_data->lut_max_entries + 1);
+ 	if (!table)
+ 		return -ENOMEM;
+ 
+@@ -236,7 +238,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 		icc_scaling_enabled = false;
+ 	}
+ 
+-	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
++	for (i = 0; i < soc_data->lut_max_entries; i++) {
+ 		data = readl_relaxed(drv_data->base + soc_data->reg_freq_lut +
+ 				      i * soc_data->lut_row_size);
+ 		src = FIELD_GET(LUT_SRC, data);
+@@ -405,6 +407,7 @@ static const struct qcom_cpufreq_soc_data qcom_soc_data = {
+ 	.reg_current_vote = 0x704,
+ 	.reg_perf_state = 0x920,
+ 	.lut_row_size = 32,
++	.lut_max_entries = LUT_MAX_ENTRIES,
+ };
+ 
+ static const struct qcom_cpufreq_soc_data epss_soc_data = {
+@@ -416,11 +419,25 @@ static const struct qcom_cpufreq_soc_data epss_soc_data = {
+ 	.reg_intr_clr = 0x308,
+ 	.reg_perf_state = 0x320,
+ 	.lut_row_size = 4,
++	.lut_max_entries = LUT_MAX_ENTRIES,
++};
++
++static const struct qcom_cpufreq_soc_data shikra_epss_soc_data = {
++	.reg_enable = 0x0,
++	.reg_domain_state = 0x20,
++	.reg_dcvs_ctrl = 0xb0,
++	.reg_freq_lut = 0x100,
++	.reg_volt_lut = 0x200,
++	.reg_intr_clr = 0x308,
++	.reg_perf_state = 0x320,
++	.lut_row_size = 4,
++	.lut_max_entries = 12,
+ };
+ 
+ static const struct of_device_id qcom_cpufreq_hw_match[] = {
+ 	{ .compatible = "qcom,cpufreq-hw", .data = &qcom_soc_data },
+ 	{ .compatible = "qcom,cpufreq-epss", .data = &epss_soc_data },
++	{ .compatible = "qcom,shikra-epss", .data = &shikra_epss_soc_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
 
-Changes in v2:
-- Dropped the generic compatible approach, and introduced Shikra
-  specific bindings [Krzysztof]
-- Updated the driver patch as per the latest bindings changes
-- Added R-By tag received in V1.
-- Link to v1: https://lore.kernel.org/r/20260501-shikra-cpufreq-scaling-v1-0-c78b95f53b91@oss.qualcomm.com
-
----
-Imran Shaik (1):
-      dt-bindings: cpufreq: Document Qualcomm Shikra SoC EPSS
-
-Taniya Das (1):
-      cpufreq: qcom: Add cpufreq scaling support for Qualcomm Shikra SoC
-
- .../bindings/cpufreq/qcom,shikra-epss.yaml         | 96 ++++++++++++++++++++++
- drivers/cpufreq/qcom-cpufreq-hw.c                  | 23 +++++-
- 2 files changed, 116 insertions(+), 3 deletions(-)
----
-base-commit: 0787c45ea08a13b5482e701fabc741877cf681f6
-change-id: 20260430-shikra-cpufreq-scaling-aff690130063
-
-Best regards,
 -- 
-Imran Shaik <imran.shaik@oss.qualcomm.com>
+2.34.1
 
