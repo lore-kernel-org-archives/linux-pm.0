@@ -1,122 +1,88 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BAFFC34D385
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:49:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6EA9372675
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:57:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779468599; cv=none; b=AJuo27HIoX4cMOJO+J+YQmMxZtYq1ygMvda/oDdr8O9rNysqpUBOHusVEP6b7ulx+fESVQtWei+12dz2VfyA14K51I34Tr2avf4gT3oCa4QaylkL5nUomed5/AsDzgp+CA7DKfjZEakjrb3u1+rdsXPRCupzu6bvCYaCLfqDoFE=
+	t=1779469039; cv=none; b=Vmr1AgtBkhJIV/9vDJXKS6Ru0v7hg27RCY6TH/gjDnOeb47O2RdweTLSFpDV2ec9ICCiUs/ofaIeKZ0qNpc4GE8TSmXkNYTasf5F1GQJGt1XA2scOdOd+h5+QxA41PibI9/RCNhHDrTkG2f4H2VCuly6SNhQ+S5VBHEIRP88/m4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779468599; c=relaxed/simple;
-	bh=1fMd7J2OpID7k1eE4I4hSAR5xlYgk/E4KuFLmxL+6yE=;
+	s=arc-20240116; t=1779469039; c=relaxed/simple;
+	bh=oKltQbpmYlxME7CofbgLqQ850qxw/4UfJkTUuFOLisg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rbwnJDTkPQvfNAXtyMaRuj8EpTg6MWVNx0vvfkuBcTnUyu22OzSol+MPhFjsDPjiQQ4ZG/kkWYZ8Y/H9TQBfxx4y9odXjLDCkhGI+GLmIkNPa1mZ9xLa++BDAYDXYaO8K3FdcbLUD4ghmzQqpAIJ7hzrSmPVC/ClXgreOvE6ots=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oAZEEZRl; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=haxMgfJV29XidDwuikhquAPj/f6BxbckxKkIDjVQ6sVHqm8n6JAU8LxMRM5uz6m8/2egumaZIRLqCI5MrYu7R5Edgors3xO20+UpBpW+QtTRK+u1GBpisdR2WtHy8uBAOpdJdabBQQAIPOCj1JWqvFghRhKk4t8PX8PTZiLuB/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hXn1BoL1; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oAZEEZRl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CC9A1F00ADF
-	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:49:58 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hXn1BoL1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AF0C1F00ADE
+	for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 16:57:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779468598;
-	bh=I4lAVT9LFjDm7p4L9smIE40CmKR2TiHJdUznQaX6/EA=;
+	s=k20260515; t=1779469038;
+	bh=XDvOCVZwNoeBj/LTvRP2Kk/jvKCTqNq6FjLEMMb3Rl4=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=oAZEEZRlFsB+eoN4+eBJlFrRPWTH+N4qJltx/QpO+fFL3VXq5Tax0dRbt2clizGK4
-	 HAw7ShnJLE1lfXt8vQX7cFaEjq7EnaeS6TK+Pni+kg+p9qmEsg1AtZ9PzvGc4EAR99
-	 0ewSSGKEoeRZYyGzR+uvLxbOt5WKwdl61ViO9ZTMFRwQsGoronr5lA0rFlOtdr+SGe
-	 Kk/P7paOtoposHexVyoT8WNCLmB8egLF3reFh41xrAZNyjKR/05iQYD3/PN4HNRI9i
-	 uDnX+55fFCHYPQeWj/fvIpYGFV+p1bjrwumXmHnEfSeYY3ZuJsHQL/JXpWIkA1JSTh
-	 qbh9cYN6VmUOw==
-Received: by mail-lj1-f172.google.com with SMTP id 38308e7fff4ca-39556b00a85so59628381fa.0
-        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 09:49:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ88vGQVn09GLfXODvU9NNPSmaugNtTGeejIKXR9pb+fg+kFWMMFNlsXfFlDWizX8av8HR7Taghncg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw11Yw4R2uj/m5Htu81vXMpDDQZ2jriOQiXU+G3bW9yAT9uUg/f
-	V84Ue4L6spf5YcrUAvNzRW55HLr7SKfxaBo4l/7KlGfsWdEf6ijyOb2fZGspAEy8dLULWSE1nIG
-	16PgTg7SJhs/AvOBpjmk/LgUHjDo5Syw=
-X-Received: by 2002:a05:6512:65:b0:5a4:17a6:9780 with SMTP id
- 2adb3069b0e04-5aa3234c7c5mr1029387e87.14.1779468597033; Fri, 22 May 2026
- 09:49:57 -0700 (PDT)
+	b=hXn1BoL1m5DZXzgLiklTDKtrU+Ps8sh+Y/UiUCCv97npxdbPXYq1tVi4bwekxTytv
+	 KK7ucu1CzmZ966geYoPeelMuVXuCp27DbCyOJ90SaWl4Wcu9oLt7KHoLQMhpRIFyHd
+	 swCwatp75/aTSW3X7fy3Tpx6Rkc0NpRs4d8reIrcXrvkbiFbXS5i3tuDi/ByjoHo1q
+	 nEgxccpJptquNXoqdbYE7ta6eI+/+e/TSJTdZEtKEvcmAMyIPe+jRvbUBFlwU6HuVP
+	 QjORkVwwM3XCryR7Q/142whyrG2Os9cEOaL1rzJiFcOrKqTJqdG73OipxACH54KUwQ
+	 mbgZHzQyjM+Xw==
+Received: by mail-lj1-f180.google.com with SMTP id 38308e7fff4ca-39396f873adso112149371fa.3
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2026 09:57:18 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8Jgr+8+0rIxZ+BR47RFURA+bU7TrL+GkbEOS1VWt+eJF1SNO7dixv1VbME9YCthlOvGYPviezbKg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywe9NITkswfBrHVKx28rAWIWy3ye4qqBD8/xwtErwt/yvHVnDcn
+	MdI1bWkRecBqWDnMwAmje3Nl0+45pl2+IpJJ3GfK3F8nOzZSvQ0AYnwVP0OrJJyAHuxqE/rsImp
+	LO1dyUnXiz3ZGgSmvtfMqmZ0xhSv15/A=
+X-Received: by 2002:a05:6512:33c2:b0:5a8:d7d4:4948 with SMTP id
+ 2adb3069b0e04-5aa323c3cbdmr1463693e87.33.1779469036955; Fri, 22 May 2026
+ 09:57:16 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260515084920.70544-1-marco.crivellari@suse.com>
-In-Reply-To: <20260515084920.70544-1-marco.crivellari@suse.com>
+References: <CAJZ5v0jskPFOQELt+XE6DhcTxVomqzuVJF322n3n3xffbG9Uog@mail.gmail.com>
+ <20260511175246.217788-1-kmayur809@gmail.com>
+In-Reply-To: <20260511175246.217788-1-kmayur809@gmail.com>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 22 May 2026 18:49:44 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
-X-Gm-Features: AVHnY4IqxjakekXbxc4Fm91KPw1U-c1aObimX29-KltDabIIOXmD-syVnV5ORI4
-Message-ID: <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
-Subject: Re: [PATCH v3] thermal: core: Add WQ_UNBOUND to alloc_workqueue users
-To: Marco Crivellari <marco.crivellari@suse.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
-	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	Michal Hocko <mhocko@suse.com>, "Rafael J . Wysocki" <rafael@kernel.org>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>
+Date: Fri, 22 May 2026 18:57:04 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gM4njmYU0KmObQnxXLcWmX9YctN=ZD9QDy_dnQz37S+g@mail.gmail.com>
+X-Gm-Features: AVHnY4LSkcs8FfW5plfU-VwwdxhOlWxdXdi1jtmpYhDPQzrjzGFEpZDGO2xlhTM
+Message-ID: <CAJZ5v0gM4njmYU0KmObQnxXLcWmX9YctN=ZD9QDy_dnQz37S+g@mail.gmail.com>
+Subject: Re: [PATCH v2] thermal: sysfs: remove space before tab in macro
+To: Mayur Kumar <kmayur809@gmail.com>
+Cc: rafael@kernel.org, daniel.lezcano@kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 15, 2026 at 10:49=E2=80=AFAM Marco Crivellari
-<marco.crivellari@suse.com> wrote:
+On Mon, May 11, 2026 at 7:53=E2=80=AFPM Mayur Kumar <kmayur809@gmail.com> w=
+rote:
 >
-> This continues the effort to refactor workqueue APIs, which began with
-> the introduction of new workqueues and a new alloc_workqueue flag in:
->
->    commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_w=
-q")
->    commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
->
-> The refactoring is going to alter the default behavior of
-> alloc_workqueue() to be unbound by default.
->
-> With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
-> any alloc_workqueue() caller that doesn=E2=80=99t explicitly specify WQ_U=
-NBOUND
-> must now use WQ_PERCPU. For more details see the Link tag below.
->
-> This workqueue has no benefits being per-CPU, so make it unbound adding
-> WQ_UNBOUND, removing also the WQ_POWER_EFFICIENT flag.
->
-> Link: https://lore.kernel.org/all/20250221112003.1dSuoGyc@linutronix.de/
-> Suggested-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+> Signed-off-by: Mayur Kumar <kmayur809@gmail.com>
 > ---
-> Changes in v3:
-> - remove WQ_POWER_EFFICIENT: the workqueue has more benetifs being unboun=
-d,
->   so just drop this flag and keep only WQ_UNBOUND.
->
-> Link to v2: https://lore.kernel.org/all/20260514142511.325446-1-marco.cri=
-vellari@suse.com/
->
-> Changes in v2:
-> - "thermal_events" workqueue has more benefits being unbound, so instead
->   of WQ_PERCPU, use WQ_UNBOUND.
->
-> Link to v1: https://lore.kernel.org/all/20260514132901.275477-1-marco.cri=
-vellari@suse.com/
->
->  drivers/thermal/thermal_core.c | 2 +-
+>  drivers/thermal/thermal_sysfs.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 2f4e2dc46b8f..0b322473deac 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1889,7 +1889,7 @@ static int __init thermal_init(void)
->         if (result)
->                 goto error;
+> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sy=
+sfs.c
+> index 5eecae13f07..15f269358e0 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -82,7 +82,7 @@ mode_store(struct device *dev, struct device_attribute =
+*attr,
+>  }
 >
-> -       thermal_wq =3D alloc_workqueue("thermal_events", WQ_POWER_EFFICIE=
-NT, 0);
-> +       thermal_wq =3D alloc_workqueue("thermal_events", WQ_UNBOUND, 0);
->         if (!thermal_wq) {
->                 result =3D -ENOMEM;
->                 goto unregister_netlink;
+>  #define thermal_trip_of_attr(_ptr_, _attr_)                            \
+> -       ({                                                              \
+> +       ({\
+
+Broken, but I fixed it up.
+
+>                 struct thermal_trip_desc *td;                           \
+>                                                                         \
+>                 td =3D container_of(_ptr_, struct thermal_trip_desc,     =
+ \
 > --
 
 Applied as 7.2 material, thanks!
