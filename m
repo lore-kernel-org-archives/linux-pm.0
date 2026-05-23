@@ -1,71 +1,77 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010056.outbound.protection.outlook.com [40.93.198.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 973DE3438B5;
-	Sat, 23 May 2026 05:55:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.56
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779515737; cv=fail; b=MvfrNFX50naERH8Ca46513aDFdMiqhN77SsWARZBMrcQtn+SGbrPLoE7DLepl03D0yQokzZKoetFyyAltUW9JrQaF7ntRChl41nBMgikwuFzl4L1lsLpqbMHZDTNmQVLNMCn7VBx9OBAimvgsnhhGq8mmvgXiLNWibe9p+4xlR8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779515737; c=relaxed/simple;
-	bh=SE5DeKPMhEPtEwwhODWckkHZEqV9HsMnS8UCa9oiDMc=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=tJVwPDUsVK29vi4t0Jjr/F4eTX8ZuFOnMTlp+2sXEWJNxhA3Z2Sk6EuYlpAKDTM+eLbSQsz9YcK7+pAb1WaNfL9OR09IPJ3UNM/IIGlfAVY3l5kyR0a/oY0hs6OI3bVBxvRcVJOx4jvGVbI8qC2D4oUqsOWlUNhq5flhaT+8bgA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=eTlIXbks; arc=fail smtp.client-ip=40.93.198.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B85837F8C6
+	for <linux-pm@vger.kernel.org>; Sat, 23 May 2026 08:51:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.51
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779526281; cv=none; b=oLlQi6GxkNSyjvy8fJEpz93sgCyjB9Ef8CLrmKfbgEqSWxzRZ7yAiTHWNPjDWMw1Zmwl6gvR51rqu2shddHTLE62CJOS5qOdTRNRX/RZf2B1DtM2SeUr+/Hqk+6xrpCDdKDm7B6BEyG+PTeyuk9TagcQJiBkFm6wClYdhDLvrj0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779526281; c=relaxed/simple;
+	bh=YlpVUBY7qjHm3/ZERt7CV3iv2qn0LVcIMaSVXRO4BdY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=czU43iIKjZuOYZyR9azsU3ZBHkONQWyzAQVYJvyJ4j70lz084JYuzJU88xTDovUleWEkJwu6ROxNx2QtyTqSABhWPKhK1HPh57nG3Q32pqQJOaz3Ewzb4USOpkUZbFm3/2PM1NdxzYS4Oi7kdR4H1ChC/AhdykOpdXcjWNADliM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rheejzAD; arc=none smtp.client-ip=209.85.208.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="eTlIXbks"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NWt0jbNXS6mZhPVYjGwt+Xx8xnVzLO1oydYYD4vcWFNY9DhGwY9BXO8ABJC0QTZRdLc1vixr8Xyb8/d6lzrTQZ9pEFVIa7H9i9+61wj9kGo7edhgAlbkV+5C9pGJILjOmroy6C+gaWnpza54/PeJk5EuTzs3tneH6CCyS4iMm/Sq1L90V8auroiFNAczU8AaWtUEkc57HDhhPIdm5iBSpn85r05OK4lzLMka0MTExlArTgUG+4K42Xy9xBTRTKjpSuIwnk+9/mOhFkWd+nrfn/UXZMg/vhcJoqe9gliE5xzc6/b7idRQ08pNJ6EkuqAB2G3Ks6DmDXLpzhrcgG9y/g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=J1JzN7jMo/Puk0DxQtFVcXnYLTBAf6kfstNPrAcMiPU=;
- b=CPIM0On5tShoAazrty28C9C0tuqSAOokFTQ6WT89M06O3/BEIwCzBkOg4WfGnkn2Df0hpfMCyO+Ym8aaEa9z2QWVyWao5oXsl5vEVKaOXCP0mjn7uNFtfBdvrbQkBvovWaHXJk7kPuLGwKyhVuF79gDSIfmkPBWyqwT/htaXsFMqoqenizPJMISVoanUPOJHpGgdtiXTAGCJYxFP31XrMWEk70j+/EwJhQcsvlBEkAbHGpIgyJlRYGzQJd1FXOZ2YGVHjSv/9VPURTHBRhLVAQM+b/o52ojsBEhs3edLpLwT625cSbRzKUdrmc3KQXbRRUEzpwtG14zjv7nViSkXOA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=J1JzN7jMo/Puk0DxQtFVcXnYLTBAf6kfstNPrAcMiPU=;
- b=eTlIXbksZGmHErKc2VoERjr8a0qEBXtRyd3mlUliwc9SH2OtRkDkhJV5Zw31q5UluEVaWfHdaayx8hf94p6YN4pk+VU90i6XhFgumeTtN4nbBslXQ6ck0f1D7Z9zjfnI7OtXNq/2uBeYE1sO8D1tl4/3M/6TZ23CQ8U0N3MUDls=
-Received: from MW3PR05CA0020.namprd05.prod.outlook.com (2603:10b6:303:2b::25)
- by PH7PR12MB7427.namprd12.prod.outlook.com (2603:10b6:510:202::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.14; Sat, 23 May
- 2026 05:55:28 +0000
-Received: from MWH0EPF000C6186.namprd02.prod.outlook.com
- (2603:10b6:303:2b:cafe::70) by MW3PR05CA0020.outlook.office365.com
- (2603:10b6:303:2b::25) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.71.10 via Frontend Transport; Sat, 23
- May 2026 05:55:27 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- MWH0EPF000C6186.mail.protection.outlook.com (10.167.249.118) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.71.7 via Frontend Transport; Sat, 23 May 2026 05:55:27 +0000
-Received: from BLRKPRNAYAK.amd.com (10.180.168.240) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Sat, 23 May
- 2026 00:55:22 -0500
-From: K Prateek Nayak <kprateek.nayak@amd.com>
-To: Mario Limonciello <mario.limonciello@amd.com>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui
-	<ray.huang@amd.com>
-CC: Perry Yuan <perry.yuan@amd.com>, "Mario Limonciello (AMD)"
-	<superm1@kernel.org>, <linux-pm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, K Prateek Nayak <kprateek.nayak@amd.com>,
-	Kalpana Shetty <kalpana.shetty@amd.com>, Dan Carpenter <error27@gmail.com>
-Subject: [PATCH] cpufreq/amd-pstate-ut: Disable dynamic_epp after the mode switch
-Date: Sat, 23 May 2026 05:55:03 +0000
-Message-ID: <20260523055503.7651-1-kprateek.nayak@amd.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rheejzAD"
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-6870f904c6bso7068435a12.0
+        for <linux-pm@vger.kernel.org>; Sat, 23 May 2026 01:51:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779526278; x=1780131078; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=DMVVhkCyi3BTFhYWA2PfziVCVQZjQefJnSrFOyQ7TOs=;
+        b=rheejzADHtw1ekI6ea1X3SUvldIzI4pCz+KFP/YnAucbaT5V1S9SGi60tYrUocBqbu
+         G6F12JB+2YkiIPnvVqnecRWlGPCHMDykEYl34Kk1wFy9XvOGd8t7Mh5x1D+ixGtztaDy
+         LxkSO0EFyW5ZHh1pRN5LQ0qWIe6g3nMjSBrMTmns/jT8SiHeN1nNT7mqaUQTu7OO+gj/
+         Vd4mslHtrrtLDdUN88IzykX/MnhkZzEJGGLjc1ltlCE1WTTUw7/aOX4xPARjsiKQAGpo
+         VMkoDhT+LlVZCy0NZow3e4FsT8lokAwprsDqTPnTphIpgdBmpoxpc6XCTjFB4wZ65SwS
+         10Tg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779526278; x=1780131078;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DMVVhkCyi3BTFhYWA2PfziVCVQZjQefJnSrFOyQ7TOs=;
+        b=K1S9/HWOJqb+GEmqkzTHnbwTwOGcx8M68mOmXeyVOCgyb1Xwg3Onq/DPzem2TO24tO
+         UheNqCV+BGKx32cboXSlrTXDAf+jXgS2anNSX5iBh15j9xI50nANn0MKuunH66LznORB
+         X/MMaEXY+VMwUJOp9o0lhb4YHIXjTGTeeU0afcZ/hTBzdgEtCcqDRiKYaSxQJGw3OVZt
+         Ymzz4HyTcKcuZ6RR3UTdXmXtAUfMG5Ve3to2ayIhCOkgL0Bz10TOpeN8fdsATeWWZz/g
+         nVRvyIi2DyrC+nApnUkGr0xApv/5yo0p2BFhyIut4dXdoI5dKuaxpXipAnW4YME74wnx
+         EDaQ==
+X-Forwarded-Encrypted: i=1; AFNElJ9Z9bnJYhEdEdTvr4tTHalbvnYz0iJ2oIUm08mjaOv3n+qaAB/S9zP1fNBzgFskHgq3S4Zclop4uA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyXb5A69+q8GCvC6Ce5g/Ub1r2D2YJgI6GdTg3K9v+oGB9iUNkL
+	h2orpSFStxZyLo6t55i+uum1AagRkqNJ04oD8nLQLK1GgB5/RI2VFTSK
+X-Gm-Gg: Acq92OEs24yj/6ILpuU2yXSySDLI5VWV3G+QpuL6QdpM5kMrV9k3GCk/3ixSHzRBEM5
+	I7OnZo0/3p2fGtl2u0GGU52fM7VU+eg0mX0VwBoxLGB3/mGJMWVuX4+8+OrpFI7yi1S8isQBFfH
+	6+GOkpXWge9gGq4Jy/11yBpGOjs9EBe2V44R2LTsVSFDaCiEwxogEGdHt9DGh8XdhBsg/agZnHA
+	Z6uK6Gvo2WhLyqo/rinx0nui20C3GVBkuZ2S/EDoQErcUK72+xXvCBaeCkLxABBvrf3ptPyZxwU
+	F9jNOF3ACqa9WWvJGXwrd2IdB7VVEbqDl12HDpIszOCEd0ATTIcVDUsUs2JL1M/TTuNUtEyw3/S
+	JcA6pucBtJKMrOu9SMOu6oBPJFQh3yvomPd951UpoSReqEC6uHmm5IanZhhuuJRRMEtCI+l13Xn
+	I6dReWOFRCgQANCWpkCaOgw8Y=
+X-Received: by 2002:a05:6402:40d4:b0:687:cfde:ddaf with SMTP id 4fb4d7f45d1cf-6889c440492mr3668932a12.7.1779526278408;
+        Sat, 23 May 2026 01:51:18 -0700 (PDT)
+Received: from xeon ([188.163.112.61])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-688baf1f0afsm1642658a12.17.2026.05.23.01.51.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 23 May 2026 01:51:16 -0700 (PDT)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Thierry Reding <thierry.reding@kernel.org>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: devicetree@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/2] power: sequencing: Add support for Nvidia Tegra modem pwrseq
+Date: Sat, 23 May 2026 11:51:00 +0300
+Message-ID: <20260523085102.51000-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -73,109 +79,31 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
- (10.181.42.216)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MWH0EPF000C6186:EE_|PH7PR12MB7427:EE_
-X-MS-Office365-Filtering-Correlation-Id: e38c2465-e348-430f-8bcd-08deb88fe3da
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|376014|1800799024|82310400026|3023799007|11063799006|5023799004|13003099007|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	dPeLr0fLgWZcMe9nCL5weMgCPN7SdB3UNZRx5xjzngg24a7XZ1APv0Yv4euB1oGk3wyWVkhYn7VdqVwUQYlLYLaDUg/g4+ZDq045XefGK9NHIwX8wq5YErvL52sw5EaMi0TDDKXjNy8Sc0yD1fjHf8vSQDRH4aVKjTCj4JOu5h2OVR2gWv6aE6SKiPRqOVQzuJwBH2JsyMiW/9R+E5JqREOTRf1eS2wmyIty1gdyIpxrcMWKlV10g4g+FKL3DpPi66Ms89vr+Grwsy58R4ZnaY23+d4qoKE3FqVegGgKAlNVBK0yz06DIVLVUm+W54OgNiC+rY4Khze97kJ8cFGHzQStfWfo1e5iQlCfADd7mkFsafmqbhPjujPgfwP4COBOl0WshTApzNB5i+jN+uvgo/fspZ2+cFpko02vn2thN/LXvBxyLbnj1r0QgwSuxnM3LrMg027k2RjlXQ0AvQ7c5SJ18aaFNuBG3teMrFUyzjmeSYkZJOEB6NRCMt1UqbwVESwO8D7wokey1YrMevWNABP2SKuNQ3iKAMwzVEWKAweJ1G9OaTPeFgngPLkM71oQK/S/Sx86qq+iXWsSajZFREosCDNzU74QNdT5bUXJN4N6P7xU6dtRaPD8SSsm5zuMwmu0tq0Te6rWjCfKSBcmvN/r4txpQJEIMsxCHG7lUxWHyZgob+smhzLggLp068HO
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(1800799024)(82310400026)(3023799007)(11063799006)(5023799004)(13003099007)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	cykYzCNoBe5Ctz2jYKN2niKHW0JlrL9/pDWCzP9ZtWB2vAkjvCxnpje+xBUrXBz50fyI8JwlQQYl2vY82rWSVYb1mdJhu3m5f3d980kGBywLS1smRuWA7Q/K4z0AP6EsjIpu5hsM3OXZj3ldjQF5Ua0Uy9QBfWZulLtKXf4FDm7kKND2SM/2ukX+atWKvh3TuaqrFdSOTL2ab8LRcKCnwTdJQ0+Z8PxccIlCYAUCNBSMdgueJgy+81A+EqRy7EgFbSyWua/t3AC0P7/fEEIpRUpWMxwH0M+tdU1wU20U5ltk7A1SVX/D9OYg9kMLCaBOd2MVfw1rgqsefp6SHbYM2HiacC1U91zw02x2WBz6GtVavYVkMtcYYpF4qrpH3qZyBvfn29ZoL4WR7bpgdjXx/OQK3q0uHRaLKmuB9xK2LlYGDyAr0zsL5SxgETFSRpFB
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 May 2026 05:55:27.4433
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: e38c2465-e348-430f-8bcd-08deb88fe3da
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MWH0EPF000C6186.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB7427
 
-Dan reported a possible NULL pointer dereference in amd-pstate-ut.c from
-static analysis and sure enough, running amd-pstate-ut in active mode
-with amd_dynamic_epp=enable results in a crash as a reult of the policy
-reference being set to NULL early, before disabling dynamic EPP.
+Patchset implements support for the Tegra-specific modem powerseqence,
+which handles the registration and unregistration of the USB controller.
 
-Kalpana also reported seeing amd-pstate-ut error out with -EBUSY for
-"amd_pstate_ut_epp" test when starting from the passive mode and
-amd_dynamic_epp=enable in the command line. The reason for the failure
-is that the command line enables dynamic_epp by default after the mode
-switch and the modifications to EPP values are blocked when running in
-dynamic EPP mode.
+This patchset is a part of larger series aiming to bring XMM6260 modem
+support for Tegra devices:
+https://lore.kernel.org/lkml/20260511135703.62470-1-clamor95@gmail.com/
 
-Solution to both problems is to toggle off dynamic_epp *after* the mode
-switch when the driver grabs the policy reference again since the unit
-test is in full control of the policy after that point.
-
-The final restoration step will reset the dynamic_epp state via mode
-switch based on the initial conditions of the system.
-
-Reported-by: Kalpana Shetty <kalpana.shetty@amd.com>
-Reported-by: Dan Carpenter <error27@gmail.com>
-Closes: https://lore.kernel.org/linux-pm/ahEq0CvdBX0T7_cO@stanley.mountain/
-Fixes: f9f16835d4dc ("cpufreq/amd-pstate-ut: Drop policy reference before driver switch")
-Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 ---
-Patches are based on:
-
-  git.kernel.org/pub/scm/linux/kernel/git/superm1/linux.git amd-pstate-fixes
-
-Sorry for the oversight on f9f16835d4dc. I've tested the fix
-exhaustively this time around on a Zen4 system with all combinations of
-driver modes and amd_dynamic_epp state and the unit test runs
-successfully under all combinations without any errors.
+Changes in v2:
+- previous phy driver reshaped into pwrseq driver
 ---
- drivers/cpufreq/amd-pstate-ut.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/amd-pstate-ut.c b/drivers/cpufreq/amd-pstate-ut.c
-index 13a23dac477d..735b29f76438 100644
---- a/drivers/cpufreq/amd-pstate-ut.c
-+++ b/drivers/cpufreq/amd-pstate-ut.c
-@@ -302,12 +302,6 @@ static int amd_pstate_ut_epp(u32 index)
- 	cpufreq_cpu_put(policy);
- 	policy = NULL;
- 
--	/* disable dynamic EPP before running test */
--	if (cpudata->dynamic_epp) {
--		pr_debug("Dynamic EPP is enabled, disabling it\n");
--		amd_pstate_clear_dynamic_epp(policy);
--	}
--
- 	buf = (char *)__get_free_page(GFP_KERNEL);
- 	if (!buf)
- 		return -ENOMEM;
-@@ -327,6 +321,16 @@ static int amd_pstate_ut_epp(u32 index)
- 	orig_policy = cpudata->policy;
- 	cpudata->policy = CPUFREQ_POLICY_POWERSAVE;
- 
-+	/*
-+	 * Disable dynamic EPP before running test. If "orig_dynamic_epp" is
-+	 * true, the  driver will do a redundant switch at the end and there
-+	 * is no need for enabling it again at the end of the test.
-+	 */
-+	if (cpudata->dynamic_epp) {
-+		pr_debug("Dynamic EPP is enabled, disabling it\n");
-+		amd_pstate_clear_dynamic_epp(policy);
-+	}
-+
- 	for (epp = 0; epp <= U8_MAX; epp++) {
- 		u8 val;
- 
+Svyatoslav Ryhel (2):
+  dt-bindings: soc: tegra: Document Nvidia Tegra modem pwrseq
+  power: sequencing: Add support for Nvidia Tegra modem pwrseq
 
-base-commit: e4e9b7b38d5db2cc6a8770bc0596bb8b36b92b1f
+ .../soc/tegra/nvidia,tegra-modem-pwrseq.yaml  |  49 ++++
+ drivers/power/sequencing/Kconfig              |  12 +
+ drivers/power/sequencing/Makefile             |   1 +
+ drivers/power/sequencing/pwrseq-tegra-modem.c | 209 ++++++++++++++++++
+ 4 files changed, 271 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/tegra/nvidia,tegra-modem-pwrseq.yaml
+ create mode 100644 drivers/power/sequencing/pwrseq-tegra-modem.c
+
 -- 
-2.34.1
+2.51.0
 
