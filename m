@@ -1,91 +1,102 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFCAC383321
-	for <linux-pm@vger.kernel.org>; Sat, 23 May 2026 09:20:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9333215A86D;
+	Sat, 23 May 2026 15:46:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779528023; cv=none; b=SOf1xB/Q+qfJq1p1Af2FK4SOGPIM7wbvyjCGOkjCy7DQo8vL/Lna4cYeg6sOFGx2nPwLWs4NXDkdLiTfLpSdqr4tolvh6kbY32hkKp2CbOnAjPbzM8CT+KuWM68zx3M0pKm1572ONWBFpYnWbyvQUgJsonBC1GrIO03tAPUCQ+o=
+	t=1779551215; cv=none; b=OtK8HfMXWqHeaysK3ueKmV+Zjq5afoE0j8uBoK9alCAglYm2/uZq4WU6Bf2MGRO+S6fZ5TtbTwP1SgF2WSeTOa7ofxbx0+T1OYWzFdb2vVR8crdNDl2tPYAUadSQSnMtX8D0GAq7Ycy5miM8IQI01XH9RJ7ozo1QGKjFVzG9PPI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779528023; c=relaxed/simple;
-	bh=t+aytgWJYWMrIeGAWf/uE60NzkgJIffFPhmKzk31inM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=k4UcgfyZ3WIODa+jAcwe5bpwPgBSFCt07t89NkViR7bubtm3EoPG98U88NstvkybPUyQopb1yfjPuWsDUuqSZGglKZRU6cbMDUy10/Ky8DaNbs8YkwaPYjnTjnbqe6N5R6d6dOIcPwcC59HzD8UhWQYONkKpEfOoUNdpTu+LfS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cfxBsi7J; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779551215; c=relaxed/simple;
+	bh=nLBZR1yPNJIwvSHlyra/l/GfIWnzfGqqm1BCrTrJ6/Y=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=QTppHdsemlgk1lB1/FzmACV3mzvCNqQ1dGvTZXLJ94MYjyJDtMs1ARv76dt+5Hj0Vwptc9nt1RG15OinLK7ILhAUp701B5rrBInYPRssbleHoOGp0JWihCGGIx0HBMudRAj8o/2eNYLGLFpyHEfiWP6qXx6cw1+tihUFf6bSPIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XtGo7vjv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cfxBsi7J"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A73101F00A3C
-	for <linux-pm@vger.kernel.org>; Sat, 23 May 2026 09:20:22 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XtGo7vjv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EF321F000E9;
+	Sat, 23 May 2026 15:46:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779528022;
-	bh=t+aytgWJYWMrIeGAWf/uE60NzkgJIffFPhmKzk31inM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=cfxBsi7J9fsxEfsgvFmd2NVs986Q+ome4emmk8XKBW0g0Vb4bFRCXh3k/gEInSN8Q
-	 wEXuaXm6WH4wWD/NmykWGGJpFREKgCOdeQKCh67hcMtBLIaQX8g4xf6Fj0YJaJrb6E
-	 0KkeYumHzBE0gW2aIVVaoAPL6MsNZAVaieL5jDJ98UnLoSi/slwePbTpTNRRuCtkdo
-	 oilPK8HHNaAyy21qLXJqkYqQiaNjU/7QbTVFL/kKpraNgzZP4FeFSD6emYDCnGFOJs
-	 r6bIrTI6lLYD5KEOFKQaAN034CwriA+B+X8bZ8PfjNeuBeHNwWRDanNTFWv/061nE7
-	 oe3vN4O5udvEQ==
-Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-3939d2bd739so64081341fa.0
-        for <linux-pm@vger.kernel.org>; Sat, 23 May 2026 02:20:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8ZGX9Qk9M3WTPxB+FS65ymSsPpxmJ2EGvH71+UkNFUgoCWm9KYjceKaMSISmoYL20LsBfJRZPb5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwHVWwbngBdm5VNIa8mA1tQzHnO/JvphwJIHY3vE4eTsv89LViJ
-	A9+93UbB2SBp275bBtBUvHDFNt5984D1QpGvUVav/B+dTunyMvrqQSUwyO8UlRy4yt+QgTdFR2p
-	YCmTRZuT0UL4tvSUr/UHHiEghr6sVROo=
-X-Received: by 2002:a05:6512:61a:b0:5a8:ee42:c131 with SMTP id
- 2adb3069b0e04-5aa323cbd13mr1605975e87.34.1779528021498; Sat, 23 May 2026
- 02:20:21 -0700 (PDT)
+	s=k20260515; t=1779551214;
+	bh=o01mZIap77JdV7lnWDWkCgBFoE4EHf5jWItgL7KxWEQ=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To;
+	b=XtGo7vjv/u2jBKRoLHA3oC9OmfZu2mVOGV/5v91LFo3aenQIJ3Cybr0FFjI67nVMk
+	 rsOKWs1mXpXve5q7T/hfXdkKBYgWVqT1s9evRpWtpIRO/d3Zltm68xofkt3Wt1bVLO
+	 7jJavYWoDXZxu8XNR30oIIFFxdR2KkchADzY/WPMvjqNlfN/M2a7heUiyegIGuuEDZ
+	 0xFLspwBB4sdqtVmDAwEwrZr/JcayDEPbyHrjLY5NnXGo9x902lQgoa6YqcXzCVGGt
+	 KRFJt1o421jQFFp3Lh9B9DfEag4cUfKMND6Kt4a3SRvOVNHtRbb3Wha0CnuBfBGbKX
+	 RnfmInEnTQ2zg==
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-References: <20260513-scmi-client-probe-log-v1-0-00b47b1be009@oss.qualcomm.com>
- <20260513-scmi-client-probe-log-v1-5-00b47b1be009@oss.qualcomm.com> <CAD++jL=6ikpC-BqVqP1Ev5HC37fw=K_n6rP96AxKi0jdVcyvmw@mail.gmail.com>
-In-Reply-To: <CAD++jL=6ikpC-BqVqP1Ev5HC37fw=K_n6rP96AxKi0jdVcyvmw@mail.gmail.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Sat, 23 May 2026 11:20:05 +0200
-X-Gmail-Original-Message-ID: <CAD++jLkCiZVOWYcN3yqLu6fOqjQhSkM0aZAbzVuoL-5hj+Lnzw@mail.gmail.com>
-X-Gm-Features: AVHnY4IWSrFsqHQpeusKv0ApoYMxulT_ZRdAj0wPbeYFZEu1mlSyB-OxmXrnTAU
-Message-ID: <CAD++jLkCiZVOWYcN3yqLu6fOqjQhSkM0aZAbzVuoL-5hj+Lnzw@mail.gmail.com>
-Subject: Re: [PATCH 5/5] pinctrl: pinctrl-scmi: Log number of pins, groups, functions
-To: Alex Tran <alex.tran@oss.qualcomm.com>
-Cc: Jyoti Bhayana <jbhayana@google.com>, Jonathan Cameron <jic23@kernel.org>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Cristian Marussi <cristian.marussi@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Guenter Roeck <linux@roeck-us.net>, linux-iio@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, arm-scmi@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 23 May 2026 17:46:46 +0200
+Message-Id: <DIQ696JK4WV0.2HOQ57L342S77@kernel.org>
+Subject: Re: [PATCH v4 21/27] rust: types: add `ForLt` trait for
+ higher-ranked lifetime support
+Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
+ <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
+ <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
+To: <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+ <acourbot@nvidia.com>, <aliceryhl@google.com>, <david.m.ertman@intel.com>,
+ <ira.weiny@intel.com>, <leon@kernel.org>, <viresh.kumar@linaro.org>,
+ <m.wilczynski@samsung.com>, <ukleinek@kernel.org>, <bhelgaas@google.com>,
+ <kwilczynski@kernel.org>, <abdiel.janulgue@gmail.com>,
+ <robin.murphy@arm.com>, <markus.probst@posteo.de>, <ojeda@kernel.org>,
+ <boqun@kernel.org>, <gary@garyguo.net>, <bjorn3_gh@protonmail.com>,
+ <lossin@kernel.org>, <a.hindborg@kernel.org>, <tmgross@umich.edu>,
+ <igor.korotin@linux.dev>, <daniel.almeida@collabora.com>,
+ <pcolberg@redhat.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260521233501.1191842-1-dakr@kernel.org>
+ <20260521233501.1191842-22-dakr@kernel.org>
+In-Reply-To: <20260521233501.1191842-22-dakr@kernel.org>
 
-On Sat, May 23, 2026 at 11:18=E2=80=AFAM Linus Walleij <linusw@kernel.org> =
-wrote:
-> On Wed, May 13, 2026 at 6:44=E2=80=AFPM Alex Tran <alex.tran@oss.qualcomm=
-.com> wrote:
+On Fri May 22, 2026 at 1:34 AM CEST, Danilo Krummrich wrote:
+> [ Handle macro_rules! invocations in the ForLt! proc macro's covariance
+>   and WF checks.
 >
-> > The SCMI pinctrl driver does not currently log the number of pins,
-> > groups, and functions discovered from firmware. This information is
-> > useful for confirming the firmware exposed pinctrl resources during
-> > debugging.
-> >
-> > Log these counts after a successful probe to align with the existing
-> > SCMI client driver logging pattern.
-> >
-> > Signed-off-by: Alex Tran <alex.tran@oss.qualcomm.com>
+>   Proc macros cannot expand macro_rules! invocations, so the
+>   syn::Visit-based has_lifetime() and replace_lifetime() helpers cannot
+>   inspect types hidden behind macro calls. This caused the covariance
+>   proof to be silently skipped and lifetime substitution to fail for
+>   such types.
 >
-> Other kernel maintainers want a minimalist dmesg, but not me,
-> so I just applied this.
->
-> If someone is upset about the noise they can send a patch
-> changing it to dev_dbg().
+>   Add an explicit Type::Macro arm to Prover::prove to conservatively
+>   require a compiler-assisted covariance proof. Detect macro-containing
+>   types with has_macro() and use a WithLt trait projection for lifetime
+>   substitution instead of AST-level replacement. - Danilo ]
 
-Ah scratch that, Andy made a fair point that it is available
-in debugfs anyway so I dropped the patch.
+I was made aware by Gary that WFness is not actually being checked, which i=
+s why
+the static expansion was needed in the first place.
 
-Yours,
-Linus Walleij
+Thus macros will remain unsupported (even covariant macros are rejected), y=
+et we
+can improve the error message by adding the following diff on top of the
+previous v3 patch.
+
+diff --git a/rust/macros/for_lt.rs b/rust/macros/for_lt.rs
+index df2027789713..75d0ce450bf0 100644
+--- a/rust/macros/for_lt.rs
++++ b/rust/macros/for_lt.rs
+@@ -107,6 +107,12 @@ fn visit_lifetime(&mut self, lifetime: &Lifetime) {
+                     self.1 =3D true;
+                 }
+             }
++
++            // Macro invocations are opaque; conservatively assume they ma=
+y
++            // reference the lifetime.
++            fn visit_macro(&mut self, _: &syn::Macro) {
++                self.1 =3D true;
++            }
+         }
+
+         let mut visitor =3D HasLifetime(lt, false);
+
