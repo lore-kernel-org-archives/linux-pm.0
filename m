@@ -1,39 +1,40 @@
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF47C1E5B88;
-	Sat, 23 May 2026 01:52:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1CD31A9FAF;
+	Sat, 23 May 2026 02:23:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779501129; cv=none; b=XN38NWzSGaHFwZJ+EFDwZh3eOAmGwZ3I5moo43fS80uEtq7hTkJE82SznSHlP4GVL+891ZAgoNLxX4Q04jU0dS+8HZzK6Lq0ZBkh2prsZr3RK/+Tg6WKydkYoCQXiew7q5gv0TFhtbsIlDsHDwVdtzDY84F+pume25w/YyGKHBc=
+	t=1779503017; cv=none; b=HNuq89eN+MTR+4eSD8/KGnmBiqN335oeLToNVNB2hHhcV5q8oi59wJv6TRro8q5xnrGQHgD81xD+tJ+04habNxQT+8UkUeJJIZTX7FYjgkBNbjohQbLbOB3ayaS6k1MBJsHwmsb/2UQ0EtBK8XbhsH8hxmXIk6BZ3qs5tbaEv6o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779501129; c=relaxed/simple;
-	bh=3hyI92Pq2/82Z+X1uonWcCEaU7tZBpUhCaDx3Zyp31M=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=k/FxDYztCfAPGOu7onV3xhX1jugXxNBi5+NOVs0UElbQo11VpNz8+M6PqjzJ/XVKQA5I4BGz4VbAzsqgPONLh+dheOGP8jZogduI8Xy3ZqTRUAkaIzQYVgQCPTomatjxsTFniMO5FdOi/SRa7qUXvMVligi4va2p08xGqqBM1yg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn; spf=pass smtp.mailfrom=mails.ucas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+	s=arc-20240116; t=1779503017; c=relaxed/simple;
+	bh=p8aFvTyAZakS59hVADNs6H5FFthlR+RJokbXfGT5pDw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PnX/Ljke0uHkT+JEvUeLTpfShV2uNkgKCPhrteb/flEvHfNwr0yhE26/B1FPXlVW85yOwMb4vHE8PnzWDGAfLMzig2XVOHaOInYvufkR8JKzCf/6aAjydogrgBeaGhtmOxRiiW2xDhV8pDuqSXVDJpFvZ1i2/D7zYWDpTz0naxA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn; spf=pass smtp.mailfrom=mails.ucas.ac.cn; arc=none smtp.client-ip=159.226.251.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mails.ucas.ac.cn
 Received: from fric.. (unknown [36.110.52.2])
-	by APP-03 (Coremail) with SMTP id rQCowADX38Y+CBFqR08AEg--.16056S2;
-	Sat, 23 May 2026 09:51:59 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowACHMGyTDxFqub48EQ--.12603S2;
+	Sat, 23 May 2026 10:23:15 +0800 (CST)
 From: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
-To: rafael@kernel.org
-Cc: ccross@android.com,
-	dakr@kernel.org,
-	driver-core@lists.linux.dev,
-	gregkh@linuxfoundation.org,
-	lenb@kernel.org,
+To: driver-core@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	linux-pm@vger.kernel.org,
-	pavel@kernel.org,
-	xujiakai24@mails.ucas.ac.cn
-Subject: Re: [PATCH v2] PM: sleep: Use complete() in device_pm_sleep_init() and skip no_pm devices in dpm_wait()
-Date: Sat, 23 May 2026 01:51:58 +0000
-Message-Id: <20260523015158.2466001-1-xujiakai24@mails.ucas.ac.cn>
+	linux-rt-devel@lists.linux.dev
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
+	Clark Williams <clrkwllms@kernel.org>,
+	Colin Cross <ccross@android.com>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
+Subject: [PATCH v3] PM: sleep: Use complete() in device_pm_sleep_init() and skip no_pm devices in dpm_wait()
+Date: Sat, 23 May 2026 02:23:14 +0000
+Message-Id: <20260523022314.2657232-1-xujiakai24@mails.ucas.ac.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <CAJZ5v0j9fFR7Et-p76jm8C-PGjQ3b+CZFqi_Ch2ixZDB0dEFtQ@mail.gmail.com>
-References: <CAJZ5v0j9fFR7Et-p76jm8C-PGjQ3b+CZFqi_Ch2ixZDB0dEFtQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -41,34 +42,90 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowADX38Y+CBFqR08AEg--.16056S2
-X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYM7AC8VAFwI0_Gr0_Xr1l1xkIjI8I6I8E
-	6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28Cjx
-	kF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVWUCVW8JwA2z4x0Y4vE2Ix0cI8I
-	cVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87
-	Iv6xkF7I0E14v26r4UJVWxJr1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28I
-	cVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx
-	0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwAC
-	jI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1l42xK82IYc2Ij64
-	vIr41l4c8EcI0Ec7CjxVAaw2AFwI0_Jw0_GFyl4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2Iq
-	xVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r
-	1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY
-	6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67
-	AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x
-	0JUQZ23UUUUU=
+X-CM-TRANSID:qwCowACHMGyTDxFqub48EQ--.12603S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxZr4kZr48Wr13ZFy3Wr48Zwb_yoW5Ar4fp3
+	4q9ayFkw4UWr4vk3Wjq3W8GF15W397CryfCrZYkw1j9wn0gr98tFW5tFW5JFs8Z397ta42
+	qFWUJw45CFnF9FJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUBa14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr
+	1j6F4UJwAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40E
+	FcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr
+	0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8v
+	x2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20x
+	vY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I
+	3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIx
+	AIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAI
+	cVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2js
+	IEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUQvtAUUUUU=
 X-CM-SenderInfo: 50xmxthndljko6pdxz3voxutnvoduhdfq/
 
-> Please see the sashiko.dev feedback on this:
-> 
-> https://sashiko.dev/#/patchset/20260513021509.483108-1-xujiakai24%40mails.ucas.ac.cn
-> 
-> AFAICS, it has a point in the first comment (not so much in the second one).
+Replace complete_all() with complete() in device_pm_sleep_init() to allow
+it to be called in atomic contexts without triggering a false-positive
+WARNING from lockdep_assert_RT_in_threaded_ctx() when
+CONFIG_PROVE_RAW_LOCK_NESTING is enabled.
 
-Thank you for the review and for pointing out the sashiko.dev feedback.
+device_pm_sleep_init() may be called during device initialization while
+holding a raw_spinlock (e.g., from within device_initialize()), and
+complete_all() is unsafe in atomic contexts on PREEMPT_RT kernels.
+complete(), which is safe to call from any context, is sufficient here.
 
-I will send a v3 with the corrected commit message shortly.
+complete_all() sets the completion count to UINT_MAX/2 (permanently
+signaled), while complete() increments it by 1. Since no threads can be
+waiting during device initialization, both are functionally equivalent.
+The completion is always reinitialized via reinit_completion() in
+dpm_clear_async_state() before each suspend/resume cycle.
 
-Best regards,
-Jiakai
+However, changing to complete() introduces a potential deadlock for
+devices with no PM support (dev->power.no_pm = true). Such devices are
+never added to the dpm_list and never go through dpm_clear_async_state(),
+so their completion is never reinitialized. A parent device waiting on a
+no_pm child across multiple suspend phases would consume the single-use
+token in the first phase and block forever in the second.
+
+Fix this by adding an early return in dpm_wait() when dev->power.no_pm is
+set, since no_pm devices do not participate in system suspend/resume.
+
+Fixes: 152e1d592071 ("PM: Prevent waiting forever on asynchronous resume after failing suspend")
+Signed-off-by: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
+---
+V1 -> V2:
+- Updated dpm_wait() to skip devices with no PM support,
+  as suggested by Rafael J. Wysocki.
+
+V2 -> V3:
+- Revised commit message to clarify that the lockdep warning originates
+  from device_pm_sleep_init() called in atomic context, not from
+  device_pm_remove().  No code changes relative to v2.
+---
+ drivers/base/power/main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e1b550664bab..ed48c292f575 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -115,7 +115,7 @@ void device_pm_sleep_init(struct device *dev)
+ 	dev->power.is_noirq_suspended = false;
+ 	dev->power.is_late_suspended = false;
+ 	init_completion(&dev->power.completion);
+-	complete_all(&dev->power.completion);
++	complete(&dev->power.completion);
+ 	dev->power.wakeup = NULL;
+ 	INIT_LIST_HEAD(&dev->power.entry);
+ }
+@@ -252,6 +252,10 @@ static void dpm_wait(struct device *dev, bool async)
+ 	if (!dev)
+ 		return;
+ 
++	/* Devices with no PM support don't use the completion. */
++	if (dev->power.no_pm)
++		return;
++
+ 	if (async || (pm_async_enabled && dev->power.async_suspend))
+ 		wait_for_completion(&dev->power.completion);
+ }
+-- 
+2.34.1
 
