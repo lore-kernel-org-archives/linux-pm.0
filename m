@@ -1,139 +1,39 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D66A235972;
-	Sat, 23 May 2026 00:45:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF47C1E5B88;
+	Sat, 23 May 2026 01:52:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779497156; cv=none; b=LShcHICzLdcR75EwljIPg1iq8uncAxzvSDUI9WCcRZeH8VxdFbGf2rPbv3HY9tECq/CXY7uPUvvCU+RL+HdSDRrYYxF95Io1TNV89Lv+ivZDE6X84E2ichW9I7Uf0oRDyf56anJPEXDK4Hh/O0GlnghBTKCpq35dp+ijYPlKtyc=
+	t=1779501129; cv=none; b=XN38NWzSGaHFwZJ+EFDwZh3eOAmGwZ3I5moo43fS80uEtq7hTkJE82SznSHlP4GVL+891ZAgoNLxX4Q04jU0dS+8HZzK6Lq0ZBkh2prsZr3RK/+Tg6WKydkYoCQXiew7q5gv0TFhtbsIlDsHDwVdtzDY84F+pume25w/YyGKHBc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779497156; c=relaxed/simple;
-	bh=DqeXOCZ0TXIcigSWsRqnJQXcvPDVQzLlWv2CI6safo4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=us74pcfi2l8+92P5YS3giAS6E89XloG4EJTCJncQNsrcv7nmuJHLFI/MTLcbqkjeTsid5P7Cxi+zUORbmHhoWNHeAdZNfse/Flnttbrva3J3o+sxYi5ylhnqcBVFWSqWGkJJ//OPySSEiJCD22I4zgnVqGgjLxv2ER1xPJsS5R0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AYrP9ADM; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AYrP9ADM"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D8D01F000E9;
-	Sat, 23 May 2026 00:45:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779497154;
-	bh=Z9Ii4kFnGASPrJVUv4pLJyz9ASaQSsUSFT2aMNSnQpw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=AYrP9ADMMstpZMK07X7RJX7Vi+LssxAckCYKP0qcdmy4tA9a9uGeNKXekQFeMbDY2
-	 LDBidZU8qfyCeiIO2lTcwcq4IenY+1Wd9qlBghobsMk+v2M/w+YRP79CHe0dVbDprH
-	 6m4cKDcu9eoRxsj9K8pW3klTEaPK47F9haaWHiA44qhhUhE1d+q0p7agQTc1CqKY7Y
-	 TIm3cavZyfg5Ocnp8Ulrf7LvNxFf6kEk1G4wZqQ5n3xAgZSAUkznMwff7nIEvl1Awg
-	 MCkN/vkTJiTtDyoIlmLFKVmTKKTBPE0rS5dN7mvUamAdq3cIcL7ggZ6AdKA3393vQz
-	 kGvcVXqs9FgPQ==
-From: SeongJae Park <sj@kernel.org>
-To: Kees Cook <kees@kernel.org>
-Cc: SeongJae Park <sj@kernel.org>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Corey Minyard <corey@minyard.net>,
-	Gabriel Somlo <somlo@cmu.edu>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Hannes Reinecke <hare@suse.de>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
-	Jason Baron <jbaron@akamai.com>,
-	Jim Cromie <jim.cromie@gmail.com>,
-	Tiwei Bie <tiwei.btw@antgroup.com>,
-	Benjamin Berg <benjamin.berg@intel.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	"David E. Box" <david.e.box@linux.intel.com>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	John Johansen <john.johansen@canonical.com>,
-	Paul Moore <paul@paul-moore.com>,
-	James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Georgia Garcia <georgia.garcia@canonical.com>,
-	kvm@vger.kernel.org,
-	dmaengine@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	apparmor@lists.ubuntu.com,
-	linux-security-module@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-acpi@vger.kernel.org,
-	openipmi-developer@lists.sourceforge.net,
-	qemu-devel@nongnu.org,
-	intel-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	linux-rdma@vger.kernel.org,
-	linux-media@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-serial@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	usb-storage@lists.one-eyed-alien.net,
-	virtualization@lists.linux.dev,
+	s=arc-20240116; t=1779501129; c=relaxed/simple;
+	bh=3hyI92Pq2/82Z+X1uonWcCEaU7tZBpUhCaDx3Zyp31M=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=k/FxDYztCfAPGOu7onV3xhX1jugXxNBi5+NOVs0UElbQo11VpNz8+M6PqjzJ/XVKQA5I4BGz4VbAzsqgPONLh+dheOGP8jZogduI8Xy3ZqTRUAkaIzQYVgQCPTomatjxsTFniMO5FdOi/SRa7qUXvMVligi4va2p08xGqqBM1yg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn; spf=pass smtp.mailfrom=mails.ucas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mails.ucas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mails.ucas.ac.cn
+Received: from fric.. (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowADX38Y+CBFqR08AEg--.16056S2;
+	Sat, 23 May 2026 09:51:59 +0800 (CST)
+From: Jiakai Xu <xujiakai24@mails.ucas.ac.cn>
+To: rafael@kernel.org
+Cc: ccross@android.com,
+	dakr@kernel.org,
+	driver-core@lists.linux.dev,
+	gregkh@linuxfoundation.org,
+	lenb@kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-hardening@vger.kernel.org,
-	damon@lists.linux.dev
-Subject: Re: [PATCH 09/11] treewide: Convert custom kernel_param_ops .get callbacks to seq_buf via cocci
-Date: Fri, 22 May 2026 17:45:43 -0700
-Message-ID: <20260523004543.86540-1-sj@kernel.org>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260521133326.2465264-9-kees@kernel.org>
-References: 
+	linux-pm@vger.kernel.org,
+	pavel@kernel.org,
+	xujiakai24@mails.ucas.ac.cn
+Subject: Re: [PATCH v2] PM: sleep: Use complete() in device_pm_sleep_init() and skip no_pm devices in dpm_wait()
+Date: Sat, 23 May 2026 01:51:58 +0000
+Message-Id: <20260523015158.2466001-1-xujiakai24@mails.ucas.ac.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <CAJZ5v0j9fFR7Et-p76jm8C-PGjQ3b+CZFqi_Ch2ixZDB0dEFtQ@mail.gmail.com>
+References: <CAJZ5v0j9fFR7Et-p76jm8C-PGjQ3b+CZFqi_Ch2ixZDB0dEFtQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -141,62 +41,34 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowADX38Y+CBFqR08AEg--.16056S2
+X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYM7AC8VAFwI0_Gr0_Xr1l1xkIjI8I6I8E
+	6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28Cjx
+	kF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVWUCVW8JwA2z4x0Y4vE2Ix0cI8I
+	cVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87
+	Iv6xkF7I0E14v26r4UJVWxJr1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28I
+	cVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx
+	0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwAC
+	jI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1l42xK82IYc2Ij64
+	vIr41l4c8EcI0Ec7CjxVAaw2AFwI0_Jw0_GFyl4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2Iq
+	xVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r
+	1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY
+	6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67
+	AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x
+	0JUQZ23UUUUU=
+X-CM-SenderInfo: 50xmxthndljko6pdxz3voxutnvoduhdfq/
 
-+ damon@lists.linux.dev
-
-On Thu, 21 May 2026 06:33:22 -0700 Kees Cook <kees@kernel.org> wrote:
-
-> Using the following Coccinelle script, convert struct kernel_param_ops
-> .get callbacks from "char *" to "struct seq_buf *" when the only write
-> to the buffer is via a final call of scnprintf(), snprintf(), sprintf(),
-> or sysfs_emit().
+> Please see the sashiko.dev feedback on this:
 > 
-> Since seq_buf_printf() will return -1 on overflow, and struct
-> kernel_param_ops .get callbacks are expected to truncate without error,
-> we must ignore the return value from seq_buf_print() and always return 0
-> (as the length is calculated in the common dispatcher code).
+> https://sashiko.dev/#/patchset/20260513021509.483108-1-xujiakai24%40mails.ucas.ac.cn
 > 
-> @@
-> identifier FN, BUF, KP;
-> expression FMT;
-> expression list ARGS;
-> @@
->  int FN(
-> -               char *BUF
-> +               struct seq_buf *BUF
->                 , const struct kernel_param *KP)
->  {
->         ... when any
-> (
-> -       return scnprintf(BUF, PAGE_SIZE, FMT, ARGS);
-> |
-> -       return snprintf(BUF, PAGE_SIZE, FMT, ARGS);
-> |
-> -       return sprintf(BUF, FMT, ARGS);
-> |
-> -       return sysfs_emit(BUF, FMT, ARGS);
-> )
-> +       seq_buf_printf(BUF, FMT, ARGS);
-> +       return 0;
->  }
-> 
-> No struct kernel_param_ops initializations need changing since
-> DEFINE_KERNEL_PARAM_OPS already routes the pointer to .get or .get_str
-> via _Generic based on the function signature, so converted callbacks
-> are automatically moved from the .get_str to the .get callback.
-> 
-> Signed-off-by: Kees Cook <kees@kernel.org>
-[...]
->  mm/damon/lru_sort.c                           | 14 +++---
->  mm/damon/reclaim.c                            | 14 +++---
->  mm/damon/stat.c                               | 10 ++--
+> AFAICS, it has a point in the first comment (not so much in the second one).
 
-For the above DAMON changes,
+Thank you for the review and for pointing out the sashiko.dev feedback.
 
-Reviewed-by: SeongJae Park <sj@kernel.org>
+I will send a v3 with the corrected commit message shortly.
 
+Best regards,
+Jiakai
 
-Thanks,
-SJ
-
-[...]
