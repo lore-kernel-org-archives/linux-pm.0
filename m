@@ -1,102 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9333215A86D;
-	Sat, 23 May 2026 15:46:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBE572744F;
+	Sun, 24 May 2026 03:18:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779551215; cv=none; b=OtK8HfMXWqHeaysK3ueKmV+Zjq5afoE0j8uBoK9alCAglYm2/uZq4WU6Bf2MGRO+S6fZ5TtbTwP1SgF2WSeTOa7ofxbx0+T1OYWzFdb2vVR8crdNDl2tPYAUadSQSnMtX8D0GAq7Ycy5miM8IQI01XH9RJ7ozo1QGKjFVzG9PPI=
+	t=1779592694; cv=none; b=Fv5Fm3OI7Sz3A1vKtASMdVxnKqYYqqte7IHLFYNtbL7FmImV1OuDo5etBR0bhTMu0+fLzBIyQ98Nt/6oUnkz47wqY/bU14SX/m5nS/fkGtb9M+z4B/YAhHYfpZJJ1dQ2X0DcxDITfLsGpeD5ylQ+jqMq5DANelMeGDIeAF7Erms=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779551215; c=relaxed/simple;
-	bh=nLBZR1yPNJIwvSHlyra/l/GfIWnzfGqqm1BCrTrJ6/Y=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=QTppHdsemlgk1lB1/FzmACV3mzvCNqQ1dGvTZXLJ94MYjyJDtMs1ARv76dt+5Hj0Vwptc9nt1RG15OinLK7ILhAUp701B5rrBInYPRssbleHoOGp0JWihCGGIx0HBMudRAj8o/2eNYLGLFpyHEfiWP6qXx6cw1+tihUFf6bSPIE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XtGo7vjv; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779592694; c=relaxed/simple;
+	bh=FTF04ASVcIjNCTSm6vabBRC9pFEBi23lkvHUCkWwLVw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cavQdjYogtOaLOIpM89PSTV09ahASelm9IUik+uNDgVCIazsPhRZXGPD2Mohgro3DUfvNIfwdUm15C5QUNvHX0QbKuw0QVkJC4NQcwdPEC88OTdka+59GJDr+dzWS17IrzSwfuIvLa8OJDLMcmh2DuXIvnC7s9/VJVtMDUJFBp4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KLJnPZ4B; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XtGo7vjv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EF321F000E9;
-	Sat, 23 May 2026 15:46:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KLJnPZ4B"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87A481F000E9;
+	Sun, 24 May 2026 03:18:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779551214;
-	bh=o01mZIap77JdV7lnWDWkCgBFoE4EHf5jWItgL7KxWEQ=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To;
-	b=XtGo7vjv/u2jBKRoLHA3oC9OmfZu2mVOGV/5v91LFo3aenQIJ3Cybr0FFjI67nVMk
-	 rsOKWs1mXpXve5q7T/hfXdkKBYgWVqT1s9evRpWtpIRO/d3Zltm68xofkt3Wt1bVLO
-	 7jJavYWoDXZxu8XNR30oIIFFxdR2KkchADzY/WPMvjqNlfN/M2a7heUiyegIGuuEDZ
-	 0xFLspwBB4sdqtVmDAwEwrZr/JcayDEPbyHrjLY5NnXGo9x902lQgoa6YqcXzCVGGt
-	 KRFJt1o421jQFFp3Lh9B9DfEag4cUfKMND6Kt4a3SRvOVNHtRbb3Wha0CnuBfBGbKX
-	 RnfmInEnTQ2zg==
+	s=k20260515; t=1779592693;
+	bh=IAB1qhj2r/fkAJ6mKlvIOfPFOwzS7DkVvJXTCaX2+So=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=KLJnPZ4BfCy7vv3pHrBbdspN7ac1IdUfwlsoQ7feQ7V1TOtNyzHvnpcBFcgqslc/Q
+	 MDdEwhQdihORhN4P0dKsaHoyuhl5QHx2I8N5sJf03RTzY5pmkcuez6lKGhR6LxRR53
+	 nRzF3hzPeh/H57M1fiwIsr0aI74M77x9Ry0yM/NnJrTCjGYBpZiOgC0yGCdq+Pz3Is
+	 hlnMPrtXcAIKWahHnStosix3etbklacLcZyNH2pAP36Anp+xp6EjMDClHKzltAPZjf
+	 PgTU1QEE/7eWI7GcUa791J77CQHMbm2lPlfjT3RwBcVjqBGTLXdbGzJ0+SEyq6lXNn
+	 9iveyTCCCAvYQ==
+Date: Sun, 24 May 2026 08:48:04 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Loic Poulain <loic.poulain@oss.qualcomm.com>
+Cc: Bartosz Golaszewski <brgl@kernel.org>, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH 1/3] power: sequencing: pcie-m2: Add QCA2066 (QCNFA765)
+ BT serdev ID
+Message-ID: <7apajygktl7myslg7mclwgndj2rqhomxmtdii2vsigo32ztr2d@qdui3oxx5rik>
+References: <20260520-monza-wireless-v1-0-9f6942310653@oss.qualcomm.com>
+ <20260520-monza-wireless-v1-1-9f6942310653@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 23 May 2026 17:46:46 +0200
-Message-Id: <DIQ696JK4WV0.2HOQ57L342S77@kernel.org>
-Subject: Re: [PATCH v4 21/27] rust: types: add `ForLt` trait for
- higher-ranked lifetime support
-Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
- <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
- <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>
-To: <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
- <acourbot@nvidia.com>, <aliceryhl@google.com>, <david.m.ertman@intel.com>,
- <ira.weiny@intel.com>, <leon@kernel.org>, <viresh.kumar@linaro.org>,
- <m.wilczynski@samsung.com>, <ukleinek@kernel.org>, <bhelgaas@google.com>,
- <kwilczynski@kernel.org>, <abdiel.janulgue@gmail.com>,
- <robin.murphy@arm.com>, <markus.probst@posteo.de>, <ojeda@kernel.org>,
- <boqun@kernel.org>, <gary@garyguo.net>, <bjorn3_gh@protonmail.com>,
- <lossin@kernel.org>, <a.hindborg@kernel.org>, <tmgross@umich.edu>,
- <igor.korotin@linux.dev>, <daniel.almeida@collabora.com>,
- <pcolberg@redhat.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
-References: <20260521233501.1191842-1-dakr@kernel.org>
- <20260521233501.1191842-22-dakr@kernel.org>
-In-Reply-To: <20260521233501.1191842-22-dakr@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260520-monza-wireless-v1-1-9f6942310653@oss.qualcomm.com>
 
-On Fri May 22, 2026 at 1:34 AM CEST, Danilo Krummrich wrote:
-> [ Handle macro_rules! invocations in the ForLt! proc macro's covariance
->   and WF checks.
->
->   Proc macros cannot expand macro_rules! invocations, so the
->   syn::Visit-based has_lifetime() and replace_lifetime() helpers cannot
->   inspect types hidden behind macro calls. This caused the covariance
->   proof to be silently skipped and lifetime substitution to fail for
->   such types.
->
->   Add an explicit Type::Macro arm to Prover::prove to conservatively
->   require a compiler-assisted covariance proof. Detect macro-containing
->   types with has_macro() and use a WithLt trait projection for lifetime
->   substitution instead of AST-level replacement. - Danilo ]
+On Wed, May 20, 2026 at 01:01:42PM +0200, Loic Poulain wrote:
+> Add PCI device ID 17cb:1103 (Qualcomm QCA2066/QCNFA765) to the M.2
+> serdev ID table, mapping it to the qcom,qca2066-bt compatible string.
+> 
+> This allows the pwrseq-pcie-m2 driver to automatically create the
+> Bluetooth serdev device when a QCA2066-based M.2 card is enumerated.
+> 
+> Signed-off-by: Loic Poulain <loic.poulain@oss.qualcomm.com>
 
-I was made aware by Gary that WFness is not actually being checked, which i=
-s why
-the static expansion was needed in the first place.
+Reviewed-by: Manivannan Sadhasivam <mani@kernel.org>
 
-Thus macros will remain unsupported (even covariant macros are rejected), y=
-et we
-can improve the error message by adding the following diff on top of the
-previous v3 patch.
+- Mani
 
-diff --git a/rust/macros/for_lt.rs b/rust/macros/for_lt.rs
-index df2027789713..75d0ce450bf0 100644
---- a/rust/macros/for_lt.rs
-+++ b/rust/macros/for_lt.rs
-@@ -107,6 +107,12 @@ fn visit_lifetime(&mut self, lifetime: &Lifetime) {
-                     self.1 =3D true;
-                 }
-             }
-+
-+            // Macro invocations are opaque; conservatively assume they ma=
-y
-+            // reference the lifetime.
-+            fn visit_macro(&mut self, _: &syn::Macro) {
-+                self.1 =3D true;
-+            }
-         }
+> ---
+>  drivers/power/sequencing/pwrseq-pcie-m2.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> index efeb25ba9c79e20fc8bc8354def8ae423d0f2f2e..f90df88c663985c7702c19911f0c147e3b68984b 100644
+> --- a/drivers/power/sequencing/pwrseq-pcie-m2.c
+> +++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+> @@ -188,6 +188,8 @@ static int pwrseq_pcie_m2_match(struct pwrseq_device *pwrseq,
+>  static const struct pci_device_id pwrseq_m2_pci_ids[] = {
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+>  	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1103),
+> +	  .driver_data = (kernel_ulong_t)"qcom,qca2066-bt" },
+>  	{ } /* Sentinel */
+>  };
+>  
+> 
+> -- 
+> 2.34.1
+> 
 
-         let mut visitor =3D HasLifetime(lt, false);
-
+-- 
+மணிவண்ணன் சதாசிவம்
