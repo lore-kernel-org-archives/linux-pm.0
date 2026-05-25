@@ -1,197 +1,222 @@
-Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012023.outbound.protection.outlook.com [40.107.209.23])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EC5A381AE6;
-	Mon, 25 May 2026 12:31:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.23
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779712321; cv=fail; b=O5OGIONArS5go4rjZSLaYlTgIoKVR3M2Coh3w6YE/gvLbKBGghjVGTnbRNLUeXZfBrru11xlfDTSniY9p94VnAtGxBsRLEnBz7RPai/C0w8Pa6wgmsWY6Q3a6m5CQvkA/94xYoSZLZDZtMch7r8z71RREhHdnPg9Lyc2SaDJuSI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779712321; c=relaxed/simple;
-	bh=6IWG2vvi4P/RboeWscBIgbE+nufcSOckFJYlogRw6Bs=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=IzE+H3ZC5lEePaB4yEH6o2qbcC2fMFOJZNXIm0l0jqYHeMvRFPwR8mj5lGh+TLh7OHRV4dzsMd2Rn9wTPrKKMw3xVwRFKByZ2W6le8hCjFcD9T6B9JGwr3fpMcbFkEpPntqbgMVyw6zmyjsDpl9FLrAUjs0hobRRprXyXmxK2bo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=mBhvq2H1; arc=fail smtp.client-ip=40.107.209.23
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D52051F192E
+	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 12:50:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779713432; cv=none; b=Hc8SifwiRiAZHXN3Q7KEf8nILdrlGF0dmiOKtm/JcKmkf4wBvLelenTpQRcNUkBX2upsRujg1hMdTuqTg6nJf0nqeVrvo85IGLjaGHxXXvatbpQpmAQz6WdHrTsCSVzfN7ClY6/hoM3Vs0Ef7Zl2ObVzFtPzGERDPoCgqNsZDZ0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779713432; c=relaxed/simple;
+	bh=jeBXtuHojBHH2gQPeCSwY8bPjROTXlTPK5x5EdFyeUM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=l/N3E0ZSiU2bnMR5vV6YNUOq8tEtVG1pJ/mYk4368bL8hczbr4f/hLh534qqpUapz3R03o1hVgisnKp9D3fimntydKDXhPnk4O6YYZqzOtQqoFdNcHCCy+aGG7LpFcigsNpR2bTlup1YaNSgLpIOboZwHuAgcvSmBzQ6FUQrhQo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=d5Cd53rb; arc=none smtp.client-ip=209.85.128.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="mBhvq2H1"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Dn4BeU7KiQgKHEmISgaVkRMXWs+8jY+0ierYLNaj8ZlRKfI1fLAJvl9Et8ULxQ0epZDyVAPLH3rlnmObsZwbpFge4Pdi3JSiSMllJULn+yEhBkM3B0Q+tmDooX0gFxc+SxKbdNdBu4miLaP+wkLn+AIbaPz50LX7khy2IwywGV1i4/hOIGFuU4tz/Ycfbz7h49AgPRR7dEVoKoNACHTxgoVj0eE8XjOZDrlctgvswjEvmDHEWgjV7pAMpg92dxaQxmUqWIx+EhcHRX5Y2OZzuDH7lJ+US4ZsOeQRDqtNtzYrSdHKtpHSNBvwe+EIWmoLZmHo+1FvlP52zXpB5HCyxA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=L+6pJtLglxHJ1LvUkb6gF8o43/tNRawXxQ0RKYh+YAs=;
- b=cZ0ykZ+X+D3duhhs8sLI0WkJ5QBBm4wIazfnC6ZVU0DyH7odH/dyMMe+mbp5VkNAvh5tjwV7RFnZif1UGGGKtdgEwl7vfX2YWQ1ISI89RyLjTgqCtpPo1/mItt43MKydiDZHuajnMgTJUASDko4Ct6Ykfxk5K/L6wsfIG2qc0+AvW95b+H1Hk1+8Gc4O9vRy9Uf2YUcQO/cL+xwiTraL21dsjQtIQHxgI/BIeqHtC+5IBufLf4HCNy6il/qDXQRaCjjpA7143sFYx6+Rg0cQujyZvKMOHO1NEYj5xazUHUACta3ZYFASgB0aufdib93JIKBfm3jNmX11vG2dKN2mGw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=L+6pJtLglxHJ1LvUkb6gF8o43/tNRawXxQ0RKYh+YAs=;
- b=mBhvq2H1rpnsni8aphsRDLalLz5VuFyPWgMVbeXsLBuRUjmgOIqXSV++w6ioIhv0JmonBnYxoqRJ9Yr2ZQLzgK9HNI+l857q1Zh47TZJSRkH8bk0Kcn5z/yrDpvK65WvsqA88uJx9jrlI4KdJEcErzdNijEHirDMPClYU/HKEnuU6y5g+NJ9C+pVo3KnvxMraqO9qb89Rw+47zUuTlf/NE565Fp1cIOulsTSN2pZ9FSE8LDj+raztUDWqeZ+eJDF9CsrennCV7kHk/aA0NlL+mB4tbMkBgv0U7LR411wu4oFtl1MOGKuFUzgNl/KQ4/JRIC+24ye1usuHTgAJS60yg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB2353.namprd12.prod.outlook.com (2603:10b6:207:4c::31)
- by LV8PR12MB9407.namprd12.prod.outlook.com (2603:10b6:408:1f9::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.20; Mon, 25 May
- 2026 12:31:54 +0000
-Received: from BL0PR12MB2353.namprd12.prod.outlook.com
- ([fe80::99b:dcff:8d6d:78e0]) by BL0PR12MB2353.namprd12.prod.outlook.com
- ([fe80::99b:dcff:8d6d:78e0%4]) with mapi id 15.21.0048.019; Mon, 25 May 2026
- 12:31:54 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 25 May 2026 21:31:50 +0900
-Message-Id: <DIRRD0MA3NFR.1DFWYY2ZLLZHQ@nvidia.com>
-Cc: <driver-core@lists.linux.dev>, <linux-kernel@vger.kernel.org>,
- <nova-gpu@lists.linux.dev>, <dri-devel@lists.freedesktop.org>,
- <linux-pm@vger.kernel.org>, <linux-pwm@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <rust-for-linux@vger.kernel.org>, "dri-devel"
- <dri-devel-bounces@lists.freedesktop.org>
-Subject: Re: [PATCH v4 21/27] rust: types: add `ForLt` trait for
- higher-ranked lifetime support
-From: "Eliot Courtney" <ecourtney@nvidia.com>
-To: "Danilo Krummrich" <dakr@kernel.org>, <gregkh@linuxfoundation.org>,
- <rafael@kernel.org>, <acourbot@nvidia.com>, <aliceryhl@google.com>,
- <david.m.ertman@intel.com>, <ira.weiny@intel.com>, <leon@kernel.org>,
- <viresh.kumar@linaro.org>, <m.wilczynski@samsung.com>,
- <ukleinek@kernel.org>, <bhelgaas@google.com>, <kwilczynski@kernel.org>,
- <abdiel.janulgue@gmail.com>, <robin.murphy@arm.com>,
- <markus.probst@posteo.de>, <ojeda@kernel.org>, <boqun@kernel.org>,
- <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
- <a.hindborg@kernel.org>, <tmgross@umich.edu>, <igor.korotin@linux.dev>,
- <daniel.almeida@collabora.com>, <pcolberg@redhat.com>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260521233501.1191842-1-dakr@kernel.org>
- <20260521233501.1191842-22-dakr@kernel.org>
- <DIQ696JK4WV0.2HOQ57L342S77@kernel.org>
-In-Reply-To: <DIQ696JK4WV0.2HOQ57L342S77@kernel.org>
-X-ClientProxiedBy: DS1PR06CA0010.namprd06.prod.outlook.com
- (2603:10b6:8:458::17) To BL0PR12MB2353.namprd12.prod.outlook.com
- (2603:10b6:207:4c::31)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="d5Cd53rb"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-49050bfe053so22989855e9.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 05:50:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1779713429; x=1780318229; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=EifUxRKI8q3aR99rwm5sIdonRFjEYR9jP8wSE6moOVo=;
+        b=d5Cd53rbjwckJ2gclfqJN77+2ewpxy3t3Y5K4KkxX1BUetCErx//cGlp34qL4rhJ+R
+         7625FvURqxfo5mmobByY3kJ+XBeAhwlwBpmKglf3fS6es/I8QMrVjPiXrtcX3rxuvcIb
+         l8tIRNvzOuEO+wLLDxrJK8hZGf01khSyofBQObzuYiNn3yh/691/yP6nBAa7+OI0LnMY
+         WmL9uRnUv4pr6yQaaHXDJ/rx0amp6C+DFTb6x2zgWvV7cOpwkxKTzOwqvNPl4zv9EZIe
+         Io19LM284li1jPFs1c47+riwKOgaRIX/+Fvoy4hmkivaIwV9clrPolK4XyRFjqXWy9bg
+         BpNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779713429; x=1780318229;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=EifUxRKI8q3aR99rwm5sIdonRFjEYR9jP8wSE6moOVo=;
+        b=L+WKLBVDkkx69pOW+HCGWjx3ULTekYO2eQaJtlG+o7Bmdn0sadV6bmR6YXKIjwTP3n
+         ecRWr1lCFO4qg0hR5nQTaFV1+0h3kCLF8uqKHBfTYjxUmp2d5iGxYGAP2B0KAyBKZmg1
+         6+Q/zo5ex7FKuCx35ulNo3YXsv1DdETS+X3aWNA3k3kIEjM2YDDpr0iTv3pvYaN35lmp
+         kBAKqd/ktfITZkzdy2fXOFbjxB4fIDq14iQJQmMwbqUU9LRqAafVq3rI402fxVfPEFGP
+         6+d1n+SWMsQxC5LmKGI0xEgm3mIBTgFzI9KMilqGqDy8+hbC4l16ZV+I7kzqLOKBeKAa
+         GeHg==
+X-Forwarded-Encrypted: i=1; AFNElJ+0JZn+qKfof6Kk/Dkfu+FHQLo9GkAZuW7AAbn1xB6d5i4ndGMJdL1vmn5bDj7wokV2R2/zFdKbVA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzUIpI9O6lDX5OChvAih89s9cGT9uL9ZhyCUVpIBKp2RU9KlZId
+	wngPV9hqeue5qWnbIBxcmAHa0ornw8I0gjM04XVZ6k0/BLhzahhkgn9sP7Qx54pNWVM=
+X-Gm-Gg: Acq92OGS0/spC6ayf6bTdsgom6RhyHfuw+jQecyb5vQirzizTTVojTdjF3Ct1dE8I3n
+	S1d2F7HPMNhzWGoOLJfaq/RVdRYyOZv0vzC/MkVgeG9xfe69Iv6EFA23X46rFLp81WbcJ+UXTdu
+	voA1s9ZHrXp+/IdRU2cr1ZvfqgABVswXyNv2iywvKfXYReNbamAVAFdQfqS1KElOalDbQ/6NLnb
+	gP4DUunvhP/sAuuBs8q7ejaDCsZkb0MZVJGhQPG/tju8XYCC65/GEjCI8tVgZb9awXJo4434byS
+	uwbatl10MNrlDW2+RUPBcUq3eRYiZr+n39mHJGEQEYyPUJmpD9olnj7ciOy8A8eBpGQbdTPtoUC
+	R1OuDoh3TLVL0nA7mHzOReO9vh3bTuOw3PfMxfuHAkKPodHwr+rLDo/2pdTU/kooZ68z+VpqRYU
+	IgXnfwv3Cg6xqcKSbxQvFMvJHYnVIWGDeXy+x0pg3XBMeq3xDG6rB2/vTn/CLIcdKDkasBTqNaR
+	UEcV14=
+X-Received: by 2002:a05:600c:8217:b0:490:5215:e9a4 with SMTP id 5b1f17b1804b1-4905215ebd3mr153873335e9.6.1779713429114;
+        Mon, 25 May 2026 05:50:29 -0700 (PDT)
+Received: from ta2.c.googlers.com (231.141.38.34.bc.googleusercontent.com. [34.38.141.231])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490454cfcaesm241824825e9.4.2026.05.25.05.50.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 May 2026 05:50:28 -0700 (PDT)
+From: Tudor Ambarus <tudor.ambarus@linaro.org>
+Subject: [PATCH v5 0/5] thermal: samsung: Add support for Google GS101 TMU
+Date: Mon, 25 May 2026 12:50:20 +0000
+Message-Id: <20260525-acpm-tmu-v5-0-85fde739752e@linaro.org>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB2353:EE_|LV8PR12MB9407:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8b03e3f3-e30a-4b47-513f-08deba599a62
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|10070799003|18002099003|56012099003|22082099003|921020|11063799006|5023799004|4143699003;
-X-Microsoft-Antispam-Message-Info:
-	9OhHGsmlbrVqpxYfbsxYzEahE1KANameJxJ2EyoqeB0Wje/Bo1kRFrwKERIaOL2A15M/5lRFUs6Q1W6pddvGJSKhKDUvnOigsJ2l10sS06/7Z6109oEx2Ynvx6UbYdvGjq5LGq3Hjp0a+JJTkQsGfvQIwcrCiCk5rsjR7sR+Gh8vHpnyB6mghLbf2cIGy8tyGhD9LcgMgqnZXJH/bbIYcAshHk9cuDDkBNLyJ/ZOFwBeidoY3KUrYU+XNHn40/w32nBgtY4fZwXDSAS/ANWqJ6oSOVM+KArIzROMAwLbORKjGuZlCngFWqsjJbxLOWh2llvIA4M2Y1G9NsiNeND1XJD94e+m4qux+hYFv1dyNn7O/E81n4GyNoy72cwA52d6gjk0ABZXRNou0kkzyrDuagW33VFM0pGyZG7qPjytBRSq80G0XKByrTOFEMmuXixOyb/VMIqakY1DXtQaYhBtBnWXSqLyd4iEBaihoc4FYJzb6oTGk6VYBv3OSdkOXH1hbfRWQ4FkhJtezWEbylBtNmNog1m8vck87jvQXlzrfR4NlgdfNFzM5w6niGeWNxP2mWyVDFYFTWpiLNXutI30R5O8gV4AgONt6Dc0CktO8YCunqyiG71sPi9zWcrUDk1cOPInyg4i2bX5+mdyxpzbtOTDsLANVEANWDmtw/EJ3QODIALhH4Y0hHksvzVMTW8g0IHAqDTmMENkxEV16ihpYno+pxKvUBmXd8TjpW6lh/8=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2353.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(10070799003)(18002099003)(56012099003)(22082099003)(921020)(11063799006)(5023799004)(4143699003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Yk5yMXpaYTR1RHoveEVVQ2d5YklVV2tmZHk4MkM4WXR3SFR5VGxzbzJFbU1T?=
- =?utf-8?B?SDJTSi94YXh1dUhlQkpROFdScFdjVTNOSDdDem9OZEVYUHRPRGdTWmtweVNm?=
- =?utf-8?B?eTlDNE9ZcGFaUDJWVWRlS1NENC9RRmZPcDU4WUNPVmY2aVlUc2lGckYrNGR0?=
- =?utf-8?B?b2lJajZQeDZjVTFML2xDT29SK1FLc2FpRlcyOG1wdExOeGJLNzNVZVJVdWZW?=
- =?utf-8?B?dlFsUi8xUlNaQ3ZCWEZld2p0N3ZCSjZIUDlhOEhtRFVvUDd4cU9jNkZxOWVB?=
- =?utf-8?B?ZWNDS3crY2xHcHFQendkWGN6b0dPU0VDOUlMdFpYMjV3aEZFYXdKVnlLVzl4?=
- =?utf-8?B?UlQzb3phYW1hUGVUTW5aYVhPMTVkVnBQUVk5N0ZhMm5qY0VQRm5wRHdyUGJs?=
- =?utf-8?B?c3Rzc0xEWk5RbUVOM3YzbW9xMU96SGNJaTdWWnIzbGhVd3Q5NkdPOFhUbEFl?=
- =?utf-8?B?RWVxbUZrWG5nOVhFY1ArTWIyV1N0dmQ1YnRnbFhrMUMwb1l6MkhRd21pMUtM?=
- =?utf-8?B?MmUyYnZiY2xWNGl4aWhRNnkyTDVrc1N1VzRNRTlJMGFpRlBVN1YyQjFKR28y?=
- =?utf-8?B?ck5RVlNjVVN2UDZYUlhEcWxObHlVL05FSElDa29lV1U4SXZtRTVLOGtLR0pV?=
- =?utf-8?B?RW9vbllCa1lEeHdZby9FQzg5MzJibTNLcmMxU0FkSlJwSkFrendqZTMwL0V4?=
- =?utf-8?B?VUx3bDhVNVZrM05PMkxORzZ6dzRQdGVhYU1tWm1PYzNadVh0S2JhOTViSXhU?=
- =?utf-8?B?b0swSHhsQ3BFYnNxSXZnQ3FLK0lYNFFHYUt2ZVRGcGFlMXo3VXYxck95VEl5?=
- =?utf-8?B?cFVWditrVXNzK09JOFc1VENiMXEwQnBtdXJVOVZhL3BJajJXT3YvRmppa0RI?=
- =?utf-8?B?Mk1xUVgvWk5jZk1Zd1JkbWVOU2owaVJCRGFWSDQ3TVlVOFV6NmRCVVh4VndF?=
- =?utf-8?B?MFhMZU5zNEJ6UVU5NldSejNiWUhkeHJkNjg0Z3dOck9kL0YzVGZJbnd0dVRN?=
- =?utf-8?B?MitiKy9DSTcrODNYdEc2VVpFMVh4RXFPREREUXlKdnFQdDZ4bVVFdlpoWEw1?=
- =?utf-8?B?MVg5c1kyTlRpbDJsV3BqeGt0OUZ3cnNDekxkaHg2N2praTRuaU5yNyswdlF3?=
- =?utf-8?B?UllsNCtHYlVTUXp2QWlPNmNxUS9WaXlGQnVqYnljMVd5MkVCZXg4eHVOalp1?=
- =?utf-8?B?b3VaQmtsblhHS1FQNlJSbEtYTjNsQ2cyWlNFYW52K2VGNnpNTEJEcWdjWXpt?=
- =?utf-8?B?emdRNFVqcytkZVFIcURpd0NleWFWRmhQbktublBJdWpDU3RTWE1POGtwOFYy?=
- =?utf-8?B?eUdzc3gwOTFYQVE4WTI0a05ISnI0cEViUUNOdEVQbHM3RzNISVR6bUxrakVI?=
- =?utf-8?B?cTF4bXFsNlE3N2E5ZzBTSlJGdFNkNUFPRW5VNk1uaWc4MkdabVZvclB3T1R4?=
- =?utf-8?B?UnFQUnFOT0tXUmhibWJNM0s2ZkVOVThVT0pSRTVKT0hiU3JpcDNDRDNsNnc4?=
- =?utf-8?B?T3U4L29LOFFMWklscnFjcWlCOEVvNzNrL3NLOGtVbksxZWRrZlEyakplUVU0?=
- =?utf-8?B?cEtFMlRGMnlwZnBndm1iZ3JkeFdlQitGRlFJM3ByYzFwNjh2VDZjTnZTR3p2?=
- =?utf-8?B?NmRUbnF3dXdPcERNZEE0aTROK3FBQ1lrcVNXYlJzWmxqclZEbHdkaE1VWkdq?=
- =?utf-8?B?VUZQTUU1ZGpSNElSMnQ2VHNLWTBqWlRKYUpCU2tlb2IxZE5aYVBCSUNJZnMy?=
- =?utf-8?B?ck55c3RhUUFBaW94K1FFWlEvNEVZM09QQlpsTzZKT0VWeXBDNTRZMlpzUkJK?=
- =?utf-8?B?WDFXL01ZWmMwR1duVmN6eW5lMVlLRnBudThpeXNjWnh1QjI1c3M5T3dyYUpH?=
- =?utf-8?B?MWdadDlyR3E4ZzhJaVR0TlB5cHd3OG1aLzExc3ZmQk9rR2RlZkpPbVR4L0RM?=
- =?utf-8?B?NlhyNk0yb0M4QTZpcUxVS0hGbE16Zncrdm1iQ3pGeFphclN1QXMzSGc3WDdl?=
- =?utf-8?B?WnJYT3ROdEVXQ01vdGpEbkRUMTZ3YUdQS1F2RHcrMU5tbjJURkFVWDlIcnZY?=
- =?utf-8?B?cDg1M3kzOGdYSE9rTnJiM2kyS3ZqRG5NT3A5ZmpBYWZraU1kbGVHdk90aWdY?=
- =?utf-8?B?cE9CKzJCb01nR2xBZFVVWHMrQWh6N2FjQ3BadTRvVm5Ubmc0YXh1NVVsU0pC?=
- =?utf-8?B?YmhubFFERUlETmxpN2JCNytaSk1YMjZWTEoxV2xGYnFML3hlQ3pldGRnSm52?=
- =?utf-8?B?R2hlSlo0RW1PWXZrWm56YnN0UVRiY3FxS2h6MWR2ZUZlYkhDbzBndVJJZFA1?=
- =?utf-8?B?aS9taTlLUUMzc05CQVJnUG5QSHEzem8xMTBUYzJUWDlRT2IzWXk4aS9WamVx?=
- =?utf-8?Q?g38q4Z3XnnJqsiYjsswokD6HKjqUdDRq91fML7LMVKefy?=
-X-MS-Exchange-AntiSpam-MessageData-1: Zdfk7wh1+yJYYQ==
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8b03e3f3-e30a-4b47-513f-08deba599a62
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2353.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 May 2026 12:31:54.2006
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: iatyMe2Ku7Uz9JA/L/jLWhTW2UQrYMl2zzAWpGs9deZkz80LYhpmr/hltlqs1B/EdCDOV6uO8QxWy6Tto11/fg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR12MB9407
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAIxFFGoC/2XQQW7CMBAF0Ksgr+tqPOMEm1XvUbFInDFYKklwg
+ kWFcvcaCsKI5R/5fcn/IiaOgSexWV1E5BSmMPQ5VB8r4fZNv2MZupwFAtagFMnGjQc5H04S14z
+ KA6OjVuTnY2Qfzreq723O+zDNQ/y9NSd1vT5K9LMkKQnSea7qzhJb8F8/oW/i8DnEnbi2JCylL
+ SRmyYCNIe1Bu/pN0lNqhEJSltQ5w5Y8tPgudSmLLyedpWkr602lTU36RS7/I0Q+nvKM832JZfk
+ D/qyo+mQBAAA=
+X-Change-ID: 20260113-acpm-tmu-27e21f0e2c3b
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Kees Cook <kees@kernel.org>, 
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, 
+ Peter Griffin <peter.griffin@linaro.org>, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>
+Cc: jyescas@google.com, linux-kernel@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-hardening@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779713428; l=5139;
+ i=tudor.ambarus@linaro.org; s=20241212; h=from:subject:message-id;
+ bh=jeBXtuHojBHH2gQPeCSwY8bPjROTXlTPK5x5EdFyeUM=;
+ b=TVGX+uxLJueTSFZqqQKinjfGd20qo8y4BOHNCkP4+kA/IzL+waxIxvvbLI1auGMTaKxO1tP6Z
+ NZvzyueB1qCBcCWePft569+A34hs4Q662s+eW32N7kRc1eZD8k8i40L
+X-Developer-Key: i=tudor.ambarus@linaro.org; a=ed25519;
+ pk=uQzE0NXo3dIjeowMTOPCpIiPHEz12IA/MbyzrZVh9WI=
 
-On Sun May 24, 2026 at 12:46 AM JST, Danilo Krummrich wrote:
-> On Fri May 22, 2026 at 1:34 AM CEST, Danilo Krummrich wrote:
->> [ Handle macro_rules! invocations in the ForLt! proc macro's covariance
->>   and WF checks.
->>
->>   Proc macros cannot expand macro_rules! invocations, so the
->>   syn::Visit-based has_lifetime() and replace_lifetime() helpers cannot
->>   inspect types hidden behind macro calls. This caused the covariance
->>   proof to be silently skipped and lifetime substitution to fail for
->>   such types.
->>
->>   Add an explicit Type::Macro arm to Prover::prove to conservatively
->>   require a compiler-assisted covariance proof. Detect macro-containing
->>   types with has_macro() and use a WithLt trait projection for lifetime
->>   substitution instead of AST-level replacement. - Danilo ]
->
-> I was made aware by Gary that WFness is not actually being checked, which=
- is why
-> the static expansion was needed in the first place.
->
-> Thus macros will remain unsupported (even covariant macros are rejected),=
- yet we
-> can improve the error message by adding the following diff on top of the
-> previous v3 patch.
->
-> diff --git a/rust/macros/for_lt.rs b/rust/macros/for_lt.rs
-> index df2027789713..75d0ce450bf0 100644
-> --- a/rust/macros/for_lt.rs
-> +++ b/rust/macros/for_lt.rs
-> @@ -107,6 +107,12 @@ fn visit_lifetime(&mut self, lifetime: &Lifetime) {
->                      self.1 =3D true;
->                  }
->              }
-> +
-> +            // Macro invocations are opaque; conservatively assume they =
-may
-> +            // reference the lifetime.
-> +            fn visit_macro(&mut self, _: &syn::Macro) {
-> +                self.1 =3D true;
-> +            }
->          }
->
->          let mut visitor =3D HasLifetime(lt, false);
+Add support for the Thermal Management Unit (TMU) on the Google GS101
+SoC.
 
-With this change,
+The GS101 TMU implementation utilizes a hybrid architecture where
+management is shared between the kernel and the Alive Clock and
+Power Manager (ACPM) firmware. This hybrid ACPM TMU architecture is 
+also present on other Samsung Exynos SoCs (e.g., AutoV920, Exynos850).
 
-Reviewed-by: Eliot Courtney <ecourtney@nvidia.com>
+Dependencies
+============
+The set depends on the ACPM TMU firmware helper driver that was queued
+via the Samsung SoC tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git, branch
+next/drivers.
 
-I think also this implementation considers &'a mut dyn Trait to be
-covariant in 'a which isn't the case in general IIUC, but I can't see
-any way it could cause an issue currently.
+The bindings, driver and MAINTAINERS patches can go either via the
+thermal tree, and then we'll need an immutable tag from the Samsung SoC
+maintainer that will contain the firmware helper driver, or they can go
+directly via the Samsung SoC tree with ACKs from the thermal
+maintainers.
+
+The dts and defconfig patches are expected to go via the Samsung SoC
+tree, after the bindings and driver are queued.
+
+Architecture Overview
+=====================
+
+The hardware supports two parallel control paths. For this
+implementation, responsibilities are split as follows:
+
+1. Kernel Responsibility:
+- maintain direct memory-mapped access to the interrupt pending
+  (INTPEND) registers to identify thermal events.
+- map physical hardware interrupts to logical thermal zones.
+- coordinate functional operations through the ACPM IPC protocol.
+
+2. Firmware Responsibility (ACPM):
+- handle sensor initialization.
+- manage thermal thresholds configuration.
+- perform temperature acquisition and expose data via IPC.
+
+Sensor Mapping (One-to-Many)
+============================
+
+The SoC contains multiple physical temperature sensors, but the ACPM
+firmware abstracts these into logical groups (Clusters) for reporting:
+
+- ACPM Sensor 0 (Big Cluster): Aggregates physical sensors 0, 6, 7, 8, 9.
+- ACPM Sensor 1 (Mid Cluster): Aggregates physical sensors 4, 5.
+- ACPM Sensor 2 (Little Cluster): Aggregates physical sensors 1, 2.
+
+The driver maps physical interrupt bits back to these logical parents.
+When an interrupt fires, the driver checks the bitmask in the INTPEND
+registers and updates the corresponding logical thermal zone.
+
+Signed-off-by: Tudor Ambarus <tudor.ambarus@linaro.org>
+---
+Changes in v5:
+- no changes, rebase on top of krzk/for-next branch.
+- Link to v4: https://lore.kernel.org/r/20260423-acpm-tmu-v4-0-8b59f8548634@linaro.org
+
+Changes in v4: address sashiko review:
+- thermal driver: avoid mixing mutex cleanup helpers with goto statements
+- firmware, tmu:
+  - remove __packed from union acpm_tmu_msg.
+  - return ERR_PTR(-ENODEV) for devm_acpm_get_by_phandle when
+    CONFIG_EXYNOS_ACPM_PROTOCOL is disabled. 
+- Link to v3: https://lore.kernel.org/r/20260420-acpm-tmu-v3-0-3dc8e93f0b26@linaro.org
+
+Changes in v3:
+- thermal driver: use .set_trips() instead of .set_trip_point()
+- new cleaning/prerequisite patches for firmware/acpm:
+  - firmware: samsung: acpm: Make acpm_ops const and access via pointer
+  - firmware: samsung: acpm: Drop redundant _ops suffix in acpm_ops members
+  - firmware: samsung: acpm: Consolidate transfer initialization helper
+- firmware: acpm: TMU helpers - check return value from the firmware
+- overall change: emphasize that the ACPM TMU hibrid approach applies to
+  other Samsung SoCs as well (Exynos850, AutoV920).
+- dts: drop active trip points, update trip point values
+- collect R-b tags
+- Link to v2: https://lore.kernel.org/r/20260119-acpm-tmu-v2-0-e02a834f04c6@linaro.org
+
+Changes in v2:
+- architecture: switch from a syscon/MFD approach to a thermal-sensor
+  node with a phandle to the ACPM interface
+- bindings: address Krzysztof's feedback, drop redundencies,
+  interrupts description.
+- firmware: introduce devm_acpm_get_by_phandle() to standardize IPC
+  handle acquisition.
+- thermal driver: drop compatible's data and use the static data from
+  the driver directly.
+- defconfig, make EXYNOS_ACPM_THERMAL a module
+- Link to v1: https://lore.kernel.org/r/20260114-acpm-tmu-v1-0-cfe56d93e90f@linaro.org
+
+---
+Tudor Ambarus (5):
+      dt-bindings: thermal: Add Google GS101 TMU
+      thermal: samsung: Add Exynos ACPM TMU driver GS101
+      MAINTAINERS: Add entry for Samsung Exynos ACPM thermal driver
+      arm64: dts: exynos: gs101: Add thermal management unit
+      arm64: defconfig: enable Exynos ACPM thermal support
+
+ .../bindings/thermal/google,gs101-tmu-top.yaml     |  68 +++
+ MAINTAINERS                                        |   8 +
+ arch/arm64/boot/dts/exynos/google/gs101-tmu.dtsi   | 136 +++++
+ arch/arm64/boot/dts/exynos/google/gs101.dtsi       |  18 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/thermal/samsung/Kconfig                    |  17 +
+ drivers/thermal/samsung/Makefile                   |   2 +
+ drivers/thermal/samsung/acpm-tmu.c                 | 547 +++++++++++++++++++++
+ 8 files changed, 797 insertions(+)
+---
+base-commit: 0d177c93e6fda86a96642e51131e1db173277957
+change-id: 20260113-acpm-tmu-27e21f0e2c3b
+
+Best regards,
+-- 
+Tudor Ambarus <tudor.ambarus@linaro.org>
+
