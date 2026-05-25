@@ -1,175 +1,151 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 802B83D1AAC
-	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 07:22:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.49
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779693767; cv=pass; b=dhnBXTRlzBhpYXgmGR958ni+IDg2GgvRr33TxOeK/PyAhMEbxzlDb3FeXnlj9L/b9MJn/uUbmbAdD33AMF7Tl2mdVzrDxk1j8abGFKwbez9bv54m9WLamvUNzSE+0vkBFqNiB/06MGHr/LwLwngLtlSd8KSkNZctuOXJ4Jw+Fx0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779693767; c=relaxed/simple;
-	bh=hsfY4M3FCyUSSdG4eY3UuT9iyiNLpq4MvxQmfl3Kt9w=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dRh+3Ec5gvJMDjcL4mARXyijFF15Sqdcpbx7Xgi6XpA2KaVKNNE4pGl2vcgAMvDOM8ns6ahddQthW4I+D+LbR2HmB6tsdB1088M2PAjxApK1Xfta6uWFavpPITaGObUpuIGa+xd2FwXQjHxdtSUZVPaAb9kXIzB8j1HHbqGHP8Q=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=JX6NSLpa; arc=pass smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE38A3382F1
+	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 09:19:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779700758; cv=none; b=trAx0ogvPMLlEJzMJ21rLsN+MU42WV44J9GKlu4WbYn1Nbng/kgvUc/7Ea21QDkF5+ZY5ocngWeMgU70pIftETw71VP7sldaxKbMwO23WboCJard9LPvfZiAux0b0Ys0EvyUmBoahcEWMwV/oJZYpBdrdhF6PqPxgC9vNHLXHdk=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779700758; c=relaxed/simple;
+	bh=wUdMiM4gznb6+rt3vTR+q6cMpxLdznGhivqWLAYNrG0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JlPfHW9DXMxWpMD/XoHH5Ab78TFXUrg5OSvSET+2t1qCtUW+i8FarnJcLwIirkvp07txxKN0OMAuy2CxNRqOOHIHRRESp9TF/Y/4trz9xosrRlkm5AFZW7HtdlRKsMmjalGHTsiGC7SsuLLn9xlQyy8QrHUFVhbrcAIx97MjEus=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=DZ2ogOOh; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=Yougnboi; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="JX6NSLpa"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aa2d5a1d51so2862719e87.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 00:22:45 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779693763; cv=none;
-        d=google.com; s=arc-20240605;
-        b=eAMj+6T670lE1swSSU1Kg19vIZAp6QLdEqMCq521NWBitaUXadNs8Ld/WW4mNNN5+Z
-         W88g19PsouFXYz/6gWq/s1zaaUl73Jst7RIkldn8tmNk0yTtj/B8jN0mW6oTTPwzcQX/
-         QgEd1I1oO/aDFby2R9wdu51Jma9YbwiK0d2HU0iMs0XCEflWyuF3/hFlBMVTgyRBFdHq
-         QuE2IhDkFbvJBYDqCsHxFJJeJK4LpagU3YMD8vYs/sXz/ksSgahmdWPw6xIfDkgLLWQ7
-         YwqWBAqMwT7NcIseEEqY/uacQni1CVVLG38d8QnKM50daNFFBpQTCO/6hJELfj7U8isX
-         JZyQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=etVNODqyZnFaIN8OnoPEXmE0+THG5cU8QdS0ReSCQPM=;
-        fh=OHSz2RW83zb96/VfNHbt1IqikPOJumTVy0vebUyRESE=;
-        b=RlZrBKh9/Lxy1XLSiuSqwUWDPPOss7KEeRlXsEc/qAI6zKkOU3DhTMbOODSpA11c8F
-         LkzMqLa56C5KoI2mGquZCbobk3Ule1dny2Og91XZVYAIocPnLqc1EqqmFLe8d82CO1Z2
-         nUygSQ77PIPhF9ZVCxhlRqxBcgj90XxNjE5kgP/4SJHpBNz4DnA4Yv24dnaV5BoOp9S2
-         FobfwObAB/tUKDM3ouSj8FmUpyuT6j/WS+kjEJCP6gZ3HnHzHNoqijJzngdaUYfNnGWh
-         cA/fmUDQtly3w9LAtI3NpiK41attm3tjxNC/dPDp822DukUFgucDPen3L1F3YFVcV2Ld
-         /+9g==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="DZ2ogOOh";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="Yougnboi"
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 64P2uieA3580685
+	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 09:19:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=bmgCDfsrFew+pg6RojZwQYb+
+	pd6o+Ri4V4tsZlDZDeo=; b=DZ2ogOOhcNvpHlFCfgpKqgyFLqn9yO7FArZS5Paa
+	DPpSUGk+80vPBbIJyaEp9thVPUMwsbRgEmPmIu3TzjGsg4DQshxGnV2h+WNybQKJ
+	W70mbM51yCHCiCDmgbpFVlGjk1AmL6TzdZPC0YaceT4qGAWy7maCjH6OtveKq/zd
+	d3zyvlOd4cpUiTUoACK6LKIegS4tT9gKII6/RdDLORqDcPEaR10qG3BUn4ZbO8G+
+	6ApEAtsa57iSR/dE8bWNw/ylUaOA666WeBlz3H1YdUNkoy7/f4BP8qbCBu0jOAlT
+	+Bqhqq/nNYdri/g065Mua9piP+NHkFItLcTNnNMY3MRlWw==
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com [209.85.221.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4eb3txp00n-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 09:19:15 +0000 (GMT)
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-575b418c83cso3616343e0c.0
+        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 02:19:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1779693763; x=1780298563; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=etVNODqyZnFaIN8OnoPEXmE0+THG5cU8QdS0ReSCQPM=;
-        b=JX6NSLpa/0B+95LqPWAPxKG0paegNMuxRSwFkxRahrWbdP7KhNrF+v6nXHnfFVFmB3
-         nPiRMGP+aOCKMQ30ZzwfgGPltR1YB680kZfkENaYpU4cE28dOQbX8uQNg4bEWVn8NXfl
-         ON1FzFo1peCdXIq8z6tSFWvDcEgcPEWOWtpe728XNc2ZS8EBXQf5025Y/e/EdXUvsOJn
-         o0Y6aHqLQDQ8otOXjqSAYdbDxDR56J7HwPQsPqViLPuNNXo/kIbffBfet4xIsfglVWL9
-         U2fSO4DlB59JZACUl5jskgtIqIpfqMp2e3ZMskR9f60ow9q6Vs3fL/NnQw9zXIoEo4q6
-         XdLQ==
+        d=oss.qualcomm.com; s=google; t=1779700755; x=1780305555; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=bmgCDfsrFew+pg6RojZwQYb+pd6o+Ri4V4tsZlDZDeo=;
+        b=YougnboiE8xlKuiDoElCBh3mR1ilC2hCb80HcEuW2UR0navXc+DCOjL95Jdwgirdsk
+         CAF+h9y4O/85XwisdIVKIdE6XitEMt4CjecvTnsfori6y8Irn1Q36F/UE3W6sgLdVbzs
+         q/Dsp4rUnDdOeWVARCJBXjTgMnyUXz+5Bk/y1HjPs4F0OKdI3wFxVq1Lwoy+zqjN4Q9K
+         9gBVHngBSHxyXwfIuxgKJ+YBTc1VoChvGweexR6Fi/lZ3L+fbwEmHfsS1qSy+QFASGxI
+         WoXSIBG05cJv0bc9cpwhsqVBJI0rf+oTuvMGOk8pbefT32/P5LnVJ5Yif/XK4zjrvu1W
+         Uxig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779693763; x=1780298563;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=etVNODqyZnFaIN8OnoPEXmE0+THG5cU8QdS0ReSCQPM=;
-        b=QVyGiYserwGAD3wn0rz/XVXxzhikMJ3UAE7OvsmhM8MFfukAQt0JwJxWTe2TrSXh9p
-         2kBK4JrixkewBRAxLwI3dneFe4IlR/fusWIo80KhP/dXPnzBfyqtMZN/QojgjAiQJ5Xs
-         JZEipP4e2e3B8sc7RUj51ABzg53lYOMZYx9HDqsyCV+1fmsik9qKEtPHCe/kNbXufsa9
-         J5yPMYA3AYITVASuZjN7+96ytFqbRsIX9gV1kTytPzxUAVWo5WYPagt3db06adbBEGa7
-         xMmu1G2txjOtFhZzlzoU4DhHTKGcBX47826jWQ7jPazWzlRj50pjguWRaoD6x78dyNnf
-         0rvA==
-X-Forwarded-Encrypted: i=1; AFNElJ/VPAHNDRp+0X23QAjf3r+lZEAoONpRubUPZaqcCw0DBoAynY/KURr01N9EhhaUvM8Pmm5wNrG7TA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxyC84KzFGgIPSSAd4nVpgAQKqmI7ygvfHPx9w8lIpeCDYOydHe
-	2CKcqvjNFT8kLXdblcasUnEpTxPpoDLFiUulPbCof0JbWjUJbGAlmF4cf2KyjD+SyXJZxJ0V+V/
-	zjIBfDUjiplyMYj+/AQLfKyYrgWDSGX6Z/kS534g4VA==
-X-Gm-Gg: Acq92OEpjAh1gCGJSAbBExRMhIzUMDmMHVuIvAq7kusBk6xVW/E2FqZZAK842lm0t4h
-	famoO9WFMFkGCUMgCxXnswUmFK3OYNy8xF4sNPJt2uBHYDfbQffXxmSpbfH422jm+1zduu4Lp5N
-	U8+/nmOEd9j66yNVUDKmH47Ys1IY9Cwv2opI/SKkoxftaTAjdMqQ32HOL2fxDi0hwlczu45LZC7
-	EEtxbrVpqVPMqzVBvVLugurq5gCWIebxhYkOMcpyWIWMSgJLu2v0wTYOp+3Vcwj3p42o5+3QiSI
-	UBcP/MGcLZ/aalkNm4wtGr1vIgPNXEnEcnKcavfM
-X-Received: by 2002:a05:6512:38c5:b0:5a8:fb56:e322 with SMTP id
- 2adb3069b0e04-5aa323cd973mr2704134e87.36.1779693763385; Mon, 25 May 2026
- 00:22:43 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779700755; x=1780305555;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=bmgCDfsrFew+pg6RojZwQYb+pd6o+Ri4V4tsZlDZDeo=;
+        b=Nq3OmVhfLkkHl0llILA/zlB5tkdt8btFUvER++FV0OD3Zc4P8IZKLnpukusrsznbxR
+         8Qy0R9fnQKun/mAenMi9dvf9za6avUPJcuVmNG73rMIbNxRU4W1ZWJxdrr0fGyhfp1pW
+         ijVLNz35AKdcL9mZADkY6yXgWGgHwMaaeOA6EttnBlhwdAzwn4hTGASBStyU4uvGCclB
+         4oCqc/i++oanGoSZs6bBdiHRVgs0aRMoQOMqVNZVwoUh26mhLl4DHFC/KtSLDren8DfR
+         AYR+S7mdYBoR0agVUFNjyzKOyLvRfHCT3CzJPvqGHJQxD8ngYMW9oezjCr8w3RbJ6/AJ
+         3OGw==
+X-Forwarded-Encrypted: i=1; AFNElJ89rjer6+Cb26Wkb+GTBaOJZ2KjZXhm3h1/peQfZtjW2riTr5apTpMwXDKqtuMrlVb3RAyYHWE34Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyY4RPN4vR1JvXwiBQ3gjiC5Y5F1EZt/rfs2Oyz7EKp1onlHnh2
+	2eI4bNUmZ7d4iwUVGw+LyEzgmq6fgTEGcalTtrZIS3DfpsTijhPFDKLKS6KeVzWplZUm/OG32Fv
+	M442ZtATFDj5t04KW9YuAUbUr77v/82QY9XzL97HtvGH7bhKUcSs81wKc2P/JUQ==
+X-Gm-Gg: Acq92OEN9egt1AAAqxu38UbbtAHiqkwgyGiyO7p9ah6tWGf0PK9hAaT66I0wr/KUsbc
+	idPnVjAXgJB/oDEE+Bfi7mBna/xpCxWQALFnuaW+W8yvs/UidM6l8QI3/ISBc9AmDPSIc7ct2Xs
+	HDuPfPg6mMR4nqnLqLyu8m/kn5fKxZPDJu6BOhlj/Ivybta9LL6sbrGsf4JPedqpOSvTNJNfi6q
+	qjrDyLAkUAPPflJjvdTWm1Tr47a8LXQwU26bHL1zW9/SLLZTIrd4J7FaPvSisQbDA6L6AUHLB4g
+	jmmv5vHT6CZchKr+im/mgHYN6gddZ4slo8Apxsm13st+UoRC7NED7UTGR5QuxpVCuW16aI/InHQ
+	gJav1lGb2S6wa9fTL5VYpAjAfR06OzOpoxvlqqzFlbDsdrZw+ZfEUl6spZ4qsXyWanxGb8mbJU0
+	VDBazOedQKHNrXLSELoPmjzvq7yngljsZ8QZQ=
+X-Received: by 2002:a05:6102:418f:b0:660:d26b:5077 with SMTP id ada2fe7eead31-67c738b7be1mr6149850137.6.1779700755010;
+        Mon, 25 May 2026 02:19:15 -0700 (PDT)
+X-Received: by 2002:a05:6102:418f:b0:660:d26b:5077 with SMTP id ada2fe7eead31-67c738b7be1mr6149831137.6.1779700754643;
+        Mon, 25 May 2026 02:19:14 -0700 (PDT)
+Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5aa32cb369fsm2511211e87.15.2026.05.25.02.19.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 May 2026 02:19:13 -0700 (PDT)
+Date: Mon, 25 May 2026 12:19:11 +0300
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
+Cc: Vinod Koul <vkoul@kernel.org>, Frank Li <Frank.Li@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Georgi Djakov <djakov@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>, linux-arm-msm@vger.kernel.org,
+        dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Imran Shaik <imran.shaik@oss.qualcomm.com>,
+        Aastha Pandey <aastha.pandey@oss.qualcomm.com>
+Subject: Re: [PATCH 04/16] arm64: dts: qcom: shikra: Add cpufreq scaling node
+Message-ID: <aibebzgnfdvfnb7hapjoym2ruawpsx7qbtedhyvn6b7gd6dqnk@3l4scbc74wsq>
+References: <20260525-shikra-dt-m1-v1-0-f51a9838dbaa@oss.qualcomm.com>
+ <20260525-shikra-dt-m1-v1-4-f51a9838dbaa@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260515084920.70544-1-marco.crivellari@suse.com> <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gLuMZ7b4fzc=f5Thk+s0bMjtaFS6HDqu9E8MfJa=jApg@mail.gmail.com>
-From: Marco Crivellari <marco.crivellari@suse.com>
-Date: Mon, 25 May 2026 09:22:31 +0200
-X-Gm-Features: AVHnY4IBwuSjJEqbEUb9UxoV6Lkrdn0cxYKkYnLVBjw9lrzG7ovjS-Ze7oPQyRw
-Message-ID: <CAAofZF7BHU4TddPB2YEQOHNzhU8oKJgV7_2cE3=BrS1BJpSZ-w@mail.gmail.com>
-Subject: Re: [PATCH v3] thermal: core: Add WQ_UNBOUND to alloc_workqueue users
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
-	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	Michal Hocko <mhocko@suse.com>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
-	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260525-shikra-dt-m1-v1-4-f51a9838dbaa@oss.qualcomm.com>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTI1MDA5NCBTYWx0ZWRfX4OtNaat7NMXj
+ 1plNpNrHm9VYrSiA3J2UzyUbMecI0RVhuVWbvJsqgCrNLGhd2FpXdh4EDLgR5hBC3cnUexlezd5
+ 3927ZSrWcDfeDQ/n/uXVTV5JYnqyOOtjptx+TRzIvAmE9Z2f8g5b+DXEMAtDfCOhwqxO5AidYmy
+ FUQPBAdt8+6ShF7wygctreUYpJAQni6qQVvuzu3is7alVRfrwBGJFxppXMW/V1BCs+E/Yl/Ynv1
+ 1pMcCVLFDc7PZdYswEk7HUe406u0h1oTviLVeuE3e7QPRfiyKfIZ1ZYtNghGim6ZfZPHOkdtlNI
+ u95IhQL+vd8EMSRVsjysF+BtApFNXthj3agJSuasJ77NtWEyEPiI+nlm1z7OuhyCiyDACmuR3Wc
+ SrWyqqjQAXA5d3R1AMfQlmPh2reCgrABOZZZXyc0JUc7eDQbAPtPNFB3EbFk2Cd3Ixo2bGWdHuE
+ c8PK9uq2ugSMvv0eyYA==
+X-Proofpoint-GUID: ekJP6V-0lqyWyHx7U78hsAFlQpPte7-N
+X-Proofpoint-ORIG-GUID: ekJP6V-0lqyWyHx7U78hsAFlQpPte7-N
+X-Authority-Analysis: v=2.4 cv=MetcfZ/f c=1 sm=1 tr=0 ts=6a141413 cx=c_pps
+ a=wuOIiItHwq1biOnFUQQHKA==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=NGcC8JguVDcA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=EUspDBNiAAAA:8
+ a=gR7PYC-x2pxtVi67x8UA:9 a=CjuIK1q_8ugA:10 a=XD7yVLdPMpWraOa8Un9W:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-05-25_02,2026-05-18_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501
+ impostorscore=0 bulkscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2605130000 definitions=main-2605250094
 
-On Fri, May 22, 2026 at 6:49=E2=80=AFPM Rafael J. Wysocki <rafael@kernel.or=
-g> wrote:
->
-> On Fri, May 15, 2026 at 10:49=E2=80=AFAM Marco Crivellari
-> <marco.crivellari@suse.com> wrote:
-> >
-> > This continues the effort to refactor workqueue APIs, which began with
-> > the introduction of new workqueues and a new alloc_workqueue flag in:
-> >
-> >    commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl=
-_wq")
-> >    commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
-> >
-> > The refactoring is going to alter the default behavior of
-> > alloc_workqueue() to be unbound by default.
-> >
-> > With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND)=
-,
-> > any alloc_workqueue() caller that doesn=E2=80=99t explicitly specify WQ=
-_UNBOUND
-> > must now use WQ_PERCPU. For more details see the Link tag below.
-> >
-> > This workqueue has no benefits being per-CPU, so make it unbound adding
-> > WQ_UNBOUND, removing also the WQ_POWER_EFFICIENT flag.
-> >
-> > Link: https://lore.kernel.org/all/20250221112003.1dSuoGyc@linutronix.de=
-/
-> > Suggested-by: Tejun Heo <tj@kernel.org>
-> > Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
-> > ---
-> > Changes in v3:
-> > - remove WQ_POWER_EFFICIENT: the workqueue has more benetifs being unbo=
-und,
-> >   so just drop this flag and keep only WQ_UNBOUND.
-> >
-> > Link to v2: https://lore.kernel.org/all/20260514142511.325446-1-marco.c=
-rivellari@suse.com/
-> >
-> > Changes in v2:
-> > - "thermal_events" workqueue has more benefits being unbound, so instea=
-d
-> >   of WQ_PERCPU, use WQ_UNBOUND.
-> >
-> > Link to v1: https://lore.kernel.org/all/20260514132901.275477-1-marco.c=
-rivellari@suse.com/
-> >
-> >  drivers/thermal/thermal_core.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
-ore.c
-> > index 2f4e2dc46b8f..0b322473deac 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -1889,7 +1889,7 @@ static int __init thermal_init(void)
-> >         if (result)
-> >                 goto error;
-> >
-> > -       thermal_wq =3D alloc_workqueue("thermal_events", WQ_POWER_EFFIC=
-IENT, 0);
-> > +       thermal_wq =3D alloc_workqueue("thermal_events", WQ_UNBOUND, 0)=
-;
-> >         if (!thermal_wq) {
-> >                 result =3D -ENOMEM;
-> >                 goto unregister_netlink;
-> > --
->
-> Applied as 7.2 material, thanks!
+On Mon, May 25, 2026 at 01:19:08AM +0530, Komal Bajaj wrote:
+> From: Imran Shaik <imran.shaik@oss.qualcomm.com>
+> 
+> Add cpufreq-hw node to support cpufreq scaling on Qualcomm Shikra SoCs.
+> 
+> Co-developed-by: Aastha Pandey <aastha.pandey@oss.qualcomm.com>
+> Signed-off-by: Aastha Pandey <aastha.pandey@oss.qualcomm.com>
+> Signed-off-by: Imran Shaik <imran.shaik@oss.qualcomm.com>
+> Signed-off-by: Komal Bajaj <komal.bajaj@oss.qualcomm.com>
+> ---
+>  arch/arm64/boot/dts/qcom/shikra.dtsi | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+> 
 
-Many thanks!
+Reviewed-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
---=20
 
-Marco Crivellari
-
-SUSE Labs
+-- 
+With best wishes
+Dmitry
