@@ -1,262 +1,285 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD673F7A82
-	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 17:10:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6CE53947AE;
+	Mon, 25 May 2026 20:29:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779729012; cv=none; b=kvuBDvQ5kyJ/UBpMUIfksprwiLeACDOm/3Al/HV3bZjnMuGWGWvP2quBIThanE4cbLDCwoXRqDyZgLQv24Cpaeud2zgC5UwBdkabSKvhgbB+R0EubheA4oLLxU+MdAPfkK1knYYffeW0f3ujNs/Mfm4RixhkKmeowKaDTjTFy3s=
+	t=1779740972; cv=none; b=Zj77CwfjcfJ26FUq3cPxfmzfHL59o6IihOmZAdeHlC7nj3gECGp7dd/0JSYUx/FPvxKoew58YMAXCdLkV1QWZtbSMLiYgB0UGcjDp2ObGG44gh1z/I/xelHcDsT1EwxBWCxcNvtk0DU8JjVDrb+xGN37yZS+yImFezcuiUZolFc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779729012; c=relaxed/simple;
-	bh=PTNg3RyBjtWL4NnI8O0q7hXUoY8uPF4RaVnZMbEInR0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Pt5Vimhru+oCr2PqElf24QZt053RiHn/tAESZYVQNh/elPA8DdnPQvAYeYRLzjcIZ7MXCucuL5UyoyJOObhlHYowmlTCoh4BVIjhY3+3zVVA3AmJCCFtnjl/adT9lX/efI18xmw79j3fFVPtWLB4J/9QrpsBzCdk1a0tBg5fwAk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=GQr1PYm1; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1779740972; c=relaxed/simple;
+	bh=5qWN36ryVO875bRpm9upQBvh6AdLmlbQstO7sKOANT4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=XKBV2/Ue4j4pqMVV04COl/gMllnbHW1R4kS6qqO4219Fha6dH8gXbeoZMRmgU6XeAsnqutfDUy2f0CXfw6hou7Afk2CMhZJsYNJTAv1mBVKvphz9TinMVonAx3FFVqPNHd+LhLgJFjLFrzDymUXhjgGnMgpgmzfiwl0Hti20yio=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eSJY/fX1; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="GQr1PYm1"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-490388fd0dbso41525965e9.0
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 10:10:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1779729007; x=1780333807; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=izugkSqOYsBmSyQ8jfD9m1SVj73YG14U78pRBc6Lai0=;
-        b=GQr1PYm1QRIrfgBC/EILAtR9O17tFRT933ldDJCayUjXIyRMiDnumrFP9i4iPLQuP/
-         bWYj6u/50hd5AlTl8fnNFXZxscNWQsfvT08lWT2g7USA76CFTeDeB9CAGnGBLt+Jk5Kd
-         lX3x9dDR55Y2wg8pVl8cBGmVyZoFj8APvHLhilXEkRN6z7J5HsqQkRDuiJpcpmZ76bBE
-         nunnNO0efpqrh3Mg+srvekhGI13bTspzjyxHMZeoT7BQvRd6lyijtBc2rfmKjAaENr6C
-         i+8SY1MRgNki/ClY1lWgGG4FXSsH+ZhGYZ0VK7FSfIVhFbKqAWGdmu0VyhcviooSpQ7X
-         9jYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779729007; x=1780333807;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=izugkSqOYsBmSyQ8jfD9m1SVj73YG14U78pRBc6Lai0=;
-        b=MsJxtJCQ67hVKvOpuaPmxa8YwuuzoCGCnExIskSesXlrlo0imE+LSAU09eJHYThX1Y
-         p9I1hygGsgmL5lqkysGhRKR1i8/vxY77xvAUIv95z/U7aUm1ENi9QB/uXCxPNQsc1kzB
-         p20FQP7i2H9J5nnfmqvarvFatK402YR7xU9W4EcVvy0XeEJUNo/IhJipx/+K6+rAP7bv
-         0+v0U/baDhxIXMsHrxSRgvRbaCGIQhKDB5uLMm6MReF8sZnFopLUSmDQlG5goYDlZq5P
-         y4bQawERyvV3KhJPPftb019zLoNlD1AuuN0X5K2g76Jg2Q0qL6IFWHyo7S8WX/amUtU6
-         MZ/w==
-X-Forwarded-Encrypted: i=1; AFNElJ+PjNNb2dVwkgFgU3spSQJdfC5WVeSEenvbptjVNUkWiF4ET+JHFXjnbXNRleaxOBBUnIpc1Ezb0w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxbcM5CPeLPAaqPhwAGRbBjaJ9d4fnywzCjtRL7u7IwW9qLJB30
-	PtJ9Yj0tMJ6+sHbG3C2mM7aksO9n2hmhZy0KW3iLK4iEEFGNG5C30HqJavkD5HTgKtk=
-X-Gm-Gg: Acq92OG7eL7VZDLaLLhpIs1gZdN+sOGtg87FbqZwlPwEHSM/yYDCxXpUqXwczAegpCV
-	SDSXh+H5+lbsyxdnidRGGOzvTi76aBynpRdcUhUEXgAO7JSzfJhSLaFcak03IjXi+V23GCTbC3m
-	745qadnKBXfmjIszg/Hq4Lr/tb6wfMM7aNKxxGiey+0GLus9YBg7jmsJ/w+VcfWZOSZhNIhEKt7
-	2QcjfRpxdHIew7Yx5b4j1WW62zgZbl631nF5PvrFi1WCSK7vEr1W7WtvpsgqOfHu13GQCb/6jEA
-	jXcyLguXVMFcfiYtRATPdvf6ZfYUJjRDiYF8Uqu+vvr3EZwTPcjqRxyKgf4v+IisjkFZFPCIpnO
-	je9Y8pSusLxxdA5TTHjD8imHMQ91WlJJLMVsskpNO2mKhLmdGakTJPxY37J2IkhgnBXrCshH4qO
-	XQQ20iAzETDCuC8qKbmwSRQtODb9gLHkqhKFpmnug2nwH80aRFSVgX4uQ64zeU3qeAyb6bM2oYs
-	cAqHJcEoZ5x7hNz+4VbD11uNeiwL0F2PpUkPS0zYnTXCNUD8MSJUg8IOuy3He3Y9OBxdnTwWziT
-	74n+JR7SJz4Ilw4=
-X-Received: by 2002:a05:600c:35cf:b0:490:44eb:c1e5 with SMTP id 5b1f17b1804b1-49044ebc257mr277307095e9.31.1779729006482;
-        Mon, 25 May 2026 10:10:06 -0700 (PDT)
-Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4904526c926sm456877405e9.1.2026.05.25.10.10.03
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 May 2026 10:10:06 -0700 (PDT)
-Message-ID: <a192eb5c-5d16-483d-862e-d937fa1b8269@suse.com>
-Date: Mon, 25 May 2026 19:10:03 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eSJY/fX1"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2F261F000E9;
+	Mon, 25 May 2026 20:29:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779740970;
+	bh=hbKm+QMbi0bxLA16ZUxC2wBcszGlYqRN0cc16jNNxWw=;
+	h=From:To:Cc:Subject:Date;
+	b=eSJY/fX11QSv/mXbgRvvzhJ0rwCmYj90qowizR2IUdbct3zFV8G3sVmX5Tw9hNXzi
+	 /cTjojCnKZV362Eb445Z+XD3DtrrNylsWbXEqCSzzgAwFv1/Dp6SS/MjzCgldzBzgX
+	 UfHx4Mn+/YAFy1wfwHaU5NElk7EXb47nUsoNz4CE7vpNBcMKDXc9Uxhx8xseduKpzj
+	 0s+dfDNc+1mYd8oXXkxulD6TvD9okbZ8D63hKsRNgBFiy6YOd/J6DuSL055udyTAdi
+	 FuUFogRAdxWIhlVbP8TaUok/23CAvhzJ+6zJsxH6p/ow/AZm+AmFnmcSXUfLHJ69RP
+	 jOnky1gjzeh9A==
+From: Danilo Krummrich <dakr@kernel.org>
+To: gregkh@linuxfoundation.org,
+	rafael@kernel.org,
+	acourbot@nvidia.com,
+	aliceryhl@google.com,
+	david.m.ertman@intel.com,
+	ira.weiny@intel.com,
+	leon@kernel.org,
+	viresh.kumar@linaro.org,
+	m.wilczynski@samsung.com,
+	ukleinek@kernel.org,
+	bhelgaas@google.com,
+	kwilczynski@kernel.org,
+	abdiel.janulgue@gmail.com,
+	robin.murphy@arm.com,
+	markus.probst@posteo.de,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	tmgross@umich.edu,
+	igor.korotin@linux.dev,
+	daniel.almeida@collabora.com,
+	pcolberg@redhat.com
+Cc: driver-core@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	nova-gpu@lists.linux.dev,
+	dri-devel@lists.freedesktop.org,
+	linux-pm@vger.kernel.org,
+	linux-pwm@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	Danilo Krummrich <dakr@kernel.org>
+Subject: [PATCH v5 00/24] rust: device: Higher-Ranked Lifetime Types for device drivers
+Date: Mon, 25 May 2026 22:20:47 +0200
+Message-ID: <20260525202921.124698-1-dakr@kernel.org>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/11] params: Convert generic kernel_param_ops .get
- helpers to seq_buf
-To: Kees Cook <kees@kernel.org>
-Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
- <pengpeng@iscas.ac.cn>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Corey Minyard <corey@minyard.net>, Gabriel Somlo <somlo@cmu.edu>,
- "Michael S. Tsirkin" <mst@redhat.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Bart Van Assche <bvanassche@acm.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Hans de Goede <hansg@kernel.org>, Mauro Carvalho Chehab
- <mchehab@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Hannes Reinecke <hare@suse.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
- Jason Wang <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
- =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- Jason Baron <jbaron@akamai.com>, Jim Cromie <jim.cromie@gmail.com>,
- Tiwei Bie <tiwei.btw@antgroup.com>, Benjamin Berg <benjamin.berg@intel.com>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- "David E. Box" <david.e.box@linux.intel.com>,
- "Maciej W. Rozycki" <macro@orcam.me.uk>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Sean Christopherson <seanjc@google.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Vinod Koul <vkoul@kernel.org>,
- Frank Li <Frank.Li@kernel.org>, Daniel Gomez <da.gomez@kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Andrew Morton
- <akpm@linux-foundation.org>, John Johansen <john.johansen@canonical.com>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Georgia Garcia <georgia.garcia@canonical.com>, kvm@vger.kernel.org,
- dmaengine@vger.kernel.org, linux-modules@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org, apparmor@lists.ubuntu.com,
- linux-security-module@vger.kernel.org, linux-um@lists.infradead.org,
- linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- qemu-devel@nongnu.org, intel-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
- linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
- linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
- virtualization@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
-References: <20260521133315.work.845-kees@kernel.org>
- <20260521133326.2465264-8-kees@kernel.org>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <20260521133326.2465264-8-kees@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 5/21/26 3:33 PM, Kees Cook wrote:
-> Convert the generic struct kernel_param_ops .get helpers in
-> kernel/params.c directly to the seq_buf signature, drop their legacy
-> "char *" form, and refresh prototypes in <linux/moduleparam.h>:
-> 
->   param_get_byte/short/ushort/int/uint/long/ulong/ullong/hexint
->   param_get_charp/bool/invbool/string
->   param_array_get
-> 
-> The STANDARD_PARAM_DEF() macro expands to a seq_buf body for every
-> numeric helper. param_array_get() now writes element output directly
-> into the parent seq_buf when the element ops provide .get; it only
-> allocates the per-call PAGE_SIZE bounce buffer when the element ops
-> still use the legacy .get_str path. The common "rewrite the prior
-> element's trailing newline as a comma" step lives outside both
-> branches so the two paths share it.
-> 
-> The non-core changes in this commit (arch/x86/kvm, mm/kfence,
-> drivers/dma/dmatest, security/apparmor) are the small set of callers that
-> directly invoke one of the converted generic helpers from their own .get
-> callback (e.g. an apparmor wrapper that adds a capability check and then
-> delegates to param_get_bool()). Because the helpers' signature changes
-> here, these wrappers must move in lockstep. Each of them is updated
-> to take "struct seq_buf *" and pass it through; param_get_debug() in
-> apparmor also pulls aa_print_debug_params() (and its val_mask_to_str()
-> helper, in security/apparmor/lib.c) over to seq_buf, since that is the
-> only consumer. No other behavioural change is intended.
-> 
-> Custom .get callbacks that do not delegate to a generic helper (and
-> therefore still match the .get_str signature) are routed automatically
-> to the .get_str field by the DEFINE_KERNEL_PARAM_OPS _Generic dispatcher
-> and are deliberately left alone here, to be changed separately within
-> their respective subsystems.
-> 
-> Signed-off-by: Kees Cook <kees@kernel.org>
-> ---
-> [...]
-> @@ -453,36 +457,46 @@ static int param_array_set(const char *val, const struct kernel_param *kp)
->  			   arr->num ?: &temp_num);
->  }
->  
-> -static int param_array_get(char *buffer, const struct kernel_param *kp)
-> +static int param_array_get(struct seq_buf *s, const struct kernel_param *kp)
->  {
-> -	int i, off, ret;
-> -	char *elem_buf;
->  	const struct kparam_array *arr = kp->arr;
->  	struct kernel_param p = *kp;
-> +	char *elem_buf = NULL;
-> +	int i, ret = 0;
->  
-> -	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> -	if (!elem_buf)
-> -		return -ENOMEM;
-> +	for (i = 0; i < (arr->num ? *arr->num : arr->max); i++) {
-> +		size_t before = s->len;
->  
-> -	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
->  		p.arg = arr->elem + arr->elemsize * i;
->  		check_kparam_locked(p.mod);
-> -		ret = arr->ops->get_str(elem_buf, &p);
-> -		if (ret < 0)
-> -			goto out;
-> -		ret = min(ret, (int)(PAGE_SIZE - 1 - off));
-> -		if (!ret)
-> +
-> +		if (arr->ops->get) {
-> +			ret = arr->ops->get(s, &p);
-> +			if (ret < 0)
-> +				goto out;
-> +		} else {
-> +			if (!elem_buf) {
-> +				elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> +				if (!elem_buf) {
-> +					ret = -ENOMEM;
-> +					goto out;
-> +				}
-> +			}
-> +			ret = arr->ops->get_str(elem_buf, &p);
-> +			if (ret < 0)
-> +				goto out;
-> +			seq_buf_putmem(s, elem_buf, ret);
-> +		}
-> +
-> +		/* Nothing got written (e.g. overflow) — stop. */
-> +		if (s->len == before)
->  			break;
-> +
->  		/* Replace the previous element's trailing newline with a comma. */
-> -		if (i)
-> -			buffer[off - 1] = ',';
-> -		memcpy(buffer + off, elem_buf, ret);
-> -		off += ret;
-> -		if (off == PAGE_SIZE - 1)
-> -			break;
-> +		if (i && s->buffer[before - 1] == '\n')
-> +			s->buffer[before - 1] = ',';
->  	}
-> -	buffer[off] = '\0';
-> -	ret = off;
-> +	ret = 0;
->  out:
->  	kfree(elem_buf);
->  	return ret;
+Currently, Rust device drivers access device resources such as PCI BAR mappings
+and I/O memory regions through Devres<T>.
 
-Since you're almost completely rewriting the logic in param_array_get(),
-I suggest tightening it up a bit. The function could warn or return an
-error when a kernel_param_ops::get/get_str() call adds a string that
-doesn't terminate with '\n', specifically, when the call adds either
-a zero-length string or a non-zero-length string that ends with
-a different character (unless an overflow occurred).
+Devres::access() provides zero-overhead access by taking a &Device<Bound>
+reference as proof that the device is still bound. Since a &Device<Bound> is
+available in almost all contexts by design, Devres is mostly a type-system level
+proof that the resource is valid, but it can also be used from scopes without
+this guarantee through its try_access() accessor.
 
-The updated code silently stops the loop when a get call returns
-a zero-length string. Similarly, handling of a string not terminated by
-'\n' is halfway there because of the added check
-"s->buffer[before - 1] == '\n'".
+This works well in general, but has a few limitations:
 
+  - Every access to a device resource goes through Devres::access(), which
+    despite zero cost, adds boilerplate to every access site.
+
+  - Destructors do not receive a &Device<Bound>, so they must use try_access(),
+    which can fail. In practice the access succeeds if teardown ordering is
+    correct, but the type system can't express this, forcing drivers to handle a
+    failure path that should never be taken.
+
+  - Sharing a resource across components (e.g. passing a BAR to a sub-component)
+    requires Arc<Devres<T>>.
+
+  - Device references must be stored as ARef<Device> rather than plain &Device
+    borrows.
+
+These limitations stem from the driver's bus device private data being 'static
+-- the driver struct cannot borrow from the device reference it receives in
+probe(), even though it structurally cannot outlive the device binding.
+
+This series introduces Higher-Ranked Lifetime Types (HRT) for Rust device
+drivers. An HRT is a type that is generic over a lifetime -- it does not have a
+fixed lifetime, but can be instantiated with any lifetime chosen by the caller.
+
+Bus driver traits use a Generic Associated Type (GAT) type Data<'bound> to
+introduce the lifetime on the private data, rather than parameterizing the
+Driver trait itself. This avoids a driver trait global lifetime and avoids the
+need for ForLt for bus device private data, making the bus implementations much
+simpler. ForLt is only needed for auxiliary registration data, where the
+lifetime is not introduced by a trait callback but must be threaded through
+Registration.
+
+With HRT, driver structs carry a lifetime parameter tied to the device binding
+scope -- the interval of a bus device being bound to a driver. Device resources
+like pci::Bar<'bound> and IoMem<'bound> are handed out with this lifetime, so
+the compiler enforces at build time that they do not escape the binding scope.
+
+Before:
+
+	struct MyDriver {
+	    pdev: ARef<pci::Device>,
+	    bar: Devres<pci::Bar<BAR_SIZE>>,
+	}
+
+	let io = self.bar.access(dev)?;
+	io.read32(OFFSET);
+
+After:
+
+	struct MyDriver<'bound> {
+	    pdev: &'bound pci::Device,
+	    bar: pci::Bar<'bound, BAR_SIZE>,
+	}
+
+	self.bar.read32(OFFSET);
+
+Lifetime-parameterized device resources can be put into a Devres at any point
+via Bar::into_devres() / IoMem::into_devres(), providing the exact same
+semantics as before. This is useful for resources shared across subsystem
+boundaries where revocation is needed.
+
+This also synergizes with the upcoming self-referential initialization support
+in pin-init, which allows one field of the driver struct to borrow another
+during initialization without unsafe code.
+
+The same pattern is applied to auxiliary device registration data as a first
+example beyond bus device private data. Registration<F: ForLt> can hold
+lifetime-parameterized data tied to the parent driver's binding scope. Since the
+auxiliary bus guarantees that the parent remains bound while the auxiliary
+device is registered, the registration data can safely borrow the parent's
+device resources.
+
+More generally, binding resource lifetimes to a registration scope applies to
+every registration that is scoped to a driver binding -- auxiliary devices,
+class devices, IRQ handlers, workqueues.
+
+A follow-up series extends this to class device registrations, starting with
+DRM, so that class device callbacks (IOCTLs, etc.) can safely access device
+resources through the separate registration data bound to the registration's
+lifetime without Devres indirection.
+
+Thanks to Gary for coming up with the ForLt implementation; thanks to Alice for
+the early discussions around lifetime-parameterized private data that helped
+shape the direction of this work.
+
+Changes in v5:
+  - Fix Bar name parameter to &'static CStr
+  - ForLt: handle macro_rules! invocations in covariance/WF checks by
+    conservatively assuming they may contain lifetimes; fix typos in commit
+    message and doc comments
+  - Update stale SAFETY comments from T::Data to T::Data<'_> in bus
+    driver callbacks
+  - Fix USB commit message: unbind() -> disconnect()
+  - Clarify Bar commit message on why Devres is no longer needed
+  - Drop REF patches (nova-core, tyr); will be revisited and sent separately to
+    be routed through drm-rust
+
+Changes in v4:
+  - Use 'bound only for lifetimes that represent the full duration of a device
+    being bound to a driver
+  - Make Core and CoreInternal lifetime-parameterized
+  - Split auxiliary::Registration constructor into unsafe fn new_with_lt
+    (borrowed data) and safe fn new ('static data) to close mem::forget()
+    soundness hole
+  - Use TypeId::of::<F>() instead of TypeId::of::<F::Of<'static>>() in auxiliary
+    registration_data()
+  - Handle Type::Macro in ForLt! covariance and WF checks; proc macros cannot
+    expand macro_rules invocations, so use WithLt trait projection for lifetime
+    substitution
+  - Fix missing Send bound in type Data: Send
+
+Changes in v3:
+  - Rework all bus "make Driver trait lifetime-parameterized" patches to use a
+    GAT (type Data<'bound>); in the context of adding a 'bound lifetime, this
+    avoids a driver trait global lifetime and avoids ForLt for bus device
+    private data making the bus implementations much simpler
+
+Changes in v2:
+  - Add 'a bound to ForLt::Of<'a> and WithLt::Of, making the lifetime bound
+    inherent to the trait; remove all F::Of<'static>: 'static where clauses
+  - Drop "rust: devres: add ForLt support to Devres"; Devres itself stays
+    unchanged -- ForLt-aware access is introduced later through DevresLt in a
+    separate series
+  - Use 'bound instead of 'a; add patches to consistently use 'bound for
+    pre-existing 'a
+
+Danilo Krummrich (21):
+  rust: pci: use 'static lifetime for PCI BAR resource names
+  rust: driver: decouple driver private data from driver type
+  rust: driver core: drop drvdata before devres release
+  rust: pci: implement Sync for Device<Bound>
+  rust: platform: implement Sync for Device<Bound>
+  rust: auxiliary: implement Sync for Device<Bound>
+  rust: usb: implement Sync for Device<Bound>
+  rust: device: implement Sync for Device<Bound>
+  rust: device: make Core and CoreInternal lifetime-parameterized
+  rust: pci: make Driver trait lifetime-parameterized
+  rust: platform: make Driver trait lifetime-parameterized
+  rust: auxiliary: make Driver trait lifetime-parameterized
+  rust: usb: make Driver trait lifetime-parameterized
+  rust: i2c: make Driver trait lifetime-parameterized
+  rust: driver: update module documentation for GAT-based Data type
+  rust: pci: make Bar lifetime-parameterized
+  rust: io: make IoMem and ExclusiveIoMem lifetime-parameterized
+  samples: rust: rust_driver_pci: use HRT lifetime for Bar
+  gpu: nova-core: separate driver type from driver data
+  rust: auxiliary: generalize Registration over ForLt
+  samples: rust: rust_driver_auxiliary: showcase lifetime-bound
+    registration data
+
+Gary Guo (3):
+  rust: alloc: remove `'static` bound on `ForeignOwnable`
+  rust: driver: move 'static bounds to constructor
+  rust: types: add `ForLt` trait for higher-ranked lifetime support
+
+ drivers/base/dd.c                     |   2 +-
+ drivers/cpufreq/rcpufreq_dt.rs        |   9 +-
+ drivers/gpu/drm/nova/driver.rs        |   6 +-
+ drivers/gpu/drm/tyr/driver.rs         |  13 +-
+ drivers/gpu/nova-core/driver.rs       |  30 ++--
+ drivers/gpu/nova-core/gpu.rs          |   2 +-
+ drivers/gpu/nova-core/nova_core.rs    |   2 +-
+ drivers/pwm/pwm_th1520.rs             |  13 +-
+ include/linux/device/driver.h         |   4 +-
+ rust/Makefile                         |   1 +
+ rust/kernel/alloc/kbox.rs             |  24 ++-
+ rust/kernel/auxiliary.rs              | 142 ++++++++++-----
+ rust/kernel/cpufreq.rs                |   9 +-
+ rust/kernel/device.rs                 |  61 +++++--
+ rust/kernel/devres.rs                 |   2 +-
+ rust/kernel/dma.rs                    |   2 +-
+ rust/kernel/driver.rs                 |  41 +++--
+ rust/kernel/i2c.rs                    |  61 ++++---
+ rust/kernel/io/mem.rs                 | 121 +++++++------
+ rust/kernel/pci.rs                    |  51 +++---
+ rust/kernel/pci/id.rs                 |   2 +-
+ rust/kernel/pci/io.rs                 |  54 +++---
+ rust/kernel/platform.rs               |  52 +++---
+ rust/kernel/types.rs                  |  12 +-
+ rust/kernel/types/for_lt.rs           | 117 ++++++++++++
+ rust/kernel/usb.rs                    |  57 +++---
+ rust/macros/for_lt.rs                 | 248 ++++++++++++++++++++++++++
+ rust/macros/lib.rs                    |  12 ++
+ samples/rust/rust_debugfs.rs          |  11 +-
+ samples/rust/rust_dma.rs              |   6 +-
+ samples/rust/rust_driver_auxiliary.rs |  79 +++++---
+ samples/rust/rust_driver_i2c.rs       |  13 +-
+ samples/rust/rust_driver_pci.rs       |  90 +++++-----
+ samples/rust/rust_driver_platform.rs  |   9 +-
+ samples/rust/rust_driver_usb.rs       |  15 +-
+ samples/rust/rust_i2c_client.rs       |  14 +-
+ samples/rust/rust_soc.rs              |   9 +-
+ 37 files changed, 998 insertions(+), 398 deletions(-)
+ create mode 100644 rust/kernel/types/for_lt.rs
+ create mode 100644 rust/macros/for_lt.rs
+
+
+base-commit: 95ade775c4ab9b9b3d7cfa2d45283e93fbfa4e7a
 -- 
-Thanks,
-Petr
+2.54.0
+
