@@ -1,67 +1,68 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 892113F54C8
-	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 16:24:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BD673F7A82
+	for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 17:10:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779726255; cv=none; b=NNM4Gd47npovsL2cAXDjcHB1HmEtTFI0PdU5qDwAtAyF4yIfFONLhB8qbuWNJDm8RdtOG/6goW6NNNwPND2vNdXK9z6bZVODyPdTSspvMfYXyBMH4cK/sw3Sq91jpCHgCt2DU+n/+fP4GQPaOGm0jM2kVVYVduh+prKJVOdheSI=
+	t=1779729012; cv=none; b=kvuBDvQ5kyJ/UBpMUIfksprwiLeACDOm/3Al/HV3bZjnMuGWGWvP2quBIThanE4cbLDCwoXRqDyZgLQv24Cpaeud2zgC5UwBdkabSKvhgbB+R0EubheA4oLLxU+MdAPfkK1knYYffeW0f3ujNs/Mfm4RixhkKmeowKaDTjTFy3s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779726255; c=relaxed/simple;
-	bh=Ix5V9VVReiSoQo6AB3QETxLfhu0cCyAdGQjvJGHnDxc=;
+	s=arc-20240116; t=1779729012; c=relaxed/simple;
+	bh=PTNg3RyBjtWL4NnI8O0q7hXUoY8uPF4RaVnZMbEInR0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Hc7Q3naZV+tHtxIKVG2WRUdeMfEDSrio+rt6nC22xNVkDciDI8B/nGeHsw9aPJ202I60zNFH7iNmwckNMTFlV7e6PQ60ueP3M0XTdmMD6xcHMqDBZNpZ1FJrvu221TY9w9YmeIT49aCHAaoKWTEOe898gtUj+0topwFYTBDMqQw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=VdZk1QbN; arc=none smtp.client-ip=209.85.221.47
+	 In-Reply-To:Content-Type; b=Pt5Vimhru+oCr2PqElf24QZt053RiHn/tAESZYVQNh/elPA8DdnPQvAYeYRLzjcIZ7MXCucuL5UyoyJOObhlHYowmlTCoh4BVIjhY3+3zVVA3AmJCCFtnjl/adT9lX/efI18xmw79j3fFVPtWLB4J/9QrpsBzCdk1a0tBg5fwAk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=GQr1PYm1; arc=none smtp.client-ip=209.85.128.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="VdZk1QbN"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-44b330c5cc6so7448763f8f.1
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 09:24:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="GQr1PYm1"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-490388fd0dbso41525965e9.0
+        for <linux-pm@vger.kernel.org>; Mon, 25 May 2026 10:10:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1779726251; x=1780331051; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1779729007; x=1780333807; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=WThGrJlj0+d9TTzzXLAp8aZigkvM5HszOOE/MfwSIgg=;
-        b=VdZk1QbNytpFbuiKsbE3wW+kpdUiwO8Oy0pgmIL3aXlcs3cEHrAyW3jehgTlLTi83n
-         wNh17lNTxLLkgF2MNP6aUmiJt0rCd+jWtZnbWylWlzXlbassqIWZOQCLLOffSEkhSbua
-         +xQlxnJ9qX8lxTNaTtv21kd2cKIugw5nnDeVK3GmUj9N/fqumL9jVllnCfVPprFZDh/q
-         LoGx1NaFUjwhYiOVtB2Bo+Ks5HuJmMsqFtXlcMGYkbS3CeNG7DthkcDMBrct+OJR510y
-         SClO2VskO/kDqNdoapbvTguZijtUGevTSuelHBqTta1LS7zaFq3R8yRear0hL0uSsY1S
-         vaYg==
+        bh=izugkSqOYsBmSyQ8jfD9m1SVj73YG14U78pRBc6Lai0=;
+        b=GQr1PYm1QRIrfgBC/EILAtR9O17tFRT933ldDJCayUjXIyRMiDnumrFP9i4iPLQuP/
+         bWYj6u/50hd5AlTl8fnNFXZxscNWQsfvT08lWT2g7USA76CFTeDeB9CAGnGBLt+Jk5Kd
+         lX3x9dDR55Y2wg8pVl8cBGmVyZoFj8APvHLhilXEkRN6z7J5HsqQkRDuiJpcpmZ76bBE
+         nunnNO0efpqrh3Mg+srvekhGI13bTspzjyxHMZeoT7BQvRd6lyijtBc2rfmKjAaENr6C
+         i+8SY1MRgNki/ClY1lWgGG4FXSsH+ZhGYZ0VK7FSfIVhFbKqAWGdmu0VyhcviooSpQ7X
+         9jYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779726251; x=1780331051;
+        d=1e100.net; s=20251104; t=1779729007; x=1780333807;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=WThGrJlj0+d9TTzzXLAp8aZigkvM5HszOOE/MfwSIgg=;
-        b=SzamnKIL6lOvMez6qy84vsxMy4Mh7B3bZWRWSlgWPjHmdLxT3ITeHee9yuTFEQ8CCx
-         Nh0y6mLpW6Nkz/lS2eOpg9LF4ICDFeLgtyhKLA3aqJH0IgHRtQBQfChSeclURywARmxt
-         h4Mt6aMHGV0cyrf+DR1EQB8l+1izle2Ea90Avlv07bmfpFL3xr+4+iONIYgLwet8pYxI
-         vhhJ0m29gcxlBJkA6uwHZviihEVr48nprwpv4bTtZvTEOWuJj/uik0ONIdB3x66B2p1w
-         ibI1o1j5He2t7ADl6qeqn5H7/ffPfjDFPvpTt46MyZahB7v5fZjETxoLUMg/t92dUttj
-         AwUQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+bpwv1L8B0abNqaJeuwEpncCjbbZVD0bhbqA90N+8CXcaZz0JP5EzxI+nrckdGbrH+hoNvuyoiOA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzdKj+dQquxdL7nSCbhx5coV8q8xJ1bddzTWpDcnYPxod1fP0gF
-	oSw5h4TUUsnDXURPk7U5XhxUYpD8EWUTA4AzpzO4dfvP7nARmirNFVirrdSwxKK737c=
-X-Gm-Gg: Acq92OFspcbYhFPCMScIDraxQXBP1llpucVKpSkr7tnZKEyXguy4Ogy16xTMLbEr0ut
-	E4H4R35O9A6y0ClRFyUHfyRJdijvePQxRt/TA0uecQadZHUFXqHsVG9ikcQbMCRbDtFHU6pZbxj
-	uayx+imQkegcLX78IQe1B0IY4f5QU7hmPVWTbbXf6EP0GOoAcAegIHuwzymKa6xxn3q1OD+T09o
-	FJh7alCZ3af+UIrk0SwZ9tM8KNRda+a+2hmwPzhEAhBmMCWJicyvqUhntTD2L0VfGKl/HVgy11+
-	6YELhnAVdKsSfaaVZ4Uw0vwqVa28WNCZciC4bMU3KLRmFDBOydQepESupp55/oxYXBnrXmIOy8l
-	V10jbG3qmBm0n/o2p7zZ2MQZY2opwbtMn1HjcfBNTwdwUw3x6jHnpDTKnPl7ogw2BentsSW064T
-	gFkSbV9douabuy3/u84H5fCDDb3hEYjSqCTz/qWFKj2gJcsfEgKYUY3U8tdXqhDkb+UAImmj1TU
-	nia8om1GBClQjGYophku4+zYy3yXpGcg/1qTHso4dh2l5O6HuAQzd1grTleA404ocIJdw==
-X-Received: by 2002:a05:6000:26cf:b0:45e:b215:12e9 with SMTP id ffacd0b85a97d-45eb368903emr24724531f8f.6.1779726250728;
-        Mon, 25 May 2026 09:24:10 -0700 (PDT)
+        bh=izugkSqOYsBmSyQ8jfD9m1SVj73YG14U78pRBc6Lai0=;
+        b=MsJxtJCQ67hVKvOpuaPmxa8YwuuzoCGCnExIskSesXlrlo0imE+LSAU09eJHYThX1Y
+         p9I1hygGsgmL5lqkysGhRKR1i8/vxY77xvAUIv95z/U7aUm1ENi9QB/uXCxPNQsc1kzB
+         p20FQP7i2H9J5nnfmqvarvFatK402YR7xU9W4EcVvy0XeEJUNo/IhJipx/+K6+rAP7bv
+         0+v0U/baDhxIXMsHrxSRgvRbaCGIQhKDB5uLMm6MReF8sZnFopLUSmDQlG5goYDlZq5P
+         y4bQawERyvV3KhJPPftb019zLoNlD1AuuN0X5K2g76Jg2Q0qL6IFWHyo7S8WX/amUtU6
+         MZ/w==
+X-Forwarded-Encrypted: i=1; AFNElJ+PjNNb2dVwkgFgU3spSQJdfC5WVeSEenvbptjVNUkWiF4ET+JHFXjnbXNRleaxOBBUnIpc1Ezb0w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxbcM5CPeLPAaqPhwAGRbBjaJ9d4fnywzCjtRL7u7IwW9qLJB30
+	PtJ9Yj0tMJ6+sHbG3C2mM7aksO9n2hmhZy0KW3iLK4iEEFGNG5C30HqJavkD5HTgKtk=
+X-Gm-Gg: Acq92OG7eL7VZDLaLLhpIs1gZdN+sOGtg87FbqZwlPwEHSM/yYDCxXpUqXwczAegpCV
+	SDSXh+H5+lbsyxdnidRGGOzvTi76aBynpRdcUhUEXgAO7JSzfJhSLaFcak03IjXi+V23GCTbC3m
+	745qadnKBXfmjIszg/Hq4Lr/tb6wfMM7aNKxxGiey+0GLus9YBg7jmsJ/w+VcfWZOSZhNIhEKt7
+	2QcjfRpxdHIew7Yx5b4j1WW62zgZbl631nF5PvrFi1WCSK7vEr1W7WtvpsgqOfHu13GQCb/6jEA
+	jXcyLguXVMFcfiYtRATPdvf6ZfYUJjRDiYF8Uqu+vvr3EZwTPcjqRxyKgf4v+IisjkFZFPCIpnO
+	je9Y8pSusLxxdA5TTHjD8imHMQ91WlJJLMVsskpNO2mKhLmdGakTJPxY37J2IkhgnBXrCshH4qO
+	XQQ20iAzETDCuC8qKbmwSRQtODb9gLHkqhKFpmnug2nwH80aRFSVgX4uQ64zeU3qeAyb6bM2oYs
+	cAqHJcEoZ5x7hNz+4VbD11uNeiwL0F2PpUkPS0zYnTXCNUD8MSJUg8IOuy3He3Y9OBxdnTwWziT
+	74n+JR7SJz4Ilw4=
+X-Received: by 2002:a05:600c:35cf:b0:490:44eb:c1e5 with SMTP id 5b1f17b1804b1-49044ebc257mr277307095e9.31.1779729006482;
+        Mon, 25 May 2026 10:10:06 -0700 (PDT)
 Received: from ?IPV6:2a00:1028:838d:271e:8e3b:4aff:fe4c:a100? (dynamic-2a00-1028-838d-271e-8e3b-4aff-fe4c-a100.ipv6.o2.cz. [2a00:1028:838d:271e:8e3b:4aff:fe4c:a100])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45eb6d47b82sm28202483f8f.19.2026.05.25.09.24.07
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4904526c926sm456877405e9.1.2026.05.25.10.10.03
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 May 2026 09:24:10 -0700 (PDT)
-Message-ID: <4e54ae4a-4f7b-451d-9b37-97f30b8fefba@suse.com>
-Date: Mon, 25 May 2026 18:24:07 +0200
+        Mon, 25 May 2026 10:10:06 -0700 (PDT)
+Message-ID: <a192eb5c-5d16-483d-862e-d937fa1b8269@suse.com>
+Date: Mon, 25 May 2026 19:10:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -69,8 +70,8 @@ List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 07/11] moduleparam: Route DEFINE_KERNEL_PARAM_OPS get
- pointer via _Generic
+Subject: Re: [PATCH 08/11] params: Convert generic kernel_param_ops .get
+ helpers to seq_buf
 To: Kees Cook <kees@kernel.org>
 Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
  <pengpeng@iscas.ac.cn>, Richard Weinberger <richard@nod.at>,
@@ -132,99 +133,130 @@ Cc: Luis Chamberlain <mcgrof@kernel.org>, Pengpeng Hou
  linux-arch@vger.kernel.org, netdev@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, linux-hardening@vger.kernel.org
 References: <20260521133315.work.845-kees@kernel.org>
- <20260521133326.2465264-7-kees@kernel.org>
+ <20260521133326.2465264-8-kees@kernel.org>
 Content-Language: en-US
 From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <20260521133326.2465264-7-kees@kernel.org>
+In-Reply-To: <20260521133326.2465264-8-kees@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
 On 5/21/26 3:33 PM, Kees Cook wrote:
-> Make the DEFINE_KERNEL_PARAM_OPS family route their _get argument to
-> either .get (struct seq_buf *) or .get_str (char *) at compile time
-> based on the pointer's actual function signature. Two helper macros
-> do the routing:
+> Convert the generic struct kernel_param_ops .get helpers in
+> kernel/params.c directly to the seq_buf signature, drop their legacy
+> "char *" form, and refresh prototypes in <linux/moduleparam.h>:
 > 
->   _KERNEL_PARAM_OPS_GET     - return the pointer if it has the seq_buf
->                               signature, otherwise NULL of that type
->   _KERNEL_PARAM_OPS_GET_STR - mirror image for the char * signature
+>   param_get_byte/short/ushort/int/uint/long/ulong/ullong/hexint
+>   param_get_charp/bool/invbool/string
+>   param_array_get
 > 
-> Both use _Generic; only the two valid function-pointer types are
-> listed, so any third-party type is a compile error rather than
-> silently falling through.
+> The STANDARD_PARAM_DEF() macro expands to a seq_buf body for every
+> numeric helper. param_array_get() now writes element output directly
+> into the parent seq_buf when the element ops provide .get; it only
+> allocates the per-call PAGE_SIZE bounce buffer when the element ops
+> still use the legacy .get_str path. The common "rewrite the prior
+> element's trailing newline as a comma" step lives outside both
+> branches so the two paths share it.
 > 
-> Now a callback whose body has been migrated from char * to struct
-> seq_buf * needs no change at its kernel_param_ops initialization site,
-> because the macro picks up the new type automatically and assigns to
-> the correct field.
+> The non-core changes in this commit (arch/x86/kvm, mm/kfence,
+> drivers/dma/dmatest, security/apparmor) are the small set of callers that
+> directly invoke one of the converted generic helpers from their own .get
+> callback (e.g. an apparmor wrapper that adds a capability check and then
+> delegates to param_get_bool()). Because the helpers' signature changes
+> here, these wrappers must move in lockstep. Each of them is updated
+> to take "struct seq_buf *" and pass it through; param_get_debug() in
+> apparmor also pulls aa_print_debug_params() (and its val_mask_to_str()
+> helper, in security/apparmor/lib.c) over to seq_buf, since that is the
+> only consumer. No other behavioural change is intended.
+> 
+> Custom .get callbacks that do not delegate to a generic helper (and
+> therefore still match the .get_str signature) are routed automatically
+> to the .get_str field by the DEFINE_KERNEL_PARAM_OPS _Generic dispatcher
+> and are deliberately left alone here, to be changed separately within
+> their respective subsystems.
 > 
 > Signed-off-by: Kees Cook <kees@kernel.org>
 > ---
->  include/linux/moduleparam.h | 33 ++++++++++++++++++++++++++-------
->  1 file changed, 26 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-> index c52120f6ac28..795bc7c654ef 100644
-> --- a/include/linux/moduleparam.h
-> +++ b/include/linux/moduleparam.h
-> @@ -85,15 +85,32 @@ struct kernel_param_ops {
->   *
->   *   static DEFINE_KERNEL_PARAM_OPS(my_ops, my_set, my_get);
->   *
-> - * Routing the @_set and @_get function pointers through the macro
-> - * (rather than naming the struct fields at every call site) lets the
-> - * field layout change in one place when callbacks are migrated to a
-> - * new signature.
-> + * @_get may be either of:
-> + *   int (*)(struct seq_buf *, const struct kernel_param *) (seq_buf)
-> + *   int (*)(char *, const struct kernel_param *)           (legacy)
-> + *
-> + * The macro uses _Generic to route the function pointer to the
-> + * matching field (.get or .get_str) at compile time, leaving the
-> + * other field NULL. Each helper matches the wrong prototype signature
-> + * and returns NULL, falling through to the default branch otherwise;
-> + * if @_get has neither expected signature the assignment to the
-> + * fields gets a normal compile-time type-mismatch error.
->   */
-> +#define _KERNEL_PARAM_OPS_GET(_get)					\
-> +	_Generic((_get),						\
-> +	    int (*)(char *, const struct kernel_param *): NULL,		\
-> +	    default: (_get))
+> [...]
+> @@ -453,36 +457,46 @@ static int param_array_set(const char *val, const struct kernel_param *kp)
+>  			   arr->num ?: &temp_num);
+>  }
+>  
+> -static int param_array_get(char *buffer, const struct kernel_param *kp)
+> +static int param_array_get(struct seq_buf *s, const struct kernel_param *kp)
+>  {
+> -	int i, off, ret;
+> -	char *elem_buf;
+>  	const struct kparam_array *arr = kp->arr;
+>  	struct kernel_param p = *kp;
+> +	char *elem_buf = NULL;
+> +	int i, ret = 0;
+>  
+> -	elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> -	if (!elem_buf)
+> -		return -ENOMEM;
+> +	for (i = 0; i < (arr->num ? *arr->num : arr->max); i++) {
+> +		size_t before = s->len;
+>  
+> -	for (i = off = 0; i < (arr->num ? *arr->num : arr->max); i++) {
+>  		p.arg = arr->elem + arr->elemsize * i;
+>  		check_kparam_locked(p.mod);
+> -		ret = arr->ops->get_str(elem_buf, &p);
+> -		if (ret < 0)
+> -			goto out;
+> -		ret = min(ret, (int)(PAGE_SIZE - 1 - off));
+> -		if (!ret)
 > +
-> +#define _KERNEL_PARAM_OPS_GET_STR(_get)					\
-> +	_Generic((_get),						\
-> +	    int (*)(struct seq_buf *, const struct kernel_param *): NULL, \
-> +	    default: (_get))
+> +		if (arr->ops->get) {
+> +			ret = arr->ops->get(s, &p);
+> +			if (ret < 0)
+> +				goto out;
+> +		} else {
+> +			if (!elem_buf) {
+> +				elem_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> +				if (!elem_buf) {
+> +					ret = -ENOMEM;
+> +					goto out;
+> +				}
+> +			}
+> +			ret = arr->ops->get_str(elem_buf, &p);
+> +			if (ret < 0)
+> +				goto out;
+> +			seq_buf_putmem(s, elem_buf, ret);
+> +		}
 > +
->  #define DEFINE_KERNEL_PARAM_OPS(_name, _set, _get)			\
->  	const struct kernel_param_ops _name = {				\
->  		.set = (_set),						\
-> -		.get_str = (_get),					\
-> +		.get = _KERNEL_PARAM_OPS_GET(_get),			\
-> +		.get_str = _KERNEL_PARAM_OPS_GET_STR(_get),		\
+> +		/* Nothing got written (e.g. overflow) — stop. */
+> +		if (s->len == before)
+>  			break;
+> +
+>  		/* Replace the previous element's trailing newline with a comma. */
+> -		if (i)
+> -			buffer[off - 1] = ',';
+> -		memcpy(buffer + off, elem_buf, ret);
+> -		off += ret;
+> -		if (off == PAGE_SIZE - 1)
+> -			break;
+> +		if (i && s->buffer[before - 1] == '\n')
+> +			s->buffer[before - 1] = ',';
 >  	}
->  
->  /* As DEFINE_KERNEL_PARAM_OPS, with KERNEL_PARAM_OPS_FL_NOARG set. */
-> @@ -101,14 +118,16 @@ struct kernel_param_ops {
->  	const struct kernel_param_ops _name = {				\
->  		.flags = KERNEL_PARAM_OPS_FL_NOARG,			\
->  		.set = (_set),						\
-> -		.get_str = (_get),					\
-> +		.get = _KERNEL_PARAM_OPS_GET(_get),			\
-> +		.get_str = _KERNEL_PARAM_OPS_GET_STR(_get),		\
->  	}
->  
->  /* As DEFINE_KERNEL_PARAM_OPS, with an additional .free callback. */
->  #define DEFINE_KERNEL_PARAM_OPS_FREE(_name, _set, _get, _free)		\
->  	const struct kernel_param_ops _name = {				\
->  		.set = (_set),						\
-> -		.get_str = (_get),					\
-> +		.get = _KERNEL_PARAM_OPS_GET(_get),			\
-> +		.get_str = _KERNEL_PARAM_OPS_GET_STR(_get),		\
->  		.free = (_free),					\
->  	}
->  
+> -	buffer[off] = '\0';
+> -	ret = off;
+> +	ret = 0;
+>  out:
+>  	kfree(elem_buf);
+>  	return ret;
 
-Reviewed-by: Petr Pavlu <petr.pavlu@suse.com>
+Since you're almost completely rewriting the logic in param_array_get(),
+I suggest tightening it up a bit. The function could warn or return an
+error when a kernel_param_ops::get/get_str() call adds a string that
+doesn't terminate with '\n', specifically, when the call adds either
+a zero-length string or a non-zero-length string that ends with
+a different character (unless an overflow occurred).
 
--- Petr
+The updated code silently stops the loop when a get call returns
+a zero-length string. Similarly, handling of a string not terminated by
+'\n' is halfway there because of the added check
+"s->buffer[before - 1] == '\n'".
+
+-- 
+Thanks,
+Petr
