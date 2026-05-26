@@ -1,125 +1,122 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E67388E5A
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A19783DEFE7
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779794088; cv=none; b=Ne0FbXcxz0AeEw7qYPQDzyA1V/pv4ENd2BiOh4lbK60O4VXIGKuUbLM0QdjZT/eYcLcBgITUGkF+sPpSPHmm9aIDFzOtg1UX1V9PwCCV9zL9jyEUZ7dQ+N5WDWwhhUTqB8o0z3j0/tHpd4eY4OPT8INBg/d4kyqgmNxzLRIdT7Q=
+	t=1779794091; cv=none; b=QFGRvomcSINecqyATgOP1EeDhYV1V66XRgRzUYhCHuvz7tT1Ok0qoGReMonqIwTGTWtnJMFChxs1EZ8PJN6X71ZW+i2tga2xRbiEd6QumgEbCaXMJmic9DkeFxmgnYRiegrm/Mf//gycs+p8SOcpYBAootZPvc0Da1K5WMoI4p0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779794088; c=relaxed/simple;
-	bh=q9w7+K4dw3tUgZV9s0a7MpYsMEq6WClBHHgbFLPKpEA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rBhuYamj7GvuZz0ocHU0zeQXfR3f96khag5VqxZA2wz1pYMwk0JfjsJE9C6KKoz1B6xi2VmbBOr/f6BZ8PPTB7IFQUvVI8XazJORi32d9/YgSsZWmVgDEZ1Ldwxt820flR9KoIRScosOrf20Iahu5D28TTQJfpToX7/a7Ede3VE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m+35ZIbP; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1779794091; c=relaxed/simple;
+	bh=8x7v1Mv6tuIs9sjMbBqRcyLtfQG/Nl3LqnbWxIpVYko=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=baY8tIJ/CqPkVWDJS9bu4UZPlMOCK914pQ1AzyMeOzSDHIj3Kt1RTNYQUoR851CSoPXgQZE5SUpGRoPxuK8YsPZ9wPQTVdE6RRFGsB34X2vSuf4dQxA53ikfjFMjZzQpUyLorTonH4wbsiUoT/N+XnPdWJBOXOzqc6kCJ1CBM20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QHs42++e; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m+35ZIbP"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AE431F00A3A
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:47 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QHs42++e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 529361F00A3F
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:14:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779794087;
-	bh=Jl4A5BploI0aLzf+f1VH2H1uwnUGnoJyUMtMQYNxCVw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=m+35ZIbPw68o69pVdadGClRCk00jjm8HZHM0GRdr31xkz8BxbPJzPxfZElOVwzsVV
-	 pYGanaKB81RFK8R5Fmuu+qIyDmQ6hmsYOffk3g8rHBh4b3RMAggfFqpVrXYFwJQIa+
-	 UgZdDknxScOHgMky8i2s2cpujxI470xfMxcAWkMYVO4RS+ExmrWTRPPXTGvHD15qk0
-	 Fcbw19L6yLJyBM/xSaszI5L+a+tjP11nG0/vYPQpDuW3vgDAxVDplXR9l07J7/GrQo
-	 VHClYlfNVfJ1ExJaywLQ4JIg8YL5Fq64O+bdAhPpkuty5CnOgzUd4xhGkjjjrehsbg
-	 tAGOjlo4vGfTw==
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a746f9c092so14548261e87.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 04:14:47 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9cpQ1E1zB/naY6fd2U8aS8d+G8+nbfkBWuAKo7Wb6qeCmNXXgMGG4KvaNCwzPZkP78tSKBCZdkRw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxGGxauAj+OYx0n0mgrAawRfn5g4T+XYaBlcQwn5jqJi3XiVGVC
-	c+xThGPEIg7XA6tNWyilbscHvElk/6Zqmehf3LwJpEpnSng/WTIzjpbySdJOfWIJ2f6Mmf79e+n
-	nboHX1+fkg0HMVKjmD42hpoqukSdKyv0=
-X-Received: by 2002:a05:6512:704:b0:5a7:4912:1a50 with SMTP id
- 2adb3069b0e04-5aa2ba8c2a7mr4167836e87.20.1779794085637; Tue, 26 May 2026
- 04:14:45 -0700 (PDT)
+	s=k20260515; t=1779794090;
+	bh=E2kOdFDhgWIu+MPmwrmzf4P6ZSq1/YuSms4C2k+gQRg=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc;
+	b=QHs42++eN9Hq+gywnoG2SxUijkwj0RfbQ1EibLSsZqGBmVDIcqgmwzk1TEy0+XRF7
+	 xlZFi4LTRfvpJivbojpXE3PWke7paRh5MAuZKje8TLf6GzRugPZtKfCJzgrZRdWp5B
+	 eixGeKt7kLvPREF3XDCZp2CMWtKpJkJ6gg9SSYslAV/auP5yxoAnEV7bDl//qQTd17
+	 Q2NBvTu0yAdDOx1qJkYUO/DOFqB1AnwEFlbW0ChR7ac41GkgjGP0jOKj9OTuZohWyo
+	 Ad89S60OeuM0TUiRUoRy+ptY8zMvng8MrlQd/swUULu/8vy+XzJu80d+NsI/gtM+LW
+	 vJ6UTxIQUMsOw==
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-38e7d983f79so96439531fa.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 04:14:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ/3V0qFHEFiz5vfksq4bEOgh9AX5kayDzgYekbRdIdc8Ykr0O0f/9/BFHZz0wxpjRGkL5pgKP5DJQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxKEsscB6KdHNpjTAL1M7EPLxaWHxVD1b7WuEMqdfInUPLaiJ4W
+	vYPKUIdhzNjNlahnmXrVr3ZV6sb7LEhArLuCS0ldpkam7Bp2Llos8J929Ndh1QysFmwb7XmQUzt
+	HwbZX4+dXjhJJcXH5tz1yAqBaK1XcKHdRBw3Z9UIR8g==
+X-Received: by 2002:a05:651c:1586:b0:392:454a:47a with SMTP id
+ 38308e7fff4ca-395d8dc6495mr56382991fa.28.1779794089011; Tue, 26 May 2026
+ 04:14:49 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 26 May 2026 07:14:47 -0400
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 26 May 2026 07:14:47 -0400
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <CAPVz0n1G5Yu2X5f+=q90RAbnsWi9psMq-L5tWDMM4JRC4R_mPg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260519055920.13180-1-jszhang@kernel.org>
-In-Reply-To: <20260519055920.13180-1-jszhang@kernel.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 26 May 2026 13:14:31 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0jOfVmjwpTFw3UKALiGrPQRbD9pBvnuga+TKt4Hm2OuCg@mail.gmail.com>
-X-Gm-Features: AVHnY4I3p3JtLqx6qWtPGsdALHvbUCPKp6zNoy1khUWLvVCRZ3XGvVcV8QjRQtw
-Message-ID: <CAJZ5v0jOfVmjwpTFw3UKALiGrPQRbD9pBvnuga+TKt4Hm2OuCg@mail.gmail.com>
-Subject: Re: [PATCH] PM: Use LIST_HEAD() to initialize on stack list head
-To: Jisheng Zhang <jszhang@kernel.org>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>, linux-pm@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-kernel@vger.kernel.org
+References: <20260523085102.51000-1-clamor95@gmail.com> <20260523085102.51000-2-clamor95@gmail.com>
+ <CAMRc=MfXVwD2u0e115RapnyLzf5JRjWMs=2PSNzMnm0GDd7aaQ@mail.gmail.com> <CAPVz0n1G5Yu2X5f+=q90RAbnsWi9psMq-L5tWDMM4JRC4R_mPg@mail.gmail.com>
+Date: Tue, 26 May 2026 07:14:47 -0400
+X-Gmail-Original-Message-ID: <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
+X-Gm-Features: AVHnY4LR9l-b2s5D4U7lp3jFcFTBHEkrzcFP4aWpe-PQvVMcMIisw4oZPWQMLPY
+Message-ID: <CAMRc=Me4G-YqKoFan3epofXk2OWzxY1iPE1mP=uwEjs9wgA6Cw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: soc: tegra: Document Nvidia Tegra
+ modem pwrseq
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Thierry Reding <thierry.reding@kernel.org>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-pm@vger.kernel.org, Bartosz Golaszewski <brgl@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 19, 2026 at 8:18=E2=80=AFAM Jisheng Zhang <jszhang@kernel.org> =
-wrote:
+On Tue, 26 May 2026 12:03:59 +0200, Svyatoslav Ryhel <clamor95@gmail.com> s=
+aid:
+> =D0=B2=D1=82, 26 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 12=
+:51 Bartosz Golaszewski <brgl@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+>>
+>> On Sat, May 23, 2026 at 10:51=E2=80=AFAM Svyatoslav Ryhel <clamor95@gmai=
+l.com> wrote:
+>> >
+>> > Document the Tegra modem pwseq used by various devices based on the Nv=
+idia
+>> > Tegra SoC, describing its usage. The power sequence provides interacti=
+on
+>> > between the modem and SoC-specific interface configurations.
+>> >
+>> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+>> > ---
+>>
+>> ...
+>>
+>> > +
+>> > +examples:
+>> > +  - |
+>> > +    #include <dt-bindings/gpio/gpio.h>
+>> > +
+>> > +    pwrseq-modem {
+>> > +        compatible =3D "nvidia,tegra-modem-pwrseq";
+>> > +
+>> > +        enable-gpios =3D <&gpio 165 GPIO_ACTIVE_HIGH>;
+>> > +        power-supply =3D <&vdd_3v3_vbat>;
+>> > +
+>> > +        nvidia,usb-bus =3D <&usb2>;
+>> > +    };
+>> > --
+>> > 2.51.0
+>> >
+>>
+>> I assume there's no such component as the tegra modem *pwrseq*?
 >
-> Use LIST_HEAD to initialize on stack list head. No intentional
-> functional impact.
+> Hardware component, I assume no.
 >
-> Change generated with below coccinelle script:
+>> What is the relationship between this node and the "infineon,xmm6260"
+>> compatible node?
+>>
 >
-> @@
-> identifier name;
-> @@
-> - struct list_head name;
-> + LIST_HEAD(name);
-> ... when !=3D name
-> - INIT_LIST_HEAD(&name);
+> The xmm6260 has a phandle reference to it. Since there is consumer
+> matching logic in the pwrseq driver I am leaning towards removing this
+> node entirely. This patches is still in non-final stage and I would
+> like to hear any opinions on the way to improving it.
 >
-> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 
-I'd rather see two separate patches for these changes as they affect
-unrelated code.
+The node attached to the pwrseq provider device should represent a real
+hardware component. Are the enable-gpios and power-supply lines connected
+to the modem package? Is there an internal structure to it, like a PMIC to
+which these lines connect that controls the actual modem IC?
 
-Thanks!
-
-> ---
->  drivers/base/power/clock_ops.c | 4 +---
->  drivers/base/power/main.c      | 3 +--
->  2 files changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_op=
-s.c
-> index 59bb37e8244c..1f708e10e711 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -422,13 +422,11 @@ void pm_clk_destroy(struct device *dev)
->  {
->         struct pm_subsys_data *psd =3D dev_to_psd(dev);
->         struct pm_clock_entry *ce, *c;
-> -       struct list_head list;
-> +       LIST_HEAD(list);
->
->         if (!psd)
->                 return;
->
-> -       INIT_LIST_HEAD(&list);
-> -
->         pm_clk_list_lock(psd);
->
->         list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index e1b550664bab..d0c7b1d4101e 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1257,11 +1257,10 @@ static void device_complete(struct device *dev, p=
-m_message_t state)
->   */
->  void dpm_complete(pm_message_t state)
->  {
-> -       struct list_head list;
-> +       LIST_HEAD(list);
->
->         trace_suspend_resume(TPS("dpm_complete"), state.event, true);
->
-> -       INIT_LIST_HEAD(&list);
->         mutex_lock(&dpm_list_mtx);
->         while (!list_empty(&dpm_prepared_list)) {
->                 struct device *dev =3D to_device(dpm_prepared_list.prev);
-> --
+Bart
