@@ -1,38 +1,38 @@
-Received: from canpmsgout12.his.huawei.com (canpmsgout12.his.huawei.com [113.46.200.227])
+Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E9063FF1BB;
-	Tue, 26 May 2026 14:56:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.227
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 612483FFAC5;
+	Tue, 26 May 2026 14:56:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.222
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779807380; cv=none; b=rGaydaCogTB/fuQNsU+7qyMx09AatrWK/1ITy8iEhrDnILSOvas+tQzUwOuO05ITK4m/b9+G5AsmCbBn+hP+reYIpDrLRdBT4Xof8cvQXkLu8KLeiQiqr7wHvrv+NuSGsUQzzCLV+1WDCyS4MpyXwX5CdqtLo8UjlC8/jzB03Ko=
+	t=1779807382; cv=none; b=Fga7p+tY6Tjym3HKflSwlhb+2yw7uFHYTOTUcFwH+W2uIx9LyRtix5W0HIB0tH6r54uROKtPc7voUzeOutZMNZKq3H2A1p/pZAnyz/wTt+0rypFlMSALLyPUD39SDUSEDw1SCVrcb508FzDZjS+b7j5Dt7oltsTGQl8NgosDapA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779807380; c=relaxed/simple;
-	bh=VY2r86ynEzqqILXhMV+rXpgCQUiCYmwcVdujKDIV3bM=;
+	s=arc-20240116; t=1779807382; c=relaxed/simple;
+	bh=iWjJTsW6BuEeSJC1LGqlI912lSrBEV+g23DvGRdK2hk=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gNC/drUtgfD+v6pbJT6ojHkx9Ogx6Bzv/wqdgWQmAYFWR3q4D7bDZN7LcTfdyhWdoXGn+I/T+46e+VJZdErhBSgZ6ykUCIiqTXjlvKkzHYN1CFXoe/0GsvWsfz6ZWCktde7G1UGzLvMdmns8dg3C9LVSdTJHGBInpvzz2GJatAo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=0iMEW0ts; arc=none smtp.client-ip=113.46.200.227
+	 MIME-Version:Content-Type; b=WoqFvPRtmzpDjd4+N6WlZaEvqS9cS9ZwdXlHN7x91lgOr0K4uW27N5RVGfV1OFNhOrYUTYkPSE7ZyUpOrZbWkRSp33bTtExx/Nj7fsf5KI0BRPAdEebgYgQ1p5pJDJ2l3L44FZRUnPtiXsnbC86O+juxpRJ2gyssHYrqTMm3ZGU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=6IZrptZt; arc=none smtp.client-ip=113.46.200.222
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="0iMEW0ts"
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="6IZrptZt"
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=l+aFKJrjVwtzzo3eLUyF5+IW/uSU3+87cCQnsOJ4oeg=;
-	b=0iMEW0tsF/BBgk4ze5nZcHMmdemvVB1xjaYbneUnB2p3zX6RYNWiFoVmHYi0xEF5s2CCLn5Oa
-	A/qAQxOhoQKr4PXdSbSP16hYOVmOosHS57dE7hnJY/IV4AfhzMAuDqs4A7vCLbtKI+1pZ9V6gfL
-	dPaibFsUNvw+EGtOP7+W/Jg=
-Received: from mail.maildlp.com (unknown [172.19.163.214])
-	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4gPwbg0PqJznTVR;
-	Tue, 26 May 2026 22:48:15 +0800 (CST)
+	bh=SRAvpL5kg7zfVB87jHmBF+c3eWPsqtwvfUMg/m3KWqc=;
+	b=6IZrptZt5pccedulAnBT8WZ9BpyHxnDtRYuwsBIYpsE+R49/hVIqXtnwoIHkcra0wdM3302cd
+	TArJlb9VMRw0M09I5X1Ptta9isxW+2x2NHLRQMjUNumTS8/2z7/BgrG5HQgOGHeoowJftfugxM4
+	f1Mp3586pp6HqfZ8jmmJtRQ=
+Received: from mail.maildlp.com (unknown [172.19.163.200])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4gPwby4VlGzLlSS;
+	Tue, 26 May 2026 22:48:30 +0800 (CST)
 Received: from kwepemr500001.china.huawei.com (unknown [7.202.194.229])
-	by mail.maildlp.com (Postfix) with ESMTPS id 985234056C;
-	Tue, 26 May 2026 22:56:12 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 613854055B;
+	Tue, 26 May 2026 22:56:15 +0800 (CST)
 Received: from huawei.com (10.50.87.63) by kwepemr500001.china.huawei.com
  (7.202.194.229) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 26 May
- 2026 22:56:11 +0800
+ 2026 22:56:13 +0800
 From: Yin Tirui <yintirui@huawei.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox
 	<willy@infradead.org>, David Hildenbrand <david@kernel.org>, Lorenzo Stoakes
@@ -63,9 +63,9 @@ CC: Catalin Marinas <catalin.marinas@arm.com>, Peter Xu <peterx@redhat.com>,
 	<linux-kernel@vger.kernel.org>, <x86@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-pm@vger.kernel.org>
-Subject: [PATCH mm-unstable RFC v4 2/7] arm64/mm: use PTE-level pgprot for huge PFN helpers
-Date: Tue, 26 May 2026 22:49:58 +0800
-Message-ID: <20260526145003.88445-3-yintirui@huawei.com>
+Subject: [PATCH mm-unstable RFC v4 4/7] mm/huge_memory: refactor copy_huge_pmd()
+Date: Tue, 26 May 2026 22:50:00 +0800
+Message-ID: <20260526145003.88445-5-yintirui@huawei.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260526145003.88445-1-yintirui@huawei.com>
 References: <20260526145003.88445-1-yintirui@huawei.com>
@@ -80,129 +80,241 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  kwepemr500001.china.huawei.com (7.202.194.229)
 
-Make the arm64 PMD/PUD PFN helpers use PTE-level pgprot_t as the basic
-format.
+Classify the source PMD via pmd_present() and vm_normal_folio_pmd(),
+matching the way the PTE path uses pte_present() and vm_normal_page().
+This moves the present-PMD decision from VMA identity checks to the
+actual PMD/folio state.
 
-pfn_pmd() and pfn_pud() now translate PTE-level attributes into block
-entries. pmd_pgprot() and pud_pgprot() translate block descriptor
-attributes back into PTE-level attributes.
+Drop the defensive "if (!pmd_trans_huge(pmd)) goto out_unlock" branch:
+with mmap_write_lock held during fork, it should not occur.
 
-Remove mk_pmd_sect_prot() and mk_pud_sect_prot().
+Extract the present-PMD side of copy_huge_pmd() into
+copy_present_huge_pmd(). The helper owns the child pgtable passed by the
+caller: it either deposits the pgtable when installing a copied PMD, or
+frees it on paths that do not install one.
+
+The child pgtable is now allocated once up front and freed on every skip
+path. This makes file/shmem and PFNMAP/special skip paths take the PMD
+locks and free the preallocated pgtable before returning. These are not
+expected to be hot paths, and the PFNMAP case is reused by the follow-up
+PMD PFNMAP copy support.
 
 Signed-off-by: Yin Tirui <yintirui@huawei.com>
 ---
- arch/arm64/include/asm/pgtable.h | 48 ++++++++++++++++++++++----------
- arch/arm64/mm/mmu.c              |  4 +--
- 2 files changed, 36 insertions(+), 16 deletions(-)
+ mm/huge_memory.c | 175 +++++++++++++++++++++++++----------------------
+ 1 file changed, 95 insertions(+), 80 deletions(-)
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 4dfa42b7d053..c3ee12e14f86 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -511,16 +511,6 @@ static inline pmd_t pte_pmd(pte_t pte)
- 	return __pmd(pte_val(pte));
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 9832ee910d5e..3964258ff91d 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1879,6 +1879,82 @@ bool touch_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 	return false;
  }
  
--static inline pgprot_t mk_pud_sect_prot(pgprot_t prot)
--{
--	return __pgprot((pgprot_val(prot) & ~PUD_TYPE_MASK) | PUD_TYPE_SECT);
--}
--
--static inline pgprot_t mk_pmd_sect_prot(pgprot_t prot)
--{
--	return __pgprot((pgprot_val(prot) & ~PMD_TYPE_MASK) | PMD_TYPE_SECT);
--}
--
- static inline pte_t pte_swp_mkexclusive(pte_t pte)
- {
- 	return set_pte_bit(pte, __pgprot(PTE_SWP_EXCLUSIVE));
-@@ -628,7 +618,13 @@ static inline pmd_t pmd_mkspecial(pmd_t pmd)
- #define __pmd_to_phys(pmd)	__pte_to_phys(pmd_pte(pmd))
- #define __phys_to_pmd_val(phys)	__phys_to_pte_val(phys)
- #define pmd_pfn(pmd)		((__pmd_to_phys(pmd) & PMD_MASK) >> PAGE_SHIFT)
--#define pfn_pmd(pfn,prot)	__pmd(__phys_to_pmd_val((phys_addr_t)(pfn) << PAGE_SHIFT) | pgprot_val(prot))
-+static inline pmd_t pfn_pmd(unsigned long pfn, pgprot_t prot)
++static int copy_present_huge_pmd(
++		struct mm_struct *dst_mm, struct mm_struct *src_mm,
++		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
++		struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
++		pmd_t pmd, pgtable_t pgtable, bool *need_split)
 +{
-+	pmd_t pmd = __pmd(__phys_to_pmd_val((phys_addr_t)pfn << PAGE_SHIFT) |
-+			  pgprot_val(prot));
++	struct folio *src_folio;
++	bool wrprotect = true;
 +
-+	return pmd_mkhuge(pmd);
-+}
- 
- #define pud_young(pud)		pte_young(pud_pte(pud))
- #define pud_mkyoung(pud)	pte_pud(pte_mkyoung(pud_pte(pud)))
-@@ -652,22 +648,46 @@ static inline pud_t pud_mkhuge(pud_t pud)
- #define __pud_to_phys(pud)	__pte_to_phys(pud_pte(pud))
- #define __phys_to_pud_val(phys)	__phys_to_pte_val(phys)
- #define pud_pfn(pud)		((__pud_to_phys(pud) & PUD_MASK) >> PAGE_SHIFT)
--#define pfn_pud(pfn,prot)	__pud(__phys_to_pud_val((phys_addr_t)(pfn) << PAGE_SHIFT) | pgprot_val(prot))
-+static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
-+{
-+	pud_t pud = __pud(__phys_to_pud_val((phys_addr_t)pfn << PAGE_SHIFT) |
-+			  pgprot_val(prot));
++	src_folio = vm_normal_folio_pmd(src_vma, addr, pmd);
++	if (!src_folio) {
++		/*
++		 * When page table lock is held, the huge zero pmd should not be
++		 * under splitting since we don't split the page itself, only pmd to
++		 * a page table.
++		 */
++		if (is_huge_zero_pmd(pmd)) {
++			/*
++			 * mm_get_huge_zero_folio() will never allocate a new
++			 * folio here, since we already have a zero page to
++			 * copy. It just takes a reference.
++			 */
++			mm_get_huge_zero_folio(dst_mm);
++			goto set_pmd;
++		}
 +
-+	return pud_mkhuge(pud);
++		/*
++		 * Making sure it's not a CoW VMA with writable
++		 * mapping, otherwise it means either the anon page wrongly
++		 * applied special bit, or we made the PRIVATE mapping be
++		 * able to wrongly write to the backend MMIO.
++		 */
++		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
++		pte_free(dst_mm, pgtable);
++		pgtable = NULL;
++		wrprotect = false;
++		goto set_pmd;
++	}
++
++	/* File THPs are copied lazily by refaulting. */
++	if (!folio_test_anon(src_folio)) {
++		pte_free(dst_mm, pgtable);
++		return 0;
++	}
++
++	folio_get(src_folio);
++	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio,
++							&src_folio->page,
++							dst_vma, src_vma))) {
++		/* Page maybe pinned: split and retry the fault on PTEs. */
++		folio_put(src_folio);
++		pte_free(dst_mm, pgtable);
++		*need_split = true;
++		return -EAGAIN;
++	}
++	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
++
++set_pmd:
++	if (pgtable) {
++		mm_inc_nr_ptes(dst_mm);
++		pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
++	}
++
++	if (wrprotect) {
++		pmdp_set_wrprotect(src_mm, addr, src_pmd);
++		if (!userfaultfd_wp(dst_vma))
++			pmd = pmd_clear_uffd_wp(pmd);
++		pmd = pmd_wrprotect(pmd);
++	}
++
++	pmd = pmd_mkold(pmd);
++	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
++
++	return 0;
 +}
- 
- #define pmd_pgprot pmd_pgprot
- static inline pgprot_t pmd_pgprot(pmd_t pmd)
++
+ static void copy_huge_non_present_pmd(
+ 		struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 		pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long addr,
+@@ -1940,104 +2016,43 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 		  struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma)
  {
- 	unsigned long pfn = pmd_pfn(pmd);
-+	pmdval_t protval = pmd_val(pmd) ^
-+		__phys_to_pmd_val((phys_addr_t)pfn << PAGE_SHIFT);
-+
-+	/*
-+	 * pgprot_t represents PTE-level attributes. Convert the PMD
-+	 * block descriptor type into a PTE page descriptor type.
-+	 */
-+	pmdval_t mask = PMD_TYPE_MASK & ~PTE_VALID;
-+	pmdval_t val = PTE_TYPE_PAGE & ~PTE_VALID;
+ 	spinlock_t *dst_ptl, *src_ptl;
+-	struct page *src_page;
+-	struct folio *src_folio;
+-	pmd_t pmd;
+ 	pgtable_t pgtable = NULL;
+-	int ret = -ENOMEM;
+-
+-	pmd = pmdp_get_lockless(src_pmd);
+-	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
+-		     !is_huge_zero_pmd(pmd))) {
+-		dst_ptl = pmd_lock(dst_mm, dst_pmd);
+-		src_ptl = pmd_lockptr(src_mm, src_pmd);
+-		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+-		/*
+-		 * No need to recheck the pmd, it can't change with write
+-		 * mmap lock held here.
+-		 *
+-		 * Meanwhile, making sure it's not a CoW VMA with writable
+-		 * mapping, otherwise it means either the anon page wrongly
+-		 * applied special bit, or we made the PRIVATE mapping be
+-		 * able to wrongly write to the backend MMIO.
+-		 */
+-		VM_WARN_ON_ONCE(is_cow_mapping(src_vma->vm_flags) && pmd_write(pmd));
+-		goto set_pmd;
+-	}
+-
+-	/* Skip if can be re-fill on fault */
+-	if (!vma_is_anonymous(dst_vma))
+-		return 0;
++	bool need_split = false;
++	int ret = 0;
++	pmd_t pmd;
  
--	return __pgprot(pmd_val(pfn_pmd(pfn, __pgprot(0))) ^ pmd_val(pmd));
-+	return __pgprot((protval & ~mask) | val);
+ 	pgtable = pte_alloc_one(dst_mm);
+ 	if (unlikely(!pgtable))
+-		goto out;
++		return -ENOMEM;
+ 
+ 	dst_ptl = pmd_lock(dst_mm, dst_pmd);
+ 	src_ptl = pmd_lockptr(src_mm, src_pmd);
+ 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+ 
+-	ret = -EAGAIN;
+ 	pmd = *src_pmd;
+ 
+-	if (unlikely(thp_migration_supported() &&
+-		     pmd_is_valid_softleaf(pmd))) {
+-		copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
++	if (likely(pmd_present(pmd))) {
++		ret = copy_present_huge_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
++					  dst_vma, src_vma, pmd, pgtable, &need_split);
++	} else if (unlikely(thp_migration_supported() && pmd_is_valid_softleaf(pmd))) {
++		if (unlikely(!vma_is_anonymous(dst_vma)))
++			pte_free(dst_mm, pgtable);
++		else
++			copy_huge_non_present_pmd(dst_mm, src_mm, dst_pmd, src_pmd, addr,
+ 					  dst_vma, src_vma, pmd, pgtable);
+-		ret = 0;
+-		goto out_unlock;
+-	}
+-
+-	if (unlikely(!pmd_trans_huge(pmd))) {
++	} else {
++		VM_WARN_ONCE(1, "unexpected non-present PMD %llx\n",
++				(unsigned long long)pmd_val(pmd));
+ 		pte_free(dst_mm, pgtable);
+-		goto out_unlock;
+-	}
+-	/*
+-	 * When page table lock is held, the huge zero pmd should not be
+-	 * under splitting since we don't split the page itself, only pmd to
+-	 * a page table.
+-	 */
+-	if (is_huge_zero_pmd(pmd)) {
+-		/*
+-		 * mm_get_huge_zero_folio() will never allocate a new
+-		 * folio here, since we already have a zero page to
+-		 * copy. It just takes a reference.
+-		 */
+-		mm_get_huge_zero_folio(dst_mm);
+-		goto out_zero_page;
++		ret = -EAGAIN;
+ 	}
+ 
+-	src_page = pmd_page(pmd);
+-	VM_BUG_ON_PAGE(!PageHead(src_page), src_page);
+-	src_folio = page_folio(src_page);
++	spin_unlock(src_ptl);
++	spin_unlock(dst_ptl);
+ 
+-	folio_get(src_folio);
+-	if (unlikely(folio_try_dup_anon_rmap_pmd(src_folio, src_page, dst_vma, src_vma))) {
+-		/* Page maybe pinned: split and retry the fault on PTEs. */
+-		folio_put(src_folio);
+-		pte_free(dst_mm, pgtable);
+-		spin_unlock(src_ptl);
+-		spin_unlock(dst_ptl);
++	if (unlikely(need_split))
+ 		__split_huge_pmd(src_vma, src_pmd, addr, false);
+-		return -EAGAIN;
+-	}
+-	add_mm_counter(dst_mm, MM_ANONPAGES, HPAGE_PMD_NR);
+-out_zero_page:
+-	mm_inc_nr_ptes(dst_mm);
+-	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
+-	pmdp_set_wrprotect(src_mm, addr, src_pmd);
+-	if (!userfaultfd_wp(dst_vma))
+-		pmd = pmd_clear_uffd_wp(pmd);
+-	pmd = pmd_wrprotect(pmd);
+-set_pmd:
+-	pmd = pmd_mkold(pmd);
+-	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
+ 
+-	ret = 0;
+-out_unlock:
+-	spin_unlock(src_ptl);
+-	spin_unlock(dst_ptl);
+-out:
+ 	return ret;
  }
  
- #define pud_pgprot pud_pgprot
- static inline pgprot_t pud_pgprot(pud_t pud)
- {
- 	unsigned long pfn = pud_pfn(pud);
-+	pudval_t protval = pud_val(pud) ^
-+		__phys_to_pud_val((phys_addr_t)pfn << PAGE_SHIFT);
-+
-+	/*
-+	 * pgprot_t represents PTE-level attributes. Convert the PUD
-+	 * block descriptor type into a PTE page descriptor type.
-+	 */
-+	pudval_t mask = PUD_TYPE_MASK & ~PTE_VALID;
-+	pudval_t val = PTE_TYPE_PAGE & ~PTE_VALID;
- 
--	return __pgprot(pud_val(pfn_pud(pfn, __pgprot(0))) ^ pud_val(pud));
-+	return __pgprot((protval & ~mask) | val);
- }
- 
- static inline void __set_ptes_anysz(struct mm_struct *mm, unsigned long addr,
-diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index e5a42b7a0160..2dd99d595f19 100644
---- a/arch/arm64/mm/mmu.c
-+++ b/arch/arm64/mm/mmu.c
-@@ -1816,7 +1816,7 @@ void vmemmap_free(unsigned long start, unsigned long end,
- 
- int pud_set_huge(pud_t *pudp, phys_addr_t phys, pgprot_t prot)
- {
--	pud_t new_pud = pfn_pud(__phys_to_pfn(phys), mk_pud_sect_prot(prot));
-+	pud_t new_pud = pfn_pud(__phys_to_pfn(phys), prot);
- 
- 	/* Only allow permission changes for now */
- 	if (!pgattr_change_is_safe(READ_ONCE(pud_val(*pudp)),
-@@ -1830,7 +1830,7 @@ int pud_set_huge(pud_t *pudp, phys_addr_t phys, pgprot_t prot)
- 
- int pmd_set_huge(pmd_t *pmdp, phys_addr_t phys, pgprot_t prot)
- {
--	pmd_t new_pmd = pfn_pmd(__phys_to_pfn(phys), mk_pmd_sect_prot(prot));
-+	pmd_t new_pmd = pfn_pmd(__phys_to_pfn(phys), prot);
- 
- 	/* Only allow permission changes for now */
- 	if (!pgattr_change_is_safe(READ_ONCE(pmd_val(*pmdp)),
 -- 
 2.43.0
 
