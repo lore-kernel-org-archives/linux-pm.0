@@ -1,206 +1,127 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D54040DFD1
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 17:38:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779817123; cv=none; b=asa6iaDtTgcmE7QKWTdwli/eGHsJ4/Rwnyqw5hnzWty1WutgoiDyjsa63njJNU83svuUjB0IM+FU7mQCuWGTeSnU6fxzUBBzxVcYUnEs6xjHRjz4RQK1Z9dOtOyKsJymET/000Tv9Fkl+9ZF1RW1gfWCxDx3uPjKxK4cRTLnQMQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779817123; c=relaxed/simple;
-	bh=YIiBEy+JoI0n0KVenwBm6+hhuAWcM9sJCjRrhCGarjk=;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F659421887
+	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 18:22:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.173
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779819721; cv=pass; b=mwXMVjfrmmGV3bNt/YD1XkU4OgBLCESA7awjkGTzEDFhqpu8vEoK43BuF1TinBmZbpGu4ZvmIsHIA3yms4BnU7RVH9M4rAslxqJcakp7CDVu7NbpJhTHf8z71K7uf3YKv87WkWI2aj/QZBdKUXPGcmoozIZ2SFUNq8yo/za9kBM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779819721; c=relaxed/simple;
+	bh=zZlGXRWOTNjKRRnkKz6c2KolMrR/moiIJiI92PNpY/U=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PpBhNFFtDwkUzB9iLZxTaEZC1uJMYnc2ObeOJm0BaWmE7VIaUUPp4KLjKlfE4nHPPm1XltmnIqBnux9YZJFv/Rsms0ET3h981fktJaQxsH5FU3D4npZ4nGYCIFGU8kK5/kPIsCeNQF0784Ny/QoZztouR/V64F4CKkWqz8cBHQM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MK1qtNcH; arc=none smtp.client-ip=100.103.45.18
+	 To:Cc:Content-Type; b=qporlGSYJzSLteor+sYRYpO689miOV3ekCckOHHhOy5JSLlGJj0zkSQvBm+SavlGCtL6h2lpW/RqbXEGd0FwsJbbd5i987zn8d9rL0XWtsoEZrZEmboYqE8dRKQ3fKjopg41hMPIZrGyCJEWfS+7HZLtoVTo++n3IHPKzG+TyEI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=qlXrT3lW; arc=pass smtp.client-ip=74.125.82.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MK1qtNcH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27CD81F00A3C
-	for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 17:38:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779817122;
-	bh=muX4PNSfjrVF3DnK03YI3T0ZlUY6aIICW/mdHaodh9k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=MK1qtNcHvTrf0USYrYTsqspRcH5g61CrUOeKJlqEA+okijsPDDoowVcX+ZAsyKzn6
-	 ZJnolxOdie1lb1uWmZ+2hkX8HZ2WbXQ5HueWrViksfgcKryOxzC9yzT7hyav4Tio9f
-	 Of19HAPNwzN4yg7jEuFgsHayGFkzV6AF96dVz1tZlde0X4rakCLE2NKcHkK0JvD5SQ
-	 C+ayOe2a9Boae7enbvCTOlZttovA/HIwpgfmhje4CIdmE3EjLNpyHZeTANvB35vDzO
-	 CVdLVHCEU88UlsiiKJLuiJCJD+n6gITlU8/dWTkydPrrMjMAWsy8dezeWawhwbcGwK
-	 cCr48HXJAl9ZA==
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5aa0cf8bca3so9909634e87.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 10:38:42 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/QCRi93bn6nwSU6KO5ihFeo1PfTlPTtIUluKn2EsWw33/sWKiHYGcMvaDGCdk/qUq32jit+5HlzA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwmitAWxd+Ew+FbOFE8bnRglvFS6dm/8QfzeI4QbkUQY7M/C2ig
-	q25Ai9n7FF+zl2jrkiTRsP/3QuL2o0fq2wjocDQ1LY+O87CC5VpqnVRmqeYVagJU0kSzy6jAfzA
-	bPlR2gFkeADArBQqPP84Syitr7DTZjBs=
-X-Received: by 2002:a05:6512:3d11:b0:5a8:d1ef:caad with SMTP id
- 2adb3069b0e04-5aa3237d6c8mr5182458e87.4.1779817120578; Tue, 26 May 2026
- 10:38:40 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qlXrT3lW"
+Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-2f114d129c0so899851eec.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2026 11:22:00 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779819719; cv=none;
+        d=google.com; s=arc-20240605;
+        b=M5DUn5UK2CnaG/HOShMEjqXhRU6f2ghL0GH8DmFeK/wz4mzK/uLgtHFcw4TaDqMp4+
+         ZpRngUkEhdVqPZXSTGG1tiFXLyJzguMD07lXXpGPPj4oOH/0PW9xlQJTFbjbHqe4hD3T
+         86Y8KFvdN4w+HnV/DAxaJDjEC1NDv6rJRyKhC2Go0AdygSq5tTi43b7oG7p5ECHuvhvY
+         j25jWZX1iQICwyTOPatby5y9nXIMOj6ADR6AukFcpa4+ULg+Ste5fk4Ue7VNS/I/t32D
+         dxAH4RUYjQwI1YCpo6kyuHnXsf1TE5gSoKsuA6dhOZrn9jIYSyWKUKTV3WrEHEzBdl6K
+         7sZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=zZlGXRWOTNjKRRnkKz6c2KolMrR/moiIJiI92PNpY/U=;
+        fh=W5mR1JwZh/o8EvdO5BdZqNnvNZZ8b9G7k0Oz9n+PprA=;
+        b=IyFz04h++3mWegAKvR+zm/ASmBjHobULG5k3TlaOm9jyms0Era5EtoGds+uThKwrry
+         JrGdZIoKGBXpNPeFFGiqjrw5rjaFoQbR56HYItbgWHXPS4ZNkx8Uu9Vjaobl2y6lht8g
+         G1rY5I2Squdn6m0n6rdQfOHER8xs4W7EQxS+2u0boAX9KN7ZNdt53XhfbrryBasTkk7g
+         PVvOSUDiMX75A3c/lkGKqbEXToqZ2bzmYCeCT4onxDt0LlwGQ6VduTZ78L4xhs/JndwR
+         h5vx5DD+Ilrqs1PvDMEGnJWNgXi0X4swxob3NpQvDTMqPPMb4ztzG+JNvRWnN+S2FYm7
+         F0rw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779819719; x=1780424519; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zZlGXRWOTNjKRRnkKz6c2KolMrR/moiIJiI92PNpY/U=;
+        b=qlXrT3lWn7CREfHFK9zMeIZFg0kNvix1PpPz9wUMf+cvc2WDwVU0o4MscpxyJZhsGI
+         CwXWZ/zyfXOhEd55gNKMGYb1D6RsPL5KQCZ8ZPTolJcNjHcvsCeR/O0ha9c4quLkTHBp
+         9a1881kAzfVfGOoLWAv/H1W7QLffXVCpSuc+KeweCYGVMxhYtGMys6zfzis06qTG7lgh
+         q7IJs5llE5+fvdiKNtaVooKmVgF2yaUjVRdYtljW1wmVs4FAjMBJed3TUB3bpB3Tpl+7
+         J4O28IKYG47fna6IZj6UJ8i/pJH4mQHEAvWcbe6pTRn3yFCJi07wFqJsve15L+6ZnUv1
+         9C8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779819719; x=1780424519;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=zZlGXRWOTNjKRRnkKz6c2KolMrR/moiIJiI92PNpY/U=;
+        b=OR8LPi+Ueg5O0nH5d2pCCKYfubcy0r3u24aS/7QY00oFLR0ZOU9Mh4jffX0gpIfKbo
+         TviTeQn5s/ZklObU1csdLKzcyxyeNaQJtGaB0w0MFtStj7BhDUCkI0hpEIcpkB38MWGo
+         jZI0IojBI+pXzScZEy4ZD6HOGZeGl50eBfF/YtJ1o2xV6Jbq1sECaXil+2GFY41YS/P8
+         DwXGLMeO28zHDsh55uCwGCI38/m8ZRbrZ7RdVq5qYnmNnEucOnXO5kaccB9DNroJ97mv
+         xyiQVwuxBk9gAxTO8PNLu5Eb4A7wt3ComT17MUxwcacObV5XSs8SD7OvPmyf77ZcW9Gu
+         XwAQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/ewRNa37gSZr3pvf5okN0UOhe3vjrrTAxka2s4NcSLftbZGmXkP6E6qrjLkdJu6LUi3KOVu3F7Fg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz6aQurOVjVcHaty29TQ6y3l8AIRWtLBblqGB2bbbWFqHCK4h4O
+	fezUfyfbitnX9/r35wbI6to6PodjY+WsZSQETgxHcWEZavx1Q/JvAfCJbHMFGFHh1D+12074gQY
+	kSLYyZKAng0u65J8lReCS8hhvIrzbtC4=
+X-Gm-Gg: Acq92OFEFVQSHDhnuDfV+GMiMN3vw1zLJduSQUiS5sEcjLaBOL4izfYIwSmaJf5X24N
+	wYfeljb6CuEx8mgZWrj7mgZ6eCueHW7L6VeL0oCVVtfSCjlsbjZv+0rgIavy8FkH07+sfGSAOG6
+	vk13ShXn3PuQkjETUJHWsV1mfRcqqtTG+MLlN0aO2LMND32fUVRa4yQBR4Nx7XINjDSkC8rveWH
+	JnqP0qof2zdK+eVoWtxh8kf0/yOMPtUw56mgJyxGogwC85YV5eDkqdPYo7Yg47le4Oy1xyeWPoG
+	krPie847sNp8xHXy1qBORVAjL82h4YKrVhabmUlaFzqCybR2J3mLmAIPtcRWclr/LCeqB5AQVvr
+	42tTAaIN129qDKloPh3oPVSY=
+X-Received: by 2002:a05:7301:2b06:b0:304:2af3:5fef with SMTP id
+ 5a478bee46e88-3044921564fmr4123223eec.8.1779819719412; Tue, 26 May 2026
+ 11:21:59 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Subscribe: <mailto:linux-pm+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260514194822.1841748-1-sumitg@nvidia.com> <20260514194822.1841748-2-sumitg@nvidia.com>
-In-Reply-To: <20260514194822.1841748-2-sumitg@nvidia.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 26 May 2026 19:38:29 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0g7u9srS47kcLJJzOh=ZO3toxcbr+OjZB5qVu2zyngn9Q@mail.gmail.com>
-X-Gm-Features: AVHnY4I0r6q_8LO8XjW2hP2K0zKWFqUZ5HKIdN4wB8tDRQXvyO_UtkQ_1YHy03E
-Message-ID: <CAJZ5v0g7u9srS47kcLJJzOh=ZO3toxcbr+OjZB5qVu2zyngn9Q@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] ACPI: CPPC: Add support for CPPC v4
-To: Sumit Gupta <sumitg@nvidia.com>, mario.limonciello@amd.com
-Cc: viresh.kumar@linaro.org, pierre.gondois@arm.com, zhenglifeng1@huawei.com, 
-	zhanjie9@hisilicon.com, saket.dumbre@intel.com, linux-acpi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 
-	acpica-devel@lists.linux.dev, treding@nvidia.com, jonathanh@nvidia.com, 
-	vsethi@nvidia.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, 
-	bbasu@nvidia.com, Mario Limonciello <superm1@kernel.org>
+References: <20260525202921.124698-1-dakr@kernel.org> <20260525202921.124698-3-dakr@kernel.org>
+In-Reply-To: <20260525202921.124698-3-dakr@kernel.org>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Tue, 26 May 2026 20:21:47 +0200
+X-Gm-Features: AVHnY4LERaGUubmcoHWuZ6pDVh-Er4DRAsv1wa0D_Oc3ExDNDH2ULqOUOsIQmwA
+Message-ID: <CANiq72mNqdOmQ3Va=EF-Fg+-BXW=O=px4z4+YQTS6wzL87=ZHQ@mail.gmail.com>
+Subject: Re: [PATCH v5 02/24] rust: alloc: remove `'static` bound on `ForeignOwnable`
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, acourbot@nvidia.com, 
+	aliceryhl@google.com, david.m.ertman@intel.com, ira.weiny@intel.com, 
+	leon@kernel.org, viresh.kumar@linaro.org, m.wilczynski@samsung.com, 
+	ukleinek@kernel.org, bhelgaas@google.com, kwilczynski@kernel.org, 
+	abdiel.janulgue@gmail.com, robin.murphy@arm.com, markus.probst@posteo.de, 
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
+	tmgross@umich.edu, igor.korotin@linux.dev, daniel.almeida@collabora.com, 
+	pcolberg@redhat.com, driver-core@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, nova-gpu@lists.linux.dev, 
+	dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, 
+	linux-pwm@vger.kernel.org, linux-pci@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 14, 2026 at 9:49=E2=80=AFPM Sumit Gupta <sumitg@nvidia.com> wro=
-te:
+On Mon, May 25, 2026 at 10:29=E2=80=AFPM Danilo Krummrich <dakr@kernel.org>=
+ wrote:
 >
-> CPPC v4 (ACPI 6.6, Section 8.4.6) adds two optional entries to the
-> _CPC package:
+> From: Gary Guo <gary@garyguo.net>
 >
-> 1. OSPM Nominal Performance (8.4.6.1.2.6): A write-only register that
->    lets OSPM inform the platform what it considers nominal performance.
->    The platform classifies performance above this level as boost and
->    below as throttle for its power/thermal decisions.
+> The `'static` bound is currently necessary because there's no
+> restriction on the lifetime of the GAT. Add a `Self: 'a` bound to
+> restrict possible lifetimes on `Borrowed` and `BorrowedMut`, and lift
+> the `'static` requirement.
 >
-> 2. Resource Priority (8.4.6.1.2.7): A Package of Resource Priority
->    Register Descriptor sub-packages that allow OSPM to set relative
->    priority among processors for shared resources (boost, throttle,
->    L2/L3 cache, memory bandwidth). Parsing the full structure is not
->    yet supported; such entries are marked as unsupported.
->
-> Add v4 _CPC table parsing (25 entries) and update REG_OPTIONAL to
-> mark the two new registers as optional.
->
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> Reviewed-by: Mario Limonciello (AMD) <superm1@kernel.org>
-> Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
+> Reviewed-by: Alexandre Courbot <acourbot@nvidia.com>
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Gary Guo <gary@garyguo.net>
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 
-I can apply this one if there are no objections.
+Acked-by: Miguel Ojeda <ojeda@kernel.org>
 
-The other patch in the series seems to require more work though.
-
-Mario, does your follow-up series depend on both patches in this one?
-
-> ---
->  drivers/acpi/cppc_acpi.c | 23 +++++++++++++++++------
->  include/acpi/cppc_acpi.h |  8 ++++++--
->  2 files changed, 23 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index f370be8715ae..c76cfafa3589 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -134,7 +134,7 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr=
-);
->   * cpc_regs[] with the corresponding index. 0 means mandatory and 1
->   * means optional.
->   */
-> -#define REG_OPTIONAL (0x1FC7D0)
-> +#define REG_OPTIONAL (0x7FC7D0)
->
->  /*
->   * Use the index of the register in per-cpu cpc_regs[] to check if
-> @@ -751,18 +751,19 @@ int acpi_cppc_processor_probe(struct acpi_processor=
- *pr)
->         /*
->          * Disregard _CPC if the number of entries in the return package =
-is not
->          * as expected, but support future revisions being proper superse=
-ts of
-> -        * the v3 and only causing more entries to be returned by _CPC.
-> +        * the v4 and only causing more entries to be returned by _CPC.
->          */
->         if ((cpc_rev =3D=3D CPPC_V2_REV && num_ent !=3D CPPC_V2_NUM_ENT) =
-||
->             (cpc_rev =3D=3D CPPC_V3_REV && num_ent !=3D CPPC_V3_NUM_ENT) =
-||
-> -           (cpc_rev > CPPC_V3_REV && num_ent <=3D CPPC_V3_NUM_ENT)) {
-> +           (cpc_rev =3D=3D CPPC_V4_REV && num_ent !=3D CPPC_V4_NUM_ENT) =
-||
-> +           (cpc_rev > CPPC_V4_REV && num_ent <=3D CPPC_V4_NUM_ENT)) {
->                 pr_debug("Unexpected number of _CPC return package entrie=
-s (%d) for CPU:%d\n",
->                          num_ent, pr->id);
->                 goto out_free;
->         }
-> -       if (cpc_rev > CPPC_V3_REV) {
-> -               num_ent =3D CPPC_V3_NUM_ENT;
-> -               cpc_rev =3D CPPC_V3_REV;
-> +       if (cpc_rev > CPPC_V4_REV) {
-> +               num_ent =3D CPPC_V4_NUM_ENT;
-> +               cpc_rev =3D CPPC_V4_REV;
->         }
->
->         cpc_ptr->num_entries =3D num_ent;
-> @@ -845,6 +846,16 @@ int acpi_cppc_processor_probe(struct acpi_processor =
-*pr)
->
->                         cpc_ptr->cpc_regs[i-2].type =3D ACPI_TYPE_BUFFER;
->                         memcpy(&cpc_ptr->cpc_regs[i-2].cpc_entry.reg, gas=
-_t, sizeof(*gas_t));
-> +               } else if (cpc_obj->type =3D=3D ACPI_TYPE_PACKAGE && (i -=
- 2) =3D=3D RESOURCE_PRIORITY) {
-> +                       /*
-> +                        * ACPI 6.6, s8.4.6.1.2.7 defines Resource Priori=
-ty as a
-> +                        * Package of Resource Priority Register Descript=
-or sub-packages.
-> +                        * Parsing the full structure is not yet supporte=
-d.
-> +                        * Mark the register as unsupported for now.
-> +                        */
-> +                       pr_debug("CPU:%d Resource Priority not supported\=
-n", pr->id);
-> +                       cpc_ptr->cpc_regs[i-2].type =3D ACPI_TYPE_INTEGER=
-;
-> +                       cpc_ptr->cpc_regs[i-2].cpc_entry.int_value =3D 0;
->                 } else {
->                         pr_debug("Invalid entry type (%d) in _CPC for CPU=
-:%d\n",
->                                  i, pr->id);
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index d1f02ceec4f9..8693890a7275 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -17,16 +17,18 @@
->  #include <acpi/pcc.h>
->  #include <acpi/processor.h>
->
-> -/* CPPCv2 and CPPCv3 support */
-> +/* CPPCv2, CPPCv3 and CPPCv4 support */
->  #define CPPC_V2_REV    2
->  #define CPPC_V3_REV    3
-> +#define CPPC_V4_REV    4
->  #define CPPC_V2_NUM_ENT        21
->  #define CPPC_V3_NUM_ENT        23
-> +#define CPPC_V4_NUM_ENT        25
->
->  #define PCC_CMD_COMPLETE_MASK  (1 << 0)
->  #define PCC_ERROR_MASK         (1 << 2)
->
-> -#define MAX_CPC_REG_ENT 21
-> +#define MAX_CPC_REG_ENT 23
->
->  /* CPPC specific PCC commands. */
->  #define        CMD_READ 0
-> @@ -109,6 +111,8 @@ enum cppc_regs {
->         REFERENCE_PERF,
->         LOWEST_FREQ,
->         NOMINAL_FREQ,
-> +       OSPM_NOMINAL_PERF,
-> +       RESOURCE_PRIORITY,
->  };
->
->  /*
-> --
-> 2.34.1
->
->
+Cheers,
+Miguel
